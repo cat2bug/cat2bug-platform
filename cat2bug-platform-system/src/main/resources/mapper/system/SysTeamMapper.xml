@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.system.mapper.SysTeamMapper">
+    
+    <resultMap type="SysTeam" id="SysTeamResult">
+        <result property="teamId"    column="team_id"    />
+        <result property="teamName"    column="team_name"    />
+        <result property="teamIcon"    column="team_icon"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="introduce"    column="introduce"    />
+        <result property="isDel"    column="is_del"    />
+    </resultMap>
+
+    <sql id="selectSysTeamVo">
+        select team_id, team_name, team_icon, create_by, create_time, update_by, update_time, introduce, is_del from sys_team
+    </sql>
+
+    <select id="selectSysTeamList" parameterType="SysTeam" resultMap="SysTeamResult">
+        <include refid="selectSysTeamVo"/>
+        <where>  
+            <if test="teamName != null  and teamName != ''"> and team_name like concat('%', #{teamName}, '%')</if>
+        </where>
+    </select>
+    
+    <select id="selectSysTeamByTeamId" parameterType="Long" resultMap="SysTeamResult">
+        <include refid="selectSysTeamVo"/>
+        where team_id = #{teamId}
+    </select>
+        
+    <insert id="insertSysTeam" parameterType="SysTeam">
+        insert into sys_team
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="teamId != null">team_id,</if>
+            <if test="teamName != null">team_name,</if>
+            <if test="teamIcon != null">team_icon,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="introduce != null">introduce,</if>
+            <if test="isDel != null">is_del,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="teamId != null">#{teamId},</if>
+            <if test="teamName != null">#{teamName},</if>
+            <if test="teamIcon != null">#{teamIcon},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="introduce != null">#{introduce},</if>
+            <if test="isDel != null">#{isDel},</if>
+         </trim>
+    </insert>
+
+    <update id="updateSysTeam" parameterType="SysTeam">
+        update sys_team
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="teamName != null">team_name = #{teamName},</if>
+            <if test="teamIcon != null">team_icon = #{teamIcon},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="introduce != null">introduce = #{introduce},</if>
+            <if test="isDel != null">is_del = #{isDel},</if>
+        </trim>
+        where team_id = #{teamId}
+    </update>
+
+    <delete id="deleteSysTeamByTeamId" parameterType="Long">
+        delete from sys_team where team_id = #{teamId}
+    </delete>
+
+    <delete id="deleteSysTeamByTeamIds" parameterType="String">
+        delete from sys_team where team_id in 
+        <foreach item="teamId" collection="array" open="(" separator="," close=")">
+            #{teamId}
+        </foreach>
+    </delete>
+</mapper>
