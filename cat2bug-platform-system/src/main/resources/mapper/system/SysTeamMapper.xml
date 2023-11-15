@@ -31,8 +31,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <include refid="selectSysTeamVo"/>
         where team_id = #{teamId}
     </select>
-        
-    <insert id="insertSysTeam" parameterType="SysTeam">
+
+    <select id="selectSysTeamByTeamName" parameterType="String" resultMap="SysTeamResult">
+        <include refid="selectSysTeamVo"/>
+        where team_name = #{teamName}
+    </select>
+
+    <insert id="insertSysTeam" parameterType="SysTeam" useGeneratedKeys="true" keyProperty="teamId">
         insert into sys_team
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="teamId != null">team_id,</if>
@@ -58,17 +63,47 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
          </trim>
     </insert>
 
+    <insert id="insertSysUserTeamRole" parameterType="SysUserTeamRole">
+        insert into sys_user_team_role
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="teamId != null">team_id,</if>
+            <if test="userId != null">user_id,</if>
+            <if test="teamRoleId != null">team_role_id,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="teamId != null">#{teamId},</if>
+            <if test="userId != null">#{userId},</if>
+            <if test="teamRoleId != null">#{teamRoleId},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+        </trim>
+    </insert>
+
     <update id="updateSysTeam" parameterType="SysTeam">
         update sys_team
         <trim prefix="SET" suffixOverrides=",">
             <if test="teamName != null">team_name = #{teamName},</if>
             <if test="teamIcon != null">team_icon = #{teamIcon},</if>
-            <if test="createBy != null">create_by = #{createBy},</if>
-            <if test="createTime != null">create_time = #{createTime},</if>
             <if test="updateBy != null">update_by = #{updateBy},</if>
             <if test="updateTime != null">update_time = #{updateTime},</if>
             <if test="introduce != null">introduce = #{introduce},</if>
             <if test="isDel != null">is_del = #{isDel},</if>
+        </trim>
+        where team_id = #{teamId}
+    </update>
+
+    <update id="updateSysUserTeamRole" parameterType="SysUserTeamRole">
+        update sys_user_team_role
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="teamRoleId != null">team_role_id = #{teamRoleId},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
         </trim>
         where team_id = #{teamId}
     </update>

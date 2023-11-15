@@ -1,0 +1,14 @@
+{
+  "system-name": "CAT & BUG",
+  "loading": "Loading",
+  "login": "Login",
+  "account": "Account",
+  "password": "Password",
+  "verification-code": "Verification Code",
+  "remember-password": "Remember Password",
+  "register-now": "Register Now",
+  "please-enter-your-account": "Please enter your account",
+  "please-enter-your-password": "Please enter your password",
+  "please-enter-verification-code": "Please enter the verification code",
+  "version": "Version"
+}

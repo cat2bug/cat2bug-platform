@@ -2,6 +2,7 @@ package com.cat2bug.system.mapper;
 
 import java.util.List;
 import com.cat2bug.system.domain.SysTeam;
+import com.cat2bug.system.domain.SysUserTeamRole;
 
 /**
  * 团队Mapper接口
@@ -20,6 +21,13 @@ public interface SysTeamMapper
     public SysTeam selectSysTeamByTeamId(Long teamId);
 
     /**
+     * 查询团队
+     * @param teamName  团队名称
+     * @return  团队
+     */
+    public SysTeam selectSysTeamByTeamName(String teamName);
+
+    /**
      * 查询团队列表
      * 
      * @param sysTeam 团队
@@ -36,6 +44,13 @@ public interface SysTeamMapper
     public int insertSysTeam(SysTeam sysTeam);
 
     /**
+     * 新增用户团队角色
+     * @param sysUserTeamRole
+     * @return
+     */
+    public int insertSysUserTeamRole(SysUserTeamRole sysUserTeamRole);
+
+    /**
      * 修改团队
      * 
      * @param sysTeam 团队
@@ -43,6 +58,12 @@ public interface SysTeamMapper
      */
     public int updateSysTeam(SysTeam sysTeam);
 
+    /**
+     * 修改用户团队角色
+     * @param sysUserTeamRole
+     * @return
+     */
+    public int updateSysUserTeamRole(SysUserTeamRole sysUserTeamRole);
     /**
      * 删除团队
      * 

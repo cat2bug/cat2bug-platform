@@ -16,11 +16,19 @@
     </description>
 
     <dependencies>
-
+        <!-- 通用工具-->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
         <!-- 通用工具-->
         <dependency>
             <groupId>com.cat2bug</groupId>
             <artifactId>cat2bug-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
         </dependency>
 
     </dependencies>
