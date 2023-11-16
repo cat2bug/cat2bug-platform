@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.system.mapper.SysUserConfigMapper">
+    
+    <resultMap type="SysUserConfig" id="SysUserConfigResult">
+        <result property="userConfigId"    column="user_config_id"    />
+        <result property="currentTeamId"    column="current_team_id"    />
+        <result property="userId"    column="user_id"    />
+    </resultMap>
+
+    <sql id="selectSysUserConfigVo">
+        select user_config_id, current_team_id, user_id from sys_user_config
+    </sql>
+
+    <select id="selectSysUserConfigList" parameterType="SysUserConfig" resultMap="SysUserConfigResult">
+        <include refid="selectSysUserConfigVo"/>
+        <where>  
+            <if test="currentTeamId != null "> and current_team_id = #{currentTeamId}</if>
+            <if test="userId != null "> and user_id = #{userId}</if>
+        </where>
+    </select>
+    
+    <select id="selectSysUserConfigByUserConfigId" parameterType="Long" resultMap="SysUserConfigResult">
+        <include refid="selectSysUserConfigVo"/>
+        where user_config_id = #{userConfigId}
+    </select>
+        
+    <insert id="insertSysUserConfig" parameterType="SysUserConfig" useGeneratedKeys="true" keyProperty="userConfigId">
+        insert into sys_user_config
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="currentTeamId != null">current_team_id,</if>
+            <if test="userId != null">user_id,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="currentTeamId != null">#{currentTeamId},</if>
+            <if test="userId != null">#{userId},</if>
+         </trim>
+    </insert>
+
+    <update id="updateSysUserConfig" parameterType="SysUserConfig">
+        update sys_user_config
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="currentTeamId != null">current_team_id = #{currentTeamId},</if>
+            <if test="userId != null">user_id = #{userId},</if>
+        </trim>
+        where user_config_id = #{userConfigId}
+    </update>
+
+    <delete id="deleteSysUserConfigByUserConfigId" parameterType="Long">
+        delete from sys_user_config where user_config_id = #{userConfigId}
+    </delete>
+
+    <delete id="deleteSysUserConfigByUserConfigIds" parameterType="String">
+        delete from sys_user_config where user_config_id in 
+        <foreach item="userConfigId" collection="array" open="(" separator="," close=")">
+            #{userConfigId}
+        </foreach>
+    </delete>
+</mapper>

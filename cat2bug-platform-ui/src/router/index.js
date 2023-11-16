@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
+import i18n from '@/utils/i18n/i18n.js'
 
 Vue.use(Router)
 
@@ -70,7 +71,7 @@ export const constantRoutes = [
         path: 'index',
         component: () => import('@/views/index'),
         name: 'Index',
-        meta: { title: '首页', icon: 'dashboard', affix: true }
+        meta: { title: i18n.t('home'), icon: 'dashboard', affix: true }
       }
     ]
   },

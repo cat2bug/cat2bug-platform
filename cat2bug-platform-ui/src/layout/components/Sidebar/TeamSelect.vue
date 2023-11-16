@@ -99,7 +99,7 @@ export default {
       }
     }
     .el-input--prefix:hover {
-      background-color: #88888866;
+      background-color: #88888833;
     }
   }
 
