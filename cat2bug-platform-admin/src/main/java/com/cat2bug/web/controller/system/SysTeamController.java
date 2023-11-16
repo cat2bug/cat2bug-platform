@@ -41,6 +41,20 @@ public class SysTeamController extends BaseController
     }
 
     /**
+     * 查询团队列表
+     */
+    @PreAuthorize("@ss.hasPermi('system:team:list')")
+    @GetMapping("/my")
+    public TableDataInfo my(SysTeam sysTeam)
+    {
+        startPage();
+        List<SysTeam> list = sysTeamService.selectSysTeamListByUserId(getUserId());
+        return getDataTable(list);
+    }
+
+
+
+    /**
      * 导出团队列表
      */
     @PreAuthorize("@ss.hasPermi('system:team:export')")

@@ -52,6 +52,11 @@ public class SysTeamServiceImpl implements ISysTeamService
         return sysTeamMapper.selectSysTeamList(sysTeam);
     }
 
+    @Override
+    public List<SysTeam> selectSysTeamListByUserId(Long userId) {
+        return sysTeamMapper.selectSysTeamListByUserId(userId);
+    }
+
     /**
      * 新增团队
      * 

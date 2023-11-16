@@ -26,6 +26,24 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="teamName != null  and teamName != ''"> and team_name like concat('%', #{teamName}, '%')</if>
         </where>
     </select>
+
+    <select id="selectSysTeamListByUserId" parameterType="Long" resultMap="SysTeamResult">
+        SELECT
+            t.team_id,
+            t.team_name,
+            t.team_icon,
+            t.create_by,
+            t.create_time,
+            t.update_by,
+            t.update_time,
+            t.introduce,
+            t.is_del
+        FROM
+            sys_team t,sys_user_team_role utr
+        <where>
+            (t.is_del != 1 OR t.is_del IS NULL) AND utr.team_id = t.team_id AND utr.user_id = #{userId}
+        </where>
+    </select>
     
     <select id="selectSysTeamByTeamId" parameterType="Long" resultMap="SysTeamResult">
         <include refid="selectSysTeamVo"/>

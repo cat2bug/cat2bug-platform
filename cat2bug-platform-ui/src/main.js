@@ -40,6 +40,8 @@ import DictData from '@/components/DictData'
 
 import i18n from './utils/i18n/i18n.js'
 
+import my from '@/plugins/my'
+
 // 全局方法挂载
 Vue.prototype.getDicts = getDicts
 Vue.prototype.getConfigKey = getConfigKey
@@ -50,6 +52,7 @@ Vue.prototype.selectDictLabel = selectDictLabel
 Vue.prototype.selectDictLabels = selectDictLabels
 Vue.prototype.download = download
 Vue.prototype.handleTree = handleTree
+Vue.prototype.my = my
 
 // 全局组件挂载
 Vue.component('DictTag', DictTag)

@@ -12,7 +12,7 @@
       </el-form-item>
     </el-form>
     <el-row>
-      <el-col span="24">
+      <el-col :span="24">
         <el-button type="primary" @click="submitForm">创建团队</el-button>
       </el-col>
     </el-row>

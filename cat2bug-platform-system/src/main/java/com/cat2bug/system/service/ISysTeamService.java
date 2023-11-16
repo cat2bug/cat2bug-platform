@@ -28,6 +28,13 @@ public interface ISysTeamService
     public List<SysTeam> selectSysTeamList(SysTeam sysTeam);
 
     /**
+     * 查询团队列表
+     * @param userId    用户id
+     * @return  团队集合
+     */
+    public List<SysTeam> selectSysTeamListByUserId(Long userId);
+
+    /**
      * 新增团队
      * 
      * @param sysTeam 团队

@@ -9,6 +9,14 @@ export function listTeam(query) {
   })
 }
 
+// 查询团队列表
+export function myListTeam() {
+  return request({
+    url: '/system/team/my',
+    method: 'get'
+  })
+}
+
 // 查询团队详细
 export function getTeam(teamId) {
   return request({
