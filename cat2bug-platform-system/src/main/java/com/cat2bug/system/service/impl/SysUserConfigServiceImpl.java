@@ -1,6 +1,8 @@
 package com.cat2bug.system.service.impl;
 
 import java.util.List;
+
+import com.cat2bug.common.utils.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.cat2bug.system.mapper.SysUserConfigMapper;
@@ -29,6 +31,11 @@ public class SysUserConfigServiceImpl implements ISysUserConfigService
     public SysUserConfig selectSysUserConfigByUserConfigId(Long userConfigId)
     {
         return sysUserConfigMapper.selectSysUserConfigByUserConfigId(userConfigId);
+    }
+
+    @Override
+    public SysUserConfig selectSysUserConfigByCurrentUserId() {
+        return sysUserConfigMapper.selectSysUserConfigByUserId(SecurityUtils.getUserId());
     }
 
     /**
@@ -64,7 +71,17 @@ public class SysUserConfigServiceImpl implements ISysUserConfigService
     @Override
     public int updateSysUserConfig(SysUserConfig sysUserConfig)
     {
-        return sysUserConfigMapper.updateSysUserConfig(sysUserConfig);
+        // 根据用户id查找配置
+        SysUserConfig selectSysUserConfig = sysUserConfigMapper.selectSysUserConfigByUserId(SecurityUtils.getUserId());
+        // 有就更新，没有新建
+        if(selectSysUserConfig==null){
+            sysUserConfig.setUserId(SecurityUtils.getUserId());
+            return sysUserConfigMapper.insertSysUserConfig(sysUserConfig);
+        } else {
+            sysUserConfig.setUserConfigId(selectSysUserConfig.getUserConfigId());
+            sysUserConfig.setUserId(selectSysUserConfig.getUserId());
+            return sysUserConfigMapper.updateSysUserConfig(sysUserConfig);
+        }
     }
 
     /**

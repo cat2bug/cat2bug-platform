@@ -20,6 +20,11 @@ public interface ISysUserConfigService
     public SysUserConfig selectSysUserConfigByUserConfigId(Long userConfigId);
 
     /**
+     * 查询用户配置
+     * @return 用户配置
+     */
+    public SysUserConfig selectSysUserConfigByCurrentUserId();
+    /**
      * 查询用户配置列表
      * 
      * @param sysUserConfig 用户配置

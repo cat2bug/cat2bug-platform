@@ -20,6 +20,12 @@ public interface SysUserConfigMapper
     public SysUserConfig selectSysUserConfigByUserConfigId(Long userConfigId);
 
     /**
+     * 查询用户配置
+     * @param userId    用户id
+     * @return          用户配置
+     */
+    public SysUserConfig selectSysUserConfigByUserId(Long userId);
+    /**
      * 查询用户配置列表
      * 
      * @param sysUserConfig 用户配置

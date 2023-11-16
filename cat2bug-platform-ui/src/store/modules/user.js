@@ -8,7 +8,8 @@ const user = {
     name: '',
     avatar: '',
     roles: [],
-    permissions: []
+    permissions: [],
+    config: {}
   },
 
   mutations: {
@@ -29,7 +30,10 @@ const user = {
     },
     SET_PERMISSIONS: (state, permissions) => {
       state.permissions = permissions
-    }
+    },
+    SET_CONFIG: (state, config) => {
+      state.config = config
+    },
   },
 
   actions: {
@@ -62,6 +66,9 @@ const user = {
           } else {
             commit('SET_ROLES', ['ROLE_DEFAULT'])
           }
+          if(res.config) {
+            commit('SET_CONFIG', res.config)
+          }
           commit('SET_ID', user.userId)
           commit('SET_NAME', user.userName)
           commit('SET_AVATAR', avatar)
@@ -79,6 +86,7 @@ const user = {
           commit('SET_TOKEN', '')
           commit('SET_ROLES', [])
           commit('SET_PERMISSIONS', [])
+          commit('SET_CONFIG', {})
           removeToken()
           resolve()
         }).catch(error => {

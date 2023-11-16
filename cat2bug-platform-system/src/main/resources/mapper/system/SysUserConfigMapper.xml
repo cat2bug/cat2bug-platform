@@ -26,7 +26,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <include refid="selectSysUserConfigVo"/>
         where user_config_id = #{userConfigId}
     </select>
-        
+
+    <select id="selectSysUserConfigByUserId" parameterType="Long" resultMap="SysUserConfigResult">
+        <include refid="selectSysUserConfigVo"/>
+        where user_id = #{userId}
+    </select>
+
     <insert id="insertSysUserConfig" parameterType="SysUserConfig" useGeneratedKeys="true" keyProperty="userConfigId">
         insert into sys_user_config
         <trim prefix="(" suffix=")" suffixOverrides=",">
@@ -43,7 +48,6 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         update sys_user_config
         <trim prefix="SET" suffixOverrides=",">
             <if test="currentTeamId != null">current_team_id = #{currentTeamId},</if>
-            <if test="userId != null">user_id = #{userId},</if>
         </trim>
         where user_config_id = #{userConfigId}
     </update>

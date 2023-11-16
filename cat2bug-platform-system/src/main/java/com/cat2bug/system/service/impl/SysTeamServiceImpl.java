@@ -4,7 +4,9 @@ import java.util.List;
 import com.cat2bug.common.utils.DateUtils;
 import com.cat2bug.common.utils.MessageUtils;
 import com.cat2bug.common.utils.SecurityUtils;
+import com.cat2bug.system.domain.SysUserConfig;
 import com.cat2bug.system.domain.SysUserTeamRole;
+import com.cat2bug.system.mapper.SysUserConfigMapper;
 import com.google.common.base.Preconditions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,6 +29,9 @@ public class SysTeamServiceImpl implements ISysTeamService
 
     @Autowired
     private SysTeamMapper sysTeamMapper;
+
+    @Autowired
+    private SysUserConfigMapper sysUserConfigMapper;
 
     /**
      * 查询团队
@@ -87,6 +92,19 @@ public class SysTeamServiceImpl implements ISysTeamService
         sysUserTeamRole.setCreateTime(DateUtils.getNowDate());
         sysUserTeamRole.setCreateBy(createBy);
         Preconditions.checkState(sysTeamMapper.insertSysUserTeamRole(sysUserTeamRole)==1,MessageUtils.message("team.insert_user_team_role_fail"));
+
+        // 查询用户配置，如果没有默认团队，就将当前团队设置为默认团队
+        SysUserConfig sysUserConfig = sysUserConfigMapper.selectSysUserConfigByUserId(SecurityUtils.getUserId());
+        if(sysUserConfig==null){
+            sysUserConfig = new SysUserConfig();
+            sysUserConfig.setCurrentTeamId(sysTeam.getTeamId());
+            sysUserConfig.setUserId(SecurityUtils.getUserId());
+            sysUserConfigMapper.insertSysUserConfig(sysUserConfig);
+        } else if(sysUserConfig.getCurrentTeamId()==null){
+            // 设置当前团队id，并更新数据库
+            sysUserConfig.setCurrentTeamId(sysTeam.getTeamId());
+            sysUserConfigMapper.updateSysUserConfig(sysUserConfig);
+        }
         return 1;
     }
 

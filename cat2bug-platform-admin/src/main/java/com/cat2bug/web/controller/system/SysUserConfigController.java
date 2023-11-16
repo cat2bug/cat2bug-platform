@@ -22,7 +22,7 @@ import java.util.List;
  * @date 2023-11-16
  */
 @RestController
-@RequestMapping("/system/config")
+@RequestMapping("/system/user-config")
 public class SysUserConfigController extends BaseController
 {
     @Autowired

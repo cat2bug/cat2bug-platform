@@ -2,6 +2,9 @@ package com.cat2bug.web.controller.system;
 
 import java.util.List;
 import java.util.Set;
+
+import com.cat2bug.system.domain.SysUserConfig;
+import com.cat2bug.system.service.ISysUserConfigService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -34,6 +37,9 @@ public class SysLoginController
     @Autowired
     private SysPermissionService permissionService;
 
+    @Autowired
+    private ISysUserConfigService userConfigService;
+
     /**
      * 登录方法
      * 
@@ -64,10 +70,13 @@ public class SysLoginController
         Set<String> roles = permissionService.getRolePermission(user);
         // 权限集合
         Set<String> permissions = permissionService.getMenuPermission(user);
+
+        SysUserConfig sysUserConfig = userConfigService.selectSysUserConfigByCurrentUserId();
         AjaxResult ajax = AjaxResult.success();
         ajax.put("user", user);
         ajax.put("roles", roles);
         ajax.put("permissions", permissions);
+        ajax.put("config", sysUserConfig);
         return ajax;
     }
 

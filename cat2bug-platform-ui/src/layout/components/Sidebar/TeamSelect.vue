@@ -21,6 +21,7 @@
 
 <script>
 import { myListTeam } from "@/api/system/team";
+import { updateConfig } from "@/api/system/user-config";
 
 export default {
   name: "TeamSelect",
@@ -28,7 +29,7 @@ export default {
     return {
       teamList:[],
       currentTeamId: null,
-      currentTeam: {}
+      currentTeam: {},
     }
   },
   props:{
@@ -48,9 +49,17 @@ export default {
     this.getTeamList();
   },
   methods:{
+    /** 获取当前人所能访问的团队列表 */
     getTeamList() {
       myListTeam().then(res=>{
         this.teamList = res.rows;
+        // 如果登陆数据中存在当前团队id，默认选择登陆数据中的团队id；否则选择已有团队的第一个
+        if(this.$store.state.user.config && this.$store.state.user.config.currentTeamId){
+          this.currentTeamId = this.$store.state.user.config.currentTeamId;
+        } else if(this.teamList && this.teamList.length>0) {
+          this.currentTeamId = res.rows[0].teamId;
+        }
+        this.selectTeamChangedHandle(this.currentTeamId);
       });
     },
     /** 选择团队变化的处理 */
@@ -58,7 +67,10 @@ export default {
       for(let i in this.teamList){
         if(this.teamList[i].teamId==currentTeamId) {
           this.currentTeam=this.teamList[i];
-          this.my.setCurrentTeam(this.currentTeam);
+          // 存储到远程服务器
+          updateConfig({
+            currentTeamId: currentTeamId
+          }).then(res=>{});
           break;
         }
       }
