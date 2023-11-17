@@ -1,7 +1,16 @@
+import i18n from "@/utils/i18n/i18n";
 const state = {
   visitedViews: [],
   cachedViews: [],
   iframeViews: []
+}
+
+function titleName(menu){
+  if(menu.meta.titleI18nKey) {
+    return i18n.t(menu.meta.titleI18nKey);
+  } else {
+    return menu.meta.title;
+  }
 }
 
 const mutations = {
@@ -9,7 +18,7 @@ const mutations = {
     if (state.iframeViews.some(v => v.path === view.path)) return
     state.iframeViews.push(
       Object.assign({}, view, {
-        title: view.meta.title || 'no-name'
+        title: titleName(view) || 'no-name'
       })
     )
   },
@@ -17,7 +26,7 @@ const mutations = {
     if (state.visitedViews.some(v => v.path === view.path)) return
     state.visitedViews.push(
       Object.assign({}, view, {
-        title: view.meta.title || 'no-name'
+        title: titleName(view) || 'no-name'
       })
     )
   },
