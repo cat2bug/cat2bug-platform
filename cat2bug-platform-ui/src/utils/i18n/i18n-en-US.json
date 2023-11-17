@@ -15,8 +15,11 @@
   "add": "Add",
   "finish": "Finish",
   "cancel": "Cancel",
+  "enter-content": "Please enter content",
+  "member": "Member",
   "update-time": "Update Time",
   "operate": "Operate",
+  "add-success": "Add Success",
   "project.manage": "Project Management",
   "project.create-project": "Create Project",
   "project.name": "Project Name",
@@ -24,5 +27,8 @@
   "project.my-participated-in": "My Participated In",
   "project.my-manage": "My Manage",
   "project.all-project": "All",
-  "project.archived-project": "Archived"
+  "project.archived-project": "Archived",
+  "project.enter-project-name": "Please enter project name",
+  "project.change-icon": "Change Icon",
+  "project.project-name-cannot-empty": "Project name cannot be empty!"
 }

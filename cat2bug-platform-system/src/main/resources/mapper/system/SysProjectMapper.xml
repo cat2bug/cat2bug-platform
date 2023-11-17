@@ -6,6 +6,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     
     <resultMap type="SysProject" id="SysProjectResult">
         <result property="projectId"    column="project_id"    />
+        <result property="teamId"    column="team_id"    />
         <result property="projectName"    column="project_name"    />
         <result property="projectIcon"    column="project_icon"    />
         <result property="projectIntroduce"    column="project_introduce"    />
@@ -16,12 +17,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </resultMap>
 
     <sql id="selectSysProjectVo">
-        select project_id, project_name, project_icon, project_introduce, create_by, create_time, update_by, update_time from sys_project
+        select project_id, team_id, project_name, project_icon, project_introduce, create_by, create_time, update_by, update_time from sys_project
     </sql>
 
     <select id="selectSysProjectList" parameterType="SysProject" resultMap="SysProjectResult">
         <include refid="selectSysProjectVo"/>
-        <where>  
+        <where>
+            team_id = #{ teamId }
             <if test="projectName != null  and projectName != ''"> and project_name like concat('%', #{projectName}, '%')</if>
             <if test="createBy != null  and createBy != ''"> and create_by like concat('%', #{createBy}, '%')</if>
         </where>
@@ -36,6 +38,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         insert into sys_project
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="projectId != null">project_id,</if>
+            <if test="teamId != null">team_id,</if>
             <if test="projectName != null and projectName != ''">project_name,</if>
             <if test="projectIcon != null">project_icon,</if>
             <if test="projectIntroduce != null">project_introduce,</if>
@@ -46,6 +49,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
          </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="projectId != null">#{projectId},</if>
+            <if test="teamId != null">#{teamId},</if>
             <if test="projectName != null and projectName != ''">#{projectName},</if>
             <if test="projectIcon != null">#{projectIcon},</if>
             <if test="projectIntroduce != null">#{projectIntroduce},</if>
@@ -60,6 +64,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         update sys_project
         <trim prefix="SET" suffixOverrides=",">
             <if test="projectName != null and projectName != ''">project_name = #{projectName},</if>
+            <if test="teamId != null and teamId != ''">team_id = #{teamId},</if>
             <if test="projectIcon != null">project_icon = #{projectIcon},</if>
             <if test="projectIntroduce != null">project_introduce = #{projectIntroduce},</if>
             <if test="createBy != null">create_by = #{createBy},</if>

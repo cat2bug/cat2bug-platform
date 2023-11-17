@@ -99,7 +99,7 @@ export const constantRoutes = [
         path: '/system/project/add-project',
         component: () => import('@/views/system/project/add'),
         name: 'ProjectAdd',
-        meta: { title: '新增项目', icon: 'user' }
+        meta: { title: i18n.t('project.create-project'), icon: 'user' }
       }
     ]
   },

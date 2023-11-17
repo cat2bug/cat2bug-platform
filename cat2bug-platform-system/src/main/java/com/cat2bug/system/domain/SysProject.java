@@ -18,6 +18,9 @@ public class SysProject extends BaseEntity
     /** 项目id */
     private Long projectId;
 
+    /** 团队id */
+    private Long teamId;
+
     /** 项目名称 */
     @Excel(name = "项目名称")
     private String projectName;
@@ -39,7 +42,16 @@ public class SysProject extends BaseEntity
     {
         return projectId;
     }
-    public void setProjectName(String projectName) 
+
+    public Long getTeamId() {
+        return teamId;
+    }
+
+    public void setTeamId(Long teamId) {
+        this.teamId = teamId;
+    }
+
+    public void setProjectName(String projectName)
     {
         this.projectName = projectName;
     }
@@ -71,6 +83,7 @@ public class SysProject extends BaseEntity
     public String toString() {
         return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)
             .append("projectId", getProjectId())
+            .append("teamId", getTeamId())
             .append("projectName", getProjectName())
             .append("projectIcon", getProjectIcon())
             .append("projectIntroduce", getProjectIntroduce())

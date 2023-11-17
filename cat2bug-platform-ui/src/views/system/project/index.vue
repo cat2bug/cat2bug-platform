@@ -51,7 +51,15 @@
           <span>{{ parseTime(scope.row.updateTime, '{y}-{m}-{d}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('operate')" align="left" class-name="small-padding fixed-width"  width="100">
+      <el-table-column :label="$t('member')" align="left" prop="member" width="300">
+        <template slot-scope="scope">
+          <div class="project-member-icons">
+            <el-avatar src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png" fit="cover" size="medium"></el-avatar>
+            <el-avatar size="medium">King haha</el-avatar>
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column :label="$t('operate')" align="left" class-name="small-padding fixed-width" width="100">
         <template slot-scope="scope">
           <el-button
             size="mini"
@@ -85,7 +93,7 @@
         <el-form-item label="项目名称" prop="projectName">
           <el-input v-model="form.projectName" placeholder="请输入项目名称" />
         </el-form-item>
-        <el-form-item label="项目图标地址" prop="projectIcon">
+        <el-form-item label="项目图标" prop="projectIcon">
           <el-input v-model="form.projectIcon" placeholder="请输入项目图标地址" />
         </el-form-item>
         <el-form-item label="项目介绍" prop="projectIntroduce">
@@ -132,6 +140,7 @@ export default {
         pageSize: 10,
         projectName: null,
         createBy: null,
+        teamId: null,
       },
       // 表单参数
       form: {},
@@ -153,6 +162,7 @@ export default {
     },
     /** 查询项目列表 */
     getList() {
+      this.queryParams.teamId = this.$store.state.user.config.currentTeamId;
       this.loading = true;
       listProject(this.queryParams).then(response => {
         this.projectList = response.rows;
@@ -197,9 +207,6 @@ export default {
     },
     /** 新增按钮操作 */
     handleAdd() {
-      // this.reset();
-      // this.open = true;
-      // this.title = "添加项目";
       this.$router.push({name:'ProjectAdd'})
     },
     /** 修改按钮操作 */
@@ -245,3 +252,17 @@ export default {
   }
 };
 </script>
+<style lang="scss" scoped>
+  .project-member-icons {
+    display: flex;
+    display: -webkit-flex; /* Safari */
+    flex-direction: row-reverse;
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+    align-items: center;
+    .el-avatar {
+      margin-right:-10px;
+      border: #FFF 3px solid;
+    }
+  }
+</style>

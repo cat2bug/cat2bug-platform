@@ -15,8 +15,11 @@
   "add": "添加",
   "finish": "完成",
   "cancel": "取消",
+  "enter-content": "请输入内容",
+  "member": "成员",
   "update-time": "更新时间",
   "operate": "操作",
+  "add-success": "添加成功",
   "project.manage": "项目管理",
   "project.create-project": "创建项目",
   "project.name": "项目名称",
@@ -24,5 +27,8 @@
   "project.my-participated-in": "我参与的",
   "project.my-manage": "我管理的",
   "project.all-project": "全部项目",
-  "project.archived-project": "已归档的"
+  "project.archived-project": "已归档的",
+  "project.enter-project-name": "请输入项目名称",
+  "project.change-icon": "更改封面",
+  "project.project-name-cannot-empty": "项目名称不能为!"
 }

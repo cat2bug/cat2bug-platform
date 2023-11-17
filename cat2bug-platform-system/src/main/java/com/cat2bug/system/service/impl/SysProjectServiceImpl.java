@@ -2,6 +2,8 @@ package com.cat2bug.system.service.impl;
 
 import java.util.List;
 import com.cat2bug.common.utils.DateUtils;
+import com.cat2bug.common.utils.MessageUtils;
+import com.google.common.base.Preconditions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.cat2bug.system.mapper.SysProjectMapper;
@@ -41,6 +43,7 @@ public class SysProjectServiceImpl implements ISysProjectService
     @Override
     public List<SysProject> selectSysProjectList(SysProject sysProject)
     {
+        Preconditions.checkNotNull(sysProject.getTeamId(), MessageUtils.message("project.team_cannot_empty"));
         return sysProjectMapper.selectSysProjectList(sysProject);
     }
 
