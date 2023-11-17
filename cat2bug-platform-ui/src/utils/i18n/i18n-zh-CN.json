@@ -11,6 +11,7 @@
   "please-enter-your-password": "请输入您的密码",
   "please-enter-verification-code": "请输入验证码",
   "version": "版本",
+  "name": "名称",
   "home": "首页",
   "add": "添加",
   "finish": "完成",
@@ -20,6 +21,7 @@
   "update-time": "更新时间",
   "operate": "操作",
   "add-success": "添加成功",
+  "team.option": "团队设置",
   "project.manage": "项目管理",
   "project.create-project": "创建项目",
   "project.name": "项目名称",
@@ -30,5 +32,8 @@
   "project.archived-project": "已归档的",
   "project.enter-project-name": "请输入项目名称",
   "project.change-icon": "更改封面",
+  "project.member": "项目成员",
+  "project.add-user": "添加用户",
+  "project.set-role-group": "设置权限组",
   "project.project-name-cannot-empty": "项目名称不能为!"
 }

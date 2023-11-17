@@ -18,6 +18,14 @@ export function myListTeam() {
 }
 
 // 查询团队详细
+export function getMemberByTeam(teamId) {
+  return request({
+    url: '/system/team/' + teamId + '/member',
+    method: 'get'
+  })
+}
+
+// 查询团队详细
 export function getTeam(teamId) {
   return request({
     url: '/system/team/' + teamId,

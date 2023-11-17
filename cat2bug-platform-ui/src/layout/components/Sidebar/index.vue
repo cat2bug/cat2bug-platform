@@ -13,11 +13,51 @@
                 mode="vertical"
             >
                 <sidebar-item
-                    v-for="(route, index) in sidebarRouters"
+                    v-for="(route, index) in filterSidebarRouters('project')"
                     :key="route.path  + index"
                     :item="route"
-                    :base-path="route.path"
+                    :base-path="'project/'+route.path"
                 />
+            </el-menu>
+            <div class="sidebar-divider">
+              <el-divider></el-divider>
+            </div>
+            <el-menu
+              :default-active="activeMenu"
+              :collapse="isCollapse"
+              :background-color="settings.sideTheme === 'theme-dark' ? variables.menuBackground : variables.menuLightBackground"
+              :text-color="settings.sideTheme === 'theme-dark' ? variables.menuColor : variables.menuLightColor"
+              :unique-opened="true"
+              :active-text-color="settings.theme"
+              :collapse-transition="false"
+              mode="vertical"
+            >
+              <sidebar-item
+                v-for="(route, index) in filterSidebarRouters('project-option')"
+                :key="route.path  + index"
+                :item="route"
+                :base-path="'project-option/'+route.path"
+              />
+            </el-menu>
+            <div class="sidebar-divider">
+              <el-divider></el-divider>
+            </div>
+            <el-menu
+              :default-active="activeMenu"
+              :collapse="isCollapse"
+              :background-color="settings.sideTheme === 'theme-dark' ? variables.menuBackground : variables.menuLightBackground"
+              :text-color="settings.sideTheme === 'theme-dark' ? variables.menuColor : variables.menuLightColor"
+              :unique-opened="true"
+              :active-text-color="settings.theme"
+              :collapse-transition="false"
+              mode="vertical"
+            >
+              <sidebar-item
+                v-for="(route, index) in filterSidebarRouters('system')"
+                :key="route.path  + index"
+                :item="route"
+                :base-path="'system/'+route.path"
+              />
             </el-menu>
         </el-scrollbar>
     </div>
@@ -34,6 +74,16 @@ export default {
     computed: {
         ...mapState(["settings"]),
         ...mapGetters(["sidebarRouters", "sidebar"]),
+        filterSidebarRouters() {
+          return function (name){
+            for(let i in this.sidebarRouters) {
+              if(this.sidebarRouters[i].name && this.sidebarRouters[i].name.toLowerCase()==name.toLowerCase()){
+                return this.sidebarRouters[i].children;
+              }
+            }
+            return [];
+          }
+        },
         activeMenu() {
             const route = this.$route;
             const { meta, path } = route;
@@ -55,3 +105,11 @@ export default {
     }
 };
 </script>
+<style lang="scss" scoped>
+  .sidebar-divider {
+    padding: 0px 15px;
+    .el-divider {
+      background-color: #EBEEF5;
+    }
+  }
+</style>

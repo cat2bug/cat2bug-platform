@@ -118,7 +118,7 @@
           <el-input v-model="form.teamName" placeholder="请输入团队名称" />
         </el-form-item>
         <el-form-item label="团队图标" prop="teamIcon">
-          <image-upload v-model="form.teamIcon" :limit="1"/>
+          <image-upload v-model="form.teamIcon"/>
         </el-form-item>
         <el-form-item label="团队介绍" prop="introduce">
           <el-input v-model="form.introduce" placeholder="请输入团队介绍" />

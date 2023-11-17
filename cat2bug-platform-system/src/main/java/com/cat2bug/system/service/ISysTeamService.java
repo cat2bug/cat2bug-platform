@@ -1,6 +1,8 @@
 package com.cat2bug.system.service;
 
 import java.util.List;
+
+import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.system.domain.SysTeam;
 
 /**
@@ -33,6 +35,13 @@ public interface ISysTeamService
      * @return  团队集合
      */
     public List<SysTeam> selectSysTeamListByUserId(Long userId);
+
+    /**
+     * 查询成员列表
+     * @param teamId    团队id
+     * @return          成员集合
+     */
+    public List<SysUser> selectSysUserListByTeamId(Long teamId);
 
     /**
      * 新增团队

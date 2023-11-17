@@ -36,6 +36,13 @@ public interface SysUserMapper
     public List<SysUser> selectUnallocatedList(SysUser user);
 
     /**
+     * 查询成员列表
+     * @param teamId    团队id
+     * @return  成员集合
+     */
+    public List<SysUser> selectSysUserListByTeamId(Long teamId);
+
+    /**
      * 通过用户名查询用户
      * 
      * @param userName 用户名

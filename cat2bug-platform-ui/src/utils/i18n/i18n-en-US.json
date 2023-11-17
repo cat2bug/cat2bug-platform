@@ -11,6 +11,7 @@
   "please-enter-your-password": "Please enter your password",
   "please-enter-verification-code": "Please enter the verification code",
   "version": "Version",
+  "name": "Name",
   "home": "Home",
   "add": "Add",
   "finish": "Finish",
@@ -20,6 +21,7 @@
   "update-time": "Update Time",
   "operate": "Operate",
   "add-success": "Add Success",
+  "team.option": "Team Option",
   "project.manage": "Project Management",
   "project.create-project": "Create Project",
   "project.name": "Project Name",
@@ -30,5 +32,8 @@
   "project.archived-project": "Archived",
   "project.enter-project-name": "Please enter project name",
   "project.change-icon": "Change Icon",
+  "project.member": "Project Member",
+  "project.add-user": "Add User",
+  "project.set-role-group": "Set Role Group",
   "project.project-name-cannot-empty": "Project name cannot be empty!"
 }

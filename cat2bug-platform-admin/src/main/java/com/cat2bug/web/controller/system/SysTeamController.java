@@ -78,6 +78,16 @@ public class SysTeamController extends BaseController
     }
 
     /**
+     * 获取团队成员
+     */
+    @PreAuthorize("@ss.hasPermi('system:team:query')")
+    @GetMapping(value = "/{teamId}/member")
+    public AjaxResult getMember(@PathVariable("teamId") Long teamId)
+    {
+        return success(sysTeamService.selectSysUserListByTeamId(teamId));
+    }
+
+    /**
      * 新增团队
      */
     @PreAuthorize("@ss.hasPermi('system:team:add')")

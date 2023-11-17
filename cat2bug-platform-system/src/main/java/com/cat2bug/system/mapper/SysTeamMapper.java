@@ -1,6 +1,8 @@
 package com.cat2bug.system.mapper;
 
 import java.util.List;
+
+import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.system.domain.SysTeam;
 import com.cat2bug.system.domain.SysUserTeamRole;
 

@@ -1,12 +1,16 @@
 package com.cat2bug.system.service.impl;
 
 import java.util.List;
+import java.util.stream.Collectors;
+
+import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.common.utils.DateUtils;
 import com.cat2bug.common.utils.MessageUtils;
 import com.cat2bug.common.utils.SecurityUtils;
 import com.cat2bug.system.domain.SysUserConfig;
 import com.cat2bug.system.domain.SysUserTeamRole;
 import com.cat2bug.system.mapper.SysUserConfigMapper;
+import com.cat2bug.system.mapper.SysUserMapper;
 import com.google.common.base.Preconditions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,6 +35,9 @@ public class SysTeamServiceImpl implements ISysTeamService
     private SysTeamMapper sysTeamMapper;
 
     @Autowired
+    private SysUserMapper sysUserMapper;
+
+    @Autowired
     private SysUserConfigMapper sysUserConfigMapper;
 
     /**
@@ -49,7 +56,7 @@ public class SysTeamServiceImpl implements ISysTeamService
      * 查询团队列表
      * 
      * @param sysTeam 团队
-     * @return 团队
+     * @return 团队集合
      */
     @Override
     public List<SysTeam> selectSysTeamList(SysTeam sysTeam)
@@ -57,9 +64,24 @@ public class SysTeamServiceImpl implements ISysTeamService
         return sysTeamMapper.selectSysTeamList(sysTeam);
     }
 
+    /**
+     * 查询团队列表
+     * @param userId    用户id
+     * @return  团队集合
+     */
     @Override
     public List<SysTeam> selectSysTeamListByUserId(Long userId) {
         return sysTeamMapper.selectSysTeamListByUserId(userId);
+    }
+
+    /**
+     * 成员列表
+     * @param teamId    团队id
+     * @return          成员集合
+     */
+    @Override
+    public List<SysUser> selectSysUserListByTeamId(Long teamId) {
+        return sysUserMapper.selectSysUserListByTeamId(teamId).stream().filter(u->u.getUserId()!=SecurityUtils.getUserId()).collect(Collectors.toList());
     }
 
     /**
