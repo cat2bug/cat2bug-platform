@@ -11,5 +11,18 @@
   "please-enter-your-password": "请输入您的密码",
   "please-enter-verification-code": "请输入验证码",
   "version": "版本",
-  "home": "首页"
+  "home": "首页",
+  "add": "添加",
+  "finish": "完成",
+  "cancel": "取消",
+  "update-time": "更新时间",
+  "operate": "操作",
+  "project.manage": "项目管理",
+  "project.create-project": "创建项目",
+  "project.name": "项目名称",
+  "project.introduction": "项目介绍",
+  "project.my-participated-in": "我参与的",
+  "project.my-manage": "我管理的",
+  "project.all-project": "全部项目",
+  "project.archived-project": "已归档的"
 }

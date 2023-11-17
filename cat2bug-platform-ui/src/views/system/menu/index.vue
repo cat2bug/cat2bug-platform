@@ -153,6 +153,11 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
+            <el-form-item label="菜单名称国际化标识" prop="menuNameI18nKey">
+              <el-input v-model="form.menuNameI18nKey" placeholder="请输入菜单名称国际化标识" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
             <el-form-item label="显示排序" prop="orderNum">
               <el-input-number v-model="form.orderNum" controls-position="right" :min="0" />
             </el-form-item>

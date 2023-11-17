@@ -15,6 +15,11 @@ public class MetaVo
     private String title;
 
     /**
+     * 设置该路由在侧边栏和面包屑中展示的名字的国际化key
+     */
+    private String titleI18nKey;
+
+    /**
      * 设置该路由的图标，对应路径src/assets/icons/svg
      */
     private String icon;
@@ -53,9 +58,10 @@ public class MetaVo
         this.link = link;
     }
 
-    public MetaVo(String title, String icon, boolean noCache, String link)
+    public MetaVo(String title, String titleI18nKey, String icon, boolean noCache, String link)
     {
         this.title = title;
+        this.titleI18nKey = titleI18nKey;
         this.icon = icon;
         this.noCache = noCache;
         if (StringUtils.ishttp(link))
@@ -82,6 +88,14 @@ public class MetaVo
     public void setTitle(String title)
     {
         this.title = title;
+    }
+
+    public String getTitleI18nKey() {
+        return titleI18nKey;
+    }
+
+    public void setTitleI18nKey(String titleI18nKey) {
+        this.titleI18nKey = titleI18nKey;
     }
 
     public String getIcon()

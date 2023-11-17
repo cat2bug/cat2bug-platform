@@ -24,6 +24,9 @@ public class SysMenu extends BaseEntity
     /** 菜单名称 */
     private String menuName;
 
+    /** 菜单名称的国际化标识 */
+    private String menuNameI18nKey;
+
     /** 父菜单名称 */
     private String parentName;
 
@@ -86,6 +89,14 @@ public class SysMenu extends BaseEntity
     public void setMenuName(String menuName)
     {
         this.menuName = menuName;
+    }
+
+    public String getMenuNameI18nKey() {
+        return menuNameI18nKey;
+    }
+
+    public void setMenuNameI18nKey(String menuNameI18nKey) {
+        this.menuNameI18nKey = menuNameI18nKey;
     }
 
     public String getParentName()
@@ -238,6 +249,7 @@ public class SysMenu extends BaseEntity
         return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)
             .append("menuId", getMenuId())
             .append("menuName", getMenuName())
+            .append("menuNameI18nKey", getMenuNameI18nKey())
             .append("parentId", getParentId())
             .append("orderNum", getOrderNum())
             .append("path", getPath())

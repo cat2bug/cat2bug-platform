@@ -11,5 +11,18 @@
   "please-enter-your-password": "Please enter your password",
   "please-enter-verification-code": "Please enter the verification code",
   "version": "Version",
-  "home": "Home"
+  "home": "Home",
+  "add": "Add",
+  "finish": "Finish",
+  "cancel": "Cancel",
+  "update-time": "Update Time",
+  "operate": "Operate",
+  "project.manage": "Project Management",
+  "project.create-project": "Create Project",
+  "project.name": "Project Name",
+  "project.introduction": "Introduction",
+  "project.my-participated-in": "My Participated In",
+  "project.my-manage": "My Manage",
+  "project.all-project": "All",
+  "project.archived-project": "Archived"
 }
