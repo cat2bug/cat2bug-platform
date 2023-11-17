@@ -45,7 +45,18 @@
     </el-row>
 
     <el-table v-loading="loading" :data="projectList" @selection-change="handleSelectionChange">
-      <el-table-column :label="$t('project.name')" align="left" prop="projectName" />
+      <el-table-column :label="$t('project.name')" align="left" prop="projectName">
+        <template slot-scope="scope">
+          <div class="project-list-name">
+            <el-image
+              style="width: 50px; height: 50px;"
+              :src="scope.row.projectIcon"
+              fit="cover"
+            ></el-image>
+            <span>{{ scope.row.projectName }}</span>
+          </div>
+        </template>
+      </el-table-column>
       <el-table-column :label="$t('update-time')" align="left" prop="updateTime" width="180">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.updateTime, '{y}-{m}-{d}') }}</span>
@@ -264,5 +275,10 @@ export default {
       margin-right:-10px;
       border: #FFF 3px solid;
     }
+  }
+  .project-list-name {
+    display: flex;
+    align-items: center;
+    column-gap: 15px;
   }
 </style>

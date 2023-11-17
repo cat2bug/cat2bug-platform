@@ -59,18 +59,26 @@ export default {
         } else if(this.teamList && this.teamList.length>0) {
           this.currentTeamId = res.rows[0].teamId;
         }
-        this.selectTeamChangedHandle(this.currentTeamId);
+        this.selectTeam(this.currentTeamId,false);
       });
     },
     /** 选择团队变化的处理 */
-    selectTeamChangedHandle(currentTeamId){
+    selectTeamChangedHandle(currentTeamId,isRefresh){
+      this.selectTeam(currentTeamId,true);
+    },
+    /** 选择团队 */
+    selectTeam(currentTeamId,isRefresh){
       for(let i in this.teamList){
         if(this.teamList[i].teamId==currentTeamId) {
           this.currentTeam=this.teamList[i];
           // 存储到远程服务器
-          updateConfig({
-            currentTeamId: currentTeamId
-          }).then(res=>{});
+          if(isRefresh) {
+            updateConfig({
+              currentTeamId: currentTeamId
+            }).then(res => {
+              window.location.reload(); // 刷新当前页面
+            });
+          }
           break;
         }
       }
