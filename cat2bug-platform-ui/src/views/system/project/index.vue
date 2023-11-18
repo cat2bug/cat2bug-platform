@@ -6,30 +6,6 @@
       <el-tab-pane :label="$t('project.all-project')" :name="$t('project.all-project')"></el-tab-pane>
       <el-tab-pane :label="$t('project.archived-project')" :name="$t('project.archived-project')"></el-tab-pane>
     </el-tabs>
-
-<!--    <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">-->
-<!--      <el-form-item label="项目名称" prop="projectName">-->
-<!--        <el-input-->
-<!--          v-model="queryParams.projectName"-->
-<!--          placeholder="请输入项目名称"-->
-<!--          clearable-->
-<!--          @keyup.enter.native="handleQuery"-->
-<!--        />-->
-<!--      </el-form-item>-->
-<!--      <el-form-item label="创建者" prop="createBy">-->
-<!--        <el-input-->
-<!--          v-model="queryParams.createBy"-->
-<!--          placeholder="请输入创建者"-->
-<!--          clearable-->
-<!--          @keyup.enter.native="handleQuery"-->
-<!--        />-->
-<!--      </el-form-item>-->
-<!--      <el-form-item>-->
-<!--        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>-->
-<!--        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>-->
-<!--      </el-form-item>-->
-<!--    </el-form>-->
-
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
         <el-button
@@ -39,7 +15,7 @@
           size="mini"
           @click="handleAdd"
           v-hasPermi="['system:project:add']"
-        >{{$t("add")}}</el-button>
+        >{{$t("create")}}</el-button>
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>

@@ -77,6 +77,9 @@ export default {
         filterSidebarRouters() {
           return function (name){
             for(let i in this.sidebarRouters) {
+              console.log(this.sidebarRouters[i].path,this.sidebarRouters[i])
+            }
+            for(let i in this.sidebarRouters) {
               if(this.sidebarRouters[i].name && this.sidebarRouters[i].name.toLowerCase()==name.toLowerCase()){
                 return this.sidebarRouters[i].children;
               }

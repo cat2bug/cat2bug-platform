@@ -1,9 +1,11 @@
 <template>
   <div class="app-container">
-    <el-row class="project-add-page-header">
-      <el-page-header @back="goBack" :content="$t('project.create-project')">
-      </el-page-header>
-    </el-row>
+    <el-page-header @back="goBack" :content="$t('project.create-project')">
+    </el-page-header>
+<!--    <el-row class="project-add-page-header">-->
+<!--      <el-page-header @back="goBack" :content="$t('project.create-project')">-->
+<!--      </el-page-header>-->
+<!--    </el-row>-->
     <el-row class="project-add-page-container">
       <el-form ref="form" :model="form" :rules="rules" label-width="120px">
 <!--        基础信息-->
@@ -182,12 +184,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  .project-add-page-header {
-    padding-bottom: 20px;
-    border-bottom: #EBEEF5 1px solid;
-  }
   .project-add-page-container {
-    margin-top: 40px;
     .step2 {
       display: flex;
       display: -webkit-flex; /* Safari */
