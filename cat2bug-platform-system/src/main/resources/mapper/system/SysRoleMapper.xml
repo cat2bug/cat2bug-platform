@@ -7,6 +7,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	<resultMap type="SysRole" id="SysRoleResult">
 		<id     property="roleId"             column="role_id"               />
 		<result property="roleName"           column="role_name"             />
+		<result property="roleNameI18nKey"    column="role_name_i18n_key"             />
 		<result property="roleKey"            column="role_key"              />
 		<result property="roleSort"           column="role_sort"             />
 		<result property="dataScope"          column="data_scope"            />
@@ -19,11 +20,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 		<result property="updateBy"           column="update_by"             />
 		<result property="updateTime"         column="update_time"           />
 		<result property="remark"             column="remark"                />
+		<result property="isTeamRole"         column="is_team_role"                />
+		<result property="isProjectRole"      column="is_project_role"                />
 	</resultMap>
 	
 	<sql id="selectRoleVo">
-	    select distinct r.role_id, r.role_name, r.role_key, r.role_sort, r.data_scope, r.menu_check_strictly, r.dept_check_strictly,
-            r.status, r.del_flag, r.create_time, r.remark 
+	    select distinct r.role_id, r.role_name, r.role_name_i18n_key, r.role_key, r.role_sort, r.data_scope, r.menu_check_strictly, r.dept_check_strictly,
+            r.status, r.del_flag, r.create_time, r.remark, r.is_team_role, r.is_project_role
         from sys_role r
 	        left join sys_user_role ur on ur.role_id = r.role_id
 	        left join sys_user u on u.user_id = ur.user_id
@@ -50,6 +53,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 		</if>
 		<if test="params.endTime != null and params.endTime != ''"><!-- 结束时间检索 -->
 			and date_format(r.create_time,'%y%m%d') &lt;= date_format(#{params.endTime},'%y%m%d')
+		</if>
+		<if test="isTeamRole != null">
+			AND r.is_team_role = #{isTeamRole}
+		</if>
+		<if test="isProjectRole != null">
+			AND r.is_project_role = #{isProjectRole}
 		</if>
 		<!-- 数据范围过滤 -->
 		${params.dataScope}
@@ -97,6 +106,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
  		insert into sys_role(
  			<if test="roleId != null and roleId != 0">role_id,</if>
  			<if test="roleName != null and roleName != ''">role_name,</if>
+			<if test="roleNameI18nKey != null and roleNameI18nKey != ''">role_name_i18n_key,</if>
  			<if test="roleKey != null and roleKey != ''">role_key,</if>
  			<if test="roleSort != null">role_sort,</if>
  			<if test="dataScope != null and dataScope != ''">data_scope,</if>
@@ -105,10 +115,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
  			<if test="status != null and status != ''">status,</if>
  			<if test="remark != null and remark != ''">remark,</if>
  			<if test="createBy != null and createBy != ''">create_by,</if>
+			<if test="isTeamRole != null">is_team_role,</if>
+			<if test="isProjectRole != null">is_project_role,</if>
  			create_time
  		)values(
  			<if test="roleId != null and roleId != 0">#{roleId},</if>
  			<if test="roleName != null and roleName != ''">#{roleName},</if>
+			<if test="roleNameI18nKey != null and roleNameI18nKey != ''">#{roleNameI18nKey},</if>
  			<if test="roleKey != null and roleKey != ''">#{roleKey},</if>
  			<if test="roleSort != null">#{roleSort},</if>
  			<if test="dataScope != null and dataScope != ''">#{dataScope},</if>
@@ -117,6 +130,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
  			<if test="status != null and status != ''">#{status},</if>
  			<if test="remark != null and remark != ''">#{remark},</if>
  			<if test="createBy != null and createBy != ''">#{createBy},</if>
+			<if test="isTeamRole != null">#{isTeamRole},</if>
+			<if test="isProjectRole != null">#{isProjectRole},</if>
  			sysdate()
  		)
 	</insert>
@@ -125,6 +140,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
  		update sys_role
  		<set>
  			<if test="roleName != null and roleName != ''">role_name = #{roleName},</if>
+			<if test="roleNameI18nKey != null and roleNameI18nKey != ''">role_name_i18n_key = #{roleNameI18nKey},</if>
  			<if test="roleKey != null and roleKey != ''">role_key = #{roleKey},</if>
  			<if test="roleSort != null">role_sort = #{roleSort},</if>
  			<if test="dataScope != null and dataScope != ''">data_scope = #{dataScope},</if>
@@ -133,6 +149,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
  			<if test="status != null and status != ''">status = #{status},</if>
  			<if test="remark != null">remark = #{remark},</if>
  			<if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+			<if test="isTeamRole != null">is_team_role = #{isTeamRole},</if>
+			<if test="isProjectRole != null">is_project_role = #{isProjectRole},</if>
  			update_time = sysdate()
  		</set>
  		where role_id = #{roleId}

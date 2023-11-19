@@ -113,7 +113,7 @@ export const constantRoutes = [
         path: '/system/team/add-team',
         component: () => import('@/views/system/team/add'),
         name: 'TeamAdd',
-        meta: { title: '新增团队', icon: 'user' }
+        meta: { title: i18n.t('team.create'), icon: 'user' }
       }
     ]
   }

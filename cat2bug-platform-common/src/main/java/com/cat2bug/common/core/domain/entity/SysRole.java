@@ -27,6 +27,9 @@ public class SysRole extends BaseEntity
     @Excel(name = "角色名称")
     private String roleName;
 
+    /** 角色名称国际化key */
+    private String roleNameI18nKey;
+
     /** 角色权限 */
     @Excel(name = "角色权限")
     private String roleKey;
@@ -41,6 +44,12 @@ public class SysRole extends BaseEntity
 
     /** 菜单树选择项是否关联显示（ 0：父子不互相关联显示 1：父子互相关联显示） */
     private boolean menuCheckStrictly;
+
+    /** 是否是团队角色 */
+    private Boolean isTeamRole;
+
+    /** 是否是项目角色 */
+    private Boolean isProjectRole;
 
     /** 部门树选择项是否关联显示（0：父子不互相关联显示 1：父子互相关联显示 ） */
     private boolean deptCheckStrictly;
@@ -67,6 +76,30 @@ public class SysRole extends BaseEntity
     public SysRole()
     {
 
+    }
+
+    public String getRoleNameI18nKey() {
+        return roleNameI18nKey;
+    }
+
+    public void setRoleNameI18nKey(String roleNameI18nKey) {
+        this.roleNameI18nKey = roleNameI18nKey;
+    }
+
+    public Boolean getIsTeamRole() {
+        return isTeamRole;
+    }
+
+    public void setIsTeamRole(Boolean teamRole) {
+        isTeamRole = teamRole;
+    }
+
+    public Boolean getIsProjectRole() {
+        return isProjectRole;
+    }
+
+    public void setIsProjectRole(Boolean projectRole) {
+        isProjectRole = projectRole;
     }
 
     public SysRole(Long roleId)

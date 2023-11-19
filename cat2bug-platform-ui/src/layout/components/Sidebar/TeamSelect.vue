@@ -7,6 +7,7 @@
           <p class="prefix-team-name" v-if="!collapse">{{currentTeam.teamName}}</p>
       </template>
       <el-option
+        style="height:80px;"
         v-for="team in teamList"
         :key="team.teamId"
         :label="team.teamName"
@@ -14,6 +15,12 @@
         <el-avatar shape="square" v-if="team.teamIcon" :src="iconUrl(team)" fit="cover"></el-avatar>
         <el-avatar shape="square" v-else>{{team.teamName}}</el-avatar>
         <p>{{ team.teamName }}</p>
+      </el-option>
+      <el-option class="team-select-footer"
+                 key="team-select-footer-create-team"
+                 value="team-select-footer-create-team"
+      >
+        <el-button icon="el-icon-plus" style="width: 100%;">{{$t('team.create')}}</el-button>
       </el-option>
     </el-select>
   </div>
@@ -64,7 +71,13 @@ export default {
     },
     /** 选择团队变化的处理 */
     selectTeamChangedHandle(currentTeamId,isRefresh){
-      this.selectTeam(currentTeamId,true);
+      switch (currentTeamId){
+        case 'team-select-footer-create-team':
+          this.$router.push({name:'TeamAdd'});
+          break;
+        default:
+          this.selectTeam(currentTeamId,true);
+      }
     },
     /** 选择团队 */
     selectTeam(currentTeamId,isRefresh){
@@ -148,5 +161,10 @@ export default {
     justify-content: flex-start;
     align-items: center;
     column-gap: 10px;
+  }
+  .team-select-footer {
+    height:60px;border-top: #EBEEF5 1px solid;
+    padding-top: 5px;
+    background-color: #FFFFFF;
   }
 </style>

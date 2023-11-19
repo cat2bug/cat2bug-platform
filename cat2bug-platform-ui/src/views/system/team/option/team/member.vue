@@ -42,9 +42,55 @@
         </el-row>
 
         <el-table v-loading="loading" :data="memberList">
-          <el-table-column :label="$t('member.name')" align="left" key="nickName" prop="nickName" :show-overflow-tooltip="true" />
-          <el-table-column :label="$t('email')" align="left" key="email" prop="email" :show-overflow-tooltip="true" width="300"/>
-          <el-table-column :label="$t('phone-number')" align="left" key="phoneNumber" prop="phoneNumber" width="120" />
+          <el-table-column :label="$t('member.name')" align="left" key="nickName" prop="nickName" :show-overflow-tooltip="true">
+            <template slot-scope="scope">
+              <div class="member-name">
+                <el-avatar v-if="scope.row.avatar" size="small" :src="scope.row.avatar"></el-avatar>
+                <el-avatar v-else size="small">{{ scope.row.userName }}</el-avatar>
+                <span :teamLock="scope.row.status">{{ scope.row.nickName }}</span>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column
+            :label="$t('role')"
+            align="left"
+            width="280"
+          >
+            <template slot-scope="scope" v-if="scope.row.userId !== 1">
+              <el-select class="member-operate"
+                         v-model="scope.row.roleIds"
+                         multiple
+                         :placeholder="$t('member.please-select-role')"
+                         :disabled="scope.row.status==1"
+              >
+                <el-option
+                  v-for="item in roleOptions"
+                  :key="item.roleId"
+                  :label="item.roleName"
+                  :value="item.roleId"
+                  :disabled="item.status == 1"
+                ></el-option>
+              </el-select>
+            </template>
+          </el-table-column>
+          <el-table-column :label="$t('email')" align="left" key="email" prop="email" :show-overflow-tooltip="true" width="300">
+            <template slot-scope="scope">
+              <span :teamLock="scope.row.status">{{ scope.row.email }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column :label="$t('phone-number')" align="left" key="phoneNumber" prop="phoneNumber" width="150">
+            <template slot-scope="scope">
+              <span :teamLock="scope.row.status">{{ scope.row.phoneNumber }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column :label="$t('register-time')" align="left" key="createTime" prop="createTime" width="180">
+            <template slot-scope="scope">
+              <div teamLock="scope.row.status">
+                <span :teamLock="scope.row.status">{{ scope.row.createTime }}</span>
+              </div>
+
+            </template>
+          </el-table-column>
           <el-table-column
             :label="$t('operate')"
             align="center"
@@ -52,6 +98,32 @@
             class-name="small-padding fixed-width"
           >
             <template slot-scope="scope" v-if="scope.row.userId !== 1">
+              <el-button
+                size="mini"
+                type="text"
+                icon="el-icon-lock"
+                @click="lockMemberHandle(scope.row)"
+                v-hasPermi="['system:user:edit']"
+                v-if="scope.row.status=='0'"
+              >锁定</el-button>
+              <el-button
+                size="mini"
+                type="text"
+                icon="el-icon-unlock"
+                @click="unlockMemberHandle(scope.row)"
+                v-hasPermi="['system:user:edit']"
+                v-else-if="scope.row.status=='1'"
+              >解锁</el-button>
+<!--              <el-popover-->
+<!--                placement="bottom"-->
+<!--                width="200"-->
+<!--                trigger="click">-->
+<!--                <el-row>-->
+<!--                  <el-col :span="24" v-for="item in roleOptions">-->
+<!--                    <el-link :underline="false">{{item.roleName}}<i class="el-icon-check"></i></el-link>-->
+<!--                  </el-col>-->
+<!--                </el-row>-->
+<!--              </el-popover>-->
 <!--              <el-button-->
 <!--                size="mini"-->
 <!--                type="text"-->
@@ -87,14 +159,18 @@
         />
       </el-col>
     </el-row>
+    <create-team-member ref="createTeamMemberDialog" />
   </div>
 </template>
 
 <script>
-import {getMemberByTeam} from "@/api/system/team";
+import {getMemberByTeam, listMember, updateMemberTeamRole} from "@/api/system/team";
+import CreateTeamMember from "@/views/system/team/option/team/CreateTeamMember";
+import {getUser} from "@/api/system/user";
 
 export default {
   name: "TeamMemberManage",
+  components: { CreateTeamMember },
   data() {
     return {
       // 遮罩层
@@ -107,7 +183,6 @@ export default {
       memberList:[],
       // 查询参数
       queryParams: {
-        teamId: this.$store.state.user.config.currentTeamId,  // 团队id
         pageNum: 1,
         pageSize: 10,
         userName: undefined,
@@ -115,15 +190,29 @@ export default {
         status: undefined,
         deptId: undefined
       },
+      // 角色选项
+      roleOptions: [],
     }
   },
   created() {
+    this.init();
     this.getMemberList();
   },
   methods: {
+    init() {
+      getUser().then(res => {
+        this.roleOptions = res.roles?res.roles.filter(r=>r.isTeamRole).map(r=>{
+          r.roleName = r.roleNameI18nKey?this.$t(r.roleNameI18nKey):r.roleName;
+          return r;
+        }):[];
+      });
+    },
+    getTeamId() {
+      return this.$store.state.user.config.currentTeamId;
+    },
     getMemberList() {
       this.loading = true;
-      getMemberByTeam(this.queryParams.teamId).then(res => {
+      listMember(this.getTeamId(),this.queryParams).then(res => {
         this.loading = false;
         this.memberList = res.rows;
       });
@@ -138,14 +227,33 @@ export default {
     },
     /** 新增按钮操作 */
     createMemberHandle() {
-      this.$router.push({name:'TeamAdd'})
+      // this.$router.push({path:'/team-option/create-member'})
+      this.$refs.createTeamMemberDialog.open();
     },
-    /** 导出按钮操作 */
-    handleExport() {
-      this.download('system/user/export', {
-        ...this.queryParams
-      }, `user_${new Date().getTime()}.xlsx`)
+    /** 更新用户操作 */
+    updateMemberRole(memberRole){
+      updateMemberTeamRole(memberRole.teamId,memberRole.userId,memberRole).then(res=>{
+        this.$message.success(this.$i18n.t('update.success'));
+        this.getMemberList();
+      });
     },
+    /** 锁定按钮操作 */
+    lockMemberHandle(member) {
+      this.updateMemberRole({
+        teamId: this.getTeamId(),
+        userId: member.userId,
+        teamLock: 1
+      });
+    },
+    /** 解锁按钮操作 */
+    unlockMemberHandle(member) {
+      this.updateMemberRole({
+        teamId: this.getTeamId(),
+        userId: member.userId,
+        teamLock: 0
+      });
+    },
+
   }
 }
 </script>
@@ -153,5 +261,35 @@ export default {
 <style lang="scss" scoped>
   .member-tools>* {
     margin-left: 10px;
+  }
+  .member-name {
+    display: flex;
+    flex-direction: row;
+    justify-content: start;
+    align-items: center;
+    >* {
+      margin-right: 10px;
+    }
+  }
+  ::v-deep .member-operate .el-input__inner, ::v-deep .member-operate .el-select__tags {
+    min-width: 250px;
+    display: flex;
+    justify-content: center;
+    background-color: #00000000;
+    border-width: 0;
+  }
+  ::v-deep .member-operate .el-select__tags {
+    flex-wrap: inherit !important;
+    overflow-x: auto !important;
+    > span {
+      display: flex;
+      margin-right: auto;
+    }
+  }
+  ::v-deep .el-table {
+    span[teamLock="1"] {
+      text-decoration: line-through;
+      color: #DCDFE6;
+    }
   }
 </style>

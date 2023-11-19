@@ -157,9 +157,12 @@
 
     <!-- 添加或修改角色配置对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
-      <el-form ref="form" :model="form" :rules="rules" label-width="100px">
+      <el-form ref="form" :model="form" :rules="rules" label-width="120px">
         <el-form-item label="角色名称" prop="roleName">
           <el-input v-model="form.roleName" placeholder="请输入角色名称" />
+        </el-form-item>
+        <el-form-item label="角色名称国际化标识" prop="roleNameI18nKey">
+          <el-input v-model="form.roleNameI18nKey" placeholder="请输入角色名称国际化必哦啊是" />
         </el-form-item>
         <el-form-item prop="roleKey">
           <span slot="label">
@@ -172,6 +175,10 @@
         </el-form-item>
         <el-form-item label="角色顺序" prop="roleSort">
           <el-input-number v-model="form.roleSort" controls-position="right" :min="0" />
+        </el-form-item>
+        <el-form-item label="角色分类">
+          <el-radio v-model="roleType" label="team">是否是团队角色</el-radio>
+          <el-radio v-model="roleType" label="project">是否是项目角色</el-radio>
         </el-form-item>
         <el-form-item label="状态">
           <el-radio-group v-model="form.status">
@@ -212,6 +219,9 @@
       <el-form :model="form" label-width="80px">
         <el-form-item label="角色名称">
           <el-input v-model="form.roleName" :disabled="true" />
+        </el-form-item>
+        <el-form-item label="权限字符">
+          <el-input v-model="form.roleKey" :disabled="true" />
         </el-form-item>
         <el-form-item label="权限字符">
           <el-input v-model="form.roleKey" :disabled="true" />
@@ -264,6 +274,7 @@ export default {
       loading: true,
       // 选中数组
       ids: [],
+      roleType: '',
       // 非单个禁用
       single: true,
       // 非多个禁用
@@ -419,13 +430,17 @@ export default {
       if (this.$refs.menu != undefined) {
         this.$refs.menu.setCheckedKeys([]);
       }
+      this.roleType = undefined;
       this.menuExpand = false,
       this.menuNodeAll = false,
       this.deptExpand = true,
       this.deptNodeAll = false,
       this.form = {
+        isTeamRole: false,
+        isProjectRole: false,
         roleId: undefined,
         roleName: undefined,
+        roleNameI18nKey: undefined,
         roleKey: undefined,
         roleSort: 0,
         status: "0",
@@ -511,6 +526,13 @@ export default {
       const roleMenu = this.getRoleMenuTreeselect(roleId);
       getRole(roleId).then(response => {
         this.form = response.data;
+        if(this.form.isTeamRole){
+          this.roleType = 'team';
+        } else if(this.form.isProjectRole) {
+          this.roleType = 'project';
+        } else {
+          this.roleType = null;
+        }
         this.open = true;
         this.$nextTick(() => {
           roleMenu.then(res => {
@@ -555,6 +577,20 @@ export default {
     submitForm: function() {
       this.$refs["form"].validate(valid => {
         if (valid) {
+          switch (this.roleType) {
+            case 'team':
+              this.form.isTeamRole = true;
+              this.form.isProjectRole = false;
+              break;
+            case 'project':
+              this.form.isTeamRole = false;
+              this.form.isProjectRole = true;
+              break;
+            default:
+              this.form.isTeamRole = false;
+              this.form.isProjectRole = false;
+              break;
+          }
           if (this.form.roleId != undefined) {
             this.form.menuIds = this.getMenuAllCheckedKeys();
             updateRole(this.form).then(response => {

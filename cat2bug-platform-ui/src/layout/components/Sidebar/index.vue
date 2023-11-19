@@ -33,10 +33,10 @@
               mode="vertical"
             >
               <sidebar-item
-                v-for="(route, index) in filterSidebarRouters('project-option')"
+                v-for="(route, index) in filterSidebarRouters('team-option')"
                 :key="route.path  + index"
                 :item="route"
-                :base-path="'project-option/'+route.path"
+                :base-path="'team-option/'+route.path"
               />
             </el-menu>
             <div class="sidebar-divider">
@@ -76,9 +76,6 @@ export default {
         ...mapGetters(["sidebarRouters", "sidebar"]),
         filterSidebarRouters() {
           return function (name){
-            for(let i in this.sidebarRouters) {
-              console.log(this.sidebarRouters[i].path,this.sidebarRouters[i])
-            }
             for(let i in this.sidebarRouters) {
               if(this.sidebarRouters[i].name && this.sidebarRouters[i].name.toLowerCase()==name.toLowerCase()){
                 return this.sidebarRouters[i].children;

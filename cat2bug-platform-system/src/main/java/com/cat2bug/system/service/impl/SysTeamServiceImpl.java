@@ -11,6 +11,7 @@ import com.cat2bug.system.domain.SysUserConfig;
 import com.cat2bug.system.domain.SysUserTeamRole;
 import com.cat2bug.system.mapper.SysUserConfigMapper;
 import com.cat2bug.system.mapper.SysUserMapper;
+import com.cat2bug.system.mapper.SysUserTeamRoleMapper;
 import com.google.common.base.Preconditions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -40,6 +41,8 @@ public class SysTeamServiceImpl implements ISysTeamService
     @Autowired
     private SysUserConfigMapper sysUserConfigMapper;
 
+    @Autowired
+    private SysUserTeamRoleMapper sysUserTeamRoleMapper;
     /**
      * 查询团队
      * 
@@ -81,7 +84,7 @@ public class SysTeamServiceImpl implements ISysTeamService
      */
     @Override
     public List<SysUser> selectSysUserListByTeamId(Long teamId) {
-        return sysUserMapper.selectSysUserListByTeamId(teamId).stream().filter(u->u.getUserId()!=SecurityUtils.getUserId()).collect(Collectors.toList());
+        return sysUserMapper.selectSysUserListByTeamId(teamId);
     }
 
     /**
@@ -127,6 +130,24 @@ public class SysTeamServiceImpl implements ISysTeamService
             sysUserConfig.setCurrentTeamId(sysTeam.getTeamId());
             sysUserConfigMapper.updateSysUserConfig(sysUserConfig);
         }
+        return 1;
+    }
+
+    @Override
+    @Transactional
+    public int insertSysUser(Long teamId, SysUser user) {
+        // 插入用户信息
+        Preconditions.checkState(sysUserMapper.insertUser(user)==1,MessageUtils.message("user.insert_user_fail"));
+
+        // 新建用户与团队关联数据
+        SysUserTeamRole sysUserTeamRole = new SysUserTeamRole();
+        sysUserTeamRole.setUserId(user.getUserId());
+        sysUserTeamRole.setTeamId(teamId);
+        sysUserTeamRole.setTeamRoleId(DEFAULT_ROLE_ID);
+        sysUserTeamRole.setCreateTime(DateUtils.getNowDate());
+        sysUserTeamRole.setCreateBy(String.valueOf(SecurityUtils.getUserId()));
+        Preconditions.checkState(sysTeamMapper.insertSysUserTeamRole(sysUserTeamRole)==1,MessageUtils.message("team.insert_user_team_role_fail"));
+
         return 1;
     }
 

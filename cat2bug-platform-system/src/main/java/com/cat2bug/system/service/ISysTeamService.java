@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.system.domain.SysTeam;
+import org.springframework.web.bind.annotation.RequestBody;
 
 /**
  * 团队Service接口
@@ -50,6 +51,14 @@ public interface ISysTeamService
      * @return 结果
      */
     public int insertSysTeam(SysTeam sysTeam);
+
+    /**
+     * 新增团队成员
+     * @param teamId    团队id
+     * @param user      用户信息
+     * @return          结果
+     */
+    public int insertSysUser(Long teamId,SysUser user);
 
     /**
      * 修改团队
