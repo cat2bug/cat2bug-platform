@@ -9,10 +9,19 @@ export function listTeam(query) {
   })
 }
 
-// 新增团队成员
+// 查询团队成员
 export function listMember(teamId,query) {
   return request({
     url: '/system/team/'+teamId+'/member',
+    method: 'get',
+    params: query
+  })
+}
+
+// 查询非团队成员
+export function listNotMember(teamId,query) {
+  return request({
+    url: '/system/team/'+teamId+'/not-member',
     method: 'get',
     params: query
   })
@@ -55,6 +64,15 @@ export function addTeam(data) {
 export function addMember(teamId,data) {
   return request({
     url: '/system/team/'+teamId+'/member',
+    method: 'post',
+    data: data
+  })
+}
+
+// 邀请团队成员
+export function inviteMember(teamId,data) {
+  return request({
+    url: '/system/team/'+teamId+'/invite',
     method: 'post',
     data: data
   })

@@ -106,7 +106,7 @@
                 @click="lockMemberHandle(scope.row)"
                 v-hasPermi="['system:user:edit']"
                 v-if="scope.row.status=='0'"
-              >锁定</el-button>
+              >{{$t('lock')}}</el-button>
               <el-button
                 size="mini"
                 type="text"
@@ -114,40 +114,7 @@
                 @click="unlockMemberHandle(scope.row)"
                 v-hasPermi="['system:user:edit']"
                 v-else-if="scope.row.status=='1'"
-              >解锁</el-button>
-<!--              <el-popover-->
-<!--                placement="bottom"-->
-<!--                width="200"-->
-<!--                trigger="click">-->
-<!--                <el-row>-->
-<!--                  <el-col :span="24" v-for="item in roleOptions">-->
-<!--                    <el-link :underline="false">{{item.roleName}}<i class="el-icon-check"></i></el-link>-->
-<!--                  </el-col>-->
-<!--                </el-row>-->
-<!--              </el-popover>-->
-<!--              <el-button-->
-<!--                size="mini"-->
-<!--                type="text"-->
-<!--                icon="el-icon-edit"-->
-<!--                @click="handleUpdate(scope.row)"-->
-<!--                v-hasPermi="['system:user:edit']"-->
-<!--              >修改</el-button>-->
-<!--              <el-button-->
-<!--                size="mini"-->
-<!--                type="text"-->
-<!--                icon="el-icon-delete"-->
-<!--                @click="handleDelete(scope.row)"-->
-<!--                v-hasPermi="['system:user:remove']"-->
-<!--              >删除</el-button>-->
-<!--              <el-dropdown size="mini" @command="(command) => handleCommand(command, scope.row)" v-hasPermi="['system:user:resetPwd', 'system:user:edit']">-->
-<!--                <el-button size="mini" type="text" icon="el-icon-d-arrow-right">更多</el-button>-->
-<!--                <el-dropdown-menu slot="dropdown">-->
-<!--                  <el-dropdown-item command="handleResetPwd" icon="el-icon-key"-->
-<!--                                    v-hasPermi="['system:user:resetPwd']">重置密码</el-dropdown-item>-->
-<!--                  <el-dropdown-item command="handleAuthRole" icon="el-icon-circle-check"-->
-<!--                                    v-hasPermi="['system:user:edit']">分配角色</el-dropdown-item>-->
-<!--                </el-dropdown-menu>-->
-<!--              </el-dropdown>-->
+              >{{$t('unlock')}}</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -161,17 +128,19 @@
       </el-col>
     </el-row>
     <create-team-member ref="createTeamMemberDialog" @create="getMemberList" />
+    <invite-team-member ref="inviteTeamMemberDialog" @invite="getMemberList" />
   </div>
 </template>
 
 <script>
 import {getMemberByTeam, listMember, updateMemberTeamRole, updateMemberTeamRoleIds} from "@/api/system/team";
 import CreateTeamMember from "@/views/system/team/option/team/CreateTeamMember";
+import InviteTeamMember from "@/views/system/team/option/team/InviteTeamMember";
 import {getUser} from "@/api/system/user";
 
 export default {
   name: "TeamMemberManage",
-  components: { CreateTeamMember },
+  components: { CreateTeamMember, InviteTeamMember },
   data() {
     return {
       // 遮罩层
@@ -242,7 +211,7 @@ export default {
     },
     /** 邀请按钮操作 */
     inviteMemberHandle() {
-      this.$router.push({name:'TeamAdd'})
+      this.$refs.inviteTeamMemberDialog.open();
     },
     /** 新增按钮操作 */
     createMemberHandle() {

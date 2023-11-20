@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.system.domain.SysTeam;
+import com.cat2bug.system.domain.vo.BatchUserRoleVo;
 import org.springframework.web.bind.annotation.RequestBody;
 
 /**
@@ -45,6 +46,20 @@ public interface ISysTeamService
      */
     public List<SysUser> selectSysUserListByTeamIdAndSysUser(Long teamId, SysUser sysUser);
 
+    /**
+     * 查询非团队成员列表
+     * @param teamId    团队id
+     * @param sysUser   用户
+     * @return          成员集合
+     */
+    public List<SysUser> selectSysUserListByTeamIdAndNotSysUser(Long teamId, SysUser sysUser);
+
+    /**
+     * 邀请用户
+     * @param batchUserRoleVo
+     * @return
+     */
+    public int inviteMember(BatchUserRoleVo batchUserRoleVo);
     /**
      * 新增团队
      * 

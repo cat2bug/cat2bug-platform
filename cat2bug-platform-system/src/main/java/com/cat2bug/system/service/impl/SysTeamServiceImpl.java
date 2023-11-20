@@ -10,6 +10,7 @@ import com.cat2bug.common.utils.SecurityUtils;
 import com.cat2bug.system.domain.SysUserConfig;
 import com.cat2bug.system.domain.SysUserTeam;
 import com.cat2bug.system.domain.SysUserTeamRole;
+import com.cat2bug.system.domain.vo.BatchUserRoleVo;
 import com.cat2bug.system.mapper.*;
 import com.google.common.base.Preconditions;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -86,6 +87,37 @@ public class SysTeamServiceImpl implements ISysTeamService
     @Override
     public List<SysUser> selectSysUserListByTeamIdAndSysUser(Long teamId, SysUser sysUser) {
         return sysUserMapper.selectSysUserListByTeamIdAndSysUser(teamId, sysUser);
+    }
+
+    @Override
+    public List<SysUser> selectSysUserListByTeamIdAndNotSysUser(Long teamId, SysUser sysUser) {
+        return sysUserMapper.selectSysUserListByTeamIdAndNotSysUser(teamId, sysUser);
+    }
+
+    @Override
+    public int inviteMember(BatchUserRoleVo batchUserRoleVo) {
+        Preconditions.checkNotNull(batchUserRoleVo.getTeamId(),MessageUtils.message("team.team_not_empty"));
+        Preconditions.checkArgument(batchUserRoleVo.getMemberIds()!=null && batchUserRoleVo.getMemberIds().length>0,MessageUtils.message("team.member_not_empty"));
+        Preconditions.checkArgument(batchUserRoleVo.getRoleIds()!=null && batchUserRoleVo.getRoleIds().length>0,MessageUtils.message("team.role_not_empty"));
+        for(Long memberId : batchUserRoleVo.getMemberIds()) {
+            SysUserTeam sysUserTeam = new SysUserTeam();
+            sysUserTeam.setUserId(memberId);
+            sysUserTeam.setTeamId(batchUserRoleVo.getTeamId());
+            sysUserTeam.setCreateTime(DateUtils.getNowDate());
+            sysUserTeam.setCreateBy(String.valueOf(SecurityUtils.getUserId()));
+            Preconditions.checkState(sysUserTeamMapper.insertSysUserTeam(sysUserTeam)==1,MessageUtils.message("team.insert_user_team_role_fail"));
+
+            // 新建团队内的用户角色
+            if(batchUserRoleVo.getRoleIds()!=null){
+                for(Long roleId : batchUserRoleVo.getRoleIds()){
+                    SysUserTeamRole utr = new SysUserTeamRole();
+                    utr.setUserTeamId(sysUserTeam.getUserTeamId());
+                    utr.setRoleId(roleId);
+                    Preconditions.checkState(sysUserTeamRoleMapper.insertSysUserTeamRole(utr)==1,MessageUtils.message("team.insert_member_role_fail"));
+                }
+            }
+        }
+        return batchUserRoleVo.getMemberIds().length;
     }
 
     /**
