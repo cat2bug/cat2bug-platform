@@ -7,13 +7,13 @@ import com.cat2bug.common.annotation.Excel;
 import com.cat2bug.common.core.domain.BaseEntity;
 
 /**
- * 用户团队角色对象 sys_user_team_role
+ * 用户团队角色对象 sys_user_team
  * 
  * @author yuzhantao
  * @date 2023-11-20
  */
 @Data
-public class SysUserTeamRole extends BaseEntity
+public class SysUserTeam extends BaseEntity
 {
     private static final long serialVersionUID = 1L;
 
@@ -28,10 +28,6 @@ public class SysUserTeamRole extends BaseEntity
     @Excel(name = "团队id")
     private Long teamId;
 
-    /** 团队角色id */
-    @Excel(name = "团队角色id")
-    private Long teamRoleId;
-
     /** 是否锁定 */
     @Excel(name = "是否锁定")
     private Integer teamLock;
@@ -42,7 +38,6 @@ public class SysUserTeamRole extends BaseEntity
             .append("userTeamId", getUserTeamId())
             .append("userId", getUserId())
             .append("teamId", getTeamId())
-            .append("teamRoleId", getTeamRoleId())
             .append("createBy", getCreateBy())
             .append("createTime", getCreateTime())
             .append("updateBy", getUpdateBy())

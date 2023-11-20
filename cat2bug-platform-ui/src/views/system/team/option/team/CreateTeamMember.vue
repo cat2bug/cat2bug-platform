@@ -162,7 +162,8 @@ export default {
           addMember(this.$store.state.user.config.currentTeamId, this.form).then(res => {
             this.$modal.msgSuccess("新增成功");
             this.dialogVisible = false;
-            this.goBack();
+            this.cancel();
+            this.$emit("create",res);
           });
         }
       });

@@ -39,7 +39,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             t.introduce,
             t.is_del
         FROM
-            sys_team t,sys_user_team_role utr
+            sys_team t,sys_user_team utr
         <where>
             (t.is_del != 1 OR t.is_del IS NULL) AND utr.team_id = t.team_id AND utr.user_id = #{userId}
         </where>
@@ -81,8 +81,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
          </trim>
     </insert>
 
-    <insert id="insertSysUserTeamRole" parameterType="SysUserTeamRole">
-        insert into sys_user_team_role
+    <insert id="insertSysUserTeam" parameterType="SysUserTeam">
+        insert into sys_user_team
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="teamId != null">team_id,</if>
             <if test="userId != null">user_id,</if>
@@ -116,8 +116,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         where team_id = #{teamId}
     </update>
 
-    <update id="updateSysUserTeamRole" parameterType="SysUserTeamRole">
-        update sys_user_team_role
+    <update id="updateSysUserTeam" parameterType="SysUserTeam">
+        update sys_user_team
         <trim prefix="SET" suffixOverrides=",">
             <if test="teamRoleId != null">team_role_id = #{teamRoleId},</if>
             <if test="updateBy != null">update_by = #{updateBy},</if>

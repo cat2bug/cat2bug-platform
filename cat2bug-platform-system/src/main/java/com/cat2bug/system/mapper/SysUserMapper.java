@@ -38,9 +38,10 @@ public interface SysUserMapper
     /**
      * 查询成员列表
      * @param teamId    团队id
+     * @param sysUser   用户
      * @return  成员集合
      */
-    public List<SysUser> selectSysUserListByTeamId(Long teamId);
+    public List<SysUser> selectSysUserListByTeamIdAndSysUser(@Param("teamId") Long teamId, @Param("sysUser") SysUser sysUser);
 
     /**
      * 通过用户名查询用户

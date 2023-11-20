@@ -14,7 +14,7 @@ export function listMember(teamId,query) {
   return request({
     url: '/system/team/'+teamId+'/member',
     method: 'get',
-    data: query
+    params: query
   })
 }
 
@@ -74,6 +74,14 @@ export function updateMemberTeamRole(teamId, memberId, data) {
     url: '/system/team/'+teamId+'/member/'+memberId+'/role',
     method: 'put',
     data: data
+  })
+}
+
+export function updateMemberTeamRoleIds(teamId, memberId, roleIds) {
+  return request({
+    url: '/system/team/'+teamId+'/member/'+memberId+'/roles',
+    method: 'put',
+    data: roleIds
   })
 }
 

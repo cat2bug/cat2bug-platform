@@ -10,13 +10,13 @@
         <el-row :gutter="10" class="mb8" type="flex" justify="space-between">
           <el-col :span="8">
             <el-input
-              v-model="queryParams.userName"
+              v-model="queryParams.params.search"
               prefix-icon="el-icon-search"
               :placeholder="$t('team.search-placeholder')"
               clearable
               style="width: 320px"
               size="mini"
-              @keyup.enter.native="handleQuery"
+              @input="memberSearchHandle"
             />
           </el-col>
           <el-col :span="8" class="member-tools">
@@ -62,6 +62,7 @@
                          multiple
                          :placeholder="$t('member.please-select-role')"
                          :disabled="scope.row.status==1"
+                         @change="roleChangeHandle(scope.row)"
               >
                 <el-option
                   v-for="item in roleOptions"
@@ -159,12 +160,12 @@
         />
       </el-col>
     </el-row>
-    <create-team-member ref="createTeamMemberDialog" />
+    <create-team-member ref="createTeamMemberDialog" @create="getMemberList" />
   </div>
 </template>
 
 <script>
-import {getMemberByTeam, listMember, updateMemberTeamRole} from "@/api/system/team";
+import {getMemberByTeam, listMember, updateMemberTeamRole, updateMemberTeamRoleIds} from "@/api/system/team";
 import CreateTeamMember from "@/views/system/team/option/team/CreateTeamMember";
 import {getUser} from "@/api/system/user";
 
@@ -179,16 +180,14 @@ export default {
       total: 0,
       // 显示搜索条件
       showSearch: true,
+      memberSearch: null,
       // 成员列表
       memberList:[],
       // 查询参数
       queryParams: {
         pageNum: 1,
         pageSize: 10,
-        userName: undefined,
-        phonenumber: undefined,
-        status: undefined,
-        deptId: undefined
+        params: {},
       },
       // 角色选项
       roleOptions: [],
@@ -199,7 +198,9 @@ export default {
     this.getMemberList();
   },
   methods: {
+    /** 初始化数据 */
     init() {
+      // 获取当前用户信息
       getUser().then(res => {
         this.roleOptions = res.roles?res.roles.filter(r=>r.isTeamRole).map(r=>{
           r.roleName = r.roleNameI18nKey?this.$t(r.roleNameI18nKey):r.roleName;
@@ -207,14 +208,32 @@ export default {
         }):[];
       });
     },
+    /** 获取团队id */
     getTeamId() {
       return this.$store.state.user.config.currentTeamId;
     },
+    /** 搜索用户 */
+    memberSearchHandle(e){
+      this.queryParams.params.search=e;
+      this.getMemberList();
+    },
+    /** 获取团队成员列表 */
     getMemberList() {
       this.loading = true;
       listMember(this.getTeamId(),this.queryParams).then(res => {
         this.loading = false;
         this.memberList = res.rows;
+      });
+    },
+    /** 更新用户权限 */
+    roleChangeHandle(member) {
+      updateMemberTeamRoleIds(
+        this.getTeamId(),
+        member.userId,
+        member.roleIds
+      ).then(res=>{
+        this.$message.success(this.$i18n.t('update.success'));
+        this.getMemberList();
       });
     },
     /** 返回 */
@@ -253,7 +272,6 @@ export default {
         teamLock: 0
       });
     },
-
   }
 }
 </script>

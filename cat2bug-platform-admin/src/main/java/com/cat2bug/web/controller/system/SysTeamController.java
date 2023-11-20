@@ -6,17 +6,23 @@ import com.cat2bug.common.core.domain.AjaxResult;
 import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.common.core.page.TableDataInfo;
 import com.cat2bug.common.enums.BusinessType;
+import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.common.utils.poi.ExcelUtil;
 import com.cat2bug.system.domain.SysTeam;
-import com.cat2bug.system.domain.SysUserTeamRole;
+import com.cat2bug.system.domain.SysUserTeam;
 import com.cat2bug.system.service.ISysTeamService;
 import com.cat2bug.system.service.ISysUserTeamRoleService;
+import com.cat2bug.system.service.ISysUserTeamService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 团队Controller
@@ -30,6 +36,9 @@ public class SysTeamController extends BaseController
 {
     @Autowired
     private ISysTeamService sysTeamService;
+
+    @Autowired
+    private ISysUserTeamService sysUserTeamService;
 
     @Autowired
     private ISysUserTeamRoleService sysUserTeamRoleService;
@@ -51,10 +60,16 @@ public class SysTeamController extends BaseController
      */
     @PreAuthorize("@ss.hasPermi('system:team:query')")
     @GetMapping("/{teamId}/member")
-    public TableDataInfo listMember(@PathVariable("teamId") Long teamId, SysUser user)
+    public TableDataInfo listMember(@PathVariable("teamId") Long teamId, SysUser sysUser)
     {
         startPage();
-        List<SysUser> list = sysTeamService.selectSysUserListByTeamId(teamId);
+        List<SysUser> list = sysTeamService.selectSysUserListByTeamIdAndSysUser(teamId, sysUser);
+        list = list.stream().map(u->{
+            if(u.getRoles()!=null){
+                u.setRoleIds(u.getRoles().stream().map(r->r.getRoleId()).collect(Collectors.toList()).toArray(new Long[]{}));
+            }
+            return u;
+        }).collect(Collectors.toList());
         return getDataTable(list);
     }
 
@@ -131,9 +146,17 @@ public class SysTeamController extends BaseController
     @PreAuthorize("@ss.hasPermi('system:team:edit')")
     @Log(title = "团队", businessType = BusinessType.UPDATE)
     @PutMapping("/{teamId}/member/{memberId}/role")
-    public AjaxResult editTeamMemberRole(@PathVariable Long teamId, @PathVariable Long memberId, @RequestBody SysUserTeamRole sysUserTeamRole)
+    public AjaxResult editTeamMemberRole(@PathVariable Long teamId, @PathVariable Long memberId, @RequestBody SysUserTeam sysUserTeam)
     {
-        return toAjax(sysUserTeamRoleService.updateSysUserTeamRoleByTeamIdAndMemberId(teamId, memberId, sysUserTeamRole));
+        return toAjax(sysUserTeamService.updateSysUserTeamByTeamIdAndMemberId(teamId, memberId, sysUserTeam));
+    }
+
+    @PreAuthorize("@ss.hasPermi('system:team:edit')")
+    @Log(title = "团队", businessType = BusinessType.UPDATE)
+    @PutMapping("/{teamId}/member/{memberId}/roles")
+    public AjaxResult editTeamMemberRoleIds(@PathVariable Long teamId, @PathVariable Long memberId,  @RequestBody Long[] roleIds)
+    {
+        return toAjax(sysUserTeamRoleService.updateSysUserTeamRoleByTeamIdAndMemberIdAndRoleIds(teamId, memberId, roleIds));
     }
 
     /**

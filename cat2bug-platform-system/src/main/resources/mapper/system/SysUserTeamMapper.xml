@@ -2,13 +2,12 @@
 <!DOCTYPE mapper
 PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.cat2bug.system.mapper.SysUserTeamRoleMapper">
+<mapper namespace="com.cat2bug.system.mapper.SysUserTeamMapper">
     
-    <resultMap type="SysUserTeamRole" id="SysUserTeamRoleResult">
+    <resultMap type="SysUserTeam" id="SysUserTeamResult">
         <result property="userTeamId"    column="user_team_id"    />
         <result property="userId"    column="user_id"    />
         <result property="teamId"    column="team_id"    />
-        <result property="teamRoleId"    column="team_role_id"    />
         <result property="createBy"    column="create_by"    />
         <result property="createTime"    column="create_time"    />
         <result property="updateBy"    column="update_by"    />
@@ -16,31 +15,29 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="teamLock"    column="team_lock"    />
     </resultMap>
 
-    <sql id="selectSysUserTeamRoleVo">
-        select user_team_id, user_id, team_id, team_role_id, create_by, create_time, update_by, update_time, team_lock from sys_user_team_role
+    <sql id="selectSysUserTeamVo">
+        select user_team_id, user_id, team_id, create_by, create_time, update_by, update_time, team_lock from sys_user_team
     </sql>
 
-    <select id="selectSysUserTeamRoleList" parameterType="SysUserTeamRole" resultMap="SysUserTeamRoleResult">
-        <include refid="selectSysUserTeamRoleVo"/>
+    <select id="selectSysUserTeamList" parameterType="SysUserTeam" resultMap="SysUserTeamResult">
+        <include refid="selectSysUserTeamVo"/>
         <where>  
             <if test="userId != null "> and user_id = #{userId}</if>
             <if test="teamId != null "> and team_id = #{teamId}</if>
-            <if test="teamRoleId != null "> and team_role_id = #{teamRoleId}</if>
             <if test="teamLock != null "> and team_lock = #{teamLock}</if>
         </where>
     </select>
     
-    <select id="selectSysUserTeamRoleByUserTeamId" parameterType="Long" resultMap="SysUserTeamRoleResult">
-        <include refid="selectSysUserTeamRoleVo"/>
+    <select id="selectSysUserTeamByUserTeamId" parameterType="Long" resultMap="SysUserTeamResult">
+        <include refid="selectSysUserTeamVo"/>
         where user_team_id = #{userTeamId}
     </select>
         
-    <insert id="insertSysUserTeamRole" parameterType="SysUserTeamRole" useGeneratedKeys="true" keyProperty="userTeamId">
-        insert into sys_user_team_role
+    <insert id="insertSysUserTeam" parameterType="SysUserTeam" useGeneratedKeys="true" keyProperty="userTeamId">
+        insert into sys_user_team
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="userId != null">user_id,</if>
             <if test="teamId != null">team_id,</if>
-            <if test="teamRoleId != null">team_role_id,</if>
             <if test="createBy != null">create_by,</if>
             <if test="createTime != null">create_time,</if>
             <if test="updateBy != null">update_by,</if>
@@ -50,7 +47,6 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="userId != null">#{userId},</if>
             <if test="teamId != null">#{teamId},</if>
-            <if test="teamRoleId != null">#{teamRoleId},</if>
             <if test="createBy != null">#{createBy},</if>
             <if test="createTime != null">#{createTime},</if>
             <if test="updateBy != null">#{updateBy},</if>
@@ -59,12 +55,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
          </trim>
     </insert>
 
-    <update id="updateSysUserTeamRole" parameterType="SysUserTeamRole">
-        update sys_user_team_role
+    <update id="updateSysUserTeam" parameterType="SysUserTeam">
+        update sys_user_team
         <trim prefix="SET" suffixOverrides=",">
             <if test="userId != null">user_id = #{userId},</if>
             <if test="teamId != null">team_id = #{teamId},</if>
-            <if test="teamRoleId != null">team_role_id = #{teamRoleId},</if>
             <if test="createBy != null">create_by = #{createBy},</if>
             <if test="createTime != null">create_time = #{createTime},</if>
             <if test="updateBy != null">update_by = #{updateBy},</if>
@@ -74,10 +69,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         where user_team_id = #{userTeamId}
     </update>
 
-    <update id="updateSysUserTeamRoleByTeamIdAndMemberId" parameterType="SysUserTeamRole">
-        update sys_user_team_role
+    <update id="updateSysUserTeamByTeamIdAndMemberId" parameterType="SysUserTeam">
+        update sys_user_team
         <trim prefix="SET" suffixOverrides=",">
-            <if test="teamRoleId != null">team_role_id = #{teamRoleId},</if>
             <if test="createBy != null">create_by = #{createBy},</if>
             <if test="createTime != null">create_time = #{createTime},</if>
             <if test="updateBy != null">update_by = #{updateBy},</if>
@@ -87,12 +81,22 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         where team_id = #{teamId} and user_id = #{userId}
     </update>
 
-    <delete id="deleteSysUserTeamRoleByUserTeamId" parameterType="Long">
-        delete from sys_user_team_role where user_team_id = #{userTeamId}
+
+    <delete id="deleteSysUserTeamByTeamIdAndMemberIdAndRoleIds" parameterType="Long">
+        delete from sys_user_team_role
+        where user_team_id in (select user_team_id from sys_user_team_role where team_id = #{teamId} and user_id = #{memberId})
+        and role_id not in
+            <foreach item="roleId" collection="roleIds" open="(" separator="," close=")">
+                #{roleId}
+            </foreach>
     </delete>
 
-    <delete id="deleteSysUserTeamRoleByUserTeamIds" parameterType="String">
-        delete from sys_user_team_role where user_team_id in 
+    <delete id="deleteSysUserTeamByUserTeamId" parameterType="Long">
+        delete from sys_user_team where user_team_id = #{userTeamId}
+    </delete>
+
+    <delete id="deleteSysUserTeamByUserTeamIds" parameterType="String">
+        delete from sys_user_team where user_team_id in
         <foreach item="userTeamId" collection="array" open="(" separator="," close=")">
             #{userTeamId}
         </foreach>

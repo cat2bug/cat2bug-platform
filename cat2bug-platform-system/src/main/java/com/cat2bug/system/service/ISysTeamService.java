@@ -40,9 +40,10 @@ public interface ISysTeamService
     /**
      * 查询成员列表
      * @param teamId    团队id
+     * @param sysUser   用户
      * @return          成员集合
      */
-    public List<SysUser> selectSysUserListByTeamId(Long teamId);
+    public List<SysUser> selectSysUserListByTeamIdAndSysUser(Long teamId, SysUser sysUser);
 
     /**
      * 新增团队

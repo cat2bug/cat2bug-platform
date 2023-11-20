@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.system.domain.SysTeam;
-import com.cat2bug.system.domain.SysUserTeamRole;
+import com.cat2bug.system.domain.SysUserTeam;
 
 /**
  * 团队Mapper接口
@@ -54,10 +54,10 @@ public interface SysTeamMapper
 
     /**
      * 新增用户团队角色
-     * @param sysUserTeamRole
+     * @param sysUserTeam
      * @return
      */
-    public int insertSysUserTeamRole(SysUserTeamRole sysUserTeamRole);
+    public int insertSysUserTeam(SysUserTeam sysUserTeam);
 
     /**
      * 修改团队
@@ -69,10 +69,10 @@ public interface SysTeamMapper
 
     /**
      * 修改用户团队角色
-     * @param sysUserTeamRole
+     * @param sysUserTeam
      * @return
      */
-    public int updateSysUserTeamRole(SysUserTeamRole sysUserTeamRole);
+    public int updateSysUserTeam(SysUserTeam sysUserTeam);
     /**
      * 删除团队
      * 
