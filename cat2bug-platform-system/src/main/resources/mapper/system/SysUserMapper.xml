@@ -86,7 +86,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	</select>
 
 
-	<select id="selectSysUserListByTeamIdAndSysUser" parameterType="Long" resultMap="SysUserResult">
+	<select id="selectSysUserListByTeamIdAndSysUser" resultMap="SysUserResult">
 		select u.user_id, u.dept_id, u.nick_name, u.user_name, u.email, u.avatar, u.phonenumber, u.sex, tr.team_lock as status, u.del_flag, u.login_ip, u.login_date, u.create_by, u.create_time, u.remark, d.dept_name, d.leader,
 			   r.role_id, r.role_name, r.role_key, r.role_sort, r.data_scope, r.status as role_status
 		from sys_user u
@@ -101,6 +101,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 				or u.nick_name like concat('%', #{sysUser.params.search}, '%')
 			)
 		</if>
+		<if test="sysUser.params != null and sysUser.params.excludeMembers != null and sysUser.params.excludeMembers != ''">
+			and u.user_id not in
+			<foreach collection="sysUser.params.excludeMembers" item="memberId" open="(" separator="," close=")">
+				#{memberId}
+			</foreach>
+		</if>
+
 		order by u.create_time
 	</select>
 

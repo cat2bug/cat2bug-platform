@@ -3,6 +3,7 @@ package com.cat2bug.system.service.impl;
 import java.util.List;
 import com.cat2bug.common.utils.DateUtils;
 import com.cat2bug.common.utils.MessageUtils;
+import com.cat2bug.common.utils.SecurityUtils;
 import com.google.common.base.Preconditions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -57,6 +58,8 @@ public class SysProjectServiceImpl implements ISysProjectService
     public int insertSysProject(SysProject sysProject)
     {
         sysProject.setCreateTime(DateUtils.getNowDate());
+        sysProject.setCreateBy(String.valueOf(SecurityUtils.getUserId()));
+
         return sysProjectMapper.insertSysProject(sysProject);
     }
 

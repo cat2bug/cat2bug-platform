@@ -35,7 +35,7 @@ export function myListTeam() {
   })
 }
 
-// 查询团队详细
+// 查询团队成员详细
 export function getMemberByTeam(teamId) {
   return request({
     url: '/system/team/' + teamId + '/member',

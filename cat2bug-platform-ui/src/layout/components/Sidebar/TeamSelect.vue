@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-select class="team-select" :collapse="collapse" v-model="currentTeamId" placeholder="请选择" @change="selectTeamChangedHandle">
+    <el-select class="team-select" :collapse="collapse" v-model="currentTeamId" :popper-append-to-body="false" @change="selectTeamChangedHandle">
       <template slot="prefix">
           <el-avatar :size="collapse?'small':'medium'"  shape="square" v-if="currentTeam.teamIcon" :src="iconUrl(currentTeam)" fit="cover"></el-avatar>
           <el-avatar :size="collapse?'small':'medium'" shape="square" v-else>{{currentTeam.name}}</el-avatar>
@@ -163,8 +163,12 @@ export default {
     column-gap: 10px;
   }
   .team-select-footer {
-    height:60px;border-top: #EBEEF5 1px solid;
+    height: 60px;
+    border-top: #EBEEF5 1px solid;
     padding-top: 5px;
     background-color: #FFFFFF;
+  }
+  ::v-deep .el-select-dropdown__wrap {
+    max-height: 100%;
   }
 </style>

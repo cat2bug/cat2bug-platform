@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.system.mapper.SysUserProjectMapper">
+    
+    <resultMap type="SysUserProject" id="SysUserProjectResult">
+        <result property="userProjectId"    column="user_project_id"    />
+        <result property="userId"    column="user_id"    />
+        <result property="projectId"    column="project_id"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="projectLock"    column="project_lock"    />
+    </resultMap>
+
+    <sql id="selectSysUserProjectVo">
+        select user_project_id, user_id, project_id, create_by, create_time, update_by, update_time, project_lock from sys_user_project
+    </sql>
+
+    <select id="selectSysUserProjectList" parameterType="SysUserProject" resultMap="SysUserProjectResult">
+        <include refid="selectSysUserProjectVo"/>
+        <where>  
+            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="projectId != null "> and project_id = #{projectId}</if>
+            <if test="projectLock != null "> and project_lock = #{projectLock}</if>
+        </where>
+    </select>
+    
+    <select id="selectSysUserProjectByUserProjectId" parameterType="Long" resultMap="SysUserProjectResult">
+        <include refid="selectSysUserProjectVo"/>
+        where user_project_id = #{userProjectId}
+    </select>
+        
+    <insert id="insertSysUserProject" parameterType="SysUserProject" useGeneratedKeys="true" keyProperty="userProjectId">
+        insert into sys_user_project
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userId != null">user_id,</if>
+            <if test="projectId != null">project_id,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="projectLock != null">project_lock,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="userId != null">#{userId},</if>
+            <if test="projectId != null">#{projectId},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="projectLock != null">#{projectLock},</if>
+         </trim>
+    </insert>
+
+    <update id="updateSysUserProject" parameterType="SysUserProject">
+        update sys_user_project
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="projectId != null">project_id = #{projectId},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="projectLock != null">project_lock = #{projectLock},</if>
+        </trim>
+        where user_project_id = #{userProjectId}
+    </update>
+
+    <delete id="deleteSysUserProjectByUserProjectId" parameterType="Long">
+        delete from sys_user_project where user_project_id = #{userProjectId}
+    </delete>
+
+    <delete id="deleteSysUserProjectByUserProjectIds" parameterType="String">
+        delete from sys_user_project where user_project_id in 
+        <foreach item="userProjectId" collection="array" open="(" separator="," close=")">
+            #{userProjectId}
+        </foreach>
+    </delete>
+</mapper>

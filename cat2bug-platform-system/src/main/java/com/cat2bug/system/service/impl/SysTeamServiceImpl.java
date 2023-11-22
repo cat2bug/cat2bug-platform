@@ -86,6 +86,11 @@ public class SysTeamServiceImpl implements ISysTeamService
      */
     @Override
     public List<SysUser> selectSysUserListByTeamIdAndSysUser(Long teamId, SysUser sysUser) {
+        // 处理排除用户的逻辑代码
+        if(sysUser.getParams()!=null && sysUser.getParams().get("excludeMembers")!=null && sysUser.getParams().get("excludeMembers") instanceof String){
+            String strExcludeMembers = String.valueOf(sysUser.getParams().get("excludeMembers"));
+            sysUser.getParams().put("excludeMembers",strExcludeMembers.split(","));
+        }
         return sysUserMapper.selectSysUserListByTeamIdAndSysUser(teamId, sysUser);
     }
 

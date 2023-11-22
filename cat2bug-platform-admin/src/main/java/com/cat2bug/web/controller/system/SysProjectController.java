@@ -3,11 +3,13 @@ package com.cat2bug.web.controller.system;
 import com.cat2bug.common.annotation.Log;
 import com.cat2bug.common.core.controller.BaseController;
 import com.cat2bug.common.core.domain.AjaxResult;
+import com.cat2bug.common.core.domain.entity.SysRole;
 import com.cat2bug.common.core.page.TableDataInfo;
 import com.cat2bug.common.enums.BusinessType;
 import com.cat2bug.common.utils.poi.ExcelUtil;
 import com.cat2bug.system.domain.SysProject;
 import com.cat2bug.system.service.ISysProjectService;
+import com.cat2bug.system.service.ISysRoleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -27,6 +29,9 @@ public class SysProjectController extends BaseController
 {
     @Autowired
     private ISysProjectService sysProjectService;
+
+    @Autowired
+    private ISysRoleService sysRoleService;
 
     /**
      * 查询项目列表
@@ -51,6 +56,21 @@ public class SysProjectController extends BaseController
         List<SysProject> list = sysProjectService.selectSysProjectList(sysProject);
         ExcelUtil<SysProject> util = new ExcelUtil<SysProject>(SysProject.class);
         util.exportExcel(response, list, "项目数据");
+    }
+
+    /**
+     * 导出项目列表
+     */
+    @PreAuthorize("@ss.hasPermi('system:project:list')")
+    @Log(title = "项目", businessType = BusinessType.EXPORT)
+    @GetMapping("/{projectId}/role")
+    public TableDataInfo getRoles(@PathVariable Long projectId)
+    {
+        startPage();
+        SysRole role = new SysRole();
+        role.setIsProjectRole(true);
+        List<SysRole> list = sysRoleService.selectRoleList(role);
+        return getDataTable(list);
     }
 
     /**

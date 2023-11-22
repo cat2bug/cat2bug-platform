@@ -8,6 +8,13 @@ export function listProject(query) {
     params: query
   })
 }
+// 查询项目角色列表
+export function listProjectRole(projectId) {
+  return request({
+    url: '/system/project/'+projectId+'/role',
+    method: 'get'
+  })
+}
 
 // 查询项目详细
 export function getProject(projectId) {

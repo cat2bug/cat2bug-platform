@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.system.mapper.SysUserProjectRoleMapper">
+    
+    <resultMap type="SysUserProjectRole" id="SysUserProjectRoleResult">
+        <result property="userProjectRoleId"    column="user_project_role_id"    />
+        <result property="userProjectId"    column="user_project_id"    />
+        <result property="roleId"    column="role_id"    />
+    </resultMap>
+
+    <sql id="selectSysUserProjectRoleVo">
+        select user_project_role_id, user_project_id, role_id from sys_user_project_role
+    </sql>
+
+    <select id="selectSysUserProjectRoleList" parameterType="SysUserProjectRole" resultMap="SysUserProjectRoleResult">
+        <include refid="selectSysUserProjectRoleVo"/>
+        <where>  
+            <if test="userProjectId != null "> and user_project_id = #{userProjectId}</if>
+            <if test="roleId != null "> and role_id = #{roleId}</if>
+        </where>
+    </select>
+    
+    <select id="selectSysUserProjectRoleByUserProjectRoleId" parameterType="Long" resultMap="SysUserProjectRoleResult">
+        <include refid="selectSysUserProjectRoleVo"/>
+        where user_project_role_id = #{userProjectRoleId}
+    </select>
+        
+    <insert id="insertSysUserProjectRole" parameterType="SysUserProjectRole" useGeneratedKeys="true" keyProperty="userProjectRoleId">
+        insert into sys_user_project_role
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userProjectId != null">user_project_id,</if>
+            <if test="roleId != null">role_id,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="userProjectId != null">#{userProjectId},</if>
+            <if test="roleId != null">#{roleId},</if>
+         </trim>
+    </insert>
+
+    <update id="updateSysUserProjectRole" parameterType="SysUserProjectRole">
+        update sys_user_project_role
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="userProjectId != null">user_project_id = #{userProjectId},</if>
+            <if test="roleId != null">role_id = #{roleId},</if>
+        </trim>
+        where user_project_role_id = #{userProjectRoleId}
+    </update>
+
+    <delete id="deleteSysUserProjectRoleByUserProjectRoleId" parameterType="Long">
+        delete from sys_user_project_role where user_project_role_id = #{userProjectRoleId}
+    </delete>
+
+    <delete id="deleteSysUserProjectRoleByUserProjectRoleIds" parameterType="String">
+        delete from sys_user_project_role where user_project_role_id in 
+        <foreach item="userProjectRoleId" collection="array" open="(" separator="," close=")">
+            #{userProjectRoleId}
+        </foreach>
+    </delete>
+</mapper>
