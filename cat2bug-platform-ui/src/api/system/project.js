@@ -33,6 +33,15 @@ export function addProject(data) {
   })
 }
 
+// 收藏
+export function collectProject(projectId,collect) {
+  return request({
+    url: '/system/project/'+projectId+'/collect',
+    method: 'post',
+    data: collect
+  })
+}
+
 // 修改项目
 export function updateProject(data) {
   return request({

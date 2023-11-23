@@ -32,6 +32,7 @@ export default {
     padding: 5px;
     .el-avatar {
       font-size: 12px;
+      flex-shrink: 0;
     }
     > * {
       margin-right: 10px;

@@ -70,6 +70,11 @@ public class SysUserProjectServiceImpl implements ISysUserProjectService
         return sysUserProjectMapper.updateSysUserProject(sysUserProject);
     }
 
+    @Override
+    public int updateSysUserProjectByUserIdAndProjectId(SysUserProject sysUserProject) {
+        return sysUserProjectMapper.updateSysUserProjectByUserIdAndProjectId(sysUserProject);
+    }
+
     /**
      * 批量删除用户项目
      * 

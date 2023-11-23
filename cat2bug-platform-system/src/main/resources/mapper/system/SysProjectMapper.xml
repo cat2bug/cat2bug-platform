@@ -10,6 +10,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="projectName"    column="project_name"    />
         <result property="projectIcon"    column="project_icon"    />
         <result property="projectIntroduce"    column="project_introduce"    />
+        <result property="collect"    column="collect"    />
         <result property="createBy"    column="create_by"    />
         <result property="createTime"    column="create_time"    />
         <result property="updateBy"    column="update_by"    />
@@ -17,24 +18,28 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </resultMap>
 
     <sql id="selectSysProjectVo">
-        select project_id, team_id, project_name, project_icon, project_introduce, create_by, create_time, update_by, update_time from sys_project
+        select p.project_id, p.team_id, p.project_name, p.project_icon, p.project_introduce, p.create_by, p.create_time, p.update_by, p.update_time, up.collect
+        from sys_project p
+        left join sys_user_project up on p.project_id=up.project_id
     </sql>
 
     <select id="selectSysProjectList" parameterType="SysProject" resultMap="SysProjectResult">
         <include refid="selectSysProjectVo"/>
         <where>
-            team_id = #{ teamId }
-            <if test="projectName != null  and projectName != ''"> and project_name like concat('%', #{projectName}, '%')</if>
-            <if test="createBy != null  and createBy != ''"> and create_by like concat('%', #{createBy}, '%')</if>
+            p.team_id = #{ teamId } and up.user_id= #{params.userId}
+            <if test="collect != null  and collect != ''"> and up.collect = #{collect}</if>
+            <if test="projectName != null  and projectName != ''"> and p.project_name like concat('%', #{projectName}, '%')</if>
+            <if test="createBy != null  and createBy != ''"> and p.create_by like concat('%', #{createBy}, '%')</if>
         </where>
+        order by p.create_time desc
     </select>
     
     <select id="selectSysProjectByProjectId" parameterType="Long" resultMap="SysProjectResult">
         <include refid="selectSysProjectVo"/>
-        where project_id = #{projectId}
+        where p.project_id = #{projectId}
     </select>
         
-    <insert id="insertSysProject" parameterType="SysProject">
+    <insert id="insertSysProject" parameterType="SysProject" useGeneratedKeys="true" keyProperty="projectId">
         insert into sys_project
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="projectId != null">project_id,</if>

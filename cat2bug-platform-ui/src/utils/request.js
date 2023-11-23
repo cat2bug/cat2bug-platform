@@ -121,7 +121,7 @@ service.interceptors.response.use(res => {
     } else if (message.includes("timeout")) {
       message = i18n.t('http.system-interface-timeout');
     } else if (message.includes("Request failed with status code")) {
-      message = i18n.t('system.interface') + message.substr(message.length - 3) + i18n.t('exception');
+      message = i18n.t('system.interface') + ' ' + message.substr(message.length - 3) + ' ' + i18n.t('exception');
     }
     Message({ message: message, type: 'error', duration: 5 * 1000 })
     return Promise.reject(error)

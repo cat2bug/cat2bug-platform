@@ -1,9 +1,12 @@
 package com.cat2bug.system.domain;
 
+import com.cat2bug.common.core.domain.entity.SysUser;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import com.cat2bug.common.annotation.Excel;
 import com.cat2bug.common.core.domain.BaseEntity;
+
+import java.util.List;
 
 /**
  * 项目对象 sys_project
@@ -32,6 +35,10 @@ public class SysProject extends BaseEntity
     /** 项目介绍 */
     @Excel(name = "项目介绍")
     private String projectIntroduce;
+    /** 是否收藏 */
+    private boolean collect;
+    /** 成员集合 */
+    private List<SysUser> members;
 
     public void setProjectId(Long projectId) 
     {
@@ -77,6 +84,22 @@ public class SysProject extends BaseEntity
     public String getProjectIntroduce() 
     {
         return projectIntroduce;
+    }
+
+    public List<SysUser> getMembers() {
+        return members;
+    }
+
+    public void setMembers(List<SysUser> members) {
+        this.members = members;
+    }
+
+    public boolean isCollect() {
+        return collect;
+    }
+
+    public void setCollect(boolean collect) {
+        this.collect = collect;
     }
 
     @Override

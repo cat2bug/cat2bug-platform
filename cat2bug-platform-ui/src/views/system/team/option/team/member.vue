@@ -44,11 +44,7 @@
         <el-table v-loading="loading" :data="memberList">
           <el-table-column :label="$t('member.name')" align="left" key="nickName" prop="nickName" :show-overflow-tooltip="true">
             <template slot-scope="scope">
-              <div class="member-name">
-                <el-avatar v-if="scope.row.avatar" size="small" :src="scope.row.avatar"></el-avatar>
-                <el-avatar v-else size="small">{{ scope.row.userName }}</el-avatar>
-                <span :teamLock="scope.row.status">{{ scope.row.nickName }}</span>
-              </div>
+              <member-nameplate :member="scope.row"></member-nameplate>
             </template>
           </el-table-column>
           <el-table-column
@@ -133,14 +129,15 @@
 </template>
 
 <script>
-import {getMemberByTeam, listMember, updateMemberTeamRole, updateMemberTeamRoleIds} from "@/api/system/team";
+import { listMember, updateMemberTeamRole, updateMemberTeamRoleIds} from "@/api/system/team";
 import CreateTeamMember from "@/views/system/team/option/team/CreateTeamMember";
 import InviteTeamMember from "@/views/system/team/option/team/InviteTeamMember";
+import MemberNameplate from "@/components/MemberNameplate";
 import {getUser} from "@/api/system/user";
 
 export default {
   name: "TeamMemberManage",
-  components: { CreateTeamMember, InviteTeamMember },
+  components: { CreateTeamMember, InviteTeamMember, MemberNameplate },
   data() {
     return {
       // 遮罩层
@@ -215,7 +212,6 @@ export default {
     },
     /** 新增按钮操作 */
     createMemberHandle() {
-      // this.$router.push({path:'/team-option/create-member'})
       this.$refs.createTeamMemberDialog.open();
     },
     /** 更新用户操作 */
@@ -248,15 +244,6 @@ export default {
 <style lang="scss" scoped>
   .member-tools>* {
     margin-left: 10px;
-  }
-  .member-name {
-    display: flex;
-    flex-direction: row;
-    justify-content: start;
-    align-items: center;
-    >* {
-      margin-right: 10px;
-    }
   }
   ::v-deep .member-operate .el-input__inner, ::v-deep .member-operate .el-select__tags {
     min-width: 250px;

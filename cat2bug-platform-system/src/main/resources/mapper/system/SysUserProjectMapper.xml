@@ -8,6 +8,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="userProjectId"    column="user_project_id"    />
         <result property="userId"    column="user_id"    />
         <result property="projectId"    column="project_id"    />
+        <result property="collect"    column="collect"    />
         <result property="createBy"    column="create_by"    />
         <result property="createTime"    column="create_time"    />
         <result property="updateBy"    column="update_by"    />
@@ -15,19 +16,50 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="projectLock"    column="project_lock"    />
     </resultMap>
 
+    <resultMap type="SysUser" id="SysUserResult">
+        <id     property="userId"       column="user_id"      />
+        <result property="deptId"       column="dept_id"      />
+        <result property="userName"     column="user_name"    />
+        <result property="nickName"     column="nick_name"    />
+        <result property="email"        column="email"        />
+        <result property="phoneNumber"  column="phonenumber"  />
+        <result property="sex"          column="sex"          />
+        <result property="avatar"       column="avatar"       />
+        <result property="password"     column="password"     />
+        <result property="status"       column="status"       />
+        <result property="delFlag"      column="del_flag"     />
+        <result property="loginIp"      column="login_ip"     />
+        <result property="loginDate"    column="login_date"   />
+        <result property="createBy"     column="create_by"    />
+        <result property="createTime"   column="create_time"  />
+        <result property="updateBy"     column="update_by"    />
+        <result property="updateTime"   column="update_time"  />
+        <result property="remark"       column="remark"       />
+    </resultMap>
+
     <sql id="selectSysUserProjectVo">
-        select user_project_id, user_id, project_id, create_by, create_time, update_by, update_time, project_lock from sys_user_project
+        select user_project_id, user_id, project_id, create_by, create_time, update_by, update_time, project_lock, collect from sys_user_project
     </sql>
 
     <select id="selectSysUserProjectList" parameterType="SysUserProject" resultMap="SysUserProjectResult">
         <include refid="selectSysUserProjectVo"/>
-        <where>  
+        <where>
+            <if test="collect != null "> and collect = #{collect}</if>
             <if test="userId != null "> and user_id = #{userId}</if>
             <if test="projectId != null "> and project_id = #{projectId}</if>
             <if test="projectLock != null "> and project_lock = #{projectLock}</if>
         </where>
     </select>
-    
+
+    <select id="selectSysUserListByProjectId" parameterType="Long" resultMap="SysUserResult">
+        select u.user_id, u.dept_id, u.user_name, u.nick_name, u.email, u.avatar, u.phonenumber, u.password, u.sex, u.status, u.del_flag, u.login_ip, u.login_date, u.create_by, u.create_time, u.remark
+        from sys_user u
+        left join sys_user_project up on u.user_id = up.user_id
+        <where>
+            up.project_id=#{projectId}
+        </where>
+    </select>
+
     <select id="selectSysUserProjectByUserProjectId" parameterType="Long" resultMap="SysUserProjectResult">
         <include refid="selectSysUserProjectVo"/>
         where user_project_id = #{userProjectId}
@@ -43,6 +75,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="updateBy != null">update_by,</if>
             <if test="updateTime != null">update_time,</if>
             <if test="projectLock != null">project_lock,</if>
+            <if test="collect != null">collect,</if>
          </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="userId != null">#{userId},</if>
@@ -52,6 +85,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="updateBy != null">#{updateBy},</if>
             <if test="updateTime != null">#{updateTime},</if>
             <if test="projectLock != null">#{projectLock},</if>
+            <if test="collect != null">#{collect},</if>
          </trim>
     </insert>
 
@@ -65,8 +99,25 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="updateBy != null">update_by = #{updateBy},</if>
             <if test="updateTime != null">update_time = #{updateTime},</if>
             <if test="projectLock != null">project_lock = #{projectLock},</if>
+            <if test="collect != null">collect = #{collect},</if>
         </trim>
         where user_project_id = #{userProjectId}
+    </update>
+
+    <update id="updateSysUserProjectByUserIdAndProjectId" parameterType="SysUserProject">
+        update sys_user_project
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="projectLock != null">project_lock = #{projectLock},</if>
+            <if test="collect != null">collect = #{collect},</if>
+        </trim>
+        <where>
+            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="projectId != null "> and project_id = #{projectId}</if>
+        </where>
     </update>
 
     <delete id="deleteSysUserProjectByUserProjectId" parameterType="Long">

@@ -44,6 +44,14 @@ public interface ISysUserProjectService
     public int updateSysUserProject(SysUserProject sysUserProject);
 
     /**
+     * 修改用户项目
+     *
+     * @param sysUserProject 用户项目
+     * @return 结果
+     */
+    public int updateSysUserProjectByUserIdAndProjectId(SysUserProject sysUserProject);
+
+    /**
      * 批量删除用户项目
      * 
      * @param userProjectIds 需要删除的用户项目主键集合

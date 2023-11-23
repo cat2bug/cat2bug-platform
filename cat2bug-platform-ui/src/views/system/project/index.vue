@@ -2,10 +2,29 @@
   <div class="app-container">
     <el-tabs v-model="activeProjectTabName" @tab-click="selectProjectTabHandle">
       <el-tab-pane :label="$t('project.my-participated-in')" :name="$t('project.my-participated-in')"></el-tab-pane>
-      <el-tab-pane :label="$t('project.my-manage')" :name="$t('project.my-manage')"></el-tab-pane>
-      <el-tab-pane :label="$t('project.all-project')" :name="$t('project.all-project')"></el-tab-pane>
-      <el-tab-pane :label="$t('project.archived-project')" :name="$t('project.archived-project')"></el-tab-pane>
+<!--      <el-tab-pane :label="$t('project.my-manage')" :name="$t('project.my-manage')"></el-tab-pane>-->
+<!--      <el-tab-pane :label="$t('project.all-project')" :name="$t('project.all-project')"></el-tab-pane>-->
+<!--      <el-tab-pane :label="$t('project.archived-project')" :name="$t('project.archived-project')"></el-tab-pane>-->
     </el-tabs>
+    <h4>{{$t('project.collect-project')}}</h4>
+    <el-row class="project-collects" :gutter="10">
+      <el-col :xs="24" :sm="12" :md="8" :lg="4" :xl="4" v-for="project in collectList" :key="project.projectId">
+        <el-card class="box-card">
+          <div slot="header" class="clearfix project-collects-card-header">
+            <project-nameplate :project="project"></project-nameplate>
+            <star-switch v-model="project.collect" @change="clickCollectHandle(project, true, $event)"></star-switch>
+          </div>
+          <div class="project-collects-card-tools">
+            <i class="el-icon-s-platform"></i>
+            <i class="el-icon-s-operation"></i>
+            <i class="el-icon-delete"
+               @click="handleDelete(project)"
+               v-hasPermi="['system:project:remove']"></i>
+          </div>
+        </el-card>
+      </el-col>
+    </el-row>
+    <h4>{{$t('project.project-list')}}</h4>
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
         <el-button
@@ -23,14 +42,7 @@
     <el-table v-loading="loading" :data="projectList" @selection-change="handleSelectionChange">
       <el-table-column :label="$t('project.name')" align="left" prop="projectName">
         <template slot-scope="scope">
-          <div class="project-list-name">
-            <el-image
-              style="width: 50px; height: 50px;"
-              :src="scope.row.projectIcon"
-              fit="cover"
-            ></el-image>
-            <span>{{ scope.row.projectName }}</span>
-          </div>
+          <project-nameplate :project="scope.row"></project-nameplate>
         </template>
       </el-table-column>
       <el-table-column :label="$t('update-time')" align="left" prop="updateTime" width="180">
@@ -38,30 +50,37 @@
           <span>{{ parseTime(scope.row.updateTime, '{y}-{m}-{d}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('member')" align="left" prop="member" width="300">
+      <el-table-column :label="$t('member')" align="left" prop="members" width="200">
         <template slot-scope="scope">
           <div class="project-member-icons">
-            <el-avatar src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png" fit="cover" size="medium"></el-avatar>
-            <el-avatar size="medium">King haha</el-avatar>
+            <el-tooltip class="item" effect="dark" v-for="member in scope.row.listShowMembers" :key="member.userId" :content="member.nickName" placement="top">
+              <el-avatar
+                :isStatistics="member.isStatistics?'true':'false'"
+                :src="member.avatar?member.avatar:''"
+                fit="cover" size="medium">
+                {{member.avatar?'':member.userName}}
+              </el-avatar>
+            </el-tooltip>
           </div>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('operate')" align="left" class-name="small-padding fixed-width" width="100">
+      <el-table-column :label="$t('operate')" align="left" class-name="small-padding fixed-width" width="150">
         <template slot-scope="scope">
-          <el-button
-            size="mini"
-            type="text"
-            icon="el-icon-edit"
-            @click="handleUpdate(scope.row)"
-            v-hasPermi="['system:project:edit']"
-          >修改</el-button>
+          <star-switch v-model="scope.row.collect" @change="clickCollectHandle(scope.row, false, $event)"></star-switch>
+<!--          <el-button-->
+<!--            size="mini"-->
+<!--            type="text"-->
+<!--            icon="el-icon-edit"-->
+<!--            @click="handleUpdate(scope.row)"-->
+<!--            v-hasPermi="['system:project:edit']"-->
+<!--          >修改</el-button>-->
           <el-button
             size="mini"
             type="text"
             icon="el-icon-delete"
             @click="handleDelete(scope.row)"
             v-hasPermi="['system:project:remove']"
-          >删除</el-button>
+          >{{$t('delete')}}</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -96,10 +115,14 @@
 </template>
 
 <script>
-import { listProject, getProject, delProject, addProject, updateProject } from "@/api/system/project";
+import {listProject, getProject, delProject, addProject, updateProject, collectProject} from "@/api/system/project";
+import ProjectNameplate from "@/components/ProjectNameplate";
+import StarSwitch from "@/components/StarSwitch";
+import { strFormat } from "@/utils/index"
 
 export default {
   name: "Project",
+  components: { ProjectNameplate, StarSwitch },
   data() {
     return {
       activeProjectTabName: this.$i18n.t('project.my-participated-in'),
@@ -115,7 +138,9 @@ export default {
       showSearch: true,
       // 总条数
       total: 0,
-      // 项目表格数据
+      // 收藏的项目集合
+      collectList: [],
+      // 项目表格集合
       projectList: [],
       // 弹出层标题
       title: "",
@@ -139,8 +164,16 @@ export default {
       }
     };
   },
+  computed: {
+    collect: function() {
+      return function (project) {
+        return project.collect?'true':'false';
+      }
+    },
+  },
   created() {
     this.getList();
+    this.getCollectList();
   },
   methods: {
     /** 选择项目分组 */
@@ -149,12 +182,40 @@ export default {
     },
     /** 查询项目列表 */
     getList() {
-      this.queryParams.teamId = this.$store.state.user.config.currentTeamId;
+      this.queryParams.teamId = this.getTeamId();
       this.loading = true;
-      listProject(this.queryParams).then(response => {
-        this.projectList = response.rows;
-        this.total = response.total;
+      listProject(this.queryParams).then(res => {
+        res.rows.forEach(p=>{
+          if(!p.members){
+            p.listShowMembers = [];
+          } else if(p.members.length<=3) {
+            p.listShowMembers = p.members;
+          } else {
+            let ms = p.members;
+            p.listShowMembers = [{
+              userName: p.members.length,
+              nickName: '共'+p.members.length+"人",
+              isStatistics: true
+            },ms[1],ms[0]]
+          }
+        });
+        this.projectList = res.rows;
+        this.total = res.total;
         this.loading = false;
+      });
+    },
+    /** 获取团队id */
+    getTeamId() {
+      return this.$store.state.user.config.currentTeamId;
+    },
+    /** 查询收藏的项目列表 */
+    getCollectList() {
+      let params = {
+        teamId: this.getTeamId(),
+        collect: true
+      }
+      listProject(params).then(res => {
+        this.collectList = res.rows;
       });
     },
     // 取消按钮
@@ -228,14 +289,30 @@ export default {
     },
     /** 删除按钮操作 */
     handleDelete(row) {
-      const projectIds = row.projectId || this.ids;
-      this.$modal.confirm('是否确认删除项目编号为"' + projectIds + '"的数据项？').then(function() {
-        return delProject(projectIds);
+      let msg = this.$i18n.t('project.is-delete-project');
+      this.$modal.confirm(strFormat(msg,'[ '+row.projectName+' ]')).then(function() {
+        return delProject(row.projectId);
       }).then(() => {
         this.getList();
         this.$modal.msgSuccess("删除成功");
       }).catch(() => {});
     },
+    /** 点击收藏操作 */
+    clickCollectHandle(project,isRefreshList,collect) {
+      this.$set(project,'collect',collect);
+      // 保存收藏状态
+      collectProject(project.projectId, project).then(res=>{
+        // 如果collect参数存在，表明是点击头部的收藏按钮触发
+        if(isRefreshList) {
+          this.getList();
+        }
+        this.getCollectList();
+        if(collect) {
+          this.$message.success(this.$i18n.t('project.collect-success'));
+        } else {
+          this.$message.success(this.$i18n.t('project.cancel-success'));}
+      });
+    }
   }
 };
 </script>
@@ -248,13 +325,53 @@ export default {
     justify-content: flex-end;
     align-items: center;
     .el-avatar {
-      margin-right:-10px;
+      margin-right:-8px;
       border: #FFF 3px solid;
     }
+    .el-avatar[isStatistics='true'] {
+      background-color: #E4E7ED;
+      color: #909399;
+    }
   }
-  .project-list-name {
-    display: flex;
-    align-items: center;
-    column-gap: 15px;
+  .cell {
+    > i {
+      margin-right: 10px;
+    }
   }
+  .el-table--enable-row-hover .el-table__body tr:hover > td.el-table__cell .el-avatar {
+    border: #F5F7FA 3px solid;
+  }
+  .el-avatar--medium {
+    line-height: 31px;
+  }
+  ::v-deep .project-collects {
+    .el-card__body {
+      padding: 10px 20px;
+    }
+    .project-collects-card-header {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      > i {
+        margin-left: auto;
+        margin-right: 5px;
+      }
+    }
+    .project-collects-card-tools {
+      i {
+        padding: 5px;
+        color: #909399;
+      }
+      i:hover {
+        cursor: pointer;
+        color: #606266;
+      }
+    }
+    .el-col {
+      margin-bottom: 10px;
+    }
+  }
+
+
 </style>

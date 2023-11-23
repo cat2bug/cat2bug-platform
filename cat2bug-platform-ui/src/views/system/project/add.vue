@@ -34,7 +34,7 @@
               placement="bottom"
               trigger="click">
               <el-row class="project-icon-popper">
-                <el-col :span="6" v-for="i in 10">
+                <el-col :span="6" v-for="i in 10" :key="i">
                   <el-image
                     @click="clickProjectIconHandle(i)"
                     :src="activeProjectIconUrl(i)"
@@ -183,6 +183,7 @@ export default {
     }
   },
   created() {
+    this.form.projectIcon = this.activeProjectIconUrl(1);
     this.getRoleList();
   },
   methods: {

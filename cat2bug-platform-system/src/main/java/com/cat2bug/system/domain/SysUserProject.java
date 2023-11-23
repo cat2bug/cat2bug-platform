@@ -30,6 +30,9 @@ public class SysUserProject extends BaseEntity
     @Excel(name = "是否锁定")
     private Integer projectLock;
 
+    /** 是否收藏 */
+    private boolean collect;
+
     public void setUserProjectId(Long userProjectId) 
     {
         this.userProjectId = userProjectId;
@@ -67,10 +70,19 @@ public class SysUserProject extends BaseEntity
         return projectLock;
     }
 
+    public boolean getCollect() {
+        return collect;
+    }
+
+    public void setCollect(boolean collect) {
+        this.collect = collect;
+    }
+
     @Override
     public String toString() {
         return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)
-            .append("userProjectId", getUserProjectId())
+            .append("collect", getCollect())
+                .append("userProjectId", getUserProjectId())
             .append("userId", getUserId())
             .append("projectId", getProjectId())
             .append("createBy", getCreateBy())

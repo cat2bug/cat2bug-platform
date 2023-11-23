@@ -1,6 +1,8 @@
 package com.cat2bug.system.mapper;
 
 import java.util.List;
+
+import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.system.domain.SysUserProject;
 
 /**
@@ -28,6 +30,12 @@ public interface SysUserProjectMapper
     public List<SysUserProject> selectSysUserProjectList(SysUserProject sysUserProject);
 
     /**
+     * 查询用户列表
+     * @param projectId 项目id
+     * @return  用户集合
+     */
+    public List<SysUser> selectSysUserListByProjectId(Long projectId);
+    /**
      * 新增用户项目
      * 
      * @param sysUserProject 用户项目
@@ -42,6 +50,14 @@ public interface SysUserProjectMapper
      * @return 结果
      */
     public int updateSysUserProject(SysUserProject sysUserProject);
+
+    /**
+     * 修改用户项目
+     *
+     * @param sysUserProject 用户项目
+     * @return 结果
+     */
+    public int updateSysUserProjectByUserIdAndProjectId(SysUserProject sysUserProject);
 
     /**
      * 删除用户项目

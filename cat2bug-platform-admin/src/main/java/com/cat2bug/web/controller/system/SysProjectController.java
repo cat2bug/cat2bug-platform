@@ -8,8 +8,10 @@ import com.cat2bug.common.core.page.TableDataInfo;
 import com.cat2bug.common.enums.BusinessType;
 import com.cat2bug.common.utils.poi.ExcelUtil;
 import com.cat2bug.system.domain.SysProject;
+import com.cat2bug.system.domain.SysUserProject;
 import com.cat2bug.system.service.ISysProjectService;
 import com.cat2bug.system.service.ISysRoleService;
+import com.cat2bug.system.service.ISysUserProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -29,6 +31,9 @@ public class SysProjectController extends BaseController
 {
     @Autowired
     private ISysProjectService sysProjectService;
+
+    @Autowired
+    private ISysUserProjectService sysUserProjectService;
 
     @Autowired
     private ISysRoleService sysRoleService;
@@ -93,6 +98,19 @@ public class SysProjectController extends BaseController
     {
         return toAjax(sysProjectService.insertSysProject(sysProject));
     }
+
+    @PreAuthorize("@ss.hasPermi('system:project:edit')")
+    @Log(title = "项目", businessType = BusinessType.INSERT)
+    @PostMapping("/{projectId}/collect")
+    public AjaxResult collect(@PathVariable Long projectId, @RequestBody SysProject sysProject)
+    {
+        SysUserProject sysUserProject = new SysUserProject();
+        sysUserProject.setUserId(getUserId());
+        sysUserProject.setProjectId(projectId);
+        sysUserProject.setCollect(sysProject.isCollect());
+        return toAjax(sysUserProjectService.updateSysUserProjectByUserIdAndProjectId(sysUserProject));
+    }
+
 
     /**
      * 修改项目
