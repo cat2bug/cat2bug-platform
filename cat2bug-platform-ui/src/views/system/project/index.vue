@@ -6,8 +6,8 @@
 <!--      <el-tab-pane :label="$t('project.all-project')" :name="$t('project.all-project')"></el-tab-pane>-->
 <!--      <el-tab-pane :label="$t('project.archived-project')" :name="$t('project.archived-project')"></el-tab-pane>-->
     </el-tabs>
-    <h4>{{$t('project.collect-project')}}</h4>
-    <el-row class="project-collects" :gutter="10">
+    <h4 v-show="collectList.length>0">{{$t('project.collect-project')}}</h4>
+    <el-row v-show="collectList.length>0" class="project-collects" :gutter="10">
       <el-col :xs="24" :sm="12" :md="8" :lg="4" :xl="4" v-for="project in collectList" :key="project.projectId">
         <el-card class="box-card">
           <div slot="header" class="clearfix project-collects-card-header">

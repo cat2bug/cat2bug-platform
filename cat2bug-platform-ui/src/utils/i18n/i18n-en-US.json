@@ -118,5 +118,6 @@
   "http.system-interface-timeout": "System interface request timeout",
   "http.interface-connect-exception": "Abnormal backend interface connection",
   "http.login-expired": "The login status has expired. You can continue to stay on this page or log in again",
-  "http.not-resubmit": "Data is being processed, please do not resubmit"
+  "http.not-resubmit": "Data is being processed, please do not resubmit",
+  "defect.manage": "Defect Management"
 }

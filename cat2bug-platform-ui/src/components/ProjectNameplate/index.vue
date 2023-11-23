@@ -44,15 +44,13 @@ export default {
       flex-direction: column;
       width: 100%;
       overflow: hidden;
-      //> p, > span {
-      //  overflow: hidden;
-      //  white-space: nowrap;
-      //  width: calc(100% - 80px);
-      //  text-overflow: ellipsis;
-      //}
       p {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
         margin: 0px;
         font-size: 16px;
+        width: 100%;
       }
       span {
         font-size: 12px;
@@ -60,6 +58,7 @@ export default {
         line-height: 12px;
         height: 12px;
         margin-top: 3px;
+        width: 100%;
       }
     }
   }

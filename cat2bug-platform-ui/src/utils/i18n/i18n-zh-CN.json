@@ -116,5 +116,6 @@
   "http.system-interface-timeout": "系统接口请求超时",
   "http.interface-connect-exception": "后端接口连接异常",
   "http.login-expired": "登录状态已过期，您可以继续留在该页面，或者重新登录",
-  "http.not-resubmit": "数据正在处理，请勿重复提交"
+  "http.not-resubmit": "数据正在处理，请勿重复提交",
+  "defect.manage": "缺陷管理"
 }

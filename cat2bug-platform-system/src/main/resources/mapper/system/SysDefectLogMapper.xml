@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.system.mapper.SysDefectLogMapper">
+    
+    <resultMap type="SysDefectLog" id="SysDefectLogResult">
+        <result property="defectLogId"    column="defect_log_id"    />
+        <result property="defectLogDescribe"    column="defect_log_describe"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="defectLogType"    column="defect_log_type"    />
+        <result property="receiveBy"    column="receive_by"    />
+        <result property="annexUrls"    column="annex_urls"    />
+        <result property="defectId"    column="defect_id"    />
+    </resultMap>
+
+    <sql id="selectSysDefectLogVo">
+        select defect_log_id, defect_log_describe, create_by, create_time, defect_log_type, receive_by, annex_urls, defect_id from sys_defect_log
+    </sql>
+
+    <select id="selectSysDefectLogList" parameterType="SysDefectLog" resultMap="SysDefectLogResult">
+        <include refid="selectSysDefectLogVo"/>
+        <where>  
+            <if test="defectLogType != null "> and defect_log_type = #{defectLogType}</if>
+            <if test="receiveBy != null  and receiveBy != ''"> and receive_by = #{receiveBy}</if>
+            <if test="defectId != null "> and defect_id = #{defectId}</if>
+        </where>
+    </select>
+    
+    <select id="selectSysDefectLogByDefectLogId" parameterType="Long" resultMap="SysDefectLogResult">
+        <include refid="selectSysDefectLogVo"/>
+        where defect_log_id = #{defectLogId}
+    </select>
+        
+    <insert id="insertSysDefectLog" parameterType="SysDefectLog">
+        insert into sys_defect_log
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="defectLogId != null">defect_log_id,</if>
+            <if test="defectLogDescribe != null">defect_log_describe,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="defectLogType != null">defect_log_type,</if>
+            <if test="receiveBy != null">receive_by,</if>
+            <if test="annexUrls != null">annex_urls,</if>
+            <if test="defectId != null">defect_id,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="defectLogId != null">#{defectLogId},</if>
+            <if test="defectLogDescribe != null">#{defectLogDescribe},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="defectLogType != null">#{defectLogType},</if>
+            <if test="receiveBy != null">#{receiveBy},</if>
+            <if test="annexUrls != null">#{annexUrls},</if>
+            <if test="defectId != null">#{defectId},</if>
+         </trim>
+    </insert>
+
+    <update id="updateSysDefectLog" parameterType="SysDefectLog">
+        update sys_defect_log
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="defectLogDescribe != null">defect_log_describe = #{defectLogDescribe},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="defectLogType != null">defect_log_type = #{defectLogType},</if>
+            <if test="receiveBy != null">receive_by = #{receiveBy},</if>
+            <if test="annexUrls != null">annex_urls = #{annexUrls},</if>
+            <if test="defectId != null">defect_id = #{defectId},</if>
+        </trim>
+        where defect_log_id = #{defectLogId}
+    </update>
+
+    <delete id="deleteSysDefectLogByDefectLogId" parameterType="Long">
+        delete from sys_defect_log where defect_log_id = #{defectLogId}
+    </delete>
+
+    <delete id="deleteSysDefectLogByDefectLogIds" parameterType="String">
+        delete from sys_defect_log where defect_log_id in 
+        <foreach item="defectLogId" collection="array" open="(" separator="," close=")">
+            #{defectLogId}
+        </foreach>
+    </delete>
+</mapper>
