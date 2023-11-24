@@ -14,14 +14,12 @@
       <i class="select-project-member-input__icon el-icon-arrow-up" v-show="isClearButtonVisible==false" @mouseenter="showClearButtonHandle(true)"></i>
       <i class="select-project-member-input__icon el-icon-circle-close" v-show="isClearButtonVisible==true" @mouseleave="showClearButtonHandle(false)" @click="clearSelectMembersHandle"></i>
     </div>
-    <el-tabs v-if="roleGroup" class="select-project-member-tabs" v-model="activeRoleTabName" @tab-click="selectRoleTabHandle">
+    <el-tabs v-if="roleGroup" class="select-project-member-tabs" v-model="queryMember.roleId" @tab-click="getMemberList">
       <el-tab-pane :label="$i18n.t('all')" name=""></el-tab-pane>
-      <el-tab-pane :label="$i18n.t('project.admin')" :name="$t('project.admin')"></el-tab-pane>
-      <el-tab-pane :label="$i18n.t('project.develop')" :name="$t('project.develop')"></el-tab-pane>
-      <el-tab-pane :label="$i18n.t('project.tester')" :name="$t('project.tester')"></el-tab-pane>
-      <el-tab-pane :label="$i18n.t('project.outsider')" :name="$t('project.outsider')"></el-tab-pane>
+      <el-tab-pane  v-for="role in roleList" :key="role.roleId" :label="role.roleNameI18nKey?$i18n.t(role.roleNameI18nKey):role.roleName" :name="role.roleId+''"></el-tab-pane>
     </el-tabs>
-    <el-row class="select-project-member-menu">
+
+    <el-row v-if="options && options.length>0" class="select-project-member-menu">
       <el-col :span="24" v-for="item in options" :key="item.userId" @click.native="clickMenuHandle(item)">
         <member-nameplate :member="item"></member-nameplate>
         <el-tag size="mini" :active="optionsChecks.get(item.userId)?'true':'false'" @click.native="setMasterHandle($event,item)" :type="tagType(item)">
@@ -29,6 +27,7 @@
         </el-tag>
       </el-col>
     </el-row>
+    <el-empty v-else :description="$i18n.t('no-data')"></el-empty>
     <el-pagination
       small
       :hide-on-single-page="true"
@@ -43,7 +42,7 @@
 
 <script>
 import i18n from "@/utils/i18n/i18n";
-import {listMemberOfProject} from "@/api/system/project";
+import {listMemberOfProject, listProjectRole} from "@/api/system/project";
 import MemberNameplate from "@/components/MemberNameplate"
 export default {
   name: "SelectProjectMember",
@@ -54,6 +53,8 @@ export default {
   components: { MemberNameplate },
   data() {
     return {
+      // 查询的角色列表
+      roleList: [],
       // 查询的成员列表
       options: [],
       // 列表中成员选择的优先级顺序
@@ -72,6 +73,7 @@ export default {
       queryMember: {
         pageNum: 1,
         pageSize: 10,
+        roleId: null,
         params: {
           search: null
         }
@@ -120,12 +122,14 @@ export default {
     }
   },
   created() {
-    this.getMember();
+    this.getRoleList();
+    this.getMemberList();
   },
   methods: {
+    /** 搜索成员事件 */
     searchChangeHandle() {
       this.popoverVisible = true;
-      this.getMember();
+      this.getMemberList();
     },
     /** 输入字符事件 */
     searchKeyDownHandle(e) {
@@ -146,7 +150,14 @@ export default {
         }
       }
     },
-    getMember() {
+    /** 查询角色集合 */
+    getRoleList() {
+      listProjectRole(this.projectId).then(res=>{
+        this.roleList = res.rows;
+      });
+    },
+    /** 查询成员集合 */
+    getMemberList() {
       this.queryMember.projectId = this.projectId;
       listMemberOfProject(this.projectId,this.queryMember).then(res=>{
         res.rows.forEach(m=>{
@@ -158,12 +169,15 @@ export default {
         this.total = res.total;
       });
     },
+    /** 选择成员变化的处理 */
     selectMemberChangeHandle(id){
       this.currentMemberId=id;
     },
+    /** 弹窗显示事件 */
     popoverShowHandle() {
       this.$refs.selectProjectMemberInput.focus();
     },
+    /** 弹窗隐藏事件 */
     popoverHideHandle() {
       this.$refs.selectProjectMemberInput.blur();
     },
@@ -207,7 +221,7 @@ export default {
     /** 显示或隐藏清除按钮 */
     showClearButtonHandle(visible) {
       if(this.clearable==false) return;
-      if(visible && this.selectMembers.size>0) {
+      if(visible && (this.selectMembers.size>0 || this.queryMember.params.search)) {
         this.isClearButtonVisible = true;
       } else {
         this.isClearButtonVisible = false;
@@ -217,13 +231,17 @@ export default {
     clearSelectMembersHandle(event) {
       this.optionsChecks.clear();
       this.selectMembers.clear();
+      this.queryMember.params.search=null;
+      this.queryMember.pageNum=1;
+      this.popoverVisible = false;
+      this.getMemberList();
       this.$forceUpdate();
       event.stopPropagation();
     },
     /** 翻页处理 */
     currentPageChangeHandle(val){
       this.queryMember.pageNum = val;
-      this.getMember();
+      this.getMemberList();
     }
   }
 }

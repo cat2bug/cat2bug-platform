@@ -51,12 +51,22 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         </where>
     </select>
 
-    <select id="selectSysUserListByProjectId" parameterType="Long" resultMap="SysUserResult">
+    <select id="selectSysUserListByProjectId" resultMap="SysUserResult">
         select u.user_id, u.dept_id, u.user_name, u.nick_name, u.email, u.avatar, u.phonenumber, u.password, u.sex, u.status, u.del_flag, u.login_ip, u.login_date, u.create_by, u.create_time, u.remark
         from sys_user u
         left join sys_user_project up on u.user_id = up.user_id
         <where>
-            up.project_id=#{projectId}
+            up.project_id=#{projectId} and u.del_flag = '0'
+            <if test="sysUser.params != null and sysUser.params.search != null  and sysUser.params.search != ''">
+                AND (
+                    u.nick_name like concat('%', #{sysUser.params.search}, '%') OR
+                    u.phonenumber like concat('%', #{sysUser.params.search}, '%') OR
+                    u.email like concat('%', #{sysUser.params.search}, '%')
+                )
+            </if>
+            <if test="sysUser.roleId != null and sysUser.roleId != ''">
+                AND #{sysUser.roleId} IN (select role_id from sys_user_project_role where user_project_id=up.user_project_id)
+            </if>
         </where>
     </select>
 

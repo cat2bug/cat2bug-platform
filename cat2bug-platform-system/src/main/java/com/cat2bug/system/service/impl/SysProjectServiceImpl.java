@@ -65,7 +65,7 @@ public class SysProjectServiceImpl implements ISysProjectService
         List<SysProject> projectList = sysProjectMapper.selectSysProjectList(sysProject);
         // 设置项目中的成员
         projectList.stream().forEach(p->{
-            List<SysUser> members = sysUserProjectMapper.selectSysUserListByProjectId(p.getProjectId());
+            List<SysUser> members = sysUserProjectMapper.selectSysUserListByProjectId(p.getProjectId(),new SysUser());
             p.setMembers(members);
         });
         return projectList;

@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.system.domain.SysUserProject;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * 用户项目Mapper接口
@@ -34,7 +35,7 @@ public interface SysUserProjectMapper
      * @param projectId 项目id
      * @return  用户集合
      */
-    public List<SysUser> selectSysUserListByProjectId(Long projectId);
+    public List<SysUser> selectSysUserListByProjectId(@Param("projectId") Long projectId, @Param("sysUser") SysUser sysUser);
     /**
      * 新增用户项目
      * 

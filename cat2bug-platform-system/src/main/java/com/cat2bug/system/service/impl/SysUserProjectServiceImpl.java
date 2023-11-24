@@ -1,6 +1,8 @@
 package com.cat2bug.system.service.impl;
 
 import java.util.List;
+
+import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.common.utils.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -42,6 +44,11 @@ public class SysUserProjectServiceImpl implements ISysUserProjectService
     public List<SysUserProject> selectSysUserProjectList(SysUserProject sysUserProject)
     {
         return sysUserProjectMapper.selectSysUserProjectList(sysUserProject);
+    }
+
+    @Override
+    public List<SysUser> selectSysUserListByProjectId(Long projectId, SysUser sysUser) {
+        return sysUserProjectMapper.selectSysUserListByProjectId(projectId, sysUser);
     }
 
     /**

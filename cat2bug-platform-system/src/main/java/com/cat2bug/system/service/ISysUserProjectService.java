@@ -1,6 +1,8 @@
 package com.cat2bug.system.service;
 
 import java.util.List;
+
+import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.system.domain.SysUserProject;
 
 /**
@@ -26,6 +28,8 @@ public interface ISysUserProjectService
      * @return 用户项目集合
      */
     public List<SysUserProject> selectSysUserProjectList(SysUserProject sysUserProject);
+
+    public List<SysUser> selectSysUserListByProjectId(Long projectId, SysUser sysUser);
 
     /**
      * 新增用户项目
