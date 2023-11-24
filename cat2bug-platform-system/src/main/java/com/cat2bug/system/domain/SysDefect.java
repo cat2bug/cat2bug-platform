@@ -1,11 +1,16 @@
 package com.cat2bug.system.domain;
 
 import java.util.Date;
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.Data;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import com.cat2bug.common.annotation.Excel;
 import com.cat2bug.common.core.domain.BaseEntity;
+
+import javax.servlet.annotation.HandlesTypes;
 
 /**
  * 缺陷对象 sys_defect
@@ -13,6 +18,7 @@ import com.cat2bug.common.core.domain.BaseEntity;
  * @author yuzhantao
  * @date 2023-11-23
  */
+@Data
 public class SysDefect extends BaseEntity
 {
     private static final long serialVersionUID = 1L;
@@ -35,18 +41,22 @@ public class SysDefect extends BaseEntity
 
     /** 附件 */
     @Excel(name = "附件")
-    private String annexUrls;
+    private List<String> annexUrls;
 
     /** 项目id */
-    @Excel(name = "项目id")
     private Long projectId;
 
+    /** 项目 */
+    @Excel(name = "项目")
+    private String projectName;
+
+
     /** 测试计划id */
-    @Excel(name = "测试计划id")
+//    @Excel(name = "测试计划id")
     private Long testPlanId;
 
     /** 测试用例id */
-    @Excel(name = "测试用例id")
+//    @Excel(name = "测试用例id")
     private Long caseId;
 
     /** 数据来源 */
@@ -70,12 +80,14 @@ public class SysDefect extends BaseEntity
     private Integer defectState;
 
     /** 用例步骤id */
-    @Excel(name = "用例步骤id")
+//    @Excel(name = "用例步骤id")
     private Long caseStepId;
 
     /** 处理人id */
-    @Excel(name = "处理人id")
     private String handleBy;
+
+    @Excel(name = "处理人")
+    private String handleName;
 
     /** 处理时间 */
     @JsonFormat(pattern = "yyyy-MM-dd")
@@ -83,162 +95,10 @@ public class SysDefect extends BaseEntity
     private Date handleTime;
 
     /** 缺陷等级 */
-    @Excel(name = "缺陷等级")
     private String defectLevel;
 
-    public void setDefectId(Long defectId) 
-    {
-        this.defectId = defectId;
-    }
-
-    public Long getDefectId() 
-    {
-        return defectId;
-    }
-    public void setDefectType(Integer defectType) 
-    {
-        this.defectType = defectType;
-    }
-
-    public Integer getDefectType() 
-    {
-        return defectType;
-    }
-    public void setDefectName(String defectName) 
-    {
-        this.defectName = defectName;
-    }
-
-    public String getDefectName() 
-    {
-        return defectName;
-    }
-    public void setDefectDescribe(String defectDescribe) 
-    {
-        this.defectDescribe = defectDescribe;
-    }
-
-    public String getDefectDescribe() 
-    {
-        return defectDescribe;
-    }
-    public void setAnnexUrls(String annexUrls) 
-    {
-        this.annexUrls = annexUrls;
-    }
-
-    public String getAnnexUrls() 
-    {
-        return annexUrls;
-    }
-    public void setProjectId(Long projectId) 
-    {
-        this.projectId = projectId;
-    }
-
-    public Long getProjectId() 
-    {
-        return projectId;
-    }
-    public void setTestPlanId(Long testPlanId) 
-    {
-        this.testPlanId = testPlanId;
-    }
-
-    public Long getTestPlanId() 
-    {
-        return testPlanId;
-    }
-    public void setCaseId(Long caseId) 
-    {
-        this.caseId = caseId;
-    }
-
-    public Long getCaseId() 
-    {
-        return caseId;
-    }
-    public void setDataSources(Integer dataSources) 
-    {
-        this.dataSources = dataSources;
-    }
-
-    public Integer getDataSources() 
-    {
-        return dataSources;
-    }
-    public void setDataSourcesParams(String dataSourcesParams) 
-    {
-        this.dataSourcesParams = dataSourcesParams;
-    }
-
-    public String getDataSourcesParams() 
-    {
-        return dataSourcesParams;
-    }
-    public void setModuleId(Long moduleId) 
-    {
-        this.moduleId = moduleId;
-    }
-
-    public Long getModuleId() 
-    {
-        return moduleId;
-    }
-    public void setModuleVersion(String moduleVersion) 
-    {
-        this.moduleVersion = moduleVersion;
-    }
-
-    public String getModuleVersion() 
-    {
-        return moduleVersion;
-    }
-    public void setDefectState(Integer defectState) 
-    {
-        this.defectState = defectState;
-    }
-
-    public Integer getDefectState() 
-    {
-        return defectState;
-    }
-    public void setCaseStepId(Long caseStepId) 
-    {
-        this.caseStepId = caseStepId;
-    }
-
-    public Long getCaseStepId() 
-    {
-        return caseStepId;
-    }
-    public void setHandleBy(String handleBy) 
-    {
-        this.handleBy = handleBy;
-    }
-
-    public String getHandleBy() 
-    {
-        return handleBy;
-    }
-    public void setHandleTime(Date handleTime) 
-    {
-        this.handleTime = handleTime;
-    }
-
-    public Date getHandleTime() 
-    {
-        return handleTime;
-    }
-    public void setDefectLevel(String defectLevel) 
-    {
-        this.defectLevel = defectLevel;
-    }
-
-    public String getDefectLevel() 
-    {
-        return defectLevel;
-    }
+    @Excel(name = "缺陷等级")
+    private String defectLevelName;
 
     @Override
     public String toString() {

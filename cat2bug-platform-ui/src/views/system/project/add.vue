@@ -138,7 +138,6 @@
 import {addProject, listProjectRole} from "@/api/system/project";
 import { listMember } from "@/api/system/team";
 import MemberNameplate from "@/components/MemberNameplate"
-import {getUser} from "@/api/system/user";
 
 export default {
   name: "ProjectAdd",
@@ -302,7 +301,7 @@ export default {
       align-items: center;
       flex-direction: row;
       flex-wrap: nowrap;
-      justify-content: start;
+      justify-content: flex-start;
     }
     .el-col:hover {
       background-color: #F2F6FC;

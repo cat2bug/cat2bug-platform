@@ -9,7 +9,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="defectType"    column="defect_type"    />
         <result property="defectName"    column="defect_name"    />
         <result property="defectDescribe"    column="defect_describe"    />
-        <result property="annexUrls"    column="annex_urls"    />
+        <result property="annexUrls"    column="annex_urls"  typeHandler="com.cat2bug.system.domain.handle.StringArrayTypeHandler"   />
         <result property="projectId"    column="project_id"    />
         <result property="testPlanId"    column="test_plan_id"    />
         <result property="caseId"    column="case_id"    />
@@ -88,7 +88,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="defectType != null">#{defectType},</if>
             <if test="defectName != null and defectName != ''">#{defectName},</if>
             <if test="defectDescribe != null and defectDescribe != ''">#{defectDescribe},</if>
-            <if test="annexUrls != null">#{annexUrls},</if>
+            <if test="annexUrls != null">#{annexUrls, typeHandler=com.cat2bug.system.domain.handle.StringArrayTypeHandler},</if>
             <if test="projectId != null">#{projectId},</if>
             <if test="testPlanId != null">#{testPlanId},</if>
             <if test="caseId != null">#{caseId},</if>
@@ -114,7 +114,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="defectType != null">defect_type = #{defectType},</if>
             <if test="defectName != null and defectName != ''">defect_name = #{defectName},</if>
             <if test="defectDescribe != null and defectDescribe != ''">defect_describe = #{defectDescribe},</if>
-            <if test="annexUrls != null">annex_urls = #{annexUrls},</if>
+            <if test="annexUrls != null">annex_urls = #{annexUrls, typeHandler=com.cat2bug.system.domain.handle.StringArrayTypeHandler},</if>
             <if test="projectId != null">project_id = #{projectId},</if>
             <if test="testPlanId != null">test_plan_id = #{testPlanId},</if>
             <if test="caseId != null">case_id = #{caseId},</if>

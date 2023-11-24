@@ -109,6 +109,7 @@ export default {
   .sidebar-divider {
     padding: 0px 15px;
     .el-divider {
+      margin: 7px 0px;
       background-color: #EBEEF5;
     }
   }

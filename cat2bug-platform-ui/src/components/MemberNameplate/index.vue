@@ -1,11 +1,17 @@
 <template>
   <div class="member-nameplate">
-    <el-avatar v-if="member.avatar" src="member.avatar" fit="cover" size="small"></el-avatar>
-    <el-avatar v-else size="small">{{member.userName}}</el-avatar>
+    <slot name="icon" v-if="iconVisible">
+      <el-avatar v-if="member.avatar" src="member.avatar" fit="cover" size="small"></el-avatar>
+      <el-avatar v-else size="small">{{member.userName}}</el-avatar>
+    </slot>
     <div class="member-nameplate-content">
-      <p>{{member.nickName}}</p>
-      <span>{{$t('phone-number')}}: {{member.phoneNumber}}</span>
-      <span>{{$t('email')}}: {{member.email}}</span>
+      <slot name="title">
+        <p>{{member.nickName}}</p>
+      </slot>
+      <slot name="body" v-if="bodyVisible">
+        <span>{{$t('phone-number')}}: {{member.phoneNumber}}</span>
+        <span>{{$t('email')}}: {{member.email}}</span>
+      </slot>
     </div>
   </div>
 </template>
@@ -17,6 +23,14 @@ export default {
     member: {
       type: Object,
       default: {}
+    },
+    iconVisible: {
+      type: Boolean,
+      default: true
+    },
+    bodyVisible: {
+      type: Boolean,
+      default: true
     }
   }
 }
@@ -28,7 +42,7 @@ export default {
     align-items: center;
     flex-direction: row;
     flex-wrap: nowrap;
-    justify-content: start;
+    justify-content: flex-start;
     padding: 5px;
     .el-avatar {
       font-size: 12px;
@@ -39,7 +53,7 @@ export default {
     }
     .member-nameplate-content {
       display: flex;
-      align-items: start;
+      align-items: flex-start;
       flex-direction: column;
       p {
         margin: 0px;
