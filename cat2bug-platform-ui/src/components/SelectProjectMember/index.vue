@@ -84,8 +84,8 @@ export default {
   },
   props: {
     memberId: {
-      type: Number,
-      default: null
+      type: Array,
+      default: null,
     },
     projectId: {
       type: Number,
@@ -144,8 +144,9 @@ export default {
           }
         }
         if(maxIndexId){
-          this.selectMembers.delete(maxIndexId);
           this.optionsChecks.set(maxIndexId,0);
+          this.selectMembers.delete(maxIndexId);
+          this.updateMembers();
           this.$forceUpdate();
         }
       }
@@ -180,6 +181,7 @@ export default {
     /** 弹窗隐藏事件 */
     popoverHideHandle() {
       this.$refs.selectProjectMemberInput.blur();
+      this.setMemberIdEvent();
     },
     /** 设置主负责人 */
     setMasterHandle(event,member) {
@@ -202,6 +204,7 @@ export default {
         }
         this.optionsChecks.set(member.userId,0);
         this.selectMembers.delete(member.userId);
+        this.updateMembers();
       } else {
         let count = 0;
         for (let [key, value] of this.optionsChecks) {
@@ -211,8 +214,12 @@ export default {
         }
         this.optionsChecks.set(member.userId,count+1);
         this.selectMembers.set(member.userId,member);
+        this.updateMembers();
       }
       this.$forceUpdate();
+    },
+    updateMembers(){
+      this.setMemberIdEvent();
     },
     /** 选择角色 */
     selectRoleTabHandle() {
@@ -234,6 +241,7 @@ export default {
       this.queryMember.params.search=null;
       this.queryMember.pageNum=1;
       this.popoverVisible = false;
+      this.updateMembers();
       this.getMemberList();
       this.$forceUpdate();
       event.stopPropagation();
@@ -242,6 +250,18 @@ export default {
     currentPageChangeHandle(val){
       this.queryMember.pageNum = val;
       this.getMemberList();
+    },
+    setMemberIdEvent() {
+      let arr = Array.from(this.selectMembers.values());
+      arr = arr.sort((a, b) => this.optionsChecks.get(a.userId) - this.optionsChecks.get(b.userId));
+      let values = [];
+      for(let i in arr){
+        values.push({
+          userId: arr[i].userId,
+          sort: i
+        })
+      }
+      this.$emit('input', values);
     }
   }
 }

@@ -133,14 +133,7 @@
     />
 
     <!-- 添加或修改缺陷对话框 -->
-    <el-drawer
-      size="50%"
-      title="新建缺陷"
-      :visible.sync="open"
-      direction="rtl"
-      :before-close="closeDefectDrawer">
-      <add-defect :project-id="22" />
-    </el-drawer>
+    <add-defect ref="addDefectForm" :project-id="22" />
   </div>
 </template>
 
@@ -207,9 +200,6 @@ export default {
     this.getList();
   },
   methods: {
-    closeDefectDrawer(done) {
-      done();
-    },
     /** 切换页标签 */
     selectDefectTabHandle() {
 
@@ -262,7 +252,7 @@ export default {
     },
     /** 新增按钮操作 */
     handleAdd() {
-      this.open = true;
+      this.$refs.addDefectForm.open();
     },
     /** 修改按钮操作 */
     handleUpdate(row) {

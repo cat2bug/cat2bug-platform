@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.system.mapper.SysModuleMapper">
+    
+    <resultMap type="SysModule" id="SysModuleResult">
+        <result property="moduleId"    column="module_id"    />
+        <result property="modulePid"    column="module_pid"    />
+        <result property="moduleName"    column="module_name"    />
+        <result property="remark"    column="remark"    />
+        <result property="projectId"    column="project_id"    />
+    </resultMap>
+
+    <sql id="selectSysModuleVo">
+        select module_id, module_pid, module_name, remark, project_id from sys_module
+    </sql>
+
+    <select id="selectSysModuleList" parameterType="SysModule" resultMap="SysModuleResult">
+        <include refid="selectSysModuleVo"/>
+        <where>  
+            <if test="modulePid != null "> and module_pid = #{modulePid}</if>
+            <if test="moduleName != null  and moduleName != ''"> and module_name like concat('%', #{moduleName}, '%')</if>
+            <if test="projectId != null "> and project_id = #{projectId}</if>
+        </where>
+    </select>
+    
+    <select id="selectSysModuleByModuleId" parameterType="Long" resultMap="SysModuleResult">
+        <include refid="selectSysModuleVo"/>
+        where module_id = #{moduleId}
+    </select>
+        
+    <insert id="insertSysModule" parameterType="SysModule">
+        insert into sys_module
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="moduleId != null">module_id,</if>
+            <if test="modulePid != null">module_pid,</if>
+            <if test="moduleName != null">module_name,</if>
+            <if test="remark != null">remark,</if>
+            <if test="projectId != null">project_id,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="moduleId != null">#{moduleId},</if>
+            <if test="modulePid != null">#{modulePid},</if>
+            <if test="moduleName != null">#{moduleName},</if>
+            <if test="remark != null">#{remark},</if>
+            <if test="projectId != null">#{projectId},</if>
+         </trim>
+    </insert>
+
+    <update id="updateSysModule" parameterType="SysModule">
+        update sys_module
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="modulePid != null">module_pid = #{modulePid},</if>
+            <if test="moduleName != null">module_name = #{moduleName},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="projectId != null">project_id = #{projectId},</if>
+        </trim>
+        where module_id = #{moduleId}
+    </update>
+
+    <delete id="deleteSysModuleByModuleId" parameterType="Long">
+        delete from sys_module where module_id = #{moduleId}
+    </delete>
+
+    <delete id="deleteSysModuleByModuleIds" parameterType="String">
+        delete from sys_module where module_id in 
+        <foreach item="moduleId" collection="array" open="(" separator="," close=")">
+            #{moduleId}
+        </foreach>
+    </delete>
+</mapper>
