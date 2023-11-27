@@ -30,6 +30,9 @@ public class SysModule extends TreeEntity
     @Excel(name = "项目id")
     private Long projectId;
 
+    /** 子菜单的数量 */
+    private int childrenCount;
+
     public void setModuleId(Long moduleId) 
     {
         this.moduleId = moduleId;
@@ -65,6 +68,14 @@ public class SysModule extends TreeEntity
     public Long getProjectId() 
     {
         return projectId;
+    }
+
+    public int getChildrenCount() {
+        return childrenCount;
+    }
+
+    public void setChildrenCount(int childrenCount) {
+        this.childrenCount = childrenCount;
     }
 
     @Override

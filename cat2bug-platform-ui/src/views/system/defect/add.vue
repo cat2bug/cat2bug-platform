@@ -14,7 +14,7 @@
           <select-project-member v-model="form.handleBy" :project-id="projectId"  />
         </el-form-item>
         <el-form-item label="测试模块id" prop="moduleId">
-          <el-input v-model="form.moduleId" placeholder="请输入测试模块id" />
+          <select-module v-model="form.moduleId" :project-id="projectId"/>
         </el-form-item>
         <el-form-item label="版本" prop="moduleVersion">
           <el-input v-model="form.moduleVersion" placeholder="请输入版本" />
@@ -32,7 +32,8 @@
           </el-input>
         </el-form-item>
         <el-form-item label="附件" prop="annexUrls">
-          <file-upload v-model="form.annexUrls"/>
+<!--          <file-upload v-model="form.annexUrls"/>-->
+          <image-upload v-model="form.annexUrls" :limit="22"></image-upload>
         </el-form-item>
   <!--      <el-form-item label="测试用例id" prop="caseId">-->
   <!--        <el-input v-model="form.caseId" placeholder="请输入测试用例id" />-->
@@ -63,10 +64,12 @@
 <script>
 import {addDefect, updateDefect} from "@/api/system/defect";
 import SelectProjectMember from "@/components/SelectProjectMember"
+import SelectModule from "@/components/SelectModule"
+import ImageUpload from "@/components/ImageUpload";
 
 export default {
   name: "AddDefect",
-  components: { SelectProjectMember },
+  components: { ImageUpload, SelectProjectMember, SelectModule },
   data() {
     return {
       // 显示窗口

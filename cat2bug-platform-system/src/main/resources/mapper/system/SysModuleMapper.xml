@@ -10,18 +10,20 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="moduleName"    column="module_name"    />
         <result property="remark"    column="remark"    />
         <result property="projectId"    column="project_id"    />
+        <result property="childrenCount"    column="children_count"    />
     </resultMap>
 
     <sql id="selectSysModuleVo">
-        select module_id, module_pid, module_name, remark, project_id from sys_module
+        select m.module_id, m.module_pid, m.module_name, m.remark, m.project_id, mg.children_count from sys_module m
     </sql>
 
     <select id="selectSysModuleList" parameterType="SysModule" resultMap="SysModuleResult">
         <include refid="selectSysModuleVo"/>
+        left join (select count(*) children_count,module_pid from sys_module group by module_pid) mg on mg.module_pid=m.module_id
         <where>  
-            <if test="modulePid != null "> and module_pid = #{modulePid}</if>
-            <if test="moduleName != null  and moduleName != ''"> and module_name like concat('%', #{moduleName}, '%')</if>
-            <if test="projectId != null "> and project_id = #{projectId}</if>
+            <if test="modulePid != null "> and m.module_pid = #{modulePid}</if>
+            <if test="moduleName != null  and moduleName != ''"> and m.module_name like concat('%', #{moduleName}, '%')</if>
+            <if test="projectId != null "> and m.project_id = #{projectId}</if>
         </where>
     </select>
     

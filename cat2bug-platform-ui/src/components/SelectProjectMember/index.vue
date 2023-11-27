@@ -275,6 +275,7 @@ export default {
     height: auto;
     line-height: 0;
     align-items: center;
+    padding-left: 0px;
     .selectProjectMemberInput_content {
       display: inline-flex;
       flex-direction: row;

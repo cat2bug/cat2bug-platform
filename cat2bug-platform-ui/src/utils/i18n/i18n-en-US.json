@@ -125,5 +125,9 @@
   "http.interface-connect-exception": "Abnormal backend interface connection",
   "http.login-expired": "The login status has expired. You can continue to stay on this page or log in again",
   "http.not-resubmit": "Data is being processed, please do not resubmit",
-  "defect.manage": "Defect Management"
+  "defect.manage": "Defect Management",
+  "module.create": "Create Module",
+  "module.enter-module-name": "Please enter module name",
+  "module.name-cannot-empty": "Module name cannot be empty!",
+  "module.create-success": "Module created successfully"
 }

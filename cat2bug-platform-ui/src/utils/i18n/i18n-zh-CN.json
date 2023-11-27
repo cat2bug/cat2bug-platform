@@ -94,6 +94,8 @@
   "team.icon-cannot-empty": "团队图标不能为空",
   "project.is-delete-project": "是否确认删除{0}的项目?",
   "project.admin": "管理员",
+  "project.collect-project": "收藏项目",
+  "project.project-list": "项目列表",
   "project.develop": "开发",
   "project.tester": "测试",
   "project.outsider": "外部人员",
@@ -113,7 +115,7 @@
   "project.set-role-group": "设置权限组",
   "project.collect-success": "收藏成功",
   "project.cancel-success": "取消成功",
-  "project.project-name-cannot-empty": "项目名称不能为!",
+  "project.project-name-cannot-empty": "项目名称不能为空!",
   "project.introduction-not-filled": "未填写项目介绍",
   "http.invalid-session": "无效的会话，或者会话已过期，请重新登录。",
   "http.downloading-wait": "正在下载数据，请稍候",
@@ -123,5 +125,9 @@
   "http.interface-connect-exception": "后端接口连接异常",
   "http.login-expired": "登录状态已过期，您可以继续留在该页面，或者重新登录",
   "http.not-resubmit": "数据正在处理，请勿重复提交",
-  "defect.manage": "缺陷管理"
+  "defect.manage": "缺陷管理",
+  "module.create": "新建模块",
+  "module.enter-module-name": "请输入模块名称",
+  "module.name-cannot-empty": "模块名称不能为空",
+  "module.create-success": "新建模块成功"
 }
