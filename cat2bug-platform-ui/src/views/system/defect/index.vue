@@ -85,26 +85,28 @@
 
     <el-table v-loading="loading" :data="defectList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="缺陷类型" align="center" prop="defectType" />
-      <el-table-column label="缺陷标题" align="center" prop="defectName" />
-      <el-table-column label="附件" align="center" prop="annexUrls" />
-      <el-table-column label="项目" align="center" prop="projectId" />
-      <el-table-column label="数据来源" align="center" prop="dataSources" />
-      <el-table-column label="版本" align="center" prop="moduleVersion" />
-      <el-table-column label="更新时间" align="center" prop="updateTime" width="180">
+      <el-table-column label="缺陷类型" align="left" prop="defectType" />
+      <el-table-column label="缺陷标题" align="left" prop="defectName" />
+      <el-table-column label="附件" align="left" prop="annexUrls" />
+      <el-table-column label="版本" align="left" prop="moduleVersion" />
+      <el-table-column label="更新时间" align="left" prop="updateTime" width="180">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.updateTime, '{y}-{m}-{d}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="缺陷状态" align="center" prop="defectState" />
-      <el-table-column label="处理人" align="center" prop="handleBy" />
-      <el-table-column label="处理时间" align="center" prop="handleTime" width="180">
+      <el-table-column label="缺陷状态" align="left" prop="defectState" />
+      <el-table-column label="处理人" align="left" prop="handleBy">
+        <template slot-scope="scope">
+          <row-list-member :members="scope.row.handleByList"></row-list-member>
+        </template>
+      </el-table-column>
+      <el-table-column label="处理时间" align="left" prop="handleTime" width="180">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.handleTime, '{y}-{m}-{d}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="缺陷等级" align="center" prop="defectLevel" />
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+      <el-table-column label="缺陷等级" align="left" prop="defectLevel" />
+      <el-table-column label="操作" align="left" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button
             size="mini"
@@ -133,16 +135,18 @@
     />
 
     <!-- 添加或修改缺陷对话框 -->
-    <add-defect ref="addDefectForm" :project-id="22" />
+    <add-defect ref="addDefectForm" :project-id="22" @added="getList" />
   </div>
 </template>
 
 <script>
 import { listDefect, getDefect, delDefect, addDefect, updateDefect } from "@/api/system/defect";
+import RowListMember from "@/components/RowListMember";
+
 import AddDefect from "./add.vue"
 export default {
   name: "Defect",
-  components: { AddDefect },
+  components: { RowListMember, AddDefect },
   data() {
     return {
       // 当前缺陷的tab页名

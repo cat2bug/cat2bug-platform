@@ -52,16 +52,7 @@
       </el-table-column>
       <el-table-column :label="$t('member')" align="left" prop="members" width="200">
         <template slot-scope="scope">
-          <div class="project-member-icons">
-            <el-tooltip class="item" effect="dark" v-for="member in scope.row.listShowMembers" :key="member.userId" :content="member.nickName" placement="top">
-              <el-avatar
-                :isStatistics="member.isStatistics?'true':'false'"
-                :src="member.avatar?member.avatar:''"
-                fit="cover" size="medium">
-                {{member.avatar?'':member.userName}}
-              </el-avatar>
-            </el-tooltip>
-          </div>
+          <row-list-member :members="scope.row.listShowMembers" />
         </template>
       </el-table-column>
       <el-table-column :label="$t('operate')" align="left" class-name="small-padding fixed-width" width="150">
@@ -118,11 +109,12 @@
 import {listProject, getProject, delProject, addProject, updateProject, collectProject} from "@/api/system/project";
 import ProjectNameplate from "@/components/ProjectNameplate";
 import StarSwitch from "@/components/StarSwitch";
+import RowListMember from "@/components/RowListMember";
 import { strFormat } from "@/utils/index"
 
 export default {
   name: "Project",
-  components: { ProjectNameplate, StarSwitch },
+  components: { ProjectNameplate, StarSwitch, RowListMember },
   data() {
     return {
       activeProjectTabName: this.$i18n.t('project.my-participated-in'),
@@ -317,22 +309,6 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
-  .project-member-icons {
-    display: flex;
-    display: -webkit-flex; /* Safari */
-    flex-direction: row-reverse;
-    flex-wrap: nowrap;
-    justify-content: flex-end;
-    align-items: center;
-    .el-avatar {
-      margin-right:-8px;
-      border: #FFF 3px solid;
-    }
-    .el-avatar[isStatistics='true'] {
-      background-color: #E4E7ED;
-      color: #909399;
-    }
-  }
   .cell {
     > i {
       margin-right: 10px;

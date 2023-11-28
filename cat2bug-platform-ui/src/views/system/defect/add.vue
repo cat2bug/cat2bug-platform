@@ -13,14 +13,13 @@
         <el-form-item label="处理人" prop="handleBy">
           <select-project-member v-model="form.handleBy" :project-id="projectId"  />
         </el-form-item>
-        <el-form-item label="测试模块id" prop="moduleId">
+        <el-form-item label="测试模块" prop="moduleId">
           <select-module v-model="form.moduleId" :project-id="projectId"/>
         </el-form-item>
         <el-form-item label="版本" prop="moduleVersion">
           <el-input v-model="form.moduleVersion" placeholder="请输入版本" />
         </el-form-item>
-        <el-form-item label="缺陷描述">
-<!--          <editor v-model="form.defectDescribe" :min-height="192"/>-->
+        <el-form-item label="缺陷描述" prop="defectDescribe">
           <el-input
             type="textarea"
             placeholder="请输入内容"
@@ -31,9 +30,11 @@
           >
           </el-input>
         </el-form-item>
+        <el-form-item label="图片" prop="imgUrls">
+          <image-upload v-model="form.imgUrls" :limit="22"></image-upload>
+        </el-form-item>
         <el-form-item label="附件" prop="annexUrls">
-<!--          <file-upload v-model="form.annexUrls"/>-->
-          <image-upload v-model="form.annexUrls" :limit="22"></image-upload>
+          <file-upload v-model="form.annexUrls"/>
         </el-form-item>
   <!--      <el-form-item label="测试用例id" prop="caseId">-->
   <!--        <el-input v-model="form.caseId" placeholder="请输入测试用例id" />-->
@@ -146,17 +147,18 @@ export default {
     submitForm() {
       this.$refs["form"].validate(valid => {
         if (valid) {
+          this.form.projectId = this.projectId;
           if (this.form.defectId != null) {
-            updateDefect(this.form).then(response => {
+            updateDefect(this.form).then(res => {
               this.$modal.msgSuccess("修改成功");
-              this.open = false;
-              this.getList();
+              this.visible = false;
+              this.$emit('added',res)
             });
           } else {
-            addDefect(this.form).then(response => {
+            addDefect(this.form).then(res => {
               this.$modal.msgSuccess("新增成功");
-              this.open = false;
-              this.getList();
+              this.visible = false;
+              this.$emit('added',res)
             });
           }
         }

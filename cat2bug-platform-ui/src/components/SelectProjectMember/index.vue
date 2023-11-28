@@ -256,10 +256,7 @@ export default {
       arr = arr.sort((a, b) => this.optionsChecks.get(a.userId) - this.optionsChecks.get(b.userId));
       let values = [];
       for(let i in arr){
-        values.push({
-          userId: arr[i].userId,
-          sort: i
-        })
+        values.push(arr[i].userId);
       }
       this.$emit('input', values);
     }

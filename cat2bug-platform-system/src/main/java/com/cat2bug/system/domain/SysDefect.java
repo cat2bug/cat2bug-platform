@@ -3,6 +3,7 @@ package com.cat2bug.system.domain;
 import java.util.Date;
 import java.util.List;
 
+import com.cat2bug.common.core.domain.entity.SysUser;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -41,7 +42,11 @@ public class SysDefect extends BaseEntity
 
     /** 附件 */
     @Excel(name = "附件")
-    private List<String> annexUrls;
+    private String annexUrls;
+
+    /** 附件 */
+    @Excel(name = "图片")
+    private String imgUrls;
 
     /** 项目id */
     private Long projectId;
@@ -84,10 +89,11 @@ public class SysDefect extends BaseEntity
     private Long caseStepId;
 
     /** 处理人id */
-    private String handleBy;
+    private List<Long> handleBy;
 
+    /** 处理人名称 */
     @Excel(name = "处理人")
-    private String handleName;
+    private List<SysUser> handleByList;
 
     /** 处理时间 */
     @JsonFormat(pattern = "yyyy-MM-dd")

@@ -9,7 +9,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="defectType"    column="defect_type"    />
         <result property="defectName"    column="defect_name"    />
         <result property="defectDescribe"    column="defect_describe"    />
-        <result property="annexUrls"    column="annex_urls"  typeHandler="com.cat2bug.system.domain.handle.StringArrayTypeHandler"   />
+        <result property="annexUrls"    column="annex_urls"  />
+        <result property="imgUrls"    column="img_urls"   />
         <result property="projectId"    column="project_id"    />
         <result property="testPlanId"    column="test_plan_id"    />
         <result property="caseId"    column="case_id"    />
@@ -23,13 +24,55 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="updateBy"    column="update_by"    />
         <result property="defectState"    column="defect_state"    />
         <result property="caseStepId"    column="case_step_id"    />
-        <result property="handleBy"    column="handle_by"    />
+        <result property="handleBy"    column="handle_by"  typeHandler="com.cat2bug.system.domain.handle.LongArrayTypeHandler"  />
+        <result property="handleByList"    column="handle_by_list"  typeHandler="com.cat2bug.system.domain.handle.SysUserArrayTypeHandler"  />
         <result property="handleTime"    column="handle_time"    />
         <result property="defectLevel"    column="defect_level"    />
     </resultMap>
 
     <sql id="selectSysDefectVo">
-        select defect_id, defect_type, defect_name, defect_describe, annex_urls, project_id, test_plan_id, case_id, data_sources, data_sources_params, module_id, module_version, create_by, update_time, create_time, update_by, defect_state, case_step_id, handle_by, handle_time, defect_level from sys_defect
+        SELECT
+            d.defect_id,
+            d.defect_type,
+            d.defect_name,
+            d.defect_describe,
+            d.annex_urls,
+            d.img_urls,
+            d.project_id,
+            d.test_plan_id,
+            d.case_id,
+            d.data_sources,
+            d.data_sources_params,
+            d.module_id,
+            d.module_version,
+            d.create_by,
+            d.update_time,
+            d.create_time,
+            d.update_by,
+            d.defect_state,
+            d.case_step_id,
+            d.handle_by,
+            un.user_infos AS handle_by_list,
+            d.handle_time,
+            d.defect_level
+        FROM
+            sys_defect d
+                LEFT JOIN (
+                SELECT
+                    d1.defect_id,
+                    JSON_ARRAYAGG( JSON_OBJECT('userId', u.user_id, 'nickName', u.nick_name, 'userName', u.user_name) ) AS user_infos
+                FROM
+                    sys_defect d1
+                        LEFT JOIN sys_user u ON JSON_CONTAINS(
+                            d1.handle_by,
+                            CAST( u.user_id AS JSON ))
+                WHERE
+                    JSON_CONTAINS(
+                            d1.handle_by,
+                            CAST( u.user_id AS JSON ))
+                GROUP BY
+                    d1.defect_id
+            ) un ON un.defect_id = d.defect_id
     </sql>
 
     <select id="selectSysDefectList" parameterType="SysDefect" resultMap="SysDefectResult">
@@ -49,7 +92,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="params.beginCreateTime != null and params.beginCreateTime != '' and params.endCreateTime != null and params.endCreateTime != ''"> and create_time between #{params.beginCreateTime} and #{params.endCreateTime}</if>
             <if test="updateBy != null  and updateBy != ''"> and update_by = #{updateBy}</if>
             <if test="defectState != null "> and defect_state = #{defectState}</if>
-            <if test="handleBy != null  and handleBy != ''"> and handle_by = #{handleBy}</if>
+            <if test="handleBy != null  and handleBy != ''">
+             and handle_by in
+             <foreach collection="handleBy" item="b" separator="," open="(" close=")">
+                 #{b}
+             </foreach>
+            </if>
             <if test="params.beginHandleTime != null and params.beginHandleTime != '' and params.endHandleTime != null and params.endHandleTime != ''"> and handle_time between #{params.beginHandleTime} and #{params.endHandleTime}</if>
             <if test="defectLevel != null  and defectLevel != ''"> and defect_level = #{defectLevel}</if>
         </where>
@@ -67,6 +115,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="defectName != null and defectName != ''">defect_name,</if>
             <if test="defectDescribe != null and defectDescribe != ''">defect_describe,</if>
             <if test="annexUrls != null">annex_urls,</if>
+            <if test="imgUrls != null">img_urls,</if>
             <if test="projectId != null">project_id,</if>
             <if test="testPlanId != null">test_plan_id,</if>
             <if test="caseId != null">case_id,</if>
@@ -88,7 +137,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="defectType != null">#{defectType},</if>
             <if test="defectName != null and defectName != ''">#{defectName},</if>
             <if test="defectDescribe != null and defectDescribe != ''">#{defectDescribe},</if>
-            <if test="annexUrls != null">#{annexUrls, typeHandler=com.cat2bug.system.domain.handle.StringArrayTypeHandler},</if>
+            <if test="annexUrls != null">#{annexUrls},</if>
+            <if test="imgUrls != null">#{imgUrls},</if>
             <if test="projectId != null">#{projectId},</if>
             <if test="testPlanId != null">#{testPlanId},</if>
             <if test="caseId != null">#{caseId},</if>
@@ -102,7 +152,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="updateBy != null">#{updateBy},</if>
             <if test="defectState != null">#{defectState},</if>
             <if test="caseStepId != null">#{caseStepId},</if>
-            <if test="handleBy != null">#{handleBy},</if>
+            <if test="handleBy != null">#{handleBy,typeHandler=com.cat2bug.system.domain.handle.LongArrayTypeHandler},</if>
             <if test="handleTime != null">#{handleTime},</if>
             <if test="defectLevel != null">#{defectLevel},</if>
          </trim>
@@ -114,7 +164,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="defectType != null">defect_type = #{defectType},</if>
             <if test="defectName != null and defectName != ''">defect_name = #{defectName},</if>
             <if test="defectDescribe != null and defectDescribe != ''">defect_describe = #{defectDescribe},</if>
-            <if test="annexUrls != null">annex_urls = #{annexUrls, typeHandler=com.cat2bug.system.domain.handle.StringArrayTypeHandler},</if>
+            <if test="annexUrls != null">annex_urls = #{annexUrls},</if>
+            <if test="imgUrls != null">img_urls = #{imgUrls},</if>
             <if test="projectId != null">project_id = #{projectId},</if>
             <if test="testPlanId != null">test_plan_id = #{testPlanId},</if>
             <if test="caseId != null">case_id = #{caseId},</if>
@@ -128,7 +179,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="updateBy != null">update_by = #{updateBy},</if>
             <if test="defectState != null">defect_state = #{defectState},</if>
             <if test="caseStepId != null">case_step_id = #{caseStepId},</if>
-            <if test="handleBy != null">handle_by = #{handleBy},</if>
+            <if test="handleBy != null">handle_by = #{handleBy, typeHandler=com.cat2bug.system.domain.handle.LongArrayTypeHandler},</if>
             <if test="handleTime != null">handle_time = #{handleTime},</if>
             <if test="defectLevel != null">defect_level = #{defectLevel},</if>
         </trim>
