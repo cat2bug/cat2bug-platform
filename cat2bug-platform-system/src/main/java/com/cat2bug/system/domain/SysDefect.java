@@ -4,6 +4,8 @@ import java.util.Date;
 import java.util.List;
 
 import com.cat2bug.common.core.domain.entity.SysUser;
+import com.cat2bug.system.domain.type.SysDefectStateEnum;
+import com.cat2bug.system.domain.type.SysDefectTypeEnum;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -24,14 +26,18 @@ public class SysDefect extends BaseEntity
 {
     private static final long serialVersionUID = 1L;
 
-    /** 缺陷id
- */
+    /** 缺陷id */
     private Long defectId;
 
-    /** 缺陷类型
- */
+    /** 项目编号 */
+    private Long projectNum;
+
+    /** 缺陷类型 */
+    @JsonFormat(shape = JsonFormat.Shape.NUMBER)
+    private SysDefectTypeEnum defectType;
+
     @Excel(name = "缺陷类型")
-    private Integer defectType;
+    private SysDefectTypeEnum defectTypeName;
 
     /** 缺陷标题 */
     @Excel(name = "缺陷标题")
@@ -73,16 +79,23 @@ public class SysDefect extends BaseEntity
     private String dataSourcesParams;
 
     /** 测试模块id */
-    @Excel(name = "测试模块id")
     private Long moduleId;
+
+    /** 测试模块名称 */
+    @Excel(name = "测试模块id")
+    private String moduleName;
 
     /** 版本 */
     @Excel(name = "版本")
     private String moduleVersion;
 
     /** 缺陷状态 */
+    @JsonFormat(shape = JsonFormat.Shape.NUMBER)
+    private SysDefectStateEnum defectState;
+
+    /** 缺陷状态 */
     @Excel(name = "缺陷状态")
-    private Integer defectState;
+    private SysDefectStateEnum defectStateName;
 
     /** 用例步骤id */
 //    @Excel(name = "用例步骤id")

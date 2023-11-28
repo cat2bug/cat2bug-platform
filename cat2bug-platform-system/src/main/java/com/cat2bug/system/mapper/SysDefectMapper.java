@@ -20,6 +20,13 @@ public interface SysDefectMapper
     public SysDefect selectSysDefectByDefectId(Long defectId);
 
     /**
+     * 查询项目中缺陷数量
+     * @param projectId
+     * @return
+     */
+    public Long getProjectDefectCount(Long projectId);
+
+    /**
      * 查询缺陷列表
      * 
      * @param sysDefect 缺陷

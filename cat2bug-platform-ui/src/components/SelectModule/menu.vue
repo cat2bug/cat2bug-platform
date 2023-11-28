@@ -1,5 +1,8 @@
 <template>
   <el-row class="module-menu">
+    <el-col v-show="loading" class="module-menu-item" :span="24">
+      <div v-loading="loading" style="width: 100%;height: 200px;"></div>
+    </el-col>
     <el-col class="module-menu-item" :span="24" v-for="(module,index) in moduleList" :key="module.moduleId"
             @click.native="showSubMenuHandle(module)"
             @mouseenter.native="mouseEnterHandle(index)"
@@ -7,13 +10,12 @@
     >
       <span>{{module.moduleName}}</span>
       <i v-if="module.childrenCount>0" class="el-icon-arrow-right"></i>
-      <el-button v-else type="text" size="mini" v-show="addButtonVisibleList[index]" @click="addSubMenuHandle($event, module)"><i class="el-icon-plus"></i></el-button>
+      <el-button v-else-if="isEdit" type="text" size="mini" v-show="addButtonVisibleList[index]" @click="addSubMenuHandle($event, module)"><i class="el-icon-plus"></i></el-button>
     </el-col>
-    <el-col :span="24">
+    <el-col :span="24" v-if="isEdit">
       <div v-show="moduleList.length>0">
         <el-divider></el-divider>
       </div>
-
       <add-module-menu-item ref="addModuleMenu" v-model="moduleName" :project-id="projectId" :module-pid="modulePid" @added="addModuleHandle" />
     </el-col>
   </el-row>
@@ -28,6 +30,7 @@ export default {
   components: { AddModuleMenuItem },
   data() {
     return {
+      loading: false,
       moduleName: null,
       moduleList: [],
       params: {
@@ -48,6 +51,10 @@ export default {
       type: Number,
       default: 0
     },
+    isEdit: {
+      type: Boolean,
+      default: true
+    }
   },
   created() {
     this.getModuleList();
@@ -56,7 +63,9 @@ export default {
     getModuleList() {
       this.params.projectId=this.projectId;
       this.params.modulePid=this.modulePid;
+      this.loading = true;
       listModule(this.params).then(res=>{
+        this.loading = false;
         this.moduleList = res.data;
         let visibleList = [];
         res.data.forEach(m=>{
@@ -64,6 +73,8 @@ export default {
         })
         this.addButtonVisibleList = visibleList;
         this.$refs.addModuleMenu.setFormVisible(this.moduleList.length==0);
+      }).catch(e=>{
+        this.loading = false;
       })
     },
     addModuleHandle(modules) {

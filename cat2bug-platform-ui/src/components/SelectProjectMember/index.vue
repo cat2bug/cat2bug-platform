@@ -1,6 +1,6 @@
 <template>
   <el-popover
-    placement="bottom"
+    placement="bottom-start"
     width="350"
     v-model="popoverVisible"
     @show="popoverShowHandle"
@@ -268,7 +268,8 @@ export default {
   ::v-deep .select-project-member-input {
     display: inline-flex;
     flex-direction: row;
-    width: 300px;
+    max-width: 300px;
+    width: 100%;
     height: auto;
     line-height: 0;
     align-items: center;

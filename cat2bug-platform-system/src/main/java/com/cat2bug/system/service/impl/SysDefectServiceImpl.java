@@ -1,6 +1,8 @@
 package com.cat2bug.system.service.impl;
 
 import java.util.List;
+import java.util.stream.Collectors;
+
 import com.cat2bug.common.utils.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -54,6 +56,9 @@ public class SysDefectServiceImpl implements ISysDefectService
     public int insertSysDefect(SysDefect sysDefect)
     {
         sysDefect.setCreateTime(DateUtils.getNowDate());
+        sysDefect.setUpdateTime(DateUtils.getNowDate());
+        long count = sysDefectMapper.getProjectDefectCount(sysDefect.getProjectId());
+        sysDefect.setProjectNum(count+1);
         return sysDefectMapper.insertSysDefect(sysDefect);
     }
 

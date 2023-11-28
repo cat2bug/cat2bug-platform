@@ -5,9 +5,10 @@
     @show="popoverShowHandle"
     @hide="popoverHideHandle"
     trigger="click">
-    <div slot="reference" class="select-module-input el-input__inner">
+    <div slot="reference" :class="'el-input__inner select-module-input select-module-input-'+size">
+      <i :class="icon" v-if="icon" style="margin: 0px 0px 0px 10px; color: #C0C4CC;"></i>
       <div class="selectProjectMemberInput_content">
-        <el-input ref="selectProjectModuleInput" readonly :placeholder="placeholder" v-model="queryMember.params.search" @input="searchChangeHandle"></el-input>
+        <el-input ref="selectProjectModuleInput" :class="icon?'padding-left-8':''" readonly :placeholder="placeholder" v-model="queryMember.params.search" @input="searchChangeHandle"></el-input>
       </div>
       <i class="select-module-input__icon el-icon-arrow-up" v-show="isClearButtonVisible==false" @mouseenter="showClearButtonHandle(true)"></i>
       <i class="select-module-input__icon el-icon-circle-close" v-show="isClearButtonVisible==true" @mouseleave="showClearButtonHandle(false)" @click="clearSelectModuleHandle"></i>
@@ -17,6 +18,7 @@
                    :key="moduleId"
                    :module-pid="moduleId"
                    :project-id="projectId"
+                   :is-edit="isEdit"
                    @clickMenu="clickMenuHandle($event,index)"
                    @clickDirectory="clickDirectoryHandle($event,index)"
                    @clickAddSubMenu="clickAddSubMenuHandle($event,index)"
@@ -69,12 +71,24 @@ export default {
     },
     placeholder: {
       type: String,
-      default: i18n.t('member.please-select-member')
+      default: i18n.t('module.select-module-name')
     },
     clearable: {
       type: Boolean,
       default: true
     },
+    isEdit: {
+      type: Boolean,
+      default: true
+    },
+    size: {
+      type: String,
+      default: 'default'
+    },
+    icon: {
+      type: String,
+      default: null
+    }
   },
   computed: {
   },
@@ -133,6 +147,7 @@ export default {
       this.selectModule=null;
       this.popoverVisible = false;
       this.$forceUpdate();
+      this.$emit('input',null);
       event.stopPropagation();
     },
     resetMenu() {
@@ -147,7 +162,8 @@ export default {
   ::v-deep .select-module-input {
     display: inline-flex;
     flex-direction: row;
-    width: 300px;
+    max-width: 300px;
+    width: 100%;
     height: auto;
     line-height: 0;
     align-items: center;
@@ -159,7 +175,7 @@ export default {
       flex-wrap: wrap;
       flex-grow: 1;
       overflow: hidden;
-      min-height: 28px;
+      min-height: 34px;
       margin: 3px 10px 3px 0px;
       .el-input {
         flex-grow: 1;
@@ -171,6 +187,9 @@ export default {
           line-height: 22px;
           display: inline;
         }
+      }
+      .padding-left-8 input {
+        padding-left: 8px;
       }
     }
     .select-module-input__icon {
@@ -203,6 +222,22 @@ export default {
       border-left: #f1f1f1 1px solid;
       padding-left: 10px;
       padding-right: 10px;
+    }
+  }
+  ::v-deep .select-module-input-medium {
+    .selectProjectMemberInput_content {
+      min-height: 28px;
+    }
+  }
+
+  ::v-deep .select-module-input-small {
+    .selectProjectMemberInput_content {
+      min-height: 24px;
+    }
+  }
+  ::v-deep .select-module-input-mini {
+    .selectProjectMemberInput_content {
+      min-height: 20px;
     }
   }
 </style>

@@ -1,28 +1,46 @@
 <template>
   <el-drawer
     size="50%"
-    title="新建缺陷"
     :visible.sync="visible"
     direction="rtl"
     :before-close="closeDefectDrawer">
+    <template slot="title">
+      <div class="defect-add-header">
+        <h3>{{$t('defect.create')}}</h3>
+        <div>
+          <el-button @click="cancel" icon="el-icon-close">{{$t('close')}}</el-button>
+          <el-button type="primary" icon="el-icon-finished" @click="submitForm">{{$t('create')}}</el-button>
+        </div>
+      </div>
+    </template>
     <div class="app-container">
       <el-form ref="form" :model="form" :rules="rules" label-width="120px">
         <el-form-item :label="$t('title')" prop="defectName">
-          <el-input v-model="form.defectName" placeholder="请输入缺陷标题" maxlength="128" />
+          <el-input v-model="form.defectName" :placeholder="$t('defect.enter-name')" maxlength="128" />
         </el-form-item>
-        <el-form-item label="处理人" prop="handleBy">
+        <el-form-item :label="$t('handle-by')" prop="handleBy">
           <select-project-member v-model="form.handleBy" :project-id="projectId"  />
         </el-form-item>
-        <el-form-item label="测试模块" prop="moduleId">
+        <el-form-item :label="$t('module')" prop="moduleId">
           <select-module v-model="form.moduleId" :project-id="projectId"/>
         </el-form-item>
-        <el-form-item label="版本" prop="moduleVersion">
-          <el-input v-model="form.moduleVersion" placeholder="请输入版本" />
+        <el-form-item :label="$t('version')" prop="moduleVersion">
+          <el-input v-model="form.moduleVersion" :placeholder="$t('defect.enter-version')" maxlength="128" style="max-width: 300px;" />
         </el-form-item>
-        <el-form-item label="缺陷描述" prop="defectDescribe">
+        <el-form-item :label="$t('level')" prop="defectLevel">
+          <el-select v-model="form.defectLevel" :placeholder="$t('defect.select-level')">
+            <el-option
+              v-for="dict in dict.type.defect_level"
+              :key="dict.value"
+              :label="$t(dict.value)?$t(dict.value):dict.label"
+              :value="dict.value"
+            ></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item :label="$t('describe')" prop="defectDescribe">
           <el-input
             type="textarea"
-            placeholder="请输入内容"
+            :placeholder="$t('enter-content')"
             v-model="form.defectDescribe"
             maxlength="65536"
             rows="8"
@@ -30,11 +48,11 @@
           >
           </el-input>
         </el-form-item>
-        <el-form-item label="图片" prop="imgUrls">
-          <image-upload v-model="form.imgUrls" :limit="22"></image-upload>
+        <el-form-item :label="$t('image')" prop="imgUrls">
+          <image-upload v-model="form.imgUrls" :limit="9"></image-upload>
         </el-form-item>
-        <el-form-item label="附件" prop="annexUrls">
-          <file-upload v-model="form.annexUrls"/>
+        <el-form-item :label="$t('annex')" prop="annexUrls">
+          <file-upload v-model="form.annexUrls" :limit="9"/>
         </el-form-item>
   <!--      <el-form-item label="测试用例id" prop="caseId">-->
   <!--        <el-input v-model="form.caseId" placeholder="请输入测试用例id" />-->
@@ -54,10 +72,7 @@
   <!--        </el-date-picker>-->
   <!--      </el-form-item>-->
       </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
-        <el-button @click="cancel">取 消</el-button>
-      </div>
+      <div slot="footer" class="dialog-footer"></div>
     </div>
   </el-drawer>
 </template>
@@ -70,32 +85,32 @@ import ImageUpload from "@/components/ImageUpload";
 
 export default {
   name: "AddDefect",
+  dicts: ['defect_level'],
   components: { ImageUpload, SelectProjectMember, SelectModule },
   data() {
     return {
       // 显示窗口
       visible: false,
       // 表单参数
-      form: {},
+      form: {
+        defectLevel: 'middle'
+      },
       // 表单校验
       rules: {
         defectType: [
-          { required: true, message: "缺陷类型不能为空", trigger: "change" }
+          { required: true, message: this.$i18n.t('defect.defect-type-cannot-empty'), trigger: "change" }
         ],
         handleBy: [
-          { required: true, message: "缺陷类型不能为空", trigger: "input" }
+          { required: true, message: this.$i18n.t('defect.handle-by-cannot-empty'), trigger: "input" }
         ],
         defectName: [
-          { required: true, message: "缺陷标题不能为空", trigger: "blur" }
+          { required: true, message: this.$i18n.t('defect.defect-name-cannot-empty'), trigger: "input" }
+        ],
+        defectLevel: [
+          { required: true, message: this.$i18n.t('defect.defect-level-cannot-empty'), trigger: "input" }
         ],
         defectDescribe: [
-          { required: true, message: "缺陷描述不能为空", trigger: "blur" }
-        ],
-        projectId: [
-          { required: true, message: "项目id不能为空", trigger: "change" }
-        ],
-        defectState: [
-          { required: true, message: "缺陷状态不能为空", trigger: "change" }
+          { required: true, message: this.$i18n.t('defect.describe-cannot-empty'), trigger: "input" }
         ],
       }
     }
@@ -139,7 +154,7 @@ export default {
         caseStepId: null,
         handleBy: null,
         handleTime: null,
-        defectLevel: null
+        defectLevel: 'middle'
       };
       this.resetForm("form");
     },
@@ -166,7 +181,7 @@ export default {
     },
     /** 关闭缺陷抽屉窗口 */
     closeDefectDrawer(done) {
-      done();
+      // done();
     },
     handleByChangeHandle(members){
       console.log(members,this.form.handleBy);
@@ -175,6 +190,14 @@ export default {
 }
 </script>
 
-<style scoped>
-
+<style lang="scss" scoped>
+  ::v-deep .el-drawer__close-btn {
+    display: none;
+  }
+  .defect-add-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-direction: row;
+  }
 </style>

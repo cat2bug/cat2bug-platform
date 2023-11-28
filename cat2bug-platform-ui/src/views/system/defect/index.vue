@@ -6,107 +6,102 @@
             <el-tab-pane :label="$t('project.all-project')" :name="$t('project.all-project')"></el-tab-pane>
       <!--      <el-tab-pane :label="$t('project.archived-project')" :name="$t('project.archived-project')"></el-tab-pane>-->
     </el-tabs>
-    <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="120px">
-      <el-form-item label="缺陷标题" prop="defectName">
-        <el-input
-          v-model="queryParams.defectName"
-          placeholder="请输入缺陷标题"
-          clearable
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="版本" prop="moduleVersion">
-        <el-input
-          v-model="queryParams.moduleVersion"
-          placeholder="请输入版本"
-          clearable
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="处理人" prop="handleBy">
-        <el-input
-          v-model="queryParams.handleBy"
-          placeholder="请输入处理人"
-          clearable
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
-      </el-form-item>
-    </el-form>
+    <div class="defect-tools">
+      <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="0">
+        <el-form-item prop="defectName">
+          <el-input
+            v-model="queryParams.defectName"
+            :placeholder="$t('defect.enter-name')"
+            prefix-icon="el-icon-search"
+            clearable
+            @input="handleQuery"
+          />
+        </el-form-item>
+        <el-form-item>
+          <select-module v-model="queryParams.moduleId" :project-id="queryParams.projectId" :is-edit="false" size="small" icon="el-icon-files" @input="handleQuery" />
+        </el-form-item>
+        <el-form-item prop="moduleVersion">
+          <el-input
+            v-model="queryParams.moduleVersion"
+            prefix-icon="el-icon-discount"
+            :placeholder="$t('defect.enter-version')"
+            clearable
+            @input="handleQuery"
+          />
+        </el-form-item>
+        <el-form-item prop="handleBy">
+          <el-input
+            v-model="queryParams.handleBy"
+            placeholder="请输入处理人"
+            clearable
+            @keyup.enter.native="handleQuery"
+          />
+        </el-form-item>
+      </el-form>
 
-    <el-row :gutter="10" class="mb8">
-      <el-col :span="1.5">
-        <el-button
-          type="primary"
-          plain
-          icon="el-icon-plus"
-          size="mini"
-          @click="handleAdd"
-          v-hasPermi="['system:defect:add']"
-        >新增</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="success"
-          plain
-          icon="el-icon-edit"
-          size="mini"
-          :disabled="single"
-          @click="handleUpdate"
-          v-hasPermi="['system:defect:edit']"
-        >修改</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="danger"
-          plain
-          icon="el-icon-delete"
-          size="mini"
-          :disabled="multiple"
-          @click="handleDelete"
-          v-hasPermi="['system:defect:remove']"
-        >删除</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="warning"
-          plain
-          icon="el-icon-download"
-          size="mini"
-          @click="handleExport"
-          v-hasPermi="['system:defect:export']"
-        >导出</el-button>
-      </el-col>
-      <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
-    </el-row>
-
-    <el-table v-loading="loading" :data="defectList" @selection-change="handleSelectionChange">
+      <el-row :gutter="10" class="mb8">
+        <el-col :span="1.5">
+          <el-button
+            type="primary"
+            plain
+            icon="el-icon-plus"
+            size="mini"
+            @click="handleAdd"
+            v-hasPermi="['system:defect:add']"
+          >{{$i18n.t('defect.create')}}</el-button>
+        </el-col>
+<!--        <el-col :span="1.5">-->
+<!--          <el-button-->
+<!--            type="warning"-->
+<!--            plain-->
+<!--            icon="el-icon-download"-->
+<!--            size="mini"-->
+<!--            @click="handleExport"-->
+<!--            v-hasPermi="['system:defect:export']"-->
+<!--          >导出</el-button>-->
+<!--        </el-col>-->
+      </el-row>
+    </div>
+    <el-table v-loading="loading" :data="defectList" @selection-change="handleSelectionChange" @sort-change="sortChangeHandle">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="缺陷类型" align="left" prop="defectType" />
-      <el-table-column label="缺陷标题" align="left" prop="defectName" />
-      <el-table-column label="附件" align="left" prop="annexUrls" />
-      <el-table-column label="版本" align="left" prop="moduleVersion" />
-      <el-table-column label="更新时间" align="left" prop="updateTime" width="180">
+      <el-table-column :label="$t('id')" align="left" prop="projectNum" width="80" sortable >
+        <template slot-scope="scope">
+          <span>{{ '#' + scope.row.projectNum }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column :label="$t('type')" align="left" prop="defectTypeName" width="80" sortable />
+      <el-table-column :label="$t('title')" align="left" prop="defectName" sortable />
+      <el-table-column :label="$t('level')" align="left" prop="defectLevel" width="100" sortable >
+        <template slot-scope="scope">
+          <level-tag :options="dict.type.defect_level" :value="scope.row.defectLevel"/>
+        </template>
+      </el-table-column>
+      <el-table-column :label="$t('state')" align="left" prop="defectStateName" width="120" sortable />
+      <el-table-column :label="$t('module')" align="left" prop="moduleName" width="150" sortable />
+      <el-table-column :label="$t('version')" align="left" prop="moduleVersion" width="100" sortable />
+      <el-table-column :label="$t('update-time')" align="left" prop="updateTime" width="180" sortable >
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.updateTime, '{y}-{m}-{d}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="缺陷状态" align="left" prop="defectState" />
-      <el-table-column label="处理人" align="left" prop="handleBy">
+      <el-table-column :label="$t('handle-by')" align="left" prop="handleBy">
         <template slot-scope="scope">
           <row-list-member :members="scope.row.handleByList"></row-list-member>
         </template>
       </el-table-column>
-      <el-table-column label="处理时间" align="left" prop="handleTime" width="180">
+      <el-table-column :label="$t('image')" align="left" prop="imgUrls">
         <template slot-scope="scope">
-          <span>{{ parseTime(scope.row.handleTime, '{y}-{m}-{d}') }}</span>
+          <el-image
+            v-for="(img,index) in getImg(scope.row)"
+            :key="index"
+            style="width: 50px; height: 50px"
+            :src="img"
+            :preview-src-list="[img]"
+            fit="contain"></el-image>
         </template>
       </el-table-column>
-      <el-table-column label="缺陷等级" align="left" prop="defectLevel" />
-      <el-table-column label="操作" align="left" class-name="small-padding fixed-width">
+      <el-table-column :label="$t('annex')" align="left" prop="annexUrls" />
+      <el-table-column :label="$t('operate')" align="left" class-name="small-padding fixed-width" width="120">
         <template slot-scope="scope">
           <el-button
             size="mini"
@@ -142,11 +137,13 @@
 <script>
 import { listDefect, getDefect, delDefect, addDefect, updateDefect } from "@/api/system/defect";
 import RowListMember from "@/components/RowListMember";
-
+import LevelTag from "@/components/LevelTag";
 import AddDefect from "./add.vue"
+import SelectModule from "@/components/SelectModule";
 export default {
   name: "Defect",
-  components: { RowListMember, AddDefect },
+  components: {SelectModule, RowListMember, AddDefect, LevelTag },
+  dicts: ['defect_level'],
   data() {
     return {
       // 当前缺陷的tab页名
@@ -179,6 +176,8 @@ export default {
       queryParams: {
         pageNum: 1,
         pageSize: 10,
+        orderByColumn: 'updateTime',
+        isAsc: 'desc',
         defectType: null,
         defectName: null,
         projectId: null,
@@ -200,13 +199,47 @@ export default {
 
     };
   },
+  computed: {
+    getImg: function () {
+      return function (defect){
+        let imgs = defect.imgUrls?defect.imgUrls.split(','):[];
+        return imgs.map(i=>{
+          return process.env.VUE_APP_BASE_API + i;
+        })
+      }
+    }
+  },
   created() {
     this.getList();
   },
   methods: {
+    sortChangeHandle(e) {
+      console.log(e)
+      if(e.order){
+        switch (e.prop) {
+          case 'defectStateName':
+            this.queryParams.orderByColumn='defectState';
+            break;
+          case 'defectTypeName':
+            this.queryParams.orderByColumn='defectType';
+            break;
+          default:
+            this.queryParams.orderByColumn=e.prop;
+            break;
+        }
+        this.queryParams.isAsc=e.order=='ascending'?"asc":'desc';
+      } else {
+        this.queryParams.orderByColumn=null;
+        this.queryParams.isAsc=null;
+      }
+      this.getList();
+    },
     /** 切换页标签 */
     selectDefectTabHandle() {
 
+    },
+    getProjectId() {
+      return 22;
     },
     /** 获取团队id */
     getTeamId() {
@@ -228,6 +261,7 @@ export default {
         this.queryParams.params["beginHandleTime"] = this.daterangeHandleTime[0];
         this.queryParams.params["endHandleTime"] = this.daterangeHandleTime[1];
       }
+      this.queryParams.projectId = this.getProjectId();
       listDefect(this.queryParams).then(response => {
         this.defectList = response.rows;
         this.total = response.total;
@@ -287,3 +321,19 @@ export default {
   }
 };
 </script>
+<style lang="scss" scoped>
+.defect-tools {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  > * {
+    display: inline-block;
+    margin-bottom: 0px;
+    ::v-deep .el-form-item {
+      margin-bottom: 0px;
+    }
+  }
+}
+</style>
