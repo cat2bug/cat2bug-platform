@@ -1,5 +1,6 @@
 {
   "system-name": "猫陪我改BUG",
+  "main": "首功能",
   "loading": "登陆中",
   "source-code-address": "源码地址",
   "doc-address": "文档地址",
@@ -111,6 +112,7 @@
   "team.search-placeholder": "请搜索成员名称、手机号码或邮箱",
   "team.name-cannot-empty": "团队名称不能为空",
   "team.icon-cannot-empty": "团队图标不能为空",
+  "project": "项目",
   "project.is-delete-project": "是否确认删除{0}的项目?",
   "project.admin": "管理员",
   "project.collect-project": "收藏项目",

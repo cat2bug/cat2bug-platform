@@ -1,5 +1,6 @@
 <template>
   <div class="app-container">
+    <project-label />
     <el-tabs v-model="activeDefectTabName" @tab-click="selectDefectTabHandle">
       <el-tab-pane :label="$t('project.my-participated-in')" :name="$t('project.my-participated-in')"></el-tab-pane>
       <!--      <el-tab-pane :label="$t('project.my-manage')" :name="$t('project.my-manage')"></el-tab-pane>-->
@@ -14,11 +15,11 @@
             :placeholder="$t('defect.enter-name')"
             prefix-icon="el-icon-search"
             clearable
-            @input="handleQuery"
+            @input="selectDefectTabHandle()"
           />
         </el-form-item>
         <el-form-item>
-          <select-module v-model="queryParams.moduleId" :project-id="queryParams.projectId" :is-edit="false" size="small" icon="el-icon-files" @input="handleQuery" />
+          <select-module v-model="queryParams.moduleId" :project-id="queryParams.projectId" :is-edit="false" size="small" icon="el-icon-files" @input="selectDefectTabHandle()" />
         </el-form-item>
         <el-form-item prop="moduleVersion">
           <el-input
@@ -26,7 +27,7 @@
             prefix-icon="el-icon-discount"
             :placeholder="$t('defect.enter-version')"
             clearable
-            @input="handleQuery"
+            @input="selectDefectTabHandle()"
           />
         </el-form-item>
         <el-form-item prop="handleBy">
@@ -37,7 +38,7 @@
             :is-head="false"
             size="small"
             icon="el-icon-user"
-            @input="handleQuery"
+            @input="selectDefectTabHandle()"
           />
         </el-form-item>
       </el-form>
@@ -73,7 +74,11 @@
         </template>
       </el-table-column>
       <el-table-column :label="$t('type')" align="left" prop="defectTypeName" width="80" sortable />
-      <el-table-column :label="$t('title')" align="left" prop="defectName" sortable />
+      <el-table-column :label="$t('title')" align="left" prop="defectName" sortable >
+        <template slot-scope="scope">
+          <el-link type="primary">{{ scope.row.defectName }}</el-link>
+        </template>
+      </el-table-column>
       <el-table-column :label="$t('level')" align="left" prop="defectLevel" width="100" sortable >
         <template slot-scope="scope">
           <level-tag :options="dict.type.defect_level" :value="scope.row.defectLevel"/>
@@ -135,7 +140,6 @@
       :limit.sync="queryParams.pageSize"
       @pagination="getList"
     />
-
     <!-- 添加或修改缺陷对话框 -->
     <add-defect ref="addDefectForm" :project-id="22" @added="getList" />
   </div>
@@ -148,10 +152,11 @@ import LevelTag from "@/components/LevelTag";
 import AddDefect from "./add.vue"
 import SelectModule from "@/components/SelectModule";
 import SelectProjectMember from "@/components/SelectProjectMember";
+import ProjectLabel from "@/components/ProjectLabel";
 
 export default {
   name: "Defect",
-  components: {SelectModule, RowListMember, AddDefect, LevelTag, SelectProjectMember },
+  components: {SelectModule, RowListMember, AddDefect, LevelTag, SelectProjectMember,ProjectLabel },
   dicts: ['defect_level'],
   data() {
     return {
@@ -246,7 +251,7 @@ export default {
         this.queryParams.orderByColumn=null;
         this.queryParams.isAsc=null;
       }
-      this.getList();
+      this.selectDefectTabHandle();
     },
     /** 切换页标签 */
     selectDefectTabHandle() {
@@ -262,7 +267,7 @@ export default {
       return this.$store.state.user.id;
     },
     getProjectId() {
-      return this.$store.state.user.currentProjectId;
+      return parseInt(this.$store.state.user.currentProjectId);
     },
     /** 获取团队id */
     getTeamId() {

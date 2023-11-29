@@ -149,7 +149,7 @@ export default {
       queryParams: {
         modulePid: null,
         moduleName: null,
-        projectId: null
+        projectId: this.getProjectId()
       },
       // 表单参数
       form: {},
@@ -205,6 +205,10 @@ export default {
         projectId: null
       };
       this.resetForm("form");
+    },
+    /** 获取项目id操作 */
+    getProjectId() {
+      return parseInt(this.$store.state.user.currentProjectId);
     },
     /** 搜索按钮操作 */
     handleQuery() {

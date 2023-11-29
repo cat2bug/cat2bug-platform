@@ -1,5 +1,6 @@
 {
   "system-name": "CAT & BUG",
+  "main": "Main",
   "loading": "Loading",
   "source-code-address": "Source Code Address",
   "doc-address": "Document Address",
@@ -111,6 +112,7 @@
   "team.search-placeholder": "Please search for name, phone, or email",
   "team.name-cannot-empty": "Name cannot be empty",
   "team.icon-cannot-empty": "Icon cannot be empty",
+  "project": "Project",
   "project.is-delete-project": "Are you sure to delete the project for {0}?",
   "project.admin": "Admin",
   "project.collect-project": "Collect Project",

@@ -17,6 +17,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="updateTime"    column="update_time"    />
     </resultMap>
 
+    <sql id="findSysProjectVo">
+        select p.project_id, p.team_id, p.project_name, p.project_icon, p.project_introduce, p.create_by, p.create_time, p.update_by, p.update_time
+        from sys_project p
+    </sql>
+
     <sql id="selectSysProjectVo">
         select p.project_id, p.team_id, p.project_name, p.project_icon, p.project_introduce, p.create_by, p.create_time, p.update_by, p.update_time, up.collect
         from sys_project p
@@ -35,7 +40,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </select>
     
     <select id="selectSysProjectByProjectId" parameterType="Long" resultMap="SysProjectResult">
-        <include refid="selectSysProjectVo"/>
+        <include refid="findSysProjectVo"/>
         where p.project_id = #{projectId}
     </select>
         
