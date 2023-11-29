@@ -6,7 +6,8 @@
     @show="popoverShowHandle"
     @hide="popoverHideHandle"
     trigger="click">
-    <div slot="reference" class="select-project-member-input el-input__inner">
+    <div slot="reference" :class="'el-input__inner select-project-member-input select-project-member-input-'+size">
+      <i :class="icon" v-if="icon" style="margin: 0px 0px 0px 5px; color: #C0C4CC;"></i>
       <div class="selectProjectMemberInput_content">
         <el-tag class="select-project-member-tag" size="mini" v-for="member in selectMemberList()" :key="member.userId" closable @close="clickMenuHandle(member)" :type="tagType(member)">{{member.nickName}}</el-tag>
         <el-input ref="selectProjectMemberInput" :placeholder="selectMembers.size>0?'':placeholder" v-model="queryMember.params.search" @input="searchChangeHandle" @keydown.native="searchKeyDownHandle"></el-input>
@@ -20,11 +21,12 @@
     </el-tabs>
 
     <el-row v-if="options && options.length>0" class="select-project-member-menu">
-      <el-col :span="24" v-for="item in options" :key="item.userId" @click.native="clickMenuHandle(item)">
+      <el-col :span="24" v-for="item in options" :key="item.userId" @click.native="clickMenuHandle(item)" :active="optionsChecks.get(item.userId)?'true':'false'">
         <member-nameplate :member="item"></member-nameplate>
-        <el-tag size="mini" :active="optionsChecks.get(item.userId)?'true':'false'" @click.native="setMasterHandle($event,item)" :type="tagType(item)">
+        <el-tag v-if="isHead" size="mini"  @click.native="setMasterHandle($event,item)" :type="tagType(item)">
           {{optionsChecks.get(item.userId)===1?$i18n.t('head'):$i18n.t('assistant')}}
         </el-tag>
+        <i v-else class="el-icon-check"></i>
       </el-col>
     </el-row>
     <el-empty v-else :description="$i18n.t('no-data')"></el-empty>
@@ -87,6 +89,10 @@ export default {
       type: Array,
       default: null,
     },
+    isHead: {
+      type: Boolean,
+      default: true
+    },
     projectId: {
       type: Number,
       default: null
@@ -107,11 +113,23 @@ export default {
       type: Boolean,
       default: true
     },
+    size: {
+      type: String,
+      default: 'default'
+    },
+    icon: {
+      type: String,
+      default: null
+    }
   },
   computed: {
     tagType: function () {
       return function (member) {
-        return this.optionsChecks.get(member.userId)===1?'':'success';
+        if(this.isHead) {
+          return this.optionsChecks.get(member.userId)===1?'':'success';
+        } else {
+          return 'info';
+        }
       }
     },
     selectMemberList: function () {
@@ -273,7 +291,7 @@ export default {
     height: auto;
     line-height: 0;
     align-items: center;
-    padding-left: 0px;
+    padding-left: 5px;
     .selectProjectMemberInput_content {
       display: inline-flex;
       flex-direction: row;
@@ -287,11 +305,16 @@ export default {
         margin: 3px;
         flex-shrink: 0;
       }
+      .select-project-member-tag:first-child {
+        margin-left: 10px;
+      }
       .el-input {
         flex-grow: 1;
         width: 0.1%;
         height: 22px;
         .el-input__inner {
+          padding-left: 8px;
+          padding-right: 0px;
           border-width: 0px;
           height: 22px;
           line-height: 22px;
@@ -309,6 +332,23 @@ export default {
       cursor: pointer;
     }
   }
+  ::v-deep .select-project-member-input-medium {
+    .selectProjectMemberInput_content {
+      min-height: 28px;
+    }
+  }
+
+  ::v-deep .select-project-member-input-small {
+    .selectProjectMemberInput_content {
+      min-height: 24px;
+    }
+  }
+  ::v-deep .select-project-member-input-mini {
+    .selectProjectMemberInput_content {
+      min-height: 20px;
+    }
+  }
+
   .select-project-member-input:focus {
     .select-project-member-input__icon {
       transform: rotateZ(0deg);
@@ -320,12 +360,22 @@ export default {
       flex-shrink: 0;
       justify-content: space-between;
       align-items: center;
+      i {
+        margin-right: 15px;
+      }
       .el-tag {
-        display: none;
         margin-right: 5px;
       }
-      .el-tag[active='true'] {
+      .el-tag, i {
+        display: none;
+      }
+    }
+    .el-col[active='true'] {
+      .el-tag, i {
         display: inline-block;
+      }
+      ::v-deep .member-nameplate-content p, i {
+        color: #409eff;
       }
     }
     .el-col:hover {

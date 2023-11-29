@@ -29,6 +29,7 @@
 <script>
 import { myListTeam } from "@/api/system/team";
 import { updateConfig } from "@/api/system/user-config";
+import {removeCurrentProjectId} from "@/utils/project";
 
 export default {
   name: "TeamSelect",
@@ -89,7 +90,13 @@ export default {
             updateConfig({
               currentTeamId: currentTeamId
             }).then(res => {
-              window.location.reload(); // 刷新当前页面
+              removeCurrentProjectId();
+              let path = '/main/index';
+              if(this.$router.currentRoute.path==path) {
+                window.location.reload(); // 刷新当前页面
+              } else {
+                this.$router.push({path:path})
+              }
             });
           }
           break;

@@ -2,24 +2,45 @@
     <div :class="{'has-logo':showLogo}" :style="{ backgroundColor: settings.sideTheme === 'theme-dark' ? variables.menuBackground : variables.menuLightBackground }">
         <team-select v-if="showLogo" :collapse="isCollapse"></team-select>
         <el-scrollbar :class="settings.sideTheme" wrap-class="scrollbar-wrapper">
-            <el-menu
-                :default-active="activeMenu"
-                :collapse="isCollapse"
-                :background-color="settings.sideTheme === 'theme-dark' ? variables.menuBackground : variables.menuLightBackground"
-                :text-color="settings.sideTheme === 'theme-dark' ? variables.menuColor : variables.menuLightColor"
-                :unique-opened="true"
-                :active-text-color="settings.theme"
-                :collapse-transition="false"
-                mode="vertical"
-            >
-                <sidebar-item
-                    v-for="(route, index) in filterSidebarRouters('project')"
-                    :key="route.path  + index"
-                    :item="route"
-                    :base-path="'project/'+route.path"
-                />
-            </el-menu>
-            <div class="sidebar-divider">
+          <el-menu
+            :default-active="activeMenu"
+            :collapse="isCollapse"
+            :background-color="settings.sideTheme === 'theme-dark' ? variables.menuBackground : variables.menuLightBackground"
+            :text-color="settings.sideTheme === 'theme-dark' ? variables.menuColor : variables.menuLightColor"
+            :unique-opened="true"
+            :active-text-color="settings.theme"
+            :collapse-transition="false"
+            mode="vertical"
+          >
+            <sidebar-item
+              v-for="(route, index) in filterSidebarRouters('main')"
+              :key="route.path  + index"
+              :item="route"
+              :base-path="'main/'+route.path"
+            />
+          </el-menu>
+          <div class="sidebar-divider">
+            <el-divider></el-divider>
+          </div>
+          <el-menu
+              v-show="isShowProjectMenu"
+              :default-active="activeMenu"
+              :collapse="isCollapse"
+              :background-color="settings.sideTheme === 'theme-dark' ? variables.menuBackground : variables.menuLightBackground"
+              :text-color="settings.sideTheme === 'theme-dark' ? variables.menuColor : variables.menuLightColor"
+              :unique-opened="true"
+              :active-text-color="settings.theme"
+              :collapse-transition="false"
+              mode="vertical"
+          >
+              <sidebar-item
+                  v-for="(route, index) in filterSidebarRouters('project')"
+                  :key="route.path  + index"
+                  :item="route"
+                  :base-path="'project/'+route.path"
+              />
+          </el-menu>
+            <div class="sidebar-divider" v-show="isShowProjectMenu">
               <el-divider></el-divider>
             </div>
             <el-menu
@@ -39,26 +60,26 @@
                 :base-path="'team-option/'+route.path"
               />
             </el-menu>
-            <div class="sidebar-divider">
-              <el-divider></el-divider>
-            </div>
-            <el-menu
-              :default-active="activeMenu"
-              :collapse="isCollapse"
-              :background-color="settings.sideTheme === 'theme-dark' ? variables.menuBackground : variables.menuLightBackground"
-              :text-color="settings.sideTheme === 'theme-dark' ? variables.menuColor : variables.menuLightColor"
-              :unique-opened="true"
-              :active-text-color="settings.theme"
-              :collapse-transition="false"
-              mode="vertical"
-            >
-              <sidebar-item
-                v-for="(route, index) in filterSidebarRouters('system')"
-                :key="route.path  + index"
-                :item="route"
-                :base-path="'system/'+route.path"
-              />
-            </el-menu>
+<!--            <div class="sidebar-divider">-->
+<!--              <el-divider></el-divider>-->
+<!--            </div>-->
+<!--            <el-menu-->
+<!--              :default-active="activeMenu"-->
+<!--              :collapse="isCollapse"-->
+<!--              :background-color="settings.sideTheme === 'theme-dark' ? variables.menuBackground : variables.menuLightBackground"-->
+<!--              :text-color="settings.sideTheme === 'theme-dark' ? variables.menuColor : variables.menuLightColor"-->
+<!--              :unique-opened="true"-->
+<!--              :active-text-color="settings.theme"-->
+<!--              :collapse-transition="false"-->
+<!--              mode="vertical"-->
+<!--            >-->
+<!--              <sidebar-item-->
+<!--                v-for="(route, index) in filterSidebarRouters('system')"-->
+<!--                :key="route.path  + index"-->
+<!--                :item="route"-->
+<!--                :base-path="'system/'+route.path"-->
+<!--              />-->
+<!--            </el-menu>-->
         </el-scrollbar>
     </div>
 </template>
@@ -74,6 +95,9 @@ export default {
     computed: {
         ...mapState(["settings"]),
         ...mapGetters(["sidebarRouters", "sidebar"]),
+        isShowProjectMenu() {
+          return this.$store.state.user.currentProjectId
+        },
         filterSidebarRouters() {
           return function (name){
             for(let i in this.sidebarRouters) {

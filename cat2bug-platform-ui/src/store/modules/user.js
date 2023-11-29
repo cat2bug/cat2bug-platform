@@ -1,5 +1,6 @@
 import { login, logout, getInfo } from '@/api/login'
 import { getToken, setToken, removeToken } from '@/utils/auth'
+import { getCurrentProjectId,setCurrentProjectId } from "@/utils/project";
 
 const user = {
   state: {
@@ -9,7 +10,8 @@ const user = {
     avatar: '',
     roles: [],
     permissions: [],
-    config: {}
+    config: {},
+    currentProjectId: getCurrentProjectId()
   },
 
   mutations: {
@@ -34,9 +36,20 @@ const user = {
     SET_CONFIG: (state, config) => {
       state.config = config
     },
+    SET_CURRENT_PROJECT_ID: (state, currentProjectId) => {
+      state.currentProjectId = currentProjectId
+    },
   },
 
   actions: {
+    // 设置当前项目
+    setCurrentProjectId({ commit }, projectId) {
+      return new Promise(resolve => {
+        setCurrentProjectId(projectId)
+        commit('SET_CURRENT_PROJECT_ID', projectId)
+        resolve()
+      })
+    },
     // 登录
     Login({ commit }, userInfo) {
       const username = userInfo.username.trim()

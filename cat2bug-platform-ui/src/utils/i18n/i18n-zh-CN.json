@@ -149,6 +149,7 @@
   "defect.enter-name": "请输入缺陷标题",
   "defect.enter-version": "请输入版本",
   "defect.select-level": "请选择级别",
+  "defect.select-handle-by": "请选择执行人",
   "defect.defect-name-cannot-empty": "缺陷标题不能为空",
   "defect.defect-level-cannot-empty": "缺陷等级不能为空",
   "defect.defect-type-cannot-empty": "缺陷类型不能为空",

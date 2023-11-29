@@ -98,22 +98,22 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="dataSources != null "> and d.data_sources = #{dataSources}</if>
             <if test="dataSourcesParams != null  and dataSourcesParams != ''"> and d.data_sources_params = #{dataSourcesParams}</if>
             <if test="moduleId != null "> and d.module_id = #{moduleId}</if>
-            <if test="moduleVersion != null  and moduleVersion != ''"> and d.module_version like concat('%', #{moduleVersion}, '%')</if>
+            <if test="moduleVersion != null and moduleVersion != ''"> and d.module_version like concat('%', #{moduleVersion}, '%')</if>
             <if test="createBy != null  and createBy != ''"> and d.create_by = #{createBy}</if>
             <if test="params.beginUpdateTime != null and params.beginUpdateTime != '' and params.endUpdateTime != null and params.endUpdateTime != ''"> and d.update_time between #{params.beginUpdateTime} and #{params.endUpdateTime}</if>
             <if test="params.beginCreateTime != null and params.beginCreateTime != '' and params.endCreateTime != null and params.endCreateTime != ''"> and d.create_time between #{params.beginCreateTime} and #{params.endCreateTime}</if>
             <if test="updateBy != null  and updateBy != ''"> and d.update_by = #{updateBy}</if>
             <if test="defectState != null "> and d.defect_state = #{defectState}</if>
             <if test="handleBy != null  and handleBy != ''">
-             and d.handle_by in
-             <foreach collection="handleBy" item="b" separator="," open="(" close=")">
-                 #{b}
+             and
+             <foreach collection="handleBy" item="b" separator=" or " open="(" close=")">
+                 JSON_CONTAINS(d.handle_by,CAST(#{b} AS CHAR))
              </foreach>
             </if>
+            <if test="params.userId != null"> and (JSON_CONTAINS(d.handle_by,CAST(#{params.userId} AS CHAR)) OR create_by=#{params.userId} OR update_by=#{params.userId})</if>
             <if test="params.beginHandleTime != null and params.beginHandleTime != '' and params.endHandleTime != null and params.endHandleTime != ''"> and d.handle_time between #{params.beginHandleTime} and #{params.endHandleTime}</if>
             <if test="defectLevel != null  and defectLevel != ''"> and d.defect_level = #{defectLevel}</if>
         </where>
---         ORDER BY update_time DESC
     </select>
     
     <select id="selectSysDefectByDefectId" parameterType="Long" resultMap="SysDefectResult">

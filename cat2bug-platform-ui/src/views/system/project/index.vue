@@ -9,24 +9,38 @@
     <h4 v-show="collectList.length>0">{{$t('project.collect-project')}}</h4>
     <el-row v-show="collectList.length>0" class="project-collects" :gutter="10">
       <el-col :xs="24" :sm="12" :md="8" :lg="4" :xl="4" v-for="project in collectList" :key="project.projectId">
-        <el-card class="box-card">
+        <el-card class="box-card project-block" @click.native="clickProject(project)">
           <div slot="header" class="clearfix project-collects-card-header">
             <project-nameplate :project="project"></project-nameplate>
-            <star-switch v-model="project.collect" @change="clickCollectHandle(project, true, $event)"></star-switch>
+            <star-switch v-model="project.collect" @change="clickCollectHandle($event, project, true)"></star-switch>
           </div>
           <div class="project-collects-card-tools">
-            <i class="el-icon-s-platform"></i>
-            <i class="el-icon-s-operation"></i>
+            <i class="el-icon-notebook-2"
+               @click="goDefectHandle($event, project)"
+               v-hasPermi="['system:project:remove']"></i>
+<!--            <i class="el-icon-s-platform"></i>-->
+<!--            <i class="el-icon-s-operation"></i>-->
             <i class="el-icon-delete"
-               @click="handleDelete(project)"
+               @click="handleDelete($event, project)"
                v-hasPermi="['system:project:remove']"></i>
           </div>
         </el-card>
       </el-col>
     </el-row>
     <h4>{{$t('project.project-list')}}</h4>
-    <el-row :gutter="10" class="mb8">
-      <el-col :span="1.5">
+    <div class="project-tools">
+      <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="0">
+        <el-form-item prop="defectName">
+          <el-input
+            v-model="queryParams.projectName"
+            :placeholder="$t('project.enter-project-name')"
+            prefix-icon="el-icon-search"
+            clearable
+            @input="handleQuery"
+          />
+        </el-form-item>
+      </el-form>
+      <div>
         <el-button
           type="primary"
           plain
@@ -34,15 +48,13 @@
           size="mini"
           @click="handleAdd"
           v-hasPermi="['system:project:add']"
-        >{{$t("create")}}</el-button>
-      </el-col>
-      <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
-    </el-row>
-
+        >{{$t("project.create-project")}}</el-button>
+      </div>
+    </div>
     <el-table v-loading="loading" :data="projectList" @selection-change="handleSelectionChange">
       <el-table-column :label="$t('project.name')" align="left" prop="projectName">
         <template slot-scope="scope">
-          <project-nameplate :project="scope.row"></project-nameplate>
+          <project-nameplate class="project-list-title" :project="scope.row" @click.native="clickProject(scope.row)"></project-nameplate>
         </template>
       </el-table-column>
       <el-table-column :label="$t('update-time')" align="left" prop="updateTime" width="180">
@@ -57,7 +69,7 @@
       </el-table-column>
       <el-table-column :label="$t('operate')" align="left" class-name="small-padding fixed-width" width="150">
         <template slot-scope="scope">
-          <star-switch v-model="scope.row.collect" @change="clickCollectHandle(scope.row, false, $event)"></star-switch>
+          <star-switch v-model="scope.row.collect" @change="clickCollectHandle($event, scope.row, false)"></star-switch>
 <!--          <el-button-->
 <!--            size="mini"-->
 <!--            type="text"-->
@@ -111,6 +123,10 @@ import ProjectNameplate from "@/components/ProjectNameplate";
 import StarSwitch from "@/components/StarSwitch";
 import RowListMember from "@/components/RowListMember";
 import { strFormat } from "@/utils/index"
+import store from "@/store";
+import {isRelogin} from "@/utils/request";
+import router from "@/router";
+import {Message} from "element-ui";
 
 export default {
   name: "Project",
@@ -279,8 +295,11 @@ export default {
         }
       });
     },
+    goDefectHandle(e, project) {
+      this.clickProject(project);
+    },
     /** 删除按钮操作 */
-    handleDelete(row) {
+    handleDelete(e,row) {
       let msg = this.$i18n.t('project.is-delete-project');
       this.$modal.confirm(strFormat(msg,'[ '+row.projectName+' ]')).then(function() {
         return delProject(row.projectId);
@@ -288,10 +307,11 @@ export default {
         this.getList();
         this.$modal.msgSuccess("删除成功");
       }).catch(() => {});
+      e.stopPropagation();
     },
     /** 点击收藏操作 */
-    clickCollectHandle(project,isRefreshList,collect) {
-      this.$set(project,'collect',collect);
+    clickCollectHandle(collect, project,isRefreshList) {
+      this.$set(project, 'collect', collect);
       // 保存收藏状态
       collectProject(project.projectId, project).then(res=>{
         // 如果collect参数存在，表明是点击头部的收藏按钮触发
@@ -304,6 +324,14 @@ export default {
         } else {
           this.$message.success(this.$i18n.t('project.cancel-success'));}
       });
+    },
+    /** 点击项目跳转 */
+    clickProject(project) {
+      store.dispatch('setCurrentProjectId',project.projectId).then(() => {
+        this.$router.push({name:'Defect'})
+      }).catch(err => {
+        console.error(err);
+      })
     }
   }
 };
@@ -348,6 +376,17 @@ export default {
       margin-bottom: 10px;
     }
   }
-
-
+  .project-list-title:hover, .project-block:hover {
+    cursor: pointer;
+  }
+  .project-tools {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-direction: row;
+    margin-bottom: 10px;
+    ::v-deep .el-form-item {
+      margin-bottom: 0px;
+    }
+  }
 </style>

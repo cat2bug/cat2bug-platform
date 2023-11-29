@@ -15,8 +15,9 @@ export default {
     }
   },
   methods: {
-    clickCollectHandle() {
+    clickCollectHandle(event) {
       this.$emit('change',!this.collect);
+      event.stopPropagation();
     }
   }
 }

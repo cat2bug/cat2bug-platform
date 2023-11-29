@@ -30,11 +30,14 @@
           />
         </el-form-item>
         <el-form-item prop="handleBy">
-          <el-input
+          <select-project-member
             v-model="queryParams.handleBy"
-            placeholder="请输入处理人"
-            clearable
-            @keyup.enter.native="handleQuery"
+            :project-id="queryParams.projectId"
+            :placeholder="$t('defect.select-handle-by').toString()"
+            :is-head="false"
+            size="small"
+            icon="el-icon-user"
+            @input="handleQuery"
           />
         </el-form-item>
       </el-form>
@@ -92,7 +95,7 @@
       <el-table-column :label="$t('image')" align="left" prop="imgUrls">
         <template slot-scope="scope">
           <el-image
-            v-for="(img,index) in getImg(scope.row)"
+            v-for="(img,index) in getUrl(scope.row.imgUrls)"
             :key="index"
             style="width: 50px; height: 50px"
             :src="img"
@@ -100,7 +103,11 @@
             fit="contain"></el-image>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('annex')" align="left" prop="annexUrls" />
+<!--      <el-table-column :label="$t('annex')" align="left" prop="annexUrls">-->
+<!--        <template slot-scope="scope">-->
+<!--          <el-link type="primary" v-for="(file,index) in getUrl(scope.row.annexUrls)" :key="index" :href="file">{{getFileName(file)}}</el-link>-->
+<!--        </template>-->
+<!--      </el-table-column>-->
       <el-table-column :label="$t('operate')" align="left" class-name="small-padding fixed-width" width="120">
         <template slot-scope="scope">
           <el-button
@@ -140,9 +147,11 @@ import RowListMember from "@/components/RowListMember";
 import LevelTag from "@/components/LevelTag";
 import AddDefect from "./add.vue"
 import SelectModule from "@/components/SelectModule";
+import SelectProjectMember from "@/components/SelectProjectMember";
+
 export default {
   name: "Defect",
-  components: {SelectModule, RowListMember, AddDefect, LevelTag },
+  components: {SelectModule, RowListMember, AddDefect, LevelTag, SelectProjectMember },
   dicts: ['defect_level'],
   data() {
     return {
@@ -196,25 +205,30 @@ export default {
         handleTime: null,
         defectLevel: null
       },
-
     };
   },
   computed: {
-    getImg: function () {
-      return function (defect){
-        let imgs = defect.imgUrls?defect.imgUrls.split(','):[];
+    getUrl: function () {
+      return function (urls){
+        let imgs = urls?urls.split(','):[];
         return imgs.map(i=>{
           return process.env.VUE_APP_BASE_API + i;
         })
       }
+    },
+    getFileName: function () {
+      return function (url) {
+        if(!url) return null;
+        let arr = url.split('\/');
+        return arr[arr.length-1];
+      }
     }
   },
   created() {
-    this.getList();
+    this.selectDefectTabHandle();
   },
   methods: {
     sortChangeHandle(e) {
-      console.log(e)
       if(e.order){
         switch (e.prop) {
           case 'defectStateName':
@@ -236,19 +250,31 @@ export default {
     },
     /** 切换页标签 */
     selectDefectTabHandle() {
-
+      if(this.activeDefectTabName == this.$i18n.t('project.my-participated-in').toString()){
+        this.handleQuery({
+          userId: this.getUserId()
+        });
+      } else {
+        this.handleQuery();
+      }
+    },
+    getUserId() {
+      return this.$store.state.user.id;
     },
     getProjectId() {
-      return 22;
+      return this.$store.state.user.currentProjectId;
     },
     /** 获取团队id */
     getTeamId() {
       return this.$store.state.user.config.currentTeamId;
     },
     /** 查询缺陷列表 */
-    getList() {
+    getList(params) {
       this.loading = true;
-      this.queryParams.params = {};
+      if(params)
+        this.queryParams.params = params;
+      else
+        this.queryParams.params = {};
       if (null != this.daterangeUpdateTime && '' != this.daterangeUpdateTime) {
         this.queryParams.params["beginUpdateTime"] = this.daterangeUpdateTime[0];
         this.queryParams.params["endUpdateTime"] = this.daterangeUpdateTime[1];
@@ -270,9 +296,9 @@ export default {
     },
 
     /** 搜索按钮操作 */
-    handleQuery() {
+    handleQuery(params) {
       this.queryParams.pageNum = 1;
-      this.getList();
+      this.getList(params);
     },
     /** 重置按钮操作 */
     resetQuery() {
