@@ -1,7 +1,10 @@
 package com.cat2bug.system.service;
 
-import java.util.List;
 import com.cat2bug.system.domain.SysDefect;
+import com.cat2bug.system.domain.SysDefectLog;
+import com.cat2bug.system.domain.vo.EnumVo;
+
+import java.util.List;
 
 /**
  * 缺陷Service接口
@@ -11,6 +14,18 @@ import com.cat2bug.system.domain.SysDefect;
  */
 public interface ISysDefectService 
 {
+    /**
+     * 指派
+     * @param sysDefect
+     * @return
+     */
+    public SysDefectLog assign(SysDefectLog sysDefect);
+    /**
+     * 获取缺陷类型列表
+     * @return
+     */
+    public List<EnumVo> getDefectTypeList();
+
     /**
      * 查询缺陷
      * 

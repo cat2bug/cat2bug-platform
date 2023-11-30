@@ -7,13 +7,16 @@ import com.cat2bug.common.core.page.TableDataInfo;
 import com.cat2bug.common.enums.BusinessType;
 import com.cat2bug.common.utils.poi.ExcelUtil;
 import com.cat2bug.system.domain.SysDefect;
+import com.cat2bug.system.domain.SysDefectLog;
 import com.cat2bug.system.service.ISysDefectService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 缺陷Controller
@@ -27,6 +30,18 @@ public class SysDefectController extends BaseController
 {
     @Autowired
     private ISysDefectService sysDefectService;
+
+    /**
+     * 查询缺陷配置
+     */
+    @PreAuthorize("@ss.hasPermi('system:defect:list')")
+    @GetMapping("/config")
+    public AjaxResult config()
+    {
+        Map<String,Object> ret = new HashMap<>();
+        ret.put("types",sysDefectService.getDefectTypeList());
+        return success(ret);
+    }
 
     /**
      * 查询缺陷列表
@@ -72,6 +87,17 @@ public class SysDefectController extends BaseController
     public AjaxResult add(@RequestBody SysDefect sysDefect)
     {
         return toAjax(sysDefectService.insertSysDefect(sysDefect));
+    }
+
+    /**
+     * 新增缺陷
+     */
+    @PreAuthorize("@ss.hasPermi('system:defect:assign')")
+    @Log(title = "缺陷", businessType = BusinessType.INSERT)
+    @PostMapping("/{defectId}/assign")
+    public AjaxResult assign(@RequestBody SysDefectLog sysDefectlog)
+    {
+        return success(sysDefectService.assign(sysDefectlog));
     }
 
     /**

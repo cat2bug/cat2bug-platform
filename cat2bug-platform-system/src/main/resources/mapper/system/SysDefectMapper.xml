@@ -118,7 +118,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     
     <select id="selectSysDefectByDefectId" parameterType="Long" resultMap="SysDefectResult">
         <include refid="selectSysDefectVo"/>
-        where defect_id = #{defectId}
+        where d.defect_id = #{defectId}
     </select>
         
     <insert id="insertSysDefect" parameterType="SysDefect" useGeneratedKeys="true" keyProperty="defectId">
@@ -165,7 +165,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="updateTime != null">#{updateTime},</if>
             <if test="createTime != null">#{createTime},</if>
             <if test="updateBy != null">#{updateBy},</if>
-            <if test="defectState != null">#{defectState},</if>
+            <if test="defectState != null">#{defectState,  typeHandler=com.cat2bug.system.domain.handle.SysDefectStateEnumTypeHandler},</if>
             <if test="caseStepId != null">#{caseStepId},</if>
             <if test="handleBy != null">#{handleBy,typeHandler=com.cat2bug.system.domain.handle.LongArrayTypeHandler},</if>
             <if test="handleTime != null">#{handleTime},</if>
@@ -192,7 +192,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="updateTime != null">update_time = #{updateTime},</if>
             <if test="createTime != null">create_time = #{createTime},</if>
             <if test="updateBy != null">update_by = #{updateBy},</if>
-            <if test="defectState != null">defect_state = #{defectState},</if>
+            <if test="defectState != null">defect_state = #{defectState,  typeHandler=com.cat2bug.system.domain.handle.SysDefectStateEnumTypeHandler},</if>
             <if test="caseStepId != null">case_step_id = #{caseStepId},</if>
             <if test="handleBy != null">handle_by = #{handleBy, typeHandler=com.cat2bug.system.domain.handle.LongArrayTypeHandler},</if>
             <if test="handleTime != null">handle_time = #{handleTime},</if>

@@ -6,7 +6,10 @@ package com.cat2bug.system.domain.type;
  * @Version: 1.0.0
  */
 public enum SysDefectTypeEnum {
+    /** 问题 */
     BUG,
-    OPTIMIZE,
+    /** 任务 */
+    TASK,
+    /** 需求 */
     DEMAND
 }

@@ -1,9 +1,15 @@
 package com.cat2bug.system.domain;
 
+import com.cat2bug.common.core.domain.entity.SysUser;
+import com.cat2bug.system.domain.type.SysDefectLogStateEnum;
+import com.cat2bug.system.domain.type.SysDefectStateEnum;
+import lombok.Data;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import com.cat2bug.common.annotation.Excel;
 import com.cat2bug.common.core.domain.BaseEntity;
+
+import java.util.List;
 
 /**
  * 缺陷日志对象 sys_defect_log
@@ -11,6 +17,7 @@ import com.cat2bug.common.core.domain.BaseEntity;
  * @author yuzhantao
  * @date 2023-11-23
  */
+@Data
 public class SysDefectLog extends BaseEntity
 {
     private static final long serialVersionUID = 1L;
@@ -23,12 +30,16 @@ public class SysDefectLog extends BaseEntity
     private String defectLogDescribe;
 
     /** 处理类型(转发\评论\关闭) */
-    @Excel(name = "处理类型(转发评论关闭)")
-    private Integer defectLogType;
+    private SysDefectLogStateEnum defectLogType;
+
+    @Excel(name = "处理类型")
+    private String defectLogTypeName;
 
     /** 缺陷接收人 */
     @Excel(name = "缺陷接收人")
-    private String receiveBy;
+    private List<Long> receiveBy;
+
+    private List<SysUser> receiveByList;
 
     /** 附件集合 */
     @Excel(name = "附件集合")
@@ -38,60 +49,7 @@ public class SysDefectLog extends BaseEntity
     @Excel(name = "缺陷id")
     private Long defectId;
 
-    public void setDefectLogId(Long defectLogId) 
-    {
-        this.defectLogId = defectLogId;
-    }
-
-    public Long getDefectLogId() 
-    {
-        return defectLogId;
-    }
-    public void setDefectLogDescribe(String defectLogDescribe) 
-    {
-        this.defectLogDescribe = defectLogDescribe;
-    }
-
-    public String getDefectLogDescribe() 
-    {
-        return defectLogDescribe;
-    }
-    public void setDefectLogType(Integer defectLogType) 
-    {
-        this.defectLogType = defectLogType;
-    }
-
-    public Integer getDefectLogType() 
-    {
-        return defectLogType;
-    }
-    public void setReceiveBy(String receiveBy) 
-    {
-        this.receiveBy = receiveBy;
-    }
-
-    public String getReceiveBy() 
-    {
-        return receiveBy;
-    }
-    public void setAnnexUrls(String annexUrls) 
-    {
-        this.annexUrls = annexUrls;
-    }
-
-    public String getAnnexUrls() 
-    {
-        return annexUrls;
-    }
-    public void setDefectId(Long defectId) 
-    {
-        this.defectId = defectId;
-    }
-
-    public Long getDefectId() 
-    {
-        return defectId;
-    }
+    private String createByName;
 
     @Override
     public String toString() {

@@ -35,5 +35,6 @@ export default {
   }
   .project-label-title {
     margin-left: 10px;
+    color: #303133;
   }
 </style>

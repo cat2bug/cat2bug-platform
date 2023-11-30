@@ -1,6 +1,15 @@
 import request from '@/utils/request'
 
 // 查询缺陷列表
+export function configDefect() {
+  return request({
+    url: '/system/defect/config',
+    method: 'get'
+  })
+}
+
+
+// 查询缺陷列表
 export function listDefect(query) {
   return request({
     url: '/system/defect/list',
@@ -34,6 +43,16 @@ export function updateDefect(data) {
     data: data
   })
 }
+
+// 指派
+export function assign(defectId, data) {
+  return request({
+    url: '/system/defect/'+defectId+'/assign',
+    method: 'post',
+    data: data
+  })
+}
+
 
 // 删除缺陷
 export function delDefect(defectId) {

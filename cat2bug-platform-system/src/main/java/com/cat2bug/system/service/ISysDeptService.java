@@ -3,6 +3,7 @@ package com.cat2bug.system.service;
 import java.util.List;
 import com.cat2bug.common.core.domain.TreeSelect;
 import com.cat2bug.common.core.domain.entity.SysDept;
+import com.cat2bug.system.domain.type.SysDefectTypeEnum;
 
 /**
  * 部门管理 服务层

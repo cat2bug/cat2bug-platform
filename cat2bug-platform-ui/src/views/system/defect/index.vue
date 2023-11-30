@@ -9,6 +9,15 @@
     </el-tabs>
     <div class="defect-tools">
       <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="0">
+        <el-form-item prop="defectState">
+          <el-dropdown split-button size="mini" @command="defectStateChangeHandle" @click="selectDefectTabHandle">
+            {{activeDefectTypeName}}
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item command="">{{$i18n.t('defect.all-type')}}</el-dropdown-item>
+              <el-dropdown-item v-for="type in config.types" :command="type.value" :key="type.key">{{$i18n.t(type.value)}}</el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+        </el-form-item>
         <el-form-item prop="defectName">
           <el-input
             v-model="queryParams.defectName"
@@ -73,10 +82,14 @@
           <span>{{ '#' + scope.row.projectNum }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('type')" align="left" prop="defectTypeName" width="80" sortable />
+      <el-table-column :label="$t('type')" align="left" prop="defectTypeName" width="80" sortable>
+        <template slot-scope="scope">
+          <defect-type-flag :defect="scope.row" />
+        </template>
+      </el-table-column>
       <el-table-column :label="$t('title')" align="left" prop="defectName" sortable >
         <template slot-scope="scope">
-          <el-link type="primary">{{ scope.row.defectName }}</el-link>
+          <el-link type="primary" @click="editDefectHandle(scope.row)">{{ scope.row.defectName }}</el-link>
         </template>
       </el-table-column>
       <el-table-column :label="$t('level')" align="left" prop="defectLevel" width="100" sortable >
@@ -113,22 +126,23 @@
 <!--          <el-link type="primary" v-for="(file,index) in getUrl(scope.row.annexUrls)" :key="index" :href="file">{{getFileName(file)}}</el-link>-->
 <!--        </template>-->
 <!--      </el-table-column>-->
-      <el-table-column :label="$t('operate')" align="left" class-name="small-padding fixed-width" width="120">
+      <el-table-column :label="$t('operate')" align="left" class-name="small-padding fixed-width" width="150">
         <template slot-scope="scope">
-          <el-button
-            size="mini"
-            type="text"
-            icon="el-icon-edit"
-            @click="handleUpdate(scope.row)"
-            v-hasPermi="['system:defect:edit']"
-          >修改</el-button>
-          <el-button
-            size="mini"
-            type="text"
-            icon="el-icon-delete"
-            @click="handleDelete(scope.row)"
-            v-hasPermi="['system:defect:remove']"
-          >删除</el-button>
+          <defect-tools :is-text="true" :defect="scope.row" size="mini" :is-show-icon="true" />
+<!--          <el-button-->
+<!--            size="mini"-->
+<!--            type="text"-->
+<!--            icon="el-icon-edit"-->
+<!--            @click="handleUpdate(scope.row)"-->
+<!--            v-hasPermi="['system:defect:edit']"-->
+<!--          >修改</el-button>-->
+<!--          <el-button-->
+<!--            size="mini"-->
+<!--            type="text"-->
+<!--            icon="el-icon-delete"-->
+<!--            @click="handleDelete(scope.row)"-->
+<!--            v-hasPermi="['system:defect:remove']"-->
+<!--          >删除</el-button>-->
         </template>
       </el-table-column>
     </el-table>
@@ -141,25 +155,33 @@
       @pagination="getList"
     />
     <!-- 添加或修改缺陷对话框 -->
-    <add-defect ref="addDefectForm" :project-id="22" @added="getList" />
+    <add-defect ref="addDefectForm" :project-id="getProjectId()" @added="getList" />
+    <edit-defect ref="editDefectForm" :project-id="getProjectId()" />
   </div>
 </template>
 
 <script>
-import { listDefect, getDefect, delDefect, addDefect, updateDefect } from "@/api/system/defect";
+import {listDefect, getDefect, delDefect, addDefect, updateDefect, configDefect} from "@/api/system/defect";
 import RowListMember from "@/components/RowListMember";
 import LevelTag from "@/components/LevelTag";
 import AddDefect from "./add.vue"
+import EditDefect from "./edit"
 import SelectModule from "@/components/SelectModule";
 import SelectProjectMember from "@/components/SelectProjectMember";
 import ProjectLabel from "@/components/ProjectLabel";
+import DefectTypeFlag from "@/components/DefectTypeFlag";
+import DefectTools from "@/components/DefectTools";
 
 export default {
   name: "Defect",
-  components: {SelectModule, RowListMember, AddDefect, LevelTag, SelectProjectMember,ProjectLabel },
+  components: {SelectModule, RowListMember, AddDefect, EditDefect, LevelTag, SelectProjectMember,ProjectLabel,DefectTypeFlag, DefectTools },
   dicts: ['defect_level'],
   data() {
     return {
+      // 查询中缺陷类型的名称
+      activeDefectTypeName: null,
+      // 缺陷配置
+      config:{},
       // 当前缺陷的tab页名
       activeDefectTabName: this.$i18n.t('project.my-participated-in'),
       // 遮罩层
@@ -230,9 +252,30 @@ export default {
     }
   },
   created() {
-    this.selectDefectTabHandle();
+    this.getDefectConfig();
+    this.defectStateChangeHandle();
   },
   methods: {
+    getDefectConfig() {
+      configDefect().then(res=>{
+        this.config = res.data;
+      })
+    },
+    /** 查找缺陷状态改变的处理 */
+    defectStateChangeHandle(defectType) {
+      if(defectType) {
+        this.activeDefectTypeName = defectType;
+      } else {
+        this.activeDefectTypeName = this.$i18n.t('defect.all-type');
+      }
+      this.queryParams.defectType= defectType;
+      this.selectDefectTabHandle();
+    },
+    /** 打开编辑界面的处理 */
+    editDefectHandle(defect) {
+      this.$refs.editDefectForm.open(defect.defectId);
+    },
+    /** 排序改变的处理 */
     sortChangeHandle(e) {
       if(e.order){
         switch (e.prop) {
@@ -263,9 +306,11 @@ export default {
         this.handleQuery();
       }
     },
+    /** 获取用户id */
     getUserId() {
       return this.$store.state.user.id;
     },
+    /** 获取项目id */
     getProjectId() {
       return parseInt(this.$store.state.user.currentProjectId);
     },
@@ -299,7 +344,6 @@ export default {
         this.loading = false;
       });
     },
-
     /** 搜索按钮操作 */
     handleQuery(params) {
       this.queryParams.pageNum = 1;
