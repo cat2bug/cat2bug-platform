@@ -1,6 +1,6 @@
 <template>
   <div class="defect-log-create">
-    <span class="user">{{log.createByName}}</span>
+    <span class="user">[{{log.createByName}}]</span>
     <span>{{ $i18n.t('defect.assigned-to') }}</span>
     <div v-if="log.receiveByList && log.receiveByList.length>1">
       <span class="user">[{{head}}]</span>
