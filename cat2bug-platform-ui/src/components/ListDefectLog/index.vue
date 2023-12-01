@@ -12,9 +12,12 @@ import {listLog} from "@/api/system/log";
 import CREATE from "@/components/ListDefectLog/create";
 import ASSIGN from "@/components/ListDefectLog/assign"
 import REJECTED from "@/components/ListDefectLog/reject";
+import REPAIR from "@/components/ListDefectLog/repair";
+import PASS from "@/components/ListDefectLog/pass";
+
 export default {
   name: "ListDefectLog",
-  components:{ CREATE,ASSIGN,REJECTED },
+  components:{ CREATE,ASSIGN,REJECTED,REPAIR,PASS },
   data() {
     return {
       logList: []

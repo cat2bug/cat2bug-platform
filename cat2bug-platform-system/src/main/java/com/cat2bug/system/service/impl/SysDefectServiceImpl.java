@@ -77,6 +77,48 @@ public class SysDefectServiceImpl implements ISysDefectService
         return sysDefectLogMapper.selectSysDefectLogByDefectLogId(sysDefectLog.getDefectLogId());
     }
 
+    /**
+     * 修复
+     * @param sysDefectLog  缺陷日志
+     * @return
+     */
+    @Override
+    @Transactional
+    public SysDefectLog repair(SysDefectLog sysDefectLog) {
+        // 更新缺陷
+        SysDefect sd = new SysDefect();
+        sd.setDefectId(sysDefectLog.getDefectId());
+        sd.setDefectState(SysDefectStateEnum.AUDIT);
+        sd.setHandleBy(sysDefectLog.getReceiveBy());
+        this.updateSysDefect(sd);
+
+        // 插入日志
+        sysDefectLog.setDefectLogType(SysDefectLogStateEnum.REPAIR);
+        sysDefectLog.setReceiveBy(sd.getHandleBy());
+        this.inertLog(sysDefectLog);
+        return sysDefectLogMapper.selectSysDefectLogByDefectLogId(sysDefectLog.getDefectLogId());
+    }
+
+    /**
+     * 通过
+     * @param sysDefectLog  缺陷日志
+     * @return
+     */
+    @Override
+    @Transactional
+    public SysDefectLog pass(SysDefectLog sysDefectLog) {
+        // 更新缺陷
+        SysDefect sd = new SysDefect();
+        sd.setDefectId(sysDefectLog.getDefectId());
+        sd.setDefectState(SysDefectStateEnum.RESOLVED);
+        this.updateSysDefect(sd);
+
+        // 插入日志
+        sysDefectLog.setDefectLogType(SysDefectLogStateEnum.PASS);
+        this.inertLog(sysDefectLog);
+        return sysDefectLogMapper.selectSysDefectLogByDefectLogId(sysDefectLog.getDefectLogId());
+    }
+
     @Override
     public List<EnumVo> getDefectTypeList() {
         return Arrays.asList(

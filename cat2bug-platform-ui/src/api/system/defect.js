@@ -62,6 +62,24 @@ export function reject(defectId, data) {
   })
 }
 
+// 修复
+export function repair(defectId, data) {
+  return request({
+    url: '/system/defect/'+defectId+'/repair',
+    method: 'post',
+    data: data
+  })
+}
+
+// 修复
+export function pass(defectId, data) {
+  return request({
+    url: '/system/defect/'+defectId+'/pass',
+    method: 'post',
+    data: data
+  })
+}
+
 // 删除缺陷
 export function delDefect(defectId) {
   return request({

@@ -1,7 +1,8 @@
 <template>
   <div class="defect-log-create">
     <span class="user">[{{log.createByName}}]</span>
-    <span class="state">{{ $i18n.t('defect.assigned-to') }}</span>
+    <span class="state red">{{ $i18n.t('repair') }}</span>
+    <span class="state">{{ $i18n.t('defect.reviewed-by') }}</span>
     <div v-if="log.receiveByList && log.receiveByList.length>1">
       <span class="user">[{{head}}]</span>
       <span class="state">{{$i18n.t('head-up')}},</span>
@@ -19,7 +20,7 @@
 
 <script>
 export default {
-  name: "ASSIGN",
+  name: "REPAIR",
   props:{
     log: {
       type: Object,
@@ -38,28 +39,29 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  .defect-log-create {
-    display: flex;
-    align-items: center;
-    flex-direction: row;
-    justify-content: flex-start;
-    align-items: center;
-    flex-direction: row;
-    flex-wrap: wrap;
-    font-size: 14px;
-    span {
-      padding-left: 2px;
-      padding-right: 2px;
-    }
-    .user {
-      font-weight: 500;
-    }
-    .state {
-      font-size: 14px;
-      color: #409EFF;
-    }
-    .orange {
-      color: rgb(255, 186, 0);
-    }
+.defect-log-create {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  flex-direction: row;
+  flex-wrap: wrap;
+  font-size: 14px;
+  span {
+    padding-left: 2px;
+    padding-right: 2px;
   }
+  .user {
+    font-weight: 500;
+  }
+  .state {
+    font-size: 14px;
+    color: #409EFF;
+  }
+  .orange {
+    color: rgb(255, 186, 0);
+  }
+  .red {
+    color: #FF0000;
+  }
+}
 </style>

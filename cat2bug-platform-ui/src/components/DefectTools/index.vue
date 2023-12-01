@@ -2,21 +2,25 @@
   <div class="defect-tools">
     <el-button :icon="isShowIcon?'el-icon-refresh':''" :size="size" :type="isText?'text':'info'" @click="assignHandle">{{$i18n.t('assign')}}</el-button>
     <el-button :icon="isShowIcon?'el-icon-document-delete':''" :size="size" :type="isText?'text':'warning'" @click="rejectHandle">{{$i18n.t('reject')}}</el-button>
-    <el-button :icon="isShowIcon?'el-icon-document-checked':''" :size="size" :type="isText?'text':'primary'">{{$i18n.t('repair')}}</el-button>
-    <el-button :icon="isShowIcon?'el-icon-finished':''" :size="size" :type="isText?'text':'success'">{{$i18n.t('pass')}}</el-button>
+    <el-button :icon="isShowIcon?'el-icon-document-checked':''" :size="size" :type="isText?'text':'primary'" @click="repairDialogHandle">{{$i18n.t('repair')}}</el-button>
+    <el-button :icon="isShowIcon?'el-icon-finished':''" :size="size" :type="isText?'text':'success'" @click="passDialogHandle">{{$i18n.t('pass')}}</el-button>
     <el-button :icon="isShowIcon?'el-icon-takeaway-box':''" :size="size" :type="isText?'text':'danger'">{{$i18n.t('close')}}</el-button>
     <assign-dialog ref="assignDialog" :project-id="defect.projectId" :defect-id="defect.defectId" @log="logHandle" />
     <reject-dialog ref="rejectDialog" :project-id="defect.projectId" :defect-id="defect.defectId" @log="logHandle" />
+    <repair-dialog ref="repairDialog" :project-id="defect.projectId" :defect-id="defect.defectId" @log="logHandle" />
+    <pass-dialog ref="passDialog" :project-id="defect.projectId" :defect-id="defect.defectId" @log="logHandle" />
   </div>
 </template>
 
 <script>
 import AssignDialog from "@/components/DefectTools/AssignDialog";
 import RejectDialog from "@/components/DefectTools/RejectDialog";
+import RepairDialog from "@/components/DefectTools/RepairDialog";
+import PassDialog from "@/components/DefectTools/PassDialog";
 
 export default {
   name: "DefectTools",
-  components: { AssignDialog, RejectDialog },
+  components: {PassDialog, AssignDialog, RejectDialog, RepairDialog },
   model: {
     prop: 'defect',
     event: 'update'
@@ -47,6 +51,12 @@ export default {
     },
     rejectHandle() {
       this.$refs.rejectDialog.open();
+    },
+    repairDialogHandle() {
+      this.$refs.repairDialog.open();
+    },
+    passDialogHandle() {
+      this.$refs.passDialog.open();
     },
     logHandle(log) {
       this.$emit('log',log);

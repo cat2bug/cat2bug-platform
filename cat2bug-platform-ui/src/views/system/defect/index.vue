@@ -128,7 +128,7 @@
 <!--      </el-table-column>-->
       <el-table-column :label="$t('operate')" align="left" class-name="small-padding fixed-width" width="150">
         <template slot-scope="scope">
-          <defect-tools :is-text="true" :defect="scope.row" size="mini" :is-show-icon="true" />
+          <defect-tools :is-text="true" :defect="scope.row" size="mini" :is-show-icon="true" @log="selectDefectTabHandle" />
 <!--          <el-button-->
 <!--            size="mini"-->
 <!--            type="text"-->

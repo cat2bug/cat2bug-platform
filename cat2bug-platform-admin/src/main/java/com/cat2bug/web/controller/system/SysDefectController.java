@@ -90,7 +90,7 @@ public class SysDefectController extends BaseController
     }
 
     /**
-     * 新增缺陷
+     * 指派
      */
     @PreAuthorize("@ss.hasPermi('system:defect:assign')")
     @Log(title = "指派缺陷", businessType = BusinessType.INSERT)
@@ -101,7 +101,7 @@ public class SysDefectController extends BaseController
     }
 
     /**
-     * 新增缺陷
+     * 驳回
      */
     @PreAuthorize("@ss.hasPermi('system:defect:reject')")
     @Log(title = "驳回缺陷", businessType = BusinessType.INSERT)
@@ -109,6 +109,28 @@ public class SysDefectController extends BaseController
     public AjaxResult reject(@RequestBody SysDefectLog sysDefectlog)
     {
         return success(sysDefectService.reject(sysDefectlog));
+    }
+
+    /**
+     * 修复
+     */
+    @PreAuthorize("@ss.hasPermi('system:defect:repair')")
+    @Log(title = "驳回缺陷", businessType = BusinessType.INSERT)
+    @PostMapping("/{defectId}/repair")
+    public AjaxResult repair(@RequestBody SysDefectLog sysDefectlog)
+    {
+        return success(sysDefectService.repair(sysDefectlog));
+    }
+
+    /**
+     * 修复
+     */
+    @PreAuthorize("@ss.hasPermi('system:defect:pass')")
+    @Log(title = "驳回缺陷", businessType = BusinessType.INSERT)
+    @PostMapping("/{defectId}/pass")
+    public AjaxResult pass(@RequestBody SysDefectLog sysDefectlog)
+    {
+        return success(sysDefectService.pass(sysDefectlog));
     }
 
     /**

@@ -14,6 +14,8 @@ public enum SysDefectLogStateEnum {
     PASS,
     /** 已驳回 */
     REJECTED,
+    /** 已处理 */
+    REPAIR,
     /** 已关闭 */
     CLOSED
 }
