@@ -4,7 +4,7 @@
     <span>{{ $i18n.t('defect.assigned-to') }}</span>
     <div v-if="log.receiveByList && log.receiveByList.length>1">
       <span class="user">[{{head}}]</span>
-      <span class="state">{{$i18n.t('head-up')}}</span>
+      <span class="state">{{$i18n.t('head-up')}},</span>
       <span class="user">[{{assistant}}]</span>
       <span class="state orange">{{$i18n.t('assist')}}</span>
     </div>
@@ -38,23 +38,27 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  .defect-log-create {
-    display: flex;
-    justify-content: start;
-    align-items: center;
-    flex-direction: row;
-    flex-wrap: wrap;
-    font-size: 14px;
-    span {
-      padding-left: 5px;
-      padding-right: 5px;
-    }
-    .user {
-      font-weight: 500;
-    }
-    .state {
-      font-size: 14px;
-      color: #409EFF;
-    }
+.defect-log-create {
+  display: flex;
+  justify-content: start;
+  align-items: center;
+  flex-direction: row;
+  flex-wrap: wrap;
+  font-size: 14px;
+  margin-bottom: 15px;
+  span {
+    padding-left: 2px;
+    padding-right: 2px;
   }
+  .user {
+    font-weight: 500;
+  }
+  .state {
+    font-size: 14px;
+    color: #409EFF;
+  }
+  .orange {
+    color: rgb(255, 186, 0);
+  }
+}
 </style>

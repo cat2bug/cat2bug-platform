@@ -9,6 +9,7 @@
                   rows="5"
                   v-model="form.defectLogDescribe"
                   maxlength="255"
+                  :placeholder="$i18n.t('please-enter-remark')"
                   show-word-limit
         ></el-input>
       </el-form-item>

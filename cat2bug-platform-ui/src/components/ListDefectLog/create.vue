@@ -5,7 +5,7 @@
     <span>{{ $i18n.t('defect.assigned-to') }}</span>
     <div v-if="log.receiveByList && log.receiveByList.length>1">
       <span class="user">[{{head}}]</span>
-      <span class="state">{{$i18n.t('head-up')}}</span>
+      <span class="state">{{$i18n.t('head-up')}},</span>
       <span class="user">[{{assistant}}]</span>
       <span class="state orange">{{$i18n.t('assist')}}</span>
     </div>
