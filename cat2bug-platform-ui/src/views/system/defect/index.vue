@@ -405,6 +405,7 @@ export default {
   margin-bottom: 10px;
   > * {
     display: inline-block;
+    justify-content: flex-start;
     margin-bottom: 0px;
     ::v-deep .el-form-item {
       margin-bottom: 0px;

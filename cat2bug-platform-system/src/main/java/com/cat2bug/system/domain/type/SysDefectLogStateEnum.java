@@ -12,7 +12,7 @@ public enum SysDefectLogStateEnum {
     REJECT,
     /** 审核通过 */
     PASS,
-    /** 已拒绝 */
+    /** 已驳回 */
     REJECTED,
     /** 已关闭 */
     CLOSED

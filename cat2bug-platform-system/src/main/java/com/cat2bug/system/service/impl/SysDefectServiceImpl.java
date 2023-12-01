@@ -35,22 +35,46 @@ public class SysDefectServiceImpl implements ISysDefectService
     @Autowired
     private SysDefectLogMapper sysDefectLogMapper;
 
+    /**
+     * 指派
+     * @param sysDefectLog 缺陷日志
+     * @return
+     */
     @Override
     @Transactional
     public SysDefectLog assign(SysDefectLog sysDefectLog) {
         // 更新缺陷
         SysDefect sd = new SysDefect();
         sd.setDefectId(sysDefectLog.getDefectId());
-        sd.setUpdateTime(DateUtils.getNowDate());
-        sd.setUpdateBy(String.valueOf(SecurityUtils.getUserId()));
-        sd.setDefectState(SysDefectStateEnum.AUDIT);
         sd.setHandleBy(sysDefectLog.getReceiveBy());
-        Preconditions.checkState(sysDefectMapper.updateSysDefect(sd)>0, MessageUtils.message("defect.assign_fail"));
+        this.updateSysDefect(sd);
 
         // 插入日志
         sysDefectLog.setDefectLogType(SysDefectLogStateEnum.ASSIGN);
         this.inertLog(sysDefectLog);
-        return sysDefectLog;
+        return sysDefectLogMapper.selectSysDefectLogByDefectLogId(sysDefectLog.getDefectLogId());
+    }
+
+    /**
+     * 驳回
+     * @param sysDefectLog  缺陷日志
+     * @return
+     */
+    @Override
+    @Transactional
+    public SysDefectLog reject(SysDefectLog sysDefectLog) {
+        // 更新缺陷
+        SysDefect sd = this.selectSysDefectByDefectId(sysDefectLog.getDefectId());
+        Preconditions.checkNotNull(sd,MessageUtils.message("defect.not_found"));
+        sd.setDefectState(SysDefectStateEnum.REJECTED);
+        sd.setHandleBy(Arrays.asList(Long.valueOf(sd.getUpdateBy())));
+        this.updateSysDefect(sd);
+
+        // 插入日志
+        sysDefectLog.setDefectLogType(SysDefectLogStateEnum.REJECTED);
+        sysDefectLog.setReceiveBy(sd.getHandleBy());
+        this.inertLog(sysDefectLog);
+        return sysDefectLogMapper.selectSysDefectLogByDefectLogId(sysDefectLog.getDefectLogId());
     }
 
     @Override
@@ -96,11 +120,16 @@ public class SysDefectServiceImpl implements ISysDefectService
     @Transactional
     public int insertSysDefect(SysDefect sysDefect)
     {
+        // 新建缺陷数据
         sysDefect.setCreateTime(DateUtils.getNowDate());
         sysDefect.setUpdateTime(DateUtils.getNowDate());
+        sysDefect.setUpdateTime(DateUtils.getNowDate());
+        sysDefect.setDefectState(SysDefectStateEnum.PROCESSING);
+        sysDefect.setUpdateBy(String.valueOf(SecurityUtils.getUserId()));
         long count = sysDefectMapper.getProjectDefectCount(sysDefect.getProjectId());
         sysDefect.setProjectNum(count+1);
         Preconditions.checkState(sysDefectMapper.insertSysDefect(sysDefect)>0,MessageUtils.message("defect.insert_fail"));
+        // 新建日志
         this.inertLog(null,null,SysDefectLogStateEnum.CREATE);
         return 1;
     }
@@ -128,10 +157,14 @@ public class SysDefectServiceImpl implements ISysDefectService
      * @return 结果
      */
     @Override
+    @Transactional
     public int updateSysDefect(SysDefect sysDefect)
     {
         sysDefect.setUpdateTime(DateUtils.getNowDate());
-        return sysDefectMapper.updateSysDefect(sysDefect);
+        sysDefect.setUpdateBy(String.valueOf(SecurityUtils.getUserId()));
+        int ret = sysDefectMapper.updateSysDefect(sysDefect);
+        Preconditions.checkState(ret>0, MessageUtils.message("defect.update_fail"));
+        return ret;
     }
 
     /**
@@ -157,4 +190,5 @@ public class SysDefectServiceImpl implements ISysDefectService
     {
         return sysDefectMapper.deleteSysDefectByDefectId(defectId);
     }
+
 }

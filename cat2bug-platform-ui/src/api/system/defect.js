@@ -53,6 +53,14 @@ export function assign(defectId, data) {
   })
 }
 
+// 拒绝
+export function reject(defectId, data) {
+  return request({
+    url: '/system/defect/'+defectId+'/reject',
+    method: 'post',
+    data: data
+  })
+}
 
 // 删除缺陷
 export function delDefect(defectId) {

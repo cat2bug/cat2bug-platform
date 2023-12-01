@@ -144,6 +144,9 @@ export default {
     this.getMemberList();
   },
   methods: {
+    clear() {
+      this.clearSelectMembersHandle();
+    },
     /** 搜索成员事件 */
     searchChangeHandle() {
       this.popoverVisible = true;
@@ -256,13 +259,15 @@ export default {
     clearSelectMembersHandle(event) {
       this.optionsChecks.clear();
       this.selectMembers.clear();
+      this.activeRoleTabName = '';
       this.queryMember.params.search=null;
       this.queryMember.pageNum=1;
       this.popoverVisible = false;
       this.updateMembers();
       this.getMemberList();
       this.$forceUpdate();
-      event.stopPropagation();
+      if(event)
+        event.stopPropagation();
     },
     /** 翻页处理 */
     currentPageChangeHandle(val){

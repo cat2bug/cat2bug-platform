@@ -162,6 +162,7 @@ export default {
   ::v-deep .select-module-input {
     display: inline-flex;
     flex-direction: row;
+    justify-content: flex-start;
     max-width: 300px;
     width: 100%;
     height: auto;
@@ -171,6 +172,7 @@ export default {
     .selectProjectMemberInput_content {
       display: inline-flex;
       flex-direction: row;
+      justify-content: flex-start;
       align-items: center;
       flex-wrap: wrap;
       flex-grow: 1;
@@ -210,7 +212,7 @@ export default {
   .select-module-menu {
     display: inline-flex;
     flex-direction: row;
-    justify-content: start;
+    justify-content: flex-start;
     .module-menu:first-child {
       padding-left: 0px;
       border-left-width: 0;

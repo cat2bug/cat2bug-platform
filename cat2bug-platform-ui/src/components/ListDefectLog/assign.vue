@@ -11,7 +11,7 @@
     <span v-else-if="log.receiveByList" class="user">[{{head}}]</span>
     <span>,</span>
     <div>
-      <span>{{$i18n.t('remark')}}:</span>
+      <span>{{$i18n.t('describe')}}:</span>
       <span>{{log.defectLogDescribe}}</span>
     </div>
   </div>
@@ -38,27 +38,28 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.defect-log-create {
-  display: flex;
-  justify-content: start;
-  align-items: center;
-  flex-direction: row;
-  flex-wrap: wrap;
-  font-size: 14px;
-  margin-bottom: 15px;
-  span {
-    padding-left: 2px;
-    padding-right: 2px;
-  }
-  .user {
-    font-weight: 500;
-  }
-  .state {
+  .defect-log-create {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    flex-direction: row;
+    flex-wrap: wrap;
     font-size: 14px;
-    color: #409EFF;
+    span {
+      padding-left: 2px;
+      padding-right: 2px;
+    }
+    .user {
+      font-weight: 500;
+    }
+    .state {
+      font-size: 14px;
+      color: #409EFF;
+    }
+    .orange {
+      color: rgb(255, 186, 0);
+    }
   }
-  .orange {
-    color: rgb(255, 186, 0);
-  }
-}
 </style>

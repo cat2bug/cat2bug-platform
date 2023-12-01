@@ -66,7 +66,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         where dl.defect_log_id = #{defectLogId}
     </select>
         
-    <insert id="insertSysDefectLog" parameterType="SysDefectLog">
+    <insert id="insertSysDefectLog" parameterType="SysDefectLog" useGeneratedKeys="true" keyProperty="defectLogId">
         insert into sys_defect_log
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="defectLogId != null">defect_log_id,</if>

@@ -13,7 +13,7 @@ public enum SysDefectStateEnum {
     AUDIT,
     /** 已解决 */
     RESOLVED,
-    /** 已拒绝 */
+    /** 已驳回 */
     REJECTED,
     /** 已关闭 */
     CLOSED

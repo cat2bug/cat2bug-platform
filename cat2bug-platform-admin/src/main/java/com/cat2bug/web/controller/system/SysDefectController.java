@@ -93,11 +93,22 @@ public class SysDefectController extends BaseController
      * 新增缺陷
      */
     @PreAuthorize("@ss.hasPermi('system:defect:assign')")
-    @Log(title = "缺陷", businessType = BusinessType.INSERT)
+    @Log(title = "指派缺陷", businessType = BusinessType.INSERT)
     @PostMapping("/{defectId}/assign")
     public AjaxResult assign(@RequestBody SysDefectLog sysDefectlog)
     {
         return success(sysDefectService.assign(sysDefectlog));
+    }
+
+    /**
+     * 新增缺陷
+     */
+    @PreAuthorize("@ss.hasPermi('system:defect:reject')")
+    @Log(title = "驳回缺陷", businessType = BusinessType.INSERT)
+    @PostMapping("/{defectId}/reject")
+    public AjaxResult reject(@RequestBody SysDefectLog sysDefectlog)
+    {
+        return success(sysDefectService.reject(sysDefectlog));
     }
 
     /**

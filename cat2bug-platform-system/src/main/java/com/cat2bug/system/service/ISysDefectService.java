@@ -16,10 +16,18 @@ public interface ISysDefectService
 {
     /**
      * 指派
-     * @param sysDefect
-     * @return
+     * @param sysDefectLog 缺陷日志
+     * @return  缺陷日志
      */
-    public SysDefectLog assign(SysDefectLog sysDefect);
+    public SysDefectLog assign(SysDefectLog sysDefectLog);
+
+    /**
+     * 驳回
+     * @param sysDefectLog  缺陷日志
+     * @return  缺陷日志
+     */
+    public SysDefectLog reject(SysDefectLog sysDefectLog);
+
     /**
      * 获取缺陷类型列表
      * @return
