@@ -1,0 +1,45 @@
+version: '3'
+services:
+  mysql:
+    image: mysql:8.2.0-oracle
+    container_name: cat2bug-mysql
+    restart: always
+    command: "--init-file /docker-entrypoint-initdb.d/cat2bug_platform.sql"
+    volumes:
+      - ./sql:/docker-entrypoint-initdb.d
+    ports:
+      - '13306:3306'
+    environment:
+      - MYSQL_ROOT_PASSWORD=cat2bug_mysql
+  redis:
+    image: redis:7-alpine
+    container_name: cat2bug-redis
+    restart: always
+    ports:
+      - '16379:6379'
+#    networks:
+#      cat2bug-network:
+#        - ipv4_address: 172.18.0.20
+  cat2bug:
+    hostname: cat2bug
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    container_name: cat2bug
+    ports:
+      - '12020:2020'
+    environment:
+      SPRING_DATASOURCE_DRUID_MASTER_URL: jdbc:mysql://cat2bug-mysql:3307/cat2bug_platform?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
+      SPRING_DATASOURCE_DRUID_MASTER_USERNAME: root
+      SPRING_DATASOURCE_DRUID_MASTER_PASSWORD: cat2bug_mysql
+      SPRING_REDIS_HOST: cat2bug-redis
+    links:
+      - redis
+      - mysql
+    depends_on:
+      - redis
+      - mysql
+
+networks:
+  cat2bug-network:
+    driver: bridge

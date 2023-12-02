@@ -56,11 +56,11 @@ public class SysProjectServiceImpl implements ISysProjectService
     public List<SysProject> selectSysProjectList(SysProject sysProject)
     {
         Preconditions.checkNotNull(sysProject.getTeamId(), MessageUtils.message("project.team_cannot_empty"));
-        // 设置当前用户可查看哪些项目
-        if(sysProject.getParams()==null){
-            sysProject.setParams(new HashMap<>());
-        }
-        sysProject.getParams().put("userId",SecurityUtils.getUserId());
+//        // 设置当前用户可查看哪些项目
+//        if(sysProject.getParams()==null){
+//            sysProject.setParams(new HashMap<>());
+//        }
+//        sysProject.getParams().put("userId",SecurityUtils.getUserId());
 
         List<SysProject> projectList = sysProjectMapper.selectSysProjectList(sysProject);
         // 设置项目中的成员

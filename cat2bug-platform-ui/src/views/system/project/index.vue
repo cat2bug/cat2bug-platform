@@ -156,6 +156,9 @@ export default {
       open: false,
       // 查询参数
       queryParams: {
+        params: {
+          userId: null
+        },
         pageNum: 1,
         pageSize: 10,
         projectName: null,
@@ -180,13 +183,20 @@ export default {
     },
   },
   created() {
-    this.getList();
+    this.selectProjectTabHandle();
     this.getCollectList();
   },
   methods: {
     /** 选择项目分组 */
     selectProjectTabHandle(){
       this.reset();
+      switch (this.activeProjectTabName) {
+        case this.$i18n.t('project.my-participated-in'):
+          this.queryParams.params.userId = this.$store.state.user.id;
+          break;
+        default:
+          this.queryParams.params.userId = null;
+      }
       this.getList();
     },
     /** 查询项目列表 */

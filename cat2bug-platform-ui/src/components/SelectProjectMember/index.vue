@@ -17,11 +17,11 @@
     </div>
     <el-tabs v-if="roleGroup" class="select-project-member-tabs" v-model="queryMember.roleId" @tab-click="getMemberList">
       <el-tab-pane :label="$i18n.t('all')" name=""></el-tab-pane>
-      <el-tab-pane  v-for="role in roleList" :key="role.roleId" :label="role.roleNameI18nKey?$i18n.t(role.roleNameI18nKey):role.roleName" :name="role.roleId+''"></el-tab-pane>
+      <el-tab-pane  v-for="(role,roleIndex) in roleList" :key="roleIndex" :label="role.roleNameI18nKey?$i18n.t(role.roleNameI18nKey):role.roleName" :name="role.roleId+''"></el-tab-pane>
     </el-tabs>
 
     <el-row v-if="options && options.length>0" class="select-project-member-menu">
-      <el-col :span="24" v-for="item in options" :key="item.userId" @click.native="clickMenuHandle(item)" :active="optionsChecks.get(item.userId)?'true':'false'">
+      <el-col :span="24" v-for="(item,itemIndex) in options" :key="itemIndex" @click.native="clickMenuHandle(item)" :active="optionsChecks.get(item.userId)?'true':'false'">
         <member-nameplate :member="item"></member-nameplate>
         <el-tag v-if="isHead" size="mini"  @click.native="setMasterHandle($event,item)" :type="tagType(item)">
           {{optionsChecks.get(item.userId)===1?$i18n.t('head'):$i18n.t('assistant')}}

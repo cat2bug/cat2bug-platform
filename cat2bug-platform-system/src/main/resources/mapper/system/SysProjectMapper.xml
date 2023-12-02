@@ -18,20 +18,21 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </resultMap>
 
     <sql id="findSysProjectVo">
-        select p.project_id, p.team_id, p.project_name, p.project_icon, p.project_introduce, p.create_by, p.create_time, p.update_by, p.update_time
-        from sys_project p
+        SELECT p.project_id, p.team_id, p.project_name, p.project_icon, p.project_introduce, p.create_by, p.create_time, p.update_by, p.update_time
+        FROM sys_project p
     </sql>
 
     <sql id="selectSysProjectVo">
-        select p.project_id, p.team_id, p.project_name, p.project_icon, p.project_introduce, p.create_by, p.create_time, p.update_by, p.update_time, up.collect
-        from sys_project p
-        left join sys_user_project up on p.project_id=up.project_id
+        SELECT DISTINCT p.project_id, p.team_id, p.project_name, p.project_icon, p.project_introduce, p.create_by, p.create_time, p.update_by, p.update_time, up.collect
+        FROM sys_project p
+        LEFT JOIN sys_user_project up on p.project_id=up.project_id
     </sql>
 
     <select id="selectSysProjectList" parameterType="SysProject" resultMap="SysProjectResult">
         <include refid="selectSysProjectVo"/>
         <where>
-            p.team_id = #{ teamId } and up.user_id= #{params.userId}
+            p.team_id = #{ teamId }
+            <if test="params != null and params.userId !=null">  and up.user_id= #{params.userId} </if>
             <if test="collect != null  and collect != ''"> and up.collect = #{collect}</if>
             <if test="projectName != null  and projectName != ''"> and p.project_name like concat('%', #{projectName}, '%')</if>
             <if test="createBy != null  and createBy != ''"> and p.create_by like concat('%', #{createBy}, '%')</if>

@@ -72,7 +72,7 @@
                         </el-col>
                       </el-row>
                     <el-empty v-else :description="$t('no-data')"></el-empty>
-                    <el-button slot="reference" size="mini" icon="el-icon-user-solid">{{$t('project.add-user')}}</el-button>
+                    <el-button slot="reference" size="mini" icon="el-icon-user-solid">{{$t('project.add-member')}}</el-button>
                   </el-popover>
                 </el-col>
                 <el-col :span="24" v-if="projectMemberSwitch">

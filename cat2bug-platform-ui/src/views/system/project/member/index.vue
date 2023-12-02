@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <el-row class="project-add-page-header">
-      <el-page-header @back="goBack" :content="$t('member.manage')">
+      <el-page-header @back="goBack" :content="$t('project.member-manage')">
       </el-page-header>
     </el-row>
     <el-row :gutter="20">
@@ -129,14 +129,15 @@
 </template>
 
 <script>
-import { listMember, updateMemberTeamRole, updateMemberTeamRoleIds} from "@/api/system/team";
+import { updateMemberTeamRole, updateMemberTeamRoleIds} from "@/api/system/team";
 import CreateTeamMember from "@/views/system/team/option/team/CreateTeamMember";
 import InviteTeamMember from "@/views/system/team/option/team/InviteTeamMember";
 import MemberNameplate from "@/components/MemberNameplate";
 import {getUser} from "@/api/system/user";
+import {listMemberOfProject} from "@/api/system/project";
 
 export default {
-  name: "TeamMemberManage",
+  name: "ProjectMemberManage",
   components: { CreateTeamMember, InviteTeamMember, MemberNameplate },
   data() {
     return {
@@ -174,9 +175,9 @@ export default {
         }):[];
       });
     },
-    /** 获取团队id */
-    getTeamId() {
-      return this.$store.state.user.config.currentTeamId;
+    /** 获取项目id */
+    getProjectId() {
+      return parseInt(this.$store.state.user.currentProjectId);
     },
     /** 搜索用户 */
     memberSearchHandle(e){
@@ -186,7 +187,7 @@ export default {
     /** 获取团队成员列表 */
     getMemberList() {
       this.loading = true;
-      listMember(this.getTeamId(),this.queryParams).then(res => {
+      listMemberOfProject(this.getProjectId(),this.queryParams).then(res => {
         this.loading = false;
         this.memberList = res.rows;
       });

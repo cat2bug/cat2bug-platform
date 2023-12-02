@@ -1,6 +1,6 @@
 <template>
   <div class="project-member-icons">
-    <el-tooltip class="item" effect="dark" v-for="member in members" :key="member.userId" :content="member.nickName" placement="top">
+    <el-tooltip class="item" effect="dark" v-for="(member,index) in members" :key="index" :content="member.nickName" placement="top">
       <el-avatar
         :isStatistics="member.isStatistics?'true':'false'"
         :src="member.avatar?member.avatar:''"
