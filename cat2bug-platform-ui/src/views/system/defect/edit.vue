@@ -272,6 +272,9 @@ export default {
       margin-bottom: 10px;
     }
     ::v-deep .el-collapse {
+      .el-collapse-item__header {
+        font-size: 16px;
+      }
       border-width: 0px;
       .el-collapse-item:last-child {
         .el-collapse-item__wrap {

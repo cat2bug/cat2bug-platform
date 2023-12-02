@@ -109,6 +109,7 @@ export default {
 
 <style lang="scss" scoped>
   ::v-deep .team-select {
+    cursor: pointer;
     .el-input--prefix {
       margin: 10px;
       width: calc(100% - 20px);

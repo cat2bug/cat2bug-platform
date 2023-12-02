@@ -166,6 +166,8 @@
   "defect.assign-success": "指派成功",
   "defect.reject-success": "拒绝成功",
   "defect.repair-success": "修复成功",
+  "defect.pass-success": "通过成功",
+  "defect.close-success": "关闭成功",
   "BUG": "BUG",
   "TASK": "任务",
   "DEMAND": "需求",

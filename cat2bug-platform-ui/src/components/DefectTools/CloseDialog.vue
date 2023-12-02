@@ -1,5 +1,5 @@
 <template>
-  <el-dialog :title="$i18n.t('reject')" :visible.sync="dialogVisible" append-to-body width="30%">
+  <el-dialog :title="$i18n.t('pass')" :visible.sync="dialogVisible" append-to-body @close="close" width="30%">
     <el-form ref="form" :model="form" :rules="rules" label-width="120px">
       <el-form-item :label="$i18n.t('describe')" prop="defectLogDescribe">
         <el-input type="textarea"
@@ -20,9 +20,9 @@
 
 <script>
 import SelectProjectMember from "@/components/SelectProjectMember";
-import {reject} from "@/api/system/defect";
+import {close} from "@/api/system/defect";
 export default {
-  name: "RejectDialog",
+  name: "PassDialog",
   components: { SelectProjectMember },
   data() {
     return {
@@ -33,6 +33,7 @@ export default {
         ],
       },
       form: {
+        receiveBy: [],
         remark: null
       }
     }
@@ -50,23 +51,24 @@ export default {
   methods:{
     reset() {
       this.form = {
+        receiveBy: [],
         remark: null
       }
       this.resetForm("form");
     },
     open() {
-      this.reset();
       this.dialogVisible = true;
     },
     close() {
       this.dialogVisible = false;
+      this.reset();
     },
     onSubmit() {
       this.$refs["form"].validate(valid => {
         if (valid) {
           this.form.defectId = this.defectId;
-          reject(this.defectId, this.form).then(res => {
-            this.$modal.msgSuccess(this.$i18n.t('defect.reject-success'));
+          close(this.defectId, this.form).then(res => {
+            this.$modal.msgSuccess(this.$i18n.t('defect.close-success'));
             this.close();
             this.$emit('log', res.data);
           });

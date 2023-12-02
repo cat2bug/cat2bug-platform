@@ -43,6 +43,13 @@ public interface ISysDefectService
     public SysDefectLog pass(SysDefectLog sysDefectLog);
 
     /**
+     * 关闭
+     * @param sysDefectLog  缺陷日志
+     * @return  缺陷日志
+     */
+    public SysDefectLog close(SysDefectLog sysDefectLog);
+
+    /**
      * 获取缺陷类型列表
      * @return
      */

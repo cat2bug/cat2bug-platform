@@ -68,7 +68,7 @@ export default {
         if (valid) {
           this.form.defectId = this.defectId;
           pass(this.defectId, this.form).then(res => {
-            this.$modal.msgSuccess(this.$i18n.t('defect.repair-success'));
+            this.$modal.msgSuccess(this.$i18n.t('defect.pass-success'));
             this.close();
             this.$emit('log', res.data);
           });

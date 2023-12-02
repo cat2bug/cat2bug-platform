@@ -4,11 +4,12 @@
     <el-button :icon="isShowIcon?'el-icon-document-delete':''" :size="size" :type="isText?'text':'warning'" @click="rejectHandle">{{$i18n.t('reject')}}</el-button>
     <el-button :icon="isShowIcon?'el-icon-document-checked':''" :size="size" :type="isText?'text':'primary'" @click="repairDialogHandle">{{$i18n.t('repair')}}</el-button>
     <el-button :icon="isShowIcon?'el-icon-finished':''" :size="size" :type="isText?'text':'success'" @click="passDialogHandle">{{$i18n.t('pass')}}</el-button>
-    <el-button :icon="isShowIcon?'el-icon-takeaway-box':''" :size="size" :type="isText?'text':'danger'">{{$i18n.t('close')}}</el-button>
+    <el-button :icon="isShowIcon?'el-icon-takeaway-box':''" :size="size" :type="isText?'text':'danger'" @click="closeDialogHandle">{{$i18n.t('close')}}</el-button>
     <assign-dialog ref="assignDialog" :project-id="defect.projectId" :defect-id="defect.defectId" @log="logHandle" />
     <reject-dialog ref="rejectDialog" :project-id="defect.projectId" :defect-id="defect.defectId" @log="logHandle" />
     <repair-dialog ref="repairDialog" :project-id="defect.projectId" :defect-id="defect.defectId" @log="logHandle" />
     <pass-dialog ref="passDialog" :project-id="defect.projectId" :defect-id="defect.defectId" @log="logHandle" />
+    <close-dialog ref="closeDialog" :project-id="defect.projectId" :defect-id="defect.defectId" @log="logHandle" />
   </div>
 </template>
 
@@ -17,10 +18,11 @@ import AssignDialog from "@/components/DefectTools/AssignDialog";
 import RejectDialog from "@/components/DefectTools/RejectDialog";
 import RepairDialog from "@/components/DefectTools/RepairDialog";
 import PassDialog from "@/components/DefectTools/PassDialog";
+import CloseDialog from "@/components/DefectTools/CloseDialog";
 
 export default {
   name: "DefectTools",
-  components: {PassDialog, AssignDialog, RejectDialog, RepairDialog },
+  components: {PassDialog, AssignDialog, RejectDialog, RepairDialog,CloseDialog },
   model: {
     prop: 'defect',
     event: 'update'
@@ -45,18 +47,26 @@ export default {
   },
   methods:{
     /** 指派 */
-    assignHandle(){
+    assignHandle(event){
       this.$refs.assignDialog.open();
+      event.stopPropagation();
       // this.$emit('update',{});
     },
-    rejectHandle() {
+    rejectHandle(event) {
       this.$refs.rejectDialog.open();
+      event.stopPropagation();
     },
-    repairDialogHandle() {
+    repairDialogHandle(event) {
       this.$refs.repairDialog.open();
+      event.stopPropagation();
     },
-    passDialogHandle() {
+    passDialogHandle(event) {
       this.$refs.passDialog.open();
+      event.stopPropagation();
+    },
+    closeDialogHandle(event){
+      this.$refs.closeDialog.open();
+      event.stopPropagation();
     },
     logHandle(log) {
       this.$emit('log',log);

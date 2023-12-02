@@ -120,6 +120,20 @@ public class SysDefectServiceImpl implements ISysDefectService
     }
 
     @Override
+    public SysDefectLog close(SysDefectLog sysDefectLog) {
+        // 更新缺陷
+        SysDefect sd = new SysDefect();
+        sd.setDefectId(sysDefectLog.getDefectId());
+        sd.setDefectState(SysDefectStateEnum.CLOSED);
+        this.updateSysDefect(sd);
+
+        // 插入日志
+        sysDefectLog.setDefectLogType(SysDefectLogStateEnum.CLOSED);
+        this.inertLog(sysDefectLog);
+        return sysDefectLogMapper.selectSysDefectLogByDefectLogId(sysDefectLog.getDefectLogId());
+    }
+
+    @Override
     public List<EnumVo> getDefectTypeList() {
         return Arrays.asList(
                 new EnumVo(SysDefectTypeEnum.BUG.ordinal(),SysDefectTypeEnum.BUG.name()),

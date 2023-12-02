@@ -80,6 +80,15 @@ export function pass(defectId, data) {
   })
 }
 
+// 关闭
+export function close(defectId, data) {
+  return request({
+    url: '/system/defect/'+defectId+'/close',
+    method: 'post',
+    data: data
+  })
+}
+
 // 删除缺陷
 export function delDefect(defectId) {
   return request({

@@ -75,7 +75,7 @@
 <!--        </el-col>-->
       </el-row>
     </div>
-    <el-table v-loading="loading" :data="defectList" @selection-change="handleSelectionChange" @sort-change="sortChangeHandle">
+    <el-table v-loading="loading" :data="defectList" @selection-change="handleSelectionChange" @sort-change="sortChangeHandle" @row-click="editDefectHandle">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column :label="$t('id')" align="left" prop="projectNum" width="80" sortable >
         <template slot-scope="scope">
@@ -113,6 +113,7 @@
       <el-table-column :label="$t('image')" align="left" prop="imgUrls">
         <template slot-scope="scope">
           <el-image
+            @click="clickImageHandle"
             v-for="(img,index) in getUrl(scope.row.imgUrls)"
             :key="index"
             style="width: 50px; height: 50px"
@@ -392,6 +393,9 @@ export default {
       this.download('system/defect/export', {
         ...this.queryParams
       }, `defect_${new Date().getTime()}.xlsx`)
+    },
+    clickImageHandle(event){
+      event.stopPropagation();
     }
   }
 };
