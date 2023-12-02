@@ -64,7 +64,6 @@ export default {
       // 当前成员id
       currentMemberId: null,
       // 当前选择的角色标签
-      activeRoleTabName: '',
       // 选择的成员
       selectMembers: new Map(),
       // 是否显示清除按钮
@@ -94,6 +93,10 @@ export default {
       default: true
     },
     projectId: {
+      type: Number,
+      default: null
+    },
+    roleId: {
       type: Number,
       default: null
     },
@@ -140,6 +143,7 @@ export default {
     }
   },
   created() {
+    this.queryMember.roleId = this.roleId?this.roleId+'':'';
     this.getRoleList();
     this.getMemberList();
   },
@@ -259,7 +263,7 @@ export default {
     clearSelectMembersHandle(event) {
       this.optionsChecks.clear();
       this.selectMembers.clear();
-      this.activeRoleTabName = '';
+      this.queryMember.roleId = this.roleId?this.roleId+'':'';
       this.queryMember.params.search=null;
       this.queryMember.pageNum=1;
       this.popoverVisible = false;

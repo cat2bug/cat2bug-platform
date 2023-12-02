@@ -145,6 +145,18 @@ public class SysDefectController extends BaseController
     }
 
     /**
+     * 启动
+     */
+    @PreAuthorize("@ss.hasPermi('system:defect:open')")
+    @Log(title = "关闭缺陷", businessType = BusinessType.INSERT)
+    @PostMapping("/{defectId}/open")
+    public AjaxResult open(@RequestBody SysDefectLog sysDefectlog)
+    {
+        return success(sysDefectService.open(sysDefectlog));
+    }
+
+
+    /**
      * 修改缺陷
      */
     @PreAuthorize("@ss.hasPermi('system:defect:edit')")

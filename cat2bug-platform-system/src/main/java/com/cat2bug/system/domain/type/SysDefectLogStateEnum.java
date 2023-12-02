@@ -17,5 +17,7 @@ public enum SysDefectLogStateEnum {
     /** 已处理 */
     REPAIR,
     /** 已关闭 */
-    CLOSED
+    CLOSED,
+    /** 开启 */
+    OPEN
 }

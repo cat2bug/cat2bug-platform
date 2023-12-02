@@ -50,6 +50,13 @@ public interface ISysDefectService
     public SysDefectLog close(SysDefectLog sysDefectLog);
 
     /**
+     * 启动
+     * @param sysDefectLog  缺陷日志
+     * @return  缺陷日志
+     */
+    public SysDefectLog open(SysDefectLog sysDefectLog);
+
+    /**
      * 获取缺陷类型列表
      * @return
      */

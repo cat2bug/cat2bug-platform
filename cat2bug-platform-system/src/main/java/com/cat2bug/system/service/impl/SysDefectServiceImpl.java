@@ -120,6 +120,7 @@ public class SysDefectServiceImpl implements ISysDefectService
     }
 
     @Override
+    @Transactional
     public SysDefectLog close(SysDefectLog sysDefectLog) {
         // 更新缺陷
         SysDefect sd = new SysDefect();
@@ -129,6 +130,22 @@ public class SysDefectServiceImpl implements ISysDefectService
 
         // 插入日志
         sysDefectLog.setDefectLogType(SysDefectLogStateEnum.CLOSED);
+        this.inertLog(sysDefectLog);
+        return sysDefectLogMapper.selectSysDefectLogByDefectLogId(sysDefectLog.getDefectLogId());
+    }
+
+    @Override
+    @Transactional
+    public SysDefectLog open(SysDefectLog sysDefectLog) {
+        // 更新缺陷
+        SysDefect sd = new SysDefect();
+        sd.setDefectId(sysDefectLog.getDefectId());
+        sd.setDefectState(SysDefectStateEnum.PROCESSING);
+        sd.setHandleBy(sysDefectLog.getReceiveBy());
+        this.updateSysDefect(sd);
+
+        // 插入日志
+        sysDefectLog.setDefectLogType(SysDefectLogStateEnum.OPEN);
         this.inertLog(sysDefectLog);
         return sysDefectLogMapper.selectSysDefectLogByDefectLogId(sysDefectLog.getDefectLogId());
     }

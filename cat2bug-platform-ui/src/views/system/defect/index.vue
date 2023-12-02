@@ -4,7 +4,7 @@
     <el-tabs v-model="activeDefectTabName" @tab-click="selectDefectTabHandle">
       <el-tab-pane :label="$t('project.my-participated-in')" :name="$t('project.my-participated-in')"></el-tab-pane>
       <!--      <el-tab-pane :label="$t('project.my-manage')" :name="$t('project.my-manage')"></el-tab-pane>-->
-            <el-tab-pane :label="$t('project.all-project')" :name="$t('project.all-project')"></el-tab-pane>
+            <el-tab-pane :label="$t('defect.all-defect')" :name="$t('defect.all-defect')"></el-tab-pane>
       <!--      <el-tab-pane :label="$t('project.archived-project')" :name="$t('project.archived-project')"></el-tab-pane>-->
     </el-tabs>
     <div class="defect-tools">
@@ -213,7 +213,7 @@ export default {
       queryParams: {
         pageNum: 1,
         pageSize: 10,
-        orderByColumn: 'updateTime',
+        orderByColumn: 'createTime',
         isAsc: 'desc',
         defectType: null,
         defectName: null,

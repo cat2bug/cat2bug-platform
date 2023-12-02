@@ -3,7 +3,7 @@
     <el-tabs v-model="activeProjectTabName" @tab-click="selectProjectTabHandle">
       <el-tab-pane :label="$t('project.my-participated-in')" :name="$t('project.my-participated-in')"></el-tab-pane>
 <!--      <el-tab-pane :label="$t('project.my-manage')" :name="$t('project.my-manage')"></el-tab-pane>-->
-<!--      <el-tab-pane :label="$t('project.all-project')" :name="$t('project.all-project')"></el-tab-pane>-->
+      <el-tab-pane :label="$t('project.all-project')" name=""></el-tab-pane>
 <!--      <el-tab-pane :label="$t('project.archived-project')" :name="$t('project.archived-project')"></el-tab-pane>-->
     </el-tabs>
     <h4 v-show="collectList.length>0">{{$t('project.collect-project')}}</h4>
@@ -186,7 +186,8 @@ export default {
   methods: {
     /** 选择项目分组 */
     selectProjectTabHandle(){
-
+      this.reset();
+      this.getList();
     },
     /** 查询项目列表 */
     getList() {
