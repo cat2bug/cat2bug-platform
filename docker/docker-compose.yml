@@ -1,0 +1,90 @@
+version: '3.4'
+name: cat2bug-platform
+services:
+  cat2bug-mysql:
+    image: mysql:8.2
+    hostname: mysql
+    container_name: cat2bug-mysql
+    restart: always
+    command:
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_general_ci
+      --explicit_defaults_for_timestamp=true
+      --lower_case_table_names=1
+      --interactive_timeout=259200
+      --wait_timeout=259200
+      --max_connections=1000
+    volumes:
+      - ../sql/:/docker-entrypoint-initdb.d/
+    expose:
+      - "3306"
+    environment:
+      TZ: Asia/Shanghai
+      MYSQL_ROOT_HOST: "%"
+      MYSQL_DATABASE: cat2bug_platform
+      MYSQL_ROOT_PASSWORD: cat2bug_password
+      MYSQL_USER: cat2bug
+      MYSQL_PASSWORD: cat2bug_password
+    healthcheck:
+      test: "mysql -h127.0.0.1 -P3306 -uroot -pcat2bug_password -e 'SHOW DATABASES;'"
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
+    networks:
+      - cat2bug-network
+  cat2bug-redis:
+    image: redis:7.2.3
+    hostname: redis
+    container_name: cat2bug-redis
+    restart: always
+    expose:
+      - "6739"
+    healthcheck:
+      test: "exit 0"
+    networks:
+      - cat2bug-network
+  cat2bug-app-after:
+    hostname: after
+    build:
+      context: .
+      dockerfile: after-dockerfile
+    container_name: cat2bug-app-after
+    expose:
+      - "2020:2020"
+    environment:
+      SPRING_DATASOURCE_DRUID_MASTER_URL: jdbc:mysql://cat2bug-mysql:3306/cat2bug_platform?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=GMT%2B8
+      SPRING_DATASOURCE_DRUID_MASTER_USERNAME: root
+      SPRING_DATASOURCE_DRUID_MASTER_PASSWORD: cat2bug_password
+      SPRING_REDIS_HOST: cat2bug-redis
+    links:
+      - cat2bug-mysql
+      - cat2bug-redis
+    depends_on:
+      cat2bug-mysql:
+        condition: service_healthy
+      cat2bug-redis:
+        condition: service_healthy
+    healthcheck:
+      test: "exit 0"
+    networks:
+      - cat2bug-network
+  cat2bug-app-front:
+    hostname: front
+    build:
+      context: .
+      dockerfile: front-dockerfile
+    container_name: cat2bug-app-front
+    ports:
+      - "2222:80"
+    links:
+      - cat2bug-app-after
+    depends_on:
+      cat2bug-app-after:
+        condition: service_healthy
+    networks:
+      - cat2bug-network
+networks:
+  cat2bug-network:
+    driver: bridge

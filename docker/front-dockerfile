@@ -1,0 +1,29 @@
+# 下载源码镜像
+FROM bitnami/git as cat2bug_git_src
+#切换目录，指定源码克隆后保存位置
+WORKDIR /usr/local/code
+ADD http://api.m.taobao.com/rest/api3.do?api=mtop.common.getTimestamp /tmp/bustcache
+# 拉取源代码
+# 如果私有仓卡记得加账号密码
+RUN git clone https://yuzhantao%40qq.com:123a123b@e.coding.net/qyzw/cat2bug/cat2bug-platform.git
+
+# 编译
+FROM node:16.16 as cat2bug_npm_build
+#切换目录，指定编译源码位置
+WORKDIR /usr/local/code
+#将源码复制到下一个镜像中
+COPY --from=cat2bug_git_src /usr/local/code .
+WORKDIR /usr/local/code/cat2bug-platform/cat2bug-platform-ui
+RUN --mount=type=cache,target=/usr/local/code/cat2bug-platform/cat2bug-platform-ui/node_modules,id=app_node_modules,sharing=locked --mount=type=cache,target=/root/.npm,id=npm_cache npm install --registry http://registry.npm.taobao.org
+RUN --mount=type=cache,target=/usr/local/code/cat2bug-platform/cat2bug-platform-ui/node_modules,id=app_node_modules,sharing=locked --mount=type=cache,target=/root/.npm,id=npm_cache npm run build:prod
+
+# 执行
+FROM nginx
+# author
+MAINTAINER yuzhantao
+#将源码复制到下一个镜像中
+COPY --from=cat2bug_npm_build /usr/local/code/cat2bug-platform/cat2bug-platform-ui/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/nginx.conf
+EXPOSE 80
+# 启动认证服务
+ENTRYPOINT ["nginx", "-g","daemon off;"]
