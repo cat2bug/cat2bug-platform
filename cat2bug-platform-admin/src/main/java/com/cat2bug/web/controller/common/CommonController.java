@@ -1,25 +1,30 @@
 package com.cat2bug.web.controller.common;
 
-import java.util.ArrayList;
-import java.util.List;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 import com.cat2bug.common.config.RuoYiConfig;
 import com.cat2bug.common.constant.Constants;
 import com.cat2bug.common.core.domain.AjaxResult;
 import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.common.utils.file.FileUploadUtils;
 import com.cat2bug.common.utils.file.FileUtils;
+import com.cat2bug.common.utils.uuid.UUID;
 import com.cat2bug.framework.config.ServerConfig;
+import com.cat2bug.system.domain.SysTempFile;
+import com.cat2bug.system.domain.type.SysTempFileTypeEnum;
+import com.cat2bug.system.service.ISysTempFileService;
+import com.google.common.base.Preconditions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.cat2bug.common.core.domain.AjaxResult.success;
 
 /**
  * 通用请求处理
@@ -34,6 +39,9 @@ public class CommonController
 
     @Autowired
     private ServerConfig serverConfig;
+
+    @Autowired
+    private ISysTempFileService sysTempFileService;
 
     private static final String FILE_DELIMETER = ",";
 
@@ -82,12 +90,41 @@ public class CommonController
             // 上传并返回新文件名称
             String fileName = FileUploadUtils.upload(filePath, file);
             String url = serverConfig.getUrl() + fileName;
-            AjaxResult ajax = AjaxResult.success();
+            AjaxResult ajax = success();
             ajax.put("url", url);
             ajax.put("fileName", fileName);
             ajax.put("newFileName", FileUtils.getName(fileName));
             ajax.put("originalFilename", file.getOriginalFilename());
             return ajax;
+        }
+        catch (Exception e)
+        {
+            return AjaxResult.error(e.getMessage());
+        }
+    }
+
+    @PostMapping("/upload/screen-shot")
+    public AjaxResult uploadScreenShot(@RequestBody SysTempFile file)
+    {
+        try
+        {
+            // Base64解码
+            String base64Code = String.valueOf(file.getFileBody());
+            // 上传文件路径
+            String filePath = RuoYiConfig.getUploadPath();
+            // 原文件名
+            String originalFileName = "screen_"+ UUID.randomUUID().toString().substring(0,8);
+            // 上传并返回新文件名称
+            String path = FileUploadUtils.uploadBase64Image(filePath, originalFileName, base64Code);
+            // 图片网址
+            String url = serverConfig.getUrl() + path;
+            file.setFileName(originalFileName);
+            file.setFileUrl(path);
+            file.setFileType(SysTempFileTypeEnum.IMAGE);
+            Preconditions.checkState(sysTempFileService.insertSysTempFile(file)>0);
+
+            file.setFileBody(null);
+            return success(file);
         }
         catch (Exception e)
         {
@@ -119,7 +156,7 @@ public class CommonController
                 newFileNames.add(FileUtils.getName(fileName));
                 originalFilenames.add(file.getOriginalFilename());
             }
-            AjaxResult ajax = AjaxResult.success();
+            AjaxResult ajax = success();
             ajax.put("urls", StringUtils.join(urls, FILE_DELIMETER));
             ajax.put("fileNames", StringUtils.join(fileNames, FILE_DELIMETER));
             ajax.put("newFileNames", StringUtils.join(newFileNames, FILE_DELIMETER));

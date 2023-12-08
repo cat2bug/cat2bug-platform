@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.system.mapper.SysTempFileMapper">
+    
+    <resultMap type="SysTempFile" id="SysTempFileResult">
+        <result property="fileId"    column="file_id"    />
+        <result property="fileName"    column="file_name"    />
+        <result property="srcUrl"    column="src_url"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="fileType"    column="file_type"  typeHandler="com.cat2bug.system.domain.handle.SysTempFileTypeEnumHandler"   />
+        <result property="fileUrl"    column="file_url"    />
+    </resultMap>
+
+    <sql id="selectSysTempFileVo">
+        select file_id, file_name, src_url, create_by, create_time, file_type, file_url from sys_temp_file
+    </sql>
+
+    <select id="selectSysTempFileList" parameterType="SysTempFile" resultMap="SysTempFileResult">
+        <include refid="selectSysTempFileVo"/>
+        <where>  
+            <if test="fileName != null  and fileName != ''"> and file_name like concat('%', #{fileName}, '%')</if>
+            <if test="params.beginCreateTime != null and params.beginCreateTime != '' and params.endCreateTime != null and params.endCreateTime != ''"> and create_time between #{params.beginCreateTime} and #{params.endCreateTime}</if>
+            <if test="fileType != null "> and file_type = #{fileType, typeHandler=com.cat2bug.system.domain.handle.SysTempFileTypeEnumHandler}</if>
+        </where>
+    </select>
+    
+    <select id="selectSysTempFileByFileId" parameterType="Long" resultMap="SysTempFileResult">
+        <include refid="selectSysTempFileVo"/>
+        where file_id = #{fileId}
+    </select>
+        
+    <insert id="insertSysTempFile" parameterType="SysTempFile" useGeneratedKeys="true" keyProperty="fileId">
+        insert into sys_temp_file
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="fileName != null">file_name,</if>
+            <if test="srcUrl != null">src_url,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="fileType != null">file_type,</if>
+            <if test="fileUrl != null">file_url,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="fileName != null">#{fileName},</if>
+            <if test="srcUrl != null">#{srcUrl},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="fileType != null">#{fileType, typeHandler=com.cat2bug.system.domain.handle.SysTempFileTypeEnumHandler },</if>
+            <if test="fileUrl != null">#{fileUrl},</if>
+         </trim>
+    </insert>
+
+    <update id="updateSysTempFile" parameterType="SysTempFile">
+        update sys_temp_file
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="fileName != null">file_name = #{fileName},</if>
+            <if test="srcUrl != null">src_url = #{srcUrl},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="fileType != null">file_type = #{fileType, typeHandler=com.cat2bug.system.domain.handle.SysTempFileTypeEnumHandler},</if>
+            <if test="fileUrl != null">file_url = #{fileUrl},</if>
+        </trim>
+        where file_id = #{fileId}
+    </update>
+
+    <delete id="deleteSysTempFileByFileId" parameterType="Long">
+        delete from sys_temp_file where file_id = #{fileId}
+    </delete>
+
+    <delete id="deleteSysTempFileByFileIds" parameterType="String">
+        delete from sys_temp_file where file_id in 
+        <foreach item="fileId" collection="array" open="(" separator="," close=")">
+            #{fileId}
+        </foreach>
+    </delete>
+</mapper>

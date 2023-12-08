@@ -165,7 +165,7 @@
 import {listDefect, getDefect, delDefect, addDefect, updateDefect, configDefect} from "@/api/system/defect";
 import RowListMember from "@/components/RowListMember";
 import LevelTag from "@/components/LevelTag";
-import AddDefect from "./add.vue"
+import AddDefect from "@/components/Defect/AddDefect"
 import EditDefect from "./edit"
 import SelectModule from "@/components/SelectModule";
 import SelectProjectMember from "@/components/SelectProjectMember";

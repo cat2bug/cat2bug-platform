@@ -1,9 +1,14 @@
 package com.cat2bug.common.utils.file;
 
-import java.io.File;
-import java.io.IOException;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.*;
 import java.nio.file.Paths;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import com.google.common.base.Preconditions;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.web.multipart.MultipartFile;
 import com.cat2bug.common.config.RuoYiConfig;
@@ -14,6 +19,9 @@ import com.cat2bug.common.exception.file.InvalidExtensionException;
 import com.cat2bug.common.utils.DateUtils;
 import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.common.utils.uuid.Seq;
+
+import javax.imageio.ImageIO;
+import javax.xml.bind.DatatypeConverter;
 
 /**
  * 文件上传工具类
@@ -117,6 +125,29 @@ public class FileUploadUtils
         return getPathFileName(baseDir, fileName);
     }
 
+    public static final String uploadBase64Image(String baseDir, String originalFileName, String base64 )
+            throws FileSizeLimitExceededException, IOException, FileNameLengthLimitExceededException
+    {
+        Pattern pattern = Pattern.compile("^data:image/([a-zA-Z]+);base64,(.+)$");
+        Matcher matcher = pattern.matcher(base64);
+        Preconditions.checkState(matcher.find());
+        String imageFormat = matcher.group(1);
+        String imageData = matcher.group(2);
+        BufferedImage image;
+        byte[] data;
+        data = DatatypeConverter.parseBase64Binary(imageData);
+        ByteArrayInputStream bis = new ByteArrayInputStream(data);
+        image = ImageIO.read(new ByteArrayInputStream(data));
+        bis.close();
+
+        String fileName = extractFilename(originalFileName, imageFormat);
+        String absPath = getAbsoluteFile(baseDir, fileName).getAbsolutePath();
+        File outputFile = new File(absPath);
+        ImageIO.write(image,imageFormat,outputFile);
+        return getPathFileName(baseDir, fileName);
+    }
+
+
     /**
      * 编码文件名
      */
@@ -124,6 +155,12 @@ public class FileUploadUtils
     {
         return StringUtils.format("{}/{}_{}.{}", DateUtils.datePath(),
                 FilenameUtils.getBaseName(file.getOriginalFilename()), Seq.getId(Seq.uploadSeqType), getExtension(file));
+    }
+
+    public static final String extractFilename(String originalFileName, String extension)
+    {
+        return StringUtils.format("{}/{}_{}.{}", DateUtils.datePath(),
+                FilenameUtils.getBaseName(originalFileName), Seq.getId(Seq.uploadSeqType), extension);
     }
 
     public static final File getAbsoluteFile(String uploadDir, String fileName) throws IOException

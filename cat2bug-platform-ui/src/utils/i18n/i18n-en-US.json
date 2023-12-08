@@ -10,6 +10,7 @@
   "account": "Account",
   "password": "Password",
   "remark": "Remark",
+  "tools": "Tools",
   "my-center": "Personal Center",
   "verification-code": "Verification Code",
   "remember-password": "Remember Password",
@@ -187,5 +188,12 @@
   "module.enter-module-name": "Please enter the module",
   "module.select-module-name": "Please select the module",
   "module.name-cannot-empty": "Module name cannot be empty!",
-  "module.create-success": "Module created successfully"
+  "module.create-success": "Module created successfully",
+  "browser": "Browser",
+  "browser.tool": "Browser Tool",
+  "browser.describe": "Browser related tools",
+  "browser.website": "Website",
+  "browser.access": "Access",
+  "browser.please-enter-testing-website": "Please enter the testing website",
+  "browser.please-enter-testing-website-prompt": "Tip: Please enter the website you want to test, click the \"Access\" button to test, and the testing tool is located in the floating border on the right."
 }

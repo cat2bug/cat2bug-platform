@@ -63,6 +63,11 @@ export const constantRoutes = [
     hidden: true
   },
   {
+    path: '/tools/browser',
+    component: () => import('@/views/tool/project/browser/index'),
+    hidden: true
+  },
+  {
     path: '',
     component: Layout,
     redirect: 'index',

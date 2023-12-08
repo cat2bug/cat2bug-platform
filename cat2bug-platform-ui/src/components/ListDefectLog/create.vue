@@ -43,28 +43,34 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.defect-log-create-body {
+.defect-log-create {
   display: flex;
-  align-items: center;
-  flex-direction: row;
   justify-content: flex-start;
   align-items: center;
   flex-direction: row;
   flex-wrap: wrap;
   font-size: 14px;
+
   span {
     padding-left: 2px;
     padding-right: 2px;
   }
+
   .user {
     font-weight: 500;
   }
+
   .state {
     font-size: 14px;
     color: #409EFF;
   }
+
   .orange {
     color: rgb(255, 186, 0);
+  }
+
+  .red {
+    color: #FF0000;
   }
 }
 </style>

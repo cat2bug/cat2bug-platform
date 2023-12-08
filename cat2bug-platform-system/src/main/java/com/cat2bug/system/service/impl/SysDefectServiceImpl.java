@@ -203,13 +203,14 @@ public class SysDefectServiceImpl implements ISysDefectService
         sysDefect.setProjectNum(count+1);
         Preconditions.checkState(sysDefectMapper.insertSysDefect(sysDefect)>0,MessageUtils.message("defect.insert_fail"));
         // 新建日志
-        this.inertLog(null,null,SysDefectLogStateEnum.CREATE);
+        this.inertLog(sysDefect.getDefectId(),sysDefect.getHandleBy(),null,SysDefectLogStateEnum.CREATE);
         return 1;
     }
 
     /** 添加日志 */
-    private SysDefectLog inertLog(List<Long> receives,String describe,SysDefectLogStateEnum state){
+    private SysDefectLog inertLog(Long defectId, List<Long> receives,String describe,SysDefectLogStateEnum state){
         SysDefectLog sysDefectLog = new SysDefectLog();
+        sysDefectLog.setDefectId(defectId);
         sysDefectLog.setDefectLogDescribe(describe);
         sysDefectLog.setReceiveBy(receives);
         sysDefectLog.setDefectLogType(state);
@@ -218,6 +219,7 @@ public class SysDefectServiceImpl implements ISysDefectService
 
     /** 添加日志 */
     private SysDefectLog inertLog(SysDefectLog sysDefectLog){
+        Preconditions.checkNotNull(sysDefectLog.getDefectId(),MessageUtils.message("defect.defect_id_cannot_empty"));
         sysDefectLog.setCreateBy(String.valueOf(SecurityUtils.getUserId()));
         sysDefectLog.setCreateTime(DateUtils.getNowDate());
         return this.sysDefectLogMapper.insertSysDefectLog(sysDefectLog)>0?sysDefectLog:null;

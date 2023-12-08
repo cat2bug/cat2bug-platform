@@ -10,6 +10,7 @@
   "account": "账号",
   "password": "密码",
   "remark": "备注",
+  "tools": "工具箱",
   "my-center": "个人中心",
   "verification-code": "验证码",
   "remember-password": "记住密码",
@@ -187,5 +188,12 @@
   "module.enter-module-name": "请输入模块名称",
   "module.select-module-name": "请选择模块名称",
   "module.name-cannot-empty": "模块名称不能为空",
-  "module.create-success": "新建模块成功"
+  "module.create-success": "新建模块成功",
+  "browser": "浏览器",
+  "browser.tool": "浏览器工具",
+  "browser.describe": "浏览器相关工具",
+  "browser.website": "网址",
+  "browser.access": "访问",
+  "browser.please-enter-testing-website": "请输入测试网址",
+  "browser.please-enter-testing-website-prompt": "提示:请输入需要测试的网址，点击\"访问\"按钮进行测试，测试工具在右侧悬浮边框中。"
 }
