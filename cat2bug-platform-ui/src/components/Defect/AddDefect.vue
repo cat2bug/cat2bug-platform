@@ -122,9 +122,10 @@ export default {
     },
   },
   methods:{
-    open(isReset) {
-      if(isReset){
-        this.reset();
+    open(data) {
+      this.reset();
+      if(data){
+        this.form.imgUrls = data.imgUrls||null
       }
       this.visible = true;
     },
@@ -143,6 +144,7 @@ export default {
         defectName: null,
         defectDescribe: null,
         annexUrls: null,
+        imgUrls: null,
         projectId: null,
         testPlanId: null,
         caseId: null,
