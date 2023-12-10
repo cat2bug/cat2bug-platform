@@ -45,6 +45,7 @@
     "file-saver": "2.0.5",
     "fuse.js": "6.4.3",
     "highlight.js": "9.18.5",
+    "jquery": "^3.7.1",
     "js-beautify": "1.13.0",
     "js-cookie": "3.0.1",
     "js-web-screen-shot": "^1.9.9-rc.6",

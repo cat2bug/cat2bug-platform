@@ -23,8 +23,19 @@
             </el-tooltip>
           </el-col>
           <el-col :span="24">
+            <el-tooltip class="item" effect="dark" content="测试区域尺寸" placement="left">
+              <el-dropdown trigger="click" @command="testScreenSizeChangedHandle">
+                <el-button type="danger" plain><svg-icon icon-class="resize" /></el-button>
+                <el-dropdown-menu slot="dropdown">
+                  <el-dropdown-item>Web</el-dropdown-item>
+                  <el-dropdown-item v-for="(screen,index) in screenSizeList" :key="index" :divided="index==0" :command="screen.screenSizeId">{{screen.name}}</el-dropdown-item>
+                </el-dropdown-menu>
+              </el-dropdown>
+            </el-tooltip>
+          </el-col>
+          <el-col :span="24">
             <el-tooltip class="item" effect="dark" content="Bug日志" placement="left">
-              <el-button type="danger" plain><svg-icon icon-class="bug-list" /></el-button>
+              <el-button type="danger" plain @click="defectListClickedHandle"><svg-icon icon-class="bug-list" /></el-button>
             </el-tooltip>
           </el-col>
           <el-divider></el-divider>
@@ -43,8 +54,13 @@
   <!--        fit="cover"></el-image>-->
       </template>
     </drag>
-    <iframe id="main-iframe" v-show="iframeVisible" :src="testUrl" class="main-iframe" security="restricted"> </iframe>
+    <cat2bug-browser ref="browser" v-show="iframeVisible" />
+    <div class="cat2bug-browser-test-frame">
+<!--      <iframe id="main-iframe" :src="testUrl" class="main-iframe" security="restricted"> </iframe>-->
+
+    </div>
     <add-defect ref="addDefectForm" :project-id="getProjectId()" />
+    <list-defect ref="listDefect" />
   </div>
 </template>
 
@@ -53,14 +69,17 @@ import ScreenShot from "js-web-screen-shot";
 import AddDefect from "@/components/Defect/AddDefect"
 import BrowserInput from "@/views/tool/project/browser/BrowserInput";
 import Drag from "@/components/Drag";
-
+import ListDefect from "@/components/Defect/ListDefect"
+import Cat2bugBrowser from "@/components/Cat2bugBrowser";
 import {uploadScreenShot} from "@/api/common/upload";
+import {listScreenSize} from "@/api/system/ScreenSize";
 
 export default {
   name: "index",
-  components: { AddDefect,BrowserInput,Drag },
+  components: { AddDefect,BrowserInput,Drag,ListDefect,Cat2bugBrowser },
   data() {
     return {
+      screenSizeList: [],
       // 是否显示工具栏
       toolsVisible: false,
       // 是否显示测试的iframe
@@ -78,22 +97,42 @@ export default {
       return function (image){
         return process.env.VUE_APP_BASE_API + image.fileUrl
       }
-    }
+    },
   },
   mounted() {
-
+    this.getScreenSizeList();
   },
   methods: {
+    /** 获取屏幕尺寸 */
+    getScreenSizeList() {
+      listScreenSize({
+        pageSize: 999,
+        pageNum:1
+      }).then(res=>{
+        this.screenSizeList = res.rows;
+      })
+    },
+    /** 测试屏幕尺寸改变的处理 */
+    testScreenSizeChangedHandle(id){
+      let width = '100%';
+      let height = '100%';
+      if(id){
+        let _this = this;
+        this.screenSizeList.filter(s=>s.screenSizeId==id).forEach(s=>{
+          width = s.width;
+          height = s.height;
+        });
+      }
+      this.$refs.browser.open(this.testUrl,width,height);
+    },
     /** 测试网址改变的处理 */
     urlInputHandle() {
       this.toolsVisible=true;
       this.iframeVisible=true;
+      this.$refs.browser.open(this.testUrl)
     },
     /** 配置处理 */
     optionHandle() {
-
-    },
-    addWindowsHandle() {
 
     },
     screenShotHandle(){
@@ -132,6 +171,10 @@ export default {
     /** 截屏取消的处理 */
     screenShotCancelHandle(){
       this.toolsVisible = true;
+    },
+    /** 缺陷列表的点击处理 */
+    defectListClickedHandle() {
+      this.$refs.listDefect.open();
     }
   }
 }
@@ -157,15 +200,7 @@ export default {
       border-width: 0px;
     }
   }
-  .main-iframe {
-    z-index: 998;
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    bottom: 0px;
-    right:0px;
-    border-width: 0px;
-  }
+
   @keyframes glow {
     0% {
       border-color: red;

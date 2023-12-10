@@ -36,6 +36,7 @@ import ImagePreview from "@/components/ImagePreview"
 import DictTag from '@/components/DictTag'
 // 头部标签组件
 import VueMeta from 'vue-meta'
+
 // 字典数据组件
 import DictData from '@/components/DictData'
 
