@@ -1,6 +1,5 @@
 <template>
   <div>
-    <browser-input v-show="!iframeVisible" v-model="testUrl" @input="urlInputHandle" />
     <drag class="browser-tools" v-show="toolsVisible">
       <template v-slot="content">
         <el-row>
@@ -13,7 +12,7 @@
           </el-col>
           <el-col :span="24">
             <el-tooltip class="item" effect="dark" content="跳转到网址输入框" placement="left">
-              <el-button type="danger" plain @click="iframeVisible=false"><svg-icon icon-class="input" /></el-button>
+              <el-button type="danger" plain><svg-icon icon-class="input" /></el-button>
             </el-tooltip>
           </el-col>
           <el-divider></el-divider>
@@ -45,19 +44,10 @@
             </el-tooltip>
           </el-col>
         </el-row>
-
-  <!--      <el-image-->
-  <!--        style="width: 100px; height: 100px"-->
-  <!--        v-for="(img,index) in screenShotList"-->
-  <!--        :key="index"-->
-  <!--        :src="screenShotUrl(img)"-->
-  <!--        fit="cover"></el-image>-->
       </template>
     </drag>
-    <cat2bug-browser ref="browser" v-show="iframeVisible" />
-    <div class="cat2bug-browser-test-frame">
-<!--      <iframe id="main-iframe" :src="testUrl" class="main-iframe" security="restricted"> </iframe>-->
-
+    <div>
+      <cat2bug-browser v-for="i in screenCount" :key="i" width="400" height="500" />
     </div>
     <add-defect ref="addDefectForm" :project-id="getProjectId()" />
     <list-defect ref="listDefect" />
@@ -67,7 +57,6 @@
 <script>
 import ScreenShot from "js-web-screen-shot";
 import AddDefect from "@/components/Defect/AddDefect"
-import BrowserInput from "@/views/tool/project/browser/BrowserInput";
 import Drag from "@/components/Drag";
 import ListDefect from "@/components/Defect/ListDefect"
 import Cat2bugBrowser from "@/components/Cat2bugBrowser";
@@ -76,16 +65,13 @@ import {listScreenSize} from "@/api/system/ScreenSize";
 
 export default {
   name: "index",
-  components: { AddDefect,BrowserInput,Drag,ListDefect,Cat2bugBrowser },
+  components: { AddDefect,Drag,ListDefect,Cat2bugBrowser },
   data() {
     return {
+      screenCount:5,
       screenSizeList: [],
       // 是否显示工具栏
-      toolsVisible: false,
-      // 是否显示测试的iframe
-      iframeVisible: false,
-      // 测试地址
-      testUrl: null,
+      toolsVisible: true,
       // 截图上传路径
       uploadUrl: process.env.VUE_APP_BASE_API + "/common/upload/screen-shot",
       screenShotList:[],
@@ -119,17 +105,9 @@ export default {
       if(id){
         let _this = this;
         this.screenSizeList.filter(s=>s.screenSizeId==id).forEach(s=>{
-          width = s.width;
-          height = s.height;
+          this.$refs.browser.open(s);
         });
       }
-      this.$refs.browser.open(this.testUrl,width,height);
-    },
-    /** 测试网址改变的处理 */
-    urlInputHandle() {
-      this.toolsVisible=true;
-      this.iframeVisible=true;
-      this.$refs.browser.open(this.testUrl)
     },
     /** 配置处理 */
     optionHandle() {
