@@ -50,7 +50,7 @@ export default {
       this.dragging = true
       this.startX = event.clientX - this.dragElement.offsetLeft;
       this.startY = event.clientY - this.dragElement.offsetTop;
-      this.dragElement.style.zIndex="99999";
+      this.dragElement.style.zIndex="999";
       this.mask = this.createMask();
     },
     /** 鼠标移动事件 */

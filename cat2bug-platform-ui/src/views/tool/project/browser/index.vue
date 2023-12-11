@@ -10,11 +10,6 @@
               </router-link>
             </el-tooltip>
           </el-col>
-          <el-col :span="24">
-            <el-tooltip class="item" effect="dark" content="跳转到网址输入框" placement="left">
-              <el-button type="danger" plain><svg-icon icon-class="input" /></el-button>
-            </el-tooltip>
-          </el-col>
           <el-divider></el-divider>
           <el-col :span="24">
             <el-tooltip class="item" effect="dark" content="截屏" placement="left">
@@ -22,12 +17,13 @@
             </el-tooltip>
           </el-col>
           <el-col :span="24">
-            <el-tooltip class="item" effect="dark" content="测试区域尺寸" placement="left">
-              <el-dropdown trigger="click" @command="testScreenSizeChangedHandle">
-                <el-button type="danger" plain><svg-icon icon-class="resize" /></el-button>
+            <el-tooltip class="item" effect="dark" content="拆分窗口" placement="left">
+              <el-dropdown trigger="click" @command="splitChangedHandle">
+                <el-button type="danger" plain><svg-icon icon-class="split" /></el-button>
                 <el-dropdown-menu slot="dropdown">
-                  <el-dropdown-item>Web</el-dropdown-item>
-                  <el-dropdown-item v-for="(screen,index) in screenSizeList" :key="index" :divided="index==0" :command="screen.screenSizeId">{{screen.name}}</el-dropdown-item>
+                  <el-dropdown-item command="">单屏</el-dropdown-item>
+                  <el-dropdown-item command="horizontal">水平拆分</el-dropdown-item>
+                  <el-dropdown-item command="vertical">垂直拆分</el-dropdown-item>
                 </el-dropdown-menu>
               </el-dropdown>
             </el-tooltip>
@@ -47,7 +43,14 @@
       </template>
     </drag>
     <div>
-      <cat2bug-browser v-for="i in screenCount" :key="i" width="400" height="500" />
+      <cat2bug-split-panel ref="cat2bugSplitPanel" v-model="split" :width="screenWidth" :height="screenHeight">
+        <template slot="left">
+          <cat2bug-browser width="100%" height="100%" @close="closeLeftBrowserHandle"/>
+        </template>
+        <template slot="right">
+          <cat2bug-browser width="100%" height="100%" @close="closeRightBrowserHandle"/>
+        </template>
+      </cat2bug-split-panel>
     </div>
     <add-defect ref="addDefectForm" :project-id="getProjectId()" />
     <list-defect ref="listDefect" />
@@ -60,21 +63,23 @@ import AddDefect from "@/components/Defect/AddDefect"
 import Drag from "@/components/Drag";
 import ListDefect from "@/components/Defect/ListDefect"
 import Cat2bugBrowser from "@/components/Cat2bugBrowser";
+import Cat2bugSplitPanel from "@/components/Cat2bugSplitPanel";
 import {uploadScreenShot} from "@/api/common/upload";
 import {listScreenSize} from "@/api/system/ScreenSize";
 
 export default {
   name: "index",
-  components: { AddDefect,Drag,ListDefect,Cat2bugBrowser },
+  components: { AddDefect,Drag,ListDefect,Cat2bugBrowser,Cat2bugSplitPanel },
   data() {
     return {
-      screenCount:5,
-      screenSizeList: [],
+      split: '',
       // 是否显示工具栏
       toolsVisible: true,
       // 截图上传路径
       uploadUrl: process.env.VUE_APP_BASE_API + "/common/upload/screen-shot",
       screenShotList:[],
+      screenWidth: document.body.clientWidth,
+      screenHeight: document.body.clientHeight
     }
   },
   computed:{
@@ -86,28 +91,22 @@ export default {
     },
   },
   mounted() {
-    this.getScreenSizeList();
+    window.onresize = () => {
+      return (() => {
+        this.screenWidth = document.body.clientWidth;
+        this.screenHeight = document.body.clientHeight;
+      })();
+    };
   },
   methods: {
-    /** 获取屏幕尺寸 */
-    getScreenSizeList() {
-      listScreenSize({
-        pageSize: 999,
-        pageNum:1
-      }).then(res=>{
-        this.screenSizeList = res.rows;
-      })
+    closeLeftBrowserHandle() {
+      this.$refs.cat2bugSplitPanel.hideLeft();
     },
-    /** 测试屏幕尺寸改变的处理 */
-    testScreenSizeChangedHandle(id){
-      let width = '100%';
-      let height = '100%';
-      if(id){
-        let _this = this;
-        this.screenSizeList.filter(s=>s.screenSizeId==id).forEach(s=>{
-          this.$refs.browser.open(s);
-        });
-      }
+    closeRightBrowserHandle() {
+      this.$refs.cat2bugSplitPanel.hideRight();
+    },
+    splitChangedHandle(split){
+      this.split = split;
     },
     /** 配置处理 */
     optionHandle() {

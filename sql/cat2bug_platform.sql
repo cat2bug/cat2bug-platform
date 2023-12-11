@@ -1,17 +1,17 @@
 /*
  Navicat Premium Data Transfer
 
- Source Server         : localhost
+ Source Server         : cat2bug
  Source Server Type    : MySQL
- Source Server Version : 50738
- Source Host           : localhost:3306
+ Source Server Version : 80200
+ Source Host           : localhost:3307
  Source Schema         : cat2bug_platform
 
  Target Server Type    : MySQL
- Target Server Version : 50738
+ Target Server Version : 80200
  File Encoding         : 65001
 
- Date: 03/12/2023 02:06:06
+ Date: 11/12/2023 22:20:37
 */
 
 SET NAMES utf8mb4;
@@ -22,28 +22,28 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- ----------------------------
 DROP TABLE IF EXISTS `gen_table`;
 CREATE TABLE `gen_table` (
-  `table_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '编号',
-  `table_name` varchar(200) COLLATE utf8_bin DEFAULT '' COMMENT '表名称',
-  `table_comment` varchar(500) COLLATE utf8_bin DEFAULT '' COMMENT '表描述',
-  `sub_table_name` varchar(64) COLLATE utf8_bin DEFAULT NULL COMMENT '关联子表的表名',
-  `sub_table_fk_name` varchar(64) COLLATE utf8_bin DEFAULT NULL COMMENT '子表关联的外键名',
-  `class_name` varchar(100) COLLATE utf8_bin DEFAULT '' COMMENT '实体类名称',
-  `tpl_category` varchar(200) COLLATE utf8_bin DEFAULT 'crud' COMMENT '使用的模板（crud单表操作 tree树表操作）',
-  `package_name` varchar(100) COLLATE utf8_bin DEFAULT NULL COMMENT '生成包路径',
-  `module_name` varchar(30) COLLATE utf8_bin DEFAULT NULL COMMENT '生成模块名',
-  `business_name` varchar(30) COLLATE utf8_bin DEFAULT NULL COMMENT '生成业务名',
-  `function_name` varchar(50) COLLATE utf8_bin DEFAULT NULL COMMENT '生成功能名',
-  `function_author` varchar(50) COLLATE utf8_bin DEFAULT NULL COMMENT '生成功能作者',
-  `gen_type` char(1) COLLATE utf8_bin DEFAULT '0' COMMENT '生成代码方式（0zip压缩包 1自定义路径）',
-  `gen_path` varchar(200) COLLATE utf8_bin DEFAULT '/' COMMENT '生成路径（不填默认项目路径）',
-  `options` varchar(1000) COLLATE utf8_bin DEFAULT NULL COMMENT '其它生成选项',
-  `create_by` varchar(64) COLLATE utf8_bin DEFAULT '' COMMENT '创建者',
+  `table_id` bigint NOT NULL AUTO_INCREMENT COMMENT '编号',
+  `table_name` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '表名称',
+  `table_comment` varchar(500) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '表描述',
+  `sub_table_name` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '关联子表的表名',
+  `sub_table_fk_name` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '子表关联的外键名',
+  `class_name` varchar(100) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '实体类名称',
+  `tpl_category` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT 'crud' COMMENT '使用的模板（crud单表操作 tree树表操作）',
+  `package_name` varchar(100) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '生成包路径',
+  `module_name` varchar(30) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '生成模块名',
+  `business_name` varchar(30) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '生成业务名',
+  `function_name` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '生成功能名',
+  `function_author` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '生成功能作者',
+  `gen_type` char(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '0' COMMENT '生成代码方式（0zip压缩包 1自定义路径）',
+  `gen_path` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '/' COMMENT '生成路径（不填默认项目路径）',
+  `options` varchar(1000) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '其它生成选项',
+  `create_by` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '创建者',
   `create_time` datetime DEFAULT NULL COMMENT '创建时间',
-  `update_by` varchar(64) COLLATE utf8_bin DEFAULT '' COMMENT '更新者',
+  `update_by` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '更新者',
   `update_time` datetime DEFAULT NULL COMMENT '更新时间',
-  `remark` varchar(500) COLLATE utf8_bin DEFAULT NULL COMMENT '备注',
+  `remark` varchar(500) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '备注',
   PRIMARY KEY (`table_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='代码生成业务表';
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='代码生成业务表';
 
 -- ----------------------------
 -- Records of gen_table
@@ -59,6 +59,8 @@ INSERT INTO `gen_table` (`table_id`, `table_name`, `table_comment`, `sub_table_n
 INSERT INTO `gen_table` (`table_id`, `table_name`, `table_comment`, `sub_table_name`, `sub_table_fk_name`, `class_name`, `tpl_category`, `package_name`, `module_name`, `business_name`, `function_name`, `function_author`, `gen_type`, `gen_path`, `options`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`) VALUES (8, 'sys_defect', '缺陷表', NULL, NULL, 'SysDefect', 'crud', 'com.cat2bug.system', 'system', 'defect', '缺陷', 'yuzhantao', '0', '/', '{}', 'admin', '2023-11-23 12:03:56', '', '2023-11-23 12:47:27', NULL);
 INSERT INTO `gen_table` (`table_id`, `table_name`, `table_comment`, `sub_table_name`, `sub_table_fk_name`, `class_name`, `tpl_category`, `package_name`, `module_name`, `business_name`, `function_name`, `function_author`, `gen_type`, `gen_path`, `options`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`) VALUES (9, 'sys_defect_log', '缺陷日志表', NULL, NULL, 'SysDefectLog', 'crud', 'com.cat2bug.system', 'system', 'log', '缺陷日志', 'yuzhantao', '0', '/', '{}', 'admin', '2023-11-23 12:03:56', '', '2023-11-23 12:45:58', NULL);
 INSERT INTO `gen_table` (`table_id`, `table_name`, `table_comment`, `sub_table_name`, `sub_table_fk_name`, `class_name`, `tpl_category`, `package_name`, `module_name`, `business_name`, `function_name`, `function_author`, `gen_type`, `gen_path`, `options`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`) VALUES (10, 'sys_module', '模块表', '', '', 'SysModule', 'tree', 'com.cat2bug.system', 'system', 'module', '模块', 'yuzhantao', '0', '/', '{\"treeCode\":\"module_id\",\"treeName\":\"module_name\",\"treeParentCode\":\"module_pid\"}', 'admin', '2023-11-25 17:17:44', '', '2023-11-25 17:18:44', NULL);
+INSERT INTO `gen_table` (`table_id`, `table_name`, `table_comment`, `sub_table_name`, `sub_table_fk_name`, `class_name`, `tpl_category`, `package_name`, `module_name`, `business_name`, `function_name`, `function_author`, `gen_type`, `gen_path`, `options`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`) VALUES (11, 'sys_temp_file', '临时文件', NULL, NULL, 'SysTempFile', 'crud', 'com.cat2bug.system', 'system', 'temp', '临时文件', 'yuzhantao', '0', '/', '{}', 'admin', '2023-12-07 04:17:30', '', '2023-12-07 04:19:23', NULL);
+INSERT INTO `gen_table` (`table_id`, `table_name`, `table_comment`, `sub_table_name`, `sub_table_fk_name`, `class_name`, `tpl_category`, `package_name`, `module_name`, `business_name`, `function_name`, `function_author`, `gen_type`, `gen_path`, `options`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`) VALUES (12, 'sys_screen_size', '屏幕尺寸', NULL, NULL, 'SysScreenSize', 'crud', 'com.cat2bug.system', 'system', 'ScreenSize', '屏幕尺寸', 'yuzhantao', '0', '/', '{}', 'admin', '2023-12-09 19:15:04', '', '2023-12-09 19:15:49', NULL);
 COMMIT;
 
 -- ----------------------------
@@ -66,30 +68,30 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `gen_table_column`;
 CREATE TABLE `gen_table_column` (
-  `column_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '编号',
-  `table_id` bigint(20) DEFAULT NULL COMMENT '归属表编号',
-  `column_name` varchar(200) COLLATE utf8_bin DEFAULT NULL COMMENT '列名称',
-  `column_comment` varchar(500) COLLATE utf8_bin DEFAULT NULL COMMENT '列描述',
-  `column_type` varchar(100) COLLATE utf8_bin DEFAULT NULL COMMENT '列类型',
-  `java_type` varchar(500) COLLATE utf8_bin DEFAULT NULL COMMENT 'JAVA类型',
-  `java_field` varchar(200) COLLATE utf8_bin DEFAULT NULL COMMENT 'JAVA字段名',
-  `is_pk` char(1) COLLATE utf8_bin DEFAULT NULL COMMENT '是否主键（1是）',
-  `is_increment` char(1) COLLATE utf8_bin DEFAULT NULL COMMENT '是否自增（1是）',
-  `is_required` char(1) COLLATE utf8_bin DEFAULT NULL COMMENT '是否必填（1是）',
-  `is_insert` char(1) COLLATE utf8_bin DEFAULT NULL COMMENT '是否为插入字段（1是）',
-  `is_edit` char(1) COLLATE utf8_bin DEFAULT NULL COMMENT '是否编辑字段（1是）',
-  `is_list` char(1) COLLATE utf8_bin DEFAULT NULL COMMENT '是否列表字段（1是）',
-  `is_query` char(1) COLLATE utf8_bin DEFAULT NULL COMMENT '是否查询字段（1是）',
-  `query_type` varchar(200) COLLATE utf8_bin DEFAULT 'EQ' COMMENT '查询方式（等于、不等于、大于、小于、范围）',
-  `html_type` varchar(200) COLLATE utf8_bin DEFAULT NULL COMMENT '显示类型（文本框、文本域、下拉框、复选框、单选框、日期控件）',
-  `dict_type` varchar(200) COLLATE utf8_bin DEFAULT '' COMMENT '字典类型',
-  `sort` int(11) DEFAULT NULL COMMENT '排序',
-  `create_by` varchar(64) COLLATE utf8_bin DEFAULT '' COMMENT '创建者',
+  `column_id` bigint NOT NULL AUTO_INCREMENT COMMENT '编号',
+  `table_id` bigint DEFAULT NULL COMMENT '归属表编号',
+  `column_name` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '列名称',
+  `column_comment` varchar(500) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '列描述',
+  `column_type` varchar(100) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '列类型',
+  `java_type` varchar(500) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT 'JAVA类型',
+  `java_field` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT 'JAVA字段名',
+  `is_pk` char(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '是否主键（1是）',
+  `is_increment` char(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '是否自增（1是）',
+  `is_required` char(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '是否必填（1是）',
+  `is_insert` char(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '是否为插入字段（1是）',
+  `is_edit` char(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '是否编辑字段（1是）',
+  `is_list` char(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '是否列表字段（1是）',
+  `is_query` char(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '是否查询字段（1是）',
+  `query_type` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT 'EQ' COMMENT '查询方式（等于、不等于、大于、小于、范围）',
+  `html_type` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '显示类型（文本框、文本域、下拉框、复选框、单选框、日期控件）',
+  `dict_type` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '字典类型',
+  `sort` int DEFAULT NULL COMMENT '排序',
+  `create_by` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '创建者',
   `create_time` datetime DEFAULT NULL COMMENT '创建时间',
-  `update_by` varchar(64) COLLATE utf8_bin DEFAULT '' COMMENT '更新者',
+  `update_by` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '更新者',
   `update_time` datetime DEFAULT NULL COMMENT '更新时间',
   PRIMARY KEY (`column_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=78 DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='代码生成业务表字段';
+) ENGINE=InnoDB AUTO_INCREMENT=90 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='代码生成业务表字段';
 
 -- ----------------------------
 -- Records of gen_table_column
@@ -172,6 +174,18 @@ INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_
 INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`, `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`, `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`, `html_type`, `dict_type`, `sort`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (75, 10, 'module_name', '模块名称', 'varchar(128)', 'String', 'moduleName', '0', '0', NULL, '1', '1', '1', '1', 'LIKE', 'input', '', 3, 'admin', '2023-11-25 17:17:44', '', '2023-11-25 17:18:44');
 INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`, `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`, `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`, `html_type`, `dict_type`, `sort`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (76, 10, 'remark', '备注', 'varchar(255)', 'String', 'remark', '0', '0', NULL, '1', '1', '1', NULL, 'EQ', 'input', '', 4, 'admin', '2023-11-25 17:17:44', '', '2023-11-25 17:18:44');
 INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`, `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`, `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`, `html_type`, `dict_type`, `sort`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (77, 10, 'project_id', '项目id', 'bigint(20)', 'Long', 'projectId', '0', '0', NULL, '1', '1', '1', '1', 'EQ', 'input', '', 5, 'admin', '2023-11-25 17:17:44', '', '2023-11-25 17:18:44');
+INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`, `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`, `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`, `html_type`, `dict_type`, `sort`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (78, 11, 'file_id', '文件id', 'bigint', 'Long', 'fileId', '1', '1', NULL, '0', NULL, NULL, NULL, 'EQ', 'input', '', 1, 'admin', '2023-12-07 04:17:31', '', '2023-12-07 04:19:23');
+INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`, `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`, `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`, `html_type`, `dict_type`, `sort`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (79, 11, 'file_name', '文件名', 'varchar(64)', 'String', 'fileName', '0', '0', NULL, '1', '1', '1', '1', 'LIKE', 'input', '', 2, 'admin', '2023-12-07 04:17:31', '', '2023-12-07 04:19:23');
+INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`, `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`, `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`, `html_type`, `dict_type`, `sort`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (80, 11, 'src_url', '来源地址', 'varchar(255)', 'String', 'srcUrl', '0', '0', NULL, '1', '1', '1', '0', 'EQ', 'input', '', 3, 'admin', '2023-12-07 04:17:31', '', '2023-12-07 04:19:23');
+INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`, `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`, `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`, `html_type`, `dict_type`, `sort`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (81, 11, 'create_by', '创建人', 'varchar(64)', 'String', 'createBy', '0', '0', NULL, '1', NULL, NULL, NULL, 'EQ', 'input', '', 4, 'admin', '2023-12-07 04:17:31', '', '2023-12-07 04:19:23');
+INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`, `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`, `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`, `html_type`, `dict_type`, `sort`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (82, 11, 'create_time', '创建时间', 'datetime', 'Date', 'createTime', '0', '0', NULL, '1', NULL, NULL, '1', 'BETWEEN', 'datetime', '', 5, 'admin', '2023-12-07 04:17:31', '', '2023-12-07 04:19:23');
+INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`, `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`, `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`, `html_type`, `dict_type`, `sort`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (83, 11, 'file_type', '文件类型', 'int(10) unsigned zerofill', 'Integer', 'fileType', '0', '0', NULL, '1', '1', '1', '1', 'EQ', 'select', '', 6, 'admin', '2023-12-07 04:17:31', '', '2023-12-07 04:19:23');
+INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`, `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`, `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`, `html_type`, `dict_type`, `sort`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (84, 11, 'file_url', '文件地址', 'varchar(255)', 'String', 'fileUrl', '0', '0', NULL, '1', '1', '1', '0', 'EQ', 'input', '', 7, 'admin', '2023-12-07 04:17:31', '', '2023-12-07 04:19:23');
+INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`, `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`, `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`, `html_type`, `dict_type`, `sort`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (85, 12, 'screen_size_id', '屏幕尺寸id', 'bigint', 'Long', 'screenSizeId', '1', '0', NULL, '0', NULL, NULL, NULL, 'EQ', 'input', '', 1, 'admin', '2023-12-09 19:15:04', '', '2023-12-09 19:15:49');
+INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`, `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`, `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`, `html_type`, `dict_type`, `sort`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (86, 12, 'name', '名称', 'varchar(32)', 'String', 'name', '0', '0', '1', '1', '1', '1', '1', 'LIKE', 'input', '', 2, 'admin', '2023-12-09 19:15:04', '', '2023-12-09 19:15:49');
+INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`, `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`, `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`, `html_type`, `dict_type`, `sort`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (87, 12, 'width', '宽', 'int', 'Long', 'width', '0', '0', NULL, '1', '1', '1', '0', 'EQ', 'input', '', 3, 'admin', '2023-12-09 19:15:04', '', '2023-12-09 19:15:49');
+INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`, `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`, `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`, `html_type`, `dict_type`, `sort`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (88, 12, 'height', '高', 'int', 'Long', 'height', '0', '0', NULL, '1', '1', '1', '0', 'EQ', 'input', '', 4, 'admin', '2023-12-09 19:15:04', '', '2023-12-09 19:15:49');
+INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`, `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`, `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`, `html_type`, `dict_type`, `sort`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (89, 12, 'remark', '备注', 'varchar(255)', 'String', 'remark', '0', '0', NULL, '1', '1', '1', NULL, 'EQ', 'input', '', 5, 'admin', '2023-12-09 19:15:04', '', '2023-12-09 19:15:49');
 COMMIT;
 
 -- ----------------------------
@@ -179,13 +193,13 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `qrtz_blob_triggers`;
 CREATE TABLE `qrtz_blob_triggers` (
-  `sched_name` varchar(120) COLLATE utf8_bin NOT NULL COMMENT '调度名称',
-  `trigger_name` varchar(200) COLLATE utf8_bin NOT NULL COMMENT 'qrtz_triggers表trigger_name的外键',
-  `trigger_group` varchar(200) COLLATE utf8_bin NOT NULL COMMENT 'qrtz_triggers表trigger_group的外键',
+  `sched_name` varchar(120) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '调度名称',
+  `trigger_name` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT 'qrtz_triggers表trigger_name的外键',
+  `trigger_group` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT 'qrtz_triggers表trigger_group的外键',
   `blob_data` blob COMMENT '存放持久化Trigger对象',
   PRIMARY KEY (`sched_name`,`trigger_name`,`trigger_group`),
   CONSTRAINT `qrtz_blob_triggers_ibfk_1` FOREIGN KEY (`sched_name`, `trigger_name`, `trigger_group`) REFERENCES `qrtz_triggers` (`sched_name`, `trigger_name`, `trigger_group`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Blob类型的触发器表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='Blob类型的触发器表';
 
 -- ----------------------------
 -- Records of qrtz_blob_triggers
@@ -198,11 +212,11 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `qrtz_calendars`;
 CREATE TABLE `qrtz_calendars` (
-  `sched_name` varchar(120) COLLATE utf8_bin NOT NULL COMMENT '调度名称',
-  `calendar_name` varchar(200) COLLATE utf8_bin NOT NULL COMMENT '日历名称',
+  `sched_name` varchar(120) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '调度名称',
+  `calendar_name` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '日历名称',
   `calendar` blob NOT NULL COMMENT '存放持久化calendar对象',
   PRIMARY KEY (`sched_name`,`calendar_name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='日历信息表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='日历信息表';
 
 -- ----------------------------
 -- Records of qrtz_calendars
@@ -215,14 +229,14 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `qrtz_cron_triggers`;
 CREATE TABLE `qrtz_cron_triggers` (
-  `sched_name` varchar(120) COLLATE utf8_bin NOT NULL COMMENT '调度名称',
-  `trigger_name` varchar(200) COLLATE utf8_bin NOT NULL COMMENT 'qrtz_triggers表trigger_name的外键',
-  `trigger_group` varchar(200) COLLATE utf8_bin NOT NULL COMMENT 'qrtz_triggers表trigger_group的外键',
-  `cron_expression` varchar(200) COLLATE utf8_bin NOT NULL COMMENT 'cron表达式',
-  `time_zone_id` varchar(80) COLLATE utf8_bin DEFAULT NULL COMMENT '时区',
+  `sched_name` varchar(120) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '调度名称',
+  `trigger_name` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT 'qrtz_triggers表trigger_name的外键',
+  `trigger_group` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT 'qrtz_triggers表trigger_group的外键',
+  `cron_expression` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT 'cron表达式',
+  `time_zone_id` varchar(80) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '时区',
   PRIMARY KEY (`sched_name`,`trigger_name`,`trigger_group`),
   CONSTRAINT `qrtz_cron_triggers_ibfk_1` FOREIGN KEY (`sched_name`, `trigger_name`, `trigger_group`) REFERENCES `qrtz_triggers` (`sched_name`, `trigger_name`, `trigger_group`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Cron类型的触发器表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='Cron类型的触发器表';
 
 -- ----------------------------
 -- Records of qrtz_cron_triggers
@@ -235,21 +249,21 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `qrtz_fired_triggers`;
 CREATE TABLE `qrtz_fired_triggers` (
-  `sched_name` varchar(120) COLLATE utf8_bin NOT NULL COMMENT '调度名称',
-  `entry_id` varchar(95) COLLATE utf8_bin NOT NULL COMMENT '调度器实例id',
-  `trigger_name` varchar(200) COLLATE utf8_bin NOT NULL COMMENT 'qrtz_triggers表trigger_name的外键',
-  `trigger_group` varchar(200) COLLATE utf8_bin NOT NULL COMMENT 'qrtz_triggers表trigger_group的外键',
-  `instance_name` varchar(200) COLLATE utf8_bin NOT NULL COMMENT '调度器实例名',
-  `fired_time` bigint(13) NOT NULL COMMENT '触发的时间',
-  `sched_time` bigint(13) NOT NULL COMMENT '定时器制定的时间',
-  `priority` int(11) NOT NULL COMMENT '优先级',
-  `state` varchar(16) COLLATE utf8_bin NOT NULL COMMENT '状态',
-  `job_name` varchar(200) COLLATE utf8_bin DEFAULT NULL COMMENT '任务名称',
-  `job_group` varchar(200) COLLATE utf8_bin DEFAULT NULL COMMENT '任务组名',
-  `is_nonconcurrent` varchar(1) COLLATE utf8_bin DEFAULT NULL COMMENT '是否并发',
-  `requests_recovery` varchar(1) COLLATE utf8_bin DEFAULT NULL COMMENT '是否接受恢复执行',
+  `sched_name` varchar(120) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '调度名称',
+  `entry_id` varchar(95) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '调度器实例id',
+  `trigger_name` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT 'qrtz_triggers表trigger_name的外键',
+  `trigger_group` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT 'qrtz_triggers表trigger_group的外键',
+  `instance_name` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '调度器实例名',
+  `fired_time` bigint NOT NULL COMMENT '触发的时间',
+  `sched_time` bigint NOT NULL COMMENT '定时器制定的时间',
+  `priority` int NOT NULL COMMENT '优先级',
+  `state` varchar(16) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '状态',
+  `job_name` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '任务名称',
+  `job_group` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '任务组名',
+  `is_nonconcurrent` varchar(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '是否并发',
+  `requests_recovery` varchar(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '是否接受恢复执行',
   PRIMARY KEY (`sched_name`,`entry_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='已触发的触发器表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='已触发的触发器表';
 
 -- ----------------------------
 -- Records of qrtz_fired_triggers
@@ -262,18 +276,18 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `qrtz_job_details`;
 CREATE TABLE `qrtz_job_details` (
-  `sched_name` varchar(120) COLLATE utf8_bin NOT NULL COMMENT '调度名称',
-  `job_name` varchar(200) COLLATE utf8_bin NOT NULL COMMENT '任务名称',
-  `job_group` varchar(200) COLLATE utf8_bin NOT NULL COMMENT '任务组名',
-  `description` varchar(250) COLLATE utf8_bin DEFAULT NULL COMMENT '相关介绍',
-  `job_class_name` varchar(250) COLLATE utf8_bin NOT NULL COMMENT '执行任务类名称',
-  `is_durable` varchar(1) COLLATE utf8_bin NOT NULL COMMENT '是否持久化',
-  `is_nonconcurrent` varchar(1) COLLATE utf8_bin NOT NULL COMMENT '是否并发',
-  `is_update_data` varchar(1) COLLATE utf8_bin NOT NULL COMMENT '是否更新数据',
-  `requests_recovery` varchar(1) COLLATE utf8_bin NOT NULL COMMENT '是否接受恢复执行',
+  `sched_name` varchar(120) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '调度名称',
+  `job_name` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '任务名称',
+  `job_group` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '任务组名',
+  `description` varchar(250) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '相关介绍',
+  `job_class_name` varchar(250) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '执行任务类名称',
+  `is_durable` varchar(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '是否持久化',
+  `is_nonconcurrent` varchar(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '是否并发',
+  `is_update_data` varchar(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '是否更新数据',
+  `requests_recovery` varchar(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '是否接受恢复执行',
   `job_data` blob COMMENT '存放持久化job对象',
   PRIMARY KEY (`sched_name`,`job_name`,`job_group`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='任务详细信息表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='任务详细信息表';
 
 -- ----------------------------
 -- Records of qrtz_job_details
@@ -286,10 +300,10 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `qrtz_locks`;
 CREATE TABLE `qrtz_locks` (
-  `sched_name` varchar(120) COLLATE utf8_bin NOT NULL COMMENT '调度名称',
-  `lock_name` varchar(40) COLLATE utf8_bin NOT NULL COMMENT '悲观锁名称',
+  `sched_name` varchar(120) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '调度名称',
+  `lock_name` varchar(40) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '悲观锁名称',
   PRIMARY KEY (`sched_name`,`lock_name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='存储的悲观锁信息表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='存储的悲观锁信息表';
 
 -- ----------------------------
 -- Records of qrtz_locks
@@ -302,10 +316,10 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `qrtz_paused_trigger_grps`;
 CREATE TABLE `qrtz_paused_trigger_grps` (
-  `sched_name` varchar(120) COLLATE utf8_bin NOT NULL COMMENT '调度名称',
-  `trigger_group` varchar(200) COLLATE utf8_bin NOT NULL COMMENT 'qrtz_triggers表trigger_group的外键',
+  `sched_name` varchar(120) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '调度名称',
+  `trigger_group` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT 'qrtz_triggers表trigger_group的外键',
   PRIMARY KEY (`sched_name`,`trigger_group`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='暂停的触发器表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='暂停的触发器表';
 
 -- ----------------------------
 -- Records of qrtz_paused_trigger_grps
@@ -318,12 +332,12 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `qrtz_scheduler_state`;
 CREATE TABLE `qrtz_scheduler_state` (
-  `sched_name` varchar(120) COLLATE utf8_bin NOT NULL COMMENT '调度名称',
-  `instance_name` varchar(200) COLLATE utf8_bin NOT NULL COMMENT '实例名称',
-  `last_checkin_time` bigint(13) NOT NULL COMMENT '上次检查时间',
-  `checkin_interval` bigint(13) NOT NULL COMMENT '检查间隔时间',
+  `sched_name` varchar(120) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '调度名称',
+  `instance_name` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '实例名称',
+  `last_checkin_time` bigint NOT NULL COMMENT '上次检查时间',
+  `checkin_interval` bigint NOT NULL COMMENT '检查间隔时间',
   PRIMARY KEY (`sched_name`,`instance_name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='调度器状态表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='调度器状态表';
 
 -- ----------------------------
 -- Records of qrtz_scheduler_state
@@ -336,15 +350,15 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `qrtz_simple_triggers`;
 CREATE TABLE `qrtz_simple_triggers` (
-  `sched_name` varchar(120) COLLATE utf8_bin NOT NULL COMMENT '调度名称',
-  `trigger_name` varchar(200) COLLATE utf8_bin NOT NULL COMMENT 'qrtz_triggers表trigger_name的外键',
-  `trigger_group` varchar(200) COLLATE utf8_bin NOT NULL COMMENT 'qrtz_triggers表trigger_group的外键',
-  `repeat_count` bigint(7) NOT NULL COMMENT '重复的次数统计',
-  `repeat_interval` bigint(12) NOT NULL COMMENT '重复的间隔时间',
-  `times_triggered` bigint(10) NOT NULL COMMENT '已经触发的次数',
+  `sched_name` varchar(120) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '调度名称',
+  `trigger_name` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT 'qrtz_triggers表trigger_name的外键',
+  `trigger_group` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT 'qrtz_triggers表trigger_group的外键',
+  `repeat_count` bigint NOT NULL COMMENT '重复的次数统计',
+  `repeat_interval` bigint NOT NULL COMMENT '重复的间隔时间',
+  `times_triggered` bigint NOT NULL COMMENT '已经触发的次数',
   PRIMARY KEY (`sched_name`,`trigger_name`,`trigger_group`),
   CONSTRAINT `qrtz_simple_triggers_ibfk_1` FOREIGN KEY (`sched_name`, `trigger_name`, `trigger_group`) REFERENCES `qrtz_triggers` (`sched_name`, `trigger_name`, `trigger_group`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='简单触发器的信息表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='简单触发器的信息表';
 
 -- ----------------------------
 -- Records of qrtz_simple_triggers
@@ -357,23 +371,23 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `qrtz_simprop_triggers`;
 CREATE TABLE `qrtz_simprop_triggers` (
-  `sched_name` varchar(120) COLLATE utf8_bin NOT NULL COMMENT '调度名称',
-  `trigger_name` varchar(200) COLLATE utf8_bin NOT NULL COMMENT 'qrtz_triggers表trigger_name的外键',
-  `trigger_group` varchar(200) COLLATE utf8_bin NOT NULL COMMENT 'qrtz_triggers表trigger_group的外键',
-  `str_prop_1` varchar(512) COLLATE utf8_bin DEFAULT NULL COMMENT 'String类型的trigger的第一个参数',
-  `str_prop_2` varchar(512) COLLATE utf8_bin DEFAULT NULL COMMENT 'String类型的trigger的第二个参数',
-  `str_prop_3` varchar(512) COLLATE utf8_bin DEFAULT NULL COMMENT 'String类型的trigger的第三个参数',
-  `int_prop_1` int(11) DEFAULT NULL COMMENT 'int类型的trigger的第一个参数',
-  `int_prop_2` int(11) DEFAULT NULL COMMENT 'int类型的trigger的第二个参数',
-  `long_prop_1` bigint(20) DEFAULT NULL COMMENT 'long类型的trigger的第一个参数',
-  `long_prop_2` bigint(20) DEFAULT NULL COMMENT 'long类型的trigger的第二个参数',
+  `sched_name` varchar(120) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '调度名称',
+  `trigger_name` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT 'qrtz_triggers表trigger_name的外键',
+  `trigger_group` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT 'qrtz_triggers表trigger_group的外键',
+  `str_prop_1` varchar(512) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT 'String类型的trigger的第一个参数',
+  `str_prop_2` varchar(512) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT 'String类型的trigger的第二个参数',
+  `str_prop_3` varchar(512) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT 'String类型的trigger的第三个参数',
+  `int_prop_1` int DEFAULT NULL COMMENT 'int类型的trigger的第一个参数',
+  `int_prop_2` int DEFAULT NULL COMMENT 'int类型的trigger的第二个参数',
+  `long_prop_1` bigint DEFAULT NULL COMMENT 'long类型的trigger的第一个参数',
+  `long_prop_2` bigint DEFAULT NULL COMMENT 'long类型的trigger的第二个参数',
   `dec_prop_1` decimal(13,4) DEFAULT NULL COMMENT 'decimal类型的trigger的第一个参数',
   `dec_prop_2` decimal(13,4) DEFAULT NULL COMMENT 'decimal类型的trigger的第二个参数',
-  `bool_prop_1` varchar(1) COLLATE utf8_bin DEFAULT NULL COMMENT 'Boolean类型的trigger的第一个参数',
-  `bool_prop_2` varchar(1) COLLATE utf8_bin DEFAULT NULL COMMENT 'Boolean类型的trigger的第二个参数',
+  `bool_prop_1` varchar(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT 'Boolean类型的trigger的第一个参数',
+  `bool_prop_2` varchar(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT 'Boolean类型的trigger的第二个参数',
   PRIMARY KEY (`sched_name`,`trigger_name`,`trigger_group`),
   CONSTRAINT `qrtz_simprop_triggers_ibfk_1` FOREIGN KEY (`sched_name`, `trigger_name`, `trigger_group`) REFERENCES `qrtz_triggers` (`sched_name`, `trigger_name`, `trigger_group`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='同步机制的行锁表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='同步机制的行锁表';
 
 -- ----------------------------
 -- Records of qrtz_simprop_triggers
@@ -386,26 +400,26 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `qrtz_triggers`;
 CREATE TABLE `qrtz_triggers` (
-  `sched_name` varchar(120) COLLATE utf8_bin NOT NULL COMMENT '调度名称',
-  `trigger_name` varchar(200) COLLATE utf8_bin NOT NULL COMMENT '触发器的名字',
-  `trigger_group` varchar(200) COLLATE utf8_bin NOT NULL COMMENT '触发器所属组的名字',
-  `job_name` varchar(200) COLLATE utf8_bin NOT NULL COMMENT 'qrtz_job_details表job_name的外键',
-  `job_group` varchar(200) COLLATE utf8_bin NOT NULL COMMENT 'qrtz_job_details表job_group的外键',
-  `description` varchar(250) COLLATE utf8_bin DEFAULT NULL COMMENT '相关介绍',
-  `next_fire_time` bigint(13) DEFAULT NULL COMMENT '上一次触发时间（毫秒）',
-  `prev_fire_time` bigint(13) DEFAULT NULL COMMENT '下一次触发时间（默认为-1表示不触发）',
-  `priority` int(11) DEFAULT NULL COMMENT '优先级',
-  `trigger_state` varchar(16) COLLATE utf8_bin NOT NULL COMMENT '触发器状态',
-  `trigger_type` varchar(8) COLLATE utf8_bin NOT NULL COMMENT '触发器的类型',
-  `start_time` bigint(13) NOT NULL COMMENT '开始时间',
-  `end_time` bigint(13) DEFAULT NULL COMMENT '结束时间',
-  `calendar_name` varchar(200) COLLATE utf8_bin DEFAULT NULL COMMENT '日程表名称',
-  `misfire_instr` smallint(2) DEFAULT NULL COMMENT '补偿执行的策略',
+  `sched_name` varchar(120) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '调度名称',
+  `trigger_name` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '触发器的名字',
+  `trigger_group` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '触发器所属组的名字',
+  `job_name` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT 'qrtz_job_details表job_name的外键',
+  `job_group` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT 'qrtz_job_details表job_group的外键',
+  `description` varchar(250) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '相关介绍',
+  `next_fire_time` bigint DEFAULT NULL COMMENT '上一次触发时间（毫秒）',
+  `prev_fire_time` bigint DEFAULT NULL COMMENT '下一次触发时间（默认为-1表示不触发）',
+  `priority` int DEFAULT NULL COMMENT '优先级',
+  `trigger_state` varchar(16) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '触发器状态',
+  `trigger_type` varchar(8) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '触发器的类型',
+  `start_time` bigint NOT NULL COMMENT '开始时间',
+  `end_time` bigint DEFAULT NULL COMMENT '结束时间',
+  `calendar_name` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '日程表名称',
+  `misfire_instr` smallint DEFAULT NULL COMMENT '补偿执行的策略',
   `job_data` blob COMMENT '存放持久化job对象',
   PRIMARY KEY (`sched_name`,`trigger_name`,`trigger_group`),
   KEY `sched_name` (`sched_name`,`job_name`,`job_group`),
   CONSTRAINT `qrtz_triggers_ibfk_1` FOREIGN KEY (`sched_name`, `job_name`, `job_group`) REFERENCES `qrtz_job_details` (`sched_name`, `job_name`, `job_group`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='触发器详细信息表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='触发器详细信息表';
 
 -- ----------------------------
 -- Records of qrtz_triggers
@@ -418,18 +432,18 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `sys_config`;
 CREATE TABLE `sys_config` (
-  `config_id` int(5) NOT NULL AUTO_INCREMENT COMMENT '参数主键',
-  `config_name` varchar(100) COLLATE utf8_bin DEFAULT '' COMMENT '参数名称',
-  `config_key` varchar(100) COLLATE utf8_bin DEFAULT '' COMMENT '参数键名',
-  `config_value` varchar(500) COLLATE utf8_bin DEFAULT '' COMMENT '参数键值',
-  `config_type` char(1) COLLATE utf8_bin DEFAULT 'N' COMMENT '系统内置（Y是 N否）',
-  `create_by` varchar(64) COLLATE utf8_bin DEFAULT '' COMMENT '创建者',
+  `config_id` int NOT NULL AUTO_INCREMENT COMMENT '参数主键',
+  `config_name` varchar(100) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '参数名称',
+  `config_key` varchar(100) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '参数键名',
+  `config_value` varchar(500) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '参数键值',
+  `config_type` char(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT 'N' COMMENT '系统内置（Y是 N否）',
+  `create_by` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '创建者',
   `create_time` datetime DEFAULT NULL COMMENT '创建时间',
-  `update_by` varchar(64) COLLATE utf8_bin DEFAULT '' COMMENT '更新者',
+  `update_by` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '更新者',
   `update_time` datetime DEFAULT NULL COMMENT '更新时间',
-  `remark` varchar(500) COLLATE utf8_bin DEFAULT NULL COMMENT '备注',
+  `remark` varchar(500) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '备注',
   PRIMARY KEY (`config_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='参数配置表';
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='参数配置表';
 
 -- ----------------------------
 -- Records of sys_config
@@ -448,35 +462,46 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `sys_defect`;
 CREATE TABLE `sys_defect` (
-  `defect_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '缺陷id\n',
+  `defect_id` bigint NOT NULL AUTO_INCREMENT COMMENT '缺陷id\n',
   `defect_type` int(1) unsigned zerofill NOT NULL DEFAULT '0' COMMENT '缺陷类型\n',
-  `defect_name` varchar(128) COLLATE utf8_bin NOT NULL COMMENT '缺陷标题',
-  `defect_describe` blob NOT NULL COMMENT '缺陷描述',
-  `annex_urls` json DEFAULT NULL COMMENT '附件',
-  `project_id` bigint(20) NOT NULL COMMENT '项目id',
-  `test_plan_id` bigint(20) DEFAULT NULL COMMENT '测试计划id',
-  `case_id` bigint(20) DEFAULT NULL COMMENT '测试用例id',
-  `data_sources` int(1) DEFAULT NULL COMMENT '数据来源',
-  `data_sources_params` varchar(255) COLLATE utf8_bin DEFAULT NULL COMMENT '数据来源相关参数',
-  `module_id` bigint(20) DEFAULT NULL COMMENT '测试模块id',
-  `module_version` varchar(128) COLLATE utf8_bin DEFAULT NULL COMMENT '测试模块的版本',
-  `create_by` varchar(64) COLLATE utf8_bin DEFAULT NULL COMMENT '创建者',
+  `defect_name` varchar(128) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '缺陷标题',
+  `defect_describe` text COLLATE utf8mb3_bin NOT NULL COMMENT '缺陷描述',
+  `annex_urls` varchar(5000) COLLATE utf8mb3_bin DEFAULT NULL COMMENT '附件集合',
+  `project_id` bigint NOT NULL COMMENT '项目id',
+  `test_plan_id` bigint DEFAULT NULL COMMENT '测试计划id',
+  `case_id` bigint DEFAULT NULL COMMENT '测试用例id',
+  `data_sources` int DEFAULT NULL COMMENT '数据来源',
+  `data_sources_params` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '数据来源相关参数',
+  `module_id` bigint DEFAULT NULL COMMENT '测试模块id',
+  `module_version` varchar(128) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '测试模块的版本',
+  `create_by` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '创建者',
   `update_time` datetime DEFAULT NULL COMMENT '更新时间',
   `create_time` datetime DEFAULT NULL COMMENT '创建时间',
-  `update_by` varchar(64) COLLATE utf8_bin DEFAULT NULL COMMENT '更新者',
+  `update_by` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '更新者',
   `defect_state` int(1) unsigned zerofill NOT NULL DEFAULT '0' COMMENT '缺陷状态',
-  `case_step_id` bigint(20) DEFAULT NULL COMMENT '用例步骤id',
+  `case_step_id` bigint DEFAULT NULL COMMENT '用例步骤id',
   `handle_by` json DEFAULT NULL COMMENT '处理人id',
   `handle_time` datetime DEFAULT NULL COMMENT '处理时间',
-  `defect_level` varchar(10) COLLATE utf8_bin DEFAULT NULL COMMENT '缺陷等级',
+  `defect_level` varchar(10) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '缺陷等级',
+  `project_num` int DEFAULT NULL COMMENT '项目编号',
+  `img_urls` varchar(5000) COLLATE utf8mb3_bin DEFAULT NULL COMMENT '图片集合',
   PRIMARY KEY (`defect_id`),
   KEY `describe_name_` (`defect_name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='缺陷表';
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='缺陷表';
 
 -- ----------------------------
 -- Records of sys_defect
 -- ----------------------------
 BEGIN;
+INSERT INTO `sys_defect` (`defect_id`, `defect_type`, `defect_name`, `defect_describe`, `annex_urls`, `project_id`, `test_plan_id`, `case_id`, `data_sources`, `data_sources_params`, `module_id`, `module_version`, `create_by`, `update_time`, `create_time`, `update_by`, `defect_state`, `case_step_id`, `handle_by`, `handle_time`, `defect_level`, `project_num`, `img_urls`) VALUES (4, 0, '313', '测试', NULL, 22, NULL, NULL, NULL, NULL, 1, NULL, NULL, '2023-12-06 19:25:44', '2023-12-06 19:25:44', '1', 0, NULL, '[117]', NULL, 'middle', 1, '/profile/upload/2023/12/06/702c6bd462e1e2f27304fe0a0c19ee9e632181f34d07c9557e058f97fa71bfb4_20231206190754A001.jpg');
+INSERT INTO `sys_defect` (`defect_id`, `defect_type`, `defect_name`, `defect_describe`, `annex_urls`, `project_id`, `test_plan_id`, `case_id`, `data_sources`, `data_sources_params`, `module_id`, `module_version`, `create_by`, `update_time`, `create_time`, `update_by`, `defect_state`, `case_step_id`, `handle_by`, `handle_time`, `defect_level`, `project_num`, `img_urls`) VALUES (5, 0, '1231', '321', NULL, 22, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2023-12-06 19:26:39', '2023-12-06 19:26:39', '1', 0, NULL, '[1]', NULL, 'middle', 2, NULL);
+INSERT INTO `sys_defect` (`defect_id`, `defect_type`, `defect_name`, `defect_describe`, `annex_urls`, `project_id`, `test_plan_id`, `case_id`, `data_sources`, `data_sources_params`, `module_id`, `module_version`, `create_by`, `update_time`, `create_time`, `update_by`, `defect_state`, `case_step_id`, `handle_by`, `handle_time`, `defect_level`, `project_num`, `img_urls`) VALUES (6, 0, '21', 'fds', NULL, 22, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2023-12-06 19:41:03', '2023-12-06 19:41:03', '1', 0, NULL, '[1, 114]', NULL, 'middle', 3, NULL);
+INSERT INTO `sys_defect` (`defect_id`, `defect_type`, `defect_name`, `defect_describe`, `annex_urls`, `project_id`, `test_plan_id`, `case_id`, `data_sources`, `data_sources_params`, `module_id`, `module_version`, `create_by`, `update_time`, `create_time`, `update_by`, `defect_state`, `case_step_id`, `handle_by`, `handle_time`, `defect_level`, `project_num`, `img_urls`) VALUES (7, 0, '312', 'fs', NULL, 22, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2023-12-06 19:42:50', '2023-12-06 19:42:50', '1', 0, NULL, '[114, 103, 1]', NULL, 'middle', 4, NULL);
+INSERT INTO `sys_defect` (`defect_id`, `defect_type`, `defect_name`, `defect_describe`, `annex_urls`, `project_id`, `test_plan_id`, `case_id`, `data_sources`, `data_sources_params`, `module_id`, `module_version`, `create_by`, `update_time`, `create_time`, `update_by`, `defect_state`, `case_step_id`, `handle_by`, `handle_time`, `defect_level`, `project_num`, `img_urls`) VALUES (8, 0, '111111', '1111', NULL, 22, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2023-12-06 19:51:09', '2023-12-06 19:45:01', '1', 1, NULL, '[1]', NULL, 'middle', 5, NULL);
+INSERT INTO `sys_defect` (`defect_id`, `defect_type`, `defect_name`, `defect_describe`, `annex_urls`, `project_id`, `test_plan_id`, `case_id`, `data_sources`, `data_sources_params`, `module_id`, `module_version`, `create_by`, `update_time`, `create_time`, `update_by`, `defect_state`, `case_step_id`, `handle_by`, `handle_time`, `defect_level`, `project_num`, `img_urls`) VALUES (9, 0, '1222222222222', '323223223', NULL, 22, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2023-12-06 21:41:25', '2023-12-06 19:52:51', '1', 1, NULL, '[1]', NULL, 'middle', 6, NULL);
+INSERT INTO `sys_defect` (`defect_id`, `defect_type`, `defect_name`, `defect_describe`, `annex_urls`, `project_id`, `test_plan_id`, `case_id`, `data_sources`, `data_sources_params`, `module_id`, `module_version`, `create_by`, `update_time`, `create_time`, `update_by`, `defect_state`, `case_step_id`, `handle_by`, `handle_time`, `defect_level`, `project_num`, `img_urls`) VALUES (10, 0, '1123123321', '123123', NULL, 22, NULL, NULL, NULL, NULL, 1, NULL, NULL, '2023-12-09 03:34:51', '2023-12-09 03:34:51', '1', 0, NULL, '[1]', NULL, 'middle', 7, '/profile/upload/2023/12/09/screen_82a79e53_20231209033427A013.png');
+INSERT INTO `sys_defect` (`defect_id`, `defect_type`, `defect_name`, `defect_describe`, `annex_urls`, `project_id`, `test_plan_id`, `case_id`, `data_sources`, `data_sources_params`, `module_id`, `module_version`, `create_by`, `update_time`, `create_time`, `update_by`, `defect_state`, `case_step_id`, `handle_by`, `handle_time`, `defect_level`, `project_num`, `img_urls`) VALUES (11, 0, '21321', 'fdsf', NULL, 22, NULL, NULL, NULL, NULL, 1, NULL, NULL, '2023-12-11 02:31:18', '2023-12-11 02:31:18', '1', 0, NULL, '[1, 114, 103]', NULL, 'middle', 8, '/profile/upload/2023/12/11/screen_f46c1a14_20231211023102A002.png');
+INSERT INTO `sys_defect` (`defect_id`, `defect_type`, `defect_name`, `defect_describe`, `annex_urls`, `project_id`, `test_plan_id`, `case_id`, `data_sources`, `data_sources_params`, `module_id`, `module_version`, `create_by`, `update_time`, `create_time`, `update_by`, `defect_state`, `case_step_id`, `handle_by`, `handle_time`, `defect_level`, `project_num`, `img_urls`) VALUES (12, 0, 'fsafdfs', 'fsafdsasfdsaf', NULL, 22, NULL, NULL, NULL, NULL, 1, NULL, NULL, '2023-12-11 14:47:07', '2023-12-11 14:47:07', '1', 0, NULL, '[1, 103]', NULL, 'middle', 9, '/profile/upload/2023/12/11/screen_ffc27fc5_20231211144647A003.png');
 COMMIT;
 
 -- ----------------------------
@@ -484,22 +509,33 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `sys_defect_log`;
 CREATE TABLE `sys_defect_log` (
-  `defect_log_id` bigint(20) NOT NULL COMMENT '缺陷日志id',
+  `defect_log_id` bigint NOT NULL AUTO_INCREMENT COMMENT '缺陷日志id',
   `defect_log_describe` blob COMMENT '缺陷日志的描述',
-  `create_by` varchar(64) COLLATE utf8_bin DEFAULT NULL COMMENT '创建人',
+  `create_by` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '创建人',
   `create_time` datetime DEFAULT NULL COMMENT '创建时间',
-  `defect_log_type` int(2) DEFAULT NULL COMMENT '处理类型(转发\\评论\\关闭)',
-  `receive_by` varchar(64) COLLATE utf8_bin DEFAULT NULL COMMENT '缺陷接收人',
-  `annex_urls` json DEFAULT NULL COMMENT '附件集合',
-  `defect_id` bigint(20) NOT NULL COMMENT '缺陷id',
+  `defect_log_type` int DEFAULT NULL COMMENT '处理类型(转发\\评论\\关闭)',
+  `receive_by` json DEFAULT NULL COMMENT '缺陷接收人',
+  `annex_urls` varchar(5000) COLLATE utf8mb3_bin DEFAULT NULL COMMENT '附件集合',
+  `defect_id` bigint NOT NULL COMMENT '缺陷id',
   PRIMARY KEY (`defect_log_id`),
   KEY `defect_id_` (`defect_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='缺陷日志表';
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='缺陷日志表';
 
 -- ----------------------------
 -- Records of sys_defect_log
 -- ----------------------------
 BEGIN;
+INSERT INTO `sys_defect_log` (`defect_log_id`, `defect_log_describe`, `create_by`, `create_time`, `defect_log_type`, `receive_by`, `annex_urls`, `defect_id`) VALUES (1, NULL, '1', '2023-12-06 19:25:44', 0, NULL, NULL, 4);
+INSERT INTO `sys_defect_log` (`defect_log_id`, `defect_log_describe`, `create_by`, `create_time`, `defect_log_type`, `receive_by`, `annex_urls`, `defect_id`) VALUES (2, NULL, '1', '2023-12-06 19:26:39', 0, NULL, NULL, 5);
+INSERT INTO `sys_defect_log` (`defect_log_id`, `defect_log_describe`, `create_by`, `create_time`, `defect_log_type`, `receive_by`, `annex_urls`, `defect_id`) VALUES (3, NULL, '1', '2023-12-06 19:41:03', 0, NULL, NULL, 6);
+INSERT INTO `sys_defect_log` (`defect_log_id`, `defect_log_describe`, `create_by`, `create_time`, `defect_log_type`, `receive_by`, `annex_urls`, `defect_id`) VALUES (4, NULL, '1', '2023-12-06 19:42:50', 0, NULL, NULL, 7);
+INSERT INTO `sys_defect_log` (`defect_log_id`, `defect_log_describe`, `create_by`, `create_time`, `defect_log_type`, `receive_by`, `annex_urls`, `defect_id`) VALUES (5, NULL, '1', '2023-12-06 19:45:01', 0, NULL, NULL, 8);
+INSERT INTO `sys_defect_log` (`defect_log_id`, `defect_log_describe`, `create_by`, `create_time`, `defect_log_type`, `receive_by`, `annex_urls`, `defect_id`) VALUES (6, NULL, '1', '2023-12-06 19:51:09', 5, '[1]', NULL, 8);
+INSERT INTO `sys_defect_log` (`defect_log_id`, `defect_log_describe`, `create_by`, `create_time`, `defect_log_type`, `receive_by`, `annex_urls`, `defect_id`) VALUES (7, NULL, '1', '2023-12-06 19:52:51', 0, '[1, 103, 114]', NULL, 9);
+INSERT INTO `sys_defect_log` (`defect_log_id`, `defect_log_describe`, `create_by`, `create_time`, `defect_log_type`, `receive_by`, `annex_urls`, `defect_id`) VALUES (8, NULL, '1', '2023-12-06 21:41:25', 5, '[1]', NULL, 9);
+INSERT INTO `sys_defect_log` (`defect_log_id`, `defect_log_describe`, `create_by`, `create_time`, `defect_log_type`, `receive_by`, `annex_urls`, `defect_id`) VALUES (9, NULL, '1', '2023-12-09 03:34:51', 0, '[1]', NULL, 10);
+INSERT INTO `sys_defect_log` (`defect_log_id`, `defect_log_describe`, `create_by`, `create_time`, `defect_log_type`, `receive_by`, `annex_urls`, `defect_id`) VALUES (10, NULL, '1', '2023-12-11 02:31:18', 0, '[1, 114, 103]', NULL, 11);
+INSERT INTO `sys_defect_log` (`defect_log_id`, `defect_log_describe`, `create_by`, `create_time`, `defect_log_type`, `receive_by`, `annex_urls`, `defect_id`) VALUES (11, NULL, '1', '2023-12-11 14:47:07', 0, '[1, 103]', NULL, 12);
 COMMIT;
 
 -- ----------------------------
@@ -507,22 +543,22 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `sys_dept`;
 CREATE TABLE `sys_dept` (
-  `dept_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '部门id',
-  `parent_id` bigint(20) DEFAULT '0' COMMENT '父部门id',
-  `ancestors` varchar(50) COLLATE utf8_bin DEFAULT '' COMMENT '祖级列表',
-  `dept_name` varchar(30) COLLATE utf8_bin DEFAULT '' COMMENT '部门名称',
-  `order_num` int(4) DEFAULT '0' COMMENT '显示顺序',
-  `leader` varchar(20) COLLATE utf8_bin DEFAULT NULL COMMENT '负责人',
-  `phone` varchar(11) COLLATE utf8_bin DEFAULT NULL COMMENT '联系电话',
-  `email` varchar(50) COLLATE utf8_bin DEFAULT NULL COMMENT '邮箱',
-  `status` char(1) COLLATE utf8_bin DEFAULT '0' COMMENT '部门状态（0正常 1停用）',
-  `del_flag` char(1) COLLATE utf8_bin DEFAULT '0' COMMENT '删除标志（0代表存在 2代表删除）',
-  `create_by` varchar(64) COLLATE utf8_bin DEFAULT '' COMMENT '创建者',
+  `dept_id` bigint NOT NULL AUTO_INCREMENT COMMENT '部门id',
+  `parent_id` bigint DEFAULT '0' COMMENT '父部门id',
+  `ancestors` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '祖级列表',
+  `dept_name` varchar(30) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '部门名称',
+  `order_num` int DEFAULT '0' COMMENT '显示顺序',
+  `leader` varchar(20) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '负责人',
+  `phone` varchar(11) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '联系电话',
+  `email` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '邮箱',
+  `status` char(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '0' COMMENT '部门状态（0正常 1停用）',
+  `del_flag` char(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '0' COMMENT '删除标志（0代表存在 2代表删除）',
+  `create_by` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '创建者',
   `create_time` datetime DEFAULT NULL COMMENT '创建时间',
-  `update_by` varchar(64) COLLATE utf8_bin DEFAULT '' COMMENT '更新者',
+  `update_by` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '更新者',
   `update_time` datetime DEFAULT NULL COMMENT '更新时间',
   PRIMARY KEY (`dept_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=110 DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='部门表';
+) ENGINE=InnoDB AUTO_INCREMENT=110 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='部门表';
 
 -- ----------------------------
 -- Records of sys_dept
@@ -545,22 +581,22 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `sys_dict_data`;
 CREATE TABLE `sys_dict_data` (
-  `dict_code` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '字典编码',
-  `dict_sort` int(4) DEFAULT '0' COMMENT '字典排序',
-  `dict_label` varchar(100) COLLATE utf8_bin DEFAULT '' COMMENT '字典标签',
-  `dict_value` varchar(100) COLLATE utf8_bin DEFAULT '' COMMENT '字典键值',
-  `dict_type` varchar(100) COLLATE utf8_bin DEFAULT '' COMMENT '字典类型',
-  `css_class` varchar(100) COLLATE utf8_bin DEFAULT NULL COMMENT '样式属性（其他样式扩展）',
-  `list_class` varchar(100) COLLATE utf8_bin DEFAULT NULL COMMENT '表格回显样式',
-  `is_default` char(1) COLLATE utf8_bin DEFAULT 'N' COMMENT '是否默认（Y是 N否）',
-  `status` char(1) COLLATE utf8_bin DEFAULT '0' COMMENT '状态（0正常 1停用）',
-  `create_by` varchar(64) COLLATE utf8_bin DEFAULT '' COMMENT '创建者',
+  `dict_code` bigint NOT NULL AUTO_INCREMENT COMMENT '字典编码',
+  `dict_sort` int DEFAULT '0' COMMENT '字典排序',
+  `dict_label` varchar(100) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '字典标签',
+  `dict_value` varchar(100) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '字典键值',
+  `dict_type` varchar(100) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '字典类型',
+  `css_class` varchar(100) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '样式属性（其他样式扩展）',
+  `list_class` varchar(100) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '表格回显样式',
+  `is_default` char(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT 'N' COMMENT '是否默认（Y是 N否）',
+  `status` char(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '0' COMMENT '状态（0正常 1停用）',
+  `create_by` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '创建者',
   `create_time` datetime DEFAULT NULL COMMENT '创建时间',
-  `update_by` varchar(64) COLLATE utf8_bin DEFAULT '' COMMENT '更新者',
+  `update_by` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '更新者',
   `update_time` datetime DEFAULT NULL COMMENT '更新时间',
-  `remark` varchar(500) COLLATE utf8_bin DEFAULT NULL COMMENT '备注',
+  `remark` varchar(500) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '备注',
   PRIMARY KEY (`dict_code`)
-) ENGINE=InnoDB AUTO_INCREMENT=32 DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='字典数据表';
+) ENGINE=InnoDB AUTO_INCREMENT=32 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='字典数据表';
 
 -- ----------------------------
 -- Records of sys_dict_data
@@ -604,18 +640,18 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `sys_dict_type`;
 CREATE TABLE `sys_dict_type` (
-  `dict_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '字典主键',
-  `dict_name` varchar(100) COLLATE utf8_bin DEFAULT '' COMMENT '字典名称',
-  `dict_type` varchar(100) COLLATE utf8_bin DEFAULT '' COMMENT '字典类型',
-  `status` char(1) COLLATE utf8_bin DEFAULT '0' COMMENT '状态（0正常 1停用）',
-  `create_by` varchar(64) COLLATE utf8_bin DEFAULT '' COMMENT '创建者',
+  `dict_id` bigint NOT NULL AUTO_INCREMENT COMMENT '字典主键',
+  `dict_name` varchar(100) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '字典名称',
+  `dict_type` varchar(100) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '字典类型',
+  `status` char(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '0' COMMENT '状态（0正常 1停用）',
+  `create_by` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '创建者',
   `create_time` datetime DEFAULT NULL COMMENT '创建时间',
-  `update_by` varchar(64) COLLATE utf8_bin DEFAULT '' COMMENT '更新者',
+  `update_by` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '更新者',
   `update_time` datetime DEFAULT NULL COMMENT '更新时间',
-  `remark` varchar(500) COLLATE utf8_bin DEFAULT NULL COMMENT '备注',
+  `remark` varchar(500) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '备注',
   PRIMARY KEY (`dict_id`),
   UNIQUE KEY `dict_type` (`dict_type`)
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='字典类型表';
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='字典类型表';
 
 -- ----------------------------
 -- Records of sys_dict_type
@@ -639,21 +675,21 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `sys_job`;
 CREATE TABLE `sys_job` (
-  `job_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '任务ID',
-  `job_name` varchar(64) COLLATE utf8_bin NOT NULL DEFAULT '' COMMENT '任务名称',
-  `job_group` varchar(64) COLLATE utf8_bin NOT NULL DEFAULT 'DEFAULT' COMMENT '任务组名',
-  `invoke_target` varchar(500) COLLATE utf8_bin NOT NULL COMMENT '调用目标字符串',
-  `cron_expression` varchar(255) COLLATE utf8_bin DEFAULT '' COMMENT 'cron执行表达式',
-  `misfire_policy` varchar(20) COLLATE utf8_bin DEFAULT '3' COMMENT '计划执行错误策略（1立即执行 2执行一次 3放弃执行）',
-  `concurrent` char(1) COLLATE utf8_bin DEFAULT '1' COMMENT '是否并发执行（0允许 1禁止）',
-  `status` char(1) COLLATE utf8_bin DEFAULT '0' COMMENT '状态（0正常 1暂停）',
-  `create_by` varchar(64) COLLATE utf8_bin DEFAULT '' COMMENT '创建者',
+  `job_id` bigint NOT NULL AUTO_INCREMENT COMMENT '任务ID',
+  `job_name` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL DEFAULT '' COMMENT '任务名称',
+  `job_group` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL DEFAULT 'DEFAULT' COMMENT '任务组名',
+  `invoke_target` varchar(500) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '调用目标字符串',
+  `cron_expression` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT 'cron执行表达式',
+  `misfire_policy` varchar(20) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '3' COMMENT '计划执行错误策略（1立即执行 2执行一次 3放弃执行）',
+  `concurrent` char(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '1' COMMENT '是否并发执行（0允许 1禁止）',
+  `status` char(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '0' COMMENT '状态（0正常 1暂停）',
+  `create_by` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '创建者',
   `create_time` datetime DEFAULT NULL COMMENT '创建时间',
-  `update_by` varchar(64) COLLATE utf8_bin DEFAULT '' COMMENT '更新者',
+  `update_by` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '更新者',
   `update_time` datetime DEFAULT NULL COMMENT '更新时间',
-  `remark` varchar(500) COLLATE utf8_bin DEFAULT '' COMMENT '备注信息',
+  `remark` varchar(500) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '备注信息',
   PRIMARY KEY (`job_id`,`job_name`,`job_group`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='定时任务调度表';
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='定时任务调度表';
 
 -- ----------------------------
 -- Records of sys_job
@@ -669,16 +705,16 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `sys_job_log`;
 CREATE TABLE `sys_job_log` (
-  `job_log_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '任务日志ID',
-  `job_name` varchar(64) COLLATE utf8_bin NOT NULL COMMENT '任务名称',
-  `job_group` varchar(64) COLLATE utf8_bin NOT NULL COMMENT '任务组名',
-  `invoke_target` varchar(500) COLLATE utf8_bin NOT NULL COMMENT '调用目标字符串',
-  `job_message` varchar(500) COLLATE utf8_bin DEFAULT NULL COMMENT '日志信息',
-  `status` char(1) COLLATE utf8_bin DEFAULT '0' COMMENT '执行状态（0正常 1失败）',
-  `exception_info` varchar(2000) COLLATE utf8_bin DEFAULT '' COMMENT '异常信息',
+  `job_log_id` bigint NOT NULL AUTO_INCREMENT COMMENT '任务日志ID',
+  `job_name` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '任务名称',
+  `job_group` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '任务组名',
+  `invoke_target` varchar(500) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '调用目标字符串',
+  `job_message` varchar(500) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '日志信息',
+  `status` char(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '0' COMMENT '执行状态（0正常 1失败）',
+  `exception_info` varchar(2000) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '异常信息',
   `create_time` datetime DEFAULT NULL COMMENT '创建时间',
   PRIMARY KEY (`job_log_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='定时任务调度日志表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='定时任务调度日志表';
 
 -- ----------------------------
 -- Records of sys_job_log
@@ -691,19 +727,19 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `sys_logininfor`;
 CREATE TABLE `sys_logininfor` (
-  `info_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '访问ID',
-  `user_name` varchar(50) COLLATE utf8_bin DEFAULT '' COMMENT '用户账号',
-  `ipaddr` varchar(128) COLLATE utf8_bin DEFAULT '' COMMENT '登录IP地址',
-  `login_location` varchar(255) COLLATE utf8_bin DEFAULT '' COMMENT '登录地点',
-  `browser` varchar(50) COLLATE utf8_bin DEFAULT '' COMMENT '浏览器类型',
-  `os` varchar(50) COLLATE utf8_bin DEFAULT '' COMMENT '操作系统',
-  `status` char(1) COLLATE utf8_bin DEFAULT '0' COMMENT '登录状态（0成功 1失败）',
-  `msg` varchar(255) COLLATE utf8_bin DEFAULT '' COMMENT '提示消息',
+  `info_id` bigint NOT NULL AUTO_INCREMENT COMMENT '访问ID',
+  `user_name` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '用户账号',
+  `ipaddr` varchar(128) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '登录IP地址',
+  `login_location` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '登录地点',
+  `browser` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '浏览器类型',
+  `os` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '操作系统',
+  `status` char(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '0' COMMENT '登录状态（0成功 1失败）',
+  `msg` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '提示消息',
   `login_time` datetime DEFAULT NULL COMMENT '访问时间',
   PRIMARY KEY (`info_id`),
   KEY `idx_sys_logininfor_s` (`status`),
   KEY `idx_sys_logininfor_lt` (`login_time`)
-) ENGINE=InnoDB AUTO_INCREMENT=223 DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='系统访问记录';
+) ENGINE=InnoDB AUTO_INCREMENT=279 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='系统访问记录';
 
 -- ----------------------------
 -- Records of sys_logininfor
@@ -832,6 +868,62 @@ INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`
 INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (220, 'admin', '127.0.0.1', '内网IP', 'Safari', 'Mac OS X', '0', 'Login succeeded', '2023-11-25 08:07:17');
 INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (221, 'admin', '127.0.0.1', '内网IP', 'Safari', 'Mac OS X', '0', 'Login succeeded', '2023-11-25 14:03:29');
 INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (222, 'admin', '127.0.0.1', '内网IP', 'Safari', 'Mac OS X', '0', 'Login succeeded', '2023-11-25 16:18:43');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (223, 'admin', '127.0.0.1', '内网IP', 'Safari', 'Mac OS X', '0', 'Login succeeded', '2023-12-06 10:31:08');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (224, 'admin', '127.0.0.1', '内网IP', 'Safari', 'Mac OS X', '0', 'Login succeeded', '2023-12-06 12:31:25');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (225, 'admin', '127.0.0.1', '内网IP', 'Safari', 'Mac OS X', '0', 'Login succeeded', '2023-12-06 13:39:10');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (226, 'admin', '127.0.0.1', '内网IP', 'Safari', 'Mac OS X', '0', 'Login succeeded', '2023-12-06 13:45:05');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (227, 'admin', '127.0.0.1', '内网IP', 'Safari', 'Mac OS X', '0', '退出成功', '2023-12-06 14:04:05');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (228, 'admin', '127.0.0.1', '内网IP', 'Safari', 'Mac OS X', '0', 'Login succeeded', '2023-12-06 14:04:07');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (229, 'admin', '127.0.0.1', '内网IP', 'Safari', 'Mac OS X', '0', 'Login succeeded', '2023-12-06 14:46:35');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (230, 'admin', '127.0.0.1', '内网IP', 'Safari', 'Mac OS X', '0', 'Login succeeded', '2023-12-06 14:52:44');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (231, 'admin', '127.0.0.1', '内网IP', 'Safari', 'Mac OS X', '0', 'Login succeeded', '2023-12-07 02:05:11');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (232, 'admin', '127.0.0.1', '内网IP', 'Chrome 11', 'Mac OS X', '0', 'Login succeeded', '2023-12-07 03:11:11');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (233, 'admin', '127.0.0.1', '内网IP', 'Chrome 11', 'Mac OS X', '0', 'Login succeeded', '2023-12-07 03:13:50');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (234, 'admin', '127.0.0.1', '内网IP', 'Safari', 'Mac OS X', '0', 'Login succeeded', '2023-12-07 03:28:25');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (235, 'admin', '127.0.0.1', '内网IP', 'Safari', 'Mac OS X', '0', 'Login succeeded', '2023-12-07 04:17:18');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (236, 'admin', '127.0.0.1', '内网IP', 'Safari', 'Mac OS X', '0', 'Login succeeded', '2023-12-07 04:54:44');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (237, 'admin', '127.0.0.1', '内网IP', 'Safari', 'Mac OS X', '0', 'Login succeeded', '2023-12-07 07:20:23');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (238, 'admin', '127.0.0.1', '内网IP', 'Chrome 11', 'Mac OS X', '0', 'Login succeeded', '2023-12-07 07:21:21');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (239, 'admin', '127.0.0.1', '内网IP', 'Chrome 11', 'Mac OS X', '0', 'Login succeeded', '2023-12-07 14:34:21');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (240, 'admin', '127.0.0.1', '内网IP', 'Safari', 'Mac OS X', '0', 'Login succeeded', '2023-12-07 14:40:16');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (241, 'admin', '127.0.0.1', '内网IP', 'Safari', 'Mac OS X', '0', 'Login succeeded', '2023-12-07 16:01:07');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (242, 'admin', '127.0.0.1', '内网IP', 'Safari', 'Mac OS X', '0', 'Login succeeded', '2023-12-07 16:32:35');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (243, 'admin', '127.0.0.1', '内网IP', 'Safari', 'Mac OS X', '0', 'Login succeeded', '2023-12-08 03:14:55');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (244, 'admin', '127.0.0.1', '内网IP', 'Safari', 'Mac OS X', '0', 'Login succeeded', '2023-12-08 08:36:24');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (245, 'admin', '127.0.0.1', '内网IP', 'Chrome 11', 'Mac OS X', '0', 'Login succeeded', '2023-12-08 08:37:40');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (246, 'admin', '127.0.0.1', '内网IP', 'Chrome 11', 'Mac OS X', '0', 'Login succeeded', '2023-12-08 12:05:06');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (247, 'admin', '127.0.0.1', '内网IP', 'Chrome 11', 'Mac OS X', '0', 'Login succeeded', '2023-12-08 12:38:19');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (248, 'admin', '127.0.0.1', '内网IP', 'Chrome 11', 'Mac OS X', '0', 'Login succeeded', '2023-12-08 16:05:19');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (249, 'admin', '127.0.0.1', '内网IP', 'Safari', 'Mac OS X', '0', 'Login succeeded', '2023-12-08 18:26:41');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (250, 'admin', '127.0.0.1', '内网IP', 'Chrome 11', 'Mac OS X', '0', 'Login succeeded', '2023-12-08 19:33:56');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (251, 'admin', '127.0.0.1', '内网IP', 'Safari', 'Mac OS X', '0', 'Login succeeded', '2023-12-08 19:41:55');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (252, 'admin', '127.0.0.1', '内网IP', 'Safari', 'Mac OS X', '0', 'Login succeeded', '2023-12-09 02:49:24');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (253, 'admin', '127.0.0.1', '内网IP', 'Chrome 11', 'Mac OS X', '0', 'Login succeeded', '2023-12-09 02:57:40');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (254, 'admin', '127.0.0.1', '内网IP', 'Chrome 11', 'Mac OS X', '0', 'Login succeeded', '2023-12-09 03:23:05');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (255, 'admin', '127.0.0.1', '内网IP', 'Safari', 'Mac OS X', '0', 'Login succeeded', '2023-12-09 03:55:17');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (256, 'admin', '127.0.0.1', '内网IP', 'Safari', 'Mac OS X', '0', 'Login succeeded', '2023-12-09 05:30:25');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (257, 'admin', '127.0.0.1', '内网IP', 'Chrome 11', 'Mac OS X', '0', 'Login succeeded', '2023-12-09 06:41:36');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (258, 'admin', '127.0.0.1', '内网IP', 'Chrome 11', 'Mac OS X', '0', 'Login succeeded', '2023-12-09 06:44:04');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (259, 'admin', '127.0.0.1', '内网IP', 'Safari', 'Mac OS X', '0', 'Login succeeded', '2023-12-09 11:58:41');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (260, 'admin', '127.0.0.1', '内网IP', 'Safari', 'Mac OS X', '1', 'Password input error 1 times', '2023-12-09 13:22:06');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (261, 'admin', '127.0.0.1', '内网IP', 'Safari', 'Mac OS X', '1', 'User does not exist/password error', '2023-12-09 13:22:06');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (262, 'admin', '127.0.0.1', '内网IP', 'Safari', 'Mac OS X', '0', 'Login succeeded', '2023-12-09 13:22:11');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (263, 'admin', '127.0.0.1', '内网IP', 'Chrome 11', 'Mac OS X', '0', 'Login succeeded', '2023-12-09 13:59:43');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (264, 'admin', '127.0.0.1', '内网IP', 'Safari', 'Mac OS X', '0', 'Login succeeded', '2023-12-09 14:33:38');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (265, 'admin', '127.0.0.1', '内网IP', 'Safari', 'Mac OS X', '0', 'Login succeeded', '2023-12-09 17:06:47');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (266, 'admin', '127.0.0.1', '内网IP', 'Chrome 11', 'Mac OS X', '0', 'Login succeeded', '2023-12-09 18:46:48');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (267, 'admin', '127.0.0.1', '内网IP', 'Chrome 11', 'Mac OS X', '0', 'Login succeeded', '2023-12-10 03:10:36');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (268, 'admin', '127.0.0.1', '内网IP', 'Safari', 'Mac OS X', '0', 'Login succeeded', '2023-12-10 04:50:40');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (269, 'admin', '127.0.0.1', '内网IP', 'Safari', 'Mac OS X', '0', 'Login succeeded', '2023-12-10 05:40:27');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (270, 'admin', '127.0.0.1', '内网IP', 'Safari', 'Mac OS X', '0', 'Login succeeded', '2023-12-10 08:26:57');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (271, 'admin', '127.0.0.1', '内网IP', 'Safari', 'Mac OS X', '0', 'Login succeeded', '2023-12-10 10:44:49');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (272, 'admin', '127.0.0.1', '内网IP', 'Safari', 'Mac OS X', '0', 'Login succeeded', '2023-12-10 18:08:15');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (273, 'admin', '127.0.0.1', '内网IP', 'Chrome 11', 'Mac OS X', '0', 'Login succeeded', '2023-12-10 18:29:35');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (274, 'admin', '127.0.0.1', '内网IP', 'Safari', 'Mac OS X', '0', 'Login succeeded', '2023-12-11 02:53:41');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (275, 'admin', '127.0.0.1', '内网IP', 'Safari', 'Mac OS X', '0', 'Login succeeded', '2023-12-11 05:58:49');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (276, 'admin', '127.0.0.1', '内网IP', 'Chrome 11', 'Mac OS X', '0', 'Login succeeded', '2023-12-11 08:24:29');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (277, 'admin', '127.0.0.1', '内网IP', 'Safari', 'Mac OS X', '0', 'Login succeeded', '2023-12-11 13:15:15');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (278, 'admin', '127.0.0.1', '内网IP', 'Safari', 'Mac OS X', '0', 'Login succeeded', '2023-12-11 14:00:38');
 COMMIT;
 
 -- ----------------------------
@@ -839,28 +931,28 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `sys_menu`;
 CREATE TABLE `sys_menu` (
-  `menu_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '菜单ID',
-  `menu_name` varchar(50) COLLATE utf8_bin NOT NULL COMMENT '菜单名称',
-  `parent_id` bigint(20) DEFAULT '0' COMMENT '父菜单ID',
-  `order_num` int(4) DEFAULT '0' COMMENT '显示顺序',
-  `path` varchar(200) COLLATE utf8_bin DEFAULT '' COMMENT '路由地址',
-  `component` varchar(255) COLLATE utf8_bin DEFAULT NULL COMMENT '组件路径',
-  `query` varchar(255) COLLATE utf8_bin DEFAULT NULL COMMENT '路由参数',
-  `is_frame` int(1) DEFAULT '1' COMMENT '是否为外链（0是 1否）',
-  `is_cache` int(1) DEFAULT '0' COMMENT '是否缓存（0缓存 1不缓存）',
-  `menu_type` char(1) COLLATE utf8_bin DEFAULT '' COMMENT '菜单类型（M目录 C菜单 F按钮）',
-  `visible` char(1) COLLATE utf8_bin DEFAULT '0' COMMENT '菜单状态（0显示 1隐藏）',
-  `status` char(1) COLLATE utf8_bin DEFAULT '0' COMMENT '菜单状态（0正常 1停用）',
-  `perms` varchar(100) COLLATE utf8_bin DEFAULT NULL COMMENT '权限标识',
-  `icon` varchar(100) COLLATE utf8_bin DEFAULT '#' COMMENT '菜单图标',
-  `create_by` varchar(64) COLLATE utf8_bin DEFAULT '' COMMENT '创建者',
+  `menu_id` bigint NOT NULL AUTO_INCREMENT COMMENT '菜单ID',
+  `menu_name` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '菜单名称',
+  `parent_id` bigint DEFAULT '0' COMMENT '父菜单ID',
+  `order_num` int DEFAULT '0' COMMENT '显示顺序',
+  `path` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '路由地址',
+  `component` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '组件路径',
+  `query` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '路由参数',
+  `is_frame` int DEFAULT '1' COMMENT '是否为外链（0是 1否）',
+  `is_cache` int DEFAULT '0' COMMENT '是否缓存（0缓存 1不缓存）',
+  `menu_type` char(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '菜单类型（M目录 C菜单 F按钮）',
+  `visible` char(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '0' COMMENT '菜单状态（0显示 1隐藏）',
+  `status` char(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '0' COMMENT '菜单状态（0正常 1停用）',
+  `perms` varchar(100) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '权限标识',
+  `icon` varchar(100) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '#' COMMENT '菜单图标',
+  `create_by` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '创建者',
   `create_time` datetime DEFAULT NULL COMMENT '创建时间',
-  `update_by` varchar(64) COLLATE utf8_bin DEFAULT '' COMMENT '更新者',
+  `update_by` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '更新者',
   `update_time` datetime DEFAULT NULL COMMENT '更新时间',
-  `remark` varchar(500) COLLATE utf8_bin DEFAULT '' COMMENT '备注',
-  `menu_name_i18n_key` varchar(64) COLLATE utf8_bin DEFAULT NULL COMMENT '菜单名称的国际化标识',
+  `remark` varchar(500) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '备注',
+  `menu_name_i18n_key` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '菜单名称的国际化标识',
   PRIMARY KEY (`menu_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2031 DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='菜单权限表';
+) ENGINE=InnoDB AUTO_INCREMENT=2046 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='菜单权限表';
 
 -- ----------------------------
 -- Records of sys_menu
@@ -950,7 +1042,7 @@ INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (1058, '导入代码', 116, 4, '#', '', '', 1, 0, 'F', '0', '0', 'tool:gen:import', '#', 'admin', '2023-11-12 15:34:52', '', NULL, '', NULL);
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (1059, '预览代码', 116, 5, '#', '', '', 1, 0, 'F', '0', '0', 'tool:gen:preview', '#', 'admin', '2023-11-12 15:34:52', '', NULL, '', NULL);
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (1060, '生成代码', 116, 6, '#', '', '', 1, 0, 'F', '0', '0', 'tool:gen:code', '#', 'admin', '2023-11-12 15:34:52', '', NULL, '', NULL);
-INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2000, '项目管理', 2013, 1, 'index', 'system/project/index', NULL, 1, 0, 'C', '0', '0', 'system:project:list', 'list', 'admin', '2023-11-12 16:31:17', 'admin', '2023-11-18 00:01:16', '项目菜单', 'project.manage');
+INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2000, '项目管理', 2043, 1, 'index', 'system/project/index', NULL, 1, 0, 'C', '0', '0', 'system:project:list', 'list', 'admin', '2023-11-12 16:31:17', 'admin', '2023-12-06 10:38:15', '项目菜单', 'project.manage');
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2001, '项目查询', 2000, 1, '#', '', NULL, 1, 0, 'F', '0', '0', 'system:project:query', '#', 'admin', '2023-11-12 16:31:17', '', NULL, '', NULL);
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2002, '项目新增', 2000, 2, 'add', 'system/project/add', NULL, 1, 0, 'F', '0', '0', 'system:project:add', '#', 'admin', '2023-11-12 16:31:17', 'admin', '2023-11-12 17:18:25', '', NULL);
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2003, '项目修改', 2000, 3, '#', '', NULL, 1, 0, 'F', '0', '0', 'system:project:edit', '#', 'admin', '2023-11-12 16:31:17', '', NULL, '', NULL);
@@ -962,7 +1054,7 @@ INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2009, '团队修改', 2006, 3, '#', '', NULL, 1, 0, 'F', '0', '0', 'system:team:edit', '#', 'admin', '2023-11-13 03:34:40', '', NULL, '', NULL);
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2010, '团队删除', 2006, 4, '#', '', NULL, 1, 0, 'F', '0', '0', 'system:team:remove', '#', 'admin', '2023-11-13 03:34:40', '', NULL, '', NULL);
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2011, '团队导出', 2006, 5, '#', '', NULL, 1, 0, 'F', '0', '0', 'system:team:export', '#', 'admin', '2023-11-13 03:34:40', '', NULL, '', NULL);
-INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2013, '项目功能', 0, 1, 'project', NULL, NULL, 1, 0, 'M', '0', '0', NULL, 'redis', 'admin', '2023-11-17 11:34:46', '', NULL, '', 'project.manage');
+INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2013, '项目功能', 0, 1, 'project', NULL, NULL, 1, 0, 'M', '0', '0', '', 'redis', 'admin', '2023-11-17 11:34:46', 'admin', '2023-12-06 10:48:30', '', 'project.manage');
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2015, '团队设置', 0, 2, 'team-option', NULL, NULL, 1, 0, 'M', '0', '0', '', 'dict', 'admin', '2023-11-17 23:19:30', 'admin', '2023-11-18 10:56:52', '', 'team.option');
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2016, '团队设置', 2015, 1, 'team-option', 'system/team/option/index', NULL, 1, 0, 'C', '0', '0', '', 'form', 'admin', '2023-11-17 23:21:54', 'admin', '2023-11-23 10:09:32', '', 'team.option');
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2017, '团队基础信息', 2015, 2, 'team-base-info', 'system/team/option/base/index', NULL, 1, 0, 'C', '1', '0', '', '#', 'admin', '2023-11-18 00:03:19', 'admin', '2023-11-18 05:29:52', '', 'team.base-info');
@@ -979,6 +1071,9 @@ INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2028, '模块修改', 2025, 3, '#', '', NULL, 1, 0, 'F', '0', '0', 'system:module:edit', '#', 'admin', '2023-11-25 17:21:33', '', NULL, '', NULL);
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2029, '模块删除', 2025, 4, '#', '', NULL, 1, 0, 'F', '0', '0', 'system:module:remove', '#', 'admin', '2023-11-25 17:21:33', '', NULL, '', NULL);
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2030, '模块导出', 2025, 5, '#', '', NULL, 1, 0, 'F', '0', '0', 'system:module:export', '#', 'admin', '2023-11-25 17:21:33', '', NULL, '', NULL);
+INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2043, '首页', 0, 0, 'main', NULL, NULL, 1, 0, 'M', '0', '0', '', '#', 'admin', '2023-12-06 10:37:40', 'admin', '2023-12-06 10:38:06', '', 'main');
+INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2044, '工具', 2013, 3, 'tools', 'tool/project/index', NULL, 1, 0, 'C', '0', '0', '', 'tool', 'admin', '2023-12-06 13:51:08', 'admin', '2023-12-06 14:07:44', '', 'tools');
+INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2045, '浏览器工具', 2013, 4, 'browser', 'tool/project/browser/index', NULL, 1, 0, 'C', '1', '0', '', '#', 'admin', '2023-12-06 14:48:16', 'admin', '2023-12-06 15:00:15', '', 'browser.tool');
 COMMIT;
 
 -- ----------------------------
@@ -986,20 +1081,21 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `sys_module`;
 CREATE TABLE `sys_module` (
-  `module_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '模块id',
+  `module_id` bigint NOT NULL AUTO_INCREMENT COMMENT '模块id',
   `module_pid` bigint(20) unsigned zerofill DEFAULT '00000000000000000000' COMMENT '父模块id',
-  `module_name` varchar(128) COLLATE utf8_bin DEFAULT NULL COMMENT '模块名称',
-  `remark` varchar(255) COLLATE utf8_bin DEFAULT NULL COMMENT '备注',
-  `project_id` bigint(20) DEFAULT NULL COMMENT '项目id',
+  `module_name` varchar(128) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '模块名称',
+  `remark` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '备注',
+  `project_id` bigint DEFAULT NULL COMMENT '项目id',
   PRIMARY KEY (`module_id`),
   KEY `module_pid_` (`module_pid`),
   KEY `module_nbame_` (`module_name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='模块表';
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='模块表';
 
 -- ----------------------------
 -- Records of sys_module
 -- ----------------------------
 BEGIN;
+INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`) VALUES (1, 00000000000000000000, '手持系统', NULL, 22);
 COMMIT;
 
 -- ----------------------------
@@ -1007,18 +1103,18 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `sys_notice`;
 CREATE TABLE `sys_notice` (
-  `notice_id` int(4) NOT NULL AUTO_INCREMENT COMMENT '公告ID',
-  `notice_title` varchar(50) COLLATE utf8_bin NOT NULL COMMENT '公告标题',
-  `notice_type` char(1) COLLATE utf8_bin NOT NULL COMMENT '公告类型（1通知 2公告）',
+  `notice_id` int NOT NULL AUTO_INCREMENT COMMENT '公告ID',
+  `notice_title` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '公告标题',
+  `notice_type` char(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '公告类型（1通知 2公告）',
   `notice_content` longblob COMMENT '公告内容',
-  `status` char(1) COLLATE utf8_bin DEFAULT '0' COMMENT '公告状态（0正常 1关闭）',
-  `create_by` varchar(64) COLLATE utf8_bin DEFAULT '' COMMENT '创建者',
+  `status` char(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '0' COMMENT '公告状态（0正常 1关闭）',
+  `create_by` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '创建者',
   `create_time` datetime DEFAULT NULL COMMENT '创建时间',
-  `update_by` varchar(64) COLLATE utf8_bin DEFAULT '' COMMENT '更新者',
+  `update_by` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '更新者',
   `update_time` datetime DEFAULT NULL COMMENT '更新时间',
-  `remark` varchar(255) COLLATE utf8_bin DEFAULT NULL COMMENT '备注',
+  `remark` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '备注',
   PRIMARY KEY (`notice_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='通知公告表';
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='通知公告表';
 
 -- ----------------------------
 -- Records of sys_notice
@@ -1033,28 +1129,28 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `sys_oper_log`;
 CREATE TABLE `sys_oper_log` (
-  `oper_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '日志主键',
-  `title` varchar(50) COLLATE utf8_bin DEFAULT '' COMMENT '模块标题',
-  `business_type` int(2) DEFAULT '0' COMMENT '业务类型（0其它 1新增 2修改 3删除）',
-  `method` varchar(100) COLLATE utf8_bin DEFAULT '' COMMENT '方法名称',
-  `request_method` varchar(10) COLLATE utf8_bin DEFAULT '' COMMENT '请求方式',
-  `operator_type` int(1) DEFAULT '0' COMMENT '操作类别（0其它 1后台用户 2手机端用户）',
-  `oper_name` varchar(50) COLLATE utf8_bin DEFAULT '' COMMENT '操作人员',
-  `dept_name` varchar(50) COLLATE utf8_bin DEFAULT '' COMMENT '部门名称',
-  `oper_url` varchar(255) COLLATE utf8_bin DEFAULT '' COMMENT '请求URL',
-  `oper_ip` varchar(128) COLLATE utf8_bin DEFAULT '' COMMENT '主机地址',
-  `oper_location` varchar(255) COLLATE utf8_bin DEFAULT '' COMMENT '操作地点',
-  `oper_param` varchar(2000) COLLATE utf8_bin DEFAULT '' COMMENT '请求参数',
-  `json_result` varchar(2000) COLLATE utf8_bin DEFAULT '' COMMENT '返回参数',
-  `status` int(1) DEFAULT '0' COMMENT '操作状态（0正常 1异常）',
-  `error_msg` varchar(2000) COLLATE utf8_bin DEFAULT '' COMMENT '错误消息',
+  `oper_id` bigint NOT NULL AUTO_INCREMENT COMMENT '日志主键',
+  `title` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '模块标题',
+  `business_type` int DEFAULT '0' COMMENT '业务类型（0其它 1新增 2修改 3删除）',
+  `method` varchar(100) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '方法名称',
+  `request_method` varchar(10) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '请求方式',
+  `operator_type` int DEFAULT '0' COMMENT '操作类别（0其它 1后台用户 2手机端用户）',
+  `oper_name` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '操作人员',
+  `dept_name` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '部门名称',
+  `oper_url` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '请求URL',
+  `oper_ip` varchar(128) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '主机地址',
+  `oper_location` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '操作地点',
+  `oper_param` varchar(2000) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '请求参数',
+  `json_result` varchar(2000) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '返回参数',
+  `status` int DEFAULT '0' COMMENT '操作状态（0正常 1异常）',
+  `error_msg` varchar(2000) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '错误消息',
   `oper_time` datetime DEFAULT NULL COMMENT '操作时间',
-  `cost_time` bigint(20) DEFAULT '0' COMMENT '消耗时间',
+  `cost_time` bigint DEFAULT '0' COMMENT '消耗时间',
   PRIMARY KEY (`oper_id`),
   KEY `idx_sys_oper_log_bt` (`business_type`),
   KEY `idx_sys_oper_log_s` (`status`),
   KEY `idx_sys_oper_log_ot` (`oper_time`)
-) ENGINE=InnoDB AUTO_INCREMENT=1045 DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='操作日志记录';
+) ENGINE=InnoDB AUTO_INCREMENT=1135 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='操作日志记录';
 
 -- ----------------------------
 -- Records of sys_oper_log
@@ -2005,6 +2101,96 @@ INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `requ
 INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1042, '代码生成', 8, 'com.cat2bug.generator.controller.GenController.batchGenCode()', 'GET', 1, 'admin', NULL, '/tool/gen/batchGenCode', '127.0.0.1', '内网IP', '{\"tables\":\"sys_module\"}', NULL, 0, NULL, '2023-11-25 17:18:52', 155);
 INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1043, '菜单管理', 2, 'com.cat2bug.web.controller.system.SysMenuController.edit()', 'PUT', 1, 'admin', NULL, '/system/menu', '127.0.0.1', '内网IP', '{\"children\":[],\"component\":\"system/module/index\",\"createTime\":\"2023-11-25 17:21:33\",\"icon\":\"cascader\",\"isCache\":\"0\",\"isFrame\":\"1\",\"menuId\":2025,\"menuName\":\"模块\",\"menuType\":\"C\",\"orderNum\":3,\"params\":{},\"parentId\":2013,\"path\":\"module\",\"perms\":\"system:module:list\",\"status\":\"0\",\"updateBy\":\"admin\",\"visible\":\"0\"}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2023-11-25 17:23:18', 20);
 INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1044, '项目', 5, 'com.cat2bug.web.controller.system.SysProjectController.getRoles()', 'GET', 1, 'admin', NULL, '/system/project/22/role', '127.0.0.1', '内网IP', '{}', '{\"code\":200,\"msg\":\"查询成功\",\"rows\":[{\"admin\":false,\"createTime\":\"2023-11-22 06:50:14\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":7,\"roleKey\":\"project.develop\",\"roleName\":\"项目开发\",\"roleNameI18nKey\":\"project.develop\",\"roleSort\":0,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:48:53\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":6,\"roleKey\":\"project.admin\",\"roleName\":\"项目管理员\",\"roleNameI18nKey\":\"project.admin\",\"roleSort\":1,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:53:11\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":8,\"roleKey\":\"project.tester\",\"roleName\":\"项目测试工程师\",\"roleNameI18nKey\":\"project.tester\",\"roleSort\":3,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:55:20\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":9,\"roleKey\":\"project.outsider\",\"roleName\":\"项目外部人员\",\"roleNameI18nKey\":\"project.outsider\",\"roleSort\":4,\"status\":\"0\"}],\"total\":4}', 0, NULL, '2023-11-25 17:24:37', 59);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1045, '代码生成', 8, 'com.cat2bug.generator.controller.GenController.batchGenCode()', 'GET', 1, 'admin', NULL, '/tool/gen/batchGenCode', '127.0.0.1', '内网IP', '{\"tables\":\"sys_project\"}', NULL, 0, NULL, '2023-12-06 10:32:58', 120);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1046, '代码生成', 8, 'com.cat2bug.generator.controller.GenController.batchGenCode()', 'GET', 1, 'admin', NULL, '/tool/gen/batchGenCode', '127.0.0.1', '内网IP', '{\"tables\":\"sys_defect\"}', NULL, 0, NULL, '2023-12-06 10:33:06', 88);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1047, '菜单管理', 3, 'com.cat2bug.web.controller.system.SysMenuController.remove()', 'DELETE', 1, 'admin', NULL, '/system/menu/2031', '127.0.0.1', '内网IP', '{}', '{\"msg\":\"存在子菜单,不允许删除\",\"code\":601}', 0, NULL, '2023-12-06 10:35:05', 11);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1048, '菜单管理', 3, 'com.cat2bug.web.controller.system.SysMenuController.remove()', 'DELETE', 1, 'admin', NULL, '/system/menu/2031', '127.0.0.1', '内网IP', '{}', '{\"msg\":\"存在子菜单,不允许删除\",\"code\":601}', 0, NULL, '2023-12-06 10:35:12', 10);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1049, '菜单管理', 1, 'com.cat2bug.web.controller.system.SysMenuController.add()', 'POST', 1, 'admin', NULL, '/system/menu', '127.0.0.1', '内网IP', '{\"children\":[],\"createBy\":\"admin\",\"isCache\":\"0\",\"isFrame\":\"1\",\"menuName\":\"main\",\"menuNameI18nKey\":\"main\",\"menuType\":\"M\",\"orderNum\":0,\"params\":{},\"parentId\":0,\"path\":\"main\",\"status\":\"0\",\"visible\":\"0\"}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2023-12-06 10:37:40', 23);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1050, '菜单管理', 2, 'com.cat2bug.web.controller.system.SysMenuController.edit()', 'PUT', 1, 'admin', NULL, '/system/menu', '127.0.0.1', '内网IP', '{\"children\":[],\"createTime\":\"2023-12-06 10:37:40\",\"icon\":\"#\",\"isCache\":\"0\",\"isFrame\":\"1\",\"menuId\":2043,\"menuName\":\"首页\",\"menuNameI18nKey\":\"main\",\"menuType\":\"M\",\"orderNum\":0,\"params\":{},\"parentId\":0,\"path\":\"main\",\"perms\":\"\",\"status\":\"0\",\"updateBy\":\"admin\",\"visible\":\"0\"}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2023-12-06 10:38:06', 27);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1051, '菜单管理', 2, 'com.cat2bug.web.controller.system.SysMenuController.edit()', 'PUT', 1, 'admin', NULL, '/system/menu', '127.0.0.1', '内网IP', '{\"children\":[],\"component\":\"system/project/index\",\"createTime\":\"2023-11-12 16:31:17\",\"icon\":\"list\",\"isCache\":\"0\",\"isFrame\":\"1\",\"menuId\":2000,\"menuName\":\"项目管理\",\"menuNameI18nKey\":\"project.manage\",\"menuType\":\"C\",\"orderNum\":1,\"params\":{},\"parentId\":2043,\"path\":\"index\",\"perms\":\"system:project:list\",\"status\":\"0\",\"updateBy\":\"admin\",\"visible\":\"0\"}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2023-12-06 10:38:15', 20);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1052, '菜单管理', 2, 'com.cat2bug.web.controller.system.SysMenuController.edit()', 'PUT', 1, 'admin', NULL, '/system/menu', '127.0.0.1', '内网IP', '{\"children\":[],\"createTime\":\"2023-11-17 11:34:46\",\"icon\":\"redis\",\"isCache\":\"0\",\"isFrame\":\"1\",\"menuId\":2013,\"menuName\":\"项目功能\",\"menuNameI18nKey\":\"project.manage\",\"menuType\":\"M\",\"orderNum\":1,\"params\":{},\"parentId\":0,\"path\":\"project\",\"perms\":\"\",\"status\":\"0\",\"updateBy\":\"admin\",\"visible\":\"0\"}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2023-12-06 10:38:49', 37);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1053, '菜单管理', 2, 'com.cat2bug.web.controller.system.SysMenuController.edit()', 'PUT', 1, 'admin', NULL, '/system/menu', '127.0.0.1', '内网IP', '{\"children\":[],\"createTime\":\"2023-11-17 11:34:46\",\"icon\":\"redis\",\"isCache\":\"0\",\"isFrame\":\"1\",\"menuId\":2013,\"menuName\":\"项目功能\",\"menuNameI18nKey\":\"project.manage\",\"menuType\":\"M\",\"orderNum\":1,\"params\":{},\"parentId\":0,\"path\":\"project\",\"perms\":\"\",\"status\":\"0\",\"updateBy\":\"admin\",\"visible\":\"0\"}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2023-12-06 10:48:30', 36);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1054, '用户配置', 2, 'com.cat2bug.web.controller.system.SysUserConfigController.edit()', 'PUT', 1, 'admin', NULL, '/system/user-config', '127.0.0.1', '内网IP', '{\"currentTeamId\":16,\"params\":{},\"userConfigId\":1,\"userId\":1}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2023-12-06 11:05:19', 21);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1055, '项目', 5, 'com.cat2bug.web.controller.system.SysProjectController.getRoles()', 'GET', 1, 'admin', NULL, '/system/project/22/role', '127.0.0.1', '内网IP', '{}', '{\"code\":200,\"msg\":\"查询成功\",\"rows\":[{\"admin\":false,\"createTime\":\"2023-11-22 06:50:14\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":7,\"roleKey\":\"project.develop\",\"roleName\":\"项目开发\",\"roleNameI18nKey\":\"project.develop\",\"roleSort\":0,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:48:53\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":6,\"roleKey\":\"project.admin\",\"roleName\":\"项目管理员\",\"roleNameI18nKey\":\"project.admin\",\"roleSort\":1,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:53:11\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":8,\"roleKey\":\"project.tester\",\"roleName\":\"项目测试工程师\",\"roleNameI18nKey\":\"project.tester\",\"roleSort\":3,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:55:20\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":9,\"roleKey\":\"project.outsider\",\"roleName\":\"项目外部人员\",\"roleNameI18nKey\":\"project.outsider\",\"roleSort\":4,\"status\":\"0\"}],\"total\":4}', 0, NULL, '2023-12-06 11:05:29', 25);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1056, '用户配置', 2, 'com.cat2bug.web.controller.system.SysUserConfigController.edit()', 'PUT', 1, 'admin', NULL, '/system/user-config', '127.0.0.1', '内网IP', '{\"currentTeamId\":16,\"params\":{},\"userConfigId\":1,\"userId\":1}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2023-12-06 11:05:59', 24);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1057, '用户配置', 2, 'com.cat2bug.web.controller.system.SysUserConfigController.edit()', 'PUT', 1, 'admin', NULL, '/system/user-config', '127.0.0.1', '内网IP', '{\"currentTeamId\":15,\"params\":{},\"userConfigId\":1,\"userId\":1}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2023-12-06 11:06:03', 10);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1058, '项目', 5, 'com.cat2bug.web.controller.system.SysProjectController.getRoles()', 'GET', 1, 'admin', NULL, '/system/project/22/role', '127.0.0.1', '内网IP', '{}', '{\"code\":200,\"msg\":\"查询成功\",\"rows\":[{\"admin\":false,\"createTime\":\"2023-11-22 06:50:14\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":7,\"roleKey\":\"project.develop\",\"roleName\":\"项目开发\",\"roleNameI18nKey\":\"project.develop\",\"roleSort\":0,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:48:53\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":6,\"roleKey\":\"project.admin\",\"roleName\":\"项目管理员\",\"roleNameI18nKey\":\"project.admin\",\"roleSort\":1,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:53:11\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":8,\"roleKey\":\"project.tester\",\"roleName\":\"项目测试工程师\",\"roleNameI18nKey\":\"project.tester\",\"roleSort\":3,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:55:20\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":9,\"roleKey\":\"project.outsider\",\"roleName\":\"项目外部人员\",\"roleNameI18nKey\":\"project.outsider\",\"roleSort\":4,\"status\":\"0\"}],\"total\":4}', 0, NULL, '2023-12-06 11:06:13', 21);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1059, '项目', 5, 'com.cat2bug.web.controller.system.SysProjectController.getRoles()', 'GET', 1, 'admin', NULL, '/system/project/22/role', '127.0.0.1', '内网IP', '{}', '{\"code\":200,\"msg\":\"查询成功\",\"rows\":[{\"admin\":false,\"createTime\":\"2023-11-22 06:50:14\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":7,\"roleKey\":\"project.develop\",\"roleName\":\"项目开发\",\"roleNameI18nKey\":\"project.develop\",\"roleSort\":0,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:48:53\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":6,\"roleKey\":\"project.admin\",\"roleName\":\"项目管理员\",\"roleNameI18nKey\":\"project.admin\",\"roleSort\":1,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:53:11\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":8,\"roleKey\":\"project.tester\",\"roleName\":\"项目测试工程师\",\"roleNameI18nKey\":\"project.tester\",\"roleSort\":3,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:55:20\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":9,\"roleKey\":\"project.outsider\",\"roleName\":\"项目外部人员\",\"roleNameI18nKey\":\"project.outsider\",\"roleSort\":4,\"status\":\"0\"}],\"total\":4}', 0, NULL, '2023-12-06 11:06:24', 37);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1060, '模块', 1, 'com.cat2bug.web.controller.system.SysModuleController.add()', 'POST', 1, 'admin', NULL, '/system/module', '127.0.0.1', '内网IP', '{\"children\":[],\"childrenCount\":0,\"moduleName\":\"手持系统\",\"modulePid\":0,\"params\":{},\"projectId\":22}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2023-12-06 11:07:03', 16);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1061, '缺陷', 1, 'com.cat2bug.web.controller.system.SysDefectController.add()', 'POST', 1, 'admin', NULL, '/system/defect', '127.0.0.1', '内网IP', '{\"createTime\":\"2023-12-06 19:07:57\",\"defectDescribe\":\"测试\",\"defectLevel\":\"middle\",\"defectName\":\"313\",\"defectState\":\"PROCESSING\",\"handleBy\":[117],\"imgUrls\":\"/profile/upload/2023/12/06/702c6bd462e1e2f27304fe0a0c19ee9e632181f34d07c9557e058f97fa71bfb4_20231206190754A001.jpg\",\"moduleId\":1,\"params\":{},\"projectId\":22,\"projectNum\":1,\"updateBy\":\"1\",\"updateTime\":\"2023-12-06 19:07:57\"}', NULL, 1, '\n### Error updating database.  Cause: java.sql.SQLSyntaxErrorException: Unknown column \'project_num\' in \'field list\'\n### The error may exist in file [/Users/yuzhantao/projects/git/cat2bug/cat2bug-platform/cat2bug-platform-system/target/classes/mapper/system/SysDefectMapper.xml]\n### The error may involve com.cat2bug.system.mapper.SysDefectMapper.insertSysDefect-Inline\n### The error occurred while setting parameters\n### SQL: insert into sys_defect          ( project_num,                          defect_name,             defect_describe,                          img_urls,             project_id,                                                                 module_id,                                       update_time,             create_time,             update_by,             defect_state,                          handle_by,                          defect_level )           values ( ?,                          ?,             ?,                          ?,             ?,                                                                 ?,                                       ?,             ?,             ?,             ?,                          ?,                          ? )\n### Cause: java.sql.SQLSyntaxErrorException: Unknown column \'project_num\' in \'field list\'\n; bad SQL grammar []; nested exception is java.sql.SQLSyntaxErrorException: Unknown column \'project_num\' in \'field list\'', '2023-12-06 11:07:57', 85);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1062, '缺陷', 1, 'com.cat2bug.web.controller.system.SysDefectController.add()', 'POST', 1, 'admin', NULL, '/system/defect', '127.0.0.1', '内网IP', '{\"createTime\":\"2023-12-06 19:08:55\",\"defectDescribe\":\"测试\",\"defectLevel\":\"middle\",\"defectName\":\"313\",\"defectState\":\"PROCESSING\",\"handleBy\":[117],\"imgUrls\":\"/profile/upload/2023/12/06/702c6bd462e1e2f27304fe0a0c19ee9e632181f34d07c9557e058f97fa71bfb4_20231206190754A001.jpg\",\"moduleId\":1,\"params\":{},\"projectId\":22,\"projectNum\":1,\"updateBy\":\"1\",\"updateTime\":\"2023-12-06 19:08:55\"}', NULL, 1, '\n### Error updating database.  Cause: java.sql.SQLSyntaxErrorException: Unknown column \'img_urls\' in \'field list\'\n### The error may exist in file [/Users/yuzhantao/projects/git/cat2bug/cat2bug-platform/cat2bug-platform-system/target/classes/mapper/system/SysDefectMapper.xml]\n### The error may involve com.cat2bug.system.mapper.SysDefectMapper.insertSysDefect-Inline\n### The error occurred while setting parameters\n### SQL: insert into sys_defect          ( project_num,                          defect_name,             defect_describe,                          img_urls,             project_id,                                                                 module_id,                                       update_time,             create_time,             update_by,             defect_state,                          handle_by,                          defect_level )           values ( ?,                          ?,             ?,                          ?,             ?,                                                                 ?,                                       ?,             ?,             ?,             ?,                          ?,                          ? )\n### Cause: java.sql.SQLSyntaxErrorException: Unknown column \'img_urls\' in \'field list\'\n; bad SQL grammar []; nested exception is java.sql.SQLSyntaxErrorException: Unknown column \'img_urls\' in \'field list\'', '2023-12-06 11:08:55', 48);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1063, '缺陷', 1, 'com.cat2bug.web.controller.system.SysDefectController.add()', 'POST', 1, 'admin', NULL, '/system/defect', '127.0.0.1', '内网IP', '{\"createTime\":\"2023-12-06 19:09:43\",\"defectDescribe\":\"测试\",\"defectLevel\":\"middle\",\"defectName\":\"313\",\"defectState\":\"PROCESSING\",\"handleBy\":[117],\"imgUrls\":\"/profile/upload/2023/12/06/702c6bd462e1e2f27304fe0a0c19ee9e632181f34d07c9557e058f97fa71bfb4_20231206190754A001.jpg\",\"moduleId\":1,\"params\":{},\"projectId\":22,\"projectNum\":1,\"updateBy\":\"1\",\"updateTime\":\"2023-12-06 19:09:43\"}', NULL, 1, '\n### Error updating database.  Cause: com.mysql.cj.jdbc.exceptions.MysqlDataTruncation: Data truncation: Invalid JSON text: \"Invalid value.\" at position 0 in value for column \'sys_defect.img_urls\'.\n### The error may exist in file [/Users/yuzhantao/projects/git/cat2bug/cat2bug-platform/cat2bug-platform-system/target/classes/mapper/system/SysDefectMapper.xml]\n### The error may involve com.cat2bug.system.mapper.SysDefectMapper.insertSysDefect-Inline\n### The error occurred while setting parameters\n### SQL: insert into sys_defect          ( project_num,                          defect_name,             defect_describe,                          img_urls,             project_id,                                                                 module_id,                                       update_time,             create_time,             update_by,             defect_state,                          handle_by,                          defect_level )           values ( ?,                          ?,             ?,                          ?,             ?,                                                                 ?,                                       ?,             ?,             ?,             ?,                          ?,                          ? )\n### Cause: com.mysql.cj.jdbc.exceptions.MysqlDataTruncation: Data truncation: Invalid JSON text: \"Invalid value.\" at position 0 in value for column \'sys_defect.img_urls\'.\n; Data truncation: Invalid JSON text: \"Invalid value.\" at position 0 in value for column \'sys_defect.img_urls\'.; nested exception is com.mysql.cj.jdbc.exceptions.MysqlDataTruncation: Data truncation: Invalid JSON text: \"Invalid value.\" at position 0 in value for column \'sys_defect.img_urls\'.', '2023-12-06 11:09:43', 33);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1064, '缺陷', 1, 'com.cat2bug.web.controller.system.SysDefectController.add()', 'POST', 1, 'admin', NULL, '/system/defect', '127.0.0.1', '内网IP', '{\"createTime\":\"2023-12-06 19:09:47\",\"defectDescribe\":\"测试\",\"defectLevel\":\"middle\",\"defectName\":\"313\",\"defectState\":\"PROCESSING\",\"handleBy\":[117],\"imgUrls\":\"/profile/upload/2023/12/06/702c6bd462e1e2f27304fe0a0c19ee9e632181f34d07c9557e058f97fa71bfb4_20231206190754A001.jpg\",\"moduleId\":1,\"params\":{},\"projectId\":22,\"projectNum\":1,\"updateBy\":\"1\",\"updateTime\":\"2023-12-06 19:09:47\"}', NULL, 1, '\n### Error updating database.  Cause: com.mysql.cj.jdbc.exceptions.MysqlDataTruncation: Data truncation: Invalid JSON text: \"Invalid value.\" at position 0 in value for column \'sys_defect.img_urls\'.\n### The error may exist in file [/Users/yuzhantao/projects/git/cat2bug/cat2bug-platform/cat2bug-platform-system/target/classes/mapper/system/SysDefectMapper.xml]\n### The error may involve com.cat2bug.system.mapper.SysDefectMapper.insertSysDefect-Inline\n### The error occurred while setting parameters\n### SQL: insert into sys_defect          ( project_num,                          defect_name,             defect_describe,                          img_urls,             project_id,                                                                 module_id,                                       update_time,             create_time,             update_by,             defect_state,                          handle_by,                          defect_level )           values ( ?,                          ?,             ?,                          ?,             ?,                                                                 ?,                                       ?,             ?,             ?,             ?,                          ?,                          ? )\n### Cause: com.mysql.cj.jdbc.exceptions.MysqlDataTruncation: Data truncation: Invalid JSON text: \"Invalid value.\" at position 0 in value for column \'sys_defect.img_urls\'.\n; Data truncation: Invalid JSON text: \"Invalid value.\" at position 0 in value for column \'sys_defect.img_urls\'.; nested exception is com.mysql.cj.jdbc.exceptions.MysqlDataTruncation: Data truncation: Invalid JSON text: \"Invalid value.\" at position 0 in value for column \'sys_defect.img_urls\'.', '2023-12-06 11:09:47', 25);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1065, '缺陷', 1, 'com.cat2bug.web.controller.system.SysDefectController.add()', 'POST', 1, 'admin', NULL, '/system/defect', '127.0.0.1', '内网IP', '{\"createTime\":\"2023-12-06 19:16:23\",\"defectDescribe\":\"测试\",\"defectId\":1,\"defectLevel\":\"middle\",\"defectName\":\"313\",\"defectState\":\"PROCESSING\",\"handleBy\":[117],\"imgUrls\":\"/profile/upload/2023/12/06/702c6bd462e1e2f27304fe0a0c19ee9e632181f34d07c9557e058f97fa71bfb4_20231206190754A001.jpg\",\"moduleId\":1,\"params\":{},\"projectId\":22,\"projectNum\":1,\"updateBy\":\"1\",\"updateTime\":\"2023-12-06 19:16:23\"}', NULL, 1, '\n### Error updating database.  Cause: java.sql.SQLException: Field \'defect_log_id\' doesn\'t have a default value\n### The error may exist in file [/Users/yuzhantao/projects/git/cat2bug/cat2bug-platform/cat2bug-platform-system/target/classes/mapper/system/SysDefectLogMapper.xml]\n### The error may involve com.cat2bug.system.mapper.SysDefectLogMapper.insertSysDefectLog-Inline\n### The error occurred while setting parameters\n### SQL: insert into sys_defect_log          ( create_by,             create_time,             defect_log_type )           values ( ?,             ?,             ? )\n### Cause: java.sql.SQLException: Field \'defect_log_id\' doesn\'t have a default value\n; Field \'defect_log_id\' doesn\'t have a default value; nested exception is java.sql.SQLException: Field \'defect_log_id\' doesn\'t have a default value', '2023-12-06 11:16:23', 50);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1066, '缺陷', 1, 'com.cat2bug.web.controller.system.SysDefectController.add()', 'POST', 1, 'admin', NULL, '/system/defect', '127.0.0.1', '内网IP', '{\"createTime\":\"2023-12-06 19:17:11\",\"defectDescribe\":\"测试\",\"defectId\":2,\"defectLevel\":\"middle\",\"defectName\":\"313\",\"defectState\":\"PROCESSING\",\"handleBy\":[117],\"imgUrls\":\"/profile/upload/2023/12/06/702c6bd462e1e2f27304fe0a0c19ee9e632181f34d07c9557e058f97fa71bfb4_20231206190754A001.jpg\",\"moduleId\":1,\"params\":{},\"projectId\":22,\"projectNum\":1,\"updateBy\":\"1\",\"updateTime\":\"2023-12-06 19:17:11\"}', NULL, 1, '\n### Error updating database.  Cause: java.sql.SQLException: Field \'defect_id\' doesn\'t have a default value\n### The error may exist in file [/Users/yuzhantao/projects/git/cat2bug/cat2bug-platform/cat2bug-platform-system/target/classes/mapper/system/SysDefectLogMapper.xml]\n### The error may involve com.cat2bug.system.mapper.SysDefectLogMapper.insertSysDefectLog-Inline\n### The error occurred while setting parameters\n### SQL: insert into sys_defect_log          ( create_by,             create_time,             defect_log_type )           values ( ?,             ?,             ? )\n### Cause: java.sql.SQLException: Field \'defect_id\' doesn\'t have a default value\n; Field \'defect_id\' doesn\'t have a default value; nested exception is java.sql.SQLException: Field \'defect_id\' doesn\'t have a default value', '2023-12-06 11:17:11', 41);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1067, '缺陷', 1, 'com.cat2bug.web.controller.system.SysDefectController.add()', 'POST', 1, 'admin', NULL, '/system/defect', '127.0.0.1', '内网IP', '{\"createTime\":\"2023-12-06 19:18:14\",\"defectDescribe\":\"测试\",\"defectId\":3,\"defectLevel\":\"middle\",\"defectName\":\"313\",\"defectState\":\"PROCESSING\",\"handleBy\":[117],\"imgUrls\":\"/profile/upload/2023/12/06/702c6bd462e1e2f27304fe0a0c19ee9e632181f34d07c9557e058f97fa71bfb4_20231206190754A001.jpg\",\"moduleId\":1,\"params\":{},\"projectId\":22,\"projectNum\":1,\"updateBy\":\"1\",\"updateTime\":\"2023-12-06 19:18:14\"}', NULL, 1, '\n### Error updating database.  Cause: java.sql.SQLException: Field \'defect_id\' doesn\'t have a default value\n### The error may exist in file [/Users/yuzhantao/projects/git/cat2bug/cat2bug-platform/cat2bug-platform-system/target/classes/mapper/system/SysDefectLogMapper.xml]\n### The error may involve com.cat2bug.system.mapper.SysDefectLogMapper.insertSysDefectLog-Inline\n### The error occurred while setting parameters\n### SQL: insert into sys_defect_log          ( create_by,             create_time,             defect_log_type )           values ( ?,             ?,             ? )\n### Cause: java.sql.SQLException: Field \'defect_id\' doesn\'t have a default value\n; Field \'defect_id\' doesn\'t have a default value; nested exception is java.sql.SQLException: Field \'defect_id\' doesn\'t have a default value', '2023-12-06 11:18:14', 41);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1068, '缺陷', 1, 'com.cat2bug.web.controller.system.SysDefectController.add()', 'POST', 1, 'admin', NULL, '/system/defect', '127.0.0.1', '内网IP', '{\"createTime\":\"2023-12-06 19:25:43\",\"defectDescribe\":\"测试\",\"defectId\":4,\"defectLevel\":\"middle\",\"defectName\":\"313\",\"defectState\":\"PROCESSING\",\"handleBy\":[117],\"imgUrls\":\"/profile/upload/2023/12/06/702c6bd462e1e2f27304fe0a0c19ee9e632181f34d07c9557e058f97fa71bfb4_20231206190754A001.jpg\",\"moduleId\":1,\"params\":{},\"projectId\":22,\"projectNum\":1,\"updateBy\":\"1\",\"updateTime\":\"2023-12-06 19:25:43\"}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2023-12-06 11:25:44', 110);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1069, '项目', 5, 'com.cat2bug.web.controller.system.SysProjectController.getRoles()', 'GET', 1, 'admin', NULL, '/system/project/22/role', '127.0.0.1', '内网IP', '{}', '{\"code\":200,\"msg\":\"查询成功\",\"rows\":[{\"admin\":false,\"createTime\":\"2023-11-22 06:50:14\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":7,\"roleKey\":\"project.develop\",\"roleName\":\"项目开发\",\"roleNameI18nKey\":\"project.develop\",\"roleSort\":0,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:48:53\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":6,\"roleKey\":\"project.admin\",\"roleName\":\"项目管理员\",\"roleNameI18nKey\":\"project.admin\",\"roleSort\":1,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:53:11\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":8,\"roleKey\":\"project.tester\",\"roleName\":\"项目测试工程师\",\"roleNameI18nKey\":\"project.tester\",\"roleSort\":3,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:55:20\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":9,\"roleKey\":\"project.outsider\",\"roleName\":\"项目外部人员\",\"roleNameI18nKey\":\"project.outsider\",\"roleSort\":4,\"status\":\"0\"}],\"total\":4}', 0, NULL, '2023-12-06 11:26:20', 45);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1070, '项目', 5, 'com.cat2bug.web.controller.system.SysProjectController.getRoles()', 'GET', 1, 'admin', NULL, '/system/project/22/role', '127.0.0.1', '内网IP', '{}', '{\"code\":200,\"msg\":\"查询成功\",\"rows\":[{\"admin\":false,\"createTime\":\"2023-11-22 06:50:14\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":7,\"roleKey\":\"project.develop\",\"roleName\":\"项目开发\",\"roleNameI18nKey\":\"project.develop\",\"roleSort\":0,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:48:53\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":6,\"roleKey\":\"project.admin\",\"roleName\":\"项目管理员\",\"roleNameI18nKey\":\"project.admin\",\"roleSort\":1,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:53:11\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":8,\"roleKey\":\"project.tester\",\"roleName\":\"项目测试工程师\",\"roleNameI18nKey\":\"project.tester\",\"roleSort\":3,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:55:20\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":9,\"roleKey\":\"project.outsider\",\"roleName\":\"项目外部人员\",\"roleNameI18nKey\":\"project.outsider\",\"roleSort\":4,\"status\":\"0\"}],\"total\":4}', 0, NULL, '2023-12-06 11:26:25', 15);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1071, '缺陷', 1, 'com.cat2bug.web.controller.system.SysDefectController.add()', 'POST', 1, 'admin', NULL, '/system/defect', '127.0.0.1', '内网IP', '{\"createTime\":\"2023-12-06 19:26:38\",\"defectDescribe\":\"321\",\"defectId\":5,\"defectLevel\":\"middle\",\"defectName\":\"1231\",\"defectState\":\"PROCESSING\",\"handleBy\":[1],\"params\":{},\"projectId\":22,\"projectNum\":2,\"updateBy\":\"1\",\"updateTime\":\"2023-12-06 19:26:38\"}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2023-12-06 11:26:38', 47);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1072, '用户配置', 2, 'com.cat2bug.web.controller.system.SysUserConfigController.edit()', 'PUT', 1, 'admin', NULL, '/system/user-config', '127.0.0.1', '内网IP', '{\"currentTeamId\":16,\"params\":{},\"userConfigId\":1,\"userId\":1}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2023-12-06 11:28:07', 31);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1073, '用户配置', 2, 'com.cat2bug.web.controller.system.SysUserConfigController.edit()', 'PUT', 1, 'admin', NULL, '/system/user-config', '127.0.0.1', '内网IP', '{\"currentTeamId\":15,\"params\":{},\"userConfigId\":1,\"userId\":1}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2023-12-06 11:28:12', 35);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1074, '用户配置', 2, 'com.cat2bug.web.controller.system.SysUserConfigController.edit()', 'PUT', 1, 'admin', NULL, '/system/user-config', '127.0.0.1', '内网IP', '{\"currentTeamId\":16,\"params\":{},\"userConfigId\":1,\"userId\":1}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2023-12-06 11:28:15', 15);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1075, '用户配置', 2, 'com.cat2bug.web.controller.system.SysUserConfigController.edit()', 'PUT', 1, 'admin', NULL, '/system/user-config', '127.0.0.1', '内网IP', '{\"currentTeamId\":15,\"params\":{},\"userConfigId\":1,\"userId\":1}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2023-12-06 11:28:18', 17);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1076, '项目', 5, 'com.cat2bug.web.controller.system.SysProjectController.getRoles()', 'GET', 1, 'admin', NULL, '/system/project/24/role', '127.0.0.1', '内网IP', '{}', '{\"code\":200,\"msg\":\"查询成功\",\"rows\":[{\"admin\":false,\"createTime\":\"2023-11-22 06:50:14\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":7,\"roleKey\":\"project.develop\",\"roleName\":\"项目开发\",\"roleNameI18nKey\":\"project.develop\",\"roleSort\":0,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:48:53\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":6,\"roleKey\":\"project.admin\",\"roleName\":\"项目管理员\",\"roleNameI18nKey\":\"project.admin\",\"roleSort\":1,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:53:11\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":8,\"roleKey\":\"project.tester\",\"roleName\":\"项目测试工程师\",\"roleNameI18nKey\":\"project.tester\",\"roleSort\":3,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:55:20\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":9,\"roleKey\":\"project.outsider\",\"roleName\":\"项目外部人员\",\"roleNameI18nKey\":\"project.outsider\",\"roleSort\":4,\"status\":\"0\"}],\"total\":4}', 0, NULL, '2023-12-06 11:38:08', 15);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1077, '项目', 1, 'com.cat2bug.web.controller.system.SysProjectController.collect()', 'POST', 1, 'admin', NULL, '/system/project/22/collect', '127.0.0.1', '内网IP', '22 {\"collect\":true,\"createBy\":\"1\",\"createTime\":\"2023-11-23 09:45:41\",\"members\":[{\"admin\":true,\"avatar\":\"\",\"createBy\":\"admin\",\"createTime\":\"2023-11-12 15:34:51\",\"delFlag\":\"0\",\"deptId\":103,\"email\":\"admin@cat2bug.com\",\"loginDate\":\"2023-12-06 18:31:09\",\"loginIp\":\"127.0.0.1\",\"nickName\":\"黑猫警长\",\"params\":{},\"phoneNumber\":\"18888888888\",\"remark\":\"管理员\",\"sex\":\"0\",\"status\":\"0\",\"userId\":1,\"userName\":\"admin\"},{\"admin\":false,\"avatar\":\"\",\"createBy\":\"\",\"createTime\":\"2023-11-18 12:28:56\",\"delFlag\":\"0\",\"email\":\"111@11.cc\",\"loginIp\":\"\",\"nickName\":\"11111111111\",\"params\":{},\"phoneNumber\":\"18810889198\",\"sex\":\"0\",\"status\":\"0\",\"userId\":103,\"userName\":\"111111111\"},{\"admin\":false,\"avatar\":\"\",\"createBy\":\"\",\"createTime\":\"2023-11-20 12:07:50\",\"delFlag\":\"0\",\"email\":\"77@77.com\",\"loginIp\":\"\",\"nickName\":\"77777\",\"params\":{},\"phoneNumber\":\"17777777777\",\"remark\":\"7777\",\"sex\":\"0\",\"status\":\"0\",\"userId\":114,\"userName\":\"77777\"},{\"admin\":false,\"avatar\":\"\",\"createBy\":\"\",\"createTime\":\"2023-11-23 01:40:15\",\"delFlag\":\"0\",\"email\":\"lina@cat2bug.com\",\"loginIp\":\"\",\"nickName\":\"李娜\",\"params\":{},\"phoneNumber\":\"18910889190\",\"remark\":\"测试人员\",\"sex\":\"0\",\"status\":\"0\",\"userId\":116,\"userName\":\"lina\"},{\"admin\":false,\"avatar\":\"\",\"createBy\":\"\",\"createTime\":\"2023-11-23 01:44:37\",\"delFlag\":\"0\",\"email\":\"wuxi@cat2bug.com\",\"loginIp\":\"\",\"nickName\":\"吴熙\",\"params\":{},\"phoneNumber\":\"17637233333\",\"sex\":\"0\",\"status\":\"0\",\"userId\":117,\"userName\":\"wuxi\"}],\"params\":{},\"projectIcon\":\"/static/img/project_icon1.204904ae.svg\",\"projectId\":22,\"projectIntroduce\":\"一个用于测试的项目\",\"projectName\":\"测试项目\",\"teamId\":15,\"updateBy\":\"1\",\"updateTime\":\"2023-11-23 09:45:41\"}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2023-12-06 11:40:17', 44);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1078, '项目', 1, 'com.cat2bug.web.controller.system.SysProjectController.collect()', 'POST', 1, 'admin', NULL, '/system/project/22/collect', '127.0.0.1', '内网IP', '22 {\"collect\":false,\"createBy\":\"1\",\"createTime\":\"2023-11-23 09:45:41\",\"members\":[{\"admin\":true,\"avatar\":\"\",\"createBy\":\"admin\",\"createTime\":\"2023-11-12 15:34:51\",\"delFlag\":\"0\",\"deptId\":103,\"email\":\"admin@cat2bug.com\",\"loginDate\":\"2023-12-06 18:31:09\",\"loginIp\":\"127.0.0.1\",\"nickName\":\"黑猫警长\",\"params\":{},\"phoneNumber\":\"18888888888\",\"remark\":\"管理员\",\"sex\":\"0\",\"status\":\"0\",\"userId\":1,\"userName\":\"admin\"},{\"admin\":false,\"avatar\":\"\",\"createBy\":\"\",\"createTime\":\"2023-11-18 12:28:56\",\"delFlag\":\"0\",\"email\":\"111@11.cc\",\"loginIp\":\"\",\"nickName\":\"11111111111\",\"params\":{},\"phoneNumber\":\"18810889198\",\"sex\":\"0\",\"status\":\"0\",\"userId\":103,\"userName\":\"111111111\"},{\"admin\":false,\"avatar\":\"\",\"createBy\":\"\",\"createTime\":\"2023-11-20 12:07:50\",\"delFlag\":\"0\",\"email\":\"77@77.com\",\"loginIp\":\"\",\"nickName\":\"77777\",\"params\":{},\"phoneNumber\":\"17777777777\",\"remark\":\"7777\",\"sex\":\"0\",\"status\":\"0\",\"userId\":114,\"userName\":\"77777\"},{\"admin\":false,\"avatar\":\"\",\"createBy\":\"\",\"createTime\":\"2023-11-23 01:40:15\",\"delFlag\":\"0\",\"email\":\"lina@cat2bug.com\",\"loginIp\":\"\",\"nickName\":\"李娜\",\"params\":{},\"phoneNumber\":\"18910889190\",\"remark\":\"测试人员\",\"sex\":\"0\",\"status\":\"0\",\"userId\":116,\"userName\":\"lina\"},{\"admin\":false,\"avatar\":\"\",\"createBy\":\"\",\"createTime\":\"2023-11-23 01:44:37\",\"delFlag\":\"0\",\"email\":\"wuxi@cat2bug.com\",\"loginIp\":\"\",\"nickName\":\"吴熙\",\"params\":{},\"phoneNumber\":\"17637233333\",\"sex\":\"0\",\"status\":\"0\",\"userId\":117,\"userName\":\"wuxi\"}],\"params\":{},\"projectIcon\":\"/static/img/project_icon1.204904ae.svg\",\"projectId\":22,\"projectIntroduce\":\"一个用于测试的项目\",\"projectName\":\"测试项目\",\"teamId\":15,\"updateBy\":\"1\",\"updateTime\":\"2023-11-23 09:45:41\"}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2023-12-06 11:40:18', 16);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1079, '项目', 5, 'com.cat2bug.web.controller.system.SysProjectController.getRoles()', 'GET', 1, 'admin', NULL, '/system/project/22/role', '127.0.0.1', '内网IP', '{}', '{\"code\":200,\"msg\":\"查询成功\",\"rows\":[{\"admin\":false,\"createTime\":\"2023-11-22 06:50:14\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":7,\"roleKey\":\"project.develop\",\"roleName\":\"项目开发\",\"roleNameI18nKey\":\"project.develop\",\"roleSort\":0,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:48:53\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":6,\"roleKey\":\"project.admin\",\"roleName\":\"项目管理员\",\"roleNameI18nKey\":\"project.admin\",\"roleSort\":1,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:53:11\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":8,\"roleKey\":\"project.tester\",\"roleName\":\"项目测试工程师\",\"roleNameI18nKey\":\"project.tester\",\"roleSort\":3,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:55:20\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":9,\"roleKey\":\"project.outsider\",\"roleName\":\"项目外部人员\",\"roleNameI18nKey\":\"project.outsider\",\"roleSort\":4,\"status\":\"0\"}],\"total\":4}', 0, NULL, '2023-12-06 11:40:23', 18);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1080, '项目', 5, 'com.cat2bug.web.controller.system.SysProjectController.getRoles()', 'GET', 1, 'admin', NULL, '/system/project/22/role', '127.0.0.1', '内网IP', '{}', '{\"code\":200,\"msg\":\"查询成功\",\"rows\":[{\"admin\":false,\"createTime\":\"2023-11-22 06:50:14\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":7,\"roleKey\":\"project.develop\",\"roleName\":\"项目开发\",\"roleNameI18nKey\":\"project.develop\",\"roleSort\":0,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:48:53\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":6,\"roleKey\":\"project.admin\",\"roleName\":\"项目管理员\",\"roleNameI18nKey\":\"project.admin\",\"roleSort\":1,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:53:11\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":8,\"roleKey\":\"project.tester\",\"roleName\":\"项目测试工程师\",\"roleNameI18nKey\":\"project.tester\",\"roleSort\":3,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:55:20\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":9,\"roleKey\":\"project.outsider\",\"roleName\":\"项目外部人员\",\"roleNameI18nKey\":\"project.outsider\",\"roleSort\":4,\"status\":\"0\"}],\"total\":4}', 0, NULL, '2023-12-06 11:40:42', 12);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1081, '缺陷', 1, 'com.cat2bug.web.controller.system.SysDefectController.add()', 'POST', 1, 'admin', NULL, '/system/defect', '127.0.0.1', '内网IP', '{\"createTime\":\"2023-12-06 19:41:03\",\"defectDescribe\":\"fds\",\"defectId\":6,\"defectLevel\":\"middle\",\"defectName\":\"21\",\"defectState\":\"PROCESSING\",\"handleBy\":[1,114],\"params\":{},\"projectId\":22,\"projectNum\":3,\"updateBy\":\"1\",\"updateTime\":\"2023-12-06 19:41:03\"}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2023-12-06 11:41:03', 53);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1082, '缺陷', 1, 'com.cat2bug.web.controller.system.SysDefectController.add()', 'POST', 1, 'admin', NULL, '/system/defect', '127.0.0.1', '内网IP', '{\"createTime\":\"2023-12-06 19:42:50\",\"defectDescribe\":\"fs\",\"defectId\":7,\"defectLevel\":\"middle\",\"defectName\":\"312\",\"defectState\":\"PROCESSING\",\"handleBy\":[114,103,1],\"params\":{},\"projectId\":22,\"projectNum\":4,\"updateBy\":\"1\",\"updateTime\":\"2023-12-06 19:42:50\"}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2023-12-06 11:42:50', 48);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1083, '缺陷', 1, 'com.cat2bug.web.controller.system.SysDefectController.add()', 'POST', 1, 'admin', NULL, '/system/defect', '127.0.0.1', '内网IP', '{\"createTime\":\"2023-12-06 19:45:00\",\"defectDescribe\":\"1111\",\"defectId\":8,\"defectLevel\":\"middle\",\"defectName\":\"111111\",\"defectState\":\"PROCESSING\",\"handleBy\":[103],\"params\":{},\"projectId\":22,\"projectNum\":5,\"updateBy\":\"1\",\"updateTime\":\"2023-12-06 19:45:00\"}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2023-12-06 11:45:00', 35);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1084, '项目', 5, 'com.cat2bug.web.controller.system.SysProjectController.getRoles()', 'GET', 1, 'admin', NULL, '/system/project/22/role', '127.0.0.1', '内网IP', '{}', '{\"code\":200,\"msg\":\"查询成功\",\"rows\":[{\"admin\":false,\"createTime\":\"2023-11-22 06:50:14\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":7,\"roleKey\":\"project.develop\",\"roleName\":\"项目开发\",\"roleNameI18nKey\":\"project.develop\",\"roleSort\":0,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:48:53\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":6,\"roleKey\":\"project.admin\",\"roleName\":\"项目管理员\",\"roleNameI18nKey\":\"project.admin\",\"roleSort\":1,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:53:11\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":8,\"roleKey\":\"project.tester\",\"roleName\":\"项目测试工程师\",\"roleNameI18nKey\":\"project.tester\",\"roleSort\":3,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:55:20\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":9,\"roleKey\":\"project.outsider\",\"roleName\":\"项目外部人员\",\"roleNameI18nKey\":\"project.outsider\",\"roleSort\":4,\"status\":\"0\"}],\"total\":4}', 0, NULL, '2023-12-06 11:51:03', 21);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1085, '修复缺陷', 1, 'com.cat2bug.web.controller.system.SysDefectController.repair()', 'POST', 1, 'admin', NULL, '/system/defect/8/repair', '127.0.0.1', '内网IP', '{\"createBy\":\"1\",\"createTime\":\"2023-12-06 19:51:08\",\"defectId\":8,\"defectLogId\":6,\"defectLogType\":\"REPAIR\",\"params\":{},\"receiveBy\":[1]}', '{\"msg\":\"操作成功\",\"code\":200,\"data\":{\"createBy\":\"1\",\"createByName\":\"黑猫警长\",\"createTime\":\"2023-12-06 19:51:09\",\"defectId\":8,\"defectLogId\":6,\"defectLogType\":\"REPAIR\",\"params\":{},\"receiveBy\":[1],\"receiveByList\":[{\"admin\":true,\"nickName\":\"黑猫警长\",\"params\":{},\"userId\":1,\"userName\":\"admin\"}]}}', 0, NULL, '2023-12-06 11:51:08', 46);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1086, '缺陷', 1, 'com.cat2bug.web.controller.system.SysDefectController.add()', 'POST', 1, 'admin', NULL, '/system/defect', '127.0.0.1', '内网IP', '{\"createTime\":\"2023-12-06 19:52:50\",\"defectDescribe\":\"323223223\",\"defectId\":9,\"defectLevel\":\"middle\",\"defectName\":\"1222222222222\",\"defectState\":\"PROCESSING\",\"handleBy\":[1,103,114],\"params\":{},\"projectId\":22,\"projectNum\":6,\"updateBy\":\"1\",\"updateTime\":\"2023-12-06 19:52:50\"}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2023-12-06 11:52:51', 120);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1087, '项目', 5, 'com.cat2bug.web.controller.system.SysProjectController.getRoles()', 'GET', 1, 'admin', NULL, '/system/project/22/role', '127.0.0.1', '内网IP', '{}', '{\"code\":200,\"msg\":\"查询成功\",\"rows\":[{\"admin\":false,\"createTime\":\"2023-11-22 06:50:14\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":7,\"roleKey\":\"project.develop\",\"roleName\":\"项目开发\",\"roleNameI18nKey\":\"project.develop\",\"roleSort\":0,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:48:53\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":6,\"roleKey\":\"project.admin\",\"roleName\":\"项目管理员\",\"roleNameI18nKey\":\"project.admin\",\"roleSort\":1,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:53:11\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":8,\"roleKey\":\"project.tester\",\"roleName\":\"项目测试工程师\",\"roleNameI18nKey\":\"project.tester\",\"roleSort\":3,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:55:20\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":9,\"roleKey\":\"project.outsider\",\"roleName\":\"项目外部人员\",\"roleNameI18nKey\":\"project.outsider\",\"roleSort\":4,\"status\":\"0\"}],\"total\":4}', 0, NULL, '2023-12-06 12:31:34', 34);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1088, '项目', 5, 'com.cat2bug.web.controller.system.SysProjectController.getRoles()', 'GET', 1, 'admin', NULL, '/system/project/22/role', '127.0.0.1', '内网IP', '{}', '{\"code\":200,\"msg\":\"查询成功\",\"rows\":[{\"admin\":false,\"createTime\":\"2023-11-22 06:50:14\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":7,\"roleKey\":\"project.develop\",\"roleName\":\"项目开发\",\"roleNameI18nKey\":\"project.develop\",\"roleSort\":0,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:48:53\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":6,\"roleKey\":\"project.admin\",\"roleName\":\"项目管理员\",\"roleNameI18nKey\":\"project.admin\",\"roleSort\":1,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:53:11\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":8,\"roleKey\":\"project.tester\",\"roleName\":\"项目测试工程师\",\"roleNameI18nKey\":\"project.tester\",\"roleSort\":3,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:55:20\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":9,\"roleKey\":\"project.outsider\",\"roleName\":\"项目外部人员\",\"roleNameI18nKey\":\"project.outsider\",\"roleSort\":4,\"status\":\"0\"}],\"total\":4}', 0, NULL, '2023-12-06 13:39:13', 45);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1089, '项目', 5, 'com.cat2bug.web.controller.system.SysProjectController.getRoles()', 'GET', 1, 'admin', NULL, '/system/project/22/role', '127.0.0.1', '内网IP', '{}', '{\"code\":200,\"msg\":\"查询成功\",\"rows\":[{\"admin\":false,\"createTime\":\"2023-11-22 06:50:14\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":7,\"roleKey\":\"project.develop\",\"roleName\":\"项目开发\",\"roleNameI18nKey\":\"project.develop\",\"roleSort\":0,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:48:53\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":6,\"roleKey\":\"project.admin\",\"roleName\":\"项目管理员\",\"roleNameI18nKey\":\"project.admin\",\"roleSort\":1,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:53:11\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":8,\"roleKey\":\"project.tester\",\"roleName\":\"项目测试工程师\",\"roleNameI18nKey\":\"project.tester\",\"roleSort\":3,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:55:20\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":9,\"roleKey\":\"project.outsider\",\"roleName\":\"项目外部人员\",\"roleNameI18nKey\":\"project.outsider\",\"roleSort\":4,\"status\":\"0\"}],\"total\":4}', 0, NULL, '2023-12-06 13:41:19', 33);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1090, '修复缺陷', 1, 'com.cat2bug.web.controller.system.SysDefectController.repair()', 'POST', 1, 'admin', NULL, '/system/defect/9/repair', '127.0.0.1', '内网IP', '{\"createBy\":\"1\",\"createTime\":\"2023-12-06 21:41:25\",\"defectId\":9,\"defectLogId\":8,\"defectLogType\":\"REPAIR\",\"params\":{},\"receiveBy\":[1]}', '{\"msg\":\"操作成功\",\"code\":200,\"data\":{\"createBy\":\"1\",\"createByName\":\"黑猫警长\",\"createTime\":\"2023-12-06 21:41:25\",\"defectId\":9,\"defectLogId\":8,\"defectLogType\":\"REPAIR\",\"params\":{},\"receiveBy\":[1],\"receiveByList\":[{\"admin\":true,\"nickName\":\"黑猫警长\",\"params\":{},\"userId\":1,\"userName\":\"admin\"}]}}', 0, NULL, '2023-12-06 13:41:25', 58);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1091, '项目', 5, 'com.cat2bug.web.controller.system.SysProjectController.getRoles()', 'GET', 1, 'admin', NULL, '/system/project/22/role', '127.0.0.1', '内网IP', '{}', '{\"code\":200,\"msg\":\"查询成功\",\"rows\":[{\"admin\":false,\"createTime\":\"2023-11-22 06:50:14\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":7,\"roleKey\":\"project.develop\",\"roleName\":\"项目开发\",\"roleNameI18nKey\":\"project.develop\",\"roleSort\":0,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:48:53\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":6,\"roleKey\":\"project.admin\",\"roleName\":\"项目管理员\",\"roleNameI18nKey\":\"project.admin\",\"roleSort\":1,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:53:11\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":8,\"roleKey\":\"project.tester\",\"roleName\":\"项目测试工程师\",\"roleNameI18nKey\":\"project.tester\",\"roleSort\":3,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:55:20\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":9,\"roleKey\":\"project.outsider\",\"roleName\":\"项目外部人员\",\"roleNameI18nKey\":\"project.outsider\",\"roleSort\":4,\"status\":\"0\"}],\"total\":4}', 0, NULL, '2023-12-06 13:45:16', 15);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1092, '项目', 5, 'com.cat2bug.web.controller.system.SysProjectController.getRoles()', 'GET', 1, 'admin', NULL, '/system/project/22/role', '127.0.0.1', '内网IP', '{}', '{\"code\":200,\"msg\":\"查询成功\",\"rows\":[{\"admin\":false,\"createTime\":\"2023-11-22 06:50:14\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":7,\"roleKey\":\"project.develop\",\"roleName\":\"项目开发\",\"roleNameI18nKey\":\"project.develop\",\"roleSort\":0,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:48:53\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":6,\"roleKey\":\"project.admin\",\"roleName\":\"项目管理员\",\"roleNameI18nKey\":\"project.admin\",\"roleSort\":1,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:53:11\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":8,\"roleKey\":\"project.tester\",\"roleName\":\"项目测试工程师\",\"roleNameI18nKey\":\"project.tester\",\"roleSort\":3,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:55:20\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":9,\"roleKey\":\"project.outsider\",\"roleName\":\"项目外部人员\",\"roleNameI18nKey\":\"project.outsider\",\"roleSort\":4,\"status\":\"0\"}],\"total\":4}', 0, NULL, '2023-12-06 13:46:50', 18);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1093, '项目', 5, 'com.cat2bug.web.controller.system.SysProjectController.getRoles()', 'GET', 1, 'admin', NULL, '/system/project/22/role', '127.0.0.1', '内网IP', '{}', '{\"code\":200,\"msg\":\"查询成功\",\"rows\":[{\"admin\":false,\"createTime\":\"2023-11-22 06:50:14\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":7,\"roleKey\":\"project.develop\",\"roleName\":\"项目开发\",\"roleNameI18nKey\":\"project.develop\",\"roleSort\":0,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:48:53\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":6,\"roleKey\":\"project.admin\",\"roleName\":\"项目管理员\",\"roleNameI18nKey\":\"project.admin\",\"roleSort\":1,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:53:11\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":8,\"roleKey\":\"project.tester\",\"roleName\":\"项目测试工程师\",\"roleNameI18nKey\":\"project.tester\",\"roleSort\":3,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:55:20\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":9,\"roleKey\":\"project.outsider\",\"roleName\":\"项目外部人员\",\"roleNameI18nKey\":\"project.outsider\",\"roleSort\":4,\"status\":\"0\"}],\"total\":4}', 0, NULL, '2023-12-06 13:46:50', 16);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1094, '项目', 5, 'com.cat2bug.web.controller.system.SysProjectController.getRoles()', 'GET', 1, 'admin', NULL, '/system/project/22/role', '127.0.0.1', '内网IP', '{}', '{\"code\":200,\"msg\":\"查询成功\",\"rows\":[{\"admin\":false,\"createTime\":\"2023-11-22 06:50:14\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":7,\"roleKey\":\"project.develop\",\"roleName\":\"项目开发\",\"roleNameI18nKey\":\"project.develop\",\"roleSort\":0,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:48:53\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":6,\"roleKey\":\"project.admin\",\"roleName\":\"项目管理员\",\"roleNameI18nKey\":\"project.admin\",\"roleSort\":1,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:53:11\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":8,\"roleKey\":\"project.tester\",\"roleName\":\"项目测试工程师\",\"roleNameI18nKey\":\"project.tester\",\"roleSort\":3,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:55:20\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":9,\"roleKey\":\"project.outsider\",\"roleName\":\"项目外部人员\",\"roleNameI18nKey\":\"project.outsider\",\"roleSort\":4,\"status\":\"0\"}],\"total\":4}', 0, NULL, '2023-12-06 13:47:46', 15);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1095, '项目', 5, 'com.cat2bug.web.controller.system.SysProjectController.getRoles()', 'GET', 1, 'admin', NULL, '/system/project/22/role', '127.0.0.1', '内网IP', '{}', '{\"code\":200,\"msg\":\"查询成功\",\"rows\":[{\"admin\":false,\"createTime\":\"2023-11-22 06:50:14\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":7,\"roleKey\":\"project.develop\",\"roleName\":\"项目开发\",\"roleNameI18nKey\":\"project.develop\",\"roleSort\":0,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:48:53\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":6,\"roleKey\":\"project.admin\",\"roleName\":\"项目管理员\",\"roleNameI18nKey\":\"project.admin\",\"roleSort\":1,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:53:11\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":8,\"roleKey\":\"project.tester\",\"roleName\":\"项目测试工程师\",\"roleNameI18nKey\":\"project.tester\",\"roleSort\":3,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:55:20\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":9,\"roleKey\":\"project.outsider\",\"roleName\":\"项目外部人员\",\"roleNameI18nKey\":\"project.outsider\",\"roleSort\":4,\"status\":\"0\"}],\"total\":4}', 0, NULL, '2023-12-06 13:47:46', 12);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1096, '项目', 5, 'com.cat2bug.web.controller.system.SysProjectController.getRoles()', 'GET', 1, 'admin', NULL, '/system/project/22/role', '127.0.0.1', '内网IP', '{}', '{\"code\":200,\"msg\":\"查询成功\",\"rows\":[{\"admin\":false,\"createTime\":\"2023-11-22 06:50:14\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":7,\"roleKey\":\"project.develop\",\"roleName\":\"项目开发\",\"roleNameI18nKey\":\"project.develop\",\"roleSort\":0,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:48:53\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":6,\"roleKey\":\"project.admin\",\"roleName\":\"项目管理员\",\"roleNameI18nKey\":\"project.admin\",\"roleSort\":1,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:53:11\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":8,\"roleKey\":\"project.tester\",\"roleName\":\"项目测试工程师\",\"roleNameI18nKey\":\"project.tester\",\"roleSort\":3,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:55:20\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":9,\"roleKey\":\"project.outsider\",\"roleName\":\"项目外部人员\",\"roleNameI18nKey\":\"project.outsider\",\"roleSort\":4,\"status\":\"0\"}],\"total\":4}', 0, NULL, '2023-12-06 13:48:12', 26);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1097, '项目', 5, 'com.cat2bug.web.controller.system.SysProjectController.getRoles()', 'GET', 1, 'admin', NULL, '/system/project/22/role', '127.0.0.1', '内网IP', '{}', '{\"code\":200,\"msg\":\"查询成功\",\"rows\":[{\"admin\":false,\"createTime\":\"2023-11-22 06:50:14\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":7,\"roleKey\":\"project.develop\",\"roleName\":\"项目开发\",\"roleNameI18nKey\":\"project.develop\",\"roleSort\":0,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:48:53\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":6,\"roleKey\":\"project.admin\",\"roleName\":\"项目管理员\",\"roleNameI18nKey\":\"project.admin\",\"roleSort\":1,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:53:11\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":8,\"roleKey\":\"project.tester\",\"roleName\":\"项目测试工程师\",\"roleNameI18nKey\":\"project.tester\",\"roleSort\":3,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:55:20\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":9,\"roleKey\":\"project.outsider\",\"roleName\":\"项目外部人员\",\"roleNameI18nKey\":\"project.outsider\",\"roleSort\":4,\"status\":\"0\"}],\"total\":4}', 0, NULL, '2023-12-06 13:48:12', 12);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1098, '菜单管理', 1, 'com.cat2bug.web.controller.system.SysMenuController.add()', 'POST', 1, 'admin', NULL, '/system/menu', '127.0.0.1', '内网IP', '{\"children\":[],\"component\":\"system/tool/project/index\",\"createBy\":\"admin\",\"icon\":\"tool\",\"isCache\":\"0\",\"isFrame\":\"1\",\"menuName\":\"工具\",\"menuNameI18nKey\":\"project.tools\",\"menuType\":\"C\",\"orderNum\":3,\"params\":{},\"parentId\":2013,\"path\":\"tools\",\"status\":\"0\",\"visible\":\"0\"}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2023-12-06 13:51:08', 24);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1099, '项目', 5, 'com.cat2bug.web.controller.system.SysProjectController.getRoles()', 'GET', 1, 'admin', NULL, '/system/project/22/role', '127.0.0.1', '内网IP', '{}', '{\"code\":200,\"msg\":\"查询成功\",\"rows\":[{\"admin\":false,\"createTime\":\"2023-11-22 06:50:14\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":7,\"roleKey\":\"project.develop\",\"roleName\":\"项目开发\",\"roleNameI18nKey\":\"project.develop\",\"roleSort\":0,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:48:53\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":6,\"roleKey\":\"project.admin\",\"roleName\":\"项目管理员\",\"roleNameI18nKey\":\"project.admin\",\"roleSort\":1,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:53:11\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":8,\"roleKey\":\"project.tester\",\"roleName\":\"项目测试工程师\",\"roleNameI18nKey\":\"project.tester\",\"roleSort\":3,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:55:20\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":9,\"roleKey\":\"project.outsider\",\"roleName\":\"项目外部人员\",\"roleNameI18nKey\":\"project.outsider\",\"roleSort\":4,\"status\":\"0\"}],\"total\":4}', 0, NULL, '2023-12-06 13:54:02', 18);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1100, '项目', 5, 'com.cat2bug.web.controller.system.SysProjectController.getRoles()', 'GET', 1, 'admin', NULL, '/system/project/22/role', '127.0.0.1', '内网IP', '{}', '{\"code\":200,\"msg\":\"查询成功\",\"rows\":[{\"admin\":false,\"createTime\":\"2023-11-22 06:50:14\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":7,\"roleKey\":\"project.develop\",\"roleName\":\"项目开发\",\"roleNameI18nKey\":\"project.develop\",\"roleSort\":0,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:48:53\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":6,\"roleKey\":\"project.admin\",\"roleName\":\"项目管理员\",\"roleNameI18nKey\":\"project.admin\",\"roleSort\":1,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:53:11\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":8,\"roleKey\":\"project.tester\",\"roleName\":\"项目测试工程师\",\"roleNameI18nKey\":\"project.tester\",\"roleSort\":3,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:55:20\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":9,\"roleKey\":\"project.outsider\",\"roleName\":\"项目外部人员\",\"roleNameI18nKey\":\"project.outsider\",\"roleSort\":4,\"status\":\"0\"}],\"total\":4}', 0, NULL, '2023-12-06 13:54:14', 15);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1101, '项目', 5, 'com.cat2bug.web.controller.system.SysProjectController.getRoles()', 'GET', 1, 'admin', NULL, '/system/project/22/role', '127.0.0.1', '内网IP', '{}', '{\"code\":200,\"msg\":\"查询成功\",\"rows\":[{\"admin\":false,\"createTime\":\"2023-11-22 06:50:14\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":7,\"roleKey\":\"project.develop\",\"roleName\":\"项目开发\",\"roleNameI18nKey\":\"project.develop\",\"roleSort\":0,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:48:53\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":6,\"roleKey\":\"project.admin\",\"roleName\":\"项目管理员\",\"roleNameI18nKey\":\"project.admin\",\"roleSort\":1,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:53:11\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":8,\"roleKey\":\"project.tester\",\"roleName\":\"项目测试工程师\",\"roleNameI18nKey\":\"project.tester\",\"roleSort\":3,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:55:20\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":9,\"roleKey\":\"project.outsider\",\"roleName\":\"项目外部人员\",\"roleNameI18nKey\":\"project.outsider\",\"roleSort\":4,\"status\":\"0\"}],\"total\":4}', 0, NULL, '2023-12-06 14:00:39', 20);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1102, '菜单管理', 2, 'com.cat2bug.web.controller.system.SysMenuController.edit()', 'PUT', 1, 'admin', NULL, '/system/menu', '127.0.0.1', '内网IP', '{\"children\":[],\"component\":\"tool/project/index\",\"createTime\":\"2023-12-06 13:51:08\",\"icon\":\"tool\",\"isCache\":\"0\",\"isFrame\":\"1\",\"menuId\":2044,\"menuName\":\"工具\",\"menuNameI18nKey\":\"project.tools\",\"menuType\":\"C\",\"orderNum\":3,\"params\":{},\"parentId\":2013,\"path\":\"tools\",\"perms\":\"\",\"status\":\"0\",\"updateBy\":\"admin\",\"visible\":\"0\"}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2023-12-06 14:02:26', 21);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1103, '菜单管理', 2, 'com.cat2bug.web.controller.system.SysMenuController.edit()', 'PUT', 1, 'admin', NULL, '/system/menu', '127.0.0.1', '内网IP', '{\"children\":[],\"component\":\"tool/project/index\",\"createTime\":\"2023-12-06 13:51:08\",\"icon\":\"tool\",\"isCache\":\"0\",\"isFrame\":\"1\",\"menuId\":2044,\"menuName\":\"工具\",\"menuNameI18nKey\":\"tools\",\"menuType\":\"C\",\"orderNum\":3,\"params\":{},\"parentId\":2013,\"path\":\"tools\",\"perms\":\"\",\"status\":\"0\",\"updateBy\":\"admin\",\"visible\":\"0\"}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2023-12-06 14:04:46', 23);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1104, '项目', 5, 'com.cat2bug.web.controller.system.SysProjectController.getRoles()', 'GET', 1, 'admin', NULL, '/system/project/22/role', '127.0.0.1', '内网IP', '{}', '{\"code\":200,\"msg\":\"查询成功\",\"rows\":[{\"admin\":false,\"createTime\":\"2023-11-22 06:50:14\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":7,\"roleKey\":\"project.develop\",\"roleName\":\"项目开发\",\"roleNameI18nKey\":\"project.develop\",\"roleSort\":0,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:48:53\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":6,\"roleKey\":\"project.admin\",\"roleName\":\"项目管理员\",\"roleNameI18nKey\":\"project.admin\",\"roleSort\":1,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:53:11\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":8,\"roleKey\":\"project.tester\",\"roleName\":\"项目测试工程师\",\"roleNameI18nKey\":\"project.tester\",\"roleSort\":3,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:55:20\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":9,\"roleKey\":\"project.outsider\",\"roleName\":\"项目外部人员\",\"roleNameI18nKey\":\"project.outsider\",\"roleSort\":4,\"status\":\"0\"}],\"total\":4}', 0, NULL, '2023-12-06 14:05:15', 21);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1105, '项目', 5, 'com.cat2bug.web.controller.system.SysProjectController.getRoles()', 'GET', 1, 'admin', NULL, '/system/project/22/role', '127.0.0.1', '内网IP', '{}', '{\"code\":200,\"msg\":\"查询成功\",\"rows\":[{\"admin\":false,\"createTime\":\"2023-11-22 06:50:14\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":7,\"roleKey\":\"project.develop\",\"roleName\":\"项目开发\",\"roleNameI18nKey\":\"project.develop\",\"roleSort\":0,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:48:53\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":6,\"roleKey\":\"project.admin\",\"roleName\":\"项目管理员\",\"roleNameI18nKey\":\"project.admin\",\"roleSort\":1,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:53:11\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":8,\"roleKey\":\"project.tester\",\"roleName\":\"项目测试工程师\",\"roleNameI18nKey\":\"project.tester\",\"roleSort\":3,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:55:20\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":9,\"roleKey\":\"project.outsider\",\"roleName\":\"项目外部人员\",\"roleNameI18nKey\":\"project.outsider\",\"roleSort\":4,\"status\":\"0\"}],\"total\":4}', 0, NULL, '2023-12-06 14:05:26', 21);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1106, '菜单管理', 2, 'com.cat2bug.web.controller.system.SysMenuController.edit()', 'PUT', 1, 'admin', NULL, '/system/menu', '127.0.0.1', '内网IP', '{\"children\":[],\"component\":\"tool/project/index\",\"createTime\":\"2023-12-06 13:51:08\",\"icon\":\"tool\",\"isCache\":\"0\",\"isFrame\":\"1\",\"menuId\":2044,\"menuName\":\"工具\",\"menuNameI18nKey\":\"tools\",\"menuType\":\"C\",\"orderNum\":3,\"params\":{},\"parentId\":2013,\"path\":\"tools\",\"perms\":\"\",\"status\":\"0\",\"updateBy\":\"admin\",\"visible\":\"0\"}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2023-12-06 14:07:44', 29);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1107, '项目', 5, 'com.cat2bug.web.controller.system.SysProjectController.getRoles()', 'GET', 1, 'admin', NULL, '/system/project/22/role', '127.0.0.1', '内网IP', '{}', '{\"code\":200,\"msg\":\"查询成功\",\"rows\":[{\"admin\":false,\"createTime\":\"2023-11-22 06:50:14\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":7,\"roleKey\":\"project.develop\",\"roleName\":\"项目开发\",\"roleNameI18nKey\":\"project.develop\",\"roleSort\":0,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:48:53\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":6,\"roleKey\":\"project.admin\",\"roleName\":\"项目管理员\",\"roleNameI18nKey\":\"project.admin\",\"roleSort\":1,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:53:11\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":8,\"roleKey\":\"project.tester\",\"roleName\":\"项目测试工程师\",\"roleNameI18nKey\":\"project.tester\",\"roleSort\":3,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:55:20\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":9,\"roleKey\":\"project.outsider\",\"roleName\":\"项目外部人员\",\"roleNameI18nKey\":\"project.outsider\",\"roleSort\":4,\"status\":\"0\"}],\"total\":4}', 0, NULL, '2023-12-06 14:08:31', 15);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1108, '菜单管理', 1, 'com.cat2bug.web.controller.system.SysMenuController.add()', 'POST', 1, 'admin', NULL, '/system/menu', '127.0.0.1', '内网IP', '{\"children\":[],\"component\":\"tool/project/browser/index\",\"createBy\":\"admin\",\"isCache\":\"0\",\"isFrame\":\"1\",\"menuName\":\"浏览器工具\",\"menuNameI18nKey\":\"browser.tool\",\"menuType\":\"C\",\"orderNum\":1,\"params\":{},\"parentId\":2044,\"path\":\"browser\",\"status\":\"0\",\"visible\":\"0\"}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2023-12-06 14:48:17', 11);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1109, '菜单管理', 2, 'com.cat2bug.web.controller.system.SysMenuController.edit()', 'PUT', 1, 'admin', NULL, '/system/menu', '127.0.0.1', '内网IP', '{\"children\":[],\"component\":\"tool/project/browser/index\",\"createTime\":\"2023-12-06 14:48:16\",\"icon\":\"#\",\"isCache\":\"0\",\"isFrame\":\"1\",\"menuId\":2045,\"menuName\":\"浏览器工具\",\"menuNameI18nKey\":\"browser.tool\",\"menuType\":\"C\",\"orderNum\":4,\"params\":{},\"parentId\":2013,\"path\":\"browser\",\"perms\":\"\",\"status\":\"0\",\"updateBy\":\"admin\",\"visible\":\"0\"}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2023-12-06 14:59:21', 21);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1110, '菜单管理', 2, 'com.cat2bug.web.controller.system.SysMenuController.edit()', 'PUT', 1, 'admin', NULL, '/system/menu', '127.0.0.1', '内网IP', '{\"children\":[],\"component\":\"tool/project/browser/index\",\"createTime\":\"2023-12-06 14:48:16\",\"icon\":\"#\",\"isCache\":\"0\",\"isFrame\":\"1\",\"menuId\":2045,\"menuName\":\"浏览器工具\",\"menuNameI18nKey\":\"browser.tool\",\"menuType\":\"C\",\"orderNum\":4,\"params\":{},\"parentId\":2013,\"path\":\"browser\",\"perms\":\"\",\"status\":\"0\",\"updateBy\":\"admin\",\"visible\":\"1\"}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2023-12-06 15:00:15', 24);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1111, '项目', 5, 'com.cat2bug.web.controller.system.SysProjectController.getRoles()', 'GET', 1, 'admin', NULL, '/system/project/22/role', '127.0.0.1', '内网IP', '{}', '{\"code\":200,\"msg\":\"查询成功\",\"rows\":[{\"admin\":false,\"createTime\":\"2023-11-22 06:50:14\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":7,\"roleKey\":\"project.develop\",\"roleName\":\"项目开发\",\"roleNameI18nKey\":\"project.develop\",\"roleSort\":0,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:48:53\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":6,\"roleKey\":\"project.admin\",\"roleName\":\"项目管理员\",\"roleNameI18nKey\":\"project.admin\",\"roleSort\":1,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:53:11\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":8,\"roleKey\":\"project.tester\",\"roleName\":\"项目测试工程师\",\"roleNameI18nKey\":\"project.tester\",\"roleSort\":3,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:55:20\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":9,\"roleKey\":\"project.outsider\",\"roleName\":\"项目外部人员\",\"roleNameI18nKey\":\"project.outsider\",\"roleSort\":4,\"status\":\"0\"}],\"total\":4}', 0, NULL, '2023-12-07 02:05:13', 10);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1112, '代码生成', 6, 'com.cat2bug.generator.controller.GenController.importTableSave()', 'POST', 1, 'admin', NULL, '/tool/gen/importTable', '127.0.0.1', '内网IP', '{\"tables\":\"sys_temp_file\"}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2023-12-07 04:17:31', 117);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1113, '代码生成', 2, 'com.cat2bug.generator.controller.GenController.editSave()', 'PUT', 1, 'admin', NULL, '/tool/gen', '127.0.0.1', '内网IP', '{\"businessName\":\"temp\",\"className\":\"SysTempFile\",\"columns\":[{\"capJavaField\":\"FileId\",\"columnComment\":\"文件id\",\"columnId\":78,\"columnName\":\"file_id\",\"columnType\":\"bigint\",\"createBy\":\"admin\",\"createTime\":\"2023-12-07 04:17:31\",\"dictType\":\"\",\"edit\":false,\"htmlType\":\"input\",\"increment\":true,\"insert\":false,\"isIncrement\":\"1\",\"isInsert\":\"0\",\"isPk\":\"1\",\"javaField\":\"fileId\",\"javaType\":\"Long\",\"list\":false,\"params\":{},\"pk\":true,\"query\":false,\"queryType\":\"EQ\",\"required\":false,\"sort\":1,\"superColumn\":false,\"tableId\":11,\"updateBy\":\"\",\"usableColumn\":false},{\"capJavaField\":\"FileName\",\"columnComment\":\"文件名\",\"columnId\":79,\"columnName\":\"file_name\",\"columnType\":\"varchar(64)\",\"createBy\":\"admin\",\"createTime\":\"2023-12-07 04:17:31\",\"dictType\":\"\",\"edit\":true,\"htmlType\":\"input\",\"increment\":false,\"insert\":true,\"isEdit\":\"1\",\"isIncrement\":\"0\",\"isInsert\":\"1\",\"isList\":\"1\",\"isPk\":\"0\",\"isQuery\":\"1\",\"javaField\":\"fileName\",\"javaType\":\"String\",\"list\":true,\"params\":{},\"pk\":false,\"query\":true,\"queryType\":\"LIKE\",\"required\":false,\"sort\":2,\"superColumn\":false,\"tableId\":11,\"updateBy\":\"\",\"usableColumn\":false},{\"capJavaField\":\"SrcUrl\",\"columnComment\":\"来源地址\",\"columnId\":80,\"columnName\":\"src_url\",\"columnType\":\"varchar(255)\",\"createBy\":\"admin\",\"createTime\":\"2023-12-07 04:17:31\",\"dictType\":\"\",\"edit\":true,\"htmlType\":\"input\",\"increment\":false,\"insert\":true,\"isEdit\":\"1\",\"isIncrement\":\"0\",\"isInsert\":\"1\",\"isList\":\"1\",\"isPk\":\"0\",\"isQuery\":\"0\",\"javaField\":\"srcUrl\",\"javaType\":\"String\",\"list\":true,\"params\":{},\"pk\":false,\"query\":false,\"queryType\":\"EQ\",\"required\":false,\"sort\":3,\"superColumn\":false,\"tableId\":11,\"updateBy\":\"\",\"usableColumn\":false},{\"capJavaField\":\"CreateBy\",\"columnComment\":\"创建人\",\"columnId\":81,\"columnName\":\"create_by\",\"columnType\":\"varchar(64)\",\"createBy\":\"admin\",\"createTime\":\"2023-12-07 04:17:31\",\"dictType\":\"\",\"edit\":false,\"htmlType\":\"input\",\"increment\":false,\"insert\":true,\"isIncrement\":\"0\",\"isInsert\":\"1\",\"isPk\":\"0\",\"javaField\":\"createBy\",\"javaType\":\"String\",\"list\":false,\"params\":{},\"pk\":false,\"query\":false,\"queryTy', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2023-12-07 04:19:23', 56);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1114, '代码生成', 8, 'com.cat2bug.generator.controller.GenController.batchGenCode()', 'GET', 1, 'admin', NULL, '/tool/gen/batchGenCode', '127.0.0.1', '内网IP', '{\"tables\":\"sys_temp_file\"}', NULL, 0, NULL, '2023-12-07 04:54:52', 155);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1115, '项目', 5, 'com.cat2bug.web.controller.system.SysProjectController.getRoles()', 'GET', 1, 'admin', NULL, '/system/project/22/role', '127.0.0.1', '内网IP', '{}', '{\"code\":200,\"msg\":\"查询成功\",\"rows\":[{\"admin\":false,\"createTime\":\"2023-11-22 06:50:14\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":7,\"roleKey\":\"project.develop\",\"roleName\":\"项目开发\",\"roleNameI18nKey\":\"project.develop\",\"roleSort\":0,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:48:53\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":6,\"roleKey\":\"project.admin\",\"roleName\":\"项目管理员\",\"roleNameI18nKey\":\"project.admin\",\"roleSort\":1,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:53:11\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":8,\"roleKey\":\"project.tester\",\"roleName\":\"项目测试工程师\",\"roleNameI18nKey\":\"project.tester\",\"roleSort\":3,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:55:20\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":9,\"roleKey\":\"project.outsider\",\"roleName\":\"项目外部人员\",\"roleNameI18nKey\":\"project.outsider\",\"roleSort\":4,\"status\":\"0\"}],\"total\":4}', 0, NULL, '2023-12-07 07:21:29', 34);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1116, '项目', 5, 'com.cat2bug.web.controller.system.SysProjectController.getRoles()', 'GET', 1, 'admin', NULL, '/system/project/22/role', '127.0.0.1', '内网IP', '{}', '{\"code\":200,\"msg\":\"查询成功\",\"rows\":[{\"admin\":false,\"createTime\":\"2023-11-22 06:50:14\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":7,\"roleKey\":\"project.develop\",\"roleName\":\"项目开发\",\"roleNameI18nKey\":\"project.develop\",\"roleSort\":0,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:48:53\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":6,\"roleKey\":\"project.admin\",\"roleName\":\"项目管理员\",\"roleNameI18nKey\":\"project.admin\",\"roleSort\":1,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:53:11\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":8,\"roleKey\":\"project.tester\",\"roleName\":\"项目测试工程师\",\"roleNameI18nKey\":\"project.tester\",\"roleSort\":3,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:55:20\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":9,\"roleKey\":\"project.outsider\",\"roleName\":\"项目外部人员\",\"roleNameI18nKey\":\"project.outsider\",\"roleSort\":4,\"status\":\"0\"}],\"total\":4}', 0, NULL, '2023-12-08 08:37:54', 41);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1117, '项目', 5, 'com.cat2bug.web.controller.system.SysProjectController.getRoles()', 'GET', 1, 'admin', NULL, '/system/project/22/role', '127.0.0.1', '内网IP', '{}', '{\"code\":200,\"msg\":\"查询成功\",\"rows\":[{\"admin\":false,\"createTime\":\"2023-11-22 06:50:14\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":7,\"roleKey\":\"project.develop\",\"roleName\":\"项目开发\",\"roleNameI18nKey\":\"project.develop\",\"roleSort\":0,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:48:53\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":6,\"roleKey\":\"project.admin\",\"roleName\":\"项目管理员\",\"roleNameI18nKey\":\"project.admin\",\"roleSort\":1,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:53:11\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":8,\"roleKey\":\"project.tester\",\"roleName\":\"项目测试工程师\",\"roleNameI18nKey\":\"project.tester\",\"roleSort\":3,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:55:20\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":9,\"roleKey\":\"project.outsider\",\"roleName\":\"项目外部人员\",\"roleNameI18nKey\":\"project.outsider\",\"roleSort\":4,\"status\":\"0\"}],\"total\":4}', 0, NULL, '2023-12-08 08:48:23', 16);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1118, '项目', 5, 'com.cat2bug.web.controller.system.SysProjectController.getRoles()', 'GET', 1, 'admin', NULL, '/system/project/22/role', '127.0.0.1', '内网IP', '{}', '{\"code\":200,\"msg\":\"查询成功\",\"rows\":[{\"admin\":false,\"createTime\":\"2023-11-22 06:50:14\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":7,\"roleKey\":\"project.develop\",\"roleName\":\"项目开发\",\"roleNameI18nKey\":\"project.develop\",\"roleSort\":0,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:48:53\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":6,\"roleKey\":\"project.admin\",\"roleName\":\"项目管理员\",\"roleNameI18nKey\":\"project.admin\",\"roleSort\":1,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:53:11\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":8,\"roleKey\":\"project.tester\",\"roleName\":\"项目测试工程师\",\"roleNameI18nKey\":\"project.tester\",\"roleSort\":3,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:55:20\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":9,\"roleKey\":\"project.outsider\",\"roleName\":\"项目外部人员\",\"roleNameI18nKey\":\"project.outsider\",\"roleSort\":4,\"status\":\"0\"}],\"total\":4}', 0, NULL, '2023-12-08 18:02:24', 13);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1119, '项目', 5, 'com.cat2bug.web.controller.system.SysProjectController.getRoles()', 'GET', 1, 'admin', NULL, '/system/project/22/role', '127.0.0.1', '内网IP', '{}', '{\"code\":200,\"msg\":\"查询成功\",\"rows\":[{\"admin\":false,\"createTime\":\"2023-11-22 06:50:14\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":7,\"roleKey\":\"project.develop\",\"roleName\":\"项目开发\",\"roleNameI18nKey\":\"project.develop\",\"roleSort\":0,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:48:53\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":6,\"roleKey\":\"project.admin\",\"roleName\":\"项目管理员\",\"roleNameI18nKey\":\"project.admin\",\"roleSort\":1,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:53:11\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":8,\"roleKey\":\"project.tester\",\"roleName\":\"项目测试工程师\",\"roleNameI18nKey\":\"project.tester\",\"roleSort\":3,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:55:20\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":9,\"roleKey\":\"project.outsider\",\"roleName\":\"项目外部人员\",\"roleNameI18nKey\":\"project.outsider\",\"roleSort\":4,\"status\":\"0\"}],\"total\":4}', 0, NULL, '2023-12-08 18:09:57', 17);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1120, '项目', 5, 'com.cat2bug.web.controller.system.SysProjectController.getRoles()', 'GET', 1, 'admin', NULL, '/system/project/22/role', '127.0.0.1', '内网IP', '{}', '{\"code\":200,\"msg\":\"查询成功\",\"rows\":[{\"admin\":false,\"createTime\":\"2023-11-22 06:50:14\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":7,\"roleKey\":\"project.develop\",\"roleName\":\"项目开发\",\"roleNameI18nKey\":\"project.develop\",\"roleSort\":0,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:48:53\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":6,\"roleKey\":\"project.admin\",\"roleName\":\"项目管理员\",\"roleNameI18nKey\":\"project.admin\",\"roleSort\":1,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:53:11\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":8,\"roleKey\":\"project.tester\",\"roleName\":\"项目测试工程师\",\"roleNameI18nKey\":\"project.tester\",\"roleSort\":3,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:55:20\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":9,\"roleKey\":\"project.outsider\",\"roleName\":\"项目外部人员\",\"roleNameI18nKey\":\"project.outsider\",\"roleSort\":4,\"status\":\"0\"}],\"total\":4}', 0, NULL, '2023-12-08 18:14:21', 19);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1121, '项目', 5, 'com.cat2bug.web.controller.system.SysProjectController.getRoles()', 'GET', 1, 'admin', NULL, '/system/project/22/role', '127.0.0.1', '内网IP', '{}', '{\"code\":200,\"msg\":\"查询成功\",\"rows\":[{\"admin\":false,\"createTime\":\"2023-11-22 06:50:14\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":7,\"roleKey\":\"project.develop\",\"roleName\":\"项目开发\",\"roleNameI18nKey\":\"project.develop\",\"roleSort\":0,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:48:53\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":6,\"roleKey\":\"project.admin\",\"roleName\":\"项目管理员\",\"roleNameI18nKey\":\"project.admin\",\"roleSort\":1,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:53:11\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":8,\"roleKey\":\"project.tester\",\"roleName\":\"项目测试工程师\",\"roleNameI18nKey\":\"project.tester\",\"roleSort\":3,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:55:20\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":9,\"roleKey\":\"project.outsider\",\"roleName\":\"项目外部人员\",\"roleNameI18nKey\":\"project.outsider\",\"roleSort\":4,\"status\":\"0\"}],\"total\":4}', 0, NULL, '2023-12-08 19:34:27', 12);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1122, '缺陷', 1, 'com.cat2bug.web.controller.system.SysDefectController.add()', 'POST', 1, 'admin', NULL, '/system/defect', '127.0.0.1', '内网IP', '{\"createTime\":\"2023-12-09 03:34:51\",\"defectDescribe\":\"123123\",\"defectId\":10,\"defectLevel\":\"middle\",\"defectName\":\"1123123321\",\"defectState\":\"PROCESSING\",\"handleBy\":[1],\"imgUrls\":\"/profile/upload/2023/12/09/screen_82a79e53_20231209033427A013.png\",\"moduleId\":1,\"params\":{},\"projectId\":22,\"projectNum\":7,\"updateBy\":\"1\",\"updateTime\":\"2023-12-09 03:34:51\"}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2023-12-08 19:34:51', 70);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1123, '项目', 5, 'com.cat2bug.web.controller.system.SysProjectController.getRoles()', 'GET', 1, 'admin', NULL, '/system/project/22/role', '127.0.0.1', '内网IP', '{}', '{\"code\":200,\"msg\":\"查询成功\",\"rows\":[{\"admin\":false,\"createTime\":\"2023-11-22 06:50:14\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":7,\"roleKey\":\"project.develop\",\"roleName\":\"项目开发\",\"roleNameI18nKey\":\"project.develop\",\"roleSort\":0,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:48:53\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":6,\"roleKey\":\"project.admin\",\"roleName\":\"项目管理员\",\"roleNameI18nKey\":\"project.admin\",\"roleSort\":1,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:53:11\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":8,\"roleKey\":\"project.tester\",\"roleName\":\"项目测试工程师\",\"roleNameI18nKey\":\"project.tester\",\"roleSort\":3,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:55:20\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":9,\"roleKey\":\"project.outsider\",\"roleName\":\"项目外部人员\",\"roleNameI18nKey\":\"project.outsider\",\"roleSort\":4,\"status\":\"0\"}],\"total\":4}', 0, NULL, '2023-12-09 03:23:11', 14);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1124, '项目', 5, 'com.cat2bug.web.controller.system.SysProjectController.getRoles()', 'GET', 1, 'admin', NULL, '/system/project/22/role', '127.0.0.1', '内网IP', '{}', '{\"code\":200,\"msg\":\"查询成功\",\"rows\":[{\"admin\":false,\"createTime\":\"2023-11-22 06:50:14\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":7,\"roleKey\":\"project.develop\",\"roleName\":\"项目开发\",\"roleNameI18nKey\":\"project.develop\",\"roleSort\":0,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:48:53\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":6,\"roleKey\":\"project.admin\",\"roleName\":\"项目管理员\",\"roleNameI18nKey\":\"project.admin\",\"roleSort\":1,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:53:11\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":8,\"roleKey\":\"project.tester\",\"roleName\":\"项目测试工程师\",\"roleNameI18nKey\":\"project.tester\",\"roleSort\":3,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:55:20\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":9,\"roleKey\":\"project.outsider\",\"roleName\":\"项目外部人员\",\"roleNameI18nKey\":\"project.outsider\",\"roleSort\":4,\"status\":\"0\"}],\"total\":4}', 0, NULL, '2023-12-09 12:48:50', 12);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1125, '项目', 5, 'com.cat2bug.web.controller.system.SysProjectController.getRoles()', 'GET', 1, 'admin', NULL, '/system/project/22/role', '127.0.0.1', '内网IP', '{}', '{\"code\":200,\"msg\":\"查询成功\",\"rows\":[{\"admin\":false,\"createTime\":\"2023-11-22 06:50:14\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":7,\"roleKey\":\"project.develop\",\"roleName\":\"项目开发\",\"roleNameI18nKey\":\"project.develop\",\"roleSort\":0,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:48:53\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":6,\"roleKey\":\"project.admin\",\"roleName\":\"项目管理员\",\"roleNameI18nKey\":\"project.admin\",\"roleSort\":1,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:53:11\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":8,\"roleKey\":\"project.tester\",\"roleName\":\"项目测试工程师\",\"roleNameI18nKey\":\"project.tester\",\"roleSort\":3,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:55:20\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":9,\"roleKey\":\"project.outsider\",\"roleName\":\"项目外部人员\",\"roleNameI18nKey\":\"project.outsider\",\"roleSort\":4,\"status\":\"0\"}],\"total\":4}', 0, NULL, '2023-12-09 18:40:56', 29);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1126, '项目', 5, 'com.cat2bug.web.controller.system.SysProjectController.getRoles()', 'GET', 1, 'admin', NULL, '/system/project/22/role', '127.0.0.1', '内网IP', '{}', '{\"code\":200,\"msg\":\"查询成功\",\"rows\":[{\"admin\":false,\"createTime\":\"2023-11-22 06:50:14\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":7,\"roleKey\":\"project.develop\",\"roleName\":\"项目开发\",\"roleNameI18nKey\":\"project.develop\",\"roleSort\":0,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:48:53\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":6,\"roleKey\":\"project.admin\",\"roleName\":\"项目管理员\",\"roleNameI18nKey\":\"project.admin\",\"roleSort\":1,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:53:11\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":8,\"roleKey\":\"project.tester\",\"roleName\":\"项目测试工程师\",\"roleNameI18nKey\":\"project.tester\",\"roleSort\":3,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:55:20\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":9,\"roleKey\":\"project.outsider\",\"roleName\":\"项目外部人员\",\"roleNameI18nKey\":\"project.outsider\",\"roleSort\":4,\"status\":\"0\"}],\"total\":4}', 0, NULL, '2023-12-09 18:40:59', 26);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1127, '代码生成', 6, 'com.cat2bug.generator.controller.GenController.importTableSave()', 'POST', 1, 'admin', NULL, '/tool/gen/importTable', '127.0.0.1', '内网IP', '{\"tables\":\"sys_screen_size\"}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2023-12-09 19:15:04', 78);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1128, '代码生成', 2, 'com.cat2bug.generator.controller.GenController.editSave()', 'PUT', 1, 'admin', NULL, '/tool/gen', '127.0.0.1', '内网IP', '{\"businessName\":\"ScreenSize\",\"className\":\"SysScreenSize\",\"columns\":[{\"capJavaField\":\"ScreenSizeId\",\"columnComment\":\"屏幕尺寸id\",\"columnId\":85,\"columnName\":\"screen_size_id\",\"columnType\":\"bigint\",\"createBy\":\"admin\",\"createTime\":\"2023-12-09 19:15:04\",\"dictType\":\"\",\"edit\":false,\"htmlType\":\"input\",\"increment\":false,\"insert\":false,\"isIncrement\":\"0\",\"isInsert\":\"0\",\"isPk\":\"1\",\"javaField\":\"screenSizeId\",\"javaType\":\"Long\",\"list\":false,\"params\":{},\"pk\":true,\"query\":false,\"queryType\":\"EQ\",\"required\":false,\"sort\":1,\"superColumn\":false,\"tableId\":12,\"updateBy\":\"\",\"usableColumn\":false},{\"capJavaField\":\"Name\",\"columnComment\":\"名称\",\"columnId\":86,\"columnName\":\"name\",\"columnType\":\"varchar(32)\",\"createBy\":\"admin\",\"createTime\":\"2023-12-09 19:15:04\",\"dictType\":\"\",\"edit\":true,\"htmlType\":\"input\",\"increment\":false,\"insert\":true,\"isEdit\":\"1\",\"isIncrement\":\"0\",\"isInsert\":\"1\",\"isList\":\"1\",\"isPk\":\"0\",\"isQuery\":\"1\",\"isRequired\":\"1\",\"javaField\":\"name\",\"javaType\":\"String\",\"list\":true,\"params\":{},\"pk\":false,\"query\":true,\"queryType\":\"LIKE\",\"required\":true,\"sort\":2,\"superColumn\":false,\"tableId\":12,\"updateBy\":\"\",\"usableColumn\":false},{\"capJavaField\":\"Width\",\"columnComment\":\"宽\",\"columnId\":87,\"columnName\":\"width\",\"columnType\":\"int\",\"createBy\":\"admin\",\"createTime\":\"2023-12-09 19:15:04\",\"dictType\":\"\",\"edit\":true,\"htmlType\":\"input\",\"increment\":false,\"insert\":true,\"isEdit\":\"1\",\"isIncrement\":\"0\",\"isInsert\":\"1\",\"isList\":\"1\",\"isPk\":\"0\",\"isQuery\":\"0\",\"javaField\":\"width\",\"javaType\":\"Long\",\"list\":true,\"params\":{},\"pk\":false,\"query\":false,\"queryType\":\"EQ\",\"required\":false,\"sort\":3,\"superColumn\":false,\"tableId\":12,\"updateBy\":\"\",\"usableColumn\":false},{\"capJavaField\":\"Height\",\"columnComment\":\"高\",\"columnId\":88,\"columnName\":\"height\",\"columnType\":\"int\",\"createBy\":\"admin\",\"createTime\":\"2023-12-09 19:15:04\",\"dictType\":\"\",\"edit\":true,\"htmlType\":\"input\",\"increment\":false,\"insert\":true,\"isEdit\":\"1\",\"isIncrement\":\"0\",\"isInsert\":\"1\",\"isList\":\"1\",\"isPk\":\"0\",\"isQuery\":\"0\",\"javaField\":\"height\",\"javaType\":\"Long\",\"list\":true,\"params\":{},', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2023-12-09 19:15:49', 41);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1129, '代码生成', 8, 'com.cat2bug.generator.controller.GenController.batchGenCode()', 'GET', 1, 'admin', NULL, '/tool/gen/batchGenCode', '127.0.0.1', '内网IP', '{\"tables\":\"sys_screen_size\"}', NULL, 0, NULL, '2023-12-09 19:16:12', 133);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1130, '项目', 5, 'com.cat2bug.web.controller.system.SysProjectController.getRoles()', 'GET', 1, 'admin', NULL, '/system/project/22/role', '127.0.0.1', '内网IP', '{}', '{\"code\":200,\"msg\":\"查询成功\",\"rows\":[{\"admin\":false,\"createTime\":\"2023-11-22 06:50:14\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":7,\"roleKey\":\"project.develop\",\"roleName\":\"项目开发\",\"roleNameI18nKey\":\"project.develop\",\"roleSort\":0,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:48:53\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":6,\"roleKey\":\"project.admin\",\"roleName\":\"项目管理员\",\"roleNameI18nKey\":\"project.admin\",\"roleSort\":1,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:53:11\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":8,\"roleKey\":\"project.tester\",\"roleName\":\"项目测试工程师\",\"roleNameI18nKey\":\"project.tester\",\"roleSort\":3,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:55:20\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":9,\"roleKey\":\"project.outsider\",\"roleName\":\"项目外部人员\",\"roleNameI18nKey\":\"project.outsider\",\"roleSort\":4,\"status\":\"0\"}],\"total\":4}', 0, NULL, '2023-12-10 18:29:57', 28);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1131, '项目', 5, 'com.cat2bug.web.controller.system.SysProjectController.getRoles()', 'GET', 1, 'admin', NULL, '/system/project/22/role', '127.0.0.1', '内网IP', '{}', '{\"code\":200,\"msg\":\"查询成功\",\"rows\":[{\"admin\":false,\"createTime\":\"2023-11-22 06:50:14\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":7,\"roleKey\":\"project.develop\",\"roleName\":\"项目开发\",\"roleNameI18nKey\":\"project.develop\",\"roleSort\":0,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:48:53\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":6,\"roleKey\":\"project.admin\",\"roleName\":\"项目管理员\",\"roleNameI18nKey\":\"project.admin\",\"roleSort\":1,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:53:11\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":8,\"roleKey\":\"project.tester\",\"roleName\":\"项目测试工程师\",\"roleNameI18nKey\":\"project.tester\",\"roleSort\":3,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:55:20\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":9,\"roleKey\":\"project.outsider\",\"roleName\":\"项目外部人员\",\"roleNameI18nKey\":\"project.outsider\",\"roleSort\":4,\"status\":\"0\"}],\"total\":4}', 0, NULL, '2023-12-10 18:31:03', 13);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1132, '缺陷', 1, 'com.cat2bug.web.controller.system.SysDefectController.add()', 'POST', 1, 'admin', NULL, '/system/defect', '127.0.0.1', '内网IP', '{\"createTime\":\"2023-12-11 02:31:17\",\"defectDescribe\":\"fdsf\",\"defectId\":11,\"defectLevel\":\"middle\",\"defectName\":\"21321\",\"defectState\":\"PROCESSING\",\"handleBy\":[1,114,103],\"imgUrls\":\"/profile/upload/2023/12/11/screen_f46c1a14_20231211023102A002.png\",\"moduleId\":1,\"params\":{},\"projectId\":22,\"projectNum\":8,\"updateBy\":\"1\",\"updateTime\":\"2023-12-11 02:31:17\"}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2023-12-10 18:31:17', 54);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1133, '项目', 5, 'com.cat2bug.web.controller.system.SysProjectController.getRoles()', 'GET', 1, 'admin', NULL, '/system/project/22/role', '127.0.0.1', '内网IP', '{}', '{\"code\":200,\"msg\":\"查询成功\",\"rows\":[{\"admin\":false,\"createTime\":\"2023-11-22 06:50:14\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":7,\"roleKey\":\"project.develop\",\"roleName\":\"项目开发\",\"roleNameI18nKey\":\"project.develop\",\"roleSort\":0,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:48:53\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":6,\"roleKey\":\"project.admin\",\"roleName\":\"项目管理员\",\"roleNameI18nKey\":\"project.admin\",\"roleSort\":1,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:53:11\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":8,\"roleKey\":\"project.tester\",\"roleName\":\"项目测试工程师\",\"roleNameI18nKey\":\"project.tester\",\"roleSort\":3,\"status\":\"0\"},{\"admin\":false,\"createTime\":\"2023-11-22 06:55:20\",\"dataScope\":\"1\",\"delFlag\":\"0\",\"deptCheckStrictly\":true,\"flag\":false,\"isProjectRole\":true,\"isTeamRole\":false,\"menuCheckStrictly\":true,\"params\":{},\"roleId\":9,\"roleKey\":\"project.outsider\",\"roleName\":\"项目外部人员\",\"roleNameI18nKey\":\"project.outsider\",\"roleSort\":4,\"status\":\"0\"}],\"total\":4}', 0, NULL, '2023-12-11 06:46:48', 12);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (1134, '缺陷', 1, 'com.cat2bug.web.controller.system.SysDefectController.add()', 'POST', 1, 'admin', NULL, '/system/defect', '127.0.0.1', '内网IP', '{\"createTime\":\"2023-12-11 14:47:06\",\"defectDescribe\":\"fsafdsasfdsaf\",\"defectId\":12,\"defectLevel\":\"middle\",\"defectName\":\"fsafdfs\",\"defectState\":\"PROCESSING\",\"handleBy\":[1,103],\"imgUrls\":\"/profile/upload/2023/12/11/screen_ffc27fc5_20231211144647A003.png\",\"moduleId\":1,\"params\":{},\"projectId\":22,\"projectNum\":9,\"updateBy\":\"1\",\"updateTime\":\"2023-12-11 14:47:06\"}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2023-12-11 06:47:06', 31);
 COMMIT;
 
 -- ----------------------------
@@ -2012,18 +2198,18 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `sys_post`;
 CREATE TABLE `sys_post` (
-  `post_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '岗位ID',
-  `post_code` varchar(64) COLLATE utf8_bin NOT NULL COMMENT '岗位编码',
-  `post_name` varchar(50) COLLATE utf8_bin NOT NULL COMMENT '岗位名称',
-  `post_sort` int(4) NOT NULL COMMENT '显示顺序',
-  `status` char(1) COLLATE utf8_bin NOT NULL COMMENT '状态（0正常 1停用）',
-  `create_by` varchar(64) COLLATE utf8_bin DEFAULT '' COMMENT '创建者',
+  `post_id` bigint NOT NULL AUTO_INCREMENT COMMENT '岗位ID',
+  `post_code` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '岗位编码',
+  `post_name` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '岗位名称',
+  `post_sort` int NOT NULL COMMENT '显示顺序',
+  `status` char(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '状态（0正常 1停用）',
+  `create_by` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '创建者',
   `create_time` datetime DEFAULT NULL COMMENT '创建时间',
-  `update_by` varchar(64) COLLATE utf8_bin DEFAULT '' COMMENT '更新者',
+  `update_by` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '更新者',
   `update_time` datetime DEFAULT NULL COMMENT '更新时间',
-  `remark` varchar(500) COLLATE utf8_bin DEFAULT NULL COMMENT '备注',
+  `remark` varchar(500) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '备注',
   PRIMARY KEY (`post_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='岗位信息表';
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='岗位信息表';
 
 -- ----------------------------
 -- Records of sys_post
@@ -2040,18 +2226,18 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `sys_project`;
 CREATE TABLE `sys_project` (
-  `project_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '项目id',
-  `project_name` varchar(64) COLLATE utf8_bin NOT NULL COMMENT '项目名称',
-  `project_icon` varchar(255) COLLATE utf8_bin DEFAULT NULL COMMENT '项目图标地址',
-  `project_introduce` varchar(255) COLLATE utf8_bin DEFAULT NULL COMMENT '项目介绍',
-  `create_by` varchar(64) COLLATE utf8_bin DEFAULT NULL COMMENT '创建者',
+  `project_id` bigint NOT NULL AUTO_INCREMENT COMMENT '项目id',
+  `project_name` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '项目名称',
+  `project_icon` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '项目图标地址',
+  `project_introduce` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '项目介绍',
+  `create_by` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '创建者',
   `create_time` datetime DEFAULT NULL COMMENT '创建时间',
-  `update_by` varchar(64) COLLATE utf8_bin DEFAULT NULL COMMENT '更新者',
+  `update_by` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '更新者',
   `update_time` datetime DEFAULT NULL COMMENT '更新时间',
-  `team_id` bigint(20) NOT NULL COMMENT '团队id',
+  `team_id` bigint NOT NULL COMMENT '团队id',
   PRIMARY KEY (`project_id`),
   KEY `team_id_` (`team_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='项目表';
+) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='项目表';
 
 -- ----------------------------
 -- Records of sys_project
@@ -2079,25 +2265,25 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `sys_role`;
 CREATE TABLE `sys_role` (
-  `role_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '角色ID',
-  `role_name` varchar(30) COLLATE utf8_bin NOT NULL COMMENT '角色名称',
-  `role_key` varchar(100) COLLATE utf8_bin NOT NULL COMMENT '角色权限字符串',
-  `role_sort` int(4) NOT NULL COMMENT '显示顺序',
-  `data_scope` char(1) COLLATE utf8_bin DEFAULT '1' COMMENT '数据范围（1：全部数据权限 2：自定数据权限 3：本部门数据权限 4：本部门及以下数据权限）',
+  `role_id` bigint NOT NULL AUTO_INCREMENT COMMENT '角色ID',
+  `role_name` varchar(30) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '角色名称',
+  `role_key` varchar(100) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '角色权限字符串',
+  `role_sort` int NOT NULL COMMENT '显示顺序',
+  `data_scope` char(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '1' COMMENT '数据范围（1：全部数据权限 2：自定数据权限 3：本部门数据权限 4：本部门及以下数据权限）',
   `menu_check_strictly` tinyint(1) DEFAULT '1' COMMENT '菜单树选择项是否关联显示',
   `dept_check_strictly` tinyint(1) DEFAULT '1' COMMENT '部门树选择项是否关联显示',
-  `status` char(1) COLLATE utf8_bin NOT NULL COMMENT '角色状态（0正常 1停用）',
-  `del_flag` char(1) COLLATE utf8_bin DEFAULT '0' COMMENT '删除标志（0代表存在 2代表删除）',
-  `create_by` varchar(64) COLLATE utf8_bin DEFAULT '' COMMENT '创建者',
+  `status` char(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '角色状态（0正常 1停用）',
+  `del_flag` char(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '0' COMMENT '删除标志（0代表存在 2代表删除）',
+  `create_by` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '创建者',
   `create_time` datetime DEFAULT NULL COMMENT '创建时间',
-  `update_by` varchar(64) COLLATE utf8_bin DEFAULT '' COMMENT '更新者',
+  `update_by` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '更新者',
   `update_time` datetime DEFAULT NULL COMMENT '更新时间',
-  `remark` varchar(500) COLLATE utf8_bin DEFAULT NULL COMMENT '备注',
+  `remark` varchar(500) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '备注',
   `is_team_role` tinyint(1) DEFAULT NULL COMMENT '是否是团队角色',
   `is_project_role` tinyint(1) DEFAULT NULL COMMENT '是否是项目角色',
-  `role_name_i18n_key` varchar(30) COLLATE utf8_bin DEFAULT NULL COMMENT '角色名称国际化标记',
+  `role_name_i18n_key` varchar(30) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '角色名称国际化标记',
   PRIMARY KEY (`role_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='角色信息表';
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='角色信息表';
 
 -- ----------------------------
 -- Records of sys_role
@@ -2119,10 +2305,10 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `sys_role_dept`;
 CREATE TABLE `sys_role_dept` (
-  `role_id` bigint(20) NOT NULL COMMENT '角色ID',
-  `dept_id` bigint(20) NOT NULL COMMENT '部门ID',
+  `role_id` bigint NOT NULL COMMENT '角色ID',
+  `dept_id` bigint NOT NULL COMMENT '部门ID',
   PRIMARY KEY (`role_id`,`dept_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='角色和部门关联表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='角色和部门关联表';
 
 -- ----------------------------
 -- Records of sys_role_dept
@@ -2138,10 +2324,10 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `sys_role_menu`;
 CREATE TABLE `sys_role_menu` (
-  `role_id` bigint(20) NOT NULL COMMENT '角色ID',
-  `menu_id` bigint(20) NOT NULL COMMENT '菜单ID',
+  `role_id` bigint NOT NULL COMMENT '角色ID',
+  `menu_id` bigint NOT NULL COMMENT '菜单ID',
   PRIMARY KEY (`role_id`,`menu_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='角色和菜单关联表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='角色和菜单关联表';
 
 -- ----------------------------
 -- Records of sys_role_menu
@@ -2291,22 +2477,59 @@ INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (9, 2013);
 COMMIT;
 
 -- ----------------------------
+-- Table structure for sys_screen_size
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_screen_size`;
+CREATE TABLE `sys_screen_size` (
+  `screen_size_id` bigint NOT NULL AUTO_INCREMENT COMMENT '屏幕尺寸id',
+  `name` varchar(32) COLLATE utf8mb4_0900_bin NOT NULL COMMENT '名称',
+  `width` varchar(12) COLLATE utf8mb4_0900_bin DEFAULT NULL COMMENT '宽',
+  `height` varchar(12) COLLATE utf8mb4_0900_bin DEFAULT NULL COMMENT '高',
+  `remark` varchar(255) COLLATE utf8mb4_0900_bin DEFAULT NULL COMMENT '备注',
+  PRIMARY KEY (`screen_size_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_bin COMMENT='屏幕尺寸';
+
+-- ----------------------------
+-- Records of sys_screen_size
+-- ----------------------------
+BEGIN;
+INSERT INTO `sys_screen_size` (`screen_size_id`, `name`, `width`, `height`, `remark`) VALUES (1, 'iPhone 6', '750px', '1334px', NULL);
+INSERT INTO `sys_screen_size` (`screen_size_id`, `name`, `width`, `height`, `remark`) VALUES (2, 'iPhone 6 Plus', '1242px', '2208px', NULL);
+INSERT INTO `sys_screen_size` (`screen_size_id`, `name`, `width`, `height`, `remark`) VALUES (3, 'iPhone 6 6s', '750px', '1334px', NULL);
+INSERT INTO `sys_screen_size` (`screen_size_id`, `name`, `width`, `height`, `remark`) VALUES (4, 'iPhone 6s Plus', '1242px', '2208px', NULL);
+INSERT INTO `sys_screen_size` (`screen_size_id`, `name`, `width`, `height`, `remark`) VALUES (5, 'iPhone 7', '750px', '1334px', NULL);
+INSERT INTO `sys_screen_size` (`screen_size_id`, `name`, `width`, `height`, `remark`) VALUES (6, 'iPhone 7 Plus', '1242px', '2208px', NULL);
+INSERT INTO `sys_screen_size` (`screen_size_id`, `name`, `width`, `height`, `remark`) VALUES (7, 'iPhone 8', '750px', '1334px', NULL);
+INSERT INTO `sys_screen_size` (`screen_size_id`, `name`, `width`, `height`, `remark`) VALUES (8, 'iPhone 8 Plus', '1242px', '2208px', NULL);
+INSERT INTO `sys_screen_size` (`screen_size_id`, `name`, `width`, `height`, `remark`) VALUES (9, 'iPhone X', '1125px', '2436px', NULL);
+INSERT INTO `sys_screen_size` (`screen_size_id`, `name`, `width`, `height`, `remark`) VALUES (10, 'iPhone SE2', '750px', '1334px', NULL);
+INSERT INTO `sys_screen_size` (`screen_size_id`, `name`, `width`, `height`, `remark`) VALUES (11, 'iPhone 11', '828px', '1792px', NULL);
+INSERT INTO `sys_screen_size` (`screen_size_id`, `name`, `width`, `height`, `remark`) VALUES (12, 'iPhone 11 Pro', '1125px', '2436px', NULL);
+INSERT INTO `sys_screen_size` (`screen_size_id`, `name`, `width`, `height`, `remark`) VALUES (13, 'iPhone 11 Pro Max', '1242px', '2688px', NULL);
+INSERT INTO `sys_screen_size` (`screen_size_id`, `name`, `width`, `height`, `remark`) VALUES (14, 'iPhone 12 mini', '1080px', '2340px', NULL);
+INSERT INTO `sys_screen_size` (`screen_size_id`, `name`, `width`, `height`, `remark`) VALUES (15, 'iPhone 12', '1170px', '2532px', NULL);
+INSERT INTO `sys_screen_size` (`screen_size_id`, `name`, `width`, `height`, `remark`) VALUES (16, 'iPhone 12 Pro', '1170px', '2532px', NULL);
+INSERT INTO `sys_screen_size` (`screen_size_id`, `name`, `width`, `height`, `remark`) VALUES (17, 'iPhone 12 Pro Max', '1284px', '2778px', NULL);
+INSERT INTO `sys_screen_size` (`screen_size_id`, `name`, `width`, `height`, `remark`) VALUES (18, 'test', '100px', '500px', NULL);
+COMMIT;
+
+-- ----------------------------
 -- Table structure for sys_team
 -- ----------------------------
 DROP TABLE IF EXISTS `sys_team`;
 CREATE TABLE `sys_team` (
-  `team_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '团队id',
-  `team_name` varchar(64) COLLATE utf8_bin DEFAULT NULL COMMENT '团队名称',
-  `team_icon` varchar(255) COLLATE utf8_bin DEFAULT NULL COMMENT '团队图标',
-  `create_by` varchar(64) COLLATE utf8_bin DEFAULT NULL COMMENT '创建者',
+  `team_id` bigint NOT NULL AUTO_INCREMENT COMMENT '团队id',
+  `team_name` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '团队名称',
+  `team_icon` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '团队图标',
+  `create_by` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '创建者',
   `create_time` datetime DEFAULT NULL COMMENT '创建时间',
-  `update_by` varchar(64) COLLATE utf8_bin DEFAULT NULL COMMENT '更新者',
+  `update_by` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '更新者',
   `update_time` datetime DEFAULT NULL COMMENT '更新时间',
-  `introduce` varchar(255) COLLATE utf8_bin DEFAULT NULL COMMENT '团队介绍',
-  `is_del` tinyint(4) DEFAULT NULL COMMENT '是否删除',
+  `introduce` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '团队介绍',
+  `is_del` tinyint DEFAULT NULL COMMENT '是否删除',
   PRIMARY KEY (`team_id`),
   UNIQUE KEY `name_` (`team_name`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='团队表';
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='团队表';
 
 -- ----------------------------
 -- Records of sys_team
@@ -2318,39 +2541,82 @@ INSERT INTO `sys_team` (`team_id`, `team_name`, `team_icon`, `create_by`, `creat
 COMMIT;
 
 -- ----------------------------
+-- Table structure for sys_temp_file
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_temp_file`;
+CREATE TABLE `sys_temp_file` (
+  `file_id` bigint NOT NULL AUTO_INCREMENT COMMENT '文件id',
+  `file_name` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin DEFAULT NULL COMMENT '文件名',
+  `src_url` varchar(255) COLLATE utf8mb4_0900_bin DEFAULT NULL COMMENT '来源地址',
+  `create_by` varchar(64) COLLATE utf8mb4_0900_bin DEFAULT NULL COMMENT '创建人',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  `file_type` int(10) unsigned zerofill DEFAULT '0000000000' COMMENT '文件类型(0普通文件,1图片)',
+  `file_url` varchar(255) COLLATE utf8mb4_0900_bin DEFAULT NULL COMMENT '文件地址',
+  PRIMARY KEY (`file_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_bin COMMENT='临时文件表';
+
+-- ----------------------------
+-- Records of sys_temp_file
+-- ----------------------------
+BEGIN;
+INSERT INTO `sys_temp_file` (`file_id`, `file_name`, `src_url`, `create_by`, `create_time`, `file_type`, `file_url`) VALUES (1, '/profile/upload/2023/12/08/screen_517c649c-4d9e-41df-9dcf-36deec8e3e02_20231208005204A002.png', 'http://127.0.0.1:2222/project/browser', NULL, '2023-12-08 00:52:05', 0000000001, 'http://localhost:2020/profile/upload/2023/12/08/screen_517c649c-4d9e-41df-9dcf-36deec8e3e02_20231208005204A002.png');
+INSERT INTO `sys_temp_file` (`file_id`, `file_name`, `src_url`, `create_by`, `create_time`, `file_type`, `file_url`) VALUES (2, 'screen_89c2f34b', 'http://127.0.0.1:2222/project/browser', NULL, '2023-12-08 01:08:06', 0000000001, 'http://localhost:2020/profile/upload/2023/12/08/screen_89c2f34b_20231208010806A001.png');
+INSERT INTO `sys_temp_file` (`file_id`, `file_name`, `src_url`, `create_by`, `create_time`, `file_type`, `file_url`) VALUES (3, 'screen_5591ea44', 'http://127.0.0.1:2222/project/browser', NULL, '2023-12-08 01:12:29', 0000000001, 'http://localhost:2020/profile/upload/2023/12/08/screen_5591ea44_20231208011229A002.png');
+INSERT INTO `sys_temp_file` (`file_id`, `file_name`, `src_url`, `create_by`, `create_time`, `file_type`, `file_url`) VALUES (4, 'screen_94f4253a', 'http://127.0.0.1:2222/project/browser', NULL, '2023-12-08 01:14:09', 0000000001, 'http://localhost:2020/profile/upload/2023/12/08/screen_94f4253a_20231208011408A003.png');
+INSERT INTO `sys_temp_file` (`file_id`, `file_name`, `src_url`, `create_by`, `create_time`, `file_type`, `file_url`) VALUES (5, 'screen_c0a86528', 'http://127.0.0.1:2222/project/browser', NULL, '2023-12-08 01:14:51', 0000000001, 'http://localhost:2020/profile/upload/2023/12/08/screen_c0a86528_20231208011450A004.png');
+INSERT INTO `sys_temp_file` (`file_id`, `file_name`, `src_url`, `create_by`, `create_time`, `file_type`, `file_url`) VALUES (6, 'screen_58ef68e7', 'http://127.0.0.1:2222/project/browser', NULL, '2023-12-08 01:16:51', 0000000001, '/profile/upload/2023/12/08/screen_58ef68e7_20231208011650A001.png');
+INSERT INTO `sys_temp_file` (`file_id`, `file_name`, `src_url`, `create_by`, `create_time`, `file_type`, `file_url`) VALUES (7, 'screen_7b8edaaf', 'http://127.0.0.1:2222/project/browser', NULL, '2023-12-08 01:17:56', 0000000001, '/profile/upload/2023/12/08/screen_7b8edaaf_20231208011756A002.png');
+INSERT INTO `sys_temp_file` (`file_id`, `file_name`, `src_url`, `create_by`, `create_time`, `file_type`, `file_url`) VALUES (8, 'screen_856484d1', 'http://127.0.0.1:2222/project/browser', NULL, '2023-12-08 01:18:16', 0000000001, '/profile/upload/2023/12/08/screen_856484d1_20231208011816A003.png');
+INSERT INTO `sys_temp_file` (`file_id`, `file_name`, `src_url`, `create_by`, `create_time`, `file_type`, `file_url`) VALUES (9, 'screen_d97c8278', 'http://127.0.0.1:2222/project/browser', NULL, '2023-12-08 01:21:09', 0000000001, '/profile/upload/2023/12/08/screen_d97c8278_20231208012108A004.png');
+INSERT INTO `sys_temp_file` (`file_id`, `file_name`, `src_url`, `create_by`, `create_time`, `file_type`, `file_url`) VALUES (10, 'screen_680860d8', 'http://127.0.0.1:2222/project/browser', NULL, '2023-12-08 16:37:54', 0000000001, '/profile/upload/2023/12/08/screen_680860d8_20231208163753A005.png');
+INSERT INTO `sys_temp_file` (`file_id`, `file_name`, `src_url`, `create_by`, `create_time`, `file_type`, `file_url`) VALUES (11, 'screen_f8bc2ea6', 'http://127.0.0.1:2222/project/browser', NULL, '2023-12-08 16:48:23', 0000000001, '/profile/upload/2023/12/08/screen_f8bc2ea6_20231208164823A006.png');
+INSERT INTO `sys_temp_file` (`file_id`, `file_name`, `src_url`, `create_by`, `create_time`, `file_type`, `file_url`) VALUES (12, 'screen_08731ee8', 'http://127.0.0.1:2222/tools/browser', NULL, '2023-12-08 21:49:31', 0000000001, '/profile/upload/2023/12/08/screen_08731ee8_20231208214931A007.png');
+INSERT INTO `sys_temp_file` (`file_id`, `file_name`, `src_url`, `create_by`, `create_time`, `file_type`, `file_url`) VALUES (13, 'screen_bd19626b', 'http://127.0.0.1:2222/tools/browser', NULL, '2023-12-09 01:51:05', 0000000001, '/profile/upload/2023/12/09/screen_bd19626b_20231209015105A008.png');
+INSERT INTO `sys_temp_file` (`file_id`, `file_name`, `src_url`, `create_by`, `create_time`, `file_type`, `file_url`) VALUES (14, 'screen_2edff7f8', 'http://127.0.0.1:2222/tools/browser', NULL, '2023-12-09 01:53:15', 0000000001, '/profile/upload/2023/12/09/screen_2edff7f8_20231209015315A009.png');
+INSERT INTO `sys_temp_file` (`file_id`, `file_name`, `src_url`, `create_by`, `create_time`, `file_type`, `file_url`) VALUES (15, 'screen_5e12e6b1', 'http://127.0.0.1:2222/tools/browser', NULL, '2023-12-09 02:02:25', 0000000001, '/profile/upload/2023/12/09/screen_5e12e6b1_20231209020224A010.png');
+INSERT INTO `sys_temp_file` (`file_id`, `file_name`, `src_url`, `create_by`, `create_time`, `file_type`, `file_url`) VALUES (16, 'screen_6db6b10a', 'http://127.0.0.1:2222/tools/browser', NULL, '2023-12-09 02:09:58', 0000000001, '/profile/upload/2023/12/09/screen_6db6b10a_20231209020957A011.png');
+INSERT INTO `sys_temp_file` (`file_id`, `file_name`, `src_url`, `create_by`, `create_time`, `file_type`, `file_url`) VALUES (17, 'screen_3d9f97df', 'http://127.0.0.1:2222/tools/browser', NULL, '2023-12-09 02:14:21', 0000000001, '/profile/upload/2023/12/09/screen_3d9f97df_20231209021420A012.png');
+INSERT INTO `sys_temp_file` (`file_id`, `file_name`, `src_url`, `create_by`, `create_time`, `file_type`, `file_url`) VALUES (18, 'screen_82a79e53', 'http://127.0.0.1:2222/tools/browser', NULL, '2023-12-09 03:34:28', 0000000001, '/profile/upload/2023/12/09/screen_82a79e53_20231209033427A013.png');
+INSERT INTO `sys_temp_file` (`file_id`, `file_name`, `src_url`, `create_by`, `create_time`, `file_type`, `file_url`) VALUES (19, 'screen_d14695c5', 'http://127.0.0.1:2222/tools/browser', NULL, '2023-12-09 20:48:51', 0000000001, '/profile/upload/2023/12/09/screen_d14695c5_20231209204850A014.png');
+INSERT INTO `sys_temp_file` (`file_id`, `file_name`, `src_url`, `create_by`, `create_time`, `file_type`, `file_url`) VALUES (20, 'screen_c101647f', 'http://127.0.0.1:2222/tools/browser', NULL, '2023-12-11 02:29:57', 0000000001, '/profile/upload/2023/12/11/screen_c101647f_20231211022956A001.png');
+INSERT INTO `sys_temp_file` (`file_id`, `file_name`, `src_url`, `create_by`, `create_time`, `file_type`, `file_url`) VALUES (21, 'screen_f46c1a14', 'http://127.0.0.1:2222/tools/browser', NULL, '2023-12-11 02:31:03', 0000000001, '/profile/upload/2023/12/11/screen_f46c1a14_20231211023102A002.png');
+INSERT INTO `sys_temp_file` (`file_id`, `file_name`, `src_url`, `create_by`, `create_time`, `file_type`, `file_url`) VALUES (22, 'screen_ffc27fc5', 'http://127.0.0.1:2222/tools/browser', NULL, '2023-12-11 14:46:48', 0000000001, '/profile/upload/2023/12/11/screen_ffc27fc5_20231211144647A003.png');
+COMMIT;
+
+-- ----------------------------
 -- Table structure for sys_user
 -- ----------------------------
 DROP TABLE IF EXISTS `sys_user`;
 CREATE TABLE `sys_user` (
-  `user_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '用户ID',
-  `dept_id` bigint(20) DEFAULT NULL COMMENT '部门ID',
-  `user_name` varchar(30) COLLATE utf8_bin NOT NULL COMMENT '用户账号',
-  `nick_name` varchar(30) COLLATE utf8_bin NOT NULL COMMENT '用户昵称',
-  `user_type` varchar(2) COLLATE utf8_bin DEFAULT '00' COMMENT '用户类型（00系统用户）',
-  `email` varchar(50) COLLATE utf8_bin DEFAULT '' COMMENT '用户邮箱',
-  `phonenumber` varchar(11) COLLATE utf8_bin DEFAULT '' COMMENT '手机号码',
-  `sex` char(1) COLLATE utf8_bin DEFAULT '0' COMMENT '用户性别（0男 1女 2未知）',
-  `avatar` varchar(100) COLLATE utf8_bin DEFAULT '' COMMENT '头像地址',
-  `password` varchar(100) COLLATE utf8_bin DEFAULT '' COMMENT '密码',
-  `status` char(1) COLLATE utf8_bin DEFAULT '0' COMMENT '帐号状态（0正常 1停用）',
-  `del_flag` char(1) COLLATE utf8_bin DEFAULT '0' COMMENT '删除标志（0代表存在 2代表删除）',
-  `login_ip` varchar(128) COLLATE utf8_bin DEFAULT '' COMMENT '最后登录IP',
+  `user_id` bigint NOT NULL AUTO_INCREMENT COMMENT '用户ID',
+  `dept_id` bigint DEFAULT NULL COMMENT '部门ID',
+  `user_name` varchar(30) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '用户账号',
+  `nick_name` varchar(30) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '用户昵称',
+  `user_type` varchar(2) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '00' COMMENT '用户类型（00系统用户）',
+  `email` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '用户邮箱',
+  `phonenumber` varchar(11) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '手机号码',
+  `sex` char(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '0' COMMENT '用户性别（0男 1女 2未知）',
+  `avatar` varchar(100) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '头像地址',
+  `password` varchar(100) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '密码',
+  `status` char(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '0' COMMENT '帐号状态（0正常 1停用）',
+  `del_flag` char(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '0' COMMENT '删除标志（0代表存在 2代表删除）',
+  `login_ip` varchar(128) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '最后登录IP',
   `login_date` datetime DEFAULT NULL COMMENT '最后登录时间',
-  `create_by` varchar(64) COLLATE utf8_bin DEFAULT '' COMMENT '创建者',
+  `create_by` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '创建者',
   `create_time` datetime DEFAULT NULL COMMENT '创建时间',
-  `update_by` varchar(64) COLLATE utf8_bin DEFAULT '' COMMENT '更新者',
+  `update_by` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '更新者',
   `update_time` datetime DEFAULT NULL COMMENT '更新时间',
-  `remark` varchar(500) COLLATE utf8_bin DEFAULT NULL COMMENT '备注',
+  `remark` varchar(500) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '备注',
   PRIMARY KEY (`user_id`),
   UNIQUE KEY `phone_` (`phonenumber`),
   UNIQUE KEY `email_` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=118 DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='用户信息表';
+) ENGINE=InnoDB AUTO_INCREMENT=118 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='用户信息表';
 
 -- ----------------------------
 -- Records of sys_user
 -- ----------------------------
 BEGIN;
-INSERT INTO `sys_user` (`user_id`, `dept_id`, `user_name`, `nick_name`, `user_type`, `email`, `phonenumber`, `sex`, `avatar`, `password`, `status`, `del_flag`, `login_ip`, `login_date`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`) VALUES (1, 103, 'admin', '黑猫警长', '00', 'admin@cat2bug.com', '18888888888', '0', '', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '0', '0', '127.0.0.1', '2023-11-26 00:18:44', 'admin', '2023-11-12 15:34:51', '', '2023-11-25 16:18:43', '管理员');
+INSERT INTO `sys_user` (`user_id`, `dept_id`, `user_name`, `nick_name`, `user_type`, `email`, `phonenumber`, `sex`, `avatar`, `password`, `status`, `del_flag`, `login_ip`, `login_date`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`) VALUES (1, 103, 'admin', '黑猫警长', '00', 'admin@cat2bug.com', '18888888888', '0', '', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '0', '0', '127.0.0.1', '2023-12-11 22:00:38', 'admin', '2023-11-12 15:34:51', '', '2023-12-11 14:00:38', '管理员');
 INSERT INTO `sys_user` (`user_id`, `dept_id`, `user_name`, `nick_name`, `user_type`, `email`, `phonenumber`, `sex`, `avatar`, `password`, `status`, `del_flag`, `login_ip`, `login_date`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`) VALUES (2, 105, 'ry', '若依', '00', 'ry@qq.com', '15666666666', '1', '', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '0', '0', '127.0.0.1', '2023-11-12 15:34:51', 'admin', '2023-11-12 15:34:51', '', NULL, '测试员');
 INSERT INTO `sys_user` (`user_id`, `dept_id`, `user_name`, `nick_name`, `user_type`, `email`, `phonenumber`, `sex`, `avatar`, `password`, `status`, `del_flag`, `login_ip`, `login_date`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`) VALUES (100, NULL, '哈哈', '哈哈', '00', '', '', '0', '', '$2a$10$dWJwZyIgWKpDh9.CtZpIXeCzs9pwemr8dl6PmSa3zdJB53QX9AUre', '0', '0', '', NULL, '', '2023-11-12 16:20:25', '', NULL, NULL);
 INSERT INTO `sys_user` (`user_id`, `dept_id`, `user_name`, `nick_name`, `user_type`, `email`, `phonenumber`, `sex`, `avatar`, `password`, `status`, `del_flag`, `login_ip`, `login_date`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`) VALUES (103, NULL, '111111111', '11111111111', '00', '111@11.cc', '18810889198', '0', '', '111111111', '0', '0', '', NULL, '', '2023-11-18 12:28:56', '', NULL, NULL);
@@ -2369,12 +2635,12 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `sys_user_config`;
 CREATE TABLE `sys_user_config` (
-  `user_config_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '用户配置id',
-  `current_team_id` bigint(20) DEFAULT NULL COMMENT '当前团队id',
-  `user_id` bigint(20) DEFAULT NULL COMMENT '用户id',
+  `user_config_id` bigint NOT NULL AUTO_INCREMENT COMMENT '用户配置id',
+  `current_team_id` bigint DEFAULT NULL COMMENT '当前团队id',
+  `user_id` bigint DEFAULT NULL COMMENT '用户id',
   PRIMARY KEY (`user_config_id`),
   KEY `user_id_` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='用户配置表';
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='用户配置表';
 
 -- ----------------------------
 -- Records of sys_user_config
@@ -2388,10 +2654,10 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `sys_user_post`;
 CREATE TABLE `sys_user_post` (
-  `user_id` bigint(20) NOT NULL COMMENT '用户ID',
-  `post_id` bigint(20) NOT NULL COMMENT '岗位ID',
+  `user_id` bigint NOT NULL COMMENT '用户ID',
+  `post_id` bigint NOT NULL COMMENT '岗位ID',
   PRIMARY KEY (`user_id`,`post_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='用户与岗位关联表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='用户与岗位关联表';
 
 -- ----------------------------
 -- Records of sys_user_post
@@ -2406,18 +2672,18 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `sys_user_project`;
 CREATE TABLE `sys_user_project` (
-  `user_project_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '用户项目id',
-  `user_id` bigint(20) NOT NULL COMMENT '用户id',
-  `project_id` bigint(20) NOT NULL COMMENT '项目id',
-  `create_by` varchar(64) COLLATE utf8_bin DEFAULT NULL COMMENT '创建者',
+  `user_project_id` bigint NOT NULL AUTO_INCREMENT COMMENT '用户项目id',
+  `user_id` bigint NOT NULL COMMENT '用户id',
+  `project_id` bigint NOT NULL COMMENT '项目id',
+  `create_by` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '创建者',
   `create_time` datetime DEFAULT NULL COMMENT '创建时间',
-  `update_by` varchar(64) COLLATE utf8_bin DEFAULT NULL COMMENT '更新者',
+  `update_by` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '更新者',
   `update_time` datetime DEFAULT NULL COMMENT '更新时间',
   `project_lock` tinyint(1) unsigned zerofill DEFAULT '0' COMMENT '是否锁定',
   `collect` tinyint(1) DEFAULT NULL COMMENT '是否收藏',
   PRIMARY KEY (`user_project_id`),
   UNIQUE KEY `user_project_` (`user_id`,`project_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='用户项目表';
+) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='用户项目表';
 
 -- ----------------------------
 -- Records of sys_user_project
@@ -2449,12 +2715,12 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `sys_user_project_role`;
 CREATE TABLE `sys_user_project_role` (
-  `user_project_role_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '用户项目角色id',
-  `user_project_id` bigint(20) NOT NULL COMMENT '用户项目id',
-  `role_id` bigint(20) NOT NULL COMMENT '角色id',
+  `user_project_role_id` bigint NOT NULL AUTO_INCREMENT COMMENT '用户项目角色id',
+  `user_project_id` bigint NOT NULL COMMENT '用户项目id',
+  `role_id` bigint NOT NULL COMMENT '角色id',
   PRIMARY KEY (`user_project_role_id`),
   UNIQUE KEY `user_project_role_` (`user_project_id`,`role_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='用户项目角色表';
+) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='用户项目角色表';
 
 -- ----------------------------
 -- Records of sys_user_project_role
@@ -2487,10 +2753,10 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `sys_user_role`;
 CREATE TABLE `sys_user_role` (
-  `user_id` bigint(20) NOT NULL COMMENT '用户ID',
-  `role_id` bigint(20) NOT NULL COMMENT '角色ID',
+  `user_id` bigint NOT NULL COMMENT '用户ID',
+  `role_id` bigint NOT NULL COMMENT '角色ID',
   PRIMARY KEY (`user_id`,`role_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='用户和角色关联表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='用户和角色关联表';
 
 -- ----------------------------
 -- Records of sys_user_role
@@ -2505,18 +2771,18 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `sys_user_team`;
 CREATE TABLE `sys_user_team` (
-  `user_team_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '用户团队id',
-  `user_id` bigint(20) NOT NULL COMMENT '用户id',
-  `team_id` bigint(20) NOT NULL COMMENT '团队id',
-  `team_role_id` bigint(20) DEFAULT NULL COMMENT '团队角色id',
-  `create_by` varchar(64) COLLATE utf8_bin DEFAULT NULL COMMENT '创建者',
+  `user_team_id` bigint NOT NULL AUTO_INCREMENT COMMENT '用户团队id',
+  `user_id` bigint NOT NULL COMMENT '用户id',
+  `team_id` bigint NOT NULL COMMENT '团队id',
+  `team_role_id` bigint DEFAULT NULL COMMENT '团队角色id',
+  `create_by` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '创建者',
   `create_time` datetime DEFAULT NULL COMMENT '创建时间',
-  `update_by` varchar(64) COLLATE utf8_bin DEFAULT NULL COMMENT '更新者',
+  `update_by` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '更新者',
   `update_time` datetime DEFAULT NULL COMMENT '更新时间',
   `team_lock` tinyint(1) unsigned zerofill DEFAULT '0' COMMENT '是否锁定',
   PRIMARY KEY (`user_team_id`),
   UNIQUE KEY `user_team_` (`user_id`,`team_id`,`team_role_id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=30 DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='用户团队角色表';
+) ENGINE=InnoDB AUTO_INCREMENT=30 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='用户团队角色表';
 
 -- ----------------------------
 -- Records of sys_user_team
@@ -2537,11 +2803,11 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `sys_user_team_role`;
 CREATE TABLE `sys_user_team_role` (
-  `user_team_role_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '用户团队角色id',
-  `user_team_id` bigint(20) NOT NULL COMMENT '用户团队id',
-  `role_id` bigint(20) NOT NULL COMMENT '角色id',
+  `user_team_role_id` bigint NOT NULL AUTO_INCREMENT COMMENT '用户团队角色id',
+  `user_team_id` bigint NOT NULL COMMENT '用户团队id',
+  `role_id` bigint NOT NULL COMMENT '角色id',
   PRIMARY KEY (`user_team_role_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=44 DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='用户团队角色表';
+) ENGINE=InnoDB AUTO_INCREMENT=44 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='用户团队角色表';
 
 -- ----------------------------
 -- Records of sys_user_team_role

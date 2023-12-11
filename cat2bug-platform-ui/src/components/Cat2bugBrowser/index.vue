@@ -3,6 +3,7 @@
     <browser-input v-show="!bodyVisible" v-model="url" @input="urlInputHandle" />
     <div class="cat2bug-browser-body" v-show="bodyVisible">
       <div class="cat2bug-browser-header" v-show="screenHeaderToolsVisible">
+        <div></div>
   <!--      屏幕尺寸选择-->
         <el-dropdown trigger="click" @command="screenTypeChangedHandle" class="pointer">
           <span>{{activeScreenType.name}}<i class="el-icon-arrow-down el-icon--right"></i></span>
@@ -27,10 +28,18 @@
             <el-dropdown-item divided>自动适应</el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
-  <!--      屏幕旋转-->
+        <!--      屏幕旋转-->
         <svg-icon icon-class="phone-rotate" class="pointer" />
+        <!--切换输入网址-->
+        <svg-icon icon-class="input" class="pointer" @click="goInputHandle" />
+        <div>
+          <!--关闭窗口-->
+          <svg-icon icon-class="close" class="pointer" @click="closeHandle" />
+          <!--最小化工具窗口-->
+<!--          <svg-icon icon-class="mini" class="pointer" @click="goInputHandle" />-->
+        </div>
       </div>
-      <iframe id="main-iframe" :src="url" class="cat2bug-browser-iframe" security="restricted" :style="`width:${screenWidthPx};height:${screenHeightPx};transform:scale(${zoom});margin-top:${screenHeaderToolsVisible?25:0}px;`"> </iframe>
+      <iframe id="main-iframe" :src="url" class="cat2bug-browser-iframe" :style="`width:${screenWidthPx};height:${screenHeightPx};transform:scale(${zoom});margin-top:${screenHeaderToolsVisible?30:0}px;`"> </iframe>
     </div>
   </div>
 </template>
@@ -45,7 +54,7 @@ export default {
   props: {
     screenToolsVisible: {
       type: Boolean,
-      default: false
+      default: true
     },
     width: {
       type: [Number,String],
@@ -89,24 +98,25 @@ export default {
   },
   computed:{
     widthPx: function (){
-      return this.width instanceof String ? this.width : this.width + 'px';
+      return parseInt(this.width).toString().length==(this.width+'').toString().length ? this.width + 'px' : this.width;
     },
     heightPx: function (){
-      return this.height instanceof String ? this.height : this.height + 'px';
+      return parseInt(this.height).toString().length==(this.height+'').toString().length  ? this.height + 'px' : this.height;
     },
     screenWidthPx: function (){
-      return this.screenWidth instanceof String ? this.screenWidth : this.screenWidth + 'px';
+      return parseInt(this.screenWidth).toString().length==(this.screenWidth+'').toString().length ? this.screenWidth + 'px' : this.screenWidth;
     },
     screenHeightPx: function (){
-      return this.screenHeight instanceof String ? this.screenHeight : this.screenHeight + 'px';
+      return parseInt(this.screenHeight).toString().length==(this.screenHeight+'').toString().length ? this.screenHeight + 'px' : this.screenHeight;
     },
   },
   created() {
     this.getScreenTypeList();
   },
-  mounted() {
-  },
   methods: {
+    closeHandle(e) {
+      this.$emit('close',e);
+    },
     urlInputHandle() {
       this.bodyVisible=true;
     },
@@ -120,7 +130,7 @@ export default {
       if(zoom){
         this.zoom = zoom
       } else {
-        let toolHeight = this.screenHeaderToolsVisible?25:0;
+        let toolHeight = this.screenHeaderToolsVisible?30:0;
         this.zoom = Math.min(
           this.width/Math.min(this.screenWidth,this.width),
           (this.height-toolHeight)/Math.min(this.screenHeight,this.height-toolHeight));
@@ -175,6 +185,9 @@ export default {
         this.resetScreen();
       }
     },
+    goInputHandle() {
+      this.bodyVisible = false;
+    }
   }
 }
 </script>
@@ -210,8 +223,26 @@ export default {
   border-bottom: #606266 1px solid;
   position: absolute;
   top: 0px;
+  div:first-child, div:last-child {
+    flex: 1;
+    display: inline-block;
+    margin-right: 0px;
+  }
+  div:first-child {
+    > * {
+      float: left;
+      margin-right: 15px;
+    }
+  }
+  div:last-child {
+    > * {
+      float: right;
+      margin-left: 15px;
+    }
+  }
   > * {
     margin-right: 15px;
+    flex-shrink: 0;
   }
   i {
     color: #FFFFFF;

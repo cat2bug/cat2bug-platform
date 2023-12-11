@@ -195,5 +195,6 @@
   "browser.website": "Website",
   "browser.access": "Access",
   "browser.please-enter-testing-website": "Please enter the testing website",
-  "browser.please-enter-testing-website-prompt": "Tip: Please enter the website you want to test, click the \"Access\" button to test, and the testing tool is located in the floating border on the right side; If your page has an anti-theft chain function, it may not open properly."
+  "browser.please-enter-testing-website-prompt": "Tip: Please enter the website you want to test, click the \"Access\" button to test, and the testing tool is located in the floating border on the right side; If your page has an anti-theft chain function, it may not open properly.",
+  "browser.window-not-close": "The current form cannot be closed!"
 }
