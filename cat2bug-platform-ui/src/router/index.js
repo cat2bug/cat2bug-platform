@@ -211,7 +211,7 @@ Router.prototype.replace = function push(location) {
 }
 
 export default new Router({
-  mode: 'history', // 去掉url中的#
+  mode: 'hash', // 去掉url中的#
   scrollBehavior: () => ({ y: 0 }),
   routes: constantRoutes
 })
