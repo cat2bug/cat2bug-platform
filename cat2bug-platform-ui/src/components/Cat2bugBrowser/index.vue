@@ -39,7 +39,7 @@
 <!--          <svg-icon icon-class="mini" class="pointer" @click="goInputHandle" />-->
         </div>
       </div>
-      <iframe id="main-iframe" :src="url" class="cat2bug-browser-iframe" :style="`width:${screenWidthPx};height:${screenHeightPx};transform:scale(${zoom});margin-top:${screenHeaderToolsVisible?30:0}px;`"> </iframe>
+      <iframe id="main-iframe" type="text/html" :src="`/tools/browser/proxy?url=${url}`" class="cat2bug-browser-iframe" :style="`width:${screenWidthPx};height:${screenHeightPx};transform:scale(${zoom});margin-top:${screenHeaderToolsVisible?30:0}px;`" />
     </div>
   </div>
 </template>
