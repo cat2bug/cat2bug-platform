@@ -39,7 +39,9 @@
 <!--          <svg-icon icon-class="mini" class="pointer" @click="goInputHandle" />-->
         </div>
       </div>
-      <iframe id="main-iframe" type="text/html"
+      <iframe
+        ref="mainIframe"
+        id="main-iframe" type="text/html"
               :src="url"
               class="cat2bug-browser-iframe"
               :style="`width:${screenWidthPx};height:${screenHeightPx};transform:scale(${zoom});margin-top:${screenHeaderToolsVisible?30:0}px;`" />
@@ -156,6 +158,7 @@ export default {
     },
     open(type){
       this.resetScreen(type);
+      this.$refs.mainIframe.contentWindow.cookieData = document.cookie;
     },
     resetScreen(type) {
       if(!type) {
