@@ -39,16 +39,16 @@
 <!--          <svg-icon icon-class="mini" class="pointer" @click="goInputHandle" />-->
         </div>
       </div>
-<!--      <iframe-->
-<!--        ref="mainIframe"-->
-<!--        id="main-iframe" type="text/html"-->
-<!--              :src="url"-->
+      <iframe
+        ref="mainIframe"
+        id="main-iframe" type="text/html"
+        :src="url"
+        class="cat2bug-browser-iframe"
+        :style="`width:${screenWidthPx};height:${screenHeightPx};transform:scale(${zoom});margin-top:${screenHeaderToolsVisible?30:0}px;`" />
+<!--      <iframe id="main-iframe" type="text/html"-->
+<!--              :src="`/tools/browser/proxy?proxy=${url}`"-->
 <!--              class="cat2bug-browser-iframe"-->
 <!--              :style="`width:${screenWidthPx};height:${screenHeightPx};transform:scale(${zoom});margin-top:${screenHeaderToolsVisible?30:0}px;`" />-->
-      <iframe id="main-iframe" type="text/html"
-              :src="`/tools/browser/proxy?proxy=${url}`"
-              class="cat2bug-browser-iframe"
-              :style="`width:${screenWidthPx};height:${screenHeightPx};transform:scale(${zoom});margin-top:${screenHeaderToolsVisible?30:0}px;`" />
     </div>
   </div>
 </template>
