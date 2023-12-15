@@ -29,7 +29,7 @@ FROM nginx
 # author
 MAINTAINER yuzhantao
 #将源码复制到下一个镜像中
-COPY --from=cat2bug_npm_build /usr/local/code/cat2bug-platform/cat2bug-platform-ui/dist /usr/share/nginx/html
+COPY --from=cat2bug_npm_build /usr/local/code/cat2bug-platform/cat2bug-platform-ui/dist /etc/nginx/html
 COPY --from=cat2bug_certs /ssl /etc/nginx/certs
 COPY nginx.conf /etc/nginx/nginx.conf
 EXPOSE 80
