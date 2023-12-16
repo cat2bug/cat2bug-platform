@@ -42,6 +42,9 @@
       <iframe
         ref="mainIframe"
         id="main-iframe" type="text/html"
+        allow="*"
+        referrerpolicy="no-referrer"
+        sandbox="allow-forms;allow-modals allow-orientation-lock allow-pointer-lock allow-popups allow-presentation allow-same-origin allow-scripts allow-top-navigation allow-storage-access-by-user-activation allow-top-navigation-by-user-activation"
         :src="url"
         class="cat2bug-browser-iframe"
         :style="`width:${screenWidthPx};height:${screenHeightPx};transform:scale(${zoom});margin-top:${screenHeaderToolsVisible?30:0}px;`" />
