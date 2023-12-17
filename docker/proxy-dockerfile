@@ -20,5 +20,5 @@ WORKDIR /cat2bug
 COPY --from=cat2bug_git_src /usr/local/code .
 WORKDIR /cat2bug/cat2bug-proxy
 COPY --from=cat2bug_certs /ssl ./ssl
-RUN --mount=type=cache,target=/cat2bug/cat2bug-proxy/node_modules,id=app_node_modules,sharing=locked --mount=type=cache,target=/root/.npm,id=npm_cache npm install --registry http://registry.npm.taobao.org
+RUN npm install --registry http://registry.npm.taobao.org
 CMD [ "node", "proxy.js" ]
