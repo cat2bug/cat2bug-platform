@@ -1,13 +1,6 @@
 version: '3.4'
 name: cat2bug-platform
 services:
-  cat2bug-certs-maker:
-    image: soulteary/certs-maker
-    container_name: cat2bug-certs-maker
-    environment:
-      - CERT_DNS=127.0.0.1,localhost
-    volumes:
-      - ./ssl:/ssl
   cat2bug-mysql:
     image: mysql:8.2.0
     hostname: mysql
