@@ -19,6 +19,6 @@ MAINTAINER yuzhantao
 RUN mkdir -p /cat2bug/proxy
 WORKDIR /cat2bug/proxy
 COPY --from=cat2bug_git_src /usr/local/code .
-COPY --from=cat2bug_certs /ssl ./ssl/
-RUN --mount=type=cache,target=/usr/local/code/cat2bug-platform/cat2bug-platform-ui/node_modules,id=app_node_modules,sharing=locked --mount=type=cache,target=/root/.npm,id=npm_cache npm install --registry http://registry.npm.taobao.org
+COPY --from=cat2bug_certs /ssl ./ssl
+RUN --mount=type=cache,target=/cat2bug/proxy/node_modules,id=app_node_modules,sharing=locked --mount=type=cache,target=/root/.npm,id=npm_cache npm install --registry http://registry.npm.taobao.org
 CMD [ "node", "proxy.js" ]
