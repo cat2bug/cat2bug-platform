@@ -1,6 +1,13 @@
 version: '3.4'
 name: cat2bug-platform
 services:
+  cat2bug-certs-maker:
+    image: soulteary/certs-maker
+    container_name: cat2bug-certs-maker
+    environment:
+      - CERT_DNS=127.0.0.1,localhost
+    volumes:
+      - ./ssl:/ssl
   cat2bug-mysql:
     image: mysql:8.2.0
     hostname: mysql
@@ -52,6 +59,7 @@ services:
       context: .
       dockerfile: after-dockerfile
     container_name: cat2bug-app-after
+    restart: always
     expose:
       - "2020:2020"
     environment:
@@ -77,11 +85,12 @@ services:
       context: .
       dockerfile: front-dockerfile
     container_name: cat2bug-app-front
+    restart: always
     ports:
       - "80:80"
       - "8080:8080"
       - "443:443"
-      - "8443:8443"
+      - "8441-8449:8441-8449"
     volumes:
       - ./nginx.conf/:/etc/nginx/nginx.conf
     links:
@@ -89,6 +98,17 @@ services:
     depends_on:
       cat2bug-app-after:
         condition: service_healthy
+    networks:
+      - cat2bug-network
+  cat2bug-proxy:
+    hostname: proxy
+    build:
+      context: .
+      dockerfile: proxy-dockerfile
+    container_name: cat2bug-proxy
+    restart: always
+    ports:
+      - "2441-2449:2441-2449"
     networks:
       - cat2bug-network
 networks:
