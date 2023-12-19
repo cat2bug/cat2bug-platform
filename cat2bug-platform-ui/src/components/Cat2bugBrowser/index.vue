@@ -39,18 +39,14 @@
 <!--          <svg-icon icon-class="mini" class="pointer" @click="goInputHandle" />-->
         </div>
       </div>
-<!--      <iframe-->
-<!--        ref="mainIframe"-->
-<!--        id="main-iframe" type="text/html"-->
-<!--        allow="*"-->
-<!--        referrerpolicy="no-referrer"-->
-<!--        :src="url"-->
-<!--        class="cat2bug-browser-iframe"-->
-<!--        :style="`width:${screenWidthPx};height:${screenHeightPx};transform:scale(${zoom});margin-top:${screenHeaderToolsVisible?30:0}px;`" />-->
       <iframe id="main-iframe" type="text/html"
-              :src="`https://127.0.0.1:2443/?proxy=${url}`"
+              :src="`${url}`"
               class="cat2bug-browser-iframe"
               :style="`width:${screenWidthPx};height:${screenHeightPx};transform:scale(${zoom});margin-top:${screenHeaderToolsVisible?30:0}px;`" />
+<!--      <iframe id="main-iframe" type="text/html"-->
+<!--              :src="`https://127.0.0.1:2443/?proxy=${url}`"-->
+<!--              class="cat2bug-browser-iframe"-->
+<!--              :style="`width:${screenWidthPx};height:${screenHeightPx};transform:scale(${zoom});margin-top:${screenHeaderToolsVisible?30:0}px;`" />-->
     </div>
   </div>
 </template>
@@ -218,7 +214,6 @@ export default {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background-color: #606266;
   overflow: auto;
 }
 .cat2bug-browser-header {
