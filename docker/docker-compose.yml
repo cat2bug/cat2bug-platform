@@ -27,8 +27,8 @@ services:
     volumes:
       - ../sql/:/docker-entrypoint-initdb.d/
       - ./mysql:/var/lib/mysql
-    ports:
-      - "3308:3306"
+    expose:
+      - "3306"
     environment:
       TZ: Asia/Shanghai
       MYSQL_ROOT_HOST: "%"
@@ -51,9 +51,6 @@ services:
     restart: always
     expose:
       - "6739"
-    command: /usr/local/bin/redis-server /usr/local/etc/redis/redis.conf
-    volumes:
-      - ./redis.conf:/usr/local/etc/redis/redis.conf:rw
     healthcheck:
       test: "exit 0"
     networks:
