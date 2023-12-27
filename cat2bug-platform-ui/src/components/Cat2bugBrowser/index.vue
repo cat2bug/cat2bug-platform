@@ -110,7 +110,7 @@ export default {
     proxyUrl: function () {
       return function (url) {
         if(url && REG_PROTOCOL.test(url)) {
-          return `${window.location.protocol}//${window.location.host}/tools/browser/proxy?cat2bug-proxy-url=${url}`
+          return  url.replace('http:\/\/','https:\/\/')+(url.indexOf('?')>0?'&cat2bug_proxy_scheme=1':'?cat2bug_proxy_scheme=1');
         } else {
           return url;
         }

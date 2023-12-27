@@ -2,9 +2,10 @@
   <div>
     <el-select class="team-select" :collapse="collapse" v-model="currentTeamId" :popper-append-to-body="false" @change="selectTeamChangedHandle">
       <template slot="prefix">
-          <el-avatar :size="collapse?'small':'medium'"  shape="square" v-if="currentTeam.teamIcon" :src="iconUrl(currentTeam)" fit="cover"></el-avatar>
-          <el-avatar :size="collapse?'small':'medium'" shape="square" v-else>{{currentTeam.name}}</el-avatar>
-          <p class="prefix-team-name" v-if="!collapse">{{currentTeam.teamName}}</p>
+        <el-avatar :size="collapse?'small':'medium'"  shape="square" v-if="!currentTeam" :src="imgUrl('add.svg')" fit="cover"></el-avatar>
+        <el-avatar :size="collapse?'small':'medium'"  shape="square" v-else-if="currentTeam.teamIcon" :src="iconUrl(currentTeam)" fit="cover"></el-avatar>
+        <el-avatar :size="collapse?'small':'medium'" shape="square" v-else>{{currentTeam.name}}</el-avatar>
+        <p class="prefix-team-name" v-if="!collapse">{{currentTeam?currentTeam.teamName:'点击创建团队addition.svg'}}</p>
       </template>
       <el-option
         style="height:80px;"
@@ -37,7 +38,7 @@ export default {
     return {
       teamList:[],
       currentTeamId: null,
-      currentTeam: {},
+      currentTeam: null,
     }
   },
   props:{
@@ -50,6 +51,11 @@ export default {
     iconUrl: function (){
       return function (team){
         return process.env.VUE_APP_BASE_API + team.teamIcon
+      }
+    },
+    imgUrl: function () {
+      return function (index){
+        return require('@/assets/images/'+index)
       }
     }
   },

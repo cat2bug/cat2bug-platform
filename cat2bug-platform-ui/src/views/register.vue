@@ -1,10 +1,20 @@
 <template>
   <div class="register">
     <el-form ref="registerForm" :model="registerForm" :rules="registerRules" class="register-form">
-      <h3 class="title">猫陪我改BUG</h3>
+      <h3 class="title">{{$t('system-name')}}</h3>
       <el-form-item prop="username">
-        <el-input v-model="registerForm.username" type="text" auto-complete="off" placeholder="账号">
+        <el-input v-model="registerForm.username" type="text" auto-complete="off" :placeholder="$t('account')">
           <svg-icon slot="prefix" icon-class="user" class="el-input__icon input-icon" />
+        </el-input>
+      </el-form-item>
+      <el-form-item prop="phoneNumber">
+        <el-input
+          v-model="registerForm.phoneNumber"
+          type="text"
+          auto-complete="off"
+          :placeholder="$t('phone-number')"
+        >
+          <svg-icon slot="prefix" icon-class="shoujihao" class="el-input__icon input-icon" />
         </el-input>
       </el-form-item>
       <el-form-item prop="password">
@@ -12,7 +22,7 @@
           v-model="registerForm.password"
           type="password"
           auto-complete="off"
-          placeholder="密码"
+          :placeholder="$t('password')"
           @keyup.enter.native="handleRegister"
         >
           <svg-icon slot="prefix" icon-class="password" class="el-input__icon input-icon" />
@@ -23,7 +33,7 @@
           v-model="registerForm.confirmPassword"
           type="password"
           auto-complete="off"
-          placeholder="确认密码"
+          :placeholder="$t('confirm-password')"
           @keyup.enter.native="handleRegister"
         >
           <svg-icon slot="prefix" icon-class="password" class="el-input__icon input-icon" />
@@ -33,7 +43,7 @@
         <el-input
           v-model="registerForm.code"
           auto-complete="off"
-          placeholder="验证码"
+          :placeholder="$t('verification-code')"
           style="width: 63%"
           @keyup.enter.native="handleRegister"
         >
@@ -51,30 +61,31 @@
           style="width:100%;"
           @click.native.prevent="handleRegister"
         >
-          <span v-if="!loading">注 册</span>
-          <span v-else>注 册 中...</span>
+          <span v-if="!loading">{{$t('register')}}</span>
+          <span v-else>{{$t('registering')}}...</span>
         </el-button>
         <div style="float: right;">
-          <router-link class="link-type" :to="'/login'">使用已有账户登录</router-link>
+          <router-link class="link-type" :to="'/login'">{{$t('login-existing-account')}}</router-link>
         </div>
       </el-form-item>
     </el-form>
     <!--  底部  -->
     <div class="el-register-footer">
-      <span>Copyright © 2018-2023 ruoyi.vip All Rights Reserved.</span>
+      <span>Copyright © 2023-2024 cat2but.com All Rights Reserved.</span>
     </div>
   </div>
 </template>
 
 <script>
 import { getCodeImg, register } from "@/api/login";
+import {strFormat} from "@/utils";
 
 export default {
   name: "Register",
   data() {
     const equalToPassword = (rule, value, callback) => {
       if (this.registerForm.password !== value) {
-        callback(new Error("两次输入的密码不一致"));
+        callback(new Error(this.$i18n.t('entered-passwords-differ').toString()));
       } else {
         callback();
       }
@@ -84,24 +95,29 @@ export default {
       registerForm: {
         username: "",
         password: "",
+        phoneNumber: "",
         confirmPassword: "",
         code: "",
         uuid: ""
       },
       registerRules: {
         username: [
-          { required: true, trigger: "blur", message: "请输入您的账号" },
-          { min: 2, max: 20, message: '用户账号长度必须介于 2 和 20 之间', trigger: 'blur' }
+          { required: true, trigger: "blur", message: this.$i18n.t('please-enter-your-account') },
+          { min: 2, max: 20, message: this.$i18n.t('account-size-exception'), trigger: 'blur' }
+        ],
+        phoneNumber: [
+          { required: true, trigger: "blur", message: this.$i18n.t('please-enter-phone') },
+          { min: 11, max: 16, message: this.$i18n.t('phone-size-exception'), trigger: 'blur' }
         ],
         password: [
-          { required: true, trigger: "blur", message: "请输入您的密码" },
-          { min: 5, max: 20, message: '用户密码长度必须介于 5 和 20 之间', trigger: 'blur' }
+          { required: true, trigger: "blur", message: this.$i18n.t('please-enter-your-password') },
+          { min: 5, max: 20, message: this.$i18n.t('password-size-exception'), trigger: 'blur' }
         ],
         confirmPassword: [
-          { required: true, trigger: "blur", message: "请再次输入您的密码" },
+          { required: true, trigger: "blur", message: this.$i18n.t('please-enter-your-password-again') },
           { required: true, validator: equalToPassword, trigger: "blur" }
         ],
-        code: [{ required: true, trigger: "change", message: "请输入验证码" }]
+        code: [{ required: true, trigger: "change", message: this.$i18n.t('please-enter-verification-code') }]
       },
       loading: false,
       captchaEnabled: true
@@ -126,7 +142,7 @@ export default {
           this.loading = true;
           register(this.registerForm).then(res => {
             const username = this.registerForm.username;
-            this.$alert("<font color='red'>恭喜你，您的账号 " + username + " 注册成功！</font>", '系统提示', {
+            this.$alert("<font color='red'>"+strFormat(this.$i18n.t('account-successfully-registered'),username)+"</font>", this.$i18n.t('prompted').toString(), {
               dangerouslyUseHTMLString: true,
               type: 'success'
             }).then(() => {

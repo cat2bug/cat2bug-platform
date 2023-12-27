@@ -68,6 +68,11 @@ export const constantRoutes = [
     hidden: true
   },
   {
+    path: '/tools/browser/proxy',
+    component: () => import('@/views/tool/project/browser/proxy'),
+    hidden: true
+  },
+  {
     path: '',
     component: Layout,
     redirect: 'index',

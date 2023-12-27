@@ -13,6 +13,11 @@ public class LoginBody
     private String username;
 
     /**
+     * 手机号
+     */
+    private String phoneNumber;
+
+    /**
      * 用户密码
      */
     private String password;
@@ -65,5 +70,13 @@ public class LoginBody
     public void setUuid(String uuid)
     {
         this.uuid = uuid;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
     }
 }
