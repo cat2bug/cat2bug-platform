@@ -1,59 +1,40 @@
 <template>
   <div class="app-container">
-    <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
-      <el-form-item label="父模块id" prop="modulePid">
-        <el-input
-          v-model="queryParams.modulePid"
-          placeholder="请输入父模块id"
-          clearable
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="模块名称" prop="moduleName">
-        <el-input
-          v-model="queryParams.moduleName"
-          placeholder="请输入模块名称"
-          clearable
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="项目id" prop="projectId">
-        <el-input
-          v-model="queryParams.projectId"
-          placeholder="请输入项目id"
-          clearable
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item>
-	    <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
-      </el-form-item>
-    </el-form>
+    <div class="module-tools">
+      <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="120px">
+        <el-form-item prop="moduleName">
+          <el-input
+            v-model="queryParams.moduleName"
+            :placeholder="$t('module.enter-module-name')"
+            prefix-icon="el-icon-files"
+            clearable
+            @input="handleQuery"
+          />
+        </el-form-item>
+      </el-form>
 
-    <el-row :gutter="10" class="mb8">
-      <el-col :span="1.5">
-        <el-button
-          type="primary"
-          plain
-          icon="el-icon-plus"
-          size="mini"
-          @click="handleAdd"
-          v-hasPermi="['system:module:add']"
-        >新增</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="info"
-          plain
-          icon="el-icon-sort"
-          size="mini"
-          @click="toggleExpandAll"
-        >展开/折叠</el-button>
-      </el-col>
-      <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
-    </el-row>
-
+      <el-row :gutter="10" class="mb8">
+        <el-col :span="1.5">
+          <el-button
+            type="primary"
+            plain
+            icon="el-icon-plus"
+            size="mini"
+            @click="handleAdd"
+            v-hasPermi="['system:module:add']"
+          >{{ $t('add') }}</el-button>
+        </el-col>
+        <el-col :span="1.5">
+          <el-button
+            type="info"
+            plain
+            icon="el-icon-sort"
+            size="mini"
+            @click="toggleExpandAll"
+          >{{ $t('module.expand-collapse') }}</el-button>
+        </el-col>
+      </el-row>
+    </div>
     <el-table
       v-if="refreshTable"
       v-loading="loading"
@@ -62,11 +43,9 @@
       :default-expand-all="isExpandAll"
       :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
     >
-      <el-table-column label="父模块id" prop="modulePid" />
-      <el-table-column label="模块名称" align="center" prop="moduleName" />
-      <el-table-column label="备注" align="center" prop="remark" />
-      <el-table-column label="项目id" align="center" prop="projectId" />
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+      <el-table-column :label="$t('module.name')" align="center" prop="moduleName" width="300" />
+      <el-table-column :label="$t('remark')" align="center" prop="remark" />
+      <el-table-column :label="$t('operate')" align="center" class-name="small-padding fixed-width" width="200">
         <template slot-scope="scope">
           <el-button
             size="mini"
@@ -74,44 +53,41 @@
             icon="el-icon-edit"
             @click="handleUpdate(scope.row)"
             v-hasPermi="['system:module:edit']"
-          >修改</el-button>
+          >{{ $t('modify') }}</el-button>
           <el-button
             size="mini"
             type="text"
             icon="el-icon-plus"
             @click="handleAdd(scope.row)"
             v-hasPermi="['system:module:add']"
-          >新增</el-button>
+          >{{ $t('add') }}</el-button>
           <el-button
             size="mini"
             type="text"
             icon="el-icon-delete"
             @click="handleDelete(scope.row)"
             v-hasPermi="['system:module:remove']"
-          >删除</el-button>
+          >{{ $t('delete') }}</el-button>
         </template>
       </el-table-column>
     </el-table>
 
     <!-- 添加或修改模块对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
-      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="父模块id" prop="modulePid">
-          <treeselect v-model="form.modulePid" :options="moduleOptions" :normalizer="normalizer" placeholder="请选择父模块id" />
+      <el-form ref="form" rules="rules" :model="form" :rules="rules" label-width="120px">
+        <el-form-item :label="$t('module.parent-module')" prop="modulePid">
+          <treeselect v-model="form.modulePid" :options="moduleOptions" :normalizer="normalizer" :placeholder="$t('module.please-select-parent-module')" />
         </el-form-item>
-        <el-form-item label="模块名称" prop="moduleName">
-          <el-input v-model="form.moduleName" placeholder="请输入模块名称" />
+        <el-form-item :label="$t('module.name')" prop="moduleName">
+          <el-input v-model="form.moduleName" :placeholder="$t('module.enter-module-name')" min="1" max="" />
         </el-form-item>
-        <el-form-item label="备注" prop="remark">
-          <el-input v-model="form.remark" placeholder="请输入备注" />
-        </el-form-item>
-        <el-form-item label="项目id" prop="projectId">
-          <el-input v-model="form.projectId" placeholder="请输入项目id" />
+        <el-form-item :label="$t('remark')" prop="remark">
+          <el-input v-model="form.remark" :placeholder="$t('please-enter-remark')" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
-        <el-button @click="cancel">取 消</el-button>
+        <el-button type="primary" @click="submitForm">{{ $t('ok') }}</el-button>
+        <el-button @click="cancel">{{ $t('cancel') }}</el-button>
       </div>
     </el-dialog>
   </div>
@@ -152,9 +128,14 @@ export default {
         projectId: this.getProjectId()
       },
       // 表单参数
-      form: {},
+      form: {
+        projectId: this.getProjectId()
+      },
       // 表单校验
       rules: {
+        moduleName: [
+          { required: true, message: this.$t('module.name-cannot-empty'), trigger: "blur" },
+        ],
       }
     };
   },
@@ -183,9 +164,12 @@ export default {
     },
 	/** 查询模块下拉树结构 */
     getTreeselect() {
-      listModule().then(response => {
+      let params = {
+        projectId: this.getProjectId()
+      }
+      listModule(params).then(response => {
         this.moduleOptions = [];
-        const data = { moduleId: 0, moduleName: '顶级节点', children: [] };
+        const data = { moduleId: 0, moduleName: this.$i18n.t('module.root-node'), children: [] };
         data.children = this.handleTree(response.data, "moduleId", "modulePid");
         this.moduleOptions.push(data);
       });
@@ -202,16 +186,17 @@ export default {
         modulePid: null,
         moduleName: null,
         remark: null,
-        projectId: null
+        projectId: this.getProjectId()
       };
       this.resetForm("form");
     },
     /** 获取项目id操作 */
     getProjectId() {
-      return parseInt(this.$store.state.user.currentProjectId);
+      return this.$route.params.projectId?parseInt(this.$route.params.projectId):parseInt(this.$store.state.user.config.currentProjectId);
     },
     /** 搜索按钮操作 */
     handleQuery() {
+      console.log('--------')
       this.getList();
     },
     /** 重置按钮操作 */
@@ -229,7 +214,7 @@ export default {
         this.form.modulePid = 0;
       }
       this.open = true;
-      this.title = "添加模块";
+      this.title = this.$i18n.t('module.add');
     },
     /** 展开/折叠操作 */
     toggleExpandAll() {
@@ -249,7 +234,7 @@ export default {
       getModule(row.moduleId).then(response => {
         this.form = response.data;
         this.open = true;
-        this.title = "修改模块";
+        this.title = this.$i18n.t('module.modify');
       });
     },
     /** 提交按钮 */
@@ -258,13 +243,13 @@ export default {
         if (valid) {
           if (this.form.moduleId != null) {
             updateModule(this.form).then(response => {
-              this.$modal.msgSuccess("修改成功");
+              this.$modal.msgSuccess(this.$i18n.t('modify-success'));
               this.open = false;
               this.getList();
             });
           } else {
             addModule(this.form).then(response => {
-              this.$modal.msgSuccess("新增成功");
+              this.$modal.msgSuccess(this.$i18n.t('add-success'));
               this.open = false;
               this.getList();
             });
@@ -274,13 +259,30 @@ export default {
     },
     /** 删除按钮操作 */
     handleDelete(row) {
-      this.$modal.confirm('是否确认删除模块编号为"' + row.moduleId + '"的数据项？').then(function() {
+      this.$modal.confirm(this.$i18n.t('module.is-delete-module')).then(function() {
         return delModule(row.moduleId);
       }).then(() => {
         this.getList();
-        this.$modal.msgSuccess("删除成功");
+        this.$modal.msgSuccess(this.$i18n.t('delete-success'));
       }).catch(() => {});
     }
   }
 };
 </script>
+<style lang="scss" scoped>
+.module-tools {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  > * {
+    display: inline-block;
+    justify-content: flex-start;
+    margin-bottom: 0px;
+    ::v-deep .el-form-item {
+      margin-bottom: 0px;
+    }
+  }
+}
+</style>

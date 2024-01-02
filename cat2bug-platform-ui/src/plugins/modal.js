@@ -1,4 +1,5 @@
 import { Message, MessageBox, Notification, Loading } from 'element-ui'
+import i18n from "@/utils/i18n/i18n";
 
 let loadingInstance;
 
@@ -21,19 +22,19 @@ export default {
   },
   // 弹出提示
   alert(content) {
-    MessageBox.alert(content, "系统提示")
+    MessageBox.alert(content, i18n.t('prompted').toString())
   },
   // 错误提示
   alertError(content) {
-    MessageBox.alert(content, "系统提示", { type: 'error' })
+    MessageBox.alert(content, i18n.t('prompted').toString(), { type: 'error' })
   },
   // 成功提示
   alertSuccess(content) {
-    MessageBox.alert(content, "系统提示", { type: 'success' })
+    MessageBox.alert(content, i18n.t('prompted').toString(), { type: 'success' })
   },
   // 警告提示
   alertWarning(content) {
-    MessageBox.alert(content, "系统提示", { type: 'warning' })
+    MessageBox.alert(content, i18n.t('prompted').toString(), { type: 'warning' })
   },
   // 通知提示
   notify(content) {
@@ -52,18 +53,18 @@ export default {
     Notification.warning(content)
   },
   // 确认窗体
-  confirm(content) {
-    return MessageBox.confirm(content, "系统提示", {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
+  confirm(content, title, options) {
+    return MessageBox.confirm(content, title || i18n.t('prompted').toString(), options || {
+      confirmButtonText: i18n.t('ok').toString(),
+      cancelButtonText: i18n.t('cancel').toString(),
       type: "warning",
     })
   },
   // 提交内容
-  prompt(content) {
-    return MessageBox.prompt(content, "系统提示", {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
+  prompt(content,title,options) {
+    return MessageBox.prompt(content, title || i18n.t('prompted').toString(), options || {
+      confirmButtonText: i18n.t('ok').toString(),
+      cancelButtonText: i18n.t('cancel').toString(),
       type: "warning",
     })
   },

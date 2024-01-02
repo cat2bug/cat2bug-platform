@@ -5,7 +5,7 @@
         <el-avatar :size="collapse?'small':'medium'"  shape="square" v-if="!currentTeam" :src="imgUrl('add.svg')" fit="cover"></el-avatar>
         <el-avatar :size="collapse?'small':'medium'"  shape="square" v-else-if="currentTeam.teamIcon" :src="iconUrl(currentTeam)" fit="cover"></el-avatar>
         <el-avatar :size="collapse?'small':'medium'" shape="square" v-else>{{currentTeam.name}}</el-avatar>
-        <p class="prefix-team-name" v-if="!collapse">{{currentTeam?currentTeam.teamName:'点击创建团队addition.svg'}}</p>
+        <p class="prefix-team-name" v-if="!collapse">{{currentTeam?currentTeam.teamName: $t('team.create')}}</p>
       </template>
       <el-option
         style="height:80px;"
@@ -34,10 +34,14 @@ import {removeCurrentProjectId} from "@/utils/project";
 
 export default {
   name: "TeamSelect",
+  model: {
+    prop: 'teamId',
+    event: 'change'
+  },
   data() {
     return {
       teamList:[],
-      currentTeamId: null,
+      currentTeamId: this.teamId,
       currentTeam: null,
     }
   },
@@ -45,6 +49,10 @@ export default {
     collapse: {
       type: Boolean,
       default: false
+    },
+    teamId: {
+      type: Number,
+      default: null
     }
   },
   computed:{
@@ -91,6 +99,7 @@ export default {
       for(let i in this.teamList){
         if(this.teamList[i].teamId==currentTeamId) {
           this.currentTeam=this.teamList[i];
+          this.$emit('change',this.currentTeamId);
           // 存储到远程服务器
           if(isRefresh) {
             updateConfig({

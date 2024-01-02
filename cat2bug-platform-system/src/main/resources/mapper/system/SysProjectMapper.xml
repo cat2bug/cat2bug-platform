@@ -6,6 +6,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     
     <resultMap type="SysProject" id="SysProjectResult">
         <result property="projectId"    column="project_id"    />
+        <result property="projectState"    column="project_state" typeHandler="com.cat2bug.system.domain.handle.ProjectStateEnumTypeHandle"    />
         <result property="teamId"    column="team_id"    />
         <result property="projectName"    column="project_name"    />
         <result property="projectIcon"    column="project_icon"    />
@@ -18,12 +19,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </resultMap>
 
     <sql id="findSysProjectVo">
-        SELECT p.project_id, p.team_id, p.project_name, p.project_icon, p.project_introduce, p.create_by, p.create_time, p.update_by, p.update_time
+        SELECT p.project_id, p.team_id, p.project_state, p.project_name, p.project_icon, p.project_introduce, p.create_by, p.create_time, p.update_by, p.update_time
         FROM sys_project p
     </sql>
 
     <sql id="selectSysProjectVo">
-        SELECT DISTINCT p.project_id, p.team_id, p.project_name, p.project_icon, p.project_introduce, p.create_by, p.create_time, p.update_by, p.update_time, up.collect
+        SELECT DISTINCT p.project_id, p.team_id, p.project_state, p.project_name, p.project_icon, p.project_introduce, p.create_by, p.create_time, p.update_by, p.update_time, up.collect
         FROM sys_project p
         LEFT JOIN sys_user_project up on p.project_id=up.project_id
     </sql>
@@ -31,7 +32,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <select id="selectSysProjectList" parameterType="SysProject" resultMap="SysProjectResult">
         <include refid="selectSysProjectVo"/>
         <where>
-            p.team_id = #{ teamId }
+            p.project_state > 0 and p.team_id = #{ teamId }
             <if test="params != null and params.userId !=null">  and up.user_id= #{params.userId} </if>
             <if test="collect != null  and collect != ''"> and up.collect = #{collect}</if>
             <if test="projectName != null  and projectName != ''"> and p.project_name like concat('%', #{projectName}, '%')</if>
@@ -87,11 +88,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </update>
 
     <delete id="deleteSysProjectByProjectId" parameterType="Long">
-        delete from sys_project where project_id = #{projectId}
+        update sys_project set project_state = 0 where project_id = #{projectId}
     </delete>
 
     <delete id="deleteSysProjectByProjectIds" parameterType="String">
-        delete from sys_project where project_id in 
+        update sys_project set project_state = 0 where project_id in
         <foreach item="projectId" collection="array" open="(" separator="," close=")">
             #{projectId}
         </foreach>

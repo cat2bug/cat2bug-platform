@@ -1,19 +1,19 @@
 <template>
   <div class="app-container">
-    <el-form ref="form" :model="form" :rules="rules" label-width="80px">
-      <el-form-item label="团队名称" prop="teamName">
-        <el-input v-model="form.teamName" placeholder="请输入团队名称" maxlength="64" />
+    <el-form ref="form" :model="form" :rules="rules" label-width="120px">
+      <el-form-item :label="$t('team.name')" prop="teamName">
+        <el-input v-model="form.teamName" :placeholder="$t('team.please-enter-name')" maxlength="64" />
       </el-form-item>
-      <el-form-item label="团队图标" prop="teamIcon">
+      <el-form-item :label="$t('team.icon')" prop="teamIcon">
         <image-upload v-model="form.teamIcon" :limit="1"/>
       </el-form-item>
-      <el-form-item label="团队介绍" prop="introduce">
-        <el-input v-model="form.introduce" placeholder="请输入团队介绍" type="textarea" maxlength="255" show-word-limit />
+      <el-form-item :label="$t('team.introduce')" prop="introduce">
+        <el-input v-model="form.introduce" :placeholder="$t('team.please-enter-introduce')" type="textarea" rows="5" maxlength="255" show-word-limit />
       </el-form-item>
     </el-form>
     <el-row>
       <el-col :span="24">
-        <el-button type="primary" @click="submitForm">创建团队</el-button>
+        <el-button type="primary" @click="submitForm">{{ $t('team.create') }}</el-button>
       </el-col>
     </el-row>
   </div>
@@ -21,6 +21,8 @@
 
 <script>
 import {addTeam, listTeam, updateTeam} from "@/api/system/team";
+import {updateConfig} from "@/api/system/user-config";
+import {removeCurrentProjectId} from "@/utils/project";
 
 export default {
   name: "TeamAdd",
@@ -57,15 +59,18 @@ export default {
         if (valid) {
           if (this.form.teamId != null) {
             updateTeam(this.form).then(response => {
-              this.$modal.msgSuccess("修改成功");
+              this.$modal.msgSuccess(this.$i18n.t('modify-success'));
               this.open = false;
               this.getList();
             });
           } else {
             addTeam(this.form).then(response => {
-              this.$modal.msgSuccess("新增成功");
-              this.open = false;
-              this.getList();
+              this.$modal.msgSuccess(this.$i18n.t('create-success'));
+              updateConfig({
+                currentTeamId: response.data.teamId
+              }).then(res => {
+                this.$router.push({path:'/main/index',query:{refresh: 'true'}});
+              });
             });
           }
         }

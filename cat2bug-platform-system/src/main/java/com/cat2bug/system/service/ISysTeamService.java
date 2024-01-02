@@ -66,7 +66,7 @@ public interface ISysTeamService
      * @param sysTeam 团队
      * @return 结果
      */
-    public int insertSysTeam(SysTeam sysTeam);
+    public SysTeam insertSysTeam(SysTeam sysTeam);
 
     /**
      * 新增团队成员

@@ -7,17 +7,21 @@ import com.cat2bug.common.core.domain.entity.SysRole;
 import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.common.core.page.TableDataInfo;
 import com.cat2bug.common.enums.BusinessType;
+import com.cat2bug.common.utils.MessageUtils;
 import com.cat2bug.common.utils.poi.ExcelUtil;
+import com.cat2bug.framework.web.service.SysLoginService;
 import com.cat2bug.system.domain.SysProject;
 import com.cat2bug.system.domain.SysUserProject;
 import com.cat2bug.system.service.ISysProjectService;
 import com.cat2bug.system.service.ISysRoleService;
 import com.cat2bug.system.service.ISysUserProjectService;
+import com.google.common.base.Preconditions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -30,6 +34,9 @@ import java.util.List;
 @RequestMapping("/system/project")
 public class SysProjectController extends BaseController
 {
+    @Autowired
+    private SysLoginService loginService;
+
     @Autowired
     private ISysProjectService sysProjectService;
 
@@ -56,7 +63,7 @@ public class SysProjectController extends BaseController
      */
     @PreAuthorize("@ss.hasPermi('system:project:list')")
     @GetMapping("/{projectId}/member")
-    public TableDataInfo list(@PathVariable Long projectId, SysUser sysUser)
+    public TableDataInfo listByProjectId(@PathVariable Long projectId, SysUser sysUser)
     {
         startPage();
         List<SysUser> list = sysUserProjectService.selectSysUserListByProjectId(projectId, sysUser);
@@ -141,9 +148,12 @@ public class SysProjectController extends BaseController
      */
     @PreAuthorize("@ss.hasPermi('system:project:remove')")
     @Log(title = "项目", businessType = BusinessType.DELETE)
-	@DeleteMapping("/{projectIds}")
-    public AjaxResult remove(@PathVariable Long[] projectIds)
+	@DeleteMapping("/{projectId}")
+    public AjaxResult remove(@PathVariable Long projectId, @RequestBody String password)
     {
-        return toAjax(sysProjectService.deleteSysProjectByProjectIds(projectIds));
+        Preconditions.checkNotNull(password, MessageUtils.message("user.password.not_empty"));
+        loginService.loginPreCheck(getUsername(),password);
+
+        return toAjax(sysProjectService.deleteSysProjectByProjectId(projectId));
     }
 }

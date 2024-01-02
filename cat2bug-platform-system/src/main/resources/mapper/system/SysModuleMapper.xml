@@ -29,7 +29,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     
     <select id="selectSysModuleByModuleId" parameterType="Long" resultMap="SysModuleResult">
         <include refid="selectSysModuleVo"/>
-        where module_id = #{moduleId}
+        left join (select count(*) children_count,module_pid from sys_module group by module_pid) mg on mg.module_pid=m.module_id
+        where m.module_id = #{moduleId}
     </select>
         
     <insert id="insertSysModule" parameterType="SysModule">

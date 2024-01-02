@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <el-page-header @back="goBack" :content="$t('project.create-project')">
+    <el-page-header @back="goBack" :content="$t('project.info')">
     </el-page-header>
     <el-row class="project-add-page-container">
       <el-form ref="form" :model="form" :rules="rules" label-width="120px">
@@ -26,7 +26,7 @@
           <el-col :xs="24" :sm="24" :md="8" :lg="6" :xl="6" class="step2">
             <el-image
               style="width: 150px; height: 150px"
-              :src="activeProjectIconUrl(activeProjectIconIndex)"
+              :src="form.projectIcon"
               fit="cover"></el-image>
             <el-popover
               v-model="projectIconPopperVisible"
@@ -46,86 +46,10 @@
               <el-button slot="reference" size="mini">{{$t('project.change-icon')}}</el-button>
             </el-popover>
           </el-col>
+          <!--            保存取消按钮-->
           <el-col :xs="24" :sm="24" :md="16" :lg="16" :xl="12">
-            <el-form-item :label="$t('project.member')">
-              <el-row>
-                <el-col :span="24">
-                  <el-switch
-                    v-model="projectMemberSwitch"
-                    active-color="#13ce66"
-                    inactive-color="#ff4949">
-                  </el-switch>
-                </el-col>
-                <el-col :span="24" v-if="projectMemberSwitch">
-<!--                  添加成员按钮-->
-                  <el-popover
-                    placement="bottom"
-                    width="400"
-                    @show="getMemberList"
-                    @hide="resetMember"
-                    trigger="click">
-                    <el-input prefix-icon="el-icon-search" :placeholder="$t('team.search-placeholder')" v-model="memberParams.params.search" @input="getMemberList" size="mini"></el-input>
-<!--                    成员列表-->
-                      <el-row v-if="memberList && memberList.length>0" class="project-members">
-                        <el-col :select="member.isSelect" :span="24" v-for="member in memberList" :key="member.userId" @click.native="selectAddMemberHandle(member)">
-                          <member-nameplate :member="member"></member-nameplate>
-                        </el-col>
-                      </el-row>
-                    <el-empty v-else :description="$t('no-data')"></el-empty>
-                    <el-button slot="reference" size="mini" icon="el-icon-user-solid">{{$t('project.add-member')}}</el-button>
-                  </el-popover>
-                </el-col>
-                <el-col :span="24" v-if="projectMemberSwitch">
-                  <el-table
-                    :data="form.members"
-                    style="width: 100%">
-                    <el-table-column
-                      prop="nickName"
-                      :label="$t('name')"
-                      min-width="200"
-                    >
-                      <template slot-scope="scope">
-                        <member-nameplate :member="scope.row"></member-nameplate>
-                      </template>
-                    </el-table-column>
-                    <el-table-column
-                      prop="roleIds"
-                      :label="$t('role')"
-                      width="230">
-                      <template slot-scope="scope">
-                        <el-form-item :prop="`members.${scope.$index}.roleIds`" :rules="rules.roleIds">
-                          <el-select v-model="scope.row.roleIds" :placeholder="$t('member.please-select-role')" multiple collapse-tags :disabled="scope.row.userId==getCurrentUserId()">
-                            <el-option
-                              v-for="role in roleOptions"
-                              :key="role.roleId"
-                              :label="role.roleName"
-                              :value="role.roleId">
-                            </el-option>
-                          </el-select>
-                        </el-form-item>
-                      </template>
-                    </el-table-column>
-                    <el-table-column
-                      width="80"
-                      :label="$t('operate')">
-                      <template slot-scope="scope">
-                        <el-button
-                          v-if="scope.row.userId!=getCurrentUserId()"
-                          size="mini"
-                          type="text"
-                          icon="el-icon-delete"
-                          @click="deleteMemberHandle(scope.row)"
-                          v-hasPermi="['system:project:remove']"
-                        >{{$t('delete')}}</el-button>
-                      </template>
-                    </el-table-column>
-                  </el-table>
-                </el-col>
-              </el-row>
-            </el-form-item>
-<!--            保存取消按钮-->
             <el-form-item>
-              <el-button type="primary" @click="onSubmit">{{$t('finish')}}</el-button>
+              <el-button type="primary" @click="onSubmit">{{$t('update')}}</el-button>
               <el-button @click="goBack">{{$t('cancel')}}</el-button>
             </el-form-item>
           </el-col>
@@ -136,7 +60,7 @@
 </template>
 
 <script>
-import {addProject, listProjectRole} from "@/api/system/project";
+import {addProject, getProject, listProjectRole, updateProject} from "@/api/system/project";
 import { listMember } from "@/api/system/team";
 import MemberNameplate from "@/components/MemberNameplate"
 
@@ -183,10 +107,18 @@ export default {
     }
   },
   created() {
-    this.form.projectIcon = this.activeProjectIconUrl(1);
+    this.getProject();
     this.getRoleList();
   },
   methods: {
+    getProjectId() {
+      return this.$route.params.projectId?parseInt(this.$route.params.projectId):parseInt(this.$store.state.user.config.currentProjectId);
+    },
+    getProject() {
+      getProject(this.getProjectId()).then(res=>{
+        this.form = res.data;
+      });
+    },
     getRoleList() {
       listProjectRole(0).then(res => {
         this.roleOptions = res.rows?res.rows.map(r=>{
@@ -211,17 +143,9 @@ export default {
           } else {
             m.roleIds=[];
           }
-          if(this.getCurrentUserId() == m.userId && this.form.members.length == 0) {
-            m.roleIds = this.roleOptions.filter(r=>r.projectAdmin).map(r=>r.roleId);
-            this.form.members.push(m);
-          }
           return m;
         });
       });
-    },
-    /** 获取当前用户id */
-    getCurrentUserId() {
-      return this.$store.state.user.id;
     },
     /** 获取团队id */
     getTeamId() {
@@ -265,8 +189,8 @@ export default {
     onSubmit() {
       this.$refs["form"].validate(valid => {
         if (valid) {
-          addProject(this.form).then(response => {
-            this.$modal.msgSuccess(this.$i18n.t('add-success'));
+          updateProject(this.form).then(response => {
+            this.$modal.msgSuccess(this.$i18n.t('update.success'));
             this.goBack();
           });
         }

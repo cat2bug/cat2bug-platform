@@ -12,6 +12,7 @@ import com.cat2bug.system.domain.SysUserTeam;
 import com.cat2bug.system.domain.SysUserTeamRole;
 import com.cat2bug.system.domain.vo.BatchUserRoleVo;
 import com.cat2bug.system.mapper.*;
+import com.cat2bug.system.service.ISysUserConfigService;
 import com.google.common.base.Preconditions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -45,6 +46,7 @@ public class SysTeamServiceImpl implements ISysTeamService
 
     @Autowired
     private SysUserTeamRoleMapper sysUserTeamRoleMapper;
+
     /**
      * 查询团队
      * 
@@ -133,7 +135,7 @@ public class SysTeamServiceImpl implements ISysTeamService
      */
     @Override
     @Transactional
-    public int insertSysTeam(SysTeam sysTeam)
+    public SysTeam insertSysTeam(SysTeam sysTeam)
     {
         Preconditions.checkNotNull(sysTeam.getTeamName(),MessageUtils.message("team.insert_team_name_cannot_empty"));
 
@@ -170,7 +172,7 @@ public class SysTeamServiceImpl implements ISysTeamService
             sysUserConfig.setCurrentTeamId(sysTeam.getTeamId());
             sysUserConfigMapper.updateSysUserConfig(sysUserConfig);
         }
-        return 1;
+        return sysTeam;
     }
 
     @Override

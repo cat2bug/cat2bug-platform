@@ -62,6 +62,11 @@ public class SysUserServiceImpl implements ISysUserService
     protected Validator validator;
 
     /**
+     * 默认权限ID
+     */
+    protected final static Long DEFAULT_ROLE_ID = 10L;
+
+    /**
      * 根据条件分页查询用户列表
      * 
      * @param user 用户信息
@@ -272,9 +277,18 @@ public class SysUserServiceImpl implements ISysUserService
      * @return 结果
      */
     @Override
+    @Transactional
     public boolean registerUser(SysUser user)
     {
-        return userMapper.insertUser(user) > 0;
+        // 新增用户信息
+        int rows =  userMapper.insertUser(user);
+        user.setRoleIds(new Long[]{DEFAULT_ROLE_ID});
+
+        // 新增用户岗位关联
+        insertUserPost(user);
+        // 新增用户与角色管理
+        insertUserRole(user);
+        return rows > 0;
     }
 
     /**

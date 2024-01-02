@@ -1,8 +1,9 @@
 <template>
     <div :class="{'has-logo':showLogo}" :style="{ backgroundColor: settings.sideTheme === 'theme-dark' ? variables.menuBackground : variables.menuLightBackground }">
-        <team-select v-if="showLogo" :collapse="isCollapse"></team-select>
+        <team-select v-if="showLogo" :collapse="isCollapse" v-model="teamId"></team-select>
         <el-scrollbar :class="settings.sideTheme" wrap-class="scrollbar-wrapper">
           <el-menu
+            v-show="teamId"
             :default-active="activeMenu"
             :collapse="isCollapse"
             :background-color="settings.sideTheme === 'theme-dark' ? variables.menuBackground : variables.menuLightBackground"
@@ -19,11 +20,11 @@
               :base-path="'main/'+route.path"
             />
           </el-menu>
-          <div class="sidebar-divider">
+          <div v-show="teamId" class="sidebar-divider">
             <el-divider></el-divider>
           </div>
           <el-menu
-              v-show="isShowProjectMenu"
+              v-show="teamId && isShowProjectMenu"
               :default-active="activeMenu"
               :collapse="isCollapse"
               :background-color="settings.sideTheme === 'theme-dark' ? variables.menuBackground : variables.menuLightBackground"
@@ -40,10 +41,11 @@
                   :base-path="'project/'+route.path"
               />
           </el-menu>
-          <div class="sidebar-divider" v-show="isShowProjectMenu">
+          <div v-show="teamId && isShowProjectMenu" class="sidebar-divider">
             <el-divider></el-divider>
           </div>
           <el-menu
+            v-show="teamId"
             :default-active="activeMenu"
             :collapse="isCollapse"
             :background-color="settings.sideTheme === 'theme-dark' ? variables.menuBackground : variables.menuLightBackground"
@@ -92,11 +94,16 @@ import variables from "@/assets/styles/variables.scss";
 
 export default {
     components: { SidebarItem, TeamSelect },
+    data() {
+      return {
+        teamId: null,
+      }
+    },
     computed: {
         ...mapState(["settings"]),
         ...mapGetters(["sidebarRouters", "sidebar"]),
         isShowProjectMenu() {
-          return this.$store.state.user.currentProjectId
+          return this.$store.state.user.config.currentProjectId
         },
         filterSidebarRouters() {
           return function (name){

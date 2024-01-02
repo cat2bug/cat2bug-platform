@@ -93,7 +93,7 @@ public class SysTeamController extends BaseController
     }
 
     /**
-     * 查询团队列表
+     * 查询我所拥有的团队
      */
     @PreAuthorize("@ss.hasPermi('system:team:list')")
     @GetMapping("/my")
@@ -137,7 +137,7 @@ public class SysTeamController extends BaseController
     @PostMapping
     public AjaxResult add(@RequestBody SysTeam sysTeam)
     {
-        return toAjax(sysTeamService.insertSysTeam(sysTeam));
+        return success(sysTeamService.insertSysTeam(sysTeam));
     }
 
     /**

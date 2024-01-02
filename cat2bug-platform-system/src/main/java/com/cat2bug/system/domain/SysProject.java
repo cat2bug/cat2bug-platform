@@ -1,6 +1,7 @@
 package com.cat2bug.system.domain;
 
 import com.cat2bug.common.core.domain.entity.SysUser;
+import com.cat2bug.system.domain.type.SysProjectStateEnum;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import com.cat2bug.common.annotation.Excel;
@@ -23,6 +24,9 @@ public class SysProject extends BaseEntity
 
     /** 团队id */
     private Long teamId;
+
+    /** 团队状态 */
+    private SysProjectStateEnum projectState;
 
     /** 项目名称 */
     @Excel(name = "项目名称")
@@ -100,6 +104,14 @@ public class SysProject extends BaseEntity
 
     public void setCollect(boolean collect) {
         this.collect = collect;
+    }
+
+    public SysProjectStateEnum getProjectState() {
+        return projectState;
+    }
+
+    public void setProjectState(SysProjectStateEnum projectState) {
+        this.projectState = projectState;
     }
 
     @Override

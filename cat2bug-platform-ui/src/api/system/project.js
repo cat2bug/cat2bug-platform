@@ -61,9 +61,10 @@ export function updateProject(data) {
 }
 
 // 删除项目
-export function delProject(projectId) {
+export function delProject(projectId, password) {
   return request({
     url: '/system/project/' + projectId,
-    method: 'delete'
+    method: 'delete',
+    data: password
   })
 }

@@ -81,7 +81,7 @@
             size="mini"
             type="text"
             icon="el-icon-delete"
-            @click="handleDelete(scope.row)"
+            @click="handleDelete($event, scope.row)"
             v-hasPermi="['system:project:remove']"
           >{{$t('delete')}}</el-button>
         </template>
@@ -127,6 +127,10 @@ import store from "@/store";
 import {isRelogin} from "@/utils/request";
 import router from "@/router";
 import {Message} from "element-ui";
+import {updateConfig} from "@/api/system/user-config";
+import {removeCurrentProjectId} from "@/utils/project";
+import i18n from "@/utils/i18n/i18n";
+import {mapGetters, mapState} from "vuex";
 
 export default {
   name: "Project",
@@ -176,6 +180,7 @@ export default {
     };
   },
   computed: {
+    ...mapGetters(["sidebarRouters"]),
     collect: function() {
       return function (project) {
         return project.collect?'true':'false';
@@ -187,6 +192,17 @@ export default {
     this.getCollectList();
   },
   methods: {
+    /** 移除url某个参数 */
+    removeParamFromUrl(url, param) {
+      let newUrl = url;
+      const regex = new RegExp(`([?&])${param}=[^&]*[&]?`, 'i')
+      newUrl = newUrl.replace(regex, '$1');
+      // 处理最后一个参数后面的&符号
+      if (newUrl.endsWith('?') || newUrl.endsWith('&')) {
+        newUrl = newUrl.slice(0, -1);
+      }
+      return newUrl;
+    },
     /** 选择项目分组 */
     selectProjectTabHandle(){
       this.reset();
@@ -312,13 +328,22 @@ export default {
     /** 删除按钮操作 */
     handleDelete(e,row) {
       let msg = this.$i18n.t('project.is-delete-project');
-      this.$modal.confirm(strFormat(msg,'[ '+row.projectName+' ]')).then(function() {
-        return delProject(row.projectId);
-      }).then(() => {
-        this.getList();
-        this.$modal.msgSuccess("删除成功");
+      let _this=this;
+      this.$modal.prompt(strFormat(msg,'[ '+row.projectName+' ]'),
+        i18n.t('prompted').toString(),
+        {
+          confirmButtonText: i18n.t('delete').toString(),
+          cancelButtonText: i18n.t('cancel').toString(),
+          inputPlaceholder: i18n.t('please-enter-your-password').toString(),
+          confirmButtonClass: 'delete-button',
+          inputType: 'password',
+          type: "warning",
+        }).then(function(res) {
+        delProject(row.projectId, res.value).then(()=>{
+          _this.$modal.msgSuccess(_this.$i18n.t('delete-success'));
+          _this.refreshSidebar();
+        });
       }).catch(() => {});
-      e.stopPropagation();
     },
     /** 点击收藏操作 */
     clickCollectHandle(collect, project,isRefreshList) {
@@ -331,19 +356,18 @@ export default {
         }
         this.getCollectList();
         if(collect) {
-          this.$message.success(this.$i18n.t('project.collect-success'));
+          this.$message.success(this.$i18n.t('project.collect-success').toString());
         } else {
-          this.$message.success(this.$i18n.t('project.cancel-success'));}
+          this.$message.success(this.$i18n.t('project.cancel-success').toString());
+        }
       });
     },
     /** 点击项目跳转 */
     clickProject(project) {
-      store.dispatch('setCurrentProjectId',project.projectId).then(() => {
-        this.$router.push({name:'Defect'})
-      }).catch(err => {
-        console.error(err);
-      })
-    }
+      store.dispatch('UpdateCurrentProjectId', project.projectId).then(() => {
+        this.$router.push({name:'Defect', params: { projectId: project.projectId }})
+      });
+    },
   }
 };
 </script>
