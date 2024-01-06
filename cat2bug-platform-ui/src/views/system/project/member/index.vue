@@ -24,20 +24,11 @@
               type="primary"
               style="float: right;"
               plain
-              icon="el-icon-plus"
+              icon="el-icon-user-solid"
               size="mini"
-              @click="inviteMemberHandle"
-              v-hasPermi="['system:member:add']"
-            >{{$t('team.invite-members')}}</el-button>
-            <el-button
-              type="primary"
-              style="float: right;"
-              plain
-              icon="el-icon-plus"
-              size="mini"
-              @click="createMemberHandle"
-              v-hasPermi="['system:member:add']"
-            >{{$t('member.create')}}</el-button>
+              @click="addMemberHandle"
+              v-hasPermi="['system:project:list']"
+            >{{$t('project.add-member')}}</el-button>
           </el-col>
         </el-row>
 
@@ -98,19 +89,10 @@
               <el-button
                 size="mini"
                 type="text"
-                icon="el-icon-lock"
-                @click="lockMemberHandle(scope.row)"
-                v-hasPermi="['system:member:edit']"
-                v-if="scope.row.status=='0'"
-              >{{$t('lock')}}</el-button>
-              <el-button
-                size="mini"
-                type="text"
-                icon="el-icon-unlock"
-                @click="unlockMemberHandle(scope.row)"
-                v-hasPermi="['system:member:edit']"
-                v-else-if="scope.row.status=='1'"
-              >{{$t('unlock')}}</el-button>
+                icon="el-icon-delete"
+                @click="deleteHandle(scope.row)"
+                v-hasPermi="['system:project:member:remove']"
+              >{{$t('delete')}}</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -123,22 +105,25 @@
         />
       </el-col>
     </el-row>
-    <create-team-member ref="createTeamMemberDialog" @create="getMemberList" />
-    <invite-team-member ref="inviteTeamMemberDialog" @invite="getMemberList" />
+    <add-project-member ref="addProjectMemberDialog" @invite="getMemberList" />
   </div>
 </template>
 
 <script>
-import { updateMemberTeamRole, updateMemberTeamRoleIds} from "@/api/system/team";
-import CreateTeamMember from "@/views/system/team/option/team/CreateTeamMember";
-import InviteTeamMember from "@/views/system/team/option/team/InviteTeamMember";
+import {updateMemberTeamRole} from "@/api/system/team";
+import AddProjectMember from "@/views/system/project/member/AddProjectMember";
 import MemberNameplate from "@/components/MemberNameplate";
-import {getUser} from "@/api/system/user";
-import {listMemberOfProject} from "@/api/system/project";
+import {
+  delMemberOfProject,
+  listMemberOfProject,
+  listProjectRole, updateMemberRoleOfProject,
+} from "@/api/system/project";
+import {strFormat} from "@/utils";
+import i18n from "@/utils/i18n/i18n";
 
 export default {
   name: "ProjectMemberManage",
-  components: { CreateTeamMember, InviteTeamMember, MemberNameplate },
+  components: { AddProjectMember, MemberNameplate },
   data() {
     return {
       // 遮罩层
@@ -161,23 +146,22 @@ export default {
     }
   },
   created() {
-    this.init();
-    this.getMemberList();
+    this.getRoleList();
   },
   methods: {
-    /** 初始化数据 */
-    init() {
-      // 获取当前用户信息
-      getUser().then(res => {
-        this.roleOptions = res.roles?res.roles.filter(r=>r.isTeamRole).map(r=>{
+    /** 获取角色 */
+    getRoleList() {
+      listProjectRole(0).then(res => {
+        this.roleOptions = res.rows?res.rows.map(r=>{
           r.roleName = r.roleNameI18nKey?this.$t(r.roleNameI18nKey):r.roleName;
           return r;
         }):[];
+        this.getMemberList();
       });
     },
     /** 获取项目id */
     getProjectId() {
-      return this.$route.params.projectId?parseInt(this.$route.params.projectId):parseInt(this.$store.state.user.config.currentProjectId);
+      return parseInt(this.$store.state.user.config.currentProjectId);
     },
     /** 搜索用户 */
     memberSearchHandle(e){
@@ -194,12 +178,14 @@ export default {
     },
     /** 更新用户权限 */
     roleChangeHandle(member) {
-      updateMemberTeamRoleIds(
-        this.getTeamId(),
+      updateMemberRoleOfProject(
+        this.getProjectId(),
         member.userId,
         member.roleIds
-      ).then(res=>{
-        this.$message.success(this.$i18n.t('update.success'));
+      ).then(()=>{
+        this.$message.success(this.$i18n.t('update.success').toString());
+        this.getMemberList();
+      }).catch(()=>{
         this.getMemberList();
       });
     },
@@ -207,36 +193,28 @@ export default {
     goBack() {
       this.$router.back();
     },
-    /** 邀请按钮操作 */
-    inviteMemberHandle() {
-      this.$refs.inviteTeamMemberDialog.open();
+    /** 添加成员按钮操作 */
+    addMemberHandle() {
+      this.$refs.addProjectMemberDialog.open();
     },
-    /** 新增按钮操作 */
-    createMemberHandle() {
-      this.$refs.createTeamMemberDialog.open();
-    },
-    /** 更新用户操作 */
-    updateMemberRole(memberRole){
-      updateMemberTeamRole(memberRole.teamId,memberRole.userId,memberRole).then(res=>{
-        this.$message.success(this.$i18n.t('update.success'));
-        this.getMemberList();
+    /** 移除成员按钮操作 */
+    deleteHandle(member) {
+      let _this = this;
+      this.$modal.confirm(this.$i18n.t('project.is-delete-member'),
+        this.$i18n.t('prompted').toString(),
+        {
+          confirmButtonText: i18n.t('delete').toString(),
+          cancelButtonText: i18n.t('cancel').toString(),
+          confirmButtonClass: 'delete-button',
+          type: "warning",
+        }).then(() => {
+          delMemberOfProject(_this.getProjectId(),member.userId).then(()=>{
+            _this.$message.success(this.$i18n.t('delete.success').toString());
+            _this.getMemberList();
+          })
+      }).catch(() => {
       });
-    },
-    /** 锁定按钮操作 */
-    lockMemberHandle(member) {
-      this.updateMemberRole({
-        teamId: this.getTeamId(),
-        userId: member.userId,
-        teamLock: 1
-      });
-    },
-    /** 解锁按钮操作 */
-    unlockMemberHandle(member) {
-      this.updateMemberRole({
-        teamId: this.getTeamId(),
-        userId: member.userId,
-        teamLock: 0
-      });
+
     },
   }
 }
@@ -267,4 +245,16 @@ export default {
       color: #DCDFE6;
     }
   }
+</style>
+<style>
+.delete-button {
+  color: #fff;
+  background-color: #f56c6c !important;
+  border-color: #f56c6c !important;
+}
+.delete-button:hover {
+  background: #f78989 !important;
+  border-color: #f78989 !important;
+  color: #fff;
+}
 </style>

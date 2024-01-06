@@ -23,6 +23,7 @@
 import {addTeam, listTeam, updateTeam} from "@/api/system/team";
 import {updateConfig} from "@/api/system/user-config";
 import {removeCurrentProjectId} from "@/utils/project";
+import store from "@/store";
 
 export default {
   name: "TeamAdd",
@@ -69,7 +70,9 @@ export default {
               updateConfig({
                 currentTeamId: response.data.teamId
               }).then(res => {
-                this.$router.push({path:'/main/index',query:{refresh: 'true'}});
+                store.dispatch('GetInfo').then(() => {
+                  this.$router.push({path:'/team/index'});
+                });
               });
             });
           }

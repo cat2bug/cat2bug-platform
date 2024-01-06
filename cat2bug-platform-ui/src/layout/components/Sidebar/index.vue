@@ -14,10 +14,10 @@
             mode="vertical"
           >
             <sidebar-item
-              v-for="(route, index) in filterSidebarRouters('main')"
+              v-for="(route, index) in filterSidebarRouters('team')"
               :key="route.path  + index"
               :item="route"
-              :base-path="'main/'+route.path"
+              :base-path="'team/'+route.path"
             />
           </el-menu>
           <div v-show="teamId" class="sidebar-divider">
@@ -56,32 +56,32 @@
             mode="vertical"
           >
             <sidebar-item
-              v-for="(route, index) in filterSidebarRouters('team-option')"
+              v-for="(route, index) in filterSidebarRouters('team-options')"
               :key="route.path  + index"
               :item="route"
-              :base-path="'team-option/'+route.path"
+              :base-path="'team-options/'+route.path"
             />
           </el-menu>
-<!--          <div class="sidebar-divider">-->
-<!--            <el-divider></el-divider>-->
-<!--          </div>-->
-<!--          <el-menu-->
-<!--            :default-active="activeMenu"-->
-<!--            :collapse="isCollapse"-->
-<!--            :background-color="settings.sideTheme === 'theme-dark' ? variables.menuBackground : variables.menuLightBackground"-->
-<!--            :text-color="settings.sideTheme === 'theme-dark' ? variables.menuColor : variables.menuLightColor"-->
-<!--            :unique-opened="true"-->
-<!--            :active-text-color="settings.theme"-->
-<!--            :collapse-transition="false"-->
-<!--            mode="vertical"-->
-<!--          >-->
-<!--            <sidebar-item-->
-<!--              v-for="(route, index) in filterSidebarRouters('system')"-->
-<!--              :key="route.path  + index"-->
-<!--              :item="route"-->
-<!--              :base-path="'system/'+route.path"-->
-<!--            />-->
-<!--          </el-menu>-->
+          <div class="sidebar-divider">
+            <el-divider></el-divider>
+          </div>
+          <el-menu
+            :default-active="activeMenu"
+            :collapse="isCollapse"
+            :background-color="settings.sideTheme === 'theme-dark' ? variables.menuBackground : variables.menuLightBackground"
+            :text-color="settings.sideTheme === 'theme-dark' ? variables.menuColor : variables.menuLightColor"
+            :unique-opened="true"
+            :active-text-color="settings.theme"
+            :collapse-transition="false"
+            mode="vertical"
+          >
+            <sidebar-item
+              v-for="(route, index) in filterSidebarRouters('system')"
+              :key="route.path  + index"
+              :item="route"
+              :base-path="'system/'+route.path"
+            />
+          </el-menu>
         </el-scrollbar>
     </div>
 </template>
@@ -96,43 +96,46 @@ export default {
     components: { SidebarItem, TeamSelect },
     data() {
       return {
-        teamId: null,
+        // teamId: null,
       }
     },
     computed: {
         ...mapState(["settings"]),
         ...mapGetters(["sidebarRouters", "sidebar"]),
-        isShowProjectMenu() {
-          return this.$store.state.user.config.currentProjectId
-        },
-        filterSidebarRouters() {
-          return function (name){
-            for(let i in this.sidebarRouters) {
-              if(this.sidebarRouters[i].name && this.sidebarRouters[i].name.toLowerCase()==name.toLowerCase()){
-                return this.sidebarRouters[i].children;
-              }
+      teamId() {
+          return this.$store.state.user.config.currentTeamId;
+      },
+      isShowProjectMenu() {
+        return this.$store.state.user.config.currentProjectId
+      },
+      filterSidebarRouters() {
+        return function (name){
+          for(let i in this.sidebarRouters) {
+            if(this.sidebarRouters[i].name && this.sidebarRouters[i].name.toLowerCase()==name.toLowerCase()){
+              return this.sidebarRouters[i].children;
             }
-            return [];
           }
-        },
-        activeMenu() {
-            const route = this.$route;
-            const { meta, path } = route;
-            // if set path, the sidebar will highlight the path you set
-            if (meta.activeMenu) {
-                return meta.activeMenu;
-            }
-            return path;
-        },
-        showLogo() {
-            return this.$store.state.settings.sidebarLogo;
-        },
-        variables() {
-            return variables;
-        },
-        isCollapse() {
-            return !this.sidebar.opened;
+          return [];
         }
+      },
+      activeMenu() {
+          const route = this.$route;
+          const { meta, path } = route;
+          // if set path, the sidebar will highlight the path you set
+          if (meta.activeMenu) {
+              return meta.activeMenu;
+          }
+          return path;
+      },
+      showLogo() {
+          return this.$store.state.settings.sidebarLogo;
+      },
+      variables() {
+          return variables;
+      },
+      isCollapse() {
+          return !this.sidebar.opened;
+      }
     }
 };
 </script>

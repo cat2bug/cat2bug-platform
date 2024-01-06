@@ -36,6 +36,14 @@ public interface SysUserProjectMapper
      * @return  用户集合
      */
     public List<SysUser> selectSysUserListByProjectId(@Param("projectId") Long projectId, @Param("sysUser") SysUser sysUser);
+
+    /**
+     * 查询非当前项目用户列表
+     * @param projectId 项目id
+     * @return  用户集合
+     */
+    public List<SysUser> selectNotSysUserListByProjectId(@Param("projectId") Long projectId, @Param("sysUser") SysUser sysUser);
+
     /**
      * 新增用户项目
      * 

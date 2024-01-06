@@ -2,15 +2,19 @@ package com.cat2bug.system.service.impl;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.common.utils.DateUtils;
 import com.cat2bug.common.utils.MessageUtils;
 import com.cat2bug.common.utils.SecurityUtils;
+import com.cat2bug.system.domain.SysUserConfig;
 import com.cat2bug.system.domain.SysUserProject;
 import com.cat2bug.system.domain.SysUserProjectRole;
 import com.cat2bug.system.mapper.SysUserProjectMapper;
 import com.cat2bug.system.mapper.SysUserProjectRoleMapper;
+import com.cat2bug.system.service.ISysUserConfigService;
 import com.google.common.base.Preconditions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -34,6 +38,9 @@ public class SysProjectServiceImpl implements ISysProjectService
     private SysUserProjectMapper sysUserProjectMapper;
     @Autowired
     private SysUserProjectRoleMapper sysUserProjectRoleMapper;
+    @Autowired
+    private ISysUserConfigService sysUserConfigService;
+
     /**
      * 查询项目
      * 
@@ -137,8 +144,30 @@ public class SysProjectServiceImpl implements ISysProjectService
      * @return 结果
      */
     @Override
+    @Transactional
     public int deleteSysProjectByProjectId(Long projectId)
     {
-        return sysProjectMapper.deleteSysProjectByProjectId(projectId);
+        int ret = sysProjectMapper.deleteSysProjectByProjectId(projectId);
+        SysUserConfig sysUserConfig = sysUserConfigService.selectSysUserConfigByCurrentUserId();
+        // 如果删除的项目是当前用户项目，就选择另外一个项目作为当前项目
+        if(sysUserConfig.getCurrentProjectId()==projectId) {
+            // 查找当前用户在当前团队中，有哪些项目可操作
+            SysProject sysProject = new SysProject();
+            Map<String,Object> params = new HashMap<>();
+            params.put("userId",SecurityUtils.getUserId());
+            sysProject.setParams(params);
+            sysProject.setTeamId(sysUserConfig.getCurrentTeamId());
+            List<SysProject> projectList = sysProjectMapper.selectSysProjectList(sysProject);
+
+            // 将查到的第一个非projectId项目作为当前默认项目
+            Optional<SysProject> potProject = projectList.stream().filter(p->p.getProjectId()!=projectId).findFirst();
+            if(potProject.isPresent()){
+                sysUserConfig.setCurrentProjectId(potProject.get().getProjectId());
+            } else {
+                sysUserConfig.setCurrentProjectId(0L);
+            }
+            sysUserConfigService.updateSysUserConfig(sysUserConfig);
+        }
+        return ret;
     }
 }

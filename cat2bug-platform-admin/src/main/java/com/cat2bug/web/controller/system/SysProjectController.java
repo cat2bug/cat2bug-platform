@@ -12,6 +12,7 @@ import com.cat2bug.common.utils.poi.ExcelUtil;
 import com.cat2bug.framework.web.service.SysLoginService;
 import com.cat2bug.system.domain.SysProject;
 import com.cat2bug.system.domain.SysUserProject;
+import com.cat2bug.system.domain.vo.BatchUserRoleVo;
 import com.cat2bug.system.service.ISysProjectService;
 import com.cat2bug.system.service.ISysRoleService;
 import com.cat2bug.system.service.ISysUserProjectService;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 项目Controller
@@ -55,18 +57,6 @@ public class SysProjectController extends BaseController
     {
         startPage();
         List<SysProject> list = sysProjectService.selectSysProjectList(sysProject);
-        return getDataTable(list);
-    }
-
-    /**
-     * 查询项目列表
-     */
-    @PreAuthorize("@ss.hasPermi('system:project:list')")
-    @GetMapping("/{projectId}/member")
-    public TableDataInfo listByProjectId(@PathVariable Long projectId, SysUser sysUser)
-    {
-        startPage();
-        List<SysUser> list = sysUserProjectService.selectSysUserListByProjectId(projectId, sysUser);
         return getDataTable(list);
     }
 

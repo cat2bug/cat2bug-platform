@@ -1,5 +1,5 @@
 <template>
-  <el-dialog :title="$t('team.invite-members')" :visible.sync="dialogVisible" width="400px" append-to-body>
+  <el-dialog :title="$t('project.add-member')" :visible.sync="dialogVisible" width="400px" append-to-body>
     <el-form ref="form" :model="form" :rules="rules" label-width="120px">
       <el-row>
         <el-col :span="24">
@@ -59,9 +59,10 @@ import {
   updateTeam
 } from "@/api/system/team";
 import {getUser} from "@/api/system/user";
+import {addProjectMembers, listNotMemberOfProject, listProjectRole} from "@/api/system/project";
 
 export default {
-  name: "CreateTeamMember",
+  name: "AddProjectMember",
   data() {
     return {
       // 遮罩层
@@ -72,7 +73,7 @@ export default {
       dialogVisible: false,
       // 表单参数
       form: {
-        teamId: this.getTeamId(),
+        projectId: this.getProjectId(),
         memberIds: [],
         roleIds: []
       },
@@ -85,16 +86,18 @@ export default {
       initPassword: null,
     }
   },
-  created() {
-    this.searchMemberHandle();
-  },
   methods: {
     open(){
-      getUser().then(res => {
-        this.roleOptions = res.roles?res.roles.filter(r=>r.isTeamRole).map(r=>{
+      this.getRoleList();
+    },
+    /** 获取项目权限列表 */
+    getRoleList() {
+      listProjectRole(0).then(res => {
+        this.roleOptions = res.rows?res.rows.map(r=>{
           r.roleName = r.roleNameI18nKey?this.$t(r.roleNameI18nKey):r.roleName;
           return r;
         }):[];
+        this.searchMemberHandle();
         this.dialogVisible = true;
       });
     },
@@ -102,10 +105,14 @@ export default {
     getTeamId() {
       return this.$store.state.user.config.currentTeamId;
     },
+    /** 获取项目id */
+    getProjectId() {
+      return parseInt(this.$store.state.user.config.currentProjectId);
+    },
     /** 获取团队成员列表 */
     searchMemberHandle(query) {
       this.loading = true;
-      listNotMember(this.getTeamId(),{params:{search:query}}).then(res => {
+      listNotMemberOfProject(this.getProjectId(),{params:{search:query}}).then(res => {
         this.loading = false;
         this.memberOptions = res.rows;
       });
@@ -118,8 +125,8 @@ export default {
     submitForm() {
       this.$refs["form"].validate(valid => {
         if (valid) {
-          inviteMember(this.getTeamId(), this.form).then(res => {
-            this.$modal.msgSuccess("新增成功");
+          addProjectMembers(this.getProjectId(), this.form).then(res => {
+            this.$modal.msgSuccess(this.$i18n.t('add-success'));
             this.dialogVisible = false;
             this.cancel();
             this.$emit("invite",res);
@@ -147,18 +154,19 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  .member-tools>* {
-    margin-left: 10px;
+.member-tools>* {
+  margin-left: 10px;
+}
+.el-select-dropdown.is-multiple .el-select-dropdown__item {
+  height: 50px;
+  display: flex;
+  justify-content:  flex-start;
+  align-items: center;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  > * {
+    margin-right: 5px;
   }
-  .el-select-dropdown.is-multiple .el-select-dropdown__item {
-      height: 50px;
-      display: flex;
-      justify-content:  flex-start;
-      align-items: center;
-      flex-direction: row;
-      flex-wrap: nowrap;
-    > * {
-      margin-right: 5px;
-    }
-  }
+}
 </style>
+

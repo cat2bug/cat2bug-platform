@@ -29,7 +29,7 @@ export default {
   },
   methods: {
     getProjectId() {
-      return this.$route.params.projectId?parseInt(this.$route.params.projectId):parseInt(this.$store.state.user.config.currentProjectId);
+      return parseInt(this.$store.state.user.config.currentProjectId);
     },
     getProject() {
       getProject(this.getProjectId()).then(res=>{

@@ -9,14 +9,6 @@ export function listProject(query) {
   })
 }
 
-export function listMemberOfProject(projectId,query) {
-  return request({
-    url: '/system/project/'+projectId+'/member',
-    method: 'get',
-    params: query
-  })
-}
-
 // 查询项目角色列表
 export function listProjectRole(projectId) {
   return request({
@@ -37,6 +29,14 @@ export function getProject(projectId) {
 export function addProject(data) {
   return request({
     url: '/system/project',
+    method: 'post',
+    data: data
+  })
+}
+
+export function addProjectMembers(projectId, data) {
+  return request({
+    url: '/system/project/'+projectId+'/member',
     method: 'post',
     data: data
   })
@@ -66,5 +66,40 @@ export function delProject(projectId, password) {
     url: '/system/project/' + projectId,
     method: 'delete',
     data: password
+  })
+}
+
+// 查询项目成员列表
+export function listMemberOfProject(projectId,query) {
+  return request({
+    url: '/system/project/'+projectId+'/member',
+    method: 'get',
+    params: query
+  })
+}
+
+// 查询非项目成员列表
+export function listNotMemberOfProject(projectId,query) {
+  return request({
+    url: '/system/project/'+projectId+'/not-member',
+    method: 'get',
+    params: query
+  })
+}
+
+// 更新项目成员角色
+export function updateMemberRoleOfProject(projectId, memberId, roleIds) {
+  return request({
+    url: '/system/project/'+projectId+'/member/'+memberId+'/role',
+    method: 'put',
+    data: roleIds
+  })
+}
+
+// 移除项目成员
+export function delMemberOfProject(projectId, memberId) {
+  return request({
+    url: '/system/project/'+projectId+'/member/'+memberId,
+    method: 'delete'
   })
 }

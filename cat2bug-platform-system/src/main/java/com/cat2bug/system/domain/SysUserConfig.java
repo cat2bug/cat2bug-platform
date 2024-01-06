@@ -1,5 +1,6 @@
 package com.cat2bug.system.domain;
 
+import lombok.Data;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import com.cat2bug.common.annotation.Excel;
@@ -11,6 +12,7 @@ import com.cat2bug.common.core.domain.BaseEntity;
  * @author yuzhantao
  * @date 2023-11-16
  */
+@Data
 public class SysUserConfig extends BaseEntity
 {
     private static final long serialVersionUID = 1L;
@@ -22,37 +24,12 @@ public class SysUserConfig extends BaseEntity
     @Excel(name = "当前团队id")
     private Long currentTeamId;
 
+    /** 当前项目id */
+    private Long currentProjectId;
+
     /** 用户id */
     @Excel(name = "用户id")
     private Long userId;
-
-    public void setUserConfigId(Long userConfigId) 
-    {
-        this.userConfigId = userConfigId;
-    }
-
-    public Long getUserConfigId() 
-    {
-        return userConfigId;
-    }
-    public void setCurrentTeamId(Long currentTeamId) 
-    {
-        this.currentTeamId = currentTeamId;
-    }
-
-    public Long getCurrentTeamId() 
-    {
-        return currentTeamId;
-    }
-    public void setUserId(Long userId) 
-    {
-        this.userId = userId;
-    }
-
-    public Long getUserId() 
-    {
-        return userId;
-    }
 
     @Override
     public String toString() {

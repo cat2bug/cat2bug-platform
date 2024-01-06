@@ -47,9 +47,8 @@ export default {
         delProject(_this.project.projectId, res.value).then(()=>{
           _this.$modal.msgSuccess(_this.$i18n.t('delete-success'));
           store.dispatch('GetInfo').then(() => {
-            _this.$router.push({path:'/main/index'});
+            _this.$router.push({path:'/team/index'});
           });
-
         });
       }).catch(() => {});
     },

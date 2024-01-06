@@ -7,11 +7,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <resultMap type="SysUserConfig" id="SysUserConfigResult">
         <result property="userConfigId"    column="user_config_id"    />
         <result property="currentTeamId"    column="current_team_id"    />
+        <result property="currentProjectId"    column="current_project_id"    />
         <result property="userId"    column="user_id"    />
     </resultMap>
 
     <sql id="selectSysUserConfigVo">
-        select user_config_id, current_team_id, user_id from sys_user_config
+        select user_config_id, current_team_id, current_project_id, user_id from sys_user_config
     </sql>
 
     <select id="selectSysUserConfigList" parameterType="SysUserConfig" resultMap="SysUserConfigResult">
@@ -36,10 +37,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         insert into sys_user_config
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="currentTeamId != null">current_team_id,</if>
+            <if test="currentProjectId != null">current_project_id,</if>
             <if test="userId != null">user_id,</if>
          </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="currentTeamId != null">#{currentTeamId},</if>
+            <if test="currentProjectId != null">#{currentProjectId},</if>
             <if test="userId != null">#{userId},</if>
          </trim>
     </insert>
@@ -48,6 +51,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         update sys_user_config
         <trim prefix="SET" suffixOverrides=",">
             <if test="currentTeamId != null">current_team_id = #{currentTeamId},</if>
+            <if test="currentProjectId != null">current_project_id = #{currentProjectId},</if>
         </trim>
         where user_config_id = #{userConfigId}
     </update>

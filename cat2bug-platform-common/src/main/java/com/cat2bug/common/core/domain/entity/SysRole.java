@@ -127,6 +127,16 @@ public class SysRole extends BaseEntity
         return roleId != null && 1L == roleId;
     }
 
+    public boolean isProjectAdmin()
+    {
+        return isProjectAdmin(this.roleId);
+    }
+
+    public static boolean isProjectAdmin(Long roleId)
+    {
+        return roleId != null && 6L == roleId;
+    }
+
     @NotBlank(message = "角色名称不能为空")
     @Size(min = 0, max = 30, message = "角色名称长度不能超过30个字符")
     public String getRoleName()

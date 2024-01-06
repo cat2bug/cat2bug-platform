@@ -95,10 +95,10 @@ service.interceptors.response.use(res => {
           store.dispatch('LogOut').then(() => {
             location.href = '/index';
           })
-      }).catch(() => {
-        isRelogin.show = false;
-      });
-    }
+        }).catch(() => {
+          isRelogin.show = false;
+        });
+      }
       return Promise.reject(i18n.t('http.invalid-session'))
     } else if (code === 500) {
       Message({ message: msg, type: 'error' })

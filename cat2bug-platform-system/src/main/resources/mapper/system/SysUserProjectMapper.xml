@@ -35,6 +35,16 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="updateBy"     column="update_by"    />
         <result property="updateTime"   column="update_time"  />
         <result property="remark"       column="remark"       />
+        <collection  property="roles"   javaType="java.util.List"  resultMap="RoleResult" />
+    </resultMap>
+
+    <resultMap id="RoleResult" type="SysRole">
+        <id     property="roleId"       column="role_id"        />
+        <result property="roleName"     column="role_name"      />
+        <result property="roleKey"      column="role_key"       />
+        <result property="roleSort"     column="role_sort"      />
+        <result property="dataScope"    column="data_scope"     />
+        <result property="status"       column="role_status"    />
     </resultMap>
 
     <sql id="selectSysUserProjectVo">
@@ -51,17 +61,57 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         </where>
     </select>
 
-    <select id="selectSysUserListByProjectId" resultMap="SysUserResult">
-        select u.user_id, u.dept_id, u.user_name, u.nick_name, u.email, u.avatar, u.phonenumber, u.password, u.sex, u.status, u.del_flag, u.login_ip, u.login_date, u.create_by, u.create_time, u.remark
-        from sys_user u
-        left join sys_user_project up on u.user_id = up.user_id
+    <select id="selectNotSysUserListByProjectId" resultMap="SysUserResult">
+        SELECT
+        l1.user_id,
+        u.dept_id,
+        u.user_name,
+        u.nick_name,
+        u.email,
+        u.avatar,
+        u.phonenumber,
+        u.PASSWORD,
+        u.sex,
+        u.STATUS,
+        u.del_flag,
+        u.login_ip,
+        u.login_date,
+        u.create_by,
+        u.create_time,
+        u.remark
+        FROM
+        ( SELECT ut.user_id, p.project_id FROM sys_project p, sys_user_team ut WHERE p.team_id = ut.team_id AND p.project_id = #{projectId} GROUP BY ut.user_id,p.project_id ) l1
+        LEFT JOIN sys_user_project l2 ON l1.user_id = l2.user_id
+        AND l2.project_id = #{projectId}
+        LEFT JOIN sys_user u ON u.user_id = l1.user_id
         <where>
-            up.project_id=#{projectId} and u.del_flag = '0'
+            l2.user_id IS NULL AND u.del_flag = '0'
             <if test="sysUser.params != null and sysUser.params.search != null  and sysUser.params.search != ''">
                 AND (
                     u.nick_name like concat('%', #{sysUser.params.search}, '%') OR
                     u.phonenumber like concat('%', #{sysUser.params.search}, '%') OR
                     u.email like concat('%', #{sysUser.params.search}, '%')
+                )
+            </if>
+            <if test="sysUser.roleId != null and sysUser.roleId != ''">
+                AND #{sysUser.roleId} IN (select role_id from sys_user_project_role where user_project_id=up.user_project_id)
+            </if>
+        </where>
+    </select>
+
+    <select id="selectSysUserListByProjectId" resultMap="SysUserResult">
+        select u.user_id, u.dept_id, u.user_name, u.nick_name, u.email, u.avatar, u.phonenumber, u.password, u.sex, u.status, u.del_flag, u.login_ip, u.login_date, u.create_by, u.create_time, u.remark,
+            upr.role_id
+        from sys_user u
+        left join sys_user_project up on u.user_id = up.user_id
+        left join sys_user_project_role upr on up.user_project_id = upr.user_project_id
+        <where>
+            up.project_id=#{projectId} and u.del_flag = '0'
+            <if test="sysUser.params != null and sysUser.params.search != null  and sysUser.params.search != ''">
+                AND (
+                u.nick_name like concat('%', #{sysUser.params.search}, '%') OR
+                u.phonenumber like concat('%', #{sysUser.params.search}, '%') OR
+                u.email like concat('%', #{sysUser.params.search}, '%')
                 )
             </if>
             <if test="sysUser.roleId != null and sysUser.roleId != ''">

@@ -192,17 +192,6 @@ export default {
     this.getCollectList();
   },
   methods: {
-    /** 移除url某个参数 */
-    removeParamFromUrl(url, param) {
-      let newUrl = url;
-      const regex = new RegExp(`([?&])${param}=[^&]*[&]?`, 'i')
-      newUrl = newUrl.replace(regex, '$1');
-      // 处理最后一个参数后面的&符号
-      if (newUrl.endsWith('?') || newUrl.endsWith('&')) {
-        newUrl = newUrl.slice(0, -1);
-      }
-      return newUrl;
-    },
     /** 选择项目分组 */
     selectProjectTabHandle(){
       this.reset();

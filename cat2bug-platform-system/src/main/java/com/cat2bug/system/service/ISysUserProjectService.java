@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.system.domain.SysUserProject;
+import com.cat2bug.system.domain.vo.BatchUserRoleVo;
 
 /**
  * 用户项目Service接口
@@ -31,6 +32,8 @@ public interface ISysUserProjectService
 
     public List<SysUser> selectSysUserListByProjectId(Long projectId, SysUser sysUser);
 
+    public List<SysUser> selectNotSysUserListByProjectId(Long projectId, SysUser sysUser);
+
     /**
      * 新增用户项目
      * 
@@ -38,6 +41,14 @@ public interface ISysUserProjectService
      * @return 结果
      */
     public int insertSysUserProject(SysUserProject sysUserProject);
+
+    /**
+     * 批量新增用户项目
+     *
+     * @param sysUserProjectList 用户项目集合
+     * @return 结果
+     */
+    public int batchInsertSysUserProject(BatchUserRoleVo batchUserRoleVo);
 
     /**
      * 修改用户项目
@@ -63,6 +74,13 @@ public interface ISysUserProjectService
      */
     public int deleteSysUserProjectByUserProjectIds(Long[] userProjectIds);
 
+    /**
+     * 删除用户项目信息
+     * @param projectId 项目id
+     * @param memberId  成员id
+     * @return
+     */
+    public int deleteSysUserProjectByProjectIdAndMemberId(Long projectId, Long memberId);
     /**
      * 删除用户项目信息
      * 

@@ -30,19 +30,14 @@
 <script>
 import { myListTeam } from "@/api/system/team";
 import { updateConfig } from "@/api/system/user-config";
-import {removeCurrentProjectId} from "@/utils/project";
+import store from "@/store";
 
 export default {
   name: "TeamSelect",
-  model: {
-    prop: 'teamId',
-    event: 'change'
-  },
   data() {
     return {
       teamList:[],
-      currentTeamId: this.teamId,
-      currentTeam: null,
+      currentTeamId:null,
     }
   },
   props:{
@@ -50,12 +45,19 @@ export default {
       type: Boolean,
       default: false
     },
-    teamId: {
-      type: Number,
-      default: null
-    }
   },
   computed:{
+    teamId: function (){
+      return this.$store.state.user.config.currentTeamId;
+    },
+    currentTeam: function() {
+      for(let i in this.teamList){
+        if(this.teamList[i].teamId==this.teamId) {
+          return this.teamList[i];
+        }
+      }
+      return null;
+    },
     iconUrl: function (){
       return function (team){
         return process.env.VUE_APP_BASE_API + team.teamIcon
@@ -75,13 +77,7 @@ export default {
     getTeamList() {
       myListTeam().then(res=>{
         this.teamList = res.rows;
-        // 如果登陆数据中存在当前团队id，默认选择登陆数据中的团队id；否则选择已有团队的第一个
-        if(this.$store.state.user.config && this.$store.state.user.config.currentTeamId){
-          this.currentTeamId = this.$store.state.user.config.currentTeamId;
-        } else if(this.teamList && this.teamList.length>0) {
-          this.currentTeamId = res.rows[0].teamId;
-        }
-        this.selectTeam(this.currentTeamId,false);
+        this.selectTeam(this.teamId,false);
       });
     },
     /** 选择团队变化的处理 */
@@ -96,26 +92,22 @@ export default {
     },
     /** 选择团队 */
     selectTeam(currentTeamId,isRefresh){
-      for(let i in this.teamList){
-        if(this.teamList[i].teamId==currentTeamId) {
-          this.currentTeam=this.teamList[i];
-          this.$emit('change',this.currentTeamId);
-          // 存储到远程服务器
-          if(isRefresh) {
-            updateConfig({
-              currentTeamId: currentTeamId
-            }).then(res => {
-              removeCurrentProjectId();
-              let path = '/main/index';
-              if(this.$router.currentRoute.path==path) {
-                window.location.reload(); // 刷新当前页面
-              } else {
-                this.$router.push({path:path})
-              }
-            });
-          }
-          break;
-        }
+      if(currentTeamId == this.teamId) return;
+      let _this=this;
+      if(isRefresh) {
+        updateConfig({
+          currentTeamId: currentTeamId,
+          currentProjectId: 0
+        }).then(res => {
+          let path = '/team/index';
+          store.dispatch('GetInfo').then(() => {
+            if (_this.$router.currentRoute.path == path) {
+              _this.$router.go(0);
+            } else {
+              _this.$router.push({path: path});
+            }
+          });
+        });
       }
     }
   }

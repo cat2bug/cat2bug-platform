@@ -313,7 +313,7 @@ export default {
     },
     /** 获取项目id */
     getProjectId() {
-      return this.$route.params.projectId?parseInt(this.$route.params.projectId):parseInt(this.$store.state.user.config.currentProjectId);
+      return parseInt(this.$store.state.user.config.currentProjectId);
     },
     /** 获取团队id */
     getTeamId() {

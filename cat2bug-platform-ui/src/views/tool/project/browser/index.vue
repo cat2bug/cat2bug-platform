@@ -127,7 +127,7 @@ export default {
     },
     /** 获取项目id */
     getProjectId() {
-      return this.$route.params.projectId?parseInt(this.$route.params.projectId):parseInt(this.$store.state.user.config.currentProjectId);
+      return parseInt(this.$store.state.user.config.currentProjectId);
     },
     /** 截屏成功的处理 */
     screenShotSuccessHandle(base64Data) {

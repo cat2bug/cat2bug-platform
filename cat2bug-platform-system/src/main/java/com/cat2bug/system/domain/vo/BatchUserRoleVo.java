@@ -12,6 +12,10 @@ public class BatchUserRoleVo {
     /**
      * 团队id
      */
+    private Long projectId;
+    /**
+     * 团队id
+     */
     private Long teamId;
 
     /**

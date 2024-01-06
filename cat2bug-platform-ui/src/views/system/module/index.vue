@@ -192,7 +192,7 @@ export default {
     },
     /** 获取项目id操作 */
     getProjectId() {
-      return this.$route.params.projectId?parseInt(this.$route.params.projectId):parseInt(this.$store.state.user.config.currentProjectId);
+      return parseInt(this.$store.state.user.config.currentProjectId);
     },
     /** 搜索按钮操作 */
     handleQuery() {
