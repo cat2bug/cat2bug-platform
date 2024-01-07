@@ -2,6 +2,7 @@ package com.cat2bug.system.mapper;
 
 import java.util.List;
 import com.cat2bug.system.domain.SysUserProjectRole;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * 用户项目角色Mapper接口
@@ -51,6 +52,12 @@ public interface SysUserProjectRoleMapper
      */
     public int deleteSysUserProjectRoleByUserProjectRoleId(Long userProjectRoleId);
 
+    /**
+     * 删除用户项目角色
+     * @param userProjectId 用户项目id
+     * @return
+     */
+    public int deleteSysUserProjectRoleByUserProjectId(Long userProjectId);
     /**
      * 批量删除用户项目角色
      * 

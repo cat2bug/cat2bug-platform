@@ -24,6 +24,20 @@ public interface ISysUserConfigService
      * @return 用户配置
      */
     public SysUserConfig selectSysUserConfigByCurrentUserId();
+
+    /**
+     * 查询用户配置
+     * @param memberId 成员id
+     * @return 用户配置
+     */
+    public SysUserConfig selectSysUserConfigByUserId(Long memberId);
+
+    /**
+     * 查询用户配置
+     * @param memberName 成员名称
+     * @return 用户配置
+     */
+    public SysUserConfig selectSysUserConfigByUserName(String memberName);
     /**
      * 查询用户配置列表
      * 

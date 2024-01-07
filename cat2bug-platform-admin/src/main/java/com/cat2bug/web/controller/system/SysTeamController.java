@@ -3,6 +3,7 @@ package com.cat2bug.web.controller.system;
 import com.cat2bug.common.annotation.Log;
 import com.cat2bug.common.core.controller.BaseController;
 import com.cat2bug.common.core.domain.AjaxResult;
+import com.cat2bug.common.core.domain.entity.SysRole;
 import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.common.core.page.TableDataInfo;
 import com.cat2bug.common.enums.BusinessType;
@@ -11,6 +12,7 @@ import com.cat2bug.common.utils.poi.ExcelUtil;
 import com.cat2bug.system.domain.SysTeam;
 import com.cat2bug.system.domain.SysUserTeam;
 import com.cat2bug.system.domain.vo.BatchUserRoleVo;
+import com.cat2bug.system.service.ISysRoleService;
 import com.cat2bug.system.service.ISysTeamService;
 import com.cat2bug.system.service.ISysUserTeamRoleService;
 import com.cat2bug.system.service.ISysUserTeamService;
@@ -35,6 +37,9 @@ import java.util.stream.Collectors;
 @RequestMapping("/system/team")
 public class SysTeamController extends BaseController
 {
+    @Autowired
+    private ISysRoleService roleService;
+
     @Autowired
     private ISysTeamService sysTeamService;
 
@@ -95,7 +100,7 @@ public class SysTeamController extends BaseController
     /**
      * 查询我所拥有的团队
      */
-    @PreAuthorize("@ss.hasPermi('system:team:list')")
+    @PreAuthorize("@ss.hasPermi('system:team:query')")
     @GetMapping("/my")
     public TableDataInfo my(SysTeam sysTeam)
     {
@@ -129,6 +134,15 @@ public class SysTeamController extends BaseController
         return success(sysTeamService.selectSysTeamByTeamId(teamId));
     }
 
+    @PreAuthorize("@ss.hasPermi('system:team:query')")
+    @GetMapping(value = "/{teamId}/role")
+    public AjaxResult getRoleList(@PathVariable("teamId") Long teamId)
+    {
+        SysRole role = new SysRole();
+        role.setIsTeamRole(true);
+        return success(roleService.selectRoleList(role));
+    }
+
     /**
      * 新增团队
      */
@@ -141,9 +155,9 @@ public class SysTeamController extends BaseController
     }
 
     /**
-     * 新增团队
+     * 邀请团队成员
      */
-    @PreAuthorize("@ss.hasPermi('system:team:add')")
+    @PreAuthorize("@ss.hasPermi('system:team:member:invite')")
     @Log(title = "团队", businessType = BusinessType.INSERT)
     @PostMapping("/{teamId}/invite")
     public AjaxResult inviteMember(@RequestBody BatchUserRoleVo batchUserRoleVo)
@@ -151,10 +165,16 @@ public class SysTeamController extends BaseController
         return toAjax(sysTeamService.inviteMember(batchUserRoleVo));
     }
 
-    @PreAuthorize("@ss.hasPermi('system:team:add')")
+    /**
+     * 新建团队成员
+     * @param teamId
+     * @param sysUser
+     * @return
+     */
+    @PreAuthorize("@ss.hasPermi('system:team:member:create')")
     @Log(title = "团队成员", businessType = BusinessType.INSERT)
     @PostMapping("/{teamId}/member")
-    public AjaxResult addMember(@PathVariable Long teamId,@RequestBody SysUser sysUser)
+    public AjaxResult createMember(@PathVariable Long teamId,@RequestBody SysUser sysUser)
     {
         return toAjax(sysTeamService.insertSysUser(teamId, sysUser));
     }
@@ -171,7 +191,7 @@ public class SysTeamController extends BaseController
     }
 
     /**
-     * 修改团队
+     * 修改团队成员权限
      */
     @PreAuthorize("@ss.hasPermi('system:team:edit')")
     @Log(title = "团队", businessType = BusinessType.UPDATE)
@@ -192,7 +212,7 @@ public class SysTeamController extends BaseController
     /**
      * 删除团队
      */
-    @PreAuthorize("@ss.hasPermi('system:team:remove')")
+    @PreAuthorize("@ss.hasPermi('system:team:delete')")
     @Log(title = "团队", businessType = BusinessType.DELETE)
 	@DeleteMapping("/{teamIds}")
     public AjaxResult remove(@PathVariable Long[] teamIds)

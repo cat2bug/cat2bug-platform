@@ -45,7 +45,7 @@
           size="mini"
           :disabled="multiple"
           @click="handleDelete"
-          v-hasPermi="['system:team:remove']"
+          v-hasPermi="['system:team:delete']"
         >删除</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -97,7 +97,7 @@
             type="text"
             icon="el-icon-delete"
             @click="handleDelete(scope.row)"
-            v-hasPermi="['system:team:remove']"
+            v-hasPermi="['system:team:delete']"
           >删除</el-button>
         </template>
       </el-table-column>

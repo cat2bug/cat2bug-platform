@@ -68,6 +68,7 @@ public class SysLoginController
         SysUser user = SecurityUtils.getLoginUser().getUser();
         // 角色集合
         Set<String> roles = permissionService.getRolePermission(user);
+
         // 权限集合
         Set<String> permissions = permissionService.getMenuPermission(user);
 

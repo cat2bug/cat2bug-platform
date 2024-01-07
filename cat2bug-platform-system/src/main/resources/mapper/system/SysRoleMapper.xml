@@ -23,16 +23,54 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 		<result property="isTeamRole"         column="is_team_role"                />
 		<result property="isProjectRole"      column="is_project_role"                />
 	</resultMap>
-	
+
 	<sql id="selectRoleVo">
-	    select distinct r.role_id, r.role_name, r.role_name_i18n_key, r.role_key, r.role_sort, r.data_scope, r.menu_check_strictly, r.dept_check_strictly,
-            r.status, r.del_flag, r.create_time, r.remark, r.is_team_role, r.is_project_role
-        from sys_role r
-	        left join sys_user_role ur on ur.role_id = r.role_id
-	        left join sys_user u on u.user_id = ur.user_id
-	        left join sys_dept d on u.dept_id = d.dept_id
-    </sql>
-    
+		select distinct r.role_id, r.role_name, r.role_name_i18n_key, r.role_key, r.role_sort, r.data_scope, r.menu_check_strictly, r.dept_check_strictly,
+						r.status, r.del_flag, r.create_time, r.remark, r.is_team_role, r.is_project_role
+		from sys_role r
+				 left join sys_user_role ur on ur.role_id = r.role_id
+				 left join sys_user u on u.user_id = ur.user_id
+				 left join sys_dept d on u.dept_id = d.dept_id
+	</sql>
+
+	<sql id="selectTeamAndProjectRoleVo">
+		SELECT DISTINCT
+		r.role_id,
+		r.role_name,
+		r.role_name_i18n_key,
+		r.role_key,
+		r.role_sort,
+		r.data_scope,
+		r.menu_check_strictly,
+		r.dept_check_strictly,
+		r.STATUS,
+		r.del_flag,
+		r.create_time,
+		r.remark,
+		r.is_team_role,
+		r.is_project_role
+		FROM
+		sys_role r
+		LEFT JOIN (
+		SELECT
+		'system' AS src,
+		'' AS src_id,
+		user_id,
+		role_id
+		FROM
+		sys_user_role
+		<if test="teamId != null and teamId != 0">
+			UNION
+			SELECT 'team' as src, ut.team_id as src_id, ut.user_id, utr.role_id FROM sys_user_team_role utr LEFT JOIN sys_user_team ut ON ut.user_team_id=utr.user_team_id AND ut.team_id = #{ teamId }
+		</if>
+		<if test="projectId != null and projectId != 0">
+			UNION
+			SELECT 'project' as src, up.project_id as src_id, up.user_id, upr.role_id FROM sys_user_project_role upr LEFT JOIN sys_user_project up ON up.user_project_id=upr.user_project_id AND up.project_id = #{ projectId }
+		</if>
+		) ur ON ur.role_id = r.role_id
+		LEFT JOIN sys_user u ON u.user_id = ur.user_id
+		LEFT JOIN sys_dept d ON u.dept_id = d.dept_id
+	</sql>
     <select id="selectRoleList" parameterType="SysRole" resultMap="SysRoleResult">
 		<include refid="selectRoleVo"/>
 		where r.del_flag = '0'
@@ -65,8 +103,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 		order by r.role_sort
 	</select>
     
-	<select id="selectRolePermissionByUserId" parameterType="Long" resultMap="SysRoleResult">
-		<include refid="selectRoleVo"/>
+	<select id="selectRolePermissionByUserId" resultMap="SysRoleResult">
+		<include refid="selectTeamAndProjectRoleVo"/>
 		WHERE r.del_flag = '0' and ur.user_id = #{userId}
 	</select>
 	
@@ -74,12 +112,23 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 		<include refid="selectRoleVo"/>
 	</select>
 	
-	<select id="selectRoleListByUserId" parameterType="Long" resultType="Long">
-		select r.role_id
-        from sys_role r
-	        left join sys_user_role ur on ur.role_id = r.role_id
-	        left join sys_user u on u.user_id = ur.user_id
-	    where u.user_id = #{userId}
+	<select id="selectRoleListByUserId" resultType="Long">
+-- 		select r.role_id
+--         from sys_role r
+-- 	        left join sys_user_role ur on ur.role_id = r.role_id
+-- 	        left join sys_user u on u.user_id = ur.user_id
+-- 	    where u.user_id = #{userId}
+		SELECT r.role_id FROM
+		(SELECT 'system' as src, '' as src_id, user_id, role_id FROM sys_user_role
+		<if test="teamId != null and teamId != 0">
+			UNION
+			SELECT 'team' as src, ut.team_id as src_id, ut.user_id, utr.role_id FROM sys_user_team_role utr LEFT JOIN sys_user_team ut ON ut.user_team_id=utr.user_team_id AND ut.team_id = #{ teamId }
+		</if>
+		<if test="projectId != null and projectId != 0">
+			UNION
+			SELECT 'project' as src, up.project_id as src_id, up.user_id, upr.role_id FROM sys_user_project_role upr LEFT JOIN sys_user_project up ON up.user_project_id=upr.user_project_id AND up.project_id = #{ projectId }
+		</if>) r
+		where r.user_id = #{userId}
 	</select>
 	
 	<select id="selectRoleById" parameterType="Long" resultMap="SysRoleResult">

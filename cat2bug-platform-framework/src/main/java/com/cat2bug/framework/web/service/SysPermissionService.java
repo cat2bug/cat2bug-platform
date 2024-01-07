@@ -3,13 +3,16 @@ package com.cat2bug.framework.web.service;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import com.cat2bug.common.utils.SecurityUtils;
+import com.cat2bug.system.domain.SysUserConfig;
+import com.cat2bug.system.domain.SysUserProjectRole;
+import com.cat2bug.system.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import com.cat2bug.common.core.domain.entity.SysRole;
 import com.cat2bug.common.core.domain.entity.SysUser;
-import com.cat2bug.system.service.ISysMenuService;
-import com.cat2bug.system.service.ISysRoleService;
 
 /**
  * 用户权限处理
@@ -21,6 +24,15 @@ public class SysPermissionService
 {
     @Autowired
     private ISysRoleService roleService;
+
+    @Autowired
+    private ISysUserProjectRoleService sysUserProjectRoleService;
+
+    @Autowired
+    private ISysUserTeamRoleService sysUserTeamRoleService;
+
+    @Autowired
+    private ISysUserConfigService sysUserConfigService;
 
     @Autowired
     private ISysMenuService menuService;

@@ -14,17 +14,17 @@
             mode="vertical"
           >
             <sidebar-item
-              v-for="(route, index) in filterSidebarRouters('team')"
+              v-for="(route, index) in teamRouters"
               :key="route.path  + index"
               :item="route"
               :base-path="'team/'+route.path"
             />
           </el-menu>
-          <div v-show="teamId" class="sidebar-divider">
+          <div v-show="teamId && teamRouters" class="sidebar-divider">
             <el-divider></el-divider>
           </div>
           <el-menu
-              v-show="teamId && isShowProjectMenu"
+              v-show="teamId && projectId"
               :default-active="activeMenu"
               :collapse="isCollapse"
               :background-color="settings.sideTheme === 'theme-dark' ? variables.menuBackground : variables.menuLightBackground"
@@ -35,13 +35,13 @@
               mode="vertical"
           >
               <sidebar-item
-                  v-for="(route, index) in filterSidebarRouters('project')"
+                  v-for="(route, index) in projectRouters"
                   :key="route.path  + index"
                   :item="route"
                   :base-path="'project/'+route.path"
               />
           </el-menu>
-          <div v-show="teamId && isShowProjectMenu" class="sidebar-divider">
+          <div v-show="teamId && projectId && projectRouters" class="sidebar-divider">
             <el-divider></el-divider>
           </div>
           <el-menu
@@ -56,13 +56,13 @@
             mode="vertical"
           >
             <sidebar-item
-              v-for="(route, index) in filterSidebarRouters('team-options')"
+              v-for="(route, index) in teamOptionRouters"
               :key="route.path  + index"
               :item="route"
               :base-path="'team-options/'+route.path"
             />
           </el-menu>
-          <div class="sidebar-divider">
+          <div v-show="teamId && teamOptionRouters" class="sidebar-divider">
             <el-divider></el-divider>
           </div>
           <el-menu
@@ -96,17 +96,26 @@ export default {
     components: { SidebarItem, TeamSelect },
     data() {
       return {
-        // teamId: null,
       }
     },
     computed: {
         ...mapState(["settings"]),
         ...mapGetters(["sidebarRouters", "sidebar"]),
       teamId() {
+          console.log('----',this.$store.state.user.config.currentTeamId,this.filterSidebarRouters('team'))
           return this.$store.state.user.config.currentTeamId;
       },
-      isShowProjectMenu() {
+      projectId() {
         return this.$store.state.user.config.currentProjectId
+      },
+      projectRouters() {
+          return this.filterSidebarRouters('project');
+      },
+      teamRouters() {
+        return this.filterSidebarRouters('team');
+      },
+      teamOptionRouters() {
+        return this.filterSidebarRouters('team-options');
       },
       filterSidebarRouters() {
         return function (name){

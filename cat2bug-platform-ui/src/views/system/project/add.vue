@@ -96,7 +96,7 @@
                         <el-form-item :prop="`members.${scope.$index}.roleIds`" :rules="rules.roleIds">
                           <el-select v-model="scope.row.roleIds" :placeholder="$t('member.please-select-role')" multiple collapse-tags :disabled="scope.row.userId==getCurrentUserId()">
                             <el-option
-                              v-for="role in roleOptions"
+                              v-for="role in selectRoleOptions(scope.row)"
                               :key="role.roleId"
                               :label="role.roleName"
                               :value="role.roleId">
@@ -180,6 +180,16 @@ export default {
       return function (index){
         return require('@/assets/images/project/project_icon'+index+'.svg')
       }
+    },
+    selectRoleOptions: function (){
+      return function (member){
+        if(this.getCurrentUserId() == member.userId){
+          return this.roleOptions.filter(r=>r.projectCreateBy);
+        } else {
+          console.log(member.roleIds, this.roleOptions.filter(r=>r.projectCreateBy==false));
+          return this.roleOptions.filter(r=>r.projectCreateBy==false);
+        }
+      }
     }
   },
   created() {
@@ -207,12 +217,12 @@ export default {
           m.isSelect=false;
           // 设置默认角色
           if(this.roleOptions && this.roleOptions.length>0){
-            m.roleIds=[this.roleOptions[0].roleId];
+            m.roleIds=[this.roleOptions.filter(r=>r.projectCreateBy==false)[0].roleId];
           } else {
             m.roleIds=[];
           }
           if(this.getCurrentUserId() == m.userId && this.form.members.length == 0) {
-            m.roleIds = this.roleOptions.filter(r=>r.projectAdmin).map(r=>r.roleId);
+            m.roleIds = this.roleOptions.filter(r=>r.projectCreateBy).map(r=>r.roleId);
             this.form.members.push(m);
           }
           return m;

@@ -56,7 +56,7 @@ public interface SysUserMapper
      * @param userName 用户名
      * @return 用户对象信息
      */
-    public SysUser selectUserByUserName(String userName);
+    public SysUser selectUserByUserName(@Param("teamId") Long teamId, @Param("projectId") Long projectId, @Param("userName") String userName);
 
     /**
      * 通过用户ID查询用户
@@ -64,7 +64,7 @@ public interface SysUserMapper
      * @param userId 用户ID
      * @return 用户对象信息
      */
-    public SysUser selectUserById(Long userId);
+    public SysUser selectUserById(@Param("teamId") Long teamId, @Param("projectId") Long projectId, @Param("userId") Long userId);
 
     /**
      * 新增用户信息

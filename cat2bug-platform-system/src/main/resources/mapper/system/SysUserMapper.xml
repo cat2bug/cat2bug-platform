@@ -52,7 +52,17 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         r.role_id, r.role_name, r.role_key, r.role_sort, r.data_scope, r.status as role_status
         from sys_user u
 		    left join sys_dept d on u.dept_id = d.dept_id
-		    left join sys_user_role ur on u.user_id = ur.user_id
+		    left join
+			(SELECT 'system' as src, '' as src_id, user_id, role_id FROM sys_user_role
+			<if test="teamId != null and teamId != 0">
+				UNION
+				SELECT 'team' as src, ut.team_id as src_id, ut.user_id, utr.role_id FROM sys_user_team_role utr LEFT JOIN sys_user_team ut ON ut.user_team_id=utr.user_team_id AND ut.team_id = #{ teamId }
+			</if>
+			<if test="projectId != null and projectId != 0">
+				UNION
+				SELECT 'project' as src, up.project_id as src_id, up.user_id, upr.role_id FROM sys_user_project_role upr LEFT JOIN sys_user_project up ON up.user_project_id=upr.user_project_id AND up.project_id = #{ projectId }
+			</if>)
+            ur on u.user_id = ur.user_id
 		    left join sys_role r on r.role_id = ur.role_id
     </sql>
     
@@ -164,12 +174,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 		${params.dataScope}
 	</select>
 	
-	<select id="selectUserByUserName" parameterType="String" resultMap="SysUserResult">
+	<select id="selectUserByUserName" resultMap="SysUserResult">
 	    <include refid="selectUserVo"/>
 		where u.user_name = #{userName} and u.del_flag = '0'
 	</select>
 	
-	<select id="selectUserById" parameterType="Long" resultMap="SysUserResult">
+	<select id="selectUserById" resultMap="SysUserResult">
 		<include refid="selectUserVo"/>
 		where u.user_id = #{userId}
 	</select>

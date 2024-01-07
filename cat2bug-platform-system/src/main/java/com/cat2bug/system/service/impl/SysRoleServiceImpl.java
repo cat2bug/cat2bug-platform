@@ -5,6 +5,9 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import com.cat2bug.system.domain.SysUserConfig;
+import com.cat2bug.system.mapper.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,10 +22,6 @@ import com.cat2bug.common.utils.spring.SpringUtils;
 import com.cat2bug.system.domain.SysRoleDept;
 import com.cat2bug.system.domain.SysRoleMenu;
 import com.cat2bug.system.domain.SysUserRole;
-import com.cat2bug.system.mapper.SysRoleDeptMapper;
-import com.cat2bug.system.mapper.SysRoleMapper;
-import com.cat2bug.system.mapper.SysRoleMenuMapper;
-import com.cat2bug.system.mapper.SysUserRoleMapper;
 import com.cat2bug.system.service.ISysRoleService;
 
 /**
@@ -44,6 +43,9 @@ public class SysRoleServiceImpl implements ISysRoleService
 
     @Autowired
     private SysRoleDeptMapper roleDeptMapper;
+
+    @Autowired
+    private SysUserConfigMapper sysUserConfigMapper;
 
     /**
      * 根据条件分页查询角色数据
@@ -67,7 +69,8 @@ public class SysRoleServiceImpl implements ISysRoleService
     @Override
     public List<SysRole> selectRolesByUserId(Long userId)
     {
-        List<SysRole> userRoles = roleMapper.selectRolePermissionByUserId(userId);
+        SysUserConfig sysUserConfig = sysUserConfigMapper.selectSysUserConfigByUserId(userId);
+        List<SysRole> userRoles = roleMapper.selectRolePermissionByUserId(sysUserConfig.getCurrentTeamId(), sysUserConfig.getCurrentProjectId(), userId);
         List<SysRole> roles = selectRoleAll();
         for (SysRole role : roles)
         {
@@ -92,7 +95,13 @@ public class SysRoleServiceImpl implements ISysRoleService
     @Override
     public Set<String> selectRolePermissionByUserId(Long userId)
     {
-        List<SysRole> perms = roleMapper.selectRolePermissionByUserId(userId);
+        SysUserConfig sysUserConfig = sysUserConfigMapper.selectSysUserConfigByUserId(userId);
+        List<SysRole> perms = null;
+        if(sysUserConfig==null) {
+            perms = roleMapper.selectRolePermissionByUserId(null, null, userId);
+        } else {
+            perms = roleMapper.selectRolePermissionByUserId(sysUserConfig.getCurrentTeamId(), sysUserConfig.getCurrentProjectId(), userId);
+        }
         Set<String> permsSet = new HashSet<>();
         for (SysRole perm : perms)
         {
@@ -124,7 +133,8 @@ public class SysRoleServiceImpl implements ISysRoleService
     @Override
     public List<Long> selectRoleListByUserId(Long userId)
     {
-        return roleMapper.selectRoleListByUserId(userId);
+        SysUserConfig sysUserConfig = sysUserConfigMapper.selectSysUserConfigByUserId(userId);
+        return roleMapper.selectRoleListByUserId(sysUserConfig.getCurrentTeamId(), sysUserConfig.getCurrentProjectId(), userId);
     }
 
     /**

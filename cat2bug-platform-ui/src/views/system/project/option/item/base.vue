@@ -7,8 +7,8 @@
         <span>{{$t('project.base-info-describe')}}</span>
       </div>
     </div>
-    <router-link to="project-base-info"><el-link>{{$t('project.base-info')}}</el-link></router-link>
-    <el-link @click="handleDelete" class="red">{{$t('project.delete')}}</el-link>
+    <router-link to="project-base-info" v-hasPermi="['system:project:edit']"><el-link>{{$t('project.base-info')}}</el-link></router-link>
+    <el-link @click="handleDelete" v-hasPermi="['system:project:remove']" type="danger">{{$t('project.delete')}}</el-link>
   </el-card>
 </template>
 
@@ -55,20 +55,3 @@ export default {
   }
 }
 </script>
-<style scoped>
-.red {
-  color: red;
-}
-</style>
-<style>
-.delete-button {
-  color: #fff;
-  background-color: #f56c6c;
-  border-color: #f56c6c;
-}
-.delete-button:hover {
-  background: #f78989;
-  border-color: #f78989;
-  color: #fff;
-}
-</style>

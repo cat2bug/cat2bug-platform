@@ -2,6 +2,7 @@ package com.cat2bug.system.mapper;
 
 import java.util.List;
 import com.cat2bug.common.core.domain.entity.SysRole;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * 角色表 数据层
@@ -20,11 +21,13 @@ public interface SysRoleMapper
 
     /**
      * 根据用户ID查询角色
-     * 
+     *
+     * @param teamId 团队id
+     * @param projectId 项目id
      * @param userId 用户ID
      * @return 角色列表
      */
-    public List<SysRole> selectRolePermissionByUserId(Long userId);
+    public List<SysRole> selectRolePermissionByUserId(@Param("teamId") Long teamId, @Param("projectId") Long projectId, @Param("userId") Long userId);
 
     /**
      * 查询所有角色
@@ -35,11 +38,13 @@ public interface SysRoleMapper
 
     /**
      * 根据用户ID获取角色选择框列表
-     * 
+     *
+     * @param teamId 团队id
+     * @param projectId 项目id
      * @param userId 用户ID
      * @return 选中角色ID列表
      */
-    public List<Long> selectRoleListByUserId(Long userId);
+    public List<Long> selectRoleListByUserId(@Param("teamId") Long teamId, @Param("projectId") Long projectId, @Param("userId") Long userId);
 
     /**
      * 通过角色ID查询角色

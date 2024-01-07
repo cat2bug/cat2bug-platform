@@ -81,26 +81,6 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
          </trim>
     </insert>
 
-    <insert id="insertSysUserTeam" parameterType="SysUserTeam">
-        insert into sys_user_team
-        <trim prefix="(" suffix=")" suffixOverrides=",">
-            <if test="teamId != null">team_id,</if>
-            <if test="userId != null">user_id,</if>
-            <if test="createBy != null">create_by,</if>
-            <if test="createTime != null">create_time,</if>
-            <if test="updateBy != null">update_by,</if>
-            <if test="updateTime != null">update_time,</if>
-        </trim>
-        <trim prefix="values (" suffix=")" suffixOverrides=",">
-            <if test="teamId != null">#{teamId},</if>
-            <if test="userId != null">#{userId},</if>
-            <if test="createBy != null">#{createBy},</if>
-            <if test="createTime != null">#{createTime},</if>
-            <if test="updateBy != null">#{updateBy},</if>
-            <if test="updateTime != null">#{updateTime},</if>
-        </trim>
-    </insert>
-
     <update id="updateSysTeam" parameterType="SysTeam">
         update sys_team
         <trim prefix="SET" suffixOverrides=",">

@@ -53,13 +53,6 @@ public interface SysTeamMapper
     public int insertSysTeam(SysTeam sysTeam);
 
     /**
-     * 新增用户团队角色
-     * @param sysUserTeam
-     * @return
-     */
-    public int insertSysUserTeam(SysUserTeam sysUserTeam);
-
-    /**
      * 修改团队
      * 
      * @param sysTeam 团队

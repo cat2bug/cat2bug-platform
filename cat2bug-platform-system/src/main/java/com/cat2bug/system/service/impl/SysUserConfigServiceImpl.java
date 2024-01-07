@@ -38,6 +38,16 @@ public class SysUserConfigServiceImpl implements ISysUserConfigService
         return sysUserConfigMapper.selectSysUserConfigByUserId(SecurityUtils.getUserId());
     }
 
+    @Override
+    public SysUserConfig selectSysUserConfigByUserId(Long memberId) {
+        return sysUserConfigMapper.selectSysUserConfigByUserId(memberId);
+    }
+
+    @Override
+    public SysUserConfig selectSysUserConfigByUserName(String memberName) {
+        return sysUserConfigMapper.selectSysUserConfigByUserName(memberName);
+    }
+
     /**
      * 查询用户配置列表
      * 

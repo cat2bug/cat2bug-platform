@@ -7,16 +7,13 @@ import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.common.utils.DateUtils;
 import com.cat2bug.common.utils.MessageUtils;
 import com.cat2bug.common.utils.SecurityUtils;
-import com.cat2bug.system.domain.SysUserConfig;
-import com.cat2bug.system.domain.SysUserTeam;
-import com.cat2bug.system.domain.SysUserTeamRole;
+import com.cat2bug.system.domain.*;
 import com.cat2bug.system.domain.vo.BatchUserRoleVo;
 import com.cat2bug.system.mapper.*;
 import com.cat2bug.system.service.ISysUserConfigService;
 import com.google.common.base.Preconditions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.cat2bug.system.domain.SysTeam;
 import com.cat2bug.system.service.ISysTeamService;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,8 +26,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class SysTeamServiceImpl implements ISysTeamService 
 {
-    /** 默认规则ID */
-    private final static Long DEFAULT_ROLE_ID = 0L;
+    /** 创建人角色ID */
+    private final static Long TEAM_CREATE_BY_ROLE_ID = 12L;
 
     @Autowired
     private SysTeamMapper sysTeamMapper;
@@ -155,10 +152,13 @@ public class SysTeamServiceImpl implements ISysTeamService
         sysUserTeam.setTeamId(sysTeam.getTeamId());
         sysUserTeam.setCreateTime(DateUtils.getNowDate());
         sysUserTeam.setCreateBy(createBy);
-        Preconditions.checkState(sysTeamMapper.insertSysUserTeam(sysUserTeam)==1,MessageUtils.message("team.insert_user_team_role_fail"));
+        Preconditions.checkState(sysUserTeamMapper.insertSysUserTeam(sysUserTeam)==1,MessageUtils.message("team.insert_user_team_role_fail"));
 
-        // TODO role
-//        sysUserTeam.setTeamRoleId(DEFAULT_ROLE_ID);
+        // 新建用户角色
+        SysUserTeamRole sysUserTeamRole = new SysUserTeamRole();
+        sysUserTeamRole.setRoleId(TEAM_CREATE_BY_ROLE_ID);
+        sysUserTeamRole.setUserTeamId(sysUserTeam.getUserTeamId());
+        Preconditions.checkState(sysUserTeamRoleMapper.insertSysUserTeamRole(sysUserTeamRole)==1,MessageUtils.message("team.insert_user_team_role_fail"));
 
         // 查询用户配置，如果没有默认团队，就将当前团队设置为默认团队
         SysUserConfig sysUserConfig = sysUserConfigMapper.selectSysUserConfigByUserId(SecurityUtils.getUserId());
@@ -179,6 +179,8 @@ public class SysTeamServiceImpl implements ISysTeamService
     @Transactional
     public int insertSysUser(Long teamId, SysUser user) {
         // 插入用户信息
+        user.setCreateBy(SecurityUtils.getUsername());
+        user.setPassword(SecurityUtils.encryptPassword(user.getPassword()));
         Preconditions.checkState(sysUserMapper.insertUser(user)==1,MessageUtils.message("user.insert_user_fail"));
 
         // 新建用户与团队关联数据
@@ -186,7 +188,7 @@ public class SysTeamServiceImpl implements ISysTeamService
         sysUserTeam.setUserId(user.getUserId());
         sysUserTeam.setTeamId(teamId);
         sysUserTeam.setCreateTime(DateUtils.getNowDate());
-        sysUserTeam.setCreateBy(String.valueOf(SecurityUtils.getUserId()));
+        sysUserTeam.setCreateBy(String.valueOf(SecurityUtils.getUsername()));
         Preconditions.checkState(sysUserTeamMapper.insertSysUserTeam(sysUserTeam)==1,MessageUtils.message("team.insert_user_team_role_fail"));
 
         // 新建团队内的用户角色
@@ -198,6 +200,11 @@ public class SysTeamServiceImpl implements ISysTeamService
                 Preconditions.checkState(sysUserTeamRoleMapper.insertSysUserTeamRole(utr)==1,MessageUtils.message("team.insert_member_role_fail"));
             }
         }
+        // 新建用户配置
+        SysUserConfig sysUserConfig = new SysUserConfig();
+        sysUserConfig.setUserId(user.getUserId());
+        sysUserConfig.setCurrentTeamId(teamId);
+        Preconditions.checkState(sysUserConfigMapper.insertSysUserConfig(sysUserConfig)==1,MessageUtils.message("user.insert_user_config_fail"));
 
         return 1;
     }

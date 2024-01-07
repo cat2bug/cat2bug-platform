@@ -27,7 +27,7 @@
               icon="el-icon-plus"
               size="mini"
               @click="inviteMemberHandle"
-              v-hasPermi="['system:member:add']"
+              v-hasPermi="['system:team:member:invite']"
             >{{$t('team.invite-members')}}</el-button>
             <el-button
               type="primary"
@@ -36,7 +36,7 @@
               icon="el-icon-plus"
               size="mini"
               @click="createMemberHandle"
-              v-hasPermi="['system:member:add']"
+              v-hasPermi="['system:team:member:create']"
             >{{$t('member.create')}}</el-button>
           </el-col>
         </el-row>
@@ -57,7 +57,7 @@
                          v-model="scope.row.roleIds"
                          multiple
                          :placeholder="$t('member.please-select-role')"
-                         :disabled="scope.row.status==1"
+                         :disabled="isMemberDisabled(scope.row) || isCreateBy(scope.row)"
                          @change="roleChangeHandle(scope.row)"
               >
                 <el-option
@@ -85,7 +85,6 @@
               <div teamLock="scope.row.status">
                 <span :teamLock="scope.row.status">{{ scope.row.createTime }}</span>
               </div>
-
             </template>
           </el-table-column>
           <el-table-column
@@ -94,13 +93,13 @@
             width="160"
             class-name="small-padding fixed-width"
           >
-            <template slot-scope="scope" v-if="scope.row.userId !== 1">
+            <template slot-scope="scope" v-if="isCreateBy(scope.row)==false">
               <el-button
                 size="mini"
                 type="text"
                 icon="el-icon-lock"
                 @click="lockMemberHandle(scope.row)"
-                v-hasPermi="['system:member:edit']"
+                v-hasPermi="['system:team:member:lock']"
                 v-if="scope.row.status=='0'"
               >{{$t('lock')}}</el-button>
               <el-button
@@ -108,7 +107,7 @@
                 type="text"
                 icon="el-icon-unlock"
                 @click="unlockMemberHandle(scope.row)"
-                v-hasPermi="['system:member:edit']"
+                v-hasPermi="['system:team:member:lock']"
                 v-else-if="scope.row.status=='1'"
               >{{$t('unlock')}}</el-button>
             </template>
@@ -129,7 +128,7 @@
 </template>
 
 <script>
-import { listMember, updateMemberTeamRole, updateMemberTeamRoleIds} from "@/api/system/team";
+import {listMember, listTeamRole, updateMemberTeamRole, updateMemberTeamRoleIds} from "@/api/system/team";
 import CreateTeamMember from "@/views/system/team/option/team/CreateTeamMember";
 import InviteTeamMember from "@/views/system/team/option/team/InviteTeamMember";
 import MemberNameplate from "@/components/MemberNameplate";
@@ -159,6 +158,20 @@ export default {
       roleOptions: [],
     }
   },
+  computed: {
+    /** 是否是创建人 */
+    isCreateBy: function (){
+      return function (member) {
+        return member.admin || (this.roleOptions.filter(r=>r.teamCreateBy && member.roleIds && member.roleIds.indexOf(r.roleId)>-1).length>0);
+      }
+    },
+    /** 成员是否禁用 */
+    isMemberDisabled: function () {
+      return function (member) {
+        return member.status==1;
+      }
+    }
+  },
   created() {
     this.init();
     this.getMemberList();
@@ -167,8 +180,8 @@ export default {
     /** 初始化数据 */
     init() {
       // 获取当前用户信息
-      getUser().then(res => {
-        this.roleOptions = res.roles?res.roles.filter(r=>r.isTeamRole).map(r=>{
+      listTeamRole(this.getTeamId()).then(res => {
+        this.roleOptions = res.data?res.data.filter(r=>r.isTeamRole && r.teamCreateBy == false).map(r=>{
           r.roleName = r.roleNameI18nKey?this.$t(r.roleNameI18nKey):r.roleName;
           return r;
         }):[];
@@ -217,7 +230,7 @@ export default {
     /** 更新用户操作 */
     updateMemberRole(memberRole){
       updateMemberTeamRole(memberRole.teamId,memberRole.userId,memberRole).then(res=>{
-        this.$message.success(this.$i18n.t('update.success'));
+        this.$message.success(this.$i18n.t('update.success').toString());
         this.getMemberList();
       });
     },

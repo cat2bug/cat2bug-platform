@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.validation.Validator;
+
+import com.cat2bug.system.domain.SysUserConfig;
+import com.cat2bug.system.service.ISysUserConfigService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +60,9 @@ public class SysUserServiceImpl implements ISysUserService
 
     @Autowired
     private ISysConfigService configService;
+
+    @Autowired
+    private ISysUserConfigService sysUserConfigService;
 
     @Autowired
     protected Validator validator;
@@ -114,19 +120,25 @@ public class SysUserServiceImpl implements ISysUserService
     @Override
     public SysUser selectUserByUserName(String userName)
     {
-        return userMapper.selectUserByUserName(userName);
+        SysUserConfig sysUserConfig = sysUserConfigService.selectSysUserConfigByUserName(userName);
+        if(sysUserConfig==null){
+            return userMapper.selectUserByUserName(null, null, userName);
+        } else {
+            return userMapper.selectUserByUserName(sysUserConfig.getCurrentTeamId(), sysUserConfig.getCurrentProjectId(), userName);
+        }
     }
 
     /**
      * 通过用户ID查询用户
      * 
-     * @param userId 用户ID
+     * @param memberId 成员ID
      * @return 用户对象信息
      */
     @Override
-    public SysUser selectUserById(Long userId)
+    public SysUser selectUserById(Long memberId)
     {
-        return userMapper.selectUserById(userId);
+        SysUserConfig sysUserConfig = sysUserConfigService.selectSysUserConfigByUserId(memberId);
+        return userMapper.selectUserById(sysUserConfig.getCurrentTeamId(), sysUserConfig.getCurrentProjectId(), memberId);
     }
 
     /**
@@ -509,7 +521,7 @@ public class SysUserServiceImpl implements ISysUserService
             try
             {
                 // 验证是否存在这个用户
-                SysUser u = userMapper.selectUserByUserName(user.getUserName());
+                SysUser u = this.selectUserByUserName(user.getUserName());
                 if (StringUtils.isNull(u))
                 {
                     BeanValidators.validateWithException(validator, user);

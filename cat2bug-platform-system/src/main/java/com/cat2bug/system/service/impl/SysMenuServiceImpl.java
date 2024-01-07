@@ -8,6 +8,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import com.cat2bug.system.domain.SysUserConfig;
+import com.cat2bug.system.mapper.SysUserConfigMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.cat2bug.common.constant.Constants;
@@ -43,6 +46,9 @@ public class SysMenuServiceImpl implements ISysMenuService
 
     @Autowired
     private SysRoleMenuMapper roleMenuMapper;
+
+    @Autowired
+    private SysUserConfigMapper sysUserConfigMapper;
 
     /**
      * 根据用户查询系统菜单列表
@@ -137,7 +143,12 @@ public class SysMenuServiceImpl implements ISysMenuService
         }
         else
         {
-            menus = menuMapper.selectMenuTreeByUserId(userId);
+            SysUserConfig sysUserConfig = sysUserConfigMapper.selectSysUserConfigByUserId(userId);
+            if(sysUserConfig==null){
+                menus = menuMapper.selectMenuTreeByUserId(null, null, userId);
+            } else {
+                menus = menuMapper.selectMenuTreeByUserId(sysUserConfig.getCurrentTeamId(), sysUserConfig.getCurrentProjectId(), userId);
+            }
         }
         return getChildPerms(menus, 0);
     }

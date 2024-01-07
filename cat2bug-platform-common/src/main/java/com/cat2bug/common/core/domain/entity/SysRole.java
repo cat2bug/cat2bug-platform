@@ -73,6 +73,12 @@ public class SysRole extends BaseEntity
     /** 角色菜单权限 */
     private Set<String> permissions;
 
+    /** 项目id */
+    private Long projectId;
+
+    /** 团队id */
+    private Long teamId;
+
     public SysRole()
     {
 
@@ -117,6 +123,22 @@ public class SysRole extends BaseEntity
         this.roleId = roleId;
     }
 
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
+    }
+
+    public Long getTeamId() {
+        return teamId;
+    }
+
+    public void setTeamId(Long teamId) {
+        this.teamId = teamId;
+    }
+
     public boolean isAdmin()
     {
         return isAdmin(this.roleId);
@@ -129,12 +151,15 @@ public class SysRole extends BaseEntity
 
     public boolean isProjectAdmin()
     {
-        return isProjectAdmin(this.roleId);
+        return roleId != null && 6L == roleId;
     }
 
-    public static boolean isProjectAdmin(Long roleId)
-    {
-        return roleId != null && 6L == roleId;
+    public boolean isProjectCreateBy() {
+        return roleId != null && 11L == roleId;
+    }
+
+    public boolean isTeamCreateBy() {
+        return roleId != null && 12L == roleId;
     }
 
     @NotBlank(message = "角色名称不能为空")

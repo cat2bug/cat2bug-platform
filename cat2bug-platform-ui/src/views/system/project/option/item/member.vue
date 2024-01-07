@@ -7,7 +7,7 @@
         <span>{{$t('project.project-and-member-describe')}}</span>
       </div>
     </div>
-    <router-link to="project-member"><el-link>{{$t('member.manage')}}</el-link></router-link>
+    <router-link to="project-member" v-hasPermi="['system:project:member']"><el-link>{{$t('member.manage')}}</el-link></router-link>
   </el-card>
 </template>
 

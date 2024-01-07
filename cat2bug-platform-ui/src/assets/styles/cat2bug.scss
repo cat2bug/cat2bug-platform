@@ -6,3 +6,13 @@
 .el-pagination__editor.el-input .el-input__inner {
   line-height: 28px;
 }
+.delete-button {
+  color: #fff;
+  background-color: #f56c6c;
+  border-color: #f56c6c;
+}
+.delete-button:hover {
+  background: #f78989;
+  border-color: #f78989;
+  color: #fff;
+}

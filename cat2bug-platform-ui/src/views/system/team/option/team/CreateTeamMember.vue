@@ -4,17 +4,17 @@
       <el-row>
         <el-col :span="12">
           <el-form-item :label="$t('name')" prop="nickName">
-            <el-input v-model="form.nickName" :placeholder="$t('member.please-enter-name')" maxlength="30" />
+            <el-input v-model="form.nickName" :placeholder="$t('member.please-enter-name')" minlength="2" maxlength="20" />
           </el-form-item>
         </el-col>
         <el-col :span="12">
           <el-form-item v-if="form.userId == undefined" :label="$t('account')" prop="userName">
-            <el-input v-model="form.userName" :placeholder="$t('member.please-enter-account')" maxlength="30" />
+            <el-input v-model="form.userName" :placeholder="$t('member.please-enter-account')" minlength="2" maxlength="20" />
           </el-form-item>
         </el-col>
         <el-col :span="12">
           <el-form-item v-if="form.userId == undefined" :label="$t('password')" prop="password">
-            <el-input v-model="form.password" :placeholder="$t('member.please-enter-password')" type="password" maxlength="20" show-password/>
+            <el-input v-model="form.password" :placeholder="$t('member.please-enter-password')" type="password" minlength="5" maxlength="20" show-password/>
           </el-form-item>
         </el-col>
         <el-col :span="12">
@@ -24,7 +24,7 @@
         </el-col>
         <el-col :span="12">
           <el-form-item :label="$t('email')" prop="email">
-            <el-input v-model="form.email" :placeholder="$t('member.please-enter-email')" maxlength="50" />
+            <el-input v-model="form.email" :placeholder="$t('member.please-enter-email')" max="50" />
           </el-form-item>
         </el-col>
 <!--        <el-col :span="12">-->
@@ -142,13 +142,13 @@ export default {
   methods: {
     open(){
       getUser().then(res => {
-        // this.postOptions = response.posts;
-        this.roleOptions = res.roles?res.roles.filter(r=>r.isTeamRole).map(r=>{
+        this.roleOptions = res.roles?res.roles.filter(r=>r.isTeamRole && r.teamCreateBy == false).map(r=>{
           r.roleName = r.roleNameI18nKey?this.$t(r.roleNameI18nKey):r.roleName;
           return r;
         }):[];
         this.dialogVisible = true;
-        this.form.password = this.initPassword;
+        if(this.initPassword)
+          this.form.password = this.initPassword;
       });
     },
     /** 返回 */

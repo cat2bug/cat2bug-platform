@@ -59,8 +59,12 @@ export default {
   }
   ::v-deep .el-card__body {
     min-height: 150px;
-    a {
-      margin-left: 10px;
+    display: flex;
+    align-items: flex-start;
+    flex-direction: column;
+    > * {
+      margin-left: 20px;
+      margin-bottom: 15px;
     }
   }
 </style>

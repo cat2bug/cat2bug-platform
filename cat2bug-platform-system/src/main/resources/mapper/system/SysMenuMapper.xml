@@ -74,11 +74,20 @@
 		order by m.parent_id, m.order_num
 	</select>
     
-    <select id="selectMenuTreeByUserId" parameterType="Long" resultMap="SysMenuResult">
+    <select id="selectMenuTreeByUserId" resultMap="SysMenuResult">
 		select distinct m.menu_id, m.parent_id, m.menu_name,m.menu_name_i18n_key, m.path, m.component, m.`query`, m.visible, m.status, ifnull(m.perms,'') as perms, m.is_frame, m.is_cache, m.menu_type, m.icon, m.order_num, m.create_time
 		from sys_menu m
 			 left join sys_role_menu rm on m.menu_id = rm.menu_id
-			 left join sys_user_role ur on rm.role_id = ur.role_id
+			 left join
+				(SELECT 'system' as src, '' as src_id, user_id, role_id FROM sys_user_role
+				<if test="teamId != null and teamId != 0">
+					UNION
+					SELECT 'team' as src, ut.team_id as src_id, ut.user_id, utr.role_id FROM sys_user_team_role utr LEFT JOIN sys_user_team ut ON ut.user_team_id=utr.user_team_id AND ut.team_id = #{ teamId }
+				</if>
+				<if test="projectId != null and projectId != 0">
+					UNION
+					SELECT 'project' as src, up.project_id as src_id, up.user_id, upr.role_id FROM sys_user_project_role upr LEFT JOIN sys_user_project up ON up.user_project_id=upr.user_project_id AND up.project_id = #{ projectId }
+				</if>) ur on rm.role_id = ur.role_id
 			 left join sys_role ro on ur.role_id = ro.role_id
 			 left join sys_user u on ur.user_id = u.user_id
 		where u.user_id = #{userId} and m.menu_type in ('M', 'C') and m.status = 0  AND ro.status = 0

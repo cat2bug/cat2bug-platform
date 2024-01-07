@@ -2,6 +2,7 @@ package com.cat2bug.system.service;
 
 import java.util.List;
 import com.cat2bug.system.domain.SysUserProjectRole;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * 用户项目角色Service接口
@@ -42,6 +43,15 @@ public interface ISysUserProjectRoleService
      * @return 结果
      */
     public int updateSysUserProjectRole(SysUserProjectRole sysUserProjectRole);
+
+    /**
+     * 修改用户项目角色
+     * @param projectId 项目id
+     * @param memberId  成员id
+     * @param roleIds   角色id集合
+     * @return  结果
+     */
+    public int updateSysUserProjectRole(Long projectId,Long memberId,List<Long> roleIds);
 
     /**
      * 批量删除用户项目角色

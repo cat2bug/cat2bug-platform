@@ -95,6 +95,15 @@ export function updateMemberTeamRole(teamId, memberId, data) {
   })
 }
 
+
+export function listTeamRole(teamId) {
+  return request({
+    url: '/system/team/'+teamId+'/role',
+    method: 'get',
+  })
+}
+
+
 export function updateMemberTeamRoleIds(teamId, memberId, roleIds) {
   return request({
     url: '/system/team/'+teamId+'/member/'+memberId+'/roles',
