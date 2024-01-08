@@ -102,7 +102,6 @@ export default {
         ...mapState(["settings"]),
         ...mapGetters(["sidebarRouters", "sidebar"]),
       teamId() {
-          console.log('----',this.$store.state.user.config.currentTeamId,this.filterSidebarRouters('team'))
           return this.$store.state.user.config.currentTeamId;
       },
       projectId() {

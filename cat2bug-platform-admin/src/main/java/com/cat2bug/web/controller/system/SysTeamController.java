@@ -64,7 +64,7 @@ public class SysTeamController extends BaseController
     /**
      * 获取团队成员列表
      */
-    @PreAuthorize("@ss.hasPermi('system:team:query')")
+    @PreAuthorize("@ss.hasPermi('system:team:list') || @ss.hasPermi('system:team:query')")
     @GetMapping("/{teamId}/member")
     public TableDataInfo listMember(@PathVariable("teamId") Long teamId, SysUser sysUser)
     {

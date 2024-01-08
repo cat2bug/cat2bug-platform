@@ -203,6 +203,7 @@
   "http.not-resubmit": "数据正在处理，请勿重复提交",
   "defect.manage": "缺陷",
   "defect.create": "新建缺陷",
+  "defect.base-info": "基本信息",
   "defect.all-type": "全部类型",
   "defect.all-defect": "全部缺陷",
   "defect.enter-name": "请输入缺陷标题",

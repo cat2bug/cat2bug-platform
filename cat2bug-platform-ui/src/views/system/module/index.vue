@@ -196,7 +196,6 @@ export default {
     },
     /** 搜索按钮操作 */
     handleQuery() {
-      console.log('--------')
       this.getList();
     },
     /** 重置按钮操作 */

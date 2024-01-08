@@ -32,7 +32,7 @@ public class SysModuleController extends BaseController
     /**
      * 查询模块列表
      */
-    @PreAuthorize("@ss.hasPermi('system:module:list')")
+    @PreAuthorize("@ss.hasPermi('system:defect:list') || @ss.hasPermi('system:module:list')")
     @GetMapping("/list")
     public AjaxResult list(SysModule sysModule)
     {

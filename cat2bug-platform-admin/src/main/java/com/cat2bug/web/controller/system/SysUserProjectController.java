@@ -41,7 +41,7 @@ public class SysUserProjectController extends BaseController {
     /**
      * 查询项目成员列表
      */
-    @PreAuthorize("@ss.hasPermi('system:project:member')")
+    @PreAuthorize("@ss.hasPermi('system:project:list') || @ss.hasPermi('system:project:member')")
     @GetMapping("/{projectId}/member")
     public TableDataInfo memberListByProjectId(@PathVariable Long projectId, SysUser sysUser)
     {

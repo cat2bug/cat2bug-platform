@@ -31,7 +31,7 @@ public class SysDefectLogController extends BaseController
     /**
      * 查询缺陷日志列表
      */
-    @PreAuthorize("@ss.hasPermi('system:log:list')")
+    @PreAuthorize("@ss.hasPermi('system:defect:list') || @ss.hasPermi('system:defect:log:list')")
     @GetMapping("/list")
     public TableDataInfo list(SysDefectLog sysDefectLog)
     {
@@ -43,7 +43,7 @@ public class SysDefectLogController extends BaseController
     /**
      * 导出缺陷日志列表
      */
-    @PreAuthorize("@ss.hasPermi('system:log:export')")
+    @PreAuthorize("@ss.hasPermi('system:defect:log:export')")
     @Log(title = "缺陷日志", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
     public void export(HttpServletResponse response, SysDefectLog sysDefectLog)
@@ -56,7 +56,7 @@ public class SysDefectLogController extends BaseController
     /**
      * 获取缺陷日志详细信息
      */
-    @PreAuthorize("@ss.hasPermi('system:log:query')")
+    @PreAuthorize("@ss.hasPermi('system:defect:log:query')")
     @GetMapping(value = "/{defectLogId}")
     public AjaxResult getInfo(@PathVariable("defectLogId") Long defectLogId)
     {
@@ -66,7 +66,7 @@ public class SysDefectLogController extends BaseController
     /**
      * 新增缺陷日志
      */
-    @PreAuthorize("@ss.hasPermi('system:log:add')")
+    @PreAuthorize("@ss.hasPermi('system:defect:log:add')")
     @Log(title = "缺陷日志", businessType = BusinessType.INSERT)
     @PostMapping
     public AjaxResult add(@RequestBody SysDefectLog sysDefectLog)
@@ -77,7 +77,7 @@ public class SysDefectLogController extends BaseController
     /**
      * 修改缺陷日志
      */
-    @PreAuthorize("@ss.hasPermi('system:log:edit')")
+    @PreAuthorize("@ss.hasPermi('system:defect:log:edit')")
     @Log(title = "缺陷日志", businessType = BusinessType.UPDATE)
     @PutMapping
     public AjaxResult edit(@RequestBody SysDefectLog sysDefectLog)
@@ -88,7 +88,7 @@ public class SysDefectLogController extends BaseController
     /**
      * 删除缺陷日志
      */
-    @PreAuthorize("@ss.hasPermi('system:log:remove')")
+    @PreAuthorize("@ss.hasPermi('system:defect:log:remove')")
     @Log(title = "缺陷日志", businessType = BusinessType.DELETE)
 	@DeleteMapping("/{defectLogIds}")
     public AjaxResult remove(@PathVariable Long[] defectLogIds)

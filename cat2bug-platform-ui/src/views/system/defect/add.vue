@@ -32,7 +32,7 @@
             <el-option
               v-for="dict in dict.type.defect_level"
               :key="dict.value"
-              :label="$t(dict.value)?$t(dict.value):dict.label"
+              :label="levelName(dict)"
               :value="dict.value"
             ></el-option>
           </el-select>
@@ -120,6 +120,13 @@ export default {
       type: Number,
       default: null
     },
+  },
+  computed: {
+    levelName: function () {
+      return function (dict) {
+        return this.$i18n.t(dict.value)?this.$i18n.t(dict.value):dict.label
+      }
+    }
   },
   methods:{
     open() {

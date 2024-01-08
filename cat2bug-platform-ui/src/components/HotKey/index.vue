@@ -98,7 +98,6 @@ export default {
         console.log(list,list2,list.length,list2.length)
         return false;
       }
-      console.log('---------')
       for(let i=0;i<list.length;i++){
         if(list[i]!=list2[i]){
           return false;

@@ -10,7 +10,7 @@
       <div class="selectProjectMemberInput_content">
         <el-input ref="selectProjectModuleInput" :class="icon?'padding-left-8':''" readonly :placeholder="placeholder" v-model="queryMember.params.search" @input="searchChangeHandle"></el-input>
       </div>
-      <i class="select-module-input__icon el-icon-arrow-up" v-show="isClearButtonVisible==false" @mouseenter="showClearButtonHandle(true)"></i>
+      <i class="select-module-input__icon el-icon-arrow-up" v-show="checkPermi(['system:module:add']) && isClearButtonVisible==false" @mouseenter="showClearButtonHandle(true)"></i>
       <i class="select-module-input__icon el-icon-circle-close" v-show="isClearButtonVisible==true" @mouseleave="showClearButtonHandle(false)" @click="clearSelectModuleHandle"></i>
     </div>
     <div class="select-module-menu">
@@ -18,7 +18,7 @@
                    :key="moduleId"
                    :module-pid="moduleId"
                    :project-id="projectId"
-                   :is-edit="isEdit"
+                   :is-edit="isEdit && checkPermi(['system:module:add'])"
                    @clickMenu="clickMenuHandle($event,index)"
                    @clickDirectory="clickDirectoryHandle($event,index)"
                    @clickAddSubMenu="clickAddSubMenuHandle($event,index)"
@@ -29,7 +29,7 @@
 
 <script>
 import i18n from "@/utils/i18n/i18n";
-import {listMemberOfProject, listProjectRole} from "@/api/system/project";
+import { checkPermi } from "@/utils/permission";
 import MemberNameplate from "@/components/MemberNameplate";
 import ModuleMenu from "@/components/SelectModule/menu";
 
@@ -95,6 +95,7 @@ export default {
   created() {
   },
   methods: {
+    checkPermi,
     /** 搜索成员事件 */
     searchChangeHandle() {
       this.$emit('input',this.selectModule.moduleId);

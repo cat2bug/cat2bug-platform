@@ -203,6 +203,7 @@
   "http.not-resubmit": "Data is being processed, please do not resubmit",
   "defect.manage": "Defect",
   "defect.create": "Create Defect",
+  "defect.base-info": "Basic Information",
   "defect.all-type": "All Type",
   "defect.all-defect": "All Defect",
   "defect.enter-name": "Please enter the title",
