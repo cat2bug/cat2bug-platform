@@ -186,7 +186,6 @@ export default {
         if(this.getCurrentUserId() == member.userId){
           return this.roleOptions.filter(r=>r.projectCreateBy);
         } else {
-          console.log(member.roleIds, this.roleOptions.filter(r=>r.projectCreateBy==false));
           return this.roleOptions.filter(r=>r.projectCreateBy==false);
         }
       }

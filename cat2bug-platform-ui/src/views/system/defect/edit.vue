@@ -27,7 +27,7 @@
             {{defect.defectDescribe}}
           </div>
         </el-collapse-item>
-        <el-collapse-item :title="$i18n.t('team.base-info')" name="base">
+        <el-collapse-item :title="$i18n.t('member.base-info')" name="base">
           <el-row class="defect-edit-body-base" :gutter="20">
             <el-col :span="12">
               <label>{{$t('project')}}:</label>

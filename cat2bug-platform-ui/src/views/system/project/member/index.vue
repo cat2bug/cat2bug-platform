@@ -12,7 +12,7 @@
             <el-input
               v-model="queryParams.params.search"
               prefix-icon="el-icon-search"
-              :placeholder="$t('team.search-placeholder')"
+              :placeholder="$t('member.search-placeholder')"
               clearable
               style="width: 320px"
               size="mini"

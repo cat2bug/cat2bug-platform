@@ -61,7 +61,7 @@
                          @change="roleChangeHandle(scope.row)"
               >
                 <el-option
-                  v-for="item in roleOptions"
+                  v-for="item in selectRoleOptions(scope.row)"
                   :key="item.roleId"
                   :label="item.roleName"
                   :value="item.roleId"
@@ -129,8 +129,8 @@
 
 <script>
 import {listMember, listTeamRole, updateMemberTeamRole, updateMemberTeamRoleIds} from "@/api/system/team";
-import CreateTeamMember from "@/views/system/team/option/team/CreateTeamMember";
-import InviteTeamMember from "@/views/system/team/option/team/InviteTeamMember";
+import CreateTeamMember from "@/views/system/team/option/member/CreateTeamMember";
+import InviteTeamMember from "@/views/system/team/option/member/InviteTeamMember";
 import MemberNameplate from "@/components/MemberNameplate";
 import {getUser} from "@/api/system/user";
 
@@ -170,6 +170,15 @@ export default {
       return function (member) {
         return member.status==1;
       }
+    },
+    selectRoleOptions: function (){
+      return function (member){
+        if(this.isCreateBy(member)){
+          return this.roleOptions.filter(r=>r.teamCreateBy);
+        } else {
+          return this.roleOptions.filter(r=>r.teamCreateBy==false);
+        }
+      }
     }
   },
   created() {
@@ -181,7 +190,7 @@ export default {
     init() {
       // 获取当前用户信息
       listTeamRole(this.getTeamId()).then(res => {
-        this.roleOptions = res.data?res.data.filter(r=>r.isTeamRole && r.teamCreateBy == false).map(r=>{
+        this.roleOptions = res.data?res.data.filter(r=>r.isTeamRole).map(r=>{
           r.roleName = r.roleNameI18nKey?this.$t(r.roleNameI18nKey):r.roleName;
           return r;
         }):[];

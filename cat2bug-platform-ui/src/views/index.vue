@@ -122,7 +122,7 @@
             </el-collapse-item>
             <el-collapse-item :title="$t('function-usage')">
               <ol>
-                <li>{{ $t('team.manage') }}</li>
+                <li>{{ $t('member.manage') }}</li>
                 <li>{{ $t('project.manage') }}</li>
                 <li>{{ $t('defect.manage') }}</li>
               </ol>

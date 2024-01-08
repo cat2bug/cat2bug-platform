@@ -7,7 +7,7 @@
         <span>{{$t('browser.describe')}}</span>
       </div>
     </div>
-    <router-link to="team-base-info"><el-link>{{$t('team.base-info')}}</el-link></router-link>
+    <router-link to="team-base-info"><el-link>{{$t('member.base-info')}}</el-link></router-link>
   </el-card>
 </template>
 

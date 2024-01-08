@@ -114,16 +114,16 @@ export const constantRoutes = [
     ]
   },
   {
-    path: '/system/team/add',
+    path: '/system/member/add',
     component: Layout,
     hidden: true,
     redirect: 'noredirect',
     children: [
       {
-        path: '/system/team/add-team',
+        path: '/system/member/add-member',
         component: () => import('@/views/system/team/add'),
         name: 'TeamAdd',
-        meta: { title: i18n.t('team.create'), icon: 'user' }
+        meta: { title: i18n.t('member.create'), icon: 'user' }
       }
     ]
   }

@@ -109,7 +109,7 @@ public class SysProjectController extends BaseController
         return toAjax(sysProjectService.insertSysProject(sysProject));
     }
 
-    @PreAuthorize("@ss.hasPermi('system:project:edit')")
+    @PreAuthorize("@ss.hasPermi('system:project:list')")
     @Log(title = "项目", businessType = BusinessType.INSERT)
     @PostMapping("/{projectId}/collect")
     public AjaxResult collect(@PathVariable Long projectId, @RequestBody SysProject sysProject)

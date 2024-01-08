@@ -11,7 +11,7 @@
               filterable
               remote
               reserve-keyword
-              :placeholder="$t('team.search-placeholder')"
+              :placeholder="$t('member.search-placeholder')"
               :remote-method="searchMemberHandle"
               :loading="loading">
               <el-option
