@@ -99,7 +99,7 @@ export default {
           currentTeamId: currentTeamId,
           currentProjectId: 0
         }).then(res => {
-          let path = '/team/index';
+          let path = '/team/project';
           store.dispatch('GetInfo').then(() => {
             if (_this.$router.currentRoute.path == path) {
               _this.$router.go(0);

@@ -97,7 +97,11 @@
           <level-tag :options="dict.type.defect_level" :value="scope.row.defectLevel"/>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('state')" align="left" prop="defectStateName" width="120" sortable />
+      <el-table-column :label="$t('state')" align="left" prop="defectStateName" width="120" sortable>
+        <template slot-scope="scope">
+          <span>{{ $t(scope.row.defectStateName) }}</span>
+        </template>
+      </el-table-column>
       <el-table-column :label="$t('module')" align="left" prop="moduleName" width="150" sortable />
       <el-table-column :label="$t('version')" align="left" prop="moduleVersion" width="100" sortable />
       <el-table-column :label="$t('update-time')" align="left" prop="updateTime" width="180" sortable >

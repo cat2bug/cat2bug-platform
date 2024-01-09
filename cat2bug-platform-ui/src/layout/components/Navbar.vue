@@ -20,11 +20,11 @@
 
       <el-dropdown class="avatar-container right-menu-item hover-effect" trigger="click">
         <div class="avatar-wrapper">
-          <img :src="avatar" class="user-avatar">
+          <cat2-bug-avatar :member="my" />
           <i class="el-icon-caret-bottom" />
         </div>
         <el-dropdown-menu slot="dropdown">
-          <router-link to="/user/profile">
+          <router-link to="/member/profile">
             <el-dropdown-item>{{$t('my-center')}}</el-dropdown-item>
           </router-link>
           <el-dropdown-item divided @click.native="logout">
@@ -46,6 +46,7 @@ import SizeSelect from '@/components/SizeSelect'
 import Search from '@/components/HeaderSearch'
 import RuoYiGit from '@/components/RuoYi/Git'
 import RuoYiDoc from '@/components/RuoYi/Doc'
+import Cat2BugAvatar from "@/components/Cat2BugAvatar";
 
 export default {
   components: {
@@ -56,13 +57,15 @@ export default {
     SizeSelect,
     Search,
     RuoYiGit,
-    RuoYiDoc
+    RuoYiDoc,
+    Cat2BugAvatar
   },
   computed: {
     ...mapGetters([
       'sidebar',
       'avatar',
-      'device'
+      'device',
+      'my',
     ]),
     setting: {
       get() {
@@ -164,18 +167,8 @@ export default {
 
     .avatar-container {
       margin-right: 30px;
-
       .avatar-wrapper {
-        margin-top: 5px;
-        position: relative;
-
-        .user-avatar {
-          cursor: pointer;
-          width: 40px;
-          height: 40px;
-          border-radius: 10px;
-        }
-
+        margin-top: 7px;
         .el-icon-caret-bottom {
           cursor: pointer;
           position: absolute;

@@ -1,12 +1,12 @@
 <template>
   <div>
-    <div class="user-info-head" @click="editCropper()"><img v-bind:src="options.img" title="点击上传头像" class="img-circle img-lg" /></div>
+    <div class="user-info-head" @click="editCropper()"><cat2-bug-avatar :member="options" style="width:120px;height:120px;line-height: 120px;border:2px solid #DCDFE6" /></div>
     <el-dialog :title="title" :visible.sync="open" width="800px" append-to-body @opened="modalOpened"  @close="closeDialog">
       <el-row>
         <el-col :xs="24" :md="12" :style="{height: '350px'}">
           <vue-cropper
             ref="cropper"
-            :img="options.img"
+            :img="options.avatar"
             :info="true"
             :autoCrop="options.autoCrop"
             :autoCropWidth="options.autoCropWidth"
@@ -58,9 +58,10 @@ import store from "@/store";
 import { VueCropper } from "vue-cropper";
 import { uploadAvatar } from "@/api/system/user";
 import { debounce } from '@/utils'
+import Cat2BugAvatar from "@/components/Cat2BugAvatar";
 
 export default {
-  components: { VueCropper },
+  components: { VueCropper, Cat2BugAvatar },
   data() {
     return {
       // 是否显示弹出层
@@ -70,7 +71,8 @@ export default {
       // 弹出层标题
       title: "修改头像",
       options: {
-        img: store.getters.avatar, //裁剪图片的地址
+        name: store.getters.my.name,  // 当前用户名
+        avatar: store.getters.avatar, //裁剪图片的地址
         autoCrop: true, // 是否默认生成截图框
         autoCropWidth: 200, // 默认生成截图框宽度
         autoCropHeight: 200, // 默认生成截图框高度
@@ -119,12 +121,12 @@ export default {
     // 上传预处理
     beforeUpload(file) {
       if (file.type.indexOf("image/") == -1) {
-        this.$modal.msgError("文件格式错误，请上传图片类型,如：JPG，PNG后缀的文件。");
+        this.$modal.msgError(this.$i18n.t('member.upload-file-format-exception'));
       } else {
         const reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = () => {
-          this.options.img = reader.result;
+          this.options.avatar = reader.result;
         };
       }
     },
@@ -135,9 +137,9 @@ export default {
         formData.append("avatarfile", data);
         uploadAvatar(formData).then(response => {
           this.open = false;
-          this.options.img = process.env.VUE_APP_BASE_API + response.imgUrl;
-          store.commit('SET_AVATAR', this.options.img);
-          this.$modal.msgSuccess("修改成功");
+          this.options.avatar = process.env.VUE_APP_BASE_API + response.imgUrl;
+          store.commit('SET_AVATAR', this.options.avatar);
+          this.$modal.msgSuccess(this.$i18n.t('modify-success'));
           this.visible = false;
         });
       });
@@ -148,7 +150,7 @@ export default {
     },
     // 关闭窗口
     closeDialog() {
-      this.options.img = store.getters.avatar
+      this.options.avatar = store.getters.avatar
       this.visible = false;
       window.removeEventListener("resize", this.resizeHandler)
     }
@@ -160,6 +162,7 @@ export default {
   position: relative;
   display: inline-block;
   height: 120px;
+  width: 120px;
 }
 
 .user-info-head:hover:after {
@@ -176,7 +179,7 @@ export default {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   cursor: pointer;
-  line-height: 110px;
+  line-height: 120px;
   border-radius: 50%;
 }
 </style>

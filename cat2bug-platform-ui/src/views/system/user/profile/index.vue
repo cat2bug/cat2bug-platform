@@ -1,10 +1,14 @@
 <template>
   <div class="app-container">
+    <el-row>
+      <el-page-header @back="goBack" :content="$t('personal-center')">
+      </el-page-header>
+    </el-row>
     <el-row :gutter="20">
       <el-col :span="6" :xs="24">
         <el-card class="box-card">
           <div slot="header" class="clearfix">
-            <span>个人信息</span>
+            <span>{{ $t('member.personal-info') }}</span>
           </div>
           <div>
             <div class="text-center">
@@ -12,27 +16,20 @@
             </div>
             <ul class="list-group list-group-striped">
               <li class="list-group-item">
-                <svg-icon icon-class="user" />用户名称
+                <svg-icon icon-class="user" />
+                {{ $t('account') }}
                 <div class="pull-right">{{ user.userName }}</div>
               </li>
               <li class="list-group-item">
-                <svg-icon icon-class="phone" />手机号码
-                <div class="pull-right">{{ user.phonenumber }}</div>
+                <svg-icon icon-class="phone" />{{ $t('phone-number') }}
+                <div class="pull-right">{{ user.phoneNumber }}</div>
               </li>
               <li class="list-group-item">
-                <svg-icon icon-class="email" />用户邮箱
+                <svg-icon icon-class="email" />{{ $t('email') }}
                 <div class="pull-right">{{ user.email }}</div>
               </li>
               <li class="list-group-item">
-                <svg-icon icon-class="tree" />所属部门
-                <div class="pull-right" v-if="user.dept">{{ user.dept.deptName }} / {{ postGroup }}</div>
-              </li>
-              <li class="list-group-item">
-                <svg-icon icon-class="peoples" />所属角色
-                <div class="pull-right">{{ roleGroup }}</div>
-              </li>
-              <li class="list-group-item">
-                <svg-icon icon-class="date" />创建日期
+                <svg-icon icon-class="date" />{{ $t('create-time') }}
                 <div class="pull-right">{{ user.createTime }}</div>
               </li>
             </ul>
@@ -42,13 +39,13 @@
       <el-col :span="18" :xs="24">
         <el-card>
           <div slot="header" class="clearfix">
-            <span>基本资料</span>
+            <span>{{ $t('member.basic-info') }}</span>
           </div>
           <el-tabs v-model="activeTab">
-            <el-tab-pane label="基本资料" name="userinfo">
+            <el-tab-pane :label="$t('member.basic-info')" name="userinfo">
               <userInfo :user="user" />
             </el-tab-pane>
-            <el-tab-pane label="修改密码" name="resetPwd">
+            <el-tab-pane :label="$t('modify-password')" name="resetPwd">
               <resetPwd />
             </el-tab-pane>
           </el-tabs>
@@ -79,6 +76,10 @@ export default {
     this.getUser();
   },
   methods: {
+    /** 返回 */
+    goBack() {
+      this.$router.back();
+    },
     getUser() {
       getUserProfile().then(response => {
         this.user = response.data;
@@ -89,3 +90,10 @@ export default {
   }
 };
 </script>
+<style lang="scss" scoped>
+.list-group-item {
+  .svg-icon {
+    margin-right: 5px;
+  }
+}
+</style>

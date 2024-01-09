@@ -1,17 +1,17 @@
 <template>
-  <el-form ref="form" :model="user" :rules="rules" label-width="80px">
-    <el-form-item label="旧密码" prop="oldPassword">
-      <el-input v-model="user.oldPassword" placeholder="请输入旧密码" type="password" show-password/>
+  <el-form ref="form" :model="user" :rules="rules" label-width="150px">
+    <el-form-item :label="$t('old-password')" prop="oldPassword">
+      <el-input v-model="user.oldPassword" :placeholder="$t('member.please-enter-old-password')" type="password" show-password maxlength="20" minlength="6" />
     </el-form-item>
-    <el-form-item label="新密码" prop="newPassword">
-      <el-input v-model="user.newPassword" placeholder="请输入新密码" type="password" show-password/>
+    <el-form-item :label="$t('new-password')" prop="newPassword">
+      <el-input v-model="user.newPassword" :placeholder="$t('member.please-enter-new-password')" type="password" show-password maxlength="20" minlength="6" />
     </el-form-item>
-    <el-form-item label="确认密码" prop="confirmPassword">
-      <el-input v-model="user.confirmPassword" placeholder="请确认新密码" type="password" show-password/>
+    <el-form-item :label="$t('confirm-password')" prop="confirmPassword">
+      <el-input v-model="user.confirmPassword" :placeholder="$t('member.please-enter-new-password')" type="password" show-password maxlength="20" minlength="6" />
     </el-form-item>
     <el-form-item>
-      <el-button type="primary" size="mini" @click="submit">保存</el-button>
-      <el-button type="danger" size="mini" @click="close">关闭</el-button>
+      <el-button type="primary" size="mini" @click="submit">{{ $t('save') }}</el-button>
+      <el-button type="danger" size="mini" @click="close">{{ $t('close') }}</el-button>
     </el-form-item>
   </el-form>
 </template>
@@ -23,7 +23,7 @@ export default {
   data() {
     const equalToPassword = (rule, value, callback) => {
       if (this.user.newPassword !== value) {
-        callback(new Error("两次输入的密码不一致"));
+        callback(new Error(this.$i18n.t('entered-passwords-differ').toString()));
       } else {
         callback();
       }
@@ -37,14 +37,14 @@ export default {
       // 表单校验
       rules: {
         oldPassword: [
-          { required: true, message: "旧密码不能为空", trigger: "blur" }
+          { required: true, message: this.$i18n.t('member.old-password-cannot-empty'), trigger: "blur" }
         ],
         newPassword: [
-          { required: true, message: "新密码不能为空", trigger: "blur" },
-          { min: 6, max: 20, message: "长度在 6 到 20 个字符", trigger: "blur" }
+          { required: true, message: this.$i18n.t('member.new-password-cannot-empty'), trigger: "blur" },
+          { min: 6, max: 20, message: this.$i18n.t('member.input-size-exception'), trigger: "blur" }
         ],
         confirmPassword: [
-          { required: true, message: "确认密码不能为空", trigger: "blur" },
+          { required: true, message: this.$i18n.t('member.confirm-password-cannot-empty'), trigger: "blur" },
           { required: true, validator: equalToPassword, trigger: "blur" }
         ]
       }
@@ -55,7 +55,7 @@ export default {
       this.$refs["form"].validate(valid => {
         if (valid) {
           updateUserPwd(this.user.oldPassword, this.user.newPassword).then(response => {
-            this.$modal.msgSuccess("修改成功");
+            this.$modal.msgSuccess(this.$i18n.t('modify-success'));
           });
         }
       });

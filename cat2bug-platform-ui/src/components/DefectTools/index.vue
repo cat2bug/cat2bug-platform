@@ -76,7 +76,7 @@ export default {
     passVisible: function () {
       return this.defect.defectStateName==AUDIT_STATE;
     },
-    // 通过
+    // 关闭
     closeVisible: function () {
       return this.defect.defectStateName!=CLOSE_STATE;
     },

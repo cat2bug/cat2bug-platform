@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <el-row class="project-add-page-header">
-      <el-page-header @back="goBack" :content="$t('member.info')">
+      <el-page-header @back="goBack" :content="$t('team.info')">
       </el-page-header>
     </el-row>
     <el-row>

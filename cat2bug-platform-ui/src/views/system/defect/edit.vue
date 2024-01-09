@@ -43,7 +43,7 @@
             </el-col>
             <el-col :span="12">
               <label>{{$t('state')}}:</label>
-              <span>{{defect.defectStateName}}</span>
+              <span>{{ $t(defect.defectStateName)}}</span>
             </el-col>
           </el-row>
         </el-collapse-item>
