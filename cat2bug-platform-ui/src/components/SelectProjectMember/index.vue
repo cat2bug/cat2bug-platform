@@ -142,6 +142,13 @@ export default {
       }
     }
   },
+  watch: {
+    memberId: function (newVal, oldVal) {
+      if(newVal!=oldVal && (!newVal || newVal.length==0)) {
+        this.clear();
+      }
+    }
+  },
   created() {
     this.queryMember.roleId = this.roleId?this.roleId+'':'';
     this.getRoleList();
@@ -217,7 +224,9 @@ export default {
       }
       this.optionsChecks.set(member.userId,1);
       this.$forceUpdate();
-      event.stopPropagation();
+      if(event){
+        event.stopPropagation();
+      }
     },
     /** 设置菜单索引顺序 */
     clickMenuHandle(member){
@@ -267,11 +276,12 @@ export default {
       this.queryMember.params.search=null;
       this.queryMember.pageNum=1;
       this.popoverVisible = false;
-      this.updateMembers();
-      this.getMemberList();
-      this.$forceUpdate();
+
       if(event)
-        event.stopPropagation();
+        this.updateMembers();
+        this.getMemberList();
+        this.$forceUpdate();
+        // event.stopPropagation();
     },
     /** 翻页处理 */
     currentPageChangeHandle(val){

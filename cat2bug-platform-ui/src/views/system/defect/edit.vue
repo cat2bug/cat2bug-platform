@@ -265,10 +265,12 @@ export default {
     }
   }
   .defect-edit-body {
+    padding-left: 30px;
+    padding-right: 30px;
     .defect-edit-body-log-first {
       border:#E4E7ED 1px solid;
       border-radius: 5px;
-      padding: 15px 15px 0px 15px;
+      padding: 15px 15px 12px 15px;
       margin-bottom: 10px;
     }
     ::v-deep .el-collapse {

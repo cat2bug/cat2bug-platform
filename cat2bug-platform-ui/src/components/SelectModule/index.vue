@@ -5,13 +5,13 @@
     @show="popoverShowHandle"
     @hide="popoverHideHandle"
     trigger="click">
-    <div slot="reference" :class="'el-input__inner select-module-input select-module-input-'+size">
+    <div slot="reference" :class="'el-input__inner select-module-input select-module-input-'+size" @mouseenter="showClearButtonHandle(true)" @mouseleave="showClearButtonHandle(false)">
       <i :class="icon" v-if="icon" style="margin: 0px 0px 0px 10px; color: #C0C4CC;"></i>
       <div class="selectProjectMemberInput_content">
         <el-input ref="selectProjectModuleInput" :class="icon?'padding-left-8':''" readonly :placeholder="placeholder" v-model="queryMember.params.search" @input="searchChangeHandle"></el-input>
       </div>
-      <i class="select-module-input__icon el-icon-arrow-up" v-show="checkPermi(['system:module:add']) && isClearButtonVisible==false" @mouseenter="showClearButtonHandle(true)"></i>
-      <i class="select-module-input__icon el-icon-circle-close" v-show="isClearButtonVisible==true" @mouseleave="showClearButtonHandle(false)" @click="clearSelectModuleHandle"></i>
+      <i class="select-module-input__icon el-icon-arrow-up" v-show="isClearButtonVisible==false"></i>
+      <i class="select-module-input__icon el-icon-circle-close" v-show="isClearButtonVisible==true" @click="clearSelectModuleHandle"></i>
     </div>
     <div class="select-module-menu">
       <module-menu v-for="(moduleId, index) in activeModuleIds"
@@ -90,7 +90,12 @@ export default {
       default: null
     }
   },
-  computed: {
+  watch: {
+    moduleId: function (newVal, oldVal) {
+      if(newVal!=oldVal && !newVal) {
+        this.clearSelectModuleHandle();
+      }
+    }
   },
   created() {
   },
@@ -148,8 +153,10 @@ export default {
       this.selectModule=null;
       this.popoverVisible = false;
       this.$forceUpdate();
-      this.$emit('input',null);
-      event.stopPropagation();
+      if(event) {
+        this.$emit('input',null);
+        // event.stopPropagation();
+      }
     },
     resetMenu() {
       this.activeModuleIds = [0];

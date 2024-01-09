@@ -124,6 +124,8 @@ export default {
     display: flex;
     flex-wrap: wrap;
     flex-direction: row;
+    align-items: center;
+    justify-content: flex-start !important;
     font-size: 12px;
     margin-bottom: 0px !important;
   }

@@ -36,7 +36,7 @@ export default {
       border: #FFF 3px solid;
     }
     .el-avatar--medium {
-      line-height: 33px;
+      line-height: 29px;
     }
     .el-avatar[isStatistics='true'] {
       background-color: #E4E7ED;
