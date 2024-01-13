@@ -29,7 +29,7 @@ RUN --mount=type=cache,target=/usr/local/code/cat2bug-platform/cat2bug-platform-
 
 
 # cat2bug服务容器
-FROM openjdk:11.0.16-jre
+FROM mysql:8.0-debian
 MAINTAINER yuzhantao@qq.com
 RUN \
     mkdir -p /opt/tools \
@@ -39,13 +39,17 @@ RUN \
     && mkdir -p /var/log/nginx \
   	&& mkdir config
 
-ADD http://download.redis.io/releases/redis-5.0.9.tar.gz /opt/tools
-ADD http://nginx.org/download/nginx-1.20.2.tar.gz /opt/tools
+RUN curl -o /opt/tools/redis-5.0.9.tar.gz http://download.redis.io/releases/redis-5.0.9.tar.gz
+RUN curl -o /opt/tools/nginx-1.25.3.tar.gz https://nginx.org/download/nginx-1.25.3.tar.gz
 COPY nginx.conf /opt/tools/nginx.conf
 # COPY jdk-8u181-linux-x64.tar.gz /opt/tools
 
-RUN apt-get update -y \
-    && apt -y install gcc automake autoconf libtool make
+# 设置镜像源
+#RUN echo "deb  buster main" > /etc/apt/sources.list
+#RUN echo "deb-src  buster main" >> /etc/apt/sources.list
+RUN echo "deb http://mirror.sjtu.edu.cn/debian bookworm main non-free contrib" > /etc/apt/sources.list
+RUN apt-get update
+RUN apt-get -y install gcc automake autoconf libtool make
 
 # 安装redis
 RUN \
@@ -53,25 +57,25 @@ RUN \
     && cd /opt/tools \
     && tar -xzf redis-5.0.9.tar.gz \
     && rm -rf redis-5.0.9.tar.gz \
-    && cd redis-5.0.9 && yum -y install tcl && make && make install \
+    && cd redis-5.0.9 && apt-get -y install tcl && make && make install \
     && cd /opt/tools \
-    && rm -rf redis-5.0.9 \
-    && rm -rf /var/cache/yum/*
+    && rm -rf redis-5.0.9
 
 # 安装 nginx
 RUN \
-    apt-get -y install gcc-c++ zlib zlib-devel openssl openssl--devel pcre pcre-devel \
+    apt-get -y install gcc libpcre3 libpcre3-dev zlib1g zlib1g-dev openssl libssl-dev \
     && cd /opt/tools \
-    && tar -zxv -f nginx-1.20.2.tar.gz \
-    && rm -rf nginx-1.20.2.tar.gz \
-    && cd nginx-1.20.2 \
-    && yum -y install openssl openssl-devel \
+    && tar -zxv -f nginx-1.25.3.tar.gz \
+    && rm -rf nginx-1.25.3.tar.gz \
+    && cd nginx-1.25.3 \
     && ./configure --with-http_stub_status_module --with-http_ssl_module --sbin-path=/usr/sbin/nginx \
     && make && make install \
     && cd .. \
-    && rm -rf nginx-1.20.2 \
-    && rm -rf /var/cache/yum/* \
+    && rm -rf nginx-1.25.3 \
     && cp -rf /opt/tools/nginx.conf /usr/local/nginx/conf/nginx.conf
+
+# 安装mysql
+
 
 # 复制文件
 # COPY redis.conf /etc/redis/redis.conf

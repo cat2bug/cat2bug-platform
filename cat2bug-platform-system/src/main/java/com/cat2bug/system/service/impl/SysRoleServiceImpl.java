@@ -70,20 +70,20 @@ public class SysRoleServiceImpl implements ISysRoleService
     public List<SysRole> selectRolesByUserId(Long userId)
     {
         SysUserConfig sysUserConfig = sysUserConfigMapper.selectSysUserConfigByUserId(userId);
-        List<SysRole> userRoles = roleMapper.selectRolePermissionByUserId(sysUserConfig.getCurrentTeamId(), sysUserConfig.getCurrentProjectId(), userId);
-        List<SysRole> roles = selectRoleAll();
-        for (SysRole role : roles)
-        {
-            for (SysRole userRole : userRoles)
-            {
-                if (role.getRoleId().longValue() == userRole.getRoleId().longValue())
-                {
-                    role.setFlag(true);
-                    break;
+        if(sysUserConfig!=null) {
+            List<SysRole> userRoles = roleMapper.selectRolePermissionByUserId(sysUserConfig.getCurrentTeamId(), sysUserConfig.getCurrentProjectId(), userId);
+            List<SysRole> roles = selectRoleAll();
+            for (SysRole role : roles) {
+                for (SysRole userRole : userRoles) {
+                    if (role.getRoleId().longValue() == userRole.getRoleId().longValue()) {
+                        role.setFlag(true);
+                        break;
+                    }
                 }
             }
+            return roles;
         }
-        return roles;
+        return new ArrayList<>();
     }
 
     /**
