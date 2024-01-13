@@ -2,7 +2,9 @@ package com.cat2bug.web.controller.system;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import com.cat2bug.common.core.domain.entity.SysRole;
 import com.cat2bug.system.domain.SysUserConfig;
 import com.cat2bug.system.service.ISysUserConfigService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,15 +69,15 @@ public class SysLoginController
     {
         SysUser user = SecurityUtils.getLoginUser().getUser();
         // 角色集合
-        Set<String> roles = permissionService.getRolePermission(user);
-
+        Set<SysRole> roles = permissionService.getRole(user);
+        user.setRoleIds(roles.stream().map(r->r.getRoleId()).collect(Collectors.toList()).toArray(new Long[]{}));
         // 权限集合
         Set<String> permissions = permissionService.getMenuPermission(user);
 
         SysUserConfig sysUserConfig = userConfigService.selectSysUserConfigByCurrentUserId();
         AjaxResult ajax = AjaxResult.success();
         ajax.put("user", user);
-        ajax.put("roles", roles);
+        ajax.put("roles", roles.stream().map(r->r.getRoleKey()).collect(Collectors.toList()));
         ajax.put("permissions", permissions);
         ajax.put("config", sysUserConfig);
         return ajax;

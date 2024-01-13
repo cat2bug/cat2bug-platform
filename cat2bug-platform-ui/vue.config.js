@@ -34,10 +34,10 @@ module.exports = {
     host: '0.0.0.0',
     port: port,
     open: true,
-    https: {
-      cert: fs.readFileSync(path.join(__dirname, 'ssl/default.crt')),
-      key: fs.readFileSync(path.join(__dirname, 'ssl/default.key'))
-    },
+    // https: {
+    //   cert: fs.readFileSync(path.join(__dirname, 'ssl/default.crt')),
+    //   key: fs.readFileSync(path.join(__dirname, 'ssl/default.key'))
+    // },
     proxy: {
       // detail: https://cli.vuejs.org/config/#devserver-proxy
       [process.env.VUE_APP_BASE_API]: {

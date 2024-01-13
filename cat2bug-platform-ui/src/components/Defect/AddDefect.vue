@@ -8,8 +8,8 @@
       <div class="defect-add-header">
         <h3>{{$t('defect.create')}}</h3>
         <div>
-          <el-button @click="cancel" icon="el-icon-close">{{$t('close')}}</el-button>
-          <el-button type="primary" icon="el-icon-finished" @click="submitForm">{{$t('create')}}</el-button>
+          <el-button @click="cancel" icon="el-icon-close" size="mini">{{$t('close')}}</el-button>
+          <el-button type="primary" icon="el-icon-finished" @click="submitForm" size="mini">{{$t('create')}}</el-button>
         </div>
       </div>
     </template>
@@ -52,7 +52,7 @@
           <image-upload v-model="form.imgUrls" :limit="9"></image-upload>
         </el-form-item>
         <el-form-item :label="$t('annex')" prop="annexUrls">
-          <file-upload v-model="form.annexUrls" :limit="9"/>
+          <file-upload v-model="form.annexUrls" :limit="9" :file-type="[]"/>
         </el-form-item>
   <!--      <el-form-item label="测试用例id" prop="caseId">-->
   <!--        <el-input v-model="form.caseId" placeholder="请输入测试用例id" />-->
@@ -197,6 +197,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+  ::v-deep .el-drawer__header {
+    margin-bottom: 0px;
+  }
   ::v-deep .el-drawer__close-btn {
     display: none;
   }

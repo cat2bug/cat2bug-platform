@@ -2,6 +2,7 @@ package com.cat2bug.system.mapper;
 
 import java.util.List;
 import com.cat2bug.system.domain.SysDefect;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * 缺陷Mapper接口
@@ -17,14 +18,14 @@ public interface SysDefectMapper
      * @param defectId 缺陷主键
      * @return 缺陷
      */
-    public SysDefect selectSysDefectByDefectId(Long defectId);
+    public SysDefect selectSysDefectByDefectId(@Param("defectId") Long defectId, @Param("currentUserId") Long currentUserId);
 
     /**
      * 查询项目中缺陷数量
      * @param projectId
      * @return
      */
-    public Long getProjectDefectCount(Long projectId);
+    public Long getProjectDefectCount(@Param("projectId") Long projectId, @Param("currentUserId") Long currentUserId);
 
     /**
      * 查询缺陷列表
@@ -32,7 +33,7 @@ public interface SysDefectMapper
      * @param sysDefect 缺陷
      * @return 缺陷集合
      */
-    public List<SysDefect> selectSysDefectList(SysDefect sysDefect);
+    public List<SysDefect> selectSysDefectList(@Param("defect") SysDefect sysDefect, @Param("currentUserId") Long currentUserId);
 
     /**
      * 新增缺陷

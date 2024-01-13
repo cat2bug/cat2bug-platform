@@ -31,7 +31,7 @@ public class SysUserProject extends BaseEntity
     private Integer projectLock;
 
     /** 是否收藏 */
-    private boolean collect;
+    private Boolean collect;
 
     public void setUserProjectId(Long userProjectId) 
     {
@@ -70,11 +70,11 @@ public class SysUserProject extends BaseEntity
         return projectLock;
     }
 
-    public boolean getCollect() {
+    public Boolean getCollect() {
         return collect;
     }
 
-    public void setCollect(boolean collect) {
+    public void setCollect(Boolean collect) {
         this.collect = collect;
     }
 
@@ -82,7 +82,7 @@ public class SysUserProject extends BaseEntity
     public String toString() {
         return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)
             .append("collect", getCollect())
-                .append("userProjectId", getUserProjectId())
+             .append("userProjectId", getUserProjectId())
             .append("userId", getUserId())
             .append("projectId", getProjectId())
             .append("createBy", getCreateBy())

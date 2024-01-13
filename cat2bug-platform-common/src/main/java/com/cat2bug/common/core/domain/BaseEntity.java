@@ -24,12 +24,18 @@ public class BaseEntity implements Serializable
     /** 创建者 */
     private String createBy;
 
+    /** 创建者ID */
+    private Long createById;
+
     /** 创建时间 */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createTime;
 
     /** 更新者 */
     private String updateBy;
+
+    /** 更新者id */
+    private Long updateById;
 
     /** 更新时间 */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -100,6 +106,22 @@ public class BaseEntity implements Serializable
     public void setRemark(String remark)
     {
         this.remark = remark;
+    }
+
+    public Long getCreateById() {
+        return createById;
+    }
+
+    public void setCreateById(Long createById) {
+        this.createById = createById;
+    }
+
+    public Long getUpdateById() {
+        return updateById;
+    }
+
+    public void setUpdateById(Long updateById) {
+        this.updateById = updateById;
     }
 
     public Map<String, Object> getParams()

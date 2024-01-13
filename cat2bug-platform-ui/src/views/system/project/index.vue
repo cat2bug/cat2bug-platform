@@ -17,7 +17,7 @@
           <div class="project-collects-card-tools">
             <i class="el-icon-notebook-2"
                @click="goDefectHandle($event, project)"
-               v-hasPermi="['system:project:remove']"></i>
+               v-hasPermi="['system:defect:list']"></i>
 <!--            <i class="el-icon-s-platform"></i>-->
 <!--            <i class="el-icon-s-operation"></i>-->
             <i class="el-icon-delete"
@@ -51,7 +51,7 @@
         >{{$t("project.create-project")}}</el-button>
       </div>
     </div>
-    <el-table v-loading="loading" :data="projectList" @selection-change="handleSelectionChange">
+    <el-table v-loading="loading" :data="projectList">
       <el-table-column :label="$t('project.name')" align="left" prop="projectName">
         <template slot-scope="scope">
           <project-nameplate class="project-list-title" :project="scope.row" @click.native="clickProject(scope.row)"></project-nameplate>
@@ -69,7 +69,7 @@
       </el-table-column>
       <el-table-column :label="$t('operate')" align="left" class-name="small-padding fixed-width" width="150">
         <template slot-scope="scope">
-          <star-switch v-model="scope.row.collect" @change="clickCollectHandle($event, scope.row, false)"></star-switch>
+          <star-switch v-if="visibleDelete(scope.row)" v-model="scope.row.collect" @change="clickCollectHandle($event, scope.row, false)"></star-switch>
 <!--          <el-button-->
 <!--            size="mini"-->
 <!--            type="text"-->
@@ -82,7 +82,7 @@
             type="text"
             icon="el-icon-delete"
             @click="handleDelete($event, scope.row)"
-            v-hasPermi="['system:project:remove']"
+            v-if="visibleDelete(scope.row)"
           >{{$t('delete')}}</el-button>
         </template>
       </el-table-column>
@@ -131,10 +131,11 @@ import {updateConfig} from "@/api/system/user-config";
 import {removeCurrentProjectId} from "@/utils/project";
 import i18n from "@/utils/i18n/i18n";
 import {mapGetters, mapState} from "vuex";
+import {checkPermi} from "@/utils/permission";
 
 export default {
   name: "Project",
-  components: { ProjectNameplate, StarSwitch, RowListMember },
+  components: { ProjectNameplate, RowListMember,StarSwitch },
   data() {
     return {
       activeProjectTabName: this.$i18n.t('project.my-participated-in'),
@@ -186,6 +187,26 @@ export default {
         return project.collect?'true':'false';
       }
     },
+    /** 获取当前用户id */
+    currentUserId: function() {
+      return this.$store.state.user.id;
+    },
+    /** 获取团队id */
+    currentTeamId() {
+      return this.$store.state.user.config.currentTeamId;
+    },
+    /** 是否显示删除按钮 */
+    visibleDelete() {
+      return function (project) {
+        return checkPermi(['system:project:remove']) && project.members.filter(m=>m.userId == this.currentUserId).length>0
+      }
+    },
+    /** 是否可以访问缺陷页面 */
+    isViewDefect() {
+      return function (project) {
+        return checkPermi(['system:defect:list']) && project.members.filter(m=>m.userId == this.currentUserId).length>0
+      }
+    }
   },
   created() {
     this.selectProjectTabHandle();
@@ -206,7 +227,7 @@ export default {
     },
     /** 查询项目列表 */
     getList() {
-      this.queryParams.teamId = this.getTeamId();
+      this.queryParams.teamId = this.currentTeamId;
       this.loading = true;
       listProject(this.queryParams).then(res => {
         res.rows.forEach(p=>{
@@ -228,14 +249,13 @@ export default {
         this.loading = false;
       });
     },
-    /** 获取团队id */
-    getTeamId() {
-      return this.$store.state.user.config.currentTeamId;
-    },
     /** 查询收藏的项目列表 */
     getCollectList() {
       let params = {
-        teamId: this.getTeamId(),
+        teamId: this.currentTeamId,
+        params: {
+          userId: this.currentUserId,
+        },
         collect: true
       }
       listProject(params).then(res => {
@@ -313,6 +333,7 @@ export default {
     },
     goDefectHandle(e, project) {
       this.clickProject(project);
+      e.stopPropagation();
     },
     /** 删除按钮操作 */
     handleDelete(e,row) {
@@ -345,17 +366,21 @@ export default {
         }
         this.getCollectList();
         if(collect) {
-          this.$message.success(this.$i18n.t('project.collect-success').toString());
+          this.$message.success(this.$i18n.t('collect-success').toString());
         } else {
-          this.$message.success(this.$i18n.t('project.cancel-success').toString());
+          this.$message.success(this.$i18n.t('cancel-success').toString());
         }
       });
     },
     /** 点击项目跳转 */
     clickProject(project) {
-      store.dispatch('UpdateCurrentProjectId', project.projectId).then(() => {
-        this.$router.push({name:'Defect', params: { projectId: project.projectId }})
-      });
+      if(this.isViewDefect(project)) {
+        store.dispatch('UpdateCurrentProjectId', project.projectId).then(() => {
+          this.$router.push({name:'Defect', params: { projectId: project.projectId }})
+        });
+      } else {
+        this.$message.warning(this.$i18n.t('project.no-permission-access-project').toString());
+      }
     },
   }
 };

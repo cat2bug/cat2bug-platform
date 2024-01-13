@@ -105,3 +105,12 @@ export function delDefect(defectId) {
     method: 'delete'
   })
 }
+
+// 修改用户缺陷
+export function updateUserDefect(defectId, data) {
+  return request({
+    url: '/system/defect/'+defectId,
+    method: 'put',
+    data: data
+  })
+}

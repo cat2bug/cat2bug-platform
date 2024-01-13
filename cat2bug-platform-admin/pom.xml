@@ -94,7 +94,7 @@
                     <failOnMissingWebXml>false</failOnMissingWebXml>
                     <warName>${project.artifactId}</warName>
                 </configuration>   
-           </plugin>   
+           </plugin>
         </plugins>
         <finalName>${project.artifactId}</finalName>
     </build>

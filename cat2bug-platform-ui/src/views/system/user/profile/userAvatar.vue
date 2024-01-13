@@ -71,7 +71,7 @@ export default {
       // 弹出层标题
       title: "修改头像",
       options: {
-        name: store.getters.my.name,  // 当前用户名
+        name: store.getters.name,  // 当前用户名
         avatar: store.getters.avatar, //裁剪图片的地址
         autoCrop: true, // 是否默认生成截图框
         autoCropWidth: 200, // 默认生成截图框宽度

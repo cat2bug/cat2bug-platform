@@ -2,6 +2,7 @@ package com.cat2bug.system.mapper;
 
 import java.util.List;
 import com.cat2bug.system.domain.SysProject;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * 项目Mapper接口
@@ -25,7 +26,7 @@ public interface SysProjectMapper
      * @param sysProject 项目
      * @return 项目集合
      */
-    public List<SysProject> selectSysProjectList(SysProject sysProject);
+    public List<SysProject> selectSysProjectList(@Param("userId") Long userId, @Param("sysProject") SysProject sysProject);
 
     /**
      * 新增项目

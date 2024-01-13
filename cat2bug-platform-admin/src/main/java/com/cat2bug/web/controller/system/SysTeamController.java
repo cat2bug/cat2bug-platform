@@ -64,7 +64,6 @@ public class SysTeamController extends BaseController
     /**
      * 获取团队成员列表
      */
-    @PreAuthorize("@ss.hasPermi('system:team:list') || @ss.hasPermi('system:team:query')")
     @GetMapping("/{teamId}/member")
     public TableDataInfo listMember(@PathVariable("teamId") Long teamId, SysUser sysUser)
     {
@@ -82,7 +81,6 @@ public class SysTeamController extends BaseController
     /**
      * 获取团队成员列表
      */
-    @PreAuthorize("@ss.hasPermi('system:team:query')")
     @GetMapping("/{teamId}/not-member")
     public TableDataInfo notTeamListMember(@PathVariable("teamId") Long teamId, SysUser sysUser)
     {
@@ -100,7 +98,6 @@ public class SysTeamController extends BaseController
     /**
      * 查询我所拥有的团队
      */
-    @PreAuthorize("@ss.hasPermi('system:team:query')")
     @GetMapping("/my")
     public TableDataInfo my(SysTeam sysTeam)
     {

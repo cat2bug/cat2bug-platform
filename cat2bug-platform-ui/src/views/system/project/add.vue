@@ -94,7 +94,7 @@
                       width="230">
                       <template slot-scope="scope">
                         <el-form-item :prop="`members.${scope.$index}.roleIds`" :rules="rules.roleIds">
-                          <el-select v-model="scope.row.roleIds" :placeholder="$t('member.please-select-role')" multiple collapse-tags :disabled="scope.row.userId==getCurrentUserId()">
+                          <el-select v-model="scope.row.roleIds" :placeholder="$t('member.please-select-role')" multiple collapse-tags :disabled="scope.row.userId==currentUserId">
                             <el-option
                               v-for="role in selectRoleOptions(scope.row)"
                               :key="role.roleId"
@@ -110,7 +110,7 @@
                       :label="$t('operate')">
                       <template slot-scope="scope">
                         <el-button
-                          v-if="scope.row.userId!=getCurrentUserId()"
+                          v-if="scope.row.userId!=currentUserId"
                           size="mini"
                           type="text"
                           icon="el-icon-delete"
@@ -155,7 +155,7 @@ export default {
       memberList:[],                    // 成员列表
       projectMemberSwitch: false,       // 项目成员开关
       form:{
-        teamId: this.getTeamId(),  // 团队id
+        teamId: this.currentTeamId,  // 团队id
         projectName: null,              // 项目名称
         projectIntroduce: null,         // 项目介绍
         projectIcon: null,              // 项目图标
@@ -181,15 +181,24 @@ export default {
         return require('@/assets/images/project/project_icon'+index+'.svg')
       }
     },
+    /** 获取角色选项 */
     selectRoleOptions: function (){
       return function (member){
-        if(this.getCurrentUserId() == member.userId){
+        if(this.currentUserId == member.userId){
           return this.roleOptions.filter(r=>r.projectCreateBy);
         } else {
           return this.roleOptions.filter(r=>r.projectCreateBy==false);
         }
       }
-    }
+    },
+    /** 获取当前用户id */
+    currentUserId: function () {
+      return this.$store.state.user.id;
+    },
+    /** 获取团队id */
+    currentTeamId: function () {
+      return this.$store.state.user.config.currentTeamId;
+    },
   },
   created() {
     this.form.projectIcon = this.activeProjectIconUrl(1);
@@ -209,7 +218,7 @@ export default {
     /** 获取待添加的成员 */
     getMemberList(){
       this.memberParams.params.excludeMembers = this.form.members.map(m=>m.userId);
-      listMember(this.getTeamId(),this.memberParams).then(res=>{
+      listMember(this.currentTeamId,this.memberParams).then(res=>{
         // 赋值成员列表
         this.memberList = res.rows.map(m=> {
           // 设置不选中
@@ -220,21 +229,14 @@ export default {
           } else {
             m.roleIds=[];
           }
-          if(this.getCurrentUserId() == m.userId && this.form.members.length == 0) {
+          if(this.currentUserId == m.userId && this.form.members.length == 0) {
+            m.isSelect = true;
             m.roleIds = this.roleOptions.filter(r=>r.projectCreateBy).map(r=>r.roleId);
             this.form.members.push(m);
           }
           return m;
         });
       });
-    },
-    /** 获取当前用户id */
-    getCurrentUserId() {
-      return this.$store.state.user.id;
-    },
-    /** 获取团队id */
-    getTeamId() {
-      return this.$store.state.user.config.currentTeamId;
     },
     /** 删除选中成员 */
     deleteMemberHandle(member){

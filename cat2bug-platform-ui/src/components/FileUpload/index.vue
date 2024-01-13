@@ -20,7 +20,7 @@
       <div class="el-upload__tip" slot="tip" v-if="showTip">
         {{$t('upload.please-upload')}}
         <template v-if="fileSize"> {{$t('upload.size-not-exceeding')}} <b style="color: #f56c6c">{{ fileSize }}MB</b> </template>
-        <template v-if="fileType"> {{$t('upload.format-is')}} <b style="color: #f56c6c">{{ fileType.join("/") }}</b> </template>
+        <template v-if="fileType && fileType.length>0"> {{$t('upload.format-is')}} <b style="color: #f56c6c">{{ fileType.join("/") }}</b> </template>
         {{$t('upload.files')}}
       </div>
     </el-upload>
@@ -62,7 +62,7 @@ export default {
     // 文件类型, 例如['png', 'jpg', 'jpeg']
     fileType: {
       type: Array,
-      default: () => ["doc", "xls", "ppt", "txt", "pdf"],
+      default: () => ["doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt", "pdf", "zip"],
     },
     // 是否显示提示
     isShowTip: {
@@ -116,7 +116,7 @@ export default {
     // 上传前校检格式和大小
     handleBeforeUpload(file) {
       // 校检文件类型
-      if (this.fileType) {
+      if (this.fileType && this.fileType.length>0) {
         const fileName = file.name.split('.');
         const fileExt = fileName[fileName.length - 1];
         const isTypeOk = this.fileType.indexOf(fileExt) >= 0;

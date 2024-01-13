@@ -13,7 +13,7 @@
           <h4 class="defect-edit-title-name">{{defect.defectName}}</h4>
         </div>
         <div>
-          <defect-tools :defect="defect" @log="logHandle"></defect-tools>
+          <defect-tools :defect="defect" size="mini" @delete="deleteHandle" @log="logHandle"></defect-tools>
         </div>
       </div>
     </template>
@@ -84,6 +84,7 @@ export default {
   components: { ImageUpload, SelectProjectMember, SelectModule, ListDefectLog, DefectTools, DefectTypeFlag },
   data() {
     return {
+      defectId: null,
       activeNames: [],
       // 显示窗口
       visible: false,
@@ -156,6 +157,7 @@ export default {
     // 打开操作
     open(defectId) {
       this.reset();
+      this.defectId = defectId;
       this.getDefectInfo(defectId);
       this.visible = true;
       this.$nextTick(()=>{
@@ -225,7 +227,12 @@ export default {
       console.log(members, this.form.handleBy);
     },
     logHandle(log) {
-      this.$refs.defectLog.addLog(log);
+      this.open(this.defectId);
+      // this.$refs.defectLog.addLog(log);
+    },
+    deleteHandle() {
+      this.$emit('delete',this.defect);
+      this.cancel();
     }
   }
 }

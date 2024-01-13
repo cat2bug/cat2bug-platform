@@ -58,6 +58,21 @@ public class SysPermissionService
         return roles;
     }
 
+    public Set<SysRole> getRole(SysUser user) {
+        Set<SysRole> roles = new HashSet<>();
+        // 管理员拥有所有权限
+        if (user.isAdmin())
+        {
+            SysRole adminRole = roleService.selectRoleById(1L);
+            roles.add(adminRole);
+        }
+        else
+        {
+            roles.addAll(roleService.selectRolesByUserId(user.getUserId()));
+        }
+        return roles;
+    }
+
     /**
      * 获取菜单数据权限
      * 

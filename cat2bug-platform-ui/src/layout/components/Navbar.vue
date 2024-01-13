@@ -8,19 +8,19 @@
     <div class="right-menu">
       <template v-if="device!=='mobile'">
         <el-tooltip :content="$t('source-code-address')" effect="dark" placement="bottom">
-          <ruo-yi-git id="ruoyi-git" class="right-menu-item hover-effect" />
+          <cat2-bug-git id="cat2bug-git" class="right-menu-item hover-effect" />
         </el-tooltip>
 
-        <el-tooltip :content="$t('doc-address')" effect="dark" placement="bottom">
-          <ruo-yi-doc id="ruoyi-doc" class="right-menu-item hover-effect" />
-        </el-tooltip>
+<!--        <el-tooltip :content="$t('doc-address')" effect="dark" placement="bottom">-->
+<!--          <cat2-bug-doc id="cat2bug-doc" class="right-menu-item hover-effect" />-->
+<!--        </el-tooltip>-->
 
         <screenfull id="screenfull" class="right-menu-item hover-effect" />
       </template>
 
       <el-dropdown class="avatar-container right-menu-item hover-effect" trigger="click">
         <div class="avatar-wrapper">
-          <cat2-bug-avatar :member="my" />
+          <cat2-bug-avatar :member="member" />
           <i class="el-icon-caret-bottom" />
         </div>
         <el-dropdown-menu slot="dropdown">
@@ -44,8 +44,8 @@ import Hamburger from '@/components/Hamburger'
 import Screenfull from '@/components/Screenfull'
 import SizeSelect from '@/components/SizeSelect'
 import Search from '@/components/HeaderSearch'
-import RuoYiGit from '@/components/RuoYi/Git'
-import RuoYiDoc from '@/components/RuoYi/Doc'
+import Cat2BugGit from '@/components/Cat2Bug/Git'
+import Cat2BugDoc from '@/components/Cat2Bug/Doc'
 import Cat2BugAvatar from "@/components/Cat2BugAvatar";
 
 export default {
@@ -56,8 +56,8 @@ export default {
     Screenfull,
     SizeSelect,
     Search,
-    RuoYiGit,
-    RuoYiDoc,
+    Cat2BugGit,
+    Cat2BugDoc,
     Cat2BugAvatar
   },
   computed: {
@@ -65,8 +65,16 @@ export default {
       'sidebar',
       'avatar',
       'device',
-      'my',
+      'name',
     ]),
+    member: {
+      get() {
+        return {
+          avatar: this.avatar,
+          name: this.name
+        }
+      }
+    },
     setting: {
       get() {
         return this.$store.state.settings.showSettings

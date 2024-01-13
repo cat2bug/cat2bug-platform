@@ -29,34 +29,8 @@ public class SysUserConfigController extends BaseController
     private ISysUserConfigService sysUserConfigService;
 
     /**
-     * 查询用户配置列表
-     */
-    @PreAuthorize("@ss.hasPermi('system:team:list')")
-    @GetMapping("/list")
-    public TableDataInfo list(SysUserConfig sysUserConfig)
-    {
-        startPage();
-        List<SysUserConfig> list = sysUserConfigService.selectSysUserConfigList(sysUserConfig);
-        return getDataTable(list);
-    }
-
-    /**
-     * 导出用户配置列表
-     */
-    @PreAuthorize("@ss.hasPermi('system:team:list')")
-    @Log(title = "用户配置", businessType = BusinessType.EXPORT)
-    @PostMapping("/export")
-    public void export(HttpServletResponse response, SysUserConfig sysUserConfig)
-    {
-        List<SysUserConfig> list = sysUserConfigService.selectSysUserConfigList(sysUserConfig);
-        ExcelUtil<SysUserConfig> util = new ExcelUtil<SysUserConfig>(SysUserConfig.class);
-        util.exportExcel(response, list, "用户配置数据");
-    }
-
-    /**
      * 获取用户配置详细信息
      */
-    @PreAuthorize("@ss.hasPermi('system:team:list')")
     @GetMapping(value = "/{userConfigId}")
     public AjaxResult getInfo(@PathVariable("userConfigId") Long userConfigId)
     {
@@ -66,7 +40,6 @@ public class SysUserConfigController extends BaseController
     /**
      * 新增用户配置
      */
-    @PreAuthorize("@ss.hasPermi('system:team:list')")
     @Log(title = "用户配置", businessType = BusinessType.INSERT)
     @PostMapping
     public AjaxResult add(@RequestBody SysUserConfig sysUserConfig)
@@ -77,7 +50,6 @@ public class SysUserConfigController extends BaseController
     /**
      * 修改用户配置
      */
-    @PreAuthorize("@ss.hasPermi('system:team:list')")
     @Log(title = "用户配置", businessType = BusinessType.UPDATE)
     @PutMapping
     public AjaxResult edit(@RequestBody SysUserConfig sysUserConfig)
@@ -88,7 +60,6 @@ public class SysUserConfigController extends BaseController
     /**
      * 删除用户配置
      */
-    @PreAuthorize("@ss.hasPermi('system:team:list')")
     @Log(title = "用户配置", businessType = BusinessType.DELETE)
 	@DeleteMapping("/{userConfigIds}")
     public AjaxResult remove(@PathVariable Long[] userConfigIds)

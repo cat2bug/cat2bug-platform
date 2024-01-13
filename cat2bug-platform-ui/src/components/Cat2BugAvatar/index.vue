@@ -1,9 +1,9 @@
 <template>
   <el-avatar
     :isStatistics="member.isStatistics?'true':'false'"
-    :src="member.avatar?member.avatar:''"
+    :src="imgUrl"
     fit="cover" :size="size">
-    {{member.avatar?'':member.userName || member.name}}
+    {{member.avatar?'': member.nickName || member.userName || member.name}}
   </el-avatar>
 </template>
 
@@ -17,13 +17,18 @@ export default {
   props: {
     member: {
       type: Object,
-      default: {}
+      default: () => {}
     },
     size: {
       type: String,
       default: 'medium'
     }
   },
+  computed: {
+    imgUrl: function () {
+      return this.member.avatar?process.env.VUE_APP_BASE_API + this.member.avatar:''
+    }
+  }
 }
 </script>
 

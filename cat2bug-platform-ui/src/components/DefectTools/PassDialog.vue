@@ -28,9 +28,9 @@ export default {
     return {
       dialogVisible: false,
       rules: {
-        defectLogDescribe: [
-          {required: true, message: this.$t('defect.describe-cannot-empty'), trigger: "change"},
-        ],
+        // defectLogDescribe: [
+        //   {required: true, message: this.$t('defect.describe-cannot-empty'), trigger: "change"},
+        // ],
       },
       form: {
         receiveBy: [],

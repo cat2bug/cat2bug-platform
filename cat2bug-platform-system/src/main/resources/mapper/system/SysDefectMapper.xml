@@ -14,6 +14,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="annexUrls"    column="annex_urls"  />
         <result property="imgUrls"    column="img_urls"   />
         <result property="projectId"    column="project_id"    />
+        <result property="projectName"    column="project_name"    />
         <result property="testPlanId"    column="test_plan_id"    />
         <result property="caseId"    column="case_id"    />
         <result property="dataSources"    column="data_sources"    />
@@ -22,9 +23,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="moduleName"    column="module_name"    />
         <result property="moduleVersion"    column="module_version"    />
         <result property="createBy"    column="create_by"    />
+        <result property="createById"    column="create_by_id"    />
         <result property="updateTime"    column="update_time"    />
         <result property="createTime"    column="create_time"    />
         <result property="updateBy"    column="update_by"    />
+        <result property="updateById"    column="update_by_id"    />
         <result property="defectState"    column="defect_state"    typeHandler="com.cat2bug.system.domain.handle.SysDefectStateEnumTypeHandler"  />
         <result property="defectStateName"    column="defect_state"    typeHandler="com.cat2bug.system.domain.handle.SysDefectStateEnumTypeHandler"    />
         <result property="caseStepId"    column="case_step_id"    />
@@ -32,6 +35,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="handleByList"    column="handle_by_list"  typeHandler="com.cat2bug.system.domain.handle.SysUserArrayTypeHandler"  />
         <result property="handleTime"    column="handle_time"    />
         <result property="defectLevel"    column="defect_level"    />
+        <result property="collect"    column="collect"    />
     </resultMap>
 
     <sql id="selectSysDefectVo">
@@ -44,6 +48,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             d.annex_urls,
             d.img_urls,
             d.project_id,
+            p.project_name,
             d.test_plan_id,
             d.case_id,
             d.data_sources,
@@ -52,27 +57,32 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             m.module_name,
             d.module_version,
             d.create_by,
+            d.create_by_id,
             d.update_time,
             d.create_time,
             d.update_by,
+            d.update_by_id,
             d.defect_state,
             d.case_step_id,
             d.handle_by,
             un.user_infos AS handle_by_list,
             d.handle_time,
-            d.defect_level
+            d.defect_level,
+            ud.collect
         FROM
             sys_defect d
             LEFT JOIN sys_module m ON m.module_id = d.module_id
+            LEFT JOIN sys_project p ON d.project_id = p.project_id
+            LEFT JOIN sys_user_defect ud ON ud.defect_id = d.defect_id and ud.user_id = #{currentUserId}
             LEFT JOIN (
                 SELECT
                     d1.defect_id,
-                    JSON_ARRAYAGG( JSON_OBJECT('userId', u.user_id, 'nickName', u.nick_name, 'userName', u.user_name) ) AS user_infos
+                    JSON_ARRAYAGG( JSON_OBJECT('userId', u.user_id, 'nickName', u.nick_name, 'userName', u.user_name, 'avatar', u.avatar) ) AS user_infos
                 FROM
                     sys_defect d1
-                        LEFT JOIN sys_user u ON JSON_CONTAINS(
-                            d1.handle_by,
-                            CAST( u.user_id AS JSON ))
+                    LEFT JOIN sys_user u ON JSON_CONTAINS(
+                        d1.handle_by,
+                        CAST( u.user_id AS JSON ))
                 WHERE
                     JSON_CONTAINS(
                             d1.handle_by,
@@ -86,37 +96,38 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         select count(*) from sys_defect where project_id=#{projectId}
     </select>
 
-    <select id="selectSysDefectList" parameterType="SysDefect" resultMap="SysDefectResult">
+    <select id="selectSysDefectList" resultMap="SysDefectResult">
         <include refid="selectSysDefectVo"/>
         <where>
-            <if test="projectNum != null "> and d.project_num = #{projectNum}</if>
-            <if test="defectType != null "> and d.defect_type = #{defectType, typeHandler=com.cat2bug.system.domain.handle.SysDefectTypeEnumTypeHandler }</if>
-            <if test="defectName != null  and defectName != ''"> and d.defect_name like concat('%', #{defectName}, '%')</if>
-            <if test="projectId != null "> and d.project_id = #{projectId}</if>
-            <if test="testPlanId != null "> and d.test_plan_id = #{testPlanId}</if>
-            <if test="caseId != null "> and d.case_id = #{caseId}</if>
-            <if test="dataSources != null "> and d.data_sources = #{dataSources}</if>
-            <if test="dataSourcesParams != null  and dataSourcesParams != ''"> and d.data_sources_params = #{dataSourcesParams}</if>
-            <if test="moduleId != null "> and d.module_id = #{moduleId}</if>
-            <if test="moduleVersion != null and moduleVersion != ''"> and d.module_version like concat('%', #{moduleVersion}, '%')</if>
-            <if test="createBy != null  and createBy != ''"> and d.create_by = #{createBy}</if>
-            <if test="params.beginUpdateTime != null and params.beginUpdateTime != '' and params.endUpdateTime != null and params.endUpdateTime != ''"> and d.update_time between #{params.beginUpdateTime} and #{params.endUpdateTime}</if>
-            <if test="params.beginCreateTime != null and params.beginCreateTime != '' and params.endCreateTime != null and params.endCreateTime != ''"> and d.create_time between #{params.beginCreateTime} and #{params.endCreateTime}</if>
-            <if test="updateBy != null  and updateBy != ''"> and d.update_by = #{updateBy}</if>
-            <if test="defectState != null "> and d.defect_state = #{defectState}</if>
-            <if test="handleBy != null  and handleBy != ''">
+            <if test="defect.projectNum != null "> and d.project_num = #{defect.projectNum}</if>
+            <if test="defect.defectType != null "> and d.defect_type = #{defect.defectType, typeHandler=com.cat2bug.system.domain.handle.SysDefectTypeEnumTypeHandler }</if>
+            <if test="defect.defectName != null  and defect.defectName != ''"> and d.defect_name like concat('%', #{defect.defectName}, '%')</if>
+            <if test="defect.projectId != null "> and d.project_id = #{defect.projectId}</if>
+            <if test="defect.testPlanId != null "> and d.test_plan_id = #{defect.testPlanId}</if>
+            <if test="defect.caseId != null "> and d.case_id = #{defect.caseId}</if>
+            <if test="defect.dataSources != null "> and d.data_sources = #{defect.dataSources}</if>
+            <if test="defect.dataSourcesParams != null  and defect.dataSourcesParams != ''"> and d.data_sources_params = #{defect.dataSourcesParams}</if>
+            <if test="defect.moduleId != null "> and d.module_id = #{defect.moduleId}</if>
+            <if test="defect.moduleVersion != null and defect.moduleVersion != ''"> and d.module_version like concat('%', #{defect.moduleVersion}, '%')</if>
+            <if test="defect.createBy != null  and defect.createBy != ''"> and d.create_by = #{defect.createBy}</if>
+            <if test="defect.params.beginUpdateTime != null and defect.params.beginUpdateTime != '' and defect.params.endUpdateTime != null and defect.params.endUpdateTime != ''"> and d.update_time between #{defect.params.beginUpdateTime} and #{defect.params.endUpdateTime}</if>
+            <if test="defect.params.beginCreateTime != null and defect.params.beginCreateTime != '' and defect.params.endCreateTime != null and defect.params.endCreateTime != ''"> and d.create_time between #{defect.params.beginCreateTime} and #{defect.params.endCreateTime}</if>
+            <if test="defect.updateBy != null  and defect.updateBy != ''"> and d.update_by = #{defect.updateBy}</if>
+            <if test="defect.defectState != null "> and d.defect_state = #{defect.defectState}</if>
+            <if test="defect.params.collect != null "> and ud.collect = #{defect.params.collect}</if>
+            <if test="defect.handleBy != null  and defect.handleBy != ''">
              and
-             <foreach collection="handleBy" item="b" separator=" or " open="(" close=")">
+             <foreach collection="defect.handleBy" item="b" separator=" or " open="(" close=")">
                  JSON_CONTAINS(d.handle_by,CAST(#{b} AS CHAR))
              </foreach>
             </if>
-            <if test="params.userId != null"> and (JSON_CONTAINS(d.handle_by,CAST(#{params.userId} AS CHAR)) OR create_by=#{params.userId} OR update_by=#{params.userId})</if>
-            <if test="params.beginHandleTime != null and params.beginHandleTime != '' and params.endHandleTime != null and params.endHandleTime != ''"> and d.handle_time between #{params.beginHandleTime} and #{params.endHandleTime}</if>
-            <if test="defectLevel != null  and defectLevel != ''"> and d.defect_level = #{defectLevel}</if>
+            <if test="defect.params.userId != null"> and (JSON_CONTAINS(d.handle_by,CAST(#{defect.params.userId} AS CHAR)) OR d.create_by_id=#{defect.params.userId} OR d.update_by_id=#{defect.params.userId})</if>
+            <if test="defect.params.beginHandleTime != null and defect.params.beginHandleTime != '' and defect.params.endHandleTime != null and defect.params.endHandleTime != ''"> and d.handle_time between #{defect.params.beginHandleTime} and #{defect.params.endHandleTime}</if>
+            <if test="defect.defectLevel != null  and defect.defectLevel != ''"> and d.defect_level = #{defect.defectLevel}</if>
         </where>
     </select>
     
-    <select id="selectSysDefectByDefectId" parameterType="Long" resultMap="SysDefectResult">
+    <select id="selectSysDefectByDefectId" resultMap="SysDefectResult">
         <include refid="selectSysDefectVo"/>
         where d.defect_id = #{defectId}
     </select>
@@ -138,9 +149,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="moduleId != null">module_id,</if>
             <if test="moduleVersion != null">module_version,</if>
             <if test="createBy != null">create_by,</if>
+            <if test="createById != null">create_by_id,</if>
             <if test="updateTime != null">update_time,</if>
             <if test="createTime != null">create_time,</if>
             <if test="updateBy != null">update_by,</if>
+            <if test="updateById != null">update_by_id,</if>
             <if test="defectState != null">defect_state,</if>
             <if test="caseStepId != null">case_step_id,</if>
             <if test="handleBy != null">handle_by,</if>
@@ -162,9 +175,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="moduleId != null">#{moduleId},</if>
             <if test="moduleVersion != null">#{moduleVersion},</if>
             <if test="createBy != null">#{createBy},</if>
+            <if test="createById != null">#{createById},</if>
             <if test="updateTime != null">#{updateTime},</if>
             <if test="createTime != null">#{createTime},</if>
             <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateById != null">#{updateById},</if>
             <if test="defectState != null">#{defectState,  typeHandler=com.cat2bug.system.domain.handle.SysDefectStateEnumTypeHandler},</if>
             <if test="caseStepId != null">#{caseStepId},</if>
             <if test="handleBy != null">#{handleBy,typeHandler=com.cat2bug.system.domain.handle.LongArrayTypeHandler},</if>
@@ -189,6 +204,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="moduleId != null">module_id = #{moduleId},</if>
             <if test="moduleVersion != null">module_version = #{moduleVersion},</if>
             <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createById != null">create_by_id = #{createById},</if>
             <if test="updateTime != null">update_time = #{updateTime},</if>
             <if test="createTime != null">create_time = #{createTime},</if>
             <if test="updateBy != null">update_by = #{updateBy},</if>

@@ -2,16 +2,16 @@
   <div class="app-container">
     <project-label />
     <el-tabs v-model="activeDefectTabName" @tab-click="selectDefectTabHandle">
-      <el-tab-pane :label="$t('project.my-participated-in')" :name="$t('project.my-participated-in')"></el-tab-pane>
-      <!--      <el-tab-pane :label="$t('project.my-manage')" :name="$t('project.my-manage')"></el-tab-pane>-->
-            <el-tab-pane :label="$t('defect.all-defect')" :name="$t('defect.all-defect')"></el-tab-pane>
+      <el-tab-pane :label="$t('defect.my-participated-in')" :name="$t('defect.my-participated-in')"></el-tab-pane>
+      <el-tab-pane :label="$t('defect.my-following')" :name="$t('defect.my-following')"></el-tab-pane>
+      <el-tab-pane :label="$t('defect.all-defect')" :name="$t('defect.all-defect')"></el-tab-pane>
       <!--      <el-tab-pane :label="$t('project.archived-project')" :name="$t('project.archived-project')"></el-tab-pane>-->
     </el-tabs>
     <div class="defect-tools">
       <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="0">
         <el-form-item prop="defectState">
           <el-dropdown split-button size="mini" @command="defectStateChangeHandle" @click="selectDefectTabHandle">
-            {{activeDefectTypeName}}
+            {{$i18n.t(activeDefectTypeName)}}
             <el-dropdown-menu slot="dropdown">
               <el-dropdown-item command="">{{$i18n.t('defect.all-type')}}</el-dropdown-item>
               <el-dropdown-item v-for="type in config.types" :command="type.value" :key="type.key">{{$i18n.t(type.value)}}</el-dropdown-item>
@@ -76,7 +76,7 @@
       </el-row>
     </div>
     <el-table v-loading="loading" :data="defectList" @selection-change="handleSelectionChange" @sort-change="sortChangeHandle" @row-click="editDefectHandle">
-      <el-table-column type="selection" width="55" align="center" />
+<!--      <el-table-column type="selection" width="55" align="center" />-->
       <el-table-column :label="$t('id')" align="left" prop="projectNum" width="80" sortable >
         <template slot-scope="scope">
           <span>{{ '#' + scope.row.projectNum }}</span>
@@ -133,21 +133,7 @@
 <!--      </el-table-column>-->
       <el-table-column :label="$t('operate')" align="left" class-name="small-padding fixed-width" width="150">
         <template slot-scope="scope">
-          <defect-tools :is-text="true" :defect="scope.row" size="mini" :is-show-icon="true" @log="selectDefectTabHandle" />
-<!--          <el-button-->
-<!--            size="mini"-->
-<!--            type="text"-->
-<!--            icon="el-icon-edit"-->
-<!--            @click="handleUpdate(scope.row)"-->
-<!--            v-hasPermi="['system:defect:edit']"-->
-<!--          >修改</el-button>-->
-<!--          <el-button-->
-<!--            size="mini"-->
-<!--            type="text"-->
-<!--            icon="el-icon-delete"-->
-<!--            @click="handleDelete(scope.row)"-->
-<!--            v-hasPermi="['system:defect:remove']"-->
-<!--          >删除</el-button>-->
+          <defect-tools :is-text="true" :defect="scope.row" size="mini" :is-show-icon="true" @delete="selectDefectTabHandle" @update="selectDefectTabHandle" @log="selectDefectTabHandle"></defect-tools>
         </template>
       </el-table-column>
     </el-table>
@@ -160,13 +146,13 @@
       @pagination="getList"
     />
     <!-- 添加或修改缺陷对话框 -->
-    <add-defect ref="addDefectForm" :project-id="getProjectId()" @added="getList" />
-    <edit-defect ref="editDefectForm" :project-id="getProjectId()" />
+    <add-defect ref="addDefectForm" :project-id="getProjectId()" @added="selectDefectTabHandle" />
+    <edit-defect ref="editDefectForm" :project-id="getProjectId()" @delete="selectDefectTabHandle()" />
   </div>
 </template>
 
 <script>
-import {listDefect, getDefect, delDefect, addDefect, updateDefect, configDefect} from "@/api/system/defect";
+import {listDefect, getDefect, delDefect, configDefect} from "@/api/system/defect";
 import RowListMember from "@/components/RowListMember";
 import LevelTag from "@/components/LevelTag";
 import AddDefect from "@/components/Defect/AddDefect"
@@ -176,6 +162,7 @@ import SelectProjectMember from "@/components/SelectProjectMember";
 import ProjectLabel from "@/components/ProjectLabel";
 import DefectTypeFlag from "@/components/DefectTypeFlag";
 import DefectTools from "@/components/DefectTools";
+import { checkPermi } from "@/utils/permission";
 
 export default {
   name: "Defect",
@@ -240,6 +227,10 @@ export default {
     };
   },
   computed: {
+    /** 获取当前用户id */
+    currentUserId: function() {
+      return this.$store.state.user.id;
+    },
     getUrl: function () {
       return function (urls){
         let imgs = urls?urls.split(','):[];
@@ -261,6 +252,7 @@ export default {
     this.defectStateChangeHandle();
   },
   methods: {
+    checkPermi,
     getDefectConfig() {
       configDefect().then(res=>{
         this.config = res.data;
@@ -303,12 +295,20 @@ export default {
     },
     /** 切换页标签 */
     selectDefectTabHandle() {
-      if(this.activeDefectTabName == this.$i18n.t('project.my-participated-in').toString()){
-        this.handleQuery({
-          userId: this.getUserId()
-        });
-      } else {
-        this.handleQuery();
+      switch (this.activeDefectTabName) {
+        case this.$i18n.t('defect.my-following'):
+          this.handleQuery({
+            collect: 1
+          });
+          break;
+        case this.$i18n.t('defect.my-participated-in'):
+          this.handleQuery({
+            userId: this.getUserId()
+          });
+          break;
+        default:
+          this.handleQuery();
+          break;
       }
     },
     /** 获取用户id */
@@ -382,25 +382,16 @@ export default {
         this.title = "修改缺陷";
       });
     },
-    /** 删除按钮操作 */
-    handleDelete(row) {
-      const defectIds = row.defectId || this.ids;
-      this.$modal.confirm('是否确认删除缺陷编号为"' + defectIds + '"的数据项？').then(function() {
-        return delDefect(defectIds);
-      }).then(() => {
-        this.getList();
-        this.$modal.msgSuccess("删除成功");
-      }).catch(() => {});
-    },
     /** 导出按钮操作 */
     handleExport() {
       this.download('system/defect/export', {
         ...this.queryParams
       }, `defect_${new Date().getTime()}.xlsx`)
     },
+    /** 显示图片操作 */
     clickImageHandle(event){
       event.stopPropagation();
-    }
+    },
   }
 };
 </script>

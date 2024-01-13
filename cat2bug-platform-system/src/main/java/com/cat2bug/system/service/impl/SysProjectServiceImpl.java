@@ -69,7 +69,7 @@ public class SysProjectServiceImpl implements ISysProjectService
 //        }
 //        sysProject.getParams().put("userId",SecurityUtils.getUserId());
 
-        List<SysProject> projectList = sysProjectMapper.selectSysProjectList(sysProject);
+        List<SysProject> projectList = sysProjectMapper.selectSysProjectList(SecurityUtils.getUserId(), sysProject);
         // 设置项目中的成员
         projectList.stream().forEach(p->{
             List<SysUser> members = sysUserProjectMapper.selectSysUserListByProjectId(p.getProjectId(),new SysUser());
@@ -157,7 +157,7 @@ public class SysProjectServiceImpl implements ISysProjectService
             params.put("userId",SecurityUtils.getUserId());
             sysProject.setParams(params);
             sysProject.setTeamId(sysUserConfig.getCurrentTeamId());
-            List<SysProject> projectList = sysProjectMapper.selectSysProjectList(sysProject);
+            List<SysProject> projectList = sysProjectMapper.selectSysProjectList(SecurityUtils.getUserId(), sysProject);
 
             // 将查到的第一个非projectId项目作为当前默认项目
             Optional<SysProject> potProject = projectList.stream().filter(p->p.getProjectId()!=projectId).findFirst();

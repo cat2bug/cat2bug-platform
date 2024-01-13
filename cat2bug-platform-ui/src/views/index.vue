@@ -100,7 +100,7 @@
             <span>{{$t('update-log')}}</span>
           </div>
           <el-collapse accordion>
-            <el-collapse-item title="v1.0.0 - 2024-01-10">
+            <el-collapse-item title="v0.0.1 - 2024-01-10">
               <ol>
                 <li>Cat2Bug正式发布</li>
               </ol>
@@ -147,7 +147,7 @@ export default {
   data() {
     return {
       // 版本号
-      version: "1.0.0"
+      version: "0.0.1"
     };
   },
   methods: {

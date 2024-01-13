@@ -1,0 +1,42 @@
+# 下载源码镜像
+FROM bitnami/git as cat2bug_git_src
+#切换目录，指定源码克隆后保存位置
+WORKDIR /usr/local/code
+ADD http://api.m.taobao.com/rest/api3.do?api=mtop.common.getTimestamp /tmp/bustcache
+# 拉取源代码
+# 如果私有仓卡记得加账号密码
+RUN git clone https://yuzhantao%40qq.com:123a123b@e.coding.net/qyzw/cat2bug/cat2bug-platform.git
+
+# 编译源码
+FROM maven:3.8.5-openjdk-11 as cat2bug_java_build
+#切换目录，指定编译源码位置
+WORKDIR /usr/local/code
+#将源码复制到下一个镜像中
+COPY --from=cat2bug_git_src /usr/local/code .
+WORKDIR /usr/local/code/cat2bug-platform
+RUN --mount=type=cache,target=/root/.m2 mvn clean install
+# RUN mvn clean install
+
+# 编译二进制程序
+FROM ghcr.io/graalvm/native-image-community:17 as cat2bug_graalvm_build
+# 切换目录，指定编译源码位置
+WORKDIR /build
+# 将源码复制到下一个镜像中
+COPY --from=cat2bug_git_src /usr/local/code/cat2bug-platform .
+WORKDIR /tools
+RUN curl -o apache-maven-3.9.6-bin.tar.gz https://dlcdn.apache.org/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.tar.gz
+RUN tar -xvf apache-maven-*.tar.gz && \
+    rm -rf apache-maven-*.tar.gz && \
+    mv apache-maven-* maven && \
+    cd /build/cat2bug-platform/cat2bug-platform-admin && \
+    /tools/maven/bin/mvn -Pnative clean package -DskipTests && \
+    ls
+
+# cat2bug服务容器
+FROM oraclelinux:7-slim
+MAINTAINER yuzhantao@qq.com
+WORKDIR /app
+COPY --from=cat2bug_graalvm_build /build .
+# COPY --from=cat2bug_graalvm_build /build/target/cat2bug-admin cat2bug-admin
+ENV PORT=2020
+# CMD [ "sh", "-c", "./cat2bug-admin -Dserver.port=$PORT" ]

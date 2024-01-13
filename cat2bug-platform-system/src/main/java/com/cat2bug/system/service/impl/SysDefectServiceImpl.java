@@ -168,7 +168,7 @@ public class SysDefectServiceImpl implements ISysDefectService
     @Override
     public SysDefect selectSysDefectByDefectId(Long defectId)
     {
-        return sysDefectMapper.selectSysDefectByDefectId(defectId);
+        return sysDefectMapper.selectSysDefectByDefectId(defectId, SecurityUtils.getUserId());
     }
 
     /**
@@ -180,7 +180,7 @@ public class SysDefectServiceImpl implements ISysDefectService
     @Override
     public List<SysDefect> selectSysDefectList(SysDefect sysDefect)
     {
-        return sysDefectMapper.selectSysDefectList(sysDefect);
+        return sysDefectMapper.selectSysDefectList(sysDefect, SecurityUtils.getUserId());
     }
 
     /**
@@ -198,8 +198,11 @@ public class SysDefectServiceImpl implements ISysDefectService
         sysDefect.setUpdateTime(DateUtils.getNowDate());
         sysDefect.setUpdateTime(DateUtils.getNowDate());
         sysDefect.setDefectState(SysDefectStateEnum.PROCESSING);
-        sysDefect.setUpdateBy(String.valueOf(SecurityUtils.getUserId()));
-        long count = sysDefectMapper.getProjectDefectCount(sysDefect.getProjectId());
+        sysDefect.setCreateBy(SecurityUtils.getUsername());
+        sysDefect.setUpdateBy(SecurityUtils.getUsername());
+        sysDefect.setCreateById(SecurityUtils.getUserId());
+        sysDefect.setUpdateById(SecurityUtils.getUserId());
+        long count = sysDefectMapper.getProjectDefectCount(sysDefect.getProjectId(), SecurityUtils.getUserId());
         sysDefect.setProjectNum(count+1);
         Preconditions.checkState(sysDefectMapper.insertSysDefect(sysDefect)>0,MessageUtils.message("defect.insert_fail"));
         // 新建日志

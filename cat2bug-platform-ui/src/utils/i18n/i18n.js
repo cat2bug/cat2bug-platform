@@ -18,7 +18,7 @@ import myI18nZh from './i18n-zh-CN.json'
 Vue.use(VueI18n)
 
 // 默认中文
-const lang = 'en-US'
+const lang = 'zh-CN'
 const i18n = new VueI18n({
   locale: lang,
   messages: {

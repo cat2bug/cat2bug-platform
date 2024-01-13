@@ -48,11 +48,11 @@
                          v-model="scope.row.roleIds"
                          multiple
                          :placeholder="$t('member.please-select-role')"
-                         :disabled="scope.row.status==1"
+                         :disabled="isMemberDisabled(scope.row)"
                          @change="roleChangeHandle(scope.row)"
               >
                 <el-option
-                  v-for="item in roleOptions"
+                  v-for="item in selectRoleOptions(scope.row)"
                   :key="item.roleId"
                   :label="item.roleName"
                   :value="item.roleId"
@@ -148,6 +148,31 @@ export default {
   created() {
     this.getRoleList();
   },
+  computed: {
+    selectRoleOptions: function () {
+      return function (member) {
+        if(member.roles && member.roles.filter(r=>r.projectCreateBy).length>0){
+          return this.roleOptions.filter(r=>r.projectCreateBy);
+        } else {
+          return this.roleOptions.filter(r=>r.projectCreateBy==false);
+        }
+      }
+    },
+    /** 获取当前用户id */
+    currentUserId: function () {
+      return this.$store.state.user.id;
+    },
+    /** 获取项目id */
+    currentProjectId: function () {
+      return parseInt(this.$store.state.user.config.currentProjectId);
+    },
+    /** 成员是否禁用 */
+    isMemberDisabled: function () {
+      return function (member) {
+        return member.status==1 || (member.roles && member.roles.filter(r=>r.projectCreateBy).length>0);
+      }
+    },
+  },
   methods: {
     /** 获取角色 */
     getRoleList() {
@@ -159,10 +184,7 @@ export default {
         this.getMemberList();
       });
     },
-    /** 获取项目id */
-    getProjectId() {
-      return parseInt(this.$store.state.user.config.currentProjectId);
-    },
+
     /** 搜索用户 */
     memberSearchHandle(e){
       this.queryParams.params.search=e;
@@ -171,7 +193,7 @@ export default {
     /** 获取团队成员列表 */
     getMemberList() {
       this.loading = true;
-      listMemberOfProject(this.getProjectId(),this.queryParams).then(res => {
+      listMemberOfProject(this.currentProjectId,this.queryParams).then(res => {
         this.loading = false;
         this.memberList = res.rows;
       });
@@ -179,7 +201,7 @@ export default {
     /** 更新用户权限 */
     roleChangeHandle(member) {
       updateMemberRoleOfProject(
-        this.getProjectId(),
+        this.currentProjectId,
         member.userId,
         member.roleIds
       ).then(()=>{
@@ -208,13 +230,12 @@ export default {
           confirmButtonClass: 'delete-button',
           type: "warning",
         }).then(() => {
-          delMemberOfProject(_this.getProjectId(),member.userId).then(()=>{
+          delMemberOfProject(_this.currentProjectId,member.userId).then(()=>{
             _this.$message.success(this.$i18n.t('delete.success').toString());
             _this.getMemberList();
           })
       }).catch(() => {
       });
-
     },
   }
 }

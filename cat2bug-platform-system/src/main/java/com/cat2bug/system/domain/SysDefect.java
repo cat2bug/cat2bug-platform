@@ -119,6 +119,9 @@ public class SysDefect extends BaseEntity
     @Excel(name = "缺陷等级")
     private String defectLevelName;
 
+    /** 是否收藏 */
+    private boolean collect;
+
     @Override
     public String toString() {
         return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)

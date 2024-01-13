@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.system.mapper.SysUserDefectMapper">
+    
+    <resultMap type="SysUserDefect" id="SysUserDefectResult">
+        <result property="userDefectId"    column="user_defect_id"    />
+        <result property="defectId"    column="defect_id"    />
+        <result property="userId"    column="user_id"    />
+        <result property="collect"    column="collect"    />
+    </resultMap>
+
+    <sql id="selectSysUserDefectVo">
+        select user_defect_id, defect_id, user_id, collect from sys_user_defect
+    </sql>
+
+    <select id="selectSysUserDefectList" parameterType="SysUserDefect" resultMap="SysUserDefectResult">
+        <include refid="selectSysUserDefectVo"/>
+        <where>  
+            <if test="defectId != null "> and defect_id = #{defectId}</if>
+            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="collect != null "> and collect = #{collect}</if>
+        </where>
+    </select>
+    
+    <select id="selectSysUserDefectByUserDefectId" parameterType="Long" resultMap="SysUserDefectResult">
+        <include refid="selectSysUserDefectVo"/>
+        where user_defect_id = #{userDefectId}
+    </select>
+        
+    <insert id="insertSysUserDefect" parameterType="SysUserDefect">
+        insert into sys_user_defect
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userDefectId != null">user_defect_id,</if>
+            <if test="defectId != null">defect_id,</if>
+            <if test="userId != null">user_id,</if>
+            <if test="collect != null">collect,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="userDefectId != null">#{userDefectId},</if>
+            <if test="defectId != null">#{defectId},</if>
+            <if test="userId != null">#{userId},</if>
+            <if test="collect != null">#{collect},</if>
+         </trim>
+    </insert>
+
+    <insert id="updateSysUserDefect" parameterType="SysUserDefect">
+        insert into sys_user_defect
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="defectId != null">defect_id,</if>
+            <if test="userId != null">user_id,</if>
+            <if test="collect != null">collect,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="defectId != null">#{defectId},</if>
+            <if test="userId != null">#{userId},</if>
+            <if test="collect != null">#{collect},</if>
+        </trim>
+        <trim prefix="ON DUPLICATE KEY UPDATE" suffix="" suffixOverrides=",">
+            <if test="collect != null">collect=#{collect},</if>
+        </trim>
+    </insert>
+
+    <delete id="deleteSysUserDefectByUserDefectId" parameterType="Long">
+        delete from sys_user_defect where user_defect_id = #{userDefectId}
+    </delete>
+
+    <delete id="deleteSysUserDefectByUserDefectIds" parameterType="String">
+        delete from sys_user_defect where user_defect_id in 
+        <foreach item="userDefectId" collection="array" open="(" separator="," close=")">
+            #{userDefectId}
+        </foreach>
+    </delete>
+</mapper>
