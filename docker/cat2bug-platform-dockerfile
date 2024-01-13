@@ -7,36 +7,89 @@ ADD http://api.m.taobao.com/rest/api3.do?api=mtop.common.getTimestamp /tmp/bustc
 # 如果私有仓卡记得加账号密码
 RUN git clone https://yuzhantao%40qq.com:123a123b@e.coding.net/qyzw/cat2bug/cat2bug-platform.git
 
-# 编译源码
+# 后台源码编译
 FROM maven:3.8.5-openjdk-11 as cat2bug_java_build
 #切换目录，指定编译源码位置
 WORKDIR /usr/local/code
 #将源码复制到下一个镜像中
 COPY --from=cat2bug_git_src /usr/local/code .
 WORKDIR /usr/local/code/cat2bug-platform
-RUN --mount=type=cache,target=/root/.m2 mvn clean install
-# RUN mvn clean install
+# RUN --mount=type=cache,target=/root/.m2 mvn clean install
+RUN mvn clean install
 
-# 编译二进制程序
-FROM ghcr.io/graalvm/native-image-community:17 as cat2bug_graalvm_build
-# 切换目录，指定编译源码位置
-WORKDIR /build
-# 将源码复制到下一个镜像中
-COPY --from=cat2bug_git_src /usr/local/code/cat2bug-platform .
-WORKDIR /tools
-RUN curl -o apache-maven-3.9.6-bin.tar.gz https://dlcdn.apache.org/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.tar.gz
-RUN tar -xvf apache-maven-*.tar.gz && \
-    rm -rf apache-maven-*.tar.gz && \
-    mv apache-maven-* maven && \
-    cd /build/cat2bug-platform/cat2bug-platform-admin && \
-    /tools/maven/bin/mvn -Pnative clean package -DskipTests && \
-    ls
+# 前台源码编译
+FROM node:16.16 as cat2bug_npm_build
+#切换目录，指定编译源码位置
+WORKDIR /usr/local/code
+#将源码复制到下一个镜像中
+COPY --from=cat2bug_git_src /usr/local/code .
+WORKDIR /usr/local/code/cat2bug-platform/cat2bug-platform-ui
+RUN --mount=type=cache,target=/usr/local/code/cat2bug-platform/cat2bug-platform-ui/node_modules,id=app_node_modules,sharing=locked --mount=type=cache,target=/root/.npm,id=npm_cache npm install --registry http://registry.npm.taobao.org
+RUN --mount=type=cache,target=/usr/local/code/cat2bug-platform/cat2bug-platform-ui/node_modules,id=app_node_modules,sharing=locked --mount=type=cache,target=/root/.npm,id=npm_cache npm run build:prod
+
 
 # cat2bug服务容器
-FROM oraclelinux:7-slim
+FROM openjdk:11.0.16-jre
 MAINTAINER yuzhantao@qq.com
-WORKDIR /app
-COPY --from=cat2bug_graalvm_build /build .
-# COPY --from=cat2bug_graalvm_build /build/target/cat2bug-admin cat2bug-admin
-ENV PORT=2020
-# CMD [ "sh", "-c", "./cat2bug-admin -Dserver.port=$PORT" ]
+RUN \
+    mkdir -p /opt/tools \
+    && mkdir -p /etc/redis \
+    && mkdir /opt/logs \
+    && mkdir -p /Users/apple/file \
+    && mkdir -p /var/log/nginx \
+  	&& mkdir config
+
+ADD http://download.redis.io/releases/redis-5.0.9.tar.gz /opt/tools
+ADD http://nginx.org/download/nginx-1.20.2.tar.gz /opt/tools
+COPY nginx.conf /opt/tools/nginx.conf
+# COPY jdk-8u181-linux-x64.tar.gz /opt/tools
+
+RUN apt-get update -y \
+    && apt -y install gcc automake autoconf libtool make
+
+# 安装redis
+RUN \
+    apt-get install gcc -y \
+    && cd /opt/tools \
+    && tar -xzf redis-5.0.9.tar.gz \
+    && rm -rf redis-5.0.9.tar.gz \
+    && cd redis-5.0.9 && yum -y install tcl && make && make install \
+    && cd /opt/tools \
+    && rm -rf redis-5.0.9 \
+    && rm -rf /var/cache/yum/*
+
+# 安装 nginx
+RUN \
+    apt-get -y install gcc-c++ zlib zlib-devel openssl openssl--devel pcre pcre-devel \
+    && cd /opt/tools \
+    && tar -zxv -f nginx-1.20.2.tar.gz \
+    && rm -rf nginx-1.20.2.tar.gz \
+    && cd nginx-1.20.2 \
+    && yum -y install openssl openssl-devel \
+    && ./configure --with-http_stub_status_module --with-http_ssl_module --sbin-path=/usr/sbin/nginx \
+    && make && make install \
+    && cd .. \
+    && rm -rf nginx-1.20.2 \
+    && rm -rf /var/cache/yum/* \
+    && cp -rf /opt/tools/nginx.conf /usr/local/nginx/conf/nginx.conf
+
+# 复制文件
+# COPY redis.conf /etc/redis/redis.conf
+#ADD web_html/ /web_html/
+#ADD *.jar dcs-server.jar
+COPY --from=cat2bug_java_build /usr/local/code/cat2bug-platform/cat2bug-platform-admin/target/cat2bug-admin.jar .
+COPY --from=cat2bug_npm_build /usr/local/code/cat2bug-platform/cat2bug-platform-ui/dist /etc/nginx/html/cat2bug
+COPY nginx.conf /etc/nginx/nginx.conf
+# ADD nginx/ /etc/nginx/
+# COPY application.yml /config/
+#COPY run.sh /
+
+# 我的nginx监听的是9998端口 这里暴露端口
+EXPOSE 8022
+
+# RUN \
+#     cd / \
+#     && chmod +x /run.sh \
+#     && ./run.sh
+
+#使用cmd命令启动你需要启动的进程 或者 镜像制作完成之后进入容器内启动
