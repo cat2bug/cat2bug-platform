@@ -140,18 +140,19 @@ public class SysTeamServiceImpl implements ISysTeamService
         SysTeam selectSysTeam = sysTeamMapper.selectSysTeamByTeamName(sysTeam.getTeamName());
         Preconditions.checkState(selectSysTeam==null,MessageUtils.message("team.insert_team_name_duplicate"));
 
-        String createBy = SecurityUtils.getUserId().toString(); // 获取当前登陆用户id
         // 新建团队数据
         sysTeam.setCreateTime(DateUtils.getNowDate());
-        sysTeam.setCreateBy(createBy);
+        sysTeam.setCreateBy(SecurityUtils.getUsername());
+        sysTeam.setCreateById(SecurityUtils.getUserId());
         Preconditions.checkState(sysTeamMapper.insertSysTeam(sysTeam)==1, MessageUtils.message("team.insert_team_fail"));
 
         // 新建用户与团队关联数据
+        String createById = SecurityUtils.getUserId().toString(); // 获取当前登陆用户id
         SysUserTeam sysUserTeam = new SysUserTeam();
-        sysUserTeam.setUserId(Long.valueOf(sysTeam.getCreateBy()));
+        sysUserTeam.setUserId(SecurityUtils.getUserId());
         sysUserTeam.setTeamId(sysTeam.getTeamId());
         sysUserTeam.setCreateTime(DateUtils.getNowDate());
-        sysUserTeam.setCreateBy(createBy);
+        sysUserTeam.setCreateBy(createById);
         Preconditions.checkState(sysUserTeamMapper.insertSysUserTeam(sysUserTeam)==1,MessageUtils.message("team.insert_user_team_role_fail"));
 
         // 新建用户角色

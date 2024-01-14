@@ -33,7 +33,7 @@ export default {
           { required: true, message: this.$i18n.t('member.name-cannot-empty'), trigger: "blur" }
         ],
         email: [
-          { required: true, message: this.$i18n.t('ember.email-cannot-empty'), trigger: "blur" },
+          { required: true, message: this.$i18n.t('member.email-cannot-empty'), trigger: "blur" },
           {
             type: "email",
             message: this.$i18n.t('member.email-format-exception'),

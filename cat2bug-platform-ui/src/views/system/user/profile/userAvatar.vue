@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="user-info-head" @click="editCropper()"><cat2-bug-avatar :member="options" style="width:120px;height:120px;line-height: 120px;border:2px solid #DCDFE6" /></div>
+    <div class="user-info-head" @click="editCropper()"><cat2-bug-avatar v-model="user" style="width:120px;height:120px;line-height: 120px;border:2px solid #DCDFE6" /></div>
     <el-dialog :title="title" :visible.sync="open" width="800px" append-to-body @opened="modalOpened"  @close="closeDialog">
       <el-row>
         <el-col :xs="24" :md="12" :style="{height: '350px'}">
@@ -28,7 +28,7 @@
         <el-col :lg="2" :sm="3" :xs="3">
           <el-upload action="#" :http-request="requestUpload" :show-file-list="false" :before-upload="beforeUpload">
             <el-button size="small">
-              选择
+              {{ $t('select') }}
               <i class="el-icon-upload el-icon--right"></i>
             </el-button>
           </el-upload>
@@ -46,7 +46,7 @@
           <el-button icon="el-icon-refresh-right" size="small" @click="rotateRight()"></el-button>
         </el-col>
         <el-col :lg="{span: 2, offset: 6}" :sm="2" :xs="2">
-          <el-button type="primary" size="small" @click="uploadImg()">提 交</el-button>
+          <el-button type="primary" size="small" @click="uploadImg()">{{ $t('submit') }}</el-button>
         </el-col>
       </el-row>
     </el-dialog>
@@ -79,9 +79,18 @@ export default {
         fixedBox: true, // 固定截图框大小 不允许改变
         outputType:"png" // 默认生成截图为PNG格式
       },
+      avatar: store.getters.avatar, //裁剪图片的地址
       previews: {},
       resizeHandler: null
     };
+  },
+  computed: {
+    user: function () {
+      return {
+        name: this.options.name,  // 当前用户名
+        avatar: this.avatar, //裁剪图片的地址
+      }
+    }
   },
   methods: {
     // 编辑头像
@@ -137,7 +146,8 @@ export default {
         formData.append("avatarfile", data);
         uploadAvatar(formData).then(response => {
           this.open = false;
-          this.options.avatar = process.env.VUE_APP_BASE_API + response.imgUrl;
+          this.options.avatar = response.imgUrl;
+          this.avatar = response.imgUrl;
           store.commit('SET_AVATAR', this.options.avatar);
           this.$modal.msgSuccess(this.$i18n.t('modify-success'));
           this.visible = false;
@@ -151,6 +161,7 @@ export default {
     // 关闭窗口
     closeDialog() {
       this.options.avatar = store.getters.avatar
+      this.avatar = store.getters.avatar
       this.visible = false;
       window.removeEventListener("resize", this.resizeHandler)
     }

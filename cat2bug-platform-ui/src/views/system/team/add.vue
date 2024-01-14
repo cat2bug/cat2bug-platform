@@ -71,7 +71,7 @@ export default {
                 currentTeamId: response.data.teamId
               }).then(res => {
                 store.dispatch('GetInfo').then(() => {
-                  this.$router.push({path:'/team/index'});
+                  this.$router.push({path:'/team/project'});
                 });
               });
             });

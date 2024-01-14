@@ -46,6 +46,11 @@ export default {
       default: false
     },
   },
+  watch: {
+    '$store.state.user.config.currentTeamId': function() {
+      this.getTeamList();
+    }
+  },
   computed:{
     teamId: function (){
       return this.$store.state.user.config.currentTeamId;

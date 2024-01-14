@@ -57,7 +57,7 @@ services:
       - cat2bug-network
   cat2bug-platform-web-after:
     hostname: after
-    image: yuzhantao/cat2bug-platform-web-after:0.0.1
+    image: cat2bug/cat2bug-platform-web-after:0.0.1
     build:
       context: .
       dockerfile: after-dockerfile
@@ -84,7 +84,7 @@ services:
       - cat2bug-network
   cat2bug-platform-web-front:
     hostname: front
-    image: yuzhantao/cat2bug-platform-web-front:0.0.1
+    image: cat2bug/cat2bug-platform-web-front:0.0.1
     build:
       context: .
       dockerfile: front-dockerfile
