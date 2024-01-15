@@ -70,7 +70,9 @@ export default {
               updateConfig({
                 currentTeamId: response.data.teamId
               }).then(res => {
+                console.log('updateConfig----------',res)
                 store.dispatch('GetInfo').then(() => {
+                  console.log('GetInfo----------')
                   this.$router.push({path:'/team/project'});
                 });
               });

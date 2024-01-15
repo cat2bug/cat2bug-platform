@@ -4,9 +4,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.alibaba.fastjson2.JSON;
 import com.cat2bug.common.core.domain.entity.SysRole;
 import com.cat2bug.system.domain.SysUserConfig;
 import com.cat2bug.system.service.ISysUserConfigService;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,6 +29,7 @@ import com.cat2bug.system.service.ISysMenuService;
  * 
  * @author ruoyi
  */
+@Log4j2
 @RestController
 public class SysLoginController
 {
@@ -70,12 +73,15 @@ public class SysLoginController
         // 更新用户权限
 //        permissionService.updateRoleAndPermissionOfCurrentUser();
         SysUser user = SecurityUtils.getLoginUser().getUser();
+
         // 角色集合
         Set<SysRole> roles = permissionService.getRole(user).stream().filter(r->r.isFlag()).collect(Collectors.toSet());
         // 权限集合
         Set<String> permissions = permissionService.getMenuPermission(user);
 
         SysUserConfig sysUserConfig = userConfigService.selectSysUserConfigByCurrentUserId();
+
+        log.info("=======getInfo:::roles={}   permissions={}   sysUserConfig={}", JSON.toJSONString(roles), JSON.toJSONString(permissions),JSON.toJSONString(sysUserConfig));
         AjaxResult ajax = AjaxResult.success();
         ajax.put("user", user);
         ajax.put("roles", roles.stream().map(r->r.getRoleKey()).collect(Collectors.toList()));

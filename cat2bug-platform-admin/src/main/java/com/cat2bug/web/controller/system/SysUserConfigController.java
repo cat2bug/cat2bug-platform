@@ -1,5 +1,6 @@
 package com.cat2bug.web.controller.system;
 
+import com.alibaba.fastjson2.JSON;
 import com.cat2bug.common.annotation.Log;
 import com.cat2bug.common.core.controller.BaseController;
 import com.cat2bug.common.core.domain.AjaxResult;
@@ -9,6 +10,7 @@ import com.cat2bug.common.utils.poi.ExcelUtil;
 import com.cat2bug.framework.web.service.SysPermissionService;
 import com.cat2bug.system.domain.SysUserConfig;
 import com.cat2bug.system.service.ISysUserConfigService;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +24,7 @@ import java.util.List;
  * @author yuzhantao
  * @date 2023-11-16
  */
+@Log4j2
 @RestController
 @RequestMapping("/system/user-config")
 public class SysUserConfigController extends BaseController
@@ -63,6 +66,7 @@ public class SysUserConfigController extends BaseController
     {
         int ret = sysUserConfigService.updateSysUserConfig(sysUserConfig);
         // 更新用户权限
+        log.info("=======edit:::ret={}   sysUserConfig={}", ret, JSON.toJSONString(sysUserConfig));
         permissionService.updateRoleAndPermissionOfCurrentUser();
         return toAjax(ret);
     }
