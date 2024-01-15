@@ -5,11 +5,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.alibaba.fastjson2.JSON;
 import com.cat2bug.common.core.domain.model.LoginUser;
 import com.cat2bug.common.utils.SecurityUtils;
 import com.cat2bug.system.domain.SysUserConfig;
 import com.cat2bug.system.domain.SysUserProjectRole;
 import com.cat2bug.system.service.*;
+import lombok.extern.log4j.Log4j;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
@@ -22,6 +25,7 @@ import com.cat2bug.common.core.domain.entity.SysUser;
  * @author ruoyi
  */
 @Component
+@Log4j2
 public class SysPermissionService
 {
     @Autowired
@@ -57,6 +61,8 @@ public class SysPermissionService
         // 刷新权限
         loginUser.setPermissions(permissions);
 
+
+        log.info("=======updateRoleAndPer:::{}",JSON.toJSONString(loginUser));
         tokenService.setLoginUser(loginUser);
     }
 

@@ -6,8 +6,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.alibaba.fastjson2.JSON;
 import com.cat2bug.system.domain.SysUserConfig;
 import com.cat2bug.system.mapper.*;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +32,7 @@ import com.cat2bug.system.service.ISysRoleService;
  * @author ruoyi
  */
 @Service
+@Log4j2
 public class SysRoleServiceImpl implements ISysRoleService
 {
     @Autowired
@@ -70,6 +73,7 @@ public class SysRoleServiceImpl implements ISysRoleService
     public List<SysRole> selectRolesByUserId(Long userId)
     {
         SysUserConfig sysUserConfig = sysUserConfigMapper.selectSysUserConfigByUserId(userId);
+        log.info("config======={}", JSON.toJSONString(sysUserConfig));
         if(sysUserConfig!=null) {
             List<SysRole> userRoles = roleMapper.selectRolePermissionByUserId(sysUserConfig.getCurrentTeamId(), sysUserConfig.getCurrentProjectId(), userId);
             List<SysRole> roles = selectRoleAll();
