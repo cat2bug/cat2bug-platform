@@ -81,7 +81,6 @@ public class SysLoginController
 
         SysUserConfig sysUserConfig = userConfigService.selectSysUserConfigByCurrentUserId();
 
-        log.info("=======getInfo:::roles={}   permissions={}   sysUserConfig={}", JSON.toJSONString(roles), JSON.toJSONString(permissions),JSON.toJSONString(sysUserConfig));
         AjaxResult ajax = AjaxResult.success();
         ajax.put("user", user);
         ajax.put("roles", roles.stream().map(r->r.getRoleKey()).collect(Collectors.toList()));

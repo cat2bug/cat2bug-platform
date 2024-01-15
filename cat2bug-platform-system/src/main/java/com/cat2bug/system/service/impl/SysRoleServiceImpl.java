@@ -73,7 +73,6 @@ public class SysRoleServiceImpl implements ISysRoleService
     public List<SysRole> selectRolesByUserId(Long userId)
     {
         SysUserConfig sysUserConfig = sysUserConfigMapper.selectSysUserConfigByUserId(userId);
-        log.info("config======={}", JSON.toJSONString(sysUserConfig));
         if(sysUserConfig!=null) {
             List<SysRole> userRoles = roleMapper.selectRolePermissionByUserId(sysUserConfig.getCurrentTeamId(), sysUserConfig.getCurrentProjectId(), userId);
             List<SysRole> roles = selectRoleAll();

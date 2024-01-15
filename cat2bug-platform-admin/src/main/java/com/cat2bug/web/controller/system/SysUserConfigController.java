@@ -66,7 +66,6 @@ public class SysUserConfigController extends BaseController
     {
         int ret = sysUserConfigService.updateSysUserConfig(sysUserConfig);
         // 更新用户权限
-        log.info("=======edit:::ret={}   sysUserConfig={}", ret, JSON.toJSONString(sysUserConfig));
         permissionService.updateRoleAndPermissionOfCurrentUser();
         return toAjax(ret);
     }

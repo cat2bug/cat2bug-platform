@@ -61,8 +61,6 @@ public class SysPermissionService
         // 刷新权限
         loginUser.setPermissions(permissions);
 
-
-        log.info("=======updateRoleAndPer:::{}",JSON.toJSONString(loginUser));
         tokenService.setLoginUser(loginUser);
     }
 
