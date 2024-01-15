@@ -55,7 +55,7 @@ import {
   getMemberByTeam,
   inviteMember,
   listMember,
-  listNotMember,
+  listNotMember, listTeamRole,
   updateTeam
 } from "@/api/system/team";
 import {getUser} from "@/api/system/user";
@@ -85,13 +85,19 @@ export default {
       initPassword: null,
     }
   },
+  computed: {
+    /** 获取团队id */
+    teamId() {
+      return this.$store.state.user.config.currentTeamId;
+    }
+  },
   created() {
     this.searchMemberHandle();
   },
   methods: {
     open(){
-      getUser().then(res => {
-        this.roleOptions = res.roles?res.roles.filter(r=>r.isTeamRole).map(r=>{
+      listTeamRole(this.teamId).then(res => {
+        this.roleOptions = res.data?res.data.filter(r=>r.isTeamRole && r.teamCreateBy==false).map(r=>{
           r.roleName = r.roleNameI18nKey?this.$t(r.roleNameI18nKey):r.roleName;
           return r;
         }):[];

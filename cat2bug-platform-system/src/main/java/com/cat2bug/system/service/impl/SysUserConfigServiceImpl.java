@@ -1,7 +1,12 @@
 package com.cat2bug.system.service.impl;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import com.cat2bug.common.core.domain.AjaxResult;
+import com.cat2bug.common.core.domain.entity.SysRole;
+import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.common.utils.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

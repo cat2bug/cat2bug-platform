@@ -45,7 +45,7 @@ public interface ISysUserProjectService
     /**
      * 批量新增用户项目
      *
-     * @param sysUserProjectList 用户项目集合
+     * @param batchUserRoleVo 用户项目集合
      * @return 结果
      */
     public int batchInsertSysUserProject(BatchUserRoleVo batchUserRoleVo);

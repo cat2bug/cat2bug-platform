@@ -146,6 +146,7 @@
   "member.confirm-password-cannot-empty": "确认密码不能为空",
   "member.input-size-exception": "长度在 6 到 20 个字符",
   "member.upload-file-format-exception": "文件格式错误，请上传图片类型,如：JPG，PNG后缀的文件。",
+  "member.search-placeholder": "请搜索成员名称、手机号码或邮箱",
   "phone-number": "手机号码",
   "email": "邮箱",
   "sex": "性别",

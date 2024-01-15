@@ -374,9 +374,12 @@ export default {
     },
     /** 点击项目跳转 */
     clickProject(project) {
+      let _this = this;
       if(this.isViewDefect(project)) {
         store.dispatch('UpdateCurrentProjectId', project.projectId).then(() => {
-          this.$router.push({name:'Defect', params: { projectId: project.projectId }})
+          store.dispatch('GetInfo').then(() => {
+            _this.$router.push({name:'Defect', params: { projectId: project.projectId }})
+          });
         });
       } else {
         this.$message.warning(this.$i18n.t('project.no-permission-access-project').toString());

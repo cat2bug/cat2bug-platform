@@ -91,7 +91,7 @@
                 type="text"
                 icon="el-icon-delete"
                 @click="deleteHandle(scope.row)"
-                v-hasPermi="['system:project:member:remove']"
+                v-show="visibleDelete(scope.row)"
               >{{$t('delete')}}</el-button>
             </template>
           </el-table-column>
@@ -120,6 +120,7 @@ import {
 } from "@/api/system/project";
 import {strFormat} from "@/utils";
 import i18n from "@/utils/i18n/i18n";
+import {checkPermi} from "@/utils/permission";
 
 export default {
   name: "ProjectMemberManage",
@@ -170,6 +171,12 @@ export default {
     isMemberDisabled: function () {
       return function (member) {
         return member.status==1 || (member.roles && member.roles.filter(r=>r.projectCreateBy).length>0);
+      }
+    },
+    /** 是否显示删除按钮 */
+    visibleDelete() {
+      return function (member) {
+        return checkPermi(['system:project:member:remove']) && member.roles.filter(r=>r.projectCreateBy).length==0;
       }
     },
   },

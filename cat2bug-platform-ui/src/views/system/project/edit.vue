@@ -65,7 +65,7 @@ import { listMember } from "@/api/system/team";
 import MemberNameplate from "@/components/MemberNameplate"
 
 export default {
-  name: "ProjectAdd",
+  name: "ProjectEdit",
   components:{ MemberNameplate },
   data() {
     return {

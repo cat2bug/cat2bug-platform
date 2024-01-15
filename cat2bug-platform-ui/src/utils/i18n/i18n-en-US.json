@@ -146,6 +146,7 @@
   "member.confirm-password-cannot-empty": "Confirm password cannot be empty",
   "member.input-size-exception": "Length between 6 and 20 characters",
   "member.upload-file-format-exception": "Personal center file format error, please upload image type, such as JPG, PNG suffix file.",
+  "member.search-placeholder": "Please search for name, phone, or email",
   "phone-number": "Phone",
   "email": "Email",
   "sex": "Sex",

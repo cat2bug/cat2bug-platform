@@ -21,7 +21,7 @@
                  key="team-select-footer-create-team"
                  value="team-select-footer-create-team"
       >
-        <el-button icon="el-icon-plus" style="width: 100%;">{{$t('team.create')}}</el-button>
+        <el-button icon="el-icon-plus" style="width: 100%;" @click="addTeamHandle">{{$t('team.create')}}</el-button>
       </el-option>
     </el-select>
   </div>
@@ -85,11 +85,13 @@ export default {
         this.selectTeam(this.teamId,false);
       });
     },
+    addTeamHandle(e) {
+      this.$router.push({name:'TeamAdd'});
+    },
     /** 选择团队变化的处理 */
     selectTeamChangedHandle(currentTeamId,isRefresh){
       switch (currentTeamId){
         case 'team-select-footer-create-team':
-          this.$router.push({name:'TeamAdd'});
           break;
         default:
           this.selectTeam(currentTeamId,true);

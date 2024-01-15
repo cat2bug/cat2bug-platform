@@ -1,6 +1,9 @@
 package com.cat2bug.framework.web.service;
 
 import java.util.Set;
+import java.util.stream.Collectors;
+
+import com.cat2bug.common.core.domain.entity.SysUser;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import com.cat2bug.common.constant.Constants;

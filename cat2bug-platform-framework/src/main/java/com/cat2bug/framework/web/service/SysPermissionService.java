@@ -3,7 +3,9 @@ package com.cat2bug.framework.web.service;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import com.cat2bug.common.core.domain.model.LoginUser;
 import com.cat2bug.common.utils.SecurityUtils;
 import com.cat2bug.system.domain.SysUserConfig;
 import com.cat2bug.system.domain.SysUserProjectRole;
@@ -36,6 +38,27 @@ public class SysPermissionService
 
     @Autowired
     private ISysMenuService menuService;
+
+    @Autowired
+    private TokenService tokenService;
+    /**
+     * 更新当前用户权限
+     */
+    public void updateRoleAndPermissionOfCurrentUser() {
+        LoginUser loginUser = SecurityUtils.getLoginUser();
+        SysUser user = loginUser.getUser();
+        // 角色集合
+        Set<SysRole> roles = this.getRole(user).stream().filter(r->r.isFlag()).collect(Collectors.toSet());
+        // 刷新角色
+        user.setRoleIds(roles.stream().map(r->r.getRoleId()).collect(Collectors.toList()).toArray(new Long[]{}));
+        user.setRoles(roles.stream().collect(Collectors.toList()));
+        // 权限集合
+        Set<String> permissions = this.getMenuPermission(user);
+        // 刷新权限
+        loginUser.setPermissions(permissions);
+
+        tokenService.setLoginUser(loginUser);
+    }
 
     /**
      * 获取角色数据权限

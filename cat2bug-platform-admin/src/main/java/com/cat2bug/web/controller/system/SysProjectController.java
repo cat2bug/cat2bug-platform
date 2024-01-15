@@ -10,6 +10,7 @@ import com.cat2bug.common.enums.BusinessType;
 import com.cat2bug.common.utils.MessageUtils;
 import com.cat2bug.common.utils.poi.ExcelUtil;
 import com.cat2bug.framework.web.service.SysLoginService;
+import com.cat2bug.framework.web.service.SysPermissionService;
 import com.cat2bug.system.domain.SysProject;
 import com.cat2bug.system.domain.SysUserProject;
 import com.cat2bug.system.domain.vo.BatchUserRoleVo;
@@ -48,6 +49,8 @@ public class SysProjectController extends BaseController
     @Autowired
     private ISysRoleService sysRoleService;
 
+    @Autowired
+    private SysPermissionService permissionService;
     /**
      * 查询项目列表
      */
@@ -143,7 +146,10 @@ public class SysProjectController extends BaseController
     {
         Preconditions.checkNotNull(password, MessageUtils.message("user.password.not_empty"));
         loginService.loginPreCheck(getUsername(),password);
-
-        return toAjax(sysProjectService.deleteSysProjectByProjectId(projectId));
+        // 删除项目
+        int ret = sysProjectService.deleteSysProjectByProjectId(projectId);
+        // 更新用户权限
+        permissionService.updateRoleAndPermissionOfCurrentUser();
+        return toAjax(ret);
     }
 }

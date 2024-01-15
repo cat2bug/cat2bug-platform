@@ -6,6 +6,7 @@ import com.cat2bug.common.core.domain.AjaxResult;
 import com.cat2bug.common.core.page.TableDataInfo;
 import com.cat2bug.common.enums.BusinessType;
 import com.cat2bug.common.utils.poi.ExcelUtil;
+import com.cat2bug.framework.web.service.SysPermissionService;
 import com.cat2bug.system.domain.SysUserConfig;
 import com.cat2bug.system.service.ISysUserConfigService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,9 @@ import java.util.List;
 public class SysUserConfigController extends BaseController
 {
     @Autowired
+    private SysPermissionService permissionService;
+
+    @Autowired
     private ISysUserConfigService sysUserConfigService;
 
     /**
@@ -44,7 +48,10 @@ public class SysUserConfigController extends BaseController
     @PostMapping
     public AjaxResult add(@RequestBody SysUserConfig sysUserConfig)
     {
-        return toAjax(sysUserConfigService.insertSysUserConfig(sysUserConfig));
+        int ret = sysUserConfigService.insertSysUserConfig(sysUserConfig);
+        // 更新用户权限
+        permissionService.updateRoleAndPermissionOfCurrentUser();
+        return toAjax(ret);
     }
 
     /**
@@ -54,7 +61,10 @@ public class SysUserConfigController extends BaseController
     @PutMapping
     public AjaxResult edit(@RequestBody SysUserConfig sysUserConfig)
     {
-        return toAjax(sysUserConfigService.updateSysUserConfig(sysUserConfig));
+        int ret = sysUserConfigService.updateSysUserConfig(sysUserConfig);
+        // 更新用户权限
+        permissionService.updateRoleAndPermissionOfCurrentUser();
+        return toAjax(ret);
     }
 
     /**

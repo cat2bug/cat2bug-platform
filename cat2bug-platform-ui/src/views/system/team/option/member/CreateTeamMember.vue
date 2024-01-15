@@ -85,7 +85,7 @@
 </template>
 
 <script>
-import {addMember, addTeam, getMemberByTeam, updateTeam} from "@/api/system/team";
+import {addMember, addTeam, getMemberByTeam, listTeamRole, updateTeam} from "@/api/system/team";
 import {getUser} from "@/api/system/user";
 
 export default {
@@ -134,6 +134,12 @@ export default {
       initPassword: null,
     }
   },
+  computed: {
+    /** 获取团队id */
+    teamId() {
+      return this.$store.state.user.config.currentTeamId;
+    }
+  },
   created() {
     this.getConfigKey("sys.member.initPassword").then(response => {
       this.initPassword = response.msg;
@@ -141,8 +147,8 @@ export default {
   },
   methods: {
     open(){
-      getUser().then(res => {
-        this.roleOptions = res.roles?res.roles.filter(r=>r.isTeamRole && r.teamCreateBy == false).map(r=>{
+      listTeamRole(this.teamId).then(res => {
+        this.roleOptions = res.data?res.data.filter(r=>r.isTeamRole && r.teamCreateBy==false).map(r=>{
           r.roleName = r.roleNameI18nKey?this.$t(r.roleNameI18nKey):r.roleName;
           return r;
         }):[];

@@ -155,7 +155,7 @@ export default {
       memberList:[],                    // 成员列表
       projectMemberSwitch: false,       // 项目成员开关
       form:{
-        teamId: this.currentTeamId,  // 团队id
+        teamId: this.currentTeamId,     // 团队id
         projectName: null,              // 项目名称
         projectIntroduce: null,         // 项目介绍
         projectIcon: null,              // 项目图标
@@ -274,6 +274,7 @@ export default {
     },
     /** 提交按钮 */
     onSubmit() {
+      this.form.teamId = this.currentTeamId;
       this.$refs["form"].validate(valid => {
         if (valid) {
           addProject(this.form).then(response => {

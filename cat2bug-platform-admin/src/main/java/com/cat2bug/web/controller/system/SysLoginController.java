@@ -67,10 +67,11 @@ public class SysLoginController
     @GetMapping("getInfo")
     public AjaxResult getInfo()
     {
+        // 更新用户权限
+//        permissionService.updateRoleAndPermissionOfCurrentUser();
         SysUser user = SecurityUtils.getLoginUser().getUser();
         // 角色集合
-        Set<SysRole> roles = permissionService.getRole(user);
-        user.setRoleIds(roles.stream().map(r->r.getRoleId()).collect(Collectors.toList()).toArray(new Long[]{}));
+        Set<SysRole> roles = permissionService.getRole(user).stream().filter(r->r.isFlag()).collect(Collectors.toSet());
         // 权限集合
         Set<String> permissions = permissionService.getMenuPermission(user);
 

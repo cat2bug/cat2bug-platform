@@ -80,8 +80,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         u.create_time,
         u.remark
         FROM
-        ( SELECT ut.user_id, p.project_id FROM sys_project p, sys_user_team ut WHERE p.team_id = ut.team_id AND p.project_id = #{projectId} GROUP BY ut.user_id,p.project_id ) l1
-        LEFT JOIN sys_user_project l2 ON l1.user_id = l2.user_id
+        ( SELECT ut.user_id, p.project_id FROM sys_project p, sys_user_team ut WHERE p.team_id = ut.team_id AND ut.team_lock != 1 AND p.project_id = #{projectId} GROUP BY ut.user_id,p.project_id ) l1
+        LEFT JOIN sys_user_project l2 ON l1.user_id = l2.user_id AND l2.project_lock != 1
         AND l2.project_id = #{projectId}
         LEFT JOIN sys_user u ON u.user_id = l1.user_id
         <where>

@@ -99,7 +99,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 			AND r.is_project_role = #{isProjectRole}
 		</if>
 		<!-- 数据范围过滤 -->
-		${params.dataScope}
+		<!-- ${params.dataScope} -->
 		order by r.role_sort
 	</select>
     
