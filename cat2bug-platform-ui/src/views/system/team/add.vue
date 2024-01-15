@@ -56,24 +56,26 @@ export default {
     },
     /** 提交按钮 */
     submitForm() {
+      let _this = this;
       this.$refs["form"].validate(valid => {
         if (valid) {
           if (this.form.teamId != null) {
             updateTeam(this.form).then(response => {
-              this.$modal.msgSuccess(this.$i18n.t('modify-success'));
-              this.open = false;
-              this.getList();
+              _this.$modal.msgSuccess(this.$i18n.t('modify-success'));
+              _this.open = false;
+              _this.getList();
             });
           } else {
             addTeam(this.form).then(response => {
-              this.$modal.msgSuccess(this.$i18n.t('create-success'));
+              console.log('addTeam----------',response)
+              _this.$modal.msgSuccess(this.$i18n.t('create-success'));
               updateConfig({
                 currentTeamId: response.data.teamId
               }).then(res => {
                 console.log('updateConfig----------',res)
                 store.dispatch('GetInfo').then(() => {
                   console.log('GetInfo----------')
-                  this.$router.push({path:'/team/project'});
+                  _this.$router.push({path:'/team/project'});
                 });
               });
             });
