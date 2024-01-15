@@ -67,14 +67,14 @@ export default {
             });
           } else {
             addTeam(this.form).then(response => {
-              console.log('addTeam----------',response)
+              alert('addTeam----------'+JSON.stringify(response))
               _this.$modal.msgSuccess(this.$i18n.t('create-success'));
               updateConfig({
                 currentTeamId: response.data.teamId
               }).then(res => {
-                console.log('updateConfig----------',res)
+                alert('updateConfig----------'+JSON.stringify(res))
                 store.dispatch('GetInfo').then(() => {
-                  console.log('GetInfo----------')
+                  alert('GetInfo----------')
                   _this.$router.push({path:'/team/project'});
                 });
               });
