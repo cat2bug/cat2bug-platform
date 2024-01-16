@@ -22,7 +22,7 @@ Cat2Bug-Platform是一套永久免费开源的Bug管理平台，将毫无保留�
 ## 在线体验
 
 - 体验账号：demo
-- 体验密码：demo  
+- 体验密码：123456  
 
 演示地址：http://www.cat2bug.com/demo/cat2bug-platform
 
