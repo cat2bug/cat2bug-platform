@@ -31,7 +31,7 @@ Cat2Bug-Platform是一套永久免费开源的Bug管理平台，将毫无保留�
 目前我们提供了一套Docker容器化的部署方案，执行命令如下：
 
 ```
-curl http://cat2bug.com/docker/docker-compose.yml
+wget http://cat2bug.com/docker/docker-compose.yml
 docker-compose up -d
 ```
 
