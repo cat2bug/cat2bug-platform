@@ -1,7 +1,3 @@
-<p align="center">
-	<img alt="logo" src="https://oscimg.oschina.net/oscnet/up-d3d0a9303e11d522a06cd263f3079027715.png">
-</p>
-
 <h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">Cat2Bug-Platform v0.0.1</h1>
 <h4 align="center">轻量化BUG管理平台</h4>
 <p align="center">
