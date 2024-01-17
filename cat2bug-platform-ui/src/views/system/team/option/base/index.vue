@@ -22,14 +22,14 @@
           </template>
           <template>
             <el-form ref="form" :model="form" :rules="rules" label-width="120px">
-              <el-form-item :label="$t('member.name')" prop="teamName">
-                <el-input v-model="form.teamName" placeholder="请输入团队名称" maxlength="64" />
+              <el-form-item :label="$t('team.name')" prop="teamName">
+                <el-input v-model="form.teamName" :placeholder="$t('team.please-enter-name')" maxlength="64" />
               </el-form-item>
-              <el-form-item :label="$t('member.icon')" prop="teamIcon">
+              <el-form-item :label="$t('team.icon')" prop="teamIcon">
                 <image-upload v-model="form.teamIcon" :limit="1"/>
               </el-form-item>
-              <el-form-item :label="$t('member.introduce')" prop="introduce">
-                <el-input v-model="form.introduce" :placeholder="$t('member.please-enter-introduce')" type="textarea" maxlength="255" rows="5" show-word-limit />
+              <el-form-item :label="$t('team.introduce')" prop="introduce">
+                <el-input v-model="form.introduce" :placeholder="$t('team.please-enter-introduce')" type="textarea" maxlength="255" rows="5" show-word-limit />
               </el-form-item>
             </el-form>
             <el-row>
