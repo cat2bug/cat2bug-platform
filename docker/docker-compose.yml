@@ -12,6 +12,7 @@ services:
 #      - ./ssl:/ssl
   cat2bug-platform-mysql:
     image: cat2bug/cat2bug-platform-mysql:0.0.1
+    platform: linux/arm64
     build:
       context: ./mysql
       dockerfile: mysql-dockerfile
@@ -60,6 +61,7 @@ services:
   cat2bug-platform-web-after:
     hostname: after
     image: cat2bug/cat2bug-platform-web-after:0.0.1
+    platform: linux/arm64
     build:
       context: ./after
       dockerfile: after-dockerfile
@@ -87,6 +89,7 @@ services:
   cat2bug-platform-web-front:
     hostname: front
     image: cat2bug/cat2bug-platform-web-front:0.0.1
+    platform: linux/arm64
     build:
       context: ./front
       dockerfile: front-dockerfile
