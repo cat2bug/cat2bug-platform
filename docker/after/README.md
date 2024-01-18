@@ -15,7 +15,7 @@ This image is the database container of Cat2Bug Platform, which is a service com
 docker run -it -p 3306:3306 --name cat2bug-platform-web-after cat2bug/cat2bug-platform-web-after:laster
 ```
 
-### Map database data to the host's disk
+### Map logs and upload files to the host disk
 
 ```
 docker run -it -p 3306:3306 -v /cat2bug-platform/after/uploadPath:/home/uploadPath -v /cat2bug-platform/after/logs:/home/logs --name cat2bug-platform-web-after cat2bug/cat2bug-platform-web-after:laster

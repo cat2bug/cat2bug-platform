@@ -16,6 +16,6 @@ public class Cat2BugApplication
     {
         // System.setProperty("spring.devtools.restart.enabled", "false");
         SpringApplication.run(Cat2BugApplication.class, args);
-        System.out.println("(♥◠‿◠)ﾉﾞ  CatBug启动成功   ლ(´ڡ`ლ)ﾞ ");
+        System.out.println("(♥◠‿◠)ﾉﾞ  Cat2Bug-Platform 启动成功   ლ(´ڡ`ლ)ﾞ ");
     }
 }
