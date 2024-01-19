@@ -282,5 +282,9 @@
   "browser.access": "访问",
   "browser.please-enter-testing-website": "请输入测试网址",
   "browser.please-enter-testing-website-prompt": "提示：请输入需要测试的网址，点击\"访问\"按钮进行测试，测试工具在右侧悬浮边框中；如果您的页面有防盗链功能，可能无法正常打开。",
-  "browser.window-not-close": "当前窗体无法关闭!"
+  "browser.window-not-close": "当前窗体无法关闭!",
+  "welcome": "欢迎来到Cat2Bug",
+  "login.introduce1": "Cat2Bug-Platform是一套永久免费开源的Bug管理平台，将毫无保留给个人及团体免费使用。",
+  "login.introduce2": "它的使用人群锁定个人或中小型软件开发团队，Cat2Bug的理念是免去了项目管理中各种重度管理，让个人或团队可以快速上手，把控软件质量。",
+  "login.introduce3": "平台采用JAVA+VUE开发，支持在各系统平台部署使用。"
 }

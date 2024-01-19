@@ -282,5 +282,9 @@
   "browser.access": "Access",
   "browser.please-enter-testing-website": "Please enter the testing website",
   "browser.please-enter-testing-website-prompt": "Tip: Please enter the website you want to test, click the \"Access\" button to test, and the testing tool is located in the floating border on the right side; If your page has an anti-theft chain function, it may not open properly.",
-  "browser.window-not-close": "The current form cannot be closed!"
+  "browser.window-not-close": "The current form cannot be closed!",
+  "welcome": "Welcome to Cat2Bug",
+  "login.introduce1": "Cat2Bug Platform is a permanent, free, and open-source bug management platform that will be fully reserved for individuals and groups to use for free.",
+  "login.introduce2": "Its target audience is individuals or small to medium-sized software development teams. The concept of Cat2Bug is to eliminate various heavy management in project management, allowing individuals or teams to quickly get started and control software quality.",
+  "login.introduce3": "The platform is developed using JAVA+VUE and supports deployment and use on various system platforms."
 }

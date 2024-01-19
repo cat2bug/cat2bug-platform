@@ -167,7 +167,7 @@ export default {
   justify-content: center;
   align-items: center;
   height: 100%;
-  background-image: url("../assets/images/login-background.jpg");
+  //background-image: url("../assets/images/login-background.jpg");
   background-size: cover;
 }
 .title {
@@ -181,6 +181,7 @@ export default {
   background: #ffffff;
   width: 400px;
   padding: 25px 25px 5px 25px;
+  border: 2px solid #5A5A59;
   .el-input {
     height: 38px;
     input {
