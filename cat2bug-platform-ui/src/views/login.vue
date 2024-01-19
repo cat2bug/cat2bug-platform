@@ -233,18 +233,33 @@ body {
   position: absolute;
   bottom: 0px;
   position: absolute;
-  animation: move 8s linear;
+  animation: move 16s linear;
   animation-iteration-count: infinite;
   left: 100%;
   @-webkit-keyframes move {
     0%   {
       left: 100%;
+      transform: rotateY(0deg);
     }
-    30%  {
+    15%  {
       left: calc(0% - 200px);
+      transform: rotateY(0deg);
+    }
+    41% {
+      left: calc(0% - 200px);
+      transform: rotateY(-180deg);
+    }
+    55%   {
+      left: 100%;
+      transform: rotateY(-180deg);
+    }
+    56%  {
+      left: 100%;
+      transform: rotateY(0deg);
     }
     100%  {
-      left: calc(0% - 200px);
+      left: 100%;
+      transform: rotateY(0deg);
     }
   }
 }
