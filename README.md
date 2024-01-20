@@ -62,5 +62,4 @@ docker-compose up -d
 
 ## Cat2Bug交流群
 
-QQ群： [![加入QQ群](https://img.shields.io/badge/%E6%9C%AA%E6%BB%A1-731462000-blue?link=https%3A%2F%2Fqm.qq.com%2Fcgi-bin%2Fqm%2Fqr%3Fk%3DG_vJa478flcFo_1ohJxNYD0mRKafQ7I1%26jump_from%3Dwebapi%26authKey%3DEL0KrLpnjYWqNN9YXTVksNlNFrV9DHYyPMx2RVOhXqLzfnmc%2BOz8oQ38aBOGx90t
-)](https://qm.qq.com/cgi-bin/qm/qr?k=G_vJa478flcFo_1ohJxNYD0mRKafQ7I1&jump_from=webapi&authKey=EL0KrLpnjYWqNN9YXTVksNlNFrV9DHYyPMx2RVOhXqLzfnmc+Oz8oQ38aBOGx90t)
+QQ群： [731462000](https://qm.qq.com/cgi-bin/qm/qr?k=G_vJa478flcFo_1ohJxNYD0mRKafQ7I1&jump_from=webapi&authKey=EL0KrLpnjYWqNN9YXTVksNlNFrV9DHYyPMx2RVOhXqLzfnmc+Oz8oQ38aBOGx90t)
