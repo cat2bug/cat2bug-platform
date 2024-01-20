@@ -81,9 +81,9 @@
           <div class="body">
             <p>
               <i class="el-icon-s-promotion"></i> {{$t('website')}}：<el-link
-                href="https://www.cat2bug.com"
+                href="http://www.cat2bug.com"
                 target="_blank"
-                >https://www.cat2bug.com</el-link
+                >http://www.cat2bug.com</el-link
               >
             </p>
             <p>
