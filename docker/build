@@ -1,3 +1,0 @@
-docker buildx build -t cat2bug/cat2bug-platform-web-after:0.0.1  -f after-dockerfile --platform=linux/arm64,linux/amd64 . --push
-docker buildx build -t cat2bug/cat2bug-platform-web-front:0.0.1 -f front-dockerfile --platform=linux/arm64,linux/amd64 . --push
-docker buildx build -t cat2bug/cat2bug-platform-mysql:0.0.1 -f mysql-dockerfile --platform=linux/arm64,linux/amd64 . --push

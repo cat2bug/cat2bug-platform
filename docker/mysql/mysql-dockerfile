@@ -1,6 +1,0 @@
-FROM mysql:8.2.0
-# author
-MAINTAINER yuzhantao@qq.com
-COPY cat2bug_platform.sql /docker-entrypoint-initdb.d/cat2bug_platform.sql
-EXPOSE 3306 33060
-CMD ["mysqld"]
