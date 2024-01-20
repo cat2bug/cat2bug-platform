@@ -1,9 +1,9 @@
 <h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">Cat2Bug-Platform v0.0.1</h1>
 <h4 align="center">轻量化BUG管理平台</h4>
 <p align="center">
-	<a href="https://gitee.com/y_project/RuoYi-Vue"><img src="https://img.shields.io/badge/Cat2Bug-v0.0.1-blue?link=https%3A%2F%2Fqm.qq.com%2Fcgi-bin%2Fqm%2Fqr%3Fk%3DG_vJa478flcFo_1ohJxNYD0mRKafQ7I1%26jump_from%3Dwebapi%26authKey%3DEL0KrLpnjYWqNN9YXTVksNlNFrV9DHYyPMx2RVOhXqLzfnmc%2BOz8oQ38aBOGx90t
+	<a href="https://gitee.com/cat2bug/cat2bug-platform/"><img src="https://img.shields.io/badge/Cat2Bug-v0.0.1-blue?link=https%3A%2F%2Fqm.qq.com%2Fcgi-bin%2Fqm%2Fqr%3Fk%3DG_vJa478flcFo_1ohJxNYD0mRKafQ7I1%26jump_from%3Dwebapi%26authKey%3DEL0KrLpnjYWqNN9YXTVksNlNFrV9DHYyPMx2RVOhXqLzfnmc%2BOz8oQ38aBOGx90t
 "></a>
-	<a href="https://gitee.com/y_project/RuoYi-Vue/blob/master/LICENSE"><img src="https://img.shields.io/github/license/mashape/apistatus.svg"></a>
+	<a href="https://gitee.com/cat2bug/cat2bug-platform/blob/master/LICENSE"><img src="https://img.shields.io/github/license/mashape/apistatus.svg"></a>
 </p>
 
 ## 平台简介
