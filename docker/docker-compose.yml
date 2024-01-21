@@ -1,15 +1,15 @@
 version: '3.4'
 name: cat2bug-platform
 services:
-#  cat2bug-certs-maker:
-#    image: soulteary/certs-maker
-#    container_name: cat2bug-certs-maker
-#    environment:
-#      - CERT_DNS=default,127.0.0.1,localhost
-#      - CERT_CN=Cat2Bug
-#      - CERT_ST=CB
-#    volumes:
-#      - ./ssl:/ssl
+  #  cat2bug-certs-maker:
+  #    image: soulteary/certs-maker
+  #    container_name: cat2bug-certs-maker
+  #    environment:
+  #      - CERT_DNS=default,127.0.0.1,localhost
+  #      - CERT_CN=Cat2Bug
+  #      - CERT_ST=CB
+  #    volumes:
+  #      - ./ssl:/ssl
   cat2bug-platform-mysql:
     image: cat2bug/cat2bug-platform-mysql:0.0.1
     platform: linux/arm64
@@ -28,8 +28,8 @@ services:
       --interactive_timeout=259200
       --wait_timeout=259200
       --max_connections=1000
-#    volumes:
-#      - ./mysql-data:/var/lib/mysql
+    #    volumes:
+    #      - ./mysql-data:/var/lib/mysql
     expose:
       - "3306"
     environment:
@@ -97,19 +97,19 @@ services:
     restart: always
     ports:
       - "8022:80"
-#      - "8080:8080"
-#      - "443:443"
-#      - "8441-8449:8441-8449"
-#    volumes:
-#      - ./front/nginx.conf/:/etc/nginx/nginx.conf
-#      - ./ssl/:/etc/nginx/certs
+    #      - "8080:8080"
+    #      - "443:443"
+    #      - "8441-8449:8441-8449"
+    #    volumes:
+    #      - ./front/nginx.conf/:/etc/nginx/nginx.conf
+    #      - ./ssl/:/etc/nginx/certs
     links:
       - cat2bug-platform-web-after
     depends_on:
       cat2bug-platform-web-after:
         condition: service_healthy
-#      cat2bug-certs-maker:
-#        condition: service_completed_successfully
+    #      cat2bug-certs-maker:
+    #        condition: service_completed_successfully
     networks:
       - cat2bug-network
 #  cat2bug-proxy:

@@ -5,7 +5,7 @@ WORKDIR /usr/local/code
 ADD http://api.m.taobao.com/rest/api3.do?api=mtop.common.getTimestamp /tmp/bustcache
 # 拉取源代码
 # 如果私有仓卡记得加账号密码
-RUN git clone https://yuzhantao%40qq.com:123a123b@e.coding.net/qyzw/cat2bug/cat2bug-platform.git
+RUN git clone https://gitee.com/cat2bug/cat2bug-platform.git
 
 FROM maven:3.8.5-openjdk-11 as cat2bug_java_build
 #切换目录，指定编译源码位置
