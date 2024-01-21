@@ -7,6 +7,7 @@
       <el-tab-pane :label="$t('defect.all-defect')" :name="$t('defect.all-defect')"></el-tab-pane>
       <!--      <el-tab-pane :label="$t('project.archived-project')" :name="$t('project.archived-project')"></el-tab-pane>-->
     </el-tabs>
+    <cat2-bug-statistic :params="{}" />
     <div class="defect-tools">
       <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="0">
         <el-form-item prop="defectState">
@@ -162,11 +163,12 @@ import SelectProjectMember from "@/components/SelectProjectMember";
 import ProjectLabel from "@/components/ProjectLabel";
 import DefectTypeFlag from "@/components/DefectTypeFlag";
 import DefectTools from "@/components/DefectTools";
+import Cat2BugStatistic from "@/components/Cat2BugStatistic"
 import { checkPermi } from "@/utils/permission";
 
 export default {
   name: "Defect",
-  components: {SelectModule, RowListMember, AddDefect, EditDefect, LevelTag, SelectProjectMember,ProjectLabel,DefectTypeFlag, DefectTools },
+  components: {SelectModule, RowListMember, AddDefect, EditDefect, LevelTag, SelectProjectMember,ProjectLabel,DefectTypeFlag, DefectTools, Cat2BugStatistic },
   dicts: ['defect_level'],
   data() {
     return {

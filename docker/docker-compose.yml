@@ -1,0 +1,130 @@
+version: '3.4'
+name: cat2bug-platform
+services:
+#  cat2bug-certs-maker:
+#    image: soulteary/certs-maker
+#    container_name: cat2bug-certs-maker
+#    environment:
+#      - CERT_DNS=default,127.0.0.1,localhost
+#      - CERT_CN=Cat2Bug
+#      - CERT_ST=CB
+#    volumes:
+#      - ./ssl:/ssl
+  cat2bug-platform-mysql:
+    image: cat2bug/cat2bug-platform-mysql:0.0.1
+    platform: linux/arm64
+    build:
+      context: ./mysql
+      dockerfile: mysql-dockerfile
+    hostname: mysql
+    container_name: cat2bug-platform-mysql
+    restart: always
+    command:
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_general_ci
+      --explicit_defaults_for_timestamp=true
+      --lower_case_table_names=1
+      --interactive_timeout=259200
+      --wait_timeout=259200
+      --max_connections=1000
+#    volumes:
+#      - ./mysql-data:/var/lib/mysql
+    expose:
+      - "3306"
+    environment:
+      TZ: Asia/Shanghai
+      MYSQL_ROOT_HOST: "%"
+      MYSQL_DATABASE: cat2bug_platform
+      MYSQL_ROOT_PASSWORD: cat2bug_password
+      MYSQL_USER: cat2bug
+      MYSQL_PASSWORD: cat2bug_password
+    healthcheck:
+      test: "mysql -h127.0.0.1 -P3306 -uroot -pcat2bug_password -e 'SHOW DATABASES;'"
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
+    networks:
+      - cat2bug-network
+  cat2bug-platform-redis:
+    image: redis:7.2.3
+    hostname: redis
+    container_name: cat2bug-platform-redis
+    restart: always
+    expose:
+      - "6739"
+    healthcheck:
+      test: "exit 0"
+    networks:
+      - cat2bug-network
+  cat2bug-platform-web-after:
+    hostname: after
+    image: cat2bug/cat2bug-platform-web-after:0.0.1
+    platform: linux/arm64
+    build:
+      context: ./after
+      dockerfile: after-dockerfile
+    container_name: cat2bug-platform-web-after
+    restart: always
+    expose:
+      - "2020"
+    environment:
+      SPRING_DATASOURCE_DRUID_MASTER_URL: jdbc:mysql://cat2bug-platform-mysql:3306/cat2bug_platform?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=GMT%2B8
+      SPRING_DATASOURCE_DRUID_MASTER_USERNAME: root
+      SPRING_DATASOURCE_DRUID_MASTER_PASSWORD: cat2bug_password
+      SPRING_REDIS_HOST: cat2bug-platform-redis
+    links:
+      - cat2bug-platform-mysql
+      - cat2bug-platform-redis
+    depends_on:
+      cat2bug-platform-mysql:
+        condition: service_healthy
+      cat2bug-platform-redis:
+        condition: service_healthy
+    healthcheck:
+      test: "exit 0"
+    networks:
+      - cat2bug-network
+  cat2bug-platform-web-front:
+    hostname: front
+    image: cat2bug/cat2bug-platform-web-front:0.0.1
+    platform: linux/arm64
+    build:
+      context: ./front
+      dockerfile: front-dockerfile
+    container_name: cat2bug-platform-web-front
+    restart: always
+    ports:
+      - "8022:80"
+#      - "8080:8080"
+#      - "443:443"
+#      - "8441-8449:8441-8449"
+#    volumes:
+#      - ./front/nginx.conf/:/etc/nginx/nginx.conf
+#      - ./ssl/:/etc/nginx/certs
+    links:
+      - cat2bug-platform-web-after
+    depends_on:
+      cat2bug-platform-web-after:
+        condition: service_healthy
+#      cat2bug-certs-maker:
+#        condition: service_completed_successfully
+    networks:
+      - cat2bug-network
+#  cat2bug-proxy:
+#    hostname: proxy
+#    build:
+#      context: .
+#      dockerfile: proxy-dockerfile
+#    container_name: cat2bug-proxy
+#    restart: always
+#    ports:
+#      - "2441-2449:2441-2449"
+#    volumes:
+#      - ./ssl/:/cat2bug/cat2bug-proxy/ssl
+#    networks:
+#      - cat2bug-network
+networks:
+  cat2bug-network:
+    driver: bridge

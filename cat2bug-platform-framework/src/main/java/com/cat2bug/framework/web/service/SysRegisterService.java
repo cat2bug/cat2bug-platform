@@ -46,6 +46,9 @@ public class SysRegisterService
         String phoneNumber = registerBody.getPhoneNumber();
         SysUser sysUser = new SysUser();
         sysUser.setUserName(username);
+        sysUser.setPhoneNumber(phoneNumber);
+        sysUser.setNickName(username);
+        sysUser.setPassword(SecurityUtils.encryptPassword(password));
 
         // 验证码开关
         boolean captchaEnabled = configService.selectCaptchaEnabled();
@@ -85,9 +88,6 @@ public class SysRegisterService
         }
         else
         {
-            sysUser.setNickName(username);
-            sysUser.setPassword(SecurityUtils.encryptPassword(password));
-            sysUser.setPhoneNumber(phoneNumber);
             boolean regFlag = userService.registerUser(sysUser);
             if (!regFlag)
             {
