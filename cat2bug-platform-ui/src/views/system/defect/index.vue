@@ -255,6 +255,25 @@ export default {
   },
   methods: {
     checkPermi,
+    search(params) {
+      this._setProperty(this.queryParams, params);
+      this.selectDefectTabHandle();
+    },
+    _setProperty(parent,obj) {
+      if(obj) {
+        for(let key in obj) {
+          if(obj[key] instanceof Object) {
+            if(parent[key]) {
+              this._setProperty(parent[key], obj[key])
+            } else {
+              parent[key]=obj[key];
+            }
+          } else {
+            parent[key]=obj[key];
+          }
+        }
+      }
+    },
     getDefectConfig() {
       configDefect().then(res=>{
         this.config = res.data;

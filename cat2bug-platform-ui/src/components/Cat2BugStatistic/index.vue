@@ -40,6 +40,11 @@ export default {
       type: Object,
       default: {}
     }
+  },
+  methods: {
+    search(params) {
+      this.$parent.search && this.$parent.search(params);
+    }
   }
 }
 </script>

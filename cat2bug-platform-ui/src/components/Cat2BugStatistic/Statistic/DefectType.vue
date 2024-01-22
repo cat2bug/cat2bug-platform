@@ -1,7 +1,7 @@
 <template>
   <cat2-bug-card :title="title" v-loading="loading">
     <template slot="content">
-      <cat2-but-label v-for="type in typeList" :key="type.label" :icon="type.icon" :icon-color="type.color" :label="type.label" :content="type.value" />
+      <cat2-but-label class="defect-type-label" @click.native="clickHandle(type)" v-for="type in typeList" :key="type.label" :icon="type.icon" :icon-color="type.color" :label="type.label" :content="type.value" />
     </template>
   </cat2-bug-card>
 </template>
@@ -59,6 +59,7 @@ export default {
               break;
           }
           return {
+            id: t.k,
             color: color,
             icon: icon,
             label: this.$i18n.t(t.k),
@@ -66,6 +67,7 @@ export default {
           }
         });
         ts.unshift({
+          id: null,
           color: '409EFF',
           icon: 'all',
           label: 'ALL',
@@ -73,11 +75,19 @@ export default {
         })
         this.typeList = ts;
       });
+    },
+    clickHandle(type) {
+      this.$parent.search({defectType: type.id})
     }
   }
 }
 </script>
 
 <style scoped>
-
+.defect-type-label, ::v-deep .defect-type-label label {
+  cursor: pointer;
+}
+.defect-type-label:hover {
+  color: #409EFF;
+}
 </style>
