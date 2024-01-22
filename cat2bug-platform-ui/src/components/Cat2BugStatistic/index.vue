@@ -28,11 +28,13 @@ export default {
         title: '模块排行',
         name: 'DefectModule',
         params: {}
-      },{
-        title: '缺陷燃尽图',
-        name: 'DefectBurnDownChart',
-        params: {}
-      }]
+      },
+      //   {
+      //   title: '缺陷燃尽图',
+      //   name: 'DefectBurnDownChart',
+      //   params: {}
+      // }
+      ]
     }
   },
   props: {

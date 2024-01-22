@@ -107,7 +107,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="defect.caseId != null "> and d.case_id = #{defect.caseId}</if>
             <if test="defect.dataSources != null "> and d.data_sources = #{defect.dataSources}</if>
             <if test="defect.dataSourcesParams != null  and defect.dataSourcesParams != ''"> and d.data_sources_params = #{defect.dataSourcesParams}</if>
-            <if test="defect.moduleId != null "> and d.module_id = #{defect.moduleId}</if>
+             <choose>
+                 <when test="defect.moduleId == 0">and d.module_id IS NULL</when>
+                 <when test="defect.moduleId != null and defect.moduleId > 0">and d.module_id = #{defect.moduleId}</when>
+                 <otherwise></otherwise>
+             </choose>
             <if test="defect.moduleVersion != null and defect.moduleVersion != ''"> and d.module_version like concat('%', #{defect.moduleVersion}, '%')</if>
             <if test="defect.createBy != null  and defect.createBy != ''"> and d.create_by = #{defect.createBy}</if>
             <if test="defect.params.beginUpdateTime != null and defect.params.beginUpdateTime != '' and defect.params.endUpdateTime != null and defect.params.endUpdateTime != ''"> and d.update_time between #{defect.params.beginUpdateTime} and #{defect.params.endUpdateTime}</if>
@@ -115,11 +119,15 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="defect.updateBy != null  and defect.updateBy != ''"> and d.update_by = #{defect.updateBy}</if>
             <if test="defect.defectState != null "> and d.defect_state = #{defect.defectState}</if>
             <if test="defect.params.collect != null "> and ud.collect = #{defect.params.collect}</if>
-            <if test="defect.handleBy != null  and defect.handleBy != ''">
-             and
-             <foreach collection="defect.handleBy" item="b" separator=" or " open="(" close=")">
-                 JSON_CONTAINS(d.handle_by,CAST(#{b} AS CHAR))
-             </foreach>
+            <if test="defect.params.defectStates != null "> and
+                <foreach collection="defect.params.defectStates.split(',')" item="state" separator=" or " open="(" close=")">
+                    d.defect_state=#{state}
+                </foreach>
+            </if>
+            <if test="defect.handleBy != null  and defect.handleBy != ''"> and
+                <foreach collection="defect.handleBy" item="b" separator=" or " open="(" close=")">
+                    JSON_CONTAINS(d.handle_by,CAST(#{b} AS CHAR))
+                </foreach>
             </if>
             <if test="defect.params.userId != null"> and (JSON_CONTAINS(d.handle_by,CAST(#{defect.params.userId} AS CHAR)) OR d.create_by_id=#{defect.params.userId} OR d.update_by_id=#{defect.params.userId})</if>
             <if test="defect.params.beginHandleTime != null and defect.params.beginHandleTime != '' and defect.params.endHandleTime != null and defect.params.endHandleTime != ''"> and d.handle_time between #{defect.params.beginHandleTime} and #{defect.params.endHandleTime}</if>

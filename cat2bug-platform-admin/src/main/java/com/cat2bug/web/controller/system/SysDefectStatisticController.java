@@ -39,4 +39,34 @@ public class SysDefectStatisticController extends BaseController {
     {
         return success(sysDefectStatisticService.typeStatistic(projectId,getUserId()));
     }
+
+    /**
+     * 获取缺陷分类统计
+     */
+    @PreAuthorize("@ss.hasPermi('system:defect:query')")
+    @GetMapping(value = "/state/{projectId}")
+    public AjaxResult getStateStatistic(@PathVariable("projectId") Long projectId)
+    {
+        return success(sysDefectStatisticService.stateStatistic(projectId,null));
+    }
+
+    /**
+     * 获取我的缺陷分类统计
+     */
+    @PreAuthorize("@ss.hasPermi('system:defect:query')")
+    @GetMapping(value = "/state/{projectId}/my")
+    public AjaxResult getMyStateStatistic(@PathVariable("projectId") Long projectId)
+    {
+        return success(sysDefectStatisticService.stateStatistic(projectId,getUserId()));
+    }
+
+    /**
+     * 获取模块统计
+     */
+    @PreAuthorize("@ss.hasPermi('system:defect:query')")
+    @GetMapping(value = "/module/{projectId}")
+    public AjaxResult getModuleStatistic(@PathVariable("projectId") Long projectId)
+    {
+        return success(sysDefectStatisticService.moduleStatistic(projectId));
+    }
 }

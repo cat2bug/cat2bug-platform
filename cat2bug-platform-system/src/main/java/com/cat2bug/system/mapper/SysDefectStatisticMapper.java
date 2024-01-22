@@ -16,4 +16,19 @@ public interface SysDefectStatisticMapper {
      * @return
      */
     public List<Map<String,Object>> typeStatistic(@Param("projectId") Long projectId, @Param("memberId") Long memberId);
+
+    /**
+     * 按照缺陷状态统计
+     * @param projectId
+     * @param memberId
+     * @return
+     */
+    public List<Map<String, Object>> stateStatistic(@Param("projectId") Long projectId, @Param("memberId") Long memberId);
+
+    /**
+     * 按照模块统计
+     * @param projectId
+     * @return
+     */
+    public List<Map<String, Object>> moduleStatistic(@Param("projectId") Long projectId);
 }

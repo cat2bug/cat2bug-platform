@@ -4,7 +4,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.cat2bug.system.mapper.SysDefectStatisticMapper">
     <select id="typeStatistic" resultType="java.util.Map">
-        select d.defect_type as k, count(d.defect_type) as v from sys_defect d
+        select d.defect_type as k, COUNT(d.defect_type) as v from sys_defect d
         <if test="memberId != null "> LEFT JOIN sys_user_defect ud ON ud.defect_id = d.defect_id</if>
         <where>
             d.project_id=#{projectId}
@@ -13,4 +13,34 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         GROUP BY d.defect_type
     </select>
 
+    <select id="stateStatistic" resultType="java.util.Map">
+        select d.defect_state as k,
+            COUNT( d.defect_state ) AS a,
+            SUM( CASE WHEN TO_DAYS(d.update_time)=TO_DAYS(now()) THEN 1 ELSE 0 END ) AS d,
+            SUM( CASE WHEN YEARWEEK(d.update_time)=YEARWEEK(now()) THEN 1 ELSE 0 END ) AS w
+        from sys_defect d
+        <if test="memberId != null "> LEFT JOIN sys_user_defect ud ON ud.defect_id = d.defect_id</if>
+        <where>
+            d.project_id=#{projectId}
+            <if test="memberId != null ">AND (ud.user_id = #{memberId} or d.create_by_id = #{memberId})</if>
+        </where>
+        GROUP BY d.defect_state
+    </select>
+
+    <select id="moduleStatistic" resultType="java.util.Map">
+        select
+        IFNULL(d.module_id,0) as id,
+        IFNULL(MAX(m.module_name),'unknown') as k,
+        COUNT( * ) AS a,
+        SUM( CASE WHEN (d.defect_state=2 OR d.defect_state=4) THEN 1 ELSE 0 END ) AS f
+        from sys_defect d
+        LEFT JOIN sys_module m ON m.module_id = d.module_id
+        <where>
+
+            d.project_id=#{projectId}
+        </where>
+        GROUP BY d.module_id
+        ORDER BY f/a ASC ,a DESC
+        LIMIT 0,20
+    </select>
 </mapper>

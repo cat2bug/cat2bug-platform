@@ -224,7 +224,8 @@ export default {
         defectState: null,
         handleBy: null,
         handleTime: null,
-        defectLevel: null
+        defectLevel: null,
+        params:{}
       },
     };
   },
@@ -256,22 +257,23 @@ export default {
   methods: {
     checkPermi,
     search(params) {
-      this._setProperty(this.queryParams, params);
+      this.queryParams=this._setProperty(this.queryParams, params);
       this.selectDefectTabHandle();
     },
     _setProperty(parent,obj) {
-      if(obj) {
-        for(let key in obj) {
-          if(obj[key] instanceof Object) {
-            if(parent[key]) {
-              this._setProperty(parent[key], obj[key])
-            } else {
-              parent[key]=obj[key];
-            }
+      if(obj && typeof obj == 'object') {
+        for (let key in obj) {
+          if (parent[key] && typeof obj[key] == 'object') {
+            // parent[key] = this._setProperty(parent[key], obj[key]);
+            this.$set(parent,key,this._setProperty(parent[key], obj[key]))
           } else {
-            parent[key]=obj[key];
+            // parent[key] = obj[key];
+            this.$set(parent,key,obj[key])
           }
         }
+        return parent
+      } else {
+        return obj;
       }
     },
     getDefectConfig() {
@@ -323,9 +325,8 @@ export default {
           });
           break;
         case this.$i18n.t('defect.my-participated-in'):
-          this.handleQuery({
-            userId: this.getUserId()
-          });
+          this.queryParams.params.userId = this.getUserId();
+          this.handleQuery();
           break;
         default:
           this.handleQuery();
@@ -349,8 +350,8 @@ export default {
       this.loading = true;
       if(params)
         this.queryParams.params = params;
-      else
-        this.queryParams.params = {};
+      // else
+      //   this.queryParams.params = {};
       if (null != this.daterangeUpdateTime && '' != this.daterangeUpdateTime) {
         this.queryParams.params["beginUpdateTime"] = this.daterangeUpdateTime[0];
         this.queryParams.params["endUpdateTime"] = this.daterangeUpdateTime[1];
@@ -365,9 +366,9 @@ export default {
       }
       this.queryParams.projectId = this.getProjectId();
       listDefect(this.queryParams).then(response => {
+        this.loading = false;
         this.defectList = response.rows;
         this.total = response.total;
-        this.loading = false;
       });
     },
     /** 搜索按钮操作 */

@@ -1,14 +1,8 @@
 <template>
   <cat2-bug-card :title="title">
     <template slot="content">
-      <div class="defect-module-row">
-        <h5 :style="`background-color:${flagColor(0)}`">1</h5><label>登陆界面</label><el-progress :percentage="20" :format="format" :color="customColors"></el-progress><span>12/232</span>
-      </div>
-      <div class="defect-module-row">
-        <h5 :style="`background-color:${flagColor(1)}`">2</h5><label>项目列表</label><el-progress :percentage="60" :format="format" :color="customColors"></el-progress>
-      </div>
-      <div class="defect-module-row">
-        <h5 :style="`background-color:${flagColor(2)}`">3</h5><label>团队列表团队列表团队列表团队列表</label><el-progress :percentage="90" :format="format" :color="customColors"></el-progress>
+      <div @click="clickHandle(m)" class="defect-module-row" v-for="(m,index) in showModuleList" :key="index">
+        <h5 :style="`background-color:${flagColor(index)}`">{{ index+1 }}</h5><h4>{{ $t(m.k) }}</h4><el-progress :percentage="percentage(m)" :format="format" :color="customColors"></el-progress><span>{{ m.f }}/{{ m.a }}</span>
       </div>
     </template>
   </cat2-bug-card>
@@ -16,12 +10,16 @@
 
 <script>
 import Cat2BugCard from "../Components/Card"
+import {statisticModule} from "@/api/system/statistic/defect";
 export default {
   name: "DefectModule",
   components: {Cat2BugCard},
   data() {
     return {
-      title: "模块排行",
+      prevClickModuleId: null,
+      loading: false,
+      title: this.$i18n.t('defect.module-ranking'),
+      moduleList:[],
       customColors: [
         {color: '#6f7ad3', percentage: 20},
         {color: 'rgb(245, 108, 108)', percentage: 40},
@@ -38,6 +36,18 @@ export default {
     }
   },
   computed: {
+    percentage: function (){
+      return function (m) {
+        return parseInt(m.f/m.a*100)||0;
+      }
+    },
+    showModuleList: function (){
+      let ret = [];
+      for(let i=0;i<4 && i<this.moduleList.length;i++){
+        ret.push(this.moduleList[i])
+      }
+      return ret;
+    },
     flagColor: function (){
       return function (index) {
         switch (index%5) {
@@ -53,11 +63,31 @@ export default {
             return '#6f7ad3';
         }
       }
-    }
+    },
+    currentProjectId: function () {
+      return parseInt(this.$store.state.user.config.currentProjectId);
+    },
+  },
+  mounted() {
+    this.getStatisticModule();
   },
   methods: {
     format(percentage) {
       return ``;
+    },
+    getStatisticModule() {
+      this.loading = true;
+      statisticModule(this.currentProjectId).then(res=>{
+        this.loading = false;
+        this.moduleList = res.data;
+      })
+    },
+    clickHandle(m) {
+      let id = this.prevClickModuleId==m.id?null:m.id;
+      this.$parent.search({
+        moduleId: id
+      });
+      this.prevClickModuleId = id;
     }
   }
 }
@@ -80,11 +110,10 @@ export default {
     margin-top: 0px;
     margin-bottom: 0px;
   }
-  label {
+  h4 {
     font-size: 13px;
     font-weight: 500;
-    margin-right: 10px;
-    margin-left: 5px;
+    margin: 0 10px 0 5px;
     width: 100px;
     overflow: hidden;
     white-space: nowrap;
@@ -99,8 +128,13 @@ export default {
   .defect-module-row {
     display: flex;
     flex-direction: row;
+    align-items: center;
     margin-top: 5px;
     margin-bottom: 5px;
+    cursor: pointer;
+  }
+  .defect-module-row:hover {
+    color: #409EFF;
   }
   .el-progress {
     margin-right: 5px;

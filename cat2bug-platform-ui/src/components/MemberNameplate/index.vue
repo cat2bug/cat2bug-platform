@@ -1,7 +1,7 @@
 <template>
   <div class="member-nameplate">
     <slot name="icon" v-if="iconVisible">
-      <el-avatar v-if="member.avatar" src="member.avatar" fit="cover" size="small"></el-avatar>
+      <el-avatar v-if="member.avatar" :src="imgUrl" fit="cover" size="small"></el-avatar>
       <el-avatar v-else size="small">{{member.userName}}</el-avatar>
     </slot>
     <div class="member-nameplate-content">
@@ -31,6 +31,11 @@ export default {
     bodyVisible: {
       type: Boolean,
       default: true
+    }
+  },
+  computed: {
+    imgUrl: function () {
+      return this.member.avatar?process.env.VUE_APP_BASE_API + this.member.avatar:''
     }
   }
 }

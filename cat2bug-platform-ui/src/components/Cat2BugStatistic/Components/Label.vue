@@ -1,7 +1,7 @@
 <template>
   <div class="cat2bug-statistic-label">
     <svg-icon :icon-class="icon" :style="`color: ${iconColor||'#606266'};`" />
-    <label>{{ label }}</label>
+    <h5>{{ label }}</h5>
     <slot name="content">
       <span>{{ content }}</span>
     </slot>
@@ -40,11 +40,10 @@ export default {
     align-items: center;
     justify-content: flex-start;
   }
-  label {
+  h5 {
     font-size: 13px;
     font-weight: 500;
-    margin-right: 10px;
-    margin-left: 5px;
+    margin: 0 10px 0 5px;
     min-width: 60px;
   }
   span {

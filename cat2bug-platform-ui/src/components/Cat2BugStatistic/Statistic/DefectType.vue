@@ -70,14 +70,14 @@ export default {
           id: null,
           color: '409EFF',
           icon: 'all',
-          label: 'ALL',
+          label: this.$i18n.t('all'),
           value: total
         })
         this.typeList = ts;
       });
     },
     clickHandle(type) {
-      this.$parent.search({defectType: type.id})
+      this.$parent.search({defectType: type?type.id:null})
     }
   }
 }

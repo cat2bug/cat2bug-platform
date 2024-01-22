@@ -1,32 +1,18 @@
 <template>
-  <cat2-bug-card :title="title">
+  <cat2-bug-card :title="title" v-loading="loading">
     <template slot="content">
-      <cat2-but-label icon="all" icon-color="#409EFF" label="全部" content="12">
+      <cat2-but-label @click.native="clickHandle()" class="defect-state-label" icon="all" icon-color="#409EFF" :label="$t('all')" content="12">
         <template slot="content">
-          <span>15</span>
-          <span class="width50">今日</span>
-          <span class="width50">本周</span>
+          <span>{{ total }}</span>
+          <span class="width50">{{ $t('today') }}</span>
+          <span class="width50">{{ $t('this-week') }}</span>
         </template>
       </cat2-but-label>
-      <cat2-but-label icon="pending-processing" icon-color="#F56C6C" label="待处理" content="123">
+      <cat2-but-label @click.native="clickHandle(state)" class="defect-state-label" icon="pending-processing" :icon-color="iconColor(index)" v-for="(state,index) in stateList" :key="index" :label="$t(state.k)">
         <template slot="content">
-          <span>15</span>
-          <span class="width50" flag="+">+1</span>
-          <span class="width50" flag="-">-2</span>
-        </template>
-      </cat2-but-label>
-      <cat2-but-label icon="processed" icon-color="#FBB13F" label="已处理" content="3">
-        <template slot="content">
-          <span>15</span>
-          <span class="width50">0</span>
-          <span class="width50">+11</span>
-        </template>
-      </cat2-but-label>
-      <cat2-but-label icon="pass" icon-color="#67C23A" label="已通过" content="2">
-        <template slot="content">
-          <span>15</span>
-          <span class="width50">+21</span>
-          <span class="width50">-1</span>
+          <span>{{ state.a }}</span>
+          <span class="width50" :flag="flag(state.d)">{{ flag(state.d) + state.d }}</span>
+          <span class="width50" :flag="flag(state.w)">{{ flag(state.w) + state.w }}</span>
         </template>
       </cat2-but-label>
     </template>
@@ -36,19 +22,100 @@
 <script>
 import Cat2BugCard from "../Components/Card"
 import Cat2ButLabel from "../Components/Label"
+import {statisticDefectState} from "@/api/system/statistic/defect";
 
 export default {
   name: "DefectState",
   components: {Cat2ButLabel,Cat2BugCard},
   data() {
     return {
-      title: "状态统计"
+      loading: false,
+      title: this.$i18n.t('defect.status-statistics'),
+      stateList: [],
     }
   },
   props: {
     params: {
       type: Object,
       default: ()=>[]
+    }
+  },
+  computed: {
+    flag: function () {
+      return function (num) {
+        if(num>0) {
+          return '+';
+        } if(num<0) {
+          return '-';
+        } else {
+          return '';
+        }
+      }
+    },
+    currentProjectId: function () {
+      return parseInt(this.$store.state.user.config.currentProjectId);
+    },
+    total: function () {
+      let all = 0;
+      this.stateList.forEach(s=>all+=s.a);
+      return all;
+    },
+    iconColor: function () {
+      return function (index) {
+        switch (index%3) {
+          case 0:
+            return '#F56C6C'
+          case 1:
+            return '#FBB13F'
+          case 2:
+            return '#67C23A'
+        }
+      }
+    }
+  },
+  mounted() {
+    this.getStatisticDefectState();
+  },
+  methods: {
+    clickHandle(state) {
+      this.$parent.search({
+        params: {
+          defectStates: state?state.id:null
+        }
+      })
+    },
+    getStatisticDefectState() {
+      this.loading = true;
+      statisticDefectState(this.currentProjectId).then(res=>{
+        this.loading = false;
+        // 合并处理中和驳回的
+        let a=0,d=0,w=0;
+        res.data.forEach(s=>{
+          if(s.k=='PROCESSING' || s.k=='REJECTED') {
+            a+=s.a;
+            d+=s.d;
+            w+=s.w;
+          }
+        });
+        let ret = [{
+          id: [0,3],
+          k:'PENDING',
+          a:a,
+          d:d,
+          w:w
+        }]
+        // 过滤只显示待审核、已审核的
+        ret = ret.concat( res.data.filter(s=>s.k == 'AUDIT' || s.k=='RESOLVED').map(s=>{
+          return {
+            id: [s.id],
+            k:s.k,
+            a:s.a,
+            d:s.d,
+            w:s.w
+          }
+        }))
+        this.stateList =ret;
+      })
     }
   }
 }
@@ -66,8 +133,11 @@ export default {
     span[flag="-"] {
       color: #67C23A;
     }
-    span[flag=""] {
-      color: dodgerblue;
-    }
+  }
+  .defect-state-label {
+    cursor: pointer;
+  }
+  .defect-state-label:hover {
+    color: #409EFF;
   }
 </style>
