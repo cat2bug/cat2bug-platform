@@ -18,6 +18,16 @@
         <el-form-item :label="$t('title')" prop="defectName">
           <el-input v-model="form.defectName" :placeholder="$t('defect.enter-name')" maxlength="128" />
         </el-form-item>
+        <el-form-item :label="$t('title')" prop="defectType">
+          <el-select v-model="form.defectType" :placeholder="$t('defect.select-level')">
+            <el-option
+              v-for="type in config.types"
+              :key="type.key"
+              :label="$t(type.value)"
+              :value="type.key"
+            ></el-option>
+          </el-select>
+        </el-form-item>
         <el-form-item :label="$t('handle-by')" prop="handleBy">
           <select-project-member v-model="form.handleBy" :project-id="projectId"  />
         </el-form-item>
@@ -78,7 +88,7 @@
 </template>
 
 <script>
-import {addDefect, updateDefect} from "@/api/system/defect";
+import {addDefect, configDefect, updateDefect} from "@/api/system/defect";
 import SelectProjectMember from "@/components/SelectProjectMember"
 import SelectModule from "@/components/SelectModule"
 import ImageUpload from "@/components/ImageUpload";
@@ -95,6 +105,7 @@ export default {
       form: {
         defectLevel: 'middle'
       },
+      config: {},
       // 表单校验
       rules: {
         defectType: [
@@ -128,7 +139,15 @@ export default {
       }
     }
   },
+  mounted() {
+    this.getDefectConfig();
+  },
   methods:{
+    getDefectConfig() {
+      configDefect().then(res=>{
+        this.config = res.data;
+      })
+    },
     open() {
       this.reset();
       this.visible = true;

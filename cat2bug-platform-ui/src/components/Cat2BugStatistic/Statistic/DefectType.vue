@@ -1,30 +1,78 @@
 <template>
-  <div>
-    <cat2-but-title v-model="title" />
-    <div>
-      <cat2-but-label icon="all" icon-color="#409EFF" label="全部" content="123" />
-      <cat2-but-label icon="bug" icon-color="#F56C6C" label="BUG" content="3" />
-      <cat2-but-label icon="task" icon-color="#67C23A" label="任务" content="2" />
-      <cat2-but-label icon="demand" icon-color="#FBB13F" label="需求" content="12" />
-    </div>
-  </div>
+  <cat2-bug-card :title="title" v-loading="loading">
+    <template slot="content">
+      <cat2-but-label v-for="type in typeList" :key="type.label" :icon="type.icon" :icon-color="type.color" :label="type.label" :content="type.value" />
+    </template>
+  </cat2-bug-card>
 </template>
 
 <script>
-import Cat2ButTitle from "../Components/Title"
+import Cat2BugCard from "../Components/Card"
 import Cat2ButLabel from "../Components/Label"
+import {statisticDefectType} from "@/api/system/statistic/defect";
 export default {
   name: "DefectType",
-  components: {Cat2ButTitle,Cat2ButLabel},
+  components: {Cat2ButLabel,Cat2BugCard},
   data() {
     return {
-      title: "类型统计"
+      loading: false,
+      title: this.$i18n.t('defect.type-statistics'),
+      typeList: [],
     }
   },
   props: {
     params: {
       type: Object,
       default: ()=>[]
+    }
+  },
+  computed: {
+    currentProjectId: function () {
+      return parseInt(this.$store.state.user.config.currentProjectId);
+    },
+  },
+  mounted() {
+    this.getStatisticDefectType();
+  },
+  methods: {
+    getStatisticDefectType: function (){
+      this.loading = true;
+      statisticDefectType(this.currentProjectId).then(res=>{
+        this.loading = false;
+        let total = 0;
+        let ts = res.data.map(t=>{
+          total += t.v;
+          let color;
+          let icon;
+          switch (t.k) {
+            case 'BUG':
+              color = '#F56C6C';
+              icon = 'bug';
+              break;
+            case 'TASK':
+              color = '#67C23A';
+              icon = 'task';
+              break;
+            case 'DEMAND':
+              color = '#FBB13F';
+              icon = 'demand';
+              break;
+          }
+          return {
+            color: color,
+            icon: icon,
+            label: this.$i18n.t(t.k),
+            value: t.v
+          }
+        });
+        ts.unshift({
+          color: '409EFF',
+          icon: 'all',
+          label: 'ALL',
+          value: total
+        })
+        this.typeList = ts;
+      });
     }
   }
 }

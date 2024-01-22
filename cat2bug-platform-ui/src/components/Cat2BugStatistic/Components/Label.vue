@@ -25,7 +25,7 @@ export default {
       default: null
     },
     content: {
-      type: String,
+      type: [String,Number],
       default: null
     }
   }
@@ -45,7 +45,7 @@ export default {
     font-weight: 500;
     margin-right: 10px;
     margin-left: 5px;
-    min-width: 50px;
+    min-width: 60px;
   }
   span {
     font-size: 13px;

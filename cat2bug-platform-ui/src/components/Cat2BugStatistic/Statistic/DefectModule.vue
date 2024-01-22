@@ -1,7 +1,6 @@
 <template>
-  <div>
-    <cat2-but-title v-model="title" />
-    <div>
+  <cat2-bug-card :title="title">
+    <template slot="content">
       <div class="defect-module-row">
         <h5 :style="`background-color:${flagColor(0)}`">1</h5><label>登陆界面</label><el-progress :percentage="20" :format="format" :color="customColors"></el-progress><span>12/232</span>
       </div>
@@ -11,20 +10,15 @@
       <div class="defect-module-row">
         <h5 :style="`background-color:${flagColor(2)}`">3</h5><label>团队列表团队列表团队列表团队列表</label><el-progress :percentage="90" :format="format" :color="customColors"></el-progress>
       </div>
-    </div>
-<!--    <el-carousel height="100px" trigger="click">-->
-<!--      <el-carousel-item v-for="item in 4" :key="item">-->
-
-<!--      </el-carousel-item>-->
-<!--    </el-carousel>-->
-  </div>
+    </template>
+  </cat2-bug-card>
 </template>
 
 <script>
-import Cat2ButTitle from "../Components/Title"
+import Cat2BugCard from "../Components/Card"
 export default {
   name: "DefectModule",
-  components: {Cat2ButTitle},
+  components: {Cat2BugCard},
   data() {
     return {
       title: "模块排行",

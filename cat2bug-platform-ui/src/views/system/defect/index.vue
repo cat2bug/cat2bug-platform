@@ -83,7 +83,7 @@
           <span>{{ '#' + scope.row.projectNum }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('type')" align="left" prop="defectTypeName" width="80" sortable>
+      <el-table-column :label="$t('type')" align="left" prop="defectTypeName" width="100" sortable>
         <template slot-scope="scope">
           <defect-type-flag :defect="scope.row" />
         </template>

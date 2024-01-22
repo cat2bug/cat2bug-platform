@@ -18,6 +18,16 @@
         <el-form-item :label="$t('title')" prop="defectName">
           <el-input v-model="form.defectName" :placeholder="$t('defect.enter-name')" maxlength="128" />
         </el-form-item>
+        <el-form-item :label="$t('type')" prop="defectType">
+          <el-select v-model="form.defectType" :placeholder="$t('defect.select-type')">
+            <el-option
+              v-for="type in config.types"
+              :key="type.key"
+              :label="$t(type.value)"
+              :value="type.key"
+            ></el-option>
+          </el-select>
+        </el-form-item>
         <el-form-item :label="$t('handle-by')" prop="handleBy">
           <select-project-member v-model="form.handleBy" :project-id="projectId"  />
         </el-form-item>
@@ -78,7 +88,7 @@
 </template>
 
 <script>
-import {addDefect, updateDefect} from "@/api/system/defect";
+import {addDefect, configDefect, updateDefect} from "@/api/system/defect";
 import SelectProjectMember from "@/components/SelectProjectMember"
 import SelectModule from "@/components/SelectModule"
 import ImageUpload from "@/components/ImageUpload";
@@ -91,6 +101,7 @@ export default {
     return {
       // 显示窗口
       visible: false,
+      config: {},
       // 表单参数
       form: {
         defectLevel: 'middle'
@@ -121,7 +132,15 @@ export default {
       default: null
     },
   },
+  mounted() {
+    this.getDefectConfig();
+  },
   methods:{
+    getDefectConfig() {
+      configDefect().then(res=>{
+        this.config = res.data;
+      })
+    },
     open(data) {
       this.reset();
       if(data){
