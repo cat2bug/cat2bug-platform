@@ -271,10 +271,8 @@ export default {
       if(obj && typeof obj == 'object') {
         for (let key in obj) {
           if (parent[key] && typeof obj[key] == 'object') {
-            // parent[key] = this._setProperty(parent[key], obj[key]);
             this.$set(parent,key,this._setProperty(parent[key], obj[key]))
           } else {
-            // parent[key] = obj[key];
             this.$set(parent,key,obj[key])
           }
         }
@@ -333,10 +331,10 @@ export default {
           break;
         case this.$i18n.t('defect.my-participated-in'):
           this.queryParams.params.userId = this.getUserId();
-          this.handleQuery({});
+          this.handleQuery();
           break;
         default:
-          this.handleQuery({});
+          this.handleQuery();
           break;
       }
     },
@@ -357,8 +355,10 @@ export default {
       this.loading = true;
       if(params)
         this.queryParams.params = params;
-      // else
-      //   this.queryParams.params = {};
+
+      if(!this.queryParams.params) {
+        this.queryParams.params={};
+      }
       if (null != this.daterangeUpdateTime && '' != this.daterangeUpdateTime) {
         this.queryParams.params["beginUpdateTime"] = this.daterangeUpdateTime[0];
         this.queryParams.params["endUpdateTime"] = this.daterangeUpdateTime[1];
