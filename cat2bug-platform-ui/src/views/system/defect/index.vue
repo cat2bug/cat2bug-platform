@@ -132,7 +132,7 @@
 <!--          <el-link type="primary" v-for="(file,index) in getUrl(scope.row.annexUrls)" :key="index" :href="file">{{getFileName(file)}}</el-link>-->
 <!--        </template>-->
 <!--      </el-table-column>-->
-      <el-table-column :label="$t('operate')" align="left" class-name="small-padding fixed-width" width="150">
+      <el-table-column :label="$t('operate')" align="left" class-name="small-padding fixed-width" width="200">
         <template slot-scope="scope">
           <defect-tools :is-text="true" :defect="scope.row" size="mini" :is-show-icon="true" @delete="selectDefectTabHandle" @update="selectDefectTabHandle" @log="selectDefectTabHandle"></defect-tools>
         </template>
@@ -148,7 +148,7 @@
     />
     <!-- 添加或修改缺陷对话框 -->
     <add-defect ref="addDefectForm" :project-id="getProjectId()" @added="selectDefectTabHandle" />
-    <edit-defect ref="editDefectForm" :project-id="getProjectId()" @delete="selectDefectTabHandle()" />
+    <handle-defect ref="editDefectForm" :project-id="getProjectId()" @delete="selectDefectTabHandle()" />
   </div>
 </template>
 
@@ -157,7 +157,7 @@ import {listDefect, getDefect, delDefect, configDefect} from "@/api/system/defec
 import RowListMember from "@/components/RowListMember";
 import LevelTag from "@/components/LevelTag";
 import AddDefect from "@/components/Defect/AddDefect"
-import EditDefect from "./edit"
+import HandleDefect from "@/components/Defect/HandleDefect"
 import SelectModule from "@/components/SelectModule";
 import SelectProjectMember from "@/components/SelectProjectMember";
 import ProjectLabel from "@/components/ProjectLabel";
@@ -168,7 +168,7 @@ import { checkPermi } from "@/utils/permission";
 
 export default {
   name: "Defect",
-  components: {SelectModule, RowListMember, AddDefect, EditDefect, LevelTag, SelectProjectMember,ProjectLabel,DefectTypeFlag, DefectTools, Cat2BugStatistic },
+  components: {SelectModule, RowListMember, AddDefect, HandleDefect, LevelTag, SelectProjectMember,ProjectLabel,DefectTypeFlag, DefectTools, Cat2BugStatistic },
   dicts: ['defect_level'],
   data() {
     return {

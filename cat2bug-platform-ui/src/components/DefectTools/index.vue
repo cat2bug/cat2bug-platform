@@ -9,7 +9,8 @@
     <el-button v-show="passVisible" :icon="isShowIcon?'el-icon-finished':''" :size="size" :type="isText?'text':'success'" @click="passDialogHandle" v-hasPermi="['system:defect:pass']">{{$i18n.t('pass')}}</el-button>
     <el-button v-show="openVisible" :icon="isShowIcon?'el-icon-document-copy':''" :size="size" :type="isText?'text':'danger'" @click="openDialogHandle" v-hasPermi="['system:defect:open']">{{$i18n.t('open')}}</el-button>
     <el-button v-show="closeVisible" :icon="isShowIcon?'el-icon-takeaway-box':''" :size="size" :type="isText?'text':'danger'" @click="closeDialogHandle" v-hasPermi="['system:defect:close']">{{$i18n.t('close')}}</el-button>
-    <el-button v-show="deleteVisible" :icon="isShowIcon?'el-icon-delete':''" :size="size" :type="isText?'text':'danger'" :plain="!isShowIcon" @click="handleDelete">{{$i18n.t('delete')}}</el-button>
+    <el-button v-show="editVisible" :icon="isShowIcon?'el-icon-delete':''" :size="size" :type="isText?'text':'primary'" :plain="!isShowIcon" @click="editDialogHandle" >{{ $t('modify') }}</el-button>
+    <el-button v-show="deleteVisible" :icon="isShowIcon?'el-icon-delete':''" :size="size" :type="isText?'text':'danger'" :class="isText?'red':''" :plain="!isShowIcon" @click="handleDelete">{{$i18n.t('delete')}}</el-button>
     <!--          <el-button-->
     <!--            size="mini"-->
     <!--            type="text"-->
@@ -23,6 +24,7 @@
     <pass-dialog ref="passDialog" :project-id="defect.projectId" :defect-id="defect.defectId" @log="logHandle" />
     <open-dialog ref="openDialog" :project-id="defect.projectId" :defect-id="defect.defectId" @log="logHandle" />
     <close-dialog ref="closeDialog" :project-id="defect.projectId" :defect-id="defect.defectId" @log="logHandle" />
+    <edit-defect-dialog ref="editDialog"  :project-id="defect.projectId" :defect-id="defect.defectId" @log="logHandle" />
     <slot name="right"></slot>
   </div>
 </template>
@@ -34,6 +36,7 @@ import RepairDialog from "@/components/DefectTools/RepairDialog";
 import PassDialog from "@/components/DefectTools/PassDialog";
 import CloseDialog from "@/components/DefectTools/CloseDialog";
 import OpenDialog from "@/components/DefectTools/OpenDialog";
+import EditDefectDialog from "@/components/Defect/EditDefectDialog";
 import StarSwitch from "@/components/StarSwitch";
 import {delDefect, updateUserDefect} from "@/api/system/defect";
 import {checkPermi} from "@/utils/permission";
@@ -51,7 +54,7 @@ const REJECTED_STATE = 'REJECTED';
 const CLOSE_STATE = 'CLOSED';
 export default {
   name: "DefectTools",
-  components: {PassDialog, AssignDialog, RejectDialog, RepairDialog,CloseDialog,OpenDialog,StarSwitch },
+  components: {PassDialog, AssignDialog, RejectDialog, RepairDialog,CloseDialog,OpenDialog,EditDefectDialog,StarSwitch },
   model: {
     prop: 'defect',
     event: 'update'
@@ -106,6 +109,9 @@ export default {
     deleteVisible: function () {
       return this.defect.createById==this.currentUserId || checkPermi(['system:defect:remove']);
     },
+    editVisible: function () {
+      return this.defect.createById==this.currentUserId || checkPermi(['system:defect:edit']);
+    },
   },
   methods:{
     /** 指派 */
@@ -131,6 +137,11 @@ export default {
     },
     openDialogHandle(event){
       this.$refs.openDialog.open();
+      event.stopPropagation();
+    },
+    /** 打开编辑窗体 */
+    editDialogHandle(event) {
+      this.$refs.editDialog.open(this.defect.defectId);
       event.stopPropagation();
     },
     logHandle(log) {
@@ -192,5 +203,8 @@ export default {
       margin-left: 5px;
       margin-right: 5px;
     }
+  }
+  .red {
+    color: #f56c6c;
   }
 </style>

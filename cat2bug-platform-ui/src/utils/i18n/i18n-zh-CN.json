@@ -227,6 +227,7 @@
   "http.interface-connect-exception": "后端接口连接异常",
   "http.login-expired": "登录状态已过期，您可以继续留在该页面，或者重新登录",
   "http.not-resubmit": "数据正在处理，请勿重复提交",
+  "defect.modify": "缺陷修改",
   "defect.manage": "缺陷",
   "defect.create": "新建缺陷",
   "defect.base-info": "基本信息",
