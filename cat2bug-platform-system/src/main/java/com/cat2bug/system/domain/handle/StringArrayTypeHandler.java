@@ -1,6 +1,7 @@
 package com.cat2bug.system.domain.handle;
 
 import com.alibaba.fastjson2.JSON;
+import com.cat2bug.common.utils.StringUtils;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
 
@@ -8,6 +9,7 @@ import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -38,6 +40,6 @@ public class StringArrayTypeHandler extends BaseTypeHandler<List<String>> {
 
     // 字符串转换为list
     private List<String> convertToList(String strArray) {
-        return JSON.parseArray(strArray,String.class);
+        return StringUtils.isEmpty(strArray)?new ArrayList<>() :JSON.parseArray(strArray,String.class);
     }
 }

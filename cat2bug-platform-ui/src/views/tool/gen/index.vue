@@ -42,7 +42,6 @@
           icon="el-icon-download"
           size="mini"
           @click="handleGenTable"
-          v-hasPermi="['tool:gen:code']"
         >生成</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -52,7 +51,6 @@
           icon="el-icon-upload"
           size="mini"
           @click="openImportTable"
-          v-hasPermi="['tool:gen:import']"
         >导入</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -63,7 +61,6 @@
           size="mini"
           :disabled="single"
           @click="handleEditTable"
-          v-hasPermi="['tool:gen:edit']"
         >修改</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -124,7 +121,6 @@
             size="small"
             icon="el-icon-edit"
             @click="handleEditTable(scope.row)"
-            v-hasPermi="['tool:gen:edit']"
           >编辑</el-button>
           <el-button
             type="text"
@@ -145,7 +141,6 @@
             size="small"
             icon="el-icon-download"
             @click="handleGenTable(scope.row)"
-            v-hasPermi="['tool:gen:code']"
           >生成代码</el-button>
         </template>
       </el-table-column>
@@ -320,6 +315,7 @@ export default {
       const tableId = row.tableId || this.ids[0];
       const tableName = row.tableName || this.tableNames[0];
       const params = { pageNum: this.queryParams.pageNum };
+      // this.$router.push({name:'GenEdit',query:params})
       this.$tab.openPage("修改[" + tableName + "]生成配置", '/tool/gen-edit/index/' + tableId, params);
     },
     /** 删除按钮操作 */

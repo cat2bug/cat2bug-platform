@@ -100,6 +100,20 @@ export const constantRoutes = [
     ]
   },
   {
+    path: '/defect/template',
+    component: Layout,
+    hidden: true,
+    redirect: 'noredirect',
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/system/defect/StatisticTemplate'),
+        name: 'DefectStatisticTemplate',
+        meta: { title: i18n.t('defect.statistic-template'), icon: 'user' }
+      }
+    ]
+  },
+  {
     path: '/system/project/add',
     component: Layout,
     hidden: true,
@@ -124,6 +138,18 @@ export const constantRoutes = [
         component: () => import('@/views/system/team/add'),
         name: 'TeamAdd',
         meta: { title: i18n.t('member.create'), icon: 'user' }
+      }
+    ]
+  },
+  {
+    path: '/tool/gen-edit/',
+    component: Layout,
+    hidden: true,
+    children: [
+      {
+        path: 'index/:tableId(\\d+)',
+        component: () => import('@/views/tool/gen/editTable'),
+        name: 'GenEdit',
       }
     ]
   }
@@ -184,20 +210,6 @@ export const dynamicRoutes = [
         component: () => import('@/views/monitor/job/log'),
         name: 'JobLog',
         meta: { title: '调度日志', activeMenu: '/monitor/job' }
-      }
-    ]
-  },
-  {
-    path: '/tool/gen-edit',
-    component: Layout,
-    hidden: true,
-    permissions: ['tool:gen:edit'],
-    children: [
-      {
-        path: 'index/:tableId(\\d+)',
-        component: () => import('@/views/tool/gen/editTable'),
-        name: 'GenEdit',
-        meta: { title: '修改生成配置', activeMenu: '/tool/gen' }
       }
     ]
   }

@@ -1,6 +1,13 @@
 <template>
   <div class="statistic-tools">
-    <component :is="sc.name" :params="sc.params" v-for="(sc,index) in statisticComponents" :key="index"/>
+    <component
+      @click.native="clickHandle($event,sc)"
+      :is="sc.name"
+      :params="sc.params"
+      v-for="(sc,index) in statisticComponents"
+      :key="index"
+      v-dragging="{item:sc,list:statisticComponents}"
+    />
   </div>
 </template>
 
@@ -16,36 +23,44 @@ export default {
   components:{Cat2ButTitle, DefectType,DefectState,DefectModule,DefectBurnDownChart},
   data() {
     return {
-      statisticComponents: [{
-        title: '类型统计',
-        name: 'DefectType',
-        params: {}
-      },{
-        title: '状态统计',
-        name: 'DefectState',
-        params: {}
-      },{
-        title: '模块排行',
-        name: 'DefectModule',
-        params: {}
-      },
-      //   {
-      //   title: '缺陷燃尽图',
-      //   name: 'DefectBurnDownChart',
-      //   params: {}
-      // }
-      ]
     }
   },
   props: {
+    statisticComponents: {
+      type: Array,
+      default: function () {
+        return [{
+          title: '类型统计',
+          name: 'DefectType',
+          params: {}
+        },{
+          title: '状态统计',
+          name: 'DefectState',
+          params: {}
+        },{
+          title: '模块排行',
+          name: 'DefectModule',
+          params: {}
+        },
+          //   {
+          //   title: '缺陷燃尽图',
+          //   name: 'DefectBurnDownChart',
+          //   params: {}
+          // }
+        ]
+      }
+    },
     params: {
       type: Object,
-      default: {}
+      default: ()=> {}
     }
   },
   methods: {
     search(params) {
       this.$parent.search && this.$parent.search(params);
+    },
+    clickHandle(e,sc){
+      this.$emit('click-template-node',e,sc);
     }
   }
 }
@@ -58,6 +73,6 @@ export default {
     align-content: center;
     flex-direction: row;
     flex-wrap: wrap;
-    gap:15px
+    gap:15px;
   }
 </style>

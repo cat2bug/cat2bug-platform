@@ -9,12 +9,14 @@
         <!--      <el-tab-pane :label="$t('project.archived-project')" :name="$t('project.archived-project')"></el-tab-pane>-->
       </el-tabs>
       <div class="defect-tools-tab-right">
+        <svg-icon class="defect-tools-button" icon-class="add-statistic" @click="addStatisticHandle" />
         <svg-icon class="defect-tools-button" v-show="statisticPanelVisible" icon-class="view-statistic" @click="statisticPanelVisible=!statisticPanelVisible" />
         <svg-icon class="defect-tools-button" v-show="!statisticPanelVisible" icon-class="not-view-statistic" @click="statisticPanelVisible=!statisticPanelVisible" />
       </div>
 
     </div>
-    <cat2-bug-statistic :params="{}" v-show="statisticPanelVisible" />
+    <cat2-bug-statistic :params="{}" v-show="statisticPanelVisible" :statistic-components="statisticList" />
+
     <div class="defect-tools">
       <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="0">
         <el-form-item prop="defectType">
@@ -183,6 +185,7 @@ import DefectTypeFlag from "@/components/DefectTypeFlag";
 import DefectTools from "@/components/DefectTools";
 import Cat2BugStatistic from "@/components/Cat2BugStatistic"
 import { checkPermi } from "@/utils/permission";
+import {listStatistic} from "@/api/system/statistic/template";
 
 export default {
   name: "Defect",
@@ -190,6 +193,8 @@ export default {
   dicts: ['defect_level'],
   data() {
     return {
+      // 分析图表列表
+      statisticList:[],
       // 查询中缺陷类型的名称
       activeDefectTypeName: this.$i18n.t('defect.all-type'),
       // 查询中缺陷状态的名称
@@ -286,10 +291,25 @@ export default {
   },
   created() {
     this.getDefectConfig();
-    this.defectStateChangeHandle();
+    this.selectDefectTabHandle();
   },
   methods: {
     checkPermi,
+    /** 获取分析模块 */
+    getStatisticList() {
+      let params = {
+        userId: this.userId,
+        projectId: this.projectId,
+        moduleType: 1
+      }
+      listStatistic(params).then(res=>{
+        if(res.rows.length>0) {
+          this.statisticList = JSON.parse(res.rows[0].statisticTemplatConfig);
+        } else {
+          this.statisticList = [];
+        }
+      })
+    },
     search(params) {
       this._setProperty(this.queryParams, params);
       this.selectDefectTabHandle();
@@ -376,6 +396,7 @@ export default {
           this.handleQuery();
           break;
       }
+      this.getStatisticList();
     },
     /** 获取用户id */
     getUserId() {
@@ -460,6 +481,10 @@ export default {
     clickImageHandle(event){
       event.stopPropagation();
     },
+    /** 添加统计操作 */
+    addStatisticHandle() {
+      this.$router.push({name:'DefectStatisticTemplate'})
+    }
   }
 };
 </script>
@@ -486,6 +511,7 @@ export default {
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
+  margin-top: 10px;
   margin-bottom: 10px;
   > * {
     display: inline-block;
@@ -499,6 +525,7 @@ export default {
 .defect-tools-button {
   cursor: pointer;
   color: #606266;
+  margin: 0px 5px;
 }
 .defect-tools-button:hover {
   color: #409EFF;

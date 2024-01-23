@@ -21,8 +21,8 @@ export default {
 
 <style scoped>
   .statistic-box {
+    background-color: #FFFFFF;
     border: 1px solid #EBEEF5;
-    margin-bottom: 10px;
     padding: 10px 30px;
     border-radius: 5px;
   }
