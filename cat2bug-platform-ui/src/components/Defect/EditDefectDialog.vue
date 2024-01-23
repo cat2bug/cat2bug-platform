@@ -57,7 +57,7 @@
             type="textarea"
             :placeholder="$t('enter-content')"
             v-model="form.defectDescribe"
-            maxlength="65536"
+            maxlength="5000"
             rows="8"
             show-word-limit
           >

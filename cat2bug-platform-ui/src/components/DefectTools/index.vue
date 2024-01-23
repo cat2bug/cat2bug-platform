@@ -195,6 +195,7 @@ export default {
     display: flex;
     flex-wrap: wrap;
     flex-direction: row;
+    gap: 10px;
     align-items: center;
     justify-content: flex-start !important;
     font-size: 12px;

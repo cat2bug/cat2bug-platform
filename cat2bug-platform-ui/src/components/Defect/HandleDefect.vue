@@ -259,6 +259,13 @@ export default {
         cursor: pointer;
         color: #909399;
       }
+      .defect-edit-title-name {
+        max-width: 400px;
+        overflow: hidden;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
       .defect-edit-title-num, .defect-edit-title-name {
         font-size: 20px;
         color: #303133;
