@@ -4,6 +4,7 @@
     v-model="popoverVisible"
     @show="popoverShowHandle"
     @hide="popoverHideHandle"
+    popper-class="select-module-popover"
     trigger="click">
     <div slot="reference" :class="'el-input__inner select-module-input select-module-input-'+size" @mouseenter="showClearButtonHandle(true)" @mouseleave="showClearButtonHandle(false)">
       <i :class="icon" v-if="icon" style="margin: 0px 0px 0px 10px; color: #C0C4CC;"></i>
@@ -172,7 +173,11 @@ export default {
   }
 }
 </script>
-
+<style>
+  .select-module-popover {
+    padding-top: 0px;
+  }
+</style>
 <style lang="scss" scoped>
   ::v-deep .select-module-input {
     display: inline-flex;
