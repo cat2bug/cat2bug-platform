@@ -9,7 +9,7 @@ import java.util.Arrays;
 import org.apache.poi.util.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.cat2bug.common.config.RuoYiConfig;
+import com.cat2bug.common.config.Cat2BugConfig;
 import com.cat2bug.common.constant.Constants;
 import com.cat2bug.common.utils.StringUtils;
 
@@ -79,7 +79,7 @@ public class ImageUtils
             else
             {
                 // 本机地址
-                String localPath = RuoYiConfig.getProfile();
+                String localPath = Cat2BugConfig.getProfile();
                 String downloadPath = localPath + StringUtils.substringAfter(url, Constants.RESOURCE_PREFIX);
                 in = new FileInputStream(downloadPath);
             }

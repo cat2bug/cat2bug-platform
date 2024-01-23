@@ -1,6 +1,6 @@
 package com.cat2bug.web.controller.common;
 
-import com.cat2bug.common.config.RuoYiConfig;
+import com.cat2bug.common.config.Cat2BugConfig;
 import com.cat2bug.common.constant.Constants;
 import com.cat2bug.common.core.domain.AjaxResult;
 import com.cat2bug.common.utils.StringUtils;
@@ -61,7 +61,7 @@ public class CommonController
                 throw new Exception(StringUtils.format("文件名称({})非法，不允许下载。 ", fileName));
             }
             String realFileName = System.currentTimeMillis() + fileName.substring(fileName.indexOf("_") + 1);
-            String filePath = RuoYiConfig.getDownloadPath() + fileName;
+            String filePath = Cat2BugConfig.getDownloadPath() + fileName;
 
             response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
             FileUtils.setAttachmentResponseHeader(response, realFileName);
@@ -86,7 +86,7 @@ public class CommonController
         try
         {
             // 上传文件路径
-            String filePath = RuoYiConfig.getUploadPath();
+            String filePath = Cat2BugConfig.getUploadPath();
             // 上传并返回新文件名称
             String fileName = FileUploadUtils.upload(filePath, file);
             String url = serverConfig.getUrl() + fileName;
@@ -111,7 +111,7 @@ public class CommonController
             // Base64解码
             String base64Code = String.valueOf(file.getFileBody());
             // 上传文件路径
-            String filePath = RuoYiConfig.getUploadPath();
+            String filePath = Cat2BugConfig.getUploadPath();
             // 原文件名
             String originalFileName = "screen_"+ UUID.randomUUID().toString().substring(0,8);
             // 上传并返回新文件名称
@@ -141,7 +141,7 @@ public class CommonController
         try
         {
             // 上传文件路径
-            String filePath = RuoYiConfig.getUploadPath();
+            String filePath = Cat2BugConfig.getUploadPath();
             List<String> urls = new ArrayList<String>();
             List<String> fileNames = new ArrayList<String>();
             List<String> newFileNames = new ArrayList<String>();
@@ -183,7 +183,7 @@ public class CommonController
                 throw new Exception(StringUtils.format("资源文件({})非法，不允许下载。 ", resource));
             }
             // 本地资源路径
-            String localPath = RuoYiConfig.getProfile();
+            String localPath = Cat2BugConfig.getProfile();
             // 数据库资源地址
             String downloadPath = localPath + StringUtils.substringAfter(resource, Constants.RESOURCE_PREFIX);
             // 下载名称

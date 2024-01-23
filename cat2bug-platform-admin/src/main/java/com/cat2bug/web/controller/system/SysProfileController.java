@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import com.cat2bug.common.annotation.Log;
-import com.cat2bug.common.config.RuoYiConfig;
+import com.cat2bug.common.config.Cat2BugConfig;
 import com.cat2bug.common.core.controller.BaseController;
 import com.cat2bug.common.core.domain.AjaxResult;
 import com.cat2bug.common.core.domain.entity.SysUser;
@@ -120,7 +120,7 @@ public class SysProfileController extends BaseController
         if (!file.isEmpty())
         {
             LoginUser loginUser = getLoginUser();
-            String avatar = FileUploadUtils.upload(RuoYiConfig.getAvatarPath(), file, MimeTypeUtils.IMAGE_EXTENSION);
+            String avatar = FileUploadUtils.upload(Cat2BugConfig.getAvatarPath(), file, MimeTypeUtils.IMAGE_EXTENSION);
             if (userService.updateUserAvatar(loginUser.getUsername(), avatar))
             {
                 AjaxResult ajax = AjaxResult.success();

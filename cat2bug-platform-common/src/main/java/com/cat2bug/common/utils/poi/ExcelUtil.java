@@ -73,7 +73,7 @@ import com.cat2bug.common.annotation.Excel;
 import com.cat2bug.common.annotation.Excel.ColumnType;
 import com.cat2bug.common.annotation.Excel.Type;
 import com.cat2bug.common.annotation.Excels;
-import com.cat2bug.common.config.RuoYiConfig;
+import com.cat2bug.common.config.Cat2BugConfig;
 import com.cat2bug.common.core.domain.AjaxResult;
 import com.cat2bug.common.core.text.Convert;
 import com.cat2bug.common.exception.UtilException;
@@ -1355,7 +1355,7 @@ public class ExcelUtil<T>
      */
     public String getAbsoluteFile(String filename)
     {
-        String downloadPath = RuoYiConfig.getDownloadPath() + filename;
+        String downloadPath = Cat2BugConfig.getDownloadPath() + filename;
         File desc = new File(downloadPath);
         if (!desc.getParentFile().exists())
         {

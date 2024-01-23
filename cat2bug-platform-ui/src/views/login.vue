@@ -13,7 +13,10 @@
           :src="require('@/assets/images/cat2bug-logo.gif')"
         ></el-image>
         <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form">
-          <h3 class="title">{{$t("system-name")}}</h3>
+          <div class="login-form-title">
+            <h3 class="title">{{$t("system-name")}}</h3>
+            <span class="version">{{ version }}</span>
+          </div>
           <el-form-item prop="username">
             <el-input
               v-model="loginForm.username"
@@ -82,11 +85,13 @@ import { getCodeImg } from "@/api/login";
 import Cookies from "js-cookie";
 import { encrypt, decrypt } from '@/utils/jsencrypt'
 import 'element-ui/lib/theme-chalk/display.css';
+import {getVersion} from "@/api/version";
 
 export default {
   name: "Login",
   data() {
     return {
+      systemVersion: null,
       randDelay: Math.random()*10,
       codeUrl: "",
       loginForm: {
@@ -121,11 +126,22 @@ export default {
       immediate: true
     }
   },
+  computed: {
+    version: function (){
+      return this.systemVersion?'V'+this.systemVersion:'';
+    }
+  },
   created() {
+    this.getSystemVersion();
     this.getCode();
     this.getCookie();
   },
   methods: {
+    getSystemVersion() {
+      getVersion().then(res=>{
+        this.systemVersion = res;
+      })
+    },
     getCode() {
       getCodeImg().then(res => {
         this.captchaEnabled = res.captchaEnabled === undefined ? true : res.captchaEnabled;
@@ -217,11 +233,23 @@ body {
   background-size: cover;
   background-color: white;
 }
-.title {
-  margin: 0px auto 30px auto;
-  text-align: center;
-  color: #707070;
+.login-form-title {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-end;
+  padding: 20px;
+  .title {
+    margin: 0px 10px;
+    text-align: center;
+    color: #707070;
+  }
+  .version {
+    font-size: 14px;
+    color: #707070;
+  }
 }
+
 .login-introduce {
   float: right;
   max-width: 40%;

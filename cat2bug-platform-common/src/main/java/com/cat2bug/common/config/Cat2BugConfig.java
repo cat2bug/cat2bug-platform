@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @ConfigurationProperties(prefix = "cat2bug")
-public class RuoYiConfig
+public class Cat2BugConfig
 {
     /** 项目名称 */
     private String name;
@@ -80,7 +80,7 @@ public class RuoYiConfig
 
     public void setProfile(String profile)
     {
-        RuoYiConfig.profile = profile;
+        Cat2BugConfig.profile = profile;
     }
 
     public static boolean isAddressEnabled()
@@ -90,7 +90,7 @@ public class RuoYiConfig
 
     public void setAddressEnabled(boolean addressEnabled)
     {
-        RuoYiConfig.addressEnabled = addressEnabled;
+        Cat2BugConfig.addressEnabled = addressEnabled;
     }
 
     public static String getCaptchaType() {
@@ -98,7 +98,7 @@ public class RuoYiConfig
     }
 
     public void setCaptchaType(String captchaType) {
-        RuoYiConfig.captchaType = captchaType;
+        Cat2BugConfig.captchaType = captchaType;
     }
 
     /**
