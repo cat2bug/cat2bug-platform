@@ -1,7 +1,10 @@
 <template>
   <cat2-bug-card :title="title">
     <template slot="content">
-      <div @click="clickHandle(m)" class="defect-module-row" v-for="(m,index) in showModuleList" :key="index">
+      <div v-if="!showModuleList || showModuleList.length==0" class="defect-module-row" v-for="(m,index) in 4" :key="index">
+        <h5 class="skeleton">{{ index+1 }}</h5><div class="skeleton width50"></div><div class="skeleton width120"></div>
+      </div>
+      <div v-else @click="clickHandle(m)" class="defect-module-row" v-for="(m,index) in showModuleList" :key="index">
         <h5 :style="`background-color:${flagColor(index)}`">{{ index+1 }}</h5><h4>{{ $t(m.k) }}</h4><el-progress :percentage="percentage(m)" :format="format" :color="customColors"></el-progress><span>{{ m.f }}/{{ m.a }}</span>
       </div>
     </template>
@@ -97,6 +100,12 @@ export default {
   .el-progress {
     width: 150px;
   }
+  .width50 {
+    width: 100px;
+  }
+  .width120 {
+    width: 120px;
+  }
   h5 {
     border-radius: 5px;
     color: #FFFFFF;
@@ -145,5 +154,11 @@ export default {
   }
   ::v-deep .el-progress__text {
     display: none;
+  }
+  .skeleton {
+    height: 18px;
+    background-color: #E4E7ED;
+    border-radius: 5px;
+    margin-left: 10px;
   }
 </style>
