@@ -2,6 +2,8 @@ package com.cat2bug.web.controller.system;
 
 import com.cat2bug.common.core.controller.BaseController;
 import com.cat2bug.common.core.domain.AjaxResult;
+import com.cat2bug.common.core.domain.entity.SysDictData;
+import com.cat2bug.common.core.page.TableDataInfo;
 import com.cat2bug.system.service.ISysDefectStatisticService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -9,6 +11,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * @Author: yuzhantao
@@ -65,8 +70,10 @@ public class SysDefectStatisticController extends BaseController {
      */
     @PreAuthorize("@ss.hasPermi('system:defect:query')")
     @GetMapping(value = "/module/{projectId}")
-    public AjaxResult getModuleStatistic(@PathVariable("projectId") Long projectId)
+    public TableDataInfo getModuleStatistic(@PathVariable("projectId") Long projectId)
     {
-        return success(sysDefectStatisticService.moduleStatistic(projectId));
+        startPage();
+        List<Map<String, Object>> list = sysDefectStatisticService.moduleStatistic(projectId);
+        return getDataTable(list);
     }
 }

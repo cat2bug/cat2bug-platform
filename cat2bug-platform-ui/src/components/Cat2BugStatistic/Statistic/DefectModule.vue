@@ -10,6 +10,15 @@
         <div @click="clickHandle(m)" class="defect-module-row" v-for="(m,index) in showModuleList" :key="index">
           <h5 :style="`background-color:${flagColor(index)}`">{{ index+1 }}</h5><h4>{{ $t(m.k) }}</h4><el-progress :percentage="percentage(m)" :format="format" :color="customColors"></el-progress><span>{{ m.f }}/{{ m.a }}</span>
         </div>
+        <el-pagination
+          small
+          :hide-on-single-page="total<formParams.pageSize"
+          layout="prev, pager, next"
+          :current-page.sync="formParams.pageNum"
+          :page-size.sync="formParams.pageSize"
+          :total="total"
+          @current-change="getStatisticModule">
+        </el-pagination>
       </div>
 
     </template>
@@ -24,6 +33,7 @@ export default {
   components: {Cat2BugCard},
   data() {
     return {
+      total:0,
       prevClickModuleId: null,
       loading: false,
       title: this.$i18n.t('defect.module-ranking'),
@@ -34,7 +44,12 @@ export default {
         {color: 'rgb(251, 177, 63)', percentage: 60},
         {color: '#1989fa', percentage: 80},
         {color: 'rgb(103, 194, 58)', percentage: 100},
-      ]
+      ],
+      formParams: {
+        pageNum: 1,
+        pageSize: 3,
+
+      }
     }
   },
   props: {
@@ -51,11 +66,10 @@ export default {
     },
     showModuleList: function (){
       let ret = [];
-      for(let i=0;i<4 && i<this.moduleList.length;i++){
+      for(let i=0;i<3 && i<this.moduleList.length;i++){
         ret.push(this.moduleList[i])
       }
-      console.log(ret);
-      return ret;
+      return ret
     },
     flagColor: function (){
       return function (index) {
@@ -86,9 +100,10 @@ export default {
     },
     getStatisticModule() {
       this.loading = true;
-      statisticModule(this.currentProjectId).then(res=>{
+      statisticModule(this.currentProjectId,this.formParams).then(res=>{
         this.loading = false;
-        this.moduleList = res.data;
+        this.moduleList = res.rows;
+        this.total = res.total;
       })
     },
     clickHandle(m) {
@@ -169,5 +184,13 @@ export default {
     background-color: #E4E7ED;
     border-radius: 5px;
     margin-left: 10px;
+  }
+  .el-pagination {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+  }
+  ::v-deep .el-pagination .number,::v-deep .el-pagination .el-icon {
+    font-size: 10px !important;
   }
 </style>

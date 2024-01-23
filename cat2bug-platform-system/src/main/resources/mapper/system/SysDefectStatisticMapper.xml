@@ -41,6 +41,5 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         </where>
         GROUP BY d.module_id
         ORDER BY f/a ASC ,a DESC
-        LIMIT 0,20
     </select>
 </mapper>

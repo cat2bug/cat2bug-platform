@@ -31,9 +31,10 @@ export function statisticMyDefectState(projectId) {
 }
 
 /** 缺陷模块统计 */
-export function statisticModule(projectId) {
+export function statisticModule(projectId, query) {
   return request({
     url: '/system/defect/statistic/module/'+projectId,
-    method: 'get'
+    method: 'get',
+    params: query
   })
 }
