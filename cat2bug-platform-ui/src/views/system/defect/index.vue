@@ -304,7 +304,6 @@ export default {
     },
     /** 查找缺陷状态改变的处理 */
     defectStateChangeHandle(defectState) {
-      console.log('---',defectState)
       if(defectState) {
         this.activeDefectStateName = defectState;
       } else {
@@ -315,7 +314,6 @@ export default {
     },
     /** 查找缺陷状态改变的处理 */
     defectTypeChangeHandle(defectType) {
-      console.log('=====',defectType)
       if(defectType) {
         this.activeDefectTypeName = defectType;
       } else {
@@ -359,9 +357,11 @@ export default {
           break;
         case this.$i18n.t('defect.my-participated-in'):
           this.queryParams.params.userId = this.getUserId();
+          this.queryParams.params.collect = null;
           this.handleQuery();
           break;
         default:
+          this.queryParams.params.collect = null;
           this.handleQuery();
           break;
       }
