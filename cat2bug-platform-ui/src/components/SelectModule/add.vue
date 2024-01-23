@@ -32,7 +32,7 @@ export default {
       // 表单校验
       rules: {
         moduleName: [
-          { required: true, message: this.$i18n.t('module.name-cannot-empty'), trigger: "change" }
+          { required: true, message: this.$i18n.t('module.name-cannot-empty'), trigger: "blur" }
         ]
       }
     }
@@ -52,6 +52,10 @@ export default {
     },
   },
   methods: {
+    reset() {
+      this.form={};
+      this.name=null;
+    },
     setFormVisible(visible) {
       this.formVisible = visible;
     },
@@ -59,21 +63,25 @@ export default {
       this.$emit('input',val);
     },
     addProjectModule(){
+      console.log('------',this.name)
       const that = this;
       this.form = {
         modulePid: this.modulePid||0,
-        moduleName: this.moduleName,
+        moduleName: this.name,
         projectId: this.projectId
       }
-      this.$refs["form"].validate(valid => {
-        if (valid) {
-          addModule(this.form).then(res=>{
-            that.$emit('added',this.moduleName);
-            that.formVisible = false;
-            that.$message.success(this.$i18n.t('module.create-success').toString());
-          })
-        }
-      });
+      this.$nextTick(()=>{
+        this.$refs["form"].validate(valid => {
+          if (valid) {
+            addModule(this.form).then(res=>{
+              that.$emit('added',this.name);
+              that.formVisibmpe = false;
+              that.reset();
+              that.$message.success(this.$i18n.t('module.create-success').toString());
+            })
+          }
+        });
+      })
     }
   }
 }

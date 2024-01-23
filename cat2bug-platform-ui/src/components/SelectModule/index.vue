@@ -175,7 +175,7 @@ export default {
 </script>
 <style>
   .select-module-popover {
-    padding-top: 0px;
+    padding-top: 10px;
   }
 </style>
 <style lang="scss" scoped>
