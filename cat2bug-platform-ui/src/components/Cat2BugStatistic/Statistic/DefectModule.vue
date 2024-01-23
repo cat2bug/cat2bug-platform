@@ -1,12 +1,17 @@
 <template>
   <cat2-bug-card :title="title">
     <template slot="content">
-      <div v-if="!showModuleList || showModuleList.length==0" class="defect-module-row" v-for="(m,index) in 4" :key="index">
-        <h5 class="skeleton">{{ index+1 }}</h5><div class="skeleton width50"></div><div class="skeleton width120"></div>
+      <div v-if="!showModuleList || showModuleList.length==0">
+        <div @click="getStatisticModule" class="defect-module-row" v-for="n in 4" :key="n">
+          <h5 class="skeleton">{{ n+1 }}</h5><div class="skeleton width100"></div><div class="skeleton width120"></div><div class="skeleton width30"></div>
+        </div>
       </div>
-      <div v-else @click="clickHandle(m)" class="defect-module-row" v-for="(m,index) in showModuleList" :key="index">
-        <h5 :style="`background-color:${flagColor(index)}`">{{ index+1 }}</h5><h4>{{ $t(m.k) }}</h4><el-progress :percentage="percentage(m)" :format="format" :color="customColors"></el-progress><span>{{ m.f }}/{{ m.a }}</span>
+      <div v-else>
+        <div @click="clickHandle(m)" class="defect-module-row" v-for="(m,index) in showModuleList" :key="index">
+          <h5 :style="`background-color:${flagColor(index)}`">{{ index+1 }}</h5><h4>{{ $t(m.k) }}</h4><el-progress :percentage="percentage(m)" :format="format" :color="customColors"></el-progress><span>{{ m.f }}/{{ m.a }}</span>
+        </div>
       </div>
+
     </template>
   </cat2-bug-card>
 </template>
@@ -49,6 +54,7 @@ export default {
       for(let i=0;i<4 && i<this.moduleList.length;i++){
         ret.push(this.moduleList[i])
       }
+      console.log(ret);
       return ret;
     },
     flagColor: function (){
@@ -100,7 +106,10 @@ export default {
   .el-progress {
     width: 150px;
   }
-  .width50 {
+  .width30 {
+    width: 30px;
+  }
+  .width100 {
     width: 100px;
   }
   .width120 {
@@ -156,7 +165,7 @@ export default {
     display: none;
   }
   .skeleton {
-    height: 18px;
+    height: 16px;
     background-color: #E4E7ED;
     border-radius: 5px;
     margin-left: 10px;
