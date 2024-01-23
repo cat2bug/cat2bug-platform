@@ -165,6 +165,7 @@ import DefectTypeFlag from "@/components/DefectTypeFlag";
 import DefectTools from "@/components/DefectTools";
 import Cat2BugStatistic from "@/components/Cat2BugStatistic"
 import { checkPermi } from "@/utils/permission";
+import {getModule} from "@/api/system/module";
 
 export default {
   name: "Defect",
@@ -247,6 +248,13 @@ export default {
         if(!url) return null;
         let arr = url.split('\/');
         return arr[arr.length-1];
+      }
+    }
+  },
+  watch: {
+    "queryParams.defectType": function (newVal, oldVal) {
+      if( newVal!=oldVal) {
+        this.defectStateChangeHandle(newVal);
       }
     }
   },
