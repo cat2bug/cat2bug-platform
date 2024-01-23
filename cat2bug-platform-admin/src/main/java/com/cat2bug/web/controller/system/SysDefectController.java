@@ -40,6 +40,7 @@ public class SysDefectController extends BaseController
     {
         Map<String,Object> ret = new HashMap<>();
         ret.put("types",sysDefectService.getDefectTypeList());
+        ret.put("states",sysDefectService.getDefectStateList());
         return success(ret);
     }
 

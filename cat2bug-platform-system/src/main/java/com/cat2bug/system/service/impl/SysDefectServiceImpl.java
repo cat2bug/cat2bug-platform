@@ -1,5 +1,6 @@
 package com.cat2bug.system.service.impl;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -152,11 +153,20 @@ public class SysDefectServiceImpl implements ISysDefectService
 
     @Override
     public List<EnumVo> getDefectTypeList() {
-        return Arrays.asList(
-                new EnumVo(SysDefectTypeEnum.BUG.ordinal(),SysDefectTypeEnum.BUG.name()),
-                new EnumVo(SysDefectTypeEnum.TASK.ordinal(),SysDefectTypeEnum.TASK.name()),
-                new EnumVo(SysDefectTypeEnum.DEMAND.ordinal(),SysDefectTypeEnum.DEMAND.name())
-        );
+        List<EnumVo> ret = new ArrayList<>();
+        for(int i = 0;i<SysDefectTypeEnum.values().length;i++){
+            ret.add(new EnumVo(SysDefectTypeEnum.values()[i].ordinal(),SysDefectTypeEnum.values()[i].name()));
+        }
+        return ret;
+    }
+
+    @Override
+    public List<EnumVo> getDefectStateList() {
+        List<EnumVo> ret = new ArrayList<>();
+        for(int i = 0;i<SysDefectStateEnum.values().length;i++){
+            ret.add(new EnumVo(SysDefectStateEnum.values()[i].ordinal(),SysDefectStateEnum.values()[i].name()));
+        }
+        return ret;
     }
 
     /**

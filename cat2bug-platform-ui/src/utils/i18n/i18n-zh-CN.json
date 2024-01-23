@@ -232,6 +232,7 @@
   "defect.create": "新建缺陷",
   "defect.base-info": "基本信息",
   "defect.all-type": "全部类型",
+  "defect.all-state": "全部状态",
   "defect.my-participated-in": "我参与的",
   "defect.all-defect": "全部缺陷",
   "defect.my-following": "我关注的",

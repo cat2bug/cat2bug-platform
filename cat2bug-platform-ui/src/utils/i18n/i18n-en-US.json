@@ -232,6 +232,7 @@
   "defect.create": "Create Defect",
   "defect.base-info": "Basic Information",
   "defect.all-type": "All Type",
+  "defect.all-state": "All State",
   "defect.my-participated-in": "My Participated In",
   "defect.all-defect": "All Defect",
   "defect.my-following": "My Following",

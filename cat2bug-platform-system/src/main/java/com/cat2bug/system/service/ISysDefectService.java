@@ -62,6 +62,8 @@ public interface ISysDefectService
      */
     public List<EnumVo> getDefectTypeList();
 
+    public List<EnumVo> getDefectStateList();
+
     /**
      * 查询缺陷
      * 

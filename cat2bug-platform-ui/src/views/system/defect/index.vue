@@ -10,12 +10,21 @@
     <cat2-bug-statistic :params="{}" />
     <div class="defect-tools">
       <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="0">
-        <el-form-item prop="defectState">
-          <el-dropdown split-button size="mini" @command="defectStateChangeHandle" @click="selectDefectTabHandle">
+        <el-form-item prop="defectType">
+          <el-dropdown split-button size="mini" @command="defectTypeChangeHandle" @click="selectDefectTabHandle">
             {{$i18n.t(activeDefectTypeName)}}
             <el-dropdown-menu slot="dropdown">
               <el-dropdown-item command="">{{$i18n.t('defect.all-type')}}</el-dropdown-item>
-              <el-dropdown-item v-for="type in config.types" :command="type.value" :key="type.key">{{$i18n.t(type.value)}}</el-dropdown-item>
+              <el-dropdown-item v-for="type in config.types" :command="type.value" :key="'type_'+type.key">{{$i18n.t(type.value)}}</el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+        </el-form-item>
+        <el-form-item prop="defectState">
+          <el-dropdown split-button size="mini" @command="defectStateChangeHandle" @click="selectDefectTabHandle">
+            {{$i18n.t(activeDefectStateName)}}
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item command="">{{$i18n.t('defect.all-state')}}</el-dropdown-item>
+              <el-dropdown-item v-for="state in config.states" :command="state.value" :key="'state_'+state.key">{{$i18n.t(state.value)}}</el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
         </el-form-item>
@@ -173,7 +182,9 @@ export default {
   data() {
     return {
       // 查询中缺陷类型的名称
-      activeDefectTypeName: null,
+      activeDefectTypeName: this.$i18n.t('defect.all-type'),
+      // 查询中缺陷状态的名称
+      activeDefectStateName: this.$i18n.t('defect.all-state'),
       // 缺陷配置
       config:{},
       // 当前缺陷的tab页名
@@ -253,6 +264,11 @@ export default {
   watch: {
     "queryParams.defectType": function (newVal, oldVal) {
       if( newVal!=oldVal) {
+        this.defectTypeChangeHandle(newVal);
+      }
+    },
+    "queryParams.defectState": function (newVal, oldVal) {
+      if( newVal!=oldVal) {
         this.defectStateChangeHandle(newVal);
       }
     }
@@ -287,7 +303,19 @@ export default {
       })
     },
     /** 查找缺陷状态改变的处理 */
-    defectStateChangeHandle(defectType) {
+    defectStateChangeHandle(defectState) {
+      console.log('---',defectState)
+      if(defectState) {
+        this.activeDefectStateName = defectState;
+      } else {
+        this.activeDefectStateName = this.$i18n.t('defect.all-state');
+      }
+      this.queryParams.defectState= defectState;
+      this.selectDefectTabHandle();
+    },
+    /** 查找缺陷状态改变的处理 */
+    defectTypeChangeHandle(defectType) {
+      console.log('=====',defectType)
       if(defectType) {
         this.activeDefectTypeName = defectType;
       } else {
