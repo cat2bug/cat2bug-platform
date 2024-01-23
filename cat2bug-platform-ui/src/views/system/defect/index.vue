@@ -1,13 +1,20 @@
 <template>
   <div class="app-container">
     <project-label />
-    <el-tabs v-model="activeDefectTabName" @tab-click="selectDefectTabHandle">
-      <el-tab-pane :label="$t('defect.my-participated-in')" :name="$t('defect.my-participated-in')"></el-tab-pane>
-      <el-tab-pane :label="$t('defect.my-following')" :name="$t('defect.my-following')"></el-tab-pane>
-      <el-tab-pane :label="$t('defect.all-defect')" :name="$t('defect.all-defect')"></el-tab-pane>
-      <!--      <el-tab-pane :label="$t('project.archived-project')" :name="$t('project.archived-project')"></el-tab-pane>-->
-    </el-tabs>
-    <cat2-bug-statistic :params="{}" />
+    <div class="defect-tools-tab">
+      <el-tabs v-model="activeDefectTabName" @tab-click="selectDefectTabHandle">
+        <el-tab-pane :label="$t('defect.my-participated-in')" :name="$t('defect.my-participated-in')"></el-tab-pane>
+        <el-tab-pane :label="$t('defect.my-following')" :name="$t('defect.my-following')"></el-tab-pane>
+        <el-tab-pane :label="$t('defect.all-defect')" :name="$t('defect.all-defect')"></el-tab-pane>
+        <!--      <el-tab-pane :label="$t('project.archived-project')" :name="$t('project.archived-project')"></el-tab-pane>-->
+      </el-tabs>
+      <div class="defect-tools-tab-right">
+        <svg-icon class="defect-tools-button" v-show="statisticPanelVisible" icon-class="view-statistic" @click="statisticPanelVisible=!statisticPanelVisible" />
+        <svg-icon class="defect-tools-button" v-show="!statisticPanelVisible" icon-class="not-view-statistic" @click="statisticPanelVisible=!statisticPanelVisible" />
+      </div>
+
+    </div>
+    <cat2-bug-statistic :params="{}" v-show="statisticPanelVisible" />
     <div class="defect-tools">
       <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="0">
         <el-form-item prop="defectType">
@@ -213,6 +220,8 @@ export default {
       daterangeCreateTime: [],
       // 缺陷等级时间范围
       daterangeHandleTime: [],
+      // 是否显示统计面板
+      statisticPanelVisible: true,
       // 查询参数
       queryParams: {
         pageNum: 1,
@@ -453,6 +462,23 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
+.defect-tools-tab {
+  position: relative;
+  height: 55px;
+  .el-tabs {
+    position: absolute;
+    width: 100%;
+  }
+  .defect-tools-tab-right {
+    position: absolute;
+    right: 0px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    padding-bottom: 5px;
+  }
+}
 .defect-tools {
   display: flex;
   flex-direction: row;
@@ -467,5 +493,12 @@ export default {
       margin-bottom: 0px;
     }
   }
+}
+.defect-tools-button {
+  cursor: pointer;
+  color: #606266;
+}
+.defect-tools-button:hover {
+  color: #409EFF;
 }
 </style>
