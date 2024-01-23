@@ -165,7 +165,6 @@ import DefectTypeFlag from "@/components/DefectTypeFlag";
 import DefectTools from "@/components/DefectTools";
 import Cat2BugStatistic from "@/components/Cat2BugStatistic"
 import { checkPermi } from "@/utils/permission";
-import {getModule} from "@/api/system/module";
 
 export default {
   name: "Defect",
@@ -334,10 +333,10 @@ export default {
           break;
         case this.$i18n.t('defect.my-participated-in'):
           this.queryParams.params.userId = this.getUserId();
-          this.handleQuery();
+          this.handleQuery({});
           break;
         default:
-          this.handleQuery();
+          this.handleQuery({});
           break;
       }
     },

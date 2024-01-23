@@ -1,5 +1,6 @@
 <template>
   <div class="app-container">
+    <project-label />
     <div class="module-tools">
       <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="120px">
         <el-form-item prop="moduleName">
@@ -96,12 +97,14 @@
 <script>
 import { listModule, getModule, delModule, addModule, updateModule } from "@/api/system/module";
 import Treeselect from "@riophae/vue-treeselect";
+import ProjectLabel from "@/components/ProjectLabel";
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
 
 export default {
   name: "Module",
   components: {
-    Treeselect
+    Treeselect,
+    ProjectLabel
   },
   data() {
     return {
