@@ -257,7 +257,7 @@ export default {
   methods: {
     checkPermi,
     search(params) {
-      this.queryParams=this._setProperty(this.queryParams, params);
+      this._setProperty(this.queryParams, params);
       this.selectDefectTabHandle();
     },
     _setProperty(parent,obj) {

@@ -32,6 +32,7 @@ import i18n from "@/utils/i18n/i18n";
 import { checkPermi } from "@/utils/permission";
 import MemberNameplate from "@/components/MemberNameplate";
 import ModuleMenu from "@/components/SelectModule/menu";
+import {getModule} from "@/api/system/module";
 
 export default {
   name: "SelectModule",
@@ -92,8 +93,14 @@ export default {
   },
   watch: {
     moduleId: function (newVal, oldVal) {
-      if(newVal!=oldVal && !newVal) {
-        this.clearSelectModuleHandle();
+      if(newVal!=oldVal) {
+        if(newVal) {
+          getModule(newVal).then(res=>{
+            this.clickMenuHandle(res.data);
+          });
+        } else {
+          this.clearSelectModuleHandle();
+        }
       }
     }
   },
