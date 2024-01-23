@@ -26,6 +26,16 @@ public class SysDefectStatisticServiceImpl implements ISysDefectStatisticService
     @Override
     public List<Map<String,Object>> typeStatistic(Long projectId, Long memberId) {
         List<Map<String,Object>> ret = sysDefectStatisticMapper.typeStatistic(projectId,memberId);
+
+        for(int i=0;i<SysDefectTypeEnum.values().length;i++) {
+            int index = SysDefectTypeEnum.values()[i].ordinal();
+            if(ret.stream().anyMatch(m->index==Long.valueOf(m.get("k").toString()))==false) {
+                Map<String,Object> map = new HashMap<>();
+                map.put("k",index);
+                map.put("v",0);
+                ret.add(map);
+            }
+        }
         return ret.stream().map(m->{
             m.put("k", SysDefectTypeEnum.values()[Long.valueOf(m.get("k").toString()).intValue()].name());
             return m;
