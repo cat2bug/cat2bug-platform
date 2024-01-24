@@ -108,9 +108,10 @@
       </el-table-column>
       <el-table-column :label="$t('title')" align="left" prop="defectName" sortable >
         <template slot-scope="scope">
-          <el-tooltip class="item" effect="dark" :content="scope.row.defectDescribe" placement="bottom-start">
-            <el-link type="primary" @click="editDefectHandle(scope.row)">{{ scope.row.defectName }}</el-link>
-          </el-tooltip>
+          <el-link type="primary" @click="editDefectHandle(scope.row)">{{ scope.row.defectName }}</el-link>
+<!--          <el-tooltip class="item" effect="dark" :content="scope.row.defectDescribe" placement="bottom-start">-->
+<!--            -->
+<!--          </el-tooltip>-->
         </template>
       </el-table-column>
       <el-table-column :label="$t('level')" align="left" prop="defectLevel" width="100" sortable >

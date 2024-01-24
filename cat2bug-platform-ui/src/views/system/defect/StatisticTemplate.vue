@@ -80,7 +80,7 @@ export default {
           statisticTemplatConfig: JSON.stringify(this.selectTemplate)
         }
         addStatistic(params).then(res => {
-
+          this.$message.success(this.$i18n.t('defect.statistic-save-success').toString());
         });
       }
       e.stopPropagation();
