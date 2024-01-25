@@ -1,7 +1,14 @@
 <template>
   <div>
     <el-button v-show="!formVisible" type="text" icon="el-icon-plus" class="select-module-add-full select-module-add-button" @click="formVisible=!formVisible">{{$t('module.create')}}</el-button>
-    <el-form v-show="formVisible" ref="form" :model="form" :rules="rules" label-width="0" class="select-module-add">
+    <el-form v-show="formVisible"
+             ref="form"
+             :model="form"
+             :rules="rules"
+             label-width="0"
+             class="select-module-add"
+             @keydown.enter.native='addProjectModule'
+             @submit.native.prevent>
       <el-form-item prop="moduleName" label-width="0">
         <el-input
           :placeholder="$t('module.enter-module-name')"
@@ -63,7 +70,6 @@ export default {
       this.$emit('input',val);
     },
     addProjectModule(){
-      console.log('------',this.name)
       const that = this;
       this.form = {
         modulePid: this.modulePid||0,
