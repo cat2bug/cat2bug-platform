@@ -6,11 +6,11 @@
     </el-row>
     <h4 class="first-title">预览区</h4>
     <div class="view-panel">
-      <cat2-bug-statistic :statistic-components="selectTemplate" @click-template-node="clickRemoveTemplate" />
+      <cat2-bug-statistic v-model="selectTemplate" />
     </div>
     <h4>模版选择区</h4>
     <div class="templates-panel">
-      <cat2-bug-statistic @click-template-node="clickAddTemplate" />
+      <cat2-bug-statistic show-type="all" :statistic-tools="[]" @click-template-node="clickAddTemplate" />
     </div>
   </div>
 </template>
@@ -57,19 +57,6 @@ export default {
         }
       })
     },
-    clickRemoveTemplate: function (e,template){
-      this.selectTemplate = this.selectTemplate.filter(t=>t.name!=template.name);
-      let params = {
-        userId: this.userId,
-        projectId: this.projectId,
-        moduleType: 1,
-        statisticTemplatConfig: JSON.stringify(this.selectTemplate)
-      }
-      addStatistic(params).then(res=>{
-
-      });
-      e.stopPropagation();
-    },
     clickAddTemplate: function (e,template){
       if(this.selectTemplate.filter(t=>t.name==template.name).length==0) {
         this.selectTemplate.push(template);
@@ -82,6 +69,8 @@ export default {
         addStatistic(params).then(res => {
           this.$message.success(this.$i18n.t('defect.statistic-save-success').toString());
         });
+      } else {
+        this.$message.warning(this.$i18n.t('defect.statistic-exists-warning').toString());
       }
       e.stopPropagation();
     },

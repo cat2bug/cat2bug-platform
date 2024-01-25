@@ -1,5 +1,5 @@
 <template>
-  <cat2-bug-card :title="title">
+  <cat2-bug-card :title="title" :tools="tools" @tools-click="toolsHandle">
     <template slot="content">
       <div id="defect-burn-down-chart-div"></div>
     </template>
@@ -29,6 +29,10 @@ export default {
   props: {
     params: {
       type: Object,
+      default: ()=>{}
+    },
+    tools: {
+      type: Array,
       default: ()=>[]
     }
   },
@@ -135,8 +139,11 @@ export default {
       window.addEventListener('resize',()=>{
         chart.resize();
       });
+    },
+    toolsHandle(e,tool) {
+      this.$emit('tools-click',tool);
     }
-  }
+  },
 }
 </script>
 

@@ -1,5 +1,5 @@
 <template>
-  <cat2-bug-card :title="title">
+  <cat2-bug-card :title="title" :tools="tools" @tools-click="toolsHandle">
     <template slot="content">
       <div v-if="!showModuleList || showModuleList.length==0">
         <div @click="getStatisticModule" class="defect-module-row" v-for="n in 4" :key="n">
@@ -55,6 +55,10 @@ export default {
   props: {
     params: {
       type: Object,
+      default: ()=>{}
+    },
+    tools: {
+      type: Array,
       default: ()=>[]
     }
   },
@@ -112,6 +116,9 @@ export default {
         moduleId: id
       });
       this.prevClickModuleId = id;
+    },
+    toolsHandle(e,tool) {
+      this.$emit('tools-click',tool);
     }
   }
 }

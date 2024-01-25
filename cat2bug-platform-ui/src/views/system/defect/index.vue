@@ -10,12 +10,12 @@
       </el-tabs>
       <div class="defect-tools-tab-right">
         <svg-icon class="defect-tools-button" icon-class="add-statistic" @click="addStatisticHandle" />
-        <svg-icon class="defect-tools-button" v-show="statisticPanelVisible" icon-class="view-statistic" @click="statisticPanelVisible=!statisticPanelVisible" />
-        <svg-icon class="defect-tools-button" v-show="!statisticPanelVisible" icon-class="not-view-statistic" @click="statisticPanelVisible=!statisticPanelVisible" />
+        <svg-icon class="defect-tools-button" v-show="statisticPanelVisible" icon-class="view-statistic" @click="statisticPanelHandle" />
+        <svg-icon class="defect-tools-button" v-show="!statisticPanelVisible" icon-class="not-view-statistic" @click="statisticPanelHandle" />
       </div>
 
     </div>
-    <cat2-bug-statistic :params="{}" v-show="statisticPanelVisible" :statistic-components="statisticList" />
+    <cat2-bug-statistic :params="{}" v-show="statisticPanelVisible" />
 
     <div class="defect-tools">
       <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="0">
@@ -188,6 +188,8 @@ import Cat2BugStatistic from "@/components/Cat2BugStatistic"
 import { checkPermi } from "@/utils/permission";
 import {listStatistic} from "@/api/system/statistic/template";
 
+/** 记录分析模版是否显示的缓存变量名 */
+const CACHE_KEY_STATISTIC_PANEL_VISIBLE = 'defect.statisticPanelVisible';
 export default {
   name: "Defect",
   components: {SelectModule, RowListMember, AddDefect, HandleDefect, LevelTag, SelectProjectMember,ProjectLabel,DefectTypeFlag, DefectTools, Cat2BugStatistic },
@@ -229,7 +231,7 @@ export default {
       // 缺陷等级时间范围
       daterangeHandleTime: [],
       // 是否显示统计面板
-      statisticPanelVisible: true,
+      statisticPanelVisible: this.$cache.local.get(CACHE_KEY_STATISTIC_PANEL_VISIBLE)=='true'?true:false,
       // 查询参数
       queryParams: {
         pageNum: 1,
@@ -296,21 +298,6 @@ export default {
   },
   methods: {
     checkPermi,
-    /** 获取分析模块 */
-    getStatisticList() {
-      let params = {
-        userId: this.userId,
-        projectId: this.projectId,
-        moduleType: 1
-      }
-      listStatistic(params).then(res=>{
-        if(res.rows.length>0) {
-          this.statisticList = JSON.parse(res.rows[0].statisticTemplatConfig);
-        } else {
-          this.statisticList = [];
-        }
-      })
-    },
     search(params) {
       this._setProperty(this.queryParams, params);
       this.selectDefectTabHandle();
@@ -397,7 +384,6 @@ export default {
           this.handleQuery();
           break;
       }
-      this.getStatisticList();
     },
     /** 获取用户id */
     getUserId() {
@@ -485,6 +471,11 @@ export default {
     /** 添加统计操作 */
     addStatisticHandle() {
       this.$router.push({name:'DefectStatisticTemplate'})
+    },
+    /** 统计显示切换操作 */
+    statisticPanelHandle() {
+      this.statisticPanelVisible = !this.statisticPanelVisible;
+      this.$cache.local.set(CACHE_KEY_STATISTIC_PANEL_VISIBLE, this.statisticPanelVisible+'');
     }
   }
 };

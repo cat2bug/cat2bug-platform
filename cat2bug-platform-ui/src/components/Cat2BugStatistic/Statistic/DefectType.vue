@@ -1,7 +1,8 @@
 <template>
-  <cat2-bug-card :title="title" v-loading="loading">
+  <cat2-bug-card :title="title" v-loading="loading" :tools="tools" @tools-click="toolsHandle">
     <template slot="content">
-      <cat2-but-label class="defect-type-label" @click.native="clickHandle(type)" v-for="type in typeList" :key="type.label" :icon="type.icon" :icon-color="type.color" :label="type.label" :content="type.value" />
+      <cat2-but-label class="defect-type-label" @click.native="clickHandle(type)" v-for="type in typeList" :key="type.label"
+                      :icon="type.icon" :icon-color="type.color" :label="type.label" :content="type.value" />
     </template>
   </cat2-bug-card>
 </template>
@@ -23,6 +24,10 @@ export default {
   props: {
     params: {
       type: Object,
+      default: ()=>{}
+    },
+    tools: {
+      type: Array,
       default: ()=>[]
     }
   },
@@ -78,6 +83,9 @@ export default {
     },
     clickHandle(type) {
       this.$parent.search({defectType: type?type.id:null})
+    },
+    toolsHandle(e,tool) {
+      this.$emit('tools-click',tool);
     }
   }
 }

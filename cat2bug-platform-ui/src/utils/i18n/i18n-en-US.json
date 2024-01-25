@@ -228,6 +228,7 @@
   "http.login-expired": "The login status has expired. You can continue to stay on this page or log in again",
   "http.not-resubmit": "Data is being processed, please do not resubmit",
   "defect.statistic-save-success": "The statistical template you selected has been successfully saved",
+  "defect.statistic-exists-warning": "The statistical template has been selected, there is no need to add it again!",
   "defect.statistic-template": "Statistic Template",
   "defect.modify": "Defect Modify",
   "defect.manage": "Defect",
