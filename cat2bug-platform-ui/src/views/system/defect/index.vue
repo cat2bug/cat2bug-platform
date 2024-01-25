@@ -15,7 +15,7 @@
       </div>
 
     </div>
-    <cat2-bug-statistic :params="{}" v-show="statisticPanelVisible" />
+    <cat2-bug-statistic :params="{}" v-show="statisticPanelVisible" :draggable="true" />
 
     <div class="defect-tools">
       <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="0">
@@ -483,7 +483,7 @@ export default {
 <style lang="scss" scoped>
 .defect-tools-tab {
   position: relative;
-  height: 55px;
+  height: 50px;
   .el-tabs {
     position: absolute;
     width: 100%;

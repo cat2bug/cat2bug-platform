@@ -6,7 +6,7 @@
     </el-row>
     <h4 class="first-title">预览区</h4>
     <div class="view-panel">
-      <cat2-bug-statistic v-model="selectTemplate" />
+      <cat2-bug-statistic v-model="selectTemplate" :draggable="true" />
     </div>
     <h4>模版选择区</h4>
     <div class="templates-panel">

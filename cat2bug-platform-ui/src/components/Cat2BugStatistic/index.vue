@@ -1,27 +1,38 @@
 <template>
-  <div class="statistic-tools">
-    <component
-      @click.native="clickHandle($event,sc)"
-      @tools-click="toolsHandle($event,sc)"
-      :tools="tools"
-      :is="sc.name"
-      :params="sc.params"
-      v-for="(sc,index) in list"
-      :key="index"
-    />
+  <div>
+    <draggable v-if="draggable" tag="div" v-model="list" @change="updateStatisticPanel" class="statistic-tools">
+      <component
+        @click.native="clickHandle($event,sc)"
+        @tools-click="toolsHandle($event,sc)"
+        :tools="tools"
+        :is="sc.name"
+        :params="sc.params"
+        v-for="(sc,index) in list"
+        :key="index"
+      />
+    </draggable>
+    <div v-else class="statistic-tools">
+      <component
+        @click.native="clickHandle($event,sc)"
+        @tools-click="toolsHandle($event,sc)"
+        :tools="tools"
+        :is="sc.name"
+        :params="sc.params"
+        v-for="(sc,index) in list"
+        :key="index"
+      />
+    </div>
   </div>
 </template>
 
 <script>
 import Cat2ButTitle from "./Components/Title"
-// import DefectState from "./Statistic/DefectState"
-// import DefectModule from "./Statistic/DefectModule"
-// import DefectBurnDownChart from "./Statistic/DefectBurnDownChart"
-import {addStatistic, delStatistic, listStatistic} from "@/api/system/statistic/template";
+import draggable from 'vuedraggable'
+import {addStatistic, listStatistic} from "@/api/system/statistic/template";
 
 const path = require('path');
 const files = require.context('./Statistic/', true, /\.vue$/);
-const modules = {Cat2ButTitle};
+const modules = {Cat2ButTitle,draggable};
 const allStatisticList = [];
 // 动态加载组件
 files.keys().forEach(key=>{
@@ -41,6 +52,7 @@ export default {
   components: modules,
   data() {
     return {
+      activeNames: null,
       statisticList: [],
       // 统计工具
       statisticToolsList: [{
@@ -62,14 +74,35 @@ export default {
       type: Array,
       default: null
     },
+    draggable: {
+      type: Boolean,
+      default: false
+    },
     params: {
       type: Object,
       default: ()=> {}
     }
   },
   computed: {
-    list: function (){
-      return this.statisticComponents || this.statisticList;
+    draggableList: {
+      get(){
+        return this.draggable?this.list:null;
+      },
+      set(val) {
+        if(this.draggable)
+          this.list = val;
+      }
+    },
+    list: {
+      get(){
+        return this.statisticComponents || this.statisticList;
+      },
+      set(val) {
+        if(this.statisticComponents) {
+          this.$emit('change', val);
+        }
+        this.statisticList = val;
+      }
     },
     tools: function () {
       return this.statisticTools || this.statisticToolsList;
@@ -93,12 +126,36 @@ export default {
     }
   },
   created() {
-    this.init();
   },
   methods: {
-    init() {
-
-
+    /** 更新统计面板 */
+    updateStatisticPanel: function (){
+      let params = {
+        userId: this.memberId,
+        projectId: this.projectId,
+        moduleType: 1,
+        statisticTemplatConfig: JSON.stringify(this.list)
+      }
+      addStatistic(params).then(res => {
+        this.$message.success(this.$i18n.t('defect.statistic-save-success').toString());
+      });
+    },
+    inputChanged(value) {
+      this.activeNames = value;
+    },
+    getComponentData() {
+      return {
+        on: {
+          change: this.updateStatisticPanel,
+          input: this.inputChanged
+        },
+        attrs:{
+          wrap: true
+        },
+        props: {
+          value: this.activeNames
+        }
+      };
     },
     refresh() {
       this.getStatisticList();
@@ -167,5 +224,6 @@ export default {
     flex-direction: row;
     flex-wrap: wrap;
     gap:15px;
+    border-width: 0px;
   }
 </style>
