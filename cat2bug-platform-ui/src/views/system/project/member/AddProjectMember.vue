@@ -93,7 +93,7 @@ export default {
     /** 获取项目权限列表 */
     getRoleList() {
       listProjectRole(0).then(res => {
-        this.roleOptions = res.rows?res.rows.map(r=>{
+        this.roleOptions = res.rows?res.rows.filter(r=>r.projectCreateBy==false).map(r=>{
           r.roleName = r.roleNameI18nKey?this.$t(r.roleNameI18nKey):r.roleName;
           return r;
         }):[];
