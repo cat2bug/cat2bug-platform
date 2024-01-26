@@ -86,7 +86,6 @@ export default {
       });
     },
     clickHandle(type) {
-      console.log(this.parent)
       this.parent.search({defectType: type?type.id:null})
     },
     toolsHandle(e,tool) {
