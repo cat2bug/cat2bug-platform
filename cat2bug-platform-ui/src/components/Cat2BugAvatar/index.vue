@@ -3,7 +3,6 @@
     :isStatistics="member.isStatistics?'true':'false'"
     :src="imgUrl"
     fit="cover" :size="size">
-    {{imgUrl}}
     {{member.avatar?'': member.nickName || member.userName || member.name}}
   </el-avatar>
 </template>

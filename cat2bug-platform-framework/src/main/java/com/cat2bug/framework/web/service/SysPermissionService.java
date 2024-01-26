@@ -91,6 +91,7 @@ public class SysPermissionService
         if (user.isAdmin())
         {
             SysRole adminRole = roleService.selectRoleById(1L);
+            adminRole.setFlag(true);
             roles.add(adminRole);
         }
         else
