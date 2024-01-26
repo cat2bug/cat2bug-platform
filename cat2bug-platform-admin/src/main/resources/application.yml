@@ -3,7 +3,7 @@ cat2bug:
   # 名称
   name: Cat2Bug
   # 版本
-  version: 0.0.1
+  version: 0.0.2
   # 版权年份
   copyrightYear: 2023
   # 实例演示开关
