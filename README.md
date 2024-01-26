@@ -34,20 +34,20 @@ docker-compose up -d
 
 <table>
     <tr>
-        <td><img src="http://www.cat2bug.com/public/cat2bug-platform/images/1.jpg"/></td>
-        <td><img src="http://www.cat2bug.com/public/cat2bug-platform/images/4.png"/></td>
+        <td><img src="readme/images/1.png"></td>
+        <td><img src="readme/images/2.png"></td>
     </tr>
     <tr>
-        <td><img src="http://www.cat2bug.com/public/cat2bug-platform/images/3.png"/></td>
-        <td><img src="http://www.cat2bug.com/public/cat2bug-platform/images/2.png"/></td>
+        <td><img src="readme/images/3.png"></td>
+        <td><img src="readme/images/4.png"></td>
     </tr>
     <tr>
-        <td><img src="http://www.cat2bug.com/public/cat2bug-platform/images/5.png"/></td>
-        <td><img src="http://www.cat2bug.com/public/cat2bug-platform/images/6.png"/></td>
+        <td><img src="readme/images/5.png"></td>
+        <td><img src="readme/images/6.png"></td>
     </tr>
     <tr>
-        <td><img src="http://www.cat2bug.com/public/cat2bug-platform/images/7.png"/></td>
-        <td><img src="http://www.cat2bug.com/public/cat2bug-platform/images/8.png"/></td>
+        <td><img src="readme/images/7.png"></td>
+        <td><img src="readme/images/8.png"></td>
     </tr>
 </table>
 
