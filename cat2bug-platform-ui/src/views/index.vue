@@ -100,6 +100,11 @@
             <span>{{$t('update-log')}}</span>
           </div>
           <el-collapse accordion>
+            <el-collapse-item title="v0.0.2 - 2024-01-26">
+              <ol>
+                <li>增加系统管理模块</li>
+              </ol>
+            </el-collapse-item>
             <el-collapse-item title="v0.0.1 - 2024-01-10">
               <ol>
                 <li>Cat2Bug正式发布</li>
@@ -142,17 +147,27 @@
 </template>
 
 <script>
+import {getVersion} from "@/api/version";
+
 export default {
   name: "Index",
   data() {
     return {
       // 版本号
-      version: "0.0.1"
+      version: null
     };
+  },
+  created() {
+    this.getSystemVersion();
   },
   methods: {
     goTarget(href) {
       window.open(href, "_blank");
+    },
+    getSystemVersion() {
+      getVersion().then(res=>{
+        this.version = res;
+      })
     }
   }
 };
