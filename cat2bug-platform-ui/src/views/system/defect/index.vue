@@ -199,9 +199,9 @@ export default {
       // 分析图表列表
       statisticList:[],
       // 查询中缺陷类型的名称
-      activeDefectTypeName: this.$i18n.t('defect.all-type'),
+      activeDefectTypeName: 'defect.all-type',
       // 查询中缺陷状态的名称
-      activeDefectStateName: this.$i18n.t('defect.all-state'),
+      activeDefectStateName: 'defect.all-state',
       // 缺陷配置
       config:{},
       // 当前缺陷的tab页名
@@ -326,7 +326,7 @@ export default {
       if(defectState) {
         this.activeDefectStateName = defectState;
       } else {
-        this.activeDefectStateName = this.$i18n.t('defect.all-state');
+        this.activeDefectStateName = 'defect.all-state';
       }
       this.queryParams.defectState= defectState;
       this.selectDefectTabHandle();
@@ -336,7 +336,7 @@ export default {
       if(defectType) {
         this.activeDefectTypeName = defectType;
       } else {
-        this.activeDefectTypeName = this.$i18n.t('defect.all-type');
+        this.activeDefectTypeName = 'defect.all-type';
       }
       this.queryParams.defectType= defectType;
       this.selectDefectTabHandle();
