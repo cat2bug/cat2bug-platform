@@ -42,7 +42,11 @@ export default {
     tools: {
       type: Array,
       default: ()=>[]
-    }
+    },
+    parent: {
+      type: Object,
+      default: ()=>{}
+    },
   },
   computed: {
     flag: function () {
@@ -82,7 +86,7 @@ export default {
   },
   methods: {
     clickHandle(state) {
-      this.$parent.search({
+      this.parent.search({
         params: {
           defectStates: state?state.id:null
         }

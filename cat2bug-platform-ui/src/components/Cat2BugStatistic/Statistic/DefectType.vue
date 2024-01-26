@@ -29,7 +29,11 @@ export default {
     tools: {
       type: Array,
       default: ()=>[]
-    }
+    },
+    parent: {
+      type: Object,
+      default: ()=>{}
+    },
   },
   computed: {
     currentProjectId: function () {
@@ -82,7 +86,8 @@ export default {
       });
     },
     clickHandle(type) {
-      this.$parent.search({defectType: type?type.id:null})
+      console.log(this.parent)
+      this.parent.search({defectType: type?type.id:null})
     },
     toolsHandle(e,tool) {
       this.$emit('tools-click',tool);

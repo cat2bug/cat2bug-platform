@@ -60,7 +60,11 @@ export default {
     tools: {
       type: Array,
       default: ()=>[]
-    }
+    },
+    parent: {
+      type: Object,
+      default: ()=>{}
+    },
   },
   computed: {
     percentage: function (){
@@ -112,7 +116,7 @@ export default {
     },
     clickHandle(m) {
       let id = this.prevClickModuleId==m.id?null:m.id;
-      this.$parent.search({
+      this.parent.search({
         moduleId: id
       });
       this.prevClickModuleId = id;

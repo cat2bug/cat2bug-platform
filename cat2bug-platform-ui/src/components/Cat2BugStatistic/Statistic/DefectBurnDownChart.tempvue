@@ -34,7 +34,11 @@ export default {
     tools: {
       type: Array,
       default: ()=>[]
-    }
+    },
+    parent: {
+      type: Object,
+      default: ()=>{}
+    },
   },
   mounted() {
     this.chartInit();

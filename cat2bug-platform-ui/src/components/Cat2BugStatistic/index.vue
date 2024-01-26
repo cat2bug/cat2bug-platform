@@ -7,6 +7,7 @@
         :tools="tools"
         :is="sc.name"
         :params="sc.params"
+        :parent="parent"
         v-for="(sc,index) in list"
         :key="index"
       />
@@ -84,6 +85,9 @@ export default {
     }
   },
   computed: {
+    parent: function() {
+      return this;
+    },
     draggableList: {
       get(){
         return this.draggable?this.list:null;
