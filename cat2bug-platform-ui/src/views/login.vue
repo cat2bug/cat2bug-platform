@@ -153,7 +153,7 @@ export default {
     },
     getCookie() {
       const username =  process.env.NODE_ENV === "demo" ? "demo" : Cookies.get("username");
-      const password =  process.env.NODE_ENV === "demo" ? "123456" : Cookies.get("password");
+      const password =  process.env.NODE_ENV === "demo" ? "$2a$10$PBB0JNeedYV36FAgw0MEFOInNLVvs9dIhMVb6OnHIOMGHQbtW/nOW" : Cookies.get("password");
       const rememberMe = Cookies.get('rememberMe')
       this.loginForm = {
         username: username === undefined ? this.loginForm.username : username,
