@@ -231,7 +231,7 @@ export default {
       // 缺陷等级时间范围
       daterangeHandleTime: [],
       // 是否显示统计面板
-      statisticPanelVisible: this.$cache.local.get(CACHE_KEY_STATISTIC_PANEL_VISIBLE)=='true'?true:false,
+      statisticPanelVisible: this.$cache.local.get(CACHE_KEY_STATISTIC_PANEL_VISIBLE)=='false'?false:true,
       // 查询参数
       queryParams: {
         pageNum: 1,
