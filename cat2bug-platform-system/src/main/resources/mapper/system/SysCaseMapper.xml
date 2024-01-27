@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.system.mapper.SysCaseMapper">
+    
+    <resultMap type="SysCase" id="SysCaseResult">
+        <result property="caseId"    column="case_id"    />
+        <result property="caseName"    column="case_name"    />
+        <result property="moduleId"    column="module_id"    />
+        <result property="caseType"    column="case_type"    />
+        <result property="caseExpect"    column="case_expect"    />
+        <result property="caseStep"    column="case_step"  typeHandler="com.cat2bug.system.domain.handle.SysCaseStepArrayTypeHandler"  />
+        <result property="caseLevel"    column="case_level"    />
+        <result property="casePreconditions"    column="case_preconditions"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="caseNum"    column="case_num"    />
+        <result property="projectId"    column="project_id"    />
+    </resultMap>
+
+    <sql id="selectSysCaseVo">
+        select case_id, case_name, module_id, case_type, case_expect, case_step, case_level, case_preconditions, create_by, create_time, update_by, update_time, case_num, project_id from sys_case
+    </sql>
+
+    <select id="selectSysCaseList" parameterType="SysCase" resultMap="SysCaseResult">
+        <include refid="selectSysCaseVo"/>
+        <where>  
+            <if test="caseName != null  and caseName != ''"> and case_name like concat('%', #{caseName}, '%')</if>
+            <if test="moduleId != null "> and module_id = #{moduleId}</if>
+            <if test="caseType != null "> and case_type = #{caseType}</if>
+            <if test="caseExpect != null  and caseExpect != ''"> and case_expect = #{caseExpect}</if>
+            <if test="caseLevel != null "> and case_level = #{caseLevel}</if>
+            <if test="casePreconditions != null  and casePreconditions != ''"> and case_preconditions = #{casePreconditions}</if>
+            <if test="caseNum != null "> and case_num = #{caseNum}</if>
+            <if test="projectId != null "> and project_id = #{projectId}</if>
+        </where>
+    </select>
+    
+    <select id="selectSysCaseByCaseId" parameterType="Long" resultMap="SysCaseResult">
+        <include refid="selectSysCaseVo"/>
+        where case_id = #{caseId}
+    </select>
+        
+    <insert id="insertSysCase" parameterType="SysCase">
+        insert into sys_case
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="caseId != null">case_id,</if>
+            <if test="caseName != null">case_name,</if>
+            <if test="moduleId != null">module_id,</if>
+            <if test="caseType != null">case_type,</if>
+            <if test="caseExpect != null">case_expect,</if>
+            <if test="caseStep != null">case_step,</if>
+            <if test="caseLevel != null">case_level,</if>
+            <if test="casePreconditions != null">case_preconditions,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="caseNum != null">case_num,</if>
+            <if test="projectId != null">project_id,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="caseId != null">#{caseId},</if>
+            <if test="caseName != null">#{caseName},</if>
+            <if test="moduleId != null">#{moduleId},</if>
+            <if test="caseType != null">#{caseType},</if>
+            <if test="caseExpect != null">#{caseExpect},</if>
+            <if test="caseStep != null">#{caseStep,typeHandler=com.cat2bug.system.domain.handle.SysCaseStepArrayTypeHandler},</if>
+            <if test="caseLevel != null">#{caseLevel},</if>
+            <if test="casePreconditions != null">#{casePreconditions},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="caseNum != null">#{caseNum},</if>
+            <if test="projectId != null">#{projectId},</if>
+         </trim>
+    </insert>
+
+    <update id="updateSysCase" parameterType="SysCase">
+        update sys_case
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="caseName != null">case_name = #{caseName},</if>
+            <if test="moduleId != null">module_id = #{moduleId},</if>
+            <if test="caseType != null">case_type = #{caseType},</if>
+            <if test="caseExpect != null">case_expect = #{caseExpect},</if>
+            <if test="caseStep != null">case_step = #{caseStep,typeHandler=com.cat2bug.system.domain.handle.SysCaseStepArrayTypeHandler},</if>
+            <if test="caseLevel != null">case_level = #{caseLevel},</if>
+            <if test="casePreconditions != null">case_preconditions = #{casePreconditions},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="caseNum != null">case_num = #{caseNum},</if>
+            <if test="projectId != null">project_id = #{projectId},</if>
+        </trim>
+        where case_id = #{caseId}
+    </update>
+
+    <delete id="deleteSysCaseByCaseId" parameterType="Long">
+        delete from sys_case where case_id = #{caseId}
+    </delete>
+
+    <delete id="deleteSysCaseByCaseIds" parameterType="String">
+        delete from sys_case where case_id in 
+        <foreach item="caseId" collection="array" open="(" separator="," close=")">
+            #{caseId}
+        </foreach>
+    </delete>
+</mapper>
