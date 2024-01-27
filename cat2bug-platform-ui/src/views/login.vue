@@ -294,14 +294,18 @@ body {
 
 .login-body {
   float: right;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 .login-logo {
   width: 500px;
   height: 400px;
   z-index: 2;
+  margin-top: -100px;
 }
 .login-form {
-  margin-top: -80px;
+  margin-top: -77px;
   border-radius: 6px;
   background: #ffffff;
   width: 500px;
