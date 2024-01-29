@@ -331,5 +331,6 @@
   "case.name-cannot-empty": "标题不能为空",
   "case.level-cannot-empty": "级别不能为空",
   "case.module-cannot-empty": "模块不能为空",
-  "case.expect-cannot-empty": "预期不能为空"
+  "case.expect-cannot-empty": "预期不能为空",
+  "case.is-delete": "是否确认删除测试用例编号为{0}的数据项？"
 }

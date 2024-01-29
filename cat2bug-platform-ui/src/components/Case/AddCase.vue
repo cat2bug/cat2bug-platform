@@ -9,8 +9,8 @@
         <h3>{{title}}</h3>
         <div>
           <el-button @click="cancel" icon="el-icon-close" size="mini">{{$t('close')}}</el-button>
-          <el-button v-if="isAddMode" type="primary" icon="el-icon-finished" @click="submitForm" size="mini">{{$t('create')}}</el-button>
-          <el-button v-else type="success" icon="el-icon-finished" @click="submitForm" size="mini">{{$t('modify')}}</el-button>
+          <el-button v-if="isAddMode" v-hasPermi="['system:case:add']" type="primary" icon="el-icon-finished" @click="submitForm" size="mini">{{$t('create')}}</el-button>
+          <el-button v-else v-hasPermi="['system:case:edit']" type="success" icon="el-icon-finished" @click="submitForm" size="mini">{{$t('modify')}}</el-button>
         </div>
       </div>
     </template>
@@ -115,7 +115,6 @@ export default {
         getCase(caseId).then(response => {
           this.form = response.data;
           this.visible = true;
-          // this.title = "修改测试用例";
         });
       } else {
         this.visible = true;

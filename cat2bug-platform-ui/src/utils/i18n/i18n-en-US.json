@@ -331,5 +331,6 @@
   "case.name-cannot-empty": "Title cannot be empty!",
   "case.level-cannot-empty": "Level cannot be empty!",
   "case.module-cannot-empty": "Module cannot be empty!",
-  "case.expect-cannot-empty": "Expected cannot be empty"
+  "case.expect-cannot-empty": "Expected cannot be empty",
+  "case.is-delete": "Are you sure to delete the data item with test case number {0} ?"
 }

@@ -70,7 +70,7 @@
     <el-table v-loading="loading" :data="caseList" @selection-change="handleSelectionChange" @row-click="handleUpdate">
       <el-table-column :label="$t('id')" align="center" prop="caseNum" width="80" sortable>
         <template slot-scope="scope">
-          <span>{{ '#' + scope.row.caseNum }}</span>
+          <span>{{ caseNumber(scope.row) }}</span>
         </template>
       </el-table-column>
       <el-table-column :label="$t('title')" align="center" prop="caseName" sortable />
@@ -131,6 +131,7 @@ import Step from "@/views/system/case/components/step";
 import { listCase, getCase, delCase } from "@/api/system/case";
 import AddCase from "@/components/Case/AddCase";
 import {checkPermi} from "@/utils/permission";
+import {strFormat} from "@/utils";
 export default {
   name: "Case",
   components: {ProjectLabel,AddCase,Cat2BugLevel,Step},
@@ -168,6 +169,13 @@ export default {
         projectId: null
       },
     };
+  },
+  computed: {
+    caseNumber: function () {
+      return function (val) {
+        return '#'+val.caseNum;
+      }
+    }
   },
   created() {
     this.getList();
@@ -210,12 +218,11 @@ export default {
     },
     /** 删除按钮操作 */
     handleDelete(e,row) {
-      const caseIds = row.caseId || this.ids;
-      this.$modal.confirm('是否确认删除测试用例编号为"' + caseIds + '"的数据项？').then(function() {
-        return delCase(caseIds);
+      this.$modal.confirm(strFormat(this.$i18n.t('case.is-delete').toString(),this.caseNumber(row))).then(function() {
+        return delCase(row.caseId);
       }).then(() => {
         this.getList();
-        this.$modal.msgSuccess("删除成功");
+        this.$modal.msgSuccess(this.$i18n.t('delete-success'));
       }).catch(() => {});
       e.stopPropagation();
     },

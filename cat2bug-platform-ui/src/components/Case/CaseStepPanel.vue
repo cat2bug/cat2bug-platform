@@ -36,6 +36,11 @@ export default {
       default: ()=>[{}]
     }
   },
+  watch: {
+    caseStep: function (n) {
+      this.caseStepList = n;
+    }
+  },
   methods: {
     addStepHandle(index) {
       if(index!=undefined){
