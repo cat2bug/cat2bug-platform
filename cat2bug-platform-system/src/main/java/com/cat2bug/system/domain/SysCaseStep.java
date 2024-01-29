@@ -12,9 +12,9 @@ public class SysCaseStep {
     /**
      * 描述
      */
-    private String describe;
+    private String stepDescribe;
     /**
      * 预期
      */
-    private String case_expect;
+    private String stepExpect;
 }

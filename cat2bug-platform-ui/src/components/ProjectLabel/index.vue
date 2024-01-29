@@ -31,7 +31,7 @@ export default {
 <style scoped>
   h3 {
     margin-top: 0px;
-    margin-bottom: 10px;
+    margin-bottom: 20px;
   }
   .project-label-title {
     margin-left: 10px;

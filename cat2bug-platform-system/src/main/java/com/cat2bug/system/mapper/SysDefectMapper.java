@@ -25,7 +25,7 @@ public interface SysDefectMapper
      * @param projectId
      * @return
      */
-    public Long getProjectDefectCount(@Param("projectId") Long projectId, @Param("currentUserId") Long currentUserId);
+    public Long getProjectDefectMaxNum(@Param("projectId") Long projectId, @Param("currentUserId") Long currentUserId);
 
     /**
      * 查询缺陷列表

@@ -12,6 +12,14 @@ import com.cat2bug.system.domain.SysCase;
 public interface SysCaseMapper 
 {
     /**
+     * 获取项目中的用例最大数量
+     * @param projectId
+     * @return
+     */
+
+    public long getCaseMaxNumOfProject(Long projectId);
+
+    /**
      * 查询测试用例
      * 
      * @param caseId 测试用例主键

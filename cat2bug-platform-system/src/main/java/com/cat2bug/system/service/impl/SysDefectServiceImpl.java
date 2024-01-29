@@ -212,7 +212,7 @@ public class SysDefectServiceImpl implements ISysDefectService
         sysDefect.setUpdateBy(SecurityUtils.getUsername());
         sysDefect.setCreateById(SecurityUtils.getUserId());
         sysDefect.setUpdateById(SecurityUtils.getUserId());
-        long count = sysDefectMapper.getProjectDefectCount(sysDefect.getProjectId(), SecurityUtils.getUserId());
+        long count = sysDefectMapper.getProjectDefectMaxNum(sysDefect.getProjectId(), SecurityUtils.getUserId());
         sysDefect.setProjectNum(count+1);
         Preconditions.checkState(sysDefectMapper.insertSysDefect(sysDefect)>0,MessageUtils.message("defect.insert_fail"));
         // 新建日志

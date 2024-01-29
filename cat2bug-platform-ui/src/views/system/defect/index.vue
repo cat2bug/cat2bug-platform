@@ -482,6 +482,7 @@ export default {
 </script>
 <style lang="scss" scoped>
 .defect-tools-tab {
+  margin-top: -10px;
   position: relative;
   height: 50px;
   .el-tabs {

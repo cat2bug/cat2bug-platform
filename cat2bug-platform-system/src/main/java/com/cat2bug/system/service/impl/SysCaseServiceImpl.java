@@ -2,6 +2,11 @@ package com.cat2bug.system.service.impl;
 
 import java.util.List;
 import com.cat2bug.common.utils.DateUtils;
+import com.cat2bug.common.utils.MessageUtils;
+import com.cat2bug.common.utils.SecurityUtils;
+import com.cat2bug.system.domain.type.SysDefectLogStateEnum;
+import com.cat2bug.system.domain.type.SysDefectStateEnum;
+import com.google.common.base.Preconditions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.cat2bug.system.mapper.SysCaseMapper;
@@ -53,7 +58,12 @@ public class SysCaseServiceImpl implements ISysCaseService
     @Override
     public int insertSysCase(SysCase sysCase)
     {
+        long count = sysCaseMapper.getCaseMaxNumOfProject(sysCase.getProjectId());
+        sysCase.setCaseNum(count+1);
+        sysCase.setCreateById(SecurityUtils.getUserId());
         sysCase.setCreateTime(DateUtils.getNowDate());
+        sysCase.setUpdateById(SecurityUtils.getUserId());
+        sysCase.setUpdateTime(DateUtils.getNowDate());
         return sysCaseMapper.insertSysCase(sysCase);
     }
 

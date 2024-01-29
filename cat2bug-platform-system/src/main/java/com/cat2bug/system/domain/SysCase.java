@@ -26,8 +26,11 @@ public class SysCase extends BaseEntity
     @Excel(name = "用例名称")
     private String caseName;
 
+    /** 模块名称 */
+    @Excel(name = "模块")
+    private String moduleName;
+
     /** 模块id */
-    @Excel(name = "模块id")
     private Long moduleId;
 
     /** 用例类型 */
@@ -57,6 +60,9 @@ public class SysCase extends BaseEntity
     /** 项目编号 */
     @Excel(name = "项目编号")
     private Long projectId;
+
+    /** 备注 */
+    private String remark;
 
     @Override
     public String toString() {

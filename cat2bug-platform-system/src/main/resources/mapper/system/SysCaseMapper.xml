@@ -8,6 +8,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="caseId"    column="case_id"    />
         <result property="caseName"    column="case_name"    />
         <result property="moduleId"    column="module_id"    />
+        <result property="moduleName"    column="module_name"    />
         <result property="caseType"    column="case_type"    />
         <result property="caseExpect"    column="case_expect"    />
         <result property="caseStep"    column="case_step"  typeHandler="com.cat2bug.system.domain.handle.SysCaseStepArrayTypeHandler"  />
@@ -19,11 +20,18 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="updateTime"    column="update_time"    />
         <result property="caseNum"    column="case_num"    />
         <result property="projectId"    column="project_id"    />
+        <result property="remark"    column="remark"    />
     </resultMap>
 
     <sql id="selectSysCaseVo">
-        select case_id, case_name, module_id, case_type, case_expect, case_step, case_level, case_preconditions, create_by, create_time, update_by, update_time, case_num, project_id from sys_case
+        select c.case_id, c.case_name, c.module_id, m.module_name, c.case_type, c.case_expect, c.case_step, c.case_level, c.case_preconditions, c.create_by, c.create_time, c.update_by, c.update_time, c.case_num, c.project_id, c.remark
+        from sys_case c
+        LEFT JOIN sys_module m on m.module_id = c.module_id
     </sql>
+
+    <select id="getCaseMaxNumOfProject" resultType="Long">
+        select IFNULL(MAX(case_num),0) from sys_case where project_id=#{projectId}
+    </select>
 
     <select id="selectSysCaseList" parameterType="SysCase" resultMap="SysCaseResult">
         <include refid="selectSysCaseVo"/>
@@ -61,6 +69,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="updateTime != null">update_time,</if>
             <if test="caseNum != null">case_num,</if>
             <if test="projectId != null">project_id,</if>
+            <if test="remark != null">remark,</if>
          </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="caseId != null">#{caseId},</if>
@@ -77,6 +86,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="updateTime != null">#{updateTime},</if>
             <if test="caseNum != null">#{caseNum},</if>
             <if test="projectId != null">#{projectId},</if>
+            <if test="remark != null">#{remark},</if>
          </trim>
     </insert>
 
@@ -96,6 +106,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="updateTime != null">update_time = #{updateTime},</if>
             <if test="caseNum != null">case_num = #{caseNum},</if>
             <if test="projectId != null">project_id = #{projectId},</if>
+            <if test="remark != null">remark = #{remark},</if>
         </trim>
         where case_id = #{caseId}
     </update>
