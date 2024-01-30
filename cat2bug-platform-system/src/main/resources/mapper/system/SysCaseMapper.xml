@@ -36,15 +36,22 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <select id="selectSysCaseList" parameterType="SysCase" resultMap="SysCaseResult">
         <include refid="selectSysCaseVo"/>
         <where>  
-            <if test="caseName != null  and caseName != ''"> and case_name like concat('%', #{caseName}, '%')</if>
-            <if test="moduleId != null "> and module_id = #{moduleId}</if>
-            <if test="caseType != null "> and case_type = #{caseType}</if>
-            <if test="caseExpect != null  and caseExpect != ''"> and case_expect = #{caseExpect}</if>
-            <if test="caseLevel != null "> and case_level = #{caseLevel}</if>
-            <if test="casePreconditions != null  and casePreconditions != ''"> and case_preconditions = #{casePreconditions}</if>
-            <if test="caseNum != null "> and case_num = #{caseNum}</if>
-            <if test="projectId != null "> and project_id = #{projectId}</if>
+            <if test="caseName != null  and caseName != ''"> and c.case_name like concat('%', #{caseName}, '%')</if>
+            <if test="moduleId != null "> and c.module_id = #{moduleId}</if>
+            <if test="caseType != null "> and c.case_type = #{caseType}</if>
+            <if test="caseExpect != null  and caseExpect != ''"> and c.case_expect = #{caseExpect}</if>
+            <if test="caseLevel != null "> and c.case_level = #{caseLevel}</if>
+            <if test="casePreconditions != null  and casePreconditions != ''"> and c.case_preconditions = #{casePreconditions}</if>
+            <if test="caseNum != null "> and c.case_num = #{caseNum}</if>
+            <if test="projectId != null "> and c.project_id = #{projectId}</if>
+            <if test="params != null and params.moduleIds !=null">
+             and c.module_id in
+                <foreach collection="params.moduleIds" item="moduleId" separator="," open="(" close=")">
+                    #{moduleId}
+                </foreach>
+             </if>
         </where>
+        ORDER BY c.update_time DESC
     </select>
     
     <select id="selectSysCaseByCaseId" parameterType="Long" resultMap="SysCaseResult">

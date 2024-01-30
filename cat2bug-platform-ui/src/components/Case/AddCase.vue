@@ -52,7 +52,7 @@
 <script>
 import {addCase, getCase, updateCase} from "@/api/system/case";
 import CaseStepPanel from "./CaseStepPanel"
-import SelectModule from "@/components/Project/SelectModule"
+import SelectModule from "@/components/Module/SelectModule"
 import Cat2BugSelectLevel from "@/components/Cat2BugSelectLevel";
 import Label from "@/components/Cat2BugStatistic/Components/Label";
 
@@ -133,6 +133,26 @@ export default {
       this.visible = false;
       this.reset();
     },
+    /** 循环时的重设 */
+    loopReset() {
+      this.form = {
+        caseId: null,
+        caseName: null,
+        moduleId: this.form.moduleId,
+        caseType: null,
+        caseExpect: null,
+        caseStep: [],
+        caseLevel: this.form.caseLevel,
+        casePreconditions: null,
+        createBy: null,
+        createTime: null,
+        updateBy: null,
+        updateTime: null,
+        caseNum: null,
+        projectId: this.projectId
+      };
+      this.resetForm("form");
+    },
     // 表单重置
     reset() {
       this.form = {
@@ -163,8 +183,10 @@ export default {
               this.$modal.msgSuccess(this.$i18n.t('create-success'));
               if(this.isCreateNextCase==false) {
                 this.visible = false;
+                this.reset();
+              } else {
+                this.loopReset();
               }
-              this.reset();
               this.$emit('added');
             });
           } else {

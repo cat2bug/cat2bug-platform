@@ -1,6 +1,8 @@
 package com.cat2bug.system.service;
 
 import java.util.List;
+import java.util.Set;
+
 import com.cat2bug.system.domain.SysModule;
 
 /**
@@ -11,6 +13,12 @@ import com.cat2bug.system.domain.SysModule;
  */
 public interface ISysModuleService 
 {
+    /**
+     * 获取所有子模块Id
+     * @param moduleId  父模块id
+     * @return  子模块集合
+     */
+    public Set<Long> getAllChildIds(Long moduleId);
     /**
      * 查询模块
      * 

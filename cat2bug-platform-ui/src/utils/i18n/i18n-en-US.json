@@ -291,6 +291,7 @@
   "assist": "Assist",
   "comment": "Comment",
   "module": "Module",
+  "module.list": "Module List",
   "module.name": "Module Name",
   "module.create": "Create Module",
   "module.add": "Add Module",

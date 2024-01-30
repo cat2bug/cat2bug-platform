@@ -68,7 +68,7 @@ import {listDefect, getDefect, delDefect, addDefect, updateDefect, configDefect}
 import RowListMember from "@/components/RowListMember";
 import LevelTag from "@/components/LevelTag";
 import AddDefect from "@/components/Defect/AddDefect"
-import SelectModule from "@/components/Project/SelectModule";
+import SelectModule from "@/components/Module/SelectModule";
 import SelectProjectMember from "@/components/Project/SelectProjectMember";
 import ProjectLabel from "@/components/Project/ProjectLabel";
 import DefectTypeFlag from "@/components/Defect/DefectTypeFlag";

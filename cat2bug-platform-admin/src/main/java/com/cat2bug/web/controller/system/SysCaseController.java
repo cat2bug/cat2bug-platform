@@ -8,12 +8,15 @@ import com.cat2bug.common.enums.BusinessType;
 import com.cat2bug.common.utils.poi.ExcelUtil;
 import com.cat2bug.system.domain.SysCase;
 import com.cat2bug.system.service.ISysCaseService;
+import com.cat2bug.system.service.ISysModuleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 /**
  * 测试用例Controller
@@ -27,6 +30,8 @@ public class SysCaseController extends BaseController
 {
     @Autowired
     private ISysCaseService sysCaseService;
+    @Autowired
+    private ISysModuleService sysModuleService;
 
     /**
      * 查询测试用例列表
@@ -35,6 +40,15 @@ public class SysCaseController extends BaseController
     @GetMapping("/list")
     public TableDataInfo list(SysCase sysCase)
     {
+        if(sysCase.getParams()!=null && sysCase.getParams().get("modulePids") != null) {
+            Long pid = Long.parseLong(String.valueOf(sysCase.getParams().get("modulePids")));
+            Set<Long> moduleIds = sysModuleService.getAllChildIds(pid);
+            if(sysCase.getParams()==null){
+                sysCase.setParams(new HashMap<>());
+            }
+            moduleIds.add(pid);
+            sysCase.getParams().put("moduleIds",moduleIds);
+        }
         startPage();
         List<SysCase> list = sysCaseService.selectSysCaseList(sysCase);
         return getDataTable(list);

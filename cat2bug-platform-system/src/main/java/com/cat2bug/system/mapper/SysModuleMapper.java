@@ -1,6 +1,8 @@
 package com.cat2bug.system.mapper;
 
 import java.util.List;
+import java.util.Set;
+
 import com.cat2bug.system.domain.SysModule;
 
 /**
@@ -11,6 +13,12 @@ import com.cat2bug.system.domain.SysModule;
  */
 public interface SysModuleMapper 
 {
+    /**
+     * 获取所有子模块id
+     * @param moduleId 查询的父模块id
+     * @return  父模块id和父模块下的所有子模块集合
+     */
+    public Set<Long> getAllChildIds(Long moduleId);
     /**
      * 查询模块
      * 

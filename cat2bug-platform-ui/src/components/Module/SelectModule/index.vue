@@ -32,7 +32,7 @@
 import i18n from "@/utils/i18n/i18n";
 import { checkPermi } from "@/utils/permission";
 import MemberNameplate from "@/components/MemberNameplate";
-import ModuleMenu from "@/components/Project/SelectModule/menu";
+import ModuleMenu from "@/components/Module/SelectModule/menu";
 import {getModule} from "@/api/system/module";
 
 export default {

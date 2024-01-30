@@ -1,11 +1,15 @@
 package com.cat2bug.system.service.impl;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
+
 import com.cat2bug.common.utils.DateUtils;
 import com.cat2bug.common.utils.MessageUtils;
 import com.cat2bug.common.utils.SecurityUtils;
 import com.cat2bug.system.domain.type.SysDefectLogStateEnum;
 import com.cat2bug.system.domain.type.SysDefectStateEnum;
+import com.cat2bug.system.mapper.SysModuleMapper;
 import com.google.common.base.Preconditions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,6 +28,9 @@ public class SysCaseServiceImpl implements ISysCaseService
 {
     @Autowired
     private SysCaseMapper sysCaseMapper;
+
+    @Autowired
+    private SysModuleMapper sysModuleMapper;
 
     /**
      * 查询测试用例

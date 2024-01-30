@@ -24,6 +24,11 @@ export default {
       value: this.level,
     }
   },
+  watch: {
+    level:function (n) {
+      this.value = n;
+    }
+  },
   props: {
     level: {
       type: Number,

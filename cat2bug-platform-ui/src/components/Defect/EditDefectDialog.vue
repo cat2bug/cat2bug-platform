@@ -81,7 +81,7 @@
 <script>
 import {addDefect, configDefect, getDefect, updateDefect} from "@/api/system/defect";
 import SelectProjectMember from "@/components/Project/SelectProjectMember"
-import SelectModule from "@/components/Project/SelectModule"
+import SelectModule from "@/components/Module/SelectModule"
 import ImageUpload from "@/components/ImageUpload";
 import ListDefectLog from "@/components/ListDefectLog";
 import DefectTools from "@/components/Defect/DefectTools";

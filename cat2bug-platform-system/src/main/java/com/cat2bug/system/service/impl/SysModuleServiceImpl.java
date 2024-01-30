@@ -1,6 +1,8 @@
 package com.cat2bug.system.service.impl;
 
 import java.util.List;
+import java.util.Set;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.cat2bug.system.mapper.SysModuleMapper;
@@ -18,6 +20,11 @@ public class SysModuleServiceImpl implements ISysModuleService
 {
     @Autowired
     private SysModuleMapper sysModuleMapper;
+
+    @Override
+    public Set<Long> getAllChildIds(Long moduleId) {
+        return sysModuleMapper.getAllChildIds(moduleId);
+    }
 
     /**
      * 查询模块

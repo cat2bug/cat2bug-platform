@@ -90,7 +90,7 @@
 <script>
 import {addDefect, configDefect, updateDefect} from "@/api/system/defect";
 import SelectProjectMember from "@/components/Project/SelectProjectMember"
-import SelectModule from "@/components/Project/SelectModule"
+import SelectModule from "@/components/Module/SelectModule"
 import ImageUpload from "@/components/ImageUpload";
 
 export default {

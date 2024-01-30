@@ -291,6 +291,7 @@
   "assist": "协助",
   "comment": "评论",
   "module": "模块",
+  "module.list": "模块列表",
   "module.name": "模块名称",
   "module.create": "新建模块",
   "module.add": "添加模块",
