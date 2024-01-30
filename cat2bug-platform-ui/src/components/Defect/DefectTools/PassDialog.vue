@@ -19,8 +19,8 @@
 </template>
 
 <script>
-import SelectProjectMember from "@/components/SelectProjectMember";
-import {close} from "@/api/system/defect";
+import SelectProjectMember from "@/components/Project/SelectProjectMember";
+import { pass } from "@/api/system/defect";
 export default {
   name: "PassDialog",
   components: { SelectProjectMember },
@@ -28,9 +28,9 @@ export default {
     return {
       dialogVisible: false,
       rules: {
-        defectLogDescribe: [
-          {required: true, message: this.$t('defect.describe-cannot-empty'), trigger: "change"},
-        ],
+        // defectLogDescribe: [
+        //   {required: true, message: this.$t('defect.describe-cannot-empty'), trigger: "change"},
+        // ],
       },
       form: {
         receiveBy: [],
@@ -67,8 +67,8 @@ export default {
       this.$refs["form"].validate(valid => {
         if (valid) {
           this.form.defectId = this.defectId;
-          close(this.defectId, this.form).then(res => {
-            this.$modal.msgSuccess(this.$i18n.t('defect.close-success'));
+          pass(this.defectId, this.form).then(res => {
+            this.$modal.msgSuccess(this.$i18n.t('defect.pass-success'));
             this.close();
             this.$emit('log', res.data);
           });

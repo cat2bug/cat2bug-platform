@@ -80,12 +80,12 @@
 
 <script>
 import {addDefect, configDefect, getDefect, updateDefect} from "@/api/system/defect";
-import SelectProjectMember from "@/components/SelectProjectMember"
-import SelectModule from "@/components/SelectModule"
+import SelectProjectMember from "@/components/Project/SelectProjectMember"
+import SelectModule from "@/components/Project/SelectModule"
 import ImageUpload from "@/components/ImageUpload";
 import ListDefectLog from "@/components/ListDefectLog";
-import DefectTools from "@/components/DefectTools";
-import DefectTypeFlag from "@/components/DefectTypeFlag";
+import DefectTools from "@/components/Defect/DefectTools";
+import DefectTypeFlag from "@/components/Defect/DefectTypeFlag";
 export default {
   name: "EditDefect",
   dicts: ['defect_level'],

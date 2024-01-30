@@ -125,7 +125,7 @@
 </template>
 
 <script>
-import ProjectLabel from "@/components/ProjectLabel";
+import ProjectLabel from "@/components/Project/ProjectLabel";
 import Cat2BugLevel from "@/components/Cat2BugLevel";
 import Step from "@/views/system/case/components/step";
 import { listCase, getCase, delCase } from "@/api/system/case";

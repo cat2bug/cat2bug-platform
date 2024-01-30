@@ -92,7 +92,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             ) un ON un.defect_id = d.defect_id
     </sql>
 
-    <select id="getProjectDefectCount" resultType="Long">
+    <select id="getProjectDefectMaxNum" resultType="Long">
         select IFNULL(MAX(project_num),0) from sys_defect where project_id=#{projectId}
     </select>
 

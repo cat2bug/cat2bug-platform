@@ -119,7 +119,7 @@
 
 <script>
 import {listProject, getProject, delProject, addProject, updateProject, collectProject} from "@/api/system/project";
-import ProjectNameplate from "@/components/ProjectNameplate";
+import ProjectNameplate from "@/components/Project/ProjectNameplate";
 import StarSwitch from "@/components/StarSwitch";
 import RowListMember from "@/components/RowListMember";
 import { strFormat } from "@/utils/index"

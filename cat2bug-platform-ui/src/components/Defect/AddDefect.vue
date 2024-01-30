@@ -89,8 +89,8 @@
 
 <script>
 import {addDefect, configDefect, updateDefect} from "@/api/system/defect";
-import SelectProjectMember from "@/components/SelectProjectMember"
-import SelectModule from "@/components/SelectModule"
+import SelectProjectMember from "@/components/Project/SelectProjectMember"
+import SelectModule from "@/components/Project/SelectModule"
 import ImageUpload from "@/components/ImageUpload";
 
 export default {

@@ -22,7 +22,7 @@
 </template>
 
 <script>
-import AddModuleMenuItem from "@/components/SelectModule/add";
+import AddModuleMenuItem from "@/components/Project/SelectModule/add";
 import {listModule} from "@/api/system/module";
 
 export default {

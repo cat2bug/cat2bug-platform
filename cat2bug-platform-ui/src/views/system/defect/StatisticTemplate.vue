@@ -16,7 +16,7 @@
 </template>
 
 <script>
-import ProjectLabel from "@/components/ProjectLabel";
+import ProjectLabel from "@/components/Project/ProjectLabel";
 import Cat2BugStatistic from "@/components/Cat2BugStatistic"
 import {addStatistic, listStatistic} from "@/api/system/statistic/template";
 

@@ -19,7 +19,7 @@
 </template>
 
 <script>
-import SelectProjectMember from "@/components/SelectProjectMember";
+import SelectProjectMember from "@/components/Project/SelectProjectMember";
 import {reject} from "@/api/system/defect";
 export default {
   name: "OpenDialog",

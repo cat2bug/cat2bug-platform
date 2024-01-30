@@ -179,11 +179,11 @@ import RowListMember from "@/components/RowListMember";
 import LevelTag from "@/components/LevelTag";
 import AddDefect from "@/components/Defect/AddDefect"
 import HandleDefect from "@/components/Defect/HandleDefect"
-import SelectModule from "@/components/SelectModule";
-import SelectProjectMember from "@/components/SelectProjectMember";
-import ProjectLabel from "@/components/ProjectLabel";
-import DefectTypeFlag from "@/components/DefectTypeFlag";
-import DefectTools from "@/components/DefectTools";
+import SelectModule from "@/components/Project/SelectModule";
+import SelectProjectMember from "@/components/Project/SelectProjectMember";
+import ProjectLabel from "@/components/Project/ProjectLabel";
+import DefectTypeFlag from "@/components/Defect/DefectTypeFlag";
+import DefectTools from "@/components/Defect/DefectTools";
 import Cat2BugStatistic from "@/components/Cat2BugStatistic"
 import { checkPermi } from "@/utils/permission";
 import {listStatistic} from "@/api/system/statistic/template";

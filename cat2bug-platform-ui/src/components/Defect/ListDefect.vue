@@ -68,11 +68,11 @@ import {listDefect, getDefect, delDefect, addDefect, updateDefect, configDefect}
 import RowListMember from "@/components/RowListMember";
 import LevelTag from "@/components/LevelTag";
 import AddDefect from "@/components/Defect/AddDefect"
-import SelectModule from "@/components/SelectModule";
-import SelectProjectMember from "@/components/SelectProjectMember";
-import ProjectLabel from "@/components/ProjectLabel";
-import DefectTypeFlag from "@/components/DefectTypeFlag";
-import DefectTools from "@/components/DefectTools";
+import SelectModule from "@/components/Project/SelectModule";
+import SelectProjectMember from "@/components/Project/SelectProjectMember";
+import ProjectLabel from "@/components/Project/ProjectLabel";
+import DefectTypeFlag from "@/components/Defect/DefectTypeFlag";
+import DefectTools from "@/components/Defect/DefectTools";
 
 export default {
   name: "ListDefect",

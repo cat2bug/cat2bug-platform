@@ -52,7 +52,7 @@
 <script>
 import {addCase, getCase, updateCase} from "@/api/system/case";
 import CaseStepPanel from "./CaseStepPanel"
-import SelectModule from "@/components/SelectModule"
+import SelectModule from "@/components/Project/SelectModule"
 import Cat2BugSelectLevel from "@/components/Cat2BugSelectLevel";
 import Label from "@/components/Cat2BugStatistic/Components/Label";
 

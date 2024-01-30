@@ -97,7 +97,7 @@
 <script>
 import { listModule, getModule, delModule, addModule, updateModule } from "@/api/system/module";
 import Treeselect from "@riophae/vue-treeselect";
-import ProjectLabel from "@/components/ProjectLabel";
+import ProjectLabel from "@/components/Project/ProjectLabel";
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
 
 export default {

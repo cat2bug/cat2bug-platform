@@ -30,12 +30,12 @@
 </template>
 
 <script>
-import AssignDialog from "@/components/DefectTools/AssignDialog";
-import RejectDialog from "@/components/DefectTools/RejectDialog";
-import RepairDialog from "@/components/DefectTools/RepairDialog";
-import PassDialog from "@/components/DefectTools/PassDialog";
-import CloseDialog from "@/components/DefectTools/CloseDialog";
-import OpenDialog from "@/components/DefectTools/OpenDialog";
+import AssignDialog from "@/components/Defect/DefectTools/AssignDialog";
+import RejectDialog from "@/components/Defect/DefectTools/RejectDialog";
+import RepairDialog from "@/components/Defect/DefectTools/RepairDialog";
+import PassDialog from "@/components/Defect/DefectTools/PassDialog";
+import CloseDialog from "@/components/Defect/DefectTools/CloseDialog";
+import OpenDialog from "@/components/Defect/DefectTools/OpenDialog";
 import EditDefectDialog from "@/components/Defect/EditDefectDialog";
 import StarSwitch from "@/components/StarSwitch";
 import {delDefect, updateUserDefect} from "@/api/system/defect";
