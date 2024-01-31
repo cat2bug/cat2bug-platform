@@ -80,7 +80,7 @@
 
 <script>
 import { listModule, getModule, delModule, addModule, updateModule } from "@/api/system/module";
-import ModuleDialog from "@/views/system/case/components/ModuleDialog";
+import ModuleDialog from "@/components/Module/ModuleDialog";
 import ProjectLabel from "@/components/Project/ProjectLabel";
 
 export default {

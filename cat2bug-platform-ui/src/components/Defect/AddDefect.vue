@@ -216,6 +216,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+  ::v-deep .el-drawer {
+    border-left: 3px solid #ff4949;
+  }
   ::v-deep .el-drawer__header {
     margin-bottom: 0px;
   }

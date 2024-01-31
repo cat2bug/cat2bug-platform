@@ -105,7 +105,12 @@ export default {
       }
     }
   },
-  created() {
+  mounted() {
+    if(this.moduleId){
+      getModule(this.moduleId).then(res=>{
+        this.clickMenuHandle(res.data);
+      });
+    }
   },
   methods: {
     checkPermi,

@@ -21,14 +21,6 @@
             @input="handleQuery"
           />
         </el-form-item>
-<!--        <el-form-item label="模块id" prop="moduleId">-->
-<!--          <el-input-->
-<!--            v-model="queryParams.moduleId"-->
-<!--            placeholder="请输入模块id"-->
-<!--            clearable-->
-<!--            @keyup.enter.native="handleQuery"-->
-<!--          />-->
-<!--        </el-form-item>-->
         <el-form-item prop="caseLevel">
           <el-input
             v-model="queryParams.caseLevel"
@@ -64,10 +56,12 @@
       </el-row>
     </div>
     <multipane layout="vertical" class="custom-resizer" @pane-resize-start="multipaneResizeStopHandle">
+<!--      树形模块选择组件-->
       <div class="tree-module" :style="treeModuleStyle" ref="treeModule">
         <tree-module :project-id="projectId" @node-click="moduleClickHandle" />
       </div>
       <multipane-resizer :style="multipaneStyle"></multipane-resizer>
+<!--      用例列表-->
       <div ref="caseContext" class="case-context">
         <el-table v-loading="loading" :data="caseList" @row-click="handleUpdate">
           <el-table-column :label="$t('id')" align="center" prop="caseNum" width="80" sortable>
@@ -96,13 +90,6 @@
           </el-table-column>
           <el-table-column :label="$t('operate')" align="center" class-name="small-padding fixed-width" width="150">
             <template slot-scope="scope">
-    <!--          <el-button-->
-    <!--            size="mini"-->
-    <!--            type="text"-->
-    <!--            icon="el-icon-edit"-->
-    <!--            @click="handleUpdate(scope.row)"-->
-    <!--            v-hasPermi="['system:case:edit']"-->
-    <!--          >{{ $t('modify') }}</el-button>-->
               <el-button
                 size="mini"
                 type="text"
@@ -124,7 +111,7 @@
         />
       </div>
     </multipane>
-    <add-case ref="addCaseDialog" @added="getList" />
+    <add-case ref="addCaseDialog" :module-id="queryParams.params.modulePids" @added="getList" />
   </div>
 </template>
 

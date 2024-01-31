@@ -6,8 +6,9 @@
     </div>
     <el-tree :highlight-current="true" ref="moduleTree" :props="props" :lazy="true" :data="tree" :load="loadNode" node-key="id" @node-click="handleNodeClick">
       <span class="tree-node" slot-scope="{ node, data }">
-        <span>{{ node.label }}</span>
-        <span>
+        <span v-if="node.label!=$t('module.all-module')">{{ node.label }}</span>
+        <span v-else><< {{ node.label }} >></span>
+        <span v-if="node.label!=$t('module.all-module')">
           <el-button
             type="text"
             size="mini"
@@ -31,7 +32,7 @@
 <script>
 import {delModule, listModule} from "@/api/system/module";
 import {checkPermi} from "@/utils/permission";
-import ModuleDialog from "@/views/system/case/components/ModuleDialog";
+import ModuleDialog from "@/components/Module/ModuleDialog";
 export default {
   name: "TreeModule",
   components: {ModuleDialog},
@@ -84,6 +85,12 @@ export default {
             leaf: m.childrenCount===0
           }
         });
+        if(modulePid==0){
+          data = [...[{
+            name: this.$i18n.t('module.all-module'),
+            leaf: true
+          }],...data];
+        }
         if(resolve){
           resolve(data);
         }

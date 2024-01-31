@@ -39,7 +39,17 @@
           <el-input type="textarea" v-model="form.caseExpect" :placeholder="$t('case.please-enter-expectations')" maxlength="255" rows="3" show-word-limit />
         </el-form-item>
         <el-form-item :label="$t('step')" prop="caseStep">
-          <case-step-panel v-model="form.caseStep" />
+          <template slot="label">
+            <div class="form-item-case-step">
+              <el-radio-group v-model="caseStepSwitchType" @input="caseStepPanelTypeChangeHandle">
+                <el-radio-button label=""><svg-icon icon-class="option" /></el-radio-button>
+                <el-radio-button label="list"><svg-icon icon-class="list2" /></el-radio-button>
+                <el-radio-button label="input"><svg-icon icon-class="textarea" /></el-radio-button>
+              </el-radio-group>
+              <label>{{ $t('step') }}</label>
+            </div>
+          </template>
+          <case-step-panel ref="caseStepPanel" v-model="form.caseStep" :panel-type="caseStepSwitchType" />
         </el-form-item>
         <el-form-item :label="$t('remark')" prop="remark">
           <el-input type="textarea" v-model="form.remark" :placeholder="$t('please-enter-remark')" maxlength="255" rows="6" show-word-limit />
@@ -56,18 +66,21 @@ import SelectModule from "@/components/Module/SelectModule"
 import Cat2BugSelectLevel from "@/components/Cat2BugSelectLevel";
 import Label from "@/components/Cat2BugStatistic/Components/Label";
 
+const CASE_STEP_PANEL_TYPE_CACHE_KEY = 'case-step-panel-type';
+
 export default {
   name: "AddCase",
   components: {Label,CaseStepPanel,SelectModule,Cat2BugSelectLevel},
   data() {
     return {
+      caseStepSwitchType: '',
       // 是否显示创建组件
       visible: false,
       // 是否连续创建用例
       isCreateNextCase: true,
       // 表单参数
       form: {
-        caseStep:[],
+        caseStep:[{}],
         caseLevel: 1
       },
       // 表单校验
@@ -85,6 +98,17 @@ export default {
           { required: true, message: this.$i18n.t('case.expect-cannot-empty'), trigger: "input" }
         ],
       }
+    }
+  },
+  props: {
+    moduleId: {
+      type: Number,
+      default: null,
+    }
+  },
+  watch: {
+    moduleId: function (n) {
+      this.form.moduleId = n;
     }
   },
   computed: {
@@ -110,16 +134,20 @@ export default {
   },
   methods: {
     open(caseId) {
+      let self = this;
       this.reset();
       if(caseId) {
         getCase(caseId).then(response => {
           this.form = response.data;
           this.visible = true;
+          this.$nextTick(()=>{
+            self.$refs['caseStepPanel'].reset();
+          })
+
         });
       } else {
         this.visible = true;
       }
-      // this.title = "添加测试用例";
     },
     /** 关闭缺陷抽屉窗口 */
     closeDefectDrawer(done) {
@@ -141,7 +169,7 @@ export default {
         moduleId: this.form.moduleId,
         caseType: null,
         caseExpect: null,
-        caseStep: [],
+        caseStep: [{}],
         caseLevel: this.form.caseLevel,
         casePreconditions: null,
         createBy: null,
@@ -152,16 +180,17 @@ export default {
         projectId: this.projectId
       };
       this.resetForm("form");
+      this.caseStepSwitchType = this.getCaseStepSwitchType();
     },
     // 表单重置
     reset() {
       this.form = {
         caseId: null,
         caseName: null,
-        moduleId: null,
+        moduleId: this.moduleId,
         caseType: null,
         caseExpect: null,
-        caseStep: [],
+        caseStep: [{}],
         caseLevel: 1,
         casePreconditions: null,
         createBy: null,
@@ -172,8 +201,13 @@ export default {
         projectId: this.projectId
       };
       this.resetForm("form");
+      this.caseStepSwitchType = this.getCaseStepSwitchType();
     },
-
+    /** 获取用例步骤面板类型 */
+    getCaseStepSwitchType() {
+      let caseStepPanelType = this.$cache.session.get(CASE_STEP_PANEL_TYPE_CACHE_KEY);
+      return caseStepPanelType?caseStepPanelType:'';
+    },
     /** 提交按钮 */
     submitForm() {
       this.$refs["form"].validate(valid => {
@@ -200,11 +234,17 @@ export default {
         }
       });
     },
+    caseStepPanelTypeChangeHandle() {
+      this.$cache.session.set(CASE_STEP_PANEL_TYPE_CACHE_KEY,this.caseStepSwitchType);
+    }
   }
 }
 </script>
 
 <style lang="scss" scoped>
+::v-deep .el-drawer {
+  border-left: 3px solid #13ce66;
+}
 ::v-deep .el-drawer__header {
   margin-bottom: 0px;
 }
@@ -219,5 +259,20 @@ export default {
 }
 .create-next-case {
   margin: 0px 10px 20px 40px;
+}
+.form-item-case-step {
+  display:flex;
+  flex-direction:row;
+  align-items: center;
+  justify-content: flex-end;
+  > * {
+    margin-left: 5px;
+  }
+  label {
+    line-height: 24px;
+  }
+  ::v-deep .el-radio-button__inner {
+    padding: 0px;
+  }
 }
 </style>
