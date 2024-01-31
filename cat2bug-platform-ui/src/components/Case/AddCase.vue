@@ -142,11 +142,13 @@ export default {
           this.visible = true;
           this.$nextTick(()=>{
             self.$refs['caseStepPanel'].reset();
-          })
-
+          });
         });
       } else {
         this.visible = true;
+        this.$nextTick(()=>{
+          self.$refs['caseStepPanel'].reset();
+        });
       }
     },
     /** 关闭缺陷抽屉窗口 */
@@ -163,6 +165,7 @@ export default {
     },
     /** 循环时的重设 */
     loopReset() {
+      let self = this;
       this.form = {
         caseId: null,
         caseName: null,
@@ -181,6 +184,9 @@ export default {
       };
       this.resetForm("form");
       this.caseStepSwitchType = this.getCaseStepSwitchType();
+      this.$nextTick(()=>{
+        self.$refs['caseStepPanel'].reset();
+      })
     },
     // 表单重置
     reset() {
@@ -212,6 +218,7 @@ export default {
     submitForm() {
       this.$refs["form"].validate(valid => {
         if (valid) {
+          this.form.caseStep = this.form.caseStep.filter(c=>c.stepDescribe || c.stepExpect);
           if (this.isAddMode) {
             addCase(this.form).then(response => {
               this.$modal.msgSuccess(this.$i18n.t('create-success'));
