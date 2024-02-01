@@ -48,7 +48,6 @@ export default {
       })
     },
     addLog(log) {
-      console.log(log)
       this.logList.unshift(log);
       this.$set(this,'logList',this.logList);
     }

@@ -21,6 +21,7 @@
   "loading": "Loading",
   "source-code-address": "Source Code Address",
   "doc-address": "Document Address",
+  "empty-data": "Empty Data",
   "login": "Log In",
   "logout": "Log Out",
   "login-again": "Log in again",
@@ -335,5 +336,10 @@
   "case.level-cannot-empty": "Level cannot be empty!",
   "case.module-cannot-empty": "Module cannot be empty!",
   "case.expect-cannot-empty": "Expected cannot be empty",
-  "case.is-delete": "Are you sure to delete the data item with test case number {0} ?"
+  "case.is-delete": "Are you sure to delete the data item with test case number {0} ?",
+  "case.not-tested": "Not Test",
+  "case.pass-tested": "Pass Test",
+  "case.failed-tested": "Failed Test",
+  "case.fold-button-on": "Click to expand all use case steps",
+  "case.fold-button-off": "Click to shrink the unnecessary steps of the not test cases"
 }

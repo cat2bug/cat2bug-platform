@@ -18,34 +18,49 @@
         <el-form-item :label="$t('title')" prop="defectName">
           <el-input v-model="form.defectName" :placeholder="$t('defect.enter-name')" maxlength="128" />
         </el-form-item>
-        <el-form-item :label="$t('type')" prop="defectType">
-          <el-select v-model="form.defectType" :placeholder="$t('defect.select-type')">
-            <el-option
-              v-for="type in config.types"
-              :key="type.key"
-              :label="$t(type.value)"
-              :value="type.key"
-            ></el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item :label="$t('handle-by')" prop="handleBy">
-          <select-project-member v-model="form.handleBy" :project-id="projectId"  />
-        </el-form-item>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item :label="$t('type')" prop="defectType">
+              <el-select v-model="form.defectType" :placeholder="$t('defect.select-type')">
+                <el-option
+                  v-for="type in config.types"
+                  :key="type.key"
+                  :label="$t(type.value)"
+                  :value="type.key"
+                ></el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item :label="$t('level')" prop="defectLevel">
+              <el-select v-model="form.defectLevel" :placeholder="$t('defect.select-level')">
+                <el-option
+                  v-for="dict in dict.type.defect_level"
+                  :key="dict.value"
+                  :label="$t(dict.value)?$t(dict.value):dict.label"
+                  :value="dict.value"
+                ></el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item :label="$t('handle-by')" prop="handleBy">
+              <select-project-member v-model="form.handleBy" :project-id="projectId"  />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item :label="$t('version')" prop="moduleVersion">
+              <el-input v-model="form.moduleVersion" :placeholder="$t('defect.enter-version')" maxlength="128" style="max-width: 300px;" />
+            </el-form-item>
+          </el-col>
+        </el-row>
         <el-form-item :label="$t('module')" prop="moduleId">
-          <select-module v-model="form.moduleId" :project-id="projectId"/>
+          <select-module v-model="form.moduleId" :project-id="projectId" @input="moduleChangeHandle"/>
         </el-form-item>
-        <el-form-item :label="$t('version')" prop="moduleVersion">
-          <el-input v-model="form.moduleVersion" :placeholder="$t('defect.enter-version')" maxlength="128" style="max-width: 300px;" />
-        </el-form-item>
-        <el-form-item :label="$t('level')" prop="defectLevel">
-          <el-select v-model="form.defectLevel" :placeholder="$t('defect.select-level')">
-            <el-option
-              v-for="dict in dict.type.defect_level"
-              :key="dict.value"
-              :label="$t(dict.value)?$t(dict.value):dict.label"
-              :value="dict.value"
-            ></el-option>
-          </el-select>
+        <el-form-item :label="$t('case')" prop="caseId">
+          <select-case ref="selectCase" v-model="form.caseId" :module-id="form.moduleId" :step-index="form.caseStepId" @step-change="stepChangeHandle" />
         </el-form-item>
         <el-form-item :label="$t('describe')" prop="defectDescribe">
           <el-input
@@ -92,11 +107,12 @@ import {addDefect, configDefect, updateDefect} from "@/api/system/defect";
 import SelectProjectMember from "@/components/Project/SelectProjectMember"
 import SelectModule from "@/components/Module/SelectModule"
 import ImageUpload from "@/components/ImageUpload";
+import SelectCase from "@/components/Case/SelectCase";
 
 export default {
   name: "AddDefect",
   dicts: ['defect_level'],
-  components: { ImageUpload, SelectProjectMember, SelectModule },
+  components: { ImageUpload, SelectProjectMember, SelectModule,SelectCase },
   data() {
     return {
       // 显示窗口
@@ -147,6 +163,11 @@ export default {
         this.form.imgUrls = data.imgUrls||null
       }
       this.visible = true;
+    },
+    openByCase(c) {
+      this.open();
+      this.form.caseId = c.caseId;
+      this.form.moduleId = c.moduleId;
     },
     // 取消按钮
     cancel(isReset) {
@@ -210,6 +231,12 @@ export default {
     },
     handleByChangeHandle(members){
       console.log(members,this.form.handleBy);
+    },
+    moduleChangeHandle() {
+      this.$refs.selectCase.search(this.form.moduleId);
+    },
+    stepChangeHandle(index){
+      this.form.caseStepId = index;
     }
   }
 }

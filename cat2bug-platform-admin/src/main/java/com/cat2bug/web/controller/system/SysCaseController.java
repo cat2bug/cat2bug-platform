@@ -40,8 +40,8 @@ public class SysCaseController extends BaseController
     @GetMapping("/list")
     public TableDataInfo list(SysCase sysCase)
     {
-        if(sysCase.getParams()!=null && sysCase.getParams().get("modulePids") != null) {
-            Long pid = Long.parseLong(String.valueOf(sysCase.getParams().get("modulePids")));
+        if(sysCase.getParams()!=null && sysCase.getParams().get("modulePid") != null) {
+            Long pid = Long.parseLong(String.valueOf(sysCase.getParams().get("modulePid")));
             Set<Long> moduleIds = sysModuleService.getAllChildIds(pid);
             if(sysCase.getParams()==null){
                 sysCase.setParams(new HashMap<>());

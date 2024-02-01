@@ -202,7 +202,7 @@ export default {
       flex-wrap: wrap;
       flex-grow: 1;
       overflow: hidden;
-      min-height: 34px;
+      min-height: 30px;
       margin: 3px 10px 3px 0px;
       .el-input {
         flex-grow: 1;

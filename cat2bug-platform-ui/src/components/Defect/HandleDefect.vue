@@ -61,6 +61,9 @@
             <el-link type="primary" v-for="(file,index) in getUrl(defect.annexUrls)" :key="index" :href="file">{{getFileName(file)}}</el-link>
           </div>
         </el-collapse-item>
+        <el-collapse-item :title="$i18n.t('case')" name="caseId">
+          <case-card :case-model="defectCase" :state-visible="true" :step-index.sync="defect.caseStepId" :edit="false" />
+        </el-collapse-item>
         <el-collapse-item :title="$i18n.t('log')" name="log">
           <list-defect-log ref="defectLog" :pageSize="10" />
         </el-collapse-item>
@@ -78,10 +81,13 @@ import ImageUpload from "@/components/ImageUpload";
 import ListDefectLog from "@/components/ListDefectLog";
 import DefectTools from "@/components/Defect/DefectTools";
 import DefectTypeFlag from "@/components/Defect/DefectTypeFlag";
+import CaseCard from "@/components/Case/CaseCard";
+import {getCase} from "@/api/system/case";
+
 export default {
   name: "EditDefect",
   dicts: ['defect_level'],
-  components: { ImageUpload, SelectProjectMember, SelectModule, ListDefectLog, DefectTools, DefectTypeFlag },
+  components: { ImageUpload, SelectProjectMember, SelectModule, ListDefectLog, DefectTools, DefectTypeFlag,CaseCard },
   data() {
     return {
       defectId: null,
@@ -90,6 +96,8 @@ export default {
       visible: false,
       // 缺陷对象
       defect:{},
+      // 用例
+      defectCase: {},
       // 表单参数
       form: {
         defectLevel: 'middle'
@@ -152,14 +160,27 @@ export default {
         if(this.defect.annexUrls && this.defect.annexUrls.length>0) {
           this.activeNames.push('annexUrls');
         }
+        if(this.defect){
+          this.getCase(this.defect.caseId);
+        }
       });
+    },
+    // 获取用例
+    getCase(caseId) {
+      if(caseId) {
+        getCase(caseId).then(res=>{
+          this.defectCase = res.data;
+        })
+      } else {
+        this.defectCase = {};
+      }
     },
     // 打开操作
     open(defectId) {
+      this.visible = true;
       this.reset();
       this.defectId = defectId;
       this.getDefectInfo(defectId);
-      this.visible = true;
       this.$nextTick(()=>{
         this.$refs.defectLogFirst.open(defectId);
         this.$refs.defectLog.open(defectId);

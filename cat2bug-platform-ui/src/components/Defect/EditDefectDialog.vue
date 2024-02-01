@@ -25,21 +25,6 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item :label="$t('handle-by')" prop="handleBy">
-              <select-project-member v-model="form.handleBy" :project-id="projectId"  />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item :label="$t('module')" prop="moduleId">
-              <select-module size="small" v-model="form.moduleId" :project-id="projectId"/>
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item :label="$t('version')" prop="moduleVersion">
-              <el-input v-model="form.moduleVersion" :placeholder="$t('defect.enter-version')" maxlength="128" style="max-width: 300px;" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
             <el-form-item :label="$t('level')" prop="defectLevel">
               <el-select v-model="form.defectLevel" :placeholder="$t('defect.select-level')">
                 <el-option
@@ -51,7 +36,25 @@
               </el-select>
             </el-form-item>
           </el-col>
+          <el-col :span="12">
+            <el-form-item :label="$t('handle-by')" prop="handleBy">
+              <select-project-member v-model="form.handleBy" :project-id="projectId"  />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item :label="$t('version')" prop="moduleVersion">
+              <el-input v-model="form.moduleVersion" :placeholder="$t('defect.enter-version')" maxlength="128" style="max-width: 300px;" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item :label="$t('module')" prop="moduleId">
+              <select-module size="small" v-model="form.moduleId" :project-id="projectId"/>
+            </el-form-item>
+          </el-col>
         </el-row>
+        <el-form-item :label="$t('case')" prop="caseId">
+          <select-case ref="selectCase" v-model="form.caseId" :module-id="form.moduleId" :step-index="form.caseStepId" @step-change="stepChangeHandle" />
+        </el-form-item>
         <el-form-item :label="$t('describe')" prop="defectDescribe">
           <el-input
             type="textarea"
@@ -86,10 +89,12 @@ import ImageUpload from "@/components/ImageUpload";
 import ListDefectLog from "@/components/ListDefectLog";
 import DefectTools from "@/components/Defect/DefectTools";
 import DefectTypeFlag from "@/components/Defect/DefectTypeFlag";
+import SelectCase from "@/components/Case/SelectCase";
+
 export default {
   name: "EditDefect",
   dicts: ['defect_level'],
-  components: { ImageUpload, SelectProjectMember, SelectModule, ListDefectLog, DefectTools, DefectTypeFlag },
+  components: { ImageUpload, SelectProjectMember, SelectModule, ListDefectLog, DefectTools, DefectTypeFlag, SelectCase },
   data() {
     return {
       title: this.$i18n.t('defect.modify'),
@@ -97,8 +102,6 @@ export default {
       config: {},
       // 显示窗口
       visible: false,
-      // 缺陷对象
-      defect:{},
       // 表单参数
       form: {
         defectLevel: 'middle'
@@ -155,16 +158,17 @@ export default {
     },
     /** 获取缺陷信息 */
     getDefectInfo(defectId) {
+      const self = this;
       this.activeNames = ['base','log']
       getDefect(defectId).then(res=>{
         this.form = res.data;
-        if(this.defect.defectDescribe) {
+        if(this.form.defectDescribe) {
           this.activeNames.push('defectDescribe');
         }
-        if(this.defect.imgUrls && this.defect.imgUrls.length>0) {
+        if(this.form.imgUrls && this.form.imgUrls.length>0) {
           this.activeNames.push('imgUrls');
         }
-        if(this.defect.annexUrls && this.defect.annexUrls.length>0) {
+        if(this.form.annexUrls && this.form.annexUrls.length>0) {
           this.activeNames.push('annexUrls');
         }
       });
@@ -222,6 +226,9 @@ export default {
         }
       });
     },
+    stepChangeHandle(index){
+      this.form.caseStepId = index;
+    }
   }
 }
 </script>

@@ -21,6 +21,7 @@
   "loading": "登陆中",
   "source-code-address": "源码地址",
   "doc-address": "文档地址",
+  "empty-data": "空数据",
   "login": "登陆",
   "logout": "登出",
   "login-again": "重新登录",
@@ -335,5 +336,10 @@
   "case.level-cannot-empty": "级别不能为空",
   "case.module-cannot-empty": "模块不能为空",
   "case.expect-cannot-empty": "预期不能为空",
-  "case.is-delete": "是否确认删除测试用例编号为{0}的数据项？"
+  "case.is-delete": "是否确认删除测试用例编号为{0}的数据项？",
+  "case.not-tested": "未测试",
+  "case.pass-tested": "通过",
+  "case.failed-tested": "未通过",
+  "case.fold-button-on": "点击展开所有用例步骤",
+  "case.fold-button-off": "点击收缩多余未测试的用例步骤"
 }

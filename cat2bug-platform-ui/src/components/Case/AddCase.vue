@@ -8,7 +8,7 @@
       <div class="case-add-header">
         <h3>{{title}}</h3>
         <div>
-          <el-button @click="cancel" icon="el-icon-close" size="mini">{{$t('close')}}</el-button>
+          <el-button @click="cancel" icon="el-icon-close" :class="isAddMode?'':'green-button'" size="mini">{{$t('close')}}</el-button>
           <el-button v-if="isAddMode" v-hasPermi="['system:case:add']" type="primary" icon="el-icon-finished" @click="submitForm" size="mini">{{$t('create')}}</el-button>
           <el-button v-else v-hasPermi="['system:case:edit']" type="success" icon="el-icon-finished" @click="submitForm" size="mini">{{$t('modify')}}</el-button>
         </div>
@@ -281,5 +281,10 @@ export default {
   ::v-deep .el-radio-button__inner {
     padding: 0px;
   }
+}
+.green-button:hover {
+  background-color: #f0f9eb;
+  border: 1px solid #c2e7b0;
+  color: #67c23a;
 }
 </style>

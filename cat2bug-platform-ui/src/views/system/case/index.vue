@@ -93,6 +93,13 @@
               <el-button
                 size="mini"
                 type="text"
+                @click="addDefectHandle($event,scope.row)"
+                v-hasPermi="['system:defect:add']"
+              ><svg-icon icon-class="bug"></svg-icon>
+                {{ $t('defect.create') }}</el-button>
+              <el-button
+                size="mini"
+                type="text"
                 class="red"
                 icon="el-icon-delete"
                 @click="handleDelete($event,scope.row)"
@@ -111,7 +118,8 @@
         />
       </div>
     </multipane>
-    <add-case ref="addCaseDialog" :module-id="queryParams.params.modulePids" @added="getList" />
+    <add-case ref="addCaseDialog" :module-id="queryParams.params.modulePid" @added="getList" />
+    <add-defect ref="addDefect" :project-id="projectId" />
   </div>
 </template>
 
@@ -123,13 +131,14 @@ import TreeModule from "@/components/Module/TreeModule";
 import { Multipane, MultipaneResizer } from 'vue-multipane';
 import { listCase, delCase } from "@/api/system/case";
 import AddCase from "@/components/Case/AddCase";
+import AddDefect from "@/components/Defect/AddDefect";
 import {checkPermi} from "@/utils/permission";
 import {strFormat} from "@/utils";
 
 const TREE_MODULE_WIDTH_CACHE_KEY = 'case_tree_module_width';
 export default {
   name: "Case",
-  components: {ProjectLabel,AddCase,Cat2BugLevel,Step,TreeModule,Multipane,MultipaneResizer},
+  components: {ProjectLabel,AddCase,Cat2BugLevel,Step,TreeModule,Multipane,MultipaneResizer,AddDefect},
   data() {
     return {
       multipaneStyle: {'--marginTop':'0px'},
@@ -250,8 +259,12 @@ export default {
     },
     /** 点击模块树中的某个模块操作 */
     moduleClickHandle(moduleId) {
-      this.queryParams.params.modulePids = moduleId;
+      this.queryParams.params.modulePid = moduleId;
       this.handleQuery();
+    },
+    addDefectHandle(e,caseObj){
+      this.$refs.addDefect.openByCase(caseObj);
+      e.stopPropagation();
     }
   }
 };
