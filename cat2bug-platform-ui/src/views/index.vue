@@ -100,6 +100,11 @@
             <span>{{$t('update-log')}}</span>
           </div>
           <el-collapse accordion>
+            <el-collapse-item title="v0.1.0 - 2024-02-02">
+              <ol>
+                <li>增加测试用例模块</li>
+              </ol>
+            </el-collapse-item>
             <el-collapse-item title="v0.0.2 - 2024-01-26">
               <ol>
                 <li>增加系统管理模块</li>
