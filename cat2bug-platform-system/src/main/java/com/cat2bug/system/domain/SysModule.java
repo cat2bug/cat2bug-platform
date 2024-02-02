@@ -33,6 +33,9 @@ public class SysModule extends TreeEntity
     /** 子菜单的数量 */
     private int childrenCount;
 
+    /** 菜单路径 */
+    private String modulePath;
+
     public void setModuleId(Long moduleId) 
     {
         this.moduleId = moduleId;
@@ -76,6 +79,14 @@ public class SysModule extends TreeEntity
 
     public void setChildrenCount(int childrenCount) {
         this.childrenCount = childrenCount;
+    }
+
+    public String getModulePath() {
+        return modulePath;
+    }
+
+    public void setModulePath(String modulePath) {
+        this.modulePath = modulePath;
     }
 
     @Override

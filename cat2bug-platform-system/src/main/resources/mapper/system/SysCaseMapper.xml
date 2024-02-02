@@ -53,7 +53,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         </where>
         ORDER BY c.update_time DESC
     </select>
-    
+
+    <select id="selectSysCaseByCaseName" resultMap="SysCaseResult">
+        <include refid="selectSysCaseVo"/>
+        where case_name = #{caseName} and project_id = #{ projectId }
+    </select>
+
     <select id="selectSysCaseByCaseId" parameterType="Long" resultMap="SysCaseResult">
         <include refid="selectSysCaseVo"/>
         where case_id = #{caseId}

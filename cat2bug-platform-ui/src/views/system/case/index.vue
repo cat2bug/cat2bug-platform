@@ -35,6 +35,16 @@
       <el-row :gutter="10" class="mb8">
         <el-col :span="1.5">
           <el-button
+            type="info"
+            plain
+            icon="el-icon-download"
+            size="mini"
+            @click="handleImport"
+            v-hasPermi="['system:case:import']"
+          >{{ $t('import') }}</el-button>
+        </el-col>
+        <el-col :span="1.5">
+          <el-button
             type="primary"
             plain
             icon="el-icon-plus"
@@ -120,6 +130,34 @@
     </multipane>
     <add-case ref="addCaseDialog" :module-id="queryParams.params.modulePid" @added="getList" />
     <add-defect ref="addDefect" :project-id="projectId" />
+
+    <!-- 用户导入对话框 -->
+    <el-dialog :title="upload.title" :visible.sync="upload.open" width="400px" append-to-body>
+      <el-upload
+        ref="upload"
+        :limit="1"
+        accept=".xlsx, .xls"
+        :headers="upload.headers"
+        :action="upload.url + '?projectId=' + projectId"
+        :disabled="upload.isUploading"
+        :on-progress="handleFileUploadProgress"
+        :on-success="handleFileSuccess"
+        :auto-upload="false"
+        drag
+      >
+        <i class="el-icon-upload"></i>
+        <div class="el-upload__text">{{ $t('case.import-prompt') }}<em>{{ $t('click.upload') }}</em></div>
+        <div class="el-upload__tip text-center" slot="tip">
+          <span>{{ strFormat($t('case.import-file-format'), 'xls、xlsx') }}</span>
+          <el-link type="primary" :underline="false" style="font-size:12px;vertical-align: baseline;" @click="importTemplate">
+            {{ $t('download.template') }}</el-link>
+        </div>
+      </el-upload>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="submitFileForm">{{ $t('import' )}}</el-button>
+        <el-button @click="upload.open = false">{{ $t('cancel') }}</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -134,6 +172,7 @@ import AddCase from "@/components/Case/AddCase";
 import AddDefect from "@/components/Defect/AddDefect";
 import {checkPermi} from "@/utils/permission";
 import {strFormat} from "@/utils";
+import {getToken} from "@/utils/auth";
 
 const TREE_MODULE_WIDTH_CACHE_KEY = 'case_tree_module_width';
 export default {
@@ -175,6 +214,19 @@ export default {
         projectId: this.projectId,
         params:{}
       },
+      // 用例导入参数
+      upload: {
+        // 是否显示弹出层（用户导入）
+        open: false,
+        // 弹出层标题（用户导入）
+        title: "",
+        // 是否禁用上传
+        isUploading: false,
+        // 设置上传的请求头部
+        headers: { Authorization: "Bearer " + getToken() },
+        // 上传的地址
+        url: process.env.VUE_APP_BASE_API + "/system/case/importData"
+      },
     };
   },
   computed: {
@@ -196,6 +248,7 @@ export default {
     this.getList();
   },
   methods: {
+    strFormat,
     getTreeModuleWidth() {
       let treeModuleWidth = this.$cache.session.get(TREE_MODULE_WIDTH_CACHE_KEY);
       this.treeModuleStyle['--treeModuleWidth'] = (treeModuleWidth?treeModuleWidth:300)+'px';
@@ -265,6 +318,32 @@ export default {
     addDefectHandle(e,caseObj){
       this.$refs.addDefect.openByCase(caseObj);
       e.stopPropagation();
+    },
+    /** 导入按钮操作 */
+    handleImport() {
+      this.upload.title = this.$i18n.t('case.import');
+      this.upload.open = true;
+    },
+    /** 下载模板操作 */
+    importTemplate() {
+      this.download('system/case/importTemplate?projectId='+this.projectId, {
+      }, this.$i18n.t('case.template-file-name')+`${new Date().getTime()}.xlsx`)
+    },
+    // 文件上传中处理
+    handleFileUploadProgress(event, file, fileList) {
+      this.upload.isUploading = true;
+    },
+    // 文件上传成功处理
+    handleFileSuccess(response, file, fileList) {
+      this.upload.open = false;
+      this.upload.isUploading = false;
+      this.$refs.upload.clearFiles();
+      this.$alert("<div style='overflow: auto;overflow-x: hidden;max-height: 70vh;padding: 10px 20px 0;'>" + response.msg + "</div>", this.$i18n.t('case.import-result').toString(), { dangerouslyUseHTMLString: true });
+      this.getList();
+    },
+    // 提交上传文件
+    submitFileForm() {
+      this.$refs.upload.submit();
     }
   }
 };

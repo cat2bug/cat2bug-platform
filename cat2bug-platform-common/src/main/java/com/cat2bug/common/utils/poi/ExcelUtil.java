@@ -24,6 +24,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletResponse;
+
+import com.cat2bug.common.utils.MessageUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
@@ -177,6 +179,10 @@ public class ExcelUtil<T>
      * 对象的子列表属性
      */
     private List<Field> subFields;
+    /**
+     * 参数
+     */
+    private Map<String,Object> params;
 
     /**
      * 统计列表
@@ -214,7 +220,7 @@ public class ExcelUtil<T>
         this.excludeFields = fields;
     }
 
-    public void init(List<T> list, String sheetName, String title, Type type)
+    public void init(List<T> list, String sheetName, String title, Type type, Map<String,Object> params)
     {
         if (list == null)
         {
@@ -224,6 +230,7 @@ public class ExcelUtil<T>
         this.sheetName = sheetName;
         this.type = type;
         this.title = title;
+        this.params = params;
         createExcelField();
         createWorkbook();
         createTitle();
@@ -268,7 +275,7 @@ public class ExcelUtil<T>
             {
                 Excel attr = (Excel) objects[1];
                 Cell headCell1 = subRow.createCell(excelNum);
-                headCell1.setCellValue(attr.name());
+                headCell1.setCellValue(getTitleName(attr));
                 headCell1.setCellStyle(styles.get(StringUtils.format("header_{}_{}", attr.headerColor(), attr.headerBackgroundColor())));
                 excelNum++;
             }
@@ -280,6 +287,12 @@ public class ExcelUtil<T>
             }
             rownum++;
         }
+    }
+
+    private String getTitleName(Excel excel) {
+        return StringUtils.isNotEmpty(excel.i18nNameKey()) && StringUtils.isNotEmpty(MessageUtils.message(excel.i18nNameKey()))?
+                MessageUtils.message(excel.i18nNameKey()):
+                excel.name();
     }
 
     /**
@@ -375,7 +388,7 @@ public class ExcelUtil<T>
             for (Object[] objects : fields)
             {
                 Excel attr = (Excel) objects[1];
-                Integer column = cellMap.get(attr.name());
+                Integer column = cellMap.get(this.getTitleName(attr));
                 if (column != null)
                 {
                     fieldsMap.put(column, objects);
@@ -520,7 +533,7 @@ public class ExcelUtil<T>
      */
     public AjaxResult exportExcel(List<T> list, String sheetName, String title)
     {
-        this.init(list, sheetName, title, Type.EXPORT);
+        this.init(list, sheetName, title, Type.EXPORT, new HashMap<>());
         return exportExcel();
     }
 
@@ -550,7 +563,7 @@ public class ExcelUtil<T>
     {
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         response.setCharacterEncoding("utf-8");
-        this.init(list, sheetName, title, Type.EXPORT);
+        this.init(list, sheetName, title, Type.EXPORT,new HashMap<>());
         exportExcel(response);
     }
 
@@ -574,7 +587,7 @@ public class ExcelUtil<T>
      */
     public AjaxResult importTemplateExcel(String sheetName, String title)
     {
-        this.init(null, sheetName, title, Type.IMPORT);
+        this.init(null, sheetName, title, Type.IMPORT, new HashMap<String,Object>());
         return exportExcel();
     }
 
@@ -586,7 +599,18 @@ public class ExcelUtil<T>
      */
     public void importTemplateExcel(HttpServletResponse response, String sheetName)
     {
-        importTemplateExcel(response, sheetName, StringUtils.EMPTY);
+        importTemplateExcel(response, sheetName, StringUtils.EMPTY, new HashMap<>());
+    }
+
+    /**
+     * 对list数据源将其里面的数据导入到excel表单
+     *
+     * @param sheetName 工作表的名称
+     * @return 结果
+     */
+    public void importTemplateExcel(HttpServletResponse response, String sheetName, Map<String,Object> params)
+    {
+        importTemplateExcel(response, sheetName, StringUtils.EMPTY, params);
     }
 
     /**
@@ -596,11 +620,11 @@ public class ExcelUtil<T>
      * @param title 标题
      * @return 结果
      */
-    public void importTemplateExcel(HttpServletResponse response, String sheetName, String title)
+    public void importTemplateExcel(HttpServletResponse response, String sheetName, String title ,Map<String,Object> params)
     {
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         response.setCharacterEncoding("utf-8");
-        this.init(null, sheetName, title, Type.IMPORT);
+        this.init(null, sheetName, title, Type.IMPORT,params);
         exportExcel(response);
     }
 
@@ -898,7 +922,7 @@ public class ExcelUtil<T>
         // 创建列
         Cell cell = row.createCell(column);
         // 写入列信息
-        cell.setCellValue(attr.name());
+        cell.setCellValue(this.getTitleName(attr));
         setDataValidation(attr, row, column);
         cell.setCellStyle(styles.get(StringUtils.format("header_{}_{}", attr.headerColor(), attr.headerBackgroundColor())));
         if (isSubList())
@@ -990,7 +1014,7 @@ public class ExcelUtil<T>
      */
     public void setDataValidation(Excel attr, Row row, int column)
     {
-        if (attr.name().indexOf("注：") >= 0)
+        if (this.getTitleName(attr).indexOf("注：") >= 0)
         {
             sheet.setColumnWidth(column, 6000);
         }
@@ -999,17 +1023,22 @@ public class ExcelUtil<T>
             // 设置列宽
             sheet.setColumnWidth(column, (int) ((attr.width() + 0.72) * 256));
         }
-        if (StringUtils.isNotEmpty(attr.prompt()) || attr.combo().length > 0)
+
+        String[] combo = null;
+        if(attr.comboHandler()!=null && !attr.comboHandler().equals(ExcelComboHandlerAdapter.class)) {
+            combo = this.dataFormatComboHandlerAdapter(attr,row.getCell(column)).toArray(new String[0]);
+        } else
         {
-            if (attr.combo().length > 15 || StringUtils.join(attr.combo()).length() > 255)
-            {
+            combo = attr.combo();
+        }
+
+        if (StringUtils.isNotEmpty(combo) || combo.length > 0) {
+            if (combo.length > 15 || StringUtils.join(combo).length() > 255) {
                 // 如果下拉数大于15或字符串长度大于255，则使用一个新sheet存储，避免生成的模板下拉值获取不到
-                setXSSFValidationWithHidden(sheet, attr.combo(), attr.prompt(), 1, 100, column, column);
-            }
-            else
-            {
+                setXSSFValidationWithHidden(sheet, combo, attr.prompt(), 1, sheetSize, column, column);
+            } else {
                 // 提示信息或只能选择不能输入的列内容.
-                setPromptOrValidation(sheet, attr.combo(), attr.prompt(), 1, 100, column, column);
+                setPromptOrValidation(sheet, combo, attr.prompt(), 1, sheetSize, column, column);
             }
         }
     }
@@ -1269,6 +1298,27 @@ public class ExcelUtil<T>
     public static String reverseDictByExp(String dictLabel, String dictType, String separator)
     {
         return DictUtils.getDictValue(dictType, dictLabel, separator);
+    }
+
+    /**
+     * 数据处理器
+     *
+     * @param excel 数据注解
+     * @return
+     */
+    public List<String> dataFormatComboHandlerAdapter(Excel excel, Cell cell)
+    {
+        try
+        {
+            Object instance = excel.comboHandler().newInstance();
+            Method formatMethod = excel.comboHandler().getMethod("format", new Class[] { Map.class, Cell.class, Workbook.class });
+            return (List<String>)formatMethod.invoke(instance,  this.params, cell, this.wb);
+        }
+        catch (Exception e)
+        {
+            log.error("不能格式化数据 " + excel.comboHandler(), e.getMessage());
+        }
+        return new ArrayList<>();
     }
 
     /**

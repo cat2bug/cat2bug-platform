@@ -10,6 +10,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="moduleName"    column="module_name"    />
         <result property="remark"    column="remark"    />
         <result property="projectId"    column="project_id"    />
+        <result property="modulePath"    column="module_path"    />
         <result property="childrenCount"    column="children_count"    />
     </resultMap>
 
@@ -24,6 +25,17 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         SELECT m.module_id, m.module_name, m.module_pid FROM sys_module m
         JOIN temp_module tm ON m.module_pid = tm.module_id
         ) SELECT module_id FROM temp_module
+    </select>
+
+    <select id="selectSysModulePathList" parameterType="Long" resultMap="SysModuleResult">
+        WITH RECURSIVE m AS (
+            SELECT module_id, module_name, module_pid, CAST(module_name AS CHAR(1024)) AS module_path
+            FROM sys_module WHERE project_id = #{projectId}
+            UNION ALL
+            SELECT d.module_id, d.module_name, d.module_pid, CONCAT(d.module_name,'/', p.module_path)
+            FROM sys_module d INNER JOIN m p ON d.module_id = p.module_pid
+        )
+        SELECT module_id, module_path FROM m WHERE module_pid = 0 ORDER BY module_path;
     </select>
 
     <select id="selectSysModuleList" parameterType="SysModule" resultMap="SysModuleResult">

@@ -65,6 +65,7 @@
   "name": "名称",
   "title": "标题",
   "home": "首页",
+  "import": "导入",
   "add": "添加",
   "update": "更新",
   "modify": "修改",
@@ -100,6 +101,11 @@
   "no-data": "暂无数据",
   "expect": "预期",
   "step": "步骤",
+  "click": "点击",
+  "upload": "上传",
+  "download": "下载",
+  "click.upload": "点击上传",
+  "download.template": "下载模版",
   "preconditions": "前置条件",
   "update.success": "更新成功",
   "save.success": "保存成功",
@@ -341,5 +347,10 @@
   "case.pass-tested": "通过",
   "case.failed-tested": "未通过",
   "case.fold-button-on": "点击展开所有用例步骤",
-  "case.fold-button-off": "点击收缩多余未测试的用例步骤"
+  "case.fold-button-off": "点击收缩多余未测试的用例步骤",
+  "case.import": "导入用例",
+  "case.import-result": "导入结果",
+  "case.import-file-format": "仅允许导入{0}格式文件。",
+  "case.import-prompt": "将文件拖到此处，或",
+  "case.template-file-name": "测试用例"
 }

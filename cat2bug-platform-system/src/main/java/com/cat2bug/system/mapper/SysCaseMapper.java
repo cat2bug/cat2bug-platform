@@ -2,6 +2,7 @@ package com.cat2bug.system.mapper;
 
 import java.util.List;
 import com.cat2bug.system.domain.SysCase;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * 测试用例Mapper接口
@@ -18,6 +19,14 @@ public interface SysCaseMapper
      */
 
     public long getCaseMaxNumOfProject(Long projectId);
+
+    /**
+     * 查询测试用例
+     * @param projectId 项目id
+     * @param caseName  测试用例名称
+     * @return  测试用例
+     */
+    public SysCase selectSysCaseByCaseName(@Param("projectId") Long projectId,@Param("caseName") String caseName);
 
     /**
      * 查询测试用例

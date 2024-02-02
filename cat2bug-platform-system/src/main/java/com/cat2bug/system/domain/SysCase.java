@@ -1,10 +1,12 @@
 package com.cat2bug.system.domain;
 
+import com.cat2bug.common.utils.MessageUtils;
 import lombok.Data;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import com.cat2bug.common.annotation.Excel;
 import com.cat2bug.common.core.domain.BaseEntity;
+import org.apache.poi.ss.usermodel.IndexedColors;
 
 import java.util.List;
 
@@ -22,47 +24,45 @@ public class SysCase extends BaseEntity
     /** 测试用例 */
     private Long caseId;
 
-    /** 用例名称 */
-    @Excel(name = "用例名称")
-    private String caseName;
-
-    /** 模块名称 */
-    @Excel(name = "模块")
-    private String moduleName;
-
     /** 模块id */
     private Long moduleId;
 
     /** 用例类型 */
-    @Excel(name = "用例类型")
     private Long caseType;
 
-    /** 预期 */
-    @Excel(name = "预期")
-    private String caseExpect;
-
-    /** 步骤 */
-    @Excel(name = "步骤")
-    private List<SysCaseStep> caseStep;
-
-    /** 用例级别 */
-    @Excel(name = "用例级别")
-    private Long caseLevel;
-
-    /** 前置条件 */
-    @Excel(name = "前置条件")
-    private String casePreconditions;
-
-    /** 用例号码 */
-    @Excel(name = "用例号码")
-    private Long caseNum;
-
     /** 项目编号 */
-    @Excel(name = "项目编号")
     private Long projectId;
 
     /** 备注 */
     private String remark;
+
+    /** 用例号码 */
+    @Excel(name = "用例编号", i18nNameKey = "case.number", type = Excel.Type.EXPORT,headerBackgroundColor=IndexedColors.GREY_25_PERCENT)
+    private Long caseNum;
+
+    /** 用例名称 */
+    @Excel(name = "用例名称(必填)", i18nNameKey = "case.name_excel", width = 50, headerColor = IndexedColors.RED,headerBackgroundColor=IndexedColors.GREY_25_PERCENT)
+    private String caseName;
+
+    /** 模块名称 */
+    @Excel(name = "模块", i18nNameKey = "module", width = 40, comboHandler = com.cat2bug.system.domain.handle.ModuleComboHandlerAdapter.class,headerBackgroundColor=IndexedColors.GREY_25_PERCENT)
+    private String moduleName;
+
+    /** 用例级别 */
+    @Excel(name = "用例级别",i18nNameKey = "case.level", combo = "1,2,3,4,5",headerBackgroundColor=IndexedColors.GREY_25_PERCENT)
+    private Long caseLevel;
+
+    /** 前置条件 */
+    @Excel(name = "前置条件",i18nNameKey = "case.prerequisite", width = 50, headerBackgroundColor=IndexedColors.GREY_25_PERCENT)
+    private String casePreconditions;
+
+    /** 预期 */
+    @Excel(name = "预期(必填)", i18nNameKey = "case.expected_excel", width = 50, headerColor = IndexedColors.RED,headerBackgroundColor=IndexedColors.GREY_25_PERCENT)
+    private String caseExpect;
+
+    /** 步骤 */
+    @Excel(name = "步骤", i18nNameKey = "case.step", width = 50, headerBackgroundColor=IndexedColors.GREY_25_PERCENT)
+    private List<SysCaseStep> caseStep;
 
     @Override
     public String toString() {

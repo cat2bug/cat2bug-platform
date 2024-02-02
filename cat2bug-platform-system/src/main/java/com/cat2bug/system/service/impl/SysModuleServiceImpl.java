@@ -50,6 +50,11 @@ public class SysModuleServiceImpl implements ISysModuleService
         return sysModuleMapper.selectSysModuleList(sysModule);
     }
 
+    @Override
+    public List<SysModule> selectSysModulePathList(Long projectId) {
+        return sysModuleMapper.selectSysModulePathList(projectId);
+    }
+
     /**
      * 新增模块
      * 

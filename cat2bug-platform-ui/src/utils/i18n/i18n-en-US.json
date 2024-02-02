@@ -65,6 +65,7 @@
   "name": "Name",
   "home": "Home",
   "title": "Title",
+  "import": "Import",
   "add": "Add",
   "update": "Update",
   "modify": "Modify",
@@ -100,6 +101,11 @@
   "no-data": "There is currently no data available",
   "expect": "Expect",
   "step": "Step",
+  "click": "Click",
+  "upload": "Upload",
+  "download": "Download",
+  "click.upload": "Click Upload",
+  "download.template": "Download Template",
   "preconditions": "Preconditions",
   "update.success": "Update Success",
   "save.success": "Save Success",
@@ -341,5 +347,10 @@
   "case.pass-tested": "Pass Test",
   "case.failed-tested": "Failed Test",
   "case.fold-button-on": "Click to expand all use case steps",
-  "case.fold-button-off": "Click to shrink the unnecessary steps of the not test cases"
+  "case.fold-button-off": "Click to shrink the unnecessary steps of the not test cases",
+  "case.import": "Case Import",
+  "case.import-result": "Import Result",
+  "case.import-file-format": "Only {0} format files are allowed to be imported.",
+  "case.import-prompt": "Drag files here, or",
+  "case.template-file-name": "case_template_"
 }

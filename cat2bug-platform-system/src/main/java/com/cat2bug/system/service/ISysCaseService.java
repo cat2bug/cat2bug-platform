@@ -12,12 +12,29 @@ import com.cat2bug.system.domain.SysCase;
 public interface ISysCaseService 
 {
     /**
+     * 导入用例数据
+     *
+     * @param caseList 用例数据列表
+     * @param projectId 项目id
+     * @param operName 操作用户
+     * @return 结果
+     */
+    public String importCase(List<SysCase> caseList, Long projectId, String operName);
+    /**
      * 查询测试用例
      * 
      * @param caseId 测试用例主键
      * @return 测试用例
      */
     public SysCase selectSysCaseByCaseId(Long caseId);
+
+    /**
+     * 查询测试用例
+     * @param projectId 项目id
+     * @param caseName  测试用例名称
+     * @return  测试用例
+     */
+    public SysCase selectSysCaseByCaseName(Long projectId, String caseName);
 
     /**
      * 查询测试用例列表

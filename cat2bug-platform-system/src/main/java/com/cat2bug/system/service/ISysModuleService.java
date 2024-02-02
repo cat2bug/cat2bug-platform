@@ -36,6 +36,14 @@ public interface ISysModuleService
     public List<SysModule> selectSysModuleList(SysModule sysModule);
 
     /**
+     * 查询模块路径列表
+     *
+     * @param projectId 模块
+     * @return 模块路径集合
+     */
+    public List<SysModule> selectSysModulePathList(Long projectId);
+
+    /**
      * 新增模块
      * 
      * @param sysModule 模块

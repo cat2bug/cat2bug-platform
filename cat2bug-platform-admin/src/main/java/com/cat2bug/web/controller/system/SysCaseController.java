@@ -3,8 +3,10 @@ package com.cat2bug.web.controller.system;
 import com.cat2bug.common.annotation.Log;
 import com.cat2bug.common.core.controller.BaseController;
 import com.cat2bug.common.core.domain.AjaxResult;
+import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.common.core.page.TableDataInfo;
 import com.cat2bug.common.enums.BusinessType;
+import com.cat2bug.common.utils.MessageUtils;
 import com.cat2bug.common.utils.poi.ExcelUtil;
 import com.cat2bug.system.domain.SysCase;
 import com.cat2bug.system.service.ISysCaseService;
@@ -12,10 +14,12 @@ import com.cat2bug.system.service.ISysModuleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -65,6 +69,27 @@ public class SysCaseController extends BaseController
         List<SysCase> list = sysCaseService.selectSysCaseList(sysCase);
         ExcelUtil<SysCase> util = new ExcelUtil<SysCase>(SysCase.class);
         util.exportExcel(response, list, "测试用例数据");
+    }
+
+    @Log(title = "测试用例", businessType = BusinessType.IMPORT)
+    @PreAuthorize("@ss.hasPermi('system:user:import')")
+    @PostMapping("/importData")
+    public AjaxResult importData(MultipartFile file, Long projectId) throws Exception
+    {
+        ExcelUtil<SysCase> util = new ExcelUtil<SysCase>(SysCase.class);
+        List<SysCase> caseList = util.importExcel(file.getInputStream());
+        String operName = getUsername();
+        String message = sysCaseService.importCase(caseList, projectId, operName);
+        return success(message);
+    }
+
+    @PostMapping("/importTemplate")
+    public void importTemplate(HttpServletResponse response,Long projectId)
+    {
+        ExcelUtil<SysCase> util = new ExcelUtil<SysCase>(SysCase.class);
+        Map<String,Object> params = new HashMap<>();
+        params.put("projectId",projectId);
+        util.importTemplateExcel(response, MessageUtils.message("case.test_case"), params);
     }
 
     /**

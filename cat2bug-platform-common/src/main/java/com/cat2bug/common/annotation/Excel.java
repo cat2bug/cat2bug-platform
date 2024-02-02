@@ -5,6 +5,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.math.BigDecimal;
+
+import com.cat2bug.common.utils.poi.ExcelComboHandlerAdapter;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.IndexedColors;
 import com.cat2bug.common.utils.poi.ExcelHandlerAdapter;
@@ -27,6 +29,12 @@ public @interface Excel
      * 导出到Excel中的名字.
      */
     public String name() default "";
+
+    /**
+     * 国际化名称key
+     * @return
+     */
+    public String i18nNameKey() default "";
 
     /**
      * 日期格式, 如: yyyy-MM-dd
@@ -87,6 +95,18 @@ public @interface Excel
      * 设置只能选择不能输入的列内容.
      */
     public String[] combo() default {};
+
+    /**
+     * 自定义下拉框处理器
+     * @return
+     */
+    public Class<?> comboHandler() default ExcelComboHandlerAdapter.class;
+
+    /**
+     * 自定义下拉框处理器参数
+     * @return
+     */
+    public String[] comboArgs() default {};
 
     /**
      * 是否需要纵向合并单元格,应对需求:含有list集合单元格)

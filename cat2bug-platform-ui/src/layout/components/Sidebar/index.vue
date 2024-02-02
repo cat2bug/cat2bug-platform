@@ -62,28 +62,26 @@
               :base-path="'team-options/'+route.path"
             />
           </el-menu>
-<!--          <div v-show="teamId && teamOptionRouters" class="sidebar-divider">-->
-<!--            <el-divider></el-divider>-->
-<!--          </div>-->
-<!--          <el-menu-->
-<!--            :default-active="activeMenu"-->
-<!--            :collapse="isCollapse"-->
-<!--            :background-color="settings.sideTheme === 'theme-dark' ? variables.menuBackground : variables.menuLightBackground"-->
-<!--            :text-color="settings.sideTheme === 'theme-dark' ? variables.menuColor : variables.menuLightColor"-->
-<!--            :unique-opened="true"-->
-<!--            :active-text-color="settings.theme"-->
-<!--            :collapse-transition="false"-->
-<!--            mode="vertical"-->
-<!--          >-->
-<!--            <sidebar-item-->
-<!--              v-for="(route, index) in filterSidebarRouters('system')"-->
-<!--              :key="route.path  + index"-->
-<!--              :item="route"-->
-<!--              :base-path="'system/'+route.path"-->
-<!--            />-->
-<!--          </el-menu>-->
-
-
+          <div v-show="teamId && teamOptionRouters" class="sidebar-divider">
+            <el-divider></el-divider>
+          </div>
+          <el-menu
+            :default-active="activeMenu"
+            :collapse="isCollapse"
+            :background-color="settings.sideTheme === 'theme-dark' ? variables.menuBackground : variables.menuLightBackground"
+            :text-color="settings.sideTheme === 'theme-dark' ? variables.menuColor : variables.menuLightColor"
+            :unique-opened="true"
+            :active-text-color="settings.theme"
+            :collapse-transition="false"
+            mode="vertical"
+          >
+            <sidebar-item
+              v-for="(route, index) in filterSidebarRouters('system')"
+              :key="route.path  + index"
+              :item="route"
+              :base-path="'system/'+route.path"
+            />
+          </el-menu>
         </el-scrollbar>
       <div style="bottom: 10px;position: absolute;height: auto;width: 100%;" v-show="adminOptionRouters.length>0" >
         <div class="sidebar-divider">
