@@ -9,6 +9,8 @@ import com.cat2bug.common.enums.BusinessType;
 import com.cat2bug.common.utils.MessageUtils;
 import com.cat2bug.common.utils.poi.ExcelUtil;
 import com.cat2bug.system.domain.SysCase;
+import com.cat2bug.system.domain.SysCaseExcelTepmplate;
+import com.cat2bug.system.domain.vo.ExcelImportResultVo;
 import com.cat2bug.system.service.ISysCaseService;
 import com.cat2bug.system.service.ISysModuleService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,25 +73,34 @@ public class SysCaseController extends BaseController
         util.exportExcel(response, list, "测试用例数据");
     }
 
+    /**
+     * 导入数据
+     * @param file      文件
+     * @param projectId 项目id
+     * @return
+     * @throws Exception
+     */
     @Log(title = "测试用例", businessType = BusinessType.IMPORT)
-    @PreAuthorize("@ss.hasPermi('system:user:import')")
+    @PreAuthorize("@ss.hasPermi('system:case:import')")
     @PostMapping("/importData")
     public AjaxResult importData(MultipartFile file, Long projectId) throws Exception
     {
         ExcelUtil<SysCase> util = new ExcelUtil<SysCase>(SysCase.class);
         List<SysCase> caseList = util.importExcel(file.getInputStream());
-        String operName = getUsername();
-        String message = sysCaseService.importCase(caseList, projectId, operName);
+        ExcelImportResultVo message = sysCaseService.importCase(caseList, projectId);
         return success(message);
     }
 
+    /**
+     * 下载导入模版
+     * @param response  反馈对象
+     * @param projectId 项目id
+     */
     @PostMapping("/importTemplate")
     public void importTemplate(HttpServletResponse response,Long projectId)
     {
         ExcelUtil<SysCase> util = new ExcelUtil<SysCase>(SysCase.class);
-        Map<String,Object> params = new HashMap<>();
-        params.put("projectId",projectId);
-        util.importTemplateExcel(response, MessageUtils.message("case.test_case"), params);
+        util.importTemplateExcel(response, MessageUtils.message("case.test_case"));
     }
 
     /**

@@ -2,6 +2,7 @@ package com.cat2bug.system.service;
 
 import java.util.List;
 import com.cat2bug.system.domain.SysCase;
+import com.cat2bug.system.domain.vo.ExcelImportResultVo;
 
 /**
  * 测试用例Service接口
@@ -16,10 +17,9 @@ public interface ISysCaseService
      *
      * @param caseList 用例数据列表
      * @param projectId 项目id
-     * @param operName 操作用户
      * @return 结果
      */
-    public String importCase(List<SysCase> caseList, Long projectId, String operName);
+    public ExcelImportResultVo importCase(List<SysCase> caseList, Long projectId);
     /**
      * 查询测试用例
      * 

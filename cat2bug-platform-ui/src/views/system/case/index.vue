@@ -146,7 +146,7 @@
         drag
       >
         <i class="el-icon-upload"></i>
-        <div class="el-upload__text">{{ $t('case.import-prompt') }}<em>{{ $t('click.upload') }}</em></div>
+        <div class="el-upload__text">{{ $t('case.import-prompt') }}<em> {{ $t('click.upload') }}</em></div>
         <div class="el-upload__tip text-center" slot="tip">
           <span>{{ strFormat($t('case.import-file-format'), 'xls、xlsx') }}</span>
           <el-link type="primary" :underline="false" style="font-size:12px;vertical-align: baseline;" @click="importTemplate">
@@ -338,7 +338,17 @@ export default {
       this.upload.open = false;
       this.upload.isUploading = false;
       this.$refs.upload.clearFiles();
-      this.$alert("<div style='overflow: auto;overflow-x: hidden;max-height: 70vh;padding: 10px 20px 0;'>" + response.msg + "</div>", this.$i18n.t('case.import-result').toString(), { dangerouslyUseHTMLString: true });
+      let html = "<div style='overflow: auto;overflow-x: hidden;max-height: 70vh;padding: 10px 20px 0;'>"
+        + "<label>"+response.data.message +"</label>";
+      response.data.rows.forEach(r=>{
+        html+='<div style="display: flex;flex-direction: row; align-items: center; padding: 5px 0px; border-top:1px solid #EBEEF5"><h4 style="margin: 0px 10px 0px 0px;">'+strFormat(this.$i18n.t('line'),r.rowNum+'')+'</h4><div style="display:flex;flex-direction:column;flex:1;overflow: hidden;">'
+        r.messages.forEach(m=>{
+          html+='<span>'+m+'</span>'
+        });
+        html+='</div></div>'
+      });
+      html+="</div>"
+      this.$alert(html, this.$i18n.t('case.import-result').toString(), { dangerouslyUseHTMLString: true, customClass: 'case-upload-alert' });
       this.getList();
     },
     // 提交上传文件
@@ -348,6 +358,11 @@ export default {
   }
 };
 </script>
+<style>
+  .case-upload-alert {
+    width: auto;
+  }
+</style>
 <style scoped lang="scss">
   .tree-module {
     width: var(--treeModuleWidth);

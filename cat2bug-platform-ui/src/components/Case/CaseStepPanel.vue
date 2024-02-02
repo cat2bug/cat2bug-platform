@@ -72,9 +72,9 @@ export default {
     },
     caseStepListChangeHandle(e,list) {
       if(e) {
-        this.stepScript = list.filter(s=>s.stepDescribe || s.stepExpect).map(s=> {
+        this.stepScript = list?list.filter(s=>s.stepDescribe || s.stepExpect).map(s=> {
           return (s.stepDescribe?s.stepDescribe:'')+'---'+(s.stepExpect?s.stepExpect:'');
-        }).join('\n');
+        }).join('\n'):'';
       }
     },
     scriptChangeHandle() {

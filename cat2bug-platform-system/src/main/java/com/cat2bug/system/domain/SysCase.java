@@ -1,6 +1,7 @@
 package com.cat2bug.system.domain;
 
-import com.cat2bug.common.utils.MessageUtils;
+import com.cat2bug.system.domain.handle.SysModuleComboHandlerAdapter;
+import com.cat2bug.system.domain.handle.SysModuleHandlerAdapter;
 import lombok.Data;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -25,6 +26,12 @@ public class SysCase extends BaseEntity
     private Long caseId;
 
     /** 模块id */
+//    @Excel(name = "模块",
+//            i18nNameKey = "module",
+//            width = 40,
+//            type = Excel.Type.IMPORT,
+//            handler = SysModuleHandlerAdapter.class,
+//            headerBackgroundColor=IndexedColors.GREY_25_PERCENT)
     private Long moduleId;
 
     /** 用例类型 */
@@ -45,7 +52,12 @@ public class SysCase extends BaseEntity
     private String caseName;
 
     /** 模块名称 */
-    @Excel(name = "模块", i18nNameKey = "module", width = 40, comboHandler = com.cat2bug.system.domain.handle.ModuleComboHandlerAdapter.class,headerBackgroundColor=IndexedColors.GREY_25_PERCENT)
+    @Excel(name = "模块",
+            i18nNameKey = "module",
+            width = 40,
+            handler = SysModuleHandlerAdapter.class,
+            comboHandler = SysModuleComboHandlerAdapter.class,
+            headerBackgroundColor=IndexedColors.GREY_25_PERCENT)
     private String moduleName;
 
     /** 用例级别 */
@@ -61,8 +73,10 @@ public class SysCase extends BaseEntity
     private String caseExpect;
 
     /** 步骤 */
-    @Excel(name = "步骤", i18nNameKey = "case.step", width = 50, headerBackgroundColor=IndexedColors.GREY_25_PERCENT)
     private List<SysCaseStep> caseStep;
+
+    @Excel(name = "步骤", i18nNameKey = "case.step", width = 50, headerBackgroundColor=IndexedColors.GREY_25_PERCENT)
+    private String caseStepScript;
 
     @Override
     public String toString() {

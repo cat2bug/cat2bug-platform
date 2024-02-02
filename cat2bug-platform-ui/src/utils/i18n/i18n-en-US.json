@@ -54,6 +54,7 @@
   "phone-size-exception": "The length of the phone number must be between 11 and 16",
   "password-size-exception": "User password length must be between 5 and 20",
   "account-successfully-registered": "Congratulations, your account {0} has been successfully registered!",
+  "line": "Line {0}",
   "today": "Day",
   "this-week": "Week",
   "unknown": "Unknown",

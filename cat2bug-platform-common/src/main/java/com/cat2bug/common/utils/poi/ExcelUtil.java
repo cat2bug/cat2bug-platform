@@ -301,7 +301,7 @@ public class ExcelUtil<T>
      * @param is 输入流
      * @return 转换后集合
      */
-    public List<T> importExcel(InputStream is)
+    public List<T> importExcel(InputStream is, Object... params)
     {
         List<T> list = null;
         try
