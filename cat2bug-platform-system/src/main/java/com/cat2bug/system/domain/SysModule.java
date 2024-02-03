@@ -5,6 +5,8 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import com.cat2bug.common.annotation.Excel;
 import com.cat2bug.common.core.domain.TreeEntity;
 
+import java.util.List;
+
 /**
  * 模块对象 sys_module
  * 
@@ -25,6 +27,9 @@ public class SysModule extends TreeEntity
     /** 模块名称 */
     @Excel(name = "模块名称")
     private String moduleName;
+
+    /** 批量添加时，传递用的模块名称 */
+    private List<String> batchModuleNames;
 
     /** 项目id */
     @Excel(name = "项目id")
@@ -87,6 +92,14 @@ public class SysModule extends TreeEntity
 
     public void setModulePath(String modulePath) {
         this.modulePath = modulePath;
+    }
+
+    public List<String> getBatchModuleNames() {
+        return batchModuleNames;
+    }
+
+    public void setBatchModuleNames(List<String> batchModuleNames) {
+        this.batchModuleNames = batchModuleNames;
     }
 
     @Override

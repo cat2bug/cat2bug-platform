@@ -1,13 +1,17 @@
 package com.cat2bug.system.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import com.cat2bug.common.utils.MessageUtils;
+import com.google.common.base.Preconditions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.cat2bug.system.mapper.SysModuleMapper;
 import com.cat2bug.system.domain.SysModule;
 import com.cat2bug.system.service.ISysModuleService;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 模块Service业务层处理
@@ -62,10 +66,26 @@ public class SysModuleServiceImpl implements ISysModuleService
      * @return 结果
      */
     @Override
-    public SysModule insertSysModule(SysModule sysModule)
+    @Transactional
+    public List<SysModule> insertSysModule(SysModule sysModule)
     {
-        int ret = sysModuleMapper.insertSysModule(sysModule);
-        return ret>0?sysModule:null;
+        List<SysModule> ret = new ArrayList<>();
+        if(sysModule.getBatchModuleNames()!=null && sysModule.getBatchModuleNames().size()>0) {
+            sysModule.getBatchModuleNames().forEach(m->{
+                SysModule module = new SysModule();
+                module.setModuleName(m);
+                module.setModulePid(sysModule.getModulePid());
+                module.setProjectId(sysModule.getProjectId());
+                int count = sysModuleMapper.insertSysModule(module);
+                Preconditions.checkState(count>0, MessageUtils.message("module.insert-fail"));
+                ret.add(module);
+            });
+        } else {
+            int  count = sysModuleMapper.insertSysModule(sysModule);
+            Preconditions.checkState(count>0, MessageUtils.message("module.insert-fail"));
+            ret.add(sysModule);
+        }
+        return ret;
     }
 
     /**

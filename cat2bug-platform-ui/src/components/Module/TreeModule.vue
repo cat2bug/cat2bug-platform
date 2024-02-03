@@ -12,6 +12,7 @@
           <el-button
             type="text"
             size="mini"
+            v-hasPermi="['system:module:add']"
             @click="append($event, data)">
             <i class="el-icon-plus" />
           </el-button>
@@ -25,7 +26,7 @@
         </span>
       </span>
     </el-tree>
-    <module-dialog ref="moduleDialog" :project-id="projectId" @added="addNode" @updated="addNode" />
+    <module-dialog ref="moduleDialog" :project-id="projectId" @added="batchAddNode" @updated="batchAddNode" />
   </div>
 </template>
 
@@ -106,21 +107,31 @@ export default {
       this.$refs.moduleDialog.open(null,data.id);
       e.stopPropagation();
     },
-    addNode(module) {
-      let parentNode = this.$refs.moduleTree.getNode({ id: module.modulePid });
-      this.$refs.moduleTree.append({
-        id: module.moduleId,
-        leaf: true,
-        name: module.moduleName,
-      }, parentNode);
-      if(parentNode) {
-        this.refreshTreeNode(parentNode);
+    /** 批量添加节点 */
+    batchAddNode(modules) {
+      if(!modules) return;
+      if(modules instanceof Array) {
+        let parentNode = this.$refs.moduleTree.getNode({ id: modules[0].modulePid });
+        for(let i=0;i<modules.length;i++){
+          let module = modules[i];
+          this.$refs.moduleTree.append({
+            id: module.moduleId,
+            leaf: true,
+            name: module.moduleName,
+          }, parentNode);
+        }
+        if(parentNode) {
+          this.refreshTreeNode(parentNode);
+        }
       }
     },
+    /** 刷新树节点 */
     refreshTreeNode(node) {
       if(!node) return;
       node.data.leaf=(node.childNodes==0);
       node.isLeft=node.data.leaf;
+      node.loaded=true;
+      node.expand()
       this.refreshTreeNode(node.parent)
     },
     remove(e, node, data) {

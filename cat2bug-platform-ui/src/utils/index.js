@@ -397,15 +397,15 @@ export function strFormat (str, args){
   if(arguments.length < 2){
     return result;
   }
-  if(typeof args == 'string'){
-    result = strReplaceAll(result, "\\{0\\}",args);
-  } else if (typeof args == 'array') {
-    for(let key in args){
+  if (args instanceof Array) {
+    for(let key in arguments){
       let value = args[key];
       if(undefined != value){
         result = strReplaceAll(result, "\\{"+key+"\\}",value);
       }
     }
+  } else {
+    result = strReplaceAll(result, "\\{0\\}",args);
   }
   return result;
 }
