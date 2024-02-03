@@ -54,7 +54,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         where m.module_id = #{moduleId}
     </select>
         
-    <insert id="insertSysModule" parameterType="SysModule">
+    <insert id="insertSysModule" parameterType="SysModule" useGeneratedKeys="true" keyProperty="moduleId">
         insert into sys_module
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="moduleId != null">module_id,</if>

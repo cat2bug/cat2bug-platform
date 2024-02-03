@@ -8,24 +8,24 @@
       <span class="tree-node" slot-scope="{ node, data }">
         <span v-if="node.label!=$t('module.all-module')">{{ node.label }}</span>
         <span v-else><< {{ node.label }} >></span>
-        <span v-if="node.label!=$t('module.all-module')">
+        <span>
           <el-button
             type="text"
             size="mini"
-            @click="() => append(data)">
+            @click="append($event, data)">
             <i class="el-icon-plus" />
           </el-button>
           <el-button
             type="text"
             size="mini"
             v-show="removeNodeButtonVisible(data)"
-            @click="() => remove(node, data)">
+            @click="remove($event, node, data)">
             <i class="el-icon-close" />
           </el-button>
         </span>
       </span>
     </el-tree>
-    <module-dialog ref="moduleDialog" :project-id="projectId" @added="refreshNode" @updated="refreshNode" />
+    <module-dialog ref="moduleDialog" :project-id="projectId" @added="addNode" @updated="addNode" />
   </div>
 </template>
 
@@ -42,7 +42,7 @@ export default {
       tree:[],
       props: {
         label: 'name',
-        children: 'zones',
+        children: 'children',
         isLeaf: 'leaf'
       },
     }
@@ -56,7 +56,7 @@ export default {
   computed: {
     removeNodeButtonVisible: function () {
       return function (node) {
-        return node.leaf && checkPermi(['system:module:remove']);
+        return node.leaf && checkPermi(['system:module:remove']) && node.name!=this.$i18n.t('module.all-module');
       }
     }
   },
@@ -102,21 +102,38 @@ export default {
       this.currentNode = node;
       this.$emit('node-click',node.id);
     },
-    append(data) {
+    append(e, data) {
       this.$refs.moduleDialog.open(null,data.id);
+      e.stopPropagation();
     },
-    refreshNode(module) {
-      let node = this.$refs.moduleTree.getNode({ id: module.modulePid })
-      node.loaded = false;
-      node.expand();
+    addNode(module) {
+      let parentNode = this.$refs.moduleTree.getNode({ id: module.modulePid });
+      this.$refs.moduleTree.append({
+        id: module.moduleId,
+        leaf: true,
+        name: module.moduleName,
+      }, parentNode);
+      if(parentNode) {
+        this.refreshTreeNode(parentNode);
+      }
     },
-    remove(node, data) {
+    refreshTreeNode(node) {
+      if(!node) return;
+      node.data.leaf=(node.data && node.data.children.length==0);
+      this.refreshTreeNode(node.parent)
+    },
+    remove(e, node, data) {
       this.$modal.confirm(this.$i18n.t('module.is-delete-module')).then(function() {
         return delModule(data.id);
       }).then(() => {
         this.$modal.msgSuccess(this.$i18n.t('delete-success'));
+        let parentNode = node.parent;
         node.remove();
+        if(parentNode) {
+          this.refreshTreeNode(parentNode);
+        }
       }).catch(() => {});
+      e.stopPropagation();
     },
   }
 }

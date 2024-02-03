@@ -64,7 +64,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         where case_id = #{caseId}
     </select>
         
-    <insert id="insertSysCase" parameterType="SysCase">
+    <insert id="insertSysCase" parameterType="SysCase" useGeneratedKeys="true" keyProperty="caseId">
         insert into sys_case
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="caseId != null">case_id,</if>

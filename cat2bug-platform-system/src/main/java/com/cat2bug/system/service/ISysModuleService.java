@@ -49,7 +49,7 @@ public interface ISysModuleService
      * @param sysModule 模块
      * @return 结果
      */
-    public int insertSysModule(SysModule sysModule);
+    public SysModule insertSysModule(SysModule sysModule);
 
     /**
      * 修改模块

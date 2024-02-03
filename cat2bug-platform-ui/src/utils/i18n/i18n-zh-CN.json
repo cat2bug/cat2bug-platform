@@ -338,7 +338,7 @@
   "case.add-step": "添加步骤",
   "case.create": "新建用例",
   "case.modify": "修改用例",
-  "case.create-next-case": "用例创建完成后继续创建吓一条用例",
+  "case.create-next-case": "用例创建完成后继续创建下一条用例",
   "case.name-cannot-empty": "标题不能为空",
   "case.level-cannot-empty": "级别不能为空",
   "case.module-cannot-empty": "模块不能为空",

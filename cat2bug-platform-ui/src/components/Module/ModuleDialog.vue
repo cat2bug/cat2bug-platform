@@ -110,7 +110,7 @@ export default {
             addModule(this.form).then(response => {
               this.$modal.msgSuccess(this.$i18n.t('add-success'));
               this.visible = false;
-              this.$emit('added',this.form)
+              this.$emit('added',response.data)
             });
           }
         }

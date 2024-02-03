@@ -62,9 +62,10 @@ public class SysModuleServiceImpl implements ISysModuleService
      * @return 结果
      */
     @Override
-    public int insertSysModule(SysModule sysModule)
+    public SysModule insertSysModule(SysModule sysModule)
     {
-        return sysModuleMapper.insertSysModule(sysModule);
+        int ret = sysModuleMapper.insertSysModule(sysModule);
+        return ret>0?sysModule:null;
     }
 
     /**
