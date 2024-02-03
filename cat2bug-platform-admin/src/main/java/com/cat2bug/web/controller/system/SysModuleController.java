@@ -71,7 +71,7 @@ public class SysModuleController extends BaseController
     @PostMapping
     public AjaxResult add(@RequestBody SysModule sysModule)
     {
-        return toAjax(sysModuleService.insertSysModule(sysModule));
+        return success(sysModuleService.insertSysModule(sysModule));
     }
 
     /**

@@ -119,7 +119,8 @@ export default {
     },
     refreshTreeNode(node) {
       if(!node) return;
-      node.data.leaf=(node.data && node.data.children.length==0);
+      node.data.leaf=(node.childNodes==0);
+      node.isLeft=node.data.leaf;
       this.refreshTreeNode(node.parent)
     },
     remove(e, node, data) {
@@ -162,5 +163,10 @@ export default {
 }
 .active {
   background-color: #00afff;
+}
+.el-tree {
+  overflow-y: hidden;
+  overflow-x: auto;
+  width: 100%;
 }
 </style>

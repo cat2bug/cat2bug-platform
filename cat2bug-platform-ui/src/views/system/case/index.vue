@@ -65,15 +65,16 @@
 <!--        </el-col>-->
       </el-row>
     </div>
-    <multipane layout="vertical" class="custom-resizer" @pane-resize-start="multipaneResizeStopHandle">
+<!--    模块树和用例列表区域-->
+    <multipane layout="vertical" ref="multiPane" class="custom-resizer" @pane-resize-start="dragStopHandle">
 <!--      树形模块选择组件-->
-      <div class="tree-module" :style="treeModuleStyle" ref="treeModule">
-        <tree-module :project-id="projectId" @node-click="moduleClickHandle" />
+      <div class="tree-module" ref="treeModule" :style="treeModuleStyle">
+        <tree-module :project-id="projectId" @node-click="moduleClickHandle"  v-resize="setDragComponentSize" />
       </div>
       <multipane-resizer :style="multipaneStyle"></multipane-resizer>
 <!--      用例列表-->
       <div ref="caseContext" class="case-context">
-        <el-table v-loading="loading" :data="caseList" @row-click="handleUpdate">
+        <el-table v-loading="loading" :data="caseList" @row-click="handleUpdate"  v-resize="setDragComponentSize">
           <el-table-column :label="$t('id')" align="center" prop="caseNum" width="80" sortable>
             <template slot-scope="scope">
               <span>{{ caseNumber(scope.row) }}</span>
@@ -227,6 +228,7 @@ export default {
         // 上传的地址
         url: process.env.VUE_APP_BASE_API + "/system/case/importData"
       },
+      observer: null,
     };
   },
   computed: {
@@ -242,13 +244,36 @@ export default {
   created() {
   },
   mounted() {
-    window.onresize=this.resize;
     this.queryParams.projectId=this.projectId;
     this.getTreeModuleWidth();
     this.getList();
   },
+  directives: {
+    resize: {
+      // 指令的名称
+      bind(el, binding) {
+        // el为绑定的元素，binding为绑定给指令的对象
+        let width = ''
+        let height = ''
+        function isResize() {
+          const style = document.defaultView.getComputedStyle(el)
+          if (width !== style.width || height !== style.height) {
+            binding.value({ width: style.width, height: style.height }) // 关键(这传入的是函数,所以执行此函数)
+          }
+          width = style.width
+          height = style.height
+        }
+        el.__vueSetInterval__ = setInterval(isResize, 300)
+      },
+      unbind(el) {
+        // console.log(el, '解绑')
+        clearInterval(el.__vueSetInterval__)
+      }
+    }
+  },
   methods: {
     strFormat,
+    /** 获取树模型宽度 */
     getTreeModuleWidth() {
       let treeModuleWidth = this.$cache.session.get(TREE_MODULE_WIDTH_CACHE_KEY);
       this.treeModuleStyle['--treeModuleWidth'] = (treeModuleWidth?treeModuleWidth:300)+'px';
@@ -258,15 +283,18 @@ export default {
       this.$cache.session.set(TREE_MODULE_WIDTH_CACHE_KEY,this.$refs.treeModule.clientWidth);
     },
     /** 拖动事件完成 */
-    multipaneResizeStopHandle(pane, container, size) {
+    dragStopHandle(pane, container, size) {
       this.cacheTreeModuleWidth();
     },
-    resize() {
-      let elContent = document.querySelector('.custom-resizer').getBoundingClientRect()
-      let scrollY = document.documentElement.scrollTop || document.body.scrollTop
-      let y = elContent.y + scrollY
-      let pageHeight = Math.max(document.body.scrollHeight-y-20,this.$refs.caseContext.scrollHeight);
-      this.multipaneStyle['--marginTop'] = pageHeight+'px';
+    /** 设置模块与用例列表中间拖动块的尺寸 */
+    setDragComponentSize() {
+      this.multipaneStyle['--marginTop'] = '0px';
+      this.$nextTick(()=> {
+        let elContent = document.querySelector('.custom-resizer').getBoundingClientRect()
+        let pageHeight = Math.max(document.body.scrollHeight - elContent.y - 20, this.$refs.caseContext.scrollHeight);
+        pageHeight = Math.max(this.$refs.treeModule.scrollHeight || 0, this.$refs.caseContext.scrollHeight || 0, document.body.scrollHeight - 170)
+        this.multipaneStyle['--marginTop'] = pageHeight + 'px';
+      })
     },
     /** 查询测试用例列表 */
     getList() {
@@ -275,8 +303,6 @@ export default {
         this.caseList = response.rows;
         this.total = response.total;
         this.loading = false;
-        this.multipaneStyle['--marginTop'] = '0px';
-        this.$nextTick(this.resize)
       });
     },
     /** 搜索按钮操作 */
