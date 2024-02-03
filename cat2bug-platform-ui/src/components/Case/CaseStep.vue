@@ -87,7 +87,7 @@ export default {
       if(this.caseSteps.length<=this.maxShowCaseCount) {
         return false;
       }
-      return this.caseSteps.filter(c=>!c.state || c.state===NOT_TEST_KEY).length>1;
+      return (this.caseSteps.length-this.stepIndex-1)>1;
     },
     /** 状态名 */
     stateName: function (){

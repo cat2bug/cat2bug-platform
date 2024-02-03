@@ -117,22 +117,20 @@ export default {
     /** 显示或隐藏清除按钮 */
     showClearButtonHandle(visible) {
       if(this.clearable==false) return;
-      // if(visible && this.queryMember.params.search) {
-      //   this.isClearButtonVisible = true;
-      // } else {
-      //   this.isClearButtonVisible = false;
-      // }
+      if(visible && this.currentCase && this.currentCase.caseId) {
+        this.isClearButtonVisible = true;
+      } else {
+        this.isClearButtonVisible = false;
+      }
     },
     /** 清除选择的成员 */
     clearSelectModuleHandle(event) {
-      // this.queryMember.params.search=null;
-      // this.currentCase=null;
       this.setCaseId({});
       this.popoverVisible = false;
       this.$forceUpdate();
       if(event) {
         this.$emit('input',null);
-        // event.stopPropagation();
+        event.stopPropagation();
       }
     },
     /** 点击用例选项处理操作 */
