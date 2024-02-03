@@ -11,8 +11,9 @@ Cat2Bug-Platform是一套永久免费开源的Bug管理平台，将毫无保留�
 
 1.  团队管理：管理团队中的项目、成员。
 2.  项目管理：管理项目中的缺陷、成员。
-3.  缺陷管理：管理BUG、需求、任务。
-4.  模块管理：维护项目中的软件模块。
+3.  用例管理：管理测试用例
+4.  缺陷管理：管理BUG、需求、任务。
+5.  模块管理：维护项目中的软件模块。
 
 ## 在线体验
 
@@ -29,6 +30,8 @@ Cat2Bug-Platform是一套永久免费开源的Bug管理平台，将毫无保留�
 curl -o docker-compose.yml http://cat2bug.com/docker/docker-compose.yml
 docker-compose up -d
 ```
+
+系统管理员账号：admin    密码：cat2bug
 
 ## 演示图
 
