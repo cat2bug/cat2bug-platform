@@ -144,7 +144,7 @@ export default {
       this.selectModule = module;
       this.queryMember.params.search=this.selectModule.moduleName;
       this.popoverVisible=false;
-      this.$emit('input',this.selectModule.moduleId);
+      this.$emit('input',this.selectModule.moduleId,this.selectModule);
       this.resetMenu();
     },
     /** 点击菜单添加按钮的事件处理 */

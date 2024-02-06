@@ -11,7 +11,7 @@
         </div>
       </div>
     </draggable>
-    <el-input class="case-step-script-input" v-show="panelType!='list'" type="textarea" v-model="stepScript" :placeholder="$t('case.please-enter-step-script')" maxlength="10000" rows="6" show-word-limit @input="scriptChangeHandle" />
+    <el-input class="case-step-script-input" v-show="panelType!='list'" type="textarea" v-model="stepScript" :placeholder="$t('case.please-enter-step-script')" maxlength="10000" :autosize="{ minRows: 4, maxRows: 10 }" show-word-limit @input="scriptChangeHandle" />
     <el-button class="button-full" type="success" size="mini" plain @click="addStepHandle(undefined)">{{ $t('case.add-step') }}</el-button>
   </div>
 </template>

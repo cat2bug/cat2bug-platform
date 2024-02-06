@@ -78,7 +78,7 @@ public class SysCaseServiceImpl implements ISysCaseService
      * @return 结果
      */
     @Override
-    public int insertSysCase(SysCase sysCase)
+    public SysCase insertSysCase(SysCase sysCase)
     {
         long count = sysCaseMapper.getCaseMaxNumOfProject(sysCase.getProjectId());
         sysCase.setCaseNum(count+1);
@@ -86,7 +86,22 @@ public class SysCaseServiceImpl implements ISysCaseService
         sysCase.setCreateTime(DateUtils.getNowDate());
         sysCase.setUpdateById(SecurityUtils.getUserId());
         sysCase.setUpdateTime(DateUtils.getNowDate());
-        return sysCaseMapper.insertSysCase(sysCase);
+        sysCaseMapper.insertSysCase(sysCase);
+        return sysCase;
+    }
+
+    @Override
+    public List<SysCase> batchInsertSysCase(List<SysCase> list) {
+        for(SysCase sc : list){
+            long count = sysCaseMapper.getCaseMaxNumOfProject(sc.getProjectId());
+            sc.setCaseNum(count+1);
+            sc.setCreateById(SecurityUtils.getUserId());
+            sc.setCreateTime(DateUtils.getNowDate());
+            sc.setUpdateById(SecurityUtils.getUserId());
+            sc.setUpdateTime(DateUtils.getNowDate());
+            sysCaseMapper.insertSysCase(sc);
+        }
+        return list;
     }
 
     /**

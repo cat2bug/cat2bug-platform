@@ -26,6 +26,15 @@ export function addCase(data) {
   })
 }
 
+// 批量新增测试用例
+export function batchAddCase(data) {
+  return request({
+    url: '/system/case/batch',
+    method: 'post',
+    data: data
+  })
+}
+
 // 修改测试用例
 export function updateCase(data) {
   return request({

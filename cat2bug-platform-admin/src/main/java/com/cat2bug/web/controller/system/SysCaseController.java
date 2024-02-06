@@ -121,7 +121,18 @@ public class SysCaseController extends BaseController
     @PostMapping
     public AjaxResult add(@RequestBody SysCase sysCase)
     {
-        return toAjax(sysCaseService.insertSysCase(sysCase));
+        return success(sysCaseService.insertSysCase(sysCase));
+    }
+
+    /**
+     * 新增测试用例
+     */
+    @PreAuthorize("@ss.hasPermi('system:case:add')")
+    @Log(title = "测试用例", businessType = BusinessType.INSERT)
+    @PostMapping("/batch")
+    public AjaxResult batchAdd(@RequestBody List<SysCase> list)
+    {
+        return success(sysCaseService.batchInsertSysCase(list));
     }
 
     /**

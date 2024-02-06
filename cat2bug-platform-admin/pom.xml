@@ -49,6 +49,12 @@
             <artifactId>mysql-connector-java</artifactId>
         </dependency>
 
+        <!-- 工具包-->
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+        </dependency>
+
         <!-- 核心模块-->
         <dependency>
             <groupId>com.cat2bug</groupId>

@@ -50,8 +50,14 @@ public interface ISysCaseService
      * @param sysCase 测试用例
      * @return 结果
      */
-    public int insertSysCase(SysCase sysCase);
+    public SysCase insertSysCase(SysCase sysCase);
 
+    /**
+     * 批量添加测试用例
+     * @param list 测试用例集合
+     * @return  结果
+     */
+    public List<SysCase> batchInsertSysCase(List<SysCase> list);
     /**
      * 修改测试用例
      * 

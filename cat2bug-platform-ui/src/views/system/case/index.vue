@@ -44,14 +44,23 @@
           >{{ $t('import') }}</el-button>
         </el-col>
         <el-col :span="1.5">
+            <el-button
+              type="primary"
+              plain
+              icon="el-icon-plus"
+              size="mini"
+              @click="handleAdd"
+              v-hasPermi="['system:case:add']"
+            >{{ $t('case.create') }}</el-button>
+        </el-col>
+        <el-col :span="1.5">
           <el-button
-            type="primary"
-            plain
-            icon="el-icon-plus"
+            type="success"
             size="mini"
-            @click="handleAdd"
+            @click="handleCloudCaseAdd"
             v-hasPermi="['system:case:add']"
-          >{{ $t('case.create') }}</el-button>
+          ><svg-icon icon-class="robot" />
+            {{ $t('case.ai-create') }}</el-button>
         </el-col>
 <!--        <el-col :span="1.5">-->
 <!--          <el-button-->
@@ -131,7 +140,7 @@
     </multipane>
     <add-case ref="addCaseDialog" :module-id="queryParams.params.modulePid" @added="getList" />
     <add-defect ref="addDefect" :project-id="projectId" />
-
+    <cloud-case ref="cloudCaseDialog" @added="getList" />
     <!-- 用户导入对话框 -->
     <el-dialog :title="upload.title" :visible.sync="upload.open" width="400px" append-to-body>
       <el-upload
@@ -171,6 +180,7 @@ import { Multipane, MultipaneResizer } from 'vue-multipane';
 import { listCase, delCase } from "@/api/system/case";
 import AddCase from "@/components/Case/AddCase";
 import AddDefect from "@/components/Defect/AddDefect";
+import CloudCase from "@/components/Cloud/CloudCase";
 import {checkPermi} from "@/utils/permission";
 import {strFormat} from "@/utils";
 import {getToken} from "@/utils/auth";
@@ -178,7 +188,7 @@ import {getToken} from "@/utils/auth";
 const TREE_MODULE_WIDTH_CACHE_KEY = 'case_tree_module_width';
 export default {
   name: "Case",
-  components: {ProjectLabel,AddCase,Cat2BugLevel,Step,TreeModule,Multipane,MultipaneResizer,AddDefect},
+  components: {ProjectLabel,AddCase,Cat2BugLevel,Step,TreeModule,Multipane,MultipaneResizer,AddDefect,CloudCase},
   data() {
     return {
       multipaneStyle: {'--marginTop':'0px'},
@@ -290,9 +300,7 @@ export default {
     setDragComponentSize() {
       this.multipaneStyle['--marginTop'] = '0px';
       this.$nextTick(()=> {
-        let elContent = document.querySelector('.custom-resizer').getBoundingClientRect()
-        let pageHeight = Math.max(document.body.scrollHeight - elContent.y - 20, this.$refs.caseContext.scrollHeight);
-        pageHeight = Math.max(this.$refs.treeModule.scrollHeight || 0, this.$refs.caseContext.scrollHeight || 0, document.body.scrollHeight - 170)
+        let pageHeight = Math.max(this.$refs.treeModule.scrollHeight || 0, this.$refs.caseContext.scrollHeight || 0, document.body.scrollHeight - 170)
         this.multipaneStyle['--marginTop'] = pageHeight + 'px';
       })
     },
@@ -313,6 +321,9 @@ export default {
     /** 新增按钮操作 */
     handleAdd() {
       this.$refs.addCaseDialog.open();
+    },
+    handleCloudCaseAdd() {
+      this.$refs.cloudCaseDialog.open();
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
