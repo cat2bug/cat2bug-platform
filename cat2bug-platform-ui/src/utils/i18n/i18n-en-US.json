@@ -73,6 +73,8 @@
   "save": "Save",
   "delete": "Delete",
   "create": "Create",
+  "batch-delete": "Batch Delete",
+  "batch-import": "Batch Import",
   "refresh": "Refresh",
   "finish": "Finish",
   "display-columns": "Display columns",

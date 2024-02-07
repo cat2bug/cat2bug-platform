@@ -17,7 +17,7 @@
         </div>
       </div>
     </template>
-    <div class="app-container defect-edit-body">
+    <div class="app-container defect-edit-body" v-loading="loading">
       <div class="defect-edit-body-log-first">
         <list-defect-log ref="defectLogFirst" :pageSize="1" />
       </div>
@@ -90,6 +90,7 @@ export default {
   components: { ImageUpload, SelectProjectMember, SelectModule, ListDefectLog, DefectTools, DefectTypeFlag,CaseCard },
   data() {
     return {
+      loading: false,
       defectId: null,
       activeNames: [],
       // 显示窗口
@@ -148,8 +149,10 @@ export default {
   methods:{
     // 获取缺陷信息
     getDefectInfo(defectId) {
+      this.loading = true;
       this.activeNames = ['base','log']
       getDefect(defectId).then(res=>{
+        this.loading = false;
         this.defect = res.data;
         if(this.defect.defectDescribe) {
           this.activeNames.push('defectDescribe');
@@ -163,6 +166,8 @@ export default {
         if(this.defect){
           this.getCase(this.defect.caseId);
         }
+      }).catch(e=>{
+        this.loading = false;
       });
     },
     // 获取用例

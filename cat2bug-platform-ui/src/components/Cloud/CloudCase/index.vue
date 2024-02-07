@@ -30,8 +30,9 @@
         <div class="case-table">
           <div class="case-table-tools">
             <div>
-              <el-button :disabled="ids.size==0" class="el-icon-delete" type="danger" size="mini" @click="batchRemoveCase">批量删除</el-button>
-              <el-button :disabled="ids.size==0" class="el-icon-download" type="primary" size="mini" @click="batchImportCase">批量导入</el-button>
+              <el-button :disabled="ids.size==0" class="el-icon-delete" type="danger" size="mini" @click="batchRemoveCase">
+                {{ $t('batch-delete') }}</el-button>
+              <el-button :disabled="ids.size==0" class="el-icon-download" type="primary" size="mini" @click="batchImportCase">{{ $t('batch-import') }}</el-button>
             </div>
             <div>
               <el-pagination

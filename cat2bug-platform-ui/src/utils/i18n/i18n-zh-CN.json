@@ -73,6 +73,8 @@
   "save": "保存",
   "delete": "删除",
   "create": "创建",
+  "batch-delete": "批量删除",
+  "batch-import": "批量导入",
   "finish": "完成",
   "refresh": "刷新",
   "display-columns": "显示列",
