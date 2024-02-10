@@ -8,6 +8,7 @@
       </div>
     </div>
     <router-link to="project-base-info" v-hasPermi="['system:project:edit']"><el-link>{{$t('project.base-info')}}</el-link></router-link>
+    <router-link to="project-api" v-hasPermi="['system:api:list']"><el-link>{{$t('project.api-key')}}</el-link></router-link>
     <el-link @click="handleDelete" v-hasPermi="['system:project:remove']" type="danger">{{$t('project.delete')}}</el-link>
   </el-card>
 </template>

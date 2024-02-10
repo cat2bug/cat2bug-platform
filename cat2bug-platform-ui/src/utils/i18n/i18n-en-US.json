@@ -247,6 +247,8 @@
   "project.project-and-member-describe": "Member management, and batch processing",
   "project.is-delete-member": "Do you want to delete this member in the project?",
   "project.delete": "Delete Project",
+  "project.api-key": "API KEY",
+  "project.api.create-key": "Create Key",
   "http.invalid-session": "Invalid session, or the session has expired. Please log in again.",
   "http.downloading-wait": "Downloading data, please wait",
   "http.download-fail": "There was an error downloading the file. Please contact the administrator!",
@@ -368,5 +370,14 @@
   "case.ai-search-success-result": "Found {0} test cases in total",
   "case.ai-search-fail-result": "The content you entered cannot be parsed correctly. Please adjust the statement and query again!",
   "case.is-batch-import": "Do you want to import the selected use cases into the system?",
-  "case.batch-import-module-describe": "This option will set module properties to empty data"
+  "case.batch-import-module-describe": "This option will set module properties to empty data",
+  "project.api.please-enter-name": "Please enter the API name",
+  "project.api.please-enter-white-list": "Please enter the whitelist",
+  "project.api.please-select-expire-time": "Please select a valid time",
+  "project.api.name": "API Name",
+  "project.api.key": "API Key",
+  "project.api.white-list": "White List",
+  "project.api.expire-time": "Expire Time",
+  "project.api.name--cannot-empty": "API nam cannot be empty",
+  "project.api.is-delete": "Are you sure to delete this Key data ?"
 }

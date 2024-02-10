@@ -106,11 +106,6 @@ public class ApiSecurityConfig extends WebSecurityConfigurerAdapter
                 .addFilterBefore(authenticationTokenFilter, UsernamePasswordAuthenticationFilter.class);
     }
 
-    public BCryptPasswordEncoder bCryptPasswordEncoder()
-    {
-        return new BCryptPasswordEncoder();
-    }
-
     /**
      * 身份认证接口
      */

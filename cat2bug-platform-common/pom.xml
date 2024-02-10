@@ -15,8 +15,13 @@
         common通用工具
     </description>
 
-    <dependencies>
+    <properties>
+        <openapi.generator.version>5.2.0</openapi.generator.version>
+        <openapi.package>com.cat2bug.common</openapi.package>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
 
+    <dependencies>
         <!-- Spring框架基本的核心工具 -->
         <dependency>
             <groupId>org.springframework</groupId>
@@ -125,6 +130,7 @@
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
         </dependency>
+
         <!-- 通用工具-->
         <dependency>
             <groupId>com.google.guava</groupId>

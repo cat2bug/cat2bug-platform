@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.api.mapper.ApiDefectMapper">
+    
+    <resultMap type="ApiDefect" id="ApiDefectResult">
+        <result property="defectNumber"    column="project_num"    />
+        <result property="defectType"    column="defect_type"  typeHandler="com.cat2bug.api.domain.handle.ApiDefectTypeEnumTypeHandler"  />
+        <result property="defectName"    column="defect_name"    />
+        <result property="defectDescribe"    column="defect_describe"    />
+        <result property="annexList"    column="annex_urls"  />
+        <result property="imgList"    column="img_urls"   />
+        <result property="projectName"    column="project_name"    />
+        <result property="moduleName"    column="module_name"    />
+        <result property="moduleVersion"    column="module_version"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="defectState"    column="defect_state"    typeHandler="com.cat2bug.api.domain.handle.ApiDefectStateEnumTypeHandler"    />
+        <result property="handleByList"    column="handle_by_list"  typeHandler="com.cat2bug.api.domain.handle.ApiStringArrayTypeHandler"  />
+        <result property="handleTime"    column="handle_time"    />
+        <result property="defectLevel"    column="defect_level"    />
+        <result property="collect"    column="collect"    />
+    </resultMap>
+
+    <sql id="selectApiDefectVo">
+        SELECT
+            d.defect_id,
+            d.project_num,
+            d.defect_type,
+            d.defect_name,
+            d.defect_describe,
+            d.annex_urls,
+            d.img_urls,
+            d.project_id,
+            p.project_name,
+            d.test_plan_id,
+            d.case_id,
+            d.data_sources,
+            d.data_sources_params,
+            d.module_id,
+            m.module_name,
+            d.module_version,
+            d.create_by,
+            d.create_by_id,
+            d.update_time,
+            d.create_time,
+            d.update_by,
+            d.update_by_id,
+            d.defect_state,
+            d.case_step_id,
+            d.handle_by,
+            un.user_infos AS handle_by_list,
+            d.handle_time,
+            d.defect_level
+        FROM
+            sys_defect d
+            LEFT JOIN sys_module m ON m.module_id = d.module_id
+            LEFT JOIN sys_project p ON d.project_id = p.project_id
+            LEFT JOIN (
+                SELECT
+                    d1.defect_id,
+                    JSON_ARRAYAGG( u.nick_name ) AS user_infos
+                FROM
+                    sys_defect d1
+                    LEFT JOIN sys_user u ON JSON_CONTAINS(
+                        d1.handle_by,
+                        CAST( u.user_id AS JSON ))
+                WHERE
+                    JSON_CONTAINS(
+                            d1.handle_by,
+                            CAST( u.user_id AS JSON ))
+                GROUP BY
+                    d1.defect_id
+            ) un ON un.defect_id = d.defect_id
+    </sql>
+
+    <select id="getProjectDefectMaxNum" resultType="Long">
+        select IFNULL(MAX(project_num),0) from sys_defect where project_id=#{projectId}
+    </select>
+
+    <select id="selectApiDefectList" resultMap="ApiDefectResult">
+        <include refid="selectApiDefectVo"/>
+        <where>
+            <if test="defect.defectNumber != null "> and d.project_num = #{defectNumber}</if>
+            <if test="defect.defectType != null "> and d.defect_type = #{defect.defectType, typeHandler=com.cat2bug.api.domain.handle.ApiDefectTypeEnumTypeHandler }</if>
+            <if test="defect.defectName != null  and defect.defectName != ''"> and d.defect_name like concat('%', #{defect.defectName}, '%')</if>
+<!--            <if test="defect.projectName != null "> and d.project_id = #{defect.projectId}</if>-->
+<!--             <choose>-->
+<!--                 <when test="defect.moduleId == 0">and d.module_id IS NULL</when>-->
+<!--                 <when test="defect.moduleId != null and defect.moduleId > 0">and d.module_id = #{defect.moduleId}</when>-->
+<!--                 <otherwise></otherwise>-->
+<!--             </choose>-->
+            <if test="defect.moduleVersion != null and defect.moduleVersion != ''"> and d.module_version like concat('%', #{defect.moduleVersion}, '%')</if>
+            <if test="defect.createBy != null  and defect.createBy != ''"> and d.create_by = #{defect.createBy}</if>
+            <if test="defect.params.beginUpdateTime != null and defect.params.beginUpdateTime != '' and defect.params.endUpdateTime != null and defect.params.endUpdateTime != ''"> and d.update_time between #{defect.params.beginUpdateTime} and #{defect.params.endUpdateTime}</if>
+            <if test="defect.params.beginCreateTime != null and defect.params.beginCreateTime != '' and defect.params.endCreateTime != null and defect.params.endCreateTime != ''"> and d.create_time between #{defect.params.beginCreateTime} and #{defect.params.endCreateTime}</if>
+            <if test="defect.updateBy != null  and defect.updateBy != ''"> and d.update_by = #{defect.updateBy}</if>
+            <if test="defect.defectState != null "> and d.defect_state = #{defect.defectState, typeHandler=com.cat2bug.api.domain.handle.ApiDefectStateEnumTypeHandler}</if>
+            <if test="defect.params.collect != null "> and ud.collect = #{defect.params.collect}</if>
+            <if test="defect.params.defectStates != null "> and
+                <foreach collection="defect.params.defectStates.split(',')" item="state" separator=" or " open="(" close=")">
+                    d.defect_state=#{state}
+                </foreach>
+            </if>
+            <if test="defect.handleByList != null  and defect.handleByList != ''"> and
+                <foreach collection="defect.handleByList" item="b" separator=" or " open="(" close=")">
+                    JSON_CONTAINS(d.handle_by,CAST(#{b} AS CHAR))
+                </foreach>
+            </if>
+            <if test="defect.params.userId != null"> and (JSON_CONTAINS(d.handle_by,CAST(#{defect.params.userId} AS CHAR)) OR d.create_by_id=#{defect.params.userId} OR d.update_by_id=#{defect.params.userId})</if>
+            <if test="defect.params.beginHandleTime != null and defect.params.beginHandleTime != '' and defect.params.endHandleTime != null and defect.params.endHandleTime != ''"> and d.handle_time between #{defect.params.beginHandleTime} and #{defect.params.endHandleTime}</if>
+            <if test="defect.defectLevel != null  and defect.defectLevel != ''"> and d.defect_level = #{defect.defectLevel}</if>
+        </where>
+    </select>
+    
+<!--    <select id="selectApiDefectByDefectId" resultMap="ApiDefectResult">-->
+<!--        <include refid="selectApiDefectVo"/>-->
+<!--        where d.defect_id = #{defectId}-->
+<!--    </select>-->
+        
+    <insert id="insertApiDefect" parameterType="ApiDefect" useGeneratedKeys="true" keyProperty="defectId">
+        insert into sys_defect
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="defectNumber != null">project_num,</if>
+            <if test="defectType != null">defect_type,</if>
+            <if test="defectName != null and defectName != ''">defect_name,</if>
+            <if test="defectDescribe != null and defectDescribe != ''">defect_describe,</if>
+            <if test="annexList != null">annex_urls,</if>
+            <if test="imgList != null">img_urls,</if>
+            <if test="projectId != null">project_id,</if>
+            <if test="moduleId != null">module_id,</if>
+            <if test="moduleVersion != null">module_version,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createById != null">create_by_id,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateById != null">update_by_id,</if>
+            <if test="defectState != null">defect_state,</if>
+            <if test="handleBy != null">handle_by,</if>
+            <if test="handleTime != null">handle_time,</if>
+            <if test="defectLevel != null">defect_level,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="defectNumber != null">#{defectNumber},</if>
+            <if test="defectType != null">#{defectType, typeHandler=com.cat2bug.api.domain.handle.ApiDefectTypeEnumTypeHandler},</if>
+            <if test="defectName != null and defectName != ''">#{defectName},</if>
+            <if test="defectDescribe != null and defectDescribe != ''">#{defectDescribe},</if>
+            <if test="annexList != null">#{annexUrls},</if>
+            <if test="imgList != null">#{imgUrls},</if>
+            <if test="projectId != null">#{projectId},</if>
+            <if test="moduleId != null">#{moduleId},</if>
+            <if test="moduleVersion != null">#{moduleVersion},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createById != null">#{createById},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateById != null">#{updateById},</if>
+            <if test="defectState != null">#{defectState,  typeHandler=com.cat2bug.api.domain.handle.ApiDefectStateEnumTypeHandler},</if>
+            <if test="handleBy != null">#{handleBy,typeHandler=com.cat2bug.api.domain.handle.ApiLongArrayTypeHandler},</if>
+            <if test="handleTime != null">#{handleTime},</if>
+            <if test="defectLevel != null">#{defectLevel},</if>
+         </trim>
+    </insert>
+
+<!--    <update id="updateApiDefect" parameterType="ApiDefect">-->
+<!--        update sys_defect-->
+<!--        <trim prefix="SET" suffixOverrides=",">-->
+<!--            <if test="defectType != null">defect_type = #{defectType, typeHandler=com.cat2bug.api.domain.handle.ApiDefectTypeEnumTypeHandler},</if>-->
+<!--            <if test="defectName != null and defectName != ''">defect_name = #{defectName},</if>-->
+<!--            <if test="defectDescribe != null and defectDescribe != ''">defect_describe = #{defectDescribe},</if>-->
+<!--            <if test="annexUrls != null">annex_urls = #{annexUrls},</if>-->
+<!--            <if test="imgUrls != null">img_urls = #{imgUrls},</if>-->
+<!--            <if test="projectId != null">project_id = #{projectId},</if>-->
+<!--            <if test="testPlanId != null">test_plan_id = #{testPlanId},</if>-->
+<!--            <if test="caseId != null">case_id = #{caseId},</if>-->
+<!--            <if test="dataSources != null">data_sources = #{dataSources},</if>-->
+<!--            <if test="dataSourcesParams != null">data_sources_params = #{dataSourcesParams},</if>-->
+<!--            <if test="moduleId != null">module_id = #{moduleId},</if>-->
+<!--            <if test="moduleVersion != null">module_version = #{moduleVersion},</if>-->
+<!--            <if test="createBy != null">create_by = #{createBy},</if>-->
+<!--            <if test="createById != null">create_by_id = #{createById},</if>-->
+<!--            <if test="updateTime != null">update_time = #{updateTime},</if>-->
+<!--            <if test="createTime != null">create_time = #{createTime},</if>-->
+<!--            <if test="updateBy != null">update_by = #{updateBy},</if>-->
+<!--            <if test="defectState != null">defect_state = #{defectState,  typeHandler=com.cat2bug.api.domain.handle.ApiDefectStateEnumTypeHandler},</if>-->
+<!--            <if test="caseStepId != null">case_step_id = #{caseStepId},</if>-->
+<!--            <if test="handleBy != null">handle_by = #{handleBy, typeHandler=com.cat2bug.api.domain.handle.ApiLongArrayTypeHandler},</if>-->
+<!--            <if test="handleTime != null">handle_time = #{handleTime},</if>-->
+<!--            <if test="defectLevel != null">defect_level = #{defectLevel},</if>-->
+<!--        </trim>-->
+<!--        where defect_id = #{defectId}-->
+<!--    </update>-->
+
+<!--    <delete id="deleteApiDefectByDefectId" parameterType="Long">-->
+<!--        delete from sys_defect where defect_id = #{defectId}-->
+<!--    </delete>-->
+
+<!--    <delete id="deleteApiDefectByDefectIds" parameterType="String">-->
+<!--        delete from sys_defect where defect_id in -->
+<!--        <foreach item="defectId" collection="array" open="(" separator="," close=")">-->
+<!--            #{defectId}-->
+<!--        </foreach>-->
+<!--    </delete>-->
+</mapper>

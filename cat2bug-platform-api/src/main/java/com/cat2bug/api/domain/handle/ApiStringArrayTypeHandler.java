@@ -1,4 +1,4 @@
-package com.cat2bug.system.domain.handle;
+package com.cat2bug.api.domain.handle;
 
 import com.alibaba.fastjson2.JSON;
 import com.cat2bug.common.utils.StringUtils;
@@ -10,7 +10,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -18,14 +17,10 @@ import java.util.List;
  * @CreateTime: 2023-11-23 22:32
  * @Version: 1.0.0
  */
-public class StringArrayTypeHandler extends BaseTypeHandler<List<String>> {
+public class ApiStringArrayTypeHandler extends BaseTypeHandler<List<String>> {
     @Override
     public void setNonNullParameter(PreparedStatement preparedStatement, int i, List<String> strings, JdbcType jdbcType) throws SQLException {
-        if(strings!=null) {
-            preparedStatement.setString(i, JSON.toJSONString(strings));
-        } else {
-            preparedStatement.setString(i, "[]");
-        }
+        preparedStatement.setString(i, JSON.toJSONString(strings));
     }
 
     @Override
@@ -45,6 +40,6 @@ public class StringArrayTypeHandler extends BaseTypeHandler<List<String>> {
 
     // 字符串转换为list
     private List<String> convertToList(String strArray) {
-        return StringUtils.isNotBlank(strArray)?JSON.parseArray(strArray,String.class):new ArrayList<>();
+        return StringUtils.isEmpty(strArray)?new ArrayList<>() :JSON.parseArray(strArray,String.class);
     }
 }
