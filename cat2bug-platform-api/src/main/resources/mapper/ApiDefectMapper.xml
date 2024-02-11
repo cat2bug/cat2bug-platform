@@ -84,6 +84,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <select id="selectApiDefectList" resultMap="ApiDefectResult">
         <include refid="selectApiDefectVo"/>
         <where>
+            d.project_id=#{projectId}
             <if test="defect.defectNumber != null "> and d.project_num = #{defectNumber}</if>
             <if test="defect.defectType != null "> and d.defect_type = #{defect.defectType, typeHandler=com.cat2bug.api.domain.handle.ApiDefectTypeEnumTypeHandler }</if>
             <if test="defect.defectName != null  and defect.defectName != ''"> and d.defect_name like concat('%', #{defect.defectName}, '%')</if>
@@ -115,55 +116,61 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="defect.defectLevel != null  and defect.defectLevel != ''"> and d.defect_level = #{defect.defectLevel}</if>
         </where>
     </select>
-    
+
+
 <!--    <select id="selectApiDefectByDefectId" resultMap="ApiDefectResult">-->
 <!--        <include refid="selectApiDefectVo"/>-->
 <!--        where d.defect_id = #{defectId}-->
 <!--    </select>-->
+
+    <select id="selectSysDefectByDefectNumber" resultMap="ApiDefectResult">
+        <include refid="selectApiDefectVo"/>
+        where d.defect_num = #{defectNumber} and d.project_id = #{projectId} limit 1
+    </select>
         
-    <insert id="insertApiDefect" parameterType="ApiDefect" useGeneratedKeys="true" keyProperty="defectId">
+    <insert id="insertApiDefect" parameterType="ApiDefect" useGeneratedKeys="true" keyProperty="defect.defectId">
         insert into sys_defect
         <trim prefix="(" suffix=")" suffixOverrides=",">
-            <if test="defectNumber != null">project_num,</if>
-            <if test="defectType != null">defect_type,</if>
-            <if test="defectName != null and defectName != ''">defect_name,</if>
-            <if test="defectDescribe != null and defectDescribe != ''">defect_describe,</if>
-            <if test="annexList != null">annex_urls,</if>
-            <if test="imgList != null">img_urls,</if>
+            <if test="defect.defectNumber != null">project_num,</if>
+            <if test="defect.defectType != null">defect_type,</if>
+            <if test="defect.defectName != null and defect.defectName != ''">defect_name,</if>
+            <if test="defect.defectDescribe != null and defect.defectDescribe != ''">defect_describe,</if>
+            <if test="defect.annexList != null">annex_urls,</if>
+            <if test="defect.imgList != null">img_urls,</if>
             <if test="projectId != null">project_id,</if>
-            <if test="moduleId != null">module_id,</if>
-            <if test="moduleVersion != null">module_version,</if>
-            <if test="createBy != null">create_by,</if>
-            <if test="createById != null">create_by_id,</if>
-            <if test="updateTime != null">update_time,</if>
-            <if test="createTime != null">create_time,</if>
-            <if test="updateBy != null">update_by,</if>
-            <if test="updateById != null">update_by_id,</if>
-            <if test="defectState != null">defect_state,</if>
-            <if test="handleBy != null">handle_by,</if>
-            <if test="handleTime != null">handle_time,</if>
-            <if test="defectLevel != null">defect_level,</if>
+            <if test="defect.moduleId != null">module_id,</if>
+            <if test="defect.moduleVersion != null">module_version,</if>
+            <if test="defect.createBy != null">create_by,</if>
+            <if test="defect.createById != null">create_by_id,</if>
+            <if test="defect.updateTime != null">update_time,</if>
+            <if test="defect.createTime != null">create_time,</if>
+            <if test="defect.updateBy != null">update_by,</if>
+            <if test="defect.updateById != null">update_by_id,</if>
+            <if test="defect.defectState != null">defect_state,</if>
+            <if test="defect.handleBy != null">handle_by,</if>
+            <if test="defect.handleTime != null">handle_time,</if>
+            <if test="defect.defectLevel != null">defect_level,</if>
          </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
-            <if test="defectNumber != null">#{defectNumber},</if>
-            <if test="defectType != null">#{defectType, typeHandler=com.cat2bug.api.domain.handle.ApiDefectTypeEnumTypeHandler},</if>
-            <if test="defectName != null and defectName != ''">#{defectName},</if>
-            <if test="defectDescribe != null and defectDescribe != ''">#{defectDescribe},</if>
-            <if test="annexList != null">#{annexUrls},</if>
-            <if test="imgList != null">#{imgUrls},</if>
+            <if test="defect.defectNumber != null">#{defect.defectNumber},</if>
+            <if test="defect.defectType != null">#{defect.defectType, typeHandler=com.cat2bug.api.domain.handle.ApiDefectTypeEnumTypeHandler},</if>
+            <if test="defect.defectName != null and defect.defectName != ''">#{defect.defectName},</if>
+            <if test="defect.defectDescribe != null and defect.defectDescribe != ''">#{defect.defectDescribe},</if>
+            <if test="defect.annexList != null">#{defect.annexUrls},</if>
+            <if test="defect.imgList != null">#{defect.imgUrls},</if>
             <if test="projectId != null">#{projectId},</if>
-            <if test="moduleId != null">#{moduleId},</if>
-            <if test="moduleVersion != null">#{moduleVersion},</if>
-            <if test="createBy != null">#{createBy},</if>
-            <if test="createById != null">#{createById},</if>
-            <if test="updateTime != null">#{updateTime},</if>
-            <if test="createTime != null">#{createTime},</if>
-            <if test="updateBy != null">#{updateBy},</if>
-            <if test="updateById != null">#{updateById},</if>
-            <if test="defectState != null">#{defectState,  typeHandler=com.cat2bug.api.domain.handle.ApiDefectStateEnumTypeHandler},</if>
-            <if test="handleBy != null">#{handleBy,typeHandler=com.cat2bug.api.domain.handle.ApiLongArrayTypeHandler},</if>
-            <if test="handleTime != null">#{handleTime},</if>
-            <if test="defectLevel != null">#{defectLevel},</if>
+            <if test="defect.moduleId != null">#{defect.moduleId},</if>
+            <if test="defect.moduleVersion != null">#{defect.moduleVersion},</if>
+            <if test="defect.createBy != null">#{defect.createBy},</if>
+            <if test="defect.createById != null">#{defect.createById},</if>
+            <if test="defect.updateTime != null">#{defect.updateTime},</if>
+            <if test="defect.createTime != null">#{defect.createTime},</if>
+            <if test="defect.updateBy != null">#{defect.updateBy},</if>
+            <if test="defect.updateById != null">#{defect.updateById},</if>
+            <if test="defect.defectState != null">#{defect.defectState,  typeHandler=com.cat2bug.api.domain.handle.ApiDefectStateEnumTypeHandler},</if>
+            <if test="defect.handleBy != null">#{defect.handleBy,typeHandler=com.cat2bug.api.domain.handle.ApiLongArrayTypeHandler},</if>
+            <if test="defect.handleTime != null">#{defect.handleTime},</if>
+            <if test="defect.defectLevel != null">#{defect.defectLevel},</if>
          </trim>
     </insert>
 

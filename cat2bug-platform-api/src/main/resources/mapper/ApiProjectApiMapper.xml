@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.api.mapper.ApiProjectApiMapper">
+    <select id="selectProjectIdByApiId" parameterType="String" resultType="Long">
+        select pa.project_id
+        from sys_project_api pa
+                 right join sys_user u ON u.user_id = pa.user_id AND u.del_flag='0'
+        where pa.api_id = #{apiId}
+    </select>
+</mapper>

@@ -2,6 +2,8 @@ package com.cat2bug.framework.web.service;
 
 import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.common.core.domain.model.LoginUser;
+import com.cat2bug.system.domain.SysProjectApi;
+import com.cat2bug.system.mapper.SysProjectApiMapper;
 import com.google.common.collect.Sets;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -23,25 +25,33 @@ public class ApiUserDetailsServiceImpl implements UserDetailsService {
     @Autowired
     ApiTokenService tokenService;
 
+    @Autowired
+    SysProjectApiMapper sysProjectApiMapper;
     /**
      * API默认权限
      */
-    private static final Set<String> DEFAULT_PERMISSIONS=Sets.newHashSet("api:defect:list");
+    private static final Set<String> DEFAULT_PERMISSIONS=Sets.newHashSet(
+            "api:defect:add",
+            "api:defect:list",
+            "api:defect:query");
 
     @Override
     public UserDetails loadUserByUsername(String token) throws UsernameNotFoundException {
         LoginUser user = createLoginUser(token);
-        tokenService.setLoginUser(user);
+        if(user!=null) {
+            tokenService.setLoginUser(user);
+        }
         return user;
     }
 
     public LoginUser createLoginUser(String token)
     {
-        if(token.equals("123456")) {
+        SysProjectApi  sysProjectApi = sysProjectApiMapper.selectSysProjectApiByApiId(token);
+        if(sysProjectApi!=null) {
             LoginUser user = new LoginUser();
-            user.setUserId(0L);
+            user.setUserId(sysProjectApi.getUserId());
             user.setToken(token);
-            user.setExpireTime(Long.MAX_VALUE);
+            user.setExpireTime(sysProjectApi.getExpireTime()==null?0:sysProjectApi.getExpireTime().getTime());
             user.setPermissions(DEFAULT_PERMISSIONS);
             user.setUser(new SysUser());
             return user;

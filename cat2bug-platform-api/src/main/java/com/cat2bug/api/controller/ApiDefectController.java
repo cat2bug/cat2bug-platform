@@ -2,13 +2,14 @@ package com.cat2bug.api.controller;
 
 import com.cat2bug.api.domain.ApiDefect;
 import com.cat2bug.api.service.IApiDefectService;
+import com.cat2bug.common.annotation.Log;
 import com.cat2bug.common.core.controller.BaseController;
+import com.cat2bug.common.core.domain.AjaxResult;
 import com.cat2bug.common.core.page.TableDataInfo;
+import com.cat2bug.common.enums.BusinessType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -29,11 +30,31 @@ public class ApiDefectController extends BaseController {
      * @return  缺陷集合
      */
     @PreAuthorize("@ss.hasPermi('api:defect:list')")
-    @GetMapping()
+    @GetMapping
     public TableDataInfo list(ApiDefect apiDefect)
     {
         startPage();
         List<ApiDefect> list = this.apiDefectService.selectApiDefectList(apiDefect);
         return getDataTable(list);
+    }
+
+    /**
+     * 获取缺陷详细信息
+     */
+    @PreAuthorize("@ss.hasPermi('api:defect:query')")
+    @GetMapping(value = "/{defectNumber}")
+    public AjaxResult getInfo(@PathVariable("defectNumber") Long defectNumber)
+    {
+        return success(apiDefectService.selectSysDefectByDefectNumber(defectNumber));
+    }
+
+    /**
+     * 新增缺陷
+     */
+    @PreAuthorize("@ss.hasPermi('api:defect:add')")
+    @PostMapping
+    public AjaxResult add(@RequestBody ApiDefect apiDefect)
+    {
+        return success(apiDefectService.insertApiDefect(apiDefect));
     }
 }

@@ -29,6 +29,13 @@ public interface ApiDefectMapper
      */
     public Long getProjectDefectMaxNum(@Param("projectId") Long projectId);
 
+    /**
+     * 查询缺陷
+     * @param projectId 项目id
+     * @param defectNumber 缺陷编号
+     * @return  缺陷
+     */
+    public ApiDefect selectSysDefectByDefectNumber(@Param("projectId") Long projectId, @Param("defectNumber") Long defectNumber);
 
     /**
      * 查询缺陷列表

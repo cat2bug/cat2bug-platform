@@ -97,6 +97,7 @@ public class ApiSecurityConfig extends WebSecurityConfigurerAdapter
 //        permitAllUrl.getUrls().forEach(url -> registry.antMatchers(url).permitAll());
 
         httpSecurity
+                .csrf().disable()
                 .requestMatchers(matchers -> matchers
                         .antMatchers("/api/**") // apply JWTSecurityConfig to requests matching "/api/**"
                 )

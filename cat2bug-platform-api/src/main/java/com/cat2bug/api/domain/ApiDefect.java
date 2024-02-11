@@ -5,6 +5,7 @@ import com.cat2bug.api.domain.type.ApiDefectTypeEnum;
 import com.cat2bug.common.annotation.Excel;
 import com.cat2bug.common.core.domain.BaseEntity;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 
 import java.util.Date;
@@ -41,6 +42,9 @@ public class ApiDefect extends BaseEntity
     /** 项目名称 */
     private String projectName;
 
+    @JsonIgnoreProperties
+    private Long moduleId;
+
     /** 测试模块名称 */
     private String moduleName;
 
@@ -52,6 +56,10 @@ public class ApiDefect extends BaseEntity
     private ApiDefectStateEnum defectState;
 
     /** 处理人id */
+    @JsonIgnoreProperties
+    private List<Long> handleBy;
+
+    /** 处理人名称列表 */
     private List<String> handleByList;
 
     /** 处理时间 */

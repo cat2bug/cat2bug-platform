@@ -14,6 +14,13 @@ public interface IApiDefectService {
     public List<ApiDefect> selectApiDefectList(ApiDefect apiDefect);
 
     /**
+     * 查询缺陷
+     * @param number    缺陷编号
+     * @return  缺陷
+     */
+    public ApiDefect selectSysDefectByDefectNumber(Long number);
+
+    /**
      * 新增缺陷
      *
      * @param apiDefect 缺陷

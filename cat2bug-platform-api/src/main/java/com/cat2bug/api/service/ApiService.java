@@ -1,6 +1,9 @@
 package com.cat2bug.api.service;
 
+import com.cat2bug.api.domain.ApiProjectApi;
+import com.cat2bug.api.mapper.ApiProjectApiMapper;
 import com.cat2bug.common.utils.SecurityUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -10,8 +13,11 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class ApiService {
+    @Autowired
+    ApiProjectApiMapper apiProjectApiMapper;
+
     public Long getProjectId() {
         String token = SecurityUtils.getLoginUser().getToken();
-        return 74L;
+        return apiProjectApiMapper.selectProjectIdByApiId(token);
     }
 }

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.api.mapper.ApiDefectLogMapper">
+    <insert id="insertApiDefectLog" parameterType="ApiDefectLog" useGeneratedKeys="true" keyProperty="defectLogId">
+        insert into sys_defect_log
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="defectLogDescribe != null">defect_log_describe,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="defectLogType != null">defect_log_type,</if>
+            <if test="receiveBy != null">receive_by,</if>
+            <if test="annexUrls != null">annex_urls,</if>
+            <if test="defectId != null">defect_id,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="defectLogDescribe != null">#{defectLogDescribe},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="defectLogType != null">#{defectLogType, typeHandler=com.cat2bug.api.domain.handle.ApiDefectLogStateEnumTypeHandle},</if>
+            <if test="receiveBy != null">#{receiveBy, typeHandler=com.cat2bug.api.domain.handle.ApiLongArrayTypeHandler },</if>
+            <if test="annexUrls != null">#{annexUrls},</if>
+            <if test="defectId != null">#{defectId},</if>
+         </trim>
+    </insert>
+</mapper>
