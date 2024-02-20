@@ -1,7 +1,13 @@
-<h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">Cat2Bug-Platform v0.2.0</h1>
-<h4 align="center">轻量化BUG管理平台</h4>
+---
+title: Blogging with VuePress
+lang: zh-CN
+---
 
-## 平台简介
+# 介绍
+
+::: tip 提示
+这是一个提示
+:::
 
 Cat2Bug-Platform是一套永久免费开源的Bug管理平台，将毫无保留给个人及团体免费使用。
 它的使用人群锁定个人或中小型软件开发团队，Cat2Bug的理念是免去了项目管理中各种重度管理，让个人或团队可以快速上手，把控软件质量。
@@ -18,7 +24,7 @@ Cat2Bug-Platform是一套永久免费开源的Bug管理平台，将毫无保留�
 ## 在线体验
 
 - 体验账号：demo
-- 体验密码：123456  
+- 体验密码：123456
 
 演示地址：[http://www.cat2bug.com:8022](http://www.cat2bug.com:8022)
 
@@ -37,20 +43,20 @@ docker-compose up -d
 
 <table>
     <tr>
-        <td><img src="readme/images/1.png"></td>
-        <td><img src="readme/images/2.png"></td>
+        <td><img src="/assets/img/1.png"></td>
+        <td><img src="./assets/img/2.png"></td>
     </tr>
     <tr>
-        <td><img src="readme/images/3.png"></td>
-        <td><img src="readme/images/4.png"></td>
+        <td><img src="./assets/img/3.png"></td>
+        <td><img src="./assets/img/4.png"></td>
     </tr>
     <tr>
-        <td><img src="readme/images/5.png"></td>
-        <td><img src="readme/images/6.png"></td>
+        <td><img src="./assets/img/5.png"></td>
+        <td><img src="./assets/img/6.png"></td>
     </tr>
     <tr>
-        <td><img src="readme/images/7.png"></td>
-        <td><img src="readme/images/8.png"></td>
+        <td><img src="./assets/img/7.png"></td>
+        <td><img src="./assets/img/8.png"></td>
     </tr>
 </table>
 

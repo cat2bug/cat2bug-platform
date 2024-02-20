@@ -229,7 +229,7 @@ body {
   //justify-content: right;
   align-items: center;
   height: 100%;
-  //background-image: url("../assets/images/login-background.jpg");
+  //background-image: url("../assets/img/login-background.jpg");
   background-size: cover;
   background-color: white;
 }

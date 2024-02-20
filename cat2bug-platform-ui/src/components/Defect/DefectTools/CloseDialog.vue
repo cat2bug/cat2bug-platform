@@ -1,5 +1,5 @@
 <template>
-  <el-dialog :title="$i18n.t('pass')" :visible.sync="dialogVisible" append-to-body @close="close" width="30%">
+  <el-dialog :title="$i18n.t('close')" :visible.sync="dialogVisible" append-to-body @close="close" width="30%">
     <el-form ref="form" :model="form" :rules="rules" label-width="120px">
       <el-form-item :label="$i18n.t('describe')" prop="defectLogDescribe">
         <el-input type="textarea"

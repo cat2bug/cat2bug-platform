@@ -15,10 +15,11 @@ import REJECTED from "@/components/ListDefectLog/reject";
 import REPAIR from "@/components/ListDefectLog/repair";
 import PASS from "@/components/ListDefectLog/pass";
 import CLOSED from "@/components/ListDefectLog/close";
+import OPEN from "@/components/ListDefectLog/open";
 
 export default {
   name: "ListDefectLog",
-  components:{ CREATE,ASSIGN,REJECTED,REPAIR,PASS,CLOSED },
+  components:{ CREATE,ASSIGN,REJECTED,REPAIR,PASS,CLOSED,OPEN },
   data() {
     return {
       logList: []

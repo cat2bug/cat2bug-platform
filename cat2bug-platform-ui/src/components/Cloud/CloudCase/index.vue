@@ -123,7 +123,7 @@
     </div>
     <!-- 将用例导入到系统对话框 -->
     <el-dialog :title="$t('import')" :visible.sync="importDialogVisible" width="500px" append-to-body>
-      <el-form ref="form" :model="importForm" label-width="80px">
+      <el-form ref="form" :model="importForm" label-width="100px">
         <el-form-item :label="$t('module')" prop="teamName">
           <div class="import-dialog-module-form-item">
             <select-module v-model="importForm.moduleId" :project-id="projectId" @input="importFormModuleChangeHandle" />
@@ -183,7 +183,7 @@ export default {
   computed: {
     importStateName() {
       return function (c) {
-        return c.isImport===true?'已导入':'未导入';
+        return c.isImport===true?this.$i18n.t('case.imported'):this.$i18n.t('case.not-imported');
       }
     },
     importStateType() {

@@ -20,7 +20,7 @@
 
 <script>
 import SelectProjectMember from "@/components/Project/SelectProjectMember";
-import {reject} from "@/api/system/defect";
+import {open} from "@/api/system/defect";
 export default {
   name: "OpenDialog",
   components: { SelectProjectMember },
@@ -66,7 +66,7 @@ export default {
         if (valid) {
           this.form.defectId = this.defectId;
           open(this.defectId, this.form).then(res => {
-            this.$modal.msgSuccess(this.$i18n.t('defect.reject-success'));
+            this.$modal.msgSuccess(this.$i18n.t('defect.start-success'));
             this.close();
             this.$emit('log', res.data);
           });

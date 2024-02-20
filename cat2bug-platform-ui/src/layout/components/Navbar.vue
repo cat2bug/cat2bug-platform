@@ -11,10 +11,10 @@
           <cat2-bug-git id="cat2bug-git" class="right-menu-item hover-effect" />
         </el-tooltip>
 
-<!--        <el-tooltip :content="$t('doc-address')" effect="dark" placement="bottom">-->
-<!--          <cat2-bug-doc id="cat2bug-doc" class="right-menu-item hover-effect" />-->
+<!--        <el-tooltip :content="$t('md-address')" effect="dark" placement="bottom">-->
+<!--          <cat2-bug-md id="cat2bug-md" class="right-menu-item hover-effect" />-->
 <!--        </el-tooltip>-->
-
+<!--        <el-link href="/doc">doc</el-link>-->
         <screenfull id="screenfull" class="right-menu-item hover-effect" />
       </template>
 

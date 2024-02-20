@@ -128,16 +128,16 @@ export const constantRoutes = [
     ]
   },
   {
-    path: '/system/member/add',
+    path: '/system/team/add',
     component: Layout,
     hidden: true,
     redirect: 'noredirect',
     children: [
       {
-        path: '/system/member/add-member',
+        path: '/system/team/add-member',
         component: () => import('@/views/system/team/add'),
         name: 'TeamAdd',
-        meta: { title: i18n.t('member.create'), icon: 'user' }
+        meta: { title: i18n.t('team.create'), icon: 'user' }
       }
     ]
   },
@@ -228,7 +228,7 @@ Router.prototype.replace = function push(location) {
 }
 
 export default new Router({
-  mode: 'history', // 去掉url中的#
+  mode: 'hash', // 去掉url中的#
   scrollBehavior: () => ({ y: 0 }),
   routes: constantRoutes
 })
