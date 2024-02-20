@@ -3,7 +3,7 @@ cat2bug:
   # 名称
   name: Cat2Bug
   # 版本
-  version: 0.1.1
+  version: 0.2.0
   # 版权年份
   copyrightYear: 2024
   # 文件路径
@@ -52,6 +52,11 @@ user:
 
 # Spring配置
 spring:
+  thymeleaf:
+    mode: HTML
+    encoding: utf-8
+    cache: false
+    prefix: classpath:/static/
   # 资源信息
   messages:
     # 国际化资源文件路径
@@ -72,6 +77,7 @@ spring:
       enabled: true
   # redis 配置
   redis:
+    embed: true
     # 地址
     host: localhost
     # 端口，默认为6379
