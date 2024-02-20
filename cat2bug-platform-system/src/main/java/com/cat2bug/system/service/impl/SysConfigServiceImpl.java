@@ -1,10 +1,5 @@
 package com.cat2bug.system.service.impl;
 
-import java.util.Collection;
-import java.util.List;
-import javax.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import com.cat2bug.common.annotation.DataSource;
 import com.cat2bug.common.constant.CacheConstants;
 import com.cat2bug.common.constant.UserConstants;
@@ -16,6 +11,13 @@ import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.system.domain.SysConfig;
 import com.cat2bug.system.mapper.SysConfigMapper;
 import com.cat2bug.system.service.ISysConfigService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.DependsOn;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.PostConstruct;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * 参数配置 服务层实现
@@ -23,6 +25,7 @@ import com.cat2bug.system.service.ISysConfigService;
  * @author ruoyi
  */
 @Service
+@DependsOn("h2Config")
 public class SysConfigServiceImpl implements ISysConfigService
 {
     @Autowired

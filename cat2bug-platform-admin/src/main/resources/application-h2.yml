@@ -1,14 +1,29 @@
 # 数据源配置
 spring:
+    h2:
+        console:
+            settings:
+                web-allow-others: false
+            path: /h2
+            # 开启浏览器访问
+            enabled: false
+#    sql:
+#        init:
+#            mode: ALWAYS
+#            schema-locations:
+#                - classpath:h2-schema.sql
     datasource:
         type: com.alibaba.druid.pool.DruidDataSource
-        driverClassName: com.mysql.cj.jdbc.Driver
+        driverClassName: org.h2.Driver
+        url: jdbc:h2:file:./cat2bug;DATABASE_TO_LOWER=TRUE;
+        username: root
+        password: cat2bug_password
         druid:
             # 主库数据源
-            master:
-                url: jdbc:mysql://localhost:3306/cat2bug_platform?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=GMT%2B8
-                username: root
-                password: cat2bug_password
+#            master:
+#                url: jdbc:h2:file:./cat2bug;DATABASE_TO_LOWER=TRUE;
+#                username: root
+#                password: cat2bug_password
             # 从库数据源
             slave:
                 # 从数据源开关/默认关闭

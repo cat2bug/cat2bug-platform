@@ -7,6 +7,9 @@ import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.annotation.DependsOn;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.cat2bug.common.constant.ScheduleConstants;
@@ -23,6 +26,7 @@ import com.cat2bug.quartz.util.ScheduleUtils;
  * @author ruoyi
  */
 @Service
+@DependsOn("h2Config")
 public class SysJobServiceImpl implements ISysJobService
 {
     @Autowired

@@ -52,6 +52,7 @@ user:
 
 # Spring配置
 spring:
+  database-type: h2
   thymeleaf:
     mode: HTML
     encoding: utf-8
@@ -62,7 +63,7 @@ spring:
     # 国际化资源文件路径
     basename: i18n/messages
   profiles:
-    active: druid
+    active: ${spring.database-type}
   # 文件上传
   servlet:
     multipart:
@@ -77,6 +78,7 @@ spring:
       enabled: true
   # redis 配置
   redis:
+    # 是否开启内嵌redis服务
     embed: true
     # 地址
     host: localhost
@@ -119,7 +121,7 @@ mybatis:
 
 # PageHelper分页插件
 pagehelper:
-  helperDialect: mysql
+  helperDialect: ${spring.database-type}
   supportMethodsArguments: true
   params: count=countSql
 

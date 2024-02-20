@@ -6,6 +6,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.annotation.DependsOn;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.cat2bug.common.constant.UserConstants;
@@ -24,6 +27,7 @@ import com.cat2bug.system.service.ISysDictTypeService;
  * @author ruoyi
  */
 @Service
+@DependsOn("h2Config")
 public class SysDictTypeServiceImpl implements ISysDictTypeService
 {
     @Autowired
