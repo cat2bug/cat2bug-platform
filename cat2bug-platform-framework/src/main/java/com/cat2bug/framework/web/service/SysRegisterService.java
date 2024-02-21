@@ -112,8 +112,8 @@ public class SysRegisterService
     public void validateCaptcha(String username, String code, String uuid)
     {
         String verifyKey = CacheConstants.CAPTCHA_CODE_KEY + StringUtils.nvl(uuid, "");
-        String captcha = redisCache.getCacheObject(verifyKey);
-        redisCache.deleteObject(verifyKey);
+        String captcha = redisCache.getCacheObject(RedisCache.VERIFY_CODE_CACHE_REGION, verifyKey);
+        redisCache.deleteObject(RedisCache.VERIFY_CODE_CACHE_REGION, verifyKey);
         if (captcha == null)
         {
             throw new CaptchaExpireException();

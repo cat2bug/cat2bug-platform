@@ -28,7 +28,7 @@ public class DictUtils
      */
     public static void setDictCache(String key, List<SysDictData> dictDatas)
     {
-        SpringUtils.getBean(RedisCache.class).setCacheObject(getCacheKey(key), dictDatas);
+        SpringUtils.getBean(RedisCache.class).setCacheObject(RedisCache.DICT_CACHE_REGION, getCacheKey(key), dictDatas);
     }
 
     /**
@@ -39,7 +39,7 @@ public class DictUtils
      */
     public static List<SysDictData> getDictCache(String key)
     {
-        JSONArray arrayCache = SpringUtils.getBean(RedisCache.class).getCacheObject(getCacheKey(key));
+        JSONArray arrayCache = SpringUtils.getBean(RedisCache.class).getCacheObject(RedisCache.DICT_CACHE_REGION, getCacheKey(key));
         if (StringUtils.isNotNull(arrayCache))
         {
             return arrayCache.toList(SysDictData.class);
@@ -161,7 +161,7 @@ public class DictUtils
      */
     public static void removeDictCache(String key)
     {
-        SpringUtils.getBean(RedisCache.class).deleteObject(getCacheKey(key));
+        SpringUtils.getBean(RedisCache.class).deleteObject(RedisCache.DICT_CACHE_REGION, getCacheKey(key));
     }
 
     /**
@@ -169,8 +169,8 @@ public class DictUtils
      */
     public static void clearDictCache()
     {
-        Collection<String> keys = SpringUtils.getBean(RedisCache.class).keys(CacheConstants.SYS_DICT_KEY + "*");
-        SpringUtils.getBean(RedisCache.class).deleteObject(keys);
+        Collection<String> keys = SpringUtils.getBean(RedisCache.class).keys(RedisCache.DICT_CACHE_REGION, CacheConstants.SYS_DICT_KEY + "*");
+        SpringUtils.getBean(RedisCache.class).deleteObject(RedisCache.DICT_CACHE_REGION, keys);
     }
 
     /**

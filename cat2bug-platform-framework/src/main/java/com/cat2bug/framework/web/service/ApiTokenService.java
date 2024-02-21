@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -73,7 +74,7 @@ public class ApiTokenService {
         {
             try
             {
-                LoginUser user = redisCache.getCacheObject(API_CACHE_FLAG+token);
+                LoginUser user = redisCache.getCacheObject(RedisCache.API_TOKEN_CACHE_REGION, API_CACHE_FLAG+token);
                 if(user==null){
                     // 用户验证
                     Authentication authentication = null;
@@ -148,7 +149,7 @@ public class ApiTokenService {
         loginUser.setExpireTime(loginUser.getLoginTime() + expireTime * MILLIS_MINUTE);
         // 根据uuid将loginUser缓存
         String userKey = API_CACHE_FLAG+loginUser.getToken();
-        redisCache.setCacheObject(userKey, loginUser, expireTime, TimeUnit.MINUTES);
+        redisCache.setCacheObject("tokenExpireTime", userKey, loginUser);
     }
 
     /**

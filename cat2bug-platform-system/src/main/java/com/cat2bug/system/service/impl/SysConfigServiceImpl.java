@@ -67,7 +67,7 @@ public class SysConfigServiceImpl implements ISysConfigService
     @Override
     public String selectConfigByKey(String configKey)
     {
-        String configValue = Convert.toStr(redisCache.getCacheObject(getCacheKey(configKey)));
+        String configValue = Convert.toStr(redisCache.getCacheObject(RedisCache.CONFIG_CACHE_REGION, getCacheKey(configKey)));
         if (StringUtils.isNotEmpty(configValue))
         {
             return configValue;
@@ -77,7 +77,7 @@ public class SysConfigServiceImpl implements ISysConfigService
         SysConfig retConfig = configMapper.selectConfig(config);
         if (StringUtils.isNotNull(retConfig))
         {
-            redisCache.setCacheObject(getCacheKey(configKey), retConfig.getConfigValue());
+            redisCache.setCacheObject(RedisCache.CONFIG_CACHE_REGION, getCacheKey(configKey), retConfig.getConfigValue());
             return retConfig.getConfigValue();
         }
         return StringUtils.EMPTY;
@@ -123,7 +123,7 @@ public class SysConfigServiceImpl implements ISysConfigService
         int row = configMapper.insertConfig(config);
         if (row > 0)
         {
-            redisCache.setCacheObject(getCacheKey(config.getConfigKey()), config.getConfigValue());
+            redisCache.setCacheObject(RedisCache.CONFIG_CACHE_REGION, getCacheKey(config.getConfigKey()), config.getConfigValue());
         }
         return row;
     }
@@ -140,13 +140,13 @@ public class SysConfigServiceImpl implements ISysConfigService
         SysConfig temp = configMapper.selectConfigById(config.getConfigId());
         if (!StringUtils.equals(temp.getConfigKey(), config.getConfigKey()))
         {
-            redisCache.deleteObject(getCacheKey(temp.getConfigKey()));
+            redisCache.deleteObject(RedisCache.CONFIG_CACHE_REGION, getCacheKey(temp.getConfigKey()));
         }
 
         int row = configMapper.updateConfig(config);
         if (row > 0)
         {
-            redisCache.setCacheObject(getCacheKey(config.getConfigKey()), config.getConfigValue());
+            redisCache.setCacheObject(RedisCache.CONFIG_CACHE_REGION, getCacheKey(config.getConfigKey()), config.getConfigValue());
         }
         return row;
     }
@@ -167,7 +167,7 @@ public class SysConfigServiceImpl implements ISysConfigService
                 throw new ServiceException(String.format("内置参数【%1$s】不能删除 ", config.getConfigKey()));
             }
             configMapper.deleteConfigById(configId);
-            redisCache.deleteObject(getCacheKey(config.getConfigKey()));
+            redisCache.deleteObject(RedisCache.CONFIG_CACHE_REGION, getCacheKey(config.getConfigKey()));
         }
     }
 
@@ -180,7 +180,7 @@ public class SysConfigServiceImpl implements ISysConfigService
         List<SysConfig> configsList = configMapper.selectConfigList(new SysConfig());
         for (SysConfig config : configsList)
         {
-            redisCache.setCacheObject(getCacheKey(config.getConfigKey()), config.getConfigValue());
+            redisCache.setCacheObject(RedisCache.CONFIG_CACHE_REGION, getCacheKey(config.getConfigKey()), config.getConfigValue());
         }
     }
 
@@ -190,8 +190,8 @@ public class SysConfigServiceImpl implements ISysConfigService
     @Override
     public void clearConfigCache()
     {
-        Collection<String> keys = redisCache.keys(CacheConstants.SYS_CONFIG_KEY + "*");
-        redisCache.deleteObject(keys);
+        Collection<String> keys = redisCache.keys(RedisCache.CONFIG_CACHE_REGION, CacheConstants.SYS_CONFIG_KEY + "*");
+        redisCache.deleteObject(RedisCache.CONFIG_CACHE_REGION, keys);
     }
 
     /**

@@ -47,8 +47,14 @@ user:
   password:
     # 密码最大错误次数
     maxRetryCount: 5
-    # 密码锁定时间（默认10分钟）
+    # 密码锁定时间（默认10分钟），已失效，在caffeine.properties里配置
     lockTime: 10
+
+j2cache:
+  config-location: classpath:${spring.database-type}-j2cache.properties
+  open-spring-cache: true
+caffeine:
+  properties: caffeine.properties
 
 # Spring配置
 spring:
@@ -76,30 +82,6 @@ spring:
     restart:
       # 热部署开关
       enabled: true
-  # redis 配置
-  redis:
-    # 是否开启内嵌redis服务
-    embed: true
-    # 地址
-    host: localhost
-    # 端口，默认为6379
-    port: 6379
-    # 数据库索引
-    database: 0
-    # 密码
-    password:
-    # 连接超时时间
-    timeout: 510s
-    lettuce:
-      pool:
-        # 连接池中的最小空闲连接
-        min-idle: 0
-        # 连接池中的最大空闲连接
-        max-idle: 8
-        # 连接池的最大数据库连接数
-        max-active: 8
-        # #连接池最大阻塞等待时间（使用负值表示没有限制）
-        max-wait: -1ms
 
 # token配置
 token:
@@ -107,7 +89,7 @@ token:
   header: Authorization
   # 令牌密钥
   secret: abcdefghijklmnopqrstuvwxyz
-  # 令牌有效期（默认30分钟）
+  # 令牌有效期（默认30分钟），同时需要设置caffeine.properties里的tokenExpireTime配置
   expireTime: 30
 
 # MyBatis配置

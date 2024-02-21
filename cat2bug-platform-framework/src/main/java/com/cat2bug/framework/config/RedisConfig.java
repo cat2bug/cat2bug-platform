@@ -1,8 +1,6 @@
 package com.cat2bug.framework.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cache.annotation.CachingConfigurerSupport;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
@@ -11,11 +9,6 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
-import redis.embedded.RedisServer;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import java.io.IOException;
 
 /**
  * redis配置
@@ -24,31 +17,9 @@ import java.io.IOException;
  */
 @Configuration
 @EnableCaching
+@ConditionalOnProperty(prefix = "j2cache.L2",name = "provider_class",havingValue = "redis")
 public class RedisConfig extends CachingConfigurerSupport
 {
-    @Value("${spring.redis.embed:false}")
-    private boolean embed;
-
-    private RedisServer redisServer;
-
-    @PostConstruct
-    public void init() throws IOException {
-        // 启动内嵌redis
-        if(this.embed) {
-            this.redisServer = new RedisServer(6379);
-            this.redisServer.start();
-        }
-    }
-
-    @PreDestroy
-    public void destroy() {
-        // 停止内嵌redis
-        if(this.redisServer!=null) {
-            this.redisServer.stop();
-            this.redisServer = null;
-        }
-    }
-
     @Bean
     @SuppressWarnings(value = { "unchecked", "rawtypes" })
     public RedisTemplate<Object, Object> redisTemplate(RedisConnectionFactory connectionFactory)

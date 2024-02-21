@@ -51,7 +51,7 @@ public class SysPasswordService
         String username = usernamePasswordAuthenticationToken.getName();
         String password = usernamePasswordAuthenticationToken.getCredentials().toString();
 
-        Integer retryCount = redisCache.getCacheObject(getCacheKey(username));
+        Integer retryCount = redisCache.getCacheObject(RedisCache.LOGIN_TOKEN_CACHE_REGION, getCacheKey(username));
 
         if (retryCount == null)
         {
@@ -70,7 +70,8 @@ public class SysPasswordService
             retryCount = retryCount + 1;
             AsyncManager.me().execute(AsyncFactory.recordLogininfor(username, Constants.LOGIN_FAIL,
                     MessageUtils.message("user.password.retry.limit.count", retryCount)));
-            redisCache.setCacheObject(getCacheKey(username), retryCount, lockTime, TimeUnit.MINUTES);
+//            redisCache.setCacheObject(getCacheKey(username), retryCount, lockTime, TimeUnit.MINUTES);
+            redisCache.setCacheObject("memberLocalTime",getCacheKey(username), retryCount);
             throw new UserPasswordNotMatchException();
         }
         else
@@ -86,9 +87,9 @@ public class SysPasswordService
 
     public void clearLoginRecordCache(String loginName)
     {
-        if (redisCache.hasKey(getCacheKey(loginName)))
+        if (redisCache.hasKey(RedisCache.LOGIN_TOKEN_CACHE_REGION, getCacheKey(loginName)))
         {
-            redisCache.deleteObject(getCacheKey(loginName));
+            redisCache.deleteObject(RedisCache.LOGIN_TOKEN_CACHE_REGION, getCacheKey(loginName));
         }
     }
 }

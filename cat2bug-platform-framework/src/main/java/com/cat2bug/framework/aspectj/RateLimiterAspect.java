@@ -10,6 +10,8 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Component;
@@ -26,6 +28,8 @@ import com.cat2bug.common.utils.ip.IpUtils;
  */
 @Aspect
 @Component
+@DependsOn("limitScript")
+@ConditionalOnProperty(prefix = "j2cache.L2",name = "provider_class",havingValue = "redis")
 public class RateLimiterAspect
 {
     private static final Logger log = LoggerFactory.getLogger(RateLimiterAspect.class);
