@@ -1607,7 +1607,7 @@ CREATE TABLE `sys_defect` (
 DROP TABLE IF EXISTS `sys_defect_log`;
 CREATE TABLE `sys_defect_log` (
 								  `defect_log_id` bigint NOT NULL AUTO_INCREMENT COMMENT '缺陷日志id',
-								  `defect_log_describe` blob COMMENT '缺陷日志的描述',
+								  `defect_log_describe` varchar(255) NULL COMMENT '缺陷日志的描述',
 								  `create_by` varchar(64) DEFAULT NULL COMMENT '创建人',
 								  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
 								  `defect_log_type` int DEFAULT NULL COMMENT '处理类型(转发\\评论\\关闭)',

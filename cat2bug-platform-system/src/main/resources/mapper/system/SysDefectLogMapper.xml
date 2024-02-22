@@ -36,16 +36,19 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                 LEFT JOIN (
                 SELECT
                     dl1.defect_log_id,
-                    JSON_ARRAYAGG( JSON_OBJECT( 'userId', u.user_id, 'nickName', u.nick_name, 'userName', u.user_name ) ) AS user_infos
+                    CONCAT('[', GROUP_CONCAT( CONCAT('{"userId":', u.user_id,
+
+                         ',"nickName":',
+                         CASE WHEN u.nick_name IS NOT NULL THEN CONCAT('"',u.nick_name,'"') ELSE 'null' END,
+                         ',"userName":',
+                         CASE WHEN u.user_name IS NOT NULL THEN CONCAT('"',u.user_name,'"') ELSE 'null' END,
+                         ',"avatar":',
+                         CASE WHEN u.avatar IS NOT NULL THEN CONCAT('"',u.avatar,'"') ELSE 'null' END,
+
+                         '}')), ']') AS user_infos
                 FROM
                     sys_defect_log dl1
-                        LEFT JOIN sys_user u ON JSON_CONTAINS(
-                            dl1.receive_by,
-                            CAST( u.user_id AS JSON ))
-                WHERE
-                    JSON_CONTAINS(
-                            dl1.receive_by,
-                            CAST( u.user_id AS JSON ))
+                        LEFT JOIN sys_user u ON dl1.receive_by REGEXP CONCAT('\[',u.user_id,'\]|(^|,)(',u.user_id,')(,|$)')
                 GROUP BY
                     dl1.defect_log_id
             ) un ON un.defect_log_id = dl.defect_log_id
