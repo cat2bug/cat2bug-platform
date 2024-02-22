@@ -12,6 +12,7 @@ import com.cat2bug.system.domain.vo.BatchUserRoleVo;
 import com.cat2bug.system.mapper.*;
 import com.cat2bug.system.service.ISysUserConfigService;
 import com.google.common.base.Preconditions;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.cat2bug.system.service.ISysTeamService;
@@ -86,7 +87,7 @@ public class SysTeamServiceImpl implements ISysTeamService
     @Override
     public List<SysUser> selectSysUserListByTeamIdAndSysUser(Long teamId, SysUser sysUser) {
         // 处理排除用户的逻辑代码
-        if(sysUser.getParams()!=null && sysUser.getParams().get("excludeMembers")!=null && sysUser.getParams().get("excludeMembers") instanceof String){
+        if(sysUser.getParams()!=null && Strings.isNotBlank((String)sysUser.getParams().get("excludeMembers"))){
             String strExcludeMembers = String.valueOf(sysUser.getParams().get("excludeMembers"));
             sysUser.getParams().put("excludeMembers",strExcludeMembers.split(","));
         }

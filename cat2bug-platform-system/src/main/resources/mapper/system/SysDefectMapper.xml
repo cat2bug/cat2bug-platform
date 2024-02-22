@@ -71,24 +71,27 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             ud.collect
         FROM
             sys_defect d
-            LEFT JOIN sys_module m ON m.module_id = d.module_id
-            LEFT JOIN sys_project p ON d.project_id = p.project_id
-            LEFT JOIN sys_user_defect ud ON ud.defect_id = d.defect_id and ud.user_id = #{currentUserId}
-            LEFT JOIN (
-                SELECT
-                    d1.defect_id,
-                    JSON_ARRAYAGG( JSON_OBJECT('userId', u.user_id, 'nickName', u.nick_name, 'userName', u.user_name, 'avatar', u.avatar) ) AS user_infos
-                FROM
-                    sys_defect d1
-                    LEFT JOIN sys_user u ON JSON_CONTAINS(
-                        d1.handle_by,
-                        CAST( u.user_id AS JSON ))
-                WHERE
-                    JSON_CONTAINS(
-                            d1.handle_by,
-                            CAST( u.user_id AS JSON ))
-                GROUP BY
-                    d1.defect_id
+                LEFT JOIN sys_module m ON m.module_id = d.module_id
+                LEFT JOIN sys_project p ON d.project_id = p.project_id
+                LEFT JOIN sys_user_defect ud ON ud.defect_id = d.defect_id and ud.user_id = #{currentUserId}
+                LEFT JOIN (
+                    SELECT
+                        d1.defect_id,
+                        CONCAT('[', GROUP_CONCAT( CONCAT('{"userId":', u.user_id,
+
+                         ',"nickName":',
+                         CASE WHEN u.nick_name IS NOT NULL THEN CONCAT('"',u.nick_name,'"') ELSE 'null' END,
+                         ',"userName":',
+                         CASE WHEN u.user_name IS NOT NULL THEN CONCAT('"',u.user_name,'"') ELSE 'null' END,
+                         ',"avatar":',
+                         CASE WHEN u.avatar IS NOT NULL THEN CONCAT('"',u.avatar,'"') ELSE 'null' END,
+
+                         '}')), ']') AS user_infos
+                    FROM
+                        sys_defect d1
+                        LEFT JOIN sys_user u ON d1.handle_by REGEXP CONCAT('\[',u.user_id,'\]|(^|,)(',u.user_id,')(,|$)')
+                    GROUP BY
+                        d1.defect_id
             ) un ON un.defect_id = d.defect_id
     </sql>
 
@@ -126,10 +129,16 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             </if>
             <if test="defect.handleBy != null  and defect.handleBy != ''"> and
                 <foreach collection="defect.handleBy" item="b" separator=" or " open="(" close=")">
-                    JSON_CONTAINS(d.handle_by,CAST(#{b} AS CHAR))
+                    d.handle_by REGEXP CONCAT('(^|,)(',#{b},')(,|$)')
                 </foreach>
             </if>
-            <if test="defect.params.userId != null"> and (JSON_CONTAINS(d.handle_by,CAST(#{defect.params.userId} AS CHAR)) OR d.create_by_id=#{defect.params.userId} OR d.update_by_id=#{defect.params.userId})</if>
+            <if test="defect.params.userId != null">
+             and (
+                 d.handle_by REGEXP CONCAT('(^|,)(',#{defect.params.userId},')(,|$)')
+                 OR d.create_by_id=#{defect.params.userId}
+                 OR d.update_by_id=#{defect.params.userId}
+             )
+            </if>
             <if test="defect.params.beginHandleTime != null and defect.params.beginHandleTime != '' and defect.params.endHandleTime != null and defect.params.endHandleTime != ''"> and d.handle_time between #{defect.params.beginHandleTime} and #{defect.params.endHandleTime}</if>
             <if test="defect.defectLevel != null  and defect.defectLevel != ''"> and d.defect_level = #{defect.defectLevel}</if>
         </where>
