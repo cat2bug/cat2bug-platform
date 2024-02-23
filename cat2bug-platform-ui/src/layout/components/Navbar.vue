@@ -7,10 +7,10 @@
 
     <div class="right-menu">
       <template v-if="device!=='mobile'">
-        <el-tooltip :content="$t('source-code-address')" effect="dark" placement="bottom">
+        <el-tooltip :content="$t('website')" effect="dark" placement="bottom">
           <cat2-bug-site class="right-menu-item hover-effect" />
         </el-tooltip>
-        <el-tooltip :content="$t('website')" effect="dark" placement="bottom">
+        <el-tooltip :content="$t('source-code-address')" effect="dark" placement="bottom">
           <cat2-bug-git id="cat2bug-git" class="right-menu-item hover-effect" />
         </el-tooltip>
 
