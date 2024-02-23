@@ -52,6 +52,17 @@ public class SysUserStatisticTemplateServiceImpl implements ISysUserStatisticTem
     @Override
     public int insertSysUserStatisticTemplate(SysUserStatisticTemplate sysUserStatisticTemplate)
     {
+        if(sysUserStatisticTemplate.getModuleType()!=null &&
+        sysUserStatisticTemplate.getUserId()!=null &&
+        sysUserStatisticTemplate.getProjectId()!=null) {
+            List<SysUserStatisticTemplate> list = sysUserStatisticTemplateMapper.selectSysUserStatisticTemplateList(sysUserStatisticTemplate);
+            if(list!=null && list.size()>0) {
+                // 更新
+                sysUserStatisticTemplate.setStatisticTemplateId(list.get(0).getStatisticTemplateId());
+                return sysUserStatisticTemplateMapper.updateSysUserStatisticTemplate(sysUserStatisticTemplate);
+            }
+        }
+
         return sysUserStatisticTemplateMapper.insertSysUserStatisticTemplate(sysUserStatisticTemplate);
     }
 

@@ -10,7 +10,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="moduleType"    column="module_type"    />
         <result property="projectId"    column="project_id"    />
         <result property="userId"    column="user_id"    />
-        <result property="statisticTemplatConfig"    column="statistic_templat_config"   />
+        <result property="statisticTemplatConfig"    column="statistic_templat_config"  typeHandler="com.cat2bug.system.domain.handle.JSONStringTypeHandler"  />
     </resultMap>
 
     <sql id="selectSysUserStatisticTemplateVo">
@@ -24,7 +24,6 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="moduleType != null "> and module_type = #{moduleType}</if>
             <if test="projectId != null "> and project_id = #{projectId}</if>
             <if test="userId != null "> and user_id = #{userId}</if>
-            <if test="statisticTemplatConfig != null  and statisticTemplatConfig != ''"> and statistic_templat_config = #{statisticTemplatConfig}</if>
         </where>
     </select>
     
@@ -51,7 +50,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </insert>
 
     <insert id="insertSysUserStatisticTemplate" parameterType="SysUserStatisticTemplate">
-        insert into sys_user_statistic_template
+        INSERT INTO sys_user_statistic_template
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="statisticTemplateId != null">statistic_template_id,</if>
             <if test="statisticTemplatCode != null">statistic_templat_code,</if>
@@ -59,17 +58,15 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="projectId != null">project_id,</if>
             <if test="userId != null">user_id,</if>
             <if test="statisticTemplatConfig != null">statistic_templat_config,</if>
-         </trim>
-        <trim prefix="values (" suffix=")" suffixOverrides=",">
+        </trim>
+        VALUES
+        <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="statisticTemplateId != null">#{statisticTemplateId},</if>
             <if test="statisticTemplatCode != null">#{statisticTemplatCode},</if>
             <if test="moduleType != null">#{moduleType},</if>
             <if test="projectId != null">#{projectId},</if>
             <if test="userId != null">#{userId},</if>
             <if test="statisticTemplatConfig != null">#{statisticTemplatConfig},</if>
-         </trim>
-        <trim prefix="ON DUPLICATE KEY UPDATE" suffix="" suffixOverrides=",">
-            <if test="statisticTemplatConfig != null">statistic_templat_config=#{statisticTemplatConfig},</if>
         </trim>
     </insert>
 

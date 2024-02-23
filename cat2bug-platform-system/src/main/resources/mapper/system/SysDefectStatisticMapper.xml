@@ -16,8 +16,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <select id="stateStatistic" resultType="java.util.Map">
         select d.defect_state as k,
             COUNT( d.defect_state ) AS a,
-            SUM( CASE WHEN TO_DAYS(d.update_time)=TO_DAYS(now()) THEN 1 ELSE 0 END ) AS d,
-            SUM( CASE WHEN YEARWEEK(d.update_time)=YEARWEEK(now()) THEN 1 ELSE 0 END ) AS w
+            SUM( CASE WHEN TIMESTAMPDIFF(DAY, '1970-01-01', d.update_time) = TIMESTAMPDIFF(DAY, '1970-01-01', NOW()) THEN 1 ELSE 0 END ) AS d,
+            SUM( CASE WHEN WEEK(d.update_time)=WEEK(now()) THEN 1 ELSE 0 END ) AS w
         from sys_defect d
         <if test="memberId != null "> LEFT JOIN sys_user_defect ud ON ud.defect_id = d.defect_id</if>
         <where>
@@ -28,7 +28,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </select>
 
     <select id="moduleStatistic" resultType="java.util.Map">
-        select
+        SELECT s.* FROM
+        (select
         IFNULL(d.module_id,0) as id,
         IFNULL(MAX(m.module_name),'unknown') as k,
         COUNT( * ) AS a,
@@ -36,10 +37,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         from sys_defect d
         LEFT JOIN sys_module m ON m.module_id = d.module_id
         <where>
-
             d.project_id=#{projectId}
         </where>
-        GROUP BY d.module_id
-        ORDER BY f/a ASC ,a DESC
+        GROUP BY d.module_id) s
+        ORDER BY s.f/s.a ASC, s.a DESC
     </select>
 </mapper>
