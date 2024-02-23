@@ -8,7 +8,7 @@
       </div>
       <div v-else>
         <div @click="clickHandle(m)" class="defect-module-row" v-for="(m,index) in showModuleList" :key="index">
-          <h5 :style="`background-color:${flagColor(index)}`">{{ index+1 }}</h5><h4>{{ $t(m.k) }}</h4><el-progress :percentage="percentage(m)" :format="format" :color="customColors"></el-progress><span>{{ m.f }}/{{ m.a }}</span>
+          <h5 :style="`background-color:${flagColor(index)}`">{{ rankingNumber(index) }}</h5><h4>{{ $t(m.k) }}</h4><el-progress :percentage="percentage(m)" :format="format" :color="customColors"></el-progress><span>{{ m.f }}/{{ m.a }}</span>
         </div>
         <el-pagination
           small
@@ -48,7 +48,6 @@ export default {
       formParams: {
         pageNum: 1,
         pageSize: 3,
-
       }
     }
   },
@@ -67,6 +66,12 @@ export default {
     },
   },
   computed: {
+    /** 排行号 */
+    rankingNumber () {
+      return function (index) {
+        return (this.formParams.pageNum - 1) * this.formParams.pageSize + index + 1;
+      }
+    },
     percentage: function (){
       return function (m) {
         return parseInt(m.f/m.a*100)||0;
