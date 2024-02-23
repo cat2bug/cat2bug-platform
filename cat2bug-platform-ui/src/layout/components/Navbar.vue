@@ -8,6 +8,9 @@
     <div class="right-menu">
       <template v-if="device!=='mobile'">
         <el-tooltip :content="$t('source-code-address')" effect="dark" placement="bottom">
+          <cat2-bug-site class="right-menu-item hover-effect" />
+        </el-tooltip>
+        <el-tooltip :content="$t('website')" effect="dark" placement="bottom">
           <cat2-bug-git id="cat2bug-git" class="right-menu-item hover-effect" />
         </el-tooltip>
 
@@ -44,6 +47,7 @@ import Hamburger from '@/components/Hamburger'
 import Screenfull from '@/components/Screenfull'
 import SizeSelect from '@/components/SizeSelect'
 import Search from '@/components/HeaderSearch'
+import Cat2BugSite from '@/components/Cat2Bug/Site'
 import Cat2BugGit from '@/components/Cat2Bug/Git'
 import Cat2BugDoc from '@/components/Cat2Bug/Doc'
 import Cat2BugAvatar from "@/components/Cat2BugAvatar";
@@ -56,6 +60,7 @@ export default {
     Screenfull,
     SizeSelect,
     Search,
+    Cat2BugSite,
     Cat2BugGit,
     Cat2BugDoc,
     Cat2BugAvatar
