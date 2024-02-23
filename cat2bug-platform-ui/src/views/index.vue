@@ -100,6 +100,13 @@
             <span>{{$t('update-log')}}</span>
           </div>
           <el-collapse accordion>
+            <el-collapse-item title="v0.2.0 - 2024-02-23">
+              <ol>
+                <li>修复已有问题BUG</li>
+                <li>添加Mysql、H2多数据库类型部署方式</li>
+                <li>添加Open API功能(测试)</li>
+              </ol>
+            </el-collapse-item>
             <el-collapse-item title="v0.1.1 - 2024-02-07">
               <ol>
                 <li>增加AI创建测试用例功能</li>
