@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "vue-cli-service serve",
     "build:prod": "vue-cli-service build --report",
+    "build:embedded": "vue-cli-service build embedded --report",
     "build:stage": "vue-cli-service build --mode staging --report",
     "preview": "node build/index.js --preview",
     "lint": "eslint --ext .js,.vue src",
