@@ -7,7 +7,7 @@ Cat2Bug-Platform是一套永久免费开源的Bug管理平台，将毫无保留�
 它的使用人群锁定个人或中小型软件开发团队，Cat2Bug的理念是免去了项目管理中各种重度管理，让个人或团队可以快速上手，把控软件质量。
 平台采用JAVA+VUE开发，支持在各系统平台部署使用。
 
-## 功能介绍
+## 内置功能
 
 1.  团队管理：管理团队中的项目、成员。
 2.  项目管理：管理项目中的缺陷、成员。
@@ -23,7 +23,7 @@ Cat2Bug-Platform是一套永久免费开源的Bug管理平台，将毫无保留�
 * 添加了OPEN API功能，用于第三方系统与Cat2Bug-Platform交互；
 * 添加H2数据库部署，使系统直接执行一个Jar文件即可使用，已达到真正轻量、快速使用的目的；
 
-## 我们的特色
+## 特色
 
 * AI自动生成测试用例并录入到系统，解决费时费力录入用例的痛点；
 * 丰富便捷的图形化界面操作，减少录入管理成本；
@@ -36,14 +36,58 @@ Cat2Bug-Platform是一套永久免费开源的Bug管理平台，将毫无保留�
 
 演示地址：[https://www.cat2bug.com:8022](https://www.cat2bug.com:8022)
 
+## 技术选型
+
+1. 系统环境
+
+* Java EE 11
+* Servlet 3.0
+* Apache Maven 3
+
+2. 主框架
+
+* Spring Boot 2.2.x
+* Spring Framework 5.2.x
+* Spring Security 5.2.x
+
+3. 持久层
+
+* Apache MyBatis 3.5.x
+* Hibernate Validation 6.0.x
+* Alibaba Druid 1.2.x
+
+4. 视图层
+
+* Vue 2.6.x
+* Axios 0.21.x
+* Element 2.15.x
+
+## 模块
+
+````
+--cat2bug-platform
+------|----cat2bug-platform-admin       # 主程序模块
+------|----cat2bug-platform-api         # Open API模块
+------|----cat2bug-platform-common      # 通用模块
+------|----cat2bug-platform-framework   # 系统框架
+------|----cat2bug-platform-generator   # 代码生成
+------|----cat2bug-platform-quartz      # 定时任务
+------|----cat2bug-platform-system      # 业务模块
+------|----cat2bug-platform-ui          # 前端VUE工程
+------|----sql                          # 数据库文件
+------|----readme                       # 文档
+````
+
 ## 部署
 
-目前我们提供了一套Docker容器化的部署方案，执行命令如下：
+以下提供的是Docker容器化的部署方案，执行命令如下：
 
 ```
 curl -o docker-compose.yml https://www.cat2bug.com/docker/docker-compose.yml
 docker-compose up -d
 ```
+
+此外目前我们还提供了多种部署方式，请访问[官网](https://www.cat2bug.com/download/cat2bug-platform/#%E9%83%A8%E7%BD%B2)了解更多信息。
 
 系统管理员账号：admin    密码：cat2bug
 
