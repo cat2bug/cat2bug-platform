@@ -8,7 +8,7 @@
       </div>
     </div>
     <router-link to="team-base-info" v-hasPermi="['system:team:edit']"><el-link>{{$t('team.base-info')}}</el-link></router-link>
-    <el-link @click="handleDelete" type="danger" v-hasPermi="['system:team:delete']">{{$t('team.delete')}}</el-link>
+    <el-link @click="handleDelete" type="danger" v-hasPermi="['system:team:remove']">{{$t('team.delete')}}</el-link>
   </el-card>
 </template>
 
