@@ -5,7 +5,7 @@
 
 Cat2Bug-Platform是一套永久免费开源的Bug管理平台，将毫无保留给个人及团体免费使用。
 它的使用人群锁定个人或中小型软件开发团队，Cat2Bug的理念是免去了项目管理中各种重度管理，让个人或团队可以快速上手，把控软件质量。
-平台采用JAVA+VUE开发，支持在各系统平台部署使用。
+平台采用JAVA+VUE前后台分离模式开发，支持在各系统平台部署使用。
 
 ## 内置功能
 
@@ -85,10 +85,11 @@ Cat2Bug-Platform是一套永久免费开源的Bug管理平台，将毫无保留�
 ```docker
 docker run -it -d -p 8022:8022 --name cat2bug-platform cat2bug/cat2bug-platform:latest
 ```
+部署成功后，打开浏览器访问http://127.0.0.1:8022,在登陆页面自行注册账号登陆使用即可。
+
+注意：系统管理员账号：admin    密码：cat2bug，此账号用于管理注册用户。
 
 此外目前我们还提供了多种部署方式，请访问[官网](https://www.cat2bug.com/download/cat2bug-platform/#%E9%83%A8%E7%BD%B2)了解更多信息。
-
-系统管理员账号：admin    密码：cat2bug
 
 ## 演示图
 
