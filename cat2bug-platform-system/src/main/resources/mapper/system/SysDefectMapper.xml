@@ -89,7 +89,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                          '}')), ']') AS user_infos
                     FROM
                         sys_defect d1
-                        LEFT JOIN sys_user u ON d1.handle_by REGEXP CONCAT('\[',u.user_id,'\]|(^|,)(',u.user_id,')(,|$)')
+                        LEFT JOIN sys_user u ON d1.handle_by REGEXP CONCAT('\\b',u.user_id,'\\b')
                     GROUP BY
                         d1.defect_id
             ) un ON un.defect_id = d.defect_id
@@ -129,12 +129,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             </if>
             <if test="defect.handleBy != null  and defect.handleBy != ''"> and
                 <foreach collection="defect.handleBy" item="b" separator=" or " open="(" close=")">
-                    d.handle_by REGEXP CONCAT('(^|,)(',#{b},')(,|$)')
+                    d.handle_by REGEXP CONCAT('\\b',#{b},')(\\b')
                 </foreach>
             </if>
             <if test="defect.params.userId != null">
              and (
-                 d.handle_by REGEXP CONCAT('(^|,)(',#{defect.params.userId},')(,|$)')
+                 d.handle_by REGEXP CONCAT('\\b',#{defect.params.userId},'\\b')
                  OR d.create_by_id=#{defect.params.userId}
                  OR d.update_by_id=#{defect.params.userId}
              )
