@@ -254,6 +254,7 @@ export default {
     },
     logHandle(log) {
       this.open(this.defectId);
+      this.$emit('change')
       // this.$refs.defectLog.addLog(log);
     },
     deleteHandle() {

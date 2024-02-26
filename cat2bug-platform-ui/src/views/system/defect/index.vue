@@ -169,7 +169,7 @@
     />
     <!-- 添加或修改缺陷对话框 -->
     <add-defect ref="addDefectForm" :project-id="getProjectId()" @added="selectDefectTabHandle" />
-    <handle-defect ref="editDefectForm" :project-id="getProjectId()" @delete="selectDefectTabHandle()" />
+    <handle-defect ref="editDefectForm" :project-id="getProjectId()" @change="selectDefectTabHandle" @delete="selectDefectTabHandle" />
   </div>
 </template>
 
@@ -380,6 +380,7 @@ export default {
           this.handleQuery();
           break;
         default:
+          this.queryParams.params.userId = null;
           this.queryParams.params.collect = null;
           this.handleQuery();
           break;
