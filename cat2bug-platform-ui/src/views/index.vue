@@ -31,7 +31,7 @@
             size="mini"
             icon="el-icon-s-home"
             plain
-            @click="goTarget('http://www.cat2bug.com')"
+            @click="goTarget('https://www.cat2bug.com')"
             >{{$t('visit-homepage')}}</el-button
           >
         </p>
@@ -81,9 +81,9 @@
           <div class="body">
             <p>
               <i class="el-icon-s-promotion"></i> {{$t('website')}}：<el-link
-                href="http://www.cat2bug.com"
+                href="https://www.cat2bug.com"
                 target="_blank"
-                >http://www.cat2bug.com</el-link
+                >https://www.cat2bug.com</el-link
               >
             </p>
             <p>

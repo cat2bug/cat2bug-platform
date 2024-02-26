@@ -59,6 +59,6 @@ AI测试用例的生成算法还会不断升级演进，希望大家在使用中
 - 体验账号：demo
 - 体验密码：123456
 
-演示地址：[http://www.cat2bug.com:8022](http://www.cat2bug.com:8022)
+演示地址：[https://www.cat2bug.com:8022](https://www.cat2bug.com:8022)
 
 Git官网地址: [https://gitee.com/cat2bug/cat2bug-platform](https://gitee.com/cat2bug/cat2bug-platform)

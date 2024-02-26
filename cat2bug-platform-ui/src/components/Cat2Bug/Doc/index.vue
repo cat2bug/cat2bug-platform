@@ -9,7 +9,7 @@ export default {
   name: 'RuoYiDoc',
   data() {
     return {
-      url: 'http://www.cat2bug.com/doc'
+      url: 'https://www.cat2bug.com/doc'
     }
   },
   methods: {

@@ -9,7 +9,7 @@ export default {
   name: 'RuoYiGit',
   data() {
     return {
-      url: 'http://www.cat2bug.com'
+      url: 'https://www.cat2bug.com'
     }
   },
   methods: {

@@ -26,14 +26,14 @@ Cat2Bug-Platform是一套永久免费开源的Bug管理平台，将毫无保留�
 - 体验账号：demo
 - 体验密码：123456
 
-演示地址：[http://www.cat2bug.com:8022](http://www.cat2bug.com:8022)
+演示地址：[https://www.cat2bug.com:8022](https://www.cat2bug.com:8022)
 
 ## 部署
 
 目前我们提供了一套Docker容器化的部署方案，执行命令如下：
 
 ```
-curl -o docker-compose.yml http://cat2bug.com/docker/docker-compose.yml
+curl -o docker-compose.yml https://www.cat2bug.com/docker/docker-compose.yml
 docker-compose up -d
 ```
 

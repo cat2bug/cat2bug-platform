@@ -18,7 +18,7 @@ import java.util.List;
 @Log4j2
 @Service
 public class CloudCaseServiceImpl implements ICloudCaseService {
-    private static String baseUrl = "http://www.cat2bug.com/cloud/api";
+    private static String baseUrl = "https://www.cat2bug.com/cloud/api";
     @Override
     public List<SysCase> searchCaseListOfAI(String content) {
         String requestUrl = baseUrl+"/ai/case/list";
