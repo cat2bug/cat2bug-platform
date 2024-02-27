@@ -304,7 +304,6 @@ export default {
       }
       .defect-edit-title-name {
         flex: 1;
-        padding-right: 50px;
         overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;

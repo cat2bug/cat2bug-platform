@@ -1,14 +1,20 @@
 <template>
   <cat2-bug-card :title="title" v-loading="loading" :tools="tools" @tools-click="toolsHandle">
     <template slot="content">
-      <cat2-but-label @click.native="clickHandle()" class="defect-state-label" icon="all" icon-color="#409EFF" :label="$t('all')" content="12">
+      <cat2-but-label @click.native="clickHandle" class="defect-state-label" icon="all" icon-color="#409EFF" :label="$t('all')" content="12">
         <template slot="content">
           <span>{{ total }}</span>
           <span class="width50">{{ $t('today') }}</span>
           <span class="width50">{{ $t('this-week') }}</span>
         </template>
       </cat2-but-label>
-      <cat2-but-label @click.native="clickHandle(state)" class="defect-state-label" icon="pending-processing" :icon-color="iconColor(index)" v-for="(state,index) in stateList" :key="index" :label="$t(state.k)">
+      <cat2-but-label @click.native="clickHandle($event,state)"
+                      class="defect-state-label"
+                      icon="pending-processing"
+                      :icon-color="iconColor(index)"
+                      v-for="(state,index) in stateList"
+                      :key="index"
+                      :label="$t(state.k).toString()">
         <template slot="content">
           <span>{{ state.a }}</span>
           <span class="width50" :flag="flag(state.d)">{{ flag(state.d) + state.d }}</span>
@@ -85,12 +91,13 @@ export default {
     this.getStatisticDefectState();
   },
   methods: {
-    clickHandle(state) {
+    clickHandle(event, state) {
       this.parent.search({
         params: {
-          defectStates: state?state.id:null
+          defectStates: state?JSON.parse(JSON.stringify(state.id)):null
         }
-      })
+      });
+      event.stopPropagation();
     },
     getStatisticDefectState() {
       this.loading = true;

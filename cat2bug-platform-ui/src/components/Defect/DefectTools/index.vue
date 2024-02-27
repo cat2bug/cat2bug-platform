@@ -201,8 +201,7 @@ export default {
     font-size: 12px;
     margin-bottom: 0px !important;
     > * {
-      margin-left: 5px;
-      margin-right: 5px;
+      margin: 0;
     }
   }
   .red {
