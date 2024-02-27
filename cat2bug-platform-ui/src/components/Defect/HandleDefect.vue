@@ -10,9 +10,10 @@
           <i class="el-icon-arrow-left" @click="cancel"></i>
           <h4 class="defect-edit-title-num">#{{defect.projectNum}}</h4>
           <defect-type-flag :defect="defect" />
+          <defect-state-flag :defect="defect" />
           <h4 class="defect-edit-title-name">{{defect.defectName}}</h4>
         </div>
-        <div>
+        <div class="defect-edit-tools">
           <defect-tools :defect="defect" size="mini" @delete="deleteHandle" @log="logHandle"></defect-tools>
         </div>
       </div>
@@ -81,13 +82,14 @@ import ImageUpload from "@/components/ImageUpload";
 import ListDefectLog from "@/components/ListDefectLog";
 import DefectTools from "@/components/Defect/DefectTools";
 import DefectTypeFlag from "@/components/Defect/DefectTypeFlag";
+import DefectStateFlag from "@/components/Defect/DefectStateFlag";
 import CaseCard from "@/components/Case/CaseCard";
 import {getCase} from "@/api/system/case";
 
 export default {
   name: "EditDefect",
   dicts: ['defect_level'],
-  components: { ImageUpload, SelectProjectMember, SelectModule, ListDefectLog, DefectTools, DefectTypeFlag,CaseCard },
+  components: { ImageUpload, SelectProjectMember, SelectModule, ListDefectLog, DefectTools, DefectTypeFlag, DefectStateFlag, CaseCard },
   data() {
     return {
       loading: false,
@@ -271,17 +273,28 @@ export default {
   }
   ::v-deep .el-drawer__header {
     margin-bottom: 0px;
+    max-width: calc(100vw);
   }
   .defect-edit-header {
+    width: 100%;
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-direction: row;
+    flex-wrap: wrap;
+    .defect-edit-tools {
+      padding: 5px 0px;
+    }
     .defect-edit-title {
+      display: inline-block;
       display: inline-flex;
       justify-content: flex-start;
       align-items: center;
       flex-direction: row;
+      overflow: hidden;
+      > * {
+        float:left;
+      }
       .el-icon-arrow-left {
         font-size: 22px;
       }
@@ -290,10 +303,10 @@ export default {
         color: #909399;
       }
       .defect-edit-title-name {
-        max-width: 400px;
+        flex: 1;
+        padding-right: 50px;
         overflow: hidden;
         white-space: nowrap;
-        overflow: hidden;
         text-overflow: ellipsis;
       }
       .defect-edit-title-num, .defect-edit-title-name {
