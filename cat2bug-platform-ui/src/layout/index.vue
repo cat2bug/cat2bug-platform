@@ -108,4 +108,7 @@ export default {
   .mobile .fixed-header {
     width: 100%;
   }
+  .main-container {
+    overflow: auto;
+  }
 </style>

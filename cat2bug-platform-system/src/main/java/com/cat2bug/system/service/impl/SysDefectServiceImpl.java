@@ -111,7 +111,7 @@ public class SysDefectServiceImpl implements ISysDefectService
         // 更新缺陷
         SysDefect sd = new SysDefect();
         sd.setDefectId(sysDefectLog.getDefectId());
-        sd.setDefectState(SysDefectStateEnum.RESOLVED);
+        sd.setDefectState(SysDefectStateEnum.CLOSED);
         this.updateSysDefect(sd);
 
         // 插入日志

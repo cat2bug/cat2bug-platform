@@ -121,7 +121,7 @@
       </el-table-column>
       <el-table-column :label="$t('state')" align="left" prop="defectStateName" width="120" sortable>
         <template slot-scope="scope">
-          <span>{{ $t(scope.row.defectStateName) }}</span>
+          <defect-state-flag :defect="scope.row" />
         </template>
       </el-table-column>
       <el-table-column :label="$t('module')" align="left" prop="moduleName" width="150" sortable />
@@ -155,7 +155,7 @@
 <!--      </el-table-column>-->
       <el-table-column :label="$t('operate')" align="left" class-name="small-padding fixed-width" width="200">
         <template slot-scope="scope">
-          <defect-tools :is-text="true" :defect="scope.row" size="mini" :is-show-icon="true" @delete="selectDefectTabHandle" @update="selectDefectTabHandle" @log="selectDefectTabHandle"></defect-tools>
+          <defect-tools :is-text="true" :defect="scope.row" size="mini" :is-show-icon="true" @delete="getList(queryParams.params)" @update="getList(queryParams.params)" @log="getList(queryParams.params)"></defect-tools>
         </template>
       </el-table-column>
     </el-table>
@@ -165,11 +165,11 @@
       :total="total"
       :page.sync="queryParams.pageNum"
       :limit.sync="queryParams.pageSize"
-      @pagination="getList"
+      @pagination="getList(queryParams.params)"
     />
     <!-- 添加或修改缺陷对话框 -->
-    <add-defect ref="addDefectForm" :project-id="getProjectId()" @added="selectDefectTabHandle" />
-    <handle-defect ref="editDefectForm" :project-id="getProjectId()" @change="selectDefectTabHandle" @delete="selectDefectTabHandle" />
+    <add-defect ref="addDefectForm" :project-id="getProjectId()" @added="getList(queryParams.params)" />
+    <handle-defect ref="editDefectForm" :project-id="getProjectId()" @change="getList(queryParams.params)" @delete="getList(queryParams.params)" />
   </div>
 </template>
 
@@ -183,6 +183,7 @@ import SelectModule from "@/components/Module/SelectModule";
 import SelectProjectMember from "@/components/Project/SelectProjectMember";
 import ProjectLabel from "@/components/Project/ProjectLabel";
 import DefectTypeFlag from "@/components/Defect/DefectTypeFlag";
+import DefectStateFlag from "@/components/Defect/DefectStateFlag";
 import DefectTools from "@/components/Defect/DefectTools";
 import Cat2BugStatistic from "@/components/Cat2BugStatistic"
 import { checkPermi } from "@/utils/permission";
@@ -192,7 +193,7 @@ import {listStatistic} from "@/api/system/statistic/template";
 const CACHE_KEY_STATISTIC_PANEL_VISIBLE = 'defect.statisticPanelVisible';
 export default {
   name: "Defect",
-  components: {SelectModule, RowListMember, AddDefect, HandleDefect, LevelTag, SelectProjectMember,ProjectLabel,DefectTypeFlag, DefectTools, Cat2BugStatistic },
+  components: {SelectModule, RowListMember, AddDefect, HandleDefect, LevelTag, SelectProjectMember,ProjectLabel,DefectTypeFlag, DefectStateFlag, DefectTools, Cat2BugStatistic },
   dicts: ['defect_level'],
   data() {
     return {
