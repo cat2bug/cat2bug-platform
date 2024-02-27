@@ -120,7 +120,16 @@ export default {
           w:w
         }]
         // 过滤只显示待审核、已审核的
-        ret = ret.concat( res.data.filter(s=>s.k == 'AUDIT' || s.k=='RESOLVED').map(s=>{
+        ret = ret.concat( res.data.filter(s=>s.k == 'AUDIT').map(s=>{
+          return {
+            id: [s.id],
+            k:s.k,
+            a:s.a,
+            d:s.d,
+            w:s.w
+          }
+        }));
+        ret = ret.concat( res.data.filter(s=>s.k=='CLOSED').map(s=>{
           return {
             id: [s.id],
             k:s.k,

@@ -166,7 +166,7 @@ public class SysDefectServiceImpl implements ISysDefectService
         for(int i = 0;i<SysDefectStateEnum.values().length;i++){
             ret.add(new EnumVo(SysDefectStateEnum.values()[i].ordinal(),SysDefectStateEnum.values()[i].name()));
         }
-        return ret;
+        return ret.stream().filter(s->!s.getValue().equals("RESOLVED")).collect(Collectors.toList());
     }
 
     /**

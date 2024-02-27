@@ -20,7 +20,7 @@
     <div class="defect-tools">
       <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="0">
         <el-form-item prop="defectType">
-          <el-dropdown split-button size="mini" @command="defectTypeChangeHandle" @click="selectDefectTabHandle">
+          <el-dropdown split-button size="small" @command="defectTypeChangeHandle" @click="selectDefectTabHandle">
             {{$i18n.t(activeDefectTypeName)}}
             <el-dropdown-menu slot="dropdown">
               <el-dropdown-item command="">{{$i18n.t('defect.all-type')}}</el-dropdown-item>
@@ -29,13 +29,14 @@
           </el-dropdown>
         </el-form-item>
         <el-form-item prop="defectState">
-          <el-dropdown split-button size="mini" @command="defectStateChangeHandle" @click="selectDefectTabHandle">
-            {{$i18n.t(activeDefectStateName)}}
-            <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item command="">{{$i18n.t('defect.all-state')}}</el-dropdown-item>
-              <el-dropdown-item v-for="state in config.states" :command="state.value" :key="'state_'+state.key">{{$i18n.t(state.value)}}</el-dropdown-item>
-            </el-dropdown-menu>
-          </el-dropdown>
+          <el-select v-model="queryParams.params.defectStates" multiple collapse-tags placeholder="请选择" @change="defectStateChangeHandle">
+            <el-option
+              v-for="state in config.states"
+              :key="state.key"
+              :label="$i18n.t(state.value)"
+              :value="state.key">
+            </el-option>
+          </el-select>
         </el-form-item>
         <el-form-item prop="defectName">
           <el-input
@@ -304,7 +305,10 @@ export default {
       this.selectDefectTabHandle();
     },
     _setProperty(parent,obj) {
-      if(obj && typeof obj == 'object') {
+      if(obj && Array.isArray(obj)) {
+        parent = obj;
+        return parent
+      } else if(obj && typeof obj == 'object') {
         for (let key in obj) {
           if (parent[key] && typeof obj[key] == 'object') {
             this.$set(parent,key,this._setProperty(parent[key], obj[key]))
@@ -324,12 +328,12 @@ export default {
     },
     /** 查找缺陷状态改变的处理 */
     defectStateChangeHandle(defectState) {
-      if(defectState) {
-        this.activeDefectStateName = defectState;
-      } else {
-        this.activeDefectStateName = 'defect.all-state';
-      }
-      this.queryParams.defectState= defectState;
+      // if(defectState) {
+      //   this.activeDefectStateName = defectState;
+      // } else {
+      //   this.activeDefectStateName = 'defect.all-state';
+      // }
+      // this.queryParams.defectState= defectState;
       this.selectDefectTabHandle();
     },
     /** 查找缺陷状态改变的处理 */
