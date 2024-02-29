@@ -274,6 +274,7 @@
   "defect.enter-describe": "请输入描述",
   "defect.select-type": "请选择类型",
   "defect.select-level": "请选择级别",
+  "defect.select-state": "请选择状态",
   "defect.select-handle-by": "请选择执行人",
   "defect.defect-name-cannot-empty": "缺陷标题不能为空",
   "defect.defect-level-cannot-empty": "缺陷等级不能为空",
@@ -382,5 +383,8 @@
   "project.api.white-list": "白名单",
   "project.api.expire-time": "有效时间",
   "project.api.name--cannot-empty": "API别名不能为空",
-  "project.api.is-delete": "是否确认删除此项Key数据?"
+  "project.api.is-delete": "是否确认删除此项Key数据?",
+  "comment.submit-success": "发表评论成功",
+  "comment.speak": "发言",
+  "comment.is-delete": "是否删除此评论?"
 }

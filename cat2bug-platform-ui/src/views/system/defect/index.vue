@@ -29,7 +29,7 @@
           </el-dropdown>
         </el-form-item>
         <el-form-item prop="defectState">
-          <el-select v-model="queryParams.params.defectStates" multiple collapse-tags placeholder="请选择" @change="defectStateChangeHandle">
+          <el-select v-model="queryParams.params.defectStates" multiple collapse-tags :placeholder="$t('defect.select-state')" @change="defectStateChangeHandle">
             <el-option
               v-for="state in config.states"
               :key="state.key"

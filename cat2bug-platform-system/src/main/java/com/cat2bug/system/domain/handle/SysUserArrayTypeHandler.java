@@ -42,7 +42,7 @@ public class SysUserArrayTypeHandler extends BaseTypeHandler<List<SysUser>> {
     // 字符串转换为list
     private List<SysUser> convertToList(String strArray) {
         if(StringUtils.isNotBlank(strArray)){
-            String json = strArray.replaceAll("^\"|\"$", "");
+            String json = strArray.replaceAll("^\"|\"$", "").replace("\\\"","\"");
             return JSON.parseArray(json,SysUser.class);
         }
         return new ArrayList<>();

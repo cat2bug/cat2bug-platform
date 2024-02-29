@@ -51,6 +51,11 @@ public class SysDefectLog extends BaseEntity
 
     private String createByName;
 
+    private String createByAvatar;
+
+    /** 评论 */
+    private List<SysComment> commentList;
+
     @Override
     public String toString() {
         return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)

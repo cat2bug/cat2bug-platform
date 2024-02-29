@@ -2,6 +2,8 @@ package com.cat2bug.system.service.impl;
 
 import java.util.List;
 import com.cat2bug.common.utils.DateUtils;
+import com.cat2bug.system.domain.SysComment;
+import com.cat2bug.system.mapper.SysCommentMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.cat2bug.system.mapper.SysDefectLogMapper;
@@ -17,8 +19,13 @@ import com.cat2bug.system.service.ISysDefectLogService;
 @Service
 public class SysDefectLogServiceImpl implements ISysDefectLogService 
 {
+    private final static String COMMENT_TYPE = "defect_log";
+
     @Autowired
     private SysDefectLogMapper sysDefectLogMapper;
+
+    @Autowired
+    private SysCommentMapper sysCommentMapper;
 
     /**
      * 查询缺陷日志
@@ -41,7 +48,15 @@ public class SysDefectLogServiceImpl implements ISysDefectLogService
     @Override
     public List<SysDefectLog> selectSysDefectLogList(SysDefectLog sysDefectLog)
     {
-        return sysDefectLogMapper.selectSysDefectLogList(sysDefectLog);
+        List<SysDefectLog> list = sysDefectLogMapper.selectSysDefectLogList(sysDefectLog);
+        list.forEach(l->{
+            SysComment sysComment = new SysComment();
+            sysComment.setModuleType(COMMENT_TYPE);
+            sysComment.setCorrelationId(l.getDefectLogId());
+            List<SysComment> commentList = sysCommentMapper.selectSysCommentList(sysComment);
+            l.setCommentList(commentList);
+        });
+        return list;
     }
 
     /**

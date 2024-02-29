@@ -6,7 +6,7 @@ spring:
                 web-allow-others: false
             path: /h2
             # 开启浏览器访问
-            enabled: true
+            enabled: false
 #    sql:
 #        init:
 #            mode: ALWAYS

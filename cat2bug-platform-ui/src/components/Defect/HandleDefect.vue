@@ -66,7 +66,7 @@
           <case-card :case-model="defectCase" :state-visible="true" :step-index.sync="defect.caseStepId" :edit="false" />
         </el-collapse-item>
         <el-collapse-item :title="$i18n.t('log')" name="log">
-          <list-defect-log ref="defectLog" :pageSize="10" />
+          <list-defect-log ref="defectLog" :pageSize="10" show-comment />
         </el-collapse-item>
       </el-collapse>
       <div slot="footer" class="dialog-footer"></div>
@@ -262,7 +262,7 @@ export default {
     deleteHandle() {
       this.$emit('delete',this.defect);
       this.cancel();
-    }
+    },
   }
 }
 </script>

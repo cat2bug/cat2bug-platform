@@ -74,4 +74,7 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
+*.mv.db
+*.trace.db
+
 !/cat2bug-platform-admin/src/main/resources/static/

@@ -9,6 +9,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="defectLogDescribe"    column="defect_log_describe"    />
         <result property="createBy"    column="create_by"    />
         <result property="createByName"    column="create_by_name"    />
+        <result property="createByAvatar"    column="create_by_avatar"    />
         <result property="createTime"    column="create_time"    />
         <result property="defectLogType"    column="defect_log_type"   typeHandler="com.cat2bug.system.domain.handle.SysDefectLogStateEnumTypeHandle"  />
         <result property="defectLogTypeName"    column="defect_log_type_name"   typeHandler="com.cat2bug.system.domain.handle.SysDefectLogStateEnumTypeHandle"  />
@@ -24,6 +25,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             dl.defect_log_describe,
             dl.create_by,
             u1.nick_name AS create_by_name,
+            u1.avatar AS create_by_avatar,
             dl.create_time,
             dl.defect_log_type,
             dl.receive_by,
@@ -36,8 +38,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                 LEFT JOIN (
                 SELECT
                     dl1.defect_log_id,
-                    CONCAT('[', GROUP_CONCAT( CONCAT('{"userId":', u.user_id,
-
+                    CONCAT('[', GROUP_CONCAT( CONCAT('{"userId":',
+                         CASE WHEN u.user_id IS NOT NULL THEN user_id ELSE 0 END,
                          ',"nickName":',
                          CASE WHEN u.nick_name IS NOT NULL THEN CONCAT('"',u.nick_name,'"') ELSE 'null' END,
                          ',"userName":',
@@ -48,7 +50,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                          '}')), ']') AS user_infos
                 FROM
                     sys_defect_log dl1
-                        LEFT JOIN sys_user u ON dl1.receive_by REGEXP CONCAT('\\b',u.user_id,'\\b')
+                        LEFT JOIN sys_user u ON dl1.receive_by REGEXP CONCAT('\b',u.user_id,'\b') OR dl1.receive_by REGEXP CONCAT('\\b',u.user_id,'\\b')
                 GROUP BY
                     dl1.defect_log_id
             ) un ON un.defect_log_id = dl.defect_log_id

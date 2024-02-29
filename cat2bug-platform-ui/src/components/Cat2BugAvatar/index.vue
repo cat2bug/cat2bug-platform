@@ -37,7 +37,15 @@ export default {
   border: #FFF 3px solid;
 }
 .el-avatar--medium {
+  height: 36px;
+  width: 36px;
   line-height: 29px;
+}
+.el-avatar--small {
+  height: 29px;
+  width: 29px;
+  line-height: 22px;
+  font-size: 12px;
 }
 .el-avatar[isStatistics='true'] {
   background-color: #E4E7ED;

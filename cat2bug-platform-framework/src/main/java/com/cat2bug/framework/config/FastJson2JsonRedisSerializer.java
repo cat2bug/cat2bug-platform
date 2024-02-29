@@ -9,6 +9,8 @@ import com.alibaba.fastjson2.JSONWriter;
 import com.alibaba.fastjson2.filter.Filter;
 import com.cat2bug.common.constant.Constants;
 
+import static com.fasterxml.jackson.core.JsonParser.Feature.ALLOW_COMMENTS;
+
 /**
  * Redis使用FastJson序列化
  * 

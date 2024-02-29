@@ -2,7 +2,6 @@
   <div class="defect-tools">
     <slot name="left"></slot>
     <star-switch v-model="defect.collect" @change="clickCollectHandle($event, defect, false)"></star-switch>
-
     <el-button v-show="assignVisible" :icon="isShowIcon?'el-icon-refresh':''" :size="size" :type="isText?'text':'info'" @click="assignHandle" v-hasPermi="['system:defect:assign']">{{$i18n.t('assign')}}</el-button>
     <el-button v-show="repairVisible" :icon="isShowIcon?'el-icon-document-checked':''" :size="size" :type="isText?'text':'primary'" @click="repairDialogHandle" v-hasPermi="['system:defect:repair']">{{$i18n.t('repair')}}</el-button>
     <el-button v-show="rejectVisible" :icon="isShowIcon?'el-icon-document-delete':''" :size="size" :type="isText?'text':'warning'" @click="rejectHandle" v-hasPermi="['system:defect:reject']">{{$i18n.t('reject')}}</el-button>

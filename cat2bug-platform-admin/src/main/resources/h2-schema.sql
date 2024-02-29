@@ -4475,3 +4475,12 @@ CREATE TABLE `sys_user_team_role` (
 									  `role_id` bigint NOT NULL COMMENT '角色id'
 );
 
+DROP TABLE IF EXISTS `sys_comment`;
+CREATE TABLE `sys_comment` (
+							   `comment_id` bigint NOT NULL AUTO_INCREMENT COMMENT '评论ID',
+							   `comment_content` varchar(255) DEFAULT NULL COMMENT '评论内容',
+							   `create_by_id` bigint DEFAULT NULL COMMENT '创建人ID',
+							   `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+							   `module_type` varchar(12) DEFAULT NULL COMMENT '所属模块(defect_log:缺陷日志的评论)',
+							   `correlation_id` bigint NOT NULL COMMENT '关联id'
+);

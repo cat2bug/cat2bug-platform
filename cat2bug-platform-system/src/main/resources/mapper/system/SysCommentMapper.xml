@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.system.mapper.SysCommentMapper">
+    
+    <resultMap type="SysComment" id="SysCommentResult">
+        <result property="commentId"    column="comment_id"    />
+        <result property="commentContent"    column="comment_content"    />
+        <result property="createById"    column="create_by_id"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="moduleType"    column="module_type"    />
+        <result property="correlationId"    column="correlation_id"    />
+        <association property="createMember"    javaType="SysUser"         resultMap="memberResult" />
+    </resultMap>
+
+    <resultMap id="memberResult" type="SysUser">
+        <id     property="userId"       column="member_user_id"      />
+        <result property="userName"     column="member_user_name"    />
+        <result property="nickName"     column="member_nick_name"    />
+        <result property="email"        column="member_email"        />
+        <result property="phoneNumber"  column="member_phone_number"  />
+        <result property="avatar"       column="member_avatar"       />
+    </resultMap>
+
+    <sql id="selectSysCommentVo">
+        select c.comment_id, c.comment_content, c.create_by_id, c.create_time, c.module_type, c.correlation_id,
+            u.user_id as member_user_id, u.user_name as member_user_name, u.nick_name as member_nick_name, u.email as member_email, u.phonenumber as member_phone_number, u.avatar as member_avatar
+            from sys_comment c
+            left join sys_user u on u.user_id = c.create_by_id
+    </sql>
+
+    <select id="selectSysCommentList" parameterType="SysComment" resultMap="SysCommentResult">
+        <include refid="selectSysCommentVo"/>
+        <where>  
+            <if test="createById != null "> and c.create_by_id = #{createById}</if>
+            <if test="moduleType != null  and moduleType != ''"> and c.module_type = #{moduleType}</if>
+            <if test="correlationId != null "> and c.correlation_id = #{correlationId}</if>
+        </where>
+        ORDER BY c.create_time DESC
+    </select>
+    
+    <select id="selectSysCommentByCommentId" parameterType="Long" resultMap="SysCommentResult">
+        <include refid="selectSysCommentVo"/>
+        where c.comment_id = #{commentId}
+    </select>
+        
+    <insert id="insertSysComment" parameterType="SysComment" useGeneratedKeys="true" keyProperty="commentId">
+        insert into sys_comment
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="commentContent != null and commentContent != ''">comment_content,</if>
+            <if test="createById != null">create_by_id,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="moduleType != null">module_type,</if>
+            <if test="correlationId != null">correlation_id,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="commentContent != null and commentContent != ''">#{commentContent},</if>
+            <if test="createById != null">#{createById},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="moduleType != null">#{moduleType},</if>
+            <if test="correlationId != null">#{correlationId},</if>
+         </trim>
+    </insert>
+
+    <update id="updateSysComment" parameterType="SysComment">
+        update sys_comment
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="commentContent != null and commentContent != ''">comment_content = #{commentContent},</if>
+            <if test="createById != null">create_by_id = #{createById},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="moduleType != null">module_type = #{moduleType},</if>
+            <if test="correlationId != null">correlation_id = #{correlationId},</if>
+        </trim>
+        where comment_id = #{commentId}
+    </update>
+
+    <delete id="deleteSysCommentByCommentId" parameterType="Long">
+        delete from sys_comment where comment_id = #{commentId}
+    </delete>
+
+    <delete id="deleteSysCommentByCommentIds" parameterType="String">
+        delete from sys_comment where comment_id in 
+        <foreach item="commentId" collection="array" open="(" separator="," close=")">
+            #{commentId}
+        </foreach>
+    </delete>
+</mapper>

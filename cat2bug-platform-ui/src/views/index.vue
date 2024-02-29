@@ -100,6 +100,12 @@
             <span>{{$t('update-log')}}</span>
           </div>
           <el-collapse accordion>
+            <el-collapse-item title="v0.2.1 - 2024-03-01">
+              <ol>
+                <li>修复已有问题BUG</li>
+                <li>添加在缺陷日志中可以评论的功能</li>
+              </ol>
+            </el-collapse-item>
             <el-collapse-item title="v0.2.0 - 2024-02-23">
               <ol>
                 <li>修复已有问题BUG</li>
