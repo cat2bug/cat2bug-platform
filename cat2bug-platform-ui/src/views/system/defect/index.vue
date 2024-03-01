@@ -13,10 +13,8 @@
         <svg-icon class="defect-tools-button" v-show="statisticPanelVisible" icon-class="view-statistic" @click="statisticPanelHandle" />
         <svg-icon class="defect-tools-button" v-show="!statisticPanelVisible" icon-class="not-view-statistic" @click="statisticPanelHandle" />
       </div>
-
     </div>
     <cat2-bug-statistic :params="{}" v-show="statisticPanelVisible" :draggable="true" />
-
     <div class="defect-tools">
       <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="0">
         <el-form-item prop="defectType">
@@ -71,8 +69,28 @@
           />
         </el-form-item>
       </el-form>
-
       <el-row :gutter="10" class="mb8">
+        <el-col :span="1.5">
+          <el-popover
+            placement="top"
+            trigger="click">
+            <div class="row">
+              <i class="el-icon-s-fold"></i>
+              <h4>显示字段</h4>
+            </div>
+            <el-divider class="defect-field-divider"></el-divider>
+            <el-checkbox-group v-model="checkedFieldList" class="col" @change="checkedFieldListChange">
+              <el-checkbox v-for="field in fieldList" :label="field" :key="field">{{field}}</el-checkbox>
+            </el-checkbox-group>
+            <el-button
+              style="padding: 7px;"
+              plain
+              slot="reference"
+              icon="el-icon-s-fold"
+              size="mini"
+            ></el-button>
+          </el-popover>
+        </el-col>
         <el-col :span="1.5">
           <el-button
             type="primary"
@@ -83,61 +101,48 @@
             v-hasPermi="['system:defect:add']"
           >{{$i18n.t('defect.create')}}</el-button>
         </el-col>
-<!--        <el-col :span="1.5">-->
-<!--          <el-button-->
-<!--            type="warning"-->
-<!--            plain-->
-<!--            icon="el-icon-download"-->
-<!--            size="mini"-->
-<!--            @click="handleExport"-->
-<!--            v-hasPermi="['system:defect:export']"-->
-<!--          >导出</el-button>-->
-<!--        </el-col>-->
       </el-row>
     </div>
-    <el-table v-loading="loading" :data="defectList" @selection-change="handleSelectionChange" @sort-change="sortChangeHandle" @row-click="editDefectHandle">
-<!--      <el-table-column type="selection" width="55" align="center" />-->
-      <el-table-column :label="$t('id')" align="left" prop="projectNum" width="80" sortable >
+    <!-- 缺陷列表-->
+    <el-table v-loading="loading" style="width:100%;" :data="defectList" @selection-change="handleSelectionChange" @sort-change="sortChangeHandle" @row-click="editDefectHandle">
+      <el-table-column v-if="showField($t('id'))" :label="$t('id')" :key="$t('id')" align="left" prop="projectNum" width="80" sortable >
         <template slot-scope="scope">
           <span>{{ '#' + scope.row.projectNum }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('type')" align="left" prop="defectTypeName" width="100" sortable>
+      <el-table-column v-if="showField($t('type'))" :label="$t('type')" :key="$t('type')" align="left" prop="defectTypeName" width="100" sortable>
         <template slot-scope="scope">
           <defect-type-flag :defect="scope.row" />
         </template>
       </el-table-column>
-      <el-table-column :label="$t('title')" align="left" prop="defectName" sortable >
+      <el-table-column v-if="showField($t('title'))" :label="$t('title')" :key="$t('title')" align="left" prop="defectName" min-width="200" sortable >
         <template slot-scope="scope">
           <el-link type="primary" @click="editDefectHandle(scope.row)">{{ scope.row.defectName }}</el-link>
-<!--          <el-tooltip class="item" effect="dark" :content="scope.row.defectDescribe" placement="bottom-start">-->
-<!--            -->
-<!--          </el-tooltip>-->
         </template>
       </el-table-column>
-      <el-table-column :label="$t('level')" align="left" prop="defectLevel" width="100" sortable >
+      <el-table-column v-if="showField($t('level'))" :label="$t('level')" :key="$t('level')" align="left" prop="defectLevel" width="100" sortable >
         <template slot-scope="scope">
           <level-tag :options="dict.type.defect_level" :value="scope.row.defectLevel"/>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('state')" align="left" prop="defectStateName" width="120" sortable>
+      <el-table-column v-if="showField($t('state'))" :label="$t('state')" :key="$t('state')" align="left" prop="defectStateName" width="120" sortable>
         <template slot-scope="scope">
           <defect-state-flag :defect="scope.row" />
         </template>
       </el-table-column>
-      <el-table-column :label="$t('module')" align="left" prop="moduleName" width="150" sortable />
-      <el-table-column :label="$t('version')" align="left" prop="moduleVersion" width="100" sortable />
-      <el-table-column :label="$t('update-time')" align="left" prop="updateTime" width="180" sortable >
+      <el-table-column v-if="showField($t('module'))" :label="$t('module')" :key="$t('module')" align="left" prop="moduleName" min-width="100" sortable />
+      <el-table-column v-if="showField($t('version'))" :label="$t('version')" :key="$t('version')" align="left" prop="moduleVersion" width="100" sortable />
+      <el-table-column v-if="showField($t('update-time'))" :label="$t('update-time')" :key="$t('update-time')" align="left" prop="updateTime" width="180" sortable >
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.updateTime, '{y}-{m}-{d}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('handle-by')" align="left" prop="handleBy">
+      <el-table-column v-if="showField($t('handle-by'))" :label="$t('handle-by')" :key="$t('handle-by')" align="left" prop="handleBy">
         <template slot-scope="scope">
           <row-list-member :members="scope.row.handleByList"></row-list-member>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('image')" align="left" prop="imgUrls">
+      <el-table-column v-if="showField($t('image'))" :label="$t('image')" :key="$t('image')" align="left" prop="imgUrls">
         <template slot-scope="scope">
           <el-image
             @click="clickImageHandle"
@@ -149,11 +154,11 @@
             fit="contain"></el-image>
         </template>
       </el-table-column>
-<!--      <el-table-column :label="$t('annex')" align="left" prop="annexUrls">-->
-<!--        <template slot-scope="scope">-->
-<!--          <el-link type="primary" v-for="(file,index) in getUrl(scope.row.annexUrls)" :key="index" :href="file">{{getFileName(file)}}</el-link>-->
-<!--        </template>-->
-<!--      </el-table-column>-->
+      <el-table-column v-if="showField($t('annex'))" :label="$t('annex')" :key="$t('annex')" align="left" prop="annexUrls">
+        <template slot-scope="scope">
+          <el-link type="primary" v-for="(file,index) in getUrl(scope.row.annexUrls)" :key="index" :href="file">{{getFileName(file)}}</el-link>
+        </template>
+      </el-table-column>
       <el-table-column :label="$t('operate')" align="left" class-name="small-padding fixed-width" width="200">
         <template slot-scope="scope">
           <defect-tools :is-text="true" :defect="scope.row" size="mini" :is-show-icon="true" @delete="getList(queryParams.params)" @update="getList(queryParams.params)" @log="getList(queryParams.params)"></defect-tools>
@@ -190,6 +195,9 @@ import Cat2BugStatistic from "@/components/Cat2BugStatistic"
 import { checkPermi } from "@/utils/permission";
 import {listStatistic} from "@/api/system/statistic/template";
 
+// 需要显示的缺陷字段列表在缓存的key值
+const DEFECT_TABLE_FIELD_LIST_CACHE_KEY='defect-table-field-list';
+
 /** 记录分析模版是否显示的缓存变量名 */
 const CACHE_KEY_STATISTIC_PANEL_VISIBLE = 'defect.statisticPanelVisible';
 export default {
@@ -198,6 +206,20 @@ export default {
   dicts: ['defect_level'],
   data() {
     return {
+      checkedFieldList: [],
+      fieldList: [
+        this.$i18n.t('id'),
+        this.$i18n.t('type'),
+        this.$i18n.t('title'),
+        this.$i18n.t('level'),
+        this.$i18n.t('state'),
+        this.$i18n.t('module'),
+        this.$i18n.t('version'),
+        this.$i18n.t('update-time'),
+        this.$i18n.t('handle-by'),
+        this.$i18n.t('image'),
+        this.$i18n.t('annex'),
+      ],
       // 分析图表列表
       statisticList:[],
       // 查询中缺陷类型的名称
@@ -262,6 +284,12 @@ export default {
     };
   },
   computed: {
+    /** 字段是否显示 */
+    showField: function () {
+      return function (field) {
+        return this.checkedFieldList.filter(f=>f==field).length>0;
+      }
+    },
     /** 获取当前用户id */
     currentUserId: function() {
       return this.$store.state.user.id;
@@ -295,6 +323,15 @@ export default {
     }
   },
   created() {
+    const fieldList = this.$cache.local.get(DEFECT_TABLE_FIELD_LIST_CACHE_KEY);
+    if(fieldList) {
+      this.checkedFieldList = JSON.parse(fieldList);
+    } else {
+      this.checkedFieldList = [];
+      this.fieldList.forEach(f=>{
+        this.checkedFieldList.push(f);
+      });
+    }
     this.getDefectConfig();
     this.selectDefectTabHandle();
   },
@@ -482,11 +519,29 @@ export default {
     statisticPanelHandle() {
       this.statisticPanelVisible = !this.statisticPanelVisible;
       this.$cache.local.set(CACHE_KEY_STATISTIC_PANEL_VISIBLE, this.statisticPanelVisible+'');
+    },
+    checkedFieldListChange(field) {
+      this.$cache.local.set(DEFECT_TABLE_FIELD_LIST_CACHE_KEY,JSON.stringify(field));
     }
   }
 };
 </script>
 <style lang="scss" scoped>
+.col {
+  display: flex;
+  flex-direction: column;
+}
+.row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  > * {
+    margin: 0px 5px 0px 0px;
+  }
+}
+.defect-field-divider {
+  margin: 8px 0px;
+}
 .defect-tools-tab {
   margin-top: -10px;
   position: relative;
