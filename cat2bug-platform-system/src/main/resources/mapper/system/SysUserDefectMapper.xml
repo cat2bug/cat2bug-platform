@@ -46,20 +46,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </insert>
 
     <insert id="updateSysUserDefect" parameterType="SysUserDefect">
-        insert into sys_user_defect
-        <trim prefix="(" suffix=")" suffixOverrides=",">
-            <if test="defectId != null">defect_id,</if>
-            <if test="userId != null">user_id,</if>
-            <if test="collect != null">collect,</if>
-        </trim>
-        <trim prefix="values (" suffix=")" suffixOverrides=",">
-            <if test="defectId != null">#{defectId},</if>
-            <if test="userId != null">#{userId},</if>
-            <if test="collect != null">#{collect},</if>
-        </trim>
-        <trim prefix="ON DUPLICATE KEY UPDATE" suffix="" suffixOverrides=",">
+        update sys_user_defect
+        <set>
             <if test="collect != null">collect=#{collect},</if>
-        </trim>
+        </set>
+        where defect_id = #{defectId} and user_id = #{userId}
     </insert>
 
     <delete id="deleteSysUserDefectByUserDefectId" parameterType="Long">

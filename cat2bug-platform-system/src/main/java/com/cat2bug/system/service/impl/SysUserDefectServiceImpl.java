@@ -64,7 +64,15 @@ public class SysUserDefectServiceImpl implements ISysUserDefectService
     @Override
     public int updateSysUserDefect(SysUserDefect sysUserDefect)
     {
-        return sysUserDefectMapper.updateSysUserDefect(sysUserDefect);
+        SysUserDefect query = new SysUserDefect();
+        query.setDefectId(sysUserDefect.getDefectId());
+        query.setUserId(sysUserDefect.getUserId());
+        List<SysUserDefect> list = sysUserDefectMapper.selectSysUserDefectList(query);
+        if(list==null || list.size()==0) {
+            return sysUserDefectMapper.insertSysUserDefect(sysUserDefect);
+        } else {
+            return sysUserDefectMapper.updateSysUserDefect(sysUserDefect);
+        }
     }
 
     /**
