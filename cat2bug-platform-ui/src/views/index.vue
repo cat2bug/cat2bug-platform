@@ -100,6 +100,13 @@
             <span>{{$t('update-log')}}</span>
           </div>
           <el-collapse accordion>
+            <el-collapse-item title="v0.2.2 - 2024-03-04">
+              <ol>
+                <li>修复系统功能BUG</li>
+                <li>优化缺陷中的显示样式，缺陷描述可以通过MD文件格式展示</li>
+                <li>实现平台与Cat2Bug-Spring-Boot-JUnit框架对接功能</li>
+              </ol>
+            </el-collapse-item>
             <el-collapse-item title="v0.2.1 - 2024-03-01">
               <ol>
                 <li>修复已有问题BUG</li>
