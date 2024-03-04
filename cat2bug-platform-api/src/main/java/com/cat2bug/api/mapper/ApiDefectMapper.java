@@ -46,6 +46,16 @@ public interface ApiDefectMapper
     public List<ApiDefect> selectApiDefectList(@Param("projectId") Long projectId, @Param("defect") ApiDefect apiDefect);
 
     /**
+     * 查询缺陷列表
+     *
+     * @param projectId 项目编号
+     * @param defectName 缺陷
+     * @return 缺陷集合
+     */
+    public List<ApiDefect> selectApiDefectListByDefectName(@Param("projectId") Long projectId, @Param("defectName") String defectName);
+
+
+    /**
      * 新增缺陷
      * 
      * @param apiDefect 缺陷
@@ -59,7 +69,7 @@ public interface ApiDefectMapper
      * @param apiDefect 缺陷
      * @return 结果
      */
-//    public int updateApiDefect(ApiDefect apiDefect);
+    public int updateApiDefect(ApiDefect apiDefect);
 
     /**
      * 删除缺陷

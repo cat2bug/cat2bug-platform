@@ -39,6 +39,10 @@ public class ApiDefect extends BaseEntity
     /** 图片列表 */
     private String imgList;
 
+    /** 项目ID */
+    @JsonIgnoreProperties
+    private Long projectId;
+
     /** 项目名称 */
     private String projectName;
 

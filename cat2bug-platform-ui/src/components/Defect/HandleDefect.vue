@@ -1,6 +1,6 @@
 <template>
   <el-drawer
-    size="45%"
+    size="65%"
     :visible.sync="visible"
     direction="rtl"
     :before-close="closeDefectDrawer">
@@ -24,9 +24,7 @@
       </div>
       <el-collapse v-model="activeNames">
         <el-collapse-item :title="$i18n.t('describe')" name="defectDescribe">
-          <div>
-            {{defect.defectDescribe}}
-          </div>
+          <vue-markdown style="width: 100%;overflow-x: auto" :source="defectDescribeParse(defect.defectDescribe)" />
         </el-collapse-item>
         <el-collapse-item :title="$i18n.t('defect.base-info')" name="base">
           <el-row class="defect-edit-body-base" :gutter="20">
@@ -85,11 +83,12 @@ import DefectTypeFlag from "@/components/Defect/DefectTypeFlag";
 import DefectStateFlag from "@/components/Defect/DefectStateFlag";
 import CaseCard from "@/components/Case/CaseCard";
 import {getCase} from "@/api/system/case";
+import VueMarkdown from "vue-markdown"
 
 export default {
   name: "EditDefect",
   dicts: ['defect_level'],
-  components: { ImageUpload, SelectProjectMember, SelectModule, ListDefectLog, DefectTools, DefectTypeFlag, DefectStateFlag, CaseCard },
+  components: { ImageUpload, SelectProjectMember, SelectModule, ListDefectLog, DefectTools, DefectTypeFlag, DefectStateFlag, CaseCard, VueMarkdown },
   data() {
     return {
       loading: false,
@@ -132,6 +131,11 @@ export default {
     },
   },
   computed: {
+    defectDescribeParse: function (){
+      return function (describe) {
+        return describe;
+      }
+    },
     getUrl: function () {
       return function (urls){
         let imgs = urls?urls.split(','):[];

@@ -63,6 +63,7 @@
     "vue-count-to": "1.0.13",
     "vue-cropper": "0.5.5",
     "vue-i18n": "^8.22.2",
+    "vue-markdown": "^2.2.4",
     "vue-meta": "2.4.0",
     "vue-multipane": "^0.9.5",
     "vue-router": "3.4.9",

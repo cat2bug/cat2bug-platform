@@ -5,6 +5,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 <mapper namespace="com.cat2bug.api.mapper.ApiDefectMapper">
     
     <resultMap type="ApiDefect" id="ApiDefectResult">
+        <result property="defectId"    column="defect_id"    />
         <result property="defectNumber"    column="project_num"    />
         <result property="defectType"    column="defect_type"  typeHandler="com.cat2bug.api.domain.handle.ApiDefectTypeEnumTypeHandler"  />
         <result property="defectName"    column="defect_name"    />
@@ -62,16 +63,19 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             LEFT JOIN (
                 SELECT
                     d1.defect_id,
-                    JSON_ARRAYAGG( u.nick_name ) AS user_infos
+                    CONCAT('[', GROUP_CONCAT( CONCAT('{"userId":',
+                         CASE WHEN u.user_id IS NOT NULL THEN user_id ELSE 0 END,
+                         ',"nickName":',
+                         CASE WHEN u.nick_name IS NOT NULL THEN CONCAT('"',u.nick_name,'"') ELSE 'null' END,
+                         ',"userName":',
+                         CASE WHEN u.user_name IS NOT NULL THEN CONCAT('"',u.user_name,'"') ELSE 'null' END,
+                         ',"avatar":',
+                         CASE WHEN u.avatar IS NOT NULL THEN CONCAT('"',u.avatar,'"') ELSE 'null' END,
+
+                         '}')), ']') AS user_infos
                 FROM
                     sys_defect d1
-                    LEFT JOIN sys_user u ON JSON_CONTAINS(
-                        d1.handle_by,
-                        CAST( u.user_id AS JSON ))
-                WHERE
-                    JSON_CONTAINS(
-                            d1.handle_by,
-                            CAST( u.user_id AS JSON ))
+                        LEFT JOIN sys_user u ON d1.handle_by REGEXP CONCAT('\b',u.user_id,'\b') OR d1.handle_by REGEXP CONCAT('\\b',u.user_id,'\\b')
                 GROUP BY
                     d1.defect_id
             ) un ON un.defect_id = d.defect_id
@@ -80,7 +84,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <select id="getProjectDefectMaxNum" resultType="Long">
         select IFNULL(MAX(project_num),0) from sys_defect where project_id=#{projectId}
     </select>
-
+    <select id="selectApiDefectListByDefectName" resultMap="ApiDefectResult">
+        <include refid="selectApiDefectVo"/>
+        <where>
+            d.defect_name = #{defectName}
+        </where>
+        order by d.create_time DESC
+    </select>
     <select id="selectApiDefectList" resultMap="ApiDefectResult">
         <include refid="selectApiDefectVo"/>
         <where>
@@ -174,34 +184,26 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
          </trim>
     </insert>
 
-<!--    <update id="updateApiDefect" parameterType="ApiDefect">-->
-<!--        update sys_defect-->
-<!--        <trim prefix="SET" suffixOverrides=",">-->
-<!--            <if test="defectType != null">defect_type = #{defectType, typeHandler=com.cat2bug.api.domain.handle.ApiDefectTypeEnumTypeHandler},</if>-->
-<!--            <if test="defectName != null and defectName != ''">defect_name = #{defectName},</if>-->
-<!--            <if test="defectDescribe != null and defectDescribe != ''">defect_describe = #{defectDescribe},</if>-->
-<!--            <if test="annexUrls != null">annex_urls = #{annexUrls},</if>-->
-<!--            <if test="imgUrls != null">img_urls = #{imgUrls},</if>-->
-<!--            <if test="projectId != null">project_id = #{projectId},</if>-->
-<!--            <if test="testPlanId != null">test_plan_id = #{testPlanId},</if>-->
-<!--            <if test="caseId != null">case_id = #{caseId},</if>-->
-<!--            <if test="dataSources != null">data_sources = #{dataSources},</if>-->
-<!--            <if test="dataSourcesParams != null">data_sources_params = #{dataSourcesParams},</if>-->
-<!--            <if test="moduleId != null">module_id = #{moduleId},</if>-->
-<!--            <if test="moduleVersion != null">module_version = #{moduleVersion},</if>-->
-<!--            <if test="createBy != null">create_by = #{createBy},</if>-->
-<!--            <if test="createById != null">create_by_id = #{createById},</if>-->
-<!--            <if test="updateTime != null">update_time = #{updateTime},</if>-->
-<!--            <if test="createTime != null">create_time = #{createTime},</if>-->
-<!--            <if test="updateBy != null">update_by = #{updateBy},</if>-->
-<!--            <if test="defectState != null">defect_state = #{defectState,  typeHandler=com.cat2bug.api.domain.handle.ApiDefectStateEnumTypeHandler},</if>-->
-<!--            <if test="caseStepId != null">case_step_id = #{caseStepId},</if>-->
-<!--            <if test="handleBy != null">handle_by = #{handleBy, typeHandler=com.cat2bug.api.domain.handle.ApiLongArrayTypeHandler},</if>-->
-<!--            <if test="handleTime != null">handle_time = #{handleTime},</if>-->
-<!--            <if test="defectLevel != null">defect_level = #{defectLevel},</if>-->
-<!--        </trim>-->
-<!--        where defect_id = #{defectId}-->
-<!--    </update>-->
+    <update id="updateApiDefect" parameterType="ApiDefect">
+        update sys_defect
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="defectType != null">defect_type = #{defectType, typeHandler=com.cat2bug.api.domain.handle.ApiDefectTypeEnumTypeHandler},</if>
+            <if test="defectName != null and defectName != ''">defect_name = #{defectName},</if>
+            <if test="defectDescribe != null and defectDescribe != ''">defect_describe = #{defectDescribe},</if>
+            <if test="annexList != null">annex_urls = #{annexList},</if>
+            <if test="imgList != null">img_urls = #{imgList},</if>
+            <if test="projectId != null">project_id = #{projectId},</if>
+            <if test="moduleId != null">module_id = #{moduleId},</if>
+            <if test="moduleVersion != null">module_version = #{moduleVersion},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="defectState != null">defect_state = #{defectState,  typeHandler=com.cat2bug.api.domain.handle.ApiDefectStateEnumTypeHandler},</if>
+            <if test="handleBy != null">handle_by = #{handleBy, typeHandler=com.cat2bug.api.domain.handle.ApiLongArrayTypeHandler},</if>
+            <if test="handleTime != null">handle_time = #{handleTime},</if>
+            <if test="defectLevel != null">defect_level = #{defectLevel},</if>
+        </trim>
+        where defect_id = #{defectId}
+    </update>
 
 <!--    <delete id="deleteApiDefectByDefectId" parameterType="Long">-->
 <!--        delete from sys_defect where defect_id = #{defectId}-->
