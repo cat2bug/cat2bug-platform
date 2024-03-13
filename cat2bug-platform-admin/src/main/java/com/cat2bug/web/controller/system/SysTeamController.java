@@ -157,8 +157,9 @@ public class SysTeamController extends BaseController
     @PreAuthorize("@ss.hasPermi('system:team:member:invite')")
     @Log(title = "团队", businessType = BusinessType.INSERT)
     @PostMapping("/{teamId}/invite")
-    public AjaxResult inviteMember(@RequestBody BatchUserRoleVo batchUserRoleVo)
+    public AjaxResult inviteMember(@PathVariable("teamId") Long teamId, @RequestBody BatchUserRoleVo batchUserRoleVo)
     {
+        batchUserRoleVo.setTeamId(teamId);
         return toAjax(sysTeamService.inviteMember(batchUserRoleVo));
     }
 

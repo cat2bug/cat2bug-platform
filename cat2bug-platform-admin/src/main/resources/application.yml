@@ -16,7 +16,11 @@ cat2bug:
   api:
     # 是否启动api服务
     enabled: true
-
+  junit:
+    push-report:
+      host: https://www.cat2bug.com:8022
+      project-key: 202403081039179f174l0igbcrgs66
+      handler: demo
 
 # 开发环境配置
 server:
@@ -58,7 +62,7 @@ caffeine:
 
 # Spring配置
 spring:
-  database-type: h2
+  database-type: mysql
   thymeleaf:
     mode: HTML
     encoding: utf-8

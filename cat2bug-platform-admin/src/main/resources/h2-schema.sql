@@ -1600,7 +1600,9 @@ CREATE TABLE `sys_defect` (
 							  `project_num` int DEFAULT NULL COMMENT '项目编号',
 							  `img_urls` varchar(5000) DEFAULT NULL COMMENT '图片集合',
 							  `create_by_id` bigint DEFAULT NULL COMMENT '创建者id',
-							  `update_by_id` bigint DEFAULT NULL COMMENT '更新者id'
+							  `update_by_id` bigint DEFAULT NULL COMMENT '更新者id',
+							  `defect_key` varchar(255) DEFAULT NULL COMMENT '缺陷关键字',
+							  `defect_group_key` varchar(255) DEFAULT NULL COMMENT '缺陷组关键字'
 );
 
 

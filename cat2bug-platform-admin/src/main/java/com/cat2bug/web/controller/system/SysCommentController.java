@@ -40,46 +40,46 @@ public class SysCommentController extends BaseController
         return getDataTable(list);
     }
 
-    /**
-     * 获取评论详细信息
-     */
-    @PreAuthorize("@ss.hasPermi('system:comment:query') || @ss.hasPermi('system:defect:list') || @ss.hasPermi('system:defect:log:list')")
-    @GetMapping(value = "/{commentId}")
-    public AjaxResult getInfo(@PathVariable("commentId") Long commentId)
-    {
-        return success(sysCommentService.selectSysCommentByCommentId(commentId));
-    }
-
-    /**
-     * 新增评论
-     */
-    @PreAuthorize("@ss.hasPermi('system:comment:add') || @ss.hasPermi('system:defect:list') || @ss.hasPermi('system:defect:log:list')")
-    @Log(title = "评论", businessType = BusinessType.INSERT)
-    @PostMapping
-    public AjaxResult add(@RequestBody SysComment sysComment)
-    {
-        return toAjax(sysCommentService.insertSysComment(sysComment));
-    }
-
-    /**
-     * 修改评论
-     */
-    @PreAuthorize("@ss.hasPermi('system:comment:edit') || @ss.hasPermi('system:defect:list') || @ss.hasPermi('system:defect:log:list')")
-    @Log(title = "评论", businessType = BusinessType.UPDATE)
-    @PutMapping
-    public AjaxResult edit(@RequestBody SysComment sysComment)
-    {
-        return toAjax(sysCommentService.updateSysComment(sysComment));
-    }
-
-    /**
-     * 删除评论
-     */
-    @PreAuthorize("@ss.hasPermi('system:comment:remove') || @ss.hasPermi('system:defect:list') || @ss.hasPermi('system:defect:log:list')")
-    @Log(title = "评论", businessType = BusinessType.DELETE)
-	@DeleteMapping("/{commentIds}")
-    public AjaxResult remove(@PathVariable Long[] commentIds)
-    {
-        return toAjax(sysCommentService.deleteSysCommentByCommentIds(commentIds));
-    }
+//    /**
+//     * 获取评论详细信息
+//     */
+//    @PreAuthorize("@ss.hasPermi('system:comment:query') || @ss.hasPermi('system:defect:list') || @ss.hasPermi('system:defect:log:list')")
+//    @GetMapping(value = "/{commentId}")
+//    public AjaxResult getInfo(@PathVariable("commentId") Long commentId)
+//    {
+//        return success(sysCommentService.selectSysCommentByCommentId(commentId));
+//    }
+//
+//    /**
+//     * 新增评论
+//     */
+//    @PreAuthorize("@ss.hasPermi('system:comment:add') || @ss.hasPermi('system:defect:list') || @ss.hasPermi('system:defect:log:list')")
+//    @Log(title = "评论", businessType = BusinessType.INSERT)
+//    @PostMapping
+//    public AjaxResult add(@RequestBody SysComment sysComment)
+//    {
+//        return toAjax(sysCommentService.insertSysComment(sysComment));
+//    }
+//
+//    /**
+//     * 修改评论
+//     */
+//    @PreAuthorize("@ss.hasPermi('system:comment:edit') || @ss.hasPermi('system:defect:list') || @ss.hasPermi('system:defect:log:list')")
+//    @Log(title = "评论", businessType = BusinessType.UPDATE)
+//    @PutMapping
+//    public AjaxResult edit(@RequestBody SysComment sysComment)
+//    {
+//        return toAjax(sysCommentService.updateSysComment(sysComment));
+//    }
+//
+//    /**
+//     * 删除评论
+//     */
+//    @PreAuthorize("@ss.hasPermi('system:comment:remove') || @ss.hasPermi('system:defect:list') || @ss.hasPermi('system:defect:log:list')")
+//    @Log(title = "评论", businessType = BusinessType.DELETE)
+//	@DeleteMapping("/{commentIds}")
+//    public AjaxResult remove(@PathVariable Long[] commentIds)
+//    {
+//        return toAjax(sysCommentService.deleteSysCommentByCommentIds(commentIds));
+//    }
 }

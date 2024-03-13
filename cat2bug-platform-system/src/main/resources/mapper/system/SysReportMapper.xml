@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.system.mapper.SysReportMapper">
+    
+    <resultMap type="SysReport" id="SysReportResult">
+        <result property="reportId"    column="report_id"    />
+        <result property="reportTitle"    column="report_title"    />
+        <result property="reportTime"    column="report_time"    />
+        <result property="reportDescription"    column="report_description"    />
+        <result property="reportDataType"    column="report_data_type"    />
+        <result property="reportData"    column="report_data"    />
+        <result property="createById"    column="create_by_id"    />
+    </resultMap>
+
+    <sql id="selectSysReportVo">
+        select report_id, report_title, report_time, report_description, report_data_type, report_data, create_by_id from sys_report
+    </sql>
+
+    <select id="selectSysReportList" parameterType="SysReport" resultMap="SysReportResult">
+        <include refid="selectSysReportVo"/>
+        <where>  
+            <if test="reportTitle != null  and reportTitle != ''"> and report_title like concat('%', #{reportTitle}, '%')</if>
+            <if test="params.beginReportTime != null and params.beginReportTime != '' and params.endReportTime != null and params.endReportTime != ''"> and report_time between #{params.beginReportTime} and #{params.endReportTime}</if>
+            <if test="reportDataType != null  and reportDataType != ''"> and report_data_type = #{reportDataType}</if>
+            <if test="createById != null "> and create_by_id = #{createById}</if>
+        </where>
+    </select>
+    
+    <select id="selectSysReportByReportId" parameterType="Long" resultMap="SysReportResult">
+        <include refid="selectSysReportVo"/>
+        where report_id = #{reportId}
+    </select>
+        
+    <insert id="insertSysReport" parameterType="SysReport">
+        insert into sys_report
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="reportId != null">report_id,</if>
+            <if test="reportTitle != null and reportTitle != ''">report_title,</if>
+            <if test="reportTime != null">report_time,</if>
+            <if test="reportDescription != null">report_description,</if>
+            <if test="reportDataType != null">report_data_type,</if>
+            <if test="reportData != null">report_data,</if>
+            <if test="createById != null">create_by_id,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="reportId != null">#{reportId},</if>
+            <if test="reportTitle != null and reportTitle != ''">#{reportTitle},</if>
+            <if test="reportTime != null">#{reportTime},</if>
+            <if test="reportDescription != null">#{reportDescription},</if>
+            <if test="reportDataType != null">#{reportDataType},</if>
+            <if test="reportData != null">#{reportData},</if>
+            <if test="createById != null">#{createById},</if>
+         </trim>
+    </insert>
+
+    <update id="updateSysReport" parameterType="SysReport">
+        update sys_report
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="reportTitle != null and reportTitle != ''">report_title = #{reportTitle},</if>
+            <if test="reportTime != null">report_time = #{reportTime},</if>
+            <if test="reportDescription != null">report_description = #{reportDescription},</if>
+            <if test="reportDataType != null">report_data_type = #{reportDataType},</if>
+            <if test="reportData != null">report_data = #{reportData},</if>
+            <if test="createById != null">create_by_id = #{createById},</if>
+        </trim>
+        where report_id = #{reportId}
+    </update>
+
+    <delete id="deleteSysReportByReportId" parameterType="Long">
+        delete from sys_report where report_id = #{reportId}
+    </delete>
+
+    <delete id="deleteSysReportByReportIds" parameterType="String">
+        delete from sys_report where report_id in 
+        <foreach item="reportId" collection="array" open="(" separator="," close=")">
+            #{reportId}
+        </foreach>
+    </delete>
+</mapper>

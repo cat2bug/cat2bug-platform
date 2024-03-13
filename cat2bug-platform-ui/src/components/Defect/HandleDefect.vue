@@ -24,7 +24,7 @@
       </div>
       <el-collapse v-model="activeNames">
         <el-collapse-item :title="$i18n.t('describe')" name="defectDescribe">
-          <vue-markdown style="width: 100%;overflow-x: auto" :source="defectDescribeParse(defect.defectDescribe)" />
+          <div style="width: 100%;overflow-x: auto" v-html="defectDescribeParse(defect.defectDescribe)"></div>
         </el-collapse-item>
         <el-collapse-item :title="$i18n.t('defect.base-info')" name="base">
           <el-row class="defect-edit-body-base" :gutter="20">
@@ -83,12 +83,14 @@ import DefectTypeFlag from "@/components/Defect/DefectTypeFlag";
 import DefectStateFlag from "@/components/Defect/DefectStateFlag";
 import CaseCard from "@/components/Case/CaseCard";
 import {getCase} from "@/api/system/case";
-import VueMarkdown from "vue-markdown"
+import MarkdownIt from "markdown-it";
+import vis from "markvis";
+import * as d3 from 'd3'
 
 export default {
   name: "EditDefect",
   dicts: ['defect_level'],
-  components: { ImageUpload, SelectProjectMember, SelectModule, ListDefectLog, DefectTools, DefectTypeFlag, DefectStateFlag, CaseCard, VueMarkdown },
+  components: { ImageUpload, SelectProjectMember, SelectModule, ListDefectLog, DefectTools, DefectTypeFlag, DefectStateFlag, CaseCard },
   data() {
     return {
       loading: false,
@@ -133,7 +135,13 @@ export default {
   computed: {
     defectDescribeParse: function (){
       return function (describe) {
-        return describe;
+        if(describe) {
+          let md = new MarkdownIt();
+          return md.use(vis).render(describe,{
+            d3
+          });
+        } else
+          return describe;
       }
     },
     getUrl: function () {

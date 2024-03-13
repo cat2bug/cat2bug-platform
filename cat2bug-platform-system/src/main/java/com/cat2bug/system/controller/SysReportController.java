@@ -1,0 +1,104 @@
+package com.cat2bug.system.controller;
+
+import java.util.List;
+import javax.servlet.http.HttpServletResponse;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import com.cat2bug.common.annotation.Log;
+import com.cat2bug.common.core.controller.BaseController;
+import com.cat2bug.common.core.domain.AjaxResult;
+import com.cat2bug.common.enums.BusinessType;
+import com.cat2bug.system.domain.SysReport;
+import com.cat2bug.system.service.ISysReportService;
+import com.cat2bug.common.utils.poi.ExcelUtil;
+import com.cat2bug.common.core.page.TableDataInfo;
+
+/**
+ * 报告Controller
+ * 
+ * @author yuzhantao
+ * @date 2024-03-13
+ */
+@RestController
+@RequestMapping("/system/report")
+public class SysReportController extends BaseController
+{
+    @Autowired
+    private ISysReportService sysReportService;
+
+    /**
+     * 查询报告列表
+     */
+    @PreAuthorize("@ss.hasPermi('system:report:list')")
+    @GetMapping("/list")
+    public TableDataInfo list(SysReport sysReport)
+    {
+        startPage();
+        List<SysReport> list = sysReportService.selectSysReportList(sysReport);
+        return getDataTable(list);
+    }
+
+    /**
+     * 导出报告列表
+     */
+    @PreAuthorize("@ss.hasPermi('system:report:export')")
+    @Log(title = "报告", businessType = BusinessType.EXPORT)
+    @PostMapping("/export")
+    public void export(HttpServletResponse response, SysReport sysReport)
+    {
+        List<SysReport> list = sysReportService.selectSysReportList(sysReport);
+        ExcelUtil<SysReport> util = new ExcelUtil<SysReport>(SysReport.class);
+        util.exportExcel(response, list, "报告数据");
+    }
+
+    /**
+     * 获取报告详细信息
+     */
+    @PreAuthorize("@ss.hasPermi('system:report:query')")
+    @GetMapping(value = "/{reportId}")
+    public AjaxResult getInfo(@PathVariable("reportId") Long reportId)
+    {
+        return success(sysReportService.selectSysReportByReportId(reportId));
+    }
+
+    /**
+     * 新增报告
+     */
+    @PreAuthorize("@ss.hasPermi('system:report:add')")
+    @Log(title = "报告", businessType = BusinessType.INSERT)
+    @PostMapping
+    public AjaxResult add(@RequestBody SysReport sysReport)
+    {
+        return toAjax(sysReportService.insertSysReport(sysReport));
+    }
+
+    /**
+     * 修改报告
+     */
+    @PreAuthorize("@ss.hasPermi('system:report:edit')")
+    @Log(title = "报告", businessType = BusinessType.UPDATE)
+    @PutMapping
+    public AjaxResult edit(@RequestBody SysReport sysReport)
+    {
+        return toAjax(sysReportService.updateSysReport(sysReport));
+    }
+
+    /**
+     * 删除报告
+     */
+    @PreAuthorize("@ss.hasPermi('system:report:remove')")
+    @Log(title = "报告", businessType = BusinessType.DELETE)
+	@DeleteMapping("/{reportIds}")
+    public AjaxResult remove(@PathVariable Long[] reportIds)
+    {
+        return toAjax(sysReportService.deleteSysReportByReportIds(reportIds));
+    }
+}

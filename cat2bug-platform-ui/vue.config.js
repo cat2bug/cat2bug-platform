@@ -74,6 +74,15 @@ module.exports = {
         minRatio: 0.8                   // 压缩率小于1才会压缩
       })
     ],
+    module: {
+      rules: [
+        {
+          test: /\.mjs$/,
+          include: /node_modules/,
+          type: "javascript/auto"
+        },
+      ]
+    }
   },
   chainWebpack(config) {
     config.plugins.delete('preload') // TODO: need test
