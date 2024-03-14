@@ -24,6 +24,9 @@ public class Cat2BugApplication
         Cat2BugApplication.drawColorLine();
     }
 
+    /**
+     * 绘制彩条
+     */
     private static void drawColorLine() {
         for (int i=0;i<1;i++) {
             for (int j=1;j<=15;j++) {
