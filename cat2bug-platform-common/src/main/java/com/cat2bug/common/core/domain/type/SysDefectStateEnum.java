@@ -1,4 +1,4 @@
-package com.cat2bug.system.domain.type;
+package com.cat2bug.common.core.domain.type;
 
 /**
  * @Author: yuzhantao

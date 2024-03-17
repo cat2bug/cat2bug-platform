@@ -4,54 +4,64 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.cat2bug.system.mapper.SysReportMapper">
     
-    <resultMap type="SysReport" id="SysReportResult">
+    <resultMap type="com.cat2bug.common.core.domain.entity.SysReport" id="SysReportResult">
         <result property="reportId"    column="report_id"    />
         <result property="reportTitle"    column="report_title"    />
         <result property="reportTime"    column="report_time"    />
         <result property="reportDescription"    column="report_description"    />
-        <result property="reportDataType"    column="report_data_type"    />
+        <result property="reportDataCoder"    column="report_data_coder"    />
         <result property="reportData"    column="report_data"    />
         <result property="createById"    column="create_by_id"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="projectId"    column="project_id"    />
+        <result property="reportSource" column="report_source" />
     </resultMap>
 
     <sql id="selectSysReportVo">
-        select report_id, report_title, report_time, report_description, report_data_type, report_data, create_by_id from sys_report
+        select r.report_id, r.report_title, r.report_time, r.report_description, r.report_data_coder, r.report_data, r.create_by_id, r.project_id, r.report_source, u.nick_name as create_by from sys_report r
+        left join sys_user u ON r.create_by_id = u.user_id
     </sql>
 
-    <select id="selectSysReportList" parameterType="SysReport" resultMap="SysReportResult">
+    <select id="selectSysReportList" parameterType="com.cat2bug.common.core.domain.entity.SysReport" resultMap="SysReportResult">
         <include refid="selectSysReportVo"/>
-        <where>  
-            <if test="reportTitle != null  and reportTitle != ''"> and report_title like concat('%', #{reportTitle}, '%')</if>
-            <if test="params.beginReportTime != null and params.beginReportTime != '' and params.endReportTime != null and params.endReportTime != ''"> and report_time between #{params.beginReportTime} and #{params.endReportTime}</if>
-            <if test="reportDataType != null  and reportDataType != ''"> and report_data_type = #{reportDataType}</if>
-            <if test="createById != null "> and create_by_id = #{createById}</if>
+        <where>
+            r.project_id = #{projectId}
+            <if test="reportTitle != null  and reportTitle != ''"> and r.report_title like concat('%', #{reportTitle}, '%')</if>
+            <if test="params.beginReportTime != null and params.beginReportTime != '' and params.endReportTime != null and params.endReportTime != ''"> and r.report_time between #{params.beginReportTime} and #{params.endReportTime}</if>
+            <if test="reportDataCoder != null  and reportDataCoder != ''"> and r.report_data_coder = #{reportDataCoder}</if>
+            <if test="createById != null "> and r.create_by_id = #{createById}</if>
         </where>
+        ORDER BY r.report_time DESC
     </select>
     
     <select id="selectSysReportByReportId" parameterType="Long" resultMap="SysReportResult">
         <include refid="selectSysReportVo"/>
-        where report_id = #{reportId}
+        where r.report_id = #{reportId}
     </select>
         
-    <insert id="insertSysReport" parameterType="SysReport">
+    <insert id="insertSysReport" parameterType="com.cat2bug.common.core.domain.entity.SysReport">
         insert into sys_report
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="reportId != null">report_id,</if>
             <if test="reportTitle != null and reportTitle != ''">report_title,</if>
             <if test="reportTime != null">report_time,</if>
             <if test="reportDescription != null">report_description,</if>
-            <if test="reportDataType != null">report_data_type,</if>
+            <if test="reportDataCoder != null">report_data_coder,</if>
             <if test="reportData != null">report_data,</if>
+            <if test="reportSource != null">report_source</if>
             <if test="createById != null">create_by_id,</if>
+            <if test="projectId != null">project_id,</if>
          </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="reportId != null">#{reportId},</if>
             <if test="reportTitle != null and reportTitle != ''">#{reportTitle},</if>
             <if test="reportTime != null">#{reportTime},</if>
             <if test="reportDescription != null">#{reportDescription},</if>
-            <if test="reportDataType != null">#{reportDataType},</if>
+            <if test="reportDataCoder != null">#{reportDataCoder},</if>
             <if test="reportData != null">#{reportData},</if>
+            <if test="reportSource != null">#{reportSource},</if>
             <if test="createById != null">#{createById},</if>
+            <if test="projectId != null">#{projectId},</if>
          </trim>
     </insert>
 
@@ -61,9 +71,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="reportTitle != null and reportTitle != ''">report_title = #{reportTitle},</if>
             <if test="reportTime != null">report_time = #{reportTime},</if>
             <if test="reportDescription != null">report_description = #{reportDescription},</if>
-            <if test="reportDataType != null">report_data_type = #{reportDataType},</if>
+            <if test="reportDataCoder != null">report_data_coder = #{reportDataCoder},</if>
             <if test="reportData != null">report_data = #{reportData},</if>
-            <if test="createById != null">create_by_id = #{createById},</if>
+            <if test="reportSource != null">report_source = #{reportSource},</if>
         </trim>
         where report_id = #{reportId}
     </update>

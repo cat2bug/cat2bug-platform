@@ -1,7 +1,7 @@
 package com.cat2bug.system.service;
 
 import java.util.List;
-import com.cat2bug.system.domain.SysReport;
+import com.cat2bug.common.core.domain.entity.SysReport;
 
 /**
  * 报告Service接口

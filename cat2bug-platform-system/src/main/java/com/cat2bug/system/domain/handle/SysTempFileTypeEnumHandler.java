@@ -1,6 +1,5 @@
 package com.cat2bug.system.domain.handle;
 
-import com.cat2bug.system.domain.type.SysDefectTypeEnum;
 import com.cat2bug.system.domain.type.SysTempFileTypeEnum;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;

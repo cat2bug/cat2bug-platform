@@ -1,4 +1,4 @@
-package com.cat2bug.system.domain.type;
+package com.cat2bug.common.core.domain.type;
 
 /**
  * 缺陷日志状态

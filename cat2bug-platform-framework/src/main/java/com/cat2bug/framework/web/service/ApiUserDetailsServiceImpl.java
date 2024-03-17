@@ -33,7 +33,8 @@ public class ApiUserDetailsServiceImpl implements UserDetailsService {
     private static final Set<String> DEFAULT_PERMISSIONS=Sets.newHashSet(
             "api:defect:add",
             "api:defect:list",
-            "api:defect:query");
+            "api:defect:query",
+            "api:report:push");
 
     @Override
     public UserDetails loadUserByUsername(String token) throws UsernameNotFoundException {

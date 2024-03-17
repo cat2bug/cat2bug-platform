@@ -6,7 +6,7 @@ import com.cat2bug.common.core.domain.AjaxResult;
 import com.cat2bug.common.core.page.TableDataInfo;
 import com.cat2bug.common.enums.BusinessType;
 import com.cat2bug.common.utils.poi.ExcelUtil;
-import com.cat2bug.system.domain.SysReport;
+import com.cat2bug.common.core.domain.entity.SysReport;
 import com.cat2bug.system.service.ISysReportService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;

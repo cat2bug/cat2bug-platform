@@ -1,107 +1,50 @@
 <template>
   <div class="app-container">
-    <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
-      <el-form-item label="报告标题" prop="reportTitle">
-        <el-input
-          v-model="queryParams.reportTitle"
-          placeholder="请输入报告标题"
-          clearable
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="报告时间">
-        <el-date-picker
-          v-model="daterangeReportTime"
-          style="width: 240px"
-          value-format="yyyy-MM-dd"
-          type="daterange"
-          range-separator="-"
-          start-placeholder="开始日期"
-          end-placeholder="结束日期"
-        ></el-date-picker>
-      </el-form-item>
-      <el-form-item label=" 推送人ID" prop="createById">
-        <el-input
-          v-model="queryParams.createById"
-          placeholder="请输入 推送人ID"
-          clearable
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
-      </el-form-item>
-    </el-form>
-
-    <el-row :gutter="10" class="mb8">
-      <el-col :span="1.5">
-        <el-button
-          type="primary"
-          plain
-          icon="el-icon-plus"
-          size="mini"
-          @click="handleAdd"
-          v-hasPermi="['system:report:add']"
-        >新增</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="success"
-          plain
-          icon="el-icon-edit"
-          size="mini"
-          :disabled="single"
-          @click="handleUpdate"
-          v-hasPermi="['system:report:edit']"
-        >修改</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="danger"
-          plain
-          icon="el-icon-delete"
-          size="mini"
-          :disabled="multiple"
-          @click="handleDelete"
-          v-hasPermi="['system:report:remove']"
-        >删除</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="warning"
-          plain
-          icon="el-icon-download"
-          size="mini"
-          @click="handleExport"
-          v-hasPermi="['system:report:export']"
-        >导出</el-button>
-      </el-col>
-      <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
-    </el-row>
-
-    <el-table v-loading="loading" :data="reportList" @selection-change="handleSelectionChange">
-      <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="报告ID" align="center" prop="reportId" />
-      <el-table-column label="报告标题" align="center" prop="reportTitle" />
-      <el-table-column label="报告时间" align="center" prop="reportTime" width="180">
+    <project-label />
+    <div class="report-tools">
+      <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
+        <el-form-item label="" prop="reportTitle">
+          <el-input
+            v-model="queryParams.reportTitle"
+            :placeholder="$t('report.please-enter-title')"
+            prefix-icon="el-icon-tickets"
+            clearable
+            @keyup.enter.native="handleQuery"
+          />
+        </el-form-item>
+        <el-form-item label="">
+          <el-date-picker
+            v-model="daterangeReportTime"
+            style="width: 240px"
+            value-format="yyyy-MM-dd"
+            type="daterange"
+            range-separator="-"
+            :start-placeholder="$t('start-time')"
+            :end-placeholder="$t('end-time')"
+          ></el-date-picker>
+        </el-form-item>
+        <el-form-item label="" prop="createById">
+          <el-input
+            v-model="queryParams.createById"
+            :placeholder="$t('report.please-enter-pusher')"
+            prefix-icon="el-icon-user"
+            clearable
+            @keyup.enter.native="handleQuery"
+          />
+        </el-form-item>
+      </el-form>
+    </div>
+    <el-table v-loading="loading" :data="reportList" @row-click="rowClickHandle">
+      <el-table-column :label="$t('report.title')" align="start" prop="reportTitle" />
+      <el-table-column :label="$t('report.time')" align="center" prop="reportTime" width="180">
         <template slot-scope="scope">
-          <span>{{ parseTime(scope.row.reportTime, '{y}-{m}-{d}') }}</span>
+          <span>{{ parseTime(scope.row.reportTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="报告描述" align="center" prop="reportDescription" />
-      <el-table-column label="数据类型" align="center" prop="reportDataType" />
-      <el-table-column label="数据" align="center" prop="reportData" />
-      <el-table-column label=" 推送人ID" align="center" prop="createById" />
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+      <el-table-column :label="$t('report.source')" align="center" prop="reportSource"  width="200"/>
+      <el-table-column :label="$t('report.create-by')" align="center" prop="createBy"  width="150"/>
+      <el-table-column :label="$t('operate')" align="center" class-name="small-padding fixed-width" width="150">
         <template slot-scope="scope">
-          <el-button
-            size="mini"
-            type="text"
-            icon="el-icon-edit"
-            @click="handleUpdate(scope.row)"
-            v-hasPermi="['system:report:edit']"
-          >修改</el-button>
           <el-button
             size="mini"
             type="text"
@@ -112,7 +55,7 @@
         </template>
       </el-table-column>
     </el-table>
-    
+
     <pagination
       v-show="total>0"
       :total="total"
@@ -147,14 +90,19 @@
         <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
+    <view-report ref="viewReport" :project-id="projectId" />
   </div>
 </template>
 
 <script>
 import { listReport, getReport, delReport, addReport, updateReport } from "@/api/system/report";
+import ProjectLabel from "@/components/Project/ProjectLabel";
+import ViewReport from "@/components/Report/ViewReport";
+import Step from "@/components/Case/CaseStep";
 
 export default {
   name: "Report",
+  components: {Step, ProjectLabel, ViewReport },
   data() {
     return {
       // 遮罩层
@@ -196,6 +144,12 @@ export default {
       }
     };
   },
+  computed: {
+    /** 获取项目id */
+    projectId() {
+      return parseInt(this.$store.state.user.config.currentProjectId);
+    },
+  },
   created() {
     this.getList();
   },
@@ -203,6 +157,7 @@ export default {
     /** 查询报告列表 */
     getList() {
       this.loading = true;
+      this.queryParams.projectId = this.projectId;
       this.queryParams.params = {};
       if (null != this.daterangeReportTime && '' != this.daterangeReportTime) {
         this.queryParams.params["beginReportTime"] = this.daterangeReportTime[0];
@@ -243,11 +198,8 @@ export default {
       this.resetForm("queryForm");
       this.handleQuery();
     },
-    // 多选框选中数据
-    handleSelectionChange(selection) {
-      this.ids = selection.map(item => item.reportId)
-      this.single = selection.length!==1
-      this.multiple = !selection.length
+    rowClickHandle(report) {
+      this.$refs.viewReport.open(report.reportId);
     },
     /** 新增按钮操作 */
     handleAdd() {
@@ -304,3 +256,20 @@ export default {
   }
 };
 </script>
+<style lang="scss" scoped>
+.report-tools {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  > * {
+    display: inline-block;
+    justify-content: flex-start;
+    margin-bottom: 0px;
+    ::v-deep .el-form-item {
+      margin-bottom: 0px;
+    }
+  }
+}
+</style>

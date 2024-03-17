@@ -73,6 +73,12 @@ public class ApiDefect extends BaseEntity
     /** 缺陷等级 */
     private String defectLevel;
 
+    /** 缺陷等级 */
     @Excel(name = "缺陷等级")
     private String defectLevelName;
+
+    /** 缺陷Key */
+    private String defectKey;
+    /** 缺陷组Key */
+    private String defectGroupKey;
 }

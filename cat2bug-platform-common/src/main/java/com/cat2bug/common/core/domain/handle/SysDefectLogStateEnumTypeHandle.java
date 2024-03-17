@@ -1,7 +1,6 @@
-package com.cat2bug.system.domain.handle;
+package com.cat2bug.common.core.domain.handle;
 
-import com.cat2bug.system.domain.type.SysDefectLogStateEnum;
-import com.cat2bug.system.domain.type.SysDefectStateEnum;
+import com.cat2bug.common.core.domain.type.SysDefectLogStateEnum;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
 

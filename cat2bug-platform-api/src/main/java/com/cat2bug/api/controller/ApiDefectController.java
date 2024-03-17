@@ -23,9 +23,9 @@ import java.util.List;
  * @CreateTime: 2024-02-10 23:30
  * @Version: 1.0.0
  */
-@RestController
-@RequestMapping("/api/defect")
-@Api(tags = "缺陷")
+//@RestController
+//@RequestMapping("/api/defect")
+//@Api(tags = "缺陷")
 public class ApiDefectController extends BaseController {
     @Autowired
     private IApiDefectService apiDefectService;

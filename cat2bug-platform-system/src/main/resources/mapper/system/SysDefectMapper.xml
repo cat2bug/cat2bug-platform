@@ -4,11 +4,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.cat2bug.system.mapper.SysDefectMapper">
     
-    <resultMap type="SysDefect" id="SysDefectResult">
+    <resultMap type="com.cat2bug.common.core.domain.entity.SysDefect" id="SysDefectResult">
         <result property="defectId"    column="defect_id"    />
         <result property="projectNum"    column="project_num"    />
-        <result property="defectType"    column="defect_type"  typeHandler="com.cat2bug.system.domain.handle.SysDefectTypeEnumTypeHandler"  />
-        <result property="defectTypeName"    column="defect_type"  typeHandler="com.cat2bug.system.domain.handle.SysDefectTypeEnumTypeHandler"  />
+        <result property="defectType"    column="defect_type"  typeHandler="com.cat2bug.common.core.domain.handle.SysDefectTypeEnumTypeHandler"  />
+        <result property="defectTypeName"    column="defect_type"  typeHandler="com.cat2bug.common.core.domain.handle.SysDefectTypeEnumTypeHandler"  />
         <result property="defectName"    column="defect_name"    />
         <result property="defectDescribe"    column="defect_describe"    />
         <result property="annexUrls"    column="annex_urls"  />
@@ -28,10 +28,10 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="createTime"    column="create_time"    />
         <result property="updateBy"    column="update_by"    />
         <result property="updateById"    column="update_by_id"    />
-        <result property="defectState"    column="defect_state"    typeHandler="com.cat2bug.system.domain.handle.SysDefectStateEnumTypeHandler"  />
-        <result property="defectStateName"    column="defect_state"    typeHandler="com.cat2bug.system.domain.handle.SysDefectStateEnumTypeHandler"    />
+        <result property="defectState"    column="defect_state"    typeHandler="com.cat2bug.common.core.domain.handle.SysDefectStateEnumTypeHandler"  />
+        <result property="defectStateName"    column="defect_state"    typeHandler="com.cat2bug.common.core.domain.handle.SysDefectStateEnumTypeHandler"    />
         <result property="caseStepId"    column="case_step_id"    />
-        <result property="handleBy"    column="handle_by"  typeHandler="com.cat2bug.system.domain.handle.LongArrayTypeHandler"  />
+        <result property="handleBy"    column="handle_by"  typeHandler="com.cat2bug.common.core.domain.handle.LongArrayTypeHandler"  />
         <result property="handleByList"    column="handle_by_list"  typeHandler="com.cat2bug.system.domain.handle.SysUserArrayTypeHandler"  />
         <result property="handleTime"    column="handle_time"    />
         <result property="defectLevel"    column="defect_level"    />
@@ -103,7 +103,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <include refid="selectSysDefectVo"/>
         <where>
             <if test="defect.projectNum != null "> and d.project_num = #{defect.projectNum}</if>
-            <if test="defect.defectType != null "> and d.defect_type = #{defect.defectType, typeHandler=com.cat2bug.system.domain.handle.SysDefectTypeEnumTypeHandler }</if>
+            <if test="defect.defectType != null "> and d.defect_type = #{defect.defectType, typeHandler=com.cat2bug.common.core.domain.handle.SysDefectTypeEnumTypeHandler }</if>
             <if test="defect.defectName != null  and defect.defectName != ''"> and d.defect_name like concat('%', #{defect.defectName}, '%')</if>
             <if test="defect.projectId != null "> and d.project_id = #{defect.projectId}</if>
             <if test="defect.testPlanId != null "> and d.test_plan_id = #{defect.testPlanId}</if>
@@ -120,7 +120,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="defect.params.beginUpdateTime != null and defect.params.beginUpdateTime != '' and defect.params.endUpdateTime != null and defect.params.endUpdateTime != ''"> and d.update_time between #{defect.params.beginUpdateTime} and #{defect.params.endUpdateTime}</if>
             <if test="defect.params.beginCreateTime != null and defect.params.beginCreateTime != '' and defect.params.endCreateTime != null and defect.params.endCreateTime != ''"> and d.create_time between #{defect.params.beginCreateTime} and #{defect.params.endCreateTime}</if>
             <if test="defect.updateBy != null  and defect.updateBy != ''"> and d.update_by = #{defect.updateBy}</if>
-            <if test="defect.defectState != null "> and d.defect_state = #{defect.defectState, typeHandler=com.cat2bug.system.domain.handle.SysDefectStateEnumTypeHandler}</if>
+            <if test="defect.defectState != null "> and d.defect_state = #{defect.defectState, typeHandler=com.cat2bug.common.core.domain.handle.SysDefectStateEnumTypeHandler}</if>
             <if test="defect.params.collect != null "> and ud.collect = #{defect.params.collect}</if>
             <if test="defect.params.defectStates != null and defect.params.defectStates != ''"> and
                 <foreach collection="defect.params.defectStates.split(',')" item="state" separator=" or " open="(" close=")">
@@ -150,7 +150,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         where d.defect_id = #{defectId}
     </select>
         
-    <insert id="insertSysDefect" parameterType="SysDefect" useGeneratedKeys="true" keyProperty="defectId">
+    <insert id="insertSysDefect" parameterType="com.cat2bug.common.core.domain.entity.SysDefect" useGeneratedKeys="true" keyProperty="defectId">
         insert into sys_defect
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="projectNum != null">project_num,</if>
@@ -180,7 +180,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
          </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="projectNum != null">#{projectNum},</if>
-            <if test="defectType != null">#{defectType, typeHandler=com.cat2bug.system.domain.handle.SysDefectTypeEnumTypeHandler},</if>
+            <if test="defectType != null">#{defectType, typeHandler=com.cat2bug.common.core.domain.handle.SysDefectTypeEnumTypeHandler},</if>
             <if test="defectName != null and defectName != ''">#{defectName},</if>
             <if test="defectDescribe != null and defectDescribe != ''">#{defectDescribe},</if>
             <if test="annexUrls != null">#{annexUrls},</if>
@@ -198,18 +198,18 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="createTime != null">#{createTime},</if>
             <if test="updateBy != null">#{updateBy},</if>
             <if test="updateById != null">#{updateById},</if>
-            <if test="defectState != null">#{defectState,  typeHandler=com.cat2bug.system.domain.handle.SysDefectStateEnumTypeHandler},</if>
+            <if test="defectState != null">#{defectState,  typeHandler=com.cat2bug.common.core.domain.handle.SysDefectStateEnumTypeHandler},</if>
             <if test="caseStepId != null">#{caseStepId},</if>
-            <if test="handleBy != null">#{handleBy,typeHandler=com.cat2bug.system.domain.handle.LongArrayTypeHandler},</if>
+            <if test="handleBy != null">#{handleBy,typeHandler=com.cat2bug.common.core.domain.handle.LongArrayTypeHandler},</if>
             <if test="handleTime != null">#{handleTime},</if>
             <if test="defectLevel != null">#{defectLevel},</if>
          </trim>
     </insert>
 
-    <update id="updateSysDefect" parameterType="SysDefect">
+    <update id="updateSysDefect" parameterType="com.cat2bug.common.core.domain.entity.SysDefect">
         update sys_defect
         <trim prefix="SET" suffixOverrides=",">
-            <if test="defectType != null">defect_type = #{defectType, typeHandler=com.cat2bug.system.domain.handle.SysDefectTypeEnumTypeHandler},</if>
+            <if test="defectType != null">defect_type = #{defectType, typeHandler=com.cat2bug.common.core.domain.handle.SysDefectTypeEnumTypeHandler},</if>
             <if test="defectName != null and defectName != ''">defect_name = #{defectName},</if>
             <if test="defectDescribe != null and defectDescribe != ''">defect_describe = #{defectDescribe},</if>
             <if test="annexUrls != null">annex_urls = #{annexUrls},</if>
@@ -226,9 +226,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="updateTime != null">update_time = #{updateTime},</if>
             <if test="createTime != null">create_time = #{createTime},</if>
             <if test="updateBy != null">update_by = #{updateBy},</if>
-            <if test="defectState != null">defect_state = #{defectState,  typeHandler=com.cat2bug.system.domain.handle.SysDefectStateEnumTypeHandler},</if>
+            <if test="defectState != null">defect_state = #{defectState,  typeHandler=com.cat2bug.common.core.domain.handle.SysDefectStateEnumTypeHandler},</if>
             <if test="caseStepId != null">case_step_id = #{caseStepId},</if>
-            <if test="handleBy != null">handle_by = #{handleBy, typeHandler=com.cat2bug.system.domain.handle.LongArrayTypeHandler},</if>
+            <if test="handleBy != null">handle_by = #{handleBy, typeHandler=com.cat2bug.common.core.domain.handle.LongArrayTypeHandler},</if>
             <if test="handleTime != null">handle_time = #{handleTime},</if>
             <if test="defectLevel != null">defect_level = #{defectLevel},</if>
         </trim>

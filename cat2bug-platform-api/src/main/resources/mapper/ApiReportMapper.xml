@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.api.mapper.ApiReportMapper">
+    <insert id="insertSysReport" parameterType="SysReport">
+        insert into sys_report
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="reportId != null">report_id,</if>
+            <if test="reportTitle != null and reportTitle != ''">report_title,</if>
+            <if test="reportTime != null">report_time,</if>
+            <if test="reportDescription != null">report_description,</if>
+            <if test="reportDataCoder != null">report_data_coder,</if>
+            <if test="reportData != null">report_data,</if>
+            <if test="reportSource != null">report_source,</if>
+            <if test="createById != null">create_by_id,</if>
+            <if test="projectId != null">project_id,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="reportId != null">#{reportId},</if>
+            <if test="reportTitle != null and reportTitle != ''">#{reportTitle},</if>
+            <if test="reportTime != null">#{reportTime},</if>
+            <if test="reportDescription != null">#{reportDescription},</if>
+            <if test="reportDataCoder != null">#{reportDataCoder},</if>
+            <if test="reportData != null">#{reportData, typeHandler = com.cat2bug.api.domain.handle.ObjectTypeHandler},</if>
+            <if test="reportSource != null">#{reportSource},</if>
+            <if test="createById != null">#{createById},</if>
+            <if test="projectId != null">#{projectId},</if>
+         </trim>
+    </insert>
+
+    <update id="updateSysReport" parameterType="SysReport">
+        update sys_report
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="reportTitle != null and reportTitle != ''">report_title = #{reportTitle},</if>
+            <if test="reportTime != null">report_time = #{reportTime},</if>
+            <if test="reportDescription != null">report_description = #{reportDescription},</if>
+            <if test="reportDataCoder != null">report_data_coder = #{reportDataCoder},</if>
+            <if test="reportData != null">report_data = #{reportData, typeHandler = com.cat2bug.api.domain.handle.ObjectTypeHandler},</if>
+            <if test="reportSource != null">report_source = #{reportSource},</if>
+        </trim>
+        where report_id = #{reportId}
+    </update>
+</mapper>

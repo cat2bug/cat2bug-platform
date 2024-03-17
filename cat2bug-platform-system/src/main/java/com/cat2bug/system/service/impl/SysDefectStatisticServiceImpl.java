@@ -1,14 +1,13 @@
 package com.cat2bug.system.service.impl;
 
-import com.cat2bug.system.domain.type.SysDefectStateEnum;
-import com.cat2bug.system.domain.type.SysDefectTypeEnum;
+import com.cat2bug.common.core.domain.type.SysDefectStateEnum;
+import com.cat2bug.common.core.domain.type.SysDefectTypeEnum;
 import com.cat2bug.system.mapper.SysDefectStatisticMapper;
 import com.cat2bug.system.service.ISysDefectStatisticService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;

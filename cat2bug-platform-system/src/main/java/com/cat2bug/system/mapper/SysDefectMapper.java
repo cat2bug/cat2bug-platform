@@ -1,7 +1,7 @@
 package com.cat2bug.system.mapper;
 
 import java.util.List;
-import com.cat2bug.system.domain.SysDefect;
+import com.cat2bug.common.core.domain.entity.SysDefect;
 import org.apache.ibatis.annotations.Param;
 
 /**

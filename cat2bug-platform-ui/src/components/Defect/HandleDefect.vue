@@ -24,7 +24,7 @@
       </div>
       <el-collapse v-model="activeNames">
         <el-collapse-item :title="$i18n.t('describe')" name="defectDescribe">
-          <div style="width: 100%;overflow-x: auto" v-html="defectDescribeParse(defect.defectDescribe)"></div>
+          <markdown-it-vue :content="defect.defectDescribe+''" />
         </el-collapse-item>
         <el-collapse-item :title="$i18n.t('defect.base-info')" name="base">
           <el-row class="defect-edit-body-base" :gutter="20">
@@ -83,14 +83,13 @@ import DefectTypeFlag from "@/components/Defect/DefectTypeFlag";
 import DefectStateFlag from "@/components/Defect/DefectStateFlag";
 import CaseCard from "@/components/Case/CaseCard";
 import {getCase} from "@/api/system/case";
-import MarkdownIt from "markdown-it";
-import vis from "markvis";
-import * as d3 from 'd3'
+import MarkdownItVue from "markdown-it-vue"
+import 'markdown-it-vue/dist/markdown-it-vue.css'
 
 export default {
   name: "EditDefect",
   dicts: ['defect_level'],
-  components: { ImageUpload, SelectProjectMember, SelectModule, ListDefectLog, DefectTools, DefectTypeFlag, DefectStateFlag, CaseCard },
+  components: { ImageUpload, SelectProjectMember, SelectModule, ListDefectLog, DefectTools, DefectTypeFlag, DefectStateFlag, CaseCard, MarkdownItVue },
   data() {
     return {
       loading: false,
@@ -123,6 +122,17 @@ export default {
         defectDescribe: [
           { required: true, message: this.$i18n.t('defect.describe-cannot-empty'), trigger: "input" }
         ],
+      },
+      options: {
+        markdownIt: {
+          linkify: true
+        },
+        linkAttributes: {
+          attrs: {
+            target: '_blank',
+            rel: 'noopener'
+          }
+        }
       }
     }
   },
@@ -133,17 +143,6 @@ export default {
     },
   },
   computed: {
-    defectDescribeParse: function (){
-      return function (describe) {
-        if(describe) {
-          let md = new MarkdownIt();
-          return md.use(vis).render(describe,{
-            d3
-          });
-        } else
-          return describe;
-      }
-    },
     getUrl: function () {
       return function (urls){
         let imgs = urls?urls.split(','):[];

@@ -1,6 +1,7 @@
 package com.cat2bug.api.mapper;
 
 import com.cat2bug.api.domain.ApiDefect;
+import com.cat2bug.common.core.domain.entity.SysDefect;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -63,6 +64,7 @@ public interface ApiDefectMapper
      */
     public int insertApiDefect(@Param("projectId") Long projectId, @Param("defect")  ApiDefect apiDefect);
 
+    public int batchInsertApiDefect(@Param("projectId") Long projectId, @Param("defectList") List<SysDefect> defectList);
     /**
      * 修改缺陷
      * 

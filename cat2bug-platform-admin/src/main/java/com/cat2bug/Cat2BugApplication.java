@@ -36,5 +36,6 @@ public class Cat2BugApplication
                 System.out.print("\u001b[0m");
             }
         }
+        System.out.println();
     }
 }

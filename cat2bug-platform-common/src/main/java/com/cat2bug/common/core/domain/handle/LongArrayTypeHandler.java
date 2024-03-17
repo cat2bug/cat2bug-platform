@@ -1,4 +1,4 @@
-package com.cat2bug.system.domain.handle;
+package com.cat2bug.common.core.domain.handle;
 
 import com.alibaba.fastjson2.JSON;
 import com.cat2bug.common.utils.StringUtils;

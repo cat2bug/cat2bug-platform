@@ -4,7 +4,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.cat2bug.system.mapper.SysReportMapper;
-import com.cat2bug.system.domain.SysReport;
+import com.cat2bug.common.core.domain.entity.SysReport;
 import com.cat2bug.system.service.ISysReportService;
 
 /**

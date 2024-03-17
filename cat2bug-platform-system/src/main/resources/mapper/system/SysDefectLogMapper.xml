@@ -11,9 +11,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="createByName"    column="create_by_name"    />
         <result property="createByAvatar"    column="create_by_avatar"    />
         <result property="createTime"    column="create_time"    />
-        <result property="defectLogType"    column="defect_log_type"   typeHandler="com.cat2bug.system.domain.handle.SysDefectLogStateEnumTypeHandle"  />
-        <result property="defectLogTypeName"    column="defect_log_type_name"   typeHandler="com.cat2bug.system.domain.handle.SysDefectLogStateEnumTypeHandle"  />
-        <result property="receiveBy"    column="receive_by"   typeHandler="com.cat2bug.system.domain.handle.LongArrayTypeHandler"   />
+        <result property="defectLogType"    column="defect_log_type"   typeHandler="com.cat2bug.common.core.domain.handle.SysDefectLogStateEnumTypeHandle"  />
+        <result property="defectLogTypeName"    column="defect_log_type_name"   typeHandler="com.cat2bug.common.core.domain.handle.SysDefectLogStateEnumTypeHandle"  />
+        <result property="receiveBy"    column="receive_by"   typeHandler="com.cat2bug.common.core.domain.handle.LongArrayTypeHandler"   />
         <result property="receiveByList"    column="receive_by_list"   typeHandler="com.cat2bug.system.domain.handle.SysUserArrayTypeHandler"   />
         <result property="annexUrls"    column="annex_urls"    />
         <result property="defectId"    column="defect_id"    />
@@ -88,8 +88,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="defectLogDescribe != null">#{defectLogDescribe},</if>
             <if test="createBy != null">#{createBy},</if>
             <if test="createTime != null">#{createTime},</if>
-            <if test="defectLogType != null">#{defectLogType, typeHandler=com.cat2bug.system.domain.handle.SysDefectLogStateEnumTypeHandle},</if>
-            <if test="receiveBy != null">#{receiveBy, typeHandler=com.cat2bug.system.domain.handle.LongArrayTypeHandler },</if>
+            <if test="defectLogType != null">#{defectLogType, typeHandler=com.cat2bug.common.core.domain.handle.SysDefectLogStateEnumTypeHandle},</if>
+            <if test="receiveBy != null">#{receiveBy, typeHandler=com.cat2bug.common.core.domain.handle.LongArrayTypeHandler },</if>
             <if test="annexUrls != null">#{annexUrls},</if>
             <if test="defectId != null">#{defectId},</if>
          </trim>
@@ -101,8 +101,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="defectLogDescribe != null">defect_log_describe = #{defectLogDescribe},</if>
             <if test="createBy != null">create_by = #{createBy},</if>
             <if test="createTime != null">create_time = #{createTime},</if>
-            <if test="defectLogType != null">defect_log_type = #{defectLogType, typeHandler=com.cat2bug.system.domain.handle.SysDefectLogStateEnumTypeHandle},</if>
-            <if test="receiveBy != null">receive_by = #{receiveBy, typeHandler=com.cat2bug.system.domain.handle.LongArrayTypeHandler},</if>
+            <if test="defectLogType != null">defect_log_type = #{defectLogType, typeHandler=com.cat2bug.common.core.domain.handle.SysDefectLogStateEnumTypeHandle},</if>
+            <if test="receiveBy != null">receive_by = #{receiveBy, typeHandler=com.cat2bug.common.core.domain.handle.LongArrayTypeHandler},</if>
             <if test="annexUrls != null">annex_urls = #{annexUrls},</if>
             <if test="defectId != null">defect_id = #{defectId},</if>
         </trim>

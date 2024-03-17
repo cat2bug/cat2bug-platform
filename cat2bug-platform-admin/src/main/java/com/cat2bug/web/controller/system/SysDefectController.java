@@ -6,7 +6,7 @@ import com.cat2bug.common.core.domain.AjaxResult;
 import com.cat2bug.common.core.page.TableDataInfo;
 import com.cat2bug.common.enums.BusinessType;
 import com.cat2bug.common.utils.poi.ExcelUtil;
-import com.cat2bug.system.domain.SysDefect;
+import com.cat2bug.common.core.domain.entity.SysDefect;
 import com.cat2bug.system.domain.SysDefectLog;
 import com.cat2bug.system.service.ISysDefectService;
 import org.springframework.beans.factory.annotation.Autowired;

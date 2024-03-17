@@ -1,19 +1,16 @@
-package com.cat2bug.system.domain;
+package com.cat2bug.common.core.domain.entity;
 
-import java.util.Date;
-import java.util.List;
-
-import com.cat2bug.common.core.domain.entity.SysUser;
-import com.cat2bug.system.domain.type.SysDefectStateEnum;
-import com.cat2bug.system.domain.type.SysDefectTypeEnum;
+import com.cat2bug.common.annotation.Excel;
+import com.cat2bug.common.core.domain.BaseEntity;
+import com.cat2bug.common.core.domain.type.SysDefectStateEnum;
+import com.cat2bug.common.core.domain.type.SysDefectTypeEnum;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import com.cat2bug.common.annotation.Excel;
-import com.cat2bug.common.core.domain.BaseEntity;
 
-import javax.servlet.annotation.HandlesTypes;
+import java.util.Date;
+import java.util.List;
 
 /**
  * 缺陷对象 sys_defect
@@ -121,6 +118,15 @@ public class SysDefect extends BaseEntity
 
     /** 是否收藏 */
     private boolean collect;
+
+    /**
+     * 缺陷组标识
+     */
+    private String groupKey;
+    /**
+     * 缺陷唯一标识
+     */
+    private String key;
 
     @Override
     public String toString() {

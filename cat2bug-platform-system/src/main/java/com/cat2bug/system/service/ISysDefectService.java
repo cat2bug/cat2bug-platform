@@ -1,6 +1,6 @@
 package com.cat2bug.system.service;
 
-import com.cat2bug.system.domain.SysDefect;
+import com.cat2bug.common.core.domain.entity.SysDefect;
 import com.cat2bug.system.domain.SysDefectLog;
 import com.cat2bug.system.domain.vo.EnumVo;
 

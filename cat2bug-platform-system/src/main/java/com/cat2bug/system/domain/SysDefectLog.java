@@ -1,8 +1,7 @@
 package com.cat2bug.system.domain;
 
 import com.cat2bug.common.core.domain.entity.SysUser;
-import com.cat2bug.system.domain.type.SysDefectLogStateEnum;
-import com.cat2bug.system.domain.type.SysDefectStateEnum;
+import com.cat2bug.common.core.domain.type.SysDefectLogStateEnum;
 import lombok.Data;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
