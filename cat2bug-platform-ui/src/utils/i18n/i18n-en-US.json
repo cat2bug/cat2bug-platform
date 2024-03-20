@@ -349,7 +349,7 @@
   "case.please-enter-step-script": "Please enter the step data. Choose between the visual step settings above and the text data structure here. Each line represents a step, and separate the step description from the expected step with a \"---\", For example:\nStep Description 1---Step Expectation 1\nStep Description 2---Step Expectation 2",
   "case.add-step": "Add Step",
   "case.create": "Create Case",
-  "case.ai-create": "Cloud AI use case generation",
+  "case.ai-create": "Cloud AI Use Case Generation",
   "case.load-prompted": "The AI robot is organizing the requirements and ideas within 5 to 60 seconds. Please be patient and wait......",
   "case.modify": "Modify Case",
   "case.create-next-case": "After completing the use case creation, continue to create another use case",
