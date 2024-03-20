@@ -132,7 +132,7 @@
       </el-table-column>
       <el-table-column v-if="showField($t('module'))" :label="$t('module')" :key="$t('module')" align="left" prop="moduleName" min-width="100" sortable />
       <el-table-column v-if="showField($t('version'))" :label="$t('version')" :key="$t('version')" align="left" prop="moduleVersion" width="100" sortable />
-      <el-table-column v-if="showField($t('update-time'))" :label="$t('update-time')" :key="$t('update-time')" align="left" prop="updateTime" width="100" sortable >
+      <el-table-column v-if="showField($t('update-time'))" :label="$t('update-time')" :key="$t('update-time')" align="left" prop="updateTime" width="160" sortable >
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.updateTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
         </template>
