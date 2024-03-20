@@ -52,7 +52,13 @@
               <img :src="codeUrl" @click="getCode" class="login-code-img"/>
             </div>
           </el-form-item>
-          <el-checkbox v-model="loginForm.rememberMe" style="margin:0px 0px 25px 0px;">{{$t("remember-password")}}</el-checkbox>
+          <div class="between-row">
+            <el-checkbox v-model="loginForm.rememberMe">{{$t("remember-password")}}</el-checkbox>
+            <div class="lang-group">
+              <svg-icon icon-class="lang_zh_CN" @mouseenter="changeLang('zh_CN')" />
+              <svg-icon icon-class="lang_en_US" @mouseenter="changeLang('en_US')" />
+            </div>
+          </div>
           <el-form-item style="width:100%;">
             <el-button
               :loading="loading"
@@ -92,6 +98,7 @@ export default {
   name: "Login",
   data() {
     return {
+      lang: null,
       systemVersion: null,
       randDelay: Math.random()*10,
       codeUrl: "",
@@ -136,8 +143,9 @@ export default {
     this.getSystemVersion();
     this.getCode();
     this.getCookie();
-    const lang = this.$cache.local.get(I18N_LOCALE_KEY);
-    this.$i18n.locale = lang||'zh_CN';
+    this.lang = this.$cache.local.get(I18N_LOCALE_KEY);
+    this.lang = this.lang||'zh_CN';
+    this.$i18n.locale = this.lang;
   },
   methods: {
     getSystemVersion() {
@@ -187,6 +195,10 @@ export default {
           });
         }
       });
+    },
+    changeLang(lang){
+      this.$i18n.locale = lang;
+      this.$cache.local.set(I18N_LOCALE_KEY,lang);
     }
   }
 };
@@ -255,7 +267,7 @@ body {
 
 .login-introduce {
   float: right;
-  max-width: 40%;
+  max-width: 45%;
   font-size: 22px;
   padding-right: 80px;
   border-right: 1px solid #DCDFE6;
@@ -348,5 +360,22 @@ body {
 }
 .login-code-img {
   height: 38px;
+}
+.between-row {
+  width: 100%;
+  display: inline-flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  .lang-group {
+    display: inline-flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    > * {
+      font-size: 22px;
+      margin-left: 3px;
+    }
+  }
 }
 </style>
