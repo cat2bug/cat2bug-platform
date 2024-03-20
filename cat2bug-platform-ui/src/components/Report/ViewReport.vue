@@ -40,7 +40,7 @@ import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import {getReport} from "@/api/system/report";
 import ReportTools from "./ReportTools/index"
-require('@/assets/font/simsun-normal');
+import '@/assets/font/simsun-normal';
 
 export default {
   name: "ViewReport",

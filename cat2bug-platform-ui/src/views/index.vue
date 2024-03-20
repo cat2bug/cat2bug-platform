@@ -143,35 +143,35 @@
           </el-collapse>
         </el-card>
       </el-col>
-      <el-col :xs="24" :sm="24" :md="12" :lg="8">
-        <el-card class="update-log">
-          <div slot="header" class="clearfix">
-            <span>{{$t('document')}}</span>
-          </div>
-          <el-collapse accordion>
-            <el-collapse-item :title="$t('system-introduction')">
-              <ol>
-                <li>{{$t('system-introduction')}}</li>
-                <li>{{$t('install')}}</li>
-              </ol>
-            </el-collapse-item>
-            <el-collapse-item :title="$t('function-usage')">
-              <ol>
-                <li>{{ $t('member.manage') }}</li>
-                <li>{{ $t('project.manage') }}</li>
-                <li>{{ $t('defect.manage') }}</li>
-              </ol>
-            </el-collapse-item>
-            <el-collapse-item :title="$t('api-description')">
-              <ol>
-                <li>{{ $t('account') }}</li>
-                <li>{{ $t('defect.submission') }}</li>
-                <li>{{ $t('defect.statistics') }}</li>
-              </ol>
-            </el-collapse-item>
-          </el-collapse>
-        </el-card>
-      </el-col>
+<!--      <el-col :xs="24" :sm="24" :md="12" :lg="8">-->
+<!--        <el-card class="update-log">-->
+<!--          <div slot="header" class="clearfix">-->
+<!--            <span>{{$t('document')}}</span>-->
+<!--          </div>-->
+<!--          <el-collapse accordion>-->
+<!--            <el-collapse-item :title="$t('system-introduction')">-->
+<!--              <ol>-->
+<!--                <li>{{$t('system-introduction')}}</li>-->
+<!--                <li>{{$t('install')}}</li>-->
+<!--              </ol>-->
+<!--            </el-collapse-item>-->
+<!--            <el-collapse-item :title="$t('function-usage')">-->
+<!--              <ol>-->
+<!--                <li>{{ $t('member.manage') }}</li>-->
+<!--                <li>{{ $t('project.manage') }}</li>-->
+<!--                <li>{{ $t('defect.manage') }}</li>-->
+<!--              </ol>-->
+<!--            </el-collapse-item>-->
+<!--            <el-collapse-item :title="$t('api-description')">-->
+<!--              <ol>-->
+<!--                <li>{{ $t('account') }}</li>-->
+<!--                <li>{{ $t('defect.submission') }}</li>-->
+<!--                <li>{{ $t('defect.statistics') }}</li>-->
+<!--              </ol>-->
+<!--            </el-collapse-item>-->
+<!--          </el-collapse>-->
+<!--        </el-card>-->
+<!--      </el-col>-->
     </el-row>
   </div>
 </template>

@@ -43,15 +43,9 @@
       </el-table-column>
       <el-table-column :label="$t('report.source')" align="center" prop="reportSource"  width="200"/>
       <el-table-column :label="$t('report.create-by')" align="center" prop="createBy"  width="150"/>
-      <el-table-column :label="$t('operate')" align="center" class-name="small-padding fixed-width" width="150">
+      <el-table-column :label="$t('operate')" align="start" class-name="small-padding fixed-width" width="90">
         <template slot-scope="scope">
-          <el-button
-            size="mini"
-            type="text"
-            icon="el-icon-delete"
-            @click="handleDelete(scope.row)"
-            v-hasPermi="['system:report:remove']"
-          >删除</el-button>
+          <report-tools :report="scope.row" :is-text="true" :is-show-icon="true" @delete="getList" />
         </template>
       </el-table-column>
     </el-table>
@@ -99,10 +93,11 @@ import { listReport, getReport, delReport, addReport, updateReport } from "@/api
 import ProjectLabel from "@/components/Project/ProjectLabel";
 import ViewReport from "@/components/Report/ViewReport";
 import Step from "@/components/Case/CaseStep";
+import ReportTools from "@/components/Report/ReportTools";
 
 export default {
   name: "Report",
-  components: {Step, ProjectLabel, ViewReport },
+  components: { Step, ProjectLabel, ViewReport, ReportTools },
   data() {
     return {
       // 遮罩层
@@ -207,16 +202,6 @@ export default {
       this.open = true;
       this.title = "添加报告";
     },
-    /** 修改按钮操作 */
-    handleUpdate(row) {
-      this.reset();
-      const reportId = row.reportId || this.ids
-      getReport(reportId).then(response => {
-        this.form = response.data;
-        this.open = true;
-        this.title = "修改报告";
-      });
-    },
     /** 提交按钮 */
     submitForm() {
       this.$refs["form"].validate(valid => {
@@ -237,22 +222,6 @@ export default {
         }
       });
     },
-    /** 删除按钮操作 */
-    handleDelete(row) {
-      const reportIds = row.reportId || this.ids;
-      this.$modal.confirm('是否确认删除报告编号为"' + reportIds + '"的数据项？').then(function() {
-        return delReport(reportIds);
-      }).then(() => {
-        this.getList();
-        this.$modal.msgSuccess("删除成功");
-      }).catch(() => {});
-    },
-    /** 导出按钮操作 */
-    handleExport() {
-      this.download('system/report/export', {
-        ...this.queryParams
-      }, `report_${new Date().getTime()}.xlsx`)
-    }
   }
 };
 </script>
