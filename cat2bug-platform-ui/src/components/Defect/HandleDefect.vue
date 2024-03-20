@@ -13,7 +13,7 @@
           <defect-state-flag :defect="defect" />
           <h4 class="defect-edit-title-name">{{defect.defectName}}</h4>
         </div>
-        <div class="defect-edit-tools">
+        <div class="report-edit-tools">
           <defect-tools :defect="defect" size="mini" @delete="deleteHandle" @log="logHandle"></defect-tools>
         </div>
       </div>
@@ -293,7 +293,7 @@ export default {
     align-items: center;
     flex-direction: row;
     flex-wrap: wrap;
-    .defect-edit-tools {
+    .report-edit-tools {
       padding: 5px 0px;
     }
     .defect-edit-title {

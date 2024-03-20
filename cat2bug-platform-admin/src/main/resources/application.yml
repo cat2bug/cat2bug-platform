@@ -97,7 +97,7 @@ token:
   # 令牌密钥
   secret: abcdefghijklmnopqrstuvwxyz
   # 令牌有效期（默认30分钟），同时需要设置caffeine.properties里的tokenExpireTime配置
-  expireTime: 30
+  expireTime: 120
 
 # MyBatis配置
 mybatis:

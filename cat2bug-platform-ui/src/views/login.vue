@@ -86,6 +86,7 @@ import Cookies from "js-cookie";
 import { encrypt, decrypt } from '@/utils/jsencrypt'
 import 'element-ui/lib/theme-chalk/display.css';
 import {getVersion} from "@/api/version";
+const I18N_LOCALE_KEY='i18n-locale'
 
 export default {
   name: "Login",
@@ -135,6 +136,8 @@ export default {
     this.getSystemVersion();
     this.getCode();
     this.getCookie();
+    const lang = this.$cache.local.get(I18N_LOCALE_KEY);
+    this.$i18n.locale = lang||'zh_CN';
   },
   methods: {
     getSystemVersion() {

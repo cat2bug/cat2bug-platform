@@ -18,13 +18,13 @@ import myI18nZh from './i18n-zh-CN.json'
 Vue.use(VueI18n)
 
 // 默认中文
-const lang = 'zh-CN'
+const lang = 'zh_CN'
 const i18n = new VueI18n({
   locale: lang,
   messages: {
     // 会把myI18nZh的所有内容拷贝到zhCnLocale文件中
-    'zh-CN': Object.assign(zhCnLocale, myI18nZh),
-    'en-US': Object.assign(enLocale, myI18nEn),
+    'zh_CN': Object.assign(zhCnLocale, myI18nZh),
+    'en_US': Object.assign(enLocale, myI18nEn),
   }
 })
 

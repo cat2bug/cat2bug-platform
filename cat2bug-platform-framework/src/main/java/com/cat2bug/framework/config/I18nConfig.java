@@ -22,10 +22,11 @@ public class I18nConfig implements WebMvcConfigurer {
     @Bean
     public LocaleResolver localeResolver()
     {
-        SessionLocaleResolver slr = new SessionLocaleResolver();
-        // 默认语言
-        slr.setDefaultLocale(Locale.CHINA);
-        return slr;
+        return new MessageLocaleResolver();
+//        SessionLocaleResolver slr = new SessionLocaleResolver();
+//        // 默认语言
+//        slr.setDefaultLocale(Locale.CHINA);
+//        return slr;
     }
 
     @Bean

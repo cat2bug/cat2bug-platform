@@ -20,12 +20,21 @@
 <!--        <el-link href="/doc">doc</el-link>-->
         <screenfull id="screenfull" class="right-menu-item hover-effect" />
       </template>
-
+      <el-dropdown class="lang avatar-container right-menu-item hover-effect" @command="handleLanguageCommand">
+        <span class="dropdown-title">
+          <svg-icon :icon-class="langIcon" />{{ langName }}
+          <i class="el-icon-caret-bottom"></i>
+        </span>
+        <el-dropdown-menu class="dropdown-menu" slot="dropdown">
+          <el-dropdown-item command="zh_CN"><svg-icon icon-class="lang_zh_CN" />简体中文</el-dropdown-item>
+          <el-dropdown-item command="en_US"><svg-icon icon-class="lang_en_US" />English</el-dropdown-item>
+        </el-dropdown-menu>
+      </el-dropdown>
       <el-dropdown class="avatar-container right-menu-item hover-effect" trigger="click">
-        <div class="avatar-wrapper">
+        <span class="dropdown-title">
           <cat2-bug-avatar :member="member" />
           <i class="el-icon-caret-bottom" />
-        </div>
+        </span>
         <el-dropdown-menu slot="dropdown">
           <router-link to="/member/profile">
             <el-dropdown-item>{{$t('my-center')}}</el-dropdown-item>
@@ -51,8 +60,14 @@ import Cat2BugSite from '@/components/Cat2Bug/Site'
 import Cat2BugGit from '@/components/Cat2Bug/Git'
 import Cat2BugDoc from '@/components/Cat2Bug/Doc'
 import Cat2BugAvatar from "@/components/Cat2BugAvatar";
-
+const I18N_LOCALE_KEY='i18n-locale'
 export default {
+  data() {
+    return {
+      langIcon: 'lang-zh-CN',
+      langName: '简体中文'
+    }
+  },
   components: {
     Breadcrumb,
     TopNav,
@@ -97,6 +112,10 @@ export default {
       }
     }
   },
+  created() {
+    const lang = this.$cache.local.get(I18N_LOCALE_KEY)
+    this.handleLanguageCommand(lang||'zh_CN');
+  },
   methods: {
     toggleSideBar() {
       this.$store.dispatch('app/toggleSideBar')
@@ -111,12 +130,52 @@ export default {
           location.href = '/index';
         })
       }).catch(() => {});
+    },
+    handleLanguageCommand(lang) {
+      this.$i18n.locale = lang;
+      this.$cache.local.set(I18N_LOCALE_KEY,lang);
+      this.langIcon = 'lang_'+lang;
+      switch (lang){
+        case 'zh_CN':
+          this.langName = '简体中文';
+          break;
+        case 'en_US':
+          this.langName = 'English';
+          break;
+      }
     }
   }
 }
 </script>
 
 <style lang="scss" scoped>
+.lang {
+  margin-right: 0px !important;
+}
+.dropdown-title{
+  font-size: 16px;
+  display: inline-flex;
+  flex-direction: row;
+  gap: 5px;
+  align-items: center;
+  .svg-icon {
+    font-size: 22px;
+  }
+  i {
+    font-size: 12px;
+  }
+}
+.dropdown-menu {
+  ::v-deep .el-dropdown-menu__item {
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 5px;
+    .svg-icon {
+      font-size: 20px;
+    }
+  }
+}
 .navbar {
   height: 50px;
   overflow: hidden;
@@ -174,20 +233,6 @@ export default {
 
         &:hover {
           background: rgba(0, 0, 0, .025)
-        }
-      }
-    }
-
-    .avatar-container {
-      margin-right: 30px;
-      .avatar-wrapper {
-        margin-top: 7px;
-        .el-icon-caret-bottom {
-          cursor: pointer;
-          position: absolute;
-          right: -20px;
-          top: 25px;
-          font-size: 12px;
         }
       }
     }

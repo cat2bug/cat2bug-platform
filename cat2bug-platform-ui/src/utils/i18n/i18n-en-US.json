@@ -389,6 +389,7 @@
   "comment.is-delete": "Do you want to delete this comment?",
   "start-time": "Start Time",
   "end-time": "End Time",
+  "report": "Report",
   "report.please-enter-title": "Please enter the Report title",
   "report.please-enter-pusher": "Please enter the Pusher",
   "report.title": "Report Title",
@@ -396,5 +397,6 @@
   "report.type": "Report Type",
   "report.source": "Report Source",
   "report.create-by": "Created By",
+  "report.delete-report": "Do you want to delete this report ?",
   "pusher": "Pusher"
 }
