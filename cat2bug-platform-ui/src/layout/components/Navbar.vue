@@ -153,6 +153,7 @@ export default {
   margin-right: 0px !important;
 }
 .dropdown-title{
+  height: 100%;
   font-size: 16px;
   display: inline-flex;
   flex-direction: row;

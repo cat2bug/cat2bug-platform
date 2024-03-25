@@ -1,14 +1,19 @@
 package com.cat2bug.web.controller.system;
 
 import com.cat2bug.common.annotation.Log;
+import com.cat2bug.common.constant.CacheConstants;
 import com.cat2bug.common.core.controller.BaseController;
 import com.cat2bug.common.core.domain.AjaxResult;
 import com.cat2bug.common.core.domain.entity.SysUser;
+import com.cat2bug.common.core.domain.model.LoginUser;
 import com.cat2bug.common.core.page.TableDataInfo;
+import com.cat2bug.common.core.redis.RedisCache;
 import com.cat2bug.common.enums.BusinessType;
 import com.cat2bug.common.utils.MessageUtils;
+import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.framework.web.service.SysLoginService;
 import com.cat2bug.system.domain.SysUserDefect;
+import com.cat2bug.system.domain.SysUserOnline;
 import com.cat2bug.system.domain.vo.BatchUserRoleVo;
 import com.cat2bug.system.service.*;
 import com.google.common.base.Preconditions;
@@ -17,6 +22,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,6 +44,12 @@ public class SysUserProjectController extends BaseController {
     @Autowired
     private ISysUserProjectRoleService sysUserProjectRoleService;
 
+    @Autowired
+    private ISysUserOnlineService sysUserOnlineService;
+
+    @Autowired
+    private RedisCache redisCache;
+
     /**
      * 查询项目成员列表
      */
@@ -46,9 +60,12 @@ public class SysUserProjectController extends BaseController {
         startPage();
         List<SysUser> list = sysUserProjectService.selectSysUserListByProjectId(projectId, sysUser);
         list = list.stream().map(u->{
+            // 设置角色
             if(u.getRoles()!=null){
                 u.setRoleIds(u.getRoles().stream().map(r->r.getRoleId()).collect(Collectors.toList()).toArray(new Long[]{}));
             }
+            // 检查用户是否在线
+            u.setOnline(sysUserOnlineService.isOnline(u.getUserId()));
             return u;
         }).collect(Collectors.toList());
         return getDataTable(list);

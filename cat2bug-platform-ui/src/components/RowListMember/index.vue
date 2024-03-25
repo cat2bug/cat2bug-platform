@@ -1,6 +1,6 @@
 <template>
   <div class="project-member-icons">
-    <el-tooltip class="item" effect="dark" v-for="(member,index) in members" :key="index" :content="member.nickName" placement="top">
+    <el-tooltip class="item" effect="dark" v-for="(member,index) in members" :key="member.userId" :content="member.nickName" placement="top">
       <cat2-bug-avatar :member="member" />
     </el-tooltip>
   </div>
@@ -11,6 +11,10 @@ import Cat2BugAvatar from "@/components/Cat2BugAvatar";
 
 export default {
   name: "RowListMember",
+  model: {
+    prop:'members',
+    event:'change'
+  },
   components: {Cat2BugAvatar},
   props: {
     members: {
@@ -31,6 +35,9 @@ export default {
     align-items: center;
     > * {
       margin-right: -8px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
   }
 </style>

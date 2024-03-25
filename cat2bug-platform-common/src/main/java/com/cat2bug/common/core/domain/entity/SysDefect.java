@@ -105,6 +105,9 @@ public class SysDefect extends BaseEntity
     @Excel(name = "处理人")
     private List<SysUser> handleByList;
 
+    /** 焦点成员 */
+    private List<SysUser> focusList;
+
     /** 处理时间 */
     @JsonFormat(pattern = "yyyy-MM-dd")
     @Excel(name = "处理时间", width = 30, dateFormat = "yyyy-MM-dd")

@@ -104,7 +104,7 @@
       </el-row>
     </div>
     <!-- 缺陷列表-->
-    <el-table v-loading="loading" style="width:100%;" :data="defectList" @selection-change="handleSelectionChange" @sort-change="sortChangeHandle" @row-click="editDefectHandle">
+    <el-table :key="tableKey" v-loading="loading" style="width:100%;" :data="defectList" @selection-change="handleSelectionChange" @sort-change="sortChangeHandle" @row-click="editDefectHandle">
       <el-table-column v-if="showField($t('id'))" :label="$t('id')" :key="$t('id')" align="left" prop="projectNum" width="80" sortable >
         <template slot-scope="scope">
           <span>{{ '#' + scope.row.projectNum }}</span>
@@ -117,7 +117,14 @@
       </el-table-column>
       <el-table-column v-if="showField($t('title'))" :label="$t('title')" :key="$t('title')" align="left" prop="defectName" min-width="200" sortable >
         <template slot-scope="scope">
-          <el-link type="primary" @click="editDefectHandle(scope.row)">{{ scope.row.defectName }}</el-link>
+          <div class="table-defect-title">
+            <focus-member-list
+              v-show="scope.row.focusList && scope.row.focusList.length>0"
+              v-model="scope.row.focusList"
+              module-name="defect"
+              :data-id="scope.row.defectId" />
+            <el-link type="primary" @click="editDefectHandle(scope.row)">{{ scope.row.defectName }}</el-link>
+          </div>
         </template>
       </el-table-column>
       <el-table-column v-if="showField($t('level'))" :label="$t('level')" :key="$t('level')" align="left" prop="defectLevel" width="100" sortable >
@@ -192,20 +199,23 @@ import DefectTypeFlag from "@/components/Defect/DefectTypeFlag";
 import DefectStateFlag from "@/components/Defect/DefectStateFlag";
 import DefectTools from "@/components/Defect/DefectTools";
 import Cat2BugStatistic from "@/components/Cat2BugStatistic"
+import FocusMemberList from "@/components/FocusMemberList";
 import { checkPermi } from "@/utils/permission";
-import {listStatistic} from "@/api/system/statistic/template";
 
-// 需要显示的缺陷字段列表在缓存的key值
+/** 需要显示的缺陷字段列表在缓存的key值 */
 const DEFECT_TABLE_FIELD_LIST_CACHE_KEY='defect-table-field-list';
+/** 记录Tab标签选项 */
+const DEFECT_TAB_CACHE_KEY='defect-tab';
 
 /** 记录分析模版是否显示的缓存变量名 */
 const CACHE_KEY_STATISTIC_PANEL_VISIBLE = 'defect.statisticPanelVisible';
 export default {
   name: "Defect",
-  components: {SelectModule, RowListMember, AddDefect, HandleDefect, LevelTag, SelectProjectMember,ProjectLabel,DefectTypeFlag, DefectStateFlag, DefectTools, Cat2BugStatistic },
+  components: {SelectModule, RowListMember, AddDefect, HandleDefect, LevelTag, SelectProjectMember,ProjectLabel,DefectTypeFlag, DefectStateFlag, DefectTools, Cat2BugStatistic, FocusMemberList },
   dicts: ['defect_level'],
   data() {
     return {
+      tableKey: (new Date()).getMilliseconds(),
       checkedFieldList: [],
       fieldList: [
         this.$i18n.t('id'),
@@ -320,9 +330,10 @@ export default {
       if( newVal!=oldVal) {
         this.defectStateChangeHandle(newVal);
       }
-    }
+    },
   },
   created() {
+    // 设置缺陷列表显示哪些列属性
     const fieldList = this.$cache.local.get(DEFECT_TABLE_FIELD_LIST_CACHE_KEY);
     if(fieldList) {
       this.checkedFieldList = JSON.parse(fieldList);
@@ -332,8 +343,15 @@ export default {
         this.checkedFieldList.push(f);
       });
     }
+    // 设置tab标签选项
+    const tabActive = this.$cache.local.get(DEFECT_TAB_CACHE_KEY);
+    this.activeDefectTabName = tabActive?tabActive:this.$i18n.t('defect.my-participated-in');
+
     this.getDefectConfig();
     this.selectDefectTabHandle();
+  },
+  mounted() {
+
   },
   methods: {
     checkPermi,
@@ -365,12 +383,6 @@ export default {
     },
     /** 查找缺陷状态改变的处理 */
     defectStateChangeHandle(defectState) {
-      // if(defectState) {
-      //   this.activeDefectStateName = defectState;
-      // } else {
-      //   this.activeDefectStateName = 'defect.all-state';
-      // }
-      // this.queryParams.defectState= defectState;
       this.selectDefectTabHandle();
     },
     /** 查找缺陷状态改变的处理 */
@@ -427,6 +439,7 @@ export default {
           this.handleQuery();
           break;
       }
+      this.$cache.local.set(DEFECT_TAB_CACHE_KEY,this.activeDefectTabName);
     },
     /** 获取用户id */
     getUserId() {
@@ -520,9 +533,10 @@ export default {
       this.statisticPanelVisible = !this.statisticPanelVisible;
       this.$cache.local.set(CACHE_KEY_STATISTIC_PANEL_VISIBLE, this.statisticPanelVisible+'');
     },
+    /** 缺陷列表属性字段改变操作 */
     checkedFieldListChange(field) {
       this.$cache.local.set(DEFECT_TABLE_FIELD_LIST_CACHE_KEY,JSON.stringify(field));
-    }
+    },
   }
 };
 </script>
@@ -583,5 +597,13 @@ export default {
 }
 .defect-tools-button:hover {
   color: #409EFF;
+}
+.table-defect-title {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  .el-link {
+    flex: 1;
+  }
 }
 </style>

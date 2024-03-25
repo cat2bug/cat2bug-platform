@@ -46,6 +46,14 @@ module.exports = {
         pathRewrite: {
           ['^' + process.env.VUE_APP_BASE_API]: ''
         }
+      },
+      [process.env.VUE_APP_BASE_WEBSOCKET]: {
+        target: `ws://localhost:2020`,
+        changeOrigin: true,
+        ws: true,
+        pathRewrite: {
+          ['^' + process.env.VUE_APP_BASE_WEBSOCKET]: ''
+        }
       }
     },
     disableHostCheck: true

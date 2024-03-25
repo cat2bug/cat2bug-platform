@@ -11,6 +11,11 @@
           <h4 class="defect-edit-title-num">#{{defect.projectNum}}</h4>
           <defect-type-flag :defect="defect" />
           <defect-state-flag :defect="defect" />
+          <focus-member-list
+            v-show="defect.focusList && defect.focusList.length>0"
+            v-model="defect.focusList"
+            module-name="defect"
+            :data-id="defect.defectId" />
           <h4 class="defect-edit-title-name">{{defect.defectName}}</h4>
         </div>
         <div class="report-edit-tools">
@@ -73,7 +78,7 @@
 </template>
 
 <script>
-import {addDefect, getDefect, updateDefect} from "@/api/system/defect";
+import {addDefect, closeEditWindow, getDefect, updateDefect} from "@/api/system/defect";
 import SelectProjectMember from "@/components/Project/SelectProjectMember"
 import SelectModule from "@/components/Module/SelectModule"
 import ImageUpload from "@/components/ImageUpload";
@@ -82,6 +87,7 @@ import DefectTools from "@/components/Defect/DefectTools";
 import DefectTypeFlag from "@/components/Defect/DefectTypeFlag";
 import DefectStateFlag from "@/components/Defect/DefectStateFlag";
 import CaseCard from "@/components/Case/CaseCard";
+import FocusMemberList from "@/components/FocusMemberList";
 import {getCase} from "@/api/system/case";
 import MarkdownItVue from "markdown-it-vue"
 import 'markdown-it-vue/dist/markdown-it-vue.css'
@@ -89,7 +95,7 @@ import 'markdown-it-vue/dist/markdown-it-vue.css'
 export default {
   name: "EditDefect",
   dicts: ['defect_level'],
-  components: { ImageUpload, SelectProjectMember, SelectModule, ListDefectLog, DefectTools, DefectTypeFlag, DefectStateFlag, CaseCard, MarkdownItVue },
+  components: { ImageUpload, SelectProjectMember, SelectModule, ListDefectLog, DefectTools, DefectTypeFlag, DefectStateFlag, CaseCard, MarkdownItVue,FocusMemberList },
   data() {
     return {
       loading: false,
@@ -261,6 +267,7 @@ export default {
     /** 关闭缺陷抽屉窗口 */
     closeDefectDrawer(done) {
       done();
+      closeEditWindow(this.defectId);
     },
     handleByChangeHandle(members) {
       console.log(members, this.form.handleBy);

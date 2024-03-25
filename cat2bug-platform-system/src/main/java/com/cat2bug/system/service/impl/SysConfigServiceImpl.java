@@ -190,7 +190,7 @@ public class SysConfigServiceImpl implements ISysConfigService
     @Override
     public void clearConfigCache()
     {
-        Collection<String> keys = redisCache.keys(RedisCache.CONFIG_CACHE_REGION, CacheConstants.SYS_CONFIG_KEY + "*");
+        Collection<String> keys = redisCache.keys(RedisCache.CONFIG_CACHE_REGION, CacheConstants.SYS_CONFIG_KEY);
         redisCache.deleteObject(RedisCache.CONFIG_CACHE_REGION, keys);
     }
 

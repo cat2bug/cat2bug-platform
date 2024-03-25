@@ -42,6 +42,8 @@ import DictData from '@/components/DictData'
 
 import i18n from './utils/i18n/i18n.js'
 
+import websocket from 'vue-native-websocket';
+
 // 全局方法挂载
 Vue.prototype.getDicts = getDicts
 Vue.prototype.getConfigKey = getConfigKey
@@ -79,6 +81,15 @@ DictData.install()
 Vue.use(Element, {
   size: Cookies.get('size') || 'medium' // set element-ui default size
 })
+
+const userId = store.state.user.id;
+const wsUrl = (window.location.protocol === 'https:' ? `wss://${location.host}${process.env.VUE_APP_BASE_WEBSOCKET}` : `ws://${location.host}${process.env.VUE_APP_BASE_WEBSOCKET}`)
+Vue.use(websocket, wsUrl, {
+  reconnection: true,
+  reconnectionAttempts: 5,
+  reconnectionDelay: 3000,
+  connectManually: true,
+});
 
 Vue.config.productionTip = false
 

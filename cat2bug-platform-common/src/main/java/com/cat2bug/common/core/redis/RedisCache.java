@@ -139,6 +139,15 @@ public class RedisCache
     }
 
     /**
+     * 获取组内所有key
+     * @param group
+     * @return
+     */
+    public Collection<String> getKeys(final String group) {
+        return cacheChannel.keys(group);
+    }
+
+    /**
      * 获得缓存的基本对象。
      *
      * @param key 缓存键值
@@ -312,6 +321,5 @@ public class RedisCache
     public Collection<String> keys(final String group, final String pattern)
     {
         return cacheChannel.keys(group).stream().filter(n->n.indexOf(pattern)>-1).collect(Collectors.toList());
-//        return redisTemplate.keys(pattern);
     }
 }

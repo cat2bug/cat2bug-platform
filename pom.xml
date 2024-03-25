@@ -50,7 +50,12 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-
+            <!--websocket-->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-websocket</artifactId>
+                <version>2.5.15</version>
+            </dependency>
             <!-- 阿里数据库连接池 -->
             <dependency>
                 <groupId>com.alibaba</groupId>

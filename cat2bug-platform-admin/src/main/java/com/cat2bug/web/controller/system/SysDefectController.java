@@ -3,12 +3,15 @@ package com.cat2bug.web.controller.system;
 import com.cat2bug.common.annotation.Log;
 import com.cat2bug.common.core.controller.BaseController;
 import com.cat2bug.common.core.domain.AjaxResult;
+import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.common.core.page.TableDataInfo;
 import com.cat2bug.common.enums.BusinessType;
 import com.cat2bug.common.utils.poi.ExcelUtil;
 import com.cat2bug.common.core.domain.entity.SysDefect;
 import com.cat2bug.system.domain.SysDefectLog;
+import com.cat2bug.system.service.IMemberFocusService;
 import com.cat2bug.system.service.ISysDefectService;
+import com.cat2bug.system.websocket.MessageWebsocket;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -28,8 +31,13 @@ import java.util.Map;
 @RequestMapping("/system/defect")
 public class SysDefectController extends BaseController
 {
+    private final static String MODULE_NAME = "defect";
+
     @Autowired
     private ISysDefectService sysDefectService;
+
+    @Autowired
+    private IMemberFocusService memberFocusService;
 
     /**
      * 查询缺陷配置
@@ -53,7 +61,22 @@ public class SysDefectController extends BaseController
     {
         startPage();
         List<SysDefect> list = sysDefectService.selectSysDefectList(sysDefect);
+        list.forEach(l->{
+            List<SysUser> focusList = memberFocusService.getFocusMemberList(MODULE_NAME,l.getDefectId());
+            l.setFocusList(focusList);
+        });
         return getDataTable(list);
+    }
+
+    /**
+     * 驳回
+     */
+    @Log(title = "驳回缺陷", businessType = BusinessType.INSERT)
+    @PostMapping("/{defectId}/close-edit-window")
+    public AjaxResult closeEditWindows(@PathVariable("defectId") Long defectId)
+    {
+        memberFocusService.removeFocus(getUserId());
+        return success();
     }
 
     /**
@@ -76,7 +99,13 @@ public class SysDefectController extends BaseController
     @GetMapping(value = "/{defectId}")
     public AjaxResult getInfo(@PathVariable("defectId") Long defectId)
     {
-        return success(sysDefectService.selectSysDefectByDefectId(defectId));
+        SysDefect sysDefect = sysDefectService.selectSysDefectByDefectId(defectId);
+        if(sysDefect!=null) {
+            memberFocusService.setFocus(MODULE_NAME, defectId, this.getLoginUser().getUser());
+            List<SysUser> focusList = memberFocusService.getFocusMemberList(MODULE_NAME,defectId);
+            sysDefect.setFocusList(focusList);
+        }
+        return success(sysDefect);
     }
 
     /**

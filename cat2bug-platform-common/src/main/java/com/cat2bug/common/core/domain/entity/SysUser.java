@@ -89,6 +89,8 @@ public class SysUser extends BaseEntity
     /** 角色ID */
     private Long roleId;
 
+    private boolean online;
+
     public SysUser()
     {
 
@@ -295,6 +297,14 @@ public class SysUser extends BaseEntity
     public void setRoleId(Long roleId)
     {
         this.roleId = roleId;
+    }
+
+    public boolean isOnline() {
+        return online;
+    }
+
+    public void setOnline(boolean online) {
+        this.online = online;
     }
 
     @Override

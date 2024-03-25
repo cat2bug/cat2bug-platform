@@ -295,6 +295,7 @@
   "defect.delete-defect": "是否删除此缺陷数据?",
   "defect.module-ranking": "交付物排行",
   "defect.status-statistics": "状态统计",
+  "defect.online-member": "成员",
   "BUG": "BUG",
   "TASK": "任务",
   "DEMAND": "需求",

@@ -35,6 +35,13 @@ export function addDefect(data) {
   })
 }
 
+export function closeEditWindow(defectId) {
+  return request({
+    url: '/system/defect/'+defectId+'/close-edit-window',
+    method: 'post',
+  })
+}
+
 // 修改缺陷
 export function updateDefect(data) {
   return request({

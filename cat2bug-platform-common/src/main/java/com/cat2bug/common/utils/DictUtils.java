@@ -165,7 +165,7 @@ public class DictUtils
      */
     public static void clearDictCache()
     {
-        Collection<String> keys = SpringUtils.getBean(RedisCache.class).keys(RedisCache.DICT_CACHE_REGION, CacheConstants.SYS_DICT_KEY + "*");
+        Collection<String> keys = SpringUtils.getBean(RedisCache.class).keys(RedisCache.DICT_CACHE_REGION, CacheConstants.SYS_DICT_KEY);
         SpringUtils.getBean(RedisCache.class).deleteObject(RedisCache.DICT_CACHE_REGION, keys);
     }
 
