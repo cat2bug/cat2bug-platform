@@ -100,6 +100,16 @@
             <span>{{$t('update-log')}}</span>
           </div>
           <el-collapse accordion>
+            <el-collapse-item title="v0.3.0 - 2024-03-25">
+              <ol>
+                <li>添加报告功能</li>
+                <li>添加系统多语言切换功能</li>
+                <li>在缺陷和报告详情中，添加markdown格式展示功能，丰富数据的展现形式</li>
+                <li>在测试用例、缺陷、报告页面中，实时显示成员所操作的数据项</li>
+                <li>在缺陷统计中添加用户面板</li>
+                <li>API接口屏蔽缺陷上传接口；添加报告上传接口</li>
+              </ol>
+            </el-collapse-item>
             <el-collapse-item title="v0.2.2 - 2024-03-04">
               <ol>
                 <li>修复系统功能BUG</li>

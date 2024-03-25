@@ -1,4 +1,4 @@
-<h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">Cat2Bug-Platform v0.2.2</h1>
+<h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">Cat2Bug-Platform v0.3.0</h1>
 <h4 align="center">轻量化BUG管理平台</h4>
 
 ## 平台简介
@@ -18,11 +18,15 @@ Cat2Bug-Platform是一套永久免费开源的Bug管理平台，将毫无保留�
 
 ## 最新版本更新说明
 
-当前最新版本是0.2.2
+当前最新版本是0.3.0
 
-* 修复系统功能BUG；
-* 优化缺陷中的显示样式，缺陷描述可以通过MD文件格式展示；
-* 实现平台与Cat2Bug-Spring-Boot-JUnit框架对接功能；
+* 添加报告功能；
+* 添加系统多语言切换功能；
+* 在缺陷和报告详情中，添加markdown格式展示功能，丰富数据的展现形式；
+* 在测试用例、缺陷、报告页面中，实时显示成员所操作的数据项；
+* 在缺陷统计中添加用户面板；
+* API接口屏蔽缺陷上传功能；
+* API添加报告上传接口；
 
 ## 特色
 
