@@ -1,10 +1,17 @@
 package com.cat2bug.system.service.impl;
 
+import com.cat2bug.common.core.domain.WebSocketResult;
+import com.cat2bug.system.websocket.MessageWebsocket;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.cat2bug.common.core.domain.model.LoginUser;
 import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.system.domain.SysUserOnline;
 import com.cat2bug.system.service.ISysUserOnlineService;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 在线用户 服务层处理
@@ -14,6 +21,14 @@ import com.cat2bug.system.service.ISysUserOnlineService;
 @Service
 public class SysUserOnlineServiceImpl implements ISysUserOnlineService
 {
+    private final static String MEMBER_ONLINE = "memberOnline";
+    private final static String MEMBER_OFFLINE = "memberOffline";
+
+    private static Map<Long, AtomicInteger> onlineMap = new ConcurrentHashMap<>();
+
+    @Autowired
+    private MessageWebsocket messageWebsocket;
+
     /**
      * 通过登录地址查询信息
      * 
@@ -92,5 +107,37 @@ public class SysUserOnlineServiceImpl implements ISysUserOnlineService
             sysUserOnline.setDeptName(user.getUser().getDept().getDeptName());
         }
         return sysUserOnline;
+    }
+
+    @Override
+    public boolean isOnline(Long memberId) {
+        return onlineMap.containsKey(memberId);
+    }
+
+    @Override
+    public void memberOnline(Long memberId) {
+        // 设置成员在线
+        if(onlineMap.containsKey(memberId)==false) {
+            onlineMap.put(memberId, new AtomicInteger());
+        }
+        onlineMap.get(memberId).incrementAndGet();
+        // 发送成员在线实时消息
+        WebSocketResult result = WebSocketResult.success(MEMBER_ONLINE,memberId);
+        messageWebsocket.sendMessage(result);
+    }
+
+    @Override
+    public void memberOffline(Long memberId) {
+        // 设置成员离线
+        if(onlineMap.containsKey(memberId)) {
+            int count = onlineMap.get(memberId).decrementAndGet();
+            // 如果所有链接都断开了，发送成员离线信息
+            if(count<=0) {
+                onlineMap.remove(memberId);
+                // 发送成员离线实时消息
+                WebSocketResult result = WebSocketResult.success(MEMBER_OFFLINE,memberId);
+                messageWebsocket.sendMessage(result);
+            }
+        }
     }
 }

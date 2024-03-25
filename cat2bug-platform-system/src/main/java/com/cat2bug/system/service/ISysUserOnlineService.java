@@ -45,4 +45,23 @@ public interface ISysUserOnlineService
      * @return 在线用户
      */
     public SysUserOnline loginUserToUserOnline(LoginUser user);
+
+    /**
+     * 是否在线
+     * @param memberId
+     * @return
+     */
+    public boolean isOnline(Long memberId);
+
+    /**
+     * 用户在线
+     * @param memberId
+     */
+    public void memberOnline(Long memberId);
+
+    /**
+     * 用户离线
+     * @param memberId
+     */
+    public void memberOffline(Long memberId);
 }
