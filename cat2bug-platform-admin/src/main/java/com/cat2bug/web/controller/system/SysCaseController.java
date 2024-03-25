@@ -11,8 +11,10 @@ import com.cat2bug.common.utils.poi.ExcelUtil;
 import com.cat2bug.system.domain.SysCase;
 import com.cat2bug.system.domain.SysCaseExcelTepmplate;
 import com.cat2bug.system.domain.vo.ExcelImportResultVo;
+import com.cat2bug.system.service.IMemberFocusService;
 import com.cat2bug.system.service.ISysCaseService;
 import com.cat2bug.system.service.ISysModuleService;
+import com.cat2bug.system.service.ISysReportService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -34,6 +36,11 @@ import java.util.Set;
 @RequestMapping("/system/case")
 public class SysCaseController extends BaseController
 {
+    private final static String MODULE_NAME = "case";
+
+    @Autowired
+    private IMemberFocusService memberFocusService;
+
     @Autowired
     private ISysCaseService sysCaseService;
     @Autowired
@@ -57,6 +64,10 @@ public class SysCaseController extends BaseController
         }
         startPage();
         List<SysCase> list = sysCaseService.selectSysCaseList(sysCase);
+        list.forEach(l->{
+            List<SysUser> focusList = memberFocusService.getFocusMemberList(MODULE_NAME,l.getCaseId());
+            l.setFocusList(focusList);
+        });
         return getDataTable(list);
     }
 
@@ -110,7 +121,23 @@ public class SysCaseController extends BaseController
     @GetMapping(value = "/{caseId}")
     public AjaxResult getInfo(@PathVariable("caseId") Long caseId)
     {
-        return success(sysCaseService.selectSysCaseByCaseId(caseId));
+        SysCase sysCase = sysCaseService.selectSysCaseByCaseId(caseId);
+        if(sysCase!=null) {
+            memberFocusService.setFocus(MODULE_NAME, caseId, this.getLoginUser().getUser());
+            List<SysUser> focusList = memberFocusService.getFocusMemberList(MODULE_NAME,caseId);
+            sysCase.setFocusList(focusList);
+        }
+        return success(sysCase);
+    }
+
+    /**
+     * 关闭窗口
+     */
+    @PostMapping("/close-edit-window")
+    public AjaxResult closeEditWindows()
+    {
+        memberFocusService.removeFocus(getUserId());
+        return success();
     }
 
     /**

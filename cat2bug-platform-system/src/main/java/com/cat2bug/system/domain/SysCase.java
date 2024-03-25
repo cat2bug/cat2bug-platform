@@ -1,5 +1,6 @@
 package com.cat2bug.system.domain;
 
+import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.system.domain.handle.SysModuleComboHandlerAdapter;
 import com.cat2bug.system.domain.handle.SysModuleHandlerAdapter;
 import lombok.Data;
@@ -77,6 +78,9 @@ public class SysCase extends BaseEntity
 
     @Excel(name = "步骤", i18nNameKey = "case.step", width = 50, headerBackgroundColor=IndexedColors.GREY_25_PERCENT)
     private String caseStepScript;
+
+    /** 焦点成员 */
+    private List<SysUser> focusList;
 
     @Override
     public String toString() {

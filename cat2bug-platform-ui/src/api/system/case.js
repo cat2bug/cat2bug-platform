@@ -51,3 +51,10 @@ export function delCase(caseId) {
     method: 'delete'
   })
 }
+
+export function closeEditWindow() {
+  return request({
+    url: '/system/case/close-edit-window',
+    method: 'post',
+  })
+}

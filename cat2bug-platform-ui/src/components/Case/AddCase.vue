@@ -6,9 +6,18 @@
     :before-close="closeDefectDrawer">
     <template slot="title">
       <div class="case-add-header">
-        <h3>{{title}}</h3>
+        <div class="case-add-header-title">
+          <i class="el-icon-arrow-left" @click="cancel"></i>
+          <focus-member-list
+            v-model="form.focusList"
+            module-name="case"
+            :data-id="form.caseId"
+            :tooltip="false"
+          />
+          <h3>{{title}}</h3>
+        </div>
         <div>
-          <el-button @click="cancel" icon="el-icon-close" :class="isAddMode?'':'green-button'" size="mini">{{$t('close')}}</el-button>
+<!--          <el-button @click="cancel" icon="el-icon-close" :class="isAddMode?'':'green-button'" size="mini">{{$t('close')}}</el-button>-->
           <el-button v-if="isAddMode" v-hasPermi="['system:case:add']" type="primary" icon="el-icon-finished" @click="submitForm" size="mini">{{$t('create')}}</el-button>
           <el-button v-else v-hasPermi="['system:case:edit']" type="success" icon="el-icon-finished" @click="submitForm" size="mini">{{$t('modify')}}</el-button>
         </div>
@@ -60,17 +69,18 @@
 </template>
 
 <script>
-import {addCase, getCase, updateCase} from "@/api/system/case";
+import {addCase, closeEditWindow, getCase, updateCase} from "@/api/system/case";
 import CaseStepPanel from "./CaseStepPanel"
 import SelectModule from "@/components/Module/SelectModule"
 import Cat2BugSelectLevel from "@/components/Cat2BugSelectLevel";
 import Label from "@/components/Cat2BugStatistic/Components/Label";
+import FocusMemberList from "@/components/FocusMemberList";
 
 const CASE_STEP_PANEL_TYPE_CACHE_KEY = 'case-step-panel-type';
 
 export default {
   name: "AddCase",
-  components: {Label,CaseStepPanel,SelectModule,Cat2BugSelectLevel},
+  components: {Label,CaseStepPanel,SelectModule,Cat2BugSelectLevel,FocusMemberList},
   data() {
     return {
       caseStepSwitchType: '',
@@ -157,6 +167,7 @@ export default {
       if(this.isAddMode==false){
         done();
       }
+      closeEditWindow();
     },
     // 取消按钮
     cancel() {
@@ -263,6 +274,12 @@ export default {
   justify-content: space-between;
   align-items: center;
   flex-direction: row;
+  .case-add-header-title {
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+  }
 }
 .create-next-case {
   margin: 0px 10px 20px 40px;

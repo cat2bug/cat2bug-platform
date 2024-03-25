@@ -12,7 +12,9 @@
           <focus-member-list
             v-model="report.focusList"
             module-name="report"
-            :data-id="report.reportId" />
+            :data-id="report.reportId"
+            :tooltip="false"
+          />
           <h4 class="report-edit-title-num">{{report.reportTitle}}</h4>
         </div>
         <div class="report-edit-tools">

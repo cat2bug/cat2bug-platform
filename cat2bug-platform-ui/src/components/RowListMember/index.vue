@@ -1,6 +1,6 @@
 <template>
   <div class="project-member-icons">
-    <el-tooltip class="item" effect="dark" v-for="(member,index) in members" :key="member.userId" :content="member.nickName" placement="top">
+    <el-tooltip class="item" effect="dark" v-for="(member,index) in members" :key="member.userId" :disabled="!tooltip" :content="member.nickName" placement="top">
       <cat2-bug-avatar :member="member" />
     </el-tooltip>
   </div>
@@ -20,6 +20,10 @@ export default {
     members: {
       type: Array,
       default: ()=>[]
+    },
+    tooltip: {
+      type: Boolean,
+      default: true
     }
   }
 }

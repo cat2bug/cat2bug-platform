@@ -1,5 +1,5 @@
 <template>
-  <row-list-member v-show="memberList && memberList.length>0" v-model="memberList" />
+  <row-list-member :tooltip="tooltip" v-show="memberList && memberList.length>0" v-model="memberList" />
 </template>
 
 <script>
@@ -29,6 +29,10 @@ export default {
     members: {
       type: Array,
       default: ()=>[]
+    },
+    tooltip: {
+      type: Boolean,
+      default: true
     }
   },
   watch: {

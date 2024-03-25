@@ -89,7 +89,17 @@
               <span>{{ caseNumber(scope.row) }}</span>
             </template>
           </el-table-column>
-          <el-table-column :label="$t('title')" align="center" prop="caseName" sortable />
+          <el-table-column :label="$t('title')" align="center" prop="caseName" sortable>
+            <template slot-scope="scope">
+              <div class="table-case-title">
+                <focus-member-list
+                  v-model="scope.row.focusList"
+                  module-name="case"
+                  :data-id="scope.row.caseId" />
+                <span>{{ scope.row.caseName }}</span>
+              </div>
+            </template>
+          </el-table-column>
           <el-table-column :label="$t('module')" align="center" prop="moduleName" sortable />
           <el-table-column :label="$t('level')" align="center" prop="caseLevel" sortable width="80">
             <template slot-scope="scope">
@@ -181,6 +191,7 @@ import { listCase, delCase } from "@/api/system/case";
 import AddCase from "@/components/Case/AddCase";
 import AddDefect from "@/components/Defect/AddDefect";
 import CloudCase from "@/components/Cloud/CloudCase";
+import FocusMemberList from "@/components/FocusMemberList";
 import {checkPermi} from "@/utils/permission";
 import {strFormat} from "@/utils";
 import {getToken} from "@/utils/auth";
@@ -188,7 +199,7 @@ import {getToken} from "@/utils/auth";
 const TREE_MODULE_WIDTH_CACHE_KEY = 'case_tree_module_width';
 export default {
   name: "Case",
-  components: {ProjectLabel,AddCase,Cat2BugLevel,Step,TreeModule,Multipane,MultipaneResizer,AddDefect,CloudCase},
+  components: {ProjectLabel,AddCase,Cat2BugLevel,Step,TreeModule,Multipane,MultipaneResizer,AddDefect,CloudCase,FocusMemberList},
   data() {
     return {
       multipaneStyle: {'--marginTop':'0px'},
@@ -276,7 +287,6 @@ export default {
         el.__vueSetInterval__ = setInterval(isResize, 300)
       },
       unbind(el) {
-        // console.log(el, '解绑')
         clearInterval(el.__vueSetInterval__)
       }
     }
@@ -366,11 +376,11 @@ export default {
       this.download('system/case/importTemplate?projectId='+this.projectId, {
       }, this.$i18n.t('case.template-file-name')+`${new Date().getTime()}.xlsx`)
     },
-    // 文件上传中处理
+    /** 文件上传中处理 */
     handleFileUploadProgress(event, file, fileList) {
       this.upload.isUploading = true;
     },
-    // 文件上传成功处理
+    /** 文件上传成功处理 */
     handleFileSuccess(response, file, fileList) {
       this.upload.open = false;
       this.upload.isUploading = false;
@@ -454,5 +464,9 @@ export default {
         border-color: #CCC;
       }
     }
+  }
+  .table-case-title {
+    display: inline-flex;
+    flex-direction: column;
   }
 </style>

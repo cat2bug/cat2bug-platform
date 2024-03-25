@@ -79,9 +79,8 @@ public class SysReportController extends BaseController
     }
 
     /**
-     * 驳回
+     * 关闭窗口
      */
-    @Log(title = "驳回缺陷", businessType = BusinessType.INSERT)
     @PostMapping("/close-edit-window")
     public AjaxResult closeEditWindows()
     {

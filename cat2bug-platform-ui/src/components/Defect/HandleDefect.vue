@@ -12,10 +12,11 @@
           <defect-type-flag :defect="defect" />
           <defect-state-flag :defect="defect" />
           <focus-member-list
-            v-show="defect.focusList && defect.focusList.length>0"
             v-model="defect.focusList"
             module-name="defect"
-            :data-id="defect.defectId" />
+            :data-id="defect.defectId"
+            :tooltip="false"
+          />
           <h4 class="defect-edit-title-name">{{defect.defectName}}</h4>
         </div>
         <div class="report-edit-tools">
