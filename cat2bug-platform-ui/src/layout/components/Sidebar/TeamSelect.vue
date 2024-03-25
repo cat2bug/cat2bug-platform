@@ -193,4 +193,9 @@ export default {
   ::v-deep .el-select-dropdown__wrap {
     max-height: 100%;
   }
+  .el-avatar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 </style>
