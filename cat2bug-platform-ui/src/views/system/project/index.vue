@@ -124,11 +124,6 @@ import StarSwitch from "@/components/StarSwitch";
 import RowListMember from "@/components/RowListMember";
 import { strFormat } from "@/utils/index"
 import store from "@/store";
-import {isRelogin} from "@/utils/request";
-import router from "@/router";
-import {Message} from "element-ui";
-import {updateConfig} from "@/api/system/user-config";
-import {removeCurrentProjectId} from "@/utils/project";
 import i18n from "@/utils/i18n/i18n";
 import {mapGetters, mapState} from "vuex";
 import {checkPermi} from "@/utils/permission";
@@ -194,6 +189,12 @@ export default {
     /** 获取团队id */
     currentTeamId() {
       return this.$store.state.user.config.currentTeamId;
+    },
+    /** 是否显示添加按钮 */
+    visibleAdd() {
+      return function (project) {
+        return checkPermi(['system:project:add']) && project.members.filter(m=>m.userId == this.currentUserId).length>0
+      }
     },
     /** 是否显示删除按钮 */
     visibleDelete() {
