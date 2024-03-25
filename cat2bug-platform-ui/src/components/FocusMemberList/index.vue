@@ -1,5 +1,5 @@
 <template>
-  <row-list-member v-model="memberList" />
+  <row-list-member v-show="memberList && memberList.length>0" v-model="memberList" />
 </template>
 
 <script>

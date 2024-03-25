@@ -3,10 +3,12 @@ package com.cat2bug.web.controller.system;
 import com.cat2bug.common.annotation.Log;
 import com.cat2bug.common.core.controller.BaseController;
 import com.cat2bug.common.core.domain.AjaxResult;
+import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.common.core.page.TableDataInfo;
 import com.cat2bug.common.enums.BusinessType;
 import com.cat2bug.common.utils.poi.ExcelUtil;
 import com.cat2bug.common.core.domain.entity.SysReport;
+import com.cat2bug.system.service.IMemberFocusService;
 import com.cat2bug.system.service.ISysReportService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -25,9 +27,12 @@ import java.util.List;
 @RequestMapping("/system/report")
 public class SysReportController extends BaseController
 {
+    private final static String MODULE_NAME = "report";
     @Autowired
     private ISysReportService sysReportService;
 
+    @Autowired
+    private IMemberFocusService memberFocusService;
     /**
      * 查询报告列表
      */
@@ -37,6 +42,10 @@ public class SysReportController extends BaseController
     {
         startPage();
         List<SysReport> list = sysReportService.selectSysReportList(sysReport);
+        list.forEach(l->{
+            List<SysUser> focusList = memberFocusService.getFocusMemberList(MODULE_NAME,l.getReportId());
+            l.setFocusList(focusList);
+        });
         return getDataTable(list);
     }
 
@@ -60,7 +69,24 @@ public class SysReportController extends BaseController
     @GetMapping(value = "/{reportId}")
     public AjaxResult getInfo(@PathVariable("reportId") Long reportId)
     {
-        return success(sysReportService.selectSysReportByReportId(reportId));
+        SysReport sysReport = sysReportService.selectSysReportByReportId(reportId);
+        if(sysReport!=null) {
+            memberFocusService.setFocus(MODULE_NAME, reportId, this.getLoginUser().getUser());
+            List<SysUser> focusList = memberFocusService.getFocusMemberList(MODULE_NAME,reportId);
+            sysReport.setFocusList(focusList);
+        }
+        return success(sysReport);
+    }
+
+    /**
+     * 驳回
+     */
+    @Log(title = "驳回缺陷", businessType = BusinessType.INSERT)
+    @PostMapping("/close-edit-window")
+    public AjaxResult closeEditWindows()
+    {
+        memberFocusService.removeFocus(getUserId());
+        return success();
     }
 
     /**

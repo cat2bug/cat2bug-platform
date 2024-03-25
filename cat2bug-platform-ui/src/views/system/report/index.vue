@@ -35,7 +35,17 @@
       </el-form>
     </div>
     <el-table v-loading="loading" :data="reportList" @row-click="rowClickHandle">
-      <el-table-column :label="$t('report.title')" align="start" prop="reportTitle" />
+      <el-table-column :label="$t('report.title')" align="start" prop="reportTitle">
+        <template slot-scope="scope">
+          <div class="table-report-title">
+            <focus-member-list
+              v-model="scope.row.focusList"
+              module-name="report"
+              :data-id="scope.row.reportId" />
+            <span>{{ scope.row.reportTitle }}</span>
+          </div>
+        </template>
+      </el-table-column>
       <el-table-column :label="$t('report.time')" align="center" prop="reportTime" width="180">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.reportTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
@@ -94,10 +104,11 @@ import ProjectLabel from "@/components/Project/ProjectLabel";
 import ViewReport from "@/components/Report/ViewReport";
 import Step from "@/components/Case/CaseStep";
 import ReportTools from "@/components/Report/ReportTools";
+import FocusMemberList from "@/components/FocusMemberList";
 
 export default {
   name: "Report",
-  components: { Step, ProjectLabel, ViewReport, ReportTools },
+  components: { Step, ProjectLabel, ViewReport, ReportTools,FocusMemberList },
   data() {
     return {
       // 遮罩层
@@ -240,5 +251,10 @@ export default {
       margin-bottom: 0px;
     }
   }
+}
+.table-report-title {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
 </style>

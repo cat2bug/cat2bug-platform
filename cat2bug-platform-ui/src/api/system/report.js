@@ -42,3 +42,10 @@ export function delReport(reportId) {
     method: 'delete'
   })
 }
+
+export function closeEditWindow() {
+  return request({
+    url: '/system/report/close-edit-window',
+    method: 'post',
+  })
+}

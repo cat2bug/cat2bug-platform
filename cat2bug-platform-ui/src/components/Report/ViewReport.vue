@@ -9,6 +9,10 @@
       <div class="report-edit-header">
         <div class="report-edit-title">
           <i class="el-icon-arrow-left" @click="cancel"></i>
+          <focus-member-list
+            v-model="report.focusList"
+            module-name="report"
+            :data-id="report.reportId" />
           <h4 class="report-edit-title-num">{{report.reportTitle}}</h4>
         </div>
         <div class="report-edit-tools">
@@ -38,13 +42,14 @@ import FileSaver from "file-saver";
 import htmlDocx from "html-docx-js/dist/html-docx";
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import {getReport} from "@/api/system/report";
+import {closeEditWindow, getReport} from "@/api/system/report";
 import ReportTools from "./ReportTools/index"
+import FocusMemberList from "@/components/FocusMemberList";
 import '@/assets/font/simsun-normal';
 
 export default {
   name: "ViewReport",
-  components: { MarkdownItVue,ReportTools },
+  components: { MarkdownItVue,ReportTools,FocusMemberList },
   data() {
     return {
       loading: false,
@@ -239,6 +244,7 @@ export default {
     /** 关闭缺陷抽屉窗口 */
     closeReportDrawer(done) {
       done();
+      closeEditWindow();
     },
     /** 导出 */
     handleExport(command) {

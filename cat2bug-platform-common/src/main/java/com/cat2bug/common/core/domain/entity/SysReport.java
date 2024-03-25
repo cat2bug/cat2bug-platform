@@ -1,6 +1,8 @@
 package com.cat2bug.common.core.domain.entity;
 
 import java.util.Date;
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -55,4 +57,7 @@ public class SysReport<T> extends BaseEntity
 
     /** 处理人 */
     private String handler;
+
+    /** 焦点成员 */
+    private List<SysUser> focusList;
 }
