@@ -1,5 +1,5 @@
 <template>
-  <cat2-bug-card :title="title" :tools="tools" @tools-click="toolsHandle">
+  <cat2-bug-card :title="$i18n.t('defect.module-ranking').toString()" :tools="tools" @tools-click="toolsHandle">
     <template slot="content">
       <div v-if="!showModuleList || showModuleList.length==0">
         <div @click="getStatisticModule" class="defect-module-row" v-for="n in 4" :key="n">
@@ -36,7 +36,6 @@ export default {
       total:0,
       prevClickModuleId: null,
       loading: false,
-      title: this.$i18n.t('defect.module-ranking'),
       moduleList:[],
       customColors: [
         {color: '#6f7ad3', percentage: 20},

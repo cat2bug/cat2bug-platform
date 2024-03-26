@@ -1,5 +1,5 @@
 <template>
-  <cat2-bug-card :title="title" v-loading="loading" :tools="tools" @tools-click="toolsHandle">
+  <cat2-bug-card :title="$i18n.t('defect.status-statistics').toString()" v-loading="loading" :tools="tools" @tools-click="toolsHandle">
     <template slot="content">
       <cat2-but-label @click.native="clickHandle" class="defect-state-label" icon="all" icon-color="#409EFF" :label="$t('all')" content="12">
         <template slot="content">
@@ -36,7 +36,6 @@ export default {
   data() {
     return {
       loading: false,
-      title: this.$i18n.t('defect.status-statistics'),
       stateList: [],
     }
   },

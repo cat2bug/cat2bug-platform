@@ -1,5 +1,5 @@
 <template>
-  <cat2-bug-card :title="title" v-loading="loading" :tools="tools" @tools-click="toolsHandle">
+  <cat2-bug-card :title="$i18n.t('defect.online-member').toString()" v-loading="loading" :tools="tools" @tools-click="toolsHandle">
     <template slot="content">
       <div class="member-list">
         <cat2-bug-avatar :member="member" :online="true" v-for="member in memberList" :key="member.userId" />
@@ -22,7 +22,6 @@ export default {
       onlineTopicId: null,
       offlineTopicId: null,
       loading: false,
-      title: this.$i18n.t('defect.online-member'),
       memberList: [],
       // 成员查询参数
       queryMember: {

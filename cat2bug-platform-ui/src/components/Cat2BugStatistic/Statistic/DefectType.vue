@@ -1,8 +1,8 @@
 <template>
-  <cat2-bug-card :title="title" v-loading="loading" :tools="tools" @tools-click="toolsHandle">
+  <cat2-bug-card :title="$i18n.t('defect.type-statistics').toString()" v-loading="loading" :tools="tools" @tools-click="toolsHandle">
     <template slot="content">
       <cat2-but-label class="defect-type-label" @click.native="clickHandle(type)" v-for="type in typeList" :key="type.label"
-                      :icon="type.icon" :icon-color="type.color" :label="type.label" :content="type.value" />
+                      :icon="type.icon" :icon-color="type.color" :label="$t(type.label).toString()" :content="type.value" />
     </template>
   </cat2-bug-card>
 </template>
@@ -17,7 +17,6 @@ export default {
   data() {
     return {
       loading: false,
-      title: this.$i18n.t('defect.type-statistics'),
       typeList: [],
     }
   },
@@ -71,7 +70,7 @@ export default {
             id: t.k,
             color: color,
             icon: icon,
-            label: this.$i18n.t(t.k),
+            label: t.k,
             value: t.v
           }
         });
