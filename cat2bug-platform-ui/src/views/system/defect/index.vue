@@ -80,7 +80,7 @@
             </div>
             <el-divider class="defect-field-divider"></el-divider>
             <el-checkbox-group v-model="checkedFieldList" class="col" @change="checkedFieldListChange">
-              <el-checkbox v-for="field in fieldList" :label="field" :key="field">{{field}}</el-checkbox>
+              <el-checkbox v-for="field in fieldList" :label="field" :key="field">{{$t(field)}}</el-checkbox>
             </el-checkbox-group>
             <el-button
               style="padding: 7px;"
@@ -105,17 +105,17 @@
     </div>
     <!-- 缺陷列表-->
     <el-table :key="tableKey" v-loading="loading" style="width:100%;" :data="defectList" @selection-change="handleSelectionChange" @sort-change="sortChangeHandle" @row-click="editDefectHandle">
-      <el-table-column v-if="showField($t('id'))" :label="$t('id')" :key="$t('id')" align="left" prop="projectNum" width="80" sortable >
+      <el-table-column v-if="showField('id')" :label="$t('id')" :key="$t('id')" align="left" prop="projectNum" width="80" sortable >
         <template slot-scope="scope">
           <span>{{ '#' + scope.row.projectNum }}</span>
         </template>
       </el-table-column>
-      <el-table-column v-if="showField($t('type'))" :label="$t('type')" :key="$t('type')" align="left" prop="defectTypeName" width="100" sortable>
+      <el-table-column v-if="showField('type')" :label="$t('type')" :key="$t('type')" align="left" prop="defectTypeName" width="100" sortable>
         <template slot-scope="scope">
           <defect-type-flag :defect="scope.row" />
         </template>
       </el-table-column>
-      <el-table-column v-if="showField($t('title'))" :label="$t('title')" :key="$t('title')" align="left" prop="defectName" min-width="200" sortable >
+      <el-table-column v-if="showField('title')" :label="$t('title')" :key="$t('title')" align="left" prop="defectName" min-width="200" sortable >
         <template slot-scope="scope">
           <div class="table-defect-title">
             <focus-member-list
@@ -127,29 +127,29 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column v-if="showField($t('level'))" :label="$t('level')" :key="$t('level')" align="left" prop="defectLevel" width="100" sortable >
+      <el-table-column v-if="showField('level')" :label="$t('level')" :key="$t('level')" align="left" prop="defectLevel" width="100" sortable >
         <template slot-scope="scope">
           <level-tag :options="dict.type.defect_level" :value="scope.row.defectLevel"/>
         </template>
       </el-table-column>
-      <el-table-column v-if="showField($t('state'))" :label="$t('state')" :key="$t('state')" align="left" prop="defectStateName" width="120" sortable>
+      <el-table-column v-if="showField('state')" :label="$t('state')" :key="$t('state')" align="left" prop="defectStateName" width="120" sortable>
         <template slot-scope="scope">
           <defect-state-flag :defect="scope.row" />
         </template>
       </el-table-column>
-      <el-table-column v-if="showField($t('module'))" :label="$t('module')" :key="$t('module')" align="left" prop="moduleName" min-width="100" sortable />
-      <el-table-column v-if="showField($t('version'))" :label="$t('version')" :key="$t('version')" align="left" prop="moduleVersion" width="100" sortable />
-      <el-table-column v-if="showField($t('update-time'))" :label="$t('update-time')" :key="$t('update-time')" align="left" prop="updateTime" width="160" sortable >
+      <el-table-column v-if="showField('module')" :label="$t('module')" :key="$t('module')" align="left" prop="moduleName" min-width="100" sortable />
+      <el-table-column v-if="showField('version')" :label="$t('version')" :key="$t('version')" align="left" prop="moduleVersion" width="100" sortable />
+      <el-table-column v-if="showField('update-time')" :label="$t('update-time')" :key="$t('update-time')" align="left" prop="updateTime" width="160" sortable >
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.updateTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column v-if="showField($t('handle-by'))" :label="$t('handle-by')" :key="$t('handle-by')" align="left" prop="handleBy">
+      <el-table-column v-if="showField('handle-by')" :label="$t('handle-by')" :key="$t('handle-by')" align="left" prop="handleBy">
         <template slot-scope="scope">
           <row-list-member :members="scope.row.handleByList"></row-list-member>
         </template>
       </el-table-column>
-      <el-table-column v-if="showField($t('image'))" :label="$t('image')" :key="$t('image')" align="left" prop="imgUrls">
+      <el-table-column v-if="showField('image')" :label="$t('image')" :key="$t('image')" align="left" prop="imgUrls">
         <template slot-scope="scope">
           <el-image
             @click="clickImageHandle"
@@ -161,7 +161,7 @@
             fit="contain"></el-image>
         </template>
       </el-table-column>
-      <el-table-column v-if="showField($t('annex'))" :label="$t('annex')" :key="$t('annex')" align="left" prop="annexUrls">
+      <el-table-column v-if="showField('annex')" :label="$t('annex')" :key="$t('annex')" align="left" prop="annexUrls">
         <template slot-scope="scope">
           <el-link type="primary" v-for="(file,index) in getUrl(scope.row.annexUrls)" :key="index" :href="file">{{getFileName(file)}}</el-link>
         </template>
@@ -217,19 +217,7 @@ export default {
     return {
       tableKey: (new Date()).getMilliseconds(),
       checkedFieldList: [],
-      fieldList: [
-        this.$i18n.t('id'),
-        this.$i18n.t('type'),
-        this.$i18n.t('title'),
-        this.$i18n.t('level'),
-        this.$i18n.t('state'),
-        this.$i18n.t('module'),
-        this.$i18n.t('version'),
-        this.$i18n.t('update-time'),
-        this.$i18n.t('handle-by'),
-        this.$i18n.t('image'),
-        this.$i18n.t('annex'),
-      ],
+      fieldList: [],
       // 分析图表列表
       statisticList:[],
       // 查询中缺陷类型的名称
@@ -321,6 +309,9 @@ export default {
     }
   },
   watch: {
+    "$i18n.locale": function (newVal, oldVal) {
+      this.setFieldList();
+    },
     "queryParams.defectType": function (newVal, oldVal) {
       if( newVal!=oldVal) {
         this.defectTypeChangeHandle(newVal);
@@ -334,15 +325,7 @@ export default {
   },
   created() {
     // 设置缺陷列表显示哪些列属性
-    const fieldList = this.$cache.local.get(DEFECT_TABLE_FIELD_LIST_CACHE_KEY);
-    if(fieldList) {
-      this.checkedFieldList = JSON.parse(fieldList);
-    } else {
-      this.checkedFieldList = [];
-      this.fieldList.forEach(f=>{
-        this.checkedFieldList.push(f);
-      });
-    }
+    this.setFieldList();
     // 设置tab标签选项
     const tabActive = this.$cache.local.get(DEFECT_TAB_CACHE_KEY);
     this.activeDefectTabName = tabActive?tabActive:this.$i18n.t('defect.my-participated-in');
@@ -351,10 +334,25 @@ export default {
     this.selectDefectTabHandle();
   },
   mounted() {
-
   },
   methods: {
     checkPermi,
+    /** 设置列表显示的属性字段 */
+    setFieldList() {
+      this.fieldList = [
+        'id','type','title','level','state','module','version','update-time','handle-by','image','annex'
+      ];
+
+      const fieldList = this.$cache.local.get(DEFECT_TABLE_FIELD_LIST_CACHE_KEY);
+      if(fieldList) {
+        this.checkedFieldList = JSON.parse(fieldList);
+      } else {
+        this.checkedFieldList = [];
+        this.fieldList.forEach(f=>{
+          this.checkedFieldList.push(f);
+        });
+      }
+    },
     search(params) {
       this._setProperty(this.queryParams, params);
       this.selectDefectTabHandle();
@@ -604,6 +602,11 @@ export default {
   justify-content: flex-start;
   .el-link {
     flex: 1;
+  }
+}
+.el-table {
+  ::v-deep table {
+    width: 100% !important;
   }
 }
 </style>

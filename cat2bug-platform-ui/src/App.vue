@@ -20,6 +20,11 @@ export default {
         }
       }
   },
+  data() {
+    return {
+      wsUrl: null
+    }
+  },
   created() {
     this.initWebSocket();
   },
@@ -31,8 +36,8 @@ export default {
       this.taskId = setInterval(()=>{
         const userId = this.$store.state.user.id;
         if(userId){
-          const wsUrl = (window.location.protocol === 'https:' ? `wss://${location.host}${process.env.VUE_APP_BASE_WEBSOCKET}/websocket/${userId}/message` : `ws://${location.host}${process.env.VUE_APP_BASE_WEBSOCKET}/websocket/${userId}/message`)
-          this.$connect(wsUrl, { format: 'json' })
+          this.wsUrl = (window.location.protocol === 'https:' ? `wss://${location.host}${process.env.VUE_APP_BASE_WEBSOCKET}/websocket/${userId}/message` : `ws://${location.host}${process.env.VUE_APP_BASE_WEBSOCKET}/websocket/${userId}/message`)
+          this.$connect(this.wsUrl, { format: 'json' })
           this.$socket.onopen = this.webSocketOnOpen;//连接成功方法
           this.$socket.onerror = this.webSocketOnError;//报错方法
           this.$socket.onmessage = this.webSocketOnMessage;// 接收端返回或推送信息的方法
@@ -48,7 +53,7 @@ export default {
      * @param e
      */
     webSocketOnOpen(e) {
-      // console.log('WebSocket连接成功', e);
+      console.log('WebSocket连接成功', e);
     },
     /**
      * 接收端发送过来的信息，整个项目接收信息的唯一入口
@@ -63,10 +68,11 @@ export default {
       }
     },
     webSocketOnError(e) {
-      console.error(e)
+      console.error(e);
     },
     webSocketClose(e) {
-      // console.log(e)
+      console.log(e)
+      this.initWebSocket();
     }
   }
 };
