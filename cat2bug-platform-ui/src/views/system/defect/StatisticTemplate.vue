@@ -4,11 +4,11 @@
       <el-page-header @back="goBack" :content="$t('defect.statistic-template')">
       </el-page-header>
     </el-row>
-    <h4 class="first-title">预览区</h4>
+    <h4 class="first-title">{{ $t('defect.statistic.view') }}</h4>
     <div class="view-panel">
       <cat2-bug-statistic v-model="selectTemplate" :draggable="true" />
     </div>
-    <h4>模版选择区</h4>
+    <h4>{{ $t('defect.statistic.select') }}</h4>
     <div class="templates-panel">
       <cat2-bug-statistic show-type="all" :statistic-tools="[]" @click-template-node="clickAddTemplate" />
     </div>

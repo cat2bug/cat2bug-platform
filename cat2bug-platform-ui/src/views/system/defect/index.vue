@@ -9,9 +9,8 @@
         <!--      <el-tab-pane :label="$t('project.archived-project')" :name="$t('project.archived-project')"></el-tab-pane>-->
       </el-tabs>
       <div class="defect-tools-tab-right">
-        <svg-icon class="defect-tools-button" icon-class="add-statistic" @click="addStatisticHandle" />
-        <svg-icon class="defect-tools-button" v-show="statisticPanelVisible" icon-class="view-statistic" @click="statisticPanelHandle" />
-        <svg-icon class="defect-tools-button" v-show="!statisticPanelVisible" icon-class="not-view-statistic" @click="statisticPanelHandle" />
+<!--        <svg-icon class="defect-tools-button" icon-class="add-statistic" @click="addStatisticHandle" />-->
+        <svg-icon class="defect-tools-button" v-show="statisticPanelVisible" icon-class="view-statistic" @click="addStatisticHandle" />
       </div>
     </div>
     <cat2-bug-statistic :params="{}" v-show="statisticPanelVisible" :draggable="true" />

@@ -295,6 +295,8 @@
   "defect.type-statistics": "Type Statistics",
   "defect.module-ranking": "Deliverable Ranking",
   "defect.status-statistics": "Status Statistics",
+  "defect.statistic.view": "Preview Area",
+  "defect.statistic.select": "Template Selection Area",
   "defect.online-member": "Member",
   "BUG": "Bug",
   "TASK": "Task",
