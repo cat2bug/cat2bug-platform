@@ -25,13 +25,14 @@ import REPAIR from "@/components/ListDefectLog/repair";
 import PASS from "@/components/ListDefectLog/pass";
 import CLOSED from "@/components/ListDefectLog/close";
 import OPEN from "@/components/ListDefectLog/open";
+import UPDATE from "@/components/ListDefectLog/update";
 import Cat2BugAvatar from "@/components/Cat2BugAvatar";
 import CommentInput from "@/components/Comment/CommentInput";
 import CommentView from "@/components/Comment/CommentView";
 import {addComment} from "@/api/system/comment";
 export default {
   name: "ListDefectLog",
-  components:{ CREATE,ASSIGN,REJECTED,REPAIR,PASS,CLOSED,OPEN,Cat2BugAvatar, CommentInput, CommentView },
+  components:{ CREATE,ASSIGN,REJECTED,REPAIR,PASS,CLOSED,OPEN,Cat2BugAvatar, CommentInput, CommentView,UPDATE },
   data() {
     return {
       defectId: null,
