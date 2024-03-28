@@ -4627,7 +4627,7 @@ CREATE TABLE `sys_user` (
 							`nick_name` varchar(30) NOT NULL COMMENT '用户昵称',
 							`user_type` varchar(2) DEFAULT '00' COMMENT '用户类型（00系统用户;01API）',
 							`email` varchar(50) DEFAULT '' COMMENT '用户邮箱',
-							`phonenumber` varchar(11) DEFAULT NULL COMMENT '手机号码',
+							`phonenumber` varchar(16) DEFAULT NULL COMMENT '手机号码',
 							`sex` char(1) DEFAULT '0' COMMENT '用户性别（0男 1女 2未知）',
 							`avatar` varchar(100) DEFAULT '' COMMENT '头像地址',
 							`password` varchar(100) DEFAULT '' COMMENT '密码',
