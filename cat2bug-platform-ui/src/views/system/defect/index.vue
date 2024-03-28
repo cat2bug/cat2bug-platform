@@ -3,9 +3,9 @@
     <project-label />
     <div class="defect-tools-tab">
       <el-tabs v-model="activeDefectTabName" @tab-click="selectDefectTabHandle">
-        <el-tab-pane :label="$t('defect.my-participated-in')" :name="$t('defect.my-participated-in')"></el-tab-pane>
-        <el-tab-pane :label="$t('defect.my-following')" :name="$t('defect.my-following')"></el-tab-pane>
-        <el-tab-pane :label="$t('defect.all-defect')" :name="$t('defect.all-defect')"></el-tab-pane>
+        <el-tab-pane :label="$t('defect.my-participated-in')" name="defect.my-participated-in"></el-tab-pane>
+        <el-tab-pane :label="$t('defect.my-following')" name="defect.my-following"></el-tab-pane>
+        <el-tab-pane :label="$t('defect.all-defect')" name="defect.all-defect"></el-tab-pane>
         <!--      <el-tab-pane :label="$t('project.archived-project')" :name="$t('project.archived-project')"></el-tab-pane>-->
       </el-tabs>
       <div class="defect-tools-tab-right">
@@ -420,12 +420,12 @@ export default {
     /** 切换页标签 */
     selectDefectTabHandle() {
       switch (this.activeDefectTabName) {
-        case this.$i18n.t('defect.my-following'):
+        case 'defect.my-following':
           this.handleQuery({
             collect: 1
           });
           break;
-        case this.$i18n.t('defect.my-participated-in'):
+        case 'defect.my-participated-in':
           this.queryParams.params.userId = this.getUserId();
           this.queryParams.params.collect = null;
           this.handleQuery();
