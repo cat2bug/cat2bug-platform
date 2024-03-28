@@ -35,6 +35,12 @@ export default {
       form: {},
       // 表单校验
       rules: {
+        teamName: [
+          { required: true, message: this.$t('team.name-cannot-empty'), trigger: "blur" }
+        ],
+        teamIcon: [
+          { required: true, message: this.$t('team.icon-cannot-empty'), trigger: "blur" }
+        ],
       }
     };
   },

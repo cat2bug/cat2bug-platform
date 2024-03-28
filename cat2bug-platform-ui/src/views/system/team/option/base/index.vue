@@ -58,10 +58,10 @@ export default {
       // 表单校验
       rules: {
         teamName: [
-          { required: true, message: this.$t('member.name-cannot-empty'), trigger: "blur" }
+          { required: true, message: this.$t('team.name-cannot-empty'), trigger: "blur" }
         ],
         teamIcon: [
-          { required: true, message: this.$t('member.icon-cannot-empty'), trigger: "blur" }
+          { required: true, message: this.$t('team.icon-cannot-empty'), trigger: "blur" }
         ],
       }
     };
