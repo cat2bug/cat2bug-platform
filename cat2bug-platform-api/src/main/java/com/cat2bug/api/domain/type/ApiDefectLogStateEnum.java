@@ -19,5 +19,7 @@ public enum ApiDefectLogStateEnum {
     /** 已关闭 */
     CLOSED,
     /** 开启 */
-    OPEN
+    OPEN,
+    /** 更新 */
+    UPDATE
 }

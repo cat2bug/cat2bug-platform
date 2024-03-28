@@ -137,8 +137,20 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <include refid="selectApiDefectVo"/>
         where d.defect_num = #{defectNumber} and d.project_id = #{projectId} limit 1
     </select>
-        
-    <insert id="insertApiDefect" parameterType="SysDefect" useGeneratedKeys="true" keyProperty="defect.defectId">
+
+    <select id="selectDefectIdsByKey" resultType="java.lang.Long">
+        select defect_id from sys_defect
+        where
+            project_id = #{projectId}
+        <if test="defectKey != null and defectKey !=''">
+            and defect_key = #{defectKey}
+        </if>
+        <if test="defectGroupKey != null and defectGroupKey !=''">
+            and defect_group_key = #{defectGroupKey}
+        </if>
+    </select>
+
+    <insert id="insertApiDefect" parameterType="ApiDefect" useGeneratedKeys="true" keyProperty="defect.defectId">
         insert into sys_defect
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="defect.defectNumber != null">project_num,</if>
@@ -184,13 +196,63 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
          </trim>
     </insert>
 
-    <insert id="batchInsertApiDefect" parameterType="SysDefect">
+    <insert id="insertSysDefect" parameterType="SysDefect" useGeneratedKeys="true" keyProperty="defect.defectId">
+        insert into sys_defect
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="defect.defectNumber != null">project_num,</if>
+            <if test="defect.defectType != null">defect_type,</if>
+            <if test="defect.defectName != null and defect.defectName != ''">defect_name,</if>
+            <if test="defect.defectDescribe != null and defect.defectDescribe != ''">defect_describe,</if>
+            <if test="defect.annexList != null">annex_urls,</if>
+            <if test="defect.imgList != null">img_urls,</if>
+            <if test="projectId != null">project_id,</if>
+            <if test="defect.moduleId != null">module_id,</if>
+            <if test="defect.moduleVersion != null">module_version,</if>
+            <if test="defect.createBy != null">create_by,</if>
+            <if test="defect.createById != null">create_by_id,</if>
+            <if test="defect.updateTime != null">update_time,</if>
+            <if test="defect.createTime != null">create_time,</if>
+            <if test="defect.updateBy != null">update_by,</if>
+            <if test="defect.updateById != null">update_by_id,</if>
+            <if test="defect.defectState != null">defect_state,</if>
+            <if test="defect.handleBy != null">handle_by,</if>
+            <if test="defect.handleTime != null">handle_time,</if>
+            <if test="defect.defectLevel != null">defect_level,</if>
+            <if test="defect.defectGroupKey != null">defect_group_key,</if>
+            <if test="defect.defectKey != null">defect_key,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="defect.defectNumber != null">#{defect.defectNumber},</if>
+            <if test="defect.defectType != null">#{defect.defectType, typeHandler=com.cat2bug.common.core.domain.handle.SysDefectTypeEnumTypeHandler},</if>
+            <if test="defect.defectName != null and defect.defectName != ''">#{defect.defectName},</if>
+            <if test="defect.defectDescribe != null and defect.defectDescribe != ''">#{defect.defectDescribe},</if>
+            <if test="defect.annexList != null">#{defect.annexUrls},</if>
+            <if test="defect.imgList != null">#{defect.imgUrls},</if>
+            <if test="projectId != null">#{projectId},</if>
+            <if test="defect.moduleId != null">#{defect.moduleId},</if>
+            <if test="defect.moduleVersion != null">#{defect.moduleVersion},</if>
+            <if test="defect.createBy != null">#{defect.createBy},</if>
+            <if test="defect.createById != null">#{defect.createById},</if>
+            <if test="defect.updateTime != null">#{defect.updateTime},</if>
+            <if test="defect.createTime != null">#{defect.createTime},</if>
+            <if test="defect.updateBy != null">#{defect.updateBy},</if>
+            <if test="defect.updateById != null">#{defect.updateById},</if>
+            <if test="defect.defectState != null">#{defect.defectState, typeHandler=com.cat2bug.common.core.domain.handle.SysDefectStateEnumTypeHandler},</if>
+            <if test="defect.handleBy != null">#{defect.handleBy, typeHandler=com.cat2bug.common.core.domain.handle.LongArrayTypeHandler},</if>
+            <if test="defect.handleTime != null">#{defect.handleTime},</if>
+            <if test="defect.defectLevel != null">#{defect.defectLevel},</if>
+            <if test="defect.defectGroupKey != null and defect.defectGroupKey != ''">#{defect.defectGroupKey},</if>
+            <if test="defect.defectKey != null and defect.defectKey != ''">#{defect.defectKey},</if>
+        </trim>
+    </insert>
+
+    <insert id="batchInsertSysDefect" parameterType="SysDefect" useGeneratedKeys="true" keyProperty="defectId" keyColumn="defect_id">
         insert into sys_defect
         <trim prefix="(" suffix=")" suffixOverrides=",">
             project_num,defect_type,defect_name,defect_describe,
             annex_urls,img_urls,project_id,module_id,module_version,
             create_by,create_by_id,update_time,create_time,update_by,update_by_id,
-            defect_state,handle_by,handle_time,defect_level
+            defect_state,handle_by,handle_time,defect_level,defect_group_key,defect_key
         </trim>
         values
         <foreach collection="defectList" separator="," item="defect">
@@ -213,12 +275,35 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                 #{defect.defectState, typeHandler=com.cat2bug.common.core.domain.handle.SysDefectStateEnumTypeHandler},
                 #{defect.handleBy, typeHandler=com.cat2bug.common.core.domain.handle.LongArrayTypeHandler},
                 #{defect.handleTime},
-                #{defect.defectLevel}
+                #{defect.defectLevel},
+                #{defect.defectGroupKey},
+                #{defect.defectKey}
             )
         </foreach>
     </insert>
 
     <update id="updateApiDefect" parameterType="ApiDefect">
+        update sys_defect
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="defectType != null">defect_type = #{defectType, typeHandler=com.cat2bug.common.core.domain.handle.SysDefectTypeEnumTypeHandler},</if>
+            <if test="defectName != null and defectName != ''">defect_name = #{defectName},</if>
+            <if test="defectDescribe != null and defectDescribe != ''">defect_describe = #{defectDescribe},</if>
+            <if test="annexList != null">annex_urls = #{annexList},</if>
+            <if test="imgList != null">img_urls = #{imgList},</if>
+            <if test="projectId != null">project_id = #{projectId},</if>
+            <if test="moduleId != null">module_id = #{moduleId},</if>
+            <if test="moduleVersion != null">module_version = #{moduleVersion},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="defectState != null">defect_state = #{defectState, typeHandler=com.cat2bug.common.core.domain.handle.SysDefectStateEnumTypeHandler},</if>
+            <if test="handleBy != null">handle_by = #{handleBy, typeHandler=com.cat2bug.common.core.domain.handle.LongArrayTypeHandler},</if>
+            <if test="handleTime != null">handle_time = #{handleTime},</if>
+            <if test="defectLevel != null">defect_level = #{defectLevel},</if>
+        </trim>
+        where defect_id = #{defectId}
+    </update>
+
+    <update id="updateSysDefect" parameterType="SysDefect">
         update sys_defect
         <trim prefix="SET" suffixOverrides=",">
             <if test="defectType != null">defect_type = #{defectType, typeHandler=com.cat2bug.common.core.domain.handle.SysDefectTypeEnumTypeHandler},</if>

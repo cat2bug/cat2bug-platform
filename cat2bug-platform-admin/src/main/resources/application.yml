@@ -62,7 +62,7 @@ caffeine:
 
 # Spring配置
 spring:
-  database-type: h2
+  database-type: mysql
   thymeleaf:
     mode: HTML
     encoding: utf-8

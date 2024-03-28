@@ -21,4 +21,6 @@ public interface ApiDefectLogMapper
      * @return 结果
      */
     public int insertApiDefectLog(ApiDefectLog sysDefectLog);
+
+    public int batchInsertApiDefectLog(List<ApiDefectLog> defectLogList);
 }

@@ -1,6 +1,9 @@
 package com.cat2bug.api.service.impl;
 
+import com.cat2bug.api.domain.ApiDefectLog;
 import com.cat2bug.api.domain.ApiMember;
+import com.cat2bug.api.domain.type.ApiDefectLogStateEnum;
+import com.cat2bug.api.mapper.ApiDefectLogMapper;
 import com.cat2bug.api.mapper.ApiDefectMapper;
 import com.cat2bug.api.mapper.ApiMemberMapper;
 import com.cat2bug.api.mapper.ApiReportMapper;
@@ -8,9 +11,12 @@ import com.cat2bug.api.service.ApiService;
 import com.cat2bug.api.service.IApiReportService;
 import com.cat2bug.common.core.domain.entity.SysDefect;
 import com.cat2bug.common.core.domain.entity.SysReport;
+import com.cat2bug.common.core.domain.type.SysDefectStateEnum;
+import com.cat2bug.common.core.domain.type.SysDefectTypeEnum;
 import com.cat2bug.common.utils.DateUtils;
-import com.cat2bug.common.utils.DictUtils;
+import com.cat2bug.common.utils.MessageUtils;
 import com.cat2bug.common.utils.SecurityUtils;
+import com.google.common.base.Preconditions;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,16 +45,20 @@ public class ApiReportServiceImpl implements IApiReportService {
 
     private ApiMemberMapper apiMemberMapper;
 
+    private ApiDefectLogMapper apiDefectLogMapper;
+
     @Autowired
     public ApiReportServiceImpl(
             ApiService apiService,
             ApiReportMapper apiReportMapper,
             ApiDefectMapper apiDefectMapper,
-            ApiMemberMapper apiMemberMapper) {
+            ApiMemberMapper apiMemberMapper,
+            ApiDefectLogMapper apiDefectLogMapper) {
         this.apiService = apiService;
         this.apiReportMapper = apiReportMapper;
         this.apiDefectMapper = apiDefectMapper;
         this.apiMemberMapper = apiMemberMapper;
+        this.apiDefectLogMapper = apiDefectLogMapper;
     }
 
     @Transactional
@@ -69,22 +79,103 @@ public class ApiReportServiceImpl implements IApiReportService {
                 if(member.isPresent())
                     handlerIds.add(member.get().getMemberId());
             }
-            List<List<SysDefect>> partition = ListUtils.partition(list,50);
-            AtomicLong count = new AtomicLong(apiDefectMapper.getProjectDefectMaxNum(this.apiService.getProjectId()));
-            for(List<SysDefect> l : partition) {
-                l.forEach(ll-> {
-                    ll.setCreateById(SecurityUtils.getUserId());
-                    ll.setCreateTime(DateUtils.getNowDate());
-                    ll.setProjectNum(count.incrementAndGet());
-                    ll.setUpdateTime(DateUtils.getNowDate());
-                    ll.setHandleBy(handlerIds);
-                    if(Strings.isBlank(ll.getDefectLevel())){
-                        ll.setDefectLevel("middle");
-                    }
-                });
-                apiDefectMapper.batchInsertApiDefect(this.apiService.getProjectId(), l);
+            List<SysDefect> insertList = list.stream().filter(l->Strings.isBlank(l.getDefectGroupKey()) && Strings.isBlank(l.getDefectKey())).collect(Collectors.toList());
+            if(insertList.size()>0) {
+                this.insertDefects(handlerIds, insertList);
+            }
+
+            List<SysDefect> updateList = list.stream().filter(l->Strings.isNotBlank(l.getDefectGroupKey()) || Strings.isNotBlank(l.getDefectKey())).collect(Collectors.toList());
+            if(updateList.size()>0) {
+                this.updateDefects(handlerIds, updateList);
             }
         }
         return ret;
+    }
+
+    /**
+     * 插入缺陷
+     * @param handlerIds    处理人集合
+     * @param list          缺陷列表
+     */
+    void insertDefects(List<Long> handlerIds,List<SysDefect> list) {
+        List<List<SysDefect>> partition = ListUtils.partition(list,50);
+        AtomicLong count = new AtomicLong(apiDefectMapper.getProjectDefectMaxNum(this.apiService.getProjectId()));
+        for(List<SysDefect> l : partition) {
+            l.forEach(ll-> {
+                ll = setInsertSysDefect(ll,count.incrementAndGet(),handlerIds);
+            });
+            apiDefectMapper.batchInsertSysDefect(this.apiService.getProjectId(), l);
+            batchInertLogs(l);
+        }
+    }
+
+    SysDefect setInsertSysDefect(SysDefect sysDefect, long projectNumber, List<Long> handlerIds) {
+        sysDefect.setCreateById(SecurityUtils.getUserId());
+        sysDefect.setCreateTime(DateUtils.getNowDate());
+        sysDefect.setDefectNumber(projectNumber);
+        sysDefect.setProjectNum(projectNumber);
+        sysDefect.setUpdateTime(DateUtils.getNowDate());
+        sysDefect.setUpdateById(SecurityUtils.getUserId());
+        sysDefect.setHandleBy(handlerIds);
+        if(sysDefect.getDefectType()==null){
+            sysDefect.setDefectType(SysDefectTypeEnum.BUG);
+        }
+        if (sysDefect.getDefectState() == null) {
+            sysDefect.setDefectState(SysDefectStateEnum.PROCESSING);
+        }
+        if(Strings.isBlank(sysDefect.getDefectLevel())){
+            sysDefect.setDefectLevel("middle");
+        } else {
+            sysDefect.setDefectLevel(sysDefect.getDefectLevel().toLowerCase());
+        }
+        return sysDefect;
+    }
+
+    void updateDefects(List<Long> handlerIds,List<SysDefect> list) {
+        for(SysDefect s : list) {
+            List<Long> ids = apiDefectMapper.selectDefectIdsByKey(this.apiService.getProjectId(),s.getDefectGroupKey(),s.getDefectKey());
+            if(ids.size()==0){
+                if(Strings.isBlank(s.getDefectName()) || Strings.isBlank(s.getDefectDescribe())){
+                    continue;
+                }
+                long count = apiDefectMapper.getProjectDefectMaxNum(this.apiService.getProjectId());
+                s = setInsertSysDefect(s,count+1,handlerIds);
+                apiDefectMapper.insertSysDefect(this.apiService.getProjectId(),s);
+                inertLog(s,ApiDefectLogStateEnum.CREATE);
+            } else {
+                for (Long id : ids) {
+                    s.setDefectId(id);
+                    s.setUpdateTime(DateUtils.getNowDate());
+                    s.setHandleBy(handlerIds);
+                    apiDefectMapper.updateSysDefect(s);
+                    inertLog(s,ApiDefectLogStateEnum.UPDATE);
+                }
+            }
+        }
+    }
+
+    /** 转换日志对象 */
+    private ApiDefectLog toLog(SysDefect sysDefect,ApiDefectLogStateEnum logStateEnum) {
+        ApiDefectLog sysDefectLog = new ApiDefectLog();
+        sysDefectLog.setDefectId(sysDefect.getDefectId());
+        sysDefectLog.setDefectLogDescribe("");
+        sysDefectLog.setReceiveBy(sysDefect.getHandleBy());
+        sysDefectLog.setDefectLogType(logStateEnum);
+        sysDefectLog.setCreateBy(SecurityUtils.getUserId().toString());
+        return sysDefectLog;
+    }
+    /** 批量添加日志 */
+    private void batchInertLogs(List<SysDefect> list) {
+        List<ApiDefectLog> logList = list.stream().map(l->toLog(l,ApiDefectLogStateEnum.CREATE)).collect(Collectors.toList());
+        apiDefectLogMapper.batchInsertApiDefectLog(logList);
+    }
+
+    /** 添加日志 */
+    private ApiDefectLog inertLog(SysDefect sysDefect,ApiDefectLogStateEnum logStateEnum){
+        ApiDefectLog sysDefectLog = toLog(sysDefect,logStateEnum);
+        Preconditions.checkNotNull(sysDefectLog.getDefectId(), MessageUtils.message("defect.defect_id_cannot_empty"));
+        sysDefectLog.setCreateById(SecurityUtils.getUserId());
+        sysDefectLog.setCreateTime(DateUtils.getNowDate());
+        return this.apiDefectLogMapper.insertApiDefectLog(sysDefectLog)>0?sysDefectLog:null;
     }
 }

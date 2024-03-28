@@ -24,4 +24,22 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="defectId != null">#{defectId},</if>
          </trim>
     </insert>
+
+    <insert id="batchInsertApiDefectLog" parameterType="ApiDefectLog" useGeneratedKeys="true" keyProperty="defectLogId">
+        insert into sys_defect_log
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            defect_log_describe,create_by,create_time,defect_log_type,
+            receive_by,annex_urls,defect_id
+        </trim>
+        values
+        <foreach collection="defectLogList" separator="," item="log">
+            #{log.defectLogDescribe},
+            #{log.createBy},
+            #{log.createTime},
+            #{log.defectLogType, typeHandler=com.cat2bug.api.domain.handle.ApiDefectLogStateEnumTypeHandle},
+            #{log.receiveBy, typeHandler=com.cat2bug.api.domain.handle.ApiLongArrayTypeHandler },
+            #{log.annexUrls},
+            #{log.defectId}
+        </foreach>
+    </insert>
 </mapper>

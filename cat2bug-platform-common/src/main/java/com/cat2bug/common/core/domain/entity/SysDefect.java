@@ -29,6 +29,8 @@ public class SysDefect extends BaseEntity
     /** 项目编号 */
     private Long projectNum;
 
+    private Long defectNumber;
+
     /** 缺陷类型 */
     @JsonFormat(shape = JsonFormat.Shape.NUMBER)
     private SysDefectTypeEnum defectType;
@@ -46,10 +48,11 @@ public class SysDefect extends BaseEntity
     /** 附件 */
     @Excel(name = "附件")
     private String annexUrls;
-
+    private String annexList;
     /** 附件 */
     @Excel(name = "图片")
     private String imgUrls;
+    private String imgList;
 
     /** 项目id */
     private Long projectId;
@@ -125,11 +128,11 @@ public class SysDefect extends BaseEntity
     /**
      * 缺陷组标识
      */
-    private String groupKey;
+    private String defectGroupKey;
     /**
      * 缺陷唯一标识
      */
-    private String key;
+    private String defectKey;
 
     @Override
     public String toString() {

@@ -46,6 +46,7 @@ public interface ApiDefectMapper
      */
     public List<ApiDefect> selectApiDefectList(@Param("projectId") Long projectId, @Param("defect") ApiDefect apiDefect);
 
+    public List<Long> selectDefectIdsByKey(@Param("projectId") Long projectId, @Param("defectGroupKey")String defectGroupKey, @Param("defectKey")String defectKey);
     /**
      * 查询缺陷列表
      *
@@ -64,7 +65,15 @@ public interface ApiDefectMapper
      */
     public int insertApiDefect(@Param("projectId") Long projectId, @Param("defect")  ApiDefect apiDefect);
 
-    public int batchInsertApiDefect(@Param("projectId") Long projectId, @Param("defectList") List<SysDefect> defectList);
+    /**
+     * 新增缺陷
+     *
+     * @param apiDefect 缺陷
+     * @return 结果
+     */
+    public int insertSysDefect(@Param("projectId") Long projectId, @Param("defect")  SysDefect apiDefect);
+
+    public int batchInsertSysDefect(@Param("projectId") Long projectId, @Param("defectList") List<SysDefect> defectList);
     /**
      * 修改缺陷
      * 
@@ -72,6 +81,8 @@ public interface ApiDefectMapper
      * @return 结果
      */
     public int updateApiDefect(ApiDefect apiDefect);
+
+    public int updateSysDefect(SysDefect sysDefect);
 
     /**
      * 删除缺陷
