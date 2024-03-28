@@ -19,6 +19,7 @@
   "api-description": "API说明",
   "main": "首功能",
   "loading": "登陆中",
+  "page.loading": "正在加载页面，请稍候！",
   "source-code-address": "源码地址",
   "doc-address": "文档地址",
   "empty-data": "空数据",

@@ -19,6 +19,7 @@
   "api-description": "API Description",
   "main": "Main",
   "loading": "Loading",
+  "page.loading": "Page loading, please wait!",
   "source-code-address": "Source Code Address",
   "doc-address": "Document Address",
   "empty-data": "Empty Data",
