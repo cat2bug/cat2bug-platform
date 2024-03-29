@@ -57,12 +57,13 @@ user:
 j2cache:
   config-location: classpath:${spring.database-type}-j2cache.properties
   open-spring-cache: true
+  allow-null-values: true
 caffeine:
   properties: caffeine.properties
 
 # Spring配置
 spring:
-  database-type: h2
+  database-type: mysql
   thymeleaf:
     mode: HTML
     encoding: utf-8

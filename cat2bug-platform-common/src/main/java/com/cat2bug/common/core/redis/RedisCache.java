@@ -54,6 +54,7 @@ public class RedisCache
 
     @Autowired
     private CacheChannel cacheChannel;
+
 //    /**
 //     * 缓存基本的对象，Integer、String、实体类等
 //     *
