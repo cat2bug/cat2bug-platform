@@ -37,6 +37,11 @@ import java.util.stream.Collectors;
  */
 @Service
 public class ApiReportServiceImpl implements IApiReportService {
+    /** 缺陷描述最大长度 */
+    private static final long DEFECT_DESCRIBE_MAX_LEN = 65536;
+    /** 缺陷名称最大长度 */
+    private static final long DEFECT_NAME_MAX_LEN = 128;
+
     private ApiReportMapper apiReportMapper;
 
     private ApiDefectMapper apiDefectMapper;
@@ -110,6 +115,12 @@ public class ApiReportServiceImpl implements IApiReportService {
     }
 
     SysDefect setInsertSysDefect(SysDefect sysDefect, long projectNumber, List<Long> handlerIds) {
+        // 自动裁剪缺陷名称长度
+        sysDefect.setDefectName(sysDefect.getDefectName().substring(0,(int)Math.min(sysDefect.getDefectName().length(),DEFECT_NAME_MAX_LEN)));
+        // 自动裁剪缺陷描述长度
+        sysDefect.setDefectDescribe(sysDefect.getDefectDescribe().substring(0,(int)Math.min(sysDefect.getDefectDescribe().length(),DEFECT_DESCRIBE_MAX_LEN)));
+
+
         sysDefect.setCreateById(SecurityUtils.getUserId());
         sysDefect.setCreateTime(DateUtils.getNowDate());
         sysDefect.setDefectNumber(projectNumber);
