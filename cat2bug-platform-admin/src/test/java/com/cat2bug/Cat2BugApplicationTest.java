@@ -11,20 +11,11 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @RunWith(Cat2BugAutoSpringSuite.class)
-@AutoTestScan(packageName = "com.cat2bug.web")
+@AutoTestScan(packageName = "com.cat2bug.web.controller")
 @PushReport
-//@Authentication(name = "admin",password = "cat2bug")
 public class Cat2BugApplicationTest {
-    @Copy
-    public Long ddd = 1L;
-
-    private Long ddd2 = 2L;
-
-    @Copy
-    private static final  Long DD_4 = 4L;
-
     @Copy
     @Autowired
     public void Security(AuthenticationManager authenticationManager) {
