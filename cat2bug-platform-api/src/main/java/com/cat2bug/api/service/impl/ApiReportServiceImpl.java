@@ -120,7 +120,6 @@ public class ApiReportServiceImpl implements IApiReportService {
         // 自动裁剪缺陷描述长度
         sysDefect.setDefectDescribe(sysDefect.getDefectDescribe().substring(0,(int)Math.min(sysDefect.getDefectDescribe().length(),DEFECT_DESCRIBE_MAX_LEN)));
 
-
         sysDefect.setCreateById(SecurityUtils.getUserId());
         sysDefect.setCreateTime(DateUtils.getNowDate());
         sysDefect.setDefectNumber(projectNumber);
