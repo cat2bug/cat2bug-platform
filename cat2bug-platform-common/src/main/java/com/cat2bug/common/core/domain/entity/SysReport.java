@@ -60,4 +60,6 @@ public class SysReport<T> extends BaseEntity
 
     /** 焦点成员 */
     private List<SysUser> focusList;
+    /** 报告KEY */
+    private String reportKey;
 }

@@ -72,7 +72,19 @@ public class ApiReportServiceImpl implements IApiReportService {
         apiReport.setCreateById(SecurityUtils.getUserId());
         apiReport.setCreateTime(DateUtils.getNowDate());
         apiReport.setProjectId(this.apiService.getProjectId());
-        int ret = apiReportMapper.insertSysReport(apiReport);
+
+        int ret;
+        if(Strings.isNotBlank(apiReport.getReportKey())) {
+            SysReport oldReport = apiReportMapper.findSysReportByReportKey(apiReport.getReportKey());
+            if(oldReport!=null) {
+                ret = apiReportMapper.updateSysReport(apiReport);
+            } else {
+                ret = apiReportMapper.insertSysReport(apiReport);
+            }
+        } else {
+            ret = apiReportMapper.insertSysReport(apiReport);
+        }
+
         List<SysDefect> list = apiReport.getReportData();
         if(ret>0 && list!=null) {
             List<Long> handlerIds = new ArrayList<>();

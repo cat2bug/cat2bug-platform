@@ -9,6 +9,7 @@
       <div class="report-edit-header">
         <div class="report-edit-title">
           <i class="el-icon-arrow-left" @click="cancel"></i>
+          <report-type-flag :report="report" />
           <focus-member-list
             v-model="report.focusList"
             module-name="report"
@@ -47,11 +48,12 @@ import jsPDF from 'jspdf';
 import {closeEditWindow, getReport} from "@/api/system/report";
 import ReportTools from "./ReportTools/index"
 import FocusMemberList from "@/components/FocusMemberList";
+import ReportTypeFlag from "@/components/Report/ReportTypeFlag";
 import '@/assets/font/simsun-normal';
 
 export default {
   name: "ViewReport",
-  components: { MarkdownItVue,ReportTools,FocusMemberList },
+  components: { MarkdownItVue,ReportTools,FocusMemberList,ReportTypeFlag },
   data() {
     return {
       loading: false,

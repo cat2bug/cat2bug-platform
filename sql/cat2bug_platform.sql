@@ -1184,6 +1184,7 @@ CREATE TABLE `sys_report` (
   `create_by_id` bigint DEFAULT NULL COMMENT ' 推送人ID',
   `project_id` bigint NOT NULL COMMENT '项目ID',
   `report_source` varchar(255) DEFAULT NULL COMMENT '报告源',
+  `report_key` varchar(255) DEFAULT NULL COMMENT '报告KEY',
   PRIMARY KEY (`report_id`),
   KEY `project_id_` (`project_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=63 DEFAULT CHARSET=utf8mb3 COMMENT='报告';

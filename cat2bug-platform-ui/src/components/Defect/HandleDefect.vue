@@ -52,7 +52,7 @@
             </el-col>
           </el-row>
         </el-collapse-item>
-        <el-collapse-item :title="$i18n.t('image')" name="imgUrls">
+        <el-collapse-item v-if="defect.imgUrls" :title="$i18n.t('image')" name="imgUrls">
           <el-image
             v-for="(img,index) in getUrl(defect.imgUrls)"
             :key="index"
@@ -61,12 +61,12 @@
             :preview-src-list="getUrl(defect.imgUrls)"
             fit="contain"></el-image>
         </el-collapse-item>
-        <el-collapse-item :title="$i18n.t('annex')" name="annexUrls">
+        <el-collapse-item v-if="defect.annexUrls" :title="$i18n.t('annex')" name="annexUrls">
           <div class="defect-edit-body-annex">
             <el-link type="primary" v-for="(file,index) in getUrl(defect.annexUrls)" :key="index" :href="file">{{getFileName(file)}}</el-link>
           </div>
         </el-collapse-item>
-        <el-collapse-item :title="$i18n.t('case')" name="caseId">
+        <el-collapse-item v-if="defect.caseStepId" :title="$i18n.t('case')" name="caseId">
           <case-card :case-model="defectCase" :state-visible="true" :step-index.sync="defect.caseStepId" :edit="false" />
         </el-collapse-item>
         <el-collapse-item :title="$i18n.t('log')" name="log">

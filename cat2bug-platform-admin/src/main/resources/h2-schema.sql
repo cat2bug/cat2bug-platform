@@ -3529,7 +3529,8 @@ CREATE TABLE `sys_report` (
 							  `report_data` json DEFAULT NULL COMMENT '数据',
 							  `create_by_id` bigint DEFAULT NULL COMMENT ' 推送人ID',
 							  `project_id` bigint NOT NULL COMMENT '项目ID',
-							  `report_source` varchar(255) DEFAULT NULL COMMENT '报告源'
+							  `report_source` varchar(255) DEFAULT NULL COMMENT '报告源',
+							  `report_key` varchar(255) DEFAULT NULL COMMENT '报告KEY'
 );
 
 

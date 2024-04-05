@@ -60,7 +60,7 @@ public class SysProjectApiServiceImpl implements ISysProjectApiService
             randStr+=chars[index];
         }
         //5，把时间字符串和16位强随机数字符串组合，形成30位随机字符串
-        return time+randStr;
+        return time+randStr.toUpperCase();
     }
 
     /**

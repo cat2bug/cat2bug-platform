@@ -13,10 +13,23 @@ import org.apache.ibatis.annotations.Mapper;
 public interface ApiReportMapper
 {
     /**
+     * 查找报告
+     * @param reportKey 报告key
+     * @return  报告
+     */
+    public SysReport findSysReportByReportKey(String reportKey);
+
+    /**
      * 新增报告
-     *
      * @param apiReport 报告
-     * @return 结果
+     * @return 新增数量
      */
     public int insertSysReport(SysReport apiReport);
+
+    /**
+     * 更新报告
+     * @param apiReport 报告
+     * @return  更新数量
+     */
+    public int updateSysReport(SysReport apiReport);
 }

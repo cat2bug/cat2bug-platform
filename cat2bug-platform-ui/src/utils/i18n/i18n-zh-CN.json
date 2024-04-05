@@ -402,5 +402,7 @@
   "report.source": "报表来源",
   "report.create-by": "创建人",
   "report.delete-report": "是否要删除此报告？",
+  "report.type-text": "文本报告",
+  "report.type-runtime": "实时报告",
   "pusher": "推送人"
 }

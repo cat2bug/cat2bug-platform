@@ -3,6 +3,33 @@
 PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.cat2bug.api.mapper.ApiReportMapper">
+    <resultMap type="com.cat2bug.common.core.domain.entity.SysReport" id="SysReportResult">
+        <result property="reportId"    column="report_id"    />
+        <result property="reportTitle"    column="report_title"    />
+        <result property="reportTime"    column="report_time"    />
+        <result property="reportDescription"    column="report_description"    />
+        <result property="reportDataCoder"    column="report_data_coder"    />
+        <result property="reportData"    column="report_data"    />
+        <result property="createById"    column="create_by_id"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="projectId"    column="project_id"    />
+        <result property="reportSource" column="report_source" />
+        <result property="reportKey" column="report_key" />
+    </resultMap>
+
+    <sql id="selectSysReportVo">
+        select r.report_id, r.report_title, r.report_time, r.report_description, r.report_data_coder, r.report_data, r.create_by_id, r.project_id, r.report_source, r.report_key, u.nick_name as create_by from sys_report r
+        left join sys_user u ON r.create_by_id = u.user_id
+    </sql>
+
+    <select id="findSysReportByReportKey"  parameterType="String" resultMap="SysReportResult">
+        <include refid="selectSysReportVo"/>
+        <where>
+            r.report_key = #{reportKey}
+        </where>
+        ORDER BY r.report_time DESC
+    </select>
+
     <insert id="insertSysReport" parameterType="SysReport">
         insert into sys_report
         <trim prefix="(" suffix=")" suffixOverrides=",">
@@ -15,6 +42,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="reportSource != null">report_source,</if>
             <if test="createById != null">create_by_id,</if>
             <if test="projectId != null">project_id,</if>
+            <if test="reportKey != null">report_key,</if>
          </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="reportId != null">#{reportId},</if>
@@ -26,6 +54,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="reportSource != null">#{reportSource},</if>
             <if test="createById != null">#{createById},</if>
             <if test="projectId != null">#{projectId},</if>
+            <if test="reportKey != null">#{reportKey},</if>
          </trim>
     </insert>
 
@@ -39,6 +68,6 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="reportData != null">report_data = #{reportData, typeHandler = com.cat2bug.api.domain.handle.ObjectTypeHandler},</if>
             <if test="reportSource != null">report_source = #{reportSource},</if>
         </trim>
-        where report_id = #{reportId}
+        where report_key = #{reportKey}
     </update>
 </mapper>
