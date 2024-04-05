@@ -1,4 +1,4 @@
-<h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">Cat2Bug-Platform v0.3.0</h1>
+<h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">Cat2Bug-Platform v0.3.1</h1>
 <h4 align="center">轻量化BUG管理平台</h4>
 
 ## 平台简介
@@ -19,7 +19,7 @@ Cat2Bug-Platform是一套永久免费开源的Bug管理平台，将毫无保留�
 
 ## 最新版本更新说明
 
-当前最新版本是0.3.0
+当前最新版本是0.3.1
 
 * 添加报告功能；
 * 添加系统多语言切换功能；

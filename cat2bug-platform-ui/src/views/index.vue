@@ -100,6 +100,13 @@
             <span>{{$t('update-log')}}</span>
           </div>
           <el-collapse accordion>
+            <el-collapse-item title="v0.3.1 - 2024-04-05">
+              <ol>
+                <li>修复系统功能BUG</li>
+                <li>报告的OPEN API中添加KEY属性</li>
+                <li>缺陷页面Tab标签改为自定义方式</li>
+              </ol>
+            </el-collapse-item>
             <el-collapse-item title="v0.3.0 - 2024-03-25">
               <ol>
                 <li>添加报告功能</li>
