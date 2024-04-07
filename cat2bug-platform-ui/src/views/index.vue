@@ -80,7 +80,7 @@
           </div>
           <div class="body">
             <p>
-              <i class="el-icon-s-promotion"></i> {{$t('website')}}：<el-link
+              <i class="el-icon-s-home"></i> {{$t('website')}}：<el-link
                 href="https://www.cat2bug.com"
                 target="_blank"
                 >https://www.cat2bug.com</el-link
@@ -103,8 +103,8 @@
             <el-collapse-item title="v0.3.1 - 2024-04-05">
               <ol>
                 <li>修复系统功能BUG</li>
-                <li>报告的OPEN API中添加KEY属性</li>
-                <li>缺陷页面Tab标签改为自定义方式</li>
+                <li>推送报告的OPEN API接口中添加KEY属性</li>
+                <li>缺陷页面添加自定义页签</li>
               </ol>
             </el-collapse-item>
             <el-collapse-item title="v0.3.0 - 2024-03-25">
@@ -160,35 +160,41 @@
           </el-collapse>
         </el-card>
       </el-col>
-<!--      <el-col :xs="24" :sm="24" :md="12" :lg="8">-->
-<!--        <el-card class="update-log">-->
-<!--          <div slot="header" class="clearfix">-->
-<!--            <span>{{$t('document')}}</span>-->
-<!--          </div>-->
-<!--          <el-collapse accordion>-->
-<!--            <el-collapse-item :title="$t('system-introduction')">-->
-<!--              <ol>-->
-<!--                <li>{{$t('system-introduction')}}</li>-->
-<!--                <li>{{$t('install')}}</li>-->
-<!--              </ol>-->
-<!--            </el-collapse-item>-->
-<!--            <el-collapse-item :title="$t('function-usage')">-->
-<!--              <ol>-->
-<!--                <li>{{ $t('member.manage') }}</li>-->
-<!--                <li>{{ $t('project.manage') }}</li>-->
-<!--                <li>{{ $t('defect.manage') }}</li>-->
-<!--              </ol>-->
-<!--            </el-collapse-item>-->
-<!--            <el-collapse-item :title="$t('api-description')">-->
-<!--              <ol>-->
-<!--                <li>{{ $t('account') }}</li>-->
-<!--                <li>{{ $t('defect.submission') }}</li>-->
-<!--                <li>{{ $t('defect.statistics') }}</li>-->
-<!--              </ol>-->
-<!--            </el-collapse-item>-->
-<!--          </el-collapse>-->
-<!--        </el-card>-->
-<!--      </el-col>-->
+      <el-col :xs="24" :sm="24" :md="12" :lg="8">
+        <el-card class="update-log">
+          <div slot="header" class="clearfix">
+            <span>{{$t('ecosystem')}}</span>
+          </div>
+          <el-collapse accordion>
+            <el-collapse-item title="Cat2Bug-JUnit">
+              <div class="body">
+                <p>
+                  <i class="el-icon-s-order"></i> {{$t('project.introduction')}}：
+                  自动化接口单元测试框架
+                </p>
+                <p>
+                  <i class="el-icon-s-home"></i>{{$t('source-code-address')}}：<el-link
+                  href="https://gitee.com/cat2bug/cat2bug-junit"
+                  target="_blank">https://gitee.com/cat2bug/cat2bug-junit</el-link>
+                </p>
+              </div>
+            </el-collapse-item>
+            <el-collapse-item title="Cat2Bug-JLog">
+              <div class="body">
+                <p>
+                  <i class="el-icon-s-order"></i> {{$t('project.introduction')}}：
+                  异常日志采集框架
+                </p>
+                <p>
+                  <i class="el-icon-s-home"></i>{{$t('source-code-address')}}：<el-link
+                  href="https://gitee.com/cat2bug/cat2bug-jlog"
+                  target="_blank">https://gitee.com/cat2bug/cat2bug-jlog</el-link>
+                </p>
+              </div>
+            </el-collapse-item>
+          </el-collapse>
+        </el-card>
+      </el-col>
     </el-row>
   </div>
 </template>
