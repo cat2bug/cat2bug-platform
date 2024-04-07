@@ -133,4 +133,9 @@ docker run -it -d -p 8022:8022 --name cat2bug-platform cat2bug/cat2bug-platform:
 
 ## Cat2Bug交流群
 
-QQ群： [731462000](https://qm.qq.com/cgi-bin/qm/qr?k=G_vJa478flcFo_1ohJxNYD0mRKafQ7I1&jump_from=webapi&authKey=EL0KrLpnjYWqNN9YXTVksNlNFrV9DHYyPMx2RVOhXqLzfnmc+Oz8oQ38aBOGx90t)
+
+
+
+| QQ群： [731462000](https://qm.qq.com/cgi-bin/qm/qr?k=G_vJa478flcFo_1ohJxNYD0mRKafQ7I1&jump_from=webapi&authKey=EL0KrLpnjYWqNN9YXTVksNlNFrV9DHYyPMx2RVOhXqLzfnmc+Oz8oQ38aBOGx90t) | 微信群                                |
+|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------|
+| ![QQ群:731462000](./readme/images/qq.png)                                                                                                                                       | ![微信群](./readme/images/wechat.png) |
