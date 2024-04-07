@@ -6,13 +6,17 @@
     :before-close="close">
     <el-form ref="form" :rules="rules" :model="form" label-width="120px">
       <el-form-item :label="$t('defect.tab-name')" prop="tabName">
-        <el-input v-model="form.tabName"></el-input>
+        <el-input
+          v-model="form.tabName"
+          :placeholder="$t('defect.enter-tab-name')"
+          maxlength="32"
+          clearable></el-input>
       </el-form-item>
       <el-form-item :label="$t('defect.title')" prop="defectName">
         <el-input
           v-model="form.config.defectName"
           :placeholder="$t('defect.enter-like-title')"
-          prefix-icon="el-icon-search"
+          maxlength="128"
           clearable
         />
       </el-form-item>
@@ -40,13 +44,13 @@
         </el-select>
       </el-form-item>
       <el-form-item :label="$t('module')" prop="moduleId">
-        <select-module v-model="form.config.moduleId" :project-id="form.projectId" :is-edit="false" size="medium" icon="el-icon-files" />
+        <select-module v-model="form.config.moduleId" :project-id="form.projectId" :is-edit="false" size="medium" />
       </el-form-item>
       <el-form-item :label="$t('version')" prop="moduleVersion">
         <el-input
           v-model="form.moduleVersion"
-          prefix-icon="el-icon-discount"
           :placeholder="$t('defect.enter-version')"
+          maxlength="64"
           clearable
         />
       </el-form-item>
@@ -57,7 +61,6 @@
           :placeholder="$t('defect.select-handle-by').toString()"
           :is-head="false"
           size="medium"
-          icon="el-icon-user"
         />
       </el-form-item>
       <el-form-item>
