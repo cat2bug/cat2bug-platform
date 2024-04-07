@@ -166,7 +166,15 @@ VALUES (18, 'sys_report', '报告', NULL, NULL
 	   , 'SysReport', 'crud', 'com.cat2bug.system', 'system', 'report'
 	   , '报告', 'yuzhantao', '0', '/', '{}'
 	   , 'admin', '2024-03-13 03:09:50', '', '2024-03-13 03:11:19', NULL);
-
+INSERT INTO `gen_table` (`table_id`, `table_name`, `table_comment`, `sub_table_name`, `sub_table_fk_name`
+						, `class_name`, `tpl_category`, `package_name`, `module_name`, `business_name`
+						, `function_name`, `function_author`, `gen_type`, `gen_path`, `options`
+						, `create_by`, `create_time`, `update_by`, `update_time`, `remark`)
+VALUES (19, 'sys_project_defect_tabs', '项目缺陷页签配置', NULL, NULL
+	   , 'SysProjectDefectTabs', 'crud', 'com.cat2bug.system', 'system', 'tabs'
+	   , '项目缺陷页签配置', 'yuzhantao', '0', '/', '{}'
+	   , 'admin', '2024-04-06 01:53:40', '', '2024-04-06 01:56:30', NULL);
+COMMIT;
 DROP TABLE IF EXISTS `gen_table_column`;
 CREATE TABLE `gen_table_column` (
 									`column_id` bigint NOT NULL AUTO_INCREMENT COMMENT '编号',
@@ -478,7 +486,7 @@ INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_
 							   , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
 							   , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
 							   , `update_by`, `update_time`)
-VALUES (29, 4, 'lock', '是否锁定', 'tinyint(1)'
+VALUES (29, 4, 'lock', '是否锁定', 'tinyint(1) unsigned zerofill'
 	   , 'Integer', 'lock', '0', '0', NULL
 	   , '1', '1', '1', '1', 'EQ'
 	   , 'checkbox', '', 9, 'admin', '2023-11-19 17:47:30'
@@ -588,7 +596,7 @@ INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_
 							   , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
 							   , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
 							   , `update_by`, `update_time`)
-VALUES (40, 6, 'project_lock', '是否锁定', 'tinyint(1)'
+VALUES (40, 6, 'project_lock', '是否锁定', 'tinyint(1) unsigned zerofill'
 	   , 'Integer', 'projectLock', '0', '0', NULL
 	   , '1', '1', '1', '1', 'EQ'
 	   , 'input', '', 8, 'admin', '2023-11-22 12:11:49'
@@ -640,7 +648,7 @@ INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_
 							   , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
 							   , `update_by`, `update_time`)
 VALUES (45, 8, 'defect_type', '缺陷类型
-', 'int(1)'
+', 'int(1) unsigned zerofill'
 	   , 'Integer', 'defectType', '0', '0', '1'
 	   , '1', '1', '1', '1', 'EQ'
 	   , 'select', '', 2, 'admin', '2023-11-23 12:03:56'
@@ -790,7 +798,7 @@ INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_
 							   , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
 							   , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
 							   , `update_by`, `update_time`)
-VALUES (60, 8, 'defect_state', '缺陷状态', 'int(1)'
+VALUES (60, 8, 'defect_state', '缺陷状态', 'int(1) unsigned zerofill'
 	   , 'Integer', 'defectState', '0', '0', '1'
 	   , '1', '1', '1', '1', 'EQ'
 	   , 'select', '', 17, 'admin', '2023-11-23 12:03:56'
@@ -1020,7 +1028,7 @@ INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_
 							   , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
 							   , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
 							   , `update_by`, `update_time`)
-VALUES (83, 11, 'file_type', '文件类型', 'int(10)'
+VALUES (83, 11, 'file_type', '文件类型', 'int(10) unsigned zerofill'
 	   , 'Integer', 'fileType', '0', '0', NULL
 	   , '1', '1', '1', '1', 'EQ'
 	   , 'select', '', 6, 'admin', '2023-12-07 04:17:31'
@@ -1525,7 +1533,77 @@ VALUES (133, 18, 'create_by_id', ' 推送人ID', 'bigint'
 	   , '1', '1', '1', '1', 'EQ'
 	   , 'input', '', 7, 'admin', '2024-03-13 03:09:50'
 	   , '', '2024-03-13 03:11:19');
-
+INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
+							   , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
+							   , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
+							   , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
+							   , `update_by`, `update_time`)
+VALUES (134, 19, 'tab_id', '页签ID', 'bigint'
+	   , 'Long', 'tabId', '1', '0', NULL
+	   , '0', NULL, NULL, NULL, 'EQ'
+	   , 'input', '', 1, 'admin', '2024-04-06 01:53:40'
+	   , '', '2024-04-06 01:56:30');
+INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
+							   , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
+							   , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
+							   , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
+							   , `update_by`, `update_time`)
+VALUES (135, 19, 'tab_name', '页签名称', 'varchar(255)'
+	   , 'String', 'tabName', '0', '0', '1'
+	   , '1', '1', '1', '1', 'LIKE'
+	   , 'input', '', 2, 'admin', '2024-04-06 01:53:40'
+	   , '', '2024-04-06 01:56:30');
+INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
+							   , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
+							   , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
+							   , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
+							   , `update_by`, `update_time`)
+VALUES (136, 19, 'project_id', '项目ID', 'bigint'
+	   , 'Long', 'projectId', '0', '0', NULL
+	   , '1', '1', '1', '1', 'EQ'
+	   , 'input', '', 3, 'admin', '2024-04-06 01:53:40'
+	   , '', '2024-04-06 01:56:30');
+INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
+							   , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
+							   , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
+							   , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
+							   , `update_by`, `update_time`)
+VALUES (137, 19, 'user_id', '用户ID', 'bigint'
+	   , 'Long', 'userId', '0', '0', NULL
+	   , '1', '1', '1', '1', 'EQ'
+	   , 'input', '', 4, 'admin', '2024-04-06 01:53:40'
+	   , '', '2024-04-06 01:56:30');
+INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
+							   , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
+							   , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
+							   , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
+							   , `update_by`, `update_time`)
+VALUES (138, 19, 'config', '配置项', 'json'
+	   , 'String', 'config', '0', '0', NULL
+	   , '1', '1', '1', '0', 'EQ'
+	   , NULL, '', 5, 'admin', '2024-04-06 01:53:40'
+	   , '', '2024-04-06 01:56:30');
+INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
+							   , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
+							   , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
+							   , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
+							   , `update_by`, `update_time`)
+VALUES (139, 19, 'tab_sort', '排序', 'int'
+	   , 'Long', 'tabSort', '0', '0', NULL
+	   , '1', '1', '1', '0', 'EQ'
+	   , 'input', '', 6, 'admin', '2024-04-06 01:53:40'
+	   , '', '2024-04-06 01:56:30');
+INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
+							   , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
+							   , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
+							   , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
+							   , `update_by`, `update_time`)
+VALUES (140, 19, 'create_time', '创建时间', 'datetime'
+	   , 'Date', 'createTime', '0', '0', NULL
+	   , '1', NULL, NULL, NULL, 'EQ'
+	   , 'datetime', '', 7, 'admin', '2024-04-06 01:53:40'
+	   , '', '2024-04-06 01:56:30');
+COMMIT;
 DROP TABLE IF EXISTS `qrtz_blob_triggers`;
 CREATE TABLE `qrtz_blob_triggers` (
 									  `sched_name` varchar(120) NOT NULL COMMENT '调度名称',
@@ -1534,7 +1612,7 @@ CREATE TABLE `qrtz_blob_triggers` (
 									  `blob_data` blob COMMENT '存放持久化Trigger对象'
 );
 
-
+COMMIT;
 DROP TABLE IF EXISTS `qrtz_calendars`;
 CREATE TABLE `qrtz_calendars` (
 								  `sched_name` varchar(120) NOT NULL COMMENT '调度名称',
@@ -1542,7 +1620,7 @@ CREATE TABLE `qrtz_calendars` (
 								  `calendar` blob NOT NULL COMMENT '存放持久化calendar对象'
 );
 
-
+COMMIT;
 DROP TABLE IF EXISTS `qrtz_cron_triggers`;
 CREATE TABLE `qrtz_cron_triggers` (
 									  `sched_name` varchar(120) NOT NULL COMMENT '调度名称',
@@ -1552,7 +1630,7 @@ CREATE TABLE `qrtz_cron_triggers` (
 									  `time_zone_id` varchar(80) DEFAULT NULL COMMENT '时区'
 );
 
-
+COMMIT;
 DROP TABLE IF EXISTS `qrtz_fired_triggers`;
 CREATE TABLE `qrtz_fired_triggers` (
 									   `sched_name` varchar(120) NOT NULL COMMENT '调度名称',
@@ -1570,7 +1648,7 @@ CREATE TABLE `qrtz_fired_triggers` (
 									   `requests_recovery` varchar(1) DEFAULT NULL COMMENT '是否接受恢复执行'
 );
 
-
+COMMIT;
 DROP TABLE IF EXISTS `qrtz_job_details`;
 CREATE TABLE `qrtz_job_details` (
 									`sched_name` varchar(120) NOT NULL COMMENT '调度名称',
@@ -1585,21 +1663,21 @@ CREATE TABLE `qrtz_job_details` (
 									`job_data` blob COMMENT '存放持久化job对象'
 );
 
-
+COMMIT;
 DROP TABLE IF EXISTS `qrtz_locks`;
 CREATE TABLE `qrtz_locks` (
 							  `sched_name` varchar(120) NOT NULL COMMENT '调度名称',
 							  `lock_name` varchar(40) NOT NULL COMMENT '悲观锁名称'
 );
 
-
+COMMIT;
 DROP TABLE IF EXISTS `qrtz_paused_trigger_grps`;
 CREATE TABLE `qrtz_paused_trigger_grps` (
 											`sched_name` varchar(120) NOT NULL COMMENT '调度名称',
 											`trigger_group` varchar(200) NOT NULL COMMENT 'qrtz_triggers表trigger_group的外键'
 );
 
-
+COMMIT;
 DROP TABLE IF EXISTS `qrtz_scheduler_state`;
 CREATE TABLE `qrtz_scheduler_state` (
 										`sched_name` varchar(120) NOT NULL COMMENT '调度名称',
@@ -1608,7 +1686,7 @@ CREATE TABLE `qrtz_scheduler_state` (
 										`checkin_interval` bigint NOT NULL COMMENT '检查间隔时间'
 );
 
-
+COMMIT;
 DROP TABLE IF EXISTS `qrtz_simple_triggers`;
 CREATE TABLE `qrtz_simple_triggers` (
 										`sched_name` varchar(120) NOT NULL COMMENT '调度名称',
@@ -1619,7 +1697,7 @@ CREATE TABLE `qrtz_simple_triggers` (
 										`times_triggered` bigint NOT NULL COMMENT '已经触发的次数'
 );
 
-
+COMMIT;
 DROP TABLE IF EXISTS `qrtz_simprop_triggers`;
 CREATE TABLE `qrtz_simprop_triggers` (
 										 `sched_name` varchar(120) NOT NULL COMMENT '调度名称',
@@ -1638,7 +1716,7 @@ CREATE TABLE `qrtz_simprop_triggers` (
 										 `bool_prop_2` varchar(1) DEFAULT NULL COMMENT 'Boolean类型的trigger的第二个参数'
 );
 
-
+COMMIT;
 DROP TABLE IF EXISTS `qrtz_triggers`;
 CREATE TABLE `qrtz_triggers` (
 								 `sched_name` varchar(120) NOT NULL COMMENT '调度名称',
@@ -1659,7 +1737,7 @@ CREATE TABLE `qrtz_triggers` (
 								 `job_data` blob COMMENT '存放持久化job对象'
 );
 
-
+COMMIT;
 DROP TABLE IF EXISTS `sys_case`;
 CREATE TABLE `sys_case` (
 							`case_id` bigint NOT NULL AUTO_INCREMENT COMMENT '测试用例',
@@ -1679,7 +1757,7 @@ CREATE TABLE `sys_case` (
 							`remark` varchar(255) DEFAULT NULL COMMENT '备注'
 );
 
-
+COMMIT;
 DROP TABLE IF EXISTS `sys_comment`;
 CREATE TABLE `sys_comment` (
 							   `comment_id` bigint NOT NULL AUTO_INCREMENT COMMENT '评论ID',
@@ -1690,7 +1768,7 @@ CREATE TABLE `sys_comment` (
 							   `correlation_id` bigint NOT NULL COMMENT '关联id'
 );
 
-
+COMMIT;
 DROP TABLE IF EXISTS `sys_config`;
 CREATE TABLE `sys_config` (
 							  `config_id` int NOT NULL AUTO_INCREMENT COMMENT '参数主键',
@@ -1729,7 +1807,7 @@ INSERT INTO `sys_config` (`config_id`, `config_name`, `config_key`, `config_valu
 						 , `create_by`, `create_time`, `update_by`, `update_time`, `remark`)
 VALUES (6, '用户登录-黑名单列表', 'sys.login.blackIPList', '', 'Y'
 	   , 'admin', '2023-11-12 15:34:52', '', NULL, '设置登录IP黑名单限制，多个匹配项以;分隔，支持匹配（*通配、网段）');
-
+COMMIT;
 DROP TABLE IF EXISTS `sys_defect`;
 CREATE TABLE `sys_defect` (
 							  `defect_id` bigint NOT NULL AUTO_INCREMENT COMMENT '缺陷id
@@ -1763,7 +1841,7 @@ CREATE TABLE `sys_defect` (
 							  `defect_group_key` varchar(255) DEFAULT NULL COMMENT '缺陷组关键字'
 );
 
-
+COMMIT;
 DROP TABLE IF EXISTS `sys_defect_log`;
 CREATE TABLE `sys_defect_log` (
 								  `defect_log_id` bigint NOT NULL AUTO_INCREMENT COMMENT '缺陷日志id',
@@ -1776,7 +1854,7 @@ CREATE TABLE `sys_defect_log` (
 								  `defect_id` bigint NOT NULL COMMENT '缺陷id'
 );
 
-
+COMMIT;
 DROP TABLE IF EXISTS `sys_dept`;
 CREATE TABLE `sys_dept` (
 							`dept_id` bigint NOT NULL AUTO_INCREMENT COMMENT '部门id',
@@ -1795,7 +1873,7 @@ CREATE TABLE `sys_dept` (
 							`update_time` datetime DEFAULT NULL COMMENT '更新时间'
 );
 
-
+COMMIT;
 DROP TABLE IF EXISTS `sys_dict_data`;
 CREATE TABLE `sys_dict_data` (
 								 `dict_code` bigint NOT NULL AUTO_INCREMENT COMMENT '字典编码',
@@ -2012,7 +2090,7 @@ INSERT INTO `sys_dict_data` (`dict_code`, `dict_sort`, `dict_label`, `dict_value
 VALUES (33, 3, '低', 'low', 'defect_level'
 	   , NULL, 'default', 'N', '0', 'admin'
 	   , '2024-01-08 17:51:28', '', NULL, NULL);
-
+COMMIT;
 DROP TABLE IF EXISTS `sys_dict_type`;
 CREATE TABLE `sys_dict_type` (
 								 `dict_id` bigint NOT NULL AUTO_INCREMENT COMMENT '字典主键',
@@ -2070,7 +2148,7 @@ INSERT INTO `sys_dict_type` (`dict_id`, `dict_name`, `dict_type`, `status`, `cre
 							, `create_time`, `update_by`, `update_time`, `remark`)
 VALUES (11, '缺陷等级', 'defect_level', '0', 'admin'
 	   , '2023-11-23 12:04:58', 'admin', '2023-11-23 12:12:52', NULL);
-
+COMMIT;
 DROP TABLE IF EXISTS `sys_job`;
 CREATE TABLE `sys_job` (
 						   `job_id` bigint NOT NULL AUTO_INCREMENT COMMENT '任务ID',
@@ -2106,7 +2184,7 @@ INSERT INTO `sys_job` (`job_id`, `job_name`, `job_group`, `invoke_target`, `cron
 VALUES (3, '系统默认（多参）', 'DEFAULT', 'ryTask.ryMultipleParams(''ry'', true, 2000L, 316.50D, 100)', '0/20 * * * * ?'
 	   , '3', '1', '1', 'admin', '2023-11-12 15:34:52'
 	   , '', NULL, '');
-
+COMMIT;
 DROP TABLE IF EXISTS `sys_job_log`;
 CREATE TABLE `sys_job_log` (
 							   `job_log_id` bigint NOT NULL AUTO_INCREMENT COMMENT '任务日志ID',
@@ -2119,7 +2197,7 @@ CREATE TABLE `sys_job_log` (
 							   `create_time` datetime DEFAULT NULL COMMENT '创建时间'
 );
 
-
+COMMIT;
 DROP TABLE IF EXISTS `sys_logininfor`;
 CREATE TABLE `sys_logininfor` (
 								  `info_id` bigint NOT NULL AUTO_INCREMENT COMMENT '访问ID',
@@ -2133,7 +2211,363 @@ CREATE TABLE `sys_logininfor` (
 								  `login_time` datetime DEFAULT NULL COMMENT '访问时间'
 );
 
-
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (241, 'demo', '127.0.0.1', '内网IP', 'Safari'
+	   , 'Mac OS X', '1', 'User does not exist/password error', '2024-03-25 13:11:14');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (242, 'demo', '127.0.0.1', '内网IP', 'Safari'
+	   , 'Mac OS X', '1', 'User does not exist/password error', '2024-03-25 13:11:15');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (243, 'demo', '127.0.0.1', '内网IP', 'Safari'
+	   , 'Mac OS X', '0', 'Registered successfully', '2024-03-25 13:11:30');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (244, 'demo', '127.0.0.1', '内网IP', 'Safari'
+	   , 'Mac OS X', '0', 'Login succeeded', '2024-03-25 13:11:34');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (245, 'demo', '127.0.0.1', '内网IP', 'Safari'
+	   , 'Mac OS X', '0', '退出成功', '2024-03-25 13:12:39');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (246, 'demo', '127.0.0.1', '内网IP', 'Safari'
+	   , 'Mac OS X', '0', '登录成功', '2024-03-25 13:12:41');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (247, 'demo', '127.0.0.1', '内网IP', 'Safari'
+	   , 'Mac OS X', '0', '退出成功', '2024-03-25 13:13:21');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (248, 'admin', '127.0.0.1', '内网IP', 'Safari'
+	   , 'Mac OS X', '0', '登录成功', '2024-03-25 13:13:30');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (249, 'admin', '127.0.0.1', '内网IP', 'Safari'
+	   , 'Mac OS X', '0', '退出成功', '2024-03-25 13:15:56');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (250, 'demo', '127.0.0.1', '内网IP', 'Safari'
+	   , 'Mac OS X', '0', '登录成功', '2024-03-25 13:16:00');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (251, 'demo', '127.0.0.1', '内网IP', 'Safari'
+	   , 'Mac OS X', '0', '登录成功', '2024-03-25 13:48:42');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (252, 'demo', '127.0.0.1', '内网IP', 'Safari'
+	   , 'Mac OS X', '0', '登录成功', '2024-03-26 09:56:30');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (253, 'demo', '127.0.0.1', '内网IP', 'Safari'
+	   , 'Mac OS X', '0', '登录成功', '2024-03-26 10:01:26');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (254, 'demo', '127.0.0.1', '内网IP', 'Safari'
+	   , 'Mac OS X', '0', '登录成功', '2024-03-26 10:59:43');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (255, 'liulei', '127.0.0.1', '内网IP', 'Chrome 12'
+	   , 'Mac OS X', '1', '成员不存在/密码错误', '2024-03-26 11:02:39');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (256, 'liulei', '127.0.0.1', '内网IP', 'Chrome 12'
+	   , 'Mac OS X', '1', '成员不存在/密码错误', '2024-03-26 11:02:41');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (257, 'demo', '127.0.0.1', '内网IP', 'Safari'
+	   , 'Mac OS X', '0', '退出成功', '2024-03-26 11:02:56');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (258, 'demo', '127.0.0.1', '内网IP', 'Safari'
+	   , 'Mac OS X', '0', '登录成功', '2024-03-26 11:03:07');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (259, 'demo', '127.0.0.1', '内网IP', 'Safari'
+	   , 'Mac OS X', '0', '登录成功', '2024-03-26 11:07:40');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (260, 'demo', '127.0.0.1', '内网IP', 'Safari'
+	   , 'Mac OS X', '0', '退出成功', '2024-03-26 11:09:15');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (261, 'demo', '127.0.0.1', '内网IP', 'Safari'
+	   , 'Mac OS X', '0', '登录成功', '2024-03-26 11:09:21');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (262, 'demo', '127.0.0.1', '内网IP', 'Safari'
+	   , 'Mac OS X', '0', '登录成功', '2024-03-26 11:15:44');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (263, 'demo', '127.0.0.1', '内网IP', 'Safari'
+	   , 'Mac OS X', '0', '登录成功', '2024-03-26 11:19:22');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (264, 'liulei', '127.0.0.1', '内网IP', 'Chrome 12'
+	   , 'Mac OS X', '1', '成员不存在/密码错误', '2024-03-26 11:29:10');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (265, 'liulei', '127.0.0.1', '内网IP', 'Chrome 12'
+	   , 'Mac OS X', '0', '登录成功', '2024-03-26 11:30:21');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (266, 'liulei', '127.0.0.1', '内网IP', 'Chrome 12'
+	   , 'Mac OS X', '0', '登录成功', '2024-03-26 15:02:12');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (267, 'demo', '127.0.0.1', '内网IP', 'Safari'
+	   , 'Mac OS X', '0', '登录成功', '2024-03-26 15:02:24');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (268, 'demo', '127.0.0.1', '内网IP', 'Safari'
+	   , 'Mac OS X', '0', '登录成功', '2024-03-28 11:30:30');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (269, 'demo', '127.0.0.1', '内网IP', 'Chrome 12'
+	   , 'Mac OS X', '0', 'Login succeeded', '2024-03-28 12:42:16');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (270, 'demo', '127.0.0.1', '内网IP', 'Chrome 12'
+	   , 'Mac OS X', '0', 'Login succeeded', '2024-03-28 12:47:11');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (271, 'demo', '127.0.0.1', '内网IP', 'Chrome 12'
+	   , 'Mac OS X', '0', 'Login succeeded', '2024-03-28 13:14:28');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (272, 'demo', '127.0.0.1', '内网IP', 'Chrome 12'
+	   , 'Mac OS X', '0', '登录成功', '2024-03-28 13:32:17');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (273, 'demo', '127.0.0.1', '内网IP', 'Chrome 12'
+	   , 'Mac OS X', '0', '登录成功', '2024-03-28 14:02:25');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (274, 'demo', '127.0.0.1', '内网IP', 'Chrome 12'
+	   , 'Mac OS X', '0', '登录成功', '2024-03-28 14:07:24');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (275, 'demo', '127.0.0.1', '内网IP', 'Chrome 12'
+	   , 'Mac OS X', '0', '登录成功', '2024-03-28 14:12:45');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (276, 'yu', '127.0.0.1', '内网IP', 'Chrome 12'
+	   , 'Mac OS X', '0', '注册成功', '2024-03-28 14:55:43');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (277, 'demo', '127.0.0.1', '内网IP', 'Chrome 12'
+	   , 'Mac OS X', '0', '登录成功', '2024-03-28 14:57:37');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (278, 'demo', '127.0.0.1', '内网IP', 'Safari'
+	   , 'Mac OS X', '0', '登录成功', '2024-04-03 20:05:23');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (279, 'demo', '127.0.0.1', '内网IP', 'Safari'
+	   , 'Mac OS X', '0', 'Login succeeded', '2024-04-03 20:35:31');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (280, 'demo', '127.0.0.1', '内网IP', 'Safari'
+	   , 'Mac OS X', '0', '登录成功', '2024-04-04 08:39:12');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (281, 'demo', '127.0.0.1', '内网IP', 'Safari'
+	   , 'Mac OS X', '0', '登录成功', '2024-04-04 09:34:16');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (282, 'demo', '127.0.0.1', '内网IP', 'Safari'
+	   , 'Mac OS X', '0', '登录成功', '2024-04-04 10:04:25');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (283, 'demo', '127.0.0.1', '内网IP', 'Safari'
+	   , 'Mac OS X', '0', '登录成功', '2024-04-04 10:37:42');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (284, 'demo', '127.0.0.1', '内网IP', 'Safari'
+	   , 'Mac OS X', '0', '登录成功', '2024-04-04 11:11:09');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (285, 'demo', '127.0.0.1', '内网IP', 'Safari'
+	   , 'Mac OS X', '0', '登录成功', '2024-04-04 11:50:41');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (286, 'demo', '127.0.0.1', '内网IP', 'Safari'
+	   , 'Mac OS X', '0', '登录成功', '2024-04-04 12:26:32');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (287, 'demo', '127.0.0.1', '内网IP', 'Safari'
+	   , 'Mac OS X', '0', '登录成功', '2024-04-04 13:38:45');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (288, 'demo', '127.0.0.1', '内网IP', 'Safari'
+	   , 'Mac OS X', '0', '登录成功', '2024-04-04 14:09:06');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (289, 'demo', '127.0.0.1', '内网IP', 'Safari'
+	   , 'Mac OS X', '0', '登录成功', '2024-04-04 16:25:03');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (290, 'demo', '127.0.0.1', '内网IP', 'Safari'
+	   , 'Mac OS X', '0', '登录成功', '2024-04-05 03:12:43');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (291, 'demo', '127.0.0.1', '内网IP', 'Safari'
+	   , 'Mac OS X', '0', '登录成功', '2024-04-05 05:18:04');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (292, 'demo', '127.0.0.1', '内网IP', 'Safari'
+	   , 'Mac OS X', '0', '登录成功', '2024-04-05 09:27:12');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (293, 'liulei', '127.0.0.1', '内网IP', 'Chrome 12'
+	   , 'Mac OS X', '0', '登录成功', '2024-04-05 14:03:29');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (294, 'liulei', '127.0.0.1', '内网IP', 'Chrome 12'
+	   , 'Mac OS X', '0', '登录成功', '2024-04-05 15:09:40');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (295, 'liulei', '127.0.0.1', '内网IP', 'Chrome 12'
+	   , 'Mac OS X', '0', '登录成功', '2024-04-05 15:47:42');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (296, 'liulei', '127.0.0.1', '内网IP', 'Chrome 12'
+	   , 'Mac OS X', '0', '登录成功', '2024-04-05 16:29:53');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (297, 'liulei', '127.0.0.1', '内网IP', 'Chrome 12'
+	   , 'Mac OS X', '0', 'Login succeeded', '2024-04-06 00:45:38');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (298, 'liulei', '127.0.0.1', '内网IP', 'Chrome 12'
+	   , 'Mac OS X', '0', 'Login succeeded', '2024-04-06 01:35:40');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (299, 'liulei', '127.0.0.1', '内网IP', 'Chrome 12'
+	   , 'Mac OS X', '0', '退出成功', '2024-04-06 01:52:46');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (300, 'admin', '127.0.0.1', '内网IP', 'Chrome 12'
+	   , 'Mac OS X', '0', '登录成功', '2024-04-06 01:52:57');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (301, 'admin', '127.0.0.1', '内网IP', 'Chrome 12'
+	   , 'Mac OS X', '0', '登录成功', '2024-04-06 07:50:34');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (302, 'admin', '127.0.0.1', '内网IP', 'Chrome 12'
+	   , 'Mac OS X', '0', '退出成功', '2024-04-06 07:50:38');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (303, 'demo', '127.0.0.1', '内网IP', 'Chrome 12'
+	   , 'Mac OS X', '0', '登录成功', '2024-04-06 07:50:43');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (304, 'demo', '127.0.0.1', '内网IP', 'Chrome 12'
+	   , 'Mac OS X', '0', '登录成功', '2024-04-06 08:01:26');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (305, 'demo', '127.0.0.1', '内网IP', 'Chrome 12'
+	   , 'Mac OS X', '0', '登录成功', '2024-04-06 08:05:16');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (306, 'demo', '127.0.0.1', '内网IP', 'Chrome 12'
+	   , 'Mac OS X', '0', '登录成功', '2024-04-06 10:42:53');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (307, 'demo', '127.0.0.1', '内网IP', 'Chrome 12'
+	   , 'Mac OS X', '0', '登录成功', '2024-04-06 10:49:45');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (308, 'demo', '127.0.0.1', '内网IP', 'Chrome 12'
+	   , 'Mac OS X', '0', '登录成功', '2024-04-06 11:24:29');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (309, 'demo', '127.0.0.1', '内网IP', 'Chrome 12'
+	   , 'Mac OS X', '0', '登录成功', '2024-04-06 11:45:22');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (310, 'demo', '127.0.0.1', '内网IP', 'Chrome 12'
+	   , 'Mac OS X', '0', '登录成功', '2024-04-06 12:16:48');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (311, 'demo', '127.0.0.1', '内网IP', 'Chrome 12'
+	   , 'Mac OS X', '0', '登录成功', '2024-04-06 13:31:03');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (312, 'demo', '127.0.0.1', '内网IP', 'Chrome 12'
+	   , 'Mac OS X', '0', '登录成功', '2024-04-06 14:01:09');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (313, 'demo', '127.0.0.1', '内网IP', 'Chrome 12'
+	   , 'Mac OS X', '0', '登录成功', '2024-04-06 15:36:39');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (314, 'demo', '127.0.0.1', '内网IP', 'Chrome 12'
+	   , 'Mac OS X', '0', '登录成功', '2024-04-06 15:53:00');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (315, 'demo', '127.0.0.1', '内网IP', 'Chrome 12'
+	   , 'Mac OS X', '0', '登录成功', '2024-04-06 15:58:30');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (316, 'demo', '127.0.0.1', '内网IP', 'Chrome 12'
+	   , 'Mac OS X', '0', '登录成功', '2024-04-06 16:29:44');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (317, 'demo', '127.0.0.1', '内网IP', 'Chrome 12'
+	   , 'Mac OS X', '0', '登录成功', '2024-04-06 17:00:35');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (318, 'demo', '127.0.0.1', '内网IP', 'Chrome 12'
+	   , 'Mac OS X', '0', '登录成功', '2024-04-06 17:30:47');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (319, 'demo', '127.0.0.1', '内网IP', 'Chrome 12'
+	   , 'Mac OS X', '0', '登录成功', '2024-04-07 01:25:34');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (320, 'demo', '127.0.0.1', '内网IP', 'Chrome 12'
+	   , 'Mac OS X', '0', '登录成功', '2024-04-07 03:26:13');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (321, 'demo', '127.0.0.1', '内网IP', 'Chrome 12'
+	   , 'Mac OS X', '0', '登录成功', '2024-04-07 07:27:30');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (322, 'demo', '127.0.0.1', '内网IP', 'Chrome 12'
+	   , 'Mac OS X', '0', '登录成功', '2024-04-07 08:03:30');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (323, 'demo', '127.0.0.1', '内网IP', 'Chrome 12'
+	   , 'Mac OS X', '0', '登录成功', '2024-04-07 08:33:35');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (324, 'demo', '127.0.0.1', '内网IP', 'Chrome 12'
+	   , 'Mac OS X', '0', '登录成功', '2024-04-07 08:44:32');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (325, 'demo', '127.0.0.1', '内网IP', 'Chrome 12'
+	   , 'Mac OS X', '0', 'Login succeeded', '2024-04-07 09:32:35');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (326, 'demo', '127.0.0.1', '内网IP', 'Chrome 12'
+	   , 'Mac OS X', '0', 'Login succeeded', '2024-04-07 10:06:21');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (327, 'demo', '127.0.0.1', '内网IP', 'Chrome 12'
+	   , 'Mac OS X', '0', '登录成功', '2024-04-07 10:44:21');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (328, 'demo', '127.0.0.1', '内网IP', 'Safari'
+	   , 'Mac OS X', '0', '登录成功', '2024-04-07 10:58:09');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+							 , `os`, `status`, `msg`, `login_time`)
+VALUES (329, 'demo', '127.0.0.1', '内网IP', 'Safari'
+	   , 'Mac OS X', '0', '登录成功', '2024-04-07 11:24:46');
+COMMIT;
 DROP TABLE IF EXISTS `sys_menu`;
 CREATE TABLE `sys_menu` (
 							`menu_id` bigint NOT NULL AUTO_INCREMENT COMMENT '菜单ID',
@@ -3414,7 +3848,7 @@ VALUES (2092, '报告导出', 2087, 5, '#'
 	   , '', NULL, 1, 0, 'F'
 	   , '0', '0', 'system:report:export', '#', 'admin'
 	   , '2024-03-13 03:27:13', '', NULL, '', NULL);
-
+COMMIT;
 DROP TABLE IF EXISTS `sys_module`;
 CREATE TABLE `sys_module` (
 							  `module_id` bigint NOT NULL AUTO_INCREMENT COMMENT '模块id',
@@ -3424,7 +3858,11 @@ CREATE TABLE `sys_module` (
 							  `project_id` bigint DEFAULT NULL COMMENT '项目id'
 );
 
-
+INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`)
+VALUES (263, 0, '登陆', NULL, 2);
+INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`)
+VALUES (264, 0, '首页', NULL, 2);
+COMMIT;
 DROP TABLE IF EXISTS `sys_notice`;
 CREATE TABLE `sys_notice` (
 							  `notice_id` int NOT NULL AUTO_INCREMENT COMMENT '公告ID',
@@ -3439,7 +3877,7 @@ CREATE TABLE `sys_notice` (
 							  `remark` varchar(255) DEFAULT NULL COMMENT '备注'
 );
 
-
+COMMIT;
 DROP TABLE IF EXISTS `sys_oper_log`;
 CREATE TABLE `sys_oper_log` (
 								`oper_id` bigint NOT NULL AUTO_INCREMENT COMMENT '日志主键',
@@ -3461,7 +3899,7 @@ CREATE TABLE `sys_oper_log` (
 								`cost_time` bigint DEFAULT '0' COMMENT '消耗时间'
 );
 
-
+COMMIT;
 DROP TABLE IF EXISTS `sys_post`;
 CREATE TABLE `sys_post` (
 							`post_id` bigint NOT NULL AUTO_INCREMENT COMMENT '岗位ID',
@@ -3492,7 +3930,7 @@ INSERT INTO `sys_post` (`post_id`, `post_code`, `post_name`, `post_sort`, `statu
 					   , `create_by`, `create_time`, `update_by`, `update_time`, `remark`)
 VALUES (4, 'user', '普通员工', 4, '0'
 	   , 'admin', '2023-11-12 15:34:52', '', NULL, '');
-
+COMMIT;
 DROP TABLE IF EXISTS `sys_project`;
 CREATE TABLE `sys_project` (
 							   `project_id` bigint NOT NULL AUTO_INCREMENT COMMENT '项目id',
@@ -3507,7 +3945,7 @@ CREATE TABLE `sys_project` (
 							   `project_state` int DEFAULT '1' COMMENT '项目状态(0删除；1运行)'
 );
 
-
+COMMIT;
 DROP TABLE IF EXISTS `sys_project_api`;
 CREATE TABLE `sys_project_api` (
 								   `api_id` varchar(32) NOT NULL COMMENT '项目api主键',
@@ -3518,7 +3956,19 @@ CREATE TABLE `sys_project_api` (
 								   `remark` varchar(255) DEFAULT NULL COMMENT '备注'
 );
 
+COMMIT;
+DROP TABLE IF EXISTS `sys_project_defect_tabs`;
+CREATE TABLE `sys_project_defect_tabs` (
+										   `tab_id` bigint NOT NULL AUTO_INCREMENT COMMENT '页签ID',
+										   `tab_name` varchar(255) NOT NULL COMMENT '页签名称',
+										   `project_id` bigint DEFAULT NULL COMMENT '项目ID',
+										   `user_id` bigint DEFAULT NULL COMMENT '用户ID',
+										   `config` json DEFAULT NULL COMMENT '配置项',
+										   `tab_sort` int DEFAULT NULL COMMENT '排序',
+										   `create_time` datetime DEFAULT NULL COMMENT '创建时间'
+);
 
+COMMIT;
 DROP TABLE IF EXISTS `sys_report`;
 CREATE TABLE `sys_report` (
 							  `report_id` bigint NOT NULL AUTO_INCREMENT COMMENT '报告ID',
@@ -3533,7 +3983,7 @@ CREATE TABLE `sys_report` (
 							  `report_key` varchar(255) DEFAULT NULL COMMENT '报告KEY'
 );
 
-
+COMMIT;
 DROP TABLE IF EXISTS `sys_role`;
 CREATE TABLE `sys_role` (
 							`role_id` bigint NOT NULL AUTO_INCREMENT COMMENT '角色ID',
@@ -3651,7 +4101,7 @@ VALUES (12, '团队创建人', 'team.create-by', 11, '1'
 	   , 1, 1, '0', '0', 'admin'
 	   , '2024-01-06 03:41:45', 'admin', '2024-03-13 03:30:57', NULL, 1
 	   , 0, 'team.create-by');
-
+COMMIT;
 DROP TABLE IF EXISTS `sys_role_dept`;
 CREATE TABLE `sys_role_dept` (
 								 `role_id` bigint NOT NULL COMMENT '角色ID',
@@ -3664,7 +4114,7 @@ INSERT INTO `sys_role_dept` (`role_id`, `dept_id`)
 VALUES (2, 101);
 INSERT INTO `sys_role_dept` (`role_id`, `dept_id`)
 VALUES (2, 105);
-
+COMMIT;
 DROP TABLE IF EXISTS `sys_role_menu`;
 CREATE TABLE `sys_role_menu` (
 								 `role_id` bigint NOT NULL COMMENT '角色ID',
@@ -4543,7 +4993,7 @@ INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (8172998673286452224, 8347487526202918912);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (8172998673286452224, 8436826121879359488);
-
+COMMIT;
 DROP TABLE IF EXISTS `sys_screen_size`;
 CREATE TABLE `sys_screen_size` (
 								   `screen_size_id` bigint NOT NULL AUTO_INCREMENT COMMENT '屏幕尺寸id',
@@ -4593,7 +5043,7 @@ INSERT INTO `sys_screen_size` (`screen_size_id`, `name`, `width`, `height`, `rem
 VALUES (550962939801262080, '3849W', 'GPNSL', 'P3B5S', NULL);
 INSERT INTO `sys_screen_size` (`screen_size_id`, `name`, `width`, `height`, `remark`)
 VALUES (8876890465889862656, 'T5U9K', '25PGK', 'PM5LY', NULL);
-
+COMMIT;
 DROP TABLE IF EXISTS `sys_team`;
 CREATE TABLE `sys_team` (
 							`team_id` bigint NOT NULL AUTO_INCREMENT COMMENT '团队id',
@@ -4607,7 +5057,7 @@ CREATE TABLE `sys_team` (
 							`is_del` tinyint DEFAULT NULL COMMENT '是否删除'
 );
 
-
+COMMIT;
 DROP TABLE IF EXISTS `sys_temp_file`;
 CREATE TABLE `sys_temp_file` (
 								 `file_id` bigint NOT NULL AUTO_INCREMENT COMMENT '文件id',
@@ -4619,7 +5069,7 @@ CREATE TABLE `sys_temp_file` (
 								 `file_url` varchar(255) DEFAULT NULL COMMENT '文件地址'
 );
 
-
+COMMIT;
 DROP TABLE IF EXISTS `sys_user`;
 CREATE TABLE `sys_user` (
 							`user_id` bigint NOT NULL AUTO_INCREMENT COMMENT '用户ID',
@@ -4649,18 +5099,20 @@ INSERT INTO `sys_user` (`user_id`, `dept_id`, `user_name`, `nick_name`, `user_ty
 					   , `create_time`, `update_by`, `update_time`, `remark`)
 VALUES (1, 0, 'admin', '黑猫警长', '00'
 	   , 'admin@cat2bug.com', '18888888888', '0', '', '$2a$10$5enMqRePATm8OfHb0/64Ce3NGChvmefyvTA3o/7juZEm4mEf1dxgu'
-	   , '0', '0', '127.0.0.1', '2024-03-20 15:47:40', 'admin'
-	   , '2023-11-12 15:34:51', '', '2024-03-20 07:47:40', '管理员');
-
+	   , '0', '0', '127.0.0.1', '2024-04-06 15:50:34', 'admin'
+	   , '2023-11-12 15:34:51', '', '2024-04-06 07:50:34', '管理员');
+COMMIT;
 DROP TABLE IF EXISTS `sys_user_config`;
 CREATE TABLE `sys_user_config` (
 								   `user_config_id` bigint NOT NULL AUTO_INCREMENT COMMENT '用户配置id',
 								   `current_team_id` bigint DEFAULT NULL COMMENT '当前团队id',
 								   `user_id` bigint DEFAULT NULL COMMENT '用户id',
-								   `current_project_id` bigint DEFAULT NULL COMMENT '当前项目id'
+								   `current_project_id` bigint DEFAULT NULL COMMENT '当前项目id',
+								   `exit_time` datetime DEFAULT NULL COMMENT '退出时间',
+								   `defect_last_access_time` datetime DEFAULT NULL COMMENT '最后访问缺陷时间'
 );
 
-
+COMMIT;
 DROP TABLE IF EXISTS `sys_user_defect`;
 CREATE TABLE `sys_user_defect` (
 								   `user_defect_id` bigint NOT NULL AUTO_INCREMENT COMMENT '用户缺陷id',
@@ -4669,14 +5121,14 @@ CREATE TABLE `sys_user_defect` (
 								   `collect` tinyint(1) DEFAULT NULL COMMENT '是否收藏'
 );
 
-
+COMMIT;
 DROP TABLE IF EXISTS `sys_user_post`;
 CREATE TABLE `sys_user_post` (
 								 `user_id` bigint NOT NULL COMMENT '用户ID',
 								 `post_id` bigint NOT NULL COMMENT '岗位ID'
 );
 
-
+COMMIT;
 DROP TABLE IF EXISTS `sys_user_project`;
 CREATE TABLE `sys_user_project` (
 									`user_project_id` bigint NOT NULL AUTO_INCREMENT COMMENT '用户项目id',
@@ -4690,7 +5142,7 @@ CREATE TABLE `sys_user_project` (
 									`collect` tinyint(1) DEFAULT NULL COMMENT '是否收藏'
 );
 
-
+COMMIT;
 DROP TABLE IF EXISTS `sys_user_project_role`;
 CREATE TABLE `sys_user_project_role` (
 										 `user_project_role_id` bigint NOT NULL AUTO_INCREMENT COMMENT '用户项目角色id',
@@ -4698,7 +5150,7 @@ CREATE TABLE `sys_user_project_role` (
 										 `role_id` bigint NOT NULL COMMENT '角色id'
 );
 
-
+COMMIT;
 DROP TABLE IF EXISTS `sys_user_role`;
 CREATE TABLE `sys_user_role` (
 								 `user_id` bigint NOT NULL COMMENT '用户ID',
@@ -4707,7 +5159,11 @@ CREATE TABLE `sys_user_role` (
 
 INSERT INTO `sys_user_role` (`user_id`, `role_id`)
 VALUES (182, 10);
-
+INSERT INTO `sys_user_role` (`user_id`, `role_id`)
+VALUES (189, 10);
+INSERT INTO `sys_user_role` (`user_id`, `role_id`)
+VALUES (192, 10);
+COMMIT;
 DROP TABLE IF EXISTS `sys_user_statistic_template`;
 CREATE TABLE `sys_user_statistic_template` (
 											   `statistic_template_id` bigint NOT NULL AUTO_INCREMENT COMMENT '统计模版id',
@@ -4718,7 +5174,7 @@ CREATE TABLE `sys_user_statistic_template` (
 											   `statistic_templat_config` json DEFAULT NULL COMMENT '统计模版配置'
 );
 
-
+COMMIT;
 DROP TABLE IF EXISTS `sys_user_team`;
 CREATE TABLE `sys_user_team` (
 								 `user_team_id` bigint NOT NULL AUTO_INCREMENT COMMENT '用户团队id',
@@ -4732,7 +5188,7 @@ CREATE TABLE `sys_user_team` (
 								 `team_lock` tinyint(1) DEFAULT '0' COMMENT '是否锁定'
 );
 
-
+COMMIT;
 DROP TABLE IF EXISTS `sys_user_team_role`;
 CREATE TABLE `sys_user_team_role` (
 									  `user_team_role_id` bigint NOT NULL AUTO_INCREMENT COMMENT '用户团队角色id',
