@@ -300,7 +300,11 @@ export default {
   }
 }
 </script>
-
+<style>
+  .select-project-member-tabs .el-tabs__nav-prev, .select-project-member-tabs .el-tabs__nav-next {
+    line-height: 27px;
+  }
+</style>
 <style lang="scss" scoped>
   ::v-deep .select-project-member-input {
     display: inline-flex;
