@@ -104,7 +104,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <where>
             <if test="defect.projectNum != null "> and d.project_num = #{defect.projectNum}</if>
             <if test="defect.defectType != null "> and d.defect_type = #{defect.defectType, typeHandler=com.cat2bug.common.core.domain.handle.SysDefectTypeEnumTypeHandler }</if>
-            <if test="defect.defectName != null  and defect.defectName != ''"> and d.defect_name like concat('%', #{defect.defectName}, '%')</if>
+            <if test="defect.defectName != null  and defect.defectName != ''"> and (d.defect_name like concat('%', #{defect.defectName}, '%') or d.defect_name=#{defect.defectName})</if>
             <if test="defect.projectId != null "> and d.project_id = #{defect.projectId}</if>
             <if test="defect.testPlanId != null "> and d.test_plan_id = #{defect.testPlanId}</if>
             <if test="defect.caseId != null "> and d.case_id = #{defect.caseId}</if>

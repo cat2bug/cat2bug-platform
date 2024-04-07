@@ -6,12 +6,18 @@ import com.cat2bug.common.core.domain.AjaxResult;
 import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.common.core.page.TableDataInfo;
 import com.cat2bug.common.enums.BusinessType;
+import com.cat2bug.common.utils.SecurityUtils;
 import com.cat2bug.common.utils.poi.ExcelUtil;
 import com.cat2bug.common.core.domain.entity.SysDefect;
 import com.cat2bug.system.domain.SysDefectLog;
+import com.cat2bug.system.domain.SysProjectDefectTabs;
+import com.cat2bug.system.domain.SysUserConfig;
 import com.cat2bug.system.service.IMemberFocusService;
 import com.cat2bug.system.service.ISysDefectService;
+import com.cat2bug.system.service.ISysProjectDefectTabsService;
+import com.cat2bug.system.service.ISysUserConfigService;
 import com.cat2bug.system.websocket.MessageWebsocket;
+import org.apache.catalina.security.SecurityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -35,10 +41,12 @@ public class SysDefectController extends BaseController
 
     @Autowired
     private ISysDefectService sysDefectService;
-
     @Autowired
     private IMemberFocusService memberFocusService;
-
+    @Autowired
+    private ISysProjectDefectTabsService sysProjectDefectTabsService;
+    @Autowired
+    private ISysUserConfigService sysUserConfigService;
     /**
      * 查询缺陷配置
      */
@@ -46,9 +54,15 @@ public class SysDefectController extends BaseController
     @GetMapping("/config")
     public AjaxResult config()
     {
+        SysUserConfig userConfig = sysUserConfigService.selectSysUserConfigByUserId(getUserId());
         Map<String,Object> ret = new HashMap<>();
         ret.put("types",sysDefectService.getDefectTypeList());
         ret.put("states",sysDefectService.getDefectStateList());
+
+        SysProjectDefectTabs pdt =new SysProjectDefectTabs();
+        pdt.setProjectId(userConfig.getCurrentProjectId());
+        pdt.setUserId(getUserId());
+        ret.put("tabs",sysProjectDefectTabsService.selectSysProjectDefectTabsList(pdt));
         return success(ret);
     }
 

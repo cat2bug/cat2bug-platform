@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.system.mapper.SysProjectDefectTabsMapper">
+    
+    <resultMap type="SysProjectDefectTabs" id="SysProjectDefectTabsResult">
+        <result property="tabId"    column="tab_id"    />
+        <result property="tabName"    column="tab_name"    />
+        <result property="projectId"    column="project_id"    />
+        <result property="userId"    column="user_id"    />
+        <result property="config"    column="config"   typeHandler="com.cat2bug.system.domain.handle.SysDefectHandler"   />
+        <result property="tabSort"    column="tab_sort"    />
+        <result property="createTime"    column="create_time"    />
+    </resultMap>
+
+    <sql id="selectSysProjectDefectTabsVo">
+        select tab_id, tab_name, project_id, user_id, config, tab_sort, create_time from sys_project_defect_tabs
+    </sql>
+
+    <select id="selectSysProjectDefectTabsList" parameterType="SysProjectDefectTabs" resultMap="SysProjectDefectTabsResult">
+        <include refid="selectSysProjectDefectTabsVo"/>
+        <where>  
+            <if test="tabName != null  and tabName != ''"> and tab_name like concat('%', #{tabName}, '%')</if>
+            <if test="projectId != null "> and project_id = #{projectId}</if>
+            <if test="userId != null "> and user_id = #{userId}</if>
+        </where>
+    </select>
+    
+    <select id="selectSysProjectDefectTabsByTabId" parameterType="Long" resultMap="SysProjectDefectTabsResult">
+        <include refid="selectSysProjectDefectTabsVo"/>
+        where tab_id = #{tabId}
+    </select>
+        
+    <insert id="insertSysProjectDefectTabs" parameterType="SysProjectDefectTabs" useGeneratedKeys="true" keyProperty="tabId" keyColumn="tab_id">
+        insert into sys_project_defect_tabs
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="tabId != null">tab_id,</if>
+            <if test="tabName != null and tabName != ''">tab_name,</if>
+            <if test="projectId != null">project_id,</if>
+            <if test="userId != null">user_id,</if>
+            <if test="config != null">config,</if>
+            <if test="tabSort != null">tab_sort,</if>
+            <if test="createTime != null">create_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="tabId != null">#{tabId},</if>
+            <if test="tabName != null and tabName != ''">#{tabName},</if>
+            <if test="projectId != null">#{projectId},</if>
+            <if test="userId != null">#{userId},</if>
+            <if test="config != null">#{config, typeHandler=com.cat2bug.system.domain.handle.SysDefectHandler},</if>
+            <if test="tabSort != null">#{tabSort},</if>
+            <if test="createTime != null">#{createTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateSysProjectDefectTabs" parameterType="SysProjectDefectTabs">
+        update sys_project_defect_tabs
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="tabName != null and tabName != ''">tab_name = #{tabName},</if>
+            <if test="projectId != null">project_id = #{projectId},</if>
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="config != null">config = #{config, typeHandler=com.cat2bug.system.domain.handle.SysDefectHandler},</if>
+            <if test="tabSort != null">tab_sort = #{tabSort},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+        </trim>
+        where tab_id = #{tabId}
+    </update>
+
+    <delete id="deleteSysProjectDefectTabsByTabId" parameterType="Long">
+        delete from sys_project_defect_tabs where tab_id = #{tabId}
+    </delete>
+
+    <delete id="deleteSysProjectDefectTabsByTabIds" parameterType="String">
+        delete from sys_project_defect_tabs where tab_id in 
+        <foreach item="tabId" collection="array" open="(" separator="," close=")">
+            #{tabId}
+        </foreach>
+    </delete>
+</mapper>

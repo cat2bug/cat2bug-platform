@@ -1,5 +1,7 @@
 package com.cat2bug.common.core.domain.type;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 /**
  * @Author: yuzhantao
  * @CreateTime: 2023-11-28 14:01
