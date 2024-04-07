@@ -66,7 +66,7 @@
             <el-link type="primary" v-for="(file,index) in getUrl(defect.annexUrls)" :key="index" :href="file">{{getFileName(file)}}</el-link>
           </div>
         </el-collapse-item>
-        <el-collapse-item v-if="defect.caseStepId" :title="$i18n.t('case')" name="caseId">
+        <el-collapse-item v-if="defectCase && defectCase.caseId" :title="$i18n.t('case')" name="caseId">
           <case-card :case-model="defectCase" :state-visible="true" :step-index.sync="defect.caseStepId" :edit="false" />
         </el-collapse-item>
         <el-collapse-item :title="$i18n.t('log')" name="log">
