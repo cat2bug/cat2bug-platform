@@ -414,5 +414,15 @@
   "report.delete-report": "Do you want to delete this report ?",
   "report.type-text": "Text Report",
   "report.type-runtime": "Runtime Report",
-  "pusher": "Pusher"
+  "pusher": "Pusher",
+  "copy-success": "Copy Success",
+  "click-copy": "Click Copy",
+  "defect.shard.click-view": "Click on the link to directly view defect details",
+  "defect.shard.click-qrcode-info": "Please right-click on the image and select \"Identify QR Code\" to jump to the defect details page.",
+  "shard.aging-hour": "Aging",
+  "shard.please-enter-password": "Please enter 4-bit password",
+  "shard.1hour": "1 Hour",
+  "shard.1day": "1 Day",
+  "shard.7day": "7 Day",
+  "shard.permanent": "Permanent"
 }

@@ -414,5 +414,15 @@
   "report.delete-report": "是否要删除此报告？",
   "report.type-text": "文本报告",
   "report.type-runtime": "实时报告",
-  "pusher": "推送人"
+  "pusher": "推送人",
+  "copy-success": "复制成功",
+  "click-copy": "点击复制",
+  "defect.shard.click-view": "点击链接直接查看缺陷详情",
+  "defect.shard.click-qrcode-info": "请右键点击图片，选中\"识别二维码\"跳转到缺陷详情页。",
+  "shard.aging-hour": "时效",
+  "shard.please-enter-password": "请输入4位密码",
+  "shard.1hour": "1小时",
+  "shard.1day": "1天",
+  "shard.7day": "7天",
+  "shard.permanent": "永久"
 }

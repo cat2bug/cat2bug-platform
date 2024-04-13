@@ -73,7 +73,10 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             sys_defect d
                 LEFT JOIN sys_module m ON m.module_id = d.module_id
                 LEFT JOIN sys_project p ON d.project_id = p.project_id
-                LEFT JOIN sys_user_defect ud ON ud.defect_id = d.defect_id and ud.user_id = #{currentUserId}
+                LEFT JOIN sys_user_defect ud ON ud.defect_id = d.defect_id
+                            <if test="currentUserId != null ">
+                               and ud.user_id = #{currentUserId}
+                            </if>
                 LEFT JOIN (
                     SELECT
                         d1.defect_id,

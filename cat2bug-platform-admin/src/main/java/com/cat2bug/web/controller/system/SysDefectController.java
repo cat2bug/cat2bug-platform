@@ -83,7 +83,7 @@ public class SysDefectController extends BaseController
     }
 
     /**
-     * 驳回
+     * 关闭前端编辑窗口
      */
     @Log(title = "驳回缺陷", businessType = BusinessType.INSERT)
     @PostMapping("/{defectId}/close-edit-window")
@@ -113,7 +113,7 @@ public class SysDefectController extends BaseController
     @GetMapping(value = "/{defectId}")
     public AjaxResult getInfo(@PathVariable("defectId") Long defectId)
     {
-        SysDefect sysDefect = sysDefectService.selectSysDefectByDefectId(defectId);
+        SysDefect sysDefect = sysDefectService.selectSysDefectByDefectId(defectId,getUserId());
         if(sysDefect!=null) {
             memberFocusService.setFocus(MODULE_NAME, defectId, this.getLoginUser().getUser());
             List<SysUser> focusList = memberFocusService.getFocusMemberList(MODULE_NAME,defectId);

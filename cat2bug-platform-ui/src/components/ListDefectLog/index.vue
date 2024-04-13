@@ -4,7 +4,7 @@
       <el-col class="list-defect-log-row" :span="24">
         <component :is="log.defectLogType" :log="log"></component>
         <div>
-          <el-button v-if="showComment" icon="el-icon-chat-line-round" size="mini" type="text" @click="showCommentInputHandle(log)">{{$i18n.t('comment')}}</el-button>
+          <el-button v-if="commentPermi" icon="el-icon-chat-line-round" size="mini" type="text" @click="showCommentInputHandle(log)">{{$i18n.t('comment')}}</el-button>
           <span class="time">{{ parseTime(log.createTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
         </div>
       </el-col>
@@ -30,6 +30,7 @@ import Cat2BugAvatar from "@/components/Cat2BugAvatar";
 import CommentInput from "@/components/Comment/CommentInput";
 import CommentView from "@/components/Comment/CommentView";
 import {addComment} from "@/api/system/comment";
+import {checkPermi} from "@/utils/permission";
 export default {
   name: "ListDefectLog",
   components:{ CREATE,ASSIGN,REJECTED,REPAIR,PASS,CLOSED,OPEN,Cat2BugAvatar, CommentInput, CommentView,UPDATE },
@@ -55,6 +56,9 @@ export default {
     }
   },
   computed: {
+    commentPermi: function () {
+      return this.showComment && checkPermi(['system:defect:list']);
+    },
     commentParse: function () {
       return function (content) {
         if(this.$refs.commentInputOfLog){
@@ -78,6 +82,12 @@ export default {
     open(defectId) {
       this.defectId = defectId;
       this.getLog();
+    },
+    refresh(logs) {
+      this.logList = logs.map(l=>{
+        l.visibleCommentInput = false;
+        return l;
+      });
     },
     getLog() {
       listLog({

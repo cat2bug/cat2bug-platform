@@ -68,9 +68,10 @@ public interface ISysDefectService
      * 查询缺陷
      * 
      * @param defectId 缺陷主键
+     * @param memberId 成员主键
      * @return 缺陷
      */
-    public SysDefect selectSysDefectByDefectId(Long defectId);
+    public SysDefect selectSysDefectByDefectId(Long defectId, Long memberId);
 
     /**
      * 查询缺陷列表

@@ -1,6 +1,7 @@
 <template>
   <div class="defect-tools">
     <slot name="left"></slot>
+    <share-card :params="defect" />
     <star-switch v-model="defect.collect" @change="clickCollectHandle($event, defect, false)"></star-switch>
     <el-button v-show="assignVisible" :icon="isShowIcon?'el-icon-refresh':''" :size="size" :type="isText?'text':'info'" @click="assignHandle" v-hasPermi="['system:defect:assign']">{{$i18n.t('assign')}}</el-button>
     <el-button v-show="repairVisible" :icon="isShowIcon?'el-icon-document-checked':''" :size="size" :type="isText?'text':'primary'" @click="repairDialogHandle" v-hasPermi="['system:defect:repair']">{{$i18n.t('repair')}}</el-button>
@@ -37,6 +38,7 @@ import CloseDialog from "@/components/Defect/DefectTools/CloseDialog";
 import OpenDialog from "@/components/Defect/DefectTools/OpenDialog";
 import EditDefectDialog from "@/components/Defect/EditDefectDialog";
 import StarSwitch from "@/components/StarSwitch";
+import ShareCard from "@/components/ShareCard";
 import {delDefect, updateUserDefect} from "@/api/system/defect";
 import {checkPermi} from "@/utils/permission";
 import i18n from "@/utils/i18n/i18n";
@@ -53,7 +55,7 @@ const REJECTED_STATE = 'REJECTED';
 const CLOSE_STATE = 'CLOSED';
 export default {
   name: "DefectTools",
-  components: {PassDialog, AssignDialog, RejectDialog, RepairDialog,CloseDialog,OpenDialog,EditDefectDialog,StarSwitch },
+  components: {PassDialog, AssignDialog, RejectDialog, RepairDialog,CloseDialog,OpenDialog,EditDefectDialog,StarSwitch, ShareCard },
   model: {
     prop: 'defect',
     event: 'update'

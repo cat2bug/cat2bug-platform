@@ -65,7 +65,7 @@ public class SysDefectServiceImpl implements ISysDefectService
     @Transactional
     public SysDefectLog reject(SysDefectLog sysDefectLog) {
         // 更新缺陷
-        SysDefect sd = this.selectSysDefectByDefectId(sysDefectLog.getDefectId());
+        SysDefect sd = this.selectSysDefectByDefectId(sysDefectLog.getDefectId(), SecurityUtils.getUserId());
         Preconditions.checkNotNull(sd,MessageUtils.message("defect.not_found"));
         sd.setDefectState(SysDefectStateEnum.REJECTED);
         sd.setHandleBy(Arrays.asList(Long.valueOf(sd.getUpdateBy())));
@@ -173,12 +173,13 @@ public class SysDefectServiceImpl implements ISysDefectService
      * 查询缺陷
      * 
      * @param defectId 缺陷主键
+     * @param memberId 成员主键
      * @return 缺陷
      */
     @Override
-    public SysDefect selectSysDefectByDefectId(Long defectId)
+    public SysDefect selectSysDefectByDefectId(Long defectId,Long memberId)
     {
-        SysDefect sysDefect = sysDefectMapper.selectSysDefectByDefectId(defectId, SecurityUtils.getUserId());
+        SysDefect sysDefect = sysDefectMapper.selectSysDefectByDefectId(defectId, memberId);
         if(sysDefect.getHandleByList()!=null){
             sysDefect.setHandleByList(sysDefect.getHandleByList().stream().filter(h->h.getUserId()>0).collect(Collectors.toList()));
         }

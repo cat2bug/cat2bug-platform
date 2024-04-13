@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.system.mapper.SysDefectShardMapper">
+    
+    <resultMap type="SysDefectShard" id="SysDefectShardResult">
+        <result property="defectShardId"    column="defect_shard_id"    />
+        <result property="projectId"    column="project_id"    />
+        <result property="defectId"    column="defect_id"    />
+        <result property="password"    column="password"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="createById"    column="create_by_id"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="agingTime"    column="aging_time"    />
+        <result property="defaultLang" column="default_lang" />
+    </resultMap>
+
+    <sql id="selectSysDefectShardVo">
+        select s.defect_shard_id, s.defect_id, d.project_id, s.password, s.create_time, s.create_by_id, s.update_time, s.aging_time, s.default_lang from sys_defect_shard s
+        left join sys_defect d ON d.defect_id = s.defect_id
+    </sql>
+
+    <select id="selectSysDefectShardList" parameterType="SysDefectShard" resultMap="SysDefectShardResult">
+        <include refid="selectSysDefectShardVo"/>
+        <where>  
+            <if test="defectId != null "> and s.defect_id = #{defectId}</if>
+            <if test="createById != null "> and s.create_by_id = #{createById}</if>
+            <if test="agingTime != null "> and s.aging_time = #{agingTime}</if>
+        </where>
+    </select>
+    
+    <select id="selectSysDefectShardByDefectShardId" parameterType="String" resultMap="SysDefectShardResult">
+        <include refid="selectSysDefectShardVo"/>
+        where s.defect_shard_id = #{defectShardId}
+    </select>
+
+    <select id="selectSysDefectShardByDefectIdAndMemberId" resultMap="SysDefectShardResult">
+        <include refid="selectSysDefectShardVo"/>
+        where s.defect_id = #{defectId} and s.create_by_id = #{memberId}
+    </select>
+
+    <insert id="insertSysDefectShard" parameterType="SysDefectShard">
+        insert into sys_defect_shard
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="defectShardId != null">defect_shard_id,</if>
+            <if test="defectId != null">defect_id,</if>
+            <if test="password != null">password,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="createById != null">create_by_id,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="agingTime != null">aging_time,</if>
+            <if test="defaultLang !=null and defaultLang != ''">default_lang,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="defectShardId != null">#{defectShardId},</if>
+            <if test="defectId != null">#{defectId},</if>
+            <if test="password != null">#{password},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="createById != null">#{createById},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="agingTime != null">#{agingTime},</if>
+            <if test="defaultLang !=null and defaultLang != ''">#{defaultLang},</if>
+         </trim>
+    </insert>
+
+    <update id="updateSysDefectShard" parameterType="SysDefectShard">
+        update sys_defect_shard
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="defectId != null">defect_id = #{defectId},</if>
+            <if test="password != null">password = #{password},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="createById != null">create_by_id = #{createById},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="agingTime != null">aging_time = #{agingTime},</if>
+            <if test="defaultLang !=null and defaultLang != ''">default_lang = #{defaultLang},</if>
+        </trim>
+        where defect_shard_id = #{defectShardId}
+    </update>
+
+    <delete id="deleteSysDefectShardByDefectShardId" parameterType="String">
+        delete from sys_defect_shard where defect_shard_id = #{defectShardId}
+    </delete>
+
+    <delete id="deleteSysDefectShardByDefectShardIds" parameterType="String">
+        delete from sys_defect_shard where defect_shard_id in 
+        <foreach item="defectShardId" collection="array" open="(" separator="," close=")">
+            #{defectShardId}
+        </foreach>
+    </delete>
+</mapper>

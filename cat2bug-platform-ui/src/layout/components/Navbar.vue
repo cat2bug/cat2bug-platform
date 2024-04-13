@@ -20,16 +20,7 @@
 <!--        <el-link href="/doc">doc</el-link>-->
         <screenfull id="screenfull" class="right-menu-item hover-effect" />
       </template>
-      <el-dropdown class="lang avatar-container right-menu-item hover-effect" @command="handleLanguageCommand">
-        <span class="dropdown-title">
-          <svg-icon :icon-class="langIcon" />{{ langName }}
-          <i class="el-icon-caret-bottom"></i>
-        </span>
-        <el-dropdown-menu class="dropdown-menu" slot="dropdown">
-          <el-dropdown-item command="zh_CN"><svg-icon icon-class="lang_zh_CN" />简体中文</el-dropdown-item>
-          <el-dropdown-item command="en_US"><svg-icon icon-class="lang_en_US" />English</el-dropdown-item>
-        </el-dropdown-menu>
-      </el-dropdown>
+      <lang-select />
       <el-dropdown class="avatar-container right-menu-item hover-effect" trigger="click">
         <span class="dropdown-title">
           <cat2-bug-avatar :member="member" />
@@ -60,7 +51,8 @@ import Cat2BugSite from '@/components/Cat2Bug/Site'
 import Cat2BugGit from '@/components/Cat2Bug/Git'
 import Cat2BugDoc from '@/components/Cat2Bug/Doc'
 import Cat2BugAvatar from "@/components/Cat2BugAvatar";
-const I18N_LOCALE_KEY='i18n-locale'
+import LangSelect from "@/components/LangSelect";
+
 export default {
   data() {
     return {
@@ -78,7 +70,8 @@ export default {
     Cat2BugSite,
     Cat2BugGit,
     Cat2BugDoc,
-    Cat2BugAvatar
+    Cat2BugAvatar,
+    LangSelect
   },
   computed: {
     ...mapGetters([
@@ -112,10 +105,6 @@ export default {
       }
     }
   },
-  created() {
-    const lang = this.$cache.local.get(I18N_LOCALE_KEY)
-    this.handleLanguageCommand(lang||'zh_CN');
-  },
   methods: {
     toggleSideBar() {
       this.$store.dispatch('app/toggleSideBar')
@@ -131,27 +120,12 @@ export default {
         })
       }).catch(() => {});
     },
-    handleLanguageCommand(lang) {
-      this.$i18n.locale = lang;
-      this.$cache.local.set(I18N_LOCALE_KEY,lang);
-      this.langIcon = 'lang_'+lang;
-      switch (lang){
-        case 'zh_CN':
-          this.langName = '简体中文';
-          break;
-        case 'en_US':
-          this.langName = 'English';
-          break;
-      }
-    }
   }
 }
 </script>
 
 <style lang="scss" scoped>
-.lang {
-  margin-right: 0px !important;
-}
+
 .dropdown-title{
   height: 100%;
   font-size: 16px;
