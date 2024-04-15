@@ -105,7 +105,8 @@ export function uploadAvatar(data) {
   return request({
     url: '/system/user/profile/avatar',
     method: 'post',
-    data: data
+    data: data,
+    headers: {'Content-Type': 'multipart/form-data'}
   })
 }
 
@@ -122,7 +123,7 @@ export function updateAuthRole(data) {
   return request({
     url: '/system/user/authRole',
     method: 'put',
-    params: data
+    params: data,
   })
 }
 

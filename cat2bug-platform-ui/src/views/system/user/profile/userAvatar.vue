@@ -1,6 +1,8 @@
 <template>
   <div>
-    <div class="user-info-head" @click="editCropper()"><cat2-bug-avatar v-model="user" style="width:120px;height:120px;line-height: 120px;border:2px solid #DCDFE6" /></div>
+    <div class="user-info-head" @click="editCropper()">
+      <img v-bind:src="user.avatar" title="点击上传头像" class="img-circle img-lg" />
+    </div>
     <el-dialog :title="title" :visible.sync="open" width="800px" append-to-body @opened="modalOpened"  @close="closeDialog">
       <el-row>
         <el-col :xs="24" :md="12" :style="{height: '350px'}">
@@ -55,7 +57,7 @@
 
 <script>
 import store from "@/store";
-import { VueCropper } from "vue-cropper";
+import  { VueCropper } from "vue-cropper";
 import { uploadAvatar } from "@/api/system/user";
 import { debounce } from '@/utils'
 import Cat2BugAvatar from "@/components/Cat2BugAvatar";
@@ -88,7 +90,7 @@ export default {
     user: function () {
       return {
         name: this.options.name,  // 当前用户名
-        avatar: this.avatar, //裁剪图片的地址
+        avatar: process.env.VUE_APP_BASE_API + this.avatar, //裁剪图片的地址
       }
     }
   },
