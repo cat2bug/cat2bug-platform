@@ -32,7 +32,7 @@
           </el-dropdown>
         </el-form-item>
         <el-form-item prop="defectState">
-          <el-select v-model="queryParams.params.defectStates" multiple collapse-tags :placeholder="$t('defect.select-state')" @change="defectStateChangeHandle">
+          <el-select v-model="queryParams.params.defectStates" multiple collapse-tags clearable :placeholder="$t('defect.select-state')" @change="handleQuery()">
             <el-option
               v-for="state in config.states"
               :key="state.key"
@@ -47,11 +47,11 @@
             :placeholder="$t('defect.enter-name')"
             prefix-icon="el-icon-search"
             clearable
-            @input="selectDefectTabHandle()"
+            @input="handleQuery()"
           />
         </el-form-item>
         <el-form-item>
-          <select-module v-model="queryParams.moduleId" :project-id="queryParams.projectId" :is-edit="false" size="small" icon="el-icon-files" @input="selectDefectTabHandle()" />
+          <select-module v-model="queryParams.moduleId" :project-id="queryParams.projectId" :is-edit="false" size="small" icon="el-icon-files" @input="handleQuery()" />
         </el-form-item>
         <el-form-item prop="moduleVersion">
           <el-input
@@ -59,7 +59,7 @@
             prefix-icon="el-icon-discount"
             :placeholder="$t('defect.enter-version')"
             clearable
-            @input="selectDefectTabHandle()"
+            @input="handleQuery()"
           />
         </el-form-item>
         <el-form-item prop="handleBy">
@@ -70,7 +70,7 @@
             :is-head="false"
             size="small"
             icon="el-icon-user"
-            @input="selectDefectTabHandle()"
+            @input="handleQuery()"
           />
         </el-form-item>
       </el-form>
@@ -368,7 +368,7 @@ export default {
     },
     search(params) {
       this._setProperty(this.queryParams, params);
-      this.selectDefectTabHandle();
+      this.handleQuery();
     },
     _setProperty(parent,obj) {
       if(obj && Array.isArray(obj)) {
@@ -394,10 +394,6 @@ export default {
       })
     },
     /** 查找缺陷状态改变的处理 */
-    defectStateChangeHandle(defectState) {
-      this.selectDefectTabHandle();
-    },
-    /** 查找缺陷状态改变的处理 */
     defectTypeChangeHandle(defectType) {
       if(defectType) {
         this.activeDefectTypeName = defectType;
@@ -405,7 +401,7 @@ export default {
         this.activeDefectTypeName = 'defect.all-type';
       }
       this.queryParams.defectType= defectType;
-      this.selectDefectTabHandle();
+      this.handleQuery();
     },
     /** 打开编辑界面的处理 */
     editDefectHandle(defect) {
@@ -430,22 +426,20 @@ export default {
         this.queryParams.orderByColumn=null;
         this.queryParams.isAsc=null;
       }
-      this.selectDefectTabHandle();
+      this.handleQuery();
     },
     /** 切换页标签 */
     selectDefectTabHandle() {
-      this.queryParams = null;
+      this.queryParams = {
+        params: {}
+      }
       if(this.config && this.config.tabs) {
         let tabs = this.config.tabs.filter(t=>t.tabId==this.activeDefectTabName);
         if(tabs && tabs.length>0) {
           this.queryParams = tabs[0].config;
         }
       }
-      if(!this.queryParams) {
-        this.queryParams = {
-          params: {}
-        }
-      }
+
       this.handleQuery();
       this.$cache.local.set(DEFECT_TAB_CACHE_KEY,this.activeDefectTabName);
     },
