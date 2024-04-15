@@ -23,9 +23,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 缺陷Controller
@@ -75,11 +77,17 @@ public class SysDefectController extends BaseController
     {
         startPage();
         List<SysDefect> list = sysDefectService.selectSysDefectList(sysDefect);
-        list.forEach(l->{
+        TableDataInfo tableDataInfo = getDataTable(list);
+        List<SysDefect> newList = new ArrayList<>(list);
+        newList.forEach(l->{
+            if(l.getHandleByList()!=null){
+                l.setHandleByList(l.getHandleByList().stream().filter(h->h.getUserId()>0).collect(Collectors.toList()));
+            }
             List<SysUser> focusList = memberFocusService.getFocusMemberList(MODULE_NAME,l.getDefectId());
             l.setFocusList(focusList);
         });
-        return getDataTable(list);
+        tableDataInfo.setRows(newList);
+        return tableDataInfo;
     }
 
     /**

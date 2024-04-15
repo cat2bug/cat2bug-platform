@@ -1,5 +1,7 @@
 package com.cat2bug.common.core.page;
 
+import com.github.pagehelper.PageInfo;
+
 import java.io.Serializable;
 import java.util.List;
 

@@ -195,13 +195,7 @@ public class SysDefectServiceImpl implements ISysDefectService
     @Override
     public List<SysDefect> selectSysDefectList(SysDefect sysDefect)
     {
-        List<SysDefect> list = sysDefectMapper.selectSysDefectList(sysDefect, SecurityUtils.getUserId());
-        return list.stream().map(m->{
-            if(m.getHandleByList()!=null){
-                m.setHandleByList(m.getHandleByList().stream().filter(h->h.getUserId()>0).collect(Collectors.toList()));
-            }
-            return m;
-        }).collect(Collectors.toList());
+        return sysDefectMapper.selectSysDefectList(sysDefect, SecurityUtils.getUserId());
     }
 
     /**
