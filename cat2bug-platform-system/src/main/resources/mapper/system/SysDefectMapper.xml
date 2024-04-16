@@ -124,7 +124,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="defect.params.beginCreateTime != null and defect.params.beginCreateTime != '' and defect.params.endCreateTime != null and defect.params.endCreateTime != ''"> and d.create_time between #{defect.params.beginCreateTime} and #{defect.params.endCreateTime}</if>
             <if test="defect.updateBy != null  and defect.updateBy != ''"> and d.update_by = #{defect.updateBy}</if>
             <if test="defect.defectState != null "> and d.defect_state = #{defect.defectState, typeHandler=com.cat2bug.common.core.domain.handle.SysDefectStateEnumTypeHandler}</if>
-            <if test="defect.params.collect != null "> and ud.collect = #{defect.params.collect}</if>
+            <if test="defect.params.collect != null and defect.params.collect > 0  "> and ud.collect = #{defect.params.collect}</if>
             <if test="defect.params.defectStates != null and defect.params.defectStates != ''"> and
                 <foreach collection="defect.params.defectStates.split(',')" item="state" separator=" or " open="(" close=")">
                     d.defect_state=#{state}
