@@ -9,7 +9,7 @@
     <div slot="reference" :class="'el-input__inner select-project-member-input select-project-member-input-'+size">
       <i :class="icon" v-if="icon" style="margin: 0px 0px 0px 5px; color: #C0C4CC;"></i>
       <div class="selectProjectMemberInput_content">
-        <el-tag class="select-project-member-tag" size="mini" v-for="member in selectMemberList()" :key="member.userId" closable @close="clickMenuHandle(member)" :type="tagType(member)">{{member.nickName}}</el-tag>
+        <el-tag class="select-project-member-tag" size="mini" v-for="member in selectMemberList()" :key="member.userId" closable @close="clickMenuHandle(member,$event)" :type="tagType(member)">{{member.nickName}}</el-tag>
         <el-input ref="selectProjectMemberInput" :placeholder="selectMembers.size>0?'':placeholder" v-model="queryMember.params.search" @input="searchChangeHandle" @keydown.native="searchKeyDownHandle"></el-input>
       </div>
       <i class="select-project-member-input__icon el-icon-arrow-up" v-show="isClearButtonVisible==false" @mouseenter="showClearButtonHandle(true)"></i>
@@ -21,7 +21,7 @@
     </el-tabs>
 
     <el-row v-if="options && options.length>0" class="select-project-member-menu">
-      <el-col :span="24" v-for="(item,itemIndex) in options" :key="itemIndex" @click.native="clickMenuHandle(item)" :active="optionsChecks.get(item.userId)?'true':'false'">
+      <el-col :span="24" v-for="(item,itemIndex) in options" :key="itemIndex" @click.native="clickMenuHandle(item,$event)" :active="optionsChecks.get(item.userId)?'true':'false'">
         <member-nameplate :member="item"></member-nameplate>
         <el-tag v-if="isHead" size="mini"  @click.native="setMasterHandle($event,item)" :type="tagType(item)">
           {{optionsChecks.get(item.userId)===1?$i18n.t('head'):$i18n.t('assistant')}}
@@ -144,8 +144,13 @@ export default {
   },
   watch: {
     memberId: function (newVal, oldVal) {
-      if(newVal!=oldVal && (!newVal || newVal.length==0)) {
-        this.clear();
+      if(newVal!=oldVal) {
+        if (!newVal || newVal.length==0) {
+          this.clear();
+        } else if(Array.from(this.selectMembers.values()).filter(m=>newVal.includes(m.userId)).length!=newVal.length) {
+          this.clearSelectMembersHandle();
+          this.getMemberList(newVal);
+        }
       }
     }
   },
@@ -192,7 +197,7 @@ export default {
       });
     },
     /** 查询成员集合 */
-    getMemberList() {
+    getMemberList(memberIds) {
       this.queryMember.projectId = this.projectId;
       listMemberOfProject(this.projectId,this.queryMember).then(res=>{
         res.rows.forEach(m=>{
@@ -202,6 +207,14 @@ export default {
         })
         this.options = res.rows;
         this.total = res.total;
+
+        if(memberIds && memberIds.length>0) {
+          this.options.forEach(m=> {
+            if(memberIds.includes(m.userId)){
+              this.clickMenuHandle(m);
+            }
+          });
+        }
         this.$forceUpdate();
       });
     },
@@ -251,7 +264,7 @@ export default {
       }
     },
     /** 设置菜单索引顺序 */
-    clickMenuHandle(member){
+    clickMenuHandle(member,event){
       if(this.optionsChecks.get(member.userId)){
         for (let [key, value] of this.optionsChecks) {
           if(value>this.optionsChecks.get(member.userId)) {
@@ -260,7 +273,6 @@ export default {
         }
         this.optionsChecks.set(member.userId,0);
         this.selectMembers.delete(member.userId);
-        this.updateMembers();
       } else {
         let count = 0;
         for (let [key, value] of this.optionsChecks) {
@@ -270,9 +282,11 @@ export default {
         }
         this.optionsChecks.set(member.userId,count+1);
         this.selectMembers.set(member.userId,member);
-        this.updateMembers();
       }
-      this.$forceUpdate();
+      if(event) {
+        this.updateMembers();
+        this.$forceUpdate();
+      }
     },
     updateMembers(){
       this.setMemberIdEvent();
