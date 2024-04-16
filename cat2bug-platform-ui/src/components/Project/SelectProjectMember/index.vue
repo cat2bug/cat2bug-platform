@@ -147,7 +147,7 @@ export default {
       if(newVal!=oldVal) {
         if (!newVal || newVal.length==0) {
           this.clear();
-        } else if(Array.from(this.selectMembers.values()).filter(m=>newVal.includes(m.userId)).length!=newVal.length) {
+        } else  {
           this.clearSelectMembersHandle();
           this.getMemberList(newVal);
         }
