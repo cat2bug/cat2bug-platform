@@ -271,7 +271,7 @@ export default {
       queryParams: {
         pageNum: 1,
         pageSize: 10,
-        orderByColumn: 'createTime',
+        orderByColumn: 'updateTime',
         isAsc: 'desc',
         defectType: null,
         defectName: null,
@@ -441,6 +441,11 @@ export default {
           this.queryParams = tab.config;
         }
       }
+
+      if(!this.queryParams.orderByColumn) this.queryParams.orderByColumn='updateTime';
+      if(!this.queryParams.isAsc) this.queryParams.isAsc='desc';
+      if(!this.queryParams.pageNum) this.queryParams.pageNum=1;
+      if(!this.queryParams.pageSize) this.queryParams.pageSize=10;
 
       this.handleQuery();
       this.$cache.local.set(DEFECT_TAB_CACHE_KEY,this.activeDefectTabName);
