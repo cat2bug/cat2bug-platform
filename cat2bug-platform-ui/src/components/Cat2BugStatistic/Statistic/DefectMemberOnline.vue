@@ -2,7 +2,7 @@
   <cat2-bug-card :title="$i18n.t('defect.online-member').toString()" v-loading="loading" :tools="tools" @tools-click="toolsHandle">
     <template slot="content">
       <div class="member-list">
-        <cat2-bug-avatar :member="member" :online="true" v-for="member in memberList" :key="member.userId" />
+        <cat2-bug-avatar class="click" :member="member" :online="true" v-for="member in memberList" :key="member.userId" @click.native="clickHandle(member)" />
       </div>
     </template>
   </cat2-bug-card>
@@ -87,6 +87,9 @@ export default {
     this.offlineTopicId = null;
   },
   methods:{
+    clickHandle(member) {
+      this.parent.search({handleBy: [member.userId]})
+    },
     toolsHandle(e,tool) {
       this.$emit('tools-click',tool);
     },
@@ -104,6 +107,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.click:hover {
+  cursor: pointer;
+}
 .member-list {
   display: flex;
   flex-direction: row;

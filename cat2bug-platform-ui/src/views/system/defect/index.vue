@@ -376,7 +376,9 @@ export default {
         return parent
       } else if(obj && typeof obj == 'object') {
         for (let key in obj) {
-          if (parent[key] && typeof obj[key] == 'object') {
+          if (parent[key] && Array.isArray(obj[key])) {
+            this.$set(parent,key,obj[key])
+          } else if (parent[key] && typeof obj[key] == 'object') {
             this.$set(parent,key,this._setProperty(parent[key], obj[key]))
           } else {
             this.$set(parent,key,obj[key])
@@ -434,9 +436,9 @@ export default {
         params: {}
       }
       if(this.config && this.config.tabs) {
-        let tabs = this.config.tabs.filter(t=>t.tabId==this.activeDefectTabName);
-        if(tabs && tabs.length>0) {
-          this.queryParams = tabs[0].config;
+        let tab = this.config.tabs.find(t=>t.tabId==this.activeDefectTabName);
+        if(tab) {
+          this.queryParams = tab.config;
         }
       }
 

@@ -133,10 +133,6 @@ export default {
       }
       this.resetForm("form");
     },
-    /** 查找缺陷状态改变的处理 */
-    defectTypeChangeHandle(defectType) {
-      this.form.defectType = defectType;
-    },
     onCreateTab() {
       this.$refs["form"].validate(valid => {
         if (valid) {

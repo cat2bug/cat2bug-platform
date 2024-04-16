@@ -32,7 +32,7 @@ public class SysDefect extends BaseEntity
     private Long defectNumber;
 
     /** 缺陷类型 */
-    @JsonFormat(shape = JsonFormat.Shape.NUMBER)
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private SysDefectTypeEnum defectType;
 
     @Excel(name = "缺陷类型")
