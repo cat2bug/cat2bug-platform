@@ -15,8 +15,8 @@
       <i class="select-project-member-input__icon el-icon-arrow-up" v-show="isClearButtonVisible==false" @mouseenter="showClearButtonHandle(true)"></i>
       <i class="select-project-member-input__icon el-icon-circle-close" v-show="isClearButtonVisible==true" @mouseleave="showClearButtonHandle(false)" @click="clearSelectMembersHandle"></i>
     </div>
-    <el-tabs v-if="roleGroup" class="select-project-member-tabs" v-model="queryMember.roleId" @tab-click="getMemberList">
-      <el-tab-pane :label="$i18n.t('all')" name=""></el-tab-pane>
+    <el-tabs v-if="roleGroup" ref="tabs" class="select-project-member-tabs" v-model="queryMember.roleId" @tab-click="getMemberList">
+      <el-tab-pane ref="tabAll" :label="$i18n.t('all')" name="0"></el-tab-pane>
       <el-tab-pane  v-for="(role,roleIndex) in roleList" :key="roleIndex" :label="role.roleNameI18nKey?$i18n.t(role.roleNameI18nKey):role.roleName" :name="role.roleId+''"></el-tab-pane>
     </el-tabs>
 
@@ -150,9 +150,11 @@ export default {
     }
   },
   created() {
-    this.queryMember.roleId = this.roleId?this.roleId+'':'';
+    this.queryMember.roleId = this.roleId?this.roleId+'':'0';
     this.getRoleList();
     this.getMemberList();
+  },
+  mounted() {
   },
   methods: {
     clear() {
@@ -200,14 +202,34 @@ export default {
         })
         this.options = res.rows;
         this.total = res.total;
+        this.$forceUpdate();
       });
     },
     /** 选择成员变化的处理 */
-    selectMemberChangeHandle(id){
+    selectMemberChangeHandle(id) {
       this.currentMemberId=id;
     },
     /** 弹窗显示事件 */
     popoverShowHandle() {
+      // 设置打开时tab下面的横条宽度
+      this.$nextTick(_ => {
+        let index = 1;
+        this.roleList.forEach((r,i)=>{
+          if(this.queryMember.roleId==r.roleId) {
+            index = i+1;
+          }
+        });
+        // 获取第一个tab元素
+        const tabFirstElement = this.$refs.tabs.$vnode.elm.childNodes[0].childNodes[0].childNodes[0].childNodes[0].childNodes[index];
+        // 获取高亮显示条
+        const activeBarElement = this.$refs.tabs.$vnode.elm.childNodes[0].childNodes[0].childNodes[0].childNodes[0].childNodes[0];
+        // 第一个tab高亮
+        if (tabFirstElement.classList.contains('is-active') && activeBarElement ) {
+          // el-tab默认距离右边有20边距
+          activeBarElement.style.width = tabFirstElement.clientWidth -16 + 'px'
+        }
+      });
+      this.getMemberList();
       this.$refs.selectProjectMemberInput.focus();
     },
     /** 弹窗隐藏事件 */
@@ -255,10 +277,6 @@ export default {
     updateMembers(){
       this.setMemberIdEvent();
     },
-    /** 选择角色 */
-    selectRoleTabHandle() {
-
-    },
     /** 显示或隐藏清除按钮 */
     showClearButtonHandle(visible) {
       if(this.clearable==false) return;
@@ -272,7 +290,7 @@ export default {
     clearSelectMembersHandle(event) {
       this.optionsChecks.clear();
       this.selectMembers.clear();
-      this.queryMember.roleId = this.roleId?this.roleId+'':'';
+      this.queryMember.roleId = this.roleId?this.roleId+'':'0';
       this.queryMember.params.search=null;
       this.queryMember.pageNum=1;
       this.popoverVisible = false;
