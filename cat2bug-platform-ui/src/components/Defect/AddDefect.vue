@@ -108,6 +108,7 @@ import SelectProjectMember from "@/components/Project/SelectProjectMember"
 import SelectModule from "@/components/Module/SelectModule"
 import ImageUpload from "@/components/ImageUpload";
 import SelectCase from "@/components/Case/SelectCase";
+import {upload} from "@/api/common/upload";
 
 export default {
   name: "AddDefect",
@@ -149,7 +150,10 @@ export default {
     },
   },
   mounted() {
-    this.getDefectConfig();
+    setTimeout(()=>{
+      this.getDefectConfig();
+    },0)
+
   },
   methods:{
     getDefectConfig() {

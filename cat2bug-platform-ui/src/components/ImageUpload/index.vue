@@ -1,25 +1,30 @@
 <template>
   <div class="component-upload-image">
-    <el-upload
-      multiple
-      :action="uploadImgUrl"
-      list-type="picture-card"
-      :on-success="handleUploadSuccess"
-      :before-upload="handleBeforeUpload"
-      :limit="limit"
-      :on-error="handleUploadError"
-      :on-exceed="handleExceed"
-      ref="imageUpload"
-      :on-remove="handleDelete"
-      :show-file-list="true"
-      :headers="headers"
-      :file-list="fileList"
-      :on-preview="handlePictureCardPreview"
-      :class="{hide: this.fileList.length >= this.limit}"
-    >
-      <i class="el-icon-plus"></i>
-    </el-upload>
+    <div class="flex-row">
+      <el-upload
+        multiple
+        :action="uploadImgUrl"
+        list-type="picture-card"
+        :on-success="handleUploadSuccess"
+        :before-upload="handleBeforeUpload"
+        :limit="limit"
+        :on-error="handleUploadError"
+        :on-exceed="handleExceed"
+        ref="imageUpload"
+        :on-remove="handleDelete"
+        :show-file-list="true"
+        :headers="headers"
+        :file-list="fileList"
+        :on-preview="handlePictureCardPreview"
+        :class="{hide: this.fileList.length >= this.limit}"
+      >
+        <i class="el-icon-plus"></i>
+      </el-upload>
 
+      <el-button class="update-button" @click="clipboardImageHandle">
+        <svg-icon icon-class="clipboard" />
+      </el-button>
+    </div>
     <!-- 上传提示 -->
     <div class="el-upload__tip" slot="tip" v-if="showTip">
       {{$t('upload.please-upload')}}
@@ -44,6 +49,7 @@
 
 <script>
 import { getToken } from "@/utils/auth";
+import {upload} from "@/api/common/upload";
 
 export default {
   props: {
@@ -117,6 +123,34 @@ export default {
     },
   },
   methods: {
+    // var imageUrl = URL.createObjectURL(blob);
+    async clipboardImageHandle() {
+      await this.getClipboardImage();
+    },
+    async getClipboardImage() {
+      try {
+        let self = this;
+        const clipboardItems = await navigator.clipboard.read();
+        let count = 0;
+        for (const clipboardItem of clipboardItems) {
+          for (const type of clipboardItem.types) {
+            const blob = await clipboardItem.getType(type);
+            if(blob.type=='image/png') {
+              const formData = new FormData();
+              formData.append('file', blob);
+              let res = await upload(formData);
+              self.$emit("input", self.listToString([...self.fileList,...[{ name: res.fileName, url: res.fileName }]]));
+              count++;
+            }
+          }
+        }
+        if(count==0) {
+          this.$message.warning("没有找到剪贴板图片");
+        }
+      } catch (err) {
+        console.error(err.name, err.message);
+      }
+    },
     // 上传前loading加载
     handleBeforeUpload(file) {
       let isImg = false;
@@ -221,6 +255,25 @@ export default {
 ::v-deep .el-list-enter, .el-list-leave-active {
     opacity: 0;
     transform: translateY(0);
+}
+.update-button {
+  width: 148px;
+  height: 148px;
+  background-color: #fbfdff;
+  border: 1px dashed #c0ccda;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 26px;
+  flex-shrink: 0;
+}
+.update-button:hover {
+  border-color: #1890ff;
+  color: #1890ff;
+}
+.flex-row {
+  display: inline-flex;
+  flex-direction: row;
+  gap: 10px;
 }
 </style>
 

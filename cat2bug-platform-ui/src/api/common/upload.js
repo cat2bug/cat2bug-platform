@@ -7,3 +7,12 @@ export function uploadScreenShot( data) {
     data: data
   })
 }
+
+export function upload(data) {
+  return request({
+    url: '/common/upload',
+    method: 'post',
+    data: data,
+    headers: {'Content-Type': 'multipart/form-data'}
+  })
+}
