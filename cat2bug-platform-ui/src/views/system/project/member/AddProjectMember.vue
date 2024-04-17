@@ -142,7 +142,7 @@ export default {
     // 表单重置
     reset() {
       this.form = {
-        teamId: this.getTeamId(),
+        projectId: this.getProjectId(),
         memberIds: [],
         roleIds: []
       };
