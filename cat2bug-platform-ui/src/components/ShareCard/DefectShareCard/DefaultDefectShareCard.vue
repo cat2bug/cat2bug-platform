@@ -7,20 +7,21 @@
     </div>
     <div class="body">
       <div>
-        <label>{{$t('shard.aging-hour')}}:</label><span>{{defectAgingHour()}}</span>
+        <i class="gitee"></i>
+        <label>{{$t('shard.aging-hour')}}:</label>
+        <span>{{defectAgingHour()}}</span>
       </div>
       <div v-if="password">
         <label>{{$t('password')}}:</label><span>{{password}}</span>
       </div>
     </div>
     <div class="body">
-      <div class="img-list">
-        <el-image
-          :key="index"
-          :index="index"
-          v-for="(img,index) in getUrl(params.imgUrls)"
-          :src="img"
-          fit="cover"></el-image>
+      <div v-show="params.imgUrls" class="img-list">
+        <canvas ref="canvas" :class="`defectSvg${index}`"
+             :key="index"
+             :index="index"
+             v-for="(img,index) in getUrl(params.imgUrls)"
+        ></canvas>
       </div>
 
       <div class="flag">
@@ -32,7 +33,7 @@
       </div>
     </div>
     <div class="footer">
-      <canvas class="qr" id="defect-qr-canvas" ></canvas>
+      <canvas ref="qrcode" class="qr" id="defect-qr-canvas" ></canvas>
       <span>{{$t('defect.shard.click-qrcode-info')}}</span>
     </div>
     <div class="link">
@@ -47,7 +48,6 @@ import DefectStateFlag from "@/components/Defect/DefectStateFlag";
 import RowListMember from "@/components/RowListMember";
 import QRCode from 'qrcode'
 import html2canvas from 'html2canvas';
-import {getShardDefect} from "@/api/system/DefectShard";
 import Label from "@/components/Cat2BugStatistic/Components/Label";
 
 export default {
@@ -116,13 +116,60 @@ export default {
     },
   },
   async mounted () {
-    await this.createQRCode(this.getDefectUrl(this.shard.defectShardId));
+
   },
   methods: {
+    init() {
+      this.$nextTick(()=>{
+        this.createQRCode(this.getDefectUrl(this.shard.defectShardId));
+        this.drawImage();
+      })
+    },
+    drawImage() {
+      let imgs = this.getUrl(this.params.imgUrls);
+      for(let i in imgs) {
+        const canvas = this.$refs.canvas[i];
+        const ctx = canvas.getContext('2d');
+        canvas.width = canvas.clientWidth || canvas.width;
+        canvas.height = canvas.clientHeight || canvas.height;
+        const img = new Image();
+        img.src = imgs[i]; // 替换为你的图片路径
+        img.onload = () => {
+          // 计算图片居中位置的坐标
+          // 设置要绘制的图片区域
+          let sourceX = 0; // 源图片X坐标
+          let sourceY = 0; // 源图片Y坐标
+          let sourceWidth = img.width; // 源图片宽度
+          let sourceHeight = img.height; // 源图片高度
+
+          // 设置目标canvas上的绘制位置和大小
+          const destX = 0; // 目标canvasX坐标
+          const destY = 0; // 目标canvasY坐标
+          const destWidth = canvas.width; // 目标canvas宽度
+          const destHeight = canvas.height; // 目标canvas高度
+
+          if((img.width/img.height)<(canvas.width/canvas.height)){
+            sourceX = 0;
+            sourceWidth = img.width;
+            sourceY = (img.height - img.width/(canvas.width/canvas.height))/2;
+            sourceHeight = img.width/(canvas.width/canvas.height);
+          } else {
+            sourceX = (img.width - img.height * (canvas.width/canvas.height))/2;
+            sourceWidth = img.height * (canvas.width/canvas.height);
+            sourceY = 0
+            sourceHeight = img.height;
+          }
+          // 绘制图片的一部分到canvas上
+          ctx.drawImage(
+            img,
+            sourceX, sourceY, sourceWidth, sourceHeight,
+            destX, destY, destWidth, destHeight
+          );
+        };
+      }
+    },
     createQRCode (url) {
-      //先用 QRCode 生成二维码 canvas，然后用 html2canvas 合成整张海报并转成 base64 显示出来
-      let canvas = document.getElementById('defect-qr-canvas')
-      QRCode.toCanvas(canvas, url, (error) => {
+      QRCode.toCanvas(this.$refs.qrcode, url, (error) => {
         if (error) {
           console.error(error)
         }
@@ -130,12 +177,21 @@ export default {
     },
     async copy(shard) {
       this.shard = shard;
-      await this.createQRCode(this.getDefectUrl(shard.defectShardId));
-      html2canvas(this.$refs.share).then(canvas => {
-        const base64Img = canvas.toDataURL("image/png"); // 通过toDataURL将此canvas对象转成base64编码
-        const file = this.base64toFile(base64Img, "图片"); // 转file
-        this.copyFile(file);
-      });
+      let self = this;
+      setTimeout( async ()=>{
+        await navigator.clipboard.write([
+          new ClipboardItem({
+            'image/png': new Promise(async (resolve) => {
+              self.createQRCode(this.getDefectUrl(shard.defectShardId));
+              let canvas = await html2canvas(self.$refs.share);
+              const base64Img = canvas.toDataURL("image/png");
+              let blob = self.base64ToBlob(base64Img.replace("data:image/png;base64,", ""), "image/png", 512);
+              resolve(new Blob([blob], {type: 'image/png'}));
+            }),
+          })
+        ]);
+        this.$emit('copy');
+      },0);
     },
     base64toFile (dataBase64, filename = "file") {
       const arr = dataBase64.split(",");
@@ -150,27 +206,6 @@ export default {
       return new File([u8arr], `${filename}.${suffix}`, {
         type: mime
       });
-    },
-    copyFile(file) {
-      const self = this;
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const newFile = e.target.result.toString();
-        const img = new Image();
-        img.src = newFile;
-        img.onload = () => {
-          //blob对象在写入时可能会出现格式出题,所以先将图片解析成base64，在转换成blob对象写入，减少后面不必要的麻烦
-          let base64 = this.imageBase64(img);
-          let blob = this.base64ToBlob(base64.replace("data:image/png;base64,", ""), "image/png", 512);
-          navigator.clipboard.write([
-            new ClipboardItem({
-              "image/png": blob
-            })
-          ]);
-          self.$emit('copy');
-        };
-      };
-      reader.readAsDataURL(file);
     },
     imageBase64(img) {
       let canvas = document.createElement("canvas");
@@ -238,29 +273,24 @@ export default {
     background-color: #FFFFFF;
     border-radius: 5px;
     margin-bottom: 10px;
+    font-size: 12px;
   }
- ::v-deep.img-list {
+ .img-list {
     width: 100%;
     display: inline-flex;
     flex-direction: row;
-   flex-wrap: wrap;
+    flex-wrap: wrap;
     margin-bottom: 10px;
-   .el-image:first-child {
+    > canvas:first-child {
      width: 100%;
+     height: 150px;
      flex: auto;
-   }
-    .el-image {
-      margin:3px;
+    }
+    > canvas {
+      padding:3px;
       flex: 1;
-      .el-image__inner[index="0"] {
-        max-height: 150px;
-        object-fit: cover;
-        width: 100%;
-      }
-      .el-image__inner {
-        max-height: 50px;
-        object-fit: cover;
-      }
+      width: 0px;
+      height: 50px;
     }
   }
   .footer {
@@ -312,5 +342,10 @@ export default {
   }
   label {
     padding-right: 10px;
+  }
+  .el-link {
+    color: #1890ff;
+    text-decoration: underline;
+    text-decoration-color: #1890ff;
   }
 </style>

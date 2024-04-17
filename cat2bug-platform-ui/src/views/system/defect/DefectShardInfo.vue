@@ -166,6 +166,7 @@ import MarkdownItVue from "markdown-it-vue";
 import FocusMemberList from "@/components/FocusMemberList";
 import LangSelect from "@/components/LangSelect";
 import {getCase} from "@/api/system/case";
+
 const I18N_LOCALE_KEY='i18n-locale'
 const DEFECT_SHARD_PASSWORD_KEY = "defect-shard-password-"
 export default {

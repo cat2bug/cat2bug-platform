@@ -5,8 +5,8 @@
       <h4 class="defect-title-name">{{params.defectName}}</h4>
     </div>
     <div class="body">
-      <span>{{`${$t('defect.type')}：${this.params.defectTypeName}`}}</span>
-      <span>{{`${$t('defect.state')}：${this.params.defectStateName}`}}</span>
+      <span>{{`${$t('defect.type')}：${this.$i18n.t(this.params.defectTypeName)}`}}</span>
+      <span>{{`${$t('defect.state')}：${this.$i18n.t(this.params.defectStateName)}`}}</span>
       <span v-if="this.params.handleByList">{{`${$t('handle-by')}：${this.params.handleByList.map(h=>h.nickName).join('、')}`}}</span>
       <span v-if="agingHour">{{`${$t('shard.aging-hour')}：${defectAgingHour()}`}}</span>
       <span v-if="password">{{`${$t('password')}：${this.password}`}}</span>
@@ -18,12 +18,12 @@
     </div>
   </div>
 </template>
-
+<script src="./src/utils/clipboard.js"></script>
 <script>
 import DefectTypeFlag from "@/components/Defect/DefectTypeFlag";
 import DefectStateFlag from "@/components/Defect/DefectStateFlag";
 import RowListMember from "@/components/RowListMember";
-
+import ClipboardJS from "clipboard";
 export default {
   name: "TextDefectShareCard",
   components:{DefectTypeFlag, DefectStateFlag, RowListMember},
@@ -74,8 +74,10 @@ export default {
   async mounted () {
   },
   methods: {
+    init() {},
     async copy(shard) {
       this.shard = shard;
+      let self = this;
       let content = `#${this.params.projectNum} ${this.params.defectName}\n\n`;
       content += `${this.$i18n.t('defect.type')}：${this.params.defectTypeName}\n`;
       content += `${this.$i18n.t('defect.state')}：${this.params.defectStateName}\n`;
@@ -92,8 +94,8 @@ export default {
       content += `\n${desc}\n`;
       content += `\n${this.$i18n.t('defect.shard.click-view')}：\n`;
       content += `${this.getDefectUrl(this.shard.defectShardId)}\n`;
-      await navigator.clipboard.writeText(content)
-      this.$emit('copy');
+      await navigator.clipboard.writeText(content);
+      self.$emit('copy');
     },
   }
 }
@@ -134,6 +136,8 @@ export default {
   padding-top: 10px;
   .el-link {
     color: #1890ff;
+    text-decoration: underline;
+    text-decoration-color: #1890ff;
   }
 }
 .body, .link {

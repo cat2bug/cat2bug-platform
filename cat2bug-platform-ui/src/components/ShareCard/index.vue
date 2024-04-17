@@ -33,9 +33,9 @@
           :params="params"
           v-for="(sc,index) in shareCardList"
           :key="index"
+          @click.native="copy(index)"
           @mouseenter.native="onMouseEnterHandle(index)"
           @mouseleave.native="onMouseLeaveHandle(index)"
-          @click.native="copy(index)"
           @copy="copyHandle"
         />
       </div>
@@ -78,14 +78,24 @@ export default {
       default: ()=> {}
     }
   },
+  watch: {
+    visible: function (n) {
+      if(n) {
+        this.shareCardList.forEach((s,index)=>this.$refs.shareComponent[index].init());
+      }
+    }
+  },
   methods: {
     copy(index) {
+      let self = this;
       this.form.defectId = this.params.defectId;
       shardDefect(this.form).then(res=>{
         this.onMouseLeaveHandle(index);
         this.$nextTick(()=>{
-          this.$refs.shareComponent[index].copy(res.data,this.form.agingHour,this.form.password);
-          this.visible = false;
+          setTimeout(()=>{
+            self.$refs.shareComponent[index].copy(res.data, self.form.agingHour, self.form.password);
+            self.visible = false;
+          },0);
         });
       })
     },
