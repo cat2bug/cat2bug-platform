@@ -265,9 +265,7 @@ export default {
     },
     /** 设置菜单索引顺序 */
     clickMenuHandle(member,event){
-      console.log('clickMenuHandle')
       if(this.optionsChecks.get(member.userId)){
-        console.log('you')
         for (let [key, value] of this.optionsChecks) {
           if(value>this.optionsChecks.get(member.userId)) {
             this.optionsChecks.set(key,value-1);
@@ -276,7 +274,6 @@ export default {
         this.optionsChecks.set(member.userId,0);
         this.selectMembers.delete(member.userId);
       } else {
-        console.log('mei')
         let count = 0;
         for (let [key, value] of this.optionsChecks) {
           if(value>0) {
@@ -330,7 +327,6 @@ export default {
       for(let i in arr){
         values.push(arr[i].userId);
       }
-      console.log('-------',Array.from(this.selectMembers.values()),arr,values)
       this.$emit('input', values);
     }
   }
