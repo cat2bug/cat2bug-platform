@@ -44,6 +44,8 @@ import i18n from './utils/i18n/i18n.js'
 
 import websocket from 'vue-native-websocket';
 
+import VueHotkey from 'v-hotkey'
+
 // 全局方法挂载
 Vue.prototype.getDicts = getDicts
 Vue.prototype.getConfigKey = getConfigKey
@@ -67,6 +69,7 @@ Vue.component('ImagePreview', ImagePreview)
 Vue.use(directive)
 Vue.use(plugins)
 Vue.use(VueMeta)
+Vue.use(VueHotkey)
 DictData.install()
 
 /**
