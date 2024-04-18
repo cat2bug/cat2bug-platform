@@ -50,6 +50,8 @@
 <script>
 import { getToken } from "@/utils/auth";
 import {upload} from "@/api/common/upload";
+import {strFormat} from "@/utils";
+import i18n from "@/utils/i18n/i18n";
 
 export default {
   props: {
@@ -145,7 +147,7 @@ export default {
           }
         }
         if(count==0) {
-          this.$message.warning("没有找到剪贴板图片");
+          this.$message.warning(this.$i18n.t('upload.clipboard-not-img').toString());
         }
       } catch (err) {
         console.error(err.name, err.message);
@@ -169,22 +171,22 @@ export default {
       }
 
       if (!isImg) {
-        this.$modal.msgError(`文件格式不正确, 请上传${this.fileType.join("/")}图片格式文件!`);
+        this.$modal.msgError(strFormat(i18n.t('upload.file-format-is-incorrect'),this.fileType.join("/")));
         return false;
       }
       if (this.fileSize) {
         const isLt = file.size / 1024 / 1024 < this.fileSize;
         if (!isLt) {
-          this.$modal.msgError(`上传头像图片大小不能超过 ${this.fileSize} MB!`);
+          this.$modal.msgError(strFormat(i18n.t('upload.img-size-exceeds-range'),this.fileSize));
           return false;
         }
       }
-      this.$modal.loading("正在上传图片，请稍候...");
+      this.$modal.loading(this.$i18n.t('upload.img-loading'));
       this.number++;
     },
     // 文件个数超出
     handleExceed() {
-      this.$modal.msgError(`上传文件数量不能超过 ${this.limit} 个!`);
+      this.$modal.msgError(strFormat(i18n.t('upload.number-exceeds-range'),this.limit));
     },
     // 上传成功回调
     handleUploadSuccess(res, file) {
@@ -209,7 +211,7 @@ export default {
     },
     // 上传失败
     handleUploadError() {
-      this.$modal.msgError("上传图片失败，请重试");
+      this.$modal.msgError(this.$i18n.t('upload.img-fail'));
       this.$modal.closeLoading();
     },
     // 上传结束处理
