@@ -220,6 +220,10 @@ export default {
     getShard() {
       let self = this;
       getShardDefect(0,this.defectShardId,this.params).then(res=>{
+        if(res.data.redirect) {
+          this.$router.replace({ path: '/project/defect', query: res.data.redirect })
+          return;
+        }
         this.defect = res.data.defect;
         if(this.defect){
           this.getCase(this.defect.caseId);

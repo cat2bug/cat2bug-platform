@@ -178,20 +178,18 @@ export default {
     async copy(shard) {
       this.shard = shard;
       let self = this;
-      setTimeout( async ()=>{
-        await navigator.clipboard.write([
-          new ClipboardItem({
-            'image/png': new Promise(async (resolve) => {
-              self.createQRCode(this.getDefectUrl(shard.defectShardId));
-              let canvas = await html2canvas(self.$refs.share);
-              const base64Img = canvas.toDataURL("image/png");
-              let blob = self.base64ToBlob(base64Img.replace("data:image/png;base64,", ""), "image/png", 512);
-              resolve(new Blob([blob], {type: 'image/png'}));
-            }),
-          })
-        ]);
-        this.$emit('copy');
-      },0);
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          'image/png': new Promise(async (resolve) => {
+            self.createQRCode(this.getDefectUrl(shard.defectShardId));
+            let canvas = await html2canvas(self.$refs.share);
+            const base64Img = canvas.toDataURL("image/png");
+            let blob = self.base64ToBlob(base64Img.replace("data:image/png;base64,", ""), "image/png", 512);
+            resolve(new Blob([blob], {type: 'image/png'}));
+          }),
+        })
+      ]);
+      this.$emit('copy');
     },
     base64toFile (dataBase64, filename = "file") {
       const arr = dataBase64.split(",");

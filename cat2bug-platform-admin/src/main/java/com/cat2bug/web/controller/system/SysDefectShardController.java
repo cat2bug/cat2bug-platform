@@ -81,7 +81,12 @@ public class SysDefectShardController extends BaseController
         ret.put("logs",logList);
         ret.put("defect",sysDefect);
         ret.put("defectLevel",DictUtils.getDictCache("defect_level"));
-
+        if(memberId!=null) {
+            Map<String, Object> param = new HashMap<>();
+            param.put("projectId", sysDefect.getProjectId());
+            param.put("defectId", sysDefect.getDefectId());
+            ret.put("redirect", param);
+        }
 
         // 如果不用输入密码，直接返回缺陷信息
         if(StringUtils.isBlank(shard.getPassword())) {
@@ -113,7 +118,7 @@ public class SysDefectShardController extends BaseController
      */
     @PreAuthorize("@ss.hasPermi('system:defect:list')")
     @GetMapping(value = "/{defectId}/shard")
-    public AjaxResult getInfo(@PathVariable("defectShardId") Long defectId)
+    public AjaxResult getInfo(@PathVariable("defectId") Long defectId)
     {
         return success(sysDefectShardService.selectSysDefectShardByDefectIdAndMemberId(defectId,getUserId()));
     }

@@ -1,5 +1,6 @@
 <template>
   <div class="app-container">
+<!--    <span slot="footer" class="dialog-footer" v-hotkey="keyMap"></span>-->
     <project-label />
     <div class="defect-tools-tab">
       <el-tabs v-model="activeDefectTabName" @tab-click="selectDefectTabHandle">
@@ -81,7 +82,7 @@
             trigger="click">
             <div class="row">
               <i class="el-icon-s-fold"></i>
-              <h4>显示字段</h4>
+              <h4>{{$t('defect.display-field')}}</h4>
             </div>
             <el-divider class="defect-field-divider"></el-divider>
             <el-checkbox-group v-model="checkedFieldList" class="col" @change="checkedFieldListChange">
@@ -295,6 +296,14 @@ export default {
     };
   },
   computed: {
+    // keyMap() {
+    //   return {
+    //     'w': () => {
+    //       alert('w')
+    //       return false;
+    //     },
+    //   }
+    // },
     /** 字段是否显示 */
     showField: function () {
       return function (field) {
@@ -347,6 +356,9 @@ export default {
     this.getDefectConfig();
   },
   mounted() {
+    if(this.$route.query.defectId) {
+      this.$refs.editDefectForm.open(this.$route.query.defectId);
+    }
   },
   methods: {
     checkPermi,
@@ -456,11 +468,7 @@ export default {
     },
     /** 获取项目id */
     getProjectId() {
-      return parseInt(this.$store.state.user.config.currentProjectId);
-    },
-    /** 获取团队id */
-    getTeamId() {
-      return this.$store.state.user.config.currentTeamId;
+      return this.$route.query.projectId?parseInt(this.$route.query.projectId):parseInt(this.$store.state.user.config.currentProjectId);
     },
     /** 查询缺陷列表 */
     getList(params) {

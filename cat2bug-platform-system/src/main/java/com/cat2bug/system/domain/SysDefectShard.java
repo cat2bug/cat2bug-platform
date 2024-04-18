@@ -39,14 +39,11 @@ public class SysDefectShard extends BaseEntity
     @JsonFormat(pattern = "yyyy-MM-dd")
     @Excel(name = "时效时间", width = 30, dateFormat = "yyyy-MM-dd")
     private Date agingTime;
+    /** 时效小时 */
+    private Integer agingHour;
 
     /** 默认语言 */
     private String defaultLang;
-
-    /**
-     * 时效小时数
-     */
-    private int agingHour;
 
     public void setDefectShardId(String defectShardId) 
     {
@@ -94,14 +91,6 @@ public class SysDefectShard extends BaseEntity
         return agingTime;
     }
 
-    public int getAgingHour() {
-        return agingHour;
-    }
-
-    public void setAgingHour(int agingHour) {
-        this.agingHour = agingHour;
-    }
-
     public Long getProjectId() {
         return projectId;
     }
@@ -116,6 +105,14 @@ public class SysDefectShard extends BaseEntity
 
     public void setDefaultLang(String defaultLang) {
         this.defaultLang = defaultLang;
+    }
+
+    public void setAgingHour(Integer agingHour) {
+        this.agingHour = agingHour;
+    }
+
+    public Integer getAgingHour() {
+        return agingHour;
     }
 
     @Override

@@ -313,6 +313,7 @@
   "defect.enter-tab-name": "请输入页签名称",
   "defect.type": "缺陷类型",
   "defect.state": "缺陷状态",
+  "defect.display-field": "显示字段",
   "BUG": "BUG",
   "TASK": "任务",
   "DEMAND": "需求",

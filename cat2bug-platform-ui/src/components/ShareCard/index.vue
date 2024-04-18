@@ -85,6 +85,9 @@ export default {
       }
     }
   },
+  created() {
+    this.getShardInfo(this.params.defectId);
+  },
   methods: {
     copy(index) {
       let self = this;
@@ -110,6 +113,16 @@ export default {
     },
     onMouseLeaveHandle(index) {
       this.$set(this.loading,index,false);
+    },
+    getShardInfo(defectId) {
+      if(defectId) {
+        getShard(defectId).then(res=>{
+          if(res.data) {
+            this.form = res.data;
+            this.form.agingHour = this.form.agingHour?this.form.agingHour + '':'1';
+          }
+        });
+      }
     }
   }
 }

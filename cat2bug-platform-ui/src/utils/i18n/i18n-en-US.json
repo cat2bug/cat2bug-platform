@@ -313,6 +313,7 @@
   "defect.enter-tab-name": "Please enter tab name",
   "defect.type": "Defect Type",
   "defect.state": "Defect State",
+  "defect.display-field": "Display Fields",
   "BUG": "Bug",
   "TASK": "Task",
   "DEMAND": "Demand",
