@@ -55,7 +55,7 @@
     <div v-else class="defect-info">
       <div class="shard-header">
         <h1><i class="el-icon-takeaway-box" /> {{$t('project')}}: {{defect.projectName}}</h1>
-        <lang-select />
+        <lang-select class="lang-select" />
       </div>
       <div class="defect-edit-header">
         <div class="defect-edit-title">
@@ -248,6 +248,23 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+/* 针对桌面设备 */
+@media screen and (min-width: 1024px) {
+  .defect-info {
+    padding: 0px 20%;
+  }
+}
+
+/* 针对手机设备 */
+@media screen and (max-width: 1023px) {
+  .defect-info {
+    padding: 0px;
+  }
+  .lang-select {
+    display: none;
+  }
+}
+
 .shard-main {
   margin: 0px;
   padding: 0px;
@@ -256,7 +273,6 @@ export default {
 }
 .defect-info {
   margin: 0px;
-  padding: 0px 20%;
   background-color: #F2F6FC;
   > * {
     background-color: #FFFFFF;
