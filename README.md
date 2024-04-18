@@ -95,7 +95,7 @@ Cat2Bug-Platform是一套永久免费开源的Bug管理平台，将毫无保留�
 ```docker
 docker run -it -d -p 8022:8022 --name cat2bug-platform cat2bug/cat2bug-platform:latest
 ```
-部署成功后，打开浏览器访问http://127.0.0.1:8022,在登陆页面自行注册账号登陆使用即可。
+部署成功后，打开浏览器访问[http://127.0.0.1:8022](http://127.0.0.1:8022),在登陆页面自行注册账号登陆使用即可。
 
 注意：系统管理员账号：admin    密码：cat2bug，此账号用于管理注册用户。
 
