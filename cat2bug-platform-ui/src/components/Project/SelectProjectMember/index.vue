@@ -309,11 +309,12 @@ export default {
       this.queryMember.pageNum=1;
       this.popoverVisible = false;
 
-      if(event)
+      if(event) {
         this.updateMembers();
         this.getMemberList();
         this.$forceUpdate();
-        // event.stopPropagation();
+        event.stopPropagation();
+      }
     },
     /** 翻页处理 */
     currentPageChangeHandle(val){
