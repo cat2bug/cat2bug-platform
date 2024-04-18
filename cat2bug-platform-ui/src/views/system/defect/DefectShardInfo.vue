@@ -3,7 +3,7 @@
     <div v-if="!defect.defectId" class="shard-pass-form">
       <el-form ref="form" :model="params" label-width="0px">
         <el-form-item>
-          <el-input v-model="params.password" show-password maxlength="4" :placeholder="$t('shard.please-enter-password')">
+          <el-input v-model="params.password" show-password :maxlength="4" :placeholder="$t('shard.please-enter-password')">
             <svg-icon slot="prefix" icon-class="password" class="el-input__icon input-icon" />
           </el-input>
         </el-form-item>
@@ -175,7 +175,9 @@ export default {
   data() {
     return {
       defectShardId: null,
-      params: {},
+      params: {
+        password: ''
+      },
       defect: {},
       activeNames: ['defectDescribe','base','imgUrls','annexUrls','caseId','log'],
       // 用例
@@ -223,8 +225,8 @@ export default {
           this.getCase(this.defect.caseId);
           if(res.data.logs && res.data.logs.length>0) {
             this.$nextTick(()=>{
-              self.$refs.defectLogFirst.refresh(res.data.logs);
-              self.$refs.defectLog.refresh([res.data.logs[0]]);
+              self.$refs.defectLogFirst.refresh([res.data.logs[0]]);
+              self.$refs.defectLog.refresh(res.data.logs);
             });
           }
         }
