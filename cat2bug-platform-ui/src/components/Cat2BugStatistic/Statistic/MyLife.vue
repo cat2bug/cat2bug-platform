@@ -1,8 +1,10 @@
 <template>
   <cat2-bug-card :style="{'--color': form.color, '--fontSize': form.fontSize}" :title="$i18n.t('defect.my-life').toString()" v-loading="loading" :tools="tools" @tools-click="toolsHandle">
     <template slot="content">
-      <div class="life-body" @click="dialogVisible=true">
-        {{myLife}}
+      <div class=" life-text" @click="dialogVisible=true">
+        <div class="life-body">
+          {{myLife}}
+        </div>
       </div>
       <el-dialog
         :title="$t('defect.my-life')"
@@ -117,14 +119,18 @@ export default {
 .title {
   margin: 0px 0px 20px 0px;
 }
+.life-text{
+  flex: 1;
+}
 .life-body {
   width: 100%;
-  max-height: 80px;
+  height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   flex-wrap: wrap;
+
   max-width: 230px;
   min-width: 230px;
   overflow:hidden;
