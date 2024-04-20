@@ -60,7 +60,7 @@ public class SysDefectShardController extends BaseController
             return AjaxResult.error("没有找到分享的缺陷!");
         }
 
-        if(shard.getAgingTime()!=null && shard.getAgingTime().getTime()>0 && shard.getAgingTime().getTime()<System.currentTimeMillis()) {
+        if(shard.getAgingHour()!=null && shard.getAgingHour()>0 && shard.getAgingTime()!=null && shard.getAgingTime().getTime()>0 && shard.getAgingTime().getTime()<System.currentTimeMillis()) {
             return AjaxResult.error("分享已过期!");
         }
         Long memberId = null;

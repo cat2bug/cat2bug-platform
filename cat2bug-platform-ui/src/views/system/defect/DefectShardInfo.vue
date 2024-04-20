@@ -176,9 +176,11 @@ export default {
     return {
       defectShardId: null,
       params: {
-        password: ''
+        password: null
       },
-      defect: {},
+      defect: {
+        defectId: null,
+      },
       activeNames: ['defectDescribe','base','imgUrls','annexUrls','caseId','log'],
       // 用例
       defectCase: {},
