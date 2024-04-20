@@ -31,6 +31,8 @@ public class SysUserConfig extends BaseEntity
     @Excel(name = "用户id")
     private Long userId;
 
+    /** 人生格言 */
+    private String lifeContent;
     @Override
     public String toString() {
         return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)
