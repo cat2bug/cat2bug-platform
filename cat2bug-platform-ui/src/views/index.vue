@@ -100,6 +100,14 @@
             <span>{{$t('update-log')}}</span>
           </div>
           <el-collapse accordion>
+            <el-collapse-item title="v0.3.2 - 2024-04-19">
+              <ol>
+                <li>修复系统功能BUG</li>
+                <li>添加分享功能</li>
+                <li>添加缺陷剪贴板</li>
+                <li>添加人生格言窗口</li>
+              </ol>
+            </el-collapse-item>
             <el-collapse-item title="v0.3.1 - 2024-04-05">
               <ol>
                 <li>修复系统功能BUG</li>

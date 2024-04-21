@@ -3,7 +3,7 @@ cat2bug:
   # 名称
   name: Cat2Bug
   # 版本
-  version: 0.3.1
+  version: 0.3.2
   # 版权年份
   copyrightYear: 2024
   # 文件路径
@@ -97,8 +97,8 @@ token:
   header: Authorization
   # 令牌密钥
   secret: abcdefghijklmnopqrstuvwxyz
-  # 令牌有效期（默认30分钟），同时需要设置caffeine.properties里的tokenExpireTime配置
-  expireTime: 120
+  # 令牌有效期（默认240分钟），同时需要设置caffeine.properties里的tokenExpireTime配置
+  expireTime: 240
 
 # MyBatis配置
 mybatis:

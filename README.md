@@ -1,4 +1,4 @@
-<h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">Cat2Bug-Platform v0.3.1</h1>
+<h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">Cat2Bug-Platform v0.3.2</h1>
 <h4 align="center">轻量化BUG管理平台</h4>
 
 ## 平台简介
@@ -19,11 +19,12 @@ Cat2Bug-Platform是一套永久免费开源的Bug管理平台，将毫无保留�
 
 ## 最新版本更新说明
 
-当前最新版本是0.3.1
+当前最新版本是0.3.2
 
 * 修复系统功能BUG；
-* 推送报告的OPEN API接口中添加KEY属性；
-* 缺陷页面添加自定义页签；
+* 添加分享功能；
+* 添加缺陷剪贴板；
+* 添加人生格言窗口；
 
 ## 特色
 
@@ -34,7 +35,7 @@ Cat2Bug-Platform是一套永久免费开源的Bug管理平台，将毫无保留�
 ## 在线体验
 
 - 体验账号：demo
-- 体验密码：123456  
+- 体验密码：123456
 
 演示地址：[https://www.cat2bug.com:8022](https://www.cat2bug.com:8022)
 
