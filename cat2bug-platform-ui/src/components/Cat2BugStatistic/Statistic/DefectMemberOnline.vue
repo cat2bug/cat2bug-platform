@@ -47,6 +47,10 @@ export default {
       type: Object,
       default: ()=>{}
     },
+    read: {
+      type: Boolean,
+      default: false
+    }
   },
   computed: {
     /** 获取项目id */
@@ -88,6 +92,7 @@ export default {
   },
   methods:{
     clickHandle(member) {
+      if(this.read) return;
       this.parent.search({handleBy: [member.userId]})
     },
     toolsHandle(e,tool) {

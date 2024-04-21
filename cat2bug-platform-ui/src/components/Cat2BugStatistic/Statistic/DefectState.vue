@@ -52,6 +52,10 @@ export default {
       type: Object,
       default: ()=>{}
     },
+    read: {
+      type: Boolean,
+      default: false
+    }
   },
   computed: {
     flag: function () {
@@ -91,6 +95,7 @@ export default {
   },
   methods: {
     clickHandle(event, state) {
+      if(this.read) return;
       this.parent.search({
         params: {
           defectStates: state?JSON.parse(JSON.stringify(state.id)):null

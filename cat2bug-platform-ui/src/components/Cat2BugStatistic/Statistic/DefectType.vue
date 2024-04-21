@@ -33,6 +33,10 @@ export default {
       type: Object,
       default: ()=>{}
     },
+    read: {
+      type: Boolean,
+      default: false
+    }
   },
   computed: {
     currentProjectId: function () {
@@ -85,6 +89,7 @@ export default {
       });
     },
     clickHandle(type) {
+      if(this.read) return;
       this.parent.search({defectType: type?type.id:null})
     },
     toolsHandle(e,tool) {

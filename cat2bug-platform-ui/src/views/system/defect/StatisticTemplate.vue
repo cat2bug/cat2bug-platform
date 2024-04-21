@@ -6,11 +6,11 @@
     </el-row>
     <h4 class="first-title">{{ $t('defect.statistic.view') }}</h4>
     <div class="view-panel">
-      <cat2-bug-statistic v-model="selectTemplate" :draggable="true" />
+      <cat2-bug-statistic :read="true" v-model="selectTemplate" :draggable="true" />
     </div>
     <h4>{{ $t('defect.statistic.select') }}</h4>
     <div class="templates-panel">
-      <cat2-bug-statistic show-type="all" :statistic-tools="[]" @click-template-node="clickAddTemplate" />
+      <cat2-bug-statistic show-type="all" :read="true" :statistic-tools="[]" @click-template-node="clickAddTemplate" />
     </div>
   </div>
 </template>

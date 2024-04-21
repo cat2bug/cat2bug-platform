@@ -63,6 +63,10 @@ export default {
       type: Object,
       default: ()=>{}
     },
+    read: {
+      type: Boolean,
+      default: false
+    }
   },
   computed: {
     /** 排行号 */
@@ -119,6 +123,7 @@ export default {
       })
     },
     clickHandle(m) {
+      if(this.read) return;
       let id = this.prevClickModuleId==m.id?null:m.id;
       this.parent.search({
         moduleId: id

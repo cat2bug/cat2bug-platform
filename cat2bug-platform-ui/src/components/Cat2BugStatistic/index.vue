@@ -4,6 +4,7 @@
       <component
         @click.native="clickHandle($event,sc)"
         @tools-click="toolsHandle($event,sc)"
+        :read="read"
         :tools="tools"
         :is="sc.name"
         :params="sc.params"
@@ -16,6 +17,7 @@
       <component
         @click.native="clickHandle($event,sc)"
         @tools-click="toolsHandle($event,sc)"
+        :read="read"
         :tools="tools"
         :is="sc.name"
         :params="sc.params"
@@ -58,7 +60,7 @@ export default {
       // 统计工具
       statisticToolsList: [{
         icon: 'close'
-      }]
+      }],
     }
   },
   props: {
@@ -82,6 +84,10 @@ export default {
     params: {
       type: Object,
       default: ()=> {}
+    },
+    read: {
+      type: Boolean,
+      default: false
     }
   },
   computed: {
@@ -189,6 +195,7 @@ export default {
       this.statisticList = allStatisticList;
     },
     clickHandle(e,sc){
+      e.stopPropagation();
       this.$emit('click-template-node',e,sc);
     },
     toolsHandle(tool,sc) {
@@ -211,6 +218,12 @@ export default {
         this.$message.success(this.$i18n.t('delete.success').toString());
         this.$emit('change',list);
       });
+    },
+    mouseEnterHandle(e){
+      e.stopPropagation();
+    },
+    mouseDownHandle(e) {
+      e.stopPropagation();
     }
   }
 }

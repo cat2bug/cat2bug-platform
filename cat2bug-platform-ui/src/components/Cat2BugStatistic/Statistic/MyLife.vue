@@ -1,7 +1,7 @@
 <template>
   <cat2-bug-card :style="{'--color': form.color, '--fontSize': form.fontSize}" :title="$i18n.t('defect.my-life').toString()" v-loading="loading" :tools="tools" @tools-click="toolsHandle">
     <template slot="content">
-      <div class=" life-text" @click="dialogVisible=true">
+      <div class=" life-text" @click="openEditHandle">
         <div class="life-body">
           {{myLife}}
         </div>
@@ -78,6 +78,10 @@ export default {
       type: Object,
       default: ()=>{}
     },
+    read: {
+      type: Boolean,
+      default: false
+    }
   },
   computed: {
     currentProjectId: function () {
@@ -110,6 +114,10 @@ export default {
         this.$message.success(this.$i18n.t('update.success').toString());
         this.dialogVisible = false;
       });
+    },
+    openEditHandle() {
+      if(this.read) return;
+      this.dialogVisible=true;
     }
   }
 }
@@ -137,7 +145,6 @@ export default {
 }
 .life-body:hover {
   cursor: pointer;
-  font-weight: 500;
 }
 .life-body, ::v-deep .input-content > textarea {
   color: var(--color);
