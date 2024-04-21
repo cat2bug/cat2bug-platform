@@ -74,7 +74,9 @@ export default {
   async mounted () {
   },
   methods: {
-    init() {},
+    async refresh(shard) {
+      this.shard = shard;
+    },
     async copy(shard) {
       this.shard = shard;
       let self = this;
@@ -94,8 +96,22 @@ export default {
       content += `\n${desc}\n`;
       content += `\n${this.$i18n.t('defect.shard.click-view')}：\n`;
       content += `${this.getDefectUrl(this.shard.defectShardId)}\n`;
-      await navigator.clipboard.writeText(content);
-      self.$emit('copy');
+
+      if (navigator.clipboard) {
+        await navigator.clipboard.writeText(content);
+        this.$emit('copy');
+      } else if (document.execCommand) {
+        const textArea = document.createElement('textarea');
+        textArea.style.height = '0';
+        textArea.style.padding = '0';
+        textArea.value = content;
+        textArea.setAttribute('readonly', 'readonly');
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        this.$emit('copy');
+      }
     },
   }
 }

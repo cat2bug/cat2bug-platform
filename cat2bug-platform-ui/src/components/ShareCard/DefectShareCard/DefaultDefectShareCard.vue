@@ -39,6 +39,7 @@
     <div class="link">
       <el-link>{{getDefectUrl(shard.defectShardId)}}</el-link>
     </div>
+    <img ref="myImg" class="myImg" :src="shardBase64Img?'data:image/jpeg;base64' + shardBase64Img:''" />
   </div>
 </template>
 
@@ -69,6 +70,7 @@ export default {
   },
   data() {
     return {
+      shardBase64Img: null,
       shard: {
         defectShardId: 'XXXXXXXXXX',
         agingTime: new Date(),
@@ -119,12 +121,6 @@ export default {
 
   },
   methods: {
-    init() {
-      this.$nextTick(()=>{
-        this.createQRCode(this.getDefectUrl(this.shard.defectShardId));
-        this.drawImage();
-      })
-    },
     drawImage() {
       let imgs = this.getUrl(this.params.imgUrls);
       for(let i in imgs) {
@@ -171,27 +167,85 @@ export default {
     createQRCode (url) {
       QRCode.toCanvas(this.$refs.qrcode, url, (error) => {
         if (error) {
-          console.error(error)
+          console.error(error);
         }
       })
     },
-    async copy(shard) {
+    async refresh(shard) {
+      this.shard = shard;
+      await this.createQRCode(this.getDefectUrl(this.shard.defectShardId));
+      this.drawImage();
+      let canvas = await html2canvas(this.$refs.share);
+      this.shardBase64Img = canvas.toDataURL('image/png');
+    },
+   async copy(shard) {
       this.shard = shard;
       let self = this;
-      setTimeout( async ()=>{
-        await navigator.clipboard.write([
-          new ClipboardItem({
-            'image/png': new Promise(async (resolve) => {
-              self.createQRCode(this.getDefectUrl(shard.defectShardId));
-              let canvas = await html2canvas(self.$refs.share);
-              const base64Img = canvas.toDataURL("image/png");
-              let blob = self.base64ToBlob(base64Img.replace("data:image/png;base64,", ""), "image/png", 512);
-              resolve(new Blob([blob], {type: 'image/png'}));
-            }),
-          })
-        ]);
-        this.$emit('copy');
-      },0);
+
+
+     // let interval1 = setInterval(async ()=>{
+     //   self.getSelect(this.$refs.myImg);
+     //   let isSuccess = document.execCommand('copy');
+     //   alert(isSuccess);
+     //   clearInterval(interval1)
+     // },0)
+     // return;
+
+     if (navigator.clipboard) {
+       setTimeout( async ()=>{
+         await navigator.clipboard.write([
+           new ClipboardItem({
+             'image/png': new Promise(async (resolve) => {
+               self.createQRCode(this.getDefectUrl(shard.defectShardId));
+               let canvas = await html2canvas(self.$refs.share);
+               const base64Img = canvas.toDataURL("image/png");
+               let blob = self.base64ToBlob(base64Img.replace("data:image/png;base64,", ""), "image/png", 512);
+               resolve(new Blob([blob], {type: 'image/png'}));
+             }),
+           })
+         ]);
+         this.$emit('copy');
+       },0);
+     } else if (document.execCommand && document.queryCommandSupported('copy')) {
+       // let interval1 = setInterval(async ()=>{
+       //   self.getSelect(this.$refs.myImg);
+       //   let isSuccess = document.execCommand('copy');
+       //   alert(isSuccess);
+       //   clearInterval(interval1)
+       // },0)
+       // self.createQRCode(this.getDefectUrl(shard.defectShardId));
+       // let canvas = await html2canvas(self.$refs.share);
+       self.getSelect(self.$refs.myImg);
+       let isSuccess = document.execCommand('copy');
+       alert(isSuccess);
+       // 清空选中区域
+       window.getSelection().removeAllRanges();
+       self.$emit('copy');
+       // self.shardBase64Img = canvas.toDataURL('image/png');
+       // setTimeout(  async () => {
+       //   self.getSelect(self.$refs.myImg);
+       //   let isSuccess = document.execCommand('copy');
+       //   alert(isSuccess);
+       //   // 清空选中区域
+       //   window.getSelection().removeAllRanges();
+       //   self.$emit('copy');
+       // },0);
+     }
+    },
+    getSelect(targetNode) {
+      if (window.getSelection) {
+        //chrome等主流浏览器
+        let selection = window.getSelection();
+        let range = document.createRange();
+        range.selectNode(targetNode);
+        // range.comparePoint(targetNode,0)
+        // range.setStart(targetNode,0)
+        // range.setEnd(targetNode,0);
+        // range.insertNode(targetNode)
+        selection.removeAllRanges();
+        selection.addRange(range);
+        // targetNode.focus();
+      }
     },
     base64toFile (dataBase64, filename = "file") {
       const arr = dataBase64.split(",");
@@ -251,6 +305,7 @@ export default {
    background-color: #f4f4f4;
    padding: 0px 10px 10px 10px;
    border-radius: 5px;
+   position: relative;
  }
   .header {
     display: inline-flex;
@@ -347,5 +402,9 @@ export default {
     color: #1890ff;
     text-decoration: underline;
     text-decoration-color: #1890ff;
+  }
+  .myImg {
+    opacity: 0;
+    position: absolute;
   }
 </style>
