@@ -1,25 +1,21 @@
 package com.cat2bug.system.service.impl;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
+import com.cat2bug.common.core.domain.entity.SysDefect;
 import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.common.utils.DateUtils;
 import com.cat2bug.common.utils.MessageUtils;
 import com.cat2bug.common.utils.SecurityUtils;
-import com.cat2bug.system.domain.SysUserConfig;
-import com.cat2bug.system.domain.SysUserProject;
-import com.cat2bug.system.domain.SysUserProjectRole;
+import com.cat2bug.system.domain.*;
 import com.cat2bug.system.mapper.SysUserProjectMapper;
 import com.cat2bug.system.mapper.SysUserProjectRoleMapper;
+import com.cat2bug.system.service.ISysProjectDefectTabsService;
 import com.cat2bug.system.service.ISysUserConfigService;
 import com.google.common.base.Preconditions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.cat2bug.system.mapper.SysProjectMapper;
-import com.cat2bug.system.domain.SysProject;
 import com.cat2bug.system.service.ISysProjectService;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,7 +36,8 @@ public class SysProjectServiceImpl implements ISysProjectService
     private SysUserProjectRoleMapper sysUserProjectRoleMapper;
     @Autowired
     private ISysUserConfigService sysUserConfigService;
-
+    @Autowired
+    private ISysProjectDefectTabsService sysProjectDefectTabsService;
     /**
      * 查询项目
      * 
@@ -101,6 +98,15 @@ public class SysProjectServiceImpl implements ISysProjectService
             up.setProjectId(sysProject.getProjectId());
             up.setUserId(m.getUserId());
             Preconditions.checkState(sysUserProjectMapper.insertSysUserProject(up)==1,MessageUtils.message("project.insert_user_fail"));
+            // 添加缺陷tab配置
+            SysProjectDefectTabs tab1 = new SysProjectDefectTabs();
+            tab1.setUserId(up.getUserId());
+            tab1.setProjectId(up.getProjectId());
+            tab1.setTabName(MessageUtils.message("my"));
+            SysDefect sysDefect1 = new SysDefect();
+            sysDefect1.setHandleBy(Arrays.asList(up.getUserId()));
+            tab1.setConfig(sysDefect1);
+            sysProjectDefectTabsService.insertSysProjectDefectTabs(tab1);
             // 新增成员角色
             for(Long roleId : m.getRoleIds()){
                 SysUserProjectRole role = new SysUserProjectRole();
