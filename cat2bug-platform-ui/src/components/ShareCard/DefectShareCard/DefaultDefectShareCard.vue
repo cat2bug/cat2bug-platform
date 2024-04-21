@@ -1,4 +1,5 @@
 <template>
+  <div>
   <div ref="share" class="share">
     <div class="header">
       <row-list-member :members="params.handleByList" />
@@ -40,6 +41,7 @@
       <el-link>{{getDefectUrl(shard.defectShardId)}}</el-link>
     </div>
     <img ref="myImg" class="myImg" :src="shardBase64Img?'data:image/jpeg;base64' + shardBase64Img:''" />
+  </div>
   </div>
 </template>
 
