@@ -404,6 +404,11 @@ export default {
     getDefectConfig() {
       configDefect().then(res=>{
         this.config = res.data;
+        if(this.config.tabs) {
+          if(this.config.tabs.filter(t=>t.tabName==this.activeDefectTabName).length==0) {
+            this.activeDefectTabName = this.allTab;
+          }
+        }
         this.selectDefectTabHandle();
       })
     },
