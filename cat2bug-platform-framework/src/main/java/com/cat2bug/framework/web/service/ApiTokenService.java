@@ -146,7 +146,7 @@ public class ApiTokenService {
     public void refreshToken(LoginUser loginUser)
     {
         loginUser.setLoginTime(System.currentTimeMillis());
-        loginUser.setExpireTime(loginUser.getLoginTime() + expireTime * MILLIS_MINUTE);
+        loginUser.setExpireTime(System.currentTimeMillis() + expireTime * MILLIS_MINUTE);
         // 根据uuid将loginUser缓存
         String userKey = API_CACHE_FLAG+loginUser.getToken();
         redisCache.setCacheObject("tokenExpireTime", userKey, loginUser);
