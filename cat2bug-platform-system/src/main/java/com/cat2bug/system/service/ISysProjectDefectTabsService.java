@@ -58,4 +58,12 @@ public interface ISysProjectDefectTabsService
      * @return 结果
      */
     public int deleteSysProjectDefectTabsByTabId(Long tabId);
+
+    /**
+     * 删除项目缺陷页签配置信息
+     * @param projectId 项目ID
+     * @param memberId  成员ID
+     * @return  结果
+     */
+    public int deleteSysProjectDefectTabsByProjectIdAndMemberId(Long projectId,Long memberId);
 }

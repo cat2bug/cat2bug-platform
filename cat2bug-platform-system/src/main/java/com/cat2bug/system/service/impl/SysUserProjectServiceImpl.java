@@ -1,14 +1,16 @@
 package com.cat2bug.system.service.impl;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
+import com.cat2bug.common.core.domain.entity.SysDefect;
 import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.common.utils.DateUtils;
 import com.cat2bug.common.utils.MessageUtils;
+import com.cat2bug.system.domain.SysProjectDefectTabs;
 import com.cat2bug.system.domain.SysUserProjectRole;
 import com.cat2bug.system.domain.vo.BatchUserRoleVo;
 import com.cat2bug.system.mapper.SysUserProjectRoleMapper;
+import com.cat2bug.system.service.ISysProjectDefectTabsService;
 import com.google.common.base.Preconditions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -32,6 +34,8 @@ public class SysUserProjectServiceImpl implements ISysUserProjectService
     @Autowired
     private SysUserProjectRoleMapper sysUserProjectRoleMapper;
 
+    @Autowired
+    private ISysProjectDefectTabsService sysProjectDefectTabsService;
     /**
      * 查询用户项目
      * 
@@ -89,6 +93,16 @@ public class SysUserProjectServiceImpl implements ISysUserProjectService
             up.setProjectId(batchUserRoleVo.getProjectId());
             up.setUserId(batchUserRoleVo.getMemberIds()[i]);
             ret += sysUserProjectMapper.insertSysUserProject(up);
+
+            // 添加缺陷tab配置
+            SysProjectDefectTabs tab1 = new SysProjectDefectTabs();
+            tab1.setUserId(up.getUserId());
+            tab1.setProjectId(up.getProjectId());
+            tab1.setTabName(MessageUtils.message("my"));
+            SysDefect sysDefect1 = new SysDefect();
+            sysDefect1.setHandleBy(Arrays.asList(up.getUserId()));
+            tab1.setConfig(sysDefect1);
+            sysProjectDefectTabsService.insertSysProjectDefectTabs(tab1);
 
             // 添加用户项目权限数据
             SysUserProjectRole upr =new SysUserProjectRole();
@@ -148,8 +162,10 @@ public class SysUserProjectServiceImpl implements ISysUserProjectService
         Optional<SysUserProject> sysUserProject = sysUserProjectMapper.selectSysUserProjectList(up).stream().findFirst();
         Preconditions.checkState(sysUserProject.isPresent(),MessageUtils.message("project.member_not_found"));
         Long sysUserProjectId = sysUserProject.get().getUserProjectId();
-        int ret = sysUserProjectMapper.deleteSysUserProjectByUserProjectId(sysUserProjectId);
-        sysUserProjectRoleMapper.deleteSysUserProjectRoleByUserProjectId(sysUserProjectId);
+        int ret = sysUserProjectMapper.deleteSysUserProjectByUserProjectId(sysUserProjectId); // 删除用户在项目中的关联信息
+
+        sysProjectDefectTabsService.deleteSysProjectDefectTabsByProjectIdAndMemberId(up.getProjectId(),up.getUserId()); // 清除缺陷tab配置
+        sysUserProjectRoleMapper.deleteSysUserProjectRoleByUserProjectId(sysUserProjectId); // 清除用户在项目中的权限
         return ret;
     }
 

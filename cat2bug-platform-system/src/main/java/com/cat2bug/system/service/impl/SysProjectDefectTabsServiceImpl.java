@@ -93,4 +93,9 @@ public class SysProjectDefectTabsServiceImpl implements ISysProjectDefectTabsSer
     {
         return sysProjectDefectTabsMapper.deleteSysProjectDefectTabsByTabId(tabId);
     }
+
+    @Override
+    public int deleteSysProjectDefectTabsByProjectIdAndMemberId(Long projectId, Long memberId) {
+        return sysProjectDefectTabsMapper.deleteSysProjectDefectTabsByProjectIdAndMemberId(projectId,memberId);
+    }
 }

@@ -2,6 +2,7 @@ package com.cat2bug.system.mapper;
 
 import java.util.List;
 import com.cat2bug.system.domain.SysProjectDefectTabs;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * 项目缺陷页签配置Mapper接口
@@ -58,4 +59,12 @@ public interface SysProjectDefectTabsMapper
      * @return 结果
      */
     public int deleteSysProjectDefectTabsByTabIds(Long[] tabIds);
+
+    /**
+     * 删除项目缺陷页签配置信息
+     * @param projectId 项目ID
+     * @param memberId  成员ID
+     * @return  结果
+     */
+    public int deleteSysProjectDefectTabsByProjectIdAndMemberId(@Param("projectId") Long projectId, @Param("memberId") Long memberId);
 }

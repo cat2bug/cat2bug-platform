@@ -77,4 +77,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             #{tabId}
         </foreach>
     </delete>
+
+    <delete id="deleteSysProjectDefectTabsByProjectIdAndMemberId" parameterType="Long">
+        delete from sys_project_defect_tabs where project_id = #{projectId} and user_id = #{memberId}
+    </delete>
 </mapper>
