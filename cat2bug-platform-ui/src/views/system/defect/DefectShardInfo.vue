@@ -54,7 +54,10 @@
 
     <div v-else class="defect-info">
       <div class="shard-header">
-        <h1><i class="el-icon-takeaway-box" /> {{$t('project')}}: {{defect.projectName}}</h1>
+        <div>
+          <!-- <i class="el-icon-takeaway-box" />  -->
+          {{$t('project')}}: {{defect.projectName}}
+        </div>
         <lang-select class="lang-select" />
       </div>
       <div class="defect-edit-header">
@@ -287,8 +290,8 @@ export default {
   }
 }
 .shard-header {
-  width: 100%;
-  height: 50px;
+  // width: 100%;
+  // height: 50px;
   background-color: #414141;
   color: #FFFFFF;
   display: inline-flex;
@@ -296,7 +299,7 @@ export default {
   justify-content: space-between;
   align-items: center;
   padding: 10px 20px;
-  font-size: 13px;
+  font-size: 16px;
 }
 .shard-footer {
   width: 100%;

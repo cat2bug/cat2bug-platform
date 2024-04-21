@@ -44,6 +44,8 @@ export default {
     border: 1px solid #EBEEF5;
     padding: 10px 30px;
     border-radius: 5px;
+    display: flex;
+    flex-direction: column;
     .statistic-box-header {
       display: inline-flex;
       flex-direction: row;
