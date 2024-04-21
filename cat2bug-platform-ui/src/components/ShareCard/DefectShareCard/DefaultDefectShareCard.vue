@@ -181,16 +181,6 @@ export default {
    async copy(shard) {
       this.shard = shard;
       let self = this;
-
-
-     // let interval1 = setInterval(async ()=>{
-     //   self.getSelect(this.$refs.myImg);
-     //   let isSuccess = document.execCommand('copy');
-     //   alert(isSuccess);
-     //   clearInterval(interval1)
-     // },0)
-     // return;
-
      if (navigator.clipboard) {
        setTimeout( async ()=>{
          await navigator.clipboard.write([
@@ -207,29 +197,11 @@ export default {
          this.$emit('copy');
        },0);
      } else if (document.execCommand && document.queryCommandSupported('copy')) {
-       // let interval1 = setInterval(async ()=>{
-       //   self.getSelect(this.$refs.myImg);
-       //   let isSuccess = document.execCommand('copy');
-       //   alert(isSuccess);
-       //   clearInterval(interval1)
-       // },0)
-       // self.createQRCode(this.getDefectUrl(shard.defectShardId));
-       // let canvas = await html2canvas(self.$refs.share);
        self.getSelect(self.$refs.myImg);
-       let isSuccess = document.execCommand('copy');
-       alert(isSuccess);
+       document.execCommand('copy');
        // 清空选中区域
        window.getSelection().removeAllRanges();
        self.$emit('copy');
-       // self.shardBase64Img = canvas.toDataURL('image/png');
-       // setTimeout(  async () => {
-       //   self.getSelect(self.$refs.myImg);
-       //   let isSuccess = document.execCommand('copy');
-       //   alert(isSuccess);
-       //   // 清空选中区域
-       //   window.getSelection().removeAllRanges();
-       //   self.$emit('copy');
-       // },0);
      }
     },
     getSelect(targetNode) {
