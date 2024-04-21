@@ -174,9 +174,12 @@ export default {
     async refresh(shard) {
       this.shard = shard;
       await this.createQRCode(this.getDefectUrl(this.shard.defectShardId));
-      this.drawImage();
-      let canvas = await html2canvas(this.$refs.share);
-      this.shardBase64Img = canvas.toDataURL('image/png');
+      await this.drawImage();
+      setTimeout(async ()=>{
+        let canvas = await html2canvas(this.$refs.share);
+        this.shardBase64Img = canvas.toDataURL('image/png');
+      },0)
+
     },
    async copy(shard) {
       this.shard = shard;

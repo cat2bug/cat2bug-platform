@@ -97,6 +97,7 @@ export default {
       if(this.shard) {
         this.refreshComponents();
       } else {
+        this.form.defectId = this.params.defectId;
         shardDefect(this.form).then(res=>{
           this.shard = res.data;
           this.refreshComponents();
