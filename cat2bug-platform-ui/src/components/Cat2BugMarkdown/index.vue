@@ -203,6 +203,7 @@ export default {
   flex-direction: row;
   flex: 1;
   background-color: #f6f6f6;
+  height: 100%;
   > * {
     min-height: 100px;
     overflow-y: auto;
@@ -224,6 +225,8 @@ export default {
   }
   > .markdown-body-view {
     flex: 1;
+    overflow: hidden;
+    overflow-y: auto;
   }
 }
 </style>
