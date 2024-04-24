@@ -119,6 +119,20 @@ export const constantRoutes = [
     ]
   },
   {
+    path: '/defect/report',
+    component: Layout,
+    hidden: true,
+    redirect: 'noredirect',
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/system/defect/report/AddDefectReport'),
+        name: 'AddDefectReport',
+        meta: { title: i18n.t('defect.statistic-template'), icon: 'user' }
+      }
+    ]
+  },
+  {
     path: '/system/project/add',
     component: Layout,
     hidden: true,

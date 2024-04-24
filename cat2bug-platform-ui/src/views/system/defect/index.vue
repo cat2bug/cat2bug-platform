@@ -107,6 +107,15 @@
             v-hasPermi="['system:defect:add']"
           >{{$i18n.t('defect.create')}}</el-button>
         </el-col>
+        <el-col :span="1.5">
+          <el-button
+            type="primary"
+            plain
+            icon="el-icon-plus"
+            size="mini"
+            @click="handleReport"
+          >report</el-button>
+        </el-col>
       </el-row>
     </div>
     <!-- 缺陷列表-->
@@ -525,6 +534,10 @@ export default {
     /** 新增按钮操作 */
     handleAdd() {
       this.$refs.addDefectForm.open();
+    },
+    /** 跳转到报表操作 */
+    handleReport() {
+      this.$router.push({name:'AddDefectReport'})
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
