@@ -9,7 +9,7 @@ export default {
   name: 'RuoYiGit',
   data() {
     return {
-      url: 'https://github.com/cat2bug/cat2bug-platform'
+      url: 'https://gitee.com/cat2bug/cat2bug-platform'
     }
   },
   methods: {

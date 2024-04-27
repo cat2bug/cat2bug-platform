@@ -2,21 +2,7 @@
   <div class="markdown">
     <div class="markdown-tools">
       <div>
-        <template v-for="(tool,index) in MarkdownTools()">
-          <el-popover
-            v-if="tool.children"
-            placement="bottom"
-            width="200"
-            trigger="hover"
-            popper-class="cat2bug-markdown-column-menu"
-            :key="index"
-            >
-            <el-button v-for="(children,cIndex) in tool.children" :key="cIndex" @click="toolsHandle(children)"><svg-icon :icon-class="children.icon"></svg-icon>{{children.name}}</el-button>
-            <el-button slot="reference"><svg-icon :icon-class="tool.icon"></svg-icon></el-button>
-          </el-popover>
-          <div class="siding" v-else-if="tool.type=='siding'" :key="index" />
-          <el-button v-else @click="toolsHandle(tool)"><svg-icon :icon-class="tool.icon"></svg-icon></el-button>
-        </template>
+        <tools-menu :tools="MarkdownTools()" @select="toolsHandle" />
       </div>
       <div>333</div>
     </div>
@@ -48,16 +34,17 @@ import 'markdown-it-vue/dist/markdown-it-vue.css'
 import {listDefect} from "@/api/system/defect";
 import {listCase} from "@/api/system/case";
 import {getProject} from "@/api/system/project";
-
+import ToolsMenu from "@/components/Cat2BugMarkdown/components/ToolsMenu";
 export default {
   name: "Cat2BugMarkdown",
-  components: { Multipane, MultipaneResizer, MarkdownItVue },
+  components: { Multipane, MultipaneResizer, MarkdownItVue, ToolsMenu },
   data() {
     return {
       multipaneStyle: {'--marginTop':'0px'},
       form: {
         content: ''
       },
+      activeToolsIndex: null,
       markdownContent: ''
     }
   },
@@ -149,16 +136,6 @@ export default {
   }
 }
 </script>
-<style>
-.cat2bug-markdown-column-menu {
-  display: flex;
-  flex-direction: column;
-}
-.cat2bug-markdown-column-menu > .el-button {
-  margin-left: 0px;
-  border: none;
-}
-</style>
 <style lang="scss" scoped>
 .markdown {
   width: 100%;
@@ -176,27 +153,26 @@ export default {
   align-items: center;
   padding: 5px;
   border-bottom: 1px solid #f2f6fc;
-  > div:first-child {
-    flex: 1;
-    display: inline-flex;
-    flex-direction: row;
-    justify-content: flex-start;
-    align-items: center;
+  ::v-deep .el-submenu__icon-arrow {
+    display: none !important;
   }
-  .el-button {
-    border-width: 0px;
-    padding: 8px;
-  }
-  .el-button:not(:first-child) {
-    margin-left: 2px;
-  }
+
+  //> div:first-child {
+  //  flex: 1;
+  //  display: inline-flex;
+  //  flex-direction: row;
+  //  justify-content: flex-start;
+  //  align-items: center;
+  //}
+  //.el-button {
+  //  border-width: 0px;
+  //  padding: 8px;
+  //}
+  //.el-button:not(:first-child) {
+  //  margin-left: 2px;
+  //}
 }
-.siding {
-  width: 1px;
-  height: 15px;
-  background-color: #dcdcdc;
-  margin: 0px 5px;
-}
+
 .markdown-body {
   width: 100%;
   display: inline-flex;
