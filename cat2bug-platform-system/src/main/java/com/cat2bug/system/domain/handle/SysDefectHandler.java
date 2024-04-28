@@ -38,6 +38,16 @@ public class SysDefectHandler extends BaseTypeHandler<SysDefect> {
     }
 
     private SysDefect toSysDefect(String json) {
-        return StringUtils.isNotBlank(json)?JSON.parseObject(json,SysDefect.class):null;
+        if(StringUtils.isNotBlank(json)){
+            if(json.charAt(0)=='"') {
+                json = json.substring(1);
+            }
+            if(json.charAt(json.length()-1)=='"') {
+                json = json.substring(0,json.length()-1);
+            }
+            json = json.replace("\\\"","\"");
+            return JSON.parseObject(json,SysDefect.class);
+        }
+        return null;
     }
 }
