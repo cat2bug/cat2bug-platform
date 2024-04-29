@@ -119,16 +119,30 @@ export const constantRoutes = [
     ]
   },
   {
-    path: '/defect/report',
+    path: '/report/template',
     component: Layout,
     hidden: true,
     redirect: 'noredirect',
     children: [
       {
         path: 'index',
-        component: () => import('@/views/system/defect/report/AddDefectReport'),
+        component: () => import('@/views/system/report/template/index'),
+        name: 'ReportTemplate',
+        meta: { title: i18n.t('report.template'), icon: 'user' }
+      }
+    ]
+  },
+  {
+    path: '/report/template/add',
+    component: Layout,
+    hidden: true,
+    redirect: 'noredirect',
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/system/report/template/EditReportTemplate'),
         name: 'AddDefectReport',
-        meta: { title: i18n.t('defect.statistic-template'), icon: 'user' }
+        meta: { title: i18n.t('report.template'), icon: 'user' }
       }
     ]
   },

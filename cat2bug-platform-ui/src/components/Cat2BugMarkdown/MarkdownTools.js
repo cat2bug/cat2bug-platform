@@ -1,3 +1,5 @@
+import {DefectTable} from "@/components/Cat2BugMarkdown/tools/DefectTable";
+
 export function MarkdownTools() {
   return [{
     icon: 'mk-weight',
@@ -24,6 +26,10 @@ export function MarkdownTools() {
         name: '项目名称',
         content: '${api.project.projectName}'
       },{
+        icon: 'mk-icon',
+        name: '项目图标',
+        content: '$image["style":"width:100px;height:100px;"]{api.project.projectIcon}'
+      },{
         icon: 'md-create-time',
         name: '项目创建日期',
         content: '${api.project.createTime}'
@@ -38,11 +44,7 @@ export function MarkdownTools() {
       }]},{
         icon: 'bug',
         name: '缺陷',
-        children: [{
-          icon: 'mk-table',
-          name: '缺陷表格',
-          content: '$table{api.defect.list}',
-        }],
+        children: [DefectTable()],
       }]
   },{
     icon: 'mk-table',

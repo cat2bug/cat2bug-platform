@@ -33,6 +33,25 @@
           />
         </el-form-item>
       </el-form>
+      <el-row :gutter="10" class="mb8">
+        <el-col :span="1.5">
+          <cat2-bug-report-template-select
+            v-hasPermi="['system:report:add']"
+            :project-id="projectId" />
+
+<!--          <el-dropdown size="mini" split-button type="primary" v-hasPermi="['system:report:add']" @command="handleCommand">-->
+<!--            生成报告-->
+<!--            <el-dropdown-menu slot="dropdown" class="list">-->
+<!--              <el-dropdown-item v-for="(t,index) in templateList" :command="t.templateId" :key="index">-->
+<!--                -->
+<!--              </el-dropdown-item>-->
+<!--              <el-dropdown-item divided command="add">-->
+<!--                <svg-icon icon-class="add-tab"/>编辑报告模版-->
+<!--              </el-dropdown-item>-->
+<!--            </el-dropdown-menu>-->
+<!--          </el-dropdown>-->
+        </el-col>
+      </el-row>
     </div>
     <el-table v-loading="loading" :data="reportList" @row-click="rowClickHandle">
       <el-table-column :label="$t('report.type')" align="center" prop="reportTime" width="120">
@@ -111,10 +130,11 @@ import Step from "@/components/Case/CaseStep";
 import ReportTools from "@/components/Report/ReportTools";
 import FocusMemberList from "@/components/FocusMemberList";
 import ReportTypeFlag from "@/components/Report/ReportTypeFlag";
+import Cat2BugReportTemplateSelect from "@/components/Cat2BugReportTemplateSelect";
 
 export default {
   name: "Report",
-  components: { Step, ProjectLabel, ViewReport, ReportTools, FocusMemberList, ReportTypeFlag },
+  components: { Step, ProjectLabel, ViewReport, ReportTools, FocusMemberList, ReportTypeFlag, Cat2BugReportTemplateSelect },
   data() {
     return {
       // 遮罩层
@@ -153,7 +173,7 @@ export default {
         reportTitle: [
           { required: true, message: "报告标题不能为空", trigger: "blur" }
         ],
-      }
+      },
     };
   },
   computed: {
@@ -239,9 +259,26 @@ export default {
         }
       });
     },
+    handleCommand(cmd) {
+      switch (cmd){
+        case 'add':
+          this.handleReport();
+          break;
+        default:
+          break;
+      }
+    }
   }
 };
 </script>
+<style>
+.list {
+  display: inline-flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  /*width: 500px;*/
+}
+</style>
 <style lang="scss" scoped>
 .report-tools {
   display: flex;

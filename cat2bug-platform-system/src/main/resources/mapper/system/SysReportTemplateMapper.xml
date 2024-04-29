@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.system.mapper.SysReportTemplateMapper">
+    
+    <resultMap type="SysReportTemplate" id="SysReportTemplateResult">
+        <result property="templateId"    column="template_id"    />
+        <result property="moduleType"    column="module_type"    />
+        <result property="templateContent"    column="template_content"    />
+        <result property="templateTitle"    column="template_title"    />
+        <result property="updateById"    column="update_by_id"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="projectId"    column="project_id"    />
+        <result property="templateIconUrl"    column="template_icon_url"    />
+        <result property="majorVersion"    column="major_version"    />
+        <result property="minorVersion"    column="minor_version"    />
+        <result property="templateKey"    column="template_key"    />
+    </resultMap>
+
+    <sql id="selectSysReportTemplateVo">
+        select template_id, module_type, template_content, template_title, update_by_id, update_time, project_id, template_icon_url, major_version, minor_version, template_key from sys_report_template
+    </sql>
+
+    <select id="selectSysReportTemplateList" parameterType="SysReportTemplate" resultMap="SysReportTemplateResult">
+        <include refid="selectSysReportTemplateVo"/>
+        <where>  
+            <if test="moduleType != null  and moduleType != ''"> and module_type = #{moduleType}</if>
+            <if test="templateTitle != null  and templateTitle != ''"> and template_title = #{templateTitle}</if>
+            <if test="updateById != null "> and update_by_id = #{updateById}</if>
+            <if test="projectId != null "> and project_id = #{projectId}</if>
+            <if test="templateIconUrl != null  and templateIconUrl != ''"> and template_icon_url = #{templateIconUrl}</if>
+            <if test="majorVersion != null "> and major_version = #{majorVersion}</if>
+            <if test="minorVersion != null "> and minor_version = #{minorVersion}</if>
+            <if test="templateKey != null  and templateKey != ''"> and template_key = #{templateKey}</if>
+        </where>
+    </select>
+    
+    <select id="selectSysReportTemplateByTemplateId" parameterType="Long" resultMap="SysReportTemplateResult">
+        <include refid="selectSysReportTemplateVo"/>
+        where template_id = #{templateId}
+    </select>
+        
+    <insert id="insertSysReportTemplate" parameterType="SysReportTemplate" useGeneratedKeys="true" keyProperty="templateId">
+        insert into sys_report_template
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="moduleType != null">module_type,</if>
+            <if test="templateTitle != null">template_title,</if>
+            <if test="templateContent != null">template_content,</if>
+            <if test="updateById != null">update_by_id,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="projectId != null">project_id,</if>
+            <if test="templateIconUrl != null">template_icon_url,</if>
+            <if test="majorVersion != null">major_version,</if>
+            <if test="minorVersion != null">minor_version,</if>
+            <if test="templateKey != null and templateKey != ''">template_key,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="moduleType != null">#{moduleType},</if>
+            <if test="templateTitle != null">#{templateTitle},</if>
+            <if test="templateContent != null">#{templateContent},</if>
+            <if test="updateById != null">#{updateById},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="projectId != null">#{projectId},</if>
+            <if test="templateIconUrl != null">#{templateIconUrl},</if>
+            <if test="majorVersion != null">#{majorVersion},</if>
+            <if test="minorVersion != null">#{minorVersion},</if>
+            <if test="templateKey != null and templateKey != ''">#{templateKey},</if>
+         </trim>
+    </insert>
+
+    <update id="updateSysReportTemplate" parameterType="SysReportTemplate">
+        update sys_report_template
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="moduleType != null">module_type = #{moduleType},</if>
+            <if test="templateTitle != null">template_title = #{templateTitle},</if>
+            <if test="templateContent != null">template_content = #{templateContent},</if>
+            <if test="updateById != null">update_by_id = #{updateById},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="projectId != null">project_id = #{projectId},</if>
+            <if test="templateIconUrl != null">template_icon_url = #{templateIconUrl},</if>
+            <if test="majorVersion != null">major_version = #{majorVersion},</if>
+            <if test="minorVersion != null">minor_version = #{minorVersion},</if>
+            <if test="templateKey != null and templateKey != ''">template_key = #{templateKey},</if>
+        </trim>
+        where template_id = #{templateId}
+    </update>
+
+    <delete id="deleteSysReportTemplateByTemplateId" parameterType="Long">
+        delete from sys_report_template where template_id = #{templateId}
+    </delete>
+
+    <delete id="deleteSysReportTemplateByTemplateIds" parameterType="String">
+        delete from sys_report_template where template_id in 
+        <foreach item="templateId" collection="array" open="(" separator="," close=")">
+            #{templateId}
+        </foreach>
+    </delete>
+</mapper>

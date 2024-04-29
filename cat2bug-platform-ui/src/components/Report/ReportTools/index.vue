@@ -42,7 +42,7 @@ export default {
       return this.$store.state.user.id;
     },
     deleteVisible: function () {
-      return this.report.createById==this.currentUserId || checkPermi(['system:report:remove']);
+      return this.report.createById==this.currentUserId || checkPermi(['system:template:remove']);
     },
   },
   methods:{
@@ -50,7 +50,7 @@ export default {
     handleDelete(event) {
       const reportIds = this.report.reportId;
       this.$modal.confirm(
-        this.$i18n.t('report.delete-report'),
+        this.$i18n.t('template.delete-template'),
         this.$i18n.t('prompted').toString(),
         {
           confirmButtonText: i18n.t('delete').toString(),

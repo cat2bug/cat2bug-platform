@@ -429,6 +429,7 @@
   "report.delete-report": "是否要删除此报告？",
   "report.type-text": "文本报告",
   "report.type-runtime": "实时报告",
+  "report.template": "报告模版",
   "pusher": "推送人",
   "copy-success": "复制成功",
   "click-copy": "点击复制",

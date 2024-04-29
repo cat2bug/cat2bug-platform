@@ -4,7 +4,7 @@ export function VariablePlugin (md,options) {
   function variable (state, silent) {
     let match;
     if (state.src.charCodeAt(state.pos) === 0x24 /* $ */) {
-      let rg = /.*\$(v|variable){0,1}\{(.*)\}/;
+      let rg = /\$(t|text){0,1}\{(.*)\}/;
       match = state.src.match(rg);
       if (!match) return false;
 
@@ -25,7 +25,7 @@ export function VariablePlugin (md,options) {
         }
 
         let vToken = state.push('text', opt.name, 0);
-        vToken.content = JSON.stringify(content);
+        vToken.content = content;
         vToken.children = []
       }
       state.pos += match[0].length;
