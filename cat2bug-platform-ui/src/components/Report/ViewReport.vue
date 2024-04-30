@@ -160,7 +160,7 @@ export default {
     /** 导出Word */
     async exportWord() {
       this.loading = true;
-      let id = "template-data";
+      let id = "report-data";
       // 将canvas转为图片
       let tempImages = this.convertCanvasesToImages(id);
       // 根据样式获取元素并转为图片

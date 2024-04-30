@@ -49,7 +49,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="reportDescription != null">report_description,</if>
             <if test="reportDataCoder != null">report_data_coder,</if>
             <if test="reportData != null">report_data,</if>
-            <if test="reportSource != null">report_source</if>
+            <if test="reportSource != null">report_source,</if>
             <if test="createById != null">create_by_id,</if>
             <if test="projectId != null">project_id,</if>
             <if test="reportKey != null">report_key,</if>
