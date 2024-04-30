@@ -3,7 +3,7 @@
     <el-row class="project-add-page-header">
       <el-page-header @back="goBack" :content="$t('defect.statistic-template')">
         <template v-slot:content>
-          <el-input type="text" v-model="template.templateTitle" class="report-name" size="small" maxlength="256" @input="changeHandle(500)"></el-input>
+          <el-input type="text" v-model="template.templateTitle" class="report-name" size="small" maxlength="255" @input="changeHandle(500)"></el-input>
           <div class="time" v-if="template.updateTime">
             <svg-icon icon-class="md-create-time" />
             <span>更新时间:{{template.updateTime}}</span>

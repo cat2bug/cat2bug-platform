@@ -1,6 +1,9 @@
 package com.cat2bug.system.service.impl;
 
 import java.util.List;
+
+import com.cat2bug.common.utils.DateUtils;
+import com.cat2bug.common.utils.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.cat2bug.system.mapper.SysReportMapper;
@@ -52,6 +55,10 @@ public class SysReportServiceImpl implements ISysReportService
     @Override
     public int insertSysReport(SysReport sysReport)
     {
+        if(sysReport.getReportTime()==null){
+            sysReport.setReportTime(DateUtils.getNowDate());
+        }
+        sysReport.setCreateById(SecurityUtils.getUserId());
         return sysReportMapper.insertSysReport(sysReport);
     }
 

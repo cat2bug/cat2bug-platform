@@ -37,6 +37,7 @@
         <el-col :span="1.5">
           <cat2-bug-report-template-select
             v-hasPermi="['system:report:add']"
+            @create="createReportHandle"
             :project-id="projectId" />
 
 <!--          <el-dropdown size="mini" split-button type="primary" v-hasPermi="['system:report:add']" @command="handleCommand">-->
@@ -267,6 +268,10 @@ export default {
         default:
           break;
       }
+    },
+    createReportHandle(template) {
+      this.getList();
+      this.$message.success('创建报告['+template.templateTitle+']成功');
     }
   }
 };

@@ -10,11 +10,16 @@ import com.cat2bug.common.utils.poi.ExcelUtil;
 import com.cat2bug.common.core.domain.entity.SysReport;
 import com.cat2bug.system.service.IMemberFocusService;
 import com.cat2bug.system.service.ISysReportService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.List;
 
 /**
@@ -27,6 +32,7 @@ import java.util.List;
 @RequestMapping("/system/report")
 public class SysReportController extends BaseController
 {
+    private Logger log = LogManager.getLogger(SysReportController.class);
     private final static String MODULE_NAME = "report";
     @Autowired
     private ISysReportService sysReportService;
@@ -94,8 +100,42 @@ public class SysReportController extends BaseController
     @PreAuthorize("@ss.hasPermi('system:report:add')")
     @Log(title = "报告", businessType = BusinessType.INSERT)
     @PostMapping
-    public AjaxResult add(@RequestBody SysReport sysReport)
+    public AjaxResult add(HttpServletRequest request, @RequestBody SysReport sysReport)
     {
+        // 获取客户端ip
+        String ipAddress = null;
+        try {
+            ipAddress = request.getHeader("x-forwarded-for");
+            if (ipAddress == null || ipAddress.length() == 0 || "unknown".equalsIgnoreCase(ipAddress)) {
+                ipAddress = request.getHeader("Proxy-Client-IP");
+            }
+            if (ipAddress == null || ipAddress.length() == 0 || "unknown".equalsIgnoreCase(ipAddress)) {
+                ipAddress = request.getHeader("WL-Proxy-Client-IP");
+            }
+            if (ipAddress == null || ipAddress.length() == 0 || "unknown".equalsIgnoreCase(ipAddress)) {
+                ipAddress = request.getRemoteAddr();
+                if (ipAddress.equals("127.0.0.1")) {
+                    // 根据网卡取本机配置的IP
+                    InetAddress inet = null;
+                    try {
+                        inet = InetAddress.getLocalHost();
+                    } catch (UnknownHostException e) {
+                        log.warn(e);
+                    }
+                    ipAddress = inet.getHostAddress();
+                }
+            }
+            // 对于通过多个代理的情况，第一个IP为客户端真实IP,多个IP按照','分割
+            if (ipAddress != null && ipAddress.length() > 15) { // "***.***.***.***".length()
+                // = 15
+                if (ipAddress.indexOf(",") > 0) {
+                    ipAddress = ipAddress.substring(0, ipAddress.indexOf(","));
+                }
+            }
+        } catch (Exception e) {
+            ipAddress="";
+        }
+        sysReport.setReportSource(ipAddress);
         return toAjax(sysReportService.insertSysReport(sysReport));
     }
 
