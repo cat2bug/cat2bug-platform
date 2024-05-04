@@ -6,12 +6,12 @@
           <el-input type="text" v-model="template.templateTitle" class="report-name" size="small" maxlength="255" @input="changeHandle(500)"></el-input>
           <div class="time" v-if="template.updateTime">
             <svg-icon icon-class="md-create-time" />
-            <span>更新时间:{{template.updateTime}}</span>
+            <span>{{$t('update-time')}}:{{template.updateTime}}</span>
           </div>
         </template>
       </el-page-header>
     </el-row>
-    <cat2-bug-markdown ref="cat2bugMarkdown" v-model="template.templateContent" @input="changeHandle(5000)" />
+    <cat2-bug-markdown ref="cat2bugMarkdown" v-model="template.templateContent" :template="template" @input="changeHandle(5000)" />
 <!--    <mavon-editor-->
 <!--      v-model="content"-->
 <!--      ref="md"-->
@@ -71,7 +71,7 @@ export default {
         const self = this;
         this.pushId = setTimeout(async ()=>{
           const blob = await this.$refs.cat2bugMarkdown.getMarkdownImage();
-          if(blob.type=='image/png') {
+          if(blob && blob.type=='image/png') {
             const formData = new FormData();
             formData.append('file', blob);
             let res = await upload(formData);
@@ -125,5 +125,10 @@ export default {
   padding: 0px 10px;
   background-color: #EBEEF5;
   margin-left: 15px;
+  gap: 5px;
+  display: inline-flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
 }
 </style>

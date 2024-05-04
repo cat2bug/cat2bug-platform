@@ -59,6 +59,7 @@
     "jsencrypt": "3.0.0-rc.1",
     "jspdf": "^2.5.1",
     "markdown-it": "^14.1.0",
+    "markdown-it-container": "^4.0.0",
     "markdown-it-multimd-table": "^4.2.3",
     "markdown-it-table-of-contents": "^0.6.0",
     "markdown-it-vue": "^1.1.7",

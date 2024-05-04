@@ -4,14 +4,14 @@
       <el-menu-item v-if="!tool.children" :index="tool.name">
         <div class="row">
           <svg-icon v-if="tool.icon" :icon-class="tool.icon" />
-          <span>{{tool.name}}</span>
+          <span>{{$t(tool.name)}}</span>
         </div>
       </el-menu-item>
       <el-submenu v-else :index="tool.name">
         <template slot="title">
           <div class="row">
             <svg-icon v-if="tool.icon" :icon-class="tool.icon" />
-            <span>{{tool.name}}</span>
+            <span>{{$t(tool.name)}}</span>
           </div>
         </template>
         <tools-menu-item :tools="tool.children" />
@@ -42,7 +42,7 @@ export default {
   justify-content: center;
   align-items: center;
   > * {
-    margin-right: 3px;
+    margin-right: 5px;
   }
   ::v-deep .el-submenu__icon-arrow {
     display: none;

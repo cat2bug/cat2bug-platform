@@ -2,10 +2,16 @@
   <el-menu :default-active="activeToolsIndex" class="tools-menu" mode="horizontal" @select="toolsHandle">
     <template v-for="(tool,index) in tools">
       <li v-if="tool.type=='siding'" class="siding" />
-      <el-menu-item v-else-if="!tool.children" :index="tool.name">
+      <el-menu-item v-else-if="!tool.children && tool.icon" :index="tool.name">
         <template slot="title">
           <div class="row">
-            <svg-icon class="icon" v-if="tool.icon" :icon-class="tool.icon" />
+            <el-tooltip class="item" effect="dark" :content="$t(tool.name)" placement="bottom">
+              <div v-if="tool.type=='check'">
+                <svg-icon class="icon" v-show="tool.check && tool.activeIcon" :icon-class="tool.activeIcon" />
+                <svg-icon class="icon" v-show="!tool.check" :icon-class="tool.icon" />
+              </div>
+              <svg-icon v-else class="icon" :icon-class="tool.icon" />
+            </el-tooltip>
           </div>
         </template>
       </el-menu-item>
@@ -20,9 +26,13 @@
 </template>
 
 <script>
-import ToolsMenuItem from "@/components/Cat2BugMarkdown/ToolsMenuItem";
+import ToolsMenuItem from "./ToolsMenuItem";
 export default {
   name: "ToolsMenu",
+  model: {
+    prop: 'tools',
+    event: 'select'
+  },
   components: { ToolsMenuItem },
   data() {
     return {
@@ -40,7 +50,14 @@ export default {
     toolsHandle(key, keyPath) {
       let tool = this.getNode(this.tools, keyPath);
       if(tool) {
-        this.$emit('select', tool)
+        if(tool.type=='check') {
+          if(tool.check) {
+            tool.check = false;
+          } else {
+            tool.check = true;
+          }
+        }
+        this.$emit('select', this.tools, tool)
       }
     },
     getNode(tools, path) {
@@ -70,9 +87,14 @@ export default {
   align-items: center;
   .el-menu-item, ::v-deep .el-submenu {
     height: 30px;
+    width: 30px;
     line-height: 28px;
     padding: 0px 8px;
     border-radius: 3px;
+    border: none;
+    > * {
+      padding: 0px;
+    }
   }
   .el-menu-item:hover, ::v-deep .el-submenu:hover {
     color: #1890ff;

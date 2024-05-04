@@ -82,7 +82,7 @@
 </template>
 
 <script>
-import {addDefect, configDefect, getDefect, updateDefect} from "@/api/system/defect";
+import {configDefect, getDefect, updateDefect} from "@/api/system/defect";
 import SelectProjectMember from "@/components/Project/SelectProjectMember"
 import SelectModule from "@/components/Module/SelectModule"
 import ImageUpload from "@/components/ImageUpload";

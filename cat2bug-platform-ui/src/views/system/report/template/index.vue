@@ -27,7 +27,7 @@ export default {
     return {
       templateList: [],
       template: {
-        templateTitle: '新建报告',
+        templateTitle: null,
         moduleType: null,
         projectId: null,
         templateContent: '',
@@ -56,6 +56,7 @@ export default {
     },
     addReportTemplate() {
       this.template.projectId = this.projectId;
+      this.template.templateTitle = this.$i18n.t('report.default-title');
       addReportTemplate(this.template).then(res=>{
         if(res.data) {
           this.goReportTemplateView(res.data.templateId);

@@ -16,14 +16,22 @@
         :headers="headers"
         :file-list="fileList"
         :on-preview="handlePictureCardPreview"
+        class="cat2bug-upload"
         :class="{hide: this.fileList.length >= this.limit}"
       >
-        <i class="el-icon-plus"></i>
+        <template v-slot:trigger>
+          <el-button class="update-button">
+            <i class="el-icon-plus"></i>
+          </el-button>
+          <el-button class="update-button" @click="clipboardImageHandle">
+            <svg-icon icon-class="clipboard" />
+          </el-button>
+        </template>
       </el-upload>
 
-      <el-button class="update-button" @click="clipboardImageHandle">
-        <svg-icon icon-class="clipboard" />
-      </el-button>
+<!--      <el-button class="update-button" @click="clipboardImageHandle">-->
+<!--        <svg-icon icon-class="clipboard" />-->
+<!--      </el-button>-->
     </div>
     <!-- 上传提示 -->
     <div class="el-upload__tip" slot="tip" v-if="showTip">
@@ -126,8 +134,9 @@ export default {
   },
   methods: {
     // var imageUrl = URL.createObjectURL(blob);
-    async clipboardImageHandle() {
+    async clipboardImageHandle(event) {
       await this.getClipboardImage();
+      event.stopPropagation();
     },
     async getClipboardImage() {
       try {
@@ -276,6 +285,12 @@ export default {
   display: inline-flex;
   flex-direction: row;
   gap: 10px;
+}
+::v-deep.cat2bug-upload > .el-upload--picture-card {
+  width: 300px !important;
+  display: inline-flex;
+  flex-direction: row;
+  border: none;
 }
 </style>
 
