@@ -34,6 +34,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="minorVersion != null "> and minor_version = #{minorVersion}</if>
             <if test="templateKey != null  and templateKey != ''"> and template_key = #{templateKey}</if>
         </where>
+        order by update_time desc
     </select>
     
     <select id="selectSysReportTemplateByTemplateId" parameterType="Long" resultMap="SysReportTemplateResult">

@@ -37,7 +37,11 @@ import { Multipane, MultipaneResizer } from 'vue-multipane';
 import MarkdownItVue from "markdown-it-vue"
 import { TablePlugin } from "./plugins/TablePlugin"
 import { CardPlugin } from "@/components/Cat2BugMarkdown/plugins/CardPlugin";
+import {CaseCardPlugin} from "@/components/Cat2BugMarkdown/plugins/CaseCardPlugin";
 import {VariablePlugin} from "./plugins/VariablePlugin"
+import {CenterPointPlugin} from "@/components/Cat2BugMarkdown/plugins/CenterPointPlugin";
+import {LeftPointPlugin} from "@/components/Cat2BugMarkdown/plugins/LeftPointPlugin";
+import {RightPointPlugin} from "@/components/Cat2BugMarkdown/plugins/RightPointPlugin";
 import { MarkdownTools } from "./MarkdownTools"
 import 'markdown-it-vue/dist/markdown-it-vue.css'
 import {listDefect} from "@/api/system/defect";
@@ -50,6 +54,7 @@ import {strFormat} from "@/utils";
 import Vue from "vue";
 import {upload} from "@/api/common/upload";
 import {updateTemplate} from "@/api/system/ReportTemplate";
+import {markdownData} from "@/api/markdown/markdown";
 
 export default {
   name: "Cat2BugMarkdown",
@@ -63,7 +68,7 @@ export default {
       multipaneStyle: {'--marginTop':'0px'},
       activeToolsIndex: null,
       viewVisible: true,
-      markdownContent: this.content,
+      markdownContent: '',
       currentToolView: null,
       viewTools: [{
         id: 'mk-look',
@@ -116,11 +121,11 @@ export default {
     }
   },
   watch: {
-    content(v) {
-      if(this.markdownContent!=v) {
-        this.markdownContent = v;
-      }
-    },
+    // content(v) {
+    //   if(this.markdownContent!=v) {
+    //     this.markdownContent = v;
+    //   }
+    // },
     markdownContent(v) {
       // console.log('markdownContent',v)
     }
@@ -190,6 +195,7 @@ export default {
     },
     /** 初始化markdown插件 */
     initMarkdownPlug() {
+      // 可以合并行列的表格
       this.$refs.markdownView.use(require('markdown-it-multimd-table'), {
         multiline:  true,
         rowspan:    true,
@@ -197,7 +203,11 @@ export default {
         multibody:  true,
         aotolabel:  true,
       });
-      listDefect().then(res=>{
+      this.$refs.markdownView.use(LeftPointPlugin);
+      this.$refs.markdownView.use(RightPointPlugin);
+      this.$refs.markdownView.use(CenterPointPlugin);
+      // 缺陷操作符
+      const defectList = listDefect().then(res=>{
         this.$refs.markdownView.use(TablePlugin,{
           name: 'api.defect.list',
           value: res.rows
@@ -206,14 +216,18 @@ export default {
           name: 'api.defect.list',
           value: res.rows
         });
+        return res;
       });
-      listCase().then(res=>{
+      // 测试用例操作符
+      const caseList = listCase().then(res=>{
         this.$refs.markdownView.use(TablePlugin,{
           name: 'api.case.list',
           value: res.rows
         });
+        return res;
       });
-      getProject(this.projectId).then(res=>{
+      // 项目操作符
+      const project = getProject(this.projectId).then(res=>{
         this.$refs.markdownView.use(ImagePlugin,{
           name: 'api.project',
           value: res.data
@@ -222,6 +236,26 @@ export default {
           name: 'api.project',
           value: res.data
         });
+        return res;
+      });
+      markdownData(this.projectId).then(res=>{
+        this.$refs.markdownView.use(TablePlugin,{
+          name: 'api.defect.list',
+          value: res.data.defect?res.data.defect.list:[]
+        });
+        this.$refs.markdownView.use(CaseCardPlugin,{
+          name: 'api.case.list',
+          value: res.data.case?res.data.case.list:[]
+        });
+        this.$refs.markdownView.use(VariablePlugin,{
+          name: 'api.case.total',
+          value: res.data.case?res.data.case.total:0
+        });
+      });
+      Promise.all([defectList,caseList,project]).then(res=>{
+        this.markdownContent = this.content;
+      }).catch(e=>{
+        this.$message.error(e);
       })
     },
     /** 拖动事件完成 */

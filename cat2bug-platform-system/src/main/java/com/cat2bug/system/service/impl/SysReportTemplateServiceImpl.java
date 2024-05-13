@@ -55,6 +55,7 @@ public class SysReportTemplateServiceImpl implements ISysReportTemplateService
     public int insertSysReportTemplate(SysReportTemplate sysReportTemplate)
     {
         sysReportTemplate.setTemplateKey(UUID.randomUUID().toString());
+        sysReportTemplate.setUpdateTime(DateUtils.getNowDate());
         return sysReportTemplateMapper.insertSysReportTemplate(sysReportTemplate);
     }
 

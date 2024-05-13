@@ -33,7 +33,7 @@
       </div>
     </template>
     <div ref="report-data" id="report-data" class="app-container" v-loading="loading">
-      <markdown-it-vue class="md" :content="report.reportDescription+''" />
+      <markdown-it-vue ref="markdownView" class="md" :content="report.reportDescription+''" />
     </div>
   </el-drawer>
 </template>
@@ -50,6 +50,15 @@ import ReportTools from "./ReportTools/index"
 import FocusMemberList from "@/components/FocusMemberList";
 import ReportTypeFlag from "@/components/Report/ReportTypeFlag";
 import '@/assets/font/simsun-normal';
+import {listDefect} from "@/api/system/defect";
+import {TablePlugin} from "@/components/Cat2BugMarkdown/plugins/TablePlugin";
+import {CardPlugin} from "@/components/Cat2BugMarkdown/plugins/CardPlugin";
+import {listCase} from "@/api/system/case";
+import {getProject} from "@/api/system/project";
+import {ImagePlugin} from "@/components/Cat2BugMarkdown/plugins/ImagePlugin";
+import {VariablePlugin} from "@/components/Cat2BugMarkdown/plugins/VariablePlugin";
+import {markdownData} from "@/api/markdown/markdown";
+import {CaseCardPlugin} from "@/components/Cat2BugMarkdown/plugins/CaseCardPlugin";
 
 export default {
   name: "ViewReport",
@@ -206,12 +215,9 @@ export default {
     /** 打开操作 */
     open(reportId) {
       this.visible = true;
-      this.reset();
-      this.reportId = reportId;
-      this.getReportInfo(reportId);
       this.$nextTick(()=>{
-
-      });
+        this.initMarkdownPlug(reportId);
+      })
     },
     /** 取消返回 */
     cancel() {
@@ -260,7 +266,67 @@ export default {
           this.exportPDF();
           break;
       }
-    }
+    },
+    /** 初始化markdown插件 */
+    initMarkdownPlug(reportId) {
+      // 可以合并行列的表格
+      this.$refs.markdownView.use(require('markdown-it-multimd-table'), {
+        multiline:  true,
+        rowspan:    true,
+        headerless: true,
+        multibody:  true,
+        aotolabel:  true,
+      });
+      // 缺陷操作符
+      const defectList = listDefect().then(res=>{
+        this.$refs.markdownView.use(TablePlugin,{
+          name: 'api.defect.list',
+          value: res.rows
+        });
+        this.$refs.markdownView.use(CardPlugin,{
+          name: 'api.defect.list',
+          value: res.rows
+        });
+        return res;
+      });
+      // 测试用例操作符
+      const caseList = listCase().then(res=>{
+        this.$refs.markdownView.use(TablePlugin,{
+          name: 'api.case.list',
+          value: res.rows
+        });
+        return res;
+      });
+      // 项目操作符
+      const project = getProject(this.projectId).then(res=>{
+        this.$refs.markdownView.use(ImagePlugin,{
+          name: 'api.project',
+          value: res.data
+        });
+        this.$refs.markdownView.use(VariablePlugin,{
+          name: 'api.project',
+          value: res.data
+        });
+        return res;
+      });
+      const data = markdownData(this.projectId).then(res=>{
+        this.$refs.markdownView.use(CaseCardPlugin,{
+          name: 'api.case.list',
+          value: res.data.case?res.data.case.list:[]
+        });
+      });
+      Promise.all([defectList,caseList,project,data]).then(res=>{
+        this.visible = true;
+        this.reset();
+        this.reportId = reportId;
+        this.getReportInfo(reportId);
+        this.$nextTick(()=>{
+
+        });
+      }).catch(e=>{
+        this.$message.error(e);
+      })
+    },
   }
 }
 </script>

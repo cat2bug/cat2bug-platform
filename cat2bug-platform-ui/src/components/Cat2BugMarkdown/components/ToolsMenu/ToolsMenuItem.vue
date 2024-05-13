@@ -1,7 +1,8 @@
 <template>
   <div class="tools-row">
     <template v-for="(tool,index) in tools">
-      <el-menu-item v-if="!tool.children" :index="tool.name">
+      <li v-if="tool.type=='siding'" class="line"></li>
+      <el-menu-item v-else-if="!tool.children" :index="tool.name">
         <div class="row">
           <svg-icon v-if="tool.icon" :icon-class="tool.icon" />
           <span>{{$t(tool.name)}}</span>
@@ -35,6 +36,10 @@ export default {
 <style lang="scss" scoped>
 .tools-row {
 
+}
+.line {
+  border-bottom: 1px solid #EBEEF5;
+  margin: 0px 10px;
 }
 .row {
   display: inline-flex;

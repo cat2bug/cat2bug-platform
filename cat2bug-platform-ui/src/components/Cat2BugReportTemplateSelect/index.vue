@@ -4,15 +4,26 @@
     width="613"
     trigger="hover">
     <div class="template-header">
-      <span>请选择报告模版</span>
+      <span>{{$t('report.select-template')}}</span>
       <div>
-        <el-link icon="el-icon-edit" @click="handleReport">编辑模版</el-link>
+        <el-link icon="el-icon-plus" @click="addReportTemplate">{{$t('report.add-template')}}</el-link>
       </div>
     </div>
     <div class="template-list">
       <div v-for="(t,index) in templateList" class="template-list-item" :key="index" @click="createReportHandle(t)">
         <el-image :src="iconUrl(t)" />
         <span>{{t.templateTitle}}</span>
+        <div class="menu">
+          <el-button type="text" size="mini" @click="copyReportTemplate($event,t)">
+            <svg-icon icon-class="copy"/>
+          </el-button>
+          <el-button type="text" size="mini" @click="goReportTemplateView($event,t.templateId)">
+            <svg-icon icon-class="edit"/>
+          </el-button>
+          <el-button type="text" size="mini" @click="deleteReport($event,t.templateId)">
+            <svg-icon icon-class="close"/>
+          </el-button>
+        </div>
       </div>
     </div>
     <div class="template-list-pagination">
@@ -32,13 +43,16 @@
       plain
       icon="el-icon-plus"
       size="mini"
-    >生成报告</el-button>
+    >{{$t('report.make')}}</el-button>
   </el-popover>
 </template>
 
 <script>
-import {listReportTemplate} from "@/api/system/ReportTemplate";
+import {addReportTemplate, delTemplate, listReportTemplate} from "@/api/system/ReportTemplate";
 import {addReport} from "@/api/system/report";
+import i18n from "@/utils/i18n/i18n";
+import {delDefect} from "@/api/system/defect";
+import {strFormat} from "@/utils";
 
 export default {
   name: "Cat2BugReportTemplateSelect",
@@ -50,7 +64,15 @@ export default {
         projectId: this.projectId,
         pageNum: 1,
         pageSize: 9
-      }
+      },
+      template: {
+        templateTitle: null,
+        moduleType: null,
+        projectId: null,
+        templateContent: '',
+        majorVersion: 1,
+        minorVersion: 0,
+      },
     }
   },
   props: {
@@ -70,16 +92,70 @@ export default {
     this.getTemplateList();
   },
   methods: {
-    /** 跳转到报表操作 */
-    handleReport() {
-      this.$router.push({name:'ReportTemplate'})
-    },
     getTemplateList() {
       this.query.projectId = this.projectId;
       listReportTemplate(this.query).then(res=>{
         this.templateList = res.rows;
         this.total = res.total;
       })
+    },
+    goReportTemplateView(event,templateId) {
+      this.$router.push({name:'AddDefectReport', query:{templateId: templateId}});
+      if(event) {
+        event.stopPropagation();
+      }
+    },
+    deleteReport(event,templateId) {
+      this.$modal.confirm(
+        this.$i18n.t('report.delete-template'),
+        this.$i18n.t('prompted').toString(),
+        {
+          confirmButtonText: i18n.t('delete').toString(),
+          cancelButtonText: i18n.t('cancel').toString(),
+          confirmButtonClass: 'delete-button',
+          type: "warning"
+        }).then(function() {
+        return delTemplate(templateId);
+      }).then(() => {
+        this.getTemplateList();
+        this.$modal.msgSuccess(this.$i18n.t('delete.success'));
+      }).catch(() => {});
+      event.stopPropagation();
+    },
+    addReportTemplate() {
+      this.template.projectId = this.projectId;
+      this.template.templateTitle = this.$i18n.t('report.default-title');
+      addReportTemplate(this.template).then(res=>{
+        if(res.data) {
+          this.$message.success(this.$i18n.t('report.create-template-success').toString());
+          this.goReportTemplateView(null, res.data.templateId);
+        } else {
+          this.$message.error(this.$i18n.t('report.create-template-fail').toString());
+        }
+      });
+    },
+    copyReportTemplate(event,template) {
+      const param = this.copyTemplateObj(template);
+      addReportTemplate(param).then(res=>{
+        if(res.data) {
+          this.$message.success(this.$i18n.t('report.copy-template-success').toString());
+          this.goReportTemplateView(null, res.data.templateId);
+        } else {
+          this.$message.error(this.$i18n.t('report.create-template-fail').toString());
+        }
+      });
+      event.stopPropagation();
+    },
+    copyTemplateObj(template) {
+      return {
+        templateTitle: template.templateTitle+'-'+this.$i18n.t('copy'),
+        moduleType: template.moduleType,
+        projectId: template.projectId,
+        templateContent: template.templateContent,
+        templateIconUrl: template.templateIconUrl,
+        majorVersion: 1,
+        minorVersion: 0,
+      }
     },
     createReportHandle(template) {
       let params = {
@@ -88,6 +164,7 @@ export default {
         projectId: this.projectId,
       }
       addReport(params).then(res=>{
+        this.$message.success(strFormat(this.$i18n.t('report.create-success'),params.reportTitle));
         this.$emit('create', params);
       });
     },
@@ -121,12 +198,28 @@ export default {
   }
   .template-list-item {
     display: flex;
+    position: relative;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: 5px;
     border-radius: 5px;
     border: 1px solid #E4E7ED;
+    .menu {
+      display: inline-flex;
+      flex-direction: row;
+      gap: 0px;
+      position: absolute;
+      right: 5px;
+      top: 5px;
+      button {
+        padding: 5px;
+        margin: 0px;
+      }
+      button:hover {
+        background-color: rgb(236, 245, 255);
+      }
+    }
     .el-image {
       width: 180px;
       height: 120px;

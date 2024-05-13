@@ -51,23 +51,20 @@ export function MarkdownTools() {
     icon: 'mk-subscript',
     name: 'font-subscript',
     content: '~{0}~'
+  },{
+    icon: 'mk-left',
+    name: 'font-left',
+    content: '\n:-- {0}\n'
   },
-    // TODO 段落功能没有实现
-  //   {
-  //   icon: 'mk-left',
-  //   name: '居左',
-  //   content: '::: hljs-left\n\n{0}\n\n:::'
-  // },
-  //   {
-  //   icon: 'mk-center',
-  //   name: '居中',
-  //   content: '::: hljs-center\n\n{0}\n\n:::'
-  // },{
-  //   icon: 'mk-right',
-  //   name: '居右',
-  //   content: '::: hljs-right\n\n{0}\n\n:::'
-  // },
     {
+    icon: 'mk-center',
+    name: 'font-center',
+    content: '\n-:- {0}\n'
+  },{
+    icon: 'mk-right',
+    name: 'font-right',
+    content: '\n--: {0}\n'
+  },{
     icon: 'mk-paragraph',
     name: 'paragraph',
     content: '> {0}'
@@ -139,16 +136,62 @@ export function MarkdownTools() {
   },{
     icon: 'mk-case',
     name: 'case',
-    children: []
+    children: [{
+      icon: 'mk-total',
+      name: 'case.total',
+      content: '${api.case.total}'
+    },{
+      type: 'siding'
+    },
+    //   {
+    //   icon: 'mk-table',
+    //   name: 'case.table',
+    //   content: '$table{api.case.list}'
+    // },
+      {
+      icon: 'mk-card',
+      name: 'case.card',
+      content: '$card{api.case.list}'
+    }]
   },{
     icon: 'mk-bug',
     name: 'defect',
       children: [{
         icon: 'bug',
         name: 'defect.table',
-        content: DefectTable(),
+        content: '$table{api.defect.list[projectNum,defectTypeName,defectLevel,defectName,defectStateName,moduleName,moduleVersion,defectDescribe,createBy,createTime,updateBy,updateTime,imgList,annexList]}'
       }]
   },{
+      icon: 'mk-member',
+      name: 'member',
+      children: [{
+        icon: 'mk-table',
+        name: 'project.member-manage',
+        content: '$table{api.member.all}'
+      },{
+        type: 'siding'
+      },{
+        icon: 'mk-table',
+        name: 'project.member-manage',
+        content: '$table{api.member.all}'
+      },{
+        icon: 'mk-table',
+        name: 'project.admin',
+        content: '$table{api.member.admin}'
+      },{
+        icon: 'mk-table',
+        name: 'project.develop',
+        content: '$table{api.member.develop}'
+      },{
+        icon: 'mk-table',
+        name: 'project.tester',
+        content: '$table{api.member.tester}'
+      },{
+        icon: 'mk-table',
+        name: 'project.outsider',
+        content: '$table{api.member.outsider}'
+      }]
+    },{
     type: 'siding'
   },{
     icon: 'mk-clear',

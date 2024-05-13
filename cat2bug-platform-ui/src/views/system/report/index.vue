@@ -39,18 +39,6 @@
             v-hasPermi="['system:report:add']"
             @create="createReportHandle"
             :project-id="projectId" />
-
-<!--          <el-dropdown size="mini" split-button type="primary" v-hasPermi="['system:report:add']" @command="handleCommand">-->
-<!--            生成报告-->
-<!--            <el-dropdown-menu slot="dropdown" class="list">-->
-<!--              <el-dropdown-item v-for="(t,index) in templateList" :command="t.templateId" :key="index">-->
-<!--                -->
-<!--              </el-dropdown-item>-->
-<!--              <el-dropdown-item divided command="add">-->
-<!--                <svg-icon icon-class="add-tab"/>编辑报告模版-->
-<!--              </el-dropdown-item>-->
-<!--            </el-dropdown-menu>-->
-<!--          </el-dropdown>-->
         </el-col>
       </el-row>
     </div>
@@ -271,8 +259,7 @@ export default {
     },
     createReportHandle(template) {
       this.getList();
-      this.$message.success('创建报告['+template.templateTitle+']成功');
-    }
+    },
   }
 };
 </script>
