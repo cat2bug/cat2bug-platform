@@ -208,10 +208,12 @@ export default {
       this.$refs.markdownView.use(CenterPointPlugin);
       // 缺陷操作符
       const defectList = listDefect().then(res=>{
-        this.$refs.markdownView.use(TablePlugin,{
-          name: 'api.defect.list',
-          value: res.rows
-        });
+        // this.$refs.markdownView.use(TablePlugin,{
+        //   name: 'api.defect.list',
+        //   value: res.rows,
+        //   defaultTitles: ["projectNum","defectTypeName","defectLevel","defectName","defectStateName","moduleName","moduleVersion","defectDescribe","createBy","createTime",
+        //     "updateBy","updateTime","imgList","annexList"]
+        // });
         this.$refs.markdownView.use(CardPlugin,{
           name: 'api.defect.list',
           value: res.rows
@@ -219,13 +221,13 @@ export default {
         return res;
       });
       // 测试用例操作符
-      const caseList = listCase().then(res=>{
-        this.$refs.markdownView.use(TablePlugin,{
-          name: 'api.case.list',
-          value: res.rows
-        });
-        return res;
-      });
+      // const caseList = listCase().then(res=>{
+      //   this.$refs.markdownView.use(TablePlugin,{
+      //     name: 'api.case.list',
+      //     value: res.rows
+      //   });
+      //   return res;
+      // });
       // 项目操作符
       const project = getProject(this.projectId).then(res=>{
         this.$refs.markdownView.use(ImagePlugin,{
@@ -241,7 +243,15 @@ export default {
       markdownData(this.projectId).then(res=>{
         this.$refs.markdownView.use(TablePlugin,{
           name: 'api.defect.list',
-          value: res.data.defect?res.data.defect.list:[]
+          value: res.data.defect?res.data.defect.list:[],
+          defaultTitles: ["projectNum","defectTypeName","defectLevel","defectName","defectStateName","moduleName","moduleVersion","defectDescribe","createBy","createTime",
+            "updateBy","updateTime","imgList","annexList"]
+        });
+        this.$refs.markdownView.use(TablePlugin,{
+          name: 'api.case.list',
+          value: res.data.case?res.data.case.list:[],
+          defaultTitles: ["caseNum","caseName","moduleName","casePreconditions","caseExpect","caseStep","createBy","createTime",
+            "updateBy","updateTime"]
         });
         this.$refs.markdownView.use(CaseCardPlugin,{
           name: 'api.case.list',
@@ -252,7 +262,7 @@ export default {
           value: res.data.case?res.data.case.total:0
         });
       });
-      Promise.all([defectList,caseList,project]).then(res=>{
+      Promise.all([defectList,project]).then(res=>{
         this.markdownContent = this.content;
       }).catch(e=>{
         this.$message.error(e);

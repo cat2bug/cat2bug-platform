@@ -59,6 +59,9 @@ import {ImagePlugin} from "@/components/Cat2BugMarkdown/plugins/ImagePlugin";
 import {VariablePlugin} from "@/components/Cat2BugMarkdown/plugins/VariablePlugin";
 import {markdownData} from "@/api/markdown/markdown";
 import {CaseCardPlugin} from "@/components/Cat2BugMarkdown/plugins/CaseCardPlugin";
+import {LeftPointPlugin} from "@/components/Cat2BugMarkdown/plugins/LeftPointPlugin";
+import {RightPointPlugin} from "@/components/Cat2BugMarkdown/plugins/RightPointPlugin";
+import {CenterPointPlugin} from "@/components/Cat2BugMarkdown/plugins/CenterPointPlugin";
 
 export default {
   name: "ViewReport",
@@ -277,6 +280,9 @@ export default {
         multibody:  true,
         aotolabel:  true,
       });
+      this.$refs.markdownView.use(LeftPointPlugin);
+      this.$refs.markdownView.use(RightPointPlugin);
+      this.$refs.markdownView.use(CenterPointPlugin);
       // 缺陷操作符
       const defectList = listDefect().then(res=>{
         this.$refs.markdownView.use(TablePlugin,{

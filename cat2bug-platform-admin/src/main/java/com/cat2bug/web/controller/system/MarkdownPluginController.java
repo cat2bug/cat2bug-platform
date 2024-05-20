@@ -45,6 +45,7 @@ public class MarkdownPluginController extends BaseController {
         List<SysDefect> defectList = sysDefectService.selectSysDefectList(sysDefect);
         Map<String,Object> defectParam = new HashMap<>();
         defectParam.put("list",defectList);
+        defectParam.put("total",defectList.size());
         ret.put("defect",defectParam);
 
         // 设置成员

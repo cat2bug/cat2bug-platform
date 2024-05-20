@@ -430,6 +430,7 @@
   "report.source": "报表来源",
   "report.create-by": "创建人",
   "report.delete-report": "是否要删除此报告？",
+  "report.delete-select-report": "是否要删除已选择的报告？",
   "report.type-text": "文本报告",
   "report.type-runtime": "实时报告",
   "report.template": "报告模版",
@@ -483,7 +484,7 @@
   "case.card": "测试用例卡片",
   "case.name": "测试用例名称",
   "case.id": "测试用例标识",
-  "case.module": "追踪关系",
+  "case.module": "关联交付物",
   "case.expect": "预期效果",
   "case.precondition": "前置条件",
   "case.step": "测试步骤",
@@ -498,6 +499,7 @@
   "report.create-template-fail": "创建模版失败!",
   "report.create-success": "创建报告[{0}]成功",
   "report.make": "生成报告",
+  "report.template-shop": "报告模版商店",
   "copy": "复制",
   "projectNum": "序号",
   "defectTypeName": "缺陷类型",
@@ -512,5 +514,12 @@
   "updateBy": "更新人",
   "updateTime": "更新时间",
   "imgList": "图像列表",
-  "annexList": "附件列表"
+  "annexList": "附件列表",
+  "caseNum": "序号",
+  "caseName": "测试用例名称",
+  "moduleName": "关联交付物",
+  "casePreconditions": "前置条件",
+  "caseExpect": "预期效果",
+  "caseStep": "测试步骤",
+  "shop": "商店"
 }

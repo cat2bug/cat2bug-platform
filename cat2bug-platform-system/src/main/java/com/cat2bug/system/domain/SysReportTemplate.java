@@ -54,7 +54,18 @@ public class SysReportTemplate extends BaseEntity
     @Excel(name = "模版唯一标识")
     private String templateKey;
 
-    public void setTemplateId(Long templateId) 
+    /** 是否是商店商品 */
+    private boolean isShop;
+
+    public boolean getIsShop() {
+        return isShop;
+    }
+
+    public void setIsShop(boolean shop) {
+        isShop = shop;
+    }
+
+    public void setTemplateId(Long templateId)
     {
         this.templateId = templateId;
     }

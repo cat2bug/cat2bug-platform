@@ -1,7 +1,7 @@
-import {DefectTable} from "@/components/Cat2BugMarkdown/tools/DefectTable";
-import LinkTool from "@/components/Cat2BugMarkdown/tools/LinkTool";
-import AddImageLinkTool from "@/components/Cat2BugMarkdown/tools/AddImageLinkTool";
-import UploadImageTool from "@/components/Cat2BugMarkdown/tools/UploadImageTool";
+import LinkTool from "@/components/Cat2BugMarkdown/components/LinkTool";
+import AddImageLinkTool from "@/components/Cat2BugMarkdown/components/AddImageLinkTool";
+import UploadImageTool from "@/components/Cat2BugMarkdown/components/UploadImageTool";
+import ShopTool from "@/components/Cat2BugMarkdown/components/ShopTool";
 
 export function MarkdownTools() {
   return [{
@@ -193,7 +193,14 @@ export function MarkdownTools() {
       }]
     },{
     type: 'siding'
-  },{
+  },
+  //   {
+  //   icon: 'mk-shop',
+  //   name: 'shop',
+  //   type: 'component',
+  //   content: ShopTool
+  // },
+    {
     icon: 'mk-clear',
     name: 'clear',
     type: 'command',

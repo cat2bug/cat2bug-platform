@@ -1,9 +1,13 @@
 package com.cat2bug.system.service.impl;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.cat2bug.common.utils.DateUtils;
 import com.cat2bug.common.utils.SecurityUtils;
+import com.cat2bug.system.service.IReportParseService;
+import com.cat2bug.system.service.ISysCaseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.cat2bug.system.mapper.SysReportMapper;
@@ -19,9 +23,11 @@ import com.cat2bug.system.service.ISysReportService;
 @Service
 public class SysReportServiceImpl implements ISysReportService 
 {
+    private final static String ENTER_CHAR = "\n";
     @Autowired
     private SysReportMapper sysReportMapper;
-
+    @Autowired
+    private List<IReportParseService> reportParseServices;
     /**
      * 查询报告
      * 
@@ -59,6 +65,19 @@ public class SysReportServiceImpl implements ISysReportService
             sysReport.setReportTime(DateUtils.getNowDate());
         }
         sysReport.setCreateById(SecurityUtils.getUserId());
+
+        if(sysReport.getReportDescription()!=null) {
+            String[] lines = sysReport.getReportDescription().split(ENTER_CHAR);
+            for(int i=0;i<lines.length;i++) {
+                for(IReportParseService reportParseService : reportParseServices) {
+                    if(reportParseService.isHandle(lines[i])) {
+                        lines[i]=reportParseService.parse(sysReport.getProjectId(), lines[i]);
+                    }
+                }
+            }
+            sysReport.setReportDescription(Arrays.stream(lines).collect(Collectors.joining(ENTER_CHAR)));
+        }
+
         return sysReportMapper.insertSysReport(sysReport);
     }
 

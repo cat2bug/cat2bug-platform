@@ -35,6 +35,17 @@
       </el-form>
       <el-row :gutter="10" class="mb8">
         <el-col :span="1.5">
+          <el-button
+            type="danger"
+            plain
+            icon="el-icon-delete"
+            size="mini"
+            :disabled="multiple"
+            @click="handleDelete"
+            v-hasPermi="['system:report:remove']"
+          >{{ $t('batch-delete') }}</el-button>
+        </el-col>
+        <el-col :span="1.5">
           <cat2-bug-report-template-select
             v-hasPermi="['system:report:add']"
             @create="createReportHandle"
@@ -42,7 +53,8 @@
         </el-col>
       </el-row>
     </div>
-    <el-table v-loading="loading" :data="reportList" @row-click="rowClickHandle">
+    <el-table v-loading="loading" :data="reportList" @selection-change="handleSelectionChange" @row-click="rowClickHandle">
+      <el-table-column type="selection" width="50" align="center" />
       <el-table-column :label="$t('report.type')" align="center" prop="reportTime" width="120">
         <template slot-scope="scope">
           <report-type-flag :report="scope.row" />
@@ -120,6 +132,8 @@ import ReportTools from "@/components/Report/ReportTools";
 import FocusMemberList from "@/components/FocusMemberList";
 import ReportTypeFlag from "@/components/Report/ReportTypeFlag";
 import Cat2BugReportTemplateSelect from "@/components/Cat2BugReportTemplateSelect";
+import i18n from "@/utils/i18n/i18n";
+import {delUser} from "@/api/system/user";
 
 export default {
   name: "Report",
@@ -259,6 +273,31 @@ export default {
     },
     createReportHandle(template) {
       this.getList();
+    },
+    /** 多选框选中数据 */
+    handleSelectionChange(selection) {
+      this.ids = selection.map(item => item.reportId);
+      this.single = selection.length != 1;
+      this.multiple = !selection.length;
+    },
+    /** 删除按钮操作 */
+    handleDelete(event) {
+      const reportIds = this.ids;
+      this.$modal.confirm(
+        this.$i18n.t('report.delete-select-report'),
+        this.$i18n.t('prompted').toString(),
+        {
+          confirmButtonText: i18n.t('delete').toString(),
+          cancelButtonText: i18n.t('cancel').toString(),
+          confirmButtonClass: 'delete-button',
+          type: "warning"
+        }).then(function() {
+        return delReport(reportIds);
+      }).then(() => {
+        this.getList();
+        this.$modal.msgSuccess(this.$i18n.t('delete.success'));
+      }).catch(() => {});
+      event.stopPropagation();
     },
   }
 };

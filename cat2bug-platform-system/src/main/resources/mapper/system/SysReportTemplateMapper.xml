@@ -32,6 +32,14 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="templateIconUrl != null  and templateIconUrl != ''"> and template_icon_url = #{templateIconUrl}</if>
             <if test="majorVersion != null "> and major_version = #{majorVersion}</if>
             <if test="minorVersion != null "> and minor_version = #{minorVersion}</if>
+            <choose>
+                <when test="isShop == true">
+                    and is_shop = 1
+                </when>
+                <otherwise>
+                    and is_shop != 1
+                </otherwise>
+            </choose>
             <if test="templateKey != null  and templateKey != ''"> and template_key = #{templateKey}</if>
         </where>
         order by update_time desc

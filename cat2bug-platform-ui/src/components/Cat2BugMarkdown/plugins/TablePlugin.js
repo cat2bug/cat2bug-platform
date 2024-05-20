@@ -3,11 +3,12 @@ import i18n from "@/utils/i18n/i18n";
 export function TablePlugin (md,options) {
   const opt = options || {}
   const values = opt.value || []
+  const defaultTitles = opt.defaultTitles || []
   function table(state,silent) {
     if (!state.src || state.src.charCodeAt(state.pos) !== 0x24 /* $ */ || !opt.value) {
       return false;
     }
-    let rg = /\s*\$table\{((\w|\.)*)(\[(((\w|\.)+(:(\w|\.)+)*){1}(,(\w|\.)+(:(\w|\.)+)*)*)\])?\}/;
+    let rg = /\s*\$table\{((\w|\.)*)(\[(((\w|\.)+(:(\w|[\u3040-\uD7AF]|\.)+)*){1}(,(\w|\.)+(:(\w|[\u3040-\uD7AF]|\.)+)*)*)\])?\}/;
     let match = state.src.match(rg);
     if (match && match.length && !silent) {
       let result = match[1];
@@ -35,6 +36,11 @@ export function TablePlugin (md,options) {
             val = i18n.t(val);
           }
           headerMap.set(key,val);
+        })
+      } else if(defaultTitles.length>0) {
+        defaultTitles.forEach(t=>{
+          let val = i18n.te(t)?i18n.t(t):t;
+          headerMap.set(t,val);
         })
       } else if(values.length>0) {
         Object.keys(values[0]).forEach(k => {
