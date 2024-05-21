@@ -5,13 +5,13 @@
  Source Server Type    : MySQL
  Source Server Version : 80200
  Source Host           : 127.0.0.1:3306
- Source Schema         : cat2bug_platform
+ Source Schema         : cat2bug_platform_temp
 
  Target Server Type    : MySQL
  Target Server Version : 80200
  File Encoding         : 65001
 
- Date: 21/04/2024 16:18:53
+ Date: 21/05/2024 07:49:24
 */
 
 SET NAMES utf8mb4;
@@ -42,8 +42,8 @@ CREATE TABLE `gen_table` (
   `update_by` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '更新者',
   `update_time` datetime DEFAULT NULL COMMENT '更新时间',
   `remark` varchar(500) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '备注',
-  PRIMARY KEY (`table_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='代码生成业务表';
+  PRIMARY KEY (`table_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin ROW_FORMAT=DYNAMIC COMMENT='代码生成业务表';
 
 -- ----------------------------
 -- Records of gen_table
@@ -69,6 +69,7 @@ INSERT INTO `gen_table` (`table_id`, `table_name`, `table_comment`, `sub_table_n
 INSERT INTO `gen_table` (`table_id`, `table_name`, `table_comment`, `sub_table_name`, `sub_table_fk_name`, `class_name`, `tpl_category`, `package_name`, `module_name`, `business_name`, `function_name`, `function_author`, `gen_type`, `gen_path`, `options`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`) VALUES (18, 'sys_report', '报告', NULL, NULL, 'SysReport', 'crud', 'com.cat2bug.system', 'system', 'report', '报告', 'yuzhantao', '0', '/', '{}', 'admin', '2024-03-13 03:09:50', '', '2024-03-13 03:11:19', NULL);
 INSERT INTO `gen_table` (`table_id`, `table_name`, `table_comment`, `sub_table_name`, `sub_table_fk_name`, `class_name`, `tpl_category`, `package_name`, `module_name`, `business_name`, `function_name`, `function_author`, `gen_type`, `gen_path`, `options`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`) VALUES (19, 'sys_project_defect_tabs', '项目缺陷页签配置', NULL, NULL, 'SysProjectDefectTabs', 'crud', 'com.cat2bug.system', 'system', 'tabs', '项目缺陷页签配置', 'yuzhantao', '0', '/', '{}', 'admin', '2024-04-06 01:53:40', '', '2024-04-06 01:56:30', NULL);
 INSERT INTO `gen_table` (`table_id`, `table_name`, `table_comment`, `sub_table_name`, `sub_table_fk_name`, `class_name`, `tpl_category`, `package_name`, `module_name`, `business_name`, `function_name`, `function_author`, `gen_type`, `gen_path`, `options`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`) VALUES (20, 'sys_defect_shard', '分享缺陷', NULL, NULL, 'SysDefectShard', 'crud', 'com.cat2bug.system', 'system', 'shard', '分享缺陷关联', 'yuzhantao', '0', '/', '{}', 'admin', '2024-04-10 08:25:34', '', '2024-04-10 08:26:54', NULL);
+INSERT INTO `gen_table` (`table_id`, `table_name`, `table_comment`, `sub_table_name`, `sub_table_fk_name`, `class_name`, `tpl_category`, `package_name`, `module_name`, `business_name`, `function_name`, `function_author`, `gen_type`, `gen_path`, `options`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`) VALUES (21, 'sys_report_template', '报告模版', NULL, NULL, 'SysReportTemplate', 'crud', 'com.cat2bug.system', 'system', 'template', '报告模版', 'yuzhantao', '0', '/', '{\"parentMenuId\":2087}', 'admin', '2024-04-28 16:54:08', '', '2024-04-28 16:57:14', NULL);
 COMMIT;
 
 -- ----------------------------
@@ -98,8 +99,8 @@ CREATE TABLE `gen_table_column` (
   `create_time` datetime DEFAULT NULL COMMENT '创建时间',
   `update_by` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '更新者',
   `update_time` datetime DEFAULT NULL COMMENT '更新时间',
-  PRIMARY KEY (`column_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=148 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='代码生成业务表字段';
+  PRIMARY KEY (`column_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=158 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin ROW_FORMAT=DYNAMIC COMMENT='代码生成业务表字段';
 
 -- ----------------------------
 -- Records of gen_table_column
@@ -252,6 +253,16 @@ INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_
 INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`, `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`, `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`, `html_type`, `dict_type`, `sort`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (145, 20, 'create_by_id', '创建人', 'bigint', 'Long', 'createById', '0', '0', '1', '1', '0', '1', '1', 'EQ', 'input', '', 5, 'admin', '2024-04-10 08:25:34', '', '2024-04-10 08:26:54');
 INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`, `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`, `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`, `html_type`, `dict_type`, `sort`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (146, 20, 'update_time', '更新日期', 'datetime', 'Date', 'updateTime', '0', '0', NULL, '1', '1', NULL, NULL, 'EQ', 'datetime', '', 6, 'admin', '2024-04-10 08:25:34', '', '2024-04-10 08:26:54');
 INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`, `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`, `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`, `html_type`, `dict_type`, `sort`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (147, 20, 'aging_time', '时效时间', 'datetime', 'Date', 'agingTime', '0', '0', NULL, '1', '1', '1', '1', 'EQ', 'datetime', '', 7, 'admin', '2024-04-10 08:25:34', '', '2024-04-10 08:26:54');
+INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`, `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`, `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`, `html_type`, `dict_type`, `sort`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (148, 21, 'template_id', '报告模版ID', 'bigint', 'Long', 'templateId', '1', '1', NULL, '1', NULL, NULL, NULL, 'EQ', 'input', '', 1, 'admin', '2024-04-28 16:54:08', '', '2024-04-28 16:57:14');
+INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`, `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`, `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`, `html_type`, `dict_type`, `sort`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (149, 21, 'module_type', '交付物类型', 'varchar(64)', 'String', 'moduleType', '0', '0', NULL, '1', '1', '1', '1', 'EQ', 'select', '', 2, 'admin', '2024-04-28 16:54:08', '', '2024-04-28 16:57:14');
+INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`, `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`, `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`, `html_type`, `dict_type`, `sort`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (150, 21, 'template_content', '模版内容', 'longtext', 'String', 'templateContent', '0', '0', NULL, '1', '1', '1', '1', 'EQ', 'editor', '', 3, 'admin', '2024-04-28 16:54:08', '', '2024-04-28 16:57:14');
+INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`, `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`, `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`, `html_type`, `dict_type`, `sort`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (151, 21, 'update_by_id', '更新用户', 'bigint', 'Long', 'updateById', '0', '0', NULL, '1', '1', '1', '1', 'EQ', 'input', '', 4, 'admin', '2024-04-28 16:54:08', '', '2024-04-28 16:57:14');
+INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`, `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`, `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`, `html_type`, `dict_type`, `sort`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (152, 21, 'update_time', '更新时间', 'datetime', 'Date', 'updateTime', '0', '0', NULL, '1', '1', '1', NULL, 'EQ', 'datetime', '', 5, 'admin', '2024-04-28 16:54:08', '', '2024-04-28 16:57:14');
+INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`, `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`, `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`, `html_type`, `dict_type`, `sort`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (153, 21, 'project_id', '项目ID', 'bigint', 'Long', 'projectId', '0', '0', NULL, '1', '1', '1', '1', 'EQ', 'input', '', 6, 'admin', '2024-04-28 16:54:08', '', '2024-04-28 16:57:14');
+INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`, `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`, `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`, `html_type`, `dict_type`, `sort`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (154, 21, 'template_icon_url', '模版图标路径', 'varchar(255)', 'String', 'templateIconUrl', '0', '0', NULL, '1', '1', '1', '1', 'EQ', 'input', '', 7, 'admin', '2024-04-28 16:54:08', '', '2024-04-28 16:57:14');
+INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`, `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`, `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`, `html_type`, `dict_type`, `sort`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (155, 21, 'major_version', '主版本', 'int', 'Long', 'majorVersion', '0', '0', NULL, '1', '1', '1', '1', 'EQ', 'input', '', 8, 'admin', '2024-04-28 16:54:08', '', '2024-04-28 16:57:14');
+INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`, `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`, `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`, `html_type`, `dict_type`, `sort`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (156, 21, 'minor_version', '次版本', 'int', 'Long', 'minorVersion', '0', '0', NULL, '1', '1', '1', '1', 'EQ', 'input', '', 9, 'admin', '2024-04-28 16:54:08', '', '2024-04-28 16:57:14');
+INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`, `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`, `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`, `html_type`, `dict_type`, `sort`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (157, 21, 'template_key', '模版唯一标识', 'varchar(64)', 'String', 'templateKey', '0', '0', '1', '1', '1', '1', '1', 'EQ', 'input', '', 10, 'admin', '2024-04-28 16:54:08', '', '2024-04-28 16:57:14');
 COMMIT;
 
 -- ----------------------------
@@ -263,9 +274,9 @@ CREATE TABLE `qrtz_blob_triggers` (
   `trigger_name` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT 'qrtz_triggers表trigger_name的外键',
   `trigger_group` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT 'qrtz_triggers表trigger_group的外键',
   `blob_data` blob COMMENT '存放持久化Trigger对象',
-  PRIMARY KEY (`sched_name`,`trigger_name`,`trigger_group`),
-  CONSTRAINT `qrtz_blob_triggers_ibfk_1` FOREIGN KEY (`sched_name`, `trigger_name`, `trigger_group`) REFERENCES `qrtz_triggers` (`sched_name`, `trigger_name`, `trigger_group`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='Blob类型的触发器表';
+  PRIMARY KEY (`sched_name`,`trigger_name`,`trigger_group`) USING BTREE,
+  CONSTRAINT `qrtz_blob_triggers_ibfk_1` FOREIGN KEY (`sched_name`, `trigger_name`, `trigger_group`) REFERENCES `qrtz_triggers` (`sched_name`, `trigger_name`, `trigger_group`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin ROW_FORMAT=DYNAMIC COMMENT='Blob类型的触发器表';
 
 -- ----------------------------
 -- Records of qrtz_blob_triggers
@@ -281,8 +292,8 @@ CREATE TABLE `qrtz_calendars` (
   `sched_name` varchar(120) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '调度名称',
   `calendar_name` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '日历名称',
   `calendar` blob NOT NULL COMMENT '存放持久化calendar对象',
-  PRIMARY KEY (`sched_name`,`calendar_name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='日历信息表';
+  PRIMARY KEY (`sched_name`,`calendar_name`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin ROW_FORMAT=DYNAMIC COMMENT='日历信息表';
 
 -- ----------------------------
 -- Records of qrtz_calendars
@@ -300,9 +311,9 @@ CREATE TABLE `qrtz_cron_triggers` (
   `trigger_group` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT 'qrtz_triggers表trigger_group的外键',
   `cron_expression` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT 'cron表达式',
   `time_zone_id` varchar(80) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '时区',
-  PRIMARY KEY (`sched_name`,`trigger_name`,`trigger_group`),
-  CONSTRAINT `qrtz_cron_triggers_ibfk_1` FOREIGN KEY (`sched_name`, `trigger_name`, `trigger_group`) REFERENCES `qrtz_triggers` (`sched_name`, `trigger_name`, `trigger_group`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='Cron类型的触发器表';
+  PRIMARY KEY (`sched_name`,`trigger_name`,`trigger_group`) USING BTREE,
+  CONSTRAINT `qrtz_cron_triggers_ibfk_1` FOREIGN KEY (`sched_name`, `trigger_name`, `trigger_group`) REFERENCES `qrtz_triggers` (`sched_name`, `trigger_name`, `trigger_group`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin ROW_FORMAT=DYNAMIC COMMENT='Cron类型的触发器表';
 
 -- ----------------------------
 -- Records of qrtz_cron_triggers
@@ -328,8 +339,8 @@ CREATE TABLE `qrtz_fired_triggers` (
   `job_group` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '任务组名',
   `is_nonconcurrent` varchar(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '是否并发',
   `requests_recovery` varchar(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '是否接受恢复执行',
-  PRIMARY KEY (`sched_name`,`entry_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='已触发的触发器表';
+  PRIMARY KEY (`sched_name`,`entry_id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin ROW_FORMAT=DYNAMIC COMMENT='已触发的触发器表';
 
 -- ----------------------------
 -- Records of qrtz_fired_triggers
@@ -352,8 +363,8 @@ CREATE TABLE `qrtz_job_details` (
   `is_update_data` varchar(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '是否更新数据',
   `requests_recovery` varchar(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '是否接受恢复执行',
   `job_data` blob COMMENT '存放持久化job对象',
-  PRIMARY KEY (`sched_name`,`job_name`,`job_group`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='任务详细信息表';
+  PRIMARY KEY (`sched_name`,`job_name`,`job_group`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin ROW_FORMAT=DYNAMIC COMMENT='任务详细信息表';
 
 -- ----------------------------
 -- Records of qrtz_job_details
@@ -368,8 +379,8 @@ DROP TABLE IF EXISTS `qrtz_locks`;
 CREATE TABLE `qrtz_locks` (
   `sched_name` varchar(120) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '调度名称',
   `lock_name` varchar(40) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '悲观锁名称',
-  PRIMARY KEY (`sched_name`,`lock_name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='存储的悲观锁信息表';
+  PRIMARY KEY (`sched_name`,`lock_name`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin ROW_FORMAT=DYNAMIC COMMENT='存储的悲观锁信息表';
 
 -- ----------------------------
 -- Records of qrtz_locks
@@ -384,8 +395,8 @@ DROP TABLE IF EXISTS `qrtz_paused_trigger_grps`;
 CREATE TABLE `qrtz_paused_trigger_grps` (
   `sched_name` varchar(120) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '调度名称',
   `trigger_group` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT 'qrtz_triggers表trigger_group的外键',
-  PRIMARY KEY (`sched_name`,`trigger_group`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='暂停的触发器表';
+  PRIMARY KEY (`sched_name`,`trigger_group`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin ROW_FORMAT=DYNAMIC COMMENT='暂停的触发器表';
 
 -- ----------------------------
 -- Records of qrtz_paused_trigger_grps
@@ -402,8 +413,8 @@ CREATE TABLE `qrtz_scheduler_state` (
   `instance_name` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '实例名称',
   `last_checkin_time` bigint NOT NULL COMMENT '上次检查时间',
   `checkin_interval` bigint NOT NULL COMMENT '检查间隔时间',
-  PRIMARY KEY (`sched_name`,`instance_name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='调度器状态表';
+  PRIMARY KEY (`sched_name`,`instance_name`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin ROW_FORMAT=DYNAMIC COMMENT='调度器状态表';
 
 -- ----------------------------
 -- Records of qrtz_scheduler_state
@@ -422,9 +433,9 @@ CREATE TABLE `qrtz_simple_triggers` (
   `repeat_count` bigint NOT NULL COMMENT '重复的次数统计',
   `repeat_interval` bigint NOT NULL COMMENT '重复的间隔时间',
   `times_triggered` bigint NOT NULL COMMENT '已经触发的次数',
-  PRIMARY KEY (`sched_name`,`trigger_name`,`trigger_group`),
-  CONSTRAINT `qrtz_simple_triggers_ibfk_1` FOREIGN KEY (`sched_name`, `trigger_name`, `trigger_group`) REFERENCES `qrtz_triggers` (`sched_name`, `trigger_name`, `trigger_group`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='简单触发器的信息表';
+  PRIMARY KEY (`sched_name`,`trigger_name`,`trigger_group`) USING BTREE,
+  CONSTRAINT `qrtz_simple_triggers_ibfk_1` FOREIGN KEY (`sched_name`, `trigger_name`, `trigger_group`) REFERENCES `qrtz_triggers` (`sched_name`, `trigger_name`, `trigger_group`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin ROW_FORMAT=DYNAMIC COMMENT='简单触发器的信息表';
 
 -- ----------------------------
 -- Records of qrtz_simple_triggers
@@ -451,9 +462,9 @@ CREATE TABLE `qrtz_simprop_triggers` (
   `dec_prop_2` decimal(13,4) DEFAULT NULL COMMENT 'decimal类型的trigger的第二个参数',
   `bool_prop_1` varchar(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT 'Boolean类型的trigger的第一个参数',
   `bool_prop_2` varchar(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT 'Boolean类型的trigger的第二个参数',
-  PRIMARY KEY (`sched_name`,`trigger_name`,`trigger_group`),
-  CONSTRAINT `qrtz_simprop_triggers_ibfk_1` FOREIGN KEY (`sched_name`, `trigger_name`, `trigger_group`) REFERENCES `qrtz_triggers` (`sched_name`, `trigger_name`, `trigger_group`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='同步机制的行锁表';
+  PRIMARY KEY (`sched_name`,`trigger_name`,`trigger_group`) USING BTREE,
+  CONSTRAINT `qrtz_simprop_triggers_ibfk_1` FOREIGN KEY (`sched_name`, `trigger_name`, `trigger_group`) REFERENCES `qrtz_triggers` (`sched_name`, `trigger_name`, `trigger_group`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin ROW_FORMAT=DYNAMIC COMMENT='同步机制的行锁表';
 
 -- ----------------------------
 -- Records of qrtz_simprop_triggers
@@ -482,10 +493,10 @@ CREATE TABLE `qrtz_triggers` (
   `calendar_name` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '日程表名称',
   `misfire_instr` smallint DEFAULT NULL COMMENT '补偿执行的策略',
   `job_data` blob COMMENT '存放持久化job对象',
-  PRIMARY KEY (`sched_name`,`trigger_name`,`trigger_group`),
-  KEY `sched_name` (`sched_name`,`job_name`,`job_group`),
-  CONSTRAINT `qrtz_triggers_ibfk_1` FOREIGN KEY (`sched_name`, `job_name`, `job_group`) REFERENCES `qrtz_job_details` (`sched_name`, `job_name`, `job_group`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='触发器详细信息表';
+  PRIMARY KEY (`sched_name`,`trigger_name`,`trigger_group`) USING BTREE,
+  KEY `sched_name` (`sched_name`,`job_name`,`job_group`) USING BTREE,
+  CONSTRAINT `qrtz_triggers_ibfk_1` FOREIGN KEY (`sched_name`, `job_name`, `job_group`) REFERENCES `qrtz_job_details` (`sched_name`, `job_name`, `job_group`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin ROW_FORMAT=DYNAMIC COMMENT='触发器详细信息表';
 
 -- ----------------------------
 -- Records of qrtz_triggers
@@ -513,10 +524,10 @@ CREATE TABLE `sys_case` (
   `case_num` bigint DEFAULT NULL COMMENT '用例号码',
   `project_id` bigint DEFAULT NULL COMMENT '项目编号',
   `remark` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin DEFAULT NULL COMMENT '备注',
-  PRIMARY KEY (`case_id`),
-  UNIQUE KEY `id_num_` (`case_id`,`case_num`),
-  KEY `project_id_case_name` (`case_name`,`project_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7237 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_bin COMMENT='测试用例表';
+  PRIMARY KEY (`case_id`) USING BTREE,
+  UNIQUE KEY `id_num_` (`case_id`,`case_num`) USING BTREE,
+  KEY `project_id_case_name` (`case_name`,`project_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=7247 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_bin ROW_FORMAT=DYNAMIC COMMENT='测试用例表';
 
 -- ----------------------------
 -- Records of sys_case
@@ -535,8 +546,8 @@ CREATE TABLE `sys_comment` (
   `create_time` datetime DEFAULT NULL COMMENT '创建时间',
   `module_type` varchar(12) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL COMMENT '所属模块(defect_log:缺陷日志的评论)',
   `correlation_id` bigint NOT NULL COMMENT '关联id',
-  PRIMARY KEY (`comment_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb3 COMMENT='评论';
+  PRIMARY KEY (`comment_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb3 ROW_FORMAT=DYNAMIC COMMENT='评论';
 
 -- ----------------------------
 -- Records of sys_comment
@@ -559,8 +570,8 @@ CREATE TABLE `sys_config` (
   `update_by` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '更新者',
   `update_time` datetime DEFAULT NULL COMMENT '更新时间',
   `remark` varchar(500) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '备注',
-  PRIMARY KEY (`config_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='参数配置表';
+  PRIMARY KEY (`config_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin ROW_FORMAT=DYNAMIC COMMENT='参数配置表';
 
 -- ----------------------------
 -- Records of sys_config
@@ -581,7 +592,7 @@ DROP TABLE IF EXISTS `sys_defect`;
 CREATE TABLE `sys_defect` (
   `defect_id` bigint NOT NULL AUTO_INCREMENT COMMENT '缺陷id\n',
   `defect_type` int(1) unsigned zerofill NOT NULL DEFAULT '0' COMMENT '缺陷类型\n',
-  `defect_name` varchar(128) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '缺陷标题',
+  `defect_name` varchar(1024) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '缺陷标题',
   `defect_describe` text CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '缺陷描述',
   `annex_urls` varchar(5000) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '附件集合',
   `project_id` bigint NOT NULL COMMENT '项目id',
@@ -604,13 +615,13 @@ CREATE TABLE `sys_defect` (
   `img_urls` varchar(5000) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '图片集合',
   `create_by_id` bigint DEFAULT NULL COMMENT '创建者id',
   `update_by_id` bigint DEFAULT NULL COMMENT '更新者id',
-  `defect_key` varchar(255) COLLATE utf8mb3_bin DEFAULT NULL COMMENT '缺陷关键字',
-  `defect_group_key` varchar(255) COLLATE utf8mb3_bin DEFAULT NULL COMMENT '缺陷组关键字',
-  PRIMARY KEY (`defect_id`),
-  KEY `describe_name_` (`defect_name`),
-  KEY `defect_key` (`defect_key`),
-  KEY `defect_group_key` (`defect_group_key`)
-) ENGINE=InnoDB AUTO_INCREMENT=234 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='缺陷表';
+  `defect_key` varchar(1024) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '缺陷关键字',
+  `defect_group_key` varchar(512) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '缺陷组关键字',
+  PRIMARY KEY (`defect_id`) USING BTREE,
+  KEY `describe_name_` (`defect_name`) USING BTREE,
+  KEY `defect_key` (`defect_key`) USING BTREE,
+  KEY `defect_group_key` (`defect_group_key`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=235 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin ROW_FORMAT=DYNAMIC COMMENT='缺陷表';
 
 -- ----------------------------
 -- Records of sys_defect
@@ -631,9 +642,9 @@ CREATE TABLE `sys_defect_log` (
   `receive_by` json DEFAULT NULL COMMENT '缺陷接收人',
   `annex_urls` varchar(5000) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '附件集合',
   `defect_id` bigint NOT NULL COMMENT '缺陷id',
-  PRIMARY KEY (`defect_log_id`),
-  KEY `defect_id_` (`defect_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=12186 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='缺陷日志表';
+  PRIMARY KEY (`defect_log_id`) USING BTREE,
+  KEY `defect_id_` (`defect_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=12187 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin ROW_FORMAT=DYNAMIC COMMENT='缺陷日志表';
 
 -- ----------------------------
 -- Records of sys_defect_log
@@ -653,7 +664,7 @@ CREATE TABLE `sys_defect_shard` (
   `create_by_id` bigint NOT NULL COMMENT '创建人',
   `update_time` datetime DEFAULT NULL COMMENT '更新日期',
   `aging_time` datetime DEFAULT NULL COMMENT '时效时间',
-  `default_lang` varchar(32) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '默认语言',
+  `default_lang` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '默认语言',
   `aging_hour` int(10) unsigned zerofill DEFAULT '0000000000' COMMENT '时效小时',
   PRIMARY KEY (`defect_shard_id`) USING BTREE,
   KEY `user_defect_id_` (`defect_id`,`create_by_id`) USING BTREE
@@ -684,8 +695,8 @@ CREATE TABLE `sys_dept` (
   `create_time` datetime DEFAULT NULL COMMENT '创建时间',
   `update_by` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '更新者',
   `update_time` datetime DEFAULT NULL COMMENT '更新时间',
-  PRIMARY KEY (`dept_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=110 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='部门表';
+  PRIMARY KEY (`dept_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=110 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin ROW_FORMAT=DYNAMIC COMMENT='部门表';
 
 -- ----------------------------
 -- Records of sys_dept
@@ -712,8 +723,8 @@ CREATE TABLE `sys_dict_data` (
   `update_by` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '更新者',
   `update_time` datetime DEFAULT NULL COMMENT '更新时间',
   `remark` varchar(500) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '备注',
-  PRIMARY KEY (`dict_code`)
-) ENGINE=InnoDB AUTO_INCREMENT=34 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='字典数据表';
+  PRIMARY KEY (`dict_code`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=34 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin ROW_FORMAT=DYNAMIC COMMENT='字典数据表';
 
 -- ----------------------------
 -- Records of sys_dict_data
@@ -768,9 +779,9 @@ CREATE TABLE `sys_dict_type` (
   `update_by` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '更新者',
   `update_time` datetime DEFAULT NULL COMMENT '更新时间',
   `remark` varchar(500) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '备注',
-  PRIMARY KEY (`dict_id`),
-  UNIQUE KEY `dict_type` (`dict_type`)
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='字典类型表';
+  PRIMARY KEY (`dict_id`) USING BTREE,
+  UNIQUE KEY `dict_type` (`dict_type`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin ROW_FORMAT=DYNAMIC COMMENT='字典类型表';
 
 -- ----------------------------
 -- Records of sys_dict_type
@@ -807,8 +818,8 @@ CREATE TABLE `sys_job` (
   `update_by` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '更新者',
   `update_time` datetime DEFAULT NULL COMMENT '更新时间',
   `remark` varchar(500) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '备注信息',
-  PRIMARY KEY (`job_id`,`job_name`,`job_group`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='定时任务调度表';
+  PRIMARY KEY (`job_id`,`job_name`,`job_group`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin ROW_FORMAT=DYNAMIC COMMENT='定时任务调度表';
 
 -- ----------------------------
 -- Records of sys_job
@@ -832,8 +843,8 @@ CREATE TABLE `sys_job_log` (
   `status` char(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '0' COMMENT '执行状态（0正常 1失败）',
   `exception_info` varchar(2000) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '异常信息',
   `create_time` datetime DEFAULT NULL COMMENT '创建时间',
-  PRIMARY KEY (`job_log_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='定时任务调度日志表';
+  PRIMARY KEY (`job_log_id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin ROW_FORMAT=DYNAMIC COMMENT='定时任务调度日志表';
 
 -- ----------------------------
 -- Records of sys_job_log
@@ -855,10 +866,10 @@ CREATE TABLE `sys_logininfor` (
   `status` char(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '0' COMMENT '登录状态（0成功 1失败）',
   `msg` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '提示消息',
   `login_time` datetime DEFAULT NULL COMMENT '访问时间',
-  PRIMARY KEY (`info_id`),
-  KEY `idx_sys_logininfor_s` (`status`),
-  KEY `idx_sys_logininfor_lt` (`login_time`)
-) ENGINE=InnoDB AUTO_INCREMENT=538 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='系统访问记录';
+  PRIMARY KEY (`info_id`) USING BTREE,
+  KEY `idx_sys_logininfor_s` (`status`) USING BTREE,
+  KEY `idx_sys_logininfor_lt` (`login_time`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=614 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin ROW_FORMAT=DYNAMIC COMMENT='系统访问记录';
 
 -- ----------------------------
 -- Records of sys_logininfor
@@ -891,8 +902,8 @@ CREATE TABLE `sys_menu` (
   `update_time` datetime DEFAULT NULL COMMENT '更新时间',
   `remark` varchar(500) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '备注',
   `menu_name_i18n_key` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '菜单名称的国际化标识',
-  PRIMARY KEY (`menu_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2093 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='菜单权限表';
+  PRIMARY KEY (`menu_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=2093 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin ROW_FORMAT=DYNAMIC COMMENT='菜单权限表';
 
 -- ----------------------------
 -- Records of sys_menu
@@ -982,7 +993,7 @@ INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (1058, '导入代码', 116, 4, '#', '', '', 1, 0, 'F', '0', '0', 'tool:gen:import', '#', 'admin', '2023-11-12 15:34:52', '', NULL, '', NULL);
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (1059, '预览代码', 116, 5, '#', '', '', 1, 0, 'F', '0', '0', 'tool:gen:preview', '#', 'admin', '2023-11-12 15:34:52', '', NULL, '', NULL);
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (1060, '生成代码', 116, 6, '#', '', '', 1, 0, 'F', '0', '0', 'tool:gen:code', '#', 'admin', '2023-11-12 15:34:52', '', NULL, '', NULL);
-INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2000, '项目管理', 2043, 1, 'project', 'system/project/index', NULL, 1, 0, 'C', '0', '0', 'system:project:list', 'list', 'admin', '2023-11-12 16:31:17', 'admin', '2024-01-08 16:28:07', '项目菜单', 'project.manage');
+INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2000, '项目管理', 2043, 1, 'project-list', 'system/project/index', NULL, 1, 0, 'C', '0', '0', 'system:project:list', 'mk-project', 'admin', '2023-11-12 16:31:17', 'admin', '2024-05-08 16:13:21', '项目菜单', 'project.manage');
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2001, '项目查询', 2000, 1, '#', '', NULL, 1, 0, 'F', '0', '0', 'system:project:query', '#', 'admin', '2023-11-12 16:31:17', '', NULL, '', NULL);
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2002, '项目新增', 2000, 2, 'add', 'system/project/add', NULL, 1, 0, 'F', '0', '0', 'system:project:add', '#', 'admin', '2023-11-12 16:31:17', 'admin', '2023-11-12 17:18:25', '', NULL);
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2003, '项目修改', 2000, 3, '#', '', NULL, 1, 0, 'F', '0', '0', 'system:project:edit', '#', 'admin', '2023-11-12 16:31:17', '', NULL, '', NULL);
@@ -1067,10 +1078,10 @@ CREATE TABLE `sys_module` (
   `module_name` varchar(128) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '模块名称',
   `remark` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '备注',
   `project_id` bigint DEFAULT NULL COMMENT '项目id',
-  PRIMARY KEY (`module_id`),
-  KEY `module_pid_` (`module_pid`),
-  KEY `module_nbame_` (`module_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=266 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='模块表';
+  PRIMARY KEY (`module_id`) USING BTREE,
+  KEY `module_pid_` (`module_pid`) USING BTREE,
+  KEY `module_nbame_` (`module_name`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=267 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin ROW_FORMAT=DYNAMIC COMMENT='模块表';
 
 -- ----------------------------
 -- Records of sys_module
@@ -1079,6 +1090,7 @@ BEGIN;
 INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`) VALUES (263, 00000000000000000000, '登陆', NULL, 2);
 INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`) VALUES (264, 00000000000000000000, '首页', NULL, 2);
 INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`) VALUES (265, 00000000000000000000, '登陆', NULL, 5);
+INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`) VALUES (266, 00000000000000000000, '登陆', NULL, 7);
 COMMIT;
 
 -- ----------------------------
@@ -1096,8 +1108,8 @@ CREATE TABLE `sys_notice` (
   `update_by` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '更新者',
   `update_time` datetime DEFAULT NULL COMMENT '更新时间',
   `remark` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '备注',
-  PRIMARY KEY (`notice_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='通知公告表';
+  PRIMARY KEY (`notice_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin ROW_FORMAT=DYNAMIC COMMENT='通知公告表';
 
 -- ----------------------------
 -- Records of sys_notice
@@ -1127,11 +1139,11 @@ CREATE TABLE `sys_oper_log` (
   `error_msg` varchar(2000) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '错误消息',
   `oper_time` datetime DEFAULT NULL COMMENT '操作时间',
   `cost_time` bigint DEFAULT '0' COMMENT '消耗时间',
-  PRIMARY KEY (`oper_id`),
-  KEY `idx_sys_oper_log_bt` (`business_type`),
-  KEY `idx_sys_oper_log_s` (`status`),
-  KEY `idx_sys_oper_log_ot` (`oper_time`)
-) ENGINE=InnoDB AUTO_INCREMENT=9493 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='操作日志记录';
+  PRIMARY KEY (`oper_id`) USING BTREE,
+  KEY `idx_sys_oper_log_bt` (`business_type`) USING BTREE,
+  KEY `idx_sys_oper_log_s` (`status`) USING BTREE,
+  KEY `idx_sys_oper_log_ot` (`oper_time`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=10071 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin ROW_FORMAT=DYNAMIC COMMENT='操作日志记录';
 
 -- ----------------------------
 -- Records of sys_oper_log
@@ -1154,8 +1166,8 @@ CREATE TABLE `sys_post` (
   `update_by` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '更新者',
   `update_time` datetime DEFAULT NULL COMMENT '更新时间',
   `remark` varchar(500) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '备注',
-  PRIMARY KEY (`post_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='岗位信息表';
+  PRIMARY KEY (`post_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin ROW_FORMAT=DYNAMIC COMMENT='岗位信息表';
 
 -- ----------------------------
 -- Records of sys_post
@@ -1182,9 +1194,9 @@ CREATE TABLE `sys_project` (
   `update_time` datetime DEFAULT NULL COMMENT '更新时间',
   `team_id` bigint NOT NULL COMMENT '团队id',
   `project_state` int DEFAULT '1' COMMENT '项目状态(0删除；1运行)',
-  PRIMARY KEY (`project_id`),
-  KEY `team_id_` (`team_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='项目表';
+  PRIMARY KEY (`project_id`) USING BTREE,
+  KEY `team_id_` (`team_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin ROW_FORMAT=DYNAMIC COMMENT='项目表';
 
 -- ----------------------------
 -- Records of sys_project
@@ -1204,8 +1216,8 @@ CREATE TABLE `sys_project_api` (
   `expire_time` datetime DEFAULT NULL COMMENT '有效时间',
   `remark` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin DEFAULT NULL COMMENT '备注',
   PRIMARY KEY (`api_id`) USING BTREE,
-  UNIQUE KEY `project_user_` (`project_id`,`user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_bin COMMENT='项目API表';
+  UNIQUE KEY `project_user_` (`project_id`,`user_id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_bin ROW_FORMAT=DYNAMIC COMMENT='项目API表';
 
 -- ----------------------------
 -- Records of sys_project_api
@@ -1219,15 +1231,15 @@ COMMIT;
 DROP TABLE IF EXISTS `sys_project_defect_tabs`;
 CREATE TABLE `sys_project_defect_tabs` (
   `tab_id` bigint NOT NULL AUTO_INCREMENT COMMENT '页签ID',
-  `tab_name` varchar(255) NOT NULL COMMENT '页签名称',
+  `tab_name` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL COMMENT '页签名称',
   `project_id` bigint DEFAULT NULL COMMENT '项目ID',
   `user_id` bigint DEFAULT NULL COMMENT '用户ID',
   `config` json DEFAULT NULL COMMENT '配置项',
   `tab_sort` int DEFAULT NULL COMMENT '排序',
   `create_time` datetime DEFAULT NULL COMMENT '创建时间',
-  PRIMARY KEY (`tab_id`),
-  KEY `user_id_` (`project_id`,`user_id`) COMMENT '查询用户所在项目的Tab配置'
-) ENGINE=InnoDB AUTO_INCREMENT=78 DEFAULT CHARSET=utf8mb3 COMMENT='项目缺陷页签配置';
+  PRIMARY KEY (`tab_id`) USING BTREE,
+  KEY `user_id_` (`project_id`,`user_id`) USING BTREE COMMENT '查询用户所在项目的Tab配置'
+) ENGINE=InnoDB AUTO_INCREMENT=79 DEFAULT CHARSET=utf8mb3 ROW_FORMAT=DYNAMIC COMMENT='项目缺陷页签配置';
 
 -- ----------------------------
 -- Records of sys_project_defect_tabs
@@ -1241,22 +1253,48 @@ COMMIT;
 DROP TABLE IF EXISTS `sys_report`;
 CREATE TABLE `sys_report` (
   `report_id` bigint NOT NULL AUTO_INCREMENT COMMENT '报告ID',
-  `report_title` varchar(255) NOT NULL COMMENT '报告标题',
+  `report_title` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL COMMENT '报告标题',
   `report_time` datetime DEFAULT NULL COMMENT '报告时间',
-  `report_description` text COMMENT '报告描述',
+  `report_description` longtext CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci COMMENT '报告描述',
   `report_data_coder` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL COMMENT '数据解码器',
   `report_data` json DEFAULT NULL COMMENT '数据',
   `create_by_id` bigint DEFAULT NULL COMMENT ' 推送人ID',
   `project_id` bigint NOT NULL COMMENT '项目ID',
-  `report_source` varchar(255) DEFAULT NULL COMMENT '报告源',
-  `report_key` varchar(255) DEFAULT NULL COMMENT '报告KEY',
-  PRIMARY KEY (`report_id`),
-  UNIQUE KEY `report_key_` (`report_key`),
-  KEY `project_id_` (`project_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=187 DEFAULT CHARSET=utf8mb3 COMMENT='报告';
+  `report_source` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL COMMENT '报告源',
+  `report_key` varchar(512) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL COMMENT '报告KEY',
+  PRIMARY KEY (`report_id`) USING BTREE,
+  UNIQUE KEY `report_key_` (`report_key`) USING BTREE,
+  KEY `project_id_` (`project_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=273 DEFAULT CHARSET=utf8mb3 ROW_FORMAT=DYNAMIC COMMENT='报告';
 
 -- ----------------------------
 -- Records of sys_report
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Table structure for sys_report_template
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_report_template`;
+CREATE TABLE `sys_report_template` (
+  `template_id` bigint NOT NULL AUTO_INCREMENT COMMENT '报告模版ID',
+  `module_type` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL COMMENT '交付物类型',
+  `template_content` longtext CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci COMMENT '模版内容',
+  `update_by_id` bigint DEFAULT NULL COMMENT '更新用户',
+  `update_time` datetime DEFAULT NULL COMMENT '更新时间',
+  `project_id` bigint DEFAULT NULL COMMENT '项目ID',
+  `template_icon_url` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL COMMENT '模版图标路径',
+  `major_version` int DEFAULT '0' COMMENT '主版本',
+  `minor_version` int DEFAULT '0' COMMENT '次版本',
+  `template_key` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL COMMENT '模版唯一标识',
+  `template_title` varchar(512) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL COMMENT '模版标题',
+  `is_shop` tinyint DEFAULT '0' COMMENT '是否是商店模版',
+  PRIMARY KEY (`template_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=45 DEFAULT CHARSET=utf8mb3 ROW_FORMAT=DYNAMIC COMMENT='报告模版';
+
+-- ----------------------------
+-- Records of sys_report_template
 -- ----------------------------
 BEGIN;
 COMMIT;
@@ -1283,8 +1321,8 @@ CREATE TABLE `sys_role` (
   `is_team_role` tinyint(1) DEFAULT NULL COMMENT '是否是团队角色',
   `is_project_role` tinyint(1) DEFAULT NULL COMMENT '是否是项目角色',
   `role_name_i18n_key` varchar(30) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '角色名称国际化标记',
-  PRIMARY KEY (`role_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='角色信息表';
+  PRIMARY KEY (`role_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin ROW_FORMAT=DYNAMIC COMMENT='角色信息表';
 
 -- ----------------------------
 -- Records of sys_role
@@ -1311,8 +1349,8 @@ DROP TABLE IF EXISTS `sys_role_dept`;
 CREATE TABLE `sys_role_dept` (
   `role_id` bigint NOT NULL COMMENT '角色ID',
   `dept_id` bigint NOT NULL COMMENT '部门ID',
-  PRIMARY KEY (`role_id`,`dept_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='角色和部门关联表';
+  PRIMARY KEY (`role_id`,`dept_id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin ROW_FORMAT=DYNAMIC COMMENT='角色和部门关联表';
 
 -- ----------------------------
 -- Records of sys_role_dept
@@ -1330,8 +1368,8 @@ DROP TABLE IF EXISTS `sys_role_menu`;
 CREATE TABLE `sys_role_menu` (
   `role_id` bigint NOT NULL COMMENT '角色ID',
   `menu_id` bigint NOT NULL COMMENT '菜单ID',
-  PRIMARY KEY (`role_id`,`menu_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='角色和菜单关联表';
+  PRIMARY KEY (`role_id`,`menu_id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin ROW_FORMAT=DYNAMIC COMMENT='角色和菜单关联表';
 
 -- ----------------------------
 -- Records of sys_role_menu
@@ -1785,8 +1823,8 @@ CREATE TABLE `sys_screen_size` (
   `width` varchar(12) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin DEFAULT NULL COMMENT '宽',
   `height` varchar(12) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin DEFAULT NULL COMMENT '高',
   `remark` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin DEFAULT NULL COMMENT '备注',
-  PRIMARY KEY (`screen_size_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8876890465889862657 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_bin COMMENT='屏幕尺寸';
+  PRIMARY KEY (`screen_size_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=8876890465889862657 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_bin ROW_FORMAT=DYNAMIC COMMENT='屏幕尺寸';
 
 -- ----------------------------
 -- Records of sys_screen_size
@@ -1828,9 +1866,9 @@ CREATE TABLE `sys_team` (
   `update_time` datetime DEFAULT NULL COMMENT '更新时间',
   `introduce` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '团队介绍',
   `is_del` tinyint DEFAULT NULL COMMENT '是否删除',
-  PRIMARY KEY (`team_id`),
+  PRIMARY KEY (`team_id`) USING BTREE,
   UNIQUE KEY `name_` (`team_name`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='团队表';
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin ROW_FORMAT=DYNAMIC COMMENT='团队表';
 
 -- ----------------------------
 -- Records of sys_team
@@ -1850,8 +1888,8 @@ CREATE TABLE `sys_temp_file` (
   `create_time` datetime DEFAULT NULL COMMENT '创建时间',
   `file_type` int(10) unsigned zerofill DEFAULT '0000000000' COMMENT '文件类型(0普通文件,1图片)',
   `file_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin DEFAULT NULL COMMENT '文件地址',
-  PRIMARY KEY (`file_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_bin COMMENT='临时文件表';
+  PRIMARY KEY (`file_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_bin ROW_FORMAT=DYNAMIC COMMENT='临时文件表';
 
 -- ----------------------------
 -- Records of sys_temp_file
@@ -1883,15 +1921,15 @@ CREATE TABLE `sys_user` (
   `update_by` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '更新者',
   `update_time` datetime DEFAULT NULL COMMENT '更新时间',
   `remark` varchar(500) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '备注',
-  PRIMARY KEY (`user_id`),
-  UNIQUE KEY `phone_` (`phonenumber`)
-) ENGINE=InnoDB AUTO_INCREMENT=198 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='用户信息表';
+  PRIMARY KEY (`user_id`) USING BTREE,
+  UNIQUE KEY `phone_` (`phonenumber`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=199 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin ROW_FORMAT=DYNAMIC COMMENT='用户信息表';
 
 -- ----------------------------
 -- Records of sys_user
 -- ----------------------------
 BEGIN;
-INSERT INTO `sys_user` (`user_id`, `dept_id`, `user_name`, `nick_name`, `user_type`, `email`, `phonenumber`, `sex`, `avatar`, `password`, `status`, `del_flag`, `login_ip`, `login_date`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`) VALUES (1, 00000000000000000000, 'admin', '黑猫警长', '00', 'admin@cat2bug.com', '18888888888', '0', '', '$2a$10$5enMqRePATm8OfHb0/64Ce3NGChvmefyvTA3o/7juZEm4mEf1dxgu', '0', '0', '127.0.0.1', '2024-04-10 16:23:23', 'admin', '2023-11-12 15:34:51', '', '2024-04-10 08:23:22', '管理员');
+INSERT INTO `sys_user` (`user_id`, `dept_id`, `user_name`, `nick_name`, `user_type`, `email`, `phonenumber`, `sex`, `avatar`, `password`, `status`, `del_flag`, `login_ip`, `login_date`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`) VALUES (1, 00000000000000000000, 'admin', '黑猫警长', '00', 'admin@cat2bug.com', '18888888888', '0', '', '$2a$10$5enMqRePATm8OfHb0/64Ce3NGChvmefyvTA3o/7juZEm4mEf1dxgu', '0', '0', '127.0.0.1', '2024-05-09 00:12:48', 'admin', '2023-11-12 15:34:51', '', '2024-05-08 16:12:48', '管理员');
 COMMIT;
 
 -- ----------------------------
@@ -1906,9 +1944,9 @@ CREATE TABLE `sys_user_config` (
   `exit_time` datetime DEFAULT NULL COMMENT '退出时间',
   `defect_last_access_time` datetime DEFAULT NULL COMMENT '最后访问缺陷时间',
   `life_content` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '人生格言',
-  PRIMARY KEY (`user_config_id`),
-  KEY `user_id_` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=95 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='用户配置表';
+  PRIMARY KEY (`user_config_id`) USING BTREE,
+  KEY `user_id_` (`user_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=96 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin ROW_FORMAT=DYNAMIC COMMENT='用户配置表';
 
 -- ----------------------------
 -- Records of sys_user_config
@@ -1925,9 +1963,9 @@ CREATE TABLE `sys_user_defect` (
   `defect_id` bigint DEFAULT NULL COMMENT '缺陷id',
   `user_id` bigint DEFAULT NULL COMMENT '用户id',
   `collect` tinyint(1) DEFAULT NULL COMMENT '是否收藏',
-  PRIMARY KEY (`user_defect_id`),
-  UNIQUE KEY `user_defect_` (`defect_id`,`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=74 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_bin COMMENT='用户缺陷表';
+  PRIMARY KEY (`user_defect_id`) USING BTREE,
+  UNIQUE KEY `user_defect_` (`defect_id`,`user_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=75 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_bin ROW_FORMAT=DYNAMIC COMMENT='用户缺陷表';
 
 -- ----------------------------
 -- Records of sys_user_defect
@@ -1942,8 +1980,8 @@ DROP TABLE IF EXISTS `sys_user_post`;
 CREATE TABLE `sys_user_post` (
   `user_id` bigint NOT NULL COMMENT '用户ID',
   `post_id` bigint NOT NULL COMMENT '岗位ID',
-  PRIMARY KEY (`user_id`,`post_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='用户与岗位关联表';
+  PRIMARY KEY (`user_id`,`post_id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin ROW_FORMAT=DYNAMIC COMMENT='用户与岗位关联表';
 
 -- ----------------------------
 -- Records of sys_user_post
@@ -1965,9 +2003,9 @@ CREATE TABLE `sys_user_project` (
   `update_time` datetime DEFAULT NULL COMMENT '更新时间',
   `project_lock` tinyint(1) unsigned zerofill DEFAULT '0' COMMENT '是否锁定',
   `collect` tinyint(1) DEFAULT NULL COMMENT '是否收藏',
-  PRIMARY KEY (`user_project_id`),
-  UNIQUE KEY `user_project_` (`user_id`,`project_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=142 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='用户项目表';
+  PRIMARY KEY (`user_project_id`) USING BTREE,
+  UNIQUE KEY `user_project_` (`user_id`,`project_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=144 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin ROW_FORMAT=DYNAMIC COMMENT='用户项目表';
 
 -- ----------------------------
 -- Records of sys_user_project
@@ -1983,9 +2021,9 @@ CREATE TABLE `sys_user_project_role` (
   `user_project_role_id` bigint NOT NULL AUTO_INCREMENT COMMENT '用户项目角色id',
   `user_project_id` bigint NOT NULL COMMENT '用户项目id',
   `role_id` bigint NOT NULL COMMENT '角色id',
-  PRIMARY KEY (`user_project_role_id`),
-  UNIQUE KEY `user_project_role_` (`user_project_id`,`role_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=267 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='用户项目角色表';
+  PRIMARY KEY (`user_project_role_id`) USING BTREE,
+  UNIQUE KEY `user_project_role_` (`user_project_id`,`role_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=269 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin ROW_FORMAT=DYNAMIC COMMENT='用户项目角色表';
 
 -- ----------------------------
 -- Records of sys_user_project_role
@@ -2000,8 +2038,8 @@ DROP TABLE IF EXISTS `sys_user_role`;
 CREATE TABLE `sys_user_role` (
   `user_id` bigint NOT NULL COMMENT '用户ID',
   `role_id` bigint NOT NULL COMMENT '角色ID',
-  PRIMARY KEY (`user_id`,`role_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='用户和角色关联表';
+  PRIMARY KEY (`user_id`,`role_id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin ROW_FORMAT=DYNAMIC COMMENT='用户和角色关联表';
 
 -- ----------------------------
 -- Records of sys_user_role
@@ -2011,6 +2049,7 @@ INSERT INTO `sys_user_role` (`user_id`, `role_id`) VALUES (182, 10);
 INSERT INTO `sys_user_role` (`user_id`, `role_id`) VALUES (189, 10);
 INSERT INTO `sys_user_role` (`user_id`, `role_id`) VALUES (192, 10);
 INSERT INTO `sys_user_role` (`user_id`, `role_id`) VALUES (193, 10);
+INSERT INTO `sys_user_role` (`user_id`, `role_id`) VALUES (198, 10);
 COMMIT;
 
 -- ----------------------------
@@ -2024,9 +2063,9 @@ CREATE TABLE `sys_user_statistic_template` (
   `project_id` bigint DEFAULT NULL COMMENT '项目id',
   `user_id` bigint DEFAULT NULL COMMENT '用户id',
   `statistic_templat_config` json DEFAULT NULL COMMENT '统计模版配置',
-  PRIMARY KEY (`statistic_template_id`),
-  UNIQUE KEY `type_project_user_` (`module_type`,`project_id`,`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=142 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_bin COMMENT='用户统计模版';
+  PRIMARY KEY (`statistic_template_id`) USING BTREE,
+  UNIQUE KEY `type_project_user_` (`module_type`,`project_id`,`user_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=144 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_bin ROW_FORMAT=DYNAMIC COMMENT='用户统计模版';
 
 -- ----------------------------
 -- Records of sys_user_statistic_template
@@ -2048,9 +2087,9 @@ CREATE TABLE `sys_user_team` (
   `update_by` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '更新者',
   `update_time` datetime DEFAULT NULL COMMENT '更新时间',
   `team_lock` tinyint(1) unsigned zerofill DEFAULT '0' COMMENT '是否锁定',
-  PRIMARY KEY (`user_team_id`),
+  PRIMARY KEY (`user_team_id`) USING BTREE,
   UNIQUE KEY `user_team_` (`user_id`,`team_id`,`team_role_id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=155 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='用户团队角色表';
+) ENGINE=InnoDB AUTO_INCREMENT=156 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin ROW_FORMAT=DYNAMIC COMMENT='用户团队角色表';
 
 -- ----------------------------
 -- Records of sys_user_team
@@ -2066,8 +2105,8 @@ CREATE TABLE `sys_user_team_role` (
   `user_team_role_id` bigint NOT NULL AUTO_INCREMENT COMMENT '用户团队角色id',
   `user_team_id` bigint NOT NULL COMMENT '用户团队id',
   `role_id` bigint NOT NULL COMMENT '角色id',
-  PRIMARY KEY (`user_team_role_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=191 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='用户团队角色表';
+  PRIMARY KEY (`user_team_role_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=192 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin ROW_FORMAT=DYNAMIC COMMENT='用户团队角色表';
 
 -- ----------------------------
 -- Records of sys_user_team_role
