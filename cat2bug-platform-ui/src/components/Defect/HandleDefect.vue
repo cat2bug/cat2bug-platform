@@ -184,6 +184,7 @@ export default {
           this.activeNames.push('annexUrls');
         }
         if(this.defect){
+          this.activeNames.push('caseId');
           this.getCase(this.defect.caseId);
         }
       }).catch(e=>{
