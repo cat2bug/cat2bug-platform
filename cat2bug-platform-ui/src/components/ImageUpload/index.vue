@@ -135,8 +135,9 @@ export default {
   methods: {
     // var imageUrl = URL.createObjectURL(blob);
     async clipboardImageHandle(event) {
-      await this.getClipboardImage();
+      this.dialogVisible = false;
       event.stopPropagation();
+      await this.getClipboardImage();
     },
     async getClipboardImage() {
       try {
