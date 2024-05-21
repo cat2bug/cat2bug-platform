@@ -106,10 +106,10 @@ export default {
           currentTeamId: currentTeamId,
           currentProjectId: 0
         }).then(res => {
-          let path = '/team/project';
+          let path = '/team/project-list';
           store.dispatch('GetInfo').then(() => {
             if (_this.$router.currentRoute.path == path) {
-              _this.$router.go(0);
+              location.reload();
             } else {
               _this.$router.push({path: path});
             }
