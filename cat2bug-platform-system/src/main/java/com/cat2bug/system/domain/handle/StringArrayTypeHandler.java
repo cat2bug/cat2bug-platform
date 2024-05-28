@@ -45,6 +45,6 @@ public class StringArrayTypeHandler extends BaseTypeHandler<List<String>> {
 
     // 字符串转换为list
     private List<String> convertToList(String strArray) {
-        return StringUtils.isNotBlank(strArray)?JSON.parseArray(strArray,String.class):new ArrayList<>();
+        return StringUtils.isNotBlank(strArray)?JSON.parseArray(strArray.replaceAll("^\"|\"$", "").replace("\\\"","\""),String.class):new ArrayList<>();
     }
 }
