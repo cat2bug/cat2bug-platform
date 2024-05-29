@@ -11,6 +11,7 @@ import com.cat2bug.system.domain.*;
 import com.cat2bug.system.domain.vo.BatchUserRoleVo;
 import com.cat2bug.system.mapper.*;
 import com.cat2bug.system.service.ISysUserConfigService;
+import com.cat2bug.system.service.ISysUserService;
 import com.google.common.base.Preconditions;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +36,9 @@ public class SysTeamServiceImpl implements ISysTeamService
 
     @Autowired
     private SysUserMapper sysUserMapper;
+
+    @Autowired
+    private ISysUserService sysUserService;
 
     @Autowired
     private SysUserConfigMapper sysUserConfigMapper;
@@ -180,6 +184,13 @@ public class SysTeamServiceImpl implements ISysTeamService
     @Override
     @Transactional
     public int insertSysUser(Long teamId, SysUser user) {
+        if (!sysUserService.checkUserNameUnique(user)) {
+            throw new RuntimeException(MessageUtils.message("user.create.fail.username-exists",user.getNickName(), user.getUserName()));
+        }
+        if(!sysUserService.checkPhoneUnique(user)) {
+            throw new RuntimeException(MessageUtils.message("user.create.fail.phone-exists",user.getNickName(), user.getPhoneNumber()));
+        }
+
         // 插入用户信息
         user.setCreateBy(SecurityUtils.getUsername());
         user.setPassword(SecurityUtils.encryptPassword(user.getPassword()));
