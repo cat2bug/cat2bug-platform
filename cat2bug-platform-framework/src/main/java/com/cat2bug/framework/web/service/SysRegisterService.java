@@ -44,10 +44,11 @@ public class SysRegisterService
         String username = registerBody.getUsername();
         String password = registerBody.getPassword();
         String phoneNumber = registerBody.getPhoneNumber();
+        String nickName = registerBody.getNickName();
         SysUser sysUser = new SysUser();
         sysUser.setUserName(username);
         sysUser.setPhoneNumber(phoneNumber);
-        sysUser.setNickName(username);
+        sysUser.setNickName(nickName);
         sysUser.setPassword(SecurityUtils.encryptPassword(password));
 
         // 验证码开关

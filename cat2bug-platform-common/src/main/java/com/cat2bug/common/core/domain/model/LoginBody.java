@@ -8,7 +8,7 @@ package com.cat2bug.common.core.domain.model;
 public class LoginBody
 {
     /**
-     * 用户名
+     * 登陆名
      */
     private String username;
 

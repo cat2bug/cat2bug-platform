@@ -7,6 +7,11 @@
           <svg-icon slot="prefix" icon-class="user" class="el-input__icon input-icon" />
         </el-input>
       </el-form-item>
+      <el-form-item prop="nickName">
+        <el-input v-model="registerForm.nickName" type="text" auto-complete="off" :placeholder="$t('name')">
+          <svg-icon slot="prefix" icon-class="name" class="el-input__icon input-icon" />
+        </el-input>
+      </el-form-item>
       <el-form-item prop="phoneNumber">
         <el-input
           v-model="registerForm.phoneNumber"

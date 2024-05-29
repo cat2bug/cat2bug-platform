@@ -7,5 +7,16 @@ package com.cat2bug.common.core.domain.model;
  */
 public class RegisterBody extends LoginBody
 {
+    /**
+     * 用户名
+     */
+    private String nickName;
 
+    public String getNickName() {
+        return nickName;
+    }
+
+    public void setNickName(String nickName) {
+        this.nickName = nickName;
+    }
 }
