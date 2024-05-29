@@ -59,7 +59,8 @@ public class SysUserProjectController extends BaseController {
     {
         startPage();
         List<SysUser> list = sysUserProjectService.selectSysUserListByProjectId(projectId, sysUser);
-        list = list.stream().map(u->{
+        TableDataInfo ret =  getDataTable(list);
+        ret.setRows(list.stream().map(u->{
             // 设置角色
             if(u.getRoles()!=null){
                 u.setRoleIds(u.getRoles().stream().map(r->r.getRoleId()).collect(Collectors.toList()).toArray(new Long[]{}));
@@ -67,8 +68,8 @@ public class SysUserProjectController extends BaseController {
             // 检查用户是否在线
             u.setOnline(sysUserOnlineService.isOnline(u.getUserId()));
             return u;
-        }).collect(Collectors.toList());
-        return getDataTable(list);
+        }).collect(Collectors.toList()));
+        return ret;
     }
 
     /**
