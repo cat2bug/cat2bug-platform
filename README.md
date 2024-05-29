@@ -129,7 +129,7 @@ docker run -it -d -p 8022:8022 --name cat2bug-platform cat2bug/cat2bug-platform:
 
 * cat2bug-platform: 功能叠加，完善系统统计管理功能；
 * cat2bug-app：提供移动端APP；
-* cat2bug-spring-junit：提供Java Spring自动化单元测试；
+* cat2bug-spring-junit：提供Java Spring自动化单元测试(已完成)；
 * cat2bug-cloud：cat2bug云平台的建设；
 
 ## Cat2Bug交流群
