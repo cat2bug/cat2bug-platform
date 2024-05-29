@@ -66,6 +66,7 @@ export default {
       // 当前选择的角色标签
       // 选择的成员
       selectMembers: new Map(),
+      updateInt: 0,
       // 是否显示清除按钮
       isClearButtonVisible: false,
       // 是否显示成员下拉列表
@@ -137,6 +138,7 @@ export default {
     },
     selectMemberList: function () {
       return function () {
+        const temp = this.updateInt;
         const arr = Array.from(this.selectMembers.values());
         return arr.sort((a, b) => this.optionsChecks.get(a.userId) - this.optionsChecks.get(b.userId));
       }
@@ -304,6 +306,7 @@ export default {
     clearSelectMembersHandle(event) {
       this.optionsChecks.clear();
       this.selectMembers.clear();
+      this.updateInt = (this.updateInt+1)%999;
       this.queryMember.roleId = this.roleId?this.roleId+'':'0';
       this.queryMember.params.search=null;
       this.queryMember.pageNum=1;
