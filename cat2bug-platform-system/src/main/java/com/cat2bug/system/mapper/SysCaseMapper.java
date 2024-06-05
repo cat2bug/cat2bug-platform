@@ -21,6 +21,13 @@ public interface SysCaseMapper
     public long getCaseMaxNumOfProject(Long projectId);
 
     /**
+     * 获取项目中的用例数量
+     * @param projectId
+     * @return
+     */
+    public long totalByProjectId(Long projectId);
+
+    /**
      * 查询测试用例
      * @param projectId 项目id
      * @param caseName  测试用例名称

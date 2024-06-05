@@ -131,7 +131,7 @@ export function MarkdownTools() {
     },{
       icon: 'mk-remark',
       name: 'describe',
-      content: '${api.project.remark}'
+      content: '${api.project.projectIntroduce}'
     }]
   },{
     icon: 'mk-case',

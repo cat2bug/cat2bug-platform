@@ -33,7 +33,7 @@
       </div>
     </template>
     <div ref="report-data" id="report-data" class="app-container" v-loading="loading">
-      <markdown-it-vue ref="markdownView" class="md" :content="report.reportDescription+''" />
+      <markdown-it-vue ref="markdownView" class="md" :options="options" :content="report.reportDescription+''" />
     </div>
   </el-drawer>
 </template>
@@ -72,6 +72,12 @@ export default {
       // 显示窗口
       visible: false,
       report: {},
+      options: {
+        markdownIt: {
+          html: true,
+          linkify: true
+        },
+      }
     }
   },
   props: {

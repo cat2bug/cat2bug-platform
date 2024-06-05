@@ -162,6 +162,9 @@ export default {
         reportTitle: template.templateTitle,
         reportDescription: template.templateContent,
         projectId: this.projectId,
+        params: {
+          vueAppBaseApi: process.env.VUE_APP_BASE_API
+        }
       }
       addReport(params).then(res=>{
         this.$message.success(strFormat(this.$i18n.t('report.create-success'),params.reportTitle));

@@ -67,6 +67,13 @@ public interface ISysCaseService
     public int updateSysCase(SysCase sysCase);
 
     /**
+     * 获取项目中的用例数量
+     * @param projectId
+     * @return
+     */
+    public long totalByProjectId(Long projectId);
+
+    /**
      * 批量删除测试用例
      * 
      * @param caseIds 需要删除的测试用例主键集合

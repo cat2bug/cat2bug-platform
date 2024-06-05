@@ -2,6 +2,7 @@ package com.cat2bug.system.service.impl.report.parse;
 
 import com.alibaba.fastjson.JSON;
 import com.cat2bug.common.utils.StringUtils;
+import com.cat2bug.system.domain.SysProject;
 import com.cat2bug.system.service.IReportParseService;
 import com.cat2bug.system.service.ISysProjectService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -12,7 +13,6 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -23,10 +23,10 @@ import java.util.regex.Pattern;
  * @Version: 1.0.0
  */
 @Service
-public class VariableParseImpl implements IReportParseService {
-    private final static Logger logger = LogManager.getLogger(VariableParseImpl.class);
+public class SysProjectVariableParseImpl implements IReportParseService {
+    private final static Logger logger = LogManager.getLogger(SysProjectVariableParseImpl.class);
 
-    private static final String  RG = "\\$(t|text){0,1}\\{(.*)\\}";
+    private static final String  RG = "\\$(t|text){0,1}\\{(api\\.project)(\\.(.+))?(\\})";
 
     @Autowired
     private ISysProjectService sysProjectService;
@@ -37,39 +37,21 @@ public class VariableParseImpl implements IReportParseService {
     }
 
     @Override
-    public String parse(Long projectId, String content) {
+    public String parse(Long projectId, String content, Map<String, Object> para) {
+        SysProject sysProject = sysProjectService.selectSysProjectByProjectId(projectId);
+        if(sysProject==null) return content;
+
         Matcher matcher = Pattern.compile(RG).matcher(content);
         while(matcher.find()){
+            String properName = matcher.group(4);
             try {
-                String api = matcher.group(1);
-                if (StringUtils.isBlank(api)) continue;
-
-                Map<String, String> params = new LinkedHashMap<>();
-                String strParams = matcher.group(4);
-                if (StringUtils.isNotBlank(strParams)) {
-                    String[] strs = strParams.split(",");
-                    for (String s : strs) {
-                        if (StringUtils.isBlank(s)) continue;
-                        String[] ss = s.split(":");
-                        if (ss.length > 1) {
-                            params.put(ss[0], ss[1]);
-                        } else {
-                            params.put(s, s);
-                        }
-                    }
+                if(StringUtils.isBlank(properName)) {
+                    return matcher.replaceAll(JSON.toJSONString(sysProject));
+                } else {
+                    String str = toContent(sysProject, properName);
+                    return matcher.replaceAll(str);
                 }
-                Object values = null;
-                switch (api) {
-                    case "api.project":
-                        values = this.getProject(projectId);
-//                    params = (params==null || params.size()==0?defaultCaseTitleNames:params);
-                        break;
-                }
-                if (values != null) {
-                    String strTable = this.toContent(values, null);
-                    return strTable;
-                }
-            }catch (Exception e) {
+            } catch (Exception e) {
                 return " ";
             }
         }

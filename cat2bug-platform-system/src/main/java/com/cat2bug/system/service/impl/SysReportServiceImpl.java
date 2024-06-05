@@ -71,7 +71,7 @@ public class SysReportServiceImpl implements ISysReportService
             for(int i=0;i<lines.length;i++) {
                 for(IReportParseService reportParseService : reportParseServices) {
                     if(reportParseService.isHandle(lines[i])) {
-                        lines[i]=reportParseService.parse(sysReport.getProjectId(), lines[i]);
+                        lines[i]=reportParseService.parse(sysReport.getProjectId(), lines[i], sysReport.getParams());
                     }
                 }
             }

@@ -33,6 +33,10 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         select IFNULL(MAX(case_num),0) from sys_case where project_id=#{projectId}
     </select>
 
+    <select id="totalByProjectId" resultType="Long">
+        select COUNT(case_id) from sys_case where project_id=#{projectId} GROUP BY project_id;
+    </select>
+
     <select id="selectSysCaseList" parameterType="SysCase" resultMap="SysCaseResult">
         <include refid="selectSysCaseVo"/>
         <where>  

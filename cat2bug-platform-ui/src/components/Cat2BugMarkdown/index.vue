@@ -23,6 +23,7 @@
         <markdown-it-vue
           ref="markdownView"
           :content="markdownContent"
+          :options="options"
           />
       </div>
     </multipane>
@@ -85,7 +86,13 @@ export default {
         content: function (view, tool) {
           return '';
         }
-      }]
+      }],
+      options: {
+        markdownIt: {
+          html: true,
+          linkify: true
+        },
+      }
     }
   },
   props: {

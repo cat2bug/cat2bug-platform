@@ -111,6 +111,11 @@ public class SysCaseServiceImpl implements ISysCaseService
         return sysCaseMapper.updateSysCase(sysCase);
     }
 
+    @Override
+    public long totalByProjectId(Long projectId) {
+        return sysCaseMapper.totalByProjectId(projectId);
+    }
+
     /**
      * 批量删除测试用例
      * 

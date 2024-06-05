@@ -2,12 +2,14 @@ package com.cat2bug.system.service.impl.report.parse;
 
 import com.alibaba.fastjson.JSON;
 import com.cat2bug.common.core.domain.entity.SysDefect;
+import com.cat2bug.common.utils.DictUtils;
 import com.cat2bug.common.utils.MessageUtils;
 import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.system.domain.SysCase;
 import com.cat2bug.system.service.IReportParseService;
 import com.cat2bug.system.service.ISysCaseService;
 import com.cat2bug.system.service.ISysDefectService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.LogManager;
@@ -58,7 +60,7 @@ public class TableParseImpl implements IReportParseService {
     }
 
     @Override
-    public String parse(Long projectId, String content) {
+    public String parse(Long projectId, String content, Map<String, Object> para) {
         Matcher matcher = Pattern.compile(RG).matcher(content);
         while(matcher.find()){
             String api = matcher.group(1);
@@ -85,7 +87,7 @@ public class TableParseImpl implements IReportParseService {
                     params = (params==null || params.size()==0?defaultCaseTitleNames:params);
                     break;
                 case "api.defect.list":
-                    values = this.getDefectList(projectId);
+                    values = this.getDefectList(projectId,para);
                     params = (params==null || params.size()==0?defaultDefectTitleNames:params);
                     break;
             }
@@ -103,10 +105,33 @@ public class TableParseImpl implements IReportParseService {
         return sysCaseService.selectSysCaseList(sysCase).stream().collect(Collectors.toList());
     }
 
-    private List<Object> getDefectList(Long projectId) {
+    private List<Object> getDefectList(Long projectId, Map<String, Object> para) {
         SysDefect sysDefect = new SysDefect();
         sysDefect.setProjectId(projectId);
-        return sysDefectService.selectSysDefectList(sysDefect).stream().collect(Collectors.toList());
+        String vueAppBaseApi = (String) para.get("vueAppBaseApi");
+        return sysDefectService.selectSysDefectList(sysDefect).stream().map(d->{
+            ObjectMapper mapper = new ObjectMapper();
+            try {
+                Map<String,Object> map = mapper.readValue(JSON.toJSONString(d), new TypeReference<Map<String, Object>>() {});
+                if(map.containsKey("defectLevel")) {
+                    map.put("defectLevel", MessageUtils.message(String.valueOf(map.get("defectLevel"))));
+                }
+                if(map.containsKey("defectType")) {
+                    map.put("defectType", MessageUtils.message(String.valueOf(map.get("defectType"))));
+                }
+                if(map.containsKey("imgUrls")) {
+                    String strImageList = (String) map.get("imgUrls");
+                    String[] imgs = strImageList.split(",");
+
+                    map.put("imgList", Arrays.stream(imgs).filter(img->StringUtils.isNotBlank(img)).map(img->{
+                        return String.format("<img src=\"%s%s\" style=\"width:max-width:200px;max-height:200px;\" />",vueAppBaseApi,img);
+                    }).collect(Collectors.joining()));
+                }
+                return map;
+            } catch (JsonProcessingException e) {
+                return d;
+            }
+        }).collect(Collectors.toList());
     }
 
     private StringBuffer toTable(List<Object> list, Map<String,String> params) {
