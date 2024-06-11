@@ -21,7 +21,8 @@ cat2bug:
       host: https://www.cat2bug.com:8022
       project-key: 202403081039179f174l0igbcrgs66
       handler: demo
-
+  ai:
+    host: http://localhost:11434
 # 开发环境配置
 server:
   # 服务器的HTTP端口，默认为2020

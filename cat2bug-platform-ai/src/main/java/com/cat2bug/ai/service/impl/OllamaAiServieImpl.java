@@ -9,6 +9,8 @@ import okhttp3.*;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
+
 
 /**
  * @Author: yuzhantao
@@ -31,8 +33,17 @@ public class OllamaAiServieImpl implements IAiService {
      * 问答数据格式类型
      */
     private static final String PROMPT_FORMAT_TYPE = "json";
+
+    /**
+     * 服务主机和端口
+     */
     private String host;
 
+    @PostConstruct
+    public void init() {
+        String ret = this.generate("llama3:8b","请用中文回复我，中国的首都是哪里");
+        System.out.println("========================"+ret);
+    }
     @Override
     public String generate(String moduleName, String prompt) {
         try {
@@ -41,7 +52,7 @@ public class OllamaAiServieImpl implements IAiService {
             String body = JSON.toJSONString(promptVo);
             RequestBody formBody = RequestBody.create(FORM_CONTENT_TYPE, body);
             Request request = new Request.Builder()
-                    .url(getApiUrl(host, GENERATE_URL))
+                    .url(getApiUrl(this.host, GENERATE_URL))
                     .post(formBody).build();
 
             Response response = client.newCall(request).execute();
