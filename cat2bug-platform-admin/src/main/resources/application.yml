@@ -23,6 +23,10 @@ cat2bug:
       handler: demo
   ai:
     host: http://localhost:11434
+    timeout: 60
+    modules:
+      - llama3:8b
+      - llava:7b
 # 开发环境配置
 server:
   # 服务器的HTTP端口，默认为2020

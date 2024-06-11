@@ -4,20 +4,17 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * @Author: yuzhantao
- * @CreateTime: 2024-06-11 12:05
+ * @CreateTime: 2024-06-12 02:15
  * @Version: 1.0.0
+ * 模型列表
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class PromptVo {
-    private String model;
-
-    private String prompt;
-
-    private String format;
-
-    private boolean stream;
+public class OllamaModuleList {
+    private List<OllamaModuleListItem> models;
 }
