@@ -212,6 +212,7 @@
         <module>cat2bug-platform-generator</module>
         <module>cat2bug-platform-common</module>
         <module>cat2bug-platform-api</module>
+        <module>cat2bug-platform-ai</module>
     </modules>
     <packaging>pom</packaging>
 
