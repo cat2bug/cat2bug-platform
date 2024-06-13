@@ -120,6 +120,7 @@ import ImageUpload from "@/components/ImageUpload";
 import SelectCase from "@/components/Case/SelectCase";
 import Cat2BugTextarea from "@/components/Cat2BugTextarea";
 import {upload} from "@/api/common/upload";
+import {makeDefect, makeDefectModule, makeDefectTitle} from "@/api/ai/AiDefect";
 
 export default {
   name: "AddDefect",
@@ -260,7 +261,26 @@ export default {
     },
     /** AI创建缺陷 */
     createDefectByAiHandle() {
-      alert('dd')
+      if(!this.form.defectDescribe) {
+        this.$message.error(this.$i18n.t('defect.describe-cannot-empty').toString());
+        return;
+      }
+      if(!this.form.defectName) {
+        makeDefectTitle(this.form.defectDescribe).then(res => {
+          console.log(res);
+          if(!this.form.defectName && res.code==200) {
+            this.form.defectName = res.data.title;
+          }
+        });
+      }
+      if(!this.form.moduleId) {
+        makeDefectModule(this.form.defectDescribe).then(res => {
+          console.log(res);
+          if(!this.form.moduleId && res.code==200) {
+            this.form.moduleId = res.data.moduleId;
+          }
+        });
+      }
     }
   }
 }
