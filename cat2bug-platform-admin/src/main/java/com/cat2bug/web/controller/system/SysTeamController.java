@@ -69,13 +69,15 @@ public class SysTeamController extends BaseController
     {
         startPage();
         List<SysUser> list = sysTeamService.selectSysUserListByTeamIdAndSysUser(teamId, sysUser);
-        list = list.stream().map(u->{
+        TableDataInfo ret = getDataTable(list);
+        ret.setRows(list.stream().map(u->{
             if(u.getRoles()!=null){
                 u.setRoleIds(u.getRoles().stream().map(r->r.getRoleId()).collect(Collectors.toList()).toArray(new Long[]{}));
             }
             return u;
-        }).collect(Collectors.toList());
-        return getDataTable(list);
+        }).collect(Collectors.toList()));
+
+        return ret;
     }
 
     /**

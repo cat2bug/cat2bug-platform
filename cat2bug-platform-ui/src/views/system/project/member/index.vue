@@ -203,6 +203,7 @@ export default {
       listMemberOfProject(this.currentProjectId,this.queryParams).then(res => {
         this.loading = false;
         this.memberList = res.rows;
+        this.total = res.total;
       });
     },
     /** 更新用户权限 */

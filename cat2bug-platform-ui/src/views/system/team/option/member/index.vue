@@ -211,6 +211,7 @@ export default {
       listMember(this.getTeamId(),this.queryParams).then(res => {
         this.loading = false;
         this.memberList = res.rows;
+        this.total = res.total;
       });
     },
     /** 更新用户权限 */
