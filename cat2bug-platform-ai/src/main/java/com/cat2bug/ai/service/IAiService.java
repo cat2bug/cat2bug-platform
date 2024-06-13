@@ -36,4 +36,11 @@ public interface IAiService {
      * @return              如果stream=false，返回推送结果，如果stream=true，返回null
      */
     public String pullModule(String moduleName, boolean stream);
+
+    /**
+     * 删除模型
+     * @param moduleName    模型名称
+     * @return              true删除成功
+     */
+    public boolean removeModule(String moduleName);
 }

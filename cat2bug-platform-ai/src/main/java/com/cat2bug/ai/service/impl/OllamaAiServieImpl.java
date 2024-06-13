@@ -48,6 +48,10 @@ public class OllamaAiServieImpl implements IAiService {
      */
     private static final String PULL_MODULE_URL = "/api/pull";
     /**
+     * 下载模型接口
+     */
+    private static final String REMOVE_MODULE_URL = "/api/delete";
+    /**
      * 显示模型信息接口
      */
     private static final String SHOW_MODULE_URL = "/api/show";
@@ -249,6 +253,25 @@ public class OllamaAiServieImpl implements IAiService {
             e.printStackTrace();
         }
         return null;
+    }
+
+    @Override
+    public boolean removeModule(String moduleName) {
+        try {
+            OkHttpClient client = new OkHttpClient().newBuilder().readTimeout(this.timeout, TimeUnit.SECONDS).build();
+            OllamaModuleRequest pullModuleRequest = new OllamaModuleRequest(moduleName);
+            String body = JSON.toJSONString(pullModuleRequest);
+            RequestBody formBody = RequestBody.create(FORM_CONTENT_TYPE, body);
+            Request request = new Request.Builder()
+                    .url(getApiUrl(this.host, REMOVE_MODULE_URL))
+                    .delete(formBody).build();
+
+            Response response = client.newCall(request).execute();
+            return response.isSuccessful();
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     /**

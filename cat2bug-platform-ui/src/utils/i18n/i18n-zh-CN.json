@@ -322,6 +322,7 @@
   "defect.my-life.input-content": "请在此处书写属于你的东西",
   "defect.my-life.click-input-content": "请点击此处书写你的人生",
   "defect.table": "缺陷表格",
+  "defect.ai-filling-in": "智能填写",
   "font-size.medium": "大字体",
   "font-size.small0": "中字体",
   "font-size.mini": "小字体",
@@ -521,5 +522,6 @@
   "casePreconditions": "前置条件",
   "caseExpect": "预期效果",
   "caseStep": "测试步骤",
-  "shop": "商店"
+  "shop": "商店",
+  "maximize": "最大化"
 }

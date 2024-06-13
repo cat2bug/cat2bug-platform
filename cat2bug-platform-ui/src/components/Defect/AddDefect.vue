@@ -63,15 +63,25 @@
           <select-case ref="selectCase" v-model="form.caseId" :module-id="form.moduleId" :step-index="form.caseStepId" @step-change="stepChangeHandle" />
         </el-form-item>
         <el-form-item :label="$t('describe')" prop="defectDescribe">
-          <el-input
-            type="textarea"
-            :placeholder="$t('enter-content')"
+<!--          <el-input-->
+<!--            type="textarea"-->
+<!--            :placeholder="$t('enter-content')"-->
+<!--            v-model="form.defectDescribe"-->
+<!--            maxlength="65536"-->
+<!--            rows="8"-->
+<!--            show-word-limit-->
+<!--          >-->
+<!--          </el-input>-->
+          <cat2-bug-textarea
+            :name="$t('describe').toString()"
+            :placeholder="$t('enter-content').toString()"
+            :tools = "describeTools"
             v-model="form.defectDescribe"
             maxlength="65536"
             rows="8"
             show-word-limit
-          >
-          </el-input>
+            show-tools
+          />
         </el-form-item>
         <el-form-item :label="$t('image')" prop="imgUrls">
           <image-upload v-model="form.imgUrls" :limit="9"></image-upload>
@@ -108,12 +118,13 @@ import SelectProjectMember from "@/components/Project/SelectProjectMember"
 import SelectModule from "@/components/Module/SelectModule"
 import ImageUpload from "@/components/ImageUpload";
 import SelectCase from "@/components/Case/SelectCase";
+import Cat2BugTextarea from "@/components/Cat2BugTextarea";
 import {upload} from "@/api/common/upload";
 
 export default {
   name: "AddDefect",
   dicts: ['defect_level'],
-  components: { ImageUpload, SelectProjectMember, SelectModule,SelectCase },
+  components: { ImageUpload, SelectProjectMember, SelectModule,SelectCase,Cat2BugTextarea },
   data() {
     return {
       // 显示窗口
@@ -140,7 +151,12 @@ export default {
         defectDescribe: [
           { required: true, message: this.$i18n.t('defect.describe-cannot-empty'), trigger: "input" }
         ],
-      }
+      },
+      describeTools:[{
+        name: 'defect.ai-filling-in',
+        icon: 'robot',
+        method: this.createDefectByAiHandle
+      },]
     }
   },
   props: {
@@ -241,6 +257,10 @@ export default {
     },
     stepChangeHandle(index){
       this.form.caseStepId = index;
+    },
+    /** AI创建缺陷 */
+    createDefectByAiHandle() {
+      alert('dd')
     }
   }
 }

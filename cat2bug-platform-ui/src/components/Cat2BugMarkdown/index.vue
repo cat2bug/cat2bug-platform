@@ -102,7 +102,7 @@ export default {
     },
     template: {
       type: Object,
-      default: {}
+      default: ()=>{}
     }
   },
   directives: {
@@ -128,11 +128,11 @@ export default {
     }
   },
   watch: {
-    // content(v) {
-    //   if(this.markdownContent!=v) {
-    //     this.markdownContent = v;
-    //   }
-    // },
+    content(v) {
+      if(this.markdownContent!=v) {
+        this.markdownContent = v;
+      }
+    },
     markdownContent(v) {
       // console.log('markdownContent',v)
     }
@@ -172,6 +172,7 @@ export default {
     },
     /** 保存文档 */
     async save() {
+      if(!this.template || Object.keys(this.template).length==0) return;
       let template = {
         templateId: this.template.templateId,
         templateTitle: this.template.templateTitle,
@@ -270,7 +271,7 @@ export default {
         });
       });
       Promise.all([defectList,project]).then(res=>{
-        this.markdownContent = this.content;
+        this.markdownContent = this.content?this.content:'';
       }).catch(e=>{
         this.$message.error(e);
       })
