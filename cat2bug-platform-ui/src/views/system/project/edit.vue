@@ -131,7 +131,7 @@ export default {
     },
     /** 获取待添加的成员 */
     getMemberList(){
-      this.memberParams.params.excludeMembers = this.form.members.map(m=>m.userId);
+      this.memberParams.params.excludeMembers = this.form.members?this.form.members.map(m=>m.userId):[];
       listMember(this.getTeamId(),this.memberParams).then(res=>{
         // 赋值成员列表
         this.memberList = res.rows.map(m=> {

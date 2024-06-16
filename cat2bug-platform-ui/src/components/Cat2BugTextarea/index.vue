@@ -22,7 +22,12 @@
       custom-class="cat2bug-textarea-dialog"
       :before-close="handleCloseDialog"
       append-to-body>
-      <cat2-bug-markdown ref="cat2bugMarkdown" v-model="textContent" @input="handleMarkdownContent"></cat2-bug-markdown>
+      <cat2-bug-markdown
+        ref="cat2bugMarkdown"
+        :exclude-tools="['siding-9899', 'project', 'case', 'defect', 'member', 'save']"
+        :placeholder="placeholder"
+        v-model="textContent"
+        @input="handleMarkdownContent"/>
     </el-dialog>
   </div>
 </template>
@@ -143,21 +148,28 @@ export default {
   .tools {
     position: absolute;
     right: 10px;
-    bottom: 1px;
+    bottom: 4px;
     display: flex;
     flex-direction: row;
     justify-content: flex-end;
     align-items: center;
-    gap:5px;
-    .text-length {
-      color: #909399;
+    gap:2px;
+    .text-length, .el-button {
+      height: 24px;
       background: #FFFFFF;
+    }
+    .text-length {
+      padding-left: 4px;
+      padding-right: 4px;
+      color: #909399;
       font-size: 12px;
+      border-radius: 3px;
+      text-align: center;
+      line-height: 24px;
     }
     .el-button {
       padding: 0px 4px;
       margin: 0px;
-      height: 24px;
       line-height: 12px;
     }
     .el-button:hover {

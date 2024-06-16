@@ -1,7 +1,7 @@
 <template>
   <div class="markdown">
     <div class="markdown-tools">
-      <tools-menu :tools="MarkdownTools()" @select="toolsHandle" />
+      <tools-menu :tools="tools" @select="toolsHandle" />
       <tools-menu v-model="viewTools" @select="viewToolsHandle" />
     </div>
     <multipane layout="vertical" ref="multiPane" class="markdown-body" @pane-resize-start="dragStopHandle">
@@ -12,7 +12,7 @@
         v-resize="setDragComponentSize"
         v-model="markdownContent"
         @input="inputHandle"
-        :placeholder="$t('mk.start-edit')"
+        :placeholder="placeholder"
       />
       <multipane-resizer v-show="viewVisible" class="markdown-body-resizer" :style="multipaneStyle"></multipane-resizer>
       <div
@@ -103,6 +103,14 @@ export default {
     template: {
       type: Object,
       default: ()=>{}
+    },
+    placeholder: {
+      type: String,
+      default: null
+    },
+    excludeTools: {
+      type: Array,
+      default: ()=>[]
     }
   },
   directives: {
@@ -141,6 +149,9 @@ export default {
     projectId() {
       return this.$store.state.user.config.currentProjectId
     },
+    tools() {
+      return MarkdownTools().filter(t=>this.excludeTools.indexOf(t.name)===-1)
+    }
   },
   mounted() {
     this.initMarkdownPlug();

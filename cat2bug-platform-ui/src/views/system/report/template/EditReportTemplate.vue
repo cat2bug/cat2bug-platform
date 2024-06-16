@@ -11,7 +11,7 @@
         </template>
       </el-page-header>
     </el-row>
-    <cat2-bug-markdown ref="cat2bugMarkdown" v-model="template.templateContent" :template="template" @input="changeHandle(5000)" />
+    <cat2-bug-markdown ref="cat2bugMarkdown" v-model="template.templateContent" :placeholder="$t('mk.start-edit').toString()" :template="template" @input="changeHandle(5000)" />
 <!--    <mavon-editor-->
 <!--      v-model="content"-->
 <!--      ref="md"-->

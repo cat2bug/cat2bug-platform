@@ -108,7 +108,8 @@ export function MarkdownTools() {
       '|-|-|-|\n' +
       '|content1|content2|content3|\n'
   },{
-    type: 'siding'
+    type: 'siding',
+    name: 'siding-9899'
   },{
     icon: 'mk-project',
     name: 'project',

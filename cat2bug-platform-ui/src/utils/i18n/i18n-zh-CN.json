@@ -282,6 +282,7 @@
   "defect.enter-name": "请输入缺陷标题",
   "defect.enter-version": "请输入版本",
   "defect.enter-describe": "请输入描述",
+  "defect.enter-markdown-describe": "请输入描述信息，此处支持Markdown格式显示。",
   "defect.select-type": "请选择类型",
   "defect.select-level": "请选择级别",
   "defect.select-state": "请选择状态",
@@ -324,7 +325,7 @@
   "defect.my-life.input-content": "请在此处书写属于你的东西",
   "defect.my-life.click-input-content": "请点击此处书写你的人生",
   "defect.table": "缺陷表格",
-  "defect.ai-filling-in": "智能填写",
+  "defect.ai-filling-in": "智能填写，AI机器人可以根据填写的描述内容，智能分析缺陷的标题、类型、处理人、交付物等属性",
   "defect.no-fields-analyze": "标题、类型、处理人、交付物都已填写，没有需要分析的字段!",
   "defect.analyze-finish": "分析完成，共耗时{0}秒。",
   "defect.ai-re-run": "AI分析正在执行，无法重复执行操作！",
@@ -531,6 +532,6 @@
   "caseExpect": "预期效果",
   "caseStep": "测试步骤",
   "shop": "商店",
-  "maximize": "最大化",
+  "maximize": "最大化窗体",
   "fill-finish": "{0} 填写完成"
 }

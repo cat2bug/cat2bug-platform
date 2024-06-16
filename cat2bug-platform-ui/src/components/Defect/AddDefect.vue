@@ -74,7 +74,7 @@
 <!--          </el-input>-->
           <cat2-bug-textarea
             :name="$t('describe').toString()"
-            :placeholder="$t('enter-content').toString()"
+            :placeholder="$t('defect.enter-markdown-describe').toString()"
             :tools = "describeTools"
             v-model="form.defectDescribe"
             maxlength="65536"
