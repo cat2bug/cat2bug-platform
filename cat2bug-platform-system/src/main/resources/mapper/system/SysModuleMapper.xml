@@ -28,14 +28,18 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </select>
 
     <select id="selectSysModulePathList" parameterType="Long" resultMap="SysModuleResult">
-        WITH RECURSIVE m AS (
-            SELECT module_id, module_name, module_pid, CAST(module_name AS CHAR(1024)) AS module_path
-            FROM sys_module WHERE project_id = #{projectId}
-            UNION ALL
-            SELECT d.module_id, d.module_name, d.module_pid, CONCAT(d.module_name,'/', p.module_path)
-            FROM sys_module d INNER JOIN m p ON d.module_id = p.module_pid
+        WITH RECURSIVE m (module_id, module_name, module_path) AS (
+        -- 初始选择最顶层的类别，即没有父类别的类别
+        SELECT module_id, module_name, module_name AS module_path
+        FROM sys_module
+        WHERE module_pid = 0 and project_id = #{projectId}
+        UNION ALL
+        -- 递归加入子类别
+        SELECT c.module_id, c.module_name, CONCAT(cp.module_path, '/', c.module_name)
+        FROM sys_module c
+        INNER JOIN m cp ON c.module_pid = cp.module_id
         )
-        SELECT module_id, module_path FROM m WHERE module_pid = 0 ORDER BY module_path;
+        SELECT * FROM m ORDER BY module_id,module_path
     </select>
 
     <select id="selectSysModuleList" parameterType="SysModule" resultMap="SysModuleResult">

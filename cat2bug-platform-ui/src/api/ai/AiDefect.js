@@ -29,3 +29,32 @@ export function makeDefectModule(describe) {
     timeout: 60000
   })
 }
+
+/** 制造缺陷关联类型 */
+export function makeDefectType(describe) {
+  return request({
+    url: '/ai/defect/type',
+    method: 'post',
+    data: describe,
+    timeout: 60000
+  })
+}
+
+/** 制造缺陷关联成员 */
+export function makeDefectMember(describe) {
+  return request({
+    url: '/ai/defect/member',
+    method: 'post',
+    data: describe,
+    timeout: 60000
+  })
+}
+
+/** 制造缺陷关联版本 */
+export function makeDefectVersion() {
+  return request({
+    url: '/ai/defect/version',
+    method: 'post',
+    timeout: 60000
+  })
+}

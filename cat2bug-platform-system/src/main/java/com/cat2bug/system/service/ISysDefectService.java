@@ -2,7 +2,9 @@ package com.cat2bug.system.service;
 
 import com.cat2bug.common.core.domain.entity.SysDefect;
 import com.cat2bug.system.domain.SysDefectLog;
+import com.cat2bug.system.domain.SysVersion;
 import com.cat2bug.system.domain.vo.EnumVo;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -112,4 +114,11 @@ public interface ISysDefectService
      * @return 结果
      */
     public int deleteSysDefectByDefectId(Long defectId);
+
+    /**
+     * 获取项目中的历史版本
+     * @param projectId 项目ID
+     * @return  版本集合
+     */
+    public List<SysVersion> selectVersionList(@Param("projectId")Long projectId);
 }

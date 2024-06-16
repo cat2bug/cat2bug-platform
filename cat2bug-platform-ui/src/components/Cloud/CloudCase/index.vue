@@ -14,19 +14,31 @@
         </div>
       </div>
     </template>
-    <div class="case">
+    <div class="case" v-loading="loading" :element-loading-text="$t('case.load-prompted')">
+      <div ref="caseHistory" v-show="promptHistoryList && promptHistoryList.length>0" class="case-history">
+        <el-row class="case-history-row" v-for="(prompt,index) in promptHistoryList" :key="index" @click.native="selectHistoryHandle(prompt)">
+          <el-tag type="success" effect="dark">{{$t('DEMAND') + ' ' + (index+1).toString().padStart(2,'0')}}</el-tag>
+          <span class="case-history-prompt" v-html="prompt.prompt"></span>
+        </el-row>
+      </div>
       <div class="case-search">
         <el-input type="textarea"
                   :readonly="loading"
                   maxlength="255"
                   rows="5"
-                  show-word-limit v-model="searchData"
+                  show-word-limit v-model="prompt.prompt"
                   :placeholder="$t('case.ai-search-describe')">
           <svg-icon slot="prefix" icon-class="robot" style="margin-right: 10px;" />
         </el-input>
-        <el-button type="success" :disabled="loading" @click="searchHandle">{{ $t('search') }}</el-button>
+        <el-dropdown split-button type="success" :disabled="loading" @click="searchHandle" @command="searchCommandHandle">
+          {{ $t('case.add-ai-case-prompt') }}
+          <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item command="add">{{ $t('case.add-ai-case-prompt') }}</el-dropdown-item>
+            <el-dropdown-item command="new">{{ $t('case.new-ai-case-prompt') }}</el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
       </div>
-      <div class="case-data" v-loading="loading" :element-loading-text="$t('case.load-prompted')">
+      <div class="case-data">
         <div class="case-table">
           <div class="case-table-tools">
             <div>
@@ -141,8 +153,6 @@
 </template>
 
 <script>
-import {listCase} from "@/api/cloud/case";
-import {checkPermi} from "@/utils/permission";
 import Cat2BugLevel from "@/components/Cat2BugLevel";
 import CaseForm from "@/components/Case/CaseForm";
 import Step from "@/views/system/case/components/step";
@@ -153,16 +163,22 @@ import Label from "@/components/Cat2BugStatistic/Components/Label";
 import {parseTime} from "@/utils/ruoyi"
 import {addCase, batchAddCase, updateCase} from "@/api/system/case";
 import {strFormat} from "@/utils";
-import {delUser} from "@/api/system/user";
+import {makeCaseList} from "@/api/ai/AiCase";
+import i18n from "@/utils/i18n/i18n";
+import {delDefect} from "@/api/system/defect";
 export default {
   name: "index",
   components: {Label, Cat2BugLevel,Step,Multipane,MultipaneResizer,CaseForm,CaseCard,SelectModule},
   data() {
     return {
+      prompt: {
+        prompt: null,
+        context: null
+      },
+      promptHistoryList: [],
       ids:new Set(),
       multipaneStyle: {'--marginTop':'0px'},
       visible: false,
-      searchData: null,
       loading:false,
       caseList:[],
       caseContextVisible: true,
@@ -220,25 +236,80 @@ export default {
     },
     close() {
       this.visible = false;
+      this.resetPrompt();
     },
     handleClose(done) {
       // done();
     },
+    selectHistoryHandle(prompt) {
+      this.caseList = prompt.list;
+    },
+    searchCommandHandle(command) {
+      switch (command) {
+        case 'add':
+          this.searchHandle();
+          break;
+        case 'new':
+          this.newPrompt();
+          break;
+      }
+    },
+    resetPrompt() {
+      this.promptHistoryList = [];
+      this.caseList = [];
+      this.prompt = {
+        prompt: null,
+        context: null
+      };
+      this.currentCase={};
+      this.$refs['caseForm'].reset();
+    },
+    newPrompt() {
+      const self = this;
+      this.$modal.confirm(
+        this.$i18n.t('case.new-ai-case-prompt-alert'),
+        this.$i18n.t('prompted').toString(),
+        {
+          confirmButtonText: i18n.t('ok').toString(),
+          cancelButtonText: i18n.t('cancel').toString(),
+          type: "warning"
+        }).then(function() {
+          self.resetPrompt();
+        }).catch(() => {});
+    },
     searchHandle() {
+      let startSeconds = new Date().getTime();
       this.loading = true;
-      listCase(this.searchData).then(res=>{
-        this.loading = false;
-        if(res.data && res.data.length>0) {
-          this.caseList = [...res.data.map(c => {
-            c.projectId = this.projectId;
-            c.searchTime = new Date();
-            return c;
-          }), ...this.caseList];
-          this.refreshCaseList();
-          this.$message.success(strFormat(this.$i18n.t('case.ai-search-success-result'),res.data.length))
-        } else {
-          this.$message.warning(this.$i18n.t('case.ai-search-fail-result').toString())
-        }
+      this.caseList = [];
+        makeCaseList(this.prompt).then(res=>{
+          this.loading = false;
+          if(res.data && res.data.cases.length>0) {
+            // this.caseList = [...res.data.cases.map(c => {
+            //   c.projectId = this.projectId;
+            //   c.searchTime = new Date();
+            //   return c;
+            // }), ...this.caseList];
+            this.promptHistoryList.push({
+              prompt: this.prompt.prompt.split('\n').join('<br />'),
+              context: this.prompt.context
+            });
+            this.$nextTick(() => {
+              const container = this.$refs.caseHistory;
+              container.scrollTop = container.scrollHeight;
+            });
+            this.caseList = res.data.cases.map(c => {
+              c.projectId = this.projectId;
+              c.searchTime = new Date();
+              return c;
+            });
+            this.promptHistoryList[this.promptHistoryList.length-1].list = this.caseList;
+            this.prompt.context = res.data.context;
+            this.prompt.prompt = null;
+            this.refreshCaseList();
+            this.$message.success(strFormat(this.$i18n.t('case.ai-search-success-result'),Math.floor((new Date().getTime()-startSeconds)/1000),res.data.length))
+          } else {
+            this.$message.warning(this.$i18n.t('case.ai-search-fail-result').toString())
+          }
       }).catch(e=>{
         this.loading = false;
       })
@@ -257,14 +328,14 @@ export default {
       if (this.validateCase(row)) {
         if (!row.caseId) {
           addCase(row).then(response => {
-            this.$modal.msgSuccess(this.$i18n.t('create-success'));
+            this.$modal.msgSuccess(this.$i18n.t('import-success'));
             row.caseId = response.data.caseId;
             this.$set(row,'isImport',true);
             this.$emit('added');
           });
         } else {
           updateCase(row).then(response => {
-            this.$modal.msgSuccess(this.$i18n.t('modify-success'));
+            this.$modal.msgSuccess(this.$i18n.t('re-import-success'));
             this.$set(row,'isImport',true);
             this.$emit('added');
           });
@@ -354,6 +425,27 @@ export default {
   flex-direction: column;
   padding: 20px;
   width: 100%;
+  .case-history {
+    max-height: 150px;
+    overflow-y: auto;
+    margin-bottom: 10px;
+    .case-history-row {
+      padding: 5px 15px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      .case-history-prompt {
+        padding-left: 20px;
+        font-size: 15px;
+        color: #606266;
+      }
+    }
+    .case-history-row:hover {
+      background-color: #f6f9fe;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+  }
   .case-search {
     display: inline-flex;
     width: 100%;
@@ -365,6 +457,7 @@ export default {
         border-radius: 5px 0 0 5px;
         padding-left: 45px;
         border-color: #67c23a;
+        border-width: 1px 0px 1px 1px ;
       }
       ::v-deep .el-textarea__inner:hover {
         border-color: #85ce61;
@@ -381,11 +474,19 @@ export default {
       top: 7px;
       left: 15px;
     }
-    .el-button {
-      border-radius: 0 5px 5px 0;
-      min-width: 80px;
+    ::v-deep .el-button-group {
+      height: 100%;
+      .el-button {
+        height: 100%;
+      }
+      .el-button:first-child {
+        border-radius: 0px;
+      }
     }
-
+    ::v-deep .el-button-group {
+      margin: 0px;
+      border-radius: 0px 5px 5px 0px;
+    }
   }
   .case-data {
     display: flex;
@@ -490,5 +591,14 @@ export default {
 }
 ::v-deep .el-drawer__close-btn {
   display: none;
+}
+::v-deep .el-loading-spinner {
+  circle {
+    stroke: #13ce66;
+  }
+  .el-loading-text {
+    color: #13ce66;
+    font-size: 18px;
+  }
 }
 </style>

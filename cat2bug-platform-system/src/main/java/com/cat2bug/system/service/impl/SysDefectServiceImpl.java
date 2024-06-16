@@ -2,6 +2,7 @@ package com.cat2bug.system.service.impl;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -12,6 +13,7 @@ import com.cat2bug.system.domain.SysDefectLog;
 import com.cat2bug.common.core.domain.type.SysDefectLogStateEnum;
 import com.cat2bug.common.core.domain.type.SysDefectStateEnum;
 import com.cat2bug.common.core.domain.type.SysDefectTypeEnum;
+import com.cat2bug.system.domain.SysVersion;
 import com.cat2bug.system.domain.vo.EnumVo;
 import com.cat2bug.system.mapper.SysDefectLogMapper;
 import com.google.common.base.Preconditions;
@@ -282,6 +284,16 @@ public class SysDefectServiceImpl implements ISysDefectService
     public int deleteSysDefectByDefectId(Long defectId)
     {
         return sysDefectMapper.deleteSysDefectByDefectId(defectId);
+    }
+
+    /**
+     * 获取项目中的历史版本
+     * @param projectId 项目ID
+     * @return  版本集合
+     */
+    @Override
+    public List<SysVersion> selectVersionList(Long projectId) {
+        return sysDefectMapper.selectVersionList(projectId);
     }
 
 }

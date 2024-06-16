@@ -1,10 +1,9 @@
 package com.cat2bug.ai.service.impl;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.cat2bug.ai.service.IAiService;
+import com.cat2bug.ai.utils.PromptUtils;
 import com.cat2bug.ai.vo.*;
-import com.cat2bug.common.constant.HttpStatus;
 import lombok.Data;
 import okhttp3.*;
 import okio.Buffer;
@@ -17,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -90,25 +90,27 @@ public class OllamaAiServieImpl implements IAiService {
                     pullModule(m,true);
                 }
             });
+
         }
     }
 
     @Override
-    public <T> T generate(String moduleName, String prompt, boolean stream, Class<T> cls) {
+    public <T> T generate(String moduleName, String prompt, boolean stream, long[] context, Class<T> cls) {
         try {
             OkHttpClient client = new OkHttpClient().newBuilder().readTimeout(this.timeout, TimeUnit.SECONDS).build();
             String requestPrompt = null;
             String format = null;
             if(cls == String.class){
-                requestPrompt = String.format("请用中文回复,%s",prompt);
+                requestPrompt = String.format("请用中文返回,%s",prompt);
             } else if(cls instanceof Object) {
-                requestPrompt = String.format("请用中文回复,%s,格式:%s",prompt,JSON.toJSONString(cls.newInstance(), SerializerFeature.WriteMapNullValue));
+                requestPrompt = String.format("请用中文返回,%s,返回JSON格式:\n%s",prompt, PromptUtils.objectToPrompt(cls));
                 format = PROMPT_FORMAT_TYPE;
             } else {
                 requestPrompt = prompt;
             }
-            Prompt promptVo = new Prompt(moduleName,requestPrompt,format,false);
+            Prompt promptVo = new Prompt(moduleName,requestPrompt,format, false, context);
             String body = JSON.toJSONString(promptVo);
+            log.info("generate request:{}",body);
             RequestBody formBody = RequestBody.create(FORM_CONTENT_TYPE, body);
             Request request = new Request.Builder()
                     .url(getApiUrl(this.host, GENERATE_URL))
@@ -116,12 +118,21 @@ public class OllamaAiServieImpl implements IAiService {
 
             Response response = client.newCall(request).execute();
             if(response.isSuccessful()) {
-               String json = response.body().string();
-               OllamaGenerateResponse responseBody =  JSON.parseObject(json, OllamaGenerateResponse.class);
-                if(cls == String.class){
+                String json = response.body().string();
+                log.info("generate response:{}",json);
+                OllamaGenerateResponse responseBody =  JSON.parseObject(json, OllamaGenerateResponse.class);
+                if(responseBody.getResponse()==null) {
+                    return null;
+                } else if(cls == String.class){
                     return (T)responseBody.getResponse();
                 } else if(cls instanceof Object) {
-                    return JSON.parseObject(responseBody.getResponse(),cls);
+                    T t = JSON.parseObject(responseBody.getResponse(),cls);
+                    if(AiResponseBody.class.isAssignableFrom(cls)) {
+                        Field field = AiResponseBody.class.getDeclaredField("context");
+                        field.setAccessible(true);
+                        field.set(t,responseBody.getContext());
+                    }
+                    return t;
                 } else {
                     return (T)responseBody.getResponse();
                 }

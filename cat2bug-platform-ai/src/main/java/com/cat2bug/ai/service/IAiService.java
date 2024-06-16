@@ -8,11 +8,12 @@ public interface IAiService {
      * @param moduleName    模型名称
      * @param prompt        问题
      * @param stream        是否通过流数据返回
+     * @param context       请求上下文
      * @param cls           返回数据类型
      * @return              回答内容
      * @param <T>           回答的内容类型
      */
-    public <T> T generate(String moduleName, String prompt, boolean stream, Class<T> cls);
+    public <T> T generate(String moduleName, String prompt, boolean stream, long[] context,  Class<T> cls);
 
     /**
      * 显示模型信息

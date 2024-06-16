@@ -81,7 +81,13 @@
             rows="8"
             show-word-limit
             show-tools
-          />
+          >
+            <template v-slot:tools>
+              <el-tooltip class="item" effect="dark" :content="$t('defect.ai-filling-in')" placement="top">
+                <el-button :handle="aiButtonLoading?'true':'false'" class="cat2-bug-textarea-button" type="text" @click="createDefectByAiHandle"><svg-icon icon-class="robot"></svg-icon><span v-show="aiButtonLoading">分析中...</span></el-button>
+              </el-tooltip>
+            </template>
+          </cat2-bug-textarea>
         </el-form-item>
         <el-form-item :label="$t('image')" prop="imgUrls">
           <image-upload v-model="form.imgUrls" :limit="9"></image-upload>
@@ -120,7 +126,15 @@ import ImageUpload from "@/components/ImageUpload";
 import SelectCase from "@/components/Case/SelectCase";
 import Cat2BugTextarea from "@/components/Cat2BugTextarea";
 import {upload} from "@/api/common/upload";
-import {makeDefect, makeDefectModule, makeDefectTitle} from "@/api/ai/AiDefect";
+import {
+  makeDefect,
+  makeDefectMember,
+  makeDefectModule,
+  makeDefectTitle,
+  makeDefectType,
+  makeDefectVersion
+} from "@/api/ai/AiDefect";
+import {strFormat} from "@/utils";
 
 export default {
   name: "AddDefect",
@@ -128,6 +142,7 @@ export default {
   components: { ImageUpload, SelectProjectMember, SelectModule,SelectCase,Cat2BugTextarea },
   data() {
     return {
+      aiButtonLoading: false,
       // 显示窗口
       visible: false,
       config: {},
@@ -153,11 +168,7 @@ export default {
           { required: true, message: this.$i18n.t('defect.describe-cannot-empty'), trigger: "input" }
         ],
       },
-      describeTools:[{
-        name: 'defect.ai-filling-in',
-        icon: 'robot',
-        method: this.createDefectByAiHandle
-      },]
+      describeTools:[]
     }
   },
   props: {
@@ -261,26 +272,75 @@ export default {
     },
     /** AI创建缺陷 */
     createDefectByAiHandle() {
+      if(this.aiButtonLoading) {
+        this.$message.error(this.$i18n.t('defect.ai-re-run').toString());
+      }
+      let startSeconds = new Date().getTime();
       if(!this.form.defectDescribe) {
         this.$message.error(this.$i18n.t('defect.describe-cannot-empty').toString());
         return;
       }
+      this.aiButtonLoading = true;
+      let makeTitle,makeModule,makeType,makeMember,makeVersion;
       if(!this.form.defectName) {
-        makeDefectTitle(this.form.defectDescribe).then(res => {
-          console.log(res);
+        makeTitle=makeDefectTitle(this.form.defectDescribe).then(res => {
           if(!this.form.defectName && res.code==200) {
             this.form.defectName = res.data.title;
+            this.$message.success(strFormat(this.$i18n.t('fill-finish'),this.$i18n.t("title").toString()));
           }
         });
       }
       if(!this.form.moduleId) {
-        makeDefectModule(this.form.defectDescribe).then(res => {
-          console.log(res);
+        makeModule=makeDefectModule(this.form.defectDescribe).then(res => {
           if(!this.form.moduleId && res.code==200) {
             this.form.moduleId = res.data.moduleId;
+            this.$message.success(strFormat(this.$i18n.t('fill-finish'),this.$i18n.t("module").toString()));
           }
         });
       }
+      if(!this.form.defectType) {
+        makeType = makeDefectType(this.form.defectDescribe).then(res => {
+          if(!this.form.defectType && res.code==200) {
+            this.form.defectType = res.data.type;
+            this.$message.success(strFormat(this.$i18n.t('fill-finish'),this.$i18n.t("type").toString()));
+          }
+        });
+      }
+      if(!this.form.handleBy) {
+        makeMember=makeDefectMember(this.form.defectDescribe).then(res => {
+          if(!this.form.handleBy && res.code==200) {
+            this.form.handleBy = [res.data.memberId];
+            this.$message.success(strFormat(this.$i18n.t('fill-finish'),this.$i18n.t("handle-by").toString()));
+          }
+        });
+      }
+      if(!this.form.moduleVersion) {
+        makeVersion = makeDefectVersion().then(res => {
+          if(!this.form.moduleVersion && res.code==200) {
+            this.form.moduleVersion = res.data.version;
+            this.$message.success(strFormat(this.$i18n.t('fill-finish'),this.$i18n.t("version").toString()));
+          }
+        });
+      }
+      if(!makeTitle && !makeModule && !makeType && !makeMember && !makeVersion) {
+        this.aiButtonLoading = false;
+        this.$message.error(this.$i18n.t('defect.no-fields-analyze').toString());
+        return;
+      }
+      Promise.all([makeTitle,makeModule,makeType,makeMember,makeVersion]).then(res=>{
+        const self = this;
+        setTimeout(()=>{
+          self.aiButtonLoading = false;
+          self.$message({
+            message:strFormat(self.$i18n.t('defect.analyze-finish'),Math.floor((new Date().getTime()-startSeconds)/1000)),
+            type: 'success',
+            duration: 5000,
+          });
+        },1000);
+      }).catch(e=>{
+        this.aiButtonLoading = false;
+        this.$message.error(e);
+      })
     }
   }
 }
@@ -301,5 +361,15 @@ export default {
     justify-content: space-between;
     align-items: center;
     flex-direction: row;
+  }
+  .cat2-bug-textarea-button {
+    span {
+      margin-left: 3px;
+      font-size: 12px;
+    }
+  }
+  .cat2-bug-textarea-button[handle="true"] {
+    background-color: rgb(236, 245, 255);
+    border-radius: 15px;
   }
 </style>

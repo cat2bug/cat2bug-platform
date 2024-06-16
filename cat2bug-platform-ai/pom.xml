@@ -6,8 +6,8 @@
         <artifactId>cat2bug</artifactId>
         <version>0.3.2</version>
     </parent>
-    <artifactId>cat2bug-ai</artifactId>
-    <name>cat2bug-platform-ai</name>
+    <artifactId>cat2bug-aiField</artifactId>
+    <name>cat2bug-platform-aiField</name>
 
     <description>
         AI接口

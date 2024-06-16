@@ -8,6 +8,7 @@
       @change="changeHandle"
     />
     <div v-show="showTools" class="tools">
+      <slot name="tools"></slot>
       <el-tooltip v-for="(button,index) in buttons" :key="index" class="item" effect="dark" :content="$t(button.name)" placement="top">
         <el-button type="text" @click="button.method"><svg-icon :icon-class="button.icon"></svg-icon></el-button>
       </el-tooltip>
@@ -32,7 +33,7 @@ export default {
   name: "index",
   components: {Cat2BugMarkdown},
   model: {
-    prop:'textContent',
+    prop:'content',
     event:'change'
   },
   data() {
@@ -46,7 +47,18 @@ export default {
       dialogVisible: false
     }
   },
+  watch: {
+    content: function (n,o) {
+      if(n!=o) {
+        this.textContent = n;
+      }
+    },
+  },
   props: {
+    content: {
+      type: String,
+      default: null
+    },
     name: {
       type: String,
       default: null

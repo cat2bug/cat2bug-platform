@@ -20,4 +20,16 @@ public class Prompt {
     private String format;
 
     private boolean stream;
+    /** 响应上下文 */
+    private long[] context;
+
+    public Prompt(String model, String prompt) {
+        this(model,prompt,null);
+    }
+
+    public Prompt(String model, String prompt, String format) {
+        this.model=model;
+        this.prompt = prompt;
+        this.format = format;
+    }
 }

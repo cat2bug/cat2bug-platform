@@ -204,7 +204,7 @@
 
             <dependency>
                 <groupId>com.cat2bug</groupId>
-                <artifactId>cat2bug-ai</artifactId>
+                <artifactId>cat2bug-aiField</artifactId>
                 <version>${cat2bug.version}</version>
             </dependency>
         </dependencies>
@@ -218,7 +218,7 @@
         <module>cat2bug-platform-generator</module>
         <module>cat2bug-platform-common</module>
         <module>cat2bug-platform-api</module>
-        <module>cat2bug-platform-ai</module>
+        <module>cat2bug-platform-aiField</module>
     </modules>
     <packaging>pom</packaging>
 

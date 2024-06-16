@@ -2,6 +2,7 @@ package com.cat2bug.system.mapper;
 
 import java.util.List;
 import com.cat2bug.common.core.domain.entity.SysDefect;
+import com.cat2bug.system.domain.SysVersion;
 import org.apache.ibatis.annotations.Param;
 
 /**
@@ -66,4 +67,11 @@ public interface SysDefectMapper
      * @return 结果
      */
     public int deleteSysDefectByDefectIds(Long[] defectIds);
+
+    /**
+     * 获取项目中的历史版本
+     * @param projectId 项目ID
+     * @return  版本集合
+     */
+    public List<SysVersion> selectVersionList(@Param("projectId")Long projectId);
 }
