@@ -162,37 +162,39 @@ export function MarkdownTools() {
         name: 'defect.table',
         content: '$table{api.defect.list[projectNum,defectTypeName,defectLevel,defectName,defectStateName,moduleName,moduleVersion,defectDescribe,createBy,createTime,updateBy,updateTime,imgList,annexList]}'
       }]
-  },{
-      icon: 'mk-member',
-      name: 'member',
-      children: [{
-        icon: 'mk-table',
-        name: 'project.member-manage',
-        content: '$table{api.member.all}'
-      },{
-        type: 'siding'
-      },{
-        icon: 'mk-table',
-        name: 'project.member-manage',
-        content: '$table{api.member.all}'
-      },{
-        icon: 'mk-table',
-        name: 'project.admin',
-        content: '$table{api.member.admin}'
-      },{
-        icon: 'mk-table',
-        name: 'project.develop',
-        content: '$table{api.member.develop}'
-      },{
-        icon: 'mk-table',
-        name: 'project.tester',
-        content: '$table{api.member.tester}'
-      },{
-        icon: 'mk-table',
-        name: 'project.outsider',
-        content: '$table{api.member.outsider}'
-      }]
-    },{
+  },
+    // {
+    //   icon: 'mk-member',
+    //   name: 'member',
+    //   children: [{
+    //     icon: 'mk-table',
+    //     name: 'project.member-manage',
+    //     content: '$table{api.member.all}'
+    //   },{
+    //     type: 'siding'
+    //   },{
+    //     icon: 'mk-table',
+    //     name: 'project.member-manage',
+    //     content: '$table{api.member.all}'
+    //   },{
+    //     icon: 'mk-table',
+    //     name: 'project.admin',
+    //     content: '$table{api.member.admin}'
+    //   },{
+    //     icon: 'mk-table',
+    //     name: 'project.develop',
+    //     content: '$table{api.member.develop}'
+    //   },{
+    //     icon: 'mk-table',
+    //     name: 'project.tester',
+    //     content: '$table{api.member.tester}'
+    //   },{
+    //     icon: 'mk-table',
+    //     name: 'project.outsider',
+    //     content: '$table{api.member.outsider}'
+    //   }]
+    // },
+    {
     type: 'siding'
   },
   //   {

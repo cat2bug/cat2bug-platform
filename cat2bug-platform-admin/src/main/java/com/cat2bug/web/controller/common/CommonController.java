@@ -12,6 +12,7 @@ import com.cat2bug.system.domain.SysTempFile;
 import com.cat2bug.system.domain.type.SysTempFileTypeEnum;
 import com.cat2bug.system.service.ISysTempFileService;
 import com.google.common.base.Preconditions;
+import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -88,13 +89,16 @@ public class CommonController
             // 上传文件路径
             String filePath = Cat2BugConfig.getUploadPath();
             // 上传并返回新文件名称
-            String fileName = FileUploadUtils.upload(filePath, file);
+            String fileName = FileUploadUtils.upload(filePath, file, null);
+            // 获取文件扩展名
+            String fileExtension = FilenameUtils.getExtension(fileName);
             String url = serverConfig.getUrl() + fileName;
             AjaxResult ajax = success();
             ajax.put("url", url);
             ajax.put("fileName", fileName);
             ajax.put("newFileName", FileUtils.getName(fileName));
             ajax.put("originalFilename", file.getOriginalFilename());
+            ajax.put("fileExtension", StringUtils.isNotBlank(fileExtension)?fileExtension.toLowerCase():"");
             return ajax;
         }
         catch (Exception e)

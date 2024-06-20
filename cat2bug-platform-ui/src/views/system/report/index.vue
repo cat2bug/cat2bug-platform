@@ -77,7 +77,13 @@
         </template>
       </el-table-column>
       <el-table-column :label="$t('report.source')" align="center" prop="reportSource"  width="200"/>
-      <el-table-column :label="$t('report.create-by')" align="center" prop="createBy"  width="150"/>
+      <el-table-column :label="$t('report.update-by')" align="center" prop="createBy"  width="150">
+        <template slot-scope="scope">
+          <el-tooltip v-if="scope.row.createBy" class="item" effect="dark" :content="scope.row.createBy" placement="top">
+            <cat2-bug-avatar :member="member(scope.row)" />
+          </el-tooltip>
+        </template>
+      </el-table-column>
       <el-table-column :label="$t('operate')" align="start" class-name="small-padding fixed-width" width="90">
         <template slot-scope="scope">
           <report-tools :report="scope.row" :is-text="true" :is-show-icon="true" @delete="getList" />
@@ -132,12 +138,13 @@ import ReportTools from "@/components/Report/ReportTools";
 import FocusMemberList from "@/components/FocusMemberList";
 import ReportTypeFlag from "@/components/Report/ReportTypeFlag";
 import Cat2BugReportTemplateSelect from "@/components/Cat2BugReportTemplateSelect";
+import Cat2BugAvatar from "@/components/Cat2BugAvatar";
 import i18n from "@/utils/i18n/i18n";
 import {delUser} from "@/api/system/user";
 
 export default {
   name: "Report",
-  components: { Step, ProjectLabel, ViewReport, ReportTools, FocusMemberList, ReportTypeFlag, Cat2BugReportTemplateSelect },
+  components: { Step, ProjectLabel, ViewReport, ReportTools, FocusMemberList, ReportTypeFlag, Cat2BugReportTemplateSelect, Cat2BugAvatar },
   data() {
     return {
       // 遮罩层
@@ -183,6 +190,13 @@ export default {
     /** 获取项目id */
     projectId() {
       return parseInt(this.$store.state.user.config.currentProjectId);
+    },
+    member: function () {
+      return function (report) {
+        return {
+          nickName: report.createBy
+        }
+      }
     },
   },
   created() {

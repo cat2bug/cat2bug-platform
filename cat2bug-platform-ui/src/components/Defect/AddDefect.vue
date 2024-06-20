@@ -73,6 +73,7 @@
 <!--          >-->
 <!--          </el-input>-->
           <cat2-bug-textarea
+            ref="cat2bugTextarea"
             :name="$t('describe').toString()"
             :placeholder="$t('defect.enter-markdown-describe').toString()"
             :tools = "describeTools"
@@ -195,6 +196,9 @@ export default {
         this.form.imgUrls = data.imgUrls||null
       }
       this.visible = true;
+      this.$nextTick(() => {
+        this.$refs.cat2bugTextarea.focus();
+      });
     },
     openByCase(c) {
       this.open();

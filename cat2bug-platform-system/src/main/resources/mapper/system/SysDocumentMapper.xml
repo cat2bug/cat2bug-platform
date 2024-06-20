@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.system.mapper.SysDocumentMapper">
+    
+    <resultMap type="SysDocument" id="SysDocumentResult">
+        <result property="docId"    column="doc_id"    />
+        <result property="projectId"    column="project_id"    />
+        <result property="docName"    column="doc_name"    />
+        <result property="docType"    column="doc_type"    />
+        <result property="fileExtension"    column="file_extension"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="createById"    column="create_by_id"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="updateById"    column="update_by_id"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="fileVersion"    column="file_version"    />
+        <result property="docPid"    column="doc_pid"    />
+        <result property="docRemakr"    column="doc_remakr"    />
+        <result property="fileUrl"    column="file_url"    />
+        <result property="leaf"    column="leaf"    />
+    </resultMap>
+
+    <sql id="selectSysDocumentVo">
+        select d.doc_id, d.project_id, d.doc_name, d.doc_type, d.file_extension, d.create_time, d.create_by_id, d.update_time, d.update_by_id, d.file_version, d.doc_pid, d.doc_remakr, d.file_url,
+               u.nick_name as update_by,
+               case when l.pid_count>0 then false else true end as leaf
+               from sys_document d
+        LEFT JOIN sys_user u ON u.user_id = d.update_by_id
+        LEFT JOIN (select doc_pid, count(doc_pid) as pid_count from sys_document where doc_type = 0 group by doc_pid) l ON d.doc_id = l.doc_pid
+    </sql>
+
+    <select id="selectSysDocumentList" parameterType="SysDocument" resultMap="SysDocumentResult">
+        <include refid="selectSysDocumentVo"/>
+        <where>  
+            <if test="projectId != null "> and d.project_id = #{projectId}</if>
+            <if test="docName != null  and docName != ''"> and d.doc_name like concat('%', #{docName}, '%')</if>
+            <if test="docType != null "> and d.doc_type = #{docType}</if>
+            <if test="fileExtension != null  and fileExtension != ''"> and d.file_extension = #{fileExtension}</if>
+            <if test="createById != null "> and d.create_by_id = #{createById}</if>
+            <if test="updateById != null "> and d.update_by_id = #{updateById}</if>
+             <choose>
+                 <when test="docPid != null">
+                     and d.doc_pid = #{docPid}
+                 </when>
+                 <otherwise>
+                     and d.doc_pid is null
+                 </otherwise>
+             </choose>
+        </where>
+        order by d.doc_type asc, d.create_time desc
+    </select>
+    
+    <select id="selectSysDocumentByDocId" parameterType="Long" resultMap="SysDocumentResult">
+        <include refid="selectSysDocumentVo"/>
+        where d.doc_id = #{docId}
+    </select>
+        
+    <insert id="insertSysDocument" parameterType="SysDocument" useGeneratedKeys="true" keyProperty="docId">
+        insert into sys_document
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="projectId != null">project_id,</if>
+            <if test="docName != null and docName != ''">doc_name,</if>
+            <if test="docType != null">doc_type,</if>
+            <if test="fileExtension != null">file_extension,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="createById != null">create_by_id,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="updateById != null">update_by_id,</if>
+            <if test="fileVersion != null">file_version,</if>
+            <if test="docPid != null">doc_pid,</if>
+            <if test="docRemakr != null">doc_remakr,</if>
+            <if test="fileUrl != null and fileUrl != ''">file_url,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="projectId != null">#{projectId},</if>
+            <if test="docName != null and docName != ''">#{docName},</if>
+            <if test="docType != null">#{docType},</if>
+            <if test="fileExtension != null">#{fileExtension},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="createById != null">#{createById},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="updateById != null">#{updateById},</if>
+            <if test="fileVersion != null">#{fileVersion},</if>
+            <if test="docPid != null">#{docPid},</if>
+            <if test="docRemakr != null">#{docRemakr},</if>
+            <if test="fileUrl != null and fileUrl != ''">#{fileUrl},</if>
+         </trim>
+    </insert>
+
+    <update id="updateSysDocument" parameterType="SysDocument">
+        update sys_document
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="projectId != null">project_id = #{projectId},</if>
+            <if test="docName != null and docName != ''">doc_name = #{docName},</if>
+            <if test="docType != null">doc_type = #{docType},</if>
+            <if test="fileExtension != null">file_extension = #{fileExtension},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="createById != null">create_by_id = #{createById},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="updateById != null">update_by_id = #{updateById},</if>
+            <if test="fileVersion != null">file_version = #{fileVersion},</if>
+            <if test="docPid != null">doc_pid = #{docPid},</if>
+            <if test="docRemakr != null">doc_remakr = #{docRemakr},</if>
+            <if test="fileUrl != null and fileUrl != ''">file_url = #{fileUrl},</if>
+        </trim>
+        where doc_id = #{docId}
+    </update>
+
+    <delete id="deleteSysDocumentByDocId" parameterType="Long">
+        delete from sys_document where doc_id = #{docId}
+    </delete>
+
+    <delete id="deleteSysDocumentByDocIds" parameterType="String">
+        delete from sys_document where doc_id in 
+        <foreach item="docId" collection="array" open="(" separator="," close=")">
+            #{docId}
+        </foreach>
+    </delete>
+</mapper>

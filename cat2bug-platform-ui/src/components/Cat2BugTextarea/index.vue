@@ -1,6 +1,7 @@
 <template>
   <div class="cat2bug-textarea">
     <textarea
+      ref="cat2bugTextarea"
       v-model="textContent"
       :placeholder="placeholder"
       :maxlength="maxlength"
@@ -116,6 +117,9 @@ export default {
     },
     handleMarkdownContent(content) {
       this.textContent = content;
+    },
+    focus() {
+      this.$refs.cat2bugTextarea.focus();
     }
   }
 }

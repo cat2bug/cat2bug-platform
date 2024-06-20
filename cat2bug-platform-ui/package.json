@@ -53,6 +53,7 @@
     "html-docx-js": "^0.3.1",
     "html2canvas": "^1.4.1",
     "jquery": "^3.7.1",
+    "js-base64": "^3.6.0",
     "js-beautify": "1.13.0",
     "js-cookie": "3.0.1",
     "js-web-screen-shot": "^1.9.9-rc.6",

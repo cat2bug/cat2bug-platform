@@ -27,6 +27,8 @@ cat2bug:
     modules:
       - llama3:8b
       - llava:7b
+  file:
+    view-url: http://localhost:8012
 # 开发环境配置
 server:
   # 服务器的HTTP端口，默认为2020
@@ -87,9 +89,9 @@ spring:
   servlet:
     multipart:
       # 单个文件大小
-      max-file-size: 10MB
+      max-file-size: 500MB
       # 设置总上传的文件大小
-      max-request-size: 1024MB
+      max-request-size: 100TB
   # 服务模块
   devtools:
     restart:

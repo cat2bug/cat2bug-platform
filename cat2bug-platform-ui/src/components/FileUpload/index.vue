@@ -2,6 +2,7 @@
   <div class="upload-file">
     <el-upload
       multiple
+      :drag="drag"
       :action="uploadFileUrl"
       :before-upload="handleBeforeUpload"
       :file-list="fileList"
@@ -14,8 +15,13 @@
       class="upload-file-uploader"
       ref="fileUpload"
     >
+      <!-- 拖动图标 -->
+      <div v-if="drag">
+        <i class="el-icon-upload"></i>
+        <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+      </div>
       <!-- 上传按钮 -->
-      <el-button size="mini" type="primary">{{$i18n.t('upload.select-file')}}</el-button>
+      <el-button v-else size="mini" type="primary">{{$i18n.t('upload.select-file')}}</el-button>
       <!-- 上传提示 -->
       <div class="el-upload__tip" slot="tip" v-if="showTip">
         {{$t('upload.please-upload')}}
@@ -47,6 +53,10 @@ import {strFormat} from "@/utils";
 export default {
   name: "FileUpload",
   props: {
+    drag: {
+      ype: Boolean,
+      default: false,
+    },
     // 值
     value: [String, Object, Array],
     // 数量限制
@@ -151,6 +161,7 @@ export default {
       if (res.code === 200) {
         this.uploadList.push({ name: res.fileName, url: res.fileName });
         this.uploadedSuccessfully();
+        this.$emit('upload',res);
       } else {
         this.number--;
         this.$modal.closeLoading();

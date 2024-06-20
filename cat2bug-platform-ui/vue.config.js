@@ -54,6 +54,14 @@ module.exports = {
         pathRewrite: {
           ['^' + process.env.VUE_APP_BASE_WEBSOCKET]: ''
         }
+      },
+      [process.env.VUE_APP_FILE_VIEW]: {
+        target: `ws://localhost:8012`,
+        changeOrigin: true,
+        ws: true,
+        pathRewrite: {
+          ['^' + process.env.VUE_APP_FILE_VIEW]: ''
+        }
       }
     },
     disableHostCheck: true
