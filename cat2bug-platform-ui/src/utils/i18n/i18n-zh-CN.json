@@ -110,6 +110,8 @@
   "click": "点击",
   "upload": "上传",
   "download": "下载",
+  "download.error": "下载错误",
+  "re-download": "重新下载",
   "click.upload": "点击上传",
   "download.template": "下载模版",
   "preconditions": "前置条件",
@@ -259,6 +261,9 @@
   "project.delete": "删除项目",
   "project.api-key": "API KEY",
   "project.api.create-key": "新建Key",
+  "project.ai-manager": "AI管理",
+  "project.ai-manager-describe": "项目中运用大模型功能的相关配置管理",
+  "project.ai-model-manager": "AI大模型",
   "http.invalid-session": "无效的会话，或者会话已过期，请重新登录。",
   "http.downloading-wait": "正在下载数据，请稍候",
   "http.download-fail": "下载文件出现错误，请联系管理员！",
@@ -552,5 +557,8 @@
   "doc.is-delete-file": "是否确认删除名称为[{0}]的文档？",
   "doc.root-folder": "根文件夹",
   "doc.move-to": "移动文档至...",
-  "doc.move-success": "文档移动成功，已移动到[{0}]"
+  "doc.move-success": "文档移动成功，已移动到[{0}]",
+  "ai.download-model": "下载模型",
+  "ai.please-enter-download-name": "请输入要下载的模型名称",
+  "ai.name-cannot-empty": "模型名称不能为空!"
 }

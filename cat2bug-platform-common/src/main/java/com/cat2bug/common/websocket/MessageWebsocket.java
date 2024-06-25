@@ -1,14 +1,11 @@
-package com.cat2bug.system.websocket;
+package com.cat2bug.common.websocket;
 
 import com.alibaba.fastjson.JSON;
 import com.cat2bug.common.config.WebSocketSpringConfigurator;
 import com.cat2bug.common.core.domain.WebSocketResult;
-import com.cat2bug.system.service.IMemberFocusService;
-import com.cat2bug.system.service.ISysUserOnlineService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
@@ -18,10 +15,11 @@ import javax.websocket.OnOpen;
 import javax.websocket.Session;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @Author: yuzhantao
@@ -34,47 +32,49 @@ public class MessageWebsocket {
 
     private static Set<Session> sessions = Collections.synchronizedSet(new HashSet<>());
 
-
     private final static Logger log = LogManager.getLogger(MessageWebsocket.class);
 
     private Long memberId;
 
-    @Lazy
     @Autowired
-    private IMemberFocusService memberFocusService;
-
-    @Lazy
-    @Autowired
-    private ISysUserOnlineService sysUserOnlineService;
+    private List<IWebSocketService> services;
 
     @OnOpen
     public void onOpen(Session session,@PathParam(value="memberId")Long memberId) {
         this.sessions.add(session);
         this.memberId = memberId;
-
-        sysUserOnlineService.memberOnline(memberId);
-        log.info("【websocket消息】有新的连接, 总数:{}", sessions.size());
+        this.services.forEach(s->{
+            s.onOpen(MessageWebsocket.this, session,memberId);
+        });
     }
 
     @OnClose
     public void onClose(Session session) {
         this.sessions.remove(session);
-        // 移除成员焦点
-        memberFocusService.removeFocus(this.memberId);
-        // 设置成员离线
-        sysUserOnlineService.memberOffline(memberId);
         log.info("【websocket消息】连接断开, 总数:{}", sessions.size());
+
+        this.services.forEach(s->{
+            s.onClose(session);
+        });
     }
 
     @OnMessage
     public void onMessage(String message) {
         log.info("【websocket消息】收到客户端发来的消息:{}", message);
+
+        this.services.forEach(s->{
+            s.onMessage(message);
+        });
     }
 
-    @Async
-    public void sendMessage(WebSocketResult result) {
+//    @Async
+    public synchronized void sendMessage(WebSocketResult result) {
         for (Session s : sessions) {
-            s.getAsyncRemote().sendText(JSON.toJSONString(result));
+            try {
+                s.getBasicRemote().sendText(JSON.toJSONString(result));
+            }catch (Exception e) {
+                log.error(e);
+            }
         }
     }
 }

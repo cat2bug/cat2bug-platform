@@ -4,6 +4,10 @@ import java.util.List;
 
 public interface IAiService {
     /**
+     * 下载模型的主题
+     */
+    public final static String PULL_MODEL_TOPIC = "aiModelPull";
+    /**
      * 问答
      * @param moduleName    模型名称
      * @param prompt        问题

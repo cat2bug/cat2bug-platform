@@ -4,6 +4,10 @@ import com.alibaba.fastjson.JSON;
 import com.cat2bug.ai.service.IAiService;
 import com.cat2bug.ai.utils.PromptUtils;
 import com.cat2bug.ai.vo.*;
+import com.cat2bug.common.core.domain.WebSocketResult;
+import com.cat2bug.common.utils.MessageUtils;
+import com.cat2bug.common.utils.StringUtils;
+import com.cat2bug.common.websocket.MessageWebsocket;
 import lombok.Data;
 import okhttp3.*;
 import okio.Buffer;
@@ -11,12 +15,17 @@ import okio.BufferedSource;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -75,23 +84,27 @@ public class OllamaAiServieImpl implements IAiService {
     private long timeout;
 
     /**
-     * 配置项：使用的模型名
+     * 配置项：默认使用的业务模型名
      */
-    private List<String> modules;
+    private String defaultBusinessModel;
+    /**
+     * 配置项：默认使用的图片处理模型名
+     */
+    private String defaultImageModel;
+
+    @Autowired
+    private MessageWebsocket messageWebsocket;
 
     @PostConstruct
     public void init() {
         // 对没有的模型进行下载
-        if(this.modules!=null) {
-            Set<String> storeModules = this.getModuleList(OllamaModuleListItem.class).stream().map(item->item.getName()).collect(Collectors.toSet());
-            modules.forEach(m->{
-                if(storeModules.contains(m)==false) {
-                    log.info("开始下载模型：{}",m);
-                    pullModule(m,true);
-                }
-            });
-
-        }
+        Set<String> storeModules = this.getModuleList(OllamaModuleListItem.class).stream().map(item->item.getName()).collect(Collectors.toSet());
+        Arrays.asList(defaultBusinessModel,defaultImageModel).forEach(m->{
+            if(StringUtils.isNotBlank(m) && storeModules.contains(m)==false) {
+                log.info("开始下载模型：{}",m);
+                pullModule(m,true);
+            }
+        });
     }
 
     @Override
@@ -202,7 +215,10 @@ public class OllamaAiServieImpl implements IAiService {
             if(response.isSuccessful()){
                 String json = response.body().string();
                 OllamaModuleList moduleListObj = JSON.parseObject(json,OllamaModuleList.class);
-                return moduleListObj.getModels().stream().map(m->(T)m).collect(Collectors.toList());
+                return moduleListObj.getModels().stream().map(m->{
+                    m.setState(AiModuleStateEnum.COMPLETED);
+                    return (T)m;
+                }).collect(Collectors.toList());
             } else {
                 throw new RuntimeException(response.message());
             }
@@ -240,13 +256,33 @@ public class OllamaAiServieImpl implements IAiService {
                     public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                         if(response.isSuccessful()) {
                             BufferedSource source = response.body().source();
-                            source.request(Long.MAX_VALUE); // Prepare to read the entire source into the buffer
-                            Buffer buffer = source.buffer();
-
-                            while (!buffer.exhausted()) {
-                                String line = buffer.readUtf8Line();
-                                log.info(String.format("下载模型【%s】,返回信息:%s", moduleName, line));
+                            int len;
+                            InputStream buffer = source.inputStream();
+                            Reader reader = new InputStreamReader(buffer, "UTF-8");
+                            char[] bs = new char[1024];
+                            while ((len = reader.read(bs)) != -1) {
+                                String line = new String(bs, 0, len);
+//                                log.info(String.format("下载模型【%s】,size:%d,返回信息:%s", moduleName, line.length(), line));
+                                OllamaPullModuleResponse aiPullModuleResponse = JSON.parseObject(line,OllamaPullModuleResponse.class);
+                                if(StringUtils.isNotBlank(aiPullModuleResponse.getError())) {
+                                    aiPullModuleResponse.setState(AiPullModuleStateEnum.ERROR);
+                                    if("pull model manifest: file does not exist".equals(aiPullModuleResponse.getError())){
+                                        aiPullModuleResponse.setError(MessageUtils.message("ai.model-file-not-exist", moduleName));
+                                    }
+                                } else if(StringUtils.isBlank(aiPullModuleResponse.getStatus())){
+                                    continue;
+                                } else if(aiPullModuleResponse.getStatus().indexOf("pulling")==0){
+                                    aiPullModuleResponse.setState(AiPullModuleStateEnum.PULLING);
+                                    aiPullModuleResponse.setLayer(aiPullModuleResponse.getStatus().substring(8));
+                                } else if (aiPullModuleResponse.getStatus().indexOf("success")==0){
+                                    aiPullModuleResponse.setState(AiPullModuleStateEnum.SUCCESS);
+                                } else {
+                                    continue;
+                                }
+                                aiPullModuleResponse.setName(moduleName);
+                                messageWebsocket.sendMessage(WebSocketResult.success(PULL_MODEL_TOPIC, (AiPullModuleResponse)aiPullModuleResponse));
                             }
+                            response.close();
                         }
                     }
                 });

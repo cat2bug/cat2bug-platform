@@ -13,5 +13,5 @@ public interface ICloudCaseService {
      * @param content
      * @return
      */
-    public List<SysCase> searchCaseListOfAI(String content);
+    List<SysCase> searchCaseListOfAI(String content);
 }

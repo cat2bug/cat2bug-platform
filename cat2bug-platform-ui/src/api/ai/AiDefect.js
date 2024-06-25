@@ -11,50 +11,51 @@ export function makeDefect(data) {
 }
 
 /** 制造缺陷标题 */
-export function makeDefectTitle(describe) {
+export function makeDefectTitle(data) {
   return request({
     url: '/ai/defect/title',
     method: 'post',
-    data: describe,
+    data: data,
     timeout: 60000
   })
 }
 
 /** 制造缺陷关联交付物 */
-export function makeDefectModule(describe) {
+export function makeDefectModule(data) {
   return request({
     url: '/ai/defect/module',
     method: 'post',
-    data: describe,
+    data: data,
     timeout: 60000
   })
 }
 
 /** 制造缺陷关联类型 */
-export function makeDefectType(describe) {
+export function makeDefectType(data) {
   return request({
     url: '/ai/defect/type',
     method: 'post',
-    data: describe,
+    data: data,
     timeout: 60000
   })
 }
 
 /** 制造缺陷关联成员 */
-export function makeDefectMember(describe) {
+export function makeDefectMember(data) {
   return request({
     url: '/ai/defect/member',
     method: 'post',
-    data: describe,
+    data: data,
     timeout: 60000
   })
 }
 
 /** 制造缺陷关联版本 */
-export function makeDefectVersion() {
+export function makeDefectVersion(data) {
   return request({
     url: '/ai/defect/version',
     method: 'post',
-    timeout: 60000
+    timeout: 60000,
+    data: data
   })
 }

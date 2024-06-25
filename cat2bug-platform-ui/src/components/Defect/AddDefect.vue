@@ -278,6 +278,7 @@ export default {
     createDefectByAiHandle() {
       if(this.aiButtonLoading) {
         this.$message.error(this.$i18n.t('defect.ai-re-run').toString());
+        return;
       }
       let startSeconds = new Date().getTime();
       if(!this.form.defectDescribe) {
@@ -286,8 +287,12 @@ export default {
       }
       this.aiButtonLoading = true;
       let makeTitle,makeModule,makeType,makeMember,makeVersion;
+      const params = {
+        projectId: this.projectId,
+        describe: this.form.defectDescribe
+      }
       if(!this.form.defectName) {
-        makeTitle=makeDefectTitle(this.form.defectDescribe).then(res => {
+        makeTitle=makeDefectTitle(params).then(res => {
           if(!this.form.defectName && res.code==200) {
             this.form.defectName = res.data.title;
             this.$message.success(strFormat(this.$i18n.t('fill-finish'),this.$i18n.t("title").toString()));
@@ -295,7 +300,7 @@ export default {
         });
       }
       if(!this.form.moduleId) {
-        makeModule=makeDefectModule(this.form.defectDescribe).then(res => {
+        makeModule=makeDefectModule(params).then(res => {
           if(!this.form.moduleId && res.code==200) {
             this.form.moduleId = res.data.moduleId;
             this.$message.success(strFormat(this.$i18n.t('fill-finish'),this.$i18n.t("module").toString()));
@@ -303,7 +308,7 @@ export default {
         });
       }
       if(!this.form.defectType) {
-        makeType = makeDefectType(this.form.defectDescribe).then(res => {
+        makeType = makeDefectType(params).then(res => {
           if(!this.form.defectType && res.code==200) {
             this.form.defectType = res.data.type;
             this.$message.success(strFormat(this.$i18n.t('fill-finish'),this.$i18n.t("type").toString()));
@@ -311,7 +316,7 @@ export default {
         });
       }
       if(!this.form.handleBy) {
-        makeMember=makeDefectMember(this.form.defectDescribe).then(res => {
+        makeMember=makeDefectMember(params).then(res => {
           if(!this.form.handleBy && res.code==200) {
             this.form.handleBy = [res.data.memberId];
             this.$message.success(strFormat(this.$i18n.t('fill-finish'),this.$i18n.t("handle-by").toString()));
@@ -319,7 +324,7 @@ export default {
         });
       }
       if(!this.form.moduleVersion) {
-        makeVersion = makeDefectVersion().then(res => {
+        makeVersion = makeDefectVersion(params).then(res => {
           if(!this.form.moduleVersion && res.code==200) {
             this.form.moduleVersion = res.data.version;
             this.$message.success(strFormat(this.$i18n.t('fill-finish'),this.$i18n.t("version").toString()));

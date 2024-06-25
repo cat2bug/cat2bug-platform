@@ -79,14 +79,16 @@ export default {
         activeIcon: 'mk-not-look',
         check: false,
         content: this.markdownView
-      },{
-        id: 'help',
-        name: 'markdown-explanation',
-        icon: 'mk-help',
-        content: function (view, tool) {
-          return '';
-        }
-      }],
+      },
+      //   {
+      //   id: 'help',
+      //   name: 'markdown-explanation',
+      //   icon: 'mk-help',
+      //   content: function (view, tool) {
+      //     return '';
+      //   }
+      // }
+      ],
       options: {
         markdownIt: {
           html: true,

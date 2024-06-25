@@ -1,7 +1,8 @@
 package com.cat2bug.system.service.impl;
 
 import com.cat2bug.common.core.domain.WebSocketResult;
-import com.cat2bug.system.websocket.MessageWebsocket;
+import com.cat2bug.common.websocket.MessageWebsocket;
+import com.cat2bug.system.websocket.MemberFocusWebsocket;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.cat2bug.common.core.domain.model.LoginUser;

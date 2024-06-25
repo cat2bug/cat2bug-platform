@@ -32,7 +32,7 @@ public class Cat2BugApplication
             for (int j=1;j<=15;j++) {
                 int number = i * 15 + j;
                 String str = String.format("%10s", " ");
-                System.out.print(String.format("\u001b[48;5;%dm %s",number,str));
+                System.out.printf("\u001b[48;5;%dm %s",number,str);
                 System.out.print("\u001b[0m");
             }
         }

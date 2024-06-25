@@ -392,7 +392,15 @@ export function strReplaceAll (str,exp,newStr) {
   return str.replace(new RegExp(exp,"gm"), newStr);
 }
 
-export function strFormat (str, args){
+export function fileSizeUnit (val) {
+  if(val === 0) return "0 B"
+  const k = 1024;
+  const sizes = ['B','KB','MB','GB','PB','TB','EB','ZB','YB'];
+  const i = Math.floor(Math.log(val) / Math.log(k));
+  return (val / Math.pow(k,i)).toPrecision(3) + "" + sizes[i];
+}
+
+export function strFormat (str, ...args){
   let result = str;
   if(arguments.length < 2){
     return result;

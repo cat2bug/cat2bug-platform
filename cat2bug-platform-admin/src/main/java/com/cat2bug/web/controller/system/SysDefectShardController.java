@@ -106,7 +106,7 @@ public class SysDefectShardController extends BaseController
             return AjaxResult.error("分享密码不能为空!");
         }
 
-        if(StringUtils.isNotBlank(shard.getPassword()) && shard.getPassword().equals(sysDefectShard.getPassword())==false) {
+        if(StringUtils.isNotBlank(shard.getPassword()) && !shard.getPassword().equals(sysDefectShard.getPassword())) {
             return AjaxResult.error("分享密码错误!");
         }
 

@@ -19,6 +19,7 @@
 import RightPanel from '@/components/RightPanel'
 import { AppMain, Navbar, Settings, Sidebar, TagsView } from './components'
 import ResizeMixin from './mixin/ResizeHandler'
+import ViewBackMixin from "@/layout/mixin/ViewBackHandle";
 import { mapState } from 'vuex'
 import variables from '@/assets/styles/variables.scss'
 
@@ -32,7 +33,7 @@ export default {
     Sidebar,
     TagsView
   },
-  mixins: [ResizeMixin],
+  mixins: [ResizeMixin,ViewBackMixin],
   computed: {
     ...mapState({
       theme: state => state.settings.theme,
@@ -57,7 +58,7 @@ export default {
   methods: {
     handleClickOutside() {
       this.$store.dispatch('app/closeSideBar', { withoutAnimation: false })
-    }
+    },
   }
 }
 </script>

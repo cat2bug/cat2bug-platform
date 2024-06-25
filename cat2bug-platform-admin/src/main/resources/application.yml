@@ -3,7 +3,7 @@ cat2bug:
   # 名称
   name: Cat2Bug
   # 版本
-  version: 0.3.2
+  version: 0.4.0
   # 版权年份
   copyrightYear: 2024
   # 文件路径
@@ -22,11 +22,17 @@ cat2bug:
       project-key: 202403081039179f174l0igbcrgs66
       handler: demo
   ai:
+    # AI服务地址
     host: http://localhost:11434
+    # AI服务接口超时时间（秒）
     timeout: 300
-    modules:
-      - llama3:8b
-      - llava:7b
+    # 默认使用的模型，系统启动时会自动下载
+    default-business-model: llama3:8b
+    default-image-model: llava:7b
+    # 推荐支持的模型，会在前端下载列表中显示
+    models:
+      - ${cat2bug.ai.default-business-model}
+      - ${cat2bug.ai.default-image-model}
   file:
     view-url: http://localhost:8012
 # 开发环境配置

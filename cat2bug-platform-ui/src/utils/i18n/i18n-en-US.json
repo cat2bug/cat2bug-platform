@@ -110,6 +110,8 @@
   "click": "Click",
   "upload": "Upload",
   "download": "Download",
+  "download.error": "Download Error",
+  "re-download": "Re-Download",
   "click.upload": "Click Upload",
   "download.template": "Download Template",
   "preconditions": "Preconditions",
@@ -259,6 +261,9 @@
   "project.delete": "Delete Project",
   "project.api-key": "API KEY",
   "project.api.create-key": "Create Key",
+  "project.ai-manager": "AI Management",
+  "project.ai-manager-describe": "Configuration management related to the use of large model functionality in the project",
+  "project.ai-model-manager": "AI Big Model",
   "http.invalid-session": "Invalid session, or the session has expired. Please log in again.",
   "http.downloading-wait": "Downloading data, please wait",
   "http.download-fail": "There was an error downloading the file. Please contact the administrator!",
@@ -552,5 +557,8 @@
   "doc.is-delete-file": "Are you sure to delete the document with the name [{0}]?",
   "doc.root-folder": "Root Folder",
   "doc.move-to": "Move document to ...",
-  "doc.move-success": "The document was successfully moved to [{0}]"
+  "doc.move-success": "The document was successfully moved to [{0}]",
+  "ai.download-model": "Download Model",
+  "ai.please-enter-download-name": "Please enter model name",
+  "ai.name-cannot-empty": "Model name cannot be empty!"
 }

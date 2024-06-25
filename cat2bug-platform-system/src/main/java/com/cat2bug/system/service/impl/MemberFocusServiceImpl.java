@@ -1,17 +1,15 @@
 package com.cat2bug.system.service.impl;
 
-import com.cat2bug.common.core.domain.AjaxResult;
 import com.cat2bug.common.core.domain.WebSocketResult;
 import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.common.core.redis.RedisCache;
-import com.cat2bug.common.utils.SecurityUtils;
+import com.cat2bug.common.websocket.MessageWebsocket;
 import com.cat2bug.system.domain.MemberFocus;
 import com.cat2bug.system.service.IMemberFocusService;
-import com.cat2bug.system.websocket.MessageWebsocket;
+import com.cat2bug.system.websocket.MemberFocusWebsocket;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;

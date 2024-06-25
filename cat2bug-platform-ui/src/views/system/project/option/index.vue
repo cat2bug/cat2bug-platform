@@ -1,27 +1,45 @@
 <template>
   <div class="app-container">
     <el-row :gutter="20">
-      <el-col :span="6">
-        <project-base-info-card v-model="project" />
+      <el-col :span="6" v-for="(m, index) in itemList" :key="index">
+        <component :is="m.name" v-model="project"></component>
       </el-col>
-      <el-col :span="6">
-        <project-member-card v-model="project" />
-      </el-col>
+<!--      <el-col :span="6">-->
+<!--        <project-base-info-card v-model="project" />-->
+<!--      </el-col>-->
+<!--      <el-col :span="6">-->
+<!--        <project-member-card v-model="project" />-->
+<!--      </el-col>-->
     </el-row>
   </div>
 </template>
 
 <script>
-import ProjectBaseInfoCard from './item/base'
-import ProjectMemberCard from './item/member'
+import ProjectBaseInfoCard from './item/A1ProjectBaseInfoCard'
+import ProjectMemberCard from './item/ProjectMemberCard'
 import {getProject} from "@/api/system/project";
+import Cat2ButTitle from "@/components/Cat2BugStatistic/Components/Title";
+import draggable from "vuedraggable";
 
+const path = require('path');
+const files = require.context('./item/', true, /\.vue$/);
+const modules = {};
+const moduleList = [];
+// 动态加载组件
+files.keys().forEach(key=>{
+  const name = path.basename(key,'.vue');
+  moduleList.push({
+    name: name,
+  });
+  modules[name] = files(key).default||files(key)
+});
 export default {
   name: "ProjectOption",
-  components: { ProjectBaseInfoCard, ProjectMemberCard },
+  components: modules,
   data() {
     return {
-      project: {}
+      project: {},
+      itemList: moduleList
     };
   },
   mounted() {

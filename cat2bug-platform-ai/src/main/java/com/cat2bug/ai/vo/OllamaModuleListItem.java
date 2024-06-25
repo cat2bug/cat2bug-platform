@@ -13,10 +13,8 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class OllamaModuleListItem {
-    private String name;
+public class OllamaModuleListItem extends AiModule {
     private String modified_at;
-    private long size;
     private String digest;
     private OllamaModulInfoDetails details;
 }

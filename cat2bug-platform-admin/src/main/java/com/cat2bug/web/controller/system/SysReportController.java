@@ -32,7 +32,7 @@ import java.util.List;
 @RequestMapping("/system/report")
 public class SysReportController extends BaseController
 {
-    private Logger log = LogManager.getLogger(SysReportController.class);
+    private final Logger log = LogManager.getLogger(SysReportController.class);
     private final static String MODULE_NAME = "report";
     @Autowired
     private ISysReportService sysReportService;

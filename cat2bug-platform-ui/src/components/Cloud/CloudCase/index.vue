@@ -4,6 +4,7 @@
     :direction="direction"
     size="90%"
     :before-close="handleClose">
+<!--    标题-->
     <template slot="title">
       <div class="case-search-header">
         <div class="case-search-title">
@@ -21,10 +22,10 @@
           <span class="case-history-prompt" v-html="prompt.prompt"></span>
         </el-row>
       </div>
-      <div class="case-search">
+      <div ref="caseSearch" class="case-search">
         <el-input type="textarea"
                   :readonly="loading"
-                  maxlength="255"
+                  maxlength="1024"
                   rows="5"
                   show-word-limit v-model="prompt.prompt"
                   :placeholder="$t('case.ai-search-describe')">
@@ -165,7 +166,6 @@ import {addCase, batchAddCase, updateCase} from "@/api/system/case";
 import {strFormat} from "@/utils";
 import {makeCaseList} from "@/api/ai/AiCase";
 import i18n from "@/utils/i18n/i18n";
-import {delDefect} from "@/api/system/defect";
 export default {
   name: "index",
   components: {Label, Cat2BugLevel,Step,Multipane,MultipaneResizer,CaseForm,CaseCard,SelectModule},
@@ -221,7 +221,8 @@ export default {
     parseTime,
     bodyScrollHandle(event) {
       const scrollTop = event.target.scrollTop;
-      if(scrollTop>150) {
+      const height = this.$refs.caseSearch.offsetHeight + this.$refs.caseHistory.offsetHeight + 30;
+      if(scrollTop>height) {
         this.caseFormStyle = 'position: fixed;top: 70px;';
       } else {
         this.caseFormStyle = '';
@@ -235,6 +236,8 @@ export default {
       });
     },
     close() {
+      const container = document.querySelector('.el-drawer__body');
+      container.removeEventListener('scroll',this.bodyScrollHandle);
       this.visible = false;
       this.resetPrompt();
     },
@@ -284,6 +287,7 @@ export default {
         makeCaseList(this.prompt).then(res=>{
           this.loading = false;
           if(res.data && res.data.cases.length>0) {
+            // 添加之前创建的用例列表，目前注释掉
             // this.caseList = [...res.data.cases.map(c => {
             //   c.projectId = this.projectId;
             //   c.searchTime = new Date();
@@ -306,7 +310,7 @@ export default {
             this.prompt.context = res.data.context;
             this.prompt.prompt = null;
             this.refreshCaseList();
-            this.$message.success(strFormat(this.$i18n.t('case.ai-search-success-result'),Math.floor((new Date().getTime()-startSeconds)/1000),res.data.length))
+            this.$message.success(strFormat(this.$i18n.t('case.ai-search-success-result'),Math.floor((new Date().getTime()-startSeconds)/1000),res.data.cases.length))
           } else {
             this.$message.warning(this.$i18n.t('case.ai-search-fail-result').toString())
           }

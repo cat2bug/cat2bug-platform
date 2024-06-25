@@ -100,6 +100,17 @@
             <span>{{$t('update-log')}}</span>
           </div>
           <el-collapse accordion>
+            <el-collapse-item title="v0.4.0 - 2024-06-26">
+              <ol>
+                <li>修复系统功能BUG</li>
+                <li>添加AI私有化服务</li>
+                <li>在新建缺陷时，更新描述组件，使之可以通过AI分析添加填充其它属性功能</li>
+                <li>更新AI创建测试用例功能，使之可以用过AI的上下文语义理解功能，通过多次描述用例需求来调整测试用例</li>
+                <li>在报告中添加模版功能</li>
+                <li>新增文档功能</li>
+                <li>在项目设置中新增AI配置项</li>
+              </ol>
+            </el-collapse-item>
             <el-collapse-item title="v0.3.2 - 2024-04-19">
               <ol>
                 <li>修复系统功能BUG</li>
