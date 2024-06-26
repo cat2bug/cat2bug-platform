@@ -89,7 +89,7 @@
               icon="el-icon-delete"
               class="red"
               @click="handleDelete(scope.row)"
-              v-hasPermi="['system:document:remove']"
+              v-if="hasDeletePermi(scope.row)"
             >{{ $t('delete') }}</el-button>
           </div>
         </template>
@@ -155,6 +155,7 @@ import Cat2BugAvatar from "@/components/Cat2BugAvatar";
 import { listDocument, getDocument, delDocument, addDocument, updateDocument } from "@/api/system/document";
 import {strFormat} from "@/utils";
 import {toBase64} from "js-base64";
+import {checkPermi} from "@/utils/permission";
 
 export default {
   name: "Document",
@@ -239,6 +240,11 @@ export default {
         }
       }
     },
+    hasDeletePermi: function() {
+      return function (doc) {
+        return doc.createById==this.$store.state.user.id || checkPermi(['system:document:remove']);
+      }
+    }
   },
   created() {
     this.getList();

@@ -5,7 +5,9 @@ import com.cat2bug.common.core.controller.BaseController;
 import com.cat2bug.common.core.domain.AjaxResult;
 import com.cat2bug.common.core.page.TableDataInfo;
 import com.cat2bug.common.enums.BusinessType;
+import com.cat2bug.common.utils.MessageUtils;
 import com.cat2bug.common.utils.poi.ExcelUtil;
+import com.cat2bug.framework.web.service.PermissionService;
 import com.cat2bug.system.domain.SysDocument;
 import com.cat2bug.system.service.ISysDocumentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +29,8 @@ public class SysDocumentController extends BaseController
 {
     @Autowired
     private ISysDocumentService sysDocumentService;
-
+    @Autowired
+    private PermissionService permissionService;
     /**
      * 查询文档列表
      */
@@ -88,11 +91,19 @@ public class SysDocumentController extends BaseController
     /**
      * 删除文档
      */
-    @PreAuthorize("@ss.hasPermi('system:document:remove')")
     @Log(title = "文档", businessType = BusinessType.DELETE)
 	@DeleteMapping("/{docIds}")
     public AjaxResult remove(@PathVariable Long[] docIds)
     {
+        // 如果不是创建者，又没有权限，就抛异常
+        if(permissionService.hasPermi("system:document:remove")==false) {
+            for(Long id : docIds) {
+                SysDocument doc = sysDocumentService.selectSysDocumentByDocId(id);
+                if(getUserId().equals(doc.getCreateById())==false) {
+                    throw new RuntimeException(MessageUtils.message("no-permission"));
+                }
+            }
+        }
         return toAjax(sysDocumentService.deleteSysDocumentByDocIds(docIds));
     }
 }
