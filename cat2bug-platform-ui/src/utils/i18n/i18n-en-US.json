@@ -335,6 +335,7 @@
   "defect.no-fields-analyze": "Title, type, processor, and deliverables have all been filled in, and there are no fields to analyze!",
   "defect.analyze-finish": "Analysis completed, taking a total of {0} seconds.",
   "defect.ai-re-run": "AI analysis is currently being executed and cannot be repeated!",
+  "defect.life-time": "Survival Time ",
   "font-size.medium": "Medium",
   "font-size.small0": "Small",
   "font-size.mini": "Mini",
@@ -560,5 +561,8 @@
   "doc.move-success": "The document was successfully moved to [{0}]",
   "ai.download-model": "Download Model",
   "ai.please-enter-download-name": "Please enter model name",
-  "ai.name-cannot-empty": "Model name cannot be empty!"
+  "ai.name-cannot-empty": "Model name cannot be empty!",
+  "day": "Day",
+  "hour": "Hour",
+  "minute": "Minute"
 }

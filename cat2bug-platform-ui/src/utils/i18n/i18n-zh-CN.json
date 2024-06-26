@@ -335,6 +335,7 @@
   "defect.no-fields-analyze": "标题、类型、处理人、交付物都已填写，没有需要分析的字段!",
   "defect.analyze-finish": "分析完成，共耗时{0}秒。",
   "defect.ai-re-run": "AI分析正在执行，无法重复执行操作！",
+  "defect.life-time": "存活时间",
   "font-size.medium": "大字体",
   "font-size.small0": "中字体",
   "font-size.mini": "小字体",
@@ -560,5 +561,8 @@
   "doc.move-success": "文档移动成功，已移动到[{0}]",
   "ai.download-model": "下载模型",
   "ai.please-enter-download-name": "请输入要下载的模型名称",
-  "ai.name-cannot-empty": "模型名称不能为空!"
+  "ai.name-cannot-empty": "模型名称不能为空!",
+  "day": "天",
+  "hour": "小时",
+  "minute": "分钟"
 }

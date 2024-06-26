@@ -134,6 +134,15 @@ public class SysDefect extends BaseEntity
      */
     private String defectKey;
 
+    /** 驳回次数 */
+    private int rejectCount;
+    /** 处理的通过时间 */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date handlePassTime;
+    /** 处理的开始时间 */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date handleStartTime;
+
     @Override
     public String toString() {
         return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)

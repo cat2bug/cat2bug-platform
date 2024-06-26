@@ -50,6 +50,14 @@
               <label>{{$t('state')}}:</label>
               <span>{{ $t(defect.defectStateName)}}</span>
             </el-col>
+            <el-col :span="12">
+              <label>{{$t('defect.life-time')}}:</label>
+              <span>{{ defectLife(defect)}}</span>
+            </el-col>
+            <el-col :span="12">
+              <label>{{$t('reject')}}:</label>
+              <span>{{ defect.rejectCount }}</span>
+            </el-col>
           </el-row>
         </el-collapse-item>
         <el-collapse-item v-if="defect.imgUrls" :title="$i18n.t('image')" name="imgUrls">
@@ -92,6 +100,7 @@ import FocusMemberList from "@/components/FocusMemberList";
 import {getCase} from "@/api/system/case";
 import MarkdownItVue from "markdown-it-vue"
 import 'markdown-it-vue/dist/markdown-it-vue.css'
+import {lifeTime} from "@/utils/defect";
 
 export default {
   name: "EditDefect",
@@ -164,7 +173,12 @@ export default {
         let arr = url.split('\/');
         return arr[arr.length-1];
       }
-    }
+    },
+    defectLife: function () {
+      return function (defect) {
+        return lifeTime(defect);
+      }
+    },
   },
   methods:{
     // 获取缺陷信息

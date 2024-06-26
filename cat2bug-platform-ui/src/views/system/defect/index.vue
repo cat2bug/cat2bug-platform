@@ -130,6 +130,18 @@
               module-name="defect"
               :data-id="scope.row.defectId" />
             <el-link type="primary" @click="editDefectHandle(scope.row)">{{ scope.row.defectName }}</el-link>
+            <div class="defect-statistics">
+              <div>
+                <i class="el-icon-time"></i>
+                <span>{{ $t('defect.life-time') }}:</span>
+                <span class="defect-statistics-value">{{defectLife(scope.row)}}</span>
+              </div>
+              <div>
+                <i class="el-icon-document-delete"></i>
+                <span>{{$i18n.t('reject')}}:</span>
+                <span class="defect-statistics-value">{{scope.row.rejectCount}}</span>
+              </div>
+            </div>
           </div>
         </template>
       </el-table-column>
@@ -211,6 +223,7 @@ import DefectTabDialog from "@/views/system/defect/DefectTabDialog";
 import { checkPermi } from "@/utils/permission";
 import {delTabs, listTabs} from "@/api/system/DefectTabs";
 import i18n from "@/utils/i18n/i18n";
+import {lifeTime} from "@/utils/defect";
 
 /** 需要显示的缺陷字段列表在缓存的key值 */
 const DEFECT_TABLE_FIELD_LIST_CACHE_KEY='defect-table-field-list';
@@ -304,6 +317,11 @@ export default {
     //     },
     //   }
     // },
+    defectLife: function () {
+      return function (defect) {
+        return lifeTime(defect);
+      }
+    },
     /** 字段是否显示 */
     showField: function () {
       return function (field) {
@@ -666,14 +684,35 @@ export default {
 .table-defect-title {
   display: inline-flex;
   flex-direction: column;
-  justify-content: flex-start;
+  justify-content: center;
+  align-items: flex-start;
   .el-link {
     flex: 1;
+    padding-left: 5px;
   }
 }
 .el-table {
   ::v-deep table {
     width: 100% !important;
+  }
+}
+.defect-statistics {
+  display: inline-flex;
+  flex-direction: row;
+  gap: 10px;
+  font-size: 10px;
+  > div {
+    padding: 0px 5px;
+    border-radius: 3px;
+    background-color: #f9fbff;
+  }
+  i {
+    margin-right: 2px;
+  }
+  .defect-statistics-value {
+    padding-left: 3px;
+    font-size: 11px;
+    color: #303133;
   }
 }
 </style>

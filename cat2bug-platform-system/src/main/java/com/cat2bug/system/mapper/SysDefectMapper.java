@@ -1,5 +1,6 @@
 package com.cat2bug.system.mapper;
 
+import java.util.Date;
 import java.util.List;
 import com.cat2bug.common.core.domain.entity.SysDefect;
 import com.cat2bug.system.domain.SysVersion;
@@ -19,7 +20,7 @@ public interface SysDefectMapper
      * @param defectId 缺陷主键
      * @return 缺陷
      */
-    public SysDefect selectSysDefectByDefectId(@Param("defectId") Long defectId, @Param("currentUserId") Long currentUserId);
+    public SysDefect selectSysDefectByDefectId(@Param("defectId") Long defectId, @Param("currentUserId") Long currentUserId, @Param("currentTime") Date currentTime);
 
     /**
      * 查询项目中缺陷数量
@@ -34,7 +35,7 @@ public interface SysDefectMapper
      * @param sysDefect 缺陷
      * @return 缺陷集合
      */
-    public List<SysDefect> selectSysDefectList(@Param("defect") SysDefect sysDefect, @Param("currentUserId") Long currentUserId);
+    public List<SysDefect> selectSysDefectList(@Param("defect") SysDefect sysDefect, @Param("currentUserId") Long currentUserId, @Param("currentTime") Date currentTime);
 
     /**
      * 新增缺陷

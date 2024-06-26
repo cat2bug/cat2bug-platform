@@ -36,6 +36,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="handleTime"    column="handle_time"    />
         <result property="defectLevel"    column="defect_level"    />
         <result property="collect"    column="collect"    />
+        <result property="rejectCount"    column="reject_count"    />
+        <result property="handlePassTime"    column="handle_pass_time"    />
+        <result property="handleStartTime"    column="handle_start_time"    />
     </resultMap>
 
     <resultMap type="SysVersion" id="SysVersionResult">
@@ -73,7 +76,10 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             un.user_infos AS handle_by_list,
             d.handle_time,
             d.defect_level,
-            ud.collect
+            ud.collect,
+            rc.reject_count,
+            lt.handle_pass_time,
+            lt.handle_start_time
         FROM
             sys_defect d
                 LEFT JOIN sys_module m ON m.module_id = d.module_id
@@ -100,7 +106,32 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                         LEFT JOIN sys_user u ON d1.handle_by REGEXP CONCAT('\b',u.user_id,'\b') OR d1.handle_by REGEXP CONCAT('\\b',u.user_id,'\\b')
                     GROUP BY
                         d1.defect_id
-            ) un ON un.defect_id = d.defect_id
+                ) un ON un.defect_id = d.defect_id
+                LEFT JOIN (
+                    SELECT
+                    l.defect_id,
+                    count(*) AS reject_count
+                    FROM
+                    sys_defect_log l
+                    JOIN ( SELECT defect_id, max( create_time ) max_create_time FROM sys_defect_log WHERE defect_log_type = 0 OR defect_log_type = 7 GROUP BY defect_id ) ld ON ld.defect_id = l.defect_id
+                    AND l.create_time > ld.max_create_time
+                    WHERE
+                    l.defect_log_type = 4
+                    GROUP BY
+                    l.defect_id
+                ) rc ON rc.defect_id = d.defect_id
+                LEFT JOIN (
+                    SELECT
+                    l.defect_id,
+                    IFNULL(passl.pass_create_time ,#{currentTime}) as handle_pass_time,
+                    maxl.max_create_time as handle_start_time
+                    FROM
+                    sys_defect_log l
+                    JOIN ( SELECT defect_id, max( create_time ) max_create_time FROM sys_defect_log WHERE defect_log_type = 0 OR defect_log_type = 7 GROUP BY defect_id ) maxl ON maxl.defect_id = l.defect_id AND l.create_time >= maxl.max_create_time
+                    LEFT JOIN ( SELECT defect_id, max( create_time ) pass_create_time FROM sys_defect_log WHERE defect_log_type = 3 GROUP BY defect_id ) passl ON passl.defect_id = l.defect_id AND passl.pass_create_time>maxl.max_create_time
+                    GROUP BY
+                    l.defect_id
+                ) lt ON lt.defect_id = d.defect_id
     </sql>
 
     <select id="getProjectDefectMaxNum" resultType="Long">
