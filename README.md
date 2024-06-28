@@ -16,20 +16,25 @@ Cat2Bug-Platform是一套永久免费开源的Bug管理平台，将毫无保留�
 5.  交付物管理：维护项目中的可交付物品。
 6.  报告管理：显示团队、项目、测试用例、缺陷、交付物等的相关数据指标。
 7.  API管理：用于管理API接口密钥
+8.  文档管理：留备项目中所用到的各种文档
 
 ## 最新版本更新说明
 
 当前最新版本是0.4.0
 
-* 修复系统功能BUG；
-* 添加分享功能；
-* 添加缺陷剪贴板；
-* 添加人生格言窗口；
+* 修复系统功能BUG;
+* 添加AI私有化服务;
+* 在新建缺陷时，更新描述组件，使之可以通过AI分析添加填充其它属性功能;
+* 更新AI创建测试用例功能，使之可以用过AI的上下文语义理解功能，通过多次描述用例需求来调整测试用例;
+* 在报告中添加模版功能;
+* 新增文档功能;
+* 在项目设置中新增AI配置项;
 
 ## 特色
 
-* AI自动生成测试用例并录入到系统，解决费时费力录入用例的痛点；
-* 丰富便捷的图形化界面操作，减少录入管理成本；
+* AI自动生成测试用例并录入到系统，解决费时费力录入用例的痛点;
+* 根据BUG描述，自动填写其余BUG信息，加速表单信息的录入;
+* 丰富便捷的图形化界面操作，减少录入管理成本;
 * 专注于软件的缺陷的跟踪管理，简单直接，即开即用，减少学习成本；
 
 ## 在线体验
@@ -78,6 +83,7 @@ Cat2Bug-Platform是一套永久免费开源的Bug管理平台，将毫无保留�
 ````
 --cat2bug-platform
 ------|----cat2bug-platform-admin       # 主程序模块
+------|----cat2bug-platform-ai          # 人工智能模块
 ------|----cat2bug-platform-api         # Open API模块
 ------|----cat2bug-platform-common      # 通用模块
 ------|----cat2bug-platform-framework   # 系统框架
@@ -91,16 +97,23 @@ Cat2Bug-Platform是一套永久免费开源的Bug管理平台，将毫无保留�
 
 ## 部署
 
-以下提供的是Docker容器化的部署方案，执行命令如下：
+以下提供的是Docker官网容器化的部署方案，执行命令如下：
 
 ```docker
 docker run -it -d -p 8022:8022 --name cat2bug-platform cat2bug/cat2bug-platform:latest
 ```
+
+由于Docker官网访问不稳定，我们还提供了国内镜像下载的方案：
+
+```docker
+docker run -it -d -p 8022:8022 --name cat2bug-platform qyzw-docker.pkg.coding.net/cat2bug/cat2bug-platform/single:latest
+```
+
 部署成功后，打开浏览器访问[http://127.0.0.1:8022](http://127.0.0.1:8022),在登陆页面自行注册账号登陆使用即可。
 
 注意：系统管理员账号：admin    密码：cat2bug，此账号用于管理注册用户。
 
-此外目前我们还提供了多种部署方式，请访问[官网](https://www.cat2bug.com/download/cat2bug-platform/#%E9%83%A8%E7%BD%B2)了解更多信息。
+此部署方式为单容器方式部署，数据库默认采用H2，多用于小型或临时性项目的缺陷管控，如需Mysql或多容器部署更稳健快速的系统，请查看[官网文档](https://www.cat2bug.com/download/cat2bug-platform/#%E9%83%A8%E7%BD%B2)。我们提供了多种部署方式。
 
 ## 演示图
 
