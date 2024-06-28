@@ -22,8 +22,8 @@ cat2bug:
       project-key: 202403081039179f174l0igbcrgs66
       handler: demo
   ai:
-    # AI服务地址
-    host: http://localhost:11434
+    # AI服务地址(https://www.cat2bug.com:8023是共享给大家的一个用于免费测试和开发的AI服务,生产环境请链接自有的AI服务)
+    host: https://www.cat2bug.com:8023
     # AI服务接口超时时间（秒）
     timeout: 300
     # 默认使用的模型，系统启动时会自动下载

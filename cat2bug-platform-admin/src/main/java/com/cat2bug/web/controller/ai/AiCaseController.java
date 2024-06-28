@@ -41,8 +41,7 @@ public class AiCaseController extends BaseController {
     public AjaxResult list(@RequestBody AiSysPrompt prompt)
     {
         SysAiModuleConfig sysAiModuleConfig = sysAiModuleConfigService.selectSysAiModuleConfigByProjectId(prompt.getProjectId());
-//        ，每条测试用例包括：名称caseName、用例级别caseLevel(1-5)、前置条件casePreconditions(至少描述5个字以上)、预期caseExpect(至少描述5个字以上)、测试步骤数组caseStep(至少3-5条测试步骤)，(每条测试步骤包括：步骤描述stepDescribe、步骤预期stepExpect，每条测试步骤的属性都必填)，每个用例属性都是必填项。
-        String json = String.format("%s。生成10条测试用例", prompt.getPrompt());
+        String json = String.format("%s。前面如果没有标明数量，那默认生成5条测试用例", prompt.getPrompt());
         AiCaseList cases = aiService.generate(sysAiModuleConfig.getBusinessModule(), json,false, prompt.getContext(), AiCaseList.class);
         return success(cases);
     }

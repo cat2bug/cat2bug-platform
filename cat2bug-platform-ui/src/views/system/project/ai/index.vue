@@ -27,7 +27,7 @@
     </el-row>
 
     <el-table v-loading="loading" :data="aiList" @selection-change="handleSelectionChange" :key="tableKey">
-      <el-table-column label="业务模型名称" align="left" prop="name">
+      <el-table-column :label="$t('ai.name')" align="left" prop="name">
         <template slot-scope="scope">
           <div class="col">
             <span>{{ scope.row.name }}</span>
@@ -35,29 +35,29 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="状态" align="center" prop="size" width="150">
+      <el-table-column :label="$t('state')" align="center" prop="size" width="150">
         <template slot-scope="scope">
           <el-progress v-if="isPulling(scope.row)" :percentage="pullProgress(scope.row)"></el-progress>
           <span v-else>{{ modelState(scope.row) }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="模型尺寸" align="center" prop="size" width="150">
+      <el-table-column :label="$t('ai.model-size')" align="center" prop="size" width="150">
         <template slot-scope="scope">
           <span v-if="isPulling(scope.row)">{{ `${fileSizeUnit(scope.row.pullCompleted+scope.row.pullCompletedLayerSize)}/${fileSizeUnit(scope.row.size)}` }}</span>
           <span v-else>{{ fileSizeUnit(scope.row.size) }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="业务识别模型" align="center" width="100">
+      <el-table-column :label="$t('ai.business-model')" align="center" width="150">
         <template slot-scope="scope">
           <el-radio v-model="modelOption.businessModule" :label="scope.row.name" @input="handleUpdateProjectModule">&nbsp;</el-radio>
         </template>
       </el-table-column>
-      <el-table-column label="图像处理模型" align="center" width="100">
+      <el-table-column :label="$t('ai.image-model')" align="center" width="150">
       <template slot-scope="scope">
         <el-radio v-model="modelOption.imageModule"  :label="scope.row.name" @input="handleUpdateProjectModule">&nbsp;</el-radio>
       </template>
     </el-table-column>
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width" width="100">
+      <el-table-column :label="$t('operate')" align="center" class-name="small-padding fixed-width" width="100">
         <template slot-scope="scope">
           <el-button
             v-if="isError(scope.row) || isEmpty(scope.row)"
@@ -72,44 +72,18 @@
             size="mini"
             type="text"
             icon="el-icon-delete"
+            class="red"
             @click="handleDelete(scope.row)"
             v-hasPermi="['system:ai:remove']"
-          >删除</el-button>
+          >{{ $t('delete') }}</el-button>
         </template>
       </el-table-column>
     </el-table>
-
-<!--    <pagination-->
-<!--      v-show="total>0"-->
-<!--      :total="total"-->
-<!--      :page.sync="queryParams.pageNum"-->
-<!--      :limit.sync="queryParams.pageSize"-->
-<!--      @pagination="getList"-->
-<!--    />-->
-
-    <!-- 添加或修改AI模型配置对话框 -->
-    <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
-      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="项目ID" prop="projectId">
-          <el-input v-model="form.projectId" placeholder="请输入项目ID" />
-        </el-form-item>
-        <el-form-item label="创建人ID" prop="createById">
-          <el-input v-model="form.createById" placeholder="请输入创建人ID" />
-        </el-form-item>
-        <el-form-item label="更新人ID" prop="updateById">
-          <el-input v-model="form.updateById" placeholder="请输入更新人ID" />
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
-        <el-button @click="cancel">取 消</el-button>
-      </div>
-    </el-dialog>
   </div>
 </template>
 
 <script>
-import {fileSizeUnit} from "@/utils";
+import {fileSizeUnit, strFormat} from "@/utils";
 import {
   listAi,
   getAi,
@@ -154,8 +128,6 @@ export default {
       aiList: [],
       // 弹出层标题
       title: "",
-      // 是否显示弹出层
-      open: false,
       downloadParams: {},
       // 查询参数
       queryParams: {
@@ -202,14 +174,14 @@ export default {
       return function (model) {
         switch (model.state) {
           case AI_MODEL_PULLING_STATE:
-            return '下载中';
+            return this.$i18n.t('ai.downloading');
           case AI_MODEL_ERROR_STATE:
-            return '下载错误'
+            return this.$i18n.t('ai.download-error');
           case AI_MODEL_SUCCESS_STATE:
           case AI_MODEL_COMPLETED_STATE:
-            return '已下载'
+            return this.$i18n.t('ai.downloaded');
           case AI_MODEL_EMPTY_STATE:
-            return '未下载'
+            return this.$i18n.t('ai.not-downloaded');
           default:
             return '-'
         }
@@ -310,7 +282,7 @@ export default {
     },
     /** 返回上一页 */
     goBack() {
-      this.$goBack();
+      this.$router.back();
     },
     /** 选择模型名称 */
     handleSelectSearchModel(modelName) {
@@ -400,7 +372,7 @@ export default {
     handleAdd() {
       this.reset();
       this.open = true;
-      this.title = "添加AI模型配置";
+      this.title = this.$i18n.t('ai.add-model');
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
@@ -409,7 +381,7 @@ export default {
       getAi(aiId).then(response => {
         this.form = response.data;
         this.open = true;
-        this.title = "修改AI模型配置";
+        this.title = this.$i18n.t('ai.modify-model');
       });
     },
     /** 提交按钮 */
@@ -418,13 +390,13 @@ export default {
         if (valid) {
           if (this.form.aiId != null) {
             updateAi(this.form).then(response => {
-              this.$modal.msgSuccess("修改成功");
+              this.$modal.msgSuccess(this.$i18n.t('modify-success'));
               this.open = false;
               this.getList();
             });
           } else {
             addAi(this.form).then(response => {
-              this.$modal.msgSuccess("新增成功");
+              this.$modal.msgSuccess(this.$i18n.t('create-success'));
               this.open = false;
               this.getList();
             });
@@ -438,7 +410,7 @@ export default {
         this.getList();
         return;
       }
-      this.$modal.confirm('是否确认删除名称为"' + row.name + '"的模型？').then(function() {
+      this.$modal.confirm(strFormat(this.$i18n.t('ai.is-delete-model'),row.name)).then(function() {
         return delModel({name:row.name});
       }).then(() => {
         this.$modal.msgSuccess("删除成功");
@@ -485,7 +457,7 @@ export default {
     handleUpdateProjectModule(name) {
       this.modelOption.projectId = this.getProjectId();
       updateProjectModelOption(this.modelOption).then(res=>{
-        this.$message.success('设置模型成功');
+        this.$message.success(this.$i18n.t('ai.set-model-success').toString());
       });
     }
   }
@@ -504,5 +476,8 @@ export default {
 .col {
   display: inline-flex;
   flex-direction: column;
+}
+.red {
+  color: #f56c6c;
 }
 </style>

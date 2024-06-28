@@ -18,7 +18,7 @@
       <!-- 拖动图标 -->
       <div v-if="drag">
         <i class="el-icon-upload"></i>
-        <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+        <div class="el-upload__text">{{ $t('case.import-prompt') }}<em>{{ $t('click.upload') }}</em></div>
       </div>
       <!-- 上传按钮 -->
       <el-button v-else size="mini" type="primary">{{$i18n.t('upload.select-file')}}</el-button>

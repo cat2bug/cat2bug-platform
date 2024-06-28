@@ -48,6 +48,8 @@ public class OllamaAiServieImpl implements IAiService {
      * 接口内容类型
      */
     private static final MediaType FORM_CONTENT_TYPE = MediaType.parse("application/json;charset=utf-8");
+    /** 拒绝删除模型的地址 */
+    private final static String REMOVE_MODEL_REJECTED_HOST = "https://www.cat2bug.com:8023";
     /**
      * 聊天接口
      */
@@ -116,7 +118,7 @@ public class OllamaAiServieImpl implements IAiService {
             if(cls == String.class){
                 requestPrompt = String.format("请用中文返回,%s",prompt);
             } else if(cls instanceof Object) {
-                requestPrompt = String.format("请用中文返回,%s,返回JSON格式:\n%s",prompt, PromptUtils.objectToPrompt(cls));
+                requestPrompt = String.format("请用中文返回,%s,返回JSON格式:\n%s\n返回的JSON数据需要压缩成一行，去掉\\n等字符",prompt, PromptUtils.objectToPrompt(cls));
                 format = PROMPT_FORMAT_TYPE;
             } else {
                 requestPrompt = prompt;
@@ -304,6 +306,10 @@ public class OllamaAiServieImpl implements IAiService {
 
     @Override
     public boolean removeModule(String moduleName) {
+        // 判断现在的AI服务器网址模型是否可以删除
+        if(REMOVE_MODEL_REJECTED_HOST.equals(host.toLowerCase())) {
+            throw new RuntimeException(MessageUtils.message("ai.rejected_host"));
+        }
         try {
             OkHttpClient client = new OkHttpClient().newBuilder().readTimeout(this.timeout, TimeUnit.SECONDS).build();
             OllamaModuleRequest pullModuleRequest = new OllamaModuleRequest(moduleName);
