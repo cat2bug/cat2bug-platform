@@ -558,7 +558,7 @@
   "doc.is-delete-file": "是否确认删除名称为[{0}]的文档？",
   "doc.root-folder": "根文件夹",
   "doc.move-to": "移动文档至...",
-  "doc.move-success": "文档移动成功，已移动到[{0}]",
+  "doc.move-success": "文档移动成功",
   "ai.download-model": "下载模型",
   "ai.please-enter-download-name": "请输入要下载的模型名称",
   "ai.name-cannot-empty": "模型名称不能为空!",

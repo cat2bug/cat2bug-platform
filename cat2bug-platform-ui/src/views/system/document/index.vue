@@ -407,6 +407,7 @@ export default {
     goFolder(dir) {
       this.reset();
       this.queryParams.docPid = dir.docId;
+      this.queryParams.docType = 0;
       if(dir.docId) {
         this.currentFolder = dir;
       } else {
@@ -454,7 +455,7 @@ export default {
         return;
       }
       updateDocument(this.folderForm).then(response => {
-        this.$modal.msgSuccess(strFormat(this.$i18n.t('doc.move-success'),''));
+        this.$modal.msgSuccess(strFormat(this.$i18n.t('doc.move-success'),));
         this.moveDialogVisible = false;
         this.getList();
       });

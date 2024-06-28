@@ -558,7 +558,7 @@
   "doc.is-delete-file": "Are you sure to delete the document with the name [{0}]?",
   "doc.root-folder": "Root Folder",
   "doc.move-to": "Move document to ...",
-  "doc.move-success": "The document was successfully moved to [{0}]",
+  "doc.move-success": "Document successfully moved",
   "ai.download-model": "Download Model",
   "ai.please-enter-download-name": "Please enter model name",
   "ai.name-cannot-empty": "Model name cannot be empty!",

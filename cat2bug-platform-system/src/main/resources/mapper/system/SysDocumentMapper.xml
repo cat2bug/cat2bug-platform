@@ -45,7 +45,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                      and d.doc_pid = #{docPid}
                  </when>
                  <otherwise>
-                     and d.doc_pid is null
+                     and (d.doc_pid is null or d.doc_pid &lt;= 0)
                  </otherwise>
              </choose>
         </where>
