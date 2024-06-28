@@ -16,7 +16,7 @@ export function makeDefectTitle(data) {
     url: '/ai/defect/title',
     method: 'post',
     data: data,
-    timeout: 60000
+    timeout: 300000
   })
 }
 
@@ -26,7 +26,7 @@ export function makeDefectModule(data) {
     url: '/ai/defect/module',
     method: 'post',
     data: data,
-    timeout: 60000
+    timeout: 300000
   })
 }
 
@@ -36,7 +36,7 @@ export function makeDefectType(data) {
     url: '/ai/defect/type',
     method: 'post',
     data: data,
-    timeout: 60000
+    timeout: 300000
   })
 }
 
@@ -46,7 +46,7 @@ export function makeDefectMember(data) {
     url: '/ai/defect/member',
     method: 'post',
     data: data,
-    timeout: 60000
+    timeout: 300000
   })
 }
 
@@ -55,7 +55,7 @@ export function makeDefectVersion(data) {
   return request({
     url: '/ai/defect/version',
     method: 'post',
-    timeout: 60000,
+    timeout: 300000,
     data: data
   })
 }
