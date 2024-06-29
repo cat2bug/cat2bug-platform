@@ -46,11 +46,14 @@ Cat2Bug-Platform是一套永久免费开源的Bug管理平台，将毫无保留�
 
 ## 关联产品
 
-
 | 名称                                                       | 类型       | 说明                                                                |
 |----------------------------------------------------------|----------|:------------------------------------------------------------------|
 | [Cat2Bug-JUnit](https://gitee.com/cat2bug/cat2bug-junit) | 单元测试框架   | 自动化单元测试框架，目前可以自动扫描Controller接口，随机提供参数测试，并将测试报告提交到Cat2Bug-Platform |
 | [Cat2Bug-JLog](https://gitee.com/cat2bug/cat2bug-jlog)   | 错误日志采集框架 | 获取项目中的异常日志，并将日志报告提交到Cat2Bug-Platform                              |
+
+## 系统架构
+
+![系统架构](readme/images/cat2bug-platform-framework.png)
 
 ## 技术选型
 
@@ -113,7 +116,7 @@ docker run -it -d -p 8022:8022 --name cat2bug-platform qyzw-docker.pkg.coding.ne
 
 注意：系统管理员账号：admin    密码：cat2bug，此账号用于管理注册用户。
 
-此部署方式为单容器方式部署，数据库默认采用H2，多用于小型或临时性项目的缺陷管控，如需Mysql或多容器部署更稳健快速的系统，请查看[官网文档](https://www.cat2bug.com/download/cat2bug-platform/#%E9%83%A8%E7%BD%B2)。我们提供了多种部署方式。
+此部署方式为单容器方式部署，数据库默认采用嵌入式H2，多用于小型或临时性项目的缺陷管理，如需Mysql或多容器部署方案，请查看[官网文档](https://www.cat2bug.com/download/cat2bug-platform/#%E9%83%A8%E7%BD%B2)。
 
 ## 演示图
 
