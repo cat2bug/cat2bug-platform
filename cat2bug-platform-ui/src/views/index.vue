@@ -109,6 +109,7 @@
                 <li>在报告中添加模版功能</li>
                 <li>新增文档功能</li>
                 <li>在项目设置中新增AI配置项</li>
+                <li>在缺陷中，为每个缺陷添加存活时常、驳回次数等指标</li>
               </ol>
             </el-collapse-item>
             <el-collapse-item title="v0.3.2 - 2024-04-19">
