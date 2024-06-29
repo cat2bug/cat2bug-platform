@@ -100,6 +100,16 @@ Cat2Bug-Platform是一套永久免费开源的Bug管理平台，将毫无保留�
 
 ## 部署
 
+### 手动命令行部署
+
+手动部署需要提前安装Java 11环境，并下载cat2bug-platform发行版程序，执行命令如下：
+
+```shell
+nohup java -jar cat2bug-platform-0.4.0.jar>/dev/null 2>&1 &
+```
+
+### Docker单容器部署
+
 以下提供的是Docker官网容器化的部署方案，执行命令如下：
 
 ```docker
