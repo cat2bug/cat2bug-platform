@@ -90,7 +90,7 @@ public class AiDefectController extends BaseController {
     {
         SysAiModuleConfig sysAiModuleConfig = sysAiModuleConfigService.selectSysAiModuleConfigByProjectId(describe.getProjectId());
         List<String> types = Arrays.stream(SysDefectTypeEnum.values()).map(t->t.name()).collect(Collectors.toList());
-        String prompt = String.format("请根据JSON( %s )数组中的数据，以及描述的信息( %s )，选择一个最符合的类型type",JSON.toJSONString(types),describe);
+        String prompt = String.format("请根据JSON( %s )数组中的数据，以及描述的信息( %s )，选择一个最符合的类型type，一般选择BUG的概率不较大",JSON.toJSONString(types),describe);
         AiDefectType type = aiService.generate(sysAiModuleConfig.getBusinessModule(),prompt,false, null, AiDefectType.class);
         return success(type);
     }
@@ -122,7 +122,7 @@ public class AiDefectController extends BaseController {
         if(versions==null || versions.size()==0) {
             return success(new AiDefectVersion("1.0.0"));
         } else {
-            String prompt = String.format("请根据JSON( %s )数组中的历史版本，猜测一下本次系统的版本号，根据版本的维护时间来判断是用最近一次，还是新创建一个版本号，一般一两周内的用最近一次的版本号，超过这个时间的需要新建版本号，如果是新创建版本号，请参考历史版本的规律创建新版本号", JSON.toJSONString(versions));
+            String prompt = String.format("请根据JSON( %s )数组中的历史版本，给我一个最新的version,最新的createTime如果超过两周了新建一个version", JSON.toJSONString(versions));
             AiDefectVersion version = aiService.generate(sysAiModuleConfig.getBusinessModule(), prompt, false, null, AiDefectVersion.class);
             return success(version);
         }

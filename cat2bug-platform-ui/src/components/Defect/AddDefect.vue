@@ -24,9 +24,9 @@
               <el-select v-model="form.defectType" :placeholder="$t('defect.select-type')">
                 <el-option
                   v-for="type in config.types"
-                  :key="type.key"
+                  :key="type.value"
                   :label="$t(type.value)"
-                  :value="type.key"
+                  :value="type.value"
                 ></el-option>
               </el-select>
             </el-form-item>
