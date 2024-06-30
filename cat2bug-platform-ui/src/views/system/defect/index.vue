@@ -358,8 +358,6 @@ export default {
   created() {
     // 设置缺陷列表显示哪些列属性
     this.setFieldList();
-    // 获取选中的缺陷页签名称
-    this.activeDefectTabName = this.$cache.local.get(DEFECT_TAB_CACHE_KEY) || ALL_TAB_NAME;
     // 获取缺陷配置
     this.getDefectConfig();
   },
@@ -413,7 +411,9 @@ export default {
       configDefect().then(res=>{
         this.config = res.data;
         if(this.config.tabs) {
-          if(this.config.tabs.filter(t=>t.tabName==this.activeDefectTabName).length==0) {
+          // 获取选中的缺陷页签名称
+          this.activeDefectTabName = this.$cache.local.get(DEFECT_TAB_CACHE_KEY); // || ALL_TAB_NAME;
+          if(this.config.tabs.filter(t=>t.tabId+''==this.activeDefectTabName).length==0) {
             this.activeDefectTabName = this.allTab;
           }
         }
