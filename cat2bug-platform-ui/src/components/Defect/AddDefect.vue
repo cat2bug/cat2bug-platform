@@ -63,15 +63,6 @@
           <select-case ref="selectCase" v-model="form.caseId" :module-id="form.moduleId" :step-index="form.caseStepId" @step-change="stepChangeHandle" />
         </el-form-item>
         <el-form-item :label="$t('describe')" prop="defectDescribe">
-<!--          <el-input-->
-<!--            type="textarea"-->
-<!--            :placeholder="$t('enter-content')"-->
-<!--            v-model="form.defectDescribe"-->
-<!--            maxlength="65536"-->
-<!--            rows="8"-->
-<!--            show-word-limit-->
-<!--          >-->
-<!--          </el-input>-->
           <cat2-bug-textarea
             ref="cat2bugTextarea"
             :name="$t('describe').toString()"
@@ -266,7 +257,7 @@ export default {
       // done();
     },
     handleByChangeHandle(members){
-      console.log(members,this.form.handleBy);
+      // console.log(members,this.form.handleBy);
     },
     moduleChangeHandle() {
       this.$refs.selectCase.search(this.form.moduleId);
@@ -293,7 +284,7 @@ export default {
       }
       if(!this.form.defectName) {
         makeTitle=makeDefectTitle(params).then(res => {
-          if(!this.form.defectName && res.code==200) {
+          if(!this.form.defectName && res.code==200 && res.data.title) {
             this.form.defectName = res.data.title;
             this.$message.success(strFormat(this.$i18n.t('fill-finish'),this.$i18n.t("title").toString()));
           }
@@ -301,7 +292,7 @@ export default {
       }
       if(!this.form.moduleId) {
         makeModule=makeDefectModule(params).then(res => {
-          if(!this.form.moduleId && res.code==200) {
+          if(!this.form.moduleId && res.code==200 && res.data && res.data.moduleId) {
             this.form.moduleId = res.data.moduleId;
             this.$message.success(strFormat(this.$i18n.t('fill-finish'),this.$i18n.t("module").toString()));
           }
@@ -309,7 +300,7 @@ export default {
       }
       if(!this.form.defectType) {
         makeType = makeDefectType(params).then(res => {
-          if(!this.form.defectType && res.code==200) {
+          if(!this.form.defectType && res.code==200 && res.data.type) {
             this.form.defectType = res.data.type;
             this.$message.success(strFormat(this.$i18n.t('fill-finish'),this.$i18n.t("type").toString()));
           }
@@ -317,7 +308,7 @@ export default {
       }
       if(!this.form.handleBy) {
         makeMember=makeDefectMember(params).then(res => {
-          if(!this.form.handleBy && res.code==200) {
+          if(!this.form.handleBy && res.code==200 && res.data.memberId) {
             this.form.handleBy = [res.data.memberId];
             this.$message.success(strFormat(this.$i18n.t('fill-finish'),this.$i18n.t("handle-by").toString()));
           }

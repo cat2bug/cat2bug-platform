@@ -76,6 +76,9 @@ public class AiDefectController extends BaseController {
             module.put("moduleId",m.getModuleId());
             return module;
         }).collect(Collectors.toList());
+        if(modules.size()==0) {
+            return success();
+        }
         String prompt = String.format("请根据JSON( %s )数组中的数据，以及描述的信息( %s )，选择一个最符合的moduleId",JSON.toJSONString(modules),describe);
         AiDefectModule module = aiService.generate(sysAiModuleConfig.getBusinessModule(),prompt,false, null, AiDefectModule.class);
         return success(module);
