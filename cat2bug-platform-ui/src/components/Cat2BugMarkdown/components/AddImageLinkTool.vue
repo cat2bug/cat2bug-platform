@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-dialog :title="$t('mk.add-image')" :visible.sync="dialogFormVisible" width="500px">
+    <el-dialog :title="$t('mk.add-image')" :visible.sync="dialogFormVisible" append-to-body width="500px">
       <el-form :model="form">
         <el-form-item :label="$t('mk.image-describe')" label-width="120">
           <el-input v-model="form.describe" autocomplete="off" maxlength="255"></el-input>
