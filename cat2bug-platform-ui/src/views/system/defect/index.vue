@@ -309,14 +309,6 @@ export default {
     };
   },
   computed: {
-    // keyMap() {
-    //   return {
-    //     'w': () => {
-    //       alert('w')
-    //       return false;
-    //     },
-    //   }
-    // },
     defectLife: function () {
       return function (defect) {
         return lifeTime(defect);
@@ -359,17 +351,15 @@ export default {
     },
     "queryParams.defectState": function (newVal, oldVal) {
       if( newVal!=oldVal) {
-        this.defectStateChangeHandle(newVal);
+        this.handleQuery();
       }
     },
   },
   created() {
     // 设置缺陷列表显示哪些列属性
     this.setFieldList();
-    // 设置tab标签选项
-    const tabActive = this.$cache.local.get(DEFECT_TAB_CACHE_KEY);
     // 获取选中的缺陷页签名称
-    this.activeDefectTabName = tabActive?tabActive:ALL_TAB_NAME;
+    this.activeDefectTabName = this.$cache.local.get(DEFECT_TAB_CACHE_KEY) || ALL_TAB_NAME;
     // 获取缺陷配置
     this.getDefectConfig();
   },

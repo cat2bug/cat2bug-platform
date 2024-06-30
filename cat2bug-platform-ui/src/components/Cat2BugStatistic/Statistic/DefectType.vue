@@ -82,7 +82,7 @@ export default {
           id: null,
           color: '409EFF',
           icon: 'all',
-          label: this.$i18n.t('all'),
+          label: 'all',
           value: total
         })
         this.typeList = ts;

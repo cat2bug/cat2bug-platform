@@ -1,7 +1,7 @@
 <template>
   <el-dialog
     :append-to-body="true"
-    size="45%"
+    width="45%"
     :title="title"
     :visible.sync="visible">
     <div class="app-container defect-edit-body">

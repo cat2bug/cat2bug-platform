@@ -222,8 +222,7 @@ export default {
     },
     /** 获取用例步骤面板类型 */
     getCaseStepSwitchType() {
-      let caseStepPanelType = this.$cache.session.get(CASE_STEP_PANEL_TYPE_CACHE_KEY);
-      return caseStepPanelType?caseStepPanelType:'';
+      return this.$cache.session.get(CASE_STEP_PANEL_TYPE_CACHE_KEY) || '';
     },
     /** 提交按钮 */
     submitForm() {
