@@ -140,7 +140,7 @@ export default {
   watch: {
     content(v) {
       if(this.markdownContent!=v) {
-        this.markdownContent = v;
+        this.markdownContent = v||'';
       }
     },
     markdownContent(v) {

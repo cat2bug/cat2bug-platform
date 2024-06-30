@@ -117,6 +117,7 @@ export default {
     },
     handleMarkdownContent(content) {
       this.textContent = content;
+      this.changeHandle();
     },
     focus() {
       this.$refs.cat2bugTextarea.focus();
