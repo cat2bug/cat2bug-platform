@@ -86,7 +86,7 @@ export const constantRoutes = [
         path: 'index',
         component: () => import('@/views/index'),
         name: 'Index',
-        meta: { title: i18n.t('home'), icon: 'dashboard', affix: true }
+        meta: { title: i18n.t('home'), titleI18nKey:'home', icon: 'dashboard', affix: true }
       }
     ]
   },
@@ -100,7 +100,7 @@ export const constantRoutes = [
         path: 'profile',
         component: () => import('@/views/system/user/profile/index'),
         name: 'Profile',
-        meta: { title: i18n.t('personal-center'), icon: 'user' }
+        meta: { title: i18n.t('personal-center'), titleI18nKey:'personal-center', icon: 'user' }
       }
     ]
   },
@@ -114,7 +114,7 @@ export const constantRoutes = [
         path: 'index',
         component: () => import('@/views/system/defect/StatisticTemplate'),
         name: 'DefectStatisticTemplate',
-        meta: { title: i18n.t('defect.statistic-template'), icon: 'user' }
+        meta: { title: i18n.t('defect.statistic-template'), titleI18nKey:'defect.statistic-template', icon: 'user' }
       }
     ]
   },
@@ -128,7 +128,7 @@ export const constantRoutes = [
         path: 'index',
         component: () => import('@/views/system/report/template/index'),
         name: 'ReportTemplate',
-        meta: { title: i18n.t('report.template'), icon: 'user' }
+        meta: { title: i18n.t('report.template'), titleI18nKey:'report.template', icon: 'user' }
       }
     ]
   },
@@ -142,7 +142,7 @@ export const constantRoutes = [
         path: 'index',
         component: () => import('@/views/system/report/template/EditReportTemplate'),
         name: 'AddDefectReport',
-        meta: { title: i18n.t('report.template'), icon: 'user' }
+        meta: { title: i18n.t('report.template'), titleI18nKey:'report.template', icon: 'user' }
       }
     ]
   },
@@ -156,7 +156,7 @@ export const constantRoutes = [
         path: '/system/project/add-project',
         component: () => import('@/views/system/project/add'),
         name: 'ProjectAdd',
-        meta: { title: i18n.t('project.create-project'), icon: 'user' }
+        meta: { title: i18n.t('project.create-project'), titleI18nKey:'project.create-project', icon: 'user' }
       }
     ]
   },
@@ -170,7 +170,7 @@ export const constantRoutes = [
         path: '/system/team/add-member',
         component: () => import('@/views/system/team/add'),
         name: 'TeamAdd',
-        meta: { title: i18n.t('team.create'), icon: 'user' }
+        meta: { title: i18n.t('team.create'), titleI18nKey:'team.create', icon: 'user' }
       }
     ]
   },

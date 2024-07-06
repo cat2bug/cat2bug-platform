@@ -28,11 +28,7 @@ export default {
   computed: {
     titleName: function (){
       return function (menu) {
-        if(menu.meta.titleI18nKey) {
-          return this.$i18n.t(menu.meta.titleI18nKey);
-        } else {
-          return menu.meta.title;
-        }
+        return menu.meta.titleI18nKey?this.$i18n.t(menu.meta.titleI18nKey):menu.meta.title;
       }
     }
   },

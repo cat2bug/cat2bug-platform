@@ -9,7 +9,7 @@
     <div slot="reference" :class="'el-input__inner select-module-input select-module-input-'+size" @mouseenter="showClearButtonHandle(true)" @mouseleave="showClearButtonHandle(false)">
       <i :class="icon" v-if="icon" style="margin: 0px 0px 0px 10px; color: #C0C4CC;"></i>
       <div class="selectProjectMemberInput_content">
-        <el-input ref="selectProjectModuleInput" :class="icon?'padding-left-8':''" readonly :placeholder="placeholder" v-model="queryMember.params.search" @input="searchChangeHandle"></el-input>
+        <el-input ref="selectProjectModuleInput" :class="icon?'padding-left-8':''" readonly :placeholder="$t(placeholder)" v-model="queryMember.params.search" @input="searchChangeHandle"></el-input>
       </div>
       <i class="select-module-input__icon el-icon-arrow-up" v-show="isClearButtonVisible==false"></i>
       <i class="select-module-input__icon el-icon-circle-close" v-show="isClearButtonVisible==true" @click="clearSelectModuleHandle"></i>
@@ -73,7 +73,7 @@ export default {
     },
     placeholder: {
       type: String,
-      default: i18n.t('module.select-module-name')
+      default: 'module.select-module-name'
     },
     clearable: {
       type: Boolean,

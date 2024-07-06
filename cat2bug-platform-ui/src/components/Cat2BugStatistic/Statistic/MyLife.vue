@@ -56,7 +56,7 @@ export default {
   data() {
     return {
       loading: false,
-      lifeContent: this.$i18n.t('defect.my-life.click-input-content'),
+      lifeContent: 'defect.my-life.click-input-content',
       dialogVisible: false,
       form: {
         color: '#303133',
@@ -88,7 +88,7 @@ export default {
       return parseInt(this.$store.state.user.config.currentProjectId);
     },
     myLife: function () {
-      return this.form.lifeContent || this.lifeContent;
+      return this.form.lifeContent || this.$i18n.t(this.lifeContent);
     },
   },
   created() {

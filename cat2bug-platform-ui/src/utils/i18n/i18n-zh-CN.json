@@ -150,6 +150,7 @@
   "member": "成员",
   "member.create": "新建成员",
   "member.add": "添加成员",
+  "member.modify": "修改成员",
   "member.manage": "成员管理",
   "member.name": "成员名称",
   "member.basic-info": "基本资料",
@@ -574,5 +575,7 @@
   "ai.name": "模型名称",
   "day": "天",
   "hour": "小时",
-  "minute": "分钟"
+  "minute": "分钟",
+  "sys.normal-disable-0": "正常",
+  "sys.normal-disable-1": "停用"
 }

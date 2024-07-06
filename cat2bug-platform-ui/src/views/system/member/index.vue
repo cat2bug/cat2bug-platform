@@ -162,7 +162,7 @@
                   v-for="dict in dict.type.sys_normal_disable"
                   :key="dict.value"
                   :label="dict.value"
-                >{{dict.label}}</el-radio>
+                >{{$t('sys.normal-disable-'+dict.value) || dict.label}}</el-radio>
               </el-radio-group>
             </el-form-item>
           </el-col>
@@ -393,7 +393,7 @@ export default {
         this.postOptions = response.posts;
         this.roleOptions = response.roles;
         this.open = true;
-        this.title = "添加用户";
+        this.title = this.$i18n.t('member.add');
         this.form.password = this.initPassword;
       });
     },
@@ -408,7 +408,7 @@ export default {
         this.$set(this.form, "postIds", response.postIds);
         this.$set(this.form, "roleIds", response.roleIds);
         this.open = true;
-        this.title = "修改用户";
+        this.title = this.$i18n.t('member.modify');
         this.form.password = "";
       });
     },

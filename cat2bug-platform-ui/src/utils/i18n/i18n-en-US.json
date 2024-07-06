@@ -150,6 +150,7 @@
   "assistant": "Assistant",
   "member.create": "Create Member",
   "member.add": "Add Member",
+  "member.modify": "Modify Member",
   "member.manage": "Member Management",
   "member.name": "Member Name",
   "member.basic-info": "Basic information",
@@ -574,5 +575,7 @@
   "ai.name": "Model Name",
   "day": "Day",
   "hour": "Hour",
-  "minute": "Minute"
+  "minute": "Minute",
+  "sys.normal-disable-0": "Normal",
+  "sys.normal-disable-1": "Stop"
 }

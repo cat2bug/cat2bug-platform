@@ -10,7 +10,7 @@
       <i :class="icon" v-if="icon" style="margin: 0px 0px 0px 5px; color: #C0C4CC;"></i>
       <div class="selectProjectMemberInput_content">
         <el-tag class="select-project-member-tag" size="mini" v-for="member in selectMemberList()" :key="member.userId" closable @close="clickMenuHandle(member,$event)" :type="tagType(member)">{{member.nickName}}</el-tag>
-        <el-input ref="selectProjectMemberInput" :placeholder="selectMembers.size>0?'':placeholder" v-model="queryMember.params.search" @input="searchChangeHandle" @keydown.native="searchKeyDownHandle"></el-input>
+        <el-input ref="selectProjectMemberInput" :placeholder="selectMembers.size>0?'':$t(placeholder)" v-model="queryMember.params.search" @input="searchChangeHandle" @keydown.native="searchKeyDownHandle"></el-input>
       </div>
       <i class="select-project-member-input__icon el-icon-arrow-up" v-show="isClearButtonVisible==false" @mouseenter="showClearButtonHandle(true)"></i>
       <i class="select-project-member-input__icon el-icon-circle-close" v-show="isClearButtonVisible==true" @mouseleave="showClearButtonHandle(false)" @click="clearSelectMembersHandle"></i>
@@ -111,7 +111,7 @@ export default {
     },
     placeholder: {
       type: String,
-      default: i18n.t('member.please-select-member')
+      default: 'member.please-select-member'
     },
     clearable: {
       type: Boolean,

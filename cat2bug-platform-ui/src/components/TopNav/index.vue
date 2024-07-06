@@ -10,7 +10,7 @@
           v-if="item.meta && item.meta.icon && item.meta.icon !== '#'"
           :icon-class="item.meta.icon"
         />
-        {{ item.meta.title }}</el-menu-item
+        {{ title(item.meta) }}</el-menu-item
       >
     </template>
 
@@ -23,7 +23,7 @@
           :key="index"
           v-if="index >= visibleNumber"
           ><svg-icon :icon-class="item.meta.icon" />
-          {{ item.meta.title }}</el-menu-item
+          {{ title(item.meta) }}</el-menu-item
         >
       </template>
     </el-submenu>
@@ -46,6 +46,11 @@ export default {
     };
   },
   computed: {
+    title: function() {
+      return function (meta) {
+        return meta.titleI18nKey ? this.$i18n.t(meta.titleI18nKey) : meta.title
+      }
+    },
     theme() {
       return this.$store.state.settings.theme;
     },
