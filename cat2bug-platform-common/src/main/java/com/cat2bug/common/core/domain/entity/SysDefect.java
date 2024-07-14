@@ -21,6 +21,8 @@ import java.util.List;
 @Data
 public class SysDefect extends BaseEntity
 {
+    public static final String KEY = "defect";
+
     private static final long serialVersionUID = 1L;
 
     /** 缺陷id */

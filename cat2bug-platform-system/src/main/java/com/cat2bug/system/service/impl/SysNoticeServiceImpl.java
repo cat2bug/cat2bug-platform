@@ -1,6 +1,11 @@
 package com.cat2bug.system.service.impl;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+
+import com.cat2bug.common.core.domain.WebSocketResult;
+import com.cat2bug.common.websocket.MessageWebsocket;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.cat2bug.system.domain.SysNotice;
@@ -15,8 +20,15 @@ import com.cat2bug.system.service.ISysNoticeService;
 @Service
 public class SysNoticeServiceImpl implements ISysNoticeService
 {
+    private final static String NOTICE_ACTION = "notice";
     @Autowired
     private SysNoticeMapper noticeMapper;
+    @Autowired
+    private MessageWebsocket messageWebsocket;
+    @Override
+    public List<Map<String, Object>> noticeGroupStatistics(Long receiveId) {
+        return noticeMapper.noticeGroupStatistics(receiveId);
+    }
 
     /**
      * 查询公告信息
@@ -27,7 +39,20 @@ public class SysNoticeServiceImpl implements ISysNoticeService
     @Override
     public SysNotice selectNoticeById(Long noticeId)
     {
-        return noticeMapper.selectNoticeById(noticeId);
+        // 读取通知
+        SysNotice notice = noticeMapper.selectNoticeById(noticeId);
+        // 如果通知是未读状态，改吧其状态为已读
+        if(notice.getIsRead()==false) {
+            notice.setIsRead(true);
+            // 更新通知已读
+            SysNotice n = new SysNotice();
+            n.setIsRead(true);
+            n.setNoticeId(noticeId);
+            noticeMapper.updateNotice(n);
+            // 发送websocket消息通知前端通知有变化
+            messageWebsocket.sendMessage(notice.getReceiverId(), WebSocketResult.success(NOTICE_ACTION,n));
+        }
+        return notice;
     }
 
     /**

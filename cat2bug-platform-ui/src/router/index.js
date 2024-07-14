@@ -185,6 +185,20 @@ export const constantRoutes = [
         name: 'GenEdit',
       }
     ]
+  },
+  {
+    path: '/notice',
+    component: Layout,
+    hidden: true,
+    redirect: 'noredirect',
+    children: [
+      {
+        path: '/notice/index',
+        component: () => import('@/views/notice'),
+        name: 'Notice',
+        meta: { title: i18n.t('notice'), titleI18nKey:'notice' }
+      }
+    ]
   }
 ]
 

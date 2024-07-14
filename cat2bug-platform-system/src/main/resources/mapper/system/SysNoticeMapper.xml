@@ -15,11 +15,22 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="updateBy"       column="update_by"       />
         <result property="updateTime"     column="update_time"     />
         <result property="remark"         column="remark"          />
+        <result property="teamName"         column="team_name"          />
+        <result property="projectName"         column="project_name"          />
+        <result property="groupName"         column="group_name"          />
+        <result property="isRead"         column="is_read"          />
+        <result property="receiverId"         column="receiver_id"          />
     </resultMap>
     
     <sql id="selectNoticeVo">
-        select notice_id, notice_title, notice_type, cast(notice_content as char) as notice_content, status, create_by, create_time, update_by, update_time, remark 
-		from sys_notice
+        select n.notice_id, n.notice_title, n.notice_type, cast(n.notice_content as char) as notice_content,
+               n.group_name, n.status, n.create_by, n.create_time, n.update_by, n.update_time, n.remark,n.is_read,
+               n.receiver_id,
+            p.project_name,
+            t.team_name
+		from sys_notice n
+        LEFT JOIN sys_project p ON p.project_id = n.project_id
+        LEFT JOIN sys_team t ON t.team_id = p.team_id
     </sql>
     
     <select id="selectNoticeById" parameterType="Long" resultMap="SysNoticeResult">
@@ -30,18 +41,35 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <select id="selectNoticeList" parameterType="SysNotice" resultMap="SysNoticeResult">
         <include refid="selectNoticeVo"/>
         <where>
+            n.receiver_id = #{receiverId}
+            <if test="groupName != null and groupName != ''">
+                AND n.group_name = #{groupName}
+            </if>
 			<if test="noticeTitle != null and noticeTitle != ''">
-				AND notice_title like concat('%', #{noticeTitle}, '%')
+				AND n.notice_title like concat('%', #{noticeTitle}, '%')
 			</if>
 			<if test="noticeType != null and noticeType != ''">
-				AND notice_type = #{noticeType}
+				AND n.notice_type = #{noticeType}
 			</if>
 			<if test="createBy != null and createBy != ''">
-				AND create_by like concat('%', #{createBy}, '%')
+				AND n.create_by like concat('%', #{createBy}, '%')
 			</if>
 		</where>
+		order by n.create_time DESC
     </select>
-    
+
+    <select id="noticeGroupStatistics" parameterType="java.lang.Long" resultType="java.util.Map">
+        SELECT
+        group_name AS groupName,
+        sum( CASE WHEN is_read = 0 OR is_read IS NULL THEN 1 ELSE 0 END ) AS notReadCount,
+        sum( CASE WHEN is_read = 1 THEN 1 ELSE 0 END ) AS readCount
+        FROM sys_notice
+        <where>
+            receiver_id = #{receiverId}
+        </where>
+        group by group_name
+    </select>
+
     <insert id="insertNotice" parameterType="SysNotice">
         insert into sys_notice (
 			<if test="noticeTitle != null and noticeTitle != '' ">notice_title, </if>
@@ -70,6 +98,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="noticeContent != null">notice_content = #{noticeContent}, </if>
             <if test="status != null and status != ''">status = #{status}, </if>
             <if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+            <if test="isRead != null and isRead != ''">is_read = #{isRead},</if>
  			update_time = sysdate()
         </set>
         where notice_id = #{noticeId}

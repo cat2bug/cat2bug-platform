@@ -173,7 +173,7 @@
 import { listNotice, getNotice, delNotice, addNotice, updateNotice } from "@/api/system/notice";
 
 export default {
-  name: "Notice",
+  name: "SysNotice",
   dicts: ['sys_notice_status', 'sys_notice_type'],
   data() {
     return {

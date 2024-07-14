@@ -1,28 +1,34 @@
 package com.cat2bug.system.service.impl;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import com.cat2bug.common.utils.DateUtils;
-import com.cat2bug.common.utils.MessageUtils;
-import com.cat2bug.common.utils.SecurityUtils;
-import com.cat2bug.system.domain.SysDefectLog;
+import com.cat2bug.common.core.domain.entity.SysDefect;
 import com.cat2bug.common.core.domain.type.SysDefectLogStateEnum;
 import com.cat2bug.common.core.domain.type.SysDefectStateEnum;
 import com.cat2bug.common.core.domain.type.SysDefectTypeEnum;
+import com.cat2bug.common.utils.DateUtils;
+import com.cat2bug.common.utils.MessageUtils;
+import com.cat2bug.common.utils.SecurityUtils;
+import com.cat2bug.im.service.IMService;
+import com.cat2bug.system.domain.SysDefectLog;
+import com.cat2bug.system.domain.SysDefectNotice;
+import com.cat2bug.system.domain.SysUserDefect;
 import com.cat2bug.system.domain.SysVersion;
 import com.cat2bug.system.domain.vo.EnumVo;
 import com.cat2bug.system.mapper.SysDefectLogMapper;
+import com.cat2bug.system.mapper.SysDefectMapper;
+import com.cat2bug.system.mapper.SysUserDefectMapper;
+import com.cat2bug.system.service.ISysDefectService;
 import com.google.common.base.Preconditions;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.cat2bug.system.mapper.SysDefectMapper;
-import com.cat2bug.common.core.domain.entity.SysDefect;
-import com.cat2bug.system.service.ISysDefectService;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 缺陷Service业务层处理
@@ -33,11 +39,18 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class SysDefectServiceImpl implements ISysDefectService 
 {
+    private final static Logger log = LogManager.getLogger(SysDefectServiceImpl.class);
+
     @Autowired
     private SysDefectMapper sysDefectMapper;
     @Autowired
     private SysDefectLogMapper sysDefectLogMapper;
-
+    @Autowired
+    private SysUserDefectMapper sysUserDefectMapper;
+    @Autowired
+    private IMService imService;
+    @Autowired
+    private DefectMessageOfNoticeTemplateImpl defectMessageOfNoticeTemplate;
     /**
      * 指派
      * @param sysDefectLog 缺陷日志
@@ -51,6 +64,9 @@ public class SysDefectServiceImpl implements ISysDefectService
         sd.setDefectId(sysDefectLog.getDefectId());
         sd.setHandleBy(sysDefectLog.getReceiveBy());
         this.updateSysDefect(sd);
+
+        // 发送通知
+        this.sendDefectNotice(sysDefectLog.getSrcHost(), sd.getDefectId());
 
         // 插入日志
         sysDefectLog.setDefectLogType(SysDefectLogStateEnum.ASSIGN);
@@ -72,6 +88,9 @@ public class SysDefectServiceImpl implements ISysDefectService
         sd.setDefectState(SysDefectStateEnum.REJECTED);
         sd.setHandleBy(Arrays.asList(Long.valueOf(sd.getUpdateBy())));
         this.updateSysDefect(sd);
+
+        // 发送通知
+        this.sendDefectNotice(sysDefectLog.getSrcHost(), sd.getDefectId());
 
         // 插入日志
         sysDefectLog.setDefectLogType(SysDefectLogStateEnum.REJECTED);
@@ -95,6 +114,9 @@ public class SysDefectServiceImpl implements ISysDefectService
         sd.setHandleBy(sysDefectLog.getReceiveBy());
         this.updateSysDefect(sd);
 
+        // 发送通知
+        this.sendDefectNotice(sysDefectLog.getSrcHost(), sd.getDefectId());
+
         // 插入日志
         sysDefectLog.setDefectLogType(SysDefectLogStateEnum.REPAIR);
         sysDefectLog.setReceiveBy(sd.getHandleBy());
@@ -116,6 +138,9 @@ public class SysDefectServiceImpl implements ISysDefectService
         sd.setDefectState(SysDefectStateEnum.CLOSED);
         this.updateSysDefect(sd);
 
+        // 发送通知
+        this.sendDefectNotice(sysDefectLog.getSrcHost(), sd.getDefectId());
+
         // 插入日志
         sysDefectLog.setDefectLogType(SysDefectLogStateEnum.PASS);
         this.inertLog(sysDefectLog);
@@ -130,6 +155,9 @@ public class SysDefectServiceImpl implements ISysDefectService
         sd.setDefectId(sysDefectLog.getDefectId());
         sd.setDefectState(SysDefectStateEnum.CLOSED);
         this.updateSysDefect(sd);
+
+        // 发送通知
+        this.sendDefectNotice(sysDefectLog.getSrcHost(), sd.getDefectId());
 
         // 插入日志
         sysDefectLog.setDefectLogType(SysDefectLogStateEnum.CLOSED);
@@ -146,6 +174,9 @@ public class SysDefectServiceImpl implements ISysDefectService
         sd.setDefectState(SysDefectStateEnum.PROCESSING);
         sd.setHandleBy(sysDefectLog.getReceiveBy());
         this.updateSysDefect(sd);
+
+        // 发送通知
+        this.sendDefectNotice(sysDefectLog.getSrcHost(), sd.getDefectId());
 
         // 插入日志
         sysDefectLog.setDefectLogType(SysDefectLogStateEnum.OPEN);
@@ -222,6 +253,10 @@ public class SysDefectServiceImpl implements ISysDefectService
         long count = sysDefectMapper.getProjectDefectMaxNum(sysDefect.getProjectId(), SecurityUtils.getUserId());
         sysDefect.setProjectNum(count+1);
         Preconditions.checkState(sysDefectMapper.insertSysDefect(sysDefect)>0,MessageUtils.message("defect.insert_fail"));
+
+        // 发送通知
+        this.sendDefectNotice(sysDefect.getSrcHost(), sysDefect.getDefectId());
+
         // 新建日志
         this.inertLog(sysDefect.getDefectId(),sysDefect.getHandleBy(),null,SysDefectLogStateEnum.CREATE);
         return 1;
@@ -256,8 +291,9 @@ public class SysDefectServiceImpl implements ISysDefectService
     public int updateSysDefect(SysDefect sysDefect)
     {
         sysDefect.setUpdateTime(DateUtils.getNowDate());
-        sysDefect.setUpdateBy(String.valueOf(SecurityUtils.getUserId()));
-        int ret = sysDefectMapper.updateSysDefect(sysDefect);
+        Long memberId = SecurityUtils.getUserId();
+        sysDefect.setUpdateBy(String.valueOf(memberId));
+        int ret = this.sysDefectMapper.updateSysDefect(sysDefect);
         Preconditions.checkState(ret>0, MessageUtils.message("defect.update_fail"));
         return ret;
     }
@@ -296,4 +332,42 @@ public class SysDefectServiceImpl implements ISysDefectService
         return sysDefectMapper.selectVersionList(projectId);
     }
 
+    /**
+     * 发送缺陷通知
+     * @param defectId
+     */
+    private void sendDefectNotice(String srcHost, Long defectId) {
+        SysDefect defect = this.sysDefectMapper.selectSysDefectByDefectId(defectId,null, DateUtils.getNowDate());
+        defect.setSrcHost(srcHost);
+        if(defect!=null) {
+            // 获取关注缺陷的人ID集合
+            SysUserDefect userDefect = new SysUserDefect();
+            userDefect.setDefectId(defectId);
+            userDefect.setCollect(1);
+            List<Long> collectUserList = this.sysUserDefectMapper.selectSysUserDefectList(userDefect).stream().map(u->u.getUserId()).collect(Collectors.toList());
+            try {
+                // 将缺陷处理人和关注人ID放到一个集合里
+                Set<Long> receiverList = new HashSet<>();
+                receiverList.addAll(collectUserList);     // 添加关注人集合
+                receiverList.addAll(defect.getHandleBy());// 添加处理人集合
+                // 给处理人和关注此缺陷的人发送通知
+                String title = String.format("[%s]%s:#%d %s",
+                        MessageUtils.message(defect.getDefectState().name()),
+                        MessageUtils.message("defect"),
+                        defect.getProjectNum(),
+                        defect.getDefectName());
+                this.imService.sendMessage(
+                        defect.getProjectId(),  // 项目ID
+                        SysDefect.KEY,  // 通知组名称
+                        SecurityUtils.getUserId(),  // 发送人ID
+                        receiverList.stream().collect(Collectors.toList()), // 接收人集合
+                        title,      // 通知标题
+                        defect,     // 通知内容
+                        this.defectMessageOfNoticeTemplate  // 通知内容格式模版
+                );
+            }catch (Exception e) {
+                log.error(e);
+            }
+        }
+    }
 }

@@ -7,6 +7,7 @@
       {{member.avatar?'': member.nickName || member.userName || member.name}}
     </el-avatar>
     <span v-if="online && member.online" class="online"></span>
+    <slot name="extend"></slot>
   </div>
 </template>
 
@@ -33,6 +34,9 @@ export default {
   },
   computed: {
     imgUrl: function () {
+      if(this.member.avatarUrl) {
+        return this.member.avatarUrl;
+      }
       return this.member.avatar?process.env.VUE_APP_BASE_API + this.member.avatar:''
     }
   }

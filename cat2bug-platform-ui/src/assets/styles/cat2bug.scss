@@ -22,3 +22,43 @@
 .el-page-header {
   margin-bottom: 20px;
 }
+
+.red {
+  color: #f56c6c;
+}
+.red-button {
+  color: #f56c6c !important;
+  --current-color: #f56c6c !important;
+  :hover {
+    color: #f56c6c !important;
+  }
+}
+.tabs-tools-row {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  > .el-tabs {
+    flex: 1;
+  }
+  > .right-tools {
+    position: absolute;
+    right: 0px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    padding-bottom: 5px;
+
+    .tools-button {
+      cursor: pointer;
+      color: #606266;
+      margin: 0px 5px;
+    }
+    .tools-button:hover {
+      color: #409EFF;
+    }
+  }
+}

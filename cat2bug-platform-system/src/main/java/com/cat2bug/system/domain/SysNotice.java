@@ -30,7 +30,19 @@ public class SysNotice extends BaseEntity
 
     /** 公告状态（0正常 1关闭） */
     private String status;
-
+    /** 团队名称 */
+    private String teamName;
+    /** 项目名称 */
+    private String projectName;
+    /** 组名称 */
+    private String groupName;
+    /** 接收人 */
+    private Long receiverId;
+    /** 项目ID */
+    private Long projectId;
+    /** 是否已读 */
+    private boolean isRead;
+    /** 公告状态（0正常 1关闭） */
     public Long getNoticeId()
     {
         return noticeId;
@@ -82,6 +94,54 @@ public class SysNotice extends BaseEntity
     public String getStatus()
     {
         return status;
+    }
+
+    public String getTeamName() {
+        return teamName;
+    }
+
+    public void setTeamName(String teamName) {
+        this.teamName = teamName;
+    }
+
+    public String getProjectName() {
+        return projectName;
+    }
+
+    public void setProjectName(String projectName) {
+        this.projectName = projectName;
+    }
+
+    public String getGroupName() {
+        return groupName;
+    }
+
+    public void setGroupName(String groupName) {
+        this.groupName = groupName;
+    }
+
+    public Long getReceiverId() {
+        return receiverId;
+    }
+
+    public void setReceiverId(Long receiverId) {
+        this.receiverId = receiverId;
+    }
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
+    }
+
+    public boolean getIsRead() {
+        return isRead;
+    }
+
+    public void setIsRead(boolean read) {
+        isRead = read;
     }
 
     @Override

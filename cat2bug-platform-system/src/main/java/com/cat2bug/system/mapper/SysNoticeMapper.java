@@ -1,6 +1,8 @@
 package com.cat2bug.system.mapper;
 
 import java.util.List;
+import java.util.Map;
+
 import com.cat2bug.system.domain.SysNotice;
 
 /**
@@ -10,6 +12,12 @@ import com.cat2bug.system.domain.SysNotice;
  */
 public interface SysNoticeMapper
 {
+    /**
+     * 消息分组统计
+     * @param receiveId
+     * @return
+     */
+    public List<Map<String, Object>> noticeGroupStatistics(Long receiveId);
     /**
      * 查询公告信息
      * 

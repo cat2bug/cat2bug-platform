@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.im.mapper.NoticeMapper">
+    <insert id="insertNotice" parameterType="com.cat2bug.im.domain.NoticeMessage">
+        insert into sys_notice (
+        <if test="title != null and title != '' ">notice_title, </if>
+        <if test="noticeType != null and noticeType != '' ">notice_type, </if>
+        <if test="content != null and content != '' ">notice_content, </if>
+        <if test="status != null and status != '' ">status, </if>
+        <if test="projectId != null">project_id,</if>
+        <if test="group != null and group != ''">group_name,</if>
+        <if test="receiveMemberId != null">receiver_id,</if>
+        create_time
+        )values(
+        <if test="title != null and title != ''">#{title}, </if>
+        <if test="noticeType != null and noticeType != ''">#{noticeType}, </if>
+        <if test="content != null and content != ''">#{content}, </if>
+        <if test="status != null and status != ''">#{status}, </if>
+        <if test="projectId != null">#{projectId},</if>
+        <if test="group != null and group != ''">#{group},</if>
+        <if test="receiveMemberId != null">#{receiveMemberId},</if>
+        sysdate()
+        )
+    </insert>
+
+
+</mapper>

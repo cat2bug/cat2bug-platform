@@ -1,6 +1,7 @@
 package com.cat2bug.system.websocket;
 
 import com.cat2bug.common.websocket.IWebSocketService;
+import com.cat2bug.common.websocket.MessageWebsocket;
 import com.cat2bug.system.service.IMemberFocusService;
 import com.cat2bug.system.service.ISysUserOnlineService;
 import org.apache.logging.log4j.LogManager;
@@ -31,13 +32,13 @@ public class MemberFocusWebsocket implements IWebSocketService {
     private ISysUserOnlineService sysUserOnlineService;
 
     @Override
-    public void onOpen(com.cat2bug.common.websocket.MessageWebsocket messageWebsocket, Session session, Long memberId) {
+    public void onOpen(com.cat2bug.common.websocket.MessageWebsocket messageWebsocket, Long memberId, Session session) {
         this.memberId = memberId;
         sysUserOnlineService.memberOnline(memberId);
     }
 
     @Override
-    public void onClose(Session session) {
+    public void onClose(MessageWebsocket messageWebsocket, Long memberId, Session session) {
         // 移除成员焦点
         memberFocusService.removeFocus(this.memberId);
         // 设置成员离线
@@ -45,7 +46,7 @@ public class MemberFocusWebsocket implements IWebSocketService {
     }
 
     @Override
-    public void onMessage(String message) {
+    public void onMessage(MessageWebsocket messageWebsocket, Long memberId, String message) {
 
     }
 }

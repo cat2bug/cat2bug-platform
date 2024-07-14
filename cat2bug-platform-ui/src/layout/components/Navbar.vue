@@ -13,6 +13,11 @@
         <el-tooltip :content="$t('source-code-address')" effect="dark" placement="bottom">
           <cat2-bug-git id="cat2bug-git" class="right-menu-item hover-effect" />
         </el-tooltip>
+        <el-tooltip :content="$t('notice')" effect="dark" placement="bottom">
+          <router-link to="/notice/index" class="right-menu-item hover-effect">
+            <el-badge :hidden="noticeCount==0" is-dot class="item"><svg-icon icon-class="notice"></svg-icon></el-badge>
+          </router-link>
+        </el-tooltip>
 
 <!--        <el-tooltip :content="$t('md-address')" effect="dark" placement="bottom">-->
 <!--          <cat2-bug-md id="cat2bug-md" class="right-menu-item hover-effect" />-->
@@ -52,10 +57,13 @@ import Cat2BugGit from '@/components/Cat2Bug/Git'
 import Cat2BugDoc from '@/components/Cat2Bug/Doc'
 import Cat2BugAvatar from "@/components/Cat2BugAvatar";
 import LangSelect from "@/components/LangSelect";
+import {groupStatisticsNotice} from "@/api/system/notice";
 
 export default {
   data() {
     return {
+      noticeCount: 0,
+      topicId: null,
       langIcon: 'lang-zh-CN',
       langName: '简体中文'
     }
@@ -105,7 +113,31 @@ export default {
       }
     }
   },
+  created() {
+    this.guoNoticeCount();
+  },
+  mounted() {
+    // 订阅WebSocket下载模型消息
+    this.topicId = this.$topic.subscribe(this.$topic.NOTICE_TOPIC, (name, data) => {
+      this.guoNoticeCount();
+    });
+  },
+  beforeDestroy() {
+    // 取消下载模型的WebSocket订阅
+    this.$topic.unsubscribe(this.topicId);
+    this.topicId = null;
+  },
   methods: {
+    /** 获取通知数量 */
+    guoNoticeCount() {
+      groupStatisticsNotice().then(res=>{
+        let count = 0;
+        res.rows.forEach(g=>{
+          count += g.notReadCount;
+        });
+        this.noticeCount = count;
+      })
+    },
     toggleSideBar() {
       this.$store.dispatch('app/toggleSideBar')
     },
@@ -193,9 +225,13 @@ export default {
     &:focus {
       outline: none;
     }
-
+    .el-badge {
+      line-height: 20px;
+    }
     .right-menu-item {
-      display: inline-block;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
       padding: 0 8px;
       height: 100%;
       font-size: 18px;
@@ -207,7 +243,11 @@ export default {
         transition: background .3s;
 
         &:hover {
-          background: rgba(0, 0, 0, .025)
+          background: rgba(0, 0, 0, .025);
+          border-bottom: 0px;
+          :after {
+            border-bottom: 0px;
+          }
         }
       }
     }

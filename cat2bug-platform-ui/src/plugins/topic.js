@@ -4,6 +4,7 @@ class topic {
   static MEMBER_ONLINE_TOPIC = "memberOnline";
   static MEMBER_OFFLINE_TOPIC = "memberOffline";
   static AI_MODEL_PULL_TOPIC = "aiModelPull";
+  static NOTICE_TOPIC = "notice";
   /** 推送数据 */
   static publish(topic, data) {
     window.PubSub.publish(topic, data);

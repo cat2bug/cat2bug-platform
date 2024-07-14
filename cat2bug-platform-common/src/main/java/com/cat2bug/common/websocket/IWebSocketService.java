@@ -12,17 +12,17 @@ public interface IWebSocketService {
      * @param session
      * @param memberId
      */
-    public void onOpen(MessageWebsocket messageWebsocket, Session session, Long memberId);
+    public void onOpen(MessageWebsocket messageWebsocket, Long memberId, Session session);
 
     /**
      * 关闭客户端
      * @param session
      */
-    public void onClose(Session session);
+    public void onClose(MessageWebsocket messageWebsocket, Long memberId, Session session);
 
     /**
      * 接收到消息
      * @param message   消息
      */
-    public void onMessage(String message);
+    public void onMessage(MessageWebsocket messageWebsocket, Long memberId, String message);
 }

@@ -18,7 +18,10 @@ import com.cat2bug.system.service.ISysUserConfigService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -144,7 +147,7 @@ public class SysDefectController extends BaseController
     @PreAuthorize("@ss.hasPermi('system:defect:assign')")
     @Log(title = "指派缺陷", businessType = BusinessType.INSERT)
     @PostMapping("/{defectId}/assign")
-    public AjaxResult assign(@RequestBody SysDefectLog sysDefectlog)
+    public AjaxResult assign(HttpServletRequest request, @RequestBody SysDefectLog sysDefectlog)
     {
         return success(sysDefectService.assign(sysDefectlog));
     }

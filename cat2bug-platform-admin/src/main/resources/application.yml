@@ -76,7 +76,7 @@ caffeine:
 
 # Spring配置
 spring:
-  database-type: h2
+  database-type: mysql
   thymeleaf:
     mode: HTML
     encoding: utf-8
@@ -98,6 +98,22 @@ spring:
       max-file-size: 500MB
       # 设置总上传的文件大小
       max-request-size: 100TB
+  mail:
+    # smtp服务器地址
+    host: mail.cat2bug.com
+    # smtp服务器端口
+    port: 587
+    # 默认邮件账号
+    username: dev@cat2bug.com
+    # 默认邮件密码
+    password: cat2bug_password
+    # 默认发送邮件地址
+    from: dev@cat2bug.com
+    # 默认邮件编码
+    default-encoding: UTF-8
+    properties:
+      mail.smtp.socketFactory.fallback: true
+      mail.smtp.starttls.enable: true
   # 服务模块
   devtools:
     restart:

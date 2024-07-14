@@ -1,4 +1,5 @@
 {
+  "char-span": "",
   "system-name": "猫陪我改BUG",
   "system-introduce": "虽然我的本职是一个程序员，但是一直都对测试技术感兴趣。之前也用了很多优秀的线上或线下测试系统，但是感觉大部分测试平台都比较重，没有适合自己简单需求的，因此萌生了自己写一套测试平台的想法。系统起名叫“猫陪我改BUG”，是因为每天坐在工作台，家里的猫总会过来陪我。而且系统的宗旨是轻量化、简单、便捷，起一个接近于生活的名字，是希望我们在做软件的时候，更能贴近于生活。目前系统只提供精简的BUG提交与修复功能，后续将陆续提供云同步、快速测试等工具。",
   "visit-homepage": "访问首页",
@@ -63,6 +64,8 @@
   "version": "版本",
   "exception": "异常",
   "prompted": "系统提示",
+  "thanks-formally": "鸣谢",
+  "notice": "通知",
   "log": "日志",
   "id": "编号",
   "name": "名称",
@@ -577,5 +580,12 @@
   "hour": "小时",
   "minute": "分钟",
   "sys.normal-disable-0": "正常",
-  "sys.normal-disable-1": "停用"
+  "sys.normal-disable-1": "停用",
+  "base-info": "基本信息",
+  "notice.content": "通知内容",
+  "notice.team": "关联团队",
+  "notice.project": "关联项目",
+  "notice.group": "通知分组",
+  "notice.send": "发送通知",
+  "notice.is-delete": "是否删除选择的通知?"
 }

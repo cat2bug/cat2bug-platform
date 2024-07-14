@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.im.mapper.MemberMapper">
+
+    <resultMap type="com.cat2bug.im.domain.Member" id="MemberResult">
+        <id     property="userId"       column="user_id"      />
+        <result property="name"     column="nick_name"    />
+        <result property="mail"        column="email"        />
+        <result property="phone"  column="phonenumber"  />
+    </resultMap>
+
+	
+	<sql id="selectMemberVo">
+        select u.user_id, u.nick_name, u.email, u.phonenumber from sys_user u
+    </sql>
+    
+    <select id="findMember" resultMap="MemberResult">
+        <include refid="selectMemberVo"/>
+		<if test="userId != null and userId != 0">
+			AND u.user_id = #{memberId}
+		</if>
+	</select>
+
+    <select id="selectMemberList" resultMap="MemberResult">
+        <include refid="selectMemberVo"/>
+    <where>
+        <if test="memberIds != null and memberIds.size > 0">
+            AND u.user_id in
+            <foreach collection="memberIds" item="id" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+    </where>
+    </select>
+</mapper>

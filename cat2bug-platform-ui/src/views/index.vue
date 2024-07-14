@@ -91,7 +91,49 @@
 <!--              <s> 满12345 </s>-->
               <a target="_blank" href="https://qm.qq.com/cgi-bin/qm/qr?k=vpZaR_tWTwG0lPABP9NqgX2wSSSEEaWV&jump_from=webapi&authKey=8xIzBRe5T9RoEdisRBgYWbMmCoWXIYk4VikARN8S4RA3MZT7z7FUj71ZIIvEzGzq">731462000</a>
             </p>
+            <el-image
+              class="qcoder"
+              :src="require('@/assets/images/qq-qcoder.png')"
+              fit="cover"></el-image>
+            <el-image
+              class="qcoder"
+              :src="require('@/assets/images/wechat-qcoder.png')"
+              fit="cover"></el-image>
           </div>
+        </el-card>
+
+        <el-card class="update-log margin-top-20">
+          <div slot="header" class="clearfix">
+            <span>{{$t('ecosystem')}}</span>
+          </div>
+          <el-collapse accordion>
+            <el-collapse-item title="Cat2Bug-JUnit">
+              <div class="body">
+                <p>
+                  <i class="el-icon-s-order"></i> {{$t('project.introduction')}}：
+                  自动化接口单元测试框架
+                </p>
+                <p>
+                  <i class="el-icon-s-home"></i>{{$t('source-code-address')}}：<el-link
+                  href="https://gitee.com/cat2bug/cat2bug-junit"
+                  target="_blank">https://gitee.com/cat2bug/cat2bug-junit</el-link>
+                </p>
+              </div>
+            </el-collapse-item>
+            <el-collapse-item title="Cat2Bug-JLog">
+              <div class="body">
+                <p>
+                  <i class="el-icon-s-order"></i> {{$t('project.introduction')}}：
+                  异常日志采集框架
+                </p>
+                <p>
+                  <i class="el-icon-s-home"></i>{{$t('source-code-address')}}：<el-link
+                  href="https://gitee.com/cat2bug/cat2bug-jlog"
+                  target="_blank">https://gitee.com/cat2bug/cat2bug-jlog</el-link>
+                </p>
+              </div>
+            </el-collapse-item>
+          </el-collapse>
         </el-card>
       </el-col>
       <el-col :xs="24" :sm="24" :md="12" :lg="8">
@@ -183,36 +225,13 @@
       <el-col :xs="24" :sm="24" :md="12" :lg="8">
         <el-card class="update-log">
           <div slot="header" class="clearfix">
-            <span>{{$t('ecosystem')}}</span>
+            <span>{{$t('thanks-formally')}}</span>
           </div>
-          <el-collapse accordion>
-            <el-collapse-item title="Cat2Bug-JUnit">
-              <div class="body">
-                <p>
-                  <i class="el-icon-s-order"></i> {{$t('project.introduction')}}：
-                  自动化接口单元测试框架
-                </p>
-                <p>
-                  <i class="el-icon-s-home"></i>{{$t('source-code-address')}}：<el-link
-                  href="https://gitee.com/cat2bug/cat2bug-junit"
-                  target="_blank">https://gitee.com/cat2bug/cat2bug-junit</el-link>
-                </p>
-              </div>
-            </el-collapse-item>
-            <el-collapse-item title="Cat2Bug-JLog">
-              <div class="body">
-                <p>
-                  <i class="el-icon-s-order"></i> {{$t('project.introduction')}}：
-                  异常日志采集框架
-                </p>
-                <p>
-                  <i class="el-icon-s-home"></i>{{$t('source-code-address')}}：<el-link
-                  href="https://gitee.com/cat2bug/cat2bug-jlog"
-                  target="_blank">https://gitee.com/cat2bug/cat2bug-jlog</el-link>
-                </p>
-              </div>
-            </el-collapse-item>
-          </el-collapse>
+          <cat2-bug-avatar style="margin-right: 10px;" size="large" :member="member" v-for="(member,index) in tanksMemberList" :key="index">
+            <template v-slot:extend>
+              <span>{{member.name}}</span>
+            </template>
+          </cat2-bug-avatar>
         </el-card>
       </el-col>
     </el-row>
@@ -221,13 +240,28 @@
 
 <script>
 import {getVersion} from "@/api/version";
+import Cat2BugAvatar from "@/components/Cat2BugAvatar";
 
 export default {
   name: "Index",
+  components: {Cat2BugAvatar},
   data() {
     return {
       // 版本号
-      version: null
+      version: null,
+      tanksMemberList: [{
+        name: '丁为康',
+        avatarUrl: require('@/assets/images/thanks/dingweikang.png')
+      },{
+        name: 'Richard CHAN',
+        avatarUrl: require('@/assets/images/thanks/Richard-CHAN.png')
+      },{
+        name: 'u\'d Like',
+        avatarUrl: require('@/assets/images/thanks/u-d-Like.jpg')
+      },{
+        name: 'Silence、',
+        avatarUrl: require('@/assets/images/thanks/Silence.png')
+      }]
     };
   },
   created() {
@@ -296,7 +330,16 @@ export default {
     }
   }
 
+  .qcoder {
+    width: 150px;
+    height: 150px;
+    margin-right: 10px;
+    :last-child {
+      margin-right: 0px;
+    }
+  }
   .update-log {
+    margin-bottom: 20px;
     ol {
       display: block;
       list-style-type: decimal;

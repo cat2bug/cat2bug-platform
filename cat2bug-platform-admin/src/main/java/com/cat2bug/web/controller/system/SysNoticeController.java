@@ -1,6 +1,8 @@
 package com.cat2bug.web.controller.system;
 
 import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -41,6 +43,14 @@ public class SysNoticeController extends BaseController
     {
         startPage();
         List<SysNotice> list = noticeService.selectNoticeList(notice);
+        return getDataTable(list);
+    }
+
+    @PreAuthorize("@ss.hasPermi('system:notice:list')")
+    @GetMapping("/statistics/group")
+    public TableDataInfo groupStatistics()
+    {
+        List<Map<String, Object>> list = noticeService.noticeGroupStatistics(getUserId());
         return getDataTable(list);
     }
 

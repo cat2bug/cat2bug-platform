@@ -1,4 +1,5 @@
 {
+  "char-span": " ",
   "system-name": "CAT & BUG",
   "system-introduce": "Although I am a programmer, I have always been interested in testing techniques. I have also used many excellent online or offline testing systems before, but I feel that most testing platforms are relatively heavy and there is no one suitable for my simple needs. Therefore, I have the idea of writing my own testing platform. The system is named \"Cat accompanies me to fix bugs\" because every day while sitting on the workbench, the cat at home always comes to accompany me. And the purpose of the system is to be lightweight, simple, and convenient, giving a name that is close to life, hoping that when we make software, we can be more close to life. At present, the system only provides streamlined bugs.",
   "visit-homepage": "Visit the Homepage",
@@ -63,6 +64,8 @@
   "version": "Version",
   "exception": "Exception",
   "prompted": "Prompted",
+  "thanks-formally": "Express One's Thanks Formally",
+  "notice": "Notice",
   "log": "Log",
   "id": "ID",
   "name": "Name",
@@ -577,5 +580,12 @@
   "hour": "Hour",
   "minute": "Minute",
   "sys.normal-disable-0": "Normal",
-  "sys.normal-disable-1": "Stop"
+  "sys.normal-disable-1": "Stop",
+  "base-info": "Basic Information",
+  "notice.content": "Notice Content",
+  "notice.team": "Related Team",
+  "notice.project": "Related Project",
+  "notice.group": "Notice Group",
+  "notice.send": "Send Notice",
+  "notice.is-delete": "Do you want to delete the selected notification?"
 }

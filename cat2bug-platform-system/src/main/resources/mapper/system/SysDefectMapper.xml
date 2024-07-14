@@ -192,6 +192,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <select id="selectVersionList" resultMap="SysVersionResult">
         select module_version as version, max(create_time) as create_time from sys_defect where module_version is not null and project_id=#{projectId} group by module_version
     </select>
+
     <insert id="insertSysDefect" parameterType="com.cat2bug.common.core.domain.entity.SysDefect" useGeneratedKeys="true" keyProperty="defectId">
         insert into sys_defect
         <trim prefix="(" suffix=")" suffixOverrides=",">

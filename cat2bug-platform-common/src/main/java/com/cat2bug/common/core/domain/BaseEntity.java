@@ -44,6 +44,11 @@ public class BaseEntity implements Serializable
     /** 备注 */
     private String remark;
 
+    /**
+     * 数据源地址
+     */
+    private String srcHost;
+
     /** 请求参数 */
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private Map<String, Object> params;
@@ -122,6 +127,14 @@ public class BaseEntity implements Serializable
 
     public void setUpdateById(Long updateById) {
         this.updateById = updateById;
+    }
+
+    public String getSrcHost() {
+        return srcHost;
+    }
+
+    public void setSrcHost(String srcHost) {
+        this.srcHost = srcHost;
     }
 
     public Map<String, Object> getParams()
