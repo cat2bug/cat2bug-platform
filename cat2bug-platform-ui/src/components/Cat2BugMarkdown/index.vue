@@ -329,12 +329,14 @@ export default {
       if (tool.content instanceof Function || tool.content instanceof Promise) {
         content = await tool.content(this, tool);
       } else {
-        content = this.$i18n.t(tool.content);
+        content = this.$i18n.te(tool.content)?this.$i18n.t(tool.content):tool.content;
       }
       if (markdownEdit.selectionStart || markdownEdit.selectionStart === 0) {
         if (markdownEdit.selectionStart == markdownEdit.selectionEnd) {
           content = strFormat(content, tool.name);
         } else {
+          let startPos = markdownEdit.selectionStart
+          let endPos = markdownEdit.selectionEnd
           content = strFormat(content, markdownEdit.value.substring(startPos, endPos));
         }
       }
