@@ -77,7 +77,7 @@
         </template>
       </el-table-column>
       <el-table-column :label="$t('report.source')" align="center" prop="reportSource"  width="200"/>
-      <el-table-column :label="$t('report.update-by')" align="center" prop="createBy"  width="150">
+      <el-table-column :label="$t('updateBy')" align="center" prop="createBy"  width="150">
         <template slot-scope="scope">
           <el-tooltip v-if="scope.row.createBy" class="item" effect="dark" :content="scope.row.createBy" placement="top">
             <cat2-bug-avatar :member="member(scope.row)" />

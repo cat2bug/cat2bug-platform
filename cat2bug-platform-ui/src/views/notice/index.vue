@@ -14,7 +14,7 @@
         </el-tab-pane>
       </el-tabs>
       <div class="right-tools">
-        <svg-icon class="tools-button" icon-class="add-tab" @click.native="addNoticeTabHandle" />
+<!--        <svg-icon class="tools-button" icon-class="add-tab" @click.native="addNoticeTabHandle" />-->
         <svg-icon class="tools-button" icon-class="config" @click="setNoticeOptionHandle" />
       </div>
     </div>
@@ -80,7 +80,7 @@
       <el-table-column
         :label="$t('notice.team')"
         prop="teamName"
-        align="left" width="150"/>
+        align="left" width="200"/>
       <el-table-column
         :label="$t('notice.project')"
         prop="projectName"
@@ -117,16 +117,18 @@
       @pagination="getList"
     />
     <view-notice ref="viewNotice" @read="getList"></view-notice>
+    <option-notice ref="noticeOption" :member-id="getUserId" />
   </div>
 </template>
 
 <script>
 import {delNotice, groupStatisticsNotice, listNotice} from "@/api/system/notice";
+import OptionNotice from "./option/index"
 import ViewNotice from "@/components/Notice/ViewNotice";
 
 export default {
   name: "Notice",
-  components: { ViewNotice },
+  components: { ViewNotice, OptionNotice },
   dicts: ['sys_notice_status', 'sys_notice_type'],
   data () {
     return {
@@ -186,7 +188,7 @@ export default {
     },
     /** 设置通知配置 */
     setNoticeOptionHandle() {
-
+      this.$refs.noticeOption.open();
     },
     /** 添加通知标签 */
     addNoticeTabHandle() {
