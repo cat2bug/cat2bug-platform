@@ -19,6 +19,7 @@ export function getReport(reportId) {
 
 // 新增报告
 export function addReport(data) {
+  data.srcHost = `${window.location.protocol}//${window.location.host}`;
   return request({
     url: '/system/report',
     method: 'post',
@@ -28,6 +29,7 @@ export function addReport(data) {
 
 // 修改报告
 export function updateReport(data) {
+  data.srcHost = `${window.location.protocol}//${window.location.host}`;
   return request({
     url: '/system/report',
     method: 'put',

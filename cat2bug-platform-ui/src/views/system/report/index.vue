@@ -202,6 +202,11 @@ export default {
   created() {
     this.getList();
   },
+  mounted() {
+    if(this.$route.query.reportId) {
+      this.$refs.viewReport.open(this.$route.query.reportId);
+    }
+  },
   methods: {
     /** 查询报告列表 */
     getList() {

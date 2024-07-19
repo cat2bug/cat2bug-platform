@@ -126,13 +126,12 @@ export default {
     this.panelTopicId = this.$topic.subscribe(this.$topic.PANEL_NOTICE_TOPIC, (name, data) => {
       if(data && data.data) {
         const msg = data.data;
-        console.log('-------',msg.src)
         if(msg.panel) {
           this.$notify({
             title: '缺陷通知',
             dangerouslyUseHTMLString: true,
             type: 'success',
-            message: `<a style="color: #409eff;" href="${msg.src}">${msg.title}<\a>`
+            message: `<a target="_blank" style="color: #409eff;" href="${msg.src}">${msg.title}<\a>`
           });
         }
       }

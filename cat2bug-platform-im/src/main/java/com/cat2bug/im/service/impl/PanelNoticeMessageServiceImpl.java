@@ -42,7 +42,6 @@ public class PanelNoticeMessageServiceImpl implements IIMService<NoticeMessage, 
         if(StringUtils.isNotBlank(message.getTitle()) && message.getTitle().length()>255) {
             message.setTitle(message.getTitle().substring(0,255));
         }
-        noticeMapper.insertNotice(message);
         if(this.memberWebSocketMap.containsKey(message.getReceiveMemberId())) {
             WebSocketResult ws = WebSocketResult.success(NOTICE_ACTION, message);
             this.memberWebSocketMap.get(message.getReceiveMemberId()).sendMessage(ws);

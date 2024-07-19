@@ -40,7 +40,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         where r.report_id = #{reportId}
     </select>
         
-    <insert id="insertSysReport" parameterType="com.cat2bug.common.core.domain.entity.SysReport">
+    <insert id="insertSysReport" parameterType="com.cat2bug.common.core.domain.entity.SysReport" useGeneratedKeys="true" keyProperty="reportId">
         insert into sys_report
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="reportId != null">report_id,</if>

@@ -21,6 +21,8 @@ public class SysReport<T> extends BaseEntity
 {
     private static final long serialVersionUID = 1L;
 
+    public static final String KEY = "report";
+
     /** 报告ID */
     private Long reportId;
 

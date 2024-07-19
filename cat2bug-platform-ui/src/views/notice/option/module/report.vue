@@ -3,7 +3,7 @@
     <h3><svg-icon icon-class="chart"/>报告通知</h3>
     <el-form ref="form" :model="form" label-width="120px">
       <el-form-item label="通知事件">
-        <el-checkbox label="有新报告时通知我" v-model="form.event.my" @change="handleChange"></el-checkbox>
+        <el-checkbox label="有新报告时通知我" v-model="form.event.newReport" @change="handleChange"></el-checkbox>
       </el-form-item>
       <el-form-item label="触发方式">
         <div class="col">
