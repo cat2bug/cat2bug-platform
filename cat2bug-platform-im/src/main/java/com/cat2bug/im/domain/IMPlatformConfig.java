@@ -1,5 +1,6 @@
 package com.cat2bug.im.domain;
 
+import com.alibaba.fastjson.annotation.JSONField;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 

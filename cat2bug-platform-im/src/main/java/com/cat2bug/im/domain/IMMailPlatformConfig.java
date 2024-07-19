@@ -1,7 +1,5 @@
 package com.cat2bug.im.domain;
 
-import com.alibaba.fastjson.annotation.JSONField;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,14 +13,15 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class IMMailPlatformConfig {
-    /**
-     * 邮件通知开关
-     */
-    @JsonProperty("switch")
-    private boolean configSwitch;
+public class IMMailPlatformConfig extends IMBasePlatformConfig {
+
     /**
      * 发送人的邮箱
      */
     private String sender;
+
+    public IMMailPlatformConfig(boolean configSwitch, String sender) {
+        super(configSwitch);
+        this.sender = sender;
+    }
 }

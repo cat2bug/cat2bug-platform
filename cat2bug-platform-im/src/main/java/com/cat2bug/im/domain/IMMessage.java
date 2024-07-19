@@ -20,6 +20,10 @@ public class IMMessage<T> {
      */
     private String title;
     /**
+     * 通知源
+     */
+    private String src;
+    /**
      * 消息类型
      */
     private IMMessageType type;

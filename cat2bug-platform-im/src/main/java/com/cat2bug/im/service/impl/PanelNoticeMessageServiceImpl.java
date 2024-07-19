@@ -1,7 +1,5 @@
 package com.cat2bug.im.service.impl;
 
-import com.alibaba.fastjson.JSON;
-import com.cat2bug.common.constant.HttpStatus;
 import com.cat2bug.common.core.domain.WebSocketResult;
 import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.common.websocket.IWebSocketService;
@@ -13,7 +11,6 @@ import com.cat2bug.im.service.IIMService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import javax.websocket.Session;
@@ -27,12 +24,12 @@ import java.util.concurrent.ConcurrentHashMap;
  * 通知消息服务
  */
 @Service
-public class NoticeMessageServiceImpl implements IIMService<NoticeMessage, IMSystemPlatformConfig>, IWebSocketService {
-    private final static Logger log = LogManager.getLogger(NoticeMessageServiceImpl.class);
+public class PanelNoticeMessageServiceImpl implements IIMService<NoticeMessage, IMSystemPlatformConfig>, IWebSocketService {
+    private final static Logger log = LogManager.getLogger(PanelNoticeMessageServiceImpl.class);
 
-    private final static String NOTICE_ACTION = "notice";
+    private final static String NOTICE_ACTION = "panel_notice";
 
-    public final static String MESSAGE_FACTORY_NAME = "ImNoticeMessage";
+    public final static String MESSAGE_FACTORY_NAME = "ImPanelNoticeMessage";
     @Autowired
     private NoticeMapper noticeMapper;
 

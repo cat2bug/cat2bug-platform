@@ -1,8 +1,7 @@
 package com.cat2bug.im.service.impl;
 
-import com.cat2bug.im.domain.DingMessage;
-import com.cat2bug.im.domain.IMMessage;
-import com.cat2bug.im.domain.Member;
+import com.cat2bug.common.utils.StringUtils;
+import com.cat2bug.im.domain.*;
 import com.cat2bug.im.mapper.MemberMapper;
 import com.cat2bug.im.service.IIMFactoryService;
 import com.cat2bug.im.service.IMessageTemplate;
@@ -25,17 +24,15 @@ public class DingMessageFactoryImpl implements IIMFactoryService {
     @Autowired
     private MemberMapper memberMapper;
 
-    @Value("${spring.mail.from}")
-    private String defaultMail;
-
     @Override
-    public <T> List<IMMessage> createMessage(Long projectId, String group, Long senderId, List<Long> recipientIds, String title, T content, IMessageTemplate<T> messageTemplate) {
+    public <T> List<IMMessage> createMessage(Long projectId, String group, Long senderId, List<Long> recipientIds, String title, T content, String src, IMessageTemplate<T> messageTemplate,IMConfig config) {
         List<Member> recipientList = this.memberMapper.selectMemberList(recipientIds);
         if(recipientList==null) return new ArrayList<>();
-        String text = messageTemplate.toText(content);
+        String text = messageTemplate.toText((T) String.format("【%s】%s", config.getPlatforms().getDing().getKey(), content), config.getModules());
+        if(StringUtils.isBlank(text)) return new ArrayList<>();
         return recipientList.stream().map(r->{
             DingMessage msg = new DingMessage(text);
-            msg.setWebHook("https://oapi.dingtalk.com/robot/send?access_token=4a70182b952466a5e2f11caed3ebc7a40eeb656bd670bd5320ad30268e15c697");
+            msg.setSrc(src);
             msg.setMsgtype("text");
             return msg;
         }).collect(Collectors.toList());

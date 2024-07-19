@@ -21,4 +21,12 @@ public class NoticeMessage extends IMMessage<String> {
      * 公告类型（1通知 2公告）
      */
     private char noticeType;
+    /**
+     * 是否开启背景音乐
+     */
+    private boolean backgroundMusic;
+    /**
+     * 是否开启提示面板
+     */
+    private boolean panel;
 }

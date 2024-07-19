@@ -1,7 +1,5 @@
 package com.cat2bug.im.domain;
 
-import com.alibaba.fastjson.annotation.JSONField;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,12 +13,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class IMDingPlatformConfig {
-    /**
-     * 钉钉通知开关
-     */
-    @JsonProperty("switch")
-    private boolean configSwitch;
+public class IMDingPlatformConfig extends IMBasePlatformConfig {
     /**
      * 关键词
      */
@@ -29,4 +22,10 @@ public class IMDingPlatformConfig {
      * 钩子函数
      */
     private String hook;
+
+    public IMDingPlatformConfig(boolean configSwitch, String key, String hook) {
+        super(configSwitch);
+        this.key = key;
+        this.hook = hook;
+    }
 }

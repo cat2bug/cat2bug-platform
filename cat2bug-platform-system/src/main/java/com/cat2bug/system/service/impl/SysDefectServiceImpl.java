@@ -363,6 +363,7 @@ public class SysDefectServiceImpl implements ISysDefectService
                         receiverList.stream().collect(Collectors.toList()), // 接收人集合
                         title,      // 通知标题
                         defect,     // 通知内容
+                        String.format("%s/#/project/defect?defectId=%d",defect.getSrcHost(), defect.getDefectId()),
                         this.defectMessageOfNoticeTemplate  // 通知内容格式模版
                 );
             }catch (Exception e) {

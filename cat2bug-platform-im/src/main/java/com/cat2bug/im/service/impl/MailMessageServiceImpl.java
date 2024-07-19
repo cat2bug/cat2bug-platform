@@ -1,5 +1,7 @@
 package com.cat2bug.im.service.impl;
 
+import com.cat2bug.common.utils.StringUtils;
+import com.cat2bug.im.domain.IMMailPlatformConfig;
 import com.cat2bug.im.service.IIMService;
 import com.cat2bug.im.domain.MailMessage;
 import org.apache.logging.log4j.LogManager;
@@ -20,25 +22,28 @@ import javax.mail.internet.MimeMessage;
  * @Version: 1.0.0
  */
 @Service
-public class MailMessageServiceImpl implements IIMService<MailMessage> {
+public class MailMessageServiceImpl implements IIMService<MailMessage, IMMailPlatformConfig> {
     public final static String MESSAGE_FACTORY_NAME = "ImMailMessage";
     private final Logger logger = LogManager.getLogger(this.getClass());
     @Autowired
     private JavaMailSender mailSender;
 
     @Override
-    public void sendNoticeMessage(MailMessage message) {
+    public void sendNoticeMessage(MailMessage message, IMMailPlatformConfig config) {
         //获取MimeMessage对象
         MimeMessage mm = mailSender.createMimeMessage();
         MimeMessageHelper messageHelper;
         try {
             messageHelper = new MimeMessageHelper(mm, true);
             //邮件发送人
-            messageHelper.setFrom(message.getFrom());
+            if(StringUtils.isNotBlank(config.getSender())) {
+                messageHelper.setFrom(config.getSender());
+            } else {
+                messageHelper.setFrom(message.getFrom());
+            }
             //邮件接收人,设置多个收件人地址
             InternetAddress[] internetAddressTo = InternetAddress.parse(message.getTo());
             messageHelper.setTo(internetAddressTo);
-            //messageHelper.setTo(to);
             //邮件主题
             mm.setSubject(message.getTitle());
             //邮件内容，html格式

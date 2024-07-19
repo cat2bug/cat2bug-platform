@@ -1,7 +1,7 @@
 package com.cat2bug.im.service;
 
+import com.cat2bug.im.domain.IMConfig;
 import com.cat2bug.im.domain.IMMessage;
-import org.apache.poi.ss.formula.functions.T;
 
 import java.util.List;
 
@@ -11,5 +11,5 @@ import java.util.List;
  * @Version: 1.0.0
  */
 public interface IIMFactoryService {
-    public <T> List<IMMessage> createMessage(Long projectId, String group, Long senderId, List<Long> recipientIds, String title, T text,IMessageTemplate<T> messageTemplate);
+    public <T> List<IMMessage> createMessage(Long projectId, String group, Long senderId, List<Long> recipientIds, String title, T text, String src, IMessageTemplate<T> messageTemplate, IMConfig config);
 }

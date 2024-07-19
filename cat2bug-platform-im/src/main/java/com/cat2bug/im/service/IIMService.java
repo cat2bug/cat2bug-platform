@@ -1,5 +1,6 @@
 package com.cat2bug.im.service;
 
+import com.cat2bug.im.domain.IMBasePlatformConfig;
 import com.cat2bug.im.domain.IMMessage;
 
 /**
@@ -7,7 +8,7 @@ import com.cat2bug.im.domain.IMMessage;
  * @CreateTime: 2024-07-07 01:49
  * @Version: 1.0.0
  */
-public interface IIMService<T extends IMMessage> extends IIMListener<T> {
+public interface IIMService<T extends IMMessage, R extends IMBasePlatformConfig> extends IIMListener<T> {
     /**
      * 获取消息工厂名称
      * @return
@@ -19,5 +20,5 @@ public interface IIMService<T extends IMMessage> extends IIMListener<T> {
      * @param message   消息
      * @return          发送是否成功
      */
-    public void sendNoticeMessage(T message) throws Exception;
+    public void sendNoticeMessage(T message, R config) throws Exception;
 }

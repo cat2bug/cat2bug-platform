@@ -1,7 +1,5 @@
 package com.cat2bug.im.domain;
 
-import com.alibaba.fastjson.annotation.JSONField;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,15 +10,10 @@ import lombok.NoArgsConstructor;
  * @Version: 1.0.0
  * 系统内部通知配置
  */
-@Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class IMSystemPlatformConfig {
-    /**
-     * 系统内部通知开关
-     */
-    @JsonProperty("switch")
-    private boolean configSwitch;
+@Data
+public class IMSystemPlatformConfig extends IMBasePlatformConfig {
     /**
      * 背景音乐文件名
      */
@@ -29,4 +22,10 @@ public class IMSystemPlatformConfig {
      * 是否显示提示面板
      */
     private boolean panel;
+
+    public IMSystemPlatformConfig(boolean configSwitch, boolean backgroundMusic, boolean panel) {
+        super(configSwitch);
+        this.backgroundMusic = backgroundMusic;
+        this.panel = panel;
+    }
 }

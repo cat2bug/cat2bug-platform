@@ -1,14 +1,21 @@
 package com.cat2bug.im.service;
 
 import com.cat2bug.common.utils.spring.SpringUtils;
+import com.cat2bug.im.domain.IMBasePlatformConfig;
+import com.cat2bug.im.domain.IMConfig;
 import com.cat2bug.im.domain.IMMessage;
-import com.cat2bug.im.service.impl.DefaultMessageTemplateImpl;
+import com.cat2bug.im.domain.IMUserConfig;
+import com.cat2bug.im.mapper.IMUserConfigMapper;
+import com.cat2bug.im.service.impl.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -24,6 +31,9 @@ public class IMService {
     private final static ExecutorService es = Executors.newFixedThreadPool(3);
 
     @Autowired
+    IMUserConfigMapper userConfigMapper;
+
+    @Autowired
     private DefaultMessageTemplateImpl defaultMessageTemplateImpl;
 
     @Autowired
@@ -36,27 +46,49 @@ public class IMService {
      * @param content       发送内容
      * @param group         分组
      */
-    public <T> void sendMessage(Long projectId, String group, Long senderId, List<Long> recipientIds, String title, T content, IMessageTemplate messageTemplate) {
-        iimServiceList.stream().forEach(im->{
-            IIMFactoryService factory = SpringUtils.getBean(im.getMessageFactoryName());
-            if(factory==null) {
-                log.error("Bean 实例 {} 未找到，无法发送IM信息",im.getMessageFactoryName());
-                return;
+    public <T> void sendMessage(Long projectId, String group, Long senderId, List<Long> recipientIds, String title, T content, String src, IMessageTemplate messageTemplate) {
+        recipientIds.stream().forEach(recipientId->{
+            IMUserConfig userConfig = userConfigMapper.selectImUserConfigByProjectAndMember(projectId,  recipientId);
+            if(userConfig.getConfig().getPlatforms().getSystem().isConfigSwitch()){
+                Optional<IIMService> opt = this.iimServiceList.stream().filter(s->s.getMessageFactoryName().equals(NoticeMessageServiceImpl.MESSAGE_FACTORY_NAME)).findFirst();
+                if(opt.isPresent())
+                    this.sendMessage(opt.get(),userConfig.getConfig(),userConfig.getConfig().getPlatforms().getSystem(),projectId,group,senderId,recipientId,title,content,src,messageTemplate);
+                opt = this.iimServiceList.stream().filter(s->s.getMessageFactoryName().equals(PanelNoticeMessageServiceImpl.MESSAGE_FACTORY_NAME)).findFirst();
+                if(opt.isPresent())
+                    this.sendMessage(opt.get(),userConfig.getConfig(),userConfig.getConfig().getPlatforms().getSystem(),projectId,group,senderId,recipientId,title,content,src,messageTemplate);
             }
-            IMessageTemplate template = messageTemplate==null? defaultMessageTemplateImpl :messageTemplate;
-            List<IMMessage> messageList = factory.createMessage(projectId,group,senderId,recipientIds,title,content,template);
+            if(userConfig.getConfig().getPlatforms().getMail().isConfigSwitch()){
+                Optional<IIMService> opt = this.iimServiceList.stream().filter(s->s.getMessageFactoryName().equals(MailMessageServiceImpl.MESSAGE_FACTORY_NAME)).findFirst();
+                if(opt.isPresent())
+                    this.sendMessage(opt.get(), userConfig.getConfig(),userConfig.getConfig().getPlatforms().getMail(), projectId,group,senderId,recipientId,title,content,src,messageTemplate);
+            }
+            if(userConfig.getConfig().getPlatforms().getDing().isConfigSwitch()){
+                Optional<IIMService> opt = this.iimServiceList.stream().filter(s->s.getMessageFactoryName().equals(DingMessageServiceImpl.MESSAGE_FACTORY_NAME)).findFirst();
+                if(opt.isPresent())
+                    this.sendMessage(opt.get(),userConfig.getConfig(),userConfig.getConfig().getPlatforms().getDing(), projectId,group,senderId,recipientId,title,content,src,messageTemplate);
+            }
+        });
+    }
 
-            messageList.forEach(m->{
-                es.submit(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            im.sendNoticeMessage(m);
-                        } catch (Exception e) {
-                            log.error(e);
-                        }
+    private  <T> void sendMessage(IIMService im, IMConfig config, IMBasePlatformConfig platformConfig, Long projectId, String group, Long senderId, Long recipientId, String title, T content, String src, IMessageTemplate messageTemplate) {
+        IIMFactoryService factory = SpringUtils.getBean(im.getMessageFactoryName());
+        if(factory==null) {
+            log.error("Bean 实例 {} 未找到，无法发送IM信息",im.getMessageFactoryName());
+            return;
+        }
+        IMessageTemplate template = messageTemplate==null? defaultMessageTemplateImpl :messageTemplate;
+        List<IMMessage> messageList = factory.createMessage(projectId,group,senderId,Arrays.asList(recipientId),title,content,src,template,config);
+
+        messageList.forEach(m->{
+            es.submit(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        im.sendNoticeMessage(m,platformConfig);
+                    } catch (Exception e) {
+                        log.error(e);
                     }
-                });
+                }
             });
         });
     }

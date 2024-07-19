@@ -41,6 +41,7 @@
         </el-dropdown-menu>
       </el-dropdown>
     </div>
+    <audio controls="controls" hidden :src="require('@/assets/sound/notice.mp3')" ref="audio"></audio>
   </div>
 </template>
 
@@ -64,6 +65,7 @@ export default {
     return {
       noticeCount: 0,
       topicId: null,
+      panelTopicId: null,
       langIcon: 'lang-zh-CN',
       langName: '简体中文'
     }
@@ -119,23 +121,52 @@ export default {
   mounted() {
     // 订阅WebSocket下载模型消息
     this.topicId = this.$topic.subscribe(this.$topic.NOTICE_TOPIC, (name, data) => {
-      this.guoNoticeCount();
+      this.guoNoticeCount(data);
+    });
+    this.panelTopicId = this.$topic.subscribe(this.$topic.PANEL_NOTICE_TOPIC, (name, data) => {
+      if(data && data.data) {
+        const msg = data.data;
+        console.log('-------',msg.src)
+        if(msg.panel) {
+          this.$notify({
+            title: '缺陷通知',
+            dangerouslyUseHTMLString: true,
+            type: 'success',
+            message: `<a style="color: #409eff;" href="${msg.src}">${msg.title}<\a>`
+          });
+        }
+      }
     });
   },
   beforeDestroy() {
     // 取消下载模型的WebSocket订阅
     this.$topic.unsubscribe(this.topicId);
+    this.$topic.unsubscribe(this.panelTopicId);
     this.topicId = null;
+    this.panelTopicId = null;
   },
   methods: {
+    /** 播放音效 */
+    playMusic() {
+      this.$refs.audio.play(); //播放
+      setTimeout(()=>{
+        this.$refs.audio.pause();//停止
+      },3000);
+    },
     /** 获取通知数量 */
-    guoNoticeCount() {
+    guoNoticeCount(data) {
       groupStatisticsNotice().then(res=>{
         let count = 0;
         res.rows.forEach(g=>{
           count += g.notReadCount;
         });
         this.noticeCount = count;
+        if(data && data.data) {
+          const msg = data.data;
+          if(msg.backgroundMusic) {
+            this.playMusic();
+          }
+        }
       })
     },
     toggleSideBar() {
