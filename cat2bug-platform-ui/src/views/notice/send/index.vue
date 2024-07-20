@@ -4,22 +4,24 @@
     :visible.sync="visible"
     width="40%"
     :before-close="handleClose">
-    <el-form ref="form" :model="form" label-width="120px">
+    <el-form ref="form" :model="form" :rules="rules" label-width="130px">
       <el-form-item :label="$t('notice.receiver')" prop="receiveIds">
         <select-project-member
+          :placeholder="$t('notice.please-select-receiver').toString()"
           v-model="form.receiveIds"
           :project-id="getProjectId()"
           :is-head="false"
         />
       </el-form-item>
       <el-form-item :label="$t('notice.title')" prop="title">
-        <el-input v-model="form.title" maxlength="255"></el-input>
+        <el-input v-model="form.title" maxlength="255" :placeholder="$t('notice.please-enter-title')"></el-input>
       </el-form-item>
       <el-form-item :label="$t('notice.content')" prop="content">
         <el-input type="textarea"
                   :rows="8"
                   maxlength="65536"
                   show-word-limit
+                  :placeholder="$t('notice.please-enter-content')"
                   v-model="form.content"></el-input>
       </el-form-item>
     </el-form>
@@ -39,7 +41,18 @@ export default {
   data() {
     return {
       visible: false,
-      form: {}
+      form: {},
+      rules: {
+        receiveIds: [
+          { required: true, message: this.$i18n.t('notice.receiver-not-empty'), trigger: "input" }
+        ],
+        title: [
+          { required: true, message: this.$i18n.t('notice.title-not-empty'), trigger: 'input' },
+        ],
+        content: [
+          { required: true, message: this.$i18n.t('notice.content-not-empty'), trigger: 'input' },
+        ]
+      }
     }
   },
   methods: {
@@ -60,14 +73,18 @@ export default {
     },
     /** 发送通知 */
     handleSend() {
-      this.form.projectId = this.getProjectId();
-      this.form.src = `${window.location.protocol}//${window.location.host}`;
-      this.form.groupName = 'artificial'; // 人工通知
-      sendNotice(this.form).then(res=>{
-        this.visible = false;
-        this.$message.success(this.$i18n.t('notice.send-success').toString());
-        this.$emit('send', this.form)
-      })
+      this.$refs['form'].validate((valid) => {
+        if (valid) {
+          this.form.projectId = this.getProjectId();
+          this.form.src = `${window.location.protocol}//${window.location.host}`;
+          this.form.groupName = 'artificial'; // 人工通知
+          sendNotice(this.form).then(res=>{
+            this.visible = false;
+            this.$message.success(this.$i18n.t('notice.send-success').toString());
+            this.$emit('send', this.form)
+          })
+        }
+      });
     }
   }
 }

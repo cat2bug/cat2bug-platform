@@ -2,19 +2,16 @@ package com.cat2bug.im.service;
 
 import com.cat2bug.common.utils.spring.SpringUtils;
 import com.cat2bug.common.utils.uuid.IdUtils;
-import com.cat2bug.common.utils.uuid.UUID;
 import com.cat2bug.im.domain.IMBasePlatformConfig;
 import com.cat2bug.im.domain.IMConfig;
 import com.cat2bug.im.domain.IMMessage;
 import com.cat2bug.im.domain.IMUserConfig;
-import com.cat2bug.im.mapper.IMUserConfigMapper;
 import com.cat2bug.im.service.impl.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -33,7 +30,7 @@ public class IMService {
     private final static ExecutorService es = Executors.newFixedThreadPool(3);
 
     @Autowired
-    IMUserConfigMapper userConfigMapper;
+    IIMUserConfigService imUserConfigService;
 
     @Autowired
     private DefaultMessageTemplateImpl defaultMessageTemplateImpl;
@@ -51,7 +48,7 @@ public class IMService {
     public <T> void sendMessage(Long projectId, String group, Long senderId, List<Long> recipientIds, String title, T content, String src, IMessageTemplate messageTemplate) {
         String sn = IdUtils.simpleUUID(); // 流水号
         recipientIds.stream().forEach(recipientId->{
-            IMUserConfig userConfig = userConfigMapper.selectImUserConfigByProjectAndMember(projectId,  recipientId);
+           IMUserConfig userConfig = imUserConfigService.selectImUserConfigByProjectAndMember(projectId,  recipientId);
             if(userConfig.getConfig().getPlatforms().getSystem().isConfigSwitch()){
                 Optional<IIMService> opt = this.iimServiceList.stream().filter(s->s.getMessageFactoryName().equals(NoticeMessageServiceImpl.MESSAGE_FACTORY_NAME)).findFirst();
                 if(opt.isPresent())
