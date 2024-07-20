@@ -51,6 +51,14 @@
               <span>{{ $t(defect.defectStateName)}}</span>
             </el-col>
             <el-col :span="12">
+              <label>{{$t('plan-start-time')}}:</label>
+              <span>{{ $t(defect.planStartTime)}}</span>
+            </el-col>
+            <el-col :span="12">
+              <label>{{$t('plan-end-time')}}:</label>
+              <span>{{ $t(defect.planEndTime)}}</span>
+            </el-col>
+            <el-col :span="12">
               <label>{{$t('defect.life-time')}}:</label>
               <span>{{ defectLife(defect)}}</span>
             </el-col>
@@ -384,7 +392,7 @@ export default {
         label {
           font-size: 14px;
           color: #303133;
-          width: 80px;
+          width: 120px;
           display: inline-block;
           justify-content: flex-start;
           margin-right: 10px;

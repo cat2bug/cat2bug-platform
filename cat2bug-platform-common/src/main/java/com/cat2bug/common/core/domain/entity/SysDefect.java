@@ -144,7 +144,12 @@ public class SysDefect extends BaseEntity
     /** 处理的开始时间 */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date handleStartTime;
-
+    /** 计划开始时间 */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date planStartTime;
+    /** 计划结束时间 */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date planEndTime;
     @Override
     public String toString() {
         return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)

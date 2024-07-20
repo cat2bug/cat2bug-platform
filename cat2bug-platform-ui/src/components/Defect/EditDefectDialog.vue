@@ -1,7 +1,7 @@
 <template>
   <el-dialog
     :append-to-body="true"
-    width="45%"
+    width="55%"
     :title="title"
     :visible.sync="visible">
     <div class="app-container defect-edit-body">
@@ -36,19 +36,43 @@
               </el-select>
             </el-form-item>
           </el-col>
-          <el-col :span="12">
-            <el-form-item :label="$t('handle-by')" prop="handleBy">
-              <select-project-member v-model="form.handleBy" :project-id="projectId"  />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item :label="$t('version')" prop="moduleVersion">
-              <el-input v-model="form.moduleVersion" :placeholder="$t('defect.enter-version')" maxlength="128" style="max-width: 300px;" />
-            </el-form-item>
-          </el-col>
+          <el-row>
+            <el-col :span="12">
+              <el-form-item :label="$t('handle-by')" prop="handleBy">
+                <select-project-member v-model="form.handleBy" :project-id="projectId"  />
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item :label="$t('version')" prop="moduleVersion">
+                <el-input v-model="form.moduleVersion" :placeholder="$t('defect.enter-version')" maxlength="128" style="max-width: 300px;" />
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="12">
+              <el-form-item :label="$t('plan-start-time')" prop="planStartTime">
+                <el-date-picker
+                  v-model="form.planStartTime"
+                  type="datetime"
+                  value-format="yyyy-MM-dd HH:mm:ss"
+                  :placeholder="$t('defect.please-select-start-time')">
+                </el-date-picker>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item :label="$t('plan-end-time')" prop="planEndTime">
+                <el-date-picker
+                  v-model="form.planEndTime"
+                  type="datetime"
+                  value-format="yyyy-MM-dd HH:mm:ss"
+                  :placeholder="$t('defect.please-select-end-time')">
+                </el-date-picker>
+              </el-form-item>
+            </el-col>
+          </el-row>
           <el-col :span="12">
             <el-form-item :label="$t('module')" prop="moduleId">
-              <select-module size="small" v-model="form.moduleId" :project-id="projectId"/>
+              <select-module v-model="form.moduleId" :project-id="projectId"/>
             </el-form-item>
           </el-col>
         </el-row>

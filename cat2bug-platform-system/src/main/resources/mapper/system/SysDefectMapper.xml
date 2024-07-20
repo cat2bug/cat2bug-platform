@@ -39,6 +39,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="rejectCount"    column="reject_count"    />
         <result property="handlePassTime"    column="handle_pass_time"    />
         <result property="handleStartTime"    column="handle_start_time"    />
+        <result property="planStartTime"    column="plan_start_time"    />
+        <result property="planEndTime"    column="plan_end_time"    />
     </resultMap>
 
     <resultMap type="SysVersion" id="SysVersionResult">
@@ -73,6 +75,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             d.defect_state,
             d.case_step_id,
             d.handle_by,
+            d.plan_start_time,
+            d.plan_end_time,
             un.user_infos AS handle_by_list,
             d.handle_time,
             d.defect_level,
@@ -220,6 +224,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="handleBy != null">handle_by,</if>
             <if test="handleTime != null">handle_time,</if>
             <if test="defectLevel != null">defect_level,</if>
+            <if test="planStartTime != null">plan_start_time,</if>
+            <if test="planEndTime != null">plan_end_time,</if>
          </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="projectNum != null">#{projectNum},</if>
@@ -246,6 +252,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="handleBy != null">#{handleBy,typeHandler=com.cat2bug.common.core.domain.handle.LongArrayTypeHandler},</if>
             <if test="handleTime != null">#{handleTime},</if>
             <if test="defectLevel != null">#{defectLevel},</if>
+            <if test="planStartTime != null">#{planStartTime},</if>
+            <if test="planEndTime != null">#{planEndTime},</if>
          </trim>
     </insert>
 
@@ -274,6 +282,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="handleBy != null">handle_by = #{handleBy, typeHandler=com.cat2bug.common.core.domain.handle.LongArrayTypeHandler},</if>
             <if test="handleTime != null">handle_time = #{handleTime},</if>
             <if test="defectLevel != null">defect_level = #{defectLevel},</if>
+            <if test="planStartTime != null">plan_start_time = #{planStartTime},</if>
+            <if test="planEndTime != null">plan_end_time = #{planEndTime},</if>
         </trim>
         where defect_id = #{defectId}
     </update>

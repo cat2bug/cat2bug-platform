@@ -157,6 +157,16 @@
       </el-table-column>
       <el-table-column v-if="showField('module')" :label="$t('module')" :key="$t('module')" align="left" prop="moduleName" min-width="100" sortable />
       <el-table-column v-if="showField('version')" :label="$t('version')" :key="$t('version')" align="left" prop="moduleVersion" width="100" sortable />
+      <el-table-column v-if="showField('plan-start-time')" :label="$t('plan-start-time')" :key="$t('plan-start-time')" align="left" prop="planStartTime" width="160" sortable >
+        <template slot-scope="scope">
+          <span>{{ parseTime(scope.row.planStartTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column v-if="showField('plan-end-time')" :label="$t('plan-end-time')" :key="$t('plan-end-time')" align="left" prop="planEndTime" width="160" sortable >
+        <template slot-scope="scope">
+          <span>{{ parseTime(scope.row.planEndTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
+        </template>
+      </el-table-column>
       <el-table-column v-if="showField('update-time')" :label="$t('update-time')" :key="$t('update-time')" align="left" prop="updateTime" width="160" sortable >
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.updateTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
@@ -375,7 +385,7 @@ export default {
     /** 设置列表显示的属性字段 */
     setFieldList() {
       this.fieldList = [
-        'id','type','title','level','state','module','version','update-time','handle-by','image','annex'
+        'id','type','title','level','state','module','version','plan-start-time','plan-end-time','update-time','handle-by','image','annex'
       ];
 
       const fieldList = this.$cache.local.get(DEFECT_TABLE_FIELD_LIST_CACHE_KEY);
