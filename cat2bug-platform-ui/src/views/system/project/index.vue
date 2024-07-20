@@ -6,6 +6,7 @@
       <el-tab-pane :label="$t('project.all-project')" name=""></el-tab-pane>
 <!--      <el-tab-pane :label="$t('project.archived-project')" :name="$t('project.archived-project')"></el-tab-pane>-->
     </el-tabs>
+<!--    收藏列表-->
     <h4 v-show="collectList.length>0">{{$t('project.collect-project')}}</h4>
     <el-row v-show="collectList.length>0" class="project-collects" :gutter="10">
       <el-col :xs="24" :sm="12" :md="8" :lg="4" :xl="4" v-for="project in collectList" :key="project.projectId">
@@ -15,9 +16,15 @@
             <star-switch v-model="project.collect" @change="clickCollectHandle($event, project, true)"></star-switch>
           </div>
           <div class="project-collects-card-tools">
-            <i class="el-icon-notebook-2"
+<!--            <svg-icon icon-class="nested"-->
+<!--                      @click="goCaseHandle($event, project)"-->
+<!--                      v-hasPermi="['system:case:list']"></svg-icon>-->
+            <svg-icon icon-class="bug"
                @click="goDefectHandle($event, project)"
-               v-hasPermi="['system:defect:list']"></i>
+               v-hasPermi="['system:defect:list']"></svg-icon>
+            <svg-icon icon-class="system"
+                @click="goProjectOptionHandle($event, project)"
+                v-hasPermi="['system:project:option']"></svg-icon>
 <!--            <i class="el-icon-s-platform"></i>-->
 <!--            <i class="el-icon-s-operation"></i>-->
             <i class="el-icon-delete"
@@ -27,6 +34,7 @@
         </el-card>
       </el-col>
     </el-row>
+<!--    项目列表-->
     <h4>{{$t('project.project-list')}}</h4>
     <div class="project-tools">
       <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="0">
@@ -332,10 +340,6 @@ export default {
         }
       });
     },
-    goDefectHandle(e, project) {
-      this.clickProject(project);
-      e.stopPropagation();
-    },
     /** 删除按钮操作 */
     handleDelete(e,row) {
       let msg = this.$i18n.t('project.is-delete-project');
@@ -386,8 +390,32 @@ export default {
         this.$message.warning(this.$i18n.t('project.no-permission-access-project').toString());
       }
     },
+    /** 跳转到缺陷管理 */
+    goDefectHandle(e, project) {
+      this.clickProject(project);
+      e.stopPropagation();
+    },
+    /** 跳转到项目设置 */
+    goProjectOptionHandle(e,project) {
+      let _this = this;
+      store.dispatch('UpdateCurrentProjectId', project.projectId).then(() => {
+        store.dispatch('GetInfo').then(() => {
+          _this.$router.push({name:'Option', params: { projectId: project.projectId }})
+        });
+      });
+      e.stopPropagation();
+    },
+    /** 跳转到测试用例 */
+    goCaseHandle(e,project) {
+      let _this = this;
+      store.dispatch('UpdateCurrentProjectId', project.projectId).then(() => {
+        store.dispatch('GetInfo').then(() => {
+          _this.$router.push({name: 'Case', params: {projectId: project.projectId}})
+        });
+      });
+    }
   }
-};
+}
 </script>
 <style lang="scss" scoped>
   .cell {
@@ -416,11 +444,14 @@ export default {
       }
     }
     .project-collects-card-tools {
-      i {
-        padding: 5px;
+      display: inline-flex;
+      flex-direction: row;
+      gap: 5px;
+      >* {
+        padding: 1px;
         color: #909399;
       }
-      i:hover {
+      >*:hover {
         cursor: pointer;
         color: #606266;
       }
