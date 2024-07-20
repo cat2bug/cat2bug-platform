@@ -12,7 +12,7 @@ export function listNotice(query) {
 // 根据分组统计
 export function groupStatisticsNotice() {
   return request({
-    url: '/system/notice//statistics/group',
+    url: '/system/notice/statistics/group',
     method: 'get'
   })
 }

@@ -12,6 +12,10 @@ import java.util.Date;
 @Data
 public class IMMessage<T> {
     /**
+     * 消息流水号
+     */
+    private String sn;
+    /**
      * 内容
      */
     private T content;

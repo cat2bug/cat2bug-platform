@@ -18,14 +18,21 @@ public class IMSystemPlatformConfig extends IMBasePlatformConfig {
      * 背景音乐文件名
      */
     private boolean backgroundMusic;
+
+    /**
+     * 背景音乐路径
+     */
+    private String backgroundMusicUrl;
+
     /**
      * 是否显示提示面板
      */
     private boolean panel;
 
-    public IMSystemPlatformConfig(boolean configSwitch, boolean backgroundMusic, boolean panel) {
+    public IMSystemPlatformConfig(boolean configSwitch, boolean backgroundMusic, String backgroundMusicUrl, boolean panel) {
         super(configSwitch);
         this.backgroundMusic = backgroundMusic;
+        this.backgroundMusicUrl = backgroundMusicUrl;
         this.panel = panel;
     }
 }

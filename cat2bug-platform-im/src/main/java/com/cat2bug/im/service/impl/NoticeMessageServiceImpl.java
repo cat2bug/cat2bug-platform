@@ -45,10 +45,15 @@ public class NoticeMessageServiceImpl implements IIMService<NoticeMessage, IMSys
         if(StringUtils.isNotBlank(message.getTitle()) && message.getTitle().length()>255) {
             message.setTitle(message.getTitle().substring(0,255));
         }
-        noticeMapper.insertNotice(message);
-        if(this.memberWebSocketMap.containsKey(message.getReceiveMemberId())) {
-            WebSocketResult ws = WebSocketResult.success(NOTICE_ACTION, message);
-            this.memberWebSocketMap.get(message.getReceiveMemberId()).sendMessage(ws);
+        message.setNoticeId(message.getSn());   // 将流水号设置为通知ID
+        int count = noticeMapper.insertNotice(message);
+        if(count>0) {
+            if (this.memberWebSocketMap.containsKey(message.getReceiveMemberId())) {
+                WebSocketResult ws = WebSocketResult.success(NOTICE_ACTION, message);
+                this.memberWebSocketMap.get(message.getReceiveMemberId()).sendMessage(ws);
+            }
+        } else {
+            log.error("保存通知失败,JSON:{}",JSON.toJSONString(message));
         }
     }
 

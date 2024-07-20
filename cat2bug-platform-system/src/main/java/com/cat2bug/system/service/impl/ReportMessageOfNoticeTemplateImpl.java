@@ -53,10 +53,10 @@ public class ReportMessageOfNoticeTemplateImpl implements IMessageTemplate<SysRe
         if(params.containsKey(REPORT_CONFIG_KEY)==false) return false;
         Map<String, Object> reportParams = (Map<String, Object>) params.get(REPORT_CONFIG_KEY);
         // 查看通知事件配置
-        if(reportParams.containsKey(EVENT_CONFIG_KEY)==false) return false;
-        Map<String, Object> eventParams = (Map<String, Object>) reportParams.get(EVENT_CONFIG_KEY);
-        if(eventParams.containsKey(NEW_REPORT_CONFIG_KEY)==false) return false;
-        if((boolean) eventParams.get(NEW_REPORT_CONFIG_KEY)==false) return false;
+//        if(reportParams.containsKey(EVENT_CONFIG_KEY)==false) return false;
+//        Map<String, Object> eventParams = (Map<String, Object>) reportParams.get(EVENT_CONFIG_KEY);
+//        if(eventParams.containsKey(NEW_REPORT_CONFIG_KEY)==false) return false;
+//        if((boolean) eventParams.get(NEW_REPORT_CONFIG_KEY)==false) return false;
         // 查看触发方式
         if(reportParams.containsKey(OPTION_CONFIG_KEY)==false) return false;
         Map<String, Object> optionParams = (Map<String, Object>) reportParams.get(OPTION_CONFIG_KEY);

@@ -7,6 +7,8 @@ import com.cat2bug.common.core.domain.type.SysDefectTypeEnum;
 import com.cat2bug.common.utils.DateUtils;
 import com.cat2bug.common.utils.MessageUtils;
 import com.cat2bug.common.utils.SecurityUtils;
+import com.cat2bug.im.domain.IMUserConfig;
+import com.cat2bug.im.service.IIMUserConfigService;
 import com.cat2bug.im.service.IMService;
 import com.cat2bug.system.domain.SysDefectLog;
 import com.cat2bug.system.domain.SysDefectNotice;
@@ -50,6 +52,8 @@ public class SysDefectServiceImpl implements ISysDefectService
     @Autowired
     private IMService imService;
     @Autowired
+    private IIMUserConfigService imUserConfigService;
+    @Autowired
     private DefectMessageOfNoticeTemplateImpl defectMessageOfNoticeTemplate;
     /**
      * 指派
@@ -66,7 +70,8 @@ public class SysDefectServiceImpl implements ISysDefectService
         this.updateSysDefect(sd);
 
         // 发送通知
-        this.sendDefectNotice(sysDefectLog.getSrcHost(), sd.getDefectId());
+        SysDefect sysDefect = sysDefectMapper.selectSysDefectByDefectId(sysDefectLog.getDefectId(),null, DateUtils.getNowDate());
+        this.sendDefectNotice(sysDefect.getProjectId(), sysDefectLog.getSrcHost(), sd.getDefectId());
 
         // 插入日志
         sysDefectLog.setDefectLogType(SysDefectLogStateEnum.ASSIGN);
@@ -90,7 +95,8 @@ public class SysDefectServiceImpl implements ISysDefectService
         this.updateSysDefect(sd);
 
         // 发送通知
-        this.sendDefectNotice(sysDefectLog.getSrcHost(), sd.getDefectId());
+        SysDefect sysDefect = sysDefectMapper.selectSysDefectByDefectId(sysDefectLog.getDefectId(),null, DateUtils.getNowDate());
+        this.sendDefectNotice(sysDefect.getProjectId(), sysDefectLog.getSrcHost(), sd.getDefectId());
 
         // 插入日志
         sysDefectLog.setDefectLogType(SysDefectLogStateEnum.REJECTED);
@@ -115,7 +121,8 @@ public class SysDefectServiceImpl implements ISysDefectService
         this.updateSysDefect(sd);
 
         // 发送通知
-        this.sendDefectNotice(sysDefectLog.getSrcHost(), sd.getDefectId());
+        SysDefect sysDefect = sysDefectMapper.selectSysDefectByDefectId(sysDefectLog.getDefectId(),null, DateUtils.getNowDate());
+        this.sendDefectNotice(sysDefect.getProjectId(), sysDefectLog.getSrcHost(), sd.getDefectId());
 
         // 插入日志
         sysDefectLog.setDefectLogType(SysDefectLogStateEnum.REPAIR);
@@ -139,7 +146,8 @@ public class SysDefectServiceImpl implements ISysDefectService
         this.updateSysDefect(sd);
 
         // 发送通知
-        this.sendDefectNotice(sysDefectLog.getSrcHost(), sd.getDefectId());
+        SysDefect sysDefect = sysDefectMapper.selectSysDefectByDefectId(sysDefectLog.getDefectId(),null, DateUtils.getNowDate());
+        this.sendDefectNotice(sysDefect.getProjectId(), sysDefectLog.getSrcHost(), sd.getDefectId());
 
         // 插入日志
         sysDefectLog.setDefectLogType(SysDefectLogStateEnum.PASS);
@@ -157,7 +165,8 @@ public class SysDefectServiceImpl implements ISysDefectService
         this.updateSysDefect(sd);
 
         // 发送通知
-        this.sendDefectNotice(sysDefectLog.getSrcHost(), sd.getDefectId());
+        SysDefect sysDefect = sysDefectMapper.selectSysDefectByDefectId(sysDefectLog.getDefectId(),null, DateUtils.getNowDate());
+        this.sendDefectNotice(sysDefect.getProjectId(), sysDefectLog.getSrcHost(), sd.getDefectId());
 
         // 插入日志
         sysDefectLog.setDefectLogType(SysDefectLogStateEnum.CLOSED);
@@ -175,8 +184,9 @@ public class SysDefectServiceImpl implements ISysDefectService
         sd.setHandleBy(sysDefectLog.getReceiveBy());
         this.updateSysDefect(sd);
 
+        SysDefect sysDefect = sysDefectMapper.selectSysDefectByDefectId(sysDefectLog.getDefectId(),null, DateUtils.getNowDate());
         // 发送通知
-        this.sendDefectNotice(sysDefectLog.getSrcHost(), sd.getDefectId());
+        this.sendDefectNotice(sysDefect.getProjectId(), sysDefectLog.getSrcHost(), sd.getDefectId());
 
         // 插入日志
         sysDefectLog.setDefectLogType(SysDefectLogStateEnum.OPEN);
@@ -255,7 +265,7 @@ public class SysDefectServiceImpl implements ISysDefectService
         Preconditions.checkState(sysDefectMapper.insertSysDefect(sysDefect)>0,MessageUtils.message("defect.insert_fail"));
 
         // 发送通知
-        this.sendDefectNotice(sysDefect.getSrcHost(), sysDefect.getDefectId());
+        this.sendDefectNotice(sysDefect.getProjectId(), sysDefect.getSrcHost(), sysDefect.getDefectId());
 
         // 新建日志
         this.inertLog(sysDefect.getDefectId(),sysDefect.getHandleBy(),null,SysDefectLogStateEnum.CREATE);
@@ -336,7 +346,7 @@ public class SysDefectServiceImpl implements ISysDefectService
      * 发送缺陷通知
      * @param defectId
      */
-    private void sendDefectNotice(String srcHost, Long defectId) {
+    private void sendDefectNotice(Long projectId, String srcHost, Long defectId) {
         SysDefect defect = this.sysDefectMapper.selectSysDefectByDefectId(defectId,null, DateUtils.getNowDate());
         defect.setSrcHost(srcHost);
         if(defect!=null) {
@@ -344,12 +354,36 @@ public class SysDefectServiceImpl implements ISysDefectService
             SysUserDefect userDefect = new SysUserDefect();
             userDefect.setDefectId(defectId);
             userDefect.setCollect(1);
-            List<Long> collectUserList = this.sysUserDefectMapper.selectSysUserDefectList(userDefect).stream().map(u->u.getUserId()).collect(Collectors.toList());
+            List<Long> collectUserList = this.sysUserDefectMapper.selectSysUserDefectList(userDefect).stream()
+                    .filter(u->{
+                        try {
+                            IMUserConfig userConfig = imUserConfigService.selectImUserConfigByProjectAndMember(projectId, u.getUserId());
+                            Map<String, Object> defectConfig = (Map<String, Object>) userConfig.getConfig().getModules().get("defect");
+                            Map<String, Object> eventConfig = (Map<String, Object>) defectConfig.get("event");
+                            return (boolean) eventConfig.get("collect");
+                        }catch (Exception e) {
+                            log.error(e);
+                            return false;
+                        }
+                    })
+                    .map(u->u.getUserId()).collect(Collectors.toList());
+            List<Long> handleUserList = defect.getHandleBy().stream()
+                    .filter(id->{
+                        try {
+                            IMUserConfig userConfig = imUserConfigService.selectImUserConfigByProjectAndMember(projectId, id);
+                            Map<String, Object> defectConfig = (Map<String, Object>) userConfig.getConfig().getModules().get("defect");
+                            Map<String, Object> eventConfig = (Map<String, Object>) defectConfig.get("event");
+                            return (boolean) eventConfig.get("receiver");
+                        }catch (Exception e) {
+                            log.error(e);
+                            return false;
+                        }
+                    }).collect(Collectors.toList());
             try {
                 // 将缺陷处理人和关注人ID放到一个集合里
                 Set<Long> receiverList = new HashSet<>();
-                receiverList.addAll(collectUserList);     // 添加关注人集合
-                receiverList.addAll(defect.getHandleBy());// 添加处理人集合
+                receiverList.addAll(collectUserList);       // 添加关注人集合
+                receiverList.addAll(handleUserList);        // 添加处理人集合
                 // 给处理人和关注此缺陷的人发送通知
                 String title = String.format("[%s]%s:#%d %s",
                         MessageUtils.message(defect.getDefectState().name()),

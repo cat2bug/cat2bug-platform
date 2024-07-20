@@ -52,7 +52,7 @@ public class IMUserConfigServiceImpl implements IIMUserConfigService
         IMPlatformConfig imPlatformConfig = new IMPlatformConfig();
         imConfig.setPlatforms(imPlatformConfig);
         // 设置系统配置
-        IMSystemPlatformConfig imSystemPlatformConfig = new IMSystemPlatformConfig(true,true,true);
+        IMSystemPlatformConfig imSystemPlatformConfig = new IMSystemPlatformConfig(true,true, "default.mp3",true);
         imPlatformConfig.setSystem(imSystemPlatformConfig);
         // 设置邮件配置
         IMMailPlatformConfig imMailPlatformConfig = new IMMailPlatformConfig(false, SecurityUtils.getLoginUser().getUser().getEmail());

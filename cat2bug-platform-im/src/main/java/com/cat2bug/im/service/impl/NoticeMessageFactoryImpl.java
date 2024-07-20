@@ -40,6 +40,7 @@ public class NoticeMessageFactoryImpl implements IIMFactoryService {
             msg.setStatus((char)0);
             msg.setReceiveMemberId(r);
             msg.setBackgroundMusic(systemConfig.isBackgroundMusic());
+            msg.setBackgroundMusicUrl(systemConfig.getBackgroundMusicUrl());
             msg.setPanel(systemConfig.isPanel());
             return msg;
         }).collect(Collectors.toList());

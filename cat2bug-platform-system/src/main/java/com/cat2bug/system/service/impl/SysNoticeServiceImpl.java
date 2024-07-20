@@ -5,6 +5,9 @@ import java.util.List;
 import java.util.Map;
 
 import com.cat2bug.common.core.domain.WebSocketResult;
+import com.cat2bug.common.utils.StringUtils;
+import com.cat2bug.common.utils.uuid.IdUtils;
+import com.cat2bug.common.utils.uuid.UUID;
 import com.cat2bug.common.websocket.MessageWebsocket;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -37,12 +40,12 @@ public class SysNoticeServiceImpl implements ISysNoticeService
      * @return 公告信息
      */
     @Override
-    public SysNotice selectNoticeById(Long noticeId)
+    public SysNotice selectNoticeById(String noticeId)
     {
         // 读取通知
         SysNotice notice = noticeMapper.selectNoticeById(noticeId);
         // 如果通知是未读状态，改吧其状态为已读
-        if(notice.getIsRead()==false) {
+        if(notice !=null && notice.getIsRead()==false) {
             notice.setIsRead(true);
             // 更新通知已读
             SysNotice n = new SysNotice();
@@ -76,6 +79,9 @@ public class SysNoticeServiceImpl implements ISysNoticeService
     @Override
     public int insertNotice(SysNotice notice)
     {
+        if(StringUtils.isBlank(notice.getNoticeId())){
+            notice.setNoticeId(IdUtils.simpleUUID());
+        }
         return noticeMapper.insertNotice(notice);
     }
 
@@ -98,7 +104,7 @@ public class SysNoticeServiceImpl implements ISysNoticeService
      * @return 结果
      */
     @Override
-    public int deleteNoticeById(Long noticeId)
+    public int deleteNoticeById(String noticeId)
     {
         return noticeMapper.deleteNoticeById(noticeId);
     }
@@ -110,7 +116,7 @@ public class SysNoticeServiceImpl implements ISysNoticeService
      * @return 结果
      */
     @Override
-    public int deleteNoticeByIds(Long[] noticeIds)
+    public int deleteNoticeByIds(String[] noticeIds)
     {
         return noticeMapper.deleteNoticeByIds(noticeIds);
     }

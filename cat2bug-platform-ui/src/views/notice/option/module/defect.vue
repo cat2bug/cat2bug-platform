@@ -1,14 +1,14 @@
 <template>
   <div class="option-body">
-    <h3><svg-icon icon-class="bug"/>缺陷通知</h3>
+    <h3><svg-icon icon-class="bug"/>{{ $t('notice.defect') }}</h3>
     <el-form ref="form" :model="form" label-width="120px">
-      <el-form-item label="通知事件">
-        <el-checkbox label="指派给我的" v-model="form.event.my" @change="handleChange"></el-checkbox>
-        <el-checkbox label="我关注的" v-model="form.event.collect" @change="handleChange"></el-checkbox>
+      <el-form-item :label="$t('notice.event')">
+        <el-checkbox :label="$t('notice.defect.assigned-me')" v-model="form.event.receiver" @change="handleChange"></el-checkbox>
+        <el-checkbox :label="$t('defect.my-following')" v-model="form.event.collect" @change="handleChange"></el-checkbox>
       </el-form-item>
-      <el-form-item label="触发方式">
+      <el-form-item :label="$t('notice.trigger-mode')">
         <div class="col">
-          <el-checkbox label="实时触发" v-model="form.option.realtime.switch" @change="handleChange"></el-checkbox>
+          <el-checkbox :label="$t('notice.realtime-trigger')" v-model="form.option.realtime.switch" @change="handleChange"></el-checkbox>
 <!--          <div class="option-item">-->
 <!--            <el-checkbox label="间隔时间" v-model="form.option.interval.switch" class="margin-right-30" @change="handleChange"></el-checkbox>-->
 <!--            <span>每隔</span>-->
@@ -57,13 +57,13 @@ export default {
       form: this.defect,
       timeUnitOptions: [{
         value: 'day',
-        label: '天'
+        label: this.$i18n.t('day')
       },{
         value: 'hour',
-        label: '小时'
+        label: this.$i18n.t('hour')
       },{
         value: 'minute',
-        label: '分'
+        label: this.$i18n.t('minute')
       }],
       timeSpanOptions: { start: '00:00', step: '00:30', end: '24:59' },
     }
@@ -89,6 +89,13 @@ export default {
         }
       }
     }
+  },
+  watch: {
+    defect: function (n,o) {
+      if(n && n!=o) {
+        this.form = n;
+      }
+    },
   },
   methods: {
     /** 操作改变 */

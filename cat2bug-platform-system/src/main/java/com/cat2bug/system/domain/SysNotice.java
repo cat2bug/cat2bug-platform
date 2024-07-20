@@ -17,7 +17,7 @@ public class SysNotice extends BaseEntity
     private static final long serialVersionUID = 1L;
 
     /** 公告ID */
-    private Long noticeId;
+    private String noticeId;
 
     /** 公告标题 */
     private String noticeTitle;
@@ -42,14 +42,12 @@ public class SysNotice extends BaseEntity
     private Long projectId;
     /** 是否已读 */
     private boolean isRead;
-    /** 公告状态（0正常 1关闭） */
-    public Long getNoticeId()
-    {
+
+    public String getNoticeId() {
         return noticeId;
     }
 
-    public void setNoticeId(Long noticeId)
-    {
+    public void setNoticeId(String noticeId) {
         this.noticeId = noticeId;
     }
 

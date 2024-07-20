@@ -1,9 +1,6 @@
 package com.cat2bug.system.service.impl;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.cat2bug.common.core.domain.entity.SysDefect;
@@ -14,8 +11,10 @@ import com.cat2bug.im.domain.IMUserConfig;
 import com.cat2bug.im.mapper.IMUserConfigMapper;
 import com.cat2bug.im.service.IMService;
 import com.cat2bug.system.domain.SysUserDefect;
+import com.cat2bug.system.domain.SysUserProject;
 import com.cat2bug.system.service.IReportParseService;
 import com.cat2bug.system.service.ISysCaseService;
+import com.cat2bug.system.service.ISysUserProjectService;
 import lombok.extern.log4j.Log4j;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -44,6 +43,8 @@ public class SysReportServiceImpl implements ISysReportService
     private List<IReportParseService> reportParseServices;
     @Autowired
     private IMService imService;
+    @Autowired
+    private ISysUserProjectService sysUserProjectService;
     @Autowired
     private ReportMessageOfNoticeTemplateImpl reportMessageOfNoticeTemplate;
     /**
@@ -147,7 +148,22 @@ public class SysReportServiceImpl implements ISysReportService
         // 获取获取报告人的ID集合
         IMUserConfig imUserConfig = new IMUserConfig();
         imUserConfig.setProjectId(report.getProjectId());
-        List<Long> memberIdList = this.imUserConfigMapper.selectImUserConfigList(imUserConfig).stream().map(u->u.getUserId()).collect(Collectors.toList());
+        SysUserProject sysUserProject = new SysUserProject();
+        sysUserProject.setProjectId(report.getProjectId());
+        sysUserProject.setProjectLock(0);
+        List<Long> memberIdList = sysUserProjectService.selectSysUserProjectList(sysUserProject).stream()
+                .filter(u->{
+                    try {
+                        IMUserConfig userConfig = imUserConfigMapper.selectImUserConfigByProjectAndMember(u.getProjectId(), u.getUserId());
+                        Map<String, Object> defectConfig = (Map<String, Object>) userConfig.getConfig().getModules().get("report");
+                        Map<String, Object> eventConfig = (Map<String, Object>) defectConfig.get("event");
+                        return (boolean) eventConfig.get("new");
+                    }catch (Exception e) {
+                        log.error(e);
+                        return false;
+                    }
+                })
+                .map(u->u.getUserId()).collect(Collectors.toList());
         try {
             // 给处理人和关注此缺陷的人发送通知
             String title = String.format("%s:%s",

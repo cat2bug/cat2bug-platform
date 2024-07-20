@@ -116,7 +116,7 @@
       :limit.sync="queryParams.pageSize"
       @pagination="getList"
     />
-    <view-notice ref="viewNotice" @read="getList"></view-notice>
+    <view-notice ref="viewNotice" @read="refreshData"></view-notice>
     <option-notice ref="noticeOption" :member-id="getUserId" />
   </div>
 </template>
@@ -198,6 +198,7 @@ export default {
     goBack() {
       this.$router.back();
     },
+    /** 获取标签数据 */
     getGroupStatisticsNotice() {
       this.loading = true;
       groupStatisticsNotice().then(res=>{
@@ -213,6 +214,11 @@ export default {
         this.groupList = [...[all],...res.rows];
         this.handleQuery();
       })
+    },
+    /** 刷新数据 */
+    refreshData() {
+      this.getList();
+      this.getGroupStatisticsNotice();
     },
     /** 查询公告列表 */
     getList() {
@@ -240,7 +246,7 @@ export default {
       this.$modal.confirm(this.$i18n.t('notice.is-delete')).then(function() {
         return delNotice(noticeIds);
       }).then(() => {
-        this.getList();
+        this.refreshData();
         this.$modal.msgSuccess(this.$i18n.t('delete.success'));
       }).catch(() => {});
       event.stopPropagation();

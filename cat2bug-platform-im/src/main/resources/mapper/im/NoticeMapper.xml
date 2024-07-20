@@ -3,8 +3,9 @@
 PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.cat2bug.im.mapper.NoticeMapper">
-    <insert id="insertNotice" parameterType="com.cat2bug.im.domain.NoticeMessage">
+    <insert id="insertNotice" parameterType="com.cat2bug.im.domain.NoticeMessage" useGeneratedKeys="true" keyProperty="noticeId">
         insert into sys_notice (
+        <if test="noticeId != null and noticeId != '' ">notice_id, </if>
         <if test="title != null and title != '' ">notice_title, </if>
         <if test="noticeType != null and noticeType != '' ">notice_type, </if>
         <if test="content != null and content != '' ">notice_content, </if>
@@ -14,6 +15,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <if test="receiveMemberId != null">receiver_id,</if>
         create_time
         )values(
+        <if test="noticeId != null and noticeId != ''">#{noticeId}, </if>
         <if test="title != null and title != ''">#{title}, </if>
         <if test="noticeType != null and noticeType != ''">#{noticeType}, </if>
         <if test="content != null and content != ''">#{content}, </if>

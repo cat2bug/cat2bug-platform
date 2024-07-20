@@ -224,6 +224,7 @@ import { checkPermi } from "@/utils/permission";
 import {delTabs, listTabs} from "@/api/system/DefectTabs";
 import i18n from "@/utils/i18n/i18n";
 import {lifeTime} from "@/utils/defect";
+import {getNotice} from "@/api/system/notice";
 
 /** 需要显示的缺陷字段列表在缓存的key值 */
 const DEFECT_TABLE_FIELD_LIST_CACHE_KEY='defect-table-field-list';
@@ -362,12 +363,21 @@ export default {
     this.getDefectConfig();
   },
   mounted() {
+    /** 显示指定缺陷信息 */
     if(this.$route.query.defectId) {
       this.$refs.editDefectForm.open(this.$route.query.defectId);
+    }
+    /** 设置指定消息已读 */
+    if(this.$route.query.noticeId) {
+      this.setNoticeRead(this.$route.query.noticeId);
     }
   },
   methods: {
     checkPermi,
+    /** 设置指定消息已读 */
+    setNoticeRead(noticeId) {
+      getNotice(noticeId).then(res=>{}).catch(e=>{});
+    },
     /** 设置列表显示的属性字段 */
     setFieldList() {
       this.fieldList = [

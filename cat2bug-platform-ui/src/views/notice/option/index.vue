@@ -1,12 +1,12 @@
 <template>
   <el-dialog
-    title="通知设置"
+    :title="$t('notice.option')"
     :visible.sync="dialogVisible"
     width="40%"
     :close-on-click-modal="false"
     :before-close="handleClose">
     <el-tabs v-model="activeTabName" v-loading="loading">
-      <el-tab-pane label="发送选项" name="type">
+      <el-tab-pane :label="$t('notice.send-option')" name="type">
         <div v-for="(m,index) in moduleList">
           <component
             v-model="option.config.modules[m.name]"
@@ -16,10 +16,11 @@
           <el-divider></el-divider>
         </div>
       </el-tab-pane>
-      <el-tab-pane label="接收平台" name="platform">
+      <el-tab-pane :label="$t('notice.receive-platform-option')" name="platform">
         <div class="option-body">
           <div v-for="(p,index) in platformList">
             <component
+              :ref="`platform-${p.name}`"
               v-model="option.config.platforms[p.name]"
               :is="p.name"
               :key="index"
@@ -84,11 +85,17 @@ export default {
     }
   },
   mounted() {
-    this.getConfig();
+    // this.getConfig();
   },
   methods: {
+    /** 重制表单 */
     reset() {
       this.activeTabName = 'type';
+      // 重制子组件表单
+      this.platformList.forEach(p=>{
+        let com = this.$refs['platform-'+p.name][0];
+        com.resetFields()
+      });
     },
     /** 获取项目ID */
     getProjectId() {
@@ -111,18 +118,40 @@ export default {
     /** 打开配置窗口 */
     open() {
       this.dialogVisible = true;
+      this.$nextTick(()=>{
+        this.reset();
+        this.getConfig();
+      });
     },
     /** 处理关闭窗口时的操作 */
     handleClose(done) {
       done();
     },
     /** 处理保存配置操作 */
-    handleSaveOption() {
-      saveConfig(this.option).then(res=>{
-        this.$message.success(this.$i18n.t('save-success').toString());
-        this.dialogVisible = false;
-        this.reset();
-      })
+    async handleSaveOption() {
+      Promise.all(
+        this.platformList.map(v => {
+          let com = this.$refs['platform-'+v.name][0];
+          let ret = com.validate();
+          return ret;
+        })
+      ).then(res => {
+        if (res.every(v => v)) {
+          saveConfig(this.option).then(res=>{
+            this.$message.success(this.$i18n.t('save-success').toString());
+            this.dialogVisible = false;
+            this.reset();
+          })
+        } else {
+          // 找出所有校验不通过的表单
+          // const falseFormList = res.filter(v => !v);
+          this.$message.error(this.$i18n.t('notice.option.save-error').toString());
+        }
+      }).catch(() => {
+        this.$alert('请稍后重试', '提示', {
+          dangerouslyUseHTMLString: true
+        });
+      });
     }
   }
 }

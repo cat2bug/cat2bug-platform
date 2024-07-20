@@ -11,6 +11,7 @@ import com.cat2bug.im.service.IIMService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
 
 import javax.websocket.Session;
@@ -42,6 +43,7 @@ public class PanelNoticeMessageServiceImpl implements IIMService<NoticeMessage, 
         if(StringUtils.isNotBlank(message.getTitle()) && message.getTitle().length()>255) {
             message.setTitle(message.getTitle().substring(0,255));
         }
+        message.setNoticeId(message.getSn()); // 将流水号设置为通知ID
         if(this.memberWebSocketMap.containsKey(message.getReceiveMemberId())) {
             WebSocketResult ws = WebSocketResult.success(NOTICE_ACTION, message);
             this.memberWebSocketMap.get(message.getReceiveMemberId()).sendMessage(ws);

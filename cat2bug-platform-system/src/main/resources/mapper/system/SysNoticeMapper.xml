@@ -33,7 +33,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         LEFT JOIN sys_team t ON t.team_id = p.team_id
     </sql>
     
-    <select id="selectNoticeById" parameterType="Long" resultMap="SysNoticeResult">
+    <select id="selectNoticeById" parameterType="String" resultMap="SysNoticeResult">
         <include refid="selectNoticeVo"/>
         where notice_id = #{noticeId}
     </select>
@@ -72,6 +72,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
     <insert id="insertNotice" parameterType="SysNotice">
         insert into sys_notice (
+            <if test="noticeId != null and noticeId != '' ">notice_id, </if>
 			<if test="noticeTitle != null and noticeTitle != '' ">notice_title, </if>
 			<if test="noticeType != null and noticeType != '' ">notice_type, </if>
 			<if test="noticeContent != null and noticeContent != '' ">notice_content, </if>
@@ -80,6 +81,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
  			<if test="createBy != null and createBy != ''">create_by,</if>
  			create_time
  		)values(
+            <if test="noticeId != null and noticeId != ''">#{noticeId}, </if>
 			<if test="noticeTitle != null and noticeTitle != ''">#{noticeTitle}, </if>
 			<if test="noticeType != null and noticeType != ''">#{noticeType}, </if>
 			<if test="noticeContent != null and noticeContent != ''">#{noticeContent}, </if>
@@ -104,11 +106,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         where notice_id = #{noticeId}
     </update>
 	
-    <delete id="deleteNoticeById" parameterType="Long">
+    <delete id="deleteNoticeById" parameterType="String">
         delete from sys_notice where notice_id = #{noticeId}
     </delete>
     
-    <delete id="deleteNoticeByIds" parameterType="Long">
+    <delete id="deleteNoticeByIds" parameterType="String">
         delete from sys_notice where notice_id in 
         <foreach item="noticeId" collection="array" open="(" separator="," close=")">
             #{noticeId}

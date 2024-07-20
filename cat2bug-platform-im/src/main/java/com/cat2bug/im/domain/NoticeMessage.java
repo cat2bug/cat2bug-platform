@@ -10,6 +10,10 @@ import lombok.Data;
 @Data
 public class NoticeMessage extends IMMessage<String> {
     /**
+     * 通知ID
+     */
+    private String noticeId;
+    /**
      * 项目ID
      */
     private Long projectId;
@@ -25,6 +29,10 @@ public class NoticeMessage extends IMMessage<String> {
      * 是否开启背景音乐
      */
     private boolean backgroundMusic;
+    /**
+     * 背景音乐路径
+     */
+    private String backgroundMusicUrl;
     /**
      * 是否开启提示面板
      */

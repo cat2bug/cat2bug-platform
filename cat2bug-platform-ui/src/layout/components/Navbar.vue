@@ -41,7 +41,7 @@
         </el-dropdown-menu>
       </el-dropdown>
     </div>
-    <audio controls="controls" hidden :src="require('@/assets/sound/notice.mp3')" ref="audio"></audio>
+    <audio hidden :src="noticeSound" ref="audio" @ended="handleAudioEnded"></audio>
   </div>
 </template>
 
@@ -63,11 +63,13 @@ import {groupStatisticsNotice} from "@/api/system/notice";
 export default {
   data() {
     return {
+      audio: null,
       noticeCount: 0,
       topicId: null,
       panelTopicId: null,
       langIcon: 'lang-zh-CN',
-      langName: '简体中文'
+      langName: '简体中文',
+      noticeSound: null,
     }
   },
   components: {
@@ -128,10 +130,11 @@ export default {
         const msg = data.data;
         if(msg.panel) {
           this.$notify({
-            title: '缺陷通知',
+            title: this.$i18n.t('notice'),
             dangerouslyUseHTMLString: true,
             type: 'success',
-            message: `<a target="_blank" style="color: #409eff;" href="${msg.src}">${msg.title}<\a>`
+            offset: 50,
+            message: `<a target="_blank" style="color: #409eff;" href="${msg.src}&noticeId=${msg.noticeId}">${msg.title}<\a>`
           });
         }
       }
@@ -146,11 +149,21 @@ export default {
   },
   methods: {
     /** 播放音效 */
-    playMusic() {
-      this.$refs.audio.play(); //播放
-      setTimeout(()=>{
-        this.$refs.audio.pause();//停止
-      },3000);
+    playMusic(soundName) {
+      if(soundName) {
+        this.noticeSound = require('@/assets/sound/'+soundName)
+      } else {
+        this.noticeSound = require('@/assets/sound/default.mp3')
+      }
+      //播放
+      this.$nextTick(()=>{
+        this.$refs.audio.play();
+      });
+    },
+    /** 声音播放完成 */
+    handleAudioEnded() {
+      this.$refs.audio.pause();//停止
+      this.$refs.audio.load();
     },
     /** 获取通知数量 */
     guoNoticeCount(data) {
@@ -163,7 +176,7 @@ export default {
         if(data && data.data) {
           const msg = data.data;
           if(msg.backgroundMusic) {
-            this.playMusic();
+            this.playMusic(msg.backgroundMusicUrl);
           }
         }
       })

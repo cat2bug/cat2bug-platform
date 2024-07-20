@@ -16,8 +16,10 @@ import java.util.Map;
 public class DefectMessageOfNoticeTemplateImpl implements IMessageTemplate<SysDefect> {
     private final static String DEFECT_CONFIG_KEY = "defect";
     private final static String OPTION_CONFIG_KEY = "option";
+    private final static String EVENT_CONFIG_KEY = "event";
     private final static String OPTION_REALTIME_CONFIG_KEY = "realtime";
     private final static String SWITCH_KEY = "switch";
+    private final static String RECEIVER_CONFIG_KEY = "receiver";
 
 
     @Override
