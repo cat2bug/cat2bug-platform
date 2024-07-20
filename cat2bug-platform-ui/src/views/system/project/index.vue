@@ -265,7 +265,9 @@ export default {
         params: {
           userId: this.currentUserId,
         },
-        collect: true
+        collect: true,
+        pageNum: 1,
+        pageSize: 99
       }
       listProject(params).then(res => {
         this.collectList = res.rows;
