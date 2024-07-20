@@ -51,3 +51,12 @@ export function delNotice(noticeId) {
     method: 'delete'
   })
 }
+
+// 发送通知
+export function sendNotice(data) {
+  return request({
+    url: '/system/notice/send',
+    method: 'post',
+    data: data
+  })
+}

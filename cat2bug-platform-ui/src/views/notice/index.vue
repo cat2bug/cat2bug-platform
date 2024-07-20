@@ -24,25 +24,11 @@
           <el-input
             prefix-icon="el-icon-document"
             v-model="queryParams.noticeTitle"
-            placeholder="请输入通知标题"
+            :placeholder="$t('notice.please-enter-title')"
             clearable
-            @keyup.enter.native="handleQuery"
+            @input="handleQuery"
           />
         </el-form-item>
-  <!--      <el-form-item label="" prop="noticeType">-->
-  <!--        <el-select v-model="queryParams.noticeType" placeholder="公告类型" clearable>-->
-  <!--          <el-option-->
-  <!--            v-for="dict in dict.type.sys_notice_type"-->
-  <!--            :key="dict.value"-->
-  <!--            :label="dict.label"-->
-  <!--            :value="dict.value"-->
-  <!--          />-->
-  <!--        </el-select>-->
-  <!--      </el-form-item>-->
-  <!--      <el-form-item>-->
-  <!--        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>-->
-  <!--        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>-->
-  <!--      </el-form-item>-->
       </el-form>
 
       <el-row :gutter="10" class="mb8">
@@ -54,18 +40,17 @@
             size="mini"
             :disabled="multiple"
             @click="handleDelete($event,{})"
-            v-hasPermi="['system:notice:remove']"
+            v-hasPermi="['notice:remove']"
           >{{ $t('batch-delete') }}</el-button>
         </el-col>
         <el-col :span="1.5">
           <el-button
-            type="danger"
+            type="primary"
             plain
-            icon="el-icon-delete"
+            icon="el-icon-s-promotion"
             size="mini"
-            :disabled="multiple"
-            @click="handleDelete($event,{})"
-            v-hasPermi="['system:notice:send']"
+            @click="handleSendNotice"
+            v-hasPermi="['notice:send']"
           >{{ $t('notice.send') }}</el-button>
         </el-col>
       </el-row>
@@ -86,7 +71,7 @@
         prop="projectName"
         align="left" width="300"/>
       <el-table-column
-        :label="$t('notice.group')"
+        :label="$t('notice.title')"
         align="left"
         :show-overflow-tooltip="true"
       >
@@ -103,7 +88,7 @@
             type="text"
             icon="el-icon-delete"
             @click="handleDelete($event,scope.row)"
-            v-hasPermi="['system:notice:remove']"
+            v-hasPermi="['notice:remove']"
           >{{$t('delete')}}</el-button>
         </template>
       </el-table-column>
@@ -118,17 +103,19 @@
     />
     <view-notice ref="viewNotice" @read="refreshData"></view-notice>
     <option-notice ref="noticeOption" :member-id="getUserId" />
+    <send-notice-dialog ref="sendNoticeDialog" @send="refreshData" />
   </div>
 </template>
 
 <script>
 import {delNotice, groupStatisticsNotice, listNotice} from "@/api/system/notice";
 import OptionNotice from "./option/index"
+import SendNoticeDialog from "./send/index"
 import ViewNotice from "@/components/Notice/ViewNotice";
 
 export default {
   name: "Notice",
-  components: { ViewNotice, OptionNotice },
+  components: { ViewNotice, OptionNotice, SendNoticeDialog },
   dicts: ['sys_notice_status', 'sys_notice_type'],
   data () {
     return {
@@ -176,6 +163,12 @@ export default {
   },
   created() {
     this.getGroupStatisticsNotice();
+  },
+  mounted() {
+    /** 设置指定消息已读 */
+    if(this.$route.query.noticeId) {
+      this.handleNotice(this.$route.query);
+    }
   },
   methods: {
     /** 获取项目id */
@@ -251,14 +244,19 @@ export default {
       }).catch(() => {});
       event.stopPropagation();
     },
-    // 多选框选中数据
+    /** 多选框选中数据 */
     handleSelectionChange(selection) {
       this.ids = selection.map(item => item.noticeId)
       this.single = selection.length!=1
       this.multiple = !selection.length
     },
+    /** 显示通知详情操作 */
     handleNotice(notice) {
       this.$refs.viewNotice.open(notice.noticeId);
+    },
+    /** 显示发送通知对话框操作 */
+    handleSendNotice() {
+      this.$refs.sendNoticeDialog.open();
     }
   }
 }

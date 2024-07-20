@@ -171,7 +171,7 @@ public class SysReportServiceImpl implements ISysReportService
                     report.getReportTitle());
             this.imService.sendMessage(
                     report.getProjectId(),  // 项目ID
-                    SysDefect.KEY,  // 通知组名称
+                    SysReport.KEY,  // 通知组名称
                     SecurityUtils.getUserId(),  // 发送人ID
                     memberIdList, // 接收人集合
                     title,      // 通知标题

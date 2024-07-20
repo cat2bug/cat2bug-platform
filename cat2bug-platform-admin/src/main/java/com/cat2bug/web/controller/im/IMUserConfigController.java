@@ -26,7 +26,7 @@ public class IMUserConfigController extends BaseController
     /**
      * 获取用户消息配置详细信息
      */
-    @PreAuthorize("@ss.hasPermi('system:notice:list')")
+    @PreAuthorize("@ss.hasPermi('notice:list')")
     @GetMapping()
     public AjaxResult getInfo(@RequestParam("projectId") Long projectId, @RequestParam("memberId") Long memberId)
     {
@@ -36,7 +36,7 @@ public class IMUserConfigController extends BaseController
     /**
      * 新增用户消息配置
      */
-    @PreAuthorize("@ss.hasPermi('system:notice:list')")
+    @PreAuthorize("@ss.hasPermi('notice:list')")
     @Log(title = "用户消息配置", businessType = BusinessType.INSERT)
     @PostMapping
     public AjaxResult save(@RequestBody IMUserConfig imUserConfig)

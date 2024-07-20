@@ -28,10 +28,11 @@ public class DingMessageFactoryImpl implements IIMFactoryService {
     public <T> List<IMMessage> createMessage(Long projectId, String group, Long senderId, List<Long> recipientIds, String title, T content, String src, IMessageTemplate<T> messageTemplate,IMConfig config) {
         List<Member> recipientList = this.memberMapper.selectMemberList(recipientIds);
         if(recipientList==null) return new ArrayList<>();
-        String text = messageTemplate.toText((T) String.format("【%s】%s", config.getPlatforms().getDing().getKey(), content), config.getModules());
+        String text = messageTemplate.toText(content, config.getModules());
         if(StringUtils.isBlank(text)) return new ArrayList<>();
+        String finalText = String.format("【%s】%s", config.getPlatforms().getDing().getKey(), text);
         return recipientList.stream().map(r->{
-            DingMessage msg = new DingMessage(text);
+            DingMessage msg = new DingMessage(finalText);
             msg.setSrc(src);
             msg.setMsgtype("text");
             return msg;

@@ -29,11 +29,11 @@ public class DefectMessageOfNoticeTemplateImpl implements IMessageTemplate<SysDe
         sb.append(String.format("%s\n",MessageUtils.message("defect.notice")));
         sb.append(String.format("%s %s/#/project/defect?defectId=%d \n", MessageUtils.message("defect.click-view"), obj.getSrcHost(), obj.getDefectId()));
         sb.append(String.format("%s: %s \n", MessageUtils.message("defectLevel"),MessageUtils.message(obj.getDefectLevel())));
-        sb.append(String.format("%s %s \n", MessageUtils.message("defectTypeName"),MessageUtils.message(obj.getDefectType().name())));
-        sb.append(String.format("%s %s \n", MessageUtils.message("defectStateName"),MessageUtils.message(obj.getDefectState().name())));
-        sb.append(String.format("%s %s \n", MessageUtils.message("moduleName"),obj.getModuleName()));
-        sb.append(String.format("%s %s \n", MessageUtils.message("moduleVersion"),obj.getModuleVersion()));
-        sb.append(String.format("%s %s \n", MessageUtils.message("defectDescribe"),obj.getDefectDescribe()));
+        sb.append(String.format("%s: %s \n", MessageUtils.message("defectTypeName"),MessageUtils.message(obj.getDefectType().name())));
+        sb.append(String.format("%s: %s \n", MessageUtils.message("defectStateName"),MessageUtils.message(obj.getDefectState().name())));
+        sb.append(String.format("%s: %s \n", MessageUtils.message("moduleName"),obj.getModuleName()));
+        sb.append(String.format("%s: %s \n", MessageUtils.message("moduleVersion"),obj.getModuleVersion()));
+        sb.append(String.format("%s: %s \n", MessageUtils.message("defectDescribe"),obj.getDefectDescribe()));
         return sb.toString();
     }
 
@@ -44,11 +44,11 @@ public class DefectMessageOfNoticeTemplateImpl implements IMessageTemplate<SysDe
         sb.append(String.format("%s <br />",MessageUtils.message("defect.notice")));
         sb.append(String.format("%s <a style=\"color: #409eff;\" href=\"%s/#/project/defect?defectId=%d\">%s/#/project/defect?defectId=%d</a> <br />", MessageUtils.message("defect.click-view"), obj.getSrcHost(), obj.getDefectId(), obj.getSrcHost(), obj.getDefectId()));
         sb.append(String.format("%s: %s <br />", MessageUtils.message("defectLevel"),MessageUtils.message(obj.getDefectLevel())));
-        sb.append(String.format("%s %s <br />", MessageUtils.message("defectTypeName"),MessageUtils.message(obj.getDefectType().name())));
-        sb.append(String.format("%s %s <br />", MessageUtils.message("defectStateName"),MessageUtils.message(obj.getDefectState().name())));
-        sb.append(String.format("%s %s <br />", MessageUtils.message("moduleName"),obj.getModuleName()));
-        sb.append(String.format("%s %s <br />", MessageUtils.message("moduleVersion"),obj.getModuleVersion()));
-        sb.append(String.format("%s %s <br />", MessageUtils.message("defectDescribe"),obj.getDefectDescribe()));
+        sb.append(String.format("%s: %s <br />", MessageUtils.message("defectTypeName"),MessageUtils.message(obj.getDefectType().name())));
+        sb.append(String.format("%s: %s <br />", MessageUtils.message("defectStateName"),MessageUtils.message(obj.getDefectState().name())));
+        sb.append(String.format("%s: %s <br />", MessageUtils.message("moduleName"),obj.getModuleName()));
+        sb.append(String.format("%s: %s <br />", MessageUtils.message("moduleVersion"),obj.getModuleVersion()));
+        sb.append(String.format("%s: %s <br />", MessageUtils.message("defectDescribe"),obj.getDefectDescribe()));
         return sb.toString();
     }
 
