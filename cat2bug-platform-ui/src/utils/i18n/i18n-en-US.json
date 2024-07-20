@@ -596,7 +596,7 @@
   "notice.receive-platform-option": "Receive Platform",
   "notice.defect": "Defect Notice",
   "notice.report": "Report Notice",
-  "artificial": "Artificial Notice",
+  "artificial": "Artificial",
   "notice.event": "Notice Event",
   "notice.defect.assigned-me": "Assigned to me",
   "notice.trigger-mode": "Trigger Mode",
