@@ -170,14 +170,6 @@
       <el-table-column v-if="showField('image')" :label="$t('image')" :key="$t('image')" align="left" prop="imgUrls">
         <template slot-scope="scope">
           <cat2-bug-preview-image :images="getUrl(scope.row.imgUrls)" />
-<!--          <el-image-->
-<!--            @click="clickImageHandle"-->
-<!--            v-for="(img,index) in getUrl(scope.row.imgUrls)"-->
-<!--            :key="index"-->
-<!--            style="width: 50px; height: 50px"-->
-<!--            :src="img"-->
-<!--            :preview-src-list="[img]"-->
-<!--            fit="contain"></el-image>-->
         </template>
       </el-table-column>
       <el-table-column v-if="showField('annex')" :label="$t('annex')" :key="$t('annex')" align="left" prop="annexUrls">

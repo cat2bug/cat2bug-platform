@@ -15,7 +15,7 @@
     </div>
     <el-popover
       v-else-if="imageCount>1"
-      placement="bottom"
+      placement="left"
       trigger="hover"
       >
       <div class="row-image">
