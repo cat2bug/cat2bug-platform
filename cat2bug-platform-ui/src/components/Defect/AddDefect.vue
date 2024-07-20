@@ -6,7 +6,10 @@
     :before-close="closeDefectDrawer">
     <template slot="title">
       <div class="defect-add-header">
-        <h3>{{$t('defect.create')}}</h3>
+        <div class="defect-add-title">
+          <i class="el-icon-arrow-left" @click="cancel"></i>
+          <h3>{{$t('defect.create')}}</h3>
+        </div>
         <div>
           <el-button @click="cancel" icon="el-icon-close" size="mini">{{$t('close')}}</el-button>
           <el-button type="primary" icon="el-icon-finished" @click="submitForm" size="mini">{{$t('create')}}</el-button>
@@ -371,5 +374,23 @@ export default {
   .cat2-bug-textarea-button[handle="true"] {
     background-color: rgb(236, 245, 255);
     border-radius: 15px;
+  }
+  .defect-add-title {
+    display: inline-flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-direction: row;
+    overflow: hidden;
+    gap: 10px;
+    > * {
+      float: left;
+    }
+    .el-icon-arrow-left {
+      font-size: 22px;
+    }
+    .el-icon-arrow-left:hover {
+      cursor: pointer;
+      color: #909399;
+    }
   }
 </style>

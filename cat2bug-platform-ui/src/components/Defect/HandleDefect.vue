@@ -320,7 +320,6 @@ export default {
       padding: 5px 0px;
     }
     .defect-edit-title {
-      display: inline-block;
       display: inline-flex;
       justify-content: flex-start;
       align-items: center;

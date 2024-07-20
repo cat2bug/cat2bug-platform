@@ -6,7 +6,7 @@
     :before-close="closeDefectDrawer">
     <template slot="title">
       <div class="case-add-header">
-        <div class="case-add-header-title">
+        <div class="case-add-title">
           <i class="el-icon-arrow-left" @click="cancel"></i>
           <focus-member-list
             v-model="form.focusList"
@@ -273,11 +273,23 @@ export default {
   justify-content: space-between;
   align-items: center;
   flex-direction: row;
-  .case-add-header-title {
+  .case-add-title {
     display: inline-flex;
-    flex-direction: row;
+    justify-content: flex-start;
     align-items: center;
+    flex-direction: row;
+    overflow: hidden;
     gap: 10px;
+    > * {
+      float: left;
+    }
+    .el-icon-arrow-left {
+      font-size: 22px;
+    }
+    .el-icon-arrow-left:hover {
+      cursor: pointer;
+      color: #909399;
+    }
   }
 }
 .create-next-case {
