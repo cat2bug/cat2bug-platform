@@ -113,6 +113,6 @@ export default {
   cursor: pointer;
 }
 .click:hover {
-  scale: 1.05;
+  scale: 1.2;
 }
 </style>
