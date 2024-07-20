@@ -169,14 +169,15 @@
       </el-table-column>
       <el-table-column v-if="showField('image')" :label="$t('image')" :key="$t('image')" align="left" prop="imgUrls">
         <template slot-scope="scope">
-          <el-image
-            @click="clickImageHandle"
-            v-for="(img,index) in getUrl(scope.row.imgUrls)"
-            :key="index"
-            style="width: 50px; height: 50px"
-            :src="img"
-            :preview-src-list="[img]"
-            fit="contain"></el-image>
+          <cat2-bug-preview-image :images="getUrl(scope.row.imgUrls)" />
+<!--          <el-image-->
+<!--            @click="clickImageHandle"-->
+<!--            v-for="(img,index) in getUrl(scope.row.imgUrls)"-->
+<!--            :key="index"-->
+<!--            style="width: 50px; height: 50px"-->
+<!--            :src="img"-->
+<!--            :preview-src-list="[img]"-->
+<!--            fit="contain"></el-image>-->
         </template>
       </el-table-column>
       <el-table-column v-if="showField('annex')" :label="$t('annex')" :key="$t('annex')" align="left" prop="annexUrls">
@@ -220,6 +221,7 @@ import DefectTools from "@/components/Defect/DefectTools";
 import Cat2BugStatistic from "@/components/Cat2BugStatistic"
 import FocusMemberList from "@/components/FocusMemberList";
 import DefectTabDialog from "@/views/system/defect/DefectTabDialog";
+import Cat2BugPreviewImage from "@/components/Cat2BugPreviewImage";
 import { checkPermi } from "@/utils/permission";
 import {delTabs, listTabs} from "@/api/system/DefectTabs";
 import i18n from "@/utils/i18n/i18n";
@@ -237,7 +239,7 @@ const ALL_TAB_NAME = 'all-tab';
 const CACHE_KEY_STATISTIC_PANEL_VISIBLE = 'defect.statisticPanelVisible';
 export default {
   name: "Defect",
-  components: {SelectModule, RowListMember, AddDefect, HandleDefect, LevelTag, SelectProjectMember,ProjectLabel,DefectTypeFlag, DefectStateFlag, DefectTools, Cat2BugStatistic, FocusMemberList, DefectTabDialog },
+  components: {SelectModule, RowListMember, AddDefect, HandleDefect, LevelTag, SelectProjectMember,ProjectLabel,DefectTypeFlag, DefectStateFlag, DefectTools, Cat2BugStatistic, FocusMemberList, DefectTabDialog, Cat2BugPreviewImage },
   dicts: ['defect_level'],
   data() {
     return {
