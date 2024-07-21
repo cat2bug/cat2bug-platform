@@ -142,6 +142,16 @@
             <span>{{$t('update-log')}}</span>
           </div>
           <el-collapse accordion>
+            <el-collapse-item title="v0.4.1 - 2024-07-21">
+              <ol>
+                <li>新增通知服务</li>
+                <li>缺陷中添加计划开始时间和结束时间属性</li>
+                <li>缺陷列表中优化图片显示方式</li>
+                <li>将缺陷描述设置为非必填项</li>
+                <li>测试用例添加添加图片功能</li>
+                <li>修复系统功能BUG</li>
+              </ol>
+            </el-collapse-item>
             <el-collapse-item title="v0.4.0 - 2024-06-26">
               <ol>
                 <li>修复系统功能BUG</li>
@@ -227,7 +237,10 @@
           <div slot="header" class="clearfix">
             <span>{{$t('thanks-formally')}}</span>
           </div>
-          <cat2-bug-avatar style="margin-right: 10px;" size="large" :member="member" v-for="(member,index) in tanksMemberList" :key="index">
+          <el-row style="margin-bottom: 20px;">
+            <span>{{ $t('thanks-content') }}</span>
+          </el-row>
+          <cat2-bug-avatar style="margin-right: 10px;margin-bottom: 20px;" size="large" :member="member" v-for="(member,index) in tanksMemberList" :key="index">
             <template v-slot:extend>
               <span>{{member.name}}</span>
             </template>
@@ -250,6 +263,9 @@ export default {
       // 版本号
       version: null,
       tanksMemberList: [{
+        name: '完美er',
+        avatarUrl: require('@/assets/images/thanks/wanmeier.png')
+      },{
         name: '丁为康',
         avatarUrl: require('@/assets/images/thanks/dingweikang.png')
       },{

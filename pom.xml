@@ -11,14 +11,14 @@
 
     <groupId>com.cat2bug</groupId>
     <artifactId>cat2bug</artifactId>
-    <version>0.4.0</version>
+    <version>0.4.1</version>
 
     <name>cat2bug-platform</name>
     <url>http://www.ruoyi.vip</url>
     <description>猫陪我改BUG</description>
     
     <properties>
-        <cat2bug.version>0.4.0</cat2bug.version>
+        <cat2bug.version>0.4.1</cat2bug.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>1.8</java.version>

@@ -1,4 +1,4 @@
-<h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">Cat2Bug-Platform v0.4.0</h1>
+<h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">Cat2Bug-Platform v0.4.1</h1>
 <h4 align="center">轻量化智能BUG管理平台</h4>
 
 ## 平台简介
@@ -17,19 +17,18 @@ Cat2Bug-Platform是一套永久免费开源的Bug管理平台，可以完全私�
 6.  报告管理：显示团队、项目、测试用例、缺陷、交付物等的相关数据指标。
 7.  API管理：用于管理API接口密钥
 8.  文档管理：留备项目中所用到的各种文档
+9.  通知管理：发送系统业务通知到系统内部、邮件、钉钉等平台中。
 
 ## 最新版本更新说明
 
-当前最新版本是0.4.0
+当前最新版本是0.4.1
 
+* 新增通知服务;
+* 缺陷中添加计划开始时间和结束时间属性;
+* 缺陷列表中优化图片显示方式;
+* 将缺陷描述设置为非必填项;
+* 测试用例添加添加图片功能;
 * 修复系统功能BUG;
-* 添加AI私有化服务;
-* 在新建缺陷时，更新描述组件，使之可以通过AI分析添加填充其它属性功能;
-* 更新AI创建测试用例功能，使之可以用过AI的上下文语义理解功能，通过多次描述用例需求来调整测试用例;
-* 在报告中添加模版功能;
-* 新增文档功能;
-* 在项目设置中新增AI配置项;
-* 在缺陷中，为每个缺陷添加存活时常、驳回次数等指标;
 
 ## 特色
 
@@ -107,7 +106,7 @@ Cat2Bug-Platform是一套永久免费开源的Bug管理平台，可以完全私�
 手动部署需要提前安装Java 11环境，并下载cat2bug-platform发行版程序，执行命令如下：
 
 ```shell
-nohup java -jar cat2bug-platform-0.4.0.jar>/dev/null 2>&1 &
+nohup java -jar cat2bug-platform-0.4.1.jar>/dev/null 2>&1 &
 ```
 
 ### Docker单容器部署
@@ -128,7 +127,7 @@ docker run -it -d -p 8022:8022 --name cat2bug-platform qyzw-docker.pkg.coding.ne
 
 注意：系统管理员账号：admin    密码：cat2bug，此账号用于管理注册用户。
 
-此部署方式为单容器方式部署，数据库默认采用嵌入式H2，多用于小型或临时性项目的缺陷管理，如需Mysql或多容器部署方案，请查看[官网文档](https://www.cat2bug.com/download/cat2bug-platform/#%E9%83%A8%E7%BD%B2)。
+此部署方式为单容器最精简方式部署，数据库默认采用嵌入式H2，多用于小型或临时性项目的缺陷管理，如需Mysql或多容器部署方案，请查看[官网文档](https://www.cat2bug.com/download/cat2bug-platform/#%E9%83%A8%E7%BD%B2)。
 
 ## 演示图
 
