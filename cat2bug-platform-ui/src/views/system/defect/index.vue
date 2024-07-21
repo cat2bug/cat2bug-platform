@@ -248,7 +248,9 @@ export default {
       // 所有tab的名称
       allTab: ALL_TAB_NAME,
       tableKey: (new Date()).getMilliseconds(),
+      // 表格中可以显示的字段列表
       checkedFieldList: [],
+      // 所有属性类型
       fieldList: [],
       // 分析图表列表
       statisticList:[],

@@ -21,10 +21,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="caseNum"    column="case_num"    />
         <result property="projectId"    column="project_id"    />
         <result property="remark"    column="remark"    />
+        <result property="imgUrls"    column="img_urls"    />
     </resultMap>
 
     <sql id="selectSysCaseVo">
-        select c.case_id, c.case_name, c.module_id, m.module_name, c.case_type, c.case_expect, c.case_step, c.case_level, c.case_preconditions, c.create_by, c.create_time, c.update_by, c.update_time, c.case_num, c.project_id, c.remark
+        select c.case_id, c.case_name, c.module_id, m.module_name, c.case_type, c.case_expect, c.case_step, c.case_level, c.case_preconditions, c.create_by, c.create_time, c.update_by, c.update_time, c.case_num, c.project_id, c.remark, c.img_urls
         from sys_case c
         LEFT JOIN sys_module m on m.module_id = c.module_id
     </sql>
@@ -86,6 +87,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="caseNum != null">case_num,</if>
             <if test="projectId != null">project_id,</if>
             <if test="remark != null">remark,</if>
+            <if test="imgUrls != null">img_urls,</if>
          </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="caseId != null">#{caseId},</if>
@@ -103,6 +105,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="caseNum != null">#{caseNum},</if>
             <if test="projectId != null">#{projectId},</if>
             <if test="remark != null">#{remark},</if>
+            <if test="imgUrls != null">#{imgUrls},</if>
          </trim>
     </insert>
 
@@ -123,6 +126,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="caseNum != null">case_num = #{caseNum},</if>
             <if test="projectId != null">project_id = #{projectId},</if>
             <if test="remark != null">remark = #{remark},</if>
+            <if test="imgUrls != null">img_urls = #{imgUrls},</if>
         </trim>
         where case_id = #{caseId}
     </update>

@@ -63,6 +63,9 @@
         <el-form-item :label="$t('remark')" prop="remark">
           <el-input type="textarea" v-model="form.remark" :placeholder="$t('please-enter-remark')" maxlength="255" rows="6" show-word-limit />
         </el-form-item>
+        <el-form-item :label="$t('image')" prop="imgUrls">
+          <image-upload v-model="form.imgUrls" :limit="9"></image-upload>
+        </el-form-item>
       </el-form>
     </div>
   </el-drawer>

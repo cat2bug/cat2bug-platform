@@ -34,6 +34,27 @@
 
       <el-row :gutter="10" class="mb8">
         <el-col :span="1.5">
+          <el-popover
+            placement="top"
+            trigger="click">
+            <div class="row">
+              <i class="el-icon-s-fold"></i>
+              <h4>{{$t('defect.display-field')}}</h4>
+            </div>
+            <el-divider class="case-field-divider"></el-divider>
+            <el-checkbox-group v-model="checkedFieldList" class="col" @change="checkedFieldListChange">
+              <el-checkbox v-for="field in fieldList" :label="field" :key="field">{{$t(field)}}</el-checkbox>
+            </el-checkbox-group>
+            <el-button
+              style="padding: 7px;"
+              plain
+              slot="reference"
+              icon="el-icon-s-fold"
+              size="mini"
+            ></el-button>
+          </el-popover>
+        </el-col>
+        <el-col :span="1.5">
           <el-button
             type="info"
             plain
@@ -84,12 +105,12 @@
 <!--      用例列表-->
       <div ref="caseContext" class="case-context">
         <el-table v-loading="loading" :data="caseList" @row-click="handleUpdate"  v-resize="setDragComponentSize">
-          <el-table-column :label="$t('id')" align="center" prop="caseNum" width="80" sortable>
+          <el-table-column v-if="showField('id')" :label="$t('id')" align="left" prop="caseNum" width="80" sortable>
             <template slot-scope="scope">
               <span>{{ caseNumber(scope.row) }}</span>
             </template>
           </el-table-column>
-          <el-table-column :label="$t('title')" align="center" prop="caseName" sortable>
+          <el-table-column v-if="showField('title')" :label="$t('title')" align="left" prop="caseName" sortable>
             <template slot-scope="scope">
               <div class="table-case-title">
                 <focus-member-list
@@ -100,20 +121,25 @@
               </div>
             </template>
           </el-table-column>
-          <el-table-column :label="$t('module')" align="center" prop="moduleName" sortable />
-          <el-table-column :label="$t('level')" align="center" prop="caseLevel" sortable width="80">
+          <el-table-column v-if="showField('module')" :label="$t('module')" align="left" prop="moduleName" sortable />
+          <el-table-column v-if="showField('level')" :label="$t('level')" align="left" prop="caseLevel" sortable width="80">
             <template slot-scope="scope">
               <cat2-bug-level :level="scope.row.caseLevel" />
             </template>
           </el-table-column>
-          <el-table-column :label="$t('preconditions')" align="center" prop="casePreconditions" sortable />
-          <el-table-column :label="$t('expect')" align="center" prop="caseExpect" sortable />
-          <el-table-column :label="$t('step')" align="center" prop="caseStep" sortable>
+          <el-table-column v-if="showField('preconditions')" :label="$t('preconditions')" align="left" prop="casePreconditions" sortable />
+          <el-table-column v-if="showField('expect')" :label="$t('expect')" align="left" prop="caseExpect" sortable />
+          <el-table-column v-if="showField('step')" :label="$t('step')" align="left" prop="caseStep" sortable>
             <template slot-scope="scope">
               <step :steps="scope.row.caseStep" />
             </template>
           </el-table-column>
-          <el-table-column :label="$t('update-time')" align="left" prop="updateTime" width="150" sortable>
+          <el-table-column v-if="showField('image')" :label="$t('image')" :key="$t('image')" align="left" prop="imgUrls">
+            <template slot-scope="scope">
+              <cat2-bug-preview-image :images="getUrl(scope.row.imgUrls)" />
+            </template>
+          </el-table-column>
+          <el-table-column v-if="showField('update-time')" :label="$t('update-time')" align="left" prop="updateTime" width="150" sortable>
             <template slot-scope="scope">
               <span>{{ parseTime(scope.row.updateTime, '{y}-{m}-{d}') }}</span>
             </template>
@@ -192,18 +218,26 @@ import AddCase from "@/components/Case/AddCase";
 import AddDefect from "@/components/Defect/AddDefect";
 import CloudCase from "@/components/Cloud/CloudCase";
 import FocusMemberList from "@/components/FocusMemberList";
+import Cat2BugPreviewImage from "@/components/Cat2BugPreviewImage";
 import {checkPermi} from "@/utils/permission";
 import {strFormat} from "@/utils";
 import {getToken} from "@/utils/auth";
 
 const TREE_MODULE_WIDTH_CACHE_KEY = 'case_tree_module_width';
+/** 需要显示的测试用例字段列表在缓存的key值 */
+const CASE_TABLE_FIELD_LIST_CACHE_KEY='case-table-field-list';
+
 export default {
   name: "Case",
-  components: {ProjectLabel,AddCase,Cat2BugLevel,Step,TreeModule,Multipane,MultipaneResizer,AddDefect,CloudCase,FocusMemberList},
+  components: {ProjectLabel,AddCase,Cat2BugLevel,Step,TreeModule,Multipane,MultipaneResizer,AddDefect,CloudCase,FocusMemberList,Cat2BugPreviewImage},
   data() {
     return {
       multipaneStyle: {'--marginTop':'0px'},
       treeModuleStyle: {'--treeModuleWidth':'300px'},
+      // 表格中可以显示的字段列表
+      checkedFieldList: [],
+      // 所有属性类型
+      fieldList: [],
       // 遮罩层
       loading: true,
       // 选中数组
@@ -252,17 +286,41 @@ export default {
       observer: null,
     };
   },
+  watch: {
+    "$i18n.locale": function (newVal, oldVal) {
+      this.setFieldList();
+    },
+  },
   computed: {
+    /** 字段是否显示 */
+    showField: function () {
+      return function (field) {
+        return this.checkedFieldList.filter(f=>f==field).length>0;
+      }
+    },
+    /** 用于显示的用例编号 */
     caseNumber: function () {
       return function (val) {
         return '#'+val.caseNum;
       }
     },
+    /** 项目ID */
     projectId: function () {
       return parseInt(this.$store.state.user.config.currentProjectId);
     },
+    /** 字符转url数组 */
+    getUrl: function () {
+      return function (urls){
+        let imgs = urls?urls.split(','):[];
+        return imgs.map(i=>{
+          return process.env.VUE_APP_BASE_API + i;
+        })
+      }
+    },
   },
   created() {
+    // 设置缺陷列表显示哪些列属性
+    this.setFieldList();
   },
   mounted() {
     this.queryParams.projectId=this.projectId;
@@ -293,6 +351,26 @@ export default {
   },
   methods: {
     strFormat,
+    /** 设置列表显示的属性字段 */
+    setFieldList() {
+      this.fieldList = [
+        'id','title','module','level', 'preconditions','expect','step','image','update-time'
+      ];
+
+      const fieldList = this.$cache.local.get(CASE_TABLE_FIELD_LIST_CACHE_KEY);
+      if(fieldList) {
+        this.checkedFieldList = JSON.parse(fieldList);
+      } else {
+        this.checkedFieldList = [];
+        this.fieldList.forEach(f=>{
+          this.checkedFieldList.push(f);
+        });
+      }
+    },
+    /** 测试用例列表属性字段改变操作 */
+    checkedFieldListChange(field) {
+      this.$cache.local.set(CASE_TABLE_FIELD_LIST_CACHE_KEY,JSON.stringify(field));
+    },
     /** 获取树模型宽度 */
     getTreeModuleWidth() {
       let treeModuleWidth = this.$cache.session.get(TREE_MODULE_WIDTH_CACHE_KEY);
@@ -411,6 +489,21 @@ export default {
   }
 </style>
 <style scoped lang="scss">
+  .col {
+    display: flex;
+    flex-direction: column;
+  }
+  .row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    > * {
+      margin: 0px 5px 0px 0px;
+    }
+  }
+  .case-field-divider {
+    margin: 8px 0px;
+  }
   .tree-module {
     width: var(--treeModuleWidth);
     max-width: 50%;

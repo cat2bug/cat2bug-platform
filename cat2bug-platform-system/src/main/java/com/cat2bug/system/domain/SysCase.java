@@ -79,6 +79,9 @@ public class SysCase extends BaseEntity
     @Excel(name = "步骤", i18nNameKey = "case.step", width = 50, headerBackgroundColor=IndexedColors.GREY_25_PERCENT)
     private String caseStepScript;
 
+    /** 图片集合 */
+    private String imgUrls;
+
     /** 焦点成员 */
     private List<SysUser> focusList;
 
