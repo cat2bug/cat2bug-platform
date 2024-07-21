@@ -8,6 +8,7 @@ import com.cat2bug.common.enums.BusinessType;
 import com.cat2bug.im.service.IMService;
 import com.cat2bug.im.service.impl.DefaultMessageTemplateImpl;
 import com.cat2bug.system.domain.SysNotice;
+import com.cat2bug.system.service.ISysDefectService;
 import com.cat2bug.system.service.ISysNoticeService;
 import com.cat2bug.web.vo.SendNotice;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,8 @@ public class SysNoticeController extends BaseController
     private ISysNoticeService noticeService;
     @Autowired
     private IMService imService;
+    @Autowired
+    private ISysDefectService sysDefectService;
     @Autowired
     private DefaultMessageTemplateImpl defaultMessageTemplate;
     /**
@@ -113,7 +116,8 @@ public class SysNoticeController extends BaseController
                 notice.getTitle(),
                 notice.getContent(),
                 String.format("%s/#/notice/index?projectId=%d",notice.getSrc(), notice.getProjectId()),
-                defaultMessageTemplate
+                defaultMessageTemplate,
+                sysDefectService.getDefaultDefectNoticeOption()
                 );
         return success();
     }

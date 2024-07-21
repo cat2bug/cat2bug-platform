@@ -1,6 +1,8 @@
 package com.cat2bug.im.service;
 
 import java.util.List;
+import java.util.Map;
+
 import com.cat2bug.im.domain.IMUserConfig;
 
 /**
@@ -18,7 +20,7 @@ public interface IIMUserConfigService
      * @param memberId 成员ID
      * @return 用户消息配置
      */
-    public IMUserConfig selectImUserConfigByProjectAndMember(Long project,Long memberId);
+    public IMUserConfig selectImUserConfigByProjectAndMember(Long project, Long memberId, Map<String, Object> defaultOption);
 
     /**
      * 新增用户消息配置

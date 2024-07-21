@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -45,10 +46,10 @@ public class IMService {
      * @param content       发送内容
      * @param group         分组
      */
-    public <T> void sendMessage(Long projectId, String group, Long senderId, List<Long> recipientIds, String title, T content, String src, IMessageTemplate messageTemplate) {
+    public <T> void sendMessage(Long projectId, String group, Long senderId, List<Long> recipientIds, String title, T content, String src, IMessageTemplate messageTemplate, Map<String,Object> defaultOption) {
         String sn = IdUtils.simpleUUID(); // 流水号
         recipientIds.stream().forEach(recipientId->{
-           IMUserConfig userConfig = imUserConfigService.selectImUserConfigByProjectAndMember(projectId,  recipientId);
+           IMUserConfig userConfig = imUserConfigService.selectImUserConfigByProjectAndMember(projectId,  recipientId, defaultOption);
             if(userConfig.getConfig().getPlatforms().getSystem().isConfigSwitch()){
                 Optional<IIMService> opt = this.iimServiceList.stream().filter(s->s.getMessageFactoryName().equals(NoticeMessageServiceImpl.MESSAGE_FACTORY_NAME)).findFirst();
                 if(opt.isPresent())

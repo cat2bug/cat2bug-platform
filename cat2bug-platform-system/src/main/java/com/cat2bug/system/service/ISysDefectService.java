@@ -7,6 +7,7 @@ import com.cat2bug.system.domain.vo.EnumVo;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 缺陷Service接口
@@ -121,4 +122,10 @@ public interface ISysDefectService
      * @return  版本集合
      */
     public List<SysVersion> selectVersionList(@Param("projectId")Long projectId);
+
+    /**
+     * 获取默认缺陷通知配置
+     * @return
+     */
+    public Map<String, Object> getDefaultDefectNoticeOption();
 }

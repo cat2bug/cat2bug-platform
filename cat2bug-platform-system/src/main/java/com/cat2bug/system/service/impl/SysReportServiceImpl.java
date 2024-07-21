@@ -177,7 +177,8 @@ public class SysReportServiceImpl implements ISysReportService
                     title,      // 通知标题
                     report,     // 通知内容
                     String.format("%s/#/project/report?reportId=%d",report.getSrcHost(), report.getReportId()),
-                    this.reportMessageOfNoticeTemplate  // 通知内容格式模版
+                    this.reportMessageOfNoticeTemplate,  // 通知内容格式模版
+                    null
             );
         }catch (Exception e) {
             log.error(e);

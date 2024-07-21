@@ -2,6 +2,8 @@ package com.cat2bug.im.service.impl;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import com.cat2bug.common.utils.DateUtils;
 import com.cat2bug.common.utils.SecurityUtils;
 import com.cat2bug.im.domain.*;
@@ -30,16 +32,20 @@ public class IMUserConfigServiceImpl implements IIMUserConfigService
      * @return 用户消息配置
      */
     @Override
-    public IMUserConfig selectImUserConfigByProjectAndMember(Long projectId,Long memberId)
+    public IMUserConfig selectImUserConfigByProjectAndMember(Long projectId,Long memberId, Map<String, Object> defaultOption)
     {
         IMUserConfig config = imUserConfigMapper.selectImUserConfigByProjectAndMember(projectId, memberId);
         if(config==null) {
-            config = this.createDefaultConfig(projectId, memberId);
+            if(defaultOption!=null) {
+                config = this.createDefaultConfig(projectId, memberId, defaultOption);
+            }   else  {
+                config = this.createDefaultConfig(projectId, memberId, new HashMap<>());
+            }
         }
         return config;
     }
 
-    private IMUserConfig createDefaultConfig(Long projectId,Long memberId) {
+    private IMUserConfig createDefaultConfig(Long projectId,Long memberId, Map<String, Object> defaultOption) {
         IMUserConfig config = new IMUserConfig();
 
         config.setProjectId(projectId);
@@ -47,7 +53,7 @@ public class IMUserConfigServiceImpl implements IIMUserConfigService
         // 设置配置
         IMConfig imConfig = new IMConfig();
         config.setConfig(imConfig);
-        imConfig.setModules(new HashMap<>());
+        imConfig.setModules(defaultOption);
 
         IMPlatformConfig imPlatformConfig = new IMPlatformConfig();
         imConfig.setPlatforms(imPlatformConfig);

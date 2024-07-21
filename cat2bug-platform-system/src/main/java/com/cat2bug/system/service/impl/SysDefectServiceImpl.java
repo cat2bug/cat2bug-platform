@@ -343,6 +343,30 @@ public class SysDefectServiceImpl implements ISysDefectService
     }
 
     /**
+     * 获取默认缺陷通知配置
+     * @return
+     */
+    @Override
+    public Map<String, Object> getDefaultDefectNoticeOption() {
+        Map<String, Object> moduleOption = new HashMap<>();
+
+        Map<String, Object> defectOption = new HashMap<>();
+        moduleOption.put("defect",defectOption);
+
+        Map<String, Object> eventOption = new HashMap<>();
+        defectOption.put("event",eventOption);
+        eventOption.put("receiver", true);
+        eventOption.put("collect", true);
+
+        Map<String, Object> optionOption = new HashMap<>();
+        defectOption.put("option",optionOption);
+        Map<String, Object> realtimeOption = new HashMap<>();
+        optionOption.put("realtime",realtimeOption);
+        realtimeOption.put("switch",true);
+        return moduleOption;
+    }
+
+    /**
      * 发送缺陷通知
      * @param defectId
      */
@@ -357,7 +381,7 @@ public class SysDefectServiceImpl implements ISysDefectService
             List<Long> collectUserList = this.sysUserDefectMapper.selectSysUserDefectList(userDefect).stream()
                     .filter(u->{
                         try {
-                            IMUserConfig userConfig = imUserConfigService.selectImUserConfigByProjectAndMember(projectId, u.getUserId());
+                            IMUserConfig userConfig = imUserConfigService.selectImUserConfigByProjectAndMember(projectId, u.getUserId(),this.getDefaultDefectNoticeOption());
                             Map<String, Object> defectConfig = (Map<String, Object>) userConfig.getConfig().getModules().get("defect");
                             Map<String, Object> eventConfig = (Map<String, Object>) defectConfig.get("event");
                             return (boolean) eventConfig.get("collect");
@@ -370,7 +394,7 @@ public class SysDefectServiceImpl implements ISysDefectService
             List<Long> handleUserList = defect.getHandleBy().stream()
                     .filter(id->{
                         try {
-                            IMUserConfig userConfig = imUserConfigService.selectImUserConfigByProjectAndMember(projectId, id);
+                            IMUserConfig userConfig = imUserConfigService.selectImUserConfigByProjectAndMember(projectId, id,this.getDefaultDefectNoticeOption());
                             Map<String, Object> defectConfig = (Map<String, Object>) userConfig.getConfig().getModules().get("defect");
                             Map<String, Object> eventConfig = (Map<String, Object>) defectConfig.get("event");
                             return (boolean) eventConfig.get("receiver");
@@ -398,7 +422,8 @@ public class SysDefectServiceImpl implements ISysDefectService
                         title,      // 通知标题
                         defect,     // 通知内容
                         String.format("%s/#/project/defect?defectId=%d",defect.getSrcHost(), defect.getDefectId()),
-                        this.defectMessageOfNoticeTemplate  // 通知内容格式模版
+                        this.defectMessageOfNoticeTemplate,  // 通知内容格式模版
+                        this.getDefaultDefectNoticeOption()
                 );
             }catch (Exception e) {
                 log.error(e);

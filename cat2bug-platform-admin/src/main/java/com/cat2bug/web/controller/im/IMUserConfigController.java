@@ -6,9 +6,13 @@ import com.cat2bug.common.core.domain.AjaxResult;
 import com.cat2bug.common.enums.BusinessType;
 import com.cat2bug.im.domain.IMUserConfig;
 import com.cat2bug.im.service.IIMUserConfigService;
+import com.cat2bug.system.service.ISysDefectService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 用户消息配置Controller
@@ -22,6 +26,8 @@ public class IMUserConfigController extends BaseController
 {
     @Autowired
     private IIMUserConfigService imUserConfigService;
+    @Autowired
+    private ISysDefectService sysDefectService;
 
     /**
      * 获取用户消息配置详细信息
@@ -30,7 +36,7 @@ public class IMUserConfigController extends BaseController
     @GetMapping()
     public AjaxResult getInfo(@RequestParam("projectId") Long projectId, @RequestParam("memberId") Long memberId)
     {
-        return success(imUserConfigService.selectImUserConfigByProjectAndMember(projectId, memberId));
+        return success(imUserConfigService.selectImUserConfigByProjectAndMember(projectId, memberId,sysDefectService.getDefaultDefectNoticeOption()));
     }
 
     /**
