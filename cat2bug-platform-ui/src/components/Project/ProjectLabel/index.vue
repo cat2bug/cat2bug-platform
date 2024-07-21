@@ -12,15 +12,28 @@ export default {
       project:{}
     }
   },
+  props: {
+    projectId : {
+      type: Number,
+      default: 0
+    }
+  },
+  watch: {
+    projectId: function (n,o) {
+      if(n!=o) {
+        this.getProjectInfo(n);
+      }
+    }
+  },
   created() {
-    this.getProjectInfo();
+    this.getProjectInfo(this.getProjectId());
   },
   methods: {
     getProjectId() {
-      return parseInt(this.$store.state.user.config.currentProjectId);
+      return this.projectId==0?parseInt(this.$store.state.user.config.currentProjectId):this.projectId;
     },
-    getProjectInfo() {
-      getProject(this.getProjectId()).then(res=>{
+    getProjectInfo(projectId) {
+      getProject(projectId).then(res=>{
         this.project = res.data;
       });
     }

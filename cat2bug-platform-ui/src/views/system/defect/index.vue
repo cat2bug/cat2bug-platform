@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
 <!--    <span slot="footer" class="dialog-footer" v-hotkey="keyMap"></span>-->
-    <project-label />
+    <project-label :project-id="projectId" />
     <div class="defect-tools-tab">
       <el-tabs v-model="activeDefectTabName" @tab-click="selectDefectTabHandle">
         <el-tab-pane v-for="tab in config.tabs" :name="tab.tabId+''" :key="tab.tabId+''">
@@ -228,7 +228,7 @@ import { checkPermi } from "@/utils/permission";
 import {delTabs, listTabs} from "@/api/system/DefectTabs";
 import i18n from "@/utils/i18n/i18n";
 import {lifeTime} from "@/utils/defect";
-import {getNotice} from "@/api/system/notice";
+import store from "@/store";
 
 /** 需要显示的缺陷字段列表在缓存的key值 */
 const DEFECT_TABLE_FIELD_LIST_CACHE_KEY='defect-table-field-list';
@@ -345,7 +345,11 @@ export default {
         let arr = url.split('\/');
         return arr[arr.length-1];
       }
-    }
+    },
+    /** 获取项目id */
+    projectId() {
+      return this.$route.query.projectId?parseInt(this.$route.query.projectId):parseInt(this.$store.state.user.config.currentProjectId);
+    },
   },
   watch: {
     "$i18n.locale": function (newVal, oldVal) {
@@ -362,28 +366,35 @@ export default {
       }
     },
   },
-  created() {
-    // 设置缺陷列表显示哪些列属性
-    this.setFieldList();
-    // 获取缺陷配置
-    this.getDefectConfig();
-  },
   mounted() {
-    /** 显示指定缺陷信息 */
-    if(this.$route.query.defectId) {
-      this.$refs.editDefectForm.open(this.$route.query.defectId);
-    }
-    /** 设置指定消息已读 */
-    if(this.$route.query.noticeId) {
-      this.setNoticeRead(this.$route.query.noticeId);
+    /** 点击项目跳转 */
+    if(this.$route.query.projectId) {
+      let _this = this;
+      store.dispatch('UpdateCurrentProjectId', this.$route.query.projectId).then(() => {
+        store.dispatch('GetInfo').then(() => {
+          // 设置缺陷列表显示哪些列属性
+          _this.setFieldList();
+          // 获取缺陷配置
+          _this.getDefectConfig();
+          // 显示指定缺陷信息
+          if(_this.$route.query.defectId) {
+            _this.$refs.editDefectForm.open(_this.$route.query.defectId);
+          }
+          this.$forceUpdate();
+        });
+      });
+    } else {
+      this.setFieldList();
+      // 获取缺陷配置
+      this.getDefectConfig();
+      // 显示指定缺陷信息
+      if(this.$route.query.defectId) {
+        this.$refs.editDefectForm.open(this.$route.query.defectId);
+      }
     }
   },
   methods: {
     checkPermi,
-    /** 设置指定消息已读 */
-    setNoticeRead(noticeId) {
-      getNotice(noticeId).then(res=>{}).catch(e=>{});
-    },
     /** 设置列表显示的属性字段 */
     setFieldList() {
       this.fieldList = [

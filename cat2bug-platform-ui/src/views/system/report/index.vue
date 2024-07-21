@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <project-label />
+    <project-label :project-id="projectId" />
     <div class="report-tools">
       <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
         <el-form-item label="" prop="reportTitle">
@@ -145,6 +145,7 @@ import SelectProjectMember from "@/components/Project/SelectProjectMember";
 import Cat2BugAvatar from "@/components/Cat2BugAvatar";
 import i18n from "@/utils/i18n/i18n";
 import {delUser} from "@/api/system/user";
+import store from "@/store";
 
 export default {
   name: "Report",
@@ -206,12 +207,22 @@ export default {
       }
     },
   },
-  created() {
-    this.getList();
-  },
   mounted() {
-    if(this.$route.query.reportId) {
-      this.$refs.viewReport.open(this.$route.query.reportId);
+    if(this.$route.query.projectId) {
+      let _this = this;
+      store.dispatch('UpdateCurrentProjectId', this.$route.query.projectId).then(() => {
+        store.dispatch('GetInfo').then(() => {
+          _this.getList();
+          if(_this.$route.query.reportId) {
+            _this.$refs.viewReport.open(this.$route.query.reportId);
+          }
+        });
+      });
+    } else {
+      this.getList();
+      if(this.$route.query.reportId) {
+        this.$refs.viewReport.open(this.$route.query.reportId);
+      }
     }
   },
   methods: {

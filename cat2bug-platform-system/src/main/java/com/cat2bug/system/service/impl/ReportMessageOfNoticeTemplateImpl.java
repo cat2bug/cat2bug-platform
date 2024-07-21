@@ -27,7 +27,7 @@ public class ReportMessageOfNoticeTemplateImpl implements IMessageTemplate<SysRe
         if(this.isValid(params)==false) return null;
         StringBuffer sb = new StringBuffer();
         sb.append(String.format("%s\n",MessageUtils.message("report.notice")));
-        sb.append(String.format("%s %s/#/project/report?reportId=%d \n", MessageUtils.message("report.click-view"), obj.getSrcHost(), obj.getReportId()));
+        sb.append(String.format("%s %s/#/project/report?projectId=%d&reportId=%d \n", MessageUtils.message("report.click-view"), obj.getSrcHost(), obj.getProjectId(), obj.getReportId()));
         return sb.toString();
     }
 
@@ -36,7 +36,7 @@ public class ReportMessageOfNoticeTemplateImpl implements IMessageTemplate<SysRe
         if(this.isValid(params)==false) return null;
         StringBuffer sb = new StringBuffer();
         sb.append(String.format("%s <br />",MessageUtils.message("report.notice")));
-        sb.append(String.format("%s <a style=\"color: #409eff;\" href=\"%s/#/project/report?reportId=%d\">%s/#/project/report?reportId=%d</a> <br />", MessageUtils.message("report.click-view"), obj.getSrcHost(), obj.getReportId(), obj.getSrcHost(), obj.getReportId()));
+        sb.append(String.format("%s <a style=\"color: #409eff;\" href=\"%s/#/project/report?projectId=%d&reportId=%d\">%s/#/project/report?reportId=%d</a> <br />", MessageUtils.message("report.click-view"), obj.getSrcHost(), obj.getProjectId(), obj.getReportId(), obj.getSrcHost(), obj.getReportId()));
         return sb.toString();
     }
 
@@ -45,7 +45,7 @@ public class ReportMessageOfNoticeTemplateImpl implements IMessageTemplate<SysRe
         if(this.isValid(params)==false) return null;
         StringBuffer sb = new StringBuffer();
         sb.append(String.format("## %s \n\n", obj.getReportTitle()));
-        sb.append(String.format("%s [%s/#/project/report?reportId=%d](%s/#/project/report?reportId=%d) \n\n", MessageUtils.message("report.click-view"), obj.getSrcHost(), obj.getReportId(), obj.getSrcHost(), obj.getReportId()));
+        sb.append(String.format("%s [%s/#/project/report?reportId=%d](%s/#/project/report?projectId=%d&reportId=%d) \n\n", MessageUtils.message("report.click-view"), obj.getSrcHost(), obj.getReportId(), obj.getSrcHost(), obj.getProjectId(), obj.getReportId()));
         return sb.toString();
     }
 
