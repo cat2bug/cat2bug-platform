@@ -19,7 +19,7 @@
           <h4 class="report-edit-title-num">{{report.reportTitle}}</h4>
         </div>
         <div class="report-edit-tools">
-          <report-tools :report="report" @delete="cancel" />
+          <report-tools :report="report" @delete="handleDelete" />
           <el-dropdown @command="handleExport">
             <el-button size="mini">
               <i class="el-icon-download"></i>
@@ -232,6 +232,10 @@ export default {
     cancel() {
       this.visible = false;
       this.reset();
+    },
+    handleDelete() {
+      this.$emit('delete');
+      this.cancel();
     },
     /** 表单重置 */
     reset() {

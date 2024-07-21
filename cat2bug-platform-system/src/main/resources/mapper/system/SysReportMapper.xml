@@ -31,6 +31,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="params.beginReportTime != null and params.beginReportTime != '' and params.endReportTime != null and params.endReportTime != ''"> and r.report_time between #{params.beginReportTime} and #{params.endReportTime}</if>
             <if test="reportDataCoder != null  and reportDataCoder != ''"> and r.report_data_coder = #{reportDataCoder}</if>
             <if test="createById != null "> and r.create_by_id = #{createById}</if>
+            <if test="createByIds != null and createByIds != '' and createByIds.size>0"> and
+                r.create_by_id in
+                <foreach collection="createByIds" item="id" separator=", " open="(" close=")">
+                    #{id}
+                </foreach>
+            </if>
         </where>
         ORDER BY r.report_time DESC
     </select>

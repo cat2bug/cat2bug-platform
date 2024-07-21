@@ -9,7 +9,7 @@
             :placeholder="$t('report.please-enter-title')"
             prefix-icon="el-icon-tickets"
             clearable
-            @keyup.enter.native="handleQuery"
+            @input="handleQuery"
           />
         </el-form-item>
         <el-form-item label="">
@@ -21,15 +21,18 @@
             range-separator="-"
             :start-placeholder="$t('start-time')"
             :end-placeholder="$t('end-time')"
+            @change="handleQuery"
           ></el-date-picker>
         </el-form-item>
         <el-form-item label="" prop="createById">
-          <el-input
-            v-model="queryParams.createById"
-            :placeholder="$t('report.please-enter-pusher')"
-            prefix-icon="el-icon-user"
-            clearable
-            @keyup.enter.native="handleQuery"
+          <select-project-member
+            v-model="queryParams.createByIds"
+            :project-id="projectId"
+            placeholder="report.please-enter-pusher"
+            :is-head="false"
+            size="small"
+            icon="el-icon-user"
+            @input="handleQuery()"
           />
         </el-form-item>
       </el-form>
@@ -77,7 +80,7 @@
         </template>
       </el-table-column>
       <el-table-column :label="$t('report.source')" align="center" prop="reportSource"  width="200"/>
-      <el-table-column :label="$t('updateBy')" align="center" prop="createBy"  width="150">
+      <el-table-column :label="$t('pusher')" align="center" prop="createBy"  width="150">
         <template slot-scope="scope">
           <el-tooltip v-if="scope.row.createBy" class="item" effect="dark" :content="scope.row.createBy" placement="top">
             <cat2-bug-avatar :member="member(scope.row)" />
@@ -125,7 +128,7 @@
         <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
-    <view-report ref="viewReport" :project-id="projectId" />
+    <view-report ref="viewReport" :project-id="projectId" @delete="handleQuery" />
   </div>
 </template>
 
@@ -138,13 +141,14 @@ import ReportTools from "@/components/Report/ReportTools";
 import FocusMemberList from "@/components/FocusMemberList";
 import ReportTypeFlag from "@/components/Report/ReportTypeFlag";
 import Cat2BugReportTemplateSelect from "@/components/Cat2BugReportTemplateSelect";
+import SelectProjectMember from "@/components/Project/SelectProjectMember";
 import Cat2BugAvatar from "@/components/Cat2BugAvatar";
 import i18n from "@/utils/i18n/i18n";
 import {delUser} from "@/api/system/user";
 
 export default {
   name: "Report",
-  components: { Step, ProjectLabel, ViewReport, ReportTools, FocusMemberList, ReportTypeFlag, Cat2BugReportTemplateSelect, Cat2BugAvatar },
+  components: { Step, ProjectLabel, ViewReport, ReportTools, FocusMemberList, ReportTypeFlag, Cat2BugReportTemplateSelect, Cat2BugAvatar, SelectProjectMember },
   data() {
     return {
       // 遮罩层
@@ -174,7 +178,10 @@ export default {
         reportTitle: null,
         reportTime: null,
         reportDataType: null,
-        createById: null
+        createById: null,
+        params:{
+          createByIds:[]
+        }
       },
       // 表单参数
       form: {},
@@ -212,7 +219,6 @@ export default {
     getList() {
       this.loading = true;
       this.queryParams.projectId = this.projectId;
-      this.queryParams.params = {};
       if (null != this.daterangeReportTime && '' != this.daterangeReportTime) {
         this.queryParams.params["beginReportTime"] = this.daterangeReportTime[0];
         this.queryParams.params["endReportTime"] = this.daterangeReportTime[1];
@@ -230,6 +236,7 @@ export default {
     },
     // 表单重置
     reset() {
+      this.queryCreateByIds = [];
       this.form = {
         reportId: null,
         reportTitle: null,
@@ -237,7 +244,10 @@ export default {
         reportDescription: null,
         reportDataType: null,
         reportData: null,
-        createById: null
+        createById: null,
+        params: {
+          createByIds:[]
+        }
       };
       this.resetForm("form");
     },

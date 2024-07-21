@@ -67,7 +67,7 @@
           <select-project-member
             v-model="queryParams.handleBy"
             :project-id="queryParams.projectId"
-            :placeholder="$t('defect.select-handle-by').toString()"
+            placeholder="defect.select-handle-by"
             :is-head="false"
             size="small"
             icon="el-icon-user"

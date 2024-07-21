@@ -142,7 +142,7 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="handleMoveFolder">{{ $t('ok') }}</el-button>
+        <el-button type="primary" :disabled="!isClickFolder" @click="handleMoveFolder">{{ $t('ok') }}</el-button>
         <el-button @click="cancelFolderDialog">{{ $t('cancel') }}</el-button>
       </div>
     </el-dialog>
@@ -164,6 +164,8 @@ export default {
     return {
       // 移动对话框是否显示
       moveDialogVisible: false,
+      // 在移动时，记录是否点击了要移动的文件夹
+      isClickFolder: false,
       // 文件夹表单
       folderForm: {},
       folderTree: [],
@@ -264,7 +266,7 @@ export default {
           }
           return d;
         });
-        if(this.currentFolder) {
+        if(this.currentFolder && this.currentFolder.docId>0) {
           this.documentList = [...[{
             docId: this.currentFolder.docPid,
             docName: '... '+this.$i18n.t('doc.upper-level-dir'),
@@ -407,7 +409,7 @@ export default {
     goFolder(dir) {
       this.reset();
       this.queryParams.docPid = dir.docId;
-      this.queryParams.docType = 0;
+      this.queryParams.docType = null;
       if(dir.docId) {
         this.currentFolder = dir;
       } else {
@@ -443,6 +445,7 @@ export default {
     handleOpenMoveDialog(doc) {
       this.moveDialogVisible = true;
       this.folderForm = doc;
+      this.isClickFolder = false;
     },
     /** 取消移动对话框 */
     cancelFolderDialog() {
@@ -457,12 +460,14 @@ export default {
       updateDocument(this.folderForm).then(response => {
         this.$modal.msgSuccess(strFormat(this.$i18n.t('doc.move-success'),));
         this.moveDialogVisible = false;
+        this.isClickFolder = false;
         this.getList();
       });
     },
     /** 移动树节点点击 */
     handleNodeClick(doc) {
       this.folderForm.docPid = doc.docId;
+      this.isClickFolder = true;
     }
   }
 };

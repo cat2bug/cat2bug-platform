@@ -41,7 +41,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="createById != null "> and d.create_by_id = #{createById}</if>
             <if test="updateById != null "> and d.update_by_id = #{updateById}</if>
              <choose>
-                 <when test="docPid != null">
+                 <when test="docPid != null and docPid > 0">
                      and d.doc_pid = #{docPid}
                  </when>
                  <otherwise>
