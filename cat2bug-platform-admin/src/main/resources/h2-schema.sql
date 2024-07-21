@@ -206,6 +206,14 @@ VALUES (23, 'sys_ai_module_config', 'AI模型', NULL, NULL
        , 'SysAiModuleConfig', 'crud', 'com.cat2bug.system', 'system', 'ai'
        , 'AI模型配置', 'yuzhantao', '0', '/', '{"parentMenuId":2052}'
        , 'admin', '2024-06-20 11:42:41', '', '2024-06-20 11:48:34', NULL);
+INSERT INTO `gen_table` (`table_id`, `table_name`, `table_comment`, `sub_table_name`, `sub_table_fk_name`
+                        , `class_name`, `tpl_category`, `package_name`, `module_name`, `business_name`
+                        , `function_name`, `function_author`, `gen_type`, `gen_path`, `options`
+                        , `create_by`, `create_time`, `update_by`, `update_time`, `remark`)
+VALUES (24, 'im_user_config', '用户消息配置表', NULL, NULL
+       , 'ImUserConfig', 'crud', 'com.cat2bug.im', 'im', 'config'
+       , '用户消息配置', 'yuzhantao', '0', '/', '{}'
+       , 'admin', '2024-07-17 16:12:29', '', '2024-07-17 16:14:31', NULL);
 COMMIT;
 DROP TABLE IF EXISTS `gen_table_column`;
 CREATE TABLE `gen_table_column` (
@@ -518,7 +526,7 @@ INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_
                                , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
                                , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
                                , `update_by`, `update_time`)
-VALUES (29, 4, 'lock', '是否锁定', 'tinyint(1) unsigned zerofill'
+VALUES (29, 4, 'lock', '是否锁定', 'tinyint(1)'
        , 'Integer', 'lock', '0', '0', NULL
        , '1', '1', '1', '1', 'EQ'
        , 'checkbox', '', 9, 'admin', '2023-11-19 17:47:30'
@@ -628,7 +636,7 @@ INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_
                                , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
                                , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
                                , `update_by`, `update_time`)
-VALUES (40, 6, 'project_lock', '是否锁定', 'tinyint(1) unsigned zerofill'
+VALUES (40, 6, 'project_lock', '是否锁定', 'tinyint(1)'
        , 'Integer', 'projectLock', '0', '0', NULL
        , '1', '1', '1', '1', 'EQ'
        , 'input', '', 8, 'admin', '2023-11-22 12:11:49'
@@ -680,7 +688,7 @@ INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_
                                , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
                                , `update_by`, `update_time`)
 VALUES (45, 8, 'defect_type', '缺陷类型
-', 'int(1) unsigned zerofill'
+', 'int(1)'
        , 'Integer', 'defectType', '0', '0', '1'
        , '1', '1', '1', '1', 'EQ'
        , 'select', '', 2, 'admin', '2023-11-23 12:03:56'
@@ -830,7 +838,7 @@ INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_
                                , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
                                , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
                                , `update_by`, `update_time`)
-VALUES (60, 8, 'defect_state', '缺陷状态', 'int(1) unsigned zerofill'
+VALUES (60, 8, 'defect_state', '缺陷状态', 'int(1)'
        , 'Integer', 'defectState', '0', '0', '1'
        , '1', '1', '1', '1', 'EQ'
        , 'select', '', 17, 'admin', '2023-11-23 12:03:56'
@@ -1060,7 +1068,7 @@ INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_
                                , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
                                , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
                                , `update_by`, `update_time`)
-VALUES (83, 11, 'file_type', '文件类型', 'int(10) unsigned zerofill'
+VALUES (83, 11, 'file_type', '文件类型', 'int(10)'
        , 'Integer', 'fileType', '0', '0', NULL
        , '1', '1', '1', '1', 'EQ'
        , 'select', '', 6, 'admin', '2023-12-07 04:17:31'
@@ -2015,6 +2023,77 @@ VALUES (179, 23, 'update_by_id', '更新人ID', 'bigint'
        , '1', '1', '0', '0', 'EQ'
        , 'input', '', 8, 'admin', '2024-06-20 11:42:41'
        , '', '2024-06-20 11:48:34');
+INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
+                               , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
+                               , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
+                               , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
+                               , `update_by`, `update_time`)
+VALUES (180, 24, 'im_config_id', '信息配置ID', 'bigint'
+       , 'Long', 'imConfigId', '1', '1', NULL
+       , '0', NULL, NULL, NULL, 'EQ'
+       , 'input', '', 1, 'admin', '2024-07-17 16:12:29'
+       , '', '2024-07-17 16:14:31');
+INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
+                               , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
+                               , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
+                               , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
+                               , `update_by`, `update_time`)
+VALUES (181, 24, 'user_id', '成员ID', 'bigint'
+       , 'Long', 'userId', '0', '0', NULL
+       , '1', '1', '1', '1', 'EQ'
+       , 'input', '', 2, 'admin', '2024-07-17 16:12:29'
+       , '', '2024-07-17 16:14:31');
+INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
+                               , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
+                               , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
+                               , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
+                               , `update_by`, `update_time`)
+VALUES (182, 24, 'project_id', '项目ID', 'bigint'
+       , 'Long', 'projectId', '0', '0', NULL
+       , '1', '1', '1', '1', 'EQ'
+       , 'input', '', 3, 'admin', '2024-07-17 16:12:29'
+       , '', '2024-07-17 16:14:31');
+INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
+                               , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
+                               , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
+                               , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
+                               , `update_by`, `update_time`)
+VALUES (183, 24, 'group_name', '模块类型', 'varchar(64)'
+       , 'String', 'groupName', '0', '0', NULL
+       , '1', '1', '1', '1', 'LIKE'
+       , 'input', '', 4, 'admin', '2024-07-17 16:12:29'
+       , '', '2024-07-17 16:14:31');
+INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
+                               , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
+                               , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
+                               , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
+                               , `update_by`, `update_time`)
+VALUES (184, 24, 'config', '配置项', 'json'
+       , 'String', 'config', '0', '0', NULL
+       , '1', '1', '1', '1', 'EQ'
+       , NULL, '', 5, 'admin', '2024-07-17 16:12:29'
+       , '', '2024-07-17 16:14:31');
+INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
+                               , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
+                               , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
+                               , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
+                               , `update_by`, `update_time`)
+VALUES (185, 24, 'update_time', '更新时间', 'datetime'
+       , 'Date', 'updateTime', '0', '0', NULL
+       , '1', '1', NULL, NULL, 'EQ'
+       , 'datetime', '', 6, 'admin', '2024-07-17 16:12:29'
+       , '', '2024-07-17 16:14:31');
+COMMIT;
+DROP TABLE IF EXISTS `im_user_config`;
+CREATE TABLE `im_user_config` (
+                                  `im_config_id` bigint NOT NULL AUTO_INCREMENT COMMENT '信息配置ID',
+                                  `user_id` bigint DEFAULT NULL COMMENT '成员ID',
+                                  `project_id` bigint DEFAULT NULL COMMENT '项目ID',
+                                  `group_name` varchar(64) DEFAULT NULL COMMENT '模块类型',
+                                  `config` json DEFAULT NULL COMMENT '配置项',
+                                  `update_time` datetime DEFAULT NULL COMMENT '更新时间'
+);
+
 COMMIT;
 DROP TABLE IF EXISTS `qrtz_blob_triggers`;
 CREATE TABLE `qrtz_blob_triggers` (
@@ -2179,7 +2258,8 @@ CREATE TABLE `sys_case` (
                             `update_time` datetime DEFAULT NULL,
                             `case_num` bigint DEFAULT NULL COMMENT '用例号码',
                             `project_id` bigint DEFAULT NULL COMMENT '项目编号',
-                            `remark` varchar(255) DEFAULT NULL COMMENT '备注'
+                            `remark` varchar(255) DEFAULT NULL COMMENT '备注',
+                            `img_urls` varchar(5000) DEFAULT NULL COMMENT '图片集合'
 );
 
 COMMIT;
@@ -2196,7 +2276,7 @@ CREATE TABLE `sys_comment` (
 COMMIT;
 DROP TABLE IF EXISTS `sys_config`;
 CREATE TABLE `sys_config` (
-                              `config_id` int NOT NULL AUTO_INCREMENT COMMENT '参数主键',
+                              `config_id` bigint NOT NULL AUTO_INCREMENT COMMENT '参数主键',
                               `config_name` varchar(100) DEFAULT '' COMMENT '参数名称',
                               `config_key` varchar(100) DEFAULT '' COMMENT '参数键名',
                               `config_value` varchar(500) DEFAULT '' COMMENT '参数键值',
@@ -2205,33 +2285,48 @@ CREATE TABLE `sys_config` (
                               `create_time` datetime DEFAULT NULL COMMENT '创建时间',
                               `update_by` varchar(64) DEFAULT '' COMMENT '更新者',
                               `update_time` datetime DEFAULT NULL COMMENT '更新时间',
-                              `remark` varchar(500) DEFAULT NULL COMMENT '备注'
+                              `remark` varchar(500) DEFAULT NULL COMMENT '备注',
+                              `project_id` bigint DEFAULT NULL COMMENT '项目ID',
+                              `receiver_id` bigint DEFAULT NULL COMMENT '接受者ID',
+                              `read` int DEFAULT '0' COMMENT '0未读,1已读'
 );
 
 INSERT INTO `sys_config` (`config_id`, `config_name`, `config_key`, `config_value`, `config_type`
-                         , `create_by`, `create_time`, `update_by`, `update_time`, `remark`)
+                         , `create_by`, `create_time`, `update_by`, `update_time`, `remark`
+                         , `project_id`, `receiver_id`, `read`)
 VALUES (1, '主框架页-默认皮肤样式名称', 'sys.index.skinName', 'skin-blue', 'Y'
-       , 'admin', '2023-11-12 15:34:52', '', NULL, '蓝色 skin-blue、绿色 skin-green、紫色 skin-purple、红色 skin-red、黄色 skin-yellow');
+       , 'admin', '2023-11-12 15:34:52', '', NULL, '蓝色 skin-blue、绿色 skin-green、紫色 skin-purple、红色 skin-red、黄色 skin-yellow'
+       , NULL, NULL, 0);
 INSERT INTO `sys_config` (`config_id`, `config_name`, `config_key`, `config_value`, `config_type`
-                         , `create_by`, `create_time`, `update_by`, `update_time`, `remark`)
+                         , `create_by`, `create_time`, `update_by`, `update_time`, `remark`
+                         , `project_id`, `receiver_id`, `read`)
 VALUES (2, '用户管理-账号初始密码', 'sys.member.initPassword', '123456', 'Y'
-       , 'admin', '2023-11-12 15:34:52', 'admin', '2024-01-07 12:36:32', '初始化密码 123456');
+       , 'admin', '2023-11-12 15:34:52', 'admin', '2024-01-07 12:36:32', '初始化密码 123456'
+       , NULL, NULL, 0);
 INSERT INTO `sys_config` (`config_id`, `config_name`, `config_key`, `config_value`, `config_type`
-                         , `create_by`, `create_time`, `update_by`, `update_time`, `remark`)
+                         , `create_by`, `create_time`, `update_by`, `update_time`, `remark`
+                         , `project_id`, `receiver_id`, `read`)
 VALUES (3, '主框架页-侧边栏主题', 'sys.index.sideTheme', 'theme-dark', 'Y'
-       , 'admin', '2023-11-12 15:34:52', '', NULL, '深色主题theme-dark，浅色主题theme-light');
+       , 'admin', '2023-11-12 15:34:52', '', NULL, '深色主题theme-dark，浅色主题theme-light'
+       , NULL, NULL, 0);
 INSERT INTO `sys_config` (`config_id`, `config_name`, `config_key`, `config_value`, `config_type`
-                         , `create_by`, `create_time`, `update_by`, `update_time`, `remark`)
+                         , `create_by`, `create_time`, `update_by`, `update_time`, `remark`
+                         , `project_id`, `receiver_id`, `read`)
 VALUES (4, '账号自助-验证码开关', 'sys.account.captchaEnabled', 'false', 'Y'
-       , 'admin', '2023-11-12 15:34:52', 'admin', '2023-11-12 16:14:31', '是否开启验证码功能（true开启，false关闭）');
+       , 'admin', '2023-11-12 15:34:52', 'admin', '2023-11-12 16:14:31', '是否开启验证码功能（true开启，false关闭）'
+       , NULL, NULL, 0);
 INSERT INTO `sys_config` (`config_id`, `config_name`, `config_key`, `config_value`, `config_type`
-                         , `create_by`, `create_time`, `update_by`, `update_time`, `remark`)
+                         , `create_by`, `create_time`, `update_by`, `update_time`, `remark`
+                         , `project_id`, `receiver_id`, `read`)
 VALUES (5, '账号自助-是否开启用户注册功能', 'sys.account.registerUser', 'true', 'Y'
-       , 'admin', '2023-11-12 15:34:52', 'admin', '2023-11-12 16:13:43', '是否开启注册用户功能（true开启，false关闭）');
+       , 'admin', '2023-11-12 15:34:52', 'admin', '2023-11-12 16:13:43', '是否开启注册用户功能（true开启，false关闭）'
+       , NULL, NULL, 0);
 INSERT INTO `sys_config` (`config_id`, `config_name`, `config_key`, `config_value`, `config_type`
-                         , `create_by`, `create_time`, `update_by`, `update_time`, `remark`)
+                         , `create_by`, `create_time`, `update_by`, `update_time`, `remark`
+                         , `project_id`, `receiver_id`, `read`)
 VALUES (6, '用户登录-黑名单列表', 'sys.login.blackIPList', '', 'Y'
-       , 'admin', '2023-11-12 15:34:52', '', NULL, '设置登录IP黑名单限制，多个匹配项以;分隔，支持匹配（*通配、网段）');
+       , 'admin', '2023-11-12 15:34:52', '', NULL, '设置登录IP黑名单限制，多个匹配项以;分隔，支持匹配（*通配、网段）'
+       , NULL, NULL, 0);
 COMMIT;
 DROP TABLE IF EXISTS `sys_defect`;
 CREATE TABLE `sys_defect` (
@@ -2240,7 +2335,7 @@ CREATE TABLE `sys_defect` (
                               `defect_type` int(1) NOT NULL DEFAULT '0' COMMENT '缺陷类型
 ',
                               `defect_name` varchar(1024) NOT NULL COMMENT '缺陷标题',
-                              `defect_describe` text NOT NULL COMMENT '缺陷描述',
+                              `defect_describe` text COMMENT '缺陷描述',
                               `annex_urls` varchar(5000) DEFAULT NULL COMMENT '附件集合',
                               `project_id` bigint NOT NULL COMMENT '项目id',
                               `test_plan_id` bigint DEFAULT NULL COMMENT '测试计划id',
@@ -2671,6 +2766,14 @@ CREATE TABLE `sys_logininfor` (
                                   `login_time` datetime DEFAULT NULL COMMENT '访问时间'
 );
 
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+                             , `os`, `status`, `msg`, `login_time`)
+VALUES (1061, 'demo', '127.0.0.1', '内网IP', 'Safari'
+       , 'Mac OS X', '0', '退出成功', '2024-07-21 10:42:42');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
+                             , `os`, `status`, `msg`, `login_time`)
+VALUES (1062, 'admin', '127.0.0.1', '内网IP', 'Safari'
+       , 'Mac OS X', '0', '登录成功', '2024-07-21 11:11:46');
 COMMIT;
 DROP TABLE IF EXISTS `sys_menu`;
 CREATE TABLE `sys_menu` (
@@ -2780,10 +2883,10 @@ INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
                        , `component`, `query`, `is_frame`, `is_cache`, `menu_type`
                        , `visible`, `status`, `perms`, `icon`, `create_by`
                        , `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`)
-VALUES (107, '通知公告', 1, 8, 'notice'
+VALUES (107, '通知公告', 1, 8, 'sys-notice'
        , 'system/notice/index', '', 1, 0, 'C'
-       , '0', '0', 'system:notice:list', 'message', 'admin'
-       , '2023-11-12 15:34:52', '', NULL, '通知公告菜单', NULL);
+       , '1', '1', 'system:notice:list', 'message', 'admin'
+       , '2023-11-12 15:34:52', 'admin', '2024-07-21 08:30:29', '通知公告菜单', NULL);
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
                        , `component`, `query`, `is_frame`, `is_cache`, `menu_type`
                        , `visible`, `status`, `perms`, `icon`, `create_by`
@@ -4048,6 +4151,38 @@ VALUES (2105, 'AI模型配置导出', 2100, 5, '#'
        , '', NULL, 1, 0, 'F'
        , '0', '0', 'system:ai:export', '#', 'admin'
        , '2024-06-20 16:49:15', '', NULL, '', NULL);
+INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
+                       , `component`, `query`, `is_frame`, `is_cache`, `menu_type`
+                       , `visible`, `status`, `perms`, `icon`, `create_by`
+                       , `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`)
+VALUES (2107, '通知', 2013, 8, 'notice'
+       , 'notice/index', NULL, 1, 0, 'C'
+       , '1', '0', 'notice:list', 'message', 'admin'
+       , '2024-07-20 09:57:22', '', NULL, '', NULL);
+INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
+                       , `component`, `query`, `is_frame`, `is_cache`, `menu_type`
+                       , `visible`, `status`, `perms`, `icon`, `create_by`
+                       , `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`)
+VALUES (2108, '删除通知', 2107, 1, ''
+       , NULL, NULL, 1, 0, 'F'
+       , '0', '0', 'notice:remove', '#', 'admin'
+       , '2024-07-20 09:58:14', '', NULL, '', NULL);
+INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
+                       , `component`, `query`, `is_frame`, `is_cache`, `menu_type`
+                       , `visible`, `status`, `perms`, `icon`, `create_by`
+                       , `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`)
+VALUES (2109, '发送通知', 2107, 2, ''
+       , NULL, NULL, 1, 0, 'F'
+       , '0', '0', 'notice:send', '#', 'admin'
+       , '2024-07-20 09:58:53', '', NULL, '', NULL);
+INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
+                       , `component`, `query`, `is_frame`, `is_cache`, `menu_type`
+                       , `visible`, `status`, `perms`, `icon`, `create_by`
+                       , `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`)
+VALUES (2110, '查询通知', 2107, 0, ''
+       , NULL, NULL, 1, 0, 'F'
+       , '0', '0', 'notice:query', '#', 'admin'
+       , '2024-07-20 10:00:27', '', NULL, '', NULL);
 COMMIT;
 DROP TABLE IF EXISTS `sys_module`;
 CREATE TABLE `sys_module` (
@@ -4058,19 +4193,47 @@ CREATE TABLE `sys_module` (
                               `project_id` bigint DEFAULT NULL COMMENT '项目id'
 );
 
+INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`)
+VALUES (263, 0, '登陆', NULL, 2);
+INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`)
+VALUES (264, 0, '首页', NULL, 2);
+INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`)
+VALUES (265, 0, '登陆', NULL, 5);
+INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`)
+VALUES (266, 0, '登陆', NULL, 7);
+INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`)
+VALUES (267, 0, '应急物资', NULL, 7);
+INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`)
+VALUES (268, 267, '储备物资管理', NULL, 7);
+INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`)
+VALUES (269, 0, '消防监督', NULL, 7);
+INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`)
+VALUES (270, 0, '安全', NULL, 7);
+INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`)
+VALUES (271, 0, '119指挥中心', NULL, 7);
+INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`)
+VALUES (272, 269, '设备管理', NULL, 7);
+INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`)
+VALUES (273, 269, '监督检查', NULL, 7);
+INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`)
+VALUES (274, 269, '安全知识', NULL, 7);
 COMMIT;
 DROP TABLE IF EXISTS `sys_notice`;
 CREATE TABLE `sys_notice` (
-                              `notice_id` int NOT NULL AUTO_INCREMENT COMMENT '公告ID',
-                              `notice_title` varchar(50) NOT NULL COMMENT '公告标题',
+                              `notice_id` varchar(32) NOT NULL COMMENT '公告ID',
+                              `notice_title` varchar(255) NOT NULL COMMENT '公告标题',
                               `notice_type` char(1) NOT NULL COMMENT '公告类型（1通知 2公告）',
-                              `notice_content` longblob COMMENT '公告内容',
+                              `notice_content` longtext COMMENT '公告内容',
                               `status` char(1) DEFAULT '0' COMMENT '公告状态（0正常 1关闭）',
                               `create_by` varchar(64) DEFAULT '' COMMENT '创建者',
                               `create_time` datetime DEFAULT NULL COMMENT '创建时间',
                               `update_by` varchar(64) DEFAULT '' COMMENT '更新者',
                               `update_time` datetime DEFAULT NULL COMMENT '更新时间',
-                              `remark` varchar(255) DEFAULT NULL COMMENT '备注'
+                              `remark` varchar(255) DEFAULT NULL COMMENT '备注',
+                              `project_id` bigint DEFAULT NULL COMMENT '项目ID',
+                              `group_name` varchar(255) DEFAULT NULL COMMENT '分组',
+                              `receiver_id` bigint DEFAULT NULL COMMENT '接收人',
+                              `is_read` tinyint(1) DEFAULT NULL COMMENT '是否已读'
 );
 
 COMMIT;
@@ -4095,6 +4258,22 @@ CREATE TABLE `sys_oper_log` (
                                 `cost_time` bigint DEFAULT '0' COMMENT '消耗时间'
 );
 
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`
+                           , `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`
+                           , `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`
+                           , `oper_time`, `cost_time`)
+VALUES (12658, '用户配置', 2, 'com.cat2bug.web.controller.system.SysUserConfigController.edit()', 'PUT'
+       , 1, 'demo', NULL, '/system/user-config', '127.0.0.1'
+       , '内网IP', '{"currentProjectId":7,"params":{},"userConfigId":102,"userId":198}', '{"msg":"操作成功","code":200}', 0, NULL
+       , '2024-07-21 10:42:31', 35);
+INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`
+                           , `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`
+                           , `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`
+                           , `oper_time`, `cost_time`)
+VALUES (12659, '角色管理', 2, 'com.cat2bug.web.controller.system.SysRoleController.edit()', 'PUT'
+       , 1, 'admin', NULL, '/system/role', '127.0.0.1'
+       , '内网IP', '{"admin":false,"createTime":"2023-12-28 18:56:22","dataScope":"1","delFlag":"0","deptCheckStrictly":true,"flag":false,"isProjectRole":false,"isTeamRole":false,"menuCheckStrictly":false,"menuIds":[2043,2000,2001,2013,2074,2075,2019,2020,2087,2088,2107,2110,2108,2015,2016,2017,2018,2057,2058,2059,2047,2048,2049,2050,2051],"params":{},"projectAdmin":false,"projectCreateBy":false,"roleId":10,"roleKey":"default","roleName":"默认成员","roleSort":2,"status":"0","teamCreateBy":false,"updateBy":"admin"}', '{"msg":"操作成功","code":200}', 0, NULL
+       , '2024-07-21 11:12:29', 43);
 COMMIT;
 DROP TABLE IF EXISTS `sys_post`;
 CREATE TABLE `sys_post` (
@@ -4199,173 +4378,7 @@ CREATE TABLE `sys_report_template` (
 INSERT INTO `sys_report_template` (`template_id`, `module_type`, `template_content`, `update_by_id`, `update_time`
                                   , `project_id`, `template_icon_url`, `major_version`, `minor_version`, `template_key`
                                   , `template_title`, `is_shop`)
-VALUES (14, NULL, '# 《${api.project.projectName}》 测试报告123
-
-
-${api.project.createTime}
-
-$image["style":"width:100px;height:100px;"]{api.project.projectIcon}
-
-
-## 1 范围
-
-* 本文档适用范围：
-
-* 本文档版本号：
-
-## 2 系统测试概述
-
-### 系统概述
-
-* 系统名称：${api.project.projectName}
-
-* 系统版本号：
-
-* 系统简介：${api.project.projectIntroduc}
-
-
-### 功能概述
-
-### 测试环境
-
-## 3 测试报告概述
-
-描述本文档的用途和内容
-
-## 术语定义
-
-|序号|术语和缩略语名称|术语和缩略语说明|
-|-|-|-|
-|  |  |  |
-
-## 4 测试概述
-
-### 4.1 测试过程概述
-
-说明测试过程中的主要活动
-
-### 4.2 测试环境说明
-
-#### 4.2.1 软/硬件环境
-
-对此次测试所采用的软/硬件环境进行描述。
-
-(1) 整体结构。描述测试工作所采用的软/硬件环境的整体结构，例如需建立的网络环境，还需描述网络的拓扑结构和配置。
-
-(2) 软/硬件资源。描述测试工作所采用的系统软件、支撑软件以及测试工具等，包括每个软件项目名称、版本、用途等信息；描述测试工作所采用的计算机硬件、接口设备和固件项等内容，包括每个硬件设备的名称、配置、用途等信息。另外，如果测试工作需借用、购买相应的测试资源时，应加以说明，如下表：
-
-|序号|资源名称|配置|数量|用途|维护人|
-|---|-------|---|---|---|-----|
-|   |       |   |   |   |     |
-
-#### 4.2.2 测试场所
-
-描述执行测试工作所使用场所的地点、面积以及安全保密措施等，如果测试工作在非测试机构进行，应加以说明。
-
-#### 4.2.3 测试数据
-
-描述测试工作所使用的真实或模拟数据，包括数据规格和数量等。
-
-#### 4.2.4 环境差异影响分析
-
-描述软/硬件环境及其结构、场所、数据与被测软件开发要求或系统开发要求、软件需求规格说明及其他等效文档要求的软硬件环境、使用场所、数据之间的差异，并分析环境差异可能对测试结果产生的影响。
-
-### 4.3 测试方法说明
-
-说明软件测试实际采用的测试方法、测试工具等。如果实际测试方法与测试计划、测试说明不一致时，需要进行详细说明，并说明原因。
-
-## 5 测试结果
-
-### 5.1 执行测试情况
-
-#### 5.1.1 首次测试
-
-本次测试的被测试对象版本为：
-
-##### 5.1.1.1 测试时间
-
-* 测试开始日期：
-
-* 测试结束日期：
-
-##### 5.1.1.2 测试人员
-
-|序号|角色|姓名|职称|主要职责|
-|---|----|---|---|-------|
-|   |    |   |   |       |
-
-##### 5.1.1.3 测试用例执行情况
-
-* 测试用例执行情况统计表
-
-|测试用例执行情况统计表||||
-:----: | --------------: | ---------: | ---------:
-测试项个数 | 0 |||
-设计的测试用例总数 | 0 |||
-完全执行的测试用例数 | 1   | 通过的测试用例数 |0|
-^^ |^^ | 未通过的测试用例数 |0|
-部分执行的测试用例数 | | 未通过的测试用例数 |0|
-未执行的测试用例数 | 0|||
-
-* 测试用例执行结果统计表
-
-|序号|测试用例名称/标识|执行状态|执行结果|问题步骤|问题报告单标识|
-:----: | --------: | ---------: | ---------:| ---------:| ---------:|
-|      |           |            |           |           |      |
-
-##### 5.1.1.4 未完整执行测试用例的原因说明
-
-说明未完整执行测试用例的原因，并分析对测试结论的影响。
-
-##### 5.1.1.5 测试执行情况的其他说明
-
-说明测试执行的其他情况。
-
-### 5.2 软件问题
-
-* 提交问题分类统计表
-
-|问题类别|第1级问题|第2级问题|第3级问题|第4级问题|
-|-------|-------|-------|--------|-------|
-|计划    |       |        |       |       |
-|方案    |       |        |       |       |
-|需求    |       |        |       |       |
-|设计    |       |        |       |       |
-|编码    |       |        |       |       |
-|数据库/数据文件    |       |        |       |       |
-|测试信息 |       |        |       |       |
-|使用性文档|       |        |       |       |
-|其他    |       |        |       |       |
-|总计    |       |        |       |       |
-
-* 问题在测试类型中分布统计表
-
-|测试类型|第1级问题|第2级问题|第3级问题|第4级问题|
-|-------|-------|-------|--------|-------|
-|安装性测试|       |        |       |       |
-|文档审查 |       |        |       |       |
-|功能性测试|       |        |       |       |
-|接口测试 |       |        |       |       |
-|人机交互界面测试|       |        |       |       |
-|数据库/数据文件    |       |        |       |       |
-|可靠性测试|       |        |       |       |
-|安全性测试|       |        |       |       |
-|余量测试    |       |        |       |       |
-|强度测试    |       |        |       |       |
-|总计    |       |        |       |       |
-
-测试共发现问题XXX个，其中，按照问题类型，编码类问题XX个......;按照问题严重性等级分，1级问题XX个......;按照测试类型，安装性问题XX个......
-
-
-
-${api.project.remark}
-', NULL, '2024-05-05 22:26:09'
-       , 7, '/profile/upload/2024/05/05/blob_20240505222608A082.png', 1, 0, 'dfdfaece-8119-48fd-b043-149c5ac54045'
-       , '测试报告# ${api.project.projectName}', 0);
-INSERT INTO `sys_report_template` (`template_id`, `module_type`, `template_content`, `update_by_id`, `update_time`
-                                  , `project_id`, `template_icon_url`, `major_version`, `minor_version`, `template_key`
-                                  , `template_title`, `is_shop`)
-VALUES (16, NULL, '# -:-《${api.project.projectName}》功能测试用例清单
+VALUES (16, NULL, '#  功能测试用例清单
 
 - 测试用例总数：${api.case.total}
 
@@ -4374,414 +4387,6 @@ $card{api.case.list}
 ', NULL, '2024-05-14 03:48:43'
        , 7, '/profile/upload/2024/05/14/blob_20240514034842A050.png', 1, 0, '702d6793-c393-45f1-9845-b295b4a42c4c'
        , '功能测试用例清单样例', 1);
-INSERT INTO `sys_report_template` (`template_id`, `module_type`, `template_content`, `update_by_id`, `update_time`
-                                  , `project_id`, `template_icon_url`, `major_version`, `minor_version`, `template_key`
-                                  , `template_title`, `is_shop`)
-VALUES (17, NULL, 'fa s f d safjdkasljf deal
-jfkdasl
-
-&gt; 段落引用
-
- 1. 范德萨发
-
-
-```
-let i
-for(let i=1;i&lt;10;i++){
-
-}
-```
-
-
-- 无序列表
-
-
-- [x] 已完成任务
-- [ ] 未完成任务
-
-::: hljs-center
-
-居中
-
-:::
-
-
-1. 有序
-- 无序列表
-列表
-{
-', NULL, '2024-05-02 13:17:22'
-       , 7, '/profile/upload/2024/05/02/blob_20240502131722A021.png', 1, 0, '11ca3c36-13b0-4f67-a0be-5ac8b3e97fcb'
-       , '新建报告1', 0);
-INSERT INTO `sys_report_template` (`template_id`, `module_type`, `template_content`, `update_by_id`, `update_time`
-                                  , `project_id`, `template_icon_url`, `major_version`, `minor_version`, `template_key`
-                                  , `template_title`, `is_shop`)
-VALUES (20, NULL, '
-$table{api.defect.list[projectNum,defectTypeName,defectLevel,defectName,defectStateName,moduleName,moduleVersion,defectDescribe,createBy,createTime,updateBy,updateTime,imgList,annexList]}
-', NULL, '2024-06-17 12:35:48'
-       , 7, '/profile/upload/2024/06/17/blob_20240617123548A001.png', 1, 0, '10cf0ee7-4f13-448b-9373-ae2d6988a86a'
-       , '新建报告1', 0);
-INSERT INTO `sys_report_template` (`template_id`, `module_type`, `template_content`, `update_by_id`, `update_time`
-                                  , `project_id`, `template_icon_url`, `major_version`, `minor_version`, `template_key`
-                                  , `template_title`, `is_shop`)
-VALUES (21, NULL, '', NULL, NULL
-       , 7, NULL, 1, 0, 'd2475a2b-0eda-4a4c-9271-400b1ca464b0'
-       , '新建报告', 0);
-INSERT INTO `sys_report_template` (`template_id`, `module_type`, `template_content`, `update_by_id`, `update_time`
-                                  , `project_id`, `template_icon_url`, `major_version`, `minor_version`, `template_key`
-                                  , `template_title`, `is_shop`)
-VALUES (22, NULL, '', NULL, NULL
-       , 7, NULL, 1, 0, 'a1688c69-ffbc-4eb7-8a4a-7b87782ef0ae'
-       , '新建报告', 0);
-INSERT INTO `sys_report_template` (`template_id`, `module_type`, `template_content`, `update_by_id`, `update_time`
-                                  , `project_id`, `template_icon_url`, `major_version`, `minor_version`, `template_key`
-                                  , `template_title`, `is_shop`)
-VALUES (23, NULL, '', NULL, NULL
-       , 7, NULL, 1, 0, 'c4eabcca-9472-4efc-b9d0-833f741f64ce'
-       , '新建报告', 0);
-INSERT INTO `sys_report_template` (`template_id`, `module_type`, `template_content`, `update_by_id`, `update_time`
-                                  , `project_id`, `template_icon_url`, `major_version`, `minor_version`, `template_key`
-                                  , `template_title`, `is_shop`)
-VALUES (24, NULL, '', NULL, NULL
-       , 7, NULL, 1, 0, '360bfc4e-8eac-40b9-911e-85923d734475'
-       , '新建报告', 0);
-INSERT INTO `sys_report_template` (`template_id`, `module_type`, `template_content`, `update_by_id`, `update_time`
-                                  , `project_id`, `template_icon_url`, `major_version`, `minor_version`, `template_key`
-                                  , `template_title`, `is_shop`)
-VALUES (25, NULL, '', NULL, NULL
-       , 7, NULL, 1, 0, 'c019b135-7cc6-4c40-bc8e-e8d0b7c554bc'
-       , '新建报告', 0);
-INSERT INTO `sys_report_template` (`template_id`, `module_type`, `template_content`, `update_by_id`, `update_time`
-                                  , `project_id`, `template_icon_url`, `major_version`, `minor_version`, `template_key`
-                                  , `template_title`, `is_shop`)
-VALUES (26, NULL, '', NULL, NULL
-       , 7, NULL, 1, 0, '575af7f8-1b57-4fcc-a822-1e29f7a4044e'
-       , '新建报告', 0);
-INSERT INTO `sys_report_template` (`template_id`, `module_type`, `template_content`, `update_by_id`, `update_time`
-                                  , `project_id`, `template_icon_url`, `major_version`, `minor_version`, `template_key`
-                                  , `template_title`, `is_shop`)
-VALUES (27, NULL, '', NULL, '2024-04-29 23:55:45'
-       , 7, '/profile/upload/2024/04/29/blob_20240429235545A042.png', 1, 0, '6c0e3d67-d431-4a88-a5c6-4d23231a6eca'
-       , '新建报告ghjgj', 0);
-INSERT INTO `sys_report_template` (`template_id`, `module_type`, `template_content`, `update_by_id`, `update_time`
-                                  , `project_id`, `template_icon_url`, `major_version`, `minor_version`, `template_key`
-                                  , `template_title`, `is_shop`)
-VALUES (28, NULL, '', NULL, '2024-04-29 23:57:48'
-       , 7, '/profile/upload/2024/04/29/blob_20240429235748A046.png', 1, 0, '7b908c1c-dc0c-4772-ae17-5acbe3ddc379'
-       , '新建报告111jkljlk结果看了我就观看了大舅刚开始老姑剪短发思科老范感觉受到罚款老姑金石东方开了个减肥的思科老姑觉得弗萨离开', 0);
-INSERT INTO `sys_report_template` (`template_id`, `module_type`, `template_content`, `update_by_id`, `update_time`
-                                  , `project_id`, `template_icon_url`, `major_version`, `minor_version`, `template_key`
-                                  , `template_title`, `is_shop`)
-VALUES (29, NULL, '', NULL, NULL
-       , 7, NULL, 1, 0, '66b7176f-77be-4aac-9215-423726fced7f'
-       , '新建报告', 0);
-INSERT INTO `sys_report_template` (`template_id`, `module_type`, `template_content`, `update_by_id`, `update_time`
-                                  , `project_id`, `template_icon_url`, `major_version`, `minor_version`, `template_key`
-                                  , `template_title`, `is_shop`)
-VALUES (30, NULL, '', NULL, NULL
-       , 7, NULL, 1, 0, '222d2c33-999f-4e1b-beac-aa8d18a230cd'
-       , '新建报告', 0);
-INSERT INTO `sys_report_template` (`template_id`, `module_type`, `template_content`, `update_by_id`, `update_time`
-                                  , `project_id`, `template_icon_url`, `major_version`, `minor_version`, `template_key`
-                                  , `template_title`, `is_shop`)
-VALUES (31, NULL, '', NULL, NULL
-       , 7, NULL, 1, 0, '3aeba44f-e230-4eb2-94c2-c69b65e43668'
-       , '新建报告', 0);
-INSERT INTO `sys_report_template` (`template_id`, `module_type`, `template_content`, `update_by_id`, `update_time`
-                                  , `project_id`, `template_icon_url`, `major_version`, `minor_version`, `template_key`
-                                  , `template_title`, `is_shop`)
-VALUES (32, NULL, '', NULL, NULL
-       , 7, NULL, 1, 0, '98ae7acd-6476-4dd2-b572-dea3f11ba328'
-       , '新建报告', 0);
-INSERT INTO `sys_report_template` (`template_id`, `module_type`, `template_content`, `update_by_id`, `update_time`
-                                  , `project_id`, `template_icon_url`, `major_version`, `minor_version`, `template_key`
-                                  , `template_title`, `is_shop`)
-VALUES (33, NULL, '', NULL, NULL
-       , 7, NULL, 1, 0, 'a2ad258a-9ce5-4e91-bf57-e907d9bde168'
-       , '新建报告模版', 0);
-INSERT INTO `sys_report_template` (`template_id`, `module_type`, `template_content`, `update_by_id`, `update_time`
-                                  , `project_id`, `template_icon_url`, `major_version`, `minor_version`, `template_key`
-                                  , `template_title`, `is_shop`)
-VALUES (34, NULL, '
-==flag==
-
-
-1. ordered-list
-2. fjkdlsaj
-
-
-![](/dev-api/profile/upload/2024/05/04/3331714317262_.pic_20240504215717A063.jpg)
-
-
-
-
-^font-superscript^
-**font-weight**
-
-
-1. ordered-list
-
-
-
-', NULL, '2024-05-04 21:57:21'
-       , 7, '/profile/upload/2024/05/04/blob_20240504215721A064.png', 1, 0, 'ab3be389-8017-4ddd-a9c8-31f0c9335d82'
-       , 'New Report Template11', 0);
-INSERT INTO `sys_report_template` (`template_id`, `module_type`, `template_content`, `update_by_id`, `update_time`
-                                  , `project_id`, `template_icon_url`, `major_version`, `minor_version`, `template_key`
-                                  , `template_title`, `is_shop`)
-VALUES (35, NULL, '', NULL, NULL
-       , 7, NULL, 1, 0, '4aad1aa3-b4a2-4a7d-b84c-f17bc43b3e45'
-       , '新建报告模版', 0);
-INSERT INTO `sys_report_template` (`template_id`, `module_type`, `template_content`, `update_by_id`, `update_time`
-                                  , `project_id`, `template_icon_url`, `major_version`, `minor_version`, `template_key`
-                                  , `template_title`, `is_shop`)
-VALUES (36, NULL, '', NULL, NULL
-       , 7, NULL, 1, 0, '602c31a2-7b5f-4516-8072-b33267f5a850'
-       , '新建报告模版', 0);
-INSERT INTO `sys_report_template` (`template_id`, `module_type`, `template_content`, `update_by_id`, `update_time`
-                                  , `project_id`, `template_icon_url`, `major_version`, `minor_version`, `template_key`
-                                  , `template_title`, `is_shop`)
-VALUES (37, NULL, '', NULL, NULL
-       , 7, NULL, 1, 0, 'fde344e9-3bc3-42c8-b6ed-6f1dd45ff1a1'
-       , '新建报告模版', 0);
-INSERT INTO `sys_report_template` (`template_id`, `module_type`, `template_content`, `update_by_id`, `update_time`
-                                  , `project_id`, `template_icon_url`, `major_version`, `minor_version`, `template_key`
-                                  , `template_title`, `is_shop`)
-VALUES (38, NULL, '# 《${api.project.projectName}》功能测试用例清单
-
-
-- 测试用例总数：${api.case.total}
-
-$card{api.case.list}
-
-', NULL, NULL
-       , 7, NULL, 1, 0, 'e524b4ca-9280-40a7-8c07-016d742f30d0'
-       , '功能测试用例清单样例-复制', 1);
-INSERT INTO `sys_report_template` (`template_id`, `module_type`, `template_content`, `update_by_id`, `update_time`
-                                  , `project_id`, `template_icon_url`, `major_version`, `minor_version`, `template_key`
-                                  , `template_title`, `is_shop`)
-VALUES (39, NULL, '# 《${api.project.projectName}》功能测试用例清单
-
-
-- 测试用例总数：${api.case.total}
-
-$card{api.case.list}
-
-', NULL, NULL
-       , 7, NULL, 1, 0, 'b210b472-7f43-4bf1-821a-03773cb30d26'
-       , '功能测试用例清单样例-复制-复制', 1);
-INSERT INTO `sys_report_template` (`template_id`, `module_type`, `template_content`, `update_by_id`, `update_time`
-                                  , `project_id`, `template_icon_url`, `major_version`, `minor_version`, `template_key`
-                                  , `template_title`, `is_shop`)
-VALUES (40, NULL, '# 《${api.project.projectName}》 测试报告123
-
-
-${api.project.createTime}
-
-$image["style":"width:100px;height:100px;"]{api.project.projectIcon}
-
-
-## 1 范围
-
-* 本文档适用范围：
-
-* 本文档版本号：
-
-## 2 系统测试概述
-
-### 系统概述
-
-* 系统名称：${api.project.projectName}
-
-* 系统版本号：
-
-* 系统简介：${api.project.projectIntroduc}
-
-
-### 功能概述
-
-### 测试环境
-
-## 3 测试报告概述
-
-描述本文档的用途和内容
-
-## 术语定义
-
-|序号|术语和缩略语名称|术语和缩略语说明|
-|-|-|-|
-|  |  |  |
-
-## 4 测试概述
-
-### 4.1 测试过程概述
-
-说明测试过程中的主要活动
-
-### 4.2 测试环境说明
-
-#### 4.2.1 软/硬件环境
-
-对此次测试所采用的软/硬件环境进行描述。
-
-(1) 整体结构。描述测试工作所采用的软/硬件环境的整体结构，例如需建立的网络环境，还需描述网络的拓扑结构和配置。
-
-(2) 软/硬件资源。描述测试工作所采用的系统软件、支撑软件以及测试工具等，包括每个软件项目名称、版本、用途等信息；描述测试工作所采用的计算机硬件、接口设备和固件项等内容，包括每个硬件设备的名称、配置、用途等信息。另外，如果测试工作需借用、购买相应的测试资源时，应加以说明，如下表：
-
-|序号|资源名称|配置|数量|用途|维护人|
-|---|-------|---|---|---|-----|
-|   |       |   |   |   |     |
-
-#### 4.2.2 测试场所
-
-描述执行测试工作所使用场所的地点、面积以及安全保密措施等，如果测试工作在非测试机构进行，应加以说明。
-
-#### 4.2.3 测试数据
-
-描述测试工作所使用的真实或模拟数据，包括数据规格和数量等。
-
-#### 4.2.4 环境差异影响分析
-
-描述软/硬件环境及其结构、场所、数据与被测软件开发要求或系统开发要求、软件需求规格说明及其他等效文档要求的软硬件环境、使用场所、数据之间的差异，并分析环境差异可能对测试结果产生的影响。
-
-### 4.3 测试方法说明
-
-说明软件测试实际采用的测试方法、测试工具等。如果实际测试方法与测试计划、测试说明不一致时，需要进行详细说明，并说明原因。
-
-## 5 测试结果
-
-### 5.1 执行测试情况
-
-#### 5.1.1 首次测试
-
-本次测试的被测试对象版本为：
-
-##### 5.1.1.1 测试时间
-
-* 测试开始日期：
-
-* 测试结束日期：
-
-##### 5.1.1.2 测试人员
-
-|序号|角色|姓名|职称|主要职责|
-|---|----|---|---|-------|
-|   |    |   |   |       |
-
-##### 5.1.1.3 测试用例执行情况
-
-* 测试用例执行情况统计表
-
-|测试用例执行情况统计表||||
-:----: | --------------: | ---------: | ---------:
-测试项个数 | 0 |||
-设计的测试用例总数 | 0 |||
-完全执行的测试用例数 | 1   | 通过的测试用例数 |0|
-^^ |^^ | 未通过的测试用例数 |0|
-部分执行的测试用例数 | | 未通过的测试用例数 |0|
-未执行的测试用例数 | 0|||
-
-* 测试用例执行结果统计表
-
-|序号|测试用例名称/标识|执行状态|执行结果|问题步骤|问题报告单标识|
-:----: | --------: | ---------: | ---------:| ---------:| ---------:|
-|      |           |            |           |           |      |
-
-##### 5.1.1.4 未完整执行测试用例的原因说明
-
-说明未完整执行测试用例的原因，并分析对测试结论的影响。
-
-##### 5.1.1.5 测试执行情况的其他说明
-
-说明测试执行的其他情况。
-
-### 5.2 软件问题
-
-* 提交问题分类统计表
-
-|问题类别|第1级问题|第2级问题|第3级问题|第4级问题|
-|-------|-------|-------|--------|-------|
-|计划    |       |        |       |       |
-|方案    |       |        |       |       |
-|需求    |       |        |       |       |
-|设计    |       |        |       |       |
-|编码    |       |        |       |       |
-|数据库/数据文件    |       |        |       |       |
-|测试信息 |       |        |       |       |
-|使用性文档|       |        |       |       |
-|其他    |       |        |       |       |
-|总计    |       |        |       |       |
-
-* 问题在测试类型中分布统计表
-
-|测试类型|第1级问题|第2级问题|第3级问题|第4级问题|
-|-------|-------|-------|--------|-------|
-|安装性测试|       |        |       |       |
-|文档审查 |       |        |       |       |
-|功能性测试|       |        |       |       |
-|接口测试 |       |        |       |       |
-|人机交互界面测试|       |        |       |       |
-|数据库/数据文件    |       |        |       |       |
-|可靠性测试|       |        |       |       |
-|安全性测试|       |        |       |       |
-|余量测试    |       |        |       |       |
-|强度测试    |       |        |       |       |
-|总计    |       |        |       |       |
-
-测试共发现问题XXX个，其中，按照问题类型，编码类问题XX个......;按照问题严重性等级分，1级问题XX个......;按照测试类型，安装性问题XX个......
-
-
-
-${api.project.remark}
-', NULL, NULL
-       , 7, '/profile/upload/2024/05/05/blob_20240505222608A082.png', 1, 0, '7dff10a9-386b-4f45-bece-e82c28761fda'
-       , '测试报告# ${api.project.projectName}-复制', 0);
-INSERT INTO `sys_report_template` (`template_id`, `module_type`, `template_content`, `update_by_id`, `update_time`
-                                  , `project_id`, `template_icon_url`, `major_version`, `minor_version`, `template_key`
-                                  , `template_title`, `is_shop`)
-VALUES (41, NULL, '
-
-$table{api.defect.list}
-
-
-
-
-
-', NULL, '2024-05-19 00:34:03'
-       , 7, '/profile/upload/2024/05/19/blob_20240519003402A002.png', 1, 0, '3ddc9e64-ba13-4c13-88bb-70df97338f9f'
-       , '新建报告模版', 0);
-INSERT INTO `sys_report_template` (`template_id`, `module_type`, `template_content`, `update_by_id`, `update_time`
-                                  , `project_id`, `template_icon_url`, `major_version`, `minor_version`, `template_key`
-                                  , `template_title`, `is_shop`)
-VALUES (42, NULL, 'sa1
-
-
-
-$table{api.member.all}
-
-$table{api.member.admin}
-
-', NULL, '2024-05-07 23:52:35'
-       , 7, '/profile/upload/2024/05/07/blob_20240507235235A007.png', 1, 0, '59d8a5ea-5e9c-4fa9-a072-08547b0beba1'
-       , '新建报告模版-复制', 1);
-INSERT INTO `sys_report_template` (`template_id`, `module_type`, `template_content`, `update_by_id`, `update_time`
-                                  , `project_id`, `template_icon_url`, `major_version`, `minor_version`, `template_key`
-                                  , `template_title`, `is_shop`)
-VALUES (43, NULL, '# -:-《${api.project.projectName}》功能测试用例清单
-
-- 测试用例总数：${api.case.total}
-
-$card{api.case.list}
-
-', NULL, '2024-05-14 03:58:47'
-       , 7, '/profile/upload/2024/05/14/blob_20240514034842A050.png', 1, 0, 'ae15617f-55fd-440d-8a3e-cb06498afe51'
-       , '功能测试用例清单样例-复制', 1);
-INSERT INTO `sys_report_template` (`template_id`, `module_type`, `template_content`, `update_by_id`, `update_time`
-                                  , `project_id`, `template_icon_url`, `major_version`, `minor_version`, `template_key`
-                                  , `template_title`, `is_shop`)
-VALUES (44, NULL, '', NULL, '2024-05-17 13:29:16'
-       , 7, NULL, 1, 0, '7f6e2a35-f5c0-448b-b2fd-618511e6bd1f'
-       , '新建报告模版', 0);
 COMMIT;
 DROP TABLE IF EXISTS `sys_role`;
 CREATE TABLE `sys_role` (
@@ -4834,7 +4439,7 @@ INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_s
                        , `is_project_role`, `role_name_i18n_key`)
 VALUES (4, '团队管理员', 'team.admin', 12, '1'
        , 1, 1, '0', '0', 'admin'
-       , '2023-11-18 15:15:50', 'admin', '2024-06-20 16:56:20', NULL, 1
+       , '2023-11-18 15:15:50', 'admin', '2024-07-20 10:41:25', NULL, 1
        , 0, 'team.admin-members');
 INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_scope`
                        , `menu_check_strictly`, `dept_check_strictly`, `status`, `del_flag`, `create_by`
@@ -4850,7 +4455,7 @@ INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_s
                        , `is_project_role`, `role_name_i18n_key`)
 VALUES (6, '项目管理员', 'project.admin', 22, '1'
        , 1, 1, '0', '0', 'admin'
-       , '2023-11-22 06:48:53', 'admin', '2024-06-20 16:56:36', NULL, 0
+       , '2023-11-22 06:48:53', 'admin', '2024-07-20 10:41:38', NULL, 0
        , 1, 'project.admin');
 INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_scope`
                        , `menu_check_strictly`, `dept_check_strictly`, `status`, `del_flag`, `create_by`
@@ -4858,7 +4463,7 @@ INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_s
                        , `is_project_role`, `role_name_i18n_key`)
 VALUES (7, '项目开发', 'project.develop', 23, '1'
        , 0, 1, '0', '0', 'admin'
-       , '2023-11-22 06:50:14', 'admin', '2024-06-26 10:00:56', NULL, 0
+       , '2023-11-22 06:50:14', 'admin', '2024-07-20 10:01:30', NULL, 0
        , 1, 'project.develop');
 INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_scope`
                        , `menu_check_strictly`, `dept_check_strictly`, `status`, `del_flag`, `create_by`
@@ -4866,7 +4471,7 @@ INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_s
                        , `is_project_role`, `role_name_i18n_key`)
 VALUES (8, '项目测试', 'project.tester', 24, '1'
        , 1, 1, '0', '0', 'admin'
-       , '2023-11-22 06:53:11', 'admin', '2024-06-26 10:01:19', NULL, 0
+       , '2023-11-22 06:53:11', 'admin', '2024-07-20 10:41:55', NULL, 0
        , 1, 'project.tester');
 INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_scope`
                        , `menu_check_strictly`, `dept_check_strictly`, `status`, `del_flag`, `create_by`
@@ -4874,7 +4479,7 @@ INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_s
                        , `is_project_role`, `role_name_i18n_key`)
 VALUES (9, '项目外部人员', 'project.outsider', 25, '1'
        , 0, 1, '0', '0', 'admin'
-       , '2023-11-22 06:55:20', 'admin', '2024-03-13 03:32:56', NULL, 0
+       , '2023-11-22 06:55:20', 'admin', '2024-07-20 10:42:00', NULL, 0
        , 1, 'project.outsider');
 INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_scope`
                        , `menu_check_strictly`, `dept_check_strictly`, `status`, `del_flag`, `create_by`
@@ -4882,7 +4487,7 @@ INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_s
                        , `is_project_role`, `role_name_i18n_key`)
 VALUES (10, '默认成员', 'default', 2, '1'
        , 0, 1, '0', '0', 'admin'
-       , '2023-12-28 18:56:22', 'admin', '2024-03-13 03:30:32', NULL, 0
+       , '2023-12-28 18:56:22', 'admin', '2024-07-21 11:12:29', NULL, 0
        , 0, NULL);
 INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_scope`
                        , `menu_check_strictly`, `dept_check_strictly`, `status`, `del_flag`, `create_by`
@@ -4890,7 +4495,7 @@ INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_s
                        , `is_project_role`, `role_name_i18n_key`)
 VALUES (11, '项目创建人', 'project.create-by', 21, '1'
        , 1, 1, '0', '0', 'admin'
-       , '2024-01-05 17:57:40', 'admin', '2024-06-20 16:56:27', NULL, 0
+       , '2024-01-05 17:57:40', 'admin', '2024-07-20 10:41:32', NULL, 0
        , 1, 'project.create-by');
 INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_scope`
                        , `menu_check_strictly`, `dept_check_strictly`, `status`, `del_flag`, `create_by`
@@ -4898,7 +4503,7 @@ INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_s
                        , `is_project_role`, `role_name_i18n_key`)
 VALUES (12, '团队创建人', 'team.create-by', 11, '1'
        , 1, 1, '0', '0', 'admin'
-       , '2024-01-06 03:41:45', 'admin', '2024-06-20 16:56:03', NULL, 1
+       , '2024-01-06 03:41:45', 'admin', '2024-07-20 10:41:21', NULL, 1
        , 0, 'team.create-by');
 COMMIT;
 DROP TABLE IF EXISTS `sys_role_dept`;
@@ -5261,6 +4866,14 @@ VALUES (4, 2104);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (4, 2105);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (4, 2107);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (4, 2108);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (4, 2109);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (4, 2110);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (5, 2000);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (5, 2001);
@@ -5419,6 +5032,18 @@ VALUES (6, 2104);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (6, 2105);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (6, 2107);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (6, 2108);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (6, 2109);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (6, 2110);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (7, 1035);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (7, 1038);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (7, 2000);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (7, 2001);
@@ -5464,6 +5089,12 @@ INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (7, 2095);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (7, 2098);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (7, 2107);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (7, 2108);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (7, 2110);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (8, 2000);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
@@ -5543,6 +5174,16 @@ VALUES (8, 2095);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (8, 2098);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (8, 2107);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (8, 2108);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (8, 2110);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (9, 1035);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (9, 1038);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (9, 2000);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (9, 2001);
@@ -5570,6 +5211,12 @@ INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (9, 2075);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (9, 2088);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (9, 2107);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (9, 2108);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (9, 2110);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (10, 2000);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
@@ -5614,6 +5261,12 @@ INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (10, 2087);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (10, 2088);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (10, 2107);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (10, 2108);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (10, 2110);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (11, 2000);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
@@ -5744,6 +5397,14 @@ INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (11, 2104);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (11, 2105);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (11, 2107);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (11, 2108);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (11, 2109);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (11, 2110);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (12, 2000);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
@@ -5895,6 +5556,14 @@ VALUES (12, 2104);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (12, 2105);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (12, 2107);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (12, 2108);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (12, 2109);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (12, 2110);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (1810336402060121088, 194487968141779968);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (1810336402060121088, 3514598350520133632);
@@ -6020,8 +5689,8 @@ INSERT INTO `sys_user` (`user_id`, `dept_id`, `user_name`, `nick_name`, `user_ty
                        , `create_time`, `update_by`, `update_time`, `remark`)
 VALUES (1, 0, 'admin', '黑猫警长', '00'
        , 'admin@cat2bug.com', '18888888888', '0', '', '$2a$10$5enMqRePATm8OfHb0/64Ce3NGChvmefyvTA3o/7juZEm4mEf1dxgu'
-       , '0', '0', '127.0.0.1', '2024-06-26 17:59:36', 'admin'
-       , '2023-11-12 15:34:51', '', '2024-06-26 09:59:35', '管理员');
+       , '0', '0', '127.0.0.1', '2024-07-21 19:11:46', 'admin'
+       , '2023-11-12 15:34:51', '', '2024-07-21 11:11:46', '管理员');
 COMMIT;
 DROP TABLE IF EXISTS `sys_user_config`;
 CREATE TABLE `sys_user_config` (
