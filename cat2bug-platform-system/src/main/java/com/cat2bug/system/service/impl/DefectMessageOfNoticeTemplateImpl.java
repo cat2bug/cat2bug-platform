@@ -2,6 +2,7 @@ package com.cat2bug.system.service.impl;
 
 import com.cat2bug.common.core.domain.entity.SysDefect;
 import com.cat2bug.common.utils.MessageUtils;
+import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.im.service.IMessageTemplate;
 import org.springframework.stereotype.Service;
 
@@ -31,9 +32,9 @@ public class DefectMessageOfNoticeTemplateImpl implements IMessageTemplate<SysDe
         sb.append(String.format("%s: %s \n", MessageUtils.message("defectLevel"),MessageUtils.message(obj.getDefectLevel())));
         sb.append(String.format("%s: %s \n", MessageUtils.message("defectTypeName"),MessageUtils.message(obj.getDefectType().name())));
         sb.append(String.format("%s: %s \n", MessageUtils.message("defectStateName"),MessageUtils.message(obj.getDefectState().name())));
-        sb.append(String.format("%s: %s \n", MessageUtils.message("moduleName"),obj.getModuleName()));
-        sb.append(String.format("%s: %s \n", MessageUtils.message("moduleVersion"),obj.getModuleVersion()));
-        sb.append(String.format("%s: %s \n", MessageUtils.message("defectDescribe"),obj.getDefectDescribe()));
+        sb.append(String.format("%s: %s \n", MessageUtils.message("moduleName"),StringUtils.toNotBlankValue(obj.getModuleName())));
+        sb.append(String.format("%s: %s \n", MessageUtils.message("moduleVersion"),StringUtils.toNotBlankValue(obj.getModuleVersion())));
+        sb.append(String.format("%s: %s \n", MessageUtils.message("defectDescribe"),StringUtils.toNotBlankValue(obj.getDefectDescribe())));
         return sb.toString();
     }
 
@@ -46,9 +47,9 @@ public class DefectMessageOfNoticeTemplateImpl implements IMessageTemplate<SysDe
         sb.append(String.format("%s: %s <br />", MessageUtils.message("defectLevel"),MessageUtils.message(obj.getDefectLevel())));
         sb.append(String.format("%s: %s <br />", MessageUtils.message("defectTypeName"),MessageUtils.message(obj.getDefectType().name())));
         sb.append(String.format("%s: %s <br />", MessageUtils.message("defectStateName"),MessageUtils.message(obj.getDefectState().name())));
-        sb.append(String.format("%s: %s <br />", MessageUtils.message("moduleName"),obj.getModuleName()));
-        sb.append(String.format("%s: %s <br />", MessageUtils.message("moduleVersion"),obj.getModuleVersion()));
-        sb.append(String.format("%s: %s <br />", MessageUtils.message("defectDescribe"),obj.getDefectDescribe()));
+        sb.append(String.format("%s: %s <br />", MessageUtils.message("moduleName"),StringUtils.toNotBlankValue(obj.getModuleName())));
+        sb.append(String.format("%s: %s <br />", MessageUtils.message("moduleVersion"),StringUtils.toNotBlankValue(obj.getModuleVersion())));
+        sb.append(String.format("%s: %s <br />", MessageUtils.message("defectDescribe"),StringUtils.toNotBlankValue(obj.getDefectDescribe())));
         return sb.toString();
     }
 
@@ -61,9 +62,9 @@ public class DefectMessageOfNoticeTemplateImpl implements IMessageTemplate<SysDe
         sb.append(String.format("**%s:** %s \n\n", MessageUtils.message("defectLevel"),MessageUtils.message(obj.getDefectLevel())));
         sb.append(String.format("**%s:** %s \n\n", MessageUtils.message("defectTypeName"),MessageUtils.message(obj.getDefectType().name())));
         sb.append(String.format("**%s:** %s \n\n", MessageUtils.message("defectStateName"),MessageUtils.message(obj.getDefectState().name())));
-        sb.append(String.format("**%s:** %s \n\n", MessageUtils.message("moduleName"),obj.getModuleName()));
-        sb.append(String.format("**%s:** %s \n\n", MessageUtils.message("moduleVersion"),obj.getModuleVersion()));
-        sb.append(String.format("**%s:** %s \n\n", MessageUtils.message("defectDescribe"),obj.getDefectDescribe()));
+        sb.append(String.format("**%s:** %s \n\n", MessageUtils.message("moduleName"), StringUtils.toNotBlankValue(obj.getModuleName())));
+        sb.append(String.format("**%s:** %s \n\n", MessageUtils.message("moduleVersion"),StringUtils.toNotBlankValue(obj.getModuleVersion())));
+        sb.append(String.format("**%s:** %s \n\n", MessageUtils.message("defectDescribe"),StringUtils.toNotBlankValue(obj.getDefectDescribe())));
         return sb.toString();
     }
 

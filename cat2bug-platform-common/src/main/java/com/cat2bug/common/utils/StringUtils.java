@@ -638,4 +638,16 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils
         }
         return sb.toString();
     }
+
+    /**
+     * 返回一个非空值
+     * @param val
+     * @return
+     */
+    public static String toNotBlankValue(String val) {
+        if(StringUtils.isNotBlank(val))
+            return val;
+        else
+            return "";
+    }
 }

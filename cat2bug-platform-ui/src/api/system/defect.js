@@ -28,7 +28,7 @@ export function getDefect(defectId) {
 
 // 新增缺陷
 export function addDefect(data) {
-  data.srcHost = window.location.host;
+  data.srcHost = `${window.location.protocol}//${window.location.host}`;
   return request({
     url: '/system/defect',
     method: 'post',
@@ -45,7 +45,7 @@ export function closeEditWindow(defectId) {
 
 // 修改缺陷
 export function updateDefect(data) {
-  data.srcHost = window.location.host;
+  data.srcHost = `${window.location.protocol}//${window.location.host}`;
   return request({
     url: '/system/defect',
     method: 'put',
@@ -65,7 +65,7 @@ export function assign(defectId, data) {
 
 // 拒绝
 export function reject(defectId, data) {
-  data.srcHost = window.location.host;
+  data.srcHost = `${window.location.protocol}//${window.location.host}`;
   return request({
     url: '/system/defect/'+defectId+'/reject',
     method: 'post',
@@ -75,7 +75,7 @@ export function reject(defectId, data) {
 
 // 修复
 export function repair(defectId, data) {
-  data.srcHost = window.location.host;
+  data.srcHost = `${window.location.protocol}//${window.location.host}`;
   return request({
     url: '/system/defect/'+defectId+'/repair',
     method: 'post',
@@ -85,7 +85,7 @@ export function repair(defectId, data) {
 
 // 修复
 export function pass(defectId, data) {
-  data.srcHost = window.location.host;
+  data.srcHost = `${window.location.protocol}//${window.location.host}`;
   return request({
     url: '/system/defect/'+defectId+'/pass',
     method: 'post',
@@ -95,7 +95,7 @@ export function pass(defectId, data) {
 
 // 开启
 export function open(defectId, data) {
-  data.srcHost = window.location.host;
+  data.srcHost = `${window.location.protocol}//${window.location.host}`;
   return request({
     url: '/system/defect/'+defectId+'/open',
     method: 'post',
@@ -105,7 +105,7 @@ export function open(defectId, data) {
 
 // 关闭
 export function close(defectId, data) {
-  data.srcHost = window.location.host;
+  data.srcHost = `${window.location.protocol}//${window.location.host}`;
   return request({
     url: '/system/defect/'+defectId+'/close',
     method: 'post',
@@ -123,7 +123,7 @@ export function delDefect(defectId) {
 
 // 修改用户缺陷
 export function updateUserDefect(defectId, data) {
-  data.srcHost = window.location.host;
+  data.srcHost = `${window.location.protocol}//${window.location.host}`;
   return request({
     url: '/system/defect/'+defectId,
     method: 'put',

@@ -128,13 +128,14 @@ export default {
     this.panelTopicId = this.$topic.subscribe(this.$topic.PANEL_NOTICE_TOPIC, (name, data) => {
       if(data && data.data) {
         const msg = data.data;
+        let host = `${window.location.protocol}//${window.location.host}`;
         if(msg.panel) {
           this.$notify({
             title: this.$i18n.t('notice'),
             dangerouslyUseHTMLString: true,
             type: 'success',
             offset: 50,
-            message: `<a target="_blank" style="color: #409eff;" href="${msg.src}&noticeId=${msg.noticeId}">${msg.title}<\a>`
+            message: `<a target="_blank" style="color: #409eff;" href="${host}/#/notice/index?noticeId=${msg.noticeId}">${msg.title}<\a>`
           });
         }
       }
