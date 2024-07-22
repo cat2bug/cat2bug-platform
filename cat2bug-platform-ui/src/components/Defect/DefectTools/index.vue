@@ -9,7 +9,7 @@
     <el-button v-show="passVisible" :icon="isShowIcon?'el-icon-finished':''" :size="size" :type="isText?'text':'success'" @click="passDialogHandle" v-hasPermi="['system:defect:pass']">{{$i18n.t('pass')}}</el-button>
     <el-button v-show="openVisible" :icon="isShowIcon?'el-icon-document-copy':''" :size="size" :type="isText?'text':'danger'" @click="openDialogHandle" v-hasPermi="['system:defect:open']">{{$i18n.t('open')}}</el-button>
     <el-button v-show="closeVisible" :icon="isShowIcon?'el-icon-takeaway-box':''" :size="size" :type="isText?'text':'danger'" @click="closeDialogHandle" v-hasPermi="['system:defect:close']">{{$i18n.t('close')}}</el-button>
-    <el-button v-show="editVisible" :icon="isShowIcon?'el-icon-edit':''" :size="size" :type="isText?'text':'primary'" :class="isText?'green':''" :plain="!isShowIcon" @click="editDialogHandle" >{{ $t('modify') }}</el-button>
+    <el-button v-show="editVisible" :icon="isShowIcon?'el-icon-edit':''" :size="size" :type="isText?'text':'success'" :class="isText?'green':''" :plain="!isShowIcon" @click="editDialogHandle" >{{ $t('modify') }}</el-button>
     <el-button v-show="deleteVisible" :icon="isShowIcon?'el-icon-delete':''" :size="size" :type="isText?'text':'danger'" :class="isText?'red':''" :plain="!isShowIcon" @click="handleDelete">{{$i18n.t('delete')}}</el-button>
     <!--          <el-button-->
     <!--            size="mini"-->

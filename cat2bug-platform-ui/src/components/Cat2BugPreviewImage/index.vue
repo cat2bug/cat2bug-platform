@@ -31,10 +31,11 @@
           fit="contain"
         ></el-image>
       </div>
-      <div slot="reference" class="preview click" :style="`width: ${width}px;height: ${height}px;`">
+      <div slot="reference" class="preview" :style="`width: ${width}px;height: ${height}px;`">
         <el-image
+          class="button"
           @click="handleClickPreview"
-          style="width: 100%; height: 100%"
+          style="width: 100%; height: 100%;"
           :src="previewUrl"
           :preview-src-list="images"
           fit="contain"
@@ -91,11 +92,24 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.el-image {
+  background-color: #F2F6FC;
+  padding: 5px;
+  border-radius: 5px;
+}
+.el-image:hover, .button:hover {
+  background-color: #bce4ff;
+}
 .row-image {
   display: inline-flex;
   flex-direction: row;
   flex-wrap: wrap;
   gap: 5px;
+  .el-image:hover {
+    z-index: 999;
+    border: 1px solid #DCDFE6;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3); /* 鼠标滑过时显示阴影 */
+  }
 }
 .preview {
   position: relative;
@@ -109,7 +123,7 @@ export default {
     line-height: 15px;
   }
 }
-.click {
+.click, button {
   cursor: pointer;
 }
 .click:hover {
