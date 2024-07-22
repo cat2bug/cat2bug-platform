@@ -1,6 +1,6 @@
 <template>
   <el-drawer
-    size="55%"
+    size="65%"
     :visible.sync="visible"
     direction="rtl"
     :before-close="closeDefectDrawer">
@@ -47,71 +47,70 @@
             </el-form-item>
           </el-col>
         </el-row>
-        <el-row>
-          <el-col :span="12">
-            <el-form-item :label="$t('handle-by')" prop="handleBy">
-              <select-project-member v-model="form.handleBy" :project-id="projectId"  />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item :label="$t('version')" prop="moduleVersion">
-              <el-input v-model="form.moduleVersion" :placeholder="$t('defect.enter-version')" maxlength="128" style="max-width: 300px;" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="12">
-            <el-form-item :label="$t('plan-start-time')" prop="planStartTime">
-              <el-date-picker
-                v-model="form.planStartTime"
-                type="datetime"
-                value-format="yyyy-MM-dd HH:mm:ss"
-                :placeholder="$t('defect.please-select-start-time')">
-              </el-date-picker>
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item :label="$t('plan-end-time')" prop="planEndTime">
-              <el-date-picker
-                v-model="form.planEndTime"
-                type="datetime"
-                value-format="yyyy-MM-dd HH:mm:ss"
-                :placeholder="$t('defect.please-select-end-time')">
-              </el-date-picker>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-form-item :label="$t('module')" prop="moduleId">
-          <select-module v-model="form.moduleId" :project-id="projectId" @input="moduleChangeHandle"/>
-        </el-form-item>
+        <el-col :span="12">
+          <el-form-item :label="$t('handle-by')" prop="handleBy">
+            <select-project-member v-model="form.handleBy" :project-id="projectId"  />
+          </el-form-item>
+        </el-col>
+        <el-col :span="12">
+          <el-form-item :label="$t('version')" prop="moduleVersion">
+            <el-input v-model="form.moduleVersion" :placeholder="$t('defect.enter-version')" maxlength="128" style="max-width: 300px;" />
+          </el-form-item>
+        </el-col>
+        <el-col :span="12">
+          <el-form-item :label="$t('module')" prop="moduleId">
+            <select-module v-model="form.moduleId" :project-id="projectId" @input="moduleChangeHandle"/>
+          </el-form-item>
+        </el-col>
+        <el-col :span="12">
+          <el-form-item :label="$t('plan-time')" prop="planEndTime">
+            <el-date-picker
+              v-model="planTimeRange"
+              type="datetimerange"
+              :range-separator="$t('time-to')"
+              :start-placeholder="$t('plan-start-time')"
+              :end-placeholder="$t('plan-end-time')"
+              value-format="yyyy-MM-dd HH:mm:ss"
+              :placeholder="$t('defect.please-select-end-time')">
+            </el-date-picker>
+          </el-form-item>
+        </el-col>
+        <el-col :span="24">
         <el-form-item :label="$t('case')" prop="caseId">
           <select-case ref="selectCase" v-model="form.caseId" :module-id="form.moduleId" :step-index="form.caseStepId" @step-change="stepChangeHandle" />
         </el-form-item>
-        <el-form-item :label="$t('describe')" prop="defectDescribe">
-          <cat2-bug-textarea
-            ref="cat2bugTextarea"
-            :name="$t('describe').toString()"
-            :placeholder="$t('defect.enter-markdown-describe').toString()"
-            :tools = "describeTools"
-            v-model="form.defectDescribe"
-            maxlength="65536"
-            rows="8"
-            show-word-limit
-            show-tools
-          >
-            <template v-slot:tools>
-              <el-tooltip class="item" effect="dark" :content="$t('defect.ai-filling-in')" placement="top">
-                <el-button :handle="aiButtonLoading?'true':'false'" class="cat2-bug-textarea-button" type="text" @click="createDefectByAiHandle"><svg-icon icon-class="robot"></svg-icon><span v-show="aiButtonLoading">分析中...</span></el-button>
-              </el-tooltip>
-            </template>
-          </cat2-bug-textarea>
-        </el-form-item>
-        <el-form-item :label="$t('image')" prop="imgUrls">
-          <image-upload v-model="form.imgUrls" :limit="9"></image-upload>
-        </el-form-item>
-        <el-form-item :label="$t('annex')" prop="annexUrls">
-          <file-upload v-model="form.annexUrls" :limit="9" :file-type="[]"/>
-        </el-form-item>
+        </el-col>
+        <el-col :span="24">
+          <el-form-item :label="$t('describe')" prop="defectDescribe">
+            <cat2-bug-textarea
+              ref="cat2bugTextarea"
+              :name="$t('describe').toString()"
+              :placeholder="$t('defect.enter-markdown-describe').toString()"
+              :tools = "describeTools"
+              v-model="form.defectDescribe"
+              maxlength="65536"
+              rows="8"
+              show-word-limit
+              show-tools
+            >
+              <template v-slot:tools>
+                <el-tooltip class="item" effect="dark" :content="$t('defect.ai-filling-in')" placement="top">
+                  <el-button :handle="aiButtonLoading?'true':'false'" class="cat2-bug-textarea-button" type="text" @click="createDefectByAiHandle"><svg-icon icon-class="robot"></svg-icon><span v-show="aiButtonLoading">分析中...</span></el-button>
+                </el-tooltip>
+              </template>
+            </cat2-bug-textarea>
+          </el-form-item>
+        </el-col>
+        <el-col :span="24">
+          <el-form-item :label="$t('image')" prop="imgUrls">
+            <image-upload v-model="form.imgUrls" :limit="9"></image-upload>
+          </el-form-item>
+        </el-col>
+        <el-col :span="12">
+          <el-form-item :label="$t('annex')" prop="annexUrls">
+            <file-upload v-model="form.annexUrls" :limit="9" :file-type="[]"/>
+          </el-form-item>
+        </el-col>
   <!--      <el-form-item label="测试用例id" prop="caseId">-->
   <!--        <el-input v-model="form.caseId" placeholder="请输入测试用例id" />-->
   <!--      </el-form-item>-->
@@ -159,6 +158,9 @@ export default {
   components: { ImageUpload, SelectProjectMember, SelectModule,SelectCase,Cat2BugTextarea },
   data() {
     return {
+      // 计划时间范围
+      planTimeRange:[],
+      // AI按钮加载是否显示
       aiButtonLoading: false,
       // 显示窗口
       visible: false,
@@ -230,6 +232,7 @@ export default {
     },
     // 表单重置
     reset() {
+      this.planTimeRange=[];
       this.form = {
         defectId: null,
         defectType: null,
@@ -261,6 +264,10 @@ export default {
       this.$refs["form"].validate(valid => {
         if (valid) {
           this.form.projectId = this.projectId;
+          if(this.planTimeRange.length>1) {
+            this.form.planStartTime = this.planTimeRange[0];
+            this.form.planEndTime = this.planTimeRange[1];
+          }
           if (this.form.defectId != null) {
             updateDefect(this.form).then(res => {
               this.$modal.msgSuccess("修改成功");

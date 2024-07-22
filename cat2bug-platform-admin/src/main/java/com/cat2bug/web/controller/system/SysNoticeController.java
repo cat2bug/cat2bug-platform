@@ -39,7 +39,7 @@ public class SysNoticeController extends BaseController
     /**
      * 获取通知公告列表
      */
-    @PreAuthorize("@ss.hasPermi('system:notice:list')||@ss.hasPermi('notice:list')")
+    @PreAuthorize("@ss.hasPermi('notice:list')")
     @GetMapping("/list")
     public TableDataInfo list(SysNotice notice)
     {
@@ -48,7 +48,7 @@ public class SysNoticeController extends BaseController
         return getDataTable(list);
     }
 
-    @PreAuthorize("@ss.hasPermi('system:notice:list')||@ss.hasPermi('notice:list')")
+    @PreAuthorize("@ss.hasPermi('notice:list')")
     @GetMapping("/statistics/group")
     public TableDataInfo groupStatistics()
     {
@@ -59,7 +59,7 @@ public class SysNoticeController extends BaseController
     /**
      * 根据通知公告编号获取详细信息
      */
-    @PreAuthorize("@ss.hasPermi('system:notice:query')||@ss.hasPermi('notice:query')")
+    @PreAuthorize("@ss.hasPermi('notice:query')")
     @GetMapping(value = "/{noticeId}")
     public AjaxResult getInfo(@PathVariable String noticeId)
     {
@@ -93,7 +93,7 @@ public class SysNoticeController extends BaseController
     /**
      * 删除通知公告
      */
-    @PreAuthorize("@ss.hasPermi('system:notice:remove')||@ss.hasPermi('notice:remove')")
+    @PreAuthorize("@ss.hasPermi('notice:remove')")
     @Log(title = "通知公告", businessType = BusinessType.DELETE)
     @DeleteMapping("/{noticeIds}")
     public AjaxResult remove(@PathVariable String[] noticeIds)

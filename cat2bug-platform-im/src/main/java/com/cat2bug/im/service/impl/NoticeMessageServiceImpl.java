@@ -50,7 +50,7 @@ public class NoticeMessageServiceImpl implements IIMService<NoticeMessage, IMSys
         if(count>0) {
             if (this.memberWebSocketMap.containsKey(message.getReceiveMemberId())) {
                 WebSocketResult ws = WebSocketResult.success(NOTICE_ACTION, message);
-                this.memberWebSocketMap.get(message.getReceiveMemberId()).sendMessage(ws);
+                this.memberWebSocketMap.get(message.getReceiveMemberId()).sendMessage(message.getReceiveMemberId(), ws);
             }
         } else {
             log.error("保存通知失败,JSON:{}",JSON.toJSONString(message));

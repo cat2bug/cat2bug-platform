@@ -1,7 +1,7 @@
 <template>
   <el-dialog
     :append-to-body="true"
-    width="55%"
+    width="65%"
     :title="title"
     :visible.sync="visible">
     <div class="app-container defect-edit-body">
@@ -48,31 +48,22 @@
               </el-form-item>
             </el-col>
           </el-row>
-          <el-row>
-            <el-col :span="12">
-              <el-form-item :label="$t('plan-start-time')" prop="planStartTime">
-                <el-date-picker
-                  v-model="form.planStartTime"
-                  type="datetime"
-                  value-format="yyyy-MM-dd HH:mm:ss"
-                  :placeholder="$t('defect.please-select-start-time')">
-                </el-date-picker>
-              </el-form-item>
-            </el-col>
-            <el-col :span="12">
-              <el-form-item :label="$t('plan-end-time')" prop="planEndTime">
-                <el-date-picker
-                  v-model="form.planEndTime"
-                  type="datetime"
-                  value-format="yyyy-MM-dd HH:mm:ss"
-                  :placeholder="$t('defect.please-select-end-time')">
-                </el-date-picker>
-              </el-form-item>
-            </el-col>
-          </el-row>
           <el-col :span="12">
             <el-form-item :label="$t('module')" prop="moduleId">
               <select-module v-model="form.moduleId" :project-id="projectId"/>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item :label="$t('plan-time')" prop="planEndTime">
+              <el-date-picker
+                v-model="planTimeRange"
+                type="datetimerange"
+                :range-separator="$t('time-to')"
+                :start-placeholder="$t('plan-start-time')"
+                :end-placeholder="$t('plan-end-time')"
+                value-format="yyyy-MM-dd HH:mm:ss"
+                :placeholder="$t('defect.please-select-end-time')">
+              </el-date-picker>
             </el-form-item>
           </el-col>
         </el-row>
@@ -121,7 +112,11 @@ export default {
   components: { ImageUpload, SelectProjectMember, SelectModule, ListDefectLog, DefectTools, DefectTypeFlag, SelectCase },
   data() {
     return {
+      // 计划时间范围
+      planTimeRange:[],
+      // 标题
       title: this.$i18n.t('defect.modify'),
+      // 当前缺陷ID
       defectId: null,
       config: {},
       // 显示窗口
@@ -186,6 +181,12 @@ export default {
       this.activeNames = ['base','log']
       getDefect(defectId).then(res=>{
         this.form = res.data;
+        if(this.form.planStartTime) {
+          this.planTimeRange.push(this.form.planStartTime);
+        }
+        if(this.form.planEndTime) {
+          this.planTimeRange.push(this.form.planEndTime);
+        }
         if(this.form.defectDescribe) {
           this.activeNames.push('defectDescribe');
         }
@@ -212,6 +213,7 @@ export default {
     },
     // 表单重置
     reset() {
+      this.planTimeRange = [];
       this.form = {
         defectId: null,
         defectType: null,
@@ -242,6 +244,10 @@ export default {
     submitForm() {
       this.$refs["form"].validate(valid => {
         if (valid) {
+          if(this.planTimeRange.length>1) {
+            this.form.planStartTime = this.planTimeRange[0];
+            this.form.planEndTime = this.planTimeRange[1];
+          }
           updateDefect(this.form).then(res => {
             this.$modal.msgSuccess(this.$i18n.t('modify-success'));
             this.visible = false;

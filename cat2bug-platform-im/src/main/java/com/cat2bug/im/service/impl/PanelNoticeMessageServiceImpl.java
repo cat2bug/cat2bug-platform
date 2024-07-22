@@ -46,7 +46,7 @@ public class PanelNoticeMessageServiceImpl implements IIMService<NoticeMessage, 
         message.setNoticeId(message.getSn()); // 将流水号设置为通知ID
         if(this.memberWebSocketMap.containsKey(message.getReceiveMemberId())) {
             WebSocketResult ws = WebSocketResult.success(NOTICE_ACTION, message);
-            this.memberWebSocketMap.get(message.getReceiveMemberId()).sendMessage(ws);
+            this.memberWebSocketMap.get(message.getReceiveMemberId()).sendMessage(message.getReceiveMemberId(), ws);
         }
     }
 
