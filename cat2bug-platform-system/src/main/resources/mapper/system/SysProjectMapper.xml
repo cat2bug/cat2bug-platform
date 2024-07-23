@@ -38,7 +38,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="sysProject.projectName != null  and sysProject.projectName != ''"> and p.project_name like concat('%', #{sysProject.projectName}, '%')</if>
             <if test="sysProject.createBy != null  and sysProject.createBy != ''"> and p.create_by like concat('%', #{sysProject.createBy}, '%')</if>
         </where>
-        order by p.create_time desc
+        order by up.collect desc, p.create_time desc
     </select>
     
     <select id="selectSysProjectByProjectId" parameterType="Long" resultMap="SysProjectResult">
