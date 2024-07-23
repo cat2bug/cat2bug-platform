@@ -42,7 +42,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </select>
     
     <select id="selectSysProjectByProjectId" parameterType="Long" resultMap="SysProjectResult">
-        <include refid="findSysProjectVo"/>
+        <include refid="selectSysProjectVo"/>
         where p.project_id = #{projectId}
     </select>
         

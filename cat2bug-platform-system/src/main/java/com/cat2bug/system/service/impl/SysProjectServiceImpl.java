@@ -47,7 +47,7 @@ public class SysProjectServiceImpl implements ISysProjectService
     @Override
     public SysProject selectSysProjectByProjectId(Long projectId)
     {
-        return sysProjectMapper.selectSysProjectByProjectId(projectId);
+        return sysProjectMapper.selectSysProjectByProjectId(projectId,SecurityUtils.getUserId());
     }
 
     /**

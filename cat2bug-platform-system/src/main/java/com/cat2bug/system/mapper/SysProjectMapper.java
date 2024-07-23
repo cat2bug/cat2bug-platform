@@ -18,7 +18,7 @@ public interface SysProjectMapper
      * @param projectId 项目主键
      * @return 项目
      */
-    public SysProject selectSysProjectByProjectId(Long projectId);
+    public SysProject selectSysProjectByProjectId( @Param("projectId") Long projectId,  @Param("userId") Long userId);
 
     /**
      * 查询项目列表

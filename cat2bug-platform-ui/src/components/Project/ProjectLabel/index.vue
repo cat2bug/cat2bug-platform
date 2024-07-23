@@ -1,12 +1,16 @@
 <template>
-  <h3>{{$t('project')}}:<span class="project-label-title">{{project.projectName}}</span></h3>
+  <h3 class="row">
+    <span>{{$t('project')}}:</span>
+    <project-select class="margin-left-10" :team-id="currentTeamId" :project-id="currentProjectId" :member-id="currentMemberId" />
+  </h3>
 </template>
 
 <script>
 import {getProject} from "@/api/system/project";
-
+import ProjectSelect from "@/components/Project/ProjectSelect";
 export default {
   name: "ProjectLabel",
+  components: {ProjectSelect},
   data() {
     return {
       project:{}
@@ -28,6 +32,19 @@ export default {
   created() {
     this.getProjectInfo(this.getProjectId());
   },
+  computed: {
+    currentProjectId: function () {
+      return this.projectId==0?parseInt(this.$store.state.user.config.currentProjectId):this.projectId;
+    },
+    /** 获取当前成员id */
+    currentMemberId: function() {
+      return this.$store.state.user.id;
+    },
+    /** 获取团队id */
+    currentTeamId() {
+      return this.$store.state.user.config.currentTeamId;
+    },
+  },
   methods: {
     getProjectId() {
       return this.projectId==0?parseInt(this.$store.state.user.config.currentProjectId):this.projectId;
@@ -42,12 +59,16 @@ export default {
 </script>
 
 <style scoped>
+  .margin-left-10 {
+    margin-left: 10px;
+  }
   h3 {
     margin-top: 0px;
     margin-bottom: 20px;
   }
-  .project-label-title {
-    margin-left: 10px;
-    color: #303133;
+  .row {
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
   }
 </style>

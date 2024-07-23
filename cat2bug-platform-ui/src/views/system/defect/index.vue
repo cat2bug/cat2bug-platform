@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
 <!--    <span slot="footer" class="dialog-footer" v-hotkey="keyMap"></span>-->
-    <project-label :project-id="projectId" />
+    <project-label />
     <div class="defect-tools-tab">
       <el-tabs v-model="activeDefectTabName" @tab-click="selectDefectTabHandle">
         <el-tab-pane v-for="tab in config.tabs" :name="tab.tabId+''" :key="tab.tabId+''">
@@ -201,6 +201,8 @@
       :limit.sync="queryParams.pageSize"
       @pagination="getList(queryParams.params)"
     />
+    <!-- 缺陷日历-->
+<!--    <defect-calendar ref="defectCalendar" />-->
     <!-- 添加或修改缺陷对话框 -->
     <add-defect ref="addDefectForm" :project-id="getProjectId()" @added="getList(queryParams.params)" />
     <handle-defect ref="editDefectForm" :project-id="getProjectId()" @change="getList(queryParams.params)" @delete="getList(queryParams.params)" />
@@ -229,6 +231,7 @@ import {delTabs, listTabs} from "@/api/system/DefectTabs";
 import i18n from "@/utils/i18n/i18n";
 import {lifeTime} from "@/utils/defect";
 import store from "@/store";
+import DefectCalendar from "./list/calendar"
 
 /** 需要显示的缺陷字段列表在缓存的key值 */
 const DEFECT_TABLE_FIELD_LIST_CACHE_KEY='defect-table-field-list';
@@ -241,7 +244,7 @@ const ALL_TAB_NAME = 'all-tab';
 const CACHE_KEY_STATISTIC_PANEL_VISIBLE = 'defect.statisticPanelVisible';
 export default {
   name: "Defect",
-  components: {SelectModule, RowListMember, AddDefect, HandleDefect, LevelTag, SelectProjectMember,ProjectLabel,DefectTypeFlag, DefectStateFlag, DefectTools, Cat2BugStatistic, FocusMemberList, DefectTabDialog, Cat2BugPreviewImage },
+  components: {SelectModule, RowListMember, AddDefect, HandleDefect, LevelTag, SelectProjectMember,ProjectLabel,DefectTypeFlag, DefectStateFlag, DefectTools, Cat2BugStatistic, FocusMemberList, DefectTabDialog, Cat2BugPreviewImage, DefectCalendar },
   dicts: ['defect_level'],
   data() {
     return {
@@ -380,7 +383,6 @@ export default {
           if(_this.$route.query.defectId) {
             _this.$refs.editDefectForm.open(_this.$route.query.defectId);
           }
-          this.$forceUpdate();
         });
       });
     } else {
