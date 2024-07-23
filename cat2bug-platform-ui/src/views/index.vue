@@ -149,6 +149,7 @@
                 <li>缺陷列表中优化图片显示方式</li>
                 <li>将缺陷描述设置为非必填项</li>
                 <li>测试用例添加添加图片功能</li>
+                <li>在每个页面中新增项目切换功能</li>
                 <li>修复系统功能BUG</li>
               </ol>
             </el-collapse-item>
@@ -263,6 +264,9 @@ export default {
       // 版本号
       version: null,
       tanksMemberList: [{
+        name: '若即若离',
+        avatarUrl: require('@/assets/images/thanks/ruojiruoli.jpg')
+      },{
         name: '完美er',
         avatarUrl: require('@/assets/images/thanks/wanmeier.png')
       },{

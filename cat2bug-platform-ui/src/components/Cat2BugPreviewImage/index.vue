@@ -98,7 +98,7 @@ export default {
   border-radius: 5px;
 }
 .el-image:hover, .button:hover {
-  background-color: #bce4ff;
+  background-color: #e8f4ff;
 }
 .row-image {
   display: inline-flex;

@@ -10,13 +10,15 @@
       <p class="prefix-project-name">{{currentProject.projectName}}</p>
       <i class="el-icon-arrow-down" />
     </div>
-    <h3 class="title">{{ $t('project.select') }}</h3>
+    <h3 class="title"><i class="el-icon-refresh"/> {{ $t('project.select') }}</h3>
+    <el-divider></el-divider>
     <div v-for="(item,index) in options" :key="index" class="col click item" @click="handleProjectChange(item)">
       <div class="row">
         <i class="yellow el-icon-star-on start-switch" :collect="item.collect?'true':'false'"></i>
         <p class="prefix-project-name">{{item.projectName}}</p>
       </div>
     </div>
+    <el-divider></el-divider>
     <el-pagination
       style="float: right;"
       small
@@ -112,6 +114,10 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.el-divider {
+  background-color: #EBEEF5;
+  margin: 10px 0px;
+}
 .between-row {
   display: inline-flex;
   flex-direction: row;
@@ -170,8 +176,6 @@ export default {
   -webkit-background-clip: text;
 }
 .title {
-  margin: 5px 5px 10px 10px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid #EBEEF5;
+  margin: 5px 5px 15px 10px;
 }
 </style>
