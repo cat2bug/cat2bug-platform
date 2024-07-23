@@ -7,6 +7,7 @@
     trigger="hover">
     <div slot="reference" :class="'between-row click select-project-member-input-'+size">
       <i class="yellow el-icon-star-on start-switch" :collect="currentProject.collect?'true':'false'"></i>
+<!--      <el-image :src="currentProject.projectIcon" />-->
       <p class="prefix-project-name">{{currentProject.projectName}}</p>
       <i class="el-icon-arrow-down" />
     </div>
@@ -15,6 +16,7 @@
     <div v-for="(item,index) in options" :key="index" class="col click item" @click="handleProjectChange(item)">
       <div class="row">
         <i class="yellow el-icon-star-on start-switch" :collect="item.collect?'true':'false'"></i>
+<!--        <el-image :src="item.projectIcon" />-->
         <p class="prefix-project-name">{{item.projectName}}</p>
       </div>
     </div>
@@ -177,5 +179,9 @@ export default {
 }
 .title {
   margin: 5px 5px 15px 10px;
+}
+.el-image {
+  width: 30px;
+  height: 30px;
 }
 </style>
