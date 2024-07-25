@@ -233,7 +233,7 @@ export default {
 <div :style="{width:'8px', height:'8px',borderRadius:'100%',backgroundColor:item.lamplightColour }" v-for="item in cabinetAreaLight" :key="item" style="margin:3px 0px;"/>
 </div>
 
-<style scoped>
+<style lang="scss" scoped>
   .statistic-tools {
     display: flex;
     justify-content: flex-start;
@@ -242,5 +242,8 @@ export default {
     flex-wrap: wrap;
     gap:15px;
     border-width: 0px;
+    > * {
+      margin-bottom: 10px;
+    }
   }
 </style>

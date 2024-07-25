@@ -108,7 +108,7 @@
     <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="100px">
         <el-form-item :label="$t('doc.name')" prop="docName">
-          <el-input ref="docNameInput" v-model="form.docName" :placeholder="$t('doc.please-enter-name')" />
+          <el-input ref="docNameInput" v-model="form.docName" :placeholder="$t('doc.please-enter-name')" maxlength="255" />
         </el-form-item>
 <!--        <el-form-item label="备注" prop="docRemark">-->
 <!--          <el-input v-model="form.docRemark" placeholder="请输入备注" />-->

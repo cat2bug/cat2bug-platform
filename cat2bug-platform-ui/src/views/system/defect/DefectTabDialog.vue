@@ -48,7 +48,7 @@
       </el-form-item>
       <el-form-item :label="$t('version')" prop="moduleVersion">
         <el-input
-          v-model="form.moduleVersion"
+          v-model="form.config.moduleVersion"
           :placeholder="$t('defect.enter-version')"
           maxlength="64"
           clearable

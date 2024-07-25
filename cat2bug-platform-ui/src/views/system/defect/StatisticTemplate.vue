@@ -99,13 +99,12 @@ export default {
     min-height: 162px;
     background-color: #F2F6FC;
     border-radius: 5px;
-    padding: 10px 15px;
+    padding: 10px 15px 5px 15px;
     ::v-deep .statistic-box:hover {
       cursor: pointer;
     }
   }
   .templates-panel {
-    flex: 1;
     overflow-y: scroll;
   }
 </style>
