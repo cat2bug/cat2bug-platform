@@ -303,7 +303,7 @@ export default {
     },
     /** 处理点击了表格中的某一行 */
     handleClickTableRow(defect) {
-      this.$emit('row-click',defect);
+      this.$emit('defect-click',defect);
     }
   }
 }
@@ -340,5 +340,39 @@ export default {
 }
 .defect-field-divider {
   margin: 8px 0px;
+}
+.table-defect-title {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  .el-link {
+    flex: 1;
+    padding-left: 5px;
+  }
+}
+.el-table {
+  ::v-deep table {
+    width: 100% !important;
+  }
+}
+.defect-statistics {
+  display: inline-flex;
+  flex-direction: row;
+  gap: 10px;
+  font-size: 10px;
+  > div {
+    padding: 0px 5px;
+    border-radius: 3px;
+    background-color: #f9fbff;
+  }
+  i {
+    margin-right: 2px;
+  }
+  .defect-statistics-value {
+    padding-left: 3px;
+    font-size: 11px;
+    color: #303133;
+  }
 }
 </style>

@@ -25,6 +25,7 @@
     <component
       ref="defectContentComponent"
       :is="defectContentComponent"
+      @defect-click="handleDefectClick"
       >
       <template slot="left-tools">
         <!-- 搜索-->
@@ -296,8 +297,8 @@ export default {
       this.queryParams.defectType= defectType;
       this.handleQuery();
     },
-    /** 打开编辑界面的处理 */
-    editDefectHandle(defect) {
+    /** 打开缺陷浏览的处理 */
+    handleDefectClick(defect) {
       this.$refs.editDefectForm.open(defect.defectId);
     },
     /** 获取项目id */
@@ -482,20 +483,5 @@ export default {
 }
 .defect-tools-button:hover {
   color: #409EFF;
-}
-.table-defect-title {
-  display: inline-flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
-  .el-link {
-    flex: 1;
-    padding-left: 5px;
-  }
-}
-.el-table {
-  ::v-deep table {
-    width: 100% !important;
-  }
 }
 </style>

@@ -16,7 +16,7 @@
           <p :class="data.isSelected ? 'is-selected' : ''">
             {{ data.day.split('-').slice(1).join('-') }} {{ data.isSelected ? '✔️' : ''}}
           </p>
-          <defect-flag v-for="d in defectList" :defect="d" />
+          <defect-flag v-for="d in defectList" :defect="d" @click.native="handleDefectClick($event,d)" />
         </div>
       </template>
     </el-calendar>
@@ -37,9 +37,11 @@ export default {
     }
   },
   methods: {
+    /** 初始化 */
     init() {
 
     },
+    /** 查找缺陷列表 */
     search(query) {
       listDefect(query).then(response => {
         this.loading = false;
@@ -48,8 +50,13 @@ export default {
 
         });
       });
+    },
+    /** 处理点击了表格中的某一行 */
+    handleDefectClick(event, defect) {
+      this.$emit('defect-click',defect);
+      event.stopPropagation();
     }
-  }
+  },
 }
 </script>
 
