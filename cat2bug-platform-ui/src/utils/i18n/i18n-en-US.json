@@ -636,5 +636,12 @@
   "notice.sound.emperor": "Emperor has new news",
   "notice.sound.immortal": "Taoist has new news",
   "notice.sound.teacher": "Teacher has new news",
-  "notice.send-success": "Send Success"
+  "notice.send-success": "Send Success",
+  "week0": "Sunday",
+  "week1": "Monday",
+  "week2": "Tuesday",
+  "week3": "Wednesday",
+  "week4": "Thursday",
+  "week5": "Friday",
+  "week6": "Saturday"
 }

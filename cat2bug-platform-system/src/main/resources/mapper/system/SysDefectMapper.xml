@@ -183,6 +183,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                  OR d.update_by_id=#{defect.params.userId}
              )
             </if>
+            <if test="defect.params.calendarStartDate != null and defect.params.calendarStartDate != '' and defect.params.calendarEndDate != null and defect.params.calendarEndDate != ''">
+             and (
+                (d.plan_start_time between #{defect.params.calendarStartDate} and #{defect.params.calendarEndDate})
+                or (d.plan_end_time between #{defect.params.calendarStartDate} and #{defect.params.calendarEndDate})
+                or (d.update_time between #{defect.params.calendarStartDate} and #{defect.params.calendarEndDate})
+                )
+            </if>
             <if test="defect.params.beginHandleTime != null and defect.params.beginHandleTime != '' and defect.params.endHandleTime != null and defect.params.endHandleTime != ''"> and d.handle_time between #{defect.params.beginHandleTime} and #{defect.params.endHandleTime}</if>
             <if test="defect.defectLevel != null  and defect.defectLevel != ''"> and d.defect_level = #{defect.defectLevel}</if>
         </where>

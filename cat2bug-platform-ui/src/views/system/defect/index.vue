@@ -26,6 +26,7 @@
       ref="defectContentComponent"
       :is="defectContentComponent"
       @defect-click="handleDefectClick"
+      @refresh="handleRefreshQuery"
       >
       <template slot="left-tools">
         <!-- 搜索-->
@@ -108,7 +109,7 @@
     <!-- 添加或修改缺陷对话框 -->
     <add-defect ref="addDefectForm" :project-id="getProjectId()" @added="search(queryParams)" />
     <!-- 浏览缺陷对话框 -->
-    <handle-defect ref="editDefectForm" :project-id="getProjectId()" @change="defectContent.search(queryParams)" @delete="defectContent.search(queryParams)" />
+    <handle-defect ref="editDefectForm" :project-id="getProjectId()" @change="handleRefreshQuery" @delete="handleRefreshQuery" />
     <!-- 添加页签对话框 -->
     <defect-tab-dialog ref="defectTabDialog" :project-id="getProjectId()" :member-id="userId" @add="tabAddHandle" />
   </div>
@@ -308,6 +309,10 @@ export default {
     /** 搜索按钮操作 */
     handleQuery() {
       this.queryParams.pageNum = 1;
+      this.handleRefreshQuery();
+    },
+    /** 搜索操作 */
+    handleRefreshQuery() {
       this.queryParams.projectId = this.getProjectId();
       this.$refs.defectContentComponent.search(this.queryParams);
     },

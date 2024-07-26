@@ -636,5 +636,12 @@
   "notice.sound.emperor": "皇上有新消息",
   "notice.sound.immortal": "上仙消息来了",
   "notice.sound.teacher": "师傅有新消息",
-  "notice.send-success": "发送成功"
+  "notice.send-success": "发送成功",
+  "week0": "星期日",
+  "week1": "星期一",
+  "week2": "星期二",
+  "week3": "星期三",
+  "week4": "星期四",
+  "week5": "星期五",
+  "week6": "星期六"
 }

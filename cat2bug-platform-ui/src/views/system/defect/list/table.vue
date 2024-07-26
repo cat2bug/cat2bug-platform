@@ -107,7 +107,7 @@
       </el-table-column>
       <el-table-column :label="$t('operate')" align="left" class-name="small-padding fixed-width" width="200">
         <template slot-scope="scope">
-          <defect-tools :is-text="true" :defect="scope.row" size="mini" :is-show-icon="true" @delete="getList(queryParams.params)" @update="getList(queryParams.params)" @log="getList(queryParams.params)"></defect-tools>
+          <defect-tools :is-text="true" :defect="scope.row" size="mini" :is-show-icon="true" @delete="refreshSearch" @update="refreshSearch" @log="refreshSearch"></defect-tools>
         </template>
       </el-table-column>
     </el-table>
@@ -291,11 +291,16 @@ export default {
     /** 查询缺陷列表 */
     search(params) {
       this.loading = true;
+      this.queryParams = params;
       listDefect(params).then(response => {
         this.loading = false;
         this.defectList = response.rows;
         this.total = response.total;
       });
+    },
+    /** 刷新查询 */
+    refreshSearch() {
+      this.$emit('refresh');
     },
     /** 显示图片操作 */
     clickImageHandle(event){
