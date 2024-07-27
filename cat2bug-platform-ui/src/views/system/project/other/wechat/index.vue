@@ -3,7 +3,7 @@
     <el-page-header @back="goBack" :content="$t('enterprise-wechat')">
     </el-page-header>
     <el-row class="project-add-page-container">
-      <el-form ref="form" :model="form" :rules="rules" label-width="120px">
+      <el-form ref="form" :model="form" :rules="rules" label-width="150px">
         <!--        基础信息-->
         <el-row :gutter="100" class="step1">
           <el-col :xs="24" :sm="24" :md="16" :lg="16" :xl="12">

@@ -656,6 +656,6 @@
   "enterprise-wechat.id-cannot-empty": "企业ID不能为空",
   "enterprise-wechat.app-id-cannot-empty": "应用ID不能为空",
   "enterprise-wechat.app-secret-cannot-empty": "应用凭证不能为空",
-  "enterprise-wechat.account": "账号",
+  "enterprise-wechat.account": "成员账号",
   "enterprise-wechat.account-cannot-empty": "企业微信账号不能为空"
 }

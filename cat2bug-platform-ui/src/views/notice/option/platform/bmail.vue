@@ -1,5 +1,5 @@
 <template>
-  <el-form ref="form" :rules="rules" :model="form" label-width="120px">
+  <el-form ref="form" :rules="rules" :model="form" label-width="150px">
     <el-form-item :label="$t('email')">
       <el-switch v-model="form.switch" @change="handleSwitchChange"></el-switch>
     </el-form-item>

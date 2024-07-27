@@ -1,9 +1,17 @@
 <template>
-  <el-form ref="form" :model="form" :rules="rules" label-width="120px">
+  <el-form ref="form" :model="form" :rules="rules" label-width="150px">
     <el-form-item :label="$t('enterprise-wechat')" prop="switch">
       <el-switch v-model="form.switch" @change="handleSwitchChange"></el-switch>
     </el-form-item>
     <el-form-item :label="$t('enterprise-wechat.account')" prop="userId">
+      <template slot="label">
+        <div class="form-label">
+          <el-tooltip class="item" effect="dark" content="访问https://work.weixin.qq.com中的通讯录，进入【成员详情】查看账号" placement="bottom">
+            <i class="el-icon-question"></i>
+          </el-tooltip>
+          <label>{{$t('enterprise-wechat.account')}}</label>
+        </div>
+      </template>
       <el-input v-model="form.userId" @input="handleChange" maxlength="128"></el-input>
     </el-form-item>
   </el-form>
@@ -11,9 +19,11 @@
 
 <script>
 import {validEmail, validURL} from "@/utils/validate";
+import Label from "@/components/Cat2BugStatistic/Components/Label";
 
 export default {
   name: "DingDingNoticePlatform",
+  components: {Label},
   model: {
     prop: 'wechat',
     event: 'change'
@@ -89,5 +99,12 @@ export default {
 </script>
 
 <style scoped>
-
+.form-label {
+  float: right;
+  display: inline-flex;
+  flex-direction: row;
+  gap: 5px;
+  justify-content: center;
+  align-items: center;
+}
 </style>
