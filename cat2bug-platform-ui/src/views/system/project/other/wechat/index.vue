@@ -5,7 +5,7 @@
     <el-row class="project-add-page-container">
       <el-form ref="form" :model="form" :rules="rules" label-width="150px">
         <!--        基础信息-->
-        <el-row :gutter="100" class="step1">
+        <el-row :gutter="100">
           <el-col :xs="24" :sm="24" :md="16" :lg="16" :xl="12">
             <el-form-item :label="$t('enterprise-wechat.id')" prop="corpId">
               <el-input v-model="form.corpId" maxlength="64" :placeholder="$t('enterprise-wechat.enter-id')"></el-input>
@@ -20,6 +20,17 @@
             <el-form-item :label="$t('enterprise-wechat.app-secret')" prop="corpSecret">
               <el-input v-model="form.corpSecret" maxlength="64" :placeholder="$t('enterprise-wechat.enter-app-secret')"></el-input>
             </el-form-item>
+          </el-col>
+
+          <el-col :xs="24" :sm="24" :md="16" :lg="16" :xl="12">
+            <el-form-item>
+              <el-alert
+                :title="$t('enterprise-wechat.project-config-remind')"
+                type="warning">
+              </el-alert>
+
+            </el-form-item>
+
           </el-col>
           <!--            保存取消按钮-->
           <el-col :xs="24" :sm="24" :md="16" :lg="16" :xl="12">
@@ -110,12 +121,6 @@ export default {
     goBack() {
       this.$router.back();
     },
-    /** 点击选中的项目图标处理方法 */
-    clickProjectIconHandle(index) {
-      this.activeProjectIconIndex = index;                      // 赋值当前所选索引
-      this.form.projectIcon = this.activeProjectIconUrl(index); // 赋值项目图标
-      this.projectIconPopperVisible = false;                    // 隐藏图标选择组件
-    },
     /** 提交按钮 */
     onSubmit() {
       this.$refs["form"].validate(valid => {
@@ -135,6 +140,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.el-alert {
+  padding: 0px 16px;
+}
 .project-add-page-container {
   .step2 {
     display: flex;

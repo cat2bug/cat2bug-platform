@@ -657,5 +657,6 @@
   "enterprise-wechat.app-id-cannot-empty": "Application ID cannot be empty",
   "enterprise-wechat.app-secret-cannot-empty": "Application secret cannot be empty",
   "enterprise-wechat.account": "Account",
-  "enterprise-wechat.account-cannot-empty": "Account cannot be empty"
+  "enterprise-wechat.account-cannot-empty": "Account cannot be empty",
+  "enterprise-wechat.project-config-remind": "Please visit https://work.weixin.qq.com Log in to the enterprise WeChat account, obtain the enterprise ID, and create an application to obtain the application ID and application key."
 }
