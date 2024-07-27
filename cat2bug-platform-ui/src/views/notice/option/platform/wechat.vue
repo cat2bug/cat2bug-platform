@@ -1,43 +1,35 @@
 <template>
-  <el-form ref="form" :rules="rules" :model="form" label-width="120px">
-    <el-form-item :label="$t('email')">
+  <el-form ref="form" :model="form" :rules="rules" label-width="120px">
+    <el-form-item :label="$t('enterprise-wechat')" prop="switch">
       <el-switch v-model="form.switch" @change="handleSwitchChange"></el-switch>
     </el-form-item>
-    <el-form-item :label="$t('sender-email')" prop="sender">
-      <el-input v-model="form.sender" @input="handleChange" maxlength="256"></el-input>
+    <el-form-item :label="$t('enterprise-wechat.account')" prop="userId">
+      <el-input v-model="form.userId" @input="handleChange" maxlength="128"></el-input>
     </el-form-item>
   </el-form>
 </template>
 
 <script>
-import {validEmail} from "@/utils/validate";
+import {validEmail, validURL} from "@/utils/validate";
 
 export default {
-  name: "EMailNoticePlatform",
+  name: "DingDingNoticePlatform",
   model: {
-    prop: 'mail',
+    prop: 'wechat',
     event: 'change'
   },
   data() {
-    let validateEMail = (rule, value, callback) => {
-      if(validEmail(value)){
-        callback();
-      } else {
-        callback(new Error(this.$i18n.t('email.format-error').toString()));
-      }
-    };
     return {
-      form: this.mail,
+      form: this.wechat,
       defaultRules: {
-        sender: [
-          { required: true, message: this.$i18n.t('email.please-enter-sender'), trigger: 'change' },
-          { validator: validateEMail, trigger: 'change' }
+        userId: [
+          { required: true, message: this.$i18n.t('enterprise-wechat.account-cannot-empty'), trigger: 'change' },
         ],
       }
     }
   },
   props: {
-    mail: {
+    wechat: {
       type: Object,
       default: ()=>{
         return {}
@@ -45,7 +37,7 @@ export default {
     }
   },
   watch: {
-    mail: function (n,o) {
+    wechat: function (n,o) {
       if(n && n!=o) {
         this.form = n;
       }
@@ -61,7 +53,7 @@ export default {
     handleChange() {
       this.$emit('change', this.form);
     },
-    /** 处理邮件开关改变的操作 */
+    /** 处理钉钉开关改变的操作 */
     handleSwitchChange() {
       this.$refs['form'].clearValidate();
       this.handleChange();

@@ -1,13 +1,13 @@
 <template>
   <el-form ref="form" :model="form" :rules="rules" label-width="120px">
-    <el-form-item :label="$t('ding.robot')" prop="robot">
+    <el-form-item :label="$t('ding.robot')" prop="switch">
       <el-switch v-model="form.switch" @change="handleSwitchChange"></el-switch>
     </el-form-item>
     <el-form-item :label="$t('ding.keyword')" prop="key">
-      <el-input v-model="form.key" @input="handleChange"></el-input>
+      <el-input v-model="form.key" @input="handleChange" maxlength="128"></el-input>
     </el-form-item>
     <el-form-item :label="$t('ding.hook')" prop="hook">
-      <el-input v-model="form.hook" @input="handleChange"></el-input>
+      <el-input v-model="form.hook" @input="handleChange" maxlength="255"></el-input>
     </el-form-item>
   </el-form>
 </template>

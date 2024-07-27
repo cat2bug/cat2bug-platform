@@ -16,6 +16,6 @@ public class IMPlatformConfig {
 
     @JsonProperty("bmail")
     private IMMailPlatformConfig mail;
-
     private IMDingPlatformConfig ding;
+    private EnterpriseWeChatPlatformConfig wechat;
 }

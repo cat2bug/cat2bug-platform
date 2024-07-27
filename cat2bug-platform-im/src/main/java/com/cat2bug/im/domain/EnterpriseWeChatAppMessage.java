@@ -1,5 +1,6 @@
 package com.cat2bug.im.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 /**
@@ -10,6 +11,10 @@ import lombok.Data;
  */
 @Data
 public class EnterpriseWeChatAppMessage extends IMMessage<String> {
+    /**
+     * 项目ID
+     */
+    private Long projectId;
     /**
      * 成员ID列表（消息接收者，多个接收者用‘|’分隔，最多支持1000个）。特殊情况：指定为@all，则向关注该企业应用的全部成员发送
      */
@@ -26,10 +31,16 @@ public class EnterpriseWeChatAppMessage extends IMMessage<String> {
      * 消息类型
      */
     private String msgtype;
+    /** 企业ID */
+    @JsonIgnore
+    private String corpId;
     /**
      * 企业应用的id，整型。企业内部开发，可在应用的设置页面查看；第三方服务商，可通过接口 获取企业授权信息 获取该参数值
      */
     private Integer agentid;
+    /** 应用的凭证密钥 */
+    @JsonIgnore
+    private String corpSecret;
     /**
      * 表示是否是保密消息，0表示可对外分享，1表示不能分享且内容显示水印，默认为0
      */

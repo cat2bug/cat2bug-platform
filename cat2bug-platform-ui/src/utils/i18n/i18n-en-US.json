@@ -270,6 +270,8 @@
   "project.ai-manager": "AI Management",
   "project.ai-manager-describe": "Configuration management related to the use of large model functionality in the project",
   "project.ai-model-manager": "AI Big Model",
+  "project.other-system": "Other System Management",
+  "project.other-system-describe": "Management of configuration parameters related to other systems",
   "http.invalid-session": "Invalid session, or the session has expired. Please log in again.",
   "http.downloading-wait": "Downloading data, please wait",
   "http.download-fail": "There was an error downloading the file. Please contact the administrator!",
@@ -643,5 +645,17 @@
   "week3": "Wednesday",
   "week4": "Thursday",
   "week5": "Friday",
-  "week6": "Saturday"
+  "week6": "Saturday",
+  "enterprise-wechat": "Enterprise WeChat",
+  "enterprise-wechat.id": "Enterprise ID",
+  "enterprise-wechat.app-id": "Application ID",
+  "enterprise-wechat.app-secret": "Application Secret",
+  "enterprise-wechat.enter-id": "Please enter the enterprise ID",
+  "enterprise-wechat.enter-app-id": "Please enter the application ID",
+  "enterprise-wechat.enter-app-secret": "Please enter the application secret",
+  "enterprise-wechat.id-cannot-empty": "Enterprise ID cannot be empty",
+  "enterprise-wechat.app-id-cannot-empty": "Application ID cannot be empty",
+  "enterprise-wechat.app-secret-cannot-empty": "Application secret cannot be empty",
+  "enterprise-wechat.account": "Account",
+  "enterprise-wechat.account-cannot-empty": "Account cannot be empty"
 }

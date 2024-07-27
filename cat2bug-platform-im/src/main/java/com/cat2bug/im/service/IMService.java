@@ -68,6 +68,11 @@ public class IMService {
                 if(opt.isPresent())
                     this.sendMessage(sn, opt.get(),userConfig.getConfig(),userConfig.getConfig().getPlatforms().getDing(), projectId,group,senderId,recipientId,title,content,src,messageTemplate);
             }
+            if(userConfig.getConfig().getPlatforms().getWechat().isConfigSwitch()){
+                Optional<IIMService> opt = this.iimServiceList.stream().filter(s->s.getMessageFactoryName().equals(EnterpriseWeChatMessageServiceImpl.MESSAGE_FACTORY_NAME)).findFirst();
+                if(opt.isPresent())
+                    this.sendMessage(sn, opt.get(),userConfig.getConfig(),userConfig.getConfig().getPlatforms().getWechat(), projectId,group,senderId,recipientId,title,content,src,messageTemplate);
+            }
         });
     }
 

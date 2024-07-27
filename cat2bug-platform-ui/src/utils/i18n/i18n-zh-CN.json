@@ -270,6 +270,8 @@
   "project.ai-manager": "AI管理",
   "project.ai-manager-describe": "项目中运用大模型功能的相关配置管理",
   "project.ai-model-manager": "AI大模型",
+  "project.other-system": "第三方应用",
+  "project.other-system-describe": "第三方应用的相关配置参数管理",
   "http.invalid-session": "无效的会话，或者会话已过期，请重新登录。",
   "http.downloading-wait": "正在下载数据，请稍候",
   "http.download-fail": "下载文件出现错误，请联系管理员！",
@@ -643,5 +645,17 @@
   "week3": "星期三",
   "week4": "星期四",
   "week5": "星期五",
-  "week6": "星期六"
+  "week6": "星期六",
+  "enterprise-wechat": "企业微信",
+  "enterprise-wechat.id": "企业ID",
+  "enterprise-wechat.app-id": "应用ID",
+  "enterprise-wechat.app-secret": "应用凭证",
+  "enterprise-wechat.enter-id": "请输入企业ID",
+  "enterprise-wechat.enter-app-id": "请输入应用ID",
+  "enterprise-wechat.enter-app-secret": "请输入应用凭证",
+  "enterprise-wechat.id-cannot-empty": "企业ID不能为空",
+  "enterprise-wechat.app-id-cannot-empty": "应用ID不能为空",
+  "enterprise-wechat.app-secret-cannot-empty": "应用凭证不能为空",
+  "enterprise-wechat.account": "账号",
+  "enterprise-wechat.account-cannot-empty": "企业微信账号不能为空"
 }

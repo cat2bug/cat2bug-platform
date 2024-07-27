@@ -57,7 +57,7 @@
               </div>
             </div>
           </div>
-          <el-tooltip effect="dark" :content="d.defectName" placement="right-end" v-for="d in pageDefectList(day)">
+          <el-tooltip effect="dark" :content="d.defectName" placement="right-end" v-for="(d,dayIndex) in pageDefectList(day)" :key="dayIndex">
             <defect-flag class="defect-flag" :defect="d" @click.native="handleDefectClick($event,d)" />
           </el-tooltip>
           <div class="right">
@@ -269,7 +269,7 @@ export default {
   .calendar-day {
     display: inline-flex;
     flex-direction: column;
-    align-items: start;
+    align-items: flex-start;
     gap: 5px;
     border-top: 1px solid #DCDFE6;
     border-left: 1px solid #DCDFE6;
@@ -314,13 +314,13 @@ export default {
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3); /* 鼠标滑过时显示阴影 */
 }
 .defect-tools {
-  display: flex;
+  display: inline-flex;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 10px;
   > * {
-    display: inline-block;
+    display: inline-flex;
     justify-content: flex-start;
     margin-bottom: 0px;
     ::v-deep .el-form-item {
@@ -329,7 +329,7 @@ export default {
   }
 }
 .row {
-  display: flex;
+  display: inline-flex;
   flex-direction: row;
   align-items: center;
   gap: 3px;

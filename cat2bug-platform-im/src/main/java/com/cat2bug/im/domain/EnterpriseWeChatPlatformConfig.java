@@ -13,8 +13,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class EnterpriseWeChatPlatformConfig extends IMBasePlatformConfig {
-    /** 企业ID */
-    private String corpId;
-    /** 应用的凭证密钥 */
-    private String corpSecret;
+    /** 企业微信的用户ID */
+    private String userId;
 }

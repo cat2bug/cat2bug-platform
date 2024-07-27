@@ -67,6 +67,8 @@ public class IMUserConfigServiceImpl implements IIMUserConfigService
         IMDingPlatformConfig imDingPlatformConfig = new IMDingPlatformConfig(false,null,null);
         imPlatformConfig.setDing(imDingPlatformConfig);
 
+        EnterpriseWeChatPlatformConfig enterpriseWeChatPlatformConfig = new EnterpriseWeChatPlatformConfig();
+        imPlatformConfig.setWechat(enterpriseWeChatPlatformConfig);
         return config;
     }
 

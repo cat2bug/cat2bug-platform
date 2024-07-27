@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.im.mapper.IMProjectConfigMapper">
+    
+    <resultMap type="IMProjectConfig" id="ImProjectConfigResult">
+        <result property="configId"    column="config_id"    />
+        <result property="projectId"    column="project_id"    />
+        <result property="systemCode"    column="system_code"    />
+        <result property="configParams"    column="config_params"  typeHandler="com.cat2bug.im.domain.handle.IMJSONStringConfigTypeHandler"   />
+    </resultMap>
+
+    <sql id="selectImProjectConfigVo">
+        select config_id, project_id, system_code, config_params from im_project_config
+    </sql>
+
+    <select id="selectImProjectConfigList" parameterType="ImProjectConfig" resultMap="ImProjectConfigResult">
+        <include refid="selectImProjectConfigVo"/>
+        <where>  
+            <if test="projectId != null "> and project_id = #{projectId}</if>
+        </where>
+    </select>
+    
+    <select id="selectImProjectConfigByConfigId" parameterType="Long" resultMap="ImProjectConfigResult">
+        <include refid="selectImProjectConfigVo"/>
+        where config_id = #{configId}
+    </select>
+
+    <select id="selectImProjectConfigByProjectIdAndSystemCode" resultMap="ImProjectConfigResult">
+        <include refid="selectImProjectConfigVo"/>
+        where project_id = #{projectId} and system_code = #{systemCode}
+    </select>
+
+    <insert id="insertImProjectConfig" parameterType="ImProjectConfig" useGeneratedKeys="true" keyProperty="configId">
+        insert into im_project_config
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="projectId != null">project_id,</if>
+            <if test="systemCode != null">system_code,</if>
+            <if test="configParams != null">config_params,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="projectId != null">#{projectId},</if>
+            <if test="systemCode != null">#{systemCode},</if>
+            <if test="configParams != null">#{configParams},</if>
+         </trim>
+    </insert>
+
+    <update id="updateImProjectConfig" parameterType="ImProjectConfig">
+        update im_project_config
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="projectId != null">project_id = #{projectId},</if>
+            <if test="systemCode != null">system_code = #{systemCode},</if>
+            <if test="configParams != null">config_params = #{configParams},</if>
+        </trim>
+        where config_id = #{configId}
+    </update>
+
+    <delete id="deleteImProjectConfigByConfigId" parameterType="Long">
+        delete from im_project_config where config_id = #{configId}
+    </delete>
+
+    <delete id="deleteImProjectConfigByConfigIds" parameterType="String">
+        delete from im_project_config where config_id in 
+        <foreach item="configId" collection="array" open="(" separator="," close=")">
+            #{configId}
+        </foreach>
+    </delete>
+</mapper>

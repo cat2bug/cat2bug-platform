@@ -17,12 +17,4 @@ public class EnterpriseWeChatResult {
      * 返回码提示语
      */
     private String errmsg;
-    /**
-     * 获取到的凭证，最长为512字节
-     */
-    private String access_token;
-    /**
-     * 凭证的有效时间（秒）
-     */
-    private int expires_in;
 }
