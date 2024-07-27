@@ -3,8 +3,8 @@
     <el-form-item :label="$t('email')">
       <el-switch v-model="form.switch" @change="handleSwitchChange"></el-switch>
     </el-form-item>
-    <el-form-item :label="$t('sender-email')" prop="sender">
-      <el-input v-model="form.sender" @input="handleChange" maxlength="256"></el-input>
+    <el-form-item :label="$t('receiver-email')" prop="receiver">
+      <el-input v-model="form.receiver" @input="handleChange" maxlength="256"></el-input>
     </el-form-item>
   </el-form>
 </template>
@@ -29,8 +29,8 @@ export default {
     return {
       form: this.mail,
       defaultRules: {
-        sender: [
-          { required: true, message: this.$i18n.t('email.please-enter-sender'), trigger: 'change' },
+        receiver: [
+          { required: true, message: this.$i18n.t('email.receiver-not-empty'), trigger: 'change' },
           { validator: validateEMail, trigger: 'change' }
         ],
       }

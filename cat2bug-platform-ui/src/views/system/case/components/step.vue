@@ -31,6 +31,7 @@ export default {
   p {
     width: 15px;
     height: 15px;
+    text-align: center;
     line-height: 15px;
     font-size: 12px;
     margin: 0px 10px;

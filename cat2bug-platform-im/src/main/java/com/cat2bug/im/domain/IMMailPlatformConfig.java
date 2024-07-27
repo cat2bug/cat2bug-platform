@@ -16,12 +16,12 @@ import lombok.NoArgsConstructor;
 public class IMMailPlatformConfig extends IMBasePlatformConfig {
 
     /**
-     * 发送人的邮箱
+     * 接收人的邮箱
      */
-    private String sender;
+    private String receiver;
 
-    public IMMailPlatformConfig(boolean configSwitch, String sender) {
+    public IMMailPlatformConfig(boolean configSwitch, String receiver) {
         super(configSwitch);
-        this.sender = sender;
+        this.receiver = receiver;
     }
 }

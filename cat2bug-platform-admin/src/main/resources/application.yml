@@ -100,20 +100,32 @@ spring:
       max-request-size: 100TB
   mail:
     # smtp服务器地址
-    host: smtp.office365.com
+    host: mail.cat2bug.com
     # smtp服务器端口
     port: 587
     # 默认邮件账号
-    username: cat2bug@outlook.com
+    username: dev@cat2bug.com
     # 默认邮件密码
-    password: 123456_password
+    password: cat2bug_password
     # 默认发送邮件地址
     from: dev@cat2bug.com
     # 默认邮件编码
     default-encoding: UTF-8
+    protocol: smtp
     properties:
       mail.smtp.socketFactory.fallback: true
       mail.smtp.starttls.enable: true
+#      mail:
+#        smtp:
+#          port: 587
+#          auth: true
+#          socketFactory:
+#            fallback: true
+#          starttls:
+#            enable: true
+#            required: true
+#          ssl:
+#            enable: true
   # 服务模块
   devtools:
     restart:
