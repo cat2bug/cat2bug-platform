@@ -5,7 +5,7 @@
     @show="popoverShowHandle"
     @hide="popoverHideHandle"
     trigger="hover">
-    <div slot="reference" :class="'between-row click select-project-member-input-'+size">
+    <div slot="reference" :class="'between-row-1 click select-project-member-input-'+size">
       <i class="yellow el-icon-star-on start-switch" :collect="currentProject.collect?'true':'false'"></i>
 <!--      <el-image :src="currentProject.projectIcon" />-->
       <p class="prefix-project-name">{{currentProject.projectName}}</p>
@@ -20,7 +20,7 @@
         <p class="prefix-project-name">{{item.projectName}}</p>
       </div>
     </div>
-    <el-divider></el-divider>
+    <el-divider v-if="total>queryParams.pageSize"></el-divider>
     <el-pagination
       style="float: right;"
       small
@@ -120,7 +120,7 @@ export default {
   background-color: #EBEEF5;
   margin: 10px 0px;
 }
-.between-row {
+.between-row-1 {
   display: inline-flex;
   flex-direction: row;
   justify-content: space-between;
