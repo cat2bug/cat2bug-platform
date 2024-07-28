@@ -90,6 +90,10 @@ public class SysUser extends BaseEntity
     private Long roleId;
 
     private boolean online;
+    /** 钉钉用户ID */
+    private String dingUserId;
+    /** 企业微信用户ID */
+    private String wechatUserId;
 
     public SysUser()
     {
@@ -305,6 +309,22 @@ public class SysUser extends BaseEntity
 
     public void setOnline(boolean online) {
         this.online = online;
+    }
+
+    public String getDingUserId() {
+        return dingUserId;
+    }
+
+    public void setDingUserId(String dingUserId) {
+        this.dingUserId = dingUserId;
+    }
+
+    public String getWechatUserId() {
+        return wechatUserId;
+    }
+
+    public void setWechatUserId(String wechatUserId) {
+        this.wechatUserId = wechatUserId;
     }
 
     @Override

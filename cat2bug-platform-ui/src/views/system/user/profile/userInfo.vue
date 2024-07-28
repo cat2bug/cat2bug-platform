@@ -1,5 +1,5 @@
 <template>
-  <el-form ref="form" :model="user" :rules="rules" label-width="80px">
+  <el-form ref="form" :model="user" :rules="rules" label-width="220px">
     <el-form-item :label="$t('name')" prop="nickName">
       <el-input v-model="user.nickName" maxlength="30" />
     </el-form-item>
@@ -8,6 +8,12 @@
     </el-form-item>
     <el-form-item :label="$t('email')" prop="email">
       <el-input v-model="user.email" maxlength="50" />
+    </el-form-item>
+    <el-form-item :label="$t('ding')+' User ID'" prop="email">
+      <el-input v-model="user.dingUserId" maxlength="32" />
+    </el-form-item>
+    <el-form-item :label="$t('enterprise-wechat')+' User ID'" prop="email">
+      <el-input v-model="user.wechatUserId" maxlength="32" />
     </el-form-item>
     <el-form-item>
       <el-button type="primary" size="mini" @click="submit">{{ $t('save') }}</el-button>

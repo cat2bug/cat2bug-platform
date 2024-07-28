@@ -31,5 +31,6 @@ public class IMDingPlatformConfig extends IMBasePlatformConfig {
         super(configSwitch);
         this.key = key;
         this.hook = hook;
+        this.userId = userId;
     }
 }
