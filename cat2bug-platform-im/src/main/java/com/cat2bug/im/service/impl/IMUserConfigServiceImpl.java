@@ -64,7 +64,7 @@ public class IMUserConfigServiceImpl implements IIMUserConfigService
         IMMailPlatformConfig imMailPlatformConfig = new IMMailPlatformConfig(false, SecurityUtils.getLoginUser().getUser().getEmail());
         imPlatformConfig.setMail(imMailPlatformConfig);
         // 设置钉钉配置
-        IMDingPlatformConfig imDingPlatformConfig = new IMDingPlatformConfig(false,null,null);
+        IMDingPlatformConfig imDingPlatformConfig = new IMDingPlatformConfig(false,null,null,null);
         imPlatformConfig.setDing(imDingPlatformConfig);
 
         EnterpriseWeChatPlatformConfig enterpriseWeChatPlatformConfig = new EnterpriseWeChatPlatformConfig();

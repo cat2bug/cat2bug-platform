@@ -18,7 +18,7 @@
           </el-col>
           <el-col :xs="24" :sm="24" :md="16" :lg="16" :xl="12">
             <el-form-item :label="$t('enterprise-wechat.app-secret')" prop="corpSecret">
-              <el-input v-model="form.corpSecret" maxlength="64" :placeholder="$t('enterprise-wechat.enter-app-secret')"></el-input>
+              <el-input v-model="form.corpSecret" maxlength="64" :show-password="true" :placeholder="$t('enterprise-wechat.enter-app-secret')"></el-input>
             </el-form-item>
           </el-col>
 
@@ -35,7 +35,7 @@
           <!--            保存取消按钮-->
           <el-col :xs="24" :sm="24" :md="16" :lg="16" :xl="12">
             <el-form-item>
-              <el-button type="primary" @click="onSubmit">{{$t('update')}}</el-button>
+              <el-button type="primary" @click="onSubmit">{{$t('save')}}</el-button>
               <el-button @click="goBack">{{$t('cancel')}}</el-button>
             </el-form-item>
           </el-col>
@@ -73,14 +73,6 @@ export default {
         corpSecret: [
           { required: true, message: this.$i18n.t('enterprise-wechat.app-secret-cannot-empty'), trigger: 'change'}
         ]
-      }
-    }
-  },
-  computed: {
-    /** 计算当前项目图标地址 */
-    activeProjectIconUrl: function () {
-      return function (index){
-        return require('@/assets/images/project/project_icon'+index+'.svg')
       }
     }
   },
@@ -129,7 +121,7 @@ export default {
           query.projectId = this.getProjectId();
           query.configParams = JSON.stringify(this.form);
           saveWeChatConfig(query).then(response => {
-            this.$modal.msgSuccess(this.$i18n.t('update.success'));
+            this.$modal.msgSuccess(this.$i18n.t('save.success'));
             this.goBack();
           });
         }

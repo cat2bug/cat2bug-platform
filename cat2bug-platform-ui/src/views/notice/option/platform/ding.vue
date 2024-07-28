@@ -9,6 +9,9 @@
     <el-form-item :label="$t('ding.hook')" prop="hook">
       <el-input v-model="form.hook" @input="handleChange" maxlength="255"></el-input>
     </el-form-item>
+    <el-form-item :label="$t('ding.user-id')" prop="userId">
+      <el-input v-model="form.userId" @input="handleChange" maxlength="64"></el-input>
+    </el-form-item>
   </el-form>
 </template>
 
@@ -32,10 +35,10 @@ export default {
     return {
       form: this.ding,
       defaultRules: {
-        hook: [
-          { required: true, message: this.$i18n.t('ding.please-enter-hook'), trigger: 'blur' },
-          { validator: validateUrl, trigger: 'change' }
-        ],
+        // hook: [
+        //   { required: true, message: this.$i18n.t('ding.please-enter-hook'), trigger: 'blur' },
+        //   { validator: validateUrl, trigger: 'change' }
+        // ],
       }
     }
   },

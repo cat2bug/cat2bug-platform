@@ -22,8 +22,12 @@ public class IMDingPlatformConfig extends IMBasePlatformConfig {
      * 钩子函数
      */
     private String hook;
+    /**
+     * 用户ID
+     */
+    private String userId;
 
-    public IMDingPlatformConfig(boolean configSwitch, String key, String hook) {
+    public IMDingPlatformConfig(boolean configSwitch, String key, String hook, String userId) {
         super(configSwitch);
         this.key = key;
         this.hook = hook;

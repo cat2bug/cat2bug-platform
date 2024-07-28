@@ -43,4 +43,8 @@ public class IMMessage<T> {
      * 分组名称
      */
     private String group;
+    /**
+     * 项目ID
+     */
+    private Long projectId;
 }

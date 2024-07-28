@@ -15,11 +15,23 @@
 
     <dependencies>
         <!-- 钉钉-->
-        <dependency>
-            <groupId>com.aliyun</groupId>
-            <artifactId>alibaba-dingtalk-service-sdk</artifactId>
-            <version>2.0.0</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.aliyun</groupId>-->
+<!--            <artifactId>alibaba-dingtalk-service-sdk</artifactId>-->
+<!--            <version>2.0.0</version>-->
+<!--        </dependency>-->
+
+<!--        <dependency>-->
+<!--            <groupId>com.dingtalk.open</groupId>-->
+<!--            <artifactId>dingtalk-stream</artifactId>-->
+<!--            <version>1.1.0</version>-->
+<!--        </dependency>-->
+
+<!--        <dependency>-->
+<!--            <groupId>com.aliyun</groupId>-->
+<!--            <artifactId>dingtalk</artifactId>-->
+<!--            <version>2.0.76</version>-->
+<!--        </dependency>-->
         <!-- 邮件收发-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
