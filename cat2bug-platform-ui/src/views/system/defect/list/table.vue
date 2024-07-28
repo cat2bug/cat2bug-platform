@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="defect-tools">
+    <div class="defect-table-tools">
       <slot name="left-tools"></slot>
       <div class="table-tools row">
         <el-popover
@@ -315,18 +315,22 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.defect-tools {
+.defect-table-tools {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
+  align-items: flex-start;
   > * {
     display: inline-block;
     justify-content: flex-start;
     margin-bottom: 0px;
     ::v-deep .el-form-item {
       margin-bottom: 0px;
+    }
+  }
+  .table-tools {
+    > * {
+      margin-bottom: 10px;
     }
   }
 }

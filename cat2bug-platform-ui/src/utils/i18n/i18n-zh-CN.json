@@ -652,6 +652,8 @@
   "notice.sound.immortal": "上仙消息来了",
   "notice.sound.teacher": "师傅有新消息",
   "notice.send-success": "发送成功",
+  "year": "年",
+  "month": "月",
   "week0": "星期日",
   "week1": "星期一",
   "week2": "星期二",
@@ -671,5 +673,7 @@
   "enterprise-wechat.app-secret-cannot-empty": "应用凭证不能为空",
   "enterprise-wechat.account": "成员账号",
   "enterprise-wechat.account-cannot-empty": "企业微信账号不能为空",
-  "enterprise-wechat.project-config-remind": "请访问https://work.weixin.qq.com登陆企业微信账号，获取企业ID，并创建应用，获取应用ID和应用密钥。"
+  "enterprise-wechat.project-config-remind": "请访问https://work.weixin.qq.com登陆企业微信账号，获取企业ID，并创建应用，获取应用ID和应用密钥。",
+  "table": "表格",
+  "calendar": "日历"
 }

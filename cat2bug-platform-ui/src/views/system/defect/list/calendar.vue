@@ -16,15 +16,14 @@
         type="month"
         :editable="false"
         :clearable="false"
-        format="yyyy 年 MM 月"
-        @change="handleCurrentDateChange"
-        placeholder="选择月">
+        :format="dateFormat"
+        @change="handleCurrentDateChange">
       </el-date-picker>
       <el-button type="text" @click="handleNextMonthChange"><i class="el-icon-arrow-right"/> </el-button>
     </div>
     <div class="calendar">
       <div class="row">
-        <div v-for="week in 7" :key="'week'+week">{{$t('week'+(week-1))}}</div>
+        <div class="week" v-for="week in 7" :key="'week'+week">{{$t('week'+(week-1))}}</div>
       </div>
       <div v-for="(row,rowIndex) in defectList" :key="'row'+rowIndex">
         <div v-for="(day,dayIndex) in row" :key="dayIndex" :week="dayIndex" class="calendar-day">
@@ -95,6 +94,9 @@ export default {
     }
   },
   computed: {
+    dateFormat: function () {
+      return `yyyy ${this.$i18n.t('year').toString()} MM ${this.$i18n.t('month').toString()}`;
+    },
     pageDefectList: function () {
       return function (day) {
         return day.list.slice((day.pageNum-1)*day.pageSize,day.pageNum*day.pageSize);
@@ -295,6 +297,7 @@ export default {
       justify-content: center;
       align-items: flex-start;
       width: 100%;
+      font-size: 0.8rem;
       > div:first-child {
         font-weight: 500;
       }
@@ -318,13 +321,17 @@ export default {
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
   > * {
     display: inline-flex;
     justify-content: flex-start;
     margin-bottom: 0px;
     ::v-deep .el-form-item {
       margin-bottom: 0px;
+    }
+  }
+  .table-tools {
+    > * {
+      margin-bottom: 10px;
     }
   }
 }
@@ -335,6 +342,13 @@ export default {
   gap: 3px;
   > * {
     margin: 0px;
+  }
+  >.week {
+    margin-bottom: 5px;
+    background-color: #F2F6FC;
+    padding: 3px 8px;
+    border-radius: 5px;
+    color: #606266;
   }
 }
 .right {
@@ -366,11 +380,12 @@ export default {
   border: 1px solid #d3d4d6;
 }
 .defect-calendar-picker {
-  width: 180px;
+  max-width: 180px;
   margin-left: 20px;
   ::v-deep input {
     border-width: 0px;
     font-size: 1.2rem;
+    text-align: center;
   }
 }
 </style>

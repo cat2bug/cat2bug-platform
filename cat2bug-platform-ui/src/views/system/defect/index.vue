@@ -30,12 +30,12 @@
       >
       <template slot="left-tools">
         <!-- 搜索-->
-        <div class="defect-tools">
+        <div class="defect-tools-search">
           <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="0">
             <el-form-item>
               <el-radio-group v-model="defectContentComponent" @input="handleDefectContentChange">
-                <el-radio-button label="DefectTable">表格</el-radio-button>
-                <el-radio-button label="DefectCalendar">日历</el-radio-button>
+                <el-radio-button label="DefectTable">{{ $t('table') }}</el-radio-button>
+                <el-radio-button label="DefectCalendar">{{ $t('calendar') }}</el-radio-button>
               </el-radio-group>
             </el-form-item>
             <el-form-item prop="defectType">
@@ -466,18 +466,17 @@ export default {
     padding-bottom: 5px;
   }
 }
-.defect-tools {
-  display: flex;
+.defect-tools-search {
+  display: inline-flex;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
   > * {
     display: inline-block;
     justify-content: flex-start;
     margin-bottom: 0px;
     ::v-deep .el-form-item {
-      margin-bottom: 0px;
+      margin-bottom: 10px;
     }
   }
 }
