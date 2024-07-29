@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 /**
  * @Author: yuzhantao
  * @CreateTime: 2024-03-22 00:04
@@ -13,7 +15,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class MemberFocus {
+public class MemberFocus implements Serializable {
     private String moduleName;
     private Long dataId;
     private SysUser user;

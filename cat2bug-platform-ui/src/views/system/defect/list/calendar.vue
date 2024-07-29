@@ -126,8 +126,7 @@ export default {
           let list = [];
           response.rows.forEach(defect=>{
             // 如果缺陷计划或创建日期在当前范围内，且没有关闭，就显示在当天列表内
-            if((defect.planStartTime && this.parseDate(defect.planStartTime).getTime()<=day.getTime()) ||
-                (defect.planEndTime && this.parseDate(defect.planEndTime).getTime()>=day.getTime()) ||
+            if(
                 this.parseDate(defect.updateTime).getTime()==day.getTime()
             ) {
               list.push(defect);

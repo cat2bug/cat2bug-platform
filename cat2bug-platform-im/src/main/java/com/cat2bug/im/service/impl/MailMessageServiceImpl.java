@@ -33,17 +33,16 @@ public class MailMessageServiceImpl implements IIMService<MailMessage, IMMailPla
     public void sendNoticeMessage(MailMessage message, IMMailPlatformConfig config) {
         //获取MimeMessage对象
 
-//        Properties prop = System.getProperties();
-//        prop.put("mail.smtp.host", "mail.cat2bug.com");
-//        prop.put("mail.smtp.host", "mail.cat2bug.com");
-//        prop.put("mail.smtp.user", "dev@cat2bug.com");
-//        prop.put("mail.smtp.port",587);
-//        prop.put("mail.smtp.starttls.enable","true");
-//        prop.put("mail.smtp.debug", true);
-//        prop.put("mail.smtp.auth", true);
-//        Session session = Session.getDefaultInstance(prop);
-//        Message mm = new MimeMessage(session);
-        MimeMessage mm = mailSender.createMimeMessage();
+        Properties prop = System.getProperties();
+        prop.put("mail.smtp.host", "mail.cat2bug.com");
+        prop.put("mail.smtp.user", "dev@cat2bug.com");
+        prop.put("mail.smtp.port",587);
+        prop.put("mail.smtp.starttls.enable","true");
+        prop.put("mail.smtp.debug", true);
+        prop.put("mail.smtp.auth", true);
+        Session session = Session.getDefaultInstance(prop);
+        MimeMessage mm = new MimeMessage(session);
+//        MimeMessage mm = mailSender.createMimeMessage();
         MimeMessageHelper messageHelper;
         try {
             messageHelper = new MimeMessageHelper(mm, true);

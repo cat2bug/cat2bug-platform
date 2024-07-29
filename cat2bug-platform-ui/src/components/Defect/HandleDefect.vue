@@ -69,13 +69,14 @@
           </el-row>
         </el-collapse-item>
         <el-collapse-item v-if="defect.imgUrls" :title="$i18n.t('image')" name="imgUrls">
-          <el-image
-            v-for="(img,index) in getUrl(defect.imgUrls)"
-            :key="index"
-            style="width: 100px; height: 100px"
-            :src="img"
-            :preview-src-list="getUrl(defect.imgUrls)"
-            fit="contain"></el-image>
+          <div class="defect-image">
+            <el-image
+              v-for="(img,index) in getUrl(defect.imgUrls)"
+              :key="index"
+              :src="img"
+              :preview-src-list="getUrl(defect.imgUrls)"
+              fit="contain"></el-image>
+          </div>
         </el-collapse-item>
         <el-collapse-item v-if="defect.annexUrls" :title="$i18n.t('annex')" name="annexUrls">
           <div class="defect-edit-body-annex">
@@ -410,5 +411,14 @@ export default {
   ::v-deep .el-drawer__close-btn {
     display: none;
   }
-
+  .defect-image {
+    display: inline-flex;
+    flex-direction: row;
+    gap: 10px;
+    flex-wrap: wrap;
+    > .el-image {
+      width: 150px;
+      height: 150px;
+    }
+  }
 </style>
