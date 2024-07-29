@@ -625,7 +625,7 @@
   "notice.option.save-error": "Unable to save notification settings, please check if all options are correct !",
   "email": "EMail",
   "sender-email": "Sender Mail",
-  "receiver-email": "Receiver Mail",
+  "receiver-email": "Receive Mail",
   "email.receiver-not-empty": "Receiver email cannot be empty",
   "email.please-enter-sender": "Please enter the sender's email address",
   "email.format-error": "Please enter the correct email address",

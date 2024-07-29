@@ -100,32 +100,26 @@ spring:
       max-request-size: 100TB
   mail:
     # smtp服务器地址
-    host: mail.cat2bug.com
+    host: smtp.sparkspace.huaweicloud.com
     # smtp服务器端口
-    port: 587
+    port: 465
     # 默认邮件账号
-    username: dev@cat2bug.com
+    username: demo@cat2bug.com
     # 默认邮件密码
-    password: cat2bug_password
+    password: bfwcyhkm5jnnY5wJ
     # 默认发送邮件地址
-    from: dev@cat2bug.com
+    from: demo@cat2bug.com
     # 默认邮件编码
     default-encoding: UTF-8
-    protocol: smtp
     properties:
-      mail.smtp.socketFactory.fallback: true
-      mail.smtp.starttls.enable: true
-#      mail:
-#        smtp:
-#          port: 587
-#          auth: true
-#          socketFactory:
-#            fallback: true
-#          starttls:
-#            enable: true
-#            required: true
-#          ssl:
-#            enable: true
+      mail:
+        smtp:
+          auth: true
+          ssl:
+            enable: true
+          socketFactory:
+            port: 465
+            class: javax.net.ssl.SSLSocketFactory
   # 服务模块
   devtools:
     restart:

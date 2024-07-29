@@ -625,7 +625,7 @@
   "notice.option.save-error": "无法保存通知设置，请检查所有选项是否正常!",
   "email": "电子邮件",
   "sender-email": "发送人邮箱",
-  "receiver-email": "发件人邮箱",
+  "receiver-email": "接收邮箱",
   "email.please-enter-sender": "请输入发件人邮箱",
   "email.receiver-not-empty": "收件人邮箱不能为空",
   "email.format-error": "请输入正确的邮件地址",

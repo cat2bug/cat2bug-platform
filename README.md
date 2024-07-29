@@ -88,6 +88,7 @@ Cat2Bug-Platform是一套永久免费开源的Bug管理平台，可以完全私�
 --cat2bug-platform
 ------|----cat2bug-platform-admin       # 主程序模块
 ------|----cat2bug-platform-ai          # 人工智能模块
+------|----cat2bug-platform-im          # 通讯模块
 ------|----cat2bug-platform-api         # Open API模块
 ------|----cat2bug-platform-common      # 通用模块
 ------|----cat2bug-platform-framework   # 系统框架
