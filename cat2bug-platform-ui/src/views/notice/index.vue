@@ -173,7 +173,7 @@ export default {
   methods: {
     /** 获取项目id */
     getProjectId() {
-      return parseInt(this.$store.state.user.config.currentProjectId);
+      return parseInt(this.$store.state.user.config.currentProjectId || 0);
     },
     /** 获取用户id */
     getUserId() {
@@ -191,7 +191,7 @@ export default {
     goBack() {
       this.$router.back();
     },
-    /** 获取标签数据 */
+    /** 获取页签数据 */
     getGroupStatisticsNotice() {
       this.loading = true;
       groupStatisticsNotice().then(res=>{
