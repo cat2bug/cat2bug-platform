@@ -6,13 +6,13 @@
     <el-form-item :label="$t('enterprise-wechat.account')" prop="userId">
       <template slot="label">
         <div class="form-label">
-          <el-tooltip class="item" effect="dark" content="访问https://work.weixin.qq.com中的通讯录，进入【成员详情】查看账号" placement="bottom">
+          <el-tooltip class="item" effect="dark" :content="$t('enterprise-wechat.account-illustrate')" placement="bottom">
             <i class="el-icon-question"></i>
           </el-tooltip>
           <label>{{$t('enterprise-wechat.account')}}</label>
         </div>
       </template>
-      <el-input v-model="form.userId" @input="handleChange" maxlength="128"></el-input>
+      <el-input v-model="form.userId" @input="handleChange" :placeholder="$t('enterprise-wechat.enter-account-id')" maxlength="128"></el-input>
     </el-form-item>
   </el-form>
 </template>

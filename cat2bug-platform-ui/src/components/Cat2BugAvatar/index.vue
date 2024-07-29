@@ -55,7 +55,7 @@ export default {
 .el-avatar--medium {
   height: 36px;
   width: 36px;
-  line-height: 29px;
+  line-height: 30px;
   +.online {
     bottom: 5px;
     left: 24px;
@@ -67,7 +67,7 @@ export default {
 .el-avatar--small {
   height: 29px;
   width: 29px;
-  line-height: 22px;
+  line-height: 24px;
   font-size: 12px;
   +.online {
     bottom: 5px;

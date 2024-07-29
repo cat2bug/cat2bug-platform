@@ -52,13 +52,31 @@
                   <el-link>{{day.closedCond}}</el-link>
                 </div>
                 <el-divider direction="vertical"></el-divider>
-                总:<el-link>{{day.list.length}}</el-link>
+                {{ $t('defect.calendar-day-total') }}:<el-link>{{day.list.length}}</el-link>
               </div>
             </div>
           </div>
-          <el-tooltip effect="dark" :content="d.defectName" placement="right-end" v-for="(d,dayIndex) in pageDefectList(day)" :key="dayIndex">
-            <defect-flag class="defect-flag" :defect="d" @click.native="handleDefectClick($event,d)" />
-          </el-tooltip>
+          <el-popover
+            v-for="(d,dayIndex) in pageDefectList(day)" :key="dayIndex"
+            placement="right-start"
+            trigger="hover">
+            <div class="defect-popover">
+              <div>
+                <defect-type-flag :defect="d" />
+                <defect-state-flag :defect="d" />
+              </div>
+              <div>#{{ d.projectNum }} {{ d.defectName }}</div>
+              <div class="defect-images">
+                <el-image
+                  v-for="(img,index) in getUrl(d.imgUrls)"
+                  :key="index"
+                  :src="img"
+                  fit="contain"
+                />
+              </div>
+            </div>
+            <defect-flag slot="reference" class="defect-flag" :defect="d" @click.native="handleDefectClick($event,d)" />
+          </el-popover>
           <div class="right">
             <el-pagination
               :hide-on-single-page="true"
@@ -78,9 +96,12 @@
 import DefectFlag from "@/components/Defect/DefectFlag";
 import {listDefect} from "@/api/system/defect";
 import {parseTime} from "@/utils/ruoyi";
+import DefectTypeFlag from "@/components/Defect/DefectTypeFlag";
+import DefectStateFlag from "@/components/Defect/DefectStateFlag";
+
 export default {
   name: "DefectCalendar",
-  components: {DefectFlag},
+  components: {DefectFlag,DefectTypeFlag,DefectStateFlag},
   data() {
     return {
       currentDate: new Date(),
@@ -94,6 +115,14 @@ export default {
     }
   },
   computed: {
+    getUrl: function () {
+      return function (urls){
+        let imgs = urls?urls.split(','):[];
+        return imgs.map(i=>{
+          return process.env.VUE_APP_BASE_API + i;
+        })
+      }
+    },
     dateFormat: function () {
       return `yyyy ${this.$i18n.t('year').toString()} MM ${this.$i18n.t('month').toString()}`;
     },
@@ -316,6 +345,7 @@ export default {
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3); /* 鼠标滑过时显示阴影 */
 }
 .defect-tools {
+  width: 100%;
   display: inline-flex;
   flex-direction: row;
   justify-content: space-between;
@@ -385,6 +415,21 @@ export default {
     border-width: 0px;
     font-size: 1.2rem;
     text-align: center;
+  }
+}
+.defect-popover {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 5px;
+  > div {
+    display: inline-flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 5px
+  }
+  .el-image {
+    width: 100px;
+    height: 100px;
   }
 }
 </style>

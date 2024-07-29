@@ -3,14 +3,38 @@
     <el-form-item :label="$t('ding.robot')" prop="switch">
       <el-switch v-model="form.switch" @change="handleSwitchChange"></el-switch>
     </el-form-item>
-    <el-form-item :label="$t('ding.keyword')" prop="key">
-      <el-input v-model="form.key" @input="handleChange" maxlength="128"></el-input>
+    <el-form-item prop="key">
+      <template slot="label">
+        <div class="form-label">
+          <el-tooltip class="item" effect="dark" :content="$t('ding.hook-illustrate')" placement="bottom">
+            <i class="el-icon-question"></i>
+          </el-tooltip>
+          <label>{{$t('ding.keyword')}}</label>
+        </div>
+      </template>
+      <el-input v-model="form.key" @input="handleChange" :placeholder="$t('ding.enter-hook-keyword')" maxlength="128"></el-input>
     </el-form-item>
-    <el-form-item :label="$t('ding.hook')" prop="hook">
-      <el-input v-model="form.hook" @input="handleChange" maxlength="255"></el-input>
+    <el-form-item prop="hook">
+      <template slot="label">
+        <div class="form-label">
+          <el-tooltip class="item" effect="dark" :content="$t('ding.hook-illustrate')" placement="bottom">
+            <i class="el-icon-question"></i>
+          </el-tooltip>
+          <label>{{$t('ding.hook')}}</label>
+        </div>
+      </template>
+      <el-input v-model="form.hook" @input="handleChange" :placeholder="$t('ding.enter-hook-url')" maxlength="255"></el-input>
     </el-form-item>
-    <el-form-item :label="$t('ding.user-id')" prop="userId">
-      <el-input v-model="form.userId" @input="handleChange" maxlength="64"></el-input>
+    <el-form-item prop="userId">
+      <template slot="label">
+        <div class="form-label">
+          <el-tooltip class="item" effect="dark" :content="$t('ding.user-id-illustrate')" placement="bottom">
+            <i class="el-icon-question"></i>
+          </el-tooltip>
+          <label>{{$t('ding.user-id')}}</label>
+        </div>
+      </template>
+      <el-input v-model="form.userId" @input="handleChange" :placeholder="$t('ding.enter-user-id')" maxlength="64"></el-input>
     </el-form-item>
   </el-form>
 </template>
@@ -103,5 +127,12 @@ export default {
 </script>
 
 <style scoped>
-
+.form-label {
+  float: right;
+  display: inline-flex;
+  flex-direction: row;
+  gap: 5px;
+  justify-content: center;
+  align-items: center;
+}
 </style>

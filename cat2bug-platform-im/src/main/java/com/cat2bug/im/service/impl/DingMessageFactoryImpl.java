@@ -46,6 +46,8 @@ public class DingMessageFactoryImpl implements IIMFactoryService {
         } else {
             dingProjectConfig = null;
         }
+
+        String markdownText = messageTemplate.toMarkdown(content, config.getModules());
         return recipientList.stream().map(r->{
             DingMessage msg = new DingMessage(finalText);
             msg.setProjectId(projectId);
@@ -60,7 +62,7 @@ public class DingMessageFactoryImpl implements IIMFactoryService {
                 msg.setUserIds(Arrays.asList(config.getPlatforms().getDing().getUserId()));
                 DingSampleActionCardParams params = new DingSampleActionCardParams();
                 params.setTitle(title);
-                params.setText(text);
+                params.setText(markdownText);
                 params.setSingleTitle("点击查看详情");
                 // 链接加全屏界面
                 params.setSingleURL(src + "&screen=full");

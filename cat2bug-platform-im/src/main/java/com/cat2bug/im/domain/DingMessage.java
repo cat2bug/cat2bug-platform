@@ -40,7 +40,7 @@ public class DingMessage extends IMMessage<String> {
      * 2：短信DING
      * 3：电话DING
      */
-    private String msgKey="sampleActionCard";
+    private String msgKey="sampleMarkdown";
 
     /**
      * 消息模板参数，消息模板参数，详情参考企业机器人发送消息的消息类型

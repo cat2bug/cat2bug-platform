@@ -4,7 +4,7 @@
       <el-switch v-model="form.switch" @change="handleSwitchChange"></el-switch>
     </el-form-item>
     <el-form-item :label="$t('receiver-email')" prop="receiver">
-      <el-input v-model="form.receiver" @input="handleChange" maxlength="256"></el-input>
+      <el-input v-model="form.receiver" @input="handleChange" :placeholder="$t('email.please-enter-receiver')" maxlength="256"></el-input>
     </el-form-item>
   </el-form>
 </template>
