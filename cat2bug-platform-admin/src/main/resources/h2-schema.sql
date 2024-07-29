@@ -178,42 +178,10 @@ INSERT INTO `gen_table` (`table_id`, `table_name`, `table_comment`, `sub_table_n
                         , `class_name`, `tpl_category`, `package_name`, `module_name`, `business_name`
                         , `function_name`, `function_author`, `gen_type`, `gen_path`, `options`
                         , `create_by`, `create_time`, `update_by`, `update_time`, `remark`)
-VALUES (20, 'sys_defect_shard', '分享缺陷', NULL, NULL
-       , 'SysDefectShard', 'crud', 'com.cat2bug.system', 'system', 'shard'
-       , '分享缺陷关联', 'yuzhantao', '0', '/', '{}'
-       , 'admin', '2024-04-10 08:25:34', '', '2024-04-10 08:26:54', NULL);
-INSERT INTO `gen_table` (`table_id`, `table_name`, `table_comment`, `sub_table_name`, `sub_table_fk_name`
-                        , `class_name`, `tpl_category`, `package_name`, `module_name`, `business_name`
-                        , `function_name`, `function_author`, `gen_type`, `gen_path`, `options`
-                        , `create_by`, `create_time`, `update_by`, `update_time`, `remark`)
-VALUES (21, 'sys_report_template', '报告模版', NULL, NULL
-       , 'SysReportTemplate', 'crud', 'com.cat2bug.system', 'system', 'template'
-       , '报告模版', 'yuzhantao', '0', '/', '{"parentMenuId":2087}'
-       , 'admin', '2024-04-28 16:54:08', '', '2024-04-28 16:57:14', NULL);
-INSERT INTO `gen_table` (`table_id`, `table_name`, `table_comment`, `sub_table_name`, `sub_table_fk_name`
-                        , `class_name`, `tpl_category`, `package_name`, `module_name`, `business_name`
-                        , `function_name`, `function_author`, `gen_type`, `gen_path`, `options`
-                        , `create_by`, `create_time`, `update_by`, `update_time`, `remark`)
-VALUES (22, 'sys_document', '文档', NULL, NULL
-       , 'SysDocument', 'crud', 'com.cat2bug.system', 'system', 'document'
-       , '文档', 'yuzhantao', '0', '/', '{}'
-       , 'admin', '2024-06-17 06:14:27', '', '2024-06-17 06:21:47', NULL);
-INSERT INTO `gen_table` (`table_id`, `table_name`, `table_comment`, `sub_table_name`, `sub_table_fk_name`
-                        , `class_name`, `tpl_category`, `package_name`, `module_name`, `business_name`
-                        , `function_name`, `function_author`, `gen_type`, `gen_path`, `options`
-                        , `create_by`, `create_time`, `update_by`, `update_time`, `remark`)
-VALUES (23, 'sys_ai_module_config', 'AI模型', NULL, NULL
-       , 'SysAiModuleConfig', 'crud', 'com.cat2bug.system', 'system', 'ai'
-       , 'AI模型配置', 'yuzhantao', '0', '/', '{"parentMenuId":2052}'
-       , 'admin', '2024-06-20 11:42:41', '', '2024-06-20 11:48:34', NULL);
-INSERT INTO `gen_table` (`table_id`, `table_name`, `table_comment`, `sub_table_name`, `sub_table_fk_name`
-                        , `class_name`, `tpl_category`, `package_name`, `module_name`, `business_name`
-                        , `function_name`, `function_author`, `gen_type`, `gen_path`, `options`
-                        , `create_by`, `create_time`, `update_by`, `update_time`, `remark`)
-VALUES (24, 'im_user_config', '用户消息配置表', NULL, NULL
-       , 'ImUserConfig', 'crud', 'com.cat2bug.im', 'im', 'config'
-       , '用户消息配置', 'yuzhantao', '0', '/', '{}'
-       , 'admin', '2024-07-17 16:12:29', '', '2024-07-17 16:14:31', NULL);
+VALUES (25, 'im_project_config', '项目通知配置', NULL, NULL
+       , 'ImProjectConfig', 'crud', 'com.cat2bug.im', 'im', 'config'
+       , '项目通知配置', 'yuzhantao', '0', '/', '{}'
+       , 'admin', '2024-07-26 16:49:18', '', '2024-07-26 16:50:32', NULL);
 COMMIT;
 DROP TABLE IF EXISTS `gen_table_column`;
 CREATE TABLE `gen_table_column` (
@@ -526,7 +494,7 @@ INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_
                                , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
                                , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
                                , `update_by`, `update_time`)
-VALUES (29, 4, 'lock', '是否锁定', 'tinyint(1)'
+VALUES (29, 4, 'lock', '是否锁定', 'tinyint(1) unsigned zerofill'
        , 'Integer', 'lock', '0', '0', NULL
        , '1', '1', '1', '1', 'EQ'
        , 'checkbox', '', 9, 'admin', '2023-11-19 17:47:30'
@@ -636,7 +604,7 @@ INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_
                                , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
                                , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
                                , `update_by`, `update_time`)
-VALUES (40, 6, 'project_lock', '是否锁定', 'tinyint(1)'
+VALUES (40, 6, 'project_lock', '是否锁定', 'tinyint(1) unsigned zerofill'
        , 'Integer', 'projectLock', '0', '0', NULL
        , '1', '1', '1', '1', 'EQ'
        , 'input', '', 8, 'admin', '2023-11-22 12:11:49'
@@ -688,7 +656,7 @@ INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_
                                , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
                                , `update_by`, `update_time`)
 VALUES (45, 8, 'defect_type', '缺陷类型
-', 'int(1)'
+', 'int(1) unsigned zerofill'
        , 'Integer', 'defectType', '0', '0', '1'
        , '1', '1', '1', '1', 'EQ'
        , 'select', '', 2, 'admin', '2023-11-23 12:03:56'
@@ -838,7 +806,7 @@ INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_
                                , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
                                , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
                                , `update_by`, `update_time`)
-VALUES (60, 8, 'defect_state', '缺陷状态', 'int(1)'
+VALUES (60, 8, 'defect_state', '缺陷状态', 'int(1) unsigned zerofill'
        , 'Integer', 'defectState', '0', '0', '1'
        , '1', '1', '1', '1', 'EQ'
        , 'select', '', 17, 'admin', '2023-11-23 12:03:56'
@@ -1068,7 +1036,7 @@ INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_
                                , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
                                , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
                                , `update_by`, `update_time`)
-VALUES (83, 11, 'file_type', '文件类型', 'int(10)'
+VALUES (83, 11, 'file_type', '文件类型', 'int(10) unsigned zerofill'
        , 'Integer', 'fileType', '0', '0', NULL
        , '1', '1', '1', '1', 'EQ'
        , 'select', '', 6, 'admin', '2023-12-07 04:17:31'
@@ -1648,441 +1616,50 @@ INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_
                                , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
                                , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
                                , `update_by`, `update_time`)
-VALUES (141, 20, 'defect_shard_id', '缺陷分享ID', 'varchar(32)'
-       , 'String', 'defectShardId', '1', '0', NULL
-       , '1', NULL, NULL, NULL, 'EQ'
-       , 'input', '', 1, 'admin', '2024-04-10 08:25:34'
-       , '', '2024-04-10 08:26:54');
-INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
-                               , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
-                               , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
-                               , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
-                               , `update_by`, `update_time`)
-VALUES (142, 20, 'defect_id', '缺陷ID', 'bigint'
-       , 'Long', 'defectId', '0', '0', '1'
-       , '1', '0', '1', '1', 'EQ'
-       , 'input', '', 2, 'admin', '2024-04-10 08:25:34'
-       , '', '2024-04-10 08:26:54');
-INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
-                               , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
-                               , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
-                               , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
-                               , `update_by`, `update_time`)
-VALUES (143, 20, 'password', '分享密码', 'varchar(64)'
-       , 'String', 'password', '0', '0', NULL
-       , '1', '1', '1', '0', 'EQ'
-       , 'input', '', 3, 'admin', '2024-04-10 08:25:34'
-       , '', '2024-04-10 08:26:54');
-INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
-                               , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
-                               , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
-                               , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
-                               , `update_by`, `update_time`)
-VALUES (144, 20, 'create_time', '创建日期', 'datetime'
-       , 'Date', 'createTime', '0', '0', NULL
-       , '1', NULL, NULL, NULL, 'EQ'
-       , 'datetime', '', 4, 'admin', '2024-04-10 08:25:34'
-       , '', '2024-04-10 08:26:54');
-INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
-                               , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
-                               , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
-                               , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
-                               , `update_by`, `update_time`)
-VALUES (145, 20, 'create_by_id', '创建人', 'bigint'
-       , 'Long', 'createById', '0', '0', '1'
-       , '1', '0', '1', '1', 'EQ'
-       , 'input', '', 5, 'admin', '2024-04-10 08:25:34'
-       , '', '2024-04-10 08:26:54');
-INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
-                               , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
-                               , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
-                               , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
-                               , `update_by`, `update_time`)
-VALUES (146, 20, 'update_time', '更新日期', 'datetime'
-       , 'Date', 'updateTime', '0', '0', NULL
-       , '1', '1', NULL, NULL, 'EQ'
-       , 'datetime', '', 6, 'admin', '2024-04-10 08:25:34'
-       , '', '2024-04-10 08:26:54');
-INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
-                               , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
-                               , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
-                               , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
-                               , `update_by`, `update_time`)
-VALUES (147, 20, 'aging_time', '时效时间', 'datetime'
-       , 'Date', 'agingTime', '0', '0', NULL
-       , '1', '1', '1', '1', 'EQ'
-       , 'datetime', '', 7, 'admin', '2024-04-10 08:25:34'
-       , '', '2024-04-10 08:26:54');
-INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
-                               , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
-                               , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
-                               , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
-                               , `update_by`, `update_time`)
-VALUES (148, 21, 'template_id', '报告模版ID', 'bigint'
-       , 'Long', 'templateId', '1', '1', NULL
-       , '1', NULL, NULL, NULL, 'EQ'
-       , 'input', '', 1, 'admin', '2024-04-28 16:54:08'
-       , '', '2024-04-28 16:57:14');
-INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
-                               , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
-                               , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
-                               , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
-                               , `update_by`, `update_time`)
-VALUES (149, 21, 'module_type', '交付物类型', 'varchar(64)'
-       , 'String', 'moduleType', '0', '0', NULL
-       , '1', '1', '1', '1', 'EQ'
-       , 'select', '', 2, 'admin', '2024-04-28 16:54:08'
-       , '', '2024-04-28 16:57:14');
-INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
-                               , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
-                               , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
-                               , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
-                               , `update_by`, `update_time`)
-VALUES (150, 21, 'template_content', '模版内容', 'longtext'
-       , 'String', 'templateContent', '0', '0', NULL
-       , '1', '1', '1', '1', 'EQ'
-       , 'editor', '', 3, 'admin', '2024-04-28 16:54:08'
-       , '', '2024-04-28 16:57:14');
-INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
-                               , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
-                               , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
-                               , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
-                               , `update_by`, `update_time`)
-VALUES (151, 21, 'update_by_id', '更新用户', 'bigint'
-       , 'Long', 'updateById', '0', '0', NULL
-       , '1', '1', '1', '1', 'EQ'
-       , 'input', '', 4, 'admin', '2024-04-28 16:54:08'
-       , '', '2024-04-28 16:57:14');
-INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
-                               , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
-                               , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
-                               , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
-                               , `update_by`, `update_time`)
-VALUES (152, 21, 'update_time', '更新时间', 'datetime'
-       , 'Date', 'updateTime', '0', '0', NULL
-       , '1', '1', '1', NULL, 'EQ'
-       , 'datetime', '', 5, 'admin', '2024-04-28 16:54:08'
-       , '', '2024-04-28 16:57:14');
-INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
-                               , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
-                               , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
-                               , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
-                               , `update_by`, `update_time`)
-VALUES (153, 21, 'project_id', '项目ID', 'bigint'
-       , 'Long', 'projectId', '0', '0', NULL
-       , '1', '1', '1', '1', 'EQ'
-       , 'input', '', 6, 'admin', '2024-04-28 16:54:08'
-       , '', '2024-04-28 16:57:14');
-INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
-                               , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
-                               , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
-                               , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
-                               , `update_by`, `update_time`)
-VALUES (154, 21, 'template_icon_url', '模版图标路径', 'varchar(255)'
-       , 'String', 'templateIconUrl', '0', '0', NULL
-       , '1', '1', '1', '1', 'EQ'
-       , 'input', '', 7, 'admin', '2024-04-28 16:54:08'
-       , '', '2024-04-28 16:57:14');
-INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
-                               , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
-                               , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
-                               , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
-                               , `update_by`, `update_time`)
-VALUES (155, 21, 'major_version', '主版本', 'int'
-       , 'Long', 'majorVersion', '0', '0', NULL
-       , '1', '1', '1', '1', 'EQ'
-       , 'input', '', 8, 'admin', '2024-04-28 16:54:08'
-       , '', '2024-04-28 16:57:14');
-INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
-                               , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
-                               , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
-                               , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
-                               , `update_by`, `update_time`)
-VALUES (156, 21, 'minor_version', '次版本', 'int'
-       , 'Long', 'minorVersion', '0', '0', NULL
-       , '1', '1', '1', '1', 'EQ'
-       , 'input', '', 9, 'admin', '2024-04-28 16:54:08'
-       , '', '2024-04-28 16:57:14');
-INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
-                               , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
-                               , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
-                               , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
-                               , `update_by`, `update_time`)
-VALUES (157, 21, 'template_key', '模版唯一标识', 'varchar(64)'
-       , 'String', 'templateKey', '0', '0', '1'
-       , '1', '1', '1', '1', 'EQ'
-       , 'input', '', 10, 'admin', '2024-04-28 16:54:08'
-       , '', '2024-04-28 16:57:14');
-INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
-                               , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
-                               , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
-                               , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
-                               , `update_by`, `update_time`)
-VALUES (158, 22, 'doc_id', '文档ID', 'bigint'
-       , 'Long', 'docId', '1', '1', NULL
+VALUES (186, 25, 'config_id', '配置ID', 'bigint'
+       , 'Long', 'configId', '1', '1', NULL
        , '0', NULL, NULL, NULL, 'EQ'
-       , 'input', '', 1, 'admin', '2024-06-17 06:14:27'
-       , '', '2024-06-17 06:21:47');
+       , 'input', '', 1, 'admin', '2024-07-26 16:49:18'
+       , '', '2024-07-26 16:50:32');
 INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
                                , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
                                , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
                                , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
                                , `update_by`, `update_time`)
-VALUES (159, 22, 'project_id', '项目ID', 'bigint'
+VALUES (187, 25, 'project_id', '项目ID', 'bigint'
        , 'Long', 'projectId', '0', '0', NULL
        , '1', '1', '1', '1', 'EQ'
-       , 'input', '', 2, 'admin', '2024-06-17 06:14:27'
-       , '', '2024-06-17 06:21:47');
+       , 'input', '', 2, 'admin', '2024-07-26 16:49:18'
+       , '', '2024-07-26 16:50:32');
 INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
                                , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
                                , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
                                , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
                                , `update_by`, `update_time`)
-VALUES (160, 22, 'doc_name', '文档名称', 'varchar(255)'
-       , 'String', 'docName', '0', '0', '1'
-       , '1', '1', '1', '1', 'LIKE'
-       , 'input', '', 3, 'admin', '2024-06-17 06:14:27'
-       , '', '2024-06-17 06:21:47');
-INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
-                               , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
-                               , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
-                               , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
-                               , `update_by`, `update_time`)
-VALUES (161, 22, 'doc_type', '文档类型(0=文件夹；1=文件)', 'int'
-       , 'Long', 'docType', '0', '0', '0'
-       , '1', '0', '1', '1', 'EQ'
-       , 'select', '', 4, 'admin', '2024-06-17 06:14:27'
-       , '', '2024-06-17 06:21:47');
-INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
-                               , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
-                               , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
-                               , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
-                               , `update_by`, `update_time`)
-VALUES (162, 22, 'file_extension', '文件类型', 'varchar(12)'
-       , 'String', 'fileExtension', '0', '0', NULL
-       , '0', '0', '1', '1', 'EQ'
-       , 'input', '', 5, 'admin', '2024-06-17 06:14:27'
-       , '', '2024-06-17 06:21:47');
-INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
-                               , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
-                               , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
-                               , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
-                               , `update_by`, `update_time`)
-VALUES (163, 22, 'create_time', '创建时间', 'datetime'
-       , 'Date', 'createTime', '0', '0', NULL
-       , '1', NULL, NULL, NULL, 'EQ'
-       , 'datetime', '', 6, 'admin', '2024-06-17 06:14:27'
-       , '', '2024-06-17 06:21:47');
-INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
-                               , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
-                               , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
-                               , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
-                               , `update_by`, `update_time`)
-VALUES (164, 22, 'create_by_id', '创建人ID', 'bigint'
-       , 'Long', 'createById', '0', '0', NULL
-       , '1', '0', '1', '1', 'EQ'
-       , 'input', '', 7, 'admin', '2024-06-17 06:14:27'
-       , '', '2024-06-17 06:21:47');
-INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
-                               , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
-                               , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
-                               , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
-                               , `update_by`, `update_time`)
-VALUES (165, 22, 'update_time', '更新时间', 'datetime'
-       , 'Date', 'updateTime', '0', '0', NULL
-       , '1', '1', NULL, NULL, 'EQ'
-       , 'datetime', '', 8, 'admin', '2024-06-17 06:14:27'
-       , '', '2024-06-17 06:21:47');
-INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
-                               , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
-                               , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
-                               , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
-                               , `update_by`, `update_time`)
-VALUES (166, 22, 'update_by_id', '更新人ID', 'bigint'
-       , 'Long', 'updateById', '0', '0', NULL
-       , '1', '1', '1', '1', 'EQ'
-       , 'input', '', 9, 'admin', '2024-06-17 06:14:27'
-       , '', '2024-06-17 06:21:47');
-INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
-                               , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
-                               , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
-                               , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
-                               , `update_by`, `update_time`)
-VALUES (168, 22, 'doc_pid', '文件夹ID', 'bigint'
-       , 'Long', 'docPid', '0', '0', NULL
-       , '1', '1', '1', '1', 'EQ'
-       , 'input', '', 11, 'admin', '2024-06-17 06:14:27'
-       , '', '2024-06-17 06:21:47');
-INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
-                               , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
-                               , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
-                               , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
-                               , `update_by`, `update_time`)
-VALUES (169, 22, 'doc_remakr', '备注', 'varchar(255)'
-       , 'String', 'docRemakr', '0', '0', NULL
+VALUES (188, 25, 'system_code', '第三方系统编码', 'varchar(64)'
+       , 'String', 'systemCode', '0', '0', NULL
        , '1', '1', '1', '0', 'EQ'
-       , 'input', '', 12, 'admin', '2024-06-17 06:14:27'
-       , '', '2024-06-17 06:21:47');
+       , 'input', '', 3, 'admin', '2024-07-26 16:49:18'
+       , '', '2024-07-26 16:50:32');
 INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
                                , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
                                , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
                                , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
                                , `update_by`, `update_time`)
-VALUES (170, 22, 'file_version', '文档版本', 'int'
-       , 'Long', 'fileVersion', '0', '0', NULL
-       , '1', '0', '1', '0', 'EQ'
-       , 'input', '', 10, '', '2024-06-17 06:16:49'
-       , '', '2024-06-17 06:21:47');
-INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
-                               , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
-                               , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
-                               , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
-                               , `update_by`, `update_time`)
-VALUES (171, 22, 'file_url', '文件', 'varchar(255)'
-       , 'String', 'fileUrl', '0', '0', '1'
+VALUES (189, 25, 'config_params', '配置参数', 'json'
+       , 'String', 'configParams', '0', '0', NULL
        , '1', '1', '1', '0', 'EQ'
-       , 'fileUpload', '', 13, '', '2024-06-17 06:16:49'
-       , '', '2024-06-17 06:21:47');
-INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
-                               , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
-                               , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
-                               , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
-                               , `update_by`, `update_time`)
-VALUES (172, 23, 'ai_id', '模型ID', 'bigint'
-       , 'Long', 'aiId', '1', '0', NULL
-       , '0', NULL, NULL, NULL, 'EQ'
-       , 'input', '', 1, 'admin', '2024-06-20 11:42:41'
-       , '', '2024-06-20 11:48:34');
-INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
-                               , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
-                               , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
-                               , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
-                               , `update_by`, `update_time`)
-VALUES (173, 23, 'business_module', '业务模型名称', 'varchar(255)'
-       , 'String', 'businessModule', '0', '0', NULL
-       , '1', '1', '1', '1', 'EQ'
-       , 'select', '', 2, 'admin', '2024-06-20 11:42:41'
-       , '', '2024-06-20 11:48:34');
-INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
-                               , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
-                               , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
-                               , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
-                               , `update_by`, `update_time`)
-VALUES (174, 23, 'image_module', '图片识别模型名称', 'varchar(255)'
-       , 'String', 'imageModule', '0', '0', NULL
-       , '1', '1', '1', '1', 'EQ'
-       , 'select', '', 3, 'admin', '2024-06-20 11:42:41'
-       , '', '2024-06-20 11:48:34');
-INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
-                               , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
-                               , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
-                               , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
-                               , `update_by`, `update_time`)
-VALUES (175, 23, 'project_id', '项目ID', 'int'
-       , 'Long', 'projectId', '0', '0', NULL
-       , '1', '1', '1', '1', 'EQ'
-       , 'input', '', 4, 'admin', '2024-06-20 11:42:41'
-       , '', '2024-06-20 11:48:34');
-INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
-                               , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
-                               , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
-                               , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
-                               , `update_by`, `update_time`)
-VALUES (176, 23, 'create_time', '创建时间', 'datetime'
-       , 'Date', 'createTime', '0', '0', NULL
-       , '1', NULL, NULL, NULL, 'EQ'
-       , 'datetime', '', 5, 'admin', '2024-06-20 11:42:41'
-       , '', '2024-06-20 11:48:34');
-INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
-                               , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
-                               , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
-                               , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
-                               , `update_by`, `update_time`)
-VALUES (177, 23, 'create_by_id', '创建人ID', 'bigint'
-       , 'Long', 'createById', '0', '0', NULL
-       , '1', '0', '0', '1', 'EQ'
-       , 'input', '', 6, 'admin', '2024-06-20 11:42:41'
-       , '', '2024-06-20 11:48:34');
-INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
-                               , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
-                               , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
-                               , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
-                               , `update_by`, `update_time`)
-VALUES (178, 23, 'update_time', '更新时间', 'datetime'
-       , 'Date', 'updateTime', '0', '0', NULL
-       , '1', '1', NULL, NULL, 'EQ'
-       , 'datetime', '', 7, 'admin', '2024-06-20 11:42:41'
-       , '', '2024-06-20 11:48:34');
-INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
-                               , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
-                               , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
-                               , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
-                               , `update_by`, `update_time`)
-VALUES (179, 23, 'update_by_id', '更新人ID', 'bigint'
-       , 'Long', 'updateById', '0', '0', NULL
-       , '1', '1', '0', '0', 'EQ'
-       , 'input', '', 8, 'admin', '2024-06-20 11:42:41'
-       , '', '2024-06-20 11:48:34');
-INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
-                               , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
-                               , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
-                               , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
-                               , `update_by`, `update_time`)
-VALUES (180, 24, 'im_config_id', '信息配置ID', 'bigint'
-       , 'Long', 'imConfigId', '1', '1', NULL
-       , '0', NULL, NULL, NULL, 'EQ'
-       , 'input', '', 1, 'admin', '2024-07-17 16:12:29'
-       , '', '2024-07-17 16:14:31');
-INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
-                               , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
-                               , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
-                               , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
-                               , `update_by`, `update_time`)
-VALUES (181, 24, 'user_id', '成员ID', 'bigint'
-       , 'Long', 'userId', '0', '0', NULL
-       , '1', '1', '1', '1', 'EQ'
-       , 'input', '', 2, 'admin', '2024-07-17 16:12:29'
-       , '', '2024-07-17 16:14:31');
-INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
-                               , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
-                               , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
-                               , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
-                               , `update_by`, `update_time`)
-VALUES (182, 24, 'project_id', '项目ID', 'bigint'
-       , 'Long', 'projectId', '0', '0', NULL
-       , '1', '1', '1', '1', 'EQ'
-       , 'input', '', 3, 'admin', '2024-07-17 16:12:29'
-       , '', '2024-07-17 16:14:31');
-INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
-                               , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
-                               , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
-                               , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
-                               , `update_by`, `update_time`)
-VALUES (183, 24, 'group_name', '模块类型', 'varchar(64)'
-       , 'String', 'groupName', '0', '0', NULL
-       , '1', '1', '1', '1', 'LIKE'
-       , 'input', '', 4, 'admin', '2024-07-17 16:12:29'
-       , '', '2024-07-17 16:14:31');
-INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
-                               , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
-                               , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
-                               , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
-                               , `update_by`, `update_time`)
-VALUES (184, 24, 'config', '配置项', 'json'
-       , 'String', 'config', '0', '0', NULL
-       , '1', '1', '1', '1', 'EQ'
-       , NULL, '', 5, 'admin', '2024-07-17 16:12:29'
-       , '', '2024-07-17 16:14:31');
-INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`
-                               , `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`
-                               , `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`
-                               , `html_type`, `dict_type`, `sort`, `create_by`, `create_time`
-                               , `update_by`, `update_time`)
-VALUES (185, 24, 'update_time', '更新时间', 'datetime'
-       , 'Date', 'updateTime', '0', '0', NULL
-       , '1', '1', NULL, NULL, 'EQ'
-       , 'datetime', '', 6, 'admin', '2024-07-17 16:12:29'
-       , '', '2024-07-17 16:14:31');
+       , NULL, '', 4, 'admin', '2024-07-26 16:49:18'
+       , '', '2024-07-26 16:50:32');
+COMMIT;
+DROP TABLE IF EXISTS `im_project_config`;
+CREATE TABLE `im_project_config` (
+                                     `config_id` bigint NOT NULL AUTO_INCREMENT COMMENT '配置ID',
+                                     `project_id` bigint DEFAULT NULL COMMENT '项目ID',
+                                     `system_code` varchar(64) DEFAULT NULL COMMENT '第三方系统编码',
+                                     `config_params` json DEFAULT NULL COMMENT '配置参数'
+);
+
 COMMIT;
 DROP TABLE IF EXISTS `im_user_config`;
 CREATE TABLE `im_user_config` (
@@ -2721,24 +2298,6 @@ CREATE TABLE `sys_job` (
                            `remark` varchar(500) DEFAULT '' COMMENT '备注信息'
 );
 
-INSERT INTO `sys_job` (`job_id`, `job_name`, `job_group`, `invoke_target`, `cron_expression`
-                      , `misfire_policy`, `concurrent`, `status`, `create_by`, `create_time`
-                      , `update_by`, `update_time`, `remark`)
-VALUES (1, '系统默认（无参）', 'DEFAULT', 'ryTask.ryNoParams', '0/10 * * * * ?'
-       , '3', '1', '1', 'admin', '2023-11-12 15:34:52'
-       , '', NULL, '');
-INSERT INTO `sys_job` (`job_id`, `job_name`, `job_group`, `invoke_target`, `cron_expression`
-                      , `misfire_policy`, `concurrent`, `status`, `create_by`, `create_time`
-                      , `update_by`, `update_time`, `remark`)
-VALUES (2, '系统默认（有参）', 'DEFAULT', 'ryTask.ryParams(''ry'')', '0/15 * * * * ?'
-       , '3', '1', '1', 'admin', '2023-11-12 15:34:52'
-       , '', NULL, '');
-INSERT INTO `sys_job` (`job_id`, `job_name`, `job_group`, `invoke_target`, `cron_expression`
-                      , `misfire_policy`, `concurrent`, `status`, `create_by`, `create_time`
-                      , `update_by`, `update_time`, `remark`)
-VALUES (3, '系统默认（多参）', 'DEFAULT', 'ryTask.ryMultipleParams(''ry'', true, 2000L, 316.50D, 100)', '0/20 * * * * ?'
-       , '3', '1', '1', 'admin', '2023-11-12 15:34:52'
-       , '', NULL, '');
 COMMIT;
 DROP TABLE IF EXISTS `sys_job_log`;
 CREATE TABLE `sys_job_log` (
@@ -2766,14 +2325,6 @@ CREATE TABLE `sys_logininfor` (
                                   `login_time` datetime DEFAULT NULL COMMENT '访问时间'
 );
 
-INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
-                             , `os`, `status`, `msg`, `login_time`)
-VALUES (1061, 'demo', '127.0.0.1', '内网IP', 'Safari'
-       , 'Mac OS X', '0', '退出成功', '2024-07-21 10:42:42');
-INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`
-                             , `os`, `status`, `msg`, `login_time`)
-VALUES (1062, 'admin', '127.0.0.1', '内网IP', 'Safari'
-       , 'Mac OS X', '0', '登录成功', '2024-07-21 11:11:46');
 COMMIT;
 DROP TABLE IF EXISTS `sys_menu`;
 CREATE TABLE `sys_menu` (
@@ -4183,6 +3734,54 @@ VALUES (2110, '查询通知', 2107, 0, ''
        , NULL, NULL, 1, 0, 'F'
        , '0', '0', 'notice:query', '#', 'admin'
        , '2024-07-20 10:00:27', '', NULL, '', NULL);
+INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
+                       , `component`, `query`, `is_frame`, `is_cache`, `menu_type`
+                       , `visible`, `status`, `perms`, `icon`, `create_by`
+                       , `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`)
+VALUES (2111, '企业微信', 2013, 7, 'enterprise-wechat'
+       , 'system/project/other/wechat/index', NULL, 1, 0, 'C'
+       , '1', '0', 'wechat:list', '#', 'admin'
+       , '2024-07-26 15:50:34', 'admin', '2024-07-26 16:14:51', '', NULL);
+INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
+                       , `component`, `query`, `is_frame`, `is_cache`, `menu_type`
+                       , `visible`, `status`, `perms`, `icon`, `create_by`
+                       , `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`)
+VALUES (2112, '查询企业微信', 2111, 0, ''
+       , NULL, NULL, 1, 0, 'F'
+       , '0', '0', 'wechat:query', '#', 'admin'
+       , '2024-07-26 15:54:23', 'admin', '2024-07-26 16:07:14', '', NULL);
+INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
+                       , `component`, `query`, `is_frame`, `is_cache`, `menu_type`
+                       , `visible`, `status`, `perms`, `icon`, `create_by`
+                       , `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`)
+VALUES (2113, '保存企业微信', 2111, 1, 'other:wechat:save'
+       , NULL, NULL, 1, 0, 'F'
+       , '0', '0', 'wechat:save', '#', 'admin'
+       , '2024-07-26 15:55:23', 'admin', '2024-07-26 16:07:20', '', NULL);
+INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
+                       , `component`, `query`, `is_frame`, `is_cache`, `menu_type`
+                       , `visible`, `status`, `perms`, `icon`, `create_by`
+                       , `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`)
+VALUES (2114, '钉钉', 2013, 8, 'ding'
+       , 'system/project/other/ding/index', NULL, 1, 0, 'C'
+       , '1', '0', 'ding:list', '#', 'admin'
+       , '2024-07-28 02:28:55', 'admin', '2024-07-28 02:29:49', '', NULL);
+INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
+                       , `component`, `query`, `is_frame`, `is_cache`, `menu_type`
+                       , `visible`, `status`, `perms`, `icon`, `create_by`
+                       , `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`)
+VALUES (2115, '查询钉钉', 2114, 0, ''
+       , NULL, NULL, 1, 0, 'F'
+       , '0', '0', 'ding:query', '#', 'admin'
+       , '2024-07-28 02:30:12', '', NULL, '', NULL);
+INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
+                       , `component`, `query`, `is_frame`, `is_cache`, `menu_type`
+                       , `visible`, `status`, `perms`, `icon`, `create_by`
+                       , `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`)
+VALUES (2116, '保存钉钉', 2114, 1, ''
+       , NULL, NULL, 1, 0, 'F'
+       , '0', '0', 'ding:save', '#', 'admin'
+       , '2024-07-28 02:30:30', '', NULL, '', NULL);
 COMMIT;
 DROP TABLE IF EXISTS `sys_module`;
 CREATE TABLE `sys_module` (
@@ -4198,25 +3797,53 @@ VALUES (263, 0, '登陆', NULL, 2);
 INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`)
 VALUES (264, 0, '首页', NULL, 2);
 INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`)
-VALUES (265, 0, '登陆', NULL, 5);
+VALUES (265, 0, '119指挥中心', NULL, 5);
 INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`)
-VALUES (266, 0, '登陆', NULL, 7);
+VALUES (266, 0, '战训', NULL, 5);
 INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`)
-VALUES (267, 0, '应急物资', NULL, 7);
+VALUES (267, 0, '装备', NULL, 5);
 INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`)
-VALUES (268, 267, '储备物资管理', NULL, 7);
+VALUES (268, 0, '安全', NULL, 5);
 INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`)
-VALUES (269, 0, '消防监督', NULL, 7);
+VALUES (269, 0, '消防监督', NULL, 5);
 INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`)
-VALUES (270, 0, '安全', NULL, 7);
+VALUES (270, 0, '测试交付', NULL, 9);
 INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`)
-VALUES (271, 0, '119指挥中心', NULL, 7);
+VALUES (271, 0, '统计查询', NULL, 7);
 INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`)
-VALUES (272, 269, '设备管理', NULL, 7);
+VALUES (272, 0, '台账维护', NULL, 7);
 INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`)
-VALUES (273, 269, '监督检查', NULL, 7);
+VALUES (273, 0, '设备评估', NULL, 7);
 INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`)
-VALUES (274, 269, '安全知识', NULL, 7);
+VALUES (274, 0, '设备领用', NULL, 7);
+INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`)
+VALUES (275, 0, '硬件配置变更', NULL, 7);
+INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`)
+VALUES (276, 0, '调拨管理', NULL, 7);
+INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`)
+VALUES (277, 0, 'IT低耗', NULL, 7);
+INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`)
+VALUES (278, 0, 'IT低耗', NULL, 7);
+INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`)
+VALUES (279, 0, '登录界面测试用例', NULL, 6);
+INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`)
+VALUES (280, 0, '消防监督【消防数据管理】', NULL, 6);
+INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`)
+VALUES (281, 0, '消防监督【消防设施类型】', NULL, 6);
+INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`)
+VALUES (282, 0, '战勤保障【基础数据管理】', NULL, 6);
+INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`)
+VALUES (283, 0, '应急预案【战例库】', NULL, 6);
+INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`)
+VALUES (284, 0, '登录界面测试', NULL, 6);
+INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`)
+VALUES (285, 0, '器材装备【消防车辆】', NULL, 6);
+INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`)
+VALUES (286, 0, '官网文档', NULL, 9);
+INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`)
+VALUES (287, 270, '测试用例', NULL, 9);
+INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`)
+VALUES (288, 270, '缺陷管理', NULL, 9);
 COMMIT;
 DROP TABLE IF EXISTS `sys_notice`;
 CREATE TABLE `sys_notice` (
@@ -4262,18 +3889,10 @@ INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `requ
                            , `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`
                            , `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`
                            , `oper_time`, `cost_time`)
-VALUES (12658, '用户配置', 2, 'com.cat2bug.web.controller.system.SysUserConfigController.edit()', 'PUT'
-       , 1, 'demo', NULL, '/system/user-config', '127.0.0.1'
-       , '内网IP', '{"currentProjectId":7,"params":{},"userConfigId":102,"userId":198}', '{"msg":"操作成功","code":200}', 0, NULL
-       , '2024-07-21 10:42:31', 35);
-INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`
-                           , `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`
-                           , `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`
-                           , `oper_time`, `cost_time`)
-VALUES (12659, '角色管理', 2, 'com.cat2bug.web.controller.system.SysRoleController.edit()', 'PUT'
-       , 1, 'admin', NULL, '/system/role', '127.0.0.1'
-       , '内网IP', '{"admin":false,"createTime":"2023-12-28 18:56:22","dataScope":"1","delFlag":"0","deptCheckStrictly":true,"flag":false,"isProjectRole":false,"isTeamRole":false,"menuCheckStrictly":false,"menuIds":[2043,2000,2001,2013,2074,2075,2019,2020,2087,2088,2107,2110,2108,2015,2016,2017,2018,2057,2058,2059,2047,2048,2049,2050,2051],"params":{},"projectAdmin":false,"projectCreateBy":false,"roleId":10,"roleKey":"default","roleName":"默认成员","roleSort":2,"status":"0","teamCreateBy":false,"updateBy":"admin"}', '{"msg":"操作成功","code":200}', 0, NULL
-       , '2024-07-21 11:12:29', 43);
+VALUES (16632, '个人信息', 2, 'com.cat2bug.web.controller.system.SysProfileController.updatePwd()', 'PUT'
+       , 1, 'admin', NULL, '/system/user/profile/updatePwd', '127.0.0.1'
+       , '内网IP', '{}', '{"msg":"操作成功","code":200}', 0, NULL
+       , '2024-07-29 16:52:56', 346);
 COMMIT;
 DROP TABLE IF EXISTS `sys_post`;
 CREATE TABLE `sys_post` (
@@ -4375,18 +3994,6 @@ CREATE TABLE `sys_report_template` (
                                        `is_shop` tinyint DEFAULT '0' COMMENT '是否是商店模版'
 );
 
-INSERT INTO `sys_report_template` (`template_id`, `module_type`, `template_content`, `update_by_id`, `update_time`
-                                  , `project_id`, `template_icon_url`, `major_version`, `minor_version`, `template_key`
-                                  , `template_title`, `is_shop`)
-VALUES (16, NULL, '#  功能测试用例清单
-
-- 测试用例总数：${api.case.total}
-
-$card{api.case.list}
-
-', NULL, '2024-05-14 03:48:43'
-       , 7, '/profile/upload/2024/05/14/blob_20240514034842A050.png', 1, 0, '702d6793-c393-45f1-9845-b295b4a42c4c'
-       , '功能测试用例清单样例', 1);
 COMMIT;
 DROP TABLE IF EXISTS `sys_role`;
 CREATE TABLE `sys_role` (
@@ -4439,7 +4046,7 @@ INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_s
                        , `is_project_role`, `role_name_i18n_key`)
 VALUES (4, '团队管理员', 'team.admin', 12, '1'
        , 1, 1, '0', '0', 'admin'
-       , '2023-11-18 15:15:50', 'admin', '2024-07-20 10:41:25', NULL, 1
+       , '2023-11-18 15:15:50', 'admin', '2024-07-28 02:30:53', NULL, 1
        , 0, 'team.admin-members');
 INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_scope`
                        , `menu_check_strictly`, `dept_check_strictly`, `status`, `del_flag`, `create_by`
@@ -4455,7 +4062,7 @@ INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_s
                        , `is_project_role`, `role_name_i18n_key`)
 VALUES (6, '项目管理员', 'project.admin', 22, '1'
        , 1, 1, '0', '0', 'admin'
-       , '2023-11-22 06:48:53', 'admin', '2024-07-20 10:41:38', NULL, 0
+       , '2023-11-22 06:48:53', 'admin', '2024-07-28 02:31:09', NULL, 0
        , 1, 'project.admin');
 INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_scope`
                        , `menu_check_strictly`, `dept_check_strictly`, `status`, `del_flag`, `create_by`
@@ -4463,7 +4070,7 @@ INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_s
                        , `is_project_role`, `role_name_i18n_key`)
 VALUES (7, '项目开发', 'project.develop', 23, '1'
        , 0, 1, '0', '0', 'admin'
-       , '2023-11-22 06:50:14', 'admin', '2024-07-20 10:01:30', NULL, 0
+       , '2023-11-22 06:50:14', 'admin', '2024-06-26 10:00:56', NULL, 0
        , 1, 'project.develop');
 INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_scope`
                        , `menu_check_strictly`, `dept_check_strictly`, `status`, `del_flag`, `create_by`
@@ -4471,7 +4078,7 @@ INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_s
                        , `is_project_role`, `role_name_i18n_key`)
 VALUES (8, '项目测试', 'project.tester', 24, '1'
        , 1, 1, '0', '0', 'admin'
-       , '2023-11-22 06:53:11', 'admin', '2024-07-20 10:41:55', NULL, 0
+       , '2023-11-22 06:53:11', 'admin', '2024-06-26 10:01:19', NULL, 0
        , 1, 'project.tester');
 INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_scope`
                        , `menu_check_strictly`, `dept_check_strictly`, `status`, `del_flag`, `create_by`
@@ -4479,7 +4086,7 @@ INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_s
                        , `is_project_role`, `role_name_i18n_key`)
 VALUES (9, '项目外部人员', 'project.outsider', 25, '1'
        , 0, 1, '0', '0', 'admin'
-       , '2023-11-22 06:55:20', 'admin', '2024-07-20 10:42:00', NULL, 0
+       , '2023-11-22 06:55:20', 'admin', '2024-03-13 03:32:56', NULL, 0
        , 1, 'project.outsider');
 INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_scope`
                        , `menu_check_strictly`, `dept_check_strictly`, `status`, `del_flag`, `create_by`
@@ -4487,7 +4094,7 @@ INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_s
                        , `is_project_role`, `role_name_i18n_key`)
 VALUES (10, '默认成员', 'default', 2, '1'
        , 0, 1, '0', '0', 'admin'
-       , '2023-12-28 18:56:22', 'admin', '2024-07-21 11:12:29', NULL, 0
+       , '2023-12-28 18:56:22', 'admin', '2024-03-13 03:30:32', NULL, 0
        , 0, NULL);
 INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_scope`
                        , `menu_check_strictly`, `dept_check_strictly`, `status`, `del_flag`, `create_by`
@@ -4495,7 +4102,7 @@ INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_s
                        , `is_project_role`, `role_name_i18n_key`)
 VALUES (11, '项目创建人', 'project.create-by', 21, '1'
        , 1, 1, '0', '0', 'admin'
-       , '2024-01-05 17:57:40', 'admin', '2024-07-20 10:41:32', NULL, 0
+       , '2024-01-05 17:57:40', 'admin', '2024-07-28 02:31:01', NULL, 0
        , 1, 'project.create-by');
 INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_scope`
                        , `menu_check_strictly`, `dept_check_strictly`, `status`, `del_flag`, `create_by`
@@ -4503,7 +4110,7 @@ INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_s
                        , `is_project_role`, `role_name_i18n_key`)
 VALUES (12, '团队创建人', 'team.create-by', 11, '1'
        , 1, 1, '0', '0', 'admin'
-       , '2024-01-06 03:41:45', 'admin', '2024-07-20 10:41:21', NULL, 1
+       , '2024-01-06 03:41:45', 'admin', '2024-07-28 02:30:46', NULL, 1
        , 0, 'team.create-by');
 COMMIT;
 DROP TABLE IF EXISTS `sys_role_dept`;
@@ -4874,6 +4481,18 @@ VALUES (4, 2109);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (4, 2110);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (4, 2111);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (4, 2112);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (4, 2113);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (4, 2114);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (4, 2115);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (4, 2116);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (5, 2000);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (5, 2001);
@@ -5039,6 +4658,18 @@ INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (6, 2109);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (6, 2110);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (6, 2111);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (6, 2112);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (6, 2113);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (6, 2114);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (6, 2115);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (6, 2116);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (7, 1035);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
@@ -5406,6 +5037,18 @@ VALUES (11, 2109);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (11, 2110);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (11, 2111);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (11, 2112);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (11, 2113);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (11, 2114);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (11, 2115);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (11, 2116);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (12, 2000);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (12, 2001);
@@ -5564,6 +5207,18 @@ VALUES (12, 2109);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (12, 2110);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (12, 2111);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (12, 2112);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (12, 2113);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (12, 2114);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (12, 2115);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (12, 2116);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (1810336402060121088, 194487968141779968);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (1810336402060121088, 3514598350520133632);
@@ -5680,17 +5335,21 @@ CREATE TABLE `sys_user` (
                             `create_time` datetime DEFAULT NULL COMMENT '创建时间',
                             `update_by` varchar(64) DEFAULT '' COMMENT '更新者',
                             `update_time` datetime DEFAULT NULL COMMENT '更新时间',
-                            `remark` varchar(500) DEFAULT NULL COMMENT '备注'
+                            `remark` varchar(500) DEFAULT NULL COMMENT '备注',
+                            `ding_user_id` varchar(255) DEFAULT NULL COMMENT '钉钉账号',
+                            `wechat_user_id` varchar(255) DEFAULT NULL COMMENT '微信账号'
 );
 
 INSERT INTO `sys_user` (`user_id`, `dept_id`, `user_name`, `nick_name`, `user_type`
                        , `email`, `phonenumber`, `sex`, `avatar`, `password`
                        , `status`, `del_flag`, `login_ip`, `login_date`, `create_by`
-                       , `create_time`, `update_by`, `update_time`, `remark`)
+                       , `create_time`, `update_by`, `update_time`, `remark`, `ding_user_id`
+                       , `wechat_user_id`)
 VALUES (1, 0, 'admin', '黑猫警长', '00'
-       , 'admin@cat2bug.com', '18888888888', '0', '', '$2a$10$5enMqRePATm8OfHb0/64Ce3NGChvmefyvTA3o/7juZEm4mEf1dxgu'
-       , '0', '0', '127.0.0.1', '2024-07-21 19:11:46', 'admin'
-       , '2023-11-12 15:34:51', '', '2024-07-21 11:11:46', '管理员');
+       , 'admin@cat2bug.com', '18888888888', '0', '', '$2a$10$r3WZTueDQZBnFjg9exCCgucuI2tLhvgwOPAALM.3ljN0x914K7Yse'
+       , '0', '0', '127.0.0.1', '2024-07-30 00:53:15', 'admin'
+       , '2023-11-12 15:34:51', '', '2024-07-29 16:53:15', '管理员', NULL
+       , NULL);
 COMMIT;
 DROP TABLE IF EXISTS `sys_user_config`;
 CREATE TABLE `sys_user_config` (
@@ -5757,13 +5416,27 @@ VALUES (192, 10);
 INSERT INTO `sys_user_role` (`user_id`, `role_id`)
 VALUES (193, 10);
 INSERT INTO `sys_user_role` (`user_id`, `role_id`)
+VALUES (194, 10);
+INSERT INTO `sys_user_role` (`user_id`, `role_id`)
+VALUES (196, 10);
+INSERT INTO `sys_user_role` (`user_id`, `role_id`)
+VALUES (197, 10);
+INSERT INTO `sys_user_role` (`user_id`, `role_id`)
 VALUES (198, 10);
 INSERT INTO `sys_user_role` (`user_id`, `role_id`)
-VALUES (203, 10);
+VALUES (199, 10);
 INSERT INTO `sys_user_role` (`user_id`, `role_id`)
-VALUES (204, 10);
+VALUES (200, 10);
 INSERT INTO `sys_user_role` (`user_id`, `role_id`)
-VALUES (205, 10);
+VALUES (201, 10);
+INSERT INTO `sys_user_role` (`user_id`, `role_id`)
+VALUES (202, 10);
+INSERT INTO `sys_user_role` (`user_id`, `role_id`)
+VALUES (209, 10);
+INSERT INTO `sys_user_role` (`user_id`, `role_id`)
+VALUES (210, 10);
+INSERT INTO `sys_user_role` (`user_id`, `role_id`)
+VALUES (212, 10);
 COMMIT;
 DROP TABLE IF EXISTS `sys_user_statistic_template`;
 CREATE TABLE `sys_user_statistic_template` (
