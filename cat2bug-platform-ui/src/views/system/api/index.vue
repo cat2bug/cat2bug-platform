@@ -1,6 +1,9 @@
 <template>
   <div class="app-container">
-    <project-label />
+    <el-row class="project-add-page-header">
+      <el-page-header @back="goBack" :content="$t('project.api-key')">
+      </el-page-header>
+    </el-row>
     <div class="api-tools">
       <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
         <el-form-item label="" prop="apiName">
@@ -155,6 +158,10 @@ export default {
     this.getList();
   },
   methods: {
+    /** 返回 */
+    goBack() {
+      this.$router.back();
+    },
     /** 查询项目API列表 */
     getList() {
       this.loading = true;

@@ -32,7 +32,7 @@
         <el-image :src="require('@/assets/images/help/wechat/wechat-create-app-page1.png')" />
         <p>4. 进入应用界面后配置企业可信IP。</p>
         <el-image :src="require('@/assets/images/help/wechat/wechat-create-app-page2.png')" />
-        <p>注意：可信IP为Cat2Bug-Platform平台外网IP地址，比配置此项，企业微信将无法正常接收通知消息。</p>
+        <p>注意：可信IP为Cat2Bug-Platform平台外网IP地址，不配置此项，企业微信将无法正常接收通知消息。</p>
         <p>5. 将应用详情上方的【AgentId】复制到左侧【应用ID】一栏，将【Secret】复制到左侧【应用凭证】栏中。</p>
         <el-image :src="require('@/assets/images/help/wechat/wechat-app-id.png')" />
         <p>6. 选择导航栏中的【我的企业】菜单，将最下放的【企业ID】复制到左侧栏中，点击【保存】按钮保存配置。</p>
