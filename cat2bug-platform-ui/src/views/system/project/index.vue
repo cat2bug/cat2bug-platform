@@ -135,6 +135,7 @@ import store from "@/store";
 import i18n from "@/utils/i18n/i18n";
 import {mapGetters, mapState} from "vuex";
 import {checkPermi} from "@/utils/permission";
+import router from "@/router";
 
 export default {
   name: "Project",
@@ -385,7 +386,9 @@ export default {
       if(this.isViewDefect(project)) {
         store.dispatch('UpdateCurrentProjectId', project.projectId).then(() => {
           store.dispatch('GetInfo').then(() => {
-            _this.$router.push({name:'Defect', params: { projectId: project.projectId }})
+            store.dispatch('GenerateRoutes').then(accessRoutes => {
+              _this.$router.push({name:'Defect', params: { projectId: project.projectId }})
+            });
           });
         });
       } else {

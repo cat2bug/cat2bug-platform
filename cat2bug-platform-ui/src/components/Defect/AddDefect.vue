@@ -422,9 +422,9 @@ export default {
       color: #909399;
     }
   }
-  .app-container {
-    ::v-deep.el-form-item--medium {
-      line-height: 35px;
+  ::v-deep .app-container {
+    .el-form-item--medium .el-form-item__content {
+      line-height: 35px !important;
     }
   }
 </style>

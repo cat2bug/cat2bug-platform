@@ -7,6 +7,7 @@
            :contenteditable="true"
            @click="handleSelection"
            @input="handleSelection"
+           @paste="handlePaste"
            @keydown.enter.prevent="keyDownHandle"
       ></div>
     </div>
@@ -105,6 +106,10 @@ export default {
     observer.observe(this.$refs.commentInputContent, { subtree: true, characterData: true, childList: true });
   },
   methods: {
+    handlePaste(event) {
+      // 阻止默认粘贴行为
+      event.preventDefault();
+    },
     /** 重置数据 */
     reset () {
       const contentDiv = this.$refs.commentInputContent;
