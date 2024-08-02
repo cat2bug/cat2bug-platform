@@ -70,7 +70,7 @@ public class SysDefectServiceImpl implements ISysDefectService
         this.updateSysDefect(sd);
 
         // 发送通知
-        SysDefect sysDefect = sysDefectMapper.selectSysDefectByDefectId(sysDefectLog.getDefectId(),null, DateUtils.getNowDate());
+        SysDefect sysDefect = sysDefectMapper.selectSysDefectByDefectId(sysDefectLog.getDefectId(), SecurityUtils.getUserId(), DateUtils.getNowDate());
         this.sendDefectNotice(sysDefect.getProjectId(), sysDefectLog.getSrcHost(), sd.getDefectId());
 
         // 插入日志
@@ -95,7 +95,7 @@ public class SysDefectServiceImpl implements ISysDefectService
         this.updateSysDefect(sd);
 
         // 发送通知
-        SysDefect sysDefect = sysDefectMapper.selectSysDefectByDefectId(sysDefectLog.getDefectId(),null, DateUtils.getNowDate());
+        SysDefect sysDefect = sysDefectMapper.selectSysDefectByDefectId(sysDefectLog.getDefectId(), SecurityUtils.getUserId(), DateUtils.getNowDate());
         this.sendDefectNotice(sysDefect.getProjectId(), sysDefectLog.getSrcHost(), sd.getDefectId());
 
         // 插入日志
@@ -121,7 +121,7 @@ public class SysDefectServiceImpl implements ISysDefectService
         this.updateSysDefect(sd);
 
         // 发送通知
-        SysDefect sysDefect = sysDefectMapper.selectSysDefectByDefectId(sysDefectLog.getDefectId(),null, DateUtils.getNowDate());
+        SysDefect sysDefect = sysDefectMapper.selectSysDefectByDefectId(sysDefectLog.getDefectId(), SecurityUtils.getUserId(), DateUtils.getNowDate());
         this.sendDefectNotice(sysDefect.getProjectId(), sysDefectLog.getSrcHost(), sd.getDefectId());
 
         // 插入日志
@@ -146,7 +146,7 @@ public class SysDefectServiceImpl implements ISysDefectService
         this.updateSysDefect(sd);
 
         // 发送通知
-        SysDefect sysDefect = sysDefectMapper.selectSysDefectByDefectId(sysDefectLog.getDefectId(),null, DateUtils.getNowDate());
+        SysDefect sysDefect = sysDefectMapper.selectSysDefectByDefectId(sysDefectLog.getDefectId(),SecurityUtils.getUserId(), DateUtils.getNowDate());
         this.sendDefectNotice(sysDefect.getProjectId(), sysDefectLog.getSrcHost(), sd.getDefectId());
 
         // 插入日志
@@ -165,7 +165,7 @@ public class SysDefectServiceImpl implements ISysDefectService
         this.updateSysDefect(sd);
 
         // 发送通知
-        SysDefect sysDefect = sysDefectMapper.selectSysDefectByDefectId(sysDefectLog.getDefectId(),null, DateUtils.getNowDate());
+        SysDefect sysDefect = sysDefectMapper.selectSysDefectByDefectId(sysDefectLog.getDefectId(),SecurityUtils.getUserId(), DateUtils.getNowDate());
         this.sendDefectNotice(sysDefect.getProjectId(), sysDefectLog.getSrcHost(), sd.getDefectId());
 
         // 插入日志
@@ -184,7 +184,7 @@ public class SysDefectServiceImpl implements ISysDefectService
         sd.setHandleBy(sysDefectLog.getReceiveBy());
         this.updateSysDefect(sd);
 
-        SysDefect sysDefect = sysDefectMapper.selectSysDefectByDefectId(sysDefectLog.getDefectId(),null, DateUtils.getNowDate());
+        SysDefect sysDefect = sysDefectMapper.selectSysDefectByDefectId(sysDefectLog.getDefectId(),SecurityUtils.getUserId(), DateUtils.getNowDate());
         // 发送通知
         this.sendDefectNotice(sysDefect.getProjectId(), sysDefectLog.getSrcHost(), sd.getDefectId());
 
@@ -371,7 +371,7 @@ public class SysDefectServiceImpl implements ISysDefectService
      * @param defectId
      */
     private void sendDefectNotice(Long projectId, String srcHost, Long defectId) {
-        SysDefect defect = this.sysDefectMapper.selectSysDefectByDefectId(defectId,null, DateUtils.getNowDate());
+        SysDefect defect = this.sysDefectMapper.selectSysDefectByDefectId(defectId,SecurityUtils.getUserId(), DateUtils.getNowDate());
         defect.setSrcHost(srcHost);
         if(defect!=null) {
             // 获取关注缺陷的人ID集合

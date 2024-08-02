@@ -102,7 +102,7 @@
       </el-table-column>
       <el-table-column v-if="showField('annex')" :label="$t('annex')" :key="$t('annex')" align="left" prop="annexUrls">
         <template slot-scope="scope">
-          <el-link type="primary" v-for="(file,index) in getUrl(scope.row.annexUrls)" :key="index" :href="file">{{getFileName(file)}}</el-link>
+          <el-button class="annex-link" type="text"  v-for="(file,index) in getUrl(scope.row.annexUrls)" :key="index" @click="handleDown($event, file)">{{getFileName(file)}}</el-button>
         </template>
       </el-table-column>
       <el-table-column :label="$t('operate')" align="left" class-name="small-padding fixed-width" width="200">
@@ -309,6 +309,14 @@ export default {
     /** 处理点击了表格中的某一行 */
     handleClickTableRow(defect) {
       this.$emit('defect-click',defect);
+    },
+    /** 下载附件操作 */
+    handleDown(event, file) {
+      const a = document.createElement("a");
+      const e = new MouseEvent("click");
+      a.href = file;
+      a.dispatchEvent(e);
+      event.stopPropagation();
     }
   }
 }
@@ -383,5 +391,10 @@ export default {
     font-size: 11px;
     color: #303133;
   }
+}
+.annex-link {
+  white-space: normal;
+  text-align: center;
+  word-break: break-all;
 }
 </style>

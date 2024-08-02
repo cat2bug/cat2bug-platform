@@ -2182,7 +2182,7 @@ CREATE TABLE `sys_user` (
 -- Records of sys_user
 -- ----------------------------
 BEGIN;
-INSERT INTO `sys_user` (`user_id`, `dept_id`, `user_name`, `nick_name`, `user_type`, `email`, `phonenumber`, `sex`, `avatar`, `password`, `status`, `del_flag`, `login_ip`, `login_date`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `ding_user_id`, `wechat_user_id`) VALUES (1, 00000000000000000000, 'admin', '黑猫警长', '00', 'admin@cat2bug.com', '18888888888', '0', '', '$2a$10$r3WZTueDQZBnFjg9exCCgucuI2tLhvgwOPAALM.3ljN0x914K7Yse', '0', '0', '127.0.0.1', '2024-07-30 00:53:15', 'admin', '2023-11-12 15:34:51', '', '2024-07-29 16:53:15', '管理员', NULL, NULL);
+INSERT INTO `sys_user` (`user_id`, `dept_id`, `user_name`, `nick_name`, `user_type`, `email`, `phonenumber`, `sex`, `avatar`, `password`, `status`, `del_flag`, `login_ip`, `login_date`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `ding_user_id`, `wechat_user_id`) VALUES (1, 00000000000000000000, 'admin', '黑猫警长', '00', 'admin@cat2bug.com', '18888888888', '0', '', '$2a$10$/YbsRyezA9pg13iJhCNE.u5yOvWbuq7NZhOlliUvycEfBIgJN6qHK', '0', '0', '127.0.0.1', '2024-07-30 00:53:15', 'admin', '2023-11-12 15:34:51', '', '2024-07-29 16:53:15', '管理员', NULL, NULL);
 COMMIT;
 
 -- ----------------------------

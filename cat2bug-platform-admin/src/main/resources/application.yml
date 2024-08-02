@@ -135,6 +135,9 @@ spring:
       mail:
         smtp:
           auth: true
+          starttls:
+            enable: true
+            required: true
           ssl:
             enable: true
           socketFactory:

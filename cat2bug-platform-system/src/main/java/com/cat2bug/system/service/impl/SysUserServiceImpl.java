@@ -138,7 +138,11 @@ public class SysUserServiceImpl implements ISysUserService
     public SysUser selectUserById(Long memberId)
     {
         SysUserConfig sysUserConfig = sysUserConfigService.selectSysUserConfigByUserId(memberId);
-        return userMapper.selectUserById(sysUserConfig.getCurrentTeamId(), sysUserConfig.getCurrentProjectId(), memberId);
+        if(sysUserConfig==null) {
+            return userMapper.selectUserById(null,null,memberId);
+        } else {
+            return userMapper.selectUserById(sysUserConfig.getCurrentTeamId(), sysUserConfig.getCurrentProjectId(), memberId);
+        }
     }
 
     /**
