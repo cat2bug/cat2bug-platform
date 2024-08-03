@@ -26,9 +26,16 @@ export default {
     }
   },
   created() {
+    this.welcome();
     this.initWebSocket();
   },
   methods: {
+    /**
+     * 欢迎语
+     */
+    welcome() {
+      console.log(this.$i18n.t('welcome'));
+    },
     /**
      * 初始化websocket
      */

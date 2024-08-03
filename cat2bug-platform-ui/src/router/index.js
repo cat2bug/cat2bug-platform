@@ -195,7 +195,7 @@ export const constantRoutes = [
       {
         path: '/notice/index',
         component: () => import('@/views/notice'),
-        name: 'Notice',
+        name: 'SystemNotice',
         meta: { title: i18n.t('notice'), titleI18nKey:'notice' }
       }
     ]
