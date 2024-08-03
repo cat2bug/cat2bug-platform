@@ -109,9 +109,9 @@
                      @click="handleAdd">
           <i class="el-icon-plus" />{{$i18n.t('defect.create')}}
           <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item @click="handleAdd">{{$i18n.t('defect.create')}}</el-dropdown-item>
-            <el-dropdown-item @click="handleImport">导入缺陷</el-dropdown-item>
-            <el-dropdown-item @click="handleExport">导出缺陷</el-dropdown-item>
+            <el-dropdown-item @click.native="handleAdd">{{$i18n.t('defect.create')}}</el-dropdown-item>
+            <el-dropdown-item @click.native="handleImport">导入缺陷</el-dropdown-item>
+            <el-dropdown-item @click.native="handleExport">导出缺陷</el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
       </template>
@@ -126,7 +126,7 @@
     <!-- 添加页签对话框 -->
     <defect-tab-dialog ref="defectTabDialog" :project-id="getProjectId()" :member-id="userId" @add="tabAddHandle" />
     <!-- 导入缺陷 -->
-    <defect-import ref="defectImportDialog" :project-id="getProjectId()" @upload="getList" />
+    <defect-import ref="defectImportDialog" :project-id="getProjectId()" @upload="search(queryParams)" />
   </div>
 </template>
 
@@ -157,7 +157,7 @@ const ALL_TAB_NAME = 'all-tab';
 const CACHE_KEY_STATISTIC_PANEL_VISIBLE = 'defect.statisticPanelVisible';
 export default {
   name: "Defect",
-  components: {SelectModule, AddDefect, HandleDefect, SelectProjectMember,ProjectLabel, Cat2BugStatistic, DefectTabDialog, DefectTable, DefectCalendar },
+  components: {SelectModule, AddDefect, HandleDefect, SelectProjectMember,ProjectLabel, Cat2BugStatistic, DefectTabDialog, DefectTable, DefectCalendar, DefectImport },
   data() {
     return {
       // 当前缺陷面板的类型

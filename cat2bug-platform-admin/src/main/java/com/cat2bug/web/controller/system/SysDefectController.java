@@ -245,13 +245,13 @@ public class SysDefectController extends BaseController
                 d.setHandleByNames(d.getHandleByList().stream().map(m->m.getNickName()).collect(Collectors.joining("/")));
             }
 
-            if(StringUtils.isNotBlank(d.getModuleName())){
-                String[] ms = d.getModuleName().split("/");
-                d.setProductName(ms[0]);
-                if(ms.length>1){
-                    d.setModuleName2(ms[1]);
-                }
-            }
+//            if(StringUtils.isNotBlank(d.getModuleName())){
+//                String[] ms = d.getModuleName().split("/");
+//                d.setProductName(ms[0]);
+//                if(ms.length>1){
+//                    d.setModuleName2(ms[1]);
+//                }
+//            }
             return d;
         }).collect(Collectors.toList());
 

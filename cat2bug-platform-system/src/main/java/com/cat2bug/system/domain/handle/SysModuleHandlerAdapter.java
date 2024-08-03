@@ -10,7 +10,6 @@ import com.cat2bug.system.service.ISysUserConfigService;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Workbook;
 
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -21,7 +20,7 @@ import java.util.stream.Collectors;
  */
 public class SysModuleHandlerAdapter implements ExcelHandlerAdapter {
     @Override
-    public Object format(Object value, String[] args, Cell cell, Workbook wb) {
+    public Object format(Object value, String[] args, Cell cell, Workbook wb,Map<String, Object> requestParams) {
         if(value!=null) {
             String modulePath = value.toString();
             ISysUserConfigService sysUserConfigService = SpringUtils.getBean(ISysUserConfigService.class);
