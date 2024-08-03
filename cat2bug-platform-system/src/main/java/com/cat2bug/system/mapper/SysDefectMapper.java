@@ -75,4 +75,11 @@ public interface SysDefectMapper
      * @return  版本集合
      */
     public List<SysVersion> selectVersionList(@Param("projectId")Long projectId);
+
+    /**
+     * 批量添加缺陷
+     * @param defectList    缺陷集合
+     * @return              添加成功的数量
+     */
+    public int batchInsertSysDefect(@Param("defectList") List<SysDefect> defectList);
 }

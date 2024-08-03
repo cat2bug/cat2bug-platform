@@ -264,6 +264,44 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
          </trim>
     </insert>
 
+    <insert id="batchInsertSysDefect" parameterType="SysDefect" useGeneratedKeys="true" keyProperty="defectId" keyColumn="defect_id">
+        insert into sys_defect
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            project_num,defect_type,defect_name,defect_describe,
+            annex_urls,img_urls,project_id,module_id,module_version,
+            create_by,create_by_id,update_time,create_time,update_by,update_by_id,
+            defect_state,handle_by,handle_time,defect_level,defect_group_key,defect_key,defect_solution,defect_plan_time
+        </trim>
+        values
+        <foreach collection="defectList" separator="," item="defect">
+            (
+            #{defect.projectNum},
+            #{defect.defectType, typeHandler=com.cat2bug.common.core.domain.handle.SysDefectTypeEnumTypeHandler},
+            #{defect.defectName},
+            #{defect.defectDescribe},
+            #{defect.annexUrls},
+            #{defect.imgUrls},
+            #{defect.projectId},
+            #{defect.moduleId},
+            #{defect.moduleVersion},
+            #{defect.createBy},
+            #{defect.createById},
+            #{defect.updateTime},
+            #{defect.createTime},
+            #{defect.updateBy},
+            #{defect.updateById},
+            #{defect.defectState, typeHandler=com.cat2bug.common.core.domain.handle.SysDefectStateEnumTypeHandler},
+            #{defect.handleBy, typeHandler=com.cat2bug.common.core.domain.handle.LongArrayTypeHandler},
+            #{defect.handleTime},
+            #{defect.defectLevel},
+            #{defect.defectGroupKey},
+            #{defect.defectKey},
+            #{defect.defectSolution},
+            #{defect.defectPlanTime}
+            )
+        </foreach>
+    </insert>
+
     <update id="updateSysDefect" parameterType="com.cat2bug.common.core.domain.entity.SysDefect">
         update sys_defect
         <trim prefix="SET" suffixOverrides=",">
