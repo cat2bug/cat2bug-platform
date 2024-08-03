@@ -18,6 +18,7 @@
         <p>{{ team.teamName }}</p>
       </el-option>
       <el-option class="team-select-footer"
+                 :line="teamList.length>0?'true':'false'"
                  key="team-select-footer-create-team"
                  value="team-select-footer-create-team"
       >
@@ -186,9 +187,11 @@ export default {
   }
   .team-select-footer {
     height: 60px;
-    border-top: #EBEEF5 1px solid;
     padding-top: 5px;
     background-color: #FFFFFF;
+  }
+  .team-select-footer[line="true"] {
+    border-top: #EBEEF5 1px solid;
   }
   ::v-deep .el-select-dropdown__wrap {
     max-height: 100%;
