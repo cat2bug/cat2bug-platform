@@ -6,20 +6,19 @@ import com.cat2bug.common.core.domain.AjaxResult;
 import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.common.core.page.TableDataInfo;
 import com.cat2bug.common.enums.BusinessType;
+import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.common.utils.poi.ExcelUtil;
 import com.cat2bug.common.core.domain.entity.SysDefect;
 import com.cat2bug.system.domain.SysDefectLog;
 import com.cat2bug.system.domain.SysProjectDefectTabs;
 import com.cat2bug.system.domain.SysUserConfig;
-import com.cat2bug.system.service.IMemberFocusService;
-import com.cat2bug.system.service.ISysDefectService;
-import com.cat2bug.system.service.ISysProjectDefectTabsService;
-import com.cat2bug.system.service.ISysUserConfigService;
+import com.cat2bug.system.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -49,6 +48,10 @@ public class SysDefectController extends BaseController
     private ISysProjectDefectTabsService sysProjectDefectTabsService;
     @Autowired
     private ISysUserConfigService sysUserConfigService;
+    @Autowired
+    private ISysModuleService sysModuleService;
+    @Autowired
+    private ISysUserProjectService sysUserProjectService;
     /**
      * 查询缺陷配置
      */
@@ -99,19 +102,6 @@ public class SysDefectController extends BaseController
     {
         memberFocusService.removeFocus(getUserId());
         return success();
-    }
-
-    /**
-     * 导出缺陷列表
-     */
-    @PreAuthorize("@ss.hasPermi('system:defect:export')")
-    @Log(title = "缺陷", businessType = BusinessType.EXPORT)
-    @PostMapping("/export")
-    public void export(HttpServletResponse response, SysDefect sysDefect)
-    {
-        List<SysDefect> list = sysDefectService.selectSysDefectList(sysDefect);
-        ExcelUtil<SysDefect> util = new ExcelUtil<SysDefect>(SysDefect.class);
-        util.exportExcel(response, list, "缺陷数据");
     }
 
     /**
@@ -228,5 +218,78 @@ public class SysDefectController extends BaseController
     public AjaxResult remove(@PathVariable Long[] defectIds)
     {
         return toAjax(sysDefectService.deleteSysDefectByDefectIds(defectIds));
+    }
+
+//    /**
+//     * 导出缺陷列表
+//     */
+//    @PreAuthorize("@ss.hasPermi('system:defect:export')")
+//    @Log(title = "缺陷", businessType = BusinessType.EXPORT)
+//    @PostMapping("/export")
+//    public void export(HttpServletResponse response, SysDefect sysDefect)
+//    {
+//        List<SysDefect> list = sysDefectService.selectSysDefectList(sysDefect);
+//        ExcelUtil<SysDefect> util = new ExcelUtil<SysDefect>(SysDefect.class);
+//        util.exportExcel(response, list, "缺陷数据");
+//    }
+
+    /**
+     * 导出缺陷列表
+     */
+    @PreAuthorize("@ss.hasPermi('system:defect:add')")
+    @Log(title = "缺陷", businessType = BusinessType.EXPORT)
+    @PostMapping("/export")
+    public void export(HttpServletResponse response, SysDefect sysDefect) {
+        List<SysDefect> list = sysDefectService.selectSysDefectList(sysDefect).stream().map(d->{
+            if(d.getHandleByList()!=null) {
+                d.setHandleByNames(d.getHandleByList().stream().map(m->m.getNickName()).collect(Collectors.joining("/")));
+            }
+
+            if(StringUtils.isNotBlank(d.getModuleName())){
+                String[] ms = d.getModuleName().split("/");
+                d.setProductName(ms[0]);
+                if(ms.length>1){
+                    d.setModuleName2(ms[1]);
+                }
+            }
+            return d;
+        }).collect(Collectors.toList());
+
+        ExcelUtil<SysDefect> util = new ExcelUtil<SysDefect>(SysDefect.class);
+        List<String> moduleNameList = sysModuleService.selectSysModulePathList(0L).stream().map(m->m.getModulePath()).collect(Collectors.toList());
+        sysDefect.getParams().put("moduleNameList",moduleNameList);
+
+        List<String> userList = sysUserProjectService.selectSysUserListByProjectId(sysDefect.getProjectId(),new SysUser()).stream().map(u->u.getNickName()).collect(Collectors.toList());
+        sysDefect.getParams().put("memberList",userList);
+        util.exportExcel(response, list, "缺陷数据",sysDefect.getParams());
+    }
+
+    @Log(title = "缺陷", businessType = BusinessType.IMPORT)
+    @PreAuthorize("@ss.hasPermi('system:defect:add')")
+    @PostMapping("/import")
+    public AjaxResult importData(MultipartFile file, boolean updateSupport) throws Exception
+    {
+        SysUserConfig userConfig = sysUserConfigService.selectSysUserConfigByUserId(getUserId());
+        ExcelUtil<SysDefect> util = new ExcelUtil<SysDefect>(SysDefect.class);
+        List<SysDefect> defectList = util.importExcel(file.getInputStream());
+        String message = sysDefectService.importDefect(userConfig.getCurrentProjectId(), defectList);
+        if(StringUtils.isNotBlank(message)) {
+            return success(message);
+        }
+        return success(String.format("导入成功,共导入%d条数据",defectList.size()));
+    }
+
+    @PostMapping("/importTemplate")
+    public void importTemplate(HttpServletResponse response)
+    {
+        SysUserConfig userConfig = sysUserConfigService.selectSysUserConfigByUserId(getUserId());
+        Map<String, Object> params = new HashMap<>();
+        ExcelUtil<SysDefect> util = new ExcelUtil<SysDefect>(SysDefect.class);
+        List<String> moduleNameList = sysModuleService.selectSysModulePathList(0L).stream().map(m->m.getModulePath()).collect(Collectors.toList());
+        params.put("moduleNameList",moduleNameList);
+
+        List<String> userList = sysUserProjectService.selectSysUserListByProjectId(userConfig.getCurrentProjectId(),new SysUser()).stream().map(u->u.getNickName()).collect(Collectors.toList());
+        params.put("memberList",userList);
+        util.importTemplateExcel(response, "缺陷数据",params);
     }
 }
