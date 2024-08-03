@@ -1,5 +1,6 @@
 <template>
   <div>
+    <!--查询-->
     <div class="defect-table-tools">
       <slot name="left-tools"></slot>
       <div class="table-tools row">
@@ -27,8 +28,32 @@
         </div>
       </div>
     </div>
-
+    <!--表格-->
     <el-table :key="tableKey" v-loading="loading" style="width:100%;" :data="defectList" @selection-change="handleSelectionChange" @sort-change="sortChangeHandle" @row-click="handleClickTableRow">
+<!--      多选项，后续版本开放 -->
+<!--      <el-table-column width="50" align="start">-->
+<!--        <template #header>-->
+<!--          <el-checkbox key="allCheck" :indeterminate="isIndeterminate" v-model="isCheckAll" @change="handleCheckAllChange"></el-checkbox>-->
+<!--        </template>-->
+<!--        <template slot-scope="scope">-->
+<!--          <div class="row">-->
+<!--            <el-checkbox-group v-model="checkedDefectList" @change="handleCheckedDefectChange">-->
+<!--              <el-checkbox :label="scope.row.defectId" :key="scope.row.defectId" @click.native="handleStopPropagation">{{''}}</el-checkbox>-->
+<!--            </el-checkbox-group>-->
+<!--            <div class="defect-check-tools">-->
+<!--              <el-tooltip class="item" effect="dark" content="合并缺陷" placement="right">-->
+<!--                <svg-icon icon-class="booknail" :disabled="batchToolsDisabled(scope.row)" />-->
+<!--              </el-tooltip>-->
+<!--              <el-tooltip class="item" effect="dark" content="合并缺陷" placement="right">-->
+<!--                <el-button round type="warning" :disabled="batchToolsDisabled(scope.row)"></el-button>-->
+<!--              </el-tooltip>-->
+<!--              <el-tooltip class="item" effect="dark" content="批量删除" placement="right">-->
+<!--                <el-button round type="danger" :disabled="batchToolsDisabled(scope.row)"></el-button>-->
+<!--              </el-tooltip>-->
+<!--            </div>-->
+<!--          </div>-->
+<!--        </template>-->
+<!--      </el-table-column>-->
       <el-table-column v-if="showField('id')" :label="$t('id')" :key="$t('id')" align="left" prop="projectNum" width="80" sortable >
         <template slot-scope="scope">
           <span>{{ '#' + scope.row.projectNum }}</span>
@@ -142,6 +167,12 @@ export default {
   components: {RowListMember, Cat2BugPreviewImage, LevelTag, FocusMemberList, DefectTypeFlag, DefectStateFlag, DefectTools},
   data() {
     return {
+      // 是否选择了所有
+      isCheckAll: false,
+      // 全选组件的状态
+      isIndeterminate: false,
+      // 勾选的缺陷ID列表
+      checkedDefectList: [],
       tableKey: (new Date()).getMilliseconds(),
       // 遮罩层
       loading: true,
@@ -203,6 +234,12 @@ export default {
     },
   },
   computed: {
+    /** 缺陷批量工具是否可用 */
+    batchToolsDisabled: function () {
+      return function (defect) {
+        return this.checkedDefectList.filter(d=>d==defect.defectId).length==0;
+      }
+    },
     /** 缺陷的存活时间 */
     defectLife: function () {
       return function (defect) {
@@ -317,6 +354,22 @@ export default {
       a.href = file;
       a.dispatchEvent(e);
       event.stopPropagation();
+    },
+    /** 全选组件勾选状态的改变处理 */
+    handleCheckAllChange(value) {
+      this.checkedDefectList = value ? this.defectList.map(d=>d.defectId) : [];
+      this.isIndeterminate = false;
+    },
+    /** 勾选某个缺陷的改变处理 */
+    handleCheckedDefectChange(value) {
+      let checkedCount = value.length;
+      this.checkAll = checkedCount === this.defectList.length;
+      this.isIndeterminate = checkedCount > 0 && checkedCount < this.defectList.length;
+
+    },
+    /** 阻止冒泡事件传递处理 */
+    handleStopPropagation(event) {
+      event.stopPropagation();
     }
   }
 }
@@ -340,6 +393,26 @@ export default {
     > * {
       margin-bottom: 10px;
     }
+  }
+}
+.el-checkbox-group {
+  width: 15px;
+  height: 15px;
+  line-height: 15px;
+}
+.defect-check-tools {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  > * {
+    font-size: 0.7rem;
+  }
+  ::v-deep .el-button {
+    width: 8px;
+    height: 8px;
+    margin: 0px;
+    padding: 0px;
+    border-width: 0px;
   }
 }
 .row {

@@ -93,14 +93,27 @@
         </div>
       </template>
       <template slot="right-tools">
-        <el-button
-          type="primary"
-          plain
-          icon="el-icon-plus"
-          size="small"
-          @click="handleAdd"
-          v-hasPermi="['system:defect:add']"
-        >{{$i18n.t('defect.create')}}</el-button>
+<!--        <el-button-->
+<!--          type="primary"-->
+<!--          plain-->
+<!--          icon="el-icon-plus"-->
+<!--          size="small"-->
+<!--          @click="handleAdd"-->
+<!--          v-hasPermi="['system:defect:add']"-->
+<!--        >{{$i18n.t('defect.create')}}</el-button>-->
+        <el-dropdown class="defect-add-dropdown"
+                     split-button
+                     size="small"
+                     type="primary"
+                     v-hasPermi="['system:defect:add']"
+                     @click="handleClick">
+          <i class="el-icon-plus" />{{$i18n.t('defect.create')}}
+          <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item>{{$i18n.t('defect.create')}}</el-dropdown-item>
+            <el-dropdown-item>导入缺陷</el-dropdown-item>
+            <el-dropdown-item>导出缺陷</el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
       </template>
     </component>
 <!--    </keep-alive>-->
@@ -487,5 +500,20 @@ export default {
 }
 .defect-tools-button:hover {
   color: #409EFF;
+}
+.defect-add-dropdown {
+  ::v-deep button {
+    color: #1890ff;
+    background: #e8f4ff;
+    border-color: #a3d3ff;
+  }
+  ::v-deep button:hover {
+    background: #1890ff;
+    border-color: #1890ff;
+    color: #FFFFFF;
+  }
+  ::v-deep .el-dropdown__caret-button::before {
+      background-color: #a3d3ff;
+    }
 }
 </style>

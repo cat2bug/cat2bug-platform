@@ -6,6 +6,8 @@ cat2bug:
   version: 0.4.1
   # 版权年份
   copyrightYear: 2024
+  # 是否启动系统自动更新
+  auto-update: false
   # 文件路径
   profile: uploadPath
   # 获取ip地址开关
@@ -76,14 +78,16 @@ caffeine:
 
 # Spring配置
 spring:
-  database-type: h2
+  database-type: mysql
   flyway:
+    # 是否开启数据库自动更新
+    enabled: ${cat2bug.auto-update}
     # 字符编码
     encoding: utf-8
     # 对执行迁移时基准版本的描述
     baseline-description: BaseLineInitialize
     # 若连接的数据库非空库，是否初始化
-    # 当迁移时发现目标schema非空，而且带有没有元数据的表时，是否自动执行基准迁移，默认false.
+    # 当迁移时发现目标schema非空，而且带有没有元数据的表时，是否自动执行基准迁移，默认false。
     baseline-on-migrate: true
     # 指定 baseline 的版本号,缺省值为 1, 低于该版本号的 SQL 文件, migrate 的时候被忽略
     # 开始执行基准迁移时对现有的schema的版本打标签，默认值为1.
@@ -93,9 +97,12 @@ spring:
     validate-on-migrate: true
     # 开发环境最好开启 outOfOrder, 生产环境关闭 outOfOrder
     # 是否允许无序的迁移，默认 false
-    out-of-order: true
+    out-of-order: false
+    # flyway 的 clean 命令会删除指定 schema 下的所有 table, 生产务必禁掉。
+    clean-disabled: true
     # 当读取元数据表时是否忽略错误的迁移，默认false
     ignore-future-migrations: false
+    table: sys_db_version
     locations: classpath:db/migration/${spring.database-type}
   thymeleaf:
     mode: HTML

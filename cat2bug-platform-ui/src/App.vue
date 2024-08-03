@@ -60,7 +60,7 @@ export default {
      * @param e
      */
     webSocketOnOpen(e) {
-      console.log('WebSocket连接成功', e);
+      // console.log('WebSocket连接成功', e);
     },
     /**
      * 接收端发送过来的信息，整个项目接收信息的唯一入口
