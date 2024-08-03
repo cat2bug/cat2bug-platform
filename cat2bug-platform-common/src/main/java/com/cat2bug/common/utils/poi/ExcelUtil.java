@@ -26,9 +26,12 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletResponse;
 
 import com.cat2bug.common.utils.MessageUtils;
+import com.cat2bug.common.utils.poi.ExcelComboHandlerAdapter;
+import com.cat2bug.common.utils.poi.ExcelHandlerAdapter;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
+import org.apache.poi.common.usermodel.HyperlinkType;
 import org.apache.poi.hssf.usermodel.HSSFClientAnchor;
 import org.apache.poi.hssf.usermodel.HSSFPicture;
 import org.apache.poi.hssf.usermodel.HSSFPictureData;
@@ -36,30 +39,11 @@ import org.apache.poi.hssf.usermodel.HSSFShape;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ooxml.POIXMLDocumentPart;
-import org.apache.poi.ss.usermodel.BorderStyle;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.ss.usermodel.ClientAnchor;
-import org.apache.poi.ss.usermodel.DataValidation;
-import org.apache.poi.ss.usermodel.DataValidationConstraint;
-import org.apache.poi.ss.usermodel.DataValidationHelper;
-import org.apache.poi.ss.usermodel.DateUtil;
-import org.apache.poi.ss.usermodel.Drawing;
-import org.apache.poi.ss.usermodel.FillPatternType;
-import org.apache.poi.ss.usermodel.Font;
-import org.apache.poi.ss.usermodel.HorizontalAlignment;
-import org.apache.poi.ss.usermodel.IndexedColors;
-import org.apache.poi.ss.usermodel.Name;
-import org.apache.poi.ss.usermodel.PictureData;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.VerticalAlignment;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.util.IOUtils;
+import org.apache.poi.util.Units;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFClientAnchor;
 import org.apache.poi.xssf.usermodel.XSSFDataValidation;
@@ -207,6 +191,12 @@ public class ExcelUtil<T>
     public ExcelUtil(Class<T> clazz)
     {
         this.clazz = clazz;
+    }
+
+    public ExcelUtil(Class<T> clazz, Map<String, Object> params)
+    {
+        this.clazz = clazz;
+        this.params = params;
     }
 
     /**
@@ -552,7 +542,37 @@ public class ExcelUtil<T>
 
     /**
      * 对list数据源将其里面的数据导入到excel表单
-     * 
+     *
+     * @param response 返回数据
+     * @param list 导出数据集合
+     * @param sheetName 工作表的名称
+     * @return 结果
+     */
+    public void exportExcel(HttpServletResponse response, List<T> list, String sheetName, Map<String, Object> params)
+    {
+        exportExcel(response, list, sheetName, StringUtils.EMPTY,params);
+    }
+
+    /**
+     * 对list数据源将其里面的数据导入到excel表单
+     *
+     * @param response 返回数据
+     * @param list 导出数据集合
+     * @param sheetName 工作表的名称
+     * @param title 标题
+     * @return 结果
+     */
+    public void exportExcel(HttpServletResponse response, List<T> list, String sheetName, String title, Map<String, Object> params)
+    {
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setCharacterEncoding("utf-8");
+        this.init(list, sheetName, title, Type.EXPORT,params);
+        exportExcel(response);
+    }
+
+    /**
+     * 对list数据源将其里面的数据导入到excel表单
+     *
      * @param response 返回数据
      * @param list 导出数据集合
      * @param sheetName 工作表的名称
@@ -561,10 +581,7 @@ public class ExcelUtil<T>
      */
     public void exportExcel(HttpServletResponse response, List<T> list, String sheetName, String title)
     {
-        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        response.setCharacterEncoding("utf-8");
-        this.init(list, sheetName, title, Type.EXPORT,new HashMap<>());
-        exportExcel(response);
+        this.exportExcel(response,list,sheetName,title,new HashMap<>());
     }
 
     /**
@@ -967,6 +984,17 @@ public class ExcelUtil<T>
                 cell.setCellValue(StringUtils.contains(Convert.toStr(value), ".") ? Convert.toDouble(value) : Convert.toInt(value));
             }
         }
+        else if (ColumnType.LINK_LIST == attr.cellType())
+        {
+            List<String> links = (List<String>)value;
+            CreationHelper createHelper = wb.getCreationHelper();
+            links.forEach(link->{
+                Hyperlink hyperlink = createHelper.createHyperlink(HyperlinkType.FILE);
+                hyperlink.setAddress(link);
+                cell.setHyperlink(hyperlink);
+                cell.setCellValue(link);
+            });
+        }
         else if (ColumnType.IMAGE == attr.cellType())
         {
             ClientAnchor anchor = new XSSFClientAnchor(0, 0, 0, 0, (short) cell.getColumnIndex(), cell.getRow().getRowNum(), (short) (cell.getColumnIndex() + 1), cell.getRow().getRowNum() + 1);
@@ -976,6 +1004,34 @@ public class ExcelUtil<T>
                 byte[] data = ImageUtils.getImage(imagePath);
                 getDrawingPatriarch(cell.getSheet()).createPicture(anchor,
                         cell.getSheet().getWorkbook().addPicture(data, getImageType(data)));
+            }
+        }
+        else if (ColumnType.IMAGE_LIST == attr.cellType())
+        {
+            String path = Convert.toStr(value);
+            Drawing drawing = getDrawingPatriarch(cell.getSheet());
+            if (StringUtils.isNotEmpty(path))
+            {
+                String[] ps = path.split(",");
+                List<String> paths = Arrays.stream(ps).filter(p->StringUtils.isNotBlank(p)).collect(Collectors.toList());
+                // 计算单元格的长宽
+                double cellWidth = sheet.getColumnWidthInPixels(cell.getColumnIndex());
+                int span = (int)(cellWidth/paths.size());
+
+                for(int i=0;i<paths.size();i++) {
+                    try {
+                        String p = paths.get(i);
+                        int x1=span*i*Units.EMU_PER_PIXEL;
+                        int x2 = -span*(paths.size()-i-1)*Units.EMU_PER_PIXEL;
+                        ClientAnchor anchor = drawing.createAnchor(x1, 0, x2, 0,  (short) cell.getColumnIndex(), cell.getRow().getRowNum(), (short) (cell.getColumnIndex() + 1), cell.getRow().getRowNum() + 1);
+                        anchor.setAnchorType(ClientAnchor.AnchorType.MOVE_AND_RESIZE);
+                        byte[] data = ImageUtils.getImage(p);
+                        Picture picture = drawing.createPicture(anchor,
+                                cell.getSheet().getWorkbook().addPicture(data, getImageType(data)));
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }
             }
         }
     }
@@ -1333,8 +1389,8 @@ public class ExcelUtil<T>
         try
         {
             Object instance = excel.handler().newInstance();
-            Method formatMethod = excel.handler().getMethod("format", new Class[] { Object.class, String[].class, Cell.class, Workbook.class });
-            value = formatMethod.invoke(instance, value, excel.args(), cell, this.wb);
+            Method formatMethod = excel.handler().getMethod("format", new Class[] { Object.class, String[].class, Cell.class, Workbook.class,Map.class });
+            value = formatMethod.invoke(instance, value, excel.args(), cell, this.wb, this.params);
         }
         catch (Exception e)
         {
