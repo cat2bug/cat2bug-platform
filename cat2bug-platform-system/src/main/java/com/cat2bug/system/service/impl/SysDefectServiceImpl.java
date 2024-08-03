@@ -1,25 +1,23 @@
 package com.cat2bug.system.service.impl;
 
 import com.cat2bug.common.core.domain.entity.SysDefect;
+import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.common.core.domain.type.SysDefectLogStateEnum;
 import com.cat2bug.common.core.domain.type.SysDefectStateEnum;
 import com.cat2bug.common.core.domain.type.SysDefectTypeEnum;
 import com.cat2bug.common.utils.DateUtils;
 import com.cat2bug.common.utils.MessageUtils;
 import com.cat2bug.common.utils.SecurityUtils;
+import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.im.domain.IMUserConfig;
 import com.cat2bug.im.service.IIMUserConfigService;
 import com.cat2bug.im.service.IMService;
-import com.cat2bug.system.domain.SysDefectLog;
-import com.cat2bug.system.domain.SysDefectNotice;
-import com.cat2bug.system.domain.SysUserDefect;
-import com.cat2bug.system.domain.SysVersion;
+import com.cat2bug.system.domain.*;
 import com.cat2bug.system.domain.vo.EnumVo;
-import com.cat2bug.system.mapper.SysDefectLogMapper;
-import com.cat2bug.system.mapper.SysDefectMapper;
-import com.cat2bug.system.mapper.SysUserDefectMapper;
+import com.cat2bug.system.mapper.*;
 import com.cat2bug.system.service.ISysDefectService;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +53,10 @@ public class SysDefectServiceImpl implements ISysDefectService
     private IIMUserConfigService imUserConfigService;
     @Autowired
     private DefectMessageOfNoticeTemplateImpl defectMessageOfNoticeTemplate;
+    @Autowired
+    private SysModuleMapper sysModuleMapper;
+    @Autowired
+    private SysUserProjectMapper sysUserProjectMapper;
     /**
      * 指派
      * @param sysDefectLog 缺陷日志
@@ -429,5 +431,109 @@ public class SysDefectServiceImpl implements ISysDefectService
                 log.error(e);
             }
         }
+    }
+
+    @Transactional
+    @Override
+    public String importDefect(Long projectId, List<SysDefect> list) {
+        List<String> sb = new ArrayList<>();
+        long count = sysDefectMapper.getProjectDefectMaxNum(projectId, SecurityUtils.getUserId());
+
+        Map<String, SysModule> moduleMap = sysModuleMapper.selectSysModulePathList(0L).stream().collect(Collectors.toMap(SysModule::getModulePath, m->m));
+
+        Map<String, SysUser> userMap = sysUserProjectMapper.selectSysUserListByProjectId(projectId,new SysUser()).stream().collect(Collectors.toMap(SysUser::getNickName, u->u));
+
+        for(int i=0;i<list.size();i++){
+            List<String> emptyCell = new ArrayList<>();     // 空数据列名集合
+            List<String> invalidCell = new ArrayList<>();   // 无效的列名集合
+            SysDefect d = list.get(i);
+            int line = i+1;
+            if(StringUtils.isBlank(d.getDefectName())) {
+                emptyCell.add("标题");
+            }
+            if(StringUtils.isNotBlank(d.getDefectStateImportName())){
+                switch (d.getDefectStateImportName()){
+                    case "处理中":
+                        d.setDefectState(SysDefectStateEnum.PROCESSING);
+                        break;
+                    case "待审核":
+                        d.setDefectState(SysDefectStateEnum.AUDIT);
+                        break;
+                    case "已解决":
+                        d.setDefectState(SysDefectStateEnum.RESOLVED);
+                        break;
+                    case "已驳回":
+                        d.setDefectState(SysDefectStateEnum.REJECTED);
+                        break;
+                    case "已关闭":
+                        d.setDefectState(SysDefectStateEnum.CLOSED);
+                        break;
+                }
+            } else {
+                emptyCell.add("状态");
+            }
+            if(StringUtils.isNotBlank(d.getDefectTypeImportName())) {
+                switch (d.getDefectTypeImportName()){
+                    case "BUG":
+                    case "Bug":
+                        d.setDefectType(SysDefectTypeEnum.BUG);
+                        break;
+                    case "Task":
+                    case "任务":
+                        d.setDefectType(SysDefectTypeEnum.TASK);
+                        break;
+                    case "Demand":
+                    case "需求":
+                        d.setDefectType(SysDefectTypeEnum.DEMAND);
+                        break;
+                }
+            } else {
+                emptyCell.add("类型");
+            }
+
+            if(StringUtils.isNotBlank(d.getModuleName())){
+                if(moduleMap.containsKey(d.getModuleName())) {
+                    d.setModuleId(moduleMap.get(d.getModuleName()).getModuleId());
+                } else {
+                    invalidCell.add("产品");
+                }
+            } else {
+                emptyCell.add("产品");
+            }
+
+            if(StringUtils.isNotBlank(d.getHandleByNames())){
+                if(userMap.containsKey(d.getHandleByNames())) {
+                    d.setHandleBy(Arrays.asList(userMap.get(d.getHandleByNames()).getUserId()));
+                } else {
+                    invalidCell.add("处理人");
+                }
+            } else {
+                emptyCell.add("处理人");
+            }
+
+            if(emptyCell.size()>0){
+                sb.add(String.format("第%d行 %s 数据不能为空",line,emptyCell.stream().collect(Collectors.joining("、"))));
+            }
+            if(invalidCell.size()>0){
+                sb.add(String.format("第%d行 %s 中的数据无效",line,invalidCell.stream().collect(Collectors.joining("、"))));
+            }
+            d.setProjectNum(++count);
+            d.setProjectId(projectId);
+            d.setCreateTime(DateUtils.getNowDate());
+            d.setUpdateTime(DateUtils.getNowDate());
+            d.setCreateBy(SecurityUtils.getUsername());
+            d.setUpdateBy(SecurityUtils.getUsername());
+            d.setCreateById(SecurityUtils.getUserId());
+            d.setUpdateById(SecurityUtils.getUserId());
+            d.setImgUrls(d.getImgObjects());
+        }
+        if(sb.size()==0) {
+            // 批量添加数据
+            List<List<SysDefect>> batchList = Lists.partition(list, 50);
+            for (int i = 0; i < batchList.size(); i++) {
+                sysDefectMapper.batchInsertSysDefect(batchList.get(i));
+            }
+        }
+        return sb.stream().collect(Collectors.joining("<br/>"));
     }
 }

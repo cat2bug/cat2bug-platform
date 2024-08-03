@@ -128,4 +128,12 @@ public interface ISysDefectService
      * @return
      */
     public Map<String, Object> getDefaultDefectNoticeOption();
+
+    /**
+     * 导入缺陷
+     * @param projectId 项目ID
+     * @param list      缺陷列表
+     * @return
+     */
+    public String importDefect(Long projectId, List<SysDefect> list);
 }
