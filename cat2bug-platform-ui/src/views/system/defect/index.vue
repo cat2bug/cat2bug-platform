@@ -106,12 +106,12 @@
                      size="small"
                      type="primary"
                      v-hasPermi="['system:defect:add']"
-                     @click="handleClick">
+                     @click="handleAdd">
           <i class="el-icon-plus" />{{$i18n.t('defect.create')}}
           <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item>{{$i18n.t('defect.create')}}</el-dropdown-item>
-            <el-dropdown-item>导入缺陷</el-dropdown-item>
-            <el-dropdown-item>导出缺陷</el-dropdown-item>
+            <el-dropdown-item @click="handleAdd">{{$i18n.t('defect.create')}}</el-dropdown-item>
+            <el-dropdown-item @click="handleImport">导入缺陷</el-dropdown-item>
+            <el-dropdown-item @click="handleExport">导出缺陷</el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
       </template>
@@ -125,6 +125,8 @@
     <handle-defect ref="editDefectForm" :project-id="getProjectId()" @change="handleRefreshQuery" @delete="handleRefreshQuery" />
     <!-- 添加页签对话框 -->
     <defect-tab-dialog ref="defectTabDialog" :project-id="getProjectId()" :member-id="userId" @add="tabAddHandle" />
+    <!-- 导入缺陷 -->
+    <defect-import ref="defectImportDialog" :project-id="getProjectId()" @upload="getList" />
   </div>
 </template>
 
@@ -139,6 +141,7 @@ import SelectProjectMember from "@/components/Project/SelectProjectMember";
 import ProjectLabel from "@/components/Project/ProjectLabel";
 import Cat2BugStatistic from "@/components/Cat2BugStatistic"
 import DefectTabDialog from "@/views/system/defect/DefectTabDialog";
+import DefectImport from "@/views/system/defect/DefectImport"
 import i18n from "@/utils/i18n/i18n";
 import {lifeTime} from "@/utils/defect";
 import store from "@/store";
@@ -448,6 +451,17 @@ export default {
         this.selectDefectTabHandle();
         this.$modal.msgSuccess(this.$i18n.t('delete.success'));
       }).catch(() => {});
+    },
+    /** 打开导入缺陷对话框 */
+    handleImport() {
+      this.$refs.defectImportDialog.open();
+    },
+    /** 导出按钮操作 */
+    handleExport() {
+      this.queryParams.params.host = `${window.location.protocol}\\${window.location.host+process.env.VUE_APP_BASE_API}`
+      this.download('system/defect/export', {
+        ...this.queryParams
+      }, `defect_${new Date().getTime()}.xlsx`)
     },
   }
 };
