@@ -36,18 +36,16 @@
               </el-select>
             </el-form-item>
           </el-col>
-          <el-row>
-            <el-col :span="12">
-              <el-form-item :label="$t('handle-by')" prop="handleBy">
-                <select-project-member v-model="form.handleBy" :project-id="projectId"  />
-              </el-form-item>
-            </el-col>
-            <el-col :span="12">
-              <el-form-item :label="$t('version')" prop="moduleVersion">
-                <el-input v-model="form.moduleVersion" :placeholder="$t('defect.enter-version')" maxlength="128" style="max-width: 300px;" />
-              </el-form-item>
-            </el-col>
-          </el-row>
+          <el-col :span="12">
+            <el-form-item :label="$t('handle-by')" prop="handleBy">
+              <select-project-member v-model="form.handleBy" :project-id="projectId"  />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item :label="$t('version')" prop="moduleVersion">
+              <el-input v-model="form.moduleVersion" :placeholder="$t('defect.enter-version')" maxlength="128" style="max-width: 300px;" />
+            </el-form-item>
+          </el-col>
           <el-col :span="12">
             <el-form-item :label="$t('module')" prop="moduleId">
               <select-module v-model="form.moduleId" :project-id="projectId"/>

@@ -361,7 +361,7 @@ export default {
       min-height: 28px;
       margin: 3px 10px 3px 0px;
       .select-project-member-tag {
-        margin: 3px;
+        margin: 0px 3px;
         flex-shrink: 0;
       }
       .select-project-member-tag:first-child {
