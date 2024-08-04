@@ -108,7 +108,7 @@
                      v-hasPermi="['system:defect:add']"
                      @click="handleAdd">
           <i class="el-icon-plus" />{{$i18n.t('defect.create')}}
-          <el-dropdown-menu slot="dropdown">
+          <el-dropdown-menu slot="dropdown" class="defect-add-dropdown-menu">
             <el-dropdown-item @click.native="handleAdd"><i class="el-icon-plus" />{{$i18n.t('defect.create')}}</el-dropdown-item>
             <el-divider class="defect-add-dropdown-divider"></el-divider>
             <el-dropdown-item @click.native="handleImport"><i class="el-icon-download" />{{ $t('defect.import') }}</el-dropdown-item>
@@ -468,6 +468,27 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
+@media screen and (max-width: 980px) {
+  .defect-tools-search {
+    display: none;
+  }
+}
+@media screen and (min-width: 980px) {
+  .defect-tools-search {
+    display: inline-flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    > * {
+      display: inline-block;
+      justify-content: flex-start;
+      margin-bottom: 0px;
+      ::v-deep .el-form-item {
+        margin-bottom: 10px;
+      }
+    }
+  }
+}
 .row {
   display: flex;
   flex-direction: row;
@@ -494,20 +515,6 @@ export default {
     padding-bottom: 5px;
   }
 }
-.defect-tools-search {
-  display: inline-flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  > * {
-    display: inline-block;
-    justify-content: flex-start;
-    margin-bottom: 0px;
-    ::v-deep .el-form-item {
-      margin-bottom: 10px;
-    }
-  }
-}
 .defect-tools-button {
   cursor: pointer;
   color: #606266;
@@ -517,6 +524,11 @@ export default {
   color: #409EFF;
 }
 .defect-add-dropdown {
+  ::v-deep .el-button-group {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+  }
   ::v-deep button {
     color: #1890ff;
     background: #e8f4ff;
@@ -530,6 +542,9 @@ export default {
   ::v-deep .el-dropdown__caret-button::before {
       background-color: #a3d3ff;
   }
+}
+.defect-add-dropdown-menu {
+  min-width: 120px;
 }
 .defect-add-dropdown-divider {
   margin-top: 5px;

@@ -390,6 +390,7 @@ export default {
     }
   }
   .table-tools {
+    align-items: flex-start;
     > * {
       margin-bottom: 10px;
     }
