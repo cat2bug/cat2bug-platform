@@ -109,9 +109,10 @@
                      @click="handleAdd">
           <i class="el-icon-plus" />{{$i18n.t('defect.create')}}
           <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item @click.native="handleAdd">{{$i18n.t('defect.create')}}</el-dropdown-item>
-            <el-dropdown-item @click.native="handleImport">导入缺陷</el-dropdown-item>
-            <el-dropdown-item @click.native="handleExport">导出缺陷</el-dropdown-item>
+            <el-dropdown-item @click.native="handleAdd"><i class="el-icon-plus" />{{$i18n.t('defect.create')}}</el-dropdown-item>
+            <el-divider class="defect-add-dropdown-divider"></el-divider>
+            <el-dropdown-item @click.native="handleImport"><i class="el-icon-download" />{{ $t('defect.import') }}</el-dropdown-item>
+            <el-dropdown-item @click.native="handleExport"><i class="el-icon-upload2" />{{ $t('defect.export') }}</el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
       </template>
@@ -528,6 +529,10 @@ export default {
   }
   ::v-deep .el-dropdown__caret-button::before {
       background-color: #a3d3ff;
-    }
+  }
+}
+.defect-add-dropdown-divider {
+  margin-top: 5px;
+  margin-bottom: 5px;
 }
 </style>

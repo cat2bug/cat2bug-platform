@@ -14,21 +14,22 @@
       drag
     >
       <i class="el-icon-upload"></i>
-      <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+      <div class="el-upload__text">{{ $t('defect.import-prompt') }}<em>{{$t('char-span')}} {{ $t('click.upload') }}</em></div>
       <div class="el-upload__tip text-center" slot="tip">
-        <span>仅允许导入xls、xlsx格式文件。</span>
-        <el-link type="primary" :underline="false" style="font-size:12px;vertical-align: baseline;" @click="importTemplate">下载模板</el-link>
+        <span>{{ strFormat($t('defect.import-file-format'), 'xls、xlsx') }}</span>
+        <el-link type="primary" :underline="false" style="font-size:12px;vertical-align: baseline;" @click="importTemplate">{{$t('upload.select-file')}}</el-link>
       </div>
     </el-upload>
     <div slot="footer" class="dialog-footer">
-      <el-button type="primary" @click="submitFileForm">确 定</el-button>
-      <el-button @click="upload.open = false">取 消</el-button>
+      <el-button type="primary" @click="submitFileForm">{{ $t('ok') }}</el-button>
+      <el-button @click="upload.open = false">{{ $t('cancel') }}</el-button>
     </div>
   </el-dialog>
 </template>
 
 <script>
 import {getToken} from "@/utils/auth";
+import {strFormat} from "@/utils";
 
 export default {
   name: "DefectImport",
@@ -58,6 +59,7 @@ export default {
     }
   },
   methods: {
+    strFormat,
     /** 导入按钮操作 */
     open() {
       this.upload.title = "缺陷导入";
@@ -77,7 +79,7 @@ export default {
       this.upload.open = false;
       this.upload.isUploading = false;
       this.$refs.upload.clearFiles();
-      this.$alert("<div style='overflow: auto;overflow-x: hidden;max-height: 70vh;padding: 10px 20px 0;'>" + response.msg + "</div>", "导入结果", { dangerouslyUseHTMLString: true });
+      this.$alert("<div style='overflow: auto;overflow-x: hidden;max-height: 70vh;padding: 10px 20px 0;'>" + response.msg + "</div>", this.$i18n.t('defect.import-result').toString(), { dangerouslyUseHTMLString: true });
       this.$emit("upload",response);
     },
     // 提交上传文件

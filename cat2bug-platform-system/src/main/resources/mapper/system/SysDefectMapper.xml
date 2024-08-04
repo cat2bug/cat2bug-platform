@@ -270,7 +270,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             project_num,defect_type,defect_name,defect_describe,
             annex_urls,img_urls,project_id,module_id,module_version,
             create_by,create_by_id,update_time,create_time,update_by,update_by_id,
-            defect_state,handle_by,handle_time,defect_level,defect_group_key,defect_key,defect_solution,defect_plan_time
+            defect_state,handle_by,handle_time,defect_level,defect_group_key,defect_key,plan_start_time,plan_end_time
         </trim>
         values
         <foreach collection="defectList" separator="," item="defect">
@@ -296,8 +296,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             #{defect.defectLevel},
             #{defect.defectGroupKey},
             #{defect.defectKey},
-            #{defect.defectSolution},
-            #{defect.defectPlanTime}
+            #{defect.planStartTime},
+            #{defect.planEndTime}
             )
         </foreach>
     </insert>

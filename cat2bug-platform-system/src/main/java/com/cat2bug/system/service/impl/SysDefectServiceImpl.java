@@ -439,7 +439,7 @@ public class SysDefectServiceImpl implements ISysDefectService
         List<String> sb = new ArrayList<>();
         long count = sysDefectMapper.getProjectDefectMaxNum(projectId, SecurityUtils.getUserId());
 
-        Map<String, SysModule> moduleMap = sysModuleMapper.selectSysModulePathList(0L).stream().collect(Collectors.toMap(SysModule::getModulePath, m->m));
+        Map<String, SysModule> moduleMap = sysModuleMapper.selectSysModulePathList(projectId).stream().collect(Collectors.toMap(SysModule::getModulePath, m->m));
 
         Map<String, SysUser> userMap = sysUserProjectMapper.selectSysUserListByProjectId(projectId,new SysUser()).stream().collect(Collectors.toMap(SysUser::getNickName, u->u));
 
