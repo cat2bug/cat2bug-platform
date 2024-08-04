@@ -16,11 +16,11 @@
             <el-checkbox v-for="field in tableAllFieldList" :label="field" :key="field">{{$t(field)}}</el-checkbox>
           </el-checkbox-group>
           <el-button
-            style="padding: 9px;"
+            style="padding: 7px;"
             plain
             slot="reference"
             icon="el-icon-s-fold"
-            size="small"
+            size="mini"
           ></el-button>
         </el-popover>
         <div>

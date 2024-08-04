@@ -9,7 +9,7 @@
     <div slot="reference" :class="'el-input__inner select-module-input select-module-input-'+size" @mouseenter="showClearButtonHandle(true)" @mouseleave="showClearButtonHandle(false)">
       <i :class="icon" v-if="icon" style="margin: 0px 0px 0px 10px; color: #C0C4CC;"></i>
       <div class="selectProjectMemberInput_content">
-        <el-input ref="selectProjectModuleInput" :class="icon?'padding-left-8':''" readonly :placeholder="$t(placeholder)" v-model="queryMember.params.search" @input="searchChangeHandle"></el-input>
+        <el-input ref="selectProjectModuleInput" :size="size" :class="icon?'padding-left-8':''" readonly :placeholder="$t(placeholder)" v-model="queryMember.params.search" @input="searchChangeHandle"></el-input>
       </div>
       <i class="select-module-input__icon el-icon-arrow-up" v-show="isClearButtonVisible==false"></i>
       <i class="select-module-input__icon el-icon-circle-close" v-show="isClearButtonVisible==true" @click="clearSelectModuleHandle"></i>
@@ -85,7 +85,7 @@ export default {
     },
     size: {
       type: String,
-      default: 'default'
+      default: 'medium'
     },
     icon: {
       type: String,
@@ -203,7 +203,7 @@ export default {
       flex-grow: 1;
       overflow: hidden;
       min-height: 30px;
-      margin: 3px 10px 3px 0px;
+      margin: 1px 10px 1px 0px;
       .el-input {
         flex-grow: 1;
         width: 0.1%;
@@ -253,7 +253,7 @@ export default {
   }
   ::v-deep .select-module-input-medium {
     .selectProjectMemberInput_content {
-      min-height: 28px;
+      min-height: 32px;
     }
   }
 

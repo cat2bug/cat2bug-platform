@@ -10,7 +10,7 @@
       <i :class="icon" v-if="icon" style="margin: 0px 0px 0px 5px; color: #C0C4CC;"></i>
       <div class="selectProjectMemberInput_content">
         <el-tag class="select-project-member-tag" size="mini" v-for="member in selectMemberList()" :key="member.userId" closable @close="clickMenuHandle(member,$event)" :type="tagType(member)">{{member.nickName}}</el-tag>
-        <el-input ref="selectProjectMemberInput" :placeholder="selectMembers.size>0?'':$t(placeholder)" v-model="queryMember.params.search" @input="searchChangeHandle" @keydown.native="searchKeyDownHandle"></el-input>
+        <el-input ref="selectProjectMemberInput" :size="size" :placeholder="selectMembers.size>0?'':$t(placeholder)" v-model="queryMember.params.search" @input="searchChangeHandle" @keydown.native="searchKeyDownHandle"></el-input>
       </div>
       <i class="select-project-member-input__icon el-icon-arrow-up" v-show="isClearButtonVisible==false" @mouseenter="showClearButtonHandle(true)"></i>
       <i class="select-project-member-input__icon el-icon-circle-close" v-show="isClearButtonVisible==true" @mouseleave="showClearButtonHandle(false)" @click="clearSelectMembersHandle"></i>
@@ -119,7 +119,7 @@ export default {
     },
     size: {
       type: String,
-      default: 'default'
+      default: 'medium'
     },
     icon: {
       type: String,
@@ -358,8 +358,8 @@ export default {
       flex-wrap: wrap;
       flex-grow: 1;
       overflow: hidden;
-      min-height: 28px;
-      margin: 3px 10px 3px 0px;
+      min-height: 30px;
+      padding: 2px 10px 2px 0px;
       .select-project-member-tag {
         margin: 0px 3px;
         flex-shrink: 0;
@@ -393,7 +393,7 @@ export default {
   }
   ::v-deep .select-project-member-input-medium {
     .selectProjectMemberInput_content {
-      min-height: 28px;
+      min-height: 34px;
     }
   }
 

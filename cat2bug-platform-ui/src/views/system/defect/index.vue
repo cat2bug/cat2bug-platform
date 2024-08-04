@@ -33,13 +33,13 @@
         <div class="defect-tools-search">
           <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="0">
             <el-form-item>
-              <el-radio-group v-model="defectContentComponent" @input="handleDefectContentChange">
+              <el-radio-group size="mini" v-model="defectContentComponent" @input="handleDefectContentChange">
                 <el-radio-button label="DefectTable">{{ $t('table') }}</el-radio-button>
                 <el-radio-button label="DefectCalendar">{{ $t('calendar') }}</el-radio-button>
               </el-radio-group>
             </el-form-item>
             <el-form-item prop="defectType">
-              <el-dropdown split-button size="small" @command="defectTypeChangeHandle" @click="selectDefectTabHandle">
+              <el-dropdown split-button size="mini" @command="defectTypeChangeHandle" @click="selectDefectTabHandle">
                 {{$i18n.t(activeDefectTypeName)}}
                 <el-dropdown-menu slot="dropdown">
                   <el-dropdown-item command="">{{$i18n.t('defect.all-type')}}</el-dropdown-item>
@@ -48,7 +48,7 @@
               </el-dropdown>
             </el-form-item>
             <el-form-item prop="defectState">
-              <el-select v-model="queryParams.params.defectStates" multiple collapse-tags clearable :placeholder="$t('defect.select-state')" @change="handleQuery()">
+              <el-select size="mini" v-model="queryParams.params.defectStates" multiple collapse-tags clearable :placeholder="$t('defect.select-state')" @change="handleQuery()">
                 <el-option
                   v-for="state in config.states"
                   :key="state.key"
@@ -59,6 +59,7 @@
             </el-form-item>
             <el-form-item prop="defectName">
               <el-input
+                size="mini"
                 v-model="queryParams.defectName"
                 :placeholder="$t('defect.enter-name')"
                 prefix-icon="el-icon-search"
@@ -71,6 +72,7 @@
             </el-form-item>
             <el-form-item prop="moduleVersion">
               <el-input
+                size="mini"
                 v-model="queryParams.moduleVersion"
                 prefix-icon="el-icon-discount"
                 :placeholder="$t('defect.enter-version')"
@@ -84,7 +86,7 @@
                 :project-id="queryParams.projectId"
                 placeholder="defect.select-handle-by"
                 :is-head="false"
-                size="small"
+                size="mini"
                 icon="el-icon-user"
                 @input="handleQuery()"
               />
@@ -95,7 +97,7 @@
       <template slot="right-tools">
         <el-dropdown class="defect-add-dropdown"
                      split-button
-                     size="small"
+                     size="mini"
                      type="primary"
                      v-hasPermi="['system:defect:add']"
                      @click="handleAdd">
