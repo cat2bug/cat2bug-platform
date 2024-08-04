@@ -54,25 +54,41 @@
             ></el-button>
           </el-popover>
         </el-col>
+<!--        <el-col :span="1.5">-->
+<!--          <el-button-->
+<!--            type="info"-->
+<!--            plain-->
+<!--            icon="el-icon-download"-->
+<!--            size="mini"-->
+<!--            @click="handleImport"-->
+<!--            v-hasPermi="['system:case:import']"-->
+<!--          >{{ $t('import') }}</el-button>-->
+<!--        </el-col>-->
         <el-col :span="1.5">
-          <el-button
-            type="info"
-            plain
-            icon="el-icon-download"
-            size="mini"
-            @click="handleImport"
-            v-hasPermi="['system:case:import']"
-          >{{ $t('import') }}</el-button>
-        </el-col>
-        <el-col :span="1.5">
-            <el-button
-              type="primary"
-              plain
-              icon="el-icon-plus"
-              size="mini"
-              @click="handleAdd"
-              v-hasPermi="['system:case:add']"
-            >{{ $t('case.create') }}</el-button>
+<!--            <el-button-->
+<!--              type="primary"-->
+<!--              plain-->
+<!--              icon="el-icon-plus"-->
+<!--              size="mini"-->
+<!--              @click="handleAdd"-->
+<!--              v-hasPermi="['system:case:add']"-->
+<!--            >{{ $t('case.create') }}</el-button>-->
+          <el-dropdown class="case-add-dropdown"
+                       split-button
+                       size="mini"
+                       type="primary"
+                       v-hasPermi="['system:case:add']"
+                       @click="handleAdd">
+            <div class="title">
+              <i class="el-icon-plus" />
+              <span>{{$i18n.t('case.create')}}</span>
+            </div>
+            <el-dropdown-menu slot="dropdown" class="case-add-dropdown-menu">
+              <el-dropdown-item @click.native="handleAdd"><i class="el-icon-plus" />{{$i18n.t('case.create')}}</el-dropdown-item>
+              <el-divider class="case-add-dropdown-divider"></el-divider>
+              <el-dropdown-item @click.native="handleImport"><i class="el-icon-upload2" />{{ $t('case.import') }}</el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
         </el-col>
         <el-col :span="1.5">
           <el-button
@@ -561,5 +577,42 @@ export default {
   .table-case-title {
     display: inline-flex;
     flex-direction: column;
+  }
+  .case-add-dropdown {
+    .title {
+      display: inline-flex;
+      flex-direction: row;
+      gap: 5px;
+      > * {
+        margin: 0px;
+      }
+    }
+    ::v-deep .el-button-group {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+    }
+    ::v-deep button {
+      color: #1890ff;
+      background: #e8f4ff;
+      border-color: #a3d3ff;
+    }
+    ::v-deep button:hover {
+      background: #1890ff;
+      border-color: #1890ff;
+      color: #FFFFFF;
+    }
+    ::v-deep .el-dropdown__caret-button::before {
+      background-color: #a3d3ff;
+    }
+  }
+  .case-add-dropdown-menu {
+    min-width: 120px;
+  }
+  .case-add-dropdown-divider {
+    margin-top: 5px;
+    margin-bottom: 5px;
+    background-color: #E4E7ED;
+    padding: 0px 5px;
   }
 </style>

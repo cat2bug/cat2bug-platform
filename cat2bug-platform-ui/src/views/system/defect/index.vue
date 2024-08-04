@@ -103,8 +103,8 @@
           <el-dropdown-menu slot="dropdown" class="defect-add-dropdown-menu">
             <el-dropdown-item @click.native="handleAdd"><i class="el-icon-plus" />{{$i18n.t('defect.create')}}</el-dropdown-item>
             <el-divider class="defect-add-dropdown-divider"></el-divider>
-            <el-dropdown-item @click.native="handleImport"><i class="el-icon-download" />{{ $t('defect.import') }}</el-dropdown-item>
-            <el-dropdown-item @click.native="handleExport"><i class="el-icon-upload2" />{{ $t('defect.export') }}</el-dropdown-item>
+            <el-dropdown-item @click.native="handleImport"><i class="el-icon-upload2" />{{ $t('defect.import') }}</el-dropdown-item>
+            <el-dropdown-item @click.native="handleExport"><i class="el-icon-download" />{{ $t('defect.export') }}</el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
       </template>
