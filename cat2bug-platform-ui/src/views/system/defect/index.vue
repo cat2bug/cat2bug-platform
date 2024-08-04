@@ -93,14 +93,6 @@
         </div>
       </template>
       <template slot="right-tools">
-<!--        <el-button-->
-<!--          type="primary"-->
-<!--          plain-->
-<!--          icon="el-icon-plus"-->
-<!--          size="small"-->
-<!--          @click="handleAdd"-->
-<!--          v-hasPermi="['system:defect:add']"-->
-<!--        >{{$i18n.t('defect.create')}}</el-button>-->
         <el-dropdown class="defect-add-dropdown"
                      split-button
                      size="small"
