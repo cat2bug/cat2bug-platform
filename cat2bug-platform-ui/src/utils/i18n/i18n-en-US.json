@@ -472,6 +472,7 @@
   "report.type-runtime": "Runtime Report",
   "report.template": "Report Template",
   "report.default-title": "New Report Template",
+  "report.batch-delete-empty-except": "Please check the report before clicking delete!",
   "pusher": "Pusher",
   "copy-success": "Copy Success",
   "click-copy": "Click Copy",

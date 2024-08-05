@@ -327,6 +327,11 @@ export default {
     this.queryParams.projectId=this.projectId;
     this.getTreeModuleWidth();
     this.getList();
+    this.initFloatMenu();
+  },
+  destroyed() {
+    // 移除滚动条监听
+    this.$floatMenu.windowsDestory();
   },
   directives: {
     resize: {
@@ -352,6 +357,41 @@ export default {
   },
   methods: {
     strFormat,
+    /** 初始化浮动菜单 */
+    initFloatMenu() {
+      this.$floatMenu.windowsInit(document.querySelector('.main-container'));
+      this.$floatMenu.resetMenus([{
+        id: 'addCase',
+        name: 'case.create',
+        visible: true,
+        plain: true,
+        type: 'primary',
+        icon: 'add-tab',
+        prompt: 'case.create',
+        permissions: ['system:case:add'],
+        click : this.handleAdd
+      },{
+        id: 'importCase',
+        name: 'case.import',
+        visible: true,
+        plain: true,
+        type: 'info',
+        icon: 'import',
+        prompt: 'case.import',
+        permissions: ['system:case:add'],
+        click : this.handleImport
+      },{
+        id: 'aiAddCase',
+        name: 'case.ai-create',
+        visible: true,
+        plain: false,
+        type: 'success',
+        icon: 'robot',
+        prompt: 'case.ai-create',
+        permissions: ['system:case:add'],
+        click : this.handleCloudCaseAdd
+      }]);
+    },
     /** 设置列表显示的属性字段 */
     setFieldList() {
       this.fieldList = [

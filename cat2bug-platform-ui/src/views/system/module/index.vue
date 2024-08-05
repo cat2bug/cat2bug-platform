@@ -113,7 +113,39 @@ export default {
   created() {
     this.getList();
   },
+  mounted() {
+    // 初始化浮动菜单
+    this.initFloatMenu();
+  },
   methods: {
+    /** 初始化浮动菜单 */
+    initFloatMenu() {
+      this.$floatMenu.windowsInit(document.querySelector('.main-container'));
+      this.$floatMenu.resetMenus([{
+        id: 'moduleExpandAll',
+        name: 'module.expand-collapse',
+        visible: true,
+        plain: true,
+        type: 'info',
+        icon: 'up_down_switch',
+        prompt: 'module.expand-collapse',
+        click : this.toggleExpandAll
+      },{
+        id: 'moduleExpandAll',
+        name: 'module.create',
+        visible: true,
+        plain: true,
+        type: 'primary',
+        icon: 'add-tab',
+        prompt: 'module.create',
+        permissions: ['system:module:add'],
+        click : this.handleAdd
+      }]);
+    },
+    // 移除滚动条监听
+    destroyed() {
+      this.$floatMenu.windowsDestory();
+    },
     /** 查询模块列表 */
     getList() {
       this.loading = true;

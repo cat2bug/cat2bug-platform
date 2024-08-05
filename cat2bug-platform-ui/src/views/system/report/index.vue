@@ -227,8 +227,28 @@ export default {
         this.$refs.viewReport.open(this.$route.query.reportId);
       }
     }
+    this.initFloatMenu();
+  },
+  // 移除滚动条监听
+  destroyed() {
+    this.$floatMenu.windowsDestory();
   },
   methods: {
+    /** 初始化浮动菜单 */
+    initFloatMenu() {
+      this.$floatMenu.windowsInit(document.querySelector('.main-container'));
+      this.$floatMenu.resetMenus([{
+        id: 'batchDeleteReport',
+        name: 'batch-delete',
+        visible: true,
+        plain: true,
+        type: 'danger',
+        icon: 'delete',
+        prompt: 'batch-delete',
+        permissions: ['system:report:remove'],
+        click : this.handleDelete
+      }]);
+    },
     /** 查询报告列表 */
     getList() {
       this.loading = true;
@@ -325,6 +345,10 @@ export default {
     },
     /** 删除按钮操作 */
     handleDelete(event) {
+      if (!this.ids || this.ids.length == 0){
+        this.$message.error(this.$i18n.t('report.batch-delete-empty-except').toString());
+        return;
+      }
       const reportIds = this.ids;
       this.$modal.confirm(
         this.$i18n.t('report.delete-select-report'),

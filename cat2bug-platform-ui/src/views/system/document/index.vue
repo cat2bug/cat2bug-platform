@@ -252,7 +252,39 @@ export default {
   created() {
     this.getList();
   },
+  mounted() {
+    this.initFloatMenu();
+  },
+  // 移除滚动条监听
+  destroyed() {
+    this.$floatMenu.windowsDestory();
+  },
   methods: {
+    /** 初始化浮动菜单 */
+    initFloatMenu() {
+      this.$floatMenu.windowsInit(document.querySelector('.main-container'));
+      this.$floatMenu.resetMenus([{
+        id: 'addDocumentDir',
+        name: 'doc.create-folder',
+        visible: true,
+        plain: true,
+        type: 'primary',
+        icon: 'add_folder',
+        prompt: 'doc.create-folder',
+        permissions: ['system:document:add'],
+        click : this.handleAddDir
+      },{
+        id: 'addDocumentFile',
+        name: 'doc.create-file',
+        visible: true,
+        plain: true,
+        type: 'primary',
+        icon: 'add_file',
+        prompt: 'doc.create-file',
+        permissions: ['system:document:add'],
+        click : this.handleAddFile
+      }]);
+    },
     /** 获取项目ID */
     getProjectId: function () {
       return parseInt(this.$store.state.user.config.currentProjectId);

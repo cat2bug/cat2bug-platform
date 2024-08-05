@@ -472,6 +472,7 @@
   "report.type-runtime": "实时报告",
   "report.template": "报告模版",
   "report.default-title": "新建报告模版",
+  "report.batch-delete-empty-except": "请勾选报告后再点击删除!",
   "pusher": "推送人",
   "copy-success": "复制成功",
   "click-copy": "点击复制",

@@ -203,6 +203,30 @@ export default {
 
   },
   methods:{
+    /** 初始化浮动菜单 */
+    initFloatMenu() {
+      this.$floatMenu.windowsInit(document.querySelector('.main-container'));
+      this.$floatMenu.resetMenus([{
+        id: 'closeAddDefect',
+        name: 'close',
+        visible: true,
+        plain: true,
+        type: '',
+        icon: 'close',
+        prompt: 'close',
+        click : this.cancel
+      },{
+        id: 'saveAddDefect',
+        name: 'defect.save',
+        visible: true,
+        plain: false,
+        type: 'primary',
+        icon: 'finish',
+        prompt: 'defect.save',
+        permissions: ['system:defect:add'],
+        click : this.submitForm
+      }]);
+    },
     getDefectConfig() {
       configDefect().then(res=>{
         this.config = res.data;
@@ -214,6 +238,7 @@ export default {
         this.form.imgUrls = data.imgUrls||null
       }
       this.visible = true;
+      this.initFloatMenu();
       this.$nextTick(() => {
         this.$refs.cat2bugTextarea.focus();
       });
@@ -226,9 +251,11 @@ export default {
     // 取消按钮
     cancel(isReset) {
       this.visible = false;
+      this.$floatMenu.windowsDestory();
       if(isReset){
         this.reset();
       }
+      this.$emit('back');
     },
     // 表单重置
     reset() {
@@ -270,14 +297,14 @@ export default {
           }
           if (this.form.defectId != null) {
             updateDefect(this.form).then(res => {
-              this.$modal.msgSuccess("修改成功");
-              this.visible = false;
+              this.$modal.msgSuccess(this.$i18n.t('modify-success'));
+              this.cancel();
               this.$emit('added',res)
             });
           } else {
             addDefect(this.form).then(res => {
-              this.$modal.msgSuccess("新增成功");
-              this.visible = false;
+              this.$modal.msgSuccess(this.$i18n.t('create-success'));
+              this.cancel();
               this.$emit('added',res)
             });
           }

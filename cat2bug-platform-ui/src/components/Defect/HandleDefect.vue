@@ -189,7 +189,16 @@ export default {
       }
     },
   },
+  // 移除滚动条监听
+  destroyed() {
+    this.$floatMenu.windowsDestory();
+  },
   methods:{
+    /** 初始化浮动菜单 */
+    initFloatMenu() {
+      this.$floatMenu.windowsInit(document.querySelector('.main-container'));
+      this.$floatMenu.resetMenus();
+    },
     // 获取缺陷信息
     getDefectInfo(defectId) {
       this.loading = true;
@@ -234,9 +243,11 @@ export default {
         this.$refs.defectLogFirst.open(defectId);
         this.$refs.defectLog.open(defectId);
       });
+      this.initFloatMenu();
     },
     // 取消按钮
     cancel() {
+      this.$emit('close')
       this.visible = false;
       this.reset();
     },
@@ -276,13 +287,13 @@ export default {
           if (this.form.defectId != null) {
             updateDefect(this.form).then(res => {
               this.$modal.msgSuccess("修改成功");
-              this.visible = false;
+              this.cancel();
               this.$emit('added',res)
             });
           } else {
             addDefect(this.form).then(res => {
               this.$modal.msgSuccess("新增成功");
-              this.visible = false;
+              this.cancel();
               this.$emit('added',res)
             });
           }
@@ -293,6 +304,7 @@ export default {
     closeDefectDrawer(done) {
       done();
       closeEditWindow(this.defectId);
+      this.cancel();
     },
     handleByChangeHandle(members) {
       console.log(members, this.form.handleBy);
