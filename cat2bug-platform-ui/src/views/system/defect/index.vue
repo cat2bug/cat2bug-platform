@@ -68,7 +68,7 @@
               />
             </el-form-item>
             <el-form-item class="padding-top-1px">
-              <select-module v-model="queryParams.moduleId" :project-id="queryParams.projectId" :is-edit="false" size="small" icon="el-icon-files" @input="handleQuery()" />
+              <select-module v-model="queryParams.moduleId" :project-id="projectId" :is-edit="false" size="small" icon="el-icon-files" @input="handleQuery()" />
             </el-form-item>
             <el-form-item prop="moduleVersion">
               <el-input
@@ -83,7 +83,7 @@
             <el-form-item prop="handleBy" class="padding-top-3px">
               <select-project-member
                 v-model="queryParams.handleBy"
-                :project-id="queryParams.projectId"
+                :project-id="projectId"
                 placeholder="defect.select-handle-by"
                 :is-head="false"
                 size="small"
@@ -325,7 +325,6 @@ export default {
     },
     /** 搜索操作 */
     handleRefreshQuery() {
-      this.queryParams.projectId = this.getProjectId();
       this.$refs.defectContentComponent.search(this.queryParams);
     },
     /** 新增按钮操作 */
