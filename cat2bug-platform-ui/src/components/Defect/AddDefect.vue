@@ -255,7 +255,7 @@ export default {
       if(isReset){
         this.reset();
       }
-      this.$emit('back');
+      this.$emit('close');
     },
     // 表单重置
     reset() {

@@ -175,9 +175,9 @@
         />
       </div>
     </multipane>
-    <add-case ref="addCaseDialog" :module-id="queryParams.params.modulePid" @added="getList" />
-    <add-defect ref="addDefect" :project-id="projectId" />
-    <cloud-case ref="cloudCaseDialog" @added="getList" />
+    <add-case ref="addCaseDialog" :module-id="queryParams.params.modulePid" @added="getList" @close="initFloatMenu" />
+    <add-defect ref="addDefect" :project-id="projectId" @close="initFloatMenu" />
+    <cloud-case ref="cloudCaseDialog" @added="getList" @close="initFloatMenu" />
     <!-- 用户导入对话框 -->
     <el-dialog :title="upload.title" :visible.sync="upload.open" width="400px" append-to-body>
       <el-upload

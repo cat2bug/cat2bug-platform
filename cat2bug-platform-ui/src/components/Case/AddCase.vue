@@ -17,7 +17,7 @@
           <h3>{{title}}</h3>
         </div>
         <div>
-<!--          <el-button @click="cancel" icon="el-icon-close" :class="isAddMode?'':'green-button'" size="mini">{{$t('close')}}</el-button>-->
+          <el-button @click="cancel" icon="el-icon-close" :class="isAddMode?'':'green-button'" size="mini">{{$t('close')}}</el-button>
           <el-button v-if="isAddMode" v-hasPermi="['system:case:add']" type="primary" icon="el-icon-finished" @click="submitForm" size="mini">{{$t('create')}}</el-button>
           <el-button v-else v-hasPermi="['system:case:edit']" type="success" icon="el-icon-finished" @click="submitForm" size="mini">{{$t('modify')}}</el-button>
         </div>
@@ -146,6 +146,46 @@ export default {
     }
   },
   methods: {
+    /** 初始化浮动菜单 */
+    initFloatMenu() {
+      this.$floatMenu.windowsInit(document.querySelector('.main-container'));
+      let tools = [{
+        id: 'closeAddCase',
+        name: 'close',
+        visible: true,
+        plain: true,
+        type: '',
+        icon: 'close',
+        prompt: 'close',
+        click : this.cancel
+      }];
+      if(this.isAddMode) {
+        tools.push({
+          id: 'saveAddCase',
+          name: 'create',
+          visible: true,
+          plain: false,
+          type: 'primary',
+          icon: 'finish',
+          prompt: 'create',
+          permissions: ['system:case:add'],
+          click : this.submitForm
+        })
+      } else {
+        tools.push({
+          id: 'editAddCase',
+          name: 'modify',
+          visible: true,
+          plain: false,
+          type: 'success',
+          icon: 'finish',
+          prompt: 'modify',
+          permissions: ['system:case:edit'],
+          click : this.submitForm
+        })
+      }
+      this.$floatMenu.resetMenus(tools);
+    },
     open(caseId) {
       let self = this;
       this.reset();
@@ -156,12 +196,14 @@ export default {
           this.$nextTick(()=>{
             self.$refs['caseStepPanel'].reset();
           });
+          this.initFloatMenu();
         });
       } else {
         this.visible = true;
         this.$nextTick(()=>{
           self.$refs['caseStepPanel'].reset();
         });
+        this.initFloatMenu();
       }
     },
     /** 关闭缺陷抽屉窗口 */
@@ -169,11 +211,13 @@ export default {
       // 如果是编辑，点击背景关闭
       if(this.isAddMode==false){
         done();
+        return;
       }
       closeEditWindow();
     },
     // 取消按钮
     cancel() {
+      this.$emit('close');
       this.visible = false;
       this.reset();
     },

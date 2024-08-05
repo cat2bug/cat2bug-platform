@@ -219,6 +219,11 @@ export default {
   },
   methods: {
     parseTime,
+    /** 初始化浮动菜单 */
+    initFloatMenu() {
+      this.$floatMenu.windowsInit(document.querySelector('.main-container'));
+      this.$floatMenu.resetMenus();
+    },
     bodyScrollHandle(event) {
       const scrollTop = event.target.scrollTop;
       const height = this.$refs.caseSearch.offsetHeight + this.$refs.caseHistory.offsetHeight + 30;
@@ -234,8 +239,10 @@ export default {
         const container = document.querySelector('.el-drawer__body');
         container.addEventListener('scroll',this.bodyScrollHandle);
       });
+      this.initFloatMenu();
     },
     close() {
+      this.$emit('close')
       const container = document.querySelector('.el-drawer__body');
       container.removeEventListener('scroll',this.bodyScrollHandle);
       this.visible = false;

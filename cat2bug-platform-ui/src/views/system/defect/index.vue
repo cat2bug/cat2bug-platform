@@ -115,7 +115,7 @@
     <!-- 缺陷日历-->
 <!--    <defect-calendar v-else-if="defectContentId=='calendar'" ref="defectCalendar" />-->
     <!-- 添加或修改缺陷对话框 -->
-    <add-defect ref="addDefectForm" :project-id="getProjectId()" @added="search(queryParams)" @back="initFloatMenu" />
+    <add-defect ref="addDefectForm" :project-id="getProjectId()" @added="search(queryParams)" @close="initFloatMenu" />
     <!-- 浏览缺陷对话框 -->
     <handle-defect ref="editDefectForm" :project-id="getProjectId()" @change="handleRefreshQuery" @delete="handleRefreshQuery" @close="initFloatMenu" />
     <!-- 添加页签对话框 -->
