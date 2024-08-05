@@ -6,6 +6,7 @@
         <el-form-item prop="moduleName">
           <el-input
             v-model="queryParams.moduleName"
+            size="small"
             :placeholder="$t('module.enter-module-name')"
             prefix-icon="el-icon-files"
             clearable
@@ -20,7 +21,7 @@
             type="info"
             plain
             icon="el-icon-sort"
-            size="mini"
+            size="small"
             @click="toggleExpandAll"
           >{{ $t('module.expand-collapse') }}</el-button>
         </el-col>
@@ -29,7 +30,7 @@
             type="primary"
             plain
             icon="el-icon-plus"
-            size="mini"
+            size="small"
             @click="handleAdd"
             v-hasPermi="['system:module:add']"
           >{{ $t('module.create') }}</el-button>
@@ -49,21 +50,21 @@
       <el-table-column :label="$t('operate')" align="center" class-name="small-padding fixed-width" width="200">
         <template slot-scope="scope">
           <el-button
-            size="mini"
+            size="small"
             type="text"
             icon="el-icon-edit"
             @click="handleUpdate(scope.row)"
             v-hasPermi="['system:module:edit']"
           >{{ $t('modify') }}</el-button>
           <el-button
-            size="mini"
+            size="small"
             type="text"
             icon="el-icon-plus"
             @click="handleAdd(scope.row)"
             v-hasPermi="['system:module:add']"
           >{{ $t('add') }}</el-button>
           <el-button
-            size="mini"
+            size="small"
             type="text"
             icon="el-icon-delete"
             @click="handleDelete(scope.row)"

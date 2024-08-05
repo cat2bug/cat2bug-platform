@@ -42,7 +42,7 @@
       slot="reference"
       plain
       icon="el-icon-plus"
-      size="mini"
+      :size="size"
     >{{$t('report.make')}}</el-button>
   </el-popover>
 </template>
@@ -79,6 +79,10 @@ export default {
     projectId: {
       type: Number,
       default: null
+    },
+    size: {
+      type: String,
+      default: 'small'
     }
   },
   computed: {

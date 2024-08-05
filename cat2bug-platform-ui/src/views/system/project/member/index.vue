@@ -15,7 +15,7 @@
               :placeholder="$t('member.search-placeholder')"
               clearable
               style="width: 320px"
-              size="mini"
+              size="small"
               @input="memberSearchHandle"
             />
           </el-col>
@@ -25,7 +25,7 @@
               style="float: right;"
               plain
               icon="el-icon-user-solid"
-              size="mini"
+              size="small"
               @click="addMemberHandle"
               v-hasPermi="['system:project:list']"
             >{{$t('project.add-member')}}</el-button>

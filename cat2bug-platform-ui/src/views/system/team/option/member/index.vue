@@ -15,7 +15,7 @@
               :placeholder="$t('team.search-placeholder')"
               clearable
               style="width: 320px"
-              size="mini"
+              size="small"
               @input="memberSearchHandle"
             />
           </el-col>
@@ -25,7 +25,7 @@
               style="float: right;"
               plain
               icon="el-icon-plus"
-              size="mini"
+              size="small"
               @click="inviteMemberHandle"
               v-hasPermi="['system:team:member:invite']"
             >{{$t('team.invite-members')}}</el-button>
@@ -34,7 +34,7 @@
               style="float: right;"
               plain
               icon="el-icon-plus"
-              size="mini"
+              size="small"
               @click="createMemberHandle"
               v-hasPermi="['system:team:member:create']"
             >{{$t('member.create')}}</el-button>

@@ -287,6 +287,7 @@
   "defect.modify": "缺陷修改",
   "defect.manage": "缺陷",
   "defect.create": "新建缺陷",
+  "defect.save": "保存缺陷",
   "defect.import": "导入缺陷",
   "defect.export": "导出缺陷",
   "defect.import-file-format": "仅允许导入{0}格式文件。",

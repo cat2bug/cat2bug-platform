@@ -8,6 +8,7 @@
             v-model="queryParams.docName"
             :placeholder="$t('doc.please-enter-name')"
             clearable
+            size="small"
             @input="handleQuery"
           />
         </el-form-item>
@@ -19,7 +20,7 @@
             type="primary"
             plain
             icon="el-icon-plus"
-            size="mini"
+            size="small"
             @click="handleAddDir"
             v-hasPermi="['system:document:add']"
           >{{ $t('doc.create-folder') }}</el-button>
@@ -29,7 +30,7 @@
             type="primary"
             plain
             icon="el-icon-plus"
-            size="mini"
+            size="small"
             @click="handleAddFile"
             v-hasPermi="['system:document:add']"
           >{{ $t('doc.create-file') }}</el-button>

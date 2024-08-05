@@ -8,6 +8,7 @@
       <el-col :span="24" class="flex-right">
         <el-autocomplete
           class="inline-input"
+          size="small"
           prefix-icon="el-icon-cloudy"
           v-model="downloadParams.name"
           :fetch-suggestions="searchDownloadModelAutocomplete"
@@ -19,7 +20,7 @@
           style="float: right;"
           plain
           icon="el-icon-download"
-          size="mini"
+          size="small"
           @click="downloadModelHandle"
           v-hasPermi="['system:ai:add']"
         >{{$t('ai.download-model')}}</el-button>

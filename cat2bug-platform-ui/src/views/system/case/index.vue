@@ -6,6 +6,7 @@
         <el-form-item prop="caseNum">
           <el-input
             v-model="queryParams.caseNum"
+            size="small"
             prefix-icon="el-icon-s-flag"
             :placeholder="$t('case.please-enter-id')"
             clearable
@@ -15,6 +16,7 @@
         <el-form-item prop="caseName">
           <el-input
             v-model="queryParams.caseName"
+            size="small"
             prefix-icon="el-icon-files"
             :placeholder="$t('case.please-enter-title')"
             clearable
@@ -24,6 +26,7 @@
         <el-form-item prop="caseLevel">
           <el-input
             v-model="queryParams.caseLevel"
+            size="small"
             prefix-icon="el-icon-s-data"
             :placeholder="$t('case.please-enter-level')"
             clearable
@@ -46,36 +49,18 @@
               <el-checkbox v-for="field in fieldList" :label="field" :key="field">{{$t(field)}}</el-checkbox>
             </el-checkbox-group>
             <el-button
-              style="padding: 7px;"
+              style="padding: 9px;"
               plain
               slot="reference"
               icon="el-icon-s-fold"
-              size="mini"
+              size="small"
             ></el-button>
           </el-popover>
         </el-col>
-<!--        <el-col :span="1.5">-->
-<!--          <el-button-->
-<!--            type="info"-->
-<!--            plain-->
-<!--            icon="el-icon-download"-->
-<!--            size="mini"-->
-<!--            @click="handleImport"-->
-<!--            v-hasPermi="['system:case:import']"-->
-<!--          >{{ $t('import') }}</el-button>-->
-<!--        </el-col>-->
         <el-col :span="1.5">
-<!--            <el-button-->
-<!--              type="primary"-->
-<!--              plain-->
-<!--              icon="el-icon-plus"-->
-<!--              size="mini"-->
-<!--              @click="handleAdd"-->
-<!--              v-hasPermi="['system:case:add']"-->
-<!--            >{{ $t('case.create') }}</el-button>-->
           <el-dropdown class="case-add-dropdown"
                        split-button
-                       size="mini"
+                       size="small"
                        type="primary"
                        v-hasPermi="['system:case:add']"
                        @click="handleAdd">
@@ -93,7 +78,7 @@
         <el-col :span="1.5">
           <el-button
             type="success"
-            size="mini"
+            size="small"
             @click="handleCloudCaseAdd"
             v-hasPermi="['system:case:add']"
           ><svg-icon icon-class="robot" />
@@ -104,7 +89,7 @@
 <!--            type="warning"-->
 <!--            plain-->
 <!--            icon="el-icon-download"-->
-<!--            size="mini"-->
+<!--            size="small"-->
 <!--            @click="handleExport"-->
 <!--            v-hasPermi="['system:case:export']"-->
 <!--          >导出</el-button>-->
@@ -163,14 +148,14 @@
           <el-table-column :label="$t('operate')" align="center" class-name="small-padding fixed-width" width="150">
             <template slot-scope="scope">
               <el-button
-                size="mini"
+                size="small"
                 type="text"
                 @click="addDefectHandle($event,scope.row)"
                 v-hasPermi="['system:defect:add']"
               ><svg-icon icon-class="bug"></svg-icon>
                 {{ $t('defect.create') }}</el-button>
               <el-button
-                size="mini"
+                size="small"
                 type="text"
                 class="red"
                 icon="el-icon-delete"

@@ -8,6 +8,7 @@
             v-model="queryParams.reportTitle"
             :placeholder="$t('report.please-enter-title')"
             prefix-icon="el-icon-tickets"
+            size="small"
             clearable
             @input="handleQuery"
           />
@@ -15,6 +16,7 @@
         <el-form-item label="">
           <el-date-picker
             v-model="daterangeReportTime"
+            size="small"
             style="width: 240px"
             value-format="yyyy-MM-dd"
             type="daterange"
@@ -42,7 +44,7 @@
             type="danger"
             plain
             icon="el-icon-delete"
-            size="mini"
+            size="small"
             :disabled="multiple"
             @click="handleDelete"
             v-hasPermi="['system:report:remove']"
@@ -50,6 +52,7 @@
         </el-col>
         <el-col :span="1.5">
           <cat2-bug-report-template-select
+            size="small"
             v-hasPermi="['system:report:add']"
             @create="createReportHandle"
             :project-id="projectId" />

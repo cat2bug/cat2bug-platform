@@ -33,13 +33,13 @@
         <div class="defect-tools-search">
           <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="0">
             <el-form-item>
-              <el-radio-group size="mini" v-model="defectContentComponent" @input="handleDefectContentChange">
+              <el-radio-group size="small" v-model="defectContentComponent" @input="handleDefectContentChange">
                 <el-radio-button label="DefectTable">{{ $t('table') }}</el-radio-button>
                 <el-radio-button label="DefectCalendar">{{ $t('calendar') }}</el-radio-button>
               </el-radio-group>
             </el-form-item>
             <el-form-item prop="defectType">
-              <el-dropdown split-button size="mini" @command="defectTypeChangeHandle" @click="selectDefectTabHandle">
+              <el-dropdown split-button size="small" @command="defectTypeChangeHandle" @click="selectDefectTabHandle">
                 {{$i18n.t(activeDefectTypeName)}}
                 <el-dropdown-menu slot="dropdown">
                   <el-dropdown-item command="">{{$i18n.t('defect.all-type')}}</el-dropdown-item>
@@ -48,7 +48,7 @@
               </el-dropdown>
             </el-form-item>
             <el-form-item prop="defectState">
-              <el-select size="mini" v-model="queryParams.params.defectStates" multiple collapse-tags clearable :placeholder="$t('defect.select-state')" @change="handleQuery()">
+              <el-select size="small" v-model="queryParams.params.defectStates" multiple collapse-tags clearable :placeholder="$t('defect.select-state')" @change="handleQuery()">
                 <el-option
                   v-for="state in config.states"
                   :key="state.key"
@@ -59,7 +59,7 @@
             </el-form-item>
             <el-form-item prop="defectName">
               <el-input
-                size="mini"
+                size="small"
                 v-model="queryParams.defectName"
                 :placeholder="$t('defect.enter-name')"
                 prefix-icon="el-icon-search"
@@ -67,12 +67,12 @@
                 @input="handleQuery()"
               />
             </el-form-item>
-            <el-form-item>
+            <el-form-item class="padding-top-1px">
               <select-module v-model="queryParams.moduleId" :project-id="queryParams.projectId" :is-edit="false" size="small" icon="el-icon-files" @input="handleQuery()" />
             </el-form-item>
             <el-form-item prop="moduleVersion">
               <el-input
-                size="mini"
+                size="small"
                 v-model="queryParams.moduleVersion"
                 prefix-icon="el-icon-discount"
                 :placeholder="$t('defect.enter-version')"
@@ -80,13 +80,13 @@
                 @input="handleQuery()"
               />
             </el-form-item>
-            <el-form-item prop="handleBy">
+            <el-form-item prop="handleBy" class="padding-top-3px">
               <select-project-member
                 v-model="queryParams.handleBy"
                 :project-id="queryParams.projectId"
                 placeholder="defect.select-handle-by"
                 :is-head="false"
-                size="mini"
+                size="small"
                 icon="el-icon-user"
                 @input="handleQuery()"
               />
@@ -97,7 +97,7 @@
       <template slot="right-tools">
         <el-dropdown class="defect-add-dropdown"
                      split-button
-                     size="mini"
+                     size="small"
                      type="primary"
                      v-hasPermi="['system:defect:add']"
                      @click="handleAdd">
@@ -248,6 +248,7 @@ export default {
   methods: {
     checkPermi,
     init() {
+      this.queryParams.projectId = this.projectId;
       // 初始化对象
       this.$refs.defectContentComponent.init();
       // 获取缺陷配置
@@ -355,7 +356,7 @@ export default {
         isAsc: 'desc',
         defectType: null,
         defectName: null,
-        projectId: 0,
+        projectId: this.projectId,
         testPlanId: null,
         caseId: null,
         dataSources: null,

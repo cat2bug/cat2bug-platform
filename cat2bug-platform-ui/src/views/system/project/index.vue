@@ -44,6 +44,7 @@
             :placeholder="$t('project.enter-project-name')"
             prefix-icon="el-icon-search"
             clearable
+            size="small"
             @input="handleQuery"
           />
         </el-form-item>
@@ -53,7 +54,7 @@
           type="primary"
           plain
           icon="el-icon-plus"
-          size="mini"
+          size="small"
           @click="handleAdd"
           v-hasPermi="['system:project:add']"
         >{{$t("project.create-project")}}</el-button>
@@ -79,14 +80,14 @@
         <template slot-scope="scope">
           <star-switch v-if="visibleDelete(scope.row)" v-model="scope.row.collect" @change="clickCollectHandle($event, scope.row, false)"></star-switch>
 <!--          <el-button-->
-<!--            size="mini"-->
+<!--            size="small"-->
 <!--            type="text"-->
 <!--            icon="el-icon-edit"-->
 <!--            @click="handleUpdate(scope.row)"-->
 <!--            v-hasPermi="['system:project:edit']"-->
 <!--          >修改</el-button>-->
           <el-button
-            size="mini"
+            size="small"
             type="text"
             icon="el-icon-delete"
             @click="handleDelete($event, scope.row)"
@@ -423,6 +424,9 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
+h4 {
+  margin: 5px 0px 10px 0px;
+}
   .cell {
     > i {
       margin-right: 10px;

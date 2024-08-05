@@ -29,7 +29,6 @@
 </template>
 
 <script>
-import i18n from "@/utils/i18n/i18n";
 import { checkPermi } from "@/utils/permission";
 import MemberNameplate from "@/components/MemberNameplate";
 import ModuleMenu from "@/components/Module/SelectModule/menu";
@@ -203,15 +202,15 @@ export default {
       flex-grow: 1;
       overflow: hidden;
       min-height: 30px;
-      margin: 1px 10px 1px 0px;
+      margin: 0px 10px 0px 0px;
       .el-input {
         flex-grow: 1;
         width: 0.1%;
-        height: 22px;
+        height: 26px;
         .el-input__inner {
           border-width: 0px;
-          height: 22px;
-          line-height: 22px;
+          height: 26px;
+          line-height: 26px;
           display: inline;
         }
       }
@@ -253,18 +252,18 @@ export default {
   }
   ::v-deep .select-module-input-medium {
     .selectProjectMemberInput_content {
-      min-height: 32px;
+      min-height: 34px;
     }
   }
 
   ::v-deep .select-module-input-small {
     .selectProjectMemberInput_content {
-      min-height: 24px;
+      min-height: 30px;
     }
   }
   ::v-deep .select-module-input-mini {
     .selectProjectMemberInput_content {
-      min-height: 20px;
+      min-height: 26px;
     }
   }
 </style>

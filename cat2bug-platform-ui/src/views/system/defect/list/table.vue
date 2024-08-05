@@ -16,7 +16,7 @@
             <el-checkbox v-for="field in tableAllFieldList" :label="field" :key="field">{{$t(field)}}</el-checkbox>
           </el-checkbox-group>
           <el-button
-            style="padding: 7px;"
+            style="padding: 9px;"
             plain
             slot="reference"
             icon="el-icon-s-fold"
@@ -376,11 +376,21 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@media screen and (max-width: 980px) {
+  .defect-table-tools {
+    justify-content: flex-end;
+  }
+}
+@media screen and (min-width: 980px) {
+  .defect-table-tools {
+    justify-content: space-between;
+  }
+}
+
 .defect-table-tools {
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   > * {
     display: inline-block;
     justify-content: flex-start;
@@ -391,6 +401,7 @@ export default {
   }
   .table-tools {
     align-items: flex-start;
+    padding-top: 3px;
     > * {
       margin-bottom: 10px;
     }

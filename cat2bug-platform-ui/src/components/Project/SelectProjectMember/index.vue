@@ -6,7 +6,8 @@
     @show="popoverShowHandle"
     @hide="popoverHideHandle"
     trigger="click">
-    <div slot="reference" :class="'el-input__inner select-project-member-input select-project-member-input-'+size">
+    <template #reference>
+    <div :class="'el-input__inner select-project-member-input select-project-member-input-'+size">
       <i :class="icon" v-if="icon" style="margin: 0px 0px 0px 5px; color: #C0C4CC;"></i>
       <div class="selectProjectMemberInput_content">
         <el-tag class="select-project-member-tag" size="mini" v-for="member in selectMemberList()" :key="member.userId" closable @close="clickMenuHandle(member,$event)" :type="tagType(member)">{{member.nickName}}</el-tag>
@@ -15,6 +16,7 @@
       <i class="select-project-member-input__icon el-icon-arrow-up" v-show="isClearButtonVisible==false" @mouseenter="showClearButtonHandle(true)"></i>
       <i class="select-project-member-input__icon el-icon-circle-close" v-show="isClearButtonVisible==true" @mouseleave="showClearButtonHandle(false)" @click="clearSelectMembersHandle"></i>
     </div>
+    </template>
     <el-tabs v-if="roleGroup" ref="tabs" class="select-project-member-tabs" v-model="queryMember.roleId" @tab-click="getMemberList">
       <el-tab-pane ref="tabAll" :label="$i18n.t('all')" name="0"></el-tab-pane>
       <el-tab-pane  v-for="(role,roleIndex) in roleList" :key="roleIndex" :label="role.roleNameI18nKey?$i18n.t(role.roleNameI18nKey):role.roleName" :name="role.roleId+''"></el-tab-pane>
@@ -359,7 +361,7 @@ export default {
       flex-grow: 1;
       overflow: hidden;
       min-height: 30px;
-      padding: 2px 10px 2px 0px;
+      padding: 0px 10px 0px 0px;
       .select-project-member-tag {
         margin: 0px 3px;
         flex-shrink: 0;
@@ -372,7 +374,7 @@ export default {
         width: 0.1%;
         height: 22px;
         .el-input__inner {
-          padding-left: 8px;
+          padding-left: 10px;
           padding-right: 0px;
           border-width: 0px;
           height: 22px;
@@ -399,12 +401,12 @@ export default {
 
   ::v-deep .select-project-member-input-small {
     .selectProjectMemberInput_content {
-      min-height: 24px;
+      min-height: 30px;
     }
   }
   ::v-deep .select-project-member-input-mini {
     .selectProjectMemberInput_content {
-      min-height: 20px;
+      min-height: 26px;
     }
   }
 
@@ -454,5 +456,8 @@ export default {
   }
   .el-pagination {
     float: right;
+  }
+  ::v-deep .el-popover__reference-wrapper {
+    display: flex;
   }
 </style>

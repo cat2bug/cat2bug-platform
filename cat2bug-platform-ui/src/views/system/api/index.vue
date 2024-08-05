@@ -9,6 +9,7 @@
         <el-form-item label="" prop="apiName">
           <el-input
             v-model="queryParams.apiName"
+            size="small"
             prefix-icon="el-icon-s-flag"
             :placeholder="$t('project.api.please-enter-name')"
             clearable
@@ -23,7 +24,7 @@
             type="primary"
             plain
             icon="el-icon-plus"
-            size="mini"
+            size="small"
             @click="handleAdd"
             v-hasPermi="['system:api:add']"
           >{{ $t('project.api.create-key') }}</el-button>

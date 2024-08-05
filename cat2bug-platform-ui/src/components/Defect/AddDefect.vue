@@ -11,8 +11,8 @@
           <h3>{{$t('defect.create')}}</h3>
         </div>
         <div>
-          <el-button @click="cancel" icon="el-icon-close" size="mini">{{$t('close')}}</el-button>
-          <el-button type="primary" icon="el-icon-finished" @click="submitForm" size="mini">{{$t('create')}}</el-button>
+          <el-button @click="cancel" icon="el-icon-close" size="small">{{$t('close')}}</el-button>
+          <el-button type="primary" icon="el-icon-finished" @click="submitForm" size="small">{{$t('defect.save')}}</el-button>
         </div>
       </div>
     </template>
