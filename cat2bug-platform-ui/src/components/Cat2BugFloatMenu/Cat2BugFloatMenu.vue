@@ -201,15 +201,17 @@ export default {
   gap: 10px;
   z-index: 2198;
   .cat2bug-float-menu-draggable-el {
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
     width: 40px;
     font-size: 0.8rem;
     border-radius: 3px;
-    background-color: #5a5e66;
-    opacity: 0.2;
-    cursor: pointer;
+    background-color: #65686c22;
+    cursor: move;
   }
   .cat2bug-float-menu-draggable-el:hover {
-    opacity: 0.4;
+    background-color: #65686c44;
   }
   .tools {
     position: relative;
