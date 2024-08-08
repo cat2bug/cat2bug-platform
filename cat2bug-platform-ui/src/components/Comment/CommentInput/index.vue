@@ -1,15 +1,23 @@
 <template>
   <div class="comment-input" :type="type">
     <div>
-      <div class="comment-input-content"
-           ref="commentInputContent"
-           :style="{ '--wordLimitContent': showWordLimit ? `'${wordLimit}'`: null }"
-           :contenteditable="true"
-           @click="handleSelection"
-           @input="handleSelection"
-           @paste="handlePaste"
-           @keydown.enter.prevent="keyDownHandle"
-      ></div>
+      <quill-editor
+        class="comment-input-content"
+        :content="content"
+        ref="myQuillEditor"
+        :style="{ '--wordLimitContent': showWordLimit ? `'${wordLimit}'`: null }"
+        :options="editorOption"
+        @blur="handleSelection"
+      ></quill-editor>
+<!--      <div class="comment-input-content"-->
+<!--           ref="commentInputContent"-->
+<!--           :style="{ '&#45;&#45;wordLimitContent': showWordLimit ? `'${wordLimit}'`: null }"-->
+<!--           :contenteditable="true"-->
+<!--           @click="handleSelection"-->
+<!--           @input="handleSelection"-->
+<!--           @paste="handlePaste"-->
+<!--           @keydown.enter.prevent="keyDownHandle"-->
+<!--      ></div>-->
     </div>
     <div class="comment-input-tools">
       <el-popover
@@ -38,8 +46,14 @@
 </template>
 
 <script>
+import { quillEditor } from "vue-quill-editor";
+import "quill/dist/quill.core.css";
+import "quill/dist/quill.snow.css";
+import "quill/dist/quill.bubble.css";
+
 export default {
   name: "CommentInput",
+  components: {quillEditor},
   model: {
     prop: 'value',
     event: 'change'
@@ -52,7 +66,14 @@ export default {
       textNode: null,
       rangeStartOffset: null,
       currentTextLength: 0,
-      commentInputEmojiPopoverVisible: false
+      commentInputEmojiPopoverVisible: false,
+      editorOption: {
+        theme: 'bubble',
+        placeholder: "every content，support html",
+        modules: {
+          toolbar: []
+        }
+      },
     }
   },
   props: {

@@ -632,6 +632,7 @@
   "notice.system.bgm-enable": "开启通知音效",
   "notice.system.panel": "在右上角实时显示通知窗口",
   "notice.option.save-error": "无法保存通知设置，请检查所有选项是否正常!",
+  "notice.batch-delete-except": "请勾选通知后再点击删除!",
   "email": "电子邮件",
   "sender-email": "发送人邮箱",
   "receiver-email": "接收邮箱",

@@ -632,6 +632,7 @@
   "notice.system.bgm-enable": "Enable notification sound effects",
   "notice.system.panel": "Real time display of notification window in the upper right corner",
   "notice.option.save-error": "Unable to save notification settings, please check if all options are correct !",
+  "notice.batch-delete-except": "Please check the notification box before clicking delete!",
   "email": "EMail",
   "sender-email": "Sender Mail",
   "receiver-email": "Receive Mail",
