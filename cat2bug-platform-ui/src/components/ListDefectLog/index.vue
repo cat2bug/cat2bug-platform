@@ -1,10 +1,10 @@
 <template>
   <div>
-    <el-row v-for="log in logList" :key="log.defectLogId">
+    <el-row v-for="(log,logIndex) in logList" :key="log.defectLogId">
       <el-col class="list-defect-log-row" :span="24">
         <component :is="log.defectLogType" :log="log"></component>
         <div>
-          <el-button v-if="commentPermi" icon="el-icon-chat-line-round" size="mini" type="text" @click="showCommentInputHandle(log)">{{$i18n.t('comment')}}</el-button>
+          <el-button v-if="commentPermi" icon="el-icon-chat-line-round" size="mini" type="text" @click="showCommentInputHandle(log,logIndex)">{{$i18n.t('comment')}}</el-button>
           <span class="time">{{ parseTime(log.createTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
         </div>
       </el-col>
@@ -116,8 +116,12 @@ export default {
         this.getLog();
       })
     },
-    showCommentInputHandle(log) {
+    showCommentInputHandle(log,logIndex) {
       log.visibleCommentInput=!log.visibleCommentInput;
+      if(log.visibleCommentInput) {
+        this.$refs['myCommentInput'][logIndex].reset();
+        this.$refs['myCommentInput'][logIndex].focus();
+      }
     }
   }
 }

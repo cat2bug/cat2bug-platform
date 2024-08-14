@@ -3,7 +3,7 @@ cat2bug:
   # 名称
   name: Cat2Bug
   # 版本
-  version: 0.4.1
+  version: 0.4.2
   # 版权年份
   copyrightYear: 2024
   # 是否启动系统自动更新
@@ -192,6 +192,6 @@ xss:
   # 过滤开关
   enabled: true
   # 排除链接（多个用逗号分隔）
-  excludes: /system/notice
+  excludes: /system/notice,system/comment
   # 匹配链接
   urlPatterns: /system/*,/monitor/*,/tool/*

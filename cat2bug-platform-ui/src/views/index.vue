@@ -142,6 +142,14 @@
             <span>{{$t('update-log')}}</span>
           </div>
           <el-collapse accordion>
+            <el-collapse-item title="v0.4.2 - 2024-08-9">
+              <ol>
+                <li>在测试用例、缺陷、交付物、报告、文档、通知模块新增悬浮菜单</li>
+                <li>缺陷中添加excel导入导出功能</li>
+                <li>添加数据库自动升级功能</li>
+                <li>修复系统功能BUG</li>
+              </ol>
+            </el-collapse-item>
             <el-collapse-item title="v0.4.1 - 2024-07-21">
               <ol>
                 <li>新增通知服务</li>

@@ -167,7 +167,7 @@ export default {
       this.$forceUpdate();
       if(event) {
         this.$emit('input',null);
-        // event.stopPropagation();
+        event.stopPropagation();
       }
     },
     resetMenu() {

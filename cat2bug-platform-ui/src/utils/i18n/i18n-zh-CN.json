@@ -353,6 +353,7 @@
   "defect.please-select-start-time": "请选择开始时间",
   "defect.please-select-end-time": "请选择结束时间",
   "defect.calendar-day-total": "总",
+  "defect.added-save-form-cache": "保存本次选项用于下次创建时免填",
   "plan-time": "计划时间",
   "plan-start-time": "计划开始时间",
   "plan-end-time": "计划结束时间",
@@ -693,5 +694,6 @@
   "enterprise-wechat.project-config-remind": "请访问https://work.weixin.qq.com登陆企业微信账号，获取企业ID，并创建应用，获取应用ID和应用密钥。",
   "enterprise-wechat.enter-account-id": "请输入成员企业微信账号",
   "table": "表格",
-  "calendar": "日历"
+  "calendar": "日历",
+  "copy-size-out": "粘贴的内容长度超出了规定的范围!"
 }

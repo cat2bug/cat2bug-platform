@@ -24,8 +24,11 @@
       </div>
     </template>
     <div class="app-container">
-      <el-checkbox v-if="isAddMode" class="create-next-case" v-model="isCreateNextCase">{{ $t('case.create-next-case') }}</el-checkbox>
+
       <el-form ref="form" :model="form" :rules="rules" label-width="120px">
+        <el-form-item>
+          <el-checkbox v-if="isAddMode" class="create-next-case" v-model="isCreateNextCase">{{ $t('case.create-next-case') }}</el-checkbox>
+        </el-form-item>
         <el-form-item :label="$t('title')" prop="caseName">
           <el-input type="textarea" v-model="form.caseName" :placeholder="$t('case.please-enter-title')" rows="3" maxlength="255" show-word-limit />
         </el-form-item>
@@ -340,7 +343,7 @@ export default {
   }
 }
 .create-next-case {
-  margin: 0px 10px 20px 40px;
+  left: -25px;
 }
 .form-item-case-step {
   display:flex;

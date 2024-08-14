@@ -19,7 +19,7 @@
     </template>
     <el-tabs v-if="roleGroup" ref="tabs" class="select-project-member-tabs" v-model="queryMember.roleId" @tab-click="getMemberList">
       <el-tab-pane ref="tabAll" :label="$i18n.t('all')" name="0"></el-tab-pane>
-      <el-tab-pane  v-for="(role,roleIndex) in roleList" :key="roleIndex" :label="role.roleNameI18nKey?$i18n.t(role.roleNameI18nKey):role.roleName" :name="role.roleId+''"></el-tab-pane>
+      <el-tab-pane v-for="(role,roleIndex) in roleList" :key="roleIndex" :label="role.roleNameI18nKey?$i18n.t(role.roleNameI18nKey):role.roleName" :name="role.roleId+''"></el-tab-pane>
     </el-tabs>
 
     <el-row v-if="options && options.length>0" class="select-project-member-menu">
@@ -231,19 +231,26 @@ export default {
       // 设置打开时tab下面的横条宽度
       this.$nextTick(_ => {
         let index = 1;
-        this.roleList.forEach((r,i)=>{
+        let left = this.$refs.tabs.$vnode.elm.childNodes[0].childNodes[0].childNodes[0].childNodes[0].childNodes[1].offsetWidth+6;
+        for(let i=0;i<this.roleList.length;i++) {
+          const r = this.roleList[i];
           if(this.queryMember.roleId==r.roleId) {
-            index = i+1;
+            index = i+2;
+            break;
           }
-        });
+          left += this.$refs.tabs.$vnode.elm.childNodes[0].childNodes[0].childNodes[0].childNodes[0].childNodes[i+2].clientWidth;
+        }
         // 获取第一个tab元素
         const tabFirstElement = this.$refs.tabs.$vnode.elm.childNodes[0].childNodes[0].childNodes[0].childNodes[0].childNodes[index];
         // 获取高亮显示条
         const activeBarElement = this.$refs.tabs.$vnode.elm.childNodes[0].childNodes[0].childNodes[0].childNodes[0].childNodes[0];
+
         // 第一个tab高亮
         if (tabFirstElement.classList.contains('is-active') && activeBarElement ) {
+
           // el-tab默认距离右边有20边距
           activeBarElement.style.width = tabFirstElement.clientWidth -16 + 'px'
+          activeBarElement.style.transform = `translateX(${left}px)`;
         }
       });
       this.getMemberList();

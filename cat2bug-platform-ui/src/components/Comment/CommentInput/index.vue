@@ -1,23 +1,17 @@
 <template>
   <div class="comment-input" :type="type">
     <div>
-      <quill-editor
-        class="comment-input-content"
-        :content="content"
-        ref="myQuillEditor"
-        :style="{ '--wordLimitContent': showWordLimit ? `'${wordLimit}'`: null }"
-        :options="editorOption"
-        @blur="handleSelection"
-      ></quill-editor>
-<!--      <div class="comment-input-content"-->
-<!--           ref="commentInputContent"-->
-<!--           :style="{ '&#45;&#45;wordLimitContent': showWordLimit ? `'${wordLimit}'`: null }"-->
-<!--           :contenteditable="true"-->
-<!--           @click="handleSelection"-->
-<!--           @input="handleSelection"-->
-<!--           @paste="handlePaste"-->
-<!--           @keydown.enter.prevent="keyDownHandle"-->
-<!--      ></div>-->
+      <div class="comment-input-content"
+           ref="commentInputContent"
+           :style="{ '--wordLimitContent': showWordLimit ? `'${wordLimit}'`: null }"
+           :contenteditable="true"
+           @keypress="handleTextLengthLimit"
+           @keydown.delete="updateCurrentTextLength"
+           @click="handleSelection"
+           @input="handleInput"
+           @paste="handlePaste"
+           @compositionend="handleCompositionEnd"
+      ></div>
     </div>
     <div class="comment-input-tools">
       <el-popover
@@ -46,20 +40,16 @@
 </template>
 
 <script>
-import { quillEditor } from "vue-quill-editor";
-import "quill/dist/quill.core.css";
-import "quill/dist/quill.snow.css";
-import "quill/dist/quill.bubble.css";
-
 export default {
   name: "CommentInput",
-  components: {quillEditor},
+  components: {},
   model: {
     prop: 'value',
     event: 'change'
   },
   data() {
     return {
+      inputLock: false,
       content: this.value,
       selection: null,
       range: null,
@@ -122,14 +112,35 @@ export default {
     }
   },
   mounted() {
-    this.updateCurrentTextLength(); // 初始化文本长度
-    const observer = new MutationObserver(this.updateCurrentTextLength);
-    observer.observe(this.$refs.commentInputContent, { subtree: true, characterData: true, childList: true });
+    // this.updateCurrentTextLength(); // 初始化文本长度
   },
   methods: {
+    /** 粘贴操作 */
     handlePaste(event) {
       // 阻止默认粘贴行为
       event.preventDefault();
+
+      let str =  (event.originalEvent || event).clipboardData.getData('text');
+      // 如果粘贴的文字超出最大长度，就跳出
+      if(str.length + this.currentTextLength > this.maxLength){
+        this.$message.error(this.$i18n.t('copy-size-out').toString());
+        return;
+      }
+
+      // 创建文字dom元素
+      const textNode = document.createTextNode(str);
+      // 在光标处插入dom
+      this.range.deleteContents();
+      this.range.insertNode(textNode);
+      // 将光标移动到新数据之后
+      this.range.setStartAfter(textNode);
+      this.range.setEndAfter(textNode);
+      this.range.collapse(true);
+      this.selection.removeAllRanges();
+      this.selection.addRange(this.range);
+      this.commentInputEmojiPopoverVisible = false;
+      // 重新计算当前文本长度
+      this.updateCurrentTextLength();
     },
     /** 重置数据 */
     reset () {
@@ -143,30 +154,31 @@ export default {
       this.currentTextLength = 0;
       this.commentInputEmojiPopoverVisible = false;
     },
-    /** 更新当前内容及长度 */
-    updateCurrentTextLength: function () {
+    /** 设置获取焦点 */
+    focus() {
+      setTimeout(()=>{
+        this.$refs.commentInputContent.focus();
+      },50);
+    },
+    /** 获取当前文本内容 */
+    getCurrentText() {
       const contentDiv = this.$refs.commentInputContent;
       if(!contentDiv || !contentDiv.childNodes){
-        return 0;
+        return '';
       }
-
       let visibleText = '';
       Array.from(contentDiv.childNodes).forEach(node => {
-        if (node.nodeType === Node.TEXT_NODE) {
-          visibleText += node.textContent;
-        } else {
-          visibleText += node.outerHTML;
-        }
+        visibleText += node.textContent;
       });
-
-      if (visibleText.length > this.maxLength) {
-        visibleText = visibleText.slice(0, this.maxLength);
-      }
-
-      if(contentDiv.innerHTML != visibleText) {
-        contentDiv.innerHTML = visibleText; // 只设置可见内容
-      }
-      this.content = visibleText;
+      return visibleText;
+    },
+    /** 获取当前网页内容 */
+    getCurrentHtml() {
+      return this.$refs.commentInputContent.innerHTML;
+    },
+    /** 更新当前内容及长度 */
+    updateCurrentTextLength: function () {
+      let visibleText = this.getCurrentText();
       this.currentTextLength = visibleText.length;
     },
     /** 将html转换成编码 */
@@ -186,6 +198,7 @@ export default {
      * 提交数据
      */
     submitHandle() {
+      this.content = this.getCurrentHtml();
       this.$emit('submit', this.codeParse(this.content));
       this.reset();
     },
@@ -195,27 +208,37 @@ export default {
       objE.innerHTML = code;
       return objE.childNodes[0];
     },
-    /** 点击回车的处理 */
-    keyDownHandle(event) {
-      if (event.key === 'Enter') {
-        this.selection = window.getSelection();
-        this.range = this.selection.getRangeAt(0);
-        const br = document.createElement('br');
-
-        this.range.deleteContents();
-        this.range.insertNode(br);
-
-        this.range.setStartAfter(br);
+    /** 处理输入Input事件 */
+    handleInput(event) {
+      this.handleSelection();
+      this.updateCurrentTextLength();
+    },
+    /** 处理中文录入（软键盘）事件 */
+    handleCompositionEnd() {
+      this.updateCurrentTextLength();
+      const diff = this.currentTextLength-this.maxLength;
+      if(diff>0) {
+        // 设置当前录入节点文字不能超过最大值
+        this.textNode.textContent = this.textNode.textContent.substring(0,this.rangeStartOffset-diff) + this.textNode.textContent.substring(this.rangeStartOffset);
+        // 将光标移动到新数据之后
+        this.range.setStart(this.textNode,this.rangeStartOffset-diff);
+        this.range.setEnd(this.textNode,this.rangeStartOffset-diff);
         this.range.collapse(true);
         this.selection.removeAllRanges();
         this.selection.addRange(this.range);
+        this.$message.error(this.$i18n.t('copy-size-out').toString());
       }
-      event.preventDefault();
+
+      this.updateCurrentTextLength();
+    },
+    /** 限制输入的字符长度 */
+    handleTextLengthLimit(event) {
+      event.returnValue = this.currentTextLength<this.maxLength;
     },
     /**
      * 记录光标位置等 （debounce防抖提升性能）
      */
-    handleSelection() {
+    handleSelection(e) {
       this.selection = getSelection();
       // 光标对象
       this.range = this.selection.getRangeAt(0)
@@ -226,11 +249,19 @@ export default {
     },
     /** 插入图片到编辑页面 */
     insertImage(name, url) {
-      const parseDom = this.insertDom(`<img alt="${name}" style="width:30px;" @click="handleTag" src="${url}" />`);
+      if(!this.range) {
+        this.handleSelection();
+      }
+      const parseDom = this.insertDom(`<img alt="${name}" style="width:30px; vertical-align: text-bottom;" @click="handleTag" src="${url}" />`);
       // 在光标处插入dom
+      this.range.deleteContents();
       this.range.insertNode(parseDom);
-      // 光标开始和光标结束重叠
+      // 设置光标在插入dom后面
+      this.range.setStartAfter(parseDom);
+      this.range.setEndAfter(parseDom);
       this.range.collapse(true);
+      this.selection.removeAllRanges();
+      this.selection.addRange(this.range);
       this.commentInputEmojiPopoverVisible = false;
     }
   }

@@ -365,6 +365,7 @@ export default {
     },
     /** 搜索操作 */
     handleRefreshQuery() {
+      this.queryParams.projectId = this.projectId;
       this.$refs.defectContentComponent.search(this.queryParams);
     },
     /** 新增按钮操作 */

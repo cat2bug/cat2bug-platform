@@ -18,6 +18,9 @@
     </template>
     <div class="app-container">
       <el-form ref="form" :model="form" :rules="rules" label-width="120px">
+        <el-form-item>
+          <el-checkbox class="save-form-cache" v-model="isSaveFormCache" @change="handleSaveFormCache">{{ $t('defect.added-save-form-cache') }}</el-checkbox>
+        </el-form-item>
         <el-form-item :label="$t('title')" prop="defectName">
           <el-input v-model="form.defectName" :placeholder="$t('defect.enter-name')" maxlength="128" />
         </el-form-item>
@@ -152,12 +155,19 @@ import {
 } from "@/api/ai/AiDefect";
 import {strFormat} from "@/utils";
 
+// 是否保存缺陷添加表单缓存的key键值
+const IS_SAVE_FORM_CACHE_KEY = 'defect-is-save-add-form-cache';
+// 缺陷添加表单缓存的key键值
+const FORM_CACHE_KEY = 'defect-add-form-cache';
+
 export default {
   name: "AddDefect",
   dicts: ['defect_level'],
   components: { ImageUpload, SelectProjectMember, SelectModule,SelectCase,Cat2BugTextarea },
   data() {
     return {
+      // 是否缓存缺陷表单
+      isSaveFormCache: false,
       // 计划时间范围
       planTimeRange:[],
       // AI按钮加载是否显示
@@ -197,12 +207,48 @@ export default {
     },
   },
   mounted() {
+    this.readIsSaveFormCacheValue();
+    if(this.isSaveFormCache) {
+      this.readAddFormCache();
+    }
     setTimeout(()=>{
       this.getDefectConfig();
     },0)
 
   },
   methods:{
+    /** 处理保存表单缓存开关状态改变的操作 */
+    handleSaveFormCache() {
+      this.saveIsSaveFormCacheValue();
+    },
+    /** 读取是否添加的表单本地缓存的开关选项 */
+    readIsSaveFormCacheValue() {
+      const isCache = this.$cache.local.get(IS_SAVE_FORM_CACHE_KEY);
+      this.isSaveFormCache = isCache&&isCache=='true'?true:false;
+    },
+    /** 获取是否添加的表单本地缓存的开关选项 */
+    saveIsSaveFormCacheValue() {
+      const isCache = this.$cache.local.set(IS_SAVE_FORM_CACHE_KEY,this.isSaveFormCache);
+    },
+    /** 获取添加的表单本地缓存 */
+    readAddFormCache() {
+      const cacheForm = this.$cache.local.getJSON(FORM_CACHE_KEY)||{};
+      this.form.defectType = cacheForm.defectType;
+      this.form.defectLevel = cacheForm.defectLevel;
+      this.form.handleBy = cacheForm.handleBy;
+      this.form.moduleVersion = cacheForm.moduleVersion;
+      this.form.moduleId = cacheForm.moduleId;
+    },
+    /** 保存添加表单本地缓存 */
+    saveAddFormCache() {
+      this.$cache.local.setJSON(FORM_CACHE_KEY, {
+        defectType: this.form.defectType,
+        defectLevel: this.form.defectLevel,
+        handleBy: this.form.handleBy,
+        moduleVersion: this.form.moduleVersion,
+        moduleId: this.form.moduleId
+      });
+    },
     /** 初始化浮动菜单 */
     initFloatMenu() {
       this.$floatMenu.windowsInit(document.querySelector('.main-container'));
@@ -284,6 +330,12 @@ export default {
         handleTime: null,
         defectLevel: 'middle'
       };
+
+      this.readIsSaveFormCacheValue();
+      if(this.isSaveFormCache) {
+        this.readAddFormCache();
+      }
+
       this.resetForm("form");
     },
     /** 提交按钮 */
@@ -297,12 +349,18 @@ export default {
           }
           if (this.form.defectId != null) {
             updateDefect(this.form).then(res => {
+              if(this.isSaveFormCache) {
+                this.saveAddFormCache();
+              }
               this.$modal.msgSuccess(this.$i18n.t('modify-success'));
               this.cancel();
               this.$emit('added',res)
             });
           } else {
             addDefect(this.form).then(res => {
+              if(this.isSaveFormCache) {
+                this.saveAddFormCache();
+              }
               this.$modal.msgSuccess(this.$i18n.t('create-success'));
               this.cancel();
               this.$emit('added',res)
@@ -450,6 +508,9 @@ export default {
     }
   }
   ::v-deep .app-container {
+    .save-form-cache {
+      left: -25px;
+    }
     .el-form-item--medium .el-form-item__content {
       line-height: 35px !important;
     }
