@@ -11,7 +11,7 @@
  Target Server Version : 80200
  File Encoding         : 65001
 
- Date: 30/07/2024 00:58:57
+ Date: 15/08/2024 15:15:11
 */
 
 SET NAMES utf8mb4;
@@ -285,7 +285,7 @@ CREATE TABLE `im_user_config` (
   KEY `user_project_` (`user_id`,`project_id`),
   KEY `row_` (`user_id`,`project_id`,`group_name`),
   KEY `user_group_` (`user_id`,`group_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb3 COMMENT='用户消息配置表';
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb3 COMMENT='用户消息配置表';
 
 -- ----------------------------
 -- Records of im_user_config
@@ -547,7 +547,7 @@ CREATE TABLE `sys_ai_module_config` (
   `update_by_id` bigint DEFAULT NULL COMMENT '更新人ID',
   PRIMARY KEY (`ai_id`),
   KEY `project_id_` (`project_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb3 COMMENT='AI模型配置';
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb3 COMMENT='AI模型配置';
 
 -- ----------------------------
 -- Records of sys_ai_module_config
@@ -579,7 +579,7 @@ CREATE TABLE `sys_case` (
   PRIMARY KEY (`case_id`),
   UNIQUE KEY `id_num_` (`case_id`,`case_num`),
   KEY `project_id_case_name` (`case_name`,`project_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7264 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_bin COMMENT='测试用例表';
+) ENGINE=InnoDB AUTO_INCREMENT=7265 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_bin COMMENT='测试用例表';
 
 -- ----------------------------
 -- Records of sys_case
@@ -593,13 +593,13 @@ COMMIT;
 DROP TABLE IF EXISTS `sys_comment`;
 CREATE TABLE `sys_comment` (
   `comment_id` bigint NOT NULL AUTO_INCREMENT COMMENT '评论ID',
-  `comment_content` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL COMMENT '评论内容',
+  `comment_content` varchar(1024) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL COMMENT '评论内容',
   `create_by_id` bigint DEFAULT NULL COMMENT '创建人ID',
   `create_time` datetime DEFAULT NULL COMMENT '创建时间',
   `module_type` varchar(12) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL COMMENT '所属模块(defect_log:缺陷日志的评论)',
   `correlation_id` bigint NOT NULL COMMENT '关联id',
   PRIMARY KEY (`comment_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=30 DEFAULT CHARSET=utf8mb3 COMMENT='评论';
+) ENGINE=InnoDB AUTO_INCREMENT=40 DEFAULT CHARSET=utf8mb3 COMMENT='评论';
 
 -- ----------------------------
 -- Records of sys_comment
@@ -638,6 +638,33 @@ INSERT INTO `sys_config` (`config_id`, `config_name`, `config_key`, `config_valu
 INSERT INTO `sys_config` (`config_id`, `config_name`, `config_key`, `config_value`, `config_type`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `project_id`, `receiver_id`, `read`) VALUES (4, '账号自助-验证码开关', 'sys.account.captchaEnabled', 'false', 'Y', 'admin', '2023-11-12 15:34:52', 'admin', '2023-11-12 16:14:31', '是否开启验证码功能（true开启，false关闭）', NULL, NULL, 0);
 INSERT INTO `sys_config` (`config_id`, `config_name`, `config_key`, `config_value`, `config_type`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `project_id`, `receiver_id`, `read`) VALUES (5, '账号自助-是否开启用户注册功能', 'sys.account.registerUser', 'true', 'Y', 'admin', '2023-11-12 15:34:52', 'admin', '2023-11-12 16:13:43', '是否开启注册用户功能（true开启，false关闭）', NULL, NULL, 0);
 INSERT INTO `sys_config` (`config_id`, `config_name`, `config_key`, `config_value`, `config_type`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `project_id`, `receiver_id`, `read`) VALUES (6, '用户登录-黑名单列表', 'sys.login.blackIPList', '', 'Y', 'admin', '2023-11-12 15:34:52', '', NULL, '设置登录IP黑名单限制，多个匹配项以;分隔，支持匹配（*通配、网段）', NULL, NULL, 0);
+COMMIT;
+
+-- ----------------------------
+-- Table structure for sys_db_version
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_db_version`;
+CREATE TABLE `sys_db_version` (
+  `installed_rank` int NOT NULL,
+  `version` varchar(50) DEFAULT NULL,
+  `description` varchar(200) NOT NULL,
+  `type` varchar(20) NOT NULL,
+  `script` varchar(1000) NOT NULL,
+  `checksum` int DEFAULT NULL,
+  `installed_by` varchar(100) NOT NULL,
+  `installed_on` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `execution_time` int NOT NULL,
+  `success` tinyint(1) NOT NULL,
+  PRIMARY KEY (`installed_rank`),
+  KEY `sys_db_version_s_idx` (`success`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+
+-- ----------------------------
+-- Records of sys_db_version
+-- ----------------------------
+BEGIN;
+INSERT INTO `sys_db_version` (`installed_rank`, `version`, `description`, `type`, `script`, `checksum`, `installed_by`, `installed_on`, `execution_time`, `success`) VALUES (1, '0', 'BaseLineInitialize', 'BASELINE', 'BaseLineInitialize', NULL, 'root', '2024-08-02 17:55:15', 0, 1);
+INSERT INTO `sys_db_version` (`installed_rank`, `version`, `description`, `type`, `script`, `checksum`, `installed_by`, `installed_on`, `execution_time`, `success`) VALUES (2, '0.0.1', 'cat2bug platform', 'SQL', 'V0_0_1__cat2bug_platform.sql', -1446232058, 'root', '2024-08-02 17:55:15', 37, 0);
 COMMIT;
 
 -- ----------------------------
@@ -680,7 +707,7 @@ CREATE TABLE `sys_defect` (
   KEY `defect_key` (`defect_key`),
   KEY `defect_group_key` (`defect_group_key`),
   KEY `project_id_` (`project_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1002 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='缺陷表';
+) ENGINE=InnoDB AUTO_INCREMENT=1007 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='缺陷表';
 
 -- ----------------------------
 -- Records of sys_defect
@@ -703,7 +730,7 @@ CREATE TABLE `sys_defect_log` (
   `defect_id` bigint NOT NULL COMMENT '缺陷id',
   PRIMARY KEY (`defect_log_id`),
   KEY `defect_id_` (`defect_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=14181 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='缺陷日志表';
+) ENGINE=InnoDB AUTO_INCREMENT=14191 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='缺陷日志表';
 
 -- ----------------------------
 -- Records of sys_defect_log
@@ -878,7 +905,7 @@ CREATE TABLE `sys_document` (
   `doc_remakr` varchar(255) DEFAULT NULL COMMENT '备注',
   `file_url` varchar(255) DEFAULT NULL COMMENT '文件路径',
   PRIMARY KEY (`doc_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=57 DEFAULT CHARSET=utf8mb3 COMMENT='文档';
+) ENGINE=InnoDB AUTO_INCREMENT=58 DEFAULT CHARSET=utf8mb3 COMMENT='文档';
 
 -- ----------------------------
 -- Records of sys_document
@@ -952,12 +979,14 @@ CREATE TABLE `sys_logininfor` (
   PRIMARY KEY (`info_id`),
   KEY `idx_sys_logininfor_s` (`status`),
   KEY `idx_sys_logininfor_lt` (`login_time`)
-) ENGINE=InnoDB AUTO_INCREMENT=1234 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='系统访问记录';
+) ENGINE=InnoDB AUTO_INCREMENT=1296 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='系统访问记录';
 
 -- ----------------------------
 -- Records of sys_logininfor
 -- ----------------------------
 BEGIN;
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (1294, 'demo', '127.0.0.1', '内网IP', 'Chrome 12', 'Mac OS X', '0', '退出成功', '2024-08-15 07:12:00');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (1295, 'admin', '127.0.0.1', '内网IP', 'Chrome 12', 'Mac OS X', '0', '登录成功', '2024-08-15 07:12:05');
 COMMIT;
 
 -- ----------------------------
@@ -1186,38 +1215,12 @@ CREATE TABLE `sys_module` (
   PRIMARY KEY (`module_id`),
   KEY `module_pid_` (`module_pid`),
   KEY `module_nbame_` (`module_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=289 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='模块表';
+) ENGINE=InnoDB AUTO_INCREMENT=311 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='模块表';
 
 -- ----------------------------
 -- Records of sys_module
 -- ----------------------------
 BEGIN;
-INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`) VALUES (263, 00000000000000000000, '登陆', NULL, 2);
-INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`) VALUES (264, 00000000000000000000, '首页', NULL, 2);
-INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`) VALUES (265, 00000000000000000000, '119指挥中心', NULL, 5);
-INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`) VALUES (266, 00000000000000000000, '战训', NULL, 5);
-INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`) VALUES (267, 00000000000000000000, '装备', NULL, 5);
-INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`) VALUES (268, 00000000000000000000, '安全', NULL, 5);
-INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`) VALUES (269, 00000000000000000000, '消防监督', NULL, 5);
-INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`) VALUES (270, 00000000000000000000, '测试交付', NULL, 9);
-INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`) VALUES (271, 00000000000000000000, '统计查询', NULL, 7);
-INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`) VALUES (272, 00000000000000000000, '台账维护', NULL, 7);
-INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`) VALUES (273, 00000000000000000000, '设备评估', NULL, 7);
-INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`) VALUES (274, 00000000000000000000, '设备领用', NULL, 7);
-INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`) VALUES (275, 00000000000000000000, '硬件配置变更', NULL, 7);
-INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`) VALUES (276, 00000000000000000000, '调拨管理', NULL, 7);
-INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`) VALUES (277, 00000000000000000000, 'IT低耗', NULL, 7);
-INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`) VALUES (278, 00000000000000000000, 'IT低耗', NULL, 7);
-INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`) VALUES (279, 00000000000000000000, '登录界面测试用例', NULL, 6);
-INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`) VALUES (280, 00000000000000000000, '消防监督【消防数据管理】', NULL, 6);
-INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`) VALUES (281, 00000000000000000000, '消防监督【消防设施类型】', NULL, 6);
-INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`) VALUES (282, 00000000000000000000, '战勤保障【基础数据管理】', NULL, 6);
-INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`) VALUES (283, 00000000000000000000, '应急预案【战例库】', NULL, 6);
-INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`) VALUES (284, 00000000000000000000, '登录界面测试', NULL, 6);
-INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`) VALUES (285, 00000000000000000000, '器材装备【消防车辆】', NULL, 6);
-INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`) VALUES (286, 00000000000000000000, '官网文档', NULL, 9);
-INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`) VALUES (287, 00000000000000000270, '测试用例', NULL, 9);
-INSERT INTO `sys_module` (`module_id`, `module_pid`, `module_name`, `remark`, `project_id`) VALUES (288, 00000000000000000270, '缺陷管理', NULL, 9);
 COMMIT;
 
 -- ----------------------------
@@ -1276,13 +1279,12 @@ CREATE TABLE `sys_oper_log` (
   KEY `idx_sys_oper_log_bt` (`business_type`),
   KEY `idx_sys_oper_log_s` (`status`),
   KEY `idx_sys_oper_log_ot` (`oper_time`)
-) ENGINE=InnoDB AUTO_INCREMENT=16633 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='操作日志记录';
+) ENGINE=InnoDB AUTO_INCREMENT=17559 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='操作日志记录';
 
 -- ----------------------------
 -- Records of sys_oper_log
 -- ----------------------------
 BEGIN;
-INSERT INTO `sys_oper_log` (`oper_id`, `title`, `business_type`, `method`, `request_method`, `operator_type`, `oper_name`, `dept_name`, `oper_url`, `oper_ip`, `oper_location`, `oper_param`, `json_result`, `status`, `error_msg`, `oper_time`, `cost_time`) VALUES (16632, '个人信息', 2, 'com.cat2bug.web.controller.system.SysProfileController.updatePwd()', 'PUT', 1, 'admin', NULL, '/system/user/profile/updatePwd', '127.0.0.1', '内网IP', '{}', '{\"msg\":\"操作成功\",\"code\":200}', 0, NULL, '2024-07-29 16:52:56', 346);
 COMMIT;
 
 -- ----------------------------
@@ -1330,7 +1332,7 @@ CREATE TABLE `sys_project` (
   `project_state` int DEFAULT '1' COMMENT '项目状态(0删除；1运行)',
   PRIMARY KEY (`project_id`),
   KEY `team_id_` (`team_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=49 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='项目表';
+) ENGINE=InnoDB AUTO_INCREMENT=50 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='项目表';
 
 -- ----------------------------
 -- Records of sys_project
@@ -1373,7 +1375,7 @@ CREATE TABLE `sys_project_defect_tabs` (
   `create_time` datetime DEFAULT NULL COMMENT '创建时间',
   PRIMARY KEY (`tab_id`),
   KEY `user_id_` (`project_id`,`user_id`) COMMENT '查询用户所在项目的Tab配置'
-) ENGINE=InnoDB AUTO_INCREMENT=136 DEFAULT CHARSET=utf8mb3 COMMENT='项目缺陷页签配置';
+) ENGINE=InnoDB AUTO_INCREMENT=137 DEFAULT CHARSET=utf8mb3 COMMENT='项目缺陷页签配置';
 
 -- ----------------------------
 -- Records of sys_project_defect_tabs
@@ -2119,7 +2121,7 @@ CREATE TABLE `sys_team` (
   `is_del` tinyint DEFAULT NULL COMMENT '是否删除',
   PRIMARY KEY (`team_id`),
   UNIQUE KEY `name_` (`team_name`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='团队表';
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='团队表';
 
 -- ----------------------------
 -- Records of sys_team
@@ -2176,13 +2178,13 @@ CREATE TABLE `sys_user` (
   `wechat_user_id` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '微信账号',
   PRIMARY KEY (`user_id`),
   UNIQUE KEY `phone_` (`phonenumber`)
-) ENGINE=InnoDB AUTO_INCREMENT=213 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='用户信息表';
+) ENGINE=InnoDB AUTO_INCREMENT=214 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='用户信息表';
 
 -- ----------------------------
 -- Records of sys_user
 -- ----------------------------
 BEGIN;
-INSERT INTO `sys_user` (`user_id`, `dept_id`, `user_name`, `nick_name`, `user_type`, `email`, `phonenumber`, `sex`, `avatar`, `password`, `status`, `del_flag`, `login_ip`, `login_date`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `ding_user_id`, `wechat_user_id`) VALUES (1, 00000000000000000000, 'admin', '黑猫警长', '00', 'admin@cat2bug.com', '18888888888', '0', '', '$2a$10$/YbsRyezA9pg13iJhCNE.u5yOvWbuq7NZhOlliUvycEfBIgJN6qHK', '0', '0', '127.0.0.1', '2024-07-30 00:53:15', 'admin', '2023-11-12 15:34:51', '', '2024-07-29 16:53:15', '管理员', NULL, NULL);
+INSERT INTO `sys_user` (`user_id`, `dept_id`, `user_name`, `nick_name`, `user_type`, `email`, `phonenumber`, `sex`, `avatar`, `password`, `status`, `del_flag`, `login_ip`, `login_date`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `ding_user_id`, `wechat_user_id`) VALUES (1, 00000000000000000000, 'admin', '黑猫警长', '00', 'admin@cat2bug.com', '18888888888', '0', '', '$2a$10$/YbsRyezA9pg13iJhCNE.u5yOvWbuq7NZhOlliUvycEfBIgJN6qHK', '0', '0', '127.0.0.1', '2024-08-15 15:12:06', 'admin', '2023-11-12 15:34:51', '', '2024-08-15 07:12:05', '管理员', NULL, NULL);
 COMMIT;
 
 -- ----------------------------
@@ -2199,7 +2201,7 @@ CREATE TABLE `sys_user_config` (
   `life_content` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '人生格言',
   PRIMARY KEY (`user_config_id`),
   KEY `user_id_` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=109 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='用户配置表';
+) ENGINE=InnoDB AUTO_INCREMENT=110 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='用户配置表';
 
 -- ----------------------------
 -- Records of sys_user_config
@@ -2258,7 +2260,7 @@ CREATE TABLE `sys_user_project` (
   `collect` tinyint(1) DEFAULT NULL COMMENT '是否收藏',
   PRIMARY KEY (`user_project_id`),
   UNIQUE KEY `user_project_` (`user_id`,`project_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=188 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='用户项目表';
+) ENGINE=InnoDB AUTO_INCREMENT=189 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='用户项目表';
 
 -- ----------------------------
 -- Records of sys_user_project
@@ -2276,7 +2278,7 @@ CREATE TABLE `sys_user_project_role` (
   `role_id` bigint NOT NULL COMMENT '角色id',
   PRIMARY KEY (`user_project_role_id`),
   UNIQUE KEY `user_project_role_` (`user_project_id`,`role_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=319 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='用户项目角色表';
+) ENGINE=InnoDB AUTO_INCREMENT=320 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='用户项目角色表';
 
 -- ----------------------------
 -- Records of sys_user_project_role
@@ -2313,6 +2315,7 @@ INSERT INTO `sys_user_role` (`user_id`, `role_id`) VALUES (202, 10);
 INSERT INTO `sys_user_role` (`user_id`, `role_id`) VALUES (209, 10);
 INSERT INTO `sys_user_role` (`user_id`, `role_id`) VALUES (210, 10);
 INSERT INTO `sys_user_role` (`user_id`, `role_id`) VALUES (212, 10);
+INSERT INTO `sys_user_role` (`user_id`, `role_id`) VALUES (213, 10);
 COMMIT;
 
 -- ----------------------------
@@ -2328,7 +2331,7 @@ CREATE TABLE `sys_user_statistic_template` (
   `statistic_templat_config` json DEFAULT NULL COMMENT '统计模版配置',
   PRIMARY KEY (`statistic_template_id`),
   UNIQUE KEY `type_project_user_` (`module_type`,`project_id`,`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=152 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_bin COMMENT='用户统计模版';
+) ENGINE=InnoDB AUTO_INCREMENT=153 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_bin COMMENT='用户统计模版';
 
 -- ----------------------------
 -- Records of sys_user_statistic_template
@@ -2352,7 +2355,7 @@ CREATE TABLE `sys_user_team` (
   `team_lock` tinyint(1) unsigned zerofill DEFAULT '0' COMMENT '是否锁定',
   PRIMARY KEY (`user_team_id`),
   UNIQUE KEY `user_team_` (`user_id`,`team_id`,`team_role_id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=169 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='用户团队角色表';
+) ENGINE=InnoDB AUTO_INCREMENT=170 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='用户团队角色表';
 
 -- ----------------------------
 -- Records of sys_user_team
@@ -2369,7 +2372,7 @@ CREATE TABLE `sys_user_team_role` (
   `user_team_id` bigint NOT NULL COMMENT '用户团队id',
   `role_id` bigint NOT NULL COMMENT '角色id',
   PRIMARY KEY (`user_team_role_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=208 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='用户团队角色表';
+) ENGINE=InnoDB AUTO_INCREMENT=209 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='用户团队角色表';
 
 -- ----------------------------
 -- Records of sys_user_team_role
