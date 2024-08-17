@@ -426,6 +426,8 @@ export default {
       if(this.config && this.config.tabs) {
         let tab = this.config.tabs.find(t=>t.tabId==this.activeDefectTabName);
         if(tab && tab.config) {
+          tab.config.isAsc = 'desc';
+          tab.config.orderByColumn = 'updateTime';
           if(!tab.config.params) {
             tab.config.params = {
               defectStates: []
