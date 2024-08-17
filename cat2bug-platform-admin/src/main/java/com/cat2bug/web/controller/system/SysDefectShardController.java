@@ -9,6 +9,7 @@ import com.cat2bug.common.core.page.TableDataInfo;
 import com.cat2bug.common.enums.BusinessType;
 import com.cat2bug.common.utils.DateUtils;
 import com.cat2bug.common.utils.DictUtils;
+import com.cat2bug.common.utils.MessageUtils;
 import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.common.utils.poi.ExcelUtil;
 import com.cat2bug.system.domain.SysDefectLog;
@@ -57,11 +58,11 @@ public class SysDefectShardController extends BaseController
         Map<String, Object> ret = new HashMap<>();
         SysDefectShard shard = sysDefectShardService.selectSysDefectShardByDefectShardId(defectShardId);
         if(shard==null) {
-            return AjaxResult.error("没有找到分享的缺陷!");
+            return AjaxResult.error(MessageUtils.message("shard.not-find-defect"));
         }
 
         if(shard.getAgingHour()!=null && shard.getAgingHour()>0 && shard.getAgingTime()!=null && shard.getAgingTime().getTime()>0 && shard.getAgingTime().getTime()<System.currentTimeMillis()) {
-            return AjaxResult.error("分享已过期!");
+            return AjaxResult.error(MessageUtils.message("shard.expire"));
         }
         Long memberId = null;
         try {
@@ -71,7 +72,7 @@ public class SysDefectShardController extends BaseController
         SysDefect sysDefect = sysDefectService.selectSysDefectByDefectId(shard.getDefectId(),memberId);
 
         if(sysDefect==null) {
-            return AjaxResult.error("没有找到分享的缺陷!");
+            return AjaxResult.error(MessageUtils.message("shard.not-find-defect"));
         }
 
         SysDefectLog sysDefectLog = new SysDefectLog();
@@ -103,11 +104,11 @@ public class SysDefectShardController extends BaseController
         }
 
         if(StringUtils.isNotBlank(shard.getPassword()) && StringUtils.isBlank(sysDefectShard.getPassword())) {
-            return AjaxResult.error("分享密码不能为空!");
+            return AjaxResult.error(MessageUtils.message("shard.input-password"));
         }
 
         if(StringUtils.isNotBlank(shard.getPassword()) && !shard.getPassword().equals(sysDefectShard.getPassword())) {
-            return AjaxResult.error("分享密码错误!");
+            return AjaxResult.error(MessageUtils.message("shard.password-error"));
         }
 
         return AjaxResult.success(ret);

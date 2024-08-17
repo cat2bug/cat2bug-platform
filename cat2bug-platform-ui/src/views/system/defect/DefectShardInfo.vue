@@ -8,7 +8,7 @@
           </el-input>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" style="width: 100%" @click="getShard">验证</el-button>
+          <el-button type="primary" style="width: 100%" @click="getShard">{{ $t('shard.verify') }}</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -198,7 +198,6 @@ export default {
         this.params.password=password;
       }
     }
-
     this.getShard();
   },
   computed: {

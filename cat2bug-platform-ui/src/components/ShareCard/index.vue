@@ -94,15 +94,11 @@ export default {
   methods: {
     /** 刷新 */
     refresh() {
-      if(this.shard) {
+      this.form.defectId = this.params.defectId;
+      shardDefect(this.form).then(res=>{
+        this.shard = res.data;
         this.refreshComponents();
-      } else {
-        this.form.defectId = this.params.defectId;
-        shardDefect(this.form).then(res=>{
-          this.shard = res.data;
-          this.refreshComponents();
-        })
-      }
+      });
     },
     /** 刷新分享组件 */
     refreshComponents() {
