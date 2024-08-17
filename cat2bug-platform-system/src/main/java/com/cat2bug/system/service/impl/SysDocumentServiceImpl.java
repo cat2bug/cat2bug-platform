@@ -98,8 +98,7 @@ public class SysDocumentServiceImpl implements ISysDocumentService
         doc.setParams(params);
         doc.setProjectId(sysDocument.getProjectId());
         doc.setDocPid(sysDocument.getDocPid());
-        List<SysDocument> list = sysDocumentMapper.selectSysDocumentList(doc);
-        return list.size()>0;
+        return sysDocumentMapper.selectSysDocumentList(doc).size()>0;
     }
 
     /**
