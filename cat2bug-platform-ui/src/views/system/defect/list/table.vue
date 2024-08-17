@@ -72,7 +72,7 @@
               v-model="scope.row.focusList"
               module-name="defect"
               :data-id="scope.row.defectId" />
-            <el-link type="primary" @click="editDefectHandle(scope.row)">{{ scope.row.defectName }}</el-link>
+            <el-link type="primary" @click="handleClickTableRow(scope.row)">{{ scope.row.defectName }}</el-link>
             <div class="defect-statistics">
               <div>
                 <i class="el-icon-time"></i>
@@ -439,6 +439,7 @@ export default {
 .col {
   display: flex;
   flex-direction: column;
+  height: auto;
 }
 .defect-field-divider {
   margin: 8px 0px;
