@@ -1,11 +1,11 @@
 <template>
   <el-dialog
     :append-to-body="true"
-    width="65%"
+    width="75%"
     :title="title"
     :visible.sync="visible">
     <div class="app-container defect-edit-body">
-      <el-form ref="form" :model="form" :rules="rules" label-width="120px">
+      <el-form ref="form" :model="form" :rules="rules" label-width="100px">
         <el-row>
           <el-col :span="24">
             <el-form-item :label="$t('title')" prop="defectName">
@@ -51,7 +51,7 @@
               <select-module v-model="form.moduleId" :project-id="projectId"/>
             </el-form-item>
           </el-col>
-          <el-col :span="12">
+          <el-col :span="12" class="selectTime">
             <el-form-item :label="$t('plan-time')" prop="planEndTime">
               <el-date-picker
                 v-model="planTimeRange"
@@ -262,4 +262,9 @@ export default {
 .dialog-footer {
   text-align: right;
 }
+
+.selectTime .el-date-editor--datetimerange.el-input__inner{
+  width: 100%;
+}
+
 </style>
