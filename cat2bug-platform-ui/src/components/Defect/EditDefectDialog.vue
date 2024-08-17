@@ -137,9 +137,6 @@ export default {
         defectLevel: [
           { required: true, message: this.$i18n.t('defect.defect-level-cannot-empty'), trigger: "input" }
         ],
-        defectDescribe: [
-          { required: true, message: this.$i18n.t('defect.describe-cannot-empty'), trigger: "input" }
-        ],
       }
     }
   },
