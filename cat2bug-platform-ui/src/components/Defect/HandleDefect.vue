@@ -8,16 +8,20 @@
       <div class="defect-edit-header">
         <div class="defect-edit-title">
           <i class="el-icon-arrow-left" @click="cancel"></i>
-          <h4 class="defect-edit-title-num">#{{defect.projectNum}}</h4>
-          <defect-type-flag :defect="defect" />
-          <defect-state-flag :defect="defect" />
-          <focus-member-list
-            v-model="defect.focusList"
-            module-name="defect"
-            :data-id="defect.defectId"
-            :tooltip="false"
-          />
-          <h4 class="defect-edit-title-name">{{defect.defectName}}</h4>
+          <div style="line-height: 36px;">
+            <span class="defect-edit-title-num">#{{defect.projectNum}}</span>
+            <span class="defect-edit-title-content">
+                <defect-type-flag :defect="defect" />
+                <defect-state-flag :defect="defect" />
+                <focus-member-list
+                  v-model="defect.focusList"
+                  module-name="defect"
+                  :data-id="defect.defectId"
+                  :tooltip="false"
+                />
+                {{defect.defectName}}
+            </span>
+          </div>
         </div>
         <div class="report-edit-tools">
           <defect-tools :defect="defect" size="mini" @delete="deleteHandle" @log="logHandle"></defect-tools>
@@ -323,114 +327,134 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  ::v-deep .el-drawer {
-    border-left: 3px solid #ff4949;
+::v-deep .el-drawer {
+  border-left: 3px solid #ff4949;
+}
+::v-deep .el-drawer__header {
+  margin-bottom: 0px;
+  max-width: calc(100vw);
+}
+.defect-edit-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: row;
+  flex-wrap: wrap;
+  .report-edit-tools {
+    padding: 5px 0px;
   }
-  ::v-deep .el-drawer__header {
-    margin-bottom: 0px;
-    max-width: calc(100vw);
-  }
-  .defect-edit-header {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
+  .defect-edit-title {
+    display: inline-flex;
+    justify-content: flex-start;
     align-items: center;
     flex-direction: row;
-    flex-wrap: wrap;
-    .report-edit-tools {
-      padding: 5px 0px;
+    overflow: hidden;
+    > * {
+      float:left;
     }
-    .defect-edit-title {
-      display: inline-flex;
-      justify-content: flex-start;
-      align-items: center;
-      flex-direction: row;
-      overflow: hidden;
-      > * {
-        float:left;
-      }
-      .el-icon-arrow-left {
-        font-size: 22px;
-      }
-      .el-icon-arrow-left:hover {
-        cursor: pointer;
-        color: #909399;
-      }
-      .defect-edit-title-name {
-        flex: 1;
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-      }
-      .defect-edit-title-num, .defect-edit-title-name {
-        font-size: 20px;
-        color: #303133;
-        font-weight: 500;
-        margin-top: 10px;
-        margin-bottom: 10px;
-      }
-      > * {
-        margin-right: 10px;
-      }
+    .el-icon-arrow-left {
+      font-size: 22px;
     }
-  }
-  .defect-edit-body {
-    padding-left: 30px;
-    padding-right: 30px;
-    .defect-edit-body-log-first {
-      border:#E4E7ED 1px solid;
-      border-radius: 5px;
-      padding: 15px 15px 12px 15px;
-      margin-bottom: 10px;
+    .el-icon-arrow-left:hover {
+      cursor: pointer;
+      color: #909399;
     }
-    ::v-deep .el-collapse {
-      .el-collapse-item__header {
-        font-size: 16px;
-      }
-      border-width: 0px;
-      .el-collapse-item:last-child {
-        .el-collapse-item__wrap {
-          border-width: 0px;
-        }
-      }
+    .defect-edit-title-name {
+      //flex: 1;
+      //overflow: hidden;
+      //white-space: nowrap;
+      //text-overflow: ellipsis;
     }
-    h5 {
-      font-size: 18px;
+    .defect-edit-title-content{
+      font-size: 20px;
       color: #303133;
-      margin: 10px 0px;
+      font-weight: 500;
+      line-height: 36px;
     }
-    .defect-edit-body-base {
-      .el-col {
-        margin-bottom: 20px;
-        label {
-          font-size: 14px;
-          color: #303133;
-          width: 120px;
-          display: inline-block;
-          justify-content: flex-start;
-          margin-right: 10px;
-          text-align: right;
-        }
+    .defect-edit-title-content .defect-type-tag{
+      float: left;
+      margin-right:10px;
+      margin-top: 5px;
+    }
+    .defect-edit-title-content .project-member-icons{
+      float: left;
+      margin-right:10px;
+    }
+    .defect-edit-title-content .el-tag--dark.el-tag--danger{
+      float: left;
+      margin-right:10px;
+      margin-top: 5px;
+    }
+    .defect-edit-title-num, .defect-edit-title-name {
+      font-size: 20px;
+      color: #303133;
+      font-weight: 500;
+      float: left;
+      margin-right:10px;
+    }
+    > * {
+      margin-right:10px;
+    }
+  }
+}
+.defect-edit-body {
+  padding-left: 30px;
+  padding-right: 30px;
+  .defect-edit-body-log-first {
+    border:#E4E7ED 1px solid;
+    border-radius: 5px;
+    padding: 15px 15px 12px 15px;
+    margin-bottom: 10px;
+  }
+  ::v-deep .el-collapse {
+    .el-collapse-item__header {
+      font-size: 16px;
+    }
+    border-width: 0px;
+    .el-collapse-item:last-child {
+      .el-collapse-item__wrap {
+        border-width: 0px;
       }
     }
-    .defect-edit-body-annex {
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-start;
-      align-items: flex-start;
+  }
+  h5 {
+    font-size: 18px;
+    color: #303133;
+    margin: 10px 0px;
+  }
+  .defect-edit-body-base {
+    .el-col {
+      margin-bottom: 20px;
+      label {
+        font-size: 14px;
+        color: #303133;
+        width: 120px;
+        display: inline-block;
+        justify-content: flex-start;
+        margin-right: 10px;
+        text-align: right;
+      }
     }
   }
-  ::v-deep .el-drawer__close-btn {
-    display: none;
+  .defect-edit-body-annex {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
   }
-  .defect-image {
-    display: inline-flex;
-    flex-direction: row;
-    gap: 10px;
-    flex-wrap: wrap;
-    > .el-image {
-      width: 150px;
-      height: 150px;
-    }
+}
+::v-deep .el-drawer__close-btn {
+  display: none;
+}
+.defect-image {
+  display: inline-flex;
+  flex-direction: row;
+  gap: 10px;
+  flex-wrap: wrap;
+  > .el-image {
+    width: 150px;
+    height: 150px;
   }
+}
 </style>
