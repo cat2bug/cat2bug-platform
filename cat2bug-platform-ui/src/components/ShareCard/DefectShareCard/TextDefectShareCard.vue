@@ -90,10 +90,12 @@ export default {
       }
 
       let desc = this.params.defectDescribe;
-      if(desc.length>255) {
-        desc = desc.substring(0,255-2) +'...';
+      if(desc) {
+        if (desc.length > 255) {
+          desc = desc.substring(0, 255 - 2) + '...';
+        }
+        content += `\n${desc}\n`;
       }
-      content += `\n${desc}\n`;
       content += `\n${this.$i18n.t('defect.shard.click-view')}：\n`;
       content += `${this.getDefectUrl(this.shard.defectShardId)}\n`;
 

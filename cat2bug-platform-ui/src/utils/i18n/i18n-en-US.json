@@ -485,6 +485,7 @@
   "shard.1day": "1 Day",
   "shard.7day": "7 Day",
   "shard.permanent": "Permanent",
+  "shard.click-prompt": "Click on any template below to copy",
   "mk.link-describe": "Link Describe",
   "mk.link-url": "Link Url",
   "mk.add-link": "Add Link",

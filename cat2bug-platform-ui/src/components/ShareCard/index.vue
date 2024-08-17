@@ -17,7 +17,7 @@
         </el-form-item>
       </el-form>
       <div class="title">
-        <label>点击下面任意模版进行复制</label>
+        <label>{{ $t('shard.click-prompt') }}</label>
       </div>
       <div class="share-list">
         <component
