@@ -84,7 +84,16 @@ public class SysDefectController extends BaseController
         List<SysDefect> newList = new ArrayList<>(list);
         newList.forEach(l->{
             if(l.getHandleByList()!=null){
-                l.setHandleByList(l.getHandleByList().stream().filter(h->h.getUserId()>0).collect(Collectors.toList()));
+                // 根据记录的用户id排序getHandleByList列表
+                Map<Long, SysUser> userMap = l.getHandleByList().stream().filter(h->h.getUserId()>0).collect(Collectors.toMap(SysUser::getUserId,i->i));
+                List<SysUser> handleList = new ArrayList<>();
+                for(int i=0;i<l.getHandleBy().size();i++) {
+                    Long userId = l.getHandleBy().get(i);
+                    if(userId!=null && userMap.containsKey(userId)) {
+                        handleList.add(userMap.get(userId));
+                    }
+                }
+                l.setHandleByList(handleList);
             }
             List<SysUser> focusList = memberFocusService.getFocusMemberList(MODULE_NAME,l.getDefectId());
             l.setFocusList(focusList);
