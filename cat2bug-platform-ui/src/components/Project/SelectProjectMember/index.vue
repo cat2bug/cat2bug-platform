@@ -138,9 +138,8 @@ export default {
         }
       }
     },
-    selectMemberList: function () {
+    selectMemberList: function() {
       return function () {
-        const temp = this.updateInt;
         const arr = Array.from(this.selectMembers.values());
         return arr.sort((a, b) => this.optionsChecks.get(a.userId) - this.optionsChecks.get(b.userId));
       }
@@ -156,12 +155,12 @@ export default {
           this.getMemberList(newVal);
         }
       }
-    }
+    },
   },
   created() {
     this.queryMember.roleId = this.roleId?this.roleId+'':'0';
     this.getRoleList();
-    this.getMemberList();
+    this.getMemberList(this.memberId);
   },
   mounted() {
   },
@@ -211,7 +210,6 @@ export default {
         })
         this.options = res.rows;
         this.total = res.total;
-
         if(memberIds && memberIds.length>0) {
           this.options.forEach(m=> {
             if(memberIds.includes(m.userId)){

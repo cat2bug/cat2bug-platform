@@ -330,13 +330,12 @@ export default {
         handleTime: null,
         defectLevel: 'middle'
       };
+      this.resetForm("form");
 
       this.readIsSaveFormCacheValue();
       if(this.isSaveFormCache) {
         this.readAddFormCache();
       }
-
-      this.resetForm("form");
     },
     /** 提交按钮 */
     submitForm() {
