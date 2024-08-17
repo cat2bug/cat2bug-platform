@@ -33,7 +33,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
     <select id="selectSysDocumentList" parameterType="SysDocument" resultMap="SysDocumentResult">
         <include refid="selectSysDocumentVo"/>
-        <where>  
+        <where>
+            <if test="docId != null "> and d.doc_id = #{docId}</if>
             <if test="projectId != null "> and d.project_id = #{projectId}</if>
             <if test="docName != null  and docName != ''"> and d.doc_name like concat('%', #{docName}, '%')</if>
             <if test="docType != null "> and d.doc_type = #{docType}</if>
@@ -48,6 +49,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                      and (d.doc_pid is null or d.doc_pid &lt;= 0)
                  </otherwise>
              </choose>
+            <if test="params != null and params.docName != null  and params.docName != ''">
+                and d.doc_name = #{params.docName}
+            </if>
         </where>
         order by d.doc_type asc, d.create_time desc
     </select>

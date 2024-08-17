@@ -1,7 +1,11 @@
 package com.cat2bug.system.service.impl;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import com.cat2bug.common.utils.DateUtils;
+import com.cat2bug.common.utils.MessageUtils;
 import com.cat2bug.common.utils.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -54,6 +58,9 @@ public class SysDocumentServiceImpl implements ISysDocumentService
     @Override
     public int insertSysDocument(SysDocument sysDocument)
     {
+        if(this.checkDuplication(sysDocument)) {
+            throw new RuntimeException(MessageUtils.message("document.check-duplication"));
+        }
         sysDocument.setCreateTime(DateUtils.getNowDate());
         sysDocument.setCreateById(SecurityUtils.getUserId());
         sysDocument.setUpdateTime(DateUtils.getNowDate());
@@ -70,9 +77,29 @@ public class SysDocumentServiceImpl implements ISysDocumentService
     @Override
     public int updateSysDocument(SysDocument sysDocument)
     {
+        if(this.checkDuplication(sysDocument)) {
+            throw new RuntimeException(MessageUtils.message("document.check-duplication"));
+        }
         sysDocument.setUpdateTime(DateUtils.getNowDate());
         sysDocument.setUpdateById(SecurityUtils.getUserId());
         return sysDocumentMapper.updateSysDocument(sysDocument);
+    }
+
+    /**
+     * 检测是否重复
+     * @param sysDocument
+     * @return
+     */
+    private boolean checkDuplication(SysDocument sysDocument) {
+        SysDocument doc = new SysDocument();
+        doc.setDocId(sysDocument.getDocId());
+        Map<String,Object> params = new HashMap<>();
+        params.put("docName", sysDocument.getDocName());
+        doc.setParams(params);
+        doc.setProjectId(sysDocument.getProjectId());
+        doc.setDocPid(sysDocument.getDocPid());
+        List<SysDocument> list = sysDocumentMapper.selectSysDocumentList(doc);
+        return list.size()>0;
     }
 
     /**
