@@ -448,6 +448,10 @@ public class SysDefectServiceImpl implements ISysDefectService
             List<String> invalidCell = new ArrayList<>();   // 无效的列名集合
             SysDefect d = list.get(i);
             int line = i+1;
+            if(d==null) {
+                sb.add(String.format("第%d行 数据格式无法识别",line));
+                continue;
+            }
             if(StringUtils.isBlank(d.getDefectName())) {
                 emptyCell.add("标题");
             }
