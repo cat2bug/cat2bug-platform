@@ -14,6 +14,7 @@
     </div>
     <div v-if="!defect.defectId" class="defect-info skeleton-main">
       <div class="shard-header">
+        <div class="" style="display: flex;"></div>
       </div>
       <div class="skeleton-parent">
         <el-skeleton :rows="6" />
@@ -29,22 +30,22 @@
         </div>
         <div>
           <div class="row">
-            <i class="el-icon-s-home"></i> {{$t('website')}}：<el-link
+            <i class="el-icon-s-home"></i> <span>{{$t('website')}}：</span><el-link
             href="https://www.cat2bug.com"
             target="_blank">https://www.cat2bug.com</el-link>
           </div>
           <div class="row">
-            <i class="el-icon-user-solid"></i> {{$t('qq-group')}}：
+            <i class="el-icon-user-solid"></i> <span>{{$t('qq-group')}}：</span>
             <a target="_blank" href="https://qm.qq.com/cgi-bin/qm/qr?k=vpZaR_tWTwG0lPABP9NqgX2wSSSEEaWV&jump_from=webapi&authKey=8xIzBRe5T9RoEdisRBgYWbMmCoWXIYk4VikARN8S4RA3MZT7z7FUj71ZIIvEzGzq">731462000</a>
           </div>
           <div class="row">
             <svg-icon icon-class="gitee"/>
-            Gitee：<el-link
+            <span>Gitee：</span><el-link
             href="https://gitee.com/cat2bug/cat2bug-platform"
             target="_blank">https://gitee.com/cat2bug/cat2bug-platform</el-link>
           </div>
           <div class="row">
-            <svg-icon icon-class="github"/>GitHub：<el-link
+            <svg-icon icon-class="github"/><span>GitHub：</span><el-link
             href="https://github.com/cat2bug/cat2bug-platform"
             target="_blank">https://github.com/cat2bug/cat2bug-platform</el-link>
           </div>
@@ -54,24 +55,31 @@
 
     <div v-else class="defect-info">
       <div class="shard-header">
-        <div>
-          <!-- <i class="el-icon-takeaway-box" />  -->
-          {{$t('project')}}: {{defect.projectName}}
+        <div class="" style="display: flex;">
+          <div>
+            <!-- <i class="el-icon-takeaway-box" />  -->
+            {{$t('project')}}: {{defect.projectName}}
+          </div>
+
+          <lang-select class="lang-select" />
         </div>
-        <lang-select class="lang-select" />
       </div>
       <div class="defect-edit-header">
         <div class="defect-edit-title">
-          <h4 class="defect-edit-title-num">#{{defect.projectNum}}</h4>
-          <defect-type-flag :defect="defect" />
-          <defect-state-flag :defect="defect" />
-  <!--        <focus-member-list-->
-  <!--          v-model="defect.focusList"-->
-  <!--          module-name="defect"-->
-  <!--          :data-id="defect.defectId"-->
-  <!--          :tooltip="false"-->
-  <!--        />-->
-          <h4 class="defect-edit-title-name">{{defect.defectName}}</h4>
+          <div style="line-height: 36px;">
+            <span class="defect-edit-title-num">#{{defect.projectNum}}</span>
+            <span class="defect-edit-title-content">
+              <defect-type-flag :defect="defect" />
+              <defect-state-flag :defect="defect" />
+              <!--        <focus-member-list-->
+              <!--          v-model="defect.focusList"-->
+              <!--          module-name="defect"-->
+              <!--          :data-id="defect.defectId"-->
+              <!--          :tooltip="false"-->
+              <!--        />-->
+              {{defect.defectName}}
+            </span>
+          </div>
         </div>
       </div>
       <div class="app-container defect-edit-body">
@@ -128,24 +136,24 @@
         <div>
           <el-image class="web-qrcode" :src="require('@/assets/images/web_qrcode.png')" />
         </div>
-        <div>
+        <div class="msg">
           <div class="row">
-            <i class="el-icon-s-home"></i> {{$t('website')}}：<el-link
+            <i class="el-icon-s-home"></i> <span>{{$t('website')}}：</span><el-link
             href="https://www.cat2bug.com"
             target="_blank">https://www.cat2bug.com</el-link>
           </div>
           <div class="row">
-            <i class="el-icon-user-solid"></i> {{$t('qq-group')}}：
+            <i class="el-icon-user-solid"></i> <span>{{$t('qq-group')}}：</span>
             <a target="_blank" href="https://qm.qq.com/cgi-bin/qm/qr?k=vpZaR_tWTwG0lPABP9NqgX2wSSSEEaWV&jump_from=webapi&authKey=8xIzBRe5T9RoEdisRBgYWbMmCoWXIYk4VikARN8S4RA3MZT7z7FUj71ZIIvEzGzq">731462000</a>
           </div>
           <div class="row">
             <svg-icon icon-class="gitee"/>
-            Gitee：<el-link
+            <span>Gitee：</span><el-link
             href="https://gitee.com/cat2bug/cat2bug-platform"
             target="_blank">https://gitee.com/cat2bug/cat2bug-platform</el-link>
           </div>
           <div class="row">
-            <svg-icon icon-class="github"/>GitHub：<el-link
+            <svg-icon icon-class="github"/><span>GitHub：</span><el-link
             href="https://github.com/cat2bug/cat2bug-platform"
             target="_blank">https://github.com/cat2bug/cat2bug-platform</el-link>
           </div>
@@ -263,6 +271,9 @@ export default {
   .defect-info {
     padding: 0px 20%;
   }
+  .row span{
+    display: block;
+  }
 }
 
 /* 针对手机设备 */
@@ -271,6 +282,9 @@ export default {
     padding: 0px;
   }
   .lang-select {
+    display: none;
+  }
+  .row span{
     display: none;
   }
 }
@@ -293,7 +307,6 @@ export default {
   // height: 50px;
   background-color: #414141;
   color: #FFFFFF;
-  display: inline-flex;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
@@ -302,24 +315,23 @@ export default {
 }
 .shard-footer {
   width: 100%;
-  height: 200px;
   background-color: #414141;
   color: #FFFFFF;
-  display: inline-flex;
+  display: flex;
   flex-direction: row;
   justify-content: flex-start;
   align-items: center;
-  padding: 10px 30px;
-  > div {
-    display: inline-flex;
+  padding: 10px 10px;
+  > div.msg {
+    flex: 1;
     flex-direction: column;
     justify-content: center;
     align-items: flex-start;
-    margin-right: 20px;
   }
   .web-qrcode {
     width: 130px;
     height: 130px;
+    margin-right: 10px;
   }
 }
 .defect-edit-header {
@@ -341,17 +353,38 @@ export default {
       float:left;
     }
     .defect-edit-title-name {
-      flex: 1;
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
+      //flex: 1;
+      //overflow: hidden;
+      //white-space: nowrap;
+      //text-overflow: ellipsis;
+    }
+    .defect-edit-title-content{
+      font-size: 20px;
+      color: #303133;
+      font-weight: 500;
+      line-height: 36px;
+    }
+    .defect-edit-title-content .defect-type-tag{
+      float: left;
+      margin-right:10px;
+      margin-top: 5px;
+      padding: 1px 5px;
+    }
+    .defect-edit-title-content .project-member-icons{
+      float: left;
+      margin-right:10px;
+    }
+    .defect-edit-title-content .el-tag--dark.el-tag--danger{
+      float: left;
+      margin-right:10px;
+      margin-top: 5px;
     }
     .defect-edit-title-num, .defect-edit-title-name {
       font-size: 20px;
       color: #303133;
       font-weight: 500;
-      margin-top: 10px;
-      margin-bottom: 10px;
+      float: left;
+      margin-right:10px;
     }
     > * {
       margin-right: 10px;
@@ -359,11 +392,10 @@ export default {
   }
 }
 .row {
-  display: inline-flex;
+  display: flex;
   flex-direction: row;
-  justify-content: center;
   align-items: center;
-  margin: 5px 10px;
+  padding: 5px 0px;
   color: #FFFFFF;
   font-size: 15px;
   .el-link {

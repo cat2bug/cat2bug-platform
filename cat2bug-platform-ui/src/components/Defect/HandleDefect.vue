@@ -376,6 +376,7 @@ export default {
       float: left;
       margin-right:10px;
       margin-top: 5px;
+      padding: 1px 5px;
     }
     .defect-edit-title-content .project-member-icons{
       float: left;
