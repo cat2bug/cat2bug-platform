@@ -285,13 +285,13 @@ public class SysDefectServiceImpl implements ISysDefectService
     }
 
     /** 批量添加日志 */
-    private int batchInertLog(List<Long> defectIdList, List<Long> receives,String describe,SysDefectLogStateEnum state){
+    private int batchInertLog(List<SysDefect> defectList, String describe,SysDefectLogStateEnum state){
         List<SysDefectLog> logList = new ArrayList<>();
-        defectIdList.forEach(id->{
+        defectList.forEach(defect->{
             SysDefectLog sysDefectLog = new SysDefectLog();
-            sysDefectLog.setDefectId(id);
+            sysDefectLog.setDefectId(defect.getDefectId());
             sysDefectLog.setDefectLogDescribe(describe);
-            sysDefectLog.setReceiveBy(receives);
+            sysDefectLog.setReceiveBy(defect.getHandleBy());
             sysDefectLog.setDefectLogType(state);
             sysDefectLog.setCreateBy(String.valueOf(SecurityUtils.getUserId()));
             sysDefectLog.setCreateTime(DateUtils.getNowDate());
@@ -555,7 +555,7 @@ public class SysDefectServiceImpl implements ISysDefectService
                 sysDefectMapper.batchInsertSysDefect(batchList.get(i));
                 // 新建日志
                 List<Long> ids = batchList.get(i).stream().map(d->d.getDefectId()).collect(Collectors.toList());
-                this.batchInertLog(ids, Arrays.asList(SecurityUtils.getUserId()),null,SysDefectLogStateEnum.IMPORT);
+                this.batchInertLog(batchList.get(i),null,SysDefectLogStateEnum.IMPORT);
             }
         }
         return sb.stream().collect(Collectors.joining("<br/>"));
