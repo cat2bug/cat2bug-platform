@@ -229,19 +229,6 @@ public class SysDefectController extends BaseController
         return toAjax(sysDefectService.deleteSysDefectByDefectIds(defectIds));
     }
 
-//    /**
-//     * 导出缺陷列表
-//     */
-//    @PreAuthorize("@ss.hasPermi('system:defect:export')")
-//    @Log(title = "缺陷", businessType = BusinessType.EXPORT)
-//    @PostMapping("/export")
-//    public void export(HttpServletResponse response, SysDefect sysDefect)
-//    {
-//        List<SysDefect> list = sysDefectService.selectSysDefectList(sysDefect);
-//        ExcelUtil<SysDefect> util = new ExcelUtil<SysDefect>(SysDefect.class);
-//        util.exportExcel(response, list, "缺陷数据");
-//    }
-
     /**
      * 导出缺陷列表
      */
@@ -253,14 +240,6 @@ public class SysDefectController extends BaseController
             if(d.getHandleByList()!=null) {
                 d.setHandleByNames(d.getHandleByList().stream().map(m->m.getNickName()).collect(Collectors.joining("/")));
             }
-
-//            if(StringUtils.isNotBlank(d.getModuleName())){
-//                String[] ms = d.getModuleName().split("/");
-//                d.setProductName(ms[0]);
-//                if(ms.length>1){
-//                    d.setModuleName2(ms[1]);
-//                }
-//            }
             return d;
         }).collect(Collectors.toList());
 

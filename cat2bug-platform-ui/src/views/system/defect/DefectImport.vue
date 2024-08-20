@@ -17,7 +17,7 @@
       <div class="el-upload__text">{{ $t('defect.import-prompt') }}<em>{{$t('char-span')}} {{ $t('click.upload') }}</em></div>
       <div class="el-upload__tip text-center" slot="tip">
         <span>{{ strFormat($t('defect.import-file-format'), 'xls、xlsx') }}</span>
-        <el-link type="primary" :underline="false" style="font-size:12px;vertical-align: baseline;" @click="importTemplate">{{$t('upload.select-file')}}</el-link>
+        <el-link type="primary" :underline="false" style="font-size:12px;vertical-align: baseline;" @click="importTemplate">{{$t('download.template')}}</el-link>
       </div>
     </el-upload>
     <div slot="footer" class="dialog-footer">

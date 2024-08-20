@@ -284,6 +284,23 @@ public class SysDefectServiceImpl implements ISysDefectService
         return this.inertLog(sysDefectLog);
     }
 
+    /** 批量添加日志 */
+    private int batchInertLog(List<Long> defectIdList, List<Long> receives,String describe,SysDefectLogStateEnum state){
+        List<SysDefectLog> logList = new ArrayList<>();
+        defectIdList.forEach(id->{
+            SysDefectLog sysDefectLog = new SysDefectLog();
+            sysDefectLog.setDefectId(id);
+            sysDefectLog.setDefectLogDescribe(describe);
+            sysDefectLog.setReceiveBy(receives);
+            sysDefectLog.setDefectLogType(state);
+            sysDefectLog.setCreateBy(String.valueOf(SecurityUtils.getUserId()));
+            sysDefectLog.setCreateTime(DateUtils.getNowDate());
+            logList.add(sysDefectLog);
+        });
+
+        return this.sysDefectLogMapper.batchInsertSysDefectLog(logList);
+    }
+
     /** 添加日志 */
     private SysDefectLog inertLog(SysDefectLog sysDefectLog){
         Preconditions.checkNotNull(sysDefectLog.getDefectId(),MessageUtils.message("defect.defect_id_cannot_empty"));
@@ -447,7 +464,7 @@ public class SysDefectServiceImpl implements ISysDefectService
             List<String> emptyCell = new ArrayList<>();     // 空数据列名集合
             List<String> invalidCell = new ArrayList<>();   // 无效的列名集合
             SysDefect d = list.get(i);
-            int line = i+1;
+            int line = i+2;
             if(d==null) {
                 sb.add(String.format("第%d行 数据格式无法识别",line));
                 continue;
@@ -536,6 +553,9 @@ public class SysDefectServiceImpl implements ISysDefectService
             List<List<SysDefect>> batchList = Lists.partition(list, 50);
             for (int i = 0; i < batchList.size(); i++) {
                 sysDefectMapper.batchInsertSysDefect(batchList.get(i));
+                // 新建日志
+                List<Long> ids = batchList.get(i).stream().map(d->d.getDefectId()).collect(Collectors.toList());
+                this.batchInertLog(ids, Arrays.asList(SecurityUtils.getUserId()),null,SysDefectLogStateEnum.IMPORT);
             }
         }
         return sb.stream().collect(Collectors.joining("<br/>"));

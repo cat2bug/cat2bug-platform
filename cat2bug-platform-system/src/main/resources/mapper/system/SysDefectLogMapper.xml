@@ -95,6 +95,25 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
          </trim>
     </insert>
 
+    <insert id="batchInsertSysDefectLog" parameterType="SysDefectLog" useGeneratedKeys="true" keyProperty="defectLogId" keyColumn="defect_log_id">
+        insert into sys_defect_log
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            defect_log_describe,create_by,create_time,defect_log_type,receive_by,annex_urls,defect_id
+        </trim>
+        values
+        <foreach collection="sysDefectLogList" separator="," item="log">
+            (
+            #{log.defectLogDescribe},
+            #{log.createBy},
+            #{log.createTime},
+            #{log.defectLogType, typeHandler=com.cat2bug.common.core.domain.handle.SysDefectLogStateEnumTypeHandle},
+            #{log.receiveBy, typeHandler=com.cat2bug.common.core.domain.handle.LongArrayTypeHandler },
+            #{log.annexUrls},
+            #{log.defectId}
+            )
+        </foreach>
+    </insert>
+
     <update id="updateSysDefectLog" parameterType="SysDefectLog">
         update sys_defect_log
         <trim prefix="SET" suffixOverrides=",">

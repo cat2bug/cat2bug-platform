@@ -19,6 +19,7 @@
 <script>
 import {listLog} from "@/api/system/log";
 import CREATE from "@/components/ListDefectLog/create";
+import IMPORT from "@/components/ListDefectLog/import"
 import ASSIGN from "@/components/ListDefectLog/assign"
 import REJECTED from "@/components/ListDefectLog/reject";
 import REPAIR from "@/components/ListDefectLog/repair";
@@ -33,7 +34,7 @@ import {addComment} from "@/api/system/comment";
 import {checkPermi} from "@/utils/permission";
 export default {
   name: "ListDefectLog",
-  components:{ CREATE,ASSIGN,REJECTED,REPAIR,PASS,CLOSED,OPEN,Cat2BugAvatar, CommentInput, CommentView,UPDATE },
+  components:{ CREATE,IMPORT,ASSIGN,REJECTED,REPAIR,PASS,CLOSED,OPEN,Cat2BugAvatar, CommentInput, CommentView,UPDATE },
   data() {
     return {
       defectId: null,
