@@ -374,9 +374,9 @@ export default {
     }
     .defect-edit-title-content .defect-type-tag{
       float: left;
-      margin-right:10px;
+      margin-right: 2px;
       margin-top: 5px;
-      padding: 1px 5px;
+      padding: 1px 10px;
     }
     .defect-edit-title-content .project-member-icons{
       float: left;
@@ -457,5 +457,10 @@ export default {
     width: 150px;
     height: 150px;
   }
+}
+
+::v-deep.el-tag{
+  font-size: 13px !important;
+  vertical-align: 1px;
 }
 </style>
