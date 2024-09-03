@@ -1,3 +1,4 @@
+<div align="center"><img src="readme/images/logo.png" style="width: 300px;" /></div>
 <h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">Cat2Bug-Platform v0.4.2</h1>
 <h4 align="center">轻量化智能BUG管理平台</h4>
 
