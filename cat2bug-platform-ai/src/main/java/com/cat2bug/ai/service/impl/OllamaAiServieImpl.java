@@ -10,7 +10,6 @@ import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.common.websocket.MessageWebsocket;
 import lombok.Data;
 import okhttp3.*;
-import okio.Buffer;
 import okio.BufferedSource;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -36,7 +35,7 @@ import java.util.stream.Collectors;
 /**
  * @Author: yuzhantao
  * @CreateTime: 2024-06-11 11:56
- * @Version: 1.0.0
+ * @Version: 1.0.1
  * Ollama服务
  */
 @Service
