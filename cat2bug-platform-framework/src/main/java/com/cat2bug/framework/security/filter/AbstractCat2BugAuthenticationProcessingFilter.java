@@ -1,8 +1,8 @@
 package com.cat2bug.framework.security.filter;
 
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 
 /**
  * @Author: yuzhantao
@@ -10,8 +10,9 @@ import org.springframework.security.web.authentication.AbstractAuthenticationPro
  * @Version: 1.0.0
  */
 public abstract class AbstractCat2BugAuthenticationProcessingFilter extends AbstractAuthenticationProcessingFilter {
-    protected AbstractCat2BugAuthenticationProcessingFilter(String defaultFilterProcessesUrl, AuthenticationManager authenticationManager) {
-        super(defaultFilterProcessesUrl, authenticationManager);
+
+    protected AbstractCat2BugAuthenticationProcessingFilter(RequestMatcher requiresAuthenticationRequestMatcher) {
+        super(requiresAuthenticationRequestMatcher);
     }
 
     /**
