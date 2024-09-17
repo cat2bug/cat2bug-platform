@@ -24,7 +24,7 @@ public class PackageUtil {
      * @return  包路径集合
      */
     public String[] getAllScanPackage() {
-        Set<Class<?>> componentScans  = AnnotationUtils.getClassesWithAnnotation("com.strongbj",ComponentScan.class);
+        Set<Class<?>> componentScans  = AnnotationUtils.getClassesWithAnnotation("com.cat2bug",ComponentScan.class);
         Set<String> ret = new HashSet<>();
         componentScans.stream().forEach(c->{
             ComponentScan componentScan = c.getAnnotation(ComponentScan.class);

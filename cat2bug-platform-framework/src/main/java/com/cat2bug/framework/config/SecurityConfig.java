@@ -85,6 +85,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
      */
     @Autowired(required = false)
     List<AuthenticationProvider> authenticationProviderList;
+
+    /**
+     * 自定义过滤服务
+     */
+    @Autowired
+    private AuthenticationTokenFilterService authenticationTokenFilterService;
     /**
      * 解决 无法直接注入 AuthenticationManager
      *
@@ -121,7 +127,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
         ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry registry = httpSecurity.authorizeRequests();
         permitAllUrl.getUrls().forEach(url -> registry.antMatchers(url).permitAll());
 
-        List<AbstractCat2BugAuthenticationProcessingFilter> filters = AuthenticationTokenFilterService.getAllAuthenticationFilterList();
+        List<AbstractCat2BugAuthenticationProcessingFilter> filters = authenticationTokenFilterService.getAllAuthenticationFilterList();
         List<String> filterMatchers = new ArrayList<>();
         AuthenticationManager authenticationManager = this.authenticationManagerBean();
         filters.forEach(f->{

@@ -2,12 +2,9 @@ package com.cat2bug.framework.security.filter;
 
 import com.cat2bug.common.utils.ClassUtils;
 import com.cat2bug.common.utils.PackageUtil;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,10 +22,7 @@ public class AuthenticationTokenFilterService {
     private static List<AbstractCat2BugAuthenticationProcessingFilter> filterList = new ArrayList<>();
 
     @Autowired
-    private PackageUtil packageUtil;
-
-    @PostConstruct
-    public void init() {
+    public AuthenticationTokenFilterService(PackageUtil packageUtil) {
         String[] packages = packageUtil.getAllScanPackage();
         for(String packagePath : packages) {
             filterList.addAll(ClassUtils.listAllSubclasses(packagePath, AbstractCat2BugAuthenticationProcessingFilter.class).
@@ -47,7 +41,7 @@ public class AuthenticationTokenFilterService {
      * 获取所有验证过滤类
      * @return  过滤类集合
      */
-    public static List<AbstractCat2BugAuthenticationProcessingFilter> getAllAuthenticationFilterList() {
+    public List<AbstractCat2BugAuthenticationProcessingFilter> getAllAuthenticationFilterList() {
         return AuthenticationTokenFilterService.filterList;
     }
 }
