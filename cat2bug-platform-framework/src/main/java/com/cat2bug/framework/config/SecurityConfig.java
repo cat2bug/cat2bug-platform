@@ -1,5 +1,7 @@
 package com.cat2bug.framework.config;
 
+import com.cat2bug.framework.security.filter.AbstractCat2BugAuthenticationProcessingFilter;
+import com.cat2bug.framework.security.filter.AuthenticationTokenFilterService;
 import com.cat2bug.framework.web.service.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -21,6 +23,8 @@ import com.cat2bug.framework.config.properties.PermitAllUrlProperties;
 import com.cat2bug.framework.security.filter.JwtAuthenticationTokenFilter;
 import com.cat2bug.framework.security.handle.AuthenticationEntryPointImpl;
 import com.cat2bug.framework.security.handle.LogoutSuccessHandlerImpl;
+
+import java.util.List;
 
 /**
  * spring security配置
@@ -72,6 +76,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
     @Autowired
     private PermitAllUrlProperties permitAllUrl;
 
+//    List<Pro>
     /**
      * 解决 无法直接注入 AuthenticationManager
      *
@@ -133,6 +138,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
 //        httpSecurity.addFilterBefore(apiKeyAuthenticationTokenFilter, UsernamePasswordAuthenticationFilter.class);
         // 添加JWT filter
         httpSecurity.addFilterBefore(authenticationTokenFilter, UsernamePasswordAuthenticationFilter.class);
+        // 扫描所有过滤类并加入到httpSecurity中
+        List<AbstractCat2BugAuthenticationProcessingFilter> filters = AuthenticationTokenFilterService.getAllAuthenticationFilterList();
+        filters.forEach(f->f.joinHttpSecurity(httpSecurity));
         // 添加CORS filter
         httpSecurity.addFilterBefore(corsFilter, JwtAuthenticationTokenFilter.class);
         httpSecurity.addFilterBefore(corsFilter, LogoutFilter.class);
@@ -154,5 +162,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
     protected void configure(AuthenticationManagerBuilder auth) throws Exception
     {
         auth.userDetailsService(userDetailsService).passwordEncoder(bCryptPasswordEncoder());
+
     }
 }
