@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -76,7 +77,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
     @Autowired
     private PermitAllUrlProperties permitAllUrl;
 
-//    List<Pro>
+    /**
+     * 所有校验方法
+     */
+    @Autowired(required = false)
+    List<AuthenticationProvider> authenticationProviderList;
     /**
      * 解决 无法直接注入 AuthenticationManager
      *
@@ -162,6 +167,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
     protected void configure(AuthenticationManagerBuilder auth) throws Exception
     {
         auth.userDetailsService(userDetailsService).passwordEncoder(bCryptPasswordEncoder());
-
+        // 注册验证类
+        if(authenticationProviderList!=null) {
+            authenticationProviderList.stream().forEach(p -> auth.authenticationProvider(p));
+        }
     }
 }

@@ -19,8 +19,6 @@ import java.util.stream.Collectors;
  */
 @Component
 public class AuthenticationTokenFilterService {
-    private final static Logger log = LogManager.getLogger(AuthenticationTokenFilterService.class);
-
     /**
      * 所有事项配置规则模版配置集合
      */
