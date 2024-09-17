@@ -123,7 +123,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
 
         List<AbstractCat2BugAuthenticationProcessingFilter> filters = AuthenticationTokenFilterService.getAllAuthenticationFilterList();
         List<String> filterMatchers = new ArrayList<>();
+        AuthenticationManager authenticationManager = this.authenticationManagerBean();
         filters.forEach(f->{
+            f.setAuthenticationManager(authenticationManager);
             filterMatchers.addAll(Arrays.asList(f.getMatchers()));
         });
         httpSecurity
