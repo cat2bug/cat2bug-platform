@@ -25,7 +25,10 @@ import com.cat2bug.framework.security.filter.JwtAuthenticationTokenFilter;
 import com.cat2bug.framework.security.handle.AuthenticationEntryPointImpl;
 import com.cat2bug.framework.security.handle.LogoutSuccessHandlerImpl;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * spring security配置
@@ -118,6 +121,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
         ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry registry = httpSecurity.authorizeRequests();
         permitAllUrl.getUrls().forEach(url -> registry.antMatchers(url).permitAll());
 
+        List<AbstractCat2BugAuthenticationProcessingFilter> filters = AuthenticationTokenFilterService.getAllAuthenticationFilterList();
+        List<String> filterMatchers = new ArrayList<>();
+        filters.forEach(f->{
+            filterMatchers.addAll(Arrays.asList(f.getMatchers()));
+        });
         httpSecurity
                 // CSRF禁用，因为不使用session
                 .csrf().disable()
@@ -134,6 +142,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
                 // 静态资源，可匿名访问
                 .antMatchers(HttpMethod.GET, "/", "/index","/static/**","/*.html", "/**/*.html", "/**/*.css", "/**/*.js", "/profile/**").permitAll()
                 .antMatchers("doc.html", "/swagger-ui.html", "/swagger-ui/**", "/swagger-resources/**", "/webjars/**", "/*/api-docs", "/druid/**","/h2/**").permitAll()
+                // 所有过滤类中的匹配网址
+                .antMatchers(filterMatchers.toArray(new String[]{})).permitAll()
                 // 除上面外的所有请求全部需要鉴权认证
                 .anyRequest().authenticated()
                 .and()
@@ -144,7 +154,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
         // 添加JWT filter
         httpSecurity.addFilterBefore(authenticationTokenFilter, UsernamePasswordAuthenticationFilter.class);
         // 扫描所有过滤类并加入到httpSecurity中
-        List<AbstractCat2BugAuthenticationProcessingFilter> filters = AuthenticationTokenFilterService.getAllAuthenticationFilterList();
+
         filters.forEach(f->f.joinHttpSecurity(httpSecurity));
         // 添加CORS filter
         httpSecurity.addFilterBefore(corsFilter, JwtAuthenticationTokenFilter.class);

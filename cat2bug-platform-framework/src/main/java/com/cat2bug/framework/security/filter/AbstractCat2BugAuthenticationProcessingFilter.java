@@ -19,4 +19,10 @@ public abstract class AbstractCat2BugAuthenticationProcessingFilter extends Abst
      * @param httpSecurity
      */
     public abstract void joinHttpSecurity(HttpSecurity httpSecurity);
+
+    /**
+     * 获取匹配网址
+     * @return
+     */
+    public abstract String[] getMatchers();
 }
