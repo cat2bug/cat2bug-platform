@@ -27,6 +27,8 @@
   "empty-data": "Empty Data",
   "login": "Log In",
   "logout": "Log Out",
+  "other-login": "Other Login Methods",
+  "other-login.UserNameAndPasswordLogin": "Username And Password",
   "login-again": "Log in again",
   "account": "Account",
   "password": "Password",

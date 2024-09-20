@@ -27,6 +27,8 @@
   "empty-data": "空数据",
   "login": "登陆",
   "logout": "登出",
+  "other-login": "其他登陆方式",
+  "other-login.UserNameAndPasswordLogin": "用户名密码",
   "login-again": "重新登录",
   "account": "账号",
   "password": "密码",
