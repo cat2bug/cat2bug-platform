@@ -21,7 +21,7 @@
                 <el-divider></el-divider>
               </div>
               <div class="login-type-button">
-                <div v-for="icon in loginTypeList" :key="icon.name">
+                <div v-for="icon in loginTypeList" :key="icon.name" @click="handleLoginType(icon.name)">
                   <div>
                     <svg-icon :icon-class="`login-type-${icon.name}`"/>
                     <p>{{ $t('other-login.'+icon.name) }}</p>
