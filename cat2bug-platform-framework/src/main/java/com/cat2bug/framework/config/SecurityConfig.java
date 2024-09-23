@@ -2,7 +2,6 @@ package com.cat2bug.framework.config;
 
 import com.cat2bug.framework.config.properties.PermitAllUrlProperties;
 import com.cat2bug.framework.security.config.AbstractSecurityConfigurerAdapter;
-import com.cat2bug.framework.security.filter.AuthenticationTokenFilterService;
 import com.cat2bug.framework.security.filter.JwtAuthenticationTokenFilter;
 import com.cat2bug.framework.security.handle.AuthenticationEntryPointImpl;
 import com.cat2bug.framework.security.handle.LogoutSuccessHandlerImpl;
@@ -114,11 +113,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
         ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry registry = httpSecurity.authorizeRequests();
         permitAllUrl.getUrls().forEach(url -> registry.antMatchers(url).permitAll());
 
-//        List<AbstractCat2BugAuthenticationProcessingFilter> filters = authenticationTokenFilterService.getAllAuthenticationFilterList();
         List<String> filterMatchers = new ArrayList<>();
-        this.securityConfigurerAdapterList.forEach(c->{
-            filterMatchers.addAll(Arrays.asList(c.getMatchers()));
-        });
+        if(this.securityConfigurerAdapterList!=null) {
+            this.securityConfigurerAdapterList.forEach(c -> {
+                filterMatchers.addAll(Arrays.asList(c.getMatchers()));
+            });
+        }
         httpSecurity
                 // CSRF禁用，因为不使用session
                 .csrf().disable()
@@ -143,7 +143,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
                 .headers().frameOptions().disable();
         // 添加Logout filter
         httpSecurity.logout().logoutUrl("/logout").logoutSuccessHandler(logoutSuccessHandler);
-//        httpSecurity.addFilterBefore(apiKeyAuthenticationTokenFilter, UsernamePasswordAuthenticationFilter.class);
         // 添加JWT filter
         httpSecurity.addFilterBefore(authenticationTokenFilter, UsernamePasswordAuthenticationFilter.class);
         // 扫描所有过滤类并加入到httpSecurity中
