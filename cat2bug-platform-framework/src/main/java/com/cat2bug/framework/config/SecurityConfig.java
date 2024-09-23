@@ -1,7 +1,10 @@
 package com.cat2bug.framework.config;
 
-import com.cat2bug.framework.security.filter.AbstractCat2BugAuthenticationProcessingFilter;
+import com.cat2bug.framework.config.properties.PermitAllUrlProperties;
 import com.cat2bug.framework.security.filter.AuthenticationTokenFilterService;
+import com.cat2bug.framework.security.filter.JwtAuthenticationTokenFilter;
+import com.cat2bug.framework.security.handle.AuthenticationEntryPointImpl;
+import com.cat2bug.framework.security.handle.LogoutSuccessHandlerImpl;
 import com.cat2bug.framework.web.service.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -9,7 +12,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -20,15 +23,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.web.filter.CorsFilter;
-import com.cat2bug.framework.config.properties.PermitAllUrlProperties;
-import com.cat2bug.framework.security.filter.JwtAuthenticationTokenFilter;
-import com.cat2bug.framework.security.handle.AuthenticationEntryPointImpl;
-import com.cat2bug.framework.security.handle.LogoutSuccessHandlerImpl;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * spring security配置
@@ -83,8 +79,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
     /**
      * 所有校验方法
      */
+//    @Autowired(required = false)
+//    List<AuthenticationProvider> authenticationProviderList;
+
+    /**
+     * 所有安全配置
+     */
     @Autowired(required = false)
-    List<AuthenticationProvider> authenticationProviderList;
+    List<SecurityConfigurerAdapter> securityConfigurerAdapterList;
 
     /**
      * 自定义过滤服务
@@ -127,13 +129,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
         ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry registry = httpSecurity.authorizeRequests();
         permitAllUrl.getUrls().forEach(url -> registry.antMatchers(url).permitAll());
 
-        List<AbstractCat2BugAuthenticationProcessingFilter> filters = authenticationTokenFilterService.getAllAuthenticationFilterList();
-        List<String> filterMatchers = new ArrayList<>();
-        AuthenticationManager authenticationManager = this.authenticationManagerBean();
-        filters.forEach(f->{
-            f.setAuthenticationManager(authenticationManager);
-            filterMatchers.addAll(Arrays.asList(f.getMatchers()));
-        });
+//        List<AbstractCat2BugAuthenticationProcessingFilter> filters = authenticationTokenFilterService.getAllAuthenticationFilterList();
+//        List<String> filterMatchers = new ArrayList<>();
+//        AuthenticationManager authenticationManager = this.authenticationManagerBean();
+//        filters.forEach(f->{
+//            f.setAuthenticationManager(authenticationManager);
+//            filterMatchers.addAll(Arrays.asList(f.getMatchers()));
+//        });
         httpSecurity
                 // CSRF禁用，因为不使用session
                 .csrf().disable()
@@ -151,7 +153,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
                 .antMatchers(HttpMethod.GET, "/", "/index","/static/**","/*.html", "/**/*.html", "/**/*.css", "/**/*.js", "/profile/**").permitAll()
                 .antMatchers("doc.html", "/swagger-ui.html", "/swagger-ui/**", "/swagger-resources/**", "/webjars/**", "/*/api-docs", "/druid/**","/h2/**").permitAll()
                 // 所有过滤类中的匹配网址
-                .antMatchers(filterMatchers.toArray(new String[]{})).permitAll()
+//                .antMatchers(filterMatchers.toArray(new String[]{})).permitAll()
                 // 除上面外的所有请求全部需要鉴权认证
                 .anyRequest().authenticated()
                 .and()
@@ -163,7 +165,16 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
         httpSecurity.addFilterBefore(authenticationTokenFilter, UsernamePasswordAuthenticationFilter.class);
         // 扫描所有过滤类并加入到httpSecurity中
 
-        filters.forEach(f->f.joinHttpSecurity(httpSecurity));
+        if(this.securityConfigurerAdapterList!=null) {
+            this.securityConfigurerAdapterList.forEach(c-> {
+                try {
+                    httpSecurity.apply(c);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        }
+//        filters.forEach(f->f.joinHttpSecurity(httpSecurity));
         // 添加CORS filter
         httpSecurity.addFilterBefore(corsFilter, JwtAuthenticationTokenFilter.class);
         httpSecurity.addFilterBefore(corsFilter, LogoutFilter.class);
@@ -185,9 +196,5 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
     protected void configure(AuthenticationManagerBuilder auth) throws Exception
     {
         auth.userDetailsService(userDetailsService).passwordEncoder(bCryptPasswordEncoder());
-        // 注册验证类
-        if(authenticationProviderList!=null) {
-            authenticationProviderList.stream().forEach(p -> auth.authenticationProvider(p));
-        }
     }
 }
