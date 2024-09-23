@@ -1,6 +1,7 @@
 package com.cat2bug.framework.config;
 
 import com.cat2bug.framework.config.properties.PermitAllUrlProperties;
+import com.cat2bug.framework.security.config.AbstractSecurityConfigurerAdapter;
 import com.cat2bug.framework.security.filter.AuthenticationTokenFilterService;
 import com.cat2bug.framework.security.filter.JwtAuthenticationTokenFilter;
 import com.cat2bug.framework.security.handle.AuthenticationEntryPointImpl;
@@ -12,7 +13,6 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -24,6 +24,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.web.filter.CorsFilter;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -60,11 +62,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
     private JwtAuthenticationTokenFilter authenticationTokenFilter;
 
     /**
-     * key认证过滤器
-     */
-//    @Autowired
-//    private ApiKeyAuthenticationTokenFilter apiKeyAuthenticationTokenFilter;
-    /**
      * 跨域过滤器
      */
     @Autowired
@@ -77,22 +74,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
     private PermitAllUrlProperties permitAllUrl;
 
     /**
-     * 所有校验方法
-     */
-//    @Autowired(required = false)
-//    List<AuthenticationProvider> authenticationProviderList;
-
-    /**
      * 所有安全配置
      */
     @Autowired(required = false)
-    List<SecurityConfigurerAdapter> securityConfigurerAdapterList;
-
-    /**
-     * 自定义过滤服务
-     */
-    @Autowired
-    private AuthenticationTokenFilterService authenticationTokenFilterService;
+    List<AbstractSecurityConfigurerAdapter> securityConfigurerAdapterList;
     /**
      * 解决 无法直接注入 AuthenticationManager
      *
@@ -130,12 +115,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
         permitAllUrl.getUrls().forEach(url -> registry.antMatchers(url).permitAll());
 
 //        List<AbstractCat2BugAuthenticationProcessingFilter> filters = authenticationTokenFilterService.getAllAuthenticationFilterList();
-//        List<String> filterMatchers = new ArrayList<>();
-//        AuthenticationManager authenticationManager = this.authenticationManagerBean();
-//        filters.forEach(f->{
-//            f.setAuthenticationManager(authenticationManager);
-//            filterMatchers.addAll(Arrays.asList(f.getMatchers()));
-//        });
+        List<String> filterMatchers = new ArrayList<>();
+        this.securityConfigurerAdapterList.forEach(c->{
+            filterMatchers.addAll(Arrays.asList(c.getMatchers()));
+        });
         httpSecurity
                 // CSRF禁用，因为不使用session
                 .csrf().disable()
@@ -153,7 +136,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
                 .antMatchers(HttpMethod.GET, "/", "/index","/static/**","/*.html", "/**/*.html", "/**/*.css", "/**/*.js", "/profile/**").permitAll()
                 .antMatchers("doc.html", "/swagger-ui.html", "/swagger-ui/**", "/swagger-resources/**", "/webjars/**", "/*/api-docs", "/druid/**","/h2/**").permitAll()
                 // 所有过滤类中的匹配网址
-//                .antMatchers(filterMatchers.toArray(new String[]{})).permitAll()
+                .antMatchers(filterMatchers.toArray(new String[]{})).permitAll()
                 // 除上面外的所有请求全部需要鉴权认证
                 .anyRequest().authenticated()
                 .and()
