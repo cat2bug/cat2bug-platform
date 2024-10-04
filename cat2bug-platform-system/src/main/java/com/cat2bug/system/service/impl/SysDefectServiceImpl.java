@@ -225,6 +225,7 @@ public class SysDefectServiceImpl implements ISysDefectService
     public SysDefect selectSysDefectByDefectId(Long defectId,Long memberId)
     {
         SysDefect sysDefect = sysDefectMapper.selectSysDefectByDefectId(defectId, memberId, DateUtils.getNowDate());
+        Preconditions.checkNotNull(sysDefect, MessageUtils.message("defect.not_found"));
         if(sysDefect.getHandleByList()!=null){
             sysDefect.setHandleByList(sysDefect.getHandleByList().stream().filter(h->h.getUserId()>0).collect(Collectors.toList()));
         }

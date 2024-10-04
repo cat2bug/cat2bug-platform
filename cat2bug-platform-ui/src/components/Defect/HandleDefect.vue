@@ -225,6 +225,7 @@ export default {
         }
       }).catch(e=>{
         this.loading = false;
+        this.visible = false;
       });
     },
     // 获取用例
