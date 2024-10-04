@@ -38,7 +38,7 @@ public class SysRegisterService
     /**
      * 注册
      */
-    public String register(RegisterBody registerBody)
+    public SysUser register(RegisterBody registerBody)
     {
         String msg = "";
         String username = registerBody.getUsername();
@@ -99,7 +99,11 @@ public class SysRegisterService
                 AsyncManager.me().execute(AsyncFactory.recordLogininfor(username, Constants.REGISTER, MessageUtils.message("user.register.success")));
             }
         }
-        return msg;
+
+        if(StringUtils.isNotBlank(msg)) {
+            throw new RuntimeException(msg);
+        }
+        return sysUser;
     }
 
     /**
