@@ -91,11 +91,9 @@ export default {
       return this.$store.state.user.config.currentTeamId;
     }
   },
-  created() {
-    this.searchMemberHandle();
-  },
   methods: {
     open(){
+      this.searchMemberHandle();
       listTeamRole(this.teamId).then(res => {
         this.roleOptions = res.data?res.data.filter(r=>r.isTeamRole && r.teamCreateBy==false).map(r=>{
           r.roleName = r.roleNameI18nKey?this.$t(r.roleNameI18nKey):r.roleName;
