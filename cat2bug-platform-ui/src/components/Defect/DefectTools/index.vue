@@ -3,12 +3,12 @@
     <slot name="left"></slot>
     <share-card :params="defect" />
     <star-switch v-model="defect.collect" @change="clickCollectHandle($event, defect, false)"></star-switch>
-    <el-button v-show="assignVisible" :icon="isShowIcon?'el-icon-refresh':''" :size="size" :type="isText?'text':'info'" @click="assignHandle" v-hasPermi="['system:defect:assign']">{{$i18n.t('assign')}}</el-button>
-    <el-button v-show="repairVisible" :icon="isShowIcon?'el-icon-document-checked':''" :size="size" :type="isText?'text':'primary'" @click="repairDialogHandle" v-hasPermi="['system:defect:repair']">{{$i18n.t('repair')}}</el-button>
-    <el-button v-show="rejectVisible" :icon="isShowIcon?'el-icon-document-delete':''" :size="size" :type="isText?'text':'warning'" @click="rejectHandle" v-hasPermi="['system:defect:reject']">{{$i18n.t('reject')}}</el-button>
-    <el-button v-show="passVisible" :icon="isShowIcon?'el-icon-finished':''" :size="size" :type="isText?'text':'success'" @click="passDialogHandle" v-hasPermi="['system:defect:pass']">{{$i18n.t('pass')}}</el-button>
+    <el-button v-show="assignVisible" :icon="isShowIcon?'el-icon-refresh':''" :size="size" :type="isText?'text':'info'" @click="assignHandle">{{$i18n.t('assign')}}</el-button>
+    <el-button v-show="repairVisible" :icon="isShowIcon?'el-icon-document-checked':''" :size="size" :type="isText?'text':'primary'" @click="repairDialogHandle">{{$i18n.t('repair')}}</el-button>
+    <el-button v-show="rejectVisible" :icon="isShowIcon?'el-icon-document-delete':''" :size="size" :type="isText?'text':'warning'" @click="rejectHandle">{{$i18n.t('reject')}}</el-button>
+    <el-button v-show="passVisible" :icon="isShowIcon?'el-icon-finished':''" :size="size" :type="isText?'text':'success'" @click="passDialogHandle">{{$i18n.t('pass')}}</el-button>
     <el-button v-show="openVisible" :icon="isShowIcon?'el-icon-document-copy':''" :size="size" :type="isText?'text':'danger'" @click="openDialogHandle" v-hasPermi="['system:defect:open']">{{$i18n.t('open')}}</el-button>
-    <el-button v-show="closeVisible" :icon="isShowIcon?'el-icon-takeaway-box':''" :size="size" :type="isText?'text':'danger'" @click="closeDialogHandle" v-hasPermi="['system:defect:close']">{{$i18n.t('close')}}</el-button>
+    <el-button v-show="closeVisible" :icon="isShowIcon?'el-icon-takeaway-box':''" :size="size" :type="isText?'text':'danger'" @click="closeDialogHandle">{{$i18n.t('close')}}</el-button>
     <el-button v-show="editVisible" :icon="isShowIcon?'el-icon-edit':''" :size="size" :type="isText?'text':'success'" :class="isText?'green':''" :plain="!isShowIcon" @click="editDialogHandle" >{{ $t('modify') }}</el-button>
     <el-button v-show="deleteVisible" :icon="isShowIcon?'el-icon-delete':''" :size="size" :type="isText?'text':'danger'" :class="isText?'red':''" :plain="!isShowIcon" @click="handleDelete">{{$i18n.t('delete')}}</el-button>
     <!--          <el-button-->
@@ -85,27 +85,34 @@ export default {
     },
     // 指派
     assignVisible: function () {
-      return this.defect.defectStateName!=CLOSE_STATE && this.defect.defectStateName!=RESOLVED_STATE;
+      return this.defect.defectStateName!=CLOSE_STATE && this.defect.defectStateName!=RESOLVED_STATE && checkPermi(['system:defect:assign']) &&
+        (
+          (this.defect.createById && this.defect.createById == this.currentUserId) ||
+          (this.defect.handleBy && this.defect.handleBy.indexOf(this.currentUserId)!==-1)
+        );
     },
     // 修复
     repairVisible: function () {
-      return this.defect.defectStateName==PROCESSING_STATE || this.defect.defectStateName==REJECTED_STATE;
+      return (this.defect.defectStateName==PROCESSING_STATE || this.defect.defectStateName==REJECTED_STATE) && checkPermi(['system:defect:repair']) &&
+        (this.defect.handleBy && this.defect.handleBy.indexOf(this.currentUserId)!==-1);
     },
     // 驳回
     rejectVisible: function () {
-      return this.defect.defectStateName==AUDIT_STATE;
+      return this.defect.defectStateName==AUDIT_STATE && checkPermi(['system:defect:reject']) &&
+        (this.defect.handleBy && this.defect.handleBy.indexOf(this.currentUserId)!==-1);
     },
     // 通过
     passVisible: function () {
-      return this.defect.defectStateName==AUDIT_STATE;
+      return this.defect.defectStateName==AUDIT_STATE && checkPermi(['system:defect:pass']) &&
+        (this.defect.handleBy && this.defect.handleBy.indexOf(this.currentUserId)!==-1);
     },
     // 关闭
     closeVisible: function () {
-      return this.defect.defectStateName!=CLOSE_STATE && this.defect.defectStateName!=RESOLVED_STATE;
+      return this.defect.defectStateName!=CLOSE_STATE && this.defect.defectStateName!=RESOLVED_STATE && checkPermi(['system:defect:close']);
     },
     // 开启
     openVisible: function () {
-      return this.defect.defectStateName==CLOSE_STATE;
+      return this.defect.defectStateName==CLOSE_STATE && checkPermi(['system:defect:open']);
     },
     deleteVisible: function () {
       return this.defect.createById==this.currentUserId || checkPermi(['system:defect:remove']);
