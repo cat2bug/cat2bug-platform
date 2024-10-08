@@ -6,7 +6,7 @@
     @hide="popoverHideHandle"
     trigger="hover">
     <div slot="reference" :class="'between-row-1 click select-project-member-input-'+size">
-      <i class="yellow el-icon-star-on start-switch" :collect="currentProject.collect?'true':'false'"></i>
+      <i class="yellow el-icon-star-on start-switch" :collect="currentProject.collect?'true':'false'" @click="handleProjectCollect(currentProject)"></i>
 <!--      <el-image :src="currentProject.projectIcon" />-->
       <p class="prefix-project-name">{{currentProject.projectName}}</p>
       <i class="el-icon-arrow-down" />
@@ -15,7 +15,7 @@
     <el-divider></el-divider>
     <div v-for="(item,index) in options" :key="index" class="col click item" @click="handleProjectChange(item)">
       <div class="row">
-        <i class="yellow el-icon-star-on start-switch" :collect="item.collect?'true':'false'"></i>
+        <i class="yellow el-icon-star-on start-switch" :collect="item.collect?'true':'false'" @click="handleProjectCollect(item, $event)"></i>
 <!--        <el-image :src="item.projectIcon" />-->
         <p class="prefix-project-name">{{item.projectName}}</p>
       </div>
@@ -35,7 +35,7 @@
 </template>
 
 <script>
-import {getProject, listProject} from "@/api/system/project";
+import {collectProject, getProject, listProject} from "@/api/system/project";
 import store from "@/store";
 import Label from "@/components/Cat2BugStatistic/Components/Label";
 
@@ -103,6 +103,7 @@ export default {
         this.total = res.total;
       });
     },
+    /** 选择项目 */
     handleProjectChange(project) {
       store.dispatch('UpdateCurrentProjectId', project.projectId).then(() => {
         store.dispatch('GetInfo').then(() => {
@@ -110,6 +111,26 @@ export default {
           window.location.reload();
         });
       });
+    },
+    /** 设置当前项目是否收藏 */
+    handleProjectCollect(project, event) {
+      this.$set(project, 'collect', !project.collect);
+      // 保存收藏状态
+      collectProject(project.projectId, project).then(res=>{
+        if(project.projectId == this.currentProject.projectId) {
+          this.$set(this.currentProject, 'collect', project.collect);
+        }
+        if(project.collect) {
+          this.$message.success(this.$i18n.t('collect-success').toString());
+        } else {
+          this.$message.success(this.$i18n.t('cancel-success').toString());
+        }
+        // 重新获取项目列表
+        this.getProjectList();
+      });
+      if(event) {
+        event.stopPropagation();
+      }
     }
   }
 }
