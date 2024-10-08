@@ -39,11 +39,7 @@ export default {
       },
       /** 设置是否显示 */
       setVisible(val) {
-        if(val) {
-          vm.show();
-        } else {
-          vm.hidden();
-        }
+        vm.setVisible(val);
       },
       /** 移除惨淡 */
       removeMenu(id) {

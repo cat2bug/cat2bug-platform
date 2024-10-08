@@ -137,16 +137,13 @@ export default {
     removeMenu(id) {
       this.menus = this.menus.filter(m=>m.id!=id);
     },
-    show() {
-      this.$cache.local.set(VISIBLE_KEY, true);
-      this.visible = true;
+    setVisible(val) {
+      this.visible = val;
+      this.$cache.local.set(VISIBLE_KEY, val);
     },
     getVisible() {
+      this.visible = (this.$cache.local.get(VISIBLE_KEY)=='true');
       return this.visible;
-    },
-    hidden() {
-      this.$cache.local.set(VISIBLE_KEY, false);
-      this.visible = false;
     },
     /** 返回顶端 */
     backTop() {

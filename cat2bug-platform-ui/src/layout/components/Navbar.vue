@@ -7,7 +7,7 @@
 
     <div class="right-menu">
       <template v-if="device!=='mobile'">
-        <el-tooltip :content="$t('website')" effect="dark" placement="bottom">
+        <el-tooltip :content="floatMenuContent" effect="dark" placement="bottom">
           <el-switch
             class="right-menu-item"
             @change="handleFloatMenuVisible"
@@ -27,7 +27,6 @@
             <el-badge :hidden="noticeCount==0" is-dot class="item"><svg-icon icon-class="notice"></svg-icon></el-badge>
           </router-link>
         </el-tooltip>
-
 <!--        <el-tooltip :content="$t('md-address')" effect="dark" placement="bottom">-->
 <!--          <cat2-bug-md id="cat2bug-md" class="right-menu-item hover-effect" />-->
 <!--        </el-tooltip>-->
@@ -72,7 +71,7 @@ import {groupStatisticsNotice} from "@/api/system/notice";
 export default {
   data() {
     return {
-      floatMenuVisible: this.$floatMenu.getVisible(),
+      floatMenuVisible: false,
       audio: null,
       noticeCount: 0,
       topicId: null,
@@ -119,6 +118,11 @@ export default {
           key: 'showSettings',
           value: val
         })
+      },
+    },
+    floatMenuContent: {
+      get() {
+        return this.$i18n.t(this.$floatMenu.getVisible()?'close':'open')+this.$i18n.t('char-span')+this.$i18n.t('float-menu')
       }
     },
     topNav: {
@@ -128,6 +132,7 @@ export default {
     }
   },
   created() {
+    this.floatMenuVisible = this.$floatMenu.getVisible();
     this.guoNoticeCount();
   },
   mounted() {
@@ -166,14 +171,14 @@ export default {
       } else {
         this.noticeSound = require('@/assets/sound/default.mp3')
       }
-      //播放
+      // 播放
       this.$nextTick(()=>{
         this.$refs.audio.play();
       });
     },
     /** 声音播放完成 */
     handleAudioEnded() {
-      this.$refs.audio.pause();//停止
+      this.$refs.audio.pause(); // 停止
       this.$refs.audio.load();
     },
     /** 获取通知数量 */
