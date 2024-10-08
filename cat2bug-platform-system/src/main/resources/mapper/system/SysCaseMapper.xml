@@ -72,7 +72,6 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <insert id="insertSysCase" parameterType="SysCase" useGeneratedKeys="true" keyProperty="caseId">
         insert into sys_case
         <trim prefix="(" suffix=")" suffixOverrides=",">
-            <if test="caseId != null">case_id,</if>
             <if test="caseName != null">case_name,</if>
             <if test="moduleId != null">module_id,</if>
             <if test="caseType != null">case_type,</if>
@@ -90,7 +89,6 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="imgUrls != null">img_urls,</if>
          </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
-            <if test="caseId != null">#{caseId},</if>
             <if test="caseName != null">#{caseName},</if>
             <if test="moduleId != null">#{moduleId},</if>
             <if test="caseType != null">#{caseType},</if>

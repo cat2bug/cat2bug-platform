@@ -13,6 +13,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @Author: yuzhantao
@@ -22,6 +23,18 @@ import java.util.List;
 public class SysCaseStepArrayTypeHandler extends BaseTypeHandler<List<SysCaseStep>> {
     @Override
     public void setNonNullParameter(PreparedStatement preparedStatement, int i, List<SysCaseStep> sysCaseSteps, JdbcType jdbcType) throws SQLException {
+        if(sysCaseSteps!=null) {
+            sysCaseSteps = sysCaseSteps.stream().map(c->{
+                if(StringUtils.isNotBlank(c.getStepDescribe())) {
+                    c.setStepDescribe(c.getStepDescribe().replace("\"", "'"));
+                }
+                if(StringUtils.isNotBlank(c.getStepExpect())){
+                    c.setStepExpect(c.getStepExpect().replace("\"", "'"));
+                }
+                return c;
+            }).collect(Collectors.toList());
+        }
+        String json = JSON.toJSONString(sysCaseSteps);
         preparedStatement.setString(i, JSON.toJSONString(sysCaseSteps));
     }
 

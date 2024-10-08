@@ -117,7 +117,7 @@ public class OllamaAiServieImpl implements IAiService {
             if(cls == String.class){
                 requestPrompt = String.format("请用中文返回,%s",prompt);
             } else if(cls instanceof Object) {
-                requestPrompt = String.format("请用中文返回,%s,返回JSON格式:\n%s\n返回的JSON数据需要压缩成一行，去掉\\n等字符",prompt, PromptUtils.objectToPrompt(cls));
+                requestPrompt = String.format("请用中文返回,%s,返回JSON格式:\n%s\n返回的JSON数据需要压缩成一行，去掉\\n等字符,并且不要有应为双引号",prompt, PromptUtils.objectToPrompt(cls));
                 format = PROMPT_FORMAT_TYPE;
             } else {
                 requestPrompt = prompt;
