@@ -42,7 +42,7 @@ public class SysCaseStepArrayTypeHandler extends BaseTypeHandler<List<SysCaseSte
     // 字符串转换为list
     private List<SysCaseStep> convertToList(String strArray) {
         if(StringUtils.isNotBlank(strArray)){
-            String json = strArray.replaceAll("^\"|\"$", "").replace("\\\"","\"");
+            String json = strArray.replaceAll("^\"|\"$", "").replace("\\\"","\"").replace("\\\\\"","\\\"");
             return JSON.parseArray(json,SysCaseStep.class);
         }
         return new ArrayList<>();

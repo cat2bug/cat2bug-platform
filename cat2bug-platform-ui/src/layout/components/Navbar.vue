@@ -8,6 +8,15 @@
     <div class="right-menu">
       <template v-if="device!=='mobile'">
         <el-tooltip :content="$t('website')" effect="dark" placement="bottom">
+          <el-switch
+            class="right-menu-item"
+            @change="handleFloatMenuVisible"
+            v-model="floatMenuVisible"
+            active-color="#13ce66"
+            inactive-color="#ff4949">
+          </el-switch>
+        </el-tooltip>
+        <el-tooltip :content="$t('website')" effect="dark" placement="bottom">
           <cat2-bug-site class="right-menu-item hover-effect" />
         </el-tooltip>
         <el-tooltip :content="$t('source-code-address')" effect="dark" placement="bottom">
@@ -63,6 +72,7 @@ import {groupStatisticsNotice} from "@/api/system/notice";
 export default {
   data() {
     return {
+      floatMenuVisible: this.$floatMenu.getVisible(),
       audio: null,
       noticeCount: 0,
       topicId: null,
@@ -196,6 +206,9 @@ export default {
         })
       }).catch(() => {});
     },
+    handleFloatMenuVisible(visible) {
+      this.$floatMenu.setVisible(visible);
+    }
   }
 }
 </script>

@@ -33,6 +33,18 @@ export default {
       addMenus(menus) {
         vm.addMenus(menus);
       },
+      /** 获取是否显示 */
+      getVisible() {
+        return vm.getVisible();
+      },
+      /** 设置是否显示 */
+      setVisible(val) {
+        if(val) {
+          vm.show();
+        } else {
+          vm.hidden();
+        }
+      },
       /** 移除惨淡 */
       removeMenu(id) {
         vm.removeMenu(id);

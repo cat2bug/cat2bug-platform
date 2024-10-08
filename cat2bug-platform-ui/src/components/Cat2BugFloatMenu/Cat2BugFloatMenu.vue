@@ -1,5 +1,5 @@
 <template>
-  <div ref="floatMenu" :style="{ top: top + 'px', left: left + 'px' }" class="cat2bug-float-menu">
+  <div v-show="visible" ref="floatMenu" :style="{ top: top + 'px', left: left + 'px' }" class="cat2bug-float-menu">
     <!-- 拖动元素-->
     <div ref="floatMenuDrag" class="cat2bug-float-menu-draggable-el" v-show="menus.length>1">
       <svg-icon icon-class="drag2" />
@@ -24,6 +24,7 @@ import i18n from "@/utils/i18n/i18n";
 import { checkPermi } from "@/utils/permission";
 
 const POSITION_KEY = 'cat2bug-float-menu-drag-position'
+const VISIBLE_KEY = 'cat2bug-float-menu-drag-visible'
 /**
  * 悬浮菜单
  */
@@ -32,6 +33,7 @@ export default {
   components: {Vue},
   data() {
     return {
+      visible: true,
       // 拖拽元素
       left:this.defaultLeft,
       top:this.defaultTop,
@@ -134,6 +136,17 @@ export default {
     /** 根据菜单ID移除菜单 */
     removeMenu(id) {
       this.menus = this.menus.filter(m=>m.id!=id);
+    },
+    show() {
+      this.$cache.local.set(VISIBLE_KEY, true);
+      this.visible = true;
+    },
+    getVisible() {
+      return this.visible;
+    },
+    hidden() {
+      this.$cache.local.set(VISIBLE_KEY, false);
+      this.visible = false;
     },
     /** 返回顶端 */
     backTop() {

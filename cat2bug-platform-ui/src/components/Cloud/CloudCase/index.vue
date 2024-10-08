@@ -25,7 +25,7 @@
       <div ref="caseSearch" class="case-search">
         <el-input type="textarea"
                   :readonly="loading"
-                  maxlength="1024"
+                  maxlength="65536"
                   rows="5"
                   show-word-limit v-model="prompt.prompt"
                   :placeholder="$t('case.ai-search-describe')">

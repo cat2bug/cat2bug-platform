@@ -132,25 +132,28 @@ public class OllamaAiServieImpl implements IAiService {
 
             Response response = client.newCall(request).execute();
             if(response.isSuccessful()) {
-                String json = response.body().string();
-                log.info("generate response:{}",json);
-                OllamaGenerateResponse responseBody =  JSON.parseObject(json, OllamaGenerateResponse.class);
-                if(responseBody.getResponse()==null) {
-                    return null;
-                } else if(cls == String.class){
-                    return (T)responseBody.getResponse();
-                } else if(cls instanceof Object) {
-                    T t = JSON.parseObject(responseBody.getResponse(),cls);
-                    if(AiResponseBody.class.isAssignableFrom(cls)) {
-                        Field field = AiResponseBody.class.getDeclaredField("context");
-                        field.setAccessible(true);
-                        field.set(t,responseBody.getContext());
+                try {
+                    String json = response.body().string();
+                    log.info("generate response:{}", json);
+                    OllamaGenerateResponse responseBody = JSON.parseObject(json, OllamaGenerateResponse.class);
+                    if (responseBody.getResponse() == null) {
+                        return null;
+                    } else if (cls == String.class) {
+                        return (T) responseBody.getResponse();
+                    } else if (cls instanceof Object) {
+                        T t = JSON.parseObject(responseBody.getResponse(), cls);
+                        if (AiResponseBody.class.isAssignableFrom(cls)) {
+                            Field field = AiResponseBody.class.getDeclaredField("context");
+                            field.setAccessible(true);
+                            field.set(t, responseBody.getContext());
+                        }
+                        return t;
+                    } else {
+                        return (T) responseBody.getResponse();
                     }
-                    return t;
-                } else {
-                    return (T)responseBody.getResponse();
+                } catch (Exception e) {
+                    throw new RuntimeException(MessageUtils.message("ai.result-json-exception"));
                 }
-
             } else {
                 throw new RuntimeException(response.message());
             }
