@@ -22,12 +22,24 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="projectId"    column="project_id"    />
         <result property="remark"    column="remark"    />
         <result property="imgUrls"    column="img_urls"    />
+        <result property="defectProcessingCount"    column="defect_processing_count"    />
+        <result property="defectAuditCount"    column="defect_audit_count"    />
+        <result property="defectCloseCount"    column="defect_close_count"    />
     </resultMap>
 
     <sql id="selectSysCaseVo">
-        select c.case_id, c.case_name, c.module_id, m.module_name, c.case_type, c.case_expect, c.case_step, c.case_level, c.case_preconditions, c.create_by, c.create_time, c.update_by, c.update_time, c.case_num, c.project_id, c.remark, c.img_urls
+        select c.case_id, c.case_name, c.module_id, m.module_name, c.case_type, c.case_expect, c.case_step, c.case_level, c.case_preconditions, c.create_by, c.create_time, c.update_by, c.update_time, c.case_num, c.project_id, c.remark, c.img_urls,
+               d.defect_processing_count, d.defect_audit_count, d.defect_close_count
         from sys_case c
         LEFT JOIN sys_module m on m.module_id = c.module_id
+        LEFT JOIN (
+            select
+                case_id,
+                IFNULL(sum(case when defect_state = 0 then 1 end), 0) as defect_processing_count,
+                IFNULL(sum(case when defect_state = 1 then 1 end), 0) as defect_audit_count,
+                IFNULL(sum(case when defect_state > 1 then 1 end), 0) as defect_close_count
+            FROM sys_defect GROUP BY case_id
+        ) d on d.case_id=c.case_id
     </sql>
 
     <select id="getCaseMaxNumOfProject" resultType="Long">

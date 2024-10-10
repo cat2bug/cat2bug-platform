@@ -145,6 +145,13 @@
               <span>{{ parseTime(scope.row.updateTime, '{y}-{m}-{d}') }}</span>
             </template>
           </el-table-column>
+          <el-table-column v-if="showField('defect.state')" :label="$t('defect.state')" align="left" prop="updateTime" width="150" sortable>
+            <template slot-scope="scope">
+              <p class="table-font table-font-red">{{ $t('PENDING') }}:{{ scope.row.defectProcessingCount }}</p>
+              <p class="table-font table-font-orange">{{ $t('PROCESSING') }}:{{ scope.row.defectAuditCount }}</p>
+              <p class="table-font table-font-green">{{ $t('CLOSED') }}:{{ scope.row.defectCloseCount }}</p>
+            </template>
+          </el-table-column>
           <el-table-column :label="$t('operate')" align="center" class-name="small-padding fixed-width" width="150">
             <template slot-scope="scope">
               <el-button
@@ -395,7 +402,7 @@ export default {
     /** 设置列表显示的属性字段 */
     setFieldList() {
       this.fieldList = [
-        'id','title','module','level', 'preconditions','expect','step','image','update-time'
+        'id','title','module','level', 'preconditions','expect','step','image','update-time','defect.state'
       ];
 
       const fieldList = this.$cache.local.get(CASE_TABLE_FIELD_LIST_CACHE_KEY);
@@ -639,5 +646,23 @@ export default {
     margin-bottom: 5px;
     background-color: #E4E7ED;
     padding: 0px 5px;
+  }
+  .table-font {
+    font-size: 0.75rem;
+    margin: 0;
+    padding: 0px 5px;
+  }
+  .table-font:hover {
+    text-decoration: underline;
+    cursor: pointer;
+  }
+  .table-font-red {
+    color: rgb(245, 108, 108);
+  }
+  .table-font-orange {
+    color: rgb(251, 177, 63);
+  }
+  .table-font-green {
+    color: rgb(103, 194, 58);
   }
 </style>

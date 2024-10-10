@@ -85,6 +85,13 @@ public class SysCase extends BaseEntity
     /** 焦点成员 */
     private List<SysUser> focusList;
 
+    /** 关联通过的缺陷数量 */
+    private int defectProcessingCount;
+    /** 关联失败的缺陷数量 */
+    private int defectAuditCount;
+    /** 关联失败的缺陷数量 */
+    private int defectCloseCount;
+
     @Override
     public String toString() {
         return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)
