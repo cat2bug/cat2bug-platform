@@ -52,6 +52,12 @@ public interface SysCaseMapper
     public List<SysCase> selectSysCaseList(SysCase sysCase);
 
     /**
+     * 查询测试用例ID列表
+     * @param moduleId  查询的模块
+     * @return  测试用例ID集合
+     */
+    public List<Long> selectSysCaseIdList(@Param("moduleId") Long moduleId);
+    /**
      * 新增测试用例
      * 
      * @param sysCase 测试用例

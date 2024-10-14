@@ -9,6 +9,14 @@ export function listCase(query) {
   })
 }
 
+// 获取指定模块的用例ID集合
+export function listPlanCaseId(moduleId) {
+  return request({
+    url: `/system/case/module/${moduleId}/ids`,
+    method: 'get',
+  })
+}
+
 // 查询测试用例详细
 export function getCase(caseId) {
   return request({

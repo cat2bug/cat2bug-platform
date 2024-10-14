@@ -71,9 +71,29 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         ORDER BY c.update_time DESC
     </select>
 
+    <select id="selectSysCaseIdList" parameterType="Long" resultType="java.lang.Long">
+        SELECT
+            c.case_id
+        FROM
+        (
+            SELECT module_id FROM sys_module WHERE module_id = #{moduleId}
+            UNION
+            SELECT t.module_id FROM
+                ( SELECT * FROM sys_module WHERE module_pid > 0 ORDER BY module_pid, module_id ) t,
+                ( SELECT @pid := #{moduleId} ) pd
+            WHERE
+                FIND_IN_SET( t.module_pid, @pid ) > 0
+                AND @pid := CONCAT( @pid, ',', t.module_id )
+        ) ids,
+        sys_case c
+        WHERE
+            c.module_id = ids.module_id
+        ORDER BY c.update_time DESC
+    </select>
+
     <select id="selectSysCaseByCaseName" resultMap="SysCaseResult">
         <include refid="selectSysCaseVo"/>
-        where c.case_name = #{caseName} and project_id = #{ projectId }
+        where c.case_name = #{caseName} and c.project_id = #{ projectId }
     </select>
 
     <select id="selectSysCaseByCaseId" parameterType="Long" resultMap="SysCaseResult">

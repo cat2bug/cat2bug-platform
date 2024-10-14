@@ -4,11 +4,11 @@
       <i class="el-icon-menu" />
       {{ $t('module.list') }}
     </div>
-    <el-tree :highlight-current="true" ref="moduleTree" :props="props" :lazy="true" :data="tree" :load="loadNode" node-key="id" @node-click="handleNodeClick">
+    <el-tree :highlight-current="true" ref="moduleTree" show-checkbox :props="props" :lazy="true" :data="tree" :load="loadNode" node-key="id" @node-click="handleNodeClick" @check-change="handleCheckChange">
       <span class="tree-node" slot-scope="{ node, data }">
         <span v-if="node.label!=$t('module.all-module')">{{ node.label }}</span>
         <span v-else><< {{ node.label }} >></span>
-        <span>
+        <span v-if="editVisible">
           <el-button
             type="text"
             size="mini"
@@ -39,6 +39,7 @@ export default {
   components: {ModuleDialog},
   data(){
     return {
+      firstLoad: true,
       currentNode: null,
       tree:[],
       props: {
@@ -52,6 +53,10 @@ export default {
     projectId: {
       type: [Number,String],
       default: null
+    },
+    editVisible: {
+      type: Boolean,
+      default: true
     }
   },
   computed: {
@@ -61,10 +66,14 @@ export default {
       }
     }
   },
-  created() {
-    this.getModuleList();
-  },
   methods: {
+    reloadData() {
+      this.currentNode = null;
+      this.tree = [];
+      if(!this.firstLoad) {
+        this.getModuleList(0);
+      }
+    },
     loadNode(node, resolve) {
       let modulePid = 0;
       if(node.level > 0) {
@@ -79,6 +88,7 @@ export default {
         modulePid:modulePid
       }
       listModule(params).then(res=>{
+        this.firstLoad = false;
         let data = res.data.map(m=>{
           return {
             id: m.moduleId,
@@ -94,10 +104,17 @@ export default {
         }
         if(resolve){
           resolve(data);
+        } else {
+          let { nodesMap } = this.$refs.moduleTree.root.store;
+          nodesMap = {};
+          this.$refs.moduleTree.root.setData(data);
         }
       }).catch(e=>{
         this.loading = false;
       })
+    },
+    handleCheckChange(data, checked, indeterminate) {
+      this.$emit('check-change', data, checked, indeterminate);
     },
     handleNodeClick(node){
       this.currentNode = node;
@@ -179,5 +196,10 @@ export default {
   overflow-y: hidden;
   overflow-x: auto;
   width: 100%;
+  ::v-deep > div[role="treeitem"]:first-child{
+    .el-checkbox {
+      display: none;
+    }
+  }
 }
 </style>

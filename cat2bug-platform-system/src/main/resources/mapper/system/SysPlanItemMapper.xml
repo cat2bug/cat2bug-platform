@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.system.mapper.SysPlanItemMapper">
+    
+    <resultMap type="SysPlanItem" id="SysPlanItemResult">
+        <result property="planItemId"    column="plan_item_id"    />
+        <result property="planId"    column="plan_id"    />
+        <result property="moduleId"    column="module_id"    />
+        <result property="caseId"    column="case_id"    />
+        <result property="planItemState"    column="plan_item_state"    />
+        <result property="updateById"    column="update_by_id"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="defectId"    column="defect_id"    />
+    </resultMap>
+
+    <resultMap type="SysCase" id="SysCaseResult">
+        <result property="caseId"    column="case_id"    />
+        <result property="caseName"    column="case_name"    />
+        <result property="moduleId"    column="module_id"    />
+        <result property="moduleName"    column="module_name"    />
+        <result property="caseType"    column="case_type"    />
+        <result property="caseExpect"    column="case_expect"    />
+        <result property="caseStep"    column="case_step"  typeHandler="com.cat2bug.system.domain.handle.SysCaseStepArrayTypeHandler"  />
+        <result property="caseLevel"    column="case_level"    />
+        <result property="casePreconditions"    column="case_preconditions"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="caseNum"    column="case_num"    />
+        <result property="projectId"    column="project_id"    />
+        <result property="remark"    column="remark"    />
+        <result property="imgUrls"    column="img_urls"    />
+        <result property="defectProcessingCount"    column="defect_processing_count"    />
+        <result property="defectAuditCount"    column="defect_audit_count"    />
+        <result property="defectCloseCount"    column="defect_close_count"    />
+        <association property="planItem"    javaType="SysPlanItem"         resultMap="SysPlanItemResult" />
+    </resultMap>
+
+    <sql id="selectSysPlanItemVo">
+        select pi.plan_item_id, pi.plan_id, pi.module_id, pi.case_id, pi.plan_item_state, pi.update_by_id, pi.update_time, pi.defect_id
+               from sys_plan_item pi
+    </sql>
+
+    <sql id="selectSysCaseVo">
+        select c.case_id, c.case_name, c.module_id, m.module_name, c.case_type, c.case_expect, c.case_step, c.case_level, c.case_preconditions, c.create_by, c.case_num, c.project_id, c.remark, c.img_urls,
+               pi.plan_item_id, pi.plan_id, pi.module_id, pi.case_id, pi.plan_item_state, pi.update_by_id, pi.update_time, pi.defect_id
+        from sys_case c
+                 LEFT JOIN sys_module m on m.module_id = c.module_id
+                 LEFT JOIN sys_plan_item pi ON c.case_id = pi.case_id
+    </sql>
+
+    <select id="selectSysPlanItemList" parameterType="SysPlanItem" resultMap="SysPlanItemResult">
+        <include refid="selectSysPlanItemVo"/>
+        <where>  
+            <if test="planId != null  and planId != ''"> and pi.plan_id = #{planId}</if>
+            <if test="moduleId != null "> and pi.module_id = #{moduleId}</if>
+            <if test="caseId != null "> and pi.case_id = #{caseId}</if>
+            <if test="planItemState != null  and planItemState != ''"> and pi.plan_item_state = #{planItemState}</if>
+            <if test="updateById != null "> and pi.update_by_id = #{updateById}</if>
+            <if test="params.beginUpdateTime != null and params.beginUpdateTime != '' and params.endUpdateTime != null and params.endUpdateTime != ''"> and pi.update_time between #{params.beginUpdateTime} and #{params.endUpdateTime}</if>
+            <if test="defectId != null "> and pi.defect_id = #{defectId}</if>
+        </where>
+    </select>
+
+    <select id="selectCaseList" parameterType="SysCase" resultMap="SysCaseResult">
+        <include refid="selectSysCaseVo"/>
+        <where>
+            <if test="caseName != null  and caseName != ''"> and c.case_name like concat('%', #{caseName}, '%')</if>
+            <if test="moduleId != null "> and c.module_id = #{moduleId}</if>
+            <if test="caseType != null "> and c.case_type = #{caseType}</if>
+            <if test="caseExpect != null  and caseExpect != ''"> and c.case_expect = #{caseExpect}</if>
+            <if test="caseLevel != null "> and c.case_level = #{caseLevel}</if>
+            <if test="casePreconditions != null  and casePreconditions != ''"> and c.case_preconditions = #{casePreconditions}</if>
+            <if test="caseNum != null "> and c.case_num = #{caseNum}</if>
+            <if test="projectId != null "> and c.project_id = #{projectId}</if>
+            <if test="params != null and params.moduleIds !=null">
+                and c.module_id in
+                <foreach collection="params.moduleIds" item="moduleId" separator="," open="(" close=")">
+                    #{moduleId}
+                </foreach>
+            </if>
+            <if test="params !=null and params.planId != null and params.planId != ''"> and (pi.plan_id is null or pi.plan_id = #{params.planId})</if>
+        </where>
+        ORDER BY c.update_time DESC
+    </select>
+
+    <select id="selectSysPlanItemByPlanItemId" parameterType="String" resultMap="SysPlanItemResult">
+        <include refid="selectSysPlanItemVo"/>
+        where pi.plan_item_id = #{planItemId}
+    </select>
+        
+    <insert id="insertSysPlanItem" parameterType="SysPlanItem">
+        insert into sys_plan_item
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="planItemId != null">plan_item_id,</if>
+            <if test="planId != null">plan_id,</if>
+            <if test="moduleId != null">module_id,</if>
+            <if test="caseId != null">case_id,</if>
+            <if test="planItemState != null">plan_item_state,</if>
+            <if test="updateById != null">update_by_id,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="defectId != null">defect_id,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="planItemId != null">#{planItemId},</if>
+            <if test="planId != null">#{planId},</if>
+            <if test="moduleId != null">#{moduleId},</if>
+            <if test="caseId != null">#{caseId},</if>
+            <if test="planItemState != null">#{planItemState},</if>
+            <if test="updateById != null">#{updateById},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="defectId != null">#{defectId},</if>
+         </trim>
+    </insert>
+
+    <update id="updateSysPlanItem" parameterType="SysPlanItem">
+        update sys_plan_item
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="planId != null">plan_id = #{planId},</if>
+            <if test="moduleId != null">module_id = #{moduleId},</if>
+            <if test="caseId != null">case_id = #{caseId},</if>
+            <if test="planItemState != null">plan_item_state = #{planItemState},</if>
+            <if test="updateById != null">update_by_id = #{updateById},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="defectId != null">defect_id = #{defectId},</if>
+        </trim>
+        where plan_item_id = #{planItemId}
+    </update>
+
+    <delete id="deleteSysPlanItemByPlanItemId" parameterType="String">
+        delete from sys_plan_item where plan_item_id = #{planItemId}
+    </delete>
+
+    <delete id="deleteSysPlanItemByPlanItemIds" parameterType="String">
+        delete from sys_plan_item where plan_item_id in 
+        <foreach item="planItemId" collection="array" open="(" separator="," close=")">
+            #{planItemId}
+        </foreach>
+    </delete>
+</mapper>

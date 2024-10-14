@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.system.mapper.SysPlanMapper">
+    
+    <resultMap type="SysPlan" id="SysPlanResult">
+        <result property="planId"    column="plan_id"    />
+        <result property="planName"    column="plan_name"    />
+        <result property="planVersion"    column="plan_version"    />
+        <result property="planStartTime"    column="plan_start_time"    />
+        <result property="planEndTime"    column="plan_end_time"    />
+        <result property="createById"    column="create_by_id"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateById"    column="update_by_id"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="projectId"    column="project_id"    />
+        <result property="reportId"    column="report_id"    />
+    </resultMap>
+
+    <resultMap id="SysPlanSysPlanItemResult" type="SysPlan" extends="SysPlanResult">
+        <collection property="sysPlanItemList" notNullColumn="sub_plan_item_id" javaType="java.util.List" resultMap="SysPlanItemResult" />
+    </resultMap>
+
+    <resultMap type="SysPlanItem" id="SysPlanItemResult">
+        <result property="planItemId"    column="sub_plan_item_id"    />
+        <result property="planId"    column="sub_plan_id"    />
+        <result property="moduleId"    column="sub_module_id"    />
+        <result property="caseId"    column="sub_case_id"    />
+        <result property="planItemState"    column="sub_plan_item_state"    />
+        <result property="updateById"    column="sub_update_by_id"    />
+        <result property="updateTime"    column="sub_update_time"    />
+        <result property="defectId"    column="sub_defect_id"    />
+    </resultMap>
+
+    <sql id="selectSysPlanVo">
+        select plan_id, plan_name, plan_version, plan_start_time, plan_end_time, create_by_id, create_time, update_by_id, update_time, project_id, report_id from sys_plan
+    </sql>
+
+    <select id="selectSysPlanList" parameterType="SysPlan" resultMap="SysPlanResult">
+        <include refid="selectSysPlanVo"/>
+        <where>  
+            <if test="planName != null  and planName != ''"> and plan_name like concat('%', #{planName}, '%')</if>
+            <if test="planVersion != null  and planVersion != ''"> and plan_version like concat('%', #{planVersion}, '%')</if>
+            <if test="params.beginPlanStartTime != null and params.beginPlanStartTime != '' and params.endPlanStartTime != null and params.endPlanStartTime != ''"> and plan_start_time between #{params.beginPlanStartTime} and #{params.endPlanStartTime}</if>
+            <if test="params.beginPlanEndTime != null and params.beginPlanEndTime != '' and params.endPlanEndTime != null and params.endPlanEndTime != ''"> and plan_end_time between #{params.beginPlanEndTime} and #{params.endPlanEndTime}</if>
+            <if test="createById != null "> and create_by_id = #{createById}</if>
+            <if test="updateById != null "> and update_by_id = #{updateById}</if>
+            <if test="projectId != null "> and project_id = #{projectId}</if>
+            <if test="reportId != null "> and report_id = #{reportId}</if>
+        </where>
+    </select>
+    
+    <select id="selectSysPlanByPlanId" parameterType="String" resultMap="SysPlanSysPlanItemResult">
+        select a.plan_id, a.plan_name, a.plan_version, a.plan_start_time, a.plan_end_time, a.create_by_id, a.create_time, a.update_by_id, a.update_time, a.project_id, a.report_id,
+ b.plan_item_id as sub_plan_item_id, b.plan_id as sub_plan_id, b.module_id as sub_module_id, b.case_id as sub_case_id, b.plan_item_state as sub_plan_item_state, b.update_by_id as sub_update_by_id, b.update_time as sub_update_time, b.defect_id as sub_defect_id
+        from sys_plan a
+        left join sys_plan_item b on b.plan_id = a.plan_id
+        where a.plan_id = #{planId}
+    </select>
+        
+    <insert id="insertSysPlan" parameterType="SysPlan">
+        insert into sys_plan
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="planId != null">plan_id,</if>
+            <if test="planName != null and planName != ''">plan_name,</if>
+            <if test="planVersion != null">plan_version,</if>
+            <if test="planStartTime != null">plan_start_time,</if>
+            <if test="planEndTime != null">plan_end_time,</if>
+            <if test="createById != null">create_by_id,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateById != null">update_by_id,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="projectId != null">project_id,</if>
+            <if test="reportId != null">report_id,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="planId != null">#{planId},</if>
+            <if test="planName != null and planName != ''">#{planName},</if>
+            <if test="planVersion != null">#{planVersion},</if>
+            <if test="planStartTime != null">#{planStartTime},</if>
+            <if test="planEndTime != null">#{planEndTime},</if>
+            <if test="createById != null">#{createById},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateById != null">#{updateById},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="projectId != null">#{projectId},</if>
+            <if test="reportId != null">#{reportId},</if>
+         </trim>
+    </insert>
+
+    <update id="updateSysPlan" parameterType="SysPlan">
+        update sys_plan
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="planName != null and planName != ''">plan_name = #{planName},</if>
+            <if test="planVersion != null">plan_version = #{planVersion},</if>
+            <if test="planStartTime != null">plan_start_time = #{planStartTime},</if>
+            <if test="planEndTime != null">plan_end_time = #{planEndTime},</if>
+            <if test="createById != null">create_by_id = #{createById},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateById != null">update_by_id = #{updateById},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="projectId != null">project_id = #{projectId},</if>
+            <if test="reportId != null">report_id = #{reportId},</if>
+        </trim>
+        where plan_id = #{planId}
+    </update>
+
+    <delete id="deleteSysPlanByPlanId" parameterType="String">
+        delete from sys_plan where plan_id = #{planId}
+    </delete>
+
+    <delete id="deleteSysPlanByPlanIds" parameterType="String">
+        delete from sys_plan where plan_id in 
+        <foreach item="planId" collection="array" open="(" separator="," close=")">
+            #{planId}
+        </foreach>
+    </delete>
+    
+    <delete id="deleteSysPlanItemByPlanIds" parameterType="String">
+        delete from sys_plan_item where plan_id in 
+        <foreach item="planId" collection="array" open="(" separator="," close=")">
+            #{planId}
+        </foreach>
+    </delete>
+
+    <delete id="deleteSysPlanItemByPlanId" parameterType="String">
+        delete from sys_plan_item where plan_id = #{planId}
+    </delete>
+
+    <insert id="batchSysPlanItem">
+        insert into sys_plan_item( plan_item_id, plan_id, module_id, case_id, plan_item_state, update_by_id, update_time, defect_id) values
+		<foreach item="item" index="index" collection="list" separator=",">
+            ( #{item.planItemId}, #{item.planId}, #{item.moduleId}, #{item.caseId}, #{item.planItemState}, #{item.updateById}, #{item.updateTime}, #{item.defectId})
+        </foreach>
+    </insert>
+</mapper>

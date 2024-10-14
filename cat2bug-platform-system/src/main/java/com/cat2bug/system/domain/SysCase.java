@@ -91,6 +91,8 @@ public class SysCase extends BaseEntity
     private int defectAuditCount;
     /** 关联失败的缺陷数量 */
     private int defectCloseCount;
+    /** 关联的测试计划子项 */
+    private SysPlanItem planItem;
 
     @Override
     public String toString() {

@@ -65,6 +65,11 @@ public class SysCaseServiceImpl implements ISysCaseService
         return sysCaseMapper.selectSysCaseList(sysCase);
     }
 
+    @Override
+    public List<Long> selectSysCaseIdList(Long moduleId) {
+        return sysCaseMapper.selectSysCaseIdList(moduleId);
+    }
+
     /**
      * 新增测试用例
      * 

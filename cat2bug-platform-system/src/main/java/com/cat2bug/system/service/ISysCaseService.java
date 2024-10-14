@@ -3,6 +3,7 @@ package com.cat2bug.system.service;
 import java.util.List;
 import com.cat2bug.system.domain.SysCase;
 import com.cat2bug.system.domain.vo.ExcelImportResultVo;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * 测试用例Service接口
@@ -43,6 +44,13 @@ public interface ISysCaseService
      * @return 测试用例集合
      */
     public List<SysCase> selectSysCaseList(SysCase sysCase);
+
+    /**
+     * 查询测试用例ID列表
+     * @param moduleId  查询的模块
+     * @return  测试用例ID集合
+     */
+    public List<Long> selectSysCaseIdList(@Param("moduleId") Long moduleId);
 
     /**
      * 新增测试用例
