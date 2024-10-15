@@ -4,7 +4,7 @@
       <i class="el-icon-menu" />
       {{ $t('module.list') }}
     </div>
-    <el-tree :highlight-current="true" ref="moduleTree" show-checkbox :props="props" :lazy="true" :data="tree" :load="loadNode" node-key="id" @node-click="handleNodeClick" @check-change="handleCheckChange">
+    <el-tree :highlight-current="true" ref="moduleTree" :show-checkbox="checkVisible" :props="props" :lazy="true" :data="tree" :load="loadNode" node-key="id" @node-click="handleNodeClick" @check-change="handleCheckChange">
       <span class="tree-node" slot-scope="{ node, data }">
         <span v-if="node.label!=$t('module.all-module')">{{ node.label }}</span>
         <span v-else><< {{ node.label }} >></span>
@@ -57,6 +57,10 @@ export default {
     editVisible: {
       type: Boolean,
       default: true
+    },
+    checkVisible: {
+      type: Boolean,
+      default: false
     }
   },
   computed: {

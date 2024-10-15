@@ -372,6 +372,7 @@
   "reject": "Reject",
   "repair": "Repair",
   "pass": "Pass",
+  "fail": "Fail",
   "head-up": "Head Up",
   "assist": "Assist",
   "comment": "Comment",
@@ -701,5 +702,17 @@
   "table": "Table",
   "calendar": "Calendar",
   "copy-size-out": "The length of the pasted content exceeds the specified range!",
-  "plan": "Test Plan"
+  "plan": "Test Plan",
+  "plan.run": "Run",
+  "plan.create": "Create Plan",
+  "plan.name": "Plan Name",
+  "plan.version": "Plan Version",
+  "plan.time": "Plan Time",
+  "plan.start-time": "Start Time",
+  "plan.end-time": "End Time",
+  "plan.run-user": "Test Member",
+  "plan.run-time": "Test Time",
+  "plan.enter-name": "Please enter the plan name",
+  "plan.enter-version": "Please enter the plan version",
+  "plan.enter-item-state": "Please select state"
 }

@@ -6,7 +6,7 @@
         <el-form-item label="" prop="planName">
           <el-input
             v-model="queryParams.planName"
-            placeholder="请输入测试计划名称"
+            :placeholder="$t('plan.enter-name')"
             prefix-icon="el-icon-files"
             clearable
             @keyup.enter.native="handleQuery"
@@ -15,7 +15,7 @@
         <el-form-item label="" prop="planVersion">
           <el-input
             v-model="queryParams.planVersion"
-            placeholder="请输入测试默认版本"
+            :placeholder="$t('plan.enter-version')"
             prefix-icon="el-icon-discount"
             clearable
             @keyup.enter.native="handleQuery"
@@ -23,6 +23,7 @@
         </el-form-item>
       </el-form>
       <div class="right">
+<!--        <el-button size="mini" icon="el-icon-setting" circle @click="handleOption"></el-button>-->
         <el-button
           type="primary"
           plain
@@ -30,46 +31,53 @@
           size="mini"
           @click="handleAdd"
           v-hasPermi="['system:plan:add']"
-        >新增</el-button>
+        >{{ $t('plan.create') }}</el-button>
       </div>
     </div>
 
     <el-table v-loading="loading" :data="planList">
 <!--      <el-table-column type="selection" width="55" align="center" />-->
-      <el-table-column label="测试计划名称" align="center" prop="planName" />
-      <el-table-column label="测试默认版本" align="center" prop="planVersion" />
-      <el-table-column label="计划开始时间" align="center" prop="planStartTime" width="180">
+      <el-table-column :label="$t('plan.name')" align="center" prop="planName" />
+      <el-table-column :label="$t('plan.version')" align="center" prop="planVersion" />
+      <el-table-column :label="$t('plan.start-time')" align="center" prop="planStartTime" width="180">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.planStartTime, '{y}-{m}-{d}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="计划结束时间" align="center" prop="planEndTime" width="180">
+      <el-table-column :label="$t('plan.end-time')" align="center" prop="planEndTime" width="180">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.planEndTime, '{y}-{m}-{d}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="更新人" align="center" prop="updateById" />
-      <el-table-column label="更新时间" align="center" prop="updateTime" width="180">
+      <el-table-column :label="$t('updateBy')" align="center" prop="updateById" />
+      <el-table-column :label="$t('updateTime')" align="center" prop="updateTime" width="180">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.updateTime, '{y}-{m}-{d}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+      <el-table-column :label="$t('operate')" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
+          <el-button
+            size="mini"
+            type="text"
+            icon="el-icon-tickets"
+            @click="handlePlanRun(scope.row)"
+            v-hasPermi="['system:plan:run']"
+          >{{ $t('plan.run') }}</el-button>
           <el-button
             size="mini"
             type="text"
             icon="el-icon-edit"
             @click="handleUpdate(scope.row)"
             v-hasPermi="['system:plan:edit']"
-          >修改</el-button>
+          >{{ $t('modify') }}</el-button>
           <el-button
             size="mini"
             type="text"
             icon="el-icon-delete"
             @click="handleDelete(scope.row)"
             v-hasPermi="['system:plan:remove']"
-          >删除</el-button>
+          >{{ $t('delete') }}</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -82,17 +90,22 @@
       @pagination="getList"
     />
     <add-plan-dialog ref="planDialog" @add="getList" @update="getList" />
+    <handle-plan-dialog ref="handlePlanDialog" />
+    <dict-option-dialog ref="planItemState" title="测试状态管理" :dictType="dict.type.plan_item_state" />
   </div>
 </template>
 
 <script>
 import ProjectLabel from "@/components/Project/ProjectLabel";
-import { listPlan, getPlan, delPlan, addPlan, updatePlan } from "@/api/system/plan";
+import { listPlan, delPlan } from "@/api/system/plan";
 import AddPlanDialog from "@/views/system/plan/AddPlanDialog";
+import HandlePlanDialog from "@/views/system/plan/HandlePlanDialog";
+import DictOptionDialog from "@/components/DictOptionDialog";
 
 export default {
   name: "Plan",
-  components:{ ProjectLabel, AddPlanDialog },
+  dicts: ['plan_item_state'],
+  components:{ ProjectLabel, AddPlanDialog, HandlePlanDialog, DictOptionDialog },
   data() {
     return {
       // 遮罩层
@@ -170,6 +183,9 @@ export default {
     handleUpdate(plan) {
       this.$refs.planDialog.openUpdate(plan);
     },
+    handlePlanRun(plan) {
+      this.$refs.handlePlanDialog.open(plan.planId);
+    },
     /** 删除按钮操作 */
     handleDelete(row) {
       const planIds = row.planId || this.ids;
@@ -185,6 +201,10 @@ export default {
       this.download('system/plan/export', {
         ...this.queryParams
       }, `plan_${new Date().getTime()}.xlsx`)
+    },
+    /** 打开配置对话框操作 */
+    handleOption() {
+      this.$refs.planItemState.open();
     }
   }
 };

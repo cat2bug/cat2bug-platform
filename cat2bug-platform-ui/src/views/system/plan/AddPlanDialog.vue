@@ -29,7 +29,7 @@
       <multipane layout="vertical" ref="multiPane" class="custom-resizer" @pane-resize-start="dragStopHandle">
         <!--      树形模块选择组件-->
         <div class="tree-module" ref="treeModule" :style="treeModuleStyle">
-          <tree-module ref="treeModuleRef" :project-id="projectId" @node-click="moduleClickHandle" @check-change="moduleCheckChangeHandle" :edit-visible="false" v-resize="setDragComponentSize" />
+          <tree-module ref="treeModuleRef" :project-id="projectId" @node-click="moduleClickHandle" @check-change="moduleCheckChangeHandle" :check-visible="true" :edit-visible="false" v-resize="setDragComponentSize" />
         </div>
         <multipane-resizer :style="multipaneStyle"></multipane-resizer>
         <!--      用例列表-->

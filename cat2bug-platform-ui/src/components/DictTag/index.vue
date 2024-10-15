@@ -17,7 +17,7 @@
           :type="item.raw.listClass == 'primary' ? '' : item.raw.listClass"
           :class="item.raw.cssClass"
         >
-          {{ item.label + " " }}
+          {{ $te(item.value) ? $t(item.value):item.label + " " }}
         </el-tag>
       </template>
     </template>

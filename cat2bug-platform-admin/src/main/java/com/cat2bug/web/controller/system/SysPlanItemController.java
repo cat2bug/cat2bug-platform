@@ -3,14 +3,19 @@ package com.cat2bug.web.controller.system;
 import com.cat2bug.common.annotation.Log;
 import com.cat2bug.common.core.controller.BaseController;
 import com.cat2bug.common.core.domain.AjaxResult;
+import com.cat2bug.common.core.domain.entity.SysDefect;
 import com.cat2bug.common.core.page.TableDataInfo;
 import com.cat2bug.common.enums.BusinessType;
+import com.cat2bug.common.utils.MessageUtils;
 import com.cat2bug.common.utils.poi.ExcelUtil;
 import com.cat2bug.system.domain.SysCase;
 import com.cat2bug.system.domain.SysPlanItem;
+import com.cat2bug.system.service.ISysDefectService;
 import com.cat2bug.system.service.ISysPlanItemService;
+import com.google.common.base.Preconditions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
@@ -28,11 +33,13 @@ public class SysPlanItemController extends BaseController
 {
     @Autowired
     private ISysPlanItemService sysPlanItemService;
+    @Autowired
+    private ISysDefectService sysDefectService;
 
     /**
      * 查询测试计划子项列表
      */
-    @PreAuthorize("@ss.hasPermi('system:plan:list')")
+    @PreAuthorize("@ss.hasPermi('system:plan:run')")
     @GetMapping("/list")
     public TableDataInfo list(SysPlanItem sysPlanItem)
     {
@@ -44,7 +51,7 @@ public class SysPlanItemController extends BaseController
     /**
      * 查询测试计划子项列表
      */
-    @PreAuthorize("@ss.hasPermi('system:plan:list')")
+    @PreAuthorize("@ss.hasPermi('system:plan:run')")
     @GetMapping("/case/list")
     public TableDataInfo items(SysCase sysCase)
     {
@@ -69,7 +76,7 @@ public class SysPlanItemController extends BaseController
     /**
      * 获取测试计划子项详细信息
      */
-    @PreAuthorize("@ss.hasPermi('system:PlanItem:query')")
+    @PreAuthorize("@ss.hasPermi('system:plan:run')")
     @GetMapping(value = "/{planItemId}")
     public AjaxResult getInfo(@PathVariable("planItemId") String planItemId)
     {
@@ -79,7 +86,7 @@ public class SysPlanItemController extends BaseController
     /**
      * 新增测试计划子项
      */
-    @PreAuthorize("@ss.hasPermi('system:PlanItem:add')")
+    @PreAuthorize("@ss.hasPermi('system:plan:run')")
     @Log(title = "测试计划子项", businessType = BusinessType.INSERT)
     @PostMapping
     public AjaxResult add(@RequestBody SysPlanItem sysPlanItem)
@@ -90,7 +97,7 @@ public class SysPlanItemController extends BaseController
     /**
      * 修改测试计划子项
      */
-    @PreAuthorize("@ss.hasPermi('system:PlanItem:edit')")
+    @PreAuthorize("@ss.hasPermi('system:plan:run')")
     @Log(title = "测试计划子项", businessType = BusinessType.UPDATE)
     @PutMapping
     public AjaxResult edit(@RequestBody SysPlanItem sysPlanItem)
@@ -101,7 +108,7 @@ public class SysPlanItemController extends BaseController
     /**
      * 删除测试计划子项
      */
-    @PreAuthorize("@ss.hasPermi('system:PlanItem:remove')")
+    @PreAuthorize("@ss.hasPermi('system:plan:run')")
     @Log(title = "测试计划子项", businessType = BusinessType.DELETE)
 	@DeleteMapping("/{planItemIds}")
     public AjaxResult remove(@PathVariable String[] planItemIds)

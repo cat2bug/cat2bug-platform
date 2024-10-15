@@ -246,7 +246,7 @@ export default {
           updateDefect(this.form).then(res => {
             this.$modal.msgSuccess(this.$i18n.t('modify-success'));
             this.visible = false;
-            this.$emit('log',res.data)
+            this.$emit('log', this.form)
           });
         }
       });

@@ -86,11 +86,11 @@ public interface ISysDefectService
 
     /**
      * 新增缺陷
-     * 
+     *
      * @param sysDefect 缺陷
      * @return 结果
      */
-    public int insertSysDefect(SysDefect sysDefect);
+    public SysDefect insertSysDefect(SysDefect sysDefect);
 
     /**
      * 修改缺陷

@@ -57,9 +57,10 @@ public class MemberFocusServiceImpl implements IMemberFocusService {
     @Override
     public List<SysUser> getFocusMemberList(String moduleName, Long dataId) {
         Collection<String> keys = this.redisCache.getKeys(MEMBER_FOCUS);
-        return keys.stream().filter(k->k.indexOf(String.format("%s-%d-",moduleName,dataId))==0).map(k->{
+        return keys.stream().filter(k -> k.indexOf(String.format("%s-%d-",moduleName,dataId))==0).map(k->{
             MemberFocus mf = redisCache.getCacheObject(MEMBER_FOCUS,k);
+            if(mf==null) return null;
             return mf.getUser();
-        }).collect(Collectors.toList());
+        }).filter(k -> k!=null).collect(Collectors.toList());
     }
 }

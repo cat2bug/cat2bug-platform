@@ -1,0 +1,433 @@
+<template>
+  <!-- 添加或修改测试计划对话框 -->
+  <el-drawer
+    custom-class="handle-plan-dialog"
+    size="85%"
+    :visible.sync="visible"
+    direction="rtl"
+    :before-close="closePlanDrawer">
+    <template slot="title">
+      <div class="plan-run-header">
+        <div class="plan-run-title">
+          <i class="el-icon-arrow-left" @click="cancel"></i>
+          <div style="line-height: 36px;">
+            <span class="plan-run-title-num">{{ $t('plan') }}:{{plan.planName}}</span>
+            <el-button size="mini" type="success">{{ $t('version') }}:{{ plan.planVersion }}</el-button>
+            <el-button size="mini" type="primary" plain>{{ $t('plan.time') }}:{{ plan.planStartTime }} - {{ plan.planEndTime }}</el-button>
+          </div>
+        </div>
+      </div>
+    </template>
+    <div class="plan-run-content">
+      <!--    模块树和用例列表区域-->
+      <multipane layout="vertical" ref="multiPane" class="custom-resizer" @pane-resize-start="dragStopHandle">
+        <!--      树形模块选择组件-->
+        <div class="tree-module" ref="treeModule" :style="treeModuleStyle">
+          <tree-module ref="treeModuleRef" :project-id="projectId" @node-click="moduleClickHandle" :check-visible="false" :edit-visible="false" v-resize="setDragComponentSize" />
+        </div>
+        <multipane-resizer :style="multipaneStyle"></multipane-resizer>
+        <!--      用例列表-->
+        <div ref="caseContext" class="plan-item-content">
+          <div class="plan-item-query">
+            <el-form :model="query" ref="queryForm" size="small" :inline="true">
+              <el-form-item label="" prop="planItemState">
+                <el-select v-model="query.planItemState" :placeholder="$t('plan.enter-item-state')" clearable @change="getPlanItemList">
+                  <el-option
+                    v-for="dict in dict.type.plan_item_state"
+                    :key="dict.value"
+                    :label="dict.label"
+                    :value="dict.value"
+                  />
+                </el-select>
+              </el-form-item>
+<!--              <el-form-item label="" prop="updateById">-->
+<!--                <el-input-->
+<!--                  v-model="query.updateById"-->
+<!--                  placeholder="请输入更新人"-->
+<!--                  clearable-->
+<!--                  @keyup.enter.native="handleQuery"-->
+<!--                />-->
+<!--              </el-form-item>-->
+            </el-form>
+          </div>
+          <el-table ref="planItemTable" v-loading="loading" :data="planItemList" v-resize="setDragComponentSize">
+<!--            <el-table-column :label="$t('id')" align="left" prop="caseNum" width="80" sortable>-->
+<!--              <template slot-scope="scope">-->
+<!--                <span>{{ caseNumber(scope.row) }}</span>-->
+<!--              </template>-->
+<!--            </el-table-column>-->
+            <el-table-column :label="$t('title')" align="left" prop="caseName" sortable>
+              <template slot-scope="scope">
+                <div class="table-case-title">
+                  <span>{{ scope.row.caseName }}</span>
+                </div>
+              </template>
+            </el-table-column>
+            <el-table-column :label="$t('module')" align="left" prop="moduleName" sortable />
+            <el-table-column :label="$t('level')" align="left" prop="caseLevel" sortable width="80">
+              <template slot-scope="scope">
+                <cat2-bug-level :level="scope.row.caseLevel" />
+              </template>
+            </el-table-column>
+            <el-table-column :label="$t('preconditions')" align="left" prop="casePreconditions" sortable />
+            <el-table-column :label="$t('expect')" align="left" prop="caseExpect" sortable />
+            <el-table-column :label="$t('step')" align="left" prop="caseStep" sortable>
+              <template slot-scope="scope">
+                <step :steps="scope.row.caseStep" />
+              </template>
+            </el-table-column>
+            <el-table-column :label="$t('state')" align="left" prop="planItemState" sortable>
+              <template slot-scope="scope">
+                <dict-tag :options="dict.type.plan_item_state" :value="scope.row.planItemState"/>
+              </template>
+            </el-table-column>
+            <el-table-column :label="$t('updateTime')" align="center" prop="updateTime" width="180">
+              <template slot-scope="scope">
+                <span>{{ parseTime(scope.row.updateTime, '{y}-{m}-{d}') }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column :label="$t('operate')" align="center" class-name="small-padding fixed-width">
+              <template slot-scope="scope">
+                <el-button
+                  v-if="scope.row.defectId"
+                  size="small"
+                  type="text"
+                  icon="el-icon-edit"
+                  @click="handleOpenEditDefect($event, scope.row)"
+                  v-hasPermi="['system:defect:edit']"
+                >
+                  {{ $t('defect.modify') }}
+                </el-button>
+                <el-button
+                  v-else
+                  size="small"
+                  type="text"
+                  icon="el-icon-plus"
+                  @click="handleOpenAddDefect($event, scope.row)"
+                  v-hasPermi="['system:defect:add']"
+                >
+                  {{ $t('defect.create') }}
+                </el-button>
+                <el-button
+                  size="mini"
+                  type="text"
+                  icon="el-icon-check"
+                  @click="handlePlanItemState(scope.row, 'pass')"
+                  v-hasPermi="['system:plan:edit']"
+                >{{ $t('pass') }}</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+
+          <pagination
+            v-show="total>0"
+            :total="total"
+            :page.sync="query.pageNum"
+            :limit.sync="query.pageSize"
+            @pagination="getPlanItemList"
+          />
+        </div>
+      </multipane>
+      <add-defect ref="addDefect" :project-id="projectId" :append-to-body="true" @added="handleAddedDefect" />
+      <edit-defect-dialog ref="editDefectDialog"  :project-id="projectId" :defect-id="planItem.defectId" @log="handleDefectLogAdded" />
+    </div>
+  </el-drawer>
+</template>
+
+<script>
+import Cat2BugLevel from "@/components/Cat2BugLevel";
+import Step from "@/views/system/case/components/step";
+import TreeModule from "@/components/Module/TreeModule";
+import FocusMemberList from "@/components/FocusMemberList";
+import Cat2BugPreviewImage from "@/components/Cat2BugPreviewImage";
+import AddDefect from "@/components/Defect/AddDefect";
+import EditDefectDialog from "@/components/Defect/EditDefectDialog";
+import { Multipane, MultipaneResizer } from 'vue-multipane';
+import { getPlan } from "@/api/system/plan";
+import {listPlanItem, updatePlanItem} from "@/api/system/PlanItem";
+
+const TREE_MODULE_WIDTH_CACHE_KEY = 'plan_case_tree_module_width';
+
+export default {
+  name: "AddPlanDialog",
+  dicts: ['plan_item_state'],
+  components: { Cat2BugLevel,Step,TreeModule,Multipane,MultipaneResizer, FocusMemberList, Cat2BugPreviewImage, AddDefect, EditDefectDialog },
+  data() {
+    return {
+      multipaneStyle: {'--marginTop':'0px'},
+      treeModuleStyle: {'--treeModuleWidth':'300px'},
+      // 遮罩层
+      loading: true,
+      // 当前计划
+      plan: {},
+      planItem: {},
+      // 是否显示弹出层
+      visible: false,
+      // 查询参数
+      query: {
+        pageNum: 1,
+        pageSize: 10,
+        moduleId: null,
+        planId: null,
+        params:{}
+      },
+      // 测试计划子项表格数据
+      planItemList: [],
+      // 总条数
+      total: 0,
+    }
+  },
+  directives: {
+    resize: {
+      // 指令的名称
+      bind(el, binding) {
+        // el为绑定的元素，binding为绑定给指令的对象
+        let width = ''
+        let height = ''
+        function isResize() {
+          const style = document.defaultView.getComputedStyle(el);
+          if (width !== style.width || height !== style.height) {
+            binding.value({ width: style.width, height: style.height }) // 关键(这传入的是函数,所以执行此函数)
+          }
+          width = style.width
+          height = style.height
+        }
+        el.__vueSetInterval__ = setInterval(isResize, 300)
+        console.log(el)
+      },
+      unbind(el) {
+        clearInterval(el.__vueSetInterval__)
+      }
+    }
+  },
+  computed: {
+    /** 用于显示的用例编号 */
+    caseNumber: function () {
+      return function (val) {
+        return '#'+val.caseNum;
+      }
+    },
+    /** 项目ID */
+    projectId: function () {
+      return parseInt(this.$store.state.user.config.currentProjectId);
+    },
+    /** 字符转url数组 */
+    getUrl: function () {
+      return function (urls){
+        let imgs = urls?urls.split(','):[];
+        return imgs.map(i=>{
+          return process.env.VUE_APP_BASE_API + i;
+        })
+      }
+    },
+  },
+  methods: {
+    /** 取消按钮 */
+    cancel() {
+      this.visible = false;
+    },
+    /** 打开窗口 */
+    open(planId) {
+      this.visible = true;
+      this.query.planId = planId;
+      this.loading = true;
+      getPlan(planId).then(response => {
+        this.plan = response.data;
+      });
+      this.getTreeModuleWidth();
+      this.getPlanItemList();
+    },
+    /** 查询测试用例列表 */
+    getPlanItemList() {
+      this.loading = true;
+      listPlanItem(this.query).then(response => {
+        this.loading = false;
+        this.planItemList = response.rows;
+        this.total = response.total;
+      });
+    },
+    /** 获取树模型宽度 */
+    getTreeModuleWidth() {
+      let treeModuleWidth = this.$cache.session.get(TREE_MODULE_WIDTH_CACHE_KEY);
+      this.treeModuleStyle['--treeModuleWidth'] = (treeModuleWidth?treeModuleWidth:300)+'px';
+    },
+    /** 设置树模型宽度到本地缓存 */
+    cacheTreeModuleWidth() {
+      this.$cache.session.set(TREE_MODULE_WIDTH_CACHE_KEY,this.$refs.treeModule.clientWidth);
+    },
+    /** 拖动事件完成 */
+    dragStopHandle(pane, container, size) {
+      this.cacheTreeModuleWidth();
+    },
+    /** 设置模块与用例列表中间拖动块的尺寸 */
+    setDragComponentSize() {
+      this.multipaneStyle['--marginTop'] = '0px';
+      this.$nextTick(()=> {
+        let pageHeight = Math.max(this.$refs.treeModule.scrollHeight || 0, this.$refs.caseContext.scrollHeight || 0)
+        this.multipaneStyle['--marginTop'] = pageHeight + 'px';
+      })
+    },
+    /** 关闭缺陷抽屉窗口 */
+    closePlanDrawer(done) {
+      done();
+      // closeEditWindow(this.defectId);
+      this.cancel();
+    },
+    /** 点击模块树中的某个模块操作 */
+    moduleClickHandle(moduleId) {
+      this.query.moduleId = moduleId;
+      this.getPlanItemList();
+    },
+    /** 更改子项状态操作 */
+    handlePlanItemState(planItem, state) {
+      let data = {
+        planItemId: planItem.planItemId,
+        planItemState: state,
+      }
+      updatePlanItem(data).then(res=>{
+        this.getPlanItemList();
+      });
+    },
+    /** 处理打开新建缺陷窗口操作 */
+    handleOpenAddDefect(e,item){
+      this.planItem = item;
+      this.$refs.addDefect.openByCase(item);
+      e.stopPropagation();
+    },
+    handleOpenEditDefect(e, item) {
+      this.planItem = item;
+      this.$refs.editDefectDialog.open(item.defectId);
+      e.stopPropagation();
+    },
+    /** 处理添加缺陷完成操作 */
+    handleAddedDefect(defect) {
+      let data = {
+        planItemId: this.planItem.planItemId,
+        defectId: defect.defectId,
+        planItemState: 'fail',
+      }
+      updatePlanItem(data).then(res=>{
+        this.getPlanItemList();
+      })
+    },
+    /** 处理缺陷日志添加完成操作 */
+    handleDefectLogAdded(log) {
+      let data = {
+        planItemId: this.planItem.planItemId,
+        defectId: log.defectId,
+        planItemState: 'fail',
+      }
+      updatePlanItem(data).then(res=>{
+        this.getPlanItemList();
+      })
+      this.$emit('log',log);
+    },
+  }
+}
+</script>
+<style>
+.handle-plan-dialog {
+  border-left: 4px solid #ffb700;
+}
+</style>
+<style lang="scss" scoped>
+.custom-resizer {
+  width: 100%;
+  height: 100%;
+}
+.custom-resizer > .multipane-resizer {
+  margin: 0; left: 0;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  height: 100%;
+  text-align: center;
+  &:before {
+     display: block;
+     content: "";
+     width: 3px;
+     height: var(--marginTop);
+     margin-top: 0px;
+     margin-left: -1.5px;
+     border-left: 1px solid #DCDFE6;
+     border-right: 1px solid #DCDFE6;
+  }
+  &:hover {
+    &:before {
+      border-color: #CCC;
+    }
+  }
+}
+.plan-item-content {
+  flex-grow: 1;
+  overflow:hidden;
+  height: 100%;
+}
+.plan-run-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: row;
+  flex-wrap: wrap;
+  .report-edit-tools {
+    padding: 5px 0px;
+  }
+  .plan-run-title {
+    display: inline-flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-direction: row;
+    overflow: hidden;
+    > * {
+      float:left;
+    }
+    .el-icon-arrow-left {
+      font-size: 22px;
+    }
+    .el-icon-arrow-left:hover {
+      cursor: pointer;
+      color: #909399;
+    }
+    .plan-run-title-name {
+      //flex: 1;
+      //overflow: hidden;
+      //white-space: nowrap;
+      //text-overflow: ellipsis;
+    }
+    .plan-run-title-content .defect-type-tag{
+      float: left;
+      margin-right: 2px;
+      margin-top: 5px;
+      padding: 1px 10px;
+    }
+    .plan-run-title-content .project-member-icons{
+      float: left;
+      margin-right:10px;
+    }
+    .plan-run-title-content .el-tag--dark.el-tag--danger{
+      float: left;
+      margin-right:10px;
+      margin-top: 5px;
+    }
+    .plan-run-title-num, .plan-run-title-name {
+      font-size: 20px;
+      color: #303133;
+      font-weight: 500;
+      float: left;
+      margin-right:10px;
+    }
+    > * {
+      margin-right:10px;
+    }
+  }
+}
+.plan-item-query {
+  .el-form-item {
+    margin-bottom: 5px;
+  }
+}
+.plan-run-content {
+  height: 100%;
+}
+</style>

@@ -23,10 +23,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -246,13 +243,13 @@ public class SysDefectServiceImpl implements ISysDefectService
 
     /**
      * 新增缺陷
-     * 
+     *
      * @param sysDefect 缺陷
      * @return 结果
      */
     @Override
     @Transactional
-    public int insertSysDefect(SysDefect sysDefect)
+    public SysDefect insertSysDefect(SysDefect sysDefect)
     {
         // 新建缺陷数据
         sysDefect.setCreateTime(DateUtils.getNowDate());
@@ -272,7 +269,7 @@ public class SysDefectServiceImpl implements ISysDefectService
 
         // 新建日志
         this.inertLog(sysDefect.getDefectId(),sysDefect.getHandleBy(),null,SysDefectLogStateEnum.CREATE);
-        return 1;
+        return sysDefect;
     }
 
     /** 添加日志 */

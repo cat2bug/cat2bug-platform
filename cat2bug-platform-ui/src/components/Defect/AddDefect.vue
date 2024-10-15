@@ -3,6 +3,7 @@
     size="65%"
     :visible.sync="visible"
     direction="rtl"
+    :append-to-body="appendToBody"
     :before-close="closeDefectDrawer">
     <template slot="title">
       <div class="defect-add-header">
@@ -205,6 +206,10 @@ export default {
       type: Number,
       default: null
     },
+    appendToBody: {
+      type: Boolean,
+      default: false
+    }
   },
   mounted() {
     this.readIsSaveFormCacheValue();
@@ -362,7 +367,7 @@ export default {
               }
               this.$modal.msgSuccess(this.$i18n.t('create-success'));
               this.cancel();
-              this.$emit('added',res)
+              this.$emit('added',res.data)
             });
           }
         }

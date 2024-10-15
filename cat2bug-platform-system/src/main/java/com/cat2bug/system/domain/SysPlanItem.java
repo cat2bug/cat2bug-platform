@@ -11,7 +11,7 @@ import com.cat2bug.common.core.domain.BaseEntity;
  * @author yuzhantao
  * @date 2024-10-11
  */
-public class SysPlanItem extends BaseEntity
+public class SysPlanItem extends SysCase
 {
     private static final long serialVersionUID = 1L;
 

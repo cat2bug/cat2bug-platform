@@ -137,7 +137,7 @@ public class SysDefectController extends BaseController
     @PostMapping
     public AjaxResult add(@RequestBody SysDefect sysDefect)
     {
-        return toAjax(sysDefectService.insertSysDefect(sysDefect));
+        return success(sysDefectService.insertSysDefect(sysDefect));
     }
 
     /**
