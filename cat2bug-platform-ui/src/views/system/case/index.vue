@@ -100,7 +100,7 @@
     <multipane layout="vertical" ref="multiPane" class="custom-resizer" @pane-resize-start="dragStopHandle">
 <!--      树形模块选择组件-->
       <div class="tree-module" ref="treeModule" :style="treeModuleStyle">
-        <tree-module :project-id="projectId" @node-click="moduleClickHandle"  v-resize="setDragComponentSize" />
+        <tree-module ref="treeModuleRef" :project-id="projectId" @node-click="moduleClickHandle"  v-resize="setDragComponentSize" />
       </div>
       <multipane-resizer :style="multipaneStyle"></multipane-resizer>
 <!--      用例列表-->
@@ -182,9 +182,9 @@
         />
       </div>
     </multipane>
-    <add-case ref="addCaseDialog" :module-id="queryParams.params.modulePid" @added="getList" @close="initFloatMenu" />
-    <add-defect ref="addDefect" :project-id="projectId" @added="getList" @close="initFloatMenu" />
-    <cloud-case ref="cloudCaseDialog" @added="getList" @close="initFloatMenu" />
+    <add-case ref="addCaseDialog" :module-id="queryParams.params.modulePid" @added="reloadData" @close="initFloatMenu" />
+    <add-defect ref="addDefect" :project-id="projectId" @added="reloadData" @close="initFloatMenu" />
+    <cloud-case ref="cloudCaseDialog" @added="reloadData" @close="initFloatMenu" />
     <!-- 用户导入对话框 -->
     <el-dialog :title="upload.title" :visible.sync="upload.open" width="400px" append-to-body>
       <el-upload
@@ -364,6 +364,10 @@ export default {
   },
   methods: {
     strFormat,
+    reloadData() {
+      this.getList();
+      this.$refs.treeModuleRef.reloadData();
+    },
     /** 初始化浮动菜单 */
     initFloatMenu() {
       this.$floatMenu.windowsInit(document.querySelector('.main-container'));

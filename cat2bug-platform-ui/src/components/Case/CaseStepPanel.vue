@@ -54,11 +54,12 @@ export default {
       this.caseStepListChangeHandle({}, this.caseStep);
     },
     addStepHandle(index) {
-      if(index!=undefined){
-        this.caseStepList.splice(index,0,{});
-      } else {
-        this.caseStepList.push({});
-      }
+      // if(index!=undefined){
+      //   this.caseStepList.splice(index,0,{});
+      // } else {
+      //   this.caseStepList.push({});
+      // }
+      this.caseStepList.push({});
       this.caseStepListChangeHandle({},this.caseStepList);
       this.$emit('change',this.caseStepList);
     },
