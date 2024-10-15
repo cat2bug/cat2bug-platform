@@ -714,7 +714,7 @@ public class ExcelUtil<T>
             {
                 Field field = (Field) os[0];
                 Excel excel = (Excel) os[1];
-                if (Collection.class.isAssignableFrom(field.getType()))
+                if (Collection.class.isAssignableFrom(field.getType()) && subFields.size()>0)
                 {
                     for (Field subField : subFields)
                     {

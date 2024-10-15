@@ -8,6 +8,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import com.cat2bug.common.annotation.Excel;
 import com.cat2bug.common.core.domain.BaseEntity;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.IndexedColors;
 
 import java.util.List;
@@ -49,12 +50,13 @@ public class SysCase extends BaseEntity
     private Long caseNum;
 
     /** 用例名称 */
-    @Excel(name = "用例名称(必填)", i18nNameKey = "case.name_excel", width = 50, headerColor = IndexedColors.RED,headerBackgroundColor=IndexedColors.GREY_25_PERCENT)
+    @Excel(name = "用例名称(必填)", i18nNameKey = "case.name_excel", align = HorizontalAlignment.LEFT, width = 50, headerColor = IndexedColors.RED,headerBackgroundColor=IndexedColors.GREY_25_PERCENT)
     private String caseName;
 
     /** 模块名称 */
     @Excel(name = "模块",
             i18nNameKey = "module",
+            align = HorizontalAlignment.LEFT,
             width = 40,
             handler = SysModuleHandlerAdapter.class,
             comboHandler = SysModuleComboHandlerAdapter.class,
@@ -66,17 +68,18 @@ public class SysCase extends BaseEntity
     private Long caseLevel;
 
     /** 前置条件 */
-    @Excel(name = "前置条件",i18nNameKey = "case.prerequisite", width = 50, headerBackgroundColor=IndexedColors.GREY_25_PERCENT)
+    @Excel(name = "前置条件",i18nNameKey = "case.prerequisite", align = HorizontalAlignment.LEFT, width = 50, headerBackgroundColor=IndexedColors.GREY_25_PERCENT)
     private String casePreconditions;
 
     /** 预期 */
-    @Excel(name = "预期(必填)", i18nNameKey = "case.expected_excel", width = 50, headerColor = IndexedColors.RED,headerBackgroundColor=IndexedColors.GREY_25_PERCENT)
+    @Excel(name = "预期(必填)", i18nNameKey = "case.expected_excel", align = HorizontalAlignment.LEFT, width = 50, headerColor = IndexedColors.RED,headerBackgroundColor=IndexedColors.GREY_25_PERCENT)
     private String caseExpect;
 
     /** 步骤 */
+    @Excel(name = "步骤", i18nNameKey = "case.step", width = 50, align = HorizontalAlignment.LEFT, type = Excel.Type.EXPORT, headerBackgroundColor=IndexedColors.GREY_25_PERCENT, handler = com.cat2bug.system.domain.excel.CaseStepAdapter.class)
     private List<SysCaseStep> caseStep;
 
-    @Excel(name = "步骤", i18nNameKey = "case.step", width = 50, headerBackgroundColor=IndexedColors.GREY_25_PERCENT)
+    @Excel(name = "步骤", i18nNameKey = "case.step", width = 50, align = HorizontalAlignment.LEFT, type = Excel.Type.IMPORT, headerBackgroundColor=IndexedColors.GREY_25_PERCENT)
     private String caseStepScript;
 
     /** 图片集合 */

@@ -72,6 +72,7 @@
               <el-dropdown-item @click.native="handleAdd"><i class="el-icon-plus" />{{$i18n.t('case.create')}}</el-dropdown-item>
               <el-divider class="case-add-dropdown-divider"></el-divider>
               <el-dropdown-item @click.native="handleImport"><i class="el-icon-upload2" />{{ $t('case.import') }}</el-dropdown-item>
+              <el-dropdown-item @click.native="handleExport"><i class="el-icon-download" />{{ $t('case.export') }}</el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
         </el-col>
@@ -84,16 +85,6 @@
           ><svg-icon icon-class="robot" />
             {{ $t('case.ai-create') }}</el-button>
         </el-col>
-<!--        <el-col :span="1.5">-->
-<!--          <el-button-->
-<!--            type="warning"-->
-<!--            plain-->
-<!--            icon="el-icon-download"-->
-<!--            size="small"-->
-<!--            @click="handleExport"-->
-<!--            v-hasPermi="['system:case:export']"-->
-<!--          >导出</el-button>-->
-<!--        </el-col>-->
       </el-row>
     </div>
 <!--    模块树和用例列表区域-->
@@ -485,7 +476,7 @@ export default {
     handleExport() {
       this.download('system/case/export', {
         ...this.queryParams
-      }, `case_${new Date().getTime()}.xlsx`)
+      }, `${ this.$i18n.t('case.export') }_${new Date().getTime()}.xlsx`)
     },
     /** 点击模块树中的某个模块操作 */
     moduleClickHandle(moduleId) {
