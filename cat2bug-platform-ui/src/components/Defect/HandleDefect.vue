@@ -3,6 +3,7 @@
     size="55%"
     :visible.sync="visible"
     direction="rtl"
+    :append-to-body="appendToBody"
     :before-close="closeDefectDrawer">
     <template slot="title">
       <div class="defect-edit-header">
@@ -170,6 +171,10 @@ export default {
       type: Number,
       default: null
     },
+    appendToBody: {
+      type: Boolean,
+      default: false
+    }
   },
   computed: {
     getUrl: function () {
@@ -316,7 +321,7 @@ export default {
     },
     logHandle(log) {
       this.open(this.defectId);
-      this.$emit('change')
+      this.$emit('change', this.defect)
       // this.$refs.defectLog.addLog(log);
     },
     deleteHandle() {

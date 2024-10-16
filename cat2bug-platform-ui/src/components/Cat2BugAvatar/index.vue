@@ -1,5 +1,5 @@
 <template>
-  <div class="member-avatar">
+  <div class="member-avatar" v-if="isVisible">
     <el-avatar
       :isStatistics="member.isStatistics?'true':'false'"
       :src="imgUrl"
@@ -33,6 +33,9 @@ export default {
     }
   },
   computed: {
+    isVisible: function () {
+      return this.member.avatar || this.member.nickName || this.member.userName || this.member.name
+    },
     imgUrl: function () {
       if(this.member.avatarUrl) {
         return this.member.avatarUrl;

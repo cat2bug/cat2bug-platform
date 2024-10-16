@@ -35,9 +35,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         LEFT JOIN (
             select
                 case_id,
-                IFNULL(sum(case when defect_state = 0 then 1 end), 0) as defect_processing_count,
+                IFNULL(sum(case when defect_state = 0 or defect_state = 3 then 1 end), 0) as defect_processing_count,
                 IFNULL(sum(case when defect_state = 1 then 1 end), 0) as defect_audit_count,
-                IFNULL(sum(case when defect_state > 1 then 1 end), 0) as defect_close_count
+                IFNULL(sum(case when defect_state = 4 then 1 end), 0) as defect_close_count
             FROM sys_defect GROUP BY case_id
         ) d on d.case_id=c.case_id
     </sql>

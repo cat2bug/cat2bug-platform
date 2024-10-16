@@ -4,6 +4,7 @@
     :visible.sync="visible"
     direction="rtl"
     :append-to-body="appendToBody"
+    @close="cancel"
     :before-close="closeDefectDrawer">
     <template slot="title">
       <div class="defect-add-header">

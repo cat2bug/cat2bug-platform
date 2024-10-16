@@ -49,14 +49,35 @@
 <!--                />-->
 <!--              </el-form-item>-->
             </el-form>
+            <div>
+              <el-popover
+                placement="top"
+                trigger="click">
+                <div class="row">
+                  <i class="el-icon-s-fold"></i>
+                  <h4>{{$t('defect.display-field')}}</h4>
+                </div>
+                <el-divider class="plan-item-field-divider"></el-divider>
+                <el-checkbox-group v-model="checkedFieldList" class="col" @change="checkedFieldListChange">
+                  <el-checkbox v-for="field in fieldList" :label="field" :key="field">{{$t(field)}}</el-checkbox>
+                </el-checkbox-group>
+                <el-button
+                  style="padding: 9px;"
+                  plain
+                  slot="reference"
+                  icon="el-icon-s-fold"
+                  size="small"
+                ></el-button>
+              </el-popover>
+            </div>
           </div>
           <el-table ref="planItemTable" v-loading="loading" :data="planItemList" v-resize="setDragComponentSize">
-            <el-table-column :label="$t('id')" align="left" prop="caseNum" width="80" sortable>
+            <el-table-column v-if="showField('id')" :label="$t('id')" align="left" prop="caseNum" width="80" sortable>
               <template slot-scope="scope">
                 <span>{{ caseNumber(scope.row) }}</span>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('title')" align="left" prop="caseName" sortable>
+            <el-table-column v-if="showField('title')" :label="$t('title')" align="left" prop="caseName" sortable>
               <template slot-scope="scope">
                 <div class="table-case-title">
                   <el-link v-if="checkPermi(['system:case:edit'])" type="primary" @click="handleOpenEditCase(scope.row)">{{ scope.row.caseName }}</el-link>
@@ -64,25 +85,35 @@
                 </div>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('module')" align="left" prop="moduleName" sortable />
-            <el-table-column :label="$t('level')" align="left" prop="caseLevel" sortable width="80">
+            <el-table-column v-if="showField('module')" :label="$t('module')" align="left" prop="moduleName" sortable />
+            <el-table-column v-if="showField('level')" :label="$t('level')" align="left" prop="caseLevel" sortable width="80">
               <template slot-scope="scope">
                 <cat2-bug-level :level="scope.row.caseLevel" />
               </template>
             </el-table-column>
-            <el-table-column :label="$t('preconditions')" align="left" prop="casePreconditions" sortable />
-            <el-table-column :label="$t('expect')" align="left" prop="caseExpect" sortable />
-            <el-table-column :label="$t('step')" align="left" prop="caseStep" sortable>
+            <el-table-column v-if="showField('preconditions')" :label="$t('preconditions')" align="left" prop="casePreconditions" sortable />
+            <el-table-column v-if="showField('expect')" :label="$t('expect')" align="left" prop="caseExpect" sortable />
+            <el-table-column v-if="showField('step')" :label="$t('step')" align="left" prop="caseStep" sortable>
               <template slot-scope="scope">
                 <step :steps="scope.row.caseStep" />
               </template>
             </el-table-column>
-            <el-table-column :label="$t('state')" align="left" prop="planItemState" sortable>
+            <el-table-column v-if="showField('image')" :label="$t('image')" :key="$t('image')" align="center" prop="imgUrls" width="100">
+              <template slot-scope="scope">
+                <cat2-bug-preview-image :images="getUrl(scope.row.imgUrls)" />
+              </template>
+            </el-table-column>
+            <el-table-column v-if="showField('state')" :label="$t('state')" align="left" prop="planItemState" sortable>
               <template slot-scope="scope">
                 <dict-tag :options="dict.type.plan_item_state" :value="scope.row.planItemState"/>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('updateTime')" align="center" prop="updateTime" width="180">
+            <el-table-column v-if="showField('updateBy')" :label="$t('updateBy')" align="center" prop="updateBy" sortable width="100">
+              <template slot-scope="scope">
+                <cat2-bug-avatar :member="member(scope.row)" />
+              </template>
+            </el-table-column>
+            <el-table-column v-if="showField('update-time')" :label="$t('updateTime')" align="center" prop="updateTime" width="180">
               <template slot-scope="scope">
                 <span>{{ parseTime(scope.row.updateTime, '{y}-{m}-{d}') }}</span>
               </template>
@@ -93,11 +124,10 @@
                   v-if="scope.row.defectId"
                   size="small"
                   type="text"
-                  icon="el-icon-edit"
-                  @click="handleOpenEditDefect($event, scope.row)"
+                  @click="handleOpenHandleDefect($event, scope.row)"
                   v-hasPermi="['system:defect:edit']"
-                >
-                  {{ $t('defect.modify') }}
+                > <svg-icon icon-class="bug"></svg-icon>
+                  {{ $t('defect.handle') }}
                 </el-button>
                 <el-button
                   v-else
@@ -129,39 +159,46 @@
           />
         </div>
       </multipane>
-      <add-case ref="addCaseDialog" :module-id="planItem.moduleId" :append-to-body="true" @added="getPlanItemList" />
-      <add-defect ref="addDefect" :project-id="projectId" :append-to-body="true" @added="handleAddedDefect" />
-      <edit-defect-dialog ref="editDefectDialog"  :project-id="projectId" :defect-id="planItem.defectId" @log="handleDefectLogAdded" />
+      <add-case ref="addCaseDialog" :module-id="planItem.moduleId" :append-to-body="true" @added="getPlanItemList" @close="initFloatMenu" />
+      <add-defect ref="addDefect" :project-id="projectId" :append-to-body="true" @added="handleAddedDefect" @close="initFloatMenu" />
+      <handle-defect ref="handleDefect" :project-id="projectId" :append-to-body="true" @change="handleAddedDefect" @delete="handleDeletedDefect" @close="initFloatMenu" />
     </div>
   </el-drawer>
 </template>
 
 <script>
 import Cat2BugLevel from "@/components/Cat2BugLevel";
+import Cat2BugAvatar from "@/components/Cat2BugAvatar";
 import Step from "@/views/system/case/components/step";
 import TreeModule from "@/components/Module/TreeModule";
 import FocusMemberList from "@/components/FocusMemberList";
 import AddCase from "@/components/Case/AddCase";
 import Cat2BugPreviewImage from "@/components/Cat2BugPreviewImage";
 import AddDefect from "@/components/Defect/AddDefect";
-import EditDefectDialog from "@/components/Defect/EditDefectDialog";
+import HandleDefect from "@/components/Defect/HandleDefect";
 import { Multipane, MultipaneResizer } from 'vue-multipane';
 import { getPlan } from "@/api/system/plan";
 import {listPlanItem, updatePlanItem} from "@/api/system/PlanItem";
 import {checkPermi} from "@/utils/permission";
 
 const TREE_MODULE_WIDTH_CACHE_KEY = 'plan_case_tree_module_width';
+/** 需要显示的测试用例字段列表在缓存的key值 */
+const PLAN_ITEM_TABLE_FIELD_LIST_CACHE_KEY='plan-item-table-field-list';
 
 export default {
   name: "AddPlanDialog",
   dicts: ['plan_item_state'],
-  components: { Cat2BugLevel,Step,TreeModule,Multipane,MultipaneResizer, FocusMemberList, Cat2BugPreviewImage, AddDefect, EditDefectDialog, AddCase },
+  components: { Cat2BugLevel,Step,TreeModule,Multipane,MultipaneResizer, FocusMemberList, Cat2BugPreviewImage, AddDefect, HandleDefect, AddCase, Cat2BugAvatar },
   data() {
     return {
       multipaneStyle: {'--marginTop':'0px'},
       treeModuleStyle: {'--treeModuleWidth':'300px'},
       // 遮罩层
       loading: true,
+      // 表格中可以显示的字段列表
+      checkedFieldList: [],
+      // 所有属性类型
+      fieldList: [],
       // 当前计划
       plan: {},
       planItem: {},
@@ -205,6 +242,21 @@ export default {
     }
   },
   computed: {
+    /** 字段是否显示 */
+    showField: function () {
+      return function (field) {
+        return this.checkedFieldList.filter(f=>f==field).length>0;
+      }
+    },
+    /** 成员结构 */
+    member: function () {
+      return function (planItem) {
+        return {
+          nickName: planItem.updateBy
+        }
+      }
+    },
+    /** 是否有通过权限 */
     hasPassPermi: function() {
       return function (item) {
         return checkPermi(['system:plan:edit']) && item.planItemState!='pass';
@@ -230,12 +282,41 @@ export default {
       }
     },
   },
+  watch: {
+    "$i18n.locale": function (newVal, oldVal) {
+      this.setFieldList();
+    },
+  },
+  created() {
+    // 设置缺陷列表显示哪些列属性
+    this.setFieldList();
+  },
   methods: {
     checkPermi,
     /** 初始化浮动菜单 */
     initFloatMenu() {
       this.$floatMenu.windowsInit(document.querySelector('.main-container'));
       this.$floatMenu.resetMenus([]);
+    },
+    /** 设置列表显示的属性字段 */
+    setFieldList() {
+      this.fieldList = [
+        'id','title','module','level', 'preconditions','expect','step','image','updateBy','update-time'
+      ];
+
+      const fieldList = this.$cache.local.get(PLAN_ITEM_TABLE_FIELD_LIST_CACHE_KEY);
+      if(fieldList) {
+        this.checkedFieldList = JSON.parse(fieldList);
+      } else {
+        this.checkedFieldList = [];
+        this.fieldList.forEach(f=>{
+          this.checkedFieldList.push(f);
+        });
+      }
+    },
+    /** 测试用例列表属性字段改变操作 */
+    checkedFieldListChange(field) {
+      this.$cache.local.set(PLAN_ITEM_TABLE_FIELD_LIST_CACHE_KEY,JSON.stringify(field));
     },
     /** 取消按钮 */
     cancel() {
@@ -314,10 +395,16 @@ export default {
       this.$refs.addDefect.openByCase(item);
       e.stopPropagation();
     },
-    handleOpenEditDefect(e, item) {
+    handleOpenHandleDefect(e, item) {
       this.planItem = item;
-      this.$refs.editDefectDialog.open(item.defectId);
+      this.$refs.handleDefect.open(item.defectId);
       e.stopPropagation();
+    },
+    /** 处理删除缺陷完成操作 */
+    handleDeletedDefect() {
+      this.handleAddedDefect({
+        defectId: null
+      })
     },
     /** 处理添加缺陷完成操作 */
     handleAddedDefect(defect) {
@@ -356,9 +443,29 @@ export default {
 }
 </style>
 <style lang="scss" scoped>
+.red {
+  color: #f56c6c;
+}
+.col {
+  display: flex;
+  flex-direction: column;
+}
+.row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  > * {
+    margin: 0px 5px 0px 0px;
+  }
+}
+.plan-item-field-divider {
+  margin: 8px 0px;
+}
 .custom-resizer {
   width: 100%;
   height: 100%;
+  padding-left: 10px;
+  padding-right: 10px;
 }
 .custom-resizer > .multipane-resizer {
   margin: 0; left: 0;
@@ -448,6 +555,11 @@ export default {
   }
 }
 .plan-item-query {
+  display: inline-flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
   .el-form-item {
     margin-bottom: 5px;
   }

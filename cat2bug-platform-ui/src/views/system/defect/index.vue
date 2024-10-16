@@ -327,8 +327,13 @@ export default {
     getDefectConfig() {
       configDefect().then(res=>{
         this.config = res.data;
-        // 获取选中的缺陷页签名称
-        if(this.config.tabs) {
+        // 如果页面传的参数有tab，代表有临时查询
+        if(this.$route.params.tab){
+          let tab = this.$route.params.tab;
+          this.config.tabs = this.config.tabs || [];
+          this.config.tabs.unshift(tab);
+          this.activeDefectTabName = tab.tabId+'';
+        } else if(this.config.tabs) {
           // 从本地缓存取激活的页标签名称
           this.activeDefectTabName = this.$cache.local.get(DEFECT_TAB_CACHE_KEY); // || ALL_TAB_NAME;
           // 查看所有页标签里是否保护激活页标签，如果没有，设置页标签为"全部"
@@ -361,6 +366,7 @@ export default {
     /** 搜索按钮操作 */
     handleQuery() {
       this.queryParams.pageNum = 1;
+      this.queryParams.pageSize = 10;
       this.handleRefreshQuery();
     },
     /** 搜索操作 */
@@ -425,6 +431,7 @@ export default {
     selectDefectTabHandle() {
       if(this.config && this.config.tabs) {
         let tab = this.config.tabs.find(t=>t.tabId==this.activeDefectTabName);
+        console.log('dd',this.config.tabs, tab)
         if(tab && tab.config) {
           tab.config.isAsc = 'desc';
           tab.config.orderByColumn = 'updateTime';

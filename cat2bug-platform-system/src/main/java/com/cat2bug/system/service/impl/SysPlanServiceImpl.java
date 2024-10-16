@@ -168,6 +168,8 @@ public class SysPlanServiceImpl implements ISysPlanService
             {
                 sysPlanItem.setPlanItemId(UUID.fastUUID().toString());
                 sysPlanItem.setPlanId(planId);
+                sysPlanItem.setUpdateById(SecurityUtils.getUserId());
+                sysPlanItem.setUpdateTime(DateUtils.getNowDate());
                 list.add(sysPlanItem);
             }
             if (list.size() > 0)

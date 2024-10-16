@@ -291,6 +291,7 @@
   "defect.manage": "缺陷管理",
   "defect.create": "新建缺陷",
   "defect.save": "保存缺陷",
+  "defect.handle": "操作缺陷",
   "defect.import": "导入缺陷",
   "defect.export": "导出缺陷",
   "defect.import-file-format": "仅允许导入{0}格式文件。",
@@ -449,6 +450,7 @@
   "case.add-ai-case-prompt": "添加需求",
   "case.new-ai-case-prompt": "开启新话题",
   "case.new-ai-case-prompt-alert": "开启新话题后,之前的需求查询逻辑将会清除,是否确认开启新话题?",
+  "case.go-defect-tab-name": "根据用例查询关联的【{0}】缺陷",
   "project.api.please-enter-name": "请输入API别名",
   "project.api.please-enter-white-list": "请输入白名单",
   "project.api.please-select-expire-time": "请选择有效时间",
@@ -676,6 +678,7 @@
   "notice.sound.immortal": "上仙消息来了",
   "notice.sound.teacher": "师傅有新消息",
   "notice.send-success": "发送成功",
+  "year-month-day": "{0}年{1}月{2}日",
   "year": "年",
   "month": "月",
   "week0": "星期日",
@@ -706,6 +709,8 @@
   "plan": "测试计划",
   "plan.run": "执行",
   "plan.create": "新建计划",
+  "plan.edit": "编辑计划",
+  "plan.save": "保存计划",
   "plan.name": "测试计划名称",
   "plan.version": "测试版本",
   "plan.time": "计划时间",
@@ -716,5 +721,8 @@
   "plan.run-time": "测试时间",
   "plan.enter-name": "请输入测试计划名称",
   "plan.enter-version": "请输入测试版本",
-  "plan.enter-item-state": "请选择测试状态"
+  "plan.enter-item-state": "请选择测试状态",
+  "plan.delete-prompt": "是否确认删除测试计划【{0}】的数据项？",
+  "plan.select-case": "选择计划测试的用例",
+  "plan.name-not-empty": "测试计划名称不能为空!"
 }

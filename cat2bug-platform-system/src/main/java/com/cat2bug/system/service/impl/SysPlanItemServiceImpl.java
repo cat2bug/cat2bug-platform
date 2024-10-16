@@ -2,6 +2,8 @@ package com.cat2bug.system.service.impl;
 
 import java.util.List;
 import com.cat2bug.common.utils.DateUtils;
+import com.cat2bug.common.utils.SecurityUtils;
+import com.cat2bug.common.utils.uuid.UUID;
 import com.cat2bug.system.domain.SysCase;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -59,6 +61,9 @@ public class SysPlanItemServiceImpl implements ISysPlanItemService
     @Override
     public int insertSysPlanItem(SysPlanItem sysPlanItem)
     {
+        sysPlanItem.setPlanItemId(UUID.fastUUID().toString());
+        sysPlanItem.setUpdateById(SecurityUtils.getUserId());
+        sysPlanItem.setUpdateTime(DateUtils.getNowDate());
         return sysPlanItemMapper.insertSysPlanItem(sysPlanItem);
     }
 
@@ -71,6 +76,7 @@ public class SysPlanItemServiceImpl implements ISysPlanItemService
     @Override
     public int updateSysPlanItem(SysPlanItem sysPlanItem)
     {
+        sysPlanItem.setUpdateById(SecurityUtils.getUserId());
         sysPlanItem.setUpdateTime(DateUtils.getNowDate());
         return sysPlanItemMapper.updateSysPlanItem(sysPlanItem);
     }

@@ -9,6 +9,7 @@
             :placeholder="$t('plan.enter-name')"
             prefix-icon="el-icon-files"
             clearable
+            size="small"
             @keyup.enter.native="handleQuery"
           />
         </el-form-item>
@@ -18,6 +19,7 @@
             :placeholder="$t('plan.enter-version')"
             prefix-icon="el-icon-discount"
             clearable
+            size="small"
             @keyup.enter.native="handleQuery"
           />
         </el-form-item>
@@ -28,8 +30,8 @@
           type="primary"
           plain
           icon="el-icon-plus"
-          size="mini"
           @click="handleAdd"
+          size="small"
           v-hasPermi="['system:plan:add']"
         >{{ $t('plan.create') }}</el-button>
       </div>
@@ -39,17 +41,16 @@
 <!--      <el-table-column type="selection" width="55" align="center" />-->
       <el-table-column :label="$t('plan.name')" align="center" prop="planName" />
       <el-table-column :label="$t('plan.version')" align="center" prop="planVersion" width="200"/>
-      <el-table-column :label="$t('plan.start-time')" align="center" prop="planStartTime" width="180">
+      <el-table-column :label="$t('plan.time')" align="center" prop="planStartTime" width="260">
         <template slot-scope="scope">
-          <span>{{ parseTime(scope.row.planStartTime, '{y}-{m}-{d}') }}</span>
+          <span>{{ parseTime(scope.row.planStartTime, strFormat($t('year-month-day'),'{y}','{m}','{d}')) }} {{ $t('time-to') }} {{ parseTime(scope.row.planEndTime, strFormat($t('year-month-day'),'{y}','{m}','{d}')) }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('plan.end-time')" align="center" prop="planEndTime" width="180">
+      <el-table-column :label="$t('updateBy')" align="center" prop="updateById" width="120">
         <template slot-scope="scope">
-          <span>{{ parseTime(scope.row.planEndTime, '{y}-{m}-{d}') }}</span>
+          <cat2-bug-avatar :member="member(scope.row)" />
         </template>
       </el-table-column>
-      <el-table-column :label="$t('updateBy')" align="center" prop="updateById" width="120" />
       <el-table-column :label="$t('updateTime')" align="center" prop="updateTime" width="180">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.updateTime, '{y}-{m}-{d}') }}</span>
@@ -82,6 +83,7 @@
           <el-button
             size="mini"
             type="text"
+            class="red"
             icon="el-icon-delete"
             @click="handleDelete(scope.row)"
             v-hasPermi="['system:plan:remove']"
@@ -105,15 +107,17 @@
 
 <script>
 import ProjectLabel from "@/components/Project/ProjectLabel";
+import Cat2BugAvatar from "@/components/Cat2BugAvatar";
 import { listPlan, delPlan } from "@/api/system/plan";
 import AddPlanDialog from "@/views/system/plan/AddPlanDialog";
 import HandlePlanDialog from "@/views/system/plan/HandlePlanDialog";
 import DictOptionDialog from "@/components/DictOptionDialog";
+import {strFormat} from "@/utils";
 
 export default {
   name: "Plan",
   dicts: ['plan_item_state'],
-  components:{ ProjectLabel, AddPlanDialog, HandlePlanDialog, DictOptionDialog },
+  components:{ ProjectLabel, AddPlanDialog, HandlePlanDialog, DictOptionDialog, Cat2BugAvatar },
   data() {
     return {
       // 遮罩层
@@ -152,6 +156,14 @@ export default {
     };
   },
   computed: {
+    // 成员结构
+    member: function () {
+      return function (plan) {
+        return {
+          nickName: plan.updateBy
+        }
+      }
+    },
     // 计划进度显示的内容
     planProcessContent: function () {
       return function (percentage) {
@@ -180,6 +192,7 @@ export default {
     this.$floatMenu.windowsDestory();
   },
   methods: {
+    strFormat,
     /** 初始化浮动菜单 */
     initFloatMenu() {
       this.$floatMenu.windowsInit(document.querySelector('.main-container'));
@@ -236,12 +249,11 @@ export default {
     },
     /** 删除按钮操作 */
     handleDelete(row) {
-      const planIds = row.planId || this.ids;
-      this.$modal.confirm('是否确认删除测试计划编号为"' + planIds + '"的数据项？').then(function() {
-        return delPlan(planIds);
+      this.$modal.confirm(strFormat(this.$i18n.t('plan.delete-prompt'), row.planName)).then(function() {
+        return delPlan(row.planId);
       }).then(() => {
         this.getList();
-        this.$modal.msgSuccess("删除成功");
+        this.$modal.msgSuccess(this.$i18n.t('delete.success'));
       }).catch(() => {});
     },
     /** 导出按钮操作 */
@@ -262,8 +274,11 @@ export default {
   width: 100%;
   display: inline-flex;
   flex-direction: row;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
+  .el-form-item {
+    margin-bottom: 10px;
+  }
 }
 .plan-progress {
   width: 100%;

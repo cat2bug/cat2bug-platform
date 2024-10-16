@@ -126,7 +126,7 @@
               <step :steps="scope.row.caseStep" />
             </template>
           </el-table-column>
-          <el-table-column v-if="showField('image')" :label="$t('image')" :key="$t('image')" align="left" prop="imgUrls">
+          <el-table-column v-if="showField('image')" :label="$t('image')" :key="$t('image')" align="center" prop="imgUrls" width="100">
             <template slot-scope="scope">
               <cat2-bug-preview-image :images="getUrl(scope.row.imgUrls)" />
             </template>

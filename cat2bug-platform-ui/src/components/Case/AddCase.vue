@@ -4,7 +4,8 @@
     :visible.sync="visible"
     direction="rtl"
     :append-to-body="appendToBody"
-    :before-close="closeDefectDrawer">
+    :before-close="closeDefectDrawer"
+    @closed="cancel">
     <template slot="title">
       <div class="case-add-header">
         <div class="case-add-title">

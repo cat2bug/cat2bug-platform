@@ -291,6 +291,7 @@
   "defect.manage": "Defect",
   "defect.create": "Create Defect",
   "defect.save": "Save Defect",
+  "defect.handle": "Defect",
   "defect.import": "Import Defect",
   "defect.export": "Export Defect",
   "defect.import-file-format": "Only {0} format files are allowed to be imported.",
@@ -449,6 +450,7 @@
   "case.add-ai-case-prompt": "Add Prompt",
   "case.new-ai-case-prompt": "Start A New Topic",
   "case.new-ai-case-prompt-alert": "After starting a new topic, the previous requirement query logic will be cleared. Are you sure to start a new topic?",
+  "case.go-defect-tab-name": "Query the associated [{0}] defects based on the use case",
   "project.api.please-enter-name": "Please enter the API name",
   "project.api.please-enter-white-list": "Please enter the whitelist",
   "project.api.please-select-expire-time": "Please select a valid time",
@@ -676,6 +678,7 @@
   "notice.sound.immortal": "Taoist has new news",
   "notice.sound.teacher": "Teacher has new news",
   "notice.send-success": "Send Success",
+  "year-month-day": "{0}-{1}-{2}",
   "year": "-",
   "month": "",
   "week0": "Sunday",
@@ -706,6 +709,8 @@
   "plan": "Test Plan",
   "plan.run": "Run",
   "plan.create": "Create Plan",
+  "plan.edit": "Edit Plan",
+  "plan.save": "Save Plan",
   "plan.name": "Plan Name",
   "plan.version": "Plan Version",
   "plan.time": "Plan Time",
@@ -716,5 +721,8 @@
   "plan.run-time": "Test Time",
   "plan.enter-name": "Please enter the plan name",
   "plan.enter-version": "Please enter the plan version",
-  "plan.enter-item-state": "Please select state"
+  "plan.enter-item-state": "Please select state",
+  "plan.delete-prompt": "Are you sure to delete the data item for test plan [{0}]?",
+  "plan.select-case": "Select test cases for planned testing",
+  "plan.name-not-empty": "The test plan name cannot be empty!"
 }

@@ -1,30 +1,30 @@
 <template>
   <!-- 添加或修改测试计划对话框 -->
-  <el-dialog :title="title" :visible.sync="open" width="80%" append-to-body @closed="cancel">
+  <el-dialog :title="$t(title)" :visible.sync="open" width="80%" append-to-body @closed="cancel">
     <el-form ref="form" :model="form" :rules="rules" label-width="120px">
-      <el-form-item label="测试计划名称" prop="planName">
-        <el-input v-model="form.planName" placeholder="请输入测试计划名称" maxlength="255" />
+      <el-form-item :label="$t('plan.name')" prop="planName">
+        <el-input v-model="form.planName" :placeholder="$t('plan.enter-name')" maxlength="255" />
       </el-form-item>
       <el-row>
         <el-col :span="12">
-          <el-form-item label="测试默认版本" prop="planVersion">
-            <el-input v-model="form.planVersion" placeholder="请输入测试默认版本" maxlength="255" />
+          <el-form-item :label="$t('plan.version')" prop="planVersion">
+            <el-input v-model="form.planVersion" :placeholder="$t('plan.enter-version')" maxlength="255" />
           </el-form-item>
         </el-col>
         <el-col :span="12">
-          <el-form-item label="计划开始时间" prop="planStartTime">
+          <el-form-item :label="$t('plan.time')" prop="planStartTime">
             <el-date-picker
               v-model="planTimeRang"
               type="daterange"
               value-format="yyyy-MM-dd"
-              range-separator="至"
-              start-placeholder="计划开始时间"
-              end-placeholder="计划结束时间">
+              :range-separator="$t('time-to')"
+              :start-placeholder="$t('plan.start-time')"
+              :end-placeholder="$t('plan.end-time')">
             </el-date-picker>
           </el-form-item>
         </el-col>
       </el-row>
-      <el-divider content-position="center">选择计划测试的用例</el-divider>
+      <el-divider content-position="center">{{ $t('plan.select-case') }}</el-divider>
       <!--    模块树和用例列表区域-->
       <multipane layout="vertical" ref="multiPane" class="custom-resizer" @pane-resize-start="dragStopHandle">
         <!--      树形模块选择组件-->
@@ -78,8 +78,8 @@
       </multipane>
     </el-form>
     <div slot="footer" class="dialog-footer">
-      <el-button type="primary" @click="submitForm">确 定</el-button>
-      <el-button @click="cancel">取 消</el-button>
+      <el-button type="primary" @click="submitForm">{{ $t('plan.save') }}</el-button>
+      <el-button @click="cancel">{{ $t('cancel') }}</el-button>
     </div>
   </el-dialog>
 </template>
@@ -137,7 +137,7 @@ export default {
       // 表单校验
       rules: {
         planName: [
-          { required: true, message: "测试计划名称不能为空", trigger: "change" }
+          { required: true, message: this.$i18n.t('plan.name-not-empty'), trigger: "blur" }
         ],
       },
       // 测试计划子项表格数据
@@ -244,7 +244,7 @@ export default {
     openAdd() {
       this.reset();
       this.open = true;
-      this.title = "添加测试计划";
+      this.title = "plan.create";
       this.getTreeModuleWidth();
       this.getCaseList();
       this.$nextTick(()=>{
@@ -263,7 +263,7 @@ export default {
           this.selectCaseIdSet = new Set(response.data.sysPlanItemList.map(i=>i.caseId));
         }
         this.open = true;
-        this.title = "修改测试计划";
+        this.title = "plan.edit";
       });
       this.getTreeModuleWidth();
       this.getCaseList();
@@ -282,13 +282,13 @@ export default {
           this.form.planEndTime = this.planTimeRang[1];
           if (this.form.planId != null) {
             updatePlan(this.form).then(response => {
-              this.$modal.msgSuccess("修改成功");
+              this.$modal.msgSuccess(this.$i18n.t('modify-success'));
               this.open = false;
               this.$emit('add', this.form);
             });
           } else {
             addPlan(this.form).then(response => {
-              this.$modal.msgSuccess("新增成功");
+              this.$modal.msgSuccess(this.$i18n.t('create-success'));
               this.open = false;
               this.$emit('update', this.form);
             });

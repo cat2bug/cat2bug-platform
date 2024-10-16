@@ -13,6 +13,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="createById"    column="create_by_id"    />
         <result property="createTime"    column="create_time"    />
         <result property="updateById"    column="update_by_id"    />
+        <result property="updateBy"    column="update_by"    />
         <result property="updateTime"    column="update_time"    />
         <result property="projectId"    column="project_id"    />
         <result property="reportId"    column="report_id"    />
@@ -48,10 +49,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             p.update_time,
             p.project_id,
             p.report_id,
+            u.nick_name as update_by,
             s.pass_count,
             s.item_total
         FROM
             sys_plan p
+            left join sys_user u ON u.user_id=p.update_by_id
                 LEFT JOIN ( SELECT plan_id, sum( CASE WHEN plan_item_state = 'pass' THEN 1 END ) AS pass_count, count( plan_item_id ) AS item_total FROM sys_plan_item pi2 GROUP BY plan_id ) s ON s.plan_id = p.plan_id
     </sql>
 
