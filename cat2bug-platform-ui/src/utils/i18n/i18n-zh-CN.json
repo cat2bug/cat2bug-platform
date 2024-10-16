@@ -724,5 +724,6 @@
   "plan.enter-item-state": "请选择测试状态",
   "plan.delete-prompt": "是否确认删除测试计划【{0}】的数据项？",
   "plan.select-case": "选择计划测试的用例",
-  "plan.name-not-empty": "测试计划名称不能为空!"
+  "plan.name-not-empty": "测试计划名称不能为空!",
+  "plan.pass-success": "执行通过操作成功"
 }

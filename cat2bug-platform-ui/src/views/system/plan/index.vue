@@ -150,13 +150,17 @@ export default {
         planEndTime: null,
         createById: null,
         updateById: null,
-        projectId: null,
+        projectId: this.projectId,
         reportId: null
       },
     };
   },
   computed: {
-    // 成员结构
+    /** 项目ID */
+    projectId: function () {
+      return parseInt(this.$store.state.user.config.currentProjectId);
+    },
+    /** 成员结构 */
     member: function () {
       return function (plan) {
         return {
@@ -164,13 +168,13 @@ export default {
         }
       }
     },
-    // 计划进度显示的内容
+    /** 计划进度显示的内容 */
     planProcessContent: function () {
       return function (percentage) {
         return '';
       }
     },
-    // 计划进度
+    /** 计划进度 */
     planProcessValue: function () {
       return function (plan) {
         if(plan.itemTotal>0) {
@@ -212,6 +216,7 @@ export default {
     getList() {
       this.loading = true;
       this.queryParams.params = {};
+      this.queryParams.projectId = this.projectId
       if (null != this.daterangePlanStartTime && '' != this.daterangePlanStartTime) {
         this.queryParams.params["beginPlanStartTime"] = this.daterangePlanStartTime[0];
         this.queryParams.params["endPlanStartTime"] = this.daterangePlanStartTime[1];

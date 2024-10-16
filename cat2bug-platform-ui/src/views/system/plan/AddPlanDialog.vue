@@ -214,7 +214,7 @@ export default {
         createTime: null,
         updateById: null,
         updateTime: null,
-        projectId: null,
+        projectId: this.projectId,
         reportId: null
       };
       this.caseQueryParams = {
@@ -278,6 +278,7 @@ export default {
               caseId: id
             }
           });
+          this.form.projectId = this.projectId;
           this.form.planStartTime = this.planTimeRang[0];
           this.form.planEndTime = this.planTimeRang[1];
           if (this.form.planId != null) {

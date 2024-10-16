@@ -724,5 +724,6 @@
   "plan.enter-item-state": "Please select state",
   "plan.delete-prompt": "Are you sure to delete the data item for test plan [{0}]?",
   "plan.select-case": "Select test cases for planned testing",
-  "plan.name-not-empty": "The test plan name cannot be empty!"
+  "plan.name-not-empty": "The test plan name cannot be empty!",
+  "plan.pass-success": "Successfully executed through operation"
 }
