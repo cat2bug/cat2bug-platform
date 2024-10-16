@@ -138,9 +138,9 @@
           </el-table-column>
           <el-table-column v-if="showField('defect.state')" :label="$t('defect.state')" align="left" prop="updateTime" width="150" sortable>
             <template slot-scope="scope">
-              <p class="table-font table-font-red">{{ $t('PENDING') }}:{{ scope.row.defectProcessingCount }}</p>
-              <p class="table-font table-font-orange">{{ $t('PROCESSING') }}:{{ scope.row.defectAuditCount }}</p>
-              <p class="table-font table-font-green">{{ $t('CLOSED') }}:{{ scope.row.defectCloseCount }}</p>
+              <p class="table-font table-font-red" @click="handleGoDefect(scope.row, $t('PENDING'),[0,3])">{{ $t('PENDING') }}:{{ scope.row.defectProcessingCount }}</p>
+              <p class="table-font table-font-orange" @click="handleGoDefect(scope.row, $t('PROCESSING'), [1])">{{ $t('PROCESSING') }}:{{ scope.row.defectAuditCount }}</p>
+              <p class="table-font table-font-green" @click="handleGoDefect(scope.row, $t('CLOSED'),[4])">{{ $t('CLOSED') }}:{{ scope.row.defectCloseCount }}</p>
             </template>
           </el-table-column>
           <el-table-column :label="$t('operate')" align="center" class-name="small-padding fixed-width" width="150">
@@ -383,6 +383,16 @@ export default {
         permissions: ['system:case:add'],
         click : this.handleImport
       },{
+        id: 'exportCase',
+        name: 'case.export',
+        visible: true,
+        plain: true,
+        type: 'info',
+        icon: 'export',
+        prompt: 'case.export',
+        permissions: ['system:case:add'],
+        click : this.handleExport
+      },{
         id: 'aiAddCase',
         name: 'case.ai-create',
         visible: true,
@@ -522,6 +532,20 @@ export default {
     // 提交上传文件
     submitFileForm() {
       this.$refs.upload.submit();
+    },
+    /** 跳转到缺陷页面 */
+    handleGoDefect(testCase,defectStateName, defectStateValues) {
+      this.$router.push({ name:'Defect', params: {
+        tab: {
+          tabId: new Date().getMilliseconds(),
+          tabName: strFormat(this.$i18n.t('case.go-defect-tab-name'), defectStateName),
+          config: {
+            caseId: testCase.caseId,
+            params: {
+              defectStates: defectStateValues
+            }
+          }
+        }}});
     }
   }
 };
