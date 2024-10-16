@@ -52,7 +52,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </resultMap>
 
     <sql id="selectSysPlanItemVo">
-        select pi.plan_item_id, pi.plan_id, pi.module_id, pi.case_id, pi.plan_item_state, pi.update_by_id, pi.update_time, pi.defect_id,
+        select pi.plan_item_id, pi.plan_id, c.module_id, pi.case_id, pi.plan_item_state, pi.update_by_id, pi.update_time, pi.defect_id,
                c.case_name, m.module_name, c.case_type, c.case_expect, c.case_step, c.case_level, c.case_preconditions, c.case_num, c.project_id, c.remark, c.img_urls
                from sys_plan_item pi
                    LEFT JOIN sys_case c on pi.case_id = c.case_id

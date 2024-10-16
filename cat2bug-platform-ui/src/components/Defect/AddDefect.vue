@@ -238,11 +238,11 @@ export default {
     /** 获取添加的表单本地缓存 */
     readAddFormCache() {
       const cacheForm = this.$cache.local.getJSON(FORM_CACHE_KEY)||{};
-      this.form.defectType = cacheForm.defectType;
-      this.form.defectLevel = cacheForm.defectLevel;
-      this.form.handleBy = cacheForm.handleBy;
-      this.form.moduleVersion = cacheForm.moduleVersion;
-      this.form.moduleId = cacheForm.moduleId;
+      this.form.defectType = this.form.defectType || cacheForm.defectType;
+      this.form.defectLevel = this.form.defectLevel || cacheForm.defectLevel;
+      this.form.handleBy = this.form.handleBy || cacheForm.handleBy;
+      this.form.moduleVersion = this.form.moduleVersion || cacheForm.moduleVersion;
+      this.form.moduleId = this.form.moduleId || cacheForm.moduleId;
     },
     /** 保存添加表单本地缓存 */
     saveAddFormCache() {
@@ -284,20 +284,15 @@ export default {
       })
     },
     open(data) {
-      this.reset();
-      if(data){
-        this.form.imgUrls = data.imgUrls||null
-      }
+      this.reset(data);
       this.visible = true;
       this.initFloatMenu();
       this.$nextTick(() => {
         this.$refs.cat2bugTextarea.focus();
       });
     },
-    openByCase(c) {
-      this.open();
-      this.form.caseId = c.caseId;
-      this.form.moduleId = c.moduleId;
+    openByCase(data) {
+      this.open(data);
     },
     // 取消按钮
     cancel(isReset) {
@@ -309,21 +304,22 @@ export default {
       this.$emit('close');
     },
     // 表单重置
-    reset() {
+    reset(data) {
       this.planTimeRange=[];
+      data = data || {};
       this.form = {
         defectId: null,
         defectType: null,
         defectName: null,
         defectDescribe: null,
         annexUrls: null,
-        imgUrls: null,
-        projectId: null,
+        imgUrls: data.imgUrls || null,
+        projectId: data.projectId || this.projectId,
         testPlanId: null,
-        caseId: null,
+        caseId: data.caseId || null,
         dataSources: null,
         dataSourcesParams: null,
-        moduleId: null,
+        moduleId: data.moduleId || null,
         moduleVersion: null,
         createBy: null,
         updateTime: null,
@@ -336,7 +332,6 @@ export default {
         defectLevel: 'middle'
       };
       this.resetForm("form");
-
       this.readIsSaveFormCacheValue();
       if(this.isSaveFormCache) {
         this.readAddFormCache();

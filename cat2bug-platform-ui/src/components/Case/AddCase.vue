@@ -3,6 +3,7 @@
     size="50%"
     :visible.sync="visible"
     direction="rtl"
+    :append-to-body="appendToBody"
     :before-close="closeDefectDrawer">
     <template slot="title">
       <div class="case-add-header">
@@ -120,6 +121,10 @@ export default {
     moduleId: {
       type: Number,
       default: null,
+    },
+    appendToBody: {
+      type: Boolean,
+      default: false
     }
   },
   watch: {

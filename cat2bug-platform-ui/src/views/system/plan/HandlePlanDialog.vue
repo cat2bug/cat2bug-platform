@@ -51,15 +51,16 @@
             </el-form>
           </div>
           <el-table ref="planItemTable" v-loading="loading" :data="planItemList" v-resize="setDragComponentSize">
-<!--            <el-table-column :label="$t('id')" align="left" prop="caseNum" width="80" sortable>-->
-<!--              <template slot-scope="scope">-->
-<!--                <span>{{ caseNumber(scope.row) }}</span>-->
-<!--              </template>-->
-<!--            </el-table-column>-->
+            <el-table-column :label="$t('id')" align="left" prop="caseNum" width="80" sortable>
+              <template slot-scope="scope">
+                <span>{{ caseNumber(scope.row) }}</span>
+              </template>
+            </el-table-column>
             <el-table-column :label="$t('title')" align="left" prop="caseName" sortable>
               <template slot-scope="scope">
                 <div class="table-case-title">
-                  <span>{{ scope.row.caseName }}</span>
+                  <el-link v-if="checkPermi(['system:case:edit'])" type="primary" @click="handleOpenEditCase(scope.row)">{{ scope.row.caseName }}</el-link>
+                  <span v-else>{{ scope.row.caseName }}</span>
                 </div>
               </template>
             </el-table-column>
@@ -128,6 +129,7 @@
           />
         </div>
       </multipane>
+      <add-case ref="addCaseDialog" :module-id="planItem.moduleId" :append-to-body="true" @added="getPlanItemList" />
       <add-defect ref="addDefect" :project-id="projectId" :append-to-body="true" @added="handleAddedDefect" />
       <edit-defect-dialog ref="editDefectDialog"  :project-id="projectId" :defect-id="planItem.defectId" @log="handleDefectLogAdded" />
     </div>
@@ -139,19 +141,21 @@ import Cat2BugLevel from "@/components/Cat2BugLevel";
 import Step from "@/views/system/case/components/step";
 import TreeModule from "@/components/Module/TreeModule";
 import FocusMemberList from "@/components/FocusMemberList";
+import AddCase from "@/components/Case/AddCase";
 import Cat2BugPreviewImage from "@/components/Cat2BugPreviewImage";
 import AddDefect from "@/components/Defect/AddDefect";
 import EditDefectDialog from "@/components/Defect/EditDefectDialog";
 import { Multipane, MultipaneResizer } from 'vue-multipane';
 import { getPlan } from "@/api/system/plan";
 import {listPlanItem, updatePlanItem} from "@/api/system/PlanItem";
+import {checkPermi} from "@/utils/permission";
 
 const TREE_MODULE_WIDTH_CACHE_KEY = 'plan_case_tree_module_width';
 
 export default {
   name: "AddPlanDialog",
   dicts: ['plan_item_state'],
-  components: { Cat2BugLevel,Step,TreeModule,Multipane,MultipaneResizer, FocusMemberList, Cat2BugPreviewImage, AddDefect, EditDefectDialog },
+  components: { Cat2BugLevel,Step,TreeModule,Multipane,MultipaneResizer, FocusMemberList, Cat2BugPreviewImage, AddDefect, EditDefectDialog, AddCase },
   data() {
     return {
       multipaneStyle: {'--marginTop':'0px'},
@@ -222,6 +226,7 @@ export default {
     },
   },
   methods: {
+    checkPermi,
     /** 取消按钮 */
     cancel() {
       this.visible = false;
@@ -322,6 +327,10 @@ export default {
       })
       this.$emit('log',log);
     },
+    /** 打开编辑用例窗口 */
+    handleOpenEditCase(planItem) {
+      this.$refs.addCaseDialog.open(planItem.caseId)
+    }
   }
 }
 </script>

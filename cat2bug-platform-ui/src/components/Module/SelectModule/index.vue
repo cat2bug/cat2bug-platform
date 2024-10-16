@@ -94,6 +94,7 @@ export default {
   watch: {
     moduleId: function (newVal, oldVal) {
       if(newVal!=oldVal) {
+        console.log(newVal,oldVal)
         if(newVal) {
           getModule(newVal).then(res=>{
             this.clickMenuHandle(res.data);

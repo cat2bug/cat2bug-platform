@@ -16,6 +16,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="updateTime"    column="update_time"    />
         <result property="projectId"    column="project_id"    />
         <result property="reportId"    column="report_id"    />
+        <result property="passCount"    column="pass_count"    />
+        <result property="itemTotal"    column="item_total"    />
     </resultMap>
 
     <resultMap id="SysPlanSysPlanItemResult" type="SysPlan" extends="SysPlanResult">
@@ -34,20 +36,36 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </resultMap>
 
     <sql id="selectSysPlanVo">
-        select plan_id, plan_name, plan_version, plan_start_time, plan_end_time, create_by_id, create_time, update_by_id, update_time, project_id, report_id from sys_plan
+        SELECT
+            p.plan_id,
+            p.plan_name,
+            p.plan_version,
+            p.plan_start_time,
+            p.plan_end_time,
+            p.create_by_id,
+            p.create_time,
+            p.update_by_id,
+            p.update_time,
+            p.project_id,
+            p.report_id,
+            s.pass_count,
+            s.item_total
+        FROM
+            sys_plan p
+                LEFT JOIN ( SELECT plan_id, sum( CASE WHEN plan_item_state = 'pass' THEN 1 END ) AS pass_count, count( plan_item_id ) AS item_total FROM sys_plan_item pi2 GROUP BY plan_id ) s ON s.plan_id = p.plan_id
     </sql>
 
     <select id="selectSysPlanList" parameterType="SysPlan" resultMap="SysPlanResult">
         <include refid="selectSysPlanVo"/>
         <where>  
-            <if test="planName != null  and planName != ''"> and plan_name like concat('%', #{planName}, '%')</if>
-            <if test="planVersion != null  and planVersion != ''"> and plan_version like concat('%', #{planVersion}, '%')</if>
+            <if test="planName != null  and planName != ''"> and p.plan_name like concat('%', #{planName}, '%')</if>
+            <if test="planVersion != null  and planVersion != ''"> and p.plan_version like concat('%', #{planVersion}, '%')</if>
             <if test="params.beginPlanStartTime != null and params.beginPlanStartTime != '' and params.endPlanStartTime != null and params.endPlanStartTime != ''"> and plan_start_time between #{params.beginPlanStartTime} and #{params.endPlanStartTime}</if>
             <if test="params.beginPlanEndTime != null and params.beginPlanEndTime != '' and params.endPlanEndTime != null and params.endPlanEndTime != ''"> and plan_end_time between #{params.beginPlanEndTime} and #{params.endPlanEndTime}</if>
-            <if test="createById != null "> and create_by_id = #{createById}</if>
-            <if test="updateById != null "> and update_by_id = #{updateById}</if>
-            <if test="projectId != null "> and project_id = #{projectId}</if>
-            <if test="reportId != null "> and report_id = #{reportId}</if>
+            <if test="createById != null "> and p.create_by_id = #{createById}</if>
+            <if test="updateById != null "> and p.update_by_id = #{updateById}</if>
+            <if test="projectId != null "> and p.project_id = #{projectId}</if>
+            <if test="reportId != null "> and p.report_id = #{reportId}</if>
         </where>
     </select>
     

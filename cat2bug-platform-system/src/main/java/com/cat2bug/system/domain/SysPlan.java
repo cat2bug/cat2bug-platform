@@ -3,6 +3,7 @@ package com.cat2bug.system.domain;
 import java.util.List;
 import java.util.Date;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.Data;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import com.cat2bug.common.annotation.Excel;
@@ -14,6 +15,7 @@ import com.cat2bug.common.core.domain.BaseEntity;
  * @author yuzhantao
  * @date 2024-10-11
  */
+@Data
 public class SysPlan extends BaseEntity
 {
     private static final long serialVersionUID = 1L;
@@ -57,97 +59,11 @@ public class SysPlan extends BaseEntity
     /** 测试计划子项信息 */
     private List<SysPlanItem> sysPlanItemList;
 
-    public void setPlanId(String planId) 
-    {
-        this.planId = planId;
-    }
+    /** 执行子项总数 */
+    private int itemTotal;
 
-    public String getPlanId() 
-    {
-        return planId;
-    }
-    public void setPlanName(String planName) 
-    {
-        this.planName = planName;
-    }
-
-    public String getPlanName() 
-    {
-        return planName;
-    }
-    public void setPlanVersion(String planVersion) 
-    {
-        this.planVersion = planVersion;
-    }
-
-    public String getPlanVersion() 
-    {
-        return planVersion;
-    }
-    public void setPlanStartTime(Date planStartTime) 
-    {
-        this.planStartTime = planStartTime;
-    }
-
-    public Date getPlanStartTime() 
-    {
-        return planStartTime;
-    }
-    public void setPlanEndTime(Date planEndTime) 
-    {
-        this.planEndTime = planEndTime;
-    }
-
-    public Date getPlanEndTime() 
-    {
-        return planEndTime;
-    }
-    public void setCreateById(Long createById) 
-    {
-        this.createById = createById;
-    }
-
-    public Long getCreateById() 
-    {
-        return createById;
-    }
-    public void setUpdateById(Long updateById) 
-    {
-        this.updateById = updateById;
-    }
-
-    public Long getUpdateById() 
-    {
-        return updateById;
-    }
-    public void setProjectId(Long projectId) 
-    {
-        this.projectId = projectId;
-    }
-
-    public Long getProjectId() 
-    {
-        return projectId;
-    }
-    public void setReportId(Long reportId) 
-    {
-        this.reportId = reportId;
-    }
-
-    public Long getReportId() 
-    {
-        return reportId;
-    }
-
-    public List<SysPlanItem> getSysPlanItemList()
-    {
-        return sysPlanItemList;
-    }
-
-    public void setSysPlanItemList(List<SysPlanItem> sysPlanItemList)
-    {
-        this.sysPlanItemList = sysPlanItemList;
-    }
+    /** 执行通过数量 */
+    private int passCount;
 
     @Override
     public String toString() {

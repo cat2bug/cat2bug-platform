@@ -38,7 +38,7 @@
     <el-table v-loading="loading" :data="planList">
 <!--      <el-table-column type="selection" width="55" align="center" />-->
       <el-table-column :label="$t('plan.name')" align="center" prop="planName" />
-      <el-table-column :label="$t('plan.version')" align="center" prop="planVersion" />
+      <el-table-column :label="$t('plan.version')" align="center" prop="planVersion" width="200"/>
       <el-table-column :label="$t('plan.start-time')" align="center" prop="planStartTime" width="180">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.planStartTime, '{y}-{m}-{d}') }}</span>
@@ -49,13 +49,21 @@
           <span>{{ parseTime(scope.row.planEndTime, '{y}-{m}-{d}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('updateBy')" align="center" prop="updateById" />
+      <el-table-column :label="$t('updateBy')" align="center" prop="updateById" width="120" />
       <el-table-column :label="$t('updateTime')" align="center" prop="updateTime" width="180">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.updateTime, '{y}-{m}-{d}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('operate')" align="center" class-name="small-padding fixed-width">
+      <el-table-column :label="$t('plan.process')" align="center" width="150">
+        <template slot-scope="scope">
+          <div class="plan-progress">
+            <el-progress :percentage="planProcessValue(scope.row)" :format="format"></el-progress>
+            <span>{{scope.row.passCount}}/{{scope.row.itemTotal}}</span>
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column :label="$t('operate')" align="center" class-name="small-padding fixed-width" width="200">
         <template slot-scope="scope">
           <el-button
             size="mini"
@@ -143,6 +151,18 @@ export default {
       },
     };
   },
+  computed: {
+    format: function () {
+      return function () {
+        return '';
+      }
+    },
+    planProcessValue: function () {
+      return function (plan) {
+        return parseInt(plan.passCount / plan.itemTotal * 100);
+      }
+    },
+  },
   created() {
     this.getList();
   },
@@ -216,5 +236,26 @@ export default {
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
+}
+.plan-progress {
+  width: 100%;
+  display: inline-flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  > .el-progress {
+    flex: 1;
+    ::v-deep .el-progress-bar {
+      display: inline-flex;
+      margin-right: 0px;
+      padding-right: 5px;
+      > .el-progress-bar__outer {
+        width: 100%;
+      }
+    }
+    ::v-deep .el-progress__text {
+      display: none;
+    }
+  }
 }
 </style>
