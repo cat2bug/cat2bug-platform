@@ -58,7 +58,7 @@
       <el-table-column :label="$t('plan.process')" align="center" width="150">
         <template slot-scope="scope">
           <div class="plan-progress">
-            <el-progress :percentage="planProcessValue(scope.row)" :format="format"></el-progress>
+            <el-progress :percentage="planProcessValue(scope.row)" :format="planProcessContent"></el-progress>
             <span>{{scope.row.passCount}}/{{scope.row.itemTotal}}</span>
           </div>
         </template>
@@ -97,8 +97,8 @@
       :limit.sync="queryParams.pageSize"
       @pagination="getList"
     />
-    <add-plan-dialog ref="planDialog" @add="getList" @update="getList" />
-    <handle-plan-dialog ref="handlePlanDialog" />
+    <add-plan-dialog ref="planDialog" @add="getList" @update="getList" @close="initFloatMenu" />
+    <handle-plan-dialog ref="handlePlanDialog" @change="getList" @close="initFloatMenu" />
     <dict-option-dialog ref="planItemState" title="测试状态管理" :dictType="dict.type.plan_item_state" />
   </div>
 </template>
@@ -152,21 +152,49 @@ export default {
     };
   },
   computed: {
-    format: function () {
-      return function () {
+    // 计划进度显示的内容
+    planProcessContent: function () {
+      return function (percentage) {
         return '';
       }
     },
+    // 计划进度
     planProcessValue: function () {
       return function (plan) {
-        return parseInt(plan.passCount / plan.itemTotal * 100);
+        if(plan.itemTotal>0) {
+          return parseInt(plan.passCount / plan.itemTotal * 100);
+        } else {
+          return 0;
+        }
       }
     },
   },
   created() {
     this.getList();
   },
+  mounted() {
+    this.initFloatMenu();
+  },
+  destroyed() {
+    // 移除滚动条监听
+    this.$floatMenu.windowsDestory();
+  },
   methods: {
+    /** 初始化浮动菜单 */
+    initFloatMenu() {
+      this.$floatMenu.windowsInit(document.querySelector('.main-container'));
+      this.$floatMenu.resetMenus([{
+        id: 'addPlan',
+        name: 'plan.create',
+        visible: true,
+        plain: true,
+        type: 'primary',
+        icon: 'add-tab',
+        prompt: 'plan.create',
+        permissions: ['system:plan:add'],
+        click : this.handleAdd
+      }]);
+    },
     /** 查询测试计划列表 */
     getList() {
       this.loading = true;

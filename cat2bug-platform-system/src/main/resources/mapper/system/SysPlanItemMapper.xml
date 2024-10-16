@@ -78,6 +78,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="params.beginUpdateTime != null and params.beginUpdateTime != '' and params.endUpdateTime != null and params.endUpdateTime != ''"> and pi.update_time between #{params.beginUpdateTime} and #{params.endUpdateTime}</if>
             <if test="defectId != null "> and pi.defect_id = #{defectId}</if>
         </where>
+        order by c.case_num DESC
     </select>
 
     <select id="selectCaseList" parameterType="SysCase" resultMap="SysCaseResult">
@@ -99,7 +100,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             </if>
             <if test="params !=null and params.planId != null and params.planId != ''"> and (pi.plan_id is null or pi.plan_id = #{params.planId})</if>
         </where>
-        ORDER BY c.update_time DESC
+        ORDER BY c.case_num DESC
     </select>
 
     <select id="selectSysPlanItemByPlanItemId" parameterType="String" resultMap="SysPlanItemResult">

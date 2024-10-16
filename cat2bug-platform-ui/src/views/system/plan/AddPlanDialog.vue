@@ -1,6 +1,6 @@
 <template>
   <!-- 添加或修改测试计划对话框 -->
-  <el-dialog :title="title" :visible.sync="open" width="80%" append-to-body>
+  <el-dialog :title="title" :visible.sync="open" width="80%" append-to-body @closed="cancel">
     <el-form ref="form" :model="form" :rules="rules" label-width="120px">
       <el-form-item label="测试计划名称" prop="planName">
         <el-input v-model="form.planName" placeholder="请输入测试计划名称" maxlength="255" />
@@ -192,6 +192,11 @@ export default {
     },
   },
   methods: {
+    /** 初始化浮动菜单 */
+    initFloatMenu() {
+      this.$floatMenu.windowsInit(document.querySelector('.main-container'));
+      this.$floatMenu.resetMenus([]);
+    },
     /** 表单重置 */
     reset() {
       this.selectCaseIdSet.clear();
@@ -233,6 +238,7 @@ export default {
     cancel() {
       this.open = false;
       this.reset();
+      this.$emit('close')
     },
     /** 新增按钮操作 */
     openAdd() {
@@ -243,6 +249,7 @@ export default {
       this.getCaseList();
       this.$nextTick(()=>{
         this.$refs.treeModuleRef.reloadData();
+        this.initFloatMenu();
       });
     },
     /** 修改按钮操作 */
@@ -260,6 +267,7 @@ export default {
       });
       this.getTreeModuleWidth();
       this.getCaseList();
+      this.initFloatMenu();
     },
     /** 提交按钮 */
     submitForm() {

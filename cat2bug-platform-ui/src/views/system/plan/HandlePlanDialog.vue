@@ -87,7 +87,7 @@
                 <span>{{ parseTime(scope.row.updateTime, '{y}-{m}-{d}') }}</span>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('operate')" align="center" class-name="small-padding fixed-width">
+            <el-table-column :label="$t('operate')" align="start" class-name="small-padding fixed-width">
               <template slot-scope="scope">
                 <el-button
                   v-if="scope.row.defectId"
@@ -114,7 +114,7 @@
                   type="text"
                   icon="el-icon-check"
                   @click="handlePlanItemState(scope.row, 'pass')"
-                  v-hasPermi="['system:plan:edit']"
+                  v-if="hasPassPermi(scope.row)"
                 >{{ $t('pass') }}</el-button>
               </template>
             </el-table-column>
@@ -205,6 +205,11 @@ export default {
     }
   },
   computed: {
+    hasPassPermi: function() {
+      return function (item) {
+        return checkPermi(['system:plan:edit']) && item.planItemState!='pass';
+      }
+    },
     /** 用于显示的用例编号 */
     caseNumber: function () {
       return function (val) {
@@ -227,9 +232,15 @@ export default {
   },
   methods: {
     checkPermi,
+    /** 初始化浮动菜单 */
+    initFloatMenu() {
+      this.$floatMenu.windowsInit(document.querySelector('.main-container'));
+      this.$floatMenu.resetMenus([]);
+    },
     /** 取消按钮 */
     cancel() {
       this.visible = false;
+      this.$emit('close');
     },
     /** 打开窗口 */
     open(planId) {
@@ -241,6 +252,9 @@ export default {
       });
       this.getTreeModuleWidth();
       this.getPlanItemList();
+      this.$nextTick(()=>{
+        this.initFloatMenu();
+      })
     },
     /** 查询测试用例列表 */
     getPlanItemList() {
@@ -291,6 +305,7 @@ export default {
       }
       updatePlanItem(data).then(res=>{
         this.getPlanItemList();
+        this.$emit('change');
       });
     },
     /** 处理打开新建缺陷窗口操作 */
@@ -313,6 +328,7 @@ export default {
       }
       updatePlanItem(data).then(res=>{
         this.getPlanItemList();
+        this.$emit('change');
       })
     },
     /** 处理缺陷日志添加完成操作 */
@@ -324,8 +340,8 @@ export default {
       }
       updatePlanItem(data).then(res=>{
         this.getPlanItemList();
-      })
-      this.$emit('log',log);
+        this.$emit('change');
+      });
     },
     /** 打开编辑用例窗口 */
     handleOpenEditCase(planItem) {

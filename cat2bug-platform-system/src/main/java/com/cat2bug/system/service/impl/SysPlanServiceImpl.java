@@ -104,7 +104,9 @@ public class SysPlanServiceImpl implements ISysPlanService
         ).map(i->i.getPlanItemId()).collect(Collectors.toList()).toArray(new String[]{});
 
         // 删除子项
-        sysPlanItemMapper.deleteSysPlanItemByPlanItemIds(removeItems);
+        if(removeItems.length>0) {
+            sysPlanItemMapper.deleteSysPlanItemByPlanItemIds(removeItems);
+        }
 
         // 计算添加的子项
         List<SysPlanItem> addItemList = sysPlan.getSysPlanItemList().stream().filter(i->
@@ -113,8 +115,10 @@ public class SysPlanServiceImpl implements ISysPlanService
                         noneMatch(id->id==i.getCaseId())
         ).collect(Collectors.toList());
         // 添加新子项
-        sysPlan.setSysPlanItemList(addItemList);
-        insertSysPlanItem(sysPlan);
+        if(addItemList.size()>0) {
+            sysPlan.setSysPlanItemList(addItemList);
+            insertSysPlanItem(sysPlan);
+        }
 
         // 更新计划
         return sysPlanMapper.updateSysPlan(sysPlan);
