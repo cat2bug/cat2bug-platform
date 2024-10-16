@@ -58,11 +58,11 @@
         </dependency>
 
         <!-- 内嵌redis-->
-        <dependency>
-            <groupId>com.github.kstyrc</groupId>
-            <artifactId>embedded-redis</artifactId>
-            <version>0.6</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.github.kstyrc</groupId>-->
+<!--            <artifactId>embedded-redis</artifactId>-->
+<!--            <version>0.6</version>-->
+<!--        </dependency>-->
 
         <!-- 系统模块-->
         <dependency>
