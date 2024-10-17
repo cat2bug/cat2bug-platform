@@ -11,7 +11,7 @@
  Target Server Version : 80200
  File Encoding         : 65001
 
- Date: 15/10/2024 21:38:57
+ Date: 18/10/2024 05:03:31
 */
 
 SET NAMES utf8mb4;
@@ -43,7 +43,7 @@ CREATE TABLE `gen_table` (
   `update_time` datetime DEFAULT NULL COMMENT '更新时间',
   `remark` varchar(500) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '备注',
   PRIMARY KEY (`table_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='代码生成业务表';
+) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='代码生成业务表';
 
 -- ----------------------------
 -- Records of gen_table
@@ -71,6 +71,7 @@ INSERT INTO `gen_table` (`table_id`, `table_name`, `table_comment`, `sub_table_n
 INSERT INTO `gen_table` (`table_id`, `table_name`, `table_comment`, `sub_table_name`, `sub_table_fk_name`, `class_name`, `tpl_category`, `package_name`, `module_name`, `business_name`, `function_name`, `function_author`, `gen_type`, `gen_path`, `options`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`) VALUES (25, 'im_project_config', '项目通知配置', NULL, NULL, 'ImProjectConfig', 'crud', 'com.cat2bug.im', 'im', 'config', '项目通知配置', 'yuzhantao', '0', '/', '{}', 'admin', '2024-07-26 16:49:18', '', '2024-07-26 16:50:32', NULL);
 INSERT INTO `gen_table` (`table_id`, `table_name`, `table_comment`, `sub_table_name`, `sub_table_fk_name`, `class_name`, `tpl_category`, `package_name`, `module_name`, `business_name`, `function_name`, `function_author`, `gen_type`, `gen_path`, `options`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`) VALUES (26, 'sys_plan', '测试计划', 'sys_plan_item', 'plan_id', 'SysPlan', 'sub', 'com.cat2bug.system', 'system', 'plan', '测试计划', 'yuzhantao', '0', '/', '{\"parentMenuId\":2013}', 'admin', '2024-10-11 00:22:59', '', '2024-10-11 00:26:52', NULL);
 INSERT INTO `gen_table` (`table_id`, `table_name`, `table_comment`, `sub_table_name`, `sub_table_fk_name`, `class_name`, `tpl_category`, `package_name`, `module_name`, `business_name`, `function_name`, `function_author`, `gen_type`, `gen_path`, `options`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`) VALUES (27, 'sys_plan_item', '测试计划子项', NULL, NULL, 'SysPlanItem', 'crud', 'com.cat2bug.system', 'system', 'PlanItem', '测试计划子项', 'yuzhantao', '0', '/', '{\"parentMenuId\":2013}', 'admin', '2024-10-11 00:22:59', '', '2024-10-11 00:34:25', NULL);
+INSERT INTO `gen_table` (`table_id`, `table_name`, `table_comment`, `sub_table_name`, `sub_table_fk_name`, `class_name`, `tpl_category`, `package_name`, `module_name`, `business_name`, `function_name`, `function_author`, `gen_type`, `gen_path`, `options`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`) VALUES (28, 'sys_case_prompt', '测试用例提示词', NULL, NULL, 'SysCasePrompt', 'crud', 'com.cat2bug.system', 'system', 'CasePrompt', '测试用例提示词', 'yuzhantao', '0', '/', '{}', 'admin', '2024-10-15 23:08:03', '', '2024-10-15 23:10:49', NULL);
 COMMIT;
 
 -- ----------------------------
@@ -101,7 +102,7 @@ CREATE TABLE `gen_table_column` (
   `update_by` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '更新者',
   `update_time` datetime DEFAULT NULL COMMENT '更新时间',
   PRIMARY KEY (`column_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=209 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='代码生成业务表字段';
+) ENGINE=InnoDB AUTO_INCREMENT=214 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='代码生成业务表字段';
 
 -- ----------------------------
 -- Records of gen_table_column
@@ -270,6 +271,11 @@ INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_
 INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`, `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`, `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`, `html_type`, `dict_type`, `sort`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (206, 27, 'update_by_id', '更新人', 'bigint', 'Long', 'updateById', '0', '0', NULL, '1', '1', '1', '1', 'EQ', 'input', '', 6, 'admin', '2024-10-11 00:22:59', '', '2024-10-11 00:34:25');
 INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`, `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`, `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`, `html_type`, `dict_type`, `sort`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (207, 27, 'update_time', '更新时间', 'datetime', 'Date', 'updateTime', '0', '0', NULL, '1', '1', '1', '1', 'BETWEEN', 'datetime', '', 7, 'admin', '2024-10-11 00:22:59', '', '2024-10-11 00:34:25');
 INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`, `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`, `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`, `html_type`, `dict_type`, `sort`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (208, 27, 'defect_id', '缺陷', 'bigint', 'Long', 'defectId', '0', '0', NULL, '1', '1', '1', '1', 'EQ', 'input', '', 8, 'admin', '2024-10-11 00:22:59', '', '2024-10-11 00:34:25');
+INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`, `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`, `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`, `html_type`, `dict_type`, `sort`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (209, 28, 'case_prompt_id', '测试用例提示词ID', 'varchar(36)', 'String', 'casePromptId', '1', '0', NULL, '1', NULL, NULL, NULL, 'EQ', 'input', '', 1, 'admin', '2024-10-15 23:08:03', '', '2024-10-15 23:10:49');
+INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`, `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`, `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`, `html_type`, `dict_type`, `sort`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (210, 28, 'case_prompt_content', '提示词内容', 'text', 'String', 'casePromptContent', '0', '0', '1', '1', '1', '1', '1', 'LIKE', 'editor', '', 2, 'admin', '2024-10-15 23:08:03', '', '2024-10-15 23:10:49');
+INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`, `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`, `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`, `html_type`, `dict_type`, `sort`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (211, 28, 'project_id', '项目ID', 'bigint', 'Long', 'projectId', '0', '0', '1', '1', '1', '0', '1', 'EQ', 'input', '', 3, 'admin', '2024-10-15 23:08:03', '', '2024-10-15 23:10:49');
+INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`, `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`, `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`, `html_type`, `dict_type`, `sort`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (212, 28, 'create_by_id', '创建人ID', 'bigint', 'Long', 'createById', '0', '0', NULL, '1', '1', '1', '1', 'EQ', 'input', '', 4, 'admin', '2024-10-15 23:08:03', '', '2024-10-15 23:10:49');
+INSERT INTO `gen_table_column` (`column_id`, `table_id`, `column_name`, `column_comment`, `column_type`, `java_type`, `java_field`, `is_pk`, `is_increment`, `is_required`, `is_insert`, `is_edit`, `is_list`, `is_query`, `query_type`, `html_type`, `dict_type`, `sort`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (213, 28, 'create_time', '创建时间', 'datetime', 'Date', 'createTime', '0', '0', NULL, '1', NULL, '1', NULL, 'EQ', 'datetime', '', 5, 'admin', '2024-10-15 23:08:03', '', '2024-10-15 23:10:49');
 COMMIT;
 
 -- ----------------------------
@@ -600,10 +606,31 @@ CREATE TABLE `sys_case` (
   PRIMARY KEY (`case_id`),
   UNIQUE KEY `id_num_` (`case_id`,`case_num`),
   KEY `project_id_case_name` (`case_name`,`project_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7292 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_bin COMMENT='测试用例表';
+) ENGINE=InnoDB AUTO_INCREMENT=7293 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_bin COMMENT='测试用例表';
 
 -- ----------------------------
 -- Records of sys_case
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Table structure for sys_case_prompt
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_case_prompt`;
+CREATE TABLE `sys_case_prompt` (
+  `case_prompt_id` varchar(36) COLLATE utf8mb4_general_ci NOT NULL COMMENT '测试用例提示词ID',
+  `case_prompt_content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '测试用例提示词内容',
+  `project_id` bigint NOT NULL COMMENT '项目ID',
+  `create_by_id` bigint DEFAULT NULL COMMENT '创建人ID',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  PRIMARY KEY (`case_prompt_id`),
+  KEY `project_id_` (`project_id`),
+  FULLTEXT KEY `content_` (`case_prompt_content`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='测试用例提示词';
+
+-- ----------------------------
+-- Records of sys_case_prompt
 -- ----------------------------
 BEGIN;
 COMMIT;
@@ -678,7 +705,7 @@ CREATE TABLE `sys_db_version` (
   `success` tinyint(1) NOT NULL,
   PRIMARY KEY (`installed_rank`),
   KEY `sys_db_version_s_idx` (`success`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COMMENT='系统版本管理';
 
 -- ----------------------------
 -- Records of sys_db_version
@@ -728,7 +755,7 @@ CREATE TABLE `sys_defect` (
   KEY `defect_key` (`defect_key`),
   KEY `defect_group_key` (`defect_group_key`),
   KEY `project_id_` (`project_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1017 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='缺陷表';
+) ENGINE=InnoDB AUTO_INCREMENT=1043 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='缺陷表';
 
 -- ----------------------------
 -- Records of sys_defect
@@ -751,7 +778,7 @@ CREATE TABLE `sys_defect_log` (
   `defect_id` bigint NOT NULL COMMENT '缺陷id',
   PRIMARY KEY (`defect_log_id`),
   KEY `defect_id_` (`defect_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=14201 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='缺陷日志表';
+) ENGINE=InnoDB AUTO_INCREMENT=14230 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='缺陷日志表';
 
 -- ----------------------------
 -- Records of sys_defect_log
@@ -831,7 +858,7 @@ CREATE TABLE `sys_dict_data` (
   `update_time` datetime DEFAULT NULL COMMENT '更新时间',
   `remark` varchar(500) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '备注',
   PRIMARY KEY (`dict_code`)
-) ENGINE=InnoDB AUTO_INCREMENT=36 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='字典数据表';
+) ENGINE=InnoDB AUTO_INCREMENT=37 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='字典数据表';
 
 -- ----------------------------
 -- Records of sys_dict_data
@@ -871,7 +898,8 @@ INSERT INTO `sys_dict_data` (`dict_code`, `dict_sort`, `dict_label`, `dict_value
 INSERT INTO `sys_dict_data` (`dict_code`, `dict_sort`, `dict_label`, `dict_value`, `dict_type`, `css_class`, `list_class`, `is_default`, `status`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`) VALUES (32, 2, '中', 'middle', 'defect_level', NULL, 'default', 'N', '0', 'admin', '2024-01-08 17:51:15', '', NULL, NULL);
 INSERT INTO `sys_dict_data` (`dict_code`, `dict_sort`, `dict_label`, `dict_value`, `dict_type`, `css_class`, `list_class`, `is_default`, `status`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`) VALUES (33, 3, '低', 'low', 'defect_level', NULL, 'default', 'N', '0', 'admin', '2024-01-08 17:51:28', '', NULL, NULL);
 INSERT INTO `sys_dict_data` (`dict_code`, `dict_sort`, `dict_label`, `dict_value`, `dict_type`, `css_class`, `list_class`, `is_default`, `status`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`) VALUES (34, 0, '通过', 'pass', 'plan_item_state', 'color: green', 'default', 'N', '0', 'admin', '2024-10-11 00:30:08', 'admin', '2024-10-15 01:41:46', NULL);
-INSERT INTO `sys_dict_data` (`dict_code`, `dict_sort`, `dict_label`, `dict_value`, `dict_type`, `css_class`, `list_class`, `is_default`, `status`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`) VALUES (35, 1, '失败', 'fail', 'plan_item_state', NULL, 'danger', 'N', '0', 'admin', '2024-10-15 01:41:24', '', NULL, NULL);
+INSERT INTO `sys_dict_data` (`dict_code`, `dict_sort`, `dict_label`, `dict_value`, `dict_type`, `css_class`, `list_class`, `is_default`, `status`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`) VALUES (35, 1, '未通过', 'fail', 'plan_item_state', NULL, 'danger', 'N', '0', 'admin', '2024-10-15 01:41:24', '', NULL, NULL);
+INSERT INTO `sys_dict_data` (`dict_code`, `dict_sort`, `dict_label`, `dict_value`, `dict_type`, `css_class`, `list_class`, `is_default`, `status`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`) VALUES (36, 2, '未执行', 'unexecuted', 'plan_item_state', NULL, 'info', 'N', '0', 'admin', '2024-10-18 03:24:37', '', NULL, NULL);
 COMMIT;
 
 -- ----------------------------
@@ -1003,12 +1031,13 @@ CREATE TABLE `sys_logininfor` (
   PRIMARY KEY (`info_id`),
   KEY `idx_sys_logininfor_s` (`status`),
   KEY `idx_sys_logininfor_lt` (`login_time`)
-) ENGINE=InnoDB AUTO_INCREMENT=1376 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='系统访问记录';
+) ENGINE=InnoDB AUTO_INCREMENT=1422 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='系统访问记录';
 
 -- ----------------------------
 -- Records of sys_logininfor
 -- ----------------------------
 BEGIN;
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (1421, 'demo', '127.0.0.1', '内网IP', 'Safari', 'Mac OS X', '0', '退出成功', '2024-10-18 05:02:33');
 COMMIT;
 
 -- ----------------------------
@@ -1249,6 +1278,14 @@ CREATE TABLE `sys_module` (
 -- Records of sys_module
 -- ----------------------------
 BEGIN;
+INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`) VALUES (322, '登陆', NULL, 50, 0);
+INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`) VALUES (323, '首页', NULL, 50, 0);
+INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`) VALUES (324, '测试用例', NULL, 50, 0);
+INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`) VALUES (325, '手动', NULL, 50, 324);
+INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`) VALUES (326, 'AI', NULL, 50, 324);
+INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`) VALUES (327, '远程', NULL, 50, 326);
+INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`) VALUES (328, '本地', NULL, 50, 326);
+INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`) VALUES (329, '1232', NULL, 50, 0);
 COMMIT;
 
 -- ----------------------------
@@ -1307,7 +1344,7 @@ CREATE TABLE `sys_oper_log` (
   KEY `idx_sys_oper_log_bt` (`business_type`),
   KEY `idx_sys_oper_log_s` (`status`),
   KEY `idx_sys_oper_log_ot` (`oper_time`)
-) ENGINE=InnoDB AUTO_INCREMENT=17794 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='操作日志记录';
+) ENGINE=InnoDB AUTO_INCREMENT=18145 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='操作日志记录';
 
 -- ----------------------------
 -- Records of sys_oper_log
@@ -1332,7 +1369,8 @@ CREATE TABLE `sys_plan` (
   `project_id` bigint DEFAULT NULL COMMENT '项目ID',
   `report_id` bigint DEFAULT NULL COMMENT '报告ID',
   PRIMARY KEY (`plan_id`) USING BTREE,
-  KEY `project_id_` (`project_id`)
+  KEY `project_id_` (`project_id`),
+  KEY `user_id_` (`update_by_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='测试计划';
 
 -- ----------------------------
@@ -1353,7 +1391,7 @@ CREATE TABLE `sys_plan_item` (
   `plan_item_state` varchar(12) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '计划子项状态',
   `update_by_id` bigint DEFAULT NULL COMMENT '更新人ID',
   `update_time` datetime DEFAULT NULL COMMENT '更新时间',
-  `defect_id` bigint DEFAULT NULL COMMENT '缺陷ID',
+  `defect_ids` varchar(10000) COLLATE utf8mb3_bin DEFAULT NULL COMMENT '缺陷ID',
   PRIMARY KEY (`plan_item_id`),
   KEY `module_plan_state_` (`plan_id`,`module_id`,`plan_item_state`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='测试计划子项';
@@ -1452,7 +1490,7 @@ CREATE TABLE `sys_project_defect_tabs` (
   `create_time` datetime DEFAULT NULL COMMENT '创建时间',
   PRIMARY KEY (`tab_id`),
   KEY `user_id_` (`project_id`,`user_id`) COMMENT '查询用户所在项目的Tab配置'
-) ENGINE=InnoDB AUTO_INCREMENT=146 DEFAULT CHARSET=utf8mb3 COMMENT='项目缺陷页签配置';
+) ENGINE=InnoDB AUTO_INCREMENT=147 DEFAULT CHARSET=utf8mb3 COMMENT='项目缺陷页签配置';
 
 -- ----------------------------
 -- Records of sys_project_defect_tabs
@@ -2294,7 +2332,7 @@ CREATE TABLE `sys_user` (
 -- Records of sys_user
 -- ----------------------------
 BEGIN;
-INSERT INTO `sys_user` (`user_id`, `dept_id`, `user_name`, `nick_name`, `user_type`, `email`, `phonenumber`, `sex`, `avatar`, `password`, `status`, `del_flag`, `login_ip`, `login_date`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `ding_user_id`, `wechat_user_id`) VALUES (1, 00000000000000000000, 'admin', '黑猫警长', '00', 'admin@cat2bug.com', '18888888888', '0', '', '$2a$10$/YbsRyezA9pg13iJhCNE.u5yOvWbuq7NZhOlliUvycEfBIgJN6qHK', '0', '0', '127.0.0.1', '2024-10-15 02:05:22', 'admin', '2023-11-12 15:34:51', '', '2024-10-15 02:05:22', '管理员', NULL, NULL);
+INSERT INTO `sys_user` (`user_id`, `dept_id`, `user_name`, `nick_name`, `user_type`, `email`, `phonenumber`, `sex`, `avatar`, `password`, `status`, `del_flag`, `login_ip`, `login_date`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `ding_user_id`, `wechat_user_id`) VALUES (1, 00000000000000000000, 'admin', '黑猫警长', '00', 'admin@cat2bug.com', '18888888888', '0', '', '$2a$10$/YbsRyezA9pg13iJhCNE.u5yOvWbuq7NZhOlliUvycEfBIgJN6qHK', '0', '0', '127.0.0.1', '2024-10-17 00:51:15', 'admin', '2023-11-12 15:34:51', '', '2024-10-17 00:51:14', '管理员', NULL, NULL);
 COMMIT;
 
 -- ----------------------------
@@ -2442,7 +2480,7 @@ CREATE TABLE `sys_user_statistic_template` (
   `statistic_templat_config` json DEFAULT NULL COMMENT '统计模版配置',
   PRIMARY KEY (`statistic_template_id`),
   UNIQUE KEY `type_project_user_` (`module_type`,`project_id`,`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=153 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_bin COMMENT='用户统计模版';
+) ENGINE=InnoDB AUTO_INCREMENT=154 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_bin COMMENT='用户统计模版';
 
 -- ----------------------------
 -- Records of sys_user_statistic_template
