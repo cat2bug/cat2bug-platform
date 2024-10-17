@@ -301,7 +301,7 @@ export default {
     /** 设置列表显示的属性字段 */
     setFieldList() {
       this.fieldList = [
-        'id','title','module','level', 'preconditions','expect','step','image','updateBy','update-time'
+        'id','title','module','level', 'preconditions','expect','step','image','state', 'updateBy','update-time'
       ];
 
       const fieldList = this.$cache.local.get(PLAN_ITEM_TABLE_FIELD_LIST_CACHE_KEY);
