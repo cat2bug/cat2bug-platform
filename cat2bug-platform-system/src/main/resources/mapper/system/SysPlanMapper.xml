@@ -18,6 +18,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="projectId"    column="project_id"    />
         <result property="reportId"    column="report_id"    />
         <result property="passCount"    column="pass_count"    />
+        <result property="failCount"    column="fail_count"    />
         <result property="itemTotal"    column="item_total"    />
     </resultMap>
 
@@ -33,7 +34,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="planItemState"    column="sub_plan_item_state"    />
         <result property="updateById"    column="sub_update_by_id"    />
         <result property="updateTime"    column="sub_update_time"    />
-        <result property="defectId"    column="sub_defect_id"    />
+        <result property="defectIds"    column="sub_defect_ids"  typeHandler="com.cat2bug.system.domain.handle.LongArrayTypeHandle"   />
     </resultMap>
 
     <sql id="selectSysPlanVo">
@@ -51,11 +52,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             p.report_id,
             u.nick_name as update_by,
             s.pass_count,
+            s.fail_count,
             s.item_total
         FROM
             sys_plan p
             left join sys_user u ON u.user_id=p.update_by_id
-                LEFT JOIN ( SELECT plan_id, sum( CASE WHEN plan_item_state = 'pass' THEN 1 END ) AS pass_count, count( plan_item_id ) AS item_total FROM sys_plan_item pi2 GROUP BY plan_id ) s ON s.plan_id = p.plan_id
+                LEFT JOIN ( SELECT plan_id, sum( CASE WHEN plan_item_state = 'pass' THEN 1 END ) AS pass_count, sum( CASE WHEN plan_item_state = 'fail' THEN 1 END ) AS fail_count, count( plan_item_id ) AS item_total FROM sys_plan_item pi2 GROUP BY plan_id ) s ON s.plan_id = p.plan_id
     </sql>
 
     <select id="selectSysPlanList" parameterType="SysPlan" resultMap="SysPlanResult">
@@ -70,11 +72,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="projectId != null "> and p.project_id = #{projectId}</if>
             <if test="reportId != null "> and p.report_id = #{reportId}</if>
         </where>
+        order by create_time desc
     </select>
     
     <select id="selectSysPlanByPlanId" parameterType="String" resultMap="SysPlanSysPlanItemResult">
         select a.plan_id, a.plan_name, a.plan_version, a.plan_start_time, a.plan_end_time, a.create_by_id, a.create_time, a.update_by_id, a.update_time, a.project_id, a.report_id,
- b.plan_item_id as sub_plan_item_id, b.plan_id as sub_plan_id, b.module_id as sub_module_id, b.case_id as sub_case_id, b.plan_item_state as sub_plan_item_state, b.update_by_id as sub_update_by_id, b.update_time as sub_update_time, b.defect_id as sub_defect_id
+ b.plan_item_id as sub_plan_item_id, b.plan_id as sub_plan_id, b.module_id as sub_module_id, b.case_id as sub_case_id, b.plan_item_state as sub_plan_item_state, b.update_by_id as sub_update_by_id, b.update_time as sub_update_time, b.defect_ids as sub_defect_id
         from sys_plan a
         left join sys_plan_item b on b.plan_id = a.plan_id
         where a.plan_id = #{planId}
@@ -150,9 +153,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </delete>
 
     <insert id="batchSysPlanItem">
-        insert into sys_plan_item( plan_item_id, plan_id, module_id, case_id, plan_item_state, update_by_id, update_time, defect_id) values
+        insert into sys_plan_item( plan_item_id, plan_id, module_id, case_id, plan_item_state, update_by_id, update_time, defect_ids) values
 		<foreach item="item" index="index" collection="list" separator=",">
-            ( #{item.planItemId}, #{item.planId}, #{item.moduleId}, #{item.caseId}, #{item.planItemState}, #{item.updateById}, #{item.updateTime}, #{item.defectId})
+            ( #{item.planItemId}, #{item.planId}, #{item.moduleId}, #{item.caseId}, #{item.planItemState}, #{item.updateById}, #{item.updateTime}, #{item.defectIds, typeHandler=com.cat2bug.system.domain.handle.LongArrayTypeHandle})
         </foreach>
     </insert>
 </mapper>

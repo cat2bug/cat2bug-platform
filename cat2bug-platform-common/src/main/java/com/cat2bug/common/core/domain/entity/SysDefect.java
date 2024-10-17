@@ -47,6 +47,10 @@ public class SysDefect extends BaseEntity
     @Excel(name = "标题",width = 100)
     private String defectName;
 
+    /** 缺陷描述 */
+    @Excel(name = "描述",width = 100)
+    private String defectDescribe;
+
     /** 缺陷等级 */
     @Excel(name = "严重程度", handler = com.cat2bug.common.core.domain.excel.DefectLevelHandler.class, comboHandler = com.cat2bug.common.core.domain.excel.DefectLevelComboHandlerAdapter.class)
     private String defectLevel;
@@ -116,10 +120,6 @@ public class SysDefect extends BaseEntity
     @Excel(name = "附件", width = 100,handler = com.cat2bug.common.core.domain.excel.UrlListHandler.class, type = Excel.Type.EXPORT)
     private String annexUrls;
     private String annexList;
-
-    /** 缺陷描述 */
-    @Excel(name = "描述",width = 100)
-    private String defectDescribe;
 
     /** 项目id */
     private Long projectId;

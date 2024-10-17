@@ -321,7 +321,7 @@ export default {
         dataSources: null,
         dataSourcesParams: null,
         moduleId: data.moduleId || null,
-        moduleVersion: null,
+        moduleVersion: data.moduleVersion || null,
         createBy: null,
         updateTime: null,
         createTime: null,

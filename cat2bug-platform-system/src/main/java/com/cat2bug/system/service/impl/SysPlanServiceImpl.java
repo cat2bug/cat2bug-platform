@@ -1,5 +1,6 @@
 package com.cat2bug.system.service.impl;
 
+import java.util.Arrays;
 import java.util.List;
 import com.cat2bug.common.utils.DateUtils;
 import com.cat2bug.common.utils.MessageUtils;
@@ -100,7 +101,7 @@ public class SysPlanServiceImpl implements ISysPlanService
         String[] removeItems = oldItemList.stream().filter(i->
                 sysPlan.getSysPlanItemList().stream().
                         map(SysPlanItem::getCaseId).
-                        noneMatch(id->id==i.getCaseId())
+                        noneMatch(id->id.equals(i.getCaseId()))
         ).map(i->i.getPlanItemId()).collect(Collectors.toList()).toArray(new String[]{});
 
         // 删除子项
@@ -112,7 +113,7 @@ public class SysPlanServiceImpl implements ISysPlanService
         List<SysPlanItem> addItemList = sysPlan.getSysPlanItemList().stream().filter(i->
                 oldItemList.stream().
                         map(SysPlanItem::getCaseId).
-                        noneMatch(id->id==i.getCaseId())
+                        noneMatch(id->id.equals(i.getCaseId()))
         ).collect(Collectors.toList());
         // 添加新子项
         if(addItemList.size()>0) {
@@ -120,6 +121,16 @@ public class SysPlanServiceImpl implements ISysPlanService
             insertSysPlanItem(sysPlan);
         }
 
+        String[] removeCaseIds = oldItemList.stream().filter(i->
+                sysPlan.getSysPlanItemList().stream().
+                        map(SysPlanItem::getCaseId).
+                        noneMatch(id->id.equals(i.getCaseId()))
+        ).map(i->i.getCaseId().toString()).collect(Collectors.toList()).toArray(new String[]{});
+
+       System.out.println("原来："+oldItemList.stream().map(c->c.getCaseId().toString()).collect(Collectors.joining(",")));
+       System.out.println("新的："+sysPlan.getSysPlanItemList().stream().map(c->c.getCaseId().toString()).collect(Collectors.joining(",")));
+        System.out.println("加的："+addItemList.stream().map(c->c.getCaseId().toString()).collect(Collectors.joining(",")));
+        System.out.println("删的："+ Arrays.stream(removeCaseIds).collect(Collectors.joining(",")));
         // 更新计划
         return sysPlanMapper.updateSysPlan(sysPlan);
     }
@@ -170,6 +181,7 @@ public class SysPlanServiceImpl implements ISysPlanService
                 sysPlanItem.setPlanId(planId);
                 sysPlanItem.setUpdateById(SecurityUtils.getUserId());
                 sysPlanItem.setUpdateTime(DateUtils.getNowDate());
+                sysPlanItem.setPlanItemState(SysPlanItem.PLAN_ITEM_DEFAULT_STATE);
                 list.add(sysPlanItem);
             }
             if (list.size() > 0)

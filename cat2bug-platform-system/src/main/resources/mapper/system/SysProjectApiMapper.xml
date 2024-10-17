@@ -8,7 +8,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="apiId"    column="api_id"    />
         <result property="projectId"    column="project_id"    />
         <result property="userId"    column="user_id"    />
-        <result property="whiteList"    column="white_list" typeHandler="com.cat2bug.system.domain.handle.StringArrayTypeHandler"    />
+        <result property="whiteList"    column="white_list" typeHandler="com.cat2bug.system.domain.handle.JsonArrayTypeHandler"    />
         <result property="expireTime"    column="expire_time"    />
         <result property="remark"    column="remark"    />
         <result property="apiName"    column="api_name"    />
@@ -49,7 +49,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="apiId != null">#{apiId},</if>
             <if test="projectId != null">#{projectId},</if>
             <if test="userId != null">#{userId},</if>
-            <if test="whiteList != null">#{whiteList,typeHandler=com.cat2bug.system.domain.handle.StringArrayTypeHandler},</if>
+            <if test="whiteList != null">#{whiteList,typeHandler=com.cat2bug.system.domain.handle.JsonArrayTypeHandler},</if>
             <if test="expireTime != null">#{expireTime},</if>
             <if test="remark != null">#{remark},</if>
          </trim>
@@ -60,7 +60,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <trim prefix="SET" suffixOverrides=",">
             <if test="projectId != null">project_id = #{projectId},</if>
             <if test="userId != null">user_id = #{userId},</if>
-            <if test="whiteList != null">white_list = #{whiteList,typeHandler=com.cat2bug.system.domain.handle.StringArrayTypeHandler},</if>
+            <if test="whiteList != null">white_list = #{whiteList,typeHandler=com.cat2bug.system.domain.handle.JsonArrayTypeHandler},</if>
             <if test="expireTime != null">expire_time = #{expireTime},</if>
             <if test="remark != null">remark = #{remark},</if>
         </trim>

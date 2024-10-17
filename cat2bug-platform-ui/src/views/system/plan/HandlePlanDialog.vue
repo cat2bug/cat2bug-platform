@@ -121,16 +121,6 @@
             <el-table-column :label="$t('operate')" align="start" class-name="small-padding fixed-width">
               <template slot-scope="scope">
                 <el-button
-                  v-if="scope.row.defectId"
-                  size="small"
-                  type="text"
-                  @click="handleOpenHandleDefect($event, scope.row)"
-                  v-hasPermi="['system:defect:edit']"
-                > <svg-icon icon-class="bug"></svg-icon>
-                  {{ $t('defect.handle') }}
-                </el-button>
-                <el-button
-                  v-else
                   size="small"
                   type="text"
                   icon="el-icon-plus"
@@ -139,6 +129,30 @@
                 >
                   {{ $t('defect.create') }}
                 </el-button>
+                <el-button
+                  v-if="scope.row.defectIds && scope.row.defectIds.length==1"
+                  size="small"
+                  type="text"
+                  @click="handleOpenHandleDefect(scope.row, scope.row.defectIds[0])"
+                  v-hasPermi="['system:defect:edit']"
+                > <svg-icon icon-class="bug"></svg-icon>
+                  {{ $t('defect') }}
+                </el-button>
+                <el-dropdown
+                  class="defect-dropdown"
+                  placement="bottom-start"
+                  @visible-change="handlePlanItemDefectList($event, scope.row)"
+                  @command="handleOpenHandleDefect(scope.row, $event)"
+                  v-else-if="scope.row.defectIds && scope.row.defectIds.length>1"
+                  v-hasPermi="['system:defect:edit']">
+                  <span class="plan-item-dropdown-link">
+                    <svg-icon icon-class="bug"></svg-icon>{{ $t('defect') }}({{ scope.row.defectIds.length }})
+                  </span>
+                  <el-dropdown-menu class="plan-item-defect-list" slot="dropdown" v-loading="defectLoading">
+                    <el-dropdown-item v-for="(defect,defectIndex) in scope.row.defectList" :key="defectIndex" :command="defect.defectId">
+                      <defect-state-flag :defect="defect" /><span class="plan-item-defect-num">#{{ defect.projectNum }}</span>{{ defect.defectName }}</el-dropdown-item>
+                  </el-dropdown-menu>
+                </el-dropdown>
                 <el-button
                   size="mini"
                   type="text"
@@ -175,11 +189,13 @@ import FocusMemberList from "@/components/FocusMemberList";
 import AddCase from "@/components/Case/AddCase";
 import Cat2BugPreviewImage from "@/components/Cat2BugPreviewImage";
 import AddDefect from "@/components/Defect/AddDefect";
+import DefectStateFlag from "@/components/Defect/DefectStateFlag";
 import HandleDefect from "@/components/Defect/HandleDefect";
 import { Multipane, MultipaneResizer } from 'vue-multipane';
 import { getPlan } from "@/api/system/plan";
 import {listPlanItem, updatePlanItem} from "@/api/system/PlanItem";
 import {checkPermi} from "@/utils/permission";
+import {listDefect} from "@/api/system/defect";
 
 const TREE_MODULE_WIDTH_CACHE_KEY = 'plan_case_tree_module_width';
 /** 需要显示的测试用例字段列表在缓存的key值 */
@@ -188,13 +204,14 @@ const PLAN_ITEM_TABLE_FIELD_LIST_CACHE_KEY='plan-item-table-field-list';
 export default {
   name: "AddPlanDialog",
   dicts: ['plan_item_state'],
-  components: { Cat2BugLevel,Step,TreeModule,Multipane,MultipaneResizer, FocusMemberList, Cat2BugPreviewImage, AddDefect, HandleDefect, AddCase, Cat2BugAvatar },
+  components: { Cat2BugLevel,Step,TreeModule,Multipane,MultipaneResizer, FocusMemberList, Cat2BugPreviewImage, AddDefect, HandleDefect, AddCase, Cat2BugAvatar, DefectStateFlag },
   data() {
     return {
       multipaneStyle: {'--marginTop':'0px'},
       treeModuleStyle: {'--treeModuleWidth':'300px'},
       // 遮罩层
       loading: true,
+      defectLoading: false,
       // 表格中可以显示的字段列表
       checkedFieldList: [],
       // 所有属性类型
@@ -234,7 +251,6 @@ export default {
           height = style.height
         }
         el.__vueSetInterval__ = setInterval(isResize, 300)
-        console.log(el)
       },
       unbind(el) {
         clearInterval(el.__vueSetInterval__)
@@ -318,9 +334,20 @@ export default {
     checkedFieldListChange(field) {
       this.$cache.local.set(PLAN_ITEM_TABLE_FIELD_LIST_CACHE_KEY,JSON.stringify(field));
     },
+    reset() {
+      this.query = {
+        pageNum: 1,
+          pageSize: 10,
+          moduleId: null,
+          planId: null,
+          params:{}
+      }
+      this.resetForm('queryForm');
+    },
     /** 取消按钮 */
     cancel() {
       this.visible = false;
+      this.reset();
       this.$emit('close');
     },
     /** 打开窗口 */
@@ -342,7 +369,10 @@ export default {
       this.loading = true;
       listPlanItem(this.query).then(response => {
         this.loading = false;
-        this.planItemList = response.rows;
+        this.planItemList = response.rows.map(i=>{
+          i.defectList=[];
+          return i;
+        });
         this.total = response.total;
       });
     },
@@ -370,7 +400,6 @@ export default {
     /** 关闭缺陷抽屉窗口 */
     closePlanDrawer(done) {
       done();
-      // closeEditWindow(this.defectId);
       this.cancel();
     },
     /** 点击模块树中的某个模块操作 */
@@ -393,25 +422,33 @@ export default {
     /** 处理打开新建缺陷窗口操作 */
     handleOpenAddDefect(e,item){
       this.planItem = item;
-      this.$refs.addDefect.openByCase(item);
+      this.$refs.addDefect.openByCase({...item, ...{ moduleVersion: this.plan.planVersion }});
       e.stopPropagation();
     },
-    handleOpenHandleDefect(e, item) {
+    handleOpenHandleDefect(item, defectId) {
       this.planItem = item;
-      this.$refs.handleDefect.open(item.defectId);
-      e.stopPropagation();
+      this.$refs.handleDefect.open(defectId);
     },
     /** 处理删除缺陷完成操作 */
-    handleDeletedDefect() {
-      this.handleAddedDefect({
-        defectId: null
+    handleDeletedDefect(defect) {
+      let data = {
+        planItemId: this.planItem.planItemId,
+        params: {
+          deleteDefectId: defect.defectId
+        },
+      }
+      updatePlanItem(data).then(res=>{
+        this.getPlanItemList();
+        this.$emit('change');
       })
     },
     /** 处理添加缺陷完成操作 */
     handleAddedDefect(defect) {
       let data = {
         planItemId: this.planItem.planItemId,
-        defectId: defect.defectId,
+        params: {
+          defectId: defect.defectId
+        },
         planItemState: 'fail',
       }
       updatePlanItem(data).then(res=>{
@@ -423,7 +460,9 @@ export default {
     handleDefectLogAdded(log) {
       let data = {
         planItemId: this.planItem.planItemId,
-        defectId: log.defectId,
+        params: {
+          defectId: log.defectId
+        },
         planItemState: 'fail',
       }
       updatePlanItem(data).then(res=>{
@@ -434,6 +473,26 @@ export default {
     /** 打开编辑用例窗口 */
     handleOpenEditCase(planItem) {
       this.$refs.addCaseDialog.open(planItem.caseId)
+    },
+    /** 根据ID查找缺陷 */
+    handlePlanItemDefectList(event, planItem) {
+      if(!event) return;
+      this.defectLoading = true;
+      let query = {
+        pageNum: 1,
+        pageSize: 9999,
+        orderByColumn: 'updateTime',
+        isAsc: 'desc',
+        params: {
+          defectIds: planItem.defectIds
+        }
+      }
+      listDefect(query).then(res=>{
+        this.defectLoading = false;
+        planItem.defectList = res.rows;
+      }).catch(e=>{
+        this.defectLoading = false;
+      })
     }
   }
 }
@@ -441,6 +500,22 @@ export default {
 <style>
 .handle-plan-dialog {
   border-left: 4px solid #ffb700;
+}
+.plan-item-defect-list {
+  width: 400px;
+}
+.plan-item-defect-list > .el-dropdown-menu__item {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 5px 10px;
+}
+.plan-item-defect-num {
+  margin-left: 5px;
+  margin-right: 5px;
+  font-weight: 500;
 }
 </style>
 <style lang="scss" scoped>
@@ -495,6 +570,7 @@ export default {
   flex-grow: 1;
   overflow:hidden;
   height: 100%;
+  padding-bottom: 30px;
 }
 .plan-run-header {
   width: 100%;
@@ -566,6 +642,17 @@ export default {
   }
 }
 .plan-run-content {
-  height: 100%;
+  //height: 100%;
+}
+.plan-item-dropdown-link {
+  cursor: pointer;
+  color: #409EFF;
+}
+.plan-item-icon-arrow-down {
+  font-size: 12px;
+}
+.defect-dropdown {
+  margin-left: 5px;
+  margin-right: 10px;
 }
 </style>

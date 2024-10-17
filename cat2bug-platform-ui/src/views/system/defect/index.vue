@@ -138,7 +138,7 @@ import Cat2BugStatistic from "@/components/Cat2BugStatistic"
 import DefectTabDialog from "@/views/system/defect/DefectTabDialog";
 import DefectImport from "@/views/system/defect/DefectImport"
 import i18n from "@/utils/i18n/i18n";
-import {lifeTime} from "@/utils/defect";
+import {getDefectTempTab, lifeTime, removeDefectTempTab} from "@/utils/defect";
 import store from "@/store";
 import DefectTable from "./list/table"
 import DefectCalendar from "./list/calendar"
@@ -328,8 +328,9 @@ export default {
       configDefect().then(res=>{
         this.config = res.data;
         // 如果页面传的参数有tab，代表有临时查询
-        if(this.$route.params.tab){
-          let tab = this.$route.params.tab;
+        const tab = getDefectTempTab(); // 获取临时缓存tab
+        if(tab){
+          removeDefectTempTab();
           this.config.tabs = this.config.tabs || [];
           this.config.tabs.unshift(tab);
           this.activeDefectTabName = tab.tabId+'';

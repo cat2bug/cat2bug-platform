@@ -72,7 +72,7 @@
             :total="total"
             :page.sync="caseQueryParams.pageNum"
             :limit.sync="caseQueryParams.pageSize"
-            @pagination="getCaseList"
+            @pagination="getPlanItemCaseList"
           />
         </div>
       </multipane>
@@ -93,7 +93,7 @@ import Cat2BugPreviewImage from "@/components/Cat2BugPreviewImage";
 import { Multipane, MultipaneResizer } from 'vue-multipane';
 import {addPlan, getPlan, updatePlan} from "@/api/system/plan";
 import {listPlanCase} from "@/api/system/PlanItem";
-import {listPlanCaseId} from "@/api/system/case";
+import {listCase, listPlanCaseId} from "@/api/system/case";
 
 const TREE_MODULE_WIDTH_CACHE_KEY = 'plan_case_tree_module_width';
 
@@ -228,7 +228,9 @@ export default {
         casePreconditions: null,
         caseNum: null,
         projectId: this.projectId,
-        params:{}
+        params:{
+          planId: 'temp'
+        }
       }
       this.planTimeRang = [new Date(), new Date()];
       this.sysPlanItemList = [];
@@ -246,7 +248,8 @@ export default {
       this.open = true;
       this.title = "plan.create";
       this.getTreeModuleWidth();
-      this.getCaseList();
+      this.caseQueryParams.params.planId= 'cat2bug-temp-id';
+      this.getPlanItemCaseList();
       this.$nextTick(()=>{
         this.$refs.treeModuleRef.reloadData();
         this.initFloatMenu();
@@ -255,7 +258,7 @@ export default {
     /** 修改按钮操作 */
     openUpdate(plan) {
       this.reset();
-      const planId = plan.planId || this.ids
+      const planId = plan.planId;
       getPlan(planId).then(response => {
         this.form = response.data;
         this.planTimeRang = [this.form.planStartTime, this.form.planEndTime];
@@ -266,7 +269,8 @@ export default {
         this.title = "plan.edit";
       });
       this.getTreeModuleWidth();
-      this.getCaseList();
+      this.caseQueryParams.params.planId= planId;
+      this.getPlanItemCaseList();
       this.initFloatMenu();
     },
     /** 提交按钮 */
@@ -298,8 +302,9 @@ export default {
       });
     },
     /** 查询测试用例列表 */
-    getCaseList() {
+    getPlanItemCaseList() {
       this.loading = true;
+      this.caseQueryParams.projectId = this.projectId;
       listPlanCase(this.caseQueryParams).then(response => {
         this.loading = false;
         this.caseList = response.rows;
@@ -317,7 +322,7 @@ export default {
     /** 搜索按钮操作 */
     handleCaseQuery() {
       this.caseQueryParams.pageNum = 1;
-      this.getCaseList();
+      this.getPlanItemCaseList();
     },
     /** 点击模块树中的某个模块前的check操作 */
     moduleCheckChangeHandle(data, checked, indeterminate) {

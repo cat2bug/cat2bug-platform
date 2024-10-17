@@ -167,12 +167,17 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="defect.params.collect != null and defect.params.collect > 0  "> and ud.collect = #{defect.params.collect}</if>
             <if test="defect.params.defectStates != null and defect.params.defectStates != ''"> and
                 <foreach collection="defect.params.defectStates.split(',')" item="state" separator=" or " open="(" close=")">
-                    d.defect_state=#{state}
+                    d.defect_state = #{state}
                 </foreach>
             </if>
             <if test="defect.handleBy != null  and defect.handleBy != ''"> and
                 <foreach collection="defect.handleBy" item="b" separator=" or " open="(" close=")">
                     d.handle_by REGEXP CONCAT('\b',#{b},'\b') OR d.handle_by REGEXP CONCAT('\\b',#{b},'\\b')
+                </foreach>
+            </if>
+            <if test="defect.params.defectIds != null and defect.params.defectIds != ''"> and
+                <foreach collection="defect.params.defectIds.split(',')" item="defectId" separator=" or " open="(" close=")">
+                    d.defect_id = #{defectId}
                 </foreach>
             </if>
             <if test="defect.params.userId != null">

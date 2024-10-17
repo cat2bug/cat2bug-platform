@@ -65,6 +65,9 @@ public class SysPlan extends BaseEntity
     /** 执行通过数量 */
     private int passCount;
 
+    /** 执行未通过数量 */
+    private int failCount;
+
     @Override
     public String toString() {
         return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)

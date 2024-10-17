@@ -138,9 +138,9 @@
           </el-table-column>
           <el-table-column v-if="showField('defect.state')" :label="$t('defect.state')" align="left" prop="updateTime" width="150" sortable>
             <template slot-scope="scope">
-              <p class="table-font table-font-red" @click="handleGoDefect(scope.row, $t('PENDING'),[0,3])">{{ $t('PENDING') }}:{{ scope.row.defectProcessingCount }}</p>
-              <p class="table-font table-font-orange" @click="handleGoDefect(scope.row, $t('PROCESSING'), [1])">{{ $t('PROCESSING') }}:{{ scope.row.defectAuditCount }}</p>
-              <p class="table-font table-font-green" @click="handleGoDefect(scope.row, $t('CLOSED'),[4])">{{ $t('CLOSED') }}:{{ scope.row.defectCloseCount }}</p>
+              <p class="table-font table-font-red" @click="handleGoDefect($event, scope.row, $t('PENDING'),[0,3])">{{ $t('PENDING') }}:{{ scope.row.defectProcessingCount }}</p>
+              <p class="table-font table-font-orange" @click="handleGoDefect($event, scope.row, $t('PROCESSING'), [1])">{{ $t('PROCESSING') }}:{{ scope.row.defectAuditCount }}</p>
+              <p class="table-font table-font-green" @click="handleGoDefect($event, scope.row, $t('CLOSED'),[4])">{{ $t('CLOSED') }}:{{ scope.row.defectCloseCount }}</p>
             </template>
           </el-table-column>
           <el-table-column :label="$t('operate')" align="center" class-name="small-padding fixed-width" width="150">
@@ -221,6 +221,7 @@ import Cat2BugPreviewImage from "@/components/Cat2BugPreviewImage";
 import {checkPermi} from "@/utils/permission";
 import {strFormat} from "@/utils";
 import {getToken} from "@/utils/auth";
+import {setDefectTempTab} from "@/utils/defect";
 
 const TREE_MODULE_WIDTH_CACHE_KEY = 'case_tree_module_width';
 /** 需要显示的测试用例字段列表在缓存的key值 */
@@ -534,18 +535,20 @@ export default {
       this.$refs.upload.submit();
     },
     /** 跳转到缺陷页面 */
-    handleGoDefect(testCase,defectStateName, defectStateValues) {
-      this.$router.push({ name:'Defect', params: {
-        tab: {
-          tabId: new Date().getMilliseconds(),
-          tabName: strFormat(this.$i18n.t('case.go-defect-tab-name'), defectStateName),
-          config: {
-            caseId: testCase.caseId,
-            params: {
-              defectStates: defectStateValues
-            }
+    handleGoDefect(event,testCase,defectStateName, defectStateValues) {
+      const params = {
+        tabId: new Date().getMilliseconds(),
+        tabName: strFormat(this.$i18n.t('case.go-defect-tab-name'), defectStateName),
+        config: {
+          caseId: testCase.caseId,
+          params: {
+            defectStates: defectStateValues
           }
-        }}});
+        }}
+      setDefectTempTab(params);
+      const targetRoute = this.$router.resolve({ name:'Defect', params: {}});
+      window.open(targetRoute.href, '_blank');
+      event.stopPropagation();
     }
   }
 };

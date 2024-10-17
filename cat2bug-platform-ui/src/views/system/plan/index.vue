@@ -60,7 +60,7 @@
         <template slot-scope="scope">
           <div class="plan-progress">
             <el-progress :percentage="planProcessValue(scope.row)" :format="planProcessContent"></el-progress>
-            <span>{{scope.row.passCount}}/{{scope.row.itemTotal}}</span>
+            <span>{{(scope.row.passCount+scope.row.failCount)}}/{{scope.row.itemTotal}}</span>
           </div>
         </template>
       </el-table-column>
@@ -178,7 +178,7 @@ export default {
     planProcessValue: function () {
       return function (plan) {
         if(plan.itemTotal>0) {
-          return parseInt(plan.passCount / plan.itemTotal * 100);
+          return parseInt((plan.passCount+plan.failCount) / plan.itemTotal * 100);
         } else {
           return 0;
         }

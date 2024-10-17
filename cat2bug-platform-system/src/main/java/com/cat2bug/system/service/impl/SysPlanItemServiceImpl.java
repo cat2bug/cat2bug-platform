@@ -3,6 +3,7 @@ package com.cat2bug.system.service.impl;
 import java.util.List;
 import com.cat2bug.common.utils.DateUtils;
 import com.cat2bug.common.utils.SecurityUtils;
+import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.common.utils.uuid.UUID;
 import com.cat2bug.system.domain.SysCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,6 +65,9 @@ public class SysPlanItemServiceImpl implements ISysPlanItemService
         sysPlanItem.setPlanItemId(UUID.fastUUID().toString());
         sysPlanItem.setUpdateById(SecurityUtils.getUserId());
         sysPlanItem.setUpdateTime(DateUtils.getNowDate());
+        if(StringUtils.isBlank(sysPlanItem.getPlanItemState())) {
+            sysPlanItem.setPlanItemState(SysPlanItem.PLAN_ITEM_DEFAULT_STATE);
+        }
         return sysPlanItemMapper.insertSysPlanItem(sysPlanItem);
     }
 

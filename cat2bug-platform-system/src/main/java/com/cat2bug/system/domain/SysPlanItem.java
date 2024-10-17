@@ -1,9 +1,12 @@
 package com.cat2bug.system.domain;
 
+import lombok.Data;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import com.cat2bug.common.annotation.Excel;
 import com.cat2bug.common.core.domain.BaseEntity;
+
+import java.util.List;
 
 /**
  * 测试计划子项对象 sys_plan_item
@@ -11,9 +14,12 @@ import com.cat2bug.common.core.domain.BaseEntity;
  * @author yuzhantao
  * @date 2024-10-11
  */
+@Data
 public class SysPlanItem extends SysCase
 {
     private static final long serialVersionUID = 1L;
+
+    public final static String PLAN_ITEM_DEFAULT_STATE = "unexecuted";
 
     /** 测试计划子项ID */
     private String planItemId;
@@ -40,71 +46,7 @@ public class SysPlanItem extends SysCase
 
     /** 缺陷 */
     @Excel(name = "缺陷")
-    private Long defectId;
-
-    public void setPlanItemId(String planItemId) 
-    {
-        this.planItemId = planItemId;
-    }
-
-    public String getPlanItemId() 
-    {
-        return planItemId;
-    }
-    public void setPlanId(String planId) 
-    {
-        this.planId = planId;
-    }
-
-    public String getPlanId() 
-    {
-        return planId;
-    }
-    public void setModuleId(Long moduleId) 
-    {
-        this.moduleId = moduleId;
-    }
-
-    public Long getModuleId() 
-    {
-        return moduleId;
-    }
-    public void setCaseId(Long caseId) 
-    {
-        this.caseId = caseId;
-    }
-
-    public Long getCaseId() 
-    {
-        return caseId;
-    }
-    public void setPlanItemState(String planItemState) 
-    {
-        this.planItemState = planItemState;
-    }
-
-    public String getPlanItemState() 
-    {
-        return planItemState;
-    }
-    public void setUpdateById(Long updateById) 
-    {
-        this.updateById = updateById;
-    }
-
-    public Long getUpdateById() 
-    {
-        return updateById;
-    }
-    public void setDefectId(Long defectId) 
-    {
-        this.defectId = defectId;
-    }
-
-    public Long getDefectId() 
-    {
-        return defectId;
-    }
+    private List<Long> defectIds;
 
     @Override
     public String toString() {
@@ -116,7 +58,7 @@ public class SysPlanItem extends SysCase
             .append("planItemState", getPlanItemState())
             .append("updateById", getUpdateById())
             .append("updateTime", getUpdateTime())
-            .append("defectId", getDefectId())
+            .append("defectId", getDefectIds())
             .toString();
     }
 }
