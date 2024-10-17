@@ -373,6 +373,7 @@
   "repair": "修复",
   "pass": "通过",
   "fail": "失败",
+  "unexecuted": "未执行",
   "reject": "驳回",
   "head-up": "负责",
   "assist": "协助",
