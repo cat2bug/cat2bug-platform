@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.system.mapper.SysCasePromptMapper">
+    
+    <resultMap type="SysCasePrompt" id="SysCasePromptResult">
+        <result property="casePromptId"    column="case_prompt_id"    />
+        <result property="casePromptContent"    column="case_prompt_content"    />
+        <result property="projectId"    column="project_id"    />
+        <result property="createById"    column="create_by_id"    />
+        <result property="createTime"    column="create_time"    />
+    </resultMap>
+
+    <sql id="selectSysCasePromptVo">
+        select case_prompt_id, case_prompt_content, project_id, create_by_id, create_time from sys_case_prompt
+    </sql>
+
+    <select id="selectSysCasePromptList" parameterType="SysCasePrompt" resultMap="SysCasePromptResult">
+        <include refid="selectSysCasePromptVo"/>
+        <where>  
+            <if test="casePromptContent != null  and casePromptContent != ''"> and case_prompt_content like concat('%', #{casePromptContent}, '%')</if>
+            <if test="projectId != null "> and project_id = #{projectId}</if>
+            <if test="createById != null "> and create_by_id = #{createById}</if>
+        </where>
+    </select>
+    
+    <select id="selectSysCasePromptByCasePromptId" parameterType="String" resultMap="SysCasePromptResult">
+        <include refid="selectSysCasePromptVo"/>
+        where case_prompt_id = #{casePromptId}
+    </select>
+        
+    <insert id="insertSysCasePrompt" parameterType="SysCasePrompt">
+        insert into sys_case_prompt
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="casePromptId != null">case_prompt_id,</if>
+            <if test="casePromptContent != null and casePromptContent != ''">case_prompt_content,</if>
+            <if test="projectId != null">project_id,</if>
+            <if test="createById != null">create_by_id,</if>
+            <if test="createTime != null">create_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="casePromptId != null">#{casePromptId},</if>
+            <if test="casePromptContent != null and casePromptContent != ''">#{casePromptContent},</if>
+            <if test="projectId != null">#{projectId},</if>
+            <if test="createById != null">#{createById},</if>
+            <if test="createTime != null">#{createTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateSysCasePrompt" parameterType="SysCasePrompt">
+        update sys_case_prompt
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="casePromptContent != null and casePromptContent != ''">case_prompt_content = #{casePromptContent},</if>
+            <if test="projectId != null">project_id = #{projectId},</if>
+            <if test="createById != null">create_by_id = #{createById},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+        </trim>
+        where case_prompt_id = #{casePromptId}
+    </update>
+
+    <delete id="deleteSysCasePromptByCasePromptId" parameterType="String">
+        delete from sys_case_prompt where case_prompt_id = #{casePromptId}
+    </delete>
+
+    <delete id="deleteSysCasePromptByCasePromptIds" parameterType="String">
+        delete from sys_case_prompt where case_prompt_id in 
+        <foreach item="casePromptId" collection="array" open="(" separator="," close=")">
+            #{casePromptId}
+        </foreach>
+    </delete>
+</mapper>
