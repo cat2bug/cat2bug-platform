@@ -57,7 +57,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         FROM
             sys_plan p
             left join sys_user u ON u.user_id=p.update_by_id
-                LEFT JOIN ( SELECT plan_id, sum( CASE WHEN plan_item_state = 'pass' THEN 1 END ) AS pass_count, sum( CASE WHEN plan_item_state = 'fail' THEN 1 END ) AS fail_count, count( plan_item_id ) AS item_total FROM sys_plan_item pi2 GROUP BY plan_id ) s ON s.plan_id = p.plan_id
+                LEFT JOIN ( SELECT pi2.plan_id, sum( CASE WHEN pi2.plan_item_state = 'pass' THEN 1 END ) AS pass_count, sum( CASE WHEN pi2.plan_item_state = 'fail' THEN 1 END ) AS fail_count, count( pi2.plan_item_id ) AS item_total FROM sys_plan_item pi2 JOIN sys_case c2 ON pi2.case_id=c2.case_id GROUP BY pi2.plan_id ) s ON s.plan_id = p.plan_id
     </sql>
 
     <select id="selectSysPlanList" parameterType="SysPlan" resultMap="SysPlanResult">

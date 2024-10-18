@@ -322,9 +322,10 @@ export default {
       if(event) {
         this.updateMembers();
         this.getMemberList();
-        this.$forceUpdate();
         event.stopPropagation();
       }
+
+      this.$forceUpdate();
     },
     /** 翻页处理 */
     currentPageChangeHandle(val){
