@@ -1,10 +1,10 @@
 <template>
   <div class="case-step">
     <draggable v-show="panelType!='input'" v-model="caseStepList" @change="updatePanelHandle">
-      <div v-for="(step,index) in caseStepList" :key="index" class="case-step-row">
+      <div ref="caseStepInputGroup" v-for="(step,index) in caseStepList" :key="index" class="case-step-row">
         <label>{{index+1}}</label>
-        <el-input type="textarea" v-model="step.stepDescribe" :placeholder="$t('case.please-enter-step-describe')" maxlength="128" rows="1" @input="caseStepListChangeHandle($event,caseStepList)" />
-        <el-input type="textarea" v-model="step.stepExpect" :placeholder="$t('case.please-enter-step-expected')" maxlength="128" rows="1" @input="caseStepListChangeHandle($event,caseStepList)" />
+        <el-input type="textarea" v-model="step.stepDescribe" :key="step.caseStepDescribeKey" :placeholder="$t('case.please-enter-step-describe')" maxlength="128" :autosize="inputRowRang(step)" @input="caseStepListChangeHandle($event,caseStepList, index, 'describe')" />
+        <el-input type="textarea" v-model="step.stepExpect" :key="step.caseStepExpectKey" :placeholder="$t('case.please-enter-step-expected')" maxlength="128" :autosize="inputRowRang(step)" @input="caseStepListChangeHandle($event,caseStepList, index, 'expect')" />
         <div class="case-step-row-tools">
           <el-link :step="index" type="danger" :underline="false" @click="removeStepHandle(index)" v-show="caseStep.length>1"><i class="el-icon-error el-icon--right"></i></el-link>
           <el-link type="success" :underline="false" @click="addStepHandle(index)"><i class="el-icon-circle-plus el-icon--right"></i></el-link>
@@ -29,7 +29,12 @@ export default {
   data() {
     return {
       stepScript: null,
-      caseStepList: this.caseStep,
+      caseStepList: this.caseStep.map((c,index)=>{
+        const time = new Date().getMilliseconds();
+        c.caseStepDescribeKey = "caseStepDescribeKey"+index+time;
+        c.caseStepExpectKey = "caseStepExpectKey"+index+time;
+        return c;
+      }),
     }
   },
   props: {
@@ -43,6 +48,19 @@ export default {
       default: ''
     }
   },
+  computed: {
+    inputRowCount: function () {
+      return function (step) {
+        return Math.max(1, step.stepDescribe?step.stepDescribe.split('\n').length:1, step.stepExpect?step.stepExpect.split('\n').length:1);
+      }
+    },
+    inputRowRang: function () {
+      return function (step) {
+        const minRows = this.inputRowCount(step);
+        return {minRows:Math.min(minRows,20),maxRows:20}
+      }
+    }
+  },
   watch: {
     caseStep: function (n) {
       this.caseStepListChangeHandle(null, n);
@@ -50,7 +68,12 @@ export default {
   },
   methods: {
     reset() {
-      this.caseStepList=this.caseStep;
+      const time = new Date().getMilliseconds();
+      this.caseStepList=this.caseStep.map((c,index)=>{
+        c.caseStepDescribeKey = "caseStepDescribeKey"+index+time;
+        c.caseStepExpectKey = "caseStepExpectKey"+index+time;
+        return c;
+      });
       this.caseStepListChangeHandle({}, this.caseStep);
     },
     addStepHandle(index) {
@@ -71,9 +94,17 @@ export default {
     updatePanelHandle() {
       this.$emit('change',this.caseStepList);
     },
-    caseStepListChangeHandle(e,list) {
+    caseStepListChangeHandle(e,list,rowIndex,propertyName) {
       if(e) {
-        this.stepScript = list?list.filter(s=>s.stepDescribe || s.stepExpect).map(s=> {
+        const time = new Date().getMilliseconds();
+        this.stepScript = list?list.filter(s=>s.stepDescribe || s.stepExpect).map((s,index)=> {
+          if(rowIndex==index) {
+            if(propertyName=='describe') {
+              s.caseStepExpectKey = "caseStepExpectKey"+index+time;
+            } else if(propertyName=='expect') {
+              s.caseStepDescribeKey = "caseStepDescribeKey"+index+time;
+            }
+          }
           return (s.stepDescribe?s.stepDescribe:'')+'---'+(s.stepExpect?s.stepExpect:'');
         }).join('\n'):'';
       }
