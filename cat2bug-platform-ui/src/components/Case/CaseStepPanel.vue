@@ -3,8 +3,8 @@
     <draggable v-show="panelType!='input'" v-model="caseStepList" @change="updatePanelHandle">
       <div ref="caseStepInputGroup" v-for="(step,index) in caseStepList" :key="index" class="case-step-row">
         <label>{{index+1}}</label>
-        <el-input type="textarea" v-model="step.stepDescribe" :key="step.caseStepDescribeKey" :placeholder="$t('case.please-enter-step-describe')" maxlength="128" :autosize="inputRowRang(step)" @input="caseStepListChangeHandle($event,caseStepList, index, 'describe')" />
-        <el-input type="textarea" v-model="step.stepExpect" :key="step.caseStepExpectKey" :placeholder="$t('case.please-enter-step-expected')" maxlength="128" :autosize="inputRowRang(step)" @input="caseStepListChangeHandle($event,caseStepList, index, 'expect')" />
+        <el-input type="textarea" ref="caseStepDescribeRef" v-model="step.stepDescribe" :key="step.caseStepDescribeKey" :placeholder="$t('case.please-enter-step-describe')" maxlength="128" :autosize="{minRows:step.caseStepRows||1,maxRows:maxRows}" @input.native="caseStepListChangeHandle($event, caseStepList, index, 'describe')" />
+        <el-input type="textarea" ref="caseStepExpectRef" v-model="step.stepExpect" :key="step.caseStepExpectKey" :placeholder="$t('case.please-enter-step-expected')" maxlength="128" :autosize="{minRows:step.caseStepRows||1,maxRows:maxRows}" @input="caseStepListChangeHandle($event,caseStepList, index, 'expect')" />
         <div class="case-step-row-tools">
           <el-link :step="index" type="danger" :underline="false" @click="removeStepHandle(index)" v-show="caseStep.length>1"><i class="el-icon-error el-icon--right"></i></el-link>
           <el-link type="success" :underline="false" @click="addStepHandle(index)"><i class="el-icon-circle-plus el-icon--right"></i></el-link>
@@ -18,7 +18,7 @@
 
 <script>
 import draggable from 'vuedraggable'
-
+/** 测试用例步骤组件 */
 export default {
   name: "CaseStepPanel",
   components: {draggable},
@@ -35,6 +35,7 @@ export default {
         c.caseStepExpectKey = "caseStepExpectKey"+index+time;
         return c;
       }),
+      ctx: null
     }
   },
   props: {
@@ -49,24 +50,21 @@ export default {
     }
   },
   computed: {
-    inputRowCount: function () {
-      return function (step) {
-        return Math.max(1, step.stepDescribe?step.stepDescribe.split('\n').length:1, step.stepExpect?step.stepExpect.split('\n').length:1);
-      }
-    },
-    inputRowRang: function () {
-      return function (step) {
-        const minRows = this.inputRowCount(step);
-        return {minRows:Math.min(minRows,20),maxRows:20}
-      }
+    maxRows: function () {
+      return 5;
     }
+  },
+  mounted() {
+    const canvas = document.createElement('canvas')
+    this.ctx = canvas.getContext('2d')
   },
   watch: {
     caseStep: function (n) {
-      this.caseStepListChangeHandle(null, n);
+      this.caseStepListChangeHandle({}, n);
     }
   },
   methods: {
+    /** 重置 */
     reset() {
       const time = new Date().getMilliseconds();
       this.caseStepList=this.caseStep.map((c,index)=>{
@@ -76,39 +74,63 @@ export default {
       });
       this.caseStepListChangeHandle({}, this.caseStep);
     },
+    /** 添加步骤 */
     addStepHandle(index) {
-      // if(index!=undefined){
-      //   this.caseStepList.splice(index,0,{});
-      // } else {
-      //   this.caseStepList.push({});
-      // }
       this.caseStepList.push({});
       this.caseStepListChangeHandle({},this.caseStepList);
       this.$emit('change',this.caseStepList);
     },
+    /** 移除步骤 */
     removeStepHandle(index) {
       this.caseStepList.splice(index,1);
       this.caseStepListChangeHandle({},this.caseStepList);
       this.$emit('change',this.caseStepList);
     },
+    /** 步骤拖动更新事件 */
     updatePanelHandle() {
       this.$emit('change',this.caseStepList);
     },
-    caseStepListChangeHandle(e,list,rowIndex,propertyName) {
+    /** 计算input的行高 */
+    calcInputRows(name, index, text) {
+      const el = this.$refs[name][index].$el.children[0];
+      const style = getComputedStyle(el);
+      const parentStyle = getComputedStyle(el.parentNode);
+      this.ctx.font = [parentStyle.fontSize,parentStyle.fontFamily].join(' ');
+      const paddingVert = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
+      const borderVert = parseFloat(style.borderLeftWidth) + parseFloat(style.borderRightWidth);
+      const textareaWidth = parseFloat(el.clientWidth)-paddingVert-borderVert;
+
+      const splitedTexts = text.split(/\r|\r\n|\n/)
+      const lineCount = splitedTexts.reduce((pre, cur) => {
+        const width = Math.max(this.ctx.measureText(cur).width,1);
+        return pre + Math.ceil(width / textareaWidth);
+      }, 0)
+
+      const rows = lineCount;
+      return  rows;
+    },
+    /** 测试步骤改变的处理 */
+    caseStepListChangeHandle(e, list, rowIndex, propertyName) {
       if(e) {
-        const time = new Date().getMilliseconds();
         this.stepScript = list?list.filter(s=>s.stepDescribe || s.stepExpect).map((s,index)=> {
           if(rowIndex==index) {
-            if(propertyName=='describe') {
-              s.caseStepExpectKey = "caseStepExpectKey"+index+time;
-            } else if(propertyName=='expect') {
-              s.caseStepDescribeKey = "caseStepDescribeKey"+index+time;
-            }
+            this.$nextTick(()=>{
+              const rows = Math.max(this.calcInputRows('caseStepExpectRef',index, s.stepExpect), this.calcInputRows('caseStepDescribeRef', index, s.stepDescribe));
+              const time = new Date().getMilliseconds();
+              if(propertyName=='describe') {
+                s.caseStepRows = Math.min(rows, this.maxRows);
+                s.caseStepExpectKey = "caseStepExpectKey"+index+time;
+              } else if(propertyName=='expect') {
+                s.caseStepRows = Math.min(rows, this.maxRows);
+                s.caseStepDescribeKey = "caseStepDescribeKey"+index+time;
+              }
+            });
           }
           return (s.stepDescribe?s.stepDescribe:'')+'---'+(s.stepExpect?s.stepExpect:'');
         }).join('\n'):'';
       }
     },
+    /** 步骤脚本改变处理 */
     scriptChangeHandle() {
       this.caseStepList = (this.stepScript||"").split('\n').filter(r=>r).map(r=>{
         let cols = r.split('---');
@@ -137,7 +159,7 @@ export default {
   display: flex;
   border-radius: 0px;
   flex-direction: row;
-  align-items: center;
+  align-items: flex-end;
   > * {
     margin: 0px 5px;
   }
