@@ -3,15 +3,15 @@
     <draggable v-show="panelType!='input'" v-model="caseStepList" @change="updatePanelHandle">
       <div ref="caseStepInputGroup" v-for="(step,index) in caseStepList" :key="index" class="case-step-row">
         <label>{{index+1}}</label>
-        <el-input type="textarea" ref="caseStepDescribeRef" v-model="step.stepDescribe" :key="step.caseStepDescribeKey" :placeholder="$t('case.please-enter-step-describe')" maxlength="128" :autosize="{minRows:step.caseStepRows||1,maxRows:maxRows}" @input.native="caseStepListChangeHandle($event, caseStepList, index, 'describe')" />
-        <el-input type="textarea" ref="caseStepExpectRef" v-model="step.stepExpect" :key="step.caseStepExpectKey" :placeholder="$t('case.please-enter-step-expected')" maxlength="128" :autosize="{minRows:step.caseStepRows||1,maxRows:maxRows}" @input="caseStepListChangeHandle($event,caseStepList, index, 'expect')" />
+        <el-input type="textarea" ref="caseStepDescribeRef" v-model="step.stepDescribe" :key="step.caseStepDescribeKey" :placeholder="$t('case.please-enter-step-describe')" maxlength="128" :autosize="autoSizeRang(step)" @input.native="caseStepListChangeHandle($event, caseStepList, index, 'describe')" />
+        <el-input type="textarea" ref="caseStepExpectRef" v-model="step.stepExpect" :key="step.caseStepExpectKey" :placeholder="$t('case.please-enter-step-expected')" maxlength="128" :autosize="autoSizeRang(step)" @input="caseStepListChangeHandle($event,caseStepList, index, 'expect')" />
         <div class="case-step-row-tools">
           <el-link :step="index" type="danger" :underline="false" @click="removeStepHandle(index)" v-show="caseStep.length>1"><i class="el-icon-error el-icon--right"></i></el-link>
           <el-link type="success" :underline="false" @click="addStepHandle(index)"><i class="el-icon-circle-plus el-icon--right"></i></el-link>
         </div>
       </div>
     </draggable>
-    <el-input class="case-step-script-input" v-show="panelType!='list'" type="textarea" v-model="stepScript" :placeholder="$t('case.please-enter-step-script')" maxlength="10000" :autosize="{ minRows: 4, maxRows: 10 }" show-word-limit @input="scriptChangeHandle" />
+    <el-input class="case-step-script-input" v-show="panelType!='list'" type="textarea" v-model="stepScript" :placeholder="$t('case.please-enter-step-script')" maxlength="10000" :autosize="{ minRows: 4, maxRows: 20 }" show-word-limit @input="scriptChangeHandle" />
     <el-button class="button-full" type="success" size="mini" plain @click="addStepHandle(undefined)">{{ $t('case.add-step') }}</el-button>
   </div>
 </template>
@@ -29,12 +29,7 @@ export default {
   data() {
     return {
       stepScript: null,
-      caseStepList: this.caseStep.map((c,index)=>{
-        const time = new Date().getMilliseconds();
-        c.caseStepDescribeKey = "caseStepDescribeKey"+index+time;
-        c.caseStepExpectKey = "caseStepExpectKey"+index+time;
-        return c;
-      }),
+      caseStepList: null,
       ctx: null
     }
   },
@@ -51,19 +46,42 @@ export default {
   },
   computed: {
     maxRows: function () {
-      return 5;
+      return 10;
+    },
+    autoSizeRang: function () {
+      return function (step) {
+        return {minRows:step.caseStepRows||1,maxRows: this.maxRows};
+      }
     }
   },
   mounted() {
     const canvas = document.createElement('canvas')
-    this.ctx = canvas.getContext('2d')
+    this.ctx = canvas.getContext('2d');
+    setTimeout(()=>{
+      this.refreshStepInput(this.caseStep);
+      this.$forceUpdate();
+    },500)
+
   },
   watch: {
     caseStep: function (n) {
-      this.caseStepListChangeHandle({}, n);
+      this.refreshStepInput(n);
+      this.$forceUpdate();
     }
   },
   methods: {
+    /** 刷新步骤文本框 */
+    refreshStepInput(stepList) {
+      this.$nextTick(()=>{
+        stepList.forEach((s,index)=> {
+          const rows = Math.max(this.calcInputRows('caseStepExpectRef',index, s.stepExpect), this.calcInputRows('caseStepDescribeRef', index, s.stepDescribe));
+          const time = new Date().getMilliseconds();
+          s.caseStepRows = Math.min(rows, this.maxRows);
+          s.caseStepExpectKey = "caseStepExpectKey"+index+time;
+          s.caseStepDescribeKey = "caseStepDescribeKey"+index+time;
+        });
+      });
+    },
     /** 重置 */
     reset() {
       const time = new Date().getMilliseconds();
@@ -92,7 +110,9 @@ export default {
     },
     /** 计算input的行高 */
     calcInputRows(name, index, text) {
+      if(!this.$refs[name] || !this.$refs[name][index]) return 1;
       const el = this.$refs[name][index].$el.children[0];
+
       const style = getComputedStyle(el);
       const parentStyle = getComputedStyle(el.parentNode);
       this.ctx.font = [parentStyle.fontSize,parentStyle.fontFamily].join(' ');
@@ -100,7 +120,7 @@ export default {
       const borderVert = parseFloat(style.borderLeftWidth) + parseFloat(style.borderRightWidth);
       const textareaWidth = parseFloat(el.clientWidth)-paddingVert-borderVert;
 
-      const splitedTexts = text.split(/\r|\r\n|\n/)
+      const splitedTexts = (text||'').split(/\r|\r\n|\n/)
       const lineCount = splitedTexts.reduce((pre, cur) => {
         const width = Math.max(this.ctx.measureText(cur).width,1);
         return pre + Math.ceil(width / textareaWidth);
@@ -159,7 +179,7 @@ export default {
   display: flex;
   border-radius: 0px;
   flex-direction: row;
-  align-items: flex-end;
+  align-items: center;
   > * {
     margin: 0px 5px;
   }
