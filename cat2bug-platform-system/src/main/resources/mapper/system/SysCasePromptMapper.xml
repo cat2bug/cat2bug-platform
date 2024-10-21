@@ -23,6 +23,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="projectId != null "> and project_id = #{projectId}</if>
             <if test="createById != null "> and create_by_id = #{createById}</if>
         </where>
+        order by create_time desc
     </select>
     
     <select id="selectSysCasePromptByCasePromptId" parameterType="String" resultMap="SysCasePromptResult">

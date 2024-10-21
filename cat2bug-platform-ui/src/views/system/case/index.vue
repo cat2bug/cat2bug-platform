@@ -58,6 +58,17 @@
           </el-popover>
         </el-col>
         <el-col :span="1.5">
+          <el-button
+            type="danger"
+            plain
+            icon="el-icon-delete"
+            size="small"
+            :disabled="multiple"
+            @click="handleDelete"
+            v-hasPermi="['system:case:remove']"
+          >{{ $t('batch-delete') }}</el-button>
+        </el-col>
+        <el-col :span="1.5">
           <el-dropdown class="case-add-dropdown"
                        split-button
                        size="small"
@@ -96,34 +107,36 @@
       <multipane-resizer :style="multipaneStyle"></multipane-resizer>
 <!--      用例列表-->
       <div ref="caseContext" class="case-context">
-        <el-table v-loading="loading" :data="caseList" @row-click="handleUpdate"  v-resize="setDragComponentSize">
+        <el-table v-loading="loading" :data="caseList" @selection-change="handleSelectionChange" @row-click="handleUpdate" v-resize="setDragComponentSize">
+          <el-table-column type="selection" width="50" align="center" />
           <el-table-column v-if="showField('id')" :label="$t('id')" align="left" prop="caseNum" width="80" sortable>
             <template slot-scope="scope">
               <span>{{ caseNumber(scope.row) }}</span>
             </template>
           </el-table-column>
-          <el-table-column v-if="showField('title')" :label="$t('title')" align="left" prop="caseName" sortable>
+          <el-table-column v-if="showField('case.name')" :label="$t('case.name')" align="left" prop="caseName" min-width="150" sortable>
             <template slot-scope="scope">
               <div class="table-case-title">
-                <focus-member-list
-                  v-model="scope.row.focusList"
-                  module-name="case"
-                  :data-id="scope.row.caseId" />
+<!--                <focus-member-list-->
+<!--                  v-show="scope.row.focusList && scope.row.focusList.length>0"-->
+<!--                  v-model="scope.row.focusList"-->
+<!--                  module-name="case"-->
+<!--                  :data-id="scope.row.caseId" />-->
                 <span>{{ scope.row.caseName }}</span>
               </div>
             </template>
           </el-table-column>
-          <el-table-column v-if="showField('module')" :label="$t('module')" align="left" prop="moduleName" sortable />
+          <el-table-column v-if="showField('module')" :label="$t('module')" align="left" prop="moduleName" min-width="120" sortable />
           <el-table-column v-if="showField('level')" :label="$t('level')" align="left" prop="caseLevel" sortable width="80">
             <template slot-scope="scope">
               <cat2-bug-level :level="scope.row.caseLevel" />
             </template>
           </el-table-column>
-          <el-table-column v-if="showField('preconditions')" :label="$t('preconditions')" align="left" prop="casePreconditions" sortable />
-          <el-table-column v-if="showField('expect')" :label="$t('expect')" align="left" prop="caseExpect" sortable />
-          <el-table-column v-if="showField('step')" :label="$t('step')" align="left" prop="caseStep" sortable>
+          <el-table-column v-if="showField('preconditions')" :label="$t('preconditions')" align="left" prop="casePreconditions" min-width="150" sortable />
+          <el-table-column v-if="showField('expect')" :label="$t('expect')" align="left" prop="caseExpect" min-width="150" sortable />
+          <el-table-column v-if="showField('step')" :label="$t('step')" align="left" prop="caseStep" width="300" sortable>
             <template slot-scope="scope">
-              <step :steps="scope.row.caseStep" />
+              <step :steps="scope.row.caseStep" style="max-width: 300px;" />
             </template>
           </el-table-column>
           <el-table-column v-if="showField('image')" :label="$t('image')" :key="$t('image')" align="center" prop="imgUrls" width="100">
@@ -143,15 +156,15 @@
               <p class="table-font table-font-green" @click="handleGoDefect($event, scope.row, $t('CLOSED'),[4])">{{ $t('CLOSED') }}:{{ scope.row.defectCloseCount }}</p>
             </template>
           </el-table-column>
-          <el-table-column :label="$t('operate')" align="center" class-name="small-padding fixed-width" width="150">
+          <el-table-column :label="$t('operate')" align="center" class-name="small-padding fixed-width">
             <template slot-scope="scope">
-              <el-button
-                size="small"
-                type="text"
-                @click="addDefectHandle($event,scope.row)"
-                v-hasPermi="['system:defect:add']"
-              ><svg-icon icon-class="bug"></svg-icon>
-                {{ $t('defect.create') }}</el-button>
+<!--              <el-button-->
+<!--                size="small"-->
+<!--                type="text"-->
+<!--                @click="addDefectHandle($event,scope.row)"-->
+<!--                v-hasPermi="['system:defect:add']"-->
+<!--              ><svg-icon icon-class="bug"></svg-icon>-->
+<!--                {{ $t('defect.create') }}</el-button>-->
               <el-button
                 size="small"
                 type="text"
@@ -279,7 +292,7 @@ export default {
         // 是否禁用上传
         isUploading: false,
         // 设置上传的请求头部
-        headers: { Authorization: "Bearer " + getToken() },
+        headers: { Authorization: "Bearer " + getToken(), language: this.$i18n.locale },
         // 上传的地址
         url: process.env.VUE_APP_BASE_API + "/system/case/importData"
       },
@@ -356,6 +369,7 @@ export default {
   },
   methods: {
     strFormat,
+    /** 重新加载数据 */
     reloadData() {
       this.getList();
       this.$refs.treeModuleRef.reloadData();
@@ -408,7 +422,7 @@ export default {
     /** 设置列表显示的属性字段 */
     setFieldList() {
       this.fieldList = [
-        'id','title','module','level', 'preconditions','expect','step','image','update-time','defect.state'
+        'id','case.name','module','level', 'preconditions','expect','step','image','update-time','defect.state'
       ];
 
       const fieldList = this.$cache.local.get(CASE_TABLE_FIELD_LIST_CACHE_KEY);
@@ -475,8 +489,12 @@ export default {
     },
     /** 删除按钮操作 */
     handleDelete(e,row) {
-      this.$modal.confirm(strFormat(this.$i18n.t('case.is-delete').toString(),this.caseNumber(row))).then(function() {
-        return delCase(row.caseId);
+      const caseIds = row?[row.caseId]:this.ids;
+      const delCaseNames = this.caseList.filter(c=>caseIds.indexOf(c.caseId)>-1).map(c=>{
+        return this.caseNumber(c);
+      }).join(', ');
+      this.$modal.confirm(strFormat(this.$i18n.t('case.is-delete').toString(), delCaseNames)).then(function() {
+        return delCase(caseIds);
       }).then(() => {
         this.getList();
         this.$modal.msgSuccess(this.$i18n.t('delete-success'));
@@ -494,6 +512,7 @@ export default {
       this.queryParams.params.modulePid = moduleId;
       this.handleQuery();
     },
+    /** 添加缺陷操作 */
     addDefectHandle(e,caseObj){
       this.$refs.addDefect.openByCase(caseObj);
       e.stopPropagation();
@@ -530,7 +549,7 @@ export default {
       this.$alert(html, this.$i18n.t('case.import-result').toString(), { dangerouslyUseHTMLString: true, customClass: 'case-upload-alert' });
       this.getList();
     },
-    // 提交上传文件
+    /** 提交上传文件 */
     submitFileForm() {
       this.$refs.upload.submit();
     },
@@ -549,7 +568,13 @@ export default {
       const targetRoute = this.$router.resolve({ name:'Defect', params: {}});
       window.open(targetRoute.href, '_blank');
       event.stopPropagation();
-    }
+    },
+    /** 多选框选中数据 */
+    handleSelectionChange(selection) {
+      this.ids = selection.map(item => item.caseId);
+      this.single = selection.length != 1;
+      this.multiple = !selection.length;
+    },
   }
 };
 </script>

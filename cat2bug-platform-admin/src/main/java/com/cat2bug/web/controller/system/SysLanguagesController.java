@@ -2,6 +2,8 @@ package com.cat2bug.web.controller.system;
 
 import com.cat2bug.common.core.domain.AjaxResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -11,8 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController("languages")
 public class SysLanguagesController {
-    @GetMapping()
-    public AjaxResult changeLanguages(String lang){
+    @PostMapping("/{lang}")
+    public AjaxResult changeLanguages(@PathVariable String lang){
         return AjaxResult.success();
     }
 }

@@ -3,7 +3,7 @@ package com.cat2bug.system.domain;
 import com.cat2bug.common.annotation.Excel;
 import com.cat2bug.common.core.domain.BaseEntity;
 import com.cat2bug.system.domain.handle.SysModuleComboHandlerAdapter;
-import com.cat2bug.system.domain.handle.SysModuleHandlerAdapter;
+import com.cat2bug.system.domain.handle.SysModuleNameHandlerAdapter;
 import lombok.Data;
 import org.apache.poi.ss.usermodel.IndexedColors;
 
@@ -26,7 +26,7 @@ public class SysCaseExcelTepmplate extends BaseEntity
     @Excel(name = "模块",
             i18nNameKey = "module",
             width = 40,
-            handler = SysModuleHandlerAdapter.class,
+            handler = SysModuleNameHandlerAdapter.class,
             comboHandler = SysModuleComboHandlerAdapter.class,
             headerBackgroundColor=IndexedColors.GREY_25_PERCENT)
     private String moduleName;

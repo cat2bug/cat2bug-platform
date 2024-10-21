@@ -2,7 +2,8 @@ package com.cat2bug.system.domain;
 
 import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.system.domain.handle.SysModuleComboHandlerAdapter;
-import com.cat2bug.system.domain.handle.SysModuleHandlerAdapter;
+import com.cat2bug.system.domain.handle.SysModuleIdHandlerAdapter;
+import com.cat2bug.system.domain.handle.SysModuleNameHandlerAdapter;
 import lombok.Data;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -27,15 +28,6 @@ public class SysCase extends BaseEntity
     /** 测试用例 */
     private Long caseId;
 
-    /** 模块id */
-//    @Excel(name = "模块",
-//            i18nNameKey = "module",
-//            width = 40,
-//            type = Excel.Type.IMPORT,
-//            handler = SysModuleHandlerAdapter.class,
-//            headerBackgroundColor=IndexedColors.GREY_25_PERCENT)
-    private Long moduleId;
-
     /** 用例类型 */
     private Long caseType;
 
@@ -53,14 +45,28 @@ public class SysCase extends BaseEntity
     @Excel(name = "用例名称(必填)", i18nNameKey = "case.name_excel", align = HorizontalAlignment.LEFT, width = 50, headerColor = IndexedColors.RED,headerBackgroundColor=IndexedColors.GREY_25_PERCENT)
     private String caseName;
 
-    /** 模块名称 */
-    @Excel(name = "模块",
+    /** 模块id */
+    @Excel(name = "交付物",
             i18nNameKey = "module",
             align = HorizontalAlignment.LEFT,
             width = 40,
-            handler = SysModuleHandlerAdapter.class,
+            handler = SysModuleIdHandlerAdapter.class,
             comboHandler = SysModuleComboHandlerAdapter.class,
-            headerBackgroundColor=IndexedColors.GREY_25_PERCENT)
+            headerBackgroundColor=IndexedColors.GREY_25_PERCENT,
+            type = Excel.Type.EXPORT
+    )
+    private Long moduleId;
+
+    /** 模块名称 */
+    @Excel(name = "交付物",
+            i18nNameKey = "module",
+            align = HorizontalAlignment.LEFT,
+            width = 40,
+            handler = SysModuleNameHandlerAdapter.class,
+            comboHandler = SysModuleComboHandlerAdapter.class,
+            headerBackgroundColor=IndexedColors.GREY_25_PERCENT,
+            type = Excel.Type.IMPORT
+    )
     private String moduleName;
 
     /** 用例级别 */

@@ -11,6 +11,7 @@
   </el-dropdown>
 </template>
 <script>
+
 const I18N_LOCALE_KEY='i18n-locale'
 
 export default {

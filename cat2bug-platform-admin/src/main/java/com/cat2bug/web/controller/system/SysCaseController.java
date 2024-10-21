@@ -87,8 +87,10 @@ public class SysCaseController extends BaseController
     public void export(HttpServletResponse response, SysCase sysCase)
     {
         List<SysCase> list = sysCaseService.selectSysCaseList(sysCase);
+        Map<String, Object> params = new HashMap<>();
+        params.put("type","export");
         ExcelUtil<SysCase> util = new ExcelUtil<SysCase>(SysCase.class);
-        util.exportExcel(response, list, "测试用例数据");
+        util.exportExcel(response, list, "测试用例数据", params);
     }
 
     /**

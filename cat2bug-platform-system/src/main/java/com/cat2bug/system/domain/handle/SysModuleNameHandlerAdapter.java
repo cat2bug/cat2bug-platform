@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
  * @CreateTime: 2024-02-02 18:40
  * @Version: 1.0.0
  */
-public class SysModuleHandlerAdapter implements ExcelHandlerAdapter {
+public class SysModuleNameHandlerAdapter implements ExcelHandlerAdapter {
     @Override
     public Object format(Object value, String[] args, Cell cell, Workbook wb,Map<String, Object> requestParams) {
         if(value!=null) {
