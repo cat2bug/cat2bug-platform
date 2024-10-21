@@ -27,7 +27,11 @@ public class CaseStepAdapter implements ExcelHandlerAdapter {
             SysCaseStep s = list.get(i);
             if(s!=null && StringUtils.isNotBlank(s.getStepExpect()) || StringUtils.isNotBlank(s.getStepDescribe())) {
                 String enterKey = (i==list.size()-1?"":"\n");
-                sb.append(String.format("%s - %s%s", s.getStepDescribe(), s.getStepExpect(), enterKey));
+                sb.append(String.format("%s%s%s%s",
+                        StringUtils.isBlank(s.getStepDescribe())?"":s.getStepDescribe(),
+                        StringUtils.isBlank(s.getStepExpect())?"":"---",
+                        StringUtils.isBlank(s.getStepExpect())?"":s.getStepExpect(),
+                        enterKey));
             }
         }
         return sb.toString();
