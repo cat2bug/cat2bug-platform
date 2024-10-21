@@ -70,8 +70,16 @@ public class SysCase extends BaseEntity
     private String moduleName;
 
     /** 用例级别 */
-    @Excel(name = "用例级别",i18nNameKey = "case.level", combo = "1,2,3,4,5",headerBackgroundColor=IndexedColors.GREY_25_PERCENT)
+    @Excel(name = "用例级别",i18nNameKey = "case.level", combo = "0P,1P,2P,3P,4P",
+            headerBackgroundColor=IndexedColors.GREY_25_PERCENT,
+            type = Excel.Type.IMPORT,
+            handler = com.cat2bug.system.domain.excel.CaseLevelAdapter.class
+    )
     private Long caseLevel;
+
+    /** 用例级别 */
+    @Excel(name = "用例级别",i18nNameKey = "case.level", combo = "0P,1P,2P,3P,4P", headerBackgroundColor=IndexedColors.GREY_25_PERCENT, type = Excel.Type.EXPORT)
+    private String caseLevelName;
 
     /** 前置条件 */
     @Excel(name = "前置条件",i18nNameKey = "case.prerequisite", align = HorizontalAlignment.LEFT, width = 50, headerBackgroundColor=IndexedColors.GREY_25_PERCENT)
@@ -87,6 +95,9 @@ public class SysCase extends BaseEntity
 
     @Excel(name = "步骤", i18nNameKey = "case.step", width = 50, align = HorizontalAlignment.LEFT, type = Excel.Type.IMPORT, headerBackgroundColor=IndexedColors.GREY_25_PERCENT)
     private String caseStepScript;
+
+    @Excel(name = "数据", i18nNameKey = "case.data", width = 50, align = HorizontalAlignment.LEFT, headerBackgroundColor=IndexedColors.GREY_25_PERCENT)
+    private String caseData;
 
     /** 图片集合 */
     private String imgUrls;

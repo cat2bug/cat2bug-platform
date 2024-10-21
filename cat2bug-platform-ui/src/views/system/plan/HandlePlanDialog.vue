@@ -200,6 +200,8 @@ import {listDefect} from "@/api/system/defect";
 const TREE_MODULE_WIDTH_CACHE_KEY = 'plan_case_tree_module_width';
 /** 需要显示的测试用例字段列表在缓存的key值 */
 const PLAN_ITEM_TABLE_FIELD_LIST_CACHE_KEY='plan-item-table-field-list';
+/** 测试子项不通过的状态key值 */
+const PLAN_ITEM_STATE_NOT_PASS = 'not_pass';
 
 export default {
   name: "AddPlanDialog",
@@ -449,7 +451,7 @@ export default {
         params: {
           defectId: defect.defectId
         },
-        planItemState: 'fail',
+        planItemState: PLAN_ITEM_STATE_NOT_PASS,
       }
       updatePlanItem(data).then(res=>{
         this.getPlanItemList();
@@ -463,7 +465,7 @@ export default {
         params: {
           defectId: log.defectId
         },
-        planItemState: 'fail',
+        planItemState: PLAN_ITEM_STATE_NOT_PASS,
       }
       updatePlanItem(data).then(res=>{
         this.getPlanItemList();

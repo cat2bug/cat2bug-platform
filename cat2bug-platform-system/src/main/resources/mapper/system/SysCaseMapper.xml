@@ -13,6 +13,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="caseExpect"    column="case_expect"    />
         <result property="caseStep"    column="case_step"  typeHandler="com.cat2bug.system.domain.handle.SysCaseStepArrayTypeHandler"  />
         <result property="caseLevel"    column="case_level"    />
+        <result property="caseLevelName"    column="case_level_name"    />
         <result property="casePreconditions"    column="case_preconditions"    />
         <result property="createBy"    column="create_by"    />
         <result property="createTime"    column="create_time"    />
@@ -22,13 +23,14 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="projectId"    column="project_id"    />
         <result property="remark"    column="remark"    />
         <result property="imgUrls"    column="img_urls"    />
+        <result property="caseData"    column="case_data"    />
         <result property="defectProcessingCount"    column="defect_processing_count"    />
         <result property="defectAuditCount"    column="defect_audit_count"    />
         <result property="defectCloseCount"    column="defect_close_count"    />
     </resultMap>
 
     <sql id="selectSysCaseVo">
-        select c.case_id, c.case_name, c.module_id, m.module_name, c.case_type, c.case_expect, c.case_step, c.case_level, c.case_preconditions, c.create_by, c.create_time, c.update_by, c.update_time, c.case_num, c.project_id, c.remark, c.img_urls,
+        select c.case_id, c.case_name, c.module_id, m.module_name, c.case_type, c.case_expect, c.case_step, c.case_level,case when c.case_level is not null then CONCAT(c.case_level-1, 'P') end as case_level_name, c.case_preconditions, c.create_by, c.create_time, c.update_by, c.update_time, c.case_num, c.project_id, c.remark, c.img_urls, c.case_data,
                d.defect_processing_count, d.defect_audit_count, d.defect_close_count
         from sys_case c
         LEFT JOIN sys_module m on m.module_id = c.module_id
@@ -119,6 +121,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="projectId != null">project_id,</if>
             <if test="remark != null">remark,</if>
             <if test="imgUrls != null">img_urls,</if>
+            <if test="caseData != null">case_data,</if>
          </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="caseName != null">#{caseName},</if>
@@ -136,6 +139,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="projectId != null">#{projectId},</if>
             <if test="remark != null">#{remark},</if>
             <if test="imgUrls != null">#{imgUrls},</if>
+            <if test="caseData != null">#{caseData},</if>
          </trim>
     </insert>
 
@@ -157,6 +161,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="projectId != null">project_id = #{projectId},</if>
             <if test="remark != null">remark = #{remark},</if>
             <if test="imgUrls != null">img_urls = #{imgUrls},</if>
+            <if test="caseData != null">case_data = #{caseData},</if>
         </trim>
         where case_id = #{caseId}
     </update>

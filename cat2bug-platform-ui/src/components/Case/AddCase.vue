@@ -65,6 +65,9 @@
           </template>
           <case-step-panel ref="caseStepPanel" v-model="form.caseStep" :panel-type="caseStepSwitchType" />
         </el-form-item>
+        <el-form-item :label="$t('data')" prop="caseData">
+          <el-input type="textarea" v-model="form.caseData" :placeholder="$t('case.please-enter-data')" maxlength="255" rows="3" show-word-limit />
+        </el-form-item>
         <el-form-item :label="$t('remark')" prop="remark">
           <el-input type="textarea" v-model="form.remark" :placeholder="$t('please-enter-remark')" maxlength="255" rows="6" show-word-limit />
         </el-form-item>
@@ -236,6 +239,7 @@ export default {
       this.form = {
         caseId: null,
         caseName: null,
+        caseData: null,
         moduleId: this.form.moduleId,
         caseType: null,
         caseExpect: null,
@@ -260,6 +264,7 @@ export default {
       this.form = {
         caseId: null,
         caseName: null,
+        caseData: null,
         moduleId: this.moduleId,
         caseType: null,
         caseExpect: null,

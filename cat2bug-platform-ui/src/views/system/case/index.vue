@@ -139,6 +139,7 @@
               <step :steps="scope.row.caseStep" style="max-width: 300px;" />
             </template>
           </el-table-column>
+          <el-table-column v-if="showField('data')" :label="$t('data')" align="left" prop="caseData" min-width="150" sortable />
           <el-table-column v-if="showField('image')" :label="$t('image')" :key="$t('image')" align="center" prop="imgUrls" width="100">
             <template slot-scope="scope">
               <cat2-bug-preview-image :images="getUrl(scope.row.imgUrls)" />
@@ -422,7 +423,7 @@ export default {
     /** 设置列表显示的属性字段 */
     setFieldList() {
       this.fieldList = [
-        'id','case.name','module','level', 'preconditions','expect','step','image','update-time','defect.state'
+        'id','case.name','module','level', 'preconditions','expect','step','data','image','update-time','defect.state'
       ];
 
       const fieldList = this.$cache.local.get(CASE_TABLE_FIELD_LIST_CACHE_KEY);

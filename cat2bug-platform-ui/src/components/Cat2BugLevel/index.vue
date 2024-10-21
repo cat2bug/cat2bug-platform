@@ -1,11 +1,12 @@
 <template>
   <div class="level-item">
     <div class="ring" :style="`color:${ringColor(level)}`"></div>
-    <span style="color: #8492a6; font-size: 13px">{{ level }}</span>
+    <span style="color: #8492a6; font-size: 13px">{{ getLevelName(level) }}</span>
   </div>
 </template>
 
 <script>
+import {getLevelName} from "@/utils/case";
 export default {
   name: "index",
   data() {
@@ -36,6 +37,9 @@ export default {
         }
       }
     }
+  },
+  methods: {
+    getLevelName
   }
 }
 </script>
