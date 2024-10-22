@@ -89,15 +89,15 @@ public class SysCase extends BaseEntity
     @Excel(name = "预期(必填)", i18nNameKey = "case.expected_excel", align = HorizontalAlignment.LEFT, width = 50, headerColor = IndexedColors.RED,headerBackgroundColor=IndexedColors.GREY_25_PERCENT)
     private String caseExpect;
 
+    @Excel(name = "数据", i18nNameKey = "case.data", width = 50, align = HorizontalAlignment.LEFT, headerBackgroundColor=IndexedColors.GREY_25_PERCENT)
+    private String caseData;
+
     /** 步骤 */
     @Excel(name = "步骤", i18nNameKey = "case.step", width = 50, align = HorizontalAlignment.LEFT, type = Excel.Type.EXPORT, headerBackgroundColor=IndexedColors.GREY_25_PERCENT, handler = com.cat2bug.system.domain.excel.CaseStepAdapter.class)
     private List<SysCaseStep> caseStep;
 
     @Excel(name = "步骤", i18nNameKey = "case.step", width = 50, align = HorizontalAlignment.LEFT, type = Excel.Type.IMPORT, headerBackgroundColor=IndexedColors.GREY_25_PERCENT)
     private String caseStepScript;
-
-    @Excel(name = "数据", i18nNameKey = "case.data", width = 50, align = HorizontalAlignment.LEFT, headerBackgroundColor=IndexedColors.GREY_25_PERCENT)
-    private String caseData;
 
     /** 图片集合 */
     private String imgUrls;

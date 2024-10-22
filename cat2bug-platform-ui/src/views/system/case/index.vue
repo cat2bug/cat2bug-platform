@@ -134,12 +134,12 @@
           </el-table-column>
           <el-table-column v-if="showField('preconditions')" :label="$t('preconditions')" align="left" prop="casePreconditions" min-width="150" sortable />
           <el-table-column v-if="showField('expect')" :label="$t('expect')" align="left" prop="caseExpect" min-width="150" sortable />
+          <el-table-column v-if="showField('data')" :label="$t('data')" align="left" prop="caseData" min-width="150" sortable />
           <el-table-column v-if="showField('step')" :label="$t('step')" align="left" prop="caseStep" width="300" sortable>
             <template slot-scope="scope">
               <step :steps="scope.row.caseStep" style="max-width: 300px;" />
             </template>
           </el-table-column>
-          <el-table-column v-if="showField('data')" :label="$t('data')" align="left" prop="caseData" min-width="150" sortable />
           <el-table-column v-if="showField('image')" :label="$t('image')" :key="$t('image')" align="center" prop="imgUrls" width="100">
             <template slot-scope="scope">
               <cat2-bug-preview-image :images="getUrl(scope.row.imgUrls)" />
