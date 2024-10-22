@@ -555,6 +555,7 @@
   "case.create-row-count": "测试用例生成数量",
   "case.prompt-content-not-empty": "需求内容不能为空!",
   "case.prompt-content-cannot-empty": "提示词不能为空!",
+  "case.empty-prompt": "空提示词",
   "report.select-template": "请选择报告模版",
   "report.add-template": "添加模版",
   "report.delete-template": "是否删除此报告模版?",

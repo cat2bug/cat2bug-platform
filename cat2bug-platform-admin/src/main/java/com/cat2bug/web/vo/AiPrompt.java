@@ -10,5 +10,6 @@ import lombok.Data;
 @Data
 public class AiPrompt {
     private String prompt;
+    private int rowCount;
     private long[] context;
 }

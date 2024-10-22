@@ -36,7 +36,7 @@
             <template v-slot:tools>
               <div class="cloud-case-input-tools">
                 <el-tooltip class="item" effect="dark" :content="$t('case.create-row-count')" placement="top">
-                  <el-input-number class="cloud-case-prompt-input-number" size="mini" :min="1" :max="100" v-model="prompt.rowCount"></el-input-number>
+                  <el-input-number class="cloud-case-prompt-input-number" size="mini" :min="1" :max="100" v-model="prompt.rowCount" @change="setDefaultRowCount(prompt.rowCount)"></el-input-number>
                 </el-tooltip>
                 <el-tooltip class="item" effect="dark" :content="$t('clear')" placement="top">
                   <el-button class="cat2-bug-textarea-button" type="text" @click="handleClearPromptContent"><svg-icon icon-class="delete"></svg-icon></el-button>
@@ -106,7 +106,7 @@
                           @current-change="getCasePrompt">
                         </el-pagination>
                       </div>
-                      <el-empty v-if="!casePromptList || casePromptList.length==0" description="描述文字"></el-empty>
+                      <el-empty v-if="!casePromptList || casePromptList.length==0" :description="$t('case.empty-prompt')"></el-empty>
                     </div>
                     <el-button slot="reference" class="cat2-bug-textarea-button" type="text"><svg-icon icon-class="tips"></svg-icon></el-button>
                   </el-popover>
@@ -253,6 +253,9 @@ import {strFormat} from "@/utils";
 import {makeCaseList} from "@/api/ai/AiCase";
 import i18n from "@/utils/i18n/i18n";
 import {addCasePrompt, listCasePrompt} from "@/api/system/CasePrompt";
+
+const DEFAULT_ROW_COUNT_KEY = 'case_default_row_count';
+
 export default {
   name: "index",
   components: { Label, Cat2BugLevel, Step, Multipane, MultipaneResizer, CaseForm, CaseCard, SelectModule, Cat2BugTextarea, AddCasePrompt, HandleCasePrompt },
@@ -261,7 +264,7 @@ export default {
       prompt: {
         prompt: null,
         context: null,
-        rowCount: 5
+        rowCount: this.getDefaultRowCount()
       },
       // 是否查询用例时保存提示
       isSearchAndSavePrompt: true,
@@ -318,6 +321,12 @@ export default {
     },
   },
   methods: {
+    setDefaultRowCount(row) {
+      this.$cache.local.set(DEFAULT_ROW_COUNT_KEY, row);
+    },
+    getDefaultRowCount() {
+      return this.$cache.local.get(DEFAULT_ROW_COUNT_KEY) || 5;
+    },
     parseTime,
     /** 初始化浮动菜单 */
     initFloatMenu() {
@@ -369,7 +378,8 @@ export default {
       this.caseList = [];
       this.prompt = {
         prompt: null,
-        context: null
+        context: null,
+        rowCount: this.getDefaultRowCount()
       };
       this.currentCase={};
       this.casePromptQuery = {

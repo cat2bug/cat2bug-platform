@@ -41,7 +41,7 @@ public class AiCaseController extends BaseController {
     public AjaxResult list(@RequestBody AiSysPrompt prompt)
     {
         SysAiModuleConfig sysAiModuleConfig = sysAiModuleConfigService.selectSysAiModuleConfigByProjectId(prompt.getProjectId());
-        String json = String.format("%s。前面如果没有标明数量，那默认生成5条测试用例", prompt.getPrompt());
+        String json = String.format("%s。前面如果没有标明数量，需要生成%d条测试用例", prompt.getPrompt(), Math.max(prompt.getRowCount(), 1));
         AiCaseList cases = aiService.generate(sysAiModuleConfig.getBusinessModule(), json,false, prompt.getContext(), AiCaseList.class);
         return success(cases);
     }
