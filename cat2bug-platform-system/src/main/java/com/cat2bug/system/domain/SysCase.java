@@ -70,7 +70,7 @@ public class SysCase extends BaseEntity
     private String moduleName;
 
     /** 用例级别 */
-    @Excel(name = "用例级别",i18nNameKey = "case.level", combo = "0P,1P,2P,3P,4P",
+    @Excel(name = "用例级别",i18nNameKey = "case.level", combo = "P0,P1,P2,P3,P4",
             headerBackgroundColor=IndexedColors.GREY_25_PERCENT,
             type = Excel.Type.IMPORT,
             handler = com.cat2bug.system.domain.excel.CaseLevelAdapter.class
@@ -78,7 +78,7 @@ public class SysCase extends BaseEntity
     private Long caseLevel;
 
     /** 用例级别 */
-    @Excel(name = "用例级别",i18nNameKey = "case.level", combo = "0P,1P,2P,3P,4P", headerBackgroundColor=IndexedColors.GREY_25_PERCENT, type = Excel.Type.EXPORT)
+    @Excel(name = "用例级别",i18nNameKey = "case.level", combo = "P0,P1,P2,P3,P4", headerBackgroundColor=IndexedColors.GREY_25_PERCENT, type = Excel.Type.EXPORT)
     private String caseLevelName;
 
     /** 前置条件 */

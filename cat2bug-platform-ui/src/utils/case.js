@@ -10,7 +10,7 @@ export function getLevelName (level){
   if(!level) {
     return null;
   }
-  return `${parseInt(level)-1}P`;
+  return `P${parseInt(level)-1}`;
 }
 /** 获取测试用例等级说明 */
 export function getLevelExplain (level){
