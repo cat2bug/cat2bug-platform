@@ -11,7 +11,7 @@
  Target Server Version : 80200
  File Encoding         : 65001
 
- Date: 21/10/2024 23:51:46
+ Date: 22/10/2024 09:28:59
 */
 
 SET NAMES utf8mb4;
@@ -603,6 +603,7 @@ CREATE TABLE `sys_case` (
   `project_id` bigint DEFAULT NULL COMMENT '项目编号',
   `remark` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin DEFAULT NULL COMMENT '备注',
   `img_urls` varchar(5000) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin DEFAULT NULL COMMENT '图片集合',
+  `case_data` varchar(10000) COLLATE utf8mb4_0900_bin DEFAULT NULL COMMENT '用例数据',
   PRIMARY KEY (`case_id`),
   UNIQUE KEY `id_num_` (`case_id`,`case_num`),
   KEY `project_id_case_name` (`case_name`,`project_id`)
