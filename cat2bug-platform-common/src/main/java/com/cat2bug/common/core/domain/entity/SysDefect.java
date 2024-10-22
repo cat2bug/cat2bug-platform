@@ -29,30 +29,31 @@ public class SysDefect extends BaseEntity
     private Long defectId;
 
     /** 项目编号 */
+    @Excel(name = "编号", i18nNameKey = "id", type=Excel.Type.EXPORT, width = 30)
     private Long projectNum;
 
     private Long defectNumber;
 
     /** 缺陷类型 */
     @JsonFormat(shape = JsonFormat.Shape.STRING)
-    @Excel(name = "类型", type=Excel.Type.EXPORT,handler = com.cat2bug.common.core.domain.excel.DefectTypeHandler.class, comboHandler = com.cat2bug.common.core.domain.excel.DefectTypeComboHandlerAdapter.class)
+    @Excel(name = "类型", i18nNameKey = "type", type=Excel.Type.EXPORT,handler = com.cat2bug.common.core.domain.excel.DefectTypeHandler.class, comboHandler = com.cat2bug.common.core.domain.excel.DefectTypeComboHandlerAdapter.class)
     private SysDefectTypeEnum defectType;
 
-    @Excel(name = "类型", type=Excel.Type.IMPORT, comboHandler = com.cat2bug.common.core.domain.excel.DefectTypeComboHandlerAdapter.class)
+    @Excel(name = "类型", i18nNameKey = "type", type=Excel.Type.IMPORT, comboHandler = com.cat2bug.common.core.domain.excel.DefectTypeComboHandlerAdapter.class)
     private String defectTypeImportName;
 
     private SysDefectTypeEnum defectTypeName;
 
     /** 缺陷标题 */
-    @Excel(name = "标题",width = 100)
+    @Excel(name = "标题", i18nNameKey = "title", width = 100)
     private String defectName;
 
     /** 缺陷描述 */
-    @Excel(name = "描述",width = 100)
+    @Excel(name = "描述", i18nNameKey = "describe", width = 100)
     private String defectDescribe;
 
     /** 缺陷等级 */
-    @Excel(name = "严重程度", handler = com.cat2bug.common.core.domain.excel.DefectLevelHandler.class, comboHandler = com.cat2bug.common.core.domain.excel.DefectLevelComboHandlerAdapter.class)
+    @Excel(name = "缺陷等级", i18nNameKey = "defect.level", handler = com.cat2bug.common.core.domain.excel.DefectLevelHandler.class, comboHandler = com.cat2bug.common.core.domain.excel.DefectLevelComboHandlerAdapter.class)
     private String defectLevel;
 
     /** 缺陷等级 */
@@ -60,10 +61,10 @@ public class SysDefect extends BaseEntity
 
     /** 缺陷状态 */
     @JsonFormat(shape = JsonFormat.Shape.NUMBER)
-    @Excel(name = "缺陷状态", type=Excel.Type.EXPORT,handler = com.cat2bug.common.core.domain.excel.DefectStateHandler.class, comboHandler = com.cat2bug.common.core.domain.excel.DefectStateComboHandlerAdapter.class)
+    @Excel(name = "缺陷状态", i18nNameKey = "defect.state", type=Excel.Type.EXPORT,handler = com.cat2bug.common.core.domain.excel.DefectStateHandler.class, comboHandler = com.cat2bug.common.core.domain.excel.DefectStateComboHandlerAdapter.class)
     private SysDefectStateEnum defectState;
 
-    @Excel(name = "缺陷状态", type=Excel.Type.IMPORT, comboHandler = com.cat2bug.common.core.domain.excel.DefectStateComboHandlerAdapter.class)
+    @Excel(name = "缺陷状态", i18nNameKey = "defect.state", type=Excel.Type.IMPORT, comboHandler = com.cat2bug.common.core.domain.excel.DefectStateComboHandlerAdapter.class)
     private String defectStateImportName;
 
     /** 缺陷状态 */
@@ -73,30 +74,30 @@ public class SysDefect extends BaseEntity
     private Long moduleId;
 
     /** 测试模块名称 */
-    @Excel(name = "交付物",width = 50, type = Excel.Type.IMPORT, comboHandler = com.cat2bug.common.core.domain.excel.ModuleComboHandlerAdapter.class)
+    @Excel(name = "交付物", i18nNameKey = "module", width = 50, type = Excel.Type.IMPORT, comboHandler = com.cat2bug.common.core.domain.excel.ModuleComboHandlerAdapter.class)
     private String moduleName;
 
     /** 版本 */
-    @Excel(name = "版本")
+    @Excel(name = "版本", i18nNameKey = "version")
     private String moduleVersion;
 
     /** 创建时间 */
     @JsonFormat(pattern = "yyyy-MM-dd HH:MM:ss")
-    @Excel(name = "创建时间", width = 30, dateFormat = "yyyy-MM-dd HH:MM:ss", type = Excel.Type.EXPORT)
+    @Excel(name = "创建时间", i18nNameKey = "create-time", width = 30, dateFormat = "yyyy-MM-dd HH:MM:ss", type = Excel.Type.EXPORT)
     private Date createTime;
 
     /** 更新时间 */
     @JsonFormat(pattern = "yyyy-MM-dd HH:MM:ss")
-    @Excel(name = "更新时间", width = 30, dateFormat = "yyyy-MM-dd HH:MM:ss", type = Excel.Type.EXPORT)
+    @Excel(name = "更新时间", i18nNameKey = "update-time", width = 30, dateFormat = "yyyy-MM-dd HH:MM:ss", type = Excel.Type.EXPORT)
     private Date updateTime;
 
     /** 计划开始时间 */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @Excel(name = "计划开始时间", width = 30, dateFormat = "yyyy-MM-dd HH:MM:ss", type = Excel.Type.EXPORT)
+    @Excel(name = "计划开始时间", i18nNameKey = "plan-start-time", width = 30, dateFormat = "yyyy-MM-dd HH:MM:ss", type = Excel.Type.EXPORT)
     private Date planStartTime;
     /** 计划结束时间 */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @Excel(name = "计划结束时间", width = 30, dateFormat = "yyyy-MM-dd HH:MM:ss", type = Excel.Type.EXPORT)
+    @Excel(name = "计划结束时间", i18nNameKey = "plan-end-time", width = 30, dateFormat = "yyyy-MM-dd HH:MM:ss", type = Excel.Type.EXPORT)
     private Date planEndTime;
 
     /** 处理人id */
@@ -106,18 +107,18 @@ public class SysDefect extends BaseEntity
     private List<SysUser> handleByList;
 
     /** 处理人名称 */
-    @Excel(name = "处理人", comboHandler = com.cat2bug.common.core.domain.excel.MemberComboHandlerAdapter.class)
+    @Excel(name = "处理人", i18nNameKey = "handle-by", comboHandler = com.cat2bug.common.core.domain.excel.MemberComboHandlerAdapter.class)
     private String handleByNames;
 
     /** 图片 */
-    @Excel(name = "图片",cellType = Excel.ColumnType.IMAGE_LIST, type = Excel.Type.EXPORT, width = 50,height = 50)
+    @Excel(name = "图片", i18nNameKey = "image", cellType = Excel.ColumnType.IMAGE_LIST, type = Excel.Type.EXPORT, width = 50,height = 50)
     private String imgUrls;
     private String imgList;
-    @Excel(name = "图片",cellType = Excel.ColumnType.IMAGE, type = Excel.Type.IMPORT, width = 50,height = 50)
+    @Excel(name = "图片", i18nNameKey = "image", cellType = Excel.ColumnType.IMAGE, type = Excel.Type.IMPORT, width = 50,height = 50)
     private String imgObjects;
 
     /** 附件 */
-    @Excel(name = "附件", width = 100,handler = com.cat2bug.common.core.domain.excel.UrlListHandler.class, type = Excel.Type.EXPORT)
+    @Excel(name = "附件", i18nNameKey = "annex", width = 100,handler = com.cat2bug.common.core.domain.excel.UrlListHandler.class, type = Excel.Type.EXPORT)
     private String annexUrls;
     private String annexList;
 

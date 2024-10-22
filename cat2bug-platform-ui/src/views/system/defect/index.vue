@@ -374,6 +374,7 @@ export default {
     handleRefreshQuery() {
       this.queryParams.projectId = this.projectId;
       this.$refs.defectContentComponent.search(this.queryParams);
+      this.$forceUpdate();
     },
     /** 新增按钮操作 */
     handleAdd() {

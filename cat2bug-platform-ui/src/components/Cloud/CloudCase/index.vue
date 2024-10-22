@@ -81,6 +81,9 @@
                           style="width: 100%">
                           <el-table-column
                             prop="casePromptContent">
+                            <template slot-scope="scope">
+                              <div class="case-prompt-content" v-html="renderCasePromptContent(scope.row.casePromptContent)"></div>
+                            </template>
                           </el-table-column>
                           <el-table-column
                             prop="operate"
@@ -252,9 +255,10 @@ import {addCase, batchAddCase, updateCase} from "@/api/system/case";
 import {strFormat} from "@/utils";
 import {makeCaseList} from "@/api/ai/AiCase";
 import i18n from "@/utils/i18n/i18n";
-import {addCasePrompt, listCasePrompt} from "@/api/system/CasePrompt";
+import { listCasePrompt } from "@/api/system/CasePrompt";
 
 const DEFAULT_ROW_COUNT_KEY = 'case_default_row_count';
+const PATTERN = /\$\{\s*[0-9a-zA-z]{1,255}\s*\}/g;
 
 export default {
   name: "index",
@@ -300,6 +304,32 @@ export default {
     }
   },
   computed: {
+    renderCasePromptContent: function () {
+      return function (content) {
+        if(!content) return null;
+        const matches = content.match(PATTERN);
+        if(matches && matches.length>0) {
+          let html = content;
+          matches.forEach(m=>{
+            html = html.replace(m,`<span style="
+                background-color: #ecf5ff;
+                display: inline-block;
+                height: 26px;
+                padding: 0 10px;
+                margin: 0 5px;
+                line-height: 24px;
+                font-size: 12px;
+                color: #409eff;
+                border: 1px solid #d9ecff;
+                border-radius: 4px;
+                box-sizing: border-box;
+                white-space: nowrap;">${m}</span>`);
+          });
+          return html;
+        }
+        return content;
+      }
+    },
     importStateName() {
       return function (c) {
         return c.isImport===true?this.$i18n.t('case.imported'):this.$i18n.t('case.not-imported');
@@ -410,6 +440,8 @@ export default {
         return;
       }
       this.casePromptVisible = true;
+      this.addCasePromptVisible = false;
+      this.$refs.addCasePrompt.reset();
       this.casePromptQuery.pageNum = 1;
       this.getCasePrompt();
     },
@@ -661,6 +693,11 @@ export default {
   }
   .cloud-case-prompt-tools h4 > i {
     margin-right: 5px;
+  }
+  .case-prompt-content {
+    display: inline-block;
+    width: 100%;
+    white-space: pre;
   }
 </style>
 <style lang="scss" scoped>

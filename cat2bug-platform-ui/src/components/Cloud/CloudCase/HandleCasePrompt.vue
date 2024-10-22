@@ -19,7 +19,7 @@
         <div class="variable-set-row">
           <div class="variable-number">#{{ index+1 }}</div>
           <label class="variable-name"><el-tag>{{ v.variableName }}</el-tag></label>
-          <el-input type="textarea" :autosize="{minRows:2, maxRows: 5}" v-model="v.replaceContent" :placeholder="strFormat($t('case.please-enter-replace-text'),v.variableName)"></el-input>
+          <el-input type="textarea" :autosize="{ minRows: 2, maxRows: 5 }" v-model="v.replaceContent" :placeholder="strFormat($t('case.please-enter-replace-text'),v.variableName)"></el-input>
         </div>
       </el-form-item>
     </el-form>

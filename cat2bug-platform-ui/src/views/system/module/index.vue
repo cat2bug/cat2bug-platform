@@ -45,7 +45,7 @@
       :default-expand-all="isExpandAll"
       :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
     >
-      <el-table-column :label="$t('module.name')" align="center" prop="moduleName" width="300" />
+      <el-table-column :label="$t('module.name')" align="start" prop="moduleName" />
       <el-table-column :label="$t('remark')" align="center" prop="remark" />
       <el-table-column :label="$t('operate')" align="center" class-name="small-padding fixed-width" width="200">
         <template slot-scope="scope">
