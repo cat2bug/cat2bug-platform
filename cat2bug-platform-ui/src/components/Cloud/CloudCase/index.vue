@@ -23,14 +23,97 @@
         </el-row>
       </div>
       <div ref="caseSearch" class="case-search">
-        <el-input type="textarea"
-                  :readonly="loading"
-                  maxlength="65536"
-                  rows="5"
-                  show-word-limit v-model="prompt.prompt"
-                  :placeholder="$t('case.ai-search-describe')">
-          <svg-icon slot="prefix" icon-class="robot" style="margin-right: 10px;" />
-        </el-input>
+          <cat2-bug-textarea
+            :readonly="loading"
+            v-model="prompt.prompt"
+            maxlength="65536"
+            rows="5"
+            :show-default-tools="false"
+            show-word-limit
+            show-tools
+            @change="handlePromptChange"
+            :placeholder="$t('case.ai-search-describe').toString()">
+            <template v-slot:tools>
+              <div class="cloud-case-input-tools">
+                <el-tooltip class="item" effect="dark" :content="$t('case.create-row-count')" placement="top">
+                  <el-input-number class="cloud-case-prompt-input-number" size="mini" :min="1" :max="100" v-model="prompt.rowCount"></el-input-number>
+                </el-tooltip>
+                <el-tooltip class="item" effect="dark" :content="$t('clear')" placement="top">
+                  <el-button class="cat2-bug-textarea-button" type="text" @click="handleClearPromptContent"><svg-icon icon-class="delete"></svg-icon></el-button>
+                </el-tooltip>
+                <el-tooltip class="item" effect="dark" :content="$t('case.prompt-tooltip')" placement="top">
+                  <el-popover
+                    placement="bottom"
+                    :title="$t('case.prompt')"
+                    popper-class="cloud-case-prompt-popover"
+                    ref="cloudCasePromptPopover"
+                    v-model="casePromptVisible"
+                    @show="handlePromptChange"
+                    trigger="click">
+                    <div class="cloud-case-prompt">
+                      <div v-show="addCasePromptVisible">
+                        <h4><i class="el-icon-plus"></i>{{ $t('case.add-prompt') }}</h4>
+                        <add-case-prompt ref="addCasePrompt" :project-id="projectId" @added="handleAddCasePrompt" @cancel="addCasePromptVisible=false" />
+                        <el-divider></el-divider>
+                      </div>
+                      <div class="cloud-case-prompt-tools">
+                        <div>
+                          <h4><i class="el-icon-tickets"></i>{{ $t('case.prompt-list') }}</h4>
+                        </div>
+                        <div>
+                          <el-button icon="el-icon-plus" v-show="!addCasePromptVisible" size="mini" @click="handleOpenAddCasePrompt">{{ $t('case.add-prompt') }}</el-button>
+                          <el-pagination
+                            style="float: right"
+                            :current-page.sync="casePromptQuery.pageNum"
+                            :page-size="casePromptQuery.pageSize"
+                            layout="prev, pager, next"
+                            :total="casePromptTotal"
+                            @size-change="getCasePrompt"
+                            @current-change="getCasePrompt">
+                          </el-pagination>
+                        </div>
+                      </div>
+                      <div v-if="casePromptList && casePromptList.length>0">
+                        <el-table
+                          :data="casePromptList"
+                          :show-header="false"
+                          @row-click="handleCasePromptClick"
+                          style="width: 100%">
+                          <el-table-column
+                            prop="casePromptContent">
+                          </el-table-column>
+                          <el-table-column
+                            prop="operate"
+                            width="80">
+                            <template slot-scope="scope">
+                              <el-button
+                                size="mini"
+                                type="text"
+                                class="red"
+                                icon="el-icon-close"
+                                @click="handleDelete($event,scope.row)"
+                              >{{ $t('delete') }}</el-button>
+                            </template>
+                          </el-table-column>
+                        </el-table>
+                        <el-pagination
+                          style="float: right; margin-top: 10px;"
+                          :current-page.sync="casePromptQuery.pageNum"
+                          :page-size="casePromptQuery.pageSize"
+                          layout="total, prev, pager, next"
+                          :total="casePromptTotal"
+                          @size-change="getCasePrompt"
+                          @current-change="getCasePrompt">
+                        </el-pagination>
+                      </div>
+                      <el-empty v-if="!casePromptList || casePromptList.length==0" description="描述文字"></el-empty>
+                    </div>
+                    <el-button slot="reference" class="cat2-bug-textarea-button" type="text"><svg-icon icon-class="tips"></svg-icon></el-button>
+                  </el-popover>
+                </el-tooltip>
+              </div>
+            </template>
+          </cat2-bug-textarea>
         <el-dropdown split-button type="success" :disabled="loading" @click="searchHandle" @command="searchCommandHandle">
           {{ $t('case.add-ai-case-prompt') }}
           <el-dropdown-menu slot="dropdown">
@@ -122,7 +205,7 @@
             </el-table-column>
           </el-table>
           <el-pagination
-            style="float: right"
+            style="float: right; margin-top: 5px"
             :current-page.sync="pageIndex"
             :page-size="pageSize"
             layout="total, prev, pager, next"
@@ -145,20 +228,23 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitImportForm">确 定</el-button>
-        <el-button @click="cancelImportForm">取 消</el-button>
+        <el-button type="primary" @click="submitImportForm">{{ $t('ok') }}</el-button>
+        <el-button @click="cancelImportForm">{{ $t('cancel') }}</el-button>
       </div>
     </el-dialog>
+    <handle-case-prompt ref="handCasePrompt" @submit="handleCasePromptCorrect" />
   </el-drawer>
-
 </template>
 
 <script>
 import Cat2BugLevel from "@/components/Cat2BugLevel";
+import Cat2BugTextarea from "@/components/Cat2BugTextarea";
 import CaseForm from "@/components/Case/CaseForm";
 import Step from "@/views/system/case/components/step";
 import CaseCard from "@/components/Case/CaseCard";
 import SelectModule from "@/components/Module/SelectModule";
+import AddCasePrompt from "@/components/Cloud/CloudCase/AddCasePrompt";
+import HandleCasePrompt from "@/components/Cloud/CloudCase/HandleCasePrompt";
 import { Multipane, MultipaneResizer } from 'vue-multipane';
 import Label from "@/components/Cat2BugStatistic/Components/Label";
 import {parseTime} from "@/utils/ruoyi"
@@ -166,15 +252,19 @@ import {addCase, batchAddCase, updateCase} from "@/api/system/case";
 import {strFormat} from "@/utils";
 import {makeCaseList} from "@/api/ai/AiCase";
 import i18n from "@/utils/i18n/i18n";
+import {addCasePrompt, listCasePrompt} from "@/api/system/CasePrompt";
 export default {
   name: "index",
-  components: {Label, Cat2BugLevel,Step,Multipane,MultipaneResizer,CaseForm,CaseCard,SelectModule},
+  components: { Label, Cat2BugLevel, Step, Multipane, MultipaneResizer, CaseForm, CaseCard, SelectModule, Cat2BugTextarea, AddCasePrompt, HandleCasePrompt },
   data() {
     return {
       prompt: {
         prompt: null,
-        context: null
+        context: null,
+        rowCount: 5
       },
+      // 是否查询用例时保存提示
+      isSearchAndSavePrompt: true,
       promptHistoryList: [],
       ids:new Set(),
       multipaneStyle: {'--marginTop':'0px'},
@@ -188,6 +278,16 @@ export default {
       caseFormStyle:null,
       importDialogVisible: false,
       importForm: {},
+      casePromptVisible: false,
+      casePromptTotal: 0,
+      casePromptQuery: {
+        pageSize: 10,
+        pageNum: 1,
+        projectId: null,
+        casePromptContent: null
+      },
+      casePromptList: [],
+      addCasePromptVisible: false,
     }
   },
   props: {
@@ -272,8 +372,16 @@ export default {
         context: null
       };
       this.currentCase={};
+      this.casePromptQuery = {
+        pageSize: 10,
+        pageNum: 1,
+        projectId: null,
+        casePromptContent: null
+      }
+      this.casePromptList = [];
       this.$refs['caseForm'].reset();
     },
+    /** 新话题 */
     newPrompt() {
       const self = this;
       this.$modal.confirm(
@@ -287,43 +395,64 @@ export default {
           self.resetPrompt();
         }).catch(() => {});
     },
+    handlePromptChange() {
+      if(this.prompt.prompt && this.prompt.prompt.length>30) {
+        return;
+      }
+      this.casePromptVisible = true;
+      this.casePromptQuery.pageNum = 1;
+      this.getCasePrompt();
+    },
+    /** 搜索用例 */
     searchHandle() {
+      if(!this.prompt.prompt) {
+        this.$message.error(this.$i18n.t('case.prompt-content-not-empty').toString())
+        return;
+      }
       let startSeconds = new Date().getTime();
       this.loading = true;
       this.caseList = [];
-        makeCaseList(this.prompt).then(res=>{
-          this.loading = false;
-          if(res.data && res.data.cases.length>0) {
-            // 添加之前创建的用例列表，目前注释掉
-            // this.caseList = [...res.data.cases.map(c => {
-            //   c.projectId = this.projectId;
-            //   c.searchTime = new Date();
-            //   return c;
-            // }), ...this.caseList];
-            this.promptHistoryList.push({
-              prompt: this.prompt.prompt.split('\n').join('<br />'),
-              context: this.prompt.context
-            });
-            this.$nextTick(() => {
-              const container = this.$refs.caseHistory;
-              container.scrollTop = container.scrollHeight;
-            });
-            this.caseList = res.data.cases.map(c => {
-              c.projectId = this.projectId;
-              c.searchTime = new Date();
-              return c;
-            });
-            this.promptHistoryList[this.promptHistoryList.length-1].list = this.caseList;
-            this.prompt.context = res.data.context;
-            this.prompt.prompt = null;
-            this.refreshCaseList();
-            this.$message.success(strFormat(this.$i18n.t('case.ai-search-success-result'),Math.floor((new Date().getTime()-startSeconds)/1000),res.data.cases.length))
-          } else {
-            this.$message.warning(this.$i18n.t('case.ai-search-fail-result').toString())
-          }
+      makeCaseList(this.prompt).then(res=>{
+        this.loading = false;
+        if(res.data && res.data.cases.length>0) {
+          // 添加之前创建的用例列表，目前注释掉
+          // this.caseList = [...res.data.cases.map(c => {
+          //   c.projectId = this.projectId;
+          //   c.searchTime = new Date();
+          //   return c;
+          // }), ...this.caseList];
+          this.promptHistoryList.push({
+            prompt: this.prompt.prompt.split('\n').join('<br />'),
+            context: this.prompt.context
+          });
+          this.$nextTick(() => {
+            const container = this.$refs.caseHistory;
+            container.scrollTop = container.scrollHeight;
+          });
+          this.caseList = res.data.cases.map(c => {
+            c.projectId = this.projectId;
+            c.searchTime = new Date();
+            return c;
+          });
+          this.promptHistoryList[this.promptHistoryList.length-1].list = this.caseList;
+          this.prompt.context = res.data.context;
+          this.prompt.prompt = null;
+          this.refreshCaseList();
+          this.$message.success(strFormat(this.$i18n.t('case.ai-search-success-result'),Math.floor((new Date().getTime()-startSeconds)/1000),res.data.cases.length))
+        } else {
+          this.$message.warning(this.$i18n.t('case.ai-search-fail-result').toString())
+        }
       }).catch(e=>{
         this.loading = false;
-      })
+      });
+      // 保存提示词
+      // if(this.isSearchAndSavePrompt) {
+      //   let prompt = {
+      //     casePromptContent: this.prompt.prompt,
+      //     projectId: this.projectId
+      //   }
+      //   addCasePrompt(prompt).then(res=>{});
+      // }
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
@@ -425,11 +554,105 @@ export default {
     },
     importFormModuleChangeHandle(moduleId,module) {
       this.importForm.moduleName = module.moduleName;
+    },
+    /** 获取提示 */
+    getCasePrompt() {
+      this.casePromptQuery.projectId = this.projectId;
+      this.casePromptQuery.casePromptContent = this.prompt.prompt;
+      listCasePrompt(this.casePromptQuery).then(res=>{
+        this.casePromptList = res.rows;
+        this.casePromptTotal = res.total;
+        this.handleCasePromptOpened();
+      })
+    },
+    handleCasePromptOpened() {
+      this.$nextTick(()=>{
+        const rect = this.$refs.caseSearch.getBoundingClientRect();
+        let el = document.querySelector('.cloud-case-prompt-popover');
+        el.style.left = rect.x+'px';
+        el.style.width = rect.width+'px';
+        el.style.maxHeight = (document.body.clientHeight - parseFloat(el.style.top) - 20) + 'px';
+        el.style.overflow = 'auto';
+      })
+    },
+    handleCasePromptClick(row, column, event) {
+      this.casePromptVisible = false;
+      if(this.$refs.handCasePrompt.check(row)) {
+        this.prompt.prompt = row.casePromptContent;
+      } else {
+        this.$refs.handCasePrompt.open(row);
+      }
+    },
+    handleOpenAddCasePrompt() {
+      this.addCasePromptVisible = true;
+      this.$refs.addCasePrompt.reset();
+    },
+    handleAddCasePrompt() {
+      this.addCasePromptVisible = false;
+      this.getCasePrompt();
+    },
+    handleCasePromptCorrect(promptContent) {
+      this.prompt.prompt = promptContent;
+    },
+    handleClearPromptContent() {
+      this.prompt.prompt = null;
     }
   }
 }
 </script>
-
+<style>
+  .cloud-case-prompt-input-number {
+    line-height: 22px;
+    width: 80px;
+  }
+  .cloud-case-prompt-input-number>.el-input-number__decrease {
+    border-radius: 2px 0 0 2px;
+  }
+  .cloud-case-prompt-input-number>.el-input-number__increase {
+    border-radius: 0 2px 2px 0;
+  }
+  .cloud-case-prompt-input-number>.el-input-number__decrease, .cloud-case-prompt-input-number>.el-input-number__increase {
+    color: #67c23a;
+    background: #f0f9eb;
+    border-color: #c2e7b0;
+    width: 22px;
+    height: 20px;
+    line-height: 20px;
+  }
+  .cloud-case-prompt-input-number>.el-input-number__decrease:hover,
+  .cloud-case-prompt-input-number>.el-input-number__increase:hover,
+  .el-input-number__increase:hover:not(.is-disabled) ~ .el-input .el-input__inner:not(.is-disabled),
+  .el-input-number__decrease:hover:not(.is-disabled) ~ .el-input .el-input__inner:not(.is-disabled) {
+    border-color: #67c23a;
+  }
+  .cloud-case-prompt-input-number>div>.el-input__inner {
+    height: 22px;
+    line-height: 22px;
+    border-radius: 2px;
+    padding: 0 20px;
+    border-color: #c2e7b0;
+    color: #67c23a;
+  }
+  .cloud-case-prompt {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 5px;
+    width: 100%;
+  }
+  .cloud-case-prompt > * {
+    width: 100%;
+  }
+  .cloud-case-prompt-tools {
+    width: 100%;
+    display: inline-flex;
+    justify-content: space-between;
+    flex-direction: row;
+    align-items: center;
+  }
+  .cloud-case-prompt-tools h4 > i {
+    margin-right: 5px;
+  }
+</style>
 <style lang="scss" scoped>
 .case {
   display: flex;
@@ -461,20 +684,30 @@ export default {
     display: inline-flex;
     width: 100%;
     margin-bottom: 20px;
-    .el-textarea {
+    .cat2-bug-textarea-button {
+      color: #67c23a;
+      background-color: white;
+      padding: 3px;
+      border-radius: 2px;
+    }
+    .cat2-bug-textarea-button:hover {
+      background-color: #f0f9eb;
+      border:1px solid #67c23a;
+    }
+    .cat2bug-textarea {
       flex: 1;
-      ::v-deep .el-textarea__inner {
+      ::v-deep textarea {
         height: 100%;
         border-radius: 5px 0 0 5px;
         padding-left: 45px;
         border-color: #67c23a;
         border-width: 1px 0px 1px 1px ;
       }
-      ::v-deep .el-textarea__inner:hover {
+      ::v-deep textarea:hover {
         border-color: #85ce61;
       }
     }
-    .el-textarea:before {
+    .cat2bug-textarea:before {
       content: '';
       display: block;
       background-size: cover; /* 调整大小以适应容器 */
@@ -611,5 +844,12 @@ export default {
     color: #13ce66;
     font-size: 18px;
   }
+}
+.cloud-case-input-tools {
+  display: inline-flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
 }
 </style>

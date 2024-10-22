@@ -6,16 +6,15 @@
       :placeholder="placeholder"
       :maxlength="maxlength"
       :rows="rows"
-      @change="changeHandle"
+      @keyup.stop="changeHandle"
     />
     <div v-show="showTools" class="tools">
       <slot name="tools"></slot>
-      <el-tooltip v-for="(button,index) in buttons" :key="index" class="item" effect="dark" :content="$t(button.name)" placement="top">
+      <el-tooltip v-if="showDefaultTools" v-for="(button,index) in buttons" :key="index" class="item" effect="dark" :content="$t(button.name)" placement="top">
         <el-button type="text" @click="button.method"><svg-icon :icon-class="button.icon"></svg-icon></el-button>
       </el-tooltip>
       <span v-show="showWordLimit" class="text-length">{{textLength}}</span>
     </div>
-
     <el-dialog
       :title="title"
       width="95%"
@@ -86,6 +85,10 @@ export default {
       default: true
     },
     showTools: {
+      type: Boolean,
+      default: true
+    },
+    showDefaultTools: {
       type: Boolean,
       default: true
     },
