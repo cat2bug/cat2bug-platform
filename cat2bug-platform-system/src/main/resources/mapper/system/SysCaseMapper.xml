@@ -30,7 +30,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </resultMap>
 
     <sql id="selectSysCaseVo">
-        select c.case_id, c.case_name, c.module_id, m.module_name, c.case_type, c.case_expect, c.case_step, c.case_level,case when c.case_level is not null then CONCAT(c.case_level-1, 'P') end as case_level_name, c.case_preconditions, c.create_by, c.create_time, c.update_by, c.update_time, c.case_num, c.project_id, c.remark, c.img_urls, c.case_data,
+        select c.case_id, c.case_name, c.module_id, m.module_name, c.case_type, c.case_expect, c.case_step, c.case_level,case when c.case_level is not null then CONCAT('P', c.case_level-1) end as case_level_name, c.case_preconditions, c.create_by, c.create_time, c.update_by, c.update_time, c.case_num, c.project_id, c.remark, c.img_urls, c.case_data,
                d.defect_processing_count, d.defect_audit_count, d.defect_close_count
         from sys_case c
         LEFT JOIN sys_module m on m.module_id = c.module_id
