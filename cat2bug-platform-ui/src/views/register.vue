@@ -105,25 +105,27 @@ export default {
         code: "",
         uuid: ""
       },
-      registerRules: {
-        username: [
-          { required: true, trigger: "blur", message: this.$i18n.t('please-enter-your-account') },
-          { min: 2, max: 20, message: this.$i18n.t('account-size-exception'), trigger: 'blur' }
-        ],
-        phoneNumber: [
-          { required: true, trigger: "blur", message: this.$i18n.t('please-enter-phone') },
-          { min: 11, max: 16, message: this.$i18n.t('phone-size-exception'), trigger: 'blur' }
-        ],
-        password: [
-          { required: true, trigger: "blur", message: this.$i18n.t('please-enter-your-password') },
-          { min: 5, max: 20, message: this.$i18n.t('password-size-exception'), trigger: 'blur' }
-        ],
-        confirmPassword: [
-          { required: true, trigger: "blur", message: this.$i18n.t('please-enter-your-password-again') },
-          { required: true, validator: equalToPassword, trigger: "blur" }
-        ],
-        code: [{ required: true, trigger: "change", message: this.$i18n.t('please-enter-verification-code') }]
-      },
+      registerUserName: [
+        {required: true, trigger: "blur", message: this.$i18n.t('please-enter-your-account')},
+        {min: 2, max: 20, message: this.$i18n.t('account-size-exception'), trigger: 'blur'}
+      ],
+      registerNickName: [
+        {required: true, trigger: "blur", message: this.$i18n.t('please-enter-your-name')},
+        {min: 2, max: 20, message: this.$i18n.t('account-size-exception'), trigger: 'blur'}
+      ],
+      phoneNumber: [
+        {required: true, trigger: "blur", message: this.$i18n.t('please-enter-phone')},
+        {min: 11, max: 16, message: this.$i18n.t('phone-size-exception'), trigger: 'blur'}
+      ],
+      password: [
+        {required: true, trigger: "blur", message: this.$i18n.t('please-enter-your-password')},
+        {min: 5, max: 20, message: this.$i18n.t('password-size-exception'), trigger: 'blur'}
+      ],
+      confirmPassword: [
+        {required: true, trigger: "blur", message: this.$i18n.t('please-enter-your-password-again')},
+        {required: true, validator: equalToPassword, trigger: "blur"}
+      ],
+      code: [{required: true, trigger: "blur", message: this.$i18n.t('please-enter-verification-code')}],
       loading: false,
       captchaEnabled: true
     };
