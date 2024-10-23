@@ -3,21 +3,20 @@ package com.cat2bug.system.service;
 import java.util.List;
 
 import com.cat2bug.system.domain.SysCase;
-import com.cat2bug.system.domain.SysModule;
 import com.cat2bug.system.domain.SysPlanItem;
 import com.cat2bug.system.domain.SysPlanItemModule;
 
 /**
  * 测试计划子项Service接口
- * 
+ *
  * @author yuzhantao
  * @date 2024-10-11
  */
-public interface ISysPlanItemService 
+public interface ISysPlanItemService
 {
     /**
      * 查询测试计划子项
-     * 
+     *
      * @param planItemId 测试计划子项主键
      * @return 测试计划子项
      */
@@ -25,7 +24,7 @@ public interface ISysPlanItemService
 
     /**
      * 查询测试计划子项列表
-     * 
+     *
      * @param sysPlanItem 测试计划子项
      * @return 测试计划子项集合
      */
@@ -48,7 +47,7 @@ public interface ISysPlanItemService
 
     /**
      * 新增测试计划子项
-     * 
+     *
      * @param sysPlanItem 测试计划子项
      * @return 结果
      */
@@ -56,7 +55,7 @@ public interface ISysPlanItemService
 
     /**
      * 修改测试计划子项
-     * 
+     *
      * @param sysPlanItem 测试计划子项
      * @return 结果
      */
@@ -64,7 +63,7 @@ public interface ISysPlanItemService
 
     /**
      * 批量删除测试计划子项
-     * 
+     *
      * @param planItemIds 需要删除的测试计划子项主键集合
      * @return 结果
      */
@@ -72,7 +71,7 @@ public interface ISysPlanItemService
 
     /**
      * 删除测试计划子项信息
-     * 
+     *
      * @param planItemId 测试计划子项主键
      * @return 结果
      */
