@@ -4,26 +4,26 @@
       <el-form-item label="" prop="casePromptContent">
         <el-input
           type="textarea"
-          :autosize="{ minRows: 10, maxRows: 15}"
+          :autosize="autoSize"
           :placeholder="$t('case.add-prompt-placeholder')"
           v-model="form.casePromptContent"></el-input>
       </el-form-item>
     </el-form>
     <span slot="footer" class="dialog-footer add-case-prompt-dialog-footer">
       <el-button size="mini" @click="cancel">{{ $t('cancel') }}</el-button>
-      <el-button size="mini" type="primary" @click="addPrompt">{{ $t('add') }}</el-button>
+      <el-button size="mini" type="primary" @click="submit">{{ $t(isAdd?'add':'update') }}</el-button>
     </span>
   </div>
 </template>
 
 <script>
-import {addCasePrompt} from "@/api/system/CasePrompt";
+import {addCasePrompt, updateCasePrompt} from "@/api/system/CasePrompt";
 
 export default {
   name: "AddCasePrompt",
   data() {
     return {
-      form: {},
+      form: this.casePrompt,
       rules: {
         casePromptContent:[
         { required: true, message: this.$i18n.t('case.prompt-content-cannot-empty'), trigger: "input" }
@@ -31,9 +31,32 @@ export default {
     }
   },
   props: {
+    autoSize: {
+      type: Object,
+      default: ()=>{
+        return { minRows: 5, maxRows: 15}
+      }
+    },
     projectId: {
       type: Number,
       default: null
+    },
+    casePrompt: {
+      type: Object,
+      default: ()=>{
+        return {
+          casePromptContent: null
+        }
+      }
+    },
+    isAdd: {
+      type: Boolean,
+      default: true
+    }
+  },
+  watch: {
+    casePrompt: function (n) {
+      this.form = n;
     }
   },
   methods: {
@@ -44,6 +67,16 @@ export default {
       this.form = {}
       this.resetForm("form");
     },
+    openEdit(casePrompt) {
+      this.form = casePrompt;
+    },
+    submit() {
+      if(this.isAdd) {
+        this.addPrompt();
+      } else {
+        this.editPrompt();
+      }
+    },
     addPrompt() {
       this.$refs["form"].validate(valid => {
         if (valid) {
@@ -51,6 +84,16 @@ export default {
           addCasePrompt(this.form).then(res => {
             this.$message.success(this.$i18n.t('save.success').toString());
             this.$emit('added', this.form);
+          });
+        }
+      });
+    },
+    editPrompt() {
+      this.$refs["form"].validate(valid => {
+        if (valid) {
+          updateCasePrompt(this.form).then(res => {
+            this.$message.success(this.$i18n.t('update.success').toString());
+            this.$emit('updated', this.form);
           });
         }
       });

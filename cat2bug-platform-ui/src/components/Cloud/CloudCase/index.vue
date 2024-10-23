@@ -82,19 +82,28 @@
                           <el-table-column
                             prop="casePromptContent">
                             <template slot-scope="scope">
-                              <div class="case-prompt-content" v-html="renderCasePromptContent(scope.row.casePromptContent)"></div>
+                              <div v-show="!scope.row.isEditVisible" class="case-prompt-content" v-html="renderCasePromptContent(scope.row.casePromptContent)"></div>
+                              <add-case-prompt v-show="scope.row.isEditVisible" :is-add="false" :case-prompt="scope.row" :auto-size="{ minRows: 1, maxRows: 15 }" @click.native="handleEditCasePromptClick" @updated="getCasePrompt" @cancel="scope.row.isEditVisible=false" />
                             </template>
                           </el-table-column>
                           <el-table-column
                             prop="operate"
-                            width="80">
+                            width="120">
                             <template slot-scope="scope">
+                              <el-button
+                                size="mini"
+                                type="text"
+                                icon="el-icon-edit"
+                                v-hasPermi="['system:case:add']"
+                                @click="handlePromptEdit($event, scope.row)"
+                              >{{ $t('modify') }}</el-button>
                               <el-button
                                 size="mini"
                                 type="text"
                                 class="red"
                                 icon="el-icon-close"
-                                @click="handleDelete($event,scope.row)"
+                                v-hasPermi="['system:case:add']"
+                                @click="handlePromptDelete($event, scope.row)"
                               >{{ $t('delete') }}</el-button>
                             </template>
                           </el-table-column>
@@ -255,7 +264,7 @@ import {addCase, batchAddCase, updateCase} from "@/api/system/case";
 import {strFormat} from "@/utils";
 import {makeCaseList} from "@/api/ai/AiCase";
 import i18n from "@/utils/i18n/i18n";
-import { listCasePrompt } from "@/api/system/CasePrompt";
+import {delCasePrompt, listCasePrompt} from "@/api/system/CasePrompt";
 
 const DEFAULT_ROW_COUNT_KEY = 'case_default_row_count';
 const PATTERN = /\$\{\s*[0-9a-zA-z]{1,255}\s*\}/g;
@@ -528,8 +537,23 @@ export default {
     addDefectHandle(e,row) {
 
     },
+    /** 删除用例 */
     handleDelete(e,row) {
       this.caseList = this.caseList.filter(c => c !== row);
+      e.stopPropagation();
+    },
+    /** 编辑提示词 */
+    handlePromptEdit(e, row) {
+      row.isEditVisible = true;
+      e.stopPropagation();
+    },
+    /** 删除提示词 */
+    handlePromptDelete(e,row) {
+      if(!row) return;
+      delCasePrompt(row.casePromptId).then(res=>{
+        this.$modal.msgSuccess(this.$i18n.t('delete.success'));
+        this.getCasePrompt();
+      });
       e.stopPropagation();
     },
     /** 设置模块与用例列表中间拖动块的尺寸 */
@@ -602,7 +626,10 @@ export default {
       this.casePromptQuery.projectId = this.projectId;
       this.casePromptQuery.casePromptContent = this.prompt.prompt;
       listCasePrompt(this.casePromptQuery).then(res=>{
-        this.casePromptList = res.rows;
+        this.casePromptList = res.rows.map(p=>{
+          p.isEditVisible = false;
+          return p;
+        });
         this.casePromptTotal = res.total;
         this.handleCasePromptOpened();
       })
@@ -624,6 +651,9 @@ export default {
       } else {
         this.$refs.handCasePrompt.open(row);
       }
+    },
+    handleEditCasePromptClick(e) {
+      e.stopPropagation();
     },
     handleOpenAddCasePrompt() {
       this.addCasePromptVisible = true;

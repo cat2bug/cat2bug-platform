@@ -99,9 +99,9 @@ export default {
         return;
       }
       let query = {
+        pageSize: 9999,
+        pageNum: 1,
         params: {
-          pageSize: 999,
-          pageNum: 1,
           modulePid: moduleId
         }
       }

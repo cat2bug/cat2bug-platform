@@ -67,7 +67,18 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <sql id="selectSysCaseVo">
         select c.case_id, c.case_name, c.module_id, m.module_name, c.case_type, c.case_expect, c.case_step, c.case_level, c.case_preconditions, c.create_by, c.case_num, c.project_id, c.remark, c.img_urls, c.case_data,
                pi.plan_item_id, pi.plan_id, pi.module_id, pi.case_id, pi.plan_item_state, pi.update_by_id, pi.update_time, pi.defect_ids
-        from sys_case c
+        from
+            (
+                SELECT module_id FROM sys_module WHERE module_id = NULLIF(#{moduleId}, 0)
+                UNION
+                SELECT t.module_id FROM
+                ( SELECT * FROM sys_module WHERE module_pid > 0 ORDER BY module_pid, module_id ) t,
+                ( SELECT @pid := #{moduleId} ) pd
+                WHERE
+                FIND_IN_SET( t.module_pid, @pid ) > 0
+                AND @pid := CONCAT( @pid, ',', t.module_id )
+            ) ids,
+            sys_case c
                  LEFT JOIN sys_module m on m.module_id = c.module_id
                  LEFT JOIN sys_plan_item pi ON c.case_id = pi.case_id
         <if test="params !=null and params.planId != null and params.planId != ''"> and (pi.plan_id = #{params.planId})</if>
@@ -95,8 +106,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <select id="selectCaseList" parameterType="SysCase" resultMap="SysCaseResult">
         <include refid="selectSysCaseVo"/>
         <where>
+            c.module_id = ids.module_id
             <if test="caseName != null  and caseName != ''"> and c.case_name like concat('%', #{caseName}, '%')</if>
-            <if test="moduleId != null "> and c.module_id = #{moduleId}</if>
             <if test="caseType != null "> and c.case_type = #{caseType}</if>
             <if test="caseExpect != null  and caseExpect != ''"> and c.case_expect = #{caseExpect}</if>
             <if test="caseLevel != null "> and c.case_level = #{caseLevel}</if>
