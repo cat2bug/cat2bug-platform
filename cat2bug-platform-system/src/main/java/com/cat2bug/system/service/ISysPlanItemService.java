@@ -3,7 +3,9 @@ package com.cat2bug.system.service;
 import java.util.List;
 
 import com.cat2bug.system.domain.SysCase;
+import com.cat2bug.system.domain.SysModule;
 import com.cat2bug.system.domain.SysPlanItem;
+import com.cat2bug.system.domain.SysPlanItemModule;
 
 /**
  * 测试计划子项Service接口
@@ -35,6 +37,15 @@ public interface ISysPlanItemService
      * @return  测试计划子项集合
      */
     public List<SysCase> selectCaseList(SysCase sysCase);
+
+    /**
+     * 查询模块列表
+     *
+     * @param sysModule 模块
+     * @return 模块集合
+     */
+    public List<SysPlanItemModule> selectSysModuleList(SysPlanItemModule sysModule);
+
     /**
      * 新增测试计划子项
      * 

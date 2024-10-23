@@ -92,7 +92,7 @@ import FocusMemberList from "@/components/FocusMemberList";
 import Cat2BugPreviewImage from "@/components/Cat2BugPreviewImage";
 import { Multipane, MultipaneResizer } from 'vue-multipane';
 import {addPlan, getPlan, updatePlan} from "@/api/system/plan";
-import {listPlanCase} from "@/api/system/PlanItem";
+import {listPlanItemCase} from "@/api/system/PlanItem";
 import {listCase, listPlanCaseId} from "@/api/system/case";
 
 const TREE_MODULE_WIDTH_CACHE_KEY = 'plan_case_tree_module_width';
@@ -305,7 +305,7 @@ export default {
     getPlanItemCaseList() {
       this.loading = true;
       this.caseQueryParams.projectId = this.projectId;
-      listPlanCase(this.caseQueryParams).then(response => {
+      listPlanItemCase(this.caseQueryParams).then(response => {
         this.loading = false;
         this.caseList = response.rows;
         // 设置是否选中

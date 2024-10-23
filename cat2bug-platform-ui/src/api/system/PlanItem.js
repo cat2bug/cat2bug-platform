@@ -10,9 +10,18 @@ export function listPlanItem(query) {
 }
 
 // 查询测试计划中显示的用例列表
-export function listPlanCase(query) {
+export function listPlanItemCase(query) {
   return request({
     url: '/system/PlanItem/case/list',
+    method: 'get',
+    params: query
+  })
+}
+
+// 查询模块列表
+export function listPlanItemModule(query) {
+  return request({
+    url: '/system/PlanItem/module/list',
     method: 'get',
     params: query
   })

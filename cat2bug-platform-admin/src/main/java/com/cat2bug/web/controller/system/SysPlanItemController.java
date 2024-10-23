@@ -9,7 +9,9 @@ import com.cat2bug.common.enums.BusinessType;
 import com.cat2bug.common.utils.MessageUtils;
 import com.cat2bug.common.utils.poi.ExcelUtil;
 import com.cat2bug.system.domain.SysCase;
+import com.cat2bug.system.domain.SysModule;
 import com.cat2bug.system.domain.SysPlanItem;
+import com.cat2bug.system.domain.SysPlanItemModule;
 import com.cat2bug.system.service.ISysDefectService;
 import com.cat2bug.system.service.ISysPlanItemService;
 import com.google.common.base.Preconditions;
@@ -58,6 +60,17 @@ public class SysPlanItemController extends BaseController
         startPage();
         List<SysCase> list = sysPlanItemService.selectCaseList(sysCase);
         return getDataTable(list);
+    }
+
+    /**
+     * 查询模块列表
+     */
+    @PreAuthorize("@ss.hasPermi('system:plan:run')")
+    @GetMapping("/module/list")
+    public AjaxResult list(SysPlanItemModule sysModule)
+    {
+        List<SysPlanItemModule> list = sysPlanItemService.selectSysModuleList(sysModule);
+        return success(list);
     }
 
     /**

@@ -23,7 +23,7 @@
       <multipane layout="vertical" ref="multiPane" class="custom-resizer" @pane-resize-start="dragStopHandle">
         <!--      树形模块选择组件-->
         <div class="tree-module" ref="treeModule" :style="treeModuleStyle">
-          <tree-module ref="treeModuleRef" :project-id="projectId" @node-click="moduleClickHandle" :check-visible="false" :edit-visible="false" v-resize="setDragComponentSize" />
+          <tree-plan-item-module ref="treeModuleRef" :project-id="projectId" :plan-id="plan.planId" @node-click="moduleClickHandle" :check-visible="false" :edit-visible="false" v-resize="setDragComponentSize" />
         </div>
         <multipane-resizer :style="multipaneStyle"></multipane-resizer>
         <!--      用例列表-->
@@ -184,7 +184,7 @@
 import Cat2BugLevel from "@/components/Cat2BugLevel";
 import Cat2BugAvatar from "@/components/Cat2BugAvatar";
 import Step from "@/views/system/case/components/step";
-import TreeModule from "@/components/Module/TreeModule";
+import TreePlanItemModule from "@/views/system/plan/TreePlanItemModule";
 import FocusMemberList from "@/components/FocusMemberList";
 import AddCase from "@/components/Case/AddCase";
 import Cat2BugPreviewImage from "@/components/Cat2BugPreviewImage";
@@ -206,7 +206,7 @@ const PLAN_ITEM_STATE_NOT_PASS = 'not_pass';
 export default {
   name: "AddPlanDialog",
   dicts: ['plan_item_state'],
-  components: { Cat2BugLevel,Step,TreeModule,Multipane,MultipaneResizer, FocusMemberList, Cat2BugPreviewImage, AddDefect, HandleDefect, AddCase, Cat2BugAvatar, DefectStateFlag },
+  components: { Cat2BugLevel,Step,TreePlanItemModule,Multipane,MultipaneResizer, FocusMemberList, Cat2BugPreviewImage, AddDefect, HandleDefect, AddCase, Cat2BugAvatar, DefectStateFlag },
   data() {
     return {
       multipaneStyle: {'--marginTop':'0px'},
@@ -359,6 +359,9 @@ export default {
       this.loading = true;
       getPlan(planId).then(response => {
         this.plan = response.data;
+          this.$nextTick(()=>{
+            this.$refs.treeModuleRef.reloadData();
+          })
       });
       this.getTreeModuleWidth();
       this.getPlanItemList();

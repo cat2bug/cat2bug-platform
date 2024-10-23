@@ -54,11 +54,32 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <association property="planItem"    javaType="SysPlanItem"         resultMap="SysPlanItemResult" />
     </resultMap>
 
+    <resultMap type="SysPlanItemModule" id="SysModuleResult">
+        <result property="moduleId"    column="module_id"    />
+        <result property="modulePid"    column="module_pid"    />
+        <result property="moduleName"    column="module_name"    />
+        <result property="remark"    column="remark"    />
+        <result property="projectId"    column="project_id"    />
+        <result property="modulePath"    column="module_path"    />
+        <result property="childrenCount"    column="children_count"    />
+    </resultMap>
+
     <sql id="selectSysPlanItemVo">
         select pi.plan_item_id, pi.plan_id, c.module_id, pi.case_id, pi.plan_item_state, pi.update_by_id, pi.update_time, pi.defect_ids,
                u.nick_name as update_by,
                c.case_name, m.module_name, c.case_type, c.case_expect, c.case_step, c.case_level, c.case_preconditions, c.case_num, c.project_id, c.remark, c.img_urls, c.case_data
-               from sys_plan_item pi
+               from
+                   (
+                       SELECT module_id FROM sys_module WHERE module_id = IFNULL(#{moduleId}, 0)
+                       UNION
+                       SELECT t.module_id FROM
+                                              sys_module t,
+                                              (SELECT @pid := (IFNULL(#{moduleId}, 0) +1)) pd
+                       WHERE
+                           FIND_IN_SET( t.module_pid + 1, @pid ) > 0
+                         AND @pid := CONCAT( @pid, ',', t.module_id )
+                   ) ids,
+                   sys_plan_item pi
                   JOIN sys_case c on pi.case_id = c.case_id
                   LEFT JOIN sys_user u on u.user_id = pi.update_by_id
                   LEFT JOIN sys_module m on m.module_id = c.module_id
@@ -69,13 +90,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                pi.plan_item_id, pi.plan_id, pi.module_id, pi.case_id, pi.plan_item_state, pi.update_by_id, pi.update_time, pi.defect_ids
         from
             (
-                SELECT module_id FROM sys_module WHERE module_id = NULLIF(#{moduleId}, 0)
+                SELECT module_id FROM sys_module WHERE module_id = IFNULL(#{moduleId}, 0)
                 UNION
                 SELECT t.module_id FROM
-                ( SELECT * FROM sys_module WHERE module_pid > 0 ORDER BY module_pid, module_id ) t,
-                ( SELECT @pid := #{moduleId} ) pd
+                sys_module t,
+                (SELECT @pid := (IFNULL(#{moduleId}, 0) +1)) pd
                 WHERE
-                FIND_IN_SET( t.module_pid, @pid ) > 0
+                FIND_IN_SET( t.module_pid + 1, @pid ) > 0
                 AND @pid := CONCAT( @pid, ',', t.module_id )
             ) ids,
             sys_case c
@@ -84,11 +105,33 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <if test="params !=null and params.planId != null and params.planId != ''"> and (pi.plan_id = #{params.planId})</if>
     </sql>
 
+    <sql id="selectSysModuleVo">
+        SELECT
+            m.module_id,
+            m.module_pid,
+            m.module_name,
+            m.remark,
+            m.project_id,
+            mg.children_count
+        FROM
+            sys_module m
+    </sql>
+
+    <select id="selectSysModuleList" parameterType="SysPlanItemModule" resultMap="SysModuleResult">
+        <include refid="selectSysModuleVo"/>
+        left join (select count(*) children_count,module_pid from sys_module group by module_pid) mg on mg.module_pid=m.module_id
+        <where>
+            <if test="modulePid != null "> and m.module_pid = #{modulePid}</if>
+            <if test="moduleName != null  and moduleName != ''"> and m.module_name like concat('%', #{moduleName}, '%')</if>
+            <if test="projectId != null "> and m.project_id = #{projectId}</if>
+        </where>
+    </select>
+
     <select id="selectSysPlanItemList" parameterType="SysPlanItem" resultMap="SysPlanItemResult">
         <include refid="selectSysPlanItemVo"/>
         <where>
+            and c.module_id = ids.module_id
             <if test="planId != null  and planId != ''"> and pi.plan_id = #{planId}</if>
-            <if test="moduleId != null "> and c.module_id = #{moduleId}</if>
             <if test="caseId != null "> and pi.case_id = #{caseId}</if>
             <if test="planItemState != null  and planItemState != ''"> and pi.plan_item_state = #{planItemState}</if>
             <if test="updateById != null "> and pi.update_by_id = #{updateById}</if>

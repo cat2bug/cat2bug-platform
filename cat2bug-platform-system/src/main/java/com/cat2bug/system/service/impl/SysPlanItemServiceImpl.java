@@ -1,11 +1,15 @@
 package com.cat2bug.system.service.impl;
 
 import java.util.List;
+import java.util.stream.Collectors;
+
 import com.cat2bug.common.utils.DateUtils;
 import com.cat2bug.common.utils.SecurityUtils;
 import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.common.utils.uuid.UUID;
 import com.cat2bug.system.domain.SysCase;
+import com.cat2bug.system.domain.SysModule;
+import com.cat2bug.system.domain.SysPlanItemModule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.cat2bug.system.mapper.SysPlanItemMapper;
@@ -51,6 +55,20 @@ public class SysPlanItemServiceImpl implements ISysPlanItemService
     @Override
     public List<SysCase> selectCaseList(SysCase sysCase) {
         return sysPlanItemMapper.selectCaseList(sysCase);
+    }
+
+    @Override
+    public List<SysPlanItemModule> selectSysModuleList(SysPlanItemModule sysModule) {
+        List<SysPlanItemModule> moduleList = sysPlanItemMapper.selectSysModuleList(sysModule);
+        return moduleList.stream().map(m->{
+            SysPlanItem sysPlanItem = new SysPlanItem();
+            sysPlanItem.setModuleId(m.getModuleId());
+            sysPlanItem.setPlanId(sysModule.getPlanId());
+            List<SysPlanItem> itemList = sysPlanItemMapper.selectSysPlanItemList(sysPlanItem);
+            m.setItemCount(itemList.size());
+            m.setPassCount(itemList.stream().filter(i->"pass".equals(i.getPlanItemState())).count()); // 统计通过的数量
+            return m;
+        }).collect(Collectors.toList());
     }
 
     /**
