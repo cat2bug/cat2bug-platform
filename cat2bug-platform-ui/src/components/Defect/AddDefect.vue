@@ -23,7 +23,7 @@
         <el-form-item>
           <el-checkbox class="save-form-cache" v-model="isSaveFormCache" @change="handleSaveFormCache">{{ $t('defect.added-save-form-cache') }}</el-checkbox>
         </el-form-item>
-        <el-form-item :label="$t('title')" prop="defectName">
+        <el-form-item :label="$t('defect.name')" prop="defectName">
           <el-input v-model="form.defectName" :placeholder="$t('defect.enter-name')" maxlength="128" />
         </el-form-item>
         <el-row>

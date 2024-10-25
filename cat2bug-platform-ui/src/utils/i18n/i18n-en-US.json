@@ -341,6 +341,7 @@
   "defect.title": "Defect Title",
   "defect.enter-like-title": "Please enter a title that can be fuzzily searched for",
   "defect.enter-tab-name": "Please enter tab name",
+  "defect.name": "Defect Name",
   "defect.type": "Defect Type",
   "defect.state": "Defect State",
   "defect.display-field": "Display Fields",

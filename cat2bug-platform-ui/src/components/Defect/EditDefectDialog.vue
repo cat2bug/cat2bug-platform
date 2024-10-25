@@ -8,7 +8,7 @@
       <el-form ref="form" :model="form" :rules="rules" label-width="100px">
         <el-row>
           <el-col :span="24">
-            <el-form-item :label="$t('title')" prop="defectName">
+            <el-form-item :label="$t('defect.name')" prop="defectName">
               <el-input v-model="form.defectName" :placeholder="$t('defect.enter-name')" maxlength="128" />
             </el-form-item>
           </el-col>

@@ -64,7 +64,7 @@
           <defect-type-flag :defect="scope.row" />
         </template>
       </el-table-column>
-      <el-table-column v-if="showField('title')" :label="$t('title')" :key="$t('title')" align="left" prop="defectName" min-width="200" sortable >
+      <el-table-column v-if="showField('defect.name')" :label="$t('defect.name')" :key="$t('defect.name')" align="left" prop="defectName" min-width="200" sortable >
         <template slot-scope="scope">
           <div class="table-defect-title">
             <focus-member-list
@@ -193,7 +193,7 @@ export default {
       tableShowFieldList: [],
       // 表格里全部列数据集合
       tableAllFieldList: [
-        'id','type','title','level','state','module','version','plan-start-time','plan-end-time','update-time','handle-by','image','annex'
+        'id','type','defect.name','level','state','module','version','plan-start-time','plan-end-time','update-time','handle-by','image','annex'
       ],
     }
   },

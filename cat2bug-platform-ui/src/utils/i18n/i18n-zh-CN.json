@@ -341,6 +341,7 @@
   "defect.title": "缺陷标题",
   "defect.enter-like-title": "请输入可模糊查找的缺陷标题",
   "defect.enter-tab-name": "请输入页签名称",
+  "defect.name": "缺陷名称",
   "defect.type": "缺陷类型",
   "defect.state": "缺陷状态",
   "defect.display-field": "显示字段",

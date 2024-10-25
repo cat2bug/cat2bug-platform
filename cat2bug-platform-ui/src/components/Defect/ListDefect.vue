@@ -15,7 +15,7 @@
             <defect-type-flag :defect="scope.row" />
           </template>
         </el-table-column>
-        <el-table-column :label="$t('title')" align="left" prop="defectName" sortable >
+        <el-table-column :label="$t('defect.name')" align="left" prop="defectName" sortable >
           <template slot-scope="scope">
             <el-link type="primary" @click="editDefectHandle(scope.row)">{{ scope.row.defectName }}</el-link>
           </template>

@@ -464,32 +464,36 @@ public class SysDefectServiceImpl implements ISysDefectService
             SysDefect d = list.get(i);
             int line = i+2;
             if(d==null) {
-                sb.add(String.format("第%d行 数据格式无法识别",line));
+                sb.add(MessageUtils.message("line-data-format-exception", line));
                 continue;
             }
             if(StringUtils.isBlank(d.getDefectName())) {
-                emptyCell.add("标题");
+                emptyCell.add(MessageUtils.message("defect.name"));
             }
             if(StringUtils.isNotBlank(d.getDefectStateImportName())){
                 switch (d.getDefectStateImportName()){
                     case "处理中":
+                    case "Processing":
                         d.setDefectState(SysDefectStateEnum.PROCESSING);
                         break;
                     case "待审核":
+                    case "Audit":
                         d.setDefectState(SysDefectStateEnum.AUDIT);
                         break;
                     case "已解决":
                         d.setDefectState(SysDefectStateEnum.RESOLVED);
                         break;
                     case "已驳回":
+                    case "Rejected":
                         d.setDefectState(SysDefectStateEnum.REJECTED);
                         break;
                     case "已关闭":
+                    case "Close":
                         d.setDefectState(SysDefectStateEnum.CLOSED);
                         break;
                 }
             } else {
-                emptyCell.add("状态");
+                emptyCell.add(MessageUtils.message("defect.state"));
             }
             if(StringUtils.isNotBlank(d.getDefectTypeImportName())) {
                 switch (d.getDefectTypeImportName()){
@@ -507,34 +511,34 @@ public class SysDefectServiceImpl implements ISysDefectService
                         break;
                 }
             } else {
-                emptyCell.add("类型");
+                emptyCell.add(MessageUtils.message("type"));
             }
 
             if(StringUtils.isNotBlank(d.getModuleName())){
                 if(moduleMap.containsKey(d.getModuleName())) {
                     d.setModuleId(moduleMap.get(d.getModuleName()).getModuleId());
                 } else {
-                    invalidCell.add("产品");
+                    invalidCell.add(MessageUtils.message("module"));
                 }
             } else {
-                emptyCell.add("产品");
+                emptyCell.add(MessageUtils.message("module"));
             }
 
             if(StringUtils.isNotBlank(d.getHandleByNames())){
                 if(userMap.containsKey(d.getHandleByNames())) {
                     d.setHandleBy(Arrays.asList(userMap.get(d.getHandleByNames()).getUserId()));
                 } else {
-                    invalidCell.add("处理人");
+                    invalidCell.add(MessageUtils.message("handle-by"));
                 }
             } else {
-                emptyCell.add("处理人");
+                emptyCell.add(MessageUtils.message("handle-by"));
             }
 
             if(emptyCell.size()>0){
-                sb.add(String.format("第%d行 %s 数据不能为空",line,emptyCell.stream().collect(Collectors.joining("、"))));
+                sb.add(MessageUtils.message("line-data-not-empty",line,emptyCell.stream().collect(Collectors.joining("、"))));
             }
             if(invalidCell.size()>0){
-                sb.add(String.format("第%d行 %s 中的数据无效",line,invalidCell.stream().collect(Collectors.joining("、"))));
+                sb.add(MessageUtils.message("line-data-not-empty",line,invalidCell.stream().collect(Collectors.joining("、"))));
             }
             d.setProjectNum(++count);
             d.setProjectId(projectId);

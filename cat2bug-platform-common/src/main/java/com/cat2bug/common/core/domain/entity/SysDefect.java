@@ -45,7 +45,7 @@ public class SysDefect extends BaseEntity
     private SysDefectTypeEnum defectTypeName;
 
     /** 缺陷标题 */
-    @Excel(name = "标题", i18nNameKey = "title", width = 100)
+    @Excel(name = "缺陷名称", i18nNameKey = "defect.name", width = 100)
     private String defectName;
 
     /** 缺陷描述 */
@@ -74,7 +74,7 @@ public class SysDefect extends BaseEntity
     private Long moduleId;
 
     /** 测试模块名称 */
-    @Excel(name = "交付物", i18nNameKey = "module", width = 50, type = Excel.Type.IMPORT, comboHandler = com.cat2bug.common.core.domain.excel.ModuleComboHandlerAdapter.class)
+    @Excel(name = "交付物", i18nNameKey = "module", width = 50, comboHandler = com.cat2bug.common.core.domain.excel.ModuleComboHandlerAdapter.class)
     private String moduleName;
 
     /** 版本 */
