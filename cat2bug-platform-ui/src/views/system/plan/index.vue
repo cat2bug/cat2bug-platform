@@ -25,7 +25,6 @@
         </el-form-item>
       </el-form>
       <div class="right">
-<!--        <el-button size="mini" icon="el-icon-setting" circle @click="handleOption"></el-button>-->
         <el-button
           type="primary"
           plain
@@ -43,7 +42,10 @@
       <el-table-column :label="$t('plan.version')" align="center" prop="planVersion" width="200"/>
       <el-table-column :label="$t('plan.time')" align="center" prop="planStartTime" width="260">
         <template slot-scope="scope">
-          <span>{{ parseTime(scope.row.planStartTime, strFormat($t('year-month-day'),'{y}','{m}','{d}')) }} {{ $t('time-to') }} {{ parseTime(scope.row.planEndTime, strFormat($t('year-month-day'),'{y}','{m}','{d}')) }}</span>
+          <div class="col" v-show="scope.row.planStartTime && scope.row.planEndTime">
+            <span>{{$t('time-form')}}: {{ parseTime(scope.row.planStartTime, strFormat($t('year-month-day-hour-minute-second'),'{y}','{m}','{d}','{h}','{i}','{s}')) }}</span>
+            <span>{{$t('time-to')}}: {{ parseTime(scope.row.planEndTime, strFormat($t('year-month-day-hour-minute-second'),'{y}','{m}','{d}','{h}','{i}','{s}')) }}</span>
+          </div>
         </template>
       </el-table-column>
       <el-table-column :label="$t('updateBy')" align="center" prop="updateById" width="120">
@@ -305,5 +307,11 @@ export default {
       display: none;
     }
   }
+}
+.col {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 </style>

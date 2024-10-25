@@ -15,8 +15,8 @@
           <el-form-item :label="$t('plan.time')" prop="planStartTime">
             <el-date-picker
               v-model="planTimeRang"
-              type="daterange"
-              value-format="yyyy-MM-dd"
+              type="datetimerange"
+              value-format="yyyy-MM-dd HH:mm:ss"
               :range-separator="$t('time-to')"
               :start-placeholder="$t('plan.start-time')"
               :end-placeholder="$t('plan.end-time')">
