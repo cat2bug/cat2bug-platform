@@ -104,7 +104,7 @@ public class SysPlanServiceImpl implements ISysPlanService
                         noneMatch(id->id.equals(i.getCaseId()))
         ).map(i->i.getPlanItemId()).collect(Collectors.toList()).toArray(new String[]{});
 
-        // 删除子项
+        // 删除 子项
         if(removeItems.length>0) {
             sysPlanItemMapper.deleteSysPlanItemByPlanItemIds(removeItems);
         }
@@ -159,8 +159,16 @@ public class SysPlanServiceImpl implements ISysPlanService
     @Override
     public int deleteSysPlanByPlanId(String planId)
     {
-        sysPlanMapper.deleteSysPlanItemByPlanId(planId);
-        return sysPlanMapper.deleteSysPlanByPlanId(planId);
+        // 删除计划
+        int rows = sysPlanMapper.deleteSysPlanByPlanId(planId);
+        Preconditions.checkArgument(rows>0, MessageUtils.message("plan.delete-fail"));
+
+        // 删除关联子项
+        SysPlanItem sysPlanItem = new SysPlanItem();
+        sysPlanItem.setPlanId(planId);
+        sysPlanItemMapper.deleteSysPlanItemByPlanId(planId);
+
+        return rows;
     }
 
     /**

@@ -71,6 +71,13 @@ public interface SysPlanItemMapper
     public int deleteSysPlanItemByPlanItemId(String planItemId);
 
     /**
+     * 删除计划中的子项
+     * @param planId    计划ID
+     * @return  删除数量
+     */
+    public int deleteSysPlanItemByPlanId(String planId);
+
+    /**
      * 批量删除测试计划子项
      * 
      * @param planItemIds 需要删除的数据主键集合

@@ -77,7 +77,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                                               (SELECT @pid := (IFNULL(#{moduleId}, 0) +1)) pd
                        WHERE
                            FIND_IN_SET( t.module_pid + 1, @pid ) > 0
-                         AND @pid := CONCAT( @pid, ',', t.module_id )
+                         AND @pid := CONCAT( @pid, ',', t.module_id +1 )
                    ) ids,
                    sys_plan_item pi
                   JOIN sys_case c on pi.case_id = c.case_id
@@ -97,7 +97,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                 (SELECT @pid := (IFNULL(#{moduleId}, 0) +1)) pd
                 WHERE
                 FIND_IN_SET( t.module_pid + 1, @pid ) > 0
-                AND @pid := CONCAT( @pid, ',', t.module_id )
+                AND @pid := CONCAT( @pid, ',', t.module_id + 1 )
             ) ids,
             sys_case c
                  LEFT JOIN sys_module m on m.module_id = c.module_id
@@ -217,6 +217,10 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
     <delete id="deleteSysPlanItemByPlanItemId" parameterType="String">
         delete from sys_plan_item where plan_item_id = #{planItemId}
+    </delete>
+
+    <delete id="deleteSysPlanItemByPlanId" parameterType="String">
+        delete from sys_plan_item where plan_id = #{planId}
     </delete>
 
     <delete id="deleteSysPlanItemByPlanItemIds" parameterType="String">
