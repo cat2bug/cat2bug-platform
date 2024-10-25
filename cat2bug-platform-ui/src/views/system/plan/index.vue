@@ -39,7 +39,7 @@
 
     <el-table v-loading="loading" :data="planList">
 <!--      <el-table-column type="selection" width="55" align="center" />-->
-      <el-table-column :label="$t('plan.name')" align="center" prop="planName" />
+      <el-table-column :label="$t('plan.name')" align="start" prop="planName" />
       <el-table-column :label="$t('plan.version')" align="center" prop="planVersion" width="200"/>
       <el-table-column :label="$t('plan.time')" align="center" prop="planStartTime" width="260">
         <template slot-scope="scope">
