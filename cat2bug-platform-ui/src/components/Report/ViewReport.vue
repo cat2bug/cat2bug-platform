@@ -62,6 +62,7 @@ import {CaseCardPlugin} from "@/components/Cat2BugMarkdown/plugins/CaseCardPlugi
 import {LeftPointPlugin} from "@/components/Cat2BugMarkdown/plugins/LeftPointPlugin";
 import {RightPointPlugin} from "@/components/Cat2BugMarkdown/plugins/RightPointPlugin";
 import {CenterPointPlugin} from "@/components/Cat2BugMarkdown/plugins/CenterPointPlugin";
+import {PlanVariablePlugin} from "@/components/Cat2BugMarkdown/plugins/PlanVariablePlugin";
 
 export default {
   name: "ViewReport",
@@ -329,6 +330,14 @@ export default {
         this.$refs.markdownView.use(CaseCardPlugin,{
           name: 'api.case.list',
           value: res.data.case?res.data.case.list:[]
+        });
+        this.$refs.markdownView.use(VariablePlugin,{
+          name: 'api.case.total',
+          value: res.data.case?res.data.case.total:0
+        });
+        this.$refs.markdownView.use(PlanVariablePlugin,{
+          name: 'api.plan',
+          value: res.data.plan?res.data.plan.list:[]
         });
       });
       Promise.all([defectList,caseList,project,data]).then(res=>{

@@ -1,6 +1,8 @@
 package com.cat2bug.system.service;
 
 import java.util.List;
+
+import com.cat2bug.common.utils.SecurityUtils;
 import com.cat2bug.system.domain.SysPlan;
 
 /**
@@ -18,6 +20,13 @@ public interface ISysPlanService
      * @return 测试计划
      */
     public SysPlan selectSysPlanByPlanId(String planId);
+
+    /**
+     * 获取测试计划最大数量
+     * @param projectId 项目ID
+     * @return  数值
+     */
+    public long getProjectPlanMaxNum(Long projectId);
 
     /**
      * 查询测试计划列表

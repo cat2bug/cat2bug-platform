@@ -1,7 +1,7 @@
 <template>
   <div class="markdown">
     <div class="markdown-tools">
-      <tools-menu :tools="tools" @select="toolsHandle" />
+      <tools-menu :tools="toolMenus" @select="toolsHandle" />
       <tools-menu v-model="viewTools" @select="viewToolsHandle" />
     </div>
     <multipane layout="vertical" ref="multiPane" class="markdown-body" @pane-resize-start="dragStopHandle">
@@ -40,6 +40,7 @@ import { TablePlugin } from "./plugins/TablePlugin"
 import { CardPlugin } from "@/components/Cat2BugMarkdown/plugins/CardPlugin";
 import {CaseCardPlugin} from "@/components/Cat2BugMarkdown/plugins/CaseCardPlugin";
 import {VariablePlugin} from "./plugins/VariablePlugin"
+import {PlanVariablePlugin} from "./plugins/PlanVariablePlugin"
 import {CenterPointPlugin} from "@/components/Cat2BugMarkdown/plugins/CenterPointPlugin";
 import {LeftPointPlugin} from "@/components/Cat2BugMarkdown/plugins/LeftPointPlugin";
 import {RightPointPlugin} from "@/components/Cat2BugMarkdown/plugins/RightPointPlugin";
@@ -67,6 +68,7 @@ export default {
   data() {
     return {
       multipaneStyle: {'--marginTop':'0px'},
+      tools: [],
       activeToolsIndex: null,
       viewVisible: true,
       markdownContent: '',
@@ -151,13 +153,14 @@ export default {
     projectId() {
       return this.$store.state.user.config.currentProjectId
     },
-    tools() {
-      return MarkdownTools().filter(t=>this.excludeTools.indexOf(t.name)===-1)
+    toolMenus() {
+      return this.tools.filter(t=>this.excludeTools.indexOf(t.name)===-1)
     }
   },
   mounted() {
+    this.tools = MarkdownTools();
     this.initMarkdownPlug();
-    this._registerComponentTools(MarkdownTools());
+    this._registerComponentTools(this.tools);
   },
   methods: {
     /** 工具数组 */
@@ -282,12 +285,66 @@ export default {
           name: 'api.case.total',
           value: res.data.case?res.data.case.total:0
         });
+        this.$refs.markdownView.use(PlanVariablePlugin,{
+          name: 'api.plan',
+          value: res.data.plan?res.data.plan.list:[]
+        });
+
+        this.addDynamicToolMenu(res); // 添加动态菜单
       });
       Promise.all([defectList,project]).then(res=>{
-        this.markdownContent = this.content?this.content:'';
+        this.markdownContent = '';
+        this.$nextTick(()=>{
+          this.markdownContent = this.content?this.content:'';
+        });
       }).catch(e=>{
         this.$message.error(e);
       })
+    },
+    /** 添加动态菜单 */
+    addDynamicToolMenu(res) {
+      // 动态添加计划菜单
+      if(res.data.plan && res.data.plan.list && res.data.plan.list.length>0) {
+        let planMenu = {
+          icon: 'md-create-time',
+          name: 'plan',
+        };
+        planMenu.children = res.data.plan.list.map(p=>{
+          return {
+            icon: 'md-create-time',
+            name: p.planName,
+            children: [{
+              icon: 'mk-total',
+              name: 'plan.name',
+              content: `\${api.plan.planName[${p.planNumber}]}`
+            },{
+              icon: 'mk-total',
+              name: 'plan.version',
+              content: `\${api.plan.planVersion[${p.planNumber}]}`
+            },{
+              icon: 'mk-total',
+              name: 'plan.fail-count',
+              content: `\${api.plan.failCount[${p.planNumber}]}`
+            },{
+              icon: 'mk-total',
+              name: 'plan.pass-count',
+              content: `\${api.plan.passCount[${p.planNumber}]}`
+            },{
+              icon: 'mk-total',
+              name: 'plan.item-total',
+              content: `\${api.plan.itemTotal[${p.planNumber}]}`
+            }]
+          }
+        });
+
+        for(let i = 0; this.tools.length; i++){
+          // 在用例菜单后面添加计划菜单
+          if(this.tools[i].name=='case') {
+            this.tools.splice(i+1,0, planMenu);
+            break;
+          }
+        }
+      }
     },
     /** 拖动事件完成 */
     dragStopHandle(pane, container, size) {

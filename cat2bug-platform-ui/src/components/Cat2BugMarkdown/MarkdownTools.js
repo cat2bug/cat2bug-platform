@@ -1,7 +1,6 @@
 import LinkTool from "@/components/Cat2BugMarkdown/components/LinkTool";
 import AddImageLinkTool from "@/components/Cat2BugMarkdown/components/AddImageLinkTool";
 import UploadImageTool from "@/components/Cat2BugMarkdown/components/UploadImageTool";
-import ShopTool from "@/components/Cat2BugMarkdown/components/ShopTool";
 
 export function MarkdownTools() {
   return [{

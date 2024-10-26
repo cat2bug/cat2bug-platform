@@ -27,7 +27,7 @@ import com.cat2bug.system.service.ISysPlanService;
  * @date 2024-10-11
  */
 @Service
-public class SysPlanServiceImpl implements ISysPlanService 
+public class SysPlanServiceImpl implements ISysPlanService
 {
     @Autowired
     private SysPlanMapper sysPlanMapper;
@@ -44,6 +44,11 @@ public class SysPlanServiceImpl implements ISysPlanService
     public SysPlan selectSysPlanByPlanId(String planId)
     {
         return sysPlanMapper.selectSysPlanByPlanId(planId);
+    }
+
+    @Override
+    public long getProjectPlanMaxNum(Long projectId) {
+        return sysPlanMapper.getProjectPlanMaxNum(projectId);
     }
 
     /**
@@ -69,6 +74,8 @@ public class SysPlanServiceImpl implements ISysPlanService
     public int insertSysPlan(SysPlan sysPlan)
     {
         sysPlan.setPlanId(UUID.fastUUID().toString());
+        long maxNumber = sysPlanMapper.getProjectPlanMaxNum(sysPlan.getProjectId());
+        sysPlan.setPlanNumber(maxNumber+1);
         sysPlan.setCreateById(SecurityUtils.getUserId());
         sysPlan.setCreateTime(DateUtils.getNowDate());
         sysPlan.setUpdateById(SecurityUtils.getUserId());

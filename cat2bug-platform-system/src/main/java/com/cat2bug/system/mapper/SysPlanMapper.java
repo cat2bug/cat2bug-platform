@@ -21,6 +21,12 @@ public interface SysPlanMapper
     public SysPlan selectSysPlanByPlanId(String planId);
 
     /**
+     * 获取测试计划最大数量
+     * @param projectId 项目ID
+     * @return  数值
+     */
+    public long getProjectPlanMaxNum(Long projectId);
+    /**
      * 查询测试计划列表
      * 
      * @param sysPlan 测试计划

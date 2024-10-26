@@ -31,7 +31,7 @@
         <el-form-item>
           <el-checkbox v-if="isAddMode" class="create-next-case" v-model="isCreateNextCase">{{ $t('case.create-next-case') }}</el-checkbox>
         </el-form-item>
-        <el-form-item :label="$t('title')" prop="caseName">
+        <el-form-item :label="$t('case.name')" prop="caseName">
           <el-input type="textarea" v-model="form.caseName" :placeholder="$t('case.please-enter-title')" rows="3" maxlength="255" show-word-limit />
         </el-form-item>
         <el-row>

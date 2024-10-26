@@ -415,7 +415,7 @@
   "case": "测试用例",
   "case.ai-search-describe": "请尽可能详细描述要生成的测试用例信息，如：页面使用的功能流程、页面显示哪些属性、是否限制长度、点击按钮想要达到的效果等;\n可以写明生成的测试用例条数，如果没有指明，默认生成5条;",
   "case.please-enter-id": "请输入用例编号",
-  "case.please-enter-title": "请输入用例标题",
+  "case.please-enter-title": "请输入用例名称",
   "case.please-enter-level": "请输入用例级别",
   "case.please-enter-prerequisite": "请输入前置条件",
   "case.please-enter-expectations": "请输入预期",
@@ -747,5 +747,8 @@
   "plan.delete-prompt": "是否确认删除测试计划【{0}】的数据项？",
   "plan.select-case": "选择计划测试的用例",
   "plan.name-not-empty": "测试计划名称不能为空!",
-  "plan.pass-success": "执行通过操作成功"
+  "plan.pass-success": "执行通过操作成功",
+  "plan.item-total": "测试用例总数量",
+  "plan.pass-count": "测试通过数量",
+  "plan.fail-count": "测试未通过数量"
 }

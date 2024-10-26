@@ -5,8 +5,10 @@ import com.cat2bug.common.core.domain.AjaxResult;
 import com.cat2bug.common.core.domain.entity.SysDefect;
 import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.system.domain.SysCase;
+import com.cat2bug.system.domain.SysPlan;
 import com.cat2bug.system.service.ISysCaseService;
 import com.cat2bug.system.service.ISysDefectService;
+import com.cat2bug.system.service.ISysPlanService;
 import com.cat2bug.system.service.ISysUserProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -34,6 +36,9 @@ public class MarkdownPluginController extends BaseController {
     private ISysCaseService sysCaseService;
     @Autowired
     private ISysDefectService sysDefectService;
+    @Autowired
+    private ISysPlanService sysPlanService;
+
     @PreAuthorize("@ss.hasPermi('system:report:list')")
     @GetMapping("/{projectId}")
     public AjaxResult initData(@PathVariable("projectId") Long projectId)
@@ -60,7 +65,6 @@ public class MarkdownPluginController extends BaseController {
             return u;
         }).collect(Collectors.toList());
         member.put("all",list);
-//        member.put("all",list.stream().filter(m->m.));
         // 设置用例
         SysCase sysCase = new SysCase();
         sysCase.setProjectId(projectId);
@@ -70,6 +74,13 @@ public class MarkdownPluginController extends BaseController {
         List<SysCase> caseList = sysCaseService.selectSysCaseList(sysCase);
         caseParam.put("list",caseList);
         caseParam.put("total",caseList.size());
+
+        Map<String,Object> planParam = new HashMap<>();
+        ret.put("plan",planParam);
+        SysPlan sysPlan = new SysPlan();
+        sysPlan.setProjectId(projectId);
+        List<SysPlan> planList = sysPlanService.selectSysPlanList(sysPlan);
+        planParam.put("list", planList);
         return success(ret);
     }
 

@@ -5,14 +5,14 @@
       <el-menu-item v-else-if="!tool.children" :index="tool.name">
         <div class="row">
           <svg-icon v-if="tool.icon" :icon-class="tool.icon" />
-          <span>{{$t(tool.name)}}</span>
+          <span>{{menuName(tool.name)}}</span>
         </div>
       </el-menu-item>
       <el-submenu v-else :index="tool.name">
         <template slot="title">
           <div class="row">
             <svg-icon v-if="tool.icon" :icon-class="tool.icon" />
-            <span>{{$t(tool.name)}}</span>
+            <span>{{menuName(tool.name)}}</span>
           </div>
         </template>
         <tools-menu-item :tools="tool.children" />
@@ -29,7 +29,14 @@ export default {
       type: Array,
       default: ()=>[]
     }
-  }
+  },
+  computed: {
+    menuName: function () {
+      return function (name) {
+        return this.$i18n.te(name)?this.$i18n.t(name):name;
+      }
+    }
+  },
 }
 </script>
 

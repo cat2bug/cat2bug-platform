@@ -23,6 +23,9 @@ public class SysPlan extends BaseEntity
     /** 测试计划ID */
     private String planId;
 
+    /** 测试计划编号 */
+    private Long planNumber;
+
     /** 测试计划名称 */
     @Excel(name = "测试计划名称")
     private String planName;
@@ -32,13 +35,13 @@ public class SysPlan extends BaseEntity
     private String planVersion;
 
     /** 计划开始时间 */
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    @Excel(name = "计划开始时间", width = 30, dateFormat = "yyyy-MM-dd")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @Excel(name = "计划开始时间", width = 30, dateFormat = "yyyy-MM-dd HH:mm:ss")
     private Date planStartTime;
 
     /** 计划结束时间 */
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    @Excel(name = "计划结束时间", width = 30, dateFormat = "yyyy-MM-dd")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @Excel(name = "计划结束时间", width = 30, dateFormat = "yyyy-MM-dd HH:mm:ss")
     private Date planEndTime;
 
     /** 创建人ID */

@@ -109,7 +109,7 @@
       <div ref="caseContext" class="case-context">
         <el-table v-loading="loading" :data="caseList" @selection-change="handleSelectionChange" @row-click="handleUpdate" v-resize="setDragComponentSize">
           <el-table-column type="selection" width="50" align="center" />
-          <el-table-column v-if="showField('id')" :label="$t('id')" align="left" prop="caseNum" width="80" sortable>
+          <el-table-column v-if="showField('id')" :label="$t('id')" align="center" prop="caseNum" width="80" sortable>
             <template slot-scope="scope">
               <span>{{ caseNumber(scope.row) }}</span>
             </template>

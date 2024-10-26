@@ -5,7 +5,7 @@
       <el-menu-item v-else-if="!tool.children && tool.icon" :index="tool.name">
         <template slot="title">
           <div class="row">
-            <el-tooltip class="item" effect="dark" :content="$t(tool.name)" placement="bottom">
+            <el-tooltip class="item" effect="dark" :content="menuName(tool.name)" placement="bottom">
               <div v-if="tool.type=='check'">
                 <svg-icon class="icon" v-show="tool.check && tool.activeIcon" :icon-class="tool.activeIcon" />
                 <svg-icon class="icon" v-show="!tool.check" :icon-class="tool.icon" />
@@ -38,6 +38,13 @@ export default {
     return {
       activeToolsIndex: null,
 
+    }
+  },
+  computed: {
+    menuName: function () {
+      return function (name) {
+        return this.$i18n.te(name)?this.$i18n.t(name):name;
+      }
     }
   },
   props:{

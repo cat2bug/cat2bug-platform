@@ -261,7 +261,7 @@ export default {
       const planId = plan.planId;
       getPlan(planId).then(response => {
         this.form = response.data;
-        this.planTimeRang = [this.form.planStartTime, this.form.planEndTime];
+        this.planTimeRang = [new Date(this.form.planStartTime), new Date(this.form.planEndTime)];
         if(response.data.sysPlanItemList) {
           this.selectCaseIdSet = new Set(response.data.sysPlanItemList.map(i=>i.caseId));
         }
@@ -283,8 +283,8 @@ export default {
             }
           });
           this.form.projectId = this.projectId;
-          this.form.planStartTime = this.planTimeRang[0];
-          this.form.planEndTime = this.planTimeRang[1];
+          this.form.planStartTime = this.planTimeRang[0].getTime();
+          this.form.planEndTime = this.planTimeRang[1].getTime();
           if (this.form.planId != null) {
             updatePlan(this.form).then(response => {
               this.$modal.msgSuccess(this.$i18n.t('modify-success'));

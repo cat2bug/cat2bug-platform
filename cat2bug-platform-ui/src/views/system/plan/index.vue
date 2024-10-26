@@ -38,6 +38,11 @@
 
     <el-table v-loading="loading" :data="planList">
 <!--      <el-table-column type="selection" width="55" align="center" />-->
+      <el-table-column :label="$t('id')" align="center" prop="planNumber" width="80" sortable>
+        <template slot-scope="scope">
+          <span>{{ planNumber(scope.row) }}</span>
+        </template>
+      </el-table-column>
       <el-table-column :label="$t('plan.name')" align="start" prop="planName" />
       <el-table-column :label="$t('plan.version')" align="center" prop="planVersion" width="200"/>
       <el-table-column :label="$t('plan.time')" align="center" prop="planStartTime" width="260">
@@ -158,6 +163,12 @@ export default {
     };
   },
   computed: {
+    /** 用于显示的用例编号 */
+    planNumber: function () {
+      return function (val) {
+        return (val && val.planNumber)?'#'+val.planNumber:'';
+      }
+    },
     /** 项目ID */
     projectId: function () {
       return parseInt(this.$store.state.user.config.currentProjectId);

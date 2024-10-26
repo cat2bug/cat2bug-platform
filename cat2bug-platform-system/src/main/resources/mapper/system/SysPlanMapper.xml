@@ -6,6 +6,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     
     <resultMap type="SysPlan" id="SysPlanResult">
         <result property="planId"    column="plan_id"    />
+        <result property="planNumber"    column="plan_number"    />
         <result property="planName"    column="plan_name"    />
         <result property="planVersion"    column="plan_version"    />
         <result property="planStartTime"    column="plan_start_time"    />
@@ -40,6 +41,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <sql id="selectSysPlanVo">
         SELECT
             p.plan_id,
+            p.plan_number,
             p.plan_name,
             p.plan_version,
             p.plan_start_time,
@@ -60,9 +62,14 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                 LEFT JOIN ( SELECT pi2.plan_id, sum( CASE WHEN pi2.plan_item_state = 'pass' THEN 1 END ) AS pass_count, sum( CASE WHEN pi2.plan_item_state = 'fail' THEN 1 END ) AS fail_count, count( pi2.plan_item_id ) AS item_total FROM sys_plan_item pi2 JOIN sys_case c2 ON pi2.case_id=c2.case_id GROUP BY pi2.plan_id ) s ON s.plan_id = p.plan_id
     </sql>
 
+    <select id="getProjectPlanMaxNum" resultType="Long">
+        select IFNULL(MAX(plan_number),0) from sys_plan where project_id=#{projectId}
+    </select>
+
     <select id="selectSysPlanList" parameterType="SysPlan" resultMap="SysPlanResult">
         <include refid="selectSysPlanVo"/>
-        <where>  
+        <where>
+            <if test="planNumber != null "> and p.plan_number = #{planNumber}</if>
             <if test="planName != null  and planName != ''"> and p.plan_name like concat('%', #{planName}, '%')</if>
             <if test="planVersion != null  and planVersion != ''"> and p.plan_version like concat('%', #{planVersion}, '%')</if>
             <if test="params.beginPlanStartTime != null and params.beginPlanStartTime != '' and params.endPlanStartTime != null and params.endPlanStartTime != ''"> and plan_start_time between #{params.beginPlanStartTime} and #{params.endPlanStartTime}</if>
@@ -76,7 +83,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </select>
     
     <select id="selectSysPlanByPlanId" parameterType="String" resultMap="SysPlanSysPlanItemResult">
-        select a.plan_id, a.plan_name, a.plan_version, a.plan_start_time, a.plan_end_time, a.create_by_id, a.create_time, a.update_by_id, a.update_time, a.project_id, a.report_id,
+        select a.plan_id, a.plan_number, a.plan_name, a.plan_version, a.plan_start_time, a.plan_end_time, a.create_by_id, a.create_time, a.update_by_id, a.update_time, a.project_id, a.report_id,
  b.plan_item_id as sub_plan_item_id, b.plan_id as sub_plan_id, b.module_id as sub_module_id, b.case_id as sub_case_id, b.plan_item_state as sub_plan_item_state, b.update_by_id as sub_update_by_id, b.update_time as sub_update_time, b.defect_ids as sub_defect_id
         from sys_plan a
         left join sys_plan_item b on b.plan_id = a.plan_id
@@ -87,6 +94,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         insert into sys_plan
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="planId != null">plan_id,</if>
+            <if test="planNumber != null">plan_number,</if>
             <if test="planName != null and planName != ''">plan_name,</if>
             <if test="planVersion != null">plan_version,</if>
             <if test="planStartTime != null">plan_start_time,</if>
@@ -100,6 +108,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
          </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="planId != null">#{planId},</if>
+            <if test="planNumber != null">#{planNumber},</if>
             <if test="planName != null and planName != ''">#{planName},</if>
             <if test="planVersion != null">#{planVersion},</if>
             <if test="planStartTime != null">#{planStartTime},</if>
@@ -116,6 +125,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <update id="updateSysPlan" parameterType="SysPlan">
         update sys_plan
         <trim prefix="SET" suffixOverrides=",">
+            <if test="planNumber != null">plan_number = #{planNumber},</if>
             <if test="planName != null and planName != ''">plan_name = #{planName},</if>
             <if test="planVersion != null">plan_version = #{planVersion},</if>
             <if test="planStartTime != null">plan_start_time = #{planStartTime},</if>
