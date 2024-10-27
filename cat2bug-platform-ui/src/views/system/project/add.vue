@@ -26,20 +26,23 @@
           <el-col :xs="24" :sm="24" :md="8" :lg="6" :xl="6" class="step2">
             <el-image
               style="width: 150px; height: 150px"
-              :src="activeProjectIconUrl(activeProjectIconIndex)"
+              :src="form.projectIcon"
               fit="cover"></el-image>
             <el-popover
               v-model="projectIconPopperVisible"
               popper-class="project-icon-popper"
               placement="bottom"
               trigger="click">
-              <el-row class="project-icon-popper">
+              <el-row class="project-icon-popper" :gutter="6">
                 <el-col :span="6" v-for="i in 10" :key="i">
                   <el-image
                     @click="clickProjectIconHandle(i)"
                     :src="activeProjectIconUrl(i)"
                     fit="cover"
                   ></el-image>
+                </el-col>
+                <el-col :span="6">
+                  <image-upload v-model="projectIcon" :limit="1" :file-type="[]" :is-show-tip="false" :is-show-clipboard-button="false" @input="handleSelectSelfImage" />
                 </el-col>
               </el-row>
               <!--              选择项目图标按钮-->
@@ -154,6 +157,7 @@ export default {
       roleOptions: [],                  // 角色选项
       memberList:[],                    // 成员列表
       projectMemberSwitch: false,       // 项目成员开关
+      projectIcon: null,
       form:{
         teamId: this.currentTeamId,     // 团队id
         projectName: null,              // 项目名称
@@ -284,6 +288,15 @@ export default {
       this.form.projectIcon = this.activeProjectIconUrl(index); // 赋值项目图标
       this.projectIconPopperVisible = false;                    // 隐藏图标选择组件
     },
+    /** 点击选择自定义图片处理方法 */
+    handleSelectSelfImage(url) {
+      if(url) {
+        this.form.projectIcon = process.env.VUE_APP_BASE_API + url;                              // 赋值项目图标
+        this.projectIconPopperVisible = false;
+      } else {
+        this.clickProjectIconHandle(1);
+      }
+    },
     /** 提交按钮 */
     onSubmit() {
       this.form.teamId = this.currentTeamId;
@@ -318,7 +331,7 @@ export default {
     }
   }
   .project-icon-popper {
-    width: 500px;
+    width: 608px;
     .el-image:hover {
       cursor: pointer;
     }

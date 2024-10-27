@@ -10,7 +10,7 @@ export function makeDefect(data) {
   })
 }
 
-/** 制造缺陷标题 */
+/** 制造缺陷名称 */
 export function makeDefectTitle(data) {
   return request({
     url: '/ai/defect/title',

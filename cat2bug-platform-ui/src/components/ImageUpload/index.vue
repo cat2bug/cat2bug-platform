@@ -17,21 +17,17 @@
         :file-list="fileList"
         :on-preview="handlePictureCardPreview"
         class="cat2bug-upload"
-        :class="{hide: this.fileList.length >= this.limit}"
+        :class="{hide: fileList.length >= limit}"
       >
         <template v-slot:trigger>
-          <el-button class="update-button">
+          <el-button class="update-button" v-if="fileList.length < limit" :style="buttonStyle">
             <i class="el-icon-plus"></i>
           </el-button>
-          <el-button class="update-button" @click="clipboardImageHandle">
+          <el-button v-if="isShowClipboardButton && fileList.length < limit" class="update-button" :style="buttonStyle" @click="clipboardImageHandle">
             <svg-icon icon-class="clipboard" />
           </el-button>
         </template>
       </el-upload>
-
-<!--      <el-button class="update-button" @click="clipboardImageHandle">-->
-<!--        <svg-icon icon-class="clipboard" />-->
-<!--      </el-button>-->
     </div>
     <!-- 上传提示 -->
     <div class="el-upload__tip" slot="tip" v-if="showTip">
@@ -79,10 +75,19 @@ export default {
       type: Array,
       default: () => ["png", "jpg", "jpeg"],
     },
+    // 是否显示剪切按钮
+    isShowClipboardButton: {
+      type: Boolean,
+      default: true
+    },
     // 是否显示提示
     isShowTip: {
       type: Boolean,
       default: true
+    },
+    buttonStyle: {
+      type: String,
+      default: null
     }
   },
   data() {
@@ -287,11 +292,11 @@ export default {
   flex-direction: row;
   gap: 10px;
 }
-::v-deep.cat2bug-upload > .el-upload--picture-card {
-  width: 300px !important;
-  display: inline-flex;
-  flex-direction: row;
-  border: none;
-}
+//::v-deep.cat2bug-upload > .el-upload--picture-card {
+//  width: 300px !important;
+//  display: inline-flex;
+//  flex-direction: row;
+//  border: none;
+//}
 </style>
 
