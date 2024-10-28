@@ -24,7 +24,7 @@
       append-to-body>
       <cat2-bug-markdown
         ref="cat2bugMarkdown"
-        :exclude-tools="['siding-9899', 'project', 'case', 'defect', 'member', 'save']"
+        :exclude-tools="['siding-9899', 'project', 'case', 'defect', 'member', 'save', 'plan']"
         :placeholder="placeholder"
         v-model="textContent"
         @input="handleMarkdownContent"/>
@@ -34,6 +34,7 @@
 
 <script>
 import Cat2BugMarkdown from "@/components/Cat2BugMarkdown";
+import {upload} from "@/api/common/upload";
 export default {
   name: "index",
   components: {Cat2BugMarkdown},
@@ -97,6 +98,12 @@ export default {
       default: ()=>[]
     }
   },
+  mounted() {
+    this.$refs.cat2bugTextarea.addEventListener('paste',this.getClipboardImage);
+  },
+  destroyed() {
+    this.$refs.cat2bugTextarea.removeEventListener('paste',this.getClipboardImage);
+  },
   computed: {
     title: function () {
       return `[${this.name?this.name:""}] ${this.$i18n.t('edit-mode')}`
@@ -112,8 +119,65 @@ export default {
     maxWindows() {
       this.dialogVisible = true;
     },
-    changeHandle(e) {
+    changeHandle(event) {
+      // if (event.clipboardData || event.originalEvent) {
+      //   let clipboardData = (event.clipboardData || event.originalEvent.clipboardData);
+      //   if(clipboardData.items){
+      //     let  blob;
+      //     for (let i = 0; i < clipboardData.items.length; i++) {
+      //       if (clipboardData.items[i].type.indexOf("image") !== -1) {
+      //         blob = clipboardData.items[i].getAsFile();
+      //       }
+      //     }
+      //     let render = new FileReader();
+      //     render.onload = function (evt) {
+      //       //输出base64编码
+      //       let base64 = evt.target.result;
+      //       let imgElem = document.createElement('img')
+      //       imgElem.src = base64
+      //       document.getElementsByClassName('img-textarea')[0].appendChild(imgElem)
+      //     }
+      //     if(blob){
+      //       render.readAsDataURL(blob);
+      //     }
+      //   }
+      // }
+
       this.$emit('change', this.textContent)
+    },
+    insertTextAtCursor(text) {
+      let textarea = this.$refs.cat2bugTextarea;
+      let startPos = textarea.selectionStart;
+      let endPos = textarea.selectionEnd;
+      let value = textarea.value;
+
+      let beforeText = value.substring(0, startPos);
+      let afterText = value.substring(endPos, value.length);
+
+      let newValue = beforeText + text + afterText;
+      this.textContent = newValue;
+
+      // textarea.value = newValue;
+      textarea.selectionStart = textarea.selectionEnd = startPos + text.length;
+    },
+    async getClipboardImage() {
+      try {
+        let self = this;
+        const clipboardItems = await navigator.clipboard.read();
+        for (const clipboardItem of clipboardItems) {
+          for (const type of clipboardItem.types) {
+            const blob = await clipboardItem.getType(type);
+            if(blob.type=='image/png') {
+              const formData = new FormData();
+              formData.append('file', blob);
+              let res = await upload(formData);
+              self.insertTextAtCursor(`![](${process.env.VUE_APP_BASE_API + res.fileName})`);
+            }
+          }
+        }
+      } catch (err) {
+        console.error(err.name, err.message);
+      }
     },
     handleCloseDialog(done) {
       done();

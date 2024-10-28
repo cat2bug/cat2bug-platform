@@ -378,6 +378,7 @@ export default {
       } else {
         this.markdownContent += '\n' + text + '\n';
       }
+      this.inputHandle();
     },
     /** 插入内容到编辑框 */
     async insertContent(tool) {
