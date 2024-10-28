@@ -261,7 +261,7 @@ export default {
 <style scoped lang="scss">
 // .el-upload--picture-card 控制加号部分
 ::v-deep.hide .el-upload--picture-card {
-    display: none;
+    display: none !important;
 }
 // 去掉动画效果
 ::v-deep .el-list-enter-active,
@@ -292,11 +292,11 @@ export default {
   flex-direction: row;
   gap: 10px;
 }
-//::v-deep.cat2bug-upload > .el-upload--picture-card {
-//  width: 300px !important;
-//  display: inline-flex;
-//  flex-direction: row;
-//  border: none;
-//}
+::v-deep.cat2bug-upload > .el-upload--picture-card {
+  width: 300px !important;
+  display: inline-flex;
+  flex-direction: row;
+  border: none;
+}
 </style>
 

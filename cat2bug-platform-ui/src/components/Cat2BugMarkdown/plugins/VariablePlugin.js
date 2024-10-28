@@ -4,10 +4,9 @@ export function VariablePlugin (md,options) {
   function variable (state, silent) {
     let match;
     if (state.src.charCodeAt(state.pos) === 0x24 /* $ */) {
-      let rg = /\$(t|text){0,1}\{(.*)\}/;
-      match = state.src.match(rg);
+      let rg = /^\$(t|text){0,1}\{([0-9a-zA-z\.]*?)\}/;
+      match = state.src.substr(state.pos).match(rg);
       if (!match) return false;
-
       let result = match[2];
       if(!result || result.indexOf(opt.name)!=0) return false;
 

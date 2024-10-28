@@ -3,13 +3,13 @@ export function PlanVariablePlugin (md,options) {
 
   function variable (state, silent) {
     let match;
+    console.log('PlanVariablePlugin', state.src)
     if (state.src.charCodeAt(state.pos) === 0x24 /* $ */) {
-      let rg = /\$(t|text)?\{(.*?)(\[\s*\d+\s*]\s*)\}/;
-      match = state.src.match(rg);
+      let rg = /^\$(t|text)?\{(.*?)(\[\s*\d+\s*]\s*)\}/;
+      match = state.src.substr(state.pos).match(rg);
       if (!match) return false;
 
       let result = match[2];
-      // console.log(match)
       if(!result || result.indexOf(opt.name)!=0) return false;
       let planNumber = parseInt(match[3].replace('[','').replace(']',''));
       if (!silent) {
@@ -20,7 +20,6 @@ export function PlanVariablePlugin (md,options) {
           for(let i=0;i<planList.length;i++) {
             const plan = planList[i];
             if(plan.planNumber && plan.planNumber==planNumber) {
-              // console.log(plan)
               const fields = result.split('.');
               for (let j in fields) {
                 if (!fields[j])

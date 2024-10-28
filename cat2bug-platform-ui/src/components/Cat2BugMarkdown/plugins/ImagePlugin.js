@@ -3,10 +3,9 @@ export function ImagePlugin (md,options) {
   const values = opt.value || {}
   function image (state, silent) {
     if (state.src.charCodeAt(state.pos) === 0x24 /* $ */) {
-      let rg = /.*\$(img|image)(\[([\"'a-zA-Z0-9]+:.+)*\])*\{(.*)\}/;
-      let match = state.src.match(rg);
+      let rg = /^\$(img|image)(\[([\"'a-zA-Z0-9]+:.+)*\])*\{(.*?)\}/;
+      let match = state.src.substr(state.pos).match(rg);
       if (!match) return false;
-
       let result = match[4];
       let attr = match[3]?match[3].split(','):[];
       if(!result || result.indexOf(opt.name)!=0) return false;
@@ -38,6 +37,7 @@ export function ImagePlugin (md,options) {
         vToken.children = []
       }
       state.pos += match[0].length;
+      // state.src=state.src.substr(match[0].length)
       return true;
     }
     return false;

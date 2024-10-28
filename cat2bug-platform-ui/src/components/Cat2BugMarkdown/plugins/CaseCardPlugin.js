@@ -8,8 +8,8 @@ export function CaseCardPlugin (md,options) {
     if (!state.src || state.src.charCodeAt(state.pos) !== 0x24 /* $ */ || !opt.value) {
       return false;
     }
-    let rg = /.*\$card\{(api\.case\.list)\}.*/;
-    let match = state.src.match(rg);
+    let rg = /^\$card\{(api\.case\.list)\}.*/;
+    let match = state.src.substr(state.pos).match(rg);
     if (match && match.length && !silent) {
       let result = match[1];
       let startLien = 0;

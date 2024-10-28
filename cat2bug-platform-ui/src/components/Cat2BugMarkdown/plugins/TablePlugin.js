@@ -8,8 +8,8 @@ export function TablePlugin (md,options) {
     if (!state.src || state.src.charCodeAt(state.pos) !== 0x24 /* $ */ || !opt.value) {
       return false;
     }
-    let rg = /\s*\$table\{((\w|\.)*)(\[(((\w|\.)+(:(\w|[\u3040-\uD7AF]|\.)+)*){1}(,(\w|\.)+(:(\w|[\u3040-\uD7AF]|\.)+)*)*)\])?\}/;
-    let match = state.src.match(rg);
+    let rg = /^\$table\{((\w|\.)*)(\[(((\w|\.)+(:(\w|[\u3040-\uD7AF]|\.)+)*){1}(,(\w|\.)+(:(\w|[\u3040-\uD7AF]|\.)+)*)*)\])?\}/;
+    let match = state.src.substr(state.pos).match(rg);
     if (match && match.length && !silent) {
       let result = match[1];
       let startLien = 0;
