@@ -46,12 +46,13 @@ public class SysCase extends BaseEntity
     private String caseName;
 
     /** 模块id */
-    @Excel(name = "交付物",
-            i18nNameKey = "module",
+    @Excel(name = "交付物(必填)",
+            i18nNameKey = "module.required",
             align = HorizontalAlignment.LEFT,
             width = 40,
             handler = SysModuleIdHandlerAdapter.class,
             comboHandler = SysModuleComboHandlerAdapter.class,
+            headerColor = IndexedColors.RED,
             headerBackgroundColor=IndexedColors.GREY_25_PERCENT,
             type = Excel.Type.EXPORT
     )
@@ -59,11 +60,12 @@ public class SysCase extends BaseEntity
 
     /** 模块名称 */
     @Excel(name = "交付物",
-            i18nNameKey = "module",
+            i18nNameKey = "module.required",
             align = HorizontalAlignment.LEFT,
             width = 40,
             handler = SysModuleNameHandlerAdapter.class,
             comboHandler = SysModuleComboHandlerAdapter.class,
+            headerColor = IndexedColors.RED,
             headerBackgroundColor=IndexedColors.GREY_25_PERCENT,
             type = Excel.Type.IMPORT
     )

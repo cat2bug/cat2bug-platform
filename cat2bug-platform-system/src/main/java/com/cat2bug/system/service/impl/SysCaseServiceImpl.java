@@ -179,6 +179,9 @@ public class SysCaseServiceImpl implements ISysCaseService
             } else if(c.getCaseName().length()>255) {
                 rr.getMessages().add(MessageUtils.message("case.title-size-exception"));
             }
+            if(StringUtils.isEmpty(c.getModuleName())) {
+                rr.getMessages().add(MessageUtils.message("case.module-not-empty"));
+            }
             if(StringUtils.isEmpty(c.getCaseExpect())) {
                 rr.getMessages().add(MessageUtils.message("case.expect-not-empty"));
             } else if(c.getCaseExpect().length()>255) {

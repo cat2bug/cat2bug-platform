@@ -22,9 +22,9 @@ public class SysCaseExcelTepmplate extends BaseEntity
     @Excel(name = "用例名称(必填)", i18nNameKey = "case.name_excel", width = 50, headerColor = IndexedColors.RED,headerBackgroundColor=IndexedColors.GREY_25_PERCENT)
     private String caseName;
 
-    /** 模块名称 */
-    @Excel(name = "模块",
-            i18nNameKey = "module",
+    /** 交付物名称 */
+    @Excel(name = "交付物",
+            i18nNameKey = "module.required",
             width = 40,
             handler = SysModuleNameHandlerAdapter.class,
             comboHandler = SysModuleComboHandlerAdapter.class,
