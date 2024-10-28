@@ -71,6 +71,41 @@ public class SysPlan extends BaseEntity
     /** 执行未通过数量 */
     private int failCount;
 
+    /** 缺陷进行中状态统计数量 */
+    private int processingStateCount;
+    /** 缺陷待审核状态统计数量 */
+    private int auditStateCount;
+    /** 缺陷驳回状态统计数量 */
+    private int rejectedStateCount;
+    /** 缺陷已关闭状态统计数量 */
+    private int closeStateCount;
+    /** 缺陷数量 */
+    private int defectCount;
+    /** 设计的交付物数量 */
+    private int moduleCount;
+    /** 测试人员创建缺陷的数量 */
+    private int createDefectCountByTester;
+    /** 获取缺陷发现率 */
+    public String getDefectDiscoveryRate() {
+        if(this.itemTotal==0) return "0%";
+        return (int)Math.floor(this.defectCount*100/this.itemTotal) + "%";
+    }
+    /** 获取缺陷修复率 */
+    public String getDefectRepairRate() {
+        if(this.itemTotal==0) return "0%";
+        return (int)Math.floor(this.closeStateCount*100/this.itemTotal) + "%";
+    }
+    /** 获取缺陷密度 */
+    public String getDefectDensity() {
+        if(this.moduleCount==0) return "0.0";
+        return Math.floor(this.defectCount*100/this.moduleCount)+"";
+    }
+    /** 获取缺陷探测率 */
+    public String getDefectDetectionRate() {
+        if(this.defectCount==0) return "0%";
+        return (int)Math.floor(this.createDefectCountByTester*100/this.defectCount) + "%";
+    }
+
     @Override
     public String toString() {
         return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)

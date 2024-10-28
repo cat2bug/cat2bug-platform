@@ -316,24 +316,42 @@ export default {
             children: [{
               icon: 'mk-total',
               name: 'plan.name',
-              content: `\${api.plan.planName[${p.planNumber}]}`
+              content: `${this.$i18n.t('plan.name')}: \${api.plan.planName[${p.planNumber}]}`
             },{
               icon: 'mk-total',
               name: 'plan.version',
-              content: `\${api.plan.planVersion[${p.planNumber}]}`
+              content: `${this.$i18n.t('plan.version')}: \${api.plan.planVersion[${p.planNumber}]}`
             },{
               icon: 'mk-total',
               name: 'plan.fail-count',
-              content: `\${api.plan.failCount[${p.planNumber}]}`
+              content: `${this.$i18n.t('plan.fail-count')}: \${api.plan.failCount[${p.planNumber}]}`
             },{
               icon: 'mk-total',
               name: 'plan.pass-count',
-              content: `\${api.plan.passCount[${p.planNumber}]}`
+              content: `${this.$i18n.t('plan.pass-count')}: \${api.plan.passCount[${p.planNumber}]}`
             },{
               icon: 'mk-total',
               name: 'plan.item-total',
-              content: `\${api.plan.itemTotal[${p.planNumber}]}`
-            }]
+              content: `${this.$i18n.t('plan.item-total')}: \${api.plan.itemTotal[${p.planNumber}]}`
+            },{
+              type: 'siding'
+            },{
+              icon: 'mk-rate',
+              name: 'plan.defect-discovery-rate',
+              content: `${this.$i18n.t('plan.defect-discovery-rate')}: \${api.plan.defectDiscoveryRate[${p.planNumber}]}`
+            },{
+              icon: 'mk-rate',
+              name: 'plan.defect-repair-rate',
+              content: `${this.$i18n.t('plan.defect-repair-rate')}: \${api.plan.defectRepairRate[${p.planNumber}]}`
+            },{
+              icon: 'mk-value',
+              name: 'plan.defect-density',
+              content: `${this.$i18n.t('plan.defect-density')}: \${api.plan.defectDensity[${p.planNumber}]}`
+            },{
+              icon: 'mk-rate',
+              name: 'plan.defect-detection-rate',
+              content: `${this.$i18n.t('plan.defect-detection-rate')}: \${api.plan.defectDetectionRate[${p.planNumber}]}`
+            },]
           }
         });
 

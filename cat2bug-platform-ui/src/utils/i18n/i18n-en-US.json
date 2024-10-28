@@ -750,5 +750,9 @@
   "plan.pass-success": "Successfully executed through operation",
   "plan.item-total": "Total number of test cases",
   "plan.pass-count": "Number of tests passed",
-  "plan.fail-count": "Number of failed tests"
+  "plan.fail-count": "Number of failed tests",
+  "plan.defect-discovery-rate": "Defect Discovery Rate",
+  "plan.defect-repair-rate": "Defect Repair Rate",
+  "plan.defect-density": "Defect Density",
+  "plan.defect-detection-rate": "Defect Detection Rate"
 }

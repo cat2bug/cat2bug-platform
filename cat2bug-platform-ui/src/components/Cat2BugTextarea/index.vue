@@ -120,29 +120,6 @@ export default {
       this.dialogVisible = true;
     },
     changeHandle(event) {
-      // if (event.clipboardData || event.originalEvent) {
-      //   let clipboardData = (event.clipboardData || event.originalEvent.clipboardData);
-      //   if(clipboardData.items){
-      //     let  blob;
-      //     for (let i = 0; i < clipboardData.items.length; i++) {
-      //       if (clipboardData.items[i].type.indexOf("image") !== -1) {
-      //         blob = clipboardData.items[i].getAsFile();
-      //       }
-      //     }
-      //     let render = new FileReader();
-      //     render.onload = function (evt) {
-      //       //输出base64编码
-      //       let base64 = evt.target.result;
-      //       let imgElem = document.createElement('img')
-      //       imgElem.src = base64
-      //       document.getElementsByClassName('img-textarea')[0].appendChild(imgElem)
-      //     }
-      //     if(blob){
-      //       render.readAsDataURL(blob);
-      //     }
-      //   }
-      // }
-
       this.$emit('change', this.textContent)
     },
     insertTextAtCursor(text) {

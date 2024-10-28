@@ -3,7 +3,6 @@ export function PlanVariablePlugin (md,options) {
 
   function variable (state, silent) {
     let match;
-    console.log('PlanVariablePlugin', state.src)
     if (state.src.charCodeAt(state.pos) === 0x24 /* $ */) {
       let rg = /^\$(t|text)?\{(.*?)(\[\s*\d+\s*]\s*)\}/;
       match = state.src.substr(state.pos).match(rg);

@@ -1,6 +1,7 @@
 import LinkTool from "@/components/Cat2BugMarkdown/components/LinkTool";
 import AddImageLinkTool from "@/components/Cat2BugMarkdown/components/AddImageLinkTool";
 import UploadImageTool from "@/components/Cat2BugMarkdown/components/UploadImageTool";
+import i18n from "@/utils/i18n/i18n";
 
 export function MarkdownTools() {
   return [{
@@ -115,23 +116,23 @@ export function MarkdownTools() {
     children: [{
       icon: 'mk-name',
       name: 'project.name',
-      content: '${api.project.projectName}'
+      content: `${i18n.t('project.name')}: \${api.project.projectName}`
     },{
       icon: 'mk-icon',
       name: 'project.icon',
-      content: '$image["style":"width:100px;height:100px;"]{api.project.projectIcon}'
+      content: `$image["style":"width:100px;height:100px;"]{api.project.projectIcon}`
     },{
       icon: 'md-create-time',
       name: 'create-time',
-      content: '${api.project.createTime}'
+      content: `${i18n.t('create-time')}: \${api.project.createTime}`
     },{
       icon: 'md-update-time',
       name: 'update-time',
-      content: '${api.project.updateTime}'
+      content: `${i18n.t('update-time')}: \${api.project.updateTime}`
     },{
       icon: 'mk-remark',
       name: 'describe',
-      content: '${api.project.projectIntroduce}'
+      content: `${i18n.t('describe')}: \${api.project.projectIntroduce}`
     }]
   },{
     icon: 'mk-case',
@@ -139,7 +140,7 @@ export function MarkdownTools() {
     children: [{
       icon: 'mk-total',
       name: 'case.total',
-      content: '${api.case.total}'
+      content: `${i18n.t('case.total')}: \${api.case.total}`
     },{
       type: 'siding'
     },

@@ -750,5 +750,9 @@
   "plan.pass-success": "执行通过操作成功",
   "plan.item-total": "测试用例总数量",
   "plan.pass-count": "测试通过数量",
-  "plan.fail-count": "测试未通过数量"
+  "plan.fail-count": "测试未通过数量",
+  "plan.defect-discovery-rate": "缺陷发现率",
+  "plan.defect-repair-rate": "缺陷修复率",
+  "plan.defect-density": "缺陷密度",
+  "plan.defect-detection-rate": "缺陷探测率"
 }
