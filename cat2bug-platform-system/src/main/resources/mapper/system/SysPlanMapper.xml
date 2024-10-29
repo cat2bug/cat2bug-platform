@@ -20,6 +20,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="reportId"    column="report_id"    />
         <result property="passCount"    column="pass_count"    />
         <result property="failCount"    column="fail_count"    />
+        <result property="defectLevelUrgentCount"    column="defect_level_urgent_count"    />
+        <result property="defectLevelHeightCount"    column="defect_level_height_count"    />
+        <result property="defectLevelMiddleCount"    column="defect_level_middle_count"    />
+        <result property="defectLevelLowCount"    column="defect_level_low_count"    />
+        <result property="unexecutedCount"    column="unexecuted_count"    />
         <result property="itemTotal"    column="item_total"    />
         <result property="processingStateCount"    column="processing_state_count"    />
         <result property="auditStateCount"    column="audit_state_count"    />
@@ -28,6 +33,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="defectCount"    column="defect_count"    />
         <result property="moduleCount"    column="module_count"    />
         <result property="createDefectCountByTester"    column="create_defect_count_by_tester"    />
+        <result property="createDefectCountByOutsider"    column="create_defect_count_by_outsider"    />
     </resultMap>
 
     <resultMap id="SysPlanSysPlanItemResult" type="SysPlan" extends="SysPlanResult">
@@ -62,14 +68,20 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             u.nick_name AS update_by,
             s.pass_count,
             s.fail_count,
+            s.unexecuted_count,
             s.item_total,
             s.processing_state_count,
             s.audit_state_count,
             s.rejected_state_count,
             s.close_state_count,
+            s.defect_level_urgent_count,
+            s.defect_level_height_count,
+            s.defect_level_middle_count,
+            s.defect_level_low_count,
             s.defect_count,
             s.module_count,
-            s.create_defect_count_by_tester
+            s.create_defect_count_by_tester,
+            s.create_defect_count_by_outsider
         FROM
             sys_plan p
                 LEFT JOIN sys_user u ON u.user_id = p.update_by_id
@@ -77,15 +89,21 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                 SELECT
                     pi2.plan_id,
                     sum( CASE WHEN pi2.plan_item_state = 'pass' THEN 1 ELSE 0 END ) AS pass_count,
-                    sum( CASE WHEN pi2.plan_item_state = 'fail' THEN 1 ELSE 0 END ) AS fail_count,
+                    sum( CASE WHEN pi2.plan_item_state = 'not_pass' THEN 1 ELSE 0 END ) AS fail_count,
+                    sum( CASE WHEN pi2.plan_item_state = 'unexecuted' THEN 1 ELSE 0 END ) AS unexecuted_count,
                     count( pi2.plan_item_id ) AS item_total,
                     IFNULL( sum( ds2.processing_state_count ), 0 ) processing_state_count,
                     IFNULL( sum( ds2.audit_state_count ), 0 ) audit_state_count,
                     IFNULL( sum( ds2.rejected_state_count ), 0 ) rejected_state_count,
                     IFNULL( sum( ds2.close_state_count ), 0 ) close_state_count,
+                    IFNULL( sum( ds2.defect_level_urgent_count ), 0 ) defect_level_urgent_count,
+                    IFNULL( sum( ds2.defect_level_height_count ), 0 ) defect_level_height_count,
+                    IFNULL( sum( ds2.defect_level_middle_count ), 0 ) defect_level_middle_count,
+                    IFNULL( sum( ds2.defect_level_low_count ), 0 ) defect_level_low_count,
                     IFNULL( sum( ds2.defect_count ), 0 ) defect_count,
                     IFNULL( sum( ms2.module_count ), 0 ) module_count,
-                    IFNULL( sum( rs2.create_defect_count_by_tester ), 0 ) create_defect_count_by_tester
+                    IFNULL( sum( rs2.create_defect_count_by_tester ), 0 ) create_defect_count_by_tester,
+                    IFNULL( sum( rs2.create_defect_count_by_outsider ), 0 ) create_defect_count_by_outsider
                 FROM
                     sys_plan_item pi2
                         LEFT JOIN (
@@ -95,6 +113,10 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                             SUM( CASE WHEN d3.defect_state = 1 THEN 1 ELSE 0 END ) AS audit_state_count,
                             SUM( CASE WHEN d3.defect_state = 3 THEN 1 ELSE 0 END ) AS rejected_state_count,
                             SUM( CASE WHEN d3.defect_state = 4 THEN 1 ELSE 0 END ) AS close_state_count,
+                            SUM( CASE WHEN d3.defect_level = 'urgent' THEN 1 ELSE 0 END ) AS defect_level_urgent_count,
+                            SUM( CASE WHEN d3.defect_level = 'height' THEN 1 ELSE 0 END ) AS defect_level_height_count,
+                            SUM( CASE WHEN d3.defect_level = 'middle' THEN 1 ELSE 0 END ) AS defect_level_middle_count,
+                            SUM( CASE WHEN d3.defect_level = 'low' THEN 1 ELSE 0 END ) AS defect_level_low_count,
                             count( pi3.plan_item_id ) AS defect_count
                         FROM
                             sys_plan_item pi3
@@ -116,7 +138,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                         LEFT JOIN (
                         SELECT
                             pi5.plan_item_id,
-                            SUM( CASE WHEN upr5.role_id = 8 THEN 1 ELSE 0 END ) AS create_defect_count_by_tester
+                            SUM( CASE WHEN upr5.role_id = 8 THEN 1 ELSE 0 END ) AS create_defect_count_by_tester,
+                            SUM( CASE WHEN upr5.role_id = 9 THEN 1 ELSE 0 END ) AS create_defect_count_by_outsider
                         FROM
                             sys_plan_item pi5
                                 JOIN sys_plan p5 ON p5.plan_id = pi5.plan_id

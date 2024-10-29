@@ -433,7 +433,6 @@ export default {
     selectDefectTabHandle() {
       if(this.config && this.config.tabs) {
         let tab = this.config.tabs.find(t=>t.tabId==this.activeDefectTabName);
-        console.log('dd',this.config.tabs, tab)
         if(tab && tab.config) {
           tab.config.isAsc = 'desc';
           tab.config.orderByColumn = 'updateTime';

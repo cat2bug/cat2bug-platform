@@ -8,7 +8,7 @@
       </div>
       <div v-else>
         <div @click="clickHandle(m)" class="defect-module-row" v-for="(m,index) in showModuleList" :key="index">
-          <h5 :style="`background-color:${flagColor(index)}`">{{ rankingNumber(index) }}</h5><h4>{{ $t(m.k) }}</h4><el-progress :percentage="percentage(m)" :format="format" :color="customColors"></el-progress><span>{{ m.f }}/{{ m.a }}</span>
+          <h5 :style="`background-color:${flagColor(index)}`">{{ rankingNumber(index) }}</h5><h4>{{ $te(m.k)?$t(m.k):m.k }}</h4><el-progress :percentage="percentage(m)" :format="format" :color="customColors"></el-progress><span>{{ m.f }}/{{ m.a }}</span>
         </div>
         <el-pagination
           small

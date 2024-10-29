@@ -70,6 +70,8 @@ public class SysPlan extends BaseEntity
 
     /** 执行未通过数量 */
     private int failCount;
+    /** 未执行数量 */
+    private int unexecutedCount;
 
     /** 缺陷进行中状态统计数量 */
     private int processingStateCount;
@@ -79,12 +81,26 @@ public class SysPlan extends BaseEntity
     private int rejectedStateCount;
     /** 缺陷已关闭状态统计数量 */
     private int closeStateCount;
+    /** 缺陷等级严重数量 */
+    private int defectLevelUrgentCount;
+    /** 缺陷等级高数量 */
+    private int defectLevelHeightCount;
+    /** 缺陷等级中数量 */
+    private int defectLevelMiddleCount;
+    /** 缺陷等级低数量 */
+    private int defectLevelLowCount;
     /** 缺陷数量 */
     private int defectCount;
-    /** 设计的交付物数量 */
+    /** 交付物的数量 */
     private int moduleCount;
     /** 测试人员创建缺陷的数量 */
     private int createDefectCountByTester;
+    /** 外部人员创建缺陷的数量 */
+    private int createDefectCountByOutsider;
+    /** 获取缺陷已执行数量 */
+    public int getExecutedCount() {
+        return this.itemTotal - this.unexecutedCount;
+    }
     /** 获取缺陷发现率 */
     public String getDefectDiscoveryRate() {
         if(this.itemTotal==0) return "0%";

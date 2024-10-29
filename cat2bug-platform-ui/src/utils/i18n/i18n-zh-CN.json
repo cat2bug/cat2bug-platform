@@ -750,9 +750,20 @@
   "plan.pass-success": "执行通过操作成功",
   "plan.item-total": "测试用例总数量",
   "plan.pass-count": "测试通过数量",
+  "plan.unexecuted-count": "测试未执行数量",
+  "plan.executed-count": "测试已执行数量",
   "plan.fail-count": "测试未通过数量",
   "plan.defect-discovery-rate": "缺陷发现率",
   "plan.defect-repair-rate": "缺陷修复率",
   "plan.defect-density": "缺陷密度",
-  "plan.defect-detection-rate": "缺陷探测率"
+  "plan.defect-detection-rate": "缺陷探测率",
+  "plan.create-defect-count-by-tester": "测试人员发现的缺陷数量",
+  "plan.create-defect-count-by-outsider": "外部人员发现的缺陷数量",
+  "plan.module-count": "交付物数量",
+  "plan.defect-level-count": "缺陷等级数量",
+  "plan.defect-level-urgent-count": "严重级别数量",
+  "plan.defect-level-height-count": "高等级数量",
+  "plan.defect-level-middle-count": "中等级数量",
+  "plan.defect-level-low-count": "低等级数量",
+  "plan.statistics": "测试计划统计表"
 }

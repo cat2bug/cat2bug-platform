@@ -314,6 +314,21 @@ export default {
             icon: 'md-create-time',
             name: p.planName,
             children: [{
+              icon: 'mk-table',
+              name: 'plan.statistics',
+              content: `|项目名称|\${api.project.projectName}|||||||||
+|测试计划|\${api.plan.planName[${p.planNumber}]}|||||||||
+|测试版本号|\${api.plan.planVersion[${p.planNumber}]}||测试用例通过数量|\${api.plan.passCount[${p.planNumber}]} 个|测试用例未通过数量|\${api.plan.failCount[${p.planNumber}]} 个|测试用例未执行数量|\${api.plan.unexecutedCount[${p.planNumber}]}||
+|||||||
+|-|-|-|-|
+|度量指标数据如下:||||||||||
+|缺陷发现率（%） |缺陷修改率或纠错率（%） ||缺陷探测率（%） ||缺陷密度||缺陷严重率（%） ||
+|本轮已发现的缺陷数量|本轮已执行的用例数量|本轮已修复的缺陷数量|本轮发现的总的缺陷数量|测试或探测者发现的缺陷数量|客户反馈的缺陷数量|缺陷数量|代码行数或功能点的数量|本计划所发现的严重缺陷数量|本计划已发现的缺陷总数|
+|\${api.plan.itemTotal[${p.planNumber}]}|\${api.plan.executedCount[${p.planNumber}]}|\${api.plan.passCount[${p.planNumber}]}|\${api.plan.itemTotal[${p.planNumber}]}|\${api.plan.createDefectCountByTester[${p.planNumber}]}|\${api.plan.createDefectCountByOutsider[${p.planNumber}]}|\${api.plan.itemTotal[${p.planNumber}]}|\${api.plan.moduleCount[${p.planNumber}]}|\${api.plan.defectLevelUrgentCount[${p.planNumber}]}|\${api.plan.itemTotal[${p.planNumber}]}|
+|\${api.plan.defectDiscoveryRate[${p.planNumber}]}||\${api.plan.defectRepairRate[${p.planNumber}]}||\${api.plan.defectDetectionRate[${p.planNumber}]}||\${api.plan.defectDensity[${p.planNumber}]}||value1|value1|`
+            },{
+              type: 'siding'
+            },{
               icon: 'mk-total',
               name: 'plan.name',
               content: `${this.$i18n.t('plan.name')}: \${api.plan.planName[${p.planNumber}]}`
@@ -331,8 +346,44 @@ export default {
               content: `${this.$i18n.t('plan.pass-count')}: \${api.plan.passCount[${p.planNumber}]}`
             },{
               icon: 'mk-total',
+              name: 'plan.unexecuted-count',
+              content: `${this.$i18n.t('plan.unexecuted-count')}: \${api.plan.unexecutedCount[${p.planNumber}]}`
+            },{
+              icon: 'mk-total',
+              name: 'plan.executed-count',
+              content: `${this.$i18n.t('plan.executed-count')}: \${api.plan.executedCount[${p.planNumber}]}`
+            },{
+              icon: 'mk-total',
               name: 'plan.item-total',
               content: `${this.$i18n.t('plan.item-total')}: \${api.plan.itemTotal[${p.planNumber}]}`
+            },{
+              icon: 'mk-member',
+              name: 'plan.create-defect-count-by-tester',
+              content: `${this.$i18n.t('plan.create-defect-count-by-tester')}: \${api.plan.createDefectCountByTester[${p.planNumber}]}`
+            },{
+              icon: 'mk-member',
+              name: 'plan.create-defect-count-by-outsider',
+              content: `${this.$i18n.t('plan.create-defect-count-by-outsider')}: \${api.plan.createDefectCountByOutsider[${p.planNumber}]}`
+            },{
+              icon: 'mk-level',
+              name: 'plan.defect-level-count',
+              children: [{
+                name: 'plan.defect-level-urgent-count',
+                content: `${this.$i18n.t('plan.defect-level-urgent-count')}: \${api.plan.defectLevelUrgentCount[${p.planNumber}]}`
+              },{
+                name: 'plan.defect-level-height-count',
+                content: `${this.$i18n.t('plan.defect-level-height-count')}: \${api.plan.defectLevelHeightCount[${p.planNumber}]}`
+              },{
+                name: 'plan.defect-level-middle-count',
+                content: `${this.$i18n.t('plan.defect-level-middle-count')}: \${api.plan.defectLevelMiddleCount[${p.planNumber}]}`
+              },{
+                name: 'plan.defect-level-low-count',
+                content: `${this.$i18n.t('plan.defect-level-low-count')}: \${api.plan.defectLevelLowCount[${p.planNumber}]}`
+              }]
+            },{
+              icon: 'cascader',
+              name: 'plan.module-count',
+              content: `${this.$i18n.t('plan.module-count')}: \${api.plan.moduleCount[${p.planNumber}]}`
             },{
               type: 'siding'
             },{
