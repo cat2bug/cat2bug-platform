@@ -105,7 +105,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                     IFNULL( sum( rs2.create_defect_count_by_tester ), 0 ) create_defect_count_by_tester,
                     IFNULL( sum( rs2.create_defect_count_by_outsider ), 0 ) create_defect_count_by_outsider
                 FROM
-                    sys_plan_item pi2
+                    (SELECT a.* FROM sys_plan_item a JOIN sys_case c ON c.case_id=a.case_id) pi2
                         LEFT JOIN (
                         SELECT
                             pi3.plan_item_id,
@@ -119,7 +119,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                             SUM( CASE WHEN d3.defect_level = 'low' THEN 1 ELSE 0 END ) AS defect_level_low_count,
                             count( pi3.plan_item_id ) AS defect_count
                         FROM
-                            sys_plan_item pi3
+                            (SELECT a.* FROM sys_plan_item a JOIN sys_case c ON c.case_id=a.case_id) pi3
                                 JOIN sys_defect d3 ON FIND_IN_SET( d3.defect_id, pi3.defect_ids )
                         GROUP BY
                             pi3.plan_item_id
@@ -141,7 +141,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                             SUM( CASE WHEN upr5.role_id = 8 THEN 1 ELSE 0 END ) AS create_defect_count_by_tester,
                             SUM( CASE WHEN upr5.role_id = 9 THEN 1 ELSE 0 END ) AS create_defect_count_by_outsider
                         FROM
-                            sys_plan_item pi5
+                            (SELECT a.* FROM sys_plan_item a JOIN sys_case c ON c.case_id=a.case_id) pi5
                                 JOIN sys_plan p5 ON p5.plan_id = pi5.plan_id
                                 JOIN sys_defect_log l5 ON l5.defect_log_type = 0
                                 AND FIND_IN_SET( l5.defect_id, pi5.defect_ids )
