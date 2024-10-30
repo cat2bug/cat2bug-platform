@@ -729,6 +729,7 @@
   "calendar": "日历",
   "copy-size-out": "粘贴的内容长度超出了规定的范围!",
   "plan": "测试计划",
+  "plan.item": "测试计划",
   "plan.run": "执行",
   "plan.create": "新建计划",
   "plan.edit": "编辑计划",
@@ -765,5 +766,19 @@
   "plan.defect-level-height-count": "高等级数量",
   "plan.defect-level-middle-count": "中等级数量",
   "plan.defect-level-low-count": "低等级数量",
-  "plan.statistics": "测试计划统计表"
+  "plan.statistics": "测试计划统计表",
+  "plan.defect-count": "缺陷总数",
+  "plan.defect-processing-count": "处理中的数量",
+  "plan.defect-audit-count": "待审核的数量",
+  "plan.defect-rejected-count": "已驳回的数量",
+  "plan.defect-close-count": "已关闭的数量",
+  "plan.defect": "缺陷",
+  "plan.defect-restart-count": "缺陷重启次数",
+  "plan.defect-use-hour-time": "缺陷解决时长",
+  "plan.defect-severity-rate": "缺陷严重率",
+  "plan.defect-restart-rate": "缺陷重开率",
+  "plan.defect-escape-rate": "缺陷逃逸率",
+  "plan.defect-repair-avg-hour": "缺陷修复平均时长",
+  "plan.defect-history-pass-count": "曾经关闭过的缺陷数量",
+  "total": "总数"
 }

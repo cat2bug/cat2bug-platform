@@ -729,6 +729,7 @@
   "calendar": "Calendar",
   "copy-size-out": "The length of the pasted content exceeds the specified range!",
   "plan": "Test Plan",
+  "plan.item": "Test Plan",
   "plan.run": "Run",
   "plan.create": "Create Plan",
   "plan.edit": "Edit Plan",
@@ -765,5 +766,19 @@
   "plan.defect-level-height-count": "Height Count",
   "plan.defect-level-middle-count": "Middle Count",
   "plan.defect-level-low-count": "Low Count",
-  "plan.statistics": "Test plan statistics Table"
+  "plan.statistics": "Test plan statistics Table",
+  "plan.defect-count": "Defect Total",
+  "plan.defect-processing-count": "Processing Count",
+  "plan.defect-audit-count": "Audit Count",
+  "plan.defect-rejected-count": "Rejected Count",
+  "plan.defect-close-count": "Close Count",
+  "plan.defect": "Defect",
+  "plan.defect-restart-count": "Defect Restart Times",
+  "plan.defect-use-hour-time": "Defect Resolution Time",
+  "plan.defect-severity-rate": "Defect Severity Rate",
+  "plan.defect-restart-rate": "Defect Restart Rate",
+  "plan.defect-escape-rate": "Defect Escape Rate",
+  "plan.defect-repair-avg-hour": "Defect Repair Avg Hour",
+  "plan.defect-history-pass-count": "Defect Closed Count",
+  "total": "Total"
 }

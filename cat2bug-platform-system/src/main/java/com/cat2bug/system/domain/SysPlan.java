@@ -74,13 +74,13 @@ public class SysPlan extends BaseEntity
     private int unexecutedCount;
 
     /** 缺陷进行中状态统计数量 */
-    private int processingStateCount;
+    private int defectProcessingStateCount;
     /** 缺陷待审核状态统计数量 */
-    private int auditStateCount;
+    private int defectAuditStateCount;
     /** 缺陷驳回状态统计数量 */
-    private int rejectedStateCount;
+    private int defectRejectedStateCount;
     /** 缺陷已关闭状态统计数量 */
-    private int closeStateCount;
+    private int defectCloseStateCount;
     /** 缺陷等级严重数量 */
     private int defectLevelUrgentCount;
     /** 缺陷等级高数量 */
@@ -97,6 +97,12 @@ public class SysPlan extends BaseEntity
     private int createDefectCountByTester;
     /** 外部人员创建缺陷的数量 */
     private int createDefectCountByOutsider;
+    /** 缺陷重启次数 */
+    private int defectRestartCount;
+    /** 历史缺陷通过数量，即有过通过的缺陷数量 */
+    private int defectHistoryPassCount;
+    /** 缺陷使用小时数 */
+    private long defectUseHourTime;
     /** 获取缺陷已执行数量 */
     public int getExecutedCount() {
         return this.itemTotal - this.unexecutedCount;
@@ -108,18 +114,42 @@ public class SysPlan extends BaseEntity
     }
     /** 获取缺陷修复率 */
     public String getDefectRepairRate() {
-        if(this.itemTotal==0) return "0%";
-        return (int)Math.floor(this.closeStateCount*100/this.itemTotal) + "%";
+        if(this.defectCount==0) return "0%";
+        return (int)Math.floor(this.defectCloseStateCount*100/this.defectCount) + "%";
     }
     /** 获取缺陷密度 */
     public String getDefectDensity() {
-        if(this.moduleCount==0) return "0.0";
+        if(this.moduleCount==0) return "0";
         return Math.floor(this.defectCount*100/this.moduleCount)+"";
     }
     /** 获取缺陷探测率 */
     public String getDefectDetectionRate() {
         if(this.defectCount==0) return "0%";
         return (int)Math.floor(this.createDefectCountByTester*100/this.defectCount) + "%";
+    }
+
+    /** 获取缺陷严重率 */
+    public String getDefectSeverityRate() {
+        if(this.defectCount==0) return "0%";
+        return (int)Math.floor(this.defectLevelUrgentCount*100/this.defectCount) + "%";
+    }
+
+    /** 获取缺陷重开率 */
+    public String getDefectRestartRate() {
+        if(this.defectHistoryPassCount==0) return "0%";
+        return (int)Math.floor(this.defectRestartCount*100/this.defectHistoryPassCount) + "%";
+    }
+
+    /** 获取缺陷逃逸率 */
+    public String getDefectEscapeRate() {
+        if(this.defectCount==0) return "0%";
+        return (int)Math.floor(this.createDefectCountByOutsider*100/this.defectCount) + "%";
+    }
+
+    /** 获取缺陷修复平均时长 */
+    public String getDefectRepairAvgHour() {
+        if(this.defectCount==0) return "0";
+        return Math.floor(this.defectUseHourTime*100/this.defectCount)/100 + "";
     }
 
     @Override

@@ -316,93 +316,164 @@ export default {
             children: [{
               icon: 'mk-table',
               name: 'plan.statistics',
-              content: `|项目名称|\${api.project.projectName}|||||||||
-|测试计划|\${api.plan.planName[${p.planNumber}]}|||||||||
-|测试版本号|\${api.plan.planVersion[${p.planNumber}]}||测试用例通过数量|\${api.plan.passCount[${p.planNumber}]} 个|测试用例未通过数量|\${api.plan.failCount[${p.planNumber}]} 个|测试用例未执行数量|\${api.plan.unexecutedCount[${p.planNumber}]}||
+              content: `|项目名称|\${api.project.projectName}|||||||||||||||||
+|测试计划|\${api.plan.planName[${p.planNumber}]}|||||||||||||||||
+测试版本号|\${api.plan.planVersion[${p.planNumber}]}||用例通过数量|\${api.plan.passCount[${p.planNumber}]} 个|用例未通过数量|\${api.plan.failCount[${p.planNumber}]} 个|用例未执行数量|\${api.plan.unexecutedCount[${p.planNumber}]} 个||||||||||
 |||||||
 |-|-|-|-|
-|度量指标数据如下:||||||||||
-|缺陷发现率（%） |缺陷修改率或纠错率（%） ||缺陷探测率（%） ||缺陷密度||缺陷严重率（%） ||
-|本轮已发现的缺陷数量|本轮已执行的用例数量|本轮已修复的缺陷数量|本轮发现的总的缺陷数量|测试或探测者发现的缺陷数量|客户反馈的缺陷数量|缺陷数量|代码行数或功能点的数量|本计划所发现的严重缺陷数量|本计划已发现的缺陷总数|
-|\${api.plan.itemTotal[${p.planNumber}]}|\${api.plan.executedCount[${p.planNumber}]}|\${api.plan.passCount[${p.planNumber}]}|\${api.plan.itemTotal[${p.planNumber}]}|\${api.plan.createDefectCountByTester[${p.planNumber}]}|\${api.plan.createDefectCountByOutsider[${p.planNumber}]}|\${api.plan.itemTotal[${p.planNumber}]}|\${api.plan.moduleCount[${p.planNumber}]}|\${api.plan.defectLevelUrgentCount[${p.planNumber}]}|\${api.plan.itemTotal[${p.planNumber}]}|
-|\${api.plan.defectDiscoveryRate[${p.planNumber}]}||\${api.plan.defectRepairRate[${p.planNumber}]}||\${api.plan.defectDetectionRate[${p.planNumber}]}||\${api.plan.defectDensity[${p.planNumber}]}||value1|value1|`
+|度量指标数据如下:||||||||||||||||||
+|缺陷发现率（单位：%）||缺陷修复率（单位：%）||缺陷探测率（单位：%） ||缺陷密度（单位：个）||缺陷严重率（单位：%） ||缺陷重开率（单位：%） ||缺陷逃逸率（单位：个）||用例执行效率（单位：个）||缺陷修复平均时长（单位：h）||
+|本轮已发现的缺陷数量|本轮已执行的用例数量|本轮已修复的缺陷数量|本轮发现的总的缺陷数量|测试或探测者发现的缺陷数量|客户反馈的缺陷数量|缺陷数量|代码行数或功能点的数 代码行数或功能点的数量|本计划所发现的严重缺陷数量|本轮已发现的缺陷总数|本轮重新打开的缺陷数量|本轮已修复的缺陷数量|用户反馈或实际使用中发现的缺陷数量|测试发现的缺陷数|本轮迭代执行的测试用例数量|执行本轮迭代测试耗时|缺陷数量|统计周期内缺陷的总解决时长
+|\${api.plan.defectCount[${p.planNumber}]}|\${api.plan.executedCount[${p.planNumber}]}个|\${api.plan.defectCloseStateCount[${p.planNumber}]}| \${api.plan.defectCount[${p.planNumber}]}|\${api.plan.createDefectCountByTester[${p.planNumber}]}|\${api.plan.createDefectCountByOutsider[${p.planNumber}]}|\${api.plan.defectCount[${p.planNumber}]}|\${api.plan.moduleCount[${p.planNumber}]}|\${api.plan.defectLevelUrgentCount[${p.planNumber}]}|\${api.plan.defectCount[${p.planNumber}]}|\${api.plan.defectRestartCount[${p.planNumber}]}|\${api.plan.defectHistoryPassCount[${p.planNumber}]}|\${api.plan.createDefectCountByOutsider[${p.planNumber}]}|\${api.plan.defectCount[${p.planNumber}]}|\${api.plan.defectCount[${p.planNumber}]}| |\${api.plan.defectCount[${p.planNumber}]}|\${api.plan.defectUseHourTime[${p.planNumber}]}h|
+
+|\${api.plan.defectDiscoveryRate[${p.planNumber}]}||\${api.plan.defectRepairRate[${p.planNumber}]}||\${api.plan.defectDetectionRate[${p.planNumber}]}||\${api.plan.defectDensity[${p.planNumber}]}个||\${api.plan.defectSeverityRate[${p.planNumber}]}||\${api.plan.defectRestartRate[${p.planNumber}]}||\${api.plan.defectEscapeRate[${p.planNumber}]}|| ||\${api.plan.defectRepairAvgHour[${p.planNumber}]}h||`
             },{
               type: 'siding'
             },{
-              icon: 'mk-total',
-              name: 'plan.name',
-              content: `${this.$i18n.t('plan.name')}: \${api.plan.planName[${p.planNumber}]}`
-            },{
-              icon: 'mk-total',
-              name: 'plan.version',
-              content: `${this.$i18n.t('plan.version')}: \${api.plan.planVersion[${p.planNumber}]}`
-            },{
-              icon: 'mk-total',
-              name: 'plan.fail-count',
-              content: `${this.$i18n.t('plan.fail-count')}: \${api.plan.failCount[${p.planNumber}]}`
-            },{
-              icon: 'mk-total',
-              name: 'plan.pass-count',
-              content: `${this.$i18n.t('plan.pass-count')}: \${api.plan.passCount[${p.planNumber}]}`
-            },{
-              icon: 'mk-total',
-              name: 'plan.unexecuted-count',
-              content: `${this.$i18n.t('plan.unexecuted-count')}: \${api.plan.unexecutedCount[${p.planNumber}]}`
-            },{
-              icon: 'mk-total',
-              name: 'plan.executed-count',
-              content: `${this.$i18n.t('plan.executed-count')}: \${api.plan.executedCount[${p.planNumber}]}`
-            },{
-              icon: 'mk-total',
-              name: 'plan.item-total',
-              content: `${this.$i18n.t('plan.item-total')}: \${api.plan.itemTotal[${p.planNumber}]}`
-            },{
-              icon: 'mk-member',
-              name: 'plan.create-defect-count-by-tester',
-              content: `${this.$i18n.t('plan.create-defect-count-by-tester')}: \${api.plan.createDefectCountByTester[${p.planNumber}]}`
-            },{
-              icon: 'mk-member',
-              name: 'plan.create-defect-count-by-outsider',
-              content: `${this.$i18n.t('plan.create-defect-count-by-outsider')}: \${api.plan.createDefectCountByOutsider[${p.planNumber}]}`
-            },{
-              icon: 'mk-level',
-              name: 'plan.defect-level-count',
+              icon: 'md-create-time',
+              name: 'plan.item',
               children: [{
-                name: 'plan.defect-level-urgent-count',
-                content: `${this.$i18n.t('plan.defect-level-urgent-count')}: \${api.plan.defectLevelUrgentCount[${p.planNumber}]}`
+                icon: 'mk-total',
+                name: 'plan.name',
+                content: `${this.$i18n.t('plan.name')}: \${api.plan.planName[${p.planNumber}]}`
               },{
-                name: 'plan.defect-level-height-count',
-                content: `${this.$i18n.t('plan.defect-level-height-count')}: \${api.plan.defectLevelHeightCount[${p.planNumber}]}`
+                icon: 'mk-total',
+                name: 'plan.version',
+                content: `${this.$i18n.t('plan.version')}: \${api.plan.planVersion[${p.planNumber}]}`
               },{
-                name: 'plan.defect-level-middle-count',
-                content: `${this.$i18n.t('plan.defect-level-middle-count')}: \${api.plan.defectLevelMiddleCount[${p.planNumber}]}`
+                icon: 'mk-total',
+                name: 'plan.fail-count',
+                content: `${this.$i18n.t('plan.fail-count')}: \${api.plan.failCount[${p.planNumber}]}`
               },{
-                name: 'plan.defect-level-low-count',
-                content: `${this.$i18n.t('plan.defect-level-low-count')}: \${api.plan.defectLevelLowCount[${p.planNumber}]}`
+                icon: 'mk-total',
+                name: 'plan.pass-count',
+                content: `${this.$i18n.t('plan.pass-count')}: \${api.plan.passCount[${p.planNumber}]}`
+              },{
+                icon: 'mk-total',
+                name: 'plan.unexecuted-count',
+                content: `${this.$i18n.t('plan.unexecuted-count')}: \${api.plan.unexecutedCount[${p.planNumber}]}`
+              },{
+                icon: 'mk-total',
+                name: 'plan.executed-count',
+                content: `${this.$i18n.t('plan.executed-count')}: \${api.plan.executedCount[${p.planNumber}]}`
+              },{
+                icon: 'mk-total',
+                name: 'plan.item-total',
+                content: `${this.$i18n.t('plan.item-total')}: \${api.plan.itemTotal[${p.planNumber}]}`
+              }]
+            },{
+              icon: 'mk-bug',
+              name: 'plan.defect',
+              children: [{
+                icon: 'mk-total',
+                name: 'plan.defect-count',
+                content: `${this.$i18n.t('plan.defect-count')}: \${api.plan.defectCount[${p.planNumber}]}`
+              },{
+                type: 'siding'
+              },{
+                icon: 'mk-member',
+                name: 'member',
+                children: [{
+                  icon: 'mk-member',
+                  name: 'plan.create-defect-count-by-tester',
+                  content: `${this.$i18n.t('plan.create-defect-count-by-tester')}: \${api.plan.createDefectCountByTester[${p.planNumber}]}`
+                },{
+                  icon: 'mk-member',
+                  name: 'plan.create-defect-count-by-outsider',
+                  content: `${this.$i18n.t('plan.create-defect-count-by-outsider')}: \${api.plan.createDefectCountByOutsider[${p.planNumber}]}`
+                }]
+              },{
+                type: 'siding'
+              },{
+                icon: 'mk-total',
+                name: 'defect.state',
+                children: [{
+                  icon: 'mk-total',
+                  name: 'plan.defect-processing-count',
+                  content: `${this.$i18n.t('plan.defect-processing-count')}: \${api.plan.defectProcessingStateCount[${p.planNumber}]}`
+                },{
+                  icon: 'mk-total',
+                  name: 'plan.defect-audit-count',
+                  content: `${this.$i18n.t('plan.defect-audit-count')}: \${api.plan.defectAuditStateCount[${p.planNumber}]}`
+                },{
+                  icon: 'mk-total',
+                  name: 'plan.defect-rejected-count',
+                  content: `${this.$i18n.t('plan.defect-rejected-count')}: \${api.plan.defectRejectedStateCount[${p.planNumber}]}`
+                },{
+                  icon: 'mk-total',
+                  name: 'plan.defect-close-count',
+                  content: `${this.$i18n.t('plan.defect-close-count')}: \${api.plan.defectCloseStateCount[${p.planNumber}]}`
+                },{
+                  icon: 'mk-total',
+                  name: 'plan.defect-history-pass-count',
+                  content: `${this.$i18n.t('plan.defect-history-pass-count')}: \${api.plan.defectHistoryPassCount[${p.planNumber}]}`
+                }]
+              },{
+                type: 'siding'
+              },{
+                icon: 'mk-level',
+                name: 'plan.defect-level-count',
+                children: [{
+                  name: 'plan.defect-level-urgent-count',
+                  content: `${this.$i18n.t('plan.defect-level-urgent-count')}: \${api.plan.defectLevelUrgentCount[${p.planNumber}]}`
+                },{
+                  name: 'plan.defect-level-height-count',
+                  content: `${this.$i18n.t('plan.defect-level-height-count')}: \${api.plan.defectLevelHeightCount[${p.planNumber}]}`
+                },{
+                  name: 'plan.defect-level-middle-count',
+                  content: `${this.$i18n.t('plan.defect-level-middle-count')}: \${api.plan.defectLevelMiddleCount[${p.planNumber}]}`
+                },{
+                  name: 'plan.defect-level-low-count',
+                  content: `${this.$i18n.t('plan.defect-level-low-count')}: \${api.plan.defectLevelLowCount[${p.planNumber}]}`
+                }]
+              },{
+                type: 'siding'
+              },{
+                icon: 'mk-total',
+                name: 'plan.defect-restart-count',
+                content: `${this.$i18n.t('plan.defect-re-open-count')}: \${api.plan.defectRestartCount[${p.planNumber}]}`
+              },{
+                icon: 'md-create-time',
+                name: 'plan.defect-use-hour-time',
+                content: `${this.$i18n.t('plan.defect-use-hour-time')}: \${api.plan.defectUseHourTime[${p.planNumber}]}`
+              },{
+                icon: 'mk-rate',
+                name: 'plan.defect-discovery-rate',
+                content: `${this.$i18n.t('plan.defect-discovery-rate')}: \${api.plan.defectDiscoveryRate[${p.planNumber}]}`
+              },{
+                icon: 'mk-rate',
+                name: 'plan.defect-repair-rate',
+                content: `${this.$i18n.t('plan.defect-repair-rate')}: \${api.plan.defectRepairRate[${p.planNumber}]}`
+              },{
+                icon: 'mk-value',
+                name: 'plan.defect-density',
+                content: `${this.$i18n.t('plan.defect-density')}: \${api.plan.defectDensity[${p.planNumber}]}`
+              },{
+                icon: 'mk-rate',
+                name: 'plan.defect-detection-rate',
+                content: `${this.$i18n.t('plan.defect-detection-rate')}: \${api.plan.defectDetectionRate[${p.planNumber}]}`
+              },{
+                icon: 'mk-rate',
+                name: 'plan.defect-severity-rate',
+                content: `${this.$i18n.t('plan.defect-severity-rate')}: \${api.plan.defectSeverityRate[${p.planNumber}]}`
+              },{
+                icon: 'mk-rate',
+                name: 'plan.defect-restart-rate',
+                content: `${this.$i18n.t('plan.defect-restart-rate')}: \${api.plan.defectRestartRate[${p.planNumber}]}`
+              },{
+                icon: 'mk-rate',
+                name: 'plan.defect-escape-rate',
+                content: `${this.$i18n.t('plan.defect-escape-rate')}: \${api.plan.defectEscapeRate[${p.planNumber}]}`
+              },{
+                icon: 'md-create-time',
+                name: 'plan.defect-repair-avg-hour',
+                content: `${this.$i18n.t('plan.defect-repair-avg-hour')}: \${api.plan.defectRepairAvgHour[${p.planNumber}]}`
               }]
             },{
               icon: 'cascader',
               name: 'plan.module-count',
               content: `${this.$i18n.t('plan.module-count')}: \${api.plan.moduleCount[${p.planNumber}]}`
-            },{
-              type: 'siding'
-            },{
-              icon: 'mk-rate',
-              name: 'plan.defect-discovery-rate',
-              content: `${this.$i18n.t('plan.defect-discovery-rate')}: \${api.plan.defectDiscoveryRate[${p.planNumber}]}`
-            },{
-              icon: 'mk-rate',
-              name: 'plan.defect-repair-rate',
-              content: `${this.$i18n.t('plan.defect-repair-rate')}: \${api.plan.defectRepairRate[${p.planNumber}]}`
-            },{
-              icon: 'mk-value',
-              name: 'plan.defect-density',
-              content: `${this.$i18n.t('plan.defect-density')}: \${api.plan.defectDensity[${p.planNumber}]}`
-            },{
-              icon: 'mk-rate',
-              name: 'plan.defect-detection-rate',
-              content: `${this.$i18n.t('plan.defect-detection-rate')}: \${api.plan.defectDetectionRate[${p.planNumber}]}`
-            },]
+            }]
           }
         });
 

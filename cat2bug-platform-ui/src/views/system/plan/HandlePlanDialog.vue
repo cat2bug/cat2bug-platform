@@ -19,6 +19,106 @@
       </div>
     </template>
     <div class="plan-run-content">
+      <el-row>
+        <el-col :span="6">
+          <el-statistic
+            group-separator=","
+            :title="`${$t('case.pass-tested')}/${$t('case.failed-tested')}/${$t('total')}`"
+          >
+            <template slot="formatter">
+              {{`${plan.passCount}/${plan.failCount}/${plan.itemTotal}`}}
+            </template>
+          </el-statistic>
+        </el-col>
+        <el-col :span="2">
+          <el-statistic
+            group-separator=","
+            :value="plan.defectCount"
+            :title="$t('plan.defect-count')"
+          ></el-statistic>
+        </el-col>
+        <el-col :span="2">
+          <el-statistic
+            group-separator=","
+            :title="$t('plan.defect-discovery-rate')"
+          >
+            <template slot="formatter">
+              {{`${plan.defectDiscoveryRate}`}}
+            </template>
+          </el-statistic>
+        </el-col>
+        <el-col :span="2">
+          <el-statistic
+            group-separator=","
+            :title="$t('plan.defect-repair-rate')"
+          >
+            <template slot="formatter">
+              {{`${plan.defectRepairRate}`}}
+            </template>
+          </el-statistic>
+        </el-col>
+        <el-col :span="2">
+          <el-statistic
+            group-separator=","
+            :title="$t('plan.defect-density')"
+          >
+            <template slot="formatter">
+              {{`${plan.defectDensity}`}}
+            </template>
+          </el-statistic>
+        </el-col>
+        <el-col :span="2">
+          <el-statistic
+            group-separator=","
+            :title="$t('plan.defect-detection-rate')"
+          >
+            <template slot="formatter">
+              {{`${plan.defectDetectionRate}`}}
+            </template>
+          </el-statistic>
+        </el-col>
+        <el-col :span="2">
+          <el-statistic
+            group-separator=","
+            :title="$t('plan.defect-severity-rate')"
+          >
+            <template slot="formatter">
+              {{`${plan.defectSeverityRate}`}}
+            </template>
+          </el-statistic>
+        </el-col>
+        <el-col :span="2">
+          <el-statistic
+            group-separator=","
+            :title="$t('plan.defect-restart-rate')"
+          >
+            <template slot="formatter">
+              {{`${plan.defectRestartRate}`}}
+            </template>
+          </el-statistic>
+        </el-col>
+        <el-col :span="2">
+          <el-statistic
+            group-separator=","
+            :title="$t('plan.defect-escape-rate')"
+          >
+            <template slot="formatter">
+              {{`${plan.defectEscapeRate}`}}
+            </template>
+          </el-statistic>
+        </el-col>
+        <el-col :span="2">
+          <el-statistic
+            group-separator=","
+            :title="$t('plan.defect-repair-avg-hour')"
+          >
+            <template slot="formatter">
+              {{`${plan.defectRepairAvgHour}`}}
+            </template>
+          </el-statistic>
+        </el-col>
+      </el-row>
+      <el-divider class="tool-divider"></el-divider>
       <!--    模块树和用例列表区域-->
       <multipane layout="vertical" ref="multiPane" class="custom-resizer" @pane-resize-start="dragStopHandle">
         <!--      树形模块选择组件-->
@@ -659,5 +759,9 @@ export default {
 .defect-dropdown {
   margin-left: 5px;
   margin-right: 10px;
+}
+.tool-divider {
+  margin: 20px 10px 10px 10px;
+  width: calc(100% - 20px);
 }
 </style>

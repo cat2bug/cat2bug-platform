@@ -26,10 +26,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="defectLevelLowCount"    column="defect_level_low_count"    />
         <result property="unexecutedCount"    column="unexecuted_count"    />
         <result property="itemTotal"    column="item_total"    />
-        <result property="processingStateCount"    column="processing_state_count"    />
-        <result property="auditStateCount"    column="audit_state_count"    />
-        <result property="rejectedStateCount"    column="rejected_state_count"    />
-        <result property="closeStateCount"    column="close_state_count"    />
+        <result property="defectRestartCount"    column="reopen_count"    />
+        <result property="defectHistoryPassCount"    column="history_closed_count"    />
+        <result property="defectUseHourTime"    column="defect_use_hour_time"    />
+        <result property="defectProcessingStateCount"    column="processing_state_count"    />
+        <result property="defectAuditStateCount"    column="audit_state_count"    />
+        <result property="defectRejectedStateCount"    column="rejected_state_count"    />
+        <result property="defectCloseStateCount"    column="close_state_count"    />
         <result property="defectCount"    column="defect_count"    />
         <result property="moduleCount"    column="module_count"    />
         <result property="createDefectCountByTester"    column="create_defect_count_by_tester"    />
@@ -78,6 +81,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             s.defect_level_height_count,
             s.defect_level_middle_count,
             s.defect_level_low_count,
+            s.reopen_count,
+            s.closed_count as history_closed_count,
+            s.defect_use_hour_time,
             s.defect_count,
             s.module_count,
             s.create_defect_count_by_tester,
@@ -100,12 +106,15 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                     IFNULL( sum( ds2.defect_level_height_count ), 0 ) defect_level_height_count,
                     IFNULL( sum( ds2.defect_level_middle_count ), 0 ) defect_level_middle_count,
                     IFNULL( sum( ds2.defect_level_low_count ), 0 ) defect_level_low_count,
+                    IFNULL( sum( ds2.reopen_count ), 0 ) reopen_count,
+                    IFNULL( sum( ds2.closed_count ), 0 ) closed_count,
                     IFNULL( sum( ds2.defect_count ), 0 ) defect_count,
                     IFNULL( sum( ms2.module_count ), 0 ) module_count,
                     IFNULL( sum( rs2.create_defect_count_by_tester ), 0 ) create_defect_count_by_tester,
-                    IFNULL( sum( rs2.create_defect_count_by_outsider ), 0 ) create_defect_count_by_outsider
+                    IFNULL( sum( rs2.create_defect_count_by_outsider ), 0 ) create_defect_count_by_outsider,
+                    IFNULL( sum( ds2.defect_use_hour_time ), 0 ) defect_use_hour_time
                 FROM
-                    (SELECT a.* FROM sys_plan_item a JOIN sys_case c ON c.case_id=a.case_id) pi2
+                    ( SELECT a.* FROM sys_plan_item a JOIN sys_case c ON c.case_id = a.case_id ) pi2
                         LEFT JOIN (
                         SELECT
                             pi3.plan_item_id,
@@ -117,10 +126,28 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                             SUM( CASE WHEN d3.defect_level = 'height' THEN 1 ELSE 0 END ) AS defect_level_height_count,
                             SUM( CASE WHEN d3.defect_level = 'middle' THEN 1 ELSE 0 END ) AS defect_level_middle_count,
                             SUM( CASE WHEN d3.defect_level = 'low' THEN 1 ELSE 0 END ) AS defect_level_low_count,
+                            SUM( CASE WHEN dl3.reopen_count > 0 THEN 1 ELSE 0 END ) AS reopen_count,
+                            SUM( CASE WHEN dl3.closed_count > 0 THEN 1 ELSE 0 END ) AS closed_count,
+                            SUM( dl3.defect_use_time ) AS defect_use_hour_time,
                             count( pi3.plan_item_id ) AS defect_count
                         FROM
-                            (SELECT a.* FROM sys_plan_item a JOIN sys_case c ON c.case_id=a.case_id) pi3
+                            ( SELECT a.* FROM sys_plan_item a JOIN sys_case c ON c.case_id = a.case_id ) pi3
                                 JOIN sys_defect d3 ON FIND_IN_SET( d3.defect_id, pi3.defect_ids )
+                                JOIN (
+                                SELECT
+                                    defect_id,
+                                    sum( CASE WHEN defect_log_type = 7 THEN 1 ELSE 0 END ) AS reopen_count,
+                                    sum( CASE WHEN defect_log_type = 6 THEN 1 ELSE 0 END ) AS closed_count,
+                                    ABS(
+                                            TIMESTAMPDIFF(
+                                                HOUR,
+                                                    MIN( create_time ),
+                                                    MAX( create_time ))) AS defect_use_time
+                                FROM
+                                    sys_defect_log
+                                GROUP BY
+                                    defect_id
+                            ) dl3 ON dl3.defect_id = d3.defect_id
                         GROUP BY
                             pi3.plan_item_id
                     ) ds2 ON ds2.plan_item_id = pi2.plan_item_id
@@ -141,7 +168,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                             SUM( CASE WHEN upr5.role_id = 8 THEN 1 ELSE 0 END ) AS create_defect_count_by_tester,
                             SUM( CASE WHEN upr5.role_id = 9 THEN 1 ELSE 0 END ) AS create_defect_count_by_outsider
                         FROM
-                            (SELECT a.* FROM sys_plan_item a JOIN sys_case c ON c.case_id=a.case_id) pi5
+                            ( SELECT a.* FROM sys_plan_item a JOIN sys_case c ON c.case_id = a.case_id ) pi5
                                 JOIN sys_plan p5 ON p5.plan_id = pi5.plan_id
                                 JOIN sys_defect_log l5 ON l5.defect_log_type = 0
                                 AND FIND_IN_SET( l5.defect_id, pi5.defect_ids )
@@ -179,9 +206,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </select>
     
     <select id="selectSysPlanByPlanId" parameterType="String" resultMap="SysPlanSysPlanItemResult">
-        select a.plan_id, a.plan_number, a.plan_name, a.plan_version, a.plan_start_time, a.plan_end_time, a.create_by_id, a.create_time, a.update_by_id, a.update_time, a.project_id, a.report_id,
- b.plan_item_id as sub_plan_item_id, b.plan_id as sub_plan_id, b.module_id as sub_module_id, b.case_id as sub_case_id, b.plan_item_state as sub_plan_item_state, b.update_by_id as sub_update_by_id, b.update_time as sub_update_time, b.defect_ids as sub_defect_id
-        from sys_plan a
+        select a.*,
+        b.plan_item_id as sub_plan_item_id, b.plan_id as sub_plan_id, b.module_id as sub_module_id, b.case_id as sub_case_id, b.plan_item_state as sub_plan_item_state, b.update_by_id as sub_update_by_id, b.update_time as sub_update_time, b.defect_ids as sub_defect_id
+        from (<include refid="selectSysPlanVo"/>) a
         left join sys_plan_item b on b.plan_id = a.plan_id
         where a.plan_id = #{planId}
     </select>
