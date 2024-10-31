@@ -114,7 +114,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                     IFNULL( sum( rs2.create_defect_count_by_outsider ), 0 ) create_defect_count_by_outsider,
                     IFNULL( sum( ds2.defect_use_hour_time ), 0 ) defect_use_hour_time
                 FROM
-                    ( SELECT a.* FROM sys_plan_item a JOIN sys_case c ON c.case_id = a.case_id ) pi2
+                    ( SELECT a.* FROM sys_plan_item a JOIN sys_case c ON c.case_id = a.case_id JOIN sys_module m ON m.module_id = c.module_id ) pi2
                         LEFT JOIN (
                         SELECT
                             pi3.plan_item_id,
@@ -131,7 +131,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                             SUM( dl3.defect_use_time ) AS defect_use_hour_time,
                             count( pi3.plan_item_id ) AS defect_count
                         FROM
-                            ( SELECT a.* FROM sys_plan_item a JOIN sys_case c ON c.case_id = a.case_id ) pi3
+                            ( SELECT a.* FROM sys_plan_item a JOIN sys_case c ON c.case_id = a.case_id JOIN sys_module m ON m.module_id = c.module_id ) pi3
                                 JOIN sys_defect d3 ON FIND_IN_SET( d3.defect_id, pi3.defect_ids )
                                 JOIN (
                                 SELECT
