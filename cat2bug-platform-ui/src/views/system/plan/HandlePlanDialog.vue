@@ -37,9 +37,12 @@
               :title="`${$t('case')}: ${$t('case.pass-tested')}/${$t('case.failed-tested')}/${$t('unexecuted')}/${$t('total')}`"
             >
               <template slot="formatter">
-                <span class="click" style="color: rgb(19, 206, 102);" @click.stop="handlePlanItemStateSearch('pass')">{{plan.passCount}}/</span>
-                <span class="click" style="color: #f56c6c;" @click.stop="handlePlanItemStateSearch('not_pass')">{{plan.failCount}}/</span>
-                <span class="click" style="color: #909399;" @click.stop="handlePlanItemStateSearch('unexecuted')">{{plan.unexecutedCount}}/</span>
+                <span class="click" style="color: rgb(19, 206, 102);" @click.stop="handlePlanItemStateSearch('pass')">{{plan.passCount}}</span>
+                <span>/</span>
+                <span class="click" style="color: #f56c6c;" @click.stop="handlePlanItemStateSearch('not_pass')">{{plan.failCount}}</span>
+                <span>/</span>
+                <span class="click" style="color: #909399;" @click.stop="handlePlanItemStateSearch('unexecuted')">{{plan.unexecutedCount}}</span>
+                <span>/</span>
                 <span class="click" style="font-weight: 500;" @click.stop="handlePlanItemStateSearch(null)">{{plan.itemTotal}}{{ $t('a') }}</span>
               </template>
             </el-statistic>
@@ -787,6 +790,38 @@ export default {
   margin: 10px;
   width: calc(100% - 20px);
 }
+
+@media screen and (min-width: 1650px) {
+  .plan-statistical {
+    > div:first-child {
+      min-width: 210px;
+      flex: 1
+    }
+  }
+}
+
+@media screen and (max-width: 1650px) {
+  .plan-statistical {
+    > div {
+      width: calc((100% - 50px) / 6);
+    }
+    > div:first-child, > div:nth-child(2) {
+      width: calc((100% - 50px) / 6 * 1.5 + 5px);
+    }
+  }
+}
+
+@media screen and (max-width: 780px) {
+  .plan-statistical {
+    > div {
+      width: calc((100% - 30px) / 4);
+    }
+    > div:first-child, > div:nth-child(2) {
+      width: calc((100% - 30px) / 4 * 1.5 + 5px);
+    }
+  }
+}
+
 .plan-statistical {
   width: 100%;
   padding: 0px 10px;
@@ -810,10 +845,6 @@ export default {
   }
   > div:hover {
     box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);
-  }
-  > div:first-child {
-    min-width: 210px;
-    flex: 1
   }
 }
 .click:hover {
