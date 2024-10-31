@@ -780,5 +780,8 @@
   "plan.defect-escape-rate": "缺陷逃逸率",
   "plan.defect-repair-avg-hour": "缺陷修复平均时长",
   "plan.defect-history-pass-count": "曾经关闭过的缺陷数量",
-  "total": "总数"
+  "total": "总数",
+  "a": "个",
+  "plan.countdown-time-format": "DD天HH小时mm分钟",
+  "plan.countdown-time-title": "距离计划结束还有"
 }

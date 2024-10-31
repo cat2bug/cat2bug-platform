@@ -124,8 +124,8 @@ public class SysPlan extends BaseEntity
     }
     /** 获取缺陷探测率 */
     public String getDefectDetectionRate() {
-        if(this.defectCount==0) return "0%";
-        return (int)Math.floor(this.createDefectCountByTester*100/this.defectCount) + "%";
+        if((this.createDefectCountByOutsider+this.createDefectCountByTester)==0) return "0%";
+        return (int)Math.floor(this.createDefectCountByTester*100/this.createDefectCountByOutsider+this.createDefectCountByTester) + "%";
     }
 
     /** 获取缺陷严重率 */

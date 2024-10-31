@@ -780,5 +780,8 @@
   "plan.defect-escape-rate": "Defect Escape Rate",
   "plan.defect-repair-avg-hour": "Defect Repair Avg Hour",
   "plan.defect-history-pass-count": "Defect Closed Count",
-  "total": "Total"
+  "total": "Total",
+  "a": "",
+  "plan.countdown-time-format": "DD HH:mm",
+  "plan.countdown-time-title": "End Countdown"
 }
