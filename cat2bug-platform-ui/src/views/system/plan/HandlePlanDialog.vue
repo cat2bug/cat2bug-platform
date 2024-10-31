@@ -2,7 +2,7 @@
   <!-- 添加或修改测试计划对话框 -->
   <el-drawer
     custom-class="handle-plan-dialog"
-    size="85%"
+    size="90%"
     :visible.sync="visible"
     direction="rtl"
     :before-close="closePlanDrawer">
@@ -37,10 +37,10 @@
               :title="`${$t('case')}: ${$t('case.pass-tested')}/${$t('case.failed-tested')}/${$t('unexecuted')}/${$t('total')}`"
             >
               <template slot="formatter">
-                <span style="color: rgb(19, 206, 102);">{{plan.passCount}}/</span>
-                <span style="color: #f56c6c;">{{plan.failCount}}/</span>
-                <span style="color: #909399;">{{plan.unexecutedCount}}/</span>
-                <span style="font-weight: 500;">{{plan.itemTotal}}{{ $t('a') }}</span>
+                <span class="click" style="color: rgb(19, 206, 102);" @click.stop="handlePlanItemStateSearch('pass')">{{plan.passCount}}/</span>
+                <span class="click" style="color: #f56c6c;" @click.stop="handlePlanItemStateSearch('not_pass')">{{plan.failCount}}/</span>
+                <span class="click" style="color: #909399;" @click.stop="handlePlanItemStateSearch('unexecuted')">{{plan.unexecutedCount}}/</span>
+                <span class="click" style="font-weight: 500;" @click.stop="handlePlanItemStateSearch(null)">{{plan.itemTotal}}{{ $t('a') }}</span>
               </template>
             </el-statistic>
           </div>
@@ -615,6 +615,12 @@ export default {
       }).catch(e=>{
         this.defectLoading = false;
       })
+    },
+    handlePlanItemStateSearch(state) {
+      this.query.planItemState = state;
+      this.query.pageNum = 1;
+      this.query.moduleId = null;
+      this.getPlanItemList();
     }
   }
 }
@@ -809,5 +815,8 @@ export default {
     min-width: 210px;
     flex: 1
   }
+}
+.click:hover {
+  cursor: pointer;
 }
 </style>

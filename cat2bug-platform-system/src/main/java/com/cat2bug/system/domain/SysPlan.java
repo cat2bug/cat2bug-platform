@@ -75,7 +75,7 @@ public class SysPlan extends BaseEntity
 
     /** 缺陷进行中状态统计数量 */
     private int defectProcessingStateCount;
-    /** 缺陷待审核状态统计数量 */
+    /** 缺陷待验证状态统计数量 */
     private int defectAuditStateCount;
     /** 缺陷驳回状态统计数量 */
     private int defectRejectedStateCount;

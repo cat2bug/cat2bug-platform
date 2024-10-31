@@ -123,7 +123,7 @@ export default {
           d:d,
           w:w
         }]
-        // 过滤只显示待审核、已审核的
+        // 过滤只显示待验证、已审核的
         ret = ret.concat( res.data.filter(s=>s.k == 'AUDIT').map(s=>{
           return {
             id: [s.id],

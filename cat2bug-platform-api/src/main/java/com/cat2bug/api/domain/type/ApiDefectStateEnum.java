@@ -9,7 +9,7 @@ package com.cat2bug.api.domain.type;
 public enum ApiDefectStateEnum {
     /** 待处理 */
     PROCESSING,
-    /** 待审核 */
+    /** 待验证 */
     AUDIT,
     /** 已解决 */
     RESOLVED,

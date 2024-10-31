@@ -29,7 +29,7 @@ public class DefectStateHandler implements ExcelHandlerAdapter {
                 case "处理中":
                 case "Processing":
                     return SysDefectStateEnum.PROCESSING;
-                case "待审核":
+                case "待验证":
                 case "Audit":
                     return SysDefectStateEnum.AUDIT;
                 case "已解决":

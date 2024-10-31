@@ -11,7 +11,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 public enum SysDefectStateEnum {
     /** 待处理 */
     PROCESSING,
-    /** 待审核 */
+    /** 待验证 */
     AUDIT,
     /** 已解决 */
     RESOLVED,

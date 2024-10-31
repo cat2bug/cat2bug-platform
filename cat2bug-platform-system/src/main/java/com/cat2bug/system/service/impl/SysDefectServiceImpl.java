@@ -476,7 +476,7 @@ public class SysDefectServiceImpl implements ISysDefectService
                     case "Processing":
                         d.setDefectState(SysDefectStateEnum.PROCESSING);
                         break;
-                    case "待审核":
+                    case "待验证":
                     case "Audit":
                         d.setDefectState(SysDefectStateEnum.AUDIT);
                         break;

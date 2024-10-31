@@ -45,7 +45,7 @@ import i18n from "@/utils/i18n/i18n";
 
 /** 处理中状态 */
 const PROCESSING_STATE = 'PROCESSING';
-/** 待审核 */
+/** 待验证 */
 const AUDIT_STATE = 'AUDIT';
 /** 已解决 */
 const RESOLVED_STATE = 'RESOLVED';
