@@ -38,6 +38,10 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.cat2bug</groupId>
+            <artifactId>cat2bug-framework</artifactId>
+        </dependency>
 
     </dependencies>
 </project>

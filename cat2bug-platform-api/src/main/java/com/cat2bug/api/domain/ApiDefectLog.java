@@ -4,10 +4,13 @@ import com.cat2bug.api.domain.type.ApiDefectLogStateEnum;
 import com.cat2bug.common.annotation.Excel;
 import com.cat2bug.common.core.domain.BaseEntity;
 import com.cat2bug.common.core.domain.entity.SysUser;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -17,50 +20,31 @@ import java.util.List;
  * @date 2023-11-23
  */
 @Data
-public class ApiDefectLog extends BaseEntity
+public class ApiDefectLog
 {
-    private static final long serialVersionUID = 1L;
-
-    /** 缺陷日志id */
+    /** 缺陷日志ID */
+    @JsonIgnore
     private Long defectLogId;
-
-    /** 缺陷日志的描述 */
-    @Excel(name = "缺陷日志的描述")
-    private String defectLogDescribe;
-
-    /** 处理类型(转发\评论\关闭) */
-    private ApiDefectLogStateEnum defectLogType;
-
-    @Excel(name = "处理类型")
-    private String defectLogTypeName;
-
-    /** 缺陷接收人 */
-    @Excel(name = "缺陷接收人")
-    private List<Long> receiveBy;
-
-    private List<SysUser> receiveByList;
-
-    /** 附件集合 */
-    @Excel(name = "附件集合")
-    private String annexUrls;
-
-    /** 缺陷id */
-    @Excel(name = "缺陷id")
+    /** 关联缺陷ID */
+    @JsonIgnore
     private Long defectId;
-
-    private String createByName;
-
-    @Override
-    public String toString() {
-        return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)
-            .append("defectLogId", getDefectLogId())
-            .append("defectLogDescribe", getDefectLogDescribe())
-            .append("createBy", getCreateBy())
-            .append("createTime", getCreateTime())
-            .append("defectLogType", getDefectLogType())
-            .append("receiveBy", getReceiveBy())
-            .append("annexUrls", getAnnexUrls())
-            .append("defectId", getDefectId())
-            .toString();
-    }
+    /** 缺陷日志类型 */
+    private ApiDefectLogStateEnum defectLogState;
+    /** 创建时间 */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date createTime;
+    /** 创建人ID */
+    @JsonIgnore
+    private Long createById;
+    /** 创建人 */
+    @JsonIgnore
+    private String createBy;
+    /** 接收处理人 */
+    @JsonIgnore
+    private List<ApiMember> receiverList;
+    /** 接收处理人ID集合 */
+    @JsonIgnore
+    private List<Long> receiveBy;
+    /** 缺陷日志的描述 */
+    private String defectLogDescribe;
 }

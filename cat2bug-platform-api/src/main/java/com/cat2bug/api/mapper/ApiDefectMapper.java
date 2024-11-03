@@ -1,6 +1,7 @@
 package com.cat2bug.api.mapper;
 
 import com.cat2bug.api.domain.ApiDefect;
+import com.cat2bug.api.domain.ApiDefectRequest;
 import com.cat2bug.common.core.domain.entity.SysDefect;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -36,7 +37,7 @@ public interface ApiDefectMapper
      * @param defectNumber 缺陷编号
      * @return  缺陷
      */
-    public ApiDefect selectSysDefectByDefectNumber(@Param("projectId") Long projectId, @Param("defectNumber") Long defectNumber);
+    public ApiDefect selectSysDefectByDefectNumber(@Param("projectId") Long projectId, @Param("defectNum") Long defectNumber);
 
     /**
      * 查询缺陷列表
@@ -63,7 +64,7 @@ public interface ApiDefectMapper
      * @param apiDefect 缺陷
      * @return 结果
      */
-    public int insertApiDefect(@Param("projectId") Long projectId, @Param("defect")  ApiDefect apiDefect);
+    public int insertApiDefect(@Param("projectId") Long projectId, @Param("defect") ApiDefectRequest apiDefect);
 
     /**
      * 新增缺陷
@@ -77,10 +78,10 @@ public interface ApiDefectMapper
     /**
      * 修改缺陷
      * 
-     * @param apiDefect 缺陷
+     * @param apiDefectRequest 缺陷
      * @return 结果
      */
-    public int updateApiDefect(ApiDefect apiDefect);
+    public int updateApiDefect(ApiDefectRequest apiDefectRequest);
 
     public int updateSysDefect(SysDefect sysDefect);
 

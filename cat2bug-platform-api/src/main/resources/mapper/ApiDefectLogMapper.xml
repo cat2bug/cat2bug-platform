@@ -9,18 +9,16 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="defectLogDescribe != null">defect_log_describe,</if>
             <if test="createBy != null">create_by,</if>
             <if test="createTime != null">create_time,</if>
-            <if test="defectLogType != null">defect_log_type,</if>
+            <if test="defectLogState != null">defect_log_type,</if>
             <if test="receiveBy != null">receive_by,</if>
-            <if test="annexUrls != null">annex_urls,</if>
             <if test="defectId != null">defect_id,</if>
          </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="defectLogDescribe != null">#{defectLogDescribe},</if>
             <if test="createBy != null">#{createBy},</if>
             <if test="createTime != null">#{createTime},</if>
-            <if test="defectLogType != null">#{defectLogType, typeHandler=com.cat2bug.api.domain.handle.ApiDefectLogStateEnumTypeHandle},</if>
+            <if test="defectLogState != null">#{defectLogState, typeHandler=com.cat2bug.api.domain.handle.ApiDefectLogStateEnumTypeHandle},</if>
             <if test="receiveBy != null">#{receiveBy, typeHandler=com.cat2bug.api.domain.handle.ApiLongArrayTypeHandler },</if>
-            <if test="annexUrls != null">#{annexUrls},</if>
             <if test="defectId != null">#{defectId},</if>
          </trim>
     </insert>
@@ -29,16 +27,15 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         insert into sys_defect_log
         <trim prefix="(" suffix=")" suffixOverrides=",">
             defect_log_describe,create_by,create_time,defect_log_type,
-            receive_by,annex_urls,defect_id
+            receive_by,defect_id
         </trim>
         values
         <foreach collection="defectLogList" separator="," item="log">
             #{log.defectLogDescribe},
             #{log.createBy},
             #{log.createTime},
-            #{log.defectLogType, typeHandler=com.cat2bug.api.domain.handle.ApiDefectLogStateEnumTypeHandle},
+            #{log.defectLogState, typeHandler=com.cat2bug.api.domain.handle.ApiDefectLogStateEnumTypeHandle},
             #{log.receiveBy, typeHandler=com.cat2bug.api.domain.handle.ApiLongArrayTypeHandler },
-            #{log.annexUrls},
             #{log.defectId}
         </foreach>
     </insert>

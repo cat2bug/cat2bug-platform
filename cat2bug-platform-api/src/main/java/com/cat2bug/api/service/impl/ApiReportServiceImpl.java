@@ -181,8 +181,8 @@ public class ApiReportServiceImpl implements IApiReportService {
         ApiDefectLog sysDefectLog = new ApiDefectLog();
         sysDefectLog.setDefectId(sysDefect.getDefectId());
         sysDefectLog.setDefectLogDescribe("");
-        sysDefectLog.setReceiveBy(sysDefect.getHandleBy());
-        sysDefectLog.setDefectLogType(logStateEnum);
+//        sysDefectLog.setReceiveBy(sysDefect.getHandleBy());
+        sysDefectLog.setDefectLogState(logStateEnum);
         sysDefectLog.setCreateBy(SecurityUtils.getUserId().toString());
         return sysDefectLog;
     }

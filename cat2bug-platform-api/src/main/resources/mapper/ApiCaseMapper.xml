@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.api.mapper.ApiCaseMapper">
+    
+    <resultMap type="ApiCase" id="ApiCaseResult">
+        <result property="caseNum"    column="case_num"    />
+        <result property="caseName"    column="case_name"    />
+        <result property="caseExpect"    column="case_expect"    />
+        <result property="caseStep"    column="case_step"  typeHandler="com.cat2bug.system.domain.handle.SysCaseStepArrayTypeHandler"  />
+        <result property="casePreconditions"    column="case_preconditions"    />
+        <result property="caseData"    column="case_data"    />
+        <result property="deliverableId"    column="module_id"    />
+        <result property="deliverableName"    column="module_name"    />
+        <result property="caseLevel"    column="case_level"    />
+        <result property="remark"    column="remark"    />
+        <result property="imgUrlList"    column="img_urls"  typeHandler="com.cat2bug.api.domain.handle.CommaArrayTypeHandler" />
+    </resultMap>
+
+    <sql id="selectApiCaseVo">
+        select c.case_name, c.module_id, c.case_expect, c.case_step, c.case_level, c.case_preconditions, c.create_by, c.create_time, c.update_by, c.update_time, c.case_num, c.remark, c.img_urls, c.case_data
+        from sys_case c
+    </sql>
+
+    <select id="selectApiCaseList" parameterType="ApiCase" resultMap="ApiCaseResult">
+        <include refid="selectApiCaseVo"/>
+        <where>  
+            <if test="apiCase != null and apiCase.caseName != null  and apiCase.caseName != ''"> and c.case_name like concat('%', #{apiCase.caseName}, '%')</if>
+            <if test="apiCase != null and apiCase.deliverableId != null "> and c.module_id = #{apiCase.deliverableId}</if>
+            <if test="apiCase != null and apiCase.caseNum != null "> and c.case_num = #{apiCase.caseNum}</if>
+            <if test="projectId != null "> and c.project_id = #{projectId}</if>
+        </where>
+        ORDER BY c.update_time DESC
+    </select>
+</mapper>

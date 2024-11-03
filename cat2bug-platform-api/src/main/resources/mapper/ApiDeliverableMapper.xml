@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.api.mapper.ApiDeliverableMapper">
+    <resultMap type="ApiDeliverable" id="ApiDeliverableResult">
+        <result property="deliverableId"    column="module_id"    />
+        <result property="deliverablePid"    column="module_pid"    />
+        <result property="deliverableName"    column="module_name"    />
+        <result property="remark"    column="remark"    />
+        <result property="deliverablePath"    column="module_path"    />
+        <result property="childrenCount"    column="children_count"    />
+    </resultMap>
+
+    <sql id="selectApiDeliverableVo">
+        select m.module_id, m.module_pid, m.module_name, m.remark, m.project_id, mg.children_count from sys_module m
+    </sql>
+
+    <select id="selectApiDeliverableList" resultMap="ApiDeliverableResult">
+        <include refid="selectApiDeliverableVo"/>
+        left join (select count(*) children_count,module_pid from sys_module group by module_pid) mg on mg.module_pid=m.module_id
+        <where>
+            <if test="apiDeliverable != null and apiDeliverable.deliverablePid != null "> and m.module_pid = #{apiDeliverable.deliverablePid}</if>
+            <if test="projectId != null "> and m.project_id = #{projectId}</if>
+        </where>
+    </select>
+
+    <select id="selectApiDeliverablePathList" parameterType="Long" resultMap="ApiDeliverableResult">
+        WITH RECURSIVE m (module_id, module_name, module_path) AS (
+            -- 初始选择最顶层的类别，即没有父类别的类别
+            SELECT module_id, module_name, module_name AS module_path
+            FROM sys_module
+            WHERE module_pid = 0 and project_id = #{projectId}
+            UNION ALL
+            -- 递归加入子类别
+            SELECT c.module_id, c.module_name, CONCAT(cp.module_path, '/', c.module_name)
+            FROM sys_module c
+                     INNER JOIN m cp ON c.module_pid = cp.module_id
+        )
+        SELECT * FROM m ORDER BY module_id,module_path
+    </select>
+</mapper>

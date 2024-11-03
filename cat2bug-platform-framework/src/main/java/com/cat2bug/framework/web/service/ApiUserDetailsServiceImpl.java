@@ -32,6 +32,8 @@ public class ApiUserDetailsServiceImpl implements UserDetailsService {
      */
     private static final Set<String> DEFAULT_PERMISSIONS=Sets.newHashSet(
             "api:defect:add",
+            "api:case:list",
+            "api:module:list",
             "api:defect:list",
             "api:defect:query",
             "api:report:push");

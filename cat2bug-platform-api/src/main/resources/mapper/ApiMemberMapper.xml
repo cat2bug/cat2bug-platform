@@ -5,19 +5,42 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 <mapper namespace="com.cat2bug.api.mapper.ApiMemberMapper">
     <resultMap type="ApiMember" id="ApiMemberResult">
         <id     property="memberId"       column="user_id"      />
-        <result property="userName"     column="user_name"    />
-        <result property="nickName"     column="nick_name"    />
+        <result property="memberAccount"     column="user_name"    />
+        <result property="memberName"        column="nick_name"        />
         <result property="email"        column="email"        />
         <result property="phoneNumber"  column="phonenumber"  />
         <result property="avatar"       column="avatar"       />
-        <result property="password"     column="password"     />
+		<collection  property="roleNameList"   javaType="java.util.List" ofType="java.lang.String" >
+			<result column="role_name"      />
+		</collection>
     </resultMap>
+
+	<sql id="selectMemberVo">
+		select u.user_id, u.dept_id, u.user_name, u.nick_name, u.email, u.avatar, u.phonenumber, u.password, u.sex, u.status, u.del_flag, u.login_ip, u.login_date, u.create_by, u.create_time, u.remark, u.ding_user_id, u.wechat_user_id,
+		d.dept_id, d.parent_id, d.ancestors, d.dept_name, d.order_num, d.leader, d.status as dept_status,
+		r.role_name
+		from sys_user u
+		left join sys_dept d on u.dept_id = d.dept_id
+		left join
+		(SELECT 'system' as src, NULL AS src_id, user_id, role_id FROM sys_user_role
+		<if test="projectId != null and projectId != 0">
+			UNION
+			SELECT 'project' as src, up.project_id as src_id, up.user_id, upr.role_id FROM sys_user_project_role upr LEFT JOIN sys_user_project up ON up.user_project_id=upr.user_project_id AND up.project_id = #{ projectId }
+		</if>)
+		ur on u.user_id = ur.user_id
+		left join sys_role r on r.role_id = ur.role_id
+	</sql>
+
 	<select id="selectMemberByNames" resultMap="ApiMemberResult">
-		select u.user_id, u.dept_id, u.nick_name, u.user_name, u.email, u.avatar, u.phonenumber
+		select u.user_id, u.dept_id, u.nick_name, u.user_name, u.email, u.avatar, u.phonenumber, '' as role_name
 		       from sys_user u, sys_user_project p
 		where u.del_flag = '0' AND p.user_id = u.user_id AND p.project_id=#{projectId} AND
 		<foreach collection="userNames" open="(" close=")" separator="OR" item="userName">
 			u.user_name=#{userName}
 		</foreach>
+	</select>
+
+	<select id="selectMemberList" resultMap="ApiMemberResult">
+		<include refid="selectMemberVo"></include>
 	</select>
 </mapper> 
