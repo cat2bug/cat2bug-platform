@@ -13,13 +13,14 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="reportData"    column="report_data"    />
         <result property="createById"    column="create_by_id"    />
         <result property="createBy"    column="create_by"    />
+        <result property="createByAvatar"    column="create_by_avatar"    />
         <result property="projectId"    column="project_id"    />
         <result property="reportSource" column="report_source" />
         <result property="reportKey" column="report_key" />
     </resultMap>
 
     <sql id="selectSysReportVo">
-        select r.report_id, r.report_title, r.report_time, r.report_description, r.report_data_coder, r.report_data, r.create_by_id, r.project_id, r.report_source, r.report_key, u.nick_name as create_by from sys_report r
+        select r.report_id, r.report_title, r.report_time, r.report_description, r.report_data_coder, r.report_data, r.create_by_id, r.project_id, r.report_source, r.report_key, u.nick_name as create_by, u.avatar AS create_by_avatar from sys_report r
         left join sys_user u ON r.create_by_id = u.user_id
     </sql>
 

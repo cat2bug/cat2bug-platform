@@ -205,7 +205,8 @@ export default {
     member: function () {
       return function (report) {
         return {
-          nickName: report.createBy
+          nickName: report.createBy,
+          avatar: report.createByAvatar
         }
       }
     },

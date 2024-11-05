@@ -15,6 +15,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="updateTime"    column="update_time"    />
         <result property="updateById"    column="update_by_id"    />
         <result property="updateBy"    column="update_by"    />
+        <result property="updateByAvatar"    column="update_by_avatar"    />
         <result property="fileVersion"    column="file_version"    />
         <result property="docPid"    column="doc_pid"    />
         <result property="docRemakr"    column="doc_remakr"    />
@@ -24,7 +25,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
     <sql id="selectSysDocumentVo">
         select d.doc_id, d.project_id, d.doc_name, d.doc_type, d.file_extension, d.create_time, d.create_by_id, d.update_time, d.update_by_id, d.file_version, d.doc_pid, d.doc_remakr, d.file_url,
-               u.nick_name as update_by,
+               u.nick_name as update_by, u.avatar AS update_by_avatar,
                case when l.pid_count>0 then false else true end as leaf
                from sys_document d
         LEFT JOIN sys_user u ON u.user_id = d.update_by_id

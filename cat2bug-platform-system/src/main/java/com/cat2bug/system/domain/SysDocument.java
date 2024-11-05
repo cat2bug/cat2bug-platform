@@ -44,6 +44,9 @@ public class SysDocument extends BaseEntity
     @Excel(name = "更新人")
     private Long updateById;
 
+    /** 更新人图标 */
+    private String updateByAvatar;
+
     /** 文档版本 */
     @Excel(name = "文档版本")
     private Long fileVersion;

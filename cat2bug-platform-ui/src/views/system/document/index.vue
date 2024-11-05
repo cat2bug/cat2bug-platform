@@ -226,7 +226,8 @@ export default {
     member: function () {
       return function (doc) {
         return {
-          nickName: doc.updateBy
+          nickName: doc.updateBy,
+          avatar: doc.updateByAvatar
         }
       }
     },

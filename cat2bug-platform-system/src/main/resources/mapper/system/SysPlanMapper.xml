@@ -15,6 +15,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="createTime"    column="create_time"    />
         <result property="updateById"    column="update_by_id"    />
         <result property="updateBy"    column="update_by"    />
+        <result property="updateByAvatar"    column="update_by_avatar"    />
         <result property="updateTime"    column="update_time"    />
         <result property="projectId"    column="project_id"    />
         <result property="reportId"    column="report_id"    />
@@ -69,6 +70,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             p.project_id,
             p.report_id,
             u.nick_name AS update_by,
+            u.avatar AS update_by_avatar,
             s.pass_count,
             s.fail_count,
             s.unexecuted_count,

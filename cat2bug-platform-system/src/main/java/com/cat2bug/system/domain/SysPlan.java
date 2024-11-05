@@ -51,6 +51,9 @@ public class SysPlan extends BaseEntity
     @Excel(name = "更新人ID")
     private Long updateById;
 
+    /** 更新人头像 */
+    private String updateByAvatar;
+
     /** 项目ID */
     @Excel(name = "项目ID")
     private Long projectId;

@@ -327,7 +327,7 @@ export default {
         createTime: null,
         updateBy: null,
         defectState: null,
-        caseStepId: null,
+        caseStepId: 0,
         handleBy: null,
         handleTime: null,
         defectLevel: 'middle'

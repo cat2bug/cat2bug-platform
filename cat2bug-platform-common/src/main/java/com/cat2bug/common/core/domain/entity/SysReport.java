@@ -53,6 +53,10 @@ public class SysReport<T> extends BaseEntity
     /**  推送人ID */
     @Excel(name = " 推送人ID")
     private Long createById;
+
+    /**  推送人图标 */
+    private String createByAvatar;
+
     /**  推送人ID集合 */
     private List<Long> createByIds;
 

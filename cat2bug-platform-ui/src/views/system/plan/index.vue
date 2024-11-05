@@ -177,7 +177,8 @@ export default {
     member: function () {
       return function (plan) {
         return {
-          nickName: plan.updateBy
+          nickName: plan.updateBy,
+          avatar: plan.updateByAvatar
         }
       }
     },
