@@ -101,8 +101,12 @@ public class SysCase extends BaseEntity
     @Excel(name = "步骤", i18nNameKey = "case.step", width = 50, align = HorizontalAlignment.LEFT, type = Excel.Type.IMPORT, headerBackgroundColor=IndexedColors.GREY_25_PERCENT)
     private String caseStepScript;
 
-    /** 图片集合 */
+    /** 图片 */
+    @Excel(name = "图片", i18nNameKey = "image", cellType = Excel.ColumnType.IMAGE_LIST, type = Excel.Type.EXPORT, width = 50,height = 50)
     private String imgUrls;
+    private String imgList;
+    @Excel(name = "图片", i18nNameKey = "image", cellType = Excel.ColumnType.IMAGE, type = Excel.Type.IMPORT, width = 50,height = 50)
+    private String imgObjects;
 
     /** 焦点成员 */
     private List<SysUser> focusList;

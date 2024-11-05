@@ -203,6 +203,7 @@ public class SysCaseServiceImpl implements ISysCaseService
                 c.setCreateTime(DateUtils.getNowDate());
                 c.setUpdateById(SecurityUtils.getUserId());
                 c.setUpdateTime(DateUtils.getNowDate());
+                c.setImgUrls(c.getImgObjects());
                 if(StringUtils.isNotBlank(c.getModuleName())) {
                     c.setModuleId(Long.parseLong(c.getModuleName()));
                 }
