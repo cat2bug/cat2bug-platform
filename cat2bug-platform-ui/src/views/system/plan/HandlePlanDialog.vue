@@ -222,6 +222,11 @@
                 <cat2-bug-preview-image :images="getUrl(scope.row.imgUrls)" />
               </template>
             </el-table-column>
+            <el-table-column v-if="showField('annex')" :label="$t('annex')" :key="$t('annex')" align="left" prop="annexUrls">
+              <template slot-scope="scope">
+                <el-button class="annex-link" type="text"  v-for="(file,index) in getUrl(scope.row.annexUrls)" :key="index" @click="handleDown($event, file)">{{getFileName(file)}}</el-button>
+              </template>
+            </el-table-column>
             <el-table-column v-if="showField('state')" :label="$t('state')" align="left" prop="planItemState" sortable>
               <template slot-scope="scope">
                 <dict-tag :options="dict.type.plan_item_state" :value="scope.row.planItemState"/>
@@ -419,6 +424,13 @@ export default {
         })
       }
     },
+    getFileName: function () {
+      return function (url) {
+        if(!url) return null;
+        let arr = url.split('\/');
+        return arr[arr.length-1];
+      }
+    },
   },
   watch: {
     "$i18n.locale": function (newVal, oldVal) {
@@ -439,7 +451,7 @@ export default {
     /** 设置列表显示的属性字段 */
     setFieldList() {
       this.fieldList = [
-        'id','title','module','level', 'preconditions','expect','step','image','state', 'updateBy','update-time'
+        'id','title','module','level', 'preconditions','expect','step','image','annex', 'state', 'updateBy','update-time'
       ];
 
       const fieldList = this.$cache.local.get(PLAN_ITEM_TABLE_FIELD_LIST_CACHE_KEY);
@@ -624,7 +636,15 @@ export default {
       this.query.pageNum = 1;
       this.query.moduleId = null;
       this.getPlanItemList();
-    }
+    },
+    /** 下载附件操作 */
+    handleDown(event, file) {
+      const a = document.createElement("a");
+      const e = new MouseEvent("click");
+      a.href = file;
+      a.dispatchEvent(e);
+      event.stopPropagation();
+    },
   }
 }
 </script>

@@ -26,6 +26,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="projectId"    column="project_id"    />
         <result property="remark"    column="remark"    />
         <result property="imgUrls"    column="img_urls"    />
+        <result property="annexUrls"    column="annex_urls"  />
         <result property="caseData"    column="case_data"    />
     </resultMap>
 
@@ -47,6 +48,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="projectId"    column="project_id"    />
         <result property="remark"    column="remark"    />
         <result property="imgUrls"    column="img_urls"    />
+        <result property="annexUrls"    column="annex_urls"  />
         <result property="caseData"    column="case_data"    />
         <result property="defectProcessingCount"    column="defect_processing_count"    />
         <result property="defectAuditCount"    column="defect_audit_count"    />
@@ -67,7 +69,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <sql id="selectSysPlanItemVo">
         select pi.plan_item_id, pi.plan_id, c.module_id, pi.case_id, pi.plan_item_state, pi.update_by_id, pi.update_time, pi.defect_ids,
                u.nick_name as update_by,
-               c.case_name, m.module_name, c.case_type, c.case_expect, c.case_step, c.case_level, c.case_preconditions, c.case_num, c.project_id, c.remark, c.img_urls, c.case_data
+               c.case_name, m.module_name, c.case_type, c.case_expect, c.case_step, c.case_level, c.case_preconditions, c.case_num, c.project_id, c.remark, c.img_urls, c.annex_urls, c.case_data
                from
                    (
                        SELECT module_id FROM sys_module WHERE module_id = IFNULL(#{moduleId}, 0)
@@ -86,7 +88,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </sql>
 
     <sql id="selectSysCaseVo">
-        select c.case_id, c.case_name, c.module_id, m.module_name, c.case_type, c.case_expect, c.case_step, c.case_level, c.case_preconditions, c.create_by, c.case_num, c.project_id, c.remark, c.img_urls, c.case_data,
+        select c.case_id, c.case_name, c.module_id, m.module_name, c.case_type, c.case_expect, c.case_step, c.case_level, c.case_preconditions, c.create_by, c.case_num, c.project_id, c.remark, c.img_urls, c.annex_urls, c.case_data,
                pi.plan_item_id, pi.plan_id, pi.module_id, pi.case_id, pi.plan_item_state, pi.update_by_id, pi.update_time, pi.defect_ids
         from
             (

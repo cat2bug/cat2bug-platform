@@ -145,6 +145,11 @@
               <cat2-bug-preview-image :images="getUrl(scope.row.imgUrls)" />
             </template>
           </el-table-column>
+          <el-table-column v-if="showField('annex')" :label="$t('annex')" :key="$t('annex')" align="left" prop="annexUrls">
+            <template slot-scope="scope">
+              <el-button class="annex-link" type="text"  v-for="(file,index) in getUrl(scope.row.annexUrls)" :key="index" @click="handleDown($event, file)">{{getFileName(file)}}</el-button>
+            </template>
+          </el-table-column>
           <el-table-column v-if="showField('update-time')" :label="$t('update-time')" align="left" prop="updateTime" width="150" sortable>
             <template slot-scope="scope">
               <span>{{ parseTime(scope.row.updateTime, '{y}-{m}-{d}') }}</span>
@@ -331,6 +336,13 @@ export default {
         })
       }
     },
+    getFileName: function () {
+      return function (url) {
+        if(!url) return null;
+        let arr = url.split('\/');
+        return arr[arr.length-1];
+      }
+    },
   },
   created() {
     // 设置缺陷列表显示哪些列属性
@@ -423,7 +435,7 @@ export default {
     /** 设置列表显示的属性字段 */
     setFieldList() {
       this.fieldList = [
-        'id','case.name','module','level', 'preconditions','expect','step','data','image','update-time','defect.state'
+        'id','case.name','module','level', 'preconditions','expect','step','data','image','annex','update-time','defect.state'
       ];
 
       const fieldList = this.$cache.local.get(CASE_TABLE_FIELD_LIST_CACHE_KEY);
@@ -575,6 +587,14 @@ export default {
       this.ids = selection.map(item => item.caseId);
       this.single = selection.length != 1;
       this.multiple = !selection.length;
+    },
+    /** 下载附件操作 */
+    handleDown(event, file) {
+      const a = document.createElement("a");
+      const e = new MouseEvent("click");
+      a.href = file;
+      a.dispatchEvent(e);
+      event.stopPropagation();
     },
   }
 };

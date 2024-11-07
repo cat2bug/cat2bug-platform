@@ -74,6 +74,9 @@
         <el-form-item :label="$t('image')" prop="imgUrls">
           <image-upload v-model="form.imgUrls" :limit="9"></image-upload>
         </el-form-item>
+        <el-form-item :label="$t('annex')" prop="annexUrls">
+          <file-upload v-model="form.annexUrls" :limit="9" :file-type="[]"/>
+        </el-form-item>
       </el-form>
     </div>
   </el-drawer>

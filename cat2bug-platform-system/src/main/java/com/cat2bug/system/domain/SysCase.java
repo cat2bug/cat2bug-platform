@@ -108,6 +108,11 @@ public class SysCase extends BaseEntity
     @Excel(name = "图片", i18nNameKey = "image", cellType = Excel.ColumnType.IMAGE, type = Excel.Type.IMPORT, width = 50,height = 50)
     private String imgObjects;
 
+    /** 附件 */
+    @Excel(name = "附件", i18nNameKey = "annex", width = 100,handler = com.cat2bug.common.core.domain.excel.UrlListHandler.class, type = Excel.Type.EXPORT)
+    private String annexUrls;
+    private String annexList;
+
     /** 焦点成员 */
     private List<SysUser> focusList;
 
