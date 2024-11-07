@@ -11,6 +11,7 @@
               :key="index"
               style="width: 100px; height: 100px"
               :src="img"
+              class="image-click"
               :preview-src-list="list(caseModel.imgUrls)"
               fit="cover"></el-image>
           </div>
@@ -191,5 +192,16 @@ export default {
   display: flex;
   flex-direction: row;
   width: 100%;
+}
+.image-click {
+  border-radius: 5px;
+  border: 1px solid #F2F6FC;
+}
+.image-click:hover {
+  scale: 1.1;
+  z-index: 999;
+  border: 1px solid #DCDFE6;
+  -webkit-box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
 }
 </style>

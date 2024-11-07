@@ -232,7 +232,9 @@
             </el-table-column>
             <el-table-column v-if="showField('annex')" :label="$t('annex')" :key="$t('annex')" align="left" prop="annexUrls">
               <template slot-scope="scope">
-                <el-button class="annex-link" type="text"  v-for="(file,index) in getUrl(scope.row.annexUrls)" :key="index" @click="handleDown($event, file)">{{getFileName(file)}}</el-button>
+                <div class="annex-link-plan">
+                  <el-button class="annex-link" type="text"  v-for="(file,index) in getUrl(scope.row.annexUrls)" :key="index" @click="handleDown($event, file)" :title="getFileName(file)">{{getFileName(file)}}</el-button>
+                </div>
               </template>
             </el-table-column>
             <el-table-column v-if="showField('state')" :label="$t('state')" align="left" prop="planItemState" sortable>
@@ -877,5 +879,19 @@ export default {
 }
 .click:hover {
   cursor: pointer;
+}
+.annex-link-plan {
+  width: 100%;
+  display: inline-flex;
+  flex-direction: column;
+  > * {
+    padding: 5px;
+    margin: 0px;
+    width: 100%;
+    text-align: start;
+    white-space: nowrap; /* 确保文本在一行内显示 */
+    overflow: hidden; /* 隐藏超出容器的文本 */
+    text-overflow: ellipsis;
+  }
 }
 </style>
