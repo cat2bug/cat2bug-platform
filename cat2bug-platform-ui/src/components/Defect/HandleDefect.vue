@@ -35,7 +35,8 @@
       </div>
       <el-collapse v-model="activeNames">
         <el-collapse-item :title="$i18n.t('describe')" name="defectDescribe">
-          <markdown-it-vue :content="defect.defectDescribe+''" />
+          <markdown-it-vue v-if="defect.defectDescribe" :content="defect.defectDescribe+''" />
+          <el-empty v-else :description="$t('no-data')"></el-empty>
         </el-collapse-item>
         <el-collapse-item :title="$i18n.t('defect.base-info')" name="base">
           <el-row class="defect-edit-body-base" :gutter="20">

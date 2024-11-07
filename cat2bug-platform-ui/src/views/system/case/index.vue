@@ -164,13 +164,13 @@
           </el-table-column>
           <el-table-column :label="$t('operate')" align="center" class-name="small-padding fixed-width">
             <template slot-scope="scope">
-<!--              <el-button-->
-<!--                size="small"-->
-<!--                type="text"-->
-<!--                @click="addDefectHandle($event,scope.row)"-->
-<!--                v-hasPermi="['system:defect:add']"-->
-<!--              ><svg-icon icon-class="bug"></svg-icon>-->
-<!--                {{ $t('defect.create') }}</el-button>-->
+              <el-button
+                size="small"
+                type="text"
+                @click="handleUpdate($event,scope.row)"
+                icon="el-icon-edit"
+                v-hasPermi="['system:case:edit']">
+                {{ $t('modify') }}</el-button>
               <el-button
                 size="small"
                 type="text"

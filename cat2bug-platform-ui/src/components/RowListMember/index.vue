@@ -35,7 +35,7 @@ export default {
     display: -webkit-flex; /* Safari */
     flex-direction: row-reverse;
     flex-wrap: nowrap;
-    justify-content: flex-end;
+    justify-content: center;
     align-items: center;
     > * {
       margin-right: -8px;

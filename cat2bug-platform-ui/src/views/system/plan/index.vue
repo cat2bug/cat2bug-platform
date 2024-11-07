@@ -55,7 +55,7 @@
       </el-table-column>
       <el-table-column :label="$t('updateBy')" align="center" prop="updateById" width="120">
         <template slot-scope="scope">
-          <cat2-bug-avatar :member="member(scope.row)" />
+          <row-list-member :members="member(scope.row)"></row-list-member>
         </template>
       </el-table-column>
       <el-table-column :label="$t('updateTime')" align="center" prop="updateTime" width="180">
@@ -114,7 +114,7 @@
 
 <script>
 import ProjectLabel from "@/components/Project/ProjectLabel";
-import Cat2BugAvatar from "@/components/Cat2BugAvatar";
+import RowListMember from "@/components/RowListMember";
 import { listPlan, delPlan } from "@/api/system/plan";
 import AddPlanDialog from "@/views/system/plan/AddPlanDialog";
 import HandlePlanDialog from "@/views/system/plan/HandlePlanDialog";
@@ -124,7 +124,7 @@ import {strFormat} from "@/utils";
 export default {
   name: "Plan",
   dicts: ['plan_item_state'],
-  components:{ ProjectLabel, AddPlanDialog, HandlePlanDialog, DictOptionDialog, Cat2BugAvatar },
+  components:{ ProjectLabel, AddPlanDialog, HandlePlanDialog, DictOptionDialog, RowListMember },
   data() {
     return {
       // 遮罩层
@@ -176,10 +176,10 @@ export default {
     /** 成员结构 */
     member: function () {
       return function (plan) {
-        return {
+        return [{
           nickName: plan.updateBy,
           avatar: plan.updateByAvatar
-        }
+        }]
       }
     },
     /** 计划进度显示的内容 */

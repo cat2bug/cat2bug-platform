@@ -103,6 +103,7 @@
   "close": "Close",
   "type": "Type",
   "level": "Level",
+  "priority": "Priority",
   "state": "State",
   "handle-by": "Handle By",
   "image": "Image",

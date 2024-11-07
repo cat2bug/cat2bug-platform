@@ -33,9 +33,17 @@
           </div>
           <div class="plan-statistical-block">
             <el-statistic
-              group-separator=","
-              :title="`${$t('case')}: ${$t('case.pass-tested')}/${$t('case.failed-tested')}/${$t('unexecuted')}/${$t('total')}`"
-            >
+              group-separator=",">
+              <template slot="title">
+                <span>{{$t('case')}}: </span>
+                <span class="click" style="color: rgb(19, 206, 102);" @click.stop="handlePlanItemStateSearch('pass')">{{$t('case.pass-tested')}}</span>
+                <span>/</span>
+                <span class="click" style="color: #f56c6c;" @click.stop="handlePlanItemStateSearch('not_pass')">{{$t('case.failed-tested')}}</span>
+                <span>/</span>
+                <span class="click" style="color: #909399;" @click.stop="handlePlanItemStateSearch('unexecuted')">{{$t('unexecuted')}}</span>
+                <span>/</span>
+                <span class="click" style="font-weight: 500;" @click.stop="handlePlanItemStateSearch(null)">{{$t('total')}}{{ $t('a') }}</span>
+              </template>
               <template slot="formatter">
                 <span class="click" style="color: rgb(19, 206, 102);" @click.stop="handlePlanItemStateSearch('pass')">{{plan.passCount}}</span>
                 <span>/</span>
@@ -234,7 +242,7 @@
             </el-table-column>
             <el-table-column v-if="showField('updateBy')" :label="$t('updateBy')" align="center" prop="updateBy" sortable width="100">
               <template slot-scope="scope">
-                <cat2-bug-avatar :member="member(scope.row)" />
+                <row-list-member :members="member(scope.row)"></row-list-member>
               </template>
             </el-table-column>
             <el-table-column v-if="showField('update-time')" :label="$t('updateTime')" align="center" prop="updateTime" width="180">
@@ -306,7 +314,7 @@
 
 <script>
 import Cat2BugLevel from "@/components/Cat2BugLevel";
-import Cat2BugAvatar from "@/components/Cat2BugAvatar";
+import RowListMember from "@/components/RowListMember";
 import Step from "@/views/system/case/components/step";
 import TreePlanItemModule from "@/views/system/plan/TreePlanItemModule";
 import FocusMemberList from "@/components/FocusMemberList";
@@ -330,7 +338,7 @@ const PLAN_ITEM_STATE_NOT_PASS = 'not_pass';
 export default {
   name: "AddPlanDialog",
   dicts: ['plan_item_state'],
-  components: { Cat2BugLevel,Step,TreePlanItemModule,Multipane,MultipaneResizer, FocusMemberList, Cat2BugPreviewImage, AddDefect, HandleDefect, AddCase, Cat2BugAvatar, DefectStateFlag },
+  components: { Cat2BugLevel,Step,TreePlanItemModule,Multipane,MultipaneResizer, FocusMemberList, Cat2BugPreviewImage, AddDefect, HandleDefect, AddCase, RowListMember, DefectStateFlag },
   data() {
     return {
       // 动态样式
@@ -394,9 +402,9 @@ export default {
     /** 成员结构 */
     member: function () {
       return function (planItem) {
-        return {
+        return [{
           nickName: planItem.updateBy
-        }
+        }]
       }
     },
     /** 是否有通过权限 */

@@ -88,7 +88,7 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column v-if="showField('level')" :label="$t('level')" :key="$t('level')" align="left" prop="defectLevel" width="100" sortable >
+      <el-table-column v-if="showField('priority')" :label="$t('priority')" :key="$t('priority')" align="left" prop="defectLevel" width="100" sortable >
         <template slot-scope="scope">
           <level-tag :options="dict.type.defect_level" :value="scope.row.defectLevel"/>
         </template>
@@ -115,7 +115,7 @@
           <span>{{ parseTime(scope.row.updateTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column v-if="showField('handle-by')" :label="$t('handle-by')" :key="$t('handle-by')" align="left" prop="handleBy">
+      <el-table-column v-if="showField('handle-by')" :label="$t('handle-by')" :key="$t('handle-by')" align="center" prop="handleBy">
         <template slot-scope="scope">
           <row-list-member :members="scope.row.handleByList"></row-list-member>
         </template>
@@ -193,7 +193,7 @@ export default {
       tableShowFieldList: [],
       // 表格里全部列数据集合
       tableAllFieldList: [
-        'id','type','defect.name','level','state','module','version','plan-start-time','plan-end-time','update-time','handle-by','image','annex'
+        'id','type','defect.name','priority','state','module','version','plan-start-time','plan-end-time','update-time','handle-by','image','annex'
       ],
     }
   },

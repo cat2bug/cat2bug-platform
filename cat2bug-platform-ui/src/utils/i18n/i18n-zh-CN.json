@@ -103,6 +103,7 @@
   "close": "关闭",
   "type": "类型",
   "level": "等级",
+  "priority": "优先级",
   "state": "状态",
   "handle-by": "处理人",
   "image": "图片",
