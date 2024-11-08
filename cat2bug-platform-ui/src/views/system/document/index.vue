@@ -108,7 +108,7 @@
     <!-- 添加或修改文档对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="100px">
-        <el-form-item :label="$t('doc.name')" prop="docName">
+        <el-form-item :label="fileFieldName" prop="docName">
           <el-input ref="docNameInput" v-model="form.docName" :placeholder="$t('doc.please-enter-name')" maxlength="255" />
         </el-form-item>
 <!--        <el-form-item label="备注" prop="docRemark">-->
@@ -193,6 +193,7 @@ export default {
       documentList: [],
       // 弹出层标题
       title: "",
+      fileFieldName: "",
       // 是否显示弹出层
       open: false,
       // 查询参数
@@ -363,7 +364,8 @@ export default {
       this.reset();
       this.form.docType=0;
       this.open = true;
-      this.title = this.$i18n.t('doc.create-file');
+      this.title = this.$i18n.t('doc.create-folder');
+      this.fileFieldName = this.$i18n.t('doc.folder-name');
       this.$nextTick(() => {
         this.$refs.docNameInput.focus();
       });
@@ -374,6 +376,7 @@ export default {
       this.form.docType=1;
       this.open = true;
       this.title = this.$i18n.t('doc.create-file');
+      this.fileFieldName = this.$i18n.t('doc.file-name');
       this.$nextTick(() => {
         this.$refs.docNameInput.focus();
       });

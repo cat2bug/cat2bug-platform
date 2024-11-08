@@ -187,11 +187,12 @@ public class SysCaseServiceImpl implements ISysCaseService
             } else if(c.getCaseExpect().length()>255) {
                 rr.getMessages().add(MessageUtils.message("case.expect-size-exception"));
             }
+
+            rowNum++;
             if(rr.getMessages().size()>0){
                 rows.add(rr);
                 continue;
             }
-            rowNum++;
         }
 
         if(rows.size()==0) {

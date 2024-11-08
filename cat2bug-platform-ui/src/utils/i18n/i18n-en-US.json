@@ -602,6 +602,8 @@
   "doc.create-file": "Add Document",
   "doc.modify-file": "Modify Document",
   "doc.name": "Name",
+  "doc.folder-name": "Folder Name",
+  "doc.file-name": "File Name",
   "doc.type": "Type",
   "doc.name-cannot-empty": "The document name cannot be empty",
   "doc.file-cannot-empty": "The file cannot be empty",
