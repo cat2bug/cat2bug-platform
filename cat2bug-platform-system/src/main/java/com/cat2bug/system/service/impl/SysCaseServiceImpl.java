@@ -184,14 +184,19 @@ public class SysCaseServiceImpl implements ISysCaseService
             }
             if(StringUtils.isEmpty(c.getCaseExpect())) {
                 rr.getMessages().add(MessageUtils.message("case.expect-not-empty"));
-            } else if(c.getCaseExpect().length()>255) {
+            } else if(c.getCaseExpect().length()>1024) {
                 rr.getMessages().add(MessageUtils.message("case.expect-size-exception"));
+            }
+            if(StringUtils.isNotBlank(c.getCasePreconditions()) && c.getCasePreconditions().length()>500) {
+                rr.getMessages().add(MessageUtils.message("case.preconditions-size-exception"));
+            }
+            if(StringUtils.isNotBlank(c.getCaseData()) && c.getCaseData().length()>10000) {
+                rr.getMessages().add(MessageUtils.message("case.data-size-exception"));
             }
 
             rowNum++;
             if(rr.getMessages().size()>0){
                 rows.add(rr);
-                continue;
             }
         }
 
