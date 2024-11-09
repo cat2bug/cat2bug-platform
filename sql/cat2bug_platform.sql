@@ -11,7 +11,7 @@
  Target Server Version : 80200
  File Encoding         : 65001
 
- Date: 07/11/2024 16:57:01
+ Date: 09/11/2024 23:06:25
 */
 
 SET NAMES utf8mb4;
@@ -591,24 +591,24 @@ CREATE TABLE `sys_case` (
   `case_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin DEFAULT NULL COMMENT '用例名称',
   `module_id` bigint DEFAULT NULL COMMENT '模块id',
   `case_type` int DEFAULT NULL COMMENT '用例类型',
-  `case_expect` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin DEFAULT NULL COMMENT '预期',
+  `case_expect` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin COMMENT '预期',
   `case_step` json DEFAULT NULL COMMENT '步骤',
   `case_level` int DEFAULT NULL COMMENT '用例级别',
-  `case_preconditions` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin DEFAULT NULL COMMENT '前置条件',
+  `case_preconditions` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin COMMENT '前置条件',
   `create_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin DEFAULT NULL,
   `create_time` datetime DEFAULT NULL,
   `update_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin DEFAULT NULL,
   `update_time` datetime DEFAULT NULL,
   `case_num` bigint DEFAULT NULL COMMENT '用例号码',
   `project_id` bigint DEFAULT NULL COMMENT '项目编号',
-  `remark` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin DEFAULT NULL COMMENT '备注',
+  `remark` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin DEFAULT NULL COMMENT '备注',
   `img_urls` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin COMMENT '图片集合',
-  `case_data` varchar(10000) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin DEFAULT NULL COMMENT '用例数据',
+  `case_data` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin COMMENT '用例数据',
   `annex_urls` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin COMMENT '附件集合',
   PRIMARY KEY (`case_id`),
   UNIQUE KEY `id_num_` (`case_id`,`case_num`),
   KEY `project_id_case_name` (`case_name`,`project_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7418 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_bin COMMENT='测试用例表';
+) ENGINE=InnoDB AUTO_INCREMENT=9821 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_bin COMMENT='测试用例表';
 
 -- ----------------------------
 -- Records of sys_case
@@ -1031,7 +1031,7 @@ CREATE TABLE `sys_logininfor` (
   PRIMARY KEY (`info_id`),
   KEY `idx_sys_logininfor_s` (`status`),
   KEY `idx_sys_logininfor_lt` (`login_time`)
-) ENGINE=InnoDB AUTO_INCREMENT=1511 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='系统访问记录';
+) ENGINE=InnoDB AUTO_INCREMENT=1513 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='系统访问记录';
 
 -- ----------------------------
 -- Records of sys_logininfor
@@ -1277,6 +1277,23 @@ CREATE TABLE `sys_module` (
 -- Records of sys_module
 -- ----------------------------
 BEGIN;
+INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`) VALUES (322, '登陆', NULL, 50, 0);
+INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`) VALUES (323, '首页', NULL, 50, 0);
+INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`) VALUES (324, '测试用例', NULL, 50, 0);
+INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`) VALUES (325, '手动', NULL, 50, 324);
+INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`) VALUES (326, 'AI', NULL, 50, 324);
+INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`) VALUES (327, '远程', NULL, 50, 326);
+INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`) VALUES (328, '本地', NULL, 50, 326);
+INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`) VALUES (329, '1232', NULL, 50, 0);
+INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`) VALUES (330, '1', NULL, 52, 0);
+INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`) VALUES (331, '2', NULL, 52, 0);
+INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`) VALUES (332, '3', NULL, 52, 0);
+INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`) VALUES (333, '1.1', NULL, 52, 330);
+INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`) VALUES (334, '1.2', NULL, 52, 330);
+INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`) VALUES (335, '1.1.1', NULL, 52, 333);
+INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`) VALUES (336, '登陆', NULL, 53, 0);
+INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`) VALUES (337, '首页', NULL, 53, 0);
+INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`) VALUES (338, '交付物', NULL, 53, 0);
 COMMIT;
 
 -- ----------------------------
@@ -1335,7 +1352,7 @@ CREATE TABLE `sys_oper_log` (
   KEY `idx_sys_oper_log_bt` (`business_type`),
   KEY `idx_sys_oper_log_s` (`status`),
   KEY `idx_sys_oper_log_ot` (`oper_time`)
-) ENGINE=InnoDB AUTO_INCREMENT=18759 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='操作日志记录';
+) ENGINE=InnoDB AUTO_INCREMENT=18770 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='操作日志记录';
 
 -- ----------------------------
 -- Records of sys_oper_log
@@ -2441,6 +2458,7 @@ CREATE TABLE `sys_user_role` (
 -- Records of sys_user_role
 -- ----------------------------
 BEGIN;
+INSERT INTO `sys_user_role` (`user_id`, `role_id`) VALUES (222, 10);
 COMMIT;
 
 -- ----------------------------
