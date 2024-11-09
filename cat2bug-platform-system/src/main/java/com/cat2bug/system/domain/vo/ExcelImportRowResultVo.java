@@ -11,6 +11,6 @@ import java.util.List;
  */
 @Data
 public class ExcelImportRowResultVo {
-    private int rowNum;
+    private Integer rowNum;
     private List<String> messages;
 }

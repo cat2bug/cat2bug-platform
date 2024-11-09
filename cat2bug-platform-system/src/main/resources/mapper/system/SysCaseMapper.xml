@@ -105,7 +105,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </select>
         
     <insert id="insertSysCase" parameterType="SysCase" useGeneratedKeys="true" keyProperty="caseId">
-        insert into sys_case
+        insert IGNORE into sys_case
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="caseName != null">case_name,</if>
             <if test="moduleId != null">module_id,</if>

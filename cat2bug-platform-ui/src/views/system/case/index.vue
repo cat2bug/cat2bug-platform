@@ -552,7 +552,11 @@ export default {
       let html = "<div style='overflow: auto;overflow-x: hidden;max-height: 70vh;padding: 10px 20px 0;'>"
         + "<label>"+response.data.message +"</label>";
       response.data.rows.forEach(r=>{
-        html+='<div style="display: flex;flex-direction: row; align-items: center; padding: 5px 0px; border-top:1px solid #EBEEF5"><h4 style="margin: 0px 10px 0px 0px;">'+strFormat(this.$i18n.t('line'),r.rowNum+'')+'</h4><div style="display:flex;flex-direction:column;flex:1;overflow: hidden;">'
+        html+='<div style="display: flex;flex-direction: row; align-items: center; padding: 5px 0px; border-top:1px solid #EBEEF5">';
+        if(r.rowNum) {
+          html += '<h4 style="margin: 0px 10px 0px 0px;">' + strFormat(this.$i18n.t('line'), r.rowNum + '') + '</h4>';
+        }
+        html+='<div style="display:flex;flex-direction:column;flex:1;overflow: hidden;">'
         r.messages.forEach(m=>{
           html+='<span>'+m+'</span>'
         });

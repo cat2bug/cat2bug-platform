@@ -1,6 +1,7 @@
 package com.cat2bug.system.service.impl;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.cat2bug.common.exception.ServiceException;
@@ -19,6 +20,7 @@ import com.cat2bug.system.mapper.SysCaseMapper;
 import com.cat2bug.system.domain.SysCase;
 import com.cat2bug.system.service.ISysCaseService;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 /**
  * 测试用例Service业务层处理
@@ -156,6 +158,7 @@ public class SysCaseServiceImpl implements ISysCaseService
     @Transactional
     public ExcelImportResultVo importCase(List<SysCase> caseList, Long projectId)
     {
+        final String NUM_PROPERTY_NAME = "num";
         if (StringUtils.isNull(caseList) || caseList.size() == 0)
         {
             throw new ServiceException(MessageUtils.message("case.import-data-not-empty"));
@@ -165,6 +168,10 @@ public class SysCaseServiceImpl implements ISysCaseService
         int rowNum = 2;
         for (SysCase c : caseList)
         {
+            Map<String,Object> params = new HashMap<>();
+            params.put(NUM_PROPERTY_NAME, rowNum);
+            c.setParams(params);
+
             ExcelImportRowResultVo rr = new ExcelImportRowResultVo();
             rr.setRowNum(rowNum);
             rr.setMessages(new ArrayList<>());
@@ -184,13 +191,13 @@ public class SysCaseServiceImpl implements ISysCaseService
             }
             if(StringUtils.isEmpty(c.getCaseExpect())) {
                 rr.getMessages().add(MessageUtils.message("case.expect-not-empty"));
-            } else if(c.getCaseExpect().length()>1024) {
+            } else if(c.getCaseExpect().length()>65536) {
                 rr.getMessages().add(MessageUtils.message("case.expect-size-exception"));
             }
-            if(StringUtils.isNotBlank(c.getCasePreconditions()) && c.getCasePreconditions().length()>500) {
+            if(StringUtils.isNotBlank(c.getCasePreconditions()) && c.getCasePreconditions().length()>65536) {
                 rr.getMessages().add(MessageUtils.message("case.preconditions-size-exception"));
             }
-            if(StringUtils.isNotBlank(c.getCaseData()) && c.getCaseData().length()>10000) {
+            if(StringUtils.isNotBlank(c.getCaseData()) && c.getCaseData().length()>65536) {
                 rr.getMessages().add(MessageUtils.message("case.data-size-exception"));
             }
 
@@ -200,8 +207,25 @@ public class SysCaseServiceImpl implements ISysCaseService
             }
         }
 
+        // 查询导入的重复项
+        caseList.stream().collect(Collectors.groupingBy(new Function<SysCase, String>() {
+            @Override
+            public String apply(SysCase sysCase) {
+                return sysCase.getProjectId()+sysCase.getCaseName()+sysCase.getModuleId();
+            }
+        })).values().stream().filter(l->l.size()>1).forEach(l->{
+            ExcelImportRowResultVo rr = new ExcelImportRowResultVo();
+            rr.setMessages(new ArrayList<>());
+            rr.getMessages().add(
+                    MessageUtils.message(
+                            "case.duplicate-row-data-exception",
+                            l.stream().map(c->String.valueOf(c.getParams().get(NUM_PROPERTY_NAME))).collect(Collectors.joining(","))));
+            rows.add(rr);
+        });
+
         if(rows.size()==0) {
             long num = sysCaseMapper.getCaseMaxNumOfProject(projectId);
+            rowNum = 2;
             for (SysCase c : caseList) {
                 c.setCaseNum(++num);
                 c.setProjectId(projectId);
@@ -226,7 +250,19 @@ public class SysCaseServiceImpl implements ISysCaseService
                     }).collect(Collectors.toList());
                     c.setCaseStep(steps);
                 }
-                sysCaseMapper.insertSysCase(c);
+                int count = sysCaseMapper.insertSysCase(c);
+                if(count==0) {
+                    int finalRowNum = rowNum;
+                    Optional<ExcelImportRowResultVo> opt = rows.stream().filter(r->r.getRowNum()== finalRowNum).findFirst();
+                    if(opt.isPresent()) {
+                        opt.get().getMessages().add(MessageUtils.message("case.data-exists"));
+                    }
+                    ExcelImportRowResultVo rr = new ExcelImportRowResultVo();
+                    rr.setRowNum(rowNum);
+                    rr.setMessages(new ArrayList<>());
+                    rr.getMessages().add("case.data-exists");
+                    rows.add(rr);
+                }
             }
         }
 
@@ -235,6 +271,7 @@ public class SysCaseServiceImpl implements ISysCaseService
         if (rows.size() > 0)
         {
             ret.setMessage(MessageUtils.message("case.import-exception", rows.size()));
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();  // 手动回滚数据
         }
         else
         {

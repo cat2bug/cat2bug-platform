@@ -16,10 +16,10 @@
       </el-col>
     </el-row>
     <el-form-item :label="$t('preconditions')" prop="casePreconditions">
-      <el-input type="textarea" v-model="form.casePreconditions" :placeholder="$t('case.please-enter-prerequisite')" maxlength="255" rows="3" show-word-limit />
+      <el-input type="textarea" v-model="form.casePreconditions" :placeholder="$t('case.please-enter-prerequisite')" maxlength="65535" rows="3" show-word-limit />
     </el-form-item>
     <el-form-item :label="$t('expect')" prop="caseExpect">
-      <el-input type="textarea" v-model="form.caseExpect" :placeholder="$t('case.please-enter-expectations')" maxlength="255" rows="3" show-word-limit />
+      <el-input type="textarea" v-model="form.caseExpect" :placeholder="$t('case.please-enter-expectations')" maxlength="65535" rows="3" show-word-limit />
     </el-form-item>
     <el-form-item :label="$t('step')" prop="caseStep">
       <template slot="label">
