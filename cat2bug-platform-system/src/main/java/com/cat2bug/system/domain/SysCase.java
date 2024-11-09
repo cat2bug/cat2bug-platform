@@ -105,7 +105,7 @@ public class SysCase extends BaseEntity
     @Excel(name = "图片", i18nNameKey = "image", cellType = Excel.ColumnType.IMAGE_LIST, type = Excel.Type.EXPORT, width = 50,height = 50)
     private String imgUrls;
     private String imgList;
-    @Excel(name = "图片", i18nNameKey = "image", cellType = Excel.ColumnType.IMAGE, type = Excel.Type.IMPORT, width = 50,height = 50)
+    @Excel(name = "图片", i18nNameKey = "image", cellType = Excel.ColumnType.IMAGE_LIST, type = Excel.Type.IMPORT, width = 50,height = 50)
     private String imgObjects;
 
     /** 附件 */

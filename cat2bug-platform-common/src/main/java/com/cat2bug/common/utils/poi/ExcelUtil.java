@@ -1,10 +1,6 @@
 package com.cat2bug.common.utils.poi;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
@@ -12,22 +8,14 @@ import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.parsers.*;
 
 import com.cat2bug.common.utils.MessageUtils;
-import com.cat2bug.common.utils.poi.ExcelComboHandlerAdapter;
-import com.cat2bug.common.utils.poi.ExcelHandlerAdapter;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
@@ -39,19 +27,19 @@ import org.apache.poi.hssf.usermodel.HSSFShape;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ooxml.POIXMLDocumentPart;
+import org.apache.poi.ooxml.util.PackageHelper;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.apache.poi.openxml4j.opc.OPCPackage;
+import org.apache.poi.openxml4j.opc.PackagePart;
+import org.apache.poi.openxml4j.opc.PackagePartName;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.util.IOUtils;
 import org.apache.poi.util.Units;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
-import org.apache.poi.xssf.usermodel.XSSFClientAnchor;
-import org.apache.poi.xssf.usermodel.XSSFDataValidation;
-import org.apache.poi.xssf.usermodel.XSSFDrawing;
-import org.apache.poi.xssf.usermodel.XSSFPicture;
-import org.apache.poi.xssf.usermodel.XSSFShape;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.xssf.usermodel.*;
+
 import org.openxmlformats.schemas.drawingml.x2006.spreadsheetDrawing.CTMarker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,6 +58,11 @@ import com.cat2bug.common.utils.file.FileTypeUtils;
 import com.cat2bug.common.utils.file.FileUtils;
 import com.cat2bug.common.utils.file.ImageUtils;
 import com.cat2bug.common.utils.reflect.ReflectUtils;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 /**
  * Excel相关处理
@@ -327,12 +320,22 @@ public class ExcelUtil<T>
      * 
      * @param sheetName 表格索引名
      * @param titleNum 标题占用行数
-     * @param is 输入流
+     * @param inputStream 输入流
      * @return 转换后集合
      */
-    public List<T> importExcel(String sheetName, InputStream is, int titleNum) throws Exception
+    public List<T> importExcel(String sheetName, InputStream inputStream, int titleNum) throws Exception
     {
         this.type = Type.IMPORT;
+        //将InputStream对象转换成ByteArrayOutputStream
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        byte[] buffer = new byte[1024];
+        int len;
+        while ((len = inputStream.read(buffer)) > -1 ) {
+            byteArrayOutputStream.write(buffer, 0, len);
+        }
+        byteArrayOutputStream.flush();
+        //将byteArrayOutputStream可转换成多个InputStream对象，达到多次读取InputStream效果
+        InputStream is = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         this.wb = WorkbookFactory.create(is);
         List<T> list = new ArrayList<T>();
         // 如果指定sheet名,则取指定sheet中的内容 否则默认指向第1个sheet
@@ -342,7 +345,8 @@ public class ExcelUtil<T>
             throw new IOException("文件sheet不存在");
         }
         boolean isXSSFWorkbook = !(wb instanceof HSSFWorkbook);
-        Map<String, PictureData> pictures;
+        // 获取悬浮图片
+        Map<String, List<PictureData>> pictures;
         if (isXSSFWorkbook)
         {
             pictures = getSheetPictures07((XSSFSheet) sheet, (XSSFWorkbook) wb);
@@ -351,6 +355,11 @@ public class ExcelUtil<T>
         {
             pictures = getSheetPictures03((HSSFSheet) sheet, (HSSFWorkbook) wb);
         }
+
+        // 获取嵌入式图片
+        InputStream embedIs = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+        Map<String, PackagePart> embedPictures = getEmbedPictureMap(embedIs);
+
         // 获取最后一个非空行的行下标，比如总行数为n，则返回的为n-1
         int rows = sheet.getLastRowNum();
         if (rows > 0)
@@ -479,17 +488,32 @@ public class ExcelUtil<T>
                         {
                             val = dataFormatHandlerAdapter(val, attr, null);
                         }
-                        else if (ColumnType.IMAGE == attr.cellType() && StringUtils.isNotEmpty(pictures))
+                        else if (ColumnType.IMAGE_LIST == attr.cellType())
                         {
-                            PictureData image = pictures.get(row.getRowNum() + "_" + entry.getKey());
-                            if (image == null)
-                            {
-                                val = "";
+                            List<String> imgPathList = new ArrayList<>();
+                            if(StringUtils.isNotEmpty(pictures)) {
+                                List<PictureData> images = pictures.get(row.getRowNum() + "_" + entry.getKey());
+                                if (images != null && images.size()>0) {
+                                    imgPathList.addAll(images.stream().map(img->{
+                                        try {
+                                            byte[] data = img.getData();
+                                            return FileUtils.writeImportBytes(data);
+                                        } catch (IOException e) {
+                                            throw new RuntimeException(e);
+                                        }
+                                    }).collect(Collectors.toList()));
+                                }
                             }
-                            else
-                            {
-                                byte[] data = image.getData();
-                                val = FileUtils.writeImportBytes(data);
+                            // 如果返回的对象为空，通过查看嵌入图片方式看看是否可以查找到图片
+                            Cell cell = row.getCell(entry.getKey());
+                            String embedImgPath = writeEmbedImage(embedPictures, cell);
+                            if(StringUtils.isNotBlank(embedImgPath)) {
+                                imgPathList.add(embedImgPath);
+                            }
+                            if(imgPathList.size()>0) {
+                                val = imgPathList.stream().collect(Collectors.joining(","));
+                            } else {
+                                val = "";
                             }
                         }
                         ReflectUtils.invokeSetter(entity, propertyName, val);
@@ -498,6 +522,8 @@ public class ExcelUtil<T>
                 list.add(entity);
             }
         }
+        embedIs.close();
+        is.close();
         return list;
     }
 
@@ -1714,9 +1740,9 @@ public class ExcelUtil<T>
      * @param workbook 工作簿对象
      * @return Map key:图片单元格索引（1_1）String，value:图片流PictureData
      */
-    public static Map<String, PictureData> getSheetPictures03(HSSFSheet sheet, HSSFWorkbook workbook)
+    public static Map<String, List<PictureData>> getSheetPictures03(HSSFSheet sheet, HSSFWorkbook workbook)
     {
-        Map<String, PictureData> sheetIndexPicMap = new HashMap<String, PictureData>();
+        Map<String, List<PictureData>> sheetIndexPicMap = new HashMap<>();
         List<HSSFPictureData> pictures = workbook.getAllPictures();
         if (!pictures.isEmpty())
         {
@@ -1729,7 +1755,10 @@ public class ExcelUtil<T>
                     int pictureIndex = pic.getPictureIndex() - 1;
                     HSSFPictureData picData = pictures.get(pictureIndex);
                     String picIndex = anchor.getRow1() + "_" + anchor.getCol1();
-                    sheetIndexPicMap.put(picIndex, picData);
+                    if(sheetIndexPicMap.containsKey(picIndex)==false) {
+                        sheetIndexPicMap.put(picIndex, new ArrayList<>());
+                    }
+                    sheetIndexPicMap.get(picIndex).add(picData);
                 }
             }
             return sheetIndexPicMap;
@@ -1747,9 +1776,9 @@ public class ExcelUtil<T>
      * @param workbook 工作簿对象
      * @return Map key:图片单元格索引（1_1）String，value:图片流PictureData
      */
-    public static Map<String, PictureData> getSheetPictures07(XSSFSheet sheet, XSSFWorkbook workbook)
+    public static Map<String, List<PictureData>> getSheetPictures07(XSSFSheet sheet, XSSFWorkbook workbook)
     {
-        Map<String, PictureData> sheetIndexPicMap = new HashMap<String, PictureData>();
+        Map<String, List<PictureData>> sheetIndexPicMap = new HashMap<>();
         for (POIXMLDocumentPart dr : sheet.getRelations())
         {
             if (dr instanceof XSSFDrawing)
@@ -1764,11 +1793,15 @@ public class ExcelUtil<T>
                         XSSFClientAnchor anchor = pic.getPreferredSize();
                         CTMarker ctMarker = anchor.getFrom();
                         String picIndex = ctMarker.getRow() + "_" + ctMarker.getCol();
-                        sheetIndexPicMap.put(picIndex, pic.getPictureData());
+                        if(sheetIndexPicMap.containsKey(picIndex)==false) {
+                            sheetIndexPicMap.put(picIndex, new ArrayList<PictureData>());
+                        }
+                        sheetIndexPicMap.get(picIndex).add(pic.getPictureData());
                     }
                 }
             }
         }
+
         return sheetIndexPicMap;
     }
 
@@ -1861,4 +1894,194 @@ public class ExcelUtil<T>
         }
         return method;
     }
+
+    /**
+     * 写Excel中的嵌入图片到静态资源路径下
+     * @param inputStream
+     * @param cell
+     * @return
+     * @throws IOException
+     * @throws InvalidFormatException
+     * @throws ParserConfigurationException
+     * @throws SAXException
+     */
+    private String writeEmbedImage(Map<String, PackagePart> picturePath, Cell cell) throws IOException, InvalidFormatException, ParserConfigurationException, SAXException {
+        // 根据正则查找Excel中的图片是否和当前单元格中的图片相匹配，匹配了则写入图片到静态资源路径，并返回路径
+        String patternStr = "^\\=DISPIMG\\(\\\"(ID_[A-Z0-9]+)\\\",[0-9]+\\)";
+        Pattern pattern = Pattern.compile(patternStr);
+        Matcher matcher = pattern.matcher(cell.getStringCellValue());
+        while (matcher.find()) {
+            // 获取单元格中匹配的图片ID
+            String imgId = matcher.group(1);
+            if(StringUtils.isBlank(imgId)) continue;
+            if(picturePath.containsKey(imgId)) {
+                // 找到匹配的图片
+                PackagePart part = picturePath.get(imgId);
+                // 写图片到静态资源路径
+                return FileUtils.writePackagePart(part);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 获取excel压缩包中rid和图片ID的映射关系
+     * @param part 包
+     * @return rid与图片ID映射的map
+     */
+    private static Map<String, Set<String>> getImgMap(PackagePart part) throws IOException, ParserConfigurationException, SAXException {
+        Map<String, Set<String>> mapImg = new HashMap<>();
+        PackagePartName partName = part.getPartName();
+        String name = partName.getName();
+        // 获取根节点
+        if ("/xl/cellimages.xml".equals(name)) {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            Document doc = builder.parse(part.getInputStream());
+
+            Element root = doc.getDocumentElement();
+            NodeList nodeList = root.getChildNodes();
+            if(nodeList==null) return mapImg;
+
+            for(int i=0;i<nodeList.getLength();i++) {
+                Node imgNode = nodeList.item(i);
+                Node xdrPic = imgNode.getFirstChild();
+                Node xdrNvPicPr = xdrPic.getFirstChild();
+                Node xdrBlipFill = xdrPic.getChildNodes().item(1);
+                Node aBlip = xdrBlipFill.getFirstChild();
+                String imgId = xdrNvPicPr.getFirstChild().getAttributes().getNamedItem("name").getNodeValue();
+                String id = aBlip.getAttributes().item(0).getNodeValue();
+                if (mapImg.containsKey(id)) {
+                    mapImg.get(id).add(imgId);
+                } else {
+                    Set<String> set = new HashSet<>();
+                    set.add(imgId);
+                    mapImg.put(id, set);
+                }
+            }
+        }
+        return mapImg;
+    }
+
+    /**
+     * 获取excel压缩包中rid和图片路径的映射关系
+     * @param part 包
+     * @return  rid与图片路径映射的map
+     * @throws IOException
+     */
+    private static Map<String, String> getImgPathMap(PackagePart part) throws IOException, ParserConfigurationException, SAXException {
+        Map<String, String> mapImgPath = new HashMap<>();
+        PackagePartName partName = part.getPartName();
+        String name = partName.getName();
+        if ("/xl/_rels/cellimages.xml.rels".equals(name)) {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            Document doc = builder.parse(part.getInputStream());
+
+            Element root = doc.getDocumentElement();
+            NodeList nodeList = root.getChildNodes();
+            if(nodeList==null) return mapImgPath;
+
+            for(int i=0;i<nodeList.getLength();i++) {
+                Node node = nodeList.item(i);
+                if(node.getNodeType()!=Node.ELEMENT_NODE) continue;
+                String id = node.getAttributes().getNamedItem("Id").getNodeValue();
+                String target = node.getAttributes().getNamedItem("Target").getNodeValue();
+                mapImgPath.put(id, target);
+            }
+        }
+        return mapImgPath;
+    }
+
+    /**
+     * 获取Sheet标段对应的Rid关系
+     * @param part
+     * @return
+     */
+    private static Map<Integer, List<String>> getImgOfSheetMap(PackagePart part) throws ParserConfigurationException, SAXException, IOException {
+        Map<Integer, List<String>> dataMap = new HashMap<>();
+        PackagePartName partName = part.getPartName();
+        String name = partName.getName();
+        if (name.contains("/xl/worksheets/sheet")) {
+//                SAXBuilder builder = new SAXBuilder();
+            // 获取文档
+            String sheetNoStr = name.replace("/xl/worksheets/sheet", "").replace(".xml", "");
+            Integer sheetNo = Integer.valueOf(sheetNoStr) - 1;
+            // 步骤1：创建SAXParserFactory实例
+            SAXParserFactory factory = SAXParserFactory.newInstance();
+            // 步骤2：创建SAXParser实例
+            SAXParser parser = factory.newSAXParser();
+            SAXParserHandler handler = new SAXParserHandler();
+            parser.parse(part.getInputStream(), handler);
+            List<String> rows = handler.getRows();
+            dataMap.put(sheetNo, rows);
+        }
+        return dataMap;
+    }
+
+    /**
+     * 获取嵌入图片Map
+     * @param inputStream
+     * @return
+     * @throws IOException
+     * @throws InvalidFormatException
+     * @throws ParserConfigurationException
+     * @throws SAXException
+     */
+    private static Map<String, PackagePart> getEmbedPictureMap(InputStream inputStream) throws IOException, InvalidFormatException, ParserConfigurationException, SAXException {
+        OPCPackage opc = null;
+        try {
+            //包管理工具打开压缩包
+            opc = PackageHelper.open(inputStream);
+            //获取所有包文件
+            List<PackagePart> parts = opc.getParts();
+            //获取每个工作表中的包文件
+            return getEmbedPictures(parts);
+        } finally {
+            if(opc!=null) {
+                opc.close();
+            }
+        }
+    }
+
+    /**
+     * 获取Sheet中图片对象列表的Map
+     * @param parts 所有文件
+     * @return  Map
+     * @throws IOException
+     * @throws ParserConfigurationException
+     * @throws SAXException
+     */
+    private static Map<String, PackagePart> getEmbedPictures(List<PackagePart> parts) throws IOException, ParserConfigurationException, SAXException {
+        Map<String, Set<String>> mapImg = new HashMap<>();
+        Map<String, String> mapImgPath = new HashMap<>();
+
+        for (PackagePart part : parts) {
+            // RID与图片ID映射的MAP
+            mapImg.putAll(getImgMap(part));
+            // RID与图片路径映射的MAP
+            mapImgPath.putAll(getImgPathMap(part));
+        }
+        // 获取图片ID与图片路径的Map
+        Map<String, Set<String>> imgMap = new HashMap<>();
+        for (String id : mapImg.keySet()) {
+            Set<String> imgIds = mapImg.get(id);
+            String path = mapImgPath.get(id);
+            imgMap.put(path, imgIds);
+        }
+
+        // 转为图片id为key，PackagePart为value的Map对象
+        Map<String, PackagePart> ret = new HashMap<>();
+        parts.stream().forEach(p->{
+            String path = p.getPartName().getName().substring(4);
+            if(imgMap.containsKey(path)) {
+                Set<String> ids = imgMap.get(path);
+                ids.stream().forEach(id->{
+                    ret.put(id, p);
+                });
+            }
+        });
+        return ret;
+    }
+
 }

@@ -1,12 +1,6 @@
 package com.cat2bug.common.utils.file;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import javax.servlet.http.HttpServletRequest;
@@ -18,6 +12,7 @@ import com.cat2bug.common.utils.DateUtils;
 import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.common.utils.uuid.IdUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.poi.openxml4j.opc.PackagePart;
 
 /**
  * 文件处理工具类
@@ -31,6 +26,41 @@ public class FileUtils
     /**
      * 输出指定文件的byte数组
      * 
+     * @param part Poi文件对象
+     * @return
+     */
+    public static String writePackagePart(PackagePart part) throws IOException {
+        String uploadDir = Cat2BugConfig.getImportPath();
+        int lastIndex = part.getPartName().getName().lastIndexOf("/");
+        String fileName = part.getPartName().getName().substring(lastIndex);
+        String pathName = DateUtils.datePath() + File.separator + IdUtils.fastUUID() + fileName;
+        File file = FileUploadUtils.getAbsoluteFile(uploadDir, pathName);
+        FileUtils.copyInputStreamToFile(part.getInputStream(),file);
+        return FileUploadUtils.getPathFileName(uploadDir, pathName);
+    }
+
+    /**
+     * 拷贝输入流到文件
+     * @param inputStream
+     * @param file
+     * @throws IOException
+     */
+    public static void copyInputStreamToFile(InputStream inputStream, File file) throws IOException {
+        try (FileOutputStream outputStream = new FileOutputStream(file)) {
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+    /**
+     * 输出指定文件的byte数组
+     *
      * @param filePath 文件路径
      * @param os 输出流
      * @return
