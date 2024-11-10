@@ -3,12 +3,12 @@
     <el-form ref="registerForm" :model="registerForm" :rules="registerRules" class="register-form">
       <h3 class="title">{{$t('system-name')}}</h3>
       <el-form-item prop="username">
-        <el-input v-model="registerForm.username" type="text" auto-complete="off" :placeholder="$t('account')">
+        <el-input v-model="registerForm.username" type="text" auto-complete="off" :placeholder="$t('member.please-enter-account')">
           <svg-icon slot="prefix" icon-class="user" class="el-input__icon input-icon" />
         </el-input>
       </el-form-item>
       <el-form-item prop="nickName">
-        <el-input v-model="registerForm.nickName" type="text" auto-complete="off" :placeholder="$t('name')">
+        <el-input v-model="registerForm.nickName" type="text" auto-complete="off" :placeholder="$t('member.please-enter-name')">
           <svg-icon slot="prefix" icon-class="name" class="el-input__icon input-icon" />
         </el-input>
       </el-form-item>
@@ -17,7 +17,7 @@
           v-model="registerForm.phoneNumber"
           type="text"
           auto-complete="off"
-          :placeholder="$t('phone-number')"
+          :placeholder="$t('member.please-enter-phone-number')"
         >
           <svg-icon slot="prefix" icon-class="shoujihao" class="el-input__icon input-icon" />
         </el-input>
@@ -27,7 +27,7 @@
           v-model="registerForm.password"
           type="password"
           auto-complete="off"
-          :placeholder="$t('password')"
+          :placeholder="$t('member.please-enter-password')"
           @keyup.enter.native="handleRegister"
         >
           <svg-icon slot="prefix" icon-class="password" class="el-input__icon input-icon" />
