@@ -128,8 +128,7 @@ public class SysProfileController extends BaseController
         if (!file.isEmpty())
         {
             LoginUser loginUser = getLoginUser();
-//            String avatar = FileUploadUtils.upload(Cat2BugConfig.getAvatarPath(), file, MimeTypeUtils.IMAGE_EXTENSION);
-            String avatar = this.fileService.upload(Cat2BugConfig.getAvatarPath(), file);
+            String avatar = this.fileService.upload(Cat2BugConfig.getAvatarPath(), file, false);
             if (userService.updateUserAvatar(loginUser.getUsername(), avatar))
             {
                 AjaxResult ajax = AjaxResult.success();

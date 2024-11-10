@@ -19,17 +19,17 @@ import java.io.IOException;
 @Service
 public class LocalFileServiceImpl implements IFileService {
     @Override
-    public String upload(String path, MultipartFile file) throws IOException, InvalidExtensionException {
+    public String upload(String path, MultipartFile file, boolean isProjectFile) throws IOException, InvalidExtensionException {
         return FileUploadUtils.upload(path, file, null);
     }
 
     @Override
-    public String uploadPackagePart(PackagePart part) throws IOException {
+    public String uploadPackagePart(PackagePart part, boolean isProjectFile) throws IOException {
         return FileUtils.writePackagePart(part);
     }
 
     @Override
-    public String uploadImportBytes(byte[] data) throws IOException {
+    public String uploadImportBytes(byte[] data, boolean isProjectFile) throws IOException {
         return FileUtils.writeImportBytes(data);
     }
 

@@ -50,7 +50,7 @@ public class FileController
             String filePath = Cat2BugConfig.getUploadPath();
             // 上传并返回新文件名称
 //            String fileName = FileUploadUtils.upload(filePath, file, null);
-            String fileName = this.fileService.upload(filePath, file);
+            String fileName = this.fileService.upload(filePath, file, true);
             // 获取文件扩展名
             String fileExtension = FilenameUtils.getExtension(fileName);
             String url = serverConfig.getUrl() + fileName;

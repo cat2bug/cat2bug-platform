@@ -503,7 +503,7 @@ public class ExcelUtil<T>
                                         try {
                                             byte[] data = img.getData();
                                             IFileService fileService = SpringUtils.getBean(IFileService.class);
-                                            return fileService.uploadImportBytes(data);
+                                            return fileService.uploadImportBytes(data, true);
                                         } catch (IOException e) {
                                             throw new RuntimeException(e);
                                         }
@@ -1929,7 +1929,7 @@ public class ExcelUtil<T>
                 PackagePart part = picturePath.get(imgId);
                 // 写图片到静态资源路径
                 IFileService fileService = SpringUtils.getBean(IFileService.class);
-                return fileService.uploadPackagePart(part);
+                return fileService.uploadPackagePart(part, true);
             }
         }
         return null;

@@ -13,11 +13,11 @@ import java.io.IOException;
  * @Version: 1.0.0
  */
 public interface IFileService {
-    public String upload(String path, MultipartFile file) throws IOException, InvalidExtensionException;
+    public String upload(String path, MultipartFile file, boolean isProjectFile) throws IOException, InvalidExtensionException;
 
-    public String uploadPackagePart(PackagePart part) throws IOException;
+    public String uploadPackagePart(PackagePart part, boolean isProjectFile) throws IOException;
 
-    public String uploadImportBytes(byte[] data) throws IOException;
+    public String uploadImportBytes(byte[] data, boolean isProjectFile) throws IOException;
 
     public void download(HttpServletResponse response, String filePath) throws IOException;
 
