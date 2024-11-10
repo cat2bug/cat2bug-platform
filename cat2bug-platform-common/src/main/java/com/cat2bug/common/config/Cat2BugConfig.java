@@ -123,7 +123,7 @@ public class Cat2BugConfig
         if(StringUtils.isNotBlank(path))
             pathList.add(path);
         pathList.add("import");
-        return File.separator + pathList.stream().collect(Collectors.joining(File.separator));
+        return pathList.stream().collect(Collectors.joining(File.separator));
     }
 
     /**
@@ -141,7 +141,7 @@ public class Cat2BugConfig
         if(StringUtils.isNotBlank(path))
             pathList.add(path);
         pathList.add("avatar");
-        return File.separator + pathList.stream().collect(Collectors.joining(File.separator));
+        return pathList.stream().collect(Collectors.joining(File.separator));
     }
 
     /**
@@ -159,7 +159,7 @@ public class Cat2BugConfig
         if(StringUtils.isNotBlank(path))
             pathList.add(path);
         pathList.add("download");
-        return File.separator + pathList.stream().collect(Collectors.joining(File.separator));
+        return pathList.stream().collect(Collectors.joining(File.separator));
     }
 
     /**
@@ -177,6 +177,6 @@ public class Cat2BugConfig
         if(StringUtils.isNotBlank(path))
             pathList.add(path);
         pathList.add("upload");
-        return File.separator + pathList.stream().collect(Collectors.joining(File.separator));
+        return pathList.stream().collect(Collectors.joining(File.separator));
     }
 }
