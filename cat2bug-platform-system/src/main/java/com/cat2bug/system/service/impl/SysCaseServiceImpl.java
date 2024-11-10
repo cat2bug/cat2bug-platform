@@ -213,7 +213,9 @@ public class SysCaseServiceImpl implements ISysCaseService
             public String apply(SysCase sysCase) {
                 return sysCase.getProjectId()+sysCase.getCaseName()+sysCase.getModuleId();
             }
-        })).values().stream().filter(l->l.size()>1).forEach(l->{
+        })).values().stream()
+                .filter(l->l.size()>1)
+                .sorted(Comparator.comparingInt(l->Integer.valueOf(String.valueOf(l.get(0).getParams().get(NUM_PROPERTY_NAME))))).forEach(l->{
             ExcelImportRowResultVo rr = new ExcelImportRowResultVo();
             rr.setMessages(new ArrayList<>());
             rr.getMessages().add(

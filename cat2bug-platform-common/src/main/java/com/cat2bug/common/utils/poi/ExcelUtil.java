@@ -24,6 +24,8 @@ import eu.bitwalker.useragentutils.Application;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.poi.common.usermodel.HyperlinkType;
 import org.apache.poi.hssf.usermodel.HSSFClientAnchor;
 import org.apache.poi.hssf.usermodel.HSSFPicture;
@@ -46,8 +48,6 @@ import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.*;
 
 import org.openxmlformats.schemas.drawingml.x2006.spreadsheetDrawing.CTMarker;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import com.cat2bug.common.annotation.Excel;
 import com.cat2bug.common.annotation.Excel.ColumnType;
 import com.cat2bug.common.annotation.Excel.Type;
@@ -76,7 +76,7 @@ import org.xml.sax.SAXException;
  */
 public class ExcelUtil<T>
 {
-    private static final Logger log = LoggerFactory.getLogger(ExcelUtil.class);
+    private static final Logger log = LogManager.getLogger(ExcelUtil.class);
 
     public static final String FORMULA_REGEX_STR = "=|-|\\+|@";
 
@@ -298,8 +298,7 @@ public class ExcelUtil<T>
         }
         catch (Exception e)
         {
-            log.error("导入Excel异常{}", e.getMessage());
-            throw new UtilException(e.getMessage());
+            log.error(e);
         }
         finally
         {
@@ -496,8 +495,9 @@ public class ExcelUtil<T>
                         else if (ColumnType.IMAGE_LIST == attr.cellType())
                         {
                             List<String> imgPathList = new ArrayList<>();
-                            if(StringUtils.isNotEmpty(pictures)) {
-                                List<PictureData> images = pictures.get(row.getRowNum() + "_" + entry.getKey());
+                            String key = row.getRowNum() + "_" + entry.getKey();
+                            if(StringUtils.isNotEmpty(pictures) && pictures.containsKey(key)) {
+                                List<PictureData> images = pictures.get(key);
                                 if (images != null && images.size()>0) {
                                     imgPathList.addAll(images.stream().map(img->{
                                         try {
@@ -511,10 +511,14 @@ public class ExcelUtil<T>
                                 }
                             }
                             // 如果返回的对象为空，通过查看嵌入图片方式看看是否可以查找到图片
-                            Cell cell = row.getCell(entry.getKey());
-                            String embedImgPath = writeEmbedImage(embedPictures, cell);
-                            if(StringUtils.isNotBlank(embedImgPath)) {
-                                imgPathList.add(embedImgPath);
+                            if(embedPictures!=null && embedPictures.size()>0) {
+                                Cell cell = row.getCell(entry.getKey());
+                                if (cell != null) {
+                                    String embedImgPath = writeEmbedImage(embedPictures, cell);
+                                    if (StringUtils.isNotBlank(embedImgPath)) {
+                                        imgPathList.add(embedImgPath);
+                                    }
+                                }
                             }
                             if(imgPathList.size()>0) {
                                 val = imgPathList.stream().collect(Collectors.joining(","));
