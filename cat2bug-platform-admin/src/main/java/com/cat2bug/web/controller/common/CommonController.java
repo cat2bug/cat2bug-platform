@@ -6,6 +6,7 @@ import com.cat2bug.common.core.domain.AjaxResult;
 import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.common.utils.file.FileUploadUtils;
 import com.cat2bug.common.utils.file.FileUtils;
+import com.cat2bug.common.utils.file.IFileService;
 import com.cat2bug.common.utils.uuid.UUID;
 import com.cat2bug.framework.config.ServerConfig;
 import com.cat2bug.system.domain.SysTempFile;
@@ -20,6 +21,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
@@ -44,6 +46,9 @@ public class CommonController
     @Autowired
     private ISysTempFileService sysTempFileService;
 
+    @Resource
+    private IFileService fileService;
+
     private static final String FILE_DELIMETER = ",";
 
     /**
@@ -66,10 +71,12 @@ public class CommonController
 
             response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
             FileUtils.setAttachmentResponseHeader(response, realFileName);
-            FileUtils.writeBytes(filePath, response.getOutputStream());
+//            FileUtils.writeBytes(filePath, response.getOutputStream());
+            this.fileService.download(response, filePath);
             if (delete)
             {
-                FileUtils.deleteFile(filePath);
+                this.fileService.delete(filePath);
+//                FileUtils.deleteFile(filePath);
             }
         }
         catch (Exception e)
@@ -89,7 +96,8 @@ public class CommonController
             // 上传文件路径
             String filePath = Cat2BugConfig.getUploadPath();
             // 上传并返回新文件名称
-            String fileName = FileUploadUtils.upload(filePath, file, null);
+//            String fileName = FileUploadUtils.upload(filePath, file, null);
+            String fileName = this.fileService.upload(filePath, file);
             // 获取文件扩展名
             String fileExtension = FilenameUtils.getExtension(fileName);
             String url = serverConfig.getUrl() + fileName;
@@ -107,6 +115,7 @@ public class CommonController
         }
     }
 
+    // TODO 目前用不上
     @PostMapping("/upload/screen-shot")
     public AjaxResult uploadScreenShot(@RequestBody SysTempFile file)
     {
@@ -153,7 +162,8 @@ public class CommonController
             for (MultipartFile file : files)
             {
                 // 上传并返回新文件名称
-                String fileName = FileUploadUtils.upload(filePath, file);
+//                String fileName = FileUploadUtils.upload(filePath, file);
+                String fileName = this.fileService.upload(filePath, file);
                 String url = serverConfig.getUrl() + fileName;
                 urls.add(url);
                 fileNames.add(fileName);
@@ -194,7 +204,8 @@ public class CommonController
             String downloadName = StringUtils.substringAfterLast(downloadPath, "/");
             response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
             FileUtils.setAttachmentResponseHeader(response, downloadName);
-            FileUtils.writeBytes(downloadPath, response.getOutputStream());
+            this.fileService.download(response, downloadPath);
+//            FileUtils.writeBytes(downloadPath, response.getOutputStream());
         }
         catch (Exception e)
         {
