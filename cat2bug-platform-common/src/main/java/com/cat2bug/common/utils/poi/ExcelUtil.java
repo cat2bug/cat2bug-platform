@@ -1,5 +1,6 @@
 package com.cat2bug.common.utils.poi;
 
+import java.beans.beancontext.BeanContext;
 import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -16,6 +17,10 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.*;
 
 import com.cat2bug.common.utils.MessageUtils;
+import com.cat2bug.common.utils.bean.BeanUtils;
+import com.cat2bug.common.utils.file.IFileService;
+import com.cat2bug.common.utils.spring.SpringUtils;
+import eu.bitwalker.useragentutils.Application;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
@@ -497,7 +502,8 @@ public class ExcelUtil<T>
                                     imgPathList.addAll(images.stream().map(img->{
                                         try {
                                             byte[] data = img.getData();
-                                            return FileUtils.writeImportBytes(data);
+                                            IFileService fileService = SpringUtils.getBean(IFileService.class);
+                                            return fileService.uploadImportBytes(data);
                                         } catch (IOException e) {
                                             throw new RuntimeException(e);
                                         }
@@ -1897,7 +1903,7 @@ public class ExcelUtil<T>
 
     /**
      * 写Excel中的嵌入图片到静态资源路径下
-     * @param inputStream
+     * @param picturePath
      * @param cell
      * @return
      * @throws IOException
@@ -1918,7 +1924,8 @@ public class ExcelUtil<T>
                 // 找到匹配的图片
                 PackagePart part = picturePath.get(imgId);
                 // 写图片到静态资源路径
-                return FileUtils.writePackagePart(part);
+                IFileService fileService = SpringUtils.getBean(IFileService.class);
+                return fileService.uploadPackagePart(part);
             }
         }
         return null;

@@ -32,8 +32,8 @@ public class FileUtils
     public static String writePackagePart(PackagePart part) throws IOException {
         String uploadDir = Cat2BugConfig.getImportPath();
         int lastIndex = part.getPartName().getName().lastIndexOf("/");
-        String fileName = part.getPartName().getName().substring(lastIndex);
-        String pathName = DateUtils.datePath() + File.separator + IdUtils.fastUUID() + fileName;
+        String fileName = part.getPartName().getName().substring(lastIndex + 1);
+        String pathName = DateUtils.datePath() + File.separator + IdUtils.fastUUID() + "-" + fileName;
         File file = FileUploadUtils.getAbsoluteFile(uploadDir, pathName);
         FileUtils.copyInputStreamToFile(part.getInputStream(),file);
         return FileUploadUtils.getPathFileName(uploadDir, pathName);

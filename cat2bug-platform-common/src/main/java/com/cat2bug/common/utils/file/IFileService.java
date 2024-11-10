@@ -1,6 +1,7 @@
 package com.cat2bug.common.utils.file;
 
 import com.cat2bug.common.exception.file.InvalidExtensionException;
+import org.apache.poi.openxml4j.opc.PackagePart;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
@@ -13,6 +14,10 @@ import java.io.IOException;
  */
 public interface IFileService {
     public String upload(String path, MultipartFile file) throws IOException, InvalidExtensionException;
+
+    public String uploadPackagePart(PackagePart part) throws IOException;
+
+    public String uploadImportBytes(byte[] data) throws IOException;
 
     public void download(HttpServletResponse response, String filePath) throws IOException;
 

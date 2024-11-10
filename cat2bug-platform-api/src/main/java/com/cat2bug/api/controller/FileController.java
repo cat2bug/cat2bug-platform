@@ -5,6 +5,7 @@ import com.cat2bug.common.core.domain.AjaxResult;
 import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.common.utils.file.FileUploadUtils;
 import com.cat2bug.common.utils.file.FileUtils;
+import com.cat2bug.common.utils.file.IFileService;
 import com.cat2bug.framework.config.ServerConfig;
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
@@ -15,6 +16,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+
+import javax.annotation.Resource;
 
 import static com.cat2bug.common.core.domain.AjaxResult.success;
 
@@ -29,6 +32,8 @@ public class FileController
 {
     @Autowired
     private ServerConfig serverConfig;
+    @Resource
+    private IFileService fileService;
 
     private static final String FILE_DELIMETER = ",";
 
@@ -44,7 +49,8 @@ public class FileController
             // 上传文件路径
             String filePath = Cat2BugConfig.getUploadPath();
             // 上传并返回新文件名称
-            String fileName = FileUploadUtils.upload(filePath, file, null);
+//            String fileName = FileUploadUtils.upload(filePath, file, null);
+            String fileName = this.fileService.upload(filePath, file);
             // 获取文件扩展名
             String fileExtension = FilenameUtils.getExtension(fileName);
             String url = serverConfig.getUrl() + fileName;

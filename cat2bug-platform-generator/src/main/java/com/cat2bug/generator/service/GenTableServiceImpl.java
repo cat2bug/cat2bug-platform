@@ -11,6 +11,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+
+import com.cat2bug.common.utils.file.IFileService;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.velocity.Template;
@@ -37,6 +39,8 @@ import com.cat2bug.generator.util.GenUtils;
 import com.cat2bug.generator.util.VelocityInitializer;
 import com.cat2bug.generator.util.VelocityUtils;
 
+import javax.annotation.Resource;
+
 /**
  * 业务 服务层实现
  * 
@@ -52,6 +56,9 @@ public class GenTableServiceImpl implements IGenTableService
 
     @Autowired
     private GenTableColumnMapper genTableColumnMapper;
+
+    @Resource
+    private IFileService fileService;
 
     /**
      * 查询业务信息

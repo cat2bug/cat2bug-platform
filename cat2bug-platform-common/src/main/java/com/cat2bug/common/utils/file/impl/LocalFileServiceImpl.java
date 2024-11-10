@@ -4,6 +4,7 @@ import com.cat2bug.common.exception.file.InvalidExtensionException;
 import com.cat2bug.common.utils.file.FileUploadUtils;
 import com.cat2bug.common.utils.file.FileUtils;
 import com.cat2bug.common.utils.file.IFileService;
+import org.apache.poi.openxml4j.opc.PackagePart;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -20,6 +21,16 @@ public class LocalFileServiceImpl implements IFileService {
     @Override
     public String upload(String path, MultipartFile file) throws IOException, InvalidExtensionException {
         return FileUploadUtils.upload(path, file, null);
+    }
+
+    @Override
+    public String uploadPackagePart(PackagePart part) throws IOException {
+        return FileUtils.writePackagePart(part);
+    }
+
+    @Override
+    public String uploadImportBytes(byte[] data) throws IOException {
+        return FileUtils.writeImportBytes(data);
     }
 
     @Override
