@@ -1,5 +1,6 @@
 package com.cat2bug.web.controller.system;
 
+import com.cat2bug.common.utils.file.IFileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,6 +24,8 @@ import com.cat2bug.common.utils.file.MimeTypeUtils;
 import com.cat2bug.framework.web.service.TokenService;
 import com.cat2bug.system.service.ISysUserService;
 
+import javax.annotation.Resource;
+
 /**
  * 个人信息 业务处理
  * 
@@ -37,6 +40,9 @@ public class SysProfileController extends BaseController
 
     @Autowired
     private TokenService tokenService;
+
+    @Resource
+    private IFileService fileService;
 
     /**
      * 个人信息
@@ -122,7 +128,8 @@ public class SysProfileController extends BaseController
         if (!file.isEmpty())
         {
             LoginUser loginUser = getLoginUser();
-            String avatar = FileUploadUtils.upload(Cat2BugConfig.getAvatarPath(), file, MimeTypeUtils.IMAGE_EXTENSION);
+//            String avatar = FileUploadUtils.upload(Cat2BugConfig.getAvatarPath(), file, MimeTypeUtils.IMAGE_EXTENSION);
+            String avatar = this.fileService.upload(Cat2BugConfig.getAvatarPath(), file);
             if (userService.updateUserAvatar(loginUser.getUsername(), avatar))
             {
                 AjaxResult ajax = AjaxResult.success();
