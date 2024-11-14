@@ -40,7 +40,7 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item :label="$t('level')" prop="defectLevel">
+            <el-form-item :label="$t('priority')" prop="defectLevel">
               <el-select v-model="form.defectLevel" :placeholder="$t('defect.select-level')">
                 <el-option
                   v-for="dict in dict.type.defect_level"

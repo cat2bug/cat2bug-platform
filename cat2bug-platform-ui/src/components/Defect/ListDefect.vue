@@ -20,7 +20,7 @@
             <el-link type="primary" @click="editDefectHandle(scope.row)">{{ scope.row.defectName }}</el-link>
           </template>
         </el-table-column>
-        <el-table-column :label="$t('level')" align="left" prop="defectLevel" width="100" sortable >
+        <el-table-column :label="$t('priority')" align="left" prop="defectLevel" width="100" sortable >
           <template slot-scope="scope">
             <level-tag :options="dict.type.defect_level" :value="scope.row.defectLevel"/>
           </template>
