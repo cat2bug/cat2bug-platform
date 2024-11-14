@@ -262,7 +262,7 @@ public class SysCaseServiceImpl implements ISysCaseService
                     ExcelImportRowResultVo rr = new ExcelImportRowResultVo();
                     rr.setRowNum(rowNum);
                     rr.setMessages(new ArrayList<>());
-                    rr.getMessages().add("case.data-exists");
+                    rr.getMessages().add(MessageUtils.message("case.data-exists"));
                     rows.add(rr);
                 }
             }
