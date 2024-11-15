@@ -9,6 +9,7 @@
         :before-upload="handleBeforeUpload"
         :limit="limit"
         :on-error="handleUploadError"
+        :before-remove="handleBeforeRemove"
         :on-exceed="handleExceed"
         ref="imageUpload"
         :on-remove="handleDelete"
@@ -56,6 +57,7 @@ import { getToken } from "@/utils/auth";
 import {upload} from "@/api/common/upload";
 import {strFormat} from "@/utils";
 import i18n from "@/utils/i18n/i18n";
+import {delDefect} from "@/api/system/defect";
 
 export default {
   props: {
@@ -215,6 +217,19 @@ export default {
         this.$refs.imageUpload.handleRemove(file);
         this.uploadedSuccessfully();
       }
+    },
+    handleBeforeRemove(file, fileList) {
+      return this.$modal.confirm(
+        this.$i18n.t('is-delete-img'),
+        this.$i18n.t('prompted').toString(),
+        {
+          confirmButtonText: i18n.t('delete').toString(),
+          cancelButtonText: i18n.t('cancel').toString(),
+          confirmButtonClass: 'delete-button',
+          type: "warning"
+        }).then(function() {
+         return true;
+      });
     },
     // 删除图片
     handleDelete(file) {

@@ -786,5 +786,6 @@
   "total": "总数",
   "a": "个",
   "plan.countdown-time-format": "DD天HH小时mm分钟",
-  "plan.countdown-time-title": "距离计划结束还有"
+  "plan.countdown-time-title": "距离计划结束还有",
+  "is-delete-img": "是否确认删除选中的图片?"
 }
