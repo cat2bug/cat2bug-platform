@@ -1,6 +1,8 @@
 package com.cat2bug.system.service.impl;
 
+import java.math.BigDecimal;
 import java.util.*;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -228,6 +230,7 @@ public class SysCaseServiceImpl implements ISysCaseService
         if(rows.size()==0) {
             long num = sysCaseMapper.getCaseMaxNumOfProject(projectId);
             rowNum = 2;
+            List<Integer> repeatRowList = new ArrayList<>(); // 重复的行列表
             for (SysCase c : caseList) {
                 c.setCaseNum(++num);
                 c.setProjectId(projectId);
@@ -254,17 +257,17 @@ public class SysCaseServiceImpl implements ISysCaseService
                 }
                 int count = sysCaseMapper.insertSysCase(c);
                 if(count==0) {
-                    int finalRowNum = rowNum;
-                    Optional<ExcelImportRowResultVo> opt = rows.stream().filter(r->r.getRowNum()== finalRowNum).findFirst();
-                    if(opt.isPresent()) {
-                        opt.get().getMessages().add(MessageUtils.message("case.data-exists"));
-                    }
-                    ExcelImportRowResultVo rr = new ExcelImportRowResultVo();
-                    rr.setRowNum(rowNum);
-                    rr.setMessages(new ArrayList<>());
-                    rr.getMessages().add(MessageUtils.message("case.data-exists"));
-                    rows.add(rr);
+                    repeatRowList.add(rowNum++);
                 }
+            }
+            if(repeatRowList.size()>0) {
+                ExcelImportRowResultVo rr = new ExcelImportRowResultVo();
+                rr.setMessages(
+                        Arrays.asList(
+                            MessageUtils.message("case.data-exists", repeatRowList.stream().map(r->String.valueOf(r)).collect(Collectors.joining("、")))
+                        ));
+                rr.setRowCount(repeatRowList.size());
+                rows.add(rr);
             }
         }
 
@@ -272,8 +275,9 @@ public class SysCaseServiceImpl implements ISysCaseService
         ret.setRows(rows);
         if (rows.size() > 0)
         {
-            ret.setMessage(MessageUtils.message("case.import-exception", rows.size()));
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();  // 手动回滚数据
+            ret.setMessage(MessageUtils.message("case.import-exception",
+                    rows.stream().map(ExcelImportRowResultVo::getRowCount).reduce((a, b)-> a + b).orElse(0)));
         }
         else
         {

@@ -12,5 +12,6 @@ import java.util.List;
 @Data
 public class ExcelImportRowResultVo {
     private Integer rowNum;
+    private Integer rowCount = 1;
     private List<String> messages;
 }
