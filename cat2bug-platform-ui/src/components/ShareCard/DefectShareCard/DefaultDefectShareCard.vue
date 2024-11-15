@@ -83,7 +83,8 @@ export default {
     getDefectUrl: function () {
       return function (id) {
         let mode = this.$router.mode=='hash'?'/#':'';
-        return `${window.location.protocol}//${window.location.host}${mode}/shard/defect?id=${id}`;
+        let basePath = this.$router.options.base?'/'+this.$router.options.base:''
+        return `${window.location.protocol}//${window.location.host}${mode}${basePath}/shard/defect?id=${id}`;
       }
     },
     getUrl: function () {
