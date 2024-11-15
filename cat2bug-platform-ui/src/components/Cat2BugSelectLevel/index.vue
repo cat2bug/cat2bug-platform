@@ -1,5 +1,8 @@
 <template>
-  <el-select popper-class="case-level" v-model="value" placeholder="请选择" @change="changeHandle">
+  <el-select popper-class="case-level" v-model="value" placeholder="请选择" @change="changeHandle" :clearable="clearable">
+    <template v-slot:prefix>
+      <i v-if="icon" class="select-header-icon" :class="icon"></i>
+    </template>
     <el-option
       v-for="item in maxLevel"
       :key="item"
@@ -32,6 +35,14 @@ export default {
     }
   },
   props: {
+    clearable: {
+      type: Boolean,
+      default: false
+    },
+    icon: {
+      type: String,
+      default: null
+    },
     level: {
       type: Number,
       default: 1,
@@ -64,6 +75,9 @@ export default {
 }
 </style>
 <style lang="scss" scoped>
+.select-header-icon {
+  margin-left: 5px;
+}
 .level-explain {
   font-size: 0.7rem;
   color: #C0C4CC;

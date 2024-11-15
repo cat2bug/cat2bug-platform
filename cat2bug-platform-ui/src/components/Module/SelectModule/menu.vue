@@ -4,10 +4,9 @@
       <div v-loading="loading" style="width: 100%;height: 200px;"></div>
     </el-col>
     <el-col class="module-menu-item" :span="24" v-for="(module,index) in moduleList" :key="module.moduleId"
-            @click.native="showSubMenuHandle(module)"
-            @mouseenter.native="mouseEnterHandle(index)"
-            @mouseleave.native="mouseLeaveHandle(index)"
-    >
+      @click.native="showSubMenuHandle(module)"
+      @mouseenter.native="mouseEnterHandle(index)"
+      @mouseleave.native="mouseLeaveHandle(index)">
       <span>{{module.moduleName}}</span>
       <i v-if="module.childrenCount>0" class="el-icon-arrow-right"></i>
       <el-button v-else-if="isEdit" type="text" size="mini" v-show="addButtonVisibleList[index]" @click="addSubMenuHandle($event, module)"><i class="el-icon-plus"></i></el-button>

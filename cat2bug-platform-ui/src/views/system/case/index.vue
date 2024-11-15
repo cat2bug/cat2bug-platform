@@ -24,14 +24,7 @@
           />
         </el-form-item>
         <el-form-item prop="caseLevel">
-          <el-input
-            v-model="queryParams.caseLevel"
-            size="small"
-            prefix-icon="el-icon-s-data"
-            :placeholder="$t('case.please-enter-level')"
-            clearable
-            @input="handleQuery"
-          />
+          <cat2-bug-select-level v-model="queryParams.caseLevel" @change="handleQuery" icon="el-icon-s-data" :clearable="true" />
         </el-form-item>
       </el-form>
 
@@ -228,6 +221,7 @@
 <script>
 import ProjectLabel from "@/components/Project/ProjectLabel";
 import Cat2BugLevel from "@/components/Cat2BugLevel";
+import Cat2BugSelectLevel from "@/components/Cat2BugSelectLevel";
 import Step from "@/views/system/case/components/step";
 import TreeModule from "@/components/Module/TreeModule";
 import { Multipane, MultipaneResizer } from 'vue-multipane';
@@ -248,7 +242,7 @@ const CASE_TABLE_FIELD_LIST_CACHE_KEY='case-table-field-list';
 
 export default {
   name: "Case",
-  components: {ProjectLabel,AddCase,Cat2BugLevel,Step,TreeModule,Multipane,MultipaneResizer,AddDefect,CloudCase,FocusMemberList,Cat2BugPreviewImage},
+  components: {ProjectLabel,AddCase,Cat2BugLevel,Step,TreeModule,Multipane,MultipaneResizer,AddDefect,CloudCase,FocusMemberList,Cat2BugPreviewImage,Cat2BugSelectLevel},
   data() {
     return {
       multipaneStyle: {'--marginTop':'0px'},
@@ -484,6 +478,9 @@ export default {
     },
     /** 搜索按钮操作 */
     handleQuery() {
+      if(this.queryParams.caseNum) {
+        this.queryParams.caseNum=this.queryParams.caseNum.replace(/[^\d]/g,'');
+      }
       this.queryParams.pageNum = 1;
       this.getList();
     },

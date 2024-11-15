@@ -306,7 +306,19 @@ export default {
   created() {
     this.getSystemVersion();
   },
+  mounted() {
+    this.initFloatMenu();
+  },
+  // 移除滚动条监听
+  destroyed() {
+    this.$floatMenu.windowsDestory();
+  },
   methods: {
+    /** 初始化浮动菜单 */
+    initFloatMenu() {
+      this.$floatMenu.windowsInit(document.querySelector('.main-container'));
+      this.$floatMenu.resetMenus([]);
+    },
     goTarget(href) {
       window.open(href, "_blank");
     },

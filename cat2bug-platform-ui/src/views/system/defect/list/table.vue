@@ -204,7 +204,7 @@ export default {
         return {
           pageNum: 1,
           pageSize: 10,
-          orderByColumn: 'updateTime',
+          orderByColumn: 'projectNum',
           isAsc: 'desc',
           defectType: null,
           defectName: null,

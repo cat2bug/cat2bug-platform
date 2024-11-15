@@ -16,6 +16,7 @@
     </div>
     <div class="select-module-menu">
       <module-menu v-for="(moduleId, index) in activeModuleIds"
+                   ref="moduleMenu"
                    :key="moduleId"
                    :module-pid="moduleId"
                    :project-id="projectId"
@@ -94,7 +95,6 @@ export default {
   watch: {
     moduleId: function (newVal, oldVal) {
       if(newVal!=oldVal) {
-        console.log(newVal,oldVal)
         if(newVal) {
           getModule(newVal).then(res=>{
             this.clickMenuHandle(res.data);
@@ -105,15 +105,12 @@ export default {
       }
     }
   },
-  mounted() {
-    if(this.moduleId){
-      getModule(this.moduleId).then(res=>{
-        this.clickMenuHandle(res.data);
-      });
-    }
-  },
   methods: {
     checkPermi,
+    reset() {
+      this.$refs['moduleMenu'][0].open(this.projectId, 0); // 刷新第一级交付物菜单数据
+      this.resetMenu();
+    },
     /** 搜索成员事件 */
     searchChangeHandle() {
       this.$emit('input',this.selectModule.moduleId);
@@ -160,7 +157,7 @@ export default {
         this.isClearButtonVisible = false;
       }
     },
-    /** 清除选择的成员 */
+    /** 清除选择的交付物 */
     clearSelectModuleHandle(event) {
       this.queryMember.params.search=null;
       this.selectModule=null;

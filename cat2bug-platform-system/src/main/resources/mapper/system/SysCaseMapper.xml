@@ -71,7 +71,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                 </foreach>
              </if>
         </where>
-        ORDER BY c.update_time DESC
+        ORDER BY c.case_num DESC
     </select>
 
     <select id="selectSysCaseIdList" parameterType="Long" resultType="java.lang.Long">
@@ -91,7 +91,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         sys_case c
         WHERE
             c.module_id = ids.module_id
-        ORDER BY c.update_time DESC
+        ORDER BY c.case_num DESC
     </select>
 
     <select id="selectSysCaseByCaseName" resultMap="SysCaseResult">

@@ -88,7 +88,11 @@ export default {
   computed: {
     iconUrl() {
       return function (template) {
-        return process.env.VUE_APP_BASE_API + template.templateIconUrl;
+        if(template.templateIconUrl) {
+          return process.env.VUE_APP_BASE_API + template.templateIconUrl;
+        } else {
+          return require('@/assets/images/empty.png')
+        }
       }
     },
   },

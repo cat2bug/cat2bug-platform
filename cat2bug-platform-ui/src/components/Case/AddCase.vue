@@ -37,7 +37,7 @@
         <el-row>
           <el-col :span="12">
             <el-form-item :label="$t('module')" prop="moduleId">
-              <select-module size="medium" v-model="form.moduleId" :project-id="projectId"/>
+              <select-module ref="selectModule" size="medium" v-model="form.moduleId" :project-id="projectId"/>
             </el-form-item>
           </el-col>
           <el-col :span="12">
@@ -283,6 +283,9 @@ export default {
       };
       this.resetForm("form");
       this.caseStepSwitchType = this.getCaseStepSwitchType();
+      this.$nextTick(()=>{
+        this.$refs.selectModule.reset();
+      })
     },
     /** 获取用例步骤面板类型 */
     getCaseStepSwitchType() {
