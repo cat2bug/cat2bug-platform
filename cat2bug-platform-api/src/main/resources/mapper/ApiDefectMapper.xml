@@ -130,8 +130,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 <!--                    d.defect_state=#{state}-->
 <!--                </foreach>-->
 <!--            </if>-->
-            <if test="defect.handleByList != null  and defect.handleByList != ''"> and
-                <foreach collection="defect.handleByList" item="b" separator=" or " open="(" close=")">
+            <if test="defect.handlerList != null  and defect.handlerList != ''"> and
+                <foreach collection="defect.handlerList" item="b" separator=" or " open="(" close=")">
                     JSON_CONTAINS(d.handle_by,CAST(#{b} AS CHAR))
                 </foreach>
             </if>

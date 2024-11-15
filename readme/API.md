@@ -222,7 +222,7 @@ Response返回值：
 | currentLog      | 日志对象 |  是   | 当前最新的缺陷日志                                  |
 | updateTime      | 字符型  |  是   | 更新时间,格式:yyyy-MM-dd HH:mm:ss                |
 
-* handleByList数组中处理人对象的格式说明
+* handlerList数组中处理人对象的格式说明
 
 | 参数名           | 类型  | 是否必返 | 说明       |
 |---------------|:---:|:----:|:---------|
@@ -315,25 +315,25 @@ Response返回值：
 
 * data中缺陷对象的格式说明
 
-| 参数名              |  类型  | 是否必返 | 说明                                         |
-|------------------|:----:|:----:|:-------------------------------------------|
-| defectNum        | 长整型  |  是   | 缺陷编号,每个项目中是唯一值,不同项目中的缺陷编号有可能重复             |
-| defectType       |  整数  |  是   | 缺陷类型(BUG=错误缺陷,TASK=任务,DEMAND=需求)           |
-| defectName       | 字符型  |  是   | 项目名称                                       |
-| defectState      | 字符型  |  是   | 缺陷状态,范围(0=处理中,1=待验证,3=已驳回,4=已关闭            |
-| defectLevel      | 字符型  |  是   | 缺陷等级,范围(URGENT=紧急,HEIGHT=高,MIDDLE=中,LOW=低) |
-| deliverableName  | 字符型  |  否   | 交付物名称,多个层级用/分隔                             |
-| moduleVersion    | 字符型  |  否   | 版本                                         |
-| createTime       |  日期  |  是   | 创建时间                                       |
-| updateTime       |  整数  |  是   | 更新时间                                       |
-| handleByList     | 用户对象 |  否   | 处理人对象集合                                    |
-| imgUrlList       |  数组  |  否   | 缺陷图片路径集合                                   |
-| annexUrlList     |  数组  |  否   | 缺陷附件路径集合                                   |
-| projectName      | 字符型  |  是   | 项目名称                                       |
-| defectGroupKey   | 字符型  |  是   | 缺陷组标识                                      |
-| defectKey        | 字符型  |  是   | 缺陷唯一标识                                     |
-| defectDescribe   | 字符型  |  否   | 缺陷描述                                       |
-| currentLog       | 日志对象 |  是   | 缺陷描述                                       |
+| 参数名             |  类型  | 是否必返 | 说明                                         |
+|-----------------|:----:|:----:|:-------------------------------------------|
+| defectNum       | 长整型  |  是   | 缺陷编号,每个项目中是唯一值,不同项目中的缺陷编号有可能重复             |
+| defectType      |  整数  |  是   | 缺陷类型(BUG=错误缺陷,TASK=任务,DEMAND=需求)           |
+| defectName      | 字符型  |  是   | 项目名称                                       |
+| defectState     | 字符型  |  是   | 缺陷状态,范围(0=处理中,1=待验证,3=已驳回,4=已关闭            |
+| defectLevel     | 字符型  |  是   | 缺陷等级,范围(URGENT=紧急,HEIGHT=高,MIDDLE=中,LOW=低) |
+| deliverableName | 字符型  |  否   | 交付物名称,多个层级用/分隔                             |
+| moduleVersion   | 字符型  |  否   | 版本                                         |
+| createTime      |  日期  |  是   | 创建时间                                       |
+| updateTime      |  整数  |  是   | 更新时间                                       |
+| handlerList     | 用户对象 |  否   | 处理人对象集合                                    |
+| imgUrlList      |  数组  |  否   | 缺陷图片路径集合                                   |
+| annexUrlList    |  数组  |  否   | 缺陷附件路径集合                                   |
+| projectName     | 字符型  |  是   | 项目名称                                       |
+| defectGroupKey  | 字符型  |  是   | 缺陷组标识                                      |
+| defectKey       | 字符型  |  是   | 缺陷唯一标识                                     |
+| defectDescribe  | 字符型  |  否   | 缺陷描述                                       |
+| currentLog      | 日志对象 |  是   | 缺陷描述                                       |
 
 
 * 缺陷状态与缺陷日志状态对应关系
