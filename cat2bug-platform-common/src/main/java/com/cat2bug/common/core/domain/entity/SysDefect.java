@@ -100,6 +100,16 @@ public class SysDefect extends BaseEntity
     @Excel(name = "计划结束时间", i18nNameKey = "plan-end-time", width = 30, dateFormat = "yyyy-MM-dd HH:MM:ss", type = Excel.Type.EXPORT)
     private Date planEndTime;
 
+    /**
+     * 创建人
+     */
+    private SysUser createMember;
+    /**
+     * 创建人姓名
+     */
+    @Excel(name = "创建人", i18nNameKey = "createBy", type = Excel.Type.EXPORT)
+    private String createMemberName;
+
     /** 处理人id */
     private List<Long> handleBy;
 

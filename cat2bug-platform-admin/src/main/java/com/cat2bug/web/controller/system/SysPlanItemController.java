@@ -36,7 +36,7 @@ public class SysPlanItemController extends BaseController
     /**
      * 查询测试计划子项列表
      */
-    @PreAuthorize("@ss.hasPermi('system:plan:run')")
+    @PreAuthorize("@ss.hasPermi('system:plan:run') || @ss.hasPermi('system:plan:edit')")
     @GetMapping("/list")
     public TableDataInfo list(SysPlanItem sysPlanItem)
     {
@@ -48,7 +48,7 @@ public class SysPlanItemController extends BaseController
     /**
      * 查询测试计划子项列表
      */
-    @PreAuthorize("@ss.hasPermi('system:plan:run')")
+    @PreAuthorize("@ss.hasPermi('system:plan:run') || @ss.hasPermi('system:plan:edit')")
     @GetMapping("/case/list")
     public TableDataInfo items(SysCase sysCase)
     {
@@ -60,7 +60,7 @@ public class SysPlanItemController extends BaseController
     /**
      * 查询模块列表
      */
-    @PreAuthorize("@ss.hasPermi('system:plan:run')")
+    @PreAuthorize("@ss.hasPermi('system:plan:run') || @ss.hasPermi('system:plan:edit')")
     @GetMapping("/module/list")
     public AjaxResult list(SysPlanItemModule sysModule)
     {
@@ -84,7 +84,7 @@ public class SysPlanItemController extends BaseController
     /**
      * 获取测试计划子项详细信息
      */
-    @PreAuthorize("@ss.hasPermi('system:plan:run')")
+    @PreAuthorize("@ss.hasPermi('system:plan:run') || @ss.hasPermi('system:plan:edit')")
     @GetMapping(value = "/{planItemId}")
     public AjaxResult getInfo(@PathVariable("planItemId") String planItemId)
     {
@@ -94,7 +94,7 @@ public class SysPlanItemController extends BaseController
     /**
      * 新增测试计划子项
      */
-    @PreAuthorize("@ss.hasPermi('system:plan:run')")
+    @PreAuthorize("@ss.hasPermi('system:plan:run') || @ss.hasPermi('system:plan:edit')")
     @Log(title = "测试计划子项", businessType = BusinessType.INSERT)
     @PostMapping
     public AjaxResult add(@RequestBody SysPlanItem sysPlanItem)
@@ -105,7 +105,7 @@ public class SysPlanItemController extends BaseController
     /**
      * 修改测试计划子项
      */
-    @PreAuthorize("@ss.hasPermi('system:plan:run')")
+    @PreAuthorize("@ss.hasPermi('system:plan:run') || @ss.hasPermi('system:plan:edit')")
     @Log(title = "测试计划子项", businessType = BusinessType.UPDATE)
     @PutMapping
     public AjaxResult edit(@RequestBody SysPlanItem sysPlanItem)
@@ -116,7 +116,7 @@ public class SysPlanItemController extends BaseController
     /**
      * 删除测试计划子项
      */
-    @PreAuthorize("@ss.hasPermi('system:plan:run')")
+    @PreAuthorize("@ss.hasPermi('system:plan:run') || @ss.hasPermi('system:plan:edit')")
     @Log(title = "测试计划子项", businessType = BusinessType.DELETE)
 	@DeleteMapping("/{planItemIds}")
     public AjaxResult remove(@PathVariable String[] planItemIds)

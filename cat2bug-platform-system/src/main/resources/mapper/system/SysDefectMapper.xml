@@ -23,6 +23,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="moduleName"    column="module_name"    />
         <result property="moduleVersion"    column="module_version"    />
         <result property="createBy"    column="create_by"    />
+        <result property="createMember"    column="create_member"   typeHandler="com.cat2bug.system.domain.handle.SysUserTypeHandler"  />
+        <result property="createMemberName"    column="create_member_name"   />
         <result property="createById"    column="create_by_id"    />
         <result property="updateTime"    column="update_time"    />
         <result property="createTime"    column="create_time"    />
@@ -78,6 +80,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             d.plan_start_time,
             d.plan_end_time,
             un.user_infos AS handle_by_list,
+            cm.user_infos AS create_member,
+            cm.nick_name AS create_member_name,
             d.handle_time,
             d.defect_level,
             ud.collect,
@@ -92,6 +96,26 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                             <if test="currentUserId != null ">
                                and ud.user_id = #{currentUserId}
                             </if>
+                LEFT JOIN (
+                    SELECT
+                    d2.defect_id,
+                    u.nick_name,
+                    CONCAT('{"userId":',
+                    CASE WHEN u.user_id IS NOT NULL THEN user_id ELSE 0 END,
+                    ',"nickName":',
+                    CASE WHEN u.nick_name IS NOT NULL THEN CONCAT('"',u.nick_name,'"') ELSE 'null' END,
+                    ',"userName":',
+                    CASE WHEN u.user_name IS NOT NULL THEN CONCAT('"',u.user_name,'"') ELSE 'null' END,
+                    ',"avatar":',
+                    CASE WHEN u.avatar IS NOT NULL THEN CONCAT('"',u.avatar,'"') ELSE 'null' END,
+
+                    '}') AS user_infos
+                    FROM
+                    sys_defect d2
+                    LEFT JOIN sys_user u ON d2.create_by_id = u.user_id
+                    GROUP BY
+                    d2.defect_id
+                ) cm ON cm.defect_id = d.defect_id
                 LEFT JOIN (
                     SELECT
                         d1.defect_id,

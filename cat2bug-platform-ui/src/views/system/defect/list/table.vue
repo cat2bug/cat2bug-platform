@@ -29,7 +29,7 @@
       </div>
     </div>
     <!--表格-->
-    <el-table :key="tableKey" v-loading="loading" style="width:100%;" :data="defectList" @selection-change="handleSelectionChange" @sort-change="sortChangeHandle" @row-click="handleClickTableRow">
+    <el-table ref="defectTable" :key="tableKey" v-loading="loading" style="width:100%;" :data="defectList" @selection-change="handleSelectionChange" @sort-change="sortChangeHandle" @row-click="handleClickTableRow">
 <!--      多选项，后续版本开放 -->
 <!--      <el-table-column width="50" align="start">-->
 <!--        <template #header>-->
@@ -115,6 +115,11 @@
           <span>{{ parseTime(scope.row.updateTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
         </template>
       </el-table-column>
+      <el-table-column v-if="showField('createBy')" :label="$t('createBy')" :key="$t('createBy')" align="center" prop="handleBy">
+        <template slot-scope="scope">
+          <row-list-member :members="[scope.row.createMember]"></row-list-member>
+        </template>
+      </el-table-column>
       <el-table-column v-if="showField('handle-by')" :label="$t('handle-by')" :key="$t('handle-by')" align="center" prop="handleBy">
         <template slot-scope="scope">
           <row-list-member :members="scope.row.handleByList"></row-list-member>
@@ -193,7 +198,7 @@ export default {
       tableShowFieldList: [],
       // 表格里全部列数据集合
       tableAllFieldList: [
-        'id','type','defect.name','priority','state','module','version','plan-start-time','plan-end-time','update-time','handle-by','image','annex'
+        'id','type','defect.name','priority','state','module','version','plan-start-time','plan-end-time','update-time','createBy','handle-by','image','annex'
       ],
     }
   },
