@@ -70,7 +70,7 @@ public class ApiDefectServiceImpl implements IApiDefectService {
     @Override
     public ApiDefect selectSysDefectByDefectNumber(Long number) {
         ApiDefect apiDefect = this.apiDefectMapper.selectSysDefectByDefectNumber(this.getProjectId(), number);
-        if(StringUtils.isNotBlank(apiDefect.getDefectLevel())){
+        if(apiDefect!=null && StringUtils.isNotBlank(apiDefect.getDefectLevel())){
             apiDefect.setDefectLevel(apiDefect.getDefectLevel().toUpperCase());
         }
         return apiDefect;
