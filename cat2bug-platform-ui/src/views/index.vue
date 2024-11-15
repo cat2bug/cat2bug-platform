@@ -274,6 +274,15 @@ export default {
       // 版本号
       version: null,
       tanksMemberList: [{
+        name: '缥缈孤鸿影',
+        avatarUrl: require('@/assets/images/thanks/piaomiaoguhongying.png')
+      },{
+        name: '良才ᝰ Cái',
+        avatarUrl: require('@/assets/images/thanks/liangcai.png')
+      },{
+        name: 'wssdy',
+        avatarUrl: require('@/assets/images/thanks/wssdy.png')
+      },{
         name: '若即若离',
         avatarUrl: require('@/assets/images/thanks/ruojiruoli.jpg')
       },{
@@ -378,6 +387,13 @@ export default {
       margin-inline-start: 0;
       margin-inline-end: 0;
       padding-inline-start: 40px;
+    }
+    > ::v-deep .el-card__body {
+      > .member-avatar {
+        margin-right: 0px !important;
+        width: calc( 100% / 4 );
+        justify-content: start;
+      }
     }
   }
 }

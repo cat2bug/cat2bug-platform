@@ -49,6 +49,7 @@ export default {
 <style lang="scss" scoped>
 .el-avatar {
   border: #FFF 2px solid;
+  flex-shrink: 0;
   +.online {
     position: absolute;
     background-color: #67C23A;
