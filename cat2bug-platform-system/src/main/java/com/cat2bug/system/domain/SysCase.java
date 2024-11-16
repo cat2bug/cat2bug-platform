@@ -87,19 +87,19 @@ public class SysCase extends BaseEntity
     @Excel(name = "前置条件",i18nNameKey = "case.prerequisite", align = HorizontalAlignment.LEFT, width = 50, headerBackgroundColor=IndexedColors.GREY_25_PERCENT)
     private String casePreconditions;
 
-    /** 预期 */
-    @Excel(name = "预期(必填)", i18nNameKey = "case.expected_excel", align = HorizontalAlignment.LEFT, width = 50, headerColor = IndexedColors.RED,headerBackgroundColor=IndexedColors.GREY_25_PERCENT)
-    private String caseExpect;
-
-    @Excel(name = "数据", i18nNameKey = "case.data", width = 50, align = HorizontalAlignment.LEFT, headerBackgroundColor=IndexedColors.GREY_25_PERCENT)
-    private String caseData;
-
     /** 步骤 */
     @Excel(name = "步骤", i18nNameKey = "case.step", width = 50, align = HorizontalAlignment.LEFT, type = Excel.Type.EXPORT, headerBackgroundColor=IndexedColors.GREY_25_PERCENT, handler = com.cat2bug.system.domain.excel.CaseStepAdapter.class)
     private List<SysCaseStep> caseStep;
 
     @Excel(name = "步骤", i18nNameKey = "case.step", width = 50, align = HorizontalAlignment.LEFT, type = Excel.Type.IMPORT, headerBackgroundColor=IndexedColors.GREY_25_PERCENT)
     private String caseStepScript;
+
+    @Excel(name = "数据", i18nNameKey = "case.data", width = 50, align = HorizontalAlignment.LEFT, headerBackgroundColor=IndexedColors.GREY_25_PERCENT)
+    private String caseData;
+
+    /** 预期 */
+    @Excel(name = "预期(必填)", i18nNameKey = "case.expected_excel", align = HorizontalAlignment.LEFT, width = 50, headerColor = IndexedColors.RED,headerBackgroundColor=IndexedColors.GREY_25_PERCENT)
+    private String caseExpect;
 
     /** 图片 */
     @Excel(name = "图片", i18nNameKey = "image", cellType = Excel.ColumnType.IMAGE_LIST, type = Excel.Type.EXPORT, width = 50,height = 50)
