@@ -36,15 +36,15 @@
       </div>
     </div>
 
-    <el-table v-loading="loading" :data="planList">
+    <el-table ref="table" v-loading="loading" :data="planList">
 <!--      <el-table-column type="selection" width="55" align="center" />-->
-      <el-table-column :label="$t('id')" align="center" prop="planNumber" width="80" sortable>
+      <el-table-column :label="$t('id')" align="center" prop="planNumber" width="80" sortable fixed>
         <template slot-scope="scope">
           <span>{{ planNumber(scope.row) }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('plan.name')" align="start" prop="planName" />
-      <el-table-column :label="$t('plan.version')" align="center" prop="planVersion" width="200"/>
+      <el-table-column :label="$t('plan.name')" align="start" prop="planName" min-width="150" fixed />
+      <el-table-column :label="$t('plan.version')" align="center" prop="planVersion" width="100"/>
       <el-table-column :label="$t('plan.time')" align="center" prop="planStartTime" width="260">
         <template slot-scope="scope">
           <div class="col" v-show="scope.row.planStartTime && scope.row.planEndTime">
@@ -71,30 +71,32 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('operate')" align="center" class-name="small-padding fixed-width" width="200">
+      <el-table-column :label="$t('operate')" align="left" class-name="small-padding fixed-width" fixed="right" width="200">
         <template slot-scope="scope">
-          <el-button
-            size="mini"
-            type="text"
-            icon="el-icon-tickets"
-            @click="handlePlanRun(scope.row)"
-            v-hasPermi="['system:plan:run']"
-          >{{ $t('plan.run') }}</el-button>
-          <el-button
-            size="mini"
-            type="text"
-            icon="el-icon-edit"
-            @click="handleUpdate(scope.row)"
-            v-hasPermi="['system:plan:edit']"
-          >{{ $t('modify') }}</el-button>
-          <el-button
-            size="mini"
-            type="text"
-            class="red"
-            icon="el-icon-delete"
-            @click="handleDelete(scope.row)"
-            v-hasPermi="['system:plan:remove']"
-          >{{ $t('delete') }}</el-button>
+          <div class="table-operate">
+            <el-button
+              size="mini"
+              type="text"
+              icon="el-icon-tickets"
+              @click="handlePlanRun(scope.row)"
+              v-hasPermi="['system:plan:run']"
+            >{{ $t('plan.run') }}</el-button>
+            <el-button
+              size="mini"
+              type="text"
+              icon="el-icon-edit"
+              @click="handleUpdate(scope.row)"
+              v-hasPermi="['system:plan:edit']"
+            >{{ $t('modify') }}</el-button>
+            <el-button
+              size="mini"
+              type="text"
+              class="red"
+              icon="el-icon-delete"
+              @click="handleDelete(scope.row)"
+              v-hasPermi="['system:plan:remove']"
+            >{{ $t('delete') }}</el-button>
+          </div>
         </template>
       </el-table-column>
     </el-table>
@@ -161,6 +163,11 @@ export default {
         reportId: null
       },
     };
+  },
+  watch: {
+    "$i18n.locale": function (newVal, oldVal) {
+      this.$refs.table.doLayout();
+    },
   },
   computed: {
     /** 用于显示的用例编号 */
@@ -325,5 +332,8 @@ export default {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+}
+.table-operate {
+  padding-left: 10px;
 }
 </style>

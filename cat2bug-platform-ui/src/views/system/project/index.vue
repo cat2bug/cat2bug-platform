@@ -71,7 +71,7 @@
           <span>{{ parseTime(scope.row.updateTime, '{y}-{m}-{d}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('member')" align="left" prop="members" width="200">
+      <el-table-column :label="$t('member')" align="center" prop="members" width="200">
         <template slot-scope="scope">
           <row-list-member :members="scope.row.listShowMembers" />
         </template>

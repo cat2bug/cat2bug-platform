@@ -54,17 +54,17 @@
 <!--          </div>-->
 <!--        </template>-->
 <!--      </el-table-column>-->
-      <el-table-column v-if="showField('id')" :label="$t('id')" :key="$t('id')" align="left" prop="projectNum" width="80" sortable >
+      <el-table-column v-if="showField('id')" :label="$t('id')" :key="$t('id')" align="left" prop="projectNum" width="80" sortable fixed >
         <template slot-scope="scope">
           <span>{{ '#' + scope.row.projectNum }}</span>
         </template>
       </el-table-column>
-      <el-table-column v-if="showField('type')" :label="$t('type')" :key="$t('type')" align="left" prop="defectTypeName" width="100" sortable>
+      <el-table-column v-if="showField('type')" :label="$t('type')" :key="$t('type')" align="left" prop="defectTypeName" width="100" sortable fixed>
         <template slot-scope="scope">
           <defect-type-flag :defect="scope.row" />
         </template>
       </el-table-column>
-      <el-table-column v-if="showField('defect.name')" :label="$t('defect.name')" :key="$t('defect.name')" align="left" prop="defectName" min-width="200" sortable >
+      <el-table-column v-if="showField('defect.name')" :label="$t('defect.name')" :key="$t('defect.name')" align="left" prop="defectName" min-width="300" sortable fixed>
         <template slot-scope="scope">
           <div class="table-defect-title">
             <focus-member-list
@@ -88,43 +88,18 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column v-if="showField('priority')" :label="$t('priority')" :key="$t('priority')" align="left" prop="defectLevel" width="100" sortable >
+      <el-table-column v-if="showField('priority')" :label="$t('priority')" :key="$t('priority')" align="center" prop="defectLevel" width="100" sortable >
         <template slot-scope="scope">
           <level-tag :options="dict.type.defect_level" :value="scope.row.defectLevel"/>
         </template>
       </el-table-column>
-      <el-table-column v-if="showField('state')" :label="$t('state')" :key="$t('state')" align="left" prop="defectStateName" width="120" sortable>
+      <el-table-column v-if="showField('state')" :label="$t('state')" :key="$t('state')" align="center" prop="defectStateName" width="120" sortable>
         <template slot-scope="scope">
           <defect-state-flag :defect="scope.row" />
         </template>
       </el-table-column>
-      <el-table-column v-if="showField('module')" :label="$t('module')" :key="$t('module')" align="left" prop="moduleName" min-width="100" sortable />
+      <el-table-column v-if="showField('module')" :label="$t('module')" :key="$t('module')" align="left" prop="moduleName" min-width="200" sortable />
       <el-table-column v-if="showField('version')" :label="$t('version')" :key="$t('version')" align="left" prop="moduleVersion" width="100" sortable />
-      <el-table-column v-if="showField('plan-start-time')" :label="$t('plan-start-time')" :key="$t('plan-start-time')" align="left" prop="planStartTime" width="160" sortable >
-        <template slot-scope="scope">
-          <span>{{ parseTime(scope.row.planStartTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column v-if="showField('plan-end-time')" :label="$t('plan-end-time')" :key="$t('plan-end-time')" align="left" prop="planEndTime" width="160" sortable >
-        <template slot-scope="scope">
-          <span>{{ parseTime(scope.row.planEndTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column v-if="showField('update-time')" :label="$t('update-time')" :key="$t('update-time')" align="left" prop="updateTime" width="160" sortable >
-        <template slot-scope="scope">
-          <span>{{ parseTime(scope.row.updateTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column v-if="showField('createBy')" :label="$t('createBy')" :key="$t('createBy')" align="center" prop="handleBy">
-        <template slot-scope="scope">
-          <row-list-member :members="[scope.row.createMember]"></row-list-member>
-        </template>
-      </el-table-column>
-      <el-table-column v-if="showField('handle-by')" :label="$t('handle-by')" :key="$t('handle-by')" align="center" prop="handleBy">
-        <template slot-scope="scope">
-          <row-list-member :members="scope.row.handleByList"></row-list-member>
-        </template>
-      </el-table-column>
       <el-table-column v-if="showField('image')" :label="$t('image')" :key="$t('image')" align="left" prop="imgUrls">
         <template slot-scope="scope">
           <cat2-bug-preview-image :images="getUrl(scope.row.imgUrls)" />
@@ -135,9 +110,34 @@
           <el-button class="annex-link" type="text"  v-for="(file,index) in getUrl(scope.row.annexUrls)" :key="index" @click="handleDown($event, file)">{{getFileName(file)}}</el-button>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('operate')" align="left" class-name="small-padding fixed-width" width="200">
+      <el-table-column v-if="showField('update-time')" :label="$t('update-time')" :key="$t('update-time')" align="left" prop="updateTime" width="160" sortable >
         <template slot-scope="scope">
-          <defect-tools :is-text="true" :defect="scope.row" size="mini" :is-show-icon="true" @delete="refreshSearch" @update="refreshSearch" @log="refreshSearch"></defect-tools>
+          <span>{{ parseTime(scope.row.updateTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column v-if="showField('plan-start-time')" :label="$t('plan-start-time')" :key="$t('plan-start-time')" align="left" prop="planStartTime" width="160" sortable >
+        <template slot-scope="scope">
+          <span>{{ parseTime(scope.row.planStartTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column v-if="showField('plan-end-time')" :label="$t('plan-end-time')" :key="$t('plan-end-time')" align="left" prop="planEndTime" width="160" sortable >
+        <template slot-scope="scope">
+          <span>{{ parseTime(scope.row.planEndTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column v-if="showField('createBy')" :label="$t('createBy')" :key="$t('createBy')" align="center" min-width="160" prop="createMember">
+        <template slot-scope="scope">
+          <row-list-member :members="[scope.row.createMember]"></row-list-member>
+        </template>
+      </el-table-column>
+      <el-table-column v-if="showField('handle-by')" :label="$t('handle-by')" :key="$t('handle-by')" align="center" min-width="160" prop="handleBy">
+        <template slot-scope="scope">
+          <row-list-member :members="scope.row.handleByList"></row-list-member>
+        </template>
+      </el-table-column>
+      <el-table-column :label="$t('operate')" align="left" class-name="small-padding fixed-width" min-width="250" fixed="right">
+        <template slot-scope="scope">
+          <defect-tools class="defect-row-tools" :is-text="true" :defect="scope.row" size="mini" :is-show-icon="true" @delete="refreshSearch" @update="refreshSearch" @log="refreshSearch"></defect-tools>
         </template>
       </el-table-column>
     </el-table>
@@ -198,7 +198,7 @@ export default {
       tableShowFieldList: [],
       // 表格里全部列数据集合
       tableAllFieldList: [
-        'id','type','defect.name','priority','state','module','version','plan-start-time','plan-end-time','update-time','createBy','handle-by','image','annex'
+        'id','type','defect.name','priority','state','module','version','image','annex','update-time','plan-start-time','plan-end-time','createBy','handle-by'
       ],
     }
   },
@@ -307,6 +307,9 @@ export default {
           this.tableShowFieldList.push(f);
         });
       }
+      this.$nextTick(()=>{
+        this.$refs.defectTable.doLayout();
+      });
     },
     /** 排序改变的处理 */
     sortChangeHandle(e) {
@@ -487,5 +490,8 @@ export default {
   white-space: normal;
   text-align: center;
   word-break: break-all;
+}
+.defect-row-tools {
+  margin-left: 10px;
 }
 </style>

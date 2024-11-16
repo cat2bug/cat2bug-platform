@@ -49,12 +49,6 @@
         <el-form-item :label="$t('preconditions')" prop="casePreconditions">
           <el-input type="textarea" v-model="form.casePreconditions" :placeholder="$t('case.please-enter-prerequisite')" maxlength="65535" rows="3" show-word-limit />
         </el-form-item>
-        <el-form-item :label="$t('expect')" prop="caseExpect">
-          <el-input type="textarea" v-model="form.caseExpect" :placeholder="$t('case.please-enter-expectations')" maxlength="65535" rows="3" show-word-limit />
-        </el-form-item>
-        <el-form-item :label="$t('data')" prop="caseData">
-          <el-input type="textarea" v-model="form.caseData" :placeholder="$t('case.please-enter-data')" maxlength="65535" rows="3" show-word-limit />
-        </el-form-item>
         <el-form-item :label="$t('step')" prop="caseStep">
           <template slot="label">
             <div class="form-item-case-step">
@@ -67,6 +61,12 @@
             </div>
           </template>
           <case-step-panel ref="caseStepPanel" v-model="form.caseStep" :panel-type="caseStepSwitchType" />
+        </el-form-item>
+        <el-form-item :label="$t('data')" prop="caseData">
+          <el-input type="textarea" v-model="form.caseData" :placeholder="$t('case.please-enter-data')" maxlength="65535" rows="3" show-word-limit />
+        </el-form-item>
+        <el-form-item :label="$t('expect')" prop="caseExpect">
+          <el-input type="textarea" v-model="form.caseExpect" :placeholder="$t('case.please-enter-expectations')" maxlength="65535" rows="3" show-word-limit />
         </el-form-item>
         <el-form-item :label="$t('remark')" prop="remark">
           <el-input type="textarea" v-model="form.remark" :placeholder="$t('please-enter-remark')" maxlength="255" rows="6" show-word-limit />

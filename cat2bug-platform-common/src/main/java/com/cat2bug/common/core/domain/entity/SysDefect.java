@@ -81,6 +81,18 @@ public class SysDefect extends BaseEntity
     @Excel(name = "版本", i18nNameKey = "version")
     private String moduleVersion;
 
+    /** 图片 */
+    @Excel(name = "图片", i18nNameKey = "image", cellType = Excel.ColumnType.IMAGE_LIST, type = Excel.Type.EXPORT, width = 50,height = 50)
+    private String imgUrls;
+    private String imgList;
+    @Excel(name = "图片", i18nNameKey = "image", cellType = Excel.ColumnType.IMAGE_LIST, type = Excel.Type.IMPORT, width = 50,height = 50)
+    private String imgObjects;
+
+    /** 附件 */
+    @Excel(name = "附件", i18nNameKey = "annex", width = 100,handler = com.cat2bug.common.core.domain.excel.UrlListHandler.class, type = Excel.Type.EXPORT)
+    private String annexUrls;
+    private String annexList;
+
     /** 创建时间 */
     @JsonFormat(pattern = "yyyy-MM-dd HH:MM:ss")
     @Excel(name = "创建时间", i18nNameKey = "create-time", width = 30, dateFormat = "yyyy-MM-dd HH:MM:ss", type = Excel.Type.EXPORT)
@@ -119,18 +131,6 @@ public class SysDefect extends BaseEntity
     /** 处理人名称 */
     @Excel(name = "处理人", i18nNameKey = "handle-by", comboHandler = com.cat2bug.common.core.domain.excel.MemberComboHandlerAdapter.class)
     private String handleByNames;
-
-    /** 图片 */
-    @Excel(name = "图片", i18nNameKey = "image", cellType = Excel.ColumnType.IMAGE_LIST, type = Excel.Type.EXPORT, width = 50,height = 50)
-    private String imgUrls;
-    private String imgList;
-    @Excel(name = "图片", i18nNameKey = "image", cellType = Excel.ColumnType.IMAGE_LIST, type = Excel.Type.IMPORT, width = 50,height = 50)
-    private String imgObjects;
-
-    /** 附件 */
-    @Excel(name = "附件", i18nNameKey = "annex", width = 100,handler = com.cat2bug.common.core.domain.excel.UrlListHandler.class, type = Excel.Type.EXPORT)
-    private String annexUrls;
-    private String annexList;
 
     /** 项目id */
     private Long projectId;

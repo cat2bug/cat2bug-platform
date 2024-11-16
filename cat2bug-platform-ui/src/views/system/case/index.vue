@@ -100,14 +100,14 @@
       <multipane-resizer :style="multipaneStyle"></multipane-resizer>
 <!--      用例列表-->
       <div ref="caseContext" class="case-context">
-        <el-table v-loading="loading" :data="caseList" @selection-change="handleSelectionChange" @row-click="handleUpdate" v-resize="setDragComponentSize">
-          <el-table-column type="selection" width="50" align="center" />
-          <el-table-column v-if="showField('id')" :label="$t('id')" align="center" prop="caseNum" width="80" sortable>
+        <el-table ref="table" v-loading="loading" :data="caseList" @selection-change="handleSelectionChange" @row-click="handleUpdate" v-resize="setDragComponentSize">
+          <el-table-column type="selection" width="50" align="center" fixed />
+          <el-table-column v-if="showField('id')" :label="$t('id')" align="center" prop="caseNum" width="80" sortable fixed>
             <template slot-scope="scope">
               <span>{{ caseNumber(scope.row) }}</span>
             </template>
           </el-table-column>
-          <el-table-column v-if="showField('case.name')" :label="$t('case.name')" align="left" prop="caseName" min-width="150" sortable>
+          <el-table-column v-if="showField('case.name')" :label="$t('case.name')" align="left" prop="caseName" min-width="150" sortable fixed>
             <template slot-scope="scope">
               <div class="table-case-title">
 <!--                <focus-member-list-->
@@ -126,13 +126,13 @@
             </template>
           </el-table-column>
           <el-table-column v-if="showField('preconditions')" :label="$t('preconditions')" align="left" prop="casePreconditions" min-width="150" sortable />
-          <el-table-column v-if="showField('expect')" :label="$t('expect')" align="left" prop="caseExpect" min-width="150" sortable />
-          <el-table-column v-if="showField('data')" :label="$t('data')" align="left" prop="caseData" min-width="150" sortable />
           <el-table-column v-if="showField('step')" :label="$t('step')" align="left" prop="caseStep" width="300" sortable>
             <template slot-scope="scope">
               <step :steps="scope.row.caseStep" style="max-width: 300px;" />
             </template>
           </el-table-column>
+          <el-table-column v-if="showField('data')" :label="$t('data')" align="left" prop="caseData" min-width="150" sortable />
+          <el-table-column v-if="showField('expect')" :label="$t('expect')" align="left" prop="caseExpect" min-width="150" sortable />
           <el-table-column v-if="showField('image')" :label="$t('image')" :key="$t('image')" align="center" prop="imgUrls" width="100">
             <template slot-scope="scope">
               <cat2-bug-preview-image :images="getUrl(scope.row.imgUrls)" />
@@ -155,8 +155,9 @@
               <p class="table-font table-font-green" @click="handleGoDefect($event, scope.row, $t('CLOSED'),[4])">{{ $t('CLOSED') }}:{{ scope.row.defectCloseCount }}</p>
             </template>
           </el-table-column>
-          <el-table-column :label="$t('operate')" align="center" class-name="small-padding fixed-width">
+          <el-table-column :label="$t('operate')" align="left" class-name="small-padding fixed-width" fixed="right" min-width="150">
             <template slot-scope="scope">
+              <div class="case-table-operate">
               <el-button
                 size="small"
                 type="text"
@@ -172,6 +173,7 @@
                 @click="handleDelete($event,scope.row)"
                 v-hasPermi="['system:case:remove']"
               >{{ $t('delete') }}</el-button>
+              </div>
             </template>
           </el-table-column>
         </el-table>
@@ -441,6 +443,7 @@ export default {
           this.checkedFieldList.push(f);
         });
       }
+      this.$refs.table.doLayout();
     },
     /** 测试用例列表属性字段改变操作 */
     checkedFieldListChange(field) {
@@ -733,5 +736,8 @@ export default {
   }
   .table-font-green {
     color: rgb(103, 194, 58);
+  }
+  .case-table-operate {
+    padding-left: 10px;
   }
 </style>
