@@ -199,33 +199,41 @@
             </div>
           </div>
           <el-table ref="planItemTable" v-loading="loading" :data="planItemList" v-resize="setDragComponentSize">
-            <el-table-column v-if="showField('id')" :label="$t('id')" align="left" prop="caseNum" width="80" sortable>
+            <el-table-column v-if="showField('id')" :label="$t('id')" align="left" prop="caseNum" width="80" sortable fixed>
               <template slot-scope="scope">
                 <span>{{ caseNumber(scope.row) }}</span>
               </template>
             </el-table-column>
-            <el-table-column v-if="showField('title')" :label="$t('title')" align="left" prop="caseName" sortable>
+            <el-table-column v-if="showField('title')" :label="$t('title')" align="left" prop="caseName" min-width="200" sortable fixed>
               <template slot-scope="scope">
                 <div class="table-case-title">
                   <el-link v-if="checkPermi(['system:case:edit'])" type="primary" @click="handleOpenEditCase(scope.row)">{{ scope.row.caseName }}</el-link>
-                  <span v-else>{{ scope.row.caseName }}</span>
+                  <cat2-bug-text v-else v-model="scope.row.caseName" :tooltip="scope.row.caseName" />
                 </div>
               </template>
             </el-table-column>
-            <el-table-column v-if="showField('module')" :label="$t('module')" align="left" prop="moduleName" sortable />
+            <el-table-column v-if="showField('module')" :label="$t('module')" align="left" prop="moduleName" sortable min-width="150" />
             <el-table-column v-if="showField('level')" :label="$t('level')" align="left" prop="caseLevel" sortable width="80">
               <template slot-scope="scope">
                 <cat2-bug-level :level="scope.row.caseLevel" />
               </template>
             </el-table-column>
-            <el-table-column v-if="showField('preconditions')" :label="$t('preconditions')" align="left" prop="casePreconditions" sortable />
-            <el-table-column v-if="showField('expect')" :label="$t('expect')" align="left" prop="caseExpect" sortable />
-            <el-table-column v-if="showField('step')" :label="$t('step')" align="left" prop="caseStep" sortable>
+            <el-table-column v-if="showField('preconditions')" :label="$t('preconditions')" align="left" prop="casePreconditions" min-width="250" sortable>
               <template slot-scope="scope">
-                <step :steps="scope.row.caseStep" />
+                <cat2-bug-text v-model="scope.row.casePreconditions" :tooltip="scope.row.casePreconditions" />
               </template>
             </el-table-column>
-            <el-table-column v-if="showField('image')" :label="$t('image')" :key="$t('image')" align="center" prop="imgUrls" width="100">
+            <el-table-column v-if="showField('step')" :label="$t('step')" align="left" prop="caseStep" width="300" sortable>
+              <template slot-scope="scope">
+                <step :steps="scope.row.caseStep" style="width: 300px;" />
+              </template>
+            </el-table-column>
+            <el-table-column v-if="showField('expect')" :label="$t('expect')" align="left" prop="caseExpect" min-width="250" sortable>
+              <template slot-scope="scope">
+                <cat2-bug-text v-model="scope.row.caseExpect" :tooltip="scope.row.caseExpect" />
+              </template>
+            </el-table-column>
+            <el-table-column v-if="showField('image')" :label="$t('image')" :key="$t('image')" align="left" prop="imgUrls" width="100">
               <template slot-scope="scope">
                 <cat2-bug-preview-image :images="getUrl(scope.row.imgUrls)" />
               </template>
@@ -242,7 +250,7 @@
                 <dict-tag :options="dict.type.plan_item_state" :value="scope.row.planItemState"/>
               </template>
             </el-table-column>
-            <el-table-column v-if="showField('updateBy')" :label="$t('updateBy')" align="center" prop="updateBy" sortable width="100">
+            <el-table-column v-if="showField('updateBy')" :label="$t('updateBy')" align="center" prop="updateBy" sortable width="120">
               <template slot-scope="scope">
                 <row-list-member :members="member(scope.row)"></row-list-member>
               </template>
@@ -252,7 +260,7 @@
                 <span>{{ parseTime(scope.row.updateTime, '{y}-{m}-{d}') }}</span>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('operate')" align="start" class-name="small-padding fixed-width">
+            <el-table-column :label="$t('operate')" align="start" class-name="small-padding fixed-width" fixed="right" width="200">
               <template slot-scope="scope">
                 <el-button
                   size="small"
@@ -316,6 +324,7 @@
 
 <script>
 import Cat2BugLevel from "@/components/Cat2BugLevel";
+import Cat2BugText from "@/components/Cat2BugText";
 import RowListMember from "@/components/RowListMember";
 import Step from "@/views/system/case/components/step";
 import TreePlanItemModule from "@/views/system/plan/TreePlanItemModule";
@@ -340,7 +349,7 @@ const PLAN_ITEM_STATE_NOT_PASS = 'not_pass';
 export default {
   name: "AddPlanDialog",
   dicts: ['plan_item_state'],
-  components: { Cat2BugLevel,Step,TreePlanItemModule,Multipane,MultipaneResizer, FocusMemberList, Cat2BugPreviewImage, AddDefect, HandleDefect, AddCase, RowListMember, DefectStateFlag },
+  components: { Cat2BugLevel,Step,TreePlanItemModule,Multipane,MultipaneResizer, FocusMemberList, Cat2BugPreviewImage, AddDefect, HandleDefect, AddCase, RowListMember, DefectStateFlag, Cat2BugText },
   data() {
     return {
       // 动态样式

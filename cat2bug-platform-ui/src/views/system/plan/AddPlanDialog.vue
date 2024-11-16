@@ -35,34 +35,42 @@
         <!--      用例列表-->
         <div ref="caseContext" class="case-context">
           <el-table ref="planItemTable" v-loading="loading" :data="caseList" v-resize="setDragComponentSize" @select="handleSelectionChange" @select-all="handleAllSelectionChange">
-            <el-table-column type="selection" width="50" align="center" />
-            <el-table-column :label="$t('id')" align="left" prop="caseNum" width="80" sortable>
+            <el-table-column type="selection" width="50" align="center" fixed />
+            <el-table-column :label="$t('id')" align="left" prop="caseNum" width="80" sortable fixed>
               <template slot-scope="scope">
                 <span>{{ caseNumber(scope.row) }}</span>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('title')" align="left" prop="caseName" sortable>
+            <el-table-column :label="$t('title')" align="left" prop="caseName" min-width="200" sortable fixed>
               <template slot-scope="scope">
                 <div class="table-case-title">
-                  <focus-member-list
-                    v-model="scope.row.focusList"
-                    module-name="case"
-                    :data-id="scope.row.caseId" />
-                  <span>{{ scope.row.caseName }}</span>
+<!--                  <focus-member-list-->
+<!--                    v-model="scope.row.focusList"-->
+<!--                    module-name="case"-->
+<!--                    :data-id="scope.row.caseId" />-->
+                  <cat2-bug-text v-model="scope.row.caseName" :tooltip="scope.row.caseName" />
                 </div>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('module')" align="left" prop="moduleName" sortable />
+            <el-table-column :label="$t('module')" align="left" prop="moduleName" min-width="150" sortable />
             <el-table-column :label="$t('level')" align="left" prop="caseLevel" sortable width="80">
               <template slot-scope="scope">
                 <cat2-bug-level :level="scope.row.caseLevel" />
               </template>
             </el-table-column>
-            <el-table-column :label="$t('preconditions')" align="left" prop="casePreconditions" sortable />
-            <el-table-column :label="$t('expect')" align="left" prop="caseExpect" sortable />
-            <el-table-column :label="$t('step')" align="left" prop="caseStep" sortable>
+            <el-table-column :label="$t('preconditions')" align="left" prop="casePreconditions" min-width="250" sortable >
               <template slot-scope="scope">
-                <step :steps="scope.row.caseStep" />
+                <cat2-bug-text v-model="scope.row.casePreconditions" :tooltip="scope.row.casePreconditions" />
+              </template>
+            </el-table-column>
+            <el-table-column :label="$t('step')" align="left" prop="caseStep" width="300" sortable>
+              <template slot-scope="scope">
+                <step :steps="scope.row.caseStep" style="width: 300px;" />
+              </template>
+            </el-table-column>
+            <el-table-column :label="$t('expect')" align="left" prop="caseExpect" min-width="250" sortable >
+              <template slot-scope="scope">
+                <cat2-bug-text v-model="scope.row.caseExpect" :tooltip="scope.row.caseExpect" />
               </template>
             </el-table-column>
           </el-table>
@@ -86,6 +94,7 @@
 
 <script>
 import Cat2BugLevel from "@/components/Cat2BugLevel";
+import Cat2BugText from "@/components/Cat2BugText";
 import Step from "@/views/system/case/components/step";
 import TreeModule from "@/components/Module/TreeModule";
 import FocusMemberList from "@/components/FocusMemberList";
@@ -100,7 +109,7 @@ const TREE_MODULE_WIDTH_CACHE_KEY = 'plan_case_tree_module_width';
 export default {
   name: "AddPlanDialog",
   dicts: ['plan_item_state'],
-  components: { Cat2BugLevel,Step,TreeModule,Multipane,MultipaneResizer, FocusMemberList, Cat2BugPreviewImage },
+  components: { Cat2BugLevel,Step,TreeModule,Multipane,MultipaneResizer, FocusMemberList, Cat2BugPreviewImage,Cat2BugText },
   data() {
     return {
       multipaneStyle: {'--marginTop':'0px'},
