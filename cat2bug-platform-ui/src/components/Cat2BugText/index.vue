@@ -2,7 +2,8 @@
   <div>
     <el-tooltip class="item" effect="dark" :placement="tooltipPosition">
       <div slot="content"><div v-html="text(tooltip)"></div></div>
-      <div class="cat2bug-text-content" v-html="text(content)"></div>
+      <el-link v-if="type=='link'" v-html="text(content)" @click="handleClick" type="primary" ></el-link>
+      <div v-else-if="type=='text'" class="cat2bug-text-content" v-html="text(content)"></div>
     </el-tooltip>
   </div>
 </template>
@@ -26,6 +27,10 @@ export default {
     tooltipPosition: {
       type: String,
       default: 'top-start'
+    },
+    type: {
+      type: String,
+      default: 'text'
     }
   },
   computed: {
@@ -33,6 +38,12 @@ export default {
       return function (value) {
         return value.replace('\n', '<br />');
       }
+    }
+  },
+  methods: {
+    handleClick(e) {
+      this.$emit('click');
+      e.stopPropagation();
     }
   }
 }
@@ -45,6 +56,5 @@ export default {
   -webkit-line-clamp: 3;
   overflow: hidden;
   text-overflow: ellipsis;
-  cursor: pointer;
 }
 </style>

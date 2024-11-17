@@ -452,7 +452,9 @@ export default {
           this.checkedFieldList.push(f);
         });
       }
-      this.$refs.table.doLayout();
+      this.$nextTick(()=>{
+        this.$refs.table.doLayout();
+      });
     },
     /** 测试用例列表属性字段改变操作 */
     checkedFieldListChange(field) {

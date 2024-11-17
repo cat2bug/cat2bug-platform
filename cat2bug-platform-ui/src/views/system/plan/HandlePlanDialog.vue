@@ -207,8 +207,7 @@
             <el-table-column v-if="showField('title')" :label="$t('title')" align="left" prop="caseName" min-width="200" sortable fixed>
               <template slot-scope="scope">
                 <div class="table-case-title">
-                  <el-link v-if="checkPermi(['system:case:edit'])" type="primary" @click="handleOpenEditCase(scope.row)">{{ scope.row.caseName }}</el-link>
-                  <cat2-bug-text v-else v-model="scope.row.caseName" :tooltip="scope.row.caseName" />
+                  <cat2-bug-text :type="checkPermi(['system:case:edit'])?'link':'text'" v-model="scope.row.caseName" :tooltip="scope.row.caseName"  @click="handleOpenEditCase(scope.row)" />
                 </div>
               </template>
             </el-table-column>

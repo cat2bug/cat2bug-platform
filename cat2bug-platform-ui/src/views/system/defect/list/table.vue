@@ -64,7 +64,7 @@
           <defect-type-flag :defect="scope.row" />
         </template>
       </el-table-column>
-      <el-table-column v-if="showField('defect.name')" :label="$t('defect.name')" :key="$t('defect.name')" align="left" prop="defectName" min-width="300" sortable fixed>
+      <el-table-column v-if="showField('defect.name')" :label="$t('defect.name')" :key="$t('defect.name')" align="left" prop="defectName" width="300" sortable fixed>
         <template slot-scope="scope">
           <div class="table-defect-title">
             <focus-member-list

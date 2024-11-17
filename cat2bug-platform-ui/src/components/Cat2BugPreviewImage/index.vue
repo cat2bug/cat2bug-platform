@@ -1,12 +1,12 @@
 <template>
-  <div @click="handleClickPreview">
+  <div @click="handleClickPreview" class="cat2bug-preview-image">
     <div v-if="imageCount==1">
       <el-image
         v-for="(img,index) in images"
         :key="index"
         @click="handleClickPreview"
         @close="handleViewClose"
-        :style="`width: ${width}px;height: ${height}px;`"
+        :style="`width: 60px;height: 60px;`"
         :src="img"
         class="click"
         :preview-src-list="images"
@@ -17,6 +17,7 @@
       v-else-if="imageCount>1"
       placement="left"
       trigger="hover"
+      popper-class="cat2bug-preview-image-popover"
       >
       <div class="row-image">
         <el-image
@@ -31,7 +32,7 @@
           fit="contain"
         ></el-image>
       </div>
-      <div slot="reference" class="preview" :style="`width: ${width}px;height: ${height}px;`">
+      <div slot="reference" class="preview" :style="`width: 60px;height: 60px;`">
         <el-image
           class="button"
           @click="handleClickPreview"
@@ -62,11 +63,11 @@ export default {
     },
     width: {
       type: Number,
-      default: 60
+      default: 100
     },
     height: {
       type: Number,
-      default: 60
+      default: 100
     }
   },
   computed: {
@@ -128,5 +129,10 @@ export default {
 }
 .click:hover {
   scale: 1.2;
+}
+.cat2bug-preview-image {
+  ::v-deep .el-popover__reference-wrapper {
+    display: inline-flex;
+  }
 }
 </style>
