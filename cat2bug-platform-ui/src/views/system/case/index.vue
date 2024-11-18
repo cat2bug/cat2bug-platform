@@ -141,14 +141,16 @@
               <cat2-bug-text v-model="scope.row.caseExpect" :tooltip="scope.row.caseExpect" />
             </template>
           </el-table-column>
-          <el-table-column v-if="showField('image')" :label="$t('image')" :key="$t('image')" align="center" prop="imgUrls" width="100">
+          <el-table-column v-if="showField('image')" :label="$t('image')" :key="$t('image')" align="center" prop="imgUrls" width="80">
             <template slot-scope="scope">
               <cat2-bug-preview-image :images="getUrl(scope.row.imgUrls)" />
             </template>
           </el-table-column>
-          <el-table-column v-if="showField('annex')" :label="$t('annex')" :key="$t('annex')" align="left" prop="annexUrls">
+          <el-table-column v-if="showField('annex')" :label="$t('annex')" :key="$t('annex')" align="left" prop="annexUrls" min-width="300">
             <template slot-scope="scope">
-              <el-button class="annex-link" type="text"  v-for="(file,index) in getUrl(scope.row.annexUrls)" :key="index" @click="handleDown($event, file)">{{getFileName(file)}}</el-button>
+              <div class="annex-list">
+                <cat2-bug-text :content="file" type="down" :tooltip="file" v-for="(file,index) in getUrl(scope.row.annexUrls)" :key="index" />
+              </div>
             </template>
           </el-table-column>
           <el-table-column v-if="showField('update-time')" :label="$t('update-time')" align="left" prop="updateTime" width="150" sortable>
@@ -339,13 +341,6 @@ export default {
         return imgs.map(i=>{
           return process.env.VUE_APP_BASE_API + i;
         })
-      }
-    },
-    getFileName: function () {
-      return function (url) {
-        if(!url) return null;
-        let arr = url.split('\/');
-        return arr[arr.length-1];
       }
     },
   },
@@ -750,5 +745,17 @@ export default {
   }
   .case-table-operate {
     padding-left: 10px;
+  }
+  .annex-list {
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    > *:last-child {
+      border-bottom: 0px;
+    }
+    > * {
+      border-bottom: 1px dashed #E4E7ED;
+    }
   }
 </style>

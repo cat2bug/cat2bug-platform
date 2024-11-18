@@ -227,24 +227,25 @@
                 <step :steps="scope.row.caseStep" style="width: 300px;" />
               </template>
             </el-table-column>
+            <el-table-column v-if="showField('data')" :label="$t('data')" class-name="fixed-width" align="left" prop="caseData" min-width="250" sortable />
             <el-table-column v-if="showField('expect')" :label="$t('expect')" align="left" prop="caseExpect" min-width="250" sortable>
               <template slot-scope="scope">
                 <cat2-bug-text v-model="scope.row.caseExpect" :tooltip="scope.row.caseExpect" />
               </template>
             </el-table-column>
-            <el-table-column v-if="showField('image')" :label="$t('image')" :key="$t('image')" align="left" prop="imgUrls" width="100">
+            <el-table-column v-if="showField('image')" :label="$t('image')" :key="$t('image')" align="center" prop="imgUrls" width="100">
               <template slot-scope="scope">
                 <cat2-bug-preview-image :images="getUrl(scope.row.imgUrls)" />
               </template>
             </el-table-column>
-            <el-table-column v-if="showField('annex')" :label="$t('annex')" :key="$t('annex')" align="left" prop="annexUrls">
+            <el-table-column v-if="showField('annex')" :label="$t('annex')" :key="$t('annex')" align="left" prop="annexUrls" min-width="300">
               <template slot-scope="scope">
-                <div class="annex-link-plan">
-                  <el-button class="annex-link" type="text"  v-for="(file,index) in getUrl(scope.row.annexUrls)" :key="index" @click="handleDown($event, file)" :title="getFileName(file)">{{getFileName(file)}}</el-button>
+                <div class="annex-list">
+                  <cat2-bug-text :content="file" type="down" :tooltip="file" v-for="(file,index) in getUrl(scope.row.annexUrls)" :key="index" />
                 </div>
               </template>
             </el-table-column>
-            <el-table-column v-if="showField('state')" :label="$t('state')" align="left" prop="planItemState" sortable>
+            <el-table-column v-if="showField('state')" :label="$t('state')" align="center" prop="planItemState" sortable>
               <template slot-scope="scope">
                 <dict-tag :options="dict.type.plan_item_state" :value="scope.row.planItemState"/>
               </template>
@@ -469,7 +470,7 @@ export default {
     /** 设置列表显示的属性字段 */
     setFieldList() {
       this.fieldList = [
-        'id','title','module','level', 'preconditions','expect','step','image','annex', 'state', 'updateBy','update-time'
+        'id','title','module','level', 'preconditions','step','data','expect','image','annex', 'state', 'updateBy','update-time'
       ];
 
       const fieldList = this.$cache.local.get(PLAN_ITEM_TABLE_FIELD_LIST_CACHE_KEY);
@@ -888,18 +889,16 @@ export default {
 .click:hover {
   cursor: pointer;
 }
-.annex-link-plan {
-  width: 100%;
+.annex-list {
   display: inline-flex;
   flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  > *:last-child {
+    border-bottom: 0px;
+  }
   > * {
-    padding: 5px;
-    margin: 0px;
-    width: 100%;
-    text-align: start;
-    white-space: nowrap; /* 确保文本在一行内显示 */
-    overflow: hidden; /* 隐藏超出容器的文本 */
-    text-overflow: ellipsis;
+    border-bottom: 1px dashed #E4E7ED;
   }
 }
 </style>

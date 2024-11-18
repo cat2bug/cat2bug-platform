@@ -100,14 +100,16 @@
       </el-table-column>
       <el-table-column v-if="showField('module')" :label="$t('module')" :key="$t('module')" align="left" prop="moduleName" min-width="200" sortable />
       <el-table-column v-if="showField('version')" :label="$t('version')" :key="$t('version')" align="left" prop="moduleVersion" width="100" sortable />
-      <el-table-column v-if="showField('image')" :label="$t('image')" :key="$t('image')" align="left" prop="imgUrls">
+      <el-table-column v-if="showField('image')" :label="$t('image')" :key="$t('image')" align="center" prop="imgUrls" width="80">
         <template slot-scope="scope">
           <cat2-bug-preview-image :images="getUrl(scope.row.imgUrls)" />
         </template>
       </el-table-column>
-      <el-table-column v-if="showField('annex')" :label="$t('annex')" :key="$t('annex')" align="left" prop="annexUrls">
+      <el-table-column v-if="showField('annex')" :label="$t('annex')" :key="$t('annex')" align="left" prop="annexUrls" min-width="300">
         <template slot-scope="scope">
-          <el-button class="annex-link" type="text"  v-for="(file,index) in getUrl(scope.row.annexUrls)" :key="index" @click="handleDown($event, file)">{{getFileName(file)}}</el-button>
+          <div class="annex-list">
+            <cat2-bug-text :content="file" type="down" :tooltip="file" v-for="(file,index) in getUrl(scope.row.annexUrls)" :key="index" />
+          </div>
         </template>
       </el-table-column>
       <el-table-column v-if="showField('update-time')" :label="$t('update-time')" :key="$t('update-time')" align="left" prop="updateTime" width="160" sortable >
@@ -154,6 +156,7 @@
 
 <script>
 import LevelTag from "@/components/LevelTag";
+import Cat2BugText from "@/components/Cat2BugText";
 import RowListMember from "@/components/RowListMember";
 import Cat2BugPreviewImage from "@/components/Cat2BugPreviewImage";
 import FocusMemberList from "@/components/FocusMemberList";
@@ -169,7 +172,7 @@ const DEFECT_TABLE_FIELD_LIST_CACHE_KEY='defect-table-field-list';
 export default {
   name: "DefectTable",
   dicts: ['defect_level'],
-  components: {RowListMember, Cat2BugPreviewImage, LevelTag, FocusMemberList, DefectTypeFlag, DefectStateFlag, DefectTools},
+  components: {RowListMember, Cat2BugPreviewImage, LevelTag, FocusMemberList, DefectTypeFlag, DefectStateFlag, DefectTools, Cat2BugText},
   data() {
     return {
       // 是否选择了所有
@@ -493,5 +496,17 @@ export default {
 }
 .defect-row-tools {
   margin-left: 10px;
+}
+.annex-list {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  > *:last-child {
+    border-bottom: 0px;
+  }
+  > * {
+    border-bottom: 1px dashed #E4E7ED;
+  }
 }
 </style>

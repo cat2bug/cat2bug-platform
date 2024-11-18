@@ -68,9 +68,22 @@
                 <step :steps="scope.row.caseStep" style="width: 300px;" />
               </template>
             </el-table-column>
+            <el-table-column :label="$t('data')" align="left" prop="caseData" min-width="250" sortable />
             <el-table-column :label="$t('expect')" align="left" prop="caseExpect" min-width="250" sortable >
               <template slot-scope="scope">
                 <cat2-bug-text v-model="scope.row.caseExpect" :tooltip="scope.row.caseExpect" />
+              </template>
+            </el-table-column>
+            <el-table-column :label="$t('image')" :key="$t('image')" align="center" prop="imgUrls" width="100">
+              <template slot-scope="scope">
+                <cat2-bug-preview-image :images="getUrl(scope.row.imgUrls)" />
+              </template>
+            </el-table-column>
+            <el-table-column :label="$t('annex')" :key="$t('annex')" align="left" prop="annexUrls" min-width="300">
+              <template slot-scope="scope">
+                <div class="annex-list">
+                  <cat2-bug-text :content="file" type="down" :tooltip="file" v-for="(file,index) in getUrl(scope.row.annexUrls)" :key="index" />
+                </div>
               </template>
             </el-table-column>
           </el-table>
@@ -439,5 +452,17 @@ export default {
 .case-context {
   flex-grow: 1;
   overflow:hidden;
+}
+.annex-list {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  > *:last-child {
+    border-bottom: 0px;
+  }
+  > * {
+    border-bottom: 1px dashed #E4E7ED;
+  }
 }
 </style>
