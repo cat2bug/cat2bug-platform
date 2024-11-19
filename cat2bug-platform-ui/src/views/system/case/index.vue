@@ -435,7 +435,7 @@ export default {
     /** 设置列表显示的属性字段 */
     setFieldList() {
       this.fieldList = [
-        'id','case.name','module','level', 'preconditions','expect','step','data','image','annex','update-time','defect.state'
+        'id','case.name','module','level', 'preconditions','step','data','expect','image','annex','update-time','defect.state'
       ];
 
       const fieldList = this.$cache.local.get(CASE_TABLE_FIELD_LIST_CACHE_KEY);
