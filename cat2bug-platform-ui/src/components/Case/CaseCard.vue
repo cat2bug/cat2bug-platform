@@ -23,9 +23,7 @@
           placement="left-start"
           trigger="hover">
           <div style="display: inline-flex; flex-direction: column; align-items: start;">
-            <el-button style="margin:0px;" type="text"  v-for="(file,index) in list(caseModel.annexUrls)" :key="index" @click="handleDown($event, file)">
-              <i class="el-icon-paperclip"/> {{getFileName(file)}}
-            </el-button>
+            <cat2-bug-text type="down" :content="file" :tooltip="file" v-for="(file,index) in list(caseModel.annexUrls)" :key="index"/>
           </div>
           <el-badge :value="num(caseModel.annexUrls)" class="item" slot="reference" v-if="num(caseModel.annexUrls)">
             <el-button icon="el-icon-paperclip" size="mini"></el-button>
@@ -58,10 +56,11 @@
 
 <script>
 import CaseStep from "@/components/Case/CaseStep";
+import Cat2BugText from "@/components/Cat2BugText";
 
 export default {
   name: "CaseCard",
-  components: {CaseStep},
+  components: {CaseStep, Cat2BugText},
   model: {
     prop: 'stepIndex',
     event:'change'
