@@ -53,18 +53,12 @@ public class ApiDefectServiceImpl implements IApiDefectService {
     private ApiDeliverableMapper apiDeliverableMapper;
 
     @Override
-    public List<ApiDefect> selectApiDefectList(Long projectId, ApiDefect apiDefect) {
+    public List<ApiDefect> selectApiDefectList(Long projectId, ApiDefectRequest apiDefect) {
         // 如果等级存在，转换一下全小写
         if(StringUtils.isNotBlank(apiDefect.getDefectLevel())){
             apiDefect.setDefectLevel(apiDefect.getDefectLevel().toLowerCase());
         }
-        return this.apiDefectMapper.selectApiDefectList(projectId, apiDefect).stream().map(d->{
-            // 等级转换为大写输出
-            if(StringUtils.isNotBlank(d.getDefectLevel())){
-                d.setDefectLevel(d.getDefectLevel().toUpperCase());
-            }
-            return d;
-        }).collect(Collectors.toList());
+        return this.apiDefectMapper.selectApiDefectList(projectId, apiDefect);
     }
 
     @Override

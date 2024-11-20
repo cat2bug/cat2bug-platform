@@ -45,7 +45,7 @@ public interface ApiDefectMapper
      * @param apiDefect 缺陷
      * @return 缺陷集合
      */
-    public List<ApiDefect> selectApiDefectList(@Param("projectId") Long projectId, @Param("defect") ApiDefect apiDefect);
+    public List<ApiDefect> selectApiDefectList(@Param("projectId") Long projectId, @Param("defect") ApiDefectRequest apiDefect);
 
     public List<Long> selectDefectIdsByKey(@Param("projectId") Long projectId, @Param("defectGroupKey")String defectGroupKey, @Param("defectKey")String defectKey);
     /**

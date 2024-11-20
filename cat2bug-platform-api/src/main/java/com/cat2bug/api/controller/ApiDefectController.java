@@ -12,6 +12,7 @@ import com.cat2bug.common.core.controller.BaseController;
 import com.cat2bug.common.core.domain.AjaxResult;
 import com.cat2bug.common.core.page.TableDataInfo;
 import com.cat2bug.common.enums.BusinessType;
+import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.system.domain.SysDefectLog;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -44,7 +45,7 @@ public class ApiDefectController extends BaseController {
      */
     @PreAuthorize("@ss.hasPermi('api:defect:list')")
     @GetMapping
-    public TableDataInfo list(ApiDefect apiDefect)
+    public TableDataInfo list(ApiDefectRequest apiDefect)
     {
         Long projectId = this.apiService.getProjectId();
         Map<Long, ApiDeliverable> allPathApiDeliverableMap = this.apiDeliverableService.selectApiDeliverablePathList(projectId).
@@ -55,6 +56,10 @@ public class ApiDefectController extends BaseController {
         tableDataInfo.setRows(list.stream().map(d->{
             if(d.getDeliverableId()!=null && allPathApiDeliverableMap.containsKey(d.getDeliverableId())) {
                 d.setDeliverableName(allPathApiDeliverableMap.get(d.getDeliverableId()).getDeliverablePath());
+            }
+            // 等级转换为大写输出
+            if(StringUtils.isNotBlank(d.getDefectLevel())){
+                d.setDefectLevel(d.getDefectLevel().toUpperCase());
             }
             return d;
         }).collect(Collectors.toList()));

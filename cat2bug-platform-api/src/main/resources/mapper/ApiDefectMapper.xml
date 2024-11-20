@@ -81,6 +81,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             LEFT JOIN (
                 SELECT
                     d1.defect_id,
+                    GROUP_CONCAT(u.user_name) AS user_names,
                     CONCAT('[', GROUP_CONCAT( CONCAT('{"memberId":',
                          CASE WHEN u.user_id IS NOT NULL THEN user_id ELSE 0 END,
                          ',"memberAccount":',
@@ -119,20 +120,20 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <where>
             d.project_id=#{projectId}
             <if test="defect.defectNum != null "> and d.project_num = #{defect.defectNum}</if>
-            <if test="defect.defectType != null "> and d.defect_type = #{defect.defectType, typeHandler=com.cat2bug.common.core.domain.handle.SysDefectTypeEnumTypeHandler }</if>
+            <if test="defect.defectType != null "> and d.defect_type = #{defect.defectType, typeHandler=com.cat2bug.api.domain.handle.ApiDefectTypeEnumTypeHandler }</if>
             <if test="defect.defectName != null  and defect.defectName != ''"> and d.defect_name like concat('%', #{defect.defectName}, '%')</if>
             <if test="defect.version != null and defect.version != ''"> and d.module_version like concat('%', #{defect.version}, '%')</if>
 <!--            <if test="defect.params.beginUpdateTime != null and defect.params.beginUpdateTime != '' and defect.params.endUpdateTime != null and defect.params.endUpdateTime != ''"> and d.update_time between #{defect.params.beginUpdateTime} and #{defect.params.endUpdateTime}</if>-->
 <!--            <if test="defect.params.beginCreateTime != null and defect.params.beginCreateTime != '' and defect.params.endCreateTime != null and defect.params.endCreateTime != ''"> and d.create_time between #{defect.params.beginCreateTime} and #{defect.params.endCreateTime}</if>-->
-            <if test="defect.defectState != null "> and d.defect_state = #{defect.defectState, typeHandler=com.cat2bug.common.core.domain.handle.SysDefectStateEnumTypeHandler}</if>
+            <if test="defect.defectState != null "> and d.defect_state = #{defect.defectState, typeHandler=com.cat2bug.api.domain.handle.ApiDefectStateEnumTypeHandler}</if>
 <!--            <if test="defect.params.defectStates != null "> and-->
 <!--                <foreach collection="defect.params.defectStates.split(',')" item="state" separator=" or " open="(" close=")">-->
 <!--                    d.defect_state=#{state}-->
 <!--                </foreach>-->
 <!--            </if>-->
-            <if test="defect.handlerList != null  and defect.handlerList != ''"> and
-                <foreach collection="defect.handlerList" item="b" separator=" or " open="(" close=")">
-                    JSON_CONTAINS(d.handle_by,CAST(#{b} AS CHAR))
+            <if test="defect.handlerAccountList != null  and defect.handlerAccountList.size>0"> and
+                <foreach collection="defect.handlerAccountList" item="b" separator=" or " open="(" close=")">
+                    FIND_IN_SET(#{b},un.user_names)
                 </foreach>
             </if>
 <!--            <if test="defect.params.userId != null"> and (JSON_CONTAINS(d.handle_by,CAST(#{defect.params.userId} AS CHAR)) OR d.create_by_id=#{defect.params.userId} OR d.update_by_id=#{defect.params.userId})</if>-->

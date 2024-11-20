@@ -14,7 +14,7 @@ public interface IApiDefectService {
      * @param apiDefect 缺陷
      * @return 缺陷集合
      */
-    public List<ApiDefect> selectApiDefectList(Long projectId, ApiDefect apiDefect);
+    public List<ApiDefect> selectApiDefectList(Long projectId, ApiDefectRequest apiDefect);
 
     /**
      * 查询缺陷
