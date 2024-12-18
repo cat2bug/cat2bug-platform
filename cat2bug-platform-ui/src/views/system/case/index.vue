@@ -89,6 +89,15 @@
           ><svg-icon icon-class="robot" />
             {{ $t('case.ai-create') }}</el-button>
         </el-col>
+<!--        <el-col :span="1.5">-->
+<!--          <el-button-->
+<!--            type="success"-->
+<!--            size="small"-->
+<!--            @click="handleCloudCaseAdd2"-->
+<!--            v-hasPermi="['system:case:add']"-->
+<!--          ><svg-icon icon-class="robot" />-->
+<!--            {{ $t('case.ai-create') }}</el-button>-->
+<!--        </el-col>-->
       </el-row>
     </div>
 <!--    模块树和用例列表区域-->
@@ -200,6 +209,7 @@
     <add-case ref="addCaseDialog" :module-id="queryParams.params.modulePid" @added="reloadData" @close="initFloatMenu" />
     <add-defect ref="addDefect" :project-id="projectId" @added="reloadData" @close="initFloatMenu" />
     <cloud-case ref="cloudCaseDialog" @added="reloadData" @close="initFloatMenu" />
+    <cloud-case2 ref="cloudCaseDialog2" />
     <!-- 用户导入对话框 -->
     <el-dialog :title="upload.title" :visible.sync="upload.open" width="400px" append-to-body>
       <el-upload
@@ -242,6 +252,7 @@ import { listCase, delCase } from "@/api/system/case";
 import AddCase from "@/components/Case/AddCase";
 import AddDefect from "@/components/Defect/AddDefect";
 import CloudCase from "@/components/Cloud/CloudCase";
+import CloudCase2 from "@/components/Cloud/CloudCase2";
 import FocusMemberList from "@/components/FocusMemberList";
 import Cat2BugPreviewImage from "@/components/Cat2BugPreviewImage";
 import {checkPermi} from "@/utils/permission";
@@ -255,7 +266,7 @@ const CASE_TABLE_FIELD_LIST_CACHE_KEY='case-table-field-list';
 
 export default {
   name: "Case",
-  components: {ProjectLabel,AddCase,Cat2BugLevel,Step,TreeModule,Multipane,MultipaneResizer,AddDefect,CloudCase,FocusMemberList,Cat2BugPreviewImage,Cat2BugSelectLevel,Cat2BugText},
+  components: {ProjectLabel,AddCase,Cat2BugLevel,Step,TreeModule,Multipane,MultipaneResizer,AddDefect,CloudCase,CloudCase2,FocusMemberList,Cat2BugPreviewImage,Cat2BugSelectLevel,Cat2BugText},
   data() {
     return {
       multipaneStyle: {'--marginTop':'0px'},
@@ -499,6 +510,9 @@ export default {
     },
     handleCloudCaseAdd() {
       this.$refs.cloudCaseDialog.open();
+    },
+    handleCloudCaseAdd2() {
+      this.$refs.cloudCaseDialog2.open();
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
