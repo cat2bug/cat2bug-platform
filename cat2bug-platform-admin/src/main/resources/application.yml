@@ -14,6 +14,11 @@ cat2bug:
   addressEnabled: false
   # 验证码类型 math 数字计算 char 字符验证
   captchaType: math
+  proxy:
+    routes:
+      ai:
+        prefix: /cat2ai
+        host: http://localhost:8080
   # API服务
   api:
     # 是否启动api服务
