@@ -217,6 +217,7 @@ export default {
       this.loading = true;
       getReport(reportId).then(res=>{
         this.loading = false;
+        res.data.reportDescription = res.data.reportDescription.replace(' \n ','\n');
         this.report = res.data;
       }).catch(e=>{
         this.loading = false;

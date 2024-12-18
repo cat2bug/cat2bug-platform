@@ -66,15 +66,15 @@ public interface ApiDefectMapper
      */
     public int insertApiDefect(@Param("projectId") Long projectId, @Param("defect") ApiDefectRequest apiDefect);
 
-    /**
-     * 新增缺陷
-     *
-     * @param apiDefect 缺陷
-     * @return 结果
-     */
-    public int insertSysDefect(@Param("projectId") Long projectId, @Param("defect")  SysDefect apiDefect);
+//    /**
+//     * 新增缺陷
+//     *
+//     * @param apiDefect 缺陷
+//     * @return 结果
+//     */
+//    public int insertSysDefect(@Param("projectId") Long projectId, @Param("defect")  SysDefect apiDefect);
 
-    public int batchInsertSysDefect(@Param("projectId") Long projectId, @Param("defectList") List<SysDefect> defectList);
+    public int batchInsertSysDefect(@Param("projectId") Long projectId, @Param("defectList") List<ApiDefectRequest> defectList);
     /**
      * 修改缺陷
      * 

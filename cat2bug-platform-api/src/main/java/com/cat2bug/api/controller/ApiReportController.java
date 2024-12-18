@@ -1,5 +1,6 @@
 package com.cat2bug.api.controller;
 
+import com.cat2bug.api.domain.ApiDefectRequest;
 import com.cat2bug.api.service.IApiReportService;
 import com.cat2bug.common.annotation.Log;
 import com.cat2bug.common.core.controller.BaseController;
@@ -43,7 +44,7 @@ public class ApiReportController extends BaseController
     @PreAuthorize("@ss.hasPermi('api:report:push')")
     @Log(title = "报告", businessType = BusinessType.INSERT)
     @PostMapping("/defect")
-    public AjaxResult pushDefect(HttpServletRequest request, @RequestBody SysReport<List<SysDefect>> apiReport)
+    public AjaxResult pushDefect(HttpServletRequest request, @RequestBody SysReport<List<ApiDefectRequest>> apiReport)
     {
         // 获取客户端ip
         String ipAddress = null;
@@ -83,5 +84,4 @@ public class ApiReportController extends BaseController
         apiReport.setReportDataCoder(DefectReportCoder.class.getName());
         return toAjax(apiReportService.pushDefectReport(apiReport));
     }
-
 }

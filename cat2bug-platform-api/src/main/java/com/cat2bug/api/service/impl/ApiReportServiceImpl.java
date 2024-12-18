@@ -1,8 +1,11 @@
 package com.cat2bug.api.service.impl;
 
 import com.cat2bug.api.domain.ApiDefectLog;
+import com.cat2bug.api.domain.ApiDefectRequest;
 import com.cat2bug.api.domain.ApiMember;
 import com.cat2bug.api.domain.type.ApiDefectLogStateEnum;
+import com.cat2bug.api.domain.type.ApiDefectStateEnum;
+import com.cat2bug.api.domain.type.ApiDefectTypeEnum;
 import com.cat2bug.api.mapper.ApiDefectLogMapper;
 import com.cat2bug.api.mapper.ApiDefectMapper;
 import com.cat2bug.api.mapper.ApiMemberMapper;
@@ -68,7 +71,7 @@ public class ApiReportServiceImpl implements IApiReportService {
 
     @Transactional
     @Override
-    public int pushDefectReport(SysReport<List<SysDefect>> apiReport) {
+    public int pushDefectReport(SysReport<List<ApiDefectRequest>> apiReport) {
         apiReport.setCreateById(SecurityUtils.getUserId());
         apiReport.setCreateTime(DateUtils.getNowDate());
         apiReport.setProjectId(this.apiService.getProjectId());
@@ -85,7 +88,7 @@ public class ApiReportServiceImpl implements IApiReportService {
             ret = apiReportMapper.insertSysReport(apiReport);
         }
 
-        List<SysDefect> list = apiReport.getReportData();
+        List<ApiDefectRequest> list = apiReport.getReportData();
         if(ret>0 && list!=null) {
             List<Long> handlerIds = new ArrayList<>();
             if(Strings.isNotBlank(apiReport.getHandler())){
@@ -96,12 +99,12 @@ public class ApiReportServiceImpl implements IApiReportService {
                 if(member.isPresent())
                     handlerIds.add(member.get().getMemberId());
             }
-            List<SysDefect> insertList = list.stream().filter(l->Strings.isBlank(l.getDefectGroupKey()) && Strings.isBlank(l.getDefectKey())).collect(Collectors.toList());
+            List<ApiDefectRequest> insertList = list.stream().filter(l->Strings.isBlank(l.getDefectGroupKey()) && Strings.isBlank(l.getDefectKey())).collect(Collectors.toList());
             if(insertList.size()>0) {
                 this.insertDefects(handlerIds, insertList);
             }
 
-            List<SysDefect> updateList = list.stream().filter(l->Strings.isNotBlank(l.getDefectGroupKey()) || Strings.isNotBlank(l.getDefectKey())).collect(Collectors.toList());
+            List<ApiDefectRequest> updateList = list.stream().filter(l->Strings.isNotBlank(l.getDefectGroupKey()) || Strings.isNotBlank(l.getDefectKey())).collect(Collectors.toList());
             if(updateList.size()>0) {
                 this.updateDefects(handlerIds, updateList);
             }
@@ -114,10 +117,10 @@ public class ApiReportServiceImpl implements IApiReportService {
      * @param handlerIds    处理人集合
      * @param list          缺陷列表
      */
-    void insertDefects(List<Long> handlerIds,List<SysDefect> list) {
-        List<List<SysDefect>> partition = ListUtils.partition(list,50);
+    void insertDefects(List<Long> handlerIds,List<ApiDefectRequest> list) {
+        List<List<ApiDefectRequest>> partition = ListUtils.partition(list,50);
         AtomicLong count = new AtomicLong(apiDefectMapper.getProjectDefectMaxNum(this.apiService.getProjectId()));
-        for(List<SysDefect> l : partition) {
+        for(List<ApiDefectRequest> l : partition) {
             l.forEach(ll-> {
                 ll = setInsertSysDefect(ll,count.incrementAndGet(),handlerIds);
             });
@@ -126,7 +129,7 @@ public class ApiReportServiceImpl implements IApiReportService {
         }
     }
 
-    SysDefect setInsertSysDefect(SysDefect sysDefect, long projectNumber, List<Long> handlerIds) {
+    ApiDefectRequest setInsertSysDefect(ApiDefectRequest sysDefect, long projectNumber, List<Long> handlerIds) {
         // 自动裁剪缺陷名称长度
         sysDefect.setDefectName(sysDefect.getDefectName().substring(0,(int)Math.min(sysDefect.getDefectName().length(),DEFECT_NAME_MAX_LEN)));
         // 自动裁剪缺陷描述长度
@@ -134,16 +137,16 @@ public class ApiReportServiceImpl implements IApiReportService {
 
         sysDefect.setCreateById(SecurityUtils.getUserId());
         sysDefect.setCreateTime(DateUtils.getNowDate());
-        sysDefect.setDefectNumber(projectNumber);
-        sysDefect.setProjectNum(projectNumber);
+//        sysDefect.setDefectNumber(projectNumber);
+//        sysDefect.setProjectNum(projectNumber);
         sysDefect.setUpdateTime(DateUtils.getNowDate());
         sysDefect.setUpdateById(SecurityUtils.getUserId());
         sysDefect.setHandleBy(handlerIds);
         if(sysDefect.getDefectType()==null){
-            sysDefect.setDefectType(SysDefectTypeEnum.BUG);
+            sysDefect.setDefectType(ApiDefectTypeEnum.BUG);
         }
         if (sysDefect.getDefectState() == null) {
-            sysDefect.setDefectState(SysDefectStateEnum.PROCESSING);
+            sysDefect.setDefectState(ApiDefectStateEnum.PROCESSING);
         }
         if(Strings.isBlank(sysDefect.getDefectLevel())){
             sysDefect.setDefectLevel("middle");
@@ -153,8 +156,8 @@ public class ApiReportServiceImpl implements IApiReportService {
         return sysDefect;
     }
 
-    void updateDefects(List<Long> handlerIds,List<SysDefect> list) {
-        for(SysDefect s : list) {
+    void updateDefects(List<Long> handlerIds,List<ApiDefectRequest> list) {
+        for(ApiDefectRequest s : list) {
             List<Long> ids = apiDefectMapper.selectDefectIdsByKey(this.apiService.getProjectId(),s.getDefectGroupKey(),s.getDefectKey());
             if(ids.size()==0){
                 if(Strings.isBlank(s.getDefectName()) || Strings.isBlank(s.getDefectDescribe())){
@@ -162,14 +165,14 @@ public class ApiReportServiceImpl implements IApiReportService {
                 }
                 long count = apiDefectMapper.getProjectDefectMaxNum(this.apiService.getProjectId());
                 s = setInsertSysDefect(s,count+1,handlerIds);
-                apiDefectMapper.insertSysDefect(this.apiService.getProjectId(),s);
+                apiDefectMapper.insertApiDefect(this.apiService.getProjectId(),s);
                 inertLog(s,ApiDefectLogStateEnum.CREATE);
             } else {
                 for (Long id : ids) {
                     s.setDefectId(id);
                     s.setUpdateTime(DateUtils.getNowDate());
                     s.setHandleBy(handlerIds);
-                    apiDefectMapper.updateSysDefect(s);
+                    apiDefectMapper.updateApiDefect(s);
                     inertLog(s,ApiDefectLogStateEnum.UPDATE);
                 }
             }
@@ -177,7 +180,7 @@ public class ApiReportServiceImpl implements IApiReportService {
     }
 
     /** 转换日志对象 */
-    private ApiDefectLog toLog(SysDefect sysDefect,ApiDefectLogStateEnum logStateEnum) {
+    private ApiDefectLog toLog(ApiDefectRequest sysDefect,ApiDefectLogStateEnum logStateEnum) {
         ApiDefectLog sysDefectLog = new ApiDefectLog();
         sysDefectLog.setDefectId(sysDefect.getDefectId());
         sysDefectLog.setDefectLogDescribe("");
@@ -187,13 +190,13 @@ public class ApiReportServiceImpl implements IApiReportService {
         return sysDefectLog;
     }
     /** 批量添加日志 */
-    private void batchInertLogs(List<SysDefect> list) {
+    private void batchInertLogs(List<ApiDefectRequest> list) {
         List<ApiDefectLog> logList = list.stream().map(l->toLog(l,ApiDefectLogStateEnum.CREATE)).collect(Collectors.toList());
         apiDefectLogMapper.batchInsertApiDefectLog(logList);
     }
 
     /** 添加日志 */
-    private ApiDefectLog inertLog(SysDefect sysDefect,ApiDefectLogStateEnum logStateEnum){
+    private ApiDefectLog inertLog(ApiDefectRequest sysDefect,ApiDefectLogStateEnum logStateEnum){
         ApiDefectLog sysDefectLog = toLog(sysDefect,logStateEnum);
         Preconditions.checkNotNull(sysDefectLog.getDefectId(), MessageUtils.message("defect.defect_id_cannot_empty"));
         sysDefectLog.setCreateById(SecurityUtils.getUserId());

@@ -1,5 +1,6 @@
 package com.cat2bug.api.service;
 
+import com.cat2bug.api.domain.ApiDefectRequest;
 import com.cat2bug.common.core.domain.entity.SysDefect;
 import com.cat2bug.common.core.domain.entity.SysReport;
 
@@ -19,5 +20,5 @@ public interface IApiReportService
      * @param apiReport 报告
      * @return 结果
      */
-    public int pushDefectReport(SysReport<List<SysDefect>> apiReport);
+    public int pushDefectReport(SysReport<List<ApiDefectRequest>> apiReport);
 }
