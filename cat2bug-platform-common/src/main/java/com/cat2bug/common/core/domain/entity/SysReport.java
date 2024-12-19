@@ -31,7 +31,7 @@ public class SysReport<T> extends BaseEntity
     private String reportTitle;
 
     /** 报告时间 */
-    @JsonFormat(pattern = "yyyy-MM-dd HH:ss:mm")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Excel(name = "报告时间", width = 30, dateFormat = "yyyy-MM-dd")
     private Date reportTime;
 
