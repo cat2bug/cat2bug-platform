@@ -2,6 +2,7 @@ package com.cat2bug.api.domain;
 
 import com.cat2bug.api.domain.type.ApiDefectStateEnum;
 import com.cat2bug.api.domain.type.ApiDefectTypeEnum;
+import com.cat2bug.common.core.domain.entity.SysDefect;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;

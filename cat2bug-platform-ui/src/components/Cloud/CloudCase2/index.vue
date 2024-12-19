@@ -17,7 +17,7 @@
     </template>
     <div>
       <div>
-        <component is="CaseDemand" />
+        <component v-for="(c,index) in chatList" :is="c.component" :ref="c.ref" :key="index" />
       </div>
       <div class="send">
         <el-input
@@ -43,6 +43,7 @@ export default {
     return {
       visible: false,
       query: {query: '登陆页面'},
+      chatList: []
     }
   },
   computed: {
@@ -64,9 +65,17 @@ export default {
       // done();
     },
     handle() {
-      makeCaseDemand(this.query).then(res=>{
-        console.log(res)
-      })
+      const newChat = {
+        component: 'CaseDemand',
+        ref: 'CaseDemand'+(this.chatList.length+1)
+      };
+      this.chatList.push(newChat);
+      // this.$forceUpdate();
+      // let self = this;
+      // this.$nextTick(()=>{
+      //   console.log(newChat.ref)
+      //   self.$refs[newChat.ref].open();
+      // });
     }
   }
 }

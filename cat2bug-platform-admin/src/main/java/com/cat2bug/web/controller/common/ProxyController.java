@@ -46,7 +46,7 @@ public class ProxyController {
      * @return
      */
     @RequestMapping(value = "/{prefix}/**")
-    public ResponseEntity proxy(@PathVariable String prefix, HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<Object> proxy(@PathVariable String prefix, HttpServletRequest request, HttpServletResponse response) {
         try {
             RouteInfo route = routeProperties.getRouteByPrefix(prefix);
             if (route == null) {
@@ -54,7 +54,11 @@ public class ProxyController {
             }
             String url = rebuildUlr(request, route.getHost(), prefix);
             RequestEntity requestEntity = buildRequestEntity(url, request);
-            return restTemplate.exchange(requestEntity, String.class);
+            ResponseEntity<byte[]> responseEntity = restTemplate.exchange(requestEntity, byte[].class);
+            byte[] responseEntityBody = responseEntity.getBody();
+            //将byte[]转为JSON格式的字符串
+            String json = new String(responseEntityBody);
+            return new ResponseEntity(json, HttpStatus.OK);
         } catch (Exception e) {
             e.printStackTrace();
             return new ResponseEntity("server Error", HttpStatus.INTERNAL_SERVER_ERROR);
