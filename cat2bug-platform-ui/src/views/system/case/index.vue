@@ -81,23 +81,22 @@
           </el-dropdown>
         </el-col>
         <el-col :span="1.5">
-          <el-button
-            type="success"
-            size="small"
-            @click="handleCloudCaseAdd"
-            v-hasPermi="['system:case:add']"
-          ><svg-icon icon-class="robot" />
-            {{ $t('case.ai-create') }}</el-button>
+          <el-dropdown class="case-ai-add-dropdown"
+             split-button
+             size="small"
+             type="success"
+             v-hasPermi="['system:case:add']"
+             @click="handleCloudCaseAdd">
+            <div class="title">
+              <svg-icon icon-class="robot" />
+              <span>{{$i18n.t('case.create')}}</span>
+            </div>
+            <el-dropdown-menu slot="dropdown" class="case-add-dropdown-menu">
+              <el-dropdown-item @click.native="handleCloudCaseAdd"><svg-icon icon-class="robot" />{{ $t('case.ai-create') }}</el-dropdown-item>
+              <el-dropdown-item @click.native="handleCloudCaseAdd2"><svg-icon icon-class="robot" />{{ $t('case.ai-create') }}2</el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
         </el-col>
-<!--        <el-col :span="1.5">-->
-<!--          <el-button-->
-<!--            type="success"-->
-<!--            size="small"-->
-<!--            @click="handleCloudCaseAdd2"-->
-<!--            v-hasPermi="['system:case:add']"-->
-<!--          ><svg-icon icon-class="robot" />-->
-<!--            {{ $t('case.ai-create') }}</el-button>-->
-<!--        </el-col>-->
       </el-row>
     </div>
 <!--    模块树和用例列表区域-->
@@ -209,7 +208,7 @@
     <add-case ref="addCaseDialog" :module-id="queryParams.params.modulePid" @added="reloadData" @close="initFloatMenu" />
     <add-defect ref="addDefect" :project-id="projectId" @added="reloadData" @close="initFloatMenu" />
     <cloud-case ref="cloudCaseDialog" @added="reloadData" @close="initFloatMenu" />
-    <cloud-case2 ref="cloudCaseDialog2" />
+    <cloud-case2 ref="cloudCaseDialog2" @added="reloadData" @close="initFloatMenu" />
     <!-- 用户导入对话框 -->
     <el-dialog :title="upload.title" :visible.sync="upload.open" width="400px" append-to-body>
       <el-upload
@@ -728,6 +727,34 @@ export default {
     }
     ::v-deep .el-dropdown__caret-button::before {
       background-color: #a3d3ff;
+    }
+  }
+  .case-ai-add-dropdown {
+    .title {
+      display: inline-flex;
+      flex-direction: row;
+      gap: 5px;
+      > * {
+        margin: 0px;
+      }
+    }
+    ::v-deep .el-button-group {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+    }
+    ::v-deep button {
+      color: #fff;
+      background: #67c23a;
+      border-color: #67c23a;
+    }
+    ::v-deep button:hover {
+      background: #85ce61;
+      border-color: #85ce61;
+      color: #FFFFFF;
+    }
+    ::v-deep .el-dropdown__caret-button::before {
+      background-color: #f0f9eb;
     }
   }
   .case-add-dropdown-menu {

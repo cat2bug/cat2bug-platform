@@ -29,7 +29,7 @@ import java.util.*;
  */
 @Slf4j
 @RestController
-public class ProxyController {
+public class Cat2AiProxyController {
     @Resource
     private RoutePropertiesConfig routeProperties;
 
@@ -40,14 +40,14 @@ public class ProxyController {
      * 请求转发
      * 支持 文件转发
      *
-     * @param prefix
      * @param request
      * @param response
      * @return
      */
-    @RequestMapping(value = "/{prefix}/**")
-    public ResponseEntity<Object> proxy(@PathVariable String prefix, HttpServletRequest request, HttpServletResponse response) {
+    @RequestMapping(value = "/cat2ai/**")
+    public ResponseEntity<Object> proxy(HttpServletRequest request, HttpServletResponse response) {
         try {
+            String prefix = "cat2ai";
             RouteInfo route = routeProperties.getRouteByPrefix(prefix);
             if (route == null) {
                 return new ResponseEntity("No route found!", HttpStatus.INTERNAL_SERVER_ERROR);
