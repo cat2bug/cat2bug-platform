@@ -18,7 +18,8 @@ cat2bug:
     routes:
       ai:
         prefix: cat2ai
-        host: http://localhost:8080
+        host: https://www.cat2bug.com:3333/prod-api
+#        host: http://127.0.0.1:8080
   # API服务
   api:
     # 是否启动api服务

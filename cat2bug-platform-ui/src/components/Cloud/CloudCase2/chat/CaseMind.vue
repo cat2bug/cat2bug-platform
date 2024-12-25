@@ -1,5 +1,5 @@
 <template>
-  <div class="case-mind" v-loading="loading">
+  <div class="case-mind" ref="caseMind">
     <div class="col" v-if="mindList.length>0">
       <h3><svg-icon icon-class="mind"></svg-icon>通过思维导图创建用例关键信息描述</h3>
       <span><i class="el-icon-info"></i>以下内容可以直接编辑修改</span>
@@ -27,20 +27,20 @@
       </div>
       <el-button class="case-button" type="primary" plain @click="handleClick">生成测试用例</el-button>
     </div>
-    <el-empty v-else description="没有找到数据"></el-empty>
+    <el-empty v-else description="没有找到数据" :image-size="50"></el-empty>
   </div>
 </template>
 
 <script>
 import { makeCaseMind } from "@/api/ai/AiCase2";
 import Label from "@/components/Cat2BugStatistic/Components/Label";
+import {Loading} from "element-ui";
 
 export default {
   name: "CaseMind",
   components: {Label},
   data() {
     return {
-      loading: false,
       mindList: [],
     }
   },
@@ -55,12 +55,15 @@ export default {
   },
   methods: {
     getMindList(data) {
-      this.loading = true;
+      const loadingInstance = Loading.service({
+        target: this.$refs.caseMind,
+        text: '思维导图分析中,请耐心等待...',
+        fullscreen: false,
+      });
       const query = {
         query: JSON.stringify(data)
       }
       makeCaseMind(query).then(res=>{
-        this.loading = false;
         this.mindList = res.rows.map(d=>{
           d.checked = true;
           d.pageElement = d.pageElement?d.pageElement.join(', '):'';
@@ -68,10 +71,11 @@ export default {
           return d;
         });
         this.$nextTick(()=>{
+          loadingInstance.close();
           this.$emit('change');
         })
       }).catch(e=>{
-        this.loading = false;
+        loadingInstance.close();
       })
     },
     handleClick() {

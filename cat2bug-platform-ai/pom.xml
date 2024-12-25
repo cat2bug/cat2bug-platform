@@ -14,6 +14,10 @@
     </description>
 
     <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
+        </dependency>
         <!-- 通用工具-->
         <dependency>
             <groupId>com.google.guava</groupId>

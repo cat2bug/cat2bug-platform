@@ -12,7 +12,7 @@
       </div>
       <el-button class="case-button" type="primary" plain @click="handleClick">生成测试用例思维导图</el-button>
     </div>
-    <el-empty v-else description="没有找到数据"></el-empty>
+    <el-empty v-else description="没有找到数据" :image-size="50"></el-empty>
   </div>
 </template>
 
@@ -32,7 +32,7 @@ export default {
   },
   props: {
     data: {
-      type: Object,
+      type: String,
       default: null
     }
   },
@@ -46,7 +46,10 @@ export default {
         text: '需求分析中,请耐心等待...',
         fullscreen: false,
       });
-      makeCaseDemand(this.query).then(res=>{
+      const query = {
+        query: this.data
+      }
+      makeCaseDemand(query).then(res=>{
         this.demandList = res.rows.map(d=>{
           d.checked = true;
           return d;
@@ -69,7 +72,7 @@ export default {
 <style lang="scss" scoped>
 .case-demand {
   width: 100%;
-  min-height: 100px;
+  min-height: 50px;
   h3 {
     color: #409EFF;
     ::v-deep i {

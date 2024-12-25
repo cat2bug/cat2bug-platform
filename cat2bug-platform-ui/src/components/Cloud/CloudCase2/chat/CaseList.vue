@@ -1,5 +1,5 @@
 <template>
-  <div class="case-demand" v-loading="loading">
+  <div class="case-demand" ref="caseList">
     <div class="col" v-if="caseList.length>0">
       <h3><svg-icon icon-class="case"></svg-icon>测试用例列表</h3>
       <span><i class="el-icon-info"></i>以下内容可以直接编辑修改</span>
@@ -39,11 +39,11 @@
         </div>
       </div>
       <div class="row">
-        <el-button class="case-button" type="warning" @click="handleClick">导出Excel</el-button>
+<!--        <el-button class="case-button" type="warning" @click="handleClick">导出Excel</el-button>-->
         <el-button class="case-button" type="primary" @click="handleImportClick">批量导入系统</el-button>
       </div>
     </div>
-    <el-empty v-else description="没有找到数据"></el-empty>
+    <el-empty v-else description="没有找到数据" :image-size="50"></el-empty>
   </div>
 </template>
 
@@ -53,6 +53,7 @@ import Label from "@/components/Cat2BugStatistic/Components/Label";
 import CaseStepPanel from "@/components/Case/CaseStepPanel";
 import CaseForm from "@/components/Case/CaseForm";
 import {batchAddCase} from "@/api/system/case";
+import {Loading} from "element-ui";
 
 export default {
   name: "CaseList",
@@ -70,13 +71,22 @@ export default {
       default: ()=>[]
     }
   },
+  computed: {
+    projectId() {
+      return this.$store.state.user.config.currentProjectId
+    },
+  },
   mounted() {
     this.getCaseList(this.data);
   },
   methods: {
     getCaseList(data) {
       const self = this;
-      this.loading = true;
+      const loadingInstance = Loading.service({
+        target: this.$refs.caseList,
+        text: '测试用例分析中,请耐心等待...',
+        fullscreen: false,
+      });
       const query = {
         query: JSON.stringify(data)
       }
@@ -86,9 +96,11 @@ export default {
           d.checked = true;
           d.caseStepSwitchType = 'list';
           d.testData = d.testData?JSON.stringify(d.testData):'';
+          d.projectId = this.projectId;
           return d;
         });
         this.$nextTick(()=>{
+          loadingInstance.close();
           this.caseList.forEach((c,index)=>{
             self.$refs['caseStepPanel'][index].reset();
           })
@@ -96,11 +108,10 @@ export default {
           this.$emit('change');
         })
       }).catch(e=>{
-        this.loading = false;
+        loadingInstance.close();
       })
     },
     handleImportClick() {
-      this.$emit('submit', 'CaseList',this.caseList.filter(d=>d.checked));
       let importCaseList = this.caseList.filter(c=>c.checked);
       batchAddCase(importCaseList).then(res=>{
         if(importCaseList.length == res.data.length){
@@ -110,6 +121,7 @@ export default {
           }
         }
         this.$modal.msgSuccess(this.$i18n.t('import.success'));
+        this.$emit('submit', 'CaseList', this.caseList.filter(d=>d.checked));
       })
     }
   }

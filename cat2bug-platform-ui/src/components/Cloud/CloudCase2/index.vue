@@ -19,20 +19,48 @@
       <div ref="chat" class="chat">
         <chat-message v-for="(c,index) in chatList"
            :message="c"
-           :ref="c.ref"
-           :key="index"
-           @change="toChatBottom"
-           @submit="handleSubmit" />
+           :key="index">
+          <template #content>
+            <component
+              :is="c.component"
+              :ref="c.ref"
+              :data="c.data"
+              @change="toChatBottom"
+              @submit="handleSubmit" />
+          </template>
+        </chat-message>
       </div>
       <div class="send">
-        <el-input
-          type="textarea"
-          placeholder="请输入内容"
-          v-model="query.query"
-          maxlength="65535"
-          :rows="5"
-          show-word-limit />
-        <el-button @click="handle">创建用例描述</el-button>
+        <div>
+          <el-input
+            type="textarea"
+            placeholder="请输入创建测试用例需求,描述越详细，创建的用例越匹配，需求格式如下:
+## 需求
+一个网页系统的登陆页面
+## 页面元素
+1. 登陆名称(3-32个英文字符)
+2. 登陆密码(3-32个数字或英文字符)
+3. 手机验证码(4个英文字符)
+4. 登陆按钮
+## 测试场景
+1. 验证每个元素的输入限制，每个元素的验证生成至少一条用例
+2. 验证正常登陆流程
+3. 验证异常登陆后是否出现提示信息
+## 测试数据
+1. 登陆名称: admin
+2. 登陆密码: admin123
+3. 手机验证码: abcd
+## 限制
+1. 不要生成（测试场景）之外的测试用例
+2. 不要出现（页面元素）之外的元素
+3. 测试用例数量不要少于3条
+              "
+            v-model="query.query"
+            maxlength="65535"
+            :rows="9"
+            show-word-limit />
+          <el-button type="success" @click="handleCreateCaseDescribe">创建用例描述</el-button>
+        </div>
       </div>
     </div>
   </el-drawer>
@@ -40,14 +68,27 @@
 
 <script>
 import ChatMessage from "@/components/Cloud/CloudCase2/chat/ChatMessage";
+import CaseDemand from "@/components/Cloud/CloudCase2/chat/CaseDemand";
+import CaseMind from "@/components/Cloud/CloudCase2/chat/CaseMind";
+import CaseList from "@/components/Cloud/CloudCase2/chat/CaseList";
+import CaseHelloWorld from "@/components/Cloud/CloudCase2/chat/CaseHelloWorld";
+import TextMessage from "@/components/Cloud/CloudCase2/chat/TextMessage";
+const AI_CASE_QUERY_KEY = 'ai_case2_query_key';
 export default {
   name: "index",
-  components: { ChatMessage },
+  components: { CaseDemand, CaseMind, CaseList, TextMessage, ChatMessage, CaseHelloWorld },
   data() {
     return {
       visible: false,
-      query: {query: '登陆页面'},
-      chatList: []
+      query: {query: ''},
+      chatList: [{
+        component: 'CaseHelloWorld',
+        ref: 'CaseHelloWorld0',
+        member: {
+          name: '用例机器人'
+        },
+        direction: 'left'
+      }]
     }
   },
   computed: {
@@ -61,34 +102,41 @@ export default {
   methods: {
     open() {
       this.visible = true;
+      this.readQuery();
     },
     close() {
       this.visible = false;
       this.$emit('close')
     },
+    readQuery() {
+      this.query.query = this.$cache.local.get(AI_CASE_QUERY_KEY)||'';
+    },
     handleClose(done) {
-      // done();
+      done();
     },
     handleAddUserChat() {
       const newChat = {
-        component: 'Text',
-        ref: 'Text'+(this.chatList.length+1),
-        data: null,
+        component: 'TextMessage',
+        ref: 'TextMessage'+(this.chatList.length+1),
+        data: this.query.query,
         member: this.$store.state.user,
         direction: 'right'
       };
       this.chatList.push(newChat);
-      this.toChatBottom();
     },
-    handle() {
+    handleCreateCaseDescribe() {
+      if(!this.query.query) {
+        this.$message.error("请输入创建用例的需求后，在点击按钮创建用例描述!")
+        return;
+      }
+      this.$cache.local.set(AI_CASE_QUERY_KEY, this.query.query);
       this.handleAddUserChat();
-
       const newChat = {
         component: 'CaseDemand',
         ref: 'CaseDemand'+(this.chatList.length+1),
-        data: null,
+        data: this.query.query,
         member: {
-          nickName: 'AI'
+          name: '用例机器人'
         },
         direction: 'left'
       };
@@ -107,7 +155,7 @@ export default {
         ref: 'CaseMind'+(this.chatList.length+1),
         data: data,
         member: {
-          nickName: 'AI'
+          name: '用例机器人'
         },
         direction: 'left'
       };
@@ -120,7 +168,7 @@ export default {
         ref: 'CaseList'+(this.chatList.length+1),
         data: data,
         member: {
-          nickName: 'AI'
+          name: '用例机器人'
         },
         direction: 'left'
       };
@@ -137,7 +185,6 @@ export default {
           break;
         case 'CaseList':
           this.$emit('added');
-          break;
       }
     }
   }
@@ -185,14 +232,19 @@ export default {
 }
 .send {
   z-index: 9;
-  bottom: 20px;
+  bottom: 0px;
   position: absolute;
-  width: calc(100% - 60px);
-  display: inline-flex;
-  flex-direction: row;
-  margin: 10px 30px;
-  border: 1px solid #DCDFE6;
-  border-radius: 4px;
+  width: 100%;
+  margin: 0px;
+  background-color: white;
+  > div {
+    display: inline-flex;
+    flex-direction: row;
+    width: calc(100% - 60px);
+    margin: 10px 30px 20px 30px;
+    border: 1px solid #DCDFE6;
+    border-radius: 4px;
+  }
   .el-input {
     flex: 1;
   }
@@ -215,9 +267,15 @@ export default {
   padding: 10px 20% 200px 20%;
   display: inline-flex;
   flex-direction: column;
-  gap: 80px;
+  gap: 50px;
   > * {
     flex-shrink: 0;
+    border-bottom: 1px solid #F2F6FC;
+    padding-bottom: 50px;
+  }
+  > *:last-child {
+    flex-shrink: 0;
+    border-bottom: 0px;
   }
 }
 </style>
