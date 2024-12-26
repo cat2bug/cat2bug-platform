@@ -1,22 +1,26 @@
 package com.cat2bug.system.service.impl;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 
 import com.cat2bug.common.core.domain.entity.SysDefect;
+import com.cat2bug.common.core.domain.entity.SysReport;
 import com.cat2bug.common.core.domain.entity.SysUser;
-import com.cat2bug.common.utils.DateUtils;
-import com.cat2bug.common.utils.MessageUtils;
-import com.cat2bug.common.utils.SecurityUtils;
+import com.cat2bug.common.utils.*;
+import com.cat2bug.common.utils.file.IFileService;
+import com.cat2bug.common.utils.uuid.UUID;
 import com.cat2bug.system.domain.*;
 import com.cat2bug.system.mapper.SysUserProjectMapper;
 import com.cat2bug.system.mapper.SysUserProjectRoleMapper;
-import com.cat2bug.system.service.ISysProjectDefectTabsService;
-import com.cat2bug.system.service.ISysUserConfigService;
+import com.cat2bug.system.service.*;
 import com.google.common.base.Preconditions;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import com.cat2bug.system.mapper.SysProjectMapper;
-import com.cat2bug.system.service.ISysProjectService;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -38,6 +42,32 @@ public class SysProjectServiceImpl implements ISysProjectService
     private ISysUserConfigService sysUserConfigService;
     @Autowired
     private ISysProjectDefectTabsService sysProjectDefectTabsService;
+    @Autowired
+    private ISysCaseService sysCaseService;
+    @Autowired
+    private ISysUserProjectService sysUserProjectService;
+    @Autowired
+    private ISysDefectService sysDefectService;
+    @Autowired
+    private ISysPlanService sysPlanService;
+    @Autowired
+    private ISysModuleService sysModuleService;
+    @Autowired
+    private ISysReportService sysReportService;
+    @Autowired
+    private ISysDocumentService sysDocumentService;
+    @Autowired
+    private ISysProjectApiService sysProjectApiService;
+
+    @Value("${server.port}")
+    private int httpPort;
+
+    @Value("${cat2bug.temp}")
+    private String tempPath;
+
+    @Value("${cat2bug.version}")
+    private String systemVersion;
+
     /**
      * 查询项目
      * 
@@ -175,5 +205,113 @@ public class SysProjectServiceImpl implements ISysProjectService
             sysUserConfigService.updateSysUserConfig(sysUserConfig);
         }
         return ret;
+    }
+
+    @Override
+    public boolean pullToCloud(Long projectId, String pullKey) throws IOException {
+        // 创建文件夹
+        File file = new File(this.tempPath);
+        if(file.exists()==false) {
+            file.mkdirs();
+        }
+        // 创建压缩文件
+        String compressFileName = String.format("%s/tempPullProject-%s.zip", tempPath, UUID.fastUUID().toString());
+        final CompressUtil compressUtil = CompressUtil.createStream(compressFileName);
+        try {
+            // 系统
+            Map<String, Object> system = new HashMap<>();
+            system.put("version", this.systemVersion);
+            compressUtil.addJsonFile("system.json", system);
+            // 项目
+            SysProject project = this.selectSysProjectByProjectId(projectId);
+            compressUtil.addJsonFile("project.json", project);
+            // 成员
+            List<SysUser> memberList = sysUserProjectService.selectNotSysUserListByProjectId(projectId, new SysUser());
+            compressUtil.addJsonFile("member.json", memberList);
+            for (SysUser member : memberList) {
+                if(StringUtils.isNotBlank(member.getAvatar())){
+                    this.compressFile(compressUtil, member.getAvatar());;
+                }
+            }
+            // 用例
+            SysCase sysCase = new SysCase();
+            sysCase.setProjectId(projectId);
+            List<SysCase> caseList = this.sysCaseService.selectSysCaseList(sysCase);
+            compressUtil.addJsonFile("case.json", caseList);
+            for(SysCase c : caseList) {
+                // 压缩图片
+                if(StringUtils.isNotBlank(c.getImgUrls())){
+                    String[] imgs = c.getImgUrls().split(",");
+                    for(String img : imgs) {
+                        this.compressFile(compressUtil, img);
+                    }
+                }
+                // 压缩附件
+                if(StringUtils.isNotBlank(c.getAnnexUrls())){
+                    String[] annexs = c.getAnnexUrls().split(",");
+                    for(String annex : annexs) {
+                        this.compressFile(compressUtil, annex);
+                    }
+                }
+            }
+            // 缺陷
+            SysDefect sysDefect = new SysDefect();
+            sysDefect.setProjectId(projectId);
+            List<SysDefect> defectList = sysDefectService.selectSysDefectList(sysDefect);
+            compressUtil.addJsonFile("defect.json", defectList);
+            for(SysDefect d : defectList) {
+                // 压缩图片
+                if(StringUtils.isNotBlank(d.getImgUrls())){
+                    String[] imgs = d.getImgUrls().split(",");
+                    for(String img : imgs) {
+                        this.compressFile(compressUtil, img);
+                    }
+                }
+                // 压缩附件
+                if(StringUtils.isNotBlank(d.getAnnexUrls())){
+                    String[] annexs = d.getAnnexUrls().split(",");
+                    for(String annex : annexs) {
+                        this.compressFile(compressUtil, annex);
+                    }
+                }
+            }
+            // 计划
+            SysPlan sysPlan = new SysPlan();
+            sysPlan.setProjectId(projectId);
+            List<SysPlan> planList = sysPlanService.selectSysPlanList(sysPlan);
+            compressUtil.addJsonFile("plan.json", planList);
+            // 交付物
+            SysModule sysModule = new SysModule();
+            sysModule.setProjectId(projectId);
+            List<SysModule> moduleList = sysModuleService.selectSysModuleList(sysModule);
+            compressUtil.addJsonFile("module.json", moduleList);
+            // 报告
+            SysReport sysReport = new SysReport();
+            sysReport.setProjectId(projectId);
+            List<SysReport> reportList = sysReportService.selectSysReportList(sysReport);
+            compressUtil.addJsonFile("report.json", reportList);
+            // 文档
+            SysDocument sysDocument = new SysDocument();
+            sysDocument.setProjectId(projectId);
+            List<SysDocument> documentList = sysDocumentService.selectSysDocumentList(sysDocument);
+            compressUtil.addJsonFile("document.json", documentList);
+            for(SysDocument doc : documentList) {
+                if(StringUtils.isNotBlank(doc.getFileUrl())) {
+                    this.compressFile(compressUtil, doc.getFileUrl());
+                }
+            }
+            // API
+            SysProjectApi sysProjectApi = new SysProjectApi();
+            sysProjectApi.setProjectId(projectId);
+            List<SysProjectApi> sysProjectApiList = sysProjectApiService.selectSysProjectApiList(sysProjectApi);
+            compressUtil.addJsonFile("api.json", sysProjectApiList);
+        } finally {
+            compressUtil.build();
+        }
+        return true;
+    }
+
+    private void compressFile(CompressUtil compressUtil, String fileName) throws IOException {
+        compressUtil.addUrlFile(fileName, String.format("http://127.0.0.1:%d%s",httpPort,fileName));
     }
 }

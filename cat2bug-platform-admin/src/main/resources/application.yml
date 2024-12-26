@@ -10,6 +10,8 @@ cat2bug:
   auto-update: false
   # 文件路径
   profile: uploadPath
+  # 临时文件夹路径
+  temp: uploadTemp
   # 获取ip地址开关
   addressEnabled: false
   # 验证码类型 math 数字计算 char 字符验证

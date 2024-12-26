@@ -46,6 +46,7 @@ nbdist/
 !*/build/*.html
 !*/build/*.xml
 uploadPath/
+uploadTemp/
 ### macOS template
 # General
 .DS_Store

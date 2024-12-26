@@ -10,6 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * @Author: yuzhantao
@@ -37,6 +38,7 @@ public class LocalFileServiceImpl implements IFileService {
     public void download(HttpServletResponse response, String filePath) throws IOException {
         FileUtils.writeBytes(filePath, response.getOutputStream());
     }
+
 
     @Override
     public boolean delete(String filePath) {

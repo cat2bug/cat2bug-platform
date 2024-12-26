@@ -1,5 +1,7 @@
 package com.cat2bug.system.service;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.List;
 import com.cat2bug.system.domain.SysProject;
 
@@ -58,4 +60,12 @@ public interface ISysProjectService
      * @return 结果
      */
     public int deleteSysProjectByProjectId(Long projectId);
+
+    /**
+     * 推送项目数据到云平台
+     * @param projectId     项目ID
+     * @param pullKey       推送KEY
+     * @return
+     */
+    public boolean pullToCloud(Long projectId, String pullKey) throws IOException;
 }

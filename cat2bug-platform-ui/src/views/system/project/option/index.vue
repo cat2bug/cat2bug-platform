@@ -92,7 +92,7 @@ export default {
     }
   }
   ::v-deep .el-card__body {
-    min-height: 150px;
+    min-height: 180px;
     display: flex;
     align-items: flex-start;
     flex-direction: column;
