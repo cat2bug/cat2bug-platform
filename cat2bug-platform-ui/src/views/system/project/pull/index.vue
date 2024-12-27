@@ -1,11 +1,11 @@
 <template>
   <div class="app-container">
     <el-row class="project-add-page-header">
-      <el-page-header @back="goBack" :content="$t('project.pull')">
+      <el-page-header @back="goBack" :content="$t('project.push')">
       </el-page-header>
     </el-row>
     <el-form ref="form" :model="form" label-width="80px">
-      <el-form-item :label="$t('project.pull.key')">
+      <el-form-item :label="$t('project.push.key')">
         <el-input v-model="form.pullKey"></el-input>
       </el-form-item>
       <el-form-item>

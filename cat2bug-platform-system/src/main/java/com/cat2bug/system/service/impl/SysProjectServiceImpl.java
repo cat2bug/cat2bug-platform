@@ -1,18 +1,12 @@
 package com.cat2bug.system.service.impl;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.*;
-
 import com.cat2bug.common.core.domain.entity.SysDefect;
 import com.cat2bug.common.core.domain.entity.SysReport;
 import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.common.utils.*;
-import com.cat2bug.common.utils.file.IFileService;
 import com.cat2bug.common.utils.uuid.UUID;
 import com.cat2bug.system.domain.*;
+import com.cat2bug.system.mapper.SysProjectMapper;
 import com.cat2bug.system.mapper.SysUserProjectMapper;
 import com.cat2bug.system.mapper.SysUserProjectRoleMapper;
 import com.cat2bug.system.service.*;
@@ -20,8 +14,11 @@ import com.google.common.base.Preconditions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import com.cat2bug.system.mapper.SysProjectMapper;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
 
 /**
  * 项目Service业务层处理
@@ -208,7 +205,7 @@ public class SysProjectServiceImpl implements ISysProjectService
     }
 
     @Override
-    public boolean pullToCloud(Long projectId, String pullKey) throws IOException {
+    public boolean pushToCloud(Long projectId, String pullKey) throws IOException {
         // 创建文件夹
         File file = new File(this.tempPath);
         if(file.exists()==false) {

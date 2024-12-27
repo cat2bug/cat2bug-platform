@@ -1,6 +1,5 @@
 package com.cat2bug.system.service;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 import com.cat2bug.system.domain.SysProject;
@@ -67,5 +66,5 @@ public interface ISysProjectService
      * @param pullKey       推送KEY
      * @return
      */
-    public boolean pullToCloud(Long projectId, String pullKey) throws IOException;
+    public boolean pushToCloud(Long projectId, String pullKey) throws IOException;
 }

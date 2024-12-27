@@ -4,7 +4,6 @@ import com.cat2bug.common.annotation.Log;
 import com.cat2bug.common.core.controller.BaseController;
 import com.cat2bug.common.core.domain.AjaxResult;
 import com.cat2bug.common.core.domain.entity.SysRole;
-import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.common.core.page.TableDataInfo;
 import com.cat2bug.common.enums.BusinessType;
 import com.cat2bug.common.utils.MessageUtils;
@@ -14,7 +13,6 @@ import com.cat2bug.framework.web.service.SysPermissionService;
 import com.cat2bug.system.domain.SysProject;
 import com.cat2bug.system.domain.SysUserConfig;
 import com.cat2bug.system.domain.SysUserProject;
-import com.cat2bug.system.domain.vo.BatchUserRoleVo;
 import com.cat2bug.system.service.ISysProjectService;
 import com.cat2bug.system.service.ISysRoleService;
 import com.cat2bug.system.service.ISysUserConfigService;
@@ -26,11 +24,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * 项目Controller
@@ -123,12 +118,12 @@ public class SysProjectController extends BaseController
     /**
      * 新增项目
      */
-    @PreAuthorize("@ss.hasPermi('system:project:pull')")
+    @PreAuthorize("@ss.hasPermi('system:project:push')")
     @Log(title = "项目", businessType = BusinessType.INSERT)
-    @PostMapping("/{projectId}/pull")
+    @PostMapping("/{projectId}/push")
     public AjaxResult pull(@PathVariable Long projectId, @RequestBody PullProject pullProject) throws IOException {
         SysUserConfig userConfig = sysUserConfigService.selectSysUserConfigByUserId(getUserId());
-        return toAjax(sysProjectService.pullToCloud(userConfig.getCurrentProjectId(), pullProject.getPullKey()));
+        return toAjax(sysProjectService.pushToCloud(userConfig.getCurrentProjectId(), pullProject.getPullKey()));
     }
 
     @PreAuthorize("@ss.hasPermi('system:project:list')")
