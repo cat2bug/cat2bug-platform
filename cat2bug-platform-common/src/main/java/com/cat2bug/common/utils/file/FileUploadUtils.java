@@ -124,6 +124,49 @@ public class FileUploadUtils
         return getPathFileName(baseDir, fileName);
     }
 
+    /**
+     * 上传本地文件
+     * @param filePath  源文件路径
+     * @return          url路径
+     * @throws FileSizeLimitExceededException
+     * @throws IOException
+     * @throws FileNameLengthLimitExceededException
+     * @throws InvalidExtensionException
+     */
+    public static final String uploadLocal(String filePath)
+            throws FileSizeLimitExceededException, IOException, FileNameLengthLimitExceededException,
+            InvalidExtensionException
+    {
+        File srcFile = new File(filePath);
+        String fileName = extractFilename(srcFile);
+        File destFile = new File(fileName);
+        InputStream input = null;
+        OutputStream output = null;
+        try {
+            createFolder(fileName);
+            input = new FileInputStream(srcFile);
+            output = new FileOutputStream(destFile);
+            byte[] buf = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = input.read(buf)) > 0) {
+                output.write(buf, 0, bytesRead);
+            }
+        } finally {
+            input.close();
+            output.close();
+        }
+        return getPathFileName("", fileName);
+    }
+
+    public static void createFolder(String filePath) {
+        int index = filePath.lastIndexOf("/");
+        String path = filePath.substring(0, index);
+        File folder = new File(path);
+        if(folder.exists()==false) {
+            folder.mkdirs();
+        }
+    }
+
     public static final String uploadBase64Image(String baseDir, String originalFileName, String base64 )
             throws FileSizeLimitExceededException, IOException, FileNameLengthLimitExceededException
     {
@@ -154,6 +197,12 @@ public class FileUploadUtils
     {
         return StringUtils.format("{}/{}_{}.{}", DateUtils.datePath(),
                 FilenameUtils.getBaseName(file.getOriginalFilename()), Seq.getId(Seq.uploadSeqType), getExtension(file));
+    }
+
+    public static final String extractFilename(File file)
+    {
+        return StringUtils.format("{}/{}_{}.{}", DateUtils.datePath(),
+                file.getName(), Seq.getId(Seq.uploadSeqType), FilenameUtils.getExtension(file.getAbsolutePath()));
     }
 
     public static final String extractFilename(String originalFileName, String extension)
