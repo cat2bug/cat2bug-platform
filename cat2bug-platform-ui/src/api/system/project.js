@@ -37,7 +37,7 @@ export function addProject(data) {
 // 新增项目
 export function pullProject(projectId, data) {
   return request({
-    url: '/system/project/'+projectId+'/pull',
+    url: '/system/project/'+projectId+'/push',
     method: 'post',
     data: data
   })

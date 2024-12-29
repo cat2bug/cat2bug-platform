@@ -16,6 +16,11 @@ cat2bug:
   addressEnabled: false
   # 验证码类型 math 数字计算 char 字符验证
   captchaType: math
+  # 云服务
+  cloud:
+    # 云服务地址
+    host: http://127.0.0.1:22020
+  # 代理服务
   proxy:
     routes:
       ai:

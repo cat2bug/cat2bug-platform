@@ -44,4 +44,9 @@ public class LocalFileServiceImpl implements IFileService {
     public boolean delete(String filePath) {
         return FileUtils.deleteFile(filePath);
     }
+
+    @Override
+    public String downloadToLocal(String filePath) throws IOException {
+        return filePath;
+    }
 }

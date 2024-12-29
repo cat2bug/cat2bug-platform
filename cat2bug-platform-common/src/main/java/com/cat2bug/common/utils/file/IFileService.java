@@ -23,4 +23,6 @@ public interface IFileService {
     public void download(HttpServletResponse response, String filePath) throws IOException;
 
     public boolean delete(String filePath);
+
+    public String downloadToLocal(String filePath) throws IOException;
 }

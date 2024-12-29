@@ -11,6 +11,7 @@ import com.cat2bug.system.mapper.SysUserProjectMapper;
 import com.cat2bug.system.mapper.SysUserProjectRoleMapper;
 import com.cat2bug.system.service.*;
 import com.google.common.base.Preconditions;
+import okhttp3.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,11 @@ import java.util.*;
 @Service
 public class SysProjectServiceImpl implements ISysProjectService 
 {
+    /**
+     * 接口提交TOKEN标识
+     */
+    private static final String AUTH_TOKEN_HEADER_NAME = "CAT2BUG-API-KEY";
+
     @Autowired
     private SysProjectMapper sysProjectMapper;
     @Autowired
@@ -65,6 +71,8 @@ public class SysProjectServiceImpl implements ISysProjectService
     @Value("${cat2bug.version}")
     private String systemVersion;
 
+    @Value("${cat2bug.cloud.host}")
+    private String cloudUrl;
     /**
      * 查询项目
      * 
@@ -212,12 +220,15 @@ public class SysProjectServiceImpl implements ISysProjectService
             file.mkdirs();
         }
         // 创建压缩文件
-        String compressFileName = String.format("%s/tempPullProject-%s.zip", tempPath, UUID.fastUUID().toString());
+        String fileExtensions = "zip";
+        String fileName = String.format("tempPullProject-%s.%s", UUID.fastUUID().toString(), fileExtensions);
+        String compressFileName = String.format("%s/%s", tempPath, fileName);
         final CompressUtil compressUtil = CompressUtil.createStream(compressFileName);
         try {
             // 系统
             Map<String, Object> system = new HashMap<>();
             system.put("version", this.systemVersion);
+            system.put("pushKey", pullKey);
             compressUtil.addJsonFile("system.json", system);
             // 项目
             SysProject project = this.selectSysProjectByProjectId(projectId);
@@ -305,7 +316,26 @@ public class SysProjectServiceImpl implements ISysProjectService
         } finally {
             compressUtil.build();
         }
-        return true;
+
+        OkHttpClient client = new OkHttpClient();
+        File compressFile = new File(compressFileName);
+        RequestBody requestBody = new MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+                .addFormDataPart("version", this.systemVersion)
+                .addFormDataPart("file", fileName, RequestBody.create(MediaType.parse("application/zip"), compressFile))
+                .build();
+        String url = cloudUrl+"/api/project/push";
+        Request request = new Request.Builder()
+                .url(url)
+                .post(requestBody)
+                .header(AUTH_TOKEN_HEADER_NAME, pullKey)
+                .build();
+
+        Response response = client.newCall(request).execute();
+        if (response.isSuccessful()) {
+            return true;
+        }
+        return false;
     }
 
     private void compressFile(CompressUtil compressUtil, String fileName) throws IOException {
