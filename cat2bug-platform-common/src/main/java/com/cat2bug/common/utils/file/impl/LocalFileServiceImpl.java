@@ -25,6 +25,11 @@ public class LocalFileServiceImpl implements IFileService {
     }
 
     @Override
+    public String uploadLocal(String path) throws IOException, InvalidExtensionException {
+        return FileUploadUtils.uploadLocal(path);
+    }
+
+    @Override
     public String uploadPackagePart(PackagePart part, boolean isProjectFile) throws IOException {
         return FileUtils.writePackagePart(part);
     }

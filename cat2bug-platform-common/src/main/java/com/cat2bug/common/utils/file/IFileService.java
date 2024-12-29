@@ -16,6 +16,8 @@ import java.io.InputStream;
 public interface IFileService {
     public String upload(String path, MultipartFile file, boolean isProjectFile) throws IOException, InvalidExtensionException;
 
+    public String uploadLocal(String path) throws IOException, InvalidExtensionException;
+
     public String uploadPackagePart(PackagePart part, boolean isProjectFile) throws IOException;
 
     public String uploadImportBytes(byte[] data, boolean isProjectFile) throws IOException;
