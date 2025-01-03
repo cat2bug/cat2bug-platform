@@ -108,7 +108,7 @@
       <multipane-resizer :style="multipaneStyle"></multipane-resizer>
 <!--      用例列表-->
       <div ref="caseContext" class="case-context">
-        <el-table ref="table" v-loading="loading" :data="caseList" @selection-change="handleSelectionChange" @row-click="handleUpdate" v-resize="setDragComponentSize">
+        <el-table ref="table" v-loading="loading" :data="caseList" @selection-change="handleSelectionChange" v-resize="setDragComponentSize">
           <el-table-column type="selection" width="50" align="center" fixed />
           <el-table-column v-if="showField('id')" :label="$t('id')" align="center" prop="caseNum" width="80" sortable fixed>
             <template slot-scope="scope">

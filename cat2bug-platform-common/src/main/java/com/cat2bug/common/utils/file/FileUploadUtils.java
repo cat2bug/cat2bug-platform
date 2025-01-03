@@ -225,6 +225,13 @@ public class FileUploadUtils
         return desc;
     }
 
+    /** 获取实际的相对路径 */
+    public static final String getRelativePath(String resourcePath) throws IOException
+    {
+        int dirLastIndex = Constants.RESOURCE_PREFIX.length() + 1;
+        return StringUtils.substring(resourcePath, dirLastIndex);
+    }
+
     public static final String getPathFileName(String uploadDir, String fileName) throws IOException
     {
         int dirLastIndex = Cat2BugConfig.getProfile().length() + 1;

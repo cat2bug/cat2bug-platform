@@ -75,6 +75,17 @@ public class SysPlanController extends BaseController
     }
 
     /**
+     * 新增测试计划
+     */
+    @PreAuthorize("@ss.hasPermi('system:plan:add')")
+    @Log(title = "测试计划", businessType = BusinessType.INSERT)
+    @PostMapping("/{planId}/copy")
+    public AjaxResult copy(@PathVariable String planId)
+    {
+        return toAjax(sysPlanService.copySysPlan(planId));
+    }
+
+    /**
      * 修改测试计划
      */
     @PreAuthorize("@ss.hasPermi('system:plan:edit')")

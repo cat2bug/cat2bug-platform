@@ -86,6 +86,15 @@ public class SysPlanServiceImpl implements ISysPlanService
         return rows;
     }
 
+    @Transactional
+    @Override
+    public int copySysPlan(String planId) {
+        SysPlan sysPlan = sysPlanMapper.selectSysPlanByPlanId(planId);
+        Preconditions.checkNotNull(sysPlan, MessageUtils.message("plan.not-find"));
+        sysPlan.setPlanName(sysPlan.getPlanName() + "-" + MessageUtils.message("copy"));
+        return insertSysPlan(sysPlan);
+    }
+
     /**
      * 修改测试计划
      * 

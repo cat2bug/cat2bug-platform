@@ -45,6 +45,13 @@ public interface ISysPlanService
     public int insertSysPlan(SysPlan sysPlan);
 
     /**
+     * 复制测试计划
+     * @param planId
+     * @return
+     */
+    public int copySysPlan(String planId);
+
+    /**
      * 修改测试计划
      * 
      * @param sysPlan 测试计划
