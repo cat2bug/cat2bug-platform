@@ -92,13 +92,7 @@ public class SysPlanServiceImpl implements ISysPlanService
         SysPlan sysPlan = sysPlanMapper.selectSysPlanByPlanId(planId);
         Preconditions.checkNotNull(sysPlan, MessageUtils.message("plan.not-find"));
         sysPlan.setPlanName(sysPlan.getPlanName() + "-" + MessageUtils.message("copy"));
-        int count = insertSysPlan(sysPlan);
-        SysPlanItem sysPlanItem = new SysPlanItem();
-        sysPlanItem.setPlanId(planId);
-        List<SysPlanItem> itemList = sysPlanItemMapper.selectSysPlanItemList(sysPlanItem);
-        sysPlan.setSysPlanItemList(itemList);
-        this.insertSysPlanItem(sysPlan);
-        return count;
+        return insertSysPlan(sysPlan);
     }
 
     /**
