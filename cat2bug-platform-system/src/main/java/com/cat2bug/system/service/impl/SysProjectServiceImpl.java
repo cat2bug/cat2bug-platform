@@ -1,6 +1,7 @@
 package com.cat2bug.system.service.impl;
 
 import com.cat2bug.common.core.domain.entity.SysDefect;
+import com.cat2bug.common.core.domain.entity.SysProjectPush;
 import com.cat2bug.common.core.domain.entity.SysReport;
 import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.common.utils.*;
@@ -226,10 +227,10 @@ public class SysProjectServiceImpl implements ISysProjectService
         final CompressUtil compressUtil = CompressUtil.createStream(compressFileName);
         try {
             // 系统
-            Map<String, Object> system = new HashMap<>();
-            system.put("version", this.systemVersion);
-            system.put("pushKey", pullKey);
-            compressUtil.addJsonFile("system.json", system);
+            SysProjectPush projectPush = new SysProjectPush();
+            projectPush.setVersion(this.systemVersion);
+            projectPush.setPushKey(pullKey);
+            compressUtil.addJsonFile("system.json", projectPush);
             // 项目
             SysProject project = this.selectSysProjectByProjectId(projectId);
             compressUtil.addJsonFile("project.json", project);

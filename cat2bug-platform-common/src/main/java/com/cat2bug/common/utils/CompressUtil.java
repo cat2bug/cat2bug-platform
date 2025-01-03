@@ -7,6 +7,8 @@ import org.springframework.core.io.ClassPathResource;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -19,6 +21,8 @@ import java.util.zip.ZipOutputStream;
 public class CompressUtil {
 
     private ZipOutputStream outputStream;
+
+    private Set<String> outputStreamFileNames = new HashSet<>();
 
     private static final int minCONNECT_TIMEOUT = 3000;
     /**
@@ -81,6 +85,9 @@ public class CompressUtil {
     }
 
     public CompressUtil addUrlFile(String fileName, String url) throws IOException {
+        if(this.outputStreamFileNames.contains(fileName)) {
+            return this;
+        }
         OkHttpClient client = new OkHttpClient.Builder()
 //                .addInterceptor(new RetryIntercepter(3))//重试3次
 //                .addInterceptor(new GzipRequestInterceptor())//gzip压缩
@@ -101,16 +108,13 @@ public class CompressUtil {
         response = client.newCall(request).execute();
         //转化成byte数组
         byte[] bytes = response.body().bytes();
-//        ClassPathResource resource = new ClassPathResource(url);
-//        InputStream inputStream = resource.getInputStream();
-//
-//        byte[] bytes = IOUtils.toByteArray(inputStream);
         ZipEntry entry = new ZipEntry(fileName);
         this.outputStream.putNextEntry(entry);
         this.outputStream.write(bytes, 0, bytes.length);
         this.outputStream.closeEntry();
-
         response.close();
+
+        this.outputStreamFileNames.add(fileName);
         return this;
     }
 }
