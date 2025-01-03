@@ -34,6 +34,33 @@
         <multipane-resizer :style="multipaneStyle"></multipane-resizer>
         <!--      用例列表-->
         <div ref="caseContext" class="case-context">
+          <div class="case-tools">
+            <el-form :model="caseQueryParams" ref="queryForm" size="small" :inline="true" label-width="68px">
+              <el-form-item prop="caseNum">
+                <el-input
+                  v-model="caseQueryParams.caseNum"
+                  size="small"
+                  prefix-icon="el-icon-s-flag"
+                  :placeholder="$t('case.please-enter-id')"
+                  clearable
+                  @input="handleQuery"
+                />
+              </el-form-item>
+              <el-form-item prop="caseName">
+                <el-input
+                  v-model="caseQueryParams.caseName"
+                  size="small"
+                  prefix-icon="el-icon-files"
+                  :placeholder="$t('case.please-enter-title')"
+                  clearable
+                  @input="handleQuery"
+                />
+              </el-form-item>
+              <el-form-item prop="caseLevel">
+                <cat2-bug-select-level v-model="caseQueryParams.caseLevel" @change="handleQuery" icon="el-icon-s-data" :clearable="true" />
+              </el-form-item>
+            </el-form>
+          </div>
           <el-table ref="planItemTable" v-loading="loading" :data="caseList" v-resize="setDragComponentSize" @select="handleSelectionChange" @select-all="handleAllSelectionChange">
             <el-table-column type="selection" width="50" align="center" fixed />
             <el-table-column :label="$t('id')" align="left" prop="caseNum" width="80" sortable fixed>
@@ -111,6 +138,7 @@ import Cat2BugText from "@/components/Cat2BugText";
 import Step from "@/views/system/case/components/step";
 import TreeModule from "@/components/Module/TreeModule";
 import FocusMemberList from "@/components/FocusMemberList";
+import Cat2BugSelectLevel from "@/components/Cat2BugSelectLevel";
 import Cat2BugPreviewImage from "@/components/Cat2BugPreviewImage";
 import { Multipane, MultipaneResizer } from 'vue-multipane';
 import {addPlan, getPlan, updatePlan} from "@/api/system/plan";
@@ -122,7 +150,7 @@ const TREE_MODULE_WIDTH_CACHE_KEY = 'plan_case_tree_module_width';
 export default {
   name: "AddPlanDialog",
   dicts: ['plan_item_state'],
-  components: { Cat2BugLevel,Step,TreeModule,Multipane,MultipaneResizer, FocusMemberList, Cat2BugPreviewImage,Cat2BugText },
+  components: { Cat2BugLevel,Step,TreeModule,Multipane,MultipaneResizer, FocusMemberList, Cat2BugPreviewImage,Cat2BugText, Cat2BugSelectLevel },
   data() {
     return {
       multipaneStyle: {'--marginTop':'0px'},
@@ -257,6 +285,10 @@ export default {
       this.planTimeRang = [new Date(), new Date()];
       this.sysPlanItemList = [];
       this.resetForm("form");
+    },
+    handleQuery() {
+      this.caseQueryParams.pageNum = 1;
+      this.getPlanItemCaseList();
     },
     /** 取消按钮 */
     cancel() {
@@ -452,6 +484,21 @@ export default {
 .case-context {
   flex-grow: 1;
   overflow:hidden;
+  .case-tools {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin: 5px 0px 10px 0px;
+    > * {
+      display: inline-block;
+      justify-content: flex-start;
+      margin-bottom: 0px;
+      ::v-deep .el-form-item {
+        margin-bottom: 0px;
+      }
+    }
+  }
 }
 .annex-list {
   display: inline-flex;
