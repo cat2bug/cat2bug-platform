@@ -790,5 +790,6 @@
   "a": "",
   "plan.countdown-time-format": "DD HH:mm",
   "plan.countdown-time-title": "End Countdown",
-  "is-delete-img": "Are you sure to delete the selected image?"
+  "is-delete-img": "Are you sure to delete the selected image?",
+  "copy.success": "Copy Success"
 }

@@ -26,6 +26,14 @@ export function addPlan(data) {
   })
 }
 
+// 新增测试计划
+export function copyPlan(planId) {
+  return request({
+    url: '/system/plan/'+planId+'/copy',
+    method: 'post',
+  })
+}
+
 // 修改测试计划
 export function updatePlan(data) {
   return request({

@@ -77,6 +77,13 @@
             <el-button
               size="mini"
               type="text"
+              icon="el-icon-plus"
+              @click="handlePlanCopy(scope.row)"
+              v-hasPermi="['system:plan:add']"
+            >{{ $t('copy') }}</el-button>
+            <el-button
+              size="mini"
+              type="text"
               icon="el-icon-tickets"
               @click="handlePlanRun(scope.row)"
               v-hasPermi="['system:plan:run']"
@@ -117,7 +124,7 @@
 <script>
 import ProjectLabel from "@/components/Project/ProjectLabel";
 import RowListMember from "@/components/RowListMember";
-import { listPlan, delPlan } from "@/api/system/plan";
+import {listPlan, delPlan, copyPlan} from "@/api/system/plan";
 import AddPlanDialog from "@/views/system/plan/AddPlanDialog";
 import HandlePlanDialog from "@/views/system/plan/HandlePlanDialog";
 import DictOptionDialog from "@/components/DictOptionDialog";
@@ -264,12 +271,22 @@ export default {
       this.resetForm("queryForm");
       this.handleQuery();
     },
+    /** 添加计划 */
     handleAdd() {
       this.$refs.planDialog.openAdd();
     },
+    /** 更新计划 */
     handleUpdate(plan) {
       this.$refs.planDialog.openUpdate(plan);
     },
+    /** 复制计划 */
+    handlePlanCopy(plan) {
+      copyPlan(plan.planId).then(res=>{
+        this.$modal.msgSuccess(this.$i18n.t('copy.success'));
+        this.getList();
+      });
+    },
+    /** 执行计划 */
     handlePlanRun(plan) {
       this.$refs.handlePlanDialog.open(plan.planId);
     },
@@ -278,8 +295,8 @@ export default {
       this.$modal.confirm(strFormat(this.$i18n.t('plan.delete-prompt'), row.planName)).then(function() {
         return delPlan(row.planId);
       }).then(() => {
-        this.getList();
         this.$modal.msgSuccess(this.$i18n.t('delete.success'));
+        this.getList();
       }).catch(() => {});
     },
     /** 导出按钮操作 */
