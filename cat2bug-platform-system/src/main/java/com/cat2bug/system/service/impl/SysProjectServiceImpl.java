@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 项目Service业务层处理
@@ -53,11 +54,17 @@ public class SysProjectServiceImpl implements ISysProjectService
     @Autowired
     private ISysDefectService sysDefectService;
     @Autowired
+    private ISysDefectLogService sysDefectLogService;
+    @Autowired
+    private ISysCommentService sysCommentService;
+    @Autowired
     private ISysPlanService sysPlanService;
     @Autowired
     private ISysModuleService sysModuleService;
     @Autowired
     private ISysReportService sysReportService;
+    @Autowired
+    private ISysReportTemplateService sysReportTemplateService;
     @Autowired
     private ISysDocumentService sysDocumentService;
     @Autowired
@@ -235,7 +242,7 @@ public class SysProjectServiceImpl implements ISysProjectService
             SysProject project = this.selectSysProjectByProjectId(projectId);
             compressUtil.addJsonFile("project.json", project);
             // 成员
-            List<SysUser> memberList = sysUserProjectService.selectNotSysUserListByProjectId(projectId, new SysUser());
+            List<SysUser> memberList = sysUserProjectService.selectSysUserListByProjectId(projectId, new SysUser());
             compressUtil.addJsonFile("member.json", memberList);
             for (SysUser member : memberList) {
                 if(StringUtils.isNotBlank(member.getAvatar())){
@@ -284,6 +291,27 @@ public class SysProjectServiceImpl implements ISysProjectService
                     }
                 }
             }
+            // 缺陷日志
+            List<SysDefectLog> sysDefectLogList = new ArrayList();
+            for(SysDefect d : defectList) {
+                SysDefectLog sysDefectLog = new SysDefectLog();
+                sysDefectLog.setDefectId(d.getDefectId());
+                sysDefectLogList.addAll(sysDefectLogService.selectSysDefectLogList(sysDefectLog));
+            }
+            sysDefectLogList = sysDefectLogList.stream().filter(l->l!=null).collect(Collectors.toList());
+            compressUtil.addJsonFile("defect_log.json", sysDefectLogList);
+            // 缺陷日志评论
+            List<SysComment> defectCommentList = new ArrayList();
+            for(SysDefectLog log : sysDefectLogList) {
+                SysComment comment = new SysComment();
+                comment.setCorrelationId(log.getDefectId());
+                comment.setModuleType(SysDefectLogServiceImpl.COMMENT_TYPE);
+                defectCommentList.addAll(sysCommentService.selectSysCommentList(comment));
+            }
+            defectCommentList = defectCommentList.stream().filter(l->l!=null).collect(Collectors.toList());
+            compressUtil.addJsonFile("defect_log_comment.json", defectCommentList);
+
+
             // 计划
             SysPlan sysPlan = new SysPlan();
             sysPlan.setProjectId(projectId);
@@ -299,6 +327,11 @@ public class SysProjectServiceImpl implements ISysProjectService
             sysReport.setProjectId(projectId);
             List<SysReport> reportList = sysReportService.selectSysReportList(sysReport);
             compressUtil.addJsonFile("report.json", reportList);
+            // 报告模版
+            SysReportTemplate sysReportTemplate = new SysReportTemplate();
+            sysReportTemplate.setProjectId(projectId);
+            List<SysReportTemplate> reportTemplateList = sysReportTemplateService.selectSysReportTemplateList(sysReportTemplate);
+            compressUtil.addJsonFile("report_template.json", reportTemplateList);
             // 文档
             SysDocument sysDocument = new SysDocument();
             sysDocument.setProjectId(projectId);
@@ -310,10 +343,10 @@ public class SysProjectServiceImpl implements ISysProjectService
                 }
             }
             // API
-            SysProjectApi sysProjectApi = new SysProjectApi();
-            sysProjectApi.setProjectId(projectId);
-            List<SysProjectApi> sysProjectApiList = sysProjectApiService.selectSysProjectApiList(sysProjectApi);
-            compressUtil.addJsonFile("api.json", sysProjectApiList);
+//            SysProjectApi sysProjectApi = new SysProjectApi();
+//            sysProjectApi.setProjectId(projectId);
+//            List<SysProjectApi> sysProjectApiList = sysProjectApiService.selectSysProjectApiList(sysProjectApi);
+//            compressUtil.addJsonFile("api.json", sysProjectApiList);
         } finally {
             compressUtil.build();
         }

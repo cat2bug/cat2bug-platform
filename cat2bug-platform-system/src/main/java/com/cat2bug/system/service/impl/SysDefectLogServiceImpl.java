@@ -19,7 +19,7 @@ import com.cat2bug.system.service.ISysDefectLogService;
 @Service
 public class SysDefectLogServiceImpl implements ISysDefectLogService 
 {
-    private final static String COMMENT_TYPE = "defect_log";
+    public final static String COMMENT_TYPE = "defect_log";
 
     @Autowired
     private SysDefectLogMapper sysDefectLogMapper;
