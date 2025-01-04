@@ -25,8 +25,8 @@ public class LocalFileServiceImpl implements IFileService {
     }
 
     @Override
-    public String uploadLocal(String path) throws IOException, InvalidExtensionException {
-        return FileUploadUtils.uploadLocal(path);
+    public String uploadLocal(String path, String filePath) throws IOException, InvalidExtensionException {
+        return FileUploadUtils.uploadLocal(filePath);
     }
 
     @Override
