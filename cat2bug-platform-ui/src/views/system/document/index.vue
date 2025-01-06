@@ -206,7 +206,7 @@ export default {
         fileExtension: null,
         createById: null,
         updateById: null,
-        docPid: null,
+        docPid: 0,
       },
       // 表单参数
       form: {},
@@ -332,7 +332,7 @@ export default {
         updateTime: null,
         updateById: null,
         fileVersion: null,
-        docPid: null,
+        docPid: 0,
         docRemark: null,
         fileUrl: null
       };
@@ -445,7 +445,7 @@ export default {
     /** 跳转文件夹按钮操作 */
     goFolder(dir) {
       this.reset();
-      this.queryParams.docPid = dir.docId;
+      this.queryParams.docPid = dir.docId || 0;
       this.queryParams.docType = null;
       if(dir.docId) {
         this.currentFolder = dir;
@@ -472,7 +472,7 @@ export default {
         pageSize: 9999,
         docType: 0,
         projectId: this.getProjectId(),
-        docPid: node.data.docId>-1?node.data.docId:null
+        docPid: node.data.docId>-1?node.data.docId:0
       }
       listDocument(params).then(response => {
         resolve(response.rows.filter(d=>d.docId!=this.folderForm.docId));

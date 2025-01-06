@@ -60,6 +60,8 @@ public class SysProjectServiceImpl implements ISysProjectService
     @Autowired
     private ISysPlanService sysPlanService;
     @Autowired
+    private ISysPlanItemService sysPlanItemService;
+    @Autowired
     private ISysModuleService sysModuleService;
     @Autowired
     private ISysReportService sysReportService;
@@ -311,11 +313,16 @@ public class SysProjectServiceImpl implements ISysProjectService
             defectCommentList = defectCommentList.stream().filter(l->l!=null).collect(Collectors.toList());
             compressUtil.addJsonFile("defect_log_comment.json", defectCommentList);
 
-
             // 计划
             SysPlan sysPlan = new SysPlan();
             sysPlan.setProjectId(projectId);
             List<SysPlan> planList = sysPlanService.selectSysPlanList(sysPlan);
+            for(SysPlan plan : planList) {
+                SysPlanItem planItem = new SysPlanItem();
+                planItem.setPlanId(plan.getPlanId());
+                List<SysPlanItem> sysPlanItemList = sysPlanItemService.selectSysPlanItemList(planItem);
+                plan.setSysPlanItemList(sysPlanItemList);
+            }
             compressUtil.addJsonFile("plan.json", planList);
             // 交付物
             SysModule sysModule = new SysModule();

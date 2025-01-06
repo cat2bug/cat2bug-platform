@@ -4,8 +4,8 @@
       <el-page-header @back="goBack" :content="$t('project.push')">
       </el-page-header>
     </el-row>
-    <el-form ref="form" :model="form" label-width="80px">
-      <el-form-item :label="$t('project.push.key')">
+    <el-form ref="form" :model="form" :rules="rules" label-width="80px">
+      <el-form-item :label="$t('project.push.key')" prop="pullKey">
         <el-input v-model="form.pullKey"></el-input>
       </el-form-item>
       <el-form-item>
@@ -25,6 +25,11 @@ export default {
     return {
       form: {
         pullKey: '',
+      },
+      rules: {
+        pullKey: [
+          {required: true, message: this.$i18n.t('project.push.key-cannot-empty'), trigger: "change"}
+        ],
       }
     }
   },
@@ -43,8 +48,12 @@ export default {
     },
     /** 提交项目同步操作 */
     onSubmit() {
-      pullProject(this.projectId, this.form).then(res=>{
-        this.$message.success('同步成功');
+      this.$refs["form"].validate(valid => {
+        if (valid) {
+          pullProject(this.projectId, this.form).then(res => {
+            this.$message.success('同步成功');
+          });
+        }
       });
     },
   }

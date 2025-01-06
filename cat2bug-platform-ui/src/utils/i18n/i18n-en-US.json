@@ -261,6 +261,7 @@
   "cancel-success": "Cancel Success",
   "project.push": "Sync to the cloud",
   "project.push.key": "Sync Key",
+  "project.push.key-cannot-empty": "The sync key cannot be empty!",
   "sync": "Sync",
   "project.no-permission-access-project": "No permission to access this project!",
   "project.set-role-group": "Set Role Group",

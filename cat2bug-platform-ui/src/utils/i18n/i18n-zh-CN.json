@@ -261,6 +261,7 @@
   "project.no-permission-access-project": "没有权限访问此项目!",
   "project.push": "同步到云端",
   "project.push.key": "同步密钥",
+  "project.push.key-cannot-empty": "同步密钥不能为空!",
   "sync": "同步",
   "collect-success": "关注成功",
   "cancel-success": "取消成功",
