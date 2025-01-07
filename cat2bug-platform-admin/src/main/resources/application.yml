@@ -19,7 +19,7 @@ cat2bug:
   # 云服务
   cloud:
     # 云服务地址
-    host: http://127.0.0.1:22020
+    host: https://www.cat2bug.com/cloud/cloud-api
   # 代理服务
   proxy:
     routes:
@@ -93,7 +93,7 @@ caffeine:
 
 # Spring配置
 spring:
-  database-type: h2
+  database-type: mysql
   flyway:
     # 是否开启数据库自动更新
     enabled: ${cat2bug.auto-update}

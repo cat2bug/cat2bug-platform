@@ -12,6 +12,7 @@ import com.cat2bug.system.mapper.SysUserProjectMapper;
 import com.cat2bug.system.mapper.SysUserProjectRoleMapper;
 import com.cat2bug.system.service.*;
 import com.google.common.base.Preconditions;
+import lombok.extern.log4j.Log4j2;
 import okhttp3.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,6 +31,7 @@ import java.util.stream.Collectors;
  * @date 2023-11-13
  */
 @Service
+@Log4j2
 public class SysProjectServiceImpl implements ISysProjectService 
 {
     /**
@@ -354,10 +356,15 @@ public class SysProjectServiceImpl implements ISysProjectService
 //            sysProjectApi.setProjectId(projectId);
 //            List<SysProjectApi> sysProjectApiList = sysProjectApiService.selectSysProjectApiList(sysProjectApi);
 //            compressUtil.addJsonFile("api.json", sysProjectApiList);
+        } catch (Exception e) {
+            log.error(e);
+            throw e;
         } finally {
             compressUtil.build();
         }
 
+        // 将文件发送到云端
+        String url = cloudUrl+"/api/project/push";
         OkHttpClient client = new OkHttpClient();
         File compressFile = new File(compressFileName);
         RequestBody requestBody = new MultipartBody.Builder()
@@ -365,15 +372,15 @@ public class SysProjectServiceImpl implements ISysProjectService
                 .addFormDataPart("version", this.systemVersion)
                 .addFormDataPart("file", fileName, RequestBody.create(MediaType.parse("application/zip"), compressFile))
                 .build();
-        String url = cloudUrl+"/api/project/push";
         Request request = new Request.Builder()
                 .url(url)
                 .post(requestBody)
                 .header(AUTH_TOKEN_HEADER_NAME, pullKey)
                 .build();
-
         Response response = client.newCall(request).execute();
+        compressFile.delete();
         if (response.isSuccessful()) {
+            response.close();
             return true;
         }
         return false;

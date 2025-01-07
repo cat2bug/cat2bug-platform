@@ -39,6 +39,7 @@ export function pullProject(projectId, data) {
   return request({
     url: '/system/project/'+projectId+'/push',
     method: 'post',
+    timeout: 3600000,
     data: data
   })
 }
