@@ -5771,46 +5771,6 @@ VALUES (1, 0, 'admin', '黑猫警长', '00'
        , '0', '0', '127.0.0.1', '2024-12-28 13:16:53', 'admin'
        , '2023-11-12 15:34:51', '', '2024-12-28 13:16:52', '管理员', NULL
        , NULL);
-INSERT INTO `sys_user` (`user_id`, `dept_id`, `user_name`, `nick_name`, `user_type`
-                       , `email`, `phonenumber`, `sex`, `avatar`, `password`
-                       , `status`, `del_flag`, `login_ip`, `login_date`, `create_by`
-                       , `create_time`, `update_by`, `update_time`, `remark`, `ding_user_id`
-                       , `wechat_user_id`)
-VALUES (225, 0, 'demo', 'demo', '00'
-       , '', '18810889190', '0', '/profile/avatar/2024/12/26/blob_20241226204917A001.png', '$2a$10$p6WCZ/mhbV0dvewtdFyMPeIKLbryjOIpwb/b3/oKfvLFbeNUVWCVy'
-       , '0', '0', '127.0.0.1', '2025-01-07 02:45:29', ''
-       , '2024-11-15 11:52:39', '', '2025-01-07 02:45:29', NULL, NULL
-       , NULL);
-INSERT INTO `sys_user` (`user_id`, `dept_id`, `user_name`, `nick_name`, `user_type`
-                       , `email`, `phonenumber`, `sex`, `avatar`, `password`
-                       , `status`, `del_flag`, `login_ip`, `login_date`, `create_by`
-                       , `create_time`, `update_by`, `update_time`, `remark`, `ding_user_id`
-                       , `wechat_user_id`)
-VALUES (226, 0, '202411151153312QNZG7SJQ32GQQ6N', 'http', '00'
-       , '', NULL, '0', '', ''
-       , '0', '0', '', NULL, ''
-       , '2024-11-15 11:53:31', '', NULL, NULL, NULL
-       , NULL);
-INSERT INTO `sys_user` (`user_id`, `dept_id`, `user_name`, `nick_name`, `user_type`
-                       , `email`, `phonenumber`, `sex`, `avatar`, `password`
-                       , `status`, `del_flag`, `login_ip`, `login_date`, `create_by`
-                       , `create_time`, `update_by`, `update_time`, `remark`, `ding_user_id`
-                       , `wechat_user_id`)
-VALUES (227, 0, 'demo1', 'demo1', '00'
-       , 'demo1@qq.com', '18888881111', '0', '', '$2a$10$ocLj89nRtrLSCjwVAMxsvuZWRbeyBB/F1bJbIp2ypYc6S1Pdm88wa'
-       , '0', '0', '127.0.0.1', '2024-11-16 09:05:00', 'demo'
-       , '2024-11-15 20:02:45', '', '2024-11-16 09:04:59', NULL, NULL
-       , NULL);
-INSERT INTO `sys_user` (`user_id`, `dept_id`, `user_name`, `nick_name`, `user_type`
-                       , `email`, `phonenumber`, `sex`, `avatar`, `password`
-                       , `status`, `del_flag`, `login_ip`, `login_date`, `create_by`
-                       , `create_time`, `update_by`, `update_time`, `remark`, `ding_user_id`
-                       , `wechat_user_id`)
-VALUES (228, 0, '20241218185232RXMI27EFG3MCVUUU', 'log', '00'
-       , '', NULL, '0', '', ''
-       , '0', '0', '', NULL, ''
-       , '2024-12-18 18:52:32', '', NULL, NULL, NULL
-       , NULL);
 COMMIT;
 DROP TABLE IF EXISTS `sys_user_config`;
 CREATE TABLE `sys_user_config` (
