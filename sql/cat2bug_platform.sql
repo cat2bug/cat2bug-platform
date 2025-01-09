@@ -11,7 +11,7 @@
  Target Server Version : 80200
  File Encoding         : 65001
 
- Date: 14/11/2024 22:31:52
+ Date: 09/01/2025 22:11:21
 */
 
 SET NAMES utf8mb4;
@@ -609,7 +609,7 @@ CREATE TABLE `sys_case` (
   UNIQUE KEY `id_num_` (`case_id`,`case_num`),
   UNIQUE KEY `project_id_namd_module_` (`case_name`,`module_id`,`project_id`),
   KEY `project_id_case_name` (`case_name`,`project_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9831 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_bin COMMENT='测试用例表';
+) ENGINE=InnoDB AUTO_INCREMENT=9936 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_bin COMMENT='测试用例表';
 
 -- ----------------------------
 -- Records of sys_case
@@ -650,7 +650,7 @@ CREATE TABLE `sys_comment` (
   `module_type` varchar(12) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL COMMENT '所属模块(defect_log:缺陷日志的评论)',
   `correlation_id` bigint NOT NULL COMMENT '关联id',
   PRIMARY KEY (`comment_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8mb3 COMMENT='评论';
+) ENGINE=InnoDB AUTO_INCREMENT=42 DEFAULT CHARSET=utf8mb3 COMMENT='评论';
 
 -- ----------------------------
 -- Records of sys_comment
@@ -756,7 +756,7 @@ CREATE TABLE `sys_defect` (
   KEY `defect_key` (`defect_key`),
   KEY `defect_group_key` (`defect_group_key`),
   KEY `project_id_` (`project_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1063 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='缺陷表';
+) ENGINE=InnoDB AUTO_INCREMENT=1078 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='缺陷表';
 
 -- ----------------------------
 -- Records of sys_defect
@@ -779,7 +779,7 @@ CREATE TABLE `sys_defect_log` (
   `defect_id` bigint NOT NULL COMMENT '缺陷id',
   PRIMARY KEY (`defect_log_id`),
   KEY `defect_id_` (`defect_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=14251 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='缺陷日志表';
+) ENGINE=InnoDB AUTO_INCREMENT=14266 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='缺陷日志表';
 
 -- ----------------------------
 -- Records of sys_defect_log
@@ -958,7 +958,7 @@ CREATE TABLE `sys_document` (
   `doc_remakr` varchar(255) DEFAULT NULL COMMENT '备注',
   `file_url` varchar(255) DEFAULT NULL COMMENT '文件路径',
   PRIMARY KEY (`doc_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=60 DEFAULT CHARSET=utf8mb3 COMMENT='文档';
+) ENGINE=InnoDB AUTO_INCREMENT=64 DEFAULT CHARSET=utf8mb3 COMMENT='文档';
 
 -- ----------------------------
 -- Records of sys_document
@@ -1032,7 +1032,7 @@ CREATE TABLE `sys_logininfor` (
   PRIMARY KEY (`info_id`),
   KEY `idx_sys_logininfor_s` (`status`),
   KEY `idx_sys_logininfor_lt` (`login_time`)
-) ENGINE=InnoDB AUTO_INCREMENT=1530 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='系统访问记录';
+) ENGINE=InnoDB AUTO_INCREMENT=1749 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='系统访问记录';
 
 -- ----------------------------
 -- Records of sys_logininfor
@@ -1066,7 +1066,7 @@ CREATE TABLE `sys_menu` (
   `remark` varchar(500) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT '' COMMENT '备注',
   `menu_name_i18n_key` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '菜单名称的国际化标识',
   PRIMARY KEY (`menu_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2124 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='菜单权限表';
+) ENGINE=InnoDB AUTO_INCREMENT=2125 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='菜单权限表';
 
 -- ----------------------------
 -- Records of sys_menu
@@ -1258,6 +1258,7 @@ INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2121, '测试计划删除', 2117, 4, '#', '', NULL, 1, 0, 'F', '0', '0', 'system:plan:remove', '#', 'admin', '2024-10-11 00:39:24', '', NULL, '', NULL);
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2122, '测试计划导出', 2117, 5, '#', '', NULL, 1, 0, 'F', '0', '0', 'system:plan:export', '#', 'admin', '2024-10-11 00:39:24', '', NULL, '', NULL);
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2123, '测试计划执行', 2117, 6, '', NULL, NULL, 1, 0, 'F', '0', '0', 'system:plan:run', '#', 'admin', '2024-10-15 02:06:28', '', NULL, '', NULL);
+INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2124, '同步项目', 2013, 9, 'push', 'system/project/push/index', NULL, 1, 0, 'C', '1', '0', 'system:project:push', '#', 'admin', '2024-12-26 17:28:45', 'admin', '2024-12-27 14:14:27', '', 'project.push');
 COMMIT;
 
 -- ----------------------------
@@ -1272,33 +1273,12 @@ CREATE TABLE `sys_module` (
   `module_pid` bigint unsigned DEFAULT '0' COMMENT '父模块id',
   PRIMARY KEY (`module_id`),
   KEY `module_nbame_` (`module_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=343 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='模块表';
+) ENGINE=InnoDB AUTO_INCREMENT=358 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='模块表';
 
 -- ----------------------------
 -- Records of sys_module
 -- ----------------------------
 BEGIN;
-INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`) VALUES (322, '登陆', NULL, 50, 0);
-INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`) VALUES (323, '首页', NULL, 50, 0);
-INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`) VALUES (324, '测试用例', NULL, 50, 0);
-INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`) VALUES (325, '手动', NULL, 50, 324);
-INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`) VALUES (326, 'AI', NULL, 50, 324);
-INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`) VALUES (327, '远程', NULL, 50, 326);
-INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`) VALUES (328, '本地', NULL, 50, 326);
-INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`) VALUES (329, '1232', NULL, 50, 0);
-INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`) VALUES (330, '1', NULL, 52, 0);
-INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`) VALUES (331, '2', NULL, 52, 0);
-INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`) VALUES (332, '3', NULL, 52, 0);
-INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`) VALUES (333, '1.1', NULL, 52, 330);
-INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`) VALUES (334, '1.2', NULL, 52, 330);
-INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`) VALUES (335, '1.1.1', NULL, 52, 333);
-INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`) VALUES (336, '登陆', NULL, 53, 0);
-INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`) VALUES (337, '首页', NULL, 53, 0);
-INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`) VALUES (338, '交付物', NULL, 53, 0);
-INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`) VALUES (339, '登陆', NULL, 54, 0);
-INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`) VALUES (340, '测试用例', NULL, 54, 0);
-INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`) VALUES (341, '测试计划', NULL, 54, 0);
-INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`) VALUES (342, '缺陷', NULL, 54, 0);
 COMMIT;
 
 -- ----------------------------
@@ -1329,7 +1309,6 @@ CREATE TABLE `sys_notice` (
 -- Records of sys_notice
 -- ----------------------------
 BEGIN;
-INSERT INTO `sys_notice` (`notice_id`, `notice_title`, `notice_type`, `notice_content`, `status`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `project_id`, `group_name`, `receiver_id`, `is_read`) VALUES ('4f2d820414f24a2abaa4ed9ff5c7b4fb', '[处理中]缺陷:#1 1123', '', '## #1 1123 \n\n点击链接访问缺陷详情 [http://localhost:2222/#/project/defect?defectId=1062](http://localhost:2222/#/project/defect?projectId=54&defectId=1062) \n\n**缺陷级别:** 中 \n\n**缺陷类型:** BUG \n\n**缺陷状态:** 处理中 \n\n**交付物名称:**  \n\n**交付物版本:**  \n\n**缺陷描述:**  \n\n', '0', '', '2024-11-10 12:13:59', '', NULL, NULL, 54, 'defect', 224, NULL);
 COMMIT;
 
 -- ----------------------------
@@ -1358,7 +1337,7 @@ CREATE TABLE `sys_oper_log` (
   KEY `idx_sys_oper_log_bt` (`business_type`),
   KEY `idx_sys_oper_log_s` (`status`),
   KEY `idx_sys_oper_log_ot` (`oper_time`)
-) ENGINE=InnoDB AUTO_INCREMENT=18794 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='操作日志记录';
+) ENGINE=InnoDB AUTO_INCREMENT=19209 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='操作日志记录';
 
 -- ----------------------------
 -- Records of sys_oper_log
@@ -1463,7 +1442,7 @@ CREATE TABLE `sys_project` (
   `project_state` int DEFAULT '1' COMMENT '项目状态(0删除；1运行)',
   PRIMARY KEY (`project_id`),
   KEY `team_id_` (`team_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=55 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='项目表';
+) ENGINE=InnoDB AUTO_INCREMENT=57 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='项目表';
 
 -- ----------------------------
 -- Records of sys_project
@@ -1506,7 +1485,7 @@ CREATE TABLE `sys_project_defect_tabs` (
   `create_time` datetime DEFAULT NULL COMMENT '创建时间',
   PRIMARY KEY (`tab_id`),
   KEY `user_id_` (`project_id`,`user_id`) COMMENT '查询用户所在项目的Tab配置'
-) ENGINE=InnoDB AUTO_INCREMENT=151 DEFAULT CHARSET=utf8mb3 COMMENT='项目缺陷页签配置';
+) ENGINE=InnoDB AUTO_INCREMENT=155 DEFAULT CHARSET=utf8mb3 COMMENT='项目缺陷页签配置';
 
 -- ----------------------------
 -- Records of sys_project_defect_tabs
@@ -1532,7 +1511,7 @@ CREATE TABLE `sys_report` (
   PRIMARY KEY (`report_id`),
   UNIQUE KEY `report_key_` (`report_key`),
   KEY `project_id_` (`project_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=371 DEFAULT CHARSET=utf8mb3 COMMENT='报告';
+) ENGINE=InnoDB AUTO_INCREMENT=385 DEFAULT CHARSET=utf8mb3 COMMENT='报告';
 
 -- ----------------------------
 -- Records of sys_report
@@ -1558,7 +1537,7 @@ CREATE TABLE `sys_report_template` (
   `template_title` varchar(512) DEFAULT NULL COMMENT '模版标题',
   `is_shop` tinyint DEFAULT '0' COMMENT '是否是商店模版',
   PRIMARY KEY (`template_id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=55 DEFAULT CHARSET=utf8mb3 COMMENT='报告模版';
+) ENGINE=InnoDB AUTO_INCREMENT=59 DEFAULT CHARSET=utf8mb3 COMMENT='报告模版';
 
 -- ----------------------------
 -- Records of sys_report_template
@@ -1598,15 +1577,15 @@ BEGIN;
 INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_scope`, `menu_check_strictly`, `dept_check_strictly`, `status`, `del_flag`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `is_team_role`, `is_project_role`, `role_name_i18n_key`) VALUES (1, '超级管理员', 'admin', 1, '1', 1, 1, '0', '0', 'admin', '2023-11-12 15:34:52', '', NULL, '超级管理员', NULL, NULL, NULL);
 INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_scope`, `menu_check_strictly`, `dept_check_strictly`, `status`, `del_flag`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `is_team_role`, `is_project_role`, `role_name_i18n_key`) VALUES (2, '普通角色', 'common', 3, '2', 1, 1, '0', '0', 'admin', '2023-11-12 15:34:52', 'admin', '2024-01-06 12:06:15', '普通角色', 0, 0, NULL);
 INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_scope`, `menu_check_strictly`, `dept_check_strictly`, `status`, `del_flag`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `is_team_role`, `is_project_role`, `role_name_i18n_key`) VALUES (3, '外部人员', 'outsiders', 4, '1', 1, 1, '0', '0', 'admin', '2023-11-18 15:08:35', 'admin', '2024-01-06 12:06:19', NULL, 0, 0, NULL);
-INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_scope`, `menu_check_strictly`, `dept_check_strictly`, `status`, `del_flag`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `is_team_role`, `is_project_role`, `role_name_i18n_key`) VALUES (4, '团队管理员', 'team.admin', 12, '1', 1, 1, '0', '0', 'admin', '2023-11-18 15:15:50', 'admin', '2024-10-15 02:07:02', NULL, 1, 0, 'team.admin-members');
+INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_scope`, `menu_check_strictly`, `dept_check_strictly`, `status`, `del_flag`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `is_team_role`, `is_project_role`, `role_name_i18n_key`) VALUES (4, '团队管理员', 'team.admin', 12, '1', 1, 1, '0', '0', 'admin', '2023-11-18 15:15:50', 'admin', '2024-12-26 17:29:42', NULL, 1, 0, 'team.admin-members');
 INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_scope`, `menu_check_strictly`, `dept_check_strictly`, `status`, `del_flag`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `is_team_role`, `is_project_role`, `role_name_i18n_key`) VALUES (5, '团队普通人员', 'team.default', 13, '1', 0, 1, '0', '0', 'admin', '2023-11-18 15:16:21', 'admin', '2024-06-17 06:29:17', NULL, 1, 0, 'team.ordinary-members');
-INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_scope`, `menu_check_strictly`, `dept_check_strictly`, `status`, `del_flag`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `is_team_role`, `is_project_role`, `role_name_i18n_key`) VALUES (6, '项目管理员', 'project.admin', 22, '1', 1, 1, '0', '0', 'admin', '2023-11-22 06:48:53', 'admin', '2024-10-11 00:46:59', NULL, 0, 1, 'project.admin');
+INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_scope`, `menu_check_strictly`, `dept_check_strictly`, `status`, `del_flag`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `is_team_role`, `is_project_role`, `role_name_i18n_key`) VALUES (6, '项目管理员', 'project.admin', 22, '1', 1, 1, '0', '0', 'admin', '2023-11-22 06:48:53', 'admin', '2024-12-26 17:30:21', NULL, 0, 1, 'project.admin');
 INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_scope`, `menu_check_strictly`, `dept_check_strictly`, `status`, `del_flag`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `is_team_role`, `is_project_role`, `role_name_i18n_key`) VALUES (7, '项目开发', 'project.develop', 23, '1', 0, 1, '0', '0', 'admin', '2023-11-22 06:50:14', 'admin', '2024-10-15 02:08:13', NULL, 0, 1, 'project.develop');
 INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_scope`, `menu_check_strictly`, `dept_check_strictly`, `status`, `del_flag`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `is_team_role`, `is_project_role`, `role_name_i18n_key`) VALUES (8, '项目测试', 'project.tester', 24, '1', 1, 1, '0', '0', 'admin', '2023-11-22 06:53:11', 'admin', '2024-10-15 02:07:29', NULL, 0, 1, 'project.tester');
 INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_scope`, `menu_check_strictly`, `dept_check_strictly`, `status`, `del_flag`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `is_team_role`, `is_project_role`, `role_name_i18n_key`) VALUES (9, '项目外部人员', 'project.outsider', 25, '1', 0, 1, '0', '0', 'admin', '2023-11-22 06:55:20', 'admin', '2024-03-13 03:32:56', NULL, 0, 1, 'project.outsider');
 INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_scope`, `menu_check_strictly`, `dept_check_strictly`, `status`, `del_flag`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `is_team_role`, `is_project_role`, `role_name_i18n_key`) VALUES (10, '默认成员', 'default', 2, '1', 0, 1, '0', '0', 'admin', '2023-12-28 18:56:22', 'admin', '2024-03-13 03:30:32', NULL, 0, 0, NULL);
-INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_scope`, `menu_check_strictly`, `dept_check_strictly`, `status`, `del_flag`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `is_team_role`, `is_project_role`, `role_name_i18n_key`) VALUES (11, '项目创建人', 'project.create-by', 21, '1', 1, 1, '0', '0', 'admin', '2024-01-05 17:57:40', 'admin', '2024-10-15 02:07:11', NULL, 0, 1, 'project.create-by');
-INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_scope`, `menu_check_strictly`, `dept_check_strictly`, `status`, `del_flag`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `is_team_role`, `is_project_role`, `role_name_i18n_key`) VALUES (12, '团队创建人', 'team.create-by', 11, '1', 1, 1, '0', '0', 'admin', '2024-01-06 03:41:45', 'admin', '2024-10-15 02:06:52', NULL, 1, 0, 'team.create-by');
+INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_scope`, `menu_check_strictly`, `dept_check_strictly`, `status`, `del_flag`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `is_team_role`, `is_project_role`, `role_name_i18n_key`) VALUES (11, '项目创建人', 'project.create-by', 21, '1', 1, 1, '0', '0', 'admin', '2024-01-05 17:57:40', 'admin', '2024-12-26 17:30:00', NULL, 0, 1, 'project.create-by');
+INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_scope`, `menu_check_strictly`, `dept_check_strictly`, `status`, `del_flag`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `is_team_role`, `is_project_role`, `role_name_i18n_key`) VALUES (12, '团队创建人', 'team.create-by', 11, '1', 1, 1, '0', '0', 'admin', '2024-01-06 03:41:45', 'admin', '2024-12-26 17:29:32', NULL, 1, 0, 'team.create-by');
 COMMIT;
 
 -- ----------------------------
@@ -1829,6 +1808,7 @@ INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (4, 2120);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (4, 2121);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (4, 2122);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (4, 2123);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (4, 2124);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (5, 2000);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (5, 2001);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (5, 2013);
@@ -1924,6 +1904,7 @@ INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (6, 2119);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (6, 2120);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (6, 2121);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (6, 2122);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (6, 2124);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (7, 1035);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (7, 1038);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (7, 2000);
@@ -2126,6 +2107,7 @@ INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (11, 2120);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (11, 2121);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (11, 2122);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (11, 2123);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (11, 2124);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (12, 2000);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (12, 2001);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (12, 2002);
@@ -2218,6 +2200,7 @@ INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (12, 2120);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (12, 2121);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (12, 2122);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (12, 2123);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (12, 2124);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (1810336402060121088, 194487968141779968);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (1810336402060121088, 3514598350520133632);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (1810336402060121088, 5846944675140404224);
@@ -2285,7 +2268,7 @@ CREATE TABLE `sys_team` (
   `is_del` tinyint DEFAULT NULL COMMENT '是否删除',
   PRIMARY KEY (`team_id`),
   UNIQUE KEY `name_` (`team_name`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='团队表';
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='团队表';
 
 -- ----------------------------
 -- Records of sys_team
@@ -2342,13 +2325,17 @@ CREATE TABLE `sys_user` (
   `wechat_user_id` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '微信账号',
   PRIMARY KEY (`user_id`),
   UNIQUE KEY `phone_` (`phonenumber`)
-) ENGINE=InnoDB AUTO_INCREMENT=225 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='用户信息表';
+) ENGINE=InnoDB AUTO_INCREMENT=229 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='用户信息表';
 
 -- ----------------------------
 -- Records of sys_user
 -- ----------------------------
 BEGIN;
-INSERT INTO `sys_user` (`user_id`, `dept_id`, `user_name`, `nick_name`, `user_type`, `email`, `phonenumber`, `sex`, `avatar`, `password`, `status`, `del_flag`, `login_ip`, `login_date`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `ding_user_id`, `wechat_user_id`) VALUES (1, 00000000000000000000, 'admin', '黑猫警长', '00', 'admin@cat2bug.com', '18888888888', '0', '', '$2a$10$/YbsRyezA9pg13iJhCNE.u5yOvWbuq7NZhOlliUvycEfBIgJN6qHK', '0', '0', '127.0.0.1', '2024-11-04 17:02:47', 'admin', '2023-11-12 15:34:51', '', '2024-11-04 17:02:46', '管理员', NULL, NULL);
+INSERT INTO `sys_user` (`user_id`, `dept_id`, `user_name`, `nick_name`, `user_type`, `email`, `phonenumber`, `sex`, `avatar`, `password`, `status`, `del_flag`, `login_ip`, `login_date`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `ding_user_id`, `wechat_user_id`) VALUES (1, 00000000000000000000, 'admin', '黑猫警长', '00', 'admin@cat2bug.com', '18888888888', '0', '', '$2a$10$/YbsRyezA9pg13iJhCNE.u5yOvWbuq7NZhOlliUvycEfBIgJN6qHK', '0', '0', '127.0.0.1', '2024-12-28 13:16:53', 'admin', '2023-11-12 15:34:51', '', '2024-12-28 13:16:52', '管理员', NULL, NULL);
+INSERT INTO `sys_user` (`user_id`, `dept_id`, `user_name`, `nick_name`, `user_type`, `email`, `phonenumber`, `sex`, `avatar`, `password`, `status`, `del_flag`, `login_ip`, `login_date`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `ding_user_id`, `wechat_user_id`) VALUES (225, 00000000000000000000, 'demo', 'demo', '00', '', '18810889190', '0', '/profile/avatar/2024/12/26/blob_20241226204917A001.png', '$2a$10$p6WCZ/mhbV0dvewtdFyMPeIKLbryjOIpwb/b3/oKfvLFbeNUVWCVy', '0', '0', '127.0.0.1', '2025-01-07 02:45:29', '', '2024-11-15 11:52:39', '', '2025-01-07 02:45:29', NULL, NULL, NULL);
+INSERT INTO `sys_user` (`user_id`, `dept_id`, `user_name`, `nick_name`, `user_type`, `email`, `phonenumber`, `sex`, `avatar`, `password`, `status`, `del_flag`, `login_ip`, `login_date`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `ding_user_id`, `wechat_user_id`) VALUES (226, 00000000000000000000, '202411151153312QNZG7SJQ32GQQ6N', 'http', '00', '', NULL, '0', '', '', '0', '0', '', NULL, '', '2024-11-15 11:53:31', '', NULL, NULL, NULL, NULL);
+INSERT INTO `sys_user` (`user_id`, `dept_id`, `user_name`, `nick_name`, `user_type`, `email`, `phonenumber`, `sex`, `avatar`, `password`, `status`, `del_flag`, `login_ip`, `login_date`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `ding_user_id`, `wechat_user_id`) VALUES (227, 00000000000000000000, 'demo1', 'demo1', '00', 'demo1@qq.com', '18888881111', '0', '', '$2a$10$ocLj89nRtrLSCjwVAMxsvuZWRbeyBB/F1bJbIp2ypYc6S1Pdm88wa', '0', '0', '127.0.0.1', '2024-11-16 09:05:00', 'demo', '2024-11-15 20:02:45', '', '2024-11-16 09:04:59', NULL, NULL, NULL);
+INSERT INTO `sys_user` (`user_id`, `dept_id`, `user_name`, `nick_name`, `user_type`, `email`, `phonenumber`, `sex`, `avatar`, `password`, `status`, `del_flag`, `login_ip`, `login_date`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `ding_user_id`, `wechat_user_id`) VALUES (228, 00000000000000000000, '20241218185232RXMI27EFG3MCVUUU', 'log', '00', '', NULL, '0', '', '', '0', '0', '', NULL, '', '2024-12-18 18:52:32', '', NULL, NULL, NULL, NULL);
 COMMIT;
 
 -- ----------------------------
@@ -2365,13 +2352,15 @@ CREATE TABLE `sys_user_config` (
   `life_content` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '人生格言',
   PRIMARY KEY (`user_config_id`),
   KEY `user_id_` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=122 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='用户配置表';
+) ENGINE=InnoDB AUTO_INCREMENT=124 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='用户配置表';
 
 -- ----------------------------
 -- Records of sys_user_config
 -- ----------------------------
 BEGIN;
 INSERT INTO `sys_user_config` (`user_config_id`, `current_team_id`, `user_id`, `current_project_id`, `exit_time`, `defect_last_access_time`, `life_content`) VALUES (121, 9, 224, 54, NULL, NULL, NULL);
+INSERT INTO `sys_user_config` (`user_config_id`, `current_team_id`, `user_id`, `current_project_id`, `exit_time`, `defect_last_access_time`, `life_content`) VALUES (122, 10, 225, 56, NULL, NULL, NULL);
+INSERT INTO `sys_user_config` (`user_config_id`, `current_team_id`, `user_id`, `current_project_id`, `exit_time`, `defect_last_access_time`, `life_content`) VALUES (123, 10, 227, 55, NULL, NULL, NULL);
 COMMIT;
 
 -- ----------------------------
@@ -2425,7 +2414,7 @@ CREATE TABLE `sys_user_project` (
   `collect` tinyint(1) DEFAULT NULL COMMENT '是否收藏',
   PRIMARY KEY (`user_project_id`),
   UNIQUE KEY `user_project_` (`user_id`,`project_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=202 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='用户项目表';
+) ENGINE=InnoDB AUTO_INCREMENT=206 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='用户项目表';
 
 -- ----------------------------
 -- Records of sys_user_project
@@ -2443,7 +2432,7 @@ CREATE TABLE `sys_user_project_role` (
   `role_id` bigint NOT NULL COMMENT '角色id',
   PRIMARY KEY (`user_project_role_id`),
   UNIQUE KEY `user_project_role_` (`user_project_id`,`role_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=336 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='用户项目角色表';
+) ENGINE=InnoDB AUTO_INCREMENT=340 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='用户项目角色表';
 
 -- ----------------------------
 -- Records of sys_user_project_role
@@ -2467,6 +2456,7 @@ CREATE TABLE `sys_user_role` (
 BEGIN;
 INSERT INTO `sys_user_role` (`user_id`, `role_id`) VALUES (222, 10);
 INSERT INTO `sys_user_role` (`user_id`, `role_id`) VALUES (224, 10);
+INSERT INTO `sys_user_role` (`user_id`, `role_id`) VALUES (225, 10);
 COMMIT;
 
 -- ----------------------------
@@ -2506,7 +2496,7 @@ CREATE TABLE `sys_user_team` (
   `team_lock` tinyint(1) unsigned zerofill DEFAULT '0' COMMENT '是否锁定',
   PRIMARY KEY (`user_team_id`),
   UNIQUE KEY `user_team_` (`user_id`,`team_id`,`team_role_id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=182 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='用户团队角色表';
+) ENGINE=InnoDB AUTO_INCREMENT=184 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='用户团队角色表';
 
 -- ----------------------------
 -- Records of sys_user_team
@@ -2523,7 +2513,7 @@ CREATE TABLE `sys_user_team_role` (
   `user_team_id` bigint NOT NULL COMMENT '用户团队id',
   `role_id` bigint NOT NULL COMMENT '角色id',
   PRIMARY KEY (`user_team_role_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=221 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='用户团队角色表';
+) ENGINE=InnoDB AUTO_INCREMENT=226 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='用户团队角色表';
 
 -- ----------------------------
 -- Records of sys_user_team_role
