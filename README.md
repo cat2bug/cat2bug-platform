@@ -1,5 +1,5 @@
 <div align="center"><img src="readme/images/logo.png" style="width: 300px;" /></div>
-<h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">Cat2Bug-Platform v0.4.2</h1>
+<h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">Cat2Bug-Platform v0.5.0</h1>
 <h4 align="center">轻量化智能BUG管理平台</h4>
 
 ## 平台简介
@@ -22,7 +22,7 @@ Cat2Bug-Platform是一套永久免费开源的Bug管理平台，可以完全私�
 
 ## 最新版本更新说明
 
-当前最新版本是0.4.2
+当前最新版本是0.5.0
 
 * 在测试用例、缺陷、交付物、报告、文档、通知模块新增悬浮菜单;
 * 新建缺陷时添加缓存上一次选项功能
@@ -107,7 +107,7 @@ Cat2Bug-Platform是一套永久免费开源的Bug管理平台，可以完全私�
 手动部署需要提前安装Java 11环境，并下载cat2bug-platform发行版程序，执行命令如下：
 
 ```shell
-nohup java -jar cat2bug-platform-0.4.2.jar>/dev/null 2>&1 &
+nohup java -jar cat2bug-platform-0.5.0.jar>/dev/null 2>&1 &
 ```
 
 ### Docker单容器部署
