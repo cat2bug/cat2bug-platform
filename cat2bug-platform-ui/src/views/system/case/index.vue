@@ -93,7 +93,7 @@
             </div>
             <el-dropdown-menu slot="dropdown" class="case-add-dropdown-menu">
               <el-dropdown-item @click.native="handleCloudCaseAdd"><svg-icon icon-class="robot" />{{ $t('case.ai-create') }}</el-dropdown-item>
-              <el-dropdown-item @click.native="handleCloudCaseAdd2"><svg-icon icon-class="robot" />{{ $t('case.ai-create') }}2</el-dropdown-item>
+<!--              <el-dropdown-item @click.native="handleCloudCaseAdd2"><svg-icon icon-class="robot" />{{ $t('case.ai-create') }}2</el-dropdown-item>-->
             </el-dropdown-menu>
           </el-dropdown>
         </el-col>
