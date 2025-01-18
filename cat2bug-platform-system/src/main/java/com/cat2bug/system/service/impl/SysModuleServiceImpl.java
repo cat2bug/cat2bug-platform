@@ -97,6 +97,7 @@ public class SysModuleServiceImpl implements ISysModuleService
     @Override
     public int updateSysModule(SysModule sysModule)
     {
+        Preconditions.checkArgument(sysModule.getModulePid()!=sysModule.getModuleId(), MessageUtils.message("module.pid-cannot-itself"));
         return sysModuleMapper.updateSysModule(sysModule);
     }
 
