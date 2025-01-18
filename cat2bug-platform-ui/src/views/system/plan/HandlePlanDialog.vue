@@ -207,7 +207,7 @@
             <el-table-column v-if="showField('title')" :label="$t('title')" align="left" prop="caseName" min-width="200" sortable fixed>
               <template slot-scope="scope">
                 <div class="table-case-title">
-                  <cat2-bug-text :type="checkPermi(['system:case:edit'])?'link':'text'" v-model="scope.row.caseName" :tooltip="scope.row.caseName"  @click="handleOpenEditCase(scope.row)" />
+                  <cat2-bug-text :type="checkPermi(['system:case:edit'])?'link':'text'" v-model="scope.row.caseName+''" :tooltip="scope.row.caseName"  @click="handleOpenEditCase(scope.row)" />
                 </div>
               </template>
             </el-table-column>
@@ -511,17 +511,22 @@ export default {
       this.query.planId = planId;
       this.query.projectId = this.projectId;
       this.loading = true;
+      this.getPlanInfo(planId);
+
+      this.getTreeModuleWidth();
+      this.getPlanItemList();
+      this.$nextTick(()=>{
+        this.initFloatMenu();
+      })
+    },
+    /** 获取计划信息 */
+    getPlanInfo(planId) {
       getPlan(planId).then(response => {
         this.plan = response.data;
         this.$nextTick(()=>{
           this.$refs.treeModuleRef.reloadData();
         })
       });
-      this.getTreeModuleWidth();
-      this.getPlanItemList();
-      this.$nextTick(()=>{
-        this.initFloatMenu();
-      })
     },
     /** 查询测试用例列表 */
     getPlanItemList() {
@@ -573,6 +578,7 @@ export default {
         planItemState: state,
       }
       updatePlanItem(data).then(res=>{
+        this.getPlanInfo(this.plan.planId);
         this.getPlanItemList();
         this.$message.success(this.$i18n.t('plan.pass-success').toString());
         this.$emit('change');
@@ -584,6 +590,7 @@ export default {
       this.$refs.addDefect.openByCase({...item, ...{ moduleVersion: this.plan.planVersion }});
       e.stopPropagation();
     },
+    /** 打开测试用例 */
     handleOpenHandleDefect(item, defectId) {
       this.planItem = item;
       this.$refs.handleDefect.open(defectId);
@@ -597,6 +604,7 @@ export default {
         },
       }
       updatePlanItem(data).then(res=>{
+        this.getPlanInfo(this.plan.planId);
         this.getPlanItemList();
         this.$emit('change');
       })
@@ -611,6 +619,7 @@ export default {
         planItemState: PLAN_ITEM_STATE_NOT_PASS,
       }
       updatePlanItem(data).then(res=>{
+        this.getPlanInfo(this.plan.planId);
         this.getPlanItemList();
         this.$emit('change');
       })
@@ -625,13 +634,14 @@ export default {
         planItemState: PLAN_ITEM_STATE_NOT_PASS,
       }
       updatePlanItem(data).then(res=>{
+        this.getPlanInfo(this.plan.planId);
         this.getPlanItemList();
         this.$emit('change');
       });
     },
     /** 打开编辑用例窗口 */
     handleOpenEditCase(planItem) {
-      this.$refs.addCaseDialog.open(planItem.caseId)
+      this.$refs.addCaseDialog.open(planItem.caseId);
     },
     /** 根据ID查找缺陷 */
     handlePlanItemDefectList(event, planItem) {
@@ -653,6 +663,7 @@ export default {
         this.defectLoading = false;
       })
     },
+    /** 查询计划项 */
     handlePlanItemStateSearch(state) {
       this.query.planItemState = state;
       this.query.pageNum = 1;
