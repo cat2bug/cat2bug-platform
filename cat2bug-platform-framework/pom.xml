@@ -69,6 +69,10 @@
             <groupId>com.cat2bug</groupId>
             <artifactId>cat2bug-system</artifactId>
         </dependency>
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy-agent</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

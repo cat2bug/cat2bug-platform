@@ -9,14 +9,18 @@ import com.cat2bug.common.utils.poi.ExcelUtil;
 import com.cat2bug.system.domain.SysCase;
 import com.cat2bug.system.domain.SysPlanItem;
 import com.cat2bug.system.domain.SysPlanItemModule;
+import com.cat2bug.system.domain.SysUserConfig;
 import com.cat2bug.system.service.ISysDefectService;
+import com.cat2bug.system.service.ISysModuleService;
 import com.cat2bug.system.service.ISysPlanItemService;
+import com.cat2bug.system.service.ISysUserConfigService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 测试计划子项Controller
@@ -31,7 +35,7 @@ public class SysPlanItemController extends BaseController
     @Autowired
     private ISysPlanItemService sysPlanItemService;
     @Autowired
-    private ISysDefectService sysDefectService;
+    private ISysModuleService sysModuleService;
 
     /**
      * 查询测试计划子项列表
@@ -40,6 +44,15 @@ public class SysPlanItemController extends BaseController
     @GetMapping("/list")
     public TableDataInfo list(SysPlanItem sysPlanItem)
     {
+        if(sysPlanItem.getParams()==null) {
+            sysPlanItem.setParams(new HashMap<>());
+        }
+        Set<Long> moduleIds = sysModuleService.getAllChildIds(sysPlanItem.getProjectId(), sysPlanItem.getModuleId());
+        if(moduleIds.size()>0) {
+            sysPlanItem.getParams().put("moduleIdsOfProject", moduleIds);
+        } else {
+            sysPlanItem.getParams().put("moduleIdsOfProject", Arrays.asList(0));
+        }
         startPage();
         List<SysPlanItem> list = sysPlanItemService.selectSysPlanItemList(sysPlanItem);
         return getDataTable(list);
@@ -52,6 +65,16 @@ public class SysPlanItemController extends BaseController
     @GetMapping("/case/list")
     public TableDataInfo items(SysCase sysCase)
     {
+        if(sysCase.getParams()==null) {
+            sysCase.setParams(new HashMap<>());
+        }
+        Set<Long> moduleIds = sysModuleService.getAllChildIds(sysCase.getProjectId(), sysCase.getModuleId());
+        if(moduleIds.size()>0) {
+            sysCase.getParams().put("moduleIdsOfProject", moduleIds);
+        } else {
+            sysCase.getParams().put("moduleIdsOfProject", Arrays.asList(0));
+        }
+
         startPage();
         List<SysCase> list = sysPlanItemService.selectCaseList(sysCase);
         return getDataTable(list);

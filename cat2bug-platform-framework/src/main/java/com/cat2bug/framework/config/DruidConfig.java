@@ -1,22 +1,5 @@
 package com.cat2bug.framework.config;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.sql.DataSource;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceBuilder;
 import com.alibaba.druid.spring.boot.autoconfigure.properties.DruidStatProperties;
@@ -25,6 +8,26 @@ import com.cat2bug.common.enums.DataSourceType;
 import com.cat2bug.common.utils.spring.SpringUtils;
 import com.cat2bug.framework.config.properties.DruidProperties;
 import com.cat2bug.framework.datasource.DynamicDataSource;
+import com.google.common.base.Preconditions;
+import org.apache.ibatis.mapping.DatabaseIdProvider;
+import org.apache.ibatis.mapping.VendorDatabaseIdProvider;
+import org.mybatis.spring.SqlSessionFactoryBean;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+
+import javax.servlet.*;
+import javax.sql.DataSource;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * druid 配置多数据源
@@ -34,6 +37,29 @@ import com.cat2bug.framework.datasource.DynamicDataSource;
 @Configuration
 public class DruidConfig
 {
+    @Value("${mybatis.mapperLocations}")
+    private String mapperLocations;
+
+    @Value("${mybatis.typeAliasesPackage}")
+    private String typeAliasesPackage;
+
+    @Bean
+    public DatabaseIdProvider getDatabaseIdProvider() {
+        DatabaseIdProvider databaseIdProvider = new VendorDatabaseIdProvider() {
+            @Override
+            public String getDatabaseId(DataSource dataSource) {
+                String databaseId = super.getDatabaseId(dataSource);
+                Preconditions.checkNotNull(databaseId, "没有获取到databaseId");
+                return databaseId;
+            }
+        };
+        Properties p = new Properties();
+        p.setProperty("H2", "h2");
+        p.setProperty("MySQL", "mysql");
+        databaseIdProvider.setProperties(p);
+        return databaseIdProvider;
+    }
+
     @Bean
     @ConfigurationProperties("spring.datasource.druid.master")
     public DataSource masterDataSource(DruidProperties druidProperties)
@@ -59,6 +85,17 @@ public class DruidConfig
         targetDataSources.put(DataSourceType.MASTER.name(), masterDataSource);
         setDataSource(targetDataSources, DataSourceType.SLAVE.name(), "slaveDataSource");
         return new DynamicDataSource(masterDataSource, targetDataSources);
+    }
+
+    @Primary
+    @Bean
+    public SqlSessionFactoryBean sqlSessionFactoryBean(@Qualifier("dynamicDataSource") DataSource dataSource) throws Exception {
+        SqlSessionFactoryBean factoryBean = new SqlSessionFactoryBean();
+        factoryBean.setDataSource(dataSource);
+        factoryBean.setDatabaseIdProvider(getDatabaseIdProvider());
+        factoryBean.setTypeAliasesPackage(typeAliasesPackage);
+        factoryBean.setMapperLocations(new PathMatchingResourcePatternResolver().getResources(mapperLocations));
+        return factoryBean;
     }
     
     /**

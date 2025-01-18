@@ -100,6 +100,7 @@ export default {
             leaf: m.childrenCount===0
           }
         });
+        // 添加一个显示所有数据的节点
         if(modulePid==0){
           data = [...[{
             name: this.$i18n.t('module.all-module'),
@@ -109,6 +110,7 @@ export default {
         if(resolve){
           resolve(data);
         } else {
+          // 刷新节点
           let { nodesMap } = this.$refs.moduleTree.root.store;
           nodesMap = {};
           this.$refs.moduleTree.root.setData(data);

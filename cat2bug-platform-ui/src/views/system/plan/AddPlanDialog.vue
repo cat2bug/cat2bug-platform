@@ -29,7 +29,16 @@
       <multipane layout="vertical" ref="multiPane" class="custom-resizer" @pane-resize-start="dragStopHandle">
         <!--      树形模块选择组件-->
         <div class="tree-module" ref="treeModule" :style="treeModuleStyle">
-          <tree-module ref="treeModuleRef" :project-id="projectId" @node-click="moduleClickHandle" @check-change="moduleCheckChangeHandle" :check-visible="true" :edit-visible="false" v-resize="setDragComponentSize" />
+          <tree-plan-item-module
+            ref="treeModuleRef"
+            :project-id="projectId"
+            @node-click="moduleClickHandle"
+            @check-change="moduleCheckChangeHandle"
+            :check-visible="true"
+            :edit-visible="false"
+            :show-all="true"
+            :show-count="false"
+            v-resize="setDragComponentSize" />
         </div>
         <multipane-resizer :style="multipaneStyle"></multipane-resizer>
         <!--      用例列表-->
@@ -136,7 +145,7 @@
 import Cat2BugLevel from "@/components/Cat2BugLevel";
 import Cat2BugText from "@/components/Cat2BugText";
 import Step from "@/views/system/case/components/step";
-import TreeModule from "@/components/Module/TreeModule";
+import TreePlanItemModule from "@/views/system/plan/TreePlanItemModule";
 import FocusMemberList from "@/components/FocusMemberList";
 import Cat2BugSelectLevel from "@/components/Cat2BugSelectLevel";
 import Cat2BugPreviewImage from "@/components/Cat2BugPreviewImage";
@@ -150,7 +159,7 @@ const TREE_MODULE_WIDTH_CACHE_KEY = 'plan_case_tree_module_width';
 export default {
   name: "AddPlanDialog",
   dicts: ['plan_item_state'],
-  components: { Cat2BugLevel,Step,TreeModule,Multipane,MultipaneResizer, FocusMemberList, Cat2BugPreviewImage,Cat2BugText, Cat2BugSelectLevel },
+  components: { Cat2BugLevel,Step,TreePlanItemModule,Multipane,MultipaneResizer, FocusMemberList, Cat2BugPreviewImage,Cat2BugText, Cat2BugSelectLevel },
   data() {
     return {
       multipaneStyle: {'--marginTop':'0px'},

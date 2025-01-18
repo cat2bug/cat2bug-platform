@@ -55,7 +55,7 @@ public class SysCaseController extends BaseController
     {
         if(sysCase.getParams()!=null && sysCase.getParams().get("modulePid") != null) {
             Long pid = Long.parseLong(String.valueOf(sysCase.getParams().get("modulePid")));
-            Set<Long> moduleIds = sysModuleService.getAllChildIds(pid);
+            Set<Long> moduleIds = sysModuleService.getAllChildIds(sysCase.getProjectId(), pid);
             if(sysCase.getParams()==null){
                 sysCase.setParams(new HashMap<>());
             }

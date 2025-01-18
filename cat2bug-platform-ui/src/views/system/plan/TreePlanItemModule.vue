@@ -44,7 +44,7 @@ export default {
       currentNode: null,
       tree:[],
       props: {
-        label: 'name',
+        label: 'label',
         children: 'children',
         isLeaf: 'leaf'
       },
@@ -59,19 +59,31 @@ export default {
       type: [Number,String],
       default: null
     },
+    /** 是否显示编辑组件 */
     editVisible: {
       type: Boolean,
       default: true
     },
+    /** 是否显示多选框 */
     checkVisible: {
       type: Boolean,
       default: false
+    },
+    /** 是否显示全部交付物 */
+    showAll: {
+      type: Boolean,
+      default: false
+    },
+    /** 是否显示交付物中包含的用例数量 */
+    showCount: {
+      type: Boolean,
+      default: true
     }
   },
   computed: {
     removeNodeButtonVisible: function () {
       return function (node) {
-        return node.leaf && checkPermi(['system:module:remove']) && node.name!=this.$i18n.t('module.all-module');
+        return node.leaf && checkPermi(['system:module:remove']) && node.label!=this.$i18n.t('module.all-module');
       }
     }
   },
@@ -88,6 +100,19 @@ export default {
       }
       this.getModuleList(modulePid,resolve);
     },
+    /** 获取模块下的用例数量 */
+    getItemCount(modules,index) {
+      const module = modules[index];
+      let count = module.itemCount||0;
+      if(module.childrenCount===0)
+        return count;
+      for(let i; i<modules.length;i++) {
+        if(modules[i].modulePid = module.moduleId) {
+          count += this.getItemCount(modules, i);
+        }
+      }
+      return count;
+    },
     /** 获取模块 */
     getModuleList(modulePid,resolve) {
       let params = {
@@ -97,16 +122,19 @@ export default {
       }
       listPlanItemModule(params).then(res=>{
         this.firstLoad = false;
-        let data = res.data.filter(m=>m.itemCount).map(m=>{
+        let data = res.data.map((m,index)=>{
+          const count = this.getItemCount(res.data, index);
           return {
             id: m.moduleId,
-            name: `${m.moduleName}(${m.itemCount})`,
+            label: m.moduleName + (this.showCount?`(${count})`:''),
+            count: count,
             leaf: m.childrenCount===0
           }
-        });
+        })
+        data = this.showAll?data:data.filter(m=>m.count);
         if(modulePid==0){
           data = [...[{
-            name: this.$i18n.t('module.all-module'),
+            label: this.$i18n.t('module.all-module'),
             leaf: true
           }],...data];
         }
@@ -142,7 +170,7 @@ export default {
           this.$refs.moduleTree.append({
             id: module.moduleId,
             leaf: true,
-            name: module.moduleName,
+            label: module.moduleName,
           }, parentNode);
         }
         if(parentNode) {

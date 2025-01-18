@@ -373,6 +373,7 @@ export default {
         pageSize: 10,
         moduleId: null,
         planId: null,
+        projectId: this.projectId,
         params:{}
       },
       // 测试计划子项表格数据
@@ -490,10 +491,11 @@ export default {
     reset() {
       this.query = {
         pageNum: 1,
-          pageSize: 10,
-          moduleId: null,
-          planId: null,
-          params:{}
+        pageSize: 10,
+        moduleId: null,
+        planId: null,
+        projectId: this.projectId,
+        params:{}
       }
       this.resetForm('queryForm');
     },
@@ -507,6 +509,7 @@ export default {
     open(planId) {
       this.visible = true;
       this.query.planId = planId;
+      this.query.projectId = this.projectId;
       this.loading = true;
       getPlan(planId).then(response => {
         this.plan = response.data;

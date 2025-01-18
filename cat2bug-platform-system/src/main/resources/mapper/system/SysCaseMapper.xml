@@ -74,23 +74,22 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         ORDER BY c.case_num DESC
     </select>
 
-    <select id="selectSysCaseIdList" parameterType="Long" resultType="java.lang.Long">
+    <select id="selectSysCaseIdList" resultType="java.lang.Long">
         SELECT
             c.case_id
         FROM
-        (
-            SELECT module_id FROM sys_module WHERE module_id = #{moduleId}
-            UNION
-            SELECT t.module_id FROM
-                ( SELECT * FROM sys_module WHERE module_pid > 0 ORDER BY module_pid, module_id ) t,
-                ( SELECT @pid := #{moduleId} ) pd
-            WHERE
-                FIND_IN_SET( t.module_pid, @pid ) > 0
-                AND @pid := CONCAT( @pid, ',', t.module_id )
-        ) ids,
         sys_case c
         WHERE
-            c.module_id = ids.module_id
+        <choose>
+            <when test="moduleIds != null and moduleIds.size() > 0">
+                <foreach collection="moduleIds" item="mId" separator="or" open="(" close=")">
+                    c.module_id = #{mId}
+                </foreach>
+            </when>
+            <otherwise>
+                1=2
+            </otherwise>
+        </choose>
         ORDER BY c.case_num DESC
     </select>
 
@@ -105,7 +104,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </select>
         
     <insert id="insertSysCase" parameterType="SysCase" useGeneratedKeys="true" keyProperty="caseId">
-        insert IGNORE into sys_case
+        insert into sys_case
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="caseName != null">case_name,</if>
             <if test="moduleId != null">module_id,</if>

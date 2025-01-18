@@ -134,7 +134,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                             count( pi3.plan_item_id ) AS defect_count
                         FROM
                             ( SELECT a.* FROM sys_plan_item a JOIN sys_case c ON c.case_id = a.case_id JOIN sys_module m ON m.module_id = c.module_id ) pi3
-                                JOIN sys_defect d3 ON FIND_IN_SET( d3.defect_id, pi3.defect_ids )
+                                JOIN sys_defect d3 ON pi3.defect_ids like concat('%,',d3.defect_id ,',%') or pi3.defect_ids like concat('%',d3.defect_id ,',%') or pi3.defect_ids like concat('%,',d3.defect_id ,'%')
                                 JOIN (
                                 SELECT
                                     defect_id,
@@ -173,11 +173,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                             ( SELECT a.* FROM sys_plan_item a JOIN sys_case c ON c.case_id = a.case_id ) pi5
                                 JOIN sys_plan p5 ON p5.plan_id = pi5.plan_id
                                 JOIN sys_defect_log l5 ON l5.defect_log_type = 0
-                                AND FIND_IN_SET( l5.defect_id, pi5.defect_ids )
-                                JOIN sys_user_project up5 ON up5.project_id = p5.project_id
-                                AND JSON_CONTAINS(
-                                                                     l5.receive_by,
-                                                                     JSON_ARRAY( up5.user_id ))
+                                AND (pi5.defect_ids like concat('%,', l5.defect_id, ',%') or pi5.defect_ids like concat('%', l5.defect_id, ',%') or pi5.defect_ids like concat('%,', l5.defect_id, '%'))
+                                JOIN sys_user_project up5 ON up5.project_id = p5.project_id and l5.receive_by=up5.user_id
                                 JOIN sys_user_project_role upr5 ON up5.user_project_id = upr5.user_project_id
                         GROUP BY
                             pi5.plan_item_id

@@ -1,6 +1,8 @@
 package com.cat2bug.system.mapper;
 
 import java.util.List;
+import java.util.Set;
+
 import com.cat2bug.system.domain.SysCase;
 import org.apache.ibatis.annotations.Param;
 
@@ -53,10 +55,10 @@ public interface SysCaseMapper
 
     /**
      * 查询测试用例ID列表
-     * @param moduleId  查询的模块
+     * @param moduleIds  查询的模块Id集合
      * @return  测试用例ID集合
      */
-    public List<Long> selectSysCaseIdList(@Param("moduleId") Long moduleId);
+    public List<Long> selectSysCaseIdList(@Param("moduleIds") Set<Long> moduleIds);
     /**
      * 新增测试用例
      * 

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.cat2bug.system.domain.SysModule;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * 模块Mapper接口
@@ -18,7 +19,7 @@ public interface SysModuleMapper
      * @param moduleId 查询的父模块id
      * @return  父模块id和父模块下的所有子模块集合
      */
-    public Set<Long> getAllChildIds(Long moduleId);
+    public Set<Long> getAllChildIds(@Param("projectId") Long projectId, @Param("moduleId") Long moduleId);
     /**
      * 查询模块
      * 

@@ -18,12 +18,17 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         select m.module_id, m.module_pid, m.module_name, m.remark, m.project_id, mg.children_count from sys_module m
     </sql>
 
-    <select id="getAllChildIds" parameterType="java.lang.Long" resultType="java.lang.Long">
+    <select id="getAllChildIds" resultType="java.lang.Long">
         WITH RECURSIVE temp_module(module_id, module_name, mudule_pid) AS (
-        SELECT module_id, module_name, module_pid FROM sys_module WHERE module_pid = #{moduleId}
+        SELECT module_id, module_name, module_pid FROM sys_module
+            WHERE project_id = #{projectId}
+            <if test="moduleId != null">
+                AND module_id = #{moduleId}
+            </if>
         UNION ALL
         SELECT m.module_id, m.module_name, m.module_pid FROM sys_module m
         JOIN temp_module tm ON m.module_pid = tm.module_id
+        WHERE m.project_id = #{projectId}
         ) SELECT module_id FROM temp_module
     </select>
 

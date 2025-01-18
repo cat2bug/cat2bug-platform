@@ -12,9 +12,11 @@ import com.cat2bug.common.utils.MessageUtils;
 import com.cat2bug.common.utils.SecurityUtils;
 import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.system.domain.SysCaseStep;
+import com.cat2bug.system.domain.SysUserConfig;
 import com.cat2bug.system.domain.vo.ExcelImportResultVo;
 import com.cat2bug.system.domain.vo.ExcelImportRowResultVo;
 import com.cat2bug.system.mapper.SysModuleMapper;
+import com.cat2bug.system.service.ISysUserConfigService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -39,6 +41,9 @@ public class SysCaseServiceImpl implements ISysCaseService
 
     @Autowired
     private SysModuleMapper sysModuleMapper;
+
+    @Autowired
+    private ISysUserConfigService sysUserConfigService;
 
     /**
      * 查询测试用例
@@ -71,7 +76,9 @@ public class SysCaseServiceImpl implements ISysCaseService
 
     @Override
     public List<Long> selectSysCaseIdList(Long moduleId) {
-        return sysCaseMapper.selectSysCaseIdList(moduleId);
+        SysUserConfig sysUserConfig = sysUserConfigService.selectSysUserConfigByCurrentUserId();
+        Set<Long> moduleIds = this.sysModuleMapper.getAllChildIds(sysUserConfig.getCurrentProjectId(), moduleId);
+        return sysCaseMapper.selectSysCaseIdList(moduleIds);
     }
 
     /**

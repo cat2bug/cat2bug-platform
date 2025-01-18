@@ -26,8 +26,8 @@ public class SysModuleServiceImpl implements ISysModuleService
     private SysModuleMapper sysModuleMapper;
 
     @Override
-    public Set<Long> getAllChildIds(Long moduleId) {
-        return sysModuleMapper.getAllChildIds(moduleId);
+    public Set<Long> getAllChildIds(Long projectId, Long moduleId) {
+        return sysModuleMapper.getAllChildIds(projectId, moduleId);
     }
 
     /**

@@ -3,16 +3,23 @@ package com.cat2bug.system.service.impl;
 import com.cat2bug.common.utils.DateUtils;
 import com.cat2bug.common.utils.SecurityUtils;
 import com.cat2bug.common.utils.StringUtils;
+import com.cat2bug.common.utils.uuid.IdUtils;
 import com.cat2bug.common.utils.uuid.UUID;
 import com.cat2bug.system.domain.SysCase;
 import com.cat2bug.system.domain.SysPlanItem;
 import com.cat2bug.system.domain.SysPlanItemModule;
+import com.cat2bug.system.domain.SysUserConfig;
+import com.cat2bug.system.mapper.SysModuleMapper;
 import com.cat2bug.system.mapper.SysPlanItemMapper;
 import com.cat2bug.system.service.ISysPlanItemService;
+import com.cat2bug.system.service.ISysUserConfigService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -26,6 +33,12 @@ public class SysPlanItemServiceImpl implements ISysPlanItemService
 {
     @Autowired
     private SysPlanItemMapper sysPlanItemMapper;
+
+    @Autowired
+    private ISysUserConfigService sysUserConfigService;
+
+    @Autowired
+    private SysModuleMapper sysModuleMapper;
 
     /**
      * 查询测试计划子项
@@ -61,8 +74,15 @@ public class SysPlanItemServiceImpl implements ISysPlanItemService
         List<SysPlanItemModule> moduleList = sysPlanItemMapper.selectSysModuleList(sysModule);
         return moduleList.stream().map(m->{
             SysPlanItem sysPlanItem = new SysPlanItem();
-            sysPlanItem.setModuleId(m.getModuleId());
+//            sysPlanItem.setModuleId(m.getModuleId());
             sysPlanItem.setPlanId(sysModule.getPlanId());
+            sysPlanItem.setParams(new HashMap<>());
+            Set<Long> moduleIds = this.sysModuleMapper.getAllChildIds(sysModule.getProjectId(), m.getModuleId());
+            if(moduleIds.size()>0) {
+                sysPlanItem.getParams().put("moduleIdsOfProject", moduleIds);
+            } else {
+                sysPlanItem.getParams().put("moduleIdsOfProject", Arrays.asList(0));
+            }
             List<SysPlanItem> itemList = sysPlanItemMapper.selectSysPlanItemList(sysPlanItem);
             m.setItemCount(itemList.size());
             m.setPassCount(itemList.stream().filter(i->"pass".equals(i.getPlanItemState())).count()); // 统计通过的数量

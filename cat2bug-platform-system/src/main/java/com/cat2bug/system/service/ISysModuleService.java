@@ -15,10 +15,11 @@ public interface ISysModuleService
 {
     /**
      * 获取所有子模块Id
+     * @param projectId 项目ID
      * @param moduleId  父模块id
      * @return  子模块集合
      */
-    public Set<Long> getAllChildIds(Long moduleId);
+    public Set<Long> getAllChildIds(Long projectId, Long moduleId);
     /**
      * 查询模块
      * 
