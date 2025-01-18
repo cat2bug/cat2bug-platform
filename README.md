@@ -113,12 +113,6 @@ nohup java -jar cat2bug-platform-0.5.0.jar>/dev/null 2>&1 &
 以下提供的是Docker官网容器化的部署方案，执行命令如下：
 
 ```docker
-docker run -it -d -p 8022:8022 --name cat2bug-platform cat2bug/cat2bug-platform:latest
-```
-
-由于Docker官网访问不稳定，我们还提供了国内镜像下载的方案：
-
-```docker
 docker run -it -d -p 8022:8022 --name cat2bug-platform qyzw-docker.pkg.coding.net/cat2bug/cat2bug-platform/single:latest
 ```
 
@@ -151,11 +145,10 @@ docker run -it -d -p 8022:8022 --name cat2bug-platform qyzw-docker.pkg.coding.ne
 
 ## 未来计划
 
-目前Cat2Bug还在持续成长中，后续我们将在测试工具、自动化、AI几个方向持续投入，完善平台的功能。2024计划如下：
+目前Cat2Bug还在持续成长中，后续我们将在测试工具、自动化、AI几个方向持续投入，完善平台的功能。2025计划如下：
 
 * cat2bug-platform: 功能叠加，完善系统统计管理功能；
 * cat2bug-app：提供移动端APP；
-* cat2bug-spring-junit：提供Java Spring自动化单元测试(已完成)；
 * cat2bug-cloud：cat2bug云平台的建设；
 
 ## Cat2Bug交流群
