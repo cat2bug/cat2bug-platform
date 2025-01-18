@@ -11,7 +11,7 @@
  Target Server Version : 80200
  File Encoding         : 65001
 
- Date: 09/01/2025 22:11:21
+ Date: 18/01/2025 15:19:30
 */
 
 SET NAMES utf8mb4;
@@ -609,7 +609,7 @@ CREATE TABLE `sys_case` (
   UNIQUE KEY `id_num_` (`case_id`,`case_num`),
   UNIQUE KEY `project_id_namd_module_` (`case_name`,`module_id`,`project_id`),
   KEY `project_id_case_name` (`case_name`,`project_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9936 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_bin COMMENT='测试用例表';
+) ENGINE=InnoDB AUTO_INCREMENT=9946 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_bin COMMENT='测试用例表';
 
 -- ----------------------------
 -- Records of sys_case
@@ -1032,12 +1032,16 @@ CREATE TABLE `sys_logininfor` (
   PRIMARY KEY (`info_id`),
   KEY `idx_sys_logininfor_s` (`status`),
   KEY `idx_sys_logininfor_lt` (`login_time`)
-) ENGINE=InnoDB AUTO_INCREMENT=1749 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='系统访问记录';
+) ENGINE=InnoDB AUTO_INCREMENT=1753 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='系统访问记录';
 
 -- ----------------------------
 -- Records of sys_logininfor
 -- ----------------------------
 BEGIN;
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (1749, 'demo', '127.0.0.1', '内网IP', 'Safari', 'Mac OS X', '0', '登录成功', '2025-01-11 18:55:24');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (1750, 'demo', '127.0.0.1', '内网IP', 'Safari', 'Mac OS X', '0', 'Login succeeded', '2025-01-11 23:31:22');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (1751, 'demo', '127.0.0.1', '内网IP', 'Safari', 'Mac OS X', '0', '登录成功', '2025-01-13 00:18:05');
+INSERT INTO `sys_logininfor` (`info_id`, `user_name`, `ipaddr`, `login_location`, `browser`, `os`, `status`, `msg`, `login_time`) VALUES (1752, 'demo', '127.0.0.1', '内网IP', 'Safari', 'Mac OS X', '0', '登录成功', '2025-01-13 00:28:10');
 COMMIT;
 
 -- ----------------------------
@@ -1273,12 +1277,16 @@ CREATE TABLE `sys_module` (
   `module_pid` bigint unsigned DEFAULT '0' COMMENT '父模块id',
   PRIMARY KEY (`module_id`),
   KEY `module_nbame_` (`module_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=358 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='模块表';
+) ENGINE=InnoDB AUTO_INCREMENT=362 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='模块表';
 
 -- ----------------------------
 -- Records of sys_module
 -- ----------------------------
 BEGIN;
+INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`) VALUES (358, '1', NULL, 57, 0);
+INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`) VALUES (359, '2', NULL, 57, 0);
+INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`) VALUES (360, '3', NULL, 57, 0);
+INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`) VALUES (361, '4', NULL, 57, 0);
 COMMIT;
 
 -- ----------------------------
@@ -1337,7 +1345,7 @@ CREATE TABLE `sys_oper_log` (
   KEY `idx_sys_oper_log_bt` (`business_type`),
   KEY `idx_sys_oper_log_s` (`status`),
   KEY `idx_sys_oper_log_ot` (`oper_time`)
-) ENGINE=InnoDB AUTO_INCREMENT=19209 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='操作日志记录';
+) ENGINE=InnoDB AUTO_INCREMENT=19220 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='操作日志记录';
 
 -- ----------------------------
 -- Records of sys_oper_log
@@ -1442,7 +1450,7 @@ CREATE TABLE `sys_project` (
   `project_state` int DEFAULT '1' COMMENT '项目状态(0删除；1运行)',
   PRIMARY KEY (`project_id`),
   KEY `team_id_` (`team_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=57 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='项目表';
+) ENGINE=InnoDB AUTO_INCREMENT=58 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='项目表';
 
 -- ----------------------------
 -- Records of sys_project
@@ -1485,7 +1493,7 @@ CREATE TABLE `sys_project_defect_tabs` (
   `create_time` datetime DEFAULT NULL COMMENT '创建时间',
   PRIMARY KEY (`tab_id`),
   KEY `user_id_` (`project_id`,`user_id`) COMMENT '查询用户所在项目的Tab配置'
-) ENGINE=InnoDB AUTO_INCREMENT=155 DEFAULT CHARSET=utf8mb3 COMMENT='项目缺陷页签配置';
+) ENGINE=InnoDB AUTO_INCREMENT=156 DEFAULT CHARSET=utf8mb3 COMMENT='项目缺陷页签配置';
 
 -- ----------------------------
 -- Records of sys_project_defect_tabs
@@ -2268,7 +2276,7 @@ CREATE TABLE `sys_team` (
   `is_del` tinyint DEFAULT NULL COMMENT '是否删除',
   PRIMARY KEY (`team_id`),
   UNIQUE KEY `name_` (`team_name`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='团队表';
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='团队表';
 
 -- ----------------------------
 -- Records of sys_team
@@ -2355,7 +2363,7 @@ CREATE TABLE `sys_user_config` (
 -- ----------------------------
 BEGIN;
 INSERT INTO `sys_user_config` (`user_config_id`, `current_team_id`, `user_id`, `current_project_id`, `exit_time`, `defect_last_access_time`, `life_content`) VALUES (121, 9, 224, 54, NULL, NULL, NULL);
-INSERT INTO `sys_user_config` (`user_config_id`, `current_team_id`, `user_id`, `current_project_id`, `exit_time`, `defect_last_access_time`, `life_content`) VALUES (122, 10, 225, 56, NULL, NULL, NULL);
+INSERT INTO `sys_user_config` (`user_config_id`, `current_team_id`, `user_id`, `current_project_id`, `exit_time`, `defect_last_access_time`, `life_content`) VALUES (122, 11, 225, 57, NULL, NULL, NULL);
 INSERT INTO `sys_user_config` (`user_config_id`, `current_team_id`, `user_id`, `current_project_id`, `exit_time`, `defect_last_access_time`, `life_content`) VALUES (123, 10, 227, 55, NULL, NULL, NULL);
 COMMIT;
 
@@ -2410,7 +2418,7 @@ CREATE TABLE `sys_user_project` (
   `collect` tinyint(1) DEFAULT NULL COMMENT '是否收藏',
   PRIMARY KEY (`user_project_id`),
   UNIQUE KEY `user_project_` (`user_id`,`project_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=206 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='用户项目表';
+) ENGINE=InnoDB AUTO_INCREMENT=207 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='用户项目表';
 
 -- ----------------------------
 -- Records of sys_user_project
@@ -2428,7 +2436,7 @@ CREATE TABLE `sys_user_project_role` (
   `role_id` bigint NOT NULL COMMENT '角色id',
   PRIMARY KEY (`user_project_role_id`),
   UNIQUE KEY `user_project_role_` (`user_project_id`,`role_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=340 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='用户项目角色表';
+) ENGINE=InnoDB AUTO_INCREMENT=341 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='用户项目角色表';
 
 -- ----------------------------
 -- Records of sys_user_project_role
@@ -2492,7 +2500,7 @@ CREATE TABLE `sys_user_team` (
   `team_lock` tinyint(1) unsigned zerofill DEFAULT '0' COMMENT '是否锁定',
   PRIMARY KEY (`user_team_id`),
   UNIQUE KEY `user_team_` (`user_id`,`team_id`,`team_role_id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=184 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='用户团队角色表';
+) ENGINE=InnoDB AUTO_INCREMENT=185 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='用户团队角色表';
 
 -- ----------------------------
 -- Records of sys_user_team
@@ -2509,7 +2517,7 @@ CREATE TABLE `sys_user_team_role` (
   `user_team_id` bigint NOT NULL COMMENT '用户团队id',
   `role_id` bigint NOT NULL COMMENT '角色id',
   PRIMARY KEY (`user_team_role_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=226 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='用户团队角色表';
+) ENGINE=InnoDB AUTO_INCREMENT=227 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='用户团队角色表';
 
 -- ----------------------------
 -- Records of sys_user_team_role
