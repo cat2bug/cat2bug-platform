@@ -3,6 +3,7 @@ package com.cat2bug.system.service.impl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.cat2bug.common.utils.MessageUtils;
 import com.google.common.base.Preconditions;
@@ -27,7 +28,13 @@ public class SysModuleServiceImpl implements ISysModuleService
 
     @Override
     public Set<Long> getAllChildIds(Long projectId, Long moduleId) {
-        return sysModuleMapper.getAllChildIds(projectId, moduleId);
+        if(moduleId==null) {
+            SysModule sysModule = new SysModule();
+            sysModule.setProjectId(projectId);
+            return sysModuleMapper.selectSysModuleList(sysModule).stream().map(m->m.getModuleId()).collect(Collectors.toSet());
+        } else {
+            return sysModuleMapper.getAllChildIds(projectId, moduleId);
+        }
     }
 
     /**

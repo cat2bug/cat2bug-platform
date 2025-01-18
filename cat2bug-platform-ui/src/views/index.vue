@@ -142,6 +142,13 @@
             <span>{{$t('update-log')}}</span>
           </div>
           <el-collapse accordion>
+            <el-collapse-item title="v0.5.0 - 2025-01-18">
+              <ol>
+                <li>新增测试计划</li>
+                <li>新增同步项目数据到云平台</li>
+                <li>修复系统功能BUG</li>
+              </ol>
+            </el-collapse-item>
             <el-collapse-item title="v0.4.2 - 2024-08-15">
               <ol>
                 <li>在测试用例、缺陷、交付物、报告、文档、通知模块新增悬浮菜单</li>
