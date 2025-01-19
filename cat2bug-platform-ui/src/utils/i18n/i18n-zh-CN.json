@@ -792,5 +792,10 @@
   "plan.countdown-time-format": "DD天HH小时mm分钟",
   "plan.countdown-time-title": "距离计划结束还有",
   "is-delete-img": "是否确认删除选中的图片?",
-  "copy.success": "复制成功"
+  "copy.success": "复制成功",
+  "dashboard": "仪表盘",
+  "dashboard.defect-state.day": "缺陷状态30天走势图",
+  "dashboard.defect-state.month": "缺陷状态月走势图",
+  "dashboard.day": "30天",
+  "dashboard.month": "12个月"
 }

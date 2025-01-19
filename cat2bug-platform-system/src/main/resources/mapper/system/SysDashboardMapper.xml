@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.system.mapper.SysDashboardMapper">
+    <resultMap type="SysDefectLine" id="SysDefectLineResult">
+        <id     property="defectCount"      column="defect_count"      />
+        <result property="defectTime"    column="defect_time"    />
+        <result property="defectState"     column="defect_state"  typeHandler="com.cat2bug.common.core.domain.handle.SysDefectStateEnumTypeHandler"   />
+    </resultMap>
+
+    <select id="defectLine" parameterType="Long" resultMap="SysDefectLineResult">
+        SELECT
+            count(*) as defect_count,
+            <choose>
+                <when test="timeType=='month'">
+                    date_format( update_time, '%Y-%m' ) AS defect_time,
+                </when>
+                <otherwise>
+                    date_format( update_time, '%Y-%m-%d' ) AS defect_time,
+                </otherwise>
+            </choose>
+            defect_state
+        FROM
+            sys_defect
+        WHERE
+            project_id = #{projectId}
+        GROUP BY
+            defect_time,
+            defect_state
+        ORDER BY
+            defect_time,
+            defect_state
+    </select>
+</mapper>

@@ -407,7 +407,7 @@ export default {
           store.dispatch('GetInfo').then(() => {
             store.dispatch('GenerateRoutes').then(accessRoutes => {
               router.addRoutes(accessRoutes) // 动态添加可访问路由表
-              _this.$router.push({name:'Defect', params: { projectId: project.projectId }})
+              _this.$router.push({name:'Dashboard', params: { projectId: project.projectId }})
             });
           });
         });
