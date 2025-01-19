@@ -74,7 +74,6 @@ export default {
           return this.$i18n.t(t);
         });
         const times = res.data.times;
-        console.log(types, times, series);
         this.setOptions(types, times, series);
       }).catch(e=>this.loading=false);
     },
