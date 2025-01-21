@@ -71,6 +71,10 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="moduleName != null">module_name,</if>
             <if test="remark != null">remark,</if>
             <if test="projectId != null">project_id,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="createById != null">create_by_id,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="updateById != null">update_by_id,</if>
          </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="moduleId != null">#{moduleId},</if>
@@ -78,6 +82,10 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="moduleName != null">#{moduleName},</if>
             <if test="remark != null">#{remark},</if>
             <if test="projectId != null">#{projectId},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="createById != null">#{createById},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="updateById != null">#{updateById},</if>
          </trim>
     </insert>
 
@@ -88,6 +96,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="moduleName != null">module_name = #{moduleName},</if>
             <if test="remark != null">remark = #{remark},</if>
             <if test="projectId != null">project_id = #{projectId},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="updateById != null">update_by_id = #{updateById},</if>
         </trim>
         where module_id = #{moduleId}
     </update>

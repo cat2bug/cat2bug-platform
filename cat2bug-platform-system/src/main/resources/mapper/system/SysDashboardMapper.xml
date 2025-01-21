@@ -9,6 +9,119 @@
         <result property="defectState"     column="defect_state"  typeHandler="com.cat2bug.common.core.domain.handle.SysDefectStateEnumTypeHandler"   />
     </resultMap>
 
+    <resultMap type="SysAction" id="SysActionResult">
+        <id     property="id"      column="id"      />
+        <result property="title"    column="title"    />
+        <result property="state"     column="state"  />
+        <result property="type"     column="type"  />
+        <result property="time"     column="time"  />
+        <result property="nickName"    column="nick_name"    />
+        <result property="userName"     column="user_name"  />
+        <result property="avatar"     column="avatar"  />
+    </resultMap>
+
+    <resultMap type="SysColumnsInChart" id="SysColumnsInChartResult">
+        <result property="key"    column="handle_time"    />
+        <result property="value"     column="unfinished_count"  />
+    </resultMap>
+
+
+    <resultMap type="SysMemberRankOfDefects" id="SysMemberRankOfDefectsResult">
+        <result property="nickName"    column="nick_name"    />
+        <result property="userName"     column="user_name"  />
+        <result property="avatar"     column="avatar"  />
+        <result property="defectTotal"     column="defect_total"  />
+        <result property="defectTodayCount"     column="defect_today_count"  />
+    </resultMap>
+
+    <resultMap type="SysCaseStatistics" id="SysCaseStatisticsResult">
+        <result property="total"    column="total"    />
+    </resultMap>
+
+    <resultMap type="SysDefectStatistics" id="SysDefectStatisticsResult">
+        <result property="total"    column="total"    />
+        <result property="pendingCount"     column="pending_count"  />
+        <result property="verifyCount"     column="verify_count"  />
+        <result property="closedCount"     column="closed_count"  />
+    </resultMap>
+
+    <resultMap type="SysModuleStatistics" id="SysModuleStatisticsResult">
+        <result property="total"    column="total"    />
+    </resultMap>
+
+    <resultMap type="SysReportStatistics" id="SysReportStatisticsResult">
+        <result property="total"    column="total"    />
+    </resultMap>
+
+    <resultMap type="SysDocumentStatistics" id="SysDocumentStatisticsResult">
+        <result property="total"    column="total"    />
+    </resultMap>
+
+    <resultMap type="SysMemberStatistics" id="SysMemberStatisticsResult">
+        <result property="total"    column="total"    />
+        <result property="adminCount"     column="admin_count"  />
+        <result property="testCount"     column="test_count"  />
+        <result property="developmentCount"     column="development_count"  />
+        <result property="outsideCount"     column="outside_count"  />
+    </resultMap>
+
+    <select id="caseStatistics" parameterType="Long" resultMap="SysCaseStatisticsResult">
+        SELECT
+            count(case_id) total
+        FROM sys_case
+        WHERE
+            project_id = #{projectId}
+    </select>
+
+    <select id="defectStatistics" parameterType="Long" resultMap="SysDefectStatisticsResult">
+        SELECT
+            count(defect_id) total,
+            sum(case when defect_state=0 or defect_state=3 then 1 else 0 end) as pending_count,
+            sum(case when defect_state=1 then 1 else 0 end) as verify_count,
+            sum(case when defect_state=2 or defect_state=4 then 1 else 0 end) as closed_count
+        FROM sys_defect
+        WHERE
+            project_id = #{projectId}
+    </select>
+
+    <select id="moduleStatistics" parameterType="Long" resultMap="SysModuleStatisticsResult">
+        SELECT
+            count(module_id) total
+        FROM sys_module
+        WHERE
+            project_id = #{projectId}
+    </select>
+
+    <select id="reportStatistics" parameterType="Long" resultMap="SysReportStatisticsResult">
+        SELECT
+            count(report_id) total
+        FROM sys_report
+        WHERE
+            project_id = #{projectId}
+    </select>
+
+    <select id="documentStatistics" parameterType="Long" resultMap="SysDocumentStatisticsResult">
+        SELECT
+            count(doc_id) total
+        FROM sys_document
+        WHERE
+            doc_type = 1
+            AND project_id = #{projectId}
+    </select>
+
+    <select id="memberStatistics" parameterType="Long" resultMap="SysMemberStatisticsResult">
+        SELECT
+            count(up.user_id) total,
+            sum(case when upr.role_id = 6 then 1 else 0 end) as admin_count,
+            sum(case when upr.role_id = 7 then 1 else 0 end) as development_count,
+            sum(case when upr.role_id = 8 then 1 else 0 end) as test_count,
+            sum( CASE WHEN upr.role_id = 9 THEN 1 ELSE 0 END ) AS outside_count
+        FROM sys_user_project up
+                 LEFT JOIN sys_user_project_role upr ON up.user_project_id=upr.user_project_id
+        WHERE
+            up.project_id = #{projectId}
+    </select>
+
     <select id="defectLine" parameterType="Long" resultMap="SysDefectLineResult">
         SELECT
             count(*) as defect_count,
@@ -31,5 +144,73 @@
         ORDER BY
             defect_time,
             defect_state
+    </select>
+
+    <select id="actonList" parameterType="Long" resultMap="SysActionResult">
+        SELECT s.*, u.nick_name, u.user_name,
+               u.avatar
+        FROM
+            (SELECT defect_id as id, defect_name as title, 'defect' as type, defect_state as state, IFNULL(update_time, create_time) as time, update_by_id FROM sys_defect WHERE project_id=#{projectId}
+             UNION
+             SELECT case_id as id, case_name as title, 'case' as type, null as state, IFNULL(update_time, create_time) as time, update_by as update_by_id FROM sys_case WHERE project_id=#{projectId}
+             UNION
+             SELECT plan_id as id, plan_name as title, 'plan' as type, null as state, IFNULL(update_time, create_time) as time, update_by_id FROM sys_plan WHERE project_id=#{projectId}
+             UNION
+             SELECT report_id as id, report_title as title, 'report' as type, null as state, report_time as time, create_by_id as update_by_id FROM sys_report WHERE project_id=#{projectId}
+             UNION
+             SELECT doc_id as id, doc_name as title, 'document' as type, null as state, IFNULL(update_time, create_time) as time, update_by_id FROM sys_document WHERE project_id=#{projectId}
+            ) s
+        LEFT JOIN sys_user u ON u.user_id = s.update_by_id
+        ORDER BY s.time DESC LIMIT 0, 50
+    </select>
+
+    <select id="planBurndown" parameterType="String" resultMap="SysColumnsInChartResult">
+        SELECT
+            a.handle_time,
+            (b.plan_count - a.pass_count) as unfinished_count
+        FROM
+            (
+                SELECT
+                    plan_id,
+                    date_format( update_time, '%Y-%m-%d' ) AS handle_time,
+                    SUM( CASE WHEN plan_item_state = 'pass' THEN 1 ELSE 0 END ) AS pass_count
+                FROM
+                    sys_plan_item pi
+                WHERE
+                    plan_id = #{ planId }
+                GROUP BY
+                    plan_id,
+                    handle_time
+                ORDER BY
+                    handle_time
+            ) a
+            LEFT JOIN ( SELECT count(*) AS plan_count, plan_id FROM sys_plan_item GROUP BY plan_id ) b ON a.plan_id = b.plan_id
+    </select>
+
+    <select id="memberRankOfDefects" parameterType="Long" resultMap="SysMemberRankOfDefectsResult">
+        SELECT
+            u.nick_name,
+            u.user_name,
+            u.avatar,
+            d.defect_total,
+            d.defect_today_count
+        FROM
+            (
+                SELECT
+                    l.create_by AS update_by_id,
+                    count( DISTINCT l.defect_id ) AS defect_total,
+                    count( DISTINCT CASE WHEN DATE_FORMAT( l.create_time, '%Y-%m-%d' ) = DATE_FORMAT( NOW(), '%Y-%m-%d' ) THEN l.defect_id ELSE NULL END ) AS defect_today_count
+                FROM
+                    sys_defect_log l
+                        JOIN sys_defect e ON e.defect_id = l.defect_id
+                WHERE
+                    e.project_id=#{projectId}
+                GROUP BY
+                    e.project_id,
+                    l.create_by
+                ORDER BY
+                    defect_total DESC
+            ) d
+                LEFT JOIN sys_user u ON d.update_by_id = u.user_id
     </select>
 </mapper>

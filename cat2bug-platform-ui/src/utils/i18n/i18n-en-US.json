@@ -708,6 +708,7 @@
   "notice.sound.teacher": "Teacher has new news",
   "notice.send-success": "Send Success",
   "year-month-day-hour-minute-second": "{0}-{1}-{2} {3}:{4}:{5}",
+  "year-month-day": "{0}-{1}-{2}",
   "year": "-",
   "month": "",
   "week0": "Sunday",
@@ -797,5 +798,8 @@
   "dashboard.defect-state.day": "Defect Status 30-Day Chart",
   "dashboard.defect-state.month": " Defect Status Month Chart",
   "dashboard.day": "30-Day",
-  "dashboard.month": "12-Month"
+  "dashboard.month": "12-Month",
+  "dashboard.member-Defect-rank.title": "Handle Defect Rankings",
+  "dashboard.plan-burndown-chart.title": "Plan 30-Day Burndown Chart",
+  "dashboard.action.title": "Actions"
 }

@@ -708,6 +708,7 @@
   "notice.sound.teacher": "师傅有新消息",
   "notice.send-success": "发送成功",
   "year-month-day-hour-minute-second": "{0}年{1}月{2}日 {3}时{4}分{5}秒",
+  "year-month-day": "{0}年{1}月{2}日",
   "year": "年",
   "month": "月",
   "week0": "星期日",
@@ -797,5 +798,8 @@
   "dashboard.defect-state.day": "缺陷状态30天走势图",
   "dashboard.defect-state.month": "缺陷状态月走势图",
   "dashboard.day": "30天",
-  "dashboard.month": "12个月"
+  "dashboard.month": "12个月",
+  "dashboard.member-Defect-rank.title": "成员处理缺陷排行",
+  "dashboard.plan-burndown-chart.title": "测试计划30天燃尽图",
+  "dashboard.action.title": "活动"
 }

@@ -1,9 +1,9 @@
 <template>
-  <div class="defect-state-chart" :style="{height:height,width:width}">
+  <div v-loading="loading" class="defect-state-chart" :style="{height:height,width:width}">
     <el-radio-group v-model="query.timeType" size="mini" @input="handleTimeTypeChange" class="time-type">
-      <el-radio-button v-for="tt in timeTypeList" :label="tt.value">{{$t(tt.label).toString()}}</el-radio-button>
+      <el-radio-button v-for="tt in timeTypeList" :key="tt.value" :label="tt.value">{{$t(tt.label).toString()}}</el-radio-button>
     </el-radio-group>
-
+    <h1 class="title">{{ $t(title) }}</h1>
     <div v-loading="loading" ref="defectStateChart" :class="className" :style="{height:height,width:width}" />
   </div>
 </template>
@@ -28,7 +28,7 @@ export default {
     },
     height: {
       type: String,
-      default: '350px'
+      default: '300px'
     },
     autoResize: {
       type: Boolean,
@@ -42,7 +42,7 @@ export default {
       timeTypeList: [
         {value:'day', label: 'dashboard.day'},
         {value:'month', label: 'dashboard.month'}],
-      title: this.$i18n.t('dashboard.defect-state.day'),
+      title: 'dashboard.defect-state.day',
       query: {
         timeType: 'day'
       }
@@ -84,7 +84,7 @@ export default {
     setOptions(legendData, xData, series) {
       this.chart.setOption({
           title: {
-            text: this.title
+            text: ''
           },
           tooltip: {
             trigger: 'axis'
@@ -118,10 +118,10 @@ export default {
     handleTimeTypeChange(val) {
       switch (this.query.timeType) {
         case 'day':
-          this.title = this.$i18n.t('dashboard.defect-state.day');
+          this.title = 'dashboard.defect-state.day';
           break;
         case 'month':
-          this.title = this.$i18n.t('dashboard.defect-state.month');
+          this.title = 'dashboard.defect-state.month';
           break;
       }
       this.getDefectLine();
@@ -133,6 +133,11 @@ export default {
 <style lang="scss" scoped>
 .defect-state-chart {
   position: relative;
+  .title {
+    position: absolute;
+    top: 7px;
+    margin-top: 0px;
+  }
 }
 .time-type {
   position: absolute;
