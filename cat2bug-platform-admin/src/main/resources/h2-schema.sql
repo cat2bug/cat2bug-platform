@@ -3475,10 +3475,10 @@ INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
                        , `component`, `query`, `is_frame`, `is_cache`, `menu_type`
                        , `visible`, `status`, `perms`, `icon`, `create_by`
                        , `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`)
-VALUES (2019, '缺陷管理', 2013, 2, 'defect'
+VALUES (2019, '缺陷管理', 2013, 4, 'defect'
        , 'system/defect/index', NULL, 1, 0, 'C'
        , '0', '0', 'system:defect:list', 'bug', 'admin'
-       , '2023-11-23 12:50:56', 'admin', '2023-11-23 13:01:52', '缺陷菜单', 'defect.manage');
+       , '2023-11-23 12:50:56', 'admin', '2025-01-19 01:12:42', '缺陷菜单', 'defect.manage');
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
                        , `component`, `query`, `is_frame`, `is_cache`, `menu_type`
                        , `visible`, `status`, `perms`, `icon`, `create_by`
@@ -3523,10 +3523,10 @@ INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
                        , `component`, `query`, `is_frame`, `is_cache`, `menu_type`
                        , `visible`, `status`, `perms`, `icon`, `create_by`
                        , `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`)
-VALUES (2025, '模块', 2013, 3, 'module'
+VALUES (2025, '交付物', 2013, 5, 'module'
        , 'system/module/index', NULL, 1, 0, 'C'
        , '0', '0', 'system:module:list', 'cascader', 'admin'
-       , '2023-11-25 17:21:33', 'admin', '2023-12-30 07:19:34', '模块菜单', 'module');
+       , '2023-11-25 17:21:33', 'admin', '2025-01-19 01:13:51', '模块菜单', 'module');
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
                        , `component`, `query`, `is_frame`, `is_cache`, `menu_type`
                        , `visible`, `status`, `perms`, `icon`, `create_by`
@@ -3635,10 +3635,10 @@ INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
                        , `component`, `query`, `is_frame`, `is_cache`, `menu_type`
                        , `visible`, `status`, `perms`, `icon`, `create_by`
                        , `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`)
-VALUES (2052, '项目设置', 2013, 6, 'option'
+VALUES (2052, '项目设置', 2013, 8, 'option'
        , 'system/project/option/index', NULL, 1, 0, 'C'
        , '0', '0', 'system:project:option', 'system', 'admin'
-       , '2023-12-30 16:21:17', 'admin', '2024-06-17 06:27:18', '', 'project.option');
+       , '2023-12-30 16:21:17', 'admin', '2025-01-19 01:13:59', '', 'project.option');
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
                        , `component`, `query`, `is_frame`, `is_cache`, `menu_type`
                        , `visible`, `status`, `perms`, `icon`, `create_by`
@@ -3771,10 +3771,10 @@ INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
                        , `component`, `query`, `is_frame`, `is_cache`, `menu_type`
                        , `visible`, `status`, `perms`, `icon`, `create_by`
                        , `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`)
-VALUES (2074, '测试用例', 2013, 0, 'case'
+VALUES (2074, '测试用例', 2013, 2, 'case'
        , 'system/case/index', NULL, 1, 0, 'C'
        , '0', '0', 'system:case:list', 'nested', 'admin'
-       , '2024-01-27 16:12:12', 'admin', '2024-10-11 00:45:32', '测试用例菜单', 'case');
+       , '2024-01-27 16:12:12', 'admin', '2025-01-19 01:12:19', '测试用例菜单', 'case');
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
                        , `component`, `query`, `is_frame`, `is_cache`, `menu_type`
                        , `visible`, `status`, `perms`, `icon`, `create_by`
@@ -3875,10 +3875,10 @@ INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
                        , `component`, `query`, `is_frame`, `is_cache`, `menu_type`
                        , `visible`, `status`, `perms`, `icon`, `create_by`
                        , `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`)
-VALUES (2087, '报告', 2013, 4, 'report'
+VALUES (2087, '报告', 2013, 6, 'report'
        , 'system/report/index', NULL, 1, 0, 'C'
        , '0', '0', 'system:report:list', 'chart', 'admin'
-       , '2024-03-13 03:27:13', 'admin', '2024-03-20 07:48:47', '报告菜单', 'report');
+       , '2024-03-13 03:27:13', 'admin', '2025-01-19 01:13:03', '报告菜单', 'report');
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
                        , `component`, `query`, `is_frame`, `is_cache`, `menu_type`
                        , `visible`, `status`, `perms`, `icon`, `create_by`
@@ -3923,10 +3923,10 @@ INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
                        , `component`, `query`, `is_frame`, `is_cache`, `menu_type`
                        , `visible`, `status`, `perms`, `icon`, `create_by`
                        , `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`)
-VALUES (2093, '文档', 2013, 5, 'document'
+VALUES (2093, '文档', 2013, 7, 'document'
        , 'system/document/index', NULL, 1, 0, 'C'
        , '0', '0', 'system:document:list', 'education', 'admin'
-       , '2024-06-17 06:24:19', 'admin', '2024-06-17 06:27:26', '文档菜单', 'doc');
+       , '2024-06-17 06:24:19', 'admin', '2025-01-19 01:13:37', '文档菜单', 'doc');
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
                        , `component`, `query`, `is_frame`, `is_cache`, `menu_type`
                        , `visible`, `status`, `perms`, `icon`, `create_by`
@@ -4019,10 +4019,10 @@ INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
                        , `component`, `query`, `is_frame`, `is_cache`, `menu_type`
                        , `visible`, `status`, `perms`, `icon`, `create_by`
                        , `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`)
-VALUES (2107, '通知', 2013, 8, 'notice'
+VALUES (2107, '通知', 2013, 10, 'notice'
        , 'notice/index', NULL, 1, 0, 'C'
        , '1', '0', 'notice:list', 'message', 'admin'
-       , '2024-07-20 09:57:22', '', NULL, '', NULL);
+       , '2024-07-20 09:57:22', 'admin', '2025-01-19 01:14:23', '', NULL);
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
                        , `component`, `query`, `is_frame`, `is_cache`, `menu_type`
                        , `visible`, `status`, `perms`, `icon`, `create_by`
@@ -4051,10 +4051,10 @@ INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
                        , `component`, `query`, `is_frame`, `is_cache`, `menu_type`
                        , `visible`, `status`, `perms`, `icon`, `create_by`
                        , `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`)
-VALUES (2111, '企业微信', 2013, 7, 'enterprise-wechat'
+VALUES (2111, '企业微信', 2013, 9, 'enterprise-wechat'
        , 'system/project/other/wechat/index', NULL, 1, 0, 'C'
        , '1', '0', 'wechat:list', '#', 'admin'
-       , '2024-07-26 15:50:34', 'admin', '2024-07-26 16:14:51', '', NULL);
+       , '2024-07-26 15:50:34', 'admin', '2025-01-19 01:14:12', '', NULL);
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
                        , `component`, `query`, `is_frame`, `is_cache`, `menu_type`
                        , `visible`, `status`, `perms`, `icon`, `create_by`
@@ -4099,10 +4099,10 @@ INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
                        , `component`, `query`, `is_frame`, `is_cache`, `menu_type`
                        , `visible`, `status`, `perms`, `icon`, `create_by`
                        , `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`)
-VALUES (2117, '测试计划', 2013, 1, 'plan'
+VALUES (2117, '测试计划', 2013, 3, 'plan'
        , 'system/plan/index', NULL, 1, 0, 'C'
        , '0', '0', 'system:plan:list', 'time', 'admin'
-       , '2024-10-11 00:39:24', 'admin', '2024-10-28 00:00:32', '测试计划菜单', 'plan');
+       , '2024-10-11 00:39:24', 'admin', '2025-01-19 01:12:27', '测试计划菜单', 'plan');
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
                        , `component`, `query`, `is_frame`, `is_cache`, `menu_type`
                        , `visible`, `status`, `perms`, `icon`, `create_by`
@@ -4155,10 +4155,18 @@ INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
                        , `component`, `query`, `is_frame`, `is_cache`, `menu_type`
                        , `visible`, `status`, `perms`, `icon`, `create_by`
                        , `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`)
-VALUES (2124, '同步项目', 2013, 9, 'push'
+VALUES (2124, '同步项目', 2013, 11, 'push'
        , 'system/project/push/index', NULL, 1, 0, 'C'
        , '1', '0', 'system:project:push', '#', 'admin'
-       , '2024-12-26 17:28:45', 'admin', '2024-12-27 14:14:27', '', 'project.push');
+       , '2024-12-26 17:28:45', 'admin', '2025-01-19 01:14:37', '', 'project.push');
+INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
+                       , `component`, `query`, `is_frame`, `is_cache`, `menu_type`
+                       , `visible`, `status`, `perms`, `icon`, `create_by`
+                       , `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`)
+VALUES (2125, 'Dashboard', 2013, 1, 'dashboard'
+       , 'system/dashboard/index', NULL, 1, 0, 'C'
+       , '0', '0', 'system:dashboard:query', 'dashboard', 'admin'
+       , '2025-01-19 01:11:58', 'admin', '2025-01-19 01:16:38', '', 'dashboard');
 COMMIT;
 DROP TABLE IF EXISTS `sys_module`;
 CREATE TABLE `sys_module` (
@@ -4166,7 +4174,11 @@ CREATE TABLE `sys_module` (
                               `module_name` varchar(128) DEFAULT NULL COMMENT '模块名称',
                               `remark` varchar(255) DEFAULT NULL COMMENT '备注',
                               `project_id` bigint DEFAULT NULL COMMENT '项目id',
-                              `module_pid` bigint DEFAULT '0' COMMENT '父模块id'
+                              `module_pid` bigint DEFAULT '0' COMMENT '父模块id',
+                              `create_by_id` bigint DEFAULT NULL COMMENT '创建成员',
+                              `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+                              `update_by_id` bigint DEFAULT NULL COMMENT '更新成员',
+                              `update_time` datetime DEFAULT NULL COMMENT '更新时间'
 );
 
 COMMIT;
@@ -4393,7 +4405,7 @@ INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_s
                        , `is_project_role`, `role_name_i18n_key`)
 VALUES (4, '团队管理员', 'team.admin', 12, '1'
        , 1, 1, '0', '0', 'admin'
-       , '2023-11-18 15:15:50', 'admin', '2024-12-26 17:29:42', NULL, 1
+       , '2023-11-18 15:15:50', 'admin', '2025-01-19 01:19:13', NULL, 1
        , 0, 'team.admin-members');
 INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_scope`
                        , `menu_check_strictly`, `dept_check_strictly`, `status`, `del_flag`, `create_by`
@@ -4401,7 +4413,7 @@ INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_s
                        , `is_project_role`, `role_name_i18n_key`)
 VALUES (5, '团队普通人员', 'team.default', 13, '1'
        , 0, 1, '0', '0', 'admin'
-       , '2023-11-18 15:16:21', 'admin', '2024-06-17 06:29:17', NULL, 1
+       , '2023-11-18 15:16:21', 'admin', '2025-01-19 01:19:38', NULL, 1
        , 0, 'team.ordinary-members');
 INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_scope`
                        , `menu_check_strictly`, `dept_check_strictly`, `status`, `del_flag`, `create_by`
@@ -4409,7 +4421,7 @@ INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_s
                        , `is_project_role`, `role_name_i18n_key`)
 VALUES (6, '项目管理员', 'project.admin', 22, '1'
        , 1, 1, '0', '0', 'admin'
-       , '2023-11-22 06:48:53', 'admin', '2024-12-26 17:30:21', NULL, 0
+       , '2023-11-22 06:48:53', 'admin', '2025-01-19 01:19:52', NULL, 0
        , 1, 'project.admin');
 INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_scope`
                        , `menu_check_strictly`, `dept_check_strictly`, `status`, `del_flag`, `create_by`
@@ -4417,7 +4429,7 @@ INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_s
                        , `is_project_role`, `role_name_i18n_key`)
 VALUES (7, '项目开发', 'project.develop', 23, '1'
        , 0, 1, '0', '0', 'admin'
-       , '2023-11-22 06:50:14', 'admin', '2024-10-15 02:08:13', NULL, 0
+       , '2023-11-22 06:50:14', 'admin', '2025-01-19 01:19:59', NULL, 0
        , 1, 'project.develop');
 INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_scope`
                        , `menu_check_strictly`, `dept_check_strictly`, `status`, `del_flag`, `create_by`
@@ -4425,7 +4437,7 @@ INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_s
                        , `is_project_role`, `role_name_i18n_key`)
 VALUES (8, '项目测试', 'project.tester', 24, '1'
        , 1, 1, '0', '0', 'admin'
-       , '2023-11-22 06:53:11', 'admin', '2024-10-15 02:07:29', NULL, 0
+       , '2023-11-22 06:53:11', 'admin', '2025-01-19 01:20:07', NULL, 0
        , 1, 'project.tester');
 INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_scope`
                        , `menu_check_strictly`, `dept_check_strictly`, `status`, `del_flag`, `create_by`
@@ -4449,7 +4461,7 @@ INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_s
                        , `is_project_role`, `role_name_i18n_key`)
 VALUES (11, '项目创建人', 'project.create-by', 21, '1'
        , 1, 1, '0', '0', 'admin'
-       , '2024-01-05 17:57:40', 'admin', '2024-12-26 17:30:00', NULL, 0
+       , '2024-01-05 17:57:40', 'admin', '2025-01-19 01:19:46', NULL, 0
        , 1, 'project.create-by');
 INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_scope`
                        , `menu_check_strictly`, `dept_check_strictly`, `status`, `del_flag`, `create_by`
@@ -4457,7 +4469,7 @@ INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `role_sort`, `data_s
                        , `is_project_role`, `role_name_i18n_key`)
 VALUES (12, '团队创建人', 'team.create-by', 11, '1'
        , 1, 1, '0', '0', 'admin'
-       , '2024-01-06 03:41:45', 'admin', '2024-12-26 17:29:32', NULL, 1
+       , '2024-01-06 03:41:45', 'admin', '2025-01-19 01:19:06', NULL, 1
        , 0, 'team.create-by');
 COMMIT;
 DROP TABLE IF EXISTS `sys_role_dept`;
@@ -4856,6 +4868,8 @@ VALUES (4, 2123);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (4, 2124);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (4, 2125);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (5, 2000);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (5, 2001);
@@ -4881,6 +4895,8 @@ INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (5, 2094);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (5, 2095);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (5, 2125);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (6, 2000);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
@@ -5048,6 +5064,8 @@ VALUES (6, 2122);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (6, 2124);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (6, 2125);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (7, 1035);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (7, 1038);
@@ -5101,6 +5119,8 @@ INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (7, 2108);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (7, 2110);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (7, 2125);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (8, 2000);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
@@ -5199,6 +5219,8 @@ INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (8, 2122);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (8, 2123);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (8, 2125);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (9, 1035);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
@@ -5454,6 +5476,8 @@ VALUES (11, 2123);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (11, 2124);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (11, 2125);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (12, 2000);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (12, 2001);
@@ -5640,6 +5664,8 @@ VALUES (12, 2123);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (12, 2124);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+VALUES (12, 2125);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (1810336402060121088, 194487968141779968);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 VALUES (1810336402060121088, 3514598350520133632);
@@ -5768,8 +5794,8 @@ INSERT INTO `sys_user` (`user_id`, `dept_id`, `user_name`, `nick_name`, `user_ty
                        , `wechat_user_id`)
 VALUES (1, 0, 'admin', '黑猫警长', '00'
        , 'admin@cat2bug.com', '18888888888', '0', '', '$2a$10$/YbsRyezA9pg13iJhCNE.u5yOvWbuq7NZhOlliUvycEfBIgJN6qHK'
-       , '0', '0', '127.0.0.1', '2024-12-28 13:16:53', 'admin'
-       , '2023-11-12 15:34:51', '', '2024-12-28 13:16:52', '管理员', NULL
+       , '0', '0', '127.0.0.1', '2025-01-19 01:18:47', 'admin'
+       , '2023-11-12 15:34:51', '', '2025-01-19 01:18:47', '管理员', NULL
        , NULL);
 COMMIT;
 DROP TABLE IF EXISTS `sys_user_config`;
@@ -5783,18 +5809,6 @@ CREATE TABLE `sys_user_config` (
                                    `life_content` varchar(255) DEFAULT NULL COMMENT '人生格言'
 );
 
-INSERT INTO `sys_user_config` (`user_config_id`, `current_team_id`, `user_id`, `current_project_id`, `exit_time`
-                              , `defect_last_access_time`, `life_content`)
-VALUES (121, 9, 224, 54, NULL
-       , NULL, NULL);
-INSERT INTO `sys_user_config` (`user_config_id`, `current_team_id`, `user_id`, `current_project_id`, `exit_time`
-                              , `defect_last_access_time`, `life_content`)
-VALUES (122, 10, 225, 56, NULL
-       , NULL, NULL);
-INSERT INTO `sys_user_config` (`user_config_id`, `current_team_id`, `user_id`, `current_project_id`, `exit_time`
-                              , `defect_last_access_time`, `life_content`)
-VALUES (123, 10, 227, 55, NULL
-       , NULL, NULL);
 COMMIT;
 DROP TABLE IF EXISTS `sys_user_defect`;
 CREATE TABLE `sys_user_defect` (
@@ -5840,12 +5854,6 @@ CREATE TABLE `sys_user_role` (
                                  `role_id` bigint NOT NULL COMMENT '角色ID'
 );
 
-INSERT INTO `sys_user_role` (`user_id`, `role_id`)
-VALUES (222, 10);
-INSERT INTO `sys_user_role` (`user_id`, `role_id`)
-VALUES (224, 10);
-INSERT INTO `sys_user_role` (`user_id`, `role_id`)
-VALUES (225, 10);
 COMMIT;
 DROP TABLE IF EXISTS `sys_user_statistic_template`;
 CREATE TABLE `sys_user_statistic_template` (
@@ -5889,4 +5897,3 @@ FROM `sys_module` `m`
          LEFT JOIN `sys_case` `c` ON `m`.`module_id` = `c`.`module_id`
          LEFT JOIN `sys_plan_item` `pi` ON `pi`.`case_id` = `c`.`case_id`
 GROUP BY `m`.`module_id`, `pi`.`plan_item_id`;
-SET FOREIGN_KEY_CHECKS = 1;
