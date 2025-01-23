@@ -67,12 +67,20 @@ public interface ISysDashboardService {
      * @param planId    计划ID
      * @return          集合
      */
-    public List<SysColumnsInChart> planBurndown(@Param("planId") String planId);
+    public List<SysColumnsInChart> planBurndown(String planId);
 
     /**
      * 成员缺陷处理排行
      * @param projectId
      * @return
      */
-    public List<SysMemberRankOfDefects> memberRankOfDefects(@Param("projectId") Long projectId);
+    public List<SysMemberRankOfDefects> memberRankOfDefects(Long projectId);
+
+    /**
+     * 用户处理缺陷折线图
+     * @param projectId
+     * @param timeType
+     * @return
+     */
+    public List<SysMemberOfDefectsLine> memberOfDefectsLine(Long projectId, String timeType);
 }

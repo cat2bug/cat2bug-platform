@@ -21,9 +21,19 @@
         <member-statistics-chart />
       </el-card>
     </div>
-    <el-card class="box-card">
-      <defect-state-chart />
-    </el-card>
+    <div class="min-width-700 dashboard-row">
+      <el-card class="box-card">
+        <defect-state-chart />
+      </el-card>
+      <el-card class="box-card">
+        <member-of-defect-line />
+      </el-card>
+    </div>
+    <div class="dashboard-row">
+      <el-card class="box-card">
+        <plan-statistics-chart />
+      </el-card>
+    </div>
     <div class="action-block dashboard-row">
       <el-card class="box-card">
         <action-list />
@@ -52,10 +62,14 @@ import MemberStatisticsChart from "@/views/system/dashboard/components/MemberSta
 import ActionList from "@/views/system/dashboard/components/ActionList";
 import MemberOfDefectRank from "@/views/system/dashboard/components/MemberOfDefectRank";
 import PlanBurndownChart from "@/views/system/dashboard/components/PlanBurndownChart";
+import MemberOfDefectLine from "@/views/system/dashboard/components/MemberOfDefectLine";
+import PlanStatisticsChart from "@/views/system/dashboard/components/PlanStatisticsChart";
 export default {
   name: "index",
   components: { ProjectLabel, DefectStateChart, CaseStatisticsChart, DefectStatisticsChart, ModuleStatisticsChart,
-    ReportStatisticsChart, DocumentStatisticsChart, MemberStatisticsChart, ActionList, MemberOfDefectRank, PlanBurndownChart },
+    ReportStatisticsChart, DocumentStatisticsChart, MemberStatisticsChart, ActionList, MemberOfDefectRank, PlanBurndownChart,
+    MemberOfDefectLine, PlanStatisticsChart
+  },
   data() {
     return {
 
@@ -85,8 +99,12 @@ export default {
   }
   .action-block {
     flex-direction: column-reverse !important;
+    > *:first-child {
+      width: 100%;
+    }
     > .action-right {
-      flex: 0 0 100%;
+      width: 100%;
+      flex: 1;
     }
   }
 }
@@ -128,5 +146,8 @@ export default {
   > *:first-child {
     flex: 1;
   }
+}
+.min-width-700 {
+  min-width: 700px;
 }
 </style>

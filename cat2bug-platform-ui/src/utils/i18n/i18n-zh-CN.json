@@ -801,5 +801,8 @@
   "dashboard.month": "12个月",
   "dashboard.member-Defect-rank.title": "成员处理缺陷排行",
   "dashboard.plan-burndown-chart.title": "测试计划30天燃尽图",
-  "dashboard.action.title": "活动"
+  "dashboard.action.title": "活动",
+  "dashboard.member-Defect-line.day.title": "成员处理缺陷30天走势图",
+  "dashboard.member-Defect-line.month.title": "成员处理缺陷月走势图",
+  "dashboard.plan-statistics.title": "测试计划统计"
 }

@@ -801,5 +801,8 @@
   "dashboard.month": "12-Month",
   "dashboard.member-Defect-rank.title": "Handle Defect Rankings",
   "dashboard.plan-burndown-chart.title": "Plan 30-Day Burndown Chart",
-  "dashboard.action.title": "Actions"
+  "dashboard.action.title": "Actions",
+  "dashboard.member-Defect-line.day.title": "Members Deal With Defects For 30-Days Chart",
+  "dashboard.member-Defect-line.month.title": "Members Deal With Defects For Months Chart",
+  "dashboard.plan-statistics.title": "Test Plan Statistics"
 }

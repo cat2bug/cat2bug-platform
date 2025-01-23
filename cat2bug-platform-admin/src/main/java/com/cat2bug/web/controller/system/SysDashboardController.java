@@ -3,10 +3,7 @@ package com.cat2bug.web.controller.system;
 import com.cat2bug.common.core.domain.AjaxResult;
 import com.cat2bug.common.core.domain.type.SysDefectStateEnum;
 import com.cat2bug.common.utils.StringUtils;
-import com.cat2bug.system.domain.SysAction;
-import com.cat2bug.system.domain.SysColumnsInChart;
-import com.cat2bug.system.domain.SysDefectLine;
-import com.cat2bug.system.domain.SysMemberRankOfDefects;
+import com.cat2bug.system.domain.*;
 import com.cat2bug.system.service.ISysDashboardService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -167,6 +164,89 @@ public class SysDashboardController {
     public AjaxResult memberRankOfDefects(@PathVariable("projectId") Long projectId) {
         List<SysMemberRankOfDefects> list = sysDashboardService.memberRankOfDefects(projectId);
         return AjaxResult.success(list);
+    }
+
+    @PreAuthorize("@ss.hasPermi('system:dashboard:query')")
+    @GetMapping("/{projectId}/member-defect-line")
+    public AjaxResult memberOfDefectsLine(@PathVariable("projectId") Long projectId,  @RequestParam("timeType") String timeType) {
+        List<SysMemberOfDefectsLine> list = sysDashboardService.memberOfDefectsLine(projectId, timeType);
+        Set<String> timeSet = new LinkedHashSet<>();
+        SimpleDateFormat format;
+        switch (timeType) {
+            case MONTH_TYPE:
+                setMemberDefectCountOfMonth(timeSet, list);
+                break;
+            default:
+                setMemberDefectCountOfDay(timeSet, list);
+                break;
+        }
+
+        Map<String, Object> ret = new HashMap<>();
+        ret.put("time", timeSet);              // 日期数组
+        ret.put("data", list);
+        return AjaxResult.success(ret);
+    }
+
+    private void setMemberDefectCountOfDay(Set<String> timeSet, List<SysMemberOfDefectsLine> list) {
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        LongSummaryStatistics summaryStatistics = list.stream().map(x-> {
+            try {
+                return format.parse(x.getCreateTime()).getTime();
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+        }).collect(Collectors.summarizingLong(x -> x));
+
+        // 如果缺陷数据小于30天，就显示30天的，没有的天数补齐
+        final long DAY_SIZE = 1000*60*60*24;    // 一天的毫秒时长
+        final long DEFAULT_DAY = 30;            // 默认最大天数
+        long dayCount = (summaryStatistics.getMax() - summaryStatistics.getMin())/DAY_SIZE;
+        if(dayCount<DEFAULT_DAY) {
+            for(long i=0;i<=DEFAULT_DAY;i++) {
+                timeSet.add(format.format(new Date(summaryStatistics.getMin()+i*DAY_SIZE)));
+            }
+        } else {
+            // 如果缺陷数据大于30天，就显示30的的
+            for(long i=DEFAULT_DAY;i>=0;i--) {
+                timeSet.add(format.format(new Date(summaryStatistics.getMax()-i*DAY_SIZE)));
+            }
+        }
+    }
+
+    private void setMemberDefectCountOfMonth(Set<String> timeSet, List<SysMemberOfDefectsLine> list) {
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM");
+        LongSummaryStatistics summaryStatistics = list.stream().map(x-> {
+            try {
+                return format.parse(x.getCreateTime()).getTime();
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+        }).collect(Collectors.summarizingLong(x -> x));
+
+        // 如果缺陷数据小于30天，就显示30天的，没有的天数补齐
+        final int DEFAULT_MONTH = 12;            // 默认最大天数
+        Calendar startCalendar = Calendar.getInstance();
+        startCalendar.setTime(new Date(summaryStatistics.getMin()));
+        Calendar endCalendar = Calendar.getInstance();
+        endCalendar.setTime(new Date(summaryStatistics.getMax()));
+        int monthCount = endCalendar.get(Calendar.MONTH)-startCalendar.get(Calendar.MONTH);
+
+        // 如果缺陷数据小于12个月，就显示12个月的，没有的天数补齐
+        if(monthCount<DEFAULT_MONTH) {
+            timeSet.add(format.format(startCalendar.getTime()));
+            for(int i=1;i<DEFAULT_MONTH;i++) {
+                startCalendar.add(Calendar.MONTH, 1);
+                timeSet.add(format.format(startCalendar.getTime()));
+            }
+        } else {
+            // 如果缺陷数据大于12个月，就显示30的的
+            endCalendar.add(Calendar.MONTH, -DEFAULT_MONTH);
+            timeSet.add(format.format(endCalendar.getTime()));
+            for(int i=1;i<=DEFAULT_MONTH;i++) {
+                endCalendar.add(Calendar.MONTH, 1);
+                timeSet.add(format.format(endCalendar.getTime()));
+            }
+        }
     }
 
     private void setCountOfDay(Set<String> timeSet, List<SysDefectLine> defectLineList) {

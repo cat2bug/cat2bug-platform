@@ -72,3 +72,11 @@ export function memberRankOfDefects(projectId) {
     method: 'get',
   })
 }
+
+export function memberLineOfDefects(projectId, query) {
+  return request({
+    url: '/system/dashboard/'+projectId+'/member-defect-line',
+    method: 'get',
+    params: query
+  })
+}

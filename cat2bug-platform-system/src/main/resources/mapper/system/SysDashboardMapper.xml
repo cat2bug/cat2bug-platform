@@ -25,7 +25,6 @@
         <result property="value"     column="unfinished_count"  />
     </resultMap>
 
-
     <resultMap type="SysMemberRankOfDefects" id="SysMemberRankOfDefectsResult">
         <result property="nickName"    column="nick_name"    />
         <result property="userName"     column="user_name"  />
@@ -63,6 +62,14 @@
         <result property="testCount"     column="test_count"  />
         <result property="developmentCount"     column="development_count"  />
         <result property="outsideCount"     column="outside_count"  />
+    </resultMap>
+
+    <resultMap type="SysMemberOfDefectsLine" id="SysMemberOfDefectsLineResult">
+        <result property="nickName"    column="nick_name"    />
+        <result property="userName"     column="user_name"  />
+        <result property="avatar"     column="avatar"  />
+        <result property="createTime"     column="create_time"  />
+        <result property="defectTodayCount"     column="defect_today_count"  />
     </resultMap>
 
     <select id="caseStatistics" parameterType="Long" resultMap="SysCaseStatisticsResult">
@@ -150,7 +157,7 @@
         SELECT s.*, u.nick_name, u.user_name,
                u.avatar
         FROM
-            (SELECT defect_id as id, defect_name as title, 'defect' as type, defect_state as state, IFNULL(update_time, create_time) as time, update_by_id FROM sys_defect WHERE project_id=#{projectId}
+            (SELECT defect_id as id, CONCAT('#', project_num, ' ' ,defect_name) as title, 'defect' as type, defect_state as state, IFNULL(update_time, create_time) as time, update_by_id FROM sys_defect WHERE project_id=#{projectId}
              UNION
              SELECT case_id as id, case_name as title, 'case' as type, null as state, IFNULL(update_time, create_time) as time, update_by as update_by_id FROM sys_case WHERE project_id=#{projectId}
              UNION
@@ -158,7 +165,7 @@
              UNION
              SELECT report_id as id, report_title as title, 'report' as type, null as state, report_time as time, create_by_id as update_by_id FROM sys_report WHERE project_id=#{projectId}
              UNION
-             SELECT doc_id as id, doc_name as title, 'document' as type, null as state, IFNULL(update_time, create_time) as time, update_by_id FROM sys_document WHERE project_id=#{projectId}
+             SELECT doc_id as id, file_url as title, 'document' as type, null as state, IFNULL(update_time, create_time) as time, update_by_id FROM sys_document WHERE project_id=#{projectId}
             ) s
         LEFT JOIN sys_user u ON u.user_id = s.update_by_id
         ORDER BY s.time DESC LIMIT 0, 50
@@ -210,6 +217,42 @@
                     l.create_by
                 ORDER BY
                     defect_total DESC
+            ) d
+                LEFT JOIN sys_user u ON d.update_by_id = u.user_id
+    </select>
+
+    <select id="memberOfDefectsLine" parameterType="Long" resultMap="SysMemberOfDefectsLineResult">
+        SELECT
+            u.nick_name,
+            u.user_name,
+            u.avatar,
+            d.create_time,
+            d.defect_today_count
+        FROM
+            (
+                SELECT
+                    e.project_id,
+                    <choose>
+                        <when test="timeType=='month'">
+                            DATE_FORMAT( l.create_time, '%Y-%m' ) AS create_time,
+                        </when>
+                        <otherwise>
+                            DATE_FORMAT( l.create_time, '%Y-%m-%d' ) AS create_time,
+                        </otherwise>
+                    </choose>
+                    l.create_by AS update_by_id,
+                    count( DISTINCT l.defect_id ) AS defect_today_count
+                FROM
+                    sys_defect_log l
+                    JOIN sys_defect e ON e.defect_id = l.defect_id
+                WHERE
+                    e.project_id=#{projectId}
+                GROUP BY
+                    e.project_id,
+                    create_time,
+                    l.create_by
+                ORDER BY
+                    create_time DESC
             ) d
                 LEFT JOIN sys_user u ON d.update_by_id = u.user_id
     </select>

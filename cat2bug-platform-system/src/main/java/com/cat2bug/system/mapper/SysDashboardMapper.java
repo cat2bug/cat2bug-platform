@@ -32,4 +32,6 @@ public interface SysDashboardMapper {
     public List<SysColumnsInChart> planBurndown(@Param("planId") String planId);
 
     public List<SysMemberRankOfDefects> memberRankOfDefects(@Param("projectId") Long projectId);
+
+    public List<SysMemberOfDefectsLine> memberOfDefectsLine(@Param("projectId") Long projectId, @Param("timeType") String timeType);
 }

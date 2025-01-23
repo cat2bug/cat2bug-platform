@@ -10,7 +10,7 @@
         <el-tag v-else-if="action.type==='case'" type="success" effect="dark">{{ $t(action.type) }}</el-tag>
         <el-tag v-else-if="action.type==='plan'" type="warning" effect="dark">{{ $t(action.type) }}</el-tag>
         <el-tag v-else type="info" effect="dark">{{ $t(action.type) }}</el-tag>
-        <cat2-bug-text :content="action.title" :tooltip="action.title" type="link" />
+        <cat2-bug-text :content="action.title" :tooltip="action.title" :type="textType(action.type)" @click="handleActionClick(action)"/>
         <span>{{ action.time }}</span>
         <span v-if="action.state && $te(action.state)">({{ $t(action.state) }})</span>
         <cat2-bug-avatar :member="action" />
@@ -61,6 +61,17 @@ export default {
     },
     sortActionTimes() {
       return Object.keys(this.actionList).sort(function(a,b){return parseInt(b)-parseInt(a)});
+    },
+    textType: function () {
+      return function (type) {
+        switch (type) {
+          case 'document':
+            return 'down';
+          case 'defect':
+            return 'link';
+        }
+        return 'text';
+      }
     }
   },
   mounted() {
@@ -73,6 +84,19 @@ export default {
         this.loading = false;
         this.actionList = res.data.actions;
       }).catch(e=>this.loading=false);
+    },
+    handleActionClick(action) {
+      switch (action.type) {
+        case 'defect':
+          let defectUrl = this.$router.resolve({
+            path: '/project/defect',
+            query: { defectId: action.id }
+          });
+          window.open(defectUrl.href, '_blank');
+          break;
+        case 'case':
+          break;
+      }
     }
   }
 }

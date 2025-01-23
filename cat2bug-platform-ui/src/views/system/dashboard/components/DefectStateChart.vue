@@ -28,7 +28,7 @@ export default {
     },
     height: {
       type: String,
-      default: '300px'
+      default: '200px'
     },
     autoResize: {
       type: Boolean,
@@ -90,9 +90,15 @@ export default {
             trigger: 'axis'
           },
           legend: {
+            top: '35',
+            left: '3%',
+            right: '4%',
+            type: 'scroll',
+            width: 'auto',
             data: legendData
           },
           grid: {
+            top: '70',
             left: '3%',
             right: '4%',
             bottom: '3%',

@@ -34,6 +34,11 @@ public class SysDashboardServiceImpl implements ISysDashboardService {
     }
 
     @Override
+    public List<SysMemberOfDefectsLine> memberOfDefectsLine(Long projectId, String timeType) {
+        return sysDashboardMapper.memberOfDefectsLine(projectId, timeType);
+    }
+
+    @Override
     public SysCaseStatistics caseStatistics(Long projectId) {
         return sysDashboardMapper.caseStatistics(projectId);
     }
