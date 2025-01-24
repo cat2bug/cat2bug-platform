@@ -21,7 +21,7 @@
         <member-statistics-chart />
       </el-card>
     </div>
-    <div class="min-width-700 dashboard-row">
+    <div class="dashboard-row">
       <el-card class="box-card">
         <defect-state-chart />
       </el-card>
