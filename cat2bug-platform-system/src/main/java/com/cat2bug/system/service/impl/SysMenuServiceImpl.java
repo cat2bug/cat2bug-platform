@@ -262,7 +262,7 @@ public class SysMenuServiceImpl implements ISysMenuService
     public List<TreeSelect> buildMenuTreeSelect(List<SysMenu> menus)
     {
         List<SysMenu> menuTrees = buildMenuTree(menus);
-        return menuTrees.stream().map(TreeSelect::new).collect(Collectors.toList());
+        return menuTrees.stream().filter(m->m.getOrderNum()<99).map(TreeSelect::new).collect(Collectors.toList());
     }
 
     /**

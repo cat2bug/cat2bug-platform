@@ -1,129 +1,99 @@
 <template>
   <div class="app-container">
-    <el-row :gutter="20">
+    <el-page-header :title="$t('back')" @back="goBack" :content="$t('member.manage')">
+    </el-page-header>
+    <div class="member-tools">
       <!--用户数据-->
-      <el-col :span="24" :xs="24">
-        <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="120px">
-          <el-form-item :label="$t('account')" prop="userName">
-            <el-input
-              v-model="queryParams.userName"
-              :placeholder="$t('member.please-enter-name')"
-              clearable
-              style="width: 240px"
-              @keyup.enter.native="handleQuery"
-            />
-          </el-form-item>
-          <el-form-item :label="$t('phone-number')" prop="phoneNumber">
-            <el-input
-              v-model="queryParams.phoneNumber"
-              :placeholder="$t('member.please-enter-phone-number')"
-              clearable
-              style="width: 240px"
-              @keyup.enter.native="handleQuery"
-            />
-          </el-form-item>
-          <el-form-item>
-            <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">{{ $t('search') }}</el-button>
-            <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">{{ $t('reset') }}</el-button>
-          </el-form-item>
-        </el-form>
+      <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="120px">
+        <el-form-item label="" prop="userName">
+          <el-input
+            v-model="queryParams.userName"
+            :placeholder="$t('member.please-enter-name')"
+            prefix-icon="el-icon-user"
+            clearable
+            style="width: 240px"
+            @input="handleQuery"
+          />
+        </el-form-item>
+        <el-form-item label="" prop="phoneNumber">
+          <el-input
+            v-model="queryParams.phoneNumber"
+            :placeholder="$t('member.please-enter-phone-number')"
+            prefix-icon="el-icon-phone-outline"
+            clearable
+            style="width: 240px"
+            @input="handleQuery"
+          />
+        </el-form-item>
+      </el-form>
 
-        <el-row :gutter="10" class="mb8">
-          <el-col :span="1.5">
+      <el-row :gutter="10" class="mb8">
+        <el-col :span="1.5">
+          <el-button
+            type="primary"
+            plain
+            icon="el-icon-plus"
+            size="mini"
+            @click="handleAdd"
+            v-hasPermi="['system:member:add']"
+          >{{ $t('member.add') }}</el-button>
+        </el-col>
+      </el-row>
+    </div>
+    <el-row>
+      <el-table v-loading="loading" :data="userList" @selection-change="handleSelectionChange">
+        <el-table-column type="selection" width="50" align="center" />
+        <el-table-column :label="$t('account')" align="center" key="userName" prop="userName" v-if="columns[0].visible" :show-overflow-tooltip="true" />
+        <el-table-column :label="$t('name')" align="center" key="nickName" prop="nickName" v-if="columns[1].visible" :show-overflow-tooltip="true" />
+        <el-table-column :label="$t('email')" align="center" key="email" prop="email" v-if="columns[2].visible"/>
+        <el-table-column :label="$t('phone-number')" align="center" key="phoneNumber" prop="phoneNumber" v-if="columns[3].visible" width="120" />
+        <el-table-column :label="$t('state')" align="center" key="status" v-if="columns[4].visible">
+          <template slot-scope="scope">
+            <el-switch
+              v-model="scope.row.status"
+              active-value="0"
+              inactive-value="1"
+              @change="handleStatusChange(scope.row)"
+            ></el-switch>
+          </template>
+        </el-table-column>
+        <el-table-column :label="$t('create-time')" align="center" prop="createTime" v-if="columns[5].visible" width="160">
+          <template slot-scope="scope">
+            <span>{{ parseTime(scope.row.createTime) }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column
+          :label="$t('operate')"
+          align="center"
+          width="200"
+          class-name="small-padding fixed-width"
+        >
+          <template slot-scope="scope" v-if="scope.row.userId !== 1">
             <el-button
-              type="primary"
-              plain
-              icon="el-icon-plus"
               size="mini"
-              @click="handleAdd"
-              v-hasPermi="['system:member:add']"
-            >{{ $t('add') }}</el-button>
-          </el-col>
-          <el-col :span="1.5">
-            <el-button
-              type="success"
-              plain
+              type="text"
               icon="el-icon-edit"
-              size="mini"
-              :disabled="single"
-              @click="handleUpdate"
+              @click="handleUpdate(scope.row)"
               v-hasPermi="['system:member:edit']"
             >{{ $t('modify') }}</el-button>
-          </el-col>
-          <el-col :span="1.5">
             <el-button
-              type="danger"
-              plain
-              icon="el-icon-delete"
               size="mini"
-              :disabled="multiple"
-              @click="handleDelete"
-              v-hasPermi="['system:member:remove']"
-            >{{ $t('delete') }}</el-button>
-          </el-col>
-          <right-toolbar :showSearch.sync="showSearch" @queryTable="getList" :columns="columns"></right-toolbar>
-        </el-row>
+              type="text"
+              icon="el-icon-delete"
+              @click="handleResetPwd(scope.row)"
+              v-hasPermi="['system:member:resetPwd']"
+            >{{ $t('reset-password') }}</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
 
-        <el-table v-loading="loading" :data="userList" @selection-change="handleSelectionChange">
-          <el-table-column type="selection" width="50" align="center" />
-          <el-table-column :label="$t('account')" align="center" key="userName" prop="userName" v-if="columns[0].visible" :show-overflow-tooltip="true" />
-          <el-table-column :label="$t('name')" align="center" key="nickName" prop="nickName" v-if="columns[1].visible" :show-overflow-tooltip="true" />
-          <el-table-column :label="$t('phone-number')" align="center" key="phoneNumber" prop="phoneNumber" v-if="columns[2].visible" width="120" />
-          <el-table-column :label="$t('state')" align="center" key="status" v-if="columns[3].visible">
-            <template slot-scope="scope">
-              <el-switch
-                v-model="scope.row.status"
-                active-value="0"
-                inactive-value="1"
-                @change="handleStatusChange(scope.row)"
-              ></el-switch>
-            </template>
-          </el-table-column>
-          <el-table-column :label="$t('create-time')" align="center" prop="createTime" v-if="columns[4].visible" width="160">
-            <template slot-scope="scope">
-              <span>{{ parseTime(scope.row.createTime) }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column
-            :label="$t('operate')"
-            align="center"
-            width="160"
-            class-name="small-padding fixed-width"
-          >
-            <template slot-scope="scope" v-if="scope.row.userId !== 1">
-              <el-button
-                size="mini"
-                type="text"
-                icon="el-icon-edit"
-                @click="handleUpdate(scope.row)"
-                v-hasPermi="['system:member:edit']"
-              >{{ $t('modify') }}</el-button>
-              <el-button
-                size="mini"
-                type="text"
-                icon="el-icon-delete"
-                @click="handleDelete(scope.row)"
-                v-hasPermi="['system:member:remove']"
-              >{{ $t('delete') }}</el-button>
-              <el-button
-                size="mini"
-                type="text"
-                icon="el-icon-delete"
-                @click="handleResetPwd(scope.row)"
-                v-hasPermi="['system:member:resetPwd']"
-              >{{ $t('reset-password') }}</el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-
-        <pagination
-          v-show="total>0"
-          :total="total"
-          :page.sync="queryParams.pageNum"
-          :limit.sync="queryParams.pageSize"
-          @pagination="getList"
-        />
-      </el-col>
+      <pagination
+        v-show="total>0"
+        :total="total"
+        :page.sync="queryParams.pageNum"
+        :limit.sync="queryParams.pageSize"
+        @pagination="getList"
+      />
     </el-row>
 
     <!-- 添加或修改用户配置对话框 -->
@@ -244,9 +214,10 @@ export default {
       columns: [
         { key: 0, label: this.$i18n.t('account'), visible: true },
         { key: 1, label: this.$i18n.t('name'), visible: true },
+        { key: 2, label: this.$i18n.t('email'), visible: true },
         { key: 2, label: this.$i18n.t('phone-number'), visible: true },
-        { key: 3, label: `状态`, visible: true },
-        { key: 4, label: `创建时间`, visible: true }
+        { key: 3, label: `state`, visible: true },
+        { key: 4, label: `create-time`, visible: true }
       ],
       // 表单校验
       rules: {
@@ -293,7 +264,22 @@ export default {
       this.initPassword = response.msg;
     });
   },
+  mounted() {
+    this.initFloatMenu();
+  },
+  destroyed() {
+    // 移除滚动条监听
+    this.$floatMenu.windowsDestory();
+  },
   methods: {
+    /** 初始化浮动菜单 */
+    initFloatMenu() {
+      this.$floatMenu.windowsInit(document.querySelector('.main-container'));
+      this.$floatMenu.resetMenus();
+    },
+    goBack() {
+      this.$router.back();
+    },
     /** 查询用户列表 */
     getList() {
       this.loading = true;
@@ -326,7 +312,7 @@ export default {
       this.$modal.confirm(strFormat(this.$i18n.t('member.change-user-state'),text + " " + row.userName)).then(function() {
         return changeUserStatus(row.userId, row.status);
       }).then(() => {
-        this.$modal.msgSuccess(text + this.$i18n.t('success'));
+        this.$modal.msgSuccess(text + this.$i18n.t('char-span') + this.$i18n.t('success'));
       }).catch(function() {
         row.status = row.status === "0" ? "1" : "0";
       });
@@ -464,3 +450,21 @@ export default {
   }
 };
 </script>
+<style lang="scss" scoped>
+.member-tools {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  > * {
+    display: inline-block;
+    justify-content: flex-start;
+    margin-bottom: 0px;
+    ::v-deep .el-form-item {
+      margin-bottom: 0px;
+    }
+  }
+}
+</style>
