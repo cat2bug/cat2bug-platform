@@ -142,7 +142,12 @@ public class SysDashboardController {
         final long DAY_SIZE = 1000*60*60*24;    // 一天的毫秒时长
         final long DEFAULT_DAY = 30;            // 默认最大天数
         long dayCount = (summaryStatistics.getMax() - summaryStatistics.getMin())/DAY_SIZE;
-        if(dayCount<DEFAULT_DAY) {
+        if(sysColumnsInChartList.size()==0) {
+            for(long i=DEFAULT_DAY;i>=0;i--) {
+                String day = format.format(new Date(System.currentTimeMillis()-i*DAY_SIZE));
+                list.add(new SysColumnsInChart(day, 0));
+            }
+        } else if(dayCount<DEFAULT_DAY) {
             for(long i=0;i<=DEFAULT_DAY;i++) {
                 String day = format.format(new Date(summaryStatistics.getMin()+i*DAY_SIZE));
                 list.add(new SysColumnsInChart(day,
@@ -201,7 +206,11 @@ public class SysDashboardController {
         final long DAY_SIZE = 1000*60*60*24;    // 一天的毫秒时长
         final long DEFAULT_DAY = 30;            // 默认最大天数
         long dayCount = (summaryStatistics.getMax() - summaryStatistics.getMin())/DAY_SIZE;
-        if(dayCount<DEFAULT_DAY) {
+        if(list.size()==0) {
+            for(long i=DEFAULT_DAY;i>=0;i--) {
+                timeSet.add(format.format(new Date(System.currentTimeMillis()-i*DAY_SIZE)));
+            }
+        } else if(dayCount<DEFAULT_DAY) {
             for(long i=0;i<=DEFAULT_DAY;i++) {
                 timeSet.add(format.format(new Date(summaryStatistics.getMin()+i*DAY_SIZE)));
             }
@@ -232,7 +241,14 @@ public class SysDashboardController {
         int monthCount = endCalendar.get(Calendar.MONTH)-startCalendar.get(Calendar.MONTH);
 
         // 如果缺陷数据小于12个月，就显示12个月的，没有的天数补齐
-        if(monthCount<DEFAULT_MONTH) {
+        if(list.size()==0) {
+            startCalendar.setTime(new Date());
+            startCalendar.add(Calendar.MONTH, -DEFAULT_MONTH);
+            for(long i=DEFAULT_MONTH;i>=0;i--) {
+                startCalendar.add(Calendar.MONTH, 1);
+                timeSet.add(format.format(startCalendar.getTime()));
+            }
+        } else if(monthCount<DEFAULT_MONTH) {
             timeSet.add(format.format(startCalendar.getTime()));
             for(int i=1;i<DEFAULT_MONTH;i++) {
                 startCalendar.add(Calendar.MONTH, 1);
@@ -263,7 +279,11 @@ public class SysDashboardController {
         long dayCount = (summaryStatistics.getMax() - summaryStatistics.getMin())/DAY_SIZE;
 
         // 如果缺陷数据小于30天，就显示30天的，没有的天数补齐
-        if(dayCount<DEFAULT_DAY) {
+        if(defectLineList.size()==0) {
+            for(long i=DEFAULT_DAY;i>=0;i--) {
+                timeSet.add(format.format(new Date(System.currentTimeMillis()-i*DAY_SIZE)));
+            }
+        } else if(dayCount<DEFAULT_DAY) {
             for(long i=0;i<=DEFAULT_DAY;i++) {
                 timeSet.add(format.format(new Date(summaryStatistics.getMin()+i*DAY_SIZE)));
             }
@@ -292,14 +312,21 @@ public class SysDashboardController {
         int monthCount = endCalendar.get(Calendar.MONTH)-startCalendar.get(Calendar.MONTH);
 
         // 如果缺陷数据小于12个月，就显示12个月的，没有的天数补齐
-        if(monthCount<DEFAULT_MONTH) {
+        if(defectLineList.size()==0) {
+            startCalendar.setTime(new Date());
+            startCalendar.add(Calendar.MONTH, -DEFAULT_MONTH);
+            for(long i=DEFAULT_MONTH;i>=0;i--) {
+                startCalendar.add(Calendar.MONTH, 1);
+                timeSet.add(format.format(startCalendar.getTime()));
+            }
+        } else if(monthCount<DEFAULT_MONTH) {
             timeSet.add(format.format(startCalendar.getTime()));
             for(int i=1;i<DEFAULT_MONTH;i++) {
                 startCalendar.add(Calendar.MONTH, 1);
                 timeSet.add(format.format(startCalendar.getTime()));
             }
         } else {
-            // 如果缺陷数据大于12个月，就显示30的的
+            // 如果缺陷数据大于12个月，就显示12个月的
             endCalendar.add(Calendar.MONTH, -DEFAULT_MONTH);
             timeSet.add(format.format(endCalendar.getTime()));
             for(int i=1;i<=DEFAULT_MONTH;i++) {
