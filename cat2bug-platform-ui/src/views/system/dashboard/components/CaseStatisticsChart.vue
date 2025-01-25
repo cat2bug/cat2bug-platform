@@ -1,6 +1,7 @@
 <template>
   <div v-loading="loading" class="defect-state-chart" :style="{height:height,width:width}">
     <div class="title">
+      <cat2-bug-block color="rgb(103, 194, 58)" />
       <h1>{{ $t('case') }}</h1>
       <span>{{ caseStatistics.total }}</span>
     </div>
@@ -9,11 +10,12 @@
 
 <script>
 // 用例统计
-
+import Cat2BugBlock from "@/components/Cat2BugBlock";
 import {caseStatistics} from "@/api/system/dashboard";
 
 export default {
   name: "CaseStatisticsChart",
+  components: { Cat2BugBlock },
   props: {
     width: {
       type: String,
