@@ -9,6 +9,8 @@ import lombok.Data;
  */
 @Data
 public class SysMemberRankOfDefects {
+    /** 用户编号 */
+    private Long userId;
     /** 成员姓名 */
     private String nickName;
     /** 成员登陆名 */

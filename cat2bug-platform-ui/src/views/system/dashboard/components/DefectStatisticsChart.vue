@@ -1,20 +1,20 @@
 <template>
   <div v-loading="loading" class="defect-state-chart" :style="{height:height,width:width}">
-    <div class="title">
+    <div class="title" @click="handleTitleClick">
       <cat2-bug-block color="rgb(245, 108, 108)" />
       <h1>{{ $t('defect') }}</h1>
       <span>{{ defectStatistics.total }}</span>
     </div>
     <div class="data">
-      <div>
+      <div @click="handleStateClick(0)">
         <svg-icon icon-class="pending-processing" :style="`color: ${iconColor(0)||'#606266'};`" />
         <span> {{ $t('PENDING') }} {{ defectStatistics.pendingCount }}</span>
       </div>
-      <div>
+      <div @click="handleStateClick(1)">
         <svg-icon icon-class="pending-processing" :style="`color: ${iconColor(1)||'#606266'};`" />
         <span> {{ $t('AUDIT') }} {{ defectStatistics.verifyCount }}</span>
       </div>
-      <div>
+      <div @click="handleStateClick(2)">
         <svg-icon icon-class="pending-processing" :style="`color: ${iconColor(2)||'#606266'};`" />
         <span> {{ $t('CLOSED') }} {{ defectStatistics.closedCount }}</span>
       </div>
@@ -26,6 +26,8 @@
 // 用例统计
 import Cat2BugBlock from "@/components/Cat2BugBlock";
 import {defectStatistics} from "@/api/system/dashboard";
+import {strFormat} from "@/utils";
+import {setDefectTempTab} from "@/utils/defect";
 
 export default {
   name: "DefectStatisticsChart",
@@ -69,6 +71,38 @@ export default {
     this.getDefectStatistics();
   },
   methods: {
+    handleTitleClick() {
+      const targetRoute = this.$router.resolve({ name:'Defect', params: {}});
+      window.open(targetRoute.href, '_blank');
+    },
+    handleStateClick(state) {
+      let defectStateValues;
+      let defectStateName;
+      switch (state) {
+        case 0:
+          defectStateValues = [0, 3];
+          defectStateName = this.$i18n.t('PENDING');
+          break;
+        case 1:
+          defectStateValues = [1];
+          defectStateName = this.$i18n.t('AUDIT');
+          break;
+        case 2:
+          defectStateValues = [4];
+          defectStateName = this.$i18n.t('CLOSED');
+          break;
+      }
+      const params = {
+        tabId: new Date().getMilliseconds(),
+        tabName: defectStateName,
+        config: {
+          params: {
+            defectStates: defectStateValues
+          }
+        }}
+      setDefectTempTab(params);
+      this.handleTitleClick();
+    },
     getDefectStatistics() {
       this.loading=true;
       defectStatistics(this.projectId).then(res=>{
@@ -83,6 +117,9 @@ export default {
 <style lang="scss" scoped>
 .defect-state-chart {
   position: relative;
+  .title:hover {
+    cursor: pointer;
+  }
   .title {
     width: 100%;
     display: inline-flex;
@@ -106,6 +143,10 @@ export default {
       font-size: 0.8rem;
       width: 50%;
       padding-bottom: 5px;
+    }
+    > *:hover {
+      cursor: pointer;
+      text-decoration: underline;
     }
   }
 }

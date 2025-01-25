@@ -15,7 +15,7 @@
         :value="item.planId">
       </el-option>
     </el-select>
-    <div class="plan-statistics">
+    <div class="plan-statistics" @click="handlePlanClick">
       <el-statistic
         group-separator=",">
         <template slot="title">
@@ -156,6 +156,10 @@ export default {
     this.getPlanList();
   },
   methods: {
+    handlePlanClick() {
+      const targetRoute = this.$router.resolve({ path:'/project/plan', query: {planId:this.query.planId}});
+      window.open(targetRoute.href, '_blank');
+    },
     /** 获取计划信息 */
     getPlanInfo(planId) {
       this.loading = true;
@@ -191,6 +195,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.defect-state-chart:hover {
+  cursor: pointer;
+}
 .planSelect {
   width: 100%;
   .prefix {

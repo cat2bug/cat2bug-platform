@@ -1,6 +1,6 @@
 <template>
   <div v-loading="loading" class="defect-state-chart" :style="{height:height,width:width}">
-    <div class="title">
+    <div class="title" @click="handleClick">
       <cat2-bug-block color="rgb(251, 177, 63)" />
       <h1>{{ $t('document') }}</h1>
       <span>{{ documentStatistics.total }}</span>
@@ -43,8 +43,12 @@ export default {
     this.getDocumentStatistics();
   },
   methods: {
+    handleClick() {
+      const targetRoute = this.$router.resolve({ name:'Document', params: {}});
+      window.open(targetRoute.href, '_blank');
+    },
     getDocumentStatistics() {
-      this.loading=false;
+      this.loading=true;
       documentStatistics(this.projectId).then(res=>{
         this.loading = false;
         this.documentStatistics = res.data;
@@ -57,6 +61,9 @@ export default {
 <style lang="scss" scoped>
 .defect-state-chart {
   position: relative;
+  .title:hover {
+    cursor: pointer;
+  }
   .title {
     width: 100%;
     display: inline-flex;

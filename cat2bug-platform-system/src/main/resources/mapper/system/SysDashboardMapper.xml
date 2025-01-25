@@ -26,6 +26,7 @@
     </resultMap>
 
     <resultMap type="SysMemberRankOfDefects" id="SysMemberRankOfDefectsResult">
+        <result property="userId"    column="user_id"    />
         <result property="nickName"    column="nick_name"    />
         <result property="userName"     column="user_name"  />
         <result property="avatar"     column="avatar"  />
@@ -243,6 +244,7 @@
 
     <select id="memberRankOfDefects" parameterType="Long" resultMap="SysMemberRankOfDefectsResult">
         SELECT
+            u.user_id,
             u.nick_name,
             u.user_name,
             u.avatar,
@@ -288,6 +290,7 @@
 
     <select id="memberRankOfDefects" parameterType="Long" resultMap="SysMemberRankOfDefectsResult" databaseId="h2">
         SELECT
+            u.user_id,
             u.nick_name,
             u.user_name,
             u.avatar,

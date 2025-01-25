@@ -129,6 +129,7 @@ import AddPlanDialog from "@/views/system/plan/AddPlanDialog";
 import HandlePlanDialog from "@/views/system/plan/HandlePlanDialog";
 import DictOptionDialog from "@/components/DictOptionDialog";
 import {strFormat} from "@/utils";
+import {checkPermi} from "@/utils/permission";
 
 export default {
   name: "Plan",
@@ -218,12 +219,17 @@ export default {
   },
   mounted() {
     this.initFloatMenu();
+    const actionPlanId = this.$route.query.planId;
+    if(actionPlanId && checkPermi(['system:plan:run'])) {
+      this.handlePlanRun({planId:actionPlanId})
+    }
   },
   destroyed() {
     // 移除滚动条监听
     this.$floatMenu.windowsDestory();
   },
   methods: {
+    checkPermi,
     strFormat,
     /** 初始化浮动菜单 */
     initFloatMenu() {

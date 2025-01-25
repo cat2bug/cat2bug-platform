@@ -1,11 +1,11 @@
 <template>
   <div v-loading="loading" class="defect-state-chart" :style="{height:height,width:width}">
-    <div class="title">
+    <div class="title" @click="handleClick">
       <cat2-bug-block color="#ff7cd1" />
       <h1>{{ $t('member') }}</h1>
       <span>{{ memberStatistics.total }}</span>
     </div>
-    <div class="data">
+    <div class="data" @click="handleClick">
       <div>
         <svg-icon icon-class="user" :style="`color: ${iconColor(0)||'#606266'};`" />
         <span> {{ $t('project.admin') }} {{ memberStatistics.adminCount }}</span>
@@ -75,6 +75,10 @@ export default {
     this.getMemberStatistics();
   },
   methods: {
+    handleClick() {
+      const targetRoute = this.$router.resolve({ path:'/project/project-member', params: {}});
+      window.open(targetRoute.href, '_blank');
+    },
     getMemberStatistics() {
       this.loading = true;
       memberStatistics(this.projectId).then(res=>{
@@ -89,6 +93,9 @@ export default {
 <style lang="scss" scoped>
 .defect-state-chart {
   position: relative;
+  .title:hover, .data:hover {
+    cursor: pointer;
+  }
   .title {
     width: 100%;
     display: inline-flex;

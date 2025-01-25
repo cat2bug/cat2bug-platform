@@ -1,7 +1,7 @@
 <template>
   <div :style="{width:width}">
     <h1>{{ $t('dashboard.member-Defect-rank.title') }}</h1>
-    <div v-for="(m,index) in memberList" :key="index" class="member-row">
+    <div v-for="(m,index) in memberList" :key="index" class="member-row" @click="handleClick(m)">
       <cat2-bug-avatar :member="m" />
       <div class="line">
         <div>
@@ -24,6 +24,7 @@
 
 import {memberRankOfDefects} from "@/api/system/dashboard";
 import Cat2BugAvatar from "@/components/Cat2BugAvatar";
+import {setDefectTempTab} from "@/utils/defect";
 
 export default {
   name: "MemberOfDefectRank",
@@ -65,6 +66,18 @@ export default {
     this.getMemberRankOfDefectList();
   },
   methods: {
+    handleClick(member) {
+      alert(JSON.stringify(member))
+      const params = {
+        tabId: new Date().getMilliseconds(),
+        tabName: member.nickName || member.userName,
+        config: {
+          handleBy: [member.userId]
+        }}
+      setDefectTempTab(params);
+      const targetRoute = this.$router.resolve({ name:'Defect', params: {}});
+      window.open(targetRoute.href, '_blank');
+    },
     getMemberRankOfDefectList() {
       this.loading = true;
       memberRankOfDefects(this.projectId).then(res=>{
