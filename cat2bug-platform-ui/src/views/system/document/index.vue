@@ -87,6 +87,13 @@
             <el-button
               size="mini"
               type="text"
+              icon="el-icon-edit"
+              @click="handleCat2Doc(scope.row)"
+              v-hasPermi="['system:document:edit']"
+            >{{ $t('modify') }}</el-button>
+            <el-button
+              size="mini"
+              type="text"
               icon="el-icon-delete"
               class="red"
               @click="handleDelete(scope.row)"
@@ -477,6 +484,10 @@ export default {
       listDocument(params).then(response => {
         resolve(response.rows.filter(d=>d.docId!=this.folderForm.docId));
       });
+    },
+    /** 编辑c2d文档 */
+    handleCat2Doc(doc) {
+      this.$router.push({name: 'HandleCat2Document', params: {docId: doc.docId}})
     },
     /** 打开移动对话框 */
     handleOpenMoveDialog(doc) {

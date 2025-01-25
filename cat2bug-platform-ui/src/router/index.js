@@ -105,6 +105,19 @@ export const constantRoutes = [
     ]
   },
   {
+    path: '/document/c2d',
+    component: Layout,
+    hidden: true,
+    redirect: 'noredirect',
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/system/document/HandleCat2Document'),
+        name: 'HandleCat2Document',
+      }
+    ]
+  },
+  {
     path: '/defect/template',
     component: Layout,
     hidden: true,
