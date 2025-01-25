@@ -13,8 +13,7 @@
         :value="item.planId">
       </el-option>
     </el-select>
-    <el-empty v-if="!query.planId" description=""></el-empty>
-    <div v-else v-loading="loading" ref="planBurndownChart" :class="className" :style="{height:height,width:width}" />
+    <div v-loading="loading" ref="planBurndownChart" :class="className" :style="{height:height,width:width}" />
   </div>
 </template>
 
@@ -84,13 +83,14 @@ export default {
         this.planList = res.rows;
         if(this.planList && this.planList.length>0) {
           this.query.planId = this.planList[0].planId;
-          this.$nextTick(()=>{
-            self.initChart();
-          });
-          this.handlePlanChange();
         } else {
           this.loading = false;
         }
+
+        this.$nextTick(()=>{
+          self.initChart();
+        });
+        this.handlePlanChange();
       }).catch(e=>{
         this.loading = false;
       })
