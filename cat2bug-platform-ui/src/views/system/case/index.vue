@@ -89,7 +89,7 @@
              @click="handleCloudCaseAdd">
             <div class="title">
               <svg-icon icon-class="robot" />
-              <span>{{$i18n.t('case.create')}}</span>
+              <span>{{$i18n.t('case.ai-create')}}</span>
             </div>
             <el-dropdown-menu slot="dropdown" class="case-add-dropdown-menu">
               <el-dropdown-item @click.native="handleCloudCaseAdd"><svg-icon icon-class="robot" />{{ $t('case.ai-create') }}</el-dropdown-item>
@@ -179,7 +179,7 @@
               <el-button
                 size="small"
                 type="text"
-                @click="handleUpdate($event,scope.row)"
+                @click="handleUpdate(scope.row)"
                 icon="el-icon-edit"
                 v-hasPermi="['system:case:edit']">
                 {{ $t('modify') }}</el-button>
