@@ -281,6 +281,9 @@ export default {
       // 版本号
       version: null,
       tanksMemberList: [{
+        name: '未完成',
+        avatarUrl: require('@/assets/images/thanks/weiwancheng.png')
+      },{
         name: '缥缈孤鸿影',
         avatarUrl: require('@/assets/images/thanks/piaomiaoguhongying.png')
       },{
