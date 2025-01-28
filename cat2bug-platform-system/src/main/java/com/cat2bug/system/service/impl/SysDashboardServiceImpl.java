@@ -2,6 +2,7 @@ package com.cat2bug.system.service.impl;
 
 import com.cat2bug.system.domain.*;
 import com.cat2bug.system.mapper.SysDashboardMapper;
+import com.cat2bug.system.mapper.SysPlanMapper;
 import com.cat2bug.system.service.ISysDashboardService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

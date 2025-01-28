@@ -5,6 +5,7 @@ import com.cat2bug.common.core.domain.type.SysDefectStateEnum;
 import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.system.domain.*;
 import com.cat2bug.system.service.ISysDashboardService;
+import com.cat2bug.system.service.ISysPlanService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +26,8 @@ public class SysDashboardController {
     private final static String MONTH_TYPE = "month";
     @Autowired
     ISysDashboardService sysDashboardService;
+    @Autowired
+    ISysPlanService sysPlanService;
 
     @PreAuthorize("@ss.hasPermi('system:dashboard:query')")
     @GetMapping("/{projectId}/case")
@@ -126,6 +129,7 @@ public class SysDashboardController {
     @PreAuthorize("@ss.hasPermi('system:dashboard:query')")
     @GetMapping("/{projectId}/plan/{planId}")
     public AjaxResult planBurndown(@PathVariable("projectId") Long projectId, @PathVariable("planId") String planId) {
+        SysPlan sysPlan = sysPlanService.selectSysPlanByPlanId(planId);
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
         List<SysColumnsInChart> sysColumnsInChartList =  sysDashboardService.planBurndown(planId);
         // 获取最大最小日期的操作对象
@@ -145,20 +149,24 @@ public class SysDashboardController {
         if(sysColumnsInChartList.size()==0) {
             for(long i=DEFAULT_DAY;i>=0;i--) {
                 String day = format.format(new Date(System.currentTimeMillis()-i*DAY_SIZE));
-                list.add(new SysColumnsInChart(day, 0));
+                list.add(new SysColumnsInChart(day, sysPlan.getItemTotal()));
             }
         } else if(dayCount<DEFAULT_DAY) {
+            long prevCount = sysPlan.getItemTotal();
             for(long i=0;i<=DEFAULT_DAY;i++) {
                 String day = format.format(new Date(summaryStatistics.getMin()+i*DAY_SIZE));
-                list.add(new SysColumnsInChart(day,
-                        sysColumnsInChartMap.containsKey(day)?sysColumnsInChartMap.get(day):0));
+                long count = sysColumnsInChartMap.containsKey(day)?prevCount-sysColumnsInChartMap.get(day):prevCount;
+                list.add(new SysColumnsInChart(day,count));
+                prevCount = count;
             }
         } else {
             // 如果缺陷数据大于30天，就显示30的的
+            long prevCount = sysPlan.getItemTotal();
             for(long i=DEFAULT_DAY;i>=0;i--) {
                 String day = format.format(new Date(summaryStatistics.getMax()-i*DAY_SIZE));
-                list.add(new SysColumnsInChart(day,
-                        sysColumnsInChartMap.containsKey(day)?sysColumnsInChartMap.get(day):0));
+                long count =  sysColumnsInChartMap.containsKey(day)?prevCount-sysColumnsInChartMap.get(day):prevCount;
+                list.add(new SysColumnsInChart(day, count));
+                prevCount = count;
             }
         }
         return AjaxResult.success(list);

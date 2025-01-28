@@ -22,7 +22,7 @@
 
     <resultMap type="SysColumnsInChart" id="SysColumnsInChartResult">
         <result property="key"    column="handle_time"    />
-        <result property="value"     column="unfinished_count"  />
+        <result property="value"     column="pass_count"  />
     </resultMap>
 
     <resultMap type="SysMemberRankOfDefects" id="SysMemberRankOfDefectsResult">
@@ -198,48 +198,33 @@
 
     <select id="planBurndown" parameterType="String" resultMap="SysColumnsInChartResult">
         SELECT
-            a.handle_time,
-            (b.plan_count - a.pass_count) as unfinished_count
+            date_format( update_time, '%Y-%m-%d' ) AS handle_time,
+            SUM( CASE WHEN plan_item_state = 'pass' THEN 1 ELSE 0 END ) AS pass_count
         FROM
-            (
-                SELECT
-                    plan_id,
-                    date_format( update_time, '%Y-%m-%d' ) AS handle_time,
-                    SUM( CASE WHEN plan_item_state = 'pass' THEN 1 ELSE 0 END ) AS pass_count
-                FROM
-                    sys_plan_item pi
-                WHERE
-                    plan_id = #{ planId }
-                GROUP BY
-                    plan_id,
-                    handle_time
-                ORDER BY
-                    handle_time
-            ) a
-            LEFT JOIN ( SELECT count(*) AS plan_count, plan_id FROM sys_plan_item GROUP BY plan_id ) b ON a.plan_id = b.plan_id
+            sys_plan_item pi
+        WHERE
+            plan_id = #{ planId }
+        GROUP BY
+            plan_id,
+            handle_time
+        ORDER BY
+            handle_time
     </select>
 
     <select id="planBurndown" parameterType="String" resultMap="SysColumnsInChartResult" databaseId="h2">
         SELECT
-            a.handle_time,
-            (b.plan_count - a.pass_count) as unfinished_count
+            plan_id,
+            PARSEDATETIME( update_time, '%Y-%m-%d' ) AS handle_time,
+            SUM( CASE WHEN plan_item_state = 'pass' THEN 1 ELSE 0 END ) AS pass_count
         FROM
-            (
-                SELECT
-                    plan_id,
-                    PARSEDATETIME( update_time, '%Y-%m-%d' ) AS handle_time,
-                    SUM( CASE WHEN plan_item_state = 'pass' THEN 1 ELSE 0 END ) AS pass_count
-                FROM
-                    sys_plan_item pi
-                WHERE
-                    plan_id = #{ planId }
-                GROUP BY
-                    plan_id,
-                    handle_time
-                ORDER BY
-                    handle_time
-            ) a
-                LEFT JOIN ( SELECT count(*) AS plan_count, plan_id FROM sys_plan_item GROUP BY plan_id ) b ON a.plan_id = b.plan_id
+            sys_plan_item pi
+        WHERE
+            plan_id = #{ planId }
+        GROUP BY
+            plan_id,
+            handle_time
+        ORDER BY
+            handle_time
     </select>
 
     <select id="memberRankOfDefects" parameterType="Long" resultMap="SysMemberRankOfDefectsResult">
