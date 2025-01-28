@@ -1,26 +1,32 @@
 <template>
-  <div class="c2d-input">
+  <div style="position: relative">
     <slot name="tools"></slot>
-    <textarea ref="c2d-input"
-              :rows="1"
-      class="c2d-input-textarea"
-              v-model="inputContent.value"
-      @input="handleInput"
-      @keypress="handleKeyDown"
-      @keydown.up="handleUp"
-      @keydown.left="handleUp"
-      @keydown.down="handleDown"
-      @keydown.right="handleDown"
-      @keydown.delete="handleBack"
-    ></textarea>
+    <div class="image-content" :style="{width: imageContent.value.width+'px',height: imageContent.value.height+'px'}">
+      <el-image class="c2d-image" ref="c2d-image" :src="require('@/assets/images/demand.png')" />
+      <div class="c2d-block" v-for="i in 3" :key="i" :style="{left: dragBlock(i).x+'px', top: dragBlock(i).y+'px'}"></div>
+    </div>
+<!--    <textarea ref="c2d-input"-->
+<!--              :rows="1"-->
+<!--      class="c2d-input"-->
+<!--              v-model="inputContent.value"-->
+<!--      @input="handleInput"-->
+<!--      @keypress="handleKeyDown"-->
+<!--      @keydown.up="handleUp"-->
+<!--      @keydown.left="handleUp"-->
+<!--      @keydown.down="handleDown"-->
+<!--      @keydown.right="handleDown"-->
+<!--      @keydown.delete="handleBack"-->
+<!--    ></textarea>-->
   </div>
 </template>
 
 <script>
+import ImageUpload from "@/components/ImageUpload";
 const KEY_ENTER = 13;
 
 export default {
-  name: "Cat2DocInput",
+  name: "Cat2DocImage",
+  components: { ImageUpload },
   model: {
     prop: 'content',
     event: 'input'
@@ -29,27 +35,52 @@ export default {
     content: {
       type: Object,
       default: ()=>{
-        return {}
+        return {
+          value: {
+            x: 0,
+            y: 0,
+            width: 100,
+            height: 100
+          }
+        }
       }
     }
   },
   data() {
     return {
-      inputContent: this.content,
+      imageContent: this.content,
     }
   },
   mounted() {
-    this.focus();
+    this.$nextTick(()=>{
+      console.log(this.c2dImage)
+    })
+
   },
   computed: {
-    textareaContent: function () {
-      return this.inputContent.value?this.inputContent.value.replace('\n',''):null;
+    dragBlock: function () {
+      console.log(this.c2dImage)
+      return function (index) {
+        switch (index) {
+          case 0:
+            return { x: 0, y:0 }
+          case 1:
+            return { x: this.c2dImage?this.c2dImage.style.width:0, y:0 }
+          case 2:
+            return { x: 0, y:0 }
+          case 3:
+            return { x: 0, y:0 }
+        }
+      }
     },
-    c2dInput() {
-      return this.$refs['c2d-input'];
+    c2dImage() {
+      return this.$refs['c2d-image'];
     }
   },
   methods: {
+    onDragging(left, top, width, height) {
+      console.log(left, top, width, height)
+    },
     /** 设置焦点 */
     focus() {
       this.$nextTick(()=>{
@@ -131,19 +162,25 @@ export default {
 }
 </script>
 
-<style scoped>
-.c2d-input {
-  width: 100%;
-  display: inline-flex;
-  flex-direction: column;
-  justify-content: center;
-}
-.c2d-input-textarea {
-  width: 100%;
-  font-size: 20px;
-  border-width: 0px;
-  border-radius: 5px;
-  outline: none;
-  resize:none;
+<style lang="scss" scoped>
+.image-content {
+  position: relative;
+  > * {
+    position: absolute;
+  }
+  > .c2d-image {
+    left: 10px;
+    top: 10px;
+    width: calc(100% - 10px);
+    height: calc(100% - 10px);
+    z-index: 1;
+  }
+  > .c2d-block {
+    background-color: red;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    z-index: 2;
+  }
 }
 </style>

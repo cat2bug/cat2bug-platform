@@ -2,7 +2,7 @@
   <div class="c2d" :style="{width: width}">
     <input class="title" value="title">
 
-    <draggable class="c2d-content" handle=".move" v-model="componentList">
+    <draggable class="c2d-content" handle=".move" v-model="componentList" ghostClass="c2d-ghost">
       <transition-group>
         <div
           class="c2d-block"
@@ -12,7 +12,7 @@
           @mouseleave="handleMouseLeave(c, index)"
         >
           <div class="drop-tools">
-            <svg-icon v-show="c.toolsVisible" class="move" icon-class="drag2" />
+            <svg-icon v-show="c.toolsVisible" icon-class="drag2" class="move"/>
           </div>
           <div class="content">
             <component
@@ -38,12 +38,13 @@
 
 <script>
 import Cat2DocInput from "@/components/Cat2BugDocument/components/Cat2DocInput";
+import Cat2DocImage from "@/components/Cat2BugDocument/components/Cat2DocImage";
 import draggable from 'vuedraggable'
 /** 默认组件名 */
 const DEFAULT_COMPONENT_NAME = 'Cat2DocInput';
 export default {
   name: "Cat2Doc",
-  components: { draggable, Cat2DocInput },
+  components: { draggable, Cat2DocInput, Cat2DocImage },
   props: {
     width: {
       type: String,
@@ -72,6 +73,7 @@ export default {
     /** 初始化 */
     init() {
       this.componentList.push(this.makeDefaultComponent());
+      this.componentList.push(this.makeCat2DocImageComponent());
     },
     /** 创建默认input组件 */
     makeDefaultComponent(value) {
@@ -80,6 +82,20 @@ export default {
         type: DEFAULT_COMPONENT_NAME,
         toolsVisible: false,
         value: value
+      };
+    },
+    /** 创建图片组件 */
+    makeCat2DocImageComponent(value) {
+      return {
+        code: 'Cat2DocImage'+new Date().getTime(),
+        type: 'Cat2DocImage',
+        toolsVisible: false,
+        value: {
+          x:0,
+          y:0,
+          width: 400,
+          height: 400,
+        }
       };
     },
     /** 处理向上按钮事件 */
@@ -164,7 +180,6 @@ export default {
 <style lang="scss" scoped>
 .c2d {
   padding: 15px calc(100% / 2 - 800px / 2);
-  /*position: relative;*/
 }
 .tools {
   position: absolute;
@@ -186,7 +201,7 @@ export default {
   width: 100%;
   display: inline-flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 0px;
 }
 .c2d-block {
   width: 100%;
@@ -194,10 +209,10 @@ export default {
   flex-direction: row;
   align-items: flex-start;
   gap: 0px;
-  min-height: 35px;
+  margin-bottom: 5px;
 }
 .drop-tools {
-  padding: 3px 5px;
+  padding: 3px;
   border-radius: 5px;
   width: 28px;
   height: 28px;
@@ -212,10 +227,23 @@ export default {
 }
 .content {
   width: 100%;
+  height: auto;
   padding: 0 10px;
+  flex: 1;
 }
 .move {
   cursor: move;
   flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+}
+.c2d-ghost {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  background-color: rgb(217, 236, 255);
+  padding: 5px;
+  border-radius: 5px;
 }
 </style>
