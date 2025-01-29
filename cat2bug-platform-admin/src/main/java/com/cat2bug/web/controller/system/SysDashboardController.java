@@ -149,7 +149,7 @@ public class SysDashboardController {
         if(sysColumnsInChartList.size()==0) {
             for(long i=DEFAULT_DAY;i>=0;i--) {
                 String day = format.format(new Date(System.currentTimeMillis()-i*DAY_SIZE));
-                list.add(new SysColumnsInChart(day, sysPlan.getItemTotal()));
+                list.add(new SysColumnsInChart(day, sysPlan!=null?sysPlan.getItemTotal():0));
             }
         } else if(dayCount<DEFAULT_DAY) {
             long prevCount = sysPlan.getItemTotal();
