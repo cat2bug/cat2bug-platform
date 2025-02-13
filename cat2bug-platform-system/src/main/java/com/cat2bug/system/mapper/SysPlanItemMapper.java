@@ -64,6 +64,13 @@ public interface SysPlanItemMapper
     public int updateSysPlanItem(SysPlanItem sysPlanItem);
 
     /**
+     * 批量更新计划子项
+     * @param sysPlanItem   测试计划子项
+     * @return  结果
+     */
+    public int batchUpdateSysPlanItem(SysPlanItem sysPlanItem);
+
+    /**
      * 删除测试计划子项
      * 
      * @param planItemId 测试计划子项主键

@@ -119,7 +119,11 @@ public class SysPlanItemServiceImpl implements ISysPlanItemService
     {
         sysPlanItem.setUpdateById(SecurityUtils.getUserId());
         sysPlanItem.setUpdateTime(DateUtils.getNowDate());
-        return sysPlanItemMapper.updateSysPlanItem(sysPlanItem);
+        if(sysPlanItem.getParams()!=null && sysPlanItem.getParams().containsKey("planItemIds")) {
+            return sysPlanItemMapper.batchUpdateSysPlanItem(sysPlanItem);
+        } else {
+            return sysPlanItemMapper.updateSysPlanItem(sysPlanItem);
+        }
     }
 
     /**

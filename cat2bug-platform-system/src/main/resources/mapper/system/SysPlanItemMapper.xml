@@ -122,6 +122,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="planItemState != null  and planItemState != ''"> and pi.plan_item_state = #{planItemState}</if>
             <if test="updateById != null "> and pi.update_by_id = #{updateById}</if>
             <if test="params.beginUpdateTime != null and params.beginUpdateTime != '' and params.endUpdateTime != null and params.endUpdateTime != ''"> and pi.update_time between #{params.beginUpdateTime} and #{params.endUpdateTime}</if>
+            <if test="params.caseName != null and params.caseName != ''"> and c.case_name like concat('%', #{params.caseName}, '%')</if>
             <if test="defectIds != null and defectIds.size > 0 "> and
                  pi.defect_ids in
                  <foreach collection="defectIds" item="defectId" open="(" close=")" separator=",">
@@ -203,6 +204,28 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             </if>
         </trim>
         where plan_item_id = #{planItemId}
+    </update>
+
+    <update id="batchUpdateSysPlanItem" parameterType="SysPlanItem">
+            update sys_plan_item
+            <trim prefix="SET" suffixOverrides=",">
+                <if test="moduleId != null">module_id = #{moduleId},</if>
+                <if test="caseId != null">case_id = #{caseId},</if>
+                <if test="planItemState != null">plan_item_state = #{planItemState},</if>
+                <if test="updateById != null">update_by_id = #{updateById},</if>
+                <if test="updateTime != null">update_time = #{updateTime},</if>
+                <if test="defectIds != null">defect_ids = #{defectIds, typeHandler=com.cat2bug.system.domain.handle.LongArrayTypeHandle},</if>
+                <if test="params != null and params.defectId != null and params.defectId != ''">
+                    defect_ids = CONCAT(REPLACE(IFNULL(defect_ids, ''), CONCAT(',', #{params.defectId}), ''), ',', #{params.defectId})
+                </if>
+                <if test="params != null and params.deleteDefectId != null and params.deleteDefectId != ''">
+                    defect_ids = REPLACE(defect_ids, CONCAT(',', #{params.deleteDefectId}), '')
+                </if>
+            </trim>
+            where
+                <foreach collection="params.planItemIds" item="planItemId" index="index" open="(" close=")" separator="or">
+                    plan_item_id = #{planItemId}
+                </foreach>
     </update>
 
     <delete id="deleteSysPlanItemByPlanItemId" parameterType="String">

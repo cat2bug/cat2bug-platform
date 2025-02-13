@@ -38,6 +38,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="moduleCount"    column="module_count"    />
         <result property="createDefectCountByTester"    column="create_defect_count_by_tester"    />
         <result property="createDefectCountByOutsider"    column="create_defect_count_by_outsider"    />
+        <result property="remark"    column="remark"    />
     </resultMap>
 
     <resultMap id="SysPlanSysPlanItemResult" type="SysPlan" extends="SysPlanResult">
@@ -69,6 +70,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             p.update_time,
             p.project_id,
             p.report_id,
+            p.remark,
             u.nick_name AS update_by,
             u.avatar AS update_by_avatar,
             s.pass_count,
@@ -227,6 +229,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="updateTime != null">update_time,</if>
             <if test="projectId != null">project_id,</if>
             <if test="reportId != null">report_id,</if>
+            <if test="remark != null and remark != ''">remark,</if>
          </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="planId != null">#{planId},</if>
@@ -241,6 +244,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="updateTime != null">#{updateTime},</if>
             <if test="projectId != null">#{projectId},</if>
             <if test="reportId != null">#{reportId},</if>
+            <if test="remark != null">#{remark},</if>
          </trim>
     </insert>
 
@@ -258,6 +262,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="updateTime != null">update_time = #{updateTime},</if>
             <if test="projectId != null">project_id = #{projectId},</if>
             <if test="reportId != null">report_id = #{reportId},</if>
+            <if test="remark != null and remark != ''">remark = #{remark},</if>
         </trim>
         where plan_id = #{planId}
     </update>

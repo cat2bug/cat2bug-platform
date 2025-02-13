@@ -75,6 +75,8 @@ public class SysPlan extends BaseEntity
     private int failCount;
     /** 未执行数量 */
     private int unexecutedCount;
+    /** 备注 */
+    private String remark;
 
     /** 缺陷进行中状态统计数量 */
     private int defectProcessingStateCount;

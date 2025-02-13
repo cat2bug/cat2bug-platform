@@ -82,6 +82,12 @@ export default {
       }
     }
   },
+  computed: {
+    /** 获取项目id */
+    projectId() {
+      return parseInt(this.$store.state.user.config.currentProjectId);
+    },
+  },
   methods: {
     setCase(caseModel) {
       let self = this;
@@ -124,7 +130,7 @@ export default {
         updateBy: null,
         updateTime: null,
         caseNum: null,
-        projectId: this.projectId
+        projectId: null
       });
     },
     /** 获取用例步骤面板类型 */

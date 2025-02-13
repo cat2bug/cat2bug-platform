@@ -290,7 +290,9 @@ export default {
       caseContextVisible: true,
       pageIndex:1,
       pageSize:10,
-      currentCase: {},
+      currentCase: {
+        projectId: this.projectId
+      },
       caseFormStyle:null,
       importDialogVisible: false,
       importForm: {},
@@ -420,7 +422,9 @@ export default {
         context: null,
         rowCount: this.getDefaultRowCount()
       };
-      this.currentCase={};
+      this.currentCase={
+        projectId: this.projectId
+      };
       this.casePromptQuery = {
         pageSize: 10,
         pageNum: 1,

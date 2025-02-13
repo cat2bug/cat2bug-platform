@@ -4236,7 +4236,8 @@ CREATE TABLE `sys_plan` (
                             `update_by_id` bigint DEFAULT NULL COMMENT '更新人ID',
                             `update_time` datetime DEFAULT NULL COMMENT '更新时间',
                             `project_id` bigint DEFAULT NULL COMMENT '项目ID',
-                            `report_id` bigint DEFAULT NULL COMMENT '报告ID'
+                            `report_id` bigint DEFAULT NULL COMMENT '报告ID',
+                            `remark` varchar(1000) DEFAULT NULL COMMENT '备注'
 );
 
 COMMIT;

@@ -157,6 +157,16 @@
         <div ref="caseContext" class="plan-item-content">
           <div class="plan-item-query">
             <el-form :model="query" ref="queryForm" size="small" :inline="true">
+              <el-form-item label="" prop="caseName">
+                <el-input
+                  size="small"
+                  v-model="query.params.caseName"
+                  :placeholder="$t('case.please-enter-title')"
+                  prefix-icon="el-icon-search"
+                  clearable
+                  @input="getPlanItemList()"
+                />
+              </el-form-item>
               <el-form-item label="" prop="planItemState">
                 <el-select v-model="query.planItemState" :placeholder="$t('plan.enter-item-state')" clearable @change="getPlanItemList">
                   <el-option
@@ -167,6 +177,8 @@
                   />
                 </el-select>
               </el-form-item>
+
+
 <!--              <el-form-item label="" prop="updateById">-->
 <!--                <el-input-->
 <!--                  v-model="query.updateById"-->
@@ -176,7 +188,17 @@
 <!--                />-->
 <!--              </el-form-item>-->
             </el-form>
-            <div>
+            <div class="handle-plan-tools-right">
+              <el-col :span="1.5">
+                <el-button
+                  size="small"
+                  type="primary"
+                  icon="el-icon-check"
+                  :disabled="!multiple"
+                  v-hasPermi="['system:plan:edit']"
+                  @click="handlePlanItemState(null, 'pass')"
+                >{{ $t('batch-pass') }}</el-button>
+              </el-col>
               <el-popover
                 placement="top"
                 trigger="click">
@@ -198,7 +220,8 @@
               </el-popover>
             </div>
           </div>
-          <el-table ref="planItemTable" v-loading="loading" :data="planItemList" v-resize="setDragComponentSize">
+          <el-table ref="planItemTable" v-loading="loading" :data="planItemList" v-resize="setDragComponentSize" @selection-change="handleSelectionChange">
+            <el-table-column type="selection" width="50" align="center" />
             <el-table-column v-if="showField('id')" :label="$t('id')" align="left" prop="caseNum" width="80" sortable fixed>
               <template slot-scope="scope">
                 <span>{{ caseNumber(scope.row) }}</span>
@@ -380,6 +403,10 @@ export default {
       planItemList: [],
       // 总条数
       total: 0,
+      // 表格的多选项
+      ids: [],
+      // 是否多选
+      multiple: false
     }
   },
   directives: {
@@ -574,8 +601,14 @@ export default {
     /** 更改子项状态操作 */
     handlePlanItemState(planItem, state) {
       let data = {
-        planItemId: planItem.planItemId,
         planItemState: state,
+      }
+      if(planItem) {
+        data.planItemId = planItem.planItemId;
+      } else if(this.ids.length>0) {
+        data.params = {
+          planItemIds:this.ids
+        }
       }
       updatePlanItem(data).then(res=>{
         this.getPlanInfo(this.plan.planId);
@@ -677,6 +710,11 @@ export default {
       a.href = file;
       a.dispatchEvent(e);
       event.stopPropagation();
+    },
+    /** 多选框选中数据 */
+    handleSelectionChange(selection) {
+      this.ids = selection.map(item => item.planItemId);
+      this.multiple = selection.length;
     },
   }
 }
@@ -914,5 +952,10 @@ export default {
   > * {
     border-bottom: 1px dashed #E4E7ED;
   }
+}
+.handle-plan-tools-right {
+  display: inline-flex;
+  flex-direction: row;
+  gap: 10px;
 }
 </style>

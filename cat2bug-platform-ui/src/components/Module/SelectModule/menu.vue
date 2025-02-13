@@ -55,12 +55,17 @@ export default {
       default: true
     }
   },
+  computed: {
+    getCurrentProjectId() {
+      return parseInt(this.$store.state.user.config.currentProjectId);
+    },
+  },
   created() {
     this.getModuleList();
   },
   methods: {
     getModuleList() {
-      this.params.projectId=this.projectId;
+      this.params.projectId=this.projectId||this.getCurrentProjectId;
       this.params.modulePid=this.modulePid;
       this.loading = true;
       listModule(this.params).then(res=>{

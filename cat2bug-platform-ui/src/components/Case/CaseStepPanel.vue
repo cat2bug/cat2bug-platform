@@ -4,7 +4,7 @@
       <div ref="caseStepInputGroup" v-for="(step,index) in caseStepList" :key="index" class="case-step-row">
         <label>{{index+1}}</label>
         <el-input type="textarea" ref="caseStepDescribeRef" v-model="step.stepDescribe" :key="step.caseStepDescribeKey" :placeholder="$t('case.please-enter-step-describe')" maxlength="128" :autosize="autoSizeRang(step)" @input.native="caseStepListChangeHandle($event, caseStepList, index, 'describe')" />
-        <el-input type="textarea" ref="caseStepExpectRef" v-model="step.stepExpect" :key="step.caseStepExpectKey" :placeholder="$t('case.please-enter-step-expected')" maxlength="128" :autosize="autoSizeRang(step)" @input="caseStepListChangeHandle($event,caseStepList, index, 'expect')" />
+        <el-input type="textarea" ref="caseStepExpectRef" v-model="step.stepExpect" :key="step.caseStepExpectKey" :placeholder="$t('case.please-enter-step-expected')" maxlength="128" :autosize="autoSizeRang(step)" @input.native="caseStepListChangeHandle($event,caseStepList, index, 'expect')" />
         <div class="case-step-row-tools">
           <el-link :step="index" type="danger" :underline="false" @click="removeStepHandle(index)" v-show="caseStep.length>1"><i class="el-icon-error el-icon--right"></i></el-link>
           <el-link type="success" :underline="false" @click="addStepHandle(index)"><i class="el-icon-circle-plus el-icon--right"></i></el-link>
@@ -29,7 +29,7 @@ export default {
   data() {
     return {
       stepScript: null,
-      caseStepList: null,
+      caseStepList: [],
       ctx: null
     }
   },
@@ -57,16 +57,16 @@ export default {
   mounted() {
     const canvas = document.createElement('canvas')
     this.ctx = canvas.getContext('2d');
-    setTimeout(()=>{
-      this.refreshStepInput(this.caseStep);
-      this.$forceUpdate();
-    },500)
+    // setTimeout(()=>{
+    //   this.refreshStepInput(this.caseStep);
+    //   this.$forceUpdate();
+    // },500)
 
   },
   watch: {
     caseStep: function (n) {
-      this.refreshStepInput(n);
-      this.$forceUpdate();
+      // this.refreshStepInput(n);
+      // this.$forceUpdate();
     }
   },
   methods: {
@@ -152,6 +152,7 @@ export default {
     },
     /** 步骤脚本改变处理 */
     scriptChangeHandle() {
+      console.log('scriptChangeHandle')
       this.caseStepList = (this.stepScript||"").split('\n').filter(r=>r).map(r=>{
         let cols = r.split('---');
         return {

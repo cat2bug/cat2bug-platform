@@ -394,6 +394,7 @@
   "assign": "指派",
   "repair": "修复",
   "pass": "通过",
+  "batch-pass": "批量通过",
   "not_pass": "未通过",
   "fail": "失败",
   "success": "成功",
@@ -820,5 +821,6 @@
   "dashboard.action.title": "活动",
   "dashboard.member-Defect-line.day.title": "成员处理缺陷30天走势图",
   "dashboard.member-Defect-line.month.title": "成员处理缺陷月走势图",
-  "dashboard.plan-statistics.title": "测试计划统计"
+  "dashboard.plan-statistics.title": "测试计划统计",
+  "display-field": "显示字段"
 }

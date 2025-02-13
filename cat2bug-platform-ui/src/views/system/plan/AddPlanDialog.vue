@@ -23,6 +23,18 @@
             </el-date-picker>
           </el-form-item>
         </el-col>
+        <el-col :span="24">
+          <el-form-item :label="$t('remark')" prop="remark">
+            <el-input
+              type="textarea"
+              :placeholder="$t('please-enter-remark')"
+              v-model="form.remark"
+              :autosize="{  minRows: 3, maxRows: 6 }"
+              maxlength="1000"
+              show-word-limit
+            ></el-input>
+          </el-form-item>
+        </el-col>
       </el-row>
       <el-divider content-position="center">{{ $t('plan.select-case') }}</el-divider>
       <!--    模块树和用例列表区域-->

@@ -395,6 +395,7 @@
   "reject": "Reject",
   "repair": "Repair",
   "pass": "Pass",
+  "batch-pass": "Batch Pass",
   "not_pass": "Not Pass",
   "fail": "Fail",
   "success": "Success",
@@ -820,5 +821,6 @@
   "dashboard.action.title": "Actions",
   "dashboard.member-Defect-line.day.title": "Members Deal With Defects For 30-Days Chart",
   "dashboard.member-Defect-line.month.title": "Members Deal With Defects For Months Chart",
-  "dashboard.plan-statistics.title": "Test Plan Statistics"
+  "dashboard.plan-statistics.title": "Test Plan Statistics",
+  "display-field": "Display Fields"
 }

@@ -101,9 +101,6 @@ export default {
   mounted() {
     this.$refs.cat2bugTextarea.addEventListener('paste',this.getClipboardImage);
   },
-  destroyed() {
-    this.$refs.cat2bugTextarea.removeEventListener('paste',this.getClipboardImage);
-  },
   computed: {
     title: function () {
       return `[${this.name?this.name:""}] ${this.$i18n.t('edit-mode')}`

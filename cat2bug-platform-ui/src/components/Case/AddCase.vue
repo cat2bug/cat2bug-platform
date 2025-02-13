@@ -224,10 +224,10 @@ export default {
     /** 关闭缺陷抽屉窗口 */
     closeDefectDrawer(done) {
       // 如果是编辑，点击背景关闭
-      if(this.isAddMode==false){
-        done();
-        return;
-      }
+      // if(this.isAddMode==false){
+      //   done();
+      //   return;
+      // }
       closeEditWindow();
     },
     // 取消按钮
