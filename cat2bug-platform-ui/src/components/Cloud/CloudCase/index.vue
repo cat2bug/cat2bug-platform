@@ -27,7 +27,8 @@
             :readonly="loading"
             v-model="prompt.prompt"
             maxlength="65536"
-            rows="5"
+            :min-rows="12"
+            :max-rows="22"
             :show-default-tools="false"
             show-word-limit
             show-tools
@@ -645,6 +646,7 @@ export default {
         el.style.left = rect.x+'px';
         el.style.width = rect.width+'px';
         el.style.maxHeight = (document.body.clientHeight - parseFloat(el.style.top) - 20) + 'px';
+        el.style.top = (rect.y + rect.height) + 'px';
         el.style.overflow = 'auto';
       })
     },

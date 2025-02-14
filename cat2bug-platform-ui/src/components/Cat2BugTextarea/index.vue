@@ -5,7 +5,7 @@
       v-model="textContent"
       :placeholder="placeholder"
       :maxlength="maxlength"
-      :rows="rows"
+      :rows="showRows"
       @keyup.stop="changeHandle"
     />
     <div v-show="showTools" class="tools">
@@ -50,7 +50,8 @@ export default {
         icon: 'windows-max',
         method: this.maxWindows
       }],
-      dialogVisible: false
+      dialogVisible: false,
+      prevRows: null
     }
   },
   watch: {
@@ -79,7 +80,15 @@ export default {
     },
     rows: {
       type: [Number,String],
+      default: null
+    },
+    minRows: {
+      type: [Number,String],
       default: 3
+    },
+    maxRows: {
+      type: [Number,String],
+      default: 9
     },
     showWordLimit: {
       type: Boolean,
@@ -110,6 +119,12 @@ export default {
     },
     buttons: function (){
       return [...this.tools, ...this.defectButtons]
+    },
+    showRows() {
+      const lines = this.textContent ? this.textContent.split('\n') : [];
+      const minRows = this.minRows || 5;
+      const maxRows = this.maxRows || 9;
+      return this.rows || Math.min(maxRows, Math.max(minRows, lines.length));
     }
   },
   methods: {
