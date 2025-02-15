@@ -1383,6 +1383,7 @@ CREATE TABLE `sys_plan` (
   `update_time` datetime DEFAULT NULL COMMENT '更新时间',
   `project_id` bigint DEFAULT NULL COMMENT '项目ID',
   `report_id` bigint DEFAULT NULL COMMENT '报告ID',
+  `remark` varchar(1000) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '备注',
   PRIMARY KEY (`plan_id`) USING BTREE,
   KEY `project_id_` (`project_id`),
   KEY `user_id_` (`update_by_id`),
