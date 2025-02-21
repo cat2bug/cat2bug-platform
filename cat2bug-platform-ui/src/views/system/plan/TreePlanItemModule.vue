@@ -1,31 +1,38 @@
 <template>
   <div class="tree">
     <div class="tree-tools">
-      <i class="el-icon-menu" />
-      {{ $t('module.list') }}
+      <el-tabs v-model="activeName" @tab-click="handleTabClick">
+        <el-tab-pane :label="$t('module.list')" name="module">
+          <el-tree :highlight-current="true" ref="moduleTree" :show-checkbox="checkVisible" :props="props" :lazy="true" :data="tree" :load="loadNode" node-key="id" @node-click="handleNodeClick" @check-change="handleCheckChange">
+            <span class="tree-node" slot-scope="{ node, data }">
+              <span v-if="node.label!=$t('module.all-module')">{{ node.label }}</span>
+              <span v-else><< {{ node.label }} >></span>
+              <span v-if="editVisible">
+                <el-button
+                  type="text"
+                  size="mini"
+                  v-hasPermi="['system:module:add']"
+                  @click="append($event, data)">
+                  <i class="el-icon-plus" />
+                </el-button>
+                <el-button
+                  type="text"
+                  size="mini"
+                  v-show="removeNodeButtonVisible(data)"
+                  @click="remove($event, node, data)">
+                  <i class="el-icon-close" />
+                </el-button>
+              </span>
+            </span>
+          </el-tree>
+        </el-tab-pane>
+        <el-tab-pane :label="$t('defect.level-list')" name="defect-level">
+          <el-tree :highlight-current="true" ref="levelTree" :show-checkbox="checkVisible" :props="props" :data="defectLevelTree" node-key="id" @node-click="handleLevelNodeClick" @check-change="handleLevelCheckChange">
+          </el-tree>
+        </el-tab-pane>
+      </el-tabs>
     </div>
-    <el-tree :highlight-current="true" ref="moduleTree" :show-checkbox="checkVisible" :props="props" :lazy="true" :data="tree" :load="loadNode" node-key="id" @node-click="handleNodeClick" @check-change="handleCheckChange">
-      <span class="tree-node" slot-scope="{ node, data }">
-        <span v-if="node.label!=$t('module.all-module')">{{ node.label }}</span>
-        <span v-else><< {{ node.label }} >></span>
-        <span v-if="editVisible">
-          <el-button
-            type="text"
-            size="mini"
-            v-hasPermi="['system:module:add']"
-            @click="append($event, data)">
-            <i class="el-icon-plus" />
-          </el-button>
-          <el-button
-            type="text"
-            size="mini"
-            v-show="removeNodeButtonVisible(data)"
-            @click="remove($event, node, data)">
-            <i class="el-icon-close" />
-          </el-button>
-        </span>
-      </span>
-    </el-tree>
+
     <module-dialog ref="moduleDialog" :project-id="projectId" @added="batchAddNode" @updated="batchAddNode" />
   </div>
 </template>
@@ -35,14 +42,20 @@ import {delModule} from "@/api/system/module";
 import {listPlanItemModule} from "@/api/system/PlanItem";
 import {checkPermi} from "@/utils/permission";
 import ModuleDialog from "@/components/Module/ModuleDialog";
+import {getLevelName, MAX_LEVEL_INDEX} from "@/utils/case";
 export default {
   name: "TreePlanItemModule",
   components: {ModuleDialog},
   data(){
     return {
+      activeName: 'module',
       firstLoad: true,
       currentNode: null,
       tree:[],
+      defectLevelTree: [{
+        label: `<< ${this.$i18n.t('defect.all-level')} >>`,
+        isLeaf: true
+      }],
       props: {
         label: 'label',
         children: 'children',
@@ -85,9 +98,21 @@ export default {
       return function (node) {
         return node.leaf && checkPermi(['system:module:remove']) && node.label!=this.$i18n.t('module.all-module');
       }
+    },
+  },
+  created() {
+    for(let i = 1; i<=MAX_LEVEL_INDEX;i++) {
+      this.defectLevelTree.push({
+        label:  getLevelName(i),
+        id: i,
+        isLeaf: true
+      })
     }
   },
   methods: {
+    handleTabClick(tab, event) {
+      console.log(tab, event);
+    },
     reloadData() {
       this.currentNode = null;
       this.tree = [];
@@ -155,6 +180,13 @@ export default {
     handleNodeClick(node){
       this.currentNode = node;
       this.$emit('node-click',node.id);
+    },
+    handleLevelCheckChange(data, checked, indeterminate) {
+      this.$emit('level-check-change', data, checked, indeterminate);
+    },
+    handleLevelNodeClick(node){
+      this.currentNode = node;
+      this.$emit('level-node-click',node.id);
     },
     append(e, data) {
       this.$refs.moduleDialog.open(null,data.id);

@@ -5,6 +5,9 @@ import {exp} from "qrcode/lib/core/galois-field";
 
 const DEFECT_TEMP_TAB_KEY = "defect-temp-tab-key";
 
+/** 获取测试用例最大索引 */
+export const MAX_LEVEL_INDEX = 5;
+
 /** 获取测试用例等级名 */
 export function getLevelName (level){
   if(!level) {

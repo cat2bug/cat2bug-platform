@@ -16,7 +16,7 @@
 
 <script>
 import Cat2BugLevel from "@/components/Cat2BugLevel";
-import { getLevelName, getLevelExplain } from "@/utils/case";
+import {getLevelName, getLevelExplain, MAX_LEVEL_INDEX} from "@/utils/case";
 export default {
   name: "index",
   model:{
@@ -49,7 +49,7 @@ export default {
     },
     maxLevel: {
       type: Number,
-      default: 5
+      default: MAX_LEVEL_INDEX
     }
   },
   methods: {

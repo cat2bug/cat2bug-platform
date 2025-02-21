@@ -119,6 +119,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             </if>
             <if test="planId != null  and planId != ''"> and pi.plan_id = #{planId}</if>
             <if test="caseId != null "> and pi.case_id = #{caseId}</if>
+            <if test="caseLevel != null "> and c.case_level = #{caseLevel}</if>
             <if test="planItemState != null  and planItemState != ''"> and pi.plan_item_state = #{planItemState}</if>
             <if test="updateById != null "> and pi.update_by_id = #{updateById}</if>
             <if test="params.beginUpdateTime != null and params.beginUpdateTime != '' and params.endUpdateTime != null and params.endUpdateTime != ''"> and pi.update_time between #{params.beginUpdateTime} and #{params.endUpdateTime}</if>

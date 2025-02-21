@@ -46,6 +46,8 @@
             :project-id="projectId"
             @node-click="moduleClickHandle"
             @check-change="moduleCheckChangeHandle"
+            @level-node-click="levelClickHandle"
+            @level-check-change="levelCheckChangeHandle"
             :check-visible="true"
             :edit-visible="false"
             :show-all="true"
@@ -164,7 +166,7 @@ import Cat2BugPreviewImage from "@/components/Cat2BugPreviewImage";
 import { Multipane, MultipaneResizer } from 'vue-multipane';
 import {addPlan, getPlan, updatePlan} from "@/api/system/plan";
 import {listPlanItemCase} from "@/api/system/PlanItem";
-import {listCase, listPlanCaseId} from "@/api/system/case";
+import {listCase, listPlanCaseId, listPlanCaseLevel} from "@/api/system/case";
 
 const TREE_MODULE_WIDTH_CACHE_KEY = 'plan_case_tree_module_width';
 
@@ -421,6 +423,30 @@ export default {
     /** 点击模块树中的某个模块操作 */
     moduleClickHandle(moduleId) {
       this.caseQueryParams.moduleId = moduleId;
+      this.handleCaseQuery();
+    },
+    /** 点击模块树中的某个缺陷优先级前的check操作 */
+    levelCheckChangeHandle(data, checked, indeterminate) {
+      if(indeterminate) return;
+      listPlanCaseLevel(data.id).then(res=>{
+        if(!res.rows || res.rows.lenght==0) return;
+        // 刷新选择的缓存
+        res.rows.forEach(id=>{
+          if(checked) {
+            this.selectCaseIdSet.add(id);
+          } else {
+            this.selectCaseIdSet.delete(id);
+          }
+        });
+        // 刷新用例列表中的check状态
+        this.caseList.forEach(c=>{
+          this.$refs.planItemTable.toggleRowSelection(c, this.selectCaseIdSet.has(c.caseId));
+        })
+      });
+    },
+    /** 点击模块树中的某个缺陷优先级操作 */
+    levelClickHandle(caseLevel) {
+      this.caseQueryParams.caseLevel = caseLevel;
       this.handleCaseQuery();
     },
     /** 复选框选中数据 */

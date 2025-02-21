@@ -81,6 +81,15 @@ public class SysCaseServiceImpl implements ISysCaseService
         return sysCaseMapper.selectSysCaseIdList(moduleIds);
     }
 
+    @Override
+    public List<Long> selectSysCaseIdByLevelList(Long level) {
+        SysUserConfig sysUserConfig = sysUserConfigService.selectSysUserConfigByCurrentUserId();
+        SysCase query = new SysCase();
+        query.setCaseLevel(level);
+        query.setProjectId(sysUserConfig.getCurrentProjectId());
+        return sysCaseMapper.selectSysCaseList(query).stream().map(c-> c.getCaseId()).collect(Collectors.toList());
+    }
+
     /**
      * 新增测试用例
      * 

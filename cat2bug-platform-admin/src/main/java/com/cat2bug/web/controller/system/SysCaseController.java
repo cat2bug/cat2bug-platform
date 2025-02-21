@@ -73,9 +73,16 @@ public class SysCaseController extends BaseController
 
     @PreAuthorize("@ss.hasPermi('system:case:list') || @ss.hasPermi('system:plan:add') || @ss.hasPermi('system:plan:edit')")
     @GetMapping("/module/{moduleId}/ids")
-    public TableDataInfo ids(@PathVariable("moduleId") Long moduleId)
+    public TableDataInfo moduleIds(@PathVariable("moduleId") Long moduleId)
     {
         return getDataTable(sysCaseService.selectSysCaseIdList(moduleId));
+    }
+
+    @PreAuthorize("@ss.hasPermi('system:case:list') || @ss.hasPermi('system:plan:add') || @ss.hasPermi('system:plan:edit')")
+    @GetMapping("/level/{level}/ids")
+    public TableDataInfo levelIds(@PathVariable("level") Long level)
+    {
+        return getDataTable(sysCaseService.selectSysCaseIdByLevelList(level));
     }
 
     /**
