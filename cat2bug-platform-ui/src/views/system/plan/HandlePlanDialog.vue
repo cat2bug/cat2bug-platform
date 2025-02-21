@@ -150,7 +150,9 @@
       <multipane layout="vertical" ref="multiPane" class="custom-resizer" @pane-resize-start="dragStopHandle">
         <!--      树形模块选择组件-->
         <div class="tree-module" ref="treeModule" :style="treeModuleStyle">
-          <tree-plan-item-module ref="treeModuleRef" :project-id="projectId" :plan-id="plan.planId" @node-click="moduleClickHandle" :check-visible="false" :edit-visible="false" v-resize="setDragComponentSize" />
+          <tree-plan-item-module ref="treeModuleRef" :project-id="projectId" :plan-id="plan.planId"
+                                 @level-node-click="levelClickHandle"
+                                 @node-click="moduleClickHandle" :check-visible="false" :edit-visible="false" v-resize="setDragComponentSize" />
         </div>
         <multipane-resizer :style="multipaneStyle"></multipane-resizer>
         <!--      用例列表-->
@@ -362,6 +364,7 @@ import { getPlan } from "@/api/system/plan";
 import {listPlanItem, updatePlanItem} from "@/api/system/PlanItem";
 import {checkPermi} from "@/utils/permission";
 import {listDefect} from "@/api/system/defect";
+import {listPlanCaseLevel} from "@/api/system/case";
 
 const TREE_MODULE_WIDTH_CACHE_KEY = 'plan_case_tree_module_width';
 /** 需要显示的测试用例字段列表在缓存的key值 */
@@ -596,6 +599,11 @@ export default {
     /** 点击模块树中的某个模块操作 */
     moduleClickHandle(moduleId) {
       this.query.moduleId = moduleId;
+      this.getPlanItemList();
+    },
+    /** 点击模块树中的某个缺陷优先级操作 */
+    levelClickHandle(caseLevel) {
+      this.query.caseLevel = caseLevel;
       this.getPlanItemList();
     },
     /** 更改子项状态操作 */
