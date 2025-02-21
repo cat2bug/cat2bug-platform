@@ -93,7 +93,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@media screen and (max-width: 1400px) {
+@media screen and (max-width: 1650px) {
   .box-card {
     min-width: 320px;
   }
@@ -109,7 +109,7 @@ export default {
   }
 }
 
-@media screen and (min-width: 1400px) {
+@media screen and (min-width: 1650px) {
   .box-card {
     min-width: 100px;
   }
