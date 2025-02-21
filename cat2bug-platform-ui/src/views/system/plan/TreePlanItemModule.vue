@@ -63,6 +63,15 @@ export default {
       },
     }
   },
+  watch: {
+    "$i18n.locale": function (newVal, oldVal) {
+      this.defectLevelTree = [{
+        label: `<< ${this.$i18n.t('defect.all-level')} >>`,
+        isLeaf: true
+      }];
+      this.initLevelTree();
+    },
+  },
   props: {
     projectId: {
       type: [Number,String],
@@ -101,15 +110,18 @@ export default {
     },
   },
   created() {
-    for(let i = 1; i<=MAX_LEVEL_INDEX;i++) {
-      this.defectLevelTree.push({
-        label:  getLevelName(i),
-        id: i,
-        isLeaf: true
-      })
-    }
+    this.initLevelTree();
   },
   methods: {
+    initLevelTree() {
+      for(let i = 1; i<=MAX_LEVEL_INDEX;i++) {
+        this.defectLevelTree.push({
+          label:  getLevelName(i),
+          id: i,
+          isLeaf: true
+        })
+      }
+    },
     handleTabClick(tab, event) {
       console.log(tab, event);
     },
