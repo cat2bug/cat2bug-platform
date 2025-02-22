@@ -3,7 +3,7 @@
     <div class="title" @click="handleClick">
       <cat2-bug-block color="rgb(103, 194, 58)" />
       <h1>{{ $t('case') }}</h1>
-      <span>12345{{ caseStatistics.total }}</span>
+      <span>{{ caseStatistics.total }}</span>
     </div>
   </div>
 </template>

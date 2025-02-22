@@ -3,7 +3,7 @@
     <div class="tree-tools">
       <el-tabs v-model="activeName" @tab-click="handleTabClick">
         <el-tab-pane :label="$t('module.list')" name="module">
-          <el-tree :highlight-current="true" ref="moduleTree" :show-checkbox="checkVisible" :props="props" :lazy="true" :data="tree" :load="loadNode" node-key="id" @node-click="handleNodeClick" @check-change="handleCheckChange">
+          <el-tree :highlight-current="true" ref="moduleTree" :show-checkbox="checkVisible" :props="props" :lazy="true" :data="tree" :load="loadNode" node-key="(id,pid)" @node-click="handleNodeClick" @check-change="handleCheckChange">
             <span class="tree-node" slot-scope="{ node, data }">
               <span v-if="node.label!=$t('module.all-module')">{{ node.label }}</span>
               <span v-else><< {{ node.label }} >></span>
@@ -163,6 +163,7 @@ export default {
           const count = this.getItemCount(res.data, index);
           return {
             id: m.moduleId,
+            pid: m.modulePid,
             label: m.moduleName + (this.showCount?`(${count})`:''),
             count: count,
             leaf: m.childrenCount===0

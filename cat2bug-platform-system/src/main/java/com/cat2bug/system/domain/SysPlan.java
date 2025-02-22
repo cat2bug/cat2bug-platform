@@ -115,12 +115,12 @@ public class SysPlan extends BaseEntity
     /** 获取缺陷发现率 */
     public String getDefectDiscoveryRate() {
         if(this.itemTotal==0) return "0%";
-        return (int)Math.floor(this.defectCount*100/this.itemTotal) + "%";
+        return rate((double)(this.defectCount*100)/(double)(this.itemTotal));
     }
     /** 获取缺陷修复率 */
     public String getDefectRepairRate() {
         if(this.defectCount==0) return "0%";
-        return (int)Math.floor(this.defectCloseStateCount*100/this.defectCount) + "%";
+        return rate((double)(this.defectCloseStateCount*100)/(double)(this.defectCount));
     }
     /** 获取缺陷密度 */
     public String getDefectDensity() {
@@ -130,31 +130,36 @@ public class SysPlan extends BaseEntity
     /** 获取缺陷探测率 */
     public String getDefectDetectionRate() {
         if((this.createDefectCountByOutsider+this.createDefectCountByTester)==0) return "0%";
-        return (int)Math.floor(this.createDefectCountByTester*100/(this.createDefectCountByOutsider+this.createDefectCountByTester)) + "%";
+        return rate((double)(this.createDefectCountByTester*100)/(double)(this.createDefectCountByOutsider+this.createDefectCountByTester));
     }
 
     /** 获取缺陷严重率 */
     public String getDefectSeverityRate() {
         if(this.defectCount==0) return "0%";
-        return (int)Math.floor(this.defectLevelUrgentCount*100/this.defectCount) + "%";
+        return rate((double)(this.defectLevelUrgentCount*100)/(double)(this.defectCount));
     }
 
     /** 获取缺陷重开率 */
     public String getDefectRestartRate() {
         if(this.defectHistoryPassCount==0) return "0%";
-        return (int)Math.floor(this.defectRestartCount*100/this.defectHistoryPassCount) + "%";
+        return rate((double)(this.defectRestartCount*100)/(double)(this.defectHistoryPassCount));
     }
 
     /** 获取缺陷逃逸率 */
     public String getDefectEscapeRate() {
         if(this.defectCount==0) return "0%";
-        return (int)Math.floor(this.createDefectCountByOutsider*100/this.defectCount) + "%";
+        return rate((double)(this.createDefectCountByOutsider*100)/(double)(this.defectCount));
     }
 
     /** 获取缺陷修复平均时长 */
     public String getDefectRepairAvgHour() {
         if(this.defectCount==0) return "0";
         return Math.floor(this.defectUseHourTime*100/this.defectCount)/100 + "";
+    }
+
+    /** 百分比显示 */
+    private String rate(double val) {
+        return String.valueOf(Math.round(val * 100) * 0.01d) + "%";
     }
 
     @Override
