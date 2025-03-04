@@ -10,6 +10,7 @@ import com.cat2bug.system.service.ISysUserConfigService;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Workbook;
 
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -28,9 +29,14 @@ public class SysModuleNameHandlerAdapter implements ExcelHandlerAdapter {
             if (config != null) {
                 Long projectId = config.getCurrentProjectId();
                 ISysModuleService sysModuleService = SpringUtils.getBean(ISysModuleService.class);
-                Map<String, Long> moduleMap = sysModuleService.selectSysModulePathList(projectId).stream().
-                        collect(Collectors.toMap(SysModule::getModulePath, SysModule::getModuleId));
-                return moduleMap.containsKey(modulePath)?moduleMap.get(modulePath):null;
+                List<SysModule> list = sysModuleService.selectSysModulePathList(projectId);
+                try {
+                    Map<String, Long> moduleMap = list.stream().
+                            collect(Collectors.toMap(SysModule::getModulePath, SysModule::getModuleId));
+                    return moduleMap.containsKey(modulePath)?moduleMap.get(modulePath):null;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
         return null;
