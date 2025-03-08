@@ -297,6 +297,15 @@
                   {{ $t('defect.create') }}
                 </el-button>
                 <el-button
+                  size="small"
+                  type="text"
+                  icon="el-icon-attract"
+                  @click="handleOpenRelatedDefect($event, scope.row)"
+                  v-hasPermi="['system:defect:add']"
+                >
+                  {{ $t('defect.related') }}
+                </el-button>
+                <el-button
                   v-if="scope.row.defectIds && scope.row.defectIds.length==1"
                   size="small"
                   type="text"
@@ -343,6 +352,7 @@
       <add-case ref="addCaseDialog" :module-id="planItem.moduleId" :append-to-body="true" @added="getPlanItemList" @close="initFloatMenu" />
       <add-defect ref="addDefect" :project-id="projectId" :append-to-body="true" @added="handleAddedDefect" @close="initFloatMenu" />
       <handle-defect ref="handleDefect" :project-id="projectId" :append-to-body="true" @change="handleAddedDefect" @delete="handleDeletedDefect" @close="initFloatMenu" />
+      <related-defect ref="relatedDefect" :project-id="projectId" :related-defect-ids="planItem.defectIds" @related="handleRelatedDefect" @close="initFloatMenu" ></related-defect>
     </div>
   </el-drawer>
 </template>
@@ -359,12 +369,12 @@ import Cat2BugPreviewImage from "@/components/Cat2BugPreviewImage";
 import AddDefect from "@/components/Defect/AddDefect";
 import DefectStateFlag from "@/components/Defect/DefectStateFlag";
 import HandleDefect from "@/components/Defect/HandleDefect";
+import RelatedDefect from "@/components/Defect/RelatedDefect";
 import { Multipane, MultipaneResizer } from 'vue-multipane';
 import { getPlan } from "@/api/system/plan";
 import {listPlanItem, updatePlanItem} from "@/api/system/PlanItem";
 import {checkPermi} from "@/utils/permission";
 import {listDefect} from "@/api/system/defect";
-import {listPlanCaseLevel} from "@/api/system/case";
 
 const TREE_MODULE_WIDTH_CACHE_KEY = 'plan_case_tree_module_width';
 /** 需要显示的测试用例字段列表在缓存的key值 */
@@ -375,7 +385,7 @@ const PLAN_ITEM_STATE_NOT_PASS = 'not_pass';
 export default {
   name: "AddPlanDialog",
   dicts: ['plan_item_state'],
-  components: { Cat2BugLevel,Step,TreePlanItemModule,Multipane,MultipaneResizer, FocusMemberList, Cat2BugPreviewImage, AddDefect, HandleDefect, AddCase, RowListMember, DefectStateFlag, Cat2BugText },
+  components: { Cat2BugLevel,Step,TreePlanItemModule,Multipane,MultipaneResizer, FocusMemberList, Cat2BugPreviewImage, AddDefect, HandleDefect, AddCase, RowListMember, DefectStateFlag, Cat2BugText, RelatedDefect },
   data() {
     return {
       // 动态样式
@@ -631,10 +641,26 @@ export default {
       this.$refs.addDefect.openByCase({...item, ...{ moduleVersion: this.plan.planVersion }});
       e.stopPropagation();
     },
+    /** 处理打开关联缺陷窗口操作 */
+    handleOpenRelatedDefect(e,item){
+      this.planItem = item;
+      this.$refs.relatedDefect.open(item.defectIds);
+      e.stopPropagation();
+    },
     /** 打开测试用例 */
     handleOpenHandleDefect(item, defectId) {
       this.planItem = item;
       this.$refs.handleDefect.open(defectId);
+    },
+    /** 处理关联缺陷 */
+    handleRelatedDefect(relatedIds, defect) {
+
+      console.log(relatedIds, defect)
+      if(relatedIds.filter(id=>id===defect.defectId).length>0) {
+        this.handleAddedDefect(defect);
+      } else {
+        this.handleDeletedDefect(defect);
+      }
     },
     /** 处理删除缺陷完成操作 */
     handleDeletedDefect(defect) {
