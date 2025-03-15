@@ -133,7 +133,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                             SUM( dl3.reopen_count ) AS reopen_count,
                             SUM( dl3.closed_count ) AS closed_count,
                             SUM( dl3.defect_use_time ) AS defect_use_hour_time,
-                            count( pi3.plan_item_id ) AS defect_count
+                            count(distinct d3.defect_id ) AS defect_count
                         FROM
                             ( SELECT a.* FROM sys_plan_item a JOIN sys_case c ON c.case_id = a.case_id JOIN sys_module m ON m.module_id = c.module_id ) pi3
                                 JOIN sys_defect d3 ON pi3.defect_ids like concat('%,',d3.defect_id ,',%') or pi3.defect_ids like concat('%',d3.defect_id ,',%') or pi3.defect_ids like concat('%,',d3.defect_id ,'%')
