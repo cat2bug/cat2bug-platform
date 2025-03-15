@@ -142,6 +142,15 @@
             <span>{{$t('update-log')}}</span>
           </div>
           <el-collapse accordion>
+            <el-collapse-item title="v0.5.1 - 2025-03-15">
+              <ol>
+                <li>添加仪表盘</li>
+                <li>在测试用例中添加按级别查找功能</li>
+                <li>在测试计划中添加取消通过功能</li>
+                <li>在admin账户中添加权限管理</li>
+                <li>修复系统功能BUG</li>
+              </ol>
+            </el-collapse-item>
             <el-collapse-item title="v0.5.0 - 2025-01-18">
               <ol>
                 <li>新增测试计划</li>
