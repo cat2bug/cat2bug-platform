@@ -6,6 +6,6 @@
                                    |___/
 
  :: Web Site:           ::  https://www.cat2bug.com
- :: Git:                ::  https://gitee.com/cat2bug/cat2bug-junit
+ :: Git:                ::  https://gitee.com/cat2bug/cat2bug-platform
  :: Application Version ::  ${cat2bug.version}
  :: Spring Boot Version ::  ${spring-boot.version}

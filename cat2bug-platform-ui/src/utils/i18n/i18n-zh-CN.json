@@ -397,6 +397,7 @@
   "assign": "指派",
   "repair": "修复",
   "pass": "通过",
+  "cancel-pass": "取消通过",
   "batch-pass": "批量通过",
   "not_pass": "未通过",
   "fail": "失败",

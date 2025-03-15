@@ -398,6 +398,7 @@
   "reject": "Reject",
   "repair": "Repair",
   "pass": "Pass",
+  "cancel-pass": "Cancel Pass",
   "batch-pass": "Batch Pass",
   "not_pass": "Not Pass",
   "fail": "Fail",

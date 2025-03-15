@@ -51,6 +51,14 @@ public interface SysPlanMapper
     public int updateSysPlan(SysPlan sysPlan);
 
     /**
+     * 更新测试计划日期
+     *
+     * @param sysPlan 测试计划
+     * @return 结果
+     */
+    public int updateUpdateTimeOfSysPlan(SysPlan sysPlan);
+
+    /**
      * 删除测试计划
      * 
      * @param planId 测试计划主键

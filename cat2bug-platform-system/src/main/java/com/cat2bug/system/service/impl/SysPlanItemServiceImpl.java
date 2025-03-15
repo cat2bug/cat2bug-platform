@@ -5,10 +5,7 @@ import com.cat2bug.common.utils.SecurityUtils;
 import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.common.utils.uuid.IdUtils;
 import com.cat2bug.common.utils.uuid.UUID;
-import com.cat2bug.system.domain.SysCase;
-import com.cat2bug.system.domain.SysPlanItem;
-import com.cat2bug.system.domain.SysPlanItemModule;
-import com.cat2bug.system.domain.SysUserConfig;
+import com.cat2bug.system.domain.*;
 import com.cat2bug.system.mapper.SysModuleMapper;
 import com.cat2bug.system.mapper.SysPlanItemMapper;
 import com.cat2bug.system.service.ISysPlanItemService;
@@ -39,6 +36,8 @@ public class SysPlanItemServiceImpl implements ISysPlanItemService
 
     @Autowired
     private SysModuleMapper sysModuleMapper;
+    @Autowired
+    private SysPlanServiceImpl sysPlanServiceImpl;
 
     /**
      * 查询测试计划子项
@@ -105,7 +104,13 @@ public class SysPlanItemServiceImpl implements ISysPlanItemService
         if(StringUtils.isBlank(sysPlanItem.getPlanItemState())) {
             sysPlanItem.setPlanItemState(SysPlanItem.PLAN_ITEM_DEFAULT_STATE);
         }
-        return sysPlanItemMapper.insertSysPlanItem(sysPlanItem);
+        int ret = sysPlanItemMapper.insertSysPlanItem(sysPlanItem);
+        if(ret>0) {
+            SysPlan sysPlan = new SysPlan();
+            sysPlan.setPlanId(sysPlanItem.getPlanId());
+            sysPlanServiceImpl.updateUpdateTimeOfSysPlan(sysPlan);
+        }
+        return ret;
     }
 
     /**
@@ -119,11 +124,19 @@ public class SysPlanItemServiceImpl implements ISysPlanItemService
     {
         sysPlanItem.setUpdateById(SecurityUtils.getUserId());
         sysPlanItem.setUpdateTime(DateUtils.getNowDate());
+        int ret;
         if(sysPlanItem.getParams()!=null && sysPlanItem.getParams().containsKey("planItemIds")) {
-            return sysPlanItemMapper.batchUpdateSysPlanItem(sysPlanItem);
+            ret = sysPlanItemMapper.batchUpdateSysPlanItem(sysPlanItem);
         } else {
-            return sysPlanItemMapper.updateSysPlanItem(sysPlanItem);
+            ret = sysPlanItemMapper.updateSysPlanItem(sysPlanItem);
         }
+
+        if(ret>0) {
+            SysPlan sysPlan = new SysPlan();
+            sysPlan.setPlanId(sysPlanItem.getPlanId());
+            sysPlanServiceImpl.updateUpdateTimeOfSysPlan(sysPlan);
+        }
+        return ret;
     }
 
     /**

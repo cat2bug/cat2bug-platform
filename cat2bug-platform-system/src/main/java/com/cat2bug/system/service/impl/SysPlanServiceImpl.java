@@ -113,6 +113,9 @@ public class SysPlanServiceImpl implements ISysPlanService
         itemParam.setPlanId(sysPlan.getPlanId());
         List<SysPlanItem> oldItemList = sysPlanItemMapper.selectSysPlanItemList(itemParam);
 
+        if(sysPlan.getSysPlanItemList()==null) {
+            sysPlan.setSysPlanItemList(new ArrayList<>());
+        }
         // 计算要删除的子项
         String[] removeItems = oldItemList.stream().filter(i->
                 sysPlan.getSysPlanItemList().stream().
@@ -143,12 +146,15 @@ public class SysPlanServiceImpl implements ISysPlanService
                         noneMatch(id->id.equals(i.getCaseId()))
         ).map(i->i.getCaseId().toString()).collect(Collectors.toList()).toArray(new String[]{});
 
-       System.out.println("原来："+oldItemList.stream().map(c->c.getCaseId().toString()).collect(Collectors.joining(",")));
-       System.out.println("新的："+sysPlan.getSysPlanItemList().stream().map(c->c.getCaseId().toString()).collect(Collectors.joining(",")));
-        System.out.println("加的："+addItemList.stream().map(c->c.getCaseId().toString()).collect(Collectors.joining(",")));
-        System.out.println("删的："+ Arrays.stream(removeCaseIds).collect(Collectors.joining(",")));
         // 更新计划
         return sysPlanMapper.updateSysPlan(sysPlan);
+    }
+
+    @Override
+    public int updateUpdateTimeOfSysPlan(SysPlan sysPlan) {
+        sysPlan.setUpdateTime(DateUtils.getNowDate());
+        sysPlan.setUpdateById(SecurityUtils.getUserId());
+        return sysPlanMapper.updateUpdateTimeOfSysPlan(sysPlan);
     }
 
     /**

@@ -159,7 +159,7 @@ public class SysPlan extends BaseEntity
 
     /** 百分比显示 */
     private String rate(double val) {
-        return String.valueOf(Math.round(val * 100) * 0.01d) + "%";
+        return String.format("%.2f",Math.round(val * 100) * 0.01d) + "%";
     }
 
     @Override

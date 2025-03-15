@@ -60,6 +60,14 @@ public interface ISysPlanService
     public int updateSysPlan(SysPlan sysPlan);
 
     /**
+     * 更新测试计划日期
+     *
+     * @param sysPlan 测试计划
+     * @return 结果
+     */
+    public int updateUpdateTimeOfSysPlan(SysPlan sysPlan);
+
+    /**
      * 批量删除测试计划
      * 
      * @param planIds 需要删除的测试计划主键集合
