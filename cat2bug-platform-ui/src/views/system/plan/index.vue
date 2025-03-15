@@ -79,7 +79,7 @@
       </el-table-column>
       <el-table-column v-if="showField('updateTime')" :label="$t('updateTime')" :key="$t('updateTime')" align="center" prop="updateTime" width="180">
         <template slot-scope="scope">
-          <span>{{ parseTime(scope.row.updateTime, '{y}-{m}-{d}') }}</span>
+          <span>{{ parseTime(scope.row.updateTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
         </template>
       </el-table-column>
       <el-table-column v-if="showField('plan.process')" :label="$t('plan.process')" :key="$t('plan.process')" align="center" width="150">
