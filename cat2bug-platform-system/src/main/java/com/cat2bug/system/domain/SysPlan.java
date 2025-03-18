@@ -125,7 +125,7 @@ public class SysPlan extends BaseEntity
     /** 获取缺陷密度 */
     public String getDefectDensity() {
         if(this.moduleCount==0) return "0";
-        return Math.floor(this.defectCount*100/this.moduleCount)+"";
+        return Math.floor(this.defectCount*100/this.moduleCount)/100+"";
     }
     /** 获取缺陷探测率 */
     public String getDefectDetectionRate() {
