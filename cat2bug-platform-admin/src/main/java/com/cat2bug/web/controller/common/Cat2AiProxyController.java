@@ -1,10 +1,14 @@
 package com.cat2bug.web.controller.common;
 
 import com.alibaba.fastjson.JSON;
+import com.cat2bug.common.utils.MessageUtils;
 import com.cat2bug.framework.config.RoutePropertiesConfig;
 import com.cat2bug.framework.web.domain.RouteInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.web.servlet.ConditionalOnMissingFilterBean;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.*;
 import org.springframework.util.LinkedMultiValueMap;
@@ -34,6 +38,7 @@ import java.util.*;
  */
 @Slf4j
 @RestController
+@ConditionalOnProperty(prefix = "cat2bug.proxy.routes.ai", name = "enabled", havingValue = "true")
 public class Cat2AiProxyController {
     @Resource
     private RoutePropertiesConfig routeProperties;

@@ -29,7 +29,7 @@ import java.util.List;
 @RequestMapping("/ai/case")
 public class AiCaseController extends BaseController {
     private final static Logger log = LogManager.getLogger(AiCaseController.class);
-    @Autowired
+    @Autowired(required = false)
     private IAiService aiService;
     @Autowired
     private ISysAiModuleConfigService sysAiModuleConfigService;

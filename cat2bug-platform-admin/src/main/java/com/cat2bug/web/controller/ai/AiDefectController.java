@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/ai/defect")
 public class AiDefectController extends BaseController {
     private final static Logger log = LogManager.getLogger(AiDefectController.class);
-    @Autowired
+    @Autowired(required = false)
     private IAiService aiService;
     @Autowired
     private ISysModuleService sysModuleService;

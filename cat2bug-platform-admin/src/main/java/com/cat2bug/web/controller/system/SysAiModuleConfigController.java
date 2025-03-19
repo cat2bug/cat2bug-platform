@@ -38,7 +38,7 @@ public class SysAiModuleConfigController extends BaseController
 {
     @Autowired
     private ISysAiModuleConfigService sysAiModuleConfigService;
-    @Autowired
+    @Autowired(required = false)
     private IAiService aiService;
 
     /**

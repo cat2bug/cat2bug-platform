@@ -15,6 +15,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Service;
 
@@ -39,6 +40,7 @@ import java.util.stream.Collectors;
  * Ollama服务
  */
 @Service
+@ConditionalOnProperty(prefix = "cat2bug.ai", name = "enabled", havingValue = "true")
 @ConfigurationProperties(prefix = "cat2bug.ai")
 @Data
 public class OllamaAiServieImpl implements IAiService {
@@ -73,7 +75,6 @@ public class OllamaAiServieImpl implements IAiService {
      * 问答数据格式类型
      */
     private static final String PROMPT_FORMAT_TYPE = "json";
-
     /**
      * 配置项：服务主机和端口
      */

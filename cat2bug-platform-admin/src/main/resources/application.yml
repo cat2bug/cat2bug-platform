@@ -24,6 +24,8 @@ cat2bug:
   proxy:
     routes:
       ai:
+        # 是否启动api代理服务
+        enabled: true
         prefix: cat2ai
         host: https://www.cat2bug.com:3333/prod-api
 #        host: http://127.0.0.1:8080
@@ -39,6 +41,8 @@ cat2bug:
       handler: demo
   # 智能服务
   ai:
+    # 是否启动链接ai服务
+    enabled: true
     # AI服务地址(https://www.cat2bug.com:8023是共享给大家的一个用于免费测试和开发的AI服务,生产环境请链接自有的AI服务)
     host: https://www.cat2bug.com:8023
     # AI服务接口超时时间（秒）

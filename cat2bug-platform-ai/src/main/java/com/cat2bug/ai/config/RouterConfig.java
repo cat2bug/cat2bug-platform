@@ -4,6 +4,7 @@ import io.netty.channel.ChannelOption;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.handler.timeout.WriteTimeoutHandler;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
@@ -22,9 +23,12 @@ import java.time.Duration;
  * @Version: 1.0.0
  */
 @Configuration
+@ConditionalOnProperty(prefix = "cat2bug.proxy.routes.ai", name = "enabled", havingValue = "true")
 public class RouterConfig {
     @Value("${cat2bug.proxy.routes.ai.host}")
     private String host;
+    @Value("${cat2bug.proxy.routes.ai.enabled}")
+    private boolean enabled;
     @Bean
     public WebClient webClient(){
         //配置固定大小连接池
