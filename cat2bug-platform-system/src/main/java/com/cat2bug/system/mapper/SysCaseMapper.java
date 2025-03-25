@@ -54,6 +54,20 @@ public interface SysCaseMapper
     public List<SysCase> selectSysCaseList(SysCase sysCase);
 
     /**
+     * 查询指定用例的上一个用例
+     * @param sysCase
+     * @return
+     */
+    public SysCase selectPrevSysCase(SysCase sysCase);
+
+    /**
+     * 查询指定用例的下一个用例
+     * @param sysCase
+     * @return
+     */
+    public SysCase selectNextSysCase(SysCase sysCase);
+
+    /**
      * 查询测试用例ID列表
      * @param moduleIds  查询的模块Id集合
      * @return  测试用例ID集合

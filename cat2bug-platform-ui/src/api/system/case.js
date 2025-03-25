@@ -33,6 +33,24 @@ export function getCase(caseId) {
   })
 }
 
+// 查询测试用例详细
+export function getPrevCase(caseId, params) {
+  return request({
+    url: '/system/case/' + caseId + '/prev',
+    method: 'get',
+    params: params
+  })
+}
+
+// 查询测试用例详细
+export function getNextCase(caseId, params) {
+  return request({
+    url: '/system/case/' + caseId + '/next',
+    method: 'get',
+    params: params
+  })
+}
+
 // 新增测试用例
 export function addCase(data) {
   return request({

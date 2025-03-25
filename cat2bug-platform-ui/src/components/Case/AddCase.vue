@@ -19,14 +19,15 @@
           <h3>{{title}}</h3>
         </div>
         <div>
+          <el-button v-if="!isAddMode"@click="prevCase" type="text" icon="el-icon-arrow-left" size="mini"></el-button>
+          <el-button v-if="!isAddMode"@click="nextCase" type="text" icon="el-icon-arrow-right" size="mini"></el-button>
           <el-button @click="cancel" icon="el-icon-close" :class="isAddMode?'':'green-button'" size="mini">{{$t('close')}}</el-button>
           <el-button v-if="isAddMode" v-hasPermi="['system:case:add']" type="primary" icon="el-icon-finished" @click="submitForm" size="mini">{{$t('create')}}</el-button>
           <el-button v-else v-hasPermi="['system:case:edit']" type="success" icon="el-icon-finished" @click="submitForm" size="mini">{{$t('modify')}}</el-button>
         </div>
       </div>
     </template>
-    <div class="app-container">
-
+    <div class="app-container" v-loading="loading">
       <el-form ref="form" :model="form" :rules="rules" label-width="120px">
         <el-form-item>
           <el-checkbox v-if="isAddMode" class="create-next-case" v-model="isCreateNextCase">{{ $t('case.create-next-case') }}</el-checkbox>
@@ -83,7 +84,7 @@
 </template>
 
 <script>
-import {addCase, closeEditWindow, getCase, updateCase} from "@/api/system/case";
+import {addCase, closeEditWindow, getCase, getNextCase, getPrevCase, updateCase} from "@/api/system/case";
 import CaseStepPanel from "./CaseStepPanel"
 import SelectModule from "@/components/Module/SelectModule"
 import Cat2BugSelectLevel from "@/components/Cat2BugSelectLevel";
@@ -97,11 +98,14 @@ export default {
   components: {Label,CaseStepPanel,SelectModule,Cat2BugSelectLevel,FocusMemberList},
   data() {
     return {
+      loading: false,
       caseStepSwitchType: '',
       // 是否显示创建组件
       visible: false,
       // 是否连续创建用例
       isCreateNextCase: true,
+      // 搜索条件
+      params: null,
       // 表单参数
       form: {
         caseStep:[{}],
@@ -201,18 +205,21 @@ export default {
       }
       this.$floatMenu.resetMenus(tools);
     },
-    open(caseId) {
+    open(caseId, params) {
       let self = this;
+      this.params = params;
       this.reset();
       if(caseId) {
+        this.loading = true;
         getCase(caseId).then(response => {
+          this.loading = false;
           this.form = response.data;
           this.visible = true;
           this.$nextTick(()=>{
             self.$refs['caseStepPanel'].reset();
           });
           this.initFloatMenu();
-        });
+        }).catch(()=>this.loading = true);
       } else {
         this.visible = true;
         this.$nextTick(()=>{
@@ -320,6 +327,32 @@ export default {
     },
     caseStepPanelTypeChangeHandle() {
       this.$cache.session.set(CASE_STEP_PANEL_TYPE_CACHE_KEY,this.caseStepSwitchType);
+    },
+    prevCase() {
+      this.loading = true;
+      getPrevCase(this.form.caseId, this.params).then(res=>{
+        this.loading = false;
+        if(res.data) {
+          this.form = res.data;
+          this.visible = true;
+          this.$nextTick(()=>{
+            self.$refs['caseStepPanel'].reset();
+          });
+        }
+      }).catch(()=>this.loading = false);
+    },
+    nextCase() {
+      this.loading = true;
+      getNextCase(this.form.caseId, this.params).then(res=>{
+        this.loading = false;
+        if(res.data) {
+          this.form = res.data;
+          this.visible = true;
+          this.$nextTick(()=>{
+            self.$refs['caseStepPanel'].reset();
+          });
+        }
+      }).catch(()=>this.loading = false);
     }
   }
 }

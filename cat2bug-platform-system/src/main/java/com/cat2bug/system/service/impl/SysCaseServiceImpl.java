@@ -57,6 +57,32 @@ public class SysCaseServiceImpl implements ISysCaseService
         return sysCaseMapper.selectSysCaseByCaseId(caseId);
     }
 
+    /**
+     * 查询指定用例的上一个用例
+     * @param sysCase
+     * @return
+     */
+    @Override
+    public SysCase selectPrevSysCase(SysCase sysCase) {
+        return sysCaseMapper.selectPrevSysCase(sysCase);
+    }
+
+    /**
+     * 查询指定用例的下一个用例
+     * @param sysCase
+     * @return
+     */
+    @Override
+    public SysCase selectNextSysCase(SysCase sysCase) {
+        return sysCaseMapper.selectNextSysCase(sysCase);
+    }
+
+    /**
+     * 查询测试用例
+     * @param projectId 项目id
+     * @param caseName  测试用例名称
+     * @return  测试用例
+     */
     @Override
     public SysCase selectSysCaseByCaseName(Long projectId, String caseName) {
         return sysCaseMapper.selectSysCaseByCaseName(projectId,caseName);

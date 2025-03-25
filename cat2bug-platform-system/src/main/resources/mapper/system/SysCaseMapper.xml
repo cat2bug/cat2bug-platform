@@ -53,9 +53,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         select COUNT(case_id) from sys_case where project_id=#{projectId} GROUP BY project_id;
     </select>
 
-    <select id="selectSysCaseList" parameterType="SysCase" resultMap="SysCaseResult">
+    <sql id="selectSysCases">
         <include refid="selectSysCaseVo"/>
-        <where>  
+        <where>
             <if test="caseName != null  and caseName != ''"> and c.case_name like concat('%', #{caseName}, '%')</if>
             <if test="moduleId != null "> and c.module_id = #{moduleId}</if>
             <if test="caseType != null "> and c.case_type = #{caseType}</if>
@@ -65,13 +65,17 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="caseNum != null "> and c.case_num = #{caseNum}</if>
             <if test="projectId != null "> and c.project_id = #{projectId}</if>
             <if test="params != null and params.moduleIds !=null">
-             and c.module_id in
+                and c.module_id in
                 <foreach collection="params.moduleIds" item="moduleId" separator="," open="(" close=")">
                     #{moduleId}
                 </foreach>
-             </if>
+            </if>
         </where>
         ORDER BY c.case_num DESC
+    </sql>
+
+    <select id="selectSysCaseList" parameterType="SysCase" resultMap="SysCaseResult">
+        <include refid="selectSysCases"></include>
     </select>
 
     <select id="selectSysCaseIdList" resultType="java.lang.Long">
@@ -102,7 +106,19 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <include refid="selectSysCaseVo"/>
         where c.case_id = #{caseId}
     </select>
-        
+
+    <select id="selectPrevSysCase" parameterType="SysCase" resultMap="SysCaseResult">
+        select c.* from (<include refid="selectSysCases"></include>) c
+                   where c.case_id &lt; #{params.prevCaseId}
+                   ORDER BY c.case_id DESC limit 1
+    </select>
+
+    <select id="selectNextSysCase" parameterType="SysCase" resultMap="SysCaseResult">
+        select c.* from (<include refid="selectSysCases"></include>) c
+        where c.case_id &gt; #{params.nextCaseId}
+        ORDER BY c.case_id limit 1
+    </select>
+
     <insert id="insertSysCase" parameterType="SysCase" useGeneratedKeys="true" keyProperty="caseId">
         insert into sys_case
         <trim prefix="(" suffix=")" suffixOverrides=",">

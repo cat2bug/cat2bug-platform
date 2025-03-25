@@ -516,7 +516,7 @@ export default {
     /** 修改按钮操作 */
     handleUpdate(row) {
       if(checkPermi(['system:case:edit'])) {
-        this.$refs.addCaseDialog.open(row.caseId);
+        this.$refs.addCaseDialog.open(row.caseId, this.queryParams);
       }
     },
     /** 删除按钮操作 */

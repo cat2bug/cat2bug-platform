@@ -30,6 +30,20 @@ public interface ISysCaseService
     public SysCase selectSysCaseByCaseId(Long caseId);
 
     /**
+     * 查询指定用例的上一个用例
+     * @param sysCase
+     * @return
+     */
+    public SysCase selectPrevSysCase(SysCase sysCase);
+
+    /**
+     * 查询指定用例的下一个用例
+     * @param sysCase
+     * @return
+     */
+    public SysCase selectNextSysCase(SysCase sysCase);
+
+    /**
      * 查询测试用例
      * @param projectId 项目id
      * @param caseName  测试用例名称

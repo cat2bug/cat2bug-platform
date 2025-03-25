@@ -147,6 +147,36 @@ public class SysCaseController extends BaseController
     }
 
     /**
+     * 查询指定用例的上一个用例
+     * @param sysCase
+     * @return
+     */
+    @PreAuthorize("@ss.hasPermi('system:case:query')")
+    @GetMapping(value = "/{caseId}/prev")
+    public AjaxResult selectPrevSysCase(@PathVariable("caseId") Long caseId, SysCase sysCase) {
+        if(sysCase.getParams()==null) {
+            sysCase.setParams(new HashMap<>());
+        }
+        sysCase.getParams().put("prevCaseId", caseId);
+        return success(sysCaseService.selectPrevSysCase(sysCase));
+    }
+
+    /**
+     * 查询指定用例的下一个用例
+     * @param sysCase
+     * @return
+     */
+    @PreAuthorize("@ss.hasPermi('system:case:query')")
+    @GetMapping(value = "/{caseId}/next")
+    public AjaxResult selectNextSysCase(@PathVariable("caseId") Long caseId, SysCase sysCase) {
+        if(sysCase.getParams()==null) {
+            sysCase.setParams(new HashMap<>());
+        }
+        sysCase.getParams().put("nextCaseId", caseId);
+        return success(sysCaseService.selectNextSysCase(sysCase));
+    }
+
+    /**
      * 关闭窗口
      */
     @PostMapping("/close-edit-window")
