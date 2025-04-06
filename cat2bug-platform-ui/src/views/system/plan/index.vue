@@ -151,8 +151,8 @@
 import ProjectLabel from "@/components/Project/ProjectLabel";
 import RowListMember from "@/components/RowListMember";
 import {listPlan, delPlan, copyPlan} from "@/api/system/plan";
-import AddPlanDialog from "@/views/system/plan/AddPlanDialog";
-import HandlePlanDialog from "@/views/system/plan/HandlePlanDialog";
+import AddPlanDialog from "@/components/Plan/AddPlanDialog";
+import HandlePlanDialog from "@/components/Plan/HandlePlanDialog";
 import DictOptionDialog from "@/components/DictOptionDialog";
 import {strFormat} from "@/utils";
 import {checkPermi} from "@/utils/permission";

@@ -1,5 +1,5 @@
 <template>
-  <el-select popper-class="case-level" v-model="value" placeholder="请选择" @change="changeHandle" :clearable="clearable">
+  <el-select popper-class="case-level" class="case-level-input" v-model="value" placeholder="请选择" @change="changeHandle" :disabled="readonly" :clearable="clearable">
     <template v-slot:prefix>
       <i v-if="icon" class="select-header-icon" :class="icon"></i>
     </template>
@@ -50,7 +50,11 @@ export default {
     maxLevel: {
       type: Number,
       default: MAX_LEVEL_INDEX
-    }
+    },
+    readonly: {
+      type: Boolean,
+      default: false
+    },
   },
   methods: {
     getLevelName,
@@ -87,5 +91,15 @@ export default {
   text-overflow: ellipsis !important;
   white-space: normal !important;
   margin-top: 5px;
+}
+.el-select.case-level-input > ::v-deep.el-input.is-disabled {
+  > .el-input__inner {
+    background-color: white;
+    cursor: default;
+    color: #303133;
+  }
+  > .el-input__suffix {
+    display: none;
+  }
 }
 </style>

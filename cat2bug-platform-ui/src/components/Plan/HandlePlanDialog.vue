@@ -180,8 +180,6 @@
                   />
                 </el-select>
               </el-form-item>
-
-
 <!--              <el-form-item label="" prop="updateById">-->
 <!--                <el-input-->
 <!--                  v-model="query.updateById"-->
@@ -230,6 +228,11 @@
                 <span>{{ caseNumber(scope.row) }}</span>
               </template>
             </el-table-column>
+            <el-table-column v-if="showField('state')" :label="$t('state')" align="center" prop="planItemState" sortable fixed>
+              <template slot-scope="scope">
+                <dict-tag :options="dict.type.plan_item_state" :value="scope.row.planItemState"/>
+              </template>
+            </el-table-column>
             <el-table-column v-if="showField('title')" :label="$t('title')" align="left" prop="caseName" min-width="300" sortable fixed>
               <template slot-scope="scope">
                 <div class="table-case-title">
@@ -271,11 +274,6 @@
                 </div>
               </template>
             </el-table-column>
-            <el-table-column v-if="showField('state')" :label="$t('state')" align="center" prop="planItemState" sortable>
-              <template slot-scope="scope">
-                <dict-tag :options="dict.type.plan_item_state" :value="scope.row.planItemState"/>
-              </template>
-            </el-table-column>
             <el-table-column v-if="showField('updateBy')" :label="$t('updateBy')" align="center" prop="updateBy" sortable width="120">
               <template slot-scope="scope">
                 <row-list-member :members="member(scope.row)"></row-list-member>
@@ -289,62 +287,7 @@
             <el-table-column :label="$t('operate')" align="start" class-name="small-padding fixed-width" fixed="right" width="270">
               <template slot-scope="scope">
                 <div class="plan-operate">
-                  <el-button
-                    size="small"
-                    type="text"
-                    icon="el-icon-plus"
-                    @click="handleOpenAddDefect($event, scope.row)"
-                    v-hasPermi="['system:defect:add']"
-                  >
-                    {{ $t('defect.create') }}
-                  </el-button>
-                  <el-button
-                    size="small"
-                    type="text"
-                    icon="el-icon-attract"
-                    @click="handleOpenRelatedDefect($event, scope.row)"
-                    v-hasPermi="['system:defect:add']"
-                  >
-                    {{ $t('defect.related') }}
-                  </el-button>
-                  <el-button
-                    v-if="scope.row.defectIds && scope.row.defectIds.length==1"
-                    size="small"
-                    type="text"
-                    @click="handleOpenHandleDefect(scope.row, scope.row.defectIds[0])"
-                    v-hasPermi="['system:defect:edit']"
-                  > <svg-icon icon-class="bug"></svg-icon>
-                    {{ $t('defect') }}
-                  </el-button>
-                  <el-dropdown
-                    class="defect-dropdown"
-                    placement="bottom-start"
-                    @visible-change="handlePlanItemDefectList($event, scope.row)"
-                    @command="handleOpenHandleDefect(scope.row, $event)"
-                    v-else-if="scope.row.defectIds && scope.row.defectIds.length>1"
-                    v-hasPermi="['system:defect:edit']">
-                    <span class="plan-item-dropdown-link">
-                      <svg-icon icon-class="bug"></svg-icon>{{ $t('defect') }}({{ scope.row.defectIds.length }})
-                    </span>
-                    <el-dropdown-menu class="plan-item-defect-list" slot="dropdown" v-loading="defectLoading">
-                      <el-dropdown-item v-for="(defect,defectIndex) in scope.row.defectList" :key="defectIndex" :command="defect.defectId">
-                        <defect-state-flag :defect="defect" /><span class="plan-item-defect-num">#{{ defect.projectNum }}</span>{{ defect.defectName }}</el-dropdown-item>
-                    </el-dropdown-menu>
-                  </el-dropdown>
-                  <el-button
-                    size="mini"
-                    type="text"
-                    icon="el-icon-check"
-                    @click="handlePlanItemState(scope.row, 'pass')"
-                    v-if="hasPassPermi(scope.row)"
-                  >{{ $t('pass') }}</el-button>
-                  <el-button
-                    size="mini"
-                    type="text"
-                    icon="el-icon-close"
-                    @click="handlePlanItemState(scope.row, 'unexecuted')"
-                    v-if="hasCancelPassPermi(scope.row)"
-                  >{{ $t('cancel-pass') }}</el-button>
+                  <plan-item-tools v-model="scope.row" :plan="plan" :project-id="projectId" @change="handlePlanItemChange" @close="initFloatMenu"></plan-item-tools>
                 </div>
               </template>
             </el-table-column>
@@ -359,10 +302,7 @@
           />
         </div>
       </multipane>
-      <add-case ref="addCaseDialog" :module-id="planItem.moduleId" :append-to-body="true" @added="getPlanItemList" @close="initFloatMenu" />
-      <add-defect ref="addDefect" :project-id="projectId" :append-to-body="true" @added="handleAddedDefect" @close="initFloatMenu" />
-      <handle-defect ref="handleDefect" :project-id="projectId" :append-to-body="true" @change="handleAddedDefect" @delete="handleDeletedDefect" @close="initFloatMenu" />
-      <related-defect ref="relatedDefect" :project-id="projectId" :related-defect-ids="planItem.defectIds" @related="handleRelatedDefect" @close="initFloatMenu" ></related-defect>
+      <handle-case-of-plan ref="handleCaseDialog" :module-id="planItem.moduleId" :append-to-body="true" @change="getPlanItemList" @close="initFloatMenu" />
     </div>
   </el-drawer>
 </template>
@@ -374,17 +314,15 @@ import RowListMember from "@/components/RowListMember";
 import Step from "@/views/system/case/components/step";
 import TreePlanItemModule from "@/views/system/plan/TreePlanItemModule";
 import FocusMemberList from "@/components/FocusMemberList";
-import AddCase from "@/components/Case/AddCase";
+import HandleCaseOfPlan from "@/components/Plan/HandleCaseOfPlan";
 import Cat2BugPreviewImage from "@/components/Cat2BugPreviewImage";
-import AddDefect from "@/components/Defect/AddDefect";
-import DefectStateFlag from "@/components/Defect/DefectStateFlag";
-import HandleDefect from "@/components/Defect/HandleDefect";
-import RelatedDefect from "@/components/Defect/RelatedDefect";
+
 import { Multipane, MultipaneResizer } from 'vue-multipane';
 import { getPlan } from "@/api/system/plan";
 import {listPlanItem, updatePlanItem} from "@/api/system/PlanItem";
 import {checkPermi} from "@/utils/permission";
 import {listDefect} from "@/api/system/defect";
+import PlanItemTools from "@/components/Plan/PlanItemTools";
 
 const TREE_MODULE_WIDTH_CACHE_KEY = 'plan_case_tree_module_width';
 /** 需要显示的测试用例字段列表在缓存的key值 */
@@ -395,7 +333,7 @@ const PLAN_ITEM_STATE_NOT_PASS = 'not_pass';
 export default {
   name: "AddPlanDialog",
   dicts: ['plan_item_state'],
-  components: { Cat2BugLevel,Step,TreePlanItemModule,Multipane,MultipaneResizer, FocusMemberList, Cat2BugPreviewImage, AddDefect, HandleDefect, AddCase, RowListMember, DefectStateFlag, Cat2BugText, RelatedDefect },
+  components: { Cat2BugLevel,Step,TreePlanItemModule,Multipane,MultipaneResizer, FocusMemberList, Cat2BugPreviewImage, HandleCaseOfPlan, RowListMember, Cat2BugText, PlanItemTools },
   data() {
     return {
       // 动态样式
@@ -403,7 +341,6 @@ export default {
       treeModuleStyle: {'--treeModuleWidth':'300px'},
       // 遮罩层
       loading: true,
-      defectLoading: false,
       // 表格中可以显示的字段列表
       checkedFieldList: [],
       // 所有属性类型
@@ -469,18 +406,6 @@ export default {
         }]
       }
     },
-    /** 是否有通过权限 */
-    hasPassPermi: function() {
-      return function (item) {
-        return checkPermi(['system:plan:edit']) && item.planItemState!='pass';
-      }
-    },
-    /** 是否有取消通过权限 */
-    hasCancelPassPermi: function() {
-      return function (item) {
-        return checkPermi(['system:plan:edit']) && item.planItemState==='pass';
-      }
-    },
     /** 用于显示的用例编号 */
     caseNumber: function () {
       return function (val) {
@@ -523,6 +448,11 @@ export default {
     initFloatMenu() {
       this.$floatMenu.windowsInit(document.querySelector('.main-container'));
       this.$floatMenu.resetMenus([]);
+    },
+    /** 处理计划项改变的事件 */
+    handlePlanItemChange() {
+      this.getPlanInfo(this.plan.planId);
+      this.getPlanItemList();
     },
     /** 设置列表显示的属性字段 */
     setFieldList() {
@@ -632,64 +562,6 @@ export default {
       this.query.caseLevel = caseLevel;
       this.getPlanItemList();
     },
-    /** 更改子项状态操作 */
-    handlePlanItemState(planItem, state) {
-      let data = {
-        planItemState: state,
-      }
-      if(planItem) {
-        data.planItemId = planItem.planItemId;
-      } else if(this.ids.length>0) {
-        data.params = {
-          planItemIds:this.ids
-        }
-      }
-      updatePlanItem(data).then(res=>{
-        this.getPlanInfo(this.plan.planId);
-        this.getPlanItemList();
-        this.$message.success(this.$i18n.t('plan.pass-success').toString());
-        this.$emit('change');
-      });
-    },
-    /** 处理打开新建缺陷窗口操作 */
-    handleOpenAddDefect(e,item){
-      this.planItem = item;
-      this.$refs.addDefect.openByCase({...item, ...{ moduleVersion: this.plan.planVersion }});
-      e.stopPropagation();
-    },
-    /** 处理打开关联缺陷窗口操作 */
-    handleOpenRelatedDefect(e,item){
-      this.planItem = item;
-      this.$refs.relatedDefect.open(item.defectIds);
-      e.stopPropagation();
-    },
-    /** 打开测试用例 */
-    handleOpenHandleDefect(item, defectId) {
-      this.planItem = item;
-      this.$refs.handleDefect.open(defectId);
-    },
-    /** 处理关联缺陷 */
-    handleRelatedDefect(relatedIds, defect) {
-      if(relatedIds.filter(id=>id===defect.defectId).length>0) {
-        this.handleAddedDefect(defect);
-      } else {
-        this.handleDeletedDefect(defect);
-      }
-    },
-    /** 处理删除缺陷完成操作 */
-    handleDeletedDefect(defect) {
-      let data = {
-        planItemId: this.planItem.planItemId,
-        params: {
-          deleteDefectId: defect.defectId
-        },
-      }
-      updatePlanItem(data).then(res=>{
-        this.getPlanInfo(this.plan.planId);
-        this.getPlanItemList();
-        this.$emit('change');
-      })
-    },
     /** 处理添加缺陷完成操作 */
     handleAddedDefect(defect) {
       let data = {
@@ -723,27 +595,7 @@ export default {
     },
     /** 打开编辑用例窗口 */
     handleOpenEditCase(planItem) {
-      this.$refs.addCaseDialog.open(planItem.caseId);
-    },
-    /** 根据ID查找缺陷 */
-    handlePlanItemDefectList(event, planItem) {
-      if(!event) return;
-      this.defectLoading = true;
-      let query = {
-        pageNum: 1,
-        pageSize: 9999,
-        orderByColumn: 'updateTime',
-        isAsc: 'desc',
-        params: {
-          defectIds: planItem.defectIds
-        }
-      }
-      listDefect(query).then(res=>{
-        this.defectLoading = false;
-        planItem.defectList = res.rows;
-      }).catch(e=>{
-        this.defectLoading = false;
-      })
+      this.$refs.handleCaseDialog.open(this.plan, planItem, planItem.caseId);
     },
     /** 查询计划项 */
     handlePlanItemStateSearch(state) {
@@ -764,6 +616,23 @@ export default {
     handleSelectionChange(selection) {
       this.ids = selection.map(item => item.planItemId);
       this.multiple = selection.length;
+    },
+    /** 更改子项状态操作 */
+    handlePlanItemState(planItem, state) {
+      let data = {
+        planItemState: state,
+      }
+      if(planItem) {
+        data.planItemId = planItem.planItemId;
+      } else if(this.ids.length>0) {
+        data.params = {
+          planItemIds:this.ids
+        }
+      }
+      updatePlanItem(data).then(()=>{
+        this.$message.success(this.$i18n.t('plan.pass-success').toString());
+        this.$emit('change');
+      });
     },
   }
 }
@@ -925,10 +794,6 @@ export default {
 }
 .plan-item-icon-arrow-down {
   font-size: 12px;
-}
-.defect-dropdown {
-  margin-left: 5px;
-  margin-right: 10px;
 }
 .tool-divider {
   margin: 10px;

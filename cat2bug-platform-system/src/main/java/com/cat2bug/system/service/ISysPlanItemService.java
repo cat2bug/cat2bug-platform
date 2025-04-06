@@ -24,6 +24,20 @@ public interface ISysPlanItemService
     public SysPlanItem selectSysPlanItemByPlanItemId(String planItemId);
 
     /**
+     * 获取上一个计划项
+     * @param sysPlanItem
+     * @return
+     */
+    public SysPlanItem selectPrevSysPlanItem(SysPlanItem sysPlanItem);
+
+    /**
+     * 获取下一个计划项
+     * @param sysPlanItem
+     * @return
+     */
+    public SysPlanItem selectNextSysPlanItem(SysPlanItem sysPlanItem);
+
+    /**
      * 查询测试计划子项列表
      *
      * @param sysPlanItem 测试计划子项

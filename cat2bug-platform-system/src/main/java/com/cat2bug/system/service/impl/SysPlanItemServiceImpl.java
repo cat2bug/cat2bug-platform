@@ -50,6 +50,25 @@ public class SysPlanItemServiceImpl implements ISysPlanItemService
     {
         return sysPlanItemMapper.selectSysPlanItemByPlanItemId(planItemId);
     }
+    /**
+     * 获取上一个计划项
+     * @param sysPlanItem
+     * @return
+     */
+    @Override
+    public SysPlanItem selectPrevSysPlanItem(SysPlanItem sysPlanItem) {
+        return sysPlanItemMapper.selectPrevSysPlanItem(sysPlanItem);
+    }
+
+    /**
+     * 获取下一个计划项
+     * @param sysPlanItem
+     * @return
+     */
+    @Override
+    public SysPlanItem selectNextSysPlanItem(SysPlanItem sysPlanItem) {
+        return sysPlanItemMapper.selectNextSysPlanItem(sysPlanItem);
+    }
 
     /**
      * 查询测试计划子项列表

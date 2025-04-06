@@ -1,7 +1,7 @@
 <template>
   <div class="case-card">
     <div class="case-card-body" v-if="caseModel && caseModel.caseId">
-      <div class="case-card-tools" v-if="toolsVisible(caseModel)">
+      <div class="case-card-tools" v-if="_toolsVisible(caseModel)">
         <el-popover
           placement="left-start"
           trigger="hover">
@@ -74,6 +74,10 @@ export default {
       type: Object,
       default: {}
     },
+    toolsVisible: {
+      type: Boolean,
+      default: true
+    }
   },
   computed: {
     list: function () {
@@ -86,9 +90,9 @@ export default {
         return strArray? strArray.split(',').length:0;
       }
     },
-    toolsVisible: function () {
+    _toolsVisible: function () {
       return function (model) {
-        return model && model.imgUrls && model.annexUrls && (this.num(model.imgUrls) + this.num(model.annexUrls))>0;
+        return this.toolsVisible && model && model.imgUrls && model.annexUrls && (this.num(model.imgUrls) + this.num(model.annexUrls))>0;
       }
     },
     getFileName: function () {
@@ -179,6 +183,7 @@ export default {
     min-height: 15px;
     line-height: 15px;
     flex: 1;
+    word-break: break-all;
   }
   .footer {
     width: 100%;

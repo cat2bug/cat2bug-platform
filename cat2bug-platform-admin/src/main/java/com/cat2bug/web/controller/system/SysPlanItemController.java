@@ -105,6 +105,36 @@ public class SysPlanItemController extends BaseController
     }
 
     /**
+     * 查询指定用例的上一个用例
+     * @param sysPlanItem
+     * @return
+     */
+    @PreAuthorize("@ss.hasPermi('system:plan:run') || @ss.hasPermi('system:plan:edit')")
+    @GetMapping(value = "/{planItemId}/prev")
+    public AjaxResult selectPrevSysCase(@PathVariable("planItemId") String planItemId, SysPlanItem sysPlanItem) {
+        if(sysPlanItem.getParams()==null) {
+            sysPlanItem.setParams(new HashMap<>());
+        }
+        sysPlanItem.getParams().put("prevPlanItemId", planItemId);
+        return success(sysPlanItemService.selectPrevSysPlanItem(sysPlanItem));
+    }
+
+    /**
+     * 查询指定用例的下一个用例
+     * @param sysPlanItem
+     * @return
+     */
+    @PreAuthorize("@ss.hasPermi('system:plan:run') || @ss.hasPermi('system:plan:edit')")
+    @GetMapping(value = "/{planItemId}/next")
+    public AjaxResult selectNextSysCase(@PathVariable("planItemId") String planItemId, SysPlanItem sysPlanItem) {
+        if(sysPlanItem.getParams()==null) {
+            sysPlanItem.setParams(new HashMap<>());
+        }
+        sysPlanItem.getParams().put("nextPlanItemId", planItemId);
+        return success(sysPlanItemService.selectNextSysPlanItem(sysPlanItem));
+    }
+
+    /**
      * 获取测试计划子项详细信息
      */
     @PreAuthorize("@ss.hasPermi('system:plan:run') || @ss.hasPermi('system:plan:edit')")

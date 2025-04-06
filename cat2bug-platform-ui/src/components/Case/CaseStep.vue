@@ -37,7 +37,7 @@ export default {
     },
     stepIndex: {
       type: Number,
-      default: null
+      default: 0
     },
     edit: {
       type: Boolean,
@@ -67,9 +67,11 @@ export default {
         for(let i = 0;i<this.stepIndex;i++){
           ret[i].state=PASS_TEST_KEY;
         }
-        ret[this.stepIndex].state=FAILED_TEST_KEY;
-        for(let i = this.stepIndex+1;i<ret.length;i++){
-          ret[i].state=NOT_TEST_KEY;
+        if(ret.length>this.stepIndex) {
+          ret[this.stepIndex].state = FAILED_TEST_KEY;
+          for (let i = this.stepIndex + 1; i < ret.length; i++) {
+            ret[i].state = NOT_TEST_KEY;
+          }
         }
       }
 

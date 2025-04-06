@@ -9,6 +9,25 @@ export function listPlanItem(query) {
   })
 }
 
+
+// 查询测试用例详细
+export function getPrevPlanItem(planItemId, params) {
+  return request({
+    url: '/system/PlanItem/' + planItemId + '/prev',
+    method: 'get',
+    params: params
+  })
+}
+
+// 查询测试用例详细
+export function getNextPlanItem(planItemId, params) {
+  return request({
+    url: '/system/PlanItem/' + planItemId + '/next',
+    method: 'get',
+    params: params
+  })
+}
+
 // 查询测试计划中显示的用例列表
 export function listPlanItemCase(query) {
   return request({

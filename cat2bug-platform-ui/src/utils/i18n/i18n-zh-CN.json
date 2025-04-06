@@ -452,6 +452,7 @@
   "case.please-enter-step-script": "请输入步骤数据，上面的可视化步骤设置和此处的文字数据结构二选一即可，此处输入每行代表一个步骤，步骤描述和步骤预期中间用\"---\"隔开，如：\n 步骤描述1---步骤预期1\n 步骤描述2---步骤预期2",
   "case.please-enter-data": "请输入用例数据",
   "case.add-step": "添加步骤",
+  "case.test": "测试用例",
   "case.create": "新建用例",
   "case.ai-create": "AI用例生成",
   "case.load-prompted": "AI机器人正在整理需求思路，处理时间根据需求的复杂度而定，请耐心等待......",

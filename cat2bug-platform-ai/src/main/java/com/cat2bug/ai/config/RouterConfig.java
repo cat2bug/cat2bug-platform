@@ -43,7 +43,6 @@ public class RouterConfig {
                 // 最大等待连接数量
                 .pendingAcquireMaxCount(-1)
                 .build();
-
         /**
          * doOnBind	当服务器channel即将被绑定的时候调用。
          * doOnBound	当服务器channel已经被绑定的时候调用。

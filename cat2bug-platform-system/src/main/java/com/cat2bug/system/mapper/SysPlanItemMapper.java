@@ -40,6 +40,19 @@ public interface SysPlanItemMapper
     public List<SysCase> selectCaseList(SysCase sysCase);
 
     /**
+     * 获取上一个计划项
+     * @param sysPlanItem
+     * @return
+     */
+    public SysPlanItem selectPrevSysPlanItem(SysPlanItem sysPlanItem);
+
+    /**
+     * 获取下一个计划项
+     * @param sysPlanItem
+     * @return
+     */
+    public SysPlanItem selectNextSysPlanItem(SysPlanItem sysPlanItem);
+    /**
      * 查询模块列表
      *
      * @param sysModule 模块

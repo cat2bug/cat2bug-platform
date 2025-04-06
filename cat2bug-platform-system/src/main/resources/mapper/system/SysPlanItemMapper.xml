@@ -99,17 +99,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             sys_module m
     </sql>
 
-    <select id="selectSysModuleList" parameterType="SysPlanItemModule" resultMap="SysModuleResult">
-        <include refid="selectSysModuleVo"/>
-        left join (select count(*) children_count,module_pid from sys_module group by module_pid) mg on mg.module_pid=m.module_id
-        <where>
-            <if test="modulePid != null "> and m.module_pid = #{modulePid}</if>
-            <if test="moduleName != null  and moduleName != ''"> and m.module_name like concat('%', #{moduleName}, '%')</if>
-            <if test="projectId != null "> and m.project_id = #{projectId}</if>
-        </where>
-    </select>
-
-    <select id="selectSysPlanItemList" parameterType="SysPlanItem" resultMap="SysPlanItemResult">
+    <sql id="planItemList">
         <include refid="selectSysPlanItemVo"/>
         <where>
             <if test="params != null and params.moduleIdsOfProject !=null and params.moduleIdsOfProject.size() > 0">
@@ -125,13 +115,40 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="params.beginUpdateTime != null and params.beginUpdateTime != '' and params.endUpdateTime != null and params.endUpdateTime != ''"> and pi.update_time between #{params.beginUpdateTime} and #{params.endUpdateTime}</if>
             <if test="params.caseName != null and params.caseName != ''"> and c.case_name like concat('%', #{params.caseName}, '%')</if>
             <if test="defectIds != null and defectIds.size > 0 "> and
-                 pi.defect_ids in
-                 <foreach collection="defectIds" item="defectId" open="(" close=")" separator=",">
-                     #{defectId}
-                 </foreach>
+                pi.defect_ids in
+                <foreach collection="defectIds" item="defectId" open="(" close=")" separator=",">
+                    #{defectId}
+                </foreach>
             </if>
         </where>
         order by c.case_num DESC
+    </sql>
+    <select id="selectSysModuleList" parameterType="SysPlanItemModule" resultMap="SysModuleResult">
+        <include refid="selectSysModuleVo"/>
+        left join (select count(*) children_count,module_pid from sys_module group by module_pid) mg on mg.module_pid=m.module_id
+        <where>
+            <if test="modulePid != null "> and m.module_pid = #{modulePid}</if>
+            <if test="moduleName != null  and moduleName != ''"> and m.module_name like concat('%', #{moduleName}, '%')</if>
+            <if test="projectId != null "> and m.project_id = #{projectId}</if>
+        </where>
+    </select>
+
+    <select id="selectSysPlanItemList" parameterType="SysPlanItem" resultMap="SysPlanItemResult">
+        <include refid="planItemList"></include>
+    </select>
+
+    <select id="selectPrevSysPlanItem" parameterType="SysPlanItem" resultMap="SysPlanItemResult">
+        select c.* from (<include refid="planItemList"></include>) c,
+        (SELECT c2.case_num FROM sys_plan_item spi left join sys_case c2 ON c2.case_id=spi.case_id WHERE spi.plan_item_id = #{params.prevPlanItemId}) m
+        where c.case_num &lt; m.case_num
+        ORDER BY c.case_num DESC limit 1
+    </select>
+
+    <select id="selectNextSysPlanItem" parameterType="SysPlanItem" resultMap="SysPlanItemResult">
+        select c.* from (<include refid="planItemList"></include>) c,
+        (SELECT c2.case_num FROM sys_plan_item spi left join sys_case c2 ON c2.case_id=spi.case_id WHERE spi.plan_item_id = #{params.nextPlanItemId}) m
+        where c.case_num &gt; m.case_num
+        ORDER BY c.case_num limit 1
     </select>
 
     <select id="selectCaseList" parameterType="SysCase" resultMap="SysCaseResult">

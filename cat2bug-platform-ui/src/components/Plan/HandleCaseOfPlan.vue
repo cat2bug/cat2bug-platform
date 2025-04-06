@@ -18,65 +18,61 @@
           />
           <h3>{{title}}</h3>
         </div>
-        <div>
+        <div class="tools-row">
           <el-button v-if="!isAddMode"@click="prevCase" type="text" icon="el-icon-arrow-left" size="mini"></el-button>
           <el-button v-if="!isAddMode"@click="nextCase" type="text" icon="el-icon-arrow-right" size="mini"></el-button>
           <el-button @click="cancel" icon="el-icon-close" :class="isAddMode?'':'green-button'" size="mini">{{$t('close')}}</el-button>
-          <el-button v-if="isAddMode" v-hasPermi="['system:case:add']" type="primary" icon="el-icon-finished" @click="submitForm" size="mini">{{$t('create')}}</el-button>
-          <el-button v-else v-hasPermi="['system:case:edit']" type="success" icon="el-icon-finished" @click="submitForm" size="mini">{{$t('modify')}}</el-button>
+          <plan-item-tools v-model="planItem" :plan="plan" type="primary" :project-id="projectId" @change="handlePlanItemChange" @close="initFloatMenu" />
         </div>
       </div>
     </template>
     <div class="app-container" v-loading="loading">
       <el-form ref="form" :model="form" :rules="rules" label-width="120px">
-        <el-form-item>
-          <el-checkbox v-if="isAddMode" class="create-next-case" v-model="isCreateNextCase">{{ $t('case.create-next-case') }}</el-checkbox>
+        <el-form-item :label="$t('case.number')" prop="caseNum">
+          <span>#{{ form.caseNum }}</span>
         </el-form-item>
         <el-form-item :label="$t('case.name')" prop="caseName">
-          <el-input type="textarea" v-model="form.caseName" :placeholder="$t('case.please-enter-title')" rows="3" maxlength="255" show-word-limit />
+          <el-input type="textarea" v-model="form.caseName" :placeholder="$t('empty-data')" rows="4" maxlength="255" readonly />
         </el-form-item>
         <el-row>
           <el-col :span="12">
             <el-form-item :label="$t('module')" prop="moduleId">
-              <select-module ref="selectModule" size="medium" v-model="form.moduleId" :project-id="projectId"/>
+              <select-module ref="selectModule" size="medium" v-model="form.moduleId" :project-id="projectId" readonly />
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item :label="$t('level')" prop="caseLevel">
-              <cat2-bug-select-level v-model="form.caseLevel" />
+              <cat2-bug-select-level v-model="form.caseLevel" readonly />
             </el-form-item>
           </el-col>
         </el-row>
         <el-form-item :label="$t('preconditions')" prop="casePreconditions">
-          <el-input type="textarea" v-model="form.casePreconditions" :placeholder="$t('case.please-enter-prerequisite')" maxlength="65535" rows="3" show-word-limit />
+          <el-input type="textarea" v-model="form.casePreconditions" :placeholder="$t('empty-data')" maxlength="65535" rows="3" readonly />
         </el-form-item>
         <el-form-item :label="$t('step')" prop="caseStep">
-          <template slot="label">
-            <div class="form-item-case-step">
-              <el-radio-group v-model="caseStepSwitchType" @input="caseStepPanelTypeChangeHandle">
-                <el-radio-button label=""><svg-icon icon-class="option" /></el-radio-button>
-                <el-radio-button label="list"><svg-icon icon-class="list2" /></el-radio-button>
-                <el-radio-button label="input"><svg-icon icon-class="textarea" /></el-radio-button>
-              </el-radio-group>
-              <label>{{ $t('step') }}</label>
-            </div>
-          </template>
-          <case-step-panel ref="caseStepPanel" v-model="form.caseStep" :panel-type="caseStepSwitchType" />
+          <case-step ref="caseStep" class="step" :case-steps="form.caseStep" />
         </el-form-item>
         <el-form-item :label="$t('data')" prop="caseData">
-          <el-input type="textarea" v-model="form.caseData" :placeholder="$t('case.please-enter-data')" maxlength="65535" rows="3" show-word-limit />
+          <el-input type="textarea" v-model="form.caseData" :placeholder="$t('empty-data')" maxlength="65535" rows="3" readonly />
         </el-form-item>
         <el-form-item :label="$t('expect')" prop="caseExpect">
-          <el-input type="textarea" v-model="form.caseExpect" :placeholder="$t('case.please-enter-expectations')" maxlength="65535" rows="3" show-word-limit />
+          <el-input type="textarea" v-model="form.caseExpect" :placeholder="$t('empty-data')" maxlength="65535" rows="3" readonly />
         </el-form-item>
         <el-form-item :label="$t('remark')" prop="remark">
-          <el-input type="textarea" v-model="form.remark" :placeholder="$t('please-enter-remark')" maxlength="255" rows="6" show-word-limit />
+          <el-input type="textarea" v-model="form.remark" :placeholder="$t('empty-data')" maxlength="255" rows="6" readonly />
         </el-form-item>
         <el-form-item :label="$t('image')" prop="imgUrls">
-          <image-upload v-model="form.imgUrls" :limit="9"></image-upload>
+          <div class="case-image">
+            <el-image
+              v-for="(img,index) in getUrl(form.imgUrls)"
+              :key="index"
+              :src="img"
+              :preview-src-list="getUrl(form.imgUrls)"
+              fit="contain"></el-image>
+          </div>
         </el-form-item>
         <el-form-item :label="$t('annex')" prop="annexUrls">
-          <file-upload v-model="form.annexUrls" :limit="9" :file-type="[]"/>
+          <el-link type="primary" v-for="(file,index) in getUrl(form.annexUrls)" :key="index" :href="file">{{getFileName(file)}}</el-link>
         </el-form-item>
       </el-form>
     </div>
@@ -85,17 +81,23 @@
 
 <script>
 import {addCase, closeEditWindow, getCase, getNextCase, getPrevCase, updateCase} from "@/api/system/case";
-import CaseStepPanel from "./CaseStepPanel"
+import CaseStepPanel from "@/components/Case/CaseStepPanel";
 import SelectModule from "@/components/Module/SelectModule"
 import Cat2BugSelectLevel from "@/components/Cat2BugSelectLevel";
 import Label from "@/components/Cat2BugStatistic/Components/Label";
 import FocusMemberList from "@/components/FocusMemberList";
-
+import PlanItemTools from "@/components/Plan/PlanItemTools";
+import CaseStep from "@/components/Case/CaseStep";
+import {getNextPlanItem, getPrevPlanItem, getPrevPlanItemId} from "@/api/system/PlanItem";
 const CASE_STEP_PANEL_TYPE_CACHE_KEY = 'case-step-panel-type';
 
 export default {
-  name: "AddCase",
-  components: {Label,CaseStepPanel,SelectModule,Cat2BugSelectLevel,FocusMemberList},
+  name: "HandleCaseOfPlan",
+  components: {Label,CaseStepPanel,SelectModule,Cat2BugSelectLevel,FocusMemberList,PlanItemTools,CaseStep},
+  model: {
+    prop: 'planItem',
+    event: 'change'
+  },
   data() {
     return {
       loading: false,
@@ -106,6 +108,9 @@ export default {
       isCreateNextCase: true,
       // 搜索条件
       params: null,
+      // 测试计划
+      plan: {},
+      planItem: {},
       // 表单参数
       form: {
         caseStep:[{}],
@@ -158,56 +163,35 @@ export default {
       return this.form.caseId == null
     },
     title: function () {
-      if(this.isAddMode) {
-        return this.$i18n.t('case.create');
-      } else {
-        return this.$i18n.t('case.modify');
+      return this.$i18n.t('case.test');
+    },
+    getUrl: function () {
+      return function (urls){
+        let imgs = urls?urls.split(','):[];
+        return imgs.map(i=>{
+          return process.env.VUE_APP_BASE_API + i;
+        })
       }
-    }
+    },
+    getFileName: function () {
+      return function (url) {
+        if(!url) return null;
+        let arr = url.split('\/');
+        return arr[arr.length-1];
+      }
+    },
   },
   methods: {
     /** 初始化浮动菜单 */
     initFloatMenu() {
       this.$floatMenu.windowsInit(document.querySelector('.main-container'));
-      let tools = [{
-        id: 'closeAddCase',
-        name: 'close',
-        visible: true,
-        plain: true,
-        type: '',
-        icon: 'close',
-        prompt: 'close',
-        click : this.cancel
-      }];
-      if(this.isAddMode) {
-        tools.push({
-          id: 'saveAddCase',
-          name: 'create',
-          visible: true,
-          plain: false,
-          type: 'primary',
-          icon: 'finish',
-          prompt: 'create',
-          permissions: ['system:case:add'],
-          click : this.submitForm
-        })
-      } else {
-        tools.push({
-          id: 'editAddCase',
-          name: 'modify',
-          visible: true,
-          plain: false,
-          type: 'success',
-          icon: 'finish',
-          prompt: 'modify',
-          permissions: ['system:case:edit'],
-          click : this.submitForm
-        })
-      }
+      let tools = [];
       this.$floatMenu.resetMenus(tools);
     },
-    open(caseId, params) {
+    open(plan, planItem, caseId, params) {
       let self = this;
+      this.plan = plan;
+      this.planItem = planItem;
       this.params = params;
       this.reset();
       if(caseId) {
@@ -216,16 +200,10 @@ export default {
           this.loading = false;
           this.visible = true;
           this.form = response.data;
-          this.$nextTick(()=>{
-            self.$refs['caseStepPanel'].reset();
-          });
           this.initFloatMenu();
         }).catch(()=>this.loading = true);
       } else {
         this.visible = true;
-        this.$nextTick(()=>{
-          self.$refs['caseStepPanel'].reset();
-        });
         this.initFloatMenu();
       }
     },
@@ -246,7 +224,6 @@ export default {
     },
     /** 循环时的重设 */
     loopReset() {
-      let self = this;
       this.form = {
         caseId: null,
         caseName: null,
@@ -266,9 +243,6 @@ export default {
       };
       this.resetForm("form");
       this.caseStepSwitchType = this.getCaseStepSwitchType();
-      this.$nextTick(()=>{
-        self.$refs['caseStepPanel'].reset();
-      })
     },
     // 表单重置
     reset() {
@@ -331,29 +305,28 @@ export default {
     },
     prevCase() {
       this.loading = true;
-      getPrevCase(this.form.caseId, this.params).then(res=>{
+      getPrevPlanItem(this.planItem.planItemId, this.params).then(res=>{
         this.loading = false;
         if(res.data) {
           this.form = res.data;
+          this.planItem = res.data;
           this.visible = true;
-          this.$nextTick(()=>{
-            self.$refs['caseStepPanel'].reset();
-          });
         }
       }).catch(()=>this.loading = false);
     },
     nextCase() {
       this.loading = true;
-      getNextCase(this.form.caseId, this.params).then(res=>{
+      getNextPlanItem(this.planItem.planItemId, this.params).then(res=>{
         this.loading = false;
         if(res.data) {
           this.form = res.data;
+          this.planItem = res.data;
           this.visible = true;
-          this.$nextTick(()=>{
-            self.$refs['caseStepPanel'].reset();
-          });
         }
       }).catch(()=>this.loading = false);
+    },
+    handlePlanItemChange() {
+      this.$emit('change');
     }
   }
 }
@@ -415,5 +388,20 @@ export default {
   background-color: #f0f9eb;
   border: 1px solid #c2e7b0;
   color: #67c23a;
+}
+.case-image {
+  display: inline-flex;
+  flex-direction: row;
+  gap: 10px;
+  flex-wrap: wrap;
+  > .el-image {
+    width: 150px;
+    height: 150px;
+  }
+}
+.tools-row {
+  display: inline-flex;
+  flex-direction: row;
+  gap: 10px;
 }
 </style>

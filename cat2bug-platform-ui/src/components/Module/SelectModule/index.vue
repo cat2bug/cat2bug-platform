@@ -5,14 +5,14 @@
     @show="popoverShowHandle"
     @hide="popoverHideHandle"
     popper-class="select-module-popover"
-    trigger="click">
+    :trigger="!readonly?'click':'manual'">
     <div slot="reference" :class="'el-input__inner select-module-input select-module-input-'+size" @mouseenter="showClearButtonHandle(true)" @mouseleave="showClearButtonHandle(false)">
       <i :class="icon" v-if="icon" style="margin: 0px 0px 0px 10px; color: #C0C4CC;"></i>
       <div class="selectProjectMemberInput_content">
         <el-input ref="selectProjectModuleInput" :size="size" :class="icon?'padding-left-8':''" readonly :placeholder="$t(placeholder)" v-model="queryMember.params.search" @input="searchChangeHandle"></el-input>
       </div>
-      <i class="select-module-input__icon el-icon-arrow-up" v-show="isClearButtonVisible==false"></i>
-      <i class="select-module-input__icon el-icon-circle-close" v-show="isClearButtonVisible==true" @click="clearSelectModuleHandle"></i>
+      <i class="select-module-input__icon el-icon-arrow-up" v-show="!readonly && isClearButtonVisible==false"></i>
+      <i class="select-module-input__icon el-icon-circle-close" v-show="!readonly && isClearButtonVisible==true" @click="clearSelectModuleHandle"></i>
     </div>
     <div class="select-module-menu">
       <module-menu v-for="(moduleId, index) in activeModuleIds"
@@ -83,6 +83,10 @@ export default {
       type: Boolean,
       default: true
     },
+    readonly: {
+      type: Boolean,
+      default: false
+    },
     size: {
       type: String,
       default: 'medium'
@@ -103,6 +107,13 @@ export default {
           this.clearSelectModuleHandle();
         }
       }
+    }
+  },
+  mounted() {
+    if(this.moduleId) {
+      getModule(this.moduleId).then(res => {
+        this.clickMenuHandle(res.data);
+      });
     }
   },
   methods: {
@@ -150,7 +161,7 @@ export default {
     },
     /** 显示或隐藏清除按钮 */
     showClearButtonHandle(visible) {
-      if(this.clearable==false) return;
+      if(this.readonly || this.clearable==false) return;
       if(visible && this.queryMember.params.search) {
         this.isClearButtonVisible = true;
       } else {

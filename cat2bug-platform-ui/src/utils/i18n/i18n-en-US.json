@@ -452,6 +452,7 @@
   "case.please-enter-step-script": "Please enter the step data. Choose between the visual step settings above and the text data structure here. Each line represents a step, and separate the step description from the expected step with a \"---\", For example:\nStep Description 1---Step Expectation 1\nStep Description 2---Step Expectation 2",
   "case.please-enter-data": "Please enter the use case data",
   "case.add-step": "Add Step",
+  "case.test": "Test Case",
   "case.create": "Create Case",
   "case.ai-create": "AI Use Case Generation",
   "case.load-prompted": "The AI robot is organizing the requirements ideas, and the processing time depends on the complexity of the requirements. Please be patient and wait......",
