@@ -220,7 +220,29 @@ export default {
     },
     /** 处理打开新建缺陷窗口操作 */
     handleOpenAddDefect(e,item){
-      this.$refs.addDefect.openByCase({...item, ...{ moduleVersion: this.plan.planVersion }});
+      const params = {...item, ...{
+          defectId: null,
+          defectType: null,
+          defectName: null,
+          defectDescribe: null,
+          annexUrls: null,
+          imgUrls: null,
+          projectId: this.projectId,
+          testPlanId: null,
+          dataSources: null,
+          dataSourcesParams: null,
+          createBy: null,
+          updateTime: null,
+          createTime: null,
+          updateBy: null,
+          defectState: null,
+          caseStepId: 0,
+          handleBy: null,
+          handleTime: null,
+          defectLevel: 'middle',
+          moduleVersion: this.plan.planVersion
+      }};
+      this.$refs.addDefect.openByCase(params);
       e.stopPropagation();
     },
   }
