@@ -221,43 +221,43 @@
               </el-popover>
             </div>
           </div>
-          <el-table ref="planItemTable" v-loading="loading" :data="planItemList" v-resize="setDragComponentSize" @selection-change="handleSelectionChange">
+          <el-table ref="planItemTable" v-loading="loading" :data="planItemList" v-resize="setDragComponentSize" @sort-change="handleSortChange" @selection-change="handleSelectionChange">
             <el-table-column type="selection" width="50" align="center" />
-            <el-table-column v-if="showField('id')" :label="$t('id')" align="left" prop="caseNum" width="80" sortable fixed>
+            <el-table-column v-if="showField('id')" :label="$t('id')" align="left" prop="caseNum" width="80" sortable="custom" fixed>
               <template slot-scope="scope">
                 <span>{{ caseNumber(scope.row) }}</span>
               </template>
             </el-table-column>
-            <el-table-column v-if="showField('state')" :label="$t('state')" align="center" prop="planItemState" sortable fixed>
+            <el-table-column v-if="showField('state')" :label="$t('state')" align="center" prop="planItemState" sortable="custom" fixed>
               <template slot-scope="scope">
                 <dict-tag :options="dict.type.plan_item_state" :value="scope.row.planItemState"/>
               </template>
             </el-table-column>
-            <el-table-column v-if="showField('title')" :label="$t('title')" align="left" prop="caseName" min-width="300" sortable fixed>
+            <el-table-column v-if="showField('title')" :label="$t('title')" align="left" prop="caseName" min-width="300" sortable="custom" fixed>
               <template slot-scope="scope">
                 <div class="table-case-title">
                   <cat2-bug-text :type="checkPermi(['system:case:edit'])?'link':'text'" v-model="scope.row.caseName+''" :tooltip="scope.row.caseName"  @click="handleOpenEditCase(scope.row)" />
                 </div>
               </template>
             </el-table-column>
-            <el-table-column v-if="showField('module')" :label="$t('module')" align="left" prop="moduleName" sortable min-width="150" />
-            <el-table-column v-if="showField('level')" :label="$t('level')" align="left" prop="caseLevel" sortable width="80">
+            <el-table-column v-if="showField('module')" :label="$t('module')" align="left" prop="moduleName" sortable="custom" min-width="150" />
+            <el-table-column v-if="showField('level')" :label="$t('level')" align="left" prop="caseLevel" sortable="custom" width="80">
               <template slot-scope="scope">
                 <cat2-bug-level :level="scope.row.caseLevel" />
               </template>
             </el-table-column>
-            <el-table-column v-if="showField('preconditions')" :label="$t('preconditions')" align="left" prop="casePreconditions" min-width="250" sortable>
+            <el-table-column v-if="showField('preconditions')" :label="$t('preconditions')" align="left" prop="casePreconditions" min-width="250" sortable="custom">
               <template slot-scope="scope">
                 <cat2-bug-text v-model="scope.row.casePreconditions" :tooltip="scope.row.casePreconditions" />
               </template>
             </el-table-column>
-            <el-table-column v-if="showField('step')" :label="$t('step')" align="left" prop="caseStep" width="300" sortable>
+            <el-table-column v-if="showField('step')" :label="$t('step')" align="left" prop="caseStep" width="300" sortable="custom">
               <template slot-scope="scope">
                 <step :steps="scope.row.caseStep" style="width: 300px;" />
               </template>
             </el-table-column>
-            <el-table-column v-if="showField('data')" :label="$t('data')" class-name="fixed-width" align="left" prop="caseData" min-width="250" sortable />
-            <el-table-column v-if="showField('expect')" :label="$t('expect')" align="left" prop="caseExpect" min-width="250" sortable>
+            <el-table-column v-if="showField('data')" :label="$t('data')" class-name="fixed-width" align="left" prop="caseData" min-width="250" sortable="custom" />
+            <el-table-column v-if="showField('expect')" :label="$t('expect')" align="left" prop="caseExpect" min-width="250" sortable="custom">
               <template slot-scope="scope">
                 <cat2-bug-text v-model="scope.row.caseExpect" :tooltip="scope.row.caseExpect" />
               </template>
@@ -274,7 +274,7 @@
                 </div>
               </template>
             </el-table-column>
-            <el-table-column v-if="showField('updateBy')" :label="$t('updateBy')" align="center" prop="updateBy" sortable width="120">
+            <el-table-column v-if="showField('updateBy')" :label="$t('updateBy')" align="center" prop="updateBy" sortable="custom" width="120">
               <template slot-scope="scope">
                 <row-list-member :members="member(scope.row)"></row-list-member>
               </template>
@@ -329,7 +329,10 @@ const TREE_MODULE_WIDTH_CACHE_KEY = 'plan_case_tree_module_width';
 const PLAN_ITEM_TABLE_FIELD_LIST_CACHE_KEY='plan-item-table-field-list';
 /** 测试子项不通过的状态key值 */
 const PLAN_ITEM_STATE_NOT_PASS = 'not_pass';
-
+/** 计划项排序的列 */
+const PLAN_ITEM_SORT_COLUMN = 'plan_item_sort_column_key';
+/** 计划项排序的类型（正序、倒叙） */
+const PLAN_ITEM_SORT_TYPE = 'plan_item_sort_type_key';
 export default {
   name: "AddPlanDialog",
   dicts: ['plan_item_state'],
@@ -439,6 +442,8 @@ export default {
     },
   },
   created() {
+    this.query.isAsc = this.$cache.local.get(PLAN_ITEM_SORT_TYPE)||null;
+    this.query.orderByColumn = this.$cache.local.get(PLAN_ITEM_SORT_COLUMN)||null;
     // 设置缺陷列表显示哪些列属性
     this.setFieldList();
   },
@@ -496,14 +501,15 @@ export default {
       this.visible = true;
       this.query.planId = planId;
       this.query.projectId = this.projectId;
-      this.loading = true;
-      this.getPlanInfo(planId);
 
-      this.getTreeModuleWidth();
-      this.getPlanItemList();
       this.$nextTick(()=>{
+        this.$refs.planItemTable.sort(this.query.orderByColumn, this.query.isAsc);
+        this.loading = true;
+        this.getPlanInfo(planId);
+        this.getTreeModuleWidth();
+        this.getPlanItemList();
         this.initFloatMenu();
-      })
+      });
     },
     /** 获取计划信息 */
     getPlanInfo(planId) {
@@ -634,6 +640,13 @@ export default {
         this.$emit('change');
       });
     },
+    handleSortChange(column) {
+      this.query.isAsc = column.order;
+      this.query.orderByColumn = column.prop;
+      this.$cache.local.set(PLAN_ITEM_SORT_COLUMN, column.prop);
+      this.$cache.local.set(PLAN_ITEM_SORT_TYPE, column.order);
+      this.getPlanItemList();
+    }
   }
 }
 </script>

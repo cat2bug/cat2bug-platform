@@ -108,14 +108,14 @@
       <multipane-resizer :style="multipaneStyle"></multipane-resizer>
 <!--      用例列表-->
       <div ref="caseContext" class="case-context">
-        <el-table ref="table" v-loading="loading" :data="caseList" @selection-change="handleSelectionChange" v-resize="setDragComponentSize">
+        <el-table ref="table" v-loading="loading" :data="caseList" @selection-change="handleSelectionChange" @sort-change="handleSortChange" v-resize="setDragComponentSize">
           <el-table-column type="selection" width="50" align="center" fixed />
-          <el-table-column v-if="showField('id')" :label="$t('id')" align="center" prop="caseNum" width="80" sortable fixed>
+          <el-table-column v-if="showField('id')" :label="$t('id')" align="center" prop="caseNum" width="80" sortable="custom" fixed>
             <template slot-scope="scope">
               <span>{{ caseNumber(scope.row) }}</span>
             </template>
           </el-table-column>
-          <el-table-column v-if="showField('case.name')" :label="$t('case.name')" align="left" prop="caseName" min-width="200" sortable fixed>
+          <el-table-column v-if="showField('case.name')" :label="$t('case.name')" align="left" prop="caseName" min-width="200" sortable="custom" fixed>
             <template slot-scope="scope">
               <div class="table-case-title">
 <!--                <focus-member-list-->
@@ -127,24 +127,24 @@
               </div>
             </template>
           </el-table-column>
-          <el-table-column v-if="showField('module')" :label="$t('module')" align="left" prop="moduleName" min-width="120" sortable />
-          <el-table-column v-if="showField('level')" :label="$t('level')" align="left" prop="caseLevel" sortable width="80">
+          <el-table-column v-if="showField('module')" :label="$t('module')" align="left" prop="moduleName" min-width="120" sortable="custom" />
+          <el-table-column v-if="showField('level')" :label="$t('level')" align="left" prop="caseLevel" sortable="custom" width="80">
             <template slot-scope="scope">
               <cat2-bug-level :level="scope.row.caseLevel" />
             </template>
           </el-table-column>
-          <el-table-column v-if="showField('preconditions')" :label="$t('preconditions')" align="left" prop="casePreconditions" min-width="250" sortable>
+          <el-table-column v-if="showField('preconditions')" :label="$t('preconditions')" align="left" prop="casePreconditions" min-width="250" sortable="custom">
             <template slot-scope="scope">
               <cat2-bug-text v-model="scope.row.casePreconditions" :tooltip="scope.row.casePreconditions" />
             </template>
           </el-table-column>
-          <el-table-column v-if="showField('step')" :label="$t('step')" align="left" prop="caseStep" width="300" sortable>
+          <el-table-column v-if="showField('step')" :label="$t('step')" align="left" prop="caseStep" width="300" sortable="custom">
             <template slot-scope="scope">
               <step :steps="scope.row.caseStep" style="max-width: 300px;" />
             </template>
           </el-table-column>
-          <el-table-column v-if="showField('data')" :label="$t('data')" class-name="fixed-width" align="left" prop="caseData" min-width="250" sortable />
-          <el-table-column v-if="showField('expect')" :label="$t('expect')" class-name="fixed-width" align="left" prop="caseExpect" min-width="250" sortable>
+          <el-table-column v-if="showField('data')" :label="$t('data')" class-name="fixed-width" align="left" prop="caseData" min-width="250" sortable="custom" />
+          <el-table-column v-if="showField('expect')" :label="$t('expect')" class-name="fixed-width" align="left" prop="caseExpect" min-width="250" sortable="custom">
             <template slot-scope="scope">
               <cat2-bug-text v-model="scope.row.caseExpect" :tooltip="scope.row.caseExpect" />
             </template>
@@ -161,12 +161,12 @@
               </div>
             </template>
           </el-table-column>
-          <el-table-column v-if="showField('update-time')" :label="$t('update-time')" align="left" prop="updateTime" width="150" sortable>
+          <el-table-column v-if="showField('update-time')" :label="$t('update-time')" align="left" prop="updateTime" width="150" sortable="custom">
             <template slot-scope="scope">
               <span>{{ parseTime(scope.row.updateTime, '{y}-{m}-{d}') }}</span>
             </template>
           </el-table-column>
-          <el-table-column v-if="showField('defect.state')" :label="$t('defect.state')" align="left" prop="updateTime" width="150" sortable>
+          <el-table-column v-if="showField('defect.state')" :label="$t('defect.state')" align="left" prop="updateTime" width="150" sortable="custom">
             <template slot-scope="scope">
               <p class="table-font table-font-red" @click="handleGoDefect($event, scope.row, $t('PENDING'),[0,3])">{{ $t('PENDING') }}:{{ scope.row.defectProcessingCount }}</p>
               <p class="table-font table-font-orange" @click="handleGoDefect($event, scope.row, $t('PROCESSING'), [1])">{{ $t('PROCESSING') }}:{{ scope.row.defectAuditCount }}</p>
@@ -262,6 +262,10 @@ import {setDefectTempTab} from "@/utils/defect";
 const TREE_MODULE_WIDTH_CACHE_KEY = 'case_tree_module_width';
 /** 需要显示的测试用例字段列表在缓存的key值 */
 const CASE_TABLE_FIELD_LIST_CACHE_KEY='case-table-field-list';
+/** 用例表排序的列 */
+const CASE_TABLE_SORT_COLUMN = 'case_table_sort_column_key';
+/** 用例表排序的类型（正序、倒叙） */
+const CASE_TABLE_SORT_TYPE = 'case_table_sort_type_key';
 
 export default {
   name: "Case",
@@ -360,6 +364,7 @@ export default {
   },
   mounted() {
     this.queryParams.projectId=this.projectId;
+    this.initSort();
     this.getTreeModuleWidth();
     this.getList();
     this.initFloatMenu();
@@ -396,6 +401,12 @@ export default {
     reloadData() {
       this.getList();
       this.$refs.treeModuleRef.reloadData();
+    },
+    /** 初始化排序数据 */
+    initSort() {
+      this.queryParams.isAsc = this.$cache.local.get(CASE_TABLE_SORT_TYPE)||null;
+      this.queryParams.orderByColumn = this.$cache.local.get(CASE_TABLE_SORT_COLUMN)||null;
+      this.$refs.table.sort(this.queryParams.orderByColumn, this.queryParams.isAsc);
     },
     /** 初始化浮动菜单 */
     initFloatMenu() {
@@ -619,6 +630,13 @@ export default {
       a.dispatchEvent(e);
       event.stopPropagation();
     },
+    handleSortChange(column) {
+      this.queryParams.isAsc = column.order;
+      this.queryParams.orderByColumn = column.prop;
+      this.$cache.local.set(CASE_TABLE_SORT_COLUMN, column.prop);
+      this.$cache.local.set(CASE_TABLE_SORT_TYPE, column.order);
+      this.getList();
+    }
   }
 };
 </script>

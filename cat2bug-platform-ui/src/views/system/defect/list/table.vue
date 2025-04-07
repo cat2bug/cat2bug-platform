@@ -54,17 +54,17 @@
 <!--          </div>-->
 <!--        </template>-->
 <!--      </el-table-column>-->
-      <el-table-column v-if="showField('id')" :label="$t('id')" :key="$t('id')" align="left" prop="projectNum" width="80" sortable fixed >
+      <el-table-column v-if="showField('id')" :label="$t('id')" :key="$t('id')" align="left" prop="projectNum" width="80" sortable="custom" fixed >
         <template slot-scope="scope">
           <span>{{ '#' + scope.row.projectNum }}</span>
         </template>
       </el-table-column>
-      <el-table-column v-if="showField('type')" :label="$t('type')" :key="$t('type')" align="left" prop="defectTypeName" width="100" sortable fixed>
+      <el-table-column v-if="showField('type')" :label="$t('type')" :key="$t('type')" align="left" prop="defectTypeName" width="100" sortable="custom" fixed>
         <template slot-scope="scope">
           <defect-type-flag :defect="scope.row" />
         </template>
       </el-table-column>
-      <el-table-column v-if="showField('defect.name')" :label="$t('defect.name')" :key="$t('defect.name')" align="left" prop="defectName" width="300" sortable fixed>
+      <el-table-column v-if="showField('defect.name')" :label="$t('defect.name')" :key="$t('defect.name')" align="left" prop="defectName" width="300" sortable="custom" fixed>
         <template slot-scope="scope">
           <div class="table-defect-title">
             <focus-member-list
@@ -88,18 +88,18 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column v-if="showField('priority')" :label="$t('priority')" :key="$t('priority')" align="center" prop="defectLevel" width="100" sortable >
+      <el-table-column v-if="showField('priority')" :label="$t('priority')" :key="$t('priority')" align="center" prop="defectLevel" width="100" sortable="custom" >
         <template slot-scope="scope">
           <level-tag :options="dict.type.defect_level" :value="scope.row.defectLevel"/>
         </template>
       </el-table-column>
-      <el-table-column v-if="showField('state')" :label="$t('state')" :key="$t('state')" align="center" prop="defectStateName" width="120" sortable>
+      <el-table-column v-if="showField('state')" :label="$t('state')" :key="$t('state')" align="center" prop="defectStateName" width="120" sortable="custom">
         <template slot-scope="scope">
           <defect-state-flag :defect="scope.row" />
         </template>
       </el-table-column>
-      <el-table-column v-if="showField('module')" :label="$t('module')" :key="$t('module')" align="left" prop="moduleName" min-width="200" sortable />
-      <el-table-column v-if="showField('version')" :label="$t('version')" :key="$t('version')" align="left" prop="moduleVersion" width="100" sortable />
+      <el-table-column v-if="showField('module')" :label="$t('module')" :key="$t('module')" align="left" prop="moduleName" min-width="200" sortable="custom" />
+      <el-table-column v-if="showField('version')" :label="$t('version')" :key="$t('version')" align="left" prop="moduleVersion" width="100" sortable="custom" />
       <el-table-column v-if="showField('image')" :label="$t('image')" :key="$t('image')" align="center" prop="imgUrls" width="80">
         <template slot-scope="scope">
           <cat2-bug-preview-image :images="getUrl(scope.row.imgUrls)" />
@@ -112,17 +112,17 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column v-if="showField('update-time')" :label="$t('update-time')" :key="$t('update-time')" align="left" prop="updateTime" width="160" sortable >
+      <el-table-column v-if="showField('update-time')" :label="$t('update-time')" :key="$t('update-time')" align="left" prop="updateTime" width="160" sortable="custom" >
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.updateTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column v-if="showField('plan-start-time')" :label="$t('plan-start-time')" :key="$t('plan-start-time')" align="left" prop="planStartTime" width="160" sortable >
+      <el-table-column v-if="showField('plan-start-time')" :label="$t('plan-start-time')" :key="$t('plan-start-time')" align="left" prop="planStartTime" width="160" sortable="custom" >
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.planStartTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column v-if="showField('plan-end-time')" :label="$t('plan-end-time')" :key="$t('plan-end-time')" align="left" prop="planEndTime" width="160" sortable >
+      <el-table-column v-if="showField('plan-end-time')" :label="$t('plan-end-time')" :key="$t('plan-end-time')" align="left" prop="planEndTime" width="160" sortable="custom" >
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.planEndTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
         </template>
@@ -168,6 +168,10 @@ import {lifeTime} from "@/utils/defect";
 
 /** 需要显示的缺陷字段列表在缓存的key值 */
 const DEFECT_TABLE_FIELD_LIST_CACHE_KEY='defect-table-field-list';
+/** 用例表排序的列 */
+const DEFECT_TABLE_SORT_COLUMN = 'defect_table_sort_column_key';
+/** 用例表排序的类型（正序、倒叙） */
+const DEFECT_TABLE_SORT_TYPE = 'defect_table_sort_type_key';
 
 export default {
   name: "DefectTable",
@@ -279,6 +283,15 @@ export default {
   methods: {
     init() {
       this.refreshShowFields();
+      this.initSort();
+    },
+    /** 初始化排序数据 */
+    initSort() {
+      this.queryParams.isAsc = this.$cache.local.get(DEFECT_TABLE_SORT_TYPE)||null;
+      this.queryParams.orderByColumn = this.$cache.local.get(DEFECT_TABLE_SORT_COLUMN)||null;
+      this.$nextTick(()=>{
+        this.$refs.defectTable.sort(this.queryParams.orderByColumn, this.queryParams.isAsc);
+      });
     },
     /** 保存表格显示哪些属性 */
     saveShowFields(field) {
@@ -316,6 +329,8 @@ export default {
     },
     /** 排序改变的处理 */
     sortChangeHandle(e) {
+      this.$cache.local.set(DEFECT_TABLE_SORT_COLUMN, e.prop);
+      this.$cache.local.set(DEFECT_TABLE_SORT_TYPE, e.order);
       if(e.order){
         switch (e.prop) {
           case 'defectStateName':
@@ -328,7 +343,8 @@ export default {
             this.queryParams.orderByColumn=e.prop;
             break;
         }
-        this.queryParams.isAsc=e.order=='ascending'?"asc":'desc';
+        // this.queryParams.isAsc=e.order=='ascending'?"asc":'desc';
+        this.queryParams.isAsc=e.order;
       } else {
         this.queryParams.orderByColumn=null;
         this.queryParams.isAsc=null;
