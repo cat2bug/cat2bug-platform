@@ -302,7 +302,7 @@
           />
         </div>
       </multipane>
-      <handle-case-of-plan ref="handleCaseDialog" :module-id="planItem.moduleId" :append-to-body="true" @change="getPlanItemList" @close="initFloatMenu" />
+      <handle-case-of-plan ref="handleCaseDialog" :module-id="planItem.moduleId" :append-to-body="true" @change="handlePlanItemChange" @close="initFloatMenu" />
     </div>
   </el-drawer>
 </template>
@@ -458,6 +458,7 @@ export default {
     handlePlanItemChange() {
       this.getPlanInfo(this.plan.planId);
       this.getPlanItemList();
+      this.$emit('change')
     },
     /** 设置列表显示的属性字段 */
     setFieldList() {
@@ -647,7 +648,7 @@ export default {
       this.$cache.local.set(PLAN_ITEM_SORT_COLUMN, column.prop);
       this.$cache.local.set(PLAN_ITEM_SORT_TYPE, column.order);
       this.getPlanItemList();
-    }
+    },
   }
 }
 </script>
