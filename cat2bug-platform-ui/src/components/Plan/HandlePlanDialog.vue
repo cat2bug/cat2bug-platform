@@ -601,7 +601,7 @@ export default {
     },
     /** 打开编辑用例窗口 */
     handleOpenEditCase(planItem) {
-      this.$refs.handleCaseDialog.open(this.plan, planItem, planItem.caseId);
+      this.$refs.handleCaseDialog.open(this.plan, planItem, planItem.caseId, this.query);
     },
     /** 查询计划项 */
     handlePlanItemStateSearch(state) {

@@ -189,7 +189,6 @@ export default {
       this.$floatMenu.resetMenus(tools);
     },
     open(plan, planItem, caseId, params) {
-      let self = this;
       this.plan = plan;
       this.planItem = planItem;
       this.params = params;
