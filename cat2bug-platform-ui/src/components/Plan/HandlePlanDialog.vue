@@ -637,6 +637,7 @@ export default {
       }
       updatePlanItem(data).then(()=>{
         this.$message.success(this.$i18n.t('plan.pass-success').toString());
+        this.getPlanItemList();
         this.$emit('change');
       });
     },
