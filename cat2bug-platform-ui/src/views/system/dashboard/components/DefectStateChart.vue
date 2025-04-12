@@ -1,8 +1,13 @@
 <template>
   <div v-loading="loading" class="defect-state-chart" :style="{height:height,width:width}">
-    <el-radio-group v-model="query.timeType" size="mini" @input="handleTimeTypeChange" class="time-type">
-      <el-radio-button v-for="tt in timeTypeList" :key="tt.value" :label="tt.value">{{$t(tt.label).toString()}}</el-radio-button>
-    </el-radio-group>
+    <div class="chart-tools">
+      <el-radio-group v-model="query.timeType" size="mini" @input="handleTimeTypeChange">
+        <el-radio-button v-for="tt in timeTypeList" :key="tt.value" :label="tt.value">{{$t(tt.label).toString()}}</el-radio-button>
+      </el-radio-group>
+      <el-tooltip class="item" effect="dark" :content="$t('export')" placement="right-end">
+        <el-button type="text" icon="el-icon-download" @click="handleExport"></el-button>
+      </el-tooltip>
+    </div>
     <h1 class="title">{{ $t(title) }}</h1>
     <div v-loading="loading" ref="defectStateChart" :class="className" :style="{height:height,width:width}" />
   </div>
@@ -59,16 +64,24 @@ export default {
     this.getDefectLine();
   },
   methods: {
+    /** 导出按钮操作 */
+    handleExport() {
+      this.download('/system/dashboard/'+this.projectId+'/defect-line/export', {
+        ...this.query
+      }, `${ this.$i18n.t(this.title) }_${new Date().getTime()}.xlsx`)
+    },
     getDefectLine() {
       this.loading = true;
       defectLine(this.projectId, this.query).then(res=>{
         this.loading = false;
-        const series = Object.keys(res.data.data).map(k=>{
-          return {
+        const series = [];
+        res.data.types.forEach(k=>{
+          if(!res.data.data[k]) return;
+          series.push({
             name: this.$i18n.t(k),
-            type: 'line',
+              type: 'line',
             data: res.data.data[k]
-          }
+          });
         })
         const types = res.data.types.map(t=>{
           return this.$i18n.t(t);
@@ -95,7 +108,7 @@ export default {
             right: '4%',
             type: 'scroll',
             width: 'auto',
-            data: legendData
+            data: legendData,
           },
           grid: {
             top: '70',
@@ -105,9 +118,6 @@ export default {
             containLabel: true
           },
           toolbox: {
-            feature: {
-              saveAsImage: {}
-            }
           },
           xAxis: {
             type: 'category',
@@ -145,13 +155,27 @@ export default {
     margin-top: 0px;
   }
 }
-.time-type {
+.chart-tools {
   position: absolute;
   z-index: 9;
   top: 7px;
-  right: 40px;
+  right: 10px;
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
   ::v-deep .el-radio-button__inner {
     padding: 3px 5px;
   }
+}
+.test {
+  background-color: #2ec7c9;
+  background-color: #b6a2de;
+  background-color: #5ab1ef;
+  //'#b6a2de',
+  //'#5ab1ef',
+  //'#ffb980',
+  //'#d87a80',
+  //'#8d98b3',;
 }
 </style>

@@ -1,6 +1,5 @@
 package com.cat2bug.common.utils.poi;
 
-import java.beans.beancontext.BeanContext;
 import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -17,10 +16,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.*;
 
 import com.cat2bug.common.utils.MessageUtils;
-import com.cat2bug.common.utils.bean.BeanUtils;
 import com.cat2bug.common.utils.file.IFileService;
 import com.cat2bug.common.utils.spring.SpringUtils;
-import eu.bitwalker.useragentutils.Application;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
@@ -44,10 +41,13 @@ import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.util.IOUtils;
 import org.apache.poi.util.Units;
+import org.apache.poi.xddf.usermodel.*;
+import org.apache.poi.xddf.usermodel.chart.XDDFChartData;
+import org.apache.poi.xddf.usermodel.chart.XDDFLineChartData;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.*;
 
-import org.openxmlformats.schemas.drawingml.x2006.spreadsheetDrawing.CTMarker;
+import org.openxmlformats.schemas.drawingml.x2006.chart.*;
 import com.cat2bug.common.annotation.Excel;
 import com.cat2bug.common.annotation.Excel.ColumnType;
 import com.cat2bug.common.annotation.Excel.Type;
@@ -60,9 +60,11 @@ import com.cat2bug.common.utils.DateUtils;
 import com.cat2bug.common.utils.DictUtils;
 import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.common.utils.file.FileTypeUtils;
-import com.cat2bug.common.utils.file.FileUtils;
 import com.cat2bug.common.utils.file.ImageUtils;
 import com.cat2bug.common.utils.reflect.ReflectUtils;
+import org.openxmlformats.schemas.drawingml.x2006.main.CTSRgbColor;
+import org.openxmlformats.schemas.drawingml.x2006.main.CTShapeProperties;
+import org.openxmlformats.schemas.drawingml.x2006.main.CTSolidColorFillProperties;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -81,6 +83,30 @@ public class ExcelUtil<T>
     public static final String FORMULA_REGEX_STR = "=|-|\\+|@";
 
     public static final String[] FORMULA_STR = { "=", "-", "+", "@" };
+
+    /** ECharts的macarons主题默认颜色数组 */
+    private static final byte[][] ECHARTS_COLORS = {
+            new byte[] {(byte)0x2e, (byte)0xc7, (byte)0xc9},
+            new byte[] {(byte)0xb6, (byte)0xa2, (byte)0xde},
+            new byte[] {(byte)0x5a, (byte)0xb1, (byte)0xef},
+            new byte[] {(byte)0xff, (byte)0xb9, (byte)0x80},
+            new byte[] {(byte)0xd8, 0x7a, (byte)0x80},
+            new byte[] {(byte)0x8d, (byte)0x98, (byte)0xb3},
+            new byte[] {(byte)0xe5, (byte)0xcf, 0x0d},
+            new byte[] {(byte)0x97, (byte)0xb5, 0x52},
+            new byte[] {(byte)0x95, 0x70, 0x6d},
+            new byte[] {(byte)0xdc, 0x69, (byte)0xaa},
+            new byte[] {(byte)0x07, (byte)0xa2, (byte)0xa4},
+            new byte[] {(byte)0x9a, 0x7f, (byte)0xd1},
+            new byte[] {(byte)0x58, (byte)0x8d, (byte)0xd5},
+            new byte[] {(byte)0xf5, (byte)0x99, 0x4e},
+            new byte[] {(byte)0xc0, 0x50, 0x50},
+            new byte[] {(byte)0x59, 0x67, (byte)0x8c},
+            new byte[] {(byte)0xc9, (byte)0xab, 0x0},
+            new byte[] {(byte)0xc7e, (byte)0xb0, 0x0a},
+            new byte[] {(byte)0x6f, 0x55, 0x53},
+            new byte[] {(byte)0xcc1, 0x40, (byte)0x89}
+    };
 
     /**
      * 用于dictType属性数据存储，避免重复查缓存
@@ -177,6 +203,11 @@ public class ExcelUtil<T>
     private static final DecimalFormat DOUBLE_FORMAT = new DecimalFormat("######0.00");
 
     /**
+     * Excel监听回调
+     */
+    private IExcelListener excelListener;
+
+    /**
      * 实体对象
      */
     public Class<T> clazz;
@@ -198,6 +229,62 @@ public class ExcelUtil<T>
     }
 
     /**
+     * 创建折线图表时应用颜色
+     * @param data
+     */
+    public static void applyLineChartsColors(XSSFChart chart, XDDFChartData data) {
+        List<XDDFChartData.Series> seriesList = data.getSeries();
+        for (int i = 0; i < seriesList.size(); i++) {
+            setSeriesColor(chart, i,  seriesList.get(i), ECHARTS_COLORS[i % ECHARTS_COLORS.length]);
+        }
+    }
+
+    /**
+     * 为系列设置颜色
+     * @param series
+     * @param hexColor
+     */
+    private static void setSeriesColor(XSSFChart chart, int lineIndex, XDDFChartData.Series series,
+                                       byte[] hexColor) {
+        // 将十六进制颜色转换为POI可用的XDDFColor
+        XDDFColor color = XDDFColor.from(hexColor);
+
+        // 设置线条的颜色
+        XDDFSolidFillProperties fill = new XDDFSolidFillProperties(color);
+        XDDFLineProperties line = new XDDFLineProperties();
+        line.setFillProperties(fill);
+        line.setWidth(2.0); // 设置线宽，单位磅，与ECharts默认接近
+        // 获取或创建形状属性
+        XDDFShapeProperties properties = series.getShapeProperties();
+        if (properties == null) {
+            properties = new XDDFShapeProperties();
+        }
+        properties.setLineProperties(line);
+        properties.setFillProperties(fill);
+        series.setShapeProperties(properties);
+
+        // 设置标记点的颜色
+        XDDFSolidFillProperties fillMarker = new XDDFSolidFillProperties(color);
+        XDDFLineProperties markerLine = new XDDFLineProperties();
+        markerLine.setFillProperties(fill);
+        markerLine.setWidth(0.0);
+        XDDFShapeProperties propertiesMarker = new XDDFShapeProperties();
+        propertiesMarker.setFillProperties(fillMarker);
+        propertiesMarker.setLineProperties(markerLine);
+        // 获取区域
+        CTPlotArea ctPlotArea = chart.getCTChart().getPlotArea();
+        // 获取折线区域集合
+        CTLineChart[] ctLineCharts =ctPlotArea.getLineChartArray();
+        // 获取折线
+        CTLineSer[] lines = ctLineCharts[0].getSerArray();
+        // 获取折线的标记点对象
+        CTMarker ctMarker = lines[lineIndex].getMarker();
+        // 获取标记点属性
+        CTShapeProperties markerShapeProperties = ctMarker.addNewSpPr();
+        markerShapeProperties.set(propertiesMarker.getXmlObject());
+    }
+
+    /**
      * 隐藏Excel中列属性
      *
      * @param fields 列属性名 示例[单个"name"/多个"id","name"]
@@ -208,7 +295,7 @@ public class ExcelUtil<T>
         this.excludeFields = fields;
     }
 
-    public void init(List<T> list, String sheetName, String title, Type type, Map<String,Object> params)
+    public void init(List<T> list, String sheetName, String title, Type type, Map<String,Object> params, IExcelListener excelListener )
     {
         if (list == null)
         {
@@ -219,6 +306,7 @@ public class ExcelUtil<T>
         this.type = type;
         this.title = title;
         this.params = params;
+        this.excelListener = excelListener;
         createExcelField();
         createWorkbook();
         createTitle();
@@ -559,7 +647,7 @@ public class ExcelUtil<T>
      */
     public AjaxResult exportExcel(List<T> list, String sheetName, String title)
     {
-        this.init(list, sheetName, title, Type.EXPORT, new HashMap<>());
+        this.init(list, sheetName, title, Type.EXPORT, new HashMap<>(), null);
         return exportExcel();
     }
 
@@ -591,7 +679,6 @@ public class ExcelUtil<T>
 
     /**
      * 对list数据源将其里面的数据导入到excel表单
-     *
      * @param response 返回数据
      * @param list 导出数据集合
      * @param sheetName 工作表的名称
@@ -600,9 +687,23 @@ public class ExcelUtil<T>
      */
     public void exportExcel(HttpServletResponse response, List<T> list, String sheetName, String title, Map<String, Object> params)
     {
+        exportExcel(response, list, sheetName, title, params, null);
+    }
+
+    /**
+     * 对list数据源将其里面的数据导入到excel表单
+     * @param response 返回数据
+     * @param list 导出数据集合
+     * @param sheetName 工作表的名称
+     * @param title 标题
+     * @param params
+     * @param listener
+     */
+    public void exportExcel(HttpServletResponse response, List<T> list, String sheetName, String title, Map<String, Object> params, IExcelListener listener)
+    {
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         response.setCharacterEncoding("utf-8");
-        this.init(list, sheetName, title, Type.EXPORT,params);
+        this.init(list, sheetName, title, Type.EXPORT,params, listener);
         exportExcel(response);
     }
 
@@ -640,7 +741,7 @@ public class ExcelUtil<T>
      */
     public AjaxResult importTemplateExcel(String sheetName, String title)
     {
-        this.init(null, sheetName, title, Type.IMPORT, new HashMap<String,Object>());
+        this.init(null, sheetName, title, Type.IMPORT, new HashMap<String,Object>(),null);
         return exportExcel();
     }
 
@@ -677,7 +778,7 @@ public class ExcelUtil<T>
     {
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         response.setCharacterEncoding("utf-8");
-        this.init(null, sheetName, title, Type.IMPORT,params);
+        this.init(null, sheetName, title, Type.IMPORT,params,null);
         exportExcel(response);
     }
 
@@ -741,7 +842,6 @@ public class ExcelUtil<T>
         for (int index = 0; index < sheetNo; index++)
         {
             createSheet(sheetNo, index);
-
             // 产生一行
             Row row = sheet.createRow(rownum);
             int column = 0;
@@ -1657,6 +1757,13 @@ public class ExcelUtil<T>
             this.sheet = wb.createSheet();
             this.createTitle();
             wb.setSheetName(index, sheetName + index);
+
+            if(this.excelListener != null) {
+                Integer curRowNum = this.excelListener.sheetCreated(sheet, rownum);
+                if(curRowNum!=null) {
+                    rownum = curRowNum + 1;
+                }
+            }
         }
     }
 
@@ -1801,7 +1908,7 @@ public class ExcelUtil<T>
                     {
                         XSSFPicture pic = (XSSFPicture) shape;
                         XSSFClientAnchor anchor = pic.getPreferredSize();
-                        CTMarker ctMarker = anchor.getFrom();
+                        org.openxmlformats.schemas.drawingml.x2006.spreadsheetDrawing.CTMarker ctMarker = anchor.getFrom();
                         String picIndex = ctMarker.getRow() + "_" + ctMarker.getCol();
                         if(sheetIndexPicMap.containsKey(picIndex)==false) {
                             sheetIndexPicMap.put(picIndex, new ArrayList<PictureData>());

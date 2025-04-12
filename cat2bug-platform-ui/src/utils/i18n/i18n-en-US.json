@@ -1,4 +1,6 @@
 {
+  "export": "Export",
+  "import": "Import",
   "back": "Back",
   "char-span": " ",
   "system-name": "CAT & BUG",
@@ -820,7 +822,7 @@
   "copy.success": "Copy Success",
   "dashboard": "Dashboard",
   "dashboard.defect-state.day": "Defect Status 30-Day Chart",
-  "dashboard.defect-state.month": " Defect Status Month Chart",
+  "dashboard.defect-state.month": "Defect Status Month Chart",
   "dashboard.day": "30-Day",
   "dashboard.month": "12-Month",
   "dashboard.member-Defect-rank.title": "Handle Defect Rankings",

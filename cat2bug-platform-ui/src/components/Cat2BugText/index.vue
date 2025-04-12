@@ -43,7 +43,7 @@ export default {
       return function (url) {
         if(!url) return null;
         let arr = url.split('\/');
-        return arr[arr.length-1].replace(/_[0-9a-zA-Z]+\./,'.');
+        return arr[arr.length-1].replaceAll(/_[0-9a-zA-Z]+\./,'.');
       }
     },
   },
