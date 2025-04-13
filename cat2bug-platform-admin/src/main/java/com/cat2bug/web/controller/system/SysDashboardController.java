@@ -217,6 +217,25 @@ public class SysDashboardController {
                 }
             }
 
+            // 设置条件
+            // 创建等于0的规则（灰色背景）
+            XSSFSheetConditionalFormatting cf = sheet.getSheetConditionalFormatting();
+            XSSFConditionalFormattingRule rule = cf.createConditionalFormattingRule(
+                    ComparisonOperator.LE,
+                    "0"); // 小于等于0
+            PatternFormatting fillLE0 = rule.createPatternFormatting();
+            XSSFColor redColor = new XSSFColor(new byte[]{(byte)0xF5, (byte)0x6C, (byte)0x6C}, null);
+            XSSFColor whiteColor = new XSSFColor(new byte[]{(byte)0xFF, (byte)0xFF, (byte)0xFF}, null);
+            fillLE0.setFillBackgroundColor(redColor);
+            fillLE0.setFillPattern(FillPatternType.SOLID_FOREGROUND.getCode());
+            // 设置字体颜色为白色
+            XSSFFontFormatting fontLE0 = rule.createFontFormatting();
+            fontLE0.setFontColor(whiteColor);
+            // 应用条件格式的范围
+            CellRangeAddress[] regions = { new CellRangeAddress(2, rowNum, 1, timeSet.size())};
+            // 添加条件格式规则到工作表
+            cf.addConditionalFormatting(regions, rule);
+
             // 绘制图表
             // 创建一个画布
             XSSFDrawing drawing = sheet.createDrawingPatriarch();
@@ -466,6 +485,24 @@ public class SysDashboardController {
                     cell.setCellStyle(dataStyle);
                 }
             }
+            // 设置条件
+            // 创建等于0的规则（灰色背景）
+            XSSFSheetConditionalFormatting cf = sheet.getSheetConditionalFormatting();
+            XSSFConditionalFormattingRule rule = cf.createConditionalFormattingRule(
+                    ComparisonOperator.LE,
+                    "0"); // 小于等于0
+            PatternFormatting fillLE0 = rule.createPatternFormatting();
+            XSSFColor redColor = new XSSFColor(new byte[]{(byte)0xF5, (byte)0x6C, (byte)0x6C}, null);
+            XSSFColor whiteColor = new XSSFColor(new byte[]{(byte)0xFF, (byte)0xFF, (byte)0xFF}, null);
+            fillLE0.setFillBackgroundColor(redColor);
+            fillLE0.setFillPattern(FillPatternType.SOLID_FOREGROUND.getCode());
+            // 设置字体颜色为白色
+            XSSFFontFormatting fontLE0 = rule.createFontFormatting();
+            fontLE0.setFontColor(whiteColor);
+            // 应用条件格式的范围
+            CellRangeAddress[] regions = { new CellRangeAddress(2, rowNum, 1, timeSet.size())};
+            // 添加条件格式规则到工作表
+            cf.addConditionalFormatting(regions, rule);
 
             // 绘制图表
             // 创建一个画布
