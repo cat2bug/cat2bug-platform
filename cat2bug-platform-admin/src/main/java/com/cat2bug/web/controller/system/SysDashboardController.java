@@ -13,6 +13,7 @@ import com.cat2bug.system.service.ISysPlanService;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.util.IOUtils;
 import org.apache.poi.xddf.usermodel.*;
 import org.apache.poi.xddf.usermodel.chart.*;
@@ -459,6 +460,9 @@ public class SysDashboardController {
                 cell.setCellValue(s);
                 cell.setCellStyle(titleStyle);
             }
+            Cell cellTotal = rowTitle.createCell(colNum++);
+            cellTotal.setCellValue(MessageUtils.message("total"));
+            cellTotal.setCellStyle(titleStyle);
 
             // 创建数据行
             // 数据样式
@@ -475,15 +479,31 @@ public class SysDashboardController {
             for(Map.Entry<String, List<SysMemberOfDefectsLine>> item : map.entrySet()) {
                 colNum = 0;
                 Row row = sheet.createRow(++rowNum);
+                // 创建人名列
                 Cell cellName = row.createCell(colNum++);
                 cellName.setCellValue(item.getKey());
                 cellName.setCellStyle(dataStyle);
                 Map<String, SysMemberOfDefectsLine> mdlMap = item.getValue().stream().collect(Collectors.toMap(SysMemberOfDefectsLine::getCreateTime,o->o));
+                // 创建每日或每月的处理缺陷数量列
+                // 每人处理缺陷总数
+                long total = 0;
                 for (String s : timeSet) {
                     Cell cell = row.createCell(colNum++);
-                    cell.setCellValue(mdlMap.containsKey(s)?mdlMap.get(s).getDefectTodayCount():0);
+                    // 当日或当月处理缺陷数
+                    int count = mdlMap.containsKey(s)?mdlMap.get(s).getDefectTodayCount():0;
+                    cell.setCellValue(count);
                     cell.setCellStyle(dataStyle);
+                    // 累加总数
+                    total+=count;
                 }
+                // 创建总数列
+                Cell cell = row.createCell(colNum);
+                cell.setCellStyle(dataStyle);
+                // 设置求和公式
+                String startColString = CellReference.convertNumToColString(1);  // 起始列长度转成ABC列
+                String endColString = CellReference.convertNumToColString(colNum-1);  // 结束列长度转成ABC列
+                String sumstring = "SUM(" + startColString + (rowNum+1) + ":" + endColString + (rowNum+1) + ")";//求和公式
+                cell.setCellFormula(sumstring);
             }
             // 设置条件
             // 创建等于0的规则（灰色背景）
@@ -500,14 +520,14 @@ public class SysDashboardController {
             XSSFFontFormatting fontLE0 = rule.createFontFormatting();
             fontLE0.setFontColor(whiteColor);
             // 应用条件格式的范围
-            CellRangeAddress[] regions = { new CellRangeAddress(2, rowNum, 1, timeSet.size())};
+            CellRangeAddress[] regions = { new CellRangeAddress(2, rowNum, 1, timeSet.size()+1)};
             // 添加条件格式规则到工作表
             cf.addConditionalFormatting(regions, rule);
 
             // 绘制图表
             // 创建一个画布
             XSSFDrawing drawing = sheet.createDrawingPatriarch();
-            XSSFClientAnchor anchor = drawing.createAnchor(0, 0, 0, 0, 0, 0 ,timeSet.size()+1, 1);
+            XSSFClientAnchor anchor = drawing.createAnchor(0, 0, 0, 0, 0, 0 ,timeSet.size()+2, 1);
             XSSFChart chart = drawing.createChart(anchor);
             chart.setTitleText(sheetName);
             chart.setTitleOverlay(false);
