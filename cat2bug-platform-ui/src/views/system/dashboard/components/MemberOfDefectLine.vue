@@ -1,8 +1,13 @@
 <template>
   <div v-loading="loading" class="defect-state-chart" :style="{width:width}">
-    <el-radio-group v-model="query.timeType" size="mini" @input="handleTimeTypeChange" class="time-type">
-      <el-radio-button v-for="tt in timeTypeList" :key="tt.value" :label="tt.value">{{$t(tt.label).toString()}}</el-radio-button>
-    </el-radio-group>
+    <div class="chart-tools">
+      <el-radio-group v-model="query.timeType" size="mini" @input="handleTimeTypeChange">
+        <el-radio-button v-for="tt in timeTypeList" :key="tt.value" :label="tt.value">{{$t(tt.label).toString()}}</el-radio-button>
+      </el-radio-group>
+      <el-tooltip class="item" effect="dark" :content="$t('export')" placement="right-end">
+        <el-button type="text" icon="el-icon-download" @click="handleExport"></el-button>
+      </el-tooltip>
+    </div>
     <h1 class="title">{{ $t(this.title) }}</h1>
     <div v-loading="loading" ref="memberDefectLineChart" :class="className" :style="{height:height,width:width}" />
   </div>
@@ -58,6 +63,12 @@ export default {
     this.getMemberLineOfDefects();
   },
   methods: {
+    /** 导出按钮操作 */
+    handleExport() {
+      this.download('/system/dashboard/'+this.projectId+'/member-defect-line/export', {
+        ...this.query
+      }, `${ this.$i18n.t(this.title) }_${new Date().getTime()}.xlsx`)
+    },
     getMemberLineOfDefects() {
       this.loading = true;
       memberLineOfDefects(this.projectId, this.query).then(res=>{
@@ -108,11 +119,6 @@ export default {
           bottom: '3%',
           containLabel: true
         },
-        toolbox: {
-          feature: {
-            saveAsImage: {}
-          }
-        },
         xAxis: {
           type: 'category',
           boundaryGap: false,
@@ -122,7 +128,7 @@ export default {
           type: 'value'
         },
         series: series
-      })
+      },true);
     },
     /** 处理时间类型变更 */
     handleTimeTypeChange(val) {
@@ -149,11 +155,15 @@ export default {
     margin-top: 0px;
   }
 }
-.time-type {
+.chart-tools {
   position: absolute;
   z-index: 9;
   top: 7px;
-  right: 40px;
+  right: 10px;
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
   ::v-deep .el-radio-button__inner {
     padding: 3px 5px;
   }

@@ -118,18 +118,18 @@ public class SysDashboardController {
     @PreAuthorize("@ss.hasPermi('system:dashboard:query')")
     @Log(title = "缺陷", businessType = BusinessType.EXPORT)
     @PostMapping("/{projectId}/defect-line/export")
-    public void export(HttpServletResponse response, @PathVariable("projectId") Long projectId, @RequestParam("timeType") String timeType) {
+    public void defectLineExport(HttpServletResponse response, @PathVariable("projectId") Long projectId, @RequestParam("timeType") String timeType) {
         // 统计数据
         List<SysDefectLine> defectLineList = sysDashboardService.defectLine(projectId, timeType);
         String sheetName = null;
         Set<String> timeSet = new LinkedHashSet<>();
         switch (timeType) {
             case MONTH_TYPE:
-                sheetName = MessageUtils.message("dashboard.defect-state.month");
+                sheetName = MessageUtils.message("dashboard.defect-line.month");
                 setCountOfMonth(timeSet, defectLineList);
                 break;
             default:
-                sheetName = MessageUtils.message("dashboard.defect-state.day");
+                sheetName = MessageUtils.message("dashboard.defect-line.day");
                 setCountOfDay(timeSet, defectLineList);
                 break;
         }
@@ -364,7 +364,6 @@ public class SysDashboardController {
     public AjaxResult memberOfDefectsLine(@PathVariable("projectId") Long projectId,  @RequestParam("timeType") String timeType) {
         List<SysMemberOfDefectsLine> list = sysDashboardService.memberOfDefectsLine(projectId, timeType);
         Set<String> timeSet = new LinkedHashSet<>();
-        SimpleDateFormat format;
         switch (timeType) {
             case MONTH_TYPE:
                 setMemberDefectCountOfMonth(timeSet, list);
@@ -378,6 +377,155 @@ public class SysDashboardController {
         ret.put("time", timeSet);              // 日期数组
         ret.put("data", list);
         return AjaxResult.success(ret);
+    }
+
+    /**
+     * 缺陷状态30天走势图
+     */
+    @PreAuthorize("@ss.hasPermi('system:dashboard:query')")
+    @PostMapping("/{projectId}/member-defect-line/export")
+    public void memberDefectLineExport(HttpServletResponse response, @PathVariable("projectId") Long projectId, @RequestParam("timeType") String timeType) {
+        // 统计数据
+        String sheetName = null;
+        List<SysMemberOfDefectsLine> list = sysDashboardService.memberOfDefectsLine(projectId, timeType);
+        Set<String> timeSet = new LinkedHashSet<>();
+        SimpleDateFormat format;
+        switch (timeType) {
+            case MONTH_TYPE:
+                sheetName = MessageUtils.message("dashboard.member-defect-line.month");
+                setMemberDefectCountOfMonth(timeSet, list);
+                break;
+            default:
+                sheetName = MessageUtils.message("dashboard.member-defect-line.day");
+                setMemberDefectCountOfDay(timeSet, list);
+                break;
+        }
+
+        // 数据转excel
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setCharacterEncoding("utf-8");
+        XSSFWorkbook wb = new XSSFWorkbook();
+        XSSFSheet sheet = wb.createSheet();
+        wb.setSheetName(0, sheetName);
+        sheet.setDefaultColumnWidth(12);
+        try
+        {
+            int rowNum = -1;
+            // 创建图表行
+            Row rowChart = sheet.createRow(++rowNum);
+            rowChart.setHeight((short)5000);
+            // 创建标题行
+            Row rowTitle = sheet.createRow(++rowNum);
+            // 创建一个单元格样式
+            XSSFCellStyle titleStyle = wb.createCellStyle();
+            // 设置单元格背景色
+            titleStyle.setFillForegroundColor(new XSSFColor(new byte[]{(byte)0x60,(byte)0x62,(byte)0x66}, null));
+            titleStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            // 设置标题字体
+            Font titleFont = wb.createFont();
+            titleFont.setColor(IndexedColors.WHITE.getIndex());
+            titleStyle.setFont(titleFont);
+            titleStyle.setAlignment(HorizontalAlignment.RIGHT);
+            titleStyle.setBorderBottom(BorderStyle.THIN);
+            titleStyle.setBorderLeft(BorderStyle.THIN);
+            titleStyle.setBorderRight(BorderStyle.THIN);
+            titleStyle.setBorderTop(BorderStyle.THIN);
+            // 创建标题行的列
+            Cell cell1 = rowTitle.createCell(0);
+            cell1.setCellValue(MessageUtils.message("member"));
+            cell1.setCellStyle(titleStyle);
+            int colNum = 1;
+            for (String s : timeSet) {
+                Cell cell = rowTitle.createCell(colNum++);
+                cell.setCellValue(s);
+                cell.setCellStyle(titleStyle);
+            }
+
+            // 创建数据行
+            // 数据样式
+            XSSFCellStyle dataStyle = wb.createCellStyle();
+            dataStyle.setAlignment(HorizontalAlignment.RIGHT);
+            dataStyle.setBorderBottom(BorderStyle.THIN);
+            dataStyle.setBorderLeft(BorderStyle.THIN);
+            dataStyle.setBorderRight(BorderStyle.THIN);
+            dataStyle.setBorderTop(BorderStyle.THIN);
+            Map<String, List<SysMemberOfDefectsLine>> map = list.stream().collect(Collectors.groupingBy(
+                    SysMemberOfDefectsLine::getNickName,
+                    LinkedHashMap::new,
+                    Collectors.toList()));
+            for(Map.Entry<String, List<SysMemberOfDefectsLine>> item : map.entrySet()) {
+                colNum = 0;
+                Row row = sheet.createRow(++rowNum);
+                Cell cellName = row.createCell(colNum++);
+                cellName.setCellValue(item.getKey());
+                cellName.setCellStyle(dataStyle);
+                Map<String, SysMemberOfDefectsLine> mdlMap = item.getValue().stream().collect(Collectors.toMap(SysMemberOfDefectsLine::getCreateTime,o->o));
+                for (String s : timeSet) {
+                    Cell cell = row.createCell(colNum++);
+                    cell.setCellValue(mdlMap.containsKey(s)?mdlMap.get(s).getDefectTodayCount():0);
+                    cell.setCellStyle(dataStyle);
+                }
+            }
+
+            // 绘制图表
+            // 创建一个画布
+            XSSFDrawing drawing = sheet.createDrawingPatriarch();
+            XSSFClientAnchor anchor = drawing.createAnchor(0, 0, 0, 0, 0, 0 ,timeSet.size()+1, 1);
+            XSSFChart chart = drawing.createChart(anchor);
+            chart.setTitleText(sheetName);
+            chart.setTitleOverlay(false);
+            // 图例位置
+            XDDFChartLegend legend = chart.getOrAddLegend();
+            legend.setPosition(LegendPosition.TOP);
+
+            // 分类轴标(X轴),标题位置
+            XDDFCategoryAxis bottomAxis = chart.createCategoryAxis(AxisPosition.BOTTOM);
+            // 值(Y轴)轴,标题位置
+            XDDFValueAxis leftAxis = chart.createValueAxis(AxisPosition.LEFT);
+            leftAxis.setTitle(MessageUtils.message("defect.count"));
+            // 设置网格颜色
+            XDDFLineProperties markerLine = new XDDFLineProperties();
+            XDDFColor color = XDDFColor.from(new byte[]{(byte)0xf0,(byte)0xf0,(byte)0xf0});
+            XDDFSolidFillProperties fill = new XDDFSolidFillProperties(color);
+            markerLine.setFillProperties(fill);
+            markerLine.setWidth(1.0);
+            leftAxis.getOrAddMajorGridProperties().setLineProperties(markerLine);
+
+            // LINE：折线图，
+            XDDFLineChartData data = (XDDFLineChartData) chart.createData(ChartTypes.LINE, bottomAxis, leftAxis);
+            // 分类轴标-日期数据
+            XDDFDataSource<String> dates = XDDFDataSourcesFactory.fromStringCellRange(sheet, new CellRangeAddress(1, 1, 1, timeSet.size()));
+            int seriesRowNum = 1;
+            for(Map.Entry<String, List<SysMemberOfDefectsLine>> item : map.entrySet()) {
+                seriesRowNum++;
+                String title = item.getKey();
+                // 某个状态在不同时间的数据
+                XDDFNumericalDataSource<Double> stateData = XDDFDataSourcesFactory.fromNumericCellRange(sheet, new CellRangeAddress(seriesRowNum, seriesRowNum, 1, timeSet.size()));
+                // 图·表加载数据
+                XDDFLineChartData.Series series = (XDDFLineChartData.Series) data.addSeries(dates, stateData);
+                // 折线图例标题
+                series.setTitle(title, null);
+                // 直线
+                series.setSmooth(true);
+                // 设置标记大小
+                series.setMarkerSize((short) 5);
+                // 设置标记样式，空心圆
+                series.setMarkerStyle(MarkerStyle.CIRCLE);
+            }
+            // 设置图表中的颜色
+            ExcelUtil.applyLineChartsColors(chart, data);
+            // 绘制
+            chart.plot(data);
+            wb.write(response.getOutputStream());
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        finally
+        {
+            IOUtils.closeQuietly(wb);
+        }
     }
 
     private void setMemberDefectCountOfDay(Set<String> timeSet, List<SysMemberOfDefectsLine> list) {

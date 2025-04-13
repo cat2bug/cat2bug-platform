@@ -128,7 +128,7 @@ export default {
             type: 'value'
           },
           series: series
-      })
+      }, true);
     },
     /** 处理时间类型变更 */
     handleTimeTypeChange(val) {
@@ -167,15 +167,5 @@ export default {
   ::v-deep .el-radio-button__inner {
     padding: 3px 5px;
   }
-}
-.test {
-  background-color: #2ec7c9;
-  background-color: #b6a2de;
-  background-color: #5ab1ef;
-  //'#b6a2de',
-  //'#5ab1ef',
-  //'#ffb980',
-  //'#d87a80',
-  //'#8d98b3',;
 }
 </style>
