@@ -1,20 +1,25 @@
 <template>
   <div v-loading="loading" class="defect-state-chart" :style="{width:width}">
     <h1 v-if="!query.planId">{{ $t('dashboard.plan-statistics.title') }}</h1>
-    <el-select v-else v-model="query.planId" placeholder="" size="mini" class="planSelect" @change="handlePlanChange">
-      <template #prefix>
-        <div class="prefix">
-          <h1>{{ $t('dashboard.plan-statistics.title') }}</h1>
-          <span>[ {{ selectPlanName(query.planId) }} ]</span>
-        </div>
-      </template>
-      <el-option
-        v-for="item in planList"
-        :key="item.planId"
-        :label="item.planName"
-        :value="item.planId">
-      </el-option>
-    </el-select>
+    <div v-else class="chart-tools">
+      <el-select v-model="query.planId" placeholder="" size="mini" class="planSelect" @change="handlePlanChange">
+        <template #prefix>
+          <div class="prefix">
+            <h1>{{ $t('dashboard.plan-statistics.title') }}</h1>
+            <span>[ {{ selectPlanName(query.planId) }} ]</span>
+          </div>
+        </template>
+        <el-option
+          v-for="item in planList"
+          :key="item.planId"
+          :label="item.planName"
+          :value="item.planId">
+        </el-option>
+      </el-select>
+      <el-tooltip class="item" effect="dark" :content="$t('export')" placement="right-end">
+        <el-button type="text" icon="el-icon-download" @click="handleExport"></el-button>
+      </el-tooltip>
+    </div>
     <div class="plan-statistics" @click="handlePlanClick">
       <el-statistic
         group-separator=",">
@@ -156,6 +161,10 @@ export default {
     this.getPlanList();
   },
   methods: {
+    /** 导出按钮操作 */
+    handleExport() {
+      this.download('/system/dashboard/'+this.projectId+'/plan-statistics/export', {}, `${ this.$i18n.t('dashboard.plan-statistics.title') }_${new Date().getTime()}.xlsx`)
+    },
     handlePlanClick() {
       const targetRoute = this.$router.resolve({ path:'/project/plan', query: {planId:this.query.planId}});
       window.open(targetRoute.href, '_blank');
@@ -288,4 +297,16 @@ export default {
 //    }
 //  }
 //}
+.chart-tools {
+  width: 100%;
+  padding-right: 10px;
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  ::v-deep .el-input__suffix {
+    display: inline-flex;
+    align-items: center;
+  }
+}
 </style>

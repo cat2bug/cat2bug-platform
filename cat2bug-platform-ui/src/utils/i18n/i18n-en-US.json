@@ -405,7 +405,7 @@
   "not_pass": "Not Pass",
   "fail": "Fail",
   "success": "Success",
-  "unexecuted": "Unexecuted",
+  "unexecuted": "Not Run",
   "head-up": "Head Up",
   "assist": "Assist",
   "comment": "Comment",

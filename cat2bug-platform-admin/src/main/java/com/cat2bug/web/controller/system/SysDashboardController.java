@@ -10,16 +10,16 @@ import com.cat2bug.common.utils.poi.ExcelUtil;
 import com.cat2bug.system.domain.*;
 import com.cat2bug.system.service.ISysDashboardService;
 import com.cat2bug.system.service.ISysPlanService;
-import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.util.IOUtils;
-import org.apache.poi.xddf.usermodel.*;
+import org.apache.poi.xddf.usermodel.XDDFColor;
+import org.apache.poi.xddf.usermodel.XDDFLineProperties;
+import org.apache.poi.xddf.usermodel.XDDFSolidFillProperties;
 import org.apache.poi.xddf.usermodel.chart.*;
 import org.apache.poi.xssf.usermodel.*;
 import org.openxmlformats.schemas.drawingml.x2006.chart.CTChart;
-import org.openxmlformats.schemas.drawingml.x2006.chart.CTPlotArea;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -486,7 +486,6 @@ public class SysDashboardController {
                 Map<String, SysMemberOfDefectsLine> mdlMap = item.getValue().stream().collect(Collectors.toMap(SysMemberOfDefectsLine::getCreateTime,o->o));
                 // 创建每日或每月的处理缺陷数量列
                 // 每人处理缺陷总数
-                long total = 0;
                 for (String s : timeSet) {
                     Cell cell = row.createCell(colNum++);
                     // 当日或当月处理缺陷数
@@ -494,7 +493,6 @@ public class SysDashboardController {
                     cell.setCellValue(count);
                     cell.setCellStyle(dataStyle);
                     // 累加总数
-                    total+=count;
                 }
                 // 创建总数列
                 Cell cell = row.createCell(colNum);
@@ -583,6 +581,407 @@ public class SysDashboardController {
         {
             IOUtils.closeQuietly(wb);
         }
+    }
+
+    /**
+     * 缺陷状态30天走势图
+     */
+    @PreAuthorize("@ss.hasPermi('system:dashboard:query')")
+    @Log(title = "缺陷", businessType = BusinessType.EXPORT)
+    @PostMapping("/{projectId}/plan-statistics/export")
+    public void planStatisticsExport(HttpServletResponse response, @PathVariable("projectId") Long projectId) {
+        // 统计数据
+        SysPlan plan = new SysPlan();
+        plan.setProjectId(projectId);
+        List<SysPlan> defectLineList = sysPlanService.selectSysPlanList(plan);
+        String sheetName = MessageUtils.message("dashboard.plan-statistics");
+//        List<Map> list = new LinkedList<>();
+//        for(SysDefectStateEnum state : SysDefectStateEnum.values()) {
+//            if(defectStateGroup.containsKey(state)==false) continue;
+//            List<SysDefectLine> defectLines = defectStateGroup.get(state);
+//            String strState = state.name();
+//            Map<String, Object> map = new HashMap<>();
+//            map.put("name", strState);
+//            list.add(map);
+//            defectStateLines.put(strState, new ArrayList<>());
+//            for (String s : timeSet) {
+//                Optional<SysDefectLine> defectLine = defectLines.stream().filter(d -> d.getDefectTime().equals(s)).findFirst();
+//                if (defectLine.isPresent()) {
+//                    map.put(s, defectLine.get().getDefectCount());
+//                    defectStateLines.get(strState).add(defectLine.get().getDefectCount());
+//                } else {
+//                    map.put(s, 0L);
+//                    defectStateLines.get(strState).add(0L);
+//                }
+//            }
+//        }
+
+        // 数据转excel
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setCharacterEncoding("utf-8");
+        XSSFWorkbook wb = new XSSFWorkbook();
+        XSSFSheet sheet = wb.createSheet();
+        wb.setSheetName(0, sheetName);
+        sheet.setDefaultColumnWidth(12);
+        try
+        {
+            int rowNum = -1;
+            // 创建图表行
+            Row rowChart = sheet.createRow(++rowNum);
+            rowChart.setHeight((short)5000);
+            // 创建标题行
+            Row rowTitle1 = sheet.createRow(++rowNum);
+            // 创建一个单元格样式
+            XSSFCellStyle titleStyle = wb.createCellStyle();
+            // 设置单元格背景色
+            titleStyle.setFillForegroundColor(new XSSFColor(new byte[]{(byte)0x60,(byte)0x62,(byte)0x66}, null));
+            titleStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            // 设置标题字体
+            Font titleFont = wb.createFont();
+            titleFont.setColor(IndexedColors.WHITE.getIndex());
+            titleStyle.setFont(titleFont);
+            titleStyle.setAlignment(HorizontalAlignment.CENTER);
+            titleStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+            titleStyle.setBorderBottom(BorderStyle.THIN);
+            titleStyle.setBorderLeft(BorderStyle.THIN);
+            titleStyle.setBorderRight(BorderStyle.THIN);
+            titleStyle.setBorderTop(BorderStyle.THIN);
+            // 创建标题行的列
+            // 标题列索引
+            int titleCellNum = 0;
+            // 测试数据的起始列索引
+            int caseTitleStartCellNum = 0;
+            // 测试用例列
+            Cell cellPlanNameTitle = rowTitle1.createCell(titleCellNum);
+            cellPlanNameTitle.setCellValue(MessageUtils.message("plan.name"));
+            cellPlanNameTitle.setCellStyle(titleStyle);
+            CellRangeAddress regionPlanNameTitle = new CellRangeAddress(rowNum, rowNum+1, titleCellNum, titleCellNum);
+            sheet.addMergedRegion(regionPlanNameTitle);
+            // 测试用例列
+            Cell cellVersionTitle = rowTitle1.createCell(++titleCellNum);
+            cellVersionTitle.setCellValue(MessageUtils.message("version"));
+            cellVersionTitle.setCellStyle(titleStyle);
+            CellRangeAddress regionVersionTitle = new CellRangeAddress(rowNum, rowNum+1, titleCellNum, titleCellNum);
+            sheet.addMergedRegion(regionVersionTitle);
+            // 测试用例列
+            Cell cellPlanStartTimeTitle = rowTitle1.createCell(++titleCellNum);
+            cellPlanStartTimeTitle.setCellValue(MessageUtils.message("plan.start-time"));
+            cellPlanStartTimeTitle.setCellStyle(titleStyle);
+            CellRangeAddress regionPlanStartTimeTitle = new CellRangeAddress(rowNum, rowNum+1, titleCellNum, titleCellNum);
+            sheet.addMergedRegion(regionPlanStartTimeTitle);
+            // 测试用例列
+            Cell cellPlanEndTimeTitle = rowTitle1.createCell(++titleCellNum);
+            cellPlanEndTimeTitle.setCellValue(MessageUtils.message("plan.end-time"));
+            cellPlanEndTimeTitle.setCellStyle(titleStyle);
+            CellRangeAddress regionPlanEndTimeTitle = new CellRangeAddress(rowNum, rowNum+1, titleCellNum, titleCellNum);
+            sheet.addMergedRegion(regionPlanEndTimeTitle);
+            // 测试用例列
+            Cell cellCaseTitle = rowTitle1.createCell(++titleCellNum);
+            cellCaseTitle.setCellValue(MessageUtils.message("case.test_case"));
+            CellRangeAddress regionCaseTitle = new CellRangeAddress(rowNum, rowNum, titleCellNum, titleCellNum+3);
+            cellCaseTitle.setCellStyle(titleStyle);
+            sheet.addMergedRegion(regionCaseTitle);
+            caseTitleStartCellNum = titleCellNum;
+            // 缺陷总数
+            titleCellNum+=4;
+            Cell cellDefectTotalTitle = rowTitle1.createCell(titleCellNum);
+            cellDefectTotalTitle.setCellValue(MessageUtils.message("defect.total"));
+            CellRangeAddress regionDefectTotal = new CellRangeAddress(rowNum, rowNum+1, titleCellNum, titleCellNum);
+            sheet.addMergedRegion(regionDefectTotal);
+            cellDefectTotalTitle.setCellStyle(titleStyle);
+            // 缺陷发现率
+            Cell cellDefectDiscoveryRateTitle = rowTitle1.createCell(++titleCellNum);
+            cellDefectDiscoveryRateTitle.setCellValue(MessageUtils.message("defect.discovery-rate"));
+            cellDefectDiscoveryRateTitle.setCellStyle(titleStyle);
+            CellRangeAddress regionDefectDiscoveryRate = new CellRangeAddress(rowNum, rowNum+1, titleCellNum, titleCellNum);
+            sheet.addMergedRegion(regionDefectDiscoveryRate);
+            // 缺陷修复率
+            Cell cellDefectRepairRateTitle = rowTitle1.createCell(++titleCellNum);
+            cellDefectRepairRateTitle.setCellValue(MessageUtils.message("defect.repair-rate"));
+            cellDefectRepairRateTitle.setCellStyle(titleStyle);
+            CellRangeAddress regionDefectRepairRate = new CellRangeAddress(rowNum, rowNum+1, titleCellNum, titleCellNum);
+            sheet.addMergedRegion(regionDefectRepairRate);
+            // 缺陷密度
+            Cell cellDefectDensityTitle = rowTitle1.createCell(++titleCellNum);
+            cellDefectDensityTitle.setCellValue(MessageUtils.message("defect.density"));
+            cellDefectDensityTitle.setCellStyle(titleStyle);
+            CellRangeAddress regionDefectDensity = new CellRangeAddress(rowNum, rowNum+1, titleCellNum, titleCellNum);
+            sheet.addMergedRegion(regionDefectDensity);
+            // 缺陷探测率
+            Cell cellDefectDetectionRateTitle = rowTitle1.createCell(++titleCellNum);
+            cellDefectDetectionRateTitle.setCellValue(MessageUtils.message("defect.detection-rate"));
+            cellDefectDetectionRateTitle.setCellStyle(titleStyle);
+            CellRangeAddress regionDefectDetectionRate = new CellRangeAddress(rowNum, rowNum+1, titleCellNum, titleCellNum);
+            sheet.addMergedRegion(regionDefectDetectionRate);
+            // 缺陷严重率
+            Cell cellDefectSeverityRateTitle = rowTitle1.createCell(++titleCellNum);
+            cellDefectSeverityRateTitle.setCellValue(MessageUtils.message("defect.severity-rate"));
+            cellDefectSeverityRateTitle.setCellStyle(titleStyle);
+            CellRangeAddress regionDefectSeverityRate = new CellRangeAddress(rowNum, rowNum+1, titleCellNum, titleCellNum);
+            sheet.addMergedRegion(regionDefectSeverityRate);
+            // 缺陷重开率
+            Cell cellDefectRestartRateTitle = rowTitle1.createCell(++titleCellNum);
+            cellDefectRestartRateTitle.setCellValue(MessageUtils.message("defect.restart-rate"));
+            cellDefectRestartRateTitle.setCellStyle(titleStyle);
+            CellRangeAddress regionDefectRestartRate = new CellRangeAddress(rowNum, rowNum+1, titleCellNum, titleCellNum);
+            sheet.addMergedRegion(regionDefectRestartRate);
+            // 缺陷逃逸率
+            Cell cellDefectEscapeRateTitle = rowTitle1.createCell(++titleCellNum);
+            cellDefectEscapeRateTitle.setCellValue(MessageUtils.message("defect.escape-rate"));
+            cellDefectEscapeRateTitle.setCellStyle(titleStyle);
+            CellRangeAddress regionDefectEscapeRate = new CellRangeAddress(rowNum, rowNum+1, titleCellNum, titleCellNum);
+            sheet.addMergedRegion(regionDefectEscapeRate);
+            // 缺陷修复平均时长
+            Cell cellDefectRepairAvgHourTitle = rowTitle1.createCell(++titleCellNum);
+            cellDefectRepairAvgHourTitle.setCellValue(MessageUtils.message("defect.repair-avg-hour"));
+            cellDefectRepairAvgHourTitle.setCellStyle(titleStyle);
+            CellRangeAddress regionDefectRepairAvgHour = new CellRangeAddress(rowNum, rowNum+1, titleCellNum, titleCellNum);
+            sheet.addMergedRegion(regionDefectRepairAvgHour);
+
+            // 创建测试用例标题列
+            Row rowTitle2 = sheet.createRow(++rowNum);
+            // 通过
+            Cell cellPassTitle = rowTitle2.createCell(caseTitleStartCellNum);
+            cellPassTitle.setCellValue(MessageUtils.message("pass"));
+            cellPassTitle.setCellStyle(titleStyle);
+            // 未通过
+            Cell cellNotPassTitle = rowTitle2.createCell(caseTitleStartCellNum+1);
+            cellNotPassTitle.setCellValue(MessageUtils.message("not-pass"));
+            cellNotPassTitle.setCellStyle(titleStyle);
+            // 执行列
+            Cell cellRunTitle = rowTitle2.createCell(caseTitleStartCellNum+2);
+            cellRunTitle.setCellValue(MessageUtils.message("run"));
+            cellRunTitle.setCellStyle(titleStyle);
+            // 未执行列
+            Cell cellNotRunTitle = rowTitle2.createCell(caseTitleStartCellNum+3);
+            cellNotRunTitle.setCellValue(MessageUtils.message("not-run"));
+            cellNotRunTitle.setCellStyle(titleStyle);
+            // 设置第二行标题默认样式
+            for(int i=caseTitleStartCellNum+4;i<=titleCellNum;i++) {
+                Cell emptyCell = rowTitle2.createCell(i);
+                emptyCell.setCellStyle(titleStyle);
+            }
+            // 创建数据行
+            // 数据样式
+            XSSFCellStyle dataStyle = wb.createCellStyle();
+            dataStyle.setAlignment(HorizontalAlignment.RIGHT);
+            dataStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+            dataStyle.setBorderBottom(BorderStyle.THIN);
+            dataStyle.setBorderLeft(BorderStyle.THIN);
+            dataStyle.setBorderRight(BorderStyle.THIN);
+            dataStyle.setBorderTop(BorderStyle.THIN);
+            // 日期格式的样式
+            XSSFCellStyle timeStyle = wb.createCellStyle();
+            timeStyle.setAlignment(HorizontalAlignment.RIGHT);
+            timeStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+            timeStyle.setBorderBottom(BorderStyle.THIN);
+            timeStyle.setBorderLeft(BorderStyle.THIN);
+            timeStyle.setBorderRight(BorderStyle.THIN);
+            timeStyle.setBorderTop(BorderStyle.THIN);
+            String dateFormatString = "yyyy-MM-dd HH:mm:ss";
+            DataFormat dataFormat = wb.createDataFormat();
+            short dateFormat = dataFormat.getFormat(dateFormatString);
+            timeStyle.setDataFormat(dateFormat);
+            for(SysPlan p : defectLineList) {
+                int colNum = 0;
+                Row row = sheet.createRow(++rowNum);
+                // 测试计划名称
+                Cell cellPlanName = row.createCell(colNum++);
+                cellPlanName.setCellValue(p.getPlanName());
+                cellPlanName.setCellStyle(dataStyle);
+                // 测试计划版本
+                Cell cellPlanVersion = row.createCell(colNum++);
+                cellPlanVersion.setCellValue(p.getPlanVersion());
+                cellPlanVersion.setCellStyle(dataStyle);
+                // 测试计划开始时间
+                Cell cellPlanStartTime = row.createCell(colNum++);
+                cellPlanStartTime.setCellValue(p.getPlanStartTime());
+                cellPlanStartTime.setCellStyle(timeStyle);
+                // 测试计划结束时间
+                Cell cellPlanEndTime = row.createCell(colNum++);
+                cellPlanEndTime.setCellValue(p.getPlanEndTime());
+                cellPlanEndTime.setCellStyle(timeStyle);
+                // 通过
+                Cell cellPass = row.createCell(colNum++);
+                cellPass.setCellValue(p.getPassCount());
+                cellPass.setCellStyle(dataStyle);
+                // 未通过
+                Cell cellNotPass = row.createCell(colNum++);
+                cellNotPass.setCellValue(p.getFailCount());
+                cellNotPass.setCellStyle(dataStyle);
+                // 未执行
+                Cell cellRun = row.createCell(colNum++);
+                cellRun.setCellValue(p.getUnexecutedCount());
+                cellRun.setCellStyle(dataStyle);
+                // 缺陷总数
+                Cell cellNotRun = row.createCell(colNum++);
+                cellNotRun.setCellValue(p.getItemTotal());
+                cellNotRun.setCellStyle(dataStyle);
+                // 缺陷总数
+                Cell cellDefectCount = row.createCell(colNum++);
+                cellDefectCount.setCellValue(p.getDefectCount());
+                cellDefectCount.setCellStyle(dataStyle);
+                // 缺陷发现率
+                Cell cellDiscoveryRate = row.createCell(colNum++);
+                cellDiscoveryRate.setCellValue(strPercentage2Double(p.getDefectDiscoveryRate()));
+                cellDiscoveryRate.setCellStyle(dataStyle);
+                // 缺陷修复率
+                Cell cellRepairRate = row.createCell(colNum++);
+                cellRepairRate.setCellValue(strPercentage2Double(p.getDefectRepairRate()));
+                cellRepairRate.setCellStyle(dataStyle);
+                // 缺陷密度
+                Cell cellDefectDensity = row.createCell(colNum++);
+                cellDefectDensity.setCellValue(Double.valueOf(p.getDefectDensity()));
+                cellDefectDensity.setCellStyle(dataStyle);
+                // 缺陷探测率
+                Cell cellDefectDetectionRate = row.createCell(colNum++);
+                cellDefectDetectionRate.setCellValue(strPercentage2Double(p.getDefectDetectionRate()));
+                cellDefectDetectionRate.setCellStyle(dataStyle);
+                // 缺陷严重率
+                Cell cellDefectSeverityRate = row.createCell(colNum++);
+                cellDefectSeverityRate.setCellValue(strPercentage2Double(p.getDefectSeverityRate()));
+                cellDefectSeverityRate.setCellStyle(dataStyle);
+                // 缺陷重开率
+                Cell cellDefectRestartRate = row.createCell(colNum++);
+                cellDefectRestartRate.setCellValue(strPercentage2Double(p.getDefectRestartRate()));
+                cellDefectRestartRate.setCellStyle(dataStyle);
+                // 缺陷逃逸率
+                Cell cellDefectEscapeRate = row.createCell(colNum++);
+                cellDefectEscapeRate.setCellValue(strPercentage2Double(p.getDefectEscapeRate()));
+                cellDefectEscapeRate.setCellStyle(dataStyle);
+                // 缺陷修复平均时长
+                Cell cellDefectRepairAvgHour = row.createCell(colNum++);
+                cellDefectRepairAvgHour.setCellValue(Double.valueOf(p.getDefectRepairAvgHour()));
+                cellDefectRepairAvgHour.setCellStyle(dataStyle);
+            }
+            // 设置所有列为自适应宽度
+            for(int i = 0;i <= titleCellNum;i++) {
+                sheet.autoSizeColumn(i, true);
+            }
+
+            // 绘制图表
+            // 创建一个画布
+            XSSFDrawing drawing = sheet.createDrawingPatriarch();
+            XSSFClientAnchor anchor = drawing.createAnchor(0, 0, 0, 0, 0, 0 ,titleCellNum + 1, 1);
+            XSSFChart chart = drawing.createChart(anchor);
+            chart.setTitleText(sheetName);
+            chart.setTitleOverlay(false);
+            // 设置图表数据区域
+            int dataRowStartIndex = 3;
+            int dataRowEndIndex = dataRowStartIndex+defectLineList.size()-1;
+            // 获取x坐标分类字段名集合
+            List<String> categories = new LinkedList<>();
+            for(int i=caseTitleStartCellNum;i<caseTitleStartCellNum+4;i++) {
+                categories.add(sheet.getRow(dataRowStartIndex-1).getCell(i).getStringCellValue());
+            }
+            for(int i=caseTitleStartCellNum+4;i<=titleCellNum;i++) {
+                categories.add(sheet.getRow(dataRowStartIndex-2).getCell(i).getStringCellValue());
+            }
+            XDDFDataSource<String> category = XDDFDataSourcesFactory.fromArray(
+                    categories.toArray(new String[0])
+            );
+            // 数据
+            Map<String, XDDFNumericalDataSource<Double>> valueList = new LinkedHashMap<>();
+            for(int i=dataRowStartIndex;i<=dataRowEndIndex;i++) {
+                String planName = sheet.getRow(i).getCell(0).getStringCellValue();
+                XDDFNumericalDataSource<Double> value = XDDFDataSourcesFactory.fromNumericCellRange(
+                        sheet, new CellRangeAddress(i, i, caseTitleStartCellNum, titleCellNum));
+                valueList.put(planName, value);
+            }
+
+            // 分类轴标(X轴),标题位置
+            XDDFCategoryAxis bottomAxis = chart.createCategoryAxis(AxisPosition.BOTTOM);
+            // 值(Y轴)轴,标题位置
+            XDDFValueAxis leftAxis = chart.createValueAxis(AxisPosition.LEFT);
+            // 设置右侧Y轴标题
+            leftAxis.setTitle("数量(个)");
+            // 设置交叉方式
+            leftAxis.setCrosses(AxisCrosses.MAX);
+            leftAxis.setMajorUnit(500);
+            // 创建第二个Y轴（右侧）
+            XDDFValueAxis rightAxis = chart.createValueAxis(AxisPosition.RIGHT);
+            // 设置右侧Y轴标题
+            rightAxis.setTitle("百分比(%)"); // 设置右侧Y轴标题
+            // 设置交叉方式
+            rightAxis.setCrosses(AxisCrosses.MAX);
+//            rightAxis.setNumberFormat("0%");
+            rightAxis.setMinimum(0.0);
+            rightAxis.setMaximum(1.0);
+            rightAxis.setMajorUnit(1);
+            // 创建图表数据并设置系列
+            XDDFBarChartData dataChart = (XDDFBarChartData)chart.createData(
+                    ChartTypes.BAR,
+                    bottomAxis,
+                    leftAxis);
+//             设置类型
+//            dataChart.setBarGrouping(BarGrouping.CLUSTERED);
+            // 设置方向
+            dataChart.setBarDirection(BarDirection.COL);
+
+            XDDFBarChartData percentageChart = (XDDFBarChartData)chart.createData(
+                    ChartTypes.BAR,
+                    bottomAxis,
+                    rightAxis);
+            // 设置类型
+//            percentageChart.setBarGrouping(BarGrouping.CLUSTERED);
+            // 设置方向
+            percentageChart.setBarDirection(BarDirection.COL);
+            percentageChart.setOverlap((byte) 255);
+
+            for(Map.Entry<String, XDDFNumericalDataSource<Double>> ds : valueList.entrySet()) {
+                addFilteredSeries(dataChart, category, ds.getValue(), ds.getKey(), new int[]{0, 1, 2,3,4,7,12});
+                addFilteredSeries(percentageChart, category, ds.getValue(), ds.getKey(), new int[]{5,6,8,9,10,11});
+            }
+
+            // 绘制
+            chart.plot(percentageChart);
+            chart.plot(dataChart);
+
+            // 设置图例位置
+            XDDFChartLegend legend = chart.getOrAddLegend();
+            legend.setPosition(LegendPosition.RIGHT);
+
+            wb.write(response.getOutputStream());
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        finally
+        {
+            IOUtils.closeQuietly(wb);
+        }
+    }
+
+    /**
+     * 字符百分比转Double
+     * @param value
+     * @return
+     */
+    private static double strPercentage2Double(String value) {
+        return Double.parseDouble(value.replace("%", ""))*0.01;
+    }
+    private static void addFilteredSeries(XDDFBarChartData chartData,
+                                          XDDFDataSource<String> categories,
+                                          XDDFNumericalDataSource<Double> values,
+                                          String title,
+                                          int[] includedIndices) {
+        // 创建筛选后的数据源
+        String[] filteredCategories = new String[includedIndices.length];
+        Double[] filteredValues = new Double[includedIndices.length];
+
+        for (int i = 0; i < includedIndices.length; i++) {
+            filteredCategories[i] = categories.getPointAt(includedIndices[i]);
+            filteredValues[i] = values.getPointAt(includedIndices[i])==null?0:values.getPointAt(includedIndices[i]);
+        }
+
+        // 使用筛选后的数据创建系列
+        XDDFDataSource<String> filteredCatSource = XDDFDataSourcesFactory.fromArray(filteredCategories);
+        XDDFNumericalDataSource<Double> filteredValSource = XDDFDataSourcesFactory.fromArray(filteredValues);
+
+        XDDFBarChartData.Series series = (XDDFBarChartData.Series) chartData.addSeries(
+                filteredCatSource, filteredValSource);
+        series.setTitle(title, null);
     }
 
     private void setMemberDefectCountOfDay(Set<String> timeSet, List<SysMemberOfDefectsLine> list) {
