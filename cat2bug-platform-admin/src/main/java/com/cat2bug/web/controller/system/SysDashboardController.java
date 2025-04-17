@@ -278,8 +278,6 @@ public class SysDashboardController {
                 series.setTitle(title, null);
                 // 直线
                 series.setSmooth(true);
-                // 设置标记大小
-                series.setMarkerSize((short) 5);
                 // 设置标记样式，空心圆
                 series.setMarkerStyle(MarkerStyle.CIRCLE);
             }
