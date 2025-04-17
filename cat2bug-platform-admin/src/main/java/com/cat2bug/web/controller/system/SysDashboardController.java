@@ -879,6 +879,10 @@ public class SysDashboardController {
             Map<String,XDDFNumericalDataSource<Double>> numValueCellRangeAddressList = new LinkedHashMap<>();
             for(int i=dataRowStartIndex;i<=dataRowEndIndex;i++) {
                 String planName = sheet.getRow(i).getCell(0).getStringCellValue();
+                String version = sheet.getRow(i).getCell(1).getStringCellValue();
+                if(StringUtils.isNotBlank(version)){
+                    planName+=String.format("(%s)",version);
+                }
                 XDDFNumericalDataSource<Double> value = XDDFDataSourcesFactory.fromNumericCellRange(
                         sheet, new CellRangeAddress(i, i, caseTitleStartCellNum, caseTitleStartCellNum+4));
                 numValueCellRangeAddressList.put(planName, value);
