@@ -6,7 +6,6 @@ import com.cat2bug.common.core.domain.type.SysDefectStateEnum;
 import com.cat2bug.common.enums.BusinessType;
 import com.cat2bug.common.utils.MessageUtils;
 import com.cat2bug.common.utils.StringUtils;
-import com.cat2bug.common.utils.poi.ExcelUtil;
 import com.cat2bug.system.domain.*;
 import com.cat2bug.system.service.ISysDashboardService;
 import com.cat2bug.system.service.ISysPlanService;
@@ -19,7 +18,7 @@ import org.apache.poi.xddf.usermodel.XDDFLineProperties;
 import org.apache.poi.xddf.usermodel.XDDFSolidFillProperties;
 import org.apache.poi.xddf.usermodel.chart.*;
 import org.apache.poi.xssf.usermodel.*;
-import org.openxmlformats.schemas.drawingml.x2006.chart.CTChart;
+import org.openxmlformats.schemas.drawingml.x2006.chart.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -29,6 +28,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static com.cat2bug.common.utils.poi.ExcelUtil.applyLineChartsColors;
 
 /**
  * @Author: yuzhantao
@@ -283,7 +284,7 @@ public class SysDashboardController {
                 series.setMarkerStyle(MarkerStyle.CIRCLE);
             }
             // 设置图表中的颜色
-            ExcelUtil.applyLineChartsColors(chart, data);
+            applyLineChartsColors(chart, data);
             // 绘制
             chart.plot(data);
             wb.write(response.getOutputStream());
@@ -563,12 +564,12 @@ public class SysDashboardController {
                 // 直线
                 series.setSmooth(true);
                 // 设置标记大小
-                series.setMarkerSize((short) 5);
+//                series.setMarkerSize((short) 5);
                 // 设置标记样式，空心圆
                 series.setMarkerStyle(MarkerStyle.CIRCLE);
             }
             // 设置图表中的颜色
-            ExcelUtil.applyLineChartsColors(chart, data);
+            applyLineChartsColors(chart, data);
             // 绘制
             chart.plot(data);
             wb.write(response.getOutputStream());
@@ -593,28 +594,8 @@ public class SysDashboardController {
         // 统计数据
         SysPlan plan = new SysPlan();
         plan.setProjectId(projectId);
-        List<SysPlan> defectLineList = sysPlanService.selectSysPlanList(plan);
+        List<SysPlan> planList = sysPlanService.selectSysPlanList(plan);
         String sheetName = MessageUtils.message("dashboard.plan-statistics");
-//        List<Map> list = new LinkedList<>();
-//        for(SysDefectStateEnum state : SysDefectStateEnum.values()) {
-//            if(defectStateGroup.containsKey(state)==false) continue;
-//            List<SysDefectLine> defectLines = defectStateGroup.get(state);
-//            String strState = state.name();
-//            Map<String, Object> map = new HashMap<>();
-//            map.put("name", strState);
-//            list.add(map);
-//            defectStateLines.put(strState, new ArrayList<>());
-//            for (String s : timeSet) {
-//                Optional<SysDefectLine> defectLine = defectLines.stream().filter(d -> d.getDefectTime().equals(s)).findFirst();
-//                if (defectLine.isPresent()) {
-//                    map.put(s, defectLine.get().getDefectCount());
-//                    defectStateLines.get(strState).add(defectLine.get().getDefectCount());
-//                } else {
-//                    map.put(s, 0L);
-//                    defectStateLines.get(strState).add(0L);
-//                }
-//            }
-//        }
 
         // 数据转excel
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
@@ -629,6 +610,9 @@ public class SysDashboardController {
             // 创建图表行
             Row rowChart = sheet.createRow(++rowNum);
             rowChart.setHeight((short)5000);
+
+            Row rowChart2 = sheet.createRow(++rowNum);
+            rowChart2.setHeight((short)3000);
             // 创建标题行
             Row rowTitle1 = sheet.createRow(++rowNum);
             // 创建一个单元格样式
@@ -701,12 +685,6 @@ public class SysDashboardController {
             cellDefectRepairRateTitle.setCellStyle(titleStyle);
             CellRangeAddress regionDefectRepairRate = new CellRangeAddress(rowNum, rowNum+1, titleCellNum, titleCellNum);
             sheet.addMergedRegion(regionDefectRepairRate);
-            // 缺陷密度
-            Cell cellDefectDensityTitle = rowTitle1.createCell(++titleCellNum);
-            cellDefectDensityTitle.setCellValue(MessageUtils.message("defect.density"));
-            cellDefectDensityTitle.setCellStyle(titleStyle);
-            CellRangeAddress regionDefectDensity = new CellRangeAddress(rowNum, rowNum+1, titleCellNum, titleCellNum);
-            sheet.addMergedRegion(regionDefectDensity);
             // 缺陷探测率
             Cell cellDefectDetectionRateTitle = rowTitle1.createCell(++titleCellNum);
             cellDefectDetectionRateTitle.setCellValue(MessageUtils.message("defect.detection-rate"));
@@ -731,6 +709,12 @@ public class SysDashboardController {
             cellDefectEscapeRateTitle.setCellStyle(titleStyle);
             CellRangeAddress regionDefectEscapeRate = new CellRangeAddress(rowNum, rowNum+1, titleCellNum, titleCellNum);
             sheet.addMergedRegion(regionDefectEscapeRate);
+            // 缺陷密度
+            Cell cellDefectDensityTitle = rowTitle1.createCell(++titleCellNum);
+            cellDefectDensityTitle.setCellValue(MessageUtils.message("defect.density"));
+            cellDefectDensityTitle.setCellStyle(titleStyle);
+            CellRangeAddress regionDefectDensity = new CellRangeAddress(rowNum, rowNum+1, titleCellNum, titleCellNum);
+            sheet.addMergedRegion(regionDefectDensity);
             // 缺陷修复平均时长
             Cell cellDefectRepairAvgHourTitle = rowTitle1.createCell(++titleCellNum);
             cellDefectRepairAvgHourTitle.setCellValue(MessageUtils.message("defect.repair-avg-hour"));
@@ -757,6 +741,10 @@ public class SysDashboardController {
             cellNotRunTitle.setCellValue(MessageUtils.message("not-run"));
             cellNotRunTitle.setCellStyle(titleStyle);
             // 设置第二行标题默认样式
+            for(int i=0;i<caseTitleStartCellNum;i++) {
+                Cell emptyCell = rowTitle2.createCell(i);
+                emptyCell.setCellStyle(titleStyle);
+            }
             for(int i=caseTitleStartCellNum+4;i<=titleCellNum;i++) {
                 Cell emptyCell = rowTitle2.createCell(i);
                 emptyCell.setCellStyle(titleStyle);
@@ -770,6 +758,15 @@ public class SysDashboardController {
             dataStyle.setBorderLeft(BorderStyle.THIN);
             dataStyle.setBorderRight(BorderStyle.THIN);
             dataStyle.setBorderTop(BorderStyle.THIN);
+            // 百分比数据样式
+            XSSFCellStyle percentageStyle = wb.createCellStyle();
+            percentageStyle.setDataFormat(wb.createDataFormat().getFormat("0.00%"));
+            percentageStyle.setAlignment(HorizontalAlignment.RIGHT);
+            percentageStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+            percentageStyle.setBorderBottom(BorderStyle.THIN);
+            percentageStyle.setBorderLeft(BorderStyle.THIN);
+            percentageStyle.setBorderRight(BorderStyle.THIN);
+            percentageStyle.setBorderTop(BorderStyle.THIN);
             // 日期格式的样式
             XSSFCellStyle timeStyle = wb.createCellStyle();
             timeStyle.setAlignment(HorizontalAlignment.RIGHT);
@@ -782,7 +779,7 @@ public class SysDashboardController {
             DataFormat dataFormat = wb.createDataFormat();
             short dateFormat = dataFormat.getFormat(dateFormatString);
             timeStyle.setDataFormat(dateFormat);
-            for(SysPlan p : defectLineList) {
+            for(SysPlan p : planList) {
                 int colNum = 0;
                 Row row = sheet.createRow(++rowNum);
                 // 测试计划名称
@@ -824,31 +821,31 @@ public class SysDashboardController {
                 // 缺陷发现率
                 Cell cellDiscoveryRate = row.createCell(colNum++);
                 cellDiscoveryRate.setCellValue(strPercentage2Double(p.getDefectDiscoveryRate()));
-                cellDiscoveryRate.setCellStyle(dataStyle);
+                cellDiscoveryRate.setCellStyle(percentageStyle);
                 // 缺陷修复率
                 Cell cellRepairRate = row.createCell(colNum++);
                 cellRepairRate.setCellValue(strPercentage2Double(p.getDefectRepairRate()));
-                cellRepairRate.setCellStyle(dataStyle);
+                cellRepairRate.setCellStyle(percentageStyle);
+                // 缺陷探测率
+                Cell cellDefectDetectionRate = row.createCell(colNum++);
+                cellDefectDetectionRate.setCellValue(strPercentage2Double(p.getDefectDetectionRate()));
+                cellDefectDetectionRate.setCellStyle(percentageStyle);
+                // 缺陷严重率
+                Cell cellDefectSeverityRate = row.createCell(colNum++);
+                cellDefectSeverityRate.setCellValue(strPercentage2Double(p.getDefectSeverityRate()));
+                cellDefectSeverityRate.setCellStyle(percentageStyle);
+                // 缺陷重开率
+                Cell cellDefectRestartRate = row.createCell(colNum++);
+                cellDefectRestartRate.setCellValue(strPercentage2Double(p.getDefectRestartRate()));
+                cellDefectRestartRate.setCellStyle(percentageStyle);
+                // 缺陷逃逸率
+                Cell cellDefectEscapeRate = row.createCell(colNum++);
+                cellDefectEscapeRate.setCellValue(strPercentage2Double(p.getDefectEscapeRate()));
+                cellDefectEscapeRate.setCellStyle(percentageStyle);
                 // 缺陷密度
                 Cell cellDefectDensity = row.createCell(colNum++);
                 cellDefectDensity.setCellValue(Double.valueOf(p.getDefectDensity()));
                 cellDefectDensity.setCellStyle(dataStyle);
-                // 缺陷探测率
-                Cell cellDefectDetectionRate = row.createCell(colNum++);
-                cellDefectDetectionRate.setCellValue(strPercentage2Double(p.getDefectDetectionRate()));
-                cellDefectDetectionRate.setCellStyle(dataStyle);
-                // 缺陷严重率
-                Cell cellDefectSeverityRate = row.createCell(colNum++);
-                cellDefectSeverityRate.setCellValue(strPercentage2Double(p.getDefectSeverityRate()));
-                cellDefectSeverityRate.setCellStyle(dataStyle);
-                // 缺陷重开率
-                Cell cellDefectRestartRate = row.createCell(colNum++);
-                cellDefectRestartRate.setCellValue(strPercentage2Double(p.getDefectRestartRate()));
-                cellDefectRestartRate.setCellStyle(dataStyle);
-                // 缺陷逃逸率
-                Cell cellDefectEscapeRate = row.createCell(colNum++);
-                cellDefectEscapeRate.setCellValue(strPercentage2Double(p.getDefectEscapeRate()));
-                cellDefectEscapeRate.setCellStyle(dataStyle);
                 // 缺陷修复平均时长
                 Cell cellDefectRepairAvgHour = row.createCell(colNum++);
                 cellDefectRepairAvgHour.setCellValue(Double.valueOf(p.getDefectRepairAvgHour()));
@@ -857,18 +854,16 @@ public class SysDashboardController {
             // 设置所有列为自适应宽度
             for(int i = 0;i <= titleCellNum;i++) {
                 sheet.autoSizeColumn(i, true);
+                // 获取当前列宽并增加20%
+                int currentWidth = sheet.getColumnWidth(i);
+                // 设置列宽加30%
+                sheet.setColumnWidth(i, (int)(currentWidth * 1.3));
             }
 
             // 绘制图表
-            // 创建一个画布
-            XSSFDrawing drawing = sheet.createDrawingPatriarch();
-            XSSFClientAnchor anchor = drawing.createAnchor(0, 0, 0, 0, 0, 0 ,titleCellNum + 1, 1);
-            XSSFChart chart = drawing.createChart(anchor);
-            chart.setTitleText(sheetName);
-            chart.setTitleOverlay(false);
             // 设置图表数据区域
-            int dataRowStartIndex = 3;
-            int dataRowEndIndex = dataRowStartIndex+defectLineList.size()-1;
+            int dataRowStartIndex = 4;
+            int dataRowEndIndex = dataRowStartIndex+planList.size()-1;
             // 获取x坐标分类字段名集合
             List<String> categories = new LinkedList<>();
             for(int i=caseTitleStartCellNum;i<caseTitleStartCellNum+4;i++) {
@@ -880,66 +875,56 @@ public class SysDashboardController {
             XDDFDataSource<String> category = XDDFDataSourcesFactory.fromArray(
                     categories.toArray(new String[0])
             );
-            // 数据
-            Map<String, XDDFNumericalDataSource<Double>> valueList = new LinkedHashMap<>();
+            // 统计数量数据
+            Map<String,XDDFNumericalDataSource<Double>> numValueCellRangeAddressList = new LinkedHashMap<>();
             for(int i=dataRowStartIndex;i<=dataRowEndIndex;i++) {
                 String planName = sheet.getRow(i).getCell(0).getStringCellValue();
                 XDDFNumericalDataSource<Double> value = XDDFDataSourcesFactory.fromNumericCellRange(
-                        sheet, new CellRangeAddress(i, i, caseTitleStartCellNum, titleCellNum));
-                valueList.put(planName, value);
+                        sheet, new CellRangeAddress(i, i, caseTitleStartCellNum, caseTitleStartCellNum+4));
+                numValueCellRangeAddressList.put(planName, value);
             }
-
-            // 分类轴标(X轴),标题位置
-            XDDFCategoryAxis bottomAxis = chart.createCategoryAxis(AxisPosition.BOTTOM);
-            // 值(Y轴)轴,标题位置
-            XDDFValueAxis leftAxis = chart.createValueAxis(AxisPosition.LEFT);
-            // 设置右侧Y轴标题
-            leftAxis.setTitle("数量(个)");
-            // 设置交叉方式
-            leftAxis.setCrosses(AxisCrosses.MAX);
-            leftAxis.setMajorUnit(500);
-            // 创建第二个Y轴（右侧）
-            XDDFValueAxis rightAxis = chart.createValueAxis(AxisPosition.RIGHT);
-            // 设置右侧Y轴标题
-            rightAxis.setTitle("百分比(%)"); // 设置右侧Y轴标题
-            // 设置交叉方式
-            rightAxis.setCrosses(AxisCrosses.MAX);
-//            rightAxis.setNumberFormat("0%");
-            rightAxis.setMinimum(0.0);
-            rightAxis.setMaximum(1.0);
-            rightAxis.setMajorUnit(1);
-            // 创建图表数据并设置系列
-            XDDFBarChartData dataChart = (XDDFBarChartData)chart.createData(
-                    ChartTypes.BAR,
-                    bottomAxis,
-                    leftAxis);
-//             设置类型
-//            dataChart.setBarGrouping(BarGrouping.CLUSTERED);
-            // 设置方向
-            dataChart.setBarDirection(BarDirection.COL);
-
-            XDDFBarChartData percentageChart = (XDDFBarChartData)chart.createData(
-                    ChartTypes.BAR,
-                    bottomAxis,
-                    rightAxis);
-            // 设置类型
-//            percentageChart.setBarGrouping(BarGrouping.CLUSTERED);
-            // 设置方向
-            percentageChart.setBarDirection(BarDirection.COL);
-            percentageChart.setOverlap((byte) 255);
-
-            for(Map.Entry<String, XDDFNumericalDataSource<Double>> ds : valueList.entrySet()) {
-                addFilteredSeries(dataChart, category, ds.getValue(), ds.getKey(), new int[]{0, 1, 2,3,4,7,12});
-                addFilteredSeries(percentageChart, category, ds.getValue(), ds.getKey(), new int[]{5,6,8,9,10,11});
+            // 绘制画布
+            drawPlanStatisticsChart(sheet, MessageUtils.message("dashboard.plan-statistics.quantity-comparison"),
+                    0,1,0,titleCellNum + 1,
+                    MessageUtils.message("dashboard.plan-statistics.quantity"),
+                    category, numValueCellRangeAddressList, new int[]{0, 1, 2,3,4}, true);
+            // 统计百分比数据
+            Map<String,XDDFNumericalDataSource<Double>> percentageValueCellRangeAddressList = new LinkedHashMap<>();
+            for(int i=dataRowStartIndex;i<=dataRowEndIndex;i++) {
+                String planName = sheet.getRow(i).getCell(0).getStringCellValue();
+                XDDFNumericalDataSource<Double> value = XDDFDataSourcesFactory.fromNumericCellRange(
+                        sheet, new CellRangeAddress(i, i, caseTitleStartCellNum+5, caseTitleStartCellNum+10));
+                percentageValueCellRangeAddressList.put(planName, value);
             }
+            drawPlanStatisticsChart(sheet, MessageUtils.message("dashboard.plan-statistics.percentage-comparison"),
+                    1,2,0,9,
+                    MessageUtils.message("dashboard.plan-statistics.percentage"),
+                    category, percentageValueCellRangeAddressList, new int[]{5,6,7,8,9,10}, false);
+            // 统计密度数据
+            Map<String,XDDFNumericalDataSource<Double>> densityValueCellRangeAddressList = new LinkedHashMap<>();
+            for(int i=dataRowStartIndex;i<=dataRowEndIndex;i++) {
+                String planName = sheet.getRow(i).getCell(0).getStringCellValue();
+                XDDFNumericalDataSource<Double> value = XDDFDataSourcesFactory.fromNumericCellRange(
+                        sheet, new CellRangeAddress(i, i, caseTitleStartCellNum+11, caseTitleStartCellNum+11));
+                densityValueCellRangeAddressList.put(planName, value);
+            }
+            drawPlanStatisticsChart(sheet, MessageUtils.message("dashboard.plan-statistics.density-comparison"),
+                    1,2,9,13,
+                    MessageUtils.message("dashboard.plan-statistics.density"),
+                    category, densityValueCellRangeAddressList, new int[]{11}, false);
 
-            // 绘制
-            chart.plot(percentageChart);
-            chart.plot(dataChart);
-
-            // 设置图例位置
-            XDDFChartLegend legend = chart.getOrAddLegend();
-            legend.setPosition(LegendPosition.RIGHT);
+            // 统计时间数据
+            Map<String,XDDFNumericalDataSource<Double>> timeValueCellRangeAddressList = new LinkedHashMap<>();
+            for(int i=dataRowStartIndex;i<=dataRowEndIndex;i++) {
+                String planName = sheet.getRow(i).getCell(0).getStringCellValue();
+                XDDFNumericalDataSource<Double> value = XDDFDataSourcesFactory.fromNumericCellRange(
+                        sheet, new CellRangeAddress(i, i, caseTitleStartCellNum+12, caseTitleStartCellNum+12));
+                timeValueCellRangeAddressList.put(planName, value);
+            }
+            drawPlanStatisticsChart(sheet, MessageUtils.message("dashboard.plan-statistics.time-comparison"),
+                    1,2,13,17,
+                    MessageUtils.message("dashboard.plan-statistics.time"),
+                    category, timeValueCellRangeAddressList, new int[]{12}, false);
 
             wb.write(response.getOutputStream());
         }
@@ -950,6 +935,74 @@ public class SysDashboardController {
         finally
         {
             IOUtils.closeQuietly(wb);
+        }
+    }
+
+    /**
+     * 绘制测试计划矩形图表
+     * @param sheet 表格对象
+     * @param title 标题
+     * @param row1  展示起始行
+     * @param row2  展示结束行
+     * @param col1  展示起始列
+     * @param col2  展示结束列
+     * @param yName Y轴名称
+     * @param category  x坐标分类对象
+     * @param valueCellRangeAddressList 数据值
+     * @param bindDataCols 绑定的数据列
+     * @param showLegend 是否显示图例
+     */
+    private void drawPlanStatisticsChart(XSSFSheet sheet, String title, int row1, int row2, int col1, int col2,
+                                         String yName,
+                                         XDDFDataSource<String> category, Map<String,XDDFNumericalDataSource<Double>> valueCellRangeAddressList,
+                                         int[] bindDataCols, boolean showLegend
+                           ) {
+        XSSFDrawing drawing = sheet.createDrawingPatriarch();
+        XSSFClientAnchor anchor = drawing.createAnchor(0, 0, 0, 0, col1, row1 ,col2, row2);
+        XSSFChart chart = drawing.createChart(anchor);
+        chart.setTitleText(title);
+        chart.setTitleOverlay(false);
+
+        // 分类轴标(X轴),标题位置
+        XDDFCategoryAxis bottomAxis = chart.createCategoryAxis(AxisPosition.BOTTOM);
+        // 值(Y轴)轴,标题位置
+        XDDFValueAxis leftAxis = chart.createValueAxis(AxisPosition.LEFT);
+        // 设置Y轴标题
+        leftAxis.setTitle(yName);
+        leftAxis.setCrossBetween(AxisCrossBetween.BETWEEN);
+        // 创建图表数据并设置系列
+        XDDFBarChartData dataChart = (XDDFBarChartData)chart.createData(
+                ChartTypes.BAR,
+                bottomAxis,
+                leftAxis);
+        // 设置类型
+        dataChart.setBarGrouping(BarGrouping.CLUSTERED);
+        // 设置方向
+        dataChart.setBarDirection(BarDirection.COL);
+
+        for(Map.Entry<String, XDDFNumericalDataSource<Double>> ds : valueCellRangeAddressList.entrySet()) {
+            addFilteredSeries(dataChart, category, ds.getValue(), ds.getKey(), bindDataCols);
+        }
+        // 绘制
+        chart.plot(dataChart);
+        // 设置颜色
+        applyLineChartsColors(chart,dataChart);
+
+        for(CTBarSer ctBarSer : chart.getCTChart().getPlotArea().getBarChartArray(0).getSerArray()) {
+            CTDLbls ctdLbls = ctBarSer.addNewDLbls();
+            ctdLbls.addNewShowVal().setVal(true); // 显示数值
+            ctdLbls.addNewShowLegendKey().setVal(false);
+            ctdLbls.addNewShowCatName().setVal(false);
+            ctdLbls.addNewShowSerName().setVal(false);
+            // 设置标签位置（外部末端）
+            ctdLbls.addNewDLblPos().setVal(STDLblPos.OUT_END);
+
+        }
+
+        // 设置图例位置
+        if(showLegend) {
+            XDDFChartLegend legend = chart.getOrAddLegend();
+            legend.setPosition(LegendPosition.RIGHT);
         }
     }
 
@@ -968,19 +1021,19 @@ public class SysDashboardController {
                                           int[] includedIndices) {
         // 创建筛选后的数据源
         String[] filteredCategories = new String[includedIndices.length];
-        Double[] filteredValues = new Double[includedIndices.length];
+//        Double[] filteredValues = new Double[includedIndices.length];
 
         for (int i = 0; i < includedIndices.length; i++) {
             filteredCategories[i] = categories.getPointAt(includedIndices[i]);
-            filteredValues[i] = values.getPointAt(includedIndices[i])==null?0:values.getPointAt(includedIndices[i]);
+//            filteredValues[i] = values.getPointAt(includedIndices[i])==null?0:values.getPointAt(includedIndices[i]);
         }
 
         // 使用筛选后的数据创建系列
         XDDFDataSource<String> filteredCatSource = XDDFDataSourcesFactory.fromArray(filteredCategories);
-        XDDFNumericalDataSource<Double> filteredValSource = XDDFDataSourcesFactory.fromArray(filteredValues);
+//        XDDFNumericalDataSource<Double> filteredValSource = XDDFDataSourcesFactory.fromArray(filteredValues);
 
-        XDDFBarChartData.Series series = (XDDFBarChartData.Series) chartData.addSeries(
-                filteredCatSource, filteredValSource);
+        XDDFChartData.Series series =  chartData.addSeries(
+                filteredCatSource, values);
         series.setTitle(title, null);
     }
 

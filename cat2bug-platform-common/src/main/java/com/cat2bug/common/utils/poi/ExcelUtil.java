@@ -275,13 +275,15 @@ public class ExcelUtil<T>
         CTPlotArea ctPlotArea = chart.getCTChart().getPlotArea();
         // 获取折线区域集合
         CTLineChart[] ctLineCharts =ctPlotArea.getLineChartArray();
-        // 获取折线
-        CTLineSer[] lines = ctLineCharts[0].getSerArray();
-        // 获取折线的标记点对象
-        CTMarker ctMarker = lines[lineIndex].getMarker();
-        // 获取标记点属性
-        CTShapeProperties markerShapeProperties = ctMarker.addNewSpPr();
-        markerShapeProperties.set(propertiesMarker.getXmlObject());
+        if(ctLineCharts.length>0) {
+            // 获取折线
+            CTLineSer[] lines = ctLineCharts[0].getSerArray();
+            // 获取折线的标记点对象
+            CTMarker ctMarker = lines[lineIndex].getMarker();
+            // 获取标记点属性
+            CTShapeProperties markerShapeProperties = ctMarker.addNewSpPr();
+            markerShapeProperties.set(propertiesMarker.getXmlObject());
+        }
     }
 
     /**
