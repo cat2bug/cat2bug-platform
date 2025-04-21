@@ -1,8 +1,12 @@
 package com.cat2bug.system.mapper;
 
+import java.util.Date;
 import java.util.List;
+
+import com.cat2bug.common.core.domain.entity.SysDefect;
 import com.cat2bug.system.domain.SysPlan;
 import com.cat2bug.system.domain.SysPlanItem;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * 测试计划Mapper接口
@@ -33,6 +37,15 @@ public interface SysPlanMapper
      * @return 测试计划集合
      */
     public List<SysPlan> selectSysPlanList(SysPlan sysPlan);
+
+    /**
+     * 查询缺陷列表
+     *
+     * @param sysDefect 缺陷
+     * @return 缺陷集合
+     */
+    public List<SysDefect> selectSysDefectList(@Param("planId") String planId, @Param("defect") SysDefect sysDefect, @Param("currentUserId") Long currentUserId, @Param("currentTime") Date currentTime);
+
 
     /**
      * 新增测试计划

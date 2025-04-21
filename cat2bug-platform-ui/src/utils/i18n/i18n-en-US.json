@@ -411,7 +411,7 @@
   "comment": "Comment",
   "module": "Deliverable",
   "module.all-module": "All Deliverable",
-  "defect.all-level": "All Defect Level",
+  "defect.all-level": "All Test Case Level",
   "module.list": "Deliverable List",
   "defect.level-list": "Level List",
   "module.create": "Create Deliverable",

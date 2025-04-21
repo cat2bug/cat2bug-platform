@@ -2,6 +2,7 @@ package com.cat2bug.system.service;
 
 import java.util.List;
 
+import com.cat2bug.common.core.domain.entity.SysDefect;
 import com.cat2bug.common.utils.SecurityUtils;
 import com.cat2bug.system.domain.SysPlan;
 
@@ -30,11 +31,20 @@ public interface ISysPlanService
 
     /**
      * 查询测试计划列表
-     * 
+     *
      * @param sysPlan 测试计划
      * @return 测试计划集合
      */
     public List<SysPlan> selectSysPlanList(SysPlan sysPlan);
+
+    /**
+     * 查询缺陷列表
+     *
+     * @param planId  测试计划ID
+     * @param sysDefect 缺陷
+     * @return 缺陷集合
+     */
+    public List<SysDefect> selectSysDefectList(String planId, SysDefect sysDefect);
 
     /**
      * 新增测试计划

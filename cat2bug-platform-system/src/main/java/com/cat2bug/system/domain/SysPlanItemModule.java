@@ -12,4 +12,5 @@ public class SysPlanItemModule extends SysModule {
     private long itemCount;
     private String planId;
     private long passCount;
+    private long defectCount;
 }

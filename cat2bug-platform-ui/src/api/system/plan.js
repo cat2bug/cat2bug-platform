@@ -9,6 +9,15 @@ export function listPlan(query) {
   })
 }
 
+// 查询测试计划中的缺陷列表
+export function listDefectOfPlan(planId, query) {
+  return request({
+    url: '/system/plan/'+planId+'/defect/list',
+    method: 'get',
+    params: query
+  })
+}
+
 // 查询测试计划详细
 export function getPlan(planId) {
   return request({

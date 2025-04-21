@@ -1,5 +1,6 @@
 package com.cat2bug.system.service.impl;
 
+import com.cat2bug.common.core.domain.entity.SysDefect;
 import com.cat2bug.common.utils.DateUtils;
 import com.cat2bug.common.utils.SecurityUtils;
 import com.cat2bug.common.utils.StringUtils;
@@ -8,6 +9,7 @@ import com.cat2bug.common.utils.uuid.UUID;
 import com.cat2bug.system.domain.*;
 import com.cat2bug.system.mapper.SysModuleMapper;
 import com.cat2bug.system.mapper.SysPlanItemMapper;
+import com.cat2bug.system.service.ISysDefectService;
 import com.cat2bug.system.service.ISysPlanItemService;
 import com.cat2bug.system.service.ISysUserConfigService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,15 +32,14 @@ public class SysPlanItemServiceImpl implements ISysPlanItemService
 {
     @Autowired
     private SysPlanItemMapper sysPlanItemMapper;
-
     @Autowired
     private ISysUserConfigService sysUserConfigService;
-
     @Autowired
     private SysModuleMapper sysModuleMapper;
     @Autowired
     private SysPlanServiceImpl sysPlanServiceImpl;
-
+    @Autowired
+    private ISysDefectService sysDefectService;
     /**
      * 查询测试计划子项
      * 
@@ -104,6 +105,7 @@ public class SysPlanItemServiceImpl implements ISysPlanItemService
             List<SysPlanItem> itemList = sysPlanItemMapper.selectSysPlanItemList(sysPlanItem);
             m.setItemCount(itemList.size());
             m.setPassCount(itemList.stream().filter(i->"pass".equals(i.getPlanItemState())).count()); // 统计通过的数量
+            m.setDefectCount(itemList.stream().mapToInt(i->i.getDefectIds().size()).sum());
             return m;
         }).collect(Collectors.toList());
     }

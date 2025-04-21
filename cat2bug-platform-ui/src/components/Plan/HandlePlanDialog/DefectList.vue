@@ -1,9 +1,43 @@
 <template>
-  <div>
-    <!--查询-->
-    <div class="defect-table-tools">
-      <slot name="left-tools"></slot>
-      <div class="table-tools row">
+  <div class="plan-item-content">
+    <div class="plan-item-query">
+      <div class="row">
+        <slot name="query"></slot>
+        <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" label-width="0">
+          <el-form-item prop="defectName">
+            <el-input
+              size="small"
+              v-model="queryParams.defectName"
+              :placeholder="$t('defect.enter-name')"
+              prefix-icon="el-icon-search"
+              clearable
+              @input="search()"
+            />
+          </el-form-item>
+          <el-form-item prop="defectState">
+            <el-select size="small" v-model="queryParams.params.defectStates" multiple collapse-tags clearable :placeholder="$t('defect.select-state')" @change="search()">
+              <el-option
+                v-for="state in defectStates"
+                :key="state.key"
+                :label="$i18n.t(state.value)"
+                :value="state.key">
+              </el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item prop="handleBy" class="padding-top-3px">
+            <select-project-member
+              v-model="queryParams.handleBy"
+              :project-id="projectId"
+              placeholder="defect.select-handle-by"
+              :is-head="false"
+              size="small"
+              icon="el-icon-user"
+              @input="search()"
+            />
+          </el-form-item>
+        </el-form>
+      </div>
+      <div class="handle-plan-tools-right">
         <el-popover
           placement="top"
           trigger="click">
@@ -23,37 +57,9 @@
             size="mini"
           ></el-button>
         </el-popover>
-        <div>
-          <slot name="right-tools"></slot>
-        </div>
       </div>
     </div>
-    <!--表格-->
     <el-table ref="defectTable" :key="tableKey" v-loading="loading" style="width:100%;" :data="defectList" @selection-change="handleSelectionChange" @sort-change="sortChangeHandle" @row-click="handleClickTableRow">
-<!--      多选项，后续版本开放 -->
-<!--      <el-table-column width="50" align="start">-->
-<!--        <template #header>-->
-<!--          <el-checkbox key="allCheck" :indeterminate="isIndeterminate" v-model="isCheckAll" @change="handleCheckAllChange"></el-checkbox>-->
-<!--        </template>-->
-<!--        <template slot-scope="scope">-->
-<!--          <div class="row">-->
-<!--            <el-checkbox-group v-model="checkedDefectList" @change="handleCheckedDefectChange">-->
-<!--              <el-checkbox :label="scope.row.defectId" :key="scope.row.defectId" @click.native="handleStopPropagation">{{''}}</el-checkbox>-->
-<!--            </el-checkbox-group>-->
-<!--            <div class="defect-check-tools">-->
-<!--              <el-tooltip class="item" effect="dark" content="合并缺陷" placement="right">-->
-<!--                <svg-icon icon-class="booknail" :disabled="batchToolsDisabled(scope.row)" />-->
-<!--              </el-tooltip>-->
-<!--              <el-tooltip class="item" effect="dark" content="合并缺陷" placement="right">-->
-<!--                <el-button round type="warning" :disabled="batchToolsDisabled(scope.row)"></el-button>-->
-<!--              </el-tooltip>-->
-<!--              <el-tooltip class="item" effect="dark" content="批量删除" placement="right">-->
-<!--                <el-button round type="danger" :disabled="batchToolsDisabled(scope.row)"></el-button>-->
-<!--              </el-tooltip>-->
-<!--            </div>-->
-<!--          </div>-->
-<!--        </template>-->
-<!--      </el-table-column>-->
       <el-table-column v-if="showField('id')" :label="$t('id')" :key="$t('id')" align="left" prop="projectNum" width="80" sortable="custom" fixed >
         <template slot-scope="scope">
           <span>{{ '#' + scope.row.projectNum }}</span>
@@ -163,22 +169,29 @@ import FocusMemberList from "@/components/FocusMemberList";
 import DefectTypeFlag from "@/components/Defect/DefectTypeFlag";
 import DefectStateFlag from "@/components/Defect/DefectStateFlag";
 import DefectTools from "@/components/Defect/DefectTools";
-import {listDefect} from "@/api/system/defect";
+import SelectModule from "@/components/Module/SelectModule";
+import SelectProjectMember from "@/components/Project/SelectProjectMember";
+import {parseTime} from "@/utils/ruoyi";
 import {lifeTime} from "@/utils/defect";
+import {listDefect} from "@/api/system/defect";
+import {listDefectOfPlan} from "@/api/system/plan";
+import {getDefectState} from "@/api/system/DefectState";
 
 /** 需要显示的缺陷字段列表在缓存的key值 */
-const DEFECT_TABLE_FIELD_LIST_CACHE_KEY='defect-table-field-list';
+const DEFECT_TABLE_FIELD_LIST_CACHE_KEY='plan-defect-table-field-list';
 /** 用例表排序的列 */
-const DEFECT_TABLE_SORT_COLUMN = 'defect_table_sort_column_key';
+const DEFECT_TABLE_SORT_COLUMN = 'plan-defect_table_sort_column_key';
 /** 用例表排序的类型（正序、倒叙） */
-const DEFECT_TABLE_SORT_TYPE = 'defect_table_sort_type_key';
-
+const DEFECT_TABLE_SORT_TYPE = 'plan-defect_table_sort_type_key';
 export default {
-  name: "DefectTable",
+  name: "DefectList",
   dicts: ['defect_level'],
-  components: {RowListMember, Cat2BugPreviewImage, LevelTag, FocusMemberList, DefectTypeFlag, DefectStateFlag, DefectTools, Cat2BugText},
+  components: { LevelTag, Cat2BugText, RowListMember, Cat2BugPreviewImage, FocusMemberList, DefectTypeFlag, DefectStateFlag, DefectTools, SelectModule, SelectProjectMember },
   data() {
     return {
+      loading: false,
+      plan: {},
+      planItem: {},
       // 是否选择了所有
       isCheckAll: false,
       // 全选组件的状态
@@ -186,8 +199,6 @@ export default {
       // 勾选的缺陷ID列表
       checkedDefectList: [],
       tableKey: (new Date()).getMilliseconds(),
-      // 遮罩层
-      loading: true,
       // 选中数组
       ids: [],
       // 非单个禁用
@@ -198,8 +209,8 @@ export default {
       total: 0,
       // 缺陷表格数据
       defectList: [],
-      // 查询参数
-      queryParams: this.query,
+      // 缺陷状态数组
+      defectStates: [],
       // 表格组件相关配置
       // 选中的表格列数据集合
       tableShowFieldList: [],
@@ -207,36 +218,30 @@ export default {
       tableAllFieldList: [
         'id','type','defect.name','priority','state','module','version','image','annex','update-time','plan-start-time','plan-end-time','createBy','handle-by'
       ],
-    }
-  },
-  props: {
-    query: {
-      type: Object,
-      default: () => {
-        return {
-          pageNum: 1,
-          pageSize: 10,
-          orderByColumn: 'projectNum',
-          isAsc: 'desc',
-          defectType: null,
-          defectName: null,
-          projectId: 0,
-          testPlanId: null,
-          caseId: null,
-          dataSources: null,
-          dataSourcesParams: null,
-          moduleId: null,
-          moduleVersion: null,
-          createBy: null,
-          updateTime: null,
-          createTime: null,
-          updateBy: null,
-          defectState: null,
-          handleBy: null,
-          handleTime: null,
-          defectLevel: null,
-          params:{}
-        }
+      // 查询条件
+      queryParams: {
+        pageNum: 1,
+        pageSize: 10,
+        orderByColumn: 'projectNum',
+        isAsc: 'desc',
+        defectType: null,
+        defectName: null,
+        projectId: 0,
+        testPlanId: null,
+        caseId: null,
+        dataSources: null,
+        dataSourcesParams: null,
+        moduleId: null,
+        moduleVersion: null,
+        createBy: null,
+        updateTime: null,
+        createTime: null,
+        updateBy: null,
+        defectState: null,
+        handleBy: null,
+        handleTime: null,
+        defectLevel: null,
+        params:{}
       }
     }
   },
@@ -245,7 +250,33 @@ export default {
       this.refreshShowFields();
     },
   },
+  directives: {
+    resize: {
+      // 指令的名称
+      bind(el, binding) {
+        // el为绑定的元素，binding为绑定给指令的对象
+        let width = ''
+        let height = ''
+        function isResize() {
+          const style = document.defaultView.getComputedStyle(el);
+          if (width !== style.width || height !== style.height) {
+            binding.value({ width: style.width, height: style.height }) // 关键(这传入的是函数,所以执行此函数)
+          }
+          width = style.width
+          height = style.height
+        }
+        el.__vueSetInterval__ = setInterval(isResize, 300)
+      },
+      unbind(el) {
+        clearInterval(el.__vueSetInterval__)
+      }
+    }
+  },
   computed: {
+    /** 项目ID */
+    projectId: function () {
+      return parseInt(this.$store.state.user.config.currentProjectId);
+    },
     /** 缺陷批量工具是否可用 */
     batchToolsDisabled: function () {
       return function (defect) {
@@ -280,7 +311,31 @@ export default {
       }
     },
   },
+  created() {
+    this.initDefectState();
+  },
   methods: {
+    parseTime,
+    /** 初始化缺陷状态 */
+    initDefectState() {
+      getDefectState().then(res=>{
+        this.defectStates = res.data;
+      });
+    },
+    setDragComponentSize() {
+      // 组件尺寸改变
+      this.$emit('resize');
+    },
+    initFloatMenu() {
+      this.$emit('init-float-menu');
+    },
+    open(planId, projectId, query) {
+      this.queryParams.projectId = projectId;
+      this.queryParams = {...this.queryParams, ...query}
+      this.queryParams.planId = planId;
+      this.init();
+      this.search(this.queryParams);
+    },
     init() {
       this.refreshShowFields();
       this.initSort();
@@ -315,7 +370,7 @@ export default {
     /** 设置列表显示的属性字段 */
     refreshShowFields() {
       const fieldList = this.getShowFields();
-      if(fieldList) {
+      if(fieldList && fieldList.length>0) {
         this.tableShowFieldList = fieldList;
       } else {
         this.tableShowFieldList = [];
@@ -343,7 +398,6 @@ export default {
             this.queryParams.orderByColumn=e.prop;
             break;
         }
-        // this.queryParams.isAsc=e.order=='ascending'?"asc":'desc';
         this.queryParams.isAsc=e.order;
       } else {
         this.queryParams.orderByColumn=null;
@@ -355,8 +409,8 @@ export default {
     /** 查询缺陷列表 */
     search(params) {
       this.loading = true;
-      this.queryParams = params;
-      listDefect(params).then(response => {
+      this.queryParams = params||this.queryParams;
+      listDefectOfPlan(this.queryParams.planId, this.queryParams).then(response => {
         this.loading = false;
         this.defectList = response.rows;
         this.total = response.total;
@@ -403,126 +457,43 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@media screen and (max-width: 980px) {
-  .defect-table-tools {
-    justify-content: flex-end;
-  }
+.plan-item-content {
+  flex-grow: 1;
+  overflow:hidden;
+  height: 100%;
+  padding-bottom: 30px;
 }
-@media screen and (min-width: 980px) {
-  .defect-table-tools {
-    justify-content: space-between;
-  }
-}
-
-.defect-table-tools {
-  display: flex;
+.plan-item-query {
+  display: inline-flex;
   flex-direction: row;
-  align-items: center;
-  > * {
-    display: inline-block;
-    justify-content: flex-start;
-    margin-bottom: 0px;
-    ::v-deep .el-form-item {
-      margin-bottom: 0px;
-    }
-  }
-  .table-tools {
-    align-items: flex-start;
-    padding-top: 3px;
-    > * {
-      margin-bottom: 10px;
-    }
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+  .el-form-item {
+    margin-bottom: 5px;
   }
 }
-.el-checkbox-group {
-  width: 15px;
-  height: 15px;
-  line-height: 15px;
+.handle-plan-tools-right {
+  display: inline-flex;
+  flex-direction: row;
+  gap: 10px;
 }
-.defect-check-tools {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  > * {
-    font-size: 0.7rem;
-  }
-  ::v-deep .el-button {
-    width: 8px;
-    height: 8px;
-    margin: 0px;
-    padding: 0px;
-    border-width: 0px;
-  }
+.plan-item-field-divider {
+  margin: 8px 0px;
 }
 .row {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 10px;
   > * {
-    margin: 0px;
+    margin: 0px 5px 0px 0px;
   }
 }
 .col {
   display: flex;
   flex-direction: column;
-  height: auto;
 }
 .defect-field-divider {
   margin: 8px 0px;
-}
-.table-defect-title {
-  display: inline-flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
-  .el-link {
-    flex: 1;
-    padding-left: 5px;
-  }
-}
-.el-table {
-  ::v-deep table {
-    width: 100% !important;
-  }
-}
-.defect-statistics {
-  display: inline-flex;
-  flex-direction: row;
-  gap: 10px;
-  font-size: 10px;
-  > div {
-    padding: 0px 5px;
-    border-radius: 3px;
-    background-color: #f9fbff;
-  }
-  i {
-    margin-right: 2px;
-  }
-  .defect-statistics-value {
-    padding-left: 3px;
-    font-size: 11px;
-    color: #303133;
-  }
-}
-.annex-link {
-  white-space: normal;
-  text-align: center;
-  word-break: break-all;
-}
-.defect-row-tools {
-  margin-left: 10px;
-}
-.annex-list {
-  display: inline-flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
-  > *:last-child {
-    border-bottom: 0px;
-  }
-  > * {
-    border-bottom: 1px dashed #E4E7ED;
-  }
 }
 </style>

@@ -2,6 +2,8 @@ package com.cat2bug.system.service.impl;
 
 import java.util.Arrays;
 import java.util.List;
+
+import com.cat2bug.common.core.domain.entity.SysDefect;
 import com.cat2bug.common.utils.DateUtils;
 import com.cat2bug.common.utils.MessageUtils;
 import com.cat2bug.common.utils.SecurityUtils;
@@ -61,6 +63,17 @@ public class SysPlanServiceImpl implements ISysPlanService
     public List<SysPlan> selectSysPlanList(SysPlan sysPlan)
     {
         return sysPlanMapper.selectSysPlanList(sysPlan);
+    }
+
+    /**
+     * 获取测试计划中的缺陷
+     * @param planId 测试计划ID
+     * @param sysDefect 缺陷
+     * @return
+     */
+    @Override
+    public List<SysDefect> selectSysDefectList(String planId, SysDefect sysDefect) {
+        return sysPlanMapper.selectSysDefectList(planId, sysDefect, SecurityUtils.getUserId(), DateUtils.getNowDate());
     }
 
     /**

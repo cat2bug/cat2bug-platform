@@ -1,6 +1,7 @@
 <template>
   <el-popover
     placement="top"
+    :append-to-body="true"
     v-model="visible">
     <div class="shard-context" :loading="apiLoading">
       <el-form :inline="true" :model="form">

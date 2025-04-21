@@ -287,7 +287,12 @@ export default {
     },
     /** 获取表格显示哪些属性 */
     getShowFields() {
-      return this.$cache.local.getJSON(DEFECT_TABLE_FIELD_LIST_CACHE_KEY);
+      const fields = this.$cache.local.getJSON(DEFECT_TABLE_FIELD_LIST_CACHE_KEY);
+      if(fields && fields.length>0) {
+        return fields;
+      } else {
+        return this.tableAllFieldList;
+      }
     },
     // 多选框选中数据
     handleSelectionChange(selection) {

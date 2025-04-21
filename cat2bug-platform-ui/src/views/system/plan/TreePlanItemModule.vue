@@ -3,7 +3,7 @@
     <div class="tree-tools">
       <el-tabs v-model="activeName" @tab-click="handleTabClick">
         <el-tab-pane :label="$t('module.list')" name="module">
-          <el-tree :highlight-current="true" ref="moduleTree" :show-checkbox="checkVisible" :props="props" :lazy="true" :data="tree" :load="loadNode" node-key="(id,pid)" @node-click="handleNodeClick" @check-change="handleCheckChange">
+          <el-tree v-loading="loading" :highlight-current="true" ref="moduleTree" :show-checkbox="checkVisible" :props="props" :lazy="true" :data="tree" :load="loadNode" node-key="(id,pid)" @node-click="handleNodeClick" @check-change="handleCheckChange">
             <span class="tree-node" slot-scope="{ node, data }">
               <span v-if="node.label!=$t('module.all-module')">{{ node.label }}</span>
               <span v-else><< {{ node.label }} >></span>
@@ -27,7 +27,7 @@
           </el-tree>
         </el-tab-pane>
         <el-tab-pane :label="$t('defect.level-list')" name="defect-level">
-          <el-tree :highlight-current="true" ref="levelTree" :show-checkbox="checkVisible" :props="props" :data="defectLevelTree" node-key="id" @node-click="handleLevelNodeClick" @check-change="handleLevelCheckChange">
+          <el-tree v-loading="loading" :highlight-current="true" ref="levelTree" :show-checkbox="checkVisible" :props="props" :data="defectLevelTree" node-key="id" @node-click="handleLevelNodeClick" @check-change="handleLevelCheckChange">
           </el-tree>
         </el-tab-pane>
       </el-tabs>
@@ -48,6 +48,7 @@ export default {
   components: {ModuleDialog},
   data(){
     return {
+      loading: false,
       activeName: 'module',
       firstLoad: true,
       currentNode: null,
@@ -61,6 +62,7 @@ export default {
         children: 'children',
         isLeaf: 'leaf'
       },
+      menuItemStatisticType: this.statisticType
     }
   },
   watch: {
@@ -71,8 +73,19 @@ export default {
       }];
       this.initLevelTree();
     },
+    statisticType: function (n,o) {
+      if(n!=o) {
+        this.menuItemStatisticType = n;
+        this.reloadData();
+      }
+    }
   },
   props: {
+    /** 统计类型:case、defect */
+    statisticType: {
+      type: String,
+      default: 'case'
+    },
     projectId: {
       type: [Number,String],
       default: null
@@ -123,7 +136,7 @@ export default {
       }
     },
     handleTabClick(tab, event) {
-      console.log(tab, event);
+      // console.log(tab, event);
     },
     reloadData() {
       this.currentNode = null;
@@ -140,7 +153,19 @@ export default {
     /** 获取模块下的用例数量 */
     getItemCount(modules,index) {
       const module = modules[index];
-      let count = module.itemCount||0;
+      let count = 0;
+      switch (this.menuItemStatisticType) {
+        case 'case':
+          count = module.itemCount||0;
+          break;
+        case 'defect':
+          count = module.defectCount||0;
+          break;
+        default:
+          count = module.itemCount||0;
+          break;
+      }
+
       if(module.childrenCount===0)
         return count;
       for(let i; i<modules.length;i++) {
@@ -157,8 +182,10 @@ export default {
         planId: this.planId,
         modulePid:modulePid
       }
+      this.loading = true;
       listPlanItemModule(params).then(res=>{
         this.firstLoad = false;
+        this.loading = false;
         let data = res.data.map((m,index)=>{
           const count = this.getItemCount(res.data, index);
           return {

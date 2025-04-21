@@ -17,7 +17,7 @@
           </div>
         </div>
 
-        <div class="plan-statistical">
+        <div class="plan-statistical" v-loading="loading">
           <div class="plan-statistical-block">
             <div style="width: 100%; display: inline-block;">
               <el-statistic
@@ -85,16 +85,6 @@
           <div class="plan-statistical-block">
             <el-statistic
               group-separator=","
-              :title="$t('plan.defect-density')"
-            >
-              <template slot="formatter">
-                {{`${plan.defectDensity}`}}
-              </template>
-            </el-statistic>
-          </div>
-          <div class="plan-statistical-block">
-            <el-statistic
-              group-separator=","
               :title="$t('plan.defect-detection-rate')"
             >
               <template slot="formatter">
@@ -135,6 +125,16 @@
           <div class="plan-statistical-block">
             <el-statistic
               group-separator=","
+              :title="$t('plan.defect-density')"
+            >
+              <template slot="formatter">
+                {{`${plan.defectDensity}`}}
+              </template>
+            </el-statistic>
+          </div>
+          <div class="plan-statistical-block">
+            <el-statistic
+              group-separator=","
               :title="$t('plan.defect-repair-avg-hour')"
             >
               <template slot="formatter">
@@ -152,157 +152,22 @@
         <!--      树形模块选择组件-->
         <div class="tree-module" ref="treeModule" :style="treeModuleStyle">
           <tree-plan-item-module ref="treeModuleRef" :project-id="projectId" :plan-id="plan.planId"
+                                 :statistic-type="activeMenuStatisticType"
                                  @level-node-click="levelClickHandle"
                                  @node-click="moduleClickHandle" :check-visible="false" :edit-visible="false" v-resize="setDragComponentSize" />
         </div>
         <multipane-resizer :style="multipaneStyle"></multipane-resizer>
         <!--      用例列表-->
-        <div ref="caseContext" class="plan-item-content">
-          <div class="plan-item-query">
-            <el-form :model="query" ref="queryForm" size="small" :inline="true">
-              <el-form-item label="" prop="caseName">
-                <el-input
-                  size="small"
-                  v-model="query.params.caseName"
-                  :placeholder="$t('case.please-enter-title')"
-                  prefix-icon="el-icon-search"
-                  clearable
-                  @input="getPlanItemList()"
-                />
-              </el-form-item>
-              <el-form-item label="" prop="planItemState">
-                <el-select v-model="query.planItemState" :placeholder="$t('plan.enter-item-state')" clearable @change="getPlanItemList">
-                  <el-option
-                    v-for="dict in dict.type.plan_item_state"
-                    :key="dict.value"
-                    :label="dict.label"
-                    :value="dict.value"
-                  />
-                </el-select>
-              </el-form-item>
-<!--              <el-form-item label="" prop="updateById">-->
-<!--                <el-input-->
-<!--                  v-model="query.updateById"-->
-<!--                  placeholder="请输入更新人"-->
-<!--                  clearable-->
-<!--                  @keyup.enter.native="handleQuery"-->
-<!--                />-->
-<!--              </el-form-item>-->
-            </el-form>
-            <div class="handle-plan-tools-right">
-              <el-col :span="1.5">
-                <el-button
-                  size="small"
-                  type="primary"
-                  icon="el-icon-check"
-                  :disabled="!multiple"
-                  v-hasPermi="['system:plan:edit']"
-                  @click="handlePlanItemState(null, 'pass')"
-                >{{ $t('batch-pass') }}</el-button>
-              </el-col>
-              <el-popover
-                placement="top"
-                trigger="click">
-                <div class="row">
-                  <i class="el-icon-s-fold"></i>
-                  <h4>{{$t('defect.display-field')}}</h4>
-                </div>
-                <el-divider class="plan-item-field-divider"></el-divider>
-                <el-checkbox-group v-model="checkedFieldList" class="col" @change="checkedFieldListChange">
-                  <el-checkbox v-for="field in fieldList" :label="field" :key="field">{{$t(field)}}</el-checkbox>
-                </el-checkbox-group>
-                <el-button
-                  style="padding: 9px;"
-                  plain
-                  slot="reference"
-                  icon="el-icon-s-fold"
-                  size="small"
-                ></el-button>
-              </el-popover>
-            </div>
-          </div>
-          <el-table ref="planItemTable" v-loading="loading" :data="planItemList" v-resize="setDragComponentSize" @sort-change="handleSortChange" @selection-change="handleSelectionChange">
-            <el-table-column type="selection" width="50" align="center" />
-            <el-table-column v-if="showField('id')" :label="$t('id')" align="left" prop="caseNum" width="80" sortable="custom" fixed>
-              <template slot-scope="scope">
-                <span>{{ caseNumber(scope.row) }}</span>
-              </template>
-            </el-table-column>
-            <el-table-column v-if="showField('state')" :label="$t('state')" align="center" prop="planItemState" sortable="custom" fixed>
-              <template slot-scope="scope">
-                <dict-tag :options="dict.type.plan_item_state" :value="scope.row.planItemState"/>
-              </template>
-            </el-table-column>
-            <el-table-column v-if="showField('title')" :label="$t('title')" align="left" prop="caseName" min-width="300" sortable="custom" fixed>
-              <template slot-scope="scope">
-                <div class="table-case-title">
-                  <cat2-bug-text :type="checkPermi(['system:case:edit'])?'link':'text'" v-model="scope.row.caseName+''" :tooltip="scope.row.caseName"  @click="handleOpenEditCase(scope.row)" />
-                </div>
-              </template>
-            </el-table-column>
-            <el-table-column v-if="showField('module')" :label="$t('module')" align="left" prop="moduleName" sortable="custom" min-width="150" />
-            <el-table-column v-if="showField('level')" :label="$t('level')" align="left" prop="caseLevel" sortable="custom" width="80">
-              <template slot-scope="scope">
-                <cat2-bug-level :level="scope.row.caseLevel" />
-              </template>
-            </el-table-column>
-            <el-table-column v-if="showField('preconditions')" :label="$t('preconditions')" align="left" prop="casePreconditions" min-width="250" sortable="custom">
-              <template slot-scope="scope">
-                <cat2-bug-text v-model="scope.row.casePreconditions" :tooltip="scope.row.casePreconditions" />
-              </template>
-            </el-table-column>
-            <el-table-column v-if="showField('step')" :label="$t('step')" align="left" prop="caseStep" width="300" sortable="custom">
-              <template slot-scope="scope">
-                <step :steps="scope.row.caseStep" style="width: 300px;" />
-              </template>
-            </el-table-column>
-            <el-table-column v-if="showField('data')" :label="$t('data')" class-name="fixed-width" align="left" prop="caseData" min-width="250" sortable="custom" />
-            <el-table-column v-if="showField('expect')" :label="$t('expect')" align="left" prop="caseExpect" min-width="250" sortable="custom">
-              <template slot-scope="scope">
-                <cat2-bug-text v-model="scope.row.caseExpect" :tooltip="scope.row.caseExpect" />
-              </template>
-            </el-table-column>
-            <el-table-column v-if="showField('image')" :label="$t('image')" :key="$t('image')" align="center" prop="imgUrls" width="100">
-              <template slot-scope="scope">
-                <cat2-bug-preview-image :images="getUrl(scope.row.imgUrls)" />
-              </template>
-            </el-table-column>
-            <el-table-column v-if="showField('annex')" :label="$t('annex')" :key="$t('annex')" align="left" prop="annexUrls" min-width="300">
-              <template slot-scope="scope">
-                <div class="annex-list">
-                  <cat2-bug-text :content="file" type="down" :tooltip="file" v-for="(file,index) in getUrl(scope.row.annexUrls)" :key="index" />
-                </div>
-              </template>
-            </el-table-column>
-            <el-table-column v-if="showField('updateBy')" :label="$t('updateBy')" align="center" prop="updateBy" sortable="custom" width="120">
-              <template slot-scope="scope">
-                <row-list-member :members="member(scope.row)"></row-list-member>
-              </template>
-            </el-table-column>
-            <el-table-column v-if="showField('update-time')" :label="$t('updateTime')" align="center" prop="updateTime" width="180">
-              <template slot-scope="scope">
-                <span>{{ parseTime(scope.row.updateTime, '{y}-{m}-{d}') }}</span>
-              </template>
-            </el-table-column>
-            <el-table-column :label="$t('operate')" align="start" class-name="small-padding fixed-width" fixed="right" width="270">
-              <template slot-scope="scope">
-                <div class="plan-operate">
-                  <plan-item-tools v-model="scope.row" :plan="plan" :project-id="projectId" @change="handlePlanItemChange" @close="initFloatMenu"></plan-item-tools>
-                </div>
-              </template>
-            </el-table-column>
-          </el-table>
-
-          <pagination
-            v-show="total>0"
-            :total="total"
-            :page.sync="query.pageNum"
-            :limit.sync="query.pageSize"
-            @pagination="getPlanItemList"
-          />
+        <div ref="caseContext" class="plan-item-content-list">
+          <component ref="list" :is="listTypeComponentName" @change="handleListChanged">
+            <template #query>
+              <el-radio-group class="list-switch" v-model="activeListType" size="small" @input="handleListTypeChanged">
+                <el-radio-button v-for="lt in listTypes" :label="$t(lt).toString()" :key="lt"></el-radio-button>
+              </el-radio-group>
+            </template>
+          </component>
         </div>
       </multipane>
-      <handle-case-of-plan ref="handleCaseDialog" :module-id="planItem.moduleId" :append-to-body="true" @change="handlePlanItemChange" @close="initFloatMenu" />
     </div>
   </el-drawer>
 </template>
@@ -316,27 +181,17 @@ import TreePlanItemModule from "@/views/system/plan/TreePlanItemModule";
 import FocusMemberList from "@/components/FocusMemberList";
 import HandleCaseOfPlan from "@/components/Plan/HandleCaseOfPlan";
 import Cat2BugPreviewImage from "@/components/Cat2BugPreviewImage";
-
+import CaseList from "@/components/Plan/HandlePlanDialog/CaseList";
+import DefectList from "@/components/Plan/HandlePlanDialog/DefectList";
 import { Multipane, MultipaneResizer } from 'vue-multipane';
 import { getPlan } from "@/api/system/plan";
-import {listPlanItem, updatePlanItem} from "@/api/system/PlanItem";
 import {checkPermi} from "@/utils/permission";
-import {listDefect} from "@/api/system/defect";
-import PlanItemTools from "@/components/Plan/PlanItemTools";
 
 const TREE_MODULE_WIDTH_CACHE_KEY = 'plan_case_tree_module_width';
-/** 需要显示的测试用例字段列表在缓存的key值 */
-const PLAN_ITEM_TABLE_FIELD_LIST_CACHE_KEY='plan-item-table-field-list';
-/** 测试子项不通过的状态key值 */
-const PLAN_ITEM_STATE_NOT_PASS = 'not_pass';
-/** 计划项排序的列 */
-const PLAN_ITEM_SORT_COLUMN = 'plan_item_sort_column_key';
-/** 计划项排序的类型（正序、倒叙） */
-const PLAN_ITEM_SORT_TYPE = 'plan_item_sort_type_key';
+
 export default {
-  name: "AddPlanDialog",
-  dicts: ['plan_item_state'],
-  components: { Cat2BugLevel,Step,TreePlanItemModule,Multipane,MultipaneResizer, FocusMemberList, Cat2BugPreviewImage, HandleCaseOfPlan, RowListMember, Cat2BugText, PlanItemTools },
+  name: "HandlePlanDialog",
+  components: { Cat2BugLevel,Step,TreePlanItemModule,Multipane,MultipaneResizer, FocusMemberList, Cat2BugPreviewImage, HandleCaseOfPlan, RowListMember, Cat2BugText, CaseList, DefectList },
   data() {
     return {
       // 动态样式
@@ -344,32 +199,43 @@ export default {
       treeModuleStyle: {'--treeModuleWidth':'300px'},
       // 遮罩层
       loading: true,
-      // 表格中可以显示的字段列表
-      checkedFieldList: [],
-      // 所有属性类型
-      fieldList: [],
-      // 当前计划
-      plan: {},
+      // 激活的列表类型
+      activeListType: this.$i18n.t('case'),
+      // 列表类型
+      listTypes: [
+        'case',
+        'defect'
+      ],
+      // 查询条件
+      query: {
+        params: {}
+      },
+      // 当前计划ID
+      planId: null,
+      // 当前测试计划
+      plan: {
+        passCount: 0,
+        failCount: 0,
+        unexecutedCount: 0,
+        itemTotal: 0,
+        defectCount: 0,
+        defectDiscoveryRate: 0.00,
+        defectRepairRate: 0.00,
+        defectDetectionRate: 0.00,
+        defectSeverityRate: 0.00,
+        defectRestartRate: 0.00,
+        defectEscapeRate: 0.00,
+        defectDensity: 0,
+        defectRepairAvgHour: 0
+      },
+      // 当前测试计划项对象
       planItem: {},
       // 是否显示弹出层
       visible: false,
-      // 查询参数
-      query: {
-        pageNum: 1,
-        pageSize: 10,
-        moduleId: null,
-        planId: null,
-        projectId: this.projectId,
-        params:{}
-      },
-      // 测试计划子项表格数据
-      planItemList: [],
-      // 总条数
-      total: 0,
-      // 表格的多选项
-      ids: [],
-      // 是否多选
-      multiple: false
+      // 当前显示的数据列表的组件名称
+      listTypeComponentName: null,
+      // 菜单统计的类型，默认统计测试用例
+      activeMenuStatisticType: null
     }
   },
   directives: {
@@ -395,24 +261,12 @@ export default {
     }
   },
   computed: {
-    /** 字段是否显示 */
-    showField: function () {
-      return function (field) {
-        return this.checkedFieldList.filter(f=>f==field).length>0;
-      }
-    },
     /** 成员结构 */
     member: function () {
       return function (planItem) {
         return [{
           nickName: planItem.updateBy
         }]
-      }
-    },
-    /** 用于显示的用例编号 */
-    caseNumber: function () {
-      return function (val) {
-        return '#'+val.caseNum;
       }
     },
     /** 项目ID */
@@ -436,16 +290,8 @@ export default {
       }
     },
   },
-  watch: {
-    "$i18n.locale": function (newVal, oldVal) {
-      this.setFieldList();
-    },
-  },
   created() {
-    this.query.isAsc = this.$cache.local.get(PLAN_ITEM_SORT_TYPE)||null;
-    this.query.orderByColumn = this.$cache.local.get(PLAN_ITEM_SORT_COLUMN)||null;
-    // 设置缺陷列表显示哪些列属性
-    this.setFieldList();
+
   },
   methods: {
     checkPermi,
@@ -453,32 +299,6 @@ export default {
     initFloatMenu() {
       this.$floatMenu.windowsInit(document.querySelector('.main-container'));
       this.$floatMenu.resetMenus([]);
-    },
-    /** 处理计划项改变的事件 */
-    handlePlanItemChange() {
-      this.getPlanInfo(this.plan.planId);
-      this.getPlanItemList();
-      this.$emit('change')
-    },
-    /** 设置列表显示的属性字段 */
-    setFieldList() {
-      this.fieldList = [
-        'id','title','module','level', 'preconditions','step','data','expect','image','annex', 'state', 'updateBy','update-time'
-      ];
-
-      const fieldList = this.$cache.local.get(PLAN_ITEM_TABLE_FIELD_LIST_CACHE_KEY);
-      if(fieldList) {
-        this.checkedFieldList = JSON.parse(fieldList);
-      } else {
-        this.checkedFieldList = [];
-        this.fieldList.forEach(f=>{
-          this.checkedFieldList.push(f);
-        });
-      }
-    },
-    /** 测试用例列表属性字段改变操作 */
-    checkedFieldListChange(field) {
-      this.$cache.local.set(PLAN_ITEM_TABLE_FIELD_LIST_CACHE_KEY,JSON.stringify(field));
     },
     reset() {
       this.query = {
@@ -499,40 +319,28 @@ export default {
     },
     /** 打开窗口 */
     open(planId) {
+      this.planId = planId;
       this.visible = true;
-      this.query.planId = planId;
-      this.query.projectId = this.projectId;
-
       this.$nextTick(()=>{
-        this.$refs.planItemTable.sort(this.query.orderByColumn, this.query.isAsc);
         this.loading = true;
         this.getPlanInfo(planId);
         this.getTreeModuleWidth();
-        this.getPlanItemList();
+        this.handleListTypeChanged(this.activeListType);
         this.initFloatMenu();
       });
     },
     /** 获取计划信息 */
     getPlanInfo(planId) {
+      this.loading = true;
       getPlan(planId).then(response => {
+        this.loading = false;
         this.plan = response.data;
         this.$nextTick(()=>{
           this.$refs.treeModuleRef.reloadData();
         })
-      });
+      }).catch(e=>{this.loading = false;});
     },
-    /** 查询测试用例列表 */
-    getPlanItemList() {
-      this.loading = true;
-      listPlanItem(this.query).then(response => {
-        this.loading = false;
-        this.planItemList = response.rows.map(i=>{
-          i.defectList=[];
-          return i;
-        });
-        this.total = response.total;
-      });
-    },
+
     /** 获取树模型宽度 */
     getTreeModuleWidth() {
       let treeModuleWidth = this.$cache.session.get(TREE_MODULE_WIDTH_CACHE_KEY);
@@ -562,93 +370,45 @@ export default {
     /** 点击模块树中的某个模块操作 */
     moduleClickHandle(moduleId) {
       this.query.moduleId = moduleId;
-      this.getPlanItemList();
+      this.query.caseLevel = null;
+      this.query.params.caseLevel = null;
+      this.getDataList();
     },
     /** 点击模块树中的某个缺陷优先级操作 */
     levelClickHandle(caseLevel) {
+      this.query.moduleId=null;
       this.query.caseLevel = caseLevel;
-      this.getPlanItemList();
+      this.query.params.caseLevel = caseLevel;
+      this.getDataList();
     },
-    /** 处理添加缺陷完成操作 */
-    handleAddedDefect(defect) {
-      let data = {
-        planId: this.planItem.planId,
-        planItemId: this.planItem.planItemId,
-        params: {
-          defectId: defect.defectId
-        },
-        planItemState: PLAN_ITEM_STATE_NOT_PASS,
-      }
-      updatePlanItem(data).then(res=>{
-        this.getPlanInfo(this.plan.planId);
-        this.getPlanItemList();
-        this.$emit('change');
-      })
-    },
-    /** 处理缺陷日志添加完成操作 */
-    handleDefectLogAdded(log) {
-      let data = {
-        planItemId: this.planItem.planItemId,
-        params: {
-          defectId: log.defectId
-        },
-        planItemState: PLAN_ITEM_STATE_NOT_PASS,
-      }
-      updatePlanItem(data).then(res=>{
-        this.getPlanInfo(this.plan.planId);
-        this.getPlanItemList();
-        this.$emit('change');
+    getDataList() {
+      this.$nextTick(()=>{
+        this.$refs.list.open(this.planId, this.projectId, this.query);
       });
     },
-    /** 打开编辑用例窗口 */
-    handleOpenEditCase(planItem) {
-      this.$refs.handleCaseDialog.open(this.plan, planItem, planItem.caseId, this.query);
-    },
-    /** 查询计划项 */
-    handlePlanItemStateSearch(state) {
-      this.query.planItemState = state;
-      this.query.pageNum = 1;
-      this.query.moduleId = null;
-      this.getPlanItemList();
-    },
-    /** 下载附件操作 */
-    handleDown(event, file) {
-      const a = document.createElement("a");
-      const e = new MouseEvent("click");
-      a.href = file;
-      a.dispatchEvent(e);
-      event.stopPropagation();
-    },
-    /** 多选框选中数据 */
-    handleSelectionChange(selection) {
-      this.ids = selection.map(item => item.planItemId);
-      this.multiple = selection.length;
-    },
-    /** 更改子项状态操作 */
-    handlePlanItemState(planItem, state) {
-      let data = {
-        planItemState: state,
+    /** 处理列表类型切换 */
+    handleListTypeChanged(name) {
+      switch (name) {
+        case this.$i18n.t('case'):
+          this.activeMenuStatisticType = 'case';
+          this.listTypeComponentName = 'CaseList';
+          break;
+        case this.$i18n.t('defect'):
+          this.activeMenuStatisticType = 'defect';
+          this.listTypeComponentName = 'DefectList';
+          break;
+        default:
+          this.activeMenuStatisticType = 'case';
+          this.listTypeComponentName = 'CaseList';
+          break;
       }
-      if(planItem) {
-        data.planItemId = planItem.planItemId;
-      } else if(this.ids.length>0) {
-        data.params = {
-          planItemIds:this.ids
-        }
-      }
-      updatePlanItem(data).then(()=>{
-        this.$message.success(this.$i18n.t('plan.pass-success').toString());
-        this.getPlanItemList();
-        this.$emit('change');
-      });
+      this.getDataList();
     },
-    handleSortChange(column) {
-      this.query.isAsc = column.order;
-      this.query.orderByColumn = column.prop;
-      this.$cache.local.set(PLAN_ITEM_SORT_COLUMN, column.prop);
-      this.$cache.local.set(PLAN_ITEM_SORT_TYPE, column.order);
-      this.getPlanItemList();
-    },
+    /** 处理列表数据变更 */
+    handleListChanged() {
+      this.getPlanInfo(this.planId);
+      this.setDragComponentSize();
+    }
   }
 }
 </script>
@@ -658,6 +418,11 @@ export default {
 }
 .handle-plan-dialog>.el-drawer__header {
   margin-bottom: 0px;
+}
+.handle-plan-dialog>.el-drawer__header>.el-drawer__close-btn {
+  position: absolute;
+  right: 20px;
+  top: 30px;
 }
 .plan-item-defect-list {
   width: 400px;
@@ -677,24 +442,6 @@ export default {
 }
 </style>
 <style lang="scss" scoped>
-.red {
-  color: #f56c6c;
-}
-.col {
-  display: flex;
-  flex-direction: column;
-}
-.row {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  > * {
-    margin: 0px 5px 0px 0px;
-  }
-}
-.plan-item-field-divider {
-  margin: 8px 0px;
-}
 .custom-resizer {
   width: 100%;
   height: 100%;
@@ -724,7 +471,7 @@ export default {
     }
   }
 }
-.plan-item-content {
+.plan-item-content-list {
   flex-grow: 1;
   overflow:hidden;
   height: 100%;
@@ -790,26 +537,16 @@ export default {
     }
   }
 }
-.plan-item-query {
-  display: inline-flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: flex-start;
-  width: 100%;
-  .el-form-item {
-    margin-bottom: 5px;
-  }
-}
-.plan-run-content {
-  //height: 100%;
-}
-.plan-item-dropdown-link {
-  cursor: pointer;
-  color: #409EFF;
-}
-.plan-item-icon-arrow-down {
-  font-size: 12px;
-}
+//.plan-run-content {
+//  //height: 100%;
+//}
+//.plan-item-dropdown-link {
+//  cursor: pointer;
+//  color: #409EFF;
+//}
+//.plan-item-icon-arrow-down {
+//  font-size: 12px;
+//}
 .tool-divider {
   margin: 10px;
   width: calc(100% - 20px);
@@ -886,11 +623,6 @@ export default {
     border-bottom: 1px dashed #E4E7ED;
   }
 }
-.handle-plan-tools-right {
-  display: inline-flex;
-  flex-direction: row;
-  gap: 10px;
-}
 .plan-operate {
   display: inline-flex;
   flex-direction: row;
@@ -899,6 +631,13 @@ export default {
   padding: 0 10px;
   > ::v-deep button {
     margin: 0;
+  }
+}
+.list-switch {
+  margin-right: 10px;
+  margin-bottom: 5px;
+  > * {
+    box-shadow: none !important;
   }
 }
 </style>

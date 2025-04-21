@@ -3,7 +3,10 @@
 PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.cat2bug.system.mapper.SysPlanMapper">
-    
+    <resultMap id="SysDefectResult" extends="com.cat2bug.system.mapper.SysDefectMapper.SysDefectResult"
+        type="com.cat2bug.common.core.domain.entity.SysDefect">
+    </resultMap>
+
     <resultMap type="SysPlan" id="SysPlanResult">
         <result property="planId"    column="plan_id"    />
         <result property="planNumber"    column="plan_number"    />
@@ -185,6 +188,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             ) s ON s.plan_id = p.plan_id
     </sql>
 
+    <sql id="selectSysDefectOfPlanVo">
+        <include refid="com.cat2bug.system.mapper.SysDefectMapper.selectSysDefectVo"/>
+        LEFT JOIN sys_plan_item spi ON spi.defect_ids IS NOT NULL AND spi.defect_ids LIKE CONCAT('%,', d.defect_id)
+        LEFT JOIN sys_case c ON c.case_id = d.case_id
+    </sql>
     <select id="getProjectPlanMaxNum" resultType="Long">
         select IFNULL(MAX(plan_number),0) from sys_plan where project_id=#{projectId}
     </select>
@@ -203,6 +211,67 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="reportId != null "> and p.report_id = #{reportId}</if>
         </where>
         order by create_time desc
+    </select>
+
+    <select id="selectSysDefectList" resultMap="SysDefectResult">
+        <include refid="selectSysDefectOfPlanVo"/>
+        <where>
+            spi.plan_id = #{planId}
+            <if test="defect.params != null and defect.params.moduleIdsOfProject !=null and defect.params.moduleIdsOfProject.size() > 0">
+                and
+                <foreach collection="defect.params.moduleIdsOfProject" item="mId" separator="or" open="(" close=")">
+                    d.module_id = #{mId}
+                </foreach>
+            </if>
+            <if test="defect.projectNum != null "> and d.project_num = #{defect.projectNum}</if>
+            <if test="defect.defectType != null "> and d.defect_type = #{defect.defectType, typeHandler=com.cat2bug.common.core.domain.handle.SysDefectTypeEnumTypeHandler }</if>
+            <if test="defect.defectName != null  and defect.defectName != ''"> and (d.defect_name like concat('%', #{defect.defectName}, '%') or d.defect_name=#{defect.defectName})</if>
+            <if test="defect.projectId != null "> and d.project_id = #{defect.projectId}</if>
+            <if test="defect.testPlanId != null "> and d.test_plan_id = #{defect.testPlanId}</if>
+            <if test="defect.caseId != null "> and d.case_id = #{defect.caseId}</if>
+            <if test="defect.dataSources != null "> and d.data_sources = #{defect.dataSources}</if>
+            <if test="defect.dataSourcesParams != null  and defect.dataSourcesParams != ''"> and d.data_sources_params = #{defect.dataSourcesParams}</if>
+            <if test="defect.moduleVersion != null and defect.moduleVersion != ''"> and d.module_version like concat('%', #{defect.moduleVersion}, '%')</if>
+            <if test="defect.createBy != null  and defect.createBy != ''"> and d.create_by = #{defect.createBy}</if>
+            <if test="defect.params.beginUpdateTime != null and defect.params.beginUpdateTime != '' and defect.params.endUpdateTime != null and defect.params.endUpdateTime != ''"> and d.update_time between #{defect.params.beginUpdateTime} and #{defect.params.endUpdateTime}</if>
+            <if test="defect.params.beginCreateTime != null and defect.params.beginCreateTime != '' and defect.params.endCreateTime != null and defect.params.endCreateTime != ''"> and d.create_time between #{defect.params.beginCreateTime} and #{defect.params.endCreateTime}</if>
+            <if test="defect.updateBy != null  and defect.updateBy != ''"> and d.update_by = #{defect.updateBy}</if>
+            <if test="defect.defectState != null "> and d.defect_state = #{defect.defectState, typeHandler=com.cat2bug.common.core.domain.handle.SysDefectStateEnumTypeHandler}</if>
+            <if test="defect.params.collect != null and defect.params.collect > 0  "> and ud.collect = #{defect.params.collect}</if>
+            <if test="defect.params.defectStates != null and defect.params.defectStates != ''"> and
+                <foreach collection="defect.params.defectStates.split(',')" item="state" separator=" or " open="(" close=")">
+                    d.defect_state = #{state}
+                </foreach>
+            </if>
+            <if test="defect.handleBy != null  and defect.handleBy != ''"> and
+                <foreach collection="defect.handleBy" item="b" separator=" or " open="(" close=")">
+                    d.handle_by REGEXP CONCAT('\b',#{b},'\b') OR d.handle_by REGEXP CONCAT('\\b',#{b},'\\b')
+                </foreach>
+            </if>
+            <if test="defect.params.defectIds != null and defect.params.defectIds != ''"> and
+                <foreach collection="defect.params.defectIds.split(',')" item="defectId" separator=" or " open="(" close=")">
+                    d.defect_id = #{defectId}
+                </foreach>
+            </if>
+            <if test="defect.params.userId != null">
+                and (
+                d.handle_by REGEXP CONCAT('\b',#{defect.params.userId},'\b')
+                OR d.handle_by REGEXP CONCAT('\\b',#{defect.params.userId},'\\b')
+                OR d.create_by_id=#{defect.params.userId}
+                OR d.update_by_id=#{defect.params.userId}
+                )
+            </if>
+            <if test="defect.params.calendarStartDate != null and defect.params.calendarStartDate != '' and defect.params.calendarEndDate != null and defect.params.calendarEndDate != ''">
+                and (
+                (d.plan_start_time between #{defect.params.calendarStartDate} and #{defect.params.calendarEndDate})
+                or (d.plan_end_time between #{defect.params.calendarStartDate} and #{defect.params.calendarEndDate})
+                or (d.update_time between #{defect.params.calendarStartDate} and #{defect.params.calendarEndDate})
+                )
+            </if>
+            <if test="defect.params.beginHandleTime != null and defect.params.beginHandleTime != '' and defect.params.endHandleTime != null and defect.params.endHandleTime != ''"> and d.handle_time between #{defect.params.beginHandleTime} and #{defect.params.endHandleTime}</if>
+            <if test="defect.defectLevel != null  and defect.defectLevel != ''"> and d.defect_level = #{defect.defectLevel}</if>
+            <if test="defect.params.caseLevel != null "> and c.case_level = #{defect.params.caseLevel}</if>
+        </where>
     </select>
     
     <select id="selectSysPlanByPlanId" parameterType="String" resultMap="SysPlanSysPlanItemResult">
