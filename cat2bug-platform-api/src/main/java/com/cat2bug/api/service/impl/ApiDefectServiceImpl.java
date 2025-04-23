@@ -160,7 +160,6 @@ public class ApiDefectServiceImpl implements IApiDefectService {
         long count = apiDefectMapper.getProjectDefectMaxNum(projectId);
         apiDefect.setDefectNum(++count);
         Preconditions.checkState(apiDefectMapper.insertApiDefect(projectId, apiDefect)>0, MessageUtils.message("defect.insert_fail"));
-
         // 新建日志
         this.inertLog(apiDefect.getDefectId(), apiDefect.getHandleBy(),"",ApiDefectLogStateEnum.CREATE);
         // 查找新建的缺陷并返回
@@ -169,6 +168,21 @@ public class ApiDefectServiceImpl implements IApiDefectService {
             retDefect.setDefectLevel(retDefect.getDefectLevel().toUpperCase());
         }
         return retDefect;
+    }
+
+    @Override
+    public ApiDefect updateSysDefect(ApiDefectRequest apiDefect) {
+        Preconditions.checkNotNull(apiDefect.getDefectNum(),MessageUtils.message("defect.num_not_empty"));
+        apiDefect.setUpdateTime(DateUtils.getNowDate());
+        apiDefect.setCreateBy(SecurityUtils.getUsername());
+        Long projectId = this.getProjectId();
+        apiDefect.setProjectId(projectId);
+        int ret = this.apiDefectMapper.updateApiDefect(apiDefect);
+        if(ret>0){
+            return apiDefect;
+        } else {
+            return null;
+        }
     }
 
     /**

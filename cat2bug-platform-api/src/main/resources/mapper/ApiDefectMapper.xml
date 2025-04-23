@@ -221,6 +221,6 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="handleBy != null">handle_by = #{handleBy, typeHandler=com.cat2bug.common.core.domain.handle.LongArrayTypeHandler},</if>
             <if test="defectLevel != null">defect_level = #{defectLevel},</if>
         </trim>
-        where defect_id = #{defectId}
+        where project_id = #{projectId} and project_num = #{defectNum}
     </update>
 </mapper>

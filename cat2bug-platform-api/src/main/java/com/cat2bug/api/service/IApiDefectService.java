@@ -40,6 +40,12 @@ public interface IApiDefectService {
     public ApiDefect insertApiDefect(ApiDefectRequest apiDefect);
 
     /**
+     * 更新缺陷
+     * @param apiDefect 缺陷
+     * @return 结果
+     */
+    public ApiDefect updateSysDefect(ApiDefectRequest apiDefect);
+    /**
      * 指派
      * @param apiDefectHandle 缺陷处理
      * @return  缺陷

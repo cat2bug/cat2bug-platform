@@ -10,6 +10,7 @@ import com.cat2bug.api.service.IApiDeliverableService;
 import com.cat2bug.common.annotation.Log;
 import com.cat2bug.common.core.controller.BaseController;
 import com.cat2bug.common.core.domain.AjaxResult;
+import com.cat2bug.common.core.domain.entity.SysDefect;
 import com.cat2bug.common.core.page.TableDataInfo;
 import com.cat2bug.common.enums.BusinessType;
 import com.cat2bug.common.utils.StringUtils;
@@ -84,13 +85,22 @@ public class ApiDefectController extends BaseController {
 //            @Parameter(name = "defectName", description = "缺陷名称", required = true, in = ParameterIn.QUERY),
 //            @Parameter(name = "defectDescribe", description = "缺陷描述", required = true, in = ParameterIn.QUERY)
 //    })
-    @PreAuthorize("@ss.hasPermi('api:defect:add')")
+    @PreAuthorize("@ss.hasPermi('api:defect:edit')")
     @PostMapping
     public AjaxResult add(@RequestBody ApiDefectRequest apiDefect)
     {
         return success(apiDefectService.insertApiDefect(apiDefect));
     }
 
+    /**
+     * 修改缺陷
+     */
+    @PreAuthorize("@ss.hasPermi('api:defect:add')")
+    @PutMapping
+    public AjaxResult edit(@RequestBody ApiDefectRequest apiDefect)
+    {
+        return success(apiDefectService.updateSysDefect(apiDefect));
+    }
 
     /**
      * 指派
