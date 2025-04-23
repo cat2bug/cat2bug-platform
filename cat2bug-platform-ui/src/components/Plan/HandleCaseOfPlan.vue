@@ -27,6 +27,9 @@
       </div>
     </template>
     <div class="app-container" v-loading="loading">
+      <div class="next-case">
+        <el-checkbox v-model="jumpNextCase">{{ $t('plan.handled-to-next-case') }}</el-checkbox>
+      </div>
       <el-form ref="form" :model="form" :rules="rules" label-width="120px">
         <el-form-item :label="$t('case.number')" prop="caseNum">
           <span>#{{ form.caseNum }}</span>
@@ -100,6 +103,7 @@ export default {
   },
   data() {
     return {
+      jumpNextCase: true,
       loading: false,
       caseStepSwitchType: '',
       // 是否显示创建组件
@@ -324,7 +328,11 @@ export default {
         }
       }).catch(()=>this.loading = false);
     },
-    handlePlanItemChange() {
+    handlePlanItemChange(planItem, state) {
+      // 如果选中了自动跳转下一个用例，则执行
+      if(state==='pass' && this.jumpNextCase) {
+        this.nextCase();
+      }
       this.$emit('change');
     }
   }
@@ -402,5 +410,9 @@ export default {
   display: inline-flex;
   flex-direction: row;
   gap: 10px;
+}
+.next-case {
+  margin-left: 90px;
+  margin-bottom: 15px;
 }
 </style>

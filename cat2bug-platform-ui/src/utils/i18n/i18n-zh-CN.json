@@ -814,6 +814,7 @@
   "plan.defect-escape-rate": "缺陷逃逸率",
   "plan.defect-repair-avg-hour": "缺陷修复平均时长",
   "plan.defect-history-pass-count": "曾经关闭过的缺陷数量",
+  "plan.handled-to-next-case": "操作后跳转到下一个测试用例",
   "total": "总数",
   "a": "个",
   "plan.countdown-time-format": "DD天HH小时mm分钟",

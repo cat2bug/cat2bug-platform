@@ -170,7 +170,7 @@ export default {
       updatePlanItem(data).then(()=>{
         this.planItem.planItemState = state;
         this.$message.success(this.$i18n.t('plan.pass-success').toString());
-        this.$emit('change', this.planItem);
+        this.$emit('change', this.planItem, state);
       });
     },
     /** 处理添加缺陷完成操作 */

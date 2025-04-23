@@ -814,6 +814,7 @@
   "plan.defect-escape-rate": "Defect Escape Rate",
   "plan.defect-repair-avg-hour": "Defect Repair Avg Hour",
   "plan.defect-history-pass-count": "Defect Closed Count",
+  "plan.handled-to-next-case": "Jump to the next test case after operation",
   "total": "Total",
   "a": "",
   "plan.countdown-time-format": "DD HH:mm",
