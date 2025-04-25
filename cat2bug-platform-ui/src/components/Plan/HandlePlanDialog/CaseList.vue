@@ -239,6 +239,23 @@ export default {
         return '#'+val.caseNum;
       }
     },
+    /** 成员结构 */
+    member: function () {
+      return function (planItem) {
+        return [{
+          nickName: planItem.updateBy
+        }]
+      }
+    },
+    /** 字符转url数组 */
+    getUrl: function () {
+      return function (urls){
+        let imgs = urls?urls.split(','):[];
+        return imgs.map(i=>{
+          return process.env.VUE_APP_BASE_API + i;
+        })
+      }
+    },
   },
   created() {
     this.query.isAsc = this.$cache.local.get(PLAN_ITEM_SORT_TYPE)||null;
@@ -294,7 +311,6 @@ export default {
           return i;
         });
         this.total = response.total;
-        this.$emit('change');
       });
     },
     /** 处理添加缺陷完成操作 */

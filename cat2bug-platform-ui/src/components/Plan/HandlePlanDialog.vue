@@ -261,26 +261,9 @@ export default {
     }
   },
   computed: {
-    /** 成员结构 */
-    member: function () {
-      return function (planItem) {
-        return [{
-          nickName: planItem.updateBy
-        }]
-      }
-    },
     /** 项目ID */
     projectId: function () {
       return parseInt(this.$store.state.user.config.currentProjectId);
-    },
-    /** 字符转url数组 */
-    getUrl: function () {
-      return function (urls){
-        let imgs = urls?urls.split(','):[];
-        return imgs.map(i=>{
-          return process.env.VUE_APP_BASE_API + i;
-        })
-      }
     },
     getFileName: function () {
       return function (url) {

@@ -145,7 +145,7 @@
       </el-table-column>
       <el-table-column :label="$t('operate')" align="left" class-name="small-padding fixed-width" min-width="250" fixed="right">
         <template slot-scope="scope">
-          <defect-tools class="defect-row-tools" :is-text="true" :defect="scope.row" size="mini" :is-show-icon="true" @delete="refreshSearch" @update="refreshSearch" @log="refreshSearch"></defect-tools>
+          <defect-tools class="defect-row-tools" :is-text="true" :defect="scope.row" size="mini" :is-show-icon="true" @delete="handleDelete" @update="search" @log="search"></defect-tools>
         </template>
       </el-table-column>
     </el-table>
@@ -241,7 +241,9 @@ export default {
         handleBy: null,
         handleTime: null,
         defectLevel: null,
-        params:{}
+        params:{
+          defectStates: null
+        }
       }
     }
   },
@@ -333,6 +335,9 @@ export default {
       this.queryParams.projectId = projectId;
       this.queryParams = {...this.queryParams, ...query}
       this.queryParams.planId = planId;
+      if(!this.queryParams.params) {
+        this.queryParams.params = {};
+      }
       this.init();
       this.search(this.queryParams);
     },
@@ -416,9 +421,10 @@ export default {
         this.total = response.total;
       });
     },
-    /** 刷新查询 */
-    refreshSearch() {
-      this.$emit('refresh');
+    /** 处理删除缺陷 */
+    handleDelete() {
+      this.search();
+      this.$emit('change');
     },
     /** 显示图片操作 */
     clickImageHandle(event){
