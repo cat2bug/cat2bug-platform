@@ -20,6 +20,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="handlerList"    column="handle_by_list"  typeHandler="com.cat2bug.api.domain.handle.ApiMemberBaseInfoArrayTypeHandler"  />
         <result property="handleTime"    column="handle_time"    />
         <result property="defectLevel"    column="defect_level"    />
+        <result property="creator"    column="creator"   typeHandler="com.cat2bug.api.domain.handle.ApiMemberBaseInfoTypeHandler"  />
         <association property="currentLog" javaType="ApiDefectLog" resultMap="defectLogResult" />
     </resultMap>
 
@@ -28,6 +29,14 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="defectLogState"     column="defect_log_type"   typeHandler="com.cat2bug.api.domain.handle.ApiDefectLogStateEnumTypeHandle"  />
         <result property="defectLogDescribe"     column="defect_log_describe"    />
         <result property="createTime"    column="defect_log_create_time"    />
+    </resultMap>
+
+    <resultMap id="userResult" type="ApiMemberBaseInfo">
+        <id     property="memberAccount"       column="memberAccount"      />
+        <result property="memberName"     column="memberName"   />
+        <result property="phoneNumber"     column="phoneNumber"    />
+        <result property="email"    column="email"    />
+        <result property="avatar"    column="avatar"    />
     </resultMap>
 
     <sql id="selectApiDefectVo">
@@ -48,6 +57,19 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             d.module_id,
             m.module_name,
             d.module_version,
+            CONCAT('{"memberId":',
+             CASE WHEN u.user_id IS NOT NULL THEN u.user_id ELSE 0 END,
+             ',"memberAccount":',
+             CASE WHEN u.user_name IS NOT NULL THEN CONCAT('"',u.user_name,'"') ELSE 'null' END,
+             ',"memberName":',
+             CASE WHEN u.nick_name IS NOT NULL THEN CONCAT('"',u.nick_name,'"') ELSE 'null' END,
+             ',"phoneNumber":',
+             CASE WHEN u.phonenumber IS NOT NULL THEN CONCAT('"',u.phonenumber,'"') ELSE 'null' END,
+             ',"email":',
+             CASE WHEN u.email IS NOT NULL THEN CONCAT('"',u.email,'"') ELSE 'null' END,
+             ',"avatar":',
+             CASE WHEN u.avatar IS NOT NULL THEN CONCAT('"',u.avatar,'"') ELSE 'null' END,
+             '}') AS creator,
             d.create_by,
             d.create_by_id,
             d.update_time,
@@ -66,6 +88,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             log.create_time AS defect_log_create_time
         FROM
             sys_defect d
+            LEFT JOIN sys_user u ON d.create_by_id = u.user_id
             LEFT JOIN (SELECT
                            l.defect_log_id,
                            l.defect_log_type,
@@ -221,6 +244,6 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="handleBy != null">handle_by = #{handleBy, typeHandler=com.cat2bug.common.core.domain.handle.LongArrayTypeHandler},</if>
             <if test="defectLevel != null">defect_level = #{defectLevel},</if>
         </trim>
-        where project_id = #{projectId} and project_num = #{defectNum}
+        where defect_id = #{defectId}
     </update>
 </mapper>

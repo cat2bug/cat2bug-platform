@@ -45,6 +45,9 @@ public class ApiDefect
     /** 版本 */
     private String version;
 
+    /** 创建人 */
+    private ApiMemberBaseInfo creator;
+
     /** 处理人名称列表 */
     private List<ApiMemberBaseInfo> handlerList;
 

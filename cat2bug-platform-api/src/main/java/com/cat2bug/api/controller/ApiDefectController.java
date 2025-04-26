@@ -87,7 +87,7 @@ public class ApiDefectController extends BaseController {
 //    })
     @PreAuthorize("@ss.hasPermi('api:defect:edit')")
     @PostMapping
-    public AjaxResult add(@RequestBody ApiDefectRequest apiDefect)
+    public AjaxResult add(@RequestBody(required=false)  ApiDefectRequest apiDefect)
     {
         return success(apiDefectService.insertApiDefect(apiDefect));
     }
@@ -97,8 +97,11 @@ public class ApiDefectController extends BaseController {
      */
     @PreAuthorize("@ss.hasPermi('api:defect:add')")
     @PutMapping
-    public AjaxResult edit(@RequestBody ApiDefectRequest apiDefect)
+    public AjaxResult edit(@RequestBody(required=false)  ApiDefectRequest apiDefect)
     {
+        if(apiDefect==null) {
+            apiDefect = new ApiDefectRequest();
+        }
         return success(apiDefectService.updateSysDefect(apiDefect));
     }
 
@@ -107,9 +110,9 @@ public class ApiDefectController extends BaseController {
      */
     @PreAuthorize("@ss.hasPermi('api:defect:list')")
     @PostMapping("/{defectNum}/assign")
-    public AjaxResult assign(@PathVariable Long defectNum, @RequestBody ApiDefectHandle apiDefectHandle)
+    public AjaxResult assign(@PathVariable Long defectNum, @RequestBody(required=false)  ApiDefectHandle apiDefectHandle)
     {
-        apiDefectHandle.setDefectNum(defectNum);
+        apiDefectHandle = this.initApiDefectHandle(defectNum, apiDefectHandle);
         return success(apiDefectService.assign(apiDefectHandle));
     }
 
@@ -118,9 +121,9 @@ public class ApiDefectController extends BaseController {
      */
     @PreAuthorize("@ss.hasPermi('api:defect:list')")
     @PostMapping("/{defectNum}/reject")
-    public AjaxResult reject(@PathVariable Long defectNum, @RequestBody ApiDefectHandle apiDefectHandle)
+    public AjaxResult reject(@PathVariable Long defectNum, @RequestBody(required=false)  ApiDefectHandle apiDefectHandle)
     {
-        apiDefectHandle.setDefectNum(defectNum);
+        apiDefectHandle = this.initApiDefectHandle(defectNum, apiDefectHandle);
         return success(apiDefectService.reject(apiDefectHandle));
     }
 
@@ -129,9 +132,9 @@ public class ApiDefectController extends BaseController {
      */
     @PreAuthorize("@ss.hasPermi('api:defect:list')")
     @PostMapping("/{defectNum}/repair")
-    public AjaxResult repair(@PathVariable Long defectNum, @RequestBody ApiDefectHandle apiDefectHandle)
+    public AjaxResult repair(@PathVariable Long defectNum, @RequestBody(required=false)  ApiDefectHandle apiDefectHandle)
     {
-        apiDefectHandle.setDefectNum(defectNum);
+        apiDefectHandle = this.initApiDefectHandle(defectNum, apiDefectHandle);
         return success(apiDefectService.repair(apiDefectHandle));
     }
 
@@ -140,9 +143,9 @@ public class ApiDefectController extends BaseController {
      */
     @PreAuthorize("@ss.hasPermi('api:defect:list')")
     @PostMapping("/{defectNum}/pass")
-    public AjaxResult pass(@PathVariable Long defectNum, @RequestBody ApiDefectHandle apiDefectHandle)
+    public AjaxResult pass(@PathVariable Long defectNum, @RequestBody(required=false)  ApiDefectHandle apiDefectHandle)
     {
-        apiDefectHandle.setDefectNum(defectNum);
+        apiDefectHandle = this.initApiDefectHandle(defectNum, apiDefectHandle);
         return success(apiDefectService.pass(apiDefectHandle));
     }
 
@@ -151,9 +154,9 @@ public class ApiDefectController extends BaseController {
      */
     @PreAuthorize("@ss.hasPermi('api:defect:list')")
     @PostMapping("/{defectNum}/close")
-    public AjaxResult close(@PathVariable Long defectNum, @RequestBody ApiDefectHandle apiDefectHandle)
+    public AjaxResult close(@PathVariable Long defectNum, @RequestBody(required=false)  ApiDefectHandle apiDefectHandle)
     {
-        apiDefectHandle.setDefectNum(defectNum);
+        apiDefectHandle = this.initApiDefectHandle(defectNum, apiDefectHandle);
         return success(apiDefectService.close(apiDefectHandle));
     }
 
@@ -162,9 +165,23 @@ public class ApiDefectController extends BaseController {
      */
     @PreAuthorize("@ss.hasPermi('api:defect:list')")
     @PostMapping("/{defectNum}/open")
-    public AjaxResult open(@PathVariable Long defectNum, @RequestBody ApiDefectHandle apiDefectHandle)
+    public AjaxResult open(@PathVariable Long defectNum, @RequestBody(required=false) ApiDefectHandle apiDefectHandle)
     {
-        apiDefectHandle.setDefectNum(defectNum);
+        apiDefectHandle = this.initApiDefectHandle(defectNum, apiDefectHandle);
         return success(apiDefectService.open(apiDefectHandle));
+    }
+
+    /**
+     * 初始化ApiDefectHandle实例
+     * @param defectNum     缺陷编号
+     * @param apiDefectHandle   缺陷处理实例
+     * @return  初始化后的缺陷处理实例
+     */
+    private ApiDefectHandle initApiDefectHandle(Long defectNum, ApiDefectHandle apiDefectHandle) {
+        if(apiDefectHandle==null) {
+            apiDefectHandle = new ApiDefectHandle();
+        }
+        apiDefectHandle.setDefectNum(defectNum);
+        return apiDefectHandle;
     }
 }

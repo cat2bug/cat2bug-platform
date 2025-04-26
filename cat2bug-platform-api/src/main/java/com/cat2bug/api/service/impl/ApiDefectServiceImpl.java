@@ -173,13 +173,21 @@ public class ApiDefectServiceImpl implements IApiDefectService {
     @Override
     public ApiDefect updateSysDefect(ApiDefectRequest apiDefect) {
         Preconditions.checkNotNull(apiDefect.getDefectNum(),MessageUtils.message("defect.num_not_empty"));
+        Long projectId = this.getProjectId();
+        ApiDefect oldDefect = this.apiDefectMapper.selectSysDefectByDefectNumber(
+                projectId, apiDefect.getDefectNum()
+        );
+        Preconditions.checkNotNull(apiDefect, MessageUtils.message("defect.not_found"));
+
+        apiDefect.setDefectId(oldDefect.getDefectId());
         apiDefect.setUpdateTime(DateUtils.getNowDate());
         apiDefect.setCreateBy(SecurityUtils.getUsername());
-        Long projectId = this.getProjectId();
         apiDefect.setProjectId(projectId);
         int ret = this.apiDefectMapper.updateApiDefect(apiDefect);
         if(ret>0){
-            return apiDefect;
+            return this.apiDefectMapper.selectSysDefectByDefectNumber(
+                    projectId, apiDefect.getDefectNum()
+            );
         } else {
             return null;
         }
