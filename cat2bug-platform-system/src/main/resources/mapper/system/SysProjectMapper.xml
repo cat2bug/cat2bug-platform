@@ -33,7 +33,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <include refid="selectSysProjectVo"/>
         <where>
             p.project_state > 0 and p.team_id = #{sysProject.teamId}
-            <if test="sysProject.params != null and sysProject.params.userId !=null">  and up.user_id= #{sysProject.params.userId} </if>
+            <if test="sysProject.params != null and sysProject.params.userId !=null">and (up.user_id= #{sysProject.params.userId} or p.create_by = #{sysProject.params.userId})</if>
             <if test="sysProject.collect != null  and sysProject.collect != ''"> and up.collect = #{sysProject.collect}</if>
             <if test="sysProject.projectName != null  and sysProject.projectName != ''"> and p.project_name like concat('%', #{sysProject.projectName}, '%')</if>
             <if test="sysProject.createBy != null  and sysProject.createBy != ''"> and p.create_by like concat('%', #{sysProject.createBy}, '%')</if>

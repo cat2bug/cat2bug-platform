@@ -203,19 +203,19 @@ export default {
     /** 是否显示添加按钮 */
     visibleAdd() {
       return function (project) {
-        return checkPermi(['system:project:add']) && project.members.filter(m=>m.userId == this.currentUserId).length>0
+        return checkPermi(['system:project:add']) && (parseInt(project.createBy) === this.currentUserId || project.members.filter(m=>m.userId == this.currentUserId).length>0)
       }
     },
     /** 是否显示删除按钮 */
     visibleDelete() {
       return function (project) {
-        return checkPermi(['system:project:remove']) && project.members.filter(m=>m.userId == this.currentUserId).length>0
+        return checkPermi(['system:project:remove']) && (parseInt(project.createBy) === this.currentUserId || project.members.filter(m=>m.userId == this.currentUserId).length>0)
       }
     },
     /** 是否可以访问缺陷页面 */
     isViewDefect() {
       return function (project) {
-        return checkPermi(['system:defect:list']) && project.members.filter(m=>m.userId == this.currentUserId).length>0
+        return checkPermi(['system:defect:list']) && (parseInt(project.createBy) === this.currentUserId || project.members.filter(m=>m.userId == this.currentUserId).length>0)
       }
     }
   },
