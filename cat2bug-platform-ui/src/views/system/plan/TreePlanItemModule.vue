@@ -280,7 +280,7 @@ export default {
 .tree-tools {
   width: 100%;
   height: 55px;
-  line-height: 55px;
+  //line-height: 55px;
   border-bottom: 1px solid #dfe6ec;
   background-color: #f8f8f9;
   padding: 0px 10px;
@@ -290,6 +290,7 @@ export default {
   color: #515a6e;
 }
 .tree-node {
+  line-height: 0px;
   flex: 1;
   display: flex;
   align-items: center;

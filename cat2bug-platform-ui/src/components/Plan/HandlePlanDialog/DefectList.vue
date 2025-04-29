@@ -145,11 +145,10 @@
       </el-table-column>
       <el-table-column :label="$t('operate')" align="left" class-name="small-padding fixed-width" min-width="250" fixed="right">
         <template slot-scope="scope">
-          <defect-tools class="defect-row-tools" :is-text="true" :defect="scope.row" size="mini" :is-show-icon="true" @delete="handleDelete" @update="search" @log="search"></defect-tools>
+          <defect-tools class="defect-row-tools" :exclusions="defectToolsExclusions" :is-text="true" :defect="scope.row" size="mini" :is-show-icon="true" @delete="handleDelete" @update="search" @log="search"></defect-tools>
         </template>
       </el-table-column>
     </el-table>
-
     <pagination
       v-show="total>0"
       :total="total"
@@ -190,6 +189,7 @@ export default {
   data() {
     return {
       loading: false,
+      defectToolsExclusions: ['delete'],
       plan: {},
       planItem: {},
       // 是否选择了所有
@@ -424,7 +424,7 @@ export default {
     /** 处理删除缺陷 */
     handleDelete() {
       this.search();
-      this.$emit('change');
+      this.$emit('delete');
     },
     /** 显示图片操作 */
     clickImageHandle(event){

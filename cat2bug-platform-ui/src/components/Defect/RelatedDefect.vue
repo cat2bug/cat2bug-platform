@@ -361,6 +361,7 @@ export default {
     /** 查询缺陷列表 */
     search() {
       this.loading = true;
+      this.queryParams.projectId = this.projectId;
       listDefect(this.queryParams).then(response => {
         this.loading = false;
         this.defectList = response.rows;

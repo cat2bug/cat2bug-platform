@@ -61,6 +61,10 @@ export default {
     event: 'update'
   },
   props:{
+    exclusions: {
+      type: Array,
+      default: ()=>[]
+    },
     defect: {
       type: Object,
       default: {}
@@ -85,40 +89,40 @@ export default {
     },
     // 指派
     assignVisible: function () {
-      return this.defect.defectStateName!=CLOSE_STATE && this.defect.defectStateName!=RESOLVED_STATE && checkPermi(['system:defect:assign']) &&
+      return !this.exclusions.includes('assign') && (this.defect.defectStateName!=CLOSE_STATE && this.defect.defectStateName!=RESOLVED_STATE && checkPermi(['system:defect:assign']) &&
         (
           (this.defect.createById && this.defect.createById == this.currentUserId) ||
           (this.defect.handleBy && this.defect.handleBy.indexOf(this.currentUserId)!==-1)
-        );
+        ));
     },
     // 修复
     repairVisible: function () {
-      return (this.defect.defectStateName==PROCESSING_STATE || this.defect.defectStateName==REJECTED_STATE) && checkPermi(['system:defect:repair']) &&
-        (this.defect.handleBy && this.defect.handleBy.indexOf(this.currentUserId)!==-1);
+      return !this.exclusions.includes('repair') && ((this.defect.defectStateName==PROCESSING_STATE || this.defect.defectStateName==REJECTED_STATE) && checkPermi(['system:defect:repair']) &&
+        (this.defect.handleBy && this.defect.handleBy.indexOf(this.currentUserId)!==-1));
     },
     // 驳回
     rejectVisible: function () {
-      return this.defect.defectStateName==AUDIT_STATE && checkPermi(['system:defect:reject']) &&
-        (this.defect.handleBy && this.defect.handleBy.indexOf(this.currentUserId)!==-1);
+      return !this.exclusions.includes('reject') && (this.defect.defectStateName==AUDIT_STATE && checkPermi(['system:defect:reject']) &&
+        (this.defect.handleBy && this.defect.handleBy.indexOf(this.currentUserId)!==-1));
     },
     // 通过
     passVisible: function () {
-      return this.defect.defectStateName==AUDIT_STATE && checkPermi(['system:defect:pass']) &&
-        (this.defect.handleBy && this.defect.handleBy.indexOf(this.currentUserId)!==-1);
+      return !this.exclusions.includes('pass') && (this.defect.defectStateName==AUDIT_STATE && checkPermi(['system:defect:pass']) &&
+        (this.defect.handleBy && this.defect.handleBy.indexOf(this.currentUserId)!==-1));
     },
     // 关闭
     closeVisible: function () {
-      return this.defect.defectStateName!=CLOSE_STATE && this.defect.defectStateName!=RESOLVED_STATE && checkPermi(['system:defect:close']);
+      return !this.exclusions.includes('close') && (this.defect.defectStateName!=CLOSE_STATE && this.defect.defectStateName!=RESOLVED_STATE && checkPermi(['system:defect:close']));
     },
     // 开启
     openVisible: function () {
-      return this.defect.defectStateName==CLOSE_STATE && checkPermi(['system:defect:open']);
+      return !this.exclusions.includes('open') && (this.defect.defectStateName==CLOSE_STATE && checkPermi(['system:defect:open']));
     },
     deleteVisible: function () {
-      return this.defect.createById==this.currentUserId || checkPermi(['system:defect:remove']);
+      return !this.exclusions.includes('delete') && (this.defect.createById==this.currentUserId || checkPermi(['system:defect:remove']));
     },
     editVisible: function () {
-      return this.defect.createById==this.currentUserId || checkPermi(['system:defect:edit']);
+      return !this.exclusions.includes('edit') && (this.defect.createById==this.currentUserId || checkPermi(['system:defect:edit']));
     },
   },
   methods:{

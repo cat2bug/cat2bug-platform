@@ -306,21 +306,23 @@ export default {
       this.visible = true;
       this.$nextTick(()=>{
         this.loading = true;
-        this.getPlanInfo(planId);
+        this.getPlanInfo(planId, true);
         this.getTreeModuleWidth();
         this.handleListTypeChanged(this.activeListType);
         this.initFloatMenu();
       });
     },
     /** 获取计划信息 */
-    getPlanInfo(planId) {
+    getPlanInfo(planId, isFreshTreeModule) {
       this.loading = true;
       getPlan(planId).then(response => {
         this.loading = false;
         this.plan = response.data;
-        this.$nextTick(()=>{
-          this.$refs.treeModuleRef.reloadData();
-        })
+        if(isFreshTreeModule) {
+          this.$nextTick(() => {
+            this.$refs.treeModuleRef.reloadData();
+          });
+        }
       }).catch(e=>{this.loading = false;});
     },
 
@@ -389,9 +391,9 @@ export default {
     },
     /** 处理列表数据变更 */
     handleListChanged() {
-      this.getPlanInfo(this.planId);
+      this.getPlanInfo(this.planId, false);
       this.setDragComponentSize();
-    }
+    },
   }
 }
 </script>

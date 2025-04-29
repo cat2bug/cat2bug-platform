@@ -73,7 +73,7 @@ public class SysPlanServiceImpl implements ISysPlanService
      */
     @Override
     public List<SysDefect> selectSysDefectList(String planId, SysDefect sysDefect) {
-        return sysPlanMapper.selectSysDefectList(planId, sysDefect, SecurityUtils.getUserId(), DateUtils.getNowDate());
+        return sysPlanMapper.selectSysDefectList(planId, sysDefect, null, DateUtils.getNowDate());
     }
 
     /**
