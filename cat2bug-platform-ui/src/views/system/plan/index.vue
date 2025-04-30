@@ -10,7 +10,7 @@
             prefix-icon="el-icon-files"
             clearable
             size="small"
-            @keyup.enter.native="handleQuery"
+            @input="handleQuery"
           />
         </el-form-item>
         <el-form-item label="" prop="planVersion">
@@ -20,7 +20,7 @@
             prefix-icon="el-icon-discount"
             clearable
             size="small"
-            @keyup.enter.native="handleQuery"
+            @input="handleQuery"
           />
         </el-form-item>
       </el-form>
@@ -320,7 +320,8 @@ export default {
     getList() {
       this.loading = true;
       this.queryParams.params = {};
-      this.queryParams.projectId = this.projectId
+      this.queryParams.params.dataType='simple';
+      this.queryParams.projectId = this.projectId;
       if (null != this.daterangePlanStartTime && '' != this.daterangePlanStartTime) {
         this.queryParams.params["beginPlanStartTime"] = this.daterangePlanStartTime[0];
         this.queryParams.params["endPlanStartTime"] = this.daterangePlanStartTime[1];

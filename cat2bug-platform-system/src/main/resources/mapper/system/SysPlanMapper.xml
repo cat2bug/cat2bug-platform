@@ -188,6 +188,44 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             ) s ON s.plan_id = p.plan_id
     </sql>
 
+    <sql id="selectSimpleSysPlanVo">
+        SELECT
+            p.plan_id,
+            p.plan_number,
+            p.plan_name,
+            p.plan_version,
+            p.plan_start_time,
+            p.plan_end_time,
+            p.create_by_id,
+            p.create_time,
+            p.update_by_id,
+            p.update_time,
+            p.project_id,
+            p.report_id,
+            p.remark,
+            u.nick_name AS update_by,
+            u.avatar AS update_by_avatar,
+            n.pass AS pass_count,
+            n.total AS item_total
+        FROM
+            sys_plan p
+                LEFT JOIN sys_user u ON u.user_id = p.update_by_id
+                LEFT JOIN (
+                SELECT
+                    spi.plan_id,
+                    SUM( CASE spi.plan_item_state WHEN 'pass' THEN 1 ELSE 0 END ) pass,
+                    COUNT( spi.plan_item_state ) total
+                FROM
+                    sys_plan_item spi,
+                    sys_case c
+                WHERE
+                    spi.case_id = c.case_id
+                  AND c.module_id IS NOT NULL
+                GROUP BY
+                    plan_id
+            ) n ON n.plan_id = p.plan_id
+    </sql>
+
     <sql id="selectSysDefectOfPlanVo">
         <include refid="com.cat2bug.system.mapper.SysDefectMapper.selectSysDefectVo"/>
         LEFT JOIN sys_plan_item spi ON spi.defect_ids IS NOT NULL AND spi.defect_ids LIKE CONCAT('%,', d.defect_id)
@@ -198,7 +236,14 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </select>
 
     <select id="selectSysPlanList" parameterType="SysPlan" resultMap="SysPlanResult">
-        <include refid="selectSysPlanVo"/>
+        <choose>
+            <when test="params.dataType=='simple'">
+                <include refid="selectSimpleSysPlanVo"></include>
+            </when>
+            <otherwise>
+                <include refid="selectSysPlanVo"/>
+            </otherwise>
+        </choose>
         <where>
             <if test="planNumber != null "> and p.plan_number = #{planNumber}</if>
             <if test="planName != null  and planName != ''"> and p.plan_name like concat('%', #{planName}, '%')</if>
