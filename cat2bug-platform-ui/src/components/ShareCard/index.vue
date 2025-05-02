@@ -3,7 +3,7 @@
     placement="top"
     :append-to-body="true"
     v-model="visible">
-    <div class="shard-context" :loading="apiLoading">
+    <div class="shard-context" v-loading="apiLoading">
       <el-form :inline="true" :model="form">
         <el-form-item :label="$t('shard.aging-hour')">
           <el-select v-model="form.agingHour" size="mini" @change="refresh">
@@ -17,6 +17,7 @@
           <el-input v-model="form.password" size="mini" clearable :placeholder="$t('shard.please-enter-password')" minlength="4" maxlength="4" @change="refresh"></el-input>
         </el-form-item>
       </el-form>
+      <el-button type="text" icon="el-icon-close"></el-button>
       <div class="title">
         <label>{{ $t('shard.click-prompt') }}</label>
       </div>
@@ -89,17 +90,16 @@ export default {
       }
     }
   },
-  created() {
-    this.getShardInfo(this.params.defectId);
-  },
   methods: {
     /** 刷新 */
     refresh() {
+      this.apiLoading = true;
       this.form.defectId = this.params.defectId;
       shardDefect(this.form).then(res=>{
         this.shard = res.data;
         this.refreshComponents();
-      });
+        this.apiLoading = false;
+      }).catch(()=>this.apiLoading = true);
     },
     /** 刷新分享组件 */
     refreshComponents() {
@@ -121,6 +121,7 @@ export default {
     },
     /** 点击分享按钮事件 */
     clickHandle(e) {
+      // this.getShardInfo(this.params.defectId);
       e.stopPropagation();
     },
     /** 鼠标进入分享组件效果 */
@@ -135,6 +136,7 @@ export default {
     getShardInfo(defectId) {
       if(defectId) {
         getShard(defectId).then(res=>{
+          // this.apiLoading = false;
           if(res.data) {
             this.form = res.data;
             this.form.agingHour = this.form.agingHour?this.form.agingHour + '':'1';

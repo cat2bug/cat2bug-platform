@@ -49,117 +49,212 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="version"    column="version"    />
         <result property="createTime"    column="create_time"    />
     </resultMap>
+    <sql id="selectSysDefectVo" databaseId="h2">
+                SELECT
+                    d.defect_id,
+                    d.project_num,
+                    d.defect_type,
+                    d.defect_name,
+                    d.defect_describe,
+                    d.annex_urls,
+                    d.img_urls,
+                    d.project_id,
+                    p.project_name,
+                    d.test_plan_id,
+                    d.case_id,
+                    d.data_sources,
+                    d.data_sources_params,
+                    d.module_id,
+                    m.module_name,
+                    d.module_version,
+                    d.create_by,
+                    d.create_by_id,
+                    d.update_time,
+                    d.create_time,
+                    d.update_by,
+                    d.update_by_id,
+                    d.defect_state,
+                    d.case_step_id,
+                    d.handle_by,
+                    d.plan_start_time,
+                    d.plan_end_time,
+                    un.user_infos AS handle_by_list,
+                    cm.user_infos AS create_member,
+                    cm.nick_name AS create_member_name,
+                    d.handle_time,
+                    d.defect_level,
+                    ud.collect,
+                    rc.reject_count,
+                    lt.handle_pass_time,
+                    lt.handle_start_time
+                FROM
+                    sys_defect d
+                        LEFT JOIN sys_module m ON m.module_id = d.module_id
+                        LEFT JOIN sys_project p ON d.project_id = p.project_id
+                        LEFT JOIN sys_user_defect ud ON ud.defect_id = d.defect_id
+                                    <if test="currentUserId != null ">
+                                       and ud.user_id = #{currentUserId}
+                                    </if>
+                        LEFT JOIN (
+                            SELECT
+                            d2.defect_id,
+                            u.nick_name,
+                            CONCAT('{"userId":',
+                            CASE WHEN u.user_id IS NOT NULL THEN user_id ELSE 0 END,
+                            ',"nickName":',
+                            CASE WHEN u.nick_name IS NOT NULL THEN CONCAT('"',u.nick_name,'"') ELSE 'null' END,
+                            ',"userName":',
+                            CASE WHEN u.user_name IS NOT NULL THEN CONCAT('"',u.user_name,'"') ELSE 'null' END,
+                            ',"avatar":',
+                            CASE WHEN u.avatar IS NOT NULL THEN CONCAT('"',u.avatar,'"') ELSE 'null' END,
 
+                            '}') AS user_infos
+                            FROM
+                            sys_defect d2
+                            LEFT JOIN sys_user u ON d2.create_by_id = u.user_id
+                            GROUP BY
+                            d2.defect_id
+                        ) cm ON cm.defect_id = d.defect_id
+                        LEFT JOIN (
+                            SELECT
+                                d1.defect_id,
+                                CONCAT('[', GROUP_CONCAT( CONCAT('{"userId":',
+                                 CASE WHEN u.user_id IS NOT NULL THEN user_id ELSE 0 END,
+                                 ',"nickName":',
+                                 CASE WHEN u.nick_name IS NOT NULL THEN CONCAT('"',u.nick_name,'"') ELSE 'null' END,
+                                 ',"userName":',
+                                 CASE WHEN u.user_name IS NOT NULL THEN CONCAT('"',u.user_name,'"') ELSE 'null' END,
+                                 ',"avatar":',
+                                 CASE WHEN u.avatar IS NOT NULL THEN CONCAT('"',u.avatar,'"') ELSE 'null' END,
+
+                                 '}')), ']') AS user_infos
+                            FROM
+                                sys_defect d1
+                                LEFT JOIN sys_user u ON d1.handle_by REGEXP CONCAT('\b',u.user_id,'\b') OR d1.handle_by REGEXP CONCAT('\\b',u.user_id,'\\b')
+                            GROUP BY
+                                d1.defect_id
+                        ) un ON un.defect_id = d.defect_id
+                        LEFT JOIN (
+                            SELECT
+                            l.defect_id,
+                            count(*) AS reject_count
+                            FROM
+                            sys_defect_log l
+                            JOIN ( SELECT defect_id, max( create_time ) max_create_time FROM sys_defect_log WHERE defect_log_type = 0 OR defect_log_type = 7 GROUP BY defect_id ) ld ON ld.defect_id = l.defect_id
+                            AND l.create_time > ld.max_create_time
+                            WHERE
+                            l.defect_log_type = 4
+                            GROUP BY
+                            l.defect_id
+                        ) rc ON rc.defect_id = d.defect_id
+                        LEFT JOIN (
+                            SELECT
+                            l.defect_id,
+                            IFNULL(passl.pass_create_time ,#{currentTime}) as handle_pass_time,
+                            maxl.max_create_time as handle_start_time
+                            FROM
+                            sys_defect_log l
+                            JOIN ( SELECT defect_id, max( create_time ) max_create_time FROM sys_defect_log WHERE defect_log_type = 0 OR defect_log_type = 7 GROUP BY defect_id ) maxl ON maxl.defect_id = l.defect_id AND l.create_time >= maxl.max_create_time
+                            LEFT JOIN ( SELECT defect_id, max( create_time ) pass_create_time FROM sys_defect_log WHERE defect_log_type = 3 GROUP BY defect_id ) passl ON passl.defect_id = l.defect_id AND passl.pass_create_time>maxl.max_create_time
+                            GROUP BY
+                            l.defect_id
+                        ) lt ON lt.defect_id = d.defect_id
+    </sql>
     <sql id="selectSysDefectVo">
         SELECT
-            d.defect_id,
-            d.project_num,
-            d.defect_type,
-            d.defect_name,
-            d.defect_describe,
-            d.annex_urls,
-            d.img_urls,
-            d.project_id,
-            p.project_name,
-            d.test_plan_id,
-            d.case_id,
-            d.data_sources,
-            d.data_sources_params,
-            d.module_id,
-            m.module_name,
-            d.module_version,
-            d.create_by,
-            d.create_by_id,
-            d.update_time,
-            d.create_time,
-            d.update_by,
-            d.update_by_id,
-            d.defect_state,
-            d.case_step_id,
-            d.handle_by,
-            d.plan_start_time,
-            d.plan_end_time,
-            un.user_infos AS handle_by_list,
-            cm.user_infos AS create_member,
-            cm.nick_name AS create_member_name,
-            d.handle_time,
-            d.defect_level,
-            ud.collect,
-            rc.reject_count,
-            lt.handle_pass_time,
-            lt.handle_start_time
+        d.defect_id,
+        d.project_num,
+        d.defect_type,
+        d.defect_name,
+        d.defect_describe,
+        d.annex_urls,
+        d.img_urls,
+        d.project_id,
+        p.project_name,
+        d.test_plan_id,
+        d.case_id,
+        d.data_sources,
+        d.data_sources_params,
+        d.module_id,
+        m.module_name,
+        d.module_version,
+        d.create_by,
+        d.create_by_id,
+        d.update_time,
+        d.create_time,
+        d.update_by,
+        d.update_by_id,
+        d.defect_state,
+        d.case_step_id,
+        d.handle_by,
+        d.plan_start_time,
+        d.plan_end_time,
+        (
+        SELECT CONCAT('[', GROUP_CONCAT(
+        CONCAT(
+        '{"userId":', IFNULL(u.user_id, 0),
+        ',"nickName":"', IFNULL(u.nick_name, ''), '"',
+        ',"userName":"', IFNULL(u.user_name, ''), '"',
+        ',"avatar":"', IFNULL(u.avatar, ''), '"',
+        '}'
+        )
+        ), ']')
+        FROM sys_user u
+        WHERE FIND_IN_SET(u.user_id, REPLACE(d.handle_by, ' ', '')) > 0
+        ) AS handle_by_list,
+        CONCAT(
+        '{"userId":', IFNULL(u_create.user_id, 0),
+        ',"nickName":"', IFNULL(u_create.nick_name, ''), '"',
+        ',"userName":"', IFNULL(u_create.user_name, ''), '"',
+        ',"avatar":"', IFNULL(u_create.avatar, ''), '"',
+        '}'
+        ) AS create_member,
+        IFNULL(u_create.nick_name, '') AS create_member_name,
+        d.handle_time,
+        d.defect_level,
+        IFNULL(ud.collect, 0) AS collect,
+        (
+        SELECT COUNT(*)
+        FROM sys_defect_log l
+        WHERE l.defect_id = d.defect_id
+        AND l.defect_log_type = 4
+        AND l.create_time > (
+        SELECT MAX(create_time)
+        FROM sys_defect_log
+        WHERE defect_id = d.defect_id
+        AND (defect_log_type = 0 OR defect_log_type = 7)
+        )
+        ) AS reject_count,
+        IFNULL(
+        (
+        SELECT MAX(create_time)
+        FROM sys_defect_log
+        WHERE defect_id = d.defect_id
+        AND defect_log_type = 3
+        AND create_time > (
+        SELECT MAX(create_time)
+        FROM sys_defect_log
+        WHERE defect_id = d.defect_id
+        AND (defect_log_type = 0 OR defect_log_type = 7)
+        )
+        ),
+        #{currentTime}
+        ) AS handle_pass_time,
+        (
+        SELECT MAX(create_time)
+        FROM sys_defect_log
+        WHERE defect_id = d.defect_id
+        AND (defect_log_type = 0 OR defect_log_type = 7)
+        ) AS handle_start_time
         FROM
-            sys_defect d
-                LEFT JOIN sys_module m ON m.module_id = d.module_id
-                LEFT JOIN sys_project p ON d.project_id = p.project_id
-                LEFT JOIN sys_user_defect ud ON ud.defect_id = d.defect_id
-                            <if test="currentUserId != null ">
-                               and ud.user_id = #{currentUserId}
-                            </if>
-                LEFT JOIN (
-                    SELECT
-                    d2.defect_id,
-                    u.nick_name,
-                    CONCAT('{"userId":',
-                    CASE WHEN u.user_id IS NOT NULL THEN user_id ELSE 0 END,
-                    ',"nickName":',
-                    CASE WHEN u.nick_name IS NOT NULL THEN CONCAT('"',u.nick_name,'"') ELSE 'null' END,
-                    ',"userName":',
-                    CASE WHEN u.user_name IS NOT NULL THEN CONCAT('"',u.user_name,'"') ELSE 'null' END,
-                    ',"avatar":',
-                    CASE WHEN u.avatar IS NOT NULL THEN CONCAT('"',u.avatar,'"') ELSE 'null' END,
-
-                    '}') AS user_infos
-                    FROM
-                    sys_defect d2
-                    LEFT JOIN sys_user u ON d2.create_by_id = u.user_id
-                    GROUP BY
-                    d2.defect_id
-                ) cm ON cm.defect_id = d.defect_id
-                LEFT JOIN (
-                    SELECT
-                        d1.defect_id,
-                        CONCAT('[', GROUP_CONCAT( CONCAT('{"userId":',
-                         CASE WHEN u.user_id IS NOT NULL THEN user_id ELSE 0 END,
-                         ',"nickName":',
-                         CASE WHEN u.nick_name IS NOT NULL THEN CONCAT('"',u.nick_name,'"') ELSE 'null' END,
-                         ',"userName":',
-                         CASE WHEN u.user_name IS NOT NULL THEN CONCAT('"',u.user_name,'"') ELSE 'null' END,
-                         ',"avatar":',
-                         CASE WHEN u.avatar IS NOT NULL THEN CONCAT('"',u.avatar,'"') ELSE 'null' END,
-
-                         '}')), ']') AS user_infos
-                    FROM
-                        sys_defect d1
-                        LEFT JOIN sys_user u ON d1.handle_by REGEXP CONCAT('\b',u.user_id,'\b') OR d1.handle_by REGEXP CONCAT('\\b',u.user_id,'\\b')
-                    GROUP BY
-                        d1.defect_id
-                ) un ON un.defect_id = d.defect_id
-                LEFT JOIN (
-                    SELECT
-                    l.defect_id,
-                    count(*) AS reject_count
-                    FROM
-                    sys_defect_log l
-                    JOIN ( SELECT defect_id, max( create_time ) max_create_time FROM sys_defect_log WHERE defect_log_type = 0 OR defect_log_type = 7 GROUP BY defect_id ) ld ON ld.defect_id = l.defect_id
-                    AND l.create_time > ld.max_create_time
-                    WHERE
-                    l.defect_log_type = 4
-                    GROUP BY
-                    l.defect_id
-                ) rc ON rc.defect_id = d.defect_id
-                LEFT JOIN (
-                    SELECT
-                    l.defect_id,
-                    IFNULL(passl.pass_create_time ,#{currentTime}) as handle_pass_time,
-                    maxl.max_create_time as handle_start_time
-                    FROM
-                    sys_defect_log l
-                    JOIN ( SELECT defect_id, max( create_time ) max_create_time FROM sys_defect_log WHERE defect_log_type = 0 OR defect_log_type = 7 GROUP BY defect_id ) maxl ON maxl.defect_id = l.defect_id AND l.create_time >= maxl.max_create_time
-                    LEFT JOIN ( SELECT defect_id, max( create_time ) pass_create_time FROM sys_defect_log WHERE defect_log_type = 3 GROUP BY defect_id ) passl ON passl.defect_id = l.defect_id AND passl.pass_create_time>maxl.max_create_time
-                    GROUP BY
-                    l.defect_id
-                ) lt ON lt.defect_id = d.defect_id
+        sys_defect d
+        LEFT JOIN sys_module m ON m.module_id = d.module_id
+        LEFT JOIN sys_project p ON d.project_id = p.project_id
+        LEFT JOIN sys_user_defect ud ON ud.defect_id = d.defect_id
+        <if test="currentUserId != null ">
+            and ud.user_id = #{currentUserId}
+        </if>
+        LEFT JOIN sys_user u_create ON u_create.user_id = d.create_by_id
     </sql>
 
     <select id="getProjectDefectMaxNum" resultType="Long">
