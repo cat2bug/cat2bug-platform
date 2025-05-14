@@ -70,7 +70,7 @@
         </div>
       </el-form-item>
     </el-form>
-    <span class="login-copyright">Copyright © 2023-2024 cat2bug.com All Rights Reserved.</span>
+    <span class="login-copyright">Copyright © 2023-2025 cat2bug.com All Rights Reserved.</span>
   </div>
 </template>
 
