@@ -254,7 +254,6 @@ public class SysDefectServiceImpl implements ISysDefectService
         // 新建缺陷数据
         sysDefect.setCreateTime(DateUtils.getNowDate());
         sysDefect.setUpdateTime(DateUtils.getNowDate());
-        sysDefect.setUpdateTime(DateUtils.getNowDate());
         sysDefect.setDefectState(SysDefectStateEnum.PROCESSING);
         sysDefect.setCreateBy(SecurityUtils.getUsername());
         sysDefect.setUpdateBy(SecurityUtils.getUsername());

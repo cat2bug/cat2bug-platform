@@ -633,25 +633,25 @@ public class SysDashboardController {
             int titleCellNum = 0;
             // 测试数据的起始列索引
             int caseTitleStartCellNum = 0;
-            // 测试用例列
+            // 测试计划名称
             Cell cellPlanNameTitle = rowTitle1.createCell(titleCellNum);
             cellPlanNameTitle.setCellValue(MessageUtils.message("plan.name"));
             cellPlanNameTitle.setCellStyle(titleStyle);
             CellRangeAddress regionPlanNameTitle = new CellRangeAddress(rowNum, rowNum+1, titleCellNum, titleCellNum);
             sheet.addMergedRegion(regionPlanNameTitle);
-            // 测试用例列
+            // 测试版本
             Cell cellVersionTitle = rowTitle1.createCell(++titleCellNum);
             cellVersionTitle.setCellValue(MessageUtils.message("version"));
             cellVersionTitle.setCellStyle(titleStyle);
             CellRangeAddress regionVersionTitle = new CellRangeAddress(rowNum, rowNum+1, titleCellNum, titleCellNum);
             sheet.addMergedRegion(regionVersionTitle);
-            // 测试用例列
+            // 测试计划开始时间
             Cell cellPlanStartTimeTitle = rowTitle1.createCell(++titleCellNum);
             cellPlanStartTimeTitle.setCellValue(MessageUtils.message("plan.start-time"));
             cellPlanStartTimeTitle.setCellStyle(titleStyle);
             CellRangeAddress regionPlanStartTimeTitle = new CellRangeAddress(rowNum, rowNum+1, titleCellNum, titleCellNum);
             sheet.addMergedRegion(regionPlanStartTimeTitle);
-            // 测试用例列
+            // 测试计划结束时间
             Cell cellPlanEndTimeTitle = rowTitle1.createCell(++titleCellNum);
             cellPlanEndTimeTitle.setCellValue(MessageUtils.message("plan.end-time"));
             cellPlanEndTimeTitle.setCellStyle(titleStyle);
@@ -732,11 +732,11 @@ public class SysDashboardController {
             cellNotPassTitle.setCellStyle(titleStyle);
             // 执行列
             Cell cellRunTitle = rowTitle2.createCell(caseTitleStartCellNum+2);
-            cellRunTitle.setCellValue(MessageUtils.message("run"));
+            cellRunTitle.setCellValue(MessageUtils.message("not-run"));
             cellRunTitle.setCellStyle(titleStyle);
             // 未执行列
             Cell cellNotRunTitle = rowTitle2.createCell(caseTitleStartCellNum+3);
-            cellNotRunTitle.setCellValue(MessageUtils.message("not-run"));
+            cellNotRunTitle.setCellValue(MessageUtils.message("total"));
             cellNotRunTitle.setCellStyle(titleStyle);
             // 设置第二行标题默认样式
             for(int i=0;i<caseTitleStartCellNum;i++) {
