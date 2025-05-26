@@ -59,7 +59,13 @@
         </el-popover>
       </div>
     </div>
-    <el-table ref="defectTable" :key="tableKey" v-loading="loading" style="width:100%;" :data="defectList" @selection-change="handleSelectionChange" @sort-change="sortChangeHandle" @row-click="handleClickTableRow">
+    <el-table ref="defectTable" :key="tableKey" v-loading="loading" style="width:100%;" :data="defectList"
+              @selection-change="handleSelectionChange"
+              @sort-change="sortChangeHandle"
+              @row-click="handleClickTableRow"
+              @mousedown.native="handleTableMouseDown"
+              @mouseup.native="handleTableMouseUp"
+              @mousemove.native="handleTableMouseMove">
       <el-table-column v-if="showField('id')" :label="$t('id')" :key="$t('id')" align="left" prop="projectNum" width="80" sortable="custom" fixed >
         <template slot-scope="scope">
           <span>{{ '#' + scope.row.projectNum }}</span>
@@ -188,6 +194,10 @@ export default {
   components: { LevelTag, Cat2BugText, RowListMember, Cat2BugPreviewImage, FocusMemberList, DefectTypeFlag, DefectStateFlag, DefectTools, SelectModule, SelectProjectMember },
   data() {
     return {
+      // 鼠标是否点击
+      mouseFlag: false,
+      // 鼠标移动的偏移量
+      mouseOffset: 0,
       loading: false,
       defectToolsExclusions: ['delete'],
       plan: {},
@@ -457,7 +467,26 @@ export default {
     /** 阻止冒泡事件传递处理 */
     handleStopPropagation(event) {
       event.stopPropagation();
-    }
+    },
+
+    /** 处理鼠标在表格点下事件 */
+    handleTableMouseDown(e) {
+      this.mouseOffset = e.clientX;
+      this.mouseFlag = true;
+    },
+    /** 处理鼠标在表格点起事件 */
+    handleTableMouseUp(e) {
+      this.mouseFlag = false;
+    },
+    /** 处理鼠标在表格移动事件 */
+    handleTableMouseMove(e) {
+      // 这里面需要注意，通过ref需要那个那个包含table元素的父元素
+      let tableBody = this.$refs.defectTable.bodyWrapper;
+      if (this.mouseFlag) {
+        // 设置水平方向的元素的位置
+        tableBody.scrollLeft -= (- this.mouseOffset + (this.mouseOffset = e.clientX));
+      }
+    },
   }
 }
 </script>

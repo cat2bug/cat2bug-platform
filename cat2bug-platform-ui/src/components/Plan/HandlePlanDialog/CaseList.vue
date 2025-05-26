@@ -66,7 +66,13 @@
         </el-popover>
       </div>
     </div>
-    <el-table ref="planItemTable" v-loading="loading" :data="planItemList" v-resize="setDragComponentSize" @sort-change="handleSortChange" @selection-change="handleSelectionChange">
+    <el-table ref="planItemTable" v-loading="loading" :data="planItemList"
+              @sort-change="handleSortChange"
+              @selection-change="handleSelectionChange"
+              @mousedown.native="handleTableMouseDown"
+              @mouseup.native="handleTableMouseUp"
+              @mousemove.native="handleTableMouseMove"
+              v-resize="setDragComponentSize">
       <el-table-column type="selection" width="50" align="center" />
       <el-table-column v-if="showField('id')" :label="$t('id')" align="left" prop="caseNum" width="80" sortable="custom" fixed>
         <template slot-scope="scope">
@@ -172,6 +178,10 @@ export default {
   components: { HandleCaseOfPlan, PlanItemTools, Cat2BugText, Cat2BugPreviewImage, Cat2BugLevel },
   data() {
     return {
+      // 鼠标是否点击
+      mouseFlag: false,
+      // 鼠标移动的偏移量
+      mouseOffset: 0,
       loading: false,
       // 是否多选
       multiple: false,
@@ -392,6 +402,24 @@ export default {
     /** 打开编辑用例窗口 */
     handleOpenEditCase(planItem) {
       this.$refs.handleCaseDialog.open(this.plan, planItem, planItem.caseId, this.query);
+    },
+    /** 处理鼠标在表格点下事件 */
+    handleTableMouseDown(e) {
+      this.mouseOffset = e.clientX;
+      this.mouseFlag = true;
+    },
+    /** 处理鼠标在表格点起事件 */
+    handleTableMouseUp(e) {
+      this.mouseFlag = false;
+    },
+    /** 处理鼠标在表格移动事件 */
+    handleTableMouseMove(e) {
+      // 这里面需要注意，通过ref需要那个那个包含table元素的父元素
+      let tableBody = this.$refs.planItemTable.bodyWrapper;
+      if (this.mouseFlag) {
+        // 设置水平方向的元素的位置
+        tableBody.scrollLeft -= (- this.mouseOffset + (this.mouseOffset = e.clientX));
+      }
     },
   }
 }
