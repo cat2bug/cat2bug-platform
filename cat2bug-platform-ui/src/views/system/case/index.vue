@@ -140,7 +140,9 @@
           </el-table-column>
           <el-table-column v-if="showField('step')" :label="$t('step')" align="left" prop="caseStep" width="300" sortable="custom">
             <template slot-scope="scope">
-              <step :steps="scope.row.caseStep" style="max-width: 300px;" />
+              <div class="table-row-full-height">
+                <step :steps="scope.row.caseStep" />
+              </div>
             </template>
           </el-table-column>
           <el-table-column v-if="showField('data')" :label="$t('data')" class-name="fixed-width" align="left" prop="caseData" min-width="250" sortable="custom" />
@@ -366,7 +368,6 @@ export default {
     this.queryParams.projectId=this.projectId;
     this.initSort();
     this.getTreeModuleWidth();
-    this.getList();
     this.initFloatMenu();
   },
   destroyed() {
@@ -501,9 +502,9 @@ export default {
     getList() {
       this.loading = true;
       listCase(this.queryParams).then(response => {
+        this.loading = false;
         this.caseList = response.rows;
         this.total = response.total;
-        this.loading = false;
       });
     },
     /** 搜索按钮操作 */
@@ -815,6 +816,24 @@ export default {
     }
     > * {
       border-bottom: 1px dashed #E4E7ED;
+    }
+  }
+  .table-row-full-height {
+    position: absolute;
+    top: 0px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: inline-flex;
+    align-items: flex-start;
+    padding: 5px 10px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    > .step {
+      display: inline-flex;
+      max-width: 300px;
+      min-height: 100%;
+      justify-content: center;
     }
   }
 </style>

@@ -1,6 +1,6 @@
 <template>
   <div class="step">
-    <div class="step-row" v-for="(step,index) in steps" :key="index">
+    <div class="step-row" v-for="(step, index) in steps" :key="index">
       <p>{{ index + 1 }}</p>
       <span>{{ step.stepDescribe }}</span>
     </div>
@@ -25,7 +25,7 @@ export default {
   flex-direction: column;
 }
 .step-row {
-  display: flex;
+  display: inline-flex;
   flex-direction: row;
   align-items: center;
   p {
