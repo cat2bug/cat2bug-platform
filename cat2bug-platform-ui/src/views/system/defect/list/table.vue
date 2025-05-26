@@ -29,7 +29,14 @@
       </div>
     </div>
     <!--表格-->
-    <el-table ref="defectTable" :key="tableKey" v-loading="loading" style="width:100%;" :data="defectList" @selection-change="handleSelectionChange" @sort-change="sortChangeHandle" @row-click="handleClickTableRow">
+    <el-table ref="defectTable" :key="tableKey" v-loading="loading" style="width:100%;" :data="defectList"
+              @selection-change="handleSelectionChange"
+              @sort-change="sortChangeHandle"
+              @row-click="handleClickTableRow"
+              @mousedown.native="handleTableMouseDown"
+              @mouseup.native="handleTableMouseUp"
+              @mousemove.native="handleTableMouseMove"
+    >
 <!--      多选项，后续版本开放 -->
 <!--      <el-table-column width="50" align="start">-->
 <!--        <template #header>-->
@@ -179,6 +186,12 @@ export default {
   components: {RowListMember, Cat2BugPreviewImage, LevelTag, FocusMemberList, DefectTypeFlag, DefectStateFlag, DefectTools, Cat2BugText},
   data() {
     return {
+      // 鼠标是否点击
+      mouseFlag: false,
+      // 鼠标移动的偏移量
+      mouseOffset: 0,
+      // 鼠标点击时间
+      mouseClickTime: 0,
       // 是否选择了所有
       isCheckAll: false,
       // 全选组件的状态
@@ -372,7 +385,10 @@ export default {
     },
     /** 处理点击了表格中的某一行 */
     handleClickTableRow(defect) {
-      this.$emit('defect-click',defect);
+      if(Date.now()-this.mouseClickTime < 400) {
+        this.$emit('defect-click',defect);
+      }
+      this.mouseClickTime = 0;
     },
     /** 下载附件操作 */
     handleDown(event, file) {
@@ -397,7 +413,27 @@ export default {
     /** 阻止冒泡事件传递处理 */
     handleStopPropagation(event) {
       event.stopPropagation();
-    }
+    },
+
+    /** 处理鼠标在表格点下事件 */
+    handleTableMouseDown(e) {
+      this.mouseOffset = e.clientX;
+      this.mouseClickTime = Date.now();
+      this.mouseFlag = true;
+    },
+    /** 处理鼠标在表格点起事件 */
+    handleTableMouseUp(e) {
+      this.mouseFlag = false;
+    },
+    /** 处理鼠标在表格移动事件 */
+    handleTableMouseMove(e) {
+      // 这里面需要注意，通过ref需要那个那个包含table元素的父元素
+      let tableBody = this.$refs.defectTable.bodyWrapper;
+      if (this.mouseFlag) {
+        // 设置水平方向的元素的位置
+        tableBody.scrollLeft -= (- this.mouseOffset + (this.mouseOffset = e.clientX));
+      }
+    },
   }
 }
 </script>

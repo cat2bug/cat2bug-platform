@@ -108,7 +108,13 @@
       <multipane-resizer :style="multipaneStyle"></multipane-resizer>
 <!--      用例列表-->
       <div ref="caseContext" class="case-context">
-        <el-table ref="table" v-loading="loading" :data="caseList" @selection-change="handleSelectionChange" @sort-change="handleSortChange" v-resize="setDragComponentSize">
+        <el-table ref="table" v-loading="loading" :data="caseList"
+                  @selection-change="handleSelectionChange"
+                  @sort-change="handleSortChange"
+                  @mousedown.native="handleTableMouseDown"
+                  @mouseup.native="handleTableMouseUp"
+                  @mousemove.native="handleTableMouseMove"
+                  v-resize="setDragComponentSize">
           <el-table-column type="selection" width="50" align="center" fixed />
           <el-table-column v-if="showField('id')" :label="$t('id')" align="center" prop="caseNum" width="80" sortable="custom" fixed>
             <template slot-scope="scope">
@@ -274,6 +280,10 @@ export default {
   components: {ProjectLabel,AddCase,Cat2BugLevel,Step,TreeModule,Multipane,MultipaneResizer,AddDefect,CloudCase,CloudCase2,FocusMemberList,Cat2BugPreviewImage,Cat2BugSelectLevel,Cat2BugText},
   data() {
     return {
+      // 鼠标是否点击
+      mouseFlag: false,
+      // 鼠标移动的偏移量
+      mouseOffset: 0,
       multipaneStyle: {'--marginTop':'0px'},
       treeModuleStyle: {'--treeModuleWidth':'300px'},
       // 表格中可以显示的字段列表
@@ -397,6 +407,24 @@ export default {
     }
   },
   methods: {
+    /** 处理鼠标在表格点下事件 */
+    handleTableMouseDown(e) {
+      this.mouseOffset = e.clientX;
+      this.mouseFlag = true;
+    },
+    /** 处理鼠标在表格点起事件 */
+    handleTableMouseUp(e) {
+      this.mouseFlag = false;
+    },
+    /** 处理鼠标在表格移动事件 */
+    handleTableMouseMove(e) {
+      // 这里面需要注意，通过ref需要那个那个包含table元素的父元素
+      let tableBody = this.$refs.table.bodyWrapper;
+      if (this.mouseFlag) {
+        // 设置水平方向的元素的位置
+        tableBody.scrollLeft -= (- this.mouseOffset + (this.mouseOffset = e.clientX));
+      }
+    },
     strFormat,
     /** 重新加载数据 */
     reloadData() {
