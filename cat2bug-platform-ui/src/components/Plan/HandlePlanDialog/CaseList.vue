@@ -104,7 +104,9 @@
       </el-table-column>
       <el-table-column v-if="showField('step')" :label="$t('step')" align="left" prop="caseStep" width="300" sortable="custom">
         <template slot-scope="scope">
-          <step :steps="scope.row.caseStep" style="width: 300px;" />
+          <div class="table-row-full-height">
+            <step :steps="scope.row.caseStep" />
+          </div>
         </template>
       </el-table-column>
       <el-table-column v-if="showField('data')" :label="$t('data')" class-name="fixed-width" align="left" prop="caseData" min-width="250" sortable="custom" />
@@ -160,6 +162,7 @@ import PlanItemTools from "@/components/Plan/PlanItemTools";
 import Cat2BugText from "@/components/Cat2BugText";
 import Cat2BugPreviewImage from "@/components/Cat2BugPreviewImage";
 import Cat2BugLevel from "@/components/Cat2BugLevel";
+import Step from "@/views/system/case/components/step";
 import {listPlanItem, updatePlanItem} from "@/api/system/PlanItem";
 import {parseTime} from "@/utils/ruoyi";
 import {checkPermi} from "@/utils/permission";
@@ -175,7 +178,7 @@ const PLAN_ITEM_SORT_TYPE = 'plan_item_sort_type_key';
 export default {
   name: "CaseList",
   dicts: ['plan_item_state'],
-  components: { HandleCaseOfPlan, PlanItemTools, Cat2BugText, Cat2BugPreviewImage, Cat2BugLevel },
+  components: { HandleCaseOfPlan, PlanItemTools, Cat2BugText, Cat2BugPreviewImage, Cat2BugLevel, Step },
   data() {
     return {
       // 鼠标是否点击
@@ -461,5 +464,23 @@ export default {
 .col {
   display: flex;
   flex-direction: column;
+}
+.table-row-full-height {
+  position: absolute;
+  top: 0px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: inline-flex;
+  align-items: flex-start;
+  padding: 5px 10px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  > .step {
+    display: inline-flex;
+    max-width: 300px;
+    min-height: 100%;
+    justify-content: center;
+  }
 }
 </style>
