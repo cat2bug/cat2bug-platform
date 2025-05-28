@@ -53,95 +53,24 @@
               </template>
             </el-statistic>
           </div>
-          <div class="plan-statistical-block">
-            <el-statistic
-              :title="$t('plan.defect-count')"
-            >
-              <template slot="formatter">
-                {{`${plan.defectCount}`}}{{ $t('a') }}
-              </template>
-            </el-statistic>
-          </div>
-          <div class="plan-statistical-block">
-            <el-statistic
-              group-separator=","
-              :title="$t('plan.defect-discovery-rate')"
-            >
-              <template slot="formatter">
-                {{`${plan.defectDiscoveryRate}`}}
-              </template>
-            </el-statistic>
-          </div>
-          <div class="plan-statistical-block">
-            <el-statistic
-              group-separator=","
-              :title="$t('plan.defect-repair-rate')"
-            >
-              <template slot="formatter">
-                {{`${plan.defectRepairRate}`}}
-              </template>
-            </el-statistic>
-          </div>
-          <div class="plan-statistical-block">
-            <el-statistic
-              group-separator=","
-              :title="$t('plan.defect-detection-rate')"
-            >
-              <template slot="formatter">
-                {{`${plan.defectDetectionRate}`}}
-              </template>
-            </el-statistic>
-          </div>
-          <div class="plan-statistical-block">
-            <el-statistic
-              group-separator=","
-              :title="$t('plan.defect-severity-rate')"
-            >
-              <template slot="formatter">
-                {{`${plan.defectSeverityRate}`}}
-              </template>
-            </el-statistic>
-          </div>
-          <div class="plan-statistical-block">
-            <el-statistic
-              group-separator=","
-              :title="$t('plan.defect-restart-rate')"
-            >
-              <template slot="formatter">
-                {{`${plan.defectRestartRate}`}}
-              </template>
-            </el-statistic>
-          </div>
-          <div class="plan-statistical-block">
-            <el-statistic
-              group-separator=","
-              :title="$t('plan.defect-escape-rate')"
-            >
-              <template slot="formatter">
-                {{`${plan.defectEscapeRate}`}}
-              </template>
-            </el-statistic>
-          </div>
-          <div class="plan-statistical-block">
-            <el-statistic
-              group-separator=","
-              :title="$t('plan.defect-density')"
-            >
-              <template slot="formatter">
-                {{`${plan.defectDensity}`}}
-              </template>
-            </el-statistic>
-          </div>
-          <div class="plan-statistical-block">
-            <el-statistic
-              group-separator=","
-              :title="$t('plan.defect-repair-avg-hour')"
-            >
-              <template slot="formatter">
-                {{`${plan.defectRepairAvgHour}`}}h
-              </template>
-            </el-statistic>
-          </div>
+<!--          缺陷总数-->
+          <defect-total :plan="plan"></defect-total>
+<!--          缺陷发现率-->
+          <defect-discovery-rate :plan="plan"></defect-discovery-rate>
+<!--          缺陷修复率-->
+          <defect-repair-rate :plan="plan"></defect-repair-rate>
+<!--          缺陷探测率-->
+          <defect-detection-rate :plan="plan"></defect-detection-rate>
+<!--          缺陷严重率-->
+          <defect-severity-rate :plan="plan"></defect-severity-rate>
+<!--          缺陷重开率-->
+          <defect-restart-rate :plan="plan"></defect-restart-rate>
+<!--          缺陷逃逸率-->
+          <defect-escape-rate :plan="plan"></defect-escape-rate>
+<!--          缺陷密度-->
+          <defect-density :plan="plan"></defect-density>
+<!--          缺陷平均时长-->
+          <defect-repair-avg-hour :plan="plan"></defect-repair-avg-hour>
         </div>
         <el-divider class="tool-divider"></el-divider>
       </div>
@@ -184,6 +113,15 @@ import Cat2BugPreviewImage from "@/components/Cat2BugPreviewImage";
 import CaseList from "@/components/Plan/HandlePlanDialog/CaseList";
 import DefectList from "@/components/Plan/HandlePlanDialog/DefectList";
 import { Multipane, MultipaneResizer } from 'vue-multipane';
+import DefectDiscoveryRate from "@/components/Plan/statistics/DefectDiscoveryRate";
+import DefectTotal from "@/components/Plan/statistics/DefectTotal";
+import DefectRepairRate from "@/components/Plan/statistics/DefectRepairRate";
+import DefectDensity from "@/components/Plan/statistics/DefectDensity";
+import DefectDetectionRate from "@/components/Plan/statistics/DefectDetectionRate";
+import DefectSeverityRate from "@/components/Plan/statistics/DefectSeverityRate";
+import DefectRestartRate from "@/components/Plan/statistics/DefectRestartRate";
+import DefectEscapeRate from "@/components/Plan/statistics/DefectEscapeRate";
+import DefectRepairAvgHour from "@/components/Plan/statistics/DefectRepairAvgHour";
 import { getPlan } from "@/api/system/plan";
 import {checkPermi} from "@/utils/permission";
 
@@ -191,7 +129,10 @@ const TREE_MODULE_WIDTH_CACHE_KEY = 'plan_case_tree_module_width';
 
 export default {
   name: "HandlePlanDialog",
-  components: { Cat2BugLevel,Step,TreePlanItemModule,Multipane,MultipaneResizer, FocusMemberList, Cat2BugPreviewImage, HandleCaseOfPlan, RowListMember, Cat2BugText, CaseList, DefectList },
+  components: { Cat2BugLevel,Step,TreePlanItemModule,Multipane,MultipaneResizer,
+    FocusMemberList, Cat2BugPreviewImage, HandleCaseOfPlan, RowListMember, Cat2BugText, CaseList, DefectList,
+    DefectDiscoveryRate, DefectTotal, DefectRepairRate, DefectDensity, DefectDetectionRate, DefectSeverityRate, DefectRestartRate, DefectEscapeRate, DefectRepairAvgHour
+  },
   data() {
     return {
       // 动态样式
@@ -365,6 +306,11 @@ export default {
       this.query.caseLevel = caseLevel;
       this.query.params.caseLevel = caseLevel;
       this.getDataList();
+    },
+    handlePlanItemStateSearch(state) {
+      this.$nextTick(()=>{
+        this.$refs.list.handlePlanItemStateSearch(state);
+      });
     },
     getDataList() {
       this.$nextTick(()=>{

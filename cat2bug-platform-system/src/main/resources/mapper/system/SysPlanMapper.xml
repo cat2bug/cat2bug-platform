@@ -143,7 +143,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                                 JOIN (
                                 SELECT
                                     defect_id,
-                                    sum( CASE WHEN defect_log_type = 7 THEN 1 ELSE 0 END ) AS reopen_count,
+                                    max( CASE WHEN defect_log_type = 7 or defect_log_type = 4 THEN 1 ELSE 0 END ) AS reopen_count,
                                     sum( CASE WHEN defect_log_type = 6 THEN 1 ELSE 0 END ) AS closed_count,
                                     ABS(
                                             TIMESTAMPDIFF(

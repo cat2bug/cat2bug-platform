@@ -43,89 +43,57 @@
           <span class="click" style="font-weight: 500;">{{selectPlan.itemTotal||0}}{{ $t('a') }}</span>
         </template>
       </el-statistic>
-      <el-statistic
-        :title="$t('plan.defect-count')"
-      >
-        <template slot="formatter">
-          {{`${selectPlan.defectCount||0}`}}{{ $t('a') }}
-        </template>
-      </el-statistic>
-      <el-statistic
-        group-separator=","
-        :title="$t('plan.defect-discovery-rate')"
-      >
-        <template slot="formatter">
-          {{`${selectPlan.defectDiscoveryRate||0}`}}
-        </template>
-      </el-statistic>
-      <el-statistic
-        group-separator=","
-        :title="$t('plan.defect-repair-rate')"
-      >
-        <template slot="formatter">
-          {{`${selectPlan.defectRepairRate||0}`}}
-        </template>
-      </el-statistic>
-      <el-statistic
-        group-separator=","
-        :title="$t('plan.defect-density')"
-      >
-        <template slot="formatter">
-          {{`${selectPlan.defectDensity||0}`}}
-        </template>
-      </el-statistic>
-      <el-statistic
-        group-separator=","
-        :title="$t('plan.defect-detection-rate')"
-      >
-        <template slot="formatter">
-          {{`${selectPlan.defectDetectionRate||0}`}}
-        </template>
-      </el-statistic>
-      <el-statistic
-        group-separator=","
-        :title="$t('plan.defect-severity-rate')"
-      >
-        <template slot="formatter">
-          {{`${selectPlan.defectSeverityRate||0}`}}
-        </template>
-      </el-statistic>
-      <el-statistic
-        group-separator=","
-        :title="$t('plan.defect-restart-rate')"
-      >
-        <template slot="formatter">
-          {{`${selectPlan.defectRestartRate||0}`}}
-        </template>
-      </el-statistic>
-      <el-statistic
-        group-separator=","
-        :title="$t('plan.defect-escape-rate')"
-      >
-        <template slot="formatter">
-          {{`${selectPlan.defectEscapeRate||0}`}}
-        </template>
-      </el-statistic>
-      <el-statistic
-        group-separator=","
-        :title="$t('plan.defect-repair-avg-hour')"
-      >
-        <template slot="formatter">
-          {{`${selectPlan.defectRepairAvgHour||0}`}}h
-        </template>
-      </el-statistic>
+      <!--          缺陷总数-->
+      <defect-total :plan="selectPlan"></defect-total>
+      <!--          缺陷发现率-->
+      <defect-discovery-rate :plan="selectPlan"></defect-discovery-rate>
+      <!--          缺陷修复率-->
+      <defect-repair-rate :plan="selectPlan"></defect-repair-rate>
+      <!--          缺陷探测率-->
+      <defect-detection-rate :plan="selectPlan"></defect-detection-rate>
+      <!--          缺陷严重率-->
+      <defect-severity-rate :plan="selectPlan"></defect-severity-rate>
+      <!--          缺陷重开率-->
+      <defect-restart-rate :plan="selectPlan"></defect-restart-rate>
+      <!--          缺陷逃逸率-->
+      <defect-escape-rate :plan="selectPlan"></defect-escape-rate>
+      <!--          缺陷密度-->
+      <defect-density :plan="selectPlan"></defect-density>
+      <!--          缺陷平均时长-->
+      <defect-repair-avg-hour :plan="selectPlan"></defect-repair-avg-hour>
     </div>
   </div>
 </template>
 
 <script>
 // 用例统计
-
-import {caseStatistics, planBurndown} from "@/api/system/dashboard";
+import DefectDiscoveryRate from "@/components/Plan/statistics/DefectDiscoveryRate";
+import DefectTotal from "@/components/Plan/statistics/DefectTotal";
+import DefectRepairRate from "@/components/Plan/statistics/DefectRepairRate";
+import DefectDensity from "@/components/Plan/statistics/DefectDensity";
+import DefectDetectionRate from "@/components/Plan/statistics/DefectDetectionRate";
+import DefectSeverityRate from "@/components/Plan/statistics/DefectSeverityRate";
+import DefectRestartRate from "@/components/Plan/statistics/DefectRestartRate";
+import DefectEscapeRate from "@/components/Plan/statistics/DefectEscapeRate";
+import DefectRepairAvgHour from "@/components/Plan/statistics/DefectRepairAvgHour";
 import {getPlan, listPlan} from "@/api/system/plan";
+import Cat2BugLevel from "@/components/Cat2BugLevel";
+import Step from "@/views/system/case/components/step";
+import TreePlanItemModule from "@/views/system/plan/TreePlanItemModule";
+import {Multipane, MultipaneResizer} from "vue-multipane";
+import FocusMemberList from "@/components/FocusMemberList";
+import Cat2BugPreviewImage from "@/components/Cat2BugPreviewImage";
+import HandleCaseOfPlan from "@/components/Plan/HandleCaseOfPlan";
+import RowListMember from "@/components/RowListMember";
+import Cat2BugText from "@/components/Cat2BugText";
+import CaseList from "@/components/Plan/HandlePlanDialog/CaseList";
+import DefectList from "@/components/Plan/HandlePlanDialog/DefectList";
 
 export default {
   name: "PlanStatisticsChart",
+  components: {
+    DefectDiscoveryRate, DefectTotal, DefectRepairRate, DefectDensity, DefectDetectionRate, DefectSeverityRate, DefectRestartRate, DefectEscapeRate, DefectRepairAvgHour
+  },
   props: {
     width: {
       type: String,

@@ -487,6 +487,10 @@ export default {
         tableBody.scrollLeft -= (- this.mouseOffset + (this.mouseOffset = e.clientX));
       }
     },
+    /** 处理计划项状态搜索事件 */
+    handlePlanItemStateSearch(state) {
+
+    }
   }
 }
 </script>
