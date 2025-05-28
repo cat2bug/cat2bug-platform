@@ -189,6 +189,9 @@ export default {
 <style>
   .select-module-popover {
     padding-top: 10px;
+    max-height: 80%;
+    overflow-y: auto;
+    overflow-x: hidden;
   }
 </style>
 <style lang="scss" scoped>
