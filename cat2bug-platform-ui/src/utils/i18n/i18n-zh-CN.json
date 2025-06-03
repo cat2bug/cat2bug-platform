@@ -235,6 +235,7 @@
   "RESOLVED": "已解决",
   "REJECTED": "已驳回",
   "CLOSED": "已关闭",
+  "team.select": "团队切换",
   "team.create-by": "创建人",
   "team.ordinary-members": "普通人员",
   "team.admin-members": "管理员",
@@ -854,5 +855,6 @@
   "dashboard.member-Defect-line.day.title": "成员处理缺陷30天走势图",
   "dashboard.member-Defect-line.month.title": "成员处理缺陷月走势图",
   "dashboard.plan-statistics.title": "测试计划统计",
-  "display-field": "显示字段"
+  "display-field": "显示字段",
+  "my": "我的"
 }

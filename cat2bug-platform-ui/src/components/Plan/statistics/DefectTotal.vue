@@ -9,7 +9,7 @@
         :title="$t('plan.defect-count')"
       >
         <template slot="formatter">
-          {{`${plan.defectCount}`}}{{ $t('a') }}
+          {{`${plan.defectCount||0}`}}{{ $t('a') }}
         </template>
       </el-statistic>
     </div>

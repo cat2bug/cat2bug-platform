@@ -25,7 +25,7 @@
         :title="$t('plan.defect-repair-rate')"
       >
         <template slot="formatter">
-          {{`${plan.defectRepairRate}`}}
+          {{`${plan.defectRepairRate||'0%'}`}}
         </template>
       </el-statistic>
     </div>

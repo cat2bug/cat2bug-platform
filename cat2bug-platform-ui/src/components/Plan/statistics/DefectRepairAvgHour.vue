@@ -24,7 +24,7 @@
         :title="$t('plan.defect-repair-avg-hour')"
       >
         <template slot="formatter">
-          {{`${plan.defectRepairAvgHour}`}}h
+          {{`${plan.defectRepairAvgHour||0}`}}h
         </template>
       </el-statistic>
     </div>

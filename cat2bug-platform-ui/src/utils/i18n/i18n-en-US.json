@@ -235,6 +235,7 @@
   "RESOLVED": "Resolved",
   "REJECTED": "Rejected",
   "CLOSED": "Closed",
+  "team.select": "Team Switch",
   "team.create-by": "Create By",
   "team.ordinary-members": "Ordinary",
   "team.admin-members": "Administrator",
@@ -854,5 +855,6 @@
   "dashboard.member-Defect-line.day.title": "Members Deal With Defects For 30-Days Chart",
   "dashboard.member-Defect-line.month.title": "Members Deal With Defects For Months Chart",
   "dashboard.plan-statistics.title": "Test Plan Statistics",
-  "display-field": "Display Fields"
+  "display-field": "Display Fields",
+  "my": "My"
 }
