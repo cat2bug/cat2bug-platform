@@ -330,6 +330,7 @@ export default {
       this.$cache.session.set(CASE_STEP_PANEL_TYPE_CACHE_KEY,this.caseStepSwitchType);
     },
     prevCase() {
+      const self = this;
       this.loading = true;
       getPrevCase(this.form.caseId, this.params).then(res=>{
         this.loading = false;
@@ -343,6 +344,7 @@ export default {
       }).catch(()=>this.loading = false);
     },
     nextCase() {
+      const self = this;
       this.loading = true;
       getNextCase(this.form.caseId, this.params).then(res=>{
         this.loading = false;
