@@ -43,7 +43,8 @@ export default {
       const urls = this.form.urls?this.form.urls.split(','):[''];
       let text = '';
       urls.forEach(url=>{
-        text += `\n![${desc}](${process.env.VUE_APP_BASE_API + url})\n`;
+        let baseUrl = location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : '');
+        text += `\n![${desc}](${baseUrl + process.env.VUE_APP_BASE_API + url})\n`;
       })
       this.view.insertText(text);
       this.dialogFormVisible = false;

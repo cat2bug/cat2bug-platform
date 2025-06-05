@@ -160,7 +160,8 @@ export default {
               const formData = new FormData();
               formData.append('file', blob);
               let res = await upload(formData);
-              self.insertTextAtCursor(`![](${process.env.VUE_APP_BASE_API + res.fileName})`);
+              let baseUrl = location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : '');
+              self.insertTextAtCursor(`![](${baseUrl + process.env.VUE_APP_BASE_API + res.fileName})`);
             }
           }
         }
