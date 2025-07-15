@@ -182,15 +182,15 @@
         SELECT s.*, u.nick_name, u.user_name,
                u.avatar
         FROM
-            (SELECT defect_id as id, CONCAT('#', project_num, ' ' ,defect_name) as title, 'defect' as type, defect_state as state, IFNULL(update_time, create_time) as time, update_by_id FROM sys_defect WHERE project_id=#{projectId}
+            (SELECT CAST(defect_id AS CHAR) as id, CONCAT('#', project_num, ' ' ,defect_name) as title, 'defect' as type, defect_state as state, IFNULL(update_time, create_time) as time, update_by_id FROM sys_defect WHERE project_id=#{projectId}
              UNION
-             SELECT case_id as id, case_name as title, 'case' as type, null as state, IFNULL(update_time, create_time) as time, update_by as update_by_id FROM sys_case WHERE project_id=#{projectId}
+             SELECT CAST(case_id AS CHAR) as id, case_name as title, 'case' as type, null as state, IFNULL(update_time, create_time) as time, update_by as update_by_id FROM sys_case WHERE project_id=#{projectId}
              UNION
-             SELECT plan_id as id, plan_name as title, 'plan' as type, null as state, IFNULL(update_time, create_time) as time, update_by_id FROM sys_plan WHERE project_id=#{projectId}
+             SELECT CAST(plan_id AS CHAR) as id, plan_name as title, 'plan' as type, null as state, IFNULL(update_time, create_time) as time, update_by_id FROM sys_plan WHERE project_id=#{projectId}
              UNION
-             SELECT report_id as id, report_title as title, 'report' as type, null as state, report_time as time, create_by_id as update_by_id FROM sys_report WHERE project_id=#{projectId}
+             SELECT CAST(report_id AS CHAR) as id, report_title as title, 'report' as type, null as state, report_time as time, create_by_id as update_by_id FROM sys_report WHERE project_id=#{projectId}
              UNION
-             SELECT doc_id as id, file_url as title, 'document' as type, null as state, IFNULL(update_time, create_time) as time, update_by_id FROM sys_document WHERE project_id=#{projectId}
+             SELECT CAST(doc_id AS CHAR) as id, file_url as title, 'document' as type, null as state, IFNULL(update_time, create_time) as time, update_by_id FROM sys_document WHERE project_id=#{projectId}
             ) s
         LEFT JOIN sys_user u ON u.user_id = s.update_by_id
         ORDER BY s.time DESC LIMIT 0, 50
