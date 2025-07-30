@@ -14,7 +14,6 @@
     "lint": "eslint --ext .js,.vue src",
     "docs:dev": "vuepress dev docs",
     "docs:build": "vuepress build docs",
-    "analyze": "NODE_ENV=production npm_config_report=true npm run build:prod"
   },
   "husky": {
     "hooks": {
