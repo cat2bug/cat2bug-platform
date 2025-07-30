@@ -117,7 +117,7 @@ public class SwaggerConfig
                 // 设置标题
                 .title("Cat2Bug-Platform系统API接口文档")
                 // 描述
-                .description("描述：用于管理集团旗下公司的人员信息,具体包括XXX,XXX模块...")
+                .description("描述：用于管理Cat2Bug系统中缺陷、测试用例等模块")
                 // 作者信息
                 .contact(new Contact(ruoyiConfig.getName(), null, null))
                 // 版本

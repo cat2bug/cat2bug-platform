@@ -8,30 +8,39 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="userConfigId"    column="user_config_id"    />
         <result property="currentTeamId"    column="current_team_id"    />
         <result property="currentProjectId"    column="current_project_id"    />
+        <result property="currentTeamName"    column="current_team_name"    />
+        <result property="currentTeamIcon"    column="current_team_icon"    />
+        <result property="currentProjectName"    column="current_project_name"    />
         <result property="userId"    column="user_id"    />
         <result property="lifeContent"    column="life_content"    />
     </resultMap>
 
     <sql id="selectSysUserConfigVo">
-        select user_config_id, current_team_id, current_project_id, user_id, life_content from sys_user_config
+        select suc.user_config_id, suc.current_team_id, suc.current_project_id, suc.user_id, suc.life_content,
+            st.team_name as current_team_name,
+            st.team_icon as current_team_icon,
+            sp.project_name as current_project_name
+        from sys_user_config suc
+        LEFT JOIN sys_team st ON st.team_id = suc.current_team_id
+        LEFT JOIN sys_project sp ON sp.project_id = suc.current_project_id
     </sql>
 
     <select id="selectSysUserConfigList" parameterType="SysUserConfig" resultMap="SysUserConfigResult">
         <include refid="selectSysUserConfigVo"/>
         <where>  
-            <if test="currentTeamId != null "> and current_team_id = #{currentTeamId}</if>
-            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="currentTeamId != null "> and suc.current_team_id = #{currentTeamId}</if>
+            <if test="userId != null "> and suc.user_id = #{userId}</if>
         </where>
     </select>
     
     <select id="selectSysUserConfigByUserConfigId" parameterType="Long" resultMap="SysUserConfigResult">
         <include refid="selectSysUserConfigVo"/>
-        where user_config_id = #{userConfigId}
+        where suc.user_config_id = #{userConfigId}
     </select>
 
     <select id="selectSysUserConfigByUserId" parameterType="Long" resultMap="SysUserConfigResult">
         <include refid="selectSysUserConfigVo"/>
-        where user_id = #{userId}
+        where suc.user_id = #{userId}
     </select>
 
     <select id="selectSysUserConfigByUserName" parameterType="String" resultMap="SysUserConfigResult">

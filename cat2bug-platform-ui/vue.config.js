@@ -9,6 +9,8 @@ function resolve(dir) {
 
 const CompressionPlugin = require('compression-webpack-plugin')
 
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
+
 const name = process.env.VUE_APP_TITLE || '猫陪我改BUG' // 网页标题
 
 const port = process.env.port || process.env.npm_config_port || 2222 // 端口
@@ -87,7 +89,16 @@ module.exports = {
         test: /\.(js|css|html)?$/i,     // 压缩文件格式
         filename: '[path].gz[query]',   // 压缩后的文件名
         algorithm: 'gzip',              // 使用gzip压缩
-        minRatio: 0.8                   // 压缩率小于1才会压缩
+        minRatio: 0.9                   // 压缩率小于1才会压缩
+      }),
+      new BundleAnalyzerPlugin({
+        analyzerMode: 'static',
+        reportFilename: 'report.html',
+        defaultSizes: 'gzip',
+        generateStatsFile: true, // 如果为true，则Webpack Stats JSON文件将在bundle输出目录中生成
+        openAnalyzer: true, // 默认在浏览器中自动打开报告
+        statsFilename: 'stats.json', // 如果generateStatsFile为true，将会生成Webpack Stats JSON文件的名字
+        statsOptions: { source: false }
       })
     ],
     module: {

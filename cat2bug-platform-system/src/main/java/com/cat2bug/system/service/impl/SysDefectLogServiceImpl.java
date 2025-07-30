@@ -36,7 +36,15 @@ public class SysDefectLogServiceImpl implements ISysDefectLogService
     @Override
     public SysDefectLog selectSysDefectLogByDefectLogId(Long defectLogId)
     {
-        return sysDefectLogMapper.selectSysDefectLogByDefectLogId(defectLogId);
+        SysDefectLog sysDefectLog =  sysDefectLogMapper.selectSysDefectLogByDefectLogId(defectLogId);
+        if(sysDefectLog!=null) {
+            SysComment sysComment = new SysComment();
+            sysComment.setModuleType(COMMENT_TYPE);
+            sysComment.setCorrelationId(sysDefectLog.getDefectLogId());
+            List<SysComment> commentList = sysCommentMapper.selectSysCommentList(sysComment);
+            sysDefectLog.setCommentList(commentList);
+        }
+        return sysDefectLog;
     }
 
     /**

@@ -21,14 +21,21 @@ public class SysUserConfig extends BaseEntity
     private Long userConfigId;
 
     /** 当前团队id */
-    @Excel(name = "当前团队id")
     private Long currentTeamId;
+
+    /** 当前团队图标 */
+    private String currentTeamIcon;
+
+    /** 当前团队名称 */
+    private String currentTeamName;
 
     /** 当前项目id */
     private Long currentProjectId;
 
+    /** 当前项目名称 */
+    private String currentProjectName;
+
     /** 用户id */
-    @Excel(name = "用户id")
     private Long userId;
 
     /** 人生格言 */

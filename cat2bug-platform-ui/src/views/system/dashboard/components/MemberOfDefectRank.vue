@@ -67,7 +67,6 @@ export default {
   },
   methods: {
     handleClick(member) {
-      alert(JSON.stringify(member))
       const params = {
         tabId: new Date().getMilliseconds(),
         tabName: member.nickName || member.userName,

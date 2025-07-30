@@ -56,7 +56,7 @@ public class SysDefectLogController extends BaseController
     /**
      * 获取缺陷日志详细信息
      */
-    @PreAuthorize("@ss.hasPermi('system:defect:log:query')")
+    @PreAuthorize("@ss.hasPermi('system:defect:list') || @ss.hasPermi('system:defect:log:query')")
     @GetMapping(value = "/{defectLogId}")
     public AjaxResult getInfo(@PathVariable("defectLogId") Long defectLogId)
     {

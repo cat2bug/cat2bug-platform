@@ -18,7 +18,7 @@
 
 import {memberLineOfDefects, memberRankOfDefects} from "@/api/system/dashboard";
 import Cat2BugAvatar from "@/components/Cat2BugAvatar";
-import * as echarts from "echarts";
+import * as echarts from '@/assets/js/echarts.min.js';
 import resize from "@/views/dashboard/mixins/resize";
 
 export default {
