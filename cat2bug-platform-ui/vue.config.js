@@ -89,7 +89,7 @@ module.exports = {
         test: /\.(js|css|html)?$/i,     // 压缩文件格式
         filename: '[path].gz[query]',   // 压缩后的文件名
         algorithm: 'gzip',              // 使用gzip压缩
-        minRatio: 0.9                   // 压缩率小于1才会压缩
+        minRatio: 1                   // 压缩率小于1才会压缩
       }),
       new BundleAnalyzerPlugin({
         analyzerMode: 'static',

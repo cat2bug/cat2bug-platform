@@ -15,7 +15,6 @@
 
 <script>
 import * as echarts from '@/assets/js/echarts.min.js';
-require('echarts/theme/macarons') // echarts theme
 import resize from "@/views/dashboard/mixins/resize";
 import {defectLine} from "@/api/system/dashboard";
 

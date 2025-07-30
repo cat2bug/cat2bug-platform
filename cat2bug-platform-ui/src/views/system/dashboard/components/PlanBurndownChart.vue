@@ -20,7 +20,6 @@
 <script>
 // 测试计划燃尽图
 import * as echarts from '@/assets/js/echarts.min.js';
-require('echarts/theme/macarons') // echarts theme
 import resize from "@/views/dashboard/mixins/resize";
 import {defectLine, planBurndown} from "@/api/system/dashboard";
 import {listPlan} from "@/api/system/plan";
