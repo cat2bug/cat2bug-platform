@@ -20,12 +20,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.View;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static com.cat2bug.common.core.domain.AjaxResult.success;
 
@@ -50,6 +52,8 @@ public class CommonController
     private IFileService fileService;
 
     private static final String FILE_DELIMETER = ",";
+    @Autowired
+    private View error;
 
     /**
      * 通用下载请求
@@ -210,6 +214,38 @@ public class CommonController
         catch (Exception e)
         {
             log.error("下载文件失败", e);
+        }
+    }
+
+    /**
+     * 通用删除请求
+     *
+     * @param body 文件名称
+     */
+    @DeleteMapping("/delete")
+    public AjaxResult fileDelete(@RequestBody Map<String, Object> body)
+    {
+        try
+        {
+            String fileName = String.valueOf(body.get("fileName"));
+            if (!FileUtils.checkAllowDownload(fileName))
+            {
+                throw new Exception(StringUtils.format("文件名称({})非法，不允许下载。 ", fileName));
+            }
+            // 本地资源路径
+            String localPath = Cat2BugConfig.getProfile();
+            // 数据库资源地址
+            String downloadPath = localPath + StringUtils.substringAfter(fileName, Constants.RESOURCE_PREFIX);
+            if(this.fileService.delete(downloadPath)){
+                return success();
+            } else {
+                return AjaxResult.error();
+            }
+        }
+        catch (Exception e)
+        {
+            log.error("删除文件失败", e);
+            return AjaxResult.error(e.getMessage());
         }
     }
 }
