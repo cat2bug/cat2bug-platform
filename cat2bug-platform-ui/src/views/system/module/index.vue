@@ -46,6 +46,13 @@
       :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
     >
       <el-table-column :label="$t('module.name')" align="start" prop="moduleName" />
+      <el-table-column :label="$t('annex')" align="left" prop="annexUrls">
+        <template slot-scope="scope">
+          <div>
+            <cat2-bug-text :content="file" type="down" :tooltip="file" v-for="(file,index) in getUrl(scope.row.annexUrls)" :key="index" />
+          </div>
+        </template>
+      </el-table-column>
       <el-table-column :label="$t('remark')" align="center" prop="remark" />
       <el-table-column :label="$t('operate')" align="center" class-name="small-padding fixed-width" width="200">
         <template slot-scope="scope">
@@ -83,12 +90,14 @@
 import { listModule, getModule, delModule, addModule, updateModule } from "@/api/system/module";
 import ModuleDialog from "@/components/Module/ModuleDialog";
 import ProjectLabel from "@/components/Project/ProjectLabel";
+import Cat2BugText from "@/components/Cat2BugText";
 
 export default {
   name: "Module",
   components: {
     ProjectLabel,
-    ModuleDialog
+    ModuleDialog,
+    Cat2BugText
   },
   data() {
     return {
@@ -109,6 +118,20 @@ export default {
         projectId: this.getProjectId()
       },
     };
+  },
+  computed: {
+    getUrl: function () {
+      return function (urls){
+        if(urls) {
+          let files = urls ? urls.split(',') : [];
+          return files.map(i => {
+            return process.env.VUE_APP_BASE_API + i;
+          })
+        } else {
+          return [];
+        }
+      }
+    },
   },
   created() {
     this.getList();

@@ -41,6 +41,9 @@ public class SysModule extends TreeEntity
     /** 菜单路径 */
     private String modulePath;
 
+    /** 附件集合 */
+    private String annexUrls;
+
     public void setModuleId(Long moduleId) 
     {
         this.moduleId = moduleId;
@@ -102,6 +105,14 @@ public class SysModule extends TreeEntity
         this.batchModuleNames = batchModuleNames;
     }
 
+    public String getAnnexUrls() {
+        return annexUrls;
+    }
+
+    public void setAnnexUrls(String annexUrls) {
+        this.annexUrls = annexUrls;
+    }
+
     @Override
     public String toString() {
         return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)
@@ -110,6 +121,7 @@ public class SysModule extends TreeEntity
             .append("moduleName", getModuleName())
             .append("remark", getRemark())
             .append("projectId", getProjectId())
+            .append("annexUrls", getAnnexUrls())
             .toString();
     }
 }

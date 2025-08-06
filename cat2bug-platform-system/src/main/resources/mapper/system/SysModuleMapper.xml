@@ -11,36 +11,37 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="remark"    column="remark"    />
         <result property="projectId"    column="project_id"    />
         <result property="modulePath"    column="module_path"    />
+        <result property="annexUrls"    column="annex_urls"    />
         <result property="childrenCount"    column="children_count"    />
     </resultMap>
 
     <sql id="selectSysModuleVo">
-        select m.module_id, m.module_pid, m.module_name, m.remark, m.project_id, mg.children_count from sys_module m
+        select m.module_id, m.module_pid, m.module_name, m.remark, m.project_id, m.annex_urls, mg.children_count from sys_module m
     </sql>
 
     <select id="getAllChildIds" resultType="java.lang.Long">
-        WITH RECURSIVE temp_module(module_id, module_name, mudule_pid) AS (
-        SELECT module_id, module_name, module_pid FROM sys_module
+        WITH RECURSIVE temp_module(module_id, module_name, annex_urls, mudule_pid) AS (
+        SELECT module_id, module_name, annex_urls, module_pid FROM sys_module
             WHERE project_id = #{projectId}
             <if test="moduleId != null">
                 AND module_id = #{moduleId}
             </if>
         UNION ALL
-        SELECT m.module_id, m.module_name, m.module_pid FROM sys_module m
+        SELECT m.module_id, m.module_name, annex_urls, m.module_pid FROM sys_module m
         JOIN temp_module tm ON m.module_pid = tm.module_id
         WHERE m.project_id = #{projectId}
         ) SELECT module_id FROM temp_module
     </select>
 
     <select id="selectSysModulePathList" parameterType="Long" resultMap="SysModuleResult">
-        WITH RECURSIVE m (module_id, module_name, module_path) AS (
+        WITH RECURSIVE m (module_id, module_name, annex_urls, module_path) AS (
         -- 初始选择最顶层的类别，即没有父类别的类别
-        SELECT module_id, module_name, module_name AS module_path
+        SELECT module_id, module_name, annex_urls, module_name AS module_path
         FROM sys_module
         WHERE module_pid = 0 and project_id = #{projectId}
         UNION ALL
         -- 递归加入子类别
-        SELECT c.module_id, c.module_name, CONCAT(cp.module_path, '/', c.module_name)
+        SELECT c.module_id, c.module_name, annex_urls, CONCAT(cp.module_path, '/', c.module_name)
         FROM sys_module c
         INNER JOIN m cp ON c.module_pid = cp.module_id
         )
@@ -69,6 +70,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="moduleId != null">module_id,</if>
             <if test="modulePid != null">module_pid,</if>
             <if test="moduleName != null">module_name,</if>
+            <if test="annexUrls != null">annex_urls,</if>
             <if test="remark != null">remark,</if>
             <if test="projectId != null">project_id,</if>
             <if test="createTime != null">create_time,</if>
@@ -80,6 +82,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="moduleId != null">#{moduleId},</if>
             <if test="modulePid != null">#{modulePid},</if>
             <if test="moduleName != null">#{moduleName},</if>
+            <if test="annexUrls != null">#{annexUrls},</if>
             <if test="remark != null">#{remark},</if>
             <if test="projectId != null">#{projectId},</if>
             <if test="createTime != null">#{createTime},</if>
@@ -94,6 +97,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <trim prefix="SET" suffixOverrides=",">
             <if test="modulePid != null">module_pid = #{modulePid},</if>
             <if test="moduleName != null">module_name = #{moduleName},</if>
+            <if test="annexUrls != null">annex_urls = #{annexUrls},</if>
             <if test="remark != null">remark = #{remark},</if>
             <if test="projectId != null">project_id = #{projectId},</if>
             <if test="updateTime != null">update_time = #{updateTime},</if>

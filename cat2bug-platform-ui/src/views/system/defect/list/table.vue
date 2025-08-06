@@ -279,10 +279,14 @@ export default {
     },
     getUrl: function () {
       return function (urls){
-        let imgs = urls?urls.split(','):[];
-        return imgs.map(i=>{
-          return process.env.VUE_APP_BASE_API + i;
-        })
+        if(urls) {
+          let files = urls ? urls.split(',') : [];
+          return files.map(i => {
+            return process.env.VUE_APP_BASE_API + i;
+          })
+        } else {
+          return [];
+        }
       }
     },
     getFileName: function () {

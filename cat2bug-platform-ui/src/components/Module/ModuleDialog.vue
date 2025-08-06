@@ -31,6 +31,9 @@
         </template>
         <el-input type="textarea" rows="8" v-model="strAddModules" :placeholder="$t('module.enter-module-names')" maxlength="65536" show-word-limit />
       </el-form-item>
+      <el-form-item v-show="addModuleMode" :label="$t('annex')" prop="annexUrls">
+        <file-upload v-model="form.annexUrls" :limit="9" :file-type="[]"/>
+      </el-form-item>
       <el-form-item :label="$t('remark')" prop="remark">
         <el-input v-model="form.remark"
                   :placeholder="$t('please-enter-remark')"
@@ -164,6 +167,7 @@ export default {
       this.$refs["form"].validate(valid => {
         if (valid) {
           if (this.form.moduleId != null) {
+            console.log(this.form, 'form')
             updateModule(this.form).then(response => {
               this.$modal.msgSuccess(this.$i18n.t('modify-success'));
               this.visible = false;
