@@ -12,6 +12,7 @@ import com.cat2bug.framework.config.ServerConfig;
 import com.cat2bug.system.domain.SysTempFile;
 import com.cat2bug.system.domain.type.SysTempFileTypeEnum;
 import com.cat2bug.system.service.ISysTempFileService;
+import com.cat2bug.web.vo.CustomMultipartFile;
 import com.google.common.base.Preconditions;
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
@@ -93,15 +94,15 @@ public class CommonController
      * 通用上传请求（单个）
      */
     @PostMapping("/upload")
-    public AjaxResult uploadFile(MultipartFile file) throws Exception
+    public AjaxResult uploadFile(@RequestParam("file") MultipartFile file, @RequestParam("customFileName") String customFileName) throws Exception
     {
         try
         {
             // 上传文件路径
             String filePath = Cat2BugConfig.getUploadPath();
+            MultipartFile uploadFile = StringUtils.isNotBlank(customFileName)?new CustomMultipartFile(file, customFileName):file;
             // 上传并返回新文件名称
-//            String fileName = FileUploadUtils.upload(filePath, file, null);
-            String fileName = this.fileService.upload(filePath, file, true);
+            String fileName = this.fileService.upload(filePath, uploadFile, true);
             // 获取文件扩展名
             String fileExtension = FilenameUtils.getExtension(fileName);
             String url = serverConfig.getUrl() + fileName;
@@ -109,7 +110,7 @@ public class CommonController
             ajax.put("url", url);
             ajax.put("fileName", fileName);
             ajax.put("newFileName", FileUtils.getName(fileName));
-            ajax.put("originalFilename", file.getOriginalFilename());
+            ajax.put("originalFilename", uploadFile.getOriginalFilename());
             ajax.put("fileExtension", StringUtils.isNotBlank(fileExtension)?fileExtension.toLowerCase():"");
             return ajax;
         }
@@ -228,10 +229,6 @@ public class CommonController
         try
         {
             String fileName = String.valueOf(body.get("fileName"));
-            if (!FileUtils.checkAllowDownload(fileName))
-            {
-                throw new Exception(StringUtils.format("文件名称({})非法，不允许下载。 ", fileName));
-            }
             // 本地资源路径
             String localPath = Cat2BugConfig.getProfile();
             // 数据库资源地址

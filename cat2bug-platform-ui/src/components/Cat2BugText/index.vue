@@ -58,7 +58,6 @@ export default {
         let link = document.createElement('a')
         let image = document.createElement('image')
         let downloadName = this.fileName(url);
-        console.log(url, downloadName);
         // 这里是将url转成blob地址，
         image.setAttribute("crossOrigin", "anonymous") // 这句可以解决跨域问题
         fetch(url).then(res => res.blob()).then(blob => { // 将链接地址字符内容转变成blob地址
