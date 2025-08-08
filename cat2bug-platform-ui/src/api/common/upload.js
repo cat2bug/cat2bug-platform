@@ -7,7 +7,7 @@ export function uploadScreenShot( data) {
     data: data
   })
 }
-
+// 上传文件
 export function upload(data) {
   return request({
     url: '/common/upload',
@@ -16,3 +16,12 @@ export function upload(data) {
     headers: {'Content-Type': 'multipart/form-data'}
   })
 }
+// 删除文件
+export function deleteFile(data) {
+  return request({
+    url: '/common/delete',
+    method: 'delete',
+    data: data,
+  })
+}
+
