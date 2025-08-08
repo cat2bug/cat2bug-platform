@@ -15,6 +15,7 @@
           type="text"
           auto-complete="off"
           :placeholder="$t('account')"
+          maxlength="30"
         >
           <svg-icon slot="prefix" icon-class="user" class="el-input__icon input-icon" />
         </el-input>
@@ -25,6 +26,7 @@
           type="password"
           auto-complete="off"
           :placeholder="$t('password')"
+          maxlength="30"
           @keyup.enter.native="handleLogin"
         >
           <svg-icon slot="prefix" icon-class="password" class="el-input__icon input-icon" />
