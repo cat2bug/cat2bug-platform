@@ -27,7 +27,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                 AND module_id = #{moduleId}
             </if>
         UNION ALL
-        SELECT m.module_id, m.module_name, annex_urls, m.module_pid FROM sys_module m
+        SELECT m.module_id, m.module_name, m.annex_urls, m.module_pid FROM sys_module m
         JOIN temp_module tm ON m.module_pid = tm.module_id
         WHERE m.project_id = #{projectId}
         ) SELECT module_id FROM temp_module
