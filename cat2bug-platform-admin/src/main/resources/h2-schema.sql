@@ -4178,7 +4178,8 @@ CREATE TABLE `sys_module` (
                               `create_by_id` bigint DEFAULT NULL COMMENT '创建成员',
                               `create_time` datetime DEFAULT NULL COMMENT '创建时间',
                               `update_by_id` bigint DEFAULT NULL COMMENT '更新成员',
-                              `update_time` datetime DEFAULT NULL COMMENT '更新时间'
+                              `update_time` datetime DEFAULT NULL COMMENT '更新时间',
+                              `annex_urls` varchar(5000) DEFAULT NULL COMMENT '附件数组',
 );
 
 COMMIT;

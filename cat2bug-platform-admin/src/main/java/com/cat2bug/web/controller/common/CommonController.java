@@ -94,7 +94,7 @@ public class CommonController
      * 通用上传请求（单个）
      */
     @PostMapping("/upload")
-    public AjaxResult uploadFile(@RequestParam("file") MultipartFile file, @RequestParam("customFileName") String customFileName) throws Exception
+    public AjaxResult uploadFile(@RequestParam("file") MultipartFile file, @RequestParam(name = "customFileName", required=false) String customFileName) throws Exception
     {
         try
         {

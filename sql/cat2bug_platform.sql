@@ -1276,6 +1276,7 @@ CREATE TABLE `sys_module` (
   `create_time` datetime DEFAULT NULL COMMENT '创建时间',
   `update_by_id` bigint DEFAULT NULL COMMENT '更新成员',
   `update_time` datetime DEFAULT NULL COMMENT '更新时间',
+  `annex_urls` varchar(5000) COLLATE utf8mb3_bin DEFAULT NULL COMMENT '附件数组',
   PRIMARY KEY (`module_id`),
   KEY `module_nbame_` (`module_name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=362 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='模块表';
