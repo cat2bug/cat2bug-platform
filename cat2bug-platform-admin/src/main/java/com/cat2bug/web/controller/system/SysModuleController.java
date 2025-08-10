@@ -1,5 +1,6 @@
 package com.cat2bug.web.controller.system;
 
+import com.alibaba.fastjson.JSON;
 import com.cat2bug.common.annotation.Log;
 import com.cat2bug.common.core.controller.BaseController;
 import com.cat2bug.common.core.domain.AjaxResult;
@@ -14,7 +15,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * 模块Controller
@@ -38,6 +42,52 @@ public class SysModuleController extends BaseController
     {
         List<SysModule> list = sysModuleService.selectSysModuleList(sysModule);
         return success(list);
+    }
+
+    /**
+     * 查询模块树形结构
+     */
+    @PreAuthorize("@ss.hasPermi('system:defect:list') || @ss.hasPermi('system:module:list')")
+    @GetMapping("/tree")
+    public AjaxResult tree(SysModule sysModule)
+    {
+        if(sysModule.getModulePid()==0) {
+            return success(sysModuleService.selectSysModuleList(sysModule));
+        }
+        SysModule findParentModule = sysModule;
+        List<SysModule> parentModule = new LinkedList<>();
+        // 从要获取的交付物往上轮训查询所有关联父交付物
+        while(findParentModule!= null) {
+            findParentModule = sysModuleService.selectSysModuleByModuleId(findParentModule.getModulePid());
+            if(findParentModule!=null) {
+                parentModule.add(0, findParentModule);
+            }
+        }
+        System.out.println("parentModule"+ JSON.toJSONString(parentModule));
+        // 查出所有关联交付物
+        List<SysModule> treeModule = null;          // 交付物树形集合
+        List<SysModule> prevLayerModuleList = null; // 上一层的父交付物
+        for(SysModule module : parentModule) {
+            SysModule params = new SysModule();
+            params.setModulePid(module.getModulePid());
+            params.setProjectId(sysModule.getProjectId());
+            // 查询当前父交付下的所有子交付物
+            List<SysModule> children = sysModuleService.selectSysModuleList(params);
+            if(treeModule==null) {
+                treeModule = children;
+            } else if(prevLayerModuleList!=null && children!=null && children.size()>0) {
+                // 将子集合设置到父交付物中
+                Long parentModuleId = children.get(0).getModulePid();
+                Optional<SysModule> prevParentModule = prevLayerModuleList.stream().filter(prevModule->prevModule.getModuleId().equals(parentModuleId)).findFirst();
+                if(prevParentModule.isPresent()) {
+                    prevParentModule.get().setChildren(children);
+                    prevParentModule.get().setChildrenCount(children.size());
+                }
+            }
+            // 记录当前层的父交付物是哪个
+            prevLayerModuleList = children;
+        }
+        return success(treeModule);
     }
 
     /**

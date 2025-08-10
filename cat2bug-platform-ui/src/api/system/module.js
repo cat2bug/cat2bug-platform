@@ -9,6 +9,15 @@ export function listModule(query) {
   })
 }
 
+// 查询模块树结构
+export function treeModule(query) {
+  return request({
+    url: '/system/module/tree',
+    method: 'get',
+    params: query
+  })
+}
+
 // 查询模块详细
 export function getModule(moduleId) {
   return request({
