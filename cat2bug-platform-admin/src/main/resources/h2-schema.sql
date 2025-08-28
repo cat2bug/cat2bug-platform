@@ -2229,7 +2229,8 @@ CREATE TABLE `sys_defect` (
                               `defect_group_key` varchar(512) DEFAULT NULL COMMENT '缺陷组关键字',
                               `plan_start_time` datetime DEFAULT NULL COMMENT '计划开始时间',
                               `plan_end_time` datetime DEFAULT NULL COMMENT '计划完成时间',
-                              `extend_properties` json DEFAULT NULL COMMENT '扩展属性'
+                              `extend_properties` json DEFAULT NULL COMMENT '扩展属性',
+                              `sponsor` varchar(128) DEFAULT NULL COMMENT '发起人',
 );
 
 COMMIT;

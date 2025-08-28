@@ -137,7 +137,7 @@ export default {
       this.$refs["form"].validate(valid => {
         if (valid) {
           addTabs(this.form).then(res=>{
-            this.$message.success("创建成功");
+            this.$message.success(this.$i18n.t('create-success').toString());
             this.$emit("add",res.data);
             this.close();
           });

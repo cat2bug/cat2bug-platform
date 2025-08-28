@@ -25,6 +25,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="projectId != null "> and project_id = #{projectId}</if>
             <if test="userId != null "> and user_id = #{userId}</if>
         </where>
+        order by tab_sort DESC , create_time DESC
     </select>
     
     <select id="selectSysProjectDefectTabsByTabId" parameterType="Long" resultMap="SysProjectDefectTabsResult">
@@ -65,6 +66,19 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="createTime != null">create_time = #{createTime},</if>
         </trim>
         where tab_id = #{tabId}
+    </update>
+
+    <update id="updateSort" parameterType="java.util.List">
+        UPDATE sys_project_defect_tabs
+        SET tab_sort = CASE tab_id
+        <foreach collection="list" item="item">
+            WHEN #{item.tabId} THEN #{item.tabSort}
+        </foreach>
+        END
+        WHERE tab_id IN
+        <foreach collection="list" item="item" open="(" separator="," close=")">
+            #{item.tabId}
+        </foreach>
     </update>
 
     <delete id="deleteSysProjectDefectTabsByTabId" parameterType="Long">

@@ -43,6 +43,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="handleStartTime"    column="handle_start_time"    />
         <result property="planStartTime"    column="plan_start_time"    />
         <result property="planEndTime"    column="plan_end_time"    />
+        <result property="sponsor"    column="sponsor"    />
     </resultMap>
 
     <resultMap type="SysVersion" id="SysVersionResult">
@@ -78,6 +79,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                     d.handle_by,
                     d.plan_start_time,
                     d.plan_end_time,
+                    d.sponsor,
                     un.user_infos AS handle_by_list,
                     cm.user_infos AS create_member,
                     cm.nick_name AS create_member_name,
@@ -189,6 +191,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         d.handle_by,
         d.plan_start_time,
         d.plan_end_time,
+        d.sponsor,
         (
         SELECT CONCAT('[', GROUP_CONCAT(
         CONCAT(
@@ -316,6 +319,19 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             </if>
             <if test="defect.params.beginHandleTime != null and defect.params.beginHandleTime != '' and defect.params.endHandleTime != null and defect.params.endHandleTime != ''"> and d.handle_time between #{defect.params.beginHandleTime} and #{defect.params.endHandleTime}</if>
             <if test="defect.defectLevel != null  and defect.defectLevel != ''"> and d.defect_level = #{defect.defectLevel}</if>
+            <if test="defect.sponsor != null  and defect.sponsor != ''"> and (d.sponsor like concat('%', #{sponsor}, '%') or d.sponsor=#{defect.sponsor})</if>
+            <if test="defect.params.search != null and defect.params.search != ''">
+                and (d.defect_name like concat('%', #{defect.params.search}, '%')
+                    or d.project_num like concat('%', #{defect.params.search}, '%')
+                    or m.module_name like concat('%', #{defect.params.search}, '%')
+                    <if test="defect.params.searchHandleBy != null and defect.params.searchHandleBy.size > 0">
+                        or (
+                            <foreach collection="defect.params.searchHandleBy" item="b" separator=" or " open="(" close=")">d.handle_by REGEXP CONCAT('\b',#{b},'\b') OR d.handle_by REGEXP CONCAT('\\b',#{b},'\\b')
+                            </foreach>
+                        )
+                    </if>
+                )
+            </if>
         </where>
     </select>
     
@@ -357,6 +373,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="defectLevel != null">defect_level,</if>
             <if test="planStartTime != null">plan_start_time,</if>
             <if test="planEndTime != null">plan_end_time,</if>
+            <if test="sponsor != null">sponsor,</if>
          </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="projectNum != null">#{projectNum},</if>
@@ -385,6 +402,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="defectLevel != null">#{defectLevel},</if>
             <if test="planStartTime != null">#{planStartTime},</if>
             <if test="planEndTime != null">#{planEndTime},</if>
+            <if test="sponsor != null">#{sponsor},</if>
          </trim>
     </insert>
 
@@ -394,7 +412,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             project_num,defect_type,defect_name,defect_describe,
             annex_urls,img_urls,project_id,module_id,module_version,
             create_by,create_by_id,update_time,create_time,update_by,update_by_id,
-            defect_state,handle_by,handle_time,defect_level,defect_group_key,defect_key,plan_start_time,plan_end_time
+            defect_state,handle_by,handle_time,defect_level,defect_group_key,defect_key,plan_start_time,plan_end_time,sponsor
         </trim>
         values
         <foreach collection="defectList" separator="," item="defect">
@@ -421,7 +439,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             #{defect.defectGroupKey},
             #{defect.defectKey},
             #{defect.planStartTime},
-            #{defect.planEndTime}
+            #{defect.planEndTime},
+            #{defect.sponsor}
             )
         </foreach>
     </insert>
@@ -453,6 +472,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="defectLevel != null">defect_level = #{defectLevel},</if>
             <if test="planStartTime != null">plan_start_time = #{planStartTime},</if>
             <if test="planEndTime != null">plan_end_time = #{planEndTime},</if>
+            <if test="sponsor != null">sponsor = #{sponsor},</if>
         </trim>
         where defect_id = #{defectId}
     </update>

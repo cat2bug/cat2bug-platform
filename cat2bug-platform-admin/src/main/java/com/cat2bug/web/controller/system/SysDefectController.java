@@ -78,6 +78,14 @@ public class SysDefectController extends BaseController
     @GetMapping("/list")
     public TableDataInfo list(SysDefect sysDefect)
     {
+        // 如果有search查询参数，先通过查询数据查找相关用户id，再通过用户id查找缺陷数据
+        if(sysDefect.getParams()!=null && sysDefect.getParams().containsKey("search")) {
+            SysUser sysUser = new SysUser();
+            sysUser.setParams(new HashMap<>());
+            sysUser.getParams().put("search", sysDefect.getParams().get("search"));
+            List<SysUser> userList = sysUserProjectService.selectSysUserListByProjectId(sysDefect.getProjectId(), sysUser);
+            sysDefect.getParams().put("searchHandleBy", userList.stream().map(u->u.getUserId()).collect(Collectors.toList()));
+        }
         startPage();
         List<SysDefect> list = sysDefectService.selectSysDefectList(sysDefect);
         TableDataInfo tableDataInfo = getDataTable(list);

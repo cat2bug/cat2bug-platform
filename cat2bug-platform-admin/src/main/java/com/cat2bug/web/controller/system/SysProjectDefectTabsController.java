@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 项目缺陷页签配置Controller
@@ -70,6 +71,14 @@ public class SysProjectDefectTabsController extends BaseController
     public AjaxResult edit(@RequestBody SysProjectDefectTabs sysProjectDefectTabs)
     {
         return toAjax(sysProjectDefectTabsService.updateSysProjectDefectTabs(sysProjectDefectTabs));
+    }
+
+    @PreAuthorize("@ss.hasPermi('system:defect:list')")
+    @Log(title = "项目缺陷页签配置", businessType = BusinessType.UPDATE)
+    @PutMapping("/sort")
+    public AjaxResult updateSort(@RequestBody List<SysProjectDefectTabs> list)
+    {
+        return toAjax(sysProjectDefectTabsService.updateSort(list));
     }
 
     /**

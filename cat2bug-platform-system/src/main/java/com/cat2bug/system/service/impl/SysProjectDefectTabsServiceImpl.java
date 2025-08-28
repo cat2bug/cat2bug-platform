@@ -70,6 +70,11 @@ public class SysProjectDefectTabsServiceImpl implements ISysProjectDefectTabsSer
         return sysProjectDefectTabsMapper.updateSysProjectDefectTabs(sysProjectDefectTabs);
     }
 
+    @Override
+    public int updateSort(List<SysProjectDefectTabs> list) {
+        return sysProjectDefectTabsMapper.updateSort(list);
+    }
+
     /**
      * 批量删除项目缺陷页签配置
      * 

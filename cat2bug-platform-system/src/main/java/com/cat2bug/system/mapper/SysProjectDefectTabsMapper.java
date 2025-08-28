@@ -45,6 +45,13 @@ public interface SysProjectDefectTabsMapper
     public int updateSysProjectDefectTabs(SysProjectDefectTabs sysProjectDefectTabs);
 
     /**
+     * 更新标签集合的排序
+     * @param list  标签集合
+     * @return      更新数量
+     */
+    public int updateSort(List<SysProjectDefectTabs> list);
+
+    /**
      * 删除项目缺陷页签配置
      * 
      * @param tabId 项目缺陷页签配置主键

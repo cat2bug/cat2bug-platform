@@ -189,6 +189,9 @@ public class SysDefect extends BaseEntity
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date handleStartTime;
 
+    /** 发起人 */
+    private String sponsor;
+
     @Override
     public String toString() {
         return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)
@@ -213,6 +216,7 @@ public class SysDefect extends BaseEntity
             .append("handleBy", getHandleBy())
             .append("handleTime", getHandleTime())
             .append("defectLevel", getDefectLevel())
+            .append("sponsor", getSponsor())
             .toString();
     }
 }

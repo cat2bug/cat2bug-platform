@@ -13,7 +13,7 @@
     "preview": "node build/index.js --preview",
     "lint": "eslint --ext .js,.vue src",
     "docs:dev": "vuepress dev docs",
-    "docs:build": "vuepress build docs",
+    "docs:build": "vuepress build docs"
   },
   "husky": {
     "hooks": {

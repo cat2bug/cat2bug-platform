@@ -42,3 +42,12 @@ export function delTabs(tabId) {
     method: 'delete'
   })
 }
+
+// 修改项目缺陷页签顺序
+export function updateSortOfTabs(data) {
+  return request({
+    url: '/system/tabs/sort',
+    method: 'put',
+    data: data
+  })
+}

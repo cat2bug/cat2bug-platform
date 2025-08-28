@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.cat2bug.ai.service.IAiService;
 import com.cat2bug.common.core.controller.BaseController;
 import com.cat2bug.common.core.domain.AjaxResult;
+import com.cat2bug.common.core.domain.entity.SysDefect;
 import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.common.core.domain.type.SysDefectTypeEnum;
 import com.cat2bug.system.domain.SysAiModuleConfig;
@@ -51,6 +52,25 @@ public class AiDefectController extends BaseController {
     private SysDefectServiceImpl sysDefectService;
     @Autowired
     private ISysAiModuleConfigService sysAiModuleConfigService;
+
+    /**
+     * 根据描述自动生产缺陷对象
+     * @param describe
+     * @return
+     */
+    @PreAuthorize("@ss.hasPermi('system:defect:add')")
+    @PostMapping()
+    public AjaxResult auto(@RequestBody AiDescribe describe)
+    {
+        SysAiModuleConfig sysAiModuleConfig = sysAiModuleConfigService.selectSysAiModuleConfigByProjectId(describe.getProjectId());
+        String prompt = String.format("请根据( %s )的描述，生成一个核心思想的标题,标题只能有中英文或数字,不要有其他任何符号或字符，且最多128个字符",describe);
+        AiDefectTitle title = aiService.generate(sysAiModuleConfig.getBusinessModule(),prompt,false, null, AiDefectTitle.class);
+        SysDefect defect = new SysDefect();
+        defect.setDefectName(title.getTitle());
+        defect.setDefectDescribe(describe.getDescribe());
+        return success(defect);
+    }
+
     /**
      * 获取缺陷详细信息
      */

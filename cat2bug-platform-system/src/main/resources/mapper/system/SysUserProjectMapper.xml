@@ -58,6 +58,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="userId != null "> and user_id = #{userId}</if>
             <if test="projectId != null "> and project_id = #{projectId}</if>
             <if test="projectLock != null "> and project_lock = #{projectLock}</if>
+            <if test="params != null and params.userName !=null  and params.userName != ''"> and (u.nick_name like concat('%', #{params.userName}, '%') or u.nick_name=#{params.userName})</if>
         </where>
     </select>
 

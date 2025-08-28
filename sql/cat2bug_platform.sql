@@ -751,6 +751,7 @@ CREATE TABLE `sys_defect` (
   `plan_start_time` datetime DEFAULT NULL COMMENT '计划开始时间',
   `plan_end_time` datetime DEFAULT NULL COMMENT '计划完成时间',
   `extend_properties` json DEFAULT NULL COMMENT '扩展属性',
+  `sponsor` varchar(128) COLLATE utf8mb3_bin DEFAULT NULL COMMENT '发起人',
   PRIMARY KEY (`defect_id`),
   KEY `describe_name_` (`defect_name`),
   KEY `defect_key` (`defect_key`),

@@ -44,6 +44,14 @@ public interface ISysProjectDefectTabsService
     public int updateSysProjectDefectTabs(SysProjectDefectTabs sysProjectDefectTabs);
 
     /**
+     * 更新标签顺序
+     *
+     * @param list 项目缺陷页签配置
+     * @return 结果
+     */
+    public int updateSort(List<SysProjectDefectTabs> list);
+
+    /**
      * 批量删除项目缺陷页签配置
      * 
      * @param tabIds 需要删除的项目缺陷页签配置主键集合

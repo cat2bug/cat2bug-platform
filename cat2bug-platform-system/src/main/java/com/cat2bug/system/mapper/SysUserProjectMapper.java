@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.system.domain.SysUserProject;
+import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 /**
@@ -12,6 +13,7 @@ import org.apache.ibatis.annotations.Param;
  * @author yuzhantao
  * @date 2023-11-22
  */
+@Mapper
 public interface SysUserProjectMapper 
 {
     /**

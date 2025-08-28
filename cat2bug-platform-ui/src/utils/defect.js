@@ -5,6 +5,7 @@ import {exp} from "qrcode/lib/core/galois-field";
 
 const DEFECT_TEMP_TAB_KEY = "defect-temp-tab-key";
 
+/** 计算缺陷存活时间 */
 export function lifeTime (defect){
   let passTime = defect.handlePassTime ? new Date(defect.handlePassTime): new Date();
   let startTime = defect.handleStartTime ? new Date(defect.handleStartTime): new Date();
