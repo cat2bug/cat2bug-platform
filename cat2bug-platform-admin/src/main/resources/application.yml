@@ -97,7 +97,7 @@ caffeine:
 
 # Spring配置
 spring:
-  database-type: h2
+  database-type: mysql
   flyway:
     # 是否开启数据库自动更新
     enabled: ${cat2bug.auto-update}
