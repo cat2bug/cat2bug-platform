@@ -67,6 +67,13 @@ public interface SysUserMapper
     public SysUser selectUserById(@Param("teamId") Long teamId, @Param("projectId") Long projectId, @Param("userId") Long userId);
 
     /**
+     * 通过手机号码查询用户
+     * @param phone 手机号码
+     * @return 用户对象信息
+     */
+    public SysUser selectUserByPhone(@Param("phone")String phone);
+
+    /**
      * 新增用户信息
      * 
      * @param user 用户信息

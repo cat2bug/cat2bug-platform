@@ -43,6 +43,13 @@ public interface ISysUserService
     public SysUser selectUserByUserName(String userName);
 
     /**
+     * 通过手机号码查询用户
+     * @param phone 手机号码
+     * @return 用户对象信息
+     */
+    public SysUser selectUserByPhone(String phone);
+
+    /**
      * 通过用户ID查询用户
      * 
      * @param userId 用户ID
