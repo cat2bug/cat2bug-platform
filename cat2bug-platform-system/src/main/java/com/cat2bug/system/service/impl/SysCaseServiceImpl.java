@@ -210,12 +210,8 @@ public class SysCaseServiceImpl implements ISysCaseService
         List<ExcelImportRowResultVo> rows = new ArrayList<>();
 
         int rowNum = 2;
-        for (SysCase c : caseList)
-        {
-            Map<String,Object> params = new HashMap<>();
-            params.put(NUM_PROPERTY_NAME, rowNum);
-            c.setParams(params);
-
+        Collections.reverse(caseList); // 倒序
+        for (SysCase c : caseList) {
             ExcelImportRowResultVo rr = new ExcelImportRowResultVo();
             rr.setRowNum(rowNum);
             rr.setMessages(new ArrayList<>());
@@ -224,6 +220,10 @@ public class SysCaseServiceImpl implements ISysCaseService
                 rows.add(rr);
                 continue;
             }
+
+            Map<String,Object> params = new HashMap<>();
+            params.put(NUM_PROPERTY_NAME, rowNum);
+            c.setParams(params);
 
             if(StringUtils.isEmpty(c.getCaseName())) {
                 rr.getMessages().add(MessageUtils.message("case.title-not-empty"));

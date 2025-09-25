@@ -1510,7 +1510,7 @@ public class ExcelUtil<T>
         }
         catch (Exception e)
         {
-            log.error("不能格式化数据 " + excel.comboHandler(), e.getMessage());
+            log.error("不能格式化数据 " + excel.comboHandler(), e);
         }
         return new ArrayList<>();
     }

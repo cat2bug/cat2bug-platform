@@ -41,7 +41,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         WHERE module_pid = 0 and project_id = #{projectId}
         UNION ALL
         -- 递归加入子类别
-        SELECT c.module_id, c.module_name, annex_urls, CONCAT(cp.module_path, '/', c.module_name)
+        SELECT c.module_id, c.module_name, c.annex_urls, CONCAT(cp.module_path, '/', c.module_name)
         FROM sys_module c
         INNER JOIN m cp ON c.module_pid = cp.module_id
         )
