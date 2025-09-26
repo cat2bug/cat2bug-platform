@@ -99,6 +99,10 @@
               class="qcoder"
               :src="require('@/assets/images/wechat-qcoder.png')"
               fit="cover"></el-image>
+            <el-image
+              class="qcoder"
+              :src="require('@/assets/images/wechat-mini-program.png')"
+              fit="cover"></el-image>
           </div>
         </el-card>
 
@@ -401,8 +405,8 @@ export default {
   }
 
   .qcoder {
-    width: 150px;
-    height: 150px;
+    width: 130px;
+    height: 130px;
     margin-right: 10px;
     :last-child {
       margin-right: 0px;
