@@ -441,6 +441,8 @@
   "module.root-node": "顶级交付物",
   "module.please-select-parent-module": "请选择父交付物",
   "module.is-delete-module": "你是否要删除此交付物？",
+  "module.level-path": "层级路径",
+  "module.sublist": "子交付物列表",
   "browser": "浏览器",
   "browser.tool": "浏览器工具",
   "browser.describe": "浏览器相关工具",

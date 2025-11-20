@@ -441,6 +441,8 @@
   "module.root-node": "Root Deliverable",
   "module.please-select-parent-module": "Please select the parent deliverable",
   "module.is-delete-module": "Do you want to delete this deliverable ?",
+  "module.level-path": "Path",
+  "module.sublist": "Sublist",
   "browser": "Browser",
   "browser.tool": "Browser Tool",
   "browser.describe": "Browser related tools",
