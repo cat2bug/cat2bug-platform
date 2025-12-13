@@ -63,7 +63,6 @@ public class SysModuleController extends BaseController
                 parentModule.add(0, findParentModule);
             }
         }
-        System.out.println("parentModule"+ JSON.toJSONString(parentModule));
         // 查出所有关联交付物
         List<SysModule> treeModule = null;          // 交付物树形集合
         List<SysModule> prevLayerModuleList = null; // 上一层的父交付物

@@ -115,7 +115,9 @@ export default {
       queryParams: {
         modulePid: null,
         moduleName: null,
-        projectId: this.getProjectId()
+        projectId: this.getProjectId(),
+        pageNum: 1,
+        pageSize: 10
       },
     };
   },

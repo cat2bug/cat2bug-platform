@@ -65,6 +65,7 @@
   "phone-size-exception": "手机号长度必须介于 11 和 16 之间",
   "password-size-exception": "用户密码长度必须介于 5 和 20 之间",
   "account-successfully-registered": "恭喜你，您的账号 {0} 注册成功！",
+  "please-select": "请选择",
   "line": "第{0}行",
   "today": "今日",
   "this-week": "本周",
