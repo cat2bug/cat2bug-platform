@@ -51,7 +51,7 @@ public class SysModuleController extends BaseController
     @GetMapping("/tree")
     public AjaxResult tree(SysModule sysModule)
     {
-        if(sysModule.getModulePid()==0) {
+        if(sysModule.getModulePid()==null || sysModule.getModulePid()==0) {
             return success(sysModuleService.selectSysModuleList(sysModule));
         }
         SysModule findParentModule = sysModule;

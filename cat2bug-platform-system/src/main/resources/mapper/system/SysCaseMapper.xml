@@ -70,6 +70,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                     #{moduleId}
                 </foreach>
             </if>
+            <if test="params != null and params.search !=null and params.search !=''">
+                and (
+                    c.case_name like concat('%', #{params.search}, '%')
+                    or c.case_num = #{params.search}
+                    or m.module_name like concat('%', #{params.search}, '%')
+                )
+            </if>
         </where>
         ORDER BY c.case_num DESC
     </sql>

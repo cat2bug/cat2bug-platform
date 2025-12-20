@@ -146,6 +146,14 @@
             <span>{{$t('update-log')}}</span>
           </div>
           <el-collapse accordion>
+            <el-collapse-item title="v0.6.0 - 2025-09-26">
+              <ol>
+                <li>交付物中添加附件</li>
+                <li>优化页面打开慢的问题</li>
+                <li>接口支持Cat2Bug-App微信小程序</li>
+                <li>修复系统功能BUG</li>
+              </ol>
+            </el-collapse-item>
             <el-collapse-item title="v0.5.1 - 2025-03-15">
               <ol>
                 <li>添加仪表盘</li>
