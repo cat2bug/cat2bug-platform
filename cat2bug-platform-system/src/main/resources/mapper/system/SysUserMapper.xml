@@ -185,7 +185,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	    <include refid="selectUserVo"/>
 		where u.user_name = #{userName} and u.del_flag = '0'
 	</select>
-	
+
+	<select id="selectUserByWechatMp" resultMap="SysUserResult">
+		<include refid="selectUserVo"/>
+		where u.wechat_mp_user_id = #{openId} and u.del_flag = '0'
+	</select>
+
 	<select id="selectUserById" resultMap="SysUserResult">
 		<include refid="selectUserVo"/>
 		where u.user_id = #{userId}
@@ -269,10 +274,19 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	<update id="updateUserAvatar" parameterType="SysUser">
  		update sys_user set avatar = #{avatar} where user_name = #{userName}
 	</update>
-	
+
+	<update id="updateWechatMp" parameterType="SysUser">
+		update sys_user set wechat_mp_user_id = #{openId} where user_name = #{userName}
+	</update>
+
 	<update id="resetUserPwd" parameterType="SysUser">
  		update sys_user set password = #{password} where user_name = #{userName}
 	</update>
+
+	<update id="clearLoginInfo" parameterType="SysUser">
+		update sys_user set wechat_mp_user_id = null where user_id = #{userId}
+	</update>
+
 	
 	<delete id="deleteUserById" parameterType="Long">
  		update sys_user set del_flag = '2' where user_id = #{userId}

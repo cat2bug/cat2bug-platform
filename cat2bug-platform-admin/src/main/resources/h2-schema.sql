@@ -5787,19 +5787,20 @@ CREATE TABLE `sys_user` (
                             `update_time` datetime DEFAULT NULL COMMENT '更新时间',
                             `remark` varchar(500) DEFAULT NULL COMMENT '备注',
                             `ding_user_id` varchar(255) DEFAULT NULL COMMENT '钉钉账号',
-                            `wechat_user_id` varchar(255) DEFAULT NULL COMMENT '微信账号'
+                            `wechat_user_id` varchar(255) DEFAULT NULL COMMENT '微信账号',
+                            `wechat_mp_user_id` varchar(255) DEFAULT NULL COMMENT '微信小程序openid'
 );
 
 INSERT INTO `sys_user` (`user_id`, `dept_id`, `user_name`, `nick_name`, `user_type`
                        , `email`, `phonenumber`, `sex`, `avatar`, `password`
                        , `status`, `del_flag`, `login_ip`, `login_date`, `create_by`
                        , `create_time`, `update_by`, `update_time`, `remark`, `ding_user_id`
-                       , `wechat_user_id`)
+                       , `wechat_user_id`, `wechat_mp_user_id`)
 VALUES (1, 0, 'admin', '黑猫警长', '00'
        , 'admin@cat2bug.com', '18888888888', '0', '', '$2a$10$/YbsRyezA9pg13iJhCNE.u5yOvWbuq7NZhOlliUvycEfBIgJN6qHK'
        , '0', '0', '127.0.0.1', '2025-01-19 01:18:47', 'admin'
        , '2023-11-12 15:34:51', '', '2025-01-19 01:18:47', '管理员', NULL
-       , NULL);
+       , NULL, NULL);
 COMMIT;
 DROP TABLE IF EXISTS `sys_user_config`;
 CREATE TABLE `sys_user_config` (

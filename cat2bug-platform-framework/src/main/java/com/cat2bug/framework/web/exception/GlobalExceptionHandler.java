@@ -1,6 +1,8 @@
 package com.cat2bug.framework.web.exception;
 
 import javax.servlet.http.HttpServletRequest;
+
+import com.cat2bug.system.exception.AjaxResultException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.access.AccessDeniedException;
@@ -91,7 +93,24 @@ public class GlobalExceptionHandler
     {
         String requestURI = request.getRequestURI();
         log.error("请求地址'{}',发生未知异常.", requestURI, e);
-        return AjaxResult.error(e.getMessage());
+
+        return AjaxResult.error(e.getMessage(), e);
+    }
+
+    /**
+     * 拦截自定义异常
+     * @param e
+     * @param request
+     * @return
+     */
+    @ExceptionHandler(AjaxResultException.class)
+    public AjaxResult handleAjaxResultException(AjaxResultException e, HttpServletRequest request)
+    {
+        String requestURI = request.getRequestURI();
+        log.error("请求地址'{}',发生未知异常.", requestURI, e);
+        return e.getCode()>0?
+                new AjaxResult(e.getCode(), e.getMessage(), e):
+                AjaxResult.error(e.getMessage(), e);
     }
 
     /**
@@ -102,7 +121,7 @@ public class GlobalExceptionHandler
     {
         String requestURI = request.getRequestURI();
         log.error("请求地址'{}',发生系统异常.", requestURI, e);
-        return AjaxResult.error(e.getMessage());
+        return AjaxResult.error(e.getMessage(), e);
     }
 
     /**

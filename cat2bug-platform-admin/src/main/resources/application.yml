@@ -16,6 +16,12 @@ cat2bug:
   addressEnabled: false
   # 验证码类型 math 数字计算 char 字符验证
   captchaType: math
+  # 登陆
+  login:
+    # 微信小程序
+    wechat-mp:
+      appid: wx4eeae5b16655538a
+      secret: 5203e519f933ca879050c5d827a2765e
   # 云服务
   cloud:
     # 云服务地址

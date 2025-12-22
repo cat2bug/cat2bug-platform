@@ -43,6 +43,14 @@ public interface ISysUserService
     public SysUser selectUserByUserName(String userName);
 
     /**
+     * 通过微信用户ID用查询用户
+     *
+     * @param openId 微信用户Id
+     * @return 用户对象信息
+     */
+    public SysUser selectUserByWechatMp(String openId);
+
+    /**
      * 通过手机号码查询用户
      * @param phone 手机号码
      * @return 用户对象信息
@@ -169,6 +177,14 @@ public interface ISysUserService
     public boolean updateUserAvatar(String userName, String avatar);
 
     /**
+     * 更新用户微信小程序ID
+     * @param userName  用户名
+     * @param openId    微信小程序ID
+     * @return          结果
+     */
+    public boolean updateWechatMp(String userName, String openId);
+
+    /**
      * 重置用户密码
      * 
      * @param user 用户信息
@@ -210,4 +226,11 @@ public interface ISysUserService
      * @return 结果
      */
     public String importUser(List<SysUser> userList, Boolean isUpdateSupport, String operName);
+
+    /**
+     * 清楚用户登陆信息
+     * @param userId
+     * @return
+     */
+    public boolean clearLoginInfo(Long userId);
 }

@@ -129,6 +129,16 @@ public class SysUserServiceImpl implements ISysUserService
     }
 
     /**
+     * 通过微信用户ID查询用户
+     * @param openId 微信用户ID
+     * @return  用户对象信息
+     */
+    @Override
+    public SysUser selectUserByWechatMp(String openId) {
+        return userMapper.selectUserByWechatMp(null, null, openId);
+    }
+
+    /**
      * 通过手机号码查询用户
      * @param phone 手机号码
      * @return 用户对象信息
@@ -391,6 +401,17 @@ public class SysUserServiceImpl implements ISysUserService
     }
 
     /**
+     * 更新用户微信小程序ID
+     * @param userName  用户名
+     * @param openId    微信小程序ID
+     * @return          结果
+     */
+    @Override
+    public boolean updateWechatMp(String userName, String openId) {
+        return userMapper.updateWechatMp(userName, openId);
+    }
+
+    /**
      * 重置用户密码
      * 
      * @param user 用户信息
@@ -580,5 +601,15 @@ public class SysUserServiceImpl implements ISysUserService
             successMsg.insert(0, "恭喜您，数据已全部导入成功！共 " + successNum + " 条，数据如下：");
         }
         return successMsg.toString();
+    }
+
+    /**
+     * 清楚用户登陆信息
+     * @param userId
+     * @return
+     */
+    @Override
+    public boolean clearLoginInfo(Long userId) {
+        return userMapper.clearLoginInfo(userId);
     }
 }

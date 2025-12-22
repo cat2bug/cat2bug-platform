@@ -59,6 +59,13 @@ public interface SysUserMapper
     public SysUser selectUserByUserName(@Param("teamId") Long teamId, @Param("projectId") Long projectId, @Param("userName") String userName);
 
     /**
+     * 通过微信用户ID查询用户
+     * @param openId 微信用户ID
+     * @return  用户对象信息
+     */
+    public SysUser selectUserByWechatMp(@Param("teamId") Long teamId, @Param("projectId") Long projectId, @Param("openId") String openId);
+
+    /**
      * 通过用户ID查询用户
      * 
      * @param userId 用户ID
@@ -97,6 +104,14 @@ public interface SysUserMapper
      * @return 结果
      */
     public int updateUserAvatar(@Param("userName") String userName, @Param("avatar") String avatar);
+
+    /**
+     * 更新用户微信小程序ID
+     * @param userName  用户名
+     * @param openId    微信小程序ID
+     * @return          结果
+     */
+    public boolean updateWechatMp(@Param("userName") String userName, @Param("openId") String openId);
 
     /**
      * 重置用户密码
@@ -146,4 +161,11 @@ public interface SysUserMapper
      * @return 结果
      */
     public SysUser checkEmailUnique(String email);
+
+    /**
+     * 清楚用户登陆信息
+     * @param userId
+     * @return
+     */
+    public boolean clearLoginInfo(Long userId);
 }

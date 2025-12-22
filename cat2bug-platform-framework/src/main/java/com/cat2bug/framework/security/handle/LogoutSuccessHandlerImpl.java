@@ -4,6 +4,9 @@ import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import com.cat2bug.common.utils.MessageUtils;
+import com.cat2bug.system.service.ISysUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.core.Authentication;
@@ -29,6 +32,9 @@ public class LogoutSuccessHandlerImpl implements LogoutSuccessHandler
     @Autowired
     private TokenService tokenService;
 
+    @Autowired
+    private ISysUserService sysUserService;
+
     /**
      * 退出处理
      * 
@@ -44,9 +50,11 @@ public class LogoutSuccessHandlerImpl implements LogoutSuccessHandler
             String userName = loginUser.getUsername();
             // 删除用户缓存记录
             tokenService.delLoginUser(loginUser.getToken());
+            // 清楚用户在数据库中的登陆信息
+            sysUserService.clearLoginInfo(loginUser.getUserId());
             // 记录用户退出日志
-            AsyncManager.me().execute(AsyncFactory.recordLogininfor(userName, Constants.LOGOUT, "退出成功"));
+            AsyncManager.me().execute(AsyncFactory.recordLogininfor(userName, Constants.LOGOUT, MessageUtils.message("user.logout.success")));
         }
-        ServletUtils.renderString(response, JSON.toJSONString(AjaxResult.success("退出成功")));
+        ServletUtils.renderString(response, JSON.toJSONString(AjaxResult.success(MessageUtils.message("user.logout.success"))));
     }
 }
