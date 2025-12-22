@@ -65,7 +65,7 @@
           @click.native.prevent="handleLogin"
         >
           <span v-if="!loading">{{$t("login")}}</span>
-          <span v-else>{{$t("loading")}}...</span>
+          <span v-else>{{$t("logging-in")}}...</span>
         </el-button>
         <div style="float: right;" v-if="register">
           <router-link class="link-type" :to="'/register'">{{$t("register-now")}}</router-link>
@@ -98,7 +98,7 @@ export default {
           { required: true, trigger: "blur", message: this.$i18n.t('please-enter-your-account') }
         ],
         password: [
-          { required: true, trigger: "blur", message: this.$i18n.t('please-enter-your-account') }
+          { required: true, trigger: "blur", message: this.$i18n.t('please-enter-your-password') }
         ],
         code: [{ required: true, trigger: "change", message: this.$i18n.t('please-enter-verification-code') }]
       },
