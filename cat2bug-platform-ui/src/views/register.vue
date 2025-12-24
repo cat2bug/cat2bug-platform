@@ -112,11 +112,11 @@ export default {
       registerRules: {
         registerUserName: [
           {required: true, trigger: "blur", message: this.$i18n.t('please-enter-your-account')},
-          {min: 2, max: 20, message: this.$i18n.t('account-size-exception'), trigger: 'blur'}
+          {min: 2, max: 30, message: this.$i18n.t('account-size-exception'), trigger: 'blur'}
         ],
         registerNickName: [
           {required: true, trigger: "blur", message: this.$i18n.t('please-enter-your-name')},
-          {min: 2, max: 20, message: this.$i18n.t('account-size-exception'), trigger: 'blur'}
+          {min: 2, max: 30, message: this.$i18n.t('account-size-exception'), trigger: 'blur'}
         ],
         phoneNumber: [
           {required: true, trigger: "blur", message: this.$i18n.t('please-enter-phone')},
@@ -124,7 +124,7 @@ export default {
         ],
         password: [
           {required: true, trigger: "blur", message: this.$i18n.t('please-enter-your-password')},
-          {min: 5, max: 20, message: this.$i18n.t('password-size-exception'), trigger: 'blur'}
+          {min: 5, max: 30, message: this.$i18n.t('password-size-exception'), trigger: 'blur'}
         ],
         confirmPassword: [
           {required: true, trigger: "blur", message: this.$i18n.t('please-enter-your-password-again')},
