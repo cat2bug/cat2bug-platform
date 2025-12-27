@@ -262,6 +262,7 @@
   "team.name-cannot-empty": "Name cannot be empty",
   "team.icon-cannot-empty": "Icon cannot be empty",
   "team.is-delete-team": "After deleting the team, you will not be able to reply. If you confirm the deletion, please fill in your login password and click the \"Delete\" button.",
+  "team.introduction-not-filled": "Team introduction not filled in",
   "project": "Project",
   "project.select": "Project Switch",
   "project.is-delete-project": "After deleting the project, you will not be able to reply. If you confirm the deletion, please fill in your login password and click the \"Delete\" button.",

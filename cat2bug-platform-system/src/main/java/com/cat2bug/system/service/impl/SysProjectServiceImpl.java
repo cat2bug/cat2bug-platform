@@ -4,6 +4,7 @@ import com.cat2bug.common.core.domain.entity.SysDefect;
 import com.cat2bug.common.core.domain.entity.SysProjectPush;
 import com.cat2bug.common.core.domain.entity.SysReport;
 import com.cat2bug.common.core.domain.entity.SysUser;
+import com.cat2bug.common.core.page.TableDataInfo;
 import com.cat2bug.common.utils.*;
 import com.cat2bug.common.utils.uuid.UUID;
 import com.cat2bug.system.domain.*;
@@ -72,7 +73,9 @@ public class SysProjectServiceImpl implements ISysProjectService
     @Autowired
     private ISysDocumentService sysDocumentService;
     @Autowired
-    private ISysProjectApiService sysProjectApiService;
+    private ISysTeamService sysTeamService;
+    @Autowired
+    private ISysUserService sysUserService;
 
     @Value("${server.port}")
     private int httpPort;
@@ -133,11 +136,22 @@ public class SysProjectServiceImpl implements ISysProjectService
     public int insertSysProject(SysProject sysProject)
     {
         // 新增项目
-        sysProject.setCreateBy(String.valueOf(SecurityUtils.getUserId()));
+        Long userId = SecurityUtils.getUserId();
+        sysProject.setCreateBy(String.valueOf(userId));
         sysProject.setCreateTime(DateUtils.getNowDate());
-        sysProject.setUpdateBy(String.valueOf(SecurityUtils.getUserId()));
+        sysProject.setUpdateBy(String.valueOf(userId));
         sysProject.setUpdateTime(DateUtils.getNowDate());
         Preconditions.checkState(sysProjectMapper.insertSysProject(sysProject)==1,MessageUtils.message("project.insert_project_fail"));
+
+        // 如果没有在sysProject.getMembers中添加创建人，则自动添加
+        Optional<SysUser> curUser = sysProject.getMembers().stream().filter(u->u.getUserId()==SecurityUtils.getUserId()).findFirst();
+        if(curUser.isPresent()==false) {
+            SysUser createUser = sysUserService.selectUserById(userId);
+            if(createUser.getRoles() != null) {
+                createUser.setRoleIds(createUser.getRoles().stream().map(r->r.getRoleId()).collect(Collectors.toList()).toArray(new Long[]{}));
+            }
+            sysProject.getMembers().add(createUser);
+        }
 
         // 新增项目成员
         sysProject.getMembers().stream().forEach(m->{

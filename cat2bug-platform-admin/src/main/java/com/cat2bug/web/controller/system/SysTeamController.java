@@ -212,7 +212,7 @@ public class SysTeamController extends BaseController
     /**
      * 删除团队
      */
-    @PreAuthorize("@ss.hasPermi('system:team:delete')")
+    @PreAuthorize("@ss.hasPermi('system:team:remove')")
     @Log(title = "团队", businessType = BusinessType.DELETE)
 	@DeleteMapping("/{teamIds}")
     public AjaxResult remove(@PathVariable Long[] teamIds)
