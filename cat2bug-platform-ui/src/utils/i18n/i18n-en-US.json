@@ -298,6 +298,7 @@
   "project.set-role-group": "Set Role Group",
   "project.introduction-not-filled": "Project introduction not filled in",
   "project.project-name-cannot-empty": "Project name cannot be empty!",
+  "project.icon-cannot-empty": "Project icon cannot be empty!",
   "project.info": "Project Information",
   "project.base-info-describe": "Project Basic Information Settings",
   "project.base-info": "Basic Information",

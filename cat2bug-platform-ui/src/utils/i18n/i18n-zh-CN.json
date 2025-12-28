@@ -297,6 +297,7 @@
   "collect-success": "关注成功",
   "cancel-success": "取消成功",
   "project.project-name-cannot-empty": "项目名称不能为空!",
+  "project.icon-cannot-empty": "项目封面不能为空!",
   "project.introduction-not-filled": "未填写项目介绍",
   "project.info": "项目信息",
   "project.base-info-describe": "项目基本信息设置",
