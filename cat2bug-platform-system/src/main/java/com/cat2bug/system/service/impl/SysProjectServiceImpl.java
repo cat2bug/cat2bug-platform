@@ -144,7 +144,7 @@ public class SysProjectServiceImpl implements ISysProjectService
         Preconditions.checkState(sysProjectMapper.insertSysProject(sysProject)==1,MessageUtils.message("project.insert_project_fail"));
 
         // 如果没有在sysProject.getMembers中添加创建人，则自动添加
-        Optional<SysUser> curUser = sysProject.getMembers().stream().filter(u->u.getUserId()==SecurityUtils.getUserId()).findFirst();
+        Optional<SysUser> curUser = sysProject.getMembers().stream().filter(u->userId.equals(u.getUserId())).findFirst();
         if(curUser.isPresent()==false) {
             SysUser createUser = sysUserService.selectUserById(userId);
             if(createUser.getRoles() != null) {

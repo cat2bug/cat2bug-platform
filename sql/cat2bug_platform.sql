@@ -2350,7 +2350,8 @@ CREATE TABLE `sys_user` (
   `wechat_user_id` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '微信账号',
   `wechat_mp_user_id` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL COMMENT '微信小程序openid',
   PRIMARY KEY (`user_id`),
-  UNIQUE KEY `phone_` (`phonenumber`)
+  UNIQUE KEY `phone_` (`phonenumber`),
+  KEY `idx_wechat_mp_user_id` (`wechat_mp_user_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=229 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin COMMENT='用户信息表';
 
 -- ----------------------------
