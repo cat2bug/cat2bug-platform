@@ -19,6 +19,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Author: yuzhantao
@@ -29,8 +30,12 @@ import java.util.List;
 @RequestMapping("/ai/case")
 public class AiCaseController extends BaseController {
     private final static Logger log = LogManager.getLogger(AiCaseController.class);
+
+    private final static String SERVICE_TYPE_OPEN_ID = "openai";
+    private final static String SERVICE_TYPE_OLLAMA = "ollama";
     @Autowired(required = false)
-    private IAiService aiService;
+    private Map<String, IAiService> aiServiceMap;
+
     @Autowired
     private ISysAiModuleConfigService sysAiModuleConfigService;
     /**
@@ -40,9 +45,17 @@ public class AiCaseController extends BaseController {
     @PostMapping("/list")
     public AjaxResult list(@RequestBody AiSysPrompt prompt)
     {
-        SysAiModuleConfig sysAiModuleConfig = sysAiModuleConfigService.selectSysAiModuleConfigByProjectId(prompt.getProjectId());
+        IAiService aiService = this.aiServiceMap.get(prompt.getServiceType());
         String json = String.format("%s。前面如果没有标明数量，需要生成%d条测试用例", prompt.getPrompt(), Math.max(prompt.getRowCount(), 1));
-        AiCaseList cases = aiService.generate(sysAiModuleConfig.getBusinessModule(), json,false, prompt.getContext(), AiCaseList.class);
+        AiCaseList cases = null;
+        switch (prompt.getServiceType()) {
+            case SERVICE_TYPE_OPEN_ID:
+                cases = aiService.generate(prompt.getModelId()+"", json,false, prompt.getContext(), AiCaseList.class);
+                break;
+            case SERVICE_TYPE_OLLAMA:
+                SysAiModuleConfig sysAiModuleConfig = sysAiModuleConfigService.selectSysAiModuleConfigByProjectId(prompt.getProjectId());
+                cases = aiService.generate(sysAiModuleConfig.getBusinessModule(), json,false, prompt.getContext(), AiCaseList.class);
+        }
         return success(cases);
     }
 

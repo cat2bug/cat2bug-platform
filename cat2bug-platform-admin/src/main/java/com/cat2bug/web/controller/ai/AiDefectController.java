@@ -40,8 +40,10 @@ import java.util.stream.Collectors;
 @RequestMapping("/ai/defect")
 public class AiDefectController extends BaseController {
     private final static Logger log = LogManager.getLogger(AiDefectController.class);
+    private final static String SERVICE_TYPE_OPEN_ID = "openai";
+    private final static String SERVICE_TYPE_OLLAMA = "ollama";
     @Autowired(required = false)
-    private IAiService aiService;
+    private Map<String, IAiService> aiServiceMap;
     @Autowired
     private ISysModuleService sysModuleService;
     @Autowired
@@ -62,6 +64,7 @@ public class AiDefectController extends BaseController {
     @PostMapping()
     public AjaxResult auto(@RequestBody AiDescribe describe)
     {
+        IAiService aiService = aiServiceMap.get(SERVICE_TYPE_OLLAMA);
         SysAiModuleConfig sysAiModuleConfig = sysAiModuleConfigService.selectSysAiModuleConfigByProjectId(describe.getProjectId());
         String prompt = String.format("请根据( %s )的描述，生成一个核心思想的标题,标题只能有中英文或数字,不要有其他任何符号或字符，且最多128个字符",describe);
         AiDefectTitle title = aiService.generate(sysAiModuleConfig.getBusinessModule(),prompt,false, null, AiDefectTitle.class);
@@ -78,6 +81,7 @@ public class AiDefectController extends BaseController {
     @PostMapping("/title")
     public AjaxResult makeTitle(@RequestBody AiDescribe describe)
     {
+        IAiService aiService = aiServiceMap.get(SERVICE_TYPE_OLLAMA);
         SysAiModuleConfig sysAiModuleConfig = sysAiModuleConfigService.selectSysAiModuleConfigByProjectId(describe.getProjectId());
         String prompt = String.format("请根据( %s )的描述，生成一个标题,标题只能有中英文或数字,不要有其他任何符号或字符",describe);
         AiDefectTitle title = aiService.generate(sysAiModuleConfig.getBusinessModule(),prompt,false, null, AiDefectTitle.class);
@@ -88,6 +92,7 @@ public class AiDefectController extends BaseController {
     @PostMapping("/module")
     public AjaxResult makeModule(@RequestBody AiDescribe describe)
     {
+        IAiService aiService = aiServiceMap.get(SERVICE_TYPE_OLLAMA);
         SysAiModuleConfig sysAiModuleConfig = sysAiModuleConfigService.selectSysAiModuleConfigByProjectId(describe.getProjectId());
         SysUserConfig userConfig = sysUserConfigService.selectSysUserConfigByUserId(getUserId());
         List<Map<String, Object>> modules = sysModuleService.selectSysModulePathList(userConfig.getCurrentProjectId()).stream().map(m->{
@@ -108,6 +113,7 @@ public class AiDefectController extends BaseController {
     @PostMapping("/type")
     public AjaxResult makeType(@RequestBody AiDescribe describe)
     {
+        IAiService aiService = aiServiceMap.get(SERVICE_TYPE_OLLAMA);
         SysAiModuleConfig sysAiModuleConfig = sysAiModuleConfigService.selectSysAiModuleConfigByProjectId(describe.getProjectId());
         List<String> types = Arrays.stream(SysDefectTypeEnum.values()).map(t->t.name()).collect(Collectors.toList());
         String prompt = String.format("请根据JSON( %s )数组中的数据，以及描述的信息( %s )，选择一个最符合的类型type，一般选择BUG的概率不较大",JSON.toJSONString(types),describe);
@@ -119,6 +125,7 @@ public class AiDefectController extends BaseController {
     @PostMapping("/member")
     public AjaxResult makeMember(@RequestBody AiDescribe describe)
     {
+        IAiService aiService = aiServiceMap.get(SERVICE_TYPE_OLLAMA);
         SysAiModuleConfig sysAiModuleConfig = sysAiModuleConfigService.selectSysAiModuleConfigByProjectId(describe.getProjectId());
         SysUserConfig userConfig = sysUserConfigService.selectSysUserConfigByUserId(getUserId());
         List<Map<String, Object>> members = sysUserProjectService.selectSysUserListByProjectId(userConfig.getCurrentProjectId(),new SysUser()).stream().map(m->{
@@ -136,6 +143,7 @@ public class AiDefectController extends BaseController {
     @PostMapping("/version")
     public AjaxResult makeVersion(AiDescribe describe)
     {
+        IAiService aiService = aiServiceMap.get(SERVICE_TYPE_OLLAMA);
         SysAiModuleConfig sysAiModuleConfig = sysAiModuleConfigService.selectSysAiModuleConfigByProjectId(describe.getProjectId());
         SysUserConfig userConfig = sysUserConfigService.selectSysUserConfigByUserId(getUserId());
         List<SysVersion> versions = sysDefectService.selectVersionList(userConfig.getCurrentProjectId());

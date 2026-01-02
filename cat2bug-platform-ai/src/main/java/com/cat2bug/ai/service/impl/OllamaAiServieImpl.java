@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
  * @Version: 1.0.1
  * Ollama服务
  */
-@Service
+@Service("ollama")
 @ConditionalOnProperty(prefix = "cat2bug.ai", name = "enabled", havingValue = "true")
 @ConfigurationProperties(prefix = "cat2bug.ai")
 @Data

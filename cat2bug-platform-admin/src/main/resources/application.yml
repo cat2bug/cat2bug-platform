@@ -45,7 +45,7 @@ cat2bug:
       host: https://www.cat2bug.com:8022
       project-key: 202403081039179f174l0igbcrgs66
       handler: demo
-  # 智能服务
+  # 智能服务(旧版本，将在下一个大版本中删除)
   ai:
     # 是否启动链接ai服务
     enabled: true
@@ -60,6 +60,9 @@ cat2bug:
     models:
       - ${cat2bug.ai.default-business-model}
       - ${cat2bug.ai.default-image-model}
+  # 智能服务(新版)
+  open-ai:
+    enabled: true
   file:
     view-url: http://localhost:8012
 # 开发环境配置

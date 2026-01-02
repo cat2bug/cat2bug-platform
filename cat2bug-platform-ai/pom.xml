@@ -12,7 +12,9 @@
     <description>
         AI接口
     </description>
-
+    <properties>
+        <open-ai.version>4.13.0</open-ai.version>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -36,7 +38,6 @@
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
-            <version>4.12.0</version>
         </dependency>
         <!-- JSON解析工具-->
         <dependency>
@@ -44,5 +45,27 @@
             <artifactId>fastjson</artifactId>
             <version>${fastjson.version}</version>
         </dependency>
+        <!-- OpenAI工具-->
+<!--        <dependency>-->
+<!--            <groupId>com.openai</groupId>-->
+<!--            <artifactId>openai-java</artifactId>-->
+<!--            <version>${open-ai.version}</version>-->
+<!--        </dependency>-->
+        <dependency>
+            <groupId>com.openai</groupId>
+            <artifactId>openai-java-spring-boot-starter</artifactId>
+            <version>${open-ai.version}</version>
+        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.openai</groupId>-->
+<!--            <artifactId>openai-java-core</artifactId>-->
+<!--            <version>${open-ai.version}</version>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>com.openai</groupId>-->
+<!--            <artifactId>openai-java-client-okhttp</artifactId>-->
+<!--            <version>${open-ai.version}</version>-->
+<!--            <scope>compile</scope>-->
+<!--        </dependency>-->
     </dependencies>
 </project>

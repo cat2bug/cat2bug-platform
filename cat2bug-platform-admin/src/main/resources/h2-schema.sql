@@ -5870,6 +5870,19 @@ CREATE TABLE `sys_user_statistic_template` (
 );
 
 COMMIT;
+DROP TABLE IF EXISTS `ai_account`;
+CREATE TABLE `ai_account` (
+                              `account_id` bigint NOT NULL AUTO_INCREMENT COMMENT '账号ID',
+                              `account_name` varchar(64) NOT NULL COMMENT '账号名称',
+                              `ai_url` varchar(255) NOT NULL COMMENT 'AI服务网址',
+                              `model_name` varchar(255) NOT NULL COMMENT '模型名称',
+                              `max_completion_tokens` bigint DEFAULT NULL COMMENT '最大Token',
+                              `api_key` varchar(255) NOT NULL COMMENT '密钥',
+                              `create_by` bigint DEFAULT NULL COMMENT '创建用户ID',
+                              `project_id` bigint DEFAULT NULL COMMENT '关联项目ID',
+);
+
+COMMIT;
 DROP TABLE IF EXISTS `sys_user_team`;
 CREATE TABLE `sys_user_team` (
                                  `user_team_id` bigint NOT NULL AUTO_INCREMENT COMMENT '用户团队id',

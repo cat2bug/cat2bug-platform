@@ -38,8 +38,11 @@ public class SysAiModuleConfigController extends BaseController
 {
     @Autowired
     private ISysAiModuleConfigService sysAiModuleConfigService;
+
+    private final static String SERVICE_TYPE_OPEN_ID = "openai";
+    private final static String SERVICE_TYPE_OLLAMA = "ollama";
     @Autowired(required = false)
-    private IAiService aiService;
+    private Map<String, IAiService> aiServiceMap;
 
     /**
      * 推荐可使用的模型列表，配置文件
@@ -61,6 +64,7 @@ public class SysAiModuleConfigController extends BaseController
     @GetMapping("/list")
     public TableDataInfo list(SysAiModuleConfig sysAiModuleConfig)
     {
+        IAiService aiService = aiServiceMap.get(SERVICE_TYPE_OLLAMA);
         SysAiModuleConfig config = sysAiModuleConfigService.selectSysAiModuleConfigByProjectId(sysAiModuleConfig.getProjectId());
         List<AiModule>  downloadedList = aiService.getModuleList(AiModule.class);
         List<Map<String, Object>> list = Stream.of(
@@ -105,6 +109,7 @@ public class SysAiModuleConfigController extends BaseController
     @PreAuthorize("@ss.hasPermi('system:ai:add')")
     @PostMapping("/model")
     public AjaxResult downloadModel(@RequestBody AiModule aiModule) {
+        IAiService aiService = aiServiceMap.get(SERVICE_TYPE_OLLAMA);
         return success(aiService.pullModule(aiModule.getName(),true));
     }
 
@@ -116,6 +121,7 @@ public class SysAiModuleConfigController extends BaseController
     @DeleteMapping("/model")
     public AjaxResult remove(@RequestBody AiModule aiModule)
     {
+        IAiService aiService = aiServiceMap.get(SERVICE_TYPE_OLLAMA);
         return toAjax(aiService.removeModule(aiModule.getName()));
     }
 

@@ -36,6 +36,19 @@
             :placeholder="$t('case.ai-search-describe').toString()">
             <template v-slot:tools>
               <div class="cloud-case-input-tools">
+                <el-select class="cloud-case-prompt-select" v-model="prompt.modelId" size="mini" placeholder="请选择">
+                  <el-option-group
+                    v-for="group in aiAccountGroup"
+                    :key="group.label"
+                    :label="group.label">
+                    <el-option
+                      v-for="item in group.options"
+                      :key="item.key"
+                      :label="item.label"
+                      :value="item.key">
+                    </el-option>
+                  </el-option-group>
+                </el-select>
                 <el-tooltip class="item" effect="dark" :content="$t('case.create-row-count')" placement="top">
                   <el-input-number class="cloud-case-prompt-input-number" size="mini" :min="1" :max="100" v-model="prompt.rowCount" @change="setDefaultRowCount(prompt.rowCount)"></el-input-number>
                 </el-tooltip>
@@ -266,6 +279,7 @@ import {strFormat} from "@/utils";
 import {makeCaseList} from "@/api/ai/AiCase";
 import i18n from "@/utils/i18n/i18n";
 import {delCasePrompt, listCasePrompt} from "@/api/system/CasePrompt";
+import {listAccount} from "@/api/ai/AIAccount"
 
 const DEFAULT_ROW_COUNT_KEY = 'case_default_row_count';
 const PATTERN = /\$\{\s*[0-9a-zA-z]{1,255}\s*\}/g;
@@ -278,6 +292,8 @@ export default {
       prompt: {
         prompt: null,
         context: null,
+        modelId: null,
+        serviceType: null,
         rowCount: this.getDefaultRowCount()
       },
       // 是否查询用例时保存提示
@@ -307,6 +323,18 @@ export default {
       },
       casePromptList: [],
       addCasePromptVisible: false,
+      aiAccountGroup: [{
+        label: '本地AI服务',
+        key: 'local',
+        options: [{
+          label: 'Ollama',
+          key: 'ollama'
+        }]
+      }, {
+        label: 'OpenAI服务',
+        key: 'openai',
+        options: []
+      }]
     }
   },
   props: {
@@ -362,7 +390,30 @@ export default {
       return this.caseList.filter((c,index)=>index>=(this.pageIndex-1)*this.pageSize && index<this.pageIndex*this.pageSize);
     },
   },
+  created() {
+    this.getOpenAIAccountList();
+  },
   methods: {
+    /** 获取openid的账号列表 */
+    getOpenAIAccountList() {
+      const params = {
+        projectId: this.projectId,
+        pageNum: 1,
+        pageSize: 99999
+      }
+      listAccount(params).then(res=>{
+        this.aiAccountGroup[1].options = res.rows.map(a=>{
+          return {
+            label: a.accountName,
+            key: a.accountId
+          }
+        });
+        if(this.aiAccountGroup[1].options.length>0) {
+          this.prompt.aiAccountId = this.aiAccountGroup[1].options[0].key;
+        }
+      })
+    },
+    /** 设置要产出的默认行数 */
     setDefaultRowCount(row) {
       this.$cache.local.set(DEFAULT_ROW_COUNT_KEY, row);
     },
@@ -420,6 +471,8 @@ export default {
       this.caseList = [];
       this.prompt = {
         prompt: null,
+        modelId: null,
+        serviceType: null,
         context: null,
         rowCount: this.getDefaultRowCount()
       };
@@ -465,6 +518,12 @@ export default {
         this.$message.error(this.$i18n.t('case.prompt-content-not-empty').toString())
         return;
       }
+      if(!this.prompt.modelId) {
+        this.$message.error(this.$i18n.t('case.model-content-not-empty').toString())
+        return;
+      }
+      this.prompt.serviceType = this.prompt.modelId==='ollama'?'ollama':'openai';
+
       let startSeconds = new Date().getTime();
       this.loading = true;
       this.caseList = [];
@@ -703,13 +762,24 @@ export default {
   .el-input-number__decrease:hover:not(.is-disabled) ~ .el-input .el-input__inner:not(.is-disabled) {
     border-color: #67c23a;
   }
-  .cloud-case-prompt-input-number>div>.el-input__inner {
+  .cloud-case-prompt-select>div>.el-input__inner, .cloud-case-prompt-input-number>div>.el-input__inner {
     height: 22px;
     line-height: 22px;
     border-radius: 2px;
     padding: 0 20px;
     border-color: #c2e7b0;
     color: #67c23a;
+  }
+  .cloud-case-prompt-select {
+    width: 300px;
+  }
+  .cloud-case-prompt-select>div>.el-input__suffix {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .cloud-case-prompt-select>.el-input.is-focus .el-input__inner {
+    border-color: #67c23a;
   }
   .cloud-case-prompt {
     display: inline-flex;
