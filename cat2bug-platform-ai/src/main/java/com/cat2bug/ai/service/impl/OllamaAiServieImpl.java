@@ -110,7 +110,7 @@ public class OllamaAiServieImpl implements IAiService {
     }
 
     @Override
-    public <T> T generate(String moduleName, String prompt, boolean stream, long[] context, Class<T> cls) {
+    public <T> T generate(String moduleName, String prompt, boolean stream, long[] context, Class<T> cls) throws Exception {
         try {
             OkHttpClient client = new OkHttpClient().newBuilder().readTimeout(this.timeout, TimeUnit.SECONDS).build();
             String requestPrompt = null;

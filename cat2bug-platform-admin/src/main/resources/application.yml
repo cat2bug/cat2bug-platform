@@ -63,6 +63,8 @@ cat2bug:
   # 智能服务(新版)
   open-ai:
     enabled: true
+    # AI服务接口超时时间（秒）
+    timeout: 300
   file:
     view-url: http://localhost:8012
 # 开发环境配置

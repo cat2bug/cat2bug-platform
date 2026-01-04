@@ -324,18 +324,24 @@ export default {
       casePromptList: [],
       addCasePromptVisible: false,
       aiAccountGroup: [{
-        label: '本地AI服务',
+        label: this.$i18n.t('case.local-ai-service'),
         key: 'local',
         options: [{
           label: 'Ollama',
           key: 'ollama'
         }]
       }, {
-        label: 'OpenAI服务',
+        label: this.$i18n.t('case.openai-service'),
         key: 'openai',
         options: []
       }]
     }
+  },
+  watch: {
+    "$i18n.locale": function (newVal, oldVal) {
+      this.aiAccountGroup[0].label = this.$i18n.t('case.local-ai-service');
+      this.aiAccountGroup[1].label = this.$i18n.t('case.openai-service');
+    },
   },
   props: {
     direction: {
@@ -411,6 +417,10 @@ export default {
         if(this.aiAccountGroup[1].options.length>0) {
           this.prompt.aiAccountId = this.aiAccountGroup[1].options[0].key;
         }
+        // 如果选项为空或者不在账号列表里存在，就赋值
+        if(!this.prompt.modelId || !this.aiAccountGroup[1].options[0].find(a=>a.key===this.prompt.modelId)) {
+          this.prompt.modelId = this.aiAccountGroup[1].options[0]?this.aiAccountGroup[1].options[0].key:this.aiAccountGroup[0].options[0].key;
+        }
       })
     },
     /** 设置要产出的默认行数 */
@@ -471,7 +481,7 @@ export default {
       this.caseList = [];
       this.prompt = {
         prompt: null,
-        modelId: null,
+        modelId: this.prompt.modelId,
         serviceType: null,
         context: null,
         rowCount: this.getDefaultRowCount()

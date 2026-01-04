@@ -62,8 +62,7 @@ public class AiDefectController extends BaseController {
      */
     @PreAuthorize("@ss.hasPermi('system:defect:add')")
     @PostMapping()
-    public AjaxResult auto(@RequestBody AiDescribe describe)
-    {
+    public AjaxResult auto(@RequestBody AiDescribe describe) throws Exception {
         IAiService aiService = aiServiceMap.get(SERVICE_TYPE_OLLAMA);
         SysAiModuleConfig sysAiModuleConfig = sysAiModuleConfigService.selectSysAiModuleConfigByProjectId(describe.getProjectId());
         String prompt = String.format("请根据( %s )的描述，生成一个核心思想的标题,标题只能有中英文或数字,不要有其他任何符号或字符，且最多128个字符",describe);
@@ -79,8 +78,7 @@ public class AiDefectController extends BaseController {
      */
     @PreAuthorize("@ss.hasPermi('system:defect:add')")
     @PostMapping("/title")
-    public AjaxResult makeTitle(@RequestBody AiDescribe describe)
-    {
+    public AjaxResult makeTitle(@RequestBody AiDescribe describe) throws Exception {
         IAiService aiService = aiServiceMap.get(SERVICE_TYPE_OLLAMA);
         SysAiModuleConfig sysAiModuleConfig = sysAiModuleConfigService.selectSysAiModuleConfigByProjectId(describe.getProjectId());
         String prompt = String.format("请根据( %s )的描述，生成一个标题,标题只能有中英文或数字,不要有其他任何符号或字符",describe);
@@ -90,8 +88,7 @@ public class AiDefectController extends BaseController {
 
     @PreAuthorize("@ss.hasPermi('system:defect:add')")
     @PostMapping("/module")
-    public AjaxResult makeModule(@RequestBody AiDescribe describe)
-    {
+    public AjaxResult makeModule(@RequestBody AiDescribe describe) throws Exception {
         IAiService aiService = aiServiceMap.get(SERVICE_TYPE_OLLAMA);
         SysAiModuleConfig sysAiModuleConfig = sysAiModuleConfigService.selectSysAiModuleConfigByProjectId(describe.getProjectId());
         SysUserConfig userConfig = sysUserConfigService.selectSysUserConfigByUserId(getUserId());
@@ -111,8 +108,7 @@ public class AiDefectController extends BaseController {
 
     @PreAuthorize("@ss.hasPermi('system:defect:add')")
     @PostMapping("/type")
-    public AjaxResult makeType(@RequestBody AiDescribe describe)
-    {
+    public AjaxResult makeType(@RequestBody AiDescribe describe) throws Exception {
         IAiService aiService = aiServiceMap.get(SERVICE_TYPE_OLLAMA);
         SysAiModuleConfig sysAiModuleConfig = sysAiModuleConfigService.selectSysAiModuleConfigByProjectId(describe.getProjectId());
         List<String> types = Arrays.stream(SysDefectTypeEnum.values()).map(t->t.name()).collect(Collectors.toList());
@@ -123,8 +119,7 @@ public class AiDefectController extends BaseController {
 
     @PreAuthorize("@ss.hasPermi('system:defect:add')")
     @PostMapping("/member")
-    public AjaxResult makeMember(@RequestBody AiDescribe describe)
-    {
+    public AjaxResult makeMember(@RequestBody AiDescribe describe) throws Exception {
         IAiService aiService = aiServiceMap.get(SERVICE_TYPE_OLLAMA);
         SysAiModuleConfig sysAiModuleConfig = sysAiModuleConfigService.selectSysAiModuleConfigByProjectId(describe.getProjectId());
         SysUserConfig userConfig = sysUserConfigService.selectSysUserConfigByUserId(getUserId());
@@ -141,8 +136,7 @@ public class AiDefectController extends BaseController {
 
     @PreAuthorize("@ss.hasPermi('system:defect:add')")
     @PostMapping("/version")
-    public AjaxResult makeVersion(AiDescribe describe)
-    {
+    public AjaxResult makeVersion(AiDescribe describe) throws Exception {
         IAiService aiService = aiServiceMap.get(SERVICE_TYPE_OLLAMA);
         SysAiModuleConfig sysAiModuleConfig = sysAiModuleConfigService.selectSysAiModuleConfigByProjectId(describe.getProjectId());
         SysUserConfig userConfig = sysUserConfigService.selectSysUserConfigByUserId(getUserId());

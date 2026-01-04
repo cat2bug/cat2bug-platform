@@ -523,6 +523,8 @@
   "case.level5-explain": "最低优先级，非功能性需求，例如性能测试、可用性测试等，通常在产品发布前进行。",
   "case.add-prompt-placeholder": "请输入需求内容,内容中可添加变量,变量格式为${变量名},变量名由英文或数组组成。",
   "case.is-delete-prompt": "是否删除提示词?",
+  "case.local-ai-service": "本地AI服务",
+  "case.openai-service": "OpenAI服务",
   "project.api.please-enter-name": "请输入API别名",
   "project.api.please-enter-white-list": "请输入白名单",
   "project.api.please-select-expire-time": "请选择有效时间",

@@ -523,6 +523,8 @@
   "case.level5-explain": "The lowest priority, non functional requirements such as performance testing, usability testing, etc., are usually conducted before product release.",
   "case.add-prompt-placeholder": "Please enter the requirement content, which can include variables. The variable format is ${variable name}, and the variable name is composed of English or an array.",
   "case.is-delete-prompt": "Do you want to delete the prompt word?",
+  "case.local-ai-service": "Local AI Service",
+  "case.openai-service": "OpenAI Service",
   "project.api.please-enter-name": "Please enter the API name",
   "project.api.please-enter-white-list": "Please enter the whitelist",
   "project.api.please-select-expire-time": "Please select a valid time",

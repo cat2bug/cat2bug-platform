@@ -18,7 +18,7 @@ public interface IAiService {
      * @return              回答内容
      * @param <T>           回答的内容类型
      */
-    public <T> T generate(String moduleName, String prompt, boolean stream, long[] context,  Class<T> cls);
+    public <T> T generate(String moduleName, String prompt, boolean stream, long[] context,  Class<T> cls) throws Exception;
 
     /**
      * 显示模型信息

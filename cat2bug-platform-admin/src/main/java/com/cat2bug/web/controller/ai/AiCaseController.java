@@ -43,8 +43,7 @@ public class AiCaseController extends BaseController {
      */
     @PreAuthorize("@ss.hasPermi('system:case:add')")
     @PostMapping("/list")
-    public AjaxResult list(@RequestBody AiSysPrompt prompt)
-    {
+    public AjaxResult list(@RequestBody AiSysPrompt prompt) throws Exception {
         IAiService aiService = this.aiServiceMap.get(prompt.getServiceType());
         String json = String.format("%s。前面如果没有标明数量，需要生成%d条测试用例", prompt.getPrompt(), Math.max(prompt.getRowCount(), 1));
         AiCaseList cases = null;
