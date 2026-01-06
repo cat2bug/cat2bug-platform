@@ -152,6 +152,7 @@
                 <li>优化页面打开慢的问题</li>
                 <li>接口支持Cat2Bug-App微信小程序</li>
                 <li>修复系统功能BUG</li>
+                <li>添加OpenAI接口，用于测试用例自动生成</li>
               </ol>
             </el-collapse-item>
             <el-collapse-item title="v0.5.1 - 2025-03-15">
