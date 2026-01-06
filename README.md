@@ -150,10 +150,10 @@ docker run -it -d -p 8022:8022 --name cat2bug-platform qyzw-docker.pkg.coding.ne
 
 ## 未来计划
 
-目前Cat2Bug还在持续成长中，后续我们将在测试工具、自动化、AI几个方向持续投入，完善平台的功能。2025计划如下：
+目前Cat2Bug还在持续成长中，后续我们将在测试工具、自动化、AI几个方向持续投入，完善平台的功能。2026计划如下：
 
 * cat2bug-platform: 功能叠加，完善系统统计管理功能；
-* cat2bug-app：提供移动端APP；
+* cat2bug-app：完善移动端APP；
 * cat2bug-cloud：cat2bug云平台的建设；
 
 ## Cat2Bug交流群
