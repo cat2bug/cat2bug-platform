@@ -45,27 +45,5 @@
             <artifactId>fastjson</artifactId>
             <version>${fastjson.version}</version>
         </dependency>
-        <!-- OpenAI工具-->
-<!--        <dependency>-->
-<!--            <groupId>com.openai</groupId>-->
-<!--            <artifactId>openai-java</artifactId>-->
-<!--            <version>${open-ai.version}</version>-->
-<!--        </dependency>-->
-        <dependency>
-            <groupId>com.openai</groupId>
-            <artifactId>openai-java-spring-boot-starter</artifactId>
-            <version>${open-ai.version}</version>
-        </dependency>
-<!--        <dependency>-->
-<!--            <groupId>com.openai</groupId>-->
-<!--            <artifactId>openai-java-core</artifactId>-->
-<!--            <version>${open-ai.version}</version>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>com.openai</groupId>-->
-<!--            <artifactId>openai-java-client-okhttp</artifactId>-->
-<!--            <version>${open-ai.version}</version>-->
-<!--            <scope>compile</scope>-->
-<!--        </dependency>-->
     </dependencies>
 </project>
