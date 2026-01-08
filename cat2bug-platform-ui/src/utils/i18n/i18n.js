@@ -12,6 +12,7 @@ import zhTwLocale from 'element-ui/lib/locale/lang/zh-TW'
 // 引入自己定义的 I18n 文件
 import myI18nEn from './i18n-en-US.json'
 import myI18nZh from './i18n-zh-CN.json'
+import myI18nAr from './i18n-ar.json'
 // 如果还有新的语言在下面继续添加
 
 // 注册 vue-i18n
@@ -25,6 +26,7 @@ const i18n = new VueI18n({
     // 会把myI18nZh的所有内容拷贝到zhCnLocale文件中
     'zh_CN': Object.assign(zhCnLocale, myI18nZh),
     'en_US': Object.assign(enLocale, myI18nEn),
+    'ar': Object.assign(enLocale, myI18nAr),
   }
 })
 

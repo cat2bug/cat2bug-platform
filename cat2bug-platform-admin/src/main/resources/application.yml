@@ -121,7 +121,7 @@ spring:
     baseline-on-migrate: true
     # 指定 baseline 的版本号,缺省值为 1, 低于该版本号的 SQL 文件, migrate 的时候被忽略
     # 开始执行基准迁移时对现有的schema的版本打标签，默认值为1.
-    baseline-version: 0
+    baseline-version: 0.5.1
     # 是否开启校验
     # 迁移时是否校验，默认为 true
     validate-on-migrate: true
@@ -129,10 +129,12 @@ spring:
     # 是否允许无序的迁移，默认 false
     out-of-order: false
     # flyway 的 clean 命令会删除指定 schema 下的所有 table, 生产务必禁掉。
-    clean-disabled: true
+    clean-disabled: false
     # 当读取元数据表时是否忽略错误的迁移，默认false
-    ignore-future-migrations: false
+    ignore-future-migrations: true
+    # 数据库记录版本变化的表名
     table: sys_db_version
+    # 存储版本变化的sql
     locations: classpath:db/migration/${spring.database-type}
   thymeleaf:
     mode: HTML
@@ -213,7 +215,7 @@ pagehelper:
 # Swagger配置
 swagger:
   # 是否开启swagger
-  enabled: true
+  enabled: false
   # 请求前缀
   pathMapping: /dev-api
 

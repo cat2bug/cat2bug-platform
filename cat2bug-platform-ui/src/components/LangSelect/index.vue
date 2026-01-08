@@ -6,6 +6,7 @@
         </span>
     <el-dropdown-menu class="dropdown-menu" slot="dropdown">
       <el-dropdown-item command="zh_CN"><svg-icon icon-class="lang_zh_CN" />简体中文</el-dropdown-item>
+<!--      <el-dropdown-item command="ar"><svg-icon icon-class="lang_en_US" />العربية</el-dropdown-item>-->
       <el-dropdown-item command="en_US"><svg-icon icon-class="lang_en_US" />English</el-dropdown-item>
     </el-dropdown-menu>
   </el-dropdown>
@@ -34,6 +35,9 @@ export default {
       switch (lang){
         case 'zh_CN':
           this.langName = '简体中文';
+          break;
+        case 'ar':
+          this.langName = 'العربية';
           break;
         case 'en_US':
           this.langName = 'English';

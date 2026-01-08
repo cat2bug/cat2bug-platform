@@ -15,7 +15,7 @@ spring:
     datasource:
         type: com.alibaba.druid.pool.DruidDataSource
         driverClassName: org.h2.Driver
-        url: jdbc:h2:file:./data/cat2bug;DATABASE_TO_LOWER=TRUE;
+        url: jdbc:h2:file:./data/cat2bug;MODE=MySQL;DATABASE_TO_LOWER=TRUE;
         username: root
         password: cat2bug_password
         druid:
