@@ -18,10 +18,10 @@ cat2bug:
   captchaType: math
   # 登陆
   login:
-    # 微信小程序
+    # 微信小程序登陆用
     wechat-mp:
-      appid: wx4eeae5b16655538a
-      secret: 5203e519f933ca879050c5d827a2765e
+      appid: 请申请自己的微信AppId
+      secret: 请申请自己的微信密钥
   # 云服务
   cloud:
     # 云服务地址
