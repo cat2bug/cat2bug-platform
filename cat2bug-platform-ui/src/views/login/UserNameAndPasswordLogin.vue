@@ -50,7 +50,12 @@
         <el-checkbox v-model="loginForm.rememberMe">{{$t("remember-password")}}</el-checkbox>
         <div class="lang-group">
           <svg-icon icon-class="lang_zh_CN" @mouseenter="changeLang('zh_CN')" />
+          <svg-icon icon-class="lang_zh_CN" @mouseenter="changeLang('zh_TW')" />
           <svg-icon icon-class="lang_en_US" @mouseenter="changeLang('en_US')" />
+          <svg-icon icon-class="lang_ru" @mouseenter="changeLang('ru')" />
+          <svg-icon icon-class="lang_ja_JP" @mouseenter="changeLang('ja_JP')" />
+          <svg-icon icon-class="lang_ko_KR" @mouseenter="changeLang('ko_KR')" />
+          <svg-icon icon-class="lang_ar" @mouseenter="changeLang('ar')" />
         </div>
       </div>
       <div>

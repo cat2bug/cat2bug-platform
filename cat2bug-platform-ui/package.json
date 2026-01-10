@@ -37,7 +37,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://gitee.com/y_project/RuoYi-Vue.git"
+    "url": "https://gitee.com/cat2bug/cat2bug-platform.git"
   },
   "dependencies": {
     "@riophae/vue-treeselect": "0.4.0",

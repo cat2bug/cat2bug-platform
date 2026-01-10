@@ -6,8 +6,12 @@
         </span>
     <el-dropdown-menu class="dropdown-menu" slot="dropdown">
       <el-dropdown-item command="zh_CN"><svg-icon icon-class="lang_zh_CN" />简体中文</el-dropdown-item>
-<!--      <el-dropdown-item command="ar"><svg-icon icon-class="lang_en_US" />العربية</el-dropdown-item>-->
+      <el-dropdown-item command="zh_TW"><svg-icon icon-class="lang_zh_CN" />繁体中文</el-dropdown-item>
       <el-dropdown-item command="en_US"><svg-icon icon-class="lang_en_US" />English</el-dropdown-item>
+      <el-dropdown-item command="ru"><svg-icon icon-class="lang_ru" />Русский</el-dropdown-item>
+      <el-dropdown-item command="ja_JP"><svg-icon icon-class="lang_ja_JP" />日本語</el-dropdown-item>
+      <el-dropdown-item command="ko_KR"><svg-icon icon-class="lang_ko_KR" />한국어</el-dropdown-item>
+      <el-dropdown-item command="ar"><svg-icon icon-class="lang_ar" />العربية</el-dropdown-item>
     </el-dropdown-menu>
   </el-dropdown>
 </template>
@@ -36,11 +40,23 @@ export default {
         case 'zh_CN':
           this.langName = '简体中文';
           break;
+        case 'zh_TW':
+          this.langName = '繁体中文';
+          break;
+        case 'ja_JP':
+          this.langName = '日本語';
+          break;
+        case 'ko_KR':
+          this.langName = '한국어';
+          break;
         case 'ar':
           this.langName = 'العربية';
           break;
         case 'en_US':
           this.langName = 'English';
+          break;
+        case 'ru':
+          this.langName = 'Русский';
           break;
       }
     }
