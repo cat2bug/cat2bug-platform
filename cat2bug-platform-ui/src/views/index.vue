@@ -146,6 +146,11 @@
             <span>{{$t('update-log')}}</span>
           </div>
           <el-collapse accordion>
+            <el-collapse-item title="v0.6.0 - 2026-01-10">
+              <ol>
+                <li>添加繁体中文、俄语、日语、韩语、阿拉伯语显示</li>
+              </ol>
+            </el-collapse-item>
             <el-collapse-item title="v0.6.0 - 2025-09-26">
               <ol>
                 <li>交付物中添加附件</li>
