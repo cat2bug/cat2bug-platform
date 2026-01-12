@@ -201,11 +201,13 @@ export default {
       this.$store.dispatch('app/toggleSideBar')
     },
     async logout() {
+      // 推出确认框
       this.$confirm(this.$i18n.t('sure-logout-system').toString(), this.$i18n.t('prompted').toString(), {
         confirmButtonText: this.$i18n.t('ok'),
         cancelButtonText: this.$i18n.t('cancel'),
         type: 'warning'
       }).then(() => {
+        // 用户登出
         this.$store.dispatch('LogOut').then(() => {
           location.href = '/index';
         })
