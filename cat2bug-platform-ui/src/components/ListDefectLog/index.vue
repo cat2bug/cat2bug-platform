@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-row v-for="(log,logIndex) in logList" :key="log.defectLogId">
+    <el-row v-for="(log,logIndex) in logList" :key="logIndex+'-'+log.defectLogId">
       <el-col class="list-defect-log-row" :span="24">
         <component :is="log.defectLogType" :log="log"></component>
         <div>
