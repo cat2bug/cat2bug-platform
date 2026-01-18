@@ -2,22 +2,22 @@ SET FOREIGN_KEY_CHECKS=0;
 
 CREATE TABLE `ai_account`  (
      `account_id` bigint NOT NULL AUTO_INCREMENT COMMENT '账号ID',
-     `ai_url` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT 'AI服务网址',
-     `model_name` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '模型名称',
+     `ai_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT 'AI服务网址',
+     `model_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '模型名称',
      `max_completion_tokens` bigint NULL DEFAULT NULL COMMENT '最大Token',
-     `api_key` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '密钥',
+     `api_key` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '密钥',
      `create_by` bigint NULL DEFAULT NULL COMMENT '创建用户ID',
      `project_id` bigint NOT NULL COMMENT '关联项目ID',
-     `account_name` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL COMMENT '账号名称',
+     `account_name` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '账号名称',
      PRIMARY KEY (`account_id`) USING BTREE,
      INDEX `idx_project_id`(`project_id` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb3 COLLATE = utf8mb3_bin COMMENT = 'OpenAI账号' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin COMMENT = 'OpenAI账号' ROW_FORMAT = DYNAMIC;
 
-ALTER TABLE `sys_defect` ADD COLUMN `sponsor` varchar(128) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NULL DEFAULT NULL COMMENT '发起人' AFTER `extend_properties`;
+ALTER TABLE `sys_defect` ADD COLUMN `sponsor` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '发起人' AFTER `extend_properties`;
 
-ALTER TABLE `sys_module` ADD COLUMN `annex_urls` varchar(5000) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NULL DEFAULT NULL COMMENT '附件数组';
+ALTER TABLE `sys_module` ADD COLUMN `annex_urls` varchar(5000) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '附件数组';
 
-ALTER TABLE `sys_user` ADD COLUMN `wechat_mp_user_id` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NULL DEFAULT NULL COMMENT '微信小程序openid' AFTER `wechat_user_id`;
+ALTER TABLE `sys_user` ADD COLUMN `wechat_mp_user_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '微信小程序openid' AFTER `wechat_user_id`;
 
 ALTER TABLE `sys_user` ADD INDEX `idx_wechat_mp_user_id`(`wechat_mp_user_id` ASC) USING BTREE;
 
