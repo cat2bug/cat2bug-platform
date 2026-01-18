@@ -76,8 +76,10 @@
       </template>
       <el-table-column :label="$t('operate')" align="left" class-name="no-drag small-padding fixed-width" min-width="250" fixed="right">
         <template slot-scope="scope">
-          <defect-tools class="defect-row-tools" :is-text="true" :defect="scope.row" size="mini" :is-show-icon="true" @delete="refreshSearch" @update="refreshSearch" @log="refreshSearch"></defect-tools>
-        </template>
+          <div class="row">
+            <defect-tools class="defect-row-tools" :is-text="true" :defect="scope.row" size="mini" :is-show-icon="true" @view="handleClickTableRow" @delete="refreshSearch" @update="refreshSearch" @log="refreshSearch"></defect-tools>
+          </div>
+          </template>
       </el-table-column>
     </cat2-bug-table>
 
@@ -280,14 +282,6 @@ export default {
   .defect-table-tools {
     justify-content: space-between;
   }
-}
-
-.table-row {
-  width: 100%;
-  display: inline-flex;
-  justify-content: flex-start;
-  align-items: center;
-  flex-direction: row;
 }
 
 .defect-table-tools {

@@ -25,7 +25,7 @@
           </div>
         </div>
         <div class="report-edit-tools">
-          <defect-tools :defect="defect" size="mini" @delete="deleteHandle" @log="logHandle"></defect-tools>
+          <defect-tools :exclusions="exclusions" :defect="defect" size="mini" @delete="deleteHandle" @log="logHandle"></defect-tools>
         </div>
       </div>
     </template>
@@ -130,6 +130,8 @@ export default {
       visible: false,
       // 缺陷对象
       defect:{},
+      // 操作工具中过滤的功能
+      exclusions:['view'],
       // 用例
       defectCase: {},
       // 表单参数

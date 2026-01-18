@@ -3,21 +3,16 @@
     <slot name="left"></slot>
     <share-card :params="defect" />
     <star-switch v-model="defect.collect" @change="clickCollectHandle($event, defect, false)"></star-switch>
-    <el-button v-show="assignVisible" :icon="isShowIcon?'el-icon-refresh':''" :size="size" :type="isText?'text':'info'" @click="assignHandle">{{$i18n.t('assign')}}</el-button>
-    <el-button v-show="repairVisible" :icon="isShowIcon?'el-icon-document-checked':''" :size="size" :type="isText?'text':'primary'" @click="repairDialogHandle">{{$i18n.t('repair')}}</el-button>
-    <el-button v-show="rejectVisible" :icon="isShowIcon?'el-icon-document-delete':''" :size="size" :type="isText?'text':'warning'" @click="rejectHandle">{{$i18n.t('reject')}}</el-button>
-    <el-button v-show="passVisible" :icon="isShowIcon?'el-icon-finished':''" :size="size" :type="isText?'text':'success'" @click="passDialogHandle">{{$i18n.t('pass')}}</el-button>
-    <el-button v-show="openVisible" :icon="isShowIcon?'el-icon-document-copy':''" :size="size" :type="isText?'text':'danger'" @click="openDialogHandle" v-hasPermi="['system:defect:open']">{{$i18n.t('open')}}</el-button>
-    <el-button v-show="closeVisible" :icon="isShowIcon?'el-icon-takeaway-box':''" :size="size" :type="isText?'text':'danger'" @click="closeDialogHandle">{{$i18n.t('close')}}</el-button>
+    <el-button v-show="assignVisible" :icon="isShowIcon?'el-icon-refresh':''" :size="size" :type="isText?'text':'info'" :class="isText?'orange':''" @click="assignHandle">{{$i18n.t('assign')}}</el-button>
+    <el-button v-show="repairVisible" :icon="isShowIcon?'el-icon-document-checked':''" :size="size" :type="isText?'text':'primary'" :class="isText?'orange':''" @click="repairDialogHandle">{{$i18n.t('repair')}}</el-button>
+    <el-button v-show="rejectVisible" :icon="isShowIcon?'el-icon-document-delete':''" :size="size" :type="isText?'text':'warning'" :class="isText?'orange':''" @click="rejectHandle">{{$i18n.t('reject')}}</el-button>
+    <el-button v-show="passVisible" :icon="isShowIcon?'el-icon-finished':''" :size="size" :type="isText?'text':'success'" :class="isText?'orange':''" @click="passDialogHandle">{{$i18n.t('pass')}}</el-button>
+    <el-button v-show="openVisible" :icon="isShowIcon?'el-icon-document-copy':''" :size="size" :type="isText?'text':'danger'" :class="isText?'orange':''" @click="openDialogHandle" v-hasPermi="['system:defect:open']">{{$i18n.t('open')}}</el-button>
+    <el-button v-show="closeVisible" :icon="isShowIcon?'el-icon-takeaway-box':''" :size="size" :type="isText?'text':'danger'" :class="isText?'orange':''" @click="closeDialogHandle">{{$i18n.t('close')}}</el-button>
+    <el-button v-show="viewVisible" :icon="isShowIcon?'el-icon-view':''" :size="size" :type="isText?'text':'warning'" @click="viewHandle">{{$i18n.t('view')}}</el-button>
     <el-button v-show="editVisible" :icon="isShowIcon?'el-icon-edit':''" :size="size" :type="isText?'text':'success'" :class="isText?'green':''" :plain="!isShowIcon" @click="editDialogHandle" >{{ $t('modify') }}</el-button>
     <el-button v-show="deleteVisible" :icon="isShowIcon?'el-icon-delete':''" :size="size" :type="isText?'text':'danger'" :class="isText?'red':''" :plain="!isShowIcon" @click="handleDelete">{{$i18n.t('delete')}}</el-button>
-    <!--          <el-button-->
-    <!--            size="mini"-->
-    <!--            type="text"-->
-    <!--            icon="el-icon-edit"-->
-    <!--            @click="handleUpdate(scope.row)"-->
-    <!--            v-hasPermi="['system:defect:edit']"-->
-    <!--          >修改</el-button>-->
+
     <assign-dialog ref="assignDialog" :project-id="defect.projectId" :defect-id="defect.defectId" @log="logHandle" />
     <repair-dialog ref="repairDialog" :project-id="defect.projectId" :defect-id="defect.defectId" @log="logHandle" />
     <reject-dialog ref="rejectDialog" :project-id="defect.projectId" :defect-id="defect.defectId" @log="logHandle" />
@@ -80,7 +75,7 @@ export default {
     size: {
       type: String,
       default: null
-    }
+    },
   },
   computed: {
     /** 获取当前用户id */
@@ -124,6 +119,9 @@ export default {
     editVisible: function () {
       return !this.exclusions.includes('edit') && (this.defect.createById==this.currentUserId || checkPermi(['system:defect:edit']));
     },
+    viewVisible: function () {
+      return !this.exclusions.includes('view') && (this.defect.createById==this.currentUserId || checkPermi(['system:defect:query']));
+    },
   },
   methods:{
     /** 指派 */
@@ -146,6 +144,9 @@ export default {
     closeDialogHandle(event){
       this.$refs.closeDialog.open();
       event.stopPropagation();
+    },
+    viewHandle() {
+      this.$emit('view', this.defect);
     },
     openDialogHandle(event){
       this.$refs.openDialog.open();
@@ -207,7 +208,7 @@ export default {
     display: flex;
     flex-wrap: wrap;
     flex-direction: row;
-    gap: 10px;
+    column-gap: 10px;
     align-items: center;
     justify-content: flex-start !important;
     font-size: 12px;
@@ -221,5 +222,8 @@ export default {
   }
   .green {
     color: #67c23a;
+  }
+  .orange {
+    color: #606266;
   }
 </style>
