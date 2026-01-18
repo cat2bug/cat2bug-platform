@@ -519,9 +519,10 @@ public class SysDefectServiceImpl implements ISysDefectService
                 } else {
                     invalidCell.add(MessageUtils.message("module"));
                 }
-            } else {
-                emptyCell.add(MessageUtils.message("module"));
             }
+//            else {
+//                emptyCell.add(MessageUtils.message("module"));
+//            }
 
             if(StringUtils.isNotBlank(d.getHandleByNames())){
                 if(userMap.containsKey(d.getHandleByNames())) {
