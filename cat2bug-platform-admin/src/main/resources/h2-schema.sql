@@ -2298,7 +2298,7 @@ CREATE TABLE `sys_db_version` (
 
 INSERT INTO `sys_db_version` (`installed_rank`, `version`, `description`, `type`, `script`
                              , `checksum`, `installed_by`, `installed_on`, `execution_time`, `success`)
-VALUES (1, '0.6.0', 'cat2bug platform', 'SQL', 'V0_6_0__cat2bug_platform.sql'
+VALUES (1, '0.6.0', 'cat2bug platform', 'SQL', 'V0_6_0__add_open_ai.sql'
        , -1044739675, 'root', '2026-01-08 21:04:28', 135, 1);
 COMMIT;
 DROP TABLE IF EXISTS `sys_defect`;
