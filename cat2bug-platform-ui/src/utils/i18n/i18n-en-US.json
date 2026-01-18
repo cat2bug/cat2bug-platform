@@ -1,4 +1,5 @@
 {
+  "copyright": "Copyright © 2024–2026 All Rights Reserved",
   "export": "Export",
   "import": "Import",
   "back": "Back",
@@ -85,6 +86,7 @@
   "title": "Title",
   "import": "Import",
   "add": "Add",
+  "view": "View",
   "update": "Update",
   "modify": "Modify",
   "save": "Save",

@@ -90,7 +90,6 @@ import {
   getAi,
   delAi,
   addAi,
-  updateAi,
   downloadModel,
   delModel,
   defaultListAiModelList,
@@ -386,25 +385,25 @@ export default {
       });
     },
     /** 提交按钮 */
-    submitForm() {
-      this.$refs["form"].validate(valid => {
-        if (valid) {
-          if (this.form.aiId != null) {
-            updateAi(this.form).then(response => {
-              this.$modal.msgSuccess(this.$i18n.t('modify-success'));
-              this.open = false;
-              this.getList();
-            });
-          } else {
-            addAi(this.form).then(response => {
-              this.$modal.msgSuccess(this.$i18n.t('create-success'));
-              this.open = false;
-              this.getList();
-            });
-          }
-        }
-      });
-    },
+    // submitForm() {
+    //   this.$refs["form"].validate(valid => {
+    //     if (valid) {
+    //       if (this.form.aiId != null) {
+    //         updateAi(this.form).then(response => {
+    //           this.$modal.msgSuccess(this.$i18n.t('modify-success'));
+    //           this.open = false;
+    //           this.getList();
+    //         });
+    //       } else {
+    //         addAi(this.form).then(response => {
+    //           this.$modal.msgSuccess(this.$i18n.t('create-success'));
+    //           this.open = false;
+    //           this.getList();
+    //         });
+    //       }
+    //     }
+    //   });
+    // },
     /** 删除按钮操作 */
     handleDelete(row) {
       if(this.isError(row)) {

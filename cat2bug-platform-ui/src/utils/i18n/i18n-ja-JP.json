@@ -1,4 +1,5 @@
 {
+  "copyright": "Copyright © 2024–2026 All Rights Reserved",
   "export":"エクスポート",
   "import":"インポート",
   "back":"戻る",
@@ -84,6 +85,7 @@
   "title":"タイトル",
   "home":"ホーム",
   "add":"追加",
+  "view": "確認する",
   "update":"更新",
   "modify":"修正",
   "save":"保存",

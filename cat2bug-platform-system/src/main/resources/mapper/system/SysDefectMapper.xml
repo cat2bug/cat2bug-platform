@@ -203,7 +203,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         )
         ), ']')
         FROM sys_user u
-        WHERE FIND_IN_SET(u.user_id, REPLACE(d.handle_by, ' ', '')) > 0
+        WHERE
+            JSON_CONTAINS(d.handle_by, CAST(u.user_id AS JSON))
         ) AS handle_by_list,
         CONCAT(
         '{"userId":', IFNULL(u_create.user_id, 0),

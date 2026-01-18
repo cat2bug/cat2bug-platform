@@ -1,4 +1,5 @@
 {
+  "copyright": "Copyright © 2024–2026 版權所有",
   "export":"匯出",
   "import":"匯入",
   "back":"返回",
@@ -84,6 +85,7 @@
   "title":"標題",
   "home":"首頁",
   "add":"新增",
+  "view": "查看",
   "update":"更新",
   "modify":"修改",
   "save":"儲存",

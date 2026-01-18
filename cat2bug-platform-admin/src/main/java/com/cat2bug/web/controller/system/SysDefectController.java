@@ -252,7 +252,7 @@ public class SysDefectController extends BaseController
         }).collect(Collectors.toList());
 
         ExcelUtil<SysDefect> util = new ExcelUtil<SysDefect>(SysDefect.class);
-        List<String> moduleNameList = sysModuleService.selectSysModulePathList(0L).stream().map(m->m.getModulePath()).collect(Collectors.toList());
+        List<String> moduleNameList = sysModuleService.selectSysModulePathList(sysDefect.getProjectId()).stream().map(m->m.getModulePath()).collect(Collectors.toList());
         sysDefect.getParams().put("moduleNameList",moduleNameList);
 
         List<String> userList = sysUserProjectService.selectSysUserListByProjectId(sysDefect.getProjectId(),new SysUser()).stream().map(u->u.getNickName()).collect(Collectors.toList());

@@ -77,7 +77,7 @@
         </div>
       </el-form-item>
     </el-form>
-    <span class="login-copyright">Cat2Bug&reg; 2025. All Rights Reserved.</span>
+    <span class="login-copyright">{{ $t('copyright') }}</span>
   </div>
 </template>
 
