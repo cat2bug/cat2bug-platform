@@ -146,9 +146,10 @@
             <span>{{$t('update-log')}}</span>
           </div>
           <el-collapse accordion>
-            <el-collapse-item title="v0.6.0 - 2026-01-10">
+            <el-collapse-item title="v0.6.1 - 2026-01-10">
               <ol>
                 <li>添加繁体中文、俄语、日语、韩语、阿拉伯语显示</li>
+                <li>缺陷列表增加可设置固定列、拖拽更改列顺序功能</li>
               </ol>
             </el-collapse-item>
             <el-collapse-item title="v0.6.0 - 2025-09-26">
