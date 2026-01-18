@@ -31,8 +31,7 @@ export default {
 
 <style lang="scss" scoped>
   .project-member-icons {
-    display: flex;
-    display: -webkit-flex; /* Safari */
+    display: inline-flex;
     flex-direction: row-reverse;
     flex-wrap: nowrap;
     justify-content: center;

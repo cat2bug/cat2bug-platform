@@ -38,7 +38,6 @@
       @columns-change="handleTableColumnsChange"
       @sort-change="sortChangeHandle">
       <template v-slot:columns="{scope, column}">
-        <div class="table-row">
           <span v-if="column.prop==='projectNum'" >{{ '#' + scope.row[column.prop] }}</span>
           <defect-type-flag v-else-if="column.prop==='defectTypeName'" :defect="scope.row" />
           <div v-else-if="column.prop==='defectName'" class="table-defect-title">
@@ -74,7 +73,6 @@
           <row-list-member v-else-if="column.prop==='createMember'" :members="[scope.row.createMember]"></row-list-member>
           <row-list-member v-else-if="column.prop==='handleBy'" :members="scope.row.handleByList"></row-list-member>
           <span v-else>{{ scope.row[column.prop] }}</span>
-        </div>
       </template>
       <el-table-column :label="$t('operate')" align="left" class-name="no-drag small-padding fixed-width" min-width="250" fixed="right">
         <template slot-scope="scope">

@@ -13,6 +13,7 @@
                      :prop="col.prop"
                      :class-name="col.fixed ? 'no-drag' : ''"
                      :fixed="col.fixed ? 'left' : false"
+                     :align="col.align || 'left'"
                      :sort-by="col.prop"
                      :sort-orders="col.prop===orderByColumn?[isAsc]:[null]"
                      sortable="custom"  >
@@ -255,5 +256,9 @@ export default {
 
 ::v-deep thead .no-drag {
   background-color: #f0f0f1;
+}
+
+::v-deep tbody > .el-table__row > .el-table__cell {
+  padding: 5px 0;
 }
 </style>

@@ -3,6 +3,7 @@ export const TableOptions=[{
   prop: 'projectNum',
   fixed: false,
   visible: true,
+  align: 'center',
   width: 100,
   width_ja_JP: 100,
   width_ar: 120,
@@ -12,6 +13,7 @@ export const TableOptions=[{
   prop: 'defectTypeName',
   fixed: false,
   visible: true,
+  align: 'center',
   width: 100,
   width_ja_JP: 120,
   width_ar: 120
@@ -20,15 +22,14 @@ export const TableOptions=[{
   prop: 'defectName',
   fixed: false,
   visible: true,
-  width: 300,
-  width_ja_JP: 300,
-  width_ar: 300,
-  width_ru: 400
+  width: 400,
+  width_ru: 500
 },{
   key: 'priority',
   prop: 'defectLevel',
   fixed: false,
   visible: true,
+  align: 'center',
   width: 120,
   width_ja_JP: 140,
   width_ar: 140,
@@ -38,6 +39,7 @@ export const TableOptions=[{
   prop: 'defectState',
   fixed: false,
   visible: true,
+  align: 'center',
   width: 100,
   width_ja_JP: 140,
   width_ar: 140,
@@ -63,6 +65,7 @@ export const TableOptions=[{
   prop: 'imgUrls',
   fixed: false,
   visible: true,
+  align: 'center',
   width: 160,
   width_ja_JP: 160,
   width_ar: 160
@@ -71,9 +74,7 @@ export const TableOptions=[{
   prop: 'annexUrls',
   fixed: false,
   visible: true,
-  width: 300,
-  width_ja_JP: 300,
-  width_ar: 300
+  width: 400
 },{
   key: 'update-time',
   prop: 'updateTime',
