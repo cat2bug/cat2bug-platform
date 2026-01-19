@@ -166,6 +166,22 @@ public class SysTeamController extends BaseController
     }
 
     /**
+     * 邀请团队成员
+     */
+    @PreAuthorize("@ss.hasPermi('system:team:lock')")
+    @Log(title = "团队", businessType = BusinessType.UPDATE)
+    @PutMapping("/{teamId}/lock")
+    public AjaxResult lock(@PathVariable("teamId") Long teamId, @RequestBody SysTeam team)
+    {
+        SysTeam updateTeam = new SysTeam();
+        updateTeam.setTeamId(teamId);
+        updateTeam.setLock(team.getLock());
+        updateTeam.setLockRemark(team.getLockRemark());
+        return toAjax(sysTeamService.updateSysTeam(updateTeam));
+    }
+
+
+    /**
      * 新建团队成员
      * @param teamId
      * @param sysUser
@@ -187,6 +203,8 @@ public class SysTeamController extends BaseController
     @PutMapping
     public AjaxResult edit(@RequestBody SysTeam sysTeam)
     {
+        sysTeam.setLock(null);
+        sysTeam.setLockRemark(null);
         return toAjax(sysTeamService.updateSysTeam(sysTeam));
     }
 

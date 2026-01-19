@@ -78,6 +78,15 @@ export function inviteMember(teamId,data) {
   })
 }
 
+// 禁用或解锁团队
+export function lockTeam(teamId, data) {
+  return request({
+    url: '/system/team/'+teamId+'/lock',
+    method: 'put',
+    data: data
+  })
+}
+
 // 修改团队
 export function updateTeam(data) {
   return request({
