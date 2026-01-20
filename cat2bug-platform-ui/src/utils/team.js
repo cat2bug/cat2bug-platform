@@ -8,7 +8,8 @@ export function isLockPath (path){
     return false;
   }
 
+
   const paths = path.split('/');
   const basePath = paths[0]+(paths.length>1?paths[1]:'');
-  return basePath==='system' || basePath==='team';
+  return basePath==='project' || basePath==='team';
 }
