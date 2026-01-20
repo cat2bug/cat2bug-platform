@@ -66,12 +66,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     
     <select id="selectSysTeamByTeamId" parameterType="Long" resultMap="SysTeamResult">
         <include refid="selectSysTeamVo"/>
-        where team_id = #{teamId}
+        where t.team_id = #{teamId}
     </select>
 
     <select id="selectSysTeamByTeamName" parameterType="String" resultMap="SysTeamResult">
         <include refid="selectSysTeamVo"/>
-        where team_name = #{teamName}
+        where t.team_name = #{teamName}
     </select>
 
     <insert id="insertSysTeam" parameterType="SysTeam" useGeneratedKeys="true" keyProperty="teamId">
