@@ -45,7 +45,7 @@
             <el-divider></el-divider>
           </div>
           <el-menu
-            v-show="!teamLock && teamId"
+            v-show="teamId"
             :default-active="activeMenu"
             :collapse="isCollapse"
             :background-color="settings.sideTheme === 'theme-dark' ? variables.menuBackground : variables.menuLightBackground"
@@ -62,7 +62,7 @@
               :base-path="'team-options/'+route.path"
             />
           </el-menu>
-          <div v-show="!teamLock && teamId && teamOptionRouters" class="sidebar-divider">
+          <div v-show="teamId && teamOptionRouters" class="sidebar-divider">
             <el-divider></el-divider>
           </div>
 <!--          <el-menu-->

@@ -5,6 +5,7 @@ import NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
 import { getToken } from '@/utils/auth'
 import { isRelogin } from '@/utils/request'
+import {isLockPath} from "@/utils/team";
 
 NProgress.configure({ showSpinner: false })
 
@@ -19,10 +20,9 @@ router.beforeEach((to, from, next) => {
       next({ path: '/' })
       NProgress.done()
     } else {
-      const lockTeamPath = '/error/team-lock';  // 锁定团队的页面路径
       // 如果项目被禁用，跳到报错界面
-      if (to.path !== lockTeamPath && store.state.user.config.currentTeamLock) {
-        next({ path: lockTeamPath, replace: true });
+      if (isLockPath(to.path)) {
+        next({ path: '/error/team-lock', replace: true });
       }
       // 如果没有角色权限，直接获取
       else if (store.getters.roles.length === 0) {
