@@ -40,6 +40,11 @@ public class SysUserConfig extends BaseEntity
 
     /** 人生格言 */
     private String lifeContent;
+    /** 禁用或解锁团队 */
+    private boolean currentTeamLock;
+    /** 禁用或解锁团队原因 */
+    private String currentTeamLockRemark;
+
     @Override
     public String toString() {
         return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)

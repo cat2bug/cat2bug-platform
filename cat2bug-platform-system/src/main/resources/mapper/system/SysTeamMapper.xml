@@ -3,7 +3,6 @@
 PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.cat2bug.system.mapper.SysTeamMapper">
-    
     <resultMap type="SysTeam" id="SysTeamResult">
         <result property="teamId"    column="team_id"    />
         <result property="teamName"    column="team_name"    />
@@ -14,16 +13,34 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="updateTime"    column="update_time"    />
         <result property="introduce"    column="introduce"    />
         <result property="isDel"    column="is_del"    />
+        <result property="projectCount"    column="project_count"    />
+        <result property="memberCount"    column="member_count"    />
+        <result property="lock"    column="is_lock"    />
+        <result property="lockRemark"    column="lock_remark"    />
     </resultMap>
 
     <sql id="selectSysTeamVo">
-        select team_id, team_name, team_icon, create_by, create_time, update_by, update_time, introduce, is_del from sys_team
+        select t.team_id, t.team_name, t.team_icon, t.create_by, t.create_time, t.update_by, t.update_time,
+               t.introduce, t.is_del, t.is_lock, t.lock_remark,
+               IFNULL(p.project_count,0) as project_count,
+               IFNULL(m.member_count,0) as member_count
+        from sys_team t
+        LEFT JOIN (
+            select count(team_id) as project_count,
+                   team_id
+            from sys_project group by team_id
+        ) p ON p.team_id = t.team_id
+        LEFT JOIN (
+            select count(team_id) as member_count,
+                   team_id
+            from sys_user_team where team_lock=0 group by team_id
+        ) m ON m.team_id = t.team_id
     </sql>
 
     <select id="selectSysTeamList" parameterType="SysTeam" resultMap="SysTeamResult">
         <include refid="selectSysTeamVo"/>
         <where>  
-            <if test="teamName != null  and teamName != ''"> and team_name like concat('%', #{teamName}, '%')</if>
+            <if test="teamName != null  and teamName != ''"> and t.team_name like concat('%', #{teamName}, '%')</if>
         </where>
     </select>
 
@@ -37,7 +54,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             t.update_by,
             t.update_time,
             t.introduce,
-            t.is_del
+            t.is_del,
+            t.is_lock,
+            t.lock_remark
         FROM
             sys_team t,sys_user_team utr
         <where>
@@ -47,12 +66,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     
     <select id="selectSysTeamByTeamId" parameterType="Long" resultMap="SysTeamResult">
         <include refid="selectSysTeamVo"/>
-        where team_id = #{teamId}
+        where t.team_id = #{teamId}
     </select>
 
     <select id="selectSysTeamByTeamName" parameterType="String" resultMap="SysTeamResult">
         <include refid="selectSysTeamVo"/>
-        where team_name = #{teamName}
+        where t.team_name = #{teamName}
     </select>
 
     <insert id="insertSysTeam" parameterType="SysTeam" useGeneratedKeys="true" keyProperty="teamId">
@@ -90,6 +109,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="updateTime != null">update_time = #{updateTime},</if>
             <if test="introduce != null">introduce = #{introduce},</if>
             <if test="isDel != null">is_del = #{isDel},</if>
+            <if test="lock != null">is_lock = #{lock},</if>
+            <if test="lockRemark != null">lock_remark = #{lockRemark},</if>
         </trim>
         where team_id = #{teamId}
     </update>

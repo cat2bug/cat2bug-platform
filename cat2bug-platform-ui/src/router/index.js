@@ -78,6 +78,20 @@ export const constantRoutes = [
     hidden: true
   },
   {
+    path: '/error',
+    component: Layout,
+    hidden: true,
+    redirect: 'noredirect',
+    children: [
+      {
+        path: 'team-lock',
+        component: () => import('@/views/error/team-lock'),
+        name: 'TeamLockError',
+        meta: { title: i18n.t('prompted'), titleI18nKey:'prompted', icon: 'dashboard', affix: true }
+      }
+    ]
+  },
+  {
     path: '',
     component: Layout,
     redirect: 'index',

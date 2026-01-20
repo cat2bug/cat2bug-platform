@@ -5,6 +5,7 @@ import NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
 import { getToken } from '@/utils/auth'
 import { isRelogin } from '@/utils/request'
+import {isLockPath} from "@/utils/team";
 
 NProgress.configure({ showSpinner: false })
 
@@ -19,10 +20,15 @@ router.beforeEach((to, from, next) => {
       next({ path: '/' })
       NProgress.done()
     } else {
-      if (store.getters.roles.length === 0) {
+      // 如果项目被禁用，跳到报错界面
+      if (isLockPath(to.path)) {
+        next({ path: '/error/team-lock', replace: true });
+      }
+      // 如果没有角色权限，直接获取
+      else if (store.getters.roles.length === 0) {
         isRelogin.show = true
         // 判断当前用户是否已拉取完user_info信息
-        store.dispatch('GetInfo').then(() => {
+        store.dispatch('GetInfo').then((res) => {
           isRelogin.show = false
           store.dispatch('GenerateRoutes').then(accessRoutes => {
             // 根据roles权限生成可访问的路由表
@@ -35,7 +41,9 @@ router.beforeEach((to, from, next) => {
               next({ path: '/' })
             })
           })
-      } else {
+      }
+      // 否则跳转页面
+      else {
         next()
       }
     }

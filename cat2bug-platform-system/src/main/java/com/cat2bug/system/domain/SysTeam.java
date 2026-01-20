@@ -35,6 +35,22 @@ public class SysTeam extends BaseEntity
     /** 是否删除 */
     private boolean isDel;
 
+    /** 项目数量 */
+    @Excel(name = "项目数量")
+    private int projectCount;
+
+    /** 项目数量 */
+    @Excel(name = "成员数量")
+    private int memberCount;
+
+    /** 是否锁定 */
+    @Excel(name = "是否锁定")
+    private Boolean lock;
+
+    /** 锁定备注 */
+    @Excel(name = "锁定备注")
+    private String lockRemark;
+
     @Override
     public String toString() {
         return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)
@@ -47,6 +63,7 @@ public class SysTeam extends BaseEntity
             .append("updateTime", getUpdateTime())
             .append("introduce", getIntroduce())
             .append("isDel", isDel())
+            .append("projectCount", getProjectCount())
             .toString();
     }
 }
