@@ -1,32 +1,39 @@
 <template>
-  <div class="project-nameplate">
+  <div class="team-nameplate">
     <el-image
       style="width: 50px; height: 50px;flex-basis:auto;"
-      :src="project.projectIcon"
+      :src="iconUrl(team)"
       fit="cover"
     ></el-image>
-    <div class="project-nameplate-content">
-      <p>{{ project.projectName }}</p>
-      <span v-if="project.projectIntroduce">{{ project.projectIntroduce }}</span>
-      <span v-else style="color: #DCDFE6;">{{ project.projectIntroduce?project.projectIntroduce:$t('project.introduction-not-filled') }}</span>
+    <div class="team-nameplate-content">
+      <p>{{ team.teamName }}</p>
+      <span v-if="team.introduce">{{ team.introduce }}</span>
+      <span v-else style="color: #DCDFE6;">{{ $t('team.introduction-not-filled') }}</span>
     </div>
   </div>
 </template>
 
 <script>
 export default {
-  name: "ProjectNameplate",
+  name: "TeamNameplate",
   props: {
-    project: {
+    team: {
       type: Object,
       default: {}
     }
+  },
+  computed: {
+    iconUrl: function (){
+      return function (team){
+        return process.env.VUE_APP_BASE_API + team.teamIcon
+      }
+    },
   }
 }
 </script>
 
 <style lang="scss" scoped>
-  .project-nameplate {
+  .team-nameplate {
     display: flex;
     align-items: center;
     flex-wrap: nowrap;
@@ -38,7 +45,7 @@ export default {
     > * {
       margin-right: 10px;
     }
-    .project-nameplate-content {
+    .team-nameplate-content {
       display: flex;
       align-items: flex-start;
       flex-direction: column;

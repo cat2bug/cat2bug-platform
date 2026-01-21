@@ -75,7 +75,7 @@
 
 <script>
 import TeamLockDialog from './lock'
-import { listTeam, getTeam, delTeam, addTeam, updateTeam } from "@/api/system/team";
+import { listTeam } from "@/api/system/team";
 
 export default {
   name: "AdminTeam",

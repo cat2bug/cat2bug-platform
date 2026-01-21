@@ -61,6 +61,7 @@ public class SysProjectController extends BaseController
     @GetMapping("/list")
     public TableDataInfo list(SysProject sysProject)
     {
+        Preconditions.checkNotNull(sysProject.getTeamId(), MessageUtils.message("project.team_cannot_empty"));
         startPage();
         List<SysProject> list = sysProjectService.selectSysProjectList(sysProject);
         return getDataTable(list);

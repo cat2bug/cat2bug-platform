@@ -1,7 +1,7 @@
 <template>
-  <el-dialog :title="(form.lock?$t('lock'):$t('unlock')) + $t('team')" :visible.sync="visible" width="600px" append-to-body>
+  <el-dialog :title="(form.lock?$t('lock'):$t('unlock')) + $t('project')" :visible.sync="visible" width="600px" append-to-body>
     <el-form ref="form" :model="form" :rules="rules" label-width="140px">
-      <el-form-item :label="$t('team.name')">
+      <el-form-item :label="$t('project.name')">
         <span>{{form.teamName}}</span>
       </el-form-item>
       <el-form-item :label="form.lock?$t('team.unlock-remark'):$t('team.lock-remark')" prop="lockRemark" required>
@@ -21,10 +21,10 @@
 </template>
 
 <script>
-import {lockTeam} from "@/api/system/team";
+import {lockProject} from "@/api/admin/project";
 
 export default {
-  name: "TeamLockDialog",
+  name: "ProjectLockDialog",
   data() {
     return {
       visible: false,
@@ -42,13 +42,13 @@ export default {
     }
   },
   methods: {
-    open(team) {
+    open(project) {
       this.reset();
       this.form = {
-        ...team,
+        ...project,
         ...{
           lockRemark: null,
-          lock: !team.lock
+          lock: !project.lock
         }
       };
       this.visible = true;
@@ -56,15 +56,7 @@ export default {
     // 表单重置
     reset() {
       this.form = {
-        teamId: null,
-        teamName: null,
-        teamIcon: null,
-        createBy: null,
-        createTime: null,
-        updateBy: null,
-        updateTime: null,
-        introduce: null,
-        isDel: null
+        projectId: null
       };
       this.resetForm("form");
     },
@@ -72,7 +64,7 @@ export default {
     handleLock() {
       this.$refs.form.validate(valid => {
         if (valid) {
-          lockTeam(this.form.teamId, this.form).then(res => {
+          lockProject(this.form.projectId, this.form).then(res => {
             this.$message.success(this.$i18n.t('modify-success').toString())
             this.visible = false;
             this.$emit('change', this.form);

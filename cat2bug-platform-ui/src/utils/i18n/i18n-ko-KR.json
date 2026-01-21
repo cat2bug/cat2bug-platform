@@ -271,7 +271,7 @@
   "team.name-cannot-empty":"팀 이름은 비워둘 수 없습니다",
   "team.icon-cannot-empty":"팀 아이콘은 비워둘 수 없습니다",
   "team.is-delete-team":"팀을 삭제하면 복구할 수 없습니다. 삭제를 확인하시려면 로그인 비밀번호를 입력한 후 '삭제' 버튼을 클릭해주세요.",
-  "team.introduction-not-filled":"프로젝트 소개가 작성되지 않았습니다",
+  "team.introduction-not-filled":"팀 소개가 작성되지 않았습니다",
   "project":"프로젝트",
   "project.count": "프로젝트 총수",
   "project.select":"프로젝트 전환",
@@ -904,5 +904,8 @@
   "enter-sponsor":"발起인 이름을 입력하세요",
   "error.team-lock.title": "팀이 비활성화되었습니다!",
   "error.team-lock.subtitle": "귀하의 팀 기능이 비활성화되었습니다. 그 이유는 다음과 같습니다:",
-  "error.team-lock.attention": "주의: 팀 기능을 해제하려면 관리자에게 문의하십시오."
+  "error.team-lock.attention": "주의: 팀 기능을 해제하려면 관리자에게 문의하십시오.",
+  "error.project-lock.title": "프로젝트가 비활성화되었습니다!",
+  "error.project-lock.subtitle": "당신이 참여한 프로젝트 기능이 비활성화되었습니다. 이유는 다음과 같습니다:",
+  "error.project-lock.attention": "주의: 프로젝트 기능을 해제하려면 관리자에게 문의하세요."
 }

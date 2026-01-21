@@ -271,7 +271,7 @@
   "team.name-cannot-empty":"團隊名稱不能為空",
   "team.icon-cannot-empty":"團隊圖示不能為空",
   "team.is-delete-team":"團隊刪除後將無法復原，若您確認刪除，請填寫您的登入密碼，然後點擊「刪除」按鈕。",
-  "team.introduction-not-filled":"未填寫專案介紹",
+  "team.introduction-not-filled":"未填寫團隊介紹",
   "project":"專案",
   "project.count": "專案總數",
   "project.select":"專案切換",
@@ -904,5 +904,8 @@
   "enter-sponsor":"請輸入發起人姓名",
   "error.team-lock.title": "團隊已禁用!",
   "error.team-lock.subtitle": "您的團隊功能已被停用，原因如下:",
-  "error.team-lock.attention": "注意：如需解鎖團隊功能，請聯繫管理人員。"
+  "error.team-lock.attention": "注意：如需解鎖團隊功能，請聯繫管理人員。",
+  "error.project-lock.title": "項目已禁用!",
+  "error.project-lock.subtitle": "您參與的項目功能已被禁用，原因如下:",
+  "error.project-lock.attention": "注意：如需解鎖專案功能，請聯繫管理人員。"
 }

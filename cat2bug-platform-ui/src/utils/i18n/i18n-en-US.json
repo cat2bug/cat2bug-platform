@@ -909,5 +909,8 @@
   "enter-sponsor": "Please enter the sponsor",
   "error.team-lock.title": "Team Disabled! ",
   "error.team-lock.subtitle": "Your team feature has been disabled for the following reasons:",
-  "error.team-lock.attention": "Note: To unlock the team feature, please contact the administrator."
+  "error.team-lock.attention": "Note: To unlock the team feature, please contact the administrator.",
+  "error.project-lock.title": "Project Disabled!",
+  "error.project-lock.subtitle": "The project feature you are participating in has been disabled for the following reasons:",
+  "error.project-lock.attention": "Attention: To unlock project features, please contact the administrator."
 }

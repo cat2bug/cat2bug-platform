@@ -24,7 +24,7 @@
             <el-divider></el-divider>
           </div>
           <el-menu
-              v-show="!teamLock && teamId && projectId"
+              v-show="!teamLock && teamId && !projectLock && projectId"
               :default-active="activeMenu"
               :collapse="isCollapse"
               :background-color="settings.sideTheme === 'theme-dark' ? variables.menuBackground : variables.menuLightBackground"
@@ -41,7 +41,7 @@
                   :base-path="'project/'+route.path"
               />
           </el-menu>
-          <div v-show="!teamLock && teamId && projectId && projectRouters" class="sidebar-divider">
+          <div v-show="!teamLock && teamId && !projectLock && projectId && projectRouters" class="sidebar-divider">
             <el-divider></el-divider>
           </div>
           <el-menu
@@ -131,6 +131,9 @@ export default {
       },
       projectId() {
         return this.$store.state.user.config.currentProjectId
+      },
+      projectLock() {
+        return this.$store.state.user.config.currentProjectLock;
       },
       projectRouters() {
           return this.filterSidebarRouters('project');

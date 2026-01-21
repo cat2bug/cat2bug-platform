@@ -25,6 +25,12 @@ public class SysProject extends BaseEntity
     /** 团队id */
     private Long teamId;
 
+    /** 团队名称 */
+    private String teamName;
+
+    /** 团队图标 */
+    private String teamIcon;
+
     /** 团队状态 */
     private SysProjectStateEnum projectState;
 
@@ -43,6 +49,14 @@ public class SysProject extends BaseEntity
     private boolean collect;
     /** 成员集合 */
     private List<SysUser> members;
+
+    /** 是否锁定 */
+    @Excel(name = "是否锁定")
+    private Boolean lock;
+
+    /** 锁定备注 */
+    @Excel(name = "锁定备注")
+    private String lockRemark;
 
     public void setProjectId(Long projectId) 
     {
@@ -112,6 +126,38 @@ public class SysProject extends BaseEntity
 
     public void setProjectState(SysProjectStateEnum projectState) {
         this.projectState = projectState;
+    }
+
+    public String getTeamName() {
+        return teamName;
+    }
+
+    public void setTeamName(String teamName) {
+        this.teamName = teamName;
+    }
+
+    public String getTeamIcon() {
+        return teamIcon;
+    }
+
+    public void setTeamIcon(String teamIcon) {
+        this.teamIcon = teamIcon;
+    }
+
+    public Boolean getLock() {
+        return lock;
+    }
+
+    public void setLock(Boolean lock) {
+        this.lock = lock;
+    }
+
+    public String getLockRemark() {
+        return lockRemark;
+    }
+
+    public void setLockRemark(String lockRemark) {
+        this.lockRemark = lockRemark;
     }
 
     @Override
