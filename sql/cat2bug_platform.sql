@@ -11,7 +11,7 @@
  Target Server Version : 80200
  File Encoding         : 65001
 
- Date: 21/01/2026 16:45:10
+ Date: 21/01/2026 17:46:38
 */
 
 SET NAMES utf8mb4;
@@ -712,6 +712,34 @@ INSERT INTO `sys_config` (`config_id`, `config_name`, `config_key`, `config_valu
 INSERT INTO `sys_config` (`config_id`, `config_name`, `config_key`, `config_value`, `config_type`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `project_id`, `receiver_id`, `read`) VALUES (4, '账号自助-验证码开关', 'sys.account.captchaEnabled', 'false', 'Y', 'admin', '2023-11-12 15:34:52', 'admin', '2023-11-12 16:14:31', '是否开启验证码功能（true开启，false关闭）', NULL, NULL, 0);
 INSERT INTO `sys_config` (`config_id`, `config_name`, `config_key`, `config_value`, `config_type`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `project_id`, `receiver_id`, `read`) VALUES (5, '账号自助-是否开启用户注册功能', 'sys.account.registerUser', 'true', 'Y', 'admin', '2023-11-12 15:34:52', 'admin', '2023-11-12 16:13:43', '是否开启注册用户功能（true开启，false关闭）', NULL, NULL, 0);
 INSERT INTO `sys_config` (`config_id`, `config_name`, `config_key`, `config_value`, `config_type`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `project_id`, `receiver_id`, `read`) VALUES (6, '用户登录-黑名单列表', 'sys.login.blackIPList', '', 'Y', 'admin', '2023-11-12 15:34:52', '', NULL, '设置登录IP黑名单限制，多个匹配项以;分隔，支持匹配（*通配、网段）', NULL, NULL, 0);
+COMMIT;
+
+-- ----------------------------
+-- Table structure for sys_db_version
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_db_version`;
+CREATE TABLE `sys_db_version` (
+                                  `installed_rank` int NOT NULL,
+                                  `version` varchar(50) DEFAULT NULL,
+                                  `description` varchar(200) NOT NULL,
+                                  `type` varchar(20) NOT NULL,
+                                  `script` varchar(1000) NOT NULL,
+                                  `checksum` int DEFAULT NULL,
+                                  `installed_by` varchar(100) NOT NULL,
+                                  `installed_on` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                  `execution_time` int NOT NULL,
+                                  `success` tinyint(1) NOT NULL,
+                                  PRIMARY KEY (`installed_rank`),
+                                  KEY `sys_db_version_s_idx` (`success`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='系统版本管理';
+
+-- ----------------------------
+-- Records of sys_db_version
+-- ----------------------------
+BEGIN;
+INSERT INTO `sys_db_version` (`installed_rank`, `version`, `description`, `type`, `script`, `checksum`, `installed_by`, `installed_on`, `execution_time`, `success`) VALUES (2, '0.5.1', 'init', 'SQL', 'V0_5_1__init.sql', 1393167113, 'root', '2026-01-21 09:46:19', 1580, 1);
+INSERT INTO `sys_db_version` (`installed_rank`, `version`, `description`, `type`, `script`, `checksum`, `installed_by`, `installed_on`, `execution_time`, `success`) VALUES (3, '0.6.0', 'add open ai', 'SQL', 'V0_6_0__add_open_ai.sql', 1606969877, 'root', '2026-01-21 09:46:19', 92, 1);
+INSERT INTO `sys_db_version` (`installed_rank`, `version`, `description`, `type`, `script`, `checksum`, `installed_by`, `installed_on`, `execution_time`, `success`) VALUES (4, '0.6.1', 'team project of admin', 'SQL', 'V0_6_1__team_project_of_admin.sql', -373115035, 'root', '2026-01-21 09:46:19', 54, 1);
 COMMIT;
 
 -- ----------------------------
