@@ -12,6 +12,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="currentTeamIcon"    column="current_team_icon"    />
         <result property="currentTeamLock"    column="current_team_lock"    />
         <result property="currentTeamLockRemark"    column="current_team_lock_remark"    />
+        <result property="currentProjectLock"    column="current_project_lock"    />
+        <result property="currentProjectLockRemark"    column="current_project_lock_remark"    />
         <result property="currentProjectName"    column="current_project_name"    />
         <result property="userId"    column="user_id"    />
         <result property="lifeContent"    column="life_content"    />
@@ -23,7 +25,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             st.team_icon as current_team_icon,
             st.is_lock as current_team_lock,
             st.lock_remark as current_team_lock_remark,
-            sp.project_name as current_project_name
+            sp.project_name as current_project_name,
+            sp.is_lock as current_project_lock,
+            sp.lock_remark as current_project_lock_remark
         from sys_user_config suc
         LEFT JOIN sys_team st ON st.team_id = suc.current_team_id
         LEFT JOIN sys_project sp ON sp.project_id = suc.current_project_id

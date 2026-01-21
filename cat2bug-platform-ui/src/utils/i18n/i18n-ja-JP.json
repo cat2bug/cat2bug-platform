@@ -271,7 +271,7 @@
   "team.name-cannot-empty":"チーム名は空にできません",
   "team.icon-cannot-empty":"チームアイコンは空にできません",
   "team.is-delete-team":"チームを削除すると復元できません。削除する場合はログインパスワードを入力して「削除」ボタンをクリックしてください。",
-  "team.introduction-not-filled":"プロジェクト紹介が入力されていません",
+  "team.introduction-not-filled":"チーム紹介が未記入",
   "project":"プロジェクト",
   "project.count": "プロジェクト総数",
   "project.select":"プロジェクト切り替え",
@@ -904,5 +904,8 @@
   "enter-sponsor":"発起人の氏名を入力してください",
   "error.team-lock.title": "チームは無効化されています!",
   "error.team-lock.subtitle": "チーム機能が無効化されています。理由は以下の通りです:",
-  "error.team-lock.attention": "注意：チーム機能のアンロックが必要な場合は、管理者にお問い合わせください。"
+  "error.team-lock.attention": "注意：チーム機能のアンロックが必要な場合は、管理者にお問い合わせください。",
+  "error.project-lock.title": "プロジェクトが無効化されています!",
+  "error.project-lock.subtitle": "ご参加中のプロジェクト機能が無効化されています。理由は以下の通りです:",
+  "error.project-lock.attention": "注意：プロジェクト機能のロック解除が必要な場合は、管理者にお問い合わせください。"
 }

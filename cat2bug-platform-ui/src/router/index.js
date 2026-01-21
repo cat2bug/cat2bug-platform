@@ -88,6 +88,11 @@ export const constantRoutes = [
         component: () => import('@/views/error/team-lock'),
         name: 'TeamLockError',
         meta: { title: i18n.t('prompted'), titleI18nKey:'prompted', icon: 'dashboard', affix: true }
+      }, {
+        path: 'project-lock',
+        component: () => import('@/views/error/project-lock'),
+        name: 'ProjectLockError',
+        meta: { title: i18n.t('prompted'), titleI18nKey:'prompted', icon: 'dashboard', affix: true }
       }
     ]
   },

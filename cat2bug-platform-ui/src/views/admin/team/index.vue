@@ -28,7 +28,11 @@
           <span>{{ parseTime(scope.row.createTime, '{y}-{m}-{d}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('project.count')" align="center" prop="projectCount" width="130" />
+      <el-table-column :label="$t('project.count')" align="center" prop="projectCount" width="130">
+        <template slot-scope="scope">
+          <el-link type="primary" @click="handleProjectListClick(scope.row)">{{ scope.row.projectCount }}</el-link>
+        </template>
+      </el-table-column>
       <el-table-column :label="$t('member.count')" align="center" prop="memberCount" width="130" />
       <el-table-column :label="$t('team.introduce')" align="left" prop="introduce" />
       <el-table-column :label="$t('operate')" align="center" class-name="small-padding" width="120">
@@ -52,30 +56,12 @@
       @pagination="getList"
     />
     <team-lock-dialog ref="teamLockDialog" @change="handleQuery"></team-lock-dialog>
-    <!-- 添加或修改团队对话框 -->
-<!--    <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>-->
-<!--      <el-form ref="form" :model="form" :rules="rules" label-width="80px">-->
-<!--        <el-form-item label="团队名称" prop="teamName">-->
-<!--          <el-input v-model="form.teamName" placeholder="请输入团队名称" />-->
-<!--        </el-form-item>-->
-<!--        <el-form-item label="团队图标" prop="teamIcon">-->
-<!--          <image-upload v-model="form.teamIcon" :limit="1"/>-->
-<!--        </el-form-item>-->
-<!--        <el-form-item label="团队介绍" prop="introduce">-->
-<!--          <el-input v-model="form.introduce" placeholder="请输入团队介绍" />-->
-<!--        </el-form-item>-->
-<!--      </el-form>-->
-<!--      <div slot="footer" class="dialog-footer">-->
-<!--        <el-button type="primary" @click="submitForm">确 定</el-button>-->
-<!--        <el-button @click="cancel">取 消</el-button>-->
-<!--      </div>-->
-<!--    </el-dialog>-->
   </div>
 </template>
 
 <script>
 import TeamLockDialog from './lock'
-import { listTeam, getTeam, delTeam, addTeam, updateTeam } from "@/api/system/team";
+import { listTeam } from "@/api/admin/team";
 
 export default {
   name: "AdminTeam",
@@ -158,6 +144,11 @@ export default {
       this.queryParams.pageNum = 1;
       this.getList();
     },
+    handleProjectListClick(team) {
+      this.$router.push({path:'/admin/project', query: {
+          teamName: team.teamName
+        }})
+    }
   }
 };
 </script>

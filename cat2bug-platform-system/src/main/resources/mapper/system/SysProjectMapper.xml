@@ -8,6 +8,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="projectId"    column="project_id"    />
         <result property="projectState"    column="project_state" typeHandler="com.cat2bug.system.domain.handle.ProjectStateEnumTypeHandle"    />
         <result property="teamId"    column="team_id"    />
+        <result property="teamName"    column="team_name"    />
+        <result property="teamIcon"    column="team_icon"    />
         <result property="projectName"    column="project_name"    />
         <result property="projectIcon"    column="project_icon"    />
         <result property="projectIntroduce"    column="project_introduce"    />
@@ -16,27 +18,36 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="createTime"    column="create_time"    />
         <result property="updateBy"    column="update_by"    />
         <result property="updateTime"    column="update_time"    />
+        <result property="lock"    column="is_lock"    />
+        <result property="lockRemark"    column="lock_remark"    />
     </resultMap>
 
     <sql id="findSysProjectVo">
-        SELECT p.project_id, p.team_id, p.project_state, p.project_name, p.project_icon, p.project_introduce, p.create_by, p.create_time, p.update_by, p.update_time
+        SELECT p.project_id, p.team_id, p.project_state, p.project_name, p.project_icon,
+               p.project_introduce, p.create_by, p.create_time, p.update_by, p.update_time,
+               p.is_lock, p.lock_remark
         FROM sys_project p
     </sql>
 
     <sql id="selectSysProjectVo">
-        SELECT DISTINCT p.project_id, p.team_id, p.project_state, p.project_name, p.project_icon, p.project_introduce, p.create_by, p.create_time, p.update_by, p.update_time, up.collect
+        SELECT DISTINCT p.project_id, p.team_id, p.project_state, p.project_name, p.project_icon, p.project_introduce,
+                        p.create_by, p.create_time, p.update_by, p.update_time, p.is_lock, p.lock_remark, up.collect,
+                        t.team_name, t.team_icon
         FROM sys_project p
         LEFT JOIN sys_user_project up on p.project_id=up.project_id and up.user_id = #{ userId }
+        LEFT JOIN sys_team t on p.team_id=t.team_id
     </sql>
 
     <select id="selectSysProjectList" resultMap="SysProjectResult">
         <include refid="selectSysProjectVo"/>
         <where>
-            p.project_state > 0 and p.team_id = #{sysProject.teamId}
+            p.project_state > 0
+            <if test="sysProject.teamId != null"> and p.team_id = #{sysProject.teamId}</if>
             <if test="sysProject.params != null and sysProject.params.userId !=null">and (up.user_id= #{sysProject.params.userId} or p.create_by = #{sysProject.params.userId})</if>
             <if test="sysProject.collect != null  and sysProject.collect != ''"> and up.collect = #{sysProject.collect}</if>
             <if test="sysProject.projectName != null  and sysProject.projectName != ''"> and p.project_name like concat('%', #{sysProject.projectName}, '%')</if>
             <if test="sysProject.createBy != null  and sysProject.createBy != ''"> and p.create_by like concat('%', #{sysProject.createBy}, '%')</if>
+            <if test="sysProject.teamName != null  and sysProject.teamName != ''"> and t.team_name like concat('%', #{sysProject.teamName}, '%')</if>
         </where>
         order by up.collect desc, p.create_time desc
     </select>
@@ -83,6 +94,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="createTime != null">create_time = #{createTime},</if>
             <if test="updateBy != null">update_by = #{updateBy},</if>
             <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="lock != null">is_lock = #{lock},</if>
+            <if test="lockRemark != null">lock_remark = #{lockRemark},</if>
         </trim>
         where project_id = #{projectId}
     </update>

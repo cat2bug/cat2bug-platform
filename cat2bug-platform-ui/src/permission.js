@@ -5,7 +5,8 @@ import NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
 import { getToken } from '@/utils/auth'
 import { isRelogin } from '@/utils/request'
-import {isLockPath} from "@/utils/team";
+import {isLockTeamPath} from "@/utils/team";
+import {isLockProjectPath} from "@/utils/project";
 
 NProgress.configure({ showSpinner: false })
 
@@ -21,8 +22,10 @@ router.beforeEach((to, from, next) => {
       NProgress.done()
     } else {
       // 如果项目被禁用，跳到报错界面
-      if (isLockPath(to.path)) {
+      if (isLockTeamPath(to.path)) {
         next({ path: '/error/team-lock', replace: true });
+      } else if(isLockProjectPath(to.path)) {
+        next({ path: '/error/project-lock', replace: true });
       }
       // 如果没有角色权限，直接获取
       else if (store.getters.roles.length === 0) {
