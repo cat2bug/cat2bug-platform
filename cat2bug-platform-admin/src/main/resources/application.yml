@@ -121,7 +121,7 @@ spring:
     baseline-on-migrate: true
     # 指定 baseline 的版本号,缺省值为 1, 低于该版本号的 SQL 文件, migrate 的时候被忽略
     # 开始执行基准迁移时对现有的schema的版本打标签，默认值为1.
-    baseline-version: 0.5.1
+    baseline-version: 0.5.0
     # 是否开启校验
     # 迁移时是否校验，默认为 true
     validate-on-migrate: true
@@ -186,7 +186,7 @@ spring:
   devtools:
     restart:
       # 热部署开关
-      enabled: true
+      enabled: false
 
 # token配置
 token:
