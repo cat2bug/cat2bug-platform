@@ -5,13 +5,13 @@
  Source Server Type    : MySQL
  Source Server Version : 80200
  Source Host           : 127.0.0.1:3306
- Source Schema         : cat2bug_platform_0.6.0
+ Source Schema         : cat2bug_platform
 
  Target Server Type    : MySQL
  Target Server Version : 80200
  File Encoding         : 65001
 
- Date: 18/01/2026 21:54:23
+ Date: 21/01/2026 16:45:10
 */
 
 SET NAMES utf8mb4;
@@ -715,33 +715,6 @@ INSERT INTO `sys_config` (`config_id`, `config_name`, `config_key`, `config_valu
 COMMIT;
 
 -- ----------------------------
--- Table structure for sys_db_version
--- ----------------------------
-DROP TABLE IF EXISTS `sys_db_version`;
-CREATE TABLE `sys_db_version` (
-                                  `installed_rank` int NOT NULL,
-                                  `version` varchar(50) DEFAULT NULL,
-                                  `description` varchar(200) NOT NULL,
-                                  `type` varchar(20) NOT NULL,
-                                  `script` varchar(1000) NOT NULL,
-                                  `checksum` int DEFAULT NULL,
-                                  `installed_by` varchar(100) NOT NULL,
-                                  `installed_on` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                                  `execution_time` int NOT NULL,
-                                  `success` tinyint(1) NOT NULL,
-                                  PRIMARY KEY (`installed_rank`),
-                                  KEY `sys_db_version_s_idx` (`success`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='系统版本管理';
-
--- ----------------------------
--- Records of sys_db_version
--- ----------------------------
-BEGIN;
-INSERT INTO `sys_db_version` (`installed_rank`, `version`, `description`, `type`, `script`, `checksum`, `installed_by`, `installed_on`, `execution_time`, `success`) VALUES (2, '0.5.1', 'init', 'SQL', 'V0_5_1__init.sql', 1393167113, 'root', '2026-01-18 13:51:00', 1591, 1);
-INSERT INTO `sys_db_version` (`installed_rank`, `version`, `description`, `type`, `script`, `checksum`, `installed_by`, `installed_on`, `execution_time`, `success`) VALUES (3, '0.6.0', 'cat2bug platform', 'SQL', 'V0_6_0__cat2bug_platform.sql', 1606969877, 'root', '2026-01-18 13:51:00', 96, 1);
-COMMIT;
-
--- ----------------------------
 -- Table structure for sys_defect
 -- ----------------------------
 DROP TABLE IF EXISTS `sys_defect`;
@@ -1092,7 +1065,7 @@ CREATE TABLE `sys_menu` (
                             `remark` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT '' COMMENT '备注',
                             `menu_name_i18n_key` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '菜单名称的国际化标识',
                             PRIMARY KEY (`menu_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2132 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='菜单权限表';
+) ENGINE=InnoDB AUTO_INCREMENT=2136 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='菜单权限表';
 
 -- ----------------------------
 -- Records of sys_menu
@@ -1235,7 +1208,7 @@ INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2070, '修改项目成员', 2054, 2, '', NULL, NULL, 1, 0, 'F', '0', '0', 'system:project:member:update', '#', 'admin', '2024-01-09 17:00:24', 'admin', '2024-01-09 17:00:58', '', NULL);
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2071, '删除项目成员', 2054, 3, '', NULL, NULL, 1, 0, 'F', '0', '0', 'system:project:member:remove', '#', 'admin', '2024-01-15 08:20:59', '', NULL, '', NULL);
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2072, '系统', 0, 99, 'admin', NULL, NULL, 1, 0, 'M', '0', '0', NULL, 'redis-list', 'admin', '2024-01-26 05:52:13', '', NULL, '', 'system');
-INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2073, '成员管理', 2072, 1, 'member', 'system/member/index', NULL, 1, 0, 'C', '0', '0', 'system:user:list', 'user', 'admin', '2024-01-26 05:53:50', 'admin', '2024-01-26 05:54:15', '', 'member.manage');
+INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2073, '成员管理', 2072, 3, 'member', 'system/member/index', NULL, 1, 0, 'C', '0', '0', 'system:user:list', 'user', 'admin', '2024-01-26 05:53:50', 'admin', '2024-01-26 05:54:15', '', 'member.manage');
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2074, '测试用例', 2013, 2, 'case', 'system/case/index', NULL, 1, 0, 'C', '0', '0', 'system:case:list', 'nested', 'admin', '2024-01-27 16:12:12', 'admin', '2025-01-19 01:12:19', '测试用例菜单', 'case');
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2075, '测试用例查询', 2074, 1, '#', '', NULL, 1, 0, 'F', '0', '0', 'system:case:query', '#', 'admin', '2024-01-27 16:12:12', '', NULL, '', NULL);
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2076, '测试用例新增', 2074, 2, '#', '', NULL, 1, 0, 'F', '0', '0', 'system:case:add', '#', 'admin', '2024-01-27 16:12:12', '', NULL, '', NULL);
@@ -1292,6 +1265,10 @@ INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2129, 'OpenAI账号修改', 2126, 3, '#', '', NULL, 1, 0, 'F', '0', '0', 'ai:account:edit', '#', 'admin', '2025-12-28 14:57:42', '', NULL, '', NULL);
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2130, 'OpenAI账号删除', 2126, 4, '#', '', NULL, 1, 0, 'F', '0', '0', 'ai:account:remove', '#', 'admin', '2025-12-28 14:57:42', '', NULL, '', NULL);
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2131, 'OpenAI账号导出', 2126, 5, '#', '', NULL, 1, 0, 'F', '0', '0', 'ai:account:export', '#', 'admin', '2025-12-28 14:57:42', '', NULL, '', NULL);
+INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2132, '团队管理', 2072, 0, 'team', 'admin/team/index', NULL, 1, 0, 'C', '0', '0', 'admin:team:list', 'website', 'admin', '2026-01-18 14:03:31', 'admin', '2026-01-21 06:56:01', '', 'team.manage');
+INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2133, '项目管理', 2072, 1, 'project', 'admin/project/index', NULL, 1, 0, 'C', '0', '0', 'admin:project:list', 'mk-project', 'admin', '2026-01-21 01:35:42', 'admin', '2026-01-21 06:56:07', '', 'project.manage');
+INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2134, '禁用', 2133, 1, '', NULL, NULL, 1, 0, 'F', '0', '0', 'admin:project:lock', '#', 'admin', '2026-01-21 06:57:22', '', NULL, '', 'lock');
+INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2135, '禁用', 2132, 1, '', NULL, NULL, 1, 0, 'F', '0', '0', 'admin:team:lock', '#', 'admin', '2026-01-21 06:57:44', '', NULL, '', 'lock');
 COMMIT;
 
 -- ----------------------------
@@ -1495,8 +1472,11 @@ CREATE TABLE `sys_project` (
                                `update_time` datetime DEFAULT NULL COMMENT '更新时间',
                                `team_id` bigint NOT NULL COMMENT '团队id',
                                `project_state` int DEFAULT '1' COMMENT '项目状态(0删除；1运行)',
+                               `is_lock` tinyint(3) unsigned zerofill DEFAULT '000' COMMENT '是否禁用',
+                               `lock_remark` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '禁用描述',
                                PRIMARY KEY (`project_id`),
-                               KEY `team_id_` (`team_id`)
+                               KEY `team_id_` (`team_id`),
+                               KEY `idx_lock` (`is_lock`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=58 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='项目表';
 
 -- ----------------------------
@@ -2351,8 +2331,11 @@ CREATE TABLE `sys_team` (
                             `update_time` datetime DEFAULT NULL COMMENT '更新时间',
                             `introduce` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '团队介绍',
                             `is_del` tinyint DEFAULT NULL COMMENT '是否删除',
+                            `is_lock` tinyint(3) unsigned zerofill DEFAULT '000' COMMENT '是否锁定',
+                            `lock_remark` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '锁定描述',
                             PRIMARY KEY (`team_id`),
-                            UNIQUE KEY `name_` (`team_name`) USING BTREE
+                            UNIQUE KEY `name_` (`team_name`) USING BTREE,
+                            KEY `idx_lock` (`is_lock`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='团队表';
 
 -- ----------------------------
