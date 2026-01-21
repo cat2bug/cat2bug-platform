@@ -28,7 +28,11 @@
           <span>{{ parseTime(scope.row.createTime, '{y}-{m}-{d}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('project.count')" align="center" prop="projectCount" width="130" />
+      <el-table-column :label="$t('project.count')" align="center" prop="projectCount" width="130">
+        <template slot-scope="scope">
+          <el-link type="primary" @click="handleProjectListClick(scope.row)">{{ scope.row.projectCount }}</el-link>
+        </template>
+      </el-table-column>
       <el-table-column :label="$t('member.count')" align="center" prop="memberCount" width="130" />
       <el-table-column :label="$t('team.introduce')" align="left" prop="introduce" />
       <el-table-column :label="$t('operate')" align="center" class-name="small-padding" width="120">
@@ -140,6 +144,11 @@ export default {
       this.queryParams.pageNum = 1;
       this.getList();
     },
+    handleProjectListClick(team) {
+      this.$router.push({path:'/admin/project', query: {
+          teamName: team.teamName
+        }})
+    }
   }
 };
 </script>

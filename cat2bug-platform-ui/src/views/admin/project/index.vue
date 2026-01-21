@@ -136,6 +136,7 @@ export default {
     },
   },
   created() {
+    this.queryParams.teamName = this.$route.query.teamName;
     this.getList();
   },
   mounted() {
