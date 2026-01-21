@@ -21,7 +21,7 @@
 </template>
 
 <script>
-import {lockTeam} from "@/api/system/team";
+import {lockTeam} from "@/api/admin/team";
 
 export default {
   name: "TeamLockDialog",

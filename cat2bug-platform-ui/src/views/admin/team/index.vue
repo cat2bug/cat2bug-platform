@@ -52,30 +52,12 @@
       @pagination="getList"
     />
     <team-lock-dialog ref="teamLockDialog" @change="handleQuery"></team-lock-dialog>
-    <!-- 添加或修改团队对话框 -->
-<!--    <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>-->
-<!--      <el-form ref="form" :model="form" :rules="rules" label-width="80px">-->
-<!--        <el-form-item label="团队名称" prop="teamName">-->
-<!--          <el-input v-model="form.teamName" placeholder="请输入团队名称" />-->
-<!--        </el-form-item>-->
-<!--        <el-form-item label="团队图标" prop="teamIcon">-->
-<!--          <image-upload v-model="form.teamIcon" :limit="1"/>-->
-<!--        </el-form-item>-->
-<!--        <el-form-item label="团队介绍" prop="introduce">-->
-<!--          <el-input v-model="form.introduce" placeholder="请输入团队介绍" />-->
-<!--        </el-form-item>-->
-<!--      </el-form>-->
-<!--      <div slot="footer" class="dialog-footer">-->
-<!--        <el-button type="primary" @click="submitForm">确 定</el-button>-->
-<!--        <el-button @click="cancel">取 消</el-button>-->
-<!--      </div>-->
-<!--    </el-dialog>-->
   </div>
 </template>
 
 <script>
 import TeamLockDialog from './lock'
-import { listTeam } from "@/api/system/team";
+import { listTeam } from "@/api/admin/team";
 
 export default {
   name: "AdminTeam",
