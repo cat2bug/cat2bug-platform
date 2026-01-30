@@ -1,7 +1,9 @@
 package com.cat2bug.im.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.cat2bug.common.core.redis.RedisCache;
 import com.cat2bug.common.utils.StringUtils;
+import com.cat2bug.im.domain.DingInternalRobotMessageResult;
 import com.cat2bug.im.domain.DingMessage;
 import com.cat2bug.im.domain.DingTokenResult;
 import com.cat2bug.im.domain.IMDingPlatformConfig;
@@ -10,6 +12,7 @@ import lombok.extern.log4j.Log4j;
 import okhttp3.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -35,7 +38,14 @@ public class DingMessageServiceImpl implements IIMService<DingMessage, IMDingPla
      */
     private final static String SEND_INTERNAL_ROBOT_MESSAGE_URL = "https://api.dingtalk.com/v1.0/robot/oToMessages/batchSend";
     /** token缓存 */
-    private Map<String, String> tokenCache = new ConcurrentHashMap<>();
+    @Autowired
+    private RedisCache redisCache;
+
+    /** 存储钉钉机器人消息的缓存组名称 */
+    private final static String DING_TOKEN_KEY = "ding-robot-message-token";
+
+    /** 重发次数的缓存 */
+    private Map<String, Integer> resendCountCache = new ConcurrentHashMap<>();
     /**
      * 接口内容类型
      */
@@ -43,7 +53,7 @@ public class DingMessageServiceImpl implements IIMService<DingMessage, IMDingPla
 
     @Override
     public void sendNoticeMessage(DingMessage message, IMDingPlatformConfig config) throws Exception {
-        OkHttpClient client = new OkHttpClient().newBuilder().readTimeout(10000, TimeUnit.SECONDS).build();
+        OkHttpClient client = new OkHttpClient().newBuilder().readTimeout(30000, TimeUnit.SECONDS).build();
         // 发送hook群消息
         if(StringUtils.isNotBlank(config.getHook())) {
             this.sendHookMessage(client, message, config);
@@ -61,14 +71,14 @@ public class DingMessageServiceImpl implements IIMService<DingMessage, IMDingPla
      */
     private void sendInternalMessage(OkHttpClient client, DingMessage message, IMDingPlatformConfig config) throws Exception {
         String tokenKey = this.getTokenCacheKey(message);
-        if(tokenCache.containsKey(tokenKey)==false) {
+        if(redisCache.hasKey(DING_TOKEN_KEY, tokenKey)==false) {
             String token = this.getToken(client, message);
-            tokenCache.put(tokenKey, token);
+            redisCache.setCacheObject(DING_TOKEN_KEY, tokenKey, token);
         }
-        sendInternalRobotMessage(client, tokenCache.get(tokenKey),message,config);
+        sendInternalRobotMessage(client, redisCache.getCacheObject(DING_TOKEN_KEY, tokenKey),message);
     }
 
-    private void sendInternalRobotMessage(OkHttpClient client, String token, DingMessage message, IMDingPlatformConfig config) throws Exception {
+    private void sendInternalRobotMessage(OkHttpClient client, String token, DingMessage message) throws Exception {
         String body = JSON.toJSONString(message);
         RequestBody formBody = RequestBody.create(FORM_CONTENT_TYPE, body);
         Request request = new Request.Builder()
@@ -76,9 +86,46 @@ public class DingMessageServiceImpl implements IIMService<DingMessage, IMDingPla
                 .url(SEND_INTERNAL_ROBOT_MESSAGE_URL)
                 .post(formBody).build();
         Response response = client.newCall(request).execute();
-        String json = response.body().string();
-//        DingInternalRobotMessageResult result = JSON.parseObject(json, DingInternalRobotMessageResult.class);
-        log.info("钉钉机器人发送企业内部消息接口，发送数据:{} \n返回消息:{}",body, json);
+        log.info("发送钉钉信息: code:{} message:{}", response.code(), response.message());
+        switch (response.code()) {
+            case 200:
+                String json = response.body().string();
+//              DingInternalRobotMessageResult result = JSON.parseObject(json, DingInternalRobotMessageResult.class);
+                log.info("钉钉机器人发送企业内部消息接口，发送数据:{} \n返回消息:{}", body, json);
+                break;
+            case 400:
+                this.handleExceptionOfSendInternalRobotMessage(client, message, response);
+                break;
+        }
+    }
+
+    /**
+     * 处理发送机器人消息后返回的异常错误
+     * @param client
+     * @param message
+     * @param response
+     * @throws Exception
+     */
+    private void handleExceptionOfSendInternalRobotMessage(OkHttpClient client, DingMessage message, Response response) throws Exception {
+        switch (response.message()) {
+            // token不存在
+            case "token.notExisted":
+            // 无效token处理
+            case "invalidParameter.token.invalid":
+                log.info("========================================================================================================================================");
+                // 重新申请token
+                String tokenKey = this.getTokenCacheKey(message);
+                String token = this.getToken(client, message);
+                redisCache.setCacheObject(DING_TOKEN_KEY, tokenKey, token);
+                if(resendCountCache.containsKey(tokenKey)==false) {
+                    resendCountCache.put(tokenKey, 3);
+                }
+                if(resendCountCache.get(tokenKey)>0)
+                    sendInternalRobotMessage(client, token, message);// 重新发送信息
+                else
+                    resendCountCache.remove(tokenKey);
+                break;
+        }
     }
 
     /**
