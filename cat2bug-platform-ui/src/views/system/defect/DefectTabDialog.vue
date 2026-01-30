@@ -54,6 +54,15 @@
           clearable
         />
       </el-form-item>
+      <el-form-item :label="$t('create-by')" prop="createByIds">
+        <select-project-member
+          v-model="form.config.createByIds"
+          :project-id="projectId"
+          :placeholder="$t('defect.select-create-by').toString()"
+          :is-head="false"
+          size="medium"
+        />
+      </el-form-item>
       <el-form-item :label="$t('handle-by')" prop="handleBy">
         <select-project-member
           v-model="form.config.handleBy"
