@@ -3,12 +3,11 @@ package com.cat2bug.im.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.cat2bug.common.core.redis.RedisCache;
 import com.cat2bug.common.utils.StringUtils;
-import com.cat2bug.im.domain.DingInternalRobotMessageResult;
+import com.cat2bug.im.domain.DingErrorResponse;
 import com.cat2bug.im.domain.DingMessage;
 import com.cat2bug.im.domain.DingTokenResult;
 import com.cat2bug.im.domain.IMDingPlatformConfig;
 import com.cat2bug.im.service.IIMService;
-import lombok.extern.log4j.Log4j;
 import okhttp3.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -86,15 +85,14 @@ public class DingMessageServiceImpl implements IIMService<DingMessage, IMDingPla
                 .url(SEND_INTERNAL_ROBOT_MESSAGE_URL)
                 .post(formBody).build();
         Response response = client.newCall(request).execute();
-        log.info("发送钉钉信息: code:{} message:{}", response.code(), response.message());
+        String json = response.body().string();
+        log.debug("钉钉机器人发送企业内部消息接口，发送数据:{} \n返回消息:{}", body, json);
         switch (response.code()) {
             case 200:
-                String json = response.body().string();
 //              DingInternalRobotMessageResult result = JSON.parseObject(json, DingInternalRobotMessageResult.class);
-                log.info("钉钉机器人发送企业内部消息接口，发送数据:{} \n返回消息:{}", body, json);
                 break;
             case 400:
-                this.handleExceptionOfSendInternalRobotMessage(client, message, response);
+                this.handleExceptionOfSendInternalRobotMessage(client, message, json);
                 break;
         }
     }
@@ -106,24 +104,19 @@ public class DingMessageServiceImpl implements IIMService<DingMessage, IMDingPla
      * @param response
      * @throws Exception
      */
-    private void handleExceptionOfSendInternalRobotMessage(OkHttpClient client, DingMessage message, Response response) throws Exception {
-        switch (response.message()) {
-            // token不存在
-            case "token.notExisted":
-            // 无效token处理
-            case "invalidParameter.token.invalid":
-                log.info("========================================================================================================================================");
+    private void handleExceptionOfSendInternalRobotMessage(OkHttpClient client, DingMessage message, String response) throws Exception {
+        DingErrorResponse dingErrorResponse = JSON.parseObject(response, DingErrorResponse.class);
+        switch (dingErrorResponse.getCode()) {
+            // 无效鉴权
+            case DingErrorResponse.INVALID_AUTHENTICATION_CODE:
                 // 重新申请token
                 String tokenKey = this.getTokenCacheKey(message);
                 String token = this.getToken(client, message);
                 redisCache.setCacheObject(DING_TOKEN_KEY, tokenKey, token);
-                if(resendCountCache.containsKey(tokenKey)==false) {
-                    resendCountCache.put(tokenKey, 3);
-                }
-                if(resendCountCache.get(tokenKey)>0)
+                // 如果重发次数大于0，测发送
+                if(this.refreshResendCountCache(tokenKey)>0) {
                     sendInternalRobotMessage(client, token, message);// 重新发送信息
-                else
-                    resendCountCache.remove(tokenKey);
+                }
                 break;
         }
     }
@@ -147,7 +140,7 @@ public class DingMessageServiceImpl implements IIMService<DingMessage, IMDingPla
         Response response = client.newCall(request).execute();
         String json = response.body().string();
         DingTokenResult tokenResult = JSON.parseObject(json, DingTokenResult.class);
-        log.info("钉钉获取token接口返回消息:{}",json);
+        log.debug("钉钉获取token接口返回消息:{}",json);
         return tokenResult.getAccessToken();
     }
 
@@ -166,7 +159,7 @@ public class DingMessageServiceImpl implements IIMService<DingMessage, IMDingPla
                 .post(formBody).build();
         Response response = client.newCall(request).execute();
         String json = response.body().string();
-        log.info("钉钉消息已经发送。{}",json);
+        log.debug("钉钉消息已经发送。{}",json);
         if(response.isSuccessful()==false) {
             log.error("发送钉钉信息错误,返回信息:{} \n 请求参数:{}",json, body);
         }
@@ -189,5 +182,25 @@ public class DingMessageServiceImpl implements IIMService<DingMessage, IMDingPla
      */
     private String getTokenCacheKey(DingMessage message) {
         return message.getProjectId() + "-" + message.getAppKey();
+    }
+
+    /**
+     * 刷新重发次数
+     * @param tokenKey  token值
+     * @return          剩余发送次数
+     */
+    private int refreshResendCountCache(String tokenKey) {
+        if(resendCountCache.containsKey(tokenKey)==false) {
+            resendCountCache.put(tokenKey, 3);
+        } else {
+            resendCountCache.put(tokenKey, resendCountCache.get(tokenKey) - 1);
+        }
+        int count = resendCountCache.get(tokenKey); // 剩余刷新次数
+        if(count<=0) {
+            resendCountCache.remove(tokenKey);
+            return 0;
+        } else {
+            return resendCountCache.get(tokenKey);
+        }
     }
 }
