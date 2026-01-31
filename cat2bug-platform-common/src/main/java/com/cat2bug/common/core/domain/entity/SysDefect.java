@@ -122,7 +122,10 @@ public class SysDefect extends BaseEntity
     @Excel(name = "创建人", i18nNameKey = "createBy", type = Excel.Type.EXPORT)
     private String createMemberName;
 
-    /** 处理人id */
+    /** 创建人id集合 */
+    private List<Long> createByIds;
+
+    /** 处理人id集合 */
     private List<Long> handleBy;
 
     /** 处理人名称 */

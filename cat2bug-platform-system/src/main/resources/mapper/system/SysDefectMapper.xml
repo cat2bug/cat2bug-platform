@@ -293,6 +293,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                     d.defect_state = #{state}
                 </foreach>
             </if>
+            <if test="defect.createByIds != null  and defect.createByIds != ''"> and
+                <foreach collection="defect.createByIds" item="b" separator=" or " open="(" close=")">
+                    d.create_by_id REGEXP CONCAT('\b',#{b},'\b') OR d.create_by_id REGEXP CONCAT('\\b',#{b},'\\b')
+                </foreach>
+            </if>
             <if test="defect.handleBy != null  and defect.handleBy != ''"> and
                 <foreach collection="defect.handleBy" item="b" separator=" or " open="(" close=")">
                     d.handle_by REGEXP CONCAT('\b',#{b},'\b') OR d.handle_by REGEXP CONCAT('\\b',#{b},'\\b')

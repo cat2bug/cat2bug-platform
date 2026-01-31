@@ -530,6 +530,7 @@ export default {
     /** 查询测试用例列表 */
     getList() {
       this.loading = true;
+      this.queryParams.projectId = this.projectId;
       listCase(this.queryParams).then(response => {
         this.loading = false;
         this.caseList = response.rows;
