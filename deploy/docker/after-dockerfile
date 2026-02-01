@@ -1,0 +1,9 @@
+FROM openjdk:11-jre
+MAINTAINER yuzhantao@qq.com
+# 创建目录
+RUN mkdir -p /home
+# 指定路径
+WORKDIR /home
+COPY ./cat2bug-admin.jar .
+# 启动认证服务
+ENTRYPOINT ["java","-jar","cat2bug-admin.jar","--spring.database-type=mysql","--server.port=2020"]
