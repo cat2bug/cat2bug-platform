@@ -97,6 +97,7 @@ Cat2Bug-Platform是一套永久免费开源的Bug管理平台，可以完全私�
 ------|----cat2bug-platform-quartz      # 定时任务
 ------|----cat2bug-platform-system      # 业务模块
 ------|----cat2bug-platform-ui          # 前端VUE工程
+------|----deploy                       # 部署相关文件
 ------|----sql                          # 数据库文件
 ------|----readme                       # 文档
 ````
@@ -108,7 +109,29 @@ Cat2Bug-Platform是一套永久免费开源的Bug管理平台，可以完全私�
 手动部署需要提前安装Java 11环境，并下载cat2bug-platform发行版程序，执行命令如下：
 
 ```shell
-nohup java -jar cat2bug-platform-0.6.1.jar>/dev/null 2>&1 &
+nohup java -jar cat2bug-admin.jar>/dev/null 2>&1 &
+```
+
+### 手动通过批处理命令部署
+
+将deploy目录中的cat2bug-service.sh或cat2bug-service.bat文件与cat2bug-admin.jar文件拷贝到一个目录下，执行以下命令：
+
+* 启动服务
+
+```shell
+cat2bug-service.sh start
+```
+
+* 停止服务
+
+```shell
+cat2bug-service.sh stop
+```
+
+* 查看服务状态
+
+```shell
+cat2bug-service.sh status
 ```
 
 ### Docker单容器部署
@@ -117,6 +140,14 @@ nohup java -jar cat2bug-platform-0.6.1.jar>/dev/null 2>&1 &
 
 ```docker
 docker run -it -d -p 8022:8022 --name cat2bug-platform qyzw-docker.pkg.coding.net/cat2bug/cat2bug-platform/single:latest
+```
+
+### 本地通过Docker-Compose容器化部署
+
+将后台服务./cat2bug-platform-admin/target/cat2bug-admin.jar、前台打包后的文件夹./cat2bug-platform-admin/src/main/resources/static、数据库sql文件./data/cat2bug_platform.sql拷贝到./deploy/docker目录下，执行以下命令：
+
+```shell
+docker-compose up -d
 ```
 
 部署成功后，打开浏览器访问[http://127.0.0.1:8022](http://127.0.0.1:8022),在登陆页面自行注册账号登陆使用即可。

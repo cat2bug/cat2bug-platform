@@ -311,6 +311,9 @@ export default {
       // 版本号
       version: null,
       tanksMemberList: [{
+        name: '忽然之間',
+        avatarUrl: require('@/assets/images/thanks/huranzhijian.jpg')
+      },{
         name: '未完成',
         avatarUrl: require('@/assets/images/thanks/weiwancheng.png')
       },{
