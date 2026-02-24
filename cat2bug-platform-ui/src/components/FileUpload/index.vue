@@ -49,6 +49,7 @@
 import { getToken } from "@/utils/auth";
 import i18n from "@/utils/i18n/i18n";
 import {strFormat} from "@/utils";
+import {setHeader} from "@/utils/request";
 
 export default {
   name: "FileUpload",
@@ -81,14 +82,14 @@ export default {
     }
   },
   data() {
+    let headers = {};
+    setHeader('/common/upload', headers);
     return {
       number: 0,
       uploadList: [],
       baseUrl: process.env.VUE_APP_BASE_API,
       uploadFileUrl: process.env.VUE_APP_BASE_API + "/common/upload", // 上传文件服务器地址
-      headers: {
-        Authorization: "Bearer " + getToken(),
-      },
+      headers: headers,
       fileList: [],
     };
   },

@@ -183,9 +183,9 @@
                 <el-button size="mini" type="text" icon="el-icon-d-arrow-right">更多</el-button>
                 <el-dropdown-menu slot="dropdown">
                   <el-dropdown-item command="handleResetPwd" icon="el-icon-key"
-                    v-hasPermi="['system:member:resetPwd']">重置密码</el-dropdown-item>
+                                    v-hasPermi="['system:member:resetPwd']">重置密码</el-dropdown-item>
                   <el-dropdown-item command="handleAuthRole" icon="el-icon-circle-check"
-                    v-hasPermi="['system:member:edit']">分配角色</el-dropdown-item>
+                                    v-hasPermi="['system:member:edit']">分配角色</el-dropdown-item>
                 </el-dropdown-menu>
               </el-dropdown>
             </template>
@@ -345,6 +345,7 @@ import { listUser, getUser, delUser, addUser, updateUser, resetUserPwd, changeUs
 import { getToken } from "@/utils/auth";
 import Treeselect from "@riophae/vue-treeselect";
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
+import {setHeader} from "@/utils/request";
 
 export default {
   name: "User",
@@ -399,7 +400,7 @@ export default {
         // 是否更新已经存在的用户数据
         updateSupport: 0,
         // 设置上传的请求头部
-        headers: { Authorization: "Bearer " + getToken(), language: this.$i18n.locale },
+        headers: {},
         // 上传的地址
         url: process.env.VUE_APP_BASE_API + "/system/user/importData"
       },
@@ -459,6 +460,10 @@ export default {
     }
   },
   created() {
+    let headers = {};
+    setHeader('/system/defect/import', headers);
+    this.upload.headers = headers;
+
     this.getList();
     this.getDeptTree();
     this.getConfigKey("sys.member.initPassword").then(response => {
@@ -593,10 +598,10 @@ export default {
         inputPattern: /^.{5,20}$/,
         inputErrorMessage: "用户密码长度必须介于 5 和 20 之间"
       }).then(({ value }) => {
-          resetUserPwd(row.userId, value).then(response => {
-            this.$modal.msgSuccess("修改成功，新密码是：" + value);
-          });
-        }).catch(() => {});
+        resetUserPwd(row.userId, value).then(response => {
+          this.$modal.msgSuccess("修改成功，新密码是：" + value);
+        });
+      }).catch(() => {});
     },
     /** 分配角色操作 */
     handleAuthRole: function(row) {

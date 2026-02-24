@@ -4,17 +4,20 @@ import { saveAs } from 'file-saver'
 import { getToken } from '@/utils/auth'
 import errorCode from '@/utils/errorCode'
 import { blobValidate } from "@/utils/ruoyi";
+import {setHeader} from "@/utils/request";
 
 const baseURL = process.env.VUE_APP_BASE_API
 
 export default {
   name(name, isDelete = true) {
-    var url = baseURL + "/common/download?fileName=" + encodeURIComponent(name) + "&delete=" + isDelete
+    let url = baseURL + "/common/download?fileName=" + encodeURIComponent(name) + "&delete=" + isDelete
+    let headers = {};
+    setHeader('/common/download', headers);
     axios({
       method: 'get',
       url: url,
       responseType: 'blob',
-      headers: { 'Authorization': 'Bearer ' + getToken() }
+      headers: headers
     }).then((res) => {
       const isBlob = blobValidate(res.data);
       if (isBlob) {
@@ -26,12 +29,14 @@ export default {
     })
   },
   resource(resource) {
-    var url = baseURL + "/common/download/resource?resource=" + encodeURIComponent(resource);
+    let url = baseURL + "/common/download/resource?resource=" + encodeURIComponent(resource);
+    let headers = {};
+    setHeader('/common/download/resource', headers);
     axios({
       method: 'get',
       url: url,
       responseType: 'blob',
-      headers: { 'Authorization': 'Bearer ' + getToken() }
+      headers: headers
     }).then((res) => {
       const isBlob = blobValidate(res.data);
       if (isBlob) {
@@ -42,13 +47,15 @@ export default {
       }
     })
   },
-  zip(url, name) {
-    var url = baseURL + url
+  zip(_url, name) {
+    let url = baseURL + _url
+    let headers = {};
+    setHeader(url, headers);
     axios({
       method: 'get',
       url: url,
       responseType: 'blob',
-      headers: { 'Authorization': 'Bearer ' + getToken() }
+      headers: headers
     }).then((res) => {
       const isBlob = blobValidate(res.data);
       if (isBlob) {

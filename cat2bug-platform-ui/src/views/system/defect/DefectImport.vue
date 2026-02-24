@@ -30,6 +30,7 @@
 <script>
 import {getToken} from "@/utils/auth";
 import {strFormat} from "@/utils";
+import {setHeader} from "@/utils/request";
 
 export default {
   name: "DefectImport",
@@ -46,7 +47,7 @@ export default {
         // 是否更新已经存在的用户数据
         updateSupport: 0,
         // 设置上传的请求头部
-        headers: { Authorization: "Bearer " + getToken(), language: this.$i18n.locale },
+        headers: { },
         // 上传的地址
         url: process.env.VUE_APP_BASE_API + "/system/defect/import"
       },
@@ -57,6 +58,11 @@ export default {
       type: Number,
       default: null
     }
+  },
+  created() {
+    let headers = {};
+    setHeader('/system/defect/import', headers);
+    this.upload.headers = headers;
   },
   methods: {
     strFormat,

@@ -1,4 +1,5 @@
 import axios from 'axios'
+import {md5} from 'js-md5'
 import { Notification, MessageBox, Message, Loading } from 'element-ui'
 import store from '@/store'
 import { getToken } from '@/utils/auth'
@@ -23,18 +24,10 @@ const service = axios.create({
 
 // request拦截器
 service.interceptors.request.use(config => {
-  // 是否需要设置 token
-  const isToken = (config.headers || {}).isToken === false
   // 是否需要防止数据重复提交
   const isRepeatSubmit = (config.headers || {}).repeatSubmit === false
-  if (getToken() && !isToken) {
-    config.headers['Authorization'] = 'Bearer ' + getToken() // 让每个请求携带自定义token 请根据实际情况自行修改
-  }
-  let language = localStorage.getItem(I18N_LOCALE_KEY);
-  if(!(language != null && language != "" && language != undefined) ){
-    language = 'zh_CN';
-  }
-  config.headers['language'] = language;
+  // 设置headers
+  setHeader(config.url, config.headers);
   // get请求映射params参数
   if (config.method === 'get' && config.params) {
     let url = config.url + '?' + tansParams(config.params);
@@ -73,8 +66,8 @@ service.interceptors.request.use(config => {
   }
   return config
 }, error => {
-    console.log(error)
-    Promise.reject(error)
+  console.log(error)
+  Promise.reject(error)
 })
 
 // 响应拦截器
@@ -100,6 +93,8 @@ service.interceptors.response.use(res => {
         });
       }
       return Promise.reject(i18n.t('http.invalid-session'))
+    } else if (code > 10000) {
+      return Promise.reject(res.data)
     } else if (code === 500) {
       Message({ message: msg, type: 'error' })
       return Promise.reject(new Error(msg))
@@ -127,6 +122,32 @@ service.interceptors.response.use(res => {
     return Promise.reject(error)
   }
 )
+
+/**
+ * 设置http的头信息
+ * @param url
+ * @param headers
+ */
+export function setHeader(url, headers) {
+  const isToken = (headers || {}).isToken === false
+  if (getToken() && !isToken) {
+    headers['Authorization'] = 'Bearer ' + getToken() // 让每个请求携带自定义token 请根据实际情况自行修改
+    // 云端接口校验
+    const platform = 'cat2bug-cloud'
+    const secret = 'cat2bug_f1ijfdklsanvdaooljfds'
+    const timestamp = Date.now().toString()
+    const signStr = platform + timestamp  + url + secret
+    const sign = md5(signStr);
+    headers['C2B_C0'] = platform
+    headers['C2B_C2'] = timestamp
+    headers['C2B_C1'] = sign
+  }
+  let language = localStorage.getItem(I18N_LOCALE_KEY);
+  if(!(language != null && language != "" && language != undefined) ){
+    language = 'zh_CN';
+  }
+  headers['language'] = language;
+}
 
 // 通用下载方法
 export function download(url, params, filename, config) {
