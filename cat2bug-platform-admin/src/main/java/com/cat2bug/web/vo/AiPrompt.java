@@ -16,7 +16,7 @@ public class AiPrompt {
     /**
      * 模型ID
      */
-    private Long modelId;
+    private String modelId;
     /**
      * 提示词
      */

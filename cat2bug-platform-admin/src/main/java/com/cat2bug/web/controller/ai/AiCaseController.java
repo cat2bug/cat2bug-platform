@@ -49,7 +49,7 @@ public class AiCaseController extends BaseController {
         AiCaseList cases = null;
         switch (prompt.getServiceType()) {
             case SERVICE_TYPE_OPEN_ID:
-                cases = aiService.generate(prompt.getModelId()+"", json,false, prompt.getContext(), AiCaseList.class);
+                cases = aiService.generate(prompt.getModelId(), json,false, prompt.getContext(), AiCaseList.class);
                 break;
             case SERVICE_TYPE_OLLAMA:
                 SysAiModuleConfig sysAiModuleConfig = sysAiModuleConfigService.selectSysAiModuleConfigByProjectId(prompt.getProjectId());
