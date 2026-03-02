@@ -1,6 +1,6 @@
 {
   "name": "cat2bug",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "猫陪我改BUG",
   "author": "yuzhantao",
   "license": "MIT",
@@ -57,6 +57,7 @@
     "js-base64": "^3.6.0",
     "js-beautify": "1.13.0",
     "js-cookie": "3.0.1",
+    "js-md5": "^0.8.3",
     "js-web-screen-shot": "^1.9.9-rc.6",
     "jsencrypt": "3.0.0-rc.1",
     "jspdf": "^2.5.1",
