@@ -251,8 +251,17 @@ public class SysCaseServiceImpl implements ISysCaseService
             }
         }
 
+        // 过滤出有效记录（通过基本字段验证的记录）用于重复判断
+        // 只有用例名称、预期结果和模块名称都不为空的记录才参与重复检查
+        // 这样可以避免将空字段错误地判定为重复
+        List<SysCase> validCases = caseList.stream()
+                .filter(c -> StringUtils.isNotEmpty(c.getCaseName())
+                        && StringUtils.isNotEmpty(c.getCaseExpect())
+                        && StringUtils.isNotEmpty(c.getModuleName()))
+                .collect(Collectors.toList());
+
         // 查询导入的重复项
-        caseList.stream().collect(Collectors.groupingBy(new Function<SysCase, String>() {
+        validCases.stream().collect(Collectors.groupingBy(new Function<SysCase, String>() {
             @Override
             public String apply(SysCase sysCase) {
                 return sysCase.getProjectId()+sysCase.getCaseName()+sysCase.getModuleId();
