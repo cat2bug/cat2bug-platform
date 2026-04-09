@@ -112,13 +112,22 @@ public class SysProjectApiServiceImpl implements ISysProjectApiService
 
     /**
      * 修改项目API
-     * 
+     *
      * @param sysProjectApi 项目API
      * @return 结果
      */
     @Override
+    @Transactional
     public int updateSysProjectApi(SysProjectApi sysProjectApi)
     {
+        // 更新用户表的 nick_name（API 别名）
+        if (sysProjectApi.getApiName() != null && sysProjectApi.getUserId() != null) {
+            SysUser user = new SysUser();
+            user.setUserId(sysProjectApi.getUserId());
+            user.setNickName(sysProjectApi.getApiName());
+            sysUserMapper.updateUser(user);
+        }
+
         return sysProjectApiMapper.updateSysProjectApi(sysProjectApi);
     }
 

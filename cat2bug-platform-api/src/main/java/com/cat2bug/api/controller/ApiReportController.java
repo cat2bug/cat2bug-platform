@@ -41,7 +41,6 @@ public class ApiReportController extends BaseController
     /**
      * 新增报告
      */
-    @PreAuthorize("@ss.hasPermi('api:report:push')")
     @Log(title = "报告", businessType = BusinessType.INSERT)
     @PostMapping("/defect")
     public AjaxResult pushDefect(HttpServletRequest request, @RequestBody SysReport<List<ApiDefectRequest>> apiReport)

@@ -30,7 +30,6 @@ public class ApiMemberController extends BaseController {
      * @param apiMember 成员参数对象
      * @return  成员集合
      */
-    @PreAuthorize("@ss.hasPermi('api:defect:list')")
     @GetMapping
     public TableDataInfo list(ApiMember apiMember)
     {

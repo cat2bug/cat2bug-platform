@@ -44,7 +44,6 @@ public class ApiDefectController extends BaseController {
      * @param apiDefect 缺陷参数对象
      * @return  缺陷集合
      */
-    @PreAuthorize("@ss.hasPermi('api:defect:list')")
     @GetMapping
     public TableDataInfo list(ApiDefectRequest apiDefect)
     {
@@ -70,7 +69,6 @@ public class ApiDefectController extends BaseController {
     /**
      * 获取缺陷详细信息
      */
-    @PreAuthorize("@ss.hasPermi('api:defect:query')")
     @GetMapping(value = "/{defectNumber}")
     public AjaxResult getInfo(@PathVariable("defectNumber") Long defectNumber)
     {
@@ -85,7 +83,6 @@ public class ApiDefectController extends BaseController {
 //            @Parameter(name = "defectName", description = "缺陷名称", required = true, in = ParameterIn.QUERY),
 //            @Parameter(name = "defectDescribe", description = "缺陷描述", required = true, in = ParameterIn.QUERY)
 //    })
-    @PreAuthorize("@ss.hasPermi('api:defect:edit')")
     @PostMapping
     public AjaxResult add(@RequestBody(required=false)  ApiDefectRequest apiDefect)
     {
@@ -95,7 +92,6 @@ public class ApiDefectController extends BaseController {
     /**
      * 修改缺陷
      */
-    @PreAuthorize("@ss.hasPermi('api:defect:add')")
     @PutMapping
     public AjaxResult edit(@RequestBody(required=false)  ApiDefectRequest apiDefect)
     {
@@ -108,7 +104,6 @@ public class ApiDefectController extends BaseController {
     /**
      * 指派
      */
-    @PreAuthorize("@ss.hasPermi('api:defect:list')")
     @PostMapping("/{defectNum}/assign")
     public AjaxResult assign(@PathVariable Long defectNum, @RequestBody(required=false)  ApiDefectHandle apiDefectHandle)
     {
@@ -119,7 +114,6 @@ public class ApiDefectController extends BaseController {
     /**
      * 驳回
      */
-    @PreAuthorize("@ss.hasPermi('api:defect:list')")
     @PostMapping("/{defectNum}/reject")
     public AjaxResult reject(@PathVariable Long defectNum, @RequestBody(required=false)  ApiDefectHandle apiDefectHandle)
     {
@@ -130,7 +124,6 @@ public class ApiDefectController extends BaseController {
     /**
      * 修复
      */
-    @PreAuthorize("@ss.hasPermi('api:defect:list')")
     @PostMapping("/{defectNum}/repair")
     public AjaxResult repair(@PathVariable Long defectNum, @RequestBody(required=false)  ApiDefectHandle apiDefectHandle)
     {
@@ -141,7 +134,6 @@ public class ApiDefectController extends BaseController {
     /**
      * 通过
      */
-    @PreAuthorize("@ss.hasPermi('api:defect:list')")
     @PostMapping("/{defectNum}/pass")
     public AjaxResult pass(@PathVariable Long defectNum, @RequestBody(required=false)  ApiDefectHandle apiDefectHandle)
     {
@@ -152,7 +144,6 @@ public class ApiDefectController extends BaseController {
     /**
      * 关闭
      */
-    @PreAuthorize("@ss.hasPermi('api:defect:list')")
     @PostMapping("/{defectNum}/close")
     public AjaxResult close(@PathVariable Long defectNum, @RequestBody(required=false)  ApiDefectHandle apiDefectHandle)
     {
@@ -163,7 +154,6 @@ public class ApiDefectController extends BaseController {
     /**
      * 启动
      */
-    @PreAuthorize("@ss.hasPermi('api:defect:list')")
     @PostMapping("/{defectNum}/open")
     public AjaxResult open(@PathVariable Long defectNum, @RequestBody(required=false) ApiDefectHandle apiDefectHandle)
     {

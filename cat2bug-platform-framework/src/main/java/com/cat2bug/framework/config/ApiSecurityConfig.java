@@ -2,6 +2,7 @@ package com.cat2bug.framework.config;
 
 import com.cat2bug.framework.config.properties.PermitAllUrlProperties;
 import com.cat2bug.framework.security.filter.ApiAuthenticationTokenFilter;
+import com.cat2bug.framework.security.filter.ApiPermissionFilter;
 import com.cat2bug.framework.security.handle.AuthenticationEntryPointImpl;
 import com.cat2bug.framework.security.handle.LogoutSuccessHandlerImpl;
 import com.cat2bug.framework.web.service.ApiUserDetailsServiceImpl;
@@ -48,6 +49,13 @@ public class ApiSecurityConfig extends WebSecurityConfigurerAdapter
      */
     @Autowired
     private ApiAuthenticationTokenFilter authenticationTokenFilter;
+
+    /**
+     * API 权限验证过滤器
+     */
+    @Autowired
+    private ApiPermissionFilter apiPermissionFilter;
+
     /**
      * 跨域过滤器
      */
@@ -106,7 +114,8 @@ public class ApiSecurityConfig extends WebSecurityConfigurerAdapter
                 .authorizeRequests(authz -> authz
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(authenticationTokenFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(authenticationTokenFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(apiPermissionFilter, ApiAuthenticationTokenFilter.class);
     }
 
     /**

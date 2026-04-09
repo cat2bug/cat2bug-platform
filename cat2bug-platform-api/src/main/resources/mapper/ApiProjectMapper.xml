@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.api.mapper.ApiProjectMapper">
+
+    <resultMap type="SysProject" id="SysProjectResult">
+        <id     property="projectId"       column="project_id"      />
+        <result property="projectName"     column="project_name"    />
+        <result property="projectIntroduce" column="project_introduce" />
+        <result property="createTime"      column="create_time"     />
+        <result property="createBy"        column="create_by"       />
+    </resultMap>
+
+    <resultMap type="ApiMember" id="ApiMemberResult">
+        <id     property="memberId"       column="user_id"      />
+        <result property="memberAccount"  column="user_name"    />
+        <result property="memberName"     column="nick_name"    />
+        <result property="email"          column="email"        />
+        <result property="phoneNumber"    column="phonenumber"  />
+    </resultMap>
+
+    <!-- 查询项目信息 -->
+    <select id="selectProjectById" parameterType="Long" resultMap="SysProjectResult">
+        select project_id, project_name, project_introduce, create_time, create_by
+        from sys_project
+        where project_id = #{projectId}
+    </select>
+
+    <!-- 查询创建成员信息 -->
+    <select id="selectCreatorByProjectId" parameterType="Long" resultMap="ApiMemberResult">
+        select u.user_id, u.user_name, u.nick_name, u.email, u.phonenumber
+        from sys_user u
+        inner join sys_project p on p.create_by = u.user_name
+        where p.project_id = #{projectId} and u.del_flag = '0'
+    </select>
+
+    <!-- 获取项目统计信息 -->
+    <select id="getProjectStatistics" parameterType="Long" resultType="map">
+        select
+            (select count(*) from sys_defect where project_id = #{projectId}) as defectCount,
+            (select count(*) from sys_case where project_id = #{projectId}) as caseCount,
+            (select count(*) from sys_user_project where project_id = #{projectId}) as memberCount,
+            (select count(*) from sys_module where project_id = #{projectId}) as deliverableCount
+    </select>
+
+</mapper>

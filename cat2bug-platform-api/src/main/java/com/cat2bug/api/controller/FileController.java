@@ -40,7 +40,6 @@ public class FileController
     /**
      * 通用上传请求（单个）
      */
-    @PreAuthorize("@ss.hasPermi('api:defect:list')")
     @PostMapping("/upload")
     public AjaxResult uploadFile(MultipartFile file) throws Exception
     {

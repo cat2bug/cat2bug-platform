@@ -45,6 +45,14 @@ public class SysProjectApi extends BaseEntity
     @Excel(name = "API名称")
     private String apiName;
 
+    /** 启用状态 */
+    @Excel(name = "启用状态")
+    private Boolean enabled;
+
+    /** 权限配置 */
+    @Excel(name = "权限配置")
+    private String features;
+
     @Override
     public String toString() {
         return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)
@@ -55,6 +63,8 @@ public class SysProjectApi extends BaseEntity
             .append("expireTime", getExpireTime())
             .append("remark", getRemark())
             .append("apiName", getApiName())
+            .append("enabled", getEnabled())
+            .append("features", getFeatures())
             .toString();
     }
 }

@@ -5,12 +5,13 @@ import com.cat2bug.api.domain.ApiDeliverable;
 import com.cat2bug.api.service.IApiDefectService;
 import com.cat2bug.api.service.IApiDeliverableService;
 import com.cat2bug.common.core.controller.BaseController;
+import com.cat2bug.common.core.domain.AjaxResult;
 import com.cat2bug.common.core.page.TableDataInfo;
+import com.cat2bug.system.domain.SysModule;
+import com.cat2bug.system.service.ISysModuleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -26,12 +27,14 @@ public class ApiDeliverableController extends BaseController {
     @Resource
     private IApiDeliverableService apiDeliverableService;
 
+    @Autowired
+    private ISysModuleService sysModuleService;
+
     /**
-     * 查询缺陷列表
+     * 查询交付物列表
      * @param apiDeliverable 交付物参数对象
      * @return  交付物集合
      */
-    @PreAuthorize("@ss.hasPermi('api:defect:list')")
     @GetMapping
     public TableDataInfo list(ApiDeliverable apiDeliverable)
     {
@@ -40,5 +43,29 @@ public class ApiDeliverableController extends BaseController {
         }
         List<ApiDeliverable> list = this.apiDeliverableService.selectApiDeliverableList(apiDeliverable);
         return getDataTable(list);
+    }
+
+    /**
+     * 查询交付物详情
+     * @param moduleId 交付物ID
+     * @return 交付物详情
+     */
+    @GetMapping("/{moduleId}")
+    public AjaxResult getInfo(@PathVariable("moduleId") Long moduleId)
+    {
+        SysModule sysModule = sysModuleService.selectSysModuleByModuleId(moduleId);
+        return AjaxResult.success(sysModule);
+    }
+
+    /**
+     * 新增交付物
+     * @param sysModule 交付物对象
+     * @return 结果
+     */
+    @PostMapping
+    public AjaxResult add(@RequestBody SysModule sysModule)
+    {
+        List<SysModule> result = sysModuleService.insertSysModule(sysModule);
+        return AjaxResult.success(result);
     }
 }

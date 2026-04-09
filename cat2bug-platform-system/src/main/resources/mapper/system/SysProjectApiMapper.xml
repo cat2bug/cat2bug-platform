@@ -12,10 +12,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="expireTime"    column="expire_time"    />
         <result property="remark"    column="remark"    />
         <result property="apiName"    column="api_name"    />
+        <result property="enabled"    column="enabled"    />
+        <result property="features"    column="features"    />
     </resultMap>
 
     <sql id="selectSysProjectApiVo">
-        select u.user_name as api_id, pa.project_id, pa.user_id, pa.white_list, pa.expire_time, pa.remark, u.nick_name as api_name
+        select u.user_name as api_id, pa.project_id, pa.user_id, pa.white_list, pa.expire_time, pa.remark, u.nick_name as api_name, pa.enabled, pa.features
         from sys_project_api pa
         right join sys_user u ON u.user_id = pa.user_id AND u.del_flag='0'
     </sql>
@@ -44,6 +46,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="whiteList != null">white_list,</if>
             <if test="expireTime != null">expire_time,</if>
             <if test="remark != null">remark,</if>
+            enabled,
+            <if test="features != null">features,</if>
          </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="apiId != null">#{apiId},</if>
@@ -52,6 +56,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="whiteList != null">#{whiteList,typeHandler=com.cat2bug.system.domain.handle.JsonArrayTypeHandler},</if>
             <if test="expireTime != null">#{expireTime},</if>
             <if test="remark != null">#{remark},</if>
+            #{enabled},
+            <if test="features != null">#{features},</if>
          </trim>
     </insert>
 
@@ -63,6 +69,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="whiteList != null">white_list = #{whiteList,typeHandler=com.cat2bug.system.domain.handle.JsonArrayTypeHandler},</if>
             <if test="expireTime != null">expire_time = #{expireTime},</if>
             <if test="remark != null">remark = #{remark},</if>
+            enabled = #{enabled},
+            <if test="features != null">features = #{features},</if>
         </trim>
         where api_id = #{apiId}
     </update>
