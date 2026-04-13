@@ -4,7 +4,7 @@
       <tools-menu :tools="toolMenus" @select="toolsHandle" />
       <tools-menu v-model="viewTools" @select="viewToolsHandle" />
     </div>
-    <multipane layout="vertical" ref="multiPane" class="markdown-body" @pane-resize-start="dragStopHandle">
+    <multipane layout="vertical" ref="multiPane" class="markdown-body" @paneResizeStop="dragStopHandle">
       <textarea
         class="markdown-body-edit"
         :mode="viewVisible?'':'single'"
@@ -618,6 +618,10 @@ export default {
   flex-direction: row;
   flex: 1;
   background-color: #f6f6f6;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
   height: 100%;
   > * {
     min-height: 100px;
@@ -636,10 +640,44 @@ export default {
     flex: 1;
   }
   > .markdown-body-resizer {
-    flex-shrink: 1;
+    flex-shrink: 0;
+    width: 8px;
+    cursor: col-resize;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    &:before {
+      content: "";
+      display: block;
+      width: 1px;
+      height: 100%;
+      background-color: #DCDFE6;
+    }
+    &:after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 4px;
+      height: 30px;
+      border-left: 1px solid #C0C4CC;
+      border-right: 1px solid #C0C4CC;
+      border-radius: 2px;
+    }
+    &:hover {
+      &:before {
+        background-color: #B0B0B0;
+      }
+      &:after {
+        border-color: #909399;
+      }
+    }
   }
   > .markdown-body-edit {
     width: calc( 50% - 5px );
+    flex-shrink: 0;
     margin-right: 5px;
     font-size: 16px;
     border: none;
@@ -648,6 +686,7 @@ export default {
   }
   > .markdown-body-view {
     flex: 1;
+    min-width: 0;
     overflow: hidden;
     overflow-y: auto;
   }

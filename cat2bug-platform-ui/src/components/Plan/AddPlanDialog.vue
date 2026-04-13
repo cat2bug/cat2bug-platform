@@ -38,7 +38,7 @@
       </el-row>
       <el-divider content-position="center">{{ $t('plan.select-case') }}</el-divider>
       <!--    模块树和用例列表区域-->
-      <multipane layout="vertical" ref="multiPane" class="custom-resizer" @pane-resize-start="dragStopHandle">
+      <multipane layout="vertical" ref="multiPane" class="custom-resizer" @paneResizeStop="dragStopHandle">
         <!--      树形模块选择组件-->
         <div class="tree-module" ref="treeModule" :style="treeModuleStyle">
           <tree-plan-item-module
@@ -504,32 +504,57 @@ export default {
 .custom-resizer {
   width: 100%;
   height: auto;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 .custom-resizer > .multipane-resizer {
   margin: 0; left: 0;
   display: flex;
   justify-content: center;
-  align-items: flex-start;
+  align-items: center;
   height: 100%;
-  text-align: center;
+  width: 8px;
+  cursor: col-resize;
+  position: relative;
   &:before {
      display: block;
      content: "";
-     width: 3px;
+     width: 1px;
      height: var(--marginTop);
-     margin-top: 0px;
-     margin-left: -1.5px;
-     border-left: 1px solid #DCDFE6;
-     border-right: 1px solid #DCDFE6;
+     background-color: #DCDFE6;
+  }
+  &:after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 4px;
+    height: 30px;
+    border-left: 1px solid #C0C4CC;
+    border-right: 1px solid #C0C4CC;
+    border-radius: 2px;
   }
   &:hover {
     &:before {
-      border-color: #CCC;
+      background-color: #B0B0B0;
+    }
+    &:after {
+      border-color: #909399;
     }
   }
 }
+.tree-module {
+  width: var(--treeModuleWidth);
+  max-width: 75%;
+  flex-shrink: 0;
+  overflow: auto;
+}
 .case-context {
   flex-grow: 1;
+  min-width: 0;
   overflow:hidden;
   .case-tools {
     display: flex;
