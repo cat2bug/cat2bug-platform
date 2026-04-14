@@ -1,4 +1,4 @@
-/*
+﻿/*
  Navicat Premium Data Transfer
 
  Source Server         : cat2bug
@@ -1278,6 +1278,9 @@ INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2114, '钉钉', 2013, 8, 'ding', 'system/project/other/ding/index', NULL, 1, 0, 'C', '1', '0', 'ding:list', '#', 'admin', '2024-07-28 02:28:55', 'admin', '2024-07-28 02:29:49', '', NULL);
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2115, '查询钉钉', 2114, 0, '', NULL, NULL, 1, 0, 'F', '0', '0', 'ding:query', '#', 'admin', '2024-07-28 02:30:12', '', NULL, '', NULL);
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2116, '保存钉钉', 2114, 1, '', NULL, NULL, 1, 0, 'F', '0', '0', 'ding:save', '#', 'admin', '2024-07-28 02:30:30', '', NULL, '', NULL);
+INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2136, '飞书', 2013, 10, 'feishu', 'system/project/other/feishu/index', NULL, 1, 0, 'C', '1', '0', 'feishu:list', '#', 'admin', '2025-04-14 00:00:00', 'admin', '2025-04-14 00:00:00', '', NULL);
+INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2137, '查询飞书', 2136, 0, '', NULL, NULL, 1, 0, 'F', '0', '0', 'feishu:query', '#', 'admin', '2025-04-14 00:00:00', '', NULL, '', NULL);
+INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2138, '保存飞书', 2136, 1, '', NULL, NULL, 1, 0, 'F', '0', '0', 'feishu:save', '#', 'admin', '2025-04-14 00:00:00', '', NULL, '', NULL);
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2117, '测试计划', 2013, 3, 'plan', 'system/plan/index', NULL, 1, 0, 'C', '0', '0', 'system:plan:list', 'time', 'admin', '2024-10-11 00:39:24', 'admin', '2025-01-19 01:12:27', '测试计划菜单', 'plan');
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2118, '测试计划查询', 2117, 1, '#', '', NULL, 1, 0, 'F', '0', '0', 'system:plan:query', '#', 'admin', '2024-10-11 00:39:24', '', NULL, '', NULL);
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2119, '测试计划新增', 2117, 2, '#', '', NULL, 1, 0, 'F', '0', '0', 'system:plan:add', '#', 'admin', '2024-10-11 00:39:24', '', NULL, '', NULL);
@@ -1864,6 +1867,9 @@ INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (4, 2113);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (4, 2114);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (4, 2115);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (4, 2116);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (4, 2136);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (4, 2137);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (4, 2138);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (4, 2117);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (4, 2118);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (4, 2119);
@@ -1969,6 +1975,9 @@ INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (6, 2113);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (6, 2114);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (6, 2115);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (6, 2116);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (6, 2136);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (6, 2137);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (6, 2138);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (6, 2117);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (6, 2118);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (6, 2119);
@@ -2174,6 +2183,9 @@ INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (11, 2113);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (11, 2114);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (11, 2115);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (11, 2116);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (11, 2136);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (11, 2137);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (11, 2138);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (11, 2117);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (11, 2118);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (11, 2119);
@@ -2274,6 +2286,9 @@ INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (12, 2113);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (12, 2114);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (12, 2115);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (12, 2116);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (12, 2136);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (12, 2137);
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (12, 2138);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (12, 2117);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (12, 2118);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (12, 2119);
