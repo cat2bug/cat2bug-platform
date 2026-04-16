@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -48,6 +49,17 @@ public class IMService {
      */
     public <T> void sendMessage(Long projectId, String group, Long senderId, List<Long> recipientIds, String title, T content, String src, IMessageTemplate messageTemplate, Map<String,Object> defaultOption) {
         String sn = IdUtils.simpleUUID(); // 流水号
+
+        // 飞书群机器人：项目级配置，每次事件只发一条消息到群，无需按用户循环
+        Optional<IIMService> feishuOpt = this.iimServiceList.stream().filter(s->s.getMessageFactoryName().equals(FeishuMessageServiceImpl.MESSAGE_FACTORY_NAME)).findFirst();
+        if(feishuOpt.isPresent()) {
+            // 取第一个收件人的 config 用于获取 modules（消息模板渲染所需），hook 由 Factory 从项目级读取
+            if(!recipientIds.isEmpty()) {
+                IMUserConfig anyUserConfig = imUserConfigService.selectImUserConfigByProjectAndMember(projectId, recipientIds.get(0), defaultOption);
+                this.sendMessage(sn, feishuOpt.get(), anyUserConfig.getConfig(), null, projectId, group, senderId, recipientIds.get(0), title, content, src, messageTemplate);
+            }
+        }
+
         recipientIds.stream().forEach(recipientId->{
            IMUserConfig userConfig = imUserConfigService.selectImUserConfigByProjectAndMember(projectId,  recipientId, defaultOption);
             if(userConfig.getConfig().getPlatforms().getSystem().isConfigSwitch()){
