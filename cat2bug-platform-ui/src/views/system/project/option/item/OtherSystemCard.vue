@@ -9,7 +9,7 @@
     </div>
     <router-link to="ding" v-hasPermi="['ding:list']"><el-link>{{$t('ding')}}</el-link></router-link>
     <router-link to="enterprise-wechat" v-hasPermi="['wechat:list']"><el-link>{{$t('enterprise-wechat')}}</el-link></router-link>
-    <router-link to="feishu" v-hasPermi="['feishu:list']"><el-link>{{$t('feishu.robot')}}</el-link></router-link>
+    <router-link to="feishu" v-hasPermi="['feishu:list']"><el-link>{{$t('feishu')}}</el-link></router-link>
   </el-card>
 </template>
 

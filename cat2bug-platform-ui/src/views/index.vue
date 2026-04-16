@@ -311,6 +311,9 @@ export default {
       // 版本号
       version: null,
       tanksMemberList: [{
+        name: '高琪',
+        avatarUrl: require('@/assets/images/thanks/gaoqi.png')
+      },{
         name: '忽然之間',
         avatarUrl: require('@/assets/images/thanks/huranzhijian.jpg')
       },{

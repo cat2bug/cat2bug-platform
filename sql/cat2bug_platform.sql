@@ -1300,6 +1300,9 @@ INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2133, '项目管理', 2072, 1, 'project', 'admin/project/index', NULL, 1, 0, 'C', '0', '0', 'admin:project:list', 'mk-project', 'admin', '2026-01-21 01:35:42', 'admin', '2026-01-21 06:56:07', '', 'project.manage');
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2134, '禁用', 2133, 1, '', NULL, NULL, 1, 0, 'F', '0', '0', 'admin:project:lock', '#', 'admin', '2026-01-21 06:57:22', '', NULL, '', 'lock');
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2135, '禁用', 2132, 1, '', NULL, NULL, 1, 0, 'F', '0', '0', 'admin:team:lock', '#', 'admin', '2026-01-21 06:57:44', '', NULL, '', 'lock');
+INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2141, '飞书', 2013, 10, 'feishu', 'system/project/other/feishu/index.vue', NULL, 1, 0, 'C', '1', '0', 'feishu:list', '#', 'admin', '2026-04-16 04:43:01', 'admin', '2026-04-16 04:44:24', '', NULL);
+INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2142, '查询飞书', 2141, 1, '', NULL, NULL, 1, 0, 'F', '0', '0', 'feishu:query', '#', 'admin', '2026-04-16 04:55:57', '', NULL, '', NULL);
+INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`) VALUES (2143, '保存飞书', 2141, 2, '', NULL, NULL, 1, 0, 'F', '0', '0', 'feishu:save', '#', 'admin', '2026-04-16 04:56:21', '', NULL, '', NULL);
 COMMIT;
 
 -- ----------------------------
@@ -2319,6 +2322,18 @@ INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (8172998673286452224, 
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (8172998673286452224, 4670106257179823104);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (8172998673286452224, 8347487526202918912);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES (8172998673286452224, 8436826121879359488);
+INSERT INTO `cat2bug_platform`.`sys_role_menu` (`role_id`, `menu_id`) VALUES (4, 2141);
+INSERT INTO `cat2bug_platform`.`sys_role_menu` (`role_id`, `menu_id`) VALUES (6, 2141);
+INSERT INTO `cat2bug_platform`.`sys_role_menu` (`role_id`, `menu_id`) VALUES (11, 2141);
+INSERT INTO `cat2bug_platform`.`sys_role_menu` (`role_id`, `menu_id`) VALUES (12, 2141);
+INSERT INTO `cat2bug_platform`.`sys_role_menu` (`role_id`, `menu_id`) VALUES (4, 2142);
+INSERT INTO `cat2bug_platform`.`sys_role_menu` (`role_id`, `menu_id`) VALUES (6, 2142);
+INSERT INTO `cat2bug_platform`.`sys_role_menu` (`role_id`, `menu_id`) VALUES (11, 2142);
+INSERT INTO `cat2bug_platform`.`sys_role_menu` (`role_id`, `menu_id`) VALUES (12, 2142);
+INSERT INTO `cat2bug_platform`.`sys_role_menu` (`role_id`, `menu_id`) VALUES (4, 2143);
+INSERT INTO `cat2bug_platform`.`sys_role_menu` (`role_id`, `menu_id`) VALUES (6, 2143);
+INSERT INTO `cat2bug_platform`.`sys_role_menu` (`role_id`, `menu_id`) VALUES (11, 2143);
+INSERT INTO `cat2bug_platform`.`sys_role_menu` (`role_id`, `menu_id`) VALUES (12, 2143);
 COMMIT;
 
 -- ----------------------------
