@@ -28,7 +28,7 @@
     </el-form-item>
     <el-alert
       :title="$t('feishu.single-send-notice')"
-      type="info"
+      type="warning"
       :closable="false"
       show-icon
       style="margin-top: -10px; margin-bottom: 20px;">
