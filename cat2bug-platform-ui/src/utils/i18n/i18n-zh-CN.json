@@ -778,6 +778,7 @@
   "ding.keyword-illustrate": "在钉钉群机器人中配置的自定义关键词（非必填）",
   "ding.group-send-config": "群发配置",
   "ding.single-send-config": "单发配置",
+  "ding.single-send-notice": "单独发送用户功能需要配置钉钉企业信息，请联系项目管理员在\"项目设置\"->\"第三方应用\"->\"钉钉\"中进行设置。",
   "ding.hook": "群发Hook地址",
   "ding.user-id": "单发User ID",
   "ding.please-enter-hook": "请输入Hook地址",

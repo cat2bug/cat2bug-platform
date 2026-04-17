@@ -778,6 +778,7 @@
   "ding.keyword-illustrate": "Custom keyword configured in DingTalk group robot (optional)",
   "ding.group-send-config": "Group Send Configuration",
   "ding.single-send-config": "Single Send Configuration",
+  "ding.single-send-notice": "Single send feature requires DingTalk enterprise configuration. Please contact the project administrator to configure it in \"Project Settings\" -> \"Third-party Applications\" -> \"DingTalk\".",
   "ding.hook": "Hook Url",
   "ding.user-id": "User ID",
   "ding.please-enter-hook": "Please enter the hook url",

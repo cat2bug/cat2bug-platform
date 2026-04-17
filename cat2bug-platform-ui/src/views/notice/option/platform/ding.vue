@@ -18,6 +18,13 @@
       </template>
       <el-input v-model="form.userId" @input="handleChange" :placeholder="$t('ding.enter-user-id')" maxlength="64"></el-input>
     </el-form-item>
+    <el-alert
+      :title="$t('ding.single-send-notice')"
+      type="warning"
+      :closable="false"
+      show-icon
+      style="margin-top: -10px; margin-bottom: 20px;">
+    </el-alert>
 
     <!-- 群发配置区域 -->
     <el-divider></el-divider>

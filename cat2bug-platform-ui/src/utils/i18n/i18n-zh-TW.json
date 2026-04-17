@@ -778,6 +778,7 @@
   "ding.keyword-illustrate": "在釘釘群機器人中配置的自定義關鍵字（非必填）",
   "ding.group-send-config": "群發配置",
   "ding.single-send-config": "單發配置",
+  "ding.single-send-notice": "單獨發送用戶功能需要配置釘釘企業信息，請聯繫項目管理員在\"項目設置\"->\"第三方應用\"->\"釘釘\"中進行設置。",
   "ding.hook": "群發Hook位址",
   "ding.user-id": "單發User ID",
   "ding.please-enter-hook": "請輸入Hook位址",

@@ -778,6 +778,7 @@
   "ding.keyword-illustrate": "DingTalkグループロボットで設定されたカスタムキーワード（任意）",
   "ding.group-send-config": "グループ送信設定",
   "ding.single-send-config": "単発送信設定",
+  "ding.single-send-notice": "単発送信機能を使用するには、DingTalk企業情報の設定が必要です。プロジェクト管理者に連絡して、「プロジェクト設定」->「サードパーティアプリケーション」->「DingTalk」で設定してください。",
   "ding.hook": "一括送信Hookアドレス",
   "ding.user-id": "個別送信ユーザーID",
   "ding.please-enter-hook": "Hookアドレスを入力してください",
