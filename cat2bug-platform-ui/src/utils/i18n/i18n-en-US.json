@@ -832,6 +832,7 @@
   "feishu.enter-mobile": "Please enter the Feishu user mobile",
   "feishu.mobile-illustrate": "After filling in the Feishu user mobile, the system will query the user ID by mobile number and send personal messages",
   "feishu.single-send-config": "Single Send Configuration",
+  "feishu.single-send-notice": "Single send feature requires Feishu enterprise configuration. Please contact the project administrator to configure it in \"Project Settings\" -> \"Third-party Applications\" -> \"Feishu\".",
   "feishu.group-send-config": "Group Send Configuration",
   "feishu.custom-keyword": "Custom Keyword",
   "feishu.signature-verification": "Signature Verification",

@@ -849,6 +849,7 @@
   "feishu.enter-mobile": "请输入飞书用户手机号",
   "feishu.mobile-illustrate": "填写飞书用户手机号后，系统将通过手机号查询用户 ID 并发送个人消息",
   "feishu.single-send-config": "单发配置",
+  "feishu.single-send-notice": "单独发送用户功能需要配置飞书企业信息，请联系项目管理员在"项目设置"->"第三方应用"->"飞书"中进行设置。",
   "feishu.group-send-config": "群发配置",
   "feishu.custom-keyword": "自定义关键词",
   "feishu.signature-verification": "签名校验",

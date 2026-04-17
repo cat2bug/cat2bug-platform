@@ -1,12 +1,12 @@
 <template>
   <el-form ref="form" :model="form" :rules="rules" label-width="190px">
-    <el-form-item prop="switch" label-width="0">
-      <span style="margin-right: 10px;">{{$t('feishu.robot')}}</span>
+    <div style="margin-bottom: 18px;">
+      <span style="font-weight: bold; margin-right: 10px;">{{$t('feishu.robot')}}</span>
       <el-switch v-model="form.switch" @change="handleSwitchChange"></el-switch>
-    </el-form-item>
+    </div>
 
     <!-- 单发配置区域 -->
-    <el-divider content-position="left">{{$t('feishu.single-send-config')}}</el-divider>
+    <div style="font-weight: bold; margin-bottom: 18px;">{{$t('feishu.single-send-config')}}</div>
     <el-form-item prop="mobile">
       <template slot="label">
         <div class="form-label">
@@ -26,9 +26,12 @@
           @click="handleMobileTest">{{$t('feishu.single-test')}}</el-button>
       </el-input>
     </el-form-item>
+    <div style="color: #909399; font-size: 12px; margin-top: -10px; margin-bottom: 20px; line-height: 1.5;">
+      {{$t('feishu.single-send-notice')}}
+    </div>
 
     <!-- 群发配置区域 -->
-    <el-divider content-position="left">{{$t('feishu.group-send-config')}}</el-divider>
+    <div style="font-weight: bold; margin-bottom: 18px;">{{$t('feishu.group-send-config')}}</div>
     <el-form-item prop="key">
       <template slot="label">
         <div class="form-label">

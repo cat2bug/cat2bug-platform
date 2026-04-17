@@ -832,6 +832,7 @@
   "feishu.enter-mobile": "Feishu 사용자 휴대폰 번호를 입력해 주세요",
   "feishu.mobile-illustrate": "Feishu 사용자 휴대폰 번호를 입력하면 시스템이 휴대폰 번호로 사용자 ID를 조회한 뒤 개인 메시지를 전송합니다",
   "feishu.single-send-config": "단일 전송 설정",
+  "feishu.single-send-notice": "단일 전송 기능을 사용하려면 Feishu 기업 정보 설정이 필요합니다. 프로젝트 관리자에게 연락하여 \"프로젝트 설정\" -> \"타사 애플리케이션\" -> \"Feishu\"에서 설정하십시오.",
   "feishu.group-send-config": "그룹 전송 설정",
   "feishu.custom-keyword": "사용자 정의 키워드",
   "feishu.signature-verification": "서명 검증",

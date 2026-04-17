@@ -832,6 +832,7 @@
   "feishu.enter-mobile":"الرجاء إدخال رقم هاتف مستخدم Feishu",
   "feishu.mobile-illustrate":"بعد إدخال رقم هاتف مستخدم Feishu، سيقوم النظام بالاستعلام عن معرّف المستخدم عبر رقم الهاتف ثم إرسال الرسائل الشخصية",
   "feishu.single-send-config":"إعدادات الإرسال الفردي",
+  "feishu.single-send-notice":"تتطلب ميزة الإرسال الفردي تكوين معلومات مؤسسة Feishu. يرجى الاتصال بمسؤول المشروع لتكوينها في \"إعدادات المشروع\" -> \"تطبيقات الطرف الثالث\" -> \"Feishu\".",
   "feishu.group-send-config":"إعدادات الإرسال الجماعي",
   "feishu.custom-keyword":"كلمة مفتاحية مخصصة",
   "feishu.signature-verification":"التحقق من التوقيع",
