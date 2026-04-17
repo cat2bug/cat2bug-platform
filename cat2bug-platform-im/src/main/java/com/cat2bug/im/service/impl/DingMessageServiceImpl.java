@@ -14,6 +14,8 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
@@ -189,8 +191,19 @@ public class DingMessageServiceImpl implements IIMService<DingMessage, IMDingPla
         message.getText().setContent(message.getText().getContent());
         String body = JSON.toJSONString(message);
         RequestBody formBody = RequestBody.create(FORM_CONTENT_TYPE, body);
+
+        // 构建请求URL，如果配置了secret则添加签名参数
+        String url = config.getHook();
+        if (StringUtils.isNotBlank(config.getSecret())) {
+            long timestamp = System.currentTimeMillis();
+            String sign = generateSign(timestamp, config.getSecret());
+            // 判断URL是否已有参数
+            String separator = url.contains("?") ? "&" : "?";
+            url = url + separator + "timestamp=" + timestamp + "&sign=" + sign;
+        }
+
         Request request = new Request.Builder()
-                .url(config.getHook())
+                .url(url)
                 .post(formBody).build();
         Response response = client.newCall(request).execute();
         String json = response.body().string();
@@ -198,6 +211,22 @@ public class DingMessageServiceImpl implements IIMService<DingMessage, IMDingPla
         if(response.isSuccessful()==false) {
             log.error("发送钉钉信息错误,返回信息:{} \n 请求参数:{}",json, body);
         }
+    }
+
+    /**
+     * 生成钉钉加签
+     * @param timestamp 时间戳
+     * @param secret 密钥
+     * @return 签名
+     * @throws Exception
+     */
+    private String generateSign(long timestamp, String secret) throws Exception {
+        String stringToSign = timestamp + "\n" + secret;
+        Mac mac = Mac.getInstance("HmacSHA256");
+        mac.init(new SecretKeySpec(secret.getBytes("UTF-8"), "HmacSHA256"));
+        byte[] signData = mac.doFinal(stringToSign.getBytes("UTF-8"));
+        String sign = java.util.Base64.getEncoder().encodeToString(signData);
+        return java.net.URLEncoder.encode(sign, "UTF-8");
     }
 
     @Override

@@ -19,6 +19,10 @@ public class IMDingPlatformConfig extends IMBasePlatformConfig {
      */
     private String key;
     /**
+     * 加签密钥
+     */
+    private String secret;
+    /**
      * 钩子函数
      */
     private String hook;
@@ -27,9 +31,10 @@ public class IMDingPlatformConfig extends IMBasePlatformConfig {
      */
     private String mobile;
 
-    public IMDingPlatformConfig(boolean configSwitch, String key, String hook, String mobile) {
+    public IMDingPlatformConfig(boolean configSwitch, String key, String secret, String hook, String mobile) {
         super(configSwitch);
         this.key = key;
+        this.secret = secret;
         this.hook = hook;
         this.mobile = mobile;
     }

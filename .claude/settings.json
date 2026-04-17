@@ -1,0 +1,120 @@
+{
+  "$schema": "https://claude.ai/schemas/settings.json",
+  "version": "1.0",
+  "description": "Cat2Bug Platform 团队配置",
+
+  "rules": [
+    ".claude/rules/security.md",
+    ".claude/rules/testing.md",
+    ".claude/rules/coding-style.md"
+  ],
+
+  "agents": {
+    "planner": {
+      "file": ".claude/agents/planner.md",
+      "description": "需求分析和规划专家"
+    },
+    "code-reviewer": {
+      "file": ".claude/agents/code-reviewer.md",
+      "description": "代码审查专家"
+    },
+    "build-error-resolver": {
+      "file": ".claude/agents/build-error-resolver.md",
+      "description": "构建错误修复专家"
+    }
+  },
+
+  "commands": {
+    "plan": {
+      "file": ".claude/commands/plan.md",
+      "description": "制定实施计划",
+      "agent": "planner"
+    },
+    "tdd": {
+      "file": ".claude/commands/tdd.md",
+      "description": "测试驱动开发"
+    },
+    "build-fix": {
+      "file": ".claude/commands/build-fix.md",
+      "description": "修复构建错误",
+      "agent": "build-error-resolver"
+    },
+    "code-review": {
+      "file": ".claude/commands/code-review.md",
+      "description": "代码审查",
+      "agent": "code-reviewer"
+    }
+  },
+
+  "permissions": {
+    "bash": {
+      "allow": [
+        "mvn clean compile",
+        "mvn clean package",
+        "mvn test",
+        "mvn spring-boot:run",
+        "npm install",
+        "npm run dev",
+        "npm run build:*",
+        "npm run lint",
+        "git status",
+        "git diff",
+        "git log",
+        "git add",
+        "git commit",
+        "ls",
+        "cat",
+        "grep",
+        "find"
+      ],
+      "deny": [
+        "rm -rf /",
+        "rm -rf *",
+        "dd if=*",
+        "mkfs.*",
+        ":(){ :|:& };:",
+        "chmod -R 777 /",
+        "chown -R *"
+      ]
+    },
+    "file": {
+      "deny_read": [
+        "**/.env",
+        "**/.env.local",
+        "**/.env.production",
+        "**/application-prod.yml",
+        "**/application-local.yml",
+        "**/*.key",
+        "**/*.pem",
+        "**/*.p12",
+        "**/*.jks"
+      ],
+      "deny_write": [
+        ".git/**",
+        "**/node_modules/**",
+        "**/target/**",
+        "**/.env",
+        "**/*.key",
+        "**/*.pem"
+      ]
+    }
+  },
+
+  "hooks": {
+    "before_file_write": {
+      "description": "写文件前检查敏感信息",
+      "script": "grep -E '(password|secret|token|api[_-]?key)\\s*=\\s*[\"\\']?[^\"\\'\n]{8,}' || exit 0"
+    },
+    "before_bash": {
+      "description": "执行命令前安全检查",
+      "script": "echo \"$BASH_COMMAND\" | grep -E '(rm -rf|dd if=|mkfs|chmod -R 777)' && exit 1 || exit 0"
+    }
+  },
+
+  "preferences": {
+    "default_agent": "planner",
+    "auto_format": true,
+    "auto_test": false,
+    "language": "zh_CN"
+  }
+}

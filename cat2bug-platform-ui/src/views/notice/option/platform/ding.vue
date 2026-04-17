@@ -46,6 +46,17 @@
       </template>
       <el-input v-model="form.key" @input="handleChange" :placeholder="$t('ding.enter-hook-keyword')" maxlength="128" :disabled="!form.switch"></el-input>
     </el-form-item>
+    <el-form-item prop="secret">
+      <template slot="label">
+        <div class="form-label">
+          <label>{{$t('ding.signature-verification')}}</label>
+          <el-tooltip class="item" effect="dark" :content="$t('ding.secret-illustrate')" placement="bottom">
+            <i class="el-icon-question"></i>
+          </el-tooltip>
+        </div>
+      </template>
+      <el-input v-model="form.secret" @input="handleChange" :placeholder="$t('ding.enter-secret')" maxlength="128" :disabled="!form.switch"></el-input>
+    </el-form-item>
     <el-form-item prop="hook">
       <template slot="label">
         <div class="form-label">
