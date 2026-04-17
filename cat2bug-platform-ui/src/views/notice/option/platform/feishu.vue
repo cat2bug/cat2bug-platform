@@ -26,9 +26,13 @@
           @click="handleMobileTest">{{$t('feishu.single-test')}}</el-button>
       </el-input>
     </el-form-item>
-    <div style="color: #909399; font-size: 12px; margin-top: -10px; margin-bottom: 20px; line-height: 1.5;">
-      {{$t('feishu.single-send-notice')}}
-    </div>
+    <el-alert
+      :title="$t('feishu.single-send-notice')"
+      type="info"
+      :closable="false"
+      show-icon
+      style="margin-top: -10px; margin-bottom: 20px;">
+    </el-alert>
 
     <!-- 群发配置区域 -->
     <div style="font-weight: bold; margin-bottom: 18px;">{{$t('feishu.group-send-config')}}</div>
