@@ -91,6 +91,7 @@ public class DingConfigController extends BaseController
             }
 
             DingMessage message = new DingMessage(testMessage);
+            message.setMsgtype("text");
             message.setProjectId(projectId);
             message.setReceiveMemberId(memberId);
             message.setWebHook(hook);
@@ -130,6 +131,7 @@ public class DingConfigController extends BaseController
             }
 
             DingMessage message = new DingMessage("这是来自 Cat2Bug 的钉钉测试消息");
+            message.setMsgtype("text");
             message.setProjectId(projectId);
             message.setReceiveMemberId(memberId);
             message.setUserIds(java.util.Arrays.asList(userId));
