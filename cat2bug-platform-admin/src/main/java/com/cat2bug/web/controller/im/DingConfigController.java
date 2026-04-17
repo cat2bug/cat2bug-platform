@@ -7,6 +7,7 @@ import com.cat2bug.common.enums.BusinessType;
 import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.im.domain.DingMessage;
 import com.cat2bug.im.domain.DingProjectConfig;
+import com.cat2bug.im.domain.IMDingPlatformConfig;
 import com.cat2bug.im.domain.IMProjectConfig;
 import com.cat2bug.im.service.IIMProjectConfigService;
 import com.cat2bug.im.service.impl.DingMessageServiceImpl;
@@ -93,7 +94,12 @@ public class DingConfigController extends BaseController
             message.setProjectId(projectId);
             message.setReceiveMemberId(memberId);
             message.setWebHook(hook);
-            dingMessageService.sendNoticeMessage(message, null);
+
+            IMDingPlatformConfig platformConfig = new IMDingPlatformConfig();
+            platformConfig.setHook(hook);
+            platformConfig.setKey(key);
+
+            dingMessageService.sendNoticeMessage(message, platformConfig);
             return success("测试消息已发送到钉钉群机器人");
         } catch (Exception e) {
             logger.error("钉钉群发测试消息发送失败", e);
@@ -127,7 +133,11 @@ public class DingConfigController extends BaseController
             message.setProjectId(projectId);
             message.setReceiveMemberId(memberId);
             message.setUserIds(java.util.Arrays.asList(userId));
-            dingMessageService.sendNoticeMessage(message, null);
+
+            IMDingPlatformConfig platformConfig = new IMDingPlatformConfig();
+            platformConfig.setUserId(userId);
+
+            dingMessageService.sendNoticeMessage(message, platformConfig);
             return success("测试消息已发送到钉钉单发用户");
         } catch (Exception e) {
             logger.error("钉钉单发测试消息发送失败", e);
