@@ -217,6 +217,7 @@ export default {
         config: {
           mobile: '',
           key: this.form.key,
+          secret: this.form.secret,
           hook: this.form.hook
         }
       };

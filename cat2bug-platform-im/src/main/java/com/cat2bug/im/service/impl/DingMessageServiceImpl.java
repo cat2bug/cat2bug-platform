@@ -200,6 +200,7 @@ public class DingMessageServiceImpl implements IIMService<DingMessage, IMDingPla
             // 判断URL是否已有参数
             String separator = url.contains("?") ? "&" : "?";
             url = url + separator + "timestamp=" + timestamp + "&sign=" + sign;
+            log.debug("钉钉加签调试 - timestamp: {}, secret: {}, sign: {}, url: {}", timestamp, config.getSecret(), sign, url);
         }
 
         Request request = new Request.Builder()
@@ -215,6 +216,13 @@ public class DingMessageServiceImpl implements IIMService<DingMessage, IMDingPla
 
     /**
      * 生成钉钉加签
+     * 根据钉钉官方文档：https://open.dingtalk.com/document/robots/custom-robot-access
+     * 签名算法：
+     * 1. 把timestamp+"\n"+密钥当做签名字符串
+     * 2. 使用HmacSHA256算法计算签名，密钥是secret
+     * 3. 对签名进行Base64编码
+     * 4. 对Base64编码后的结果进行URL编码
+     *
      * @param timestamp 时间戳
      * @param secret 密钥
      * @return 签名

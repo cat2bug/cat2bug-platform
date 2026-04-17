@@ -80,6 +80,7 @@ public class DingConfigController extends BaseController
             Map<String, String> config = (Map<String, String>) params.get("config");
 
             String key = config.get("key");
+            String secret = config.get("secret");
             String hook = config.get("hook");
 
             if (StringUtils.isBlank(hook)) {
@@ -100,6 +101,7 @@ public class DingConfigController extends BaseController
             IMDingPlatformConfig platformConfig = new IMDingPlatformConfig();
             platformConfig.setHook(hook);
             platformConfig.setKey(key);
+            platformConfig.setSecret(secret);
 
             dingMessageService.sendNoticeMessage(message, platformConfig);
             return success("测试消息已发送到钉钉群机器人");
