@@ -1,6 +1,7 @@
 <template>
   <el-form ref="form" :model="form" :rules="rules" label-width="190px">
-    <el-form-item :label="$t('feishu.robot')" prop="switch">
+    <el-form-item prop="switch" label-width="0">
+      <span style="margin-right: 10px;">{{$t('feishu.robot')}}</span>
       <el-switch v-model="form.switch" @change="handleSwitchChange"></el-switch>
     </el-form-item>
 
