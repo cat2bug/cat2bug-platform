@@ -16,7 +16,15 @@
           </el-tooltip>
         </div>
       </template>
-      <el-input v-model="form.userId" @input="handleChange" :placeholder="$t('ding.enter-user-id')" maxlength="64"></el-input>
+      <el-input v-model="form.userId" @input="handleUserIdInput" :placeholder="$t('ding.enter-user-id')" maxlength="64">
+        <el-button
+          slot="append"
+          :class="hasUserId ? 'test-button-success' : 'test-button-disabled'"
+          size="small"
+          :loading="userIdTestLoading"
+          :disabled="!hasUserId"
+          @click="handleUserIdTest">{{$t('ding.single-test')}}</el-button>
+      </el-input>
     </el-form-item>
     <el-alert
       :title="$t('ding.single-send-notice')"
@@ -49,13 +57,22 @@
           </el-tooltip>
         </div>
       </template>
-      <el-input v-model="form.hook" @input="handleChange" :placeholder="$t('ding.enter-hook-url')" maxlength="255"></el-input>
+      <el-input v-model="form.hook" @input="handleHookInput" :placeholder="$t('ding.enter-hook-url')" maxlength="255">
+        <el-button
+          slot="append"
+          :class="hasHook ? 'test-button-success' : 'test-button-disabled'"
+          size="small"
+          :loading="groupTestLoading"
+          :disabled="!hasHook"
+          @click="handleGroupTest">{{$t('ding.group-test')}}</el-button>
+      </el-input>
     </el-form-item>
   </el-form>
 </template>
 
 <script>
 import {validEmail, validURL} from "@/utils/validate";
+import {groupTestDingNotice, singleTestDingNotice} from "@/api/im/ding";
 
 export default {
   name: "DingDingNoticePlatform",
@@ -73,6 +90,8 @@ export default {
     };
     return {
       form: this.ding,
+      userIdTestLoading: false,
+      groupTestLoading: false,
       defaultRules: {
         // hook: [
         //   { required: true, message: this.$i18n.t('ding.please-enter-hook'), trigger: 'blur' },
@@ -99,6 +118,12 @@ export default {
   computed: {
     rules: function (){
       return this.form.switch?this.defaultRules: {}
+    },
+    hasUserId() {
+      return this.form.userId && this.form.userId.trim().length > 0;
+    },
+    hasHook() {
+      return this.form.hook && this.form.hook.trim().length > 0;
     }
   },
   methods: {
@@ -106,10 +131,84 @@ export default {
     handleChange() {
       this.$emit('change', this.form);
     },
+    /** 处理用户ID输入 */
+    handleUserIdInput() {
+      this.$forceUpdate();
+      this.handleChange();
+    },
+    /** 处理 Hook 输入 */
+    handleHookInput() {
+      this.$forceUpdate();
+      this.handleChange();
+    },
     /** 处理钉钉开关改变的操作 */
     handleSwitchChange() {
       this.$refs['form'].clearValidate();
       this.handleChange();
+    },
+    /** 单发测试钉钉通知 */
+    handleUserIdTest() {
+      if (!this.form.switch) {
+        this.$message.warning(this.$i18n.t('ding.please-enable-switch'));
+        return;
+      }
+
+      const hasUserId = this.form.userId && this.form.userId.trim();
+      if (!hasUserId) {
+        this.$message.warning(this.$i18n.t('ding.please-enter-user-id'));
+        return;
+      }
+
+      this.userIdTestLoading = true;
+      const testData = {
+        projectId: this.$store.state.user.config.currentProjectId,
+        memberId: this.$store.state.user.id,
+        config: {
+          userId: this.form.userId,
+          key: '',
+          hook: ''
+        }
+      };
+
+      singleTestDingNotice(testData).then(res => {
+        this.userIdTestLoading = false;
+        this.$message.success(this.$i18n.t('ding.test-success'));
+      }).catch(err => {
+        this.userIdTestLoading = false;
+        this.$message.error(this.$i18n.t('ding.test-failed') + ': ' + (err.msg || err.message || '未知错误'));
+      });
+    },
+    /** 群发测试钉钉通知 */
+    handleGroupTest() {
+      if (!this.form.switch) {
+        this.$message.warning(this.$i18n.t('ding.please-enable-switch'));
+        return;
+      }
+
+      const hasHook = this.form.hook && this.form.hook.trim();
+      if (!hasHook) {
+        this.$message.warning(this.$i18n.t('ding.please-enter-hook'));
+        return;
+      }
+
+      this.groupTestLoading = true;
+      const testData = {
+        projectId: this.$store.state.user.config.currentProjectId,
+        memberId: this.$store.state.user.id,
+        config: {
+          userId: '',
+          key: this.form.key,
+          hook: this.form.hook
+        }
+      };
+
+      groupTestDingNotice(testData).then(res => {
+        this.groupTestLoading = false;
+        this.$message.success(this.$i18n.t('ding.test-success'));
+      }).catch(err => {
+        this.groupTestLoading = false;
+        this.$message.error(this.$i18n.t('ding.test-failed') + ': ' + (err.msg || err.message || '未知错误'));
+      });
     },
     /** 重制表单 */
     resetFields() {

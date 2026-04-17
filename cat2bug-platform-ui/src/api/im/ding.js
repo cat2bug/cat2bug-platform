@@ -16,3 +16,21 @@ export function saveDingConfig(data) {
     data: data
   })
 }
+
+// 群发测试钉钉通知
+export function groupTestDingNotice(data) {
+  return request({
+    url: '/im/project/ding/config/group-test',
+    method: 'post',
+    data: data
+  })
+}
+
+// 单发测试钉钉通知
+export function singleTestDingNotice(data) {
+  return request({
+    url: '/im/project/ding/config/single-test',
+    method: 'post',
+    data: data
+  })
+}
