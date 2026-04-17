@@ -47,6 +47,19 @@ nbdist/
 !*/build/*.xml
 uploadPath/
 uploadTemp/
+
+######################################################################
+# Claude AI
+.claude/
+.worktree/
+CLAUDE.md
+
+######################################################################
+# Node.js
+node_modules/
+package-lock.json
+yarn.lock
+
 ### macOS template
 # General
 .DS_Store
