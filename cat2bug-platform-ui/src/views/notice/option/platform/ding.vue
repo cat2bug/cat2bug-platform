@@ -7,23 +7,21 @@
 
     <!-- 单发配置区域 -->
     <div style="font-weight: bold; margin-bottom: 18px;">{{$t('ding.single-send-config')}}</div>
-    <el-form-item prop="userId">
+    <el-form-item prop="mobile">
       <template slot="label">
         <div class="form-label">
-          <label>{{$t('ding.user-id')}}</label>
-          <el-tooltip class="item" effect="dark" :content="$t('ding.user-id-illustrate')" placement="bottom">
+          <label>{{$t('ding.enterprise-mobile')}}</label>
+          <el-tooltip class="item" effect="dark" :content="$t('ding.mobile-illustrate')" placement="bottom">
             <i class="el-icon-question"></i>
           </el-tooltip>
         </div>
       </template>
-      <el-input v-model="form.userId" @input="handleUserIdInput" :placeholder="$t('ding.enter-user-id')" maxlength="64">
+      <el-input v-model="form.mobile" @input="handleMobileInput" :placeholder="$t('ding.enter-mobile')" maxlength="32" :disabled="!form.switch">
         <el-button
           slot="append"
-          :class="hasUserId ? 'test-button-success' : 'test-button-disabled'"
-          size="small"
-          :loading="userIdTestLoading"
-          :disabled="!hasUserId"
-          @click="handleUserIdTest">{{$t('ding.single-test')}}</el-button>
+          :loading="mobileTestLoading"
+          :disabled="!form.switch || !hasMobile"
+          @click="handleMobileTest">{{$t('ding.single-test')}}</el-button>
       </el-input>
     </el-form-item>
     <el-alert
@@ -46,7 +44,7 @@
           </el-tooltip>
         </div>
       </template>
-      <el-input v-model="form.key" @input="handleChange" :placeholder="$t('ding.enter-hook-keyword')" maxlength="128"></el-input>
+      <el-input v-model="form.key" @input="handleChange" :placeholder="$t('ding.enter-hook-keyword')" maxlength="128" :disabled="!form.switch"></el-input>
     </el-form-item>
     <el-form-item prop="hook">
       <template slot="label">
@@ -57,13 +55,11 @@
           </el-tooltip>
         </div>
       </template>
-      <el-input v-model="form.hook" @input="handleHookInput" :placeholder="$t('ding.enter-hook-url')" maxlength="255">
+      <el-input v-model="form.hook" @input="handleHookInput" :placeholder="$t('ding.enter-hook-url')" maxlength="255" :disabled="!form.switch">
         <el-button
           slot="append"
-          :class="hasHook ? 'test-button-success' : 'test-button-disabled'"
-          size="small"
           :loading="groupTestLoading"
-          :disabled="!hasHook"
+          :disabled="!form.switch || !hasHook"
           @click="handleGroupTest">{{$t('ding.group-test')}}</el-button>
       </el-input>
     </el-form-item>
@@ -90,7 +86,7 @@ export default {
     };
     return {
       form: this.ding,
-      userIdTestLoading: false,
+      mobileTestLoading: false,
       groupTestLoading: false,
       defaultRules: {
         // hook: [
@@ -112,6 +108,11 @@ export default {
     ding: function (n,o) {
       if(n && n!=o) {
         this.form = n;
+        // 如果企业手机号未设置，默认显示当前用户的手机号
+        if (!this.form.mobile && this.$store.state.user.phoneNumber) {
+          this.form.mobile = this.$store.state.user.phoneNumber;
+          this.handleChange();
+        }
       }
     },
   },
@@ -119,11 +120,18 @@ export default {
     rules: function (){
       return this.form.switch?this.defaultRules: {}
     },
-    hasUserId() {
-      return this.form.userId && this.form.userId.trim().length > 0;
+    hasMobile() {
+      return this.form.mobile && this.form.mobile.trim().length > 0;
     },
     hasHook() {
       return this.form.hook && this.form.hook.trim().length > 0;
+    }
+  },
+  mounted() {
+    // 如果企业手机号未设置，默认显示当前用户的手机号
+    if (!this.form.mobile && this.$store.state.user.phoneNumber) {
+      this.form.mobile = this.$store.state.user.phoneNumber;
+      this.handleChange();
     }
   },
   methods: {
@@ -131,8 +139,8 @@ export default {
     handleChange() {
       this.$emit('change', this.form);
     },
-    /** 处理用户ID输入 */
-    handleUserIdInput() {
+    /** 处理手机号输入 */
+    handleMobileInput() {
       this.$forceUpdate();
       this.handleChange();
     },
@@ -147,34 +155,34 @@ export default {
       this.handleChange();
     },
     /** 单发测试钉钉通知 */
-    handleUserIdTest() {
+    handleMobileTest() {
       if (!this.form.switch) {
         this.$message.warning(this.$i18n.t('ding.please-enable-switch'));
         return;
       }
 
-      const hasUserId = this.form.userId && this.form.userId.trim();
-      if (!hasUserId) {
-        this.$message.warning(this.$i18n.t('ding.please-enter-user-id'));
+      const hasMobile = this.form.mobile && this.form.mobile.trim();
+      if (!hasMobile) {
+        this.$message.warning(this.$i18n.t('ding.please-enter-mobile'));
         return;
       }
 
-      this.userIdTestLoading = true;
+      this.mobileTestLoading = true;
       const testData = {
         projectId: this.$store.state.user.config.currentProjectId,
         memberId: this.$store.state.user.id,
         config: {
-          userId: this.form.userId,
+          mobile: this.form.mobile,
           key: '',
           hook: ''
         }
       };
 
       singleTestDingNotice(testData).then(res => {
-        this.userIdTestLoading = false;
+        this.mobileTestLoading = false;
         this.$message.success(this.$i18n.t('ding.test-success'));
       }).catch(err => {
-        this.userIdTestLoading = false;
+        this.mobileTestLoading = false;
         this.$message.error(this.$i18n.t('ding.test-failed') + ': ' + (err.msg || err.message || '未知错误'));
       });
     },
@@ -196,7 +204,7 @@ export default {
         projectId: this.$store.state.user.config.currentProjectId,
         memberId: this.$store.state.user.id,
         config: {
-          userId: '',
+          mobile: '',
           key: this.form.key,
           hook: this.form.hook
         }

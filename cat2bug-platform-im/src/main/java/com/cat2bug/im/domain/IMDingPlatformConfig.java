@@ -23,14 +23,14 @@ public class IMDingPlatformConfig extends IMBasePlatformConfig {
      */
     private String hook;
     /**
-     * 用户ID
+     * 手机号
      */
-    private String userId;
+    private String mobile;
 
-    public IMDingPlatformConfig(boolean configSwitch, String key, String hook, String userId) {
+    public IMDingPlatformConfig(boolean configSwitch, String key, String hook, String mobile) {
         super(configSwitch);
         this.key = key;
         this.hook = hook;
-        this.userId = userId;
+        this.mobile = mobile;
     }
 }

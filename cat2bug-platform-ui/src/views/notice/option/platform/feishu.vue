@@ -16,13 +16,11 @@
           </el-tooltip>
         </div>
       </template>
-      <el-input v-model="form.mobile" @input="handleMobileInput" :placeholder="$t('feishu.enter-mobile')" maxlength="32">
+      <el-input v-model="form.mobile" @input="handleMobileInput" :placeholder="$t('feishu.enter-mobile')" maxlength="32" :disabled="!form.switch">
         <el-button
           slot="append"
-          :class="hasMobile ? 'test-button-success' : 'test-button-disabled'"
-          size="small"
           :loading="mobileTestLoading"
-          :disabled="!hasMobile"
+          :disabled="!form.switch || !hasMobile"
           @click="handleMobileTest">{{$t('feishu.single-test')}}</el-button>
       </el-input>
     </el-form-item>
@@ -46,7 +44,7 @@
           </el-tooltip>
         </div>
       </template>
-      <el-input v-model="form.key" @input="handleChange" :placeholder="$t('feishu.enter-hook-keyword')" maxlength="128"></el-input>
+      <el-input v-model="form.key" @input="handleChange" :placeholder="$t('feishu.enter-hook-keyword')" maxlength="128" :disabled="!form.switch"></el-input>
     </el-form-item>
     <el-form-item prop="secret">
       <template slot="label">
@@ -57,7 +55,7 @@
           </el-tooltip>
         </div>
       </template>
-      <el-input v-model="form.secret" @input="handleChange" :placeholder="$t('feishu.enter-secret')" maxlength="128"></el-input>
+      <el-input v-model="form.secret" @input="handleChange" :placeholder="$t('feishu.enter-secret')" maxlength="128" :disabled="!form.switch"></el-input>
     </el-form-item>
     <el-form-item prop="hook">
       <template slot="label">
@@ -68,13 +66,11 @@
           </el-tooltip>
         </div>
       </template>
-      <el-input v-model="form.hook" @input="handleHookInput" :placeholder="$t('feishu.enter-hook-url')" maxlength="255">
+      <el-input v-model="form.hook" @input="handleHookInput" :placeholder="$t('feishu.enter-hook-url')" maxlength="255" :disabled="!form.switch">
         <el-button
           slot="append"
-          :class="hasHook ? 'test-button-success' : 'test-button-disabled'"
-          size="small"
           :loading="groupTestLoading"
-          :disabled="!hasHook"
+          :disabled="!form.switch || !hasHook"
           @click="handleGroupTest">{{$t('feishu.group-test')}}</el-button>
       </el-input>
     </el-form-item>
@@ -273,61 +269,5 @@ export default {
   gap: 5px;
   justify-content: center;
   align-items: center;
-}
-
-.test-button-primary {
-  background-color: #409EFF !important;
-  border-color: #409EFF !important;
-  color: #fff !important;
-}
-
-.test-button-primary:hover {
-  background-color: #66B1FF !important;
-  border-color: #66B1FF !important;
-}
-
-.test-button-success {
-  background-color: #67C23A !important;
-  border-color: #67C23A !important;
-  color: #fff !important;
-}
-
-.test-button-success:hover {
-  background-color: #85CE61 !important;
-  border-color: #85CE61 !important;
-}
-
-.test-button-disabled {
-  background-color: #909399 !important;
-  border-color: #909399 !important;
-  color: #fff !important;
-  cursor: not-allowed !important;
-}
-
-/* 修复焦点边框包括按钮 */
-::v-deep .el-input-group--append .el-input__inner:focus {
-  border-color: #409EFF !important;
-}
-
-::v-deep .el-input-group--append:focus-within .el-input__inner {
-  border-color: #409EFF !important;
-}
-
-::v-deep .el-input-group--append:focus-within .el-input-group__append {
-  border-color: #409EFF !important;
-}
-
-::v-deep .el-input-group__append {
-  background-color: transparent !important;
-  padding: 0 !important;
-  border-left: 0 !important;
-}
-
-::v-deep .el-input-group__append .el-button {
-  margin: 0 !important;
-  margin-left: -1px !important;
-  border-radius: 0 4px 4px 0 !important;
-  height: 100% !important;
-  line-height: normal !important;
 }
 </style>

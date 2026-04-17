@@ -1,5 +1,6 @@
 package com.cat2bug.web.controller.im;
 
+import com.alibaba.fastjson.JSON;
 import com.cat2bug.common.annotation.Log;
 import com.cat2bug.common.core.controller.BaseController;
 import com.cat2bug.common.core.domain.AjaxResult;
@@ -120,9 +121,9 @@ public class DingConfigController extends BaseController
             @SuppressWarnings("unchecked")
             Map<String, String> config = (Map<String, String>) params.get("config");
 
-            String userId = config.get("userId");
-            if (StringUtils.isBlank(userId)) {
-                return error("请配置单发用户 User ID");
+            String mobile = config.get("mobile");
+            if (StringUtils.isBlank(mobile)) {
+                return error("请配置单发用户手机号");
             }
 
             IMProjectConfig projectConfig = imProjectConfigService.selectImProjectConfigByProjectIdAndSystemCode(projectId, DingProjectConfig.SYSTEM_CODE);
@@ -130,14 +131,26 @@ public class DingConfigController extends BaseController
                 return error("请先在项目配置中设置钉钉企业应用配置");
             }
 
+            DingProjectConfig dingProjectConfig = JSON.parseObject(projectConfig.getConfigParams(), DingProjectConfig.class);
+
             DingMessage message = new DingMessage("这是来自 Cat2Bug 的钉钉测试消息");
             message.setMsgtype("text");
             message.setProjectId(projectId);
             message.setReceiveMemberId(memberId);
-            message.setUserIds(java.util.Arrays.asList(userId));
+            message.setAppKey(dingProjectConfig.getAppKey());
+            message.setAppSecret(dingProjectConfig.getAppSecret());
+            message.setRobotCode(dingProjectConfig.getRobotCode());
+
+            // 设置消息参数
+            com.cat2bug.im.domain.DingSampleActionCardParams msgParams = new com.cat2bug.im.domain.DingSampleActionCardParams();
+            msgParams.setTitle("Cat2Bug 测试消息");
+            msgParams.setText("这是来自 Cat2Bug 的钉钉测试消息");
+            msgParams.setSingleTitle("确认");
+            msgParams.setSingleURL("https://www.cat2bug.com");
+            message.setMsgParam(JSON.toJSONString(msgParams));
 
             IMDingPlatformConfig platformConfig = new IMDingPlatformConfig();
-            platformConfig.setUserId(userId);
+            platformConfig.setMobile(mobile);
 
             dingMessageService.sendNoticeMessage(message, platformConfig);
             return success("测试消息已发送到钉钉单发用户");

@@ -54,12 +54,13 @@ public class DingMessageFactoryImpl implements IIMFactoryService {
             msg.setSrc(src);
             msg.setMsgtype("text");
 
-            // 群发消息
-            if(dingProjectConfig!=null && StringUtils.isNotBlank(config.getPlatforms().getDing().getUserId())) {
+            // 单发消息
+            if(dingProjectConfig!=null && StringUtils.isNotBlank(config.getPlatforms().getDing().getMobile())) {
                 msg.setAppKey(dingProjectConfig.getAppKey());
                 msg.setAppSecret(dingProjectConfig.getAppSecret());
                 msg.setRobotCode(dingProjectConfig.getRobotCode());
-                msg.setUserIds(Arrays.asList(config.getPlatforms().getDing().getUserId()));
+                // 注意：这里暂时存储手机号，实际的 User ID 会在 DingMessageServiceImpl 中通过手机号获取
+                msg.setUserIds(Arrays.asList(config.getPlatforms().getDing().getMobile()));
                 DingSampleActionCardParams params = new DingSampleActionCardParams();
                 params.setTitle(title);
                 params.setText(markdownText);

@@ -10,7 +10,8 @@ const user = {
     avatar: '',
     roles: [],
     permissions: [],
-    config: {}
+    config: {},
+    phoneNumber: ''
   },
 
   mutations: {
@@ -37,6 +38,9 @@ const user = {
     },
     SET_PROJECT_ID: (state, projectId) => {
       state.config.currentProjectId = projectId
+    },
+    SET_PHONE_NUMBER: (state, phoneNumber) => {
+      state.phoneNumber = phoneNumber
     },
   },
 
@@ -90,6 +94,7 @@ const user = {
           commit('SET_ID', user.userId)
           commit('SET_NAME', user.userName)
           commit('SET_AVATAR', avatar)
+          commit('SET_PHONE_NUMBER', user.phoneNumber || '')
           resolve(res)
         }).catch(error => {
           reject(error)

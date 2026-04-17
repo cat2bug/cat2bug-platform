@@ -15,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -32,6 +34,10 @@ public class DingMessageServiceImpl implements IIMService<DingMessage, IMDingPla
      * 获取token接口网址
      */
     private final static String GET_TOKEN_URL = "https://api.dingtalk.com/v1.0/oauth2/accessToken";
+    /**
+     * 通过手机号获取用户ID接口网址
+     */
+    private final static String GET_USER_BY_MOBILE_URL = "https://oapi.dingtalk.com/topapi/v2/user/getbymobile";
     /**
      * 发送内部机器人消息接口网址
      */
@@ -57,8 +63,8 @@ public class DingMessageServiceImpl implements IIMService<DingMessage, IMDingPla
         if(StringUtils.isNotBlank(config.getHook())) {
             this.sendHookMessage(client, message, config);
         }
-        // 发送企业内部单人消息（只有当设置了 userId 或 userIds 时才发送）
-        if(StringUtils.isNotBlank(config.getUserId()) || (message.getUserIds() != null && !message.getUserIds().isEmpty())) {
+        // 发送企业内部单人消息（只有当设置了 mobile 或 userIds 时才发送）
+        if(StringUtils.isNotBlank(config.getMobile()) || (message.getUserIds() != null && !message.getUserIds().isEmpty())) {
             this.sendInternalMessage(client, message, config);
         }
     }
@@ -76,7 +82,34 @@ public class DingMessageServiceImpl implements IIMService<DingMessage, IMDingPla
             String token = this.getToken(client, message);
             redisCache.setCacheObject(DING_TOKEN_KEY, tokenKey, token);
         }
-        sendInternalRobotMessage(client, redisCache.getCacheObject(DING_TOKEN_KEY, tokenKey),message);
+        String accessToken = redisCache.getCacheObject(DING_TOKEN_KEY, tokenKey);
+
+        // 如果配置了手机号，先通过手机号获取 User ID
+        if(StringUtils.isNotBlank(config.getMobile())) {
+            String userId = this.getUserIdByMobile(client, accessToken, config.getMobile(), message);
+            if(message.getUserIds() == null || message.getUserIds().isEmpty()) {
+                message.setUserIds(java.util.Arrays.asList(userId));
+            }
+        }
+
+        // 如果 message.getUserIds() 中包含手机号格式（非钉钉 User ID），则转换为 User ID
+        // 钉钉 User ID 通常不包含数字以外的字符，而手机号是纯数字
+        // 这里假设如果 userIds 中的值看起来像手机号（纯数字且长度合适），则进行转换
+        if(message.getUserIds() != null && !message.getUserIds().isEmpty()) {
+            List<String> convertedUserIds = new java.util.ArrayList<>();
+            for(String id : message.getUserIds()) {
+                // 如果看起来像手机号（11位数字），则转换
+                if(id != null && id.matches("\\d{11}")) {
+                    String userId = this.getUserIdByMobile(client, accessToken, id, message);
+                    convertedUserIds.add(userId);
+                } else {
+                    convertedUserIds.add(id);
+                }
+            }
+            message.setUserIds(convertedUserIds);
+        }
+
+        sendInternalRobotMessage(client, accessToken, message);
     }
 
     private void sendInternalRobotMessage(OkHttpClient client, String token, DingMessage message) throws Exception {
@@ -203,6 +236,76 @@ public class DingMessageServiceImpl implements IIMService<DingMessage, IMDingPla
             return 0;
         } else {
             return resendCountCache.get(tokenKey);
+        }
+    }
+
+    /**
+     * 通过手机号获取钉钉用户ID
+     * 注意：钉钉API会优先查找企业手机号，如果企业手机号未设置，会自动使用用户的个人手机号进行查找
+     * @param client OkHttpClient
+     * @param accessToken 访问令牌
+     * @param mobile 手机号（企业手机号或个人手机号）
+     * @param message DingMessage（用于token刷新）
+     * @return 用户ID
+     * @throws Exception
+     */
+    private String getUserIdByMobile(OkHttpClient client, String accessToken, String mobile, DingMessage message) throws Exception {
+        Map<String, String> requestBody = new HashMap<>();
+        requestBody.put("mobile", mobile);
+
+        RequestBody body = RequestBody.create(FORM_CONTENT_TYPE, JSON.toJSONString(requestBody));
+        Request request = new Request.Builder()
+                .url(GET_USER_BY_MOBILE_URL + "?access_token=" + accessToken)
+                .post(body)
+                .build();
+
+        Response response = client.newCall(request).execute();
+        String responseBody = response.body().string();
+        log.info("通过手机号获取用户ID响应: {}", responseBody);
+
+        Map<String, Object> result = JSON.parseObject(responseBody, Map.class);
+        Integer errcode = (Integer) result.get("errcode");
+
+        if (errcode != null && errcode == 0) {
+            Map<String, Object> resultData = (Map<String, Object>) result.get("result");
+            return (String) resultData.get("userid");
+        } else if (errcode != null && (errcode == 40014 || errcode == 88)) {
+            // Token 无效（errcode=40014 或 88），刷新 token 并重试
+            log.warn("获取用户ID时token无效(errcode={}，尝试刷新token并重试", errcode);
+            String tokenKey = this.getTokenCacheKey(message);
+            String newToken = this.getToken(client, message);
+            redisCache.setCacheObject(DING_TOKEN_KEY, tokenKey, newToken);
+
+            // 重试一次
+            return getUserIdByMobileRetry(client, newToken, mobile);
+        } else {
+            throw new Exception("获取用户ID失败: " + result.get("errmsg"));
+        }
+    }
+
+    /**
+     * 重试获取用户ID（不再处理token失效）
+     */
+    private String getUserIdByMobileRetry(OkHttpClient client, String accessToken, String mobile) throws Exception {
+        Map<String, String> requestBody = new HashMap<>();
+        requestBody.put("mobile", mobile);
+
+        RequestBody body = RequestBody.create(FORM_CONTENT_TYPE, JSON.toJSONString(requestBody));
+        Request request = new Request.Builder()
+                .url(GET_USER_BY_MOBILE_URL + "?access_token=" + accessToken)
+                .post(body)
+                .build();
+
+        Response response = client.newCall(request).execute();
+        String responseBody = response.body().string();
+        log.info("重试通过手机号获取用户ID响应: {}", responseBody);
+
+        Map<String, Object> result = JSON.parseObject(responseBody, Map.class);
+        if (result.get("errcode") != null && (Integer) result.get("errcode") == 0) {
+            Map<String, Object> resultData = (Map<String, Object>) result.get("result");
+            return (String) resultData.get("userid");
+        } else {
+            throw new Exception("获取用户ID失败: " + result.get("errmsg"));
         }
     }
 }
