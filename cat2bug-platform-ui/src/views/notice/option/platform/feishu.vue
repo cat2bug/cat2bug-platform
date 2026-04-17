@@ -10,10 +10,10 @@
     <el-form-item prop="mobile">
       <template slot="label">
         <div class="form-label">
+          <label>{{$t('feishu.enterprise-mobile')}}</label>
           <el-tooltip class="item" effect="dark" :content="$t('feishu.mobile-illustrate')" placement="bottom">
             <i class="el-icon-question"></i>
           </el-tooltip>
-          <label>{{$t('feishu.enterprise-mobile')}}</label>
         </div>
       </template>
       <el-input v-model="form.mobile" @input="handleMobileInput" :placeholder="$t('feishu.enter-mobile')" maxlength="32">
@@ -35,14 +35,15 @@
     </el-alert>
 
     <!-- 群发配置区域 -->
+    <el-divider></el-divider>
     <div style="font-weight: bold; margin-bottom: 18px;">{{$t('feishu.group-send-config')}}</div>
     <el-form-item prop="key">
       <template slot="label">
         <div class="form-label">
+          <label>{{$t('feishu.custom-keyword')}}</label>
           <el-tooltip class="item" effect="dark" :content="$t('feishu.keyword-illustrate')" placement="bottom">
             <i class="el-icon-question"></i>
           </el-tooltip>
-          <label>{{$t('feishu.custom-keyword')}}</label>
         </div>
       </template>
       <el-input v-model="form.key" @input="handleChange" :placeholder="$t('feishu.enter-hook-keyword')" maxlength="128"></el-input>
@@ -50,10 +51,10 @@
     <el-form-item prop="secret">
       <template slot="label">
         <div class="form-label">
+          <label>{{$t('feishu.signature-verification')}}</label>
           <el-tooltip class="item" effect="dark" :content="$t('feishu.secret-illustrate')" placement="bottom">
             <i class="el-icon-question"></i>
           </el-tooltip>
-          <label>{{$t('feishu.signature-verification')}}</label>
         </div>
       </template>
       <el-input v-model="form.secret" @input="handleChange" :placeholder="$t('feishu.enter-secret')" maxlength="128"></el-input>
@@ -61,10 +62,10 @@
     <el-form-item prop="hook">
       <template slot="label">
         <div class="form-label">
+          <label>{{$t('feishu.hook')}}</label>
           <el-tooltip class="item" effect="dark" :content="$t('feishu.hook-illustrate')" placement="bottom">
             <i class="el-icon-question"></i>
           </el-tooltip>
-          <label>{{$t('feishu.hook')}}</label>
         </div>
       </template>
       <el-input v-model="form.hook" @input="handleHookInput" :placeholder="$t('feishu.enter-hook-url')" maxlength="255">
