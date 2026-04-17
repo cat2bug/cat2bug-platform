@@ -1,5 +1,5 @@
 <template>
-  <el-form ref="form" :model="form" :rules="rules" label-width="150px">
+  <el-form ref="form" :model="form" :rules="rules" label-width="190px">
     <el-form-item :label="$t('feishu.robot')" prop="switch">
       <el-switch v-model="form.switch" @change="handleSwitchChange"></el-switch>
     </el-form-item>
