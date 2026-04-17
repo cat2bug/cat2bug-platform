@@ -5,7 +5,22 @@
       <el-switch v-model="form.switch" @change="handleSwitchChange"></el-switch>
     </div>
 
+    <!-- 单发配置区域 -->
+    <div style="font-weight: bold; margin-bottom: 18px;">{{$t('ding.single-send-config')}}</div>
+    <el-form-item prop="userId">
+      <template slot="label">
+        <div class="form-label">
+          <label>{{$t('ding.user-id')}}</label>
+          <el-tooltip class="item" effect="dark" :content="$t('ding.user-id-illustrate')" placement="bottom">
+            <i class="el-icon-question"></i>
+          </el-tooltip>
+        </div>
+      </template>
+      <el-input v-model="form.userId" @input="handleChange" :placeholder="$t('ding.enter-user-id')" maxlength="64"></el-input>
+    </el-form-item>
+
     <!-- 群发配置区域 -->
+    <el-divider></el-divider>
     <div style="font-weight: bold; margin-bottom: 18px;">{{$t('ding.group-send-config')}}</div>
     <el-form-item prop="key">
       <template slot="label">
@@ -28,21 +43,6 @@
         </div>
       </template>
       <el-input v-model="form.hook" @input="handleChange" :placeholder="$t('ding.enter-hook-url')" maxlength="255"></el-input>
-    </el-form-item>
-
-    <!-- 单发配置区域 -->
-    <el-divider></el-divider>
-    <div style="font-weight: bold; margin-bottom: 18px;">{{$t('ding.single-send-config')}}</div>
-    <el-form-item prop="userId">
-      <template slot="label">
-        <div class="form-label">
-          <label>{{$t('ding.user-id')}}</label>
-          <el-tooltip class="item" effect="dark" :content="$t('ding.user-id-illustrate')" placement="bottom">
-            <i class="el-icon-question"></i>
-          </el-tooltip>
-        </div>
-      </template>
-      <el-input v-model="form.userId" @input="handleChange" :placeholder="$t('ding.enter-user-id')" maxlength="64"></el-input>
     </el-form-item>
   </el-form>
 </template>
