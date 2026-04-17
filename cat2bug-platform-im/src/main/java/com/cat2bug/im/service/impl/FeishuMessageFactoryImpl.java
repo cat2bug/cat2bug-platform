@@ -37,24 +37,15 @@ public class FeishuMessageFactoryImpl implements IIMFactoryService {
         String text = messageTemplate.toText(content, config.getModules());
         if (StringUtils.isBlank(text)) return new ArrayList<>();
 
-        // 仅使用项目级飞书群机器人配置
+        // 获取项目级飞书配置（企业应用配置）
         IMProjectConfig projectConfig = imProjectConfigService.selectImProjectConfigByProjectIdAndSystemCode(
                 projectId, FeishuProjectConfig.SYSTEM_CODE);
-        if (projectConfig == null || StringUtils.isBlank(projectConfig.getConfigParams())) {
-            log.warn("飞书群机器人未配置（项目级），无法发送消息 projectId={}", projectId);
-            return new ArrayList<>();
-        }
-        FeishuProjectConfig feishuProjectConfig = JSON.parseObject(projectConfig.getConfigParams(), FeishuProjectConfig.class);
-        String hook = feishuProjectConfig.getHook();
-        String secret = feishuProjectConfig.getSecret();
-
-        if (StringUtils.isBlank(hook)) {
-            log.warn("飞书群机器人 Webhook 地址为空，无法发送消息 projectId={}", projectId);
-            return new ArrayList<>();
+        FeishuProjectConfig feishuProjectConfig = null;
+        if (projectConfig != null && StringUtils.isNotBlank(projectConfig.getConfigParams())) {
+            feishuProjectConfig = JSON.parseObject(projectConfig.getConfigParams(), FeishuProjectConfig.class);
         }
 
-        final String finalHook = hook;
-        final String finalSecret = secret;
+        final FeishuProjectConfig finalProjectConfig = feishuProjectConfig;
 
         return recipientIds.stream().map(r -> {
             FeishuMessage msg = new FeishuMessage(text);
@@ -63,8 +54,18 @@ public class FeishuMessageFactoryImpl implements IIMFactoryService {
             msg.setGroup(group);
             msg.setTitle(title);
             msg.setReceiveMemberId(r);
-            msg.setHook(finalHook);
-            msg.setSecret(finalSecret);
+
+            // 从用户配置中获取飞书配置
+            FeishuPlatformConfig userFeishuConfig = config.getPlatforms().getFeishu();
+            if (userFeishuConfig != null) {
+                // 优先使用用户配置的群机器人 hook
+                if (StringUtils.isNotBlank(userFeishuConfig.getHook())) {
+                    msg.setHook(userFeishuConfig.getHook());
+                    msg.setSecret(userFeishuConfig.getSecret()); // 从用户配置读取 secret
+                    log.debug("使用用户配置的飞书群机器人 hook, recipientId={}", r);
+                }
+            }
+
             return (IMMessage) msg;
         }).collect(Collectors.toList());
     }

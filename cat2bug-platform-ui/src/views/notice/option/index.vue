@@ -2,7 +2,7 @@
   <el-dialog
     :title="$t('notice.option')"
     :visible.sync="dialogVisible"
-    width="40%"
+    width="60%"
     :close-on-click-modal="false"
     :before-close="handleClose">
     <el-tabs v-model="activeTabName" v-loading="loading">
@@ -17,17 +17,28 @@
         </div>
       </el-tab-pane>
       <el-tab-pane :label="$t('notice.receive-platform-option')" name="platform">
-        <div class="option-body">
-          <div v-for="(p,index) in platformList">
+        <el-tabs v-model="activePlatformName" type="border-card">
+          <el-tab-pane :label="$t('system.internal-notification')" name="system">
+            <component
+              ref="platform-asystem"
+              v-model="option.config.platforms.asystem"
+              is="asystem"
+            />
+            <el-divider></el-divider>
+            <component
+              ref="platform-bmail"
+              v-model="option.config.platforms.bmail"
+              is="bmail"
+            />
+          </el-tab-pane>
+          <el-tab-pane v-for="(p,index) in externalPlatformList" :key="index" :label="getPlatformLabel(p.name)" :name="p.name">
             <component
               :ref="`platform-${p.name}`"
               v-model="option.config.platforms[p.name]"
               :is="p.name"
-              :key="index"
             />
-            <el-divider></el-divider>
-          </div>
-        </div>
+          </el-tab-pane>
+        </el-tabs>
       </el-tab-pane>
     </el-tabs>
 
@@ -74,6 +85,7 @@ export default {
       loading: false,
       dialogVisible: false,
       activeTabName: 'type',
+      activePlatformName: 'system',
       option: {
         config: {
           modules: {},
@@ -84,6 +96,11 @@ export default {
       platformList: allPlatformList,
     }
   },
+  computed: {
+    externalPlatformList() {
+      return this.platformList.filter(p => p.name !== 'asystem' && p.name !== 'bmail');
+    }
+  },
   mounted() {
     // this.getConfig();
   },
@@ -91,11 +108,23 @@ export default {
     /** 重制表单 */
     reset() {
       this.activeTabName = 'type';
+      this.activePlatformName = 'system';
       // 重制子组件表单
       this.platformList.forEach(p=>{
-        let com = this.$refs['platform-'+p.name][0];
-        com.resetFields()
+        let com = this.$refs['platform-'+p.name];
+        if (com && com[0]) {
+          com[0].resetFields();
+        }
       });
+    },
+    /** 获取平台标签名称 */
+    getPlatformLabel(name) {
+      const labels = {
+        'ding': this.$i18n.t('ding'),
+        'feishu': this.$i18n.t('feishu'),
+        'wechat': this.$i18n.t('enterprise-wechat')
+      };
+      return labels[name] || name;
     },
     /** 获取项目ID */
     getProjectId() {
@@ -129,13 +158,28 @@ export default {
     },
     /** 处理保存配置操作 */
     async handleSaveOption() {
-      Promise.all(
-        this.platformList.map(v => {
-          let com = this.$refs['platform-'+v.name][0];
-          let ret = com.validate();
-          return ret;
-        })
-      ).then(res => {
+      const validatePromises = [];
+
+      // 验证 asystem 和 bmail（在 system 标签页中）
+      const asystemCom = this.$refs['platform-asystem'];
+      if (asystemCom && asystemCom.validate) {
+        validatePromises.push(asystemCom.validate());
+      }
+
+      const bmailCom = this.$refs['platform-bmail'];
+      if (bmailCom && bmailCom.validate) {
+        validatePromises.push(bmailCom.validate());
+      }
+
+      // 验证其他外部平台
+      this.externalPlatformList.forEach(v => {
+        let com = this.$refs['platform-'+v.name];
+        if (com && com[0] && com[0].validate) {
+          validatePromises.push(com[0].validate());
+        }
+      });
+
+      Promise.all(validatePromises).then(res => {
         if (res.every(v => v)) {
           saveConfig(this.option).then(res=>{
             this.$message.success(this.$i18n.t('save-success').toString());
@@ -143,8 +187,6 @@ export default {
             this.reset();
           })
         } else {
-          // 找出所有校验不通过的表单
-          // const falseFormList = res.filter(v => !v);
           this.$message.error(this.$i18n.t('notice.option.save-error').toString());
         }
       }).catch(() => {

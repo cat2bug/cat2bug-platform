@@ -70,6 +70,9 @@ public class IMUserConfigServiceImpl implements IIMUserConfigService
         EnterpriseWeChatPlatformConfig enterpriseWeChatPlatformConfig = new EnterpriseWeChatPlatformConfig();
         enterpriseWeChatPlatformConfig.setUserId(SecurityUtils.getLoginUser().getUser().getWechatUserId());
         imPlatformConfig.setWechat(enterpriseWeChatPlatformConfig);
+        // 设置飞书配置
+        FeishuPlatformConfig feishuPlatformConfig = new FeishuPlatformConfig(false, SecurityUtils.getLoginUser().getUser().getPhoneNumber(), null, null, null);
+        imPlatformConfig.setFeishu(feishuPlatformConfig);
         return config;
     }
 

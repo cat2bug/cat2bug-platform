@@ -93,7 +93,8 @@ public class FeishuMessageServiceImpl implements IIMService<FeishuMessage, IMBas
 
     /**
      * 生成飞书签名
-     * 签名算法：Base64(HMAC-SHA256(timestamp + "\n" + secret))
+     * 签名算法：把 timestamp + "\n" + 密钥 作为 key，使用 HmacSHA256 对空字符串进行签名，再进行 Base64 编码
+     * 参考：https://open.feishu.cn/document/client-docs/bot-v3/add-custom-bot
      */
     private String generateSign(String secret, long timestamp) throws Exception {
         String stringToSign = timestamp + "\n" + secret;
