@@ -57,8 +57,10 @@ public class DingMessageServiceImpl implements IIMService<DingMessage, IMDingPla
         if(StringUtils.isNotBlank(config.getHook())) {
             this.sendHookMessage(client, message, config);
         }
-        // 发送企业内部单人消息
-        this.sendInternalMessage(client, message, config);
+        // 发送企业内部单人消息（只有当设置了 userId 或 userIds 时才发送）
+        if(StringUtils.isNotBlank(config.getUserId()) || (message.getUserIds() != null && !message.getUserIds().isEmpty())) {
+            this.sendInternalMessage(client, message, config);
+        }
     }
 
     /**

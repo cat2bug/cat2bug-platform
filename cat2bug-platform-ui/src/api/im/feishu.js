@@ -16,3 +16,21 @@ export function saveFeishuConfig(data) {
     data: data
   })
 }
+
+// 群发测试飞书通知
+export function groupTestFeishuNotice(data) {
+  return request({
+    url: '/im/project/feishu/config/group-test',
+    method: 'post',
+    data: data
+  })
+}
+
+// 单发测试飞书通知
+export function singleTestFeishuNotice(data) {
+  return request({
+    url: '/im/project/feishu/config/single-test',
+    method: 'post',
+    data: data
+  })
+}

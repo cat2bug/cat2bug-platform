@@ -1,5 +1,6 @@
 package com.cat2bug.im.service;
 
+import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.common.utils.spring.SpringUtils;
 import com.cat2bug.common.utils.uuid.IdUtils;
 import com.cat2bug.im.domain.IMBasePlatformConfig;
@@ -53,12 +54,20 @@ public class IMService {
         // 飞书群机器人：项目级配置，每次事件只发一条消息到群，无需按用户循环
         Optional<IIMService> feishuOpt = this.iimServiceList.stream().filter(s->s.getMessageFactoryName().equals(FeishuMessageServiceImpl.MESSAGE_FACTORY_NAME)).findFirst();
         if(feishuOpt.isPresent()) {
-            // 取第一个收件人的 config 用于获取 modules（消息模板渲染所需），hook 由 Factory 从项目级读取
+            // 取第一个收件人的 config 用于获取 modules（消息模板渲染所需），hook 由 Factory 从用户配置读取
             if(!recipientIds.isEmpty()) {
                 IMUserConfig anyUserConfig = imUserConfigService.selectImUserConfigByProjectAndMember(projectId, recipientIds.get(0), defaultOption);
-                this.sendMessage(sn, feishuOpt.get(), anyUserConfig.getConfig(), null, projectId, group, senderId, recipientIds.get(0), title, content, src, messageTemplate);
+                // 检查用户是否配置了飞书群机器人
+                if(anyUserConfig.getConfig().getPlatforms().getFeishu() != null
+                    && anyUserConfig.getConfig().getPlatforms().getFeishu().isConfigSwitch()
+                    && StringUtils.isNotBlank(anyUserConfig.getConfig().getPlatforms().getFeishu().getHook())) {
+                    this.sendMessage(sn, feishuOpt.get(), anyUserConfig.getConfig(), anyUserConfig.getConfig().getPlatforms().getFeishu(), projectId, group, senderId, recipientIds.get(0), title, content, src, messageTemplate);
+                }
             }
         }
+
+        // 飞书企业应用单发：按用户逐个发送
+        Optional<IIMService> feishuAppOpt = this.iimServiceList.stream().filter(s->s.getMessageFactoryName().equals(FeishuAppMessageServiceImpl.MESSAGE_FACTORY_NAME)).findFirst();
 
         recipientIds.stream().forEach(recipientId->{
            IMUserConfig userConfig = imUserConfigService.selectImUserConfigByProjectAndMember(projectId,  recipientId, defaultOption);
@@ -84,6 +93,9 @@ public class IMService {
                 Optional<IIMService> opt = this.iimServiceList.stream().filter(s->s.getMessageFactoryName().equals(EnterpriseWeChatMessageServiceImpl.MESSAGE_FACTORY_NAME)).findFirst();
                 if(opt.isPresent())
                     this.sendMessage(sn, opt.get(),userConfig.getConfig(),userConfig.getConfig().getPlatforms().getWechat(), projectId,group,senderId,recipientId,title,content,src,messageTemplate);
+            }
+            if(feishuAppOpt.isPresent() && userConfig.getConfig().getPlatforms().getFeishu() != null && StringUtils.isNotBlank(userConfig.getConfig().getPlatforms().getFeishu().getMobile())) {
+                this.sendMessage(sn, feishuAppOpt.get(), userConfig.getConfig(), userConfig.getConfig().getPlatforms().getFeishu(), projectId, group, senderId, recipientId, title, content, src, messageTemplate);
             }
         });
     }

@@ -5,11 +5,11 @@
     <el-row class="project-add-page-container">
       <el-col :xs="24" :sm="24" :md="10" :lg="10" :xl="10">
         <el-form ref="form" :model="form" :rules="rules" label-width="150px">
-          <el-form-item :label="$t('feishu.hook')" prop="hook">
-            <el-input v-model="form.hook" maxlength="255" :placeholder="$t('feishu.enter-hook-url')"></el-input>
+          <el-form-item :label="$t('feishu.appId')" prop="appId">
+            <el-input v-model="form.appId" maxlength="255" :placeholder="$t('feishu.enter-appId')"></el-input>
           </el-form-item>
-          <el-form-item :label="$t('feishu.secret')" prop="secret">
-            <el-input v-model="form.secret" maxlength="64" :show-password="true" :placeholder="$t('feishu.enter-secret')"></el-input>
+          <el-form-item :label="$t('feishu.appSecret')" prop="appSecret">
+            <el-input v-model="form.appSecret" maxlength="255" :show-password="true" :placeholder="$t('feishu.enter-appSecret')"></el-input>
           </el-form-item>
           <el-form-item>
             <el-button type="primary" @click="onSubmit">{{$t('save')}}</el-button>
@@ -18,16 +18,20 @@
         </el-form>
       </el-col>
       <el-col :xs="24" :sm="24" :md="14" :lg="14" :xl="14" class="doc">
-        <h1 style="font-size: 2rem;">飞书群机器人配置说明</h1>
-        <h2>飞书自定义群机器人配置</h2>
-        <p>当前配置目的是通过飞书群机器人发送通知消息。飞书自定义机器人无需应用审核，配置简单，步骤如下。</p>
-        <p>1. 打开需要接收通知的飞书群，点击群右上角【设置】图标，选择【群机器人】->【添加机器人】。</p>
-        <p>2. 在机器人列表中选择【自定义机器人】，填写机器人名称后点击【添加】。</p>
-        <p>3. 复制生成的 Webhook 地址，粘贴到左侧【Webhook 地址】栏中。</p>
-        <p>4. （可选）如需提升安全性，可开启【签名校验】，将生成的密钥复制到左侧【签名密钥】栏中。</p>
-        <p>5. 点击左侧【保存】按钮完成配置。</p>
+        <h1 style="font-size: 2rem;">飞书企业应用配置说明</h1>
+        <h2>飞书企业自建应用配置</h2>
+        <p>当前配置目的是通过飞书企业应用发送通知消息给指定用户。企业应用支持发送个人消息，配置步骤如下。</p>
+        <p>1. 登录飞书开放平台（https://open.feishu.cn/），进入【开发者后台】->【企业自建应用】。</p>
+        <p>2. 点击【创建企业自建应用】，填写应用名称、描述等信息后创建应用。</p>
+        <p>3. 进入应用详情页，在【凭证与基础信息】中找到【App ID】和【App Secret】。</p>
+        <p>4. 将【App ID】复制到左侧【应用凭证】栏中，将【App Secret】复制到左侧【应用密钥】栏中。</p>
+        <p>5. 在应用的【权限管理】中，添加【以应用身份发消息】权限（im:message）。</p>
+        <p>6. 在【版本管理与发布】中创建版本并发布应用，使其在企业内可用。</p>
+        <p>7. 点击左侧【保存】按钮完成配置。</p>
         <h2>通知说明</h2>
-        <p>配置完成后，当项目中的缺陷或报告发生变化时，系统将自动通过飞书群机器人发送通知消息到对应飞书群，无需成员单独配置。</p>
+        <p>配置完成后，用户需要在个人通知设置中配置自己的飞书邮箱地址。</p>
+        <p>系统将通过飞书开放平台消息发送 API（/im/v1/messages），使用 receive_id_type=email 直接向用户邮箱发送个人消息通知。</p>
+        <p>用户也可以在个人配置中填写飞书群机器人的 Webhook 地址和关键词，无需配置企业应用即可接收群消息通知。</p>
       </el-col>
     </el-row>
   </div>
@@ -42,12 +46,15 @@ export default {
     return {
       feishuConfig: {},
       form: {
-        hook: null,
-        secret: null,
+        appId: null,
+        appSecret: null,
       },
       rules: {
-        hook: [
-          { required: true, message: this.$i18n.t('feishu.please-enter-hook'), trigger: 'blur' }
+        appId: [
+          { required: true, message: this.$i18n.t('feishu.please-enter-appId'), trigger: 'blur' }
+        ],
+        appSecret: [
+          { required: true, message: this.$i18n.t('feishu.please-enter-appSecret'), trigger: 'blur' }
         ]
       }
     }
@@ -79,8 +86,8 @@ export default {
     reset() {
       this.feishuConfig = {};
       this.form = {
-        hook: null,
-        secret: null,
+        appId: null,
+        appSecret: null,
       };
       this.resetForm("form");
     },

@@ -18,4 +18,5 @@ public class IMPlatformConfig {
     private IMMailPlatformConfig mail;
     private IMDingPlatformConfig ding;
     private EnterpriseWeChatPlatformConfig wechat;
+    private FeishuPlatformConfig feishu;
 }
