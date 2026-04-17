@@ -832,7 +832,7 @@
   "feishu.enter-mobile": "請輸入飛書用戶手機號",
   "feishu.mobile-illustrate": "填寫飛書用戶手機號後，系統將通過手機號查詢用戶 ID 並發送個人消息",
   "feishu.single-send-config": "單發配置",
-  "feishu.single-send-notice": "單獨發送用戶功能需要配置飛書企業信息，請聯繫項目管理員在「項目設置」->「第三方應用」->「飛書」中進行設置。",
+  "feishu.single-send-notice": "單獨發送用戶功能需要配置飛書企業信息，請聯繫項目管理員在\"項目設置\"->\"第三方應用\"->\"飛書\"中進行設置。",
   "feishu.group-send-config": "群發配置",
   "feishu.custom-keyword": "自定義關鍵詞",
   "feishu.signature-verification": "簽名校驗",
