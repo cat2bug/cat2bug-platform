@@ -779,7 +779,7 @@
   "ding.group-send-config": "Group Send Configuration",
   "ding.single-send-config": "Single Send Configuration",
   "ding.single-send-notice": "Single send feature requires DingTalk enterprise configuration. Please contact the project administrator to configure it in \"Project Settings\" -> \"Third-party Applications\" -> \"DingTalk\".",
-  "ding.hook": "Hook Url",
+  "ding.hook": "Webhook Address",
   "ding.user-id": "User ID",
   "ding.please-enter-hook": "Please enter the hook url",
   "ding.format-error": "Please enter the correct DingTalk Hook address",
