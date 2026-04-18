@@ -36,7 +36,15 @@ public class DingMessageFactoryImpl implements IIMFactoryService {
         if(recipientList==null) return new ArrayList<>();
         String text = messageTemplate.toText(content, config.getModules());
         if(StringUtils.isBlank(text)) return new ArrayList<>();
-        String finalText = String.format("【%s】%s", config.getPlatforms().getDing().getKey(), text);
+
+        // 只有当 key 不为空时才添加【】格式
+        String finalText;
+        String key = config.getPlatforms().getDing().getKey();
+        if(StringUtils.isNotBlank(key)) {
+            finalText = String.format("【%s】%s", key, text);
+        } else {
+            finalText = text;
+        }
 
         // 获取配置
         IMProjectConfig projectConfig = imProjectConfigService.selectImProjectConfigByProjectIdAndSystemCode(projectId, DingProjectConfig.SYSTEM_CODE);
