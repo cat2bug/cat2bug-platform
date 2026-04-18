@@ -7,6 +7,7 @@ import com.cat2bug.common.enums.BusinessType;
 import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.im.domain.FeishuAppMessage;
 import com.cat2bug.im.domain.FeishuMessage;
+import com.cat2bug.im.domain.FeishuPlatformConfig;
 import com.cat2bug.im.domain.FeishuProjectConfig;
 import com.cat2bug.im.domain.IMProjectConfig;
 import com.cat2bug.im.service.IIMProjectConfigService;
@@ -98,7 +99,14 @@ public class FeishuConfigController extends BaseController {
             message.setReceiveMemberId(memberId);
             message.setHook(hook);
             message.setSecret(secret);
-            feishuMessageService.sendNoticeMessage(message, null);
+            FeishuPlatformConfig platformConfig = new FeishuPlatformConfig();
+            platformConfig.setConfigSwitch(true);
+            platformConfig.setSingleSwitch(false);
+            platformConfig.setGroupSwitch(true);
+            platformConfig.setHook(hook);
+            platformConfig.setSecret(secret);
+            platformConfig.setKey(key);
+            feishuMessageService.sendNoticeMessage(message, platformConfig);
             return success("测试消息已发送到飞书群机器人");
         } catch (Exception e) {
             logger.error("飞书群发测试消息发送失败", e);
@@ -139,6 +147,9 @@ public class FeishuConfigController extends BaseController {
             message.setAppSecret(feishuProjectConfig.getAppSecret());
 
             com.cat2bug.im.domain.FeishuPlatformConfig platformConfig = new com.cat2bug.im.domain.FeishuPlatformConfig();
+            platformConfig.setConfigSwitch(true);
+            platformConfig.setSingleSwitch(true);
+            platformConfig.setGroupSwitch(false);
             platformConfig.setMobile(mobile);
             feishuAppMessageService.sendNoticeMessage(message, platformConfig);
             return success("测试消息已发送到飞书单发用户");

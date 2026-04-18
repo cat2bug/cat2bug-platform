@@ -102,7 +102,7 @@
       @pagination="getList"
     />
     <view-notice ref="viewNotice" @read="refreshData" @close="initFloatMenu"></view-notice>
-    <option-notice ref="noticeOption" :member-id="getUserId" />
+    <option-notice ref="noticeOption" :member-id="getUserId()" />
     <send-notice-dialog ref="sendNoticeDialog" @send="refreshData" />
   </div>
 </template>

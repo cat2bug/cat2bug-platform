@@ -7,6 +7,8 @@ import com.cat2bug.im.mapper.MemberMapper;
 import com.cat2bug.im.service.IIMFactoryService;
 import com.cat2bug.im.service.IIMProjectConfigService;
 import com.cat2bug.im.service.IMessageTemplate;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -24,6 +26,8 @@ import java.util.stream.Collectors;
  */
 @Service(DingMessageServiceImpl.MESSAGE_FACTORY_NAME)
 public class DingMessageFactoryImpl implements IIMFactoryService {
+    private final static Logger log = LogManager.getLogger(DingMessageFactoryImpl.class);
+
     @Autowired
     private MemberMapper memberMapper;
 
@@ -56,7 +60,7 @@ public class DingMessageFactoryImpl implements IIMFactoryService {
         }
 
         String markdownText = messageTemplate.toMarkdown(content, config.getModules());
-        return recipientList.stream().map(r->{
+        List<IMMessage> messages = recipientList.stream().map(r->{
             DingMessage msg = new DingMessage(finalText);
             msg.setProjectId(projectId);
             msg.setSrc(src);
@@ -79,5 +83,6 @@ public class DingMessageFactoryImpl implements IIMFactoryService {
             }
             return msg;
         }).collect(Collectors.toList());
+        return messages;
     }
 }

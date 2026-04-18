@@ -32,6 +32,9 @@ public class FeishuAppMessageServiceImpl implements IIMService<FeishuAppMessage,
 
     @Override
     public void sendNoticeMessage(FeishuAppMessage message, FeishuPlatformConfig config) throws Exception {
+        if (config != null && !Boolean.TRUE.equals(config.getSingleSwitch())) {
+            return;
+        }
         if (config == null || StringUtils.isBlank(config.getMobile())) {
             log.warn("飞书单发手机号为空，无法发送信息 message:{}", JSON.toJSONString(message));
             return;

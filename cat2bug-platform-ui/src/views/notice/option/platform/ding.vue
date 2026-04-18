@@ -1,12 +1,12 @@
 <template>
   <el-form ref="form" :model="form" :rules="rules" label-width="190px">
-    <div style="margin-bottom: 18px;">
-      <span style="font-weight: bold; margin-right: 10px;">{{$t('ding.robot')}}</span>
-      <el-switch v-model="form.switch" @change="handleSwitchChange"></el-switch>
-    </div>
-
     <!-- 单发配置区域 -->
-    <div style="font-weight: bold; margin-bottom: 18px;">{{$t('ding.single-send-config')}}</div>
+    <el-form-item prop="singleSwitch">
+      <template slot="label">
+        <span>{{$t('ding.single-send-config')}}</span>
+      </template>
+      <el-switch v-model="form.singleSwitch" @change="handleChange"></el-switch>
+    </el-form-item>
     <el-form-item prop="mobile">
       <template slot="label">
         <div class="form-label">
@@ -16,11 +16,11 @@
           </el-tooltip>
         </div>
       </template>
-      <el-input v-model="form.mobile" @input="handleMobileInput" :placeholder="$t('ding.enter-mobile')" maxlength="32" :disabled="!form.switch">
+      <el-input v-model="form.mobile" @input="handleMobileInput" :placeholder="$t('ding.enter-mobile')" maxlength="32" :disabled="!form.singleSwitch">
         <el-button
           slot="append"
           :loading="mobileTestLoading"
-          :disabled="!form.switch || !hasMobile"
+          :disabled="!form.singleSwitch || !hasMobile"
           @click="handleMobileTest">{{$t('ding.single-test')}}</el-button>
       </el-input>
     </el-form-item>
@@ -34,7 +34,12 @@
 
     <!-- 群发配置区域 -->
     <el-divider></el-divider>
-    <div style="font-weight: bold; margin-bottom: 18px;">{{$t('ding.group-send-config')}}</div>
+    <el-form-item prop="groupSwitch">
+      <template slot="label">
+        <span>{{$t('ding.group-send-config')}}</span>
+      </template>
+      <el-switch v-model="form.groupSwitch" @change="handleChange"></el-switch>
+    </el-form-item>
     <el-form-item prop="key">
       <template slot="label">
         <div class="form-label">
@@ -44,7 +49,7 @@
           </el-tooltip>
         </div>
       </template>
-      <el-input v-model="form.key" @input="handleChange" :placeholder="$t('ding.enter-hook-keyword')" maxlength="128" :disabled="!form.switch"></el-input>
+      <el-input v-model="form.key" @input="handleChange" :placeholder="$t('ding.enter-hook-keyword')" maxlength="128" :disabled="!form.groupSwitch"></el-input>
     </el-form-item>
     <el-form-item prop="secret">
       <template slot="label">
@@ -55,7 +60,7 @@
           </el-tooltip>
         </div>
       </template>
-      <el-input v-model="form.secret" @input="handleChange" :placeholder="$t('ding.enter-secret')" maxlength="128" :disabled="!form.switch"></el-input>
+      <el-input v-model="form.secret" @input="handleChange" :placeholder="$t('ding.enter-secret')" maxlength="128" :disabled="!form.groupSwitch"></el-input>
     </el-form-item>
     <el-form-item prop="hook">
       <template slot="label">
@@ -66,11 +71,11 @@
           </el-tooltip>
         </div>
       </template>
-      <el-input v-model="form.hook" @input="handleHookInput" :placeholder="$t('ding.enter-hook-url')" maxlength="255" :disabled="!form.switch">
+      <el-input v-model="form.hook" @input="handleHookInput" :placeholder="$t('ding.enter-hook-url')" maxlength="255" :disabled="!form.groupSwitch">
         <el-button
           slot="append"
           :loading="groupTestLoading"
-          :disabled="!form.switch || !hasHook"
+          :disabled="!form.groupSwitch || !hasHook"
           @click="handleGroupTest">{{$t('ding.group-test')}}</el-button>
       </el-input>
     </el-form-item>
@@ -78,7 +83,6 @@
 </template>
 
 <script>
-import {validEmail, validURL} from "@/utils/validate";
 import {groupTestDingNotice, singleTestDingNotice} from "@/api/im/ding";
 
 export default {
@@ -88,23 +92,11 @@ export default {
     event: 'change'
   },
   data() {
-    let validateUrl = (rule, value, callback) => {
-      if(validURL(value)){
-        callback();
-      } else {
-        callback(new Error(this.$i18n.t('ding.format-error').toString()));
-      }
-    };
     return {
       form: this.ding,
       mobileTestLoading: false,
       groupTestLoading: false,
-      defaultRules: {
-        // hook: [
-        //   { required: true, message: this.$i18n.t('ding.please-enter-hook'), trigger: 'blur' },
-        //   { validator: validateUrl, trigger: 'change' }
-        // ],
-      }
+      defaultRules: {}
     }
   },
   props: {
@@ -118,8 +110,11 @@ export default {
   watch: {
     ding: function (n,o) {
       if(n && n!=o) {
-        this.form = n;
-        // 如果企业手机号未设置，默认显示当前用户的手机号
+        this.form = {
+          ...n,
+          singleSwitch: n.singleSwitch !== undefined ? n.singleSwitch : !!(n.switch && n.mobile),
+          groupSwitch: n.groupSwitch !== undefined ? n.groupSwitch : !!(n.switch && n.hook)
+        };
         if (!this.form.mobile && this.$store.state.user.phoneNumber) {
           this.form.mobile = this.$store.state.user.phoneNumber;
           this.handleChange();
@@ -129,7 +124,7 @@ export default {
   },
   computed: {
     rules: function (){
-      return this.form.switch?this.defaultRules: {}
+      return (this.form.singleSwitch || this.form.groupSwitch) ? this.defaultRules : {}
     },
     hasMobile() {
       return this.form.mobile && this.form.mobile.trim().length > 0;
@@ -139,57 +134,51 @@ export default {
     }
   },
   mounted() {
-    // 如果企业手机号未设置，默认显示当前用户的手机号
+    this.form = {
+      ...this.form,
+      singleSwitch: this.form.singleSwitch !== undefined ? this.form.singleSwitch : !!(this.form.switch && this.form.mobile),
+      groupSwitch: this.form.groupSwitch !== undefined ? this.form.groupSwitch : !!(this.form.switch && this.form.hook)
+    };
     if (!this.form.mobile && this.$store.state.user.phoneNumber) {
       this.form.mobile = this.$store.state.user.phoneNumber;
       this.handleChange();
     }
   },
   methods: {
-    /** 操作改变 */
     handleChange() {
       this.$emit('change', this.form);
     },
-    /** 处理手机号输入 */
     handleMobileInput() {
       this.$forceUpdate();
       this.handleChange();
     },
-    /** 处理 Hook 输入 */
     handleHookInput() {
       this.$forceUpdate();
       this.handleChange();
     },
-    /** 处理钉钉开关改变的操作 */
-    handleSwitchChange() {
-      this.$refs['form'].clearValidate();
-      this.handleChange();
-    },
-    /** 单发测试钉钉通知 */
     handleMobileTest() {
-      if (!this.form.switch) {
-        this.$message.warning(this.$i18n.t('ding.please-enable-switch'));
+      if (!this.form.singleSwitch) {
+        this.$message.warning(this.$i18n.t('ding.please-enable-single-switch'));
         return;
       }
-
       const hasMobile = this.form.mobile && this.form.mobile.trim();
       if (!hasMobile) {
         this.$message.warning(this.$i18n.t('ding.please-enter-mobile'));
         return;
       }
-
       this.mobileTestLoading = true;
       const testData = {
         projectId: this.$store.state.user.config.currentProjectId,
         memberId: this.$store.state.user.id,
         config: {
+          singleSwitch: this.form.singleSwitch,
+          groupSwitch: this.form.groupSwitch,
           mobile: this.form.mobile,
           key: '',
           hook: ''
         }
       };
-
-      singleTestDingNotice(testData).then(res => {
+      singleTestDingNotice(testData).then(() => {
         this.mobileTestLoading = false;
         this.$message.success(this.$i18n.t('ding.test-success'));
       }).catch(err => {
@@ -197,32 +186,30 @@ export default {
         this.$message.error(this.$i18n.t('ding.test-failed') + ': ' + (err.msg || err.message || '未知错误'));
       });
     },
-    /** 群发测试钉钉通知 */
     handleGroupTest() {
-      if (!this.form.switch) {
-        this.$message.warning(this.$i18n.t('ding.please-enable-switch'));
+      if (!this.form.groupSwitch) {
+        this.$message.warning(this.$i18n.t('ding.please-enable-group-switch'));
         return;
       }
-
       const hasHook = this.form.hook && this.form.hook.trim();
       if (!hasHook) {
         this.$message.warning(this.$i18n.t('ding.please-enter-hook'));
         return;
       }
-
       this.groupTestLoading = true;
       const testData = {
         projectId: this.$store.state.user.config.currentProjectId,
         memberId: this.$store.state.user.id,
         config: {
+          singleSwitch: this.form.singleSwitch,
+          groupSwitch: this.form.groupSwitch,
           mobile: '',
           key: this.form.key,
           secret: this.form.secret,
           hook: this.form.hook
         }
       };
-
-      groupTestDingNotice(testData).then(res => {
+      groupTestDingNotice(testData).then(() => {
         this.groupTestLoading = false;
         this.$message.success(this.$i18n.t('ding.test-success'));
       }).catch(err => {
@@ -230,11 +217,9 @@ export default {
         this.$message.error(this.$i18n.t('ding.test-failed') + ': ' + (err.msg || err.message || '未知错误'));
       });
     },
-    /** 重制表单 */
     resetFields() {
       this.$refs['form'].resetFields();
     },
-    /** 验证表单 */
     validate() {
       const validatePromises = new Promise((resolve, reject) => {
         this.$refs['form'].validate((valid) => {
@@ -247,7 +232,7 @@ export default {
       });
       if (validatePromises) {
         return Promise.all([validatePromises])
-          .then(res => {
+          .then(() => {
             return true;
           }).catch(() => {
             return false;

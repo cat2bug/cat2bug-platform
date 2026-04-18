@@ -3,6 +3,7 @@ package com.cat2bug.im.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.im.domain.FeishuMessage;
+import com.cat2bug.im.domain.FeishuPlatformConfig;
 import com.cat2bug.im.domain.IMBasePlatformConfig;
 import com.cat2bug.im.service.IIMService;
 import okhttp3.*;
@@ -38,6 +39,10 @@ public class FeishuMessageServiceImpl implements IIMService<FeishuMessage, IMBas
 
     @Override
     public void sendNoticeMessage(FeishuMessage message, IMBasePlatformConfig config) throws Exception {
+        FeishuPlatformConfig feishuConfig = (FeishuPlatformConfig) config;
+        if (feishuConfig != null && !Boolean.TRUE.equals(feishuConfig.getGroupSwitch())) {
+            return;
+        }
         // hook/secret 由 Factory 从项目级配置注入到 message 中
         String hook = message.getHook();
         String secret = message.getSecret();

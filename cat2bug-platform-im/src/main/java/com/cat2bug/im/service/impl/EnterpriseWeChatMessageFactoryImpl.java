@@ -30,7 +30,7 @@ public class EnterpriseWeChatMessageFactoryImpl implements IIMFactoryService {
     @Override
     public <T> List<IMMessage> createMessage(Long projectId, String group, Long senderId, List<Long> recipientIds, String title, T content, String src, IMessageTemplate<T> messageTemplate, IMConfig config) {
         if(recipientIds==null) return new ArrayList<>();
-        String text = messageTemplate.toHtml(content, config.getModules());
+        String text = messageTemplate.toMarkdown(content, config.getModules());
         if(StringUtils.isBlank(text)) return new ArrayList<>();
 
         // 获取企业微信在项目中的配置

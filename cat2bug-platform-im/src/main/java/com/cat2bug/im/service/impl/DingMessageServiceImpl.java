@@ -62,11 +62,11 @@ public class DingMessageServiceImpl implements IIMService<DingMessage, IMDingPla
     public void sendNoticeMessage(DingMessage message, IMDingPlatformConfig config) throws Exception {
         OkHttpClient client = new OkHttpClient().newBuilder().readTimeout(30000, TimeUnit.SECONDS).build();
         // 发送hook群消息
-        if(StringUtils.isNotBlank(config.getHook())) {
+        if(Boolean.TRUE.equals(config.getGroupSwitch()) && StringUtils.isNotBlank(config.getHook())) {
             this.sendHookMessage(client, message, config);
         }
-        // 发送企业内部单人消息（只有当设置了 mobile 或 userIds 时才发送）
-        if(StringUtils.isNotBlank(config.getMobile()) || (message.getUserIds() != null && !message.getUserIds().isEmpty())) {
+        // 发送企业内部单人消息
+        if(Boolean.TRUE.equals(config.getSingleSwitch()) && (StringUtils.isNotBlank(config.getMobile()) || (message.getUserIds() != null && !message.getUserIds().isEmpty()))) {
             this.sendInternalMessage(client, message, config);
         }
     }
@@ -200,7 +200,6 @@ public class DingMessageServiceImpl implements IIMService<DingMessage, IMDingPla
             // 判断URL是否已有参数
             String separator = url.contains("?") ? "&" : "?";
             url = url + separator + "timestamp=" + timestamp + "&sign=" + sign;
-            log.debug("钉钉加签调试 - timestamp: {}, secret: {}, sign: {}, url: {}", timestamp, config.getSecret(), sign, url);
         }
 
         Request request = new Request.Builder()

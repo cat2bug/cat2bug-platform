@@ -13,6 +13,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class EnterpriseWeChatPlatformConfig extends IMBasePlatformConfig {
-    /** 企业微信的用户ID */
-    private String userId;
+    /** 单发开关 */
+    private Boolean singleSwitch;
+    /** 群发开关 */
+    private Boolean groupSwitch;
+    /** 企业微信手机号（用于单发，通过手机号查询 userid） */
+    private String mobile;
+    /** 企业微信群机器人 Webhook（用于群发） */
+    private String hook;
 }

@@ -57,7 +57,7 @@ public class FeishuMessageFactoryImpl implements IIMFactoryService {
 
         final FeishuProjectConfig finalProjectConfig = feishuProjectConfig;
 
-        return recipientIds.stream().map(r -> {
+        List<IMMessage> messages = recipientIds.stream().map(r -> {
             FeishuMessage msg = new FeishuMessage(finalText);
             msg.setProjectId(projectId);
             msg.setSrc(src);
@@ -77,5 +77,6 @@ public class FeishuMessageFactoryImpl implements IIMFactoryService {
 
             return (IMMessage) msg;
         }).collect(Collectors.toList());
+        return messages;
     }
 }

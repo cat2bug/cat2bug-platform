@@ -10,18 +10,18 @@ import lombok.Data;
 @Data
 public class TextEnterpriseWeChatAppMessage extends EnterpriseWeChatAppMessage {
     /**
-     ** 文本类型消息
+     ** markdown 类型消息
      */
-    public final static String TEXT_MSG_TYPE = "text";
-    private Text text;
+    public final static String MARKDOWN_MSG_TYPE = "markdown";
+    private Markdown markdown;
 
     public TextEnterpriseWeChatAppMessage(String text) {
-        super.setMsgtype(TEXT_MSG_TYPE);
-        this.text = new Text();
-        this.text.setContent(text);
+        super.setMsgtype(MARKDOWN_MSG_TYPE);
+        this.markdown = new Markdown();
+        this.markdown.setContent(text);
     }
 
-    public static class Text {
+    public static class Markdown {
         private String content;
 
         public String getContent() {

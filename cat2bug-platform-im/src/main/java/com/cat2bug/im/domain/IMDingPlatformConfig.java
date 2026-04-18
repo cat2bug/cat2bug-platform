@@ -14,25 +14,23 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class IMDingPlatformConfig extends IMBasePlatformConfig {
-    /**
-     * 关键词
-     */
+    /** 单发开关 */
+    private Boolean singleSwitch;
+    /** 群发开关 */
+    private Boolean groupSwitch;
+    /** 关键词 */
     private String key;
-    /**
-     * 加签密钥
-     */
+    /** 加签密钥 */
     private String secret;
-    /**
-     * 钩子函数
-     */
+    /** 钩子函数 */
     private String hook;
-    /**
-     * 手机号
-     */
+    /** 手机号 */
     private String mobile;
 
-    public IMDingPlatformConfig(boolean configSwitch, String key, String secret, String hook, String mobile) {
+    public IMDingPlatformConfig(boolean configSwitch, Boolean singleSwitch, Boolean groupSwitch, String key, String secret, String hook, String mobile) {
         super(configSwitch);
+        this.singleSwitch = singleSwitch;
+        this.groupSwitch = groupSwitch;
         this.key = key;
         this.secret = secret;
         this.hook = hook;

@@ -64,14 +64,16 @@ public class IMUserConfigServiceImpl implements IIMUserConfigService
         IMMailPlatformConfig imMailPlatformConfig = new IMMailPlatformConfig(false, SecurityUtils.getLoginUser().getUser().getEmail());
         imPlatformConfig.setMail(imMailPlatformConfig);
         // 设置钉钉配置
-        IMDingPlatformConfig imDingPlatformConfig = new IMDingPlatformConfig(false,null,null,null,SecurityUtils.getLoginUser().getUser().getDingUserId());
+        IMDingPlatformConfig imDingPlatformConfig = new IMDingPlatformConfig(false, false, false, null, null, null, SecurityUtils.getLoginUser().getUser().getDingUserId());
         imPlatformConfig.setDing(imDingPlatformConfig);
         // 设置企业微信
         EnterpriseWeChatPlatformConfig enterpriseWeChatPlatformConfig = new EnterpriseWeChatPlatformConfig();
-        enterpriseWeChatPlatformConfig.setUserId(SecurityUtils.getLoginUser().getUser().getWechatUserId());
+        enterpriseWeChatPlatformConfig.setSingleSwitch(false);
+        enterpriseWeChatPlatformConfig.setGroupSwitch(false);
+        enterpriseWeChatPlatformConfig.setMobile(SecurityUtils.getLoginUser().getUser().getPhoneNumber());
         imPlatformConfig.setWechat(enterpriseWeChatPlatformConfig);
         // 设置飞书配置
-        FeishuPlatformConfig feishuPlatformConfig = new FeishuPlatformConfig(false, SecurityUtils.getLoginUser().getUser().getPhoneNumber(), null, null, null);
+        FeishuPlatformConfig feishuPlatformConfig = new FeishuPlatformConfig(false, false, false, SecurityUtils.getLoginUser().getUser().getPhoneNumber(), null, null, null);
         imPlatformConfig.setFeishu(feishuPlatformConfig);
         return config;
     }

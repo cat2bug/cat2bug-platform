@@ -99,6 +99,9 @@ public class DingConfigController extends BaseController
             message.setWebHook(hook);
 
             IMDingPlatformConfig platformConfig = new IMDingPlatformConfig();
+            platformConfig.setConfigSwitch(true);
+            platformConfig.setSingleSwitch(false);
+            platformConfig.setGroupSwitch(true);
             platformConfig.setHook(hook);
             platformConfig.setKey(key);
             platformConfig.setSecret(secret);
@@ -152,6 +155,9 @@ public class DingConfigController extends BaseController
             message.setMsgParam(JSON.toJSONString(msgParams));
 
             IMDingPlatformConfig platformConfig = new IMDingPlatformConfig();
+            platformConfig.setConfigSwitch(true);
+            platformConfig.setSingleSwitch(true);
+            platformConfig.setGroupSwitch(false);
             platformConfig.setMobile(mobile);
 
             dingMessageService.sendNoticeMessage(message, platformConfig);
