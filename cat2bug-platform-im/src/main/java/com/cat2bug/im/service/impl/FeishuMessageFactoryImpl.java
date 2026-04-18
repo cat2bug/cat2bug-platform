@@ -37,6 +37,16 @@ public class FeishuMessageFactoryImpl implements IIMFactoryService {
         String text = messageTemplate.toText(content, config.getModules());
         if (StringUtils.isBlank(text)) return new ArrayList<>();
 
+        // 只有当 key 不为空时才添加【】格式
+        String finalText;
+        FeishuPlatformConfig userFeishuConfig = config.getPlatforms().getFeishu();
+        String key = userFeishuConfig != null ? userFeishuConfig.getKey() : null;
+        if(StringUtils.isNotBlank(key)) {
+            finalText = String.format("【%s】%s", key, text);
+        } else {
+            finalText = text;
+        }
+
         // 获取项目级飞书配置（企业应用配置）
         IMProjectConfig projectConfig = imProjectConfigService.selectImProjectConfigByProjectIdAndSystemCode(
                 projectId, FeishuProjectConfig.SYSTEM_CODE);
@@ -48,7 +58,7 @@ public class FeishuMessageFactoryImpl implements IIMFactoryService {
         final FeishuProjectConfig finalProjectConfig = feishuProjectConfig;
 
         return recipientIds.stream().map(r -> {
-            FeishuMessage msg = new FeishuMessage(text);
+            FeishuMessage msg = new FeishuMessage(finalText);
             msg.setProjectId(projectId);
             msg.setSrc(src);
             msg.setGroup(group);
@@ -56,7 +66,6 @@ public class FeishuMessageFactoryImpl implements IIMFactoryService {
             msg.setReceiveMemberId(r);
 
             // 从用户配置中获取飞书配置
-            FeishuPlatformConfig userFeishuConfig = config.getPlatforms().getFeishu();
             if (userFeishuConfig != null) {
                 // 优先使用用户配置的群机器人 hook
                 if (StringUtils.isNotBlank(userFeishuConfig.getHook())) {
