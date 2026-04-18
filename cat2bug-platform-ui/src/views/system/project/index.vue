@@ -405,8 +405,7 @@ export default {
       if(this.isViewDefect(project)) {
         store.dispatch('UpdateCurrentProjectId', project.projectId).then(() => {
           store.dispatch('GetInfo').then(() => {
-            store.dispatch('GenerateRoutes').then(accessRoutes => {
-              router.addRoutes(accessRoutes) // 动态添加可访问路由表
+            store.dispatch('GenerateRoutes').then(() => {
               _this.$router.push({name:'Dashboard', params: { projectId: project.projectId }})
             });
           });

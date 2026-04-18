@@ -11,7 +11,8 @@ const permission = {
     addRoutes: [],
     defaultRoutes: [],
     topbarRouters: [],
-    sidebarRouters: []
+    sidebarRouters: [],
+    dynamicRoutesAdded: false
   },
   mutations: {
     SET_ROUTES: (state, routes) => {
@@ -27,10 +28,13 @@ const permission = {
     SET_SIDEBAR_ROUTERS: (state, routes) => {
       state.sidebarRouters = routes
     },
+    SET_DYNAMIC_ROUTES_ADDED: (state, added) => {
+      state.dynamicRoutesAdded = added
+    },
   },
   actions: {
     // 生成路由
-    GenerateRoutes({ commit }) {
+    GenerateRoutes({ commit, state }) {
       return new Promise(resolve => {
         // 向后端请求路由数据
         getRouters().then(res => {
@@ -40,7 +44,10 @@ const permission = {
           const rewriteRoutes = filterAsyncRouter(rdata, false, true)
           const asyncRoutes = filterDynamicRoutes(dynamicRoutes);
           rewriteRoutes.push({ path: '*', redirect: '/404', hidden: true })
-          router.addRoutes(asyncRoutes);
+          if (!state.dynamicRoutesAdded) {
+            router.addRoutes(asyncRoutes);
+            commit('SET_DYNAMIC_ROUTES_ADDED', true)
+          }
           commit('SET_ROUTES', rewriteRoutes)
           commit('SET_SIDEBAR_ROUTERS', constantRoutes.concat(sidebarRoutes))
           commit('SET_DEFAULT_ROUTES', sidebarRoutes)
