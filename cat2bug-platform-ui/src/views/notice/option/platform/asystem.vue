@@ -6,8 +6,8 @@
     <el-form-item :label="$t('option')">
       <div class="col">
         <div class="row">
-          <el-checkbox :label="$t('notice.system.bgm-enable')" v-model="form.backgroundMusic" @change="handleChange"></el-checkbox>
-          <el-select v-model="form.backgroundMusicUrl" size="mini" placeholder="请选择">
+          <el-checkbox :label="$t('notice.system.bgm-enable')" v-model="form.backgroundMusic" @change="handleChange" :disabled="!form.switch"></el-checkbox>
+          <el-select v-model="form.backgroundMusicUrl" size="mini" placeholder="请选择" :disabled="!form.switch || !form.backgroundMusic">
             <el-option
               v-for="item in backgroundMusicOptions"
               :key="item.value"
@@ -17,7 +17,7 @@
           </el-select>
         </div>
         <div class="row">
-          <el-checkbox :label="$t('notice.system.panel')" v-model="form.panel" @change="handleChange"></el-checkbox>
+          <el-checkbox :label="$t('notice.system.panel')" v-model="form.panel" @change="handleChange" :disabled="!form.switch"></el-checkbox>
         </div>
       </div>
     </el-form-item>

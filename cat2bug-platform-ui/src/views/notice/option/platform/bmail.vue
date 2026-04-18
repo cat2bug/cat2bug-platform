@@ -59,11 +59,21 @@ export default {
   methods: {
     /** 操作改变 */
     handleChange() {
+      this.$nextTick(() => {
+        if (this.$refs['form']) {
+          this.$refs['form'].clearValidate();
+        }
+      });
       this.$emit('change', this.form);
     },
     /** 处理邮件开关改变的操作 */
     handleSwitchChange() {
       this.$refs['form'].clearValidate();
+      this.$nextTick(() => {
+        if (!this.form.switch) {
+          this.$refs['form'].clearValidate();
+        }
+      });
       this.handleChange();
     },
     /** 重制表单 */

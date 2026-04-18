@@ -18,13 +18,14 @@
       </el-tab-pane>
       <el-tab-pane :label="$t('notice.receive-platform-option')" name="platform">
         <el-tabs v-model="activePlatformName" type="border-card">
-          <el-tab-pane :label="$t('system.internal-notification')" name="system">
+          <el-tab-pane :label="$t('system.internal-notification')" name="asystem">
             <component
               ref="platform-asystem"
               v-model="option.config.platforms.asystem"
               is="asystem"
             />
-            <el-divider></el-divider>
+          </el-tab-pane>
+          <el-tab-pane :label="$t('email')" name="bmail">
             <component
               ref="platform-bmail"
               v-model="option.config.platforms.bmail"
@@ -85,7 +86,7 @@ export default {
       loading: false,
       dialogVisible: false,
       activeTabName: 'type',
-      activePlatformName: 'system',
+      activePlatformName: 'asystem',
       option: {
         config: {
           modules: {},
@@ -108,7 +109,7 @@ export default {
     /** 重制表单 */
     reset() {
       this.activeTabName = 'type';
-      this.activePlatformName = 'system';
+      this.activePlatformName = 'asystem';
       // 重制子组件表单
       this.platformList.forEach(p=>{
         let com = this.$refs['platform-'+p.name];
@@ -225,5 +226,11 @@ export default {
 }
 .margin-right-30 {
   margin-right: 30px;
+}
+::v-deep .el-dialog__body {
+  padding-bottom: 10px;
+}
+::v-deep .el-dialog__footer {
+  padding-top: 8px;
 }
 </style>

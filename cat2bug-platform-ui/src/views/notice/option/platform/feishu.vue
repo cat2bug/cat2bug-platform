@@ -29,7 +29,7 @@
       type="warning"
       :closable="false"
       show-icon
-      style="margin-top: -10px; margin-bottom: 20px;">
+      style="margin-top: 12px; margin-bottom: 20px;">
     </el-alert>
 
     <!-- 群发配置区域 -->
@@ -96,7 +96,14 @@ export default {
       form: {},
       mobileTestLoading: false,
       groupTestLoading: false,
-      defaultRules: {}
+      defaultRules: {
+        mobile: [
+          { required: true, message: this.$i18n.t('feishu.mobile-required'), trigger: 'blur' }
+        ],
+        hook: [
+          { required: true, message: this.$i18n.t('feishu.hook-required'), trigger: 'blur' }
+        ]
+      }
     }
   },
   props: {
@@ -127,7 +134,14 @@ export default {
   },
   computed: {
     rules: function (){
-      return (this.form.singleSwitch || this.form.groupSwitch) ? this.defaultRules : {}
+      const rules = {};
+      if (this.form.singleSwitch) {
+        rules.mobile = this.defaultRules.mobile;
+      }
+      if (this.form.groupSwitch) {
+        rules.hook = this.defaultRules.hook;
+      }
+      return rules;
     },
     hasMobile() {
       return this.form.mobile && this.form.mobile.trim().length > 0;
@@ -138,6 +152,11 @@ export default {
   },
   methods: {
     handleChange() {
+      this.$nextTick(() => {
+        if (this.$refs['form']) {
+          this.$refs['form'].clearValidate();
+        }
+      });
       this.$emit('change', {
         ...this.feishu,
         ...this.form

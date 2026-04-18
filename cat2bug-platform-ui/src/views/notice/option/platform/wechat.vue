@@ -29,7 +29,7 @@
       type="warning"
       :closable="false"
       show-icon
-      style="margin-top: -10px; margin-bottom: 20px;">
+      style="margin-top: 12px; margin-bottom: 20px;">
     </el-alert>
 
     <!-- 群发配置区域 -->
@@ -74,7 +74,15 @@ export default {
       form: this.wechat,
       mobileTestLoading: false,
       groupTestLoading: false,
-      defaultRules: {}
+      autoFilledMobile: false,
+      defaultRules: {
+        mobile: [
+          { required: true, message: this.$i18n.t('enterprise-wechat.mobile-required'), trigger: 'blur' }
+        ],
+        hook: [
+          { required: true, message: this.$i18n.t('enterprise-wechat.hook-required'), trigger: 'blur' }
+        ]
+      }
     }
   },
   props: {
@@ -93,8 +101,9 @@ export default {
           singleSwitch: n.singleSwitch !== undefined ? n.singleSwitch : !!(n.switch && n.mobile),
           groupSwitch: n.groupSwitch !== undefined ? n.groupSwitch : !!(n.switch && n.hook)
         };
-        if (!this.form.mobile && this.$store.state.user.phoneNumber) {
+        if (!this.form.mobile && !this.autoFilledMobile && this.$store.state.user.phoneNumber) {
           this.form.mobile = this.$store.state.user.phoneNumber;
+          this.autoFilledMobile = true;
           this.handleChange();
         }
       }
@@ -102,7 +111,14 @@ export default {
   },
   computed: {
     rules: function (){
-      return (this.form.singleSwitch || this.form.groupSwitch) ? this.defaultRules : {}
+      const rules = {};
+      if (this.form.singleSwitch) {
+        rules.mobile = this.defaultRules.mobile;
+      }
+      if (this.form.groupSwitch) {
+        rules.hook = this.defaultRules.hook;
+      }
+      return rules;
     },
     hasMobile() {
       return this.form.mobile && this.form.mobile.trim().length > 0;
@@ -117,16 +133,25 @@ export default {
       singleSwitch: this.form.singleSwitch !== undefined ? this.form.singleSwitch : !!(this.form.switch && this.form.mobile),
       groupSwitch: this.form.groupSwitch !== undefined ? this.form.groupSwitch : !!(this.form.switch && this.form.hook)
     };
-    if (!this.form.mobile && this.$store.state.user.phoneNumber) {
+    if (!this.form.mobile && !this.autoFilledMobile && this.$store.state.user.phoneNumber) {
       this.form.mobile = this.$store.state.user.phoneNumber;
+      this.autoFilledMobile = true;
       this.handleChange();
     }
   },
   methods: {
     handleChange() {
+      this.$nextTick(() => {
+        if (this.$refs['form']) {
+          this.$refs['form'].clearValidate();
+        }
+      });
       this.$emit('change', this.form);
     },
     handleMobileInput() {
+      if (!this.form.mobile) {
+        this.autoFilledMobile = true;
+      }
       this.$forceUpdate();
       this.handleChange();
     },
