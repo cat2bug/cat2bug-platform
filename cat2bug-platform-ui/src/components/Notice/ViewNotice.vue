@@ -1,6 +1,6 @@
 <template>
   <el-drawer
-    size="35%"
+    size="50%"
     :visible.sync="visible"
     direction="rtl"
     :before-close="closeDefectDrawer">
