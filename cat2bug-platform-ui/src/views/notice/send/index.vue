@@ -7,7 +7,7 @@
     <el-form ref="form" :model="form" :rules="rules" label-width="130px">
       <el-form-item :label="$t('notice.receiver')" prop="receiveIds">
         <select-project-member
-          :placeholder="$t('notice.please-select-receiver').toString()"
+          :placeholder="$t('notice.please-select-receiver')"
           v-model="form.receiveIds"
           :project-id="getProjectId()"
           :is-head="false"
