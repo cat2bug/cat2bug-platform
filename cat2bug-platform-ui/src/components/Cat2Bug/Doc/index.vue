@@ -1,20 +1,15 @@
 <template>
   <div>
-    <svg-icon icon-class="question" @click="goto" />
+    <svg-icon icon-class="documentation" @click="goto" />
   </div>
 </template>
 
 <script>
 export default {
-  name: 'RuoYiDoc',
-  data() {
-    return {
-      url: 'https://www.cat2bug.com/doc'
-    }
-  },
+  name: 'Cat2BugDoc',
   methods: {
     goto() {
-      window.open(this.url)
+      this.$router.push('/system/doc')
     }
   }
 }

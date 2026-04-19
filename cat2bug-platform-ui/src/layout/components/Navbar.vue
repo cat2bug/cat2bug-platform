@@ -27,10 +27,9 @@
             <el-badge :hidden="noticeCount==0" is-dot class="item"><svg-icon icon-class="notice"></svg-icon></el-badge>
           </router-link>
         </el-tooltip>
-<!--        <el-tooltip :content="$t('md-address')" effect="dark" placement="bottom">-->
-<!--          <cat2-bug-md id="cat2bug-md" class="right-menu-item hover-effect" />-->
-<!--        </el-tooltip>-->
-<!--        <el-link href="/doc">doc</el-link>-->
+        <el-tooltip :content="$t('system-doc')" effect="dark" placement="bottom">
+          <cat2-bug-doc class="right-menu-item hover-effect" />
+        </el-tooltip>
         <screenfull id="screenfull" class="right-menu-item hover-effect" />
       </template>
       <lang-select />

@@ -1,0 +1,299 @@
+/* Markdown 统一样式 */
+.markdown-body {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #333;
+  word-wrap: break-word;
+}
+
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4,
+.markdown-body h5,
+.markdown-body h6 {
+  margin-top: 24px;
+  margin-bottom: 16px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: #24292e;
+}
+
+.markdown-body h1 {
+  font-size: 32px;
+  border-bottom: 1px solid #eaecef;
+  padding-bottom: 8px;
+}
+
+.markdown-body h2 {
+  font-size: 24px;
+  border-bottom: 1px solid #eaecef;
+  padding-bottom: 8px;
+}
+
+.markdown-body h3 {
+  font-size: 20px;
+}
+
+.markdown-body h4 {
+  font-size: 16px;
+}
+
+.markdown-body h5 {
+  font-size: 14px;
+}
+
+.markdown-body h6 {
+  font-size: 13px;
+  color: #6a737d;
+}
+
+.markdown-body p {
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+.markdown-body ul,
+.markdown-body ol {
+  padding-left: 32px;
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+.markdown-body li {
+  margin-bottom: 8px;
+}
+
+.markdown-body li > p {
+  margin-bottom: 8px;
+}
+
+.markdown-body ul ul,
+.markdown-body ul ol,
+.markdown-body ol ol,
+.markdown-body ol ul {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.markdown-body code {
+  padding: 2px 6px;
+  margin: 0 2px;
+  font-size: 14px;
+  background-color: rgba(27, 31, 35, 0.05);
+  border-radius: 3px;
+  font-family: 'SFMono-Regular', 'Consolas', 'Liberation Mono', 'Menlo', 'Courier', monospace;
+}
+
+.markdown-body pre {
+  padding: 16px;
+  overflow: auto;
+  font-size: 14px;
+  line-height: 1.45;
+  background-color: #f6f8fa;
+  border-radius: 6px;
+  margin-bottom: 16px;
+}
+
+.markdown-body pre code {
+  padding: 0;
+  margin: 0;
+  background-color: transparent;
+  border-radius: 0;
+  font-size: 100%;
+  word-break: normal;
+  white-space: pre;
+}
+
+.markdown-body blockquote {
+  padding: 0 16px;
+  margin: 0 0 16px 0;
+  color: #6a737d;
+  border-left: 4px solid #dfe2e5;
+}
+
+.markdown-body blockquote > :first-child {
+  margin-top: 0;
+}
+
+.markdown-body blockquote > :last-child {
+  margin-bottom: 0;
+}
+
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  margin-bottom: 16px;
+  display: block;
+  overflow: auto;
+}
+
+.markdown-body table th,
+.markdown-body table td {
+  padding: 8px 12px;
+  border: 1px solid #dfe2e5;
+}
+
+.markdown-body table th {
+  background-color: #f6f8fa;
+  font-weight: 600;
+}
+
+.markdown-body table tr {
+  background-color: #fff;
+  border-top: 1px solid #c6cbd1;
+}
+
+.markdown-body table tr:nth-child(2n) {
+  background-color: #f6f8fa;
+}
+
+.markdown-body a {
+  color: #0366d6;
+  text-decoration: none;
+}
+
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  margin: 16px 0;
+  box-sizing: border-box;
+  background-color: #fff;
+  border-radius: 3px;
+}
+
+.markdown-body hr {
+  height: 1px;
+  padding: 0;
+  margin: 24px 0;
+  background-color: #e1e4e8;
+  border: 0;
+}
+
+.markdown-body strong {
+  font-weight: 600;
+}
+
+.markdown-body em {
+  font-style: italic;
+}
+
+.markdown-body del {
+  text-decoration: line-through;
+}
+
+/* 提示框样式 */
+.markdown-body .tip,
+.markdown-body .warning,
+.markdown-body .danger {
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  border-left: 4px solid;
+  border-radius: 4px;
+}
+
+.markdown-body .tip {
+  background-color: #f3f5f7;
+  border-color: #42b983;
+}
+
+.markdown-body .warning {
+  background-color: #fffbe6;
+  border-color: #faad14;
+}
+
+.markdown-body .danger {
+  background-color: #fff2f0;
+  border-color: #ff4d4f;
+}
+
+.markdown-body .tip .custom-block-title,
+.markdown-body .warning .custom-block-title,
+.markdown-body .danger .custom-block-title {
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+/* 代码块语言标识 */
+.markdown-body pre[class*="language-"] {
+  position: relative;
+}
+
+.markdown-body pre[class*="language-"]::before {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  font-size: 12px;
+  color: #999;
+}
+
+.markdown-body pre.language-javascript::before {
+  content: 'JavaScript';
+}
+
+.markdown-body pre.language-bash::before {
+  content: 'Bash';
+}
+
+.markdown-body pre.language-json::before {
+  content: 'JSON';
+}
+
+.markdown-body pre.language-html::before {
+  content: 'HTML';
+}
+
+.markdown-body pre.language-css::before {
+  content: 'CSS';
+}
+
+.markdown-body pre.language-java::before {
+  content: 'Java';
+}
+
+.markdown-body pre.language-python::before {
+  content: 'Python';
+}
+
+/* 任务列表 */
+.markdown-body .task-list-item {
+  list-style-type: none;
+}
+
+.markdown-body .task-list-item input[type="checkbox"] {
+  margin: 0 6px 0 -20px;
+  vertical-align: middle;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .markdown-body {
+    font-size: 14px;
+  }
+
+  .markdown-body h1 {
+    font-size: 28px;
+  }
+
+  .markdown-body h2 {
+    font-size: 22px;
+  }
+
+  .markdown-body h3 {
+    font-size: 18px;
+  }
+
+  .markdown-body table {
+    font-size: 12px;
+  }
+
+  .markdown-body table th,
+  .markdown-body table td {
+    padding: 6px 8px;
+  }
+}
