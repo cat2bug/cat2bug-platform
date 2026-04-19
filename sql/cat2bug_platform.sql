@@ -312,7 +312,7 @@ CREATE TABLE `im_project_config` (
                                      `config_params` json DEFAULT NULL COMMENT '配置参数',
                                      PRIMARY KEY (`config_id`),
                                      UNIQUE KEY `project_id_system_code_` (`project_id`,`system_code`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='项目通知配置';
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='项目通知配置';
 
 -- ----------------------------
 -- Records of im_project_config
@@ -335,7 +335,7 @@ CREATE TABLE `im_user_config` (
                                   KEY `user_project_` (`user_id`,`project_id`),
                                   KEY `row_` (`user_id`,`project_id`,`group_name`),
                                   KEY `user_group_` (`user_id`,`group_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户消息配置表';
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='用户消息配置表';
 
 -- ----------------------------
 -- Records of im_user_config
@@ -597,7 +597,7 @@ CREATE TABLE `sys_ai_module_config` (
                                         `update_by_id` bigint DEFAULT NULL COMMENT '更新人ID',
                                         PRIMARY KEY (`ai_id`),
                                         KEY `project_id_` (`project_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='AI模型配置';
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='AI模型配置';
 
 -- ----------------------------
 -- Records of sys_ai_module_config
@@ -614,25 +614,25 @@ CREATE TABLE `sys_case` (
                             `case_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '用例名称',
                             `module_id` bigint DEFAULT NULL COMMENT '模块id',
                             `case_type` int DEFAULT NULL COMMENT '用例类型',
-                            `case_expect` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin COMMENT '预期',
+                            `case_expect` text CHARACTER SET utf8mb4 COLLATE utf8mb4_bin COMMENT '预期',
                             `case_step` json DEFAULT NULL COMMENT '步骤',
                             `case_level` int DEFAULT NULL COMMENT '用例级别',
-                            `case_preconditions` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin COMMENT '前置条件',
-                            `create_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin DEFAULT NULL,
+                            `case_preconditions` text CHARACTER SET utf8mb4 COLLATE utf8mb4_bin COMMENT '前置条件',
+                            `create_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
                             `create_time` datetime DEFAULT NULL,
-                            `update_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin DEFAULT NULL,
+                            `update_by` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
                             `update_time` datetime DEFAULT NULL,
                             `case_num` bigint DEFAULT NULL COMMENT '用例号码',
                             `project_id` bigint DEFAULT NULL COMMENT '项目编号',
-                            `remark` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin DEFAULT NULL COMMENT '备注',
-                            `img_urls` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin COMMENT '图片集合',
-                            `case_data` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin COMMENT '用例数据',
-                            `annex_urls` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin COMMENT '附件集合',
+                            `remark` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '备注',
+                            `img_urls` text CHARACTER SET utf8mb4 COLLATE utf8mb4_bin COMMENT '图片集合',
+                            `case_data` text CHARACTER SET utf8mb4 COLLATE utf8mb4_bin COMMENT '用例数据',
+                            `annex_urls` text CHARACTER SET utf8mb4 COLLATE utf8mb4_bin COMMENT '附件集合',
                             PRIMARY KEY (`case_id`),
                             UNIQUE KEY `id_num_` (`case_id`,`case_num`),
                             UNIQUE KEY `project_id_namd_module_` (`case_name`,`module_id`,`project_id`),
                             KEY `project_id_case_name` (`case_name`,`project_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9946 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_bin COMMENT='测试用例表';
+) ENGINE=InnoDB AUTO_INCREMENT=9946 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='测试用例表';
 
 -- ----------------------------
 -- Records of sys_case
@@ -673,7 +673,7 @@ CREATE TABLE `sys_comment` (
                                `module_type` varchar(12) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '所属模块(defect_log:缺陷日志的评论)',
                                `correlation_id` bigint NOT NULL COMMENT '关联id',
                                PRIMARY KEY (`comment_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=42 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='评论';
+) ENGINE=InnoDB AUTO_INCREMENT=42 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='评论';
 
 -- ----------------------------
 -- Records of sys_comment
@@ -731,7 +731,7 @@ CREATE TABLE `sys_db_version` (
                                   `success` tinyint(1) NOT NULL,
                                   PRIMARY KEY (`installed_rank`),
                                   KEY `sys_db_version_s_idx` (`success`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='系统版本管理';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='系统版本管理';
 
 -- ----------------------------
 -- Records of sys_db_version
@@ -985,7 +985,7 @@ CREATE TABLE `sys_document` (
                                 `doc_remakr` varchar(255) DEFAULT NULL COMMENT '备注',
                                 `file_url` varchar(255) DEFAULT NULL COMMENT '文件路径',
                                 PRIMARY KEY (`doc_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=64 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='文档';
+) ENGINE=InnoDB AUTO_INCREMENT=64 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='文档';
 
 -- ----------------------------
 -- Records of sys_document
@@ -1524,15 +1524,15 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `sys_project_api`;
 CREATE TABLE `sys_project_api` (
-                                   `api_id` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin NOT NULL COMMENT '项目api主键',
+                                   `api_id` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '项目api主键',
                                    `project_id` bigint NOT NULL COMMENT '项目id',
                                    `user_id` bigint NOT NULL COMMENT '用户id',
                                    `white_list` json DEFAULT NULL COMMENT '白名单',
                                    `expire_time` datetime DEFAULT NULL COMMENT '有效时间',
-                                   `remark` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin DEFAULT NULL COMMENT '备注',
+                                   `remark` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '备注',
                                    PRIMARY KEY (`api_id`) USING BTREE,
                                    UNIQUE KEY `project_user_` (`project_id`,`user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_bin COMMENT='项目API表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='项目API表';
 
 -- ----------------------------
 -- Records of sys_project_api
@@ -1554,7 +1554,7 @@ CREATE TABLE `sys_project_defect_tabs` (
                                            `create_time` datetime DEFAULT NULL COMMENT '创建时间',
                                            PRIMARY KEY (`tab_id`),
                                            KEY `user_id_` (`project_id`,`user_id`) COMMENT '查询用户所在项目的Tab配置'
-) ENGINE=InnoDB AUTO_INCREMENT=156 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='项目缺陷页签配置';
+) ENGINE=InnoDB AUTO_INCREMENT=156 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='项目缺陷页签配置';
 
 -- ----------------------------
 -- Records of sys_project_defect_tabs
@@ -1580,7 +1580,7 @@ CREATE TABLE `sys_report` (
                               PRIMARY KEY (`report_id`),
                               UNIQUE KEY `report_key_` (`report_key`),
                               KEY `project_id_` (`project_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=385 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='报告';
+) ENGINE=InnoDB AUTO_INCREMENT=385 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='报告';
 
 -- ----------------------------
 -- Records of sys_report
@@ -1606,7 +1606,7 @@ CREATE TABLE `sys_report_template` (
                                        `template_title` varchar(512) DEFAULT NULL COMMENT '模版标题',
                                        `is_shop` tinyint DEFAULT '0' COMMENT '是否是商店模版',
                                        PRIMARY KEY (`template_id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=59 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='报告模版';
+) ENGINE=InnoDB AUTO_INCREMENT=59 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='报告模版';
 
 -- ----------------------------
 -- Records of sys_report_template
@@ -2342,12 +2342,12 @@ COMMIT;
 DROP TABLE IF EXISTS `sys_screen_size`;
 CREATE TABLE `sys_screen_size` (
                                    `screen_size_id` bigint NOT NULL AUTO_INCREMENT COMMENT '屏幕尺寸id',
-                                   `name` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin NOT NULL COMMENT '名称',
-                                   `width` varchar(12) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin DEFAULT NULL COMMENT '宽',
-                                   `height` varchar(12) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin DEFAULT NULL COMMENT '高',
-                                   `remark` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin DEFAULT NULL COMMENT '备注',
+                                   `name` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '名称',
+                                   `width` varchar(12) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '宽',
+                                   `height` varchar(12) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '高',
+                                   `remark` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '备注',
                                    PRIMARY KEY (`screen_size_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8876890465889862657 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_bin COMMENT='屏幕尺寸';
+) ENGINE=InnoDB AUTO_INCREMENT=8876890465889862657 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='屏幕尺寸';
 
 -- ----------------------------
 -- Records of sys_screen_size
@@ -2408,14 +2408,14 @@ COMMIT;
 DROP TABLE IF EXISTS `sys_temp_file`;
 CREATE TABLE `sys_temp_file` (
                                  `file_id` bigint NOT NULL AUTO_INCREMENT COMMENT '文件id',
-                                 `file_name` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin DEFAULT NULL COMMENT '文件名',
-                                 `src_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin DEFAULT NULL COMMENT '来源地址',
-                                 `create_by` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin DEFAULT NULL COMMENT '创建人',
+                                 `file_name` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '文件名',
+                                 `src_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '来源地址',
+                                 `create_by` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '创建人',
                                  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
                                  `file_type` int(10) unsigned zerofill DEFAULT '0000000000' COMMENT '文件类型(0普通文件,1图片)',
-                                 `file_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin DEFAULT NULL COMMENT '文件地址',
+                                 `file_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '文件地址',
                                  PRIMARY KEY (`file_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_bin COMMENT='临时文件表';
+) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='临时文件表';
 
 -- ----------------------------
 -- Records of sys_temp_file
@@ -2495,7 +2495,7 @@ CREATE TABLE `sys_user_defect` (
                                    `collect` tinyint(1) DEFAULT NULL COMMENT '是否收藏',
                                    PRIMARY KEY (`user_defect_id`),
                                    UNIQUE KEY `user_defect_` (`defect_id`,`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=167 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_bin COMMENT='用户缺陷表';
+) ENGINE=InnoDB AUTO_INCREMENT=167 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='用户缺陷表';
 
 -- ----------------------------
 -- Records of sys_user_defect
@@ -2583,14 +2583,14 @@ COMMIT;
 DROP TABLE IF EXISTS `sys_user_statistic_template`;
 CREATE TABLE `sys_user_statistic_template` (
                                                `statistic_template_id` bigint NOT NULL AUTO_INCREMENT COMMENT '统计模版id',
-                                               `statistic_templat_code` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin DEFAULT NULL COMMENT '统计模版编码',
+                                               `statistic_templat_code` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '统计模版编码',
                                                `module_type` int NOT NULL COMMENT '模型类型(1:缺陷)',
                                                `project_id` bigint DEFAULT NULL COMMENT '项目id',
                                                `user_id` bigint DEFAULT NULL COMMENT '用户id',
                                                `statistic_templat_config` json DEFAULT NULL COMMENT '统计模版配置',
                                                PRIMARY KEY (`statistic_template_id`),
                                                UNIQUE KEY `type_project_user_` (`module_type`,`project_id`,`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=154 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_bin COMMENT='用户统计模版';
+) ENGINE=InnoDB AUTO_INCREMENT=154 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='用户统计模版';
 
 -- ----------------------------
 -- Records of sys_user_statistic_template
