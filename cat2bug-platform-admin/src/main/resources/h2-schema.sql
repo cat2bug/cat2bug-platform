@@ -3444,7 +3444,7 @@ INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
                        , `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`)
 VALUES (2015, '团队设置', 0, 2, 'team-options'
        , NULL, NULL, 1, 0, 'M'
-       , '0', '0', '', 'dict', 'admin'
+       , '0', '0', '', 'team-option', 'admin'
        , '2023-11-17 23:19:30', 'admin', '2024-01-05 16:15:30', '', 'team.option');
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
                        , `component`, `query`, `is_frame`, `is_cache`, `menu_type`
@@ -3452,7 +3452,7 @@ INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
                        , `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`)
 VALUES (2016, '团队设置', 2015, 1, 'team-option'
        , 'system/team/option/index', NULL, 1, 0, 'C'
-       , '0', '0', 'system:team:query', 'form', 'admin'
+       , '0', '0', 'system:team:query', 'team-option', 'admin'
        , '2023-11-17 23:21:54', 'admin', '2024-01-06 06:57:58', '', 'team.option');
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
                        , `component`, `query`, `is_frame`, `is_cache`, `menu_type`
