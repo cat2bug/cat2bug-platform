@@ -14,7 +14,7 @@
         <el-tree
           :data="filteredDocs"
           :props="treeProps"
-          node-key="path"
+          node-key="label"
           :default-expanded-keys="expandedKeys"
           :highlight-current="true"
           @node-click="handleNodeClick"
@@ -344,8 +344,20 @@ export default {
   mounted() {
     this.md = new MarkdownIt()
     this.loadDoc('README.md')
+    this.initExpandedKeys()
   },
   methods: {
+    initExpandedKeys() {
+      // 收集所有一级目录的key（有children的节点）
+      const keys = []
+      this.docs.forEach(doc => {
+        if (doc.children && doc.children.length > 0) {
+          // 使用label作为key，因为一级目录没有path
+          keys.push(doc.label)
+        }
+      })
+      this.expandedKeys = keys
+    },
     handleSearch() {
       // 搜索功能已通过 computed 实现
     },
