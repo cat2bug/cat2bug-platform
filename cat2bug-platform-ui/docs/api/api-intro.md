@@ -60,7 +60,11 @@ curl --location -X POST 'http://localhost:2020/api/defect' \
 ### 报告接口
 - [推送缺陷报告](./api-report-defect.md)
 
-### 其他接口
-- [查看项目成员列表](./api-other.md#查看项目成员列表)
-- [上传图片](./api-other.md#上传图片)
-- [获取项目信息](./api-other.md#获取项目信息)
+### 成员接口
+- [查看项目成员列表](./api-member.md#查看项目成员列表)
+
+### 文件接口
+- [上传图片](./api-file.md#上传图片)
+
+### 项目接口
+- [获取项目信息](./api-project.md#获取项目信息)
