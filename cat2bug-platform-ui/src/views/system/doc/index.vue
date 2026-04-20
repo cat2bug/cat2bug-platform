@@ -111,7 +111,7 @@ export default {
                 {
                   label: '交付物管理',
                   path: 'module.md',
-                  icon: 'el-icon-files'
+                  icon: 'cascader'
                 },
                 {
                   label: '报告管理',

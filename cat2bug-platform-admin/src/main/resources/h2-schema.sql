@@ -3924,7 +3924,7 @@ INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
                        , `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`)
 VALUES (2093, '文档', 2013, 7, 'document'
        , 'system/document/index', NULL, 1, 0, 'C'
-       , '0', '0', 'system:document:list', 'education', 'admin'
+       , '0', '0', 'system:document:list', 'documentation', 'admin'
        , '2024-06-17 06:24:19', 'admin', '2025-01-19 01:13:37', '文档菜单', 'doc');
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
                        , `component`, `query`, `is_frame`, `is_cache`, `menu_type`
