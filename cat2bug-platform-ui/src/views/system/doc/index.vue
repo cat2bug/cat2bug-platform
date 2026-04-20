@@ -111,13 +111,13 @@ export default {
                   label: '文档管理',
                   path: 'document.md',
                   icon: 'education'
-                },
-                {
-                  label: '团队设置',
-                  path: 'team-setting.md',
-                  icon: 'team-option'
                 }
               ]
+            },
+            {
+              label: '团队设置',
+              path: 'team-setting.md',
+              icon: 'team-option'
             }
           ]
         },
