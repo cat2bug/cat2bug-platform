@@ -1,10 +1,10 @@
 # Cat2Bug 系统文档
 
-欢迎使用 Cat2Bug 轻量级 AI 辅助 BUG 管理平台！
+欢迎使用 Cat2Bug 轻量级 BUG 管理平台！
 
 ## 关于 Cat2Bug
 
-Cat2Bug-Platform 是一个开源的轻量级 AI 辅助 BUG 管理平台，采用 Spring Boot + Vue.js 前后端分离架构。系统起名叫"猫陪我改BUG"，是因为每天坐在工作台，家里的猫总会过来陪伴。系统的宗旨是轻量化、简单、便捷，让测试管理更贴近生活。
+Cat2Bug-Platform 是一个开源的轻量级 BUG 管理平台，采用 Spring Boot + Vue.js 前后端分离架构。系统起名叫"猫陪我改BUG"，是因为每天坐在工作台，家里的猫总会过来陪伴。系统的宗旨是轻量化、简单、便捷，让测试管理更贴近生活。
 
 ## 核心特点
 
@@ -70,7 +70,7 @@ Cat2Bug-Platform 专门针对测试工作的各个环节及不同角色，开发
 - 官方网站：https://www.cat2bug.com
 - GitHub：https://github.com/cat2bug/cat2bug-platform
 - Gitee：https://gitee.com/cat2bug/cat2bug-platform
-- 问题反馈：https://github.com/cat2bug/cat2bug-platform/issues
+- 问题反馈：https://gitee.com/cat2bug/cat2bug-platform/issues
 
 ## 开源协议
 
