@@ -55,7 +55,7 @@ export default {
       },
       docs: [
         {
-          label: '系统文档',
+          label: '系统介绍',
           path: 'README.md',
           icon: 'el-icon-document'
         },
