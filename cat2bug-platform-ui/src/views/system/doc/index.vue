@@ -139,23 +139,82 @@ export default {
                   children: [
                     {
                       label: '项目信息',
-                      path: 'project-info.md',
-                      icon: 'el-icon-info'
+                      icon: 'el-icon-info',
+                      children: [
+                        {
+                          label: '基本信息',
+                          path: 'project-info.md#基本信息',
+                          icon: 'el-icon-edit'
+                        },
+                        {
+                          label: 'API KEY',
+                          path: 'project-info.md#api-key',
+                          icon: 'el-icon-key'
+                        },
+                        {
+                          label: '同步到云端',
+                          path: 'project-info.md#同步到云端',
+                          icon: 'el-icon-upload'
+                        },
+                        {
+                          label: '删除项目',
+                          path: 'project-info.md#删除项目',
+                          icon: 'el-icon-delete'
+                        }
+                      ]
                     },
                     {
                       label: 'AI管理',
-                      path: 'project-ai.md',
-                      icon: 'robot'
+                      icon: 'robot',
+                      children: [
+                        {
+                          label: 'AI大模型',
+                          path: 'project-ai.md#ai大模型',
+                          icon: 'robot'
+                        },
+                        {
+                          label: 'OpenAI账号管理',
+                          path: 'project-ai.md#openai账号管理',
+                          icon: 'el-icon-user'
+                        }
+                      ]
                     },
                     {
                       label: '第三方应用',
-                      path: 'project-third-party.md',
-                      icon: 'el-icon-connection'
+                      icon: 'el-icon-connection',
+                      children: [
+                        {
+                          label: '钉钉',
+                          path: 'project-third-party.md#钉钉',
+                          icon: 'el-icon-message'
+                        },
+                        {
+                          label: '飞书',
+                          path: 'project-third-party.md#飞书',
+                          icon: 'el-icon-chat-line-square'
+                        },
+                        {
+                          label: '企业微信',
+                          path: 'project-third-party.md#企业微信',
+                          icon: 'el-icon-chat-dot-square'
+                        }
+                      ]
                     },
                     {
                       label: '组织和成员',
-                      path: 'project-member.md',
-                      icon: 'mk-member'
+                      icon: 'mk-member',
+                      children: [
+                        {
+                          label: '成员管理',
+                          path: 'project-member.md#成员管理',
+                          icon: 'peoples'
+                        },
+                        {
+                          label: '成员角色说明',
+                          path: 'project-member.md#成员角色说明',
+                          icon: 'role'
+                        }
+                      ]
                     }
                   ]
                 }
