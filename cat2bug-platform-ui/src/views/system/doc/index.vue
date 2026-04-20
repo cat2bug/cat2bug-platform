@@ -111,6 +111,11 @@ export default {
                   label: '文档管理',
                   path: 'document.md',
                   icon: 'education'
+                },
+                {
+                  label: '项目设置',
+                  path: 'project-setting.md',
+                  icon: 'el-icon-setting'
                 }
               ]
             },
