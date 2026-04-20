@@ -208,11 +208,6 @@ export default {
                           label: '成员管理',
                           path: 'project-member.md#成员管理',
                           icon: 'peoples'
-                        },
-                        {
-                          label: '成员角色说明',
-                          path: 'project-member.md#成员角色说明',
-                          icon: 'role'
                         }
                       ]
                     }
