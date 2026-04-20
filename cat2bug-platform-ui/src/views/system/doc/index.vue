@@ -95,7 +95,7 @@ export default {
               icon: 'el-icon-office-building'
             },
             {
-              label: '项目管理',
+              label: '项目',
               path: 'project-manage.md',
               icon: 'el-icon-folder-opened'
             },
@@ -217,8 +217,36 @@ export default {
             },
             {
               label: '团队设置',
-              path: 'team-setting.md',
-              icon: 'team-option'
+              icon: 'team-option',
+              children: [
+                {
+                  label: '团队信息',
+                  icon: 'el-icon-info',
+                  children: [
+                    {
+                      label: '基本信息',
+                      path: 'team-info.md#基本信息',
+                      icon: 'el-icon-edit'
+                    },
+                    {
+                      label: '删除团队',
+                      path: 'team-info.md#删除团队',
+                      icon: 'el-icon-delete'
+                    }
+                  ]
+                },
+                {
+                  label: '组织和成员',
+                  icon: 'mk-member',
+                  children: [
+                    {
+                      label: '成员管理',
+                      path: 'team-member.md#成员管理',
+                      icon: 'peoples'
+                    }
+                  ]
+                }
+              ]
             }
           ]
         },
