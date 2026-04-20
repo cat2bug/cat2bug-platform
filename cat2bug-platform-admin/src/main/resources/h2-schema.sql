@@ -3772,7 +3772,7 @@ INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
                        , `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`)
 VALUES (2074, '测试用例', 2013, 2, 'case'
        , 'system/case/index', NULL, 1, 0, 'C'
-       , '0', '0', 'system:case:list', 'nested', 'admin'
+       , '0', '0', 'system:case:list', 'case', 'admin'
        , '2024-01-27 16:12:12', 'admin', '2025-01-19 01:12:19', '测试用例菜单', 'case');
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
                        , `component`, `query`, `is_frame`, `is_cache`, `menu_type`
