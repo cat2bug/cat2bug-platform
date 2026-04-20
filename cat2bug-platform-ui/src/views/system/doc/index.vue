@@ -150,7 +150,7 @@ export default {
         {
           label: '管理员指南',
           path: 'admin-guide.md',
-          icon: 'el-icon-s-tools'
+          icon: 'admin'
         },
         {
           label: 'API 文档',
