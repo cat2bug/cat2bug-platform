@@ -74,29 +74,29 @@ export default {
               children: [
                 {
                   label: '登录',
-                  path: 'user-login.md',
+                  path: 'user-guide/user-management/user-login.md',
                   icon: 'el-icon-user'
                 },
                 {
                   label: '注册',
-                  path: 'user-register.md',
+                  path: 'user-guide/user-management/user-register.md',
                   icon: 'el-icon-edit'
                 },
                 {
                   label: '个人中心',
-                  path: 'user-profile.md',
+                  path: 'user-guide/user-management/user-profile.md',
                   icon: 'el-icon-s-custom'
                 }
               ]
             },
             {
               label: '团队管理',
-              path: 'team-manage.md',
+              path: 'user-guide/team-manage.md',
               icon: 'el-icon-office-building'
             },
             {
               label: '项目',
-              path: 'project-manage.md',
+              path: 'user-guide/project-manage.md',
               icon: 'el-icon-folder-opened'
             },
             {
@@ -105,32 +105,32 @@ export default {
               children: [
                 {
                   label: '测试用例',
-                  path: 'case.md',
+                  path: 'user-guide/current-project/case.md',
                   icon: 'case'
                 },
                 {
                   label: '测试计划',
-                  path: 'plan.md',
+                  path: 'user-guide/current-project/plan.md',
                   icon: 'date'
                 },
                 {
                   label: '缺陷管理',
-                  path: 'defect.md',
+                  path: 'user-guide/current-project/defect.md',
                   icon: 'bug'
                 },
                 {
                   label: '交付物管理',
-                  path: 'module.md',
+                  path: 'user-guide/current-project/module.md',
                   icon: 'cascader'
                 },
                 {
                   label: '报告管理',
-                  path: 'report.md',
+                  path: 'user-guide/current-project/report.md',
                   icon: 'chart'
                 },
                 {
                   label: '文档管理',
-                  path: 'document.md',
+                  path: 'user-guide/current-project/document.md',
                   icon: 'education'
                 },
                 {
@@ -143,22 +143,22 @@ export default {
                       children: [
                         {
                           label: '基本信息',
-                          path: 'project-info.md#基本信息',
+                          path: 'user-guide/current-project/project-setting/project-info.md#基本信息',
                           icon: 'el-icon-edit'
                         },
                         {
                           label: 'API KEY',
-                          path: 'project-info.md#api-key',
+                          path: 'user-guide/current-project/project-setting/project-info.md#api-key',
                           icon: 'el-icon-key'
                         },
                         {
                           label: '同步到云端',
-                          path: 'project-info.md#同步到云端',
+                          path: 'user-guide/current-project/project-setting/project-info.md#同步到云端',
                           icon: 'el-icon-upload'
                         },
                         {
                           label: '删除项目',
-                          path: 'project-info.md#删除项目',
+                          path: 'user-guide/current-project/project-setting/project-info.md#删除项目',
                           icon: 'el-icon-delete'
                         }
                       ]
@@ -169,12 +169,12 @@ export default {
                       children: [
                         {
                           label: 'AI大模型',
-                          path: 'project-ai.md#ai大模型',
+                          path: 'user-guide/current-project/project-setting/project-ai.md#ai大模型',
                           icon: 'robot'
                         },
                         {
                           label: 'OpenAI账号管理',
-                          path: 'project-ai.md#openai账号管理',
+                          path: 'user-guide/current-project/project-setting/project-ai.md#openai账号管理',
                           icon: 'el-icon-user'
                         }
                       ]
@@ -185,17 +185,17 @@ export default {
                       children: [
                         {
                           label: '钉钉',
-                          path: 'project-third-party.md#钉钉',
+                          path: 'user-guide/current-project/project-setting/project-third-party.md#钉钉',
                           icon: 'el-icon-message'
                         },
                         {
                           label: '飞书',
-                          path: 'project-third-party.md#飞书',
+                          path: 'user-guide/current-project/project-setting/project-third-party.md#飞书',
                           icon: 'el-icon-chat-line-square'
                         },
                         {
                           label: '企业微信',
-                          path: 'project-third-party.md#企业微信',
+                          path: 'user-guide/current-project/project-setting/project-third-party.md#企业微信',
                           icon: 'el-icon-chat-dot-square'
                         }
                       ]
@@ -206,7 +206,7 @@ export default {
                       children: [
                         {
                           label: '成员管理',
-                          path: 'project-member.md#成员管理',
+                          path: 'user-guide/current-project/project-setting/project-member.md#成员管理',
                           icon: 'peoples'
                         }
                       ]
@@ -225,12 +225,12 @@ export default {
                   children: [
                     {
                       label: '基本信息',
-                      path: 'team-base-info.md',
+                      path: 'user-guide/team-setting/team-base-info.md',
                       icon: 'el-icon-edit'
                     },
                     {
                       label: '删除团队',
-                      path: 'team-delete.md',
+                      path: 'user-guide/team-setting/team-delete.md',
                       icon: 'el-icon-delete'
                     }
                   ]
@@ -241,7 +241,7 @@ export default {
                   children: [
                     {
                       label: '成员管理',
-                      path: 'team-member.md#成员管理',
+                      path: 'user-guide/team-setting/team-member.md#成员管理',
                       icon: 'peoples'
                     }
                   ]
@@ -256,22 +256,22 @@ export default {
           children: [
             {
               label: '团队管理',
-              path: 'admin-team.md',
+              path: 'admin-guide/admin-team.md',
               icon: 'el-icon-office-building'
             },
             {
               label: '项目管理',
-              path: 'admin-project.md',
+              path: 'admin-guide/admin-project.md',
               icon: 'el-icon-folder-opened'
             },
             {
               label: '角色管理',
-              path: 'admin-role.md',
+              path: 'admin-guide/admin-role.md',
               icon: 'role'
             },
             {
               label: '成员管理',
-              path: 'admin-member.md',
+              path: 'admin-guide/admin-member.md',
               icon: 'peoples'
             }
           ]
@@ -282,42 +282,42 @@ export default {
           children: [
             {
               label: 'API 介绍',
-              path: 'api-intro.md',
+              path: 'api/api-intro.md',
               icon: 'el-icon-info'
             },
             {
               label: '交付物接口',
-              path: 'api-deliverable.md',
+              path: 'api/api-deliverable.md',
               icon: 'el-icon-files'
             },
             {
               label: '测试用例接口',
-              path: 'api-case.md',
+              path: 'api/api-case.md',
               icon: 'case'
             },
             {
               label: '缺陷接口',
-              path: 'api-defect.md',
+              path: 'api/api-defect.md',
               icon: 'bug'
             },
             {
               label: '报告接口',
-              path: 'api-report-defect.md',
+              path: 'api/api-report-defect.md',
               icon: 'chart'
             },
             {
               label: '成员接口',
-              path: 'api-member.md',
+              path: 'api/api-member.md',
               icon: 'el-icon-user'
             },
             {
               label: '文件接口',
-              path: 'api-file.md',
+              path: 'api/api-file.md',
               icon: 'el-icon-upload'
             },
             {
               label: '项目接口',
-              path: 'api-project.md',
+              path: 'api/api-project.md',
               icon: 'el-icon-folder-opened'
             }
           ]
