@@ -4124,7 +4124,7 @@ INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
                        , `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`)
 VALUES (2117, '测试计划', 2013, 3, 'plan'
        , 'system/plan/index', NULL, 1, 0, 'C'
-       , '0', '0', 'system:plan:list', 'time', 'admin'
+       , '0', '0', 'system:plan:list', 'case', 'admin'
        , '2024-10-11 00:39:24', 'admin', '2025-01-19 01:12:27', '测试计划菜单', 'plan');
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
                        , `component`, `query`, `is_frame`, `is_cache`, `menu_type`
