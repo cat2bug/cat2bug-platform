@@ -115,7 +115,7 @@ export default {
                 {
                   label: '团队设置',
                   path: 'team-setting.md',
-                  icon: 'el-icon-setting'
+                  icon: 'team-option'
                 }
               ]
             }
