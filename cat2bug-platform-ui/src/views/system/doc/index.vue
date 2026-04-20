@@ -65,32 +65,26 @@ export default {
           icon: 'el-icon-video-play'
         },
         {
-          label: '系统功能',
-          icon: 'el-icon-folder',
+          label: '用户指南',
+          icon: 'el-icon-reading',
           children: [
             {
               label: '团队管理',
-              icon: 'el-icon-folder',
-              children: [
-                {
-                  label: '团队管理',
-                  path: 'team-manage.md',
-                  icon: 'el-icon-office-building'
-                },
-                {
-                  label: '项目管理',
-                  path: 'project-manage.md',
-                  icon: 'el-icon-folder-opened'
-                },
-                {
-                  label: '团队设置',
-                  path: 'team-setting.md',
-                  icon: 'el-icon-setting'
-                }
-              ]
+              path: 'team-manage.md',
+              icon: 'el-icon-office-building'
             },
             {
-              label: '当前项目管理',
+              label: '项目管理',
+              path: 'project-manage.md',
+              icon: 'el-icon-folder-opened'
+            },
+            {
+              label: '团队设置',
+              path: 'team-setting.md',
+              icon: 'el-icon-setting'
+            },
+            {
+              label: '当前项目',
               icon: 'el-icon-folder',
               children: [
                 {
@@ -106,7 +100,7 @@ export default {
                 {
                   label: '测试计划',
                   path: 'plan.md',
-                  icon: 'el-icon-date'
+                  icon: 'date'
                 },
                 {
                   label: '交付物管理',
@@ -126,11 +120,6 @@ export default {
               ]
             }
           ]
-        },
-        {
-          label: '用户指南',
-          path: 'user-guide.md',
-          icon: 'el-icon-reading'
         },
         {
           label: '管理员指南',
