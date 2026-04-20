@@ -225,12 +225,12 @@ export default {
                   children: [
                     {
                       label: '基本信息',
-                      path: 'team-info.md#基本信息',
+                      path: 'team-base-info.md',
                       icon: 'el-icon-edit'
                     },
                     {
                       label: '删除团队',
-                      path: 'team-info.md#删除团队',
+                      path: 'team-delete.md',
                       icon: 'el-icon-delete'
                     }
                   ]
