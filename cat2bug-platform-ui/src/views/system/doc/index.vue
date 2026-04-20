@@ -66,7 +66,7 @@ export default {
         },
         {
           label: '用户指南',
-          icon: 'el-icon-reading',
+          icon: 'user',
           children: [
             {
               label: '团队管理',
