@@ -69,6 +69,27 @@ export default {
           icon: 'user',
           children: [
             {
+              label: '用户管理',
+              icon: 'user',
+              children: [
+                {
+                  label: '登录',
+                  path: 'user-login.md',
+                  icon: 'el-icon-user'
+                },
+                {
+                  label: '注册',
+                  path: 'user-register.md',
+                  icon: 'el-icon-edit'
+                },
+                {
+                  label: '个人中心',
+                  path: 'user-profile.md',
+                  icon: 'el-icon-s-custom'
+                }
+              ]
+            },
+            {
               label: '团队管理',
               path: 'team-manage.md',
               icon: 'el-icon-office-building'
