@@ -134,7 +134,7 @@ export default {
                     {
                       label: '组织和成员',
                       path: 'project-member.md',
-                      icon: 'peoples'
+                      icon: 'mk-member'
                     }
                   ]
                 }
