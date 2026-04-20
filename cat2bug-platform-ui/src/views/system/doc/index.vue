@@ -170,8 +170,29 @@ export default {
         },
         {
           label: '管理员指南',
-          path: 'admin-guide.md',
-          icon: 'admin'
+          icon: 'admin',
+          children: [
+            {
+              label: '团队管理',
+              path: 'admin-team.md',
+              icon: 'el-icon-office-building'
+            },
+            {
+              label: '项目管理',
+              path: 'admin-project.md',
+              icon: 'el-icon-folder-opened'
+            },
+            {
+              label: '角色管理',
+              path: 'admin-role.md',
+              icon: 'role'
+            },
+            {
+              label: '成员管理',
+              path: 'admin-member.md',
+              icon: 'peoples'
+            }
+          ]
         },
         {
           label: 'API 文档',
