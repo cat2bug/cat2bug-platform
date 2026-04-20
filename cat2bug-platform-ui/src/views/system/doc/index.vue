@@ -79,11 +79,6 @@ export default {
               icon: 'el-icon-folder-opened'
             },
             {
-              label: '团队设置',
-              path: 'team-setting.md',
-              icon: 'el-icon-setting'
-            },
-            {
               label: '当前项目',
               icon: 'el-icon-folder',
               children: [
@@ -116,6 +111,11 @@ export default {
                   label: '文档管理',
                   path: 'document.md',
                   icon: 'education'
+                },
+                {
+                  label: '团队设置',
+                  path: 'team-setting.md',
+                  icon: 'el-icon-setting'
                 }
               ]
             }
