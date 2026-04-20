@@ -121,7 +121,7 @@ export default {
                 {
                   label: '文档管理',
                   path: 'document.md',
-                  icon: 'documentation'
+                  icon: 'education'
                 }
               ]
             }
