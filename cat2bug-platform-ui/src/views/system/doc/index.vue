@@ -104,11 +104,6 @@ export default {
               icon: 'el-icon-folder',
               children: [
                 {
-                  label: '缺陷管理',
-                  path: 'defect.md',
-                  icon: 'bug'
-                },
-                {
                   label: '测试用例',
                   path: 'case.md',
                   icon: 'case'
@@ -117,6 +112,11 @@ export default {
                   label: '测试计划',
                   path: 'plan.md',
                   icon: 'date'
+                },
+                {
+                  label: '缺陷管理',
+                  path: 'defect.md',
+                  icon: 'bug'
                 },
                 {
                   label: '交付物管理',
