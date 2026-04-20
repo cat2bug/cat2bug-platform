@@ -114,8 +114,29 @@ export default {
                 },
                 {
                   label: '项目设置',
-                  path: 'project-setting.md',
-                  icon: 'el-icon-setting'
+                  icon: 'el-icon-setting',
+                  children: [
+                    {
+                      label: '项目信息',
+                      path: 'project-info.md',
+                      icon: 'el-icon-info'
+                    },
+                    {
+                      label: 'AI管理',
+                      path: 'project-ai.md',
+                      icon: 'robot'
+                    },
+                    {
+                      label: '第三方应用',
+                      path: 'project-third-party.md',
+                      icon: 'el-icon-connection'
+                    },
+                    {
+                      label: '组织和成员',
+                      path: 'project-member.md',
+                      icon: 'peoples'
+                    }
+                  ]
                 }
               ]
             },
