@@ -139,7 +139,7 @@ cat2bug-service.sh status
 以下提供的是Docker官网容器化的部署方案，执行命令如下：
 
 ```docker
-docker run -it -d -p 8022:8022 --name cat2bug-platform qyzw-docker.pkg.coding.net/cat2bug/cat2bug-platform/single:latest
+docker run -it -d -p 8022:8022 --name cat2bug-platform docker.cat2bug.com/cat2bug/cat2bug-platform/single:latest
 ```
 
 ### 本地通过Docker-Compose容器化部署
