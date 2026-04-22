@@ -41,10 +41,6 @@ module.exports = {
     //   cert: fs.readFileSync(path.join(__dirname, 'ssl/default.crt')),
     //   key: fs.readFileSync(path.join(__dirname, 'ssl/default.key'))
     // },
-    before(app) {
-      // 提供 docs 目录的静态文件访问
-      app.use('/docs', require('express').static(path.join(__dirname, 'docs')))
-    },
     proxy: {
       // detail: https://cli.vuejs.org/config/#devserver-proxy
       [process.env.VUE_APP_BASE_API]: {
@@ -107,7 +103,7 @@ module.exports = {
       }),
       new CopyWebpackPlugin([
         {
-          from: path.resolve(__dirname, 'docs'),
+          from: path.resolve(__dirname, '../readme'),
           to: path.resolve(__dirname, process.env.NODE_ENV === "embedded" ? '../cat2bug-platform-admin/src/main/resources/static/docs' : 'dist/docs'),
           toType: 'dir'
         }
