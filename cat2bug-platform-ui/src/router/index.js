@@ -240,7 +240,7 @@ export const constantRoutes = [
     children: [
       {
         path: '',
-        component: () => import('@/views/system/doc/index'),
+        component: () => import('@/views/doc/index'),
         name: 'SystemDoc',
         meta: { title: i18n.t('system-doc'), titleI18nKey:'system-doc' }
       }

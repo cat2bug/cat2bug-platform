@@ -52,7 +52,14 @@ uploadTemp/
 # Claude AI
 .claude/
 .worktree/
+.worktrees/
+worktrees/
 CLAUDE.md
+
+######################################################################
+# Docs
+cat2bug-platform-ui/docs
+cat2bug-platform-ui/public/docs
 
 ######################################################################
 # Node.js
@@ -63,6 +70,7 @@ yarn.lock
 ### macOS template
 # General
 .DS_Store
+**/.DS_Store
 .AppleDouble
 .LSOverride
 
@@ -122,6 +130,7 @@ replay_pid*
 ### macOS template
 # General
 .DS_Store
+**/.DS_Store
 .AppleDouble
 .LSOverride
 

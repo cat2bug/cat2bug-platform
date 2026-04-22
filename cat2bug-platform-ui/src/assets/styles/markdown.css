@@ -297,3 +297,23 @@
     padding: 6px 8px;
   }
 }
+
+/* 自定义容器样式 - tip 橙色块风格 */
+.markdown-body .custom-block.tip {
+  padding: 16px;
+  background-color: #fff7e6;
+  border-left: 4px solid #ff9800;
+  border-radius: 4px;
+  margin: 16px 0;
+}
+
+.markdown-body .custom-block.tip .custom-block-title {
+  font-weight: 600;
+  color: #ff9800;
+  margin: 0 0 8px 0;
+  font-size: 14px;
+}
+
+.markdown-body .custom-block.tip p:last-child {
+  margin-bottom: 0;
+}

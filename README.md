@@ -1,4 +1,4 @@
-<div align="center"><img src="readme/images/logo.png" style="width: 300px;" /></div>
+<div align="center"><img src="readme/images/readme/logo.png" style="width: 300px;" /></div>
 <h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">Cat2Bug-Platform v0.6.1</h1>
 <h4 align="center">轻量化智能BUG管理平台</h4>
 
@@ -54,7 +54,7 @@ Cat2Bug-Platform是一套永久免费开源的Bug管理平台，可以完全私�
 
 ## 系统架构
 
-![系统架构](readme/images/cat2bug-platform-framework.png)
+![系统架构](readme/images/readme/cat2bug-platform-framework.png)
 
 ## 技术选型
 
@@ -160,20 +160,20 @@ docker-compose up -d
 
 <table>
     <tr>
-        <td><img src="readme/images/1.png"></td>
-        <td><img src="readme/images/2.png"></td>
+        <td><img src="readme/images/readme/1.png"></td>
+        <td><img src="readme/images/readme/2.png"></td>
     </tr>
     <tr>
-        <td><img src="readme/images/3.png"></td>
-        <td><img src="readme/images/4.png"></td>
+        <td><img src="readme/images/readme/3.png"></td>
+        <td><img src="readme/images/readme/4.png"></td>
     </tr>
     <tr>
-        <td><img src="readme/images/5.png"></td>
-        <td><img src="readme/images/6.png"></td>
+        <td><img src="readme/images/readme/5.png"></td>
+        <td><img src="readme/images/readme/6.png"></td>
     </tr>
     <tr>
-        <td><img src="readme/images/7.png"></td>
-        <td><img src="readme/images/8.png"></td>
+        <td><img src="readme/images/readme/7.png"></td>
+        <td><img src="readme/images/readme/8.png"></td>
     </tr>
 </table>
 
@@ -189,4 +189,4 @@ docker-compose up -d
 
 | QQ群： [731462000](https://qm.qq.com/cgi-bin/qm/qr?k=G_vJa478flcFo_1ohJxNYD0mRKafQ7I1&jump_from=webapi&authKey=EL0KrLpnjYWqNN9YXTVksNlNFrV9DHYyPMx2RVOhXqLzfnmc+Oz8oQ38aBOGx90t) | 微信群：Cat2Bug                                                                 |
 |--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------|
-| <img src="./readme/images/qq.png" style="width: 150px; height: 150px;">                                                                                                        | <img src="./readme/images/wechat.png" style="width: 150px; height: 150px;"> |
+| <img src="./readme/images/readme/qq.png" style="width: 150px; height: 150px;">                                                                                                        | <img src="./readme/images/readme/wechat.png" style="width: 150px; height: 150px;"> |
