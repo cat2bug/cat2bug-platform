@@ -422,10 +422,20 @@ export default {
       word-wrap: break-word;
       white-space: normal;
     }
+    /* 应用统一的 markdown 样式 - 确保图片最大宽度100% */
+    img {
+      max-width: 100% !important;
+      height: auto !important;
+    }
   }
   ::v-deep .el-dropdown-menu__item {
     > * {
       margin-right: 5px;
     }
   }
+</style>
+
+<style>
+/* 引入统一的 Markdown 样式 */
+@import '~@/assets/styles/markdown.css';
 </style>

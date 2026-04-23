@@ -2,6 +2,7 @@
 const path = require('path')
 const https = require('https');
 const fs = require('fs');
+const CopyWebpackPlugin = require('copy-webpack-plugin')
 
 function resolve(dir) {
   return path.join(__dirname, dir)
@@ -99,7 +100,14 @@ module.exports = {
         openAnalyzer: false, // 默认在浏览器中自动打开报告
         statsFilename: 'stats.json', // 如果generateStatsFile为true，将会生成Webpack Stats JSON文件的名字
         statsOptions: { source: false }
-      })
+      }),
+      new CopyWebpackPlugin([
+        {
+          from: path.resolve(__dirname, '../readme'),
+          to: path.resolve(__dirname, process.env.NODE_ENV === "embedded" ? '../cat2bug-platform-admin/src/main/resources/static/docs' : 'dist/docs'),
+          toType: 'dir'
+        }
+      ])
     ],
     module: {
       rules: [

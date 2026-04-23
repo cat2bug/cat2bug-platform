@@ -3444,7 +3444,7 @@ INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
                        , `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`)
 VALUES (2015, '团队设置', 0, 2, 'team-options'
        , NULL, NULL, 1, 0, 'M'
-       , '0', '0', '', 'dict', 'admin'
+       , '0', '0', '', 'team-option', 'admin'
        , '2023-11-17 23:19:30', 'admin', '2024-01-05 16:15:30', '', 'team.option');
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
                        , `component`, `query`, `is_frame`, `is_cache`, `menu_type`
@@ -3452,7 +3452,7 @@ INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
                        , `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`)
 VALUES (2016, '团队设置', 2015, 1, 'team-option'
        , 'system/team/option/index', NULL, 1, 0, 'C'
-       , '0', '0', 'system:team:query', 'form', 'admin'
+       , '0', '0', 'system:team:query', 'team-option', 'admin'
        , '2023-11-17 23:21:54', 'admin', '2024-01-06 06:57:58', '', 'team.option');
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
                        , `component`, `query`, `is_frame`, `is_cache`, `menu_type`
@@ -3772,7 +3772,7 @@ INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
                        , `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`)
 VALUES (2074, '测试用例', 2013, 2, 'case'
        , 'system/case/index', NULL, 1, 0, 'C'
-       , '0', '0', 'system:case:list', 'nested', 'admin'
+       , '0', '0', 'system:case:list', 'case', 'admin'
        , '2024-01-27 16:12:12', 'admin', '2025-01-19 01:12:19', '测试用例菜单', 'case');
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
                        , `component`, `query`, `is_frame`, `is_cache`, `menu_type`
@@ -4124,7 +4124,7 @@ INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
                        , `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`)
 VALUES (2117, '测试计划', 2013, 3, 'plan'
        , 'system/plan/index', NULL, 1, 0, 'C'
-       , '0', '0', 'system:plan:list', 'time', 'admin'
+       , '0', '0', 'system:plan:list', 'date', 'admin'
        , '2024-10-11 00:39:24', 'admin', '2025-01-19 01:12:27', '测试计划菜单', 'plan');
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
                        , `component`, `query`, `is_frame`, `is_cache`, `menu_type`

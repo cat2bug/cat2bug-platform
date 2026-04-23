@@ -231,6 +231,20 @@ export const constantRoutes = [
         meta: { title: i18n.t('notice'), titleI18nKey:'notice' }
       }
     ]
+  },
+  {
+    path: '/system/doc',
+    component: Layout,
+    hidden: true,
+    redirect: 'noredirect',
+    children: [
+      {
+        path: '',
+        component: () => import('@/views/doc/index'),
+        name: 'SystemDoc',
+        meta: { title: i18n.t('system-doc'), titleI18nKey:'system-doc' }
+      }
+    ]
   }
 ]
 
