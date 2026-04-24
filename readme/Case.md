@@ -11,11 +11,11 @@
 
 在测试用例列表页，上侧的是数据查找选项区；左侧是模块筛选区；中间为用例列表数据展示区。我们可以通过点击左侧模块或上方的筛选项对用例数据进行筛选查找。
 
-<img src="images/case/case_list.png">
+<img src="production/images/case/case_list.png">
 
 当点击用例列表中的某条数据时，会从右侧弹出用例详情，可以对其进行查看和编辑操作，如下图：
 
-<img src="images/case/case_edit.png">
+<img src="production/images/case/case_edit.png">
 
 ### 测试用例的创建
 
@@ -25,15 +25,15 @@
 
 1. 首先点击页面右上侧的【新建用例】按钮，将从右侧打开测试用例新建界面，如下图：
 
-<img src="images/case/case_click_create_button.png">
+<img src="production/images/case/case_click_create_button.png">
 
 2. 在下图的新建用例界面中，红框标注的第一个选项用于连续创建用例而用，默认是选中状态。
 
-<img src="images/case/case_create-next-case.png">
+<img src="production/images/case/case_create-next-case.png">
 
 3. 在Cat2Bug-Platform中，所有用于测试的软件系统结构都是基于模块体现的，所以测试用例也需要关联模块，下图就是展示模块的选择示例。如当前不存在某个模块，也可以通过模块下拉组件中的添加功能快速创建模块（注：添加、删除模块需要有管理员或测试人员的权限）。
 
-<img src="images/case/case_create_module.png">
+<img src="production/images/case/case_create_module.png">
 
 4. 设置测试步骤，在测试步骤选项中，系统提供了两种录入方式：
 
@@ -53,7 +53,7 @@
 * 第二个图标按钮是显示列表模式；
 * 第三个图标按钮是显示文本模式；
 
-<img src="images/case/case_step.png">
+<img src="production/images/case/case_step.png">
 
 5 当输入完所有数据后，点击右上角的【创建】按钮创建完成新用例。
 
@@ -66,7 +66,7 @@
 我们提供了一套标准的测试用例模版格式，点击【导入用例】对话框中的【下载模版】链接按钮，即可下载Excel模版文件。
 值得注意的是，此模版中模块选项是非必填的（系统中，测试用例的模块属性是必填项），此处主要考虑到在没有完全维护好模块结构的时候，也可以畅通无阻的完成测试用例的导入工作（模块与测试用例的关联不会影响其它操作，只会影响根据模块筛选用例的功能）。操作如下图：
 
-<img src="images/case/case_import_template.png">
+<img src="production/images/case/case_import_template.png">
 
 2. 在Excel模版中录入数据
 
@@ -82,13 +82,13 @@
 在用户名输入框输入中文“刘德华”---应提示只能输入英文及数字
 ````
 
-<img src="images/case/case_import_excel.png">
+<img src="production/images/case/case_import_excel.png">
 
 3. 导入数据
 
 将维护好的Excel文件导入到系统,如录入的数据无误，系统将提示导入成功，如下图：
 
-<img src="images/case/case_import.png">
+<img src="production/images/case/case_import.png">
 
 ## 总结
 

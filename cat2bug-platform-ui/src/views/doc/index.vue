@@ -1,7 +1,11 @@
 <template>
   <div class="doc-viewer-wrapper">
     <div class="doc-header">
-      <el-page-header @back="handleBack" :content="currentDocTitle"></el-page-header>
+      <el-page-header @back="handleBack">
+        <template slot="content">
+          <span v-html="formattedTitle"></span>
+        </template>
+      </el-page-header>
     </div>
     <div class="doc-viewer">
       <div class="doc-sidebar">
@@ -450,6 +454,20 @@ export default {
         return this.docs
       }
       return this.filterDocsRecursive(this.docs, keywords)
+    },
+    formattedTitle() {
+      if (!this.currentDocTitle) {
+        return '系统文档'
+      }
+      const parts = this.currentDocTitle.split(' / ')
+      if (parts.length === 1) {
+        return `<span style="color: #303133;">${parts[0]}</span>`
+      }
+      const grayParts = parts.slice(0, -1).map(part =>
+        `<span style="color: #909399;">${part}</span>`
+      ).join('<span style="color: #909399;"> / </span>')
+      const lastPart = `<span style="color: #303133;">${parts[parts.length - 1]}</span>`
+      return `${grayParts}<span style="color: #909399;"> / </span>${lastPart}`
     }
   },
   mounted() {
@@ -569,12 +587,26 @@ export default {
     handleSearch() {
       // 搜索功能已通过 computed 实现
     },
-    handleNodeClick(data) {
+    handleNodeClick(data, node) {
       // 只有叶子节点（有 path 属性）才加载文档
       if (data.path) {
         this.loadDoc(data.path)
-        this.currentDocTitle = data.label
+        // 构建面包屑路径
+        this.currentDocTitle = this.buildBreadcrumb(node)
       }
+    },
+    buildBreadcrumb(node) {
+      // 从当前节点向上遍历，构建面包屑
+      const breadcrumbs = []
+      let currentNode = node
+
+      while (currentNode) {
+        breadcrumbs.unshift(currentNode.label)
+        currentNode = currentNode.parent
+      }
+
+      // 第一级前不要有 /，用 / 连接面包屑
+      return breadcrumbs.join(' / ')
     },
     async loadDoc(docPath) {
       try {

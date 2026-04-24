@@ -11,15 +11,15 @@
 
 在Cat2Bug-Platform V0.1.1版本中，测试用例界面右上角多了一个【云AI用例生成】按钮，点击将会从右侧划出【云AI用例生成】界面，如下图：
 
-<img src="images/case/case_ai_button.png">
+<img src="production/images/case/case_ai_button.png">
 
 在【云AI用例生成】界面中，分为三个区域，上侧是查询区、左侧是查询用例结果列表、右侧是单个用例编辑区，见下图：
 
-<img src="images/case/case_ai_create_div.png">
+<img src="production/images/case/case_ai_create_div.png">
 
 在最上面的输入框中，输入【想要生成的测试用例描述】，点击【搜索】按钮后，等待5至60秒，即可在下方显示AI创建的用例数据，目前版本一次查询通常会生成10条测试用例，如下图：
 
-<img src="images/case/case_ai_use.png">
+<img src="production/images/case/case_ai_use.png">
 
 在输入测试用例需求时，应尽可能详细描述所要测试的载体信息，如业务流程、用途、显示的关键内容、每个内容的属性、测试的标准和预期等，越是精准的描述，机器人越能给出更加详细的答案。
 
@@ -29,7 +29,7 @@
 
 点击左侧【测试用例列表】中的任意一条【测试用例】，可以在右侧对其属性进行修改，以便通过人为干预优化AI生成的数据（注意：右侧没有保存按钮，所有更改会实时体现在左侧列表中）；
 
-<img src="images/case/case_ai_edit.png">
+<img src="production/images/case/case_ai_edit.png">
 
 ## 导入测试用例导到Cat2Bug-Platform系统
 
@@ -37,7 +37,7 @@
 
 在【测试用例列表】中，点击某条测试用例右侧的【导入】按钮,会直接将其导入系统，并在状态列显示【已导入】的标识。导入同一用例多次点击【导入】按钮，后续只会修改此用例，不会在系统中生成多条。如下图：
 
-<img src="images/case/case_ai_single_import.png">
+<img src="production/images/case/case_ai_single_import.png">
 
 ### 批量导入测试用例
 
@@ -45,7 +45,7 @@
 
 需要注意：如果之前已经单独设置过用例的关联模块，将不会在此处覆盖关联关系。
 
-<img src="images/case/case_ai_batch_import.png">
+<img src="production/images/case/case_ai_batch_import.png">
 
 ## 总结
 
