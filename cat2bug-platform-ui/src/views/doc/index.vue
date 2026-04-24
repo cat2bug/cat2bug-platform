@@ -144,8 +144,50 @@ export default {
                 },
                 {
                   label: '通知',
-                  path: 'user-guide/user-management/notification.md',
-                  icon: 'notice'
+                  icon: 'notice',
+                  children: [
+                    {
+                      label: '通知列表',
+                      path: 'user-guide/user-management/notification/notification-list.md',
+                      icon: 'list'
+                    },
+                    {
+                      label: '发送选项',
+                      path: 'user-guide/user-management/notification/send-options.md',
+                      icon: 'el-icon-setting'
+                    },
+                    {
+                      label: '接收平台',
+                      icon: 'mk-card',
+                      children: [
+                        {
+                          label: '系统内部通知',
+                          path: 'user-guide/user-management/notification/system-notification.md',
+                          icon: 'server'
+                        },
+                        {
+                          label: '电子邮件',
+                          path: 'user-guide/user-management/notification/email-notification.md',
+                          icon: 'el-icon-message'
+                        },
+                        {
+                          label: '钉钉',
+                          path: 'user-guide/user-management/notification/dingtalk-notification.md',
+                          icon: 'dingding'
+                        },
+                        {
+                          label: '飞书',
+                          path: 'user-guide/user-management/notification/feishu-notification.md',
+                          icon: 'feishu'
+                        },
+                        {
+                          label: '企业微信',
+                          path: 'user-guide/user-management/notification/wecom-notification.md',
+                          icon: 'wechat'
+                        }
+                      ]
+                    }
+                  ]
                 }
               ]
             },
