@@ -19,26 +19,57 @@ Cat2Bug-Platform 专门针对测试工作的各个环节及不同角色，开发
 
 ## 快速导航
 
-### 系统功能介绍
-
-#### 团队管理
-- [团队管理](./team-manage.md) - 创建和管理团队
-- [项目管理](./project-manage.md) - 创建和管理项目
-- [团队设置](team-setting.md) - 团队配置和成员管理
-
-#### 当前项目管理
-- [缺陷管理](./defect.md) - 缺陷的全生命周期管理
-- [测试用例](./case.md) - 测试用例的创建和维护
-- [测试计划](./plan.md) - 测试计划的制定和执行
-- [交付物管理](./module.md) - 项目需要交付的软/硬件模块
-- [报告管理](./report.md) - 测试报告的生成和导出
-- [文档管理](./document.md) - 项目文档的存储和管理
-
-### 其他文档
+### 快速开始
 - [快速开始](quick-start.md) - 快速上手指南
-- [用户指南](user-guide.md) - 用户使用指南
-- [管理员指南](admin-guide.md) - 管理员配置指南
-- [API 文档](./api.md) - 开放 API 接口说明
+
+### 角色介绍
+- [团队创建人](role-guide/team-creator.md) - 团队创建人的权限和职责
+- [团队管理员](role-guide/team-admin.md) - 团队管理员的权限和职责
+- [团队普通人员](role-guide/team-member.md) - 团队普通成员的权限和职责
+- [项目创建人](role-guide/project-creator.md) - 项目创建人的权限和职责
+- [项目管理员](role-guide/project-admin.md) - 项目管理员的权限和职责
+- [开发](role-guide/developer.md) - 开发人员的权限和职责
+- [测试](role-guide/tester.md) - 测试人员的权限和职责
+- [外部人员](role-guide/external.md) - 外部人员的权限和职责
+- [系统管理员](role-guide/system-admin.md) - 系统管理员的权限和职责
+
+### 用户指南
+
+#### 用户管理
+- [登录](user-guide/user-management/user-login.md) - 用户登录说明
+- [注册](user-guide/user-management/user-register.md) - 用户注册说明
+- [个人中心](user-guide/user-management/user-profile.md) - 个人信息管理
+
+#### 团队和项目
+- [团队管理](user-guide/team-manage.md) - 创建和管理团队
+- [项目管理](user-guide/project-manage.md) - 创建和管理项目
+
+#### 当前项目功能
+- [仪表盘](user-guide/current-project/dashboard.md) - 项目数据概览
+- [测试用例](user-guide/current-project/case.md) - 测试用例的创建和维护
+- [测试计划](user-guide/current-project/plan.md) - 测试计划的制定和执行
+- [缺陷管理](user-guide/current-project/defect.md) - 缺陷的全生命周期管理
+- [交付物管理](user-guide/current-project/module.md) - 项目需要交付的软/硬件模块
+- [报告管理](user-guide/current-project/report.md) - 测试报告的生成和导出
+- [文档管理](user-guide/current-project/document.md) - 项目文档的存储和管理
+
+### 管理员指南
+- [团队管理](admin-guide/admin-team.md) - 系统管理员的团队管理
+- [项目管理](admin-guide/admin-project.md) - 系统管理员的项目管理
+- [角色管理](admin-guide/admin-role.md) - 系统角色配置
+- [成员管理](admin-guide/admin-member.md) - 系统成员管理
+
+### API 文档
+- [API 介绍](api/api-intro.md) - API 接口说明
+- [交付物接口](api/api-deliverable.md) - 交付物相关接口
+- [测试用例接口](api/api-case.md) - 测试用例相关接口
+- [缺陷接口](api/api-defect.md) - 缺陷相关接口
+- [报告接口](api/api-report-defect.md) - 报告相关接口
+- [成员接口](api/api-member.md) - 成员相关接口
+- [文件接口](api/api-file.md) - 文件上传下载接口
+- [项目接口](api/api-project.md) - 项目相关接口
+
+### 其他
 - [常见问题](faq.md) - 常见问题解答
 
 ## 系统架构

@@ -35,8 +35,13 @@
           </el-tree>
         </div>
       </div>
-      <div class="doc-content">
+      <div class="doc-content" ref="docContent">
         <div class="markdown-body" v-html="renderedContent"></div>
+        <el-backtop target=".doc-content" :visibility-height="300" :right="40" :bottom="40">
+          <div class="backtop-button">
+            <i class="el-icon-top"></i>
+          </div>
+        </el-backtop>
       </div>
     </div>
   </div>
@@ -824,7 +829,7 @@ export default {
 .doc-viewer-wrapper {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 84px);
+  height: calc(100vh - 50px);
 
   .doc-header {
     padding: 10px 24px 0 24px;
@@ -883,7 +888,8 @@ export default {
     .doc-content {
       flex: 1;
       overflow-y: auto;
-      padding: 0px 48px;
+      padding: 0px 48px 24px 48px;
+      position: relative;
 
       .markdown-body {
         max-width: 1000px;
@@ -896,11 +902,28 @@ export default {
           font-weight: 500;
         }
       }
+
+      .backtop-button {
+        width: 40px;
+        height: 40px;
+        background-color: #409eff;
+        color: #fff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        cursor: pointer;
+        box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+        transition: all 0.3s;
+
+        &:hover {
+          background-color: #66b1ff;
+        }
+      }
     }
   }
 }
 
 /* markdown-body 样式已在 @import 的 CSS 文件中定义 */
 </style>
-
-这是一个腰带扣，是美杜莎的题材，我想调整一下效果，请将调整后的效果已前后左右多为图像生成给我；这个美杜莎太慈眉善目了，表情应该更魅惑，并且因为她要凝视石化别人，头应该前倾，并且这个是皮带，开的人眼睛要高出皮带50cm左右，因此这个美杜莎应该轻微仰视，并且都发中的蛇同时看向一个方向，显示出美杜莎、蛇都凝视前方的人；并且打破脸部完全对称规矩的动作，因为她是蛇妖，应该微微有妩媚缠绕的感觉，头部从正面看不要很端正，要有点歪头
