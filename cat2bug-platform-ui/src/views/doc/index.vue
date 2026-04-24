@@ -61,6 +61,7 @@ export default {
         label: 'label'
       },
       docContents: {}, // 缓存文档内容
+      docHistory: [], // 文档浏览历史记录
       docs: [
         {
           label: '系统介绍',
@@ -541,7 +542,15 @@ export default {
       return result
     },
     handleBack() {
-      this.$router.go(-1)
+      // 如果有文档浏览历史，返回上一个文档
+      if (this.docHistory.length > 0) {
+        const previousDoc = this.docHistory.pop()
+        this.currentDocTitle = previousDoc.title
+        this.loadDoc(previousDoc.path, false) // false 表示不添加到历史记录
+      } else {
+        // 如果没有文档历史，按照浏览器记录返回
+        this.$router.go(-1)
+      }
     },
     initExpandedKeys() {
       // 收集所有一级目录的key（有children的节点）
@@ -590,6 +599,13 @@ export default {
     handleNodeClick(data, node) {
       // 只有叶子节点（有 path 属性）才加载文档
       if (data.path) {
+        // 将当前文档添加到历史记录
+        if (this.currentDoc && this.currentDoc !== data.path) {
+          this.docHistory.push({
+            path: this.currentDoc,
+            title: this.currentDocTitle
+          })
+        }
         this.loadDoc(data.path)
         // 构建面包屑路径
         this.currentDocTitle = this.buildBreadcrumb(node)
@@ -608,7 +624,7 @@ export default {
       // 第一级前不要有 /，用 / 连接面包屑
       return breadcrumbs.join(' / ')
     },
-    async loadDoc(docPath) {
+    async loadDoc(docPath, addToHistory = true) {
       try {
         const response = await fetch(`/docs/${docPath}`)
         if (!response.ok) {
@@ -747,6 +763,14 @@ export default {
               // 相对路径，需要基于当前文档目录
               const currentDir = this.currentDoc.substring(0, this.currentDoc.lastIndexOf('/'))
               fullPath = currentDir ? `${currentDir}/${path}` : path
+            }
+
+            // 将当前文档添加到历史记录
+            if (this.currentDoc && this.currentDoc !== fullPath) {
+              this.docHistory.push({
+                path: this.currentDoc,
+                title: this.currentDocTitle
+              })
             }
 
             // 加载文档
