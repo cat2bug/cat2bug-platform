@@ -50,6 +50,7 @@
 <script>
 import MarkdownIt from 'markdown-it'
 import MarkdownItContainer from 'markdown-it-container'
+import MarkdownItAnchor from 'markdown-it-anchor'
 
 export default {
   name: 'DocViewer',
@@ -479,6 +480,12 @@ export default {
   mounted() {
     this.md = new MarkdownIt()
 
+    // 配置 markdown-it-anchor 插件，直接使用标题文本作为 ID
+    this.md.use(MarkdownItAnchor, {
+      permalink: false,
+      slugify: (s) => s.trim()
+    })
+
     // 配置 tip 容器，使用橙色块风格
     this.md.use(MarkdownItContainer, 'tip', {
       validate: function(params) {
@@ -748,6 +755,26 @@ export default {
         const oldHandler = link._clickHandler
         if (oldHandler) {
           link.removeEventListener('click', oldHandler)
+        }
+
+        // 处理页面内锚点链接（以 # 开头，但不包含路径）
+        if (href.startsWith('#') && !href.includes('/')) {
+          const handler = (e) => {
+            e.preventDefault()
+            e.stopPropagation()
+
+            // 获取锚点 ID（去掉 # 号）并解码
+            const targetId = decodeURIComponent(href.substring(1))
+            const target = document.getElementById(targetId)
+
+            if (target) {
+              // 滚动到目标位置
+              target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            }
+          }
+          link.addEventListener('click', handler)
+          link._clickHandler = handler
+          return
         }
 
         // 处理相对路径的.md文件链接
