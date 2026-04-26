@@ -223,8 +223,44 @@ export default {
                 },
                 {
                   label: '测试用例',
-                  path: 'user-guide/current-project/case.md',
-                  icon: 'case'
+                  icon: 'case',
+                  children: [
+                    {
+                      label: '用例介绍',
+                      path: 'user-guide/current-project/case.md',
+                      icon: 'el-icon-document'
+                    },
+                    {
+                      label: '新建用例',
+                      path: 'user-guide/current-project/case/case-create.md',
+                      icon: 'el-icon-plus'
+                    },
+                    {
+                      label: '编辑用例',
+                      path: 'user-guide/current-project/case/case-edit.md',
+                      icon: 'el-icon-edit'
+                    },
+                    {
+                      label: '删除用例',
+                      path: 'user-guide/current-project/case/case-delete.md',
+                      icon: 'el-icon-delete'
+                    },
+                    {
+                      label: '导入用例',
+                      path: 'user-guide/current-project/case/case-import.md',
+                      icon: 'el-icon-upload2'
+                    },
+                    {
+                      label: '导出用例',
+                      path: 'user-guide/current-project/case/case-export.md',
+                      icon: 'el-icon-download'
+                    },
+                    {
+                      label: 'AI用例生成',
+                      path: 'user-guide/current-project/case/case-ai.md',
+                      icon: 'robot'
+                    }
+                  ]
                 },
                 {
                   label: '测试计划',
