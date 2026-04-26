@@ -6,7 +6,7 @@
 
 在用例列表中，点击某条用例右侧的【删除】按钮，确认后即可删除该用例。
 
-![单个删除](images/case_single_delete.png)
+![单个删除](../../../images/user-guide/current-project/case/case_single_delete.png)
 
 ## 批量删除
 
@@ -15,6 +15,6 @@
 3. 在弹出的确认对话框中点击【确认】按钮
 4. 系统将批量删除所选的所有用例
 
-![批量删除](images/case_batch_delete.png)
+![批量删除](../../../images/user-guide/current-project/case/case_batch_delete.png)
 
 > **注意：** 删除操作不可恢复，并影响关联的测试计划、缺陷等模块，请谨慎操作。建议在删除前确认用例是否还需要使用。

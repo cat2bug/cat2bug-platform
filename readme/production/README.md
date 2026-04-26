@@ -46,7 +46,15 @@ Cat2Bug-Platform 专门针对测试工作的各个环节及不同角色，开发
 
 #### 当前项目功能
 - [仪表盘](user-guide/current-project/dashboard.md) - 项目数据概览
-- [测试用例](user-guide/current-project/case.md) - 测试用例的创建和维护
+- 测试用例
+  - [测试用例概述](user-guide/current-project/case.md) - 测试用例介绍和名词解释
+  - [用例列表](user-guide/current-project/case/case-list.md) - 查看和管理测试用例列表
+  - [新建用例](user-guide/current-project/case/case-create.md) - 手动创建测试用例
+  - [编辑用例](user-guide/current-project/case/case-edit.md) - 编辑已有测试用例
+  - [删除用例](user-guide/current-project/case/case-delete.md) - 删除测试用例（单独或批量）
+  - [导入用例](user-guide/current-project/case/case-import.md) - 从 Excel 文件导入测试用例
+  - [导出用例](user-guide/current-project/case/case-export.md) - 导出测试用例为 Excel 文件
+  - [AI用例生成](user-guide/current-project/case/case-ai.md) - 使用 AI 自动生成测试用例
 - [测试计划](user-guide/current-project/plan.md) - 测试计划的制定和执行
 - [缺陷管理](user-guide/current-project/defect.md) - 缺陷的全生命周期管理
 - [交付物管理](user-guide/current-project/module.md) - 项目需要交付的软/硬件模块

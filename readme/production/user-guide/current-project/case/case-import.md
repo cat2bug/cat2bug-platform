@@ -8,9 +8,9 @@
 
 值得注意的是，此模版中交付物选项是非必填的（系统中，测试用例的交付物属性是必填项），此处主要考虑到在没有完全维护好交付物结构的时候，也可以畅通无阻的完成测试用例的导入工作。操作如下图：
 
-![导入用例模版](images/case_import_button.png)
+![导入用例模版](../../../images/user-guide/current-project/case/case_import_button.png)
 
-![导入用例模版](images/case_import_template.png)
+![导入用例模版](../../../images/user-guide/current-project/case/case_import_template.png)
 
 ## 2. 在 Excel 模版中录入数据
 
@@ -28,10 +28,10 @@
 点击"登录"按钮---跳转到首页
 ```
 
-![导入用例的Excel](images/case_import_excel.png)
+![导入用例的Excel](../../../images/user-guide/current-project/case/case_import_excel.png)
 
 ## 3. 导入数据
 
 将维护好的 Excel 文件导入到系统，如录入的数据无误，系统将提示导入成功，如下图：
 
-![导入用例](images/case_import.png)
+![导入用例](../../../images/user-guide/current-project/case/case_import.png)

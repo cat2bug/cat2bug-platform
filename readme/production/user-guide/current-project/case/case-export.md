@@ -2,7 +2,7 @@
 
 测试用例支持导出为 Excel 格式，方便用户进行数据备份、分享或在其他系统中使用。
 
-![导出用例](images/case_export.png)
+![导出用例](../../../images/user-guide/current-project/case/case_export.png)
 
 ## 导出操作
 

@@ -6,19 +6,19 @@
 
 首先点击页面右上侧的【新建用例】按钮，将从右侧打开测试用例新建界面，如下图：
 
-![创建用例](images/case_click_create_button.png)
+![创建用例](../../../images/user-guide/current-project/case/case_click_create_button.png)
 
 ## 2. 选择关联交付物
 
 在 Cat2Bug-Platform 中，所有用于测试的软件系统结构都是基于交付物体现的，所以测试用例也需要关联交付物，下图就是展示交付物的选择示例。如当前不存在某个交付物，也可以通过交付物下拉组件中的添加功能快速创建交付物。
 
-![选择交付物](images/case_create_module.png)
+![选择交付物](../../../images/user-guide/current-project/case/case_create_module.png)
 
 ## 3. 选择等级
 
 根据用例重要程度选择等级，等级根据重要性降序从 P0 到 P4，默认选择"P0"。
 
-![选择等级](images/case_level.png)
+![选择等级](../../../images/user-guide/current-project/case/case_level.png)
 
 ## 4. 输入预期
 
@@ -96,7 +96,7 @@
 - 第二个图标按钮：显示列表模式
 - 第三个图标按钮：显示文本模式
 
-![用例步骤](images/case_step.png)
+![用例步骤](../../../images/user-guide/current-project/case/case_step.png)
 
 ## 7. 输入数据（非必填）
 
@@ -155,4 +155,4 @@
 
 在新建用例界面中，红框标注的第一个选项用于连续创建用例而用，默认是选中状态，选中此项后，创建完用例还会停留在创建页面，并保留上一次"交付物"、"等级"的选择选项，便于持续录入多条用例。
 
-![创建下一个用例](images/case_create-next-case.png)
+![创建下一个用例](../../../images/user-guide/current-project/case/case_create-next-case.png)
