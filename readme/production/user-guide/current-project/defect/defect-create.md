@@ -2,7 +2,7 @@
 
 在缺陷列表页面，点击【新建缺陷】按钮，从右侧弹出新建对话框，填写相关数据后点击【新建】按钮保存提交。
 
-![新建缺陷](../../../images/defect-create.png)
+![新建缺陷](../../../images/user-guide/current-project/defect/defect-create.png)
 
 ## 使用场景
 

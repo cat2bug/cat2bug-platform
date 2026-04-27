@@ -2,7 +2,7 @@
 
 当缺陷被提出后，根据缺陷提示修复完缺陷后，点击【修复】按钮，将修复后的缺陷转给测试人员。
 
-![修复缺陷](../../../images/defect-repair.png)
+![修复缺陷](../../../images/user-guide/current-project/defect/defect-repair.png)
 
 ## 使用场景
 

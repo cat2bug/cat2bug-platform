@@ -2,7 +2,7 @@
 
 当一个缺陷处理完被关闭后，在后续测试过程中，又再次发现，可改变其状态，使之变成开启状态。
 
-![开启缺陷](../../../images/defect-start.png)
+![开启缺陷](../../../images/user-guide/current-project/defect/defect-start.png)
 
 ## 使用场景
 

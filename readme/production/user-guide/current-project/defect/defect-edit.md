@@ -2,7 +2,7 @@
 
 修改用于调整缺陷的信息，一般由缺陷创建人、测试、项目管理员来维护。
 
-![修改缺陷](../../../images/defect-modify.png)
+![修改缺陷](../../../images/user-guide/current-project/defect/defect-modify.png)
 
 ## 使用场景
 

@@ -2,7 +2,7 @@
 
 当开发人员修复缺陷后，测试人员进行回归测试，如发现问题已经解决，将会通过此缺陷。
 
-![通过缺陷](../../../images/defect-pass.png)
+![通过缺陷](../../../images/user-guide/current-project/defect/defect-pass.png)
 
 ## 使用场景
 

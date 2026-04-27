@@ -2,7 +2,7 @@
 
 当想改变缺陷处理人时，可通过【指派】功能改变当前处理人。
 
-![指派缺陷](../../../images/defect-assign.png)
+![指派缺陷](../../../images/user-guide/current-project/defect/defect-assign.png)
 
 ## 使用场景
 
