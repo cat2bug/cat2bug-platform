@@ -62,7 +62,17 @@ Cat2Bug-Platform 专门针对测试工作的各个环节及不同角色，开发
   - [执行计划](user-guide/current-project/plan/plan-execute.md) - 执行测试用例和跟踪进度
   - [修改计划](user-guide/current-project/plan/plan-edit.md) - 修改测试计划内容
   - [删除计划](user-guide/current-project/plan/plan-delete.md) - 删除不需要的测试计划
-- [缺陷管理](user-guide/current-project/defect.md) - 缺陷的全生命周期管理
+- 缺陷管理
+  - [缺陷介绍](user-guide/current-project/defect.md) - 缺陷管理介绍和名词解释
+  - [新建缺陷](user-guide/current-project/defect/defect-create.md) - 创建新的缺陷记录
+  - [修改缺陷](user-guide/current-project/defect/defect-edit.md) - 修改缺陷信息
+  - [指派缺陷](user-guide/current-project/defect/defect-assign.md) - 更改缺陷处理人
+  - [修复缺陷](user-guide/current-project/defect/defect-repair.md) - 开发人员提交修复
+  - [驳回缺陷](user-guide/current-project/defect/defect-reject.md) - 测试人员驳回修复
+  - [通过缺陷](user-guide/current-project/defect/defect-pass.md) - 测试人员验证通过
+  - [开启缺陷](user-guide/current-project/defect/defect-reopen.md) - 重新开启已关闭的缺陷
+  - [关闭缺陷](user-guide/current-project/defect/defect-close.md) - 关闭缺陷
+  - [删除缺陷](user-guide/current-project/defect/defect-delete.md) - 删除缺陷记录
 - [交付物管理](user-guide/current-project/module.md) - 项目需要交付的软/硬件模块
 - [报告管理](user-guide/current-project/report.md) - 测试报告的生成和导出
 - [文档管理](user-guide/current-project/document.md) - 项目文档的存储和管理

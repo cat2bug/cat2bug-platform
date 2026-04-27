@@ -300,8 +300,59 @@ export default {
                 },
                 {
                   label: '缺陷管理',
-                  path: 'user-guide/current-project/defect.md',
-                  icon: 'bug'
+                  icon: 'bug',
+                  children: [
+                    {
+                      label: '缺陷介绍',
+                      path: 'user-guide/current-project/defect.md',
+                      icon: 'el-icon-document'
+                    },
+                    {
+                      label: '新建缺陷',
+                      path: 'user-guide/current-project/defect/defect-create.md',
+                      icon: 'el-icon-plus'
+                    },
+                    {
+                      label: '修改缺陷',
+                      path: 'user-guide/current-project/defect/defect-edit.md',
+                      icon: 'el-icon-edit'
+                    },
+                    {
+                      label: '指派缺陷',
+                      path: 'user-guide/current-project/defect/defect-assign.md',
+                      icon: 'el-icon-user'
+                    },
+                    {
+                      label: '修复缺陷',
+                      path: 'user-guide/current-project/defect/defect-repair.md',
+                      icon: 'el-icon-check'
+                    },
+                    {
+                      label: '驳回缺陷',
+                      path: 'user-guide/current-project/defect/defect-reject.md',
+                      icon: 'el-icon-close'
+                    },
+                    {
+                      label: '通过缺陷',
+                      path: 'user-guide/current-project/defect/defect-pass.md',
+                      icon: 'el-icon-circle-check'
+                    },
+                    {
+                      label: '开启缺陷',
+                      path: 'user-guide/current-project/defect/defect-reopen.md',
+                      icon: 'el-icon-refresh'
+                    },
+                    {
+                      label: '关闭缺陷',
+                      path: 'user-guide/current-project/defect/defect-close.md',
+                      icon: 'el-icon-turn-off'
+                    },
+                    {
+                      label: '删除缺陷',
+                      path: 'user-guide/current-project/defect/defect-delete.md',
+                      icon: 'el-icon-delete'
+                    }
+                  ]
                 },
                 {
                   label: '交付物管理',
