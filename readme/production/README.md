@@ -55,7 +55,13 @@ Cat2Bug-Platform 专门针对测试工作的各个环节及不同角色，开发
   - [导入用例](user-guide/current-project/case/case-import.md) - 从 Excel 文件导入测试用例
   - [导出用例](user-guide/current-project/case/case-export.md) - 导出测试用例为 Excel 文件
   - [AI用例生成](user-guide/current-project/case/case-ai.md) - 使用 AI 自动生成测试用例
-- [测试计划](user-guide/current-project/plan.md) - 测试计划的制定和执行
+- 测试计划
+  - [测试计划概述](user-guide/current-project/plan.md) - 测试计划介绍和功能指南
+  - [创建测试计划](user-guide/current-project/plan/plan-create.md) - 如何创建和配置测试计划
+  - [执行测试计划](user-guide/current-project/plan/plan-execute.md) - 执行测试用例和跟踪进度
+  - [测试报告](user-guide/current-project/plan/plan-report.md) - 生成和导出测试报告
+  - [测试计划模板](user-guide/current-project/plan/plan-template.md) - 使用预定义的测试计划模板
+  - [最佳实践](user-guide/current-project/plan/plan-best-practice.md) - 测试计划的最佳实践建议
 - [缺陷管理](user-guide/current-project/defect.md) - 缺陷的全生命周期管理
 - [交付物管理](user-guide/current-project/module.md) - 项目需要交付的软/硬件模块
 - [报告管理](user-guide/current-project/report.md) - 测试报告的生成和导出
