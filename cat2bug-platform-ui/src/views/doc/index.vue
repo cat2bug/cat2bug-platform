@@ -236,7 +236,7 @@ export default {
                       icon: 'el-icon-plus'
                     },
                     {
-                      label: '编辑用例',
+                      label: '修改用例',
                       path: 'user-guide/current-project/case/case-edit.md',
                       icon: 'el-icon-edit'
                     },
@@ -264,8 +264,39 @@ export default {
                 },
                 {
                   label: '测试计划',
-                  path: 'user-guide/current-project/plan.md',
-                  icon: 'date'
+                  icon: 'date',
+                  children: [
+                    {
+                      label: '计划介绍',
+                      path: 'user-guide/current-project/plan.md',
+                      icon: 'el-icon-document'
+                    },
+                    {
+                      label: '新建计划',
+                      path: 'user-guide/current-project/plan/plan-create.md',
+                      icon: 'el-icon-plus'
+                    },
+                    {
+                      label: '复制计划',
+                      path: 'user-guide/current-project/plan/plan-copy.md',
+                      icon: 'el-icon-document-copy'
+                    },
+                    {
+                      label: '执行计划',
+                      path: 'user-guide/current-project/plan/plan-execute.md',
+                      icon: 'el-icon-video-play'
+                    },
+                    {
+                      label: '修改计划',
+                      path: 'user-guide/current-project/plan/plan-edit.md',
+                      icon: 'el-icon-edit'
+                    },
+                    {
+                      label: '删除计划',
+                      path: 'user-guide/current-project/plan/plan-delete.md',
+                      icon: 'el-icon-delete'
+                    }
+                  ]
                 },
                 {
                   label: '缺陷管理',

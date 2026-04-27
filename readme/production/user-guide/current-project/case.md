@@ -24,7 +24,7 @@
 ## 功能列表
 
 - [新建用例](./case/case-create.md) - 手动创建测试用例
-- [编辑用例](./case/case-edit.md) - 编辑已有测试用例
+- [修改用例](./case/case-edit.md) - 编辑已有测试用例
 - [删除用例](./case/case-delete.md) - 删除测试用例（单独或批量）
 - [导入用例](./case/case-import.md) - 从 Excel 文件导入测试用例
 - [导出用例](./case/case-export.md) - 导出测试用例为 Excel 文件
