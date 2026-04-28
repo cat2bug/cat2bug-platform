@@ -308,6 +308,16 @@ export default {
                       icon: 'el-icon-document'
                     },
                     {
+                      label: '页标签',
+                      path: 'user-guide/current-project/defect/defect-tabs.md',
+                      icon: 'el-icon-collection-tag'
+                    },
+                    {
+                      label: '数据统计',
+                      path: 'user-guide/current-project/defect/defect-statistics.md',
+                      icon: 'el-icon-data-line'
+                    },
+                    {
                       label: '新建缺陷',
                       path: 'user-guide/current-project/defect/defect-create.md',
                       icon: 'el-icon-plus'
@@ -351,6 +361,21 @@ export default {
                       label: '删除缺陷',
                       path: 'user-guide/current-project/defect/defect-delete.md',
                       icon: 'el-icon-delete'
+                    },
+                    {
+                      label: '新建评论',
+                      path: 'user-guide/current-project/defect/defect-comment.md',
+                      icon: 'el-icon-chat-line-round'
+                    },
+                    {
+                      label: '导入缺陷',
+                      path: 'user-guide/current-project/defect/defect-import.md',
+                      icon: 'el-icon-upload2'
+                    },
+                    {
+                      label: '导出缺陷',
+                      path: 'user-guide/current-project/defect/defect-export.md',
+                      icon: 'el-icon-download'
                     }
                   ]
                 },
