@@ -23,10 +23,9 @@
             ref="docTree"
             :data="filteredDocs"
             :props="treeProps"
-            node-key="path"
+            node-key="label"
             :default-expanded-keys="expandedKeys"
             :highlight-current="true"
-            :current-node-key="currentDoc"
             @node-click="handleNodeClick"
           >
             <span class="custom-tree-node" slot-scope="{ node, data }">
@@ -902,8 +901,8 @@ export default {
           if (this.$refs.docTree) {
             // 先展开包含该节点的所有父节点
             this.expandNodeParents(docPath)
-            // 然后激活该节点
-            this.$refs.docTree.setCurrentKey(docPath)
+            // 然后通过label找到并激活该节点
+            this.setCurrentNodeByPath(docPath)
           }
         })
 
@@ -921,17 +920,37 @@ export default {
         this.renderedContent = '<p>文档加载失败，请稍后重试。</p>'
       }
     },
+    setCurrentNodeByPath(docPath) {
+      // 通过path查找节点的label，然后设置为当前节点
+      const findLabelByPath = (nodes, targetPath) => {
+        for (let node of nodes) {
+          if (node.path === targetPath) {
+            return node.label
+          }
+          if (node.children && node.children.length > 0) {
+            const result = findLabelByPath(node.children, targetPath)
+            if (result) return result
+          }
+        }
+        return null
+      }
+
+      const label = findLabelByPath(this.docs, docPath)
+      if (label && this.$refs.docTree) {
+        this.$refs.docTree.setCurrentKey(label)
+      }
+    },
     expandNodeParents(docPath) {
-      // 递归查找节点并收集所有父节点的path
+      // 递归查找节点并收集所有父节点的label（因为父节点没有path）
       const findNodeAndParents = (nodes, targetPath, parents = []) => {
         for (let node of nodes) {
           if (node.path === targetPath) {
-            // 找到目标节点，返回所有父节点的path
+            // 找到目标节点，返回所有父节点的label
             return parents
           }
           if (node.children && node.children.length > 0) {
-            // 将当前节点的path加入父节点列表（如果有path）
-            const newParents = node.path ? [...parents, node.path] : parents
+            // 将当前节点的label加入父节点列表
+            const newParents = [...parents, node.label]
             const result = findNodeAndParents(node.children, targetPath, newParents)
             if (result) {
               return result
@@ -942,21 +961,21 @@ export default {
       }
 
       // 在原始docs中查找所有父节点
-      const parentPaths = findNodeAndParents(this.docs, docPath)
+      const parentLabels = findNodeAndParents(this.docs, docPath)
 
       // 展开所有父节点
-      if (parentPaths && this.$refs.docTree) {
-        // 先将所有父节点路径添加到expandedKeys中
-        parentPaths.forEach(parentPath => {
-          if (!this.expandedKeys.includes(parentPath)) {
-            this.expandedKeys.push(parentPath)
+      if (parentLabels && this.$refs.docTree) {
+        // 先将所有父节点label添加到expandedKeys中
+        parentLabels.forEach(label => {
+          if (!this.expandedKeys.includes(label)) {
+            this.expandedKeys.push(label)
           }
         })
 
         // 然后通过tree组件展开节点
         this.$nextTick(() => {
-          parentPaths.forEach(parentPath => {
-            const node = this.$refs.docTree.getNode(parentPath)
+          parentLabels.forEach(label => {
+            const node = this.$refs.docTree.getNode(label)
             if (node && !node.expanded) {
               node.expand()
             }
