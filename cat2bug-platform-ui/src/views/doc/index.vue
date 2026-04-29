@@ -930,7 +930,7 @@ export default {
             return parents
           }
           if (node.children && node.children.length > 0) {
-            // 将当前节点的path加入父节点列表
+            // 将当前节点的path加入父节点列表（如果有path）
             const newParents = node.path ? [...parents, node.path] : parents
             const result = findNodeAndParents(node.children, targetPath, newParents)
             if (result) {
@@ -941,16 +941,26 @@ export default {
         return null
       }
 
-      // 查找所有父节点
+      // 在原始docs中查找所有父节点
       const parentPaths = findNodeAndParents(this.docs, docPath)
 
       // 展开所有父节点
-      if (parentPaths && parentPaths.length > 0 && this.$refs.docTree) {
+      if (parentPaths && this.$refs.docTree) {
+        // 先将所有父节点路径添加到expandedKeys中
         parentPaths.forEach(parentPath => {
-          const node = this.$refs.docTree.getNode(parentPath)
-          if (node) {
-            node.expand()
+          if (!this.expandedKeys.includes(parentPath)) {
+            this.expandedKeys.push(parentPath)
           }
+        })
+
+        // 然后通过tree组件展开节点
+        this.$nextTick(() => {
+          parentPaths.forEach(parentPath => {
+            const node = this.$refs.docTree.getNode(parentPath)
+            if (node && !node.expanded) {
+              node.expand()
+            }
+          })
         })
       }
     },
