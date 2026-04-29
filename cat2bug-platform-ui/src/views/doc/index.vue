@@ -897,9 +897,12 @@ export default {
         this.renderedContent = html
         this.currentDoc = docPath
 
-        // 设置左侧目录树的当前激活节点
+        // 设置左侧目录树的当前激活节点，并展开其父节点
         this.$nextTick(() => {
           if (this.$refs.docTree) {
+            // 先展开包含该节点的所有父节点
+            this.expandNodeParents(docPath)
+            // 然后激活该节点
             this.$refs.docTree.setCurrentKey(docPath)
           }
         })
@@ -916,6 +919,39 @@ export default {
       } catch (error) {
         this.$message.error('加载文档失败: ' + error.message)
         this.renderedContent = '<p>文档加载失败，请稍后重试。</p>'
+      }
+    },
+    expandNodeParents(docPath) {
+      // 递归查找节点并收集所有父节点的path
+      const findNodeAndParents = (nodes, targetPath, parents = []) => {
+        for (let node of nodes) {
+          if (node.path === targetPath) {
+            // 找到目标节点，返回所有父节点的path
+            return parents
+          }
+          if (node.children && node.children.length > 0) {
+            // 将当前节点的path加入父节点列表
+            const newParents = node.path ? [...parents, node.path] : parents
+            const result = findNodeAndParents(node.children, targetPath, newParents)
+            if (result) {
+              return result
+            }
+          }
+        }
+        return null
+      }
+
+      // 查找所有父节点
+      const parentPaths = findNodeAndParents(this.docs, docPath)
+
+      // 展开所有父节点
+      if (parentPaths && parentPaths.length > 0 && this.$refs.docTree) {
+        parentPaths.forEach(parentPath => {
+          const node = this.$refs.docTree.getNode(parentPath)
+          if (node) {
+            node.expand()
+          }
+        })
       }
     },
     escapeRegExp(string) {
