@@ -19,7 +19,7 @@
 
 点击【新建交付物】按钮，打开创建对话框。
 
-![创建交付物](../../../images/deliverable-create.png)
+![创建交付物](../../../images/user-guide/current-project/module/deliverable-create.png)
 
 ### 3. 填写交付物信息
 

@@ -20,7 +20,7 @@
 
 点击交付物右侧的【编辑】按钮，打开编辑对话框。
 
-![编辑交付物](../../../images/deliverable-edit.png)
+![编辑交付物](../../../images/user-guide/current-project/module/deliverable-edit.png)
 
 ### 3. 修改交付物信息
 

@@ -29,7 +29,7 @@
 
 点击交付物右侧的【删除】按钮。
 
-![删除交付物](../../../images/deliverable-delete.png)
+![删除交付物](../../../images/user-guide/current-project/module/deliverable-delete.png)
 
 ### 3. 确认删除
 
