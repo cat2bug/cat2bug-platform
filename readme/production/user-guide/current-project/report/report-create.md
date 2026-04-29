@@ -37,7 +37,7 @@ X-API-Key: your-api-key
 | 参数名 | 类型 | 必填 | 说明 |
 |--------|------|------|------|
 | projectId | Integer | 是 | 项目 ID |
-| reportName | String | 是 | 报告名称 |
+| reportName | String | 是 | 报告标题 |
 | reportType | String | 是 | 报告类型 |
 | content | String | 是 | 报告内容（Markdown 格式） |
 | startTime | String | 否 | 测试开始时间 |
