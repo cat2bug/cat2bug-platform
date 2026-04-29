@@ -13,7 +13,7 @@
 
 报告列表以表格形式展示所有报告信息。
 
-![报告列表](../../../images/report_list.png)
+![报告列表](../../../images/user-guide/current-project/report/report_list.png)
 
 ### 列表信息
 

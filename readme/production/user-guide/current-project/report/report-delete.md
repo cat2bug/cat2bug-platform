@@ -21,7 +21,7 @@
 
 点击报告右侧的【删除】按钮。
 
-![删除报告](../../../images/report_delete.png)
+![删除报告](../../../images/user-guide/current-project/report/report_delete.png)
 
 #### 3. 确认删除
 

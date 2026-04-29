@@ -24,7 +24,7 @@
 
 报告以 Markdown 格式展示，支持丰富的内容格式。
 
-![报告详情](../../../images/report_details.png)
+![报告详情](../../../images/user-guide/current-project/report/report_details.png)
 
 ### 1. 测试概述
 

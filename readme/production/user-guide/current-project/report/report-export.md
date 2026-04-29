@@ -59,7 +59,7 @@
 
 点击报告详情页右上角的【导出】按钮。
 
-![报告导出](../../../images/report_export.png)
+![报告导出](../../../images/user-guide/current-project/report/report_export.png)
 
 #### 3. 选择导出格式
 
