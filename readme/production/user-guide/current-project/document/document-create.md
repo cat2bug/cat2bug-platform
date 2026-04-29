@@ -15,7 +15,7 @@
 
 在文档列表页面，点击【新建文档】按钮。
 
-![新建文档](../../../images/document-create.png)
+![新建文档](../../../images/user-guide/current-project/document/document-create.png)
 
 ### 2. 选择文档类型
 

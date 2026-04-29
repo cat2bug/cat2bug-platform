@@ -13,7 +13,7 @@
 
 文档列表支持两种展示方式：列表视图和卡片视图。
 
-![文档列表](../../../images/doc-list.png)
+![文档列表](../../../images/user-guide/current-project/document/doc-list.png)
 
 ### 列表视图
 

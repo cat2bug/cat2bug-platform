@@ -27,7 +27,7 @@
 
 系统支持在线预览多种格式的文档，无需下载到本地。
 
-![文档预览](../../../images/document-view.png)
+![文档预览](../../../images/user-guide/current-project/document/document-view.png)
 
 ### PDF 文档预览
 

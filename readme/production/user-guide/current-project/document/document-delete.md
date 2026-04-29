@@ -21,7 +21,7 @@
 
 点击文档右侧的【删除】按钮。
 
-![删除文档](../../../images/document-delete.png)
+![删除文档](../../../images/user-guide/current-project/document/document-delete.png)
 
 #### 3. 确认删除
 

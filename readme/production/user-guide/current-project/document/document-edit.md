@@ -20,7 +20,7 @@
 
 点击文档右侧的【编辑】按钮，打开编辑页面。
 
-![编辑文档](../../../images/document-edit.png)
+![编辑文档](../../../images/user-guide/current-project/document/document-edit.png)
 
 ### 3. 编辑文档信息
 

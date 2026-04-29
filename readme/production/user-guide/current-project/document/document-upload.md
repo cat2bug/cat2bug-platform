@@ -16,7 +16,7 @@
 
 在文档列表页面，点击【上传文档】按钮。
 
-![上传文档](../../../images/document-upload.png)
+![上传文档](../../../images/user-guide/current-project/document/document-upload.png)
 
 ### 2. 选择文件
 
