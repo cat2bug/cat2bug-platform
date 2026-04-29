@@ -381,18 +381,116 @@ export default {
                 },
                 {
                   label: '交付物管理',
-                  path: 'user-guide/current-project/module.md',
-                  icon: 'cascader'
+                  icon: 'cascader',
+                  children: [
+                    {
+                      label: '交付物介绍',
+                      path: 'user-guide/current-project/module.md',
+                      icon: 'el-icon-document'
+                    },
+                    {
+                      label: '交付物列表',
+                      path: 'user-guide/current-project/module/module-list.md',
+                      icon: 'el-icon-menu'
+                    },
+                    {
+                      label: '新建交付物',
+                      path: 'user-guide/current-project/module/module-create.md',
+                      icon: 'el-icon-plus'
+                    },
+                    {
+                      label: '修改交付物',
+                      path: 'user-guide/current-project/module/module-edit.md',
+                      icon: 'el-icon-edit'
+                    },
+                    {
+                      label: '删除交付物',
+                      path: 'user-guide/current-project/module/module-delete.md',
+                      icon: 'el-icon-delete'
+                    },
+                    {
+                      label: '交付物统计',
+                      path: 'user-guide/current-project/module/module-statistics.md',
+                      icon: 'el-icon-data-analysis'
+                    }
+                  ]
                 },
                 {
                   label: '报告管理',
-                  path: 'user-guide/current-project/report.md',
-                  icon: 'chart'
+                  icon: 'chart',
+                  children: [
+                    {
+                      label: '报告介绍',
+                      path: 'user-guide/current-project/report.md',
+                      icon: 'el-icon-document'
+                    },
+                    {
+                      label: '报告列表',
+                      path: 'user-guide/current-project/report/report-list.md',
+                      icon: 'el-icon-menu'
+                    },
+                    {
+                      label: '创建报告',
+                      path: 'user-guide/current-project/report/report-create.md',
+                      icon: 'el-icon-plus'
+                    },
+                    {
+                      label: '查看报告',
+                      path: 'user-guide/current-project/report/report-view.md',
+                      icon: 'el-icon-view'
+                    },
+                    {
+                      label: '导出报告',
+                      path: 'user-guide/current-project/report/report-export.md',
+                      icon: 'el-icon-download'
+                    },
+                    {
+                      label: '删除报告',
+                      path: 'user-guide/current-project/report/report-delete.md',
+                      icon: 'el-icon-delete'
+                    }
+                  ]
                 },
                 {
                   label: '文档管理',
-                  path: 'user-guide/current-project/document.md',
-                  icon: 'education'
+                  icon: 'education',
+                  children: [
+                    {
+                      label: '文档介绍',
+                      path: 'user-guide/current-project/document.md',
+                      icon: 'el-icon-document'
+                    },
+                    {
+                      label: '文档列表',
+                      path: 'user-guide/current-project/document/document-list.md',
+                      icon: 'el-icon-menu'
+                    },
+                    {
+                      label: '上传文档',
+                      path: 'user-guide/current-project/document/document-upload.md',
+                      icon: 'el-icon-upload2'
+                    },
+                    {
+                      label: '创建文档',
+                      path: 'user-guide/current-project/document/document-create.md',
+                      icon: 'el-icon-plus'
+                    },
+                    {
+                      label: '查看文档',
+                      path: 'user-guide/current-project/document/document-view.md',
+                      icon: 'el-icon-view'
+                    },
+                    {
+                      label: '编辑文档',
+                      path: 'user-guide/current-project/document/document-edit.md',
+                      icon: 'el-icon-edit'
+                    },
+                    {
+                      label: '删除文档',
+                      path: 'user-guide/current-project/document/document-delete.md',
+                      icon: 'el-icon-delete'
+                    }
+                  ]
                 },
                 {
                   label: '项目设置',

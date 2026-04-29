@@ -78,9 +78,28 @@ Cat2Bug-Platform 专门针对测试工作的各个环节及不同角色，开发
   - [新建评论](user-guide/current-project/defect/defect-comment.md) - 对缺陷添加评论和讨论
   - [导入缺陷](user-guide/current-project/defect/defect-import.md) - 批量导入缺陷数据
   - [导出缺陷](user-guide/current-project/defect/defect-export.md) - 导出缺陷为 Excel 文件
-- [交付物管理](user-guide/current-project/module.md) - 项目需要交付的软/硬件模块
-- [报告管理](user-guide/current-project/report.md) - 测试报告的生成和导出
-- [文档管理](user-guide/current-project/document.md) - 项目文档的存储和管理
+- 交付物管理
+  - [交付物管理概述](user-guide/current-project/module.md) - 交付物管理介绍和功能指南
+  - [交付物列表](user-guide/current-project/module/module-list.md) - 查看和管理交付物列表
+  - [新建交付物](user-guide/current-project/module/module-create.md) - 创建新的交付物
+  - [修改交付物](user-guide/current-project/module/module-edit.md) - 编辑交付物信息
+  - [删除交付物](user-guide/current-project/module/module-delete.md) - 删除交付物
+  - [交付物统计](user-guide/current-project/module/module-statistics.md) - 查看交付物的统计数据
+- 报告管理
+  - [报告管理概述](user-guide/current-project/report.md) - 报告管理介绍和功能指南
+  - [报告列表](user-guide/current-project/report/report-list.md) - 查看和管理报告列表
+  - [创建报告](user-guide/current-project/report/report-create.md) - 通过 API 创建测试报告
+  - [查看报告](user-guide/current-project/report/report-view.md) - 查看报告详细内容
+  - [导出报告](user-guide/current-project/report/report-export.md) - 导出报告为 Word 或 PDF
+  - [删除报告](user-guide/current-project/report/report-delete.md) - 删除不需要的报告
+- 文档管理
+  - [文档管理概述](user-guide/current-project/document.md) - 文档管理介绍和功能指南
+  - [文档列表](user-guide/current-project/document/document-list.md) - 查看和管理文档列表
+  - [上传文档](user-guide/current-project/document/document-upload.md) - 上传文档文件到项目
+  - [创建文档](user-guide/current-project/document/document-create.md) - 在线创建 Markdown 文档
+  - [查看文档](user-guide/current-project/document/document-view.md) - 查看文档详细内容
+  - [编辑文档](user-guide/current-project/document/document-edit.md) - 编辑文档信息或内容
+  - [删除文档](user-guide/current-project/document/document-delete.md) - 删除不需要的文档
 
 ### 管理员指南
 - [团队管理](admin-guide/admin-team.md) - 系统管理员的团队管理
