@@ -389,11 +389,6 @@ export default {
                       icon: 'el-icon-document'
                     },
                     {
-                      label: '交付物列表',
-                      path: 'user-guide/current-project/module/module-list.md',
-                      icon: 'el-icon-menu'
-                    },
-                    {
                       label: '新建交付物',
                       path: 'user-guide/current-project/module/module-create.md',
                       icon: 'el-icon-plus'
@@ -407,11 +402,6 @@ export default {
                       label: '删除交付物',
                       path: 'user-guide/current-project/module/module-delete.md',
                       icon: 'el-icon-delete'
-                    },
-                    {
-                      label: '交付物统计',
-                      path: 'user-guide/current-project/module/module-statistics.md',
-                      icon: 'el-icon-data-analysis'
                     }
                   ]
                 },
