@@ -20,11 +20,13 @@
         </div>
         <div class="doc-tree">
           <el-tree
+            ref="docTree"
             :data="filteredDocs"
             :props="treeProps"
-            node-key="label"
+            node-key="path"
             :default-expanded-keys="expandedKeys"
             :highlight-current="true"
+            :current-node-key="currentDoc"
             @node-click="handleNodeClick"
           >
             <span class="custom-tree-node" slot-scope="{ node, data }">
@@ -894,6 +896,13 @@ export default {
 
         this.renderedContent = html
         this.currentDoc = docPath
+
+        // 设置左侧目录树的当前激活节点
+        this.$nextTick(() => {
+          if (this.$refs.docTree) {
+            this.$refs.docTree.setCurrentKey(docPath)
+          }
+        })
 
         // 等待DOM更新后，为文档内的链接添加点击事件处理，并滚动到顶部
         this.$nextTick(() => {
