@@ -84,13 +84,13 @@
               @click="handleUpdate(scope.row)"
               v-hasPermi="['system:document:edit']"
             >{{ $t('update') }}</el-button>
-            <el-button
-              size="mini"
-              type="text"
-              icon="el-icon-edit"
-              @click="handleCat2Doc(scope.row)"
-              v-hasPermi="['system:document:edit']"
-            >{{ $t('modify') }}</el-button>
+<!--            <el-button-->
+<!--              size="mini"-->
+<!--              type="text"-->
+<!--              icon="el-icon-edit"-->
+<!--              @click="handleCat2Doc(scope.row)"-->
+<!--              v-hasPermi="['system:document:edit']"-->
+<!--            >{{ $t('modify') }}</el-button>-->
             <el-button
               size="mini"
               type="text"

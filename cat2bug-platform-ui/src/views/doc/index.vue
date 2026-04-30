@@ -463,34 +463,39 @@ export default {
                       icon: 'el-icon-document'
                     },
                     {
-                      label: '文档列表',
-                      path: 'user-guide/current-project/document/document-list.md',
-                      icon: 'el-icon-menu'
+                      label: '新建文件夹',
+                      path: 'user-guide/current-project/document/folder-create.md',
+                      icon: 'el-icon-folder-add'
                     },
                     {
-                      label: '上传文档',
-                      path: 'user-guide/current-project/document/document-upload.md',
-                      icon: 'el-icon-upload2'
-                    },
-                    {
-                      label: '创建文档',
+                      label: '新建文档',
                       path: 'user-guide/current-project/document/document-create.md',
-                      icon: 'el-icon-plus'
+                      icon: 'el-icon-document-add'
                     },
                     {
-                      label: '查看文档',
-                      path: 'user-guide/current-project/document/document-view.md',
-                      icon: 'el-icon-view'
+                      label: '移动文件夹/文档',
+                      path: 'user-guide/current-project/document/document-move.md',
+                      icon: 'el-icon-rank'
                     },
                     {
-                      label: '编辑文档',
-                      path: 'user-guide/current-project/document/document-edit.md',
-                      icon: 'el-icon-edit'
-                    },
-                    {
-                      label: '删除文档',
+                      label: '删除文件夹/文档',
                       path: 'user-guide/current-project/document/document-delete.md',
                       icon: 'el-icon-delete'
+                    },
+                    {
+                      label: '更新文件夹',
+                      path: 'user-guide/current-project/document/folder-update.md',
+                      icon: 'el-icon-folder-opened'
+                    },
+                    {
+                      label: '更新文档',
+                      path: 'user-guide/current-project/document/document-update.md',
+                      icon: 'el-icon-document-checked'
+                    },
+                    {
+                      label: '下载文档',
+                      path: 'user-guide/current-project/document/document-download.md',
+                      icon: 'el-icon-download'
                     }
                   ]
                 },
