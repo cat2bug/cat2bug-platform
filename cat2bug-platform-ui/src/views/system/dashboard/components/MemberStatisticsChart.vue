@@ -102,6 +102,7 @@ export default {
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
+    margin-top: -15px;
     > h1 {
       flex-shrink: 0;
     }
