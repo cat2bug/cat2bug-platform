@@ -103,7 +103,7 @@ module.exports = {
       }),
       new CopyWebpackPlugin([
         {
-          from: path.resolve(__dirname, '../readme'),
+          from: path.resolve(__dirname, '../readme/production'),
           to: path.resolve(__dirname, process.env.NODE_ENV === "embedded" ? '../cat2bug-platform-admin/src/main/resources/static/docs' : 'dist/docs'),
           toType: 'dir'
         }

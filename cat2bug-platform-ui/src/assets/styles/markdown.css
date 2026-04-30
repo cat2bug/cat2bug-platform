@@ -106,10 +106,12 @@
 }
 
 .markdown-body blockquote {
-  padding: 0 16px;
+  padding: 20px 24px;
   margin: 0 0 16px 0;
-  color: #6a737d;
-  border-left: 4px solid #dfe2e5;
+  color: #856404;
+  background-color: #fff3cd;
+  border-left: 4px solid #ffc107;
+  border-radius: 4px;
 }
 
 .markdown-body blockquote > :first-child {
@@ -118,6 +120,11 @@
 
 .markdown-body blockquote > :last-child {
   margin-bottom: 0;
+}
+
+.markdown-body blockquote strong {
+  color: #856404;
+  font-weight: 600;
 }
 
 .markdown-body table {
@@ -165,6 +172,10 @@
   box-sizing: border-box;
   background-color: #fff;
   border-radius: 3px;
+  vertical-align: middle;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .markdown-body hr {

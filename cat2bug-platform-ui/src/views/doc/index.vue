@@ -1,7 +1,11 @@
 <template>
   <div class="doc-viewer-wrapper">
     <div class="doc-header">
-      <el-page-header @back="handleBack" :content="currentDocTitle"></el-page-header>
+      <el-page-header @back="handleBack">
+        <template slot="content">
+          <span v-html="formattedTitle"></span>
+        </template>
+      </el-page-header>
     </div>
     <div class="doc-viewer">
       <div class="doc-sidebar">
@@ -31,8 +35,13 @@
           </el-tree>
         </div>
       </div>
-      <div class="doc-content">
+      <div class="doc-content" ref="docContent">
         <div class="markdown-body" v-html="renderedContent"></div>
+        <el-backtop target=".doc-content" :visibility-height="300" :right="40" :bottom="40">
+          <div class="backtop-button">
+            <i class="el-icon-top"></i>
+          </div>
+        </el-backtop>
       </div>
     </div>
   </div>
@@ -41,6 +50,7 @@
 <script>
 import MarkdownIt from 'markdown-it'
 import MarkdownItContainer from 'markdown-it-container'
+import MarkdownItAnchor from 'markdown-it-anchor'
 
 export default {
   name: 'DocViewer',
@@ -57,6 +67,7 @@ export default {
         label: 'label'
       },
       docContents: {}, // 缓存文档内容
+      docHistory: [], // 文档浏览历史记录
       docs: [
         {
           label: '系统介绍',
@@ -144,8 +155,50 @@ export default {
                 },
                 {
                   label: '通知',
-                  path: 'user-guide/user-management/notification.md',
-                  icon: 'notice'
+                  icon: 'notice',
+                  children: [
+                    {
+                      label: '通知列表',
+                      path: 'user-guide/user-management/notification/notification-list.md',
+                      icon: 'list'
+                    },
+                    {
+                      label: '发送选项',
+                      path: 'user-guide/user-management/notification/send-options.md',
+                      icon: 'el-icon-setting'
+                    },
+                    {
+                      label: '接收平台',
+                      icon: 'mk-card',
+                      children: [
+                        {
+                          label: '系统内部通知',
+                          path: 'user-guide/user-management/notification/system-notification.md',
+                          icon: 'server'
+                        },
+                        {
+                          label: '电子邮件',
+                          path: 'user-guide/user-management/notification/email-notification.md',
+                          icon: 'el-icon-message'
+                        },
+                        {
+                          label: '钉钉',
+                          path: 'user-guide/user-management/notification/dingtalk-notification.md',
+                          icon: 'dingding'
+                        },
+                        {
+                          label: '飞书',
+                          path: 'user-guide/user-management/notification/feishu-notification.md',
+                          icon: 'feishu'
+                        },
+                        {
+                          label: '企业微信',
+                          path: 'user-guide/user-management/notification/wecom-notification.md',
+                          icon: 'wechat'
+                        }
+                      ]
+                    }
+                  ]
                 }
               ]
             },
@@ -170,18 +223,161 @@ export default {
                 },
                 {
                   label: '测试用例',
-                  path: 'user-guide/current-project/case.md',
-                  icon: 'case'
+                  icon: 'case',
+                  children: [
+                    {
+                      label: '用例介绍',
+                      path: 'user-guide/current-project/case.md',
+                      icon: 'el-icon-document'
+                    },
+                    {
+                      label: '新建用例',
+                      path: 'user-guide/current-project/case/case-create.md',
+                      icon: 'el-icon-plus'
+                    },
+                    {
+                      label: '修改用例',
+                      path: 'user-guide/current-project/case/case-edit.md',
+                      icon: 'el-icon-edit'
+                    },
+                    {
+                      label: '删除用例',
+                      path: 'user-guide/current-project/case/case-delete.md',
+                      icon: 'el-icon-delete'
+                    },
+                    {
+                      label: '导入用例',
+                      path: 'user-guide/current-project/case/case-import.md',
+                      icon: 'el-icon-upload2'
+                    },
+                    {
+                      label: '导出用例',
+                      path: 'user-guide/current-project/case/case-export.md',
+                      icon: 'el-icon-download'
+                    },
+                    {
+                      label: 'AI用例生成',
+                      path: 'user-guide/current-project/case/case-ai.md',
+                      icon: 'robot'
+                    }
+                  ]
                 },
                 {
                   label: '测试计划',
-                  path: 'user-guide/current-project/plan.md',
-                  icon: 'date'
+                  icon: 'date',
+                  children: [
+                    {
+                      label: '计划介绍',
+                      path: 'user-guide/current-project/plan.md',
+                      icon: 'el-icon-document'
+                    },
+                    {
+                      label: '新建计划',
+                      path: 'user-guide/current-project/plan/plan-create.md',
+                      icon: 'el-icon-plus'
+                    },
+                    {
+                      label: '复制计划',
+                      path: 'user-guide/current-project/plan/plan-copy.md',
+                      icon: 'el-icon-document-copy'
+                    },
+                    {
+                      label: '执行计划',
+                      path: 'user-guide/current-project/plan/plan-execute.md',
+                      icon: 'el-icon-video-play'
+                    },
+                    {
+                      label: '修改计划',
+                      path: 'user-guide/current-project/plan/plan-edit.md',
+                      icon: 'el-icon-edit'
+                    },
+                    {
+                      label: '删除计划',
+                      path: 'user-guide/current-project/plan/plan-delete.md',
+                      icon: 'el-icon-delete'
+                    }
+                  ]
                 },
                 {
                   label: '缺陷管理',
-                  path: 'user-guide/current-project/defect.md',
-                  icon: 'bug'
+                  icon: 'bug',
+                  children: [
+                    {
+                      label: '缺陷介绍',
+                      path: 'user-guide/current-project/defect.md',
+                      icon: 'el-icon-document'
+                    },
+                    {
+                      label: '页标签',
+                      path: 'user-guide/current-project/defect/defect-tabs.md',
+                      icon: 'el-icon-collection-tag'
+                    },
+                    {
+                      label: '数据统计',
+                      path: 'user-guide/current-project/defect/defect-statistics.md',
+                      icon: 'el-icon-data-line'
+                    },
+                    {
+                      label: '新建缺陷',
+                      path: 'user-guide/current-project/defect/defect-create.md',
+                      icon: 'el-icon-plus'
+                    },
+                    {
+                      label: '修改缺陷',
+                      path: 'user-guide/current-project/defect/defect-edit.md',
+                      icon: 'el-icon-edit'
+                    },
+                    {
+                      label: '指派缺陷',
+                      path: 'user-guide/current-project/defect/defect-assign.md',
+                      icon: 'el-icon-user'
+                    },
+                    {
+                      label: '修复缺陷',
+                      path: 'user-guide/current-project/defect/defect-repair.md',
+                      icon: 'el-icon-check'
+                    },
+                    {
+                      label: '驳回缺陷',
+                      path: 'user-guide/current-project/defect/defect-reject.md',
+                      icon: 'el-icon-close'
+                    },
+                    {
+                      label: '通过缺陷',
+                      path: 'user-guide/current-project/defect/defect-pass.md',
+                      icon: 'el-icon-circle-check'
+                    },
+                    {
+                      label: '开启缺陷',
+                      path: 'user-guide/current-project/defect/defect-reopen.md',
+                      icon: 'el-icon-refresh'
+                    },
+                    {
+                      label: '关闭缺陷',
+                      path: 'user-guide/current-project/defect/defect-close.md',
+                      icon: 'el-icon-turn-off'
+                    },
+                    {
+                      label: '删除缺陷',
+                      path: 'user-guide/current-project/defect/defect-delete.md',
+                      icon: 'el-icon-delete'
+                    },
+                    {
+                      label: '新建评论',
+                      path: 'user-guide/current-project/defect/defect-comment.md',
+                      icon: 'el-icon-chat-line-round'
+                    },
+                    {
+                      label: '导入缺陷',
+                      path: 'user-guide/current-project/defect/defect-import.md',
+                      icon: 'el-icon-upload2'
+                    },
+                    {
+                      label: '导出缺陷',
+                      path: 'user-guide/current-project/defect/defect-export.md',
+                      icon: 'el-icon-download'
+                    }
+                  ]
                 },
                 {
                   label: '交付物管理',
@@ -408,10 +604,30 @@ export default {
         return this.docs
       }
       return this.filterDocsRecursive(this.docs, keywords)
+    },
+    formattedTitle() {
+      if (!this.currentDocTitle) {
+        return '系统文档'
+      }
+      const parts = this.currentDocTitle.split(' / ')
+      if (parts.length === 1) {
+        return `<span style="color: #303133;">${parts[0]}</span>`
+      }
+      const grayParts = parts.slice(0, -1).map(part =>
+        `<span style="color: #909399;">${part}</span>`
+      ).join('<span style="color: #909399;"> / </span>')
+      const lastPart = `<span style="color: #303133;">${parts[parts.length - 1]}</span>`
+      return `${grayParts}<span style="color: #909399;"> / </span>${lastPart}`
     }
   },
   mounted() {
     this.md = new MarkdownIt()
+
+    // 配置 markdown-it-anchor 插件，直接使用标题文本作为 ID
+    this.md.use(MarkdownItAnchor, {
+      permalink: false,
+      slugify: (s) => s.trim()
+    })
 
     // 配置 tip 容器，使用橙色块风格
     this.md.use(MarkdownItContainer, 'tip', {
@@ -481,7 +697,15 @@ export default {
       return result
     },
     handleBack() {
-      this.$router.go(-1)
+      // 如果有文档浏览历史，返回上一个文档
+      if (this.docHistory.length > 0) {
+        const previousDoc = this.docHistory.pop()
+        this.currentDocTitle = previousDoc.title
+        this.loadDoc(previousDoc.path, false) // false 表示不添加到历史记录
+      } else {
+        // 如果没有文档历史，按照浏览器记录返回
+        this.$router.go(-1)
+      }
     },
     initExpandedKeys() {
       // 收集所有一级目录的key（有children的节点）
@@ -527,14 +751,35 @@ export default {
     handleSearch() {
       // 搜索功能已通过 computed 实现
     },
-    handleNodeClick(data) {
+    handleNodeClick(data, node) {
       // 只有叶子节点（有 path 属性）才加载文档
       if (data.path) {
+        // 将当前文档添加到历史记录
+        if (this.currentDoc && this.currentDoc !== data.path) {
+          this.docHistory.push({
+            path: this.currentDoc,
+            title: this.currentDocTitle
+          })
+        }
         this.loadDoc(data.path)
-        this.currentDocTitle = data.label
+        // 构建面包屑路径
+        this.currentDocTitle = this.buildBreadcrumb(node)
       }
     },
-    async loadDoc(docPath) {
+    buildBreadcrumb(node) {
+      // 从当前节点向上遍历，构建面包屑
+      const breadcrumbs = []
+      let currentNode = node
+
+      while (currentNode) {
+        breadcrumbs.unshift(currentNode.label)
+        currentNode = currentNode.parent
+      }
+
+      // 第一级前不要有 /，用 / 连接面包屑
+      return breadcrumbs.join(' / ')
+    },
+    async loadDoc(docPath, addToHistory = true) {
       try {
         const response = await fetch(`/docs/${docPath}`)
         if (!response.ok) {
@@ -655,6 +900,26 @@ export default {
           link.removeEventListener('click', oldHandler)
         }
 
+        // 处理页面内锚点链接（以 # 开头，但不包含路径）
+        if (href.startsWith('#') && !href.includes('/')) {
+          const handler = (e) => {
+            e.preventDefault()
+            e.stopPropagation()
+
+            // 获取锚点 ID（去掉 # 号）并解码
+            const targetId = decodeURIComponent(href.substring(1))
+            const target = document.getElementById(targetId)
+
+            if (target) {
+              // 滚动到目标位置
+              target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            }
+          }
+          link.addEventListener('click', handler)
+          link._clickHandler = handler
+          return
+        }
+
         // 处理相对路径的.md文件链接
         if (href.endsWith('.md') || href.includes('.md#')) {
           const handler = (e) => {
@@ -673,6 +938,14 @@ export default {
               // 相对路径，需要基于当前文档目录
               const currentDir = this.currentDoc.substring(0, this.currentDoc.lastIndexOf('/'))
               fullPath = currentDir ? `${currentDir}/${path}` : path
+            }
+
+            // 将当前文档添加到历史记录
+            if (this.currentDoc && this.currentDoc !== fullPath) {
+              this.docHistory.push({
+                path: this.currentDoc,
+                title: this.currentDocTitle
+              })
             }
 
             // 加载文档
@@ -726,7 +999,7 @@ export default {
 .doc-viewer-wrapper {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 84px);
+  height: calc(100vh - 50px);
 
   .doc-header {
     padding: 10px 24px 0 24px;
@@ -785,7 +1058,8 @@ export default {
     .doc-content {
       flex: 1;
       overflow-y: auto;
-      padding: 0px 48px;
+      padding: 0px 48px 24px 48px;
+      position: relative;
 
       .markdown-body {
         max-width: 1000px;
@@ -798,11 +1072,28 @@ export default {
           font-weight: 500;
         }
       }
+
+      .backtop-button {
+        width: 40px;
+        height: 40px;
+        background-color: #409eff;
+        color: #fff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        cursor: pointer;
+        box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+        transition: all 0.3s;
+
+        &:hover {
+          background-color: #66b1ff;
+        }
+      }
     }
   }
 }
 
 /* markdown-body 样式已在 @import 的 CSS 文件中定义 */
 </style>
-
-这是一个腰带扣，是美杜莎的题材，我想调整一下效果，请将调整后的效果已前后左右多为图像生成给我；这个美杜莎太慈眉善目了，表情应该更魅惑，并且因为她要凝视石化别人，头应该前倾，并且这个是皮带，开的人眼睛要高出皮带50cm左右，因此这个美杜莎应该轻微仰视，并且都发中的蛇同时看向一个方向，显示出美杜莎、蛇都凝视前方的人；并且打破脸部完全对称规矩的动作，因为她是蛇妖，应该微微有妩媚缠绕的感觉，头部从正面看不要很端正，要有点歪头
