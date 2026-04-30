@@ -57,7 +57,10 @@
 
 ## 功能指南
 
-- [创建报告](report/report-create.md) - 通过 API 创建测试报告
+- [添加模版](report/template-create.md) - 添加报告模版
+- 生成报告
+  - [通过API创建](report/report-create-api.md) - 通过 Open API 创建测试报告
+  - [通过模版创建](report/report-create-template.md) - 通过模版快速创建测试报告
 - [查看报告](report/report-view.md) - 查看报告详细内容
 - [导出报告](report/report-export.md) - 导出报告为 Word 或 PDF
 - [删除报告](report/report-delete.md) - 删除不需要的报告

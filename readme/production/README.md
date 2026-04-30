@@ -85,8 +85,10 @@ Cat2Bug-Platform 专门针对测试工作的各个环节及不同角色，开发
   - [删除交付物](user-guide/current-project/module/module-delete.md) - 删除交付物
 - 报告管理
   - [报告管理概述](user-guide/current-project/report.md) - 报告管理介绍和功能指南
-  - [报告列表](user-guide/current-project/report/report-list.md) - 查看和管理报告列表
-  - [创建报告](user-guide/current-project/report/report-create.md) - 通过 API 创建测试报告
+  - [添加模版](user-guide/current-project/report/template-create.md) - 添加报告模版
+  - 生成报告
+    - [通过API创建](user-guide/current-project/report/report-create-api.md) - 通过 Open API 创建测试报告
+    - [通过模版创建](user-guide/current-project/report/report-create-template.md) - 通过模版快速创建测试报告
   - [查看报告](user-guide/current-project/report/report-view.md) - 查看报告详细内容
   - [导出报告](user-guide/current-project/report/report-export.md) - 导出报告为 Word 或 PDF
   - [删除报告](user-guide/current-project/report/report-delete.md) - 删除不需要的报告

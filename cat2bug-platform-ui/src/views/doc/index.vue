@@ -416,14 +416,25 @@ export default {
                       icon: 'el-icon-document'
                     },
                     {
-                      label: '报告列表',
-                      path: 'user-guide/current-project/report/report-list.md',
-                      icon: 'el-icon-menu'
+                      label: '添加模版',
+                      path: 'user-guide/current-project/report/template-create.md',
+                      icon: 'el-icon-circle-plus'
                     },
                     {
-                      label: '创建报告',
-                      path: 'user-guide/current-project/report/report-create.md',
-                      icon: 'el-icon-plus'
+                      label: '生成报告',
+                      icon: 'el-icon-plus',
+                      children: [
+                        {
+                          label: '通过API创建',
+                          path: 'user-guide/current-project/report/report-create-api.md',
+                          icon: 'el-icon-connection'
+                        },
+                        {
+                          label: '通过模版创建',
+                          path: 'user-guide/current-project/report/report-create-template.md',
+                          icon: 'el-icon-document-copy'
+                        }
+                      ]
                     },
                     {
                       label: '查看报告',
