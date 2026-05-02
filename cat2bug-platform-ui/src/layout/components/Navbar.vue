@@ -66,6 +66,7 @@ import Cat2BugDoc from '@/components/Cat2Bug/Doc'
 import Cat2BugAvatar from "@/components/Cat2BugAvatar";
 import LangSelect from "@/components/LangSelect";
 import {groupStatisticsNotice} from "@/api/system/notice";
+import { checkPermi } from "@/utils/permission";
 
 export default {
   data() {
@@ -182,6 +183,9 @@ export default {
     },
     /** 获取通知数量 */
     guoNoticeCount(data) {
+      if (!checkPermi(['notice:list'])) {
+        return;
+      }
       groupStatisticsNotice().then(res=>{
         let count = 0;
         res.rows.forEach(g=>{
