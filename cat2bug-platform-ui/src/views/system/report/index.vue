@@ -214,13 +214,11 @@ export default {
   mounted() {
     if(this.$route.query.projectId) {
       let _this = this;
-      store.dispatch('UpdateCurrentProjectId', this.$route.query.projectId).then(() => {
-        store.dispatch('GetInfo').then(() => {
-          _this.getList();
-          if(_this.$route.query.reportId) {
-            _this.$refs.viewReport.open(this.$route.query.reportId);
-          }
-        });
+      store.dispatch('SwitchCurrentProject', this.$route.query.projectId).then(() => {
+        _this.getList();
+        if(_this.$route.query.reportId) {
+          _this.$refs.viewReport.open(this.$route.query.reportId);
+        }
       });
     } else {
       this.getList();

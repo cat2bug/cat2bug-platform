@@ -24,7 +24,7 @@
             <el-divider></el-divider>
           </div>
           <el-menu
-              v-show="!teamLock && teamId && !projectLock && projectId"
+              v-show="!teamLock && teamId && !projectLock && projectId && projectRouters.length > 0 && !routesRefreshing"
               :default-active="activeMenu"
               :collapse="isCollapse"
               :background-color="settings.sideTheme === 'theme-dark' ? variables.menuBackground : variables.menuLightBackground"
@@ -41,7 +41,7 @@
                   :base-path="'project/'+route.path"
               />
           </el-menu>
-          <div v-show="!teamLock && teamId && !projectLock && projectId && projectRouters" class="sidebar-divider">
+          <div v-show="!teamLock && teamId && !projectLock && projectId && projectRouters.length > 0 && !routesRefreshing" class="sidebar-divider">
             <el-divider></el-divider>
           </div>
           <el-menu
@@ -122,7 +122,7 @@ export default {
     },
     computed: {
         ...mapState(["settings"]),
-        ...mapGetters(["sidebarRouters", "sidebar"]),
+        ...mapGetters(["sidebarRouters", "sidebar", "routesRefreshing"]),
       teamId() {
           return this.$store.state.user.config.currentTeamId;
       },

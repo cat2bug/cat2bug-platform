@@ -46,17 +46,28 @@ const user = {
 
   actions: {
     // 更新当前项目ID
-    UpdateCurrentProjectId({ commit }, projectId) {
+    UpdateCurrentProjectId(_, projectId) {
       return new Promise((resolve, reject) => {
         updateConfig({
           currentProjectId: projectId
         }).then(res => {
-          commit('SET_PROJECT_ID', projectId)
+          // currentProjectId 以 GetInfo / SET_CONFIG 为准，避免与侧栏路由切换节拍不一致
           resolve()
         }).catch(error => {
           reject(error)
         });
       })
+    },
+    /** 切换当前项目：持久化配置 → 刷新用户信息 → 重生成动态路由（侧栏只在这一段结束后展示一次） */
+    SwitchCurrentProject({ dispatch }, projectId) {
+      dispatch('SetRoutesRefreshing', true)
+      return updateConfig({
+        currentProjectId: projectId
+      }).then(() => dispatch('GetInfo'))
+        .then(() => dispatch('GenerateRoutes'))
+        .finally(() => {
+          dispatch('SetRoutesRefreshing', false)
+        })
     },
     // 登录
     Login({ commit }, userInfo) {

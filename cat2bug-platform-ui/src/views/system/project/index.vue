@@ -403,12 +403,8 @@ export default {
     clickProject(project) {
       let _this = this;
       if(this.isViewDefect(project)) {
-        store.dispatch('UpdateCurrentProjectId', project.projectId).then(() => {
-          store.dispatch('GetInfo').then(() => {
-            store.dispatch('GenerateRoutes').then(() => {
-              _this.$router.push({name:'Dashboard', params: { projectId: project.projectId }})
-            });
-          });
+        store.dispatch('SwitchCurrentProject', project.projectId).then(() => {
+          _this.$router.push({name:'Dashboard', params: { projectId: project.projectId }})
         });
       } else {
         this.$message.warning(this.$i18n.t('project.no-permission-access-project').toString());
@@ -422,20 +418,16 @@ export default {
     /** 跳转到项目设置 */
     goProjectOptionHandle(e,project) {
       let _this = this;
-      store.dispatch('UpdateCurrentProjectId', project.projectId).then(() => {
-        store.dispatch('GetInfo').then(() => {
-          _this.$router.push({name:'Option', params: { projectId: project.projectId }})
-        });
+      store.dispatch('SwitchCurrentProject', project.projectId).then(() => {
+        _this.$router.push({name:'Option', params: { projectId: project.projectId }})
       });
       e.stopPropagation();
     },
     /** 跳转到测试用例 */
     goCaseHandle(e,project) {
       let _this = this;
-      store.dispatch('UpdateCurrentProjectId', project.projectId).then(() => {
-        store.dispatch('GetInfo').then(() => {
-          _this.$router.push({name: 'Case', params: {projectId: project.projectId}})
-        });
+      store.dispatch('SwitchCurrentProject', project.projectId).then(() => {
+        _this.$router.push({name: 'Case', params: {projectId: project.projectId}})
       });
     }
   }

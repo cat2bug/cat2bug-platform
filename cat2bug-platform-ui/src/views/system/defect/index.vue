@@ -236,10 +236,8 @@ export default {
     /** 根据项目ID跳转 */
     if(this.$route.query.projectId) {
       let _this = this;
-      store.dispatch('UpdateCurrentProjectId', this.$route.query.projectId).then(() => {
-        store.dispatch('GetInfo').then(() => {
-          _this.init();
-        });
+      store.dispatch('SwitchCurrentProject', this.$route.query.projectId).then(() => {
+        _this.init();
       });
     } else {
       this.init();

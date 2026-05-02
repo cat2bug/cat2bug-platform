@@ -1,5 +1,5 @@
 import auth from '@/plugins/auth'
-import router, { constantRoutes, dynamicRoutes } from '@/router'
+import router, { constantRoutes, dynamicRoutes, resetRouter } from '@/router'
 import { getRouters } from '@/api/menu'
 import Layout from '@/layout/index'
 import ParentView from '@/components/ParentView'
@@ -11,7 +11,9 @@ const permission = {
     addRoutes: [],
     defaultRoutes: [],
     topbarRouters: [],
-    sidebarRouters: []
+    sidebarRouters: [],
+    /** 切换团队/项目并重拉动态路由时为 true，用于避免侧栏项目菜单多次闪烁 */
+    routesRefreshing: false
   },
   mutations: {
     SET_ROUTES: (state, routes) => {
@@ -27,8 +29,14 @@ const permission = {
     SET_SIDEBAR_ROUTERS: (state, routes) => {
       state.sidebarRouters = routes
     },
+    SET_ROUTES_REFRESHING: (state, val) => {
+      state.routesRefreshing = !!val
+    },
   },
   actions: {
+    SetRoutesRefreshing({ commit }, val) {
+      commit('SET_ROUTES_REFRESHING', val)
+    },
     // 生成路由
     GenerateRoutes({ commit }) {
       return new Promise(resolve => {
@@ -40,7 +48,9 @@ const permission = {
           const rewriteRoutes = filterAsyncRouter(rdata, false, true)
           const asyncRoutes = filterDynamicRoutes(dynamicRoutes);
           rewriteRoutes.push({ path: '*', redirect: '/404', hidden: true })
-          router.addRoutes(asyncRoutes);
+          resetRouter()
+          router.addRoutes(rewriteRoutes)
+          router.addRoutes(asyncRoutes)
           commit('SET_ROUTES', rewriteRoutes)
           commit('SET_SIDEBAR_ROUTERS', constantRoutes.concat(sidebarRoutes))
           commit('SET_DEFAULT_ROUTES', sidebarRoutes)

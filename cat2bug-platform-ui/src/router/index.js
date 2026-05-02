@@ -320,8 +320,19 @@ Router.prototype.replace = function push(location) {
   return routerReplace.call(this, location).catch(err => err)
 }
 
-export default new Router({
-  mode: 'hash', // 去掉url中的#
-  scrollBehavior: () => ({ y: 0 }),
-  routes: constantRoutes
-})
+const createRouter = () =>
+  new Router({
+    mode: 'hash', // 去掉url中的#
+    scrollBehavior: () => ({ y: 0 }),
+    routes: constantRoutes
+  })
+
+const router = createRouter()
+
+/** 切换项目后重新注入动态菜单时，先重置 matcher 再 addRoutes，避免旧项目路由残留 */
+export function resetRouter() {
+  const newRouter = createRouter()
+  router.matcher = newRouter.matcher
+}
+
+export default router
