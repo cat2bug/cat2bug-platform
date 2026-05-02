@@ -139,6 +139,7 @@ import DefectTabDialog from "@/views/system/defect/DefectTabDialog";
 import DefectImport from "@/views/system/defect/DefectImport"
 import i18n from "@/utils/i18n/i18n";
 import {getDefectTempTab, lifeTime, removeDefectTempTab} from "@/utils/defect";
+import { resolveExportAssetHost } from "@/utils/ruoyi";
 import store from "@/store";
 import DefectTable from "./list/table"
 import DefectCalendar from "./list/calendar"
@@ -496,10 +497,12 @@ export default {
     },
     /** 导出按钮操作 */
     handleExport() {
-      this.queryParams.params.host = `${window.location.protocol}\\${window.location.host+process.env.VUE_APP_BASE_API}`
-      this.download('system/defect/export', {
-        ...this.queryParams
-      }, `defect_${new Date().getTime()}.xlsx`)
+      const host = resolveExportAssetHost()
+      const payload = { ...this.queryParams }
+      if (host) {
+        payload.params = { ...(payload.params || {}), host }
+      }
+      this.download('system/defect/export', payload, `defect_${new Date().getTime()}.xlsx`)
     },
   }
 };

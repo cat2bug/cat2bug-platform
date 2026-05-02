@@ -22,12 +22,19 @@ public class UrlListHandler implements ExcelHandlerAdapter {
         }
 
         String[] urls = v.split(",");
-        return Arrays.stream(urls).map(url->{
-            if(requestParams==null || !requestParams.containsKey("host"))
+        return Arrays.stream(urls).map(String::trim).filter(u -> !u.isEmpty()).map(url -> {
+            if (url.startsWith("http://") || url.startsWith("https://")) {
                 return url;
-            else {
-                return requestParams.get("host")+url;
             }
+            if (requestParams == null || !requestParams.containsKey("host")) {
+                return url;
+            }
+            Object ho = requestParams.get("host");
+            if (ho == null || String.valueOf(ho).trim().isEmpty()) {
+                return url;
+            }
+            String host = String.valueOf(ho).trim().replaceAll("/+$", "");
+            return url.startsWith("/") ? host + url : host + "/" + url;
         }).collect(Collectors.joining("\n"));
     }
 }

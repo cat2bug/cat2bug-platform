@@ -205,6 +205,25 @@ export function handleTree(data, id, parentId, children) {
 * 参数处理
 * @param {*} params  参数
 */
+/**
+ * 与列表页附件链接一致：浏览器可访问的接口根路径（如 http://localhost:2222/dev-api），用于导出 Excel 时拼接相对路径。
+ */
+export function resolveExportAssetHost() {
+  const base = process.env.VUE_APP_BASE_API || ''
+  if (!base) {
+    return ''
+  }
+  if (/^https?:\/\//i.test(base)) {
+    return base.replace(/\/+$/, '')
+  }
+  if (typeof window === 'undefined' || !window.location) {
+    return ''
+  }
+  const origin = window.location.origin.replace(/\/+$/, '')
+  const path = base.startsWith('/') ? base : '/' + base
+  return origin + path.replace(/\/+$/, '')
+}
+
 export function tansParams(params) {
   let result = ''
   for (const propName of Object.keys(params)) {

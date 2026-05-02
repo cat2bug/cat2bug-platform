@@ -256,6 +256,7 @@ import FocusMemberList from "@/components/FocusMemberList";
 import Cat2BugPreviewImage from "@/components/Cat2BugPreviewImage";
 import {checkPermi} from "@/utils/permission";
 import {strFormat} from "@/utils";
+import { resolveExportAssetHost } from "@/utils/ruoyi";
 import {getToken} from "@/utils/auth";
 import {setDefectTempTab} from "@/utils/defect";
 import {setHeader} from "@/utils/request";
@@ -573,9 +574,12 @@ export default {
     },
     /** 导出按钮操作 */
     handleExport() {
-      this.download('system/case/export', {
-        ...this.queryParams
-      }, `${ this.$i18n.t('case.export') }_${new Date().getTime()}.xlsx`)
+      const host = resolveExportAssetHost()
+      const payload = { ...this.queryParams }
+      if (host) {
+        payload.params = { ...(payload.params || {}), host }
+      }
+      this.download('system/case/export', payload, `${ this.$i18n.t('case.export') }_${new Date().getTime()}.xlsx`)
     },
     /** 点击模块树中的某个模块操作 */
     moduleClickHandle(moduleId) {

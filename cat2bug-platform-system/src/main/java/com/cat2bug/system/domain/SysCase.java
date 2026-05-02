@@ -37,6 +37,7 @@ public class SysCase extends BaseEntity
     private Long projectId;
 
     /** 备注 */
+    @Excel(name = "备注", i18nNameKey = "remark", sort = 85, align = HorizontalAlignment.LEFT, width = 40, headerBackgroundColor = IndexedColors.GREY_25_PERCENT)
     private String remark;
 
     /** 用例号码 */

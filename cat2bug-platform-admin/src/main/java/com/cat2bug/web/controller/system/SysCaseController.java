@@ -7,6 +7,7 @@ import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.common.core.page.TableDataInfo;
 import com.cat2bug.common.enums.BusinessType;
 import com.cat2bug.common.utils.MessageUtils;
+import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.common.utils.poi.ExcelUtil;
 import com.cat2bug.system.domain.SysCase;
 import com.cat2bug.system.domain.vo.ExcelImportResultVo;
@@ -97,7 +98,13 @@ public class SysCaseController extends BaseController
             c.setCaseExportUpdateTime(c.getUpdateTime());
         }
         Map<String, Object> params = new HashMap<>();
-        params.put("type","export");
+        params.put("type", "export");
+        if (sysCase.getParams() != null) {
+            Object host = sysCase.getParams().get("host");
+            if (host != null && StringUtils.isNotEmpty(String.valueOf(host))) {
+                params.put("host", String.valueOf(host).trim());
+            }
+        }
         ExcelUtil<SysCase> util = new ExcelUtil<SysCase>(SysCase.class);
         util.exportExcel(response, list, "测试用例数据", params);
     }
