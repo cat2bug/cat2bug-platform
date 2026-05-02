@@ -9,7 +9,6 @@ import com.cat2bug.common.enums.BusinessType;
 import com.cat2bug.common.utils.MessageUtils;
 import com.cat2bug.common.utils.poi.ExcelUtil;
 import com.cat2bug.system.domain.SysCase;
-import com.cat2bug.system.domain.SysCaseExcelTepmplate;
 import com.cat2bug.system.domain.vo.ExcelImportResultVo;
 import com.cat2bug.system.service.IMemberFocusService;
 import com.cat2bug.system.service.ISysCaseService;
@@ -94,6 +93,9 @@ public class SysCaseController extends BaseController
     public void export(HttpServletResponse response, SysCase sysCase)
     {
         List<SysCase> list = sysCaseService.selectSysCaseList(sysCase);
+        for (SysCase c : list) {
+            c.setCaseExportUpdateTime(c.getUpdateTime());
+        }
         Map<String, Object> params = new HashMap<>();
         params.put("type","export");
         ExcelUtil<SysCase> util = new ExcelUtil<SysCase>(SysCase.class);
