@@ -3,8 +3,7 @@
     :append-to-body="true"
     width="75%"
     :title="title"
-    :visible.sync="visible"
-    @opened="onDialogOpened">
+    :visible.sync="visible">
     <div class="app-container defect-edit-body">
       <el-form ref="form" :model="form" :rules="rules" label-width="100px">
         <el-row>
@@ -87,11 +86,6 @@
           <file-upload v-model="form.annexUrls" :limit="9" :file-type="[]"/>
         </el-form-item>
       </el-form>
-      <el-collapse v-model="logPanelNames" class="edit-defect-log-panel">
-        <el-collapse-item :title="$t('log')" name="log">
-          <list-defect-log ref="dialogDefectLog" :pageSize="15" />
-        </el-collapse-item>
-      </el-collapse>
       <div slot="footer" class="dialog-footer">
         <el-button @click="cancel">{{  $t('cancel') }}</el-button>
         <el-button type="primary" @click="submitForm">{{ $t('save') }}</el-button>
@@ -105,15 +99,12 @@ import {configDefect, getDefect, updateDefect} from "@/api/system/defect";
 import SelectProjectMember from "@/components/Project/SelectProjectMember"
 import SelectModule from "@/components/Module/SelectModule"
 import ImageUpload from "@/components/ImageUpload";
-import ListDefectLog from "@/components/ListDefectLog";
-import DefectTools from "@/components/Defect/DefectTools";
-import DefectTypeFlag from "@/components/Defect/DefectTypeFlag";
 import SelectCase from "@/components/Case/SelectCase";
 
 export default {
   name: "EditDefect",
   dicts: ['defect_level'],
-  components: { ImageUpload, SelectProjectMember, SelectModule, ListDefectLog, DefectTools, DefectTypeFlag, SelectCase },
+  components: { ImageUpload, SelectProjectMember, SelectModule, SelectCase },
   data() {
     return {
       // 计划时间范围
@@ -144,7 +135,6 @@ export default {
           { required: true, message: this.$i18n.t('defect.defect-level-cannot-empty'), trigger: "input" }
         ],
       },
-      logPanelNames: ['log'],
     }
   },
   props: {
@@ -171,11 +161,6 @@ export default {
     }
   },
   methods:{
-    onDialogOpened() {
-      if (this.defectId != null && this.$refs.dialogDefectLog) {
-        this.$refs.dialogDefectLog.open(this.defectId);
-      }
-    },
     /** 获取缺陷配置 */
     getDefectConfig() {
       configDefect().then(res=>{
@@ -184,8 +169,6 @@ export default {
     },
     /** 获取缺陷信息 */
     getDefectInfo(defectId) {
-      const self = this;
-      this.activeNames = ['base','log']
       getDefect(defectId).then(res=>{
         this.form = res.data;
         if(this.form.planStartTime) {
@@ -193,15 +176,6 @@ export default {
         }
         if(this.form.planEndTime) {
           this.planTimeRange.push(this.form.planEndTime);
-        }
-        if(this.form.defectDescribe) {
-          this.activeNames.push('defectDescribe');
-        }
-        if(this.form.imgUrls && this.form.imgUrls.length>0) {
-          this.activeNames.push('imgUrls');
-        }
-        if(this.form.annexUrls && this.form.annexUrls.length>0) {
-          this.activeNames.push('annexUrls');
         }
       });
     },
@@ -244,7 +218,6 @@ export default {
         handleTime: null,
         defectLevel: 'middle'
       };
-      this.activeNames = ['base','log']
       this.resetForm("form");
     },
     /** 提交按钮 */
@@ -273,10 +246,6 @@ export default {
 <style lang="scss" scoped>
 .dialog-footer {
   text-align: right;
-}
-
-.edit-defect-log-panel {
-  margin-top: 12px;
 }
 
 .selectTime .el-date-editor--datetimerange.el-input__inner{
