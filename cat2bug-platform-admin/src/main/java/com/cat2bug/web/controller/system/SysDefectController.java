@@ -13,6 +13,7 @@ import com.cat2bug.system.domain.SysDefectLog;
 import com.cat2bug.system.domain.SysProjectDefectTabs;
 import com.cat2bug.system.domain.SysUserConfig;
 import com.cat2bug.system.service.*;
+import com.cat2bug.system.util.DefectListKeywordSupport;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -78,6 +79,8 @@ public class SysDefectController extends BaseController
     @GetMapping("/list")
     public TableDataInfo list(SysDefect sysDefect)
     {
+        // 合并关键字匹配处理人：必须在 startPage() 之前执行，否则 PageHelper 会把缺陷列表的 orderBy 追加到本条 SQL，导致多表 join 下 update_time 歧义
+        DefectListKeywordSupport.fillNameVersionKeywordHandleBy(sysDefect, sysUserProjectService);
         // 如果有search查询参数，先通过查询数据查找相关用户id，再通过用户id查找缺陷数据
         if(sysDefect.getParams()!=null && sysDefect.getParams().containsKey("search")) {
             SysUser sysUser = new SysUser();

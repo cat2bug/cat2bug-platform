@@ -270,7 +270,42 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <where>
             <if test="defect.projectNum != null "> and d.project_num = #{defect.projectNum}</if>
             <if test="defect.defectType != null "> and d.defect_type = #{defect.defectType, typeHandler=com.cat2bug.common.core.domain.handle.SysDefectTypeEnumTypeHandler }</if>
-            <if test="defect.defectName != null  and defect.defectName != ''"> and (d.defect_name like concat('%', #{defect.defectName}, '%') or d.defect_name=#{defect.defectName})</if>
+            <choose>
+                <when test="defect.nameVersionKeyword != null and defect.nameVersionKeyword != ''">
+                    and (
+                        d.defect_name like concat('%', #{defect.nameVersionKeyword}, '%')
+                        or d.defect_name = #{defect.nameVersionKeyword}
+                        or d.project_num like concat('%', #{defect.nameVersionKeyword}, '%')
+                        or (d.module_version is not null and d.module_version like concat('%', #{defect.nameVersionKeyword}, '%'))
+                        or (m.module_name is not null and m.module_name like concat('%', #{defect.nameVersionKeyword}, '%'))
+                        <if test="defect.params != null and defect.params.nameVersionKeywordHandleBy != null and defect.params.nameVersionKeywordHandleBy.size() > 0">
+                            or (
+                            <foreach collection="defect.params.nameVersionKeywordHandleBy" item="b" separator=" or " open="(" close=")">d.handle_by REGEXP CONCAT('\b',#{b},'\b') OR d.handle_by REGEXP CONCAT('\\b',#{b},'\\b')
+                            </foreach>
+                            )
+                        </if>
+                    )
+                </when>
+                <when test="defect.params != null and defect.params.nameVersionKeyword != null and defect.params.nameVersionKeyword != ''">
+                    and (
+                        d.defect_name like concat('%', #{defect.params.nameVersionKeyword}, '%')
+                        or d.defect_name = #{defect.params.nameVersionKeyword}
+                        or d.project_num like concat('%', #{defect.params.nameVersionKeyword}, '%')
+                        or (d.module_version is not null and d.module_version like concat('%', #{defect.params.nameVersionKeyword}, '%'))
+                        or (m.module_name is not null and m.module_name like concat('%', #{defect.params.nameVersionKeyword}, '%'))
+                        <if test="defect.params != null and defect.params.nameVersionKeywordHandleBy != null and defect.params.nameVersionKeywordHandleBy.size() > 0">
+                            or (
+                            <foreach collection="defect.params.nameVersionKeywordHandleBy" item="b" separator=" or " open="(" close=")">d.handle_by REGEXP CONCAT('\b',#{b},'\b') OR d.handle_by REGEXP CONCAT('\\b',#{b},'\\b')
+                            </foreach>
+                            )
+                        </if>
+                    )
+                </when>
+                <otherwise>
+                    <if test="defect.defectName != null  and defect.defectName != ''"> and (d.defect_name like concat('%', #{defect.defectName}, '%') or d.defect_name=#{defect.defectName})</if>
+                    <if test="defect.moduleVersion != null and defect.moduleVersion != ''"> and d.module_version like concat('%', #{defect.moduleVersion}, '%')</if>
+                </otherwise>
+            </choose>
             <if test="defect.projectId != null "> and d.project_id = #{defect.projectId}</if>
             <if test="defect.testPlanId != null "> and d.test_plan_id = #{defect.testPlanId}</if>
             <if test="defect.caseId != null "> and d.case_id = #{defect.caseId}</if>
@@ -281,7 +316,6 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                  <when test="defect.moduleId != null and defect.moduleId > 0">and d.module_id = #{defect.moduleId}</when>
                  <otherwise></otherwise>
              </choose>
-            <if test="defect.moduleVersion != null and defect.moduleVersion != ''"> and d.module_version like concat('%', #{defect.moduleVersion}, '%')</if>
             <if test="defect.createBy != null  and defect.createBy != ''"> and d.create_by = #{defect.createBy}</if>
             <if test="defect.params.beginUpdateTime != null and defect.params.beginUpdateTime != '' and defect.params.endUpdateTime != null and defect.params.endUpdateTime != ''"> and d.update_time between #{defect.params.beginUpdateTime} and #{defect.params.endUpdateTime}</if>
             <if test="defect.params.beginCreateTime != null and defect.params.beginCreateTime != '' and defect.params.endCreateTime != null and defect.params.endCreateTime != ''"> and d.create_time between #{defect.params.beginCreateTime} and #{defect.params.endCreateTime}</if>

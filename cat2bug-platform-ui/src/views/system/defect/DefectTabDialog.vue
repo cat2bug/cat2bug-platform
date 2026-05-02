@@ -12,10 +12,10 @@
           maxlength="32"
           clearable></el-input>
       </el-form-item>
-      <el-form-item :label="$t('defect.title')" prop="defectName">
+      <el-form-item :label="$t('defect.name-or-version')" prop="nameVersionKeyword">
         <el-input
-          v-model="form.config.defectName"
-          :placeholder="$t('defect.enter-like-title')"
+          v-model="form.config.nameVersionKeyword"
+          :placeholder="$t('defect.enter-name-or-version')"
           maxlength="128"
           clearable
         />
@@ -45,14 +45,6 @@
       </el-form-item>
       <el-form-item :label="$t('module')" prop="moduleId">
         <select-module v-model="form.config.moduleId" :project-id="form.projectId" :is-edit="false" size="medium" />
-      </el-form-item>
-      <el-form-item :label="$t('version')" prop="moduleVersion">
-        <el-input
-          v-model="form.config.moduleVersion"
-          :placeholder="$t('defect.enter-version')"
-          maxlength="64"
-          clearable
-        />
       </el-form-item>
       <el-form-item :label="$t('create-by')" prop="createByIds">
         <select-project-member

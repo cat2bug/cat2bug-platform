@@ -81,6 +81,9 @@ public class SysDefect extends BaseEntity
     @Excel(name = "版本", i18nNameKey = "version")
     private String moduleVersion;
 
+    /** 列表查询：名称/编号/版本/交付物/处理人的合并关键字（请求参数，非持久化字段） */
+    private String nameVersionKeyword;
+
     /** 图片 */
     @Excel(name = "图片", i18nNameKey = "image", cellType = Excel.ColumnType.IMAGE_LIST, type = Excel.Type.EXPORT, width = 50,height = 50)
     private String imgUrls;

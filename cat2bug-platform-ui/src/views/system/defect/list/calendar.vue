@@ -102,6 +102,11 @@ import DefectStateFlag from "@/components/Defect/DefectStateFlag";
 export default {
   name: "DefectCalendar",
   components: {DefectFlag,DefectTypeFlag,DefectStateFlag},
+  /** 与缺陷页动态组件对齐：表格使用 query/projectId，日历仅占位接收避免落到根 DOM */
+  props: {
+    query: { type: Object, default: null },
+    projectId: { type: Number, default: null }
+  },
   data() {
     return {
       currentDate: new Date(),

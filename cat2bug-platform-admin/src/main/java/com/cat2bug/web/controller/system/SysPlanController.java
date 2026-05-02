@@ -11,6 +11,8 @@ import com.cat2bug.common.utils.poi.ExcelUtil;
 import com.cat2bug.system.domain.SysPlan;
 import com.cat2bug.system.service.ISysModuleService;
 import com.cat2bug.system.service.ISysPlanService;
+import com.cat2bug.system.service.ISysUserProjectService;
+import com.cat2bug.system.util.DefectListKeywordSupport;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -33,6 +35,8 @@ public class SysPlanController extends BaseController
     private ISysPlanService sysPlanService;
     @Autowired
     private ISysModuleService sysModuleService;
+    @Autowired
+    private ISysUserProjectService sysUserProjectService;
 
     /**
      * 查询测试计划列表
@@ -85,6 +89,7 @@ public class SysPlanController extends BaseController
         } else {
             sysDefect.getParams().put("moduleIdsOfProject", Arrays.asList(0));
         }
+        DefectListKeywordSupport.fillNameVersionKeywordHandleBy(sysDefect, sysUserProjectService);
         startPage();
         List<SysDefect> list = sysPlanService.selectSysDefectList(planId, sysDefect);
         TableDataInfo tableDataInfo = getDataTable(list);

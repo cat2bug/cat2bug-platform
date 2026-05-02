@@ -25,6 +25,8 @@
     <component
       ref="defectContentComponent"
       :is="defectContentComponent"
+      :query="queryParams"
+      :project-id="projectId"
       @defect-click="handleDefectClick"
       @refresh="handleRefreshQuery"
       >
@@ -33,9 +35,13 @@
         <div class="defect-tools-search">
           <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="0">
             <el-form-item>
-              <el-radio-group size="small" v-model="defectContentComponent" @input="handleDefectContentChange">
-                <el-radio-button label="DefectTable">{{ $t('table') }}</el-radio-button>
-                <el-radio-button label="DefectCalendar">{{ $t('calendar') }}</el-radio-button>
+              <el-radio-group class="defect-content-view-switch" size="small" v-model="defectContentComponent" @input="handleDefectContentChange">
+                <el-radio-button label="DefectTable">
+                  <span class="defect-content-view-switch-inner" :title="$t('table')"><i class="el-icon-s-grid"></i></span>
+                </el-radio-button>
+                <el-radio-button label="DefectCalendar">
+                  <span class="defect-content-view-switch-inner" :title="$t('calendar')"><i class="el-icon-date"></i></span>
+                </el-radio-button>
               </el-radio-group>
             </el-form-item>
             <el-form-item prop="defectType">
@@ -57,29 +63,6 @@
                 </el-option>
               </el-select>
             </el-form-item>
-            <el-form-item prop="defectName">
-              <el-input
-                size="small"
-                v-model="queryParams.defectName"
-                :placeholder="$t('defect.enter-name')"
-                prefix-icon="el-icon-search"
-                clearable
-                @input="handleQuery()"
-              />
-            </el-form-item>
-            <el-form-item class="padding-top-1px">
-              <select-module v-model="queryParams.moduleId" :project-id="projectId" :is-edit="false" size="small" icon="el-icon-files" @input="handleQuery()" />
-            </el-form-item>
-            <el-form-item prop="moduleVersion">
-              <el-input
-                size="small"
-                v-model="queryParams.moduleVersion"
-                prefix-icon="el-icon-discount"
-                :placeholder="$t('defect.enter-version')"
-                clearable
-                @input="handleQuery()"
-              />
-            </el-form-item>
             <el-form-item prop="handleBy" class="padding-top-3px">
               <select-project-member
                 v-model="queryParams.handleBy"
@@ -88,6 +71,16 @@
                 :is-head="false"
                 size="small"
                 icon="el-icon-user"
+                @input="handleQuery()"
+              />
+            </el-form-item>
+            <el-form-item prop="nameVersionKeyword">
+              <el-input
+                size="small"
+                v-model="queryParams.nameVersionKeyword"
+                :placeholder="$t('defect.enter-name-or-version')"
+                prefix-icon="el-icon-search"
+                clearable
                 @input="handleQuery()"
               />
             </el-form-item>
@@ -131,7 +124,6 @@ import { delTabs } from "@/api/system/DefectTabs";
 import { configDefect } from "@/api/system/defect";
 import AddDefect from "@/components/Defect/AddDefect"
 import HandleDefect from "@/components/Defect/HandleDefect"
-import SelectModule from "@/components/Module/SelectModule";
 import SelectProjectMember from "@/components/Project/SelectProjectMember";
 import ProjectLabel from "@/components/Project/ProjectLabel";
 import Cat2BugStatistic from "@/components/Cat2BugStatistic"
@@ -153,7 +145,7 @@ const ALL_TAB_NAME = 'all-tab';
 const CACHE_KEY_STATISTIC_PANEL_VISIBLE = 'defect.statisticPanelVisible';
 export default {
   name: "Defect",
-  components: {SelectModule, AddDefect, HandleDefect, SelectProjectMember,ProjectLabel, Cat2BugStatistic, DefectTabDialog, DefectTable, DefectCalendar, DefectImport },
+  components: { AddDefect, HandleDefect, SelectProjectMember, ProjectLabel, Cat2BugStatistic, DefectTabDialog, DefectTable, DefectCalendar, DefectImport },
   data() {
     return {
       // 当前缺陷面板的类型
@@ -186,6 +178,7 @@ export default {
         isAsc: 'desc',
         defectType: null,
         defectName: null,
+        nameVersionKeyword: null,
         projectId: 0,
         testPlanId: null,
         caseId: null,
@@ -397,6 +390,7 @@ export default {
         isAsc: 'desc',
         defectType: null,
         defectName: null,
+        nameVersionKeyword: null,
         projectId: this.projectId,
         testPlanId: null,
         caseId: null,
@@ -439,6 +433,22 @@ export default {
             tab.config.params = {
               defectStates: []
             };
+          }
+          const tc = tab.config;
+          const tp = tc.params;
+          if (tp.nameVersionKeyword != null && String(tp.nameVersionKeyword).trim() !== '') {
+            if (tc.nameVersionKeyword == null || String(tc.nameVersionKeyword).trim() === '') {
+              tc.nameVersionKeyword = String(tp.nameVersionKeyword).trim();
+            }
+            this.$delete(tp, 'nameVersionKeyword');
+          }
+          const kwEmpty = tc.nameVersionKeyword == null || String(tc.nameVersionKeyword).trim() === '';
+          const hasDn = tc.defectName != null && String(tc.defectName).trim() !== '';
+          const hasMv = tc.moduleVersion != null && String(tc.moduleVersion).trim() !== '';
+          if (kwEmpty && ((hasDn && !hasMv) || (!hasDn && hasMv))) {
+            tc.nameVersionKeyword = hasDn ? String(tc.defectName).trim() : String(tc.moduleVersion).trim();
+            tc.defectName = null;
+            tc.moduleVersion = null;
           }
           this.queryParams = tab.config;
         } else {
@@ -589,5 +599,18 @@ export default {
 .defect-add-dropdown-divider {
   margin-top: 5px;
   margin-bottom: 5px;
+}
+.defect-content-view-switch {
+  vertical-align: middle;
+  ::v-deep .el-radio-button__inner {
+    padding: 7px 11px;
+    line-height: 1;
+  }
+  .defect-content-view-switch-inner {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+  }
 }
 </style>
