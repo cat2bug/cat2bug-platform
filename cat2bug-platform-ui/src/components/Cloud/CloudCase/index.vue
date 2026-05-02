@@ -36,7 +36,7 @@
             :placeholder="$t('case.ai-search-describe').toString()">
             <template v-slot:tools>
               <div class="cloud-case-input-tools">
-                <el-select class="cloud-case-prompt-select" v-model="prompt.modelId" size="mini" placeholder="请选择">
+                <el-select class="cloud-case-prompt-select" v-model="prompt.modelId" size="mini" :placeholder="$t('please-select')" @change="handleCaseAiModelChange">
                   <el-option-group
                     v-for="group in aiAccountGroup"
                     :key="group.label"
@@ -280,8 +280,11 @@ import {makeCaseList} from "@/api/ai/AiCase";
 import i18n from "@/utils/i18n/i18n";
 import {delCasePrompt, listCasePrompt} from "@/api/system/CasePrompt";
 import {listAccount} from "@/api/ai/AIAccount"
+import { listAi } from "@/api/system/ai";
 
 const DEFAULT_ROW_COUNT_KEY = 'case_default_row_count';
+const CASE_AI_MODEL_ID_PREFIX = 'case_ai_model_id_';
+const AI_MODEL_COMPLETED_STATE = 'COMPLETED';
 const PATTERN = /\$\{\s*[0-9a-zA-z]{1,255}\s*\}/g;
 
 export default {
@@ -326,12 +329,9 @@ export default {
       /** 是否已在首次打开抽屉时拉取过 AI 账号列表，避免反复请求 */
       aiAccountLoaded: false,
       aiAccountGroup: [{
-        label: this.$i18n.t('case.local-ai-service'),
-        key: 'local',
-        options: [{
-          label: 'Ollama',
-          key: 'ollama'
-        }]
+        label: this.$i18n.t('project.ai-model-manager'),
+        key: 'ollama',
+        options: []
       }, {
         label: this.$i18n.t('case.openai-service'),
         key: 'openai',
@@ -341,7 +341,7 @@ export default {
   },
   watch: {
     "$i18n.locale": function (newVal, oldVal) {
-      this.aiAccountGroup[0].label = this.$i18n.t('case.local-ai-service');
+      this.aiAccountGroup[0].label = this.$i18n.t('project.ai-model-manager');
       this.aiAccountGroup[1].label = this.$i18n.t('case.openai-service');
     },
   },
@@ -399,29 +399,84 @@ export default {
     },
   },
   methods: {
-    /** 获取openid的账号列表 */
+    caseAiModelStorageKey() {
+      const pid = this.projectId;
+      return CASE_AI_MODEL_ID_PREFIX + (Number.isFinite(pid) ? pid : '0');
+    },
+    caseAiModelKeyEquals(a, b) {
+      return String(a) === String(b);
+    },
+    /** 读取上次选择的模型（按当前项目） */
+    getStoredCaseAiModelId() {
+      const raw = this.$cache.local.get(this.caseAiModelStorageKey());
+      if (raw === undefined || raw === null || raw === '') {
+        return null;
+      }
+      return String(raw);
+    },
+    /** 用户在下拉框中选择后写入本地 */
+    persistCaseAiModelChoice(modelId) {
+      if (modelId === null || modelId === undefined || modelId === '') {
+        return;
+      }
+      this.$cache.local.set(this.caseAiModelStorageKey(), String(modelId));
+    },
+    handleCaseAiModelChange(val) {
+      this.persistCaseAiModelChoice(val);
+    },
+    /** 合并加载 Ollama 已下载模型与 OpenAI 账号列表 */
     getOpenAIAccountList() {
       const params = {
         projectId: this.projectId,
         pageNum: 1,
         pageSize: 99999
-      }
-      listAccount(params).then(res=>{
-        this.aiAccountGroup[1].options = res.rows.map(a=>{
-          return {
-            label: a.accountName,
-            key: a.accountId
+      };
+      Promise.all([
+        listAi(params).catch(() => ({ rows: [] })),
+        listAccount(params).catch(() => ({ rows: [] }))
+      ]).then(([aiRes, accRes]) => {
+        const rows = aiRes.rows || [];
+        const downloaded = rows.filter(m => m.state === AI_MODEL_COMPLETED_STATE);
+        this.aiAccountGroup[0].options = downloaded.map(m => ({
+          label: m.name,
+          key: m.name
+        }));
+        const bizRow = rows.find(m => m.businessModule);
+        const defaultBusinessModel = bizRow ? bizRow.businessModule : null;
+
+        this.aiAccountGroup[1].options = (accRes.rows || []).map(a => ({
+          label: a.accountName,
+          key: a.accountId
+        }));
+
+        const ollamaOpts = this.aiAccountGroup[0].options;
+        const openaiOpts = this.aiAccountGroup[1].options;
+        const allOpts = [...ollamaOpts, ...openaiOpts];
+
+        const pickServerDefaultModelId = () => {
+          if (defaultBusinessModel && ollamaOpts.some(o => this.caseAiModelKeyEquals(o.key, defaultBusinessModel))) {
+            return defaultBusinessModel;
           }
-        });
-        if(this.aiAccountGroup[1].options.length>0) {
-          this.prompt.aiAccountId = this.aiAccountGroup[1].options[0].key;
+          if (ollamaOpts.length > 0) {
+            return ollamaOpts[0].key;
+          }
+          if (openaiOpts.length > 0) {
+            return openaiOpts[0].key;
+          }
+          return null;
+        };
+
+        const stored = this.getStoredCaseAiModelId();
+        const storedOpt = stored ? allOpts.find(o => this.caseAiModelKeyEquals(o.key, stored)) : null;
+
+        if (storedOpt) {
+          this.prompt.modelId = storedOpt.key;
+        } else {
+          this.prompt.modelId = pickServerDefaultModelId();
         }
-        // 如果选项为空或者不在账号列表里存在，就赋值
-        if(!this.prompt.modelId || !this.aiAccountGroup[1].options[0].find(a=>a.key===this.prompt.modelId)) {
-          this.prompt.modelId = this.aiAccountGroup[1].options[0]?this.aiAccountGroup[1].options[0].key:this.aiAccountGroup[0].options[0].key;
-        }
+
         this.aiAccountLoaded = true;
-      })
+      });
     },
     /** 设置要产出的默认行数 */
     setDefaultRowCount(row) {
@@ -535,7 +590,9 @@ export default {
         this.$message.error(this.$i18n.t('case.model-content-not-empty').toString())
         return;
       }
-      this.prompt.serviceType = this.prompt.modelId==='ollama'?'ollama':'openai';
+      const useOllama = this.aiAccountGroup[0].options.some(o => o.key === this.prompt.modelId);
+      this.prompt.serviceType = useOllama ? 'ollama' : 'openai';
+      this.prompt.projectId = this.projectId;
 
       let startSeconds = new Date().getTime();
       this.loading = true;

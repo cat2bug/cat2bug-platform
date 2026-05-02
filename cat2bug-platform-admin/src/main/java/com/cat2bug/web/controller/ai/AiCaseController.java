@@ -5,6 +5,7 @@ import com.cat2bug.ai.service.IAiService;
 import com.cat2bug.ai.utils.PromptUtils;
 import com.cat2bug.common.core.controller.BaseController;
 import com.cat2bug.common.core.domain.AjaxResult;
+import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.common.core.domain.entity.SysDefect;
 import com.cat2bug.system.domain.SysAiModuleConfig;
 import com.cat2bug.system.domain.SysCaseStep;
@@ -53,7 +54,10 @@ public class AiCaseController extends BaseController {
                 break;
             case SERVICE_TYPE_OLLAMA:
                 SysAiModuleConfig sysAiModuleConfig = sysAiModuleConfigService.selectSysAiModuleConfigByProjectId(prompt.getProjectId());
-                cases = aiService.generate(sysAiModuleConfig.getBusinessModule(), json,false, prompt.getContext(), AiCaseList.class);
+                String ollamaModule = StringUtils.isNotBlank(prompt.getModelId())
+                        ? prompt.getModelId()
+                        : (sysAiModuleConfig != null ? sysAiModuleConfig.getBusinessModule() : null);
+                cases = aiService.generate(ollamaModule, json,false, prompt.getContext(), AiCaseList.class);
         }
         return success(cases);
     }
