@@ -1,7 +1,9 @@
 package com.cat2bug.web.controller.system;
 
 import com.cat2bug.common.annotation.Log;
+import com.cat2bug.common.core.controller.BaseController;
 import com.cat2bug.common.core.domain.AjaxResult;
+import com.cat2bug.common.core.page.TableDataInfo;
 import com.cat2bug.common.core.domain.type.SysDefectStateEnum;
 import com.cat2bug.common.enums.BusinessType;
 import com.cat2bug.common.utils.MessageUtils;
@@ -38,7 +40,7 @@ import static com.cat2bug.common.utils.poi.ExcelUtil.applyLineChartsColors;
  */
 @RestController
 @RequestMapping("/system/dashboard")
-public class SysDashboardController {
+public class SysDashboardController extends BaseController {
     private final static String MONTH_TYPE = "month";
     @Autowired
     ISysDashboardService sysDashboardService;
@@ -326,7 +328,22 @@ public class SysDashboardController {
     }
 
     @PreAuthorize("@ss.hasPermi('system:dashboard:query')")
+    @GetMapping("/{projectId}/plans")
+    public TableDataInfo planList(@PathVariable("projectId") Long projectId, SysPlan sysPlan) {
+        sysPlan.setProjectId(projectId);
+        startPage();
+        List<SysPlan> list = sysPlanService.selectSysPlanList(sysPlan);
+        return getDataTable(list);
+    }
+
+    @PreAuthorize("@ss.hasPermi('system:dashboard:query')")
     @GetMapping("/{projectId}/plan/{planId}")
+    public AjaxResult planInfo(@PathVariable("projectId") Long projectId, @PathVariable("planId") String planId) {
+        return AjaxResult.success(sysPlanService.selectSysPlanByPlanId(planId));
+    }
+
+    @PreAuthorize("@ss.hasPermi('system:dashboard:query')")
+    @GetMapping("/{projectId}/plan/{planId}/burndown")
     public AjaxResult planBurndown(@PathVariable("projectId") Long projectId, @PathVariable("planId") String planId) {
         SysPlan sysPlan = sysPlanService.selectSysPlanByPlanId(planId);
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");

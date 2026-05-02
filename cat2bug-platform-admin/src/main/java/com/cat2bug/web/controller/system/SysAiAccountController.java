@@ -31,7 +31,7 @@ public class SysAiAccountController extends BaseController
     /**
      * 查询OpenAI账号列表
      */
-    @PreAuthorize("@ss.hasPermi('ai:account:list')")
+    @PreAuthorize("@ss.hasPermi('ai:account:list') || @ss.hasPermi('system:case:add')")
     @GetMapping("/list")
     public TableDataInfo list(AiAccount aiAccount)
     {

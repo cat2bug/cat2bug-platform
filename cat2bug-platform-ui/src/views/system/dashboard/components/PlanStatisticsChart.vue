@@ -76,7 +76,7 @@ import DefectSeverityRate from "@/components/Plan/statistics/DefectSeverityRate"
 import DefectRestartRate from "@/components/Plan/statistics/DefectRestartRate";
 import DefectEscapeRate from "@/components/Plan/statistics/DefectEscapeRate";
 import DefectRepairAvgHour from "@/components/Plan/statistics/DefectRepairAvgHour";
-import {getPlan, listPlan} from "@/api/system/plan";
+import {dashboardPlanInfo, dashboardPlanList} from "@/api/system/dashboard";
 import Cat2BugLevel from "@/components/Cat2BugLevel";
 import Step from "@/views/system/case/components/step";
 import TreePlanItemModule from "@/views/system/plan/TreePlanItemModule";
@@ -140,7 +140,7 @@ export default {
     /** 获取计划信息 */
     getPlanInfo(planId) {
       this.loading = true;
-      getPlan(planId).then(response => {
+      dashboardPlanInfo(this.projectId, planId).then(response => {
         this.loading = false;
         this.selectPlan = response.data;
       }).catch(e=>this.loading = false);
@@ -155,7 +155,7 @@ export default {
         pageSize: 99,
         projectId: this.projectId
       }
-      listPlan(query).then(res=>{
+      dashboardPlanList(this.projectId, query).then(res=>{
         this.planList = res.rows;
         if(this.planList && this.planList.length>0) {
           this.query.planId = this.planList[0].planId;

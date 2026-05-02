@@ -61,7 +61,22 @@ export function actionList(projectId, query) {
 
 export function planBurndown(projectId, planId) {
   return request({
-    url: '/system/dashboard/'+projectId+'/plan/'+planId,
+    url: '/system/dashboard/' + projectId + '/plan/' + planId + '/burndown',
+    method: 'get',
+  })
+}
+
+export function dashboardPlanList(projectId, query) {
+  return request({
+    url: '/system/dashboard/' + projectId + '/plans',
+    method: 'get',
+    params: query
+  })
+}
+
+export function dashboardPlanInfo(projectId, planId) {
+  return request({
+    url: '/system/dashboard/' + projectId + '/plan/' + planId,
     method: 'get',
   })
 }

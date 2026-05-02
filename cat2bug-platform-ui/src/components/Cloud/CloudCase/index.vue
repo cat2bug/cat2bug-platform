@@ -323,6 +323,8 @@ export default {
       },
       casePromptList: [],
       addCasePromptVisible: false,
+      /** 是否已在首次打开抽屉时拉取过 AI 账号列表，避免反复请求 */
+      aiAccountLoaded: false,
       aiAccountGroup: [{
         label: this.$i18n.t('case.local-ai-service'),
         key: 'local',
@@ -396,9 +398,6 @@ export default {
       return this.caseList.filter((c,index)=>index>=(this.pageIndex-1)*this.pageSize && index<this.pageIndex*this.pageSize);
     },
   },
-  created() {
-    this.getOpenAIAccountList();
-  },
   methods: {
     /** 获取openid的账号列表 */
     getOpenAIAccountList() {
@@ -421,6 +420,7 @@ export default {
         if(!this.prompt.modelId || !this.aiAccountGroup[1].options[0].find(a=>a.key===this.prompt.modelId)) {
           this.prompt.modelId = this.aiAccountGroup[1].options[0]?this.aiAccountGroup[1].options[0].key:this.aiAccountGroup[0].options[0].key;
         }
+        this.aiAccountLoaded = true;
       })
     },
     /** 设置要产出的默认行数 */
@@ -447,6 +447,9 @@ export default {
     },
     open() {
       this.visible = true;
+      if (!this.aiAccountLoaded) {
+        this.getOpenAIAccountList();
+      }
       this.$nextTick(()=>{
         const container = document.querySelector('.el-drawer__body');
         container.addEventListener('scroll',this.bodyScrollHandle);

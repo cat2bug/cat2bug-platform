@@ -2,7 +2,7 @@
   <div class="app-container case-body">
     <project-label />
     <div class="case-tools">
-      <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
+      <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="0px">
         <el-form-item prop="caseNum">
           <el-input
             v-model="queryParams.caseNum"
@@ -28,76 +28,68 @@
         </el-form-item>
       </el-form>
 
-      <el-row :gutter="10" class="mb8">
-        <el-col :span="1.5">
-          <el-popover
-            placement="top"
-            trigger="click">
-            <div class="row">
-              <i class="el-icon-s-fold"></i>
-              <h4>{{$t('defect.display-field')}}</h4>
-            </div>
-            <el-divider class="case-field-divider"></el-divider>
-            <el-checkbox-group v-model="checkedFieldList" class="col" @change="checkedFieldListChange">
-              <el-checkbox v-for="field in fieldList" :label="field" :key="field">{{$t(field)}}</el-checkbox>
-            </el-checkbox-group>
-            <el-button
-              style="padding: 9px;"
-              plain
-              slot="reference"
-              icon="el-icon-s-fold"
-              size="small"
-            ></el-button>
-          </el-popover>
-        </el-col>
-        <el-col :span="1.5">
+      <div class="case-right-tools mb8">
+        <el-popover
+          placement="top"
+          trigger="click">
+          <div class="row">
+            <i class="el-icon-s-fold"></i>
+            <h4>{{$t('defect.display-field')}}</h4>
+          </div>
+          <el-divider class="case-field-divider"></el-divider>
+          <el-checkbox-group v-model="checkedFieldList" class="col" @change="checkedFieldListChange">
+            <el-checkbox v-for="field in fieldList" :label="field" :key="field">{{$t(field)}}</el-checkbox>
+          </el-checkbox-group>
           <el-button
-            type="danger"
+            style="padding: 9px;"
             plain
-            icon="el-icon-delete"
+            slot="reference"
+            icon="el-icon-s-fold"
             size="small"
-            :disabled="multiple"
-            @click="handleDelete"
-            v-hasPermi="['system:case:remove']"
-          >{{ $t('batch-delete') }}</el-button>
-        </el-col>
-        <el-col :span="1.5">
-          <el-dropdown class="case-add-dropdown"
-                       split-button
-                       size="small"
-                       type="primary"
-                       v-hasPermi="['system:case:add']"
-                       @click="handleAdd">
-            <div class="title">
-              <i class="el-icon-plus" />
-              <span>{{$i18n.t('case.create')}}</span>
-            </div>
-            <el-dropdown-menu slot="dropdown" class="case-add-dropdown-menu">
-              <el-dropdown-item @click.native="handleAdd"><i class="el-icon-plus" />{{$i18n.t('case.create')}}</el-dropdown-item>
-              <el-divider class="case-add-dropdown-divider"></el-divider>
-              <el-dropdown-item @click.native="handleImport"><i class="el-icon-upload2" />{{ $t('case.import') }}</el-dropdown-item>
-              <el-dropdown-item @click.native="handleExport"><i class="el-icon-download" />{{ $t('case.export') }}</el-dropdown-item>
-            </el-dropdown-menu>
-          </el-dropdown>
-        </el-col>
-        <el-col :span="1.5">
-          <el-dropdown class="case-ai-add-dropdown"
-                       split-button
-                       size="small"
-                       type="success"
-                       v-hasPermi="['system:case:add']"
-                       @click="handleCloudCaseAdd">
-            <div class="title">
-              <svg-icon icon-class="robot" />
-              <span>{{$i18n.t('case.ai-create')}}</span>
-            </div>
-            <el-dropdown-menu slot="dropdown" class="case-add-dropdown-menu">
-              <el-dropdown-item @click.native="handleCloudCaseAdd"><svg-icon icon-class="robot" />{{ $t('case.ai-create') }}</el-dropdown-item>
-              <!--              <el-dropdown-item @click.native="handleCloudCaseAdd2"><svg-icon icon-class="robot" />{{ $t('case.ai-create') }}2</el-dropdown-item>-->
-            </el-dropdown-menu>
-          </el-dropdown>
-        </el-col>
-      </el-row>
+          ></el-button>
+        </el-popover>
+        <el-button
+          type="danger"
+          plain
+          icon="el-icon-delete"
+          size="small"
+          :disabled="multiple"
+          @click="handleDelete"
+          v-hasPermi="['system:case:remove']"
+        >{{ $t('batch-delete') }}</el-button>
+        <el-dropdown class="case-add-dropdown"
+                     split-button
+                     size="small"
+                     type="primary"
+                     v-hasPermi="['system:case:add']"
+                     @click="handleAdd">
+          <div class="title">
+            <i class="el-icon-plus" />
+            <span>{{$i18n.t('case.create')}}</span>
+          </div>
+          <el-dropdown-menu slot="dropdown" class="case-add-dropdown-menu">
+            <el-dropdown-item @click.native="handleAdd"><i class="el-icon-plus" />{{$i18n.t('case.create')}}</el-dropdown-item>
+            <el-divider class="case-add-dropdown-divider"></el-divider>
+            <el-dropdown-item @click.native="handleImport"><i class="el-icon-upload2" />{{ $t('case.import') }}</el-dropdown-item>
+            <el-dropdown-item @click.native="handleExport"><i class="el-icon-download" />{{ $t('case.export') }}</el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
+        <el-dropdown class="case-ai-add-dropdown"
+                     split-button
+                     size="small"
+                     type="success"
+                     v-hasPermi="['system:case:add']"
+                     @click="handleCloudCaseAdd">
+          <div class="title">
+            <svg-icon icon-class="robot" />
+            <span>{{$i18n.t('case.ai-create')}}</span>
+          </div>
+          <el-dropdown-menu slot="dropdown" class="case-add-dropdown-menu">
+            <el-dropdown-item @click.native="handleCloudCaseAdd"><svg-icon icon-class="robot" />{{ $t('case.ai-create') }}</el-dropdown-item>
+            <!--              <el-dropdown-item @click.native="handleCloudCaseAdd2"><svg-icon icon-class="robot" />{{ $t('case.ai-create') }}2</el-dropdown-item>-->
+          </el-dropdown-menu>
+        </el-dropdown>
+      </div>
     </div>
     <!--    模块树和用例列表区域-->
     <multipane layout="vertical" ref="multiPane" class="custom-resizer" @paneResizeStop="dragStopHandle">
@@ -707,6 +699,7 @@ export default {
   overflow:hidden;
 }
 .case-tools {
+  width: 100%;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -889,5 +882,13 @@ export default {
     min-height: 100%;
     justify-content: center;
   }
+}
+.case-right-tools {
+  display: inline-flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 </style>
