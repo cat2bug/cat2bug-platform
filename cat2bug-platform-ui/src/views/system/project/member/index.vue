@@ -33,7 +33,7 @@
         </el-row>
 
         <el-table v-loading="loading" :data="memberList">
-          <el-table-column :label="$t('member.name')" align="left" key="nickName" prop="nickName" :show-overflow-tooltip="true">
+          <el-table-column :label="$t('member.name')" align="left" key="nickName" prop="nickName" min-width="200" :show-overflow-tooltip="true">
             <template slot-scope="scope">
               <member-nameplate :member="scope.row"></member-nameplate>
             </template>
@@ -41,7 +41,6 @@
           <el-table-column
             :label="$t('role')"
             align="left"
-            width="280"
           >
             <template slot-scope="scope" v-if="scope.row.userId !== 1">
               <el-select class="member-operate"
