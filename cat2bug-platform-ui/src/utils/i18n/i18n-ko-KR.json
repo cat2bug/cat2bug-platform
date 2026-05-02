@@ -322,7 +322,7 @@
   "project.api.create-key": "키 새로 만들기",
   "project.ai-manager": "AI 관리",
   "project.ai-manager-describe": "프로젝트에서 대형 모델 기능을 사용하기 위한 관련 설정 관리",
-  "project.ai-model-manager": "AI 대형 모델",
+  "project.ai-model-manager": "Ollama 모델",
   "project.ai-account-manager": "OpenAI 계정 관리",
   "project.ai.create": "OpenAI 계정 생성",
   "project.ai.account-name": "계정 이름",

@@ -534,7 +534,7 @@ export default {
                       icon: 'robot',
                       children: [
                         {
-                          label: 'AI大模型',
+                          label: 'Ollama模型',
                           path: 'user-guide/current-project/project-setting/project-ai/ai-model.md',
                           icon: 'robot'
                         },

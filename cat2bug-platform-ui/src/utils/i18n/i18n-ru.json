@@ -323,7 +323,7 @@
   "project.api.create-key":"Создать ключ",
   "project.ai-manager":"Управление ИИ",
   "project.ai-manager-describe":"Управление конфигурацией функций больших моделей в проекте",
-  "project.ai-model-manager":"Большие модели ИИ",
+  "project.ai-model-manager":"Модель Ollama",
   "project.ai-account-manager":"Управление учетными записями OpenAI",
   "project.ai.create":"Создать учетную запись OpenAI",
   "project.ai.account-name":"Название учетной записи",

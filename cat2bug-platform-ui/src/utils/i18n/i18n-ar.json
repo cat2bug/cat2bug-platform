@@ -322,7 +322,7 @@
   "project.api.create-key":"إنشاء مفتاح جديد",
   "project.ai-manager":"إدارة الذكاء الاصطناعي",
   "project.ai-manager-describe":"إدارة الإعدادات المتعلقة باستخدام وظائف النماذج الكبيرة في المشروع",
-  "project.ai-model-manager":"نماذج الذكاء الاصطناعي الكبيرة",
+  "project.ai-model-manager":"نموذج Ollama",
   "project.ai-account-manager":"إدارة حسابات OpenAI",
   "project.ai.create":"إنشاء حساب OpenAI",
   "project.ai.account-name":"اسم الحساب",
