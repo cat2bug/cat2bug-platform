@@ -223,7 +223,7 @@ public class SysDefectController extends BaseController
     @PutMapping
     public AjaxResult edit(@RequestBody SysDefect sysDefect)
     {
-        return toAjax(sysDefectService.updateSysDefect(sysDefect));
+        return toAjax(sysDefectService.editSysDefect(sysDefect));
     }
 
     /**

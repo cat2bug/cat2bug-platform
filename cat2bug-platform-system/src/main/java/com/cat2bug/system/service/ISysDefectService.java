@@ -101,6 +101,15 @@ public interface ISysDefectService
     public int updateSysDefect(SysDefect sysDefect);
 
     /**
+     * 业务编辑缺陷：在更新基础上对比新旧值，写入一条 UPDATE 类型的缺陷日志，并发送通知。
+     * 仅供「编辑保存」入口使用，避免与状态变更动作（assign/reject/repair/...）的日志重复。
+     *
+     * @param sysDefect 用户提交的缺陷数据
+     * @return 受影响的行数
+     */
+    public int editSysDefect(SysDefect sysDefect);
+
+    /**
      * 批量删除缺陷
      * 
      * @param defectIds 需要删除的缺陷主键集合

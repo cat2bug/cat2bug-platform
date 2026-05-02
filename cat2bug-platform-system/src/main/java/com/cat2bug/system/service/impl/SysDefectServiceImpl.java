@@ -12,10 +12,13 @@ import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.im.domain.IMUserConfig;
 import com.cat2bug.im.service.IIMUserConfigService;
 import com.cat2bug.im.service.IMService;
+import com.alibaba.fastjson2.JSON;
 import com.cat2bug.system.domain.*;
 import com.cat2bug.system.domain.vo.EnumVo;
 import com.cat2bug.system.mapper.*;
 import com.cat2bug.system.service.ISysDefectService;
+import com.cat2bug.system.util.DefectChange;
+import com.cat2bug.system.util.DefectChangeUtil;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import org.apache.logging.log4j.LogManager;
@@ -54,6 +57,10 @@ public class SysDefectServiceImpl implements ISysDefectService
     private SysModuleMapper sysModuleMapper;
     @Autowired
     private SysUserProjectMapper sysUserProjectMapper;
+    @Autowired
+    private SysUserMapper sysUserMapper;
+    @Autowired
+    private SysCaseMapper sysCaseMapper;
     /**
      * 指派
      * @param sysDefectLog 缺陷日志
@@ -321,6 +328,45 @@ public class SysDefectServiceImpl implements ISysDefectService
         sysDefect.setUpdateBy(String.valueOf(memberId));
         int ret = this.sysDefectMapper.updateSysDefect(sysDefect);
         Preconditions.checkState(ret>0, MessageUtils.message("defect.update_fail"));
+        return ret;
+    }
+
+    /**
+     * 业务编辑入口：先抓快照、再走 updateSysDefect、有差异时写一条 UPDATE 日志并发送通知。
+     * 只在 Controller `edit` 入口调用，状态动作走各自的 assign/repair/... 不会经过这里。
+     */
+    @Override
+    @Transactional
+    public int editSysDefect(SysDefect sysDefect) {
+        Preconditions.checkNotNull(sysDefect, MessageUtils.message("defect.not_found"));
+        Preconditions.checkNotNull(sysDefect.getDefectId(), MessageUtils.message("defect.defect_id_cannot_empty"));
+
+        Long memberId = SecurityUtils.getUserId();
+        SysDefect oldDefect = this.sysDefectMapper.selectSysDefectByDefectId(
+                sysDefect.getDefectId(), memberId, DateUtils.getNowDate());
+        Preconditions.checkNotNull(oldDefect, MessageUtils.message("defect.not_found"));
+
+        int ret = this.updateSysDefect(sysDefect);
+
+        try {
+            List<DefectChange> changes = DefectChangeUtil.diff(
+                    oldDefect, sysDefect, sysUserMapper, sysModuleMapper, sysCaseMapper);
+            if (!changes.isEmpty()) {
+                SysDefectLog logEntry = new SysDefectLog();
+                logEntry.setDefectId(sysDefect.getDefectId());
+                logEntry.setDefectLogType(SysDefectLogStateEnum.UPDATE);
+                logEntry.setReceiveBy(sysDefect.getHandleBy() != null
+                        ? sysDefect.getHandleBy() : oldDefect.getHandleBy());
+                logEntry.setDefectLogDescribe(JSON.toJSONString(changes));
+                this.inertLog(logEntry);
+
+                this.sendDefectNotice(
+                        oldDefect.getProjectId(), sysDefect.getSrcHost(), sysDefect.getDefectId());
+            }
+        } catch (Exception e) {
+            log.error("write defect update log failed, defectId=" + sysDefect.getDefectId(), e);
+        }
+
         return ret;
     }
 

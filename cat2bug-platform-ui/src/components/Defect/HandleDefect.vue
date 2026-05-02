@@ -4,7 +4,8 @@
     :visible.sync="visible"
     direction="rtl"
     :append-to-body="appendToBody"
-    :before-close="closeDefectDrawer">
+    :before-close="closeDefectDrawer"
+    @opened="loadDefectLogs">
     <template slot="title">
       <div class="defect-edit-header">
         <div class="defect-edit-title">
@@ -205,6 +206,13 @@ export default {
   destroyed() {
     this.$floatMenu.windowsDestory();
   },
+  watch: {
+    defectId(id) {
+      if (id != null && this.visible) {
+        this.$nextTick(() => this.loadDefectLogs());
+      }
+    },
+  },
   methods:{
     /** 初始化浮动菜单 */
     initFloatMenu() {
@@ -246,16 +254,27 @@ export default {
         this.defectCase = {};
       }
     },
+    /** 刷新顶部与折叠内的缺陷日志（抽屉动画结束后也会触发一次） */
+    loadDefectLogs() {
+      if (!this.defectId || !this.visible) {
+        return;
+      }
+      const id = this.defectId;
+      const first = this.$refs.defectLogFirst;
+      const list = this.$refs.defectLog;
+      if (first && typeof first.open === 'function') {
+        first.open(id);
+      }
+      if (list && typeof list.open === 'function') {
+        list.open(id);
+      }
+    },
     // 打开操作
     open(defectId) {
       this.visible = true;
       this.reset();
       this.defectId = defectId;
       this.getDefectInfo(defectId);
-      this.$nextTick(()=>{
-        this.$refs.defectLogFirst.open(defectId);
-        this.$refs.defectLog.open(defectId);
-      });
       this.initFloatMenu();
     },
     // 取消按钮
@@ -323,9 +342,9 @@ export default {
       console.log(members, this.form.handleBy);
     },
     logHandle(log) {
-      this.open(this.defectId);
-      this.$emit('change', this.defect)
-      // this.$refs.defectLog.addLog(log);
+      this.getDefectInfo(this.defectId);
+      this.$nextTick(() => this.loadDefectLogs());
+      this.$emit('change', this.defect);
     },
     deleteHandle() {
       this.$emit('delete',this.defect);

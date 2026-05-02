@@ -1,5 +1,6 @@
 package com.cat2bug.api.service.impl;
 
+import com.alibaba.fastjson2.JSON;
 import com.cat2bug.api.domain.*;
 import com.cat2bug.api.domain.type.ApiDefectLogStateEnum;
 import com.cat2bug.api.domain.type.ApiDefectStateEnum;
@@ -17,6 +18,8 @@ import com.cat2bug.common.utils.MessageUtils;
 import com.cat2bug.common.utils.SecurityUtils;
 import com.cat2bug.common.utils.StringUtils;
 import com.google.common.base.Preconditions;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,8 +27,10 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -35,6 +40,8 @@ import java.util.stream.Collectors;
  */
 @Service
 public class ApiDefectServiceImpl implements IApiDefectService {
+
+    private final static Logger log = LogManager.getLogger(ApiDefectServiceImpl.class);
 
     /** 缺陷描述最大长度 */
     private static final long DEFECT_DESCRIBE_MAX_LEN = 65536;
@@ -171,13 +178,14 @@ public class ApiDefectServiceImpl implements IApiDefectService {
     }
 
     @Override
+    @Transactional
     public ApiDefect updateSysDefect(ApiDefectRequest apiDefect) {
         Preconditions.checkNotNull(apiDefect.getDefectNum(),MessageUtils.message("defect.num_not_empty"));
         Long projectId = this.getProjectId();
         ApiDefect oldDefect = this.apiDefectMapper.selectSysDefectByDefectNumber(
                 projectId, apiDefect.getDefectNum()
         );
-        Preconditions.checkNotNull(apiDefect, MessageUtils.message("defect.not_found"));
+        Preconditions.checkNotNull(oldDefect, MessageUtils.message("defect.not_found"));
 
         apiDefect.setDefectId(oldDefect.getDefectId());
         apiDefect.setUpdateTime(DateUtils.getNowDate());
@@ -185,12 +193,90 @@ public class ApiDefectServiceImpl implements IApiDefectService {
         apiDefect.setProjectId(projectId);
         int ret = this.apiDefectMapper.updateApiDefect(apiDefect);
         if(ret>0){
+            try {
+                List<Map<String,Object>> changes = buildApiDefectChanges(oldDefect, apiDefect);
+                if(!changes.isEmpty()) {
+                    this.inertLog(oldDefect.getDefectId(), apiDefect.getHandleBy(),
+                            JSON.toJSONString(changes), ApiDefectLogStateEnum.UPDATE);
+                }
+            } catch (Exception e) {
+                log.error("write api defect update log failed, defectNum=" + apiDefect.getDefectNum(), e);
+            }
             return this.apiDefectMapper.selectSysDefectByDefectNumber(
                     projectId, apiDefect.getDefectNum()
             );
         } else {
             return null;
         }
+    }
+
+    /**
+     * 比较 API 模块的旧/新缺陷，生成与 sys 模块 DefectChange JSON 结构一致的变更列表。
+     * 仅覆盖 ApiDefect 暴露的字段，无对应概念的字段（plan-time/case 等）不做对比。
+     */
+    private List<Map<String,Object>> buildApiDefectChanges(ApiDefect oldDefect, ApiDefectRequest newDefect) {
+        List<Map<String,Object>> changes = new ArrayList<>();
+
+        addTextChange(changes, "defectName", oldDefect.getDefectName(), newDefect.getDefectName());
+        addEnumChange(changes, "defectType",
+                oldDefect.getDefectType() == null ? null : oldDefect.getDefectType().name(),
+                newDefect.getDefectType() == null ? null : newDefect.getDefectType().name());
+        addEnumChange(changes, "defectLevel",
+                oldDefect.getDefectLevel(),
+                newDefect.getDefectLevel());
+        addTextChange(changes, "moduleVersion", oldDefect.getVersion(), newDefect.getVersion());
+
+        // ApiDefect.deliverableName -> 与 sys 模块的 moduleId 在前端按 module 类型渲染
+        if (!Objects.equals(nullSafe(oldDefect.getDeliverableName()), nullSafe(newDefect.getDeliverableName()))) {
+            Map<String,Object> c = baseChange("moduleId", "module",
+                    oldDefect.getDeliverableId(), newDefect.getDeliverableId());
+            c.put("oldDisplay", oldDefect.getDeliverableName());
+            c.put("newDisplay", newDefect.getDeliverableName());
+            changes.add(c);
+        }
+
+        // 处理人对比：旧值取 handlerList 的账号集合，新值取 handlerAccountList
+        List<String> oldHandlers = oldDefect.getHandlerList() == null ? new ArrayList<>()
+                : oldDefect.getHandlerList().stream()
+                    .map(ApiMemberBaseInfo::getMemberName).filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+        List<String> newHandlers = newDefect.getHandlerAccountList() == null ? new ArrayList<>()
+                : newDefect.getHandlerAccountList();
+        if (!oldHandlers.equals(newHandlers)) {
+            Map<String,Object> c = baseChange("handleBy", "users", oldHandlers, newHandlers);
+            c.put("oldDisplay", String.join(",", oldHandlers));
+            c.put("newDisplay", String.join(",", newHandlers));
+            changes.add(c);
+        }
+
+        addTextChange(changes, "defectDescribe", oldDefect.getDefectDescribe(), newDefect.getDefectDescribe());
+        return changes;
+    }
+
+    private static String nullSafe(String s) { return s == null ? "" : s; }
+
+    private static void addTextChange(List<Map<String,Object>> changes, String field, String oldValue, String newValue) {
+        if (!nullSafe(oldValue).equals(nullSafe(newValue))) {
+            changes.add(baseChange(field, "text", oldValue, newValue));
+        }
+    }
+
+    private static void addEnumChange(List<Map<String,Object>> changes, String field, String oldValue, String newValue) {
+        if (!nullSafe(oldValue).equals(nullSafe(newValue))) {
+            Map<String,Object> c = baseChange(field, "enum", oldValue, newValue);
+            c.put("oldDisplay", oldValue);
+            c.put("newDisplay", newValue);
+            changes.add(c);
+        }
+    }
+
+    private static Map<String,Object> baseChange(String field, String type, Object oldValue, Object newValue) {
+        Map<String,Object> c = new HashMap<>();
+        c.put("field", field);
+        c.put("type", type);
+        c.put("oldValue", oldValue);
+        c.put("newValue", newValue);
+        return c;
     }
 
     /**

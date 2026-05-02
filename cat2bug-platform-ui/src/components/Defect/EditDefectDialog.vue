@@ -3,7 +3,8 @@
     :append-to-body="true"
     width="75%"
     :title="title"
-    :visible.sync="visible">
+    :visible.sync="visible"
+    @opened="onDialogOpened">
     <div class="app-container defect-edit-body">
       <el-form ref="form" :model="form" :rules="rules" label-width="100px">
         <el-row>
@@ -86,6 +87,11 @@
           <file-upload v-model="form.annexUrls" :limit="9" :file-type="[]"/>
         </el-form-item>
       </el-form>
+      <el-collapse v-model="logPanelNames" class="edit-defect-log-panel">
+        <el-collapse-item :title="$t('log')" name="log">
+          <list-defect-log ref="dialogDefectLog" :pageSize="15" />
+        </el-collapse-item>
+      </el-collapse>
       <div slot="footer" class="dialog-footer">
         <el-button @click="cancel">{{  $t('cancel') }}</el-button>
         <el-button type="primary" @click="submitForm">{{ $t('save') }}</el-button>
@@ -137,7 +143,8 @@ export default {
         defectLevel: [
           { required: true, message: this.$i18n.t('defect.defect-level-cannot-empty'), trigger: "input" }
         ],
-      }
+      },
+      logPanelNames: ['log'],
     }
   },
   props: {
@@ -164,6 +171,11 @@ export default {
     }
   },
   methods:{
+    onDialogOpened() {
+      if (this.defectId != null && this.$refs.dialogDefectLog) {
+        this.$refs.dialogDefectLog.open(this.defectId);
+      }
+    },
     /** 获取缺陷配置 */
     getDefectConfig() {
       configDefect().then(res=>{
@@ -261,6 +273,10 @@ export default {
 <style lang="scss" scoped>
 .dialog-footer {
   text-align: right;
+}
+
+.edit-defect-log-panel {
+  margin-top: 12px;
 }
 
 .selectTime .el-date-editor--datetimerange.el-input__inner{

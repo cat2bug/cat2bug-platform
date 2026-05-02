@@ -2,7 +2,7 @@
   <div>
     <el-row v-for="(log,logIndex) in logList" :key="logIndex+'-'+log.defectLogId">
       <el-col class="list-defect-log-row" :span="24">
-        <component :is="log.defectLogType" :log="log"></component>
+        <component :is="logComponentType(log)" :log="log"></component>
         <div>
           <el-button v-if="commentPermi" icon="el-icon-chat-line-round" size="mini" type="text" @click="showCommentInputHandle(log,logIndex)">{{$i18n.t('comment')}}</el-button>
           <span class="time">{{ parseTime(log.createTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
@@ -32,6 +32,12 @@ import CommentInput from "@/components/Comment/CommentInput";
 import CommentView from "@/components/Comment/CommentView";
 import {addComment} from "@/api/system/comment";
 import {checkPermi} from "@/utils/permission";
+
+/** 与后端 SysDefectLogStateEnum.ordinal() 一致，兼容接口返回枚举序号而非名称的情况 */
+const DEFECT_LOG_TYPE_ORDER = [
+  'CREATE', 'ASSIGN', 'REJECT', 'PASS', 'REJECTED', 'REPAIR', 'CLOSED', 'OPEN', 'UPDATE', 'IMPORT'
+];
+
 export default {
   name: "ListDefectLog",
   components:{ CREATE,IMPORT,ASSIGN,REJECTED,REPAIR,PASS,CLOSED,OPEN,Cat2BugAvatar, CommentInput, CommentView,UPDATE },
@@ -80,6 +86,22 @@ export default {
     }
   },
   methods: {
+    logComponentType(log) {
+      const raw = log && log.defectLogType;
+      if (raw === null || raw === undefined) {
+        return 'CREATE';
+      }
+      if (typeof raw === 'number' && raw >= 0 && raw < DEFECT_LOG_TYPE_ORDER.length) {
+        return DEFECT_LOG_TYPE_ORDER[raw];
+      }
+      if (typeof raw === 'string') {
+        return raw;
+      }
+      if (typeof raw === 'object' && raw.name) {
+        return raw.name;
+      }
+      return 'CREATE';
+    },
     open(defectId) {
       this.defectId = defectId;
       this.getLog();
