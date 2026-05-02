@@ -40,6 +40,19 @@
       </el-form>
       <el-row :gutter="10" class="mb8">
         <el-col :span="1.5">
+          <el-popover placement="top" trigger="click">
+            <div class="report-picker-head row">
+              <i class="el-icon-s-fold"></i>
+              <h4>{{ $t('display-field') }}</h4>
+            </div>
+            <el-divider class="report-picker-divider"></el-divider>
+            <el-checkbox-group v-model="columnPickerCheckedKeys" class="report-column-picker" @change="onReportColumnPickerChange">
+              <el-checkbox v-for="c in reportColumnPickerOptions" :key="c.key" :label="c.key">{{ $t(c.key) }}</el-checkbox>
+            </el-checkbox-group>
+            <el-button style="padding: 9px;" plain slot="reference" icon="el-icon-s-fold" size="small"></el-button>
+          </el-popover>
+        </el-col>
+        <el-col :span="1.5">
           <el-button
             type="danger"
             plain
@@ -59,43 +72,46 @@
         </el-col>
       </el-row>
     </div>
-    <el-table v-loading="loading" :data="reportList" @selection-change="handleSelectionChange" @row-click="rowClickHandle">
-      <el-table-column type="selection" width="50" align="center" />
-      <el-table-column :label="$t('report.type')" align="center" prop="reportTime" width="120">
-        <template slot-scope="scope">
-          <report-type-flag :report="scope.row" />
-        </template>
-      </el-table-column>
-      <el-table-column :label="$t('report.title')" align="start" prop="reportTitle">
-        <template slot-scope="scope">
-          <div class="table-report-title">
-            <focus-member-list
-              v-model="scope.row.focusList"
-              module-name="report"
-              :data-id="scope.row.reportId" />
-            <span>{{ scope.row.reportTitle }}</span>
-          </div>
-        </template>
-      </el-table-column>
-      <el-table-column :label="$t('report.time')" align="center" prop="reportTime" width="180">
-        <template slot-scope="scope">
-          <span>{{ parseTime(scope.row.reportTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column :label="$t('report.source')" align="center" prop="reportSource"  width="200"/>
-      <el-table-column :label="$t('pusher')" align="center" prop="createBy"  width="150">
-        <template slot-scope="scope">
+    <cat2-bug-table
+      ref="cat2BugTable"
+      cache-key="report-table"
+      :persist-sort="false"
+      :columns="reportTableColumnDefaults"
+      :data="reportList"
+      :loading="loading"
+      @selection-change="handleSelectionChange"
+      @row-click="rowClickHandle"
+      @columns-change="onReportTableColumnsChange"
+    >
+      <template #prepend>
+        <el-table-column type="selection" width="50" align="center" />
+      </template>
+      <template #columns="{ scope, column }">
+        <report-type-flag v-if="column.prop==='reportKey'" :report="scope.row" />
+        <div v-else-if="column.prop==='reportTitle'" class="table-report-title">
+          <focus-member-list
+            v-model="scope.row.focusList"
+            module-name="report"
+            :data-id="scope.row.reportId" />
+          <span>{{ scope.row.reportTitle }}</span>
+        </div>
+        <span v-else-if="column.prop==='reportTime'">{{ parseTime(scope.row.reportTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
+        <span v-else-if="column.prop==='reportSource'">{{ scope.row.reportSource }}</span>
+        <template v-else-if="column.prop==='createBy'">
           <el-tooltip v-if="scope.row.createBy" class="item" effect="dark" :content="scope.row.createBy" placement="top">
             <cat2-bug-avatar :member="member(scope.row)" />
           </el-tooltip>
         </template>
-      </el-table-column>
-      <el-table-column :label="$t('operate')" align="start" class-name="small-padding fixed-width" width="90">
-        <template slot-scope="scope">
-          <report-tools :report="scope.row" :is-text="true" :is-show-icon="true" @delete="getList" />
-        </template>
-      </el-table-column>
-    </el-table>
+        <span v-else>{{ scope.row[column.prop] }}</span>
+      </template>
+      <template #append>
+        <el-table-column :label="$t('operate')" align="center" class-name="small-padding fixed-width no-drag" width="90" fixed="right">
+          <template slot-scope="scope">
+            <report-tools :report="scope.row" :is-text="true" :is-show-icon="true" @delete="getList" />
+          </template>
+        </el-table-column>
+      </template>
+    </cat2-bug-table>
 
     <pagination
       v-show="total>0"
@@ -150,9 +166,12 @@ import i18n from "@/utils/i18n/i18n";
 import {delUser} from "@/api/system/user";
 import store from "@/store";
 
+import Cat2BugTable from "@/components/Cat2BugTable";
+import { ReportTableColumnDefaults } from "@/views/system/report/report-table-options";
+
 export default {
   name: "Report",
-  components: { Step, ProjectLabel, ViewReport, ReportTools, FocusMemberList, ReportTypeFlag, Cat2BugReportTemplateSelect, Cat2BugAvatar, SelectProjectMember },
+  components: { Step, ProjectLabel, ViewReport, ReportTools, FocusMemberList, ReportTypeFlag, Cat2BugReportTemplateSelect, Cat2BugAvatar, SelectProjectMember, Cat2BugTable },
   data() {
     return {
       // 遮罩层
@@ -169,6 +188,8 @@ export default {
       total: 0,
       // 报告表格数据
       reportList: [],
+      reportTableColumnDefaults: ReportTableColumnDefaults.map(c => ({ ...c })),
+      columnPickerCheckedKeys: [],
       // 弹出层标题
       title: "",
       // 是否显示弹出层
@@ -198,6 +219,9 @@ export default {
     };
   },
   computed: {
+    reportColumnPickerOptions() {
+      return ReportTableColumnDefaults.filter(c => c.showInColumnPicker !== false);
+    },
     /** 获取项目id */
     projectId() {
       return parseInt(this.$store.state.user.config.currentProjectId);
@@ -336,6 +360,12 @@ export default {
     createReportHandle(template) {
       this.getList();
     },
+    onReportTableColumnsChange(columns) {
+      this.columnPickerCheckedKeys = columns.filter(c => c.visible && c.showInColumnPicker !== false).map(c => c.key);
+    },
+    onReportColumnPickerChange(keys) {
+      this.$refs.cat2BugTable && this.$refs.cat2BugTable.setColumnsVisible(keys);
+    },
     /** 多选框选中数据 */
     handleSelectionChange(selection) {
       this.ids = selection.map(item => item.reportId);
@@ -396,5 +426,46 @@ export default {
   display: inline-flex;
   flex-direction: column;
   align-items: flex-start;
+}
+.report-picker-head.row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+.report-picker-head h4 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.report-picker-divider {
+  margin: 8px 0;
+}
+/** 与缺陷列表「显示字段」同款：用 gap 控制间距，去掉 checkbox 默认大块外边距 */
+.report-column-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 220px;
+  max-height: 380px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.report-column-picker ::v-deep .el-checkbox {
+  display: flex;
+  align-items: center;
+  margin-right: 0;
+  margin-bottom: 0;
+  height: auto;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+.report-column-picker ::v-deep .el-checkbox__input {
+  flex-shrink: 0;
+}
+.report-column-picker ::v-deep .el-checkbox__label {
+  line-height: 1.4;
+  padding-left: 8px;
 }
 </style>

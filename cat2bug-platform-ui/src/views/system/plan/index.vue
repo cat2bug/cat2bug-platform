@@ -25,24 +25,16 @@
         </el-form-item>
       </el-form>
       <div class="plan-tools-right">
-        <el-popover
-          placement="top"
-          trigger="click">
+        <el-popover placement="top" trigger="click">
           <div class="row">
             <i class="el-icon-s-fold"></i>
-            <h4>{{$t('display-field')}}</h4>
+            <h4>{{ $t('display-field') }}</h4>
           </div>
           <el-divider class="plan-field-divider"></el-divider>
-          <el-checkbox-group v-model="tableShowFieldList" class="col" @change="checkedFieldListChange">
-            <el-checkbox v-for="field in tableAllFieldList" :label="field" :key="field">{{$t(field)}}</el-checkbox>
+          <el-checkbox-group v-model="columnPickerCheckedKeys" class="col" @change="onPlanColumnPickerChange">
+            <el-checkbox v-for="c in planColumnPickerOptions" :key="c.key" :label="c.key">{{ $t(c.key) }}</el-checkbox>
           </el-checkbox-group>
-          <el-button
-            style="padding: 9px;"
-            plain
-            slot="reference"
-            icon="el-icon-s-fold"
-            size="mini"
-          ></el-button>
+          <el-button style="padding: 9px;" plain slot="reference" icon="el-icon-s-fold" size="mini"></el-button>
         </el-popover>
         <el-button
           type="primary"
@@ -55,84 +47,71 @@
       </div>
     </div>
 
-    <el-table ref="table" v-loading="loading" :data="planList">
-<!--      <el-table-column type="selection" width="55" align="center" />-->
-      <el-table-column v-if="showField('id')" :label="$t('id')" :key="$t('id')" align="center" prop="planNumber" width="80" sortable fixed>
-        <template slot-scope="scope">
-          <span>{{ planNumber(scope.row) }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column v-if="showField('plan.name')" :label="$t('plan.name')" :key="$t('plan.name')" align="start" prop="planName" min-width="150" fixed />
-      <el-table-column v-if="showField('plan.version')" :label="$t('plan.version')" :key="$t('plan.version')" align="center" prop="planVersion" width="100"/>
-      <el-table-column v-if="showField('plan.time')" :label="$t('plan.time')" :key="$t('plan.time')" align="center" prop="planStartTime" width="260">
-        <template slot-scope="scope">
-          <div class="col col-center" v-show="scope.row.planStartTime && scope.row.planEndTime">
-            <span>{{$t('time-form')}}: {{ parseTime(scope.row.planStartTime, strFormat($t('year-month-day-hour-minute-second'),'{y}','{m}','{d}','{h}','{i}','{s}')) }}</span>
-            <span>{{$t('time-to')}}: {{ parseTime(scope.row.planEndTime, strFormat($t('year-month-day-hour-minute-second'),'{y}','{m}','{d}','{h}','{i}','{s}')) }}</span>
-          </div>
-        </template>
-      </el-table-column>
-      <el-table-column v-if="showField('updateBy')" :label="$t('updateBy')" :key="$t('updateBy')" align="center" prop="updateById" width="120">
-        <template slot-scope="scope">
-          <row-list-member :members="member(scope.row)"></row-list-member>
-        </template>
-      </el-table-column>
-      <el-table-column v-if="showField('updateTime')" :label="$t('updateTime')" :key="$t('updateTime')" align="center" prop="updateTime" width="180">
-        <template slot-scope="scope">
-          <span>{{ parseTime(scope.row.updateTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column v-if="showField('plan.process')" :label="$t('plan.process')" :key="$t('plan.process')" align="center" width="150">
-        <template slot-scope="scope">
-          <div class="plan-progress">
-            <el-progress :percentage="planProcessValue(scope.row)" :format="planProcessContent"></el-progress>
-            <span>{{scope.row.passCount}}/{{scope.row.itemTotal}}</span>
-          </div>
-        </template>
-      </el-table-column>
-      <el-table-column v-if="showField('remark')" :label="$t('remark')" :key="$t('remark')" align="center" prop="remark">
-        <template slot-scope="scope">
-          <el-tooltip class="item" effect="dark" :content="scope.row.remark" placement="top">
-            <span class="text-row3">{{scope.row.remark}}</span>
-          </el-tooltip>
-        </template>
-      </el-table-column>
-      <el-table-column :label="$t('operate')" align="left" class-name="small-padding fixed-width" fixed="right" width="200">
-        <template slot-scope="scope">
-          <div class="table-operate">
-            <el-button
-              size="mini"
-              type="text"
-              icon="el-icon-plus"
-              @click="handlePlanCopy(scope.row)"
-              v-hasPermi="['system:plan:add']"
-            >{{ $t('copy') }}</el-button>
-            <el-button
-              size="mini"
-              type="text"
-              icon="el-icon-tickets"
-              @click="handlePlanRun(scope.row)"
-              v-hasPermi="['system:plan:run']"
-            >{{ $t('plan.run') }}</el-button>
-            <el-button
-              size="mini"
-              type="text"
-              icon="el-icon-edit"
-              @click="handleUpdate(scope.row)"
-              v-hasPermi="['system:plan:edit']"
-            >{{ $t('modify') }}</el-button>
-            <el-button
-              size="mini"
-              type="text"
-              class="red"
-              icon="el-icon-delete"
-              @click="handleDelete(scope.row)"
-              v-hasPermi="['system:plan:remove']"
-            >{{ $t('delete') }}</el-button>
-          </div>
-        </template>
-      </el-table-column>
-    </el-table>
+    <cat2-bug-table
+      ref="cat2BugTable"
+      cache-key="plan-table"
+      field-list-cache-key="plan-table-field-list"
+      :persist-sort="false"
+      :columns="planTableColumnDefaults"
+      :data="planList"
+      :loading="loading"
+      @columns-change="onPlanTableColumnsChange"
+    >
+      <template #columns="{ scope, column }">
+        <span v-if="column.prop==='planNumber'">{{ planNumber(scope.row) }}</span>
+        <div v-else-if="column.prop==='planStartTime'" class="col col-center" v-show="scope.row.planStartTime && scope.row.planEndTime">
+          <span>{{$t('time-form')}}: {{ parseTime(scope.row.planStartTime, strFormat($t('year-month-day-hour-minute-second'),'{y}','{m}','{d}','{h}','{i}','{s}')) }}</span>
+          <span>{{$t('time-to')}}: {{ parseTime(scope.row.planEndTime, strFormat($t('year-month-day-hour-minute-second'),'{y}','{m}','{d}','{h}','{i}','{s}')) }}</span>
+        </div>
+        <row-list-member v-else-if="column.prop==='updateById'" :members="member(scope.row)" />
+        <span v-else-if="column.prop==='updateTime'">{{ parseTime(scope.row.updateTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
+        <div v-else-if="column.prop==='itemTotal'" class="plan-progress">
+          <el-progress :percentage="planProcessValue(scope.row)" :format="planProcessContent"></el-progress>
+          <span>{{scope.row.passCount}}/{{scope.row.itemTotal}}</span>
+        </div>
+        <el-tooltip v-else-if="column.prop==='remark'" class="item" effect="dark" :content="scope.row.remark" placement="top">
+          <span class="text-row3">{{scope.row.remark}}</span>
+        </el-tooltip>
+        <span v-else>{{ scope.row[column.prop] }}</span>
+      </template>
+      <template #append>
+        <el-table-column :label="$t('operate')" align="center" class-name="small-padding fixed-width no-drag" fixed="right" width="200">
+          <template slot-scope="scope">
+            <div class="table-operate">
+              <el-button
+                size="mini"
+                type="text"
+                icon="el-icon-plus"
+                @click="handlePlanCopy(scope.row)"
+                v-hasPermi="['system:plan:add']"
+              >{{ $t('copy') }}</el-button>
+              <el-button
+                size="mini"
+                type="text"
+                icon="el-icon-tickets"
+                @click="handlePlanRun(scope.row)"
+                v-hasPermi="['system:plan:run']"
+              >{{ $t('plan.run') }}</el-button>
+              <el-button
+                size="mini"
+                type="text"
+                icon="el-icon-edit"
+                @click="handleUpdate(scope.row)"
+                v-hasPermi="['system:plan:edit']"
+              >{{ $t('modify') }}</el-button>
+              <el-button
+                size="mini"
+                type="text"
+                class="red"
+                icon="el-icon-delete"
+                @click="handleDelete(scope.row)"
+                v-hasPermi="['system:plan:remove']"
+              >{{ $t('delete') }}</el-button>
+            </div>
+          </template>
+        </el-table-column>
+      </template>
+    </cat2-bug-table>
 
     <pagination
       v-show="total>0"
@@ -154,16 +133,15 @@ import {listPlan, delPlan, copyPlan} from "@/api/system/plan";
 import AddPlanDialog from "@/components/Plan/AddPlanDialog";
 import HandlePlanDialog from "@/components/Plan/HandlePlanDialog";
 import DictOptionDialog from "@/components/DictOptionDialog";
+import Cat2BugTable from "@/components/Cat2BugTable";
+import { PlanTableColumnDefaults } from "@/views/system/plan/plan-table-options";
 import {strFormat} from "@/utils";
 import {checkPermi} from "@/utils/permission";
-
-/** 需要显示的缺陷字段列表在缓存的key值 */
-const PLAN_TABLE_FIELD_LIST_CACHE_KEY='plan-table-field-list';
 
 export default {
   name: "Plan",
   dicts: ['plan_item_state'],
-  components:{ ProjectLabel, AddPlanDialog, HandlePlanDialog, DictOptionDialog, RowListMember },
+  components:{ ProjectLabel, AddPlanDialog, HandlePlanDialog, DictOptionDialog, RowListMember, Cat2BugTable },
   data() {
     return {
       // 遮罩层
@@ -199,25 +177,20 @@ export default {
         projectId: this.projectId,
         reportId: null
       },
-      // 选中的表格列数据集合
-      tableShowFieldList: [],
-      // 表格里全部列数据集合
-      tableAllFieldList: [
-        'id','plan.name','plan.version','plan.time','updateBy','updateTime','plan.process','remark'
-      ],
+      planTableColumnDefaults: PlanTableColumnDefaults.map(c => ({ ...c })),
+      columnPickerCheckedKeys: [],
     };
   },
   watch: {
-    "$i18n.locale": function (newVal, oldVal) {
-      this.$refs.table.doLayout();
+    "$i18n.locale": function () {
+      this.$nextTick(() => {
+        this.$refs.cat2BugTable && this.$refs.cat2BugTable.doLayout();
+      });
     },
   },
   computed: {
-    /** 字段是否显示 */
-    showField: function () {
-      return function (field) {
-        return this.tableShowFieldList.filter(f=>f==field).length>0;
-      }
+    planColumnPickerOptions() {
+      return PlanTableColumnDefaults.filter(c => c.showInColumnPicker !== false);
     },
     /** 用于显示的用例编号 */
     planNumber: function () {
@@ -264,7 +237,6 @@ export default {
     if(actionPlanId && checkPermi(['system:plan:run'])) {
       this.handlePlanRun({planId:actionPlanId})
     }
-    this.refreshShowFields();
   },
   destroyed() {
     // 移除滚动条监听
@@ -273,6 +245,12 @@ export default {
   methods: {
     checkPermi,
     strFormat,
+    onPlanTableColumnsChange(columns) {
+      this.columnPickerCheckedKeys = columns.filter(c => c.visible && c.showInColumnPicker !== false).map(c => c.key);
+    },
+    onPlanColumnPickerChange(keys) {
+      this.$refs.cat2BugTable && this.$refs.cat2BugTable.setColumnsVisible(keys);
+    },
     /** 初始化浮动菜单 */
     initFloatMenu() {
       this.$floatMenu.windowsInit(document.querySelector('.main-container'));
@@ -287,34 +265,6 @@ export default {
         permissions: ['system:plan:add'],
         click : this.handleAdd
       }]);
-    },
-    /** 缺陷列表属性字段改变操作 */
-    checkedFieldListChange(field) {
-      this.saveShowFields(field);
-      this.refreshShowFields();
-    },
-    /** 设置列表显示的属性字段 */
-    refreshShowFields() {
-      const fieldList = this.getShowFields();
-      if(fieldList) {
-        this.tableShowFieldList = fieldList;
-      } else {
-        this.tableShowFieldList = [];
-        this.tableAllFieldList.forEach(f=>{
-          this.tableShowFieldList.push(f);
-        });
-      }
-      this.$nextTick(()=>{
-        this.$refs.table.doLayout();
-      });
-    },
-    /** 保存表格显示哪些属性 */
-    saveShowFields(field) {
-      this.$cache.local.setJSON(PLAN_TABLE_FIELD_LIST_CACHE_KEY,field);
-    },
-    /** 获取表格显示哪些属性 */
-    getShowFields() {
-      return this.$cache.local.getJSON(PLAN_TABLE_FIELD_LIST_CACHE_KEY);
     },
     /** 查询测试计划列表 */
     getList() {
@@ -450,6 +400,11 @@ export default {
 }
 .table-operate {
   padding-left: 10px;
+  display: inline-flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  flex-wrap: wrap;
 }
 .plan-field-divider {
   margin: 8px 0px;

@@ -29,24 +29,16 @@
       </el-form>
 
       <div class="case-right-tools mb8">
-        <el-popover
-          placement="top"
-          trigger="click">
+        <el-popover placement="top" trigger="click">
           <div class="row">
             <i class="el-icon-s-fold"></i>
-            <h4>{{$t('defect.display-field')}}</h4>
+            <h4>{{ $t('display-field') }}</h4>
           </div>
           <el-divider class="case-field-divider"></el-divider>
-          <el-checkbox-group v-model="checkedFieldList" class="col" @change="checkedFieldListChange">
-            <el-checkbox v-for="field in fieldList" :label="field" :key="field">{{$t(field)}}</el-checkbox>
+          <el-checkbox-group v-model="columnPickerCheckedKeys" class="col" @change="onCaseColumnPickerChange">
+            <el-checkbox v-for="c in caseColumnPickerOptions" :key="c.key" :label="c.key">{{ $t(c.key) }}</el-checkbox>
           </el-checkbox-group>
-          <el-button
-            style="padding: 9px;"
-            plain
-            slot="reference"
-            icon="el-icon-s-fold"
-            size="small"
-          ></el-button>
+          <el-button style="padding: 9px;" plain slot="reference" icon="el-icon-s-fold" size="small"></el-button>
         </el-popover>
         <el-button
           type="danger"
@@ -108,126 +100,99 @@
       <!--      用例列表-->
       <div ref="caseContext" class="case-context">
         <div class="case-context-body">
-        <el-table ref="table" v-loading="loading" :data="caseList"
-                  @selection-change="handleSelectionChange"
-                  @sort-change="handleSortChange"
-                  @mousedown.native="handleTableMouseDown"
-                  @mouseup.native="handleTableMouseUp"
-                  @mousemove.native="handleTableMouseMove"
-                  v-resize="setDragComponentSize">
-          <el-table-column
-            v-if="!showModuleTree"
-            key="case-sidebar-expand-col"
-            fixed
-            width="40"
-            align="center"
-            label-class-name="case-sidebar-expand-header-cell"
-            class-name="case-sidebar-expand-body-cell">
-            <template slot="header">
-              <el-tooltip :content="$t('case.show-module-tree')" placement="bottom">
-                <span
-                  class="case-sidebar-expand-trigger"
-                  role="button"
-                  tabindex="0"
-                  @click.stop="toggleModuleTreeVisible"
-                  @keyup.enter.stop.prevent="toggleModuleTreeVisible"
-                >
-                  <svg-icon icon-class="menu" class-name="case-sidebar-expand-svg" />
-                </span>
-              </el-tooltip>
-            </template>
-            <template slot-scope>
-              <span class="case-sidebar-expand-body-placeholder" />
-            </template>
-          </el-table-column>
-          <el-table-column type="selection" width="50" align="center" fixed />
-          <el-table-column v-if="showField('id')" :label="$t('id')" align="center" prop="caseNum" width="80" sortable="custom" fixed>
-            <template slot-scope="scope">
-              <span>{{ caseNumber(scope.row) }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column v-if="showField('case.name')" :label="$t('case.name')" align="left" prop="caseName" min-width="200" sortable="custom" fixed>
-            <template slot-scope="scope">
-              <div class="table-case-title">
-                <!--                <focus-member-list-->
-                <!--                  v-show="scope.row.focusList && scope.row.focusList.length>0"-->
-                <!--                  v-model="scope.row.focusList"-->
-                <!--                  module-name="case"-->
-                <!--                  :data-id="scope.row.caseId" />-->
-                <cat2-bug-text v-model="scope.row.caseName" :tooltip="scope.row.caseName" />
-              </div>
-            </template>
-          </el-table-column>
-          <el-table-column v-if="showField('module')" :label="$t('module')" align="left" prop="moduleName" min-width="120" sortable="custom" />
-          <el-table-column v-if="showField('level')" :label="$t('level')" align="left" prop="caseLevel" sortable="custom" width="80">
-            <template slot-scope="scope">
-              <cat2-bug-level :level="scope.row.caseLevel" />
-            </template>
-          </el-table-column>
-          <el-table-column v-if="showField('preconditions')" :label="$t('preconditions')" align="left" prop="casePreconditions" min-width="250" sortable="custom">
-            <template slot-scope="scope">
-              <cat2-bug-text v-model="scope.row.casePreconditions" :tooltip="scope.row.casePreconditions" />
-            </template>
-          </el-table-column>
-          <el-table-column v-if="showField('step')" :label="$t('step')" align="left" prop="caseStep" width="300" sortable="custom">
-            <template slot-scope="scope">
-              <div class="table-row-full-height">
-                <step :steps="scope.row.caseStep" />
-              </div>
-            </template>
-          </el-table-column>
-          <el-table-column v-if="showField('data')" :label="$t('data')" class-name="fixed-width" align="left" prop="caseData" min-width="250" sortable="custom" />
-          <el-table-column v-if="showField('expect')" :label="$t('expect')" class-name="fixed-width" align="left" prop="caseExpect" min-width="250" sortable="custom">
-            <template slot-scope="scope">
-              <cat2-bug-text v-model="scope.row.caseExpect" :tooltip="scope.row.caseExpect" />
-            </template>
-          </el-table-column>
-          <el-table-column v-if="showField('image')" :label="$t('image')" :key="$t('image')" align="center" prop="imgUrls" width="80">
-            <template slot-scope="scope">
-              <cat2-bug-preview-image :images="getUrl(scope.row.imgUrls)" />
-            </template>
-          </el-table-column>
-          <el-table-column v-if="showField('annex')" :label="$t('annex')" :key="$t('annex')" align="left" prop="annexUrls" min-width="300">
-            <template slot-scope="scope">
-              <div class="annex-list">
-                <cat2-bug-text :content="file" type="down" :tooltip="file" v-for="(file,index) in getUrl(scope.row.annexUrls)" :key="index" />
-              </div>
-            </template>
-          </el-table-column>
-          <el-table-column v-if="showField('update-time')" :label="$t('update-time')" align="left" prop="updateTime" width="150" sortable="custom">
-            <template slot-scope="scope">
-              <span>{{ parseTime(scope.row.updateTime, '{y}-{m}-{d}') }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column v-if="showField('defect.state')" :label="$t('defect.state')" align="left" prop="updateTime" width="150" sortable="custom">
-            <template slot-scope="scope">
+        <cat2-bug-table
+          ref="cat2BugTable"
+          cache-key="case-table"
+          field-list-cache-key="case-table-field-list"
+          sort-column-cache-key="case_table_sort_column_key"
+          sort-type-cache-key="case_table_sort_type_key"
+          :columns="caseTableColumnDefaults"
+          :data="caseList"
+          :loading="loading"
+          @columns-change="onCaseTableColumnsChange"
+          @sort-change="handleSortChange"
+          @selection-change="handleSelectionChange"
+          @native-mousedown="handleTableMouseDown"
+          @native-mouseup="handleTableMouseUp"
+          @native-mousemove="handleTableMouseMove"
+          v-resize="setDragComponentSize"
+        >
+          <template #prepend>
+            <el-table-column
+              v-if="!showModuleTree"
+              key="case-sidebar-expand-col"
+              fixed
+              width="40"
+              align="center"
+              label-class-name="case-sidebar-expand-header-cell"
+              class-name="case-sidebar-expand-body-cell">
+              <template slot="header">
+                <el-tooltip :content="$t('case.show-module-tree')" placement="bottom">
+                  <span
+                    class="case-sidebar-expand-trigger"
+                    role="button"
+                    tabindex="0"
+                    @click.stop="toggleModuleTreeVisible"
+                    @keyup.enter.stop.prevent="toggleModuleTreeVisible"
+                  >
+                    <svg-icon icon-class="menu" class-name="case-sidebar-expand-svg" />
+                  </span>
+                </el-tooltip>
+              </template>
+              <template slot-scope>
+                <span class="case-sidebar-expand-body-placeholder" />
+              </template>
+            </el-table-column>
+            <el-table-column type="selection" width="50" align="center" fixed />
+          </template>
+          <template #columns="{ scope, column }">
+            <span v-if="column.prop==='caseNum'">{{ caseNumber(scope.row) }}</span>
+            <div v-else-if="column.prop==='caseName'" class="table-case-title">
+              <cat2-bug-text v-model="scope.row.caseName" :tooltip="scope.row.caseName" />
+            </div>
+            <cat2-bug-level v-else-if="column.prop==='caseLevel'" :level="scope.row.caseLevel" />
+            <cat2-bug-text v-else-if="column.prop==='casePreconditions'" v-model="scope.row.casePreconditions" :tooltip="scope.row.casePreconditions" />
+            <div v-else-if="column.prop==='caseStep'" class="table-row-full-height">
+              <step :steps="scope.row.caseStep" />
+            </div>
+            <span v-else-if="column.prop==='caseData'">{{ scope.row.caseData }}</span>
+            <cat2-bug-text v-else-if="column.prop==='caseExpect'" v-model="scope.row.caseExpect" :tooltip="scope.row.caseExpect" />
+            <cat2-bug-preview-image v-else-if="column.prop==='imgUrls'" :images="getUrl(scope.row.imgUrls)" />
+            <div v-else-if="column.prop==='annexUrls'" class="annex-list">
+              <cat2-bug-text :content="file" type="down" :tooltip="file" v-for="(file,index) in getUrl(scope.row.annexUrls)" :key="index" />
+            </div>
+            <span v-else-if="column.prop==='updateTime'">{{ parseTime(scope.row.updateTime, '{y}-{m}-{d}') }}</span>
+            <template v-else-if="column.prop==='defectProcessingCount'">
               <p class="table-font table-font-red" @click="handleGoDefect($event, scope.row, $t('PENDING'),[0,3])">{{ $t('PENDING') }}:{{ scope.row.defectProcessingCount }}</p>
               <p class="table-font table-font-orange" @click="handleGoDefect($event, scope.row, $t('PROCESSING'), [1])">{{ $t('PROCESSING') }}:{{ scope.row.defectAuditCount }}</p>
               <p class="table-font table-font-green" @click="handleGoDefect($event, scope.row, $t('CLOSED'),[4])">{{ $t('CLOSED') }}:{{ scope.row.defectCloseCount }}</p>
             </template>
-          </el-table-column>
-          <el-table-column :label="$t('operate')" align="left" class-name="small-padding fixed-width" fixed="right" min-width="150">
-            <template slot-scope="scope">
-              <div class="case-table-operate">
-                <el-button
-                  size="small"
-                  type="text"
-                  @click="handleUpdate(scope.row)"
-                  icon="el-icon-edit"
-                  v-hasPermi="['system:case:edit']">
-                  {{ $t('modify') }}</el-button>
-                <el-button
-                  size="small"
-                  type="text"
-                  class="red"
-                  icon="el-icon-delete"
-                  @click="handleDelete($event,scope.row)"
-                  v-hasPermi="['system:case:remove']"
-                >{{ $t('delete') }}</el-button>
-              </div>
-            </template>
-          </el-table-column>
-        </el-table>
+            <span v-else>{{ scope.row[column.prop] }}</span>
+          </template>
+          <template #append>
+            <el-table-column :label="$t('operate')" align="left" class-name="small-padding fixed-width no-drag" fixed="right" min-width="150">
+              <template slot-scope="scope">
+                <div class="case-table-operate">
+                  <el-button
+                    size="small"
+                    type="text"
+                    @click="handleUpdate(scope.row)"
+                    icon="el-icon-edit"
+                    v-hasPermi="['system:case:edit']">
+                    {{ $t('modify') }}</el-button>
+                  <el-button
+                    size="small"
+                    type="text"
+                    class="red"
+                    icon="el-icon-delete"
+                    @click="handleDelete($event,scope.row)"
+                    v-hasPermi="['system:case:remove']"
+                  >{{ $t('delete') }}</el-button>
+                </div>
+              </template>
+            </el-table-column>
+          </template>
+        </cat2-bug-table>
 
         <pagination
           v-show="total>0"
@@ -288,6 +253,8 @@ import CloudCase from "@/components/Cloud/CloudCase";
 import CloudCase2 from "@/components/Cloud/CloudCase2";
 import FocusMemberList from "@/components/FocusMemberList";
 import Cat2BugPreviewImage from "@/components/Cat2BugPreviewImage";
+import Cat2BugTable from "@/components/Cat2BugTable";
+import { CaseTableColumnDefaults } from "@/views/system/case/case-table-options";
 import {checkPermi} from "@/utils/permission";
 import {strFormat} from "@/utils";
 import { resolveExportAssetHost } from "@/utils/ruoyi";
@@ -298,16 +265,10 @@ import {setHeader} from "@/utils/request";
 const TREE_MODULE_WIDTH_CACHE_KEY = 'case_tree_module_width';
 /** 用例页左侧交付物树是否展开（本地缓存） */
 const CASE_TREE_MODULE_VISIBLE_CACHE_KEY = 'case_tree_module_visible';
-/** 需要显示的测试用例字段列表在缓存的key值 */
-const CASE_TABLE_FIELD_LIST_CACHE_KEY='case-table-field-list';
-/** 用例表排序的列 */
-const CASE_TABLE_SORT_COLUMN = 'case_table_sort_column_key';
-/** 用例表排序的类型（正序、倒叙） */
-const CASE_TABLE_SORT_TYPE = 'case_table_sort_type_key';
 
 export default {
   name: "Case",
-  components: {ProjectLabel,AddCase,Cat2BugLevel,Step,TreeModule,Multipane,MultipaneResizer,AddDefect,CloudCase,CloudCase2,FocusMemberList,Cat2BugPreviewImage,Cat2BugSelectLevel,Cat2BugText},
+  components: {ProjectLabel,AddCase,Cat2BugLevel,Step,TreeModule,Multipane,MultipaneResizer,AddDefect,CloudCase,CloudCase2,FocusMemberList,Cat2BugPreviewImage,Cat2BugSelectLevel,Cat2BugText,Cat2BugTable},
   data() {
     return {
       // 鼠标是否点击
@@ -318,10 +279,8 @@ export default {
       treeModuleStyle: {'--treeModuleWidth':'300px'},
       /** 是否显示左侧交付物列表 */
       showModuleTree: true,
-      // 表格中可以显示的字段列表
-      checkedFieldList: [],
-      // 所有属性类型
-      fieldList: [],
+      caseTableColumnDefaults: CaseTableColumnDefaults.map(c => ({ ...c })),
+      columnPickerCheckedKeys: [],
       // 遮罩层
       loading: false,
       // 选中数组
@@ -352,6 +311,8 @@ export default {
         casePreconditions: null,
         caseNum: null,
         projectId: this.projectId,
+        orderByColumn: null,
+        isAsc: null,
         params:{}
       },
       // 用例导入参数
@@ -371,16 +332,15 @@ export default {
     };
   },
   watch: {
-    "$i18n.locale": function (newVal, oldVal) {
-      this.setFieldList();
+    "$i18n.locale": function () {
+      this.$nextTick(() => {
+        this.$refs.cat2BugTable && this.$refs.cat2BugTable.doLayout();
+      });
     },
   },
   computed: {
-    /** 字段是否显示 */
-    showField: function () {
-      return function (field) {
-        return this.checkedFieldList.filter(f=>f==field).length>0;
-      }
+    caseColumnPickerOptions() {
+      return CaseTableColumnDefaults.filter(c => c.showInColumnPicker !== false);
     },
     /** 用于显示的用例编号 */
     caseNumber: function () {
@@ -405,8 +365,8 @@ export default {
   created() {
     const treeVis = this.$cache.local.get(CASE_TREE_MODULE_VISIBLE_CACHE_KEY);
     this.showModuleTree = !(treeVis === '0' || treeVis === 'false');
-    // 设置缺陷列表显示哪些列属性
-    this.setFieldList();
+    this.queryParams.orderByColumn = this.$cache.local.get('case_table_sort_column_key') || null;
+    this.queryParams.isAsc = this.$cache.local.get('case_table_sort_type_key') || null;
     this.handleQuery();
     let headers = {};
     setHeader('/system/case/importData', headers);
@@ -414,7 +374,6 @@ export default {
   },
   mounted() {
     this.queryParams.projectId=this.projectId;
-    this.initSort();
     this.getTreeModuleWidth();
     this.initFloatMenu();
   },
@@ -455,11 +414,17 @@ export default {
       this.mouseFlag = false;
     },
     /** 处理鼠标在表格移动事件 */
+    onCaseTableColumnsChange(columns) {
+      this.columnPickerCheckedKeys = columns.filter(c => c.visible && c.showInColumnPicker !== false).map(c => c.key);
+    },
+    onCaseColumnPickerChange(keys) {
+      this.$refs.cat2BugTable && this.$refs.cat2BugTable.setColumnsVisible(keys);
+    },
     handleTableMouseMove(e) {
-      // 这里面需要注意，通过ref需要那个那个包含table元素的父元素
-      let tableBody = this.$refs.table.bodyWrapper;
+      const elTable = this.$refs.cat2BugTable && this.$refs.cat2BugTable.$refs.elTable;
+      if (!elTable || !elTable.bodyWrapper) return;
+      let tableBody = elTable.bodyWrapper;
       if (this.mouseFlag) {
-        // 设置水平方向的元素的位置
         tableBody.scrollLeft -= (- this.mouseOffset + (this.mouseOffset = e.clientX));
       }
     },
@@ -472,11 +437,6 @@ export default {
       }
     },
     /** 初始化排序数据 */
-    initSort() {
-      this.queryParams.isAsc = this.$cache.local.get(CASE_TABLE_SORT_TYPE)||null;
-      this.queryParams.orderByColumn = this.$cache.local.get(CASE_TABLE_SORT_COLUMN)||null;
-      this.$refs.table.sort(this.queryParams.orderByColumn, this.queryParams.isAsc);
-    },
     /** 初始化浮动菜单 */
     initFloatMenu() {
       this.$floatMenu.windowsInit(document.querySelector('.main-container'));
@@ -523,28 +483,6 @@ export default {
       }]);
     },
     /** 设置列表显示的属性字段 */
-    setFieldList() {
-      this.fieldList = [
-        'id','case.name','module','level', 'preconditions','step','data','expect','image','annex','update-time','defect.state'
-      ];
-
-      const fieldList = this.$cache.local.get(CASE_TABLE_FIELD_LIST_CACHE_KEY);
-      if(fieldList) {
-        this.checkedFieldList = JSON.parse(fieldList);
-      } else {
-        this.checkedFieldList = [];
-        this.fieldList.forEach(f=>{
-          this.checkedFieldList.push(f);
-        });
-      }
-      this.$nextTick(()=>{
-        this.$refs.table.doLayout();
-      });
-    },
-    /** 测试用例列表属性字段改变操作 */
-    checkedFieldListChange(field) {
-      this.$cache.local.set(CASE_TABLE_FIELD_LIST_CACHE_KEY,JSON.stringify(field));
-    },
     /** 获取树模型宽度 */
     getTreeModuleWidth() {
       let treeModuleWidth = this.$cache.session.get(TREE_MODULE_WIDTH_CACHE_KEY);
@@ -566,8 +504,8 @@ export default {
       this.$cache.local.set(CASE_TREE_MODULE_VISIBLE_CACHE_KEY, this.showModuleTree ? '1' : '0');
       this.$nextTick(() => {
         this.setDragComponentSize();
-        if (this.$refs.table) {
-          this.$refs.table.doLayout();
+        if (this.$refs.cat2BugTable) {
+          this.$refs.cat2BugTable.doLayout();
         }
       });
     },
@@ -626,7 +564,7 @@ export default {
         this.getList();
         this.$modal.msgSuccess(this.$i18n.t('delete-success'));
       }).catch(() => {});
-      e.stopPropagation();
+      if (e && e.stopPropagation) e.stopPropagation();
     },
     /** 导出按钮操作 */
     handleExport() {
@@ -720,8 +658,6 @@ export default {
     handleSortChange(column) {
       this.queryParams.isAsc = column.order;
       this.queryParams.orderByColumn = column.prop;
-      this.$cache.local.set(CASE_TABLE_SORT_COLUMN, column.prop);
-      this.$cache.local.set(CASE_TABLE_SORT_TYPE, column.order);
       this.getList();
     }
   }

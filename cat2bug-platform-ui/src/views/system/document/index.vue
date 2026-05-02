@@ -16,6 +16,19 @@
 
       <el-row :gutter="10" class="mb8">
         <el-col :span="1.5">
+          <el-popover placement="top" trigger="click">
+            <div class="doc-picker-head row">
+              <i class="el-icon-s-fold"></i>
+              <h4>{{ $t('display-field') }}</h4>
+            </div>
+            <el-divider class="doc-picker-divider"></el-divider>
+            <el-checkbox-group v-model="columnPickerCheckedKeys" class="doc-picker-col" @change="onDocColumnPickerChange">
+              <el-checkbox v-for="c in documentColumnPickerOptions" :key="c.key" :label="c.key">{{ $t(c.key) }}</el-checkbox>
+            </el-checkbox-group>
+            <el-button style="padding: 9px;" plain slot="reference" icon="el-icon-s-fold" size="small"></el-button>
+          </el-popover>
+        </el-col>
+        <el-col :span="1.5">
           <el-button
             type="primary"
             plain
@@ -38,71 +51,76 @@
       </el-row>
     </div>
 
-    <el-table v-loading="loading" :data="documentList" @selection-change="handleSelectionChange">
-<!--      <el-table-column type="selection" width="55" align="center" />-->
-      <el-table-column label="" align="center" prop="docType" width="60">
-        <template slot-scope="scope">
-          <svg-icon class="file-icon" :icon-class="fileIcon(scope.row)" />
+    <cat2-bug-table
+      ref="cat2BugTable"
+      cache-key="document-table"
+      :persist-sort="false"
+      :columns="documentTableColumnDefaults"
+      :data="documentList"
+      :loading="loading"
+      @selection-change="handleSelectionChange"
+      @columns-change="onDocTableColumnsChange"
+    >
+      <template #columns="{ scope, column }">
+        <template v-if="column.prop==='docName'">
+          <div class="document-title">
+            <svg-icon class="file-icon" :icon-class="fileIcon(scope.row)" />
+            <el-link v-if="scope.row.docType<=0" @click="goFolder(scope.row)" type="primary">
+              <template v-if="scope.row.docType===-1">{{ '... ' + $t('doc.upper-level-dir') }}</template>
+              <template v-else>{{ scope.row.docName }}</template>
+            </el-link>
+            <el-link v-else @click="handleView(scope.row)" type="primary">{{ scope.row.docName }}</el-link>
+          </div>
         </template>
-      </el-table-column>
-      <el-table-column :label="$t('doc.name')" align="left" prop="docName">
-        <template slot-scope="scope">
-          <el-link v-if="scope.row.docType<=0" @click="goFolder(scope.row)" type="primary">{{ scope.row.docName }}</el-link>
-          <el-link v-else @click="handleView(scope.row)" type="primary">{{ scope.row.docName }}</el-link>
+        <template v-else-if="column.prop==='fileExtension'">
+          <span v-if="scope.row.docType===0">{{ $t('folder') }}</span>
+          <span v-else>{{ scope.row.fileExtension }}</span>
         </template>
-      </el-table-column>
-      <el-table-column :label="$t('doc.type')" align="center" prop="fileExtension" width="150"/>
-      <el-table-column :label="$t('updateBy')" align="center" prop="updateByName" width="180">
-        <template slot-scope="scope">
+        <template v-else-if="column.prop==='updateByName'">
           <el-tooltip v-if="scope.row.updateBy" class="item" effect="dark" :content="scope.row.updateBy" placement="top">
             <cat2-bug-avatar :member="member(scope.row)" />
           </el-tooltip>
         </template>
-      </el-table-column>
-      <el-table-column :label="$t('update-time')" align="center" prop="updateTime" width="180" />
-      <el-table-column :label="$t('operate')" align="center" class-name="small-padding fixed-width" width="280">
-        <template slot-scope="scope">
-          <div v-show="scope.row.docType>-1">
-            <el-button
-              v-if="scope.row.docType==1"
-              size="mini"
-              type="text"
-              icon="el-icon-edit"
-              @click="handleDownload(scope.row)"
-              v-hasPermi="['system:document:export']"
-            >{{ $t('download') }}</el-button>
-            <el-button
-              size="mini"
-              type="text"
-              @click="handleOpenMoveDialog(scope.row)"
-              v-hasPermi="['system:document:edit']"
-            ><svg-icon class="button-icon" icon-class="file-move"></svg-icon>{{ $t('move') }}</el-button>
-            <el-button
-              size="mini"
-              type="text"
-              icon="el-icon-edit"
-              @click="handleUpdate(scope.row)"
-              v-hasPermi="['system:document:edit']"
-            >{{ $t('update') }}</el-button>
-<!--            <el-button-->
-<!--              size="mini"-->
-<!--              type="text"-->
-<!--              icon="el-icon-edit"-->
-<!--              @click="handleCat2Doc(scope.row)"-->
-<!--              v-hasPermi="['system:document:edit']"-->
-<!--            >{{ $t('modify') }}</el-button>-->
-            <el-button
-              size="mini"
-              type="text"
-              icon="el-icon-delete"
-              class="red"
-              @click="handleDelete(scope.row)"
-              v-if="hasDeletePermi(scope.row)"
-            >{{ $t('delete') }}</el-button>
-          </div>
-        </template>
-      </el-table-column>
-    </el-table>
+        <span v-else>{{ scope.row[column.prop] }}</span>
+      </template>
+      <template #append>
+        <el-table-column :label="$t('operate')" align="center" class-name="small-padding fixed-width no-drag" width="200" fixed="right">
+          <template slot-scope="scope">
+            <div v-show="scope.row.docType>-1">
+              <el-button
+                v-if="scope.row.docType==1"
+                size="mini"
+                type="text"
+                icon="el-icon-edit"
+                @click="handleDownload(scope.row)"
+                v-hasPermi="['system:document:export']"
+              >{{ $t('download') }}</el-button>
+              <el-button
+                size="mini"
+                type="text"
+                @click="handleOpenMoveDialog(scope.row)"
+                v-hasPermi="['system:document:edit']"
+              ><svg-icon class="button-icon" icon-class="file-move"></svg-icon>{{ $t('move') }}</el-button>
+              <el-button
+                size="mini"
+                type="text"
+                icon="el-icon-edit"
+                @click="handleUpdate(scope.row)"
+                v-hasPermi="['system:document:edit']"
+              >{{ $t('update') }}</el-button>
+              <el-button
+                size="mini"
+                type="text"
+                icon="el-icon-delete"
+                class="red"
+                @click="handleDelete(scope.row)"
+                v-if="hasDeletePermi(scope.row)"
+              >{{ $t('delete') }}</el-button>
+            </div>
+          </template>
+        </el-table-column>
+      </template>
+    </cat2-bug-table>
 
     <pagination
       v-show="total>0"
@@ -160,6 +178,8 @@
 <script>
 import ProjectLabel from "@/components/Project/ProjectLabel";
 import Cat2BugAvatar from "@/components/Cat2BugAvatar";
+import Cat2BugTable from "@/components/Cat2BugTable";
+import { DocumentTableColumnDefaults } from "@/views/system/document/document-table-options";
 import { listDocument, getDocument, delDocument, addDocument, updateDocument } from "@/api/system/document";
 import {strFormat} from "@/utils";
 import {toBase64} from "js-base64";
@@ -167,7 +187,7 @@ import {checkPermi} from "@/utils/permission";
 
 export default {
   name: "Document",
-  components: { ProjectLabel, Cat2BugAvatar },
+  components: { ProjectLabel, Cat2BugAvatar, Cat2BugTable },
   data() {
     return {
       // 移动对话框是否显示
@@ -198,6 +218,8 @@ export default {
       total: 0,
       // 文档表格数据
       documentList: [],
+      documentTableColumnDefaults: DocumentTableColumnDefaults.map(c => ({ ...c })),
+      columnPickerCheckedKeys: [],
       // 弹出层标题
       title: "",
       fileFieldName: "",
@@ -231,6 +253,9 @@ export default {
     };
   },
   computed: {
+    documentColumnPickerOptions() {
+      return DocumentTableColumnDefaults.filter(c => c.showInColumnPicker !== false);
+    },
     member: function () {
       return function (doc) {
         return {
@@ -298,20 +323,21 @@ export default {
     getProjectId: function () {
       return parseInt(this.$store.state.user.config.currentProjectId);
     },
+    onDocTableColumnsChange(columns) {
+      this.columnPickerCheckedKeys = columns.filter(c => c.visible && c.showInColumnPicker !== false).map(c => c.key);
+    },
+    onDocColumnPickerChange(keys) {
+      this.$refs.cat2BugTable && this.$refs.cat2BugTable.setColumnsVisible(keys);
+    },
     /** 查询文档列表 */
     getList() {
       this.loading = true;
       listDocument(this.queryParams).then(response => {
-        let rows = response.rows.map(d=>{
-          if(d.docType==0) {
-            d.fileExtension = this.$i18n.t('folder');
-          }
-          return d;
-        });
+        const rows = response.rows;
         if(this.currentFolder && this.currentFolder.docId>0) {
           this.documentList = [...[{
             docId: this.currentFolder.docPid,
-            docName: '... '+this.$i18n.t('doc.upper-level-dir'),
+            docName: '',
             docType: -1
           }],...rows];
         } else {
@@ -521,6 +547,19 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
+.doc-picker-head.row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+.doc-picker-divider {
+  margin: 8px 0;
+}
+.doc-picker-col {
+  display: flex;
+  flex-direction: column;
+}
 .document-tools {
   display: flex;
   flex-direction: row;
@@ -539,6 +578,7 @@ export default {
 .file-icon {
   width: 30px;
   height: 30px;
+  flex-shrink: 0;
 }
 .red {
   color: #f56c6c;
@@ -551,5 +591,12 @@ export default {
 }
 .margin-bottom-0 {
   margin-bottom: 0px;
+}
+.document-title {
+  display: inline-flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 10px;
 }
 </style>

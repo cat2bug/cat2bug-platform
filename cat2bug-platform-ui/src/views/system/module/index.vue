@@ -74,6 +74,7 @@
             size="small"
             type="text"
             icon="el-icon-delete"
+            class="red"
             @click="handleDelete(scope.row)"
             v-hasPermi="['system:module:remove']"
           >{{ $t('delete') }}</el-button>

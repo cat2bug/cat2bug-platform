@@ -1,54 +1,55 @@
 <template>
-  <el-table ref="defectTable"
-            :key="tableKey"
-            v-loading="loading"
-            :data="data"
-            @selection-change="handleSelectionChange"
-            @sort-change="sortChangeHandle"
-            @row-click="handleClickTableRow">
-    <el-table-column v-for="(col, colIndex) in showTableFieldList"
-                     :label="$t(col.key)"
-                     :key="$t(col.key)+colIndex"
-                     :min-width="columnWidth(col)"
-                     :prop="col.prop"
-                     :class-name="col.fixed ? 'no-drag' : ''"
-                     :fixed="col.fixed ? 'left' : false"
-                     :align="col.align || 'left'"
-                     :sort-by="col.prop"
-                     :sort-orders="col.prop===orderByColumn?[isAsc]:[null]"
-                     sortable="custom"  >
-      <template v-slot:header>
-        <div class="table-header">
-          <svg-icon :icon-class="col.fixed ? 'header-right' : 'header-left'" @click.stop="handleClickColumnsPin(col)"></svg-icon>
-          <span class="header-title">{{ $t(col.key) }}</span>
-        </div>
-      </template>
-      <!-- 数据行 -->
-      <template slot-scope="scope">
-        <slot name="columns" :scope="scope" :column="col"></slot>
-      </template>
-    </el-table-column>
-    <slot></slot>
-  </el-table>
+  <div class="cat2-bug-table-wrap">
+    <el-table ref="elTable"
+              :key="tableKey"
+              v-loading="loading"
+              :data="data"
+              @selection-change="handleSelectionChange"
+              @sort-change="sortChangeHandle"
+              @row-click="handleClickTableRow"
+              @mousedown.native="e => $emit('native-mousedown', e)"
+              @mouseup.native="e => $emit('native-mouseup', e)"
+              @mousemove.native="e => $emit('native-mousemove', e)">
+      <slot name="prepend"></slot>
+      <el-table-column v-for="(col, colIndex) in showTableFieldList"
+                       :label="columnHeaderLabel(col)"
+                       :key="columnRowKey(col, colIndex)"
+                       :min-width="columnMinWidth(col)"
+                       :prop="col.prop"
+                       :class-name="columnClassName(col)"
+                       :fixed="col.fixed ? 'left' : false"
+                       :align="col.align || 'left'"
+                       :sort-by="columnSortBy(col)"
+                       :sort-orders="columnSortOrders(col)"
+                       :sortable="columnSortableMode(col)">
+        <template v-slot:header>
+          <div v-if="col.pinFixedToggle !== false" class="table-header">
+            <svg-icon :icon-class="col.fixed ? 'header-right' : 'header-left'" @click.stop="handleClickColumnsPin(col)"></svg-icon>
+            <span class="header-title">{{ columnHeaderLabel(col) }}</span>
+          </div>
+          <span v-else class="header-title-only">{{ columnHeaderLabel(col) }}</span>
+        </template>
+        <template slot-scope="scope">
+          <slot name="columns" :scope="scope" :column="col"></slot>
+        </template>
+      </el-table-column>
+      <slot name="append"></slot>
+    </el-table>
+  </div>
 </template>
 
 <script>
 import Sortable from "sortablejs";
 
-/** 需要显示的字段列表在缓存的key值 */
-const TABLE_FIELD_LIST_CACHE_KEY='defect-table-field-list';
-/** 表排序的列key值 */
+const TABLE_FIELD_LIST_CACHE_KEY = 'defect-table-field-list';
 const TABLE_SORT_COLUMN = 'defect_table_sort_column_key';
-/** 表排序的类型（正序、倒叙）key值 */
 const TABLE_SORT_TYPE = 'defect_table_sort_type_key';
-/** 默认列宽 */
 const DEFAULT_COLUMN_WIDTH = 180;
 
 export default {
-  name: "index",
+  name: "Cat2BugTable",
   data() {
     return {
-      loading: false,
       tableFieldList: [],
       tableKey: (new Date()).getMilliseconds(),
       headerSortable: {},
@@ -57,114 +58,239 @@ export default {
     }
   },
   props: {
-    /** 缓存Key */
     cacheKey: {
       type: String,
       default: null
     },
-    /** 表列集合 */
+    fieldListCacheKey: {
+      type: String,
+      default: null
+    },
     columns: {
       type: Array,
-      default: []
+      default: () => []
     },
-    /** 表数据集合 */
     data: {
       type: Array,
-      default: []
+      default: () => []
+    },
+    loading: {
+      type: Boolean,
+      default: false
+    },
+    sortColumnCacheKey: {
+      type: String,
+      default: null
+    },
+    sortTypeCacheKey: {
+      type: String,
+      default: null
+    },
+    persistSort: {
+      type: Boolean,
+      default: true
     }
   },
   computed: {
-    /** 显示的列集合 */
     showTableFieldList: function () {
-      return this.tableFieldList.map((col,index)=>{
+      return this.tableFieldList.map((col, index) => {
         col.index = index;
         return col;
-      }).filter(col=>col.visible);
+      }).filter(col => col.visible);
     },
-    /** 列宽度 */
     columnWidth: function () {
       return function (column) {
-        return column['width_'+this.$i18n.locale] || column.width || DEFAULT_COLUMN_WIDTH;
+        return column['width_' + this.$i18n.locale] || column.width || DEFAULT_COLUMN_WIDTH;
       }
     }
   },
   watch: {
-    "$i18n.locale": function (newVal, oldVal) {
+    "$i18n.locale": function () {
       this.$nextTick(() => {
-        this.$refs.defectTable.doLayout();
+        this.$refs.elTable && this.$refs.elTable.doLayout();
       });
     },
   },
   created() {
-    this.setColumns(this.getShowColumns() || this.columns);
+    const merged = this.mergeCachedColumns(this.columns);
+    this.tableFieldList = merged;
+    this.$emit('columns-change', merged);
+    if (this.columnsStorageKey()) {
+      this.saveShowColumns(merged);
+    }
   },
   mounted() {
     this.initSort();
     this.initColumnDrag();
   },
   methods: {
-    /** 初始化排序数据 */
+    columnsStorageKey() {
+      if (this.fieldListCacheKey) return this.fieldListCacheKey;
+      if (this.cacheKey != null && this.cacheKey !== '') return this.cacheKey + TABLE_FIELD_LIST_CACHE_KEY;
+      return null;
+    },
+    sortColumnStorageKey() {
+      if (this.sortColumnCacheKey) return this.sortColumnCacheKey;
+      if (this.cacheKey != null && this.cacheKey !== '') return this.cacheKey + TABLE_SORT_COLUMN;
+      return null;
+    },
+    sortTypeStorageKey() {
+      if (this.sortTypeCacheKey) return this.sortTypeCacheKey;
+      if (this.cacheKey != null && this.cacheKey !== '') return this.cacheKey + TABLE_SORT_TYPE;
+      return null;
+    },
+    columnHeaderLabel(col) {
+      if (col.label !== undefined && col.label !== null) return col.label;
+      return this.$t(col.key);
+    },
+    columnRowKey(col, colIndex) {
+      return (col.key || col.prop) + '_' + colIndex;
+    },
+    columnMinWidth(col) {
+      return col.minWidth || this.columnWidth(col);
+    },
+    columnClassName(col) {
+      const parts = [];
+      if (col.fixed) parts.push('no-drag');
+      if (col.className) parts.push(col.className);
+      return parts.join(' ');
+    },
+    columnSortableMode(col) {
+      if (col.sortable === false) return false;
+      if (col.sortable === true) return true;
+      return 'custom';
+    },
+    columnSortBy(col) {
+      const mode = this.columnSortableMode(col);
+      return mode === 'custom' || mode === true ? col.prop : undefined;
+    },
+    columnSortOrders(col) {
+      if (this.columnSortableMode(col) !== 'custom') return undefined;
+      return col.prop === this.orderByColumn ? [this.isAsc] : [null];
+    },
+    mergeCachedColumns(defaults) {
+      const list = defaults && defaults.length ? defaults.map(d => ({ ...d })) : [];
+      const storageKey = this.columnsStorageKey();
+      if (!storageKey || !list.length) {
+        return list;
+      }
+      const cached = this.getShowColumns(storageKey);
+      if (!cached || !Array.isArray(cached) || cached.length === 0) {
+        return list;
+      }
+      if (typeof cached[0] === 'string') {
+        const visibleKeys = new Set(cached);
+        return list.map(d => ({ ...d, visible: visibleKeys.has(d.key) }));
+      }
+      const defaultByKey = {};
+      list.forEach(d => {
+        defaultByKey[d.key] = d;
+      });
+      const merged = [];
+      const used = new Set();
+      cached.forEach(c => {
+        const base = defaultByKey[c.key];
+        if (!base) return;
+        merged.push({
+          ...base,
+          fixed: !!c.fixed,
+          visible: c.visible !== false
+        });
+        used.add(c.key);
+      });
+      list.forEach(d => {
+        if (!used.has(d.key)) merged.push({ ...d });
+      });
+      return merged;
+    },
     initSort() {
-      this.isAsc = this.$cache.local.get(this.cacheKey+TABLE_SORT_TYPE)||null;
-      this.orderByColumn = this.$cache.local.get(this.cacheKey+TABLE_SORT_COLUMN)||null;
+      if (!this.persistSort) {
+        this.orderByColumn = null;
+        this.isAsc = null;
+        return;
+      }
+      const ck = this.sortColumnStorageKey();
+      const tk = this.sortTypeStorageKey();
+      if (!ck || !tk) {
+        this.orderByColumn = null;
+        this.isAsc = null;
+        return;
+      }
+      this.isAsc = this.$cache.local.get(tk) || null;
+      this.orderByColumn = this.$cache.local.get(ck) || null;
       this.sort(this.orderByColumn, this.isAsc);
     },
-    /** 排序改变的处理 */
     sortChangeHandle(e) {
       this.isAsc = e.order;
       this.orderByColumn = e.prop;
-      this.$cache.local.set(this.cacheKey+TABLE_SORT_COLUMN, e.prop);
-      this.$cache.local.set(this.cacheKey+TABLE_SORT_TYPE, e.order);
+      if (this.persistSort) {
+        const ck = this.sortColumnStorageKey();
+        const tk = this.sortTypeStorageKey();
+        if (ck && tk) {
+          if (e.prop != null) this.$cache.local.set(ck, e.prop);
+          else this.$cache.local.remove(ck);
+          if (e.order != null) this.$cache.local.set(tk, e.order);
+          else this.$cache.local.remove(tk);
+        }
+      }
       this.$emit('sort-change', e);
     },
-    /** 保存表格显示哪些属性 */
     saveShowColumns(columns) {
-      this.$cache.local.setJSON(this.cacheKey+TABLE_FIELD_LIST_CACHE_KEY, columns);
+      const key = this.columnsStorageKey();
+      if (!key) return;
+      this.$cache.local.setJSON(key, columns);
     },
-    /** 获取表格显示哪些属性 */
-    getShowColumns() {
-      return this.$cache.local.getJSON(this.cacheKey+TABLE_FIELD_LIST_CACHE_KEY);
+    getShowColumns(storageKey) {
+      const key = storageKey || this.columnsStorageKey();
+      if (!key) return null;
+      let cached = this.$cache.local.getJSON(key);
+      if (cached == null) {
+        const raw = this.$cache.local.get(key);
+        if (raw) {
+          try {
+            cached = typeof raw === 'string' ? JSON.parse(raw) : raw;
+          } catch (e) {
+            cached = null;
+          }
+        }
+      }
+      return cached;
     },
-    /** 设置列显示属性 */
+    /** 按勾选的可显示列 key 更新显隐（不参与列设置的列保持可见） */
     setColumnsVisible(showColumns) {
-      this.setColumns(this.tableFieldList.map(col=>{
-        col.visible = showColumns.filter(key=>key===col.key).length>0;
-        return col;
-      }));
+      const showSet = new Set(showColumns);
+      this.setColumns(this.tableFieldList.map(col => ({
+        ...col,
+        visible: col.showInColumnPicker === false ? true : showSet.has(col.key)
+      })));
       this.reorderColumns();
     },
-    /** 设置列 */
     setColumns(columns) {
       this.tableFieldList = columns;
       this.$emit('columns-change', columns);
-      this.saveShowColumns(columns);
+      if (this.columnsStorageKey()) this.saveShowColumns(columns);
     },
-    /** 出事化列拖动 */
     initColumnDrag() {
       this.bindSortable('.el-table__header-wrapper thead tr', 'normal');
       this.bindSortable('.el-table__fixed-header-wrapper thead tr', 'fixed');
     },
-    /** 绑定拖动功能 */
     bindSortable(selector, zone) {
-      this.$nextTick(()=>{
-        const el = this.$refs.defectTable.$el.querySelector(selector);
+      this.$nextTick(() => {
+        const el = this.$refs.elTable.$el.querySelector(selector);
         if (!el) return;
-        // 防止重复绑定
         if (this.headerSortable[zone]) {
           this.headerSortable[zone].destroy();
         }
-
         this.headerSortable[zone] = Sortable.create(el, {
           ghostClass: 'table-header-ghost',
-          // filter: '.no-drag',
           group: zone,
           onStart: () => {
             this.mouseFlag = false;
           },
-          // onMove: evt => !evt.related.classList.contains('no-drag'),
           onEnd: evt => {
             const oldField = this.showTableFieldList[evt.oldIndex];
             const newField = this.showTableFieldList[evt.newIndex];
+            if (!oldField || !newField) return;
             this.mouseFlag = false;
             const moved = this.tableFieldList.splice(oldField.index, 1)[0];
             this.tableFieldList.splice(newField.index, 0, moved);
@@ -173,74 +299,54 @@ export default {
         });
       });
     },
-    /** 表格排序 */
     sort(prop, order) {
-      this.$refs.defectTable.sort(prop, order);
+      if (!this.$refs.elTable || prop == null) return;
+      this.$refs.elTable.sort(prop, order);
     },
-    /** 刷新表格 */
     doLayout() {
-      this.$refs.defectTable.doLayout();
+      this.$refs.elTable && this.$refs.elTable.doLayout();
     },
-    /** 处理点击表格列中的图钉按钮 */
     handleClickColumnsPin(column) {
       column.fixed = !column.fixed;
-      this.saveShowColumns(this.tableFieldList);
+      if (this.columnsStorageKey()) this.saveShowColumns(this.tableFieldList);
       this.tableKey = (new Date()).getMilliseconds();
       this.initColumnDrag();
     },
-    /** 多选框选中数据 */
     handleSelectionChange(selection) {
       this.$emit('selection-change', selection);
     },
-    /** 处理点击了表格中的某一行 */
     handleClickTableRow(row) {
       this.$emit('row-click', row);
     },
-    /** 处理鼠标在表格点下事件 */
-    handleTableMouseDown(e) {
-      this.mouseOffset = e.clientX;
-      this.mouseFlag = true;
-    },
-    /** 处理鼠标在表格点起事件 */
-    handleTableMouseUp(e) {
-      this.mouseFlag = false;
-    },
-    /** 处理鼠标在表格移动事件 */
-    handleTableMouseMove(e) {
-      // 这里面需要注意，通过ref需要那个那个包含table元素的父元素
-      let tableBody = this.$refs.defectTable.bodyWrapper;
-      if (this.mouseFlag) {
-        // 设置水平方向的元素的位置
-        tableBody.scrollLeft -= (- this.mouseOffset + (this.mouseOffset = e.clientX));
-      }
-    },
-    /** 重新加载列 */
     reorderColumns() {
-      // 重排 tableFieldList
+      if (!this.$refs.elTable) return;
       const fixedCols = this.tableFieldList.filter(c => c.fixed);
       const normalCols = this.tableFieldList.filter(c => !c.fixed);
       this.setColumns([...fixedCols, ...normalCols]);
 
-      // 同步 el-table 内部 columns
-      const storeCols = this.$refs.defectTable.store.states.columns;
-      const dataCols = storeCols.filter(c => c.property); // 排除 selection / 操作列
+      const storeCols = this.$refs.elTable.store.states.columns;
+      const dataCols = storeCols.filter(c => c.property);
       const fixedStore = dataCols.filter(c => c.fixed === 'left');
       const normalStore = dataCols.filter(c => !c.fixed);
 
-      this.$refs.defectTable.store.states.columns = [
+      this.$refs.elTable.store.states.columns = [
         ...fixedStore,
         ...normalStore,
-        ...storeCols.filter(c => !c.property) // 操作列
+        ...storeCols.filter(c => !c.property)
       ];
       this.$nextTick(() => {
-        this.$refs.defectTable.doLayout();
+        this.$refs.elTable.doLayout();
       });
     }
   }
 }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+.header-title-only {
+  display: inline-block;
+}
+
 ::v-deep .table-header-ghost {
   background-color: #ecf5ff !important;
   border-radius: 3px;

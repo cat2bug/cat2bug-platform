@@ -1,20 +1,16 @@
 <template>
   <div>
-    <!--查询-->
     <div class="defect-table-tools">
       <slot name="left-tools"></slot>
       <div class="table-tools row">
-        <el-popover
-          v-show="$refs.defectTable"
-          placement="top"
-          trigger="click">
+        <el-popover placement="top" trigger="click">
           <div class="row">
             <i class="el-icon-s-fold"></i>
-            <h4>{{$t('defect.display-field')}}</h4>
+            <h4>{{ $t('display-field') }}</h4>
           </div>
           <el-divider class="defect-field-divider"></el-divider>
-          <el-checkbox-group v-model="tableShowFieldList" class="col" @change="checkedFieldListChange">
-            <el-checkbox v-for="field in tableFieldList" :label="field.key" :key="field.key">{{$t(field.key)}}</el-checkbox>
+          <el-checkbox-group v-model="columnPickerCheckedKeys" class="defect-column-picker" @change="onColumnPickerChange">
+            <el-checkbox v-for="c in defectColumnPickerOptions" :key="c.key" :label="c.key">{{ $t(c.key) }}</el-checkbox>
           </el-checkbox-group>
           <el-button
             style="padding: 9px;"
@@ -29,58 +25,59 @@
         </div>
       </div>
     </div>
-    <!--表格-->
     <cat2-bug-table
-      ref="defectTable"
+      ref="cat2BugTable"
       cache-key="defect-table"
-      :columns="tableFieldList"
+      :columns="tableColumnDefaults"
       :data="defectList"
-      @columns-change="handleTableColumnsChange"
-      @sort-change="sortChangeHandle">
-      <template v-slot:columns="{scope, column}">
-          <span v-if="column.prop==='projectNum'" >{{ '#' + scope.row[column.prop] }}</span>
-          <defect-type-flag v-else-if="column.prop==='defectTypeName'" :defect="scope.row" />
-          <div v-else-if="column.prop==='defectName'" class="table-defect-title">
-            <focus-member-list
-              v-show="scope.row.focusList && scope.row.focusList.length>0"
-              v-model="scope.row.focusList"
-              module-name="defect"
-              :data-id="scope.row.defectId" />
-            <el-link type="primary" @click="handleClickTableRow(scope.row)">{{ scope.row.defectName }}</el-link>
-            <div class="defect-statistics">
-              <div>
-                <i class="el-icon-time"></i>
-                <span>{{ $t('defect.life-time') }}:</span>
-                <span class="defect-statistics-value">{{defectLife(scope.row)}}</span>
-              </div>
-              <div>
-                <i class="el-icon-document-delete"></i>
-                <span>{{$i18n.t('reject')}}:</span>
-                <span class="defect-statistics-value">{{scope.row.rejectCount}}</span>
-              </div>
+      :loading="loading"
+      @sort-change="sortChangeHandle"
+      @columns-change="onTableColumnsChange">
+      <template #columns="{ scope, column }">
+        <span v-if="column.prop==='projectNum'" >{{ '#' + scope.row[column.prop] }}</span>
+        <defect-type-flag v-else-if="column.prop==='defectTypeName'" :defect="scope.row" />
+        <div v-else-if="column.prop==='defectName'" class="table-defect-title">
+          <focus-member-list
+            v-show="scope.row.focusList && scope.row.focusList.length>0"
+            v-model="scope.row.focusList"
+            module-name="defect"
+            :data-id="scope.row.defectId" />
+          <el-link type="primary" @click="handleClickTableRow(scope.row)">{{ scope.row.defectName }}</el-link>
+          <div class="defect-statistics">
+            <div>
+              <i class="el-icon-time"></i>
+              <span>{{ $t('defect.life-time') }}:</span>
+              <span class="defect-statistics-value">{{defectLife(scope.row)}}</span>
+            </div>
+            <div>
+              <i class="el-icon-document-delete"></i>
+              <span>{{$i18n.t('reject')}}:</span>
+              <span class="defect-statistics-value">{{scope.row.rejectCount}}</span>
             </div>
           </div>
-          <level-tag v-else-if="column.prop==='defectLevel'" :options="dict.type.defect_level" :value="scope.row.defectLevel"/>
-          <defect-state-flag v-else-if="column.prop==='defectState'" :defect="scope.row" />
-          <cat2-bug-preview-image v-else-if="column.prop==='imgUrls'" :images="getUrl(scope.row.imgUrls)" />
-          <div v-else-if="column.prop==='annexUrls'" class="annex-list">
-            <cat2-bug-text :content="file" type="down" :tooltip="file" v-for="(file,index) in getUrl(scope.row.annexUrls)" :key="index" />
-          </div>
-          <defect-type-flag v-else-if="column.prop==='defectTypeName'" :defect="scope.row" />
-          <span v-else-if="column.prop==='updateTime'">{{ parseTime(scope.row.updateTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
-          <span v-else-if="column.prop==='planStartTime'">{{ parseTime(scope.row.planStartTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
-          <span v-else-if="column.prop==='planEndTime'">{{ parseTime(scope.row.planEndTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
-          <row-list-member v-else-if="column.prop==='createMember'" :members="[scope.row.createMember]"></row-list-member>
-          <row-list-member v-else-if="column.prop==='handleBy'" :members="scope.row.handleByList"></row-list-member>
-          <span v-else>{{ scope.row[column.prop] }}</span>
+        </div>
+        <level-tag v-else-if="column.prop==='defectLevel'" :options="dict.type.defect_level" :value="scope.row.defectLevel"/>
+        <defect-state-flag v-else-if="column.prop==='defectState'" :defect="scope.row" />
+        <cat2-bug-preview-image v-else-if="column.prop==='imgUrls'" :images="getUrl(scope.row.imgUrls)" />
+        <div v-else-if="column.prop==='annexUrls'" class="annex-list">
+          <cat2-bug-text :content="file" type="down" :tooltip="file" v-for="(file,index) in getUrl(scope.row.annexUrls)" :key="index" />
+        </div>
+        <span v-else-if="column.prop==='updateTime'">{{ parseTime(scope.row.updateTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
+        <span v-else-if="column.prop==='planStartTime'">{{ parseTime(scope.row.planStartTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
+        <span v-else-if="column.prop==='planEndTime'">{{ parseTime(scope.row.planEndTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
+        <row-list-member v-else-if="column.prop==='createMember'" :members="[scope.row.createMember]"></row-list-member>
+        <row-list-member v-else-if="column.prop==='handleBy'" :members="scope.row.handleByList"></row-list-member>
+        <span v-else>{{ scope.row[column.prop] }}</span>
       </template>
-      <el-table-column :label="$t('operate')" align="left" class-name="no-drag small-padding fixed-width" min-width="250" fixed="right">
-        <template slot-scope="scope">
-          <div class="row">
-            <defect-tools class="defect-row-tools" :is-text="true" :defect="scope.row" size="mini" :is-show-icon="true" @view="handleClickTableRow" @delete="refreshSearch" @update="refreshSearch" @log="refreshSearch"></defect-tools>
-          </div>
+      <template #append>
+        <el-table-column :label="$t('operate')" align="center" class-name="no-drag small-padding fixed-width" min-width="250" fixed="right">
+          <template slot-scope="scope">
+            <div class="row">
+              <defect-tools class="defect-row-tools" :is-text="true" :defect="scope.row" size="mini" :is-show-icon="true" @view="handleClickTableRow" @delete="refreshSearch" @update="refreshSearch" @log="refreshSearch"></defect-tools>
+            </div>
           </template>
-      </el-table-column>
+        </el-table-column>
+      </template>
     </cat2-bug-table>
 
     <pagination
@@ -105,7 +102,7 @@ import DefectTools from "@/components/Defect/DefectTools";
 import Cat2BugTable from "@/components/Cat2BugTable";
 import {listDefect} from "@/api/system/defect";
 import {lifeTime} from "@/utils/defect";
-import {TableOptions} from "@/views/system/defect/list/table-options";
+import { TableOptions } from "@/views/system/defect/list/table-options";
 
 export default {
   name: "DefectTable",
@@ -113,36 +110,22 @@ export default {
   components: {RowListMember, Cat2BugPreviewImage, LevelTag, FocusMemberList, DefectTypeFlag, DefectStateFlag, DefectTools, Cat2BugText, Cat2BugTable },
   data() {
     return {
-      // 鼠标是否点击
       mouseFlag: false,
-      // 鼠标移动的偏移量
       mouseOffset: 0,
-      // 鼠标点击时间
       mouseClickTime: 0,
-      // 是否选择了所有
       isCheckAll: false,
-      // 全选组件的状态
       isIndeterminate: false,
-      // 勾选的缺陷ID列表
       checkedDefectList: [],
-      // 遮罩层
       loading: true,
-      // 选中数组
       ids: [],
-      // 非单个禁用
       single: true,
-      // 非多个禁用
       multiple: true,
-      // 总条数
       total: 0,
-      // 缺陷表格数据
       defectList: [],
-      // 查询参数
       queryParams: this.query,
-      // 表格列表
-      tableFieldList: TableOptions,
-      // 选中的表格列数据集合
-      tableShowFieldList: [],
+      /** 缺陷列表表格默认列（克隆自 table-options，避免与全局常量引用互相污染） */
+      tableColumnDefaults: TableOptions.map(c => ({ ...c })),
+      columnPickerCheckedKeys: [],
     }
   },
   props: {
@@ -177,7 +160,9 @@ export default {
     }
   },
   computed: {
-    /** 缺陷的存活时间 */
+    defectColumnPickerOptions() {
+      return TableOptions.filter(c => c.showInColumnPicker !== false);
+    },
     defectLife: function () {
       return function (defect) {
         return lifeTime(defect);
@@ -205,11 +190,12 @@ export default {
   },
   methods: {
     init() {},
-    /** 缺陷列表属性字段改变操作 */
-    checkedFieldListChange(fields) {
-      this.$refs.defectTable.setColumnsVisible(fields);
+    onTableColumnsChange(columns) {
+      this.columnPickerCheckedKeys = columns.filter(c => c.visible && c.showInColumnPicker !== false).map(c => c.key);
     },
-    /** 排序改变的处理 */
+    onColumnPickerChange(keys) {
+      this.$refs.cat2BugTable && this.$refs.cat2BugTable.setColumnsVisible(keys);
+    },
     sortChangeHandle(e) {
       if(e.order){
         switch (e.prop) {
@@ -223,7 +209,6 @@ export default {
             this.queryParams.orderByColumn=e.prop;
             break;
         }
-        // this.queryParams.isAsc=e.order=='ascending'?"asc":'desc';
         this.queryParams.isAsc=e.order;
       } else {
         this.queryParams.orderByColumn=null;
@@ -232,7 +217,6 @@ export default {
       this.queryParams.pageNum = 1;
       this.search(this.queryParams);
     },
-    /** 查询缺陷列表 */
     search(params) {
       this.loading = true;
       this.queryParams = params;
@@ -242,20 +226,16 @@ export default {
         this.total = response.total;
       });
     },
-    /** 刷新查询 */
     refreshSearch() {
       this.$emit('refresh');
     },
-    /** 显示图片操作 */
     clickImageHandle(event){
       event.stopPropagation();
     },
-    /** 处理点击了表格中的某一行 */
     handleClickTableRow(defect) {
       if(defect && defect.defectId)
         this.$emit('defect-click',defect);
     },
-    /** 下载附件操作 */
     handleDown(event, file) {
       const a = document.createElement("a");
       const e = new MouseEvent("click");
@@ -263,11 +243,6 @@ export default {
       a.dispatchEvent(e);
       event.stopPropagation();
     },
-    /** 表格列改变事件 */
-    handleTableColumnsChange(columns) {
-      this.tableFieldList = columns;
-      this.tableShowFieldList = columns.filter(c=>c.visible).map(c=>c.key);
-    }
   }
 }
 </script>
@@ -283,7 +258,6 @@ export default {
     justify-content: space-between;
   }
 }
-
 .defect-table-tools {
   display: flex;
   flex-direction: row;
@@ -304,25 +278,31 @@ export default {
     }
   }
 }
-.el-checkbox-group {
-  width: 15px;
-  height: 15px;
-  line-height: 15px;
+.defect-field-divider {
+  margin: 8px 0px;
 }
-.defect-check-tools {
+/** 显示字段：勿限制 checkbox-group 宽高（原先 15px 会导致选项重叠错乱） */
+.defect-column-picker {
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  > * {
-    font-size: 0.7rem;
-  }
-  ::v-deep .el-button {
-    width: 8px;
-    height: 8px;
-    margin: 0px;
-    padding: 0px;
-    border-width: 0px;
-  }
+  gap: 6px;
+  min-width: 220px;
+  max-height: 380px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.defect-column-picker ::v-deep .el-checkbox {
+  display: flex;
+  align-items: center;
+  margin-right: 0;
+  white-space: nowrap;
+}
+.defect-column-picker ::v-deep .el-checkbox__input {
+  flex-shrink: 0;
+}
+.defect-column-picker ::v-deep .el-checkbox__label {
+  line-height: 1.4;
+  padding-left: 8px;
 }
 .row {
   display: flex;
@@ -332,14 +312,6 @@ export default {
   > * {
     margin: 0px;
   }
-}
-.col {
-  display: flex;
-  flex-direction: column;
-  height: auto;
-}
-.defect-field-divider {
-  margin: 8px 0px;
 }
 .table-defect-title {
   display: inline-flex;
