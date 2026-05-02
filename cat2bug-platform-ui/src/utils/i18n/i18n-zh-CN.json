@@ -656,6 +656,8 @@
   "case.prompt-tooltip": "提示词，点击选择提示词",
   "case.prompt-list": "提示词列表",
   "case.create-row-count": "测试用例生成数量",
+  "case.show-module-tree": "显示交付物列表",
+  "case.hide-module-tree": "隐藏交付物列表",
   "case.prompt-content-not-empty": "需求内容不能为空!",
   "case.model-content-not-empty": "模型选择不能为空!",
   "case.prompt-content-cannot-empty": "提示词不能为空!",

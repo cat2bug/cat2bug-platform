@@ -656,6 +656,8 @@
   "case.prompt-tooltip":"Подсказка. Нажмите, чтобы выбрать подсказку",
   "case.prompt-list":"Список подсказок",
   "case.create-row-count":"Количество генерируемых тестовых случаев",
+  "case.show-module-tree":"Показать дерево модулей",
+  "case.hide-module-tree":"Скрыть дерево модулей",
   "case.prompt-content-not-empty":"Содержимое требования не может быть пустым!",
   "case.model-content-not-empty":"Выбор модели не может быть пустым!",
   "case.prompt-content-cannot-empty":"Подсказка не может быть пустой!",

@@ -92,14 +92,22 @@
       </div>
     </div>
     <!--    模块树和用例列表区域-->
-    <multipane layout="vertical" ref="multiPane" class="custom-resizer" @paneResizeStop="dragStopHandle">
+    <multipane layout="vertical" ref="multiPane" class="custom-resizer" :class="{ 'custom-resizer--tree-hidden': !showModuleTree }" @paneResizeStop="dragStopHandle">
       <!--      树形模块选择组件-->
-      <div class="tree-module" ref="treeModule" :style="treeModuleStyle">
-        <tree-module ref="treeModuleRef" :project-id="projectId" @node-click="moduleClickHandle"  v-resize="setDragComponentSize" />
+      <div class="tree-module" ref="treeModule" :style="treeModuleStyle" v-if="showModuleTree">
+        <tree-module
+          ref="treeModuleRef"
+          :project-id="projectId"
+          :show-sidebar-toggle="true"
+          @toggle-sidebar="toggleModuleTreeVisible"
+          @node-click="moduleClickHandle"
+          v-resize="setDragComponentSize"
+        />
       </div>
-      <multipane-resizer :style="multipaneStyle"></multipane-resizer>
+      <multipane-resizer v-show="showModuleTree" :style="multipaneStyle"></multipane-resizer>
       <!--      用例列表-->
       <div ref="caseContext" class="case-context">
+        <div class="case-context-body">
         <el-table ref="table" v-loading="loading" :data="caseList"
                   @selection-change="handleSelectionChange"
                   @sort-change="handleSortChange"
@@ -107,6 +115,31 @@
                   @mouseup.native="handleTableMouseUp"
                   @mousemove.native="handleTableMouseMove"
                   v-resize="setDragComponentSize">
+          <el-table-column
+            v-if="!showModuleTree"
+            key="case-sidebar-expand-col"
+            fixed
+            width="40"
+            align="center"
+            label-class-name="case-sidebar-expand-header-cell"
+            class-name="case-sidebar-expand-body-cell">
+            <template slot="header">
+              <el-tooltip :content="$t('case.show-module-tree')" placement="bottom">
+                <span
+                  class="case-sidebar-expand-trigger"
+                  role="button"
+                  tabindex="0"
+                  @click.stop="toggleModuleTreeVisible"
+                  @keyup.enter.stop.prevent="toggleModuleTreeVisible"
+                >
+                  <svg-icon icon-class="menu" class-name="case-sidebar-expand-svg" />
+                </span>
+              </el-tooltip>
+            </template>
+            <template slot-scope>
+              <span class="case-sidebar-expand-body-placeholder" />
+            </template>
+          </el-table-column>
           <el-table-column type="selection" width="50" align="center" fixed />
           <el-table-column v-if="showField('id')" :label="$t('id')" align="center" prop="caseNum" width="80" sortable="custom" fixed>
             <template slot-scope="scope">
@@ -203,6 +236,7 @@
           :limit.sync="queryParams.pageSize"
           @pagination="getList"
         />
+        </div>
       </div>
     </multipane>
     <add-case ref="addCaseDialog" :module-id="queryParams.params.modulePid" @added="reloadData" @close="initFloatMenu" />
@@ -262,6 +296,8 @@ import {setDefectTempTab} from "@/utils/defect";
 import {setHeader} from "@/utils/request";
 
 const TREE_MODULE_WIDTH_CACHE_KEY = 'case_tree_module_width';
+/** 用例页左侧交付物树是否展开（本地缓存） */
+const CASE_TREE_MODULE_VISIBLE_CACHE_KEY = 'case_tree_module_visible';
 /** 需要显示的测试用例字段列表在缓存的key值 */
 const CASE_TABLE_FIELD_LIST_CACHE_KEY='case-table-field-list';
 /** 用例表排序的列 */
@@ -280,6 +316,8 @@ export default {
       mouseOffset: 0,
       multipaneStyle: {'--marginTop':'0px'},
       treeModuleStyle: {'--treeModuleWidth':'300px'},
+      /** 是否显示左侧交付物列表 */
+      showModuleTree: true,
       // 表格中可以显示的字段列表
       checkedFieldList: [],
       // 所有属性类型
@@ -365,6 +403,8 @@ export default {
     },
   },
   created() {
+    const treeVis = this.$cache.local.get(CASE_TREE_MODULE_VISIBLE_CACHE_KEY);
+    this.showModuleTree = !(treeVis === '0' || treeVis === 'false');
     // 设置缺陷列表显示哪些列属性
     this.setFieldList();
     this.handleQuery();
@@ -427,7 +467,9 @@ export default {
     /** 重新加载数据 */
     reloadData() {
       this.getList();
-      this.$refs.treeModuleRef.reloadData();
+      if (this.$refs.treeModuleRef) {
+        this.$refs.treeModuleRef.reloadData();
+      }
     },
     /** 初始化排序数据 */
     initSort() {
@@ -514,13 +556,27 @@ export default {
     },
     /** 拖动事件完成 */
     dragStopHandle(pane, container, size) {
-      this.cacheTreeModuleWidth();
+      if (this.showModuleTree) {
+        this.cacheTreeModuleWidth();
+      }
+    },
+    /** 切换左侧交付物列表显示，状态写入本地 */
+    toggleModuleTreeVisible() {
+      this.showModuleTree = !this.showModuleTree;
+      this.$cache.local.set(CASE_TREE_MODULE_VISIBLE_CACHE_KEY, this.showModuleTree ? '1' : '0');
+      this.$nextTick(() => {
+        this.setDragComponentSize();
+        if (this.$refs.table) {
+          this.$refs.table.doLayout();
+        }
+      });
     },
     /** 设置模块与用例列表中间拖动块的尺寸 */
     setDragComponentSize() {
       this.multipaneStyle['--marginTop'] = '0px';
       this.$nextTick(()=> {
-        let pageHeight = Math.max(this.$refs.treeModule.scrollHeight || 0, this.$refs.caseContext.scrollHeight || 0, document.body.scrollHeight - 170)
+        const treeH = this.$refs.treeModule ? (this.$refs.treeModule.scrollHeight || 0) : 0;
+        let pageHeight = Math.max(treeH, this.$refs.caseContext.scrollHeight || 0, document.body.scrollHeight - 170)
         this.multipaneStyle['--marginTop'] = pageHeight + 'px';
       })
     },
@@ -700,7 +756,72 @@ export default {
 .case-context {
   flex-grow: 1;
   min-width: 0;
-  overflow:hidden;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+.case-context-body {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.case-sidebar-expand-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  box-sizing: border-box;
+  cursor: pointer;
+  color: #909399;
+  font-size: 12px;
+  line-height: 1;
+  flex-shrink: 0;
+  border-radius: 4px;
+}
+.case-sidebar-expand-trigger:hover {
+  color: #409eff;
+  background-color: #ecf5ff;
+}
+.case-sidebar-expand-trigger:focus-visible {
+  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.35);
+}
+.case-sidebar-expand-trigger ::v-deep .case-sidebar-expand-svg {
+  width: 14px;
+  height: 14px;
+  vertical-align: middle;
+  display: block;
+}
+::v-deep .case-sidebar-expand-header-cell {
+  padding: 0 !important;
+  text-align: center;
+}
+::v-deep .case-sidebar-expand-header-cell .cell {
+  padding: 0 4px !important;
+  overflow: visible !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+::v-deep .el-table__fixed-header-wrapper .case-sidebar-expand-header-cell .cell {
+  overflow: visible !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+::v-deep .case-sidebar-expand-body-cell .cell {
+  padding: 4px 2px !important;
+}
+.case-sidebar-expand-body-placeholder {
+  display: block;
+  width: 1px;
+  height: 1px;
+  visibility: hidden;
 }
 .case-tools {
   width: 100%;
@@ -729,6 +850,10 @@ export default {
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
+}
+.custom-resizer--tree-hidden > .case-context {
+  flex: 1 1 100%;
+  width: 100%;
 }
 .custom-resizer > .multipane-resizer {
   margin: 0; left: 0;

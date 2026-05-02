@@ -1,8 +1,21 @@
 <template>
   <div class="tree">
     <div class="tree-tools">
-      <i class="el-icon-menu" />
-      {{ $t('module.list') }}
+      <span class="tree-tools-title">
+        <i class="el-icon-menu" />
+        {{ $t('module.list') }}
+      </span>
+      <el-tooltip v-if="showSidebarToggle" :content="$t('case.hide-module-tree')" placement="bottom">
+        <span
+          class="tree-sidebar-collapse-toggle"
+          role="button"
+          tabindex="0"
+          @click.stop="handleSidebarToggle"
+          @keyup.enter.stop.prevent="handleSidebarToggle"
+        >
+          <i class="el-icon-d-arrow-left" />
+        </span>
+      </el-tooltip>
     </div>
     <el-tree :highlight-current="true" ref="moduleTree" :show-checkbox="checkVisible" :props="props" :lazy="true" :data="tree" :load="loadNode" node-key="id" @node-click="handleNodeClick" @check-change="handleCheckChange">
       <span class="tree-node" slot-scope="{ node, data }">
@@ -61,6 +74,11 @@ export default {
     checkVisible: {
       type: Boolean,
       default: false
+    },
+    /** 标题栏右侧：收起左侧栏按钮（用例页交付物展开时） */
+    showSidebarToggle: {
+      type: Boolean,
+      default: false
     }
   },
   computed: {
@@ -71,6 +89,9 @@ export default {
     }
   },
   methods: {
+    handleSidebarToggle() {
+      this.$emit('toggle-sidebar');
+    },
     reloadData() {
       this.currentNode = null;
       this.tree = [];
@@ -186,6 +207,53 @@ export default {
   font-size: 15px;
   font-weight: 500;
   color: #515a6e;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+}
+.tree-tools-title {
+  display: inline-flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  > i {
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+}
+.tree-sidebar-collapse-toggle {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  box-sizing: border-box;
+  cursor: pointer;
+  color: #909399;
+  font-size: 12px;
+  line-height: 1;
+  border-radius: 4px;
+  border: none;
+  outline: none;
+  background: transparent;
+}
+.tree-sidebar-collapse-toggle:hover {
+  color: #409eff;
+  background-color: #ecf5ff;
+}
+.tree-sidebar-collapse-toggle:focus-visible {
+  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.35);
+}
+.tree-sidebar-collapse-toggle > i {
+  font-size: 12px;
+  transform: scale(0.92);
 }
 .tree-node {
   flex: 1;

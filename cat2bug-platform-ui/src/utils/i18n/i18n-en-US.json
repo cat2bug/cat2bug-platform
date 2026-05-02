@@ -656,6 +656,8 @@
   "case.prompt-tooltip": "Prompt word, click to select prompt word",
   "case.prompt-list": "Prompt List",
   "case.create-row-count": "Number of test cases generated",
+  "case.show-module-tree": "Show module tree",
+  "case.hide-module-tree": "Hide module tree",
   "case.prompt-content-not-empty": "The requirement content cannot be empty!",
   "case.model-content-not-empty": "The model content cannot be empty!",
   "case.prompt-content-cannot-empty": "The prompt word cannot be empty!",

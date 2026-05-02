@@ -655,6 +655,8 @@
   "case.prompt-tooltip":"كلمة تلميح، اضغط لاختيار كلمة تلميح",
   "case.prompt-list":"قائمة كلمات التلميح",
   "case.create-row-count":"عدد حالات الاختبار المُنشأة",
+  "case.show-module-tree":"إظهار شجرة الوحدات",
+  "case.hide-module-tree":"إخفاء شجرة الوحدات",
   "case.prompt-content-not-empty":"لا يمكن أن تكون محتوى المتطلبات فارغًا!",
   "case.model-content-not-empty":"لا يمكن أن تكون اختيار النموذج فارغًا!",
   "case.prompt-content-cannot-empty":"لا يمكن أن تكون كلمة التلميح فارغة!",

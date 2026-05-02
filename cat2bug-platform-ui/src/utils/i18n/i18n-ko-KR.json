@@ -655,6 +655,8 @@
   "case.prompt-tooltip": "프롬프트 단어, 클릭하여 프롬프트 단어 선택",
   "case.prompt-list": "프롬프트 단어 목록",
   "case.create-row-count": "테스트 케이스 생성 개수",
+  "case.show-module-tree": "모듈 트리 표시",
+  "case.hide-module-tree": "모듈 트리 숨기기",
   "case.prompt-content-not-empty": "요구 사항 내용은 비어 있을 수 없습니다!",
   "case.model-content-not-empty": "모델 선택은 비어 있을 수 없습니다!",
   "case.prompt-content-cannot-empty": "프롬프트 단어는 비어 있을 수 없습니다!",

@@ -655,6 +655,8 @@
   "case.prompt-tooltip": "プロンプト、クリックしてプロンプトを選択してください",
   "case.prompt-list": "プロンプト一覧",
   "case.create-row-count": "生成するテストケースの数",
+  "case.show-module-tree": "モジュールツリーを表示",
+  "case.hide-module-tree": "モジュールツリーを非表示",
   "case.prompt-content-not-empty": "要件内容は空にできません！",
   "case.model-content-not-empty": "モデルの選択は空にできません！",
   "case.prompt-content-cannot-empty": "プロンプトは空にできません！",
