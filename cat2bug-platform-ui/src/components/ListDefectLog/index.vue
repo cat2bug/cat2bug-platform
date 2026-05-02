@@ -155,8 +155,25 @@ export default {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 5px;
+
+  /* 左侧日志正文占满剩余宽度，右侧「评论 + 时间」固定在同一行顶端（与单行日志一致） */
+  > :first-child {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  > div:last-child {
+    flex-shrink: 0;
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+    white-space: nowrap;
+    margin-left: 8px;
+    padding-top: 1px;
+  }
+
   .time {
     margin-left: 10px;
     flex-shrink: 0;
