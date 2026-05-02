@@ -236,7 +236,7 @@ export default {
       //   done();
       //   return;
       // }
-      closeEditWindow();
+      // closeEditWindow();
     },
     // 取消按钮
     cancel() {
