@@ -122,7 +122,7 @@
               v-if="!showModuleTree"
               key="case-sidebar-expand-col"
               fixed
-              width="40"
+              width="30"
               align="center"
               label-class-name="case-sidebar-expand-header-cell"
               class-name="case-sidebar-expand-body-cell">
@@ -709,8 +709,8 @@ export default {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
+  width: 18px;
+  height: 18px;
   padding: 0;
   box-sizing: border-box;
   cursor: pointer;
@@ -728,8 +728,8 @@ export default {
   box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.35);
 }
 .case-sidebar-expand-trigger ::v-deep .case-sidebar-expand-svg {
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
   vertical-align: middle;
   display: block;
 }
@@ -738,7 +738,7 @@ export default {
   text-align: center;
 }
 ::v-deep .case-sidebar-expand-header-cell .cell {
-  padding: 0 4px !important;
+  padding: 0 !important;
   overflow: visible !important;
   display: flex !important;
   justify-content: center !important;
@@ -751,7 +751,7 @@ export default {
   align-items: center !important;
 }
 ::v-deep .case-sidebar-expand-body-cell .cell {
-  padding: 4px 2px !important;
+  padding: 4px 0 !important;
 }
 .case-sidebar-expand-body-placeholder {
   display: block;
