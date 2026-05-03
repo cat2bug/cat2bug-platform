@@ -1,0 +1,224 @@
+diff --git a/node_modules/vue-excel-editor/src/VueExcelEditor.vue b/node_modules/vue-excel-editor/src/VueExcelEditor.vue
+index 6411a01..74c769f 100644
+--- a/node_modules/vue-excel-editor/src/VueExcelEditor.vue
++++ b/node_modules/vue-excel-editor/src/VueExcelEditor.vue
+@@ -616,6 +616,12 @@ export default {
+     }
+   },
+   methods: {
++    /** 鼠标事件中 target 可能为文本节点等，无 classList；规范化到最近 Element（与宿主页捕获 mousedown 等场景兼容） */
++    domEventTargetEl (e) {
++      let t = e && e.target
++      while (t && t.nodeType !== 1) t = t.parentNode
++      return t || null
++    },
+     componentTabInto (e) {
+       if (e.keyCode === 9) {
+         if (!this.moveInputSquare(this.currentRowPos, this.currentColPos))
+@@ -1116,6 +1122,7 @@ export default {
+     },
+     vsbMouseDown (e) {
+       e.stopPropagation()
++      if (!this.$refs.vScrollButton) return
+       if (!this.vScroller.mouseY) {
+         this.vScroller.saveButtonTop = this.vScroller.buttonTop
+         this.vScroller.mouseY = e.clientY
+@@ -1175,6 +1182,7 @@ export default {
+     },
+     sbMouseDown (e) {
+       e.stopPropagation()
++      if (!this.$refs.hScroll) return
+       if (!this.hScroller.mouseX) {
+         const sleft = this.$refs.hScroll.getBoundingClientRect().left
+         const fleft = this.footer.getBoundingClientRect().left + 40
+@@ -1497,9 +1505,11 @@ export default {
+     colSepMouseDown (e) {
+       e.preventDefault()
+       e.stopPropagation()
+-      if (this.allowAddCol && !e.target.classList.contains('col-sep')) {
+-        e.target.style.display = 'none'
+-        const me = e.target.parentElement.parentElement
++      const sepEl = this.domEventTargetEl(e)
++      if (!sepEl) return
++      if (this.allowAddCol && !sepEl.classList.contains('col-sep')) {
++        sepEl.style.display = 'none'
++        const me = sepEl.parentElement.parentElement
+         const pos = Array.from(me.parentElement.children).findIndex(td => td === me)
+         this.insertColumn(pos)
+       }
+@@ -1510,7 +1520,7 @@ export default {
+       this.sep = {}
+       // this.sep.curCol = this.colgroupTr.children[Array.from(this.labelTr.children).indexOf(e.target.parentElement)]
+       this.sep.curCol = this.colgroupTr.children[
+-        Array.from(this.labelTr.children).indexOf(e.target.parentElement) - (!this.noNumCol ? 0 : 1)]
++        Array.from(this.labelTr.children).indexOf(sepEl.parentElement) - (!this.noNumCol ? 0 : 1)]
+       // this.sep.nxtCol = this.sep.curCol.nextElementSibling
+       this.sep.pageX = e.pageX
+       let padding = 0
+@@ -1520,37 +1530,41 @@ export default {
+         if (padLeft && padRight)
+           padding = parseInt(padLeft) + parseInt(padRight)
+       }
+-      this.sep.curColWidth = e.target.parentElement.offsetWidth - padding
++      this.sep.curColWidth = sepEl.parentElement.offsetWidth - padding
+       // if (this.sep.nxtCol)
+       //   this.sep.nxtColWidth = this.sep.nxtCol.offsetWidth - padding
+       window.addEventListener('mousemove', this.colSepMouseMove)
+       window.addEventListener('mouseup', this.colSepMouseUp)
+     },
+     colSepMouseOver (e) {
+-      if (e.target.classList.contains('col-sep')) {
+-        e.target.style.borderRight = '5px solid #cccccc'
+-        e.target.style.height = this.systable.getBoundingClientRect().height + 'px'
++      const t = this.domEventTargetEl(e)
++      if (!t) return
++      if (t.classList.contains('col-sep')) {
++        t.style.borderRight = '5px solid #cccccc'
++        t.style.height = this.systable.getBoundingClientRect().height + 'px'
+         if (this.allowAddCol)
+-          e.target.children[0].style.display = 'block'
++          t.children[0].style.display = 'block'
+       }
+       else {
+         // add-col-btn
+         if (this.addColBtnTimeout) clearTimeout(this.addColBtnTimeout)
+         if (this.allowAddCol)
+-          e.target.style.display = 'block'
++          t.style.display = 'block'
+       }
+     },
+     colSepMouseOut (e) {
+-      if (e.target.classList.contains('col-sep')) {
+-        e.target.style.borderRight = '5px solid transparent'
+-        e.target.style.height = '100%'
++      const t = this.domEventTargetEl(e)
++      if (!t) return
++      if (t.classList.contains('col-sep')) {
++        t.style.borderRight = '5px solid transparent'
++        t.style.height = '100%'
+         this.addColBtnTimeout = setTimeout(() => {
+-          e.target.children[0].style.display = 'none'
++          t.children[0].style.display = 'none'
+         }, 500)
+       }
+       else {
+         // add-col-btn
+-          e.target.style.display = 'none'
++          t.style.display = 'none'
+       }
+     },
+     colSepMouseMove (e) {
+@@ -2014,8 +2028,9 @@ export default {
+     },
+     */
+     rowLabelClick (e) {
+-      let target = e.target
+-      while (target.tagName !== 'TD') target = target.parentNode
++      let target = this.domEventTargetEl(e)
++      while (target && target.tagName !== 'TD') target = target.parentNode
++      if (!target) return
+       const rowPos = Number(target.getAttribute('pos')) + this.pageTop
+       if (e.shiftKey) {
+         document.getSelection().removeAllRanges()
+@@ -2210,12 +2225,14 @@ export default {
+       return false
+     },
+     mouseDown (e) {
+-      if (e.target.parentNode.parentNode.tagName === 'TBODY' && !e.target.classList.contains('first-col')) {
++      const el = this.domEventTargetEl(e)
++      if (!el) return
++      if (el.parentNode.parentNode.tagName === 'TBODY' && !el.classList.contains('first-col')) {
+         e.preventDefault()
+         setTimeout(() => this.inputBox.focus())
+         this.focused = true
+-        const row = e.target.parentNode
+-        const colPos = Array.from(row.children).indexOf(e.target) - 1
++        const row = el.parentNode
++        const colPos = Array.from(row.children).indexOf(el) - 1
+         const rowPos = Array.from(row.parentNode.children).indexOf(row)
+         this.currentField = this.fields[colPos]
+         this.$emit('cell-click', {rowPos, colPos})
+@@ -2224,13 +2241,16 @@ export default {
+         this.moveInputSquare(rowPos, colPos)
+         if (this.currentField && this.currentField.link /* && e.altKey */)
+           setTimeout(() => this.currentField.link(this.currentCell.textContent, this.currentRecord, rowPos, colPos, this.currentField, this))
+-        if (this.currentField.listByClick) return this.calAutocompleteList(true)
+-        if (e.target.offsetWidth - e.offsetX > 25) return
+-        if (e.target.offsetWidth < e.target.scrollWidth) {
++        if (this.currentField.listByClick) {
++          if (el.offsetWidth - e.offsetX > 25) return
++          return this.calAutocompleteList(true)
++        }
++        if (el.offsetWidth - e.offsetX > 25) return
++        if (el.offsetWidth < el.scrollWidth) {
+           // show textTip
+           this.textTip = this.currentCell.textContent
+           this.$refs.texttip.style.opacity = 0
+-          const rect = e.target.getBoundingClientRect()
++          const rect = el.getBoundingClientRect()
+           setTimeout(() => {
+             const r = this.$refs.texttip.getBoundingClientRect()
+             if (rect.bottom + r.height > window.innerHeight) {
+@@ -2249,29 +2269,31 @@ export default {
+         }
+         if (this.currentField.readonly) return
+         this.inputBox.value = this.currentCell.textContent
+-        if (e.target.classList.contains('select')) this.calAutocompleteList(true)
+-        if (e.target.classList.contains('datepick')) this.showDatePickerDiv()
++        if (el.classList.contains('select')) this.calAutocompleteList(true)
++        if (el.classList.contains('datepick')) this.showDatePickerDiv()
+       }
+     },
+     cellMouseMove (e) {
++      const el = this.domEventTargetEl(e)
++      if (!el) return
+       let cursor = 'cell'
+       if (this.inputBoxShow) cursor = 'default'
+-      if (e.target.offsetWidth - e.offsetX < 25) {
+-        if (!e.target.classList.contains('readonly') && (e.target.classList.contains('select') || e.target.classList.contains('datepick')))
++      if (el.offsetWidth - e.offsetX < 25) {
++        if (!el.classList.contains('readonly') && (el.classList.contains('select') || el.classList.contains('datepick')))
+           cursor = 'pointer'
+-        if (e.target.offsetWidth < e.target.scrollWidth)
++        if (el.offsetWidth < el.scrollWidth)
+           cursor = 'pointer'
+       }
+-      const row = e.target.parentNode
+-      const colPos = Array.from(row.children).indexOf(e.target) - 1
++      const row = el.parentNode
++      const colPos = Array.from(row.children).indexOf(el) - 1
+       const currentField = this.fields[colPos]
+       if (currentField.type === 'action')
+         cursor = 'pointer'
+-      e.target.style.cursor = cursor
++      el.style.cursor = cursor
+     },
+     cellMouseOver (e) {
+-      const cell = e.target
+-      if (!cell.classList.contains('error')) return
++      const cell = this.domEventTargetEl(e)
++      if (!cell || !cell.classList || !cell.classList.contains('error')) return
+       if (this.tipTimeout) clearTimeout(this.tipTimeout)
+       if ((this.tip = this.errmsg[cell.getAttribute('id')]) === '') return
+       const rect = cell.getBoundingClientRect()
+@@ -2280,8 +2302,8 @@ export default {
+       cell.addEventListener('mouseout', this.cellMouseOut)
+     },
+     numcolMouseOver (e) {
+-      const cell = e.target
+-      if (!cell.classList.contains('error')) return
++      const cell = this.domEventTargetEl(e)
++      if (!cell || !cell.classList || !cell.classList.contains('error')) return
+       if (this.tipTimeout) clearTimeout(this.tipTimeout)
+       if ((this.tip = this.rowerr[cell.getAttribute('id')]) === '') return
+       const rect = cell.getBoundingClientRect()
+@@ -2293,7 +2315,8 @@ export default {
+       this.tipTimeout = setTimeout(() => {
+         this.tip = ''
+       }, 1000)
+-      e.target.removeEventListener(e.type, this.cellMouseOut)
++      const el = this.domEventTargetEl(e)
++      if (el) el.removeEventListener(e.type, this.cellMouseOut)
+     },
+     mouseOver () {
+       this.mousein = true

@@ -12,6 +12,7 @@
     "build:stage": "vue-cli-service build --mode staging --report",
     "preview": "node build/index.js --preview",
     "lint": "eslint --ext .js,.vue src",
+    "postinstall": "patch-package",
     "docs:dev": "vuepress dev docs",
     "docs:build": "vuepress build docs"
   },
@@ -45,7 +46,6 @@
     "axios": "1.7.4",
     "clipboard": "^2.0.11",
     "core-js": "^3.38.1",
-    "default-passive-events": "^2.0.0",
     "element-resize-detector": "^1.2.4",
     "element-ui": "2.15.13",
     "file-saver": "^2.0.5",
@@ -80,13 +80,18 @@
     "vue": "2.7.16",
     "vue-count-to": "1.0.13",
     "vue-cropper": "0.5.5",
+    "vue-excel-editor": "1.5.23",
     "vue-i18n": "^8.22.2",
     "vue-meta": "2.4.0",
     "vue-multipane": "^0.9.5",
     "vue-native-websocket": "^2.0.15",
     "vue-router": "3.4.9",
+    "vue2-datepicker": "^3.11.1",
     "vuedraggable": "^2.24.3",
-    "vuex": "3.6.0"
+    "vuex": "3.6.0",
+    "vxe-table": "^3.8.16",
+    "xe-utils": "^3.5.13",
+    "xlsx": "^0.17.5"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "4.4.6",
@@ -100,6 +105,7 @@
     "eslint": "7.15.0",
     "eslint-plugin-vue": "7.2.0",
     "lint-staged": "10.5.3",
+    "patch-package": "^8.0.1",
     "runjs": "4.4.2",
     "sass": "1.32.13",
     "sass-loader": "10.1.1",
