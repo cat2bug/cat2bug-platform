@@ -37,17 +37,20 @@
         <div class="defect-tools-search">
           <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="0">
             <el-form-item>
+              <!-- 缺陷显示模式切换 -->
               <el-radio-group class="defect-content-view-switch" size="mini" v-model="defectContentComponent" @input="handleDefectContentChange">
+                <!-- 表格模式 -->
                 <el-radio-button label="DefectTable">
                   <span class="defect-content-view-switch-inner" :title="$t('table')">
                     <svg-icon icon-class="table" />
                   </span>
                 </el-radio-button>
-                <el-radio-button label="DefectCalendar">
-                  <span class="defect-content-view-switch-inner" :title="$t('calendar')">
-                    <svg-icon icon-class="date" />
-                  </span>
-                </el-radio-button>
+<!--                <el-radio-button label="DefectCalendar">-->
+<!--                  <span class="defect-content-view-switch-inner" :title="$t('calendar')">-->
+<!--                    <svg-icon icon-class="date" />-->
+<!--                  </span>-->
+<!--                </el-radio-button>-->
+                <!-- Excel模式 -->
                 <el-radio-button label="DefectExcel">
                   <span class="defect-content-view-switch-inner" :title="$t('excel')">
                     <svg-icon icon-class="excel2" />
@@ -145,14 +148,13 @@ import {getDefectTempTab, lifeTime, removeDefectTempTab} from "@/utils/defect";
 import { resolveExportAssetHost } from "@/utils/ruoyi";
 import store from "@/store";
 import DefectTable from "./list/table"
-import DefectCalendar from "./list/calendar"
 import DefectExcel from "./list/excel"
 
 /** 记录Tab标签选项 */
 const DEFECT_TAB_CACHE_KEY='defect-tab';
 /** 缺陷列表/日历/Excel 视图组件名，与 el-radio-button label 一致；默认 DefectTable */
 const DEFECT_CONTENT_VIEW_CACHE_KEY = "defect.contentViewComponent";
-const DEFECT_CONTENT_VIEW_ALLOWED = ["DefectTable", "DefectCalendar", "DefectExcel"];
+const DEFECT_CONTENT_VIEW_ALLOWED = ["DefectTable", "DefectExcel"];
 /** 名称等于所有选项的name */
 const ALL_TAB_NAME = 'all-tab';
 
@@ -163,7 +165,7 @@ const LAYOUT_TOP_CHROME_PX = 50;
 const LAYOUT_TAGS_STRIP_PX = 34;
 export default {
   name: "Defect",
-  components: { AddDefect, HandleDefect, SelectProjectMember, ProjectLabel, Cat2BugStatistic, DefectTabDialog, DefectTable, DefectCalendar, DefectExcel, DefectImport },
+  components: { AddDefect, HandleDefect, SelectProjectMember, ProjectLabel, Cat2BugStatistic, DefectTabDialog, DefectTable, DefectExcel, DefectImport },
   data() {
     return {
       // 当前缺陷面板的类型
