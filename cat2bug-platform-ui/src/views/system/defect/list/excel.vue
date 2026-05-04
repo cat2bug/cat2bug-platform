@@ -267,6 +267,9 @@ const KEYS_IN_EXCEL_FOR_PICKER = new Set(
 /** 编号列在 TableOptions 中为 key `id`，与 COLS.projectNum.titleKey 一致 */
 KEYS_IN_EXCEL_FOR_PICKER.add("id");
 
+/** 优先级下拉顺序：与 sys_dict_data.defect_level 值（急/高/中/低）一致 */
+const DEFECT_LEVEL_DICT_VALUE_ORDER = Object.freeze(["urgent", "height", "middle", "low"]);
+
 /** 与 Excel「显示字段」勾选列表一致（含编号 id ↔ projectNum） */
 function isExcelPickerTableOption(c) {
   return (
@@ -454,7 +457,20 @@ export default {
     },
     defectLevelMap() {
       const m = {};
-      const list = this.dict.type.defect_level || [];
+      const list = [...(this.dict.type.defect_level || [])];
+      const pri = DEFECT_LEVEL_DICT_VALUE_ORDER;
+      list.sort((a, b) => {
+        const av = String(a.value);
+        const bv = String(b.value);
+        const ia = pri.indexOf(av);
+        const ib = pri.indexOf(bv);
+        const ra = ia >= 0 ? ia : 100;
+        const rb = ib >= 0 ? ib : 100;
+        if (ra !== rb) return ra - rb;
+        const as = a.raw && (a.raw.dictSort != null ? a.raw.dictSort : a.raw.dict_sort);
+        const bs = b.raw && (b.raw.dictSort != null ? b.raw.dictSort : b.raw.dict_sort);
+        return (Number(as) || 0) - (Number(bs) || 0);
+      });
       list.forEach((item) => {
         const k = item.value;
         if (k == null || k === "") return;
