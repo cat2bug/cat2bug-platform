@@ -438,7 +438,6 @@ export default {
   align-content: flex-start;
   column-gap: 12px;
   row-gap: 8px;
-  margin-top: 10px;
   margin-bottom: 10px;
   .el-form-item {
     margin-bottom: 0;
