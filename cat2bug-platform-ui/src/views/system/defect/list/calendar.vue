@@ -360,8 +360,12 @@ export default {
   width: 100%;
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
+  flex-wrap: wrap;
   align-items: center;
+  align-content: flex-start;
+  row-gap: 8px;
+  column-gap: 12px;
+  justify-content: flex-start;
   > * {
     display: inline-flex;
     justify-content: flex-start;

@@ -600,25 +600,151 @@ export default {
 .defect-project-label {
   margin-bottom: 10px;
 }
-@media screen and (max-width: 980px) {
-  .defect-tools-search {
-    display: none;
-  }
-}
-@media screen and (min-width: 980px) {
-  .defect-tools-search {
-    display: inline-flex;
-    flex-direction: row;
-    justify-content: space-between;
+/*
+ * 查询条：全宽保留（不再在窄屏隐藏）。宽屏与工具栏同一行时由父级 flex 让右侧先换行；
+ * 表单项过多时左侧内部 flex-wrap；≤576px 为手机排布（切换+类型一行，其余与新建各占行）。
+ */
+.defect-tools-search {
+  flex: 1 1 auto;
+  min-width: 0;
+  /* 勿设 width:100%：与工具栏同行时 flex 子项会按父宽 100% 占位，右侧 .table-tools 会被挤换行 */
+  max-width: 100%;
+  box-sizing: border-box;
+  ::v-deep .el-form.el-form--inline {
+    display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    > * {
-      display: inline-block;
-      justify-content: flex-start;
-      margin-bottom: 0px;
-      /* 与表格/日历/Excel 工具栏同一行，勿再叠 10px 底边距，否则三视图行高不一致 */
-      ::v-deep .el-form-item {
-        margin-bottom: 0;
-      }
+    row-gap: 8px;
+    column-gap: 8px;
+    /* 相对 .defect-tools-search 盒宽铺满；父级勿 width:100% 占满整行 flex */
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  ::v-deep .el-form--inline .el-form-item {
+    margin-right: 0;
+    margin-bottom: 0;
+    display: flex;
+    align-items: center;
+    vertical-align: middle;
+  }
+  @media screen and (max-width: 576px) {
+    width: 100%;
+    max-width: 100%;
+    ::v-deep .el-form.el-form--inline {
+      display: grid;
+      width: 100%;
+      max-width: 100%;
+      /* minmax(0,1fr) 避免第二列被内容最小宽度卡住无法铺满 */
+      grid-template-columns: auto minmax(0, 1fr);
+      column-gap: 8px;
+      row-gap: 8px;
+      align-items: start;
+    }
+    ::v-deep .el-form--inline .el-form-item:nth-child(1) {
+      grid-column: 1;
+      grid-row: 1;
+      align-self: start;
+      align-items: flex-start;
+    }
+    ::v-deep .el-form--inline .el-form-item:nth-child(1) .el-form-item__content {
+      line-height: 1;
+      margin-top: 0;
+      padding-top: 0;
+    }
+    ::v-deep .el-form--inline .el-form-item:nth-child(2) {
+      grid-column: 2;
+      grid-row: 1;
+      min-width: 0;
+      width: 100%;
+      max-width: 100%;
+      justify-self: stretch;
+      display: flex;
+      align-items: flex-start;
+    }
+    /* Element：控件在 .el-form-item__content 内，勿用 > .el-dropdown */
+    ::v-deep .el-form--inline .el-form-item:nth-child(2) .el-form-item__content {
+      flex: 1 1 auto;
+      min-width: 0;
+      width: 100%;
+      max-width: 100%;
+      display: block;
+      margin-top: 0;
+      padding-top: 0;
+      line-height: 1;
+    }
+    ::v-deep .el-form--inline .el-form-item:nth-child(2) .el-form-item__content .el-dropdown {
+      min-width: 0;
+      width: 100% !important;
+      max-width: 100%;
+      display: block !important;
+    }
+    ::v-deep .el-form--inline .el-form-item:nth-child(2) .el-button-group {
+      width: 100%;
+      max-width: 100%;
+      display: flex;
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+    ::v-deep .el-form--inline .el-form-item:nth-child(2) .el-button:first-child {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+    ::v-deep .el-form--inline .el-form-item:nth-child(2) .el-button:last-child {
+      flex-shrink: 0;
+    }
+    ::v-deep .el-form--inline .el-form-item:nth-child(3),
+    ::v-deep .el-form--inline .el-form-item:nth-child(4),
+    ::v-deep .el-form--inline .el-form-item:nth-child(5) {
+      grid-column: 1 / -1;
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      display: flex;
+      align-items: stretch;
+    }
+    ::v-deep .el-form--inline .el-form-item:nth-child(3) .el-form-item__content,
+    ::v-deep .el-form--inline .el-form-item:nth-child(4) .el-form-item__content,
+    ::v-deep .el-form--inline .el-form-item:nth-child(5) .el-form-item__content {
+      display: block;
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
+    }
+    ::v-deep .el-form--inline .el-form-item:nth-child(3) .el-form-item__content > *,
+    ::v-deep .el-form--inline .el-form-item:nth-child(4) .el-form-item__content > *,
+    ::v-deep .el-form--inline .el-form-item:nth-child(5) .el-form-item__content > * {
+      display: block;
+      min-width: 0;
+      width: 100% !important;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+    ::v-deep .el-form--inline .el-form-item:nth-child(3) .el-select {
+      display: block;
+    }
+    ::v-deep .el-form--inline .el-form-item:nth-child(3) .el-select,
+    ::v-deep .el-form--inline .el-form-item:nth-child(3) .el-input {
+      width: 100% !important;
+      max-width: 100%;
+    }
+    ::v-deep .el-form--inline .el-form-item:nth-child(3) .el-input__inner {
+      width: 100% !important;
+      box-sizing: border-box;
+    }
+    ::v-deep .el-form--inline .el-form-item:nth-child(4) .select-project-member-input {
+      width: 100% !important;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+    ::v-deep .el-form--inline .el-form-item:nth-child(5) .el-input {
+      width: 100% !important;
+      max-width: 100%;
+    }
+    ::v-deep .el-form--inline .el-form-item:nth-child(5) .el-input__inner {
+      width: 100% !important;
+      box-sizing: border-box;
     }
   }
 }
@@ -694,11 +820,13 @@ export default {
 }
 .defect-content-view-switch {
   vertical-align: middle;
+  flex-shrink: 0;
   /* 三等分格：等宽等高，避免 table/date/excel2 矢量留白不同导致「格与格」观感不一 */
   ::v-deep .el-radio-button__inner {
     padding: 0 !important;
     width: 36px !important;
-    height: 30px !important;
+    /* 与右侧「全部类型」(el-dropdown split-button size=small) 高度对齐 */
+    height: 32px !important;
     line-height: 1;
     box-sizing: border-box;
     display: inline-flex !important;
@@ -727,15 +855,98 @@ export default {
 .defect-page .defect-view-toolbar {
   box-sizing: border-box;
   flex-shrink: 0;
-  align-items: center !important;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  align-content: flex-start;
+  /* space-between：同行时左右拉开；右侧单独换行时该行仅一项，会靠主轴起点（左） */
+  justify-content: space-between;
+  column-gap: 12px;
+  row-gap: 8px;
   margin-top: var(--defect-toolbar-v-gap, 8px);
   margin-bottom: var(--defect-toolbar-v-gap, 8px);
   padding-top: 0;
   padding-bottom: 0;
 }
+/* 左侧（查询区 / Excel 左槽）优先占行宽；右侧为第二子节点时先被挤到下一行 */
+.defect-page .defect-view-toolbar > *:first-child {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.defect-page .defect-view-toolbar > *:nth-child(2) {
+  flex: 0 0 auto;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+}
+@media screen and (max-width: 576px) {
+  .defect-page .defect-view-toolbar > *:nth-child(2) {
+    flex: 1 1 100%;
+    width: 100%;
+    max-width: 100%;
+    justify-content: flex-start;
+    flex-wrap: nowrap !important;
+  }
+  /* 列选择 + 新建：同一行，新建 flex:1 占满剩余宽 */
+  .defect-page .defect-view-toolbar .table-tools {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    column-gap: 8px;
+  }
+  .defect-page .defect-view-toolbar .table-tools > *:first-child {
+    flex-shrink: 0;
+  }
+  .defect-page .defect-view-toolbar .table-tools .defect-add-dropdown {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: auto !important;
+    max-width: none;
+    box-sizing: border-box;
+  }
+  .defect-page .defect-view-toolbar .defect-add-dropdown .el-button-group {
+    width: 100%;
+    display: flex;
+  }
+  .defect-page .defect-view-toolbar .defect-add-dropdown .el-button-group > .el-button:first-child {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  /* Excel 视图右侧：刷新/列选择与新建同一行，新建占满剩余宽 */
+  .defect-page .defect-view-toolbar.defect-excel-tools > .defect-excel-tools-right {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    flex: 1 1 auto;
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+    column-gap: 8px;
+  }
+  .defect-page .defect-view-toolbar.defect-excel-tools > .defect-excel-tools-right > *:not(.defect-add-dropdown) {
+    flex-shrink: 0;
+  }
+  .defect-page .defect-view-toolbar.defect-excel-tools > .defect-excel-tools-right .defect-add-dropdown {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: auto !important;
+    max-width: none;
+    box-sizing: border-box;
+  }
+}
 .defect-page .defect-view-toolbar .table-tools {
   padding-top: 0 !important;
   align-items: center !important;
+  display: inline-flex;
+  flex-wrap: wrap;
+  row-gap: 8px;
+  justify-content: flex-start;
 }
 .defect-page .defect-view-toolbar .table-tools.row > * {
   margin-bottom: 0 !important;

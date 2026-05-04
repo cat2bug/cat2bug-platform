@@ -613,22 +613,16 @@ export default {
   height: 1px;
   visibility: hidden;
 }
-@media screen and (max-width: 980px) {
-  .defect-table-tools {
-    justify-content: flex-end;
-  }
-}
-@media screen and (min-width: 980px) {
-  .defect-table-tools {
-    justify-content: space-between;
-  }
-}
 .defect-table-tools {
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   align-items: center;
+  align-content: flex-start;
+  row-gap: 8px;
+  column-gap: 12px;
   > * {
-    display: inline-block;
+    display: block;
     justify-content: flex-start;
     margin-bottom: 0px;
     ::v-deep .el-form-item {

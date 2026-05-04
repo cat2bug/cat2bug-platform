@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <project-label />
-    <div class="plan-tools">
+    <div ref="planTools" class="plan-tools" :class="{ 'wrapped-tools': planToolsWrapped }">
       <el-form class="left" :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
         <el-form-item label="" prop="planName">
           <el-input
@@ -24,7 +24,7 @@
           />
         </el-form-item>
       </el-form>
-      <div class="plan-tools-right">
+      <div ref="planToolsRight" class="plan-tools-right">
         <el-popover placement="top" trigger="click">
           <div class="row">
             <i class="el-icon-s-fold"></i>
@@ -75,7 +75,7 @@
         <span v-else>{{ scope.row[column.prop] }}</span>
       </template>
       <template #append>
-        <el-table-column :label="$t('operate')" align="center" class-name="small-padding fixed-width no-drag" fixed="right" width="200">
+        <el-table-column :label="$t('operate')" align="center" class-name="small-padding fixed-width no-drag" fixed="right" width="260">
           <template slot-scope="scope">
             <div class="table-operate">
               <el-button
@@ -179,6 +179,7 @@ export default {
       },
       planTableColumnDefaults: PlanTableColumnDefaults.map(c => ({ ...c })),
       columnPickerCheckedKeys: [],
+      planToolsWrapped: false,
     };
   },
   watch: {
@@ -233,6 +234,10 @@ export default {
   },
   mounted() {
     this.initFloatMenu();
+    this.$nextTick(() => {
+      this.syncPlanToolsWrapped();
+    });
+    window.addEventListener("resize", this.syncPlanToolsWrapped);
     const actionPlanId = this.$route.query.planId;
     if(actionPlanId && checkPermi(['system:plan:run'])) {
       this.handlePlanRun({planId:actionPlanId})
@@ -241,12 +246,35 @@ export default {
   destroyed() {
     // 移除滚动条监听
     this.$floatMenu.windowsDestory();
+    window.removeEventListener("resize", this.syncPlanToolsWrapped);
   },
   methods: {
     checkPermi,
     strFormat,
     onPlanTableColumnsChange(columns) {
       this.columnPickerCheckedKeys = columns.filter(c => c.visible && c.showInColumnPicker !== false).map(c => c.key);
+    },
+    syncPlanToolsWrapped() {
+      const measure = () => {
+        const tools = this.$refs.planTools;
+        const left = tools && tools.querySelector(".left");
+        const right = this.$refs.planToolsRight;
+        if (!tools || !left || !right) {
+          this.planToolsWrapped = false;
+          return;
+        }
+        this.planToolsWrapped = right.offsetTop - left.offsetTop > 4;
+      };
+
+      this.$nextTick(() => {
+        // 先回到默认单行布局再测量，避免 wrapped 样式影响判断导致无法恢复一行
+        if (this.planToolsWrapped) {
+          this.planToolsWrapped = false;
+          this.$nextTick(measure);
+          return;
+        }
+        measure();
+      });
     },
     onPlanColumnPickerChange(keys) {
       this.$refs.cat2BugTable && this.$refs.cat2BugTable.setColumnsVisible(keys);
@@ -284,6 +312,7 @@ export default {
         this.planList = response.rows;
         this.total = response.total;
         this.loading = false;
+        this.syncPlanToolsWrapped();
       });
     },
     /** 搜索按钮操作 */
@@ -340,27 +369,113 @@ export default {
 };
 </script>
 <style scoped lang="scss">
-@media screen and (max-width: 980px) {
-  .plan-tools > .left {
-    display: none;
-  }
-}
-@media screen and (min-width: 980px) {
-  .plan-tools > .left {
-    display: inline-flex;
-  }
-}
 /* 与测试用例页 .case-tools 一致：项目切换与工具条上下间距 */
 .plan-tools {
   width: 100%;
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
+  align-content: flex-start;
+  /* 同行时左右拉开；右侧单独换行时该行仅一项，会靠左 */
+  justify-content: flex-start;
+  column-gap: 12px;
+  row-gap: 8px;
   margin-top: 10px;
   margin-bottom: 10px;
   .el-form-item {
     margin-bottom: 0;
+  }
+}
+
+/* 左侧查询表单：占满剩余宽，可内部换行 */
+.plan-tools > .left {
+  /* 左侧优先占据第一行可用空间；空间不足时先挤压自身，再让右侧换行 */
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  width: auto;
+  display: flex;
+  /* 默认先不换行，优先触发右侧换到下一行 */
+  flex-wrap: nowrap;
+  align-items: center;
+  row-gap: 8px;
+  column-gap: 8px;
+  box-sizing: border-box;
+  ::v-deep .el-form-item {
+    margin-right: 0;
+  }
+}
+
+/* 右侧工具：默认自适应；空间不够会被挤到下一行 */
+.plan-tools-right {
+  flex: 0 0 auto;
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+/* 右侧工具换到下一行时，左侧查询改为逐行满宽 */
+.plan-tools.wrapped-tools {
+  /* 左侧进入换行态后：每个查询项独占一行并铺满（与缺陷页的移动端策略一致） */
+  > .left {
+    flex: 1 1 100%;
+    width: 100%;
+    max-width: 100%;
+    display: block;
+    box-sizing: border-box;
+  }
+  > .left ::v-deep .el-form-item {
+    display: block;
+    width: 100% !important;
+    margin-right: 0;
+    margin-bottom: 8px;
+  }
+  > .left ::v-deep .el-form-item:last-child {
+    margin-bottom: 0;
+  }
+  > .left ::v-deep .el-form-item .el-form-item__content,
+  > .left ::v-deep .el-form-item .el-input {
+    width: 100% !important;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  > .left ::v-deep .el-form-item .el-input__inner {
+    width: 100% !important;
+    box-sizing: border-box;
+  }
+  > .plan-tools-right {
+    margin-left: 0;
+    flex: 1 1 100%;
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
+@media screen and (max-width: 576px) {
+  /* 右侧工具单独一行：字段按钮 + 新建同一行，新建填充剩余宽度 */
+  .plan-tools-right {
+    flex: 1 1 100%;
+    width: 100%;
+    max-width: 100%;
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 8px;
+  }
+  .plan-tools-right > *:first-child {
+    flex-shrink: 0;
+  }
+  .plan-tools-right > .el-button {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: auto;
+  }
+  .plan-tools-right > .el-button .el-icon {
+    margin-right: 4px;
   }
 }
 .plan-progress {
@@ -402,24 +517,18 @@ export default {
   align-items: flex-start;
 }
 .table-operate {
-  padding-left: 10px;
+  padding-left: 6px;
   display: inline-flex;
   flex-direction: row;
   justify-content: flex-start;
   align-items: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  white-space: nowrap;
 }
 .plan-field-divider {
   margin: 8px 0px;
 }
-.plan-tools-right {
-  display: inline-flex;
-  flex-direction: row;
-  width: 100%;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 10px;
-}
+/* plan-tools-right 已在上方按响应式统一定义 */
 .text-row3 {
   word-break: break-all;
   display: -webkit-box;

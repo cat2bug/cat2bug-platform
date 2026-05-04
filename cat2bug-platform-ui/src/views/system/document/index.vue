@@ -1,8 +1,8 @@
 <template>
   <div class="app-container">
     <project-label />
-    <div class="document-tools">
-      <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="120px">
+    <div ref="documentTools" class="document-tools" :class="{ 'wrapped-tools': documentToolsWrapped }">
+      <el-form class="left" :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="120px">
         <el-form-item label="" prop="docName">
           <el-input
             v-model="queryParams.docName"
@@ -14,8 +14,7 @@
         </el-form-item>
       </el-form>
 
-      <el-row :gutter="10" class="mb8">
-        <el-col :span="1.5">
+      <div ref="documentToolsRight" class="document-tools-right">
           <el-popover placement="top" trigger="click">
             <div class="doc-picker-head row">
               <i class="el-icon-s-fold"></i>
@@ -27,8 +26,6 @@
             </el-checkbox-group>
             <el-button style="padding: 9px;" plain slot="reference" icon="el-icon-s-fold" size="small"></el-button>
           </el-popover>
-        </el-col>
-        <el-col :span="1.5">
           <el-button
             type="primary"
             plain
@@ -37,8 +34,6 @@
             @click="handleAddDir"
             v-hasPermi="['system:document:add']"
           >{{ $t('doc.create-folder') }}</el-button>
-        </el-col>
-        <el-col :span="1.5">
           <el-button
             type="primary"
             plain
@@ -47,8 +42,7 @@
             @click="handleAddFile"
             v-hasPermi="['system:document:add']"
           >{{ $t('doc.create-file') }}</el-button>
-        </el-col>
-      </el-row>
+      </div>
     </div>
 
     <cat2-bug-table
@@ -220,6 +214,7 @@ export default {
       documentList: [],
       documentTableColumnDefaults: DocumentTableColumnDefaults.map(c => ({ ...c })),
       columnPickerCheckedKeys: [],
+      documentToolsWrapped: false,
       // 弹出层标题
       title: "",
       fileFieldName: "",
@@ -288,12 +283,37 @@ export default {
   },
   mounted() {
     this.initFloatMenu();
+    this.$nextTick(() => {
+      this.syncDocumentToolsWrapped();
+    });
+    window.addEventListener("resize", this.syncDocumentToolsWrapped);
   },
   // 移除滚动条监听
   destroyed() {
     this.$floatMenu.windowsDestory();
+    window.removeEventListener("resize", this.syncDocumentToolsWrapped);
   },
   methods: {
+    syncDocumentToolsWrapped() {
+      const measure = () => {
+        const tools = this.$refs.documentTools;
+        const left = tools && tools.querySelector(".left");
+        const right = this.$refs.documentToolsRight;
+        if (!tools || !left || !right) {
+          this.documentToolsWrapped = false;
+          return;
+        }
+        this.documentToolsWrapped = right.offsetTop - left.offsetTop > 4;
+      };
+      this.$nextTick(() => {
+        if (this.documentToolsWrapped) {
+          this.documentToolsWrapped = false;
+          this.$nextTick(measure);
+          return;
+        }
+        measure();
+      });
+    },
     /** 初始化浮动菜单 */
     initFloatMenu() {
       this.$floatMenu.windowsInit(document.querySelector('.main-container'));
@@ -345,6 +365,7 @@ export default {
         }
         this.total = response.total;
         this.loading = false;
+        this.syncDocumentToolsWrapped();
       });
     },
     /** 取消按钮 */
@@ -561,18 +582,76 @@ export default {
   flex-direction: column;
 }
 .document-tools {
+  width: 100%;
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
+  flex-wrap: wrap;
+  justify-content: flex-start;
   align-items: center;
+  align-content: flex-start;
+  column-gap: 12px;
+  row-gap: 8px;
+  margin-top: 10px;
   margin-bottom: 10px;
-  > * {
-    display: inline-block;
+  .el-form-item {
+    margin-bottom: 0;
+  }
+}
+.document-tools > .left {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  width: auto;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  row-gap: 8px;
+  column-gap: 8px;
+  box-sizing: border-box;
+  ::v-deep .el-form-item {
+    margin-right: 0;
+  }
+}
+.document-tools-right {
+  flex: 0 0 auto;
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  >* {
+    margin-left: 0;
+  }
+}
+.document-tools.wrapped-tools {
+  > .left {
+    flex: 1 1 100%;
+    width: 100%;
+    max-width: 100%;
+    display: block;
+    box-sizing: border-box;
+  }
+  > .left ::v-deep .el-form-item {
+    display: block;
+    width: 100% !important;
+    margin-right: 0;
+    margin-bottom: 8px;
+  }
+  > .left ::v-deep .el-form-item:last-child {
+    margin-bottom: 0;
+  }
+  > .left ::v-deep .el-form-item .el-form-item__content,
+  > .left ::v-deep .el-form-item .el-input {
+    width: 100% !important;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  > .document-tools-right {
+    margin-left: 0;
+    flex: 1 1 100%;
+    width: 100%;
     justify-content: flex-start;
-    margin-bottom: 0px;
-    ::v-deep .el-form-item {
-      margin-bottom: 0px;
-    }
   }
 }
 .file-icon {

@@ -1,8 +1,8 @@
 <template>
   <div class="app-container">
     <project-label :project-id="projectId" />
-    <div class="report-tools">
-      <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
+    <div ref="reportTools" class="report-tools" :class="{ 'wrapped-tools': reportToolsWrapped }">
+      <el-form class="left" :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
         <el-form-item label="" prop="reportTitle">
           <el-input
             v-model="queryParams.reportTitle"
@@ -38,8 +38,7 @@
           />
         </el-form-item>
       </el-form>
-      <el-row :gutter="10" class="mb8">
-        <el-col :span="1.5">
+      <div ref="reportToolsRight" class="report-tools-right">
           <el-popover placement="top" trigger="click">
             <div class="report-picker-head row">
               <i class="el-icon-s-fold"></i>
@@ -51,8 +50,6 @@
             </el-checkbox-group>
             <el-button style="padding: 9px;" plain slot="reference" icon="el-icon-s-fold" size="small"></el-button>
           </el-popover>
-        </el-col>
-        <el-col :span="1.5">
           <el-button
             type="danger"
             plain
@@ -62,15 +59,12 @@
             @click="handleDelete"
             v-hasPermi="['system:report:remove']"
           >{{ $t('batch-delete') }}</el-button>
-        </el-col>
-        <el-col :span="1.5">
           <cat2-bug-report-template-select
             size="small"
             v-hasPermi="['system:report:add']"
             @create="createReportHandle"
             :project-id="projectId" />
-        </el-col>
-      </el-row>
+      </div>
     </div>
     <cat2-bug-table
       ref="cat2BugTable"
@@ -190,6 +184,7 @@ export default {
       reportList: [],
       reportTableColumnDefaults: ReportTableColumnDefaults.map(c => ({ ...c })),
       columnPickerCheckedKeys: [],
+      reportToolsWrapped: false,
       // 弹出层标题
       title: "",
       // 是否显示弹出层
@@ -251,12 +246,37 @@ export default {
       }
     }
     this.initFloatMenu();
+    this.$nextTick(() => {
+      this.syncReportToolsWrapped();
+    });
+    window.addEventListener("resize", this.syncReportToolsWrapped);
   },
   // 移除滚动条监听
   destroyed() {
     this.$floatMenu.windowsDestory();
+    window.removeEventListener("resize", this.syncReportToolsWrapped);
   },
   methods: {
+    syncReportToolsWrapped() {
+      const measure = () => {
+        const tools = this.$refs.reportTools;
+        const left = tools && tools.querySelector(".left");
+        const right = this.$refs.reportToolsRight;
+        if (!tools || !left || !right) {
+          this.reportToolsWrapped = false;
+          return;
+        }
+        this.reportToolsWrapped = right.offsetTop - left.offsetTop > 4;
+      };
+      this.$nextTick(() => {
+        if (this.reportToolsWrapped) {
+          this.reportToolsWrapped = false;
+          this.$nextTick(measure);
+          return;
+        }
+        measure();
+      });
+    },
     /** 初始化浮动菜单 */
     initFloatMenu() {
       this.$floatMenu.windowsInit(document.querySelector('.main-container'));
@@ -284,6 +304,7 @@ export default {
         this.reportList = response.rows;
         this.total = response.total;
         this.loading = false;
+        this.syncReportToolsWrapped();
       });
     },
     // 取消按钮
@@ -408,18 +429,77 @@ export default {
 </style>
 <style lang="scss" scoped>
 .report-tools {
+  width: 100%;
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
+  flex-wrap: wrap;
+  justify-content: flex-start;
   align-items: center;
+  align-content: flex-start;
+  column-gap: 12px;
+  row-gap: 8px;
+  margin-top: 10px;
   margin-bottom: 10px;
-  > * {
-    display: inline-block;
+  .el-form-item {
+    margin-bottom: 0;
+  }
+}
+.report-tools > .left {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  width: auto;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  row-gap: 8px;
+  column-gap: 8px;
+  box-sizing: border-box;
+  ::v-deep .el-form-item {
+    margin-right: 0;
+  }
+}
+.report-tools-right {
+  flex: 0 0 auto;
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+.report-tools.wrapped-tools {
+  > .left {
+    flex: 1 1 100%;
+    width: 100%;
+    max-width: 100%;
+    display: block;
+    box-sizing: border-box;
+  }
+  > .left ::v-deep .el-form-item {
+    display: block;
+    width: 100% !important;
+    margin-right: 0;
+    margin-bottom: 8px;
+  }
+  > .left ::v-deep .el-form-item:last-child {
+    margin-bottom: 0;
+  }
+  > .left ::v-deep .el-form-item .el-form-item__content,
+  > .left ::v-deep .el-form-item .el-input,
+  > .left ::v-deep .el-form-item .el-date-editor,
+  > .left ::v-deep .el-form-item .select-project-member,
+  > .left ::v-deep .el-form-item .el-popover__reference-wrapper,
+  > .left ::v-deep .el-form-item .select-project-member-input {
+    width: 100% !important;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  > .report-tools-right {
+    margin-left: 0;
+    flex: 1 1 100%;
+    width: 100%;
     justify-content: flex-start;
-    margin-bottom: 0px;
-    ::v-deep .el-form-item {
-      margin-bottom: 0px;
-    }
   }
 }
 .table-report-title {

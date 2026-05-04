@@ -1,8 +1,8 @@
 <template>
   <div class="app-container case-body">
     <project-label />
-    <div class="case-tools">
-      <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="0px">
+    <div ref="caseTools" class="case-tools" :class="{ 'wrapped-tools': caseToolsWrapped }">
+      <el-form class="left" :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="0px">
         <el-form-item prop="caseNum">
           <el-input
             v-model="queryParams.caseNum"
@@ -28,7 +28,7 @@
         </el-form-item>
       </el-form>
 
-      <div class="case-right-tools mb8">
+      <div ref="caseToolsRight" class="case-right-tools" :class="{ 'buttons-wrapped': caseRightButtonsWrapped }">
         <el-popover placement="top" trigger="click">
           <div class="row">
             <i class="el-icon-s-fold"></i>
@@ -38,9 +38,10 @@
           <el-checkbox-group v-model="columnPickerCheckedKeys" class="col" @change="onCaseColumnPickerChange">
             <el-checkbox v-for="c in caseColumnPickerOptions" :key="c.key" :label="c.key">{{ $t(c.key) }}</el-checkbox>
           </el-checkbox-group>
-          <el-button style="padding: 9px;" plain slot="reference" icon="el-icon-s-fold" size="small"></el-button>
+          <el-button class="case-field-picker-btn" style="padding: 9px;" plain slot="reference" icon="el-icon-s-fold" size="small"></el-button>
         </el-popover>
         <el-button
+          class="case-batch-delete-btn"
           type="danger"
           plain
           icon="el-icon-delete"
@@ -329,6 +330,8 @@ export default {
         url: process.env.VUE_APP_BASE_API + "/system/case/importData"
       },
       observer: null,
+      caseToolsWrapped: false,
+      caseRightButtonsWrapped: false,
     };
   },
   watch: {
@@ -336,6 +339,9 @@ export default {
       this.$nextTick(() => {
         this.$refs.cat2BugTable && this.$refs.cat2BugTable.doLayout();
       });
+    },
+    showSearch() {
+      this.syncCaseToolsWrapped();
     },
   },
   computed: {
@@ -376,10 +382,17 @@ export default {
     this.queryParams.projectId=this.projectId;
     this.getTreeModuleWidth();
     this.initFloatMenu();
+    this.$nextTick(() => {
+      this.syncCaseToolsWrapped();
+      this.initCaseToolsObserver();
+    });
+    window.addEventListener("resize", this.syncCaseToolsWrapped);
   },
   destroyed() {
     // 移除滚动条监听
     this.$floatMenu.windowsDestory();
+    window.removeEventListener("resize", this.syncCaseToolsWrapped);
+    this.destroyCaseToolsObserver();
   },
   directives: {
     resize: {
@@ -404,6 +417,56 @@ export default {
     }
   },
   methods: {
+    initCaseToolsObserver() {
+      if (typeof ResizeObserver === "undefined") return;
+      this.destroyCaseToolsObserver();
+      const tools = this.$refs.caseTools;
+      if (!tools) return;
+      this.observer = new ResizeObserver(() => {
+        this.syncCaseToolsWrapped();
+      });
+      this.observer.observe(tools);
+    },
+    destroyCaseToolsObserver() {
+      if (this.observer && typeof this.observer.disconnect === "function") {
+        this.observer.disconnect();
+      }
+      this.observer = null;
+    },
+    syncCaseToolsWrapped() {
+      const measure = () => {
+        const tools = this.$refs.caseTools;
+        const left = tools && tools.querySelector(".left");
+        const right = this.$refs.caseToolsRight;
+        if (!tools || !left || !right) {
+          this.caseToolsWrapped = false;
+          this.caseRightButtonsWrapped = false;
+          return;
+        }
+        const leftTop = left.offsetTop || 0;
+        const leftBottom = leftTop + (left.offsetHeight || 0);
+        const rightTop = right.offsetTop || 0;
+        // 仅当右侧工具条真正落到左侧筛选区域“下一行”时，才进入 wrapped 态
+        this.caseToolsWrapped = rightTop >= leftBottom - 1;
+
+        // 仅当右侧按钮组自身出现多行时，才让主按钮等分填充。
+        const buttonItems = Array.from(right.children || []);
+        if (!buttonItems.length) {
+          this.caseRightButtonsWrapped = false;
+          return;
+        }
+        const firstTop = buttonItems[0].offsetTop;
+        this.caseRightButtonsWrapped = buttonItems.some(item => Math.abs((item.offsetTop || 0) - firstTop) > 2);
+      };
+      this.$nextTick(() => {
+        if (this.caseToolsWrapped) {
+          this.caseToolsWrapped = false;
+          this.$nextTick(measure);
+          return;
+        }
+        measure();
+      });
+    },
     /** 处理鼠标在表格点下事件 */
     handleTableMouseDown(e) {
       this.mouseOffset = e.clientX;
@@ -526,6 +589,7 @@ export default {
         this.loading = false;
         this.caseList = response.rows;
         this.total = response.total;
+        this.syncCaseToolsWrapped();
       });
     },
     /** 搜索按钮操作 */
@@ -763,17 +827,117 @@ export default {
   width: 100%;
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
+  flex-wrap: wrap;
+  justify-content: flex-start;
   align-items: center;
+  align-content: flex-start;
+  column-gap: 12px;
+  row-gap: 8px;
   margin-top: 10px;
   margin-bottom: 10px;
-  > * {
-    display: inline-block;
+  .el-form-item {
+    margin-bottom: 0;
+  }
+}
+.case-tools > .left {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  width: auto;
+  display: inline-flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  row-gap: 8px;
+  column-gap: 8px;
+  box-sizing: border-box;
+  ::v-deep .el-form-item {
+    flex: 1 1 0;
+    min-width: 180px;
+    margin-right: 0;
+  }
+  ::v-deep .el-form-item .el-form-item__content,
+  ::v-deep .el-form-item .el-input,
+  ::v-deep .el-form-item .el-select,
+  ::v-deep .el-form-item .cat2-bug-select-level {
+    width: 100%;
+  }
+}
+.case-tools.wrapped-tools {
+  > .left {
+    display: inline-flex;
+    flex-wrap: wrap;
+    flex: 1 1 100%;
+  }
+  > .left ::v-deep .el-form-item {
+    display: inline-flex;
+    flex: 1 1 0;
+    min-width: 180px;
+    margin-right: 0;
+    margin-bottom: 0;
+  }
+  > .left ::v-deep .el-form-item .el-form-item__content,
+  > .left ::v-deep .el-form-item .el-input,
+  > .left ::v-deep .el-form-item .el-select,
+  > .left ::v-deep .el-form-item .el-select .el-input,
+  > .left ::v-deep .el-form-item .cat2-bug-select-level {
+    width: 100% !important;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  > .left ::v-deep .el-form-item .el-select .el-input__inner {
+    width: 100% !important;
+  }
+  > .case-right-tools {
+    margin-left: 0;
+    flex: 1 1 100%;
+    width: 100%;
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 10px;
     justify-content: flex-start;
-    margin-bottom: 0px;
-    ::v-deep .el-form-item {
-      margin-bottom: 0px;
-    }
+    align-items: center;
+  }
+  > .case-right-tools > * {
+    flex: 0 0 auto;
+    width: auto;
+    min-width: 0;
+  }
+  /* 字段显示 + 批量删除始终同一行 */
+  > .case-right-tools ::v-deep .case-field-picker-btn,
+  > .case-right-tools > .case-batch-delete-btn {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  /* 按钮组没换行时保持自然宽度 */
+  > .case-right-tools > .case-batch-delete-btn,
+  > .case-right-tools > .case-add-dropdown,
+  > .case-right-tools > .case-ai-add-dropdown {
+    flex: 0 0 auto;
+    width: auto;
+    display: flex;
+  }
+  /* 右侧按钮组自身换行后，三个主按钮才等宽填充 */
+  > .case-right-tools.buttons-wrapped > .case-batch-delete-btn,
+  > .case-right-tools.buttons-wrapped > .case-add-dropdown,
+  > .case-right-tools.buttons-wrapped > .case-ai-add-dropdown {
+    flex: 1 1 0;
+    min-width: 0;
+    width: 100%;
+  }
+  > .case-right-tools ::v-deep .el-button-group {
+    width: 100%;
+    display: flex;
+    flex-wrap: nowrap;
+  }
+  > .case-right-tools ::v-deep .el-button-group > .el-button:not(.el-dropdown__caret-button) {
+    flex: 1 1 auto;
+  }
+  > .case-right-tools ::v-deep .el-button-group > .el-button {
+    min-width: 0;
+  }
+  > .case-right-tools ::v-deep .el-button-group > .el-dropdown__caret-button {
+    flex: 0 0 auto;
   }
 }
 .red {
@@ -949,11 +1113,18 @@ export default {
   }
 }
 .case-right-tools {
+  flex: 0 0 auto;
   display: inline-flex;
   flex-direction: row;
-  justify-content: flex-end;
+  justify-content: flex-start;
   align-items: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 10px;
+  margin-left: auto;
+  > * {
+    flex: 0 0 auto;
+    width: auto;
+    min-width: 0;
+  }
 }
 </style>

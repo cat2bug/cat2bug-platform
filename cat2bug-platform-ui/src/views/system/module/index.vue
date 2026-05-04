@@ -1,8 +1,8 @@
 <template>
   <div class="app-container">
     <project-label />
-    <div class="module-tools">
-      <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="120px">
+    <div ref="moduleTools" class="module-tools" :class="{ 'wrapped-tools': moduleToolsWrapped }">
+      <el-form class="left" :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="120px">
         <el-form-item prop="moduleName">
           <el-input
             v-model="queryParams.moduleName"
@@ -15,8 +15,7 @@
         </el-form-item>
       </el-form>
 
-      <el-row :gutter="10" class="mb8">
-        <el-col :span="1.5">
+      <div ref="moduleToolsRight" class="module-tools-right">
           <el-button
             type="info"
             plain
@@ -24,8 +23,6 @@
             size="small"
             @click="toggleExpandAll"
           >{{ $t('module.expand-collapse') }}</el-button>
-        </el-col>
-        <el-col :span="1.5">
           <el-button
             type="primary"
             plain
@@ -34,8 +31,7 @@
             @click="handleAdd"
             v-hasPermi="['system:module:add']"
           >{{ $t('module.create') }}</el-button>
-        </el-col>
-      </el-row>
+      </div>
     </div>
     <el-table
       v-if="refreshTable"
@@ -112,6 +108,7 @@ export default {
       isExpandAll: true,
       // 重新渲染表格状态
       refreshTable: true,
+      moduleToolsWrapped: false,
       // 查询参数
       queryParams: {
         modulePid: null,
@@ -142,8 +139,36 @@ export default {
   mounted() {
     // 初始化浮动菜单
     this.initFloatMenu();
+    this.$nextTick(() => {
+      this.syncModuleToolsWrapped();
+    });
+    window.addEventListener("resize", this.syncModuleToolsWrapped);
+  },
+  destroyed() {
+    this.$floatMenu.windowsDestory();
+    window.removeEventListener("resize", this.syncModuleToolsWrapped);
   },
   methods: {
+    syncModuleToolsWrapped() {
+      const measure = () => {
+        const tools = this.$refs.moduleTools;
+        const left = tools && tools.querySelector(".left");
+        const right = this.$refs.moduleToolsRight;
+        if (!tools || !left || !right) {
+          this.moduleToolsWrapped = false;
+          return;
+        }
+        this.moduleToolsWrapped = right.offsetTop - left.offsetTop > 4;
+      };
+      this.$nextTick(() => {
+        if (this.moduleToolsWrapped) {
+          this.moduleToolsWrapped = false;
+          this.$nextTick(measure);
+          return;
+        }
+        measure();
+      });
+    },
     /** 初始化浮动菜单 */
     initFloatMenu() {
       this.$floatMenu.windowsInit(document.querySelector('.main-container'));
@@ -168,16 +193,13 @@ export default {
         click : this.handleAdd
       }]);
     },
-    // 移除滚动条监听
-    destroyed() {
-      this.$floatMenu.windowsDestory();
-    },
     /** 查询模块列表 */
     getList() {
       this.loading = true;
       listModule(this.queryParams).then(response => {
         this.moduleList = this.handleTree(response.data, "moduleId", "modulePid");
         this.loading = false;
+        this.syncModuleToolsWrapped();
       });
     },
     /** 获取项目id操作 */
@@ -229,18 +251,87 @@ export default {
 </script>
 <style lang="scss" scoped>
 .module-tools {
+  width: 100%;
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
+  flex-wrap: wrap;
+  justify-content: flex-start;
   align-items: center;
+  align-content: flex-start;
+  column-gap: 12px;
+  row-gap: 8px;
+  margin-top: 10px;
   margin-bottom: 10px;
+  .el-form-item {
+    margin-bottom: 0;
+  }
+}
+.module-tools > .left {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  width: auto;
+  display: inline-flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  row-gap: 8px;
+  column-gap: 8px;
+  box-sizing: border-box;
+  ::v-deep .el-form-item {
+    flex: 0 0 auto;
+    min-width: 0;
+    margin-right: 0;
+  }
+  ::v-deep .el-form-item .el-form-item__content,
+  ::v-deep .el-form-item .el-input {
+    width: auto;
+  }
+}
+.module-tools-right {
+  flex: 0 0 auto;
+  display: inline-flex;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 10px;
   > * {
-    display: inline-block;
+    flex: 0 0 auto;
+    width: auto;
+    min-width: 0;
+    margin-left: 0;
+  }
+}
+.module-tools.wrapped-tools {
+  > .left {
+    flex: 1 1 100%;
+    width: 100%;
+    max-width: 100%;
+    display: inline-flex;
+    flex-wrap: wrap;
+    box-sizing: border-box;
+  }
+  > .left ::v-deep .el-form-item {
+    display: inline-flex;
+    flex: 1 1 0;
+    min-width: 220px;
+    margin-right: 0;
+    margin-bottom: 0;
+  }
+  > .left ::v-deep .el-form-item .el-form-item__content,
+  > .left ::v-deep .el-form-item .el-input {
+    width: 100% !important;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  > .module-tools-right {
+    margin-left: 0 !important;
+    flex: 1 1 100%;
+    width: 100%;
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 10px;
     justify-content: flex-start;
-    margin-bottom: 0px;
-    ::v-deep .el-form-item {
-      margin-bottom: 0px;
-    }
+    align-items: center;
   }
 }
 </style>

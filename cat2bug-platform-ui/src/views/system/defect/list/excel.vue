@@ -3386,12 +3386,7 @@ export default {
 .defect-excel-tools {
   flex-shrink: 0;
   width: 100%;
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px 12px;
+  /* 行内 flex 排布由父页 .defect-page .defect-view-toolbar 统一控制，右侧先换行 */
 }
 .defect-excel-tools-left {
   flex: 1 1 auto;
@@ -3405,16 +3400,10 @@ export default {
   flex-direction: row;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: 8px;
   > * {
     margin: 0 !important;
-  }
-}
-@media screen and (max-width: 980px) {
-  .defect-excel-tools-right {
-    flex: 1 1 100%;
-    justify-content: center;
   }
 }
 .defect-excel-context {
