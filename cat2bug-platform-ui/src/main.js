@@ -6,7 +6,7 @@ import Element from 'element-ui'
 import './assets/styles/element-variables.scss'
 import '@/assets/styles/index.scss' // global css
 import '@/assets/styles/ruoyi.scss' // ruoyi css
-import 'default-passive-events'
+// 不使用 default-passive-events：其全局劫持 addEventListener 可能影响依赖 passive 检测的组件。
 import '@/assets/styles/cat2bug.scss'
 import App from './App'
 import store from './store'
@@ -48,6 +48,7 @@ import i18n from './utils/i18n/i18n.js'
 import websocket from 'vue-native-websocket';
 
 import VueHotkey from 'v-hotkey'
+import VueExcelEditor from 'vue-excel-editor'
 
 // 全局方法挂载
 Vue.prototype.getDicts = getDicts
@@ -74,6 +75,7 @@ Vue.use(plugins)
 Vue.use(VueMeta)
 Vue.use(floatMenu)
 Vue.use(VueHotkey)
+Vue.use(VueExcelEditor)
 DictData.install()
 
 /**

@@ -89,6 +89,11 @@ export default {
     persistSort: {
       type: Boolean,
       default: true
+    },
+    /** 为 false 时不展示列头排序、不触发 sort-change（仍保留列拖拽等表头能力） */
+    enableHeaderSort: {
+      type: Boolean,
+      default: true
     }
   },
   computed: {
@@ -156,6 +161,7 @@ export default {
       return parts.join(' ');
     },
     columnSortableMode(col) {
+      if (!this.enableHeaderSort) return false;
       if (col.sortable === false) return false;
       if (col.sortable === true) return true;
       return 'custom';
@@ -204,6 +210,11 @@ export default {
       return merged;
     },
     initSort() {
+      if (!this.enableHeaderSort) {
+        this.orderByColumn = null;
+        this.isAsc = null;
+        return;
+      }
       if (!this.persistSort) {
         this.orderByColumn = null;
         this.isAsc = null;
@@ -221,6 +232,7 @@ export default {
       this.sort(this.orderByColumn, this.isAsc);
     },
     sortChangeHandle(e) {
+      if (!this.enableHeaderSort) return;
       this.isAsc = e.order;
       this.orderByColumn = e.prop;
       if (this.persistSort) {

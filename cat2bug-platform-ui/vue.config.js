@@ -30,6 +30,7 @@ module.exports = {
   assetsDir: process.env.VUE_APP_STATIC_PATH,
   // 是否开启eslint保存检测，有效值：ture | false | 'error'
   lintOnSave: process.env.NODE_ENV === 'development',
+  transpileDependencies: [/vue-excel-editor/],
   // 如果你不需要生产环境的 source map，可以将其设置为 false 以加速生产环境构建。
   productionSourceMap: false,
   // webpack-dev-server 相关配置
@@ -37,6 +38,15 @@ module.exports = {
     host: '0.0.0.0',
     port: port,
     open: true,
+    /**
+     * 通过局域网 IP 访问（如 http://192.168.31.31:2222）时，默认 SockJS 请求 /sockjs-node/info
+     * 易出现 net::ERR_EMPTY_RESPONSE，热更新客户端连不上（页面仍可正常用，只是无 HMR）。
+     * 改为 ws 传输（webpack-dev-server 3.11+），与浏览器同源 WebSocket，一般更稳。
+     */
+    transportMode: {
+      client: 'ws',
+      server: 'ws',
+    },
     // https: {
     //   cert: fs.readFileSync(path.join(__dirname, 'ssl/default.crt')),
     //   key: fs.readFileSync(path.join(__dirname, 'ssl/default.key'))
@@ -80,7 +90,9 @@ module.exports = {
     name: name,
     resolve: {
       alias: {
-        '@': resolve('src')
+        '@': resolve('src'),
+        // vue-multipane@0.9.5: mousedown uses target.className.match — breaks on SVG (SVGAnimatedString). Patched vendor build.
+        'vue-multipane': resolve('src/vendor/vue-multipane/index.js')
       }
     },
     plugins: [

@@ -1,5 +1,5 @@
 <template>
-  <div ref="defectMain" class="app-container">
+  <div ref="defectMain" class="app-container defect-page" :style="defectPageRootStyle">
     <project-label />
     <!-- 缺陷页标签-->
     <div class="defect-tools-tab">
@@ -24,9 +24,11 @@
 <!--    <keep-alive>-->
     <component
       ref="defectContentComponent"
+      class="defect-content-slot"
       :is="defectContentComponent"
       :query="queryParams"
       :project-id="projectId"
+      v-bind="defectViewExtraProps"
       @defect-click="handleDefectClick"
       @refresh="handleRefreshQuery"
       >
@@ -35,12 +37,21 @@
         <div class="defect-tools-search">
           <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="0">
             <el-form-item>
-              <el-radio-group class="defect-content-view-switch" size="small" v-model="defectContentComponent" @input="handleDefectContentChange">
+              <el-radio-group class="defect-content-view-switch" size="mini" v-model="defectContentComponent" @input="handleDefectContentChange">
                 <el-radio-button label="DefectTable">
-                  <span class="defect-content-view-switch-inner" :title="$t('table')"><i class="el-icon-s-grid"></i></span>
+                  <span class="defect-content-view-switch-inner" :title="$t('table')">
+                    <svg-icon icon-class="table" />
+                  </span>
                 </el-radio-button>
                 <el-radio-button label="DefectCalendar">
-                  <span class="defect-content-view-switch-inner" :title="$t('calendar')"><i class="el-icon-date"></i></span>
+                  <span class="defect-content-view-switch-inner" :title="$t('calendar')">
+                    <svg-icon icon-class="date" />
+                  </span>
+                </el-radio-button>
+                <el-radio-button label="DefectExcel">
+                  <span class="defect-content-view-switch-inner" :title="$t('excel')">
+                    <svg-icon icon-class="excel2" />
+                  </span>
                 </el-radio-button>
               </el-radio-group>
             </el-form-item>
@@ -135,17 +146,24 @@ import { resolveExportAssetHost } from "@/utils/ruoyi";
 import store from "@/store";
 import DefectTable from "./list/table"
 import DefectCalendar from "./list/calendar"
+import DefectExcel from "./list/excel"
 
 /** 记录Tab标签选项 */
 const DEFECT_TAB_CACHE_KEY='defect-tab';
+/** 缺陷列表/日历/Excel 视图组件名，与 el-radio-button label 一致；默认 DefectTable */
+const DEFECT_CONTENT_VIEW_CACHE_KEY = "defect.contentViewComponent";
+const DEFECT_CONTENT_VIEW_ALLOWED = ["DefectTable", "DefectCalendar", "DefectExcel"];
 /** 名称等于所有选项的name */
 const ALL_TAB_NAME = 'all-tab';
 
 /** 记录分析模版是否显示的缓存变量名 */
 const CACHE_KEY_STATISTIC_PANEL_VISIBLE = 'defect.statisticPanelVisible';
+/** 与 layout/AppMain.vue 一致：顶栏 Navbar 50px；开启 TagsView 时再减 34px */
+const LAYOUT_TOP_CHROME_PX = 50;
+const LAYOUT_TAGS_STRIP_PX = 34;
 export default {
   name: "Defect",
-  components: { AddDefect, HandleDefect, SelectProjectMember, ProjectLabel, Cat2BugStatistic, DefectTabDialog, DefectTable, DefectCalendar, DefectImport },
+  components: { AddDefect, HandleDefect, SelectProjectMember, ProjectLabel, Cat2BugStatistic, DefectTabDialog, DefectTable, DefectCalendar, DefectExcel, DefectImport },
   data() {
     return {
       // 当前缺陷面板的类型
@@ -200,6 +218,15 @@ export default {
       },
     };
   },
+  created() {
+    let v = this.$cache.local.get(DEFECT_CONTENT_VIEW_CACHE_KEY);
+    if (v != null && typeof v === "string") v = v.trim();
+    if (v && DEFECT_CONTENT_VIEW_ALLOWED.includes(v)) {
+      this.defectContentComponent = v;
+    } else {
+      this.defectContentComponent = "DefectTable";
+    }
+  },
   computed: {
     /** 获取当前用户id */
     currentUserId: function() {
@@ -212,6 +239,24 @@ export default {
     /** 获取用户id */
     userId: function() {
       return Number(this.$store.state.user.id);
+    },
+    /** Excel 视图额外参数（其它视图不声明对应 prop，避免落到根 DOM） */
+    defectViewExtraProps() {
+      if (this.defectContentComponent === "DefectExcel") {
+        return {
+          defectTypeOptions: this.config.types || [],
+          /** Excel 可视区在表格容器内距底留白(px)，与 clientHeight 联算高度 */
+          viewportBottomGap: 20,
+        };
+      }
+      return {};
+    },
+    /** 与 store settings.tagsView、AppMain 顶栏占位对齐，避免关标签后仍按 84px 少一截高度 */
+    defectPageRootStyle() {
+      const tagsOn = !!this.$store.state.settings.tagsView;
+      const offset = LAYOUT_TOP_CHROME_PX + (tagsOn ? LAYOUT_TAGS_STRIP_PX : 0);
+      const h = `calc(100vh - ${offset}px)`;
+      return { height: h, maxHeight: h };
     },
   },
   watch: {
@@ -413,6 +458,10 @@ export default {
     },
     /** 切换缺陷内容组件改变的处理 */
     handleDefectContentChange() {
+      const c = this.defectContentComponent;
+      if (DEFECT_CONTENT_VIEW_ALLOWED.includes(c)) {
+        this.$cache.local.set(DEFECT_CONTENT_VIEW_CACHE_KEY, c);
+      }
       this.$nextTick(()=>{
         this.$refs.defectContentComponent.init();
         this.$refs.defectContentComponent.search(this.queryParams);
@@ -518,6 +567,32 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
+/*
+ * 高度说明（与「全局 .app-container」区分）：
+ * - `src/assets/styles/index.scss` 里 `.app-container` 只有 padding:20px，不设高度。
+ * - 本页根节点是 `class="app-container defect-page"`；`height/max-height` 由 :style `defectPageRootStyle` 按
+ *   `settings.tagsView` 动态计算（与 `layout/components/AppMain.vue`：无 Tags 时 50px、有 Tags 时 84px）。
+ * - 上下 padding 用 0，避免 border-box 下再吃掉纵高；左右 20px 与其它列表一致。
+ */
+.defect-page {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  padding: 0 20px;
+  min-height: 0;
+  overflow: hidden;
+  /* 查询条上、下与 Tab / 主内容区的留白一致（子树继承） */
+  --defect-toolbar-v-gap: 8px;
+}
+.defect-page .defect-content-slot {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  /* 与 Tab/统计区之间的纵向留白改由 .defect-view-toolbar 的 margin-top 承担，避免 padding+margin 叠在不同盒子上导致观感不对称 */
+  padding-top: 0;
+  box-sizing: border-box;
+}
 @media screen and (max-width: 980px) {
   .defect-tools-search {
     display: none;
@@ -533,8 +608,9 @@ export default {
       display: inline-block;
       justify-content: flex-start;
       margin-bottom: 0px;
+      /* 与表格/日历/Excel 工具栏同一行，勿再叠 10px 底边距，否则三视图行高不一致 */
       ::v-deep .el-form-item {
-        margin-bottom: 10px;
+        margin-bottom: 0;
       }
     }
   }
@@ -550,7 +626,14 @@ export default {
 .defect-tools-tab {
   margin-top: -10px;
   position: relative;
-  height: 50px;
+  height: 40px;
+  /* el-tabs 默认表头 margin-bottom:15px + 空 content，会在 Tab 与下方查询条之间多出一段空白 */
+  ::v-deep .el-tabs__header {
+    margin-bottom: 0 !important;
+  }
+  ::v-deep .el-tabs__content {
+    display: none !important;
+  }
   .el-tabs {
     position: absolute;
     width: 100%;
@@ -574,6 +657,7 @@ export default {
   color: #409EFF;
 }
 .defect-add-dropdown {
+  margin-right: 0px;
   ::v-deep .el-button-group {
     display: flex;
     flex-direction: row;
@@ -602,15 +686,50 @@ export default {
 }
 .defect-content-view-switch {
   vertical-align: middle;
+  /* 三等分格：等宽等高，避免 table/date/excel2 矢量留白不同导致「格与格」观感不一 */
   ::v-deep .el-radio-button__inner {
-    padding: 7px 11px;
+    padding: 0 !important;
+    width: 36px !important;
+    height: 30px !important;
     line-height: 1;
+    box-sizing: border-box;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
   }
   .defect-content-view-switch-inner {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    line-height: 0;
   }
+  .defect-content-view-switch-inner ::v-deep .svg-icon {
+    width: 18px !important;
+    height: 18px !important;
+    vertical-align: top;
+  }
+}
+</style>
+
+<!-- 三视图共用：工具栏与下方主体间距、与右侧 table-tools 对齐（不受子组件 scoped 限制） -->
+<style lang="scss">
+.defect-page .defect-view-toolbar {
+  box-sizing: border-box;
+  flex-shrink: 0;
+  align-items: center !important;
+  margin-top: var(--defect-toolbar-v-gap, 8px);
+  margin-bottom: var(--defect-toolbar-v-gap, 8px);
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.defect-page .defect-view-toolbar .table-tools {
+  padding-top: 0 !important;
+  align-items: center !important;
+}
+.defect-page .defect-view-toolbar .table-tools.row > * {
+  margin-bottom: 0 !important;
 }
 </style>

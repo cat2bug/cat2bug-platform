@@ -349,14 +349,16 @@ public class SysDefectServiceImpl implements ISysDefectService
         int ret = this.updateSysDefect(sysDefect);
 
         try {
+            /* 请求体常为部分字段（如 Excel 内联只改一列）；未传字段反序列化为 null，不可与「清空」混淆，否则 diff 会误记整单被清空 */
+            SysDefect afterForLog = this.mergePatchOntoDefectForUpdateLog(oldDefect, sysDefect);
             List<DefectChange> changes = DefectChangeUtil.diff(
-                    oldDefect, sysDefect, sysUserMapper, sysModuleMapper, sysCaseMapper);
+                    oldDefect, afterForLog, sysUserMapper, sysModuleMapper, sysCaseMapper);
             if (!changes.isEmpty()) {
                 SysDefectLog logEntry = new SysDefectLog();
                 logEntry.setDefectId(sysDefect.getDefectId());
                 logEntry.setDefectLogType(SysDefectLogStateEnum.UPDATE);
-                logEntry.setReceiveBy(sysDefect.getHandleBy() != null
-                        ? sysDefect.getHandleBy() : oldDefect.getHandleBy());
+                logEntry.setReceiveBy(afterForLog.getHandleBy() != null
+                        ? afterForLog.getHandleBy() : oldDefect.getHandleBy());
                 logEntry.setDefectLogDescribe(JSON.toJSONString(changes));
                 this.inertLog(logEntry);
 
@@ -368,6 +370,56 @@ public class SysDefectServiceImpl implements ISysDefectService
         }
 
         return ret;
+    }
+
+    private static boolean isTruthyParam(SysDefect d, String key) {
+        if (d == null || d.getParams() == null) {
+            return false;
+        }
+        Object v = d.getParams().get(key);
+        if (v == null) {
+            return false;
+        }
+        if (v instanceof Boolean) {
+            return (Boolean) v;
+        }
+        return "true".equalsIgnoreCase(String.valueOf(v)) || "1".equals(v);
+    }
+
+    /**
+     * 将 {@code edit} 接口上的部分更新体叠在更新前数据库快照上，得到与动态 SQL 实际效果一致的「更新后」视图，专供 {@link DefectChangeUtil#diff} 写日志。
+     */
+    private SysDefect mergePatchOntoDefectForUpdateLog(SysDefect oldSnap, SysDefect patch) {
+        SysDefect m = new SysDefect();
+        m.setDefectName(patch.getDefectName() != null ? patch.getDefectName() : oldSnap.getDefectName());
+        m.setDefectType(patch.getDefectType() != null ? patch.getDefectType() : oldSnap.getDefectType());
+        m.setDefectLevel(patch.getDefectLevel() != null ? patch.getDefectLevel() : oldSnap.getDefectLevel());
+        m.setDefectState(patch.getDefectState() != null ? patch.getDefectState() : oldSnap.getDefectState());
+        m.setHandleBy(patch.getHandleBy() != null ? patch.getHandleBy() : oldSnap.getHandleBy());
+        m.setModuleId(patch.getModuleId() != null ? patch.getModuleId() : oldSnap.getModuleId());
+        m.setModuleVersion(patch.getModuleVersion() != null ? patch.getModuleVersion() : oldSnap.getModuleVersion());
+
+        if (isTruthyParam(patch, "clearPlanStartTime")) {
+            m.setPlanStartTime(null);
+        } else if (patch.getPlanStartTime() != null) {
+            m.setPlanStartTime(patch.getPlanStartTime());
+        } else {
+            m.setPlanStartTime(oldSnap.getPlanStartTime());
+        }
+        if (isTruthyParam(patch, "clearPlanEndTime")) {
+            m.setPlanEndTime(null);
+        } else if (patch.getPlanEndTime() != null) {
+            m.setPlanEndTime(patch.getPlanEndTime());
+        } else {
+            m.setPlanEndTime(oldSnap.getPlanEndTime());
+        }
+
+        m.setCaseId(patch.getCaseId() != null ? patch.getCaseId() : oldSnap.getCaseId());
+        m.setCaseStepId(patch.getCaseStepId() != null ? patch.getCaseStepId() : oldSnap.getCaseStepId());
+        m.setDefectDescribe(patch.getDefectDescribe() != null ? patch.getDefectDescribe() : oldSnap.getDefectDescribe());
+        m.setImgUrls(patch.getImgUrls() != null ? patch.getImgUrls() : oldSnap.getImgUrls());
+        m.setAnnexUrls(patch.getAnnexUrls() != null ? patch.getAnnexUrls() : oldSnap.getAnnexUrls());
+        return m;
     }
 
     /**

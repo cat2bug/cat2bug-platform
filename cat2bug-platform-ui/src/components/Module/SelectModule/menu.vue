@@ -8,13 +8,10 @@
       @mouseenter.native="mouseEnterHandle(index)"
       @mouseleave.native="mouseLeaveHandle(index)">
       <span>{{module.moduleName}}</span>
-      <i v-if="module.childrenCount>0" class="el-icon-arrow-right"></i>
+      <i v-if="moduleHasChildren(module)" class="el-icon-arrow-right"></i>
       <el-button v-else-if="isEdit" type="text" size="mini" v-show="addButtonVisibleList[index]" @click="addSubMenuHandle($event, module)"><i class="el-icon-plus"></i></el-button>
     </el-col>
-    <el-col :span="24" v-if="isEdit">
-      <div v-show="moduleList.length>0">
-        <el-divider></el-divider>
-      </div>
+    <el-col :span="24" v-if="isEdit" class="module-menu-add-wrap">
       <add-module-menu-item ref="addModuleMenu" v-model="moduleName" :project-id="projectId" :module-pid="modulePid" @added="addModuleHandle" />
     </el-col>
   </el-row>
@@ -94,8 +91,12 @@ export default {
       }
       this.getModuleList();
     },
+    moduleHasChildren (module) {
+      const c = module && module.childrenCount
+      return c != null && Number(c) > 0
+    },
     showSubMenuHandle(module) {
-      if(module.childrenCount>0) {
+      if (this.moduleHasChildren(module)) {
         this.$emit('clickDirectory', module);
       } else {
         this.$emit('clickMenu', module);
@@ -120,11 +121,10 @@ export default {
 <style lang="scss" scoped>
   .module-menu {
     width: 200px;
-    .el-divider {
-      margin: 5px 15px 15px 15px;
-      width: calc(100% - 30px);
-      background-color: #f1f1f1;
-    }
+  }
+  .module-menu-add-wrap {
+    margin-top: 0;
+    padding-top: 6px;
   }
   .module-menu-item {
     padding: 5px 20px;

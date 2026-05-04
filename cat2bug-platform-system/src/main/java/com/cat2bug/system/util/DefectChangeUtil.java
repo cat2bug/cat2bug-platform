@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 /**
  * 缺陷字段差异计算工具。
  * <p>负责对比"编辑前/编辑后"两份 SysDefect 对象，按业务白名单产出 {@link DefectChange} 列表。</p>
- * <p>状态相关字段（defectState、createBy 等）由专用日志类型记录，故不在白名单内。</p>
+ * <p>工作流动作（指派、驳回等）仍写入专用 {@code defect_log_type}；通用 {@code PUT} 编辑（含 Excel 改状态）通过本工具记录 {@code defectState} 等字段差异。</p>
  */
 public final class DefectChangeUtil {
 
@@ -73,6 +73,9 @@ public final class DefectChangeUtil {
                 oldDefect.getDefectType() == null ? null : oldDefect.getDefectType().name(),
                 newDefect.getDefectType() == null ? null : newDefect.getDefectType().name());
         addEnumChange(changes, "defectLevel", oldDefect.getDefectLevel(), newDefect.getDefectLevel());
+        addEnumChange(changes, "defectState",
+                oldDefect.getDefectState() == null ? null : oldDefect.getDefectState().name(),
+                newDefect.getDefectState() == null ? null : newDefect.getDefectState().name());
 
         addUsersChange(changes, "handleBy", oldDefect.getHandleBy(), newDefect.getHandleBy(),
                 oldDefect.getProjectId(), userMapper);

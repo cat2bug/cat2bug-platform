@@ -1,7 +1,7 @@
 <template>
   <div class="defect-table-root">
     <!-- 查询与表格工具栏独占一行，下方左侧交付物树与右侧表格顶端对齐（与用例页一致） -->
-    <div class="defect-table-tools defect-table-tools-bar">
+    <div class="defect-table-tools defect-table-tools-bar defect-view-toolbar">
       <slot name="left-tools"></slot>
       <div class="table-tools row">
         <el-popover placement="top" trigger="click">
@@ -21,9 +21,7 @@
             size="mini"
           ></el-button>
         </el-popover>
-        <div>
-          <slot name="right-tools"></slot>
-        </div>
+        <slot name="right-tools"></slot>
       </div>
     </div>
     <multipane
@@ -43,7 +41,11 @@
           v-resize="setDragComponentSize"
         />
       </div>
-      <multipane-resizer v-show="showModuleTree" :style="multipaneStyle"></multipane-resizer>
+      <multipane-resizer
+        ref="splitResizerEl"
+        v-show="showModuleTree"
+        :style="splitResizerLineStyle"
+      ></multipane-resizer>
       <div ref="defectTableContext" class="defect-table-context">
         <cat2-bug-table
           ref="cat2BugTable"
@@ -51,6 +53,7 @@
           :columns="tableColumnDefaults"
           :data="defectList"
           :loading="loading"
+          :enable-header-sort="false"
           v-resize="setDragComponentSize"
           @sort-change="sortChangeHandle"
           @columns-change="onTableColumnsChange">
@@ -212,13 +215,19 @@ export default {
       total: 0,
       defectList: [],
       queryParams: this.query,
-      multipaneStyle: { "--marginTop": "0px" },
       treeModuleStyle: { "--treeModuleWidth": "300px" },
+      /** 竖线 position:fixed 用的视口坐标，使底部贴齐浏览器视口底 */
+      splitResizerLineStyle: {},
+      _splitLineReflowCb: null,
+      _splitLineScrollEl: null,
+      _splitLineRaf: null,
       /** 是否显示左侧交付物列表 */
       showModuleTree: true,
       /** 缺陷列表表格默认列（克隆自 table-options，避免与全局常量引用互相污染） */
       tableColumnDefaults: TableOptions.map(c => ({ ...c })),
       columnPickerCheckedKeys: [],
+      /** 与 Cat2BugTable 列顺序一致，供「显示字段」勾选列表排序（含 Excel 拖列写回缓存后） */
+      defectPickerColumnList: null,
     }
   },
   props: {
@@ -259,7 +268,11 @@ export default {
   },
   computed: {
     defectColumnPickerOptions() {
-      return TableOptions.filter(c => c.showInColumnPicker !== false);
+      const ordered = this.defectPickerColumnList;
+      if (ordered && ordered.length) {
+        return ordered.map((c) => ({ ...c }));
+      }
+      return TableOptions.filter((c) => c.showInColumnPicker !== false);
     },
     defectLife: function () {
       return function (defect) {
@@ -299,7 +312,13 @@ export default {
   },
   mounted() {
     this.getTreeModuleWidth();
-    this.$nextTick(() => this.setDragComponentSize());
+    this.$nextTick(() => {
+      this.setDragComponentSize();
+      this.bindSplitResizerLineListeners();
+    });
+  },
+  beforeDestroy() {
+    this.unbindSplitResizerLineListeners();
   },
   methods: {
     init() {
@@ -330,6 +349,7 @@ export default {
       if (this.showModuleTree) {
         this.cacheTreeModuleWidth();
       }
+      this.$nextTick(() => this.updateSplitResizerLineVars());
     },
     toggleModuleTreeVisible() {
       this.showModuleTree = !this.showModuleTree;
@@ -341,17 +361,69 @@ export default {
         }
       });
     },
+    /** 树/表格区域尺寸变化时同步竖线视口几何，并重算表格布局 */
     setDragComponentSize() {
-      this.multipaneStyle["--marginTop"] = "0px";
       this.$nextTick(() => {
-        const treeH = this.$refs.treeModule ? (this.$refs.treeModule.scrollHeight || 0) : 0;
-        const ctxH = this.$refs.defectTableContext ? (this.$refs.defectTableContext.scrollHeight || 0) : 0;
-        const pageHeight = Math.max(treeH, ctxH, document.body.scrollHeight - 170);
-        this.multipaneStyle["--marginTop"] = pageHeight + "px";
+        this.updateSplitResizerLineVars();
+        this.$refs.cat2BugTable && this.$refs.cat2BugTable.doLayout && this.$refs.cat2BugTable.doLayout();
       });
     },
+    queueSplitResizerLineUpdate() {
+      if (this._splitLineRaf != null) return;
+      this._splitLineRaf = requestAnimationFrame(() => {
+        this._splitLineRaf = null;
+        this.updateSplitResizerLineVars();
+      });
+    },
+    updateSplitResizerLineVars() {
+      if (!this.showModuleTree) {
+        this.splitResizerLineStyle = {};
+        return;
+      }
+      const comp = this.$refs.splitResizerEl;
+      const el = comp && (comp.$el || comp);
+      if (!el || typeof el.getBoundingClientRect !== "function") return;
+      const r = el.getBoundingClientRect();
+      const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+      const top = Math.max(0, r.top);
+      const h = Math.max(0, vh - top);
+      const cx = r.left + r.width / 2;
+      this.splitResizerLineStyle = {
+        "--defect-split-line-top": `${top}px`,
+        "--defect-split-line-height": `${h}px`,
+        "--defect-split-line-left": `${cx}px`,
+      };
+    },
+    bindSplitResizerLineListeners() {
+      if (this._splitLineReflowCb) return;
+      this._splitLineReflowCb = () => this.queueSplitResizerLineUpdate();
+      window.addEventListener("resize", this._splitLineReflowCb, { passive: true });
+      this.$nextTick(() => {
+        const main = this.$el && this.$el.closest && this.$el.closest(".main-container");
+        this._splitLineScrollEl = main || null;
+        if (main) {
+          main.addEventListener("scroll", this._splitLineReflowCb, { passive: true });
+        }
+      });
+    },
+    unbindSplitResizerLineListeners() {
+      if (this._splitLineRaf != null) {
+        cancelAnimationFrame(this._splitLineRaf);
+        this._splitLineRaf = null;
+      }
+      if (!this._splitLineReflowCb) return;
+      window.removeEventListener("resize", this._splitLineReflowCb);
+      if (this._splitLineScrollEl) {
+        this._splitLineScrollEl.removeEventListener("scroll", this._splitLineReflowCb);
+        this._splitLineScrollEl = null;
+      }
+      this._splitLineReflowCb = null;
+    },
     onTableColumnsChange(columns) {
-      this.columnPickerCheckedKeys = columns.filter(c => c.visible && c.showInColumnPicker !== false).map(c => c.key);
+      this.columnPickerCheckedKeys = columns
+        .filter((c) => c.visible && c.showInColumnPicker !== false)
+        .map((c) => c.key);
+      this.defectPickerColumnList = columns.filter((c) => c.showInColumnPicker !== false).map((c) => ({ ...c }));
     },
     onColumnPickerChange(keys) {
       this.$refs.cat2BugTable && this.$refs.cat2BugTable.setColumnsVisible(keys);
@@ -435,19 +507,24 @@ export default {
 .defect-table-multipane > .multipane-resizer {
   margin: 0;
   left: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  display: block;
   height: 100%;
   width: 8px;
   cursor: col-resize;
   position: relative;
+  overflow: visible;
+  /* 竖线：顶对齐分割条（与交付物列表同顶），底对齐视口底（由 JS 写入 --defect-split-line-*） */
   &:before {
-    display: block;
-    content: "";
+    position: fixed;
+    top: var(--defect-split-line-top, 0px);
+    left: var(--defect-split-line-left, 0px);
     width: 1px;
-    height: var(--marginTop);
+    height: var(--defect-split-line-height, 100vh);
+    transform: translateX(-50%);
+    content: "";
     background-color: #dcdfe6;
+    z-index: 6;
+    pointer-events: none;
   }
   &:after {
     content: "";
@@ -559,10 +636,9 @@ export default {
     }
   }
   .table-tools {
-    align-items: flex-start;
-    padding-top: 3px;
+    align-items: center;
     > * {
-      margin-bottom: 10px;
+      margin-bottom: 0;
     }
   }
 }
@@ -601,6 +677,11 @@ export default {
     margin: 0px;
   }
 }
+/* 缺陷名称列：覆盖 el-table .cell 默认 nowrap，使标题内 \\n 在表格中换行展示 */
+.defect-table-root ::v-deep td.defect-name-col .cell {
+  white-space: pre-line !important;
+  word-break: break-word;
+}
 .table-defect-title {
   display: inline-flex;
   flex-direction: column;
@@ -609,6 +690,9 @@ export default {
   .el-link {
     flex: 1;
     padding-left: 5px;
+    white-space: inherit;
+    word-break: break-word;
+    line-height: 1.45;
   }
 }
 .el-table {

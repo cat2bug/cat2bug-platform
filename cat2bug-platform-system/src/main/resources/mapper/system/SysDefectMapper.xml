@@ -278,6 +278,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                         or d.project_num like concat('%', #{defect.nameVersionKeyword}, '%')
                         or (d.module_version is not null and d.module_version like concat('%', #{defect.nameVersionKeyword}, '%'))
                         or (m.module_name is not null and m.module_name like concat('%', #{defect.nameVersionKeyword}, '%'))
+                        or (d.defect_describe is not null and d.defect_describe like concat('%', #{defect.nameVersionKeyword}, '%'))
                         <if test="defect.params != null and defect.params.nameVersionKeywordHandleBy != null and defect.params.nameVersionKeywordHandleBy.size() > 0">
                             or (
                             <foreach collection="defect.params.nameVersionKeywordHandleBy" item="b" separator=" or " open="(" close=")">d.handle_by REGEXP CONCAT('\b',#{b},'\b') OR d.handle_by REGEXP CONCAT('\\b',#{b},'\\b')
@@ -293,6 +294,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                         or d.project_num like concat('%', #{defect.params.nameVersionKeyword}, '%')
                         or (d.module_version is not null and d.module_version like concat('%', #{defect.params.nameVersionKeyword}, '%'))
                         or (m.module_name is not null and m.module_name like concat('%', #{defect.params.nameVersionKeyword}, '%'))
+                        or (d.defect_describe is not null and d.defect_describe like concat('%', #{defect.params.nameVersionKeyword}, '%'))
                         <if test="defect.params != null and defect.params.nameVersionKeywordHandleBy != null and defect.params.nameVersionKeywordHandleBy.size() > 0">
                             or (
                             <foreach collection="defect.params.nameVersionKeywordHandleBy" item="b" separator=" or " open="(" close=")">d.handle_by REGEXP CONCAT('\b',#{b},'\b') OR d.handle_by REGEXP CONCAT('\\b',#{b},'\\b')
@@ -364,6 +366,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                 and (d.defect_name like concat('%', #{defect.params.search}, '%')
                     or d.project_num like concat('%', #{defect.params.search}, '%')
                     or m.module_name like concat('%', #{defect.params.search}, '%')
+                    or (d.defect_describe is not null and d.defect_describe like concat('%', #{defect.params.search}, '%'))
                     <if test="defect.params.searchHandleBy != null and defect.params.searchHandleBy.size > 0">
                         or (
                             <foreach collection="defect.params.searchHandleBy" item="b" separator=" or " open="(" close=")">d.handle_by REGEXP CONCAT('\b',#{b},'\b') OR d.handle_by REGEXP CONCAT('\\b',#{b},'\\b')
@@ -499,6 +502,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="dataSources != null">data_sources = #{dataSources},</if>
             <if test="dataSourcesParams != null">data_sources_params = #{dataSourcesParams},</if>
             <if test="moduleId != null">module_id = #{moduleId},</if>
+            <if test="moduleId == null and params != null and params.clearModuleId != null">module_id = null,</if>
             <if test="moduleVersion != null">module_version = #{moduleVersion},</if>
             <if test="createBy != null">create_by = #{createBy},</if>
             <if test="createById != null">create_by_id = #{createById},</if>
@@ -511,7 +515,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="handleTime != null">handle_time = #{handleTime},</if>
             <if test="defectLevel != null">defect_level = #{defectLevel},</if>
             <if test="planStartTime != null">plan_start_time = #{planStartTime},</if>
+            <if test="planStartTime == null and params != null and params.clearPlanStartTime != null">plan_start_time = null,</if>
             <if test="planEndTime != null">plan_end_time = #{planEndTime},</if>
+            <if test="planEndTime == null and params != null and params.clearPlanEndTime != null">plan_end_time = null,</if>
             <if test="sponsor != null">sponsor = #{sponsor},</if>
         </trim>
         where defect_id = #{defectId}

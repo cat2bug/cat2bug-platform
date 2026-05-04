@@ -1,5 +1,6 @@
 # 数据源配置
 spring:
+    database-type: mysql
     # redis 配置
     redis:
         # 是否开启内嵌redis服务

@@ -1,8 +1,239 @@
+diff --git a/node_modules/vue-excel-editor/src/VueExcelColumn.vue b/node_modules/vue-excel-editor/src/VueExcelColumn.vue
+index 889c82a..ae03194 100644
+--- a/node_modules/vue-excel-editor/src/VueExcelColumn.vue
++++ b/node_modules/vue-excel-editor/src/VueExcelColumn.vue
+@@ -22,6 +22,8 @@ export default {
+     change: {type: Function, default: null},
+     link: {type: Function, default: null},
+     cellClick: {type: Function, default: null},
++    /** 可选：返回 HTML 字符串渲染单元格（由宿主负责转义；用于只读缩略图等） */
++    cellHtml: {type: Function, default: null},
+     autoFillWidth: {type: Boolean, default: false},
+ 
+     allowKeys: {type: [Array, Function], default () {return null}},
+@@ -264,7 +266,8 @@ export default {
+         register: this.register,
+         placeholder: this.placeholder,
+         cellClick: this.cellClick,
+-        listByClick: this.listByClick || this._listByClick
++        listByClick: this.listByClick || this._listByClick,
++        cellHtml: this.cellHtml
+       })
+     }
+   }
 diff --git a/node_modules/vue-excel-editor/src/VueExcelEditor.vue b/node_modules/vue-excel-editor/src/VueExcelEditor.vue
-index 6411a01..74c769f 100644
+index 6411a01..53ae30f 100644
 --- a/node_modules/vue-excel-editor/src/VueExcelEditor.vue
 +++ b/node_modules/vue-excel-editor/src/VueExcelEditor.vue
-@@ -616,6 +616,12 @@ export default {
+@@ -28,19 +28,10 @@
+           </colgroup>
+           <thead class="center-text">
+             <tr>
+-              <th class="center-text first-col tl-setting"
++              <th class="center-text first-col"
+                   :class="{hide: noNumCol}"
+-                  style="top: 0"
+-                  @mousedown.left="selectAllClick"
+-                  @contextmenu.prevent="settingClick">
+-                <span style="width:100%">
+-                  <svg v-if="selectedCount>0" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="times-circle" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="svg-inline--fa fa-times-circle fa-w-16 fa-sm"><path fill="currentColor" d="M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm121.6 313.1c4.7 4.7 4.7 12.3 0 17L338 377.6c-4.7 4.7-12.3 4.7-17 0L256 312l-65.1 65.6c-4.7 4.7-12.3 4.7-17 0L134.4 338c-4.7-4.7-4.7-12.3 0-17l65.6-65-65.6-65.1c-4.7-4.7-4.7-12.3 0-17l39.6-39.6c4.7-4.7 12.3-4.7 17 0l65 65.7 65.1-65.6c4.7-4.7 12.3-4.7 17 0l39.6 39.6c4.7 4.7 4.7 12.3 0 17L312 256l65.6 65.1z"></path></svg>
+-                  <svg v-else aria-hidden="true" focusable="false" data-prefix="fas" data-icon="bars" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="svg-inline--fa fa-bars fa-w-14 fa-sm"><path fill="currentColor" d="M16 132h416c8.837 0 16-7.163 16-16V76c0-8.837-7.163-16-16-16H16C7.163 60 0 67.163 0 76v40c0 8.837 7.163 16 16 16zm0 160h416c8.837 0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837 0-16 7.163-16 16v40c0 8.837 7.163 16 16 16zm0 160h416c8.837 0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837 0-16 7.163-16 16v40c0 8.837 7.163 16 16 16z"></path></svg>
+-                  <!--
+-                  <svg v-if="processing" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="spinner" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="svg-inline--fa fa-spinner fa-w-16 fa-spin fa-sm"><path fill="currentColor" d="M304 48c0 26.51-21.49 48-48 48s-48-21.49-48-48 21.49-48 48-48 48 21.49 48 48zm-48 368c-26.51 0-48 21.49-48 48s21.49 48 48 48 48-21.49 48-48-21.49-48-48-48zm208-208c-26.51 0-48 21.49-48 48s21.49 48 48 48 48-21.49 48-48-21.49-48-48-48zM96 256c0-26.51-21.49-48-48-48S0 229.49 0 256s21.49 48 48 48 48-21.49 48-48zm12.922 99.078c-26.51 0-48 21.49-48 48s21.49 48 48 48 48-21.49 48-48c0-26.509-21.491-48-48-48zm294.156 0c-26.51 0-48 21.49-48 48s21.49 48 48 48 48-21.49 48-48c0-26.509-21.49-48-48-48zM108.922 60.922c-26.51 0-48 21.49-48 48s21.49 48 48 48 48-21.49 48-48-21.491-48-48-48z"></path></svg>
+-                  <svg v-else aria-hidden="true" focusable="false" data-prefix="fas" data-icon="bars" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="svg-inline--fa fa-bars fa-w-14 fa-sm"><path fill="currentColor" d="M16 132h416c8.837 0 16-7.163 16-16V76c0-8.837-7.163-16-16-16H16C7.163 60 0 67.163 0 76v40c0 8.837 7.163 16 16 16zm0 160h416c8.837 0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837 0-16 7.163-16 16v40c0 8.837 7.163 16 16 16zm0 160h416c8.837 0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837 0-16 7.163-16 16v40c0 8.837 7.163 16 16 16z"></path></svg>
+-                  -->
+-                </span>
++                  style="top: 0">
++                <span class="first-col-corner-placeholder" style="width:100%;display:block" aria-hidden="true"></span>
+               </th>
+               <th v-for="(item, p) in fields"
+                   v-show="!item.invisible"
+@@ -88,7 +79,7 @@
+                                 class="column-filter" />
+             </tr>
+           </thead>
+-          <tbody @mousedown="mouseDown">
++          <tbody @mousedown="mouseDown" @dblclick="cellDoubleClick">
+             <tr v-if="localizedLabel.noRecordIndicator && pagingTable.length == 0">
+               <td colspan="100%" style="height:40px; vertical-align: middle; text-align: center"></td>
+             </tr>
+@@ -105,7 +96,7 @@
+                   }"
+                   :pos="rowPos"
+                   @mouseover="numcolMouseOver"
+-                  @click="rowLabelClick">
++                  @mousedown="rowLabelMouseDown">
+                 <span v-html="recordLabel(pageTop + rowPos + 1, record)"></span>
+               </td>
+               <td v-for="(item, p) in fields"
+@@ -118,12 +109,20 @@
+                     link: item.link,
+                     select: item.options,
+                     datepick: item.type == 'date',
+-                    'sticky-column': item.sticky
++                    'sticky-column': item.sticky,
++                    'cell-html': !!item.cellHtml
+                   }"
+                   :key="p"
+                   :style="Object.assign(cellStyle(record, item), renderColumnCellStyle(item))"
+                   @mouseover="cellMouseOver"
+-                  @mousemove="cellMouseMove">{{ item.toText(record[item.name]) }}</td>
++                  @mousemove="cellMouseMove">
++                <span
++                  v-if="item.cellHtml"
++                  class="vue-excel-cell-html"
++                  v-html="item.cellHtml(record, item)"
++                ></span>
++                <template v-else>{{ item.toText(record[item.name]) }}</template>
++              </td>
+               <td v-if="vScroller.buttonHeight < vScroller.height" class="last-col"></td>
+             </tr>
+           </tbody>
+@@ -153,15 +152,42 @@
+         <!-- Text Tip -->
+         <div v-show="textTip" ref="texttip" class="text-tip">{{ textTip }}</div>
+ 
++        <!-- 填充柄拖动预览：围住源格到目标格（同行或同列） -->
++        <div v-show="fillDragOverlay.show"
++             ref="fillDragOverlay"
++             class="fill-drag-overlay"
++             :style="fillDragOverlay.style"></div>
++
++        <!-- 矩形区域选：整块外框+底色（盖在表格之上，避免 cell-html 等遮住 td 背景） -->
++        <div v-show="cellRangeOverlay.show"
++             class="cell-range-overlay"
++             :style="cellRangeOverlay.style"></div>
++
+         <!-- Editor Square -->
+-        <div v-show="focused" ref="inputSquare" class="input-square" @mousedown="inputSquareClick">
+-          <div style="position: relative; height: 100%; padding: 2px 2px 1px">
+-            <div class="rb-square" />
++        <div v-show="focused"
++             ref="inputSquare"
++             class="input-square"
++             :class="{
++               'input-square--editing': !!inputBoxShow,
++               'input-square--range-suppress': suppressInputSquareRangeChrome,
++               'input-square--defect-name': currentField && !currentField.readonly && currentField.type !== 'date' && !currentField.options
++             }"
++             @mousedown="inputSquareClick">
++          <div
++            :data-vee-field="currentField ? currentField.name : ''"
++            style="position: relative; height: 100%; padding: 2px 2px 1px">
++            <div
++              v-show="!cellRangeDrag && !fillDragActive"
++              class="rb-square"
++              @mousedown.stop.prevent="fillHandleMouseDown"
++            />
+             <textarea ref="inputBox"
+                       id="inputBox"
+                       class="input-box"
++                      v-bind="defectNameTextareaRowBind"
+                       :style="{opacity: inputBoxShow}"
+                       @blur="inputBoxBlur"
++                      @input="onInputBoxNativeInput"
+                       @mousemove="inputBoxMouseMove"
+                       @mousedown="inputBoxMouseDown"
+                       trim
+@@ -473,7 +499,34 @@ export default {
+       summaryRow: false,
+       summary: {},
+       showFilteredOnly: true,
+-      showSelectedOnly: false
++      showSelectedOnly: false,
++
++      fillDragActive: false,
++      fillDragSource: null,
++      fillDragBoundMove: null,
++      fillDragBoundUp: null,
++      fillDragOverlay: { show: false, style: {} },
++      fillDragHoverRow: null,
++      fillDragHoverCol: null,
++
++      /** 区域选外框（相对 systable，与 fill 预览同一套坐标） */
++      cellRangeOverlay: { show: false, style: {} },
++
++      /** 矩形区域选：table 行下标 + fields 列下标 */
++      cellRange: null,
++      cellRangeDrag: null,
++      _cellRangeSelectMoveBound: null,
++      _cellRangeSelectUpBound: null,
++      suppressClearCellRangeOnMove: false,
++
++      /** 行号列拖选多行 */
++      rowLabelDrag: null,
++      _rowLabelDragMoveBound: null,
++      _rowLabelDragUpBound: null,
++      _rowLabelDragRaf: null,
++
++      /** 合并 table-content 高频 scroll 到每帧一次 */
++      _tableScrollRaf: null
+     }
+     return dataset
+   },
+@@ -520,6 +573,17 @@ export default {
+           }
+         }
+       }
++    },
++    /** 矩形拖选/已选时由 overlay 统一绘制选区，隐藏活动格外框，避免与 overlay 叠两套 */
++    suppressInputSquareRangeChrome () {
++      if (this.inputBoxShow) return false
++      return !!(this.cellRange || this.cellRangeDrag)
++    },
++    /** 可编辑纯文本列（无 options）：单行 textarea 便于格内垂直居中；含 options 的列勿套（交付物/计划时间等） */
++    defectNameTextareaRowBind () {
++      if (this.currentField && !this.currentField.readonly && this.currentField.type !== 'date' && !this.currentField.options)
++        return { rows: 1 }
++      return {}
+     }
+   },
+   watch: {
+@@ -563,15 +627,30 @@ export default {
+     },
+     pageSize (newVal) {
+       this.$emit('page-changed', this.pageTop, this.pageTop + newVal - 1)
++    },
++    inputBoxShow (v) {
++      if (v)
++        this.$nextTick(() => this.syncDefectNameInputBoxLayout())
++      else if (this.inputBox) {
++        this.inputBox.style.removeProperty('height')
++        this.inputBox.style.removeProperty('min-height')
++      }
+     }
+   },
+   beforeDestroy () {
++    if (this._tableScrollRaf != null) {
++      cancelAnimationFrame(this._tableScrollRaf)
++      this._tableScrollRaf = null
++    }
+     window.removeEventListener('resize', this.winResize)
+     window.removeEventListener('paste', this.winPaste)
+     window.removeEventListener('keydown', this.winKeydown)
+     window.removeEventListener('keyup', this.winKeyup)
+     window.removeEventListener('scroll', this.winScroll)
+     window.removeEventListener('wheel', this.mousewheel)
++    this.fillHandleCleanup()
++    this.cellRangeSelectCleanupListeners()
++    this.rowLabelDragCleanup()
+   },
+   mounted () {
+     this.editor = this.$refs.editor
+@@ -594,7 +673,11 @@ export default {
+       this.labelTr.children[0].style.height = this.labelTr.offsetHeight + 'px'
+       this.calCellTop2 = this.labelTr.offsetHeight
+       this.refreshPageSize()
+-      this.tableContent.scrollTo(0, this.tableContent.scrollTop)
++      {
++        const tc = this.tableContent
++        const maxL = Math.max(0, tc.scrollWidth - tc.clientWidth)
++        tc.scrollTo(Math.min(Math.max(0, tc.scrollLeft), maxL), tc.scrollTop)
++      }
+       this.calStickyLeft()
+     }, 200)
+ 
+@@ -616,6 +699,573 @@ export default {
      }
    },
    methods: {
@@ -12,10 +243,608 @@ index 6411a01..74c769f 100644
 +      while (t && t.nodeType !== 1) t = t.parentNode
 +      return t || null
 +    },
++    /** 单元格内若有子节点（如宿主 v-html 缩略图），事件 target 常为子元素；归一到所在 TD */
++    domEventTargetTd (e) {
++      let el = this.domEventTargetEl(e)
++      while (el && el.tagName !== 'TD') el = el.parentElement
++      return el || null
++    },
++    /** 下拉/日期三角在单元格右侧（background: right 6px center）时的点击热区：右缘向内约 24px（含只读计划列等宿主自定义弹层） */
++    tdDropdownHotZoneHit (td, clientX) {
++      if (!td || typeof td.getBoundingClientRect !== 'function') return false
++      if (!td.classList.contains('select') && !td.classList.contains('datepick')) return false
++      const relX = clientX - td.getBoundingClientRect().left
++      const w = td.offsetWidth
++      return relX >= w - 24
++    },
++    /** 右下角填充柄：拖动矩形区域，将源单元格值复制到范围内可写格（跳过 key / 只读 / 隐藏 / cellHtml） */
++    fillHandleMouseDown (e) {
++      this.cellRangeSelectCleanupListeners()
++      e.preventDefault()
++      e.stopPropagation()
++      /* 先置位以立刻隐藏 rb-square（cleanup 会清 cellRangeDrag，否则 v-show 会短暂为 true） */
++      this.fillDragActive = true
++      if (!this.focused || this.currentRowPos < 0 || !this.currentField) {
++        this.fillDragActive = false
++        return
++      }
++      if (this.inputBoxShow) {
++        this.fillDragActive = false
++        return
++      }
++      const field = this.currentField
++      if (field.keyField || field.cellHtml) {
++        this.fillDragActive = false
++        return
++      }
++      const row = this.pagingTable[this.currentRowPos]
++      if (!row) {
++        this.fillDragActive = false
++        return
++      }
++      let value = row[field.name]
++      if (value !== null && typeof value === 'object') {
++        try {
++          value = JSON.parse(JSON.stringify(value))
++        } catch (err) {
++          this.fillDragActive = false
++          return
++        }
++      }
++      let fillDragSource = {
++        mode: 'single',
++        rowPos: this.currentRowPos,
++        colPos: this.currentColPos,
++        fieldName: field.name,
++        value
++      }
++      const cr = this.cellRange
++      const absR = this.pageTop + this.currentRowPos
++      if (cr) {
++        const ra0 = Math.min(cr.r0, cr.r1)
++        const ra1 = Math.max(cr.r0, cr.r1)
++        const ca0 = Math.min(cr.c0, cr.c1)
++        const ca1 = Math.max(cr.c0, cr.c1)
++        const lastPagingRow = ra1 - this.pageTop
++        const tryRowStripFromPagingRow = (pRow) => {
++          if (pRow < 0 || pRow >= (this.pagingTable && this.pagingTable.length ? this.pagingTable.length : 0)) return null
++          const srcRow = this.pagingTable[pRow]
++          if (!srcRow) return null
++          let ok = true
++          const valuesByCol = {}
++          for (let c = ca0; c <= ca1; c++) {
++            const f = this.fields[c]
++            if (!f || f.keyField || f.cellHtml) {
++              ok = false
++              break
++            }
++            let v = srcRow[f.name]
++            if (v !== null && typeof v === 'object') {
++              try {
++                v = JSON.parse(JSON.stringify(v))
++              } catch (err) {
++                ok = false
++                break
++              }
++            }
++            valuesByCol[c] = v
++          }
++          if (!ok || Object.keys(valuesByCol).length === 0) return null
++          const anchorF = this.fields[this.currentColPos]
++          let anchorVal = anchorF ? srcRow[anchorF.name] : value
++          if (anchorVal !== null && typeof anchorVal === 'object') {
++            try {
++              anchorVal = JSON.parse(JSON.stringify(anchorVal))
++            } catch (err) {
++              anchorVal = value
++            }
++          }
++          return {
++            mode: 'row-strip',
++            rowPos: pRow,
++            colPos: this.currentColPos,
++            fieldName: field.name,
++            value: anchorVal,
++            cMin: ca0,
++            cMax: ca1,
++            valuesByCol
++          }
++        }
++        /* 单行多列：源行为该选区行 */
++        if (ra0 === ra1 && ra0 === absR && ca1 > ca0) {
++          const strip = tryRowStripFromPagingRow(lastPagingRow)
++          if (strip) fillDragSource = strip
++        } else if (ra1 > ra0 && absR === ra1 && this.currentColPos === ca1) {
++          /* 多行选区：以选区最后一行为模板向下填（填充柄须在右下角） */
++          const strip = tryRowStripFromPagingRow(lastPagingRow)
++          if (strip) fillDragSource = strip
++        }
++      }
++      this.fillDragSource = fillDragSource
++      this.fillDragBoundMove = this.fillHandleMouseMove.bind(this)
++      this.fillDragBoundUp = this.fillHandleMouseUp.bind(this)
++      document.addEventListener('mousemove', this.fillDragBoundMove)
++      document.addEventListener('mouseup', this.fillDragBoundUp, true)
++      this.fillDragHoverRow = this.currentRowPos
++      this.fillDragHoverCol = this.currentColPos
++      this.$nextTick(() => {
++        this.updateFillDragOverlay(this.fillDragHoverRow, this.fillDragHoverCol)
++        this.updateCellRangeSelectionOverlay()
++      })
++    },
++    /** 当前页 tbody 内单元格 DOM：rowPos/colPos 为分页内下标（与 cell-RC 一致） */
++    getPagingCellEl (rowPos, colPos) {
++      if (!this.recordBody || rowPos < 0 || colPos < 0) return null
++      const row = this.recordBody.children[rowPos]
++      if (!row || !row.children || colPos + 1 >= row.children.length) return null
++      const td = row.children[colPos + 1]
++      if (!td || td.tagName !== 'TD' || td.classList.contains('first-col')) return null
++      return td
++    },
++    /** 根据源格与目标格（同行或同列）更新绿色预览框，相对 systable 与 input-square 一致 */
++    updateFillDragOverlay (targetRow, targetCol) {
++      const src = this.fillDragSource
++      if (!src || !this.systable) return
++      let rMin
++      let rMax
++      let cMin
++      let cMax
++      if (src.mode === 'row-strip') {
++        const r0s = src.rowPos
++        const cLo = src.cMin
++        const cHi = src.cMax
++        if (typeof targetRow !== 'number' || typeof targetCol !== 'number' || !Number.isFinite(targetRow) || !Number.isFinite(targetCol)) {
++          rMin = rMax = r0s
++          cMin = cLo
++          cMax = cHi
++        } else if (targetRow !== r0s) {
++          rMin = Math.min(r0s, targetRow)
++          rMax = Math.max(r0s, targetRow)
++          cMin = cLo
++          cMax = cHi
++        } else {
++          rMin = rMax = r0s
++          cMin = cLo
++          cMax = cHi
++        }
++      } else {
++        const r0 = src.rowPos
++        const c0 = src.colPos
++        if (typeof targetRow !== 'number' || typeof targetCol !== 'number' || !Number.isFinite(targetRow) || !Number.isFinite(targetCol)) {
++          rMin = rMax = r0
++          cMin = cMax = c0
++        } else if (targetCol === c0) {
++          rMin = Math.min(r0, targetRow)
++          rMax = Math.max(r0, targetRow)
++          cMin = cMax = c0
++        } else if (targetRow === r0) {
++          cMin = Math.min(c0, targetCol)
++          cMax = Math.max(c0, targetCol)
++          rMin = rMax = r0
++        } else {
++          rMin = rMax = r0
++          cMin = cMax = c0
++        }
++      }
++      const els = []
++      for (let r = rMin; r <= rMax; r++) {
++        for (let c = cMin; c <= cMax; c++) {
++          const el = this.getPagingCellEl(r, c)
++          if (el) els.push(el)
++        }
++      }
++      if (!els.length) {
++        this.$set(this.fillDragOverlay, 'show', false)
++        this.$set(this.fillDragOverlay, 'style', {})
++        return
++      }
++      const tableRect = this.systable.getBoundingClientRect()
++      let left = Infinity
++      let top = Infinity
++      let right = -Infinity
++      let bottom = -Infinity
++      els.forEach((el) => {
++        const br = el.getBoundingClientRect()
++        left = Math.min(left, br.left)
++        top = Math.min(top, br.top)
++        right = Math.max(right, br.right)
++        bottom = Math.max(bottom, br.bottom)
++      })
++      this.$set(this.fillDragOverlay, 'show', true)
++      this.$set(this.fillDragOverlay, 'style', {
++        left: (left - tableRect.left - 1) + 'px',
++        top: (top - tableRect.top - 1) + 'px',
++        width: (right - left + 2) + 'px',
++        height: (bottom - top + 2) + 'px'
++      })
++    },
++    /** 拖选/已选矩形：用单元格 DOM 并集画一层外框+底色（选区仅此一层，避免与 td 底色、活动格外框叠画） */
++    updateCellRangeSelectionOverlay () {
++      if (this.fillDragActive) {
++        this.$set(this.cellRangeOverlay, 'show', false)
++        this.$set(this.cellRangeOverlay, 'style', {})
++        return
++      }
++      let rMin
++      let rMax
++      let cMin
++      let cMax
++      if (this.cellRangeDrag) {
++        rMin = Math.min(this.cellRangeDrag.pr0, this.cellRangeDrag.pr1)
++        rMax = Math.max(this.cellRangeDrag.pr0, this.cellRangeDrag.pr1)
++        cMin = Math.min(this.cellRangeDrag.pc0, this.cellRangeDrag.pc1)
++        cMax = Math.max(this.cellRangeDrag.pc0, this.cellRangeDrag.pc1)
++      } else if (this.cellRange) {
++        const top = this.pageTop
++        rMin = Math.min(this.cellRange.r0, this.cellRange.r1) - top
++        rMax = Math.max(this.cellRange.r0, this.cellRange.r1) - top
++        cMin = Math.min(this.cellRange.c0, this.cellRange.c1)
++        cMax = Math.max(this.cellRange.c0, this.cellRange.c1)
++      } else {
++        this.$set(this.cellRangeOverlay, 'show', false)
++        this.$set(this.cellRangeOverlay, 'style', {})
++        return
++      }
++      const nRow = this.pagingTable && this.pagingTable.length ? this.pagingTable.length : 0
++      if (nRow <= 0 || !this.systable) {
++        this.$set(this.cellRangeOverlay, 'show', false)
++        this.$set(this.cellRangeOverlay, 'style', {})
++        return
++      }
++      rMin = Math.max(0, Math.min(rMin, nRow - 1))
++      rMax = Math.max(0, Math.min(rMax, nRow - 1))
++      if (rMin > rMax) {
++        const t = rMin
++        rMin = rMax
++        rMax = t
++      }
++      const nCol = this.fields ? this.fields.length : 0
++      if (nCol <= 0) {
++        this.$set(this.cellRangeOverlay, 'show', false)
++        this.$set(this.cellRangeOverlay, 'style', {})
++        return
++      }
++      cMin = Math.max(0, Math.min(cMin, nCol - 1))
++      cMax = Math.max(0, Math.min(cMax, nCol - 1))
++      if (cMin > cMax) {
++        const t = cMin
++        cMin = cMax
++        cMax = t
++      }
++      const els = []
++      for (let r = rMin; r <= rMax; r++) {
++        for (let c = cMin; c <= cMax; c++) {
++          const el = this.getPagingCellEl(r, c)
++          if (!el) continue
++          if (this.fields[c] && this.fields[c].invisible) continue
++          const br = el.getBoundingClientRect()
++          if (br.width < 1 || br.height < 1) continue
++          els.push(el)
++        }
++      }
++      if (!els.length) {
++        this.$set(this.cellRangeOverlay, 'show', false)
++        this.$set(this.cellRangeOverlay, 'style', {})
++        return
++      }
++      const tableRect = this.systable.getBoundingClientRect()
++      let left = Infinity
++      let top = Infinity
++      let right = -Infinity
++      let bottom = -Infinity
++      els.forEach((el) => {
++        const br = el.getBoundingClientRect()
++        left = Math.min(left, br.left)
++        top = Math.min(top, br.top)
++        right = Math.max(right, br.right)
++        bottom = Math.max(bottom, br.bottom)
++      })
++      this.$set(this.cellRangeOverlay, 'show', true)
++      this.$set(this.cellRangeOverlay, 'style', {
++        left: (left - tableRect.left - 1) + 'px',
++        top: (top - tableRect.top - 1) + 'px',
++        width: (right - left + 2) + 'px',
++        height: (bottom - top + 2) + 'px'
++      })
++    },
++    fillHandleMouseMove (e) {
++      if (!this.fillDragActive || !this.fillDragSource) return
++      const raw = document.elementFromPoint(e.clientX, e.clientY)
++      const td = raw && this.domEventTargetTd({ target: raw })
++      if (td && td.parentNode && td.parentNode.parentNode && td.parentNode.parentNode.tagName === 'TBODY' && !td.classList.contains('first-col')) {
++        const rc = td.getAttribute('cell-RC')
++        const m = rc && /^(\d+)-/.exec(rc)
++        if (m) {
++          const rowIdx = parseInt(m[1], 10)
++          const fieldName = rc.slice(m[0].length)
++          const c1 = this.fields.findIndex(f => f.name === fieldName)
++          if (Number.isFinite(rowIdx) && c1 >= 0) {
++            this.fillDragHoverRow = rowIdx
++            this.fillDragHoverCol = c1
++          }
++        }
++      }
++      this.updateFillDragOverlay(this.fillDragHoverRow, this.fillDragHoverCol)
++    },
++    fillHandleMouseUp (e) {
++      if (!this.fillDragActive || !this.fillDragSource) {
++        this.fillHandleCleanup()
++        return
++      }
++      const src = this.fillDragSource
++      this.fillHandleCleanup()
++      const raw = document.elementFromPoint(e.clientX, e.clientY)
++      const td = raw && this.domEventTargetTd({ target: raw })
++      if (!td || td.tagName !== 'TD' || td.classList.contains('first-col')) return
++      if (td.parentNode.parentNode.tagName !== 'TBODY') return
++      const rc = td.getAttribute('cell-RC')
++      const m = rc && /^(\d+)-/.exec(rc)
++      if (!m) return
++      const rowIdx = parseInt(m[1], 10)
++      const fieldName = rc.slice(m[0].length)
++      if (!Number.isFinite(rowIdx) || !fieldName) return
++      const c1 = this.fields.findIndex(f => f.name === fieldName)
++      if (c1 < 0) return
++      const r0 = src.rowPos
++      const c0 = src.colPos
++      const r1 = rowIdx
++      if (src.mode === 'row-strip') {
++        const cLo = src.cMin
++        const cHi = src.cMax
++        if (r1 !== r0) {
++          const rMin = Math.min(r0, r1)
++          const rMax = Math.max(r0, r1)
++          const vbc = src.valuesByCol
++          for (let r = rMin; r <= rMax; r++) {
++            if (r === r0) continue
++            if (!this.pagingTable[r]) continue
++            for (let c = cLo; c <= cHi; c++) {
++              const f = this.fields[c]
++              if (!f || f.readonly || f.keyField || f.invisible || f.cellHtml) continue
++              const copyVal = vbc[c]
++              if (copyVal === undefined) continue
++              try {
++                this.updateCell(this.pageTop + r, f, copyVal)
++              } catch (err) {}
++            }
++          }
++        }
++        return
++      }
++      if (r0 === r1 && c0 === c1) return
++      /* 仅同行横向或同列纵向，避免斜向误填多列 */
++      if (r1 !== r0 && c1 !== c0) return
++      const copyVal = src.value
++      if (c1 === c0) {
++        const rMin = Math.min(r0, r1)
++        const rMax = Math.max(r0, r1)
++        const f = this.fields[c0]
++        if (!f || f.readonly || f.keyField || f.invisible || f.cellHtml) return
++        for (let r = rMin; r <= rMax; r++) {
++          if (r === r0) continue
++          if (!this.pagingTable[r]) continue
++          try {
++            this.updateCell(this.pageTop + r, f, copyVal)
++          } catch (err) {}
++        }
++      } else if (r1 === r0) {
++        const cMin = Math.min(c0, c1)
++        const cMax = Math.max(c0, c1)
++        for (let c = cMin; c <= cMax; c++) {
++          if (c === c0) continue
++          const f = this.fields[c]
++          if (!f || f.readonly || f.keyField || f.invisible || f.cellHtml) continue
++          if (!this.pagingTable[r0]) continue
++          try {
++            this.updateCell(this.pageTop + r0, f, copyVal)
++          } catch (err) {}
++        }
++      }
++    },
++    /**
++     * 矩形选区批量清空（Del / Backspace）。
++     * 上游组件无原生区域多选，仅支持当前格；与填充柄一致跳过 key / 只读 / 隐藏 / cellHtml。
++     */
++    clearCellRangeContents () {
++      if (!this.cellRange || this.fillDragActive) return
++      const r0 = Math.min(this.cellRange.r0, this.cellRange.r1)
++      const r1 = Math.max(this.cellRange.r0, this.cellRange.r1)
++      const c0 = Math.min(this.cellRange.c0, this.cellRange.c1)
++      const c1 = Math.max(this.cellRange.c0, this.cellRange.c1)
++      for (let absR = r0; absR <= r1; absR++) {
++        if (!this.table[absR]) continue
++        for (let c = c0; c <= c1; c++) {
++          const field = this.fields[c]
++          if (!field || field.readonly || field.keyField || field.invisible || field.cellHtml) continue
++          try {
++            const emptyVal = field.toValue('')
++            this.updateCell(absR, field, emptyVal)
++          } catch (err) {}
++        }
++      }
++      this.inputBoxChanged = false
++      this.$nextTick(() => {
++        if (this.currentCell && !this.inputBoxShow) {
++          this.inputBox.value = this.currentCell.textContent
++        }
++        this.updateCellRangeSelectionOverlay()
++      })
++    },
++    cellRangeSelectCleanupListeners () {
++      if (this._cellRangeSelectMoveBound) {
++        document.removeEventListener('mousemove', this._cellRangeSelectMoveBound, true)
++        document.removeEventListener('mouseup', this._cellRangeSelectUpBound, true)
++        this._cellRangeSelectMoveBound = null
++        this._cellRangeSelectUpBound = null
++      }
++      this.cellRangeDrag = null
++      this.$nextTick(() => this.updateCellRangeSelectionOverlay())
++    },
++    cellRangeSelectArm (rowPos, colPos) {
++      this.cellRangeSelectCleanupListeners()
++      this.cellRange = null
++      this.cellRangeDrag = {
++        pr0: rowPos,
++        pc0: colPos,
++        pr1: rowPos,
++        pc1: colPos
++      }
++      this._cellRangeSelectMoveBound = this.cellRangeSelectMove.bind(this)
++      this._cellRangeSelectUpBound = this.cellRangeSelectUp.bind(this)
++      document.addEventListener('mousemove', this._cellRangeSelectMoveBound, true)
++      document.addEventListener('mouseup', this._cellRangeSelectUpBound, true)
++      this.$nextTick(() => this.updateCellRangeSelectionOverlay())
++    },
++    cellRangeSelectMove (e) {
++      if (!this.cellRangeDrag || this.fillDragActive) return
++      /* 不设 e.buttons 门槛：部分环境下拖选时 buttons 为 0，会导致矩形不更新 */
++      const raw = document.elementFromPoint(e.clientX, e.clientY)
++      const td = raw && this.domEventTargetTd({ target: raw })
++      if (!td || td.parentNode.parentNode.tagName !== 'TBODY' || td.classList.contains('first-col')) return
++      const rc = td.getAttribute('cell-RC')
++      const m = rc && /^(\d+)-/.exec(rc)
++      if (!m) return
++      const pr1 = parseInt(m[1], 10)
++      const fieldName = rc.slice(m[0].length)
++      const pc1 = this.fields.findIndex(f => f.name === fieldName)
++      if (pc1 < 0) return
++      const d = this.cellRangeDrag
++      if (d.pr1 === pr1 && d.pc1 === pc1) return
++      this.$set(this.cellRangeDrag, 'pr1', pr1)
++      this.$set(this.cellRangeDrag, 'pc1', pc1)
++      this.$nextTick(() => this.updateCellRangeSelectionOverlay())
++    },
++    cellRangeSelectUp (e) {
++      if (this._cellRangeSelectMoveBound) {
++        document.removeEventListener('mousemove', this._cellRangeSelectMoveBound, true)
++        document.removeEventListener('mouseup', this._cellRangeSelectUpBound, true)
++        this._cellRangeSelectMoveBound = null
++        this._cellRangeSelectUpBound = null
++      }
++      if (!this.cellRangeDrag) return
++      const d = this.cellRangeDrag
++      this.cellRangeDrag = null
++      let pr1 = d.pr1
++      let pc1 = d.pc1
++      const raw = document.elementFromPoint(e.clientX, e.clientY)
++      const td = raw && this.domEventTargetTd({ target: raw })
++      if (td && td.parentNode.parentNode.tagName === 'TBODY' && !td.classList.contains('first-col')) {
++        const rc = td.getAttribute('cell-RC')
++        const m = rc && /^(\d+)-/.exec(rc)
++        if (m) {
++          const ridx = parseInt(m[1], 10)
++          const fname = rc.slice(m[0].length)
++          const cidx = this.fields.findIndex(f => f.name === fname)
++          if (cidx >= 0) {
++            pr1 = ridx
++            pc1 = cidx
++          }
++        }
++      }
++      const r0a = this.pageTop + Math.min(d.pr0, pr1)
++      const r1a = this.pageTop + Math.max(d.pr0, pr1)
++      const c0a = Math.min(d.pc0, pc1)
++      const c1a = Math.max(d.pc0, pc1)
++      if (this.fillDragActive) {
++        this.suppressClearCellRangeOnMove = true
++        try {
++          this.moveInputSquare(pr1, pc1)
++        } finally {
++          this.suppressClearCellRangeOnMove = false
++        }
++        this.$nextTick(() => this.updateCellRangeSelectionOverlay())
++        return
++      }
++      if (r0a === r1a && c0a === c1a) {
++        this.cellRange = null
++      } else {
++        this.cellRange = { r0: r0a, r1: r1a, c0: c0a, c1: c1a }
++        const fieldSlice = []
++        for (let c = c0a; c <= c1a; c++) {
++          if (this.fields[c]) fieldSlice.push(this.fields[c].name)
++        }
++        this.$emit('cell-range-select', {
++          r0: r0a,
++          r1: r1a,
++          c0: c0a,
++          c1: c1a,
++          fieldNames: fieldSlice
++        })
++      }
++      /* 填充柄在 input-square 右下角：多格选区应对齐选区右下角（与 Excel 一致），勿用松开鼠标的对角格 */
++      let focusRowPos = pr1
++      let focusColPos = pc1
++      if (this.cellRange) {
++        focusRowPos = r1a - this.pageTop
++        focusColPos = c1a
++      }
++      this.suppressClearCellRangeOnMove = true
++      try {
++        this.moveInputSquare(focusRowPos, focusColPos)
++      } finally {
++        this.suppressClearCellRangeOnMove = false
++      }
++      this.$nextTick(() => this.updateCellRangeSelectionOverlay())
++    },
++
++    fillHandleCleanup () {
++      this.fillDragActive = false
++      this.fillDragSource = null
++      this.fillDragHoverRow = null
++      this.fillDragHoverCol = null
++      this.$set(this.fillDragOverlay, 'show', false)
++      this.$set(this.fillDragOverlay, 'style', {})
++      if (this.fillDragBoundMove) {
++        document.removeEventListener('mousemove', this.fillDragBoundMove)
++        this.fillDragBoundMove = null
++      }
++      if (this.fillDragBoundUp) {
++        document.removeEventListener('mouseup', this.fillDragBoundUp, true)
++        this.fillDragBoundUp = null
++      }
++      this.$nextTick(() => this.updateCellRangeSelectionOverlay())
++    },
      componentTabInto (e) {
        if (e.keyCode === 9) {
          if (!this.moveInputSquare(this.currentRowPos, this.currentColPos))
-@@ -1116,6 +1122,7 @@ export default {
+@@ -637,6 +1287,8 @@ export default {
+       this.prevSelect = -1
+       this.processing = false
+       this.rowIndex = {}
++      this.cellRange = null
++      this.cellRangeSelectCleanupListeners()
+       this.refresh()
+     },
+     toggleSelectView (e) {
+@@ -1089,16 +1741,20 @@ export default {
+     calVScroll () {
+       let d = this.labelTr.getBoundingClientRect().height
+       if (this.filterRow) d += 29
+-      this.vScroller.top = d
++      const top = d
+       if (!this.noFooter) d += 25
+       if (this.summaryRow) d += 27
+       const fullHeight = this.$el.getBoundingClientRect().height
+-      this.vScroller.height = fullHeight - d
+-      const ratio =  this.vScroller.height / (this.table.length * 24)
+-      this.vScroller.buttonHeight = Math.max(24, this.vScroller.height * ratio)
+-      const prop = (this.tableContent.scrollTop + this.pageTop * 24) / (this.table.length * 24 - this.vScroller.height)
+-      this.vScroller.buttonTop = (this.vScroller.height - this.vScroller.buttonHeight) * prop
+-      this.$forceUpdate()
++      const height = fullHeight - d
++      const ratio = this.table.length ? height / (this.table.length * 24) : 1
++      const buttonHeight = Math.max(24, height * ratio)
++      const denom = this.table.length * 24 - height
++      const prop = denom > 0 ? (this.tableContent.scrollTop + this.pageTop * 24) / denom : 0
++      const buttonTop = (height - buttonHeight) * prop
++      this.$set(this.vScroller, 'top', top)
++      this.$set(this.vScroller, 'height', height)
++      this.$set(this.vScroller, 'buttonHeight', buttonHeight)
++      this.$set(this.vScroller, 'buttonTop', Number.isFinite(buttonTop) ? buttonTop : 0)
+     },
+     vsMouseDown (e) {
+       e.stopPropagation()
+@@ -1116,6 +1772,7 @@ export default {
      },
      vsbMouseDown (e) {
        e.stopPropagation()
@@ -23,7 +852,7 @@ index 6411a01..74c769f 100644
        if (!this.vScroller.mouseY) {
          this.vScroller.saveButtonTop = this.vScroller.buttonTop
          this.vScroller.mouseY = e.clientY
-@@ -1175,6 +1182,7 @@ export default {
+@@ -1175,6 +1832,7 @@ export default {
      },
      sbMouseDown (e) {
        e.stopPropagation()
@@ -31,7 +860,208 @@ index 6411a01..74c769f 100644
        if (!this.hScroller.mouseX) {
          const sleft = this.$refs.hScroll.getBoundingClientRect().left
          const fleft = this.footer.getBoundingClientRect().left + 40
-@@ -1497,9 +1505,11 @@ export default {
+@@ -1208,6 +1866,13 @@ export default {
+     /* *** Window Event *******************************************************************************************
+      */
+     tableScroll () {
++      if (this._tableScrollRaf != null) return
++      this._tableScrollRaf = requestAnimationFrame(() => {
++        this._tableScrollRaf = null
++        this._tableScrollFlush()
++      })
++    },
++    _tableScrollFlush () {
+       this.showDatePicker = false
+       this.autocompleteInputs = []
+       if (this.focused && this.currentField)
+@@ -1232,6 +1897,8 @@ export default {
+         }
+       }
+       this.hScroller.lastLeft = this.tableContent.scrollLeft
++      if (this.cellRange || this.cellRangeDrag || this.fillDragActive)
++        this.updateCellRangeSelectionOverlay()
+     },
+     winScroll () {
+       this.showDatePicker = false
+@@ -1257,6 +1924,87 @@ export default {
+     winResize () {
+       this.lazy(this.refreshPageSize, 500)
+     },
++    /** 剪贴板纯文本 → 二维数组（TSV / 多行单列，与 Excel 互操作） */
++    parseClipboardToMatrix (text) {
++      if (text == null || text === '') return null
++      const normalized = String(text).replace(/\r\n/g, '\n').replace(/\r/g, '\n')
++      const lines = normalized.split('\n')
++      while (lines.length && lines[lines.length - 1] === '') lines.pop()
++      if (lines.length === 0) return null
++      return lines.map(line => line.split('\t'))
++    },
++    isMultiCellClipboardMatrix (matrix) {
++      return !!(matrix && matrix.length && (matrix.length > 1 || (matrix[0] && matrix[0].length > 1)))
++    },
++    /** 以当前单元格为左上角写入矩阵；跳过只读 / key / 隐藏 / cellHtml */
++    pasteClipboardMatrix (matrix) {
++      if (!matrix || !matrix.length || this.currentRowPos < 0) return
++      const anchorAbsR = this.pageTop + this.currentRowPos
++      const anchorC = this.currentColPos
++      for (let dr = 0; dr < matrix.length; dr++) {
++        const rowCells = matrix[dr]
++        if (!rowCells || !rowCells.length) continue
++        const absR = anchorAbsR + dr
++        if (absR < 0 || absR >= this.table.length) continue
++        for (let dc = 0; dc < rowCells.length; dc++) {
++          const col = anchorC + dc
++          if (col < 0 || col >= this.fields.length) continue
++          const field = this.fields[col]
++          if (!field || field.readonly || field.keyField || field.invisible || field.cellHtml) continue
++          const raw = rowCells[dc]
++          try {
++            this.updateCell(absR, field, field.toValue(raw == null ? '' : String(raw)))
++          } catch (err) {}
++        }
++      }
++    },
++    /** 矩形选区 → TSV 字符串（供 Ctrl+C 写入剪贴板） */
++    copyCellRangeAsTsvToClipboard () {
++      const cr = this.cellRange
++      if (!cr) return ''
++      const r0 = Math.min(cr.r0, cr.r1)
++      const r1 = Math.max(cr.r0, cr.r1)
++      const c0 = Math.min(cr.c0, cr.c1)
++      const c1 = Math.max(cr.c0, cr.c1)
++      const lines = []
++      for (let r = r0; r <= r1; r++) {
++        const rec = this.table[r]
++        const parts = []
++        for (let c = c0; c <= c1; c++) {
++          const f = this.fields[c]
++          let cell = ''
++          if (rec && f) {
++            const t = f.toText(rec[f.name])
++            cell = t == null ? '' : String(t)
++            cell = cell.replace(/\r\n/g, '\n').replace(/\r/g, '\n').replace(/\n/g, ' ')
++          }
++          parts.push(cell)
++        }
++        lines.push(parts.join('\t'))
++      }
++      return lines.join('\n')
++    },
++    /** 行号列多选：选中行导出为 TSV（仅可见列） */
++    copySelectedRowsAsTsv () {
++      const keys = Object.keys(this.selected).map(Number).sort((a, b) => a - b)
++      if (keys.length < 1) return ''
++      const cols = this.fields.filter(f => !f.invisible)
++      const lines = []
++      for (const rowPos of keys) {
++        const rec = this.table[rowPos]
++        if (!rec) continue
++        const parts = []
++        for (const f of cols) {
++          let cell = ''
++          const t = f.toText(rec[f.name])
++          cell = t == null ? '' : String(t)
++          cell = cell.replace(/\r\n/g, '\n').replace(/\r/g, '\n').replace(/\n/g, ' ')
++          parts.push(cell)
++        }
++        lines.push(parts.join('\t'))
++      }
++      return lines.join('\n')
++    },
+     winPaste (e) {
+       if (e.target.tagName !== 'TEXTAREA') return
+       if (!this.mousein && !this.focused) return
+@@ -1265,7 +2013,15 @@ export default {
+         this.inputBoxChanged = true
+         return
+       }
+-      const text = (e.originalEvent || e).clipboardData.getData('text/plain')
++      const cd = (e.originalEvent && e.originalEvent.clipboardData) || e.clipboardData
++      const text = cd ? cd.getData('text/plain') : ''
++      const matrix = this.parseClipboardToMatrix(text)
++      if (this.isMultiCellClipboardMatrix(matrix)) {
++        e.preventDefault()
++        e.stopPropagation()
++        this.pasteClipboardMatrix(matrix)
++        return
++      }
+       this.inputCellWrite(text)
+       e.preventDefault()
+     },
+@@ -1282,6 +2038,13 @@ export default {
+     winKeydown (e) {
+       if (e.altKey) this.systable.classList.add('alt')
+       if (!this.mousein && !this.focused) return
++      /* 行号多选后 Del/Backspace：删行由宿主处理（先于单元格清空逻辑） */
++      if ((e.keyCode === 8 || e.keyCode === 46) && this.selectedCount > 0 &&
++          !this.inputBoxShow && !this.cellRange && !this.fillDragActive) {
++        e.preventDefault()
++        this.$emit('delete-selected', this.getSelectedRecords())
++        return
++      }
+       if (e.ctrlKey || e.metaKey)
+         switch (e.keyCode) {
+           case 90: // z
+@@ -1292,7 +2055,30 @@ export default {
+             this.toggleSelectAllRecords()
+             e.preventDefault()
+             break
+-          case 67: // c
++          case 67: // c — 有矩形选区时复制整块为 TSV（便于 Ctrl+V 从当前格起粘贴）
++            if (this.cellRange) {
++              const tsv = this.copyCellRangeAsTsvToClipboard()
++              if (tsv !== '') {
++                this.inputBox.value = tsv
++                this.inputBox.focus()
++                this.inputBox.select()
++                document.execCommand('copy')
++                e.preventDefault()
++                break
++              }
++            }
++            /* 行号列多选 ≥2 行：复制选中行为 TSV */
++            if (this.selectedCount >= 2) {
++              const tsvRows = this.copySelectedRowsAsTsv()
++              if (tsvRows !== '') {
++                this.inputBox.value = tsvRows
++                this.inputBox.focus()
++                this.inputBox.select()
++                document.execCommand('copy')
++                e.preventDefault()
++                break
++              }
++            }
+             this.inputBox.value = this.currentCell.textContent
+             this.inputBox.focus()
+             this.inputBox.select()
+@@ -1438,16 +2224,23 @@ export default {
+             this.nextPage()
+             e.preventDefault()
+             break
+-          case 8:   // Delete
+-          case 46:  // BS
++          case 8:   // Backspace
++          case 46:  // Delete
+             if (!this.focused) return
+             if (this.inputBoxShow) {
+               this.inputBoxChanged = true
+               setTimeout(() => this.calAutocompleteList(true))
+               return
+             }
+-            if (this.currentField.readonly) return
+             if (this.autocompleteInputs.length) return
++            /* 已提交矩形选区：批量清空可写格（上游无此能力，仅清当前格） */
++            if (this.cellRange && !this.fillDragActive) {
++              e.preventDefault()
++              this.clearCellRangeContents()
++              break
++            }
++            if (this.currentField.readonly) return
++            e.preventDefault()
+             this.inputBoxChanged = true
+             this.inputBox.value = ''
+             this.inputBoxComplete()
+@@ -1497,9 +2290,11 @@ export default {
      colSepMouseDown (e) {
        e.preventDefault()
        e.stopPropagation()
@@ -46,7 +1076,7 @@ index 6411a01..74c769f 100644
          const pos = Array.from(me.parentElement.children).findIndex(td => td === me)
          this.insertColumn(pos)
        }
-@@ -1510,7 +1520,7 @@ export default {
+@@ -1510,7 +2305,7 @@ export default {
        this.sep = {}
        // this.sep.curCol = this.colgroupTr.children[Array.from(this.labelTr.children).indexOf(e.target.parentElement)]
        this.sep.curCol = this.colgroupTr.children[
@@ -55,7 +1085,7 @@ index 6411a01..74c769f 100644
        // this.sep.nxtCol = this.sep.curCol.nextElementSibling
        this.sep.pageX = e.pageX
        let padding = 0
-@@ -1520,37 +1530,41 @@ export default {
+@@ -1520,37 +2315,44 @@ export default {
          if (padLeft && padRight)
            padding = parseInt(padLeft) + parseInt(padRight)
        }
@@ -74,7 +1104,10 @@ index 6411a01..74c769f 100644
 +      if (!t) return
 +      if (t.classList.contains('col-sep')) {
 +        t.style.borderRight = '5px solid #cccccc'
-+        t.style.height = this.systable.getBoundingClientRect().height + 'px'
++        /* 与所在表头格同高；整表高度会导致竖条与列头不一致 */
++        const th = t.closest && t.closest('th')
++        const h = th && th.offsetHeight > 0 ? th.offsetHeight : this.systable.getBoundingClientRect().height
++        t.style.height = h + 'px'
          if (this.allowAddCol)
 -          e.target.children[0].style.display = 'block'
 +          t.children[0].style.display = 'block'
@@ -108,7 +1141,19 @@ index 6411a01..74c769f 100644
        }
      },
      colSepMouseMove (e) {
-@@ -2014,8 +2028,9 @@ export default {
+@@ -1777,10 +2579,7 @@ export default {
+       }
+     },
+ 
+-    settingClick() {
+-      if (!this.disablePanelSetting)
+-        this.$refs.panelSetting.showPanel();
+-    },
++    settingClick () {},
+ 
+     panelFilterClick(item) {
+       if (!this.disablePanelFilter)
+@@ -2014,9 +2813,28 @@ export default {
      },
      */
      rowLabelClick (e) {
@@ -118,38 +1163,161 @@ index 6411a01..74c769f 100644
 +      while (target && target.tagName !== 'TD') target = target.parentNode
 +      if (!target) return
        const rowPos = Number(target.getAttribute('pos')) + this.pageTop
++      this.rowLabelClickOnRow(e, rowPos)
++    },
++    rowLabelDragCleanup () {
++      if (this._rowLabelDragMoveBound) {
++        document.removeEventListener('mousemove', this._rowLabelDragMoveBound)
++        this._rowLabelDragMoveBound = null
++      }
++      if (this._rowLabelDragUpBound) {
++        document.removeEventListener('mouseup', this._rowLabelDragUpBound, true)
++        this._rowLabelDragUpBound = null
++      }
++      if (this._rowLabelDragRaf) {
++        cancelAnimationFrame(this._rowLabelDragRaf)
++        this._rowLabelDragRaf = null
++      }
++      this.rowLabelDrag = null
++    },
++    rowLabelClickOnRow (e, rowPos) {
        if (e.shiftKey) {
          document.getSelection().removeAllRanges()
-@@ -2210,12 +2225,14 @@ export default {
+         if (this.prevSelect !== -1 && this.prevSelect !== rowPos) {
+@@ -2037,9 +2855,95 @@ export default {
+       }
+       this.prevSelect = rowPos
+     },
+-    selectAllClick () {
+-      this.toggleSelectAllRecords()
++    rowLabelMouseDown (e) {
++      if (e.button !== 0) return
++      const td = this.domEventTargetTd(e)
++      if (!td || !td.classList.contains('first-col')) return
++      const tr = td.parentNode
++      if (!tr || tr.parentNode !== this.recordBody) return
++      const idx = Array.from(this.recordBody.children).indexOf(tr)
++      if (idx < 0) return
++      const anchorAbs = this.pageTop + idx
++      this.rowLabelDrag = {
++        anchorAbs,
++        lastAbs: anchorAbs,
++        additive: !!(e.ctrlKey || e.metaKey),
++        moved: false
++      }
++      this.prevSelect = anchorAbs
++      this._rowLabelDragMoveBound = this.rowLabelDragMove.bind(this)
++      this._rowLabelDragUpBound = this.rowLabelDragUp.bind(this)
++      document.addEventListener('mousemove', this._rowLabelDragMoveBound)
++      document.addEventListener('mouseup', this._rowLabelDragUpBound, true)
++      e.preventDefault()
++    },
++    rowLabelDragMove (e) {
++      if (!this.rowLabelDrag) return
++      const el = document.elementFromPoint(e.clientX, e.clientY)
++      let node = el
++      while (node && node.tagName !== 'TR') node = node.parentElement
++      if (!node || node.parentNode !== this.recordBody) return
++      const idx = Array.from(this.recordBody.children).indexOf(node)
++      if (idx < 0) return
++      const abs = this.pageTop + idx
++      if (abs !== this.rowLabelDrag.lastAbs) this.rowLabelDrag.moved = true
++      this.rowLabelDrag.lastAbs = abs
++      this.scheduleRowLabelDragSelect(this.rowLabelDrag.anchorAbs, abs, this.rowLabelDrag.additive)
+     },
++    scheduleRowLabelDragSelect (a, b, additive) {
++      if (this._rowLabelDragRaf) cancelAnimationFrame(this._rowLabelDragRaf)
++      this._rowLabelDragRaf = requestAnimationFrame(() => {
++        this._rowLabelDragRaf = null
++        this.applyRowLabelDragSelect(a, b, additive)
++      })
++    },
++    applyRowLabelDragSelect (a, b, additive) {
++      const lo = Math.min(a, b)
++      const hi = Math.max(a, b)
++      if (!additive) {
++        if (this.selectedCount > 0)
++          this.$emit('select', Object.keys(this.selected).map(Number), false)
++        this.selected = {}
++        this.selectedCount = 0
++      }
++      for (let i = lo; i <= hi; i++) {
++        if (i < 0 || i >= this.table.length) continue
++        if (additive && typeof this.selected[i] !== 'undefined') continue
++        this.$set(this.selected, i, this.table[i].$id)
++      }
++      this.selectedCount = Object.keys(this.selected).length
++    },
++    rowLabelDragUp (e) {
++      if (this._rowLabelDragMoveBound) {
++        document.removeEventListener('mousemove', this._rowLabelDragMoveBound)
++        this._rowLabelDragMoveBound = null
++      }
++      if (this._rowLabelDragUpBound) {
++        document.removeEventListener('mouseup', this._rowLabelDragUpBound, true)
++        this._rowLabelDragUpBound = null
++      }
++      if (this._rowLabelDragRaf) {
++        cancelAnimationFrame(this._rowLabelDragRaf)
++        this._rowLabelDragRaf = null
++      }
++      const d = this.rowLabelDrag
++      this.rowLabelDrag = null
++      if (!d) return
++      if (d.moved || d.anchorAbs !== d.lastAbs) {
++        this.applyRowLabelDragSelect(d.anchorAbs, d.lastAbs, d.additive)
++        this.prevSelect = d.lastAbs
++      } else {
++        const ev = {
++          shiftKey: !!e.shiftKey,
++          ctrlKey: !!e.ctrlKey,
++          metaKey: !!e.metaKey,
++          preventDefault () {},
++          stopPropagation () {}
++        }
++        this.rowLabelClickOnRow(ev, d.anchorAbs)
++      }
++    },
++    selectAllClick () {},
+     reviseSelectedAfterTableChange () {
+       this.rowIndex = {}
+       this.table.forEach((rec, i) => (this.rowIndex[rec.$id] = i))
+@@ -2210,27 +3114,35 @@ export default {
        return false
      },
      mouseDown (e) {
 -      if (e.target.parentNode.parentNode.tagName === 'TBODY' && !e.target.classList.contains('first-col')) {
-+      const el = this.domEventTargetEl(e)
++      const el = this.domEventTargetTd(e)
 +      if (!el) return
 +      if (el.parentNode.parentNode.tagName === 'TBODY' && !el.classList.contains('first-col')) {
++        const row = el.parentNode
++        const colPos = Array.from(row.children).indexOf(el) - 1
++        const rowPos = Array.from(row.parentNode.children).indexOf(row)
++        this.currentField = this.fields[colPos]
++        if (!this.currentField) return
          e.preventDefault()
          setTimeout(() => this.inputBox.focus())
          this.focused = true
 -        const row = e.target.parentNode
 -        const colPos = Array.from(row.children).indexOf(e.target) - 1
-+        const row = el.parentNode
-+        const colPos = Array.from(row.children).indexOf(el) - 1
-         const rowPos = Array.from(row.parentNode.children).indexOf(row)
-         this.currentField = this.fields[colPos]
+-        const rowPos = Array.from(row.parentNode.children).indexOf(row)
+-        this.currentField = this.fields[colPos]
++        const relX = e.clientX - el.getBoundingClientRect().left
          this.$emit('cell-click', {rowPos, colPos})
-@@ -2224,13 +2241,16 @@ export default {
+         if (typeof this.currentField.cellClick === 'function')
+           this.currentField.cellClick(this.currentCell.textContent, this.currentRecord, rowPos, colPos, this.currentField, this)
          this.moveInputSquare(rowPos, colPos)
++        this.cellRangeSelectArm(rowPos, colPos)
          if (this.currentField && this.currentField.link /* && e.altKey */)
            setTimeout(() => this.currentField.link(this.currentCell.textContent, this.currentRecord, rowPos, colPos, this.currentField, this))
 -        if (this.currentField.listByClick) return this.calAutocompleteList(true)
 -        if (e.target.offsetWidth - e.offsetX > 25) return
 -        if (e.target.offsetWidth < e.target.scrollWidth) {
 +        if (this.currentField.listByClick) {
-+          if (el.offsetWidth - e.offsetX > 25) return
++          if (!this.tdDropdownHotZoneHit(el, e.clientX)) return
++          this.cellRangeSelectCleanupListeners()
 +          return this.calAutocompleteList(true)
 +        }
-+        if (el.offsetWidth - e.offsetX > 25) return
 +        if (el.offsetWidth < el.scrollWidth) {
            // show textTip
            this.textTip = this.currentCell.textContent
@@ -159,66 +1327,333 @@ index 6411a01..74c769f 100644
            setTimeout(() => {
              const r = this.$refs.texttip.getBoundingClientRect()
              if (rect.bottom + r.height > window.innerHeight) {
-@@ -2249,29 +2269,31 @@ export default {
+@@ -2249,29 +3161,61 @@ export default {
          }
          if (this.currentField.readonly) return
          this.inputBox.value = this.currentCell.textContent
 -        if (e.target.classList.contains('select')) this.calAutocompleteList(true)
 -        if (e.target.classList.contains('datepick')) this.showDatePickerDiv()
-+        if (el.classList.contains('select')) this.calAutocompleteList(true)
-+        if (el.classList.contains('datepick')) this.showDatePickerDiv()
++        /* 仅点击右侧下拉/日期三角热区时弹出面板，点击单元格正文不打开 */
++        const tri = this.tdDropdownHotZoneHit(el, e.clientX)
++        /* 与 listByClick 分支一致：三角打开下拉/日期前须卸掉 cellRangeSelectArm 注册的 document mouseup，
++         * 否则同一次点击的 mouseup → cellRangeSelectUp → moveInputSquare 会清空 autocompleteInputs / 关掉日期面板 */
++        if (el.classList.contains('select') && tri) {
++          this.cellRangeSelectCleanupListeners()
++          this.calAutocompleteList(true)
++        } else if (el.classList.contains('datepick') && tri) {
++          this.cellRangeSelectCleanupListeners()
++          this.showDatePickerDiv()
++        }
++      }
++    },
++    /** 覆盖层 pointer-events:none 后，单击不再触发 inputSquareClick；双击进入内联编辑（与原先单击绿框一致） */
++    cellDoubleClick (e) {
++      const el = this.domEventTargetTd(e)
++      if (!el) return
++      if (el.parentNode.parentNode.tagName !== 'TBODY' || el.classList.contains('first-col')) return
++      const row = el.parentNode
++      const colPos = Array.from(row.children).indexOf(el) - 1
++      const rowPos = Array.from(row.parentNode.children).indexOf(row)
++      const field = this.fields[colPos]
++      if (!field || field.readonly || field.type === 'select') return
++      e.preventDefault()
++      this.moveInputSquare(rowPos, colPos)
++      if (!this.inputBoxShow) {
++        this.inputBox.value = this.currentCell.textContent
++        this.inputBoxShow = 1
++        this.inputBox.focus()
++        this.inputBoxChanged = false
++        this.focused = true
        }
      },
      cellMouseMove (e) {
-+      const el = this.domEventTargetEl(e)
-+      if (!el) return
++      const td = this.domEventTargetTd(e)
++      if (!td) return
        let cursor = 'cell'
        if (this.inputBoxShow) cursor = 'default'
 -      if (e.target.offsetWidth - e.offsetX < 25) {
 -        if (!e.target.classList.contains('readonly') && (e.target.classList.contains('select') || e.target.classList.contains('datepick')))
-+      if (el.offsetWidth - e.offsetX < 25) {
-+        if (!el.classList.contains('readonly') && (el.classList.contains('select') || el.classList.contains('datepick')))
-           cursor = 'pointer'
+-          cursor = 'pointer'
 -        if (e.target.offsetWidth < e.target.scrollWidth)
-+        if (el.offsetWidth < el.scrollWidth)
++      if (this.tdDropdownHotZoneHit(td, e.clientX)) {
++        if (!td.classList.contains('readonly') && (td.classList.contains('select') || td.classList.contains('datepick')))
            cursor = 'pointer'
        }
 -      const row = e.target.parentNode
 -      const colPos = Array.from(row.children).indexOf(e.target) - 1
-+      const row = el.parentNode
-+      const colPos = Array.from(row.children).indexOf(el) - 1
++      if (td.offsetWidth < td.scrollWidth)
++        cursor = 'pointer'
++      const row = td.parentNode
++      if (!row) return
++      const colPos = Array.from(row.children).indexOf(td) - 1
        const currentField = this.fields[colPos]
-       if (currentField.type === 'action')
+-      if (currentField.type === 'action')
++      if (currentField && currentField.type === 'action')
          cursor = 'pointer'
 -      e.target.style.cursor = cursor
-+      el.style.cursor = cursor
++      td.style.cursor = cursor
      },
      cellMouseOver (e) {
 -      const cell = e.target
 -      if (!cell.classList.contains('error')) return
-+      const cell = this.domEventTargetEl(e)
++      const cell = this.domEventTargetTd(e)
 +      if (!cell || !cell.classList || !cell.classList.contains('error')) return
        if (this.tipTimeout) clearTimeout(this.tipTimeout)
        if ((this.tip = this.errmsg[cell.getAttribute('id')]) === '') return
        const rect = cell.getBoundingClientRect()
-@@ -2280,8 +2302,8 @@ export default {
+@@ -2280,8 +3224,8 @@ export default {
        cell.addEventListener('mouseout', this.cellMouseOut)
      },
      numcolMouseOver (e) {
 -      const cell = e.target
 -      if (!cell.classList.contains('error')) return
-+      const cell = this.domEventTargetEl(e)
++      const cell = this.domEventTargetTd(e)
 +      if (!cell || !cell.classList || !cell.classList.contains('error')) return
        if (this.tipTimeout) clearTimeout(this.tipTimeout)
        if ((this.tip = this.rowerr[cell.getAttribute('id')]) === '') return
        const rect = cell.getBoundingClientRect()
-@@ -2293,7 +2315,8 @@ export default {
+@@ -2293,7 +3237,8 @@ export default {
        this.tipTimeout = setTimeout(() => {
          this.tip = ''
        }, 1000)
 -      e.target.removeEventListener(e.type, this.cellMouseOut)
-+      const el = this.domEventTargetEl(e)
++      const el = this.domEventTargetTd(e)
 +      if (el) el.removeEventListener(e.type, this.cellMouseOut)
      },
      mouseOver () {
        this.mousein = true
+@@ -2306,7 +3251,26 @@ export default {
+ 
+     /* *** InputBox *****************************************************************************************
+      */
++    /** 可编辑纯文本列：按内容收缩 textarea 高度；有 options 的列跳过 */
++    syncDefectNameInputBoxLayout () {
++      const ta = this.inputBox
++      const f = this.currentField
++      if (!ta || !this.inputBoxShow || !f || f.readonly || f.type === 'date' || f.options) return
++      const wrap = ta.parentElement
++      if (!wrap) return
++      ta.style.setProperty('height', 'auto', 'important')
++      ta.style.setProperty('min-height', '0', 'important')
++      const maxH = Math.max(0, wrap.clientHeight)
++      let h = ta.scrollHeight
++      if (maxH > 0) h = Math.min(h, maxH)
++      ta.style.setProperty('height', h + 'px', 'important')
++    },
++    onInputBoxNativeInput () {
++      const f = this.currentField
++      if (f && !f.readonly && f.type !== 'date' && !f.options && this.inputBoxShow)
++        this.$nextTick(() => this.syncDefectNameInputBoxLayout())
++    },
+     moveInputSquare (rowPos, colPos) {
++      const prevR = this.currentRowPos
++      const prevC = this.currentColPos
+       this.textTip = ''
+       if (colPos < 0) return false
+       const top = this.pageTop
+@@ -2390,6 +3354,10 @@ export default {
+         row.children[0].classList.add('focus')
+         this.labelTr.children[colPos + 1].classList.add('focus')
+       }
++      if (!this.suppressClearCellRangeOnMove && (prevR !== this.currentRowPos || prevC !== this.currentColPos)) {
++        this.cellRange = null
++      }
++      this.$nextTick(() => this.updateCellRangeSelectionOverlay())
+       return true
+     },
+     inputSquareClick () {
+@@ -2405,12 +3373,12 @@ export default {
+       let cursor = 'text'
+       if (!this.currentField.readonly
+         && (this.currentField.options || this.currentField.type === 'date')
+-        && e.target.offsetWidth - e.offsetX < 15)
++        && e.target.offsetWidth - e.offsetX < 24)
+         cursor = 'pointer'
+       e.target.style.cursor = cursor
+     },
+     inputBoxMouseDown (e) {
+-      if (e.target.offsetWidth - e.offsetX > 15) return
++      if (e.target.offsetWidth - e.offsetX > 24) return
+       if (this.currentField.readonly) return
+       if (this.currentField.options) {
+         e.preventDefault()
+@@ -2511,12 +3479,9 @@ export default {
+       return rec
+     },
+     deleteSelectedRecords () {
+-      Object.values(this.selected).forEach((id) => {
+-        const valueRowPos = this.value.findIndex(v => v.$id === id)
+-        if (valueRowPos >= 0) this.deleteRecord(valueRowPos)
+-      })
+-      this.selected = {}
+-      this.selectedCount = 0
++      const rows = this.getSelectedRecords()
++      if (!rows.length) return
++      this.$emit('delete-selected', rows)
+     },
+     deleteRecord (valueRowPos, isUndo) {
+       if (this.currentRowPos === valueRowPos) this.moveNorth()
+@@ -2767,6 +3732,11 @@ export default {
+ </script>
+ 
+ <style scoped>
++/* 与宿主 Element 主题主色一致（element-variables.scss $--color-primary） */
++.vue-excel-editor {
++  --vee-primary: #1890ff;
++  --vee-primary-rgb: 24, 144, 255;
++}
+ input:focus, input:active:focus, input.active:focus {
+   outline: none;
+   box-shadow: inset 0 -1px 0 #ddd;
+@@ -2774,13 +3744,42 @@ input:focus, input:active:focus, input.active:focus {
+ *, *::before, *::after {
+   box-sizing: border-box;
+ }
++.fill-drag-overlay {
++  position: absolute;
++  pointer-events: none;
++  z-index: 2;
++  box-sizing: border-box;
++  border: 2px solid #1890ff;
++  background: rgba(var(--vee-primary-rgb), 0.05);
++}
++/* 低于 input-square(1/3)，避免盖住活动单元格蓝框；高于 systable(-1)，整块选区连续可见 */
++.cell-range-overlay {
++  position: absolute;
++  pointer-events: none;
++  z-index: 0;
++  box-sizing: border-box;
++  border: 2px solid #1890ff;
++  background: rgba(var(--vee-primary-rgb), 0.07);
++}
+ .input-square {
+   position: absolute;
+   padding: 0;
+   z-index: 4;
+-  border: 2px solid rgb(108, 143, 108);
++  border: 2px solid #1890ff;
+   /* transition: all 0.04s linear; */
+ }
++/* 非内联编辑时让事件穿透到下方单元格，才能拖选矩形；填充柄单独开启 pointer-events */
++.input-square:not(.input-square--editing) {
++  pointer-events: none;
++}
++.input-square.input-square--editing {
++  pointer-events: auto;
++}
++/* 拖选/多格选区：不画组件自带活动格外框，选区仅由 cell-range-overlay 表现（填充柄仍可用） */
++.input-square.input-square--range-suppress:not(.input-square--editing) {
++  border-color: transparent;
++  background: transparent;
++}
+ .no-transition {
+   transition: none !important;
+ }
+@@ -2789,8 +3788,8 @@ input:focus, input:active:focus, input.active:focus {
+   position: fixed;
+   padding: 3px;
+   margin: -1px;
+-  background-color: lightyellow;
+-  border: 1px solid rgb(108, 143, 108);
++  background-color: #fafcff;
++  border: 1px solid #1890ff;
+   /*height: fit-content;*/
+   overflow-y: scroll;
+   font-size: 0.88rem;
+@@ -2813,7 +3812,7 @@ input:focus, input:active:focus, input.active:focus {
+   cursor: pointer
+ }
+ .autocomplete-result.select {
+-  background-color: lightsteelblue;
++  background-color: rgba(var(--vee-primary-rgb), 0.08);
+ }
+ .rb-square {
+   width: 9px;
+@@ -2822,11 +3821,12 @@ input:focus, input:active:focus, input.active:focus {
+   border-left: 2px solid white;
+   border-bottom: 0;
+   border-right: 0;
+-  background-color:rgb(108, 143, 108);
++  background-color: #1890ff;
+   position: absolute;
+   bottom: -3px;
+   right: -2px;
+   cursor: crosshair;
++  pointer-events: auto;
+ }
+ .input-box {
+   opacity: 0;
+@@ -2915,7 +3915,7 @@ input:focus, input:active:focus, input.active:focus {
+   text-align: left;
+ }
+ .systable tr.select td {
+-  background-color: #bbb !important;
++  background-color: rgba(var(--vee-primary-rgb), 0.06) !important;
+ }
+ .systable th, .systable td {
+   vertical-align: bottom;
+@@ -2979,22 +3979,24 @@ input:focus, input:active:focus, input.active:focus {
+   text-overflow: ellipsis;
+ }
+ .systable th.focus {
+-  border-bottom: 1px solid rgb(61, 85, 61) !important;
++  border-bottom: 1px solid #1890ff !important;
+ }
+ .systable td.first-col.focus {
+-  border-right: 1px solid rgb(61, 85, 61) !important;
++  border-right: 1px solid #1890ff !important;
+ }
+ .systable tbody td.select:not(.readonly) {
+   background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAMAAABhEH5lAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAASUExURQAAANra2tfX19ra2tnZ2dnZ2c8lDs8AAAAFdFJOUwAwQL/PKlwehgAAAAlwSFlzAAAXEQAAFxEByibzPwAAAEdJREFUKFNdyskBACAIA8F49d+yiBEh+9rHYC5poPGiDmUDUGZI2EHCHBV2UWFEiT2UWKBgHwVLiCwjsoKcVeRMkDFFxoiADdH4AyvGhvOPAAAAAElFTkSuQmCC');
+   background-repeat: no-repeat;
+   background-size: 8px 8px;
+-  background-position: right 5px top 8px;
++  background-position: right 6px center;
++  vertical-align: middle;
+ }
+ .systable tbody td.datepick:not(.readonly) {
+   background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAMAAABhEH5lAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAASUExURQAAANra2tfX19ra2tnZ2dnZ2c8lDs8AAAAFdFJOUwAwQL/PKlwehgAAAAlwSFlzAAAXEQAAFxEByibzPwAAAEdJREFUKFNdyskBACAIA8F49d+yiBEh+9rHYC5poPGiDmUDUGZI2EHCHBV2UWFEiT2UWKBgHwVLiCwjsoKcVeRMkDFFxoiADdH4AyvGhvOPAAAAAElFTkSuQmCC');
+   background-repeat: no-repeat;
+   background-size: 8px 8px;
+-  background-position: right 5px top 8px;
++  background-position: right 6px center;
++  vertical-align: middle;
+ }
+ .systable .first-col {
+   background:#e9ecef;
+@@ -3286,4 +4288,35 @@ a:disabled {
+   left: 50%;
+   transform: translate(-50%, 0%);
+ }
++/* 可编辑纯文本列（无 options）：内联文本在格内上下居中；含 options 的交付物/计划列勿用此类 */
++.input-square.input-square--defect-name {
++  display: flex;
++  flex-direction: column;
++}
++.input-square.input-square--defect-name > div:first-child {
++  flex: 1 1 auto;
++  min-height: 0;
++  display: flex;
++  flex-direction: column;
++  justify-content: center;
++  align-items: stretch;
++  /* 覆盖内联 padding:2px 2px 1px：左右不再叠加，与单元格 td 正文左缘对齐 */
++  padding: 2px 0 1px 0 !important;
++}
++.input-square.input-square--defect-name textarea.input-box {
++  height: auto !important;
++  max-height: 100% !important;
++  width: 100% !important;
++  min-height: 1.35em;
++  flex: 0 1 auto;
++  box-sizing: border-box;
++  line-height: 1.45;
++  /* 与 .systable th, .systable td 一致 */
++  padding: 0.2rem 0.3rem !important;
++}
++/* 库内全局 input:focus 在底边画 inset 线，会把文字衬得偏上 */
++.input-square.input-square--defect-name textarea.input-box:focus,
++.input-square.input-square--defect-name textarea.input-box:active {
++  box-shadow: none !important;
++}
+ </style>

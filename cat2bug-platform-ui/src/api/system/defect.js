@@ -26,13 +26,18 @@ export function getDefect(defectId) {
   })
 }
 
-// 新增缺陷
-export function addDefect(data) {
+/**
+ * 新增缺陷
+ * @param {object} data 请求体
+ * @param {object} [axiosConfig] 透传给 axios（如 Excel 批量创建：`{ headers: { repeatSubmit: false } }` 关闭 1s 内同 body 拦截，避免多行相同内容被判重复提交）
+ */
+export function addDefect(data, axiosConfig) {
   data.srcHost = `${window.location.protocol}//${window.location.host}`;
   return request({
     url: '/system/defect',
     method: 'post',
-    data: data
+    data: data,
+    ...(axiosConfig || {}),
   })
 }
 

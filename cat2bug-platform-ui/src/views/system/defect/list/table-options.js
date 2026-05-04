@@ -23,7 +23,9 @@ export const TableOptions=[{
   fixed: false,
   visible: true,
   width: 400,
-  width_ru: 500
+  width_ru: 500,
+  /** 列表格内展示标题中的换行（见 table.vue .defect-name-col） */
+  className: 'defect-name-col',
 },{
   key: 'priority',
   prop: 'defectLevel',
@@ -60,6 +62,17 @@ export const TableOptions=[{
   width: 130,
   width_ja_JP: 130,
   width_ar: 130
+},{
+  key: 'describe',
+  prop: 'defectDescribe',
+  fixed: false,
+  visible: true,
+  align: 'left',
+  width: 200,
+  width_ja_JP: 200,
+  width_ar: 200,
+  /** 与缺陷名称列一致：单元格内换行与 .cell 样式（见 table.vue .defect-name-col） */
+  className: 'defect-name-col',
 },{
   key: 'image',
   prop: 'imgUrls',

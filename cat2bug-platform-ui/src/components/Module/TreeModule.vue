@@ -196,15 +196,16 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+/* 与全局 .el-table th 一致（ruoyi.scss：表头行 48px / font-size 13px），与含 padding 的表头视觉同高 */
 .tree-tools {
   width: 100%;
-  height: 55px;
-  line-height: 55px;
+  height: 48px;
+  line-height: 48px;
   border-bottom: 1px solid #dfe6ec;
   background-color: #f8f8f9;
   padding: 0px 10px;
-  margin-bottom: 10px;
-  font-size: 15px;
+  margin-bottom: 0;
+  font-size: 13px;
   font-weight: 500;
   color: #515a6e;
   display: flex;

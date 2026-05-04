@@ -1,12 +1,8 @@
 <template>
-  <div>
-    <div class="defect-tools">
+  <div class="defect-calendar-root">
+    <div class="defect-tools defect-view-toolbar">
       <slot name="left-tools"></slot>
-      <div class="table-tools row">
-        <div>
-          <slot name="right-tools"></slot>
-        </div>
-      </div>
+      <slot name="right-tools"></slot>
     </div>
     <div>
       <el-button type="text" @click="handlePrevMonthChange"><i class="el-icon-arrow-left"/> </el-button>
@@ -289,6 +285,8 @@ export default {
 
 <style lang="scss" scoped>
 .calendar {
+  flex: 1 1 0;
+  min-height: 0;
   width: 100%;
   display: inline-flex;
   flex-direction: column;
@@ -349,9 +347,18 @@ export default {
   z-index: 999;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3); /* 鼠标滑过时显示阴影 */
 }
+.defect-calendar-root {
+  width: 100%;
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  box-sizing: border-box;
+}
 .defect-tools {
   width: 100%;
-  display: inline-flex;
+  display: flex;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
@@ -361,11 +368,6 @@ export default {
     margin-bottom: 0px;
     ::v-deep .el-form-item {
       margin-bottom: 0px;
-    }
-  }
-  .table-tools {
-    > * {
-      margin-bottom: 10px;
     }
   }
 }

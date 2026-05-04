@@ -81,8 +81,11 @@
 			word-break: break-word;
 			background-color: #f8f8f9;
 			color: #515a6e;
-			height: 40px;
+			/* 与 Element 默认表头 .el-table__cell 上下 padding(12px) + 单行/图标一致，避免写 40px 被内容撑高后与侧栏树标题不齐 */
+			height: 48px;
+			min-height: 48px;
 			font-size: 13px;
+			box-sizing: border-box;
 		}
 	}
 	.el-table__body-wrapper {

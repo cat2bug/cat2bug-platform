@@ -21,6 +21,8 @@ $--table-border: 1px solid #dfe6ec;
 
 /* icon font path, required */
 $--font-path: '~element-ui/lib/theme-chalk/fonts';
+/* 默认 $--font-display 为 auto；改为 swap 先显示回退字形再切换，减轻慢网下长时间等字体（Chrome [Intervention] 多为提示，非错误） */
+$--font-display: swap;
 
 @import "~element-ui/packages/theme-chalk/src/index";
 
