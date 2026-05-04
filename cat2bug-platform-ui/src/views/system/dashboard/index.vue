@@ -120,6 +120,7 @@ export default {
   }
 }
 .dashboard-row {
+  margin-top: 0 !important;
   width: 100%;
   display: inline-flex;
   flex-direction: row;
@@ -134,11 +135,9 @@ export default {
 .dashboard-row > * {
   flex: 1;
 }
-.app-container > * {
+/* 与测试用例页一致：仅图表行之间留白，勿给首子项 project-label 叠 margin-top */
+.app-container > *:not(:first-child) {
   margin-top: 10px;
-}
-.app-container:first-child {
-  margin-top: 0px;
 }
 .action-block {
   flex: 1;

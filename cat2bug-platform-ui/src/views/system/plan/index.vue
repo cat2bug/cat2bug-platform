@@ -350,14 +350,17 @@ export default {
     display: inline-flex;
   }
 }
+/* 与测试用例页 .case-tools 一致：项目切换与工具条上下间距 */
 .plan-tools {
   width: 100%;
-  display: inline-flex;
+  display: flex;
   flex-direction: row;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
+  margin-top: 10px;
+  margin-bottom: 10px;
   .el-form-item {
-    margin-bottom: 10px;
+    margin-bottom: 0;
   }
 }
 .plan-progress {
@@ -416,7 +419,6 @@ export default {
   justify-content: flex-end;
   align-items: center;
   gap: 10px;
-  margin-bottom: 10px;
 }
 .text-row3 {
   word-break: break-all;

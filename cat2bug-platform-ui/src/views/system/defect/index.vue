@@ -1,6 +1,6 @@
 <template>
   <div ref="defectMain" class="app-container defect-page" :style="defectPageRootStyle">
-    <project-label />
+    <project-label class="defect-project-label" />
     <!-- 缺陷页标签-->
     <div class="defect-tools-tab">
       <el-tabs v-model="activeDefectTabName" @tab-click="selectDefectTabHandle">
@@ -574,13 +574,15 @@ export default {
  * - `src/assets/styles/index.scss` 里 `.app-container` 只有 padding:20px，不设高度。
  * - 本页根节点是 `class="app-container defect-page"`；`height/max-height` 由 :style `defectPageRootStyle` 按
  *   `settings.tagsView` 动态计算（与 `layout/components/AppMain.vue`：无 Tags 时 50px、有 Tags 时 84px）。
- * - 上下 padding 用 0，避免 border-box 下再吃掉纵高；左右 20px 与其它列表一致。
+ * - 顶 padding 20px 与全局 .app-container、测试用例页一致；底侧 0 少占纵高；左右 20px。
+ * - 本页根为 flex 列：相邻子项 margin 不折叠（与块流不同）。project-label 的 h3 已有 margin-bottom:20px，
+ *   故 .defect-tools-tab 勿再叠 margin-top，否则项目行与 Tab 间距会大于用例页（20+10）。
  */
 .defect-page {
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  padding: 0 20px;
+  padding: 20px 20px 0 20px;
   min-height: 0;
   overflow: hidden;
   /* 查询条上、下与 Tab / 主内容区的留白一致（子树继承） */
@@ -594,6 +596,9 @@ export default {
   /* 与 Tab/统计区之间的纵向留白改由 .defect-view-toolbar 的 margin-top 承担，避免 padding+margin 叠在不同盒子上导致观感不对称 */
   padding-top: 0;
   box-sizing: border-box;
+}
+.defect-project-label {
+  margin-bottom: 10px;
 }
 @media screen and (max-width: 980px) {
   .defect-tools-search {
@@ -625,8 +630,9 @@ export default {
     margin: 0px 5px 0px 0px;
   }
 }
+/* 与测试用例页 project-label → 工具条观感一致：块流可 margin 折叠，flex 子项不可，故此处 margin-top 为 0 */
 .defect-tools-tab {
-  margin-top: -10px;
+  margin-top: 0;
   position: relative;
   height: 40px;
   /* el-tabs 默认表头 margin-bottom:15px + 空 content，会在 Tab 与下方查询条之间多出一段空白 */
