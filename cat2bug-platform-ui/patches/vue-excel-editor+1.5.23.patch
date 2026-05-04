@@ -22,7 +22,7 @@ index 889c82a..ae03194 100644
      }
    }
 diff --git a/node_modules/vue-excel-editor/src/VueExcelEditor.vue b/node_modules/vue-excel-editor/src/VueExcelEditor.vue
-index 6411a01..53ae30f 100644
+index 6411a01..dcf1ff0 100644
 --- a/node_modules/vue-excel-editor/src/VueExcelEditor.vue
 +++ b/node_modules/vue-excel-editor/src/VueExcelEditor.vue
 @@ -28,19 +28,10 @@
@@ -89,7 +89,7 @@ index 6411a01..53ae30f 100644
                <td v-if="vScroller.buttonHeight < vScroller.height" class="last-col"></td>
              </tr>
            </tbody>
-@@ -153,15 +152,42 @@
+@@ -153,15 +152,47 @@
          <!-- Text Tip -->
          <div v-show="textTip" ref="texttip" class="text-tip">{{ textTip }}</div>
  
@@ -103,6 +103,11 @@ index 6411a01..53ae30f 100644
 +        <div v-show="cellRangeOverlay.show"
 +             class="cell-range-overlay"
 +             :style="cellRangeOverlay.style"></div>
++        <div v-for="(seg, si) in rowSelectOverlaySegments"
++             :key="'row-sel-ov-' + si"
++             v-show="seg.show"
++             class="cell-range-overlay"
++             :style="seg.style"></div>
 +
          <!-- Editor Square -->
 -        <div v-show="focused" ref="inputSquare" class="input-square" @mousedown="inputSquareClick">
@@ -135,7 +140,7 @@ index 6411a01..53ae30f 100644
                        @mousemove="inputBoxMouseMove"
                        @mousedown="inputBoxMouseDown"
                        trim
-@@ -473,7 +499,34 @@ export default {
+@@ -473,7 +504,36 @@ export default {
        summaryRow: false,
        summary: {},
        showFilteredOnly: true,
@@ -152,6 +157,8 @@ index 6411a01..53ae30f 100644
 +
 +      /** 区域选外框（相对 systable，与 fill 预览同一套坐标） */
 +      cellRangeOverlay: { show: false, style: {} },
++      /** 行号多选且不连续时多块外框（与 cell-range-overlay 同 class） */
++      rowSelectOverlaySegments: [],
 +
 +      /** 矩形区域选：table 行下标 + fields 列下标 */
 +      cellRange: null,
@@ -171,17 +178,20 @@ index 6411a01..53ae30f 100644
      }
      return dataset
    },
-@@ -520,6 +573,17 @@ export default {
+@@ -520,6 +580,20 @@ export default {
            }
          }
        }
 +    },
-+    /** 矩形拖选/已选时由 overlay 统一绘制选区，隐藏活动格外框，避免与 overlay 叠两套 */
++    /** 矩形拖选/已选、或选区 overlay 已显示时，活动格只保留填充柄位置，不画第二套蓝框 */
 +    suppressInputSquareRangeChrome () {
 +      if (this.inputBoxShow) return false
-+      return !!(this.cellRange || this.cellRangeDrag)
++      if (this.cellRange || this.cellRangeDrag) return true
++      if (this.cellRangeOverlay && this.cellRangeOverlay.show) return true
++      if (this.rowSelectOverlaySegments && this.rowSelectOverlaySegments.length) return true
++      return false
 +    },
-+    /** 可编辑纯文本列（无 options）：单行 textarea 便于格内垂直居中；含 options 的列勿套（交付物/计划时间等） */
++    /** 可编辑纯文本列（无 options 三角/map）：单行 textarea 便于格内垂直居中；含 options 的列勿套（交付物/计划时间等） */
 +    defectNameTextareaRowBind () {
 +      if (this.currentField && !this.currentField.readonly && this.currentField.type !== 'date' && !this.currentField.options)
 +        return { rows: 1 }
@@ -189,7 +199,11 @@ index 6411a01..53ae30f 100644
      }
    },
    watch: {
-@@ -563,15 +627,30 @@ export default {
+@@ -560,18 +634,44 @@ export default {
+     },
+     pageTop (newVal) {
+       this.$emit('page-changed', newVal, newVal + this.pageSize - 1)
++      this.$nextTick(() => this.updateCellRangeSelectionOverlay())
      },
      pageSize (newVal) {
        this.$emit('page-changed', this.pageTop, this.pageTop + newVal - 1)
@@ -201,6 +215,16 @@ index 6411a01..53ae30f 100644
 +        this.inputBox.style.removeProperty('height')
 +        this.inputBox.style.removeProperty('min-height')
 +      }
++    },
++    /**
++     * 行选高亮依赖 updateCellRangeSelectionOverlay。仅 watch selectedCount 时，同一事件循环内
++     * clearAllSelected(1→0) + selectRecord(0→1) 会合并为「首尾仍是 1」，watcher 不触发，overlay 滞后一次点击。
++     */
++    selected: {
++      handler () {
++        this.$nextTick(() => this.updateCellRangeSelectionOverlay())
++      },
++      deep: true
      }
    },
    beforeDestroy () {
@@ -220,7 +244,7 @@ index 6411a01..53ae30f 100644
    },
    mounted () {
      this.editor = this.$refs.editor
-@@ -594,7 +673,11 @@ export default {
+@@ -594,7 +694,11 @@ export default {
        this.labelTr.children[0].style.height = this.labelTr.offsetHeight + 'px'
        this.calCellTop2 = this.labelTr.offsetHeight
        this.refreshPageSize()
@@ -233,7 +257,7 @@ index 6411a01..53ae30f 100644
        this.calStickyLeft()
      }, 200)
  
-@@ -616,6 +699,573 @@ export default {
+@@ -616,6 +720,724 @@ export default {
      }
    },
    methods: {
@@ -259,6 +283,7 @@ index 6411a01..53ae30f 100644
 +    },
 +    /** 右下角填充柄：拖动矩形区域，将源单元格值复制到范围内可写格（跳过 key / 只读 / 隐藏 / cellHtml） */
 +    fillHandleMouseDown (e) {
++      if (this.selectedCount > 0) this.clearAllSelected()
 +      this.cellRangeSelectCleanupListeners()
 +      e.preventDefault()
 +      e.stopPropagation()
@@ -381,6 +406,60 @@ index 6411a01..53ae30f 100644
 +      if (!td || td.tagName !== 'TD' || td.classList.contains('first-col')) return null
 +      return td
 +    },
++    /** 当前页数据行 TR（与 cell-RC 行下标一致） */
++    getPagingRowTrEl (rowPos) {
++      if (!this.recordBody || rowPos < 0) return null
++      const tr = this.recordBody.children[rowPos]
++      if (!tr || tr.tagName !== 'TR') return null
++      return tr
++    },
++    /** 选区 overlay 相对 .table-content（含 scrollTop）：表头区域底边 Y，用于裁切避免盖住标题 */
++    getSelectionOverlayHeaderBottomRel () {
++      if (!this.tableContent || !this.labelTr) return 0
++      const tc = this.tableContent
++      const tcR = tc.getBoundingClientRect()
++      let bottom = this.labelTr.getBoundingClientRect().bottom
++      if (this.filterRow && this.filterTr) {
++        const fr = this.filterTr.getBoundingClientRect()
++        if (fr.height > 2) bottom = fr.bottom
++      }
++      return Math.max(0, bottom - tcR.top + tc.scrollTop)
++    },
++    /** 顶边裁到表头之下；若选区完全在表头背后则返回 null */
++    clipSelectionOverlayStyle (style) {
++      if (!style) return style
++      const top = parseFloat(style.top)
++      const h = parseFloat(style.height)
++      if (!Number.isFinite(top) || !Number.isFinite(h) || h <= 0) return style
++      const hb = this.getSelectionOverlayHeaderBottomRel()
++      if (top >= hb) return style
++      const cut = hb - top
++      const newTop = hb
++      const newH = h - cut
++      if (newH <= 0) return null
++      return Object.assign({}, style, {
++        top: newTop + 'px',
++        height: newH + 'px'
++      })
++    },
++    /**
++     * 选区/填充预览相对 .table-content 定位（须加 scrollLeft/scrollTop），勿用 systable 为参照
++     * ——否则横向滚动时左边被裁、底角与格线错位；描边用宿主 border，勿用 outline（overflow 外扩被裁）
++     */
++    finalizeSelectionOverlayBox (left, top, right, bottom) {
++      const tc = this.tableContent
++      if (!tc || !Number.isFinite(left) || left === Infinity) return null
++      const cr = tc.getBoundingClientRect()
++      const relLeft = left - cr.left + tc.scrollLeft
++      const relTop = top - cr.top + tc.scrollTop
++      const st = {
++        left: Math.round(relLeft) + 'px',
++        top: Math.round(relTop) + 'px',
++        width: Math.max(1, Math.round(right - left)) + 'px',
++        height: Math.max(1, Math.round(bottom - top)) + 'px'
++      }
++      return this.clipSelectionOverlayStyle(st)
++    },
 +    /** 根据源格与目标格（同行或同列）更新绿色预览框，相对 systable 与 input-square 一致 */
 +    updateFillDragOverlay (targetRow, targetCol) {
 +      const src = this.fillDragSource
@@ -438,7 +517,6 @@ index 6411a01..53ae30f 100644
 +        this.$set(this.fillDragOverlay, 'style', {})
 +        return
 +      }
-+      const tableRect = this.systable.getBoundingClientRect()
 +      let left = Infinity
 +      let top = Infinity
 +      let right = -Infinity
@@ -450,84 +528,179 @@ index 6411a01..53ae30f 100644
 +        right = Math.max(right, br.right)
 +        bottom = Math.max(bottom, br.bottom)
 +      })
++      const fst = this.finalizeSelectionOverlayBox(left, top, right, bottom)
++      if (!fst) {
++        this.$set(this.fillDragOverlay, 'show', false)
++        this.$set(this.fillDragOverlay, 'style', {})
++        return
++      }
 +      this.$set(this.fillDragOverlay, 'show', true)
-+      this.$set(this.fillDragOverlay, 'style', {
-+        left: (left - tableRect.left - 1) + 'px',
-+        top: (top - tableRect.top - 1) + 'px',
-+        width: (right - left + 2) + 'px',
-+        height: (bottom - top + 2) + 'px'
-+      })
++      this.$set(this.fillDragOverlay, 'style', fst)
 +    },
-+    /** 拖选/已选矩形：用单元格 DOM 并集画一层外框+底色（选区仅此一层，避免与 td 底色、活动格外框叠画） */
++    /** 拖选/已选矩形与行选外框：行选 bbox 为所选各行内全部 TD 的 rect 并集（含序号列），避免高行底边缺线 */
 +    updateCellRangeSelectionOverlay () {
 +      if (this.fillDragActive) {
 +        this.$set(this.cellRangeOverlay, 'show', false)
 +        this.$set(this.cellRangeOverlay, 'style', {})
-+        return
-+      }
-+      let rMin
-+      let rMax
-+      let cMin
-+      let cMax
-+      if (this.cellRangeDrag) {
-+        rMin = Math.min(this.cellRangeDrag.pr0, this.cellRangeDrag.pr1)
-+        rMax = Math.max(this.cellRangeDrag.pr0, this.cellRangeDrag.pr1)
-+        cMin = Math.min(this.cellRangeDrag.pc0, this.cellRangeDrag.pc1)
-+        cMax = Math.max(this.cellRangeDrag.pc0, this.cellRangeDrag.pc1)
-+      } else if (this.cellRange) {
-+        const top = this.pageTop
-+        rMin = Math.min(this.cellRange.r0, this.cellRange.r1) - top
-+        rMax = Math.max(this.cellRange.r0, this.cellRange.r1) - top
-+        cMin = Math.min(this.cellRange.c0, this.cellRange.c1)
-+        cMax = Math.max(this.cellRange.c0, this.cellRange.c1)
-+      } else {
-+        this.$set(this.cellRangeOverlay, 'show', false)
-+        this.$set(this.cellRangeOverlay, 'style', {})
++        this.rowSelectOverlaySegments = []
 +        return
 +      }
 +      const nRow = this.pagingTable && this.pagingTable.length ? this.pagingTable.length : 0
 +      if (nRow <= 0 || !this.systable) {
 +        this.$set(this.cellRangeOverlay, 'show', false)
 +        this.$set(this.cellRangeOverlay, 'style', {})
++        this.rowSelectOverlaySegments = []
 +        return
-+      }
-+      rMin = Math.max(0, Math.min(rMin, nRow - 1))
-+      rMax = Math.max(0, Math.min(rMax, nRow - 1))
-+      if (rMin > rMax) {
-+        const t = rMin
-+        rMin = rMax
-+        rMax = t
 +      }
 +      const nCol = this.fields ? this.fields.length : 0
 +      if (nCol <= 0) {
 +        this.$set(this.cellRangeOverlay, 'show', false)
 +        this.$set(this.cellRangeOverlay, 'style', {})
++        this.rowSelectOverlaySegments = []
 +        return
 +      }
-+      cMin = Math.max(0, Math.min(cMin, nCol - 1))
-+      cMax = Math.max(0, Math.min(cMax, nCol - 1))
-+      if (cMin > cMax) {
-+        const t = cMin
-+        cMin = cMax
-+        cMax = t
-+      }
++
++      this.rowSelectOverlaySegments = []
 +      const els = []
-+      for (let r = rMin; r <= rMax; r++) {
-+        for (let c = cMin; c <= cMax; c++) {
-+          const el = this.getPagingCellEl(r, c)
-+          if (!el) continue
-+          if (this.fields[c] && this.fields[c].invisible) continue
-+          const br = el.getBoundingClientRect()
-+          if (br.width < 1 || br.height < 1) continue
-+          els.push(el)
++      if (this.cellRangeDrag) {
++        let rMin = Math.min(this.cellRangeDrag.pr0, this.cellRangeDrag.pr1)
++        let rMax = Math.max(this.cellRangeDrag.pr0, this.cellRangeDrag.pr1)
++        let cMin = Math.min(this.cellRangeDrag.pc0, this.cellRangeDrag.pc1)
++        let cMax = Math.max(this.cellRangeDrag.pc0, this.cellRangeDrag.pc1)
++        rMin = Math.max(0, Math.min(rMin, nRow - 1))
++        rMax = Math.max(0, Math.min(rMax, nRow - 1))
++        if (rMin > rMax) {
++          const t = rMin
++          rMin = rMax
++          rMax = t
 +        }
++        cMin = Math.max(0, Math.min(cMin, nCol - 1))
++        cMax = Math.max(0, Math.min(cMax, nCol - 1))
++        if (cMin > cMax) {
++          const t = cMin
++          cMin = cMax
++          cMax = t
++        }
++        for (let r = rMin; r <= rMax; r++) {
++          for (let c = cMin; c <= cMax; c++) {
++            const el = this.getPagingCellEl(r, c)
++            if (!el) continue
++            if (this.fields[c] && this.fields[c].invisible) continue
++            const br = el.getBoundingClientRect()
++            if (br.width < 1 || br.height < 1) continue
++            els.push(el)
++          }
++        }
++      } else if (this.cellRange) {
++        const top = this.pageTop
++        let rMin = Math.min(this.cellRange.r0, this.cellRange.r1) - top
++        let rMax = Math.max(this.cellRange.r0, this.cellRange.r1) - top
++        let cMin = Math.min(this.cellRange.c0, this.cellRange.c1)
++        let cMax = Math.max(this.cellRange.c0, this.cellRange.c1)
++        rMin = Math.max(0, Math.min(rMin, nRow - 1))
++        rMax = Math.max(0, Math.min(rMax, nRow - 1))
++        if (rMin > rMax) {
++          const t = rMin
++          rMin = rMax
++          rMax = t
++        }
++        cMin = Math.max(0, Math.min(cMin, nCol - 1))
++        cMax = Math.max(0, Math.min(cMax, nCol - 1))
++        if (cMin > cMax) {
++          const t = cMin
++          cMin = cMax
++          cMax = t
++        }
++        for (let r = rMin; r <= rMax; r++) {
++          for (let c = cMin; c <= cMax; c++) {
++            const el = this.getPagingCellEl(r, c)
++            if (!el) continue
++            if (this.fields[c] && this.fields[c].invisible) continue
++            const br = el.getBoundingClientRect()
++            if (br.width < 1 || br.height < 1) continue
++            els.push(el)
++          }
++        }
++      } else if (this.selectedCount > 0) {
++        const pageTop = this.pageTop
++        const pageEnd = pageTop + nRow
++        const vis = Object.keys(this.selected)
++          .map(Number)
++          .filter((abs) => Number.isFinite(abs) && abs >= pageTop && abs < pageEnd)
++          .sort((a, b) => a - b)
++        if (!vis.length) {
++          this.$set(this.cellRangeOverlay, 'show', false)
++          this.$set(this.cellRangeOverlay, 'style', {})
++          this.rowSelectOverlaySegments = []
++          return
++        }
++        const runs = []
++        let cur = []
++        vis.forEach((abs) => {
++          if (!cur.length || abs === cur[cur.length - 1] + 1) cur.push(abs)
++          else {
++            runs.push(cur)
++            cur = [abs]
++          }
++        })
++        if (cur.length) runs.push(cur)
++        /* 必须合并行内每个 TD 的 bbox：TR 的 outline/整行 getBoundingClientRect 在多行高格时底边会短一截 */
++        const bboxStyleForAbsRowRun = (absRun) => {
++          if (!absRun.length) return null
++          let left = Infinity
++          let top = Infinity
++          let right = -Infinity
++          let bottom = -Infinity
++          absRun.forEach((abs) => {
++            const r = abs - pageTop
++            const tr = this.getPagingRowTrEl(r)
++            if (!tr || !tr.children) return
++            for (let i = 0; i < tr.children.length; i++) {
++              const cell = tr.children[i]
++              if (!cell || cell.tagName !== 'TD') continue
++              const br = cell.getBoundingClientRect()
++              if (br.width < 1 || br.height < 1) continue
++              left = Math.min(left, br.left)
++              top = Math.min(top, br.top)
++              right = Math.max(right, br.right)
++              bottom = Math.max(bottom, br.bottom)
++            }
++          })
++          if (!Number.isFinite(left) || left === Infinity) return null
++          const style = this.finalizeSelectionOverlayBox(left, top, right, bottom)
++          if (!style) return null
++          return { show: true, style }
++        }
++        if (runs.length > 1) {
++          const segs = runs.map((run) => bboxStyleForAbsRowRun(run)).filter(Boolean)
++          this.$set(this.cellRangeOverlay, 'show', false)
++          this.$set(this.cellRangeOverlay, 'style', {})
++          this.rowSelectOverlaySegments = segs.length ? segs : []
++          return
++        }
++        const one = bboxStyleForAbsRowRun(runs[0])
++        if (!one) {
++          this.$set(this.cellRangeOverlay, 'show', false)
++          this.$set(this.cellRangeOverlay, 'style', {})
++          this.rowSelectOverlaySegments = []
++          return
++        }
++        this.$set(this.cellRangeOverlay, 'show', true)
++        this.$set(this.cellRangeOverlay, 'style', one.style)
++        this.rowSelectOverlaySegments = []
++        return
++      } else {
++        this.$set(this.cellRangeOverlay, 'show', false)
++        this.$set(this.cellRangeOverlay, 'style', {})
++        this.rowSelectOverlaySegments = []
++        return
 +      }
 +      if (!els.length) {
 +        this.$set(this.cellRangeOverlay, 'show', false)
 +        this.$set(this.cellRangeOverlay, 'style', {})
++        this.rowSelectOverlaySegments = []
 +        return
 +      }
-+      const tableRect = this.systable.getBoundingClientRect()
 +      let left = Infinity
 +      let top = Infinity
 +      let right = -Infinity
@@ -539,13 +712,15 @@ index 6411a01..53ae30f 100644
 +        right = Math.max(right, br.right)
 +        bottom = Math.max(bottom, br.bottom)
 +      })
++      const cst = this.finalizeSelectionOverlayBox(left, top, right, bottom)
++      if (!cst) {
++        this.$set(this.cellRangeOverlay, 'show', false)
++        this.$set(this.cellRangeOverlay, 'style', {})
++        this.rowSelectOverlaySegments = []
++        return
++      }
 +      this.$set(this.cellRangeOverlay, 'show', true)
-+      this.$set(this.cellRangeOverlay, 'style', {
-+        left: (left - tableRect.left - 1) + 'px',
-+        top: (top - tableRect.top - 1) + 'px',
-+        width: (right - left + 2) + 'px',
-+        height: (bottom - top + 2) + 'px'
-+      })
++      this.$set(this.cellRangeOverlay, 'style', cst)
 +    },
 +    fillHandleMouseMove (e) {
 +      if (!this.fillDragActive || !this.fillDragSource) return
@@ -807,7 +982,7 @@ index 6411a01..53ae30f 100644
      componentTabInto (e) {
        if (e.keyCode === 9) {
          if (!this.moveInputSquare(this.currentRowPos, this.currentColPos))
-@@ -637,6 +1287,8 @@ export default {
+@@ -637,6 +1459,8 @@ export default {
        this.prevSelect = -1
        this.processing = false
        this.rowIndex = {}
@@ -816,7 +991,7 @@ index 6411a01..53ae30f 100644
        this.refresh()
      },
      toggleSelectView (e) {
-@@ -1089,16 +1741,20 @@ export default {
+@@ -1089,16 +1913,20 @@ export default {
      calVScroll () {
        let d = this.labelTr.getBoundingClientRect().height
        if (this.filterRow) d += 29
@@ -844,7 +1019,7 @@ index 6411a01..53ae30f 100644
      },
      vsMouseDown (e) {
        e.stopPropagation()
-@@ -1116,6 +1772,7 @@ export default {
+@@ -1116,6 +1944,7 @@ export default {
      },
      vsbMouseDown (e) {
        e.stopPropagation()
@@ -852,7 +1027,7 @@ index 6411a01..53ae30f 100644
        if (!this.vScroller.mouseY) {
          this.vScroller.saveButtonTop = this.vScroller.buttonTop
          this.vScroller.mouseY = e.clientY
-@@ -1175,6 +1832,7 @@ export default {
+@@ -1175,6 +2004,7 @@ export default {
      },
      sbMouseDown (e) {
        e.stopPropagation()
@@ -860,7 +1035,7 @@ index 6411a01..53ae30f 100644
        if (!this.hScroller.mouseX) {
          const sleft = this.$refs.hScroll.getBoundingClientRect().left
          const fleft = this.footer.getBoundingClientRect().left + 40
-@@ -1208,6 +1866,13 @@ export default {
+@@ -1208,6 +2038,13 @@ export default {
      /* *** Window Event *******************************************************************************************
       */
      tableScroll () {
@@ -874,16 +1049,16 @@ index 6411a01..53ae30f 100644
        this.showDatePicker = false
        this.autocompleteInputs = []
        if (this.focused && this.currentField)
-@@ -1232,6 +1897,8 @@ export default {
+@@ -1232,6 +2069,8 @@ export default {
          }
        }
        this.hScroller.lastLeft = this.tableContent.scrollLeft
-+      if (this.cellRange || this.cellRangeDrag || this.fillDragActive)
++      if (this.cellRange || this.cellRangeDrag || this.fillDragActive || this.selectedCount > 0)
 +        this.updateCellRangeSelectionOverlay()
      },
      winScroll () {
        this.showDatePicker = false
-@@ -1257,6 +1924,87 @@ export default {
+@@ -1257,6 +2096,87 @@ export default {
      winResize () {
        this.lazy(this.refreshPageSize, 500)
      },
@@ -971,7 +1146,7 @@ index 6411a01..53ae30f 100644
      winPaste (e) {
        if (e.target.tagName !== 'TEXTAREA') return
        if (!this.mousein && !this.focused) return
-@@ -1265,7 +2013,15 @@ export default {
+@@ -1265,7 +2185,15 @@ export default {
          this.inputBoxChanged = true
          return
        }
@@ -988,7 +1163,7 @@ index 6411a01..53ae30f 100644
        this.inputCellWrite(text)
        e.preventDefault()
      },
-@@ -1282,6 +2038,13 @@ export default {
+@@ -1282,6 +2210,13 @@ export default {
      winKeydown (e) {
        if (e.altKey) this.systable.classList.add('alt')
        if (!this.mousein && !this.focused) return
@@ -1002,7 +1177,7 @@ index 6411a01..53ae30f 100644
        if (e.ctrlKey || e.metaKey)
          switch (e.keyCode) {
            case 90: // z
-@@ -1292,7 +2055,30 @@ export default {
+@@ -1292,7 +2227,30 @@ export default {
              this.toggleSelectAllRecords()
              e.preventDefault()
              break
@@ -1034,7 +1209,7 @@ index 6411a01..53ae30f 100644
              this.inputBox.value = this.currentCell.textContent
              this.inputBox.focus()
              this.inputBox.select()
-@@ -1438,16 +2224,23 @@ export default {
+@@ -1438,16 +2396,23 @@ export default {
              this.nextPage()
              e.preventDefault()
              break
@@ -1061,7 +1236,7 @@ index 6411a01..53ae30f 100644
              this.inputBoxChanged = true
              this.inputBox.value = ''
              this.inputBoxComplete()
-@@ -1497,9 +2290,11 @@ export default {
+@@ -1497,9 +2462,11 @@ export default {
      colSepMouseDown (e) {
        e.preventDefault()
        e.stopPropagation()
@@ -1076,7 +1251,7 @@ index 6411a01..53ae30f 100644
          const pos = Array.from(me.parentElement.children).findIndex(td => td === me)
          this.insertColumn(pos)
        }
-@@ -1510,7 +2305,7 @@ export default {
+@@ -1510,7 +2477,7 @@ export default {
        this.sep = {}
        // this.sep.curCol = this.colgroupTr.children[Array.from(this.labelTr.children).indexOf(e.target.parentElement)]
        this.sep.curCol = this.colgroupTr.children[
@@ -1085,7 +1260,7 @@ index 6411a01..53ae30f 100644
        // this.sep.nxtCol = this.sep.curCol.nextElementSibling
        this.sep.pageX = e.pageX
        let padding = 0
-@@ -1520,37 +2315,44 @@ export default {
+@@ -1520,37 +2487,44 @@ export default {
          if (padLeft && padRight)
            padding = parseInt(padLeft) + parseInt(padRight)
        }
@@ -1141,7 +1316,7 @@ index 6411a01..53ae30f 100644
        }
      },
      colSepMouseMove (e) {
-@@ -1777,10 +2579,7 @@ export default {
+@@ -1777,10 +2751,7 @@ export default {
        }
      },
  
@@ -1153,7 +1328,41 @@ index 6411a01..53ae30f 100644
  
      panelFilterClick(item) {
        if (!this.disablePanelFilter)
-@@ -2014,9 +2813,28 @@ export default {
+@@ -2006,6 +2977,33 @@ export default {
+     getSelectedRecords () {
+       return this.table.filter((rec, i) => this.selected[i])
+     },
++    /**
++     * 行号列多行选择与「单格焦点 / 矩形区域选」互斥：进入行选前卸掉单元格编辑态与区域选外框。
++     */
++    exclusiveClearSheetFocusForRowSelect () {
++      this.fillHandleCleanup()
++      this.cellRangeSelectCleanupListeners()
++      this.cellRange = null
++      this.$nextTick(() => this.updateCellRangeSelectionOverlay())
++      if (!this.focused) return
++      if (this.inputBoxChanged && this.currentRowPos >= 0 && this.currentColPos >= 0 && this.inputBox) {
++        const value = this.inputBox._value || this.inputBox.value
++        this.inputBox._value = ''
++        this.inputCellWrite(value, this.currentColPos, this.pageTop + this.currentRowPos)
++        this.inputBoxChanged = false
++      }
++      this.inputBoxShow = 0
++      this.showDatePicker = false
++      this.autocompleteInputs = []
++      if (this.currentRowPos >= 0 && this.recordBody && this.currentRowPos < this.recordBody.children.length) {
++        const row = this.recordBody.children[this.currentRowPos]
++        if (row && row.children && row.children[0]) row.children[0].classList.remove('focus')
++      }
++      if (this.currentColPos >= 0 && this.labelTr && this.labelTr.children && this.labelTr.children[this.currentColPos + 1])
++        this.labelTr.children[this.currentColPos + 1].classList.remove('focus')
++      if (this.$refs.inputBox) this.$refs.inputBox.blur()
++      this.focused = false
++    },
+     /*
+     deleteSelectedRecords () {
+       this.table = this.table.filter((rec, i) => typeof this.selected[i] === 'undefined')
+@@ -2014,9 +3012,29 @@ export default {
      },
      */
      rowLabelClick (e) {
@@ -1162,6 +1371,7 @@ index 6411a01..53ae30f 100644
 +      let target = this.domEventTargetEl(e)
 +      while (target && target.tagName !== 'TD') target = target.parentNode
 +      if (!target) return
++      this.exclusiveClearSheetFocusForRowSelect()
        const rowPos = Number(target.getAttribute('pos')) + this.pageTop
 +      this.rowLabelClickOnRow(e, rowPos)
 +    },
@@ -1184,7 +1394,23 @@ index 6411a01..53ae30f 100644
        if (e.shiftKey) {
          document.getSelection().removeAllRanges()
          if (this.prevSelect !== -1 && this.prevSelect !== rowPos) {
-@@ -2037,9 +2855,95 @@ export default {
+@@ -2030,16 +3048,117 @@ export default {
+         }
+       }
+       else {
+-        const selected = this.selected[rowPos]
+-        if (!this.freeSelect && !(e.ctrlKey || e.metaKey)) this.clearAllSelected()
+-        if (!selected) this.selectRecord(rowPos)
+-        else this.unSelectRecord(rowPos)
++        /* 无修饰键：点行号始终选中该行（独占），再点同一行保持选中，不做 toggle 取消 */
++        if (!this.freeSelect && !(e.ctrlKey || e.metaKey)) {
++          this.clearAllSelected()
++          this.selectRecord(rowPos)
++        } else {
++          const wasSelected = typeof this.selected[rowPos] !== 'undefined'
++          if (!wasSelected) this.selectRecord(rowPos)
++          else this.unSelectRecord(rowPos)
++        }
        }
        this.prevSelect = rowPos
      },
@@ -1194,6 +1420,7 @@ index 6411a01..53ae30f 100644
 +      if (e.button !== 0) return
 +      const td = this.domEventTargetTd(e)
 +      if (!td || !td.classList.contains('first-col')) return
++      this.exclusiveClearSheetFocusForRowSelect()
 +      const tr = td.parentNode
 +      if (!tr || tr.parentNode !== this.recordBody) return
 +      const idx = Array.from(this.recordBody.children).indexOf(tr)
@@ -1205,7 +1432,6 @@ index 6411a01..53ae30f 100644
 +        additive: !!(e.ctrlKey || e.metaKey),
 +        moved: false
 +      }
-+      this.prevSelect = anchorAbs
 +      this._rowLabelDragMoveBound = this.rowLabelDragMove.bind(this)
 +      this._rowLabelDragUpBound = this.rowLabelDragUp.bind(this)
 +      document.addEventListener('mousemove', this._rowLabelDragMoveBound)
@@ -1224,7 +1450,7 @@ index 6411a01..53ae30f 100644
 +      if (abs !== this.rowLabelDrag.lastAbs) this.rowLabelDrag.moved = true
 +      this.rowLabelDrag.lastAbs = abs
 +      this.scheduleRowLabelDragSelect(this.rowLabelDrag.anchorAbs, abs, this.rowLabelDrag.additive)
-     },
++    },
 +    scheduleRowLabelDragSelect (a, b, additive) {
 +      if (this._rowLabelDragRaf) cancelAnimationFrame(this._rowLabelDragRaf)
 +      this._rowLabelDragRaf = requestAnimationFrame(() => {
@@ -1236,8 +1462,16 @@ index 6411a01..53ae30f 100644
 +      const lo = Math.min(a, b)
 +      const hi = Math.max(a, b)
 +      if (!additive) {
-+        if (this.selectedCount > 0)
-+          this.$emit('select', Object.keys(this.selected).map(Number), false)
++        if (this.selectedCount > 0) {
++          const prevKeys = Object.keys(this.selected).map(Number)
++          this.$emit('select', prevKeys, false)
++          if (this.recordBody) {
++            prevKeys.forEach((rowPos) => {
++              const tr = this.recordBody.children[rowPos - this.pageTop]
++              if (tr) tr.classList.remove('select')
++            })
++          }
++        }
 +        this.selected = {}
 +        this.selectedCount = 0
 +      }
@@ -1245,9 +1479,11 @@ index 6411a01..53ae30f 100644
 +        if (i < 0 || i >= this.table.length) continue
 +        if (additive && typeof this.selected[i] !== 'undefined') continue
 +        this.$set(this.selected, i, this.table[i].$id)
++        const tr = this.recordBody && this.recordBody.children[i - this.pageTop]
++        if (tr) tr.classList.add('select')
 +      }
 +      this.selectedCount = Object.keys(this.selected).length
-+    },
+     },
 +    rowLabelDragUp (e) {
 +      if (this._rowLabelDragMoveBound) {
 +        document.removeEventListener('mousemove', this._rowLabelDragMoveBound)
@@ -1282,7 +1518,37 @@ index 6411a01..53ae30f 100644
      reviseSelectedAfterTableChange () {
        this.rowIndex = {}
        this.table.forEach((rec, i) => (this.rowIndex[rec.$id] = i))
-@@ -2210,27 +3114,35 @@ export default {
+@@ -2059,7 +3178,7 @@ export default {
+     selectRecord (rowPos) {
+       if (typeof this.selected[rowPos] === 'undefined') {
+         this.selectedCount++
+-        this.selected[rowPos] = this.table[rowPos].$id
++        this.$set(this.selected, rowPos, this.table[rowPos].$id)
+         if (this.recordBody.children[rowPos - this.pageTop])
+           this.recordBody.children[rowPos - this.pageTop].classList.add('select')
+         this.lazy(rowPos, (buf) => {
+@@ -2098,10 +3217,16 @@ export default {
+       }
+     },
+     clearAllSelected () {
+-      // for (let i = 0; i < this.$refs.systable.children[2].children.length; i++)
+-      //  this.unSelectRecord(this.pageTop + i)
+-      if (this.selectedCount > 0)
+-        this.$emit('select', Object.keys(this.selected).map(rowPos => Number(rowPos)), false)
++      if (this.selectedCount > 0) {
++        const keys = Object.keys(this.selected).map(Number)
++        this.$emit('select', keys, false)
++        if (this.recordBody) {
++          keys.forEach((rowPos) => {
++            const tr = this.recordBody.children[rowPos - this.pageTop]
++            if (tr) tr.classList.remove('select')
++          })
++        }
++      }
+       this.selected = {}
+       this.selectedCount = 0
+     },
+@@ -2210,27 +3335,36 @@ export default {
        return false
      },
      mouseDown (e) {
@@ -1290,6 +1556,7 @@ index 6411a01..53ae30f 100644
 +      const el = this.domEventTargetTd(e)
 +      if (!el) return
 +      if (el.parentNode.parentNode.tagName === 'TBODY' && !el.classList.contains('first-col')) {
++        if (this.selectedCount > 0) this.clearAllSelected()
 +        const row = el.parentNode
 +        const colPos = Array.from(row.children).indexOf(el) - 1
 +        const rowPos = Array.from(row.parentNode.children).indexOf(row)
@@ -1327,7 +1594,7 @@ index 6411a01..53ae30f 100644
            setTimeout(() => {
              const r = this.$refs.texttip.getBoundingClientRect()
              if (rect.bottom + r.height > window.innerHeight) {
-@@ -2249,29 +3161,61 @@ export default {
+@@ -2249,29 +3383,62 @@ export default {
          }
          if (this.currentField.readonly) return
          this.inputBox.value = this.currentCell.textContent
@@ -1351,6 +1618,7 @@ index 6411a01..53ae30f 100644
 +      const el = this.domEventTargetTd(e)
 +      if (!el) return
 +      if (el.parentNode.parentNode.tagName !== 'TBODY' || el.classList.contains('first-col')) return
++      if (this.selectedCount > 0) this.clearAllSelected()
 +      const row = el.parentNode
 +      const colPos = Array.from(row.children).indexOf(el) - 1
 +      const rowPos = Array.from(row.parentNode.children).indexOf(row)
@@ -1401,7 +1669,7 @@ index 6411a01..53ae30f 100644
        if (this.tipTimeout) clearTimeout(this.tipTimeout)
        if ((this.tip = this.errmsg[cell.getAttribute('id')]) === '') return
        const rect = cell.getBoundingClientRect()
-@@ -2280,8 +3224,8 @@ export default {
+@@ -2280,8 +3447,8 @@ export default {
        cell.addEventListener('mouseout', this.cellMouseOut)
      },
      numcolMouseOver (e) {
@@ -1412,7 +1680,7 @@ index 6411a01..53ae30f 100644
        if (this.tipTimeout) clearTimeout(this.tipTimeout)
        if ((this.tip = this.rowerr[cell.getAttribute('id')]) === '') return
        const rect = cell.getBoundingClientRect()
-@@ -2293,7 +3237,8 @@ export default {
+@@ -2293,7 +3460,8 @@ export default {
        this.tipTimeout = setTimeout(() => {
          this.tip = ''
        }, 1000)
@@ -1422,7 +1690,7 @@ index 6411a01..53ae30f 100644
      },
      mouseOver () {
        this.mousein = true
-@@ -2306,7 +3251,26 @@ export default {
+@@ -2306,7 +3474,28 @@ export default {
  
      /* *** InputBox *****************************************************************************************
       */
@@ -1451,7 +1719,7 @@ index 6411a01..53ae30f 100644
        this.textTip = ''
        if (colPos < 0) return false
        const top = this.pageTop
-@@ -2390,6 +3354,10 @@ export default {
+@@ -2390,6 +3579,10 @@ export default {
          row.children[0].classList.add('focus')
          this.labelTr.children[colPos + 1].classList.add('focus')
        }
@@ -1462,7 +1730,7 @@ index 6411a01..53ae30f 100644
        return true
      },
      inputSquareClick () {
-@@ -2405,12 +3373,12 @@ export default {
+@@ -2405,12 +3598,12 @@ export default {
        let cursor = 'text'
        if (!this.currentField.readonly
          && (this.currentField.options || this.currentField.type === 'date')
@@ -1477,7 +1745,7 @@ index 6411a01..53ae30f 100644
        if (this.currentField.readonly) return
        if (this.currentField.options) {
          e.preventDefault()
-@@ -2511,12 +3479,9 @@ export default {
+@@ -2511,12 +3704,9 @@ export default {
        return rec
      },
      deleteSelectedRecords () {
@@ -1493,7 +1761,7 @@ index 6411a01..53ae30f 100644
      },
      deleteRecord (valueRowPos, isUndo) {
        if (this.currentRowPos === valueRowPos) this.moveNorth()
-@@ -2767,6 +3732,11 @@ export default {
+@@ -2767,6 +3957,11 @@ export default {
  </script>
  
  <style scoped>
@@ -1505,7 +1773,7 @@ index 6411a01..53ae30f 100644
  input:focus, input:active:focus, input.active:focus {
    outline: none;
    box-shadow: inset 0 -1px 0 #ddd;
-@@ -2774,13 +3744,42 @@ input:focus, input:active:focus, input.active:focus {
+@@ -2774,13 +3969,42 @@ input:focus, input:active:focus, input.active:focus {
  *, *::before, *::after {
    box-sizing: border-box;
  }
@@ -1517,11 +1785,11 @@ index 6411a01..53ae30f 100644
 +  border: 2px solid #1890ff;
 +  background: rgba(var(--vee-primary-rgb), 0.05);
 +}
-+/* 低于 input-square(1/3)，避免盖住活动单元格蓝框；高于 systable(-1)，整块选区连续可见 */
++/* 低于 input-square(4)，避免盖住活动单元格蓝框；高于 fill-drag(2) 与 systable(-1)，行选外框不被遮挡 */
 +.cell-range-overlay {
 +  position: absolute;
 +  pointer-events: none;
-+  z-index: 0;
++  z-index: 3;
 +  box-sizing: border-box;
 +  border: 2px solid #1890ff;
 +  background: rgba(var(--vee-primary-rgb), 0.07);
@@ -1549,7 +1817,7 @@ index 6411a01..53ae30f 100644
  .no-transition {
    transition: none !important;
  }
-@@ -2789,8 +3788,8 @@ input:focus, input:active:focus, input.active:focus {
+@@ -2789,8 +4013,8 @@ input:focus, input:active:focus, input.active:focus {
    position: fixed;
    padding: 3px;
    margin: -1px;
@@ -1560,7 +1828,7 @@ index 6411a01..53ae30f 100644
    /*height: fit-content;*/
    overflow-y: scroll;
    font-size: 0.88rem;
-@@ -2813,7 +3812,7 @@ input:focus, input:active:focus, input.active:focus {
+@@ -2813,7 +4037,7 @@ input:focus, input:active:focus, input.active:focus {
    cursor: pointer
  }
  .autocomplete-result.select {
@@ -1569,7 +1837,7 @@ index 6411a01..53ae30f 100644
  }
  .rb-square {
    width: 9px;
-@@ -2822,11 +3821,12 @@ input:focus, input:active:focus, input.active:focus {
+@@ -2822,11 +4046,12 @@ input:focus, input:active:focus, input.active:focus {
    border-left: 2px solid white;
    border-bottom: 0;
    border-right: 0;
@@ -1583,7 +1851,7 @@ index 6411a01..53ae30f 100644
  }
  .input-box {
    opacity: 0;
-@@ -2915,7 +3915,7 @@ input:focus, input:active:focus, input.active:focus {
+@@ -2915,7 +4140,7 @@ input:focus, input:active:focus, input.active:focus {
    text-align: left;
  }
  .systable tr.select td {
@@ -1592,7 +1860,7 @@ index 6411a01..53ae30f 100644
  }
  .systable th, .systable td {
    vertical-align: bottom;
-@@ -2979,22 +3979,24 @@ input:focus, input:active:focus, input.active:focus {
+@@ -2979,22 +4204,24 @@ input:focus, input:active:focus, input.active:focus {
    text-overflow: ellipsis;
  }
  .systable th.focus {
@@ -1621,7 +1889,7 @@ index 6411a01..53ae30f 100644
  }
  .systable .first-col {
    background:#e9ecef;
-@@ -3286,4 +4288,35 @@ a:disabled {
+@@ -3286,4 +4513,35 @@ a:disabled {
    left: 50%;
    transform: translate(-50%, 0%);
  }

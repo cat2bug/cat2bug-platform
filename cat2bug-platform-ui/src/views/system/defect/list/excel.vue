@@ -234,7 +234,6 @@ const PLAN_TIME_SELECT_TRIANGLE_BG = Object.freeze({
   /* 与库内 td.select 一致：三角垂直居中、靠右 */
   backgroundPosition: "right 6px center",
   paddingRight: "18px",
-  overflowX: "visible",
   position: "relative",
 });
 
@@ -251,7 +250,7 @@ const COLS = [
   { key: "moduleVersion", titleKey: "version", width: 120, editable: true },
   { key: "defectDescribe", titleKey: "describe", width: 200, editable: true },
   /** 与 table.vue 中 imgUrls 列同源；由 cellHtml 平铺缩略图；不落库文本，改图走上传/剪贴板文件 */
-  { key: "excelImgUrlsText", titleKey: "image", width: 160, editable: true },
+  { key: "excelImgUrlsText", titleKey: "image", width: 220, editable: true },
   /** cellHtml 附件行；不落库文本，改附件走上传/剪贴板文件 */
   { key: "excelAnnexUrlsText", titleKey: "annex", width: 400, editable: true },
   /** columnOptions 带三角；可键盘改时间，清空走 params.clearPlan* */
@@ -3438,15 +3437,51 @@ export default {
   min-width: 0;
   box-sizing: border-box;
 }
+/* 矩形选区 / 行选 / 填充预览：z 在序号列(11)之上、表头(16)之下；背景须透明，否则会盖住只读/交付物/序号列的格线 */
+.defect-vue-excel-editor ::v-deep .cell-range-overlay,
+.defect-vue-excel-editor ::v-deep .fill-drag-overlay {
+  z-index: 13 !important;
+  border: 2px solid #1890ff !important;
+  box-shadow: none !important;
+  outline: none !important;
+  background: transparent !important;
+}
+.defect-vue-excel-editor ::v-deep .fill-drag-overlay {
+  /* 填充预览略铺淡色即可，勿铺实底挡格线 */
+  background: rgba(24, 144, 255, 0.06) !important;
+}
+/*
+ * 活动格须高于选区(13)，且须低于吸顶表头(16)，滚动时不得盖住标题；
+ * 编辑态仍用库内边框（input-square--editing），非编辑态矩形选区用 inset 与 overlay 一致。
+ */
+.defect-vue-excel-editor ::v-deep .input-square {
+  z-index: 14 !important;
+}
+/* 勿再画蓝边：与 cell-range-overlay 叠成双框；库内已 border/background transparent，仅保留透明+无阴影 */
+.defect-vue-excel-editor ::v-deep .input-square.input-square--range-suppress:not(.input-square--editing) {
+  border-color: transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
 .defect-vue-excel-editor ::v-deep .table-content {
   text-shadow: none;
   font-size: 12px;
 }
-.defect-vue-excel-editor ::v-deep .systable th:not(:last-child),
-.defect-vue-excel-editor ::v-deep .systable tbody tr:not(:last-child) td,
-.defect-vue-excel-editor ::v-deep .systable td:not(:last-child),
+/* 库内 systable 为 z-index:-1，会把整块表压在选区 overlay 之下，格线像「消失」；提到 0 与 overlay 同属一层叠上下文后再靠透明 overlay 露格线 */
+.defect-vue-excel-editor ::v-deep table.systable {
+  z-index: 0 !important;
+}
+/* 仅表头需要高于选区 overlay(13)；tbody 勿写 z-index（无效且易误导） */
 .defect-vue-excel-editor ::v-deep .systable thead th,
 .defect-vue-excel-editor ::v-deep .systable thead td {
+  border-color: #ebeef5 !important;
+  z-index: 16 !important;
+}
+.defect-vue-excel-editor ::v-deep .systable th:not(:last-child) {
+  border-color: #ebeef5 !important;
+}
+.defect-vue-excel-editor ::v-deep .systable tbody td {
   border-color: #ebeef5 !important;
 }
 .defect-vue-excel-editor ::v-deep .systable thead th {
@@ -3528,7 +3563,8 @@ export default {
   cursor: default !important;
   position: sticky !important;
   left: 0 !important;
-  z-index: 12 !important;
+  /* 左上角：同时 sticky top+left，须高于同行其它 th，避免横向滚动时被列头压住 */
+  z-index: 18 !important;
 }
 .defect-vue-excel-editor ::v-deep .systable thead td.first-col {
   background-color: #f5f7fa !important;
@@ -3536,7 +3572,7 @@ export default {
   cursor: pointer !important;
   position: sticky !important;
   left: 0 !important;
-  z-index: 12 !important;
+  z-index: 18 !important;
 }
 .defect-vue-excel-editor ::v-deep .systable thead tr:first-child th.first-col {
   top: 0 !important;
@@ -3567,7 +3603,7 @@ export default {
 .defect-vue-excel-editor ::v-deep .systable tbody tr:hover td {
   background-color: #fafafa;
 }
-/* 整行选中：对齐 Element 表格 current-row 淡蓝（覆盖库内 tr.select td #bbb） */
+/* 整行选中：蓝色描边由库内 cell-range-overlay（TD 并集 bbox）绘制；勿对 tr 用 outline（高行时底边会短） */
 .defect-vue-excel-editor ::v-deep .systable tbody tr.select td,
 .defect-vue-excel-editor ::v-deep .systable tbody tr.select td.first-col {
   background-color: #ecf5ff !important;
@@ -3775,8 +3811,8 @@ export default {
 .defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-img-wrap {
   position: relative;
   flex: 0 0 auto;
-  width: 32px;
-  height: 32px;
+  width: 80px;
+  height: 80px;
   line-height: 0;
 }
 .defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-img-remove {
@@ -3809,8 +3845,8 @@ export default {
   min-width: 1px;
 }
 .defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-img-tile {
-  width: 32px;
-  height: 32px;
+  width: 80px;
+  height: 80px;
   object-fit: cover;
   border-radius: 3px;
   flex: 0 0 auto;
@@ -4091,12 +4127,12 @@ export default {
   vertical-align: middle !important;
   text-align: left !important;
 }
-/* 计划开始/结束、交付物：与库内 td.select 相同三角；overflow 放开以免被 td 裁切 */
+/* 计划开始/结束、交付物：与库内 td.select 相同三角；三角在 padding 区内，横向溢出仍裁切 */
 .defect-excel-root .defect-vue-excel-editor table.systable tbody td[id$="-planStartTime"]:not(.first-col),
 .defect-excel-root .defect-vue-excel-editor table.systable tbody td[id$="-planEndTime"]:not(.first-col),
 .defect-excel-root .defect-vue-excel-editor table.systable tbody td[id$="-moduleName"]:not(.first-col) {
   position: relative !important;
-  overflow-x: visible !important;
+  overflow-x: hidden !important;
   padding-right: 18px !important;
   background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAMAAABhEH5lAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAASUExURQAAANra2tfX19ra2tnZ2dnZ2c8lDs8AAAAFdFJOUwAwQL/PKlwehgAAAAlwSFlzAAAXEQAAFxEByibzPwAAAEdJREFUKFNdyskBACAIA8F49d+yiBEh+9rHYC5poPGiDmUDUGZI2EHCHBV2UWFEiT2UWKBgHwVLiCwjsoKcVeRMkDFFxoiADtH4AyvGhvOPAAAAAElFTkSuQmCC") !important;
   background-repeat: no-repeat !important;
