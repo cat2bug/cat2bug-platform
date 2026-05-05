@@ -47,6 +47,8 @@
         :style="splitResizerLineStyle"
       ></multipane-resizer>
       <div ref="defectTableContext" class="defect-table-context">
+        <!-- 宽表横向滚动限制在本层，避免整页 main-container 底部出现横向条与分页同一底边叠在一起「压住」分页 -->
+        <div class="defect-table-x-scroll">
         <cat2-bug-table
           ref="cat2BugTable"
           cache-key="defect-table"
@@ -130,14 +132,17 @@
             </el-table-column>
           </template>
         </cat2-bug-table>
+        </div>
 
-        <pagination
-          v-show="total>0"
-          :total="total"
-          :page.sync="queryParams.pageNum"
-          :limit.sync="queryParams.pageSize"
-          @pagination="search(queryParams)"
-        />
+        <div v-show="total>0" class="defect-table-pagination-band">
+          <pagination
+            class="defect-table-pagination"
+            :total="total"
+            :page.sync="queryParams.pageNum"
+            :limit.sync="queryParams.pageSize"
+            @pagination="search(queryParams)"
+          />
+        </div>
       </div>
     </multipane>
   </div>
@@ -486,13 +491,20 @@ export default {
   flex-direction: column;
   align-items: stretch;
 }
+.defect-table-x-scroll {
+  min-width: 0;
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: visible;
+  /* 固定列 / 宽表时确保横向滚动发生在本层，减轻外层出现双横条 */
+  -webkit-overflow-scrolling: touch;
+}
 .defect-table-tools-bar {
   flex-shrink: 0;
   width: 100%;
 }
 .defect-table-multipane {
-  flex: 1;
-  min-height: 0;
+  flex: 0 1 auto;
   width: 100%;
   height: auto;
   user-select: none;
@@ -555,9 +567,37 @@ export default {
 .defect-table-context {
   flex-grow: 1;
   min-width: 0;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: visible;
   display: flex;
   flex-direction: column;
+  /*
+   * 分页上下留白同高：抵消全局 .pagination-container{margin-top:30px}；
+   * 父级 defect-page / .app-container 底 padding 约 20px + safe-area，margin-bottom 用 calc 使「距表格」≈「距可视内容底」。
+   */
+  --defect-pagination-v-gap: 28px;
+  --defect-page-bottom-pad: 20px;
+  /* 分页整体略上移，加大与页面内容底的间距 */
+  --defect-pagination-extra-bottom: 14px;
+}
+.defect-table-pagination-band {
+  flex-shrink: 0;
+  margin-top: var(--defect-pagination-v-gap);
+  margin-bottom: max(
+    0px,
+    calc(
+      var(--defect-pagination-v-gap) - var(--defect-page-bottom-pad) -
+        env(safe-area-inset-bottom, 0px) + var(--defect-pagination-extra-bottom)
+    )
+  );
+}
+::v-deep .defect-table-pagination.pagination-container {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  padding-left: 16px;
+  padding-right: 20px;
 }
 .defect-sidebar-expand-trigger {
   display: inline-flex;

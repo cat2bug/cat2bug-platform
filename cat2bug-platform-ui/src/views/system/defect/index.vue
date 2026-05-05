@@ -1,5 +1,10 @@
 <template>
-  <div ref="defectMain" class="app-container defect-page" :style="defectPageRootStyle">
+  <div
+    ref="defectMain"
+    class="app-container defect-page"
+    :class="{ 'defect-page--excel-view': defectContentComponent === 'DefectExcel' }"
+    :style="defectPageExcelRootStyle"
+  >
     <project-label class="defect-project-label" />
     <!-- 缺陷页标签-->
     <div class="defect-tools-tab">
@@ -24,7 +29,7 @@
 <!--    <keep-alive>-->
     <component
       ref="defectContentComponent"
-      class="defect-content-slot"
+      :class="['defect-content-slot', { 'defect-content-slot--excel': defectContentComponent === 'DefectExcel' }]"
       :is="defectContentComponent"
       :query="queryParams"
       :project-id="projectId"
@@ -150,6 +155,9 @@ import store from "@/store";
 import DefectTable from "./list/table"
 import DefectExcel from "./list/excel"
 
+/** 与 AppMain 一致：顶栏 50px；开启 TagsView 时再 34px（Excel 根节点 min-height 与顶栏对齐） */
+const LAYOUT_NAVBAR_PX = 50;
+const LAYOUT_TAGS_STRIP_PX = 34;
 /** 记录Tab标签选项 */
 const DEFECT_TAB_CACHE_KEY='defect-tab';
 /** 缺陷列表/日历/Excel 视图组件名，与 el-radio-button label 一致；默认 DefectTable */
@@ -160,9 +168,6 @@ const ALL_TAB_NAME = 'all-tab';
 
 /** 记录分析模版是否显示的缓存变量名 */
 const CACHE_KEY_STATISTIC_PANEL_VISIBLE = 'defect.statisticPanelVisible';
-/** 与 layout/AppMain.vue 一致：顶栏 Navbar 50px；开启 TagsView 时再减 34px */
-const LAYOUT_TOP_CHROME_PX = 50;
-const LAYOUT_TAGS_STRIP_PX = 34;
 export default {
   name: "Defect",
   components: { AddDefect, HandleDefect, SelectProjectMember, ProjectLabel, Cat2BugStatistic, DefectTabDialog, DefectTable, DefectExcel, DefectImport },
@@ -247,18 +252,31 @@ export default {
       if (this.defectContentComponent === "DefectExcel") {
         return {
           defectTypeOptions: this.config.types || [],
-          /** Excel 可视区在表格容器内距底留白(px)，与 clientHeight 联算高度 */
-          viewportBottomGap: 20,
+          /** 底边贴齐主区域：编辑区高度用满 clientHeight，不在内部再减空白 */
+          viewportBottomGap: 0,
         };
       }
       return {};
     },
-    /** 与 store settings.tagsView、AppMain 顶栏占位对齐，避免关标签后仍按 84px 少一截高度 */
-    defectPageRootStyle() {
+    /**
+     * Excel 模式：固定视口内一屏高度（与原先 defectPageRootStyle 一致），根节点不随内容增高，
+     * 避免整页 main-container 上下滚动；纵向滚动由 vue-excel-editor 内部承担。
+     */
+    defectPageExcelRootStyle() {
+      if (this.defectContentComponent !== "DefectExcel") return {};
       const tagsOn = !!this.$store.state.settings.tagsView;
-      const offset = LAYOUT_TOP_CHROME_PX + (tagsOn ? LAYOUT_TAGS_STRIP_PX : 0);
+      const offset = LAYOUT_NAVBAR_PX + (tagsOn ? LAYOUT_TAGS_STRIP_PX : 0);
       const h = `calc(100vh - ${offset}px)`;
-      return { height: h, maxHeight: h };
+      return {
+        height: h,
+        maxHeight: h,
+        paddingTop: "20px",
+        paddingLeft: "20px",
+        paddingRight: "20px",
+        paddingBottom: "env(safe-area-inset-bottom, 0px)",
+        boxSizing: "border-box",
+        overflow: "hidden",
+      };
     },
   },
   watch: {
@@ -570,32 +588,37 @@ export default {
 </script>
 <style lang="scss" scoped>
 /*
- * 高度说明（与「全局 .app-container」区分）：
- * - `src/assets/styles/index.scss` 里 `.app-container` 只有 padding:20px，不设高度。
- * - 本页根节点是 `class="app-container defect-page"`；`height/max-height` 由 :style `defectPageRootStyle` 按
- *   `settings.tagsView` 动态计算（与 `layout/components/AppMain.vue`：无 Tags 时 50px、有 Tags 时 84px）。
- * - 顶 padding 20px 与全局 .app-container、测试用例页一致；底侧 0 少占纵高；左右 20px。
- * - 本页根为 flex 列：相邻子项 margin 不折叠（与块流不同）。project-label 的 h3 已有 margin-bottom:20px，
- *   故 .defect-tools-tab 勿再叠 margin-top，否则项目行与 Tab 间距会大于用例页（20+10）。
+ * 高度与滚动：
+ * - 表格模式：根节点随内容增高，在 main-container 整页滚动（见 table.vue）。
+ * - Excel 模式：defectPageExcelRootStyle 固定 height/maxHeight + overflow:hidden，仅组件内滚动。
  */
 .defect-page {
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  padding: 20px 20px 0 20px;
-  min-height: 0;
-  overflow: hidden;
+  padding: 20px;
+  padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  overflow: visible;
   /* 查询条上、下与 Tab / 主内容区的留白一致（子树继承） */
   --defect-toolbar-v-gap: 8px;
 }
 .defect-page .defect-content-slot {
-  flex: 1 1 0;
-  min-height: 0;
+  flex: 0 1 auto;
   display: flex;
   flex-direction: column;
   /* 与 Tab/统计区之间的纵向留白改由 .defect-view-toolbar 的 margin-top 承担，避免 padding+margin 叠在不同盒子上导致观感不对称 */
   padding-top: 0;
   box-sizing: border-box;
+}
+.defect-page.defect-page--excel-view .defect-project-label,
+.defect-page.defect-page--excel-view .defect-tools-tab,
+.defect-page.defect-page--excel-view .defect-tools-statistic {
+  flex-shrink: 0;
+}
+.defect-page.defect-page--excel-view .defect-content-slot.defect-content-slot--excel {
+  flex: 1 1 0%;
+  min-height: 0;
+  overflow: hidden;
 }
 .defect-project-label {
   margin-bottom: 10px;

@@ -32,7 +32,8 @@ export default {
   min-height: calc(100vh - 50px);
   width: 100%;
   position: relative;
-  overflow: hidden;
+  /* hidden 会在个别布局下裁掉主区域底部内容；整页滚动由 main-container 承担 */
+  overflow: visible;
 }
 
 .fixed-header + .app-main {

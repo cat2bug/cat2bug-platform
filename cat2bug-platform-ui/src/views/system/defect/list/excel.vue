@@ -737,7 +737,9 @@ export default {
         if (typeof wrap.closest === "function") {
           const pageEl = wrap.closest(".defect-page");
           if (pageEl && typeof pageEl.getBoundingClientRect === "function") {
-            bottomBoundary = pageEl.getBoundingClientRect().bottom;
+            const pb = pageEl.getBoundingClientRect().bottom;
+            /* 整页滚动时 .defect-page 底边常在视口下方，不能与视口底取较大值，否则 Excel 高度会被算成超大 */
+            bottomBoundary = Math.min(pb, window.innerHeight);
           }
         }
         space = Math.max(0, Math.floor(bottomBoundary - top - gap));
@@ -3330,7 +3332,7 @@ export default {
 <style lang="scss" scoped>
 .defect-excel-root {
   width: 100%;
-  flex: 1 1 auto;
+  flex: 1 1 0%;
   min-height: 0;
   display: flex;
   flex-direction: column;
@@ -3407,7 +3409,8 @@ export default {
   }
 }
 .defect-excel-context {
-  flex: 1 1 0;
+  /* 缺陷页 Excel 模式：父级 defect-page 给 min-height + flex，此处撑满剩余高度 */
+  flex: 1 1 0%;
   min-width: 0;
   min-height: 0;
   overflow: hidden;
@@ -3417,15 +3420,13 @@ export default {
 }
 /* 去掉外层边框，只保留库内 .component-content 一层 1px，避免「双边框」显粗 */
 .defect-vue-excel-editor {
-  flex: 1 1 0;
-  min-height: 0;
+  flex: 0 0 auto;
   min-width: 0;
   max-width: 100%;
   border: none;
   align-self: stretch;
   box-sizing: border-box;
   display: block !important;
-  height: 100%;
 }
 /* 纵向由 .table-content 滚动；隐藏库右侧假纵向条，避免误以为可上下拖 */
 .defect-vue-excel-editor ::v-deep .v-scroll {
