@@ -358,6 +358,8 @@ export default {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  /* 与下方 multipane .custom-resizer 一致，避免标题区与列表区左右留白不一致 */
+  padding: 0;
 }
 .handle-plan-dialog .plan-run-content {
   flex: 1 1 auto;
@@ -369,10 +371,12 @@ export default {
 .handle-plan-dialog > .el-drawer__header {
   margin-bottom: 0px;
   flex-shrink: 0;
+  padding: 16px 10px 8px;
+  box-sizing: border-box;
 }
 .handle-plan-dialog>.el-drawer__header>.el-drawer__close-btn {
   position: absolute;
-  right: 20px;
+  right: 10px;
   top: 30px;
 }
 .plan-item-defect-list {
@@ -441,6 +445,19 @@ export default {
   align-items: center;
   flex-direction: row;
   flex-wrap: wrap;
+  box-sizing: border-box;
+  .plan-statistical {
+    flex: 1 1 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+  .tool-divider {
+    flex: 1 1 100%;
+    width: 100%;
+    max-width: 100%;
+    margin: 10px 0;
+    box-sizing: border-box;
+  }
   .report-edit-tools {
     padding: 5px 0px;
   }
@@ -501,11 +518,6 @@ export default {
 //.plan-item-icon-arrow-down {
 //  font-size: 12px;
 //}
-.tool-divider {
-  margin: 10px;
-  width: calc(100% - 20px);
-}
-
 @media screen and (min-width: 1650px) {
   .plan-statistical {
     > div:first-child {
@@ -539,11 +551,13 @@ export default {
 
 .plan-statistical {
   width: 100%;
-  padding: 0px 10px;
+  max-width: 100%;
+  padding: 0;
   display: inline-flex;
   flex-direction: row;
   gap: 10px;
   flex-wrap: wrap;
+  box-sizing: border-box;
   > div {
     padding: 0px 10px;
     display: inline-flex;
@@ -588,6 +602,7 @@ export default {
   }
 }
 .list-switch {
+  margin-left: 6px;
   margin-right: 10px;
   margin-bottom: 5px;
   > * {
