@@ -8,6 +8,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import com.cat2bug.common.annotation.Excel;
 import com.cat2bug.common.core.domain.BaseEntity;
 
+import javax.validation.constraints.Size;
 import java.util.List;
 
 /**
@@ -26,6 +27,7 @@ public class SysDefectLog extends BaseEntity
 
     /** 缺陷日志的描述 */
     @Excel(name = "缺陷日志的描述")
+    @Size(min = 0, max = 255, message = "缺陷日志描述长度不能超过255个字符")
     private String defectLogDescribe;
 
     /** 处理类型(转发\评论\关闭) */

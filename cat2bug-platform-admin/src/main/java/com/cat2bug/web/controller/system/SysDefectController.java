@@ -16,6 +16,7 @@ import com.cat2bug.system.service.*;
 import com.cat2bug.system.util.DefectListKeywordSupport;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -157,7 +158,7 @@ public class SysDefectController extends BaseController
     @PreAuthorize("@ss.hasPermi('system:defect:assign')")
     @Log(title = "指派缺陷", businessType = BusinessType.INSERT)
     @PostMapping("/{defectId}/assign")
-    public AjaxResult assign(HttpServletRequest request, @RequestBody SysDefectLog sysDefectlog)
+    public AjaxResult assign(HttpServletRequest request, @Validated @RequestBody SysDefectLog sysDefectlog)
     {
         return success(sysDefectService.assign(sysDefectlog));
     }
@@ -168,7 +169,7 @@ public class SysDefectController extends BaseController
     @PreAuthorize("@ss.hasPermi('system:defect:reject')")
     @Log(title = "驳回缺陷", businessType = BusinessType.INSERT)
     @PostMapping("/{defectId}/reject")
-    public AjaxResult reject(@RequestBody SysDefectLog sysDefectlog)
+    public AjaxResult reject(@Validated @RequestBody SysDefectLog sysDefectlog)
     {
         return success(sysDefectService.reject(sysDefectlog));
     }
@@ -179,7 +180,7 @@ public class SysDefectController extends BaseController
     @PreAuthorize("@ss.hasPermi('system:defect:repair')")
     @Log(title = "修复缺陷", businessType = BusinessType.INSERT)
     @PostMapping("/{defectId}/repair")
-    public AjaxResult repair(@RequestBody SysDefectLog sysDefectlog)
+    public AjaxResult repair(@Validated @RequestBody SysDefectLog sysDefectlog)
     {
         return success(sysDefectService.repair(sysDefectlog));
     }
@@ -190,7 +191,7 @@ public class SysDefectController extends BaseController
     @PreAuthorize("@ss.hasPermi('system:defect:pass')")
     @Log(title = "通过缺陷", businessType = BusinessType.INSERT)
     @PostMapping("/{defectId}/pass")
-    public AjaxResult pass(@RequestBody SysDefectLog sysDefectlog)
+    public AjaxResult pass(@Validated @RequestBody SysDefectLog sysDefectlog)
     {
         return success(sysDefectService.pass(sysDefectlog));
     }
@@ -201,7 +202,7 @@ public class SysDefectController extends BaseController
     @PreAuthorize("@ss.hasPermi('system:defect:close')")
     @Log(title = "关闭缺陷", businessType = BusinessType.INSERT)
     @PostMapping("/{defectId}/close")
-    public AjaxResult close(@RequestBody SysDefectLog sysDefectlog)
+    public AjaxResult close(@Validated @RequestBody SysDefectLog sysDefectlog)
     {
         return success(sysDefectService.close(sysDefectlog));
     }
@@ -212,7 +213,7 @@ public class SysDefectController extends BaseController
     @PreAuthorize("@ss.hasPermi('system:defect:open')")
     @Log(title = "开启缺陷", businessType = BusinessType.INSERT)
     @PostMapping("/{defectId}/open")
-    public AjaxResult open(@RequestBody SysDefectLog sysDefectlog)
+    public AjaxResult open(@Validated @RequestBody SysDefectLog sysDefectlog)
     {
         return success(sysDefectService.open(sysDefectlog));
     }

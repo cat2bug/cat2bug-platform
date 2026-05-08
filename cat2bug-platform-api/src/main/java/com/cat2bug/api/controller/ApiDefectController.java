@@ -16,6 +16,7 @@ import com.cat2bug.common.enums.BusinessType;
 import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.system.domain.SysDefectLog;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -105,7 +106,7 @@ public class ApiDefectController extends BaseController {
      * 指派
      */
     @PostMapping("/{defectNum}/assign")
-    public AjaxResult assign(@PathVariable Long defectNum, @RequestBody(required=false)  ApiDefectHandle apiDefectHandle)
+    public AjaxResult assign(@PathVariable Long defectNum, @Validated @RequestBody(required=false)  ApiDefectHandle apiDefectHandle)
     {
         apiDefectHandle = this.initApiDefectHandle(defectNum, apiDefectHandle);
         return success(apiDefectService.assign(apiDefectHandle));
@@ -115,7 +116,7 @@ public class ApiDefectController extends BaseController {
      * 驳回
      */
     @PostMapping("/{defectNum}/reject")
-    public AjaxResult reject(@PathVariable Long defectNum, @RequestBody(required=false)  ApiDefectHandle apiDefectHandle)
+    public AjaxResult reject(@PathVariable Long defectNum, @Validated @RequestBody(required=false)  ApiDefectHandle apiDefectHandle)
     {
         apiDefectHandle = this.initApiDefectHandle(defectNum, apiDefectHandle);
         return success(apiDefectService.reject(apiDefectHandle));
@@ -125,7 +126,7 @@ public class ApiDefectController extends BaseController {
      * 修复
      */
     @PostMapping("/{defectNum}/repair")
-    public AjaxResult repair(@PathVariable Long defectNum, @RequestBody(required=false)  ApiDefectHandle apiDefectHandle)
+    public AjaxResult repair(@PathVariable Long defectNum, @Validated @RequestBody(required=false)  ApiDefectHandle apiDefectHandle)
     {
         apiDefectHandle = this.initApiDefectHandle(defectNum, apiDefectHandle);
         return success(apiDefectService.repair(apiDefectHandle));
@@ -135,7 +136,7 @@ public class ApiDefectController extends BaseController {
      * 通过
      */
     @PostMapping("/{defectNum}/pass")
-    public AjaxResult pass(@PathVariable Long defectNum, @RequestBody(required=false)  ApiDefectHandle apiDefectHandle)
+    public AjaxResult pass(@PathVariable Long defectNum, @Validated @RequestBody(required=false)  ApiDefectHandle apiDefectHandle)
     {
         apiDefectHandle = this.initApiDefectHandle(defectNum, apiDefectHandle);
         return success(apiDefectService.pass(apiDefectHandle));
@@ -145,7 +146,7 @@ public class ApiDefectController extends BaseController {
      * 关闭
      */
     @PostMapping("/{defectNum}/close")
-    public AjaxResult close(@PathVariable Long defectNum, @RequestBody(required=false)  ApiDefectHandle apiDefectHandle)
+    public AjaxResult close(@PathVariable Long defectNum, @Validated @RequestBody(required=false)  ApiDefectHandle apiDefectHandle)
     {
         apiDefectHandle = this.initApiDefectHandle(defectNum, apiDefectHandle);
         return success(apiDefectService.close(apiDefectHandle));
@@ -155,7 +156,7 @@ public class ApiDefectController extends BaseController {
      * 启动
      */
     @PostMapping("/{defectNum}/open")
-    public AjaxResult open(@PathVariable Long defectNum, @RequestBody(required=false) ApiDefectHandle apiDefectHandle)
+    public AjaxResult open(@PathVariable Long defectNum, @Validated @RequestBody(required=false) ApiDefectHandle apiDefectHandle)
     {
         apiDefectHandle = this.initApiDefectHandle(defectNum, apiDefectHandle);
         return success(apiDefectService.open(apiDefectHandle));
