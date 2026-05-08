@@ -1,6 +1,6 @@
 <template>
   <div class="tree">
-    <div class="tree-tools">
+    <div class="tree-tools" :style="treeToolsBarStyle">
       <span class="tree-tools-title">
         <i class="el-icon-menu" />
         {{ $t('module.list') }}
@@ -79,9 +79,28 @@ export default {
     showSidebarToggle: {
       type: Boolean,
       default: false
+    },
+    /**
+     * 与右侧表格表头行同高（px）。由父级测量传入；未传时沿用样式默认高度。
+     */
+    toolbarSyncHeight: {
+      type: Number,
+      default: null
     }
   },
   computed: {
+    treeToolsBarStyle() {
+      const h = this.toolbarSyncHeight;
+      if (h == null || !(h > 0)) {
+        return {};
+      }
+      return {
+        height: `${h}px`,
+        minHeight: `${h}px`,
+        lineHeight: "normal",
+        boxSizing: "border-box",
+      };
+    },
     removeNodeButtonVisible: function () {
       return function (node) {
         return node.leaf && checkPermi(['system:module:remove']) && node.name!=this.$i18n.t('module.all-module');

@@ -92,6 +92,7 @@
           ref="treeModuleRef"
           :project-id="projectId"
           :show-sidebar-toggle="true"
+          :toolbar-sync-height="treeToolsToolbarHeight"
           @toggle-sidebar="toggleModuleTreeVisible"
           @node-click="moduleClickHandle"
           v-resize="setDragComponentSize"
@@ -334,12 +335,15 @@ export default {
       observer: null,
       caseToolsWrapped: false,
       caseRightButtonsWrapped: false,
+      /** 交付物列表标题栏高度（px），与右侧用例表 thead 行高对齐 */
+      treeToolsToolbarHeight: null,
     };
   },
   watch: {
     "$i18n.locale": function () {
       this.$nextTick(() => {
         this.$refs.cat2BugTable && this.$refs.cat2BugTable.doLayout();
+        this.$nextTick(() => this.syncTreeToolbarWithTableHeader());
       });
     },
     showSearch() {
@@ -387,6 +391,7 @@ export default {
     this.$nextTick(() => {
       this.syncCaseToolsWrapped();
       this.initCaseToolsObserver();
+      this.$nextTick(() => this.initCaseTableHeaderHeightSync());
     });
     window.addEventListener("resize", this.syncCaseToolsWrapped);
   },
@@ -395,6 +400,7 @@ export default {
     this.$floatMenu.windowsDestory();
     window.removeEventListener("resize", this.syncCaseToolsWrapped);
     this.destroyCaseToolsObserver();
+    this.destroyCaseTableHeaderHeightSync();
   },
   directives: {
     resize: {
@@ -434,6 +440,68 @@ export default {
         this.observer.disconnect();
       }
       this.observer = null;
+    },
+    /** 测量用例表表头行高，同步到左侧交付物 tree-tools */
+    syncTreeToolbarWithTableHeader() {
+      this.$nextTick(() => {
+        const cat = this.$refs.cat2BugTable;
+        const elTable = cat && cat.$refs && cat.$refs.elTable;
+        if (!elTable || !elTable.$el) {
+          return;
+        }
+        const headerWrap = elTable.$el.querySelector(".el-table__header-wrapper");
+        if (!headerWrap) {
+          return;
+        }
+        /* Cat2BugTable 固定列切换等会重建表头 DOM，需重绑 ResizeObserver */
+        if (
+          this._caseTableHeaderObservedEl &&
+          this._caseTableHeaderObservedEl !== headerWrap
+        ) {
+          this.destroyCaseTableHeaderHeightSync();
+          this.initCaseTableHeaderHeightSync();
+          return;
+        }
+        const tr = headerWrap.querySelector("thead tr");
+        if (!tr) {
+          return;
+        }
+        const rect = tr.getBoundingClientRect();
+        const h = Math.round(rect.height || tr.offsetHeight || 0);
+        if (h > 0 && h !== this.treeToolsToolbarHeight) {
+          this.treeToolsToolbarHeight = h;
+        }
+      });
+    },
+    initCaseTableHeaderHeightSync() {
+      this.destroyCaseTableHeaderHeightSync();
+      const cat = this.$refs.cat2BugTable;
+      const elTable = cat && cat.$refs && cat.$refs.elTable;
+      if (!elTable || !elTable.$el) {
+        this.syncTreeToolbarWithTableHeader();
+        return;
+      }
+      const headerWrap = elTable.$el.querySelector(".el-table__header-wrapper");
+      if (!headerWrap) {
+        this.syncTreeToolbarWithTableHeader();
+        return;
+      }
+      this._caseTableHeaderObservedEl = headerWrap;
+      this.syncTreeToolbarWithTableHeader();
+      if (typeof ResizeObserver === "undefined") {
+        return;
+      }
+      this._caseTableHeaderResizeObserver = new ResizeObserver(() => {
+        this.syncTreeToolbarWithTableHeader();
+      });
+      this._caseTableHeaderResizeObserver.observe(headerWrap);
+    },
+    destroyCaseTableHeaderHeightSync() {
+      if (this._caseTableHeaderResizeObserver) {
+        this._caseTableHeaderResizeObserver.disconnect();
+        this._caseTableHeaderResizeObserver = null;
+      }
+      this._caseTableHeaderObservedEl = null;
     },
     syncCaseToolsWrapped() {
       const measure = () => {
@@ -481,6 +549,7 @@ export default {
     /** 处理鼠标在表格移动事件 */
     onCaseTableColumnsChange(columns) {
       this.columnPickerCheckedKeys = columns.filter(c => c.visible && c.showInColumnPicker !== false).map(c => c.key);
+      this.$nextTick(() => this.syncTreeToolbarWithTableHeader());
     },
     onCaseColumnPickerChange(keys) {
       this.$refs.cat2BugTable && this.$refs.cat2BugTable.setColumnsVisible(keys);
@@ -572,6 +641,7 @@ export default {
         if (this.$refs.cat2BugTable) {
           this.$refs.cat2BugTable.doLayout();
         }
+        this.$nextTick(() => this.syncTreeToolbarWithTableHeader());
       });
     },
     /** 设置模块与用例列表中间拖动块的尺寸 */
@@ -592,6 +662,7 @@ export default {
         this.caseList = response.rows;
         this.total = response.total;
         this.syncCaseToolsWrapped();
+        this.$nextTick(() => this.syncTreeToolbarWithTableHeader());
       });
     },
     /** 搜索按钮操作 */

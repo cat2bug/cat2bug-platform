@@ -27,8 +27,8 @@
     <multipane
       layout="vertical"
       ref="multiPane"
-      class="defect-table-multipane"
-      :class="{ 'defect-table-multipane--tree-hidden': !showModuleTree }"
+      class="custom-resizer"
+      :class="{ 'custom-resizer--tree-hidden': !showModuleTree }"
       @paneResizeStop="dragStopHandle"
     >
       <div v-if="showModuleTree" ref="treeModule" class="defect-tree-module" :style="treeModuleStyle">
@@ -41,11 +41,7 @@
           v-resize="setDragComponentSize"
         />
       </div>
-      <multipane-resizer
-        ref="splitResizerEl"
-        v-show="showModuleTree"
-        :style="splitResizerLineStyle"
-      ></multipane-resizer>
+      <multipane-resizer v-show="showModuleTree" :style="multipaneStyle"></multipane-resizer>
       <div ref="defectTableContext" class="defect-table-context">
         <!-- 宽表横向滚动限制在本层，避免整页 main-container 底部出现横向条与分页同一底边叠在一起「压住」分页 -->
         <div class="defect-table-x-scroll">
@@ -221,11 +217,8 @@ export default {
       defectList: [],
       queryParams: this.query,
       treeModuleStyle: { "--treeModuleWidth": "300px" },
-      /** 竖线 position:fixed 用的视口坐标，使底部贴齐浏览器视口底 */
-      splitResizerLineStyle: {},
-      _splitLineReflowCb: null,
-      _splitLineScrollEl: null,
-      _splitLineRaf: null,
+      /** 与用例页一致：拖动条中间竖线高度由树/表格区域较大 scrollHeight 决定 */
+      multipaneStyle: { "--marginTop": "0px" },
       /** 是否显示左侧交付物列表 */
       showModuleTree: true,
       /** 缺陷列表表格默认列（克隆自 table-options，避免与全局常量引用互相污染） */
@@ -319,11 +312,7 @@ export default {
     this.getTreeModuleWidth();
     this.$nextTick(() => {
       this.setDragComponentSize();
-      this.bindSplitResizerLineListeners();
     });
-  },
-  beforeDestroy() {
-    this.unbindSplitResizerLineListeners();
   },
   methods: {
     init() {
@@ -354,7 +343,6 @@ export default {
       if (this.showModuleTree) {
         this.cacheTreeModuleWidth();
       }
-      this.$nextTick(() => this.updateSplitResizerLineVars());
     },
     toggleModuleTreeVisible() {
       this.showModuleTree = !this.showModuleTree;
@@ -366,63 +354,17 @@ export default {
         }
       });
     },
-    /** 树/表格区域尺寸变化时同步竖线视口几何，并重算表格布局 */
+    /** 与用例页 setDragComponentSize 一致：拖动条竖线高度随树/表格区域增高 */
     setDragComponentSize() {
+      this.multipaneStyle["--marginTop"] = "0px";
       this.$nextTick(() => {
-        this.updateSplitResizerLineVars();
+        const treeH = this.$refs.treeModule ? (this.$refs.treeModule.scrollHeight || 0) : 0;
+        const ctx = this.$refs.defectTableContext;
+        const ctxH = ctx ? (ctx.scrollHeight || 0) : 0;
+        const pageHeight = Math.max(treeH, ctxH, document.body.scrollHeight - 170);
+        this.multipaneStyle["--marginTop"] = pageHeight + "px";
         this.$refs.cat2BugTable && this.$refs.cat2BugTable.doLayout && this.$refs.cat2BugTable.doLayout();
       });
-    },
-    queueSplitResizerLineUpdate() {
-      if (this._splitLineRaf != null) return;
-      this._splitLineRaf = requestAnimationFrame(() => {
-        this._splitLineRaf = null;
-        this.updateSplitResizerLineVars();
-      });
-    },
-    updateSplitResizerLineVars() {
-      if (!this.showModuleTree) {
-        this.splitResizerLineStyle = {};
-        return;
-      }
-      const comp = this.$refs.splitResizerEl;
-      const el = comp && (comp.$el || comp);
-      if (!el || typeof el.getBoundingClientRect !== "function") return;
-      const r = el.getBoundingClientRect();
-      const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-      const top = Math.max(0, r.top);
-      const h = Math.max(0, vh - top);
-      const cx = r.left + r.width / 2;
-      this.splitResizerLineStyle = {
-        "--defect-split-line-top": `${top}px`,
-        "--defect-split-line-height": `${h}px`,
-        "--defect-split-line-left": `${cx}px`,
-      };
-    },
-    bindSplitResizerLineListeners() {
-      if (this._splitLineReflowCb) return;
-      this._splitLineReflowCb = () => this.queueSplitResizerLineUpdate();
-      window.addEventListener("resize", this._splitLineReflowCb, { passive: true });
-      this.$nextTick(() => {
-        const main = this.$el && this.$el.closest && this.$el.closest(".main-container");
-        this._splitLineScrollEl = main || null;
-        if (main) {
-          main.addEventListener("scroll", this._splitLineReflowCb, { passive: true });
-        }
-      });
-    },
-    unbindSplitResizerLineListeners() {
-      if (this._splitLineRaf != null) {
-        cancelAnimationFrame(this._splitLineRaf);
-        this._splitLineRaf = null;
-      }
-      if (!this._splitLineReflowCb) return;
-      window.removeEventListener("resize", this._splitLineReflowCb);
-      if (this._splitLineScrollEl) {
-        this._splitLineScrollEl.removeEventListener("scroll", this._splitLineReflowCb);
-        this._splitLineScrollEl = null;
-      }
-      this._splitLineReflowCb = null;
     },
     onTableColumnsChange(columns) {
       this.columnPickerCheckedKeys = columns
@@ -461,6 +403,7 @@ export default {
         this.loading = false;
         this.defectList = response.rows;
         this.total = response.total;
+        this.$nextTick(() => this.setDragComponentSize());
       });
     },
     refreshSearch() {
@@ -503,7 +446,8 @@ export default {
   flex-shrink: 0;
   width: 100%;
 }
-.defect-table-multipane {
+/* 与测试用例页 custom-resizer 一致 */
+.custom-resizer {
   flex: 0 1 auto;
   width: 100%;
   height: auto;
@@ -512,31 +456,26 @@ export default {
   -moz-user-select: none;
   -ms-user-select: none;
 }
-.defect-table-multipane--tree-hidden > .defect-table-context {
+.custom-resizer--tree-hidden > .defect-table-context {
   flex: 1 1 100%;
   width: 100%;
 }
-.defect-table-multipane > .multipane-resizer {
+.custom-resizer > .multipane-resizer {
   margin: 0;
   left: 0;
-  display: block;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   height: 100%;
   width: 8px;
   cursor: col-resize;
   position: relative;
-  overflow: visible;
-  /* 竖线：顶对齐分割条（与交付物列表同顶），底对齐视口底（由 JS 写入 --defect-split-line-*） */
   &:before {
-    position: fixed;
-    top: var(--defect-split-line-top, 0px);
-    left: var(--defect-split-line-left, 0px);
-    width: 1px;
-    height: var(--defect-split-line-height, 100vh);
-    transform: translateX(-50%);
+    display: block;
     content: "";
+    width: 1px;
+    height: var(--marginTop);
     background-color: #dcdfe6;
-    z-index: 6;
-    pointer-events: none;
   }
   &:after {
     content: "";
