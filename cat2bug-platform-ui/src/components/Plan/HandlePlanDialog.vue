@@ -346,9 +346,29 @@ export default {
 <style>
 .handle-plan-dialog {
   border-left: 4px solid #ffb700;
+  /* 与 el-drawer 默认结构配合：整列 flex，正文区占满标题以下直到抽屉底 */
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-sizing: border-box;
 }
-.handle-plan-dialog>.el-drawer__header {
+.handle-plan-dialog.el-drawer .el-drawer__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.handle-plan-dialog .plan-run-content {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.handle-plan-dialog > .el-drawer__header {
   margin-bottom: 0px;
+  flex-shrink: 0;
 }
 .handle-plan-dialog>.el-drawer__header>.el-drawer__close-btn {
   position: absolute;
@@ -376,8 +396,9 @@ export default {
 @import "~@/assets/styles/multipane-resizer-grip.scss";
 
 .custom-resizer {
+  flex: 1 1 auto;
+  min-height: 0;
   width: 100%;
-  height: 100%;
   padding-left: 10px;
   padding-right: 10px;
   user-select: none;
@@ -396,6 +417,8 @@ export default {
   width: 8px;
   cursor: col-resize;
   position: relative;
+  box-sizing: border-box;
+  z-index: 350;
   @include multipane-resizer-vertical-appearance;
 }
 .tree-module {
@@ -471,9 +494,6 @@ export default {
     }
   }
 }
-//.plan-run-content {
-//  //height: 100%;
-//}
 //.plan-item-dropdown-link {
 //  cursor: pointer;
 //  color: #409EFF;

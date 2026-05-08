@@ -522,6 +522,9 @@ export default {
   width: 8px;
   cursor: col-resize;
   position: relative;
+  box-sizing: border-box;
+  /* 弹窗内 el-table 固定列等层级较高，与 vendor 100 叠加保证可点 */
+  z-index: 350;
   @include multipane-resizer-vertical-appearance;
 }
 .tree-module {

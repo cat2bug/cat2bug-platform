@@ -45,4 +45,13 @@
   left: 5px;
   cursor: col-resize;
 }
+
+/*
+ * div.multipane-resizer 同时匹配上面的 .multipane > div，后者 z-index:1 特异度更高，会盖掉 .multipane-resizer{z-index:2}，
+ * 导致分隔条与左右 pane 同为 1，右侧 el-table 固定列等后绘制则压住拖动条（如新建计划弹窗）。
+ */
+.multipane.layout-v > div.multipane-resizer,
+.multipane.layout-h > div.multipane-resizer {
+  z-index: 100;
+}
 </style>
