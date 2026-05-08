@@ -373,6 +373,8 @@ export default {
 }
 </style>
 <style lang="scss" scoped>
+@import "~@/assets/styles/multipane-resizer-grip.scss";
+
 .custom-resizer {
   width: 100%;
   height: 100%;
@@ -384,41 +386,17 @@ export default {
   -ms-user-select: none;
 }
 .custom-resizer > .multipane-resizer {
-  margin: 0; left: 0;
+  flex-shrink: 0;
+  margin: 0 0 0 -8px;
+  left: 4px;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   height: 100%;
   width: 8px;
   cursor: col-resize;
   position: relative;
-  &:before {
-     display: block;
-     content: "";
-     width: 1px;
-     height: var(--marginTop);
-     background-color: #DCDFE6;
-  }
-  &:after {
-    content: "";
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 4px;
-    height: 30px;
-    border-left: 1px solid #C0C4CC;
-    border-right: 1px solid #C0C4CC;
-    border-radius: 2px;
-  }
-  &:hover {
-    &:before {
-      background-color: #B0B0B0;
-    }
-    &:after {
-      border-color: #909399;
-    }
-  }
+  @include multipane-resizer-vertical-appearance;
 }
 .tree-module {
   width: var(--treeModuleWidth);

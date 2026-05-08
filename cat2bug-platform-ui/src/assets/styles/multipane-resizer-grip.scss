@@ -1,0 +1,66 @@
+/**
+ * 竖向 multipane 分隔条：细轨道 + 圆角「滑块」手柄，与 Element 主色 hover 呼应。
+ * $track-height: var(--marginTop)（缺陷/用例/计划）或 100%（Markdown 等）
+ */
+@mixin multipane-resizer-vertical-appearance($track-height: var(--marginTop)) {
+  &:before {
+    display: block;
+    content: "";
+    width: 2px;
+    height: $track-height;
+    border-radius: 2px;
+    background: linear-gradient(
+      180deg,
+      rgba(220, 223, 230, 0.2) 0%,
+      rgba(192, 196, 204, 0.45) 12%,
+      rgba(192, 196, 204, 0.45) 88%,
+      rgba(220, 223, 230, 0.2) 100%
+    );
+    box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.65);
+    transition: background 0.22s ease, box-shadow 0.22s ease;
+  }
+
+  &:after {
+    content: "";
+    position: absolute;
+    top: var(--resizerHandleTop, 50%);
+    left: 50%;
+    transform: translate(-50%, -50%);
+    box-sizing: border-box;
+    width: 7px;
+    height: 40px;
+    border-radius: 999px;
+    /* 实线边框：白底上轮廓清晰，避免仅靠淡阴影看不清 */
+    border: 1px solid #c0c4cc;
+    background: linear-gradient(180deg, #fafbfc 0%, #ebeef5 48%, #ebeef5 52%, #fafbfc 100%);
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.9),
+      0 1px 4px rgba(0, 0, 0, 0.1);
+    transition:
+      transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 0.2s ease,
+      background 0.2s ease,
+      border-color 0.2s ease;
+  }
+
+  &:hover:before {
+    background: linear-gradient(
+      180deg,
+      rgba(64, 158, 255, 0.14) 0%,
+      rgba(64, 158, 255, 0.34) 18%,
+      rgba(64, 158, 255, 0.34) 82%,
+      rgba(64, 158, 255, 0.14) 100%
+    );
+    box-shadow: inset 0 0 0 0.5px rgba(64, 158, 255, 0.18);
+  }
+
+  &:hover:after {
+    transform: translate(-50%, -50%) scale(1.06);
+    border-color: #409eff;
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.95),
+      0 2px 8px rgba(64, 158, 255, 0.22),
+      0 4px 14px rgba(64, 158, 255, 0.12);
+    background: linear-gradient(180deg, #ffffff 0%, #ecf5ff 50%, #ffffff 100%);
+  }
+}

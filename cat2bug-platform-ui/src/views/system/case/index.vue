@@ -2,7 +2,7 @@
   <div class="app-container case-body">
     <project-label />
     <div ref="caseTools" class="case-tools" :class="{ 'wrapped-tools': caseToolsWrapped }">
-      <el-form class="left" :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="0px">
+      <el-form v-show="showSearch" ref="queryForm" class="left" :model="queryParams" size="small" :inline="true" label-width="0px">
         <el-form-item prop="caseNum">
           <el-input
             v-model="queryParams.caseNum"
@@ -24,23 +24,24 @@
           />
         </el-form-item>
         <el-form-item prop="caseLevel">
-          <cat2-bug-select-level v-model="queryParams.caseLevel" @change="handleQuery" icon="el-icon-s-data" :clearable="true" />
+          <cat2-bug-select-level v-model="queryParams.caseLevel" icon="el-icon-s-data" :clearable="true" @change="handleQuery" />
         </el-form-item>
       </el-form>
 
       <div ref="caseToolsRight" class="case-right-tools" :class="{ 'buttons-wrapped': caseRightButtonsWrapped }">
         <el-popover placement="top" trigger="click">
           <div class="row">
-            <i class="el-icon-s-fold"></i>
+            <i class="el-icon-s-fold" />
             <h4>{{ $t('display-field') }}</h4>
           </div>
-          <el-divider class="case-field-divider"></el-divider>
+          <el-divider class="case-field-divider" />
           <el-checkbox-group v-model="columnPickerCheckedKeys" class="col" @change="onCaseColumnPickerChange">
             <el-checkbox v-for="c in caseColumnPickerOptions" :key="c.key" :label="c.key">{{ $t(c.key) }}</el-checkbox>
           </el-checkbox-group>
-          <el-button class="case-field-picker-btn" style="padding: 9px;" plain slot="reference" icon="el-icon-s-fold" size="small"></el-button>
+          <el-button slot="reference" class="case-field-picker-btn" style="padding: 9px;" plain icon="el-icon-s-fold" size="small" />
         </el-popover>
         <el-button
+          v-hasPermi="['system:case:remove']"
           class="case-batch-delete-btn"
           type="danger"
           plain
@@ -48,34 +49,37 @@
           size="small"
           :disabled="multiple"
           @click="handleDelete"
-          v-hasPermi="['system:case:remove']"
         >{{ $t('batch-delete') }}</el-button>
-        <el-dropdown class="case-add-dropdown"
-                     split-button
-                     size="small"
-                     type="primary"
-                     v-hasPermi="['system:case:add']"
-                     @click="handleAdd">
+        <el-dropdown
+          v-hasPermi="['system:case:add']"
+          class="case-add-dropdown"
+          split-button
+          size="small"
+          type="primary"
+          @click="handleAdd"
+        >
           <div class="title">
             <i class="el-icon-plus" />
-            <span>{{$i18n.t('case.create')}}</span>
+            <span>{{ $i18n.t('case.create') }}</span>
           </div>
           <el-dropdown-menu slot="dropdown" class="case-add-dropdown-menu">
-            <el-dropdown-item @click.native="handleAdd"><i class="el-icon-plus" />{{$i18n.t('case.create')}}</el-dropdown-item>
-            <el-divider class="case-add-dropdown-divider"></el-divider>
+            <el-dropdown-item @click.native="handleAdd"><i class="el-icon-plus" />{{ $i18n.t('case.create') }}</el-dropdown-item>
+            <el-divider class="case-add-dropdown-divider" />
             <el-dropdown-item @click.native="handleImport"><i class="el-icon-upload2" />{{ $t('case.import') }}</el-dropdown-item>
             <el-dropdown-item @click.native="handleExport"><i class="el-icon-download" />{{ $t('case.export') }}</el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
-        <el-dropdown class="case-ai-add-dropdown"
-                     split-button
-                     size="small"
-                     type="success"
-                     v-hasPermi="['system:case:add']"
-                     @click="handleCloudCaseAdd">
+        <el-dropdown
+          v-hasPermi="['system:case:add']"
+          class="case-ai-add-dropdown"
+          split-button
+          size="small"
+          type="success"
+          @click="handleCloudCaseAdd"
+        >
           <div class="title">
             <svg-icon icon-class="robot" />
-            <span>{{$i18n.t('case.ai-create')}}</span>
+            <span>{{ $i18n.t('case.ai-create') }}</span>
           </div>
           <el-dropdown-menu slot="dropdown" class="case-add-dropdown-menu">
             <el-dropdown-item @click.native="handleCloudCaseAdd"><svg-icon icon-class="robot" />{{ $t('case.ai-create') }}</el-dropdown-item>
@@ -85,126 +89,130 @@
       </div>
     </div>
     <!--    模块树和用例列表区域-->
-    <multipane layout="vertical" ref="multiPane" class="custom-resizer" :class="{ 'custom-resizer--tree-hidden': !showModuleTree }" @paneResizeStop="dragStopHandle">
+    <multipane ref="multiPane" layout="vertical" class="custom-resizer" :class="{ 'custom-resizer--tree-hidden': !showModuleTree }" @paneResizeStop="dragStopHandle">
       <!--      树形模块选择组件-->
-      <div class="tree-module" ref="treeModule" :style="treeModuleStyle" v-if="showModuleTree">
+      <div v-if="showModuleTree" ref="treeModule" class="tree-module" :style="treeModuleStyle">
         <tree-module
           ref="treeModuleRef"
+          v-resize="setDragComponentSize"
           :project-id="projectId"
           :show-sidebar-toggle="true"
           :toolbar-sync-height="treeToolsToolbarHeight"
           @toggle-sidebar="toggleModuleTreeVisible"
           @node-click="moduleClickHandle"
-          v-resize="setDragComponentSize"
         />
       </div>
-      <multipane-resizer v-show="showModuleTree" :style="multipaneStyle"></multipane-resizer>
+      <multipane-resizer ref="paneResizer" v-show="showModuleTree" :style="multipaneStyle"></multipane-resizer>
       <!--      用例列表-->
       <div ref="caseContext" class="case-context">
         <div class="case-context-body">
-        <cat2-bug-table
-          ref="cat2BugTable"
-          cache-key="case-table"
-          field-list-cache-key="case-table-field-list"
-          sort-column-cache-key="case_table_sort_column_key"
-          sort-type-cache-key="case_table_sort_type_key"
-          :columns="caseTableColumnDefaults"
-          :data="caseList"
-          :loading="loading"
-          @columns-change="onCaseTableColumnsChange"
-          @sort-change="handleSortChange"
-          @selection-change="handleSelectionChange"
-          @native-mousedown="handleTableMouseDown"
-          @native-mouseup="handleTableMouseUp"
-          @native-mousemove="handleTableMouseMove"
-          v-resize="setDragComponentSize"
-        >
-          <template #prepend>
-            <el-table-column
-              v-if="!showModuleTree"
-              key="case-sidebar-expand-col"
-              fixed
-              width="30"
-              align="center"
-              label-class-name="case-sidebar-expand-header-cell"
-              class-name="case-sidebar-expand-body-cell">
-              <template slot="header">
-                <el-tooltip :content="$t('case.show-module-tree')" placement="bottom">
-                  <span
-                    class="case-sidebar-expand-trigger"
-                    role="button"
-                    tabindex="0"
-                    @click.stop="toggleModuleTreeVisible"
-                    @keyup.enter.stop.prevent="toggleModuleTreeVisible"
-                  >
-                    <svg-icon icon-class="menu" class-name="case-sidebar-expand-svg" />
-                  </span>
-                </el-tooltip>
-              </template>
-              <template slot-scope>
-                <span class="case-sidebar-expand-body-placeholder" />
-              </template>
-            </el-table-column>
-            <el-table-column type="selection" width="50" align="center" fixed />
-          </template>
-          <template #columns="{ scope, column }">
-            <span v-if="column.prop==='caseNum'">{{ caseNumber(scope.row) }}</span>
-            <div v-else-if="column.prop==='caseName'" class="table-case-title">
-              <cat2-bug-text v-model="scope.row.caseName" :tooltip="scope.row.caseName" />
-            </div>
-            <cat2-bug-level v-else-if="column.prop==='caseLevel'" :level="scope.row.caseLevel" />
-            <cat2-bug-text v-else-if="column.prop==='casePreconditions'" v-model="scope.row.casePreconditions" :tooltip="scope.row.casePreconditions" />
-            <div v-else-if="column.prop==='caseStep'" class="table-row-full-height">
-              <step :steps="scope.row.caseStep" />
-            </div>
-            <span v-else-if="column.prop==='caseData'">{{ scope.row.caseData }}</span>
-            <cat2-bug-text v-else-if="column.prop==='caseExpect'" v-model="scope.row.caseExpect" :tooltip="scope.row.caseExpect" />
-            <cat2-bug-preview-image v-else-if="column.prop==='imgUrls'" :images="getUrl(scope.row.imgUrls)" />
-            <div v-else-if="column.prop==='annexUrls'" class="annex-list">
-              <cat2-bug-text :content="file" type="down" :tooltip="file" v-for="(file,index) in getUrl(scope.row.annexUrls)" :key="index" />
-            </div>
-            <span v-else-if="column.prop==='updateTime'">{{ parseTime(scope.row.updateTime, '{y}-{m}-{d}') }}</span>
-            <template v-else-if="column.prop==='defectProcessingCount'">
-              <p class="table-font table-font-red" @click="handleGoDefect($event, scope.row, $t('PENDING'),[0,3])">{{ $t('PENDING') }}:{{ scope.row.defectProcessingCount }}</p>
-              <p class="table-font table-font-orange" @click="handleGoDefect($event, scope.row, $t('PROCESSING'), [1])">{{ $t('PROCESSING') }}:{{ scope.row.defectAuditCount }}</p>
-              <p class="table-font table-font-green" @click="handleGoDefect($event, scope.row, $t('CLOSED'),[4])">{{ $t('CLOSED') }}:{{ scope.row.defectCloseCount }}</p>
+          <div class="case-table-x-scroll">
+          <cat2-bug-table
+            ref="cat2BugTable"
+            cache-key="case-table"
+            field-list-cache-key="case-table-field-list"
+            sort-column-cache-key="case_table_sort_column_key"
+            sort-type-cache-key="case_table_sort_type_key"
+            v-resize="setDragComponentSize"
+            :columns="caseTableColumnDefaults"
+            :data="caseList"
+            :loading="loading"
+            @columns-change="onCaseTableColumnsChange"
+            @sort-change="handleSortChange"
+            @selection-change="handleSelectionChange"
+            @native-mousedown="handleTableMouseDown"
+            @native-mouseup="handleTableMouseUp"
+            @native-mousemove="handleTableMouseMove"
+          >
+            <template #prepend>
+              <el-table-column
+                v-if="!showModuleTree"
+                key="case-sidebar-expand-col"
+                fixed
+                width="30"
+                align="center"
+                label-class-name="case-sidebar-expand-header-cell"
+                class-name="case-sidebar-expand-body-cell"
+              >
+                <template slot="header">
+                  <el-tooltip :content="$t('case.show-module-tree')" placement="bottom">
+                    <span
+                      class="case-sidebar-expand-trigger"
+                      role="button"
+                      tabindex="0"
+                      @click.stop="toggleModuleTreeVisible"
+                      @keyup.enter.stop.prevent="toggleModuleTreeVisible"
+                    >
+                      <svg-icon icon-class="menu" class-name="case-sidebar-expand-svg" />
+                    </span>
+                  </el-tooltip>
+                </template>
+                <template slot-scope>
+                  <span class="case-sidebar-expand-body-placeholder" />
+                </template>
+              </el-table-column>
+              <el-table-column type="selection" width="50" align="center" fixed />
             </template>
-            <span v-else>{{ scope.row[column.prop] }}</span>
-          </template>
-          <template #append>
-            <el-table-column :label="$t('operate')" align="left" class-name="small-padding fixed-width no-drag" fixed="right" min-width="150">
-              <template slot-scope="scope">
-                <div class="case-table-operate">
-                  <el-button
-                    size="small"
-                    type="text"
-                    @click="handleUpdate(scope.row)"
-                    icon="el-icon-edit"
-                    v-hasPermi="['system:case:edit']">
-                    {{ $t('modify') }}</el-button>
-                  <el-button
-                    size="small"
-                    type="text"
-                    class="red"
-                    icon="el-icon-delete"
-                    @click="handleDelete($event,scope.row)"
-                    v-hasPermi="['system:case:remove']"
-                  >{{ $t('delete') }}</el-button>
-                </div>
+            <template #columns="{ scope, column }">
+              <span v-if="column.prop==='caseNum'">{{ caseNumber(scope.row) }}</span>
+              <div v-else-if="column.prop==='caseName'" class="table-case-title">
+                <cat2-bug-text v-model="scope.row.caseName" :tooltip="scope.row.caseName" />
+              </div>
+              <cat2-bug-level v-else-if="column.prop==='caseLevel'" :level="scope.row.caseLevel" />
+              <cat2-bug-text v-else-if="column.prop==='casePreconditions'" v-model="scope.row.casePreconditions" :tooltip="scope.row.casePreconditions" />
+              <div v-else-if="column.prop==='caseStep'" class="table-row-full-height">
+                <step :steps="scope.row.caseStep" />
+              </div>
+              <span v-else-if="column.prop==='caseData'">{{ scope.row.caseData }}</span>
+              <cat2-bug-text v-else-if="column.prop==='caseExpect'" v-model="scope.row.caseExpect" :tooltip="scope.row.caseExpect" />
+              <cat2-bug-preview-image v-else-if="column.prop==='imgUrls'" :images="getUrl(scope.row.imgUrls)" />
+              <div v-else-if="column.prop==='annexUrls'" class="annex-list">
+                <cat2-bug-text v-for="(file,index) in getUrl(scope.row.annexUrls)" :key="index" :content="file" type="down" :tooltip="file" />
+              </div>
+              <span v-else-if="column.prop==='updateTime'">{{ parseTime(scope.row.updateTime, '{y}-{m}-{d}') }}</span>
+              <template v-else-if="column.prop==='defectProcessingCount'">
+                <p class="table-font table-font-red" @click="handleGoDefect($event, scope.row, $t('PENDING'),[0,3])">{{ $t('PENDING') }}:{{ scope.row.defectProcessingCount }}</p>
+                <p class="table-font table-font-orange" @click="handleGoDefect($event, scope.row, $t('PROCESSING'), [1])">{{ $t('PROCESSING') }}:{{ scope.row.defectAuditCount }}</p>
+                <p class="table-font table-font-green" @click="handleGoDefect($event, scope.row, $t('CLOSED'),[4])">{{ $t('CLOSED') }}:{{ scope.row.defectCloseCount }}</p>
               </template>
-            </el-table-column>
-          </template>
-        </cat2-bug-table>
+              <span v-else>{{ scope.row[column.prop] }}</span>
+            </template>
+            <template #append>
+              <el-table-column :label="$t('operate')" align="left" class-name="small-padding fixed-width no-drag" fixed="right" min-width="150">
+                <template slot-scope="scope">
+                  <div class="case-table-operate">
+                    <el-button
+                      v-hasPermi="['system:case:edit']"
+                      size="small"
+                      type="text"
+                      icon="el-icon-edit"
+                      @click="handleUpdate(scope.row)"
+                    >
+                      {{ $t('modify') }}</el-button>
+                    <el-button
+                      v-hasPermi="['system:case:remove']"
+                      size="small"
+                      type="text"
+                      class="red"
+                      icon="el-icon-delete"
+                      @click="handleDelete($event,scope.row)"
+                    >{{ $t('delete') }}</el-button>
+                  </div>
+                </template>
+              </el-table-column>
+            </template>
+          </cat2-bug-table>
+          </div>
 
-        <div v-show="total>0" class="case-table-pagination-band">
-          <pagination
-            class="case-table-pagination"
-            :total="total"
-            :page.sync="queryParams.pageNum"
-            :limit.sync="queryParams.pageSize"
-            @pagination="getList"
-          />
-        </div>
+          <div v-show="total>0" class="case-table-pagination-band">
+            <pagination
+              class="case-table-pagination"
+              :total="total"
+              :page.sync="queryParams.pageNum"
+              :limit.sync="queryParams.pageSize"
+              @pagination="getList"
+            />
+          </div>
         </div>
       </div>
     </multipane>
@@ -226,16 +234,16 @@
         :auto-upload="false"
         drag
       >
-        <i class="el-icon-upload"></i>
+        <i class="el-icon-upload" />
         <div class="el-upload__text">{{ $t('case.import-prompt') }}<em> {{ $t('click.upload') }}</em></div>
-        <div class="el-upload__tip text-center" slot="tip">
+        <div slot="tip" class="el-upload__tip text-center">
           <span>{{ strFormat($t('case.import-file-format'), 'xls、xlsx') }}</span>
           <el-link type="primary" :underline="false" style="font-size:12px;vertical-align: baseline;" @click="importTemplate">
             {{ $t('download.template') }}</el-link>
         </div>
       </el-upload>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitFileForm">{{ $t('import' )}}</el-button>
+        <el-button type="primary" @click="submitFileForm">{{ $t('import' ) }}</el-button>
         <el-button @click="upload.open = false">{{ $t('cancel') }}</el-button>
       </div>
     </el-dialog>
@@ -243,165 +251,37 @@
 </template>
 
 <script>
-import ProjectLabel from "@/components/Project/ProjectLabel";
-import Cat2BugLevel from "@/components/Cat2BugLevel";
-import Cat2BugText from "@/components/Cat2BugText";
-import Cat2BugSelectLevel from "@/components/Cat2BugSelectLevel";
-import Step from "@/views/system/case/components/step";
-import TreeModule from "@/components/Module/TreeModule";
-import { Multipane, MultipaneResizer } from 'vue-multipane';
-import { listCase, delCase } from "@/api/system/case";
-import AddCase from "@/components/Case/AddCase";
-import AddDefect from "@/components/Defect/AddDefect";
-import CloudCase from "@/components/Cloud/CloudCase";
-import CloudCase2 from "@/components/Cloud/CloudCase2";
-import FocusMemberList from "@/components/FocusMemberList";
-import Cat2BugPreviewImage from "@/components/Cat2BugPreviewImage";
-import Cat2BugTable from "@/components/Cat2BugTable";
-import { CaseTableColumnDefaults } from "@/views/system/case/case-table-options";
-import {checkPermi} from "@/utils/permission";
-import {strFormat} from "@/utils";
-import { resolveExportAssetHost } from "@/utils/ruoyi";
-import {getToken} from "@/utils/auth";
-import {setDefectTempTab} from "@/utils/defect";
-import {setHeader} from "@/utils/request";
-
-const TREE_MODULE_WIDTH_CACHE_KEY = 'case_tree_module_width';
+import ProjectLabel from '@/components/Project/ProjectLabel'
+import Cat2BugLevel from '@/components/Cat2BugLevel'
+import Cat2BugText from '@/components/Cat2BugText'
+import Cat2BugSelectLevel from '@/components/Cat2BugSelectLevel'
+import Step from '@/views/system/case/components/step'
+import TreeModule from '@/components/Module/TreeModule'
+import { Multipane, MultipaneResizer } from 'vue-multipane'
+import { listCase, delCase } from '@/api/system/case'
+import AddCase from '@/components/Case/AddCase'
+import AddDefect from '@/components/Defect/AddDefect'
+import CloudCase from '@/components/Cloud/CloudCase'
+import CloudCase2 from '@/components/Cloud/CloudCase2'
+import FocusMemberList from '@/components/FocusMemberList'
+import Cat2BugPreviewImage from '@/components/Cat2BugPreviewImage'
+import Cat2BugTable from '@/components/Cat2BugTable'
+import { CaseTableColumnDefaults } from '@/views/system/case/case-table-options'
+import { checkPermi } from '@/utils/permission'
+import { strFormat } from '@/utils'
+import { resolveExportAssetHost } from '@/utils/ruoyi'
+import { getToken } from '@/utils/auth'
+import { setDefectTempTab } from '@/utils/defect'
+import { setHeader } from '@/utils/request'
+import paneResizerHandleViewport from '@/mixins/paneResizerHandleViewport'
+const TREE_MODULE_WIDTH_CACHE_KEY = 'case_tree_module_width'
 /** 用例页左侧交付物树是否展开（本地缓存） */
-const CASE_TREE_MODULE_VISIBLE_CACHE_KEY = 'case_tree_module_visible';
+const CASE_TREE_MODULE_VISIBLE_CACHE_KEY = 'case_tree_module_visible'
 
 export default {
-  name: "Case",
-  components: {ProjectLabel,AddCase,Cat2BugLevel,Step,TreeModule,Multipane,MultipaneResizer,AddDefect,CloudCase,CloudCase2,FocusMemberList,Cat2BugPreviewImage,Cat2BugSelectLevel,Cat2BugText,Cat2BugTable},
-  data() {
-    return {
-      // 鼠标是否点击
-      mouseFlag: false,
-      // 鼠标移动的偏移量
-      mouseOffset: 0,
-      multipaneStyle: {'--marginTop':'0px'},
-      treeModuleStyle: {'--treeModuleWidth':'300px'},
-      /** 是否显示左侧交付物列表 */
-      showModuleTree: true,
-      caseTableColumnDefaults: CaseTableColumnDefaults.map(c => ({ ...c })),
-      columnPickerCheckedKeys: [],
-      // 遮罩层
-      loading: false,
-      // 选中数组
-      ids: [],
-      // 非单个禁用
-      single: true,
-      // 非多个禁用
-      multiple: true,
-      // 显示搜索条件
-      showSearch: true,
-      // 总条数
-      total: 0,
-      // 测试用例表格数据
-      caseList: [],
-      // 弹出层标题
-      title: "",
-      // 是否显示弹出层
-      open: false,
-      // 查询参数
-      queryParams: {
-        pageNum: 1,
-        pageSize: 10,
-        caseName: null,
-        moduleId: null,
-        caseType: null,
-        caseExpect: null,
-        caseLevel: null,
-        casePreconditions: null,
-        caseNum: null,
-        projectId: this.projectId,
-        orderByColumn: null,
-        isAsc: null,
-        params:{}
-      },
-      // 用例导入参数
-      upload: {
-        // 是否显示弹出层（用户导入）
-        open: false,
-        // 弹出层标题（用户导入）
-        title: "",
-        // 是否禁用上传
-        isUploading: false,
-        // 设置上传的请求头部
-        headers: {},
-        // 上传的地址
-        url: process.env.VUE_APP_BASE_API + "/system/case/importData"
-      },
-      observer: null,
-      caseToolsWrapped: false,
-      caseRightButtonsWrapped: false,
-      /** 交付物列表标题栏高度（px），与右侧用例表 thead 行高对齐 */
-      treeToolsToolbarHeight: null,
-    };
-  },
-  watch: {
-    "$i18n.locale": function () {
-      this.$nextTick(() => {
-        this.$refs.cat2BugTable && this.$refs.cat2BugTable.doLayout();
-        this.$nextTick(() => this.syncTreeToolbarWithTableHeader());
-      });
-    },
-    showSearch() {
-      this.syncCaseToolsWrapped();
-    },
-  },
-  computed: {
-    caseColumnPickerOptions() {
-      return CaseTableColumnDefaults.filter(c => c.showInColumnPicker !== false);
-    },
-    /** 用于显示的用例编号 */
-    caseNumber: function () {
-      return function (val) {
-        return '#'+val.caseNum;
-      }
-    },
-    /** 项目ID */
-    projectId: function () {
-      return parseInt(this.$store.state.user.config.currentProjectId);
-    },
-    /** 字符转url数组 */
-    getUrl: function () {
-      return function (urls){
-        let imgs = urls?urls.split(','):[];
-        return imgs.map(i=>{
-          return process.env.VUE_APP_BASE_API + i;
-        })
-      }
-    },
-  },
-  created() {
-    const treeVis = this.$cache.local.get(CASE_TREE_MODULE_VISIBLE_CACHE_KEY);
-    this.showModuleTree = !(treeVis === '0' || treeVis === 'false');
-    this.queryParams.orderByColumn = this.$cache.local.get('case_table_sort_column_key') || null;
-    this.queryParams.isAsc = this.$cache.local.get('case_table_sort_type_key') || null;
-    this.handleQuery();
-    let headers = {};
-    setHeader('/system/case/importData', headers);
-    this.upload.headers = headers;
-  },
-  mounted() {
-    this.queryParams.projectId=this.projectId;
-    this.getTreeModuleWidth();
-    this.initFloatMenu();
-    this.$nextTick(() => {
-      this.syncCaseToolsWrapped();
-      this.initCaseToolsObserver();
-      this.$nextTick(() => this.initCaseTableHeaderHeightSync());
-    });
-    window.addEventListener("resize", this.syncCaseToolsWrapped);
-  },
-  destroyed() {
-    // 移除滚动条监听
-    this.$floatMenu.windowsDestory();
-    window.removeEventListener("resize", this.syncCaseToolsWrapped);
-    this.destroyCaseToolsObserver();
-    this.destroyCaseTableHeaderHeightSync();
-  },
+  name: 'Case',
+  mixins: [paneResizerHandleViewport],
+  components: { ProjectLabel, AddCase, Cat2BugLevel, Step, TreeModule, Multipane, MultipaneResizer, AddDefect, CloudCase, CloudCase2, FocusMemberList, Cat2BugPreviewImage, Cat2BugSelectLevel, Cat2BugText, Cat2BugTable },
   directives: {
     resize: {
       // 指令的名称
@@ -424,156 +304,299 @@ export default {
       }
     }
   },
+  data() {
+    return {
+      // 鼠标是否点击
+      mouseFlag: false,
+      // 鼠标移动的偏移量
+      mouseOffset: 0,
+      treeModuleStyle: { '--treeModuleWidth': '300px' },
+      multipaneStyle: { '--marginTop': '0px' },
+      /** 是否显示左侧交付物列表 */
+      showModuleTree: true,
+      caseTableColumnDefaults: CaseTableColumnDefaults.map(c => ({ ...c })),
+      columnPickerCheckedKeys: [],
+      // 遮罩层
+      loading: false,
+      // 选中数组
+      ids: [],
+      // 非单个禁用
+      single: true,
+      // 非多个禁用
+      multiple: true,
+      // 显示搜索条件
+      showSearch: true,
+      // 总条数
+      total: 0,
+      // 测试用例表格数据
+      caseList: [],
+      // 弹出层标题
+      title: '',
+      // 是否显示弹出层
+      open: false,
+      // 查询参数
+      queryParams: {
+        pageNum: 1,
+        pageSize: 10,
+        caseName: null,
+        moduleId: null,
+        caseType: null,
+        caseExpect: null,
+        caseLevel: null,
+        casePreconditions: null,
+        caseNum: null,
+        projectId: this.projectId,
+        orderByColumn: null,
+        isAsc: null,
+        params: {}
+      },
+      // 用例导入参数
+      upload: {
+        // 是否显示弹出层（用户导入）
+        open: false,
+        // 弹出层标题（用户导入）
+        title: '',
+        // 是否禁用上传
+        isUploading: false,
+        // 设置上传的请求头部
+        headers: {},
+        // 上传的地址
+        url: process.env.VUE_APP_BASE_API + '/system/case/importData'
+      },
+      observer: null,
+      caseToolsWrapped: false,
+      caseRightButtonsWrapped: false,
+      /** 交付物列表标题栏高度（px），与右侧用例表 thead 行高对齐 */
+      treeToolsToolbarHeight: null
+    }
+  },
+  computed: {
+    caseColumnPickerOptions() {
+      return CaseTableColumnDefaults.filter(c => c.showInColumnPicker !== false)
+    },
+    /** 用于显示的用例编号 */
+    caseNumber: function() {
+      return function(val) {
+        return '#' + val.caseNum
+      }
+    },
+    /** 项目ID */
+    projectId: function() {
+      return parseInt(this.$store.state.user.config.currentProjectId)
+    },
+    /** 字符转url数组 */
+    getUrl: function() {
+      return function(urls) {
+        const imgs = urls ? urls.split(',') : []
+        return imgs.map(i => {
+          return process.env.VUE_APP_BASE_API + i
+        })
+      }
+    }
+  },
+  watch: {
+    '$i18n.locale': function() {
+      this.$nextTick(() => {
+        this.$refs.cat2BugTable && this.$refs.cat2BugTable.doLayout()
+        this.$nextTick(() => this.syncTreeToolbarWithTableHeader())
+      })
+    },
+    showSearch() {
+      this.syncCaseToolsWrapped()
+    }
+  },
+  created() {
+    const treeVis = this.$cache.local.get(CASE_TREE_MODULE_VISIBLE_CACHE_KEY)
+    this.showModuleTree = !(treeVis === '0' || treeVis === 'false')
+    this.queryParams.orderByColumn = this.$cache.local.get('case_table_sort_column_key') || null
+    this.queryParams.isAsc = this.$cache.local.get('case_table_sort_type_key') || null
+    this.handleQuery()
+    const headers = {}
+    setHeader('/system/case/importData', headers)
+    this.upload.headers = headers
+  },
+  mounted() {
+    this.queryParams.projectId = this.projectId
+    this.getTreeModuleWidth()
+    this.initFloatMenu()
+    this.$nextTick(() => {
+      this.syncCaseToolsWrapped()
+      this.initCaseToolsObserver()
+      this.$nextTick(() => {
+        this.initCaseTableHeaderHeightSync()
+        this.setDragComponentSize()
+      })
+    })
+    window.addEventListener('resize', this.syncCaseToolsWrapped)
+  },
+  activated() {
+    /** keep-alive 返回后刷新表格布局（固定列等） */
+    this.$nextTick(() => {
+      const tbl = this.$refs.cat2BugTable
+      if (tbl && typeof tbl.doLayout === 'function') {
+        tbl.doLayout()
+      }
+      this.setDragComponentSize()
+      this.$nextTick(() => this.syncTreeToolbarWithTableHeader())
+    })
+  },
+  destroyed() {
+    // 移除滚动条监听
+    this.$floatMenu.windowsDestory()
+    window.removeEventListener('resize', this.syncCaseToolsWrapped)
+    this.destroyCaseToolsObserver()
+    this.destroyCaseTableHeaderHeightSync()
+  },
   methods: {
     initCaseToolsObserver() {
-      if (typeof ResizeObserver === "undefined") return;
-      this.destroyCaseToolsObserver();
-      const tools = this.$refs.caseTools;
-      if (!tools) return;
+      if (typeof ResizeObserver === 'undefined') return
+      this.destroyCaseToolsObserver()
+      const tools = this.$refs.caseTools
+      if (!tools) return
       this.observer = new ResizeObserver(() => {
-        this.syncCaseToolsWrapped();
-      });
-      this.observer.observe(tools);
+        this.syncCaseToolsWrapped()
+      })
+      this.observer.observe(tools)
     },
     destroyCaseToolsObserver() {
-      if (this.observer && typeof this.observer.disconnect === "function") {
-        this.observer.disconnect();
+      if (this.observer && typeof this.observer.disconnect === 'function') {
+        this.observer.disconnect()
       }
-      this.observer = null;
+      this.observer = null
     },
     /** 测量用例表表头行高，同步到左侧交付物 tree-tools */
     syncTreeToolbarWithTableHeader() {
       this.$nextTick(() => {
-        const cat = this.$refs.cat2BugTable;
-        const elTable = cat && cat.$refs && cat.$refs.elTable;
+        const cat = this.$refs.cat2BugTable
+        const elTable = cat && cat.$refs && cat.$refs.elTable
         if (!elTable || !elTable.$el) {
-          return;
+          return
         }
-        const headerWrap = elTable.$el.querySelector(".el-table__header-wrapper");
+        const headerWrap = elTable.$el.querySelector('.el-table__header-wrapper')
         if (!headerWrap) {
-          return;
+          return
         }
         /* Cat2BugTable 固定列切换等会重建表头 DOM，需重绑 ResizeObserver */
         if (
           this._caseTableHeaderObservedEl &&
           this._caseTableHeaderObservedEl !== headerWrap
         ) {
-          this.destroyCaseTableHeaderHeightSync();
-          this.initCaseTableHeaderHeightSync();
-          return;
+          this.destroyCaseTableHeaderHeightSync()
+          this.initCaseTableHeaderHeightSync()
+          return
         }
-        const tr = headerWrap.querySelector("thead tr");
+        const tr = headerWrap.querySelector('thead tr')
         if (!tr) {
-          return;
+          return
         }
-        const rect = tr.getBoundingClientRect();
-        const h = Math.round(rect.height || tr.offsetHeight || 0);
+        const rect = tr.getBoundingClientRect()
+        const h = Math.round(rect.height || tr.offsetHeight || 0)
         if (h > 0 && h !== this.treeToolsToolbarHeight) {
-          this.treeToolsToolbarHeight = h;
+          this.treeToolsToolbarHeight = h
         }
-      });
+      })
     },
     initCaseTableHeaderHeightSync() {
-      this.destroyCaseTableHeaderHeightSync();
-      const cat = this.$refs.cat2BugTable;
-      const elTable = cat && cat.$refs && cat.$refs.elTable;
+      this.destroyCaseTableHeaderHeightSync()
+      const cat = this.$refs.cat2BugTable
+      const elTable = cat && cat.$refs && cat.$refs.elTable
       if (!elTable || !elTable.$el) {
-        this.syncTreeToolbarWithTableHeader();
-        return;
+        this.syncTreeToolbarWithTableHeader()
+        return
       }
-      const headerWrap = elTable.$el.querySelector(".el-table__header-wrapper");
+      const headerWrap = elTable.$el.querySelector('.el-table__header-wrapper')
       if (!headerWrap) {
-        this.syncTreeToolbarWithTableHeader();
-        return;
+        this.syncTreeToolbarWithTableHeader()
+        return
       }
-      this._caseTableHeaderObservedEl = headerWrap;
-      this.syncTreeToolbarWithTableHeader();
-      if (typeof ResizeObserver === "undefined") {
-        return;
+      this._caseTableHeaderObservedEl = headerWrap
+      this.syncTreeToolbarWithTableHeader()
+      if (typeof ResizeObserver === 'undefined') {
+        return
       }
       this._caseTableHeaderResizeObserver = new ResizeObserver(() => {
-        this.syncTreeToolbarWithTableHeader();
-      });
-      this._caseTableHeaderResizeObserver.observe(headerWrap);
+        this.syncTreeToolbarWithTableHeader()
+      })
+      this._caseTableHeaderResizeObserver.observe(headerWrap)
     },
     destroyCaseTableHeaderHeightSync() {
       if (this._caseTableHeaderResizeObserver) {
-        this._caseTableHeaderResizeObserver.disconnect();
-        this._caseTableHeaderResizeObserver = null;
+        this._caseTableHeaderResizeObserver.disconnect()
+        this._caseTableHeaderResizeObserver = null
       }
-      this._caseTableHeaderObservedEl = null;
+      this._caseTableHeaderObservedEl = null
     },
     syncCaseToolsWrapped() {
       const measure = () => {
-        const tools = this.$refs.caseTools;
-        const left = tools && tools.querySelector(".left");
-        const right = this.$refs.caseToolsRight;
+        const tools = this.$refs.caseTools
+        const left = tools && tools.querySelector('.left')
+        const right = this.$refs.caseToolsRight
         if (!tools || !left || !right) {
-          this.caseToolsWrapped = false;
-          this.caseRightButtonsWrapped = false;
-          return;
+          this.caseToolsWrapped = false
+          this.caseRightButtonsWrapped = false
+          return
         }
-        const leftTop = left.offsetTop || 0;
-        const leftBottom = leftTop + (left.offsetHeight || 0);
-        const rightTop = right.offsetTop || 0;
+        const leftTop = left.offsetTop || 0
+        const leftBottom = leftTop + (left.offsetHeight || 0)
+        const rightTop = right.offsetTop || 0
         // 仅当右侧工具条真正落到左侧筛选区域“下一行”时，才进入 wrapped 态
-        this.caseToolsWrapped = rightTop >= leftBottom - 1;
+        this.caseToolsWrapped = rightTop >= leftBottom - 1
 
         // 仅当右侧按钮组自身出现多行时，才让主按钮等分填充。
-        const buttonItems = Array.from(right.children || []);
+        const buttonItems = Array.from(right.children || [])
         if (!buttonItems.length) {
-          this.caseRightButtonsWrapped = false;
-          return;
+          this.caseRightButtonsWrapped = false
+          return
         }
-        const firstTop = buttonItems[0].offsetTop;
-        this.caseRightButtonsWrapped = buttonItems.some(item => Math.abs((item.offsetTop || 0) - firstTop) > 2);
-      };
+        const firstTop = buttonItems[0].offsetTop
+        this.caseRightButtonsWrapped = buttonItems.some(item => Math.abs((item.offsetTop || 0) - firstTop) > 2)
+      }
       this.$nextTick(() => {
         if (this.caseToolsWrapped) {
-          this.caseToolsWrapped = false;
-          this.$nextTick(measure);
-          return;
+          this.caseToolsWrapped = false
+          this.$nextTick(measure)
+          return
         }
-        measure();
-      });
+        measure()
+      })
     },
     /** 处理鼠标在表格点下事件 */
     handleTableMouseDown(e) {
-      this.mouseOffset = e.clientX;
-      this.mouseFlag = true;
+      this.mouseOffset = e.clientX
+      this.mouseFlag = true
     },
     /** 处理鼠标在表格点起事件 */
     handleTableMouseUp(e) {
-      this.mouseFlag = false;
+      this.mouseFlag = false
     },
     /** 处理鼠标在表格移动事件 */
     onCaseTableColumnsChange(columns) {
-      this.columnPickerCheckedKeys = columns.filter(c => c.visible && c.showInColumnPicker !== false).map(c => c.key);
-      this.$nextTick(() => this.syncTreeToolbarWithTableHeader());
+      this.columnPickerCheckedKeys = columns.filter(c => c.visible && c.showInColumnPicker !== false).map(c => c.key)
+      this.$nextTick(() => this.syncTreeToolbarWithTableHeader())
     },
     onCaseColumnPickerChange(keys) {
-      this.$refs.cat2BugTable && this.$refs.cat2BugTable.setColumnsVisible(keys);
+      this.$refs.cat2BugTable && this.$refs.cat2BugTable.setColumnsVisible(keys)
     },
     handleTableMouseMove(e) {
-      const elTable = this.$refs.cat2BugTable && this.$refs.cat2BugTable.$refs.elTable;
-      if (!elTable || !elTable.bodyWrapper) return;
-      let tableBody = elTable.bodyWrapper;
+      const elTable = this.$refs.cat2BugTable && this.$refs.cat2BugTable.$refs.elTable
+      if (!elTable || !elTable.bodyWrapper) return
+      const tableBody = elTable.bodyWrapper
       if (this.mouseFlag) {
-        tableBody.scrollLeft -= (- this.mouseOffset + (this.mouseOffset = e.clientX));
+        tableBody.scrollLeft -= (-this.mouseOffset + (this.mouseOffset = e.clientX))
       }
     },
     strFormat,
     /** 重新加载数据 */
     reloadData() {
-      this.getList();
+      this.getList()
       if (this.$refs.treeModuleRef) {
-        this.$refs.treeModuleRef.reloadData();
+        this.$refs.treeModuleRef.reloadData()
       }
     },
     /** 初始化排序数据 */
     /** 初始化浮动菜单 */
     initFloatMenu() {
-      this.$floatMenu.windowsInit(document.querySelector('.main-container'));
+      this.$floatMenu.windowsInit(document.querySelector('.main-container'))
       this.$floatMenu.resetMenus([{
         id: 'addCase',
         name: 'case.create',
@@ -583,8 +606,8 @@ export default {
         icon: 'add-tab',
         prompt: 'case.create',
         permissions: ['system:case:add'],
-        click : this.handleAdd
-      },{
+        click: this.handleAdd
+      }, {
         id: 'importCase',
         name: 'case.import',
         visible: true,
@@ -593,8 +616,8 @@ export default {
         icon: 'import',
         prompt: 'case.import',
         permissions: ['system:case:add'],
-        click : this.handleImport
-      },{
+        click: this.handleImport
+      }, {
         id: 'exportCase',
         name: 'case.export',
         visible: true,
@@ -603,8 +626,8 @@ export default {
         icon: 'export',
         prompt: 'case.export',
         permissions: ['system:case:add'],
-        click : this.handleExport
-      },{
+        click: this.handleExport
+      }, {
         id: 'aiAddCase',
         name: 'case.ai-create',
         visible: true,
@@ -613,95 +636,101 @@ export default {
         icon: 'robot',
         prompt: 'case.ai-create',
         permissions: ['system:case:add'],
-        click : this.handleCloudCaseAdd
-      }]);
+        click: this.handleCloudCaseAdd
+      }])
     },
     /** 设置列表显示的属性字段 */
     /** 获取树模型宽度 */
     getTreeModuleWidth() {
-      let treeModuleWidth = this.$cache.session.get(TREE_MODULE_WIDTH_CACHE_KEY);
-      this.treeModuleStyle['--treeModuleWidth'] = (treeModuleWidth?treeModuleWidth:300)+'px';
+      const treeModuleWidth = this.$cache.session.get(TREE_MODULE_WIDTH_CACHE_KEY)
+      this.treeModuleStyle['--treeModuleWidth'] = (treeModuleWidth || 300) + 'px'
     },
     /** 设置树模型宽度到本地缓存 */
     cacheTreeModuleWidth() {
-      this.$cache.session.set(TREE_MODULE_WIDTH_CACHE_KEY,this.$refs.treeModule.clientWidth);
+      this.$cache.session.set(TREE_MODULE_WIDTH_CACHE_KEY, this.$refs.treeModule.clientWidth)
     },
     /** 拖动事件完成 */
     dragStopHandle(pane, container, size) {
       if (this.showModuleTree) {
-        this.cacheTreeModuleWidth();
+        this.cacheTreeModuleWidth()
       }
+      this.setDragComponentSize()
     },
     /** 切换左侧交付物列表显示，状态写入本地 */
     toggleModuleTreeVisible() {
-      this.showModuleTree = !this.showModuleTree;
-      this.$cache.local.set(CASE_TREE_MODULE_VISIBLE_CACHE_KEY, this.showModuleTree ? '1' : '0');
+      this.showModuleTree = !this.showModuleTree
+      this.$cache.local.set(CASE_TREE_MODULE_VISIBLE_CACHE_KEY, this.showModuleTree ? '1' : '0')
       this.$nextTick(() => {
-        this.setDragComponentSize();
+        this.setDragComponentSize()
         if (this.$refs.cat2BugTable) {
-          this.$refs.cat2BugTable.doLayout();
+          this.$refs.cat2BugTable.doLayout()
         }
-        this.$nextTick(() => this.syncTreeToolbarWithTableHeader());
-      });
+        this.$nextTick(() => this.syncTreeToolbarWithTableHeader())
+      })
     },
-    /** 设置模块与用例列表中间拖动块的尺寸 */
+    /** 设置模块与用例列表中间拖动块的尺寸（竖线高度与树/表区域一致，手柄在分隔条上居中） */
     setDragComponentSize() {
-      this.multipaneStyle['--marginTop'] = '0px';
-      this.$nextTick(()=> {
-        const treeH = this.$refs.treeModule ? (this.$refs.treeModule.scrollHeight || 0) : 0;
-        let pageHeight = Math.max(treeH, this.$refs.caseContext.scrollHeight || 0, document.body.scrollHeight - 170)
-        this.multipaneStyle['--marginTop'] = pageHeight + 'px';
+      this.multipaneStyle['--marginTop'] = '0px'
+      this.$nextTick(() => {
+        const treeH = this.$refs.treeModule ? (this.$refs.treeModule.scrollHeight || 0) : 0
+        const ctxH = this.$refs.caseContext ? (this.$refs.caseContext.scrollHeight || 0) : 0
+        const pageHeight = Math.max(treeH, ctxH, 8)
+        this.multipaneStyle['--marginTop'] = pageHeight + 'px'
+        if (this.$refs.cat2BugTable && this.$refs.cat2BugTable.doLayout) {
+          this.$refs.cat2BugTable.doLayout()
+        }
+        this.scheduleSyncPaneResizerHandle()
       })
     },
     /** 查询测试用例列表 */
     getList() {
-      this.loading = true;
-      this.queryParams.projectId = this.projectId;
+      this.loading = true
+      this.queryParams.projectId = this.projectId
       listCase(this.queryParams).then(response => {
-        this.loading = false;
-        this.caseList = response.rows;
-        this.total = response.total;
-        this.syncCaseToolsWrapped();
-        this.$nextTick(() => this.syncTreeToolbarWithTableHeader());
-      });
+        this.loading = false
+        this.caseList = response.rows
+        this.total = response.total
+        this.syncCaseToolsWrapped()
+        this.$nextTick(() => this.syncTreeToolbarWithTableHeader())
+      })
     },
     /** 搜索按钮操作 */
     handleQuery() {
-      if(this.queryParams.caseNum) {
-        this.queryParams.caseNum=this.queryParams.caseNum.replace(/[^\d]/g,'');
+      if (this.queryParams.caseNum) {
+        this.queryParams.caseNum = this.queryParams.caseNum.replace(/[^\d]/g, '')
       }
-      this.queryParams.pageNum = 1;
-      this.getList();
+      this.queryParams.pageNum = 1
+      this.getList()
     },
     /** 新增按钮操作 */
     handleAdd() {
-      this.$refs.addCaseDialog.open();
+      this.$refs.addCaseDialog.open()
     },
     handleCloudCaseAdd() {
-      this.$refs.cloudCaseDialog.open();
+      this.$refs.cloudCaseDialog.open()
     },
     handleCloudCaseAdd2() {
-      this.$refs.cloudCaseDialog2.open();
+      this.$refs.cloudCaseDialog2.open()
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
-      if(checkPermi(['system:case:edit'])) {
-        this.$refs.addCaseDialog.open(row.caseId, this.queryParams);
+      if (checkPermi(['system:case:edit'])) {
+        this.$refs.addCaseDialog.open(row.caseId, this.queryParams)
       }
     },
     /** 删除按钮操作 */
-    handleDelete(e,row) {
-      const caseIds = row?[row.caseId]:this.ids;
-      const delCaseNames = this.caseList.filter(c=>caseIds.indexOf(c.caseId)>-1).map(c=>{
-        return this.caseNumber(c);
-      }).join(', ');
+    handleDelete(e, row) {
+      const caseIds = row ? [row.caseId] : this.ids
+      const delCaseNames = this.caseList.filter(c => caseIds.indexOf(c.caseId) > -1).map(c => {
+        return this.caseNumber(c)
+      }).join(', ')
       this.$modal.confirm(strFormat(this.$i18n.t('case.is-delete').toString(), delCaseNames)).then(function() {
-        return delCase(caseIds);
+        return delCase(caseIds)
       }).then(() => {
-        this.getList();
-        this.$modal.msgSuccess(this.$i18n.t('delete-success'));
-      }).catch(() => {});
-      if (e && e.stopPropagation) e.stopPropagation();
+        this.getList()
+        this.$modal.msgSuccess(this.$i18n.t('delete-success'))
+      }).catch(() => {})
+      if (e && e.stopPropagation) e.stopPropagation()
     },
     /** 导出按钮操作 */
     handleExport() {
@@ -710,60 +739,60 @@ export default {
       if (host) {
         payload.params = { ...(payload.params || {}), host }
       }
-      this.download('system/case/export', payload, `${ this.$i18n.t('case.export') }_${new Date().getTime()}.xlsx`)
+      this.download('system/case/export', payload, `${this.$i18n.t('case.export')}_${new Date().getTime()}.xlsx`)
     },
     /** 点击模块树中的某个模块操作 */
     moduleClickHandle(moduleId) {
-      this.queryParams.params.modulePid = moduleId;
-      this.handleQuery();
+      this.queryParams.params.modulePid = moduleId
+      this.handleQuery()
     },
     /** 添加缺陷操作 */
-    addDefectHandle(e,caseObj){
-      this.$refs.addDefect.openByCase(caseObj);
-      e.stopPropagation();
+    addDefectHandle(e, caseObj) {
+      this.$refs.addDefect.openByCase(caseObj)
+      e.stopPropagation()
     },
     /** 导入按钮操作 */
     handleImport() {
-      this.upload.title = this.$i18n.t('case.import');
-      this.upload.open = true;
+      this.upload.title = this.$i18n.t('case.import')
+      this.upload.open = true
     },
     /** 下载模板操作 */
     importTemplate() {
-      this.download('system/case/importTemplate?projectId='+this.projectId, {
-      }, this.$i18n.t('case.template-file-name')+`${new Date().getTime()}.xlsx`)
+      this.download('system/case/importTemplate?projectId=' + this.projectId, {
+      }, this.$i18n.t('case.template-file-name') + `${new Date().getTime()}.xlsx`)
     },
     /** 文件上传中处理 */
     handleFileUploadProgress(event, file, fileList) {
-      this.upload.isUploading = true;
+      this.upload.isUploading = true
     },
     /** 文件上传成功处理 */
     handleFileSuccess(response, file, fileList) {
-      this.upload.open = false;
-      this.upload.isUploading = false;
-      this.$refs.upload.clearFiles();
-      let html = "<div style='overflow: auto;overflow-x: hidden;max-height: 70vh;padding: 10px 20px 0;'>"
-        + "<label>"+response.data.message +"</label>";
-      response.data.rows.forEach(r=>{
-        html+='<div style="display: flex;flex-direction: row; align-items: center; padding: 5px 0px; border-top:1px solid #EBEEF5">';
-        if(r.rowNum) {
-          html += '<h4 style="margin: 0px 10px 0px 0px;">' + strFormat(this.$i18n.t('line'), r.rowNum + '') + '</h4>';
+      this.upload.open = false
+      this.upload.isUploading = false
+      this.$refs.upload.clearFiles()
+      let html = "<div style='overflow: auto;overflow-x: hidden;max-height: 70vh;padding: 10px 20px 0;'>" +
+        '<label>' + response.data.message + '</label>'
+      response.data.rows.forEach(r => {
+        html += '<div style="display: flex;flex-direction: row; align-items: center; padding: 5px 0px; border-top:1px solid #EBEEF5">'
+        if (r.rowNum) {
+          html += '<h4 style="margin: 0px 10px 0px 0px;">' + strFormat(this.$i18n.t('line'), r.rowNum + '') + '</h4>'
         }
-        html+='<div style="display:flex;flex-direction:column;flex:1;overflow: hidden;">'
-        r.messages.forEach(m=>{
-          html+='<span>'+m+'</span>'
-        });
-        html+='</div></div>'
-      });
-      html+="</div>"
-      this.$alert(html, this.$i18n.t('case.import-result').toString(), { dangerouslyUseHTMLString: true, customClass: 'case-upload-alert' });
-      this.getList();
+        html += '<div style="display:flex;flex-direction:column;flex:1;overflow: hidden;">'
+        r.messages.forEach(m => {
+          html += '<span>' + m + '</span>'
+        })
+        html += '</div></div>'
+      })
+      html += '</div>'
+      this.$alert(html, this.$i18n.t('case.import-result').toString(), { dangerouslyUseHTMLString: true, customClass: 'case-upload-alert' })
+      this.getList()
     },
     /** 提交上传文件 */
     submitFileForm() {
-      this.$refs.upload.submit();
+      this.$refs.upload.submit()
     },
     /** 跳转到缺陷页面 */
-    handleGoDefect(event,testCase,defectStateName, defectStateValues) {
+    handleGoDefect(event, testCase, defectStateName, defectStateValues) {
       const params = {
         tabId: new Date().getMilliseconds(),
         tabName: strFormat(this.$i18n.t('case.go-defect-tab-name'), defectStateName),
@@ -773,32 +802,32 @@ export default {
             defectStates: defectStateValues
           }
         }}
-      setDefectTempTab(params);
-      const targetRoute = this.$router.resolve({ name:'Defect', params: {}});
-      window.open(targetRoute.href, '_blank');
-      event.stopPropagation();
+      setDefectTempTab(params)
+      const targetRoute = this.$router.resolve({ name: 'Defect', params: {}})
+      window.open(targetRoute.href, '_blank')
+      event.stopPropagation()
     },
     /** 多选框选中数据 */
     handleSelectionChange(selection) {
-      this.ids = selection.map(item => item.caseId);
-      this.single = selection.length != 1;
-      this.multiple = !selection.length;
+      this.ids = selection.map(item => item.caseId)
+      this.single = selection.length != 1
+      this.multiple = !selection.length
     },
     /** 下载附件操作 */
     handleDown(event, file) {
-      const a = document.createElement("a");
-      const e = new MouseEvent("click");
-      a.href = file;
-      a.dispatchEvent(e);
-      event.stopPropagation();
+      const a = document.createElement('a')
+      const e = new MouseEvent('click')
+      a.href = file
+      a.dispatchEvent(e)
+      event.stopPropagation()
     },
     handleSortChange(column) {
-      this.queryParams.isAsc = column.order;
-      this.queryParams.orderByColumn = column.prop;
-      this.getList();
+      this.queryParams.isAsc = column.order
+      this.queryParams.orderByColumn = column.prop
+      this.getList()
     }
   }
-};
+}
 </script>
 <style>
 .case-upload-alert {
@@ -806,6 +835,8 @@ export default {
 }
 </style>
 <style scoped lang="scss">
+@import "~@/assets/styles/multipane-resizer-grip.scss";
+
 .col {
   display: flex;
   flex-direction: column;
@@ -821,18 +852,70 @@ export default {
 .case-field-divider {
   margin: 8px 0px;
 }
+.case-body {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  min-height: 0;
+  /* 与缺陷页 defect-page 一致：在 AppMain 内铺满，底边 padding 交给分页区 margin */
+  flex: 1 1 auto;
+  width: 100%;
+  box-sizing: border-box;
+  padding-bottom: 0;
+}
+.case-body > .custom-resizer.multipane {
+  flex: 1 1 0%;
+  min-height: 0;
+  height: auto;
+  width: 100%;
+  min-width: 0;
+  align-items: stretch;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
 .tree-module {
   width: var(--treeModuleWidth);
   max-width: 75%;
   flex-shrink: 0;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  box-sizing: border-box;
+}
+.tree-module ::v-deep > .tree {
+  flex: 1 1 0%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.tree-module ::v-deep .el-tree {
+  flex: 1 1 0%;
+  min-height: 0;
+  overflow-y: auto;
 }
 .case-context {
-  flex-grow: 1;
+  flex: 1 1 0%;
   min-width: 0;
-  overflow: hidden;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: hidden;
   display: flex;
   flex-direction: column;
   align-items: stretch;
+}
+/* 与缺陷列表 defect-table-x-scroll 一致：表体按内容增高，未满一屏时空白在表格外壳内，分页与列表间距不变 */
+.case-table-x-scroll {
+  flex: 0 1 auto;
+  min-width: 0;
+  min-height: 0;
+  max-height: 100%;
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 .case-context-body {
   flex: 1;
@@ -841,9 +924,9 @@ export default {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  /* 与缺陷列表 table.vue 分页底部留白一致 */
+  /* 与缺陷 table.vue：页根底无 padding，分页下边距用变量算 */
   --defect-pagination-v-gap: 28px;
-  --defect-page-bottom-pad: 20px;
+  --defect-page-bottom-pad: 0px;
   --defect-pagination-extra-bottom: 14px;
 }
 .case-table-pagination-band {
@@ -1039,54 +1122,25 @@ export default {
 .red {
   color: #f56c6c;
 }
-.custom-resizer {
-  width: 100%;
-  height: auto;
-  user-select: none;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-}
 .custom-resizer--tree-hidden > .case-context {
   flex: 1 1 100%;
   width: 100%;
 }
-.custom-resizer > .multipane-resizer {
-  margin: 0; left: 0;
+.case-body .custom-resizer > .multipane-resizer {
+  flex-shrink: 0;
+  /* 与缺陷 list/table.vue：骑缝 + 竖线贴顶 + multipane-resizer-grip（含手柄边框） */
+  margin: 0 0 0 -8px;
+  left: 4px;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   height: 100%;
   width: 8px;
   cursor: col-resize;
   position: relative;
-  &:before {
-    display: block;
-    content: "";
-    width: 1px;
-    height: var(--marginTop);
-    background-color: #DCDFE6;
-  }
-  &:after {
-    content: "";
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 4px;
-    height: 30px;
-    border-left: 1px solid #C0C4CC;
-    border-right: 1px solid #C0C4CC;
-    border-radius: 2px;
-  }
-  &:hover {
-    &:before {
-      background-color: #B0B0B0;
-    }
-    &:after {
-      border-color: #909399;
-    }
-  }
+  box-sizing: border-box;
+  z-index: 350;
+  @include multipane-resizer-vertical-appearance;
 }
 .table-case-title {
   display: inline-flex;

@@ -591,6 +591,8 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
+@import "~@/assets/styles/multipane-resizer-grip.scss";
+
 .markdown {
   width: 100%;
   height: 100%;
@@ -642,38 +644,14 @@ export default {
   > .markdown-body-resizer {
     flex-shrink: 0;
     width: 8px;
+    margin: 0 0 0 -8px;
+    left: 4px;
     cursor: col-resize;
     position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
-    &:before {
-      content: "";
-      display: block;
-      width: 1px;
-      height: 100%;
-      background-color: #DCDFE6;
-    }
-    &:after {
-      content: "";
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 4px;
-      height: 30px;
-      border-left: 1px solid #C0C4CC;
-      border-right: 1px solid #C0C4CC;
-      border-radius: 2px;
-    }
-    &:hover {
-      &:before {
-        background-color: #B0B0B0;
-      }
-      &:after {
-        border-color: #909399;
-      }
-    }
+    @include multipane-resizer-vertical-appearance(100%);
   }
   > .markdown-body-edit {
     width: calc( 50% - 5px );

@@ -12,6 +12,8 @@
     "build:stage": "vue-cli-service build --mode staging --report",
     "preview": "node build/index.js --preview",
     "lint": "eslint --ext .js,.vue src",
+    "test:e2e": "playwright test",
+    "test:e2e:local": "PLAYWRIGHT_NO_WEB_SERVER=1 PW_CHANNEL=chrome playwright test",
     "postinstall": "patch-package",
     "docs:dev": "vuepress dev docs",
     "docs:build": "vuepress build docs"
@@ -94,6 +96,7 @@
     "xlsx": "^0.17.5"
   },
   "devDependencies": {
+    "@playwright/test": "^1.59.1",
     "@vue/cli-plugin-babel": "4.4.6",
     "@vue/cli-plugin-eslint": "4.4.6",
     "@vue/cli-service": "4.4.6",

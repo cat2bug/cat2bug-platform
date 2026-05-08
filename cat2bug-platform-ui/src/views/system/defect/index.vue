@@ -3,15 +3,15 @@
     ref="defectMain"
     class="app-container defect-page"
     :class="{ 'defect-page--excel-view': defectContentComponent === 'DefectExcel' }"
-    :style="defectPageExcelRootStyle"
+    :style="defectPageRootStyle"
   >
     <project-label class="defect-project-label" />
     <!-- 缺陷页标签-->
     <div class="defect-tools-tab">
       <el-tabs v-model="activeDefectTabName" @tab-click="selectDefectTabHandle">
-        <el-tab-pane v-for="tab in config.tabs" :name="tab.tabId+''" :key="tab.tabId+''">
+        <el-tab-pane v-for="tab in config.tabs" :key="tab.tabId+''" :name="tab.tabId+''">
           <span slot="label">{{ tab.tabName }}
-            <i style="width: 14px;" class="el-icon-close" @click.stop="removeDefectTabHandle(tab.tabId)"></i>
+            <i style="width: 14px;" class="el-icon-close" @click.stop="removeDefectTabHandle(tab.tabId)" />
           </span>
         </el-tab-pane>
         <el-tab-pane key="all-tab" :name="allTab">
@@ -24,37 +24,37 @@
       </div>
     </div>
     <!-- 统计板块-->
-    <cat2-bug-statistic class="defect-tools-statistic" :params="{}" v-show="statisticPanelVisible" :draggable="true" />
+    <cat2-bug-statistic v-show="statisticPanelVisible" class="defect-tools-statistic" :params="{}" :draggable="true" />
     <!-- 动态缺陷显示组件-->
-<!--    <keep-alive>-->
+    <!--    <keep-alive>-->
     <component
+      :is="defectContentComponent"
       ref="defectContentComponent"
       :class="['defect-content-slot', { 'defect-content-slot--excel': defectContentComponent === 'DefectExcel' }]"
-      :is="defectContentComponent"
       :query="queryParams"
       :project-id="projectId"
       v-bind="defectViewExtraProps"
       @defect-click="handleDefectClick"
       @refresh="handleRefreshQuery"
-      >
+    >
       <template slot="left-tools">
         <!-- 搜索-->
         <div class="defect-tools-search">
-          <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="0">
+          <el-form v-show="showSearch" ref="queryForm" :model="queryParams" size="small" :inline="true" label-width="0">
             <el-form-item>
               <!-- 缺陷显示模式切换 -->
-              <el-radio-group class="defect-content-view-switch" size="mini" v-model="defectContentComponent" @input="handleDefectContentChange">
+              <el-radio-group v-model="defectContentComponent" class="defect-content-view-switch" size="mini" @input="handleDefectContentChange">
                 <!-- 表格模式 -->
                 <el-radio-button label="DefectTable">
                   <span class="defect-content-view-switch-inner" :title="$t('table')">
                     <svg-icon icon-class="table" />
                   </span>
                 </el-radio-button>
-<!--                <el-radio-button label="DefectCalendar">-->
-<!--                  <span class="defect-content-view-switch-inner" :title="$t('calendar')">-->
-<!--                    <svg-icon icon-class="date" />-->
-<!--                  </span>-->
-<!--                </el-radio-button>-->
+                <!--                <el-radio-button label="DefectCalendar">-->
+                <!--                  <span class="defect-content-view-switch-inner" :title="$t('calendar')">-->
+                <!--                    <svg-icon icon-class="date" />-->
+                <!--                  </span>-->
+                <!--                </el-radio-button>-->
                 <!-- Excel模式 -->
                 <el-radio-button label="DefectExcel">
                   <span class="defect-content-view-switch-inner" :title="$t('excel')">
@@ -65,21 +65,21 @@
             </el-form-item>
             <el-form-item prop="defectType">
               <el-dropdown split-button size="small" @command="defectTypeChangeHandle" @click="selectDefectTabHandle">
-                {{$i18n.t(activeDefectTypeName)}}
+                {{ $i18n.t(activeDefectTypeName) }}
                 <el-dropdown-menu slot="dropdown">
-                  <el-dropdown-item command="">{{$i18n.t('defect.all-type')}}</el-dropdown-item>
-                  <el-dropdown-item v-for="type in config.types" :command="type.value" :key="'type_'+type.key">{{$i18n.t(type.value)}}</el-dropdown-item>
+                  <el-dropdown-item command="">{{ $i18n.t('defect.all-type') }}</el-dropdown-item>
+                  <el-dropdown-item v-for="type in config.types" :key="'type_'+type.key" :command="type.value">{{ $i18n.t(type.value) }}</el-dropdown-item>
                 </el-dropdown-menu>
               </el-dropdown>
             </el-form-item>
             <el-form-item prop="defectState">
-              <el-select size="small" v-model="queryParams.params.defectStates" multiple collapse-tags clearable :placeholder="$t('defect.select-state')" @change="handleQuery()">
+              <el-select v-model="queryParams.params.defectStates" size="small" multiple collapse-tags clearable :placeholder="$t('defect.select-state')" @change="handleQuery()">
                 <el-option
                   v-for="state in config.states"
                   :key="state.key"
                   :label="$i18n.t(state.value)"
-                  :value="state.key">
-                </el-option>
+                  :value="state.key"
+                />
               </el-select>
             </el-form-item>
             <el-form-item prop="handleBy" class="padding-top-3px">
@@ -95,8 +95,8 @@
             </el-form-item>
             <el-form-item prop="nameVersionKeyword">
               <el-input
-                size="small"
                 v-model="queryParams.nameVersionKeyword"
+                size="small"
                 :placeholder="$t('defect.enter-name-or-version')"
                 prefix-icon="el-icon-search"
                 clearable
@@ -107,25 +107,27 @@
         </div>
       </template>
       <template slot="right-tools">
-        <el-dropdown class="defect-add-dropdown"
-                     split-button
-                     size="small"
-                     type="primary"
-                     v-hasPermi="['system:defect:add']"
-                     @click="handleAdd">
-          <i class="el-icon-plus" />{{$i18n.t('defect.create')}}
+        <el-dropdown
+          v-hasPermi="['system:defect:add']"
+          class="defect-add-dropdown"
+          split-button
+          size="small"
+          type="primary"
+          @click="handleAdd"
+        >
+          <i class="el-icon-plus" />{{ $i18n.t('defect.create') }}
           <el-dropdown-menu slot="dropdown" class="defect-add-dropdown-menu">
-            <el-dropdown-item @click.native="handleAdd"><i class="el-icon-plus" />{{$i18n.t('defect.create')}}</el-dropdown-item>
-            <el-divider class="defect-add-dropdown-divider"></el-divider>
+            <el-dropdown-item @click.native="handleAdd"><i class="el-icon-plus" />{{ $i18n.t('defect.create') }}</el-dropdown-item>
+            <el-divider class="defect-add-dropdown-divider" />
             <el-dropdown-item @click.native="handleImport"><i class="el-icon-upload2" />{{ $t('defect.import') }}</el-dropdown-item>
             <el-dropdown-item @click.native="handleExport"><i class="el-icon-download" />{{ $t('defect.export') }}</el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
       </template>
     </component>
-<!--    </keep-alive>-->
+    <!--    </keep-alive>-->
     <!-- 缺陷日历-->
-<!--    <defect-calendar v-else-if="defectContentId=='calendar'" ref="defectCalendar" />-->
+    <!--    <defect-calendar v-else-if="defectContentId=='calendar'" ref="defectCalendar" />-->
     <!-- 添加或修改缺陷对话框 -->
     <add-defect ref="addDefectForm" :project-id="getProjectId()" @added="search(queryParams)" @close="initFloatMenu" />
     <!-- 浏览缺陷对话框 -->
@@ -138,38 +140,38 @@
 </template>
 
 <script>
-import { checkPermi } from "@/utils/permission";
-import { delTabs } from "@/api/system/DefectTabs";
-import { configDefect } from "@/api/system/defect";
-import AddDefect from "@/components/Defect/AddDefect"
-import HandleDefect from "@/components/Defect/HandleDefect"
-import SelectProjectMember from "@/components/Project/SelectProjectMember";
-import ProjectLabel from "@/components/Project/ProjectLabel";
-import Cat2BugStatistic from "@/components/Cat2BugStatistic"
-import DefectTabDialog from "@/views/system/defect/DefectTabDialog";
-import DefectImport from "@/views/system/defect/DefectImport"
-import i18n from "@/utils/i18n/i18n";
-import {getDefectTempTab, lifeTime, removeDefectTempTab} from "@/utils/defect";
-import { resolveExportAssetHost } from "@/utils/ruoyi";
-import store from "@/store";
-import DefectTable from "./list/table"
-import DefectExcel from "./list/excel"
+import { checkPermi } from '@/utils/permission'
+import { delTabs } from '@/api/system/DefectTabs'
+import { configDefect } from '@/api/system/defect'
+import AddDefect from '@/components/Defect/AddDefect'
+import HandleDefect from '@/components/Defect/HandleDefect'
+import SelectProjectMember from '@/components/Project/SelectProjectMember'
+import ProjectLabel from '@/components/Project/ProjectLabel'
+import Cat2BugStatistic from '@/components/Cat2BugStatistic'
+import DefectTabDialog from '@/views/system/defect/DefectTabDialog'
+import DefectImport from '@/views/system/defect/DefectImport'
+import i18n from '@/utils/i18n/i18n'
+import { getDefectTempTab, lifeTime, removeDefectTempTab } from '@/utils/defect'
+import { resolveExportAssetHost } from '@/utils/ruoyi'
+import store from '@/store'
+import DefectTable from './list/table'
+import DefectExcel from './list/excel'
 
 /** 与 AppMain 一致：顶栏 50px；开启 TagsView 时再 34px（Excel 根节点 min-height 与顶栏对齐） */
-const LAYOUT_NAVBAR_PX = 50;
-const LAYOUT_TAGS_STRIP_PX = 34;
+const LAYOUT_NAVBAR_PX = 50
+const LAYOUT_TAGS_STRIP_PX = 34
 /** 记录Tab标签选项 */
-const DEFECT_TAB_CACHE_KEY='defect-tab';
+const DEFECT_TAB_CACHE_KEY = 'defect-tab'
 /** 缺陷列表/日历/Excel 视图组件名，与 el-radio-button label 一致；默认 DefectTable */
-const DEFECT_CONTENT_VIEW_CACHE_KEY = "defect.contentViewComponent";
-const DEFECT_CONTENT_VIEW_ALLOWED = ["DefectTable", "DefectExcel"];
+const DEFECT_CONTENT_VIEW_CACHE_KEY = 'defect.contentViewComponent'
+const DEFECT_CONTENT_VIEW_ALLOWED = ['DefectTable', 'DefectExcel']
 /** 名称等于所有选项的name */
-const ALL_TAB_NAME = 'all-tab';
+const ALL_TAB_NAME = 'all-tab'
 
 /** 记录分析模版是否显示的缓存变量名 */
-const CACHE_KEY_STATISTIC_PANEL_VISIBLE = 'defect.statisticPanelVisible';
+const CACHE_KEY_STATISTIC_PANEL_VISIBLE = 'defect.statisticPanelVisible'
 export default {
-  name: "Defect",
+  name: 'Defect',
   components: { AddDefect, HandleDefect, SelectProjectMember, ProjectLabel, Cat2BugStatistic, DefectTabDialog, DefectTable, DefectExcel, DefectImport },
   data() {
     return {
@@ -185,16 +187,16 @@ export default {
       // 显示搜索条件
       showSearch: true,
       // 分析图表列表
-      statisticList:[],
+      statisticList: [],
       // 查询中缺陷类型的名称
       activeDefectTypeName: 'defect.all-type',
       // 查询中缺陷状态的名称
       activeDefectStateName: 'defect.all-state',
       // 缺陷配置
-      config:{},
+      config: {},
 
       // 是否显示统计面板
-      statisticPanelVisible: this.$cache.local.get(CACHE_KEY_STATISTIC_PANEL_VISIBLE)=='false'?false:true,
+      statisticPanelVisible: this.$cache.local.get(CACHE_KEY_STATISTIC_PANEL_VISIBLE) != 'false',
       // 查询参数
       queryParams: {
         pageNum: 1,
@@ -219,110 +221,130 @@ export default {
         handleBy: null,
         handleTime: null,
         defectLevel: null,
-        params:{
+        params: {
           defectStates: []
         }
-      },
-    };
-  },
-  created() {
-    let v = this.$cache.local.get(DEFECT_CONTENT_VIEW_CACHE_KEY);
-    if (v != null && typeof v === "string") v = v.trim();
-    if (v && DEFECT_CONTENT_VIEW_ALLOWED.includes(v)) {
-      this.defectContentComponent = v;
-    } else {
-      this.defectContentComponent = "DefectTable";
+      }
     }
   },
   computed: {
     /** 获取当前用户id */
     currentUserId: function() {
-      return this.$store.state.user.id;
+      return this.$store.state.user.id
     },
     /** 获取项目id */
     projectId: function() {
-      return this.$route.query.projectId?parseInt(this.$route.query.projectId):parseInt(this.$store.state.user.config.currentProjectId);
+      return this.$route.query.projectId ? parseInt(this.$route.query.projectId) : parseInt(this.$store.state.user.config.currentProjectId)
     },
     /** 获取用户id */
     userId: function() {
-      return Number(this.$store.state.user.id);
+      return Number(this.$store.state.user.id)
     },
     /** Excel 视图额外参数（其它视图不声明对应 prop，避免落到根 DOM） */
     defectViewExtraProps() {
-      if (this.defectContentComponent === "DefectExcel") {
+      if (this.defectContentComponent === 'DefectExcel') {
         return {
           defectTypeOptions: this.config.types || [],
           /** 底边贴齐主区域：编辑区高度用满 clientHeight，不在内部再减空白 */
-          viewportBottomGap: 0,
-        };
+          viewportBottomGap: 0
+        }
       }
-      return {};
+      return {}
     },
     /**
-     * Excel 模式：固定视口内一屏高度（与原先 defectPageRootStyle 一致），根节点不随内容增高，
-     * 避免整页 main-container 上下滚动；纵向滚动由 vue-excel-editor 内部承担。
+     * Excel：固定 height/maxHeight，组件内滚动。
+     * 表格模式：高度交给 AppMain 首子 flex:1 铺满，避免 min-height 与 padding-top 盒模型叠算后仍留底空白；
+     * 竖线高度仍只用树/表实际高度（table.vue setDragComponentSize），勿用 body.scrollHeight，避免把 multipane 撑出假高度。
      */
-    defectPageExcelRootStyle() {
-      if (this.defectContentComponent !== "DefectExcel") return {};
-      const tagsOn = !!this.$store.state.settings.tagsView;
-      const offset = LAYOUT_NAVBAR_PX + (tagsOn ? LAYOUT_TAGS_STRIP_PX : 0);
-      const h = `calc(100vh - ${offset}px)`;
+    defectPageRootStyle() {
+      const tagsOn = !!this.$store.state.tagsView
+      const offset = LAYOUT_NAVBAR_PX + (tagsOn ? LAYOUT_TAGS_STRIP_PX : 0)
+      const fillH = `calc(100vh - ${offset}px)`
+      if (this.defectContentComponent === 'DefectExcel') {
+        return {
+          height: fillH,
+          maxHeight: fillH,
+          paddingTop: '20px',
+          paddingLeft: '20px',
+          paddingRight: '20px',
+          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+          boxSizing: 'border-box',
+          overflow: 'hidden'
+        }
+      }
       return {
-        height: h,
-        maxHeight: h,
-        paddingTop: "20px",
-        paddingLeft: "20px",
-        paddingRight: "20px",
-        paddingBottom: "env(safe-area-inset-bottom, 0px)",
-        boxSizing: "border-box",
-        overflow: "hidden",
-      };
-    },
+        boxSizing: 'border-box'
+      }
+    }
   },
   watch: {
-    "queryParams.defectType": function (newVal, oldVal) {
-      if( newVal!=oldVal) {
+    'queryParams.defectType': function(newVal, oldVal) {
+      if (newVal != oldVal) {
         // this.defectTypeChangeHandle(newVal);
       }
     },
-    "queryParams.defectState": function (newVal, oldVal) {
-      if( newVal!=oldVal) {
+    'queryParams.defectState': function(newVal, oldVal) {
+      if (newVal != oldVal) {
         // this.handleQuery();
       }
-    },
+    }
+  },
+  created() {
+    let v = this.$cache.local.get(DEFECT_CONTENT_VIEW_CACHE_KEY)
+    if (v != null && typeof v === 'string') v = v.trim()
+    if (v && DEFECT_CONTENT_VIEW_ALLOWED.includes(v)) {
+      this.defectContentComponent = v
+    } else {
+      this.defectContentComponent = 'DefectTable'
+    }
   },
   mounted() {
     /** 根据项目ID跳转 */
-    if(this.$route.query.projectId) {
-      let _this = this;
+    if (this.$route.query.projectId) {
+      const _this = this
       store.dispatch('SwitchCurrentProject', this.$route.query.projectId).then(() => {
-        _this.init();
-      });
+        _this.init()
+      })
     } else {
-      this.init();
+      this.init()
     }
+  },
+  activated() {
+    /** keep-alive 返回后刷新表格布局（固定列等） */
+    this.$nextTick(() => {
+      const c = this.$refs.defectContentComponent
+      const tbl = c && c.$refs && c.$refs.cat2BugTable
+      if (tbl && typeof tbl.doLayout === 'function') {
+        tbl.doLayout()
+      }
+      this.$nextTick(() => {
+        if (c && typeof c.setDragComponentSize === 'function') {
+          c.setDragComponentSize()
+        }
+      })
+    })
   },
   // 移除滚动条监听
   destroyed() {
-    this.$floatMenu.windowsDestory();
+    this.$floatMenu.windowsDestory()
   },
   methods: {
     checkPermi,
     init() {
-      this.queryParams.projectId = this.projectId;
+      this.queryParams.projectId = this.projectId
       // 初始化对象
-      this.$refs.defectContentComponent.init();
+      this.$refs.defectContentComponent.init()
       // 获取缺陷配置
-      this.getDefectConfig();
+      this.getDefectConfig()
       // 显示指定缺陷信息
-      if(this.$route.query.defectId) {
-        this.$refs.editDefectForm.open(this.$route.query.defectId);
+      if (this.$route.query.defectId) {
+        this.$refs.editDefectForm.open(this.$route.query.defectId)
       }
-      this.initFloatMenu();
+      this.initFloatMenu()
     },
     /** 初始化浮动菜单 */
     initFloatMenu() {
-      this.$floatMenu.windowsInit(document.querySelector('.main-container'));
+      this.$floatMenu.windowsInit(document.querySelector('.main-container'))
       this.$floatMenu.resetMenus([{
         id: 'addDefect',
         name: 'defect.create',
@@ -332,8 +354,8 @@ export default {
         icon: 'add-tab',
         prompt: 'defect.create',
         permissions: ['system:defect:add'],
-        click : this.handleAdd
-      },{
+        click: this.handleAdd
+      }, {
         id: 'importDefect',
         name: 'defect.import',
         visible: true,
@@ -342,8 +364,8 @@ export default {
         icon: 'import',
         prompt: 'defect.import',
         permissions: ['system:defect:add'],
-        click : this.handleImport
-      },{
+        click: this.handleImport
+      }, {
         id: 'exportDefect',
         name: 'defect.export',
         visible: true,
@@ -352,99 +374,99 @@ export default {
         icon: 'export',
         prompt: 'defect.export',
         permissions: ['system:defect:add'],
-        click : this.handleExport
-      }]);
+        click: this.handleExport
+      }])
     },
     /** 查询缺陷 */
     search(params) {
-      this._setProperty(this.queryParams, params);
-      this.handleQuery();
+      this._setProperty(this.queryParams, params)
+      this.handleQuery()
     },
     /** 设置查询属性 */
-    _setProperty(parent,obj) {
-      if(obj && Array.isArray(obj)) {
-        parent = obj;
+    _setProperty(parent, obj) {
+      if (obj && Array.isArray(obj)) {
+        parent = obj
         return parent
-      } else if(obj && typeof obj == 'object') {
-        for (let key in obj) {
+      } else if (obj && typeof obj === 'object') {
+        for (const key in obj) {
           if (parent[key] && Array.isArray(obj[key])) {
-            this.$set(parent,key,obj[key])
-          } else if (parent[key] && typeof obj[key] == 'object') {
-            this.$set(parent,key,this._setProperty(parent[key], obj[key]))
+            this.$set(parent, key, obj[key])
+          } else if (parent[key] && typeof obj[key] === 'object') {
+            this.$set(parent, key, this._setProperty(parent[key], obj[key]))
           } else {
-            this.$set(parent,key,obj[key])
+            this.$set(parent, key, obj[key])
           }
         }
         return parent
       } else {
-        return obj;
+        return obj
       }
     },
     /** 获取当前用户缺陷配置 */
     getDefectConfig() {
-      configDefect().then(res=>{
-        this.config = res.data;
+      configDefect().then(res => {
+        this.config = res.data
         // 如果页面传的参数有tab，代表有临时查询
-        const tab = getDefectTempTab(); // 获取临时缓存tab
-        if(tab){
-          removeDefectTempTab();
-          this.config.tabs = this.config.tabs || [];
-          this.config.tabs.unshift(tab);
-          this.activeDefectTabName = tab.tabId+'';
-        } else if(this.config.tabs) {
+        const tab = getDefectTempTab() // 获取临时缓存tab
+        if (tab) {
+          removeDefectTempTab()
+          this.config.tabs = this.config.tabs || []
+          this.config.tabs.unshift(tab)
+          this.activeDefectTabName = tab.tabId + ''
+        } else if (this.config.tabs) {
           // 从本地缓存取激活的页标签名称
-          this.activeDefectTabName = this.$cache.local.get(DEFECT_TAB_CACHE_KEY); // || ALL_TAB_NAME;
+          this.activeDefectTabName = this.$cache.local.get(DEFECT_TAB_CACHE_KEY) // || ALL_TAB_NAME;
           // 查看所有页标签里是否保护激活页标签，如果没有，设置页标签为"全部"
-          if(!this.activeDefectTabName || this.config.tabs.filter(t=>t.tabId+''==this.activeDefectTabName).length==0) {
-            this.activeDefectTabName = this.allTab;
+          if (!this.activeDefectTabName || this.config.tabs.filter(t => t.tabId + '' == this.activeDefectTabName).length == 0) {
+            this.activeDefectTabName = this.allTab
           }
         }
         // 执行激活页标签方法
-        this.selectDefectTabHandle();
+        this.selectDefectTabHandle()
       })
     },
     /** 查找缺陷状态改变的处理 */
     defectTypeChangeHandle(defectType) {
-      if(defectType) {
-        this.activeDefectTypeName = defectType;
+      if (defectType) {
+        this.activeDefectTypeName = defectType
       } else {
-        this.activeDefectTypeName = 'defect.all-type';
+        this.activeDefectTypeName = 'defect.all-type'
       }
-      this.queryParams.defectType= defectType;
-      this.handleQuery();
+      this.queryParams.defectType = defectType
+      this.handleQuery()
     },
     /** 打开缺陷浏览的处理 */
     handleDefectClick(defect) {
-      this.$refs.editDefectForm.open(defect.defectId);
+      this.$refs.editDefectForm.open(defect.defectId)
     },
     /** 获取项目id */
     getProjectId() {
-      return this.$route.query.projectId?parseInt(this.$route.query.projectId):parseInt(this.$store.state.user.config.currentProjectId);
+      return this.$route.query.projectId ? parseInt(this.$route.query.projectId) : parseInt(this.$store.state.user.config.currentProjectId)
     },
     /** 搜索按钮操作 */
     handleQuery() {
-      this.queryParams.pageNum = 1;
-      this.queryParams.pageSize = 10;
-      this.handleRefreshQuery();
+      this.queryParams.pageNum = 1
+      this.queryParams.pageSize = 10
+      this.handleRefreshQuery()
     },
     /** 搜索操作 */
     handleRefreshQuery() {
-      this.queryParams.projectId = this.projectId;
-      this.$refs.defectContentComponent.search(this.queryParams);
-      this.$forceUpdate();
+      this.queryParams.projectId = this.projectId
+      this.$refs.defectContentComponent.search(this.queryParams)
+      this.$forceUpdate()
     },
     /** 新增按钮操作 */
     handleAdd() {
-      this.$refs.addDefectForm.open();
+      this.$refs.addDefectForm.open()
     },
     /** 添加统计操作 */
     addStatisticHandle() {
-      this.$router.push({name:'DefectStatisticTemplate'})
+      this.$router.push({ name: 'DefectStatisticTemplate' })
     },
     /** 统计显示切换操作 */
     statisticPanelHandle() {
-      this.statisticPanelVisible = !this.statisticPanelVisible;
-      this.$cache.local.set(CACHE_KEY_STATISTIC_PANEL_VISIBLE, this.statisticPanelVisible+'');
+      this.statisticPanelVisible = !this.statisticPanelVisible
+      this.$cache.local.set(CACHE_KEY_STATISTIC_PANEL_VISIBLE, this.statisticPanelVisible + '')
     },
     /** 重制查询条件 */
     reset() {
@@ -471,21 +493,25 @@ export default {
         handleBy: null,
         handleTime: null,
         defectLevel: null,
-        params:{
+        params: {
           defectStates: []
         }
       }
     },
     /** 切换缺陷内容组件改变的处理 */
     handleDefectContentChange() {
-      const c = this.defectContentComponent;
+      const c = this.defectContentComponent
       if (DEFECT_CONTENT_VIEW_ALLOWED.includes(c)) {
-        this.$cache.local.set(DEFECT_CONTENT_VIEW_CACHE_KEY, c);
+        this.$cache.local.set(DEFECT_CONTENT_VIEW_CACHE_KEY, c)
       }
-      this.$nextTick(()=>{
-        this.$refs.defectContentComponent.init();
-        this.$refs.defectContentComponent.search(this.queryParams);
-      });
+      this.$nextTick(() => {
+        const child = this.$refs.defectContentComponent
+        child.init()
+        child.search(this.queryParams)
+        if (child && typeof child.setDragComponentSize === 'function') {
+          child.setDragComponentSize()
+        }
+      })
     },
     /** ============================================
      * 页签处理方法
@@ -493,53 +519,53 @@ export default {
 
     /** 切换页标签 */
     selectDefectTabHandle() {
-      if(this.config && this.config.tabs) {
-        let tab = this.config.tabs.find(t=>t.tabId==this.activeDefectTabName);
-        if(tab && tab.config) {
-          tab.config.isAsc = 'desc';
-          tab.config.orderByColumn = 'updateTime';
-          if(!tab.config.params) {
+      if (this.config && this.config.tabs) {
+        const tab = this.config.tabs.find(t => t.tabId == this.activeDefectTabName)
+        if (tab && tab.config) {
+          tab.config.isAsc = 'desc'
+          tab.config.orderByColumn = 'updateTime'
+          if (!tab.config.params) {
             tab.config.params = {
               defectStates: []
-            };
+            }
           }
-          const tc = tab.config;
-          const tp = tc.params;
+          const tc = tab.config
+          const tp = tc.params
           if (tp.nameVersionKeyword != null && String(tp.nameVersionKeyword).trim() !== '') {
             if (tc.nameVersionKeyword == null || String(tc.nameVersionKeyword).trim() === '') {
-              tc.nameVersionKeyword = String(tp.nameVersionKeyword).trim();
+              tc.nameVersionKeyword = String(tp.nameVersionKeyword).trim()
             }
-            this.$delete(tp, 'nameVersionKeyword');
+            this.$delete(tp, 'nameVersionKeyword')
           }
-          const kwEmpty = tc.nameVersionKeyword == null || String(tc.nameVersionKeyword).trim() === '';
-          const hasDn = tc.defectName != null && String(tc.defectName).trim() !== '';
-          const hasMv = tc.moduleVersion != null && String(tc.moduleVersion).trim() !== '';
+          const kwEmpty = tc.nameVersionKeyword == null || String(tc.nameVersionKeyword).trim() === ''
+          const hasDn = tc.defectName != null && String(tc.defectName).trim() !== ''
+          const hasMv = tc.moduleVersion != null && String(tc.moduleVersion).trim() !== ''
           if (kwEmpty && ((hasDn && !hasMv) || (!hasDn && hasMv))) {
-            tc.nameVersionKeyword = hasDn ? String(tc.defectName).trim() : String(tc.moduleVersion).trim();
-            tc.defectName = null;
-            tc.moduleVersion = null;
+            tc.nameVersionKeyword = hasDn ? String(tc.defectName).trim() : String(tc.moduleVersion).trim()
+            tc.defectName = null
+            tc.moduleVersion = null
           }
-          this.queryParams = tab.config;
+          this.queryParams = tab.config
         } else {
-          this.reset();
+          this.reset()
         }
-        this.handleQuery();
+        this.handleQuery()
       }
-      this.$cache.local.set(DEFECT_TAB_CACHE_KEY,this.activeDefectTabName);
+      this.$cache.local.set(DEFECT_TAB_CACHE_KEY, this.activeDefectTabName)
     },
     /** 打开添加缺陷页签对话框 */
     addDefectTabHandle() {
-      this.$refs.defectTabDialog.open();
+      this.$refs.defectTabDialog.open()
     },
     /** 添加页签处理 */
     tabAddHandle(tab) {
-      this.config.tabs.push(tab);
-      this.activeDefectTabName = tab.tabId+'';
-      this.selectDefectTabHandle();
+      this.config.tabs.push(tab)
+      this.activeDefectTabName = tab.tabId + ''
+      this.selectDefectTabHandle()
     },
     /** 移除页签处理 */
     removeDefectTabHandle(tabId) {
-      if(!tabId) return;
+      if (!tabId) return
       this.$modal.confirm(
         this.$i18n.t('defect.delete-defect-tab'),
         this.$i18n.t('prompted').toString(),
@@ -547,32 +573,32 @@ export default {
           confirmButtonText: i18n.t('delete').toString(),
           cancelButtonText: i18n.t('cancel').toString(),
           confirmButtonClass: 'delete-button',
-          type: "warning"
+          type: 'warning'
         }).then(function() {
-        return delTabs(tabId);
+        return delTabs(tabId)
       }).then(() => {
-        let activeName = this.activeDefectTabName;
+        let activeName = this.activeDefectTabName
         if (this.activeDefectTabName == tabId) {
           this.config.tabs.forEach((tab, index) => {
-            if (tab.tabId+'' == tabId) {
-              let nextTab = this.config.tabs[index + 1] || this.config.tabs[index - 1];
+            if (tab.tabId + '' == tabId) {
+              const nextTab = this.config.tabs[index + 1] || this.config.tabs[index - 1]
               if (nextTab) {
-                activeName = nextTab.tabId + '';
+                activeName = nextTab.tabId + ''
               } else {
-                activeName = ALL_TAB_NAME;
+                activeName = ALL_TAB_NAME
               }
             }
-          });
+          })
         }
-        this.activeDefectTabName = activeName;
-        this.config.tabs=this.config.tabs.filter(t=>(t.tabId+'')!=tabId);
-        this.selectDefectTabHandle();
-        this.$modal.msgSuccess(this.$i18n.t('delete.success'));
-      }).catch(() => {});
+        this.activeDefectTabName = activeName
+        this.config.tabs = this.config.tabs.filter(t => (t.tabId + '') != tabId)
+        this.selectDefectTabHandle()
+        this.$modal.msgSuccess(this.$i18n.t('delete.success'))
+      }).catch(() => {})
     },
     /** 打开导入缺陷对话框 */
     handleImport() {
-      this.$refs.defectImportDialog.open();
+      this.$refs.defectImportDialog.open()
     },
     /** 导出按钮操作 */
     handleExport() {
@@ -582,25 +608,34 @@ export default {
         payload.params = { ...(payload.params || {}), host }
       }
       this.download('system/defect/export', payload, `defect_${new Date().getTime()}.xlsx`)
-    },
+    }
   }
-};
+}
 </script>
 <style lang="scss" scoped>
 /*
  * 高度与滚动：
- * - 表格模式：根节点随内容增高，在 main-container 整页滚动（见 table.vue）。
- * - Excel 模式：defectPageExcelRootStyle 固定 height/maxHeight + overflow:hidden，仅组件内滚动。
+ * - 表格模式：根节点在 AppMain 内 flex:1 铺满主列；内容区 flex:1 吃满剩余高度（table.vue 内表体区再 flex:1）。
+ * - Excel 模式：内联 height/maxHeight + overflow:hidden，仅组件内滚动。
  */
 .defect-page {
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
   padding: 20px;
-  padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  /* 底边不设 padding，便于树表 multipane 分隔竖线与主区域底对齐；分页底距在 table.vue 用 margin 补足 */
+  padding-bottom: 0;
   overflow: visible;
   /* 查询条上、下与 Tab / 主内容区的留白一致（子树继承） */
   --defect-toolbar-v-gap: 8px;
+}
+.defect-page:not(.defect-page--excel-view) {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+}
+.defect-page.defect-page--excel-view {
+  flex: 0 0 auto;
 }
 .defect-page .defect-content-slot {
   flex: 0 1 auto;
@@ -609,6 +644,10 @@ export default {
   /* 与 Tab/统计区之间的纵向留白改由 .defect-view-toolbar 的 margin-top 承担，避免 padding+margin 叠在不同盒子上导致观感不对称 */
   padding-top: 0;
   box-sizing: border-box;
+}
+.defect-page:not(.defect-page--excel-view) .defect-content-slot:not(.defect-content-slot--excel) {
+  flex: 1 1 0%;
+  min-height: 0;
 }
 .defect-page.defect-page--excel-view .defect-project-label,
 .defect-page.defect-page--excel-view .defect-tools-tab,

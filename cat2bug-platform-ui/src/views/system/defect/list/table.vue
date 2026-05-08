@@ -41,7 +41,7 @@
           v-resize="setDragComponentSize"
         />
       </div>
-      <multipane-resizer v-show="showModuleTree" :style="multipaneStyle"></multipane-resizer>
+      <multipane-resizer ref="paneResizer" v-show="showModuleTree" :style="multipaneStyle"></multipane-resizer>
       <div ref="defectTableContext" class="defect-table-context">
         <!-- 宽表横向滚动限制在本层，避免整页 main-container 底部出现横向条与分页同一底边叠在一起「压住」分页 -->
         <div class="defect-table-x-scroll">
@@ -159,6 +159,7 @@ import Cat2BugTable from "@/components/Cat2BugTable";
 import {listDefect} from "@/api/system/defect";
 import {lifeTime} from "@/utils/defect";
 import { TableOptions } from "@/views/system/defect/list/table-options";
+import paneResizerHandleViewport from "@/mixins/paneResizerHandleViewport";
 
 const DEFECT_TREE_MODULE_WIDTH_CACHE_KEY = "defect_tree_module_width";
 /** 缺陷列表左侧交付物树是否展开（本地缓存） */
@@ -167,6 +168,7 @@ const DEFECT_TREE_MODULE_VISIBLE_CACHE_KEY = "defect_tree_module_visible";
 export default {
   name: "DefectTable",
   dicts: ['defect_level'],
+  mixins: [paneResizerHandleViewport],
   components: {
     Multipane,
     MultipaneResizer,
@@ -343,6 +345,7 @@ export default {
       if (this.showModuleTree) {
         this.cacheTreeModuleWidth();
       }
+      this.setDragComponentSize();
     },
     toggleModuleTreeVisible() {
       this.showModuleTree = !this.showModuleTree;
@@ -361,9 +364,11 @@ export default {
         const treeH = this.$refs.treeModule ? (this.$refs.treeModule.scrollHeight || 0) : 0;
         const ctx = this.$refs.defectTableContext;
         const ctxH = ctx ? (ctx.scrollHeight || 0) : 0;
-        const pageHeight = Math.max(treeH, ctxH, document.body.scrollHeight - 170);
+        /* 勿用 document.body.scrollHeight：会把竖线撑到整页，multipane 行被拉高，未满一屏时出现内层滚动与分页下大片空白 */
+        const pageHeight = Math.max(treeH, ctxH, 8);
         this.multipaneStyle["--marginTop"] = pageHeight + "px";
         this.$refs.cat2BugTable && this.$refs.cat2BugTable.doLayout && this.$refs.cat2BugTable.doLayout();
+        this.scheduleSyncPaneResizerHandle();
       });
     },
     onTableColumnsChange(columns) {
@@ -428,17 +433,28 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import "~@/assets/styles/multipane-resizer-grip.scss";
+
 .defect-table-root {
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: stretch;
+  flex: 1 1 0%;
+  min-height: 0;
 }
+/*
+ * 表体区域：按内容增高，max-height 不超过父级，行数多时在本层纵向滚动。
+ * 勿用 flex:1 撑满父列：会在表底与分页之间塞入大块空白，改变「列表—分页」间距观感。
+ */
 .defect-table-x-scroll {
+  flex: 0 1 auto;
   min-width: 0;
+  min-height: 0;
+  max-height: 100%;
   width: 100%;
   overflow-x: auto;
-  overflow-y: visible;
+  overflow-y: auto;
   /* 固定列 / 宽表时确保横向滚动发生在本层，减轻外层出现双横条 */
   -webkit-overflow-scrolling: touch;
 }
@@ -446,11 +462,14 @@ export default {
   flex-shrink: 0;
   width: 100%;
 }
-/* 与测试用例页 custom-resizer 一致 */
-.custom-resizer {
-  flex: 0 1 auto;
+/* 与用例页共用 multipane-resizer-grip：轨道 + 圆角手柄，竖线高度 --marginTop */
+.custom-resizer.multipane {
+  flex: 1 1 0%;
   width: 100%;
+  min-width: 0;
+  min-height: 0;
   height: auto;
+  align-items: stretch;
   user-select: none;
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -461,61 +480,57 @@ export default {
   width: 100%;
 }
 .custom-resizer > .multipane-resizer {
-  margin: 0;
-  left: 0;
+  flex-shrink: 0;
+  /* 与 vue-multipane 竖向布局一致：负 margin + left 一半宽度，条骑在左右列缝上，不占一整列留白 */
+  margin: 0 0 0 -8px;
+  left: 4px;
   display: flex;
   justify-content: center;
-  align-items: center;
+  /* 竖线贴顶，与左右交付物树/表格同起点，避免分隔列上方一条白缝 */
+  align-items: flex-start;
   height: 100%;
   width: 8px;
   cursor: col-resize;
   position: relative;
-  &:before {
-    display: block;
-    content: "";
-    width: 1px;
-    height: var(--marginTop);
-    background-color: #dcdfe6;
-  }
-  &:after {
-    content: "";
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 4px;
-    height: 30px;
-    border-left: 1px solid #c0c4cc;
-    border-right: 1px solid #c0c4cc;
-    border-radius: 2px;
-  }
-  &:hover {
-    &:before {
-      background-color: #b0b0b0;
-    }
-    &:after {
-      border-color: #909399;
-    }
-  }
+  box-sizing: border-box;
+  z-index: 350;
+  @include multipane-resizer-vertical-appearance;
 }
 .defect-tree-module {
   width: var(--treeModuleWidth);
   max-width: 75%;
   flex-shrink: 0;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  box-sizing: border-box;
+}
+.defect-tree-module ::v-deep > .tree {
+  flex: 1 1 0%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.defect-tree-module ::v-deep .el-tree {
+  flex: 1 1 0%;
+  min-height: 0;
+  overflow-y: auto;
 }
 .defect-table-context {
-  flex-grow: 1;
+  flex: 1 1 0%;
   min-width: 0;
+  min-height: 0;
   overflow-x: hidden;
-  overflow-y: visible;
+  overflow-y: hidden;
   display: flex;
   flex-direction: column;
   /*
-   * 分页上下留白同高：抵消全局 .pagination-container{margin-top:30px}；
-   * 父级 defect-page / .app-container 底 padding 约 20px + safe-area，margin-bottom 用 calc 使「距表格」≈「距可视内容底」。
+   * 分页上下留白：父级 defect-page 底 padding 为 0（竖线可贴底），此处将 --defect-page-bottom-pad 置 0，
+   * margin-bottom 计算比原先少减 20px，等效为分页区相对底部多留约 20px，与原先「页底 padding + 分页边距」观感一致；safe-area 仍参与 calc。
    */
   --defect-pagination-v-gap: 28px;
-  --defect-page-bottom-pad: 20px;
+  --defect-page-bottom-pad: 0px;
   /* 分页整体略上移，加大与页面内容底的间距 */
   --defect-pagination-extra-bottom: 14px;
 }

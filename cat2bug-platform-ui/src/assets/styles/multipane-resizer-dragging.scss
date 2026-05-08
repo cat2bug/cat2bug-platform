@@ -1,0 +1,28 @@
+/**
+ * 左右分栏拖动中（vue-multipane 在根节点加 .is-resizing），略加强轨道与手柄反馈。
+ */
+.custom-resizer.multipane.is-resizing > .multipane-resizer,
+.markdown-body.multipane.is-resizing > .markdown-body-resizer {
+  cursor: col-resize;
+
+  &::before {
+    background: linear-gradient(
+      180deg,
+      rgba(64, 158, 255, 0.2) 0%,
+      rgba(64, 158, 255, 0.48) 22%,
+      rgba(64, 158, 255, 0.48) 78%,
+      rgba(64, 158, 255, 0.2) 100%
+    );
+    box-shadow: inset 0 0 0 0.5px rgba(64, 158, 255, 0.22);
+  }
+
+  &::after {
+    transform: translate(-50%, -50%) scale(1.08);
+    border: 1px solid #337ecc;
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.95),
+      0 2px 6px rgba(64, 158, 255, 0.25),
+      0 4px 18px rgba(64, 158, 255, 0.2);
+    background: linear-gradient(180deg, #ffffff 0%, #e2eeff 50%, #ffffff 100%);
+  }
+}

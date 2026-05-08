@@ -34,6 +34,15 @@ export default {
   position: relative;
   /* hidden 会在个别布局下裁掉主区域底部内容；整页滚动由 main-container 承担 */
   overflow: visible;
+  /* 路由根节点（transition/keep-alive 为抽象组件，不占 DOM）作为首子元素铺满，避免仅 min-height 时底部留白 */
+  display: flex;
+  flex-direction: column;
+}
+
+.app-main > *:first-child {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
 }
 
 .fixed-header + .app-main {
