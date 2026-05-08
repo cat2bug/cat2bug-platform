@@ -60,7 +60,7 @@ public class SysAiModuleConfigController extends BaseController
     /**
      * 查询AI模型配置列表
      */
-    @PreAuthorize("@ss.hasPermi('system:ai:list')")
+    @PreAuthorize("@ss.hasPermi('system:ai:list') || @ss.hasPermi('system:case:add')")
     @GetMapping("/list")
     public TableDataInfo list(SysAiModuleConfig sysAiModuleConfig)
     {
