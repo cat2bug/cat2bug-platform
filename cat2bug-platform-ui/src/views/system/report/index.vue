@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container">
+  <div class="app-container report-page">
     <project-label :project-id="projectId" />
     <div ref="reportTools" class="report-tools" :class="{ 'wrapped-tools': reportToolsWrapped }">
       <el-form class="left" :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
@@ -107,13 +107,15 @@
       </template>
     </cat2-bug-table>
 
-    <pagination
-      v-show="total>0"
-      :total="total"
-      :page.sync="queryParams.pageNum"
-      :limit.sync="queryParams.pageSize"
-      @pagination="getList"
-    />
+    <div v-show="total>0" class="report-table-pagination-band">
+      <pagination
+        class="report-table-pagination"
+        :total="total"
+        :page.sync="queryParams.pageNum"
+        :limit.sync="queryParams.pageSize"
+        @pagination="getList"
+      />
+    </div>
 
     <!-- 添加或修改报告对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
@@ -546,5 +548,30 @@ export default {
 .report-column-picker ::v-deep .el-checkbox__label {
   line-height: 1.4;
   padding-left: 8px;
+}
+/* 与缺陷列表分页底部留白一致（defect/list/table.vue） */
+.report-page {
+  --defect-pagination-v-gap: 28px;
+  --defect-page-bottom-pad: 20px;
+  --defect-pagination-extra-bottom: 14px;
+}
+.report-table-pagination-band {
+  flex-shrink: 0;
+  margin-top: var(--defect-pagination-v-gap);
+  margin-bottom: max(
+    0px,
+    calc(
+      var(--defect-pagination-v-gap) - var(--defect-page-bottom-pad) -
+        env(safe-area-inset-bottom, 0px) + var(--defect-pagination-extra-bottom)
+    )
+  );
+}
+::v-deep .report-table-pagination.pagination-container {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  padding-left: 16px;
+  padding-right: 20px;
 }
 </style>

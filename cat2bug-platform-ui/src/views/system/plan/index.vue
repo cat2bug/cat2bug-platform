@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container">
+  <div class="app-container plan-page">
     <project-label />
     <div ref="planTools" class="plan-tools" :class="{ 'wrapped-tools': planToolsWrapped }">
       <el-form class="left" :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
@@ -113,13 +113,15 @@
       </template>
     </cat2-bug-table>
 
-    <pagination
-      v-show="total>0"
-      :total="total"
-      :page.sync="queryParams.pageNum"
-      :limit.sync="queryParams.pageSize"
-      @pagination="getList"
-    />
+    <div v-show="total>0" class="plan-table-pagination-band">
+      <pagination
+        class="plan-table-pagination"
+        :total="total"
+        :page.sync="queryParams.pageNum"
+        :limit.sync="queryParams.pageSize"
+        @pagination="getList"
+      />
+    </div>
     <add-plan-dialog ref="planDialog" @add="getList" @update="getList" @close="initFloatMenu" />
     <handle-plan-dialog ref="handlePlanDialog" @change="getList" @close="initFloatMenu" />
     <dict-option-dialog ref="planItemState" title="测试状态管理" :dictType="dict.type.plan_item_state" />
@@ -535,5 +537,30 @@ export default {
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+/* 与缺陷列表分页底部留白一致（defect/list/table.vue） */
+.plan-page {
+  --defect-pagination-v-gap: 28px;
+  --defect-page-bottom-pad: 20px;
+  --defect-pagination-extra-bottom: 14px;
+}
+.plan-table-pagination-band {
+  flex-shrink: 0;
+  margin-top: var(--defect-pagination-v-gap);
+  margin-bottom: max(
+    0px,
+    calc(
+      var(--defect-pagination-v-gap) - var(--defect-page-bottom-pad) -
+        env(safe-area-inset-bottom, 0px) + var(--defect-pagination-extra-bottom)
+    )
+  );
+}
+::v-deep .plan-table-pagination.pagination-container {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  padding-left: 16px;
+  padding-right: 20px;
 }
 </style>

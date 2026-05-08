@@ -195,13 +195,15 @@
           </template>
         </cat2-bug-table>
 
-        <pagination
-          v-show="total>0"
-          :total="total"
-          :page.sync="queryParams.pageNum"
-          :limit.sync="queryParams.pageSize"
-          @pagination="getList"
-        />
+        <div v-show="total>0" class="case-table-pagination-band">
+          <pagination
+            class="case-table-pagination"
+            :total="total"
+            :page.sync="queryParams.pageNum"
+            :limit.sync="queryParams.pageSize"
+            @pagination="getList"
+          />
+        </div>
         </div>
       </div>
     </multipane>
@@ -768,6 +770,29 @@ export default {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  /* 与缺陷列表 table.vue 分页底部留白一致 */
+  --defect-pagination-v-gap: 28px;
+  --defect-page-bottom-pad: 20px;
+  --defect-pagination-extra-bottom: 14px;
+}
+.case-table-pagination-band {
+  flex-shrink: 0;
+  margin-top: var(--defect-pagination-v-gap);
+  margin-bottom: max(
+    0px,
+    calc(
+      var(--defect-pagination-v-gap) - var(--defect-page-bottom-pad) -
+        env(safe-area-inset-bottom, 0px) + var(--defect-pagination-extra-bottom)
+    )
+  );
+}
+::v-deep .case-table-pagination.pagination-container {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  padding-left: 16px;
+  padding-right: 20px;
 }
 .case-sidebar-expand-trigger {
   display: inline-flex;
