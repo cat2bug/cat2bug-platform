@@ -136,7 +136,7 @@ public class AiDefectController extends BaseController {
 
     @PreAuthorize("@ss.hasPermi('system:defect:add')")
     @PostMapping("/version")
-    public AjaxResult makeVersion(AiDescribe describe) throws Exception {
+    public AjaxResult makeVersion(@RequestBody AiDescribe describe) throws Exception {
         IAiService aiService = aiServiceMap.get(SERVICE_TYPE_OLLAMA);
         SysAiModuleConfig sysAiModuleConfig = sysAiModuleConfigService.selectSysAiModuleConfigByProjectId(describe.getProjectId());
         SysUserConfig userConfig = sysUserConfigService.selectSysUserConfigByUserId(getUserId());

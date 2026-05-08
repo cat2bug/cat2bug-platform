@@ -69,15 +69,31 @@
           <select-case ref="selectCase" v-model="form.caseId" :module-id="form.moduleId" :step-index="form.caseStepId" @step-change="stepChangeHandle" />
         </el-form-item>
         <el-form-item :label="$t('describe')" prop="defectDescribe">
-          <el-input
-            type="textarea"
-            :placeholder="$t('enter-content')"
+          <cat2-bug-textarea
+            ref="cat2bugTextarea"
+            :name="$t('describe').toString()"
+            :placeholder="$t('defect.enter-markdown-describe').toString()"
+            :tools="describeTools"
             v-model="form.defectDescribe"
             maxlength="65536"
             rows="8"
             show-word-limit
+            show-tools
           >
-          </el-input>
+            <template v-slot:tools>
+              <el-tooltip class="item" effect="dark" :content="$t('defect.ai-filling-in')" placement="top">
+                <el-button
+                  :handle="aiButtonLoading ? 'true' : 'false'"
+                  class="cat2-bug-textarea-button"
+                  type="text"
+                  @click="createDefectByAiHandle"
+                >
+                  <svg-icon icon-class="robot" />
+                  <span v-show="aiButtonLoading">分析中...</span>
+                </el-button>
+              </el-tooltip>
+            </template>
+          </cat2-bug-textarea>
         </el-form-item>
         <el-form-item :label="$t('image')" prop="imgUrls">
           <image-upload v-model="form.imgUrls" :limit="9"></image-upload>
@@ -100,13 +116,24 @@ import SelectProjectMember from "@/components/Project/SelectProjectMember"
 import SelectModule from "@/components/Module/SelectModule"
 import ImageUpload from "@/components/ImageUpload";
 import SelectCase from "@/components/Case/SelectCase";
+import Cat2BugTextarea from "@/components/Cat2BugTextarea";
+import {
+  makeDefectMember,
+  makeDefectModule,
+  makeDefectTitle,
+  makeDefectType,
+  makeDefectVersion
+} from "@/api/ai/AiDefect";
+import {strFormat} from "@/utils";
 
 export default {
   name: "EditDefect",
   dicts: ['defect_level'],
-  components: { ImageUpload, SelectProjectMember, SelectModule, SelectCase },
+  components: { ImageUpload, SelectProjectMember, SelectModule, SelectCase, Cat2BugTextarea },
   data() {
     return {
+      describeTools: [],
+      aiButtonLoading: false,
       // 计划时间范围
       planTimeRange:[],
       // 标题
@@ -238,7 +265,112 @@ export default {
     },
     stepChangeHandle(index){
       this.form.caseStepId = index;
-    }
+    },
+    /** 处理人：清空后为 []，[] 在 JS 中为 truthy，需单独判断 */
+    defectHandleByNeedsAiFill() {
+      const hb = this.form.handleBy;
+      if (hb == null) return true;
+      return Array.isArray(hb) && hb.length === 0;
+    },
+    /** 与新建缺陷一致：根据描述 AI 补全未填字段 */
+    createDefectByAiHandle() {
+      if (this.aiButtonLoading) {
+        this.$message.error(this.$i18n.t("defect.ai-re-run").toString());
+        return;
+      }
+      const startSeconds = new Date().getTime();
+      if (!this.form.defectDescribe) {
+        this.$message.error(this.$i18n.t("defect.describe-cannot-empty").toString());
+        return;
+      }
+      this.aiButtonLoading = true;
+      let makeTitle;
+      let makeModule;
+      let makeType;
+      let makeMember;
+      let makeVersion;
+      const params = {
+        projectId: this.projectId,
+        describe: this.form.defectDescribe,
+      };
+      if (!this.form.defectName) {
+        makeTitle = makeDefectTitle(params).then((res) => {
+          if (!this.form.defectName && res.code == 200 && res.data.title) {
+            this.form.defectName = res.data.title;
+            this.$message.success(strFormat(this.$i18n.t("fill-finish"), this.$i18n.t("title").toString()));
+          }
+        });
+      }
+      if (!this.form.moduleId) {
+        makeModule = makeDefectModule(params).then((res) => {
+          if (!this.form.moduleId && res.code == 200 && res.data && res.data.moduleId) {
+            this.form.moduleId = res.data.moduleId;
+            this.$message.success(strFormat(this.$i18n.t("fill-finish"), this.$i18n.t("module").toString()));
+          }
+        });
+      }
+      if (!this.form.defectType) {
+        makeType = makeDefectType(params).then((res) => {
+          if (!this.form.defectType && res.code == 200 && res.data.type) {
+            this.form.defectType = res.data.type;
+            this.$message.success(strFormat(this.$i18n.t("fill-finish"), this.$i18n.t("type").toString()));
+          }
+        });
+      }
+      if (this.defectHandleByNeedsAiFill()) {
+        makeMember = makeDefectMember(params).then((res) => {
+          if (this.defectHandleByNeedsAiFill() && res.code == 200 && res.data.memberId) {
+            this.$set(this.form, "handleBy", [res.data.memberId]);
+            this.$message.success(strFormat(this.$i18n.t("fill-finish"), this.$i18n.t("handle-by").toString()));
+          }
+        });
+      }
+      if (!this.form.moduleVersion) {
+        makeVersion = makeDefectVersion(params).then((res) => {
+          if (this.form.moduleVersion || res.code !== 200 || !res.data) {
+            return;
+          }
+          const raw = res.data;
+          const v =
+            raw.version != null && String(raw.version).trim() !== ""
+              ? String(raw.version).trim()
+              : raw.moduleVersion != null && String(raw.moduleVersion).trim() !== ""
+                ? String(raw.moduleVersion).trim()
+                : null;
+          if (!v) {
+            return;
+          }
+          this.$set(this.form, "moduleVersion", v);
+          this.$message.success(
+            strFormat(this.$i18n.t("fill-finish"), this.$i18n.t("version").toString())
+          );
+        });
+      }
+      if (!makeTitle && !makeModule && !makeType && !makeMember && !makeVersion) {
+        this.aiButtonLoading = false;
+        this.$message.error(this.$i18n.t("defect.no-fields-analyze").toString());
+        return;
+      }
+      Promise.all([makeTitle, makeModule, makeType, makeMember, makeVersion])
+        .then(() => {
+          const self = this;
+          setTimeout(() => {
+            self.aiButtonLoading = false;
+            self.$message({
+              message: strFormat(
+                self.$i18n.t("defect.analyze-finish"),
+                Math.floor((new Date().getTime() - startSeconds) / 1000)
+              ),
+              type: "success",
+              duration: 5000,
+            });
+          }, 1000);
+        })
+        .catch((e) => {
+          this.aiButtonLoading = false;
+          this.$message.error(e);
+        });
+    },
   }
 }
 </script>
@@ -250,6 +382,17 @@ export default {
 
 .selectTime .el-date-editor--datetimerange.el-input__inner{
   width: 100%;
+}
+
+.cat2-bug-textarea-button {
+  span {
+    margin-left: 3px;
+    font-size: 12px;
+  }
+}
+.cat2-bug-textarea-button[handle="true"] {
+  background-color: rgb(236, 245, 255);
+  border-radius: 15px;
 }
 
 </style>

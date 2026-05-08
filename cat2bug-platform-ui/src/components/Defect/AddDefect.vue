@@ -382,6 +382,12 @@ export default {
     stepChangeHandle(index){
       this.form.caseStepId = index;
     },
+    /** 处理人：清空后为 []，[] 在 JS 中为 truthy，需单独判断 */
+    defectHandleByNeedsAiFill() {
+      const hb = this.form.handleBy;
+      if (hb == null) return true;
+      return Array.isArray(hb) && hb.length === 0;
+    },
     /** AI创建缺陷 */
     createDefectByAiHandle() {
       if(this.aiButtonLoading) {
@@ -423,20 +429,31 @@ export default {
           }
         });
       }
-      if(!this.form.handleBy) {
+      if(this.defectHandleByNeedsAiFill()) {
         makeMember=makeDefectMember(params).then(res => {
-          if(!this.form.handleBy && res.code==200 && res.data.memberId) {
-            this.form.handleBy = [res.data.memberId];
+          if(this.defectHandleByNeedsAiFill() && res.code==200 && res.data.memberId) {
+            this.$set(this.form, 'handleBy', [res.data.memberId]);
             this.$message.success(strFormat(this.$i18n.t('fill-finish'),this.$i18n.t("handle-by").toString()));
           }
         });
       }
       if(!this.form.moduleVersion) {
         makeVersion = makeDefectVersion(params).then(res => {
-          if(!this.form.moduleVersion && res.code==200) {
-            this.form.moduleVersion = res.data.version;
-            this.$message.success(strFormat(this.$i18n.t('fill-finish'),this.$i18n.t("version").toString()));
+          if (this.form.moduleVersion || res.code !== 200 || !res.data) {
+            return;
           }
+          const raw = res.data;
+          const v =
+            raw.version != null && String(raw.version).trim() !== ''
+              ? String(raw.version).trim()
+              : raw.moduleVersion != null && String(raw.moduleVersion).trim() !== ''
+                ? String(raw.moduleVersion).trim()
+                : null;
+          if (!v) {
+            return;
+          }
+          this.$set(this.form, 'moduleVersion', v);
+          this.$message.success(strFormat(this.$i18n.t('fill-finish'), this.$i18n.t("version").toString()));
         });
       }
       if(!makeTitle && !makeModule && !makeType && !makeMember && !makeVersion) {
