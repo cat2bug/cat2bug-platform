@@ -35,7 +35,12 @@
             <h4>{{ $t('display-field') }}</h4>
           </div>
           <el-divider class="case-field-divider" />
-          <el-checkbox-group v-model="columnPickerCheckedKeys" class="col" @change="onCaseColumnPickerChange">
+          <el-checkbox-group
+            :key="'case-colpick-' + caseColumnPickerRev"
+            v-model="columnPickerCheckedKeys"
+            class="col"
+            @change="onCaseColumnPickerChange"
+          >
             <el-checkbox v-for="c in caseColumnPickerOptions" :key="c.key" :label="c.key">{{ $t(c.key) }}</el-checkbox>
           </el-checkbox-group>
           <el-button slot="reference" class="case-field-picker-btn" style="padding: 9px;" plain icon="el-icon-s-fold" size="small" />
@@ -316,6 +321,9 @@ export default {
       showModuleTree: true,
       caseTableColumnDefaults: CaseTableColumnDefaults.map(c => ({ ...c })),
       columnPickerCheckedKeys: [],
+      /** 与 Cat2BugTable columns-change 列顺序一致，供「显示字段」列表排序 */
+      caseColumnPickerRev: 0,
+      casePickerColumnList: null,
       // 遮罩层
       loading: false,
       // 选中数组
@@ -372,6 +380,10 @@ export default {
   },
   computed: {
     caseColumnPickerOptions() {
+      const ordered = this.casePickerColumnList
+      if (ordered && ordered.length) {
+        return ordered.map(c => ({ ...c }))
+      }
       return CaseTableColumnDefaults.filter(c => c.showInColumnPicker !== false)
     },
     /** 用于显示的用例编号 */
@@ -571,6 +583,9 @@ export default {
     },
     /** 处理鼠标在表格移动事件 */
     onCaseTableColumnsChange(columns) {
+      this.caseColumnPickerRev += 1
+      const picker = columns.filter(c => c.showInColumnPicker !== false).map(c => ({ ...c }))
+      this.$set(this, 'casePickerColumnList', picker)
       this.columnPickerCheckedKeys = columns.filter(c => c.visible && c.showInColumnPicker !== false).map(c => c.key)
       this.$nextTick(() => this.syncTreeToolbarWithTableHeader())
     },

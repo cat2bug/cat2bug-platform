@@ -10,7 +10,12 @@
             <h4>{{ $t('display-field') }}</h4>
           </div>
           <el-divider class="defect-field-divider"></el-divider>
-          <el-checkbox-group v-model="columnPickerCheckedKeys" class="defect-column-picker" @change="onColumnPickerChange">
+          <el-checkbox-group
+            :key="'defect-colpick-' + defectColumnPickerRev"
+            v-model="columnPickerCheckedKeys"
+            class="defect-column-picker"
+            @change="onColumnPickerChange"
+          >
             <el-checkbox v-for="c in defectColumnPickerOptions" :key="c.key" :label="c.key">{{ $t(c.key) }}</el-checkbox>
           </el-checkbox-group>
           <el-button
@@ -226,6 +231,7 @@ export default {
       /** 缺陷列表表格默认列（克隆自 table-options，避免与全局常量引用互相污染） */
       tableColumnDefaults: TableOptions.map(c => ({ ...c })),
       columnPickerCheckedKeys: [],
+      defectColumnPickerRev: 0,
       /** 与 Cat2BugTable 列顺序一致，供「显示字段」勾选列表排序（含 Excel 拖列写回缓存后） */
       defectPickerColumnList: null,
     }
@@ -372,10 +378,12 @@ export default {
       });
     },
     onTableColumnsChange(columns) {
+      this.defectColumnPickerRev += 1;
+      const picker = columns.filter((c) => c.showInColumnPicker !== false).map((c) => ({ ...c }));
+      this.$set(this, 'defectPickerColumnList', picker);
       this.columnPickerCheckedKeys = columns
         .filter((c) => c.visible && c.showInColumnPicker !== false)
         .map((c) => c.key);
-      this.defectPickerColumnList = columns.filter((c) => c.showInColumnPicker !== false).map((c) => ({ ...c }));
     },
     onColumnPickerChange(keys) {
       this.$refs.cat2BugTable && this.$refs.cat2BugTable.setColumnsVisible(keys);

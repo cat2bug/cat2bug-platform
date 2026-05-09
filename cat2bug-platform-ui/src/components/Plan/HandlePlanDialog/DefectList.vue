@@ -46,7 +46,12 @@
             <h4>{{$t('defect.display-field')}}</h4>
           </div>
           <el-divider class="defect-field-divider"></el-divider>
-          <el-checkbox-group v-model="columnPickerCheckedKeys" class="col" @change="onColumnPickerChange">
+          <el-checkbox-group
+            :key="'plan-defect-colpick-' + planDefectColumnPickerRev"
+            v-model="columnPickerCheckedKeys"
+            class="col"
+            @change="onColumnPickerChange"
+          >
             <el-checkbox v-for="c in defectColumnPickerOptions" :key="c.key" :label="c.key">{{ $t(c.key) }}</el-checkbox>
           </el-checkbox-group>
           <el-button
@@ -172,6 +177,7 @@ export default {
       planDefectSortTypeKey: DEFECT_TABLE_SORT_TYPE,
       planDefectTableColumns: TableOptions.map((c) => ({ ...c })),
       columnPickerCheckedKeys: [],
+      planDefectColumnPickerRev: 0,
       defectPickerColumnList: null,
       // 鼠标是否点击
       mouseFlag: false,
@@ -339,10 +345,12 @@ export default {
       });
     },
     onTableColumnsChange(columns) {
+      this.planDefectColumnPickerRev += 1;
+      const picker = columns.filter((c) => c.showInColumnPicker !== false).map((c) => ({ ...c }));
+      this.$set(this, 'defectPickerColumnList', picker);
       this.columnPickerCheckedKeys = columns
         .filter((c) => c.visible && c.showInColumnPicker !== false)
         .map((c) => c.key);
-      this.defectPickerColumnList = columns.filter((c) => c.showInColumnPicker !== false).map((c) => ({ ...c }));
     },
     onColumnPickerChange(keys) {
       this.$refs.cat2BugTable && this.$refs.cat2BugTable.setColumnsVisible(keys);

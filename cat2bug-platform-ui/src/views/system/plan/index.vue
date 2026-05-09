@@ -31,7 +31,12 @@
             <h4>{{ $t('display-field') }}</h4>
           </div>
           <el-divider class="plan-field-divider"></el-divider>
-          <el-checkbox-group v-model="columnPickerCheckedKeys" class="col" @change="onPlanColumnPickerChange">
+          <el-checkbox-group
+            :key="'plan-list-colpick-' + planColumnPickerRev"
+            v-model="columnPickerCheckedKeys"
+            class="col"
+            @change="onPlanColumnPickerChange"
+          >
             <el-checkbox v-for="c in planColumnPickerOptions" :key="c.key" :label="c.key">{{ $t(c.key) }}</el-checkbox>
           </el-checkbox-group>
           <el-button style="padding: 9px;" plain slot="reference" icon="el-icon-s-fold" size="mini"></el-button>
@@ -181,6 +186,9 @@ export default {
       },
       planTableColumnDefaults: PlanTableColumnDefaults.map(c => ({ ...c })),
       columnPickerCheckedKeys: [],
+      planColumnPickerRev: 0,
+      /** 与 Cat2BugTable columns-change 列顺序一致 */
+      planPickerColumnList: null,
       planToolsWrapped: false,
     };
   },
@@ -193,6 +201,10 @@ export default {
   },
   computed: {
     planColumnPickerOptions() {
+      const ordered = this.planPickerColumnList;
+      if (ordered && ordered.length) {
+        return ordered.map(c => ({ ...c }));
+      }
       return PlanTableColumnDefaults.filter(c => c.showInColumnPicker !== false);
     },
     /** 用于显示的用例编号 */
@@ -254,6 +266,9 @@ export default {
     checkPermi,
     strFormat,
     onPlanTableColumnsChange(columns) {
+      this.planColumnPickerRev += 1;
+      const picker = columns.filter(c => c.showInColumnPicker !== false).map(c => ({ ...c }));
+      this.$set(this, 'planPickerColumnList', picker);
       this.columnPickerCheckedKeys = columns.filter(c => c.visible && c.showInColumnPicker !== false).map(c => c.key);
     },
     syncPlanToolsWrapped() {

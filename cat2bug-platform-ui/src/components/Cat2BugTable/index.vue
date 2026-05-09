@@ -40,6 +40,7 @@
 
 <script>
 import Sortable from "sortablejs";
+import { getColumnById } from "element-ui/packages/table/src/util";
 
 const TABLE_FIELD_LIST_CACHE_KEY = 'defect-table-field-list';
 const TABLE_SORT_COLUMN = 'defect_table_sort_column_key';
@@ -282,6 +283,19 @@ export default {
       this.$emit('columns-change', columns);
       if (this.columnsStorageKey()) this.saveShowColumns(columns);
     },
+    /**
+     * 与 Element UI util.getColumnByCell 一致：th.className 中含 el-table_*_column_*（可多级 _column_），
+     * 不能用 ^el-table_\\d+_column_\\d+$，否则子列 id 或部分构建下无法解析，拖列会整段 return。
+     */
+    getHeaderThDataProp(th) {
+      if (!th || !this.$refs.elTable) return null;
+      const matches = (th.className || "").match(/el-table_[^\s]+/);
+      if (!matches) return null;
+      const storeCol = getColumnById(this.$refs.elTable, matches[0]);
+      return storeCol && storeCol.property != null && storeCol.property !== ""
+        ? storeCol.property
+        : null;
+    },
     initColumnDrag() {
       this.bindSortable('.el-table__header-wrapper thead tr', 'normal');
       this.bindSortable('.el-table__fixed-header-wrapper thead tr', 'fixed');
@@ -296,16 +310,68 @@ export default {
         this.headerSortable[zone] = Sortable.create(el, {
           ghostClass: 'table-header-ghost',
           group: zone,
+          filter: 'th.gutter, .el-table__gutter',
+          preventOnFilter: false,
           onStart: () => {
             this.mouseFlag = false;
           },
           onEnd: evt => {
-            const oldField = this.showTableFieldList[evt.oldIndex];
-            const newField = this.showTableFieldList[evt.newIndex];
-            if (!oldField || !newField) return;
             this.mouseFlag = false;
-            const moved = this.tableFieldList.splice(oldField.index, 1)[0];
-            this.tableFieldList.splice(newField.index, 0, moved);
+            const visibleInZone = this.showTableFieldList.filter((col) =>
+              zone === 'fixed' ? !!col.fixed : !col.fixed
+            );
+            const dataLen = visibleInZone.length;
+            if (!dataLen || !evt.from || !evt.from.children) return;
+
+            const isGutterTh = (cell) =>
+              cell &&
+              cell.tagName === 'TH' &&
+              (cell.classList.contains('gutter') || cell.classList.contains('el-table__gutter'));
+
+            /**
+             * 注意：必须用 tagName !== 'TH' 才跳过非表头；若写成 === 'TH' 会跳过所有列，导致永远无法联动。
+             * 按表头 th 从左到右读取本分区 property 顺序，与 model 比较后整体写回（不依赖 oldIndex/newIndex）。
+             */
+            const zonePropSet = new Set(visibleInZone.map((c) => c.prop).filter(Boolean));
+            const domPropsInZone = [];
+            for (let i = 0; i < evt.from.children.length; i++) {
+              const cell = evt.from.children[i];
+              if (!cell || cell.tagName !== 'TH' || isGutterTh(cell)) continue;
+              const p = this.getHeaderThDataProp(cell);
+              if (p != null && zonePropSet.has(p)) {
+                domPropsInZone.push(p);
+              }
+            }
+            if (domPropsInZone.length !== dataLen) return;
+
+            const modelProps = visibleInZone.map((c) => c.prop);
+            const sameOrder =
+              domPropsInZone.length === modelProps.length &&
+              domPropsInZone.every((p, idx) => p === modelProps[idx]);
+            if (sameOrder) return;
+
+            const zoneKeySet = new Set(visibleInZone.map((c) => c.key));
+            const byProp = new Map(visibleInZone.map((c) => [c.prop, c]));
+            const reorderedCols = domPropsInZone.map((p) => byProp.get(p)).filter(Boolean);
+            if (reorderedCols.length !== dataLen) return;
+
+            const positions = [];
+            this.tableFieldList.forEach((col, idx) => {
+              if (
+                col.visible &&
+                (zone === 'fixed' ? !!col.fixed : !col.fixed) &&
+                zoneKeySet.has(col.key)
+              ) {
+                positions.push(idx);
+              }
+            });
+            if (positions.length !== dataLen) return;
+
+            const newList = this.tableFieldList.slice();
+            reorderedCols.forEach((col, j) => {
+              newList[positions[j]] = col;
+            });
+            this.tableFieldList = newList;
             this.reorderColumns();
           }
         });
@@ -347,7 +413,9 @@ export default {
         ...storeCols.filter(c => !c.property)
       ];
       this.$nextTick(() => {
+        if (!this.$refs.elTable) return;
         this.$refs.elTable.doLayout();
+        this.initColumnDrag();
       });
     }
   }

@@ -21,7 +21,12 @@
               <h4>{{ $t('display-field') }}</h4>
             </div>
             <el-divider class="doc-picker-divider"></el-divider>
-            <el-checkbox-group v-model="columnPickerCheckedKeys" class="doc-picker-col" @change="onDocColumnPickerChange">
+            <el-checkbox-group
+              :key="'doc-colpick-' + docColumnPickerRev"
+              v-model="columnPickerCheckedKeys"
+              class="doc-picker-col"
+              @change="onDocColumnPickerChange"
+            >
               <el-checkbox v-for="c in documentColumnPickerOptions" :key="c.key" :label="c.key">{{ $t(c.key) }}</el-checkbox>
             </el-checkbox-group>
             <el-button style="padding: 9px;" plain slot="reference" icon="el-icon-s-fold" size="small"></el-button>
@@ -216,6 +221,8 @@ export default {
       documentList: [],
       documentTableColumnDefaults: DocumentTableColumnDefaults.map(c => ({ ...c })),
       columnPickerCheckedKeys: [],
+      docColumnPickerRev: 0,
+      docPickerColumnList: null,
       documentToolsWrapped: false,
       // 弹出层标题
       title: "",
@@ -251,6 +258,10 @@ export default {
   },
   computed: {
     documentColumnPickerOptions() {
+      const ordered = this.docPickerColumnList;
+      if (ordered && ordered.length) {
+        return ordered.map(c => ({ ...c }));
+      }
       return DocumentTableColumnDefaults.filter(c => c.showInColumnPicker !== false);
     },
     member: function () {
@@ -346,6 +357,9 @@ export default {
       return parseInt(this.$store.state.user.config.currentProjectId);
     },
     onDocTableColumnsChange(columns) {
+      this.docColumnPickerRev += 1;
+      const picker = columns.filter(c => c.showInColumnPicker !== false).map(c => ({ ...c }));
+      this.$set(this, 'docPickerColumnList', picker);
       this.columnPickerCheckedKeys = columns.filter(c => c.visible && c.showInColumnPicker !== false).map(c => c.key);
     },
     onDocColumnPickerChange(keys) {

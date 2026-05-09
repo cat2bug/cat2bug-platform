@@ -45,7 +45,12 @@
               <h4>{{ $t('display-field') }}</h4>
             </div>
             <el-divider class="report-picker-divider"></el-divider>
-            <el-checkbox-group v-model="columnPickerCheckedKeys" class="report-column-picker" @change="onReportColumnPickerChange">
+            <el-checkbox-group
+              :key="'report-colpick-' + reportColumnPickerRev"
+              v-model="columnPickerCheckedKeys"
+              class="report-column-picker"
+              @change="onReportColumnPickerChange"
+            >
               <el-checkbox v-for="c in reportColumnPickerOptions" :key="c.key" :label="c.key">{{ $t(c.key) }}</el-checkbox>
             </el-checkbox-group>
             <el-button style="padding: 9px;" plain slot="reference" icon="el-icon-s-fold" size="small"></el-button>
@@ -186,6 +191,8 @@ export default {
       reportList: [],
       reportTableColumnDefaults: ReportTableColumnDefaults.map(c => ({ ...c })),
       columnPickerCheckedKeys: [],
+      reportColumnPickerRev: 0,
+      reportPickerColumnList: null,
       reportToolsWrapped: false,
       // 弹出层标题
       title: "",
@@ -217,6 +224,10 @@ export default {
   },
   computed: {
     reportColumnPickerOptions() {
+      const ordered = this.reportPickerColumnList;
+      if (ordered && ordered.length) {
+        return ordered.map(c => ({ ...c }));
+      }
       return ReportTableColumnDefaults.filter(c => c.showInColumnPicker !== false);
     },
     /** 获取项目id */
@@ -384,6 +395,9 @@ export default {
       this.getList();
     },
     onReportTableColumnsChange(columns) {
+      this.reportColumnPickerRev += 1;
+      const picker = columns.filter(c => c.showInColumnPicker !== false).map(c => ({ ...c }));
+      this.$set(this, 'reportPickerColumnList', picker);
       this.columnPickerCheckedKeys = columns.filter(c => c.visible && c.showInColumnPicker !== false).map(c => c.key);
     },
     onReportColumnPickerChange(keys) {

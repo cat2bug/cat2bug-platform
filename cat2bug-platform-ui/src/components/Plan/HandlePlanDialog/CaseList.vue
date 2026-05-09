@@ -43,7 +43,12 @@
             <h4>{{$t('defect.display-field')}}</h4>
           </div>
           <el-divider class="plan-item-field-divider"></el-divider>
-          <el-checkbox-group v-model="columnPickerCheckedKeys" class="col" @change="onPlanCaseColumnPickerChange">
+          <el-checkbox-group
+            :key="'plan-case-colpick-' + planCaseColumnPickerRev"
+            v-model="columnPickerCheckedKeys"
+            class="col"
+            @change="onPlanCaseColumnPickerChange"
+          >
             <el-checkbox v-for="c in planCaseColumnPickerOptions" :key="c.key" :label="c.key">{{ $t(c.key) }}</el-checkbox>
           </el-checkbox-group>
           <el-button
@@ -163,6 +168,7 @@ export default {
       planItemSortTypeKey: PLAN_ITEM_SORT_TYPE,
       planCaseTableColumns: PlanItemCaseTableOptions.map((c) => ({ ...c })),
       columnPickerCheckedKeys: [],
+      planCaseColumnPickerRev: 0,
       planCasePickerColumnList: null,
       // 鼠标是否点击
       mouseFlag: false,
@@ -280,7 +286,9 @@ export default {
       this.getPlanItemList();
     },
     onPlanCaseColumnsChange(columns) {
-      this.planCasePickerColumnList = columns.filter((c) => c.showInColumnPicker !== false).map((c) => ({ ...c }));
+      this.planCaseColumnPickerRev += 1;
+      const picker = columns.filter((c) => c.showInColumnPicker !== false).map((c) => ({ ...c }));
+      this.$set(this, 'planCasePickerColumnList', picker);
       this.columnPickerCheckedKeys = columns
         .filter((c) => c.visible && c.showInColumnPicker !== false)
         .map((c) => c.key);
