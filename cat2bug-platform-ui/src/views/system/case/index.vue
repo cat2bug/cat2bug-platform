@@ -1,34 +1,55 @@
 <template>
-  <div class="app-container case-body">
-    <project-label />
-    <div ref="caseTools" class="case-tools" :class="{ 'wrapped-tools': caseToolsWrapped }">
-      <el-form v-show="showSearch" ref="queryForm" class="left" :model="queryParams" size="small" :inline="true" label-width="0px">
-        <el-form-item prop="caseNum">
-          <el-input
-            v-model="queryParams.caseNum"
-            size="small"
-            prefix-icon="el-icon-s-flag"
-            :placeholder="$t('case.please-enter-id')"
-            clearable
-            @input="handleQuery"
-          />
-        </el-form-item>
-        <el-form-item prop="caseName">
-          <el-input
-            v-model="queryParams.caseName"
-            size="small"
-            prefix-icon="el-icon-files"
-            :placeholder="$t('case.please-enter-title')"
-            clearable
-            @input="handleQuery"
-          />
-        </el-form-item>
-        <el-form-item prop="caseLevel">
-          <cat2-bug-select-level v-model="queryParams.caseLevel" icon="el-icon-s-data" :clearable="true" @change="handleQuery" />
-        </el-form-item>
-      </el-form>
+  <div class="app-container case-body case-page">
+    <div class="case-page-head">
+      <project-label class="case-project-label" />
+      <div class="case-page-head-right">
+        <svg-icon
+          class="case-statistic-toggle"
+          icon-class="view-statistic"
+          @click.native="toggleCaseStatisticPanel"
+        />
+      </div>
+    </div>
+    <cat2-bug-statistic
+      v-show="caseStatisticPanelVisible"
+      class="case-tools-statistic"
+      :params="{}"
+      :draggable="true"
+    />
+    <div
+      ref="caseTools"
+      class="case-view-toolbar defect-table-tools-bar"
+      :class="{ 'wrapped-tools': caseToolsWrapped }"
+    >
+      <div class="case-tools-search">
+        <el-form v-show="showSearch" ref="queryForm" class="left" :model="queryParams" size="small" :inline="true" label-width="0px">
+          <el-form-item prop="caseNum">
+            <el-input
+              v-model="queryParams.caseNum"
+              size="small"
+              prefix-icon="el-icon-s-flag"
+              :placeholder="$t('case.please-enter-id')"
+              clearable
+              @input="handleQuery"
+            />
+          </el-form-item>
+          <el-form-item prop="caseName">
+            <el-input
+              v-model="queryParams.caseName"
+              size="small"
+              prefix-icon="el-icon-files"
+              :placeholder="$t('case.please-enter-title')"
+              clearable
+              @input="handleQuery"
+            />
+          </el-form-item>
+          <el-form-item prop="caseLevel">
+            <cat2-bug-select-level v-model="queryParams.caseLevel" icon="el-icon-s-data" :clearable="true" @change="handleQuery" />
+          </el-form-item>
+        </el-form>
+      </div>
 
-      <div ref="caseToolsRight" class="case-right-tools" :class="{ 'buttons-wrapped': caseRightButtonsWrapped }">
+      <div ref="caseToolsRight" class="table-tools row case-right-tools" :class="{ 'buttons-wrapped': caseRightButtonsWrapped }">
         <el-popover placement="top" trigger="click">
           <div class="row">
             <i class="el-icon-s-fold" />
@@ -110,7 +131,7 @@
       <multipane-resizer ref="paneResizer" v-show="showModuleTree" :style="[multipaneStyle, paneResizerRuleVars]"></multipane-resizer>
       <!--      用例列表-->
       <div ref="caseContext" class="case-context">
-        <div class="case-context-body">
+        <div ref="caseContextBody" class="case-context-body">
           <div class="case-table-x-scroll">
           <cat2-bug-table
             ref="cat2BugTable"
@@ -119,6 +140,7 @@
             sort-column-cache-key="case_table_sort_column_key"
             sort-type-cache-key="case_table_sort_type_key"
             v-resize="setDragComponentSize"
+            :table-max-height="caseTableBodyMaxHeight"
             :columns="caseTableColumnDefaults"
             :data="caseList"
             :loading="loading"
@@ -209,7 +231,7 @@
           </cat2-bug-table>
           </div>
 
-          <div v-show="total>0" class="case-table-pagination-band">
+          <div v-show="total>0" ref="casePaginationBand" class="case-table-pagination-band">
             <pagination
               class="case-table-pagination"
               :total="total"
@@ -271,6 +293,7 @@ import CloudCase2 from '@/components/Cloud/CloudCase2'
 import FocusMemberList from '@/components/FocusMemberList'
 import Cat2BugPreviewImage from '@/components/Cat2BugPreviewImage'
 import Cat2BugTable from '@/components/Cat2BugTable'
+import Cat2BugStatistic from '@/components/Cat2BugStatistic'
 import { CaseTableColumnDefaults } from '@/views/system/case/case-table-options'
 import { checkPermi } from '@/utils/permission'
 import { strFormat } from '@/utils'
@@ -282,11 +305,13 @@ import paneResizerHandleViewport from '@/mixins/paneResizerHandleViewport'
 const TREE_MODULE_WIDTH_CACHE_KEY = 'case_tree_module_width'
 /** 用例页左侧交付物树是否展开（本地缓存） */
 const CASE_TREE_MODULE_VISIBLE_CACHE_KEY = 'case_tree_module_visible'
+/** 与缺陷页一致：分析统计面板是否展开 */
+const CACHE_KEY_CASE_STATISTIC_VISIBLE = 'case.statisticPanelVisible'
 
 export default {
   name: 'Case',
   mixins: [paneResizerHandleViewport],
-  components: { ProjectLabel, AddCase, Cat2BugLevel, Step, TreeModule, Multipane, MultipaneResizer, AddDefect, CloudCase, CloudCase2, FocusMemberList, Cat2BugPreviewImage, Cat2BugSelectLevel, Cat2BugText, Cat2BugTable },
+  components: { ProjectLabel, AddCase, Cat2BugLevel, Step, TreeModule, Multipane, MultipaneResizer, AddDefect, CloudCase, CloudCase2, FocusMemberList, Cat2BugPreviewImage, Cat2BugSelectLevel, Cat2BugText, Cat2BugTable, Cat2BugStatistic },
   directives: {
     resize: {
       // 指令的名称
@@ -334,10 +359,14 @@ export default {
       multiple: true,
       // 显示搜索条件
       showSearch: true,
+      /** 与缺陷页一致：顶部统计面板显隐（本地缓存） */
+      caseStatisticPanelVisible: this.$cache.local.get(CACHE_KEY_CASE_STATISTIC_VISIBLE) != 'false',
       // 总条数
       total: 0,
       // 测试用例表格数据
       caseList: [],
+      /** el-table max-height（像素）：由右侧列可用高度减去分页区测量得到，不用 flex 撑表格高度 */
+      caseTableBodyMaxHeight: null,
       // 弹出层标题
       title: '',
       // 是否显示弹出层
@@ -438,13 +467,15 @@ export default {
     this.getTreeModuleWidth()
     this.initFloatMenu()
     this.$nextTick(() => {
-      this.syncCaseToolsWrapped()
-      this.initCaseToolsObserver()
-      this.$nextTick(() => {
-        this.initCaseTableHeaderHeightSync()
-        this.setDragComponentSize()
+        this.syncCaseToolsWrapped()
+        this.initCaseToolsObserver()
+        this.initCaseTableBodyResizeObserver()
+        this.$nextTick(() => {
+          this.initCaseTableHeaderHeightSync()
+          this.syncCaseTableBodyMaxHeight()
+          this.setDragComponentSize()
+        })
       })
-    })
     window.addEventListener('resize', this.syncCaseToolsWrapped)
   },
   activated() {
@@ -454,6 +485,7 @@ export default {
       if (tbl && typeof tbl.doLayout === 'function') {
         tbl.doLayout()
       }
+      this.syncCaseTableBodyMaxHeight()
       this.setDragComponentSize()
       this.$nextTick(() => this.syncTreeToolbarWithTableHeader())
     })
@@ -464,8 +496,14 @@ export default {
     window.removeEventListener('resize', this.syncCaseToolsWrapped)
     this.destroyCaseToolsObserver()
     this.destroyCaseTableHeaderHeightSync()
+    this.destroyCaseTableBodyResizeObserver()
   },
   methods: {
+    toggleCaseStatisticPanel() {
+      this.caseStatisticPanelVisible = !this.caseStatisticPanelVisible
+      this.$cache.local.set(CACHE_KEY_CASE_STATISTIC_VISIBLE, this.caseStatisticPanelVisible + '')
+      this.$nextTick(() => this.setDragComponentSize())
+    },
     initCaseToolsObserver() {
       if (typeof ResizeObserver === 'undefined') return
       this.destroyCaseToolsObserver()
@@ -691,11 +729,51 @@ export default {
     },
     /** 表格 doLayout + 分隔条手柄位置（竖线 CSS 已随 resizer 100% 置底） */
     setDragComponentSize() {
+      this.syncCaseTableBodyMaxHeight()
       this.$nextTick(() => {
         if (this.$refs.cat2BugTable && this.$refs.cat2BugTable.doLayout) {
           this.$refs.cat2BugTable.doLayout()
         }
         this.scheduleSyncPaneResizerHandle()
+      })
+    },
+    initCaseTableBodyResizeObserver() {
+      if (typeof ResizeObserver === 'undefined') return
+      this.destroyCaseTableBodyResizeObserver()
+      const el = this.$refs.caseContextBody
+      if (!el) return
+      this._caseTableBodyResizeObserver = new ResizeObserver(() => {
+        this.syncCaseTableBodyMaxHeight()
+      })
+      this._caseTableBodyResizeObserver.observe(el)
+    },
+    destroyCaseTableBodyResizeObserver() {
+      if (this._caseTableBodyResizeObserver) {
+        this._caseTableBodyResizeObserver.disconnect()
+        this._caseTableBodyResizeObserver = null
+      }
+    },
+    syncCaseTableBodyMaxHeight() {
+      this.$nextTick(() => {
+        const body = this.$refs.caseContextBody
+        if (!body || !body.clientHeight) return
+        const pagEl = this.$refs.casePaginationBand
+        let reserveBelowTable = 0
+        if (this.total > 0 && pagEl && pagEl.offsetParent !== null) {
+          const st = window.getComputedStyle(pagEl)
+          reserveBelowTable =
+            pagEl.offsetHeight +
+            parseFloat(st.marginTop || '0') +
+            parseFloat(st.marginBottom || '0')
+        }
+        const next = Math.max(120, Math.floor(body.clientHeight - reserveBelowTable - 2))
+        if (this.caseTableBodyMaxHeight !== next) {
+          this.caseTableBodyMaxHeight = next
+          this.$nextTick(() => {
+            const tbl = this.$refs.cat2BugTable
+            if (tbl && typeof tbl.doLayout === 'function') tbl.doLayout()
+          })
+        }
       })
     },
     /** 查询测试用例列表 */
@@ -707,7 +785,10 @@ export default {
         this.caseList = response.rows
         this.total = response.total
         this.syncCaseToolsWrapped()
-        this.$nextTick(() => this.syncTreeToolbarWithTableHeader())
+        this.$nextTick(() => {
+          this.syncCaseTableBodyMaxHeight()
+          this.syncTreeToolbarWithTableHeader()
+        })
       })
     },
     /** 搜索按钮操作 */
@@ -868,6 +949,90 @@ export default {
 .case-field-divider {
   margin: 8px 0px;
 }
+.case-page {
+  --case-toolbar-v-gap: 8px;
+}
+.case-page-head {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  column-gap: 12px;
+  row-gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 10px;
+}
+.case-project-label {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.case-page-head-right {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+}
+.case-statistic-toggle {
+  cursor: pointer;
+  color: #606266;
+  font-size: 18px;
+}
+.case-statistic-toggle:hover {
+  color: #409eff;
+}
+/* 与缺陷页 .defect-tools-search 一致：表单项可换行；窄屏纵向铺满 */
+.case-tools-search {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  ::v-deep .el-form.el-form--inline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    row-gap: 8px;
+    column-gap: 8px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  ::v-deep .el-form--inline .el-form-item {
+    margin-right: 0;
+    margin-bottom: 0;
+    display: flex;
+    align-items: center;
+    vertical-align: middle;
+  }
+  @media screen and (max-width: 576px) {
+    width: 100%;
+    max-width: 100%;
+    ::v-deep .el-form.el-form--inline {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    ::v-deep .el-form--inline .el-form-item {
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+    }
+    ::v-deep .el-form--inline .el-form-item .el-form-item__content {
+      width: 100% !important;
+      max-width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
+    }
+    ::v-deep .el-form--inline .el-form-item .el-input,
+    ::v-deep .el-form--inline .el-form-item .cat2-bug-select-level {
+      width: 100% !important;
+      max-width: 100%;
+    }
+    ::v-deep .el-form--inline .el-form-item .el-input__inner {
+      width: 100% !important;
+      box-sizing: border-box;
+    }
+  }
+}
 .case-body {
   display: flex;
   flex-direction: column;
@@ -916,45 +1081,30 @@ export default {
   flex: 1 1 0%;
   min-width: 0;
   min-height: 0;
-  overflow-x: hidden;
-  overflow-y: hidden;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-}
-/* 与缺陷列表 defect-table-x-scroll 一致：表体按内容增高，未满一屏时空白在表格外壳内，分页与列表间距不变 */
-.case-table-x-scroll {
-  flex: 0 1 auto;
-  min-width: 0;
-  min-height: 0;
-  max-height: 100%;
-  width: 100%;
-  overflow-x: auto;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-}
-.case-context-body {
-  flex: 1;
-  min-height: 0;
-  min-width: 0;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  /* 与缺陷 table.vue：页根底无 padding，分页下边距用变量算 */
+}
+/* 仅占 multipane 剩余高度；内部普通块级流式排版，表格 max-height 由 JS 测量写入 el-table */
+.case-context-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
   --defect-pagination-v-gap: 28px;
-  --defect-page-bottom-pad: 0px;
-  --defect-pagination-extra-bottom: 14px;
+}
+.case-table-x-scroll {
+  width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 .case-table-pagination-band {
-  flex-shrink: 0;
   margin-top: var(--defect-pagination-v-gap);
-  margin-bottom: max(
-    0px,
-    calc(
-      var(--defect-pagination-v-gap) - var(--defect-page-bottom-pad) -
-        env(safe-area-inset-bottom, 0px) + var(--defect-pagination-extra-bottom)
-    )
-  );
+  margin-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
 }
 ::v-deep .case-table-pagination.pagination-container {
   margin-top: 0 !important;
@@ -1018,122 +1168,70 @@ export default {
   height: 1px;
   visibility: hidden;
 }
-.case-tools {
+/* 查询条上下留白（与缺陷页 --defect-toolbar-v-gap 一致） */
+.case-view-toolbar {
+  margin-top: var(--case-toolbar-v-gap, 8px);
+  margin-bottom: var(--case-toolbar-v-gap, 8px);
+}
+.case-view-toolbar.wrapped-tools .case-right-tools {
+  margin-left: 0;
+  flex: 1 1 100%;
   width: 100%;
-  display: flex;
-  flex-direction: row;
+  display: inline-flex;
   flex-wrap: wrap;
+  gap: 10px;
   justify-content: flex-start;
   align-items: center;
-  align-content: flex-start;
-  column-gap: 12px;
-  row-gap: 8px;
-  margin-top: 10px;
-  margin-bottom: 10px;
-  .el-form-item {
-    margin-bottom: 0;
-  }
 }
-.case-tools > .left {
-  flex: 1 1 auto;
-  min-width: 0;
-  max-width: 100%;
+.case-view-toolbar.wrapped-tools .case-right-tools > * {
+  flex: 0 0 auto;
   width: auto;
-  display: inline-flex;
-  flex-wrap: nowrap;
-  align-items: center;
-  row-gap: 8px;
-  column-gap: 8px;
-  box-sizing: border-box;
-  ::v-deep .el-form-item {
-    flex: 1 1 0;
-    min-width: 180px;
-    margin-right: 0;
-  }
-  ::v-deep .el-form-item .el-form-item__content,
-  ::v-deep .el-form-item .el-input,
-  ::v-deep .el-form-item .el-select,
-  ::v-deep .el-form-item .cat2-bug-select-level {
-    width: 100%;
-  }
+  min-width: 0;
 }
-.case-tools.wrapped-tools {
-  > .left {
-    display: inline-flex;
-    flex-wrap: wrap;
-    flex: 1 1 100%;
-  }
-  > .left ::v-deep .el-form-item {
-    display: inline-flex;
-    flex: 1 1 0;
-    min-width: 180px;
-    margin-right: 0;
-    margin-bottom: 0;
-  }
-  > .left ::v-deep .el-form-item .el-form-item__content,
-  > .left ::v-deep .el-form-item .el-input,
-  > .left ::v-deep .el-form-item .el-select,
-  > .left ::v-deep .el-form-item .el-select .el-input,
-  > .left ::v-deep .el-form-item .cat2-bug-select-level {
-    width: 100% !important;
-    max-width: 100%;
-    box-sizing: border-box;
-  }
-  > .left ::v-deep .el-form-item .el-select .el-input__inner {
-    width: 100% !important;
-  }
-  > .case-right-tools {
-    margin-left: 0;
-    flex: 1 1 100%;
-    width: 100%;
-    display: inline-flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    justify-content: flex-start;
-    align-items: center;
-  }
-  > .case-right-tools > * {
-    flex: 0 0 auto;
-    width: auto;
-    min-width: 0;
-  }
-  /* 字段显示 + 批量删除始终同一行 */
-  > .case-right-tools ::v-deep .case-field-picker-btn,
-  > .case-right-tools > .case-batch-delete-btn {
-    flex: 0 0 auto;
-    white-space: nowrap;
-  }
-
-  /* 按钮组没换行时保持自然宽度 */
-  > .case-right-tools > .case-batch-delete-btn,
-  > .case-right-tools > .case-add-dropdown,
-  > .case-right-tools > .case-ai-add-dropdown {
-    flex: 0 0 auto;
-    width: auto;
-    display: flex;
-  }
-  /* 右侧按钮组自身换行后，三个主按钮才等宽填充 */
-  > .case-right-tools.buttons-wrapped > .case-batch-delete-btn,
-  > .case-right-tools.buttons-wrapped > .case-add-dropdown,
-  > .case-right-tools.buttons-wrapped > .case-ai-add-dropdown {
-    flex: 1 1 0;
-    min-width: 0;
-    width: 100%;
-  }
-  > .case-right-tools ::v-deep .el-button-group {
-    width: 100%;
-    display: flex;
-    flex-wrap: nowrap;
-  }
-  > .case-right-tools ::v-deep .el-button-group > .el-button:not(.el-dropdown__caret-button) {
-    flex: 1 1 auto;
-  }
-  > .case-right-tools ::v-deep .el-button-group > .el-button {
-    min-width: 0;
-  }
-  > .case-right-tools ::v-deep .el-button-group > .el-dropdown__caret-button {
-    flex: 0 0 auto;
-  }
+.case-view-toolbar.wrapped-tools .case-right-tools ::v-deep .case-field-picker-btn,
+.case-view-toolbar.wrapped-tools .case-right-tools > .case-batch-delete-btn {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+.case-view-toolbar.wrapped-tools .case-right-tools > .case-batch-delete-btn,
+.case-view-toolbar.wrapped-tools .case-right-tools > .case-add-dropdown,
+.case-view-toolbar.wrapped-tools .case-right-tools > .case-ai-add-dropdown {
+  flex: 0 0 auto;
+  width: auto;
+  display: flex;
+}
+.case-view-toolbar.wrapped-tools .case-right-tools.buttons-wrapped > .case-batch-delete-btn,
+.case-view-toolbar.wrapped-tools .case-right-tools.buttons-wrapped > .case-add-dropdown,
+.case-view-toolbar.wrapped-tools .case-right-tools.buttons-wrapped > .case-ai-add-dropdown {
+  flex: 1 1 0;
+  min-width: 0;
+  width: 100%;
+}
+.case-view-toolbar.wrapped-tools .case-right-tools ::v-deep .el-button-group {
+  width: 100%;
+  display: flex;
+  flex-wrap: nowrap;
+}
+.case-view-toolbar.wrapped-tools .case-right-tools ::v-deep .el-button-group > .el-button:not(.el-dropdown__caret-button) {
+  flex: 1 1 auto;
+}
+.case-view-toolbar.wrapped-tools .case-right-tools ::v-deep .el-button-group > .el-button {
+  min-width: 0;
+}
+.case-view-toolbar.wrapped-tools .case-right-tools ::v-deep .el-button-group > .el-dropdown__caret-button {
+  flex: 0 0 auto;
+}
+/* 宽屏：表单项与缺陷查询行类似，可伸缩 */
+.case-tools-search ::v-deep .el-form--inline .el-form-item {
+  flex: 1 1 180px;
+  min-width: 140px;
+  max-width: 100%;
+}
+.case-tools-search ::v-deep .el-form-item .el-form-item__content,
+.case-tools-search ::v-deep .el-form-item .el-input,
+.case-tools-search ::v-deep .el-form-item .cat2-bug-select-level {
+  width: 100%;
+  min-width: 0;
 }
 .red {
   color: #f56c6c;
@@ -1286,11 +1384,110 @@ export default {
   align-items: center;
   flex-wrap: nowrap;
   gap: 10px;
-  margin-left: auto;
   > * {
     flex: 0 0 auto;
     width: auto;
     min-width: 0;
+  }
+}
+</style>
+
+<!-- 与缺陷页工具栏、仪表盘统计栅格一致（不受 scoped 限制） -->
+<style lang="scss">
+.case-page .case-view-toolbar {
+  box-sizing: border-box;
+  flex-shrink: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  align-content: flex-start;
+  justify-content: space-between;
+  column-gap: 12px;
+  row-gap: 8px;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.case-page .case-view-toolbar > *:first-child {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.case-page .case-view-toolbar > *:nth-child(2) {
+  flex: 0 0 auto;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+}
+@media screen and (max-width: 576px) {
+  .case-page .case-view-toolbar > *:nth-child(2) {
+    flex: 1 1 100%;
+    width: 100%;
+    max-width: 100%;
+    justify-content: flex-start;
+    flex-wrap: nowrap !important;
+  }
+  .case-page .case-view-toolbar .table-tools {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    column-gap: 8px;
+  }
+  .case-page .case-view-toolbar .table-tools > *:first-child {
+    flex-shrink: 0;
+  }
+  .case-page .case-view-toolbar .table-tools .case-add-dropdown,
+  .case-page .case-view-toolbar .table-tools .case-ai-add-dropdown {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: auto !important;
+    max-width: none;
+    box-sizing: border-box;
+  }
+  .case-page .case-view-toolbar .case-add-dropdown .el-button-group,
+  .case-page .case-view-toolbar .case-ai-add-dropdown .el-button-group {
+    width: 100%;
+    display: flex;
+  }
+  .case-page .case-view-toolbar .case-add-dropdown .el-button-group > .el-button:first-child,
+  .case-page .case-view-toolbar .case-ai-add-dropdown .el-button-group > .el-button:first-child {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+}
+.case-page .case-view-toolbar .table-tools {
+  padding-top: 0 !important;
+  align-items: center !important;
+  display: inline-flex;
+  flex-wrap: wrap;
+  row-gap: 8px;
+  justify-content: flex-start;
+}
+.case-page .case-view-toolbar .table-tools.row > * {
+  margin-bottom: 0 !important;
+}
+
+.case-page .case-tools-statistic {
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 10px;
+}
+@media screen and (max-width: 1650px) {
+  .case-page .case-tools-statistic .statistic-tools > * {
+    flex: 1 1 auto;
+    min-width: 320px;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+}
+@media screen and (min-width: 1650px) {
+  .case-page .case-tools-statistic .statistic-tools > * {
+    flex: 1;
+    min-width: 200px;
+    box-sizing: border-box;
   }
 }
 </style>

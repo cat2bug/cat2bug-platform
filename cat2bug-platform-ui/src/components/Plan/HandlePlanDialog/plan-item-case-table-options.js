@@ -7,7 +7,7 @@ export const PlanItemCaseTableOptions = [
     prop: 'caseNum',
     fixed: true,
     visible: true,
-    align: 'left',
+    align: 'center',
     width: 100
   },
   {
