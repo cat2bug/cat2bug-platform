@@ -2,9 +2,11 @@
   <div class="plan-item-content plan-item-drawer-layout">
     <!-- 与缺陷 list/table.vue：查询条独占一行 -->
     <div class="plan-item-query defect-table-tools defect-table-tools-bar">
-      <div class="row">
-        <slot name="query"></slot>
-        <el-form :model="query" ref="queryForm" size="small" :inline="true">
+      <div class="plan-query-main">
+        <el-form :model="query" ref="queryForm" class="plan-query-inline-form" size="small" :inline="true" label-width="0">
+          <el-form-item class="plan-query-switch-item" label-width="0">
+            <slot name="query"></slot>
+          </el-form-item>
           <el-form-item label="" prop="caseName">
             <el-input
               size="small"
@@ -360,9 +362,18 @@ export default {
       });
     },
     updatePlanDrawerTableMaxHeight() {
-      const wrap = this.$refs.planDrawerTableScroll;
-      if (!wrap) return;
-      const h = Math.floor(wrap.clientHeight);
+      const pane = this.$refs.caseContext;
+      if (!pane || !pane.clientHeight) return;
+      let reserveBelowTable = 0;
+      const pagEl = pane.querySelector(".pagination-container");
+      if (this.total > 0 && pagEl && pagEl.offsetParent !== null) {
+        const st = window.getComputedStyle(pagEl);
+        reserveBelowTable =
+          pagEl.offsetHeight +
+          parseFloat(st.marginTop || "0") +
+          parseFloat(st.marginBottom || "0");
+      }
+      const h = Math.floor(pane.clientHeight - reserveBelowTable - 2);
       if (h < 48) return;
       if (this.planDrawerTableMaxHeight !== h) {
         this.planDrawerTableMaxHeight = h;
@@ -370,8 +381,8 @@ export default {
     },
     initPlanDrawerTableScrollResize() {
       this.destroyPlanDrawerTableScrollResize();
-      const wrap = this.$refs.planDrawerTableScroll;
-      if (!wrap) return;
+      const pane = this.$refs.caseContext;
+      if (!pane) return;
       if (typeof ResizeObserver !== "undefined") {
         this._planDrawerTableScrollResizeObserver = new ResizeObserver(() => {
           this.updatePlanDrawerTableMaxHeight();
@@ -379,7 +390,7 @@ export default {
             this.$refs.cat2BugTable && this.$refs.cat2BugTable.doLayout && this.$refs.cat2BugTable.doLayout();
           });
         });
-        this._planDrawerTableScrollResizeObserver.observe(wrap);
+        this._planDrawerTableScrollResizeObserver.observe(pane);
       }
       this.updatePlanDrawerTableMaxHeight();
     },
@@ -632,8 +643,9 @@ export default {
   width: 100%;
   align-items: stretch;
   overflow: hidden;
-  padding-left: 5px;
-  padding-right: 5px;
+  /* 左右边距由 HandlePlanDialog .plan-run-content 统一为 10px */
+  padding-left: 0;
+  padding-right: 0;
   box-sizing: border-box;
   user-select: none;
   -webkit-user-select: none;
@@ -690,14 +702,14 @@ export default {
   display: flex;
   flex-direction: column;
 }
-/* 占满表格与分页之间的剩余高度；纵向滚动交给 el-table（table-max-height），以固定表头 */
+/* 高度随表格内容走，不把外层撑满；纵向上限由 planDrawerTableMaxHeight（测父列减分页）交给 el-table */
 .plan-drawer-table-scroll {
-  flex: 1 1 0%;
+  flex: 0 1 auto;
   align-self: stretch;
   width: 100%;
   min-width: 0;
-  min-height: 0;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 /* 表体底色；表头 gutter / 滚动槽见 assets/styles/el-table-scrollbar.scss */
 .plan-drawer-case-list-pane ::v-deep .el-table__body-wrapper,
@@ -719,13 +731,14 @@ export default {
   right: auto !important;
 }
 .plan-item-query {
-  display: inline-flex;
+  display: flex;
   flex-direction: row;
-  justify-content: space-between;
-  align-items: flex-start;
+  justify-content: flex-start;
+  align-items: center;
   width: 100%;
   flex-shrink: 0;
   box-sizing: border-box;
+  margin-bottom: 8px;
   .el-form-item {
     margin-bottom: 5px;
   }
@@ -737,9 +750,73 @@ export default {
   align-content: flex-start;
   align-items: center;
 }
+/* 与缺陷页 .defect-tools-search：勿设 width:100%，否则 flex 子项占满整行会把右侧工具挤换行 */
+.plan-query-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.plan-query-main ::v-deep .list-switch {
+  flex: 0 0 auto;
+  flex-shrink: 0;
+  white-space: nowrap;
+  margin-bottom: 0 !important;
+  display: inline-flex !important;
+  align-items: center;
+}
+.plan-query-main .plan-query-inline-form.el-form--inline {
+  display: flex !important;
+  flex-wrap: wrap;
+  align-items: center;
+  row-gap: 8px;
+  column-gap: 8px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.plan-query-main ::v-deep .el-form--inline .el-form-item {
+  flex: 0 1 auto;
+  min-width: 0;
+  margin-right: 0 !important;
+  margin-bottom: 0 !important;
+  display: flex;
+  align-items: center;
+}
+.plan-query-main ::v-deep .el-form--inline .el-form-item.plan-query-switch-item {
+  flex: 0 0 auto;
+  min-width: 0;
+}
+.plan-query-main ::v-deep .plan-query-switch-item .el-form-item__content {
+  width: auto !important;
+  margin-left: 0 !important;
+}
+@media screen and (max-width: 576px) {
+  .plan-query-main {
+    width: 100%;
+    max-width: 100%;
+  }
+  .plan-query-main ::v-deep .el-form--inline .el-form-item:not(.plan-query-switch-item) {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+  .plan-query-main ::v-deep .el-form-item__content {
+    width: 100% !important;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  .plan-query-main ::v-deep .el-input,
+  .plan-query-main ::v-deep .el-select,
+  .plan-query-main ::v-deep .select-project-member-input {
+    width: 100% !important;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+}
 .handle-plan-tools-right {
   display: inline-flex;
   flex-direction: row;
+  flex-shrink: 0;
   gap: 10px;
 }
 .plan-item-field-divider {
