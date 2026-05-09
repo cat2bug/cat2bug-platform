@@ -86,6 +86,22 @@
 			min-height: 48px;
 			font-size: 13px;
 			box-sizing: border-box;
+			vertical-align: middle;
+			> .cell {
+				display: flex;
+				align-items: center;
+				line-height: normal;
+				min-height: 0;
+			}
+			&.is-center > .cell {
+				justify-content: center;
+			}
+			&.is-right > .cell {
+				justify-content: flex-end;
+			}
+			&.is-left > .cell {
+				justify-content: flex-start;
+			}
 		}
 	}
 	.el-table__body-wrapper {

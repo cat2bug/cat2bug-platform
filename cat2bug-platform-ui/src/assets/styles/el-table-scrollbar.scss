@@ -1,0 +1,142 @@
+/**
+ * Element 表格滚动条：纯色轨道 + 深色滑块（避免 macOS/WebKit 半透明叠加「透底」）。
+ * 选择器挂在 .el-table 下，优先级高于 AppMain 等对 main-container 的规则。
+ */
+
+.el-table__header-wrapper thead th.gutter,
+.el-table__header-wrapper thead th.el-table__gutter,
+.el-table__fixed-header-wrapper thead th.gutter,
+.el-table__fixed-header-wrapper thead th.el-table__gutter {
+  background-color: #f8f8f9 !important;
+  border-bottom: 1px solid #dfe6ec !important;
+}
+
+.el-table__fixed-right-patch {
+  background-color: #f8f8f9 !important;
+}
+
+@mixin cat2bug-el-table-scrollbar-opaque {
+  color-scheme: light;
+  scrollbar-gutter: stable;
+  scrollbar-width: auto;
+  scrollbar-color: #434343 #cfd5dc;
+
+  &::-webkit-scrollbar {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    width: 14px !important;
+    height: 14px !important;
+    background-color: #cfd5dc !important;
+  }
+
+  &::-webkit-scrollbar-button {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+
+  &::-webkit-scrollbar-track,
+  &::-webkit-scrollbar-track-piece {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    background-color: #cfd5dc !important;
+    background-image: none !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    background-color: #434343 !important;
+    border-radius: 7px !important;
+    border: 3px solid #cfd5dc !important;
+    background-clip: padding-box !important;
+    box-shadow: none !important;
+  }
+
+  /* 勿对横向滑块设 min-height，否则 WebKit 会把滑块撑高盖住末行 */
+  &::-webkit-scrollbar-thumb:vertical {
+    min-height: 40px !important;
+  }
+
+  &::-webkit-scrollbar-thumb:horizontal {
+    min-width: 48px !important;
+  }
+
+  &::-webkit-scrollbar-track:horizontal {
+    background-color: #cfd5dc !important;
+  }
+
+  &::-webkit-scrollbar-corner {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    background-color: #cfd5dc !important;
+  }
+}
+
+.el-table .el-table__body-wrapper,
+.el-table .el-table__fixed-body-wrapper,
+.case-table-x-scroll,
+.defect-table-x-scroll,
+.plan-drawer-table-scroll {
+  @include cat2bug-el-table-scrollbar-opaque;
+}
+
+/* TableLayout 调用 scrollbar-width() 时用此类名，测得与主题一致的 gutter，无需改固定列高度 */
+.cat2bug-scrollbar-measure-host {
+  @include cat2bug-el-table-scrollbar-opaque;
+}
+
+/**
+ * Cat2BugTable 自定义横向条：
+ * 1) WebKit：用基础 ::-webkit-scrollbar 设 width=竖条厚度、height=0 消掉横向厚度（压过 mixin 的 height:14px）。
+ * 2) 外层 .case-table-x-scroll 等仍有 overflow-x:auto + mixin，会多出第二条横条 → JS 给父级 .cat2bug-parent-lock-x。
+ */
+.cat2bug-parent-lock-x {
+  overflow-x: hidden !important;
+}
+
+/**
+ * 勿再依赖 .el-table--scrollable-x：layout.scrollX 与真实 scrollWidth/clientWidth 可能不一致，
+ * JS 已在 needsX 时加 .cat2bug-hide-native-x，此处只需跟该类对齐。
+ * 仅 body-wrapper 设 overflow-x:hidden（勿动 fixed-body-wrapper）：去掉原生横条，横向仍靠 scrollLeft；
+ * 触控板横滑 / Shift+滚轮由 Cat2BugTable 在捕获阶段 wheel 里补一层。
+ */
+.cat2-bug-table-wrap.cat2bug-hide-native-x .el-table .el-table__body-wrapper {
+  overflow-x: hidden !important;
+}
+
+.cat2-bug-table-wrap.cat2bug-hide-native-x .el-table {
+  .el-table__body-wrapper,
+  .el-table__header-wrapper,
+  .el-table__footer-wrapper,
+  .el-table__fixed-body-wrapper {
+    &::-webkit-scrollbar {
+      width: 14px !important;
+      height: 0 !important;
+      background: transparent !important;
+      -webkit-appearance: none !important;
+      appearance: none !important;
+    }
+
+    &::-webkit-scrollbar-thumb:horizontal {
+      min-width: 0 !important;
+      min-height: 0 !important;
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      border-radius: 0 !important;
+    }
+
+    &::-webkit-scrollbar-track:horizontal,
+    &::-webkit-scrollbar-track-piece:horizontal {
+      background: transparent !important;
+      height: 0 !important;
+    }
+
+    &::-webkit-scrollbar-corner {
+      background: transparent !important;
+    }
+  }
+}

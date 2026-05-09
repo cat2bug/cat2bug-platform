@@ -491,11 +491,7 @@ export default {
     },
     /** 设置模块与用例列表中间拖动块的尺寸 */
     setDragComponentSize() {
-      this.multipaneStyle['--marginTop'] = '0px';
-      this.$nextTick(()=> {
-        let pageHeight = Math.max(this.$refs.markdownEdit.scrollHeight || 0, this.$refs.markdownView.scrollHeight || 0, document.body.scrollHeight - 170)
-        this.multipaneStyle['--marginTop'] = pageHeight + 'px';
-      })
+      /* 竖向分隔线由 multipane-resizer-grip（stretch + absolute 轨道）绘制；保留钩子供 v-resize 触发 */
     },
     /** 右侧工具栏点击处理事件 */
     viewToolsHandle(tools,tool) {
@@ -648,10 +644,7 @@ export default {
     left: 4px;
     cursor: col-resize;
     position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    @include multipane-resizer-vertical-appearance(100%);
+    @include multipane-resizer-vertical-appearance;
   }
   > .markdown-body-edit {
     width: calc( 50% - 5px );

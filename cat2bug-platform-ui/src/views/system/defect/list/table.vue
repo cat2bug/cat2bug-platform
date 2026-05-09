@@ -41,12 +41,13 @@
           ref="treeModuleRef"
           :project-id="projectId"
           :show-sidebar-toggle="true"
+          :toolbar-sync-height="defectTreeToolbarHeight"
           @toggle-sidebar="toggleModuleTreeVisible"
           @node-click="moduleTreeClickHandle"
           v-resize="setDragComponentSize"
         />
       </div>
-      <multipane-resizer ref="paneResizer" v-show="showModuleTree" :style="multipaneStyle"></multipane-resizer>
+      <multipane-resizer ref="paneResizer" v-show="showModuleTree" :style="[multipaneStyle, paneResizerRuleVars]"></multipane-resizer>
       <div ref="defectTableContext" class="defect-table-context">
         <!-- 宽表横向滚动限制在本层，避免整页 main-container 底部出现横向条与分页同一底边叠在一起「压住」分页 -->
         <div class="defect-table-x-scroll">
@@ -224,8 +225,7 @@ export default {
       defectList: [],
       queryParams: this.query,
       treeModuleStyle: { "--treeModuleWidth": "300px" },
-      /** 与用例页一致：拖动条中间竖线高度由树/表格区域较大 scrollHeight 决定 */
-      multipaneStyle: { "--marginTop": "0px" },
+      multipaneStyle: {},
       /** 是否显示左侧交付物列表 */
       showModuleTree: true,
       /** 缺陷列表表格默认列（克隆自 table-options，避免与全局常量引用互相污染） */
@@ -234,6 +234,8 @@ export default {
       defectColumnPickerRev: 0,
       /** 与 Cat2BugTable 列顺序一致，供「显示字段」勾选列表排序（含 Excel 拖列写回缓存后） */
       defectPickerColumnList: null,
+      /** 交付物列表标题栏高度（px），与右侧缺陷表 thead 行高对齐 */
+      defectTreeToolbarHeight: null,
     }
   },
   props: {
@@ -304,11 +306,18 @@ export default {
         return arr[arr.length-1];
       }
     },
+    paneResizerRuleVars() {
+      const h = this.defectTreeToolbarHeight;
+      return {
+        '--multipane-header-rule-offset': h != null && h > 0 ? `${h}px` : '48px',
+      };
+    },
   },
   watch: {
     "$i18n.locale": function () {
       this.$nextTick(() => {
         this.$refs.cat2BugTable && this.$refs.cat2BugTable.doLayout();
+        this.$nextTick(() => this.syncDefectTreeToolbarWithTableHeader());
       });
     },
   },
@@ -319,8 +328,12 @@ export default {
   mounted() {
     this.getTreeModuleWidth();
     this.$nextTick(() => {
+      this.initDefectTableHeaderHeightSync();
       this.setDragComponentSize();
     });
+  },
+  destroyed() {
+    this.destroyDefectTableHeaderHeightSync();
   },
   methods: {
     init() {
@@ -328,6 +341,7 @@ export default {
         if (this.$refs.treeModuleRef) {
           this.$refs.treeModuleRef.reloadData();
         }
+        this.initDefectTableHeaderHeightSync();
         this.setDragComponentSize();
       });
     },
@@ -361,21 +375,75 @@ export default {
         if (this.$refs.cat2BugTable) {
           this.$refs.cat2BugTable.doLayout();
         }
+        this.$nextTick(() => this.syncDefectTreeToolbarWithTableHeader());
       });
     },
-    /** 与用例页 setDragComponentSize 一致：拖动条竖线高度随树/表格区域增高 */
+    /** 表格 doLayout + 分隔条手柄（竖线随 resizer 高度置底） */
     setDragComponentSize() {
-      this.multipaneStyle["--marginTop"] = "0px";
       this.$nextTick(() => {
-        const treeH = this.$refs.treeModule ? (this.$refs.treeModule.scrollHeight || 0) : 0;
-        const ctx = this.$refs.defectTableContext;
-        const ctxH = ctx ? (ctx.scrollHeight || 0) : 0;
-        /* 勿用 document.body.scrollHeight：会把竖线撑到整页，multipane 行被拉高，未满一屏时出现内层滚动与分页下大片空白 */
-        const pageHeight = Math.max(treeH, ctxH, 8);
-        this.multipaneStyle["--marginTop"] = pageHeight + "px";
         this.$refs.cat2BugTable && this.$refs.cat2BugTable.doLayout && this.$refs.cat2BugTable.doLayout();
         this.scheduleSyncPaneResizerHandle();
       });
+    },
+    syncDefectTreeToolbarWithTableHeader() {
+      this.$nextTick(() => {
+        const cat = this.$refs.cat2BugTable;
+        const elTable = cat && cat.$refs && cat.$refs.elTable;
+        if (!elTable || !elTable.$el) {
+          return;
+        }
+        const headerWrap = elTable.$el.querySelector(".el-table__header-wrapper");
+        if (!headerWrap) {
+          return;
+        }
+        if (
+          this._defectTableHeaderObservedEl &&
+          this._defectTableHeaderObservedEl !== headerWrap
+        ) {
+          this.destroyDefectTableHeaderHeightSync();
+          this.initDefectTableHeaderHeightSync();
+          return;
+        }
+        const tr = headerWrap.querySelector("thead tr");
+        if (!tr) {
+          return;
+        }
+        const rect = tr.getBoundingClientRect();
+        const h = Math.round(rect.height || tr.offsetHeight || 0);
+        if (h > 0 && h !== this.defectTreeToolbarHeight) {
+          this.defectTreeToolbarHeight = h;
+        }
+      });
+    },
+    initDefectTableHeaderHeightSync() {
+      this.destroyDefectTableHeaderHeightSync();
+      const cat = this.$refs.cat2BugTable;
+      const elTable = cat && cat.$refs && cat.$refs.elTable;
+      if (!elTable || !elTable.$el) {
+        this.syncDefectTreeToolbarWithTableHeader();
+        return;
+      }
+      const headerWrap = elTable.$el.querySelector(".el-table__header-wrapper");
+      if (!headerWrap) {
+        this.syncDefectTreeToolbarWithTableHeader();
+        return;
+      }
+      this._defectTableHeaderObservedEl = headerWrap;
+      this.syncDefectTreeToolbarWithTableHeader();
+      if (typeof ResizeObserver === "undefined") {
+        return;
+      }
+      this._defectTableHeaderResizeObserver = new ResizeObserver(() => {
+        this.syncDefectTreeToolbarWithTableHeader();
+      });
+      this._defectTableHeaderResizeObserver.observe(headerWrap);
+    },
+    destroyDefectTableHeaderHeightSync() {
+      if (this._defectTableHeaderResizeObserver) {
+        this._defectTableHeaderResizeObserver.disconnect();
+        this._defectTableHeaderResizeObserver = null;
+      }
+      this._defectTableHeaderObservedEl = null;
     },
     onTableColumnsChange(columns) {
       this.defectColumnPickerRev += 1;
@@ -384,6 +452,7 @@ export default {
       this.columnPickerCheckedKeys = columns
         .filter((c) => c.visible && c.showInColumnPicker !== false)
         .map((c) => c.key);
+      this.$nextTick(() => this.syncDefectTreeToolbarWithTableHeader());
     },
     onColumnPickerChange(keys) {
       this.$refs.cat2BugTable && this.$refs.cat2BugTable.setColumnsVisible(keys);
@@ -416,7 +485,10 @@ export default {
         this.loading = false;
         this.defectList = response.rows;
         this.total = response.total;
-        this.$nextTick(() => this.setDragComponentSize());
+        this.$nextTick(() => {
+          this.syncDefectTreeToolbarWithTableHeader();
+          this.setDragComponentSize();
+        });
       });
     },
     refreshSearch() {
@@ -470,7 +542,7 @@ export default {
   flex-shrink: 0;
   width: 100%;
 }
-/* 与用例页共用 multipane-resizer-grip：轨道 + 圆角手柄，竖线高度 --marginTop */
+/* 与用例页共用 multipane-resizer-grip：轨道 + 圆角手柄，竖线随 resizer 高度置底 */
 .custom-resizer.multipane {
   flex: 1 1 0%;
   width: 100%;
@@ -492,16 +564,15 @@ export default {
   /* 与 vue-multipane 竖向布局一致：负 margin + left 一半宽度，条骑在左右列缝上，不占一整列留白 */
   margin: 0 0 0 -8px;
   left: 4px;
-  display: flex;
-  justify-content: center;
-  /* 竖线贴顶，与左右交付物树/表格同起点，避免分隔列上方一条白缝 */
-  align-items: flex-start;
-  height: 100%;
   width: 8px;
   cursor: col-resize;
   position: relative;
   box-sizing: border-box;
   z-index: 350;
+  background-image: linear-gradient(#dfe6ec, #dfe6ec);
+  background-size: 100% 1px;
+  background-position: 0 calc(var(--multipane-header-rule-offset, 48px) - 1px);
+  background-repeat: no-repeat;
   @include multipane-resizer-vertical-appearance;
 }
 .defect-tree-module {
@@ -558,8 +629,8 @@ export default {
   margin-bottom: 0 !important;
   padding-top: 0 !important;
   padding-bottom: 0 !important;
-  padding-left: 16px;
-  padding-right: 20px;
+  padding-left: 5px;
+  padding-right: 5px;
 }
 .defect-sidebar-expand-trigger {
   display: inline-flex;

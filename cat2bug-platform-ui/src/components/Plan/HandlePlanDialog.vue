@@ -76,27 +76,36 @@
       </div>
     </template>
     <div class="plan-run-content">
-      <!--    模块树和用例列表区域-->
-      <multipane layout="vertical" ref="multiPane" class="custom-resizer" @paneResizeStop="dragStopHandle">
-        <!--      树形模块选择组件-->
-        <div class="tree-module" ref="treeModule" :style="treeModuleStyle">
-          <tree-plan-item-module ref="treeModuleRef" :project-id="projectId" :plan-id="plan.planId"
-                                 :statistic-type="activeMenuStatisticType"
-                                 @level-node-click="levelClickHandle"
-                                 @node-click="moduleClickHandle" :check-visible="false" :edit-visible="false" v-resize="setDragComponentSize" />
-        </div>
-        <multipane-resizer :style="multipaneStyle"></multipane-resizer>
-        <!--      用例列表-->
-        <div ref="caseContext" class="plan-item-content-list">
-          <component ref="list" :is="listTypeComponentName" @change="handleListChanged">
-            <template #query>
-              <el-radio-group class="list-switch" v-model="activeListType" size="small" @input="handleListTypeChanged">
-                <el-radio-button v-for="lt in listTypes" :label="$t(lt).toString()" :key="lt"></el-radio-button>
-              </el-radio-group>
-            </template>
-          </component>
-        </div>
-      </multipane>
+      <!-- 查询条 + 树/表布局由 CaseList / DefectList 内部承担（与缺陷 list/table.vue 一致） -->
+      <component
+        ref="list"
+        :is="listTypeComponentName"
+        :show-module-tree="showModuleTree"
+        @expand-module-tree="toggleModuleTreeVisible"
+        @change="handleListChanged"
+      >
+        <template #tree="{ toolbarSyncHeight }">
+          <tree-plan-item-module
+            ref="treeModuleRef"
+            :project-id="projectId"
+            :plan-id="plan.planId"
+            :statistic-type="activeMenuStatisticType"
+            :show-sidebar-toggle="true"
+            :toolbar-sync-height="toolbarSyncHeight"
+            @toggle-sidebar="toggleModuleTreeVisible"
+            @level-node-click="levelClickHandle"
+            @node-click="moduleClickHandle"
+            :check-visible="false"
+            :edit-visible="false"
+            v-resize="onTreePaneResize"
+          />
+        </template>
+        <template #query>
+          <el-radio-group class="list-switch" v-model="activeListType" size="small" @input="handleListTypeChanged">
+            <el-radio-button v-for="lt in listTypes" :label="$t(lt).toString()" :key="lt"></el-radio-button>
+          </el-radio-group>
+        </template>
+      </component>
     </div>
   </el-drawer>
 </template>
@@ -112,7 +121,6 @@ import HandleCaseOfPlan from "@/components/Plan/HandleCaseOfPlan";
 import Cat2BugPreviewImage from "@/components/Cat2BugPreviewImage";
 import CaseList from "@/components/Plan/HandlePlanDialog/CaseList";
 import DefectList from "@/components/Plan/HandlePlanDialog/DefectList";
-import { Multipane, MultipaneResizer } from 'vue-multipane';
 import DefectDiscoveryRate from "@/components/Plan/statistics/DefectDiscoveryRate";
 import DefectTotal from "@/components/Plan/statistics/DefectTotal";
 import DefectRepairRate from "@/components/Plan/statistics/DefectRepairRate";
@@ -125,19 +133,17 @@ import DefectRepairAvgHour from "@/components/Plan/statistics/DefectRepairAvgHou
 import { getPlan } from "@/api/system/plan";
 import {checkPermi} from "@/utils/permission";
 
-const TREE_MODULE_WIDTH_CACHE_KEY = 'plan_case_tree_module_width';
+/** 执行计划抽屉：左侧树是否展开 */
+const PLAN_HANDLE_DRAWER_TREE_VISIBLE_CACHE_KEY = 'plan_handle_drawer_tree_module_visible';
 
 export default {
   name: "HandlePlanDialog",
-  components: { Cat2BugLevel,Step,TreePlanItemModule,Multipane,MultipaneResizer,
+  components: { Cat2BugLevel,Step,TreePlanItemModule,
     FocusMemberList, Cat2BugPreviewImage, HandleCaseOfPlan, RowListMember, Cat2BugText, CaseList, DefectList,
     DefectDiscoveryRate, DefectTotal, DefectRepairRate, DefectDensity, DefectDetectionRate, DefectSeverityRate, DefectRestartRate, DefectEscapeRate, DefectRepairAvgHour
   },
   data() {
     return {
-      // 动态样式
-      multipaneStyle: {'--marginTop':'0px'},
-      treeModuleStyle: {'--treeModuleWidth':'300px'},
       // 遮罩层
       loading: true,
       // 激活的列表类型
@@ -176,7 +182,9 @@ export default {
       // 当前显示的数据列表的组件名称
       listTypeComponentName: null,
       // 菜单统计的类型，默认统计测试用例
-      activeMenuStatisticType: null
+      activeMenuStatisticType: null,
+      /** 是否显示左侧交付物/优先级树 */
+      showModuleTree: true,
     }
   },
   directives: {
@@ -215,7 +223,8 @@ export default {
     },
   },
   created() {
-
+    const treeVis = this.$cache.local.get(PLAN_HANDLE_DRAWER_TREE_VISIBLE_CACHE_KEY);
+    this.showModuleTree = !(treeVis === '0' || treeVis === 'false');
   },
   methods: {
     checkPermi,
@@ -248,7 +257,6 @@ export default {
       this.$nextTick(()=>{
         this.loading = true;
         this.getPlanInfo(planId, true);
-        this.getTreeModuleWidth();
         this.handleListTypeChanged(this.activeListType);
         this.initFloatMenu();
       });
@@ -259,34 +267,37 @@ export default {
       getPlan(planId).then(response => {
         this.loading = false;
         this.plan = response.data;
-        if(isFreshTreeModule) {
+        if (isFreshTreeModule) {
           this.$nextTick(() => {
-            this.$refs.treeModuleRef.reloadData();
+            this.$refs.treeModuleRef && this.$refs.treeModuleRef.reloadData();
           });
         }
       }).catch(e=>{this.loading = false;});
     },
 
-    /** 获取树模型宽度 */
-    getTreeModuleWidth() {
-      let treeModuleWidth = this.$cache.session.get(TREE_MODULE_WIDTH_CACHE_KEY);
-      this.treeModuleStyle['--treeModuleWidth'] = (treeModuleWidth?treeModuleWidth:300)+'px';
+    onTreePaneResize() {
+      this.$nextTick(() => {
+        const list = this.$refs.list;
+        if (list && list.setDragComponentSize) {
+          list.setDragComponentSize();
+        }
+      });
     },
-    /** 设置树模型宽度到本地缓存 */
-    cacheTreeModuleWidth() {
-      this.$cache.session.set(TREE_MODULE_WIDTH_CACHE_KEY,this.$refs.treeModule.clientWidth);
+    toggleModuleTreeVisible() {
+      this.showModuleTree = !this.showModuleTree;
+      this.$cache.local.set(PLAN_HANDLE_DRAWER_TREE_VISIBLE_CACHE_KEY, this.showModuleTree ? '1' : '0');
+      this.$nextTick(() => {
+        this.setDragComponentSize();
+      });
     },
-    /** 拖动事件完成 */
-    dragStopHandle(pane, container, size) {
-      this.cacheTreeModuleWidth();
-    },
-    /** 设置模块与用例列表中间拖动块的尺寸 */
+    /** 委托子列表计算 multipane 分隔条高度 */
     setDragComponentSize() {
-      this.multipaneStyle['--marginTop'] = '0px';
-      this.$nextTick(()=> {
-        let pageHeight = Math.max(this.$refs.treeModule.scrollHeight || 0, this.$refs.caseContext.scrollHeight || 0)
-        this.multipaneStyle['--marginTop'] = pageHeight + 'px';
-      })
+      this.$nextTick(() => {
+        const list = this.$refs.list;
+        if (list && list.setDragComponentSize) {
+          list.setDragComponentSize();
+        }
+      });
     },
     /** 关闭缺陷抽屉窗口 */
     closePlanDrawer(done) {
@@ -358,7 +369,6 @@ export default {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  /* 与下方 multipane .custom-resizer 一致，避免标题区与列表区左右留白不一致 */
   padding: 0;
 }
 .handle-plan-dialog .plan-run-content {
@@ -368,15 +378,21 @@ export default {
   display: flex;
   flex-direction: column;
 }
+.handle-plan-dialog .plan-run-content > * {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
+}
 .handle-plan-dialog > .el-drawer__header {
   margin-bottom: 0px;
   flex-shrink: 0;
-  padding: 16px 10px 8px;
+  padding: 16px 5px 8px;
   box-sizing: border-box;
 }
 .handle-plan-dialog>.el-drawer__header>.el-drawer__close-btn {
   position: absolute;
-  right: 10px;
+  right: 5px;
   top: 30px;
 }
 .plan-item-defect-list {
@@ -397,47 +413,6 @@ export default {
 }
 </style>
 <style lang="scss" scoped>
-@import "~@/assets/styles/multipane-resizer-grip.scss";
-
-.custom-resizer {
-  flex: 1 1 auto;
-  min-height: 0;
-  width: 100%;
-  padding-left: 10px;
-  padding-right: 10px;
-  user-select: none;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-}
-.custom-resizer > .multipane-resizer {
-  flex-shrink: 0;
-  margin: 0 0 0 -8px;
-  left: 4px;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  height: 100%;
-  width: 8px;
-  cursor: col-resize;
-  position: relative;
-  box-sizing: border-box;
-  z-index: 350;
-  @include multipane-resizer-vertical-appearance;
-}
-.tree-module {
-  width: var(--treeModuleWidth);
-  max-width: 75%;
-  flex-shrink: 0;
-  overflow: auto;
-}
-.plan-item-content-list {
-  flex-grow: 1;
-  min-width: 0;
-  overflow:hidden;
-  height: 100%;
-  padding-bottom: 30px;
-}
 .plan-run-header {
   width: 100%;
   display: flex;

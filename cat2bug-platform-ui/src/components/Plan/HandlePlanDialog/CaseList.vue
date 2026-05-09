@@ -1,6 +1,7 @@
 <template>
-  <div class="plan-item-content">
-    <div class="plan-item-query">
+  <div class="plan-item-content plan-item-drawer-layout">
+    <!-- 与缺陷 list/table.vue：查询条独占一行 -->
+    <div class="plan-item-query defect-table-tools defect-table-tools-bar">
       <div class="row">
         <slot name="query"></slot>
         <el-form :model="query" ref="queryForm" size="small" :inline="true">
@@ -71,8 +72,23 @@
         </el-col>
       </div>
     </div>
+    <!-- 下方：左侧交付物树 + 右侧表格（与缺陷页 multipane 一致） -->
+    <multipane
+      layout="vertical"
+      ref="multiPane"
+      class="custom-resizer plan-drawer-case-multipane"
+      :class="{ 'custom-resizer--tree-hidden': !showModuleTree }"
+      @paneResizeStop="dragStopHandle"
+    >
+      <div v-if="showModuleTree" class="tree-module" ref="treeModule" :style="treeModuleStyle">
+        <slot name="tree" :toolbar-sync-height="deliverableToolbarSyncHeight" />
+      </div>
+      <multipane-resizer ref="paneResizer" v-show="showModuleTree" :style="[multipaneStyle, paneResizerRuleVars]" />
+      <div ref="caseContext" class="plan-item-content-list plan-drawer-case-list-pane">
+        <div ref="planDrawerTableScroll" class="plan-drawer-table-scroll">
     <cat2-bug-table
       ref="cat2BugTable"
+      :table-max-height="planDrawerTableMaxHeight"
       cache-key="plan-item-case"
       field-list-cache-key="plan-item-table-field-list"
       :sort-column-cache-key="planItemSortColumnKey"
@@ -89,6 +105,32 @@
       @native-mousemove="handleTableMouseMove"
     >
       <template #prepend>
+        <el-table-column
+          v-if="!showModuleTree"
+          key="plan-case-sidebar-expand-col"
+          fixed
+          width="30"
+          align="center"
+          label-class-name="plan-case-sidebar-expand-header-cell"
+          class-name="plan-case-sidebar-expand-body-cell"
+        >
+          <template slot="header">
+            <el-tooltip :content="$t('case.show-module-tree')" placement="bottom">
+              <span
+                class="plan-case-sidebar-expand-trigger"
+                role="button"
+                tabindex="0"
+                @click.stop="emitExpandModuleTree"
+                @keyup.enter.stop.prevent="emitExpandModuleTree"
+              >
+                <svg-icon icon-class="menu" class-name="plan-case-sidebar-expand-svg" />
+              </span>
+            </el-tooltip>
+          </template>
+          <template slot-scope>
+            <span class="plan-case-sidebar-expand-body-placeholder" />
+          </template>
+        </el-table-column>
         <el-table-column type="selection" width="50" align="center" />
       </template>
       <template #columns="{ scope, column }">
@@ -126,6 +168,7 @@
         </el-table-column>
       </template>
     </cat2-bug-table>
+        </div>
     <pagination
       v-show="total>0"
       :total="total"
@@ -134,6 +177,8 @@
       @pagination="getPlanItemList"
     />
     <handle-case-of-plan ref="handleCaseDialog" :module-id="planItem.moduleId" :append-to-body="true" @change="getPlanItemList" @close="initFloatMenu" />
+      </div>
+    </multipane>
   </div>
 </template>
 
@@ -151,6 +196,10 @@ import { PlanItemCaseTableOptions } from "@/components/Plan/HandlePlanDialog/pla
 import {listPlanItem, updatePlanItem} from "@/api/system/PlanItem";
 import {parseTime} from "@/utils/ruoyi";
 import {checkPermi} from "@/utils/permission";
+import { Multipane, MultipaneResizer } from "vue-multipane";
+import paneResizerHandleViewport from "@/mixins/paneResizerHandleViewport";
+
+const TREE_MODULE_WIDTH_CACHE_KEY = "plan_case_tree_module_width";
 
 /** 测试子项不通过的状态key值 */
 const PLAN_ITEM_STATE_NOT_PASS = 'not_pass';
@@ -161,9 +210,19 @@ const PLAN_ITEM_SORT_TYPE = 'plan_item_sort_type_key';
 export default {
   name: "CaseList",
   dicts: ['plan_item_state'],
-  components: { HandleCaseOfPlan, PlanItemTools, Cat2BugText, Cat2BugPreviewImage, Cat2BugLevel, Cat2BugTable, DictTag, RowListMember, Step },
+  mixins: [paneResizerHandleViewport],
+  components: { Multipane, MultipaneResizer, HandleCaseOfPlan, PlanItemTools, Cat2BugText, Cat2BugPreviewImage, Cat2BugLevel, Cat2BugTable, DictTag, RowListMember, Step },
+  props: {
+    /** 与缺陷页 table.vue：为 false 时在表格首列显示「展开交付物树」 */
+    showModuleTree: {
+      type: Boolean,
+      default: true,
+    },
+  },
   data() {
     return {
+      multipaneStyle: {},
+      treeModuleStyle: { "--treeModuleWidth": "300px" },
       planItemSortColumnKey: PLAN_ITEM_SORT_COLUMN,
       planItemSortTypeKey: PLAN_ITEM_SORT_TYPE,
       planCaseTableColumns: PlanItemCaseTableOptions.map((c) => ({ ...c })),
@@ -195,7 +254,14 @@ export default {
       total: 0,
       // 表格的多选项
       ids: [],
+      /** 交付物 Tab 标题区高度（px），与右侧表头对齐 */
+      deliverableToolbarSyncHeight: null,
+      /** 计划抽屉表格区域高度（px），用于 el-table max-height 固定表头 */
+      planDrawerTableMaxHeight: null,
     }
+  },
+  mounted() {
+    this.$nextTick(() => this.initPlanDrawerTableScrollResize());
   },
   directives: {
     resize: {
@@ -223,8 +289,13 @@ export default {
     "$i18n.locale": function () {
       this.$nextTick(() => {
         this.$refs.cat2BugTable && this.$refs.cat2BugTable.doLayout();
+        this.$nextTick(() => this.syncDeliverableToolbarWithTableHeader());
       });
     },
+  },
+  destroyed() {
+    this.destroyDeliverableTableHeaderHeightSync();
+    this.destroyPlanDrawerTableScrollResize();
   },
   computed: {
     planCaseColumnPickerOptions() {
@@ -260,6 +331,13 @@ export default {
         })
       }
     },
+    /** 分隔条上画出与表头底边对齐的横线（缝补树标题与表格 thead 之间空隙） */
+    paneResizerRuleVars() {
+      const h = this.deliverableToolbarSyncHeight;
+      return {
+        '--multipane-header-rule-offset': h != null && h > 0 ? `${h}px` : '48px',
+      };
+    },
   },
   created() {
     this.query.isAsc = this.$cache.local.get(PLAN_ITEM_SORT_TYPE) || null;
@@ -268,9 +346,108 @@ export default {
   methods: {
     checkPermi,
     parseTime,
+    emitExpandModuleTree() {
+      this.$emit('expand-module-tree');
+    },
     setDragComponentSize() {
-      // 组件尺寸改变
-      this.$emit('resize');
+      this.$nextTick(() => {
+        this.updatePlanDrawerTableMaxHeight();
+        this.$nextTick(() => {
+          this.$refs.cat2BugTable && this.$refs.cat2BugTable.doLayout && this.$refs.cat2BugTable.doLayout();
+          this.scheduleSyncPaneResizerHandle();
+          this.$emit("resize");
+        });
+      });
+    },
+    updatePlanDrawerTableMaxHeight() {
+      const wrap = this.$refs.planDrawerTableScroll;
+      if (!wrap) return;
+      const h = Math.floor(wrap.clientHeight);
+      if (h < 48) return;
+      if (this.planDrawerTableMaxHeight !== h) {
+        this.planDrawerTableMaxHeight = h;
+      }
+    },
+    initPlanDrawerTableScrollResize() {
+      this.destroyPlanDrawerTableScrollResize();
+      const wrap = this.$refs.planDrawerTableScroll;
+      if (!wrap) return;
+      if (typeof ResizeObserver !== "undefined") {
+        this._planDrawerTableScrollResizeObserver = new ResizeObserver(() => {
+          this.updatePlanDrawerTableMaxHeight();
+          this.$nextTick(() => {
+            this.$refs.cat2BugTable && this.$refs.cat2BugTable.doLayout && this.$refs.cat2BugTable.doLayout();
+          });
+        });
+        this._planDrawerTableScrollResizeObserver.observe(wrap);
+      }
+      this.updatePlanDrawerTableMaxHeight();
+    },
+    destroyPlanDrawerTableScrollResize() {
+      if (this._planDrawerTableScrollResizeObserver) {
+        this._planDrawerTableScrollResizeObserver.disconnect();
+        this._planDrawerTableScrollResizeObserver = null;
+      }
+    },
+    syncDeliverableToolbarWithTableHeader() {
+      this.$nextTick(() => {
+        const cat = this.$refs.cat2BugTable;
+        const elTable = cat && cat.$refs && cat.$refs.elTable;
+        if (!elTable || !elTable.$el) {
+          return;
+        }
+        const headerWrap = elTable.$el.querySelector(".el-table__header-wrapper");
+        if (!headerWrap) {
+          return;
+        }
+        if (
+          this._deliverableTableHeaderObservedEl &&
+          this._deliverableTableHeaderObservedEl !== headerWrap
+        ) {
+          this.destroyDeliverableTableHeaderHeightSync();
+          this.initDeliverableTableHeaderHeightSync();
+          return;
+        }
+        /* 用整块 header-wrapper 高度对齐左侧 Tab 外框（含边框），避免仅 thead tr 与 Tab height:border-box 差 1px */
+        const rect = headerWrap.getBoundingClientRect();
+        const h = Math.round(rect.height || headerWrap.offsetHeight || 0);
+        if (h < 1) {
+          return;
+        }
+        if (h > 0 && h !== this.deliverableToolbarSyncHeight) {
+          this.deliverableToolbarSyncHeight = h;
+        }
+      });
+    },
+    initDeliverableTableHeaderHeightSync() {
+      this.destroyDeliverableTableHeaderHeightSync();
+      const cat = this.$refs.cat2BugTable;
+      const elTable = cat && cat.$refs && cat.$refs.elTable;
+      if (!elTable || !elTable.$el) {
+        this.syncDeliverableToolbarWithTableHeader();
+        return;
+      }
+      const headerWrap = elTable.$el.querySelector(".el-table__header-wrapper");
+      if (!headerWrap) {
+        this.syncDeliverableToolbarWithTableHeader();
+        return;
+      }
+      this._deliverableTableHeaderObservedEl = headerWrap;
+      this.syncDeliverableToolbarWithTableHeader();
+      if (typeof ResizeObserver === "undefined") {
+        return;
+      }
+      this._deliverableTableHeaderResizeObserver = new ResizeObserver(() => {
+        this.syncDeliverableToolbarWithTableHeader();
+      });
+      this._deliverableTableHeaderResizeObserver.observe(headerWrap);
+    },
+    destroyDeliverableTableHeaderHeightSync() {
+      if (this._deliverableTableHeaderResizeObserver) {
+        this._deliverableTableHeaderResizeObserver.disconnect();
+        this._deliverableTableHeaderResizeObserver = null;
+      }
+      this._deliverableTableHeaderObservedEl = null;
     },
     initFloatMenu() {
       this.$emit('init-float-menu');
@@ -280,10 +457,28 @@ export default {
       this.query.planId = planId;
       this.query.projectId = projectId;
       this.query = { ...this.query, ...query };
+      this.getTreeModuleWidth();
       this.$nextTick(() => {
         this.$refs.cat2BugTable && this.$refs.cat2BugTable.sort(this.query.orderByColumn, this.query.isAsc);
+        this.initDeliverableTableHeaderHeightSync();
+        this.setDragComponentSize();
       });
       this.getPlanItemList();
+    },
+    getTreeModuleWidth() {
+      const w = this.$cache.session.get(TREE_MODULE_WIDTH_CACHE_KEY);
+      this.treeModuleStyle["--treeModuleWidth"] = (w ? w : 300) + "px";
+    },
+    cacheTreeModuleWidth() {
+      if (this.$refs.treeModule) {
+        this.$cache.session.set(TREE_MODULE_WIDTH_CACHE_KEY, this.$refs.treeModule.clientWidth);
+      }
+    },
+    dragStopHandle() {
+      if (this.showModuleTree && this.$refs.treeModule) {
+        this.cacheTreeModuleWidth();
+      }
+      this.setDragComponentSize();
     },
     onPlanCaseColumnsChange(columns) {
       this.planCaseColumnPickerRev += 1;
@@ -292,6 +487,7 @@ export default {
       this.columnPickerCheckedKeys = columns
         .filter((c) => c.visible && c.showInColumnPicker !== false)
         .map((c) => c.key);
+      this.$nextTick(() => this.syncDeliverableToolbarWithTableHeader());
     },
     onPlanCaseColumnPickerChange(keys) {
       this.$refs.cat2BugTable && this.$refs.cat2BugTable.setColumnsVisible(keys);
@@ -311,6 +507,11 @@ export default {
           return i;
         });
         this.total = response.total;
+        this.$nextTick(() => {
+          this.initDeliverableTableHeaderHeightSync();
+          this.syncDeliverableToolbarWithTableHeader();
+          this.setDragComponentSize();
+        });
       });
     },
     /** 处理添加缺陷完成操作 */
@@ -415,11 +616,107 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import "~@/assets/styles/multipane-resizer-grip.scss";
+
+.plan-item-drawer-layout {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  height: 100%;
+}
+.plan-drawer-case-multipane.custom-resizer {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  align-items: stretch;
+  overflow: hidden;
+  padding-left: 5px;
+  padding-right: 5px;
+  box-sizing: border-box;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+.custom-resizer--tree-hidden > .plan-item-content-list {
+  flex: 1 1 100%;
+  width: 100%;
+}
+.custom-resizer > .multipane-resizer {
+  flex-shrink: 0;
+  margin: 0 0 0 -8px;
+  left: 4px;
+  width: 8px;
+  cursor: col-resize;
+  position: relative;
+  box-sizing: border-box;
+  z-index: 350;
+  background-image: linear-gradient(#dfe6ec, #dfe6ec);
+  background-size: 100% 1px;
+  background-position: 0 calc(var(--multipane-header-rule-offset, 48px) - 1px);
+  background-repeat: no-repeat;
+  @include multipane-resizer-vertical-appearance;
+}
+.tree-module {
+  width: var(--treeModuleWidth);
+  max-width: 75%;
+  flex-shrink: 0;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+.tree-module ::v-deep > .tree {
+  flex: 1 1 0%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
 .plan-item-content {
   flex-grow: 1;
-  overflow:hidden;
+  overflow: hidden;
   height: 100%;
-  padding-bottom: 30px;
+  padding-bottom: 0;
+}
+.plan-drawer-case-list-pane.plan-item-content-list {
+  flex: 1 1 0%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+/* 占满表格与分页之间的剩余高度；纵向滚动交给 el-table（table-max-height），以固定表头 */
+.plan-drawer-table-scroll {
+  flex: 1 1 0%;
+  align-self: stretch;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+/* 表体底色；表头 gutter / 滚动槽见 assets/styles/el-table-scrollbar.scss */
+.plan-drawer-case-list-pane ::v-deep .el-table__body-wrapper,
+.plan-drawer-case-list-pane ::v-deep .el-table__fixed-body-wrapper {
+  background-color: #fff !important;
+}
+/* ruoyi.scss 给分页容器 height:25px + 内部 absolute，预留高度不足会压住上方表格 */
+.plan-drawer-case-list-pane ::v-deep .pagination-container {
+  flex-shrink: 0;
+  margin-bottom: 30px !important;
+  height: auto !important;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.plan-drawer-case-list-pane ::v-deep .pagination-container .el-pagination {
+  position: relative !important;
+  right: auto !important;
 }
 .plan-item-query {
   display: inline-flex;
@@ -427,9 +724,18 @@ export default {
   justify-content: space-between;
   align-items: flex-start;
   width: 100%;
+  flex-shrink: 0;
+  box-sizing: border-box;
   .el-form-item {
     margin-bottom: 5px;
   }
+}
+.plan-item-query.defect-table-tools.defect-table-tools-bar {
+  flex-wrap: wrap;
+  row-gap: 8px;
+  column-gap: 12px;
+  align-content: flex-start;
+  align-items: center;
 }
 .handle-plan-tools-right {
   display: inline-flex;
@@ -468,5 +774,60 @@ export default {
     min-height: 100%;
     justify-content: center;
   }
+}
+/* 与缺陷 list/table.vue 表头展开侧栏列一致 */
+.plan-case-sidebar-expand-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  box-sizing: border-box;
+  cursor: pointer;
+  color: #909399;
+  font-size: 12px;
+  line-height: 1;
+  flex-shrink: 0;
+  border-radius: 4px;
+}
+.plan-case-sidebar-expand-trigger:hover {
+  color: #409eff;
+  background-color: #ecf5ff;
+}
+.plan-case-sidebar-expand-trigger:focus-visible {
+  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.35);
+}
+.plan-case-sidebar-expand-trigger ::v-deep .plan-case-sidebar-expand-svg {
+  width: 12px;
+  height: 12px;
+  vertical-align: middle;
+  display: block;
+}
+::v-deep .plan-case-sidebar-expand-header-cell {
+  padding: 0 !important;
+  text-align: center;
+}
+::v-deep .plan-case-sidebar-expand-header-cell .cell {
+  padding: 0 !important;
+  overflow: visible !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+::v-deep .el-table__fixed-header-wrapper .plan-case-sidebar-expand-header-cell .cell {
+  overflow: visible !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+::v-deep .plan-case-sidebar-expand-body-cell .cell {
+  padding: 4px 0 !important;
+}
+.plan-case-sidebar-expand-body-placeholder {
+  display: block;
+  width: 1px;
+  height: 1px;
+  visibility: hidden;
 }
 </style>

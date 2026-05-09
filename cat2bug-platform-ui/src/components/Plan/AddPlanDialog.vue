@@ -37,26 +37,9 @@
         </el-col>
       </el-row>
       <el-divider content-position="center">{{ $t('plan.select-case') }}</el-divider>
-      <!--    模块树和用例列表区域-->
-      <multipane layout="vertical" ref="multiPane" class="custom-resizer" @paneResizeStop="dragStopHandle">
-        <!--      树形模块选择组件-->
-        <div class="tree-module" ref="treeModule" :style="treeModuleStyle">
-          <tree-plan-item-module
-            ref="treeModuleRef"
-            :project-id="projectId"
-            @node-click="moduleClickHandle"
-            @check-change="moduleCheckChangeHandle"
-            @level-node-click="levelClickHandle"
-            @level-check-change="levelCheckChangeHandle"
-            :check-visible="true"
-            :edit-visible="false"
-            :show-all="true"
-            :show-count="false"
-            v-resize="setDragComponentSize" />
-        </div>
-        <multipane-resizer :style="multipaneStyle"></multipane-resizer>
-        <!--      用例列表-->
-        <div ref="caseContext" class="case-context">
+      <!-- 与缺陷 list/table.vue：查询条单独一行，下方再树 + 表 -->
+      <div class="plan-add-case-select">
+        <div class="plan-add-case-toolbar defect-table-tools defect-table-tools-bar">
           <div class="case-tools">
             <el-form :model="caseQueryParams" ref="queryForm" size="small" :inline="true" label-width="68px">
               <el-form-item prop="caseNum">
@@ -84,7 +67,56 @@
               </el-form-item>
             </el-form>
           </div>
+        </div>
+        <multipane layout="vertical" ref="multiPane" class="custom-resizer" :class="{ 'custom-resizer--tree-hidden': !showModuleTree }" @paneResizeStop="dragStopHandle">
+          <!--      树形模块选择组件-->
+          <div v-if="showModuleTree" class="tree-module" ref="treeModule" :style="treeModuleStyle">
+            <tree-plan-item-module
+              ref="treeModuleRef"
+              :project-id="projectId"
+              :show-sidebar-toggle="true"
+              :toolbar-sync-height="planAddTreeToolbarSyncHeight"
+              @toggle-sidebar="toggleModuleTreeVisible"
+              @node-click="moduleClickHandle"
+              @check-change="moduleCheckChangeHandle"
+              @level-node-click="levelClickHandle"
+              @level-check-change="levelCheckChangeHandle"
+              :check-visible="true"
+              :edit-visible="false"
+              :show-all="true"
+              :show-count="false"
+              v-resize="setDragComponentSize" />
+          </div>
+          <multipane-resizer ref="paneResizer" v-show="showModuleTree" :style="[multipaneStyle, paneResizerRuleVars]"></multipane-resizer>
+          <!--      用例列表-->
+          <div ref="caseContext" class="case-context">
           <el-table ref="planItemTable" v-loading="loading" :data="caseList" v-resize="setDragComponentSize" @select="handleSelectionChange" @select-all="handleAllSelectionChange">
+            <el-table-column
+              v-if="!showModuleTree"
+              key="plan-add-sidebar-expand-col"
+              fixed
+              width="30"
+              align="center"
+              label-class-name="plan-add-sidebar-expand-header-cell"
+              class-name="plan-add-sidebar-expand-body-cell"
+            >
+              <template slot="header">
+                <el-tooltip :content="$t('case.show-module-tree')" placement="bottom">
+                  <span
+                    class="plan-add-sidebar-expand-trigger"
+                    role="button"
+                    tabindex="0"
+                    @click.stop="toggleModuleTreeVisible"
+                    @keyup.enter.stop.prevent="toggleModuleTreeVisible"
+                  >
+                    <svg-icon icon-class="menu" class-name="plan-add-sidebar-expand-svg" />
+                  </span>
+                </el-tooltip>
+              </template>
+              <template slot-scope>
+                <span class="plan-add-sidebar-expand-body-placeholder" />
+              </template>
+            </el-table-column>
             <el-table-column type="selection" width="50" align="center" fixed />
             <el-table-column :label="$t('id')" align="left" prop="caseNum" width="80" sortable fixed>
               <template slot-scope="scope">
@@ -145,8 +177,9 @@
             :limit.sync="caseQueryParams.pageSize"
             @pagination="getPlanItemCaseList"
           />
-        </div>
-      </multipane>
+          </div>
+        </multipane>
+      </div>
     </el-form>
     <div slot="footer" class="dialog-footer">
       <el-button type="primary" @click="submitForm">{{ $t('plan.save') }}</el-button>
@@ -164,19 +197,23 @@ import FocusMemberList from "@/components/FocusMemberList";
 import Cat2BugSelectLevel from "@/components/Cat2BugSelectLevel";
 import Cat2BugPreviewImage from "@/components/Cat2BugPreviewImage";
 import { Multipane, MultipaneResizer } from 'vue-multipane';
+import paneResizerHandleViewport from '@/mixins/paneResizerHandleViewport';
 import {addPlan, getPlan, updatePlan} from "@/api/system/plan";
 import {listPlanItemCase} from "@/api/system/PlanItem";
 import {listCase, listPlanCaseId, listPlanCaseLevel} from "@/api/system/case";
 
 const TREE_MODULE_WIDTH_CACHE_KEY = 'plan_case_tree_module_width';
+/** 新建/编辑计划弹窗：左侧树是否展开（与缺陷列表一致用 local） */
+const PLAN_ADD_DIALOG_TREE_VISIBLE_CACHE_KEY = 'plan_add_dialog_tree_module_visible';
 
 export default {
   name: "AddPlanDialog",
   dicts: ['plan_item_state'],
+  mixins: [paneResizerHandleViewport],
   components: { Cat2BugLevel,Step,TreePlanItemModule,Multipane,MultipaneResizer, FocusMemberList, Cat2BugPreviewImage,Cat2BugText, Cat2BugSelectLevel },
   data() {
     return {
-      multipaneStyle: {'--marginTop':'0px'},
+      multipaneStyle: {},
       treeModuleStyle: {'--treeModuleWidth':'300px'},
       // 遮罩层
       loading: true,
@@ -219,7 +256,27 @@ export default {
       total: 0,
       // 测试用例表格数据
       caseList: [],
+      /** 是否显示左侧交付物/优先级树 */
+      showModuleTree: true,
+      /** 与右侧 el-table 表头行高对齐（px） */
+      planAddTreeToolbarSyncHeight: null,
     }
+  },
+  watch: {
+    open(val) {
+      if (val) {
+        this.$nextTick(() => {
+          this.initPlanAddTableHeaderHeightSync();
+          this.setDragComponentSize();
+        });
+      } else {
+        this.destroyPlanAddTableHeaderHeightSync();
+      }
+    },
+  },
+  created() {
+    const treeVis = this.$cache.local.get(PLAN_ADD_DIALOG_TREE_VISIBLE_CACHE_KEY);
+    this.showModuleTree = !(treeVis === '0' || treeVis === 'false');
   },
   directives: {
     resize: {
@@ -263,8 +320,74 @@ export default {
         })
       }
     },
+    paneResizerRuleVars() {
+      const h = this.planAddTreeToolbarSyncHeight;
+      return {
+        '--multipane-header-rule-offset': h != null && h > 0 ? `${h}px` : '48px',
+      };
+    },
+  },
+  destroyed() {
+    this.destroyPlanAddTableHeaderHeightSync();
   },
   methods: {
+    syncPlanAddTreeToolbarWithTableHeader() {
+      this.$nextTick(() => {
+        const tbl = this.$refs.planItemTable;
+        if (!tbl || !tbl.$el) {
+          return;
+        }
+        const headerWrap = tbl.$el.querySelector('.el-table__header-wrapper');
+        if (!headerWrap) {
+          return;
+        }
+        if (
+          this._planAddTableHeaderObservedEl &&
+          this._planAddTableHeaderObservedEl !== headerWrap
+        ) {
+          this.destroyPlanAddTableHeaderHeightSync();
+          this.initPlanAddTableHeaderHeightSync();
+          return;
+        }
+        const rect = headerWrap.getBoundingClientRect();
+        const h = Math.round(rect.height || headerWrap.offsetHeight || 0);
+        if (h < 1) {
+          return;
+        }
+        if (h > 0 && h !== this.planAddTreeToolbarSyncHeight) {
+          this.planAddTreeToolbarSyncHeight = h;
+        }
+      });
+    },
+    initPlanAddTableHeaderHeightSync() {
+      this.destroyPlanAddTableHeaderHeightSync();
+      const tbl = this.$refs.planItemTable;
+      if (!tbl || !tbl.$el) {
+        this.syncPlanAddTreeToolbarWithTableHeader();
+        return;
+      }
+      const headerWrap = tbl.$el.querySelector('.el-table__header-wrapper');
+      if (!headerWrap) {
+        this.syncPlanAddTreeToolbarWithTableHeader();
+        return;
+      }
+      this._planAddTableHeaderObservedEl = headerWrap;
+      this.syncPlanAddTreeToolbarWithTableHeader();
+      if (typeof ResizeObserver === 'undefined') {
+        return;
+      }
+      this._planAddTableHeaderResizeObserver = new ResizeObserver(() => {
+        this.syncPlanAddTreeToolbarWithTableHeader();
+      });
+      this._planAddTableHeaderResizeObserver.observe(headerWrap);
+    },
+    destroyPlanAddTableHeaderHeightSync() {
+      if (this._planAddTableHeaderResizeObserver) {
+        this._planAddTableHeaderResizeObserver.disconnect();
+        this._planAddTableHeaderResizeObserver = null;
+      }
+      this._planAddTableHeaderObservedEl = null;
+    },
     /** 初始化浮动菜单 */
     initFloatMenu() {
       this.$floatMenu.windowsInit(document.querySelector('.main-container'));
@@ -327,8 +450,8 @@ export default {
       this.getTreeModuleWidth();
       this.caseQueryParams.params.planId= 'cat2bug-temp-id';
       this.getPlanItemCaseList();
-      this.$nextTick(()=>{
-        this.$refs.treeModuleRef.reloadData();
+      this.$nextTick(() => {
+        this.$refs.treeModuleRef && this.$refs.treeModuleRef.reloadData();
         this.initFloatMenu();
       });
     },
@@ -394,6 +517,11 @@ export default {
           });
         });
         this.total = response.total;
+        this.$nextTick(() => {
+          this.initPlanAddTableHeaderHeightSync();
+          this.syncPlanAddTreeToolbarWithTableHeader();
+          this.setDragComponentSize();
+        });
       });
     },
     /** 搜索按钮操作 */
@@ -468,15 +596,26 @@ export default {
     },
     /** 拖动事件完成 */
     dragStopHandle(pane, container, size) {
-      this.cacheTreeModuleWidth();
+      if (this.showModuleTree && this.$refs.treeModule) {
+        this.cacheTreeModuleWidth();
+      }
+      this.setDragComponentSize();
     },
-    /** 设置模块与用例列表中间拖动块的尺寸 */
+    /** 收起/展开左侧树（与缺陷 list/table.vue 一致） */
+    toggleModuleTreeVisible() {
+      this.showModuleTree = !this.showModuleTree;
+      this.$cache.local.set(PLAN_ADD_DIALOG_TREE_VISIBLE_CACHE_KEY, this.showModuleTree ? '1' : '0');
+      this.$nextTick(() => {
+        this.setDragComponentSize();
+        this.$nextTick(() => this.syncPlanAddTreeToolbarWithTableHeader());
+      });
+    },
+    /** 表格 doLayout + 分隔条手柄 */
     setDragComponentSize() {
-      this.multipaneStyle['--marginTop'] = '0px';
-      this.$nextTick(()=> {
-        let pageHeight = Math.max(this.$refs.treeModule.scrollHeight || 0, this.$refs.caseContext.scrollHeight || 0)
-        this.multipaneStyle['--marginTop'] = pageHeight + 'px';
-      })
+      this.$nextTick(() => {
+        this.$refs.planItemTable && this.$refs.planItemTable.doLayout && this.$refs.planItemTable.doLayout();
+        this.scheduleSyncPaneResizerHandle();
+      });
     },
     handleAllSelectionChange(selection) {
       if(selection.length==0) {
@@ -503,53 +642,158 @@ export default {
 <style lang="scss" scoped>
 @import "~@/assets/styles/multipane-resizer-grip.scss";
 
+.plan-add-case-select {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 0;
+  flex: 1 1 auto;
+}
+.plan-add-case-toolbar {
+  flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+.plan-add-case-toolbar.defect-table-tools.defect-table-tools-bar {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  align-content: flex-start;
+  row-gap: 8px;
+  column-gap: 12px;
+  margin: 5px 0 10px 0;
+}
+.plan-add-case-toolbar .case-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  row-gap: 8px;
+  column-gap: 8px;
+  ::v-deep .el-form-item {
+    margin-bottom: 0;
+  }
+}
 .custom-resizer {
+  flex: 1 1 auto;
+  min-height: 0;
   width: 100%;
   height: auto;
+  align-items: stretch;
+  padding-left: 5px;
+  padding-right: 5px;
+  box-sizing: border-box;
   user-select: none;
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
 }
+.custom-resizer--tree-hidden > .case-context {
+  flex: 1 1 100%;
+  width: 100%;
+}
+.plan-add-sidebar-expand-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  box-sizing: border-box;
+  cursor: pointer;
+  color: #909399;
+  font-size: 12px;
+  line-height: 1;
+  flex-shrink: 0;
+  border-radius: 4px;
+}
+.plan-add-sidebar-expand-trigger:hover {
+  color: #409eff;
+  background-color: #ecf5ff;
+}
+.plan-add-sidebar-expand-trigger:focus-visible {
+  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.35);
+}
+.plan-add-sidebar-expand-trigger ::v-deep .plan-add-sidebar-expand-svg {
+  width: 12px;
+  height: 12px;
+  vertical-align: middle;
+  display: block;
+}
+::v-deep .plan-add-sidebar-expand-header-cell {
+  padding: 0 !important;
+  text-align: center;
+}
+::v-deep .plan-add-sidebar-expand-header-cell .cell {
+  padding: 0 !important;
+  overflow: visible !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+::v-deep .el-table__fixed-header-wrapper .plan-add-sidebar-expand-header-cell .cell {
+  overflow: visible !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+::v-deep .plan-add-sidebar-expand-body-cell .cell {
+  padding: 4px 0 !important;
+}
+.plan-add-sidebar-expand-body-placeholder {
+  display: block;
+  width: 1px;
+  height: 1px;
+  visibility: hidden;
+}
 .custom-resizer > .multipane-resizer {
   flex-shrink: 0;
   margin: 0 0 0 -8px;
   left: 4px;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  height: 100%;
   width: 8px;
   cursor: col-resize;
   position: relative;
   box-sizing: border-box;
   /* 弹窗内 el-table 固定列等层级较高，与 vendor 100 叠加保证可点 */
   z-index: 350;
+  background-image: linear-gradient(#dfe6ec, #dfe6ec);
+  background-size: 100% 1px;
+  background-position: 0 calc(var(--multipane-header-rule-offset, 48px) - 1px);
+  background-repeat: no-repeat;
   @include multipane-resizer-vertical-appearance;
 }
 .tree-module {
   width: var(--treeModuleWidth);
   max-width: 75%;
   flex-shrink: 0;
-  overflow: auto;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+.tree-module ::v-deep > .tree {
+  flex: 1 1 0%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 .case-context {
-  flex-grow: 1;
+  flex: 1 1 auto;
   min-width: 0;
-  overflow:hidden;
-  .case-tools {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    margin: 5px 0px 10px 0px;
-    > * {
-      display: inline-block;
-      justify-content: flex-start;
-      margin-bottom: 0px;
-      ::v-deep .el-form-item {
-        margin-bottom: 0px;
-      }
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  /* 表格可横向滚动但不显示滚动条（仍可用触控板 / Shift+滚轮） */
+  ::v-deep .el-table__body-wrapper,
+  ::v-deep .el-table__fixed-body-wrapper {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    &::-webkit-scrollbar {
+      width: 0 !important;
+      height: 0 !important;
     }
   }
 }

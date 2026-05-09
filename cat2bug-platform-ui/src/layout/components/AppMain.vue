@@ -69,17 +69,18 @@ export default {
   }
 }
 
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+/* 勿用全局 ::-webkit-scrollbar，会压扁 / 干扰表格区滚动条（见 el-table-scrollbar.scss） */
+.main-container::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
 
-::-webkit-scrollbar-track {
-  background-color: #f1f1f1;
+.main-container::-webkit-scrollbar-track {
+  background-color: #e8e8e8;
 }
 
-::-webkit-scrollbar-thumb {
-  background-color: #c0c0c0;
-  border-radius: 3px;
+.main-container::-webkit-scrollbar-thumb {
+  background-color: #a8a8a8;
+  border-radius: 4px;
 }
 </style>

@@ -1,7 +1,20 @@
 <template>
   <div class="tree">
-    <div class="tree-tools">
-      <el-tabs v-model="activeName" @tab-click="handleTabClick">
+    <div class="tree-tools" :style="planTreeHeaderSyncStyle">
+      <div v-if="showSidebarToggle" class="tree-plan-item-sidebar-toggle-wrap">
+        <el-tooltip :content="$t('case.hide-module-tree')" placement="bottom">
+          <span
+            class="tree-sidebar-collapse-toggle"
+            role="button"
+            tabindex="0"
+            @click.stop="handleSidebarToggle"
+            @keyup.enter.stop.prevent="handleSidebarToggle"
+          >
+            <i class="el-icon-d-arrow-left" />
+          </span>
+        </el-tooltip>
+      </div>
+      <el-tabs v-model="activeName" stretch class="tree-plan-item-tabs" @tab-click="handleTabClick">
         <el-tab-pane :label="$t('module.list')" name="module">
           <el-tree v-loading="loading" :highlight-current="true" ref="moduleTree" :show-checkbox="checkVisible" :props="props" :lazy="true" :data="tree" :load="loadNode" node-key="(id,pid)" @node-click="handleNodeClick" @check-change="handleCheckChange">
             <span class="tree-node" slot-scope="{ node, data }">
@@ -113,9 +126,25 @@ export default {
     showCount: {
       type: Boolean,
       default: true
+    },
+    /** 标题栏右侧：收起左侧栏（与 TreeModule 一致，由父级 multipane 隐藏树列） */
+    showSidebarToggle: {
+      type: Boolean,
+      default: false
+    },
+    /** 与右侧表格表头行同高（px），用于 Tab 标题行与收起按钮行对齐 */
+    toolbarSyncHeight: {
+      type: Number,
+      default: null
     }
   },
   computed: {
+    /** 与 ruoyi.scss 表头 th 默认 48px 对齐；测量到位后用右侧 thead tr 实际高度 */
+    planTreeHeaderSyncStyle() {
+      const h = this.toolbarSyncHeight;
+      const px = h != null && h > 0 ? `${h}px` : '48px';
+      return { '--plan-tree-tabs-sync-height': px };
+    },
     removeNodeButtonVisible: function () {
       return function (node) {
         return node.leaf && checkPermi(['system:module:remove']) && node.label!=this.$i18n.t('module.all-module');
@@ -137,6 +166,9 @@ export default {
     },
     handleTabClick(tab, event) {
       // console.log(tab, event);
+    },
+    handleSidebarToggle() {
+      this.$emit('toggle-sidebar');
     },
     reloadData() {
       this.currentNode = null;
@@ -277,20 +309,161 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.tree-tools {
+/* 与缺陷页 defect-tree-module + TreeModule 一致：侧栏纵向撑满、树区可滚动 */
+.tree {
+  height: 100%;
+  min-height: 0;
   width: 100%;
-  height: 55px;
-  //line-height: 55px;
-  border-bottom: 1px solid #dfe6ec;
-  background-color: #f8f8f9;
-  padding: 0px 10px;
-  margin-bottom: 10px;
-  font-size: 15px;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+.tree-tools {
+  position: relative;
+  width: 100%;
+  flex: 1 1 0%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border-bottom: none;
+  background-color: transparent;
+  padding: 0;
+  margin-bottom: 0;
+  font-size: 13px;
   font-weight: 500;
   color: #515a6e;
+  box-sizing: border-box;
+  /* 外层左右 5px：父级 AddPlanDialog / HandlePlanDialog .custom-resizer；树/优先级列表在 Tab 内容区内再留 5px，避免贴边 */
+  ::v-deep .el-tabs {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0%;
+    min-height: 0;
+  }
+  ::v-deep .el-tabs__header {
+    flex-shrink: 0;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    background-color: #f8f8f9;
+  }
+  /* 与右侧 el-table 表头同色同高：固定 height（不只 min-height），避免 Tab 默认行高低于 th */
+  ::v-deep .tree-plan-item-tabs > .el-tabs__header {
+    padding-right: 28px;
+    box-sizing: border-box;
+    height: var(--plan-tree-tabs-sync-height, 48px);
+    min-height: var(--plan-tree-tabs-sync-height, 48px);
+    display: flex;
+    align-items: stretch;
+    border-bottom: 1px solid #dfe6ec;
+  }
+  ::v-deep .tree-plan-item-tabs > .el-tabs__header .el-tabs__nav-wrap {
+    flex: 1;
+    min-height: 100%;
+    display: flex;
+    align-items: stretch;
+    box-sizing: border-box;
+    /* Element 默认 ::after 高度 2px，与下方 header 的 1px 底边叠加会「一段粗一段细」 */
+    margin-bottom: 0 !important;
+  }
+  ::v-deep .tree-plan-item-tabs > .el-tabs__header .el-tabs__nav-wrap::after {
+    display: none !important;
+  }
+  ::v-deep .el-tabs__nav-wrap {
+    padding-left: 5px;
+    padding-right: 5px;
+    box-sizing: border-box;
+  }
+  /*
+   * Element 默认 TabBar 用 JS 算宽度/位移，在 stretch + 侧栏拖拽变宽时经常错位。
+   * 隐藏 TabBar，用每个 tab 格子的 border-bottom 作为选中指示线，宽度随 flex 自动正确。
+   */
+  ::v-deep .el-tabs__active-bar {
+    display: none !important;
+  }
+  /* stretch 下 nav 已 flex；item 默认 inline-block 会让文案视觉上偏左，改为 flex 居中 */
+  ::v-deep .tree-plan-item-tabs .el-tabs__nav {
+    width: 100%;
+    float: none;
+  }
+  /* Tab 格纵向铺满标题栏高度，文案 flex 居中（与表头 th 内 .cell 观感一致） */
+  ::v-deep .tree-plan-item-tabs .el-tabs__item {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    align-self: stretch;
+    text-align: center;
+    line-height: 1.25;
+    padding-left: 8px;
+    padding-right: 8px;
+    border-bottom: none !important;
+    box-sizing: border-box;
+  }
+  ::v-deep .tree-plan-item-tabs .el-tabs__item.is-active {
+    color: #1890ff;
+    position: relative;
+  }
+  ::v-deep .tree-plan-item-tabs .el-tabs__item.is-active::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1px;
+    background-color: #1890ff;
+    z-index: 2;
+  }
+  ::v-deep .el-tabs__content {
+    flex: 1 1 0%;
+    min-height: 0;
+    overflow: hidden;
+    padding: 10px 5px 0;
+    box-sizing: border-box;
+    background-color: #fff;
+  }
+  ::v-deep .el-tab-pane {
+    height: 100%;
+  }
+}
+.tree-plan-item-sidebar-toggle-wrap {
+  position: absolute;
+  top: 0;
+  right: 5px;
+  z-index: 4;
+  height: var(--plan-tree-tabs-sync-height, 48px);
+  display: flex;
+  align-items: center;
+}
+.tree-plan-item-sidebar-toggle-wrap .tree-sidebar-collapse-toggle {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  box-sizing: border-box;
+  cursor: pointer;
+  color: #909399;
+  font-size: 12px;
+  line-height: 1;
+  border-radius: 4px;
+  border: none;
+  outline: none;
+  background: transparent;
+}
+.tree-plan-item-sidebar-toggle-wrap .tree-sidebar-collapse-toggle:hover {
+  color: #409eff;
+  background-color: #ecf5ff;
+}
+.tree-plan-item-sidebar-toggle-wrap .tree-sidebar-collapse-toggle:focus-visible {
+  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.35);
+}
+.tree-plan-item-sidebar-toggle-wrap .tree-sidebar-collapse-toggle > i {
+  font-size: 12px;
+  transform: scale(0.92);
 }
 .tree-node {
-  line-height: 0px;
   flex: 1;
   display: flex;
   align-items: center;
@@ -301,10 +474,20 @@ export default {
 .active {
   background-color: #00afff;
 }
+/* 可横/纵滚动，滚动条隐藏（触控板、Shift+滚轮、拖拽仍可滚） */
 .el-tree {
-  overflow-y: hidden;
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
   overflow-x: auto;
   width: 100%;
+  box-sizing: border-box;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+  }
   ::v-deep > div[role="treeitem"]:first-child{
     .el-checkbox {
       display: none;

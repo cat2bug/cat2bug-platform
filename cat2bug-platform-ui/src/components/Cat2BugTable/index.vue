@@ -4,6 +4,7 @@
               :key="tableKey"
               v-loading="loading"
               :data="data"
+              :max-height="elTableMaxHeight"
               @selection-change="handleSelectionChange"
               @sort-change="sortChangeHandle"
               @row-click="handleClickTableRow"
@@ -35,6 +36,21 @@
       </el-table-column>
       <slot name="append"></slot>
     </el-table>
+    <!-- 原生横向条无法在不错位 DOM 的情况下区间显示；自定义条同步 scrollLeft，轨道从左/右固定列内侧起算 -->
+    <div
+      v-show="customXVisible"
+      ref="customXBarTrack"
+      class="cat2bug-custom-xbar"
+      :style="customXTrackStyle"
+      @mousedown.self.prevent="onCustomXTrackMouseDown"
+    >
+      <div
+        ref="customXBarThumb"
+        class="cat2bug-custom-xbar__thumb"
+        :style="customXThumbStyle"
+        @mousedown.stop.prevent="onCustomXThumbMouseDown"
+      />
+    </div>
   </div>
 </template>
 
@@ -55,7 +71,15 @@ export default {
       tableKey: (new Date()).getMilliseconds(),
       headerSortable: {},
       orderByColumn: null,
-      isAsc: null
+      isAsc: null,
+      customXVisible: false,
+      customXTrackStyle: {},
+      customXThumbStyle: {},
+      _customXScrollListener: null,
+      _customXWheelListener: null,
+      _customXResizeListener: null,
+      _customXRo: null,
+      _customXBoundBody: null,
     }
   },
   props: {
@@ -95,9 +119,19 @@ export default {
     enableHeaderSort: {
       type: Boolean,
       default: true
+    },
+    /** 传入后由表格内部滚动表体，表头固定（像素值或带单位的字符串，不设则整表随外层滚动） */
+    tableMaxHeight: {
+      type: [Number, String],
+      default: null
     }
   },
   computed: {
+    elTableMaxHeight() {
+      const v = this.tableMaxHeight;
+      if (v === null || v === undefined || v === '') return undefined;
+      return v;
+    },
     showTableFieldList: function () {
       return this.tableFieldList.map((col, index) => {
         col.index = index;
@@ -116,6 +150,13 @@ export default {
         this.$refs.elTable && this.$refs.elTable.doLayout();
       });
     },
+    tableKey() {
+      this.teardownCustomHorizontalScrollbar();
+      this.$nextTick(() => this.setupCustomHorizontalScrollbar());
+    },
+    data() {
+      this.$nextTick(() => this.updateCustomHorizontalScrollbar());
+    },
   },
   created() {
     const merged = this.mergeCachedColumns(this.columns);
@@ -128,6 +169,10 @@ export default {
   mounted() {
     this.initSort();
     this.initColumnDrag();
+    this.$nextTick(() => this.setupCustomHorizontalScrollbar());
+  },
+  beforeDestroy() {
+    this.teardownCustomHorizontalScrollbar();
   },
   methods: {
     columnsStorageKey() {
@@ -299,6 +344,203 @@ export default {
     initColumnDrag() {
       this.bindSortable('.el-table__header-wrapper thead tr', 'normal');
       this.bindSortable('.el-table__fixed-header-wrapper thead tr', 'fixed');
+      this.$nextTick(() => this.updateCustomHorizontalScrollbar());
+    },
+    getTableBodyWrapper() {
+      const t = this.$refs.elTable;
+      return t && t.$el ? t.$el.querySelector('.el-table__body-wrapper') : null;
+    },
+    setupCustomHorizontalScrollbar() {
+      this.teardownCustomHorizontalScrollbar();
+      const bw = this.getTableBodyWrapper();
+      const wrap = this.$el;
+      if (!bw || !wrap) return;
+
+      this._customXBoundBody = bw;
+      this._customXScrollListener = () => this.updateCustomHorizontalScrollbar();
+      bw.addEventListener('scroll', this._customXScrollListener, { passive: true });
+
+      this._customXWheelListener = (e) => this.handleCustomXWheel(e);
+      wrap.addEventListener('wheel', this._customXWheelListener, { passive: false, capture: true });
+
+      this._customXResizeListener = () =>
+        this.$nextTick(() => this.updateCustomHorizontalScrollbar());
+      window.addEventListener('resize', this._customXResizeListener);
+
+      this._customXRo = new ResizeObserver(() => this.updateCustomHorizontalScrollbar());
+      this._customXRo.observe(wrap);
+      this._customXRo.observe(bw);
+      const root = this.$refs.elTable.$el;
+      const fixedL = root.querySelector('.el-table__fixed');
+      const fixedR = root.querySelector('.el-table__fixed-right');
+      if (fixedL) this._customXRo.observe(fixedL);
+      if (fixedR) this._customXRo.observe(fixedR);
+
+      this.updateCustomHorizontalScrollbar();
+    },
+    teardownCustomHorizontalScrollbar() {
+      const wrap = this.$el;
+      if (wrap && wrap.classList) wrap.classList.remove('cat2bug-hide-native-x');
+      if (wrap && wrap.parentElement) wrap.parentElement.classList.remove('cat2bug-parent-lock-x');
+
+      const bw = this._customXBoundBody;
+      if (bw && this._customXScrollListener) {
+        bw.removeEventListener('scroll', this._customXScrollListener);
+      }
+      if (wrap && this._customXWheelListener) {
+        wrap.removeEventListener('wheel', this._customXWheelListener, true);
+      }
+      this._customXBoundBody = null;
+      this._customXScrollListener = null;
+      this._customXWheelListener = null;
+      if (this._customXResizeListener) {
+        window.removeEventListener('resize', this._customXResizeListener);
+        this._customXResizeListener = null;
+      }
+      if (this._customXRo) {
+        this._customXRo.disconnect();
+        this._customXRo = null;
+      }
+    },
+    updateCustomHorizontalScrollbar() {
+      const wrap = this.$el;
+      const elTable = this.$refs.elTable;
+      if (!wrap || !elTable || !elTable.$el) return;
+
+      const tableRoot = elTable.$el;
+      const bw = tableRoot.querySelector('.el-table__body-wrapper');
+      if (!bw) return;
+
+      const scrollW = bw.scrollWidth;
+      const clientW = bw.clientWidth;
+      const needsX = scrollW > clientW + 2;
+
+      wrap.classList.toggle('cat2bug-hide-native-x', needsX);
+      const scrollParent = wrap.parentElement;
+      if (scrollParent) scrollParent.classList.toggle('cat2bug-parent-lock-x', needsX);
+
+      if (!needsX) {
+        this.customXVisible = false;
+        return;
+      }
+
+      const wrapRect = wrap.getBoundingClientRect();
+      const bwRect = bw.getBoundingClientRect();
+      const fixedL = tableRoot.querySelector('.el-table__fixed');
+      const fixedR = tableRoot.querySelector('.el-table__fixed-right');
+
+      let leftInset = 0;
+      if (fixedL) {
+        const fr = fixedL.getBoundingClientRect();
+        leftInset = Math.max(0, Math.round(fr.right - bwRect.left));
+      }
+
+      let rightInset = 0;
+      if (fixedR) {
+        const fr = fixedR.getBoundingClientRect();
+        rightInset = Math.max(0, Math.round(bwRect.right - fr.left));
+      }
+
+      const barH = 6;
+      const trackLeft = bwRect.left - wrapRect.left + leftInset;
+      const trackWidth = Math.max(0, Math.round(bwRect.width - leftInset - rightInset));
+      let trackTop = bwRect.bottom - wrapRect.top - barH;
+      if (trackTop < 0) trackTop = 0;
+
+      if (trackWidth < 8) {
+        this.customXVisible = false;
+        wrap.classList.remove('cat2bug-hide-native-x');
+        if (scrollParent) scrollParent.classList.remove('cat2bug-parent-lock-x');
+        return;
+      }
+
+      this.customXTrackStyle = {
+        left: `${trackLeft}px`,
+        top: `${trackTop}px`,
+        width: `${trackWidth}px`,
+        height: `${barH}px`,
+      };
+
+      const maxScroll = scrollW - clientW;
+      const thumbRatio = Math.min(1, clientW / scrollW);
+      let thumbW = Math.max(18, Math.floor(trackWidth * thumbRatio));
+      if (thumbW > trackWidth) thumbW = trackWidth;
+      const travel = Math.max(0, trackWidth - thumbW);
+      const thumbLeft = maxScroll <= 0 ? 0 : Math.round((bw.scrollLeft / maxScroll) * travel);
+
+      this.customXThumbStyle = {
+        width: `${thumbW}px`,
+        height: '100%',
+        left: `${thumbLeft}px`,
+      };
+
+      this.customXVisible = true;
+    },
+    /**
+     * body-wrapper overflow-x:hidden 后浏览器不再把横滑交给默认横条；在表格外包层捕获 wheel，
+     * 仅在「横向意图」下 preventDefault 并写 scrollLeft（竖向滚动照常冒泡）。
+     */
+    handleCustomXWheel(e) {
+      const wrap = this.$el;
+      const bw = this._customXBoundBody;
+      if (!wrap || !bw || !wrap.classList.contains('cat2bug-hide-native-x')) return;
+
+      const maxScroll = bw.scrollWidth - bw.clientWidth;
+      if (maxScroll <= 0) return;
+
+      let dx = e.deltaX;
+      if (e.shiftKey && Math.abs(e.deltaY) >= Math.abs(dx)) {
+        dx = e.deltaY;
+      }
+      if (!dx) return;
+
+      if (!e.shiftKey && Math.abs(dx) < Math.abs(e.deltaY)) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+      bw.scrollLeft = Math.max(0, Math.min(maxScroll, bw.scrollLeft + dx));
+      this.updateCustomHorizontalScrollbar();
+    },
+    onCustomXThumbMouseDown(e) {
+      const bw = this.getTableBodyWrapper();
+      const track = this.$refs.customXBarTrack;
+      const thumb = this.$refs.customXBarThumb;
+      if (!bw || !track || !thumb) return;
+
+      const startX = e.clientX;
+      const startScroll = bw.scrollLeft;
+      const maxScroll = Math.max(0, bw.scrollWidth - bw.clientWidth);
+      const travel = Math.max(1, track.clientWidth - thumb.offsetWidth);
+
+      const onMove = (ev) => {
+        const dx = ev.clientX - startX;
+        const next = startScroll + (dx / travel) * maxScroll;
+        bw.scrollLeft = Math.max(0, Math.min(maxScroll, next));
+        this.updateCustomHorizontalScrollbar();
+      };
+      const onUp = () => {
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+      };
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    },
+    onCustomXTrackMouseDown(e) {
+      const bw = this.getTableBodyWrapper();
+      const track = this.$refs.customXBarTrack;
+      const thumb = this.$refs.customXBarThumb;
+      if (!bw || !track || !thumb) return;
+
+      const rect = track.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const maxScroll = Math.max(0, bw.scrollWidth - bw.clientWidth);
+      const trackW = rect.width;
+      const thumbW = thumb.offsetWidth;
+      const thumbTravel = Math.max(1, trackW - thumbW);
+      let ratio = (x - thumbW / 2) / thumbTravel;
+      ratio = Math.max(0, Math.min(1, ratio));
+      bw.scrollLeft = ratio * maxScroll;
+      this.updateCustomHorizontalScrollbar();
     },
     bindSortable(selector, zone) {
       this.$nextTick(() => {
@@ -383,6 +625,7 @@ export default {
     },
     doLayout() {
       this.$refs.elTable && this.$refs.elTable.doLayout();
+      this.$nextTick(() => this.updateCustomHorizontalScrollbar());
     },
     handleClickColumnsPin(column) {
       column.fixed = !column.fixed;
@@ -416,6 +659,7 @@ export default {
         if (!this.$refs.elTable) return;
         this.$refs.elTable.doLayout();
         this.initColumnDrag();
+        this.updateCustomHorizontalScrollbar();
       });
     }
   }
@@ -423,6 +667,35 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.cat2-bug-table-wrap {
+  position: relative;
+}
+
+.cat2bug-custom-xbar {
+  position: absolute;
+  z-index: 45;
+  box-sizing: border-box;
+  background: #f2f3f5;
+  border-radius: 3px;
+  overflow: hidden;
+  padding: 0;
+}
+
+.cat2bug-custom-xbar__thumb {
+  position: absolute;
+  top: 0;
+  left: 0;
+  box-sizing: border-box;
+  cursor: pointer;
+  background: #e3e6eb;
+  border-radius: 3px;
+  border: none;
+}
+
+.cat2bug-custom-xbar__thumb:hover {
+  background: #d9dde4;
+}
+
 .header-title-only {
   display: inline-block;
 }

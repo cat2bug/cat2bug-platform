@@ -107,7 +107,7 @@
           @node-click="moduleClickHandle"
         />
       </div>
-      <multipane-resizer ref="paneResizer" v-show="showModuleTree" :style="multipaneStyle"></multipane-resizer>
+      <multipane-resizer ref="paneResizer" v-show="showModuleTree" :style="[multipaneStyle, paneResizerRuleVars]"></multipane-resizer>
       <!--      用例列表-->
       <div ref="caseContext" class="case-context">
         <div class="case-context-body">
@@ -316,7 +316,7 @@ export default {
       // 鼠标移动的偏移量
       mouseOffset: 0,
       treeModuleStyle: { '--treeModuleWidth': '300px' },
-      multipaneStyle: { '--marginTop': '0px' },
+      multipaneStyle: {},
       /** 是否显示左侧交付物列表 */
       showModuleTree: true,
       caseTableColumnDefaults: CaseTableColumnDefaults.map(c => ({ ...c })),
@@ -404,7 +404,13 @@ export default {
           return process.env.VUE_APP_BASE_API + i
         })
       }
-    }
+    },
+    paneResizerRuleVars() {
+      const h = this.treeToolsToolbarHeight
+      return {
+        '--multipane-header-rule-offset': h != null && h > 0 ? `${h}px` : '48px',
+      }
+    },
   },
   watch: {
     '$i18n.locale': function() {
@@ -683,14 +689,9 @@ export default {
         this.$nextTick(() => this.syncTreeToolbarWithTableHeader())
       })
     },
-    /** 设置模块与用例列表中间拖动块的尺寸（竖线高度与树/表区域一致，手柄在分隔条上居中） */
+    /** 表格 doLayout + 分隔条手柄位置（竖线 CSS 已随 resizer 100% 置底） */
     setDragComponentSize() {
-      this.multipaneStyle['--marginTop'] = '0px'
       this.$nextTick(() => {
-        const treeH = this.$refs.treeModule ? (this.$refs.treeModule.scrollHeight || 0) : 0
-        const ctxH = this.$refs.caseContext ? (this.$refs.caseContext.scrollHeight || 0) : 0
-        const pageHeight = Math.max(treeH, ctxH, 8)
-        this.multipaneStyle['--marginTop'] = pageHeight + 'px'
         if (this.$refs.cat2BugTable && this.$refs.cat2BugTable.doLayout) {
           this.$refs.cat2BugTable.doLayout()
         }
@@ -872,11 +873,11 @@ export default {
   flex-direction: column;
   align-items: stretch;
   min-height: 0;
-  /* 与缺陷页 defect-page 一致：在 AppMain 内铺满，底边 padding 交给分页区 margin */
+  /* 与缺陷页 defect-page 一致：在 AppMain 内铺满，底边 padding 交给分页区 margin；左右 5px */
   flex: 1 1 auto;
   width: 100%;
   box-sizing: border-box;
-  padding-bottom: 0;
+  padding: 20px 5px 0;
 }
 .case-body > .custom-resizer.multipane {
   flex: 1 1 0%;
@@ -960,8 +961,8 @@ export default {
   margin-bottom: 0 !important;
   padding-top: 0 !important;
   padding-bottom: 0 !important;
-  padding-left: 16px;
-  padding-right: 20px;
+  padding-left: 5px;
+  padding-right: 5px;
 }
 .case-sidebar-expand-trigger {
   display: inline-flex;
@@ -1143,18 +1144,18 @@ export default {
 }
 .case-body .custom-resizer > .multipane-resizer {
   flex-shrink: 0;
-  /* 与缺陷 list/table.vue：骑缝 + 竖线贴顶 + multipane-resizer-grip（含手柄边框） */
+  /* 与缺陷 list/table.vue：骑缝 + multipane-resizer-grip（含手柄边框） */
   margin: 0 0 0 -8px;
   left: 4px;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  height: 100%;
   width: 8px;
   cursor: col-resize;
   position: relative;
   box-sizing: border-box;
   z-index: 350;
+  background-image: linear-gradient(#dfe6ec, #dfe6ec);
+  background-size: 100% 1px;
+  background-position: 0 calc(var(--multipane-header-rule-offset, 48px) - 1px);
+  background-repeat: no-repeat;
   @include multipane-resizer-vertical-appearance;
 }
 .table-case-title {

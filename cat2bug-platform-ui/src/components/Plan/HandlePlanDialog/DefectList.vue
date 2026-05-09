@@ -1,6 +1,6 @@
 <template>
-  <div class="plan-item-content">
-    <div class="plan-item-query">
+  <div class="plan-item-content plan-item-drawer-layout">
+    <div class="plan-item-query defect-table-tools defect-table-tools-bar">
       <div class="row">
         <slot name="query"></slot>
         <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" label-width="0">
@@ -64,14 +64,29 @@
         </el-popover>
       </div>
     </div>
+    <multipane
+      layout="vertical"
+      ref="multiPane"
+      class="custom-resizer plan-drawer-defect-multipane"
+      :class="{ 'custom-resizer--tree-hidden': !showModuleTree }"
+      @paneResizeStop="dragStopHandle"
+    >
+      <div v-if="showModuleTree" class="tree-module" ref="treeModule" :style="treeModuleStyle">
+        <slot name="tree" :toolbar-sync-height="deliverableToolbarSyncHeight" />
+      </div>
+      <multipane-resizer ref="paneResizer" v-show="showModuleTree" :style="[multipaneStyle, paneResizerRuleVars]" />
+      <div ref="caseContext" class="plan-item-content-list plan-drawer-defect-list-pane">
+        <div ref="planDrawerTableScroll" class="plan-drawer-table-scroll">
     <cat2-bug-table
       ref="cat2BugTable"
+      :table-max-height="planDrawerTableMaxHeight"
       field-list-cache-key="plan-defect-table-field-list"
       :sort-column-cache-key="planDefectSortColumnKey"
       :sort-type-cache-key="planDefectSortTypeKey"
       :columns="planDefectTableColumns"
       :data="defectList"
       :loading="loading"
+      v-resize="setDragComponentSize"
       @sort-change="sortChangeHandle"
       @selection-change="handleSelectionChange"
       @row-click="handleClickTableRow"
@@ -80,6 +95,34 @@
       @native-mouseup="handleTableMouseUp"
       @native-mousemove="handleTableMouseMove"
     >
+      <template #prepend>
+        <el-table-column
+          v-if="!showModuleTree"
+          key="plan-defect-sidebar-expand-col"
+          fixed
+          width="30"
+          align="center"
+          label-class-name="plan-defect-sidebar-expand-header-cell"
+          class-name="plan-defect-sidebar-expand-body-cell"
+        >
+          <template slot="header">
+            <el-tooltip :content="$t('case.show-module-tree')" placement="bottom">
+              <span
+                class="plan-defect-sidebar-expand-trigger"
+                role="button"
+                tabindex="0"
+                @click.stop="emitExpandModuleTree"
+                @keyup.enter.stop.prevent="emitExpandModuleTree"
+              >
+                <svg-icon icon-class="menu" class-name="plan-defect-sidebar-expand-svg" />
+              </span>
+            </el-tooltip>
+          </template>
+          <template slot-scope>
+            <span class="plan-defect-sidebar-expand-body-placeholder" />
+          </template>
+        </el-table-column>
+      </template>
       <template #columns="{ scope, column }">
         <span v-if="column.prop === 'projectNum'">{{ '#' + scope.row[column.prop] }}</span>
         <defect-type-flag v-else-if="column.prop === 'defectTypeName'" :defect="scope.row" />
@@ -135,6 +178,7 @@
         </el-table-column>
       </template>
     </cat2-bug-table>
+        </div>
     <pagination
       v-show="total>0"
       :total="total"
@@ -142,6 +186,8 @@
       :limit.sync="queryParams.pageSize"
       @pagination="search(queryParams)"
     />
+      </div>
+    </multipane>
   </div>
 </template>
 
@@ -162,6 +208,10 @@ import {parseTime} from "@/utils/ruoyi";
 import {lifeTime} from "@/utils/defect";
 import {listDefectOfPlan} from "@/api/system/plan";
 import {getDefectState} from "@/api/system/DefectState";
+import { Multipane, MultipaneResizer } from "vue-multipane";
+import paneResizerHandleViewport from "@/mixins/paneResizerHandleViewport";
+
+const TREE_MODULE_WIDTH_CACHE_KEY = "plan_case_tree_module_width";
 
 /** 用例表排序的列 */
 const DEFECT_TABLE_SORT_COLUMN = 'plan-defect_table_sort_column_key';
@@ -170,9 +220,18 @@ const DEFECT_TABLE_SORT_TYPE = 'plan-defect_table_sort_type_key';
 export default {
   name: "DefectList",
   dicts: ['defect_level'],
-  components: { LevelTag, Cat2BugText, RowListMember, Cat2BugPreviewImage, FocusMemberList, DefectTypeFlag, DefectStateFlag, DefectTools, Cat2BugTable, SelectModule, SelectProjectMember },
+  mixins: [paneResizerHandleViewport],
+  components: { Multipane, MultipaneResizer, LevelTag, Cat2BugText, RowListMember, Cat2BugPreviewImage, FocusMemberList, DefectTypeFlag, DefectStateFlag, DefectTools, Cat2BugTable, SelectModule, SelectProjectMember },
+  props: {
+    showModuleTree: {
+      type: Boolean,
+      default: true,
+    },
+  },
   data() {
     return {
+      multipaneStyle: {},
+      treeModuleStyle: { "--treeModuleWidth": "300px" },
       planDefectSortColumnKey: DEFECT_TABLE_SORT_COLUMN,
       planDefectSortTypeKey: DEFECT_TABLE_SORT_TYPE,
       planDefectTableColumns: TableOptions.map((c) => ({ ...c })),
@@ -231,15 +290,25 @@ export default {
         params:{
           defectStates: null
         }
-      }
+      },
+      deliverableToolbarSyncHeight: null,
+      planDrawerTableMaxHeight: null,
     }
+  },
+  mounted() {
+    this.$nextTick(() => this.initPlanDrawerTableScrollResize());
   },
   watch: {
     "$i18n.locale": function () {
       this.$nextTick(() => {
         this.$refs.cat2BugTable && this.$refs.cat2BugTable.doLayout();
+        this.$nextTick(() => this.syncDeliverableToolbarWithTableHeader());
       });
     },
+  },
+  destroyed() {
+    this.destroyDeliverableTableHeaderHeightSync();
+    this.destroyPlanDrawerTableScrollResize();
   },
   directives: {
     resize: {
@@ -302,12 +371,36 @@ export default {
         return arr[arr.length-1];
       }
     },
+    paneResizerRuleVars() {
+      const h = this.deliverableToolbarSyncHeight;
+      return {
+        '--multipane-header-rule-offset': h != null && h > 0 ? `${h}px` : '48px',
+      };
+    },
   },
   created() {
     this.initDefectState();
   },
   methods: {
     parseTime,
+    emitExpandModuleTree() {
+      this.$emit('expand-module-tree');
+    },
+    getTreeModuleWidth() {
+      const w = this.$cache.session.get(TREE_MODULE_WIDTH_CACHE_KEY);
+      this.treeModuleStyle["--treeModuleWidth"] = (w ? w : 300) + "px";
+    },
+    cacheTreeModuleWidth() {
+      if (this.$refs.treeModule) {
+        this.$cache.session.set(TREE_MODULE_WIDTH_CACHE_KEY, this.$refs.treeModule.clientWidth);
+      }
+    },
+    dragStopHandle() {
+      if (this.showModuleTree && this.$refs.treeModule) {
+        this.cacheTreeModuleWidth();
+      }
+      this.setDragComponentSize();
+    },
     /** 初始化缺陷状态 */
     initDefectState() {
       getDefectState().then(res=>{
@@ -315,8 +408,103 @@ export default {
       });
     },
     setDragComponentSize() {
-      // 组件尺寸改变
-      this.$emit('resize');
+      this.$nextTick(() => {
+        this.updatePlanDrawerTableMaxHeight();
+        this.$nextTick(() => {
+          this.$refs.cat2BugTable && this.$refs.cat2BugTable.doLayout && this.$refs.cat2BugTable.doLayout();
+          this.scheduleSyncPaneResizerHandle();
+          this.$emit("resize");
+        });
+      });
+    },
+    updatePlanDrawerTableMaxHeight() {
+      const wrap = this.$refs.planDrawerTableScroll;
+      if (!wrap) return;
+      const h = Math.floor(wrap.clientHeight);
+      if (h < 48) return;
+      if (this.planDrawerTableMaxHeight !== h) {
+        this.planDrawerTableMaxHeight = h;
+      }
+    },
+    initPlanDrawerTableScrollResize() {
+      this.destroyPlanDrawerTableScrollResize();
+      const wrap = this.$refs.planDrawerTableScroll;
+      if (!wrap) return;
+      if (typeof ResizeObserver !== "undefined") {
+        this._planDrawerTableScrollResizeObserver = new ResizeObserver(() => {
+          this.updatePlanDrawerTableMaxHeight();
+          this.$nextTick(() => {
+            this.$refs.cat2BugTable && this.$refs.cat2BugTable.doLayout && this.$refs.cat2BugTable.doLayout();
+          });
+        });
+        this._planDrawerTableScrollResizeObserver.observe(wrap);
+      }
+      this.updatePlanDrawerTableMaxHeight();
+    },
+    destroyPlanDrawerTableScrollResize() {
+      if (this._planDrawerTableScrollResizeObserver) {
+        this._planDrawerTableScrollResizeObserver.disconnect();
+        this._planDrawerTableScrollResizeObserver = null;
+      }
+    },
+    syncDeliverableToolbarWithTableHeader() {
+      this.$nextTick(() => {
+        const cat = this.$refs.cat2BugTable;
+        const elTable = cat && cat.$refs && cat.$refs.elTable;
+        if (!elTable || !elTable.$el) {
+          return;
+        }
+        const headerWrap = elTable.$el.querySelector(".el-table__header-wrapper");
+        if (!headerWrap) {
+          return;
+        }
+        if (
+          this._deliverableTableHeaderObservedEl &&
+          this._deliverableTableHeaderObservedEl !== headerWrap
+        ) {
+          this.destroyDeliverableTableHeaderHeightSync();
+          this.initDeliverableTableHeaderHeightSync();
+          return;
+        }
+        const rect = headerWrap.getBoundingClientRect();
+        const h = Math.round(rect.height || headerWrap.offsetHeight || 0);
+        if (h < 1) {
+          return;
+        }
+        if (h > 0 && h !== this.deliverableToolbarSyncHeight) {
+          this.deliverableToolbarSyncHeight = h;
+        }
+      });
+    },
+    initDeliverableTableHeaderHeightSync() {
+      this.destroyDeliverableTableHeaderHeightSync();
+      const cat = this.$refs.cat2BugTable;
+      const elTable = cat && cat.$refs && cat.$refs.elTable;
+      if (!elTable || !elTable.$el) {
+        this.syncDeliverableToolbarWithTableHeader();
+        return;
+      }
+      const headerWrap = elTable.$el.querySelector(".el-table__header-wrapper");
+      if (!headerWrap) {
+        this.syncDeliverableToolbarWithTableHeader();
+        return;
+      }
+      this._deliverableTableHeaderObservedEl = headerWrap;
+      this.syncDeliverableToolbarWithTableHeader();
+      if (typeof ResizeObserver === "undefined") {
+        return;
+      }
+      this._deliverableTableHeaderResizeObserver = new ResizeObserver(() => {
+        this.syncDeliverableToolbarWithTableHeader();
+      });
+      this._deliverableTableHeaderResizeObserver.observe(headerWrap);
+    },
+    destroyDeliverableTableHeaderHeightSync() {
+      if (this._deliverableTableHeaderResizeObserver) {
+        this._deliverableTableHeaderResizeObserver.disconnect();
+        this._deliverableTableHeaderResizeObserver = null;
+      }
+      this._deliverableTableHeaderObservedEl = null;
     },
     initFloatMenu() {
       this.$emit('init-float-menu');
@@ -328,6 +516,7 @@ export default {
       if(!this.queryParams.params) {
         this.queryParams.params = {};
       }
+      this.getTreeModuleWidth();
       this.init();
       this.search(this.queryParams);
     },
@@ -342,6 +531,8 @@ export default {
       this.queryParams.orderByColumn = this.$cache.local.get(DEFECT_TABLE_SORT_COLUMN) || null;
       this.$nextTick(() => {
         this.$refs.cat2BugTable && this.$refs.cat2BugTable.sort(this.queryParams.orderByColumn, this.queryParams.isAsc);
+        this.initDeliverableTableHeaderHeightSync();
+        this.setDragComponentSize();
       });
     },
     onTableColumnsChange(columns) {
@@ -351,6 +542,7 @@ export default {
       this.columnPickerCheckedKeys = columns
         .filter((c) => c.visible && c.showInColumnPicker !== false)
         .map((c) => c.key);
+      this.$nextTick(() => this.syncDeliverableToolbarWithTableHeader());
     },
     onColumnPickerChange(keys) {
       this.$refs.cat2BugTable && this.$refs.cat2BugTable.setColumnsVisible(keys);
@@ -391,6 +583,11 @@ export default {
         this.loading = false;
         this.defectList = response.rows;
         this.total = response.total;
+        this.$nextTick(() => {
+          this.initDeliverableTableHeaderHeightSync();
+          this.syncDeliverableToolbarWithTableHeader();
+          this.setDragComponentSize();
+        });
       });
     },
     /** 处理删除缺陷 */
@@ -459,11 +656,106 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import "~@/assets/styles/multipane-resizer-grip.scss";
+
+.plan-item-drawer-layout {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  height: 100%;
+}
+.plan-drawer-defect-multipane.custom-resizer {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  align-items: stretch;
+  overflow: hidden;
+  padding-left: 5px;
+  padding-right: 5px;
+  box-sizing: border-box;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+.custom-resizer--tree-hidden > .plan-item-content-list {
+  flex: 1 1 100%;
+  width: 100%;
+}
+.custom-resizer > .multipane-resizer {
+  flex-shrink: 0;
+  margin: 0 0 0 -8px;
+  left: 4px;
+  width: 8px;
+  cursor: col-resize;
+  position: relative;
+  box-sizing: border-box;
+  z-index: 350;
+  background-image: linear-gradient(#dfe6ec, #dfe6ec);
+  background-size: 100% 1px;
+  background-position: 0 calc(var(--multipane-header-rule-offset, 48px) - 1px);
+  background-repeat: no-repeat;
+  @include multipane-resizer-vertical-appearance;
+}
+.tree-module {
+  width: var(--treeModuleWidth);
+  max-width: 75%;
+  flex-shrink: 0;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+.tree-module ::v-deep > .tree {
+  flex: 1 1 0%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
 .plan-item-content {
   flex-grow: 1;
   overflow:hidden;
   height: 100%;
-  padding-bottom: 30px;
+  padding-bottom: 0;
+}
+.plan-drawer-defect-list-pane.plan-item-content-list {
+  flex: 1 1 0%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+/* 占满表格与分页之间的剩余高度；纵向滚动交给 el-table（table-max-height），以固定表头 */
+.plan-drawer-table-scroll {
+  flex: 1 1 0%;
+  align-self: stretch;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+.plan-drawer-defect-list-pane ::v-deep .el-table__body-wrapper,
+.plan-drawer-defect-list-pane ::v-deep .el-table__fixed-body-wrapper {
+  background-color: #fff !important;
+}
+/* ruoyi.scss 给分页容器 height:25px + 内部 absolute，预留高度不足会压住上方表格 */
+.plan-drawer-defect-list-pane ::v-deep .pagination-container {
+  flex-shrink: 0;
+  margin-bottom: 30px !important;
+  height: auto !important;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.plan-drawer-defect-list-pane ::v-deep .pagination-container .el-pagination {
+  position: relative !important;
+  right: auto !important;
 }
 .plan-item-query {
   display: inline-flex;
@@ -471,9 +763,18 @@ export default {
   justify-content: space-between;
   align-items: flex-start;
   width: 100%;
+  flex-shrink: 0;
+  box-sizing: border-box;
   .el-form-item {
     margin-bottom: 5px;
   }
+}
+.plan-item-query.defect-table-tools.defect-table-tools-bar {
+  flex-wrap: wrap;
+  row-gap: 8px;
+  column-gap: 12px;
+  align-content: flex-start;
+  align-items: center;
 }
 .handle-plan-tools-right {
   display: inline-flex;
@@ -497,5 +798,59 @@ export default {
 }
 .defect-field-divider {
   margin: 8px 0px;
+}
+.plan-defect-sidebar-expand-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  box-sizing: border-box;
+  cursor: pointer;
+  color: #909399;
+  font-size: 12px;
+  line-height: 1;
+  flex-shrink: 0;
+  border-radius: 4px;
+}
+.plan-defect-sidebar-expand-trigger:hover {
+  color: #409eff;
+  background-color: #ecf5ff;
+}
+.plan-defect-sidebar-expand-trigger:focus-visible {
+  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.35);
+}
+.plan-defect-sidebar-expand-trigger ::v-deep .plan-defect-sidebar-expand-svg {
+  width: 12px;
+  height: 12px;
+  vertical-align: middle;
+  display: block;
+}
+::v-deep .plan-defect-sidebar-expand-header-cell {
+  padding: 0 !important;
+  text-align: center;
+}
+::v-deep .plan-defect-sidebar-expand-header-cell .cell {
+  padding: 0 !important;
+  overflow: visible !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+::v-deep .el-table__fixed-header-wrapper .plan-defect-sidebar-expand-header-cell .cell {
+  overflow: visible !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+::v-deep .plan-defect-sidebar-expand-body-cell .cell {
+  padding: 4px 0 !important;
+}
+.plan-defect-sidebar-expand-body-placeholder {
+  display: block;
+  width: 1px;
+  height: 1px;
+  visibility: hidden;
 }
 </style>

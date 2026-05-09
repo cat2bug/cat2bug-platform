@@ -265,8 +265,8 @@ export default {
           height: fillH,
           maxHeight: fillH,
           paddingTop: '20px',
-          paddingLeft: '20px',
-          paddingRight: '20px',
+          paddingLeft: '5px',
+          paddingRight: '5px',
           paddingBottom: 'env(safe-area-inset-bottom, 0px)',
           boxSizing: 'border-box',
           overflow: 'hidden'
@@ -622,9 +622,8 @@ export default {
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  padding: 20px;
-  /* 底边不设 padding，便于树表 multipane 分隔竖线与主区域底对齐；分页底距在 table.vue 用 margin 补足 */
-  padding-bottom: 0;
+  /* 左右与计划抽屉列表区一致 5px；顶栏保留 20px */
+  padding: 20px 5px 0;
   overflow: visible;
   /* 查询条上、下与 Tab / 主内容区的留白一致（子树继承） */
   --defect-toolbar-v-gap: 8px;

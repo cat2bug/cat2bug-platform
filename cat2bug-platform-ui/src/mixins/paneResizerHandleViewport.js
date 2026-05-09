@@ -50,7 +50,9 @@ export default {
       if (!comp || !this.showModuleTree) return
       const el = comp.$el || comp
       if (!el || typeof el.getBoundingClientRect !== 'function') return
-      const lineH = parseFloat(String(this.multipaneStyle['--marginTop'] || '0')) || 8
+      const rectH = el.getBoundingClientRect().height
+      const legacy = parseFloat(String(this.multipaneStyle['--marginTop'] || '0')) || 0
+      const lineH = (rectH > 1 ? rectH : legacy) || 8
       const px = computeResizerHandleTopPx(el, lineH)
       if (px == null || Number.isNaN(px)) return
       this.$set(this.multipaneStyle, '--resizerHandleTop', `${Math.round(px * 100) / 100}px`)

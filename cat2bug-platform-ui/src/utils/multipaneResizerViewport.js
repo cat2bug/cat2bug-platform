@@ -18,7 +18,7 @@ export function getViewportVerticalBounds() {
  * 再与可视区纵向求交取中点，使方块手柄落在「线条与视窗重叠段」的垂直中线。
  *
  * @param {HTMLElement} resizerEl .multipane-resizer 根元素
- * @param {number} lineHeightPx 与 CSS --marginTop 一致的竖线高度（px）
+ * @param {number} lineHeightPx 竖线在 resizer 内的有效高度（px），通常取 .multipane-resizer 的 getBoundingClientRect().height
  * @returns {number|null} 手柄中心相对 resizer 顶部的 px（配合 top + translateY(-50%)）
  */
 export function computeResizerHandleTopPx(resizerEl, lineHeightPx) {

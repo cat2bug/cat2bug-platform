@@ -92,7 +92,9 @@ module.exports = {
       alias: {
         '@': resolve('src'),
         // vue-multipane@0.9.5: mousedown uses target.className.match — breaks on SVG (SVGAnimatedString). Patched vendor build.
-        'vue-multipane': resolve('src/vendor/vue-multipane/index.js')
+        'vue-multipane': resolve('src/vendor/vue-multipane/index.js'),
+        // 与自定义表头滚动条厚度对齐 gutterWidth，避免固定列压住滚动条（不改 Element 默认 fixed 布局）
+        'element-ui/src/utils/scrollbar-width': resolve('src/utils/element-scrollbar-width.js')
       }
     },
     plugins: [
