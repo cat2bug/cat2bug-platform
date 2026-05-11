@@ -36,7 +36,13 @@ public class ApiDefectLogStateEnumTypeHandle extends BaseTypeHandler<ApiDefectLo
     }
 
     private ApiDefectLogStateEnum convertToEnum(int i) {
-        return ApiDefectLogStateEnum.values()[i];
+        ApiDefectLogStateEnum[] values = ApiDefectLogStateEnum.values();
+        if (i < 0 || i >= values.length) {
+            throw new IllegalArgumentException(
+                String.format("Invalid defect_log_type value: %d. Valid range: 0-%d", i, values.length - 1)
+            );
+        }
+        return values[i];
     }
 
 }

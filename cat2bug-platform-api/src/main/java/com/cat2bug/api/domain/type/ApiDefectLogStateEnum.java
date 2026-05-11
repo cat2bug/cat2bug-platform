@@ -21,5 +21,7 @@ public enum ApiDefectLogStateEnum {
     /** 开启 */
     OPEN,
     /** 更新 */
-    UPDATE
+    UPDATE,
+    /** 导入 */
+    IMPORT
 }
