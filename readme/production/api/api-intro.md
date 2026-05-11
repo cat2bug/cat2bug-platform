@@ -26,8 +26,10 @@
 curl --location -X POST 'http://localhost:2020/api/defect' \
 -H 'Content-Type: application/json' \
 -H 'CAT2BUG-API-KEY: 202411011547433W484U00XIEXL3U6' \
--d '{"defectType": 1, "defectName":"defectName", "defectDescribe":"defectDescribe", "defectLevel":2 }'
+-d '{"defectType":"BUG","defectName":"defectName","defectDescribe":"defectDescribe","defectLevel":"MIDDLE","handlerAccountList":["demo"]}'
 ```
+
+说明：创建缺陷时 `defectType`、`defectLevel` 为字符串枚举；`handlerAccountList` 为成员登录账号数组（与成员接口返回的 `memberAccount` 一致），勿传用户数字 ID。
 
 ## 接口列表
 

@@ -79,11 +79,6 @@ public class ApiDefectController extends BaseController {
     /**
      * 新增缺陷
      */
-//    @Operation(summary = "添加缺陷")
-//    @Parameters({
-//            @Parameter(name = "defectName", description = "缺陷名称", required = true, in = ParameterIn.QUERY),
-//            @Parameter(name = "defectDescribe", description = "缺陷描述", required = true, in = ParameterIn.QUERY)
-//    })
     @PostMapping
     public AjaxResult add(@RequestBody(required=false)  ApiDefectRequest apiDefect)
     {
