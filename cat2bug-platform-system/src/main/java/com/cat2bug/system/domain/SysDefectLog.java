@@ -33,9 +33,6 @@ public class SysDefectLog extends BaseEntity
     /** 处理类型(转发\评论\关闭) */
     private SysDefectLogStateEnum defectLogType;
 
-    @Excel(name = "处理类型")
-    private String defectLogTypeName;
-
     /** 缺陷接收人 */
     @Excel(name = "缺陷接收人")
     private List<Long> receiveBy;
