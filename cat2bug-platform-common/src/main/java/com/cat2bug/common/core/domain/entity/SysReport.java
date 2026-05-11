@@ -4,6 +4,8 @@ import java.util.Date;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.cat2bug.common.core.jackson.MultiDateFormatDeserializer;
 import lombok.Data;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -31,7 +33,8 @@ public class SysReport<T> extends BaseEntity
     private String reportTitle;
 
     /** 报告时间 */
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @JsonDeserialize(using = MultiDateFormatDeserializer.class)
     @Excel(name = "报告时间", width = 30, dateFormat = "yyyy-MM-dd")
     private Date reportTime;
 
