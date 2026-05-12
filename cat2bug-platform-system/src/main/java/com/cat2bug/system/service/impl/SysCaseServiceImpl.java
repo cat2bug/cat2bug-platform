@@ -57,6 +57,11 @@ public class SysCaseServiceImpl implements ISysCaseService
         return sysCaseMapper.selectSysCaseByCaseId(caseId);
     }
 
+    @Override
+    public SysCase selectSysCaseByCaseNum(Long projectId, Long caseNum) {
+        return sysCaseMapper.selectSysCaseByCaseNum(projectId, caseNum);
+    }
+
     /**
      * 查询指定用例的上一个用例
      * @param sysCase
@@ -189,6 +194,11 @@ public class SysCaseServiceImpl implements ISysCaseService
     public int deleteSysCaseByCaseId(Long caseId)
     {
         return sysCaseMapper.deleteSysCaseByCaseId(caseId);
+    }
+
+    @Override
+    public int deleteSysCaseByCaseNum(Long projectId, Long caseNum) {
+        return sysCaseMapper.deleteSysCaseByCaseNumAndProjectId(projectId, caseNum);
     }
 
     /**

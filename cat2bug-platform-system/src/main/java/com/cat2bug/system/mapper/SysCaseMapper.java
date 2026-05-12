@@ -46,6 +46,11 @@ public interface SysCaseMapper
     public SysCase selectSysCaseByCaseId(Long caseId);
 
     /**
+     * 按项目与用例编号查询（Open API）
+     */
+    SysCase selectSysCaseByCaseNum(@Param("projectId") Long projectId, @Param("caseNum") Long caseNum);
+
+    /**
      * 查询测试用例列表
      * 
      * @param sysCase 测试用例
@@ -96,6 +101,8 @@ public interface SysCaseMapper
      * @return 结果
      */
     public int deleteSysCaseByCaseId(Long caseId);
+
+    int deleteSysCaseByCaseNumAndProjectId(@Param("projectId") Long projectId, @Param("caseNum") Long caseNum);
 
     /**
      * 批量删除测试用例

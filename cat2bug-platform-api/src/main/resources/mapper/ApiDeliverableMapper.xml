@@ -39,4 +39,33 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         )
         SELECT * FROM m ORDER BY module_id,module_path
     </select>
+
+    <select id="selectApiDeliverableTreeFlat" parameterType="Long" resultMap="ApiDeliverableResult">
+        WITH RECURSIVE m (module_id, module_pid, module_name, module_path) AS (
+            SELECT module_id, module_pid, module_name, module_name AS module_path
+            FROM sys_module
+            WHERE module_pid = 0 AND project_id = #{projectId}
+            UNION ALL
+            SELECT c.module_id, c.module_pid, c.module_name, CONCAT(cp.module_path, '/', c.module_name)
+            FROM sys_module c
+                     INNER JOIN m cp ON c.module_pid = cp.module_id
+            WHERE c.project_id = #{projectId}
+        )
+        SELECT m.module_id, m.module_pid, m.module_name, m.module_path,
+               COALESCE(cnt.children_count, 0) AS children_count,
+               sm.remark AS remark
+        FROM m
+                 LEFT JOIN (
+            SELECT module_pid, COUNT(*) AS children_count
+            FROM sys_module
+            WHERE project_id = #{projectId}
+            GROUP BY module_pid
+        ) cnt ON cnt.module_pid = m.module_id
+                 LEFT JOIN sys_module sm ON sm.module_id = m.module_id AND sm.project_id = #{projectId}
+        ORDER BY m.module_path
+    </select>
+
+    <select id="countModuleChildren" resultType="int">
+        select count(*) from sys_module where project_id = #{projectId} and module_pid = #{moduleId}
+    </select>
 </mapper>

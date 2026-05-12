@@ -22,6 +22,10 @@
 
 第三方系统调用 Cat2Bug-Platform 接口时，需要在接口请求头部添加之前创建的【API KEY】，变量名为 `CAT2BUG-API-KEY`，如下示例：
 
+**项目范围**：`CAT2BUG-API-KEY` 与项目是绑定的，Open API 请求**不需要**也不应再传 `projectId`；各子文档中的请求参数均不包含项目 ID。
+
+**名称化参数**：测试用例、交付物等接口使用**用例编号**、**交付物全路径**（多级用 `/` 分隔）等与界面一致的可读标识；请勿传 `caseId`、`moduleId`、`deliverableId` 等数字主键（响应 JSON 中亦不返回此类字段，详见各子文档）。
+
 ```bash
 curl --location -X POST 'http://localhost:2020/api/defect' \
 -H 'Content-Type: application/json' \

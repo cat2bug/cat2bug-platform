@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.BindException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingPathVariableException;
@@ -75,6 +76,21 @@ public class GlobalExceptionHandler
     }
 
     /**
+     * 请求体 JSON 无法解析（避免将异常对象放入 data 导致二次序列化失败）
+     */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public AjaxResult handleHttpMessageNotReadableException(HttpMessageNotReadableException e, HttpServletRequest request)
+    {
+        String requestURI = request.getRequestURI();
+        log.error("请求地址'{}',无法解析请求体.", requestURI, e);
+        Throwable cause = e.getMostSpecificCause();
+        String detail = cause != null && StringUtils.isNotBlank(cause.getMessage())
+            ? cause.getMessage()
+            : e.getMessage();
+        return AjaxResult.error("请求体格式错误" + (detail != null ? ": " + detail : ""));
+    }
+
+    /**
      * 请求参数类型不匹配
      */
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
@@ -94,7 +110,7 @@ public class GlobalExceptionHandler
         String requestURI = request.getRequestURI();
         log.error("请求地址'{}',发生未知异常.", requestURI, e);
 
-        return AjaxResult.error(e.getMessage(), e);
+        return AjaxResult.error(e.getMessage());
     }
 
     /**
@@ -109,8 +125,8 @@ public class GlobalExceptionHandler
         String requestURI = request.getRequestURI();
         log.error("请求地址'{}',发生未知异常.", requestURI, e);
         return e.getCode()>0?
-                new AjaxResult(e.getCode(), e.getMessage(), e):
-                AjaxResult.error(e.getMessage(), e);
+                new AjaxResult(e.getCode(), e.getMessage(), null):
+                AjaxResult.error(e.getMessage());
     }
 
     /**
@@ -121,7 +137,7 @@ public class GlobalExceptionHandler
     {
         String requestURI = request.getRequestURI();
         log.error("请求地址'{}',发生系统异常.", requestURI, e);
-        return AjaxResult.error(e.getMessage(), e);
+        return AjaxResult.error(e.getMessage());
     }
 
     /**

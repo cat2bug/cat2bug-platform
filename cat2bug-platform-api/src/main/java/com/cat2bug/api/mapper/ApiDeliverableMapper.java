@@ -21,4 +21,11 @@ public interface ApiDeliverableMapper {
      * @return  模块路径集合
      */
     public List<ApiDeliverable> selectApiDeliverablePathList(Long projectId);
+
+    /**
+     * 当前项目下全部交付物（扁平全路径），含直接子节点数量；供 Open API 一次展开树形展示。
+     */
+    List<ApiDeliverable> selectApiDeliverableTreeFlat(@Param("projectId") Long projectId);
+
+    int countModuleChildren(@Param("projectId") Long projectId, @Param("moduleId") Long moduleId);
 }

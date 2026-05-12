@@ -22,4 +22,9 @@ public interface ApiCaseMapper
      * @return 测试用例集合
      */
     public List<ApiCase> selectApiCaseList(@Param("projectId") Long projectId, @Param("apiCase") ApiCase apiCase);
+
+    /**
+     * 按用例编号查询单条（限定项目），用于 Open API 详情，与列表行结构一致
+     */
+    ApiCase selectApiCaseByCaseNum(@Param("projectId") Long projectId, @Param("caseNum") Long caseNum);
 }

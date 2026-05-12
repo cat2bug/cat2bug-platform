@@ -114,6 +114,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         where c.case_id = #{caseId}
     </select>
 
+    <select id="selectSysCaseByCaseNum" resultMap="SysCaseResult">
+        <include refid="selectSysCaseVo"/>
+        where c.case_num = #{caseNum} and c.project_id = #{projectId}
+    </select>
+
     <select id="selectPrevSysCase" parameterType="SysCase" resultMap="SysCaseResult">
         select c.* from (<include refid="selectSysCases"></include>) c
                    where c.case_id &lt; #{params.prevCaseId}
@@ -194,6 +199,10 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
     <delete id="deleteSysCaseByCaseId" parameterType="Long">
         delete from sys_case where case_id = #{caseId}
+    </delete>
+
+    <delete id="deleteSysCaseByCaseNumAndProjectId">
+        delete from sys_case where case_num = #{caseNum} and project_id = #{projectId}
     </delete>
 
     <delete id="deleteSysCaseByCaseIds" parameterType="String">

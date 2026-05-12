@@ -1,6 +1,5 @@
 package com.cat2bug.api.domain.handle;
 
-import com.alibaba.fastjson2.JSON;
 import com.cat2bug.common.utils.StringUtils;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;

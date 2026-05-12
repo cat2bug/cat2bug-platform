@@ -4,11 +4,16 @@ import com.cat2bug.api.domain.ApiDeliverable;
 import com.cat2bug.api.mapper.ApiDeliverableMapper;
 import com.cat2bug.api.service.ApiService;
 import com.cat2bug.api.service.IApiDeliverableService;
+import com.cat2bug.api.support.ApiDeliverablePathMatch;
+import com.cat2bug.common.utils.StringUtils;
+import com.cat2bug.system.domain.SysModule;
+import com.cat2bug.system.service.ISysModuleService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -24,6 +29,9 @@ public class ApiDeliverableServiceImpl implements IApiDeliverableService {
 
     @Resource
     private ApiDeliverableMapper apiDeliverableMapper;
+
+    @Resource
+    private ISysModuleService sysModuleService;
 
     @Override
     public List<ApiDeliverable> selectApiDeliverableList(ApiDeliverable apiDeliverable) {
@@ -42,5 +50,50 @@ public class ApiDeliverableServiceImpl implements IApiDeliverableService {
     @Override
     public List<ApiDeliverable> selectApiDeliverablePathList(Long projectId) {
         return this.apiDeliverableMapper.selectApiDeliverablePathList(projectId);
+    }
+
+    @Override
+    public List<ApiDeliverable> selectApiDeliverableTreeFlat(Long projectId) {
+        return this.apiDeliverableMapper.selectApiDeliverableTreeFlat(projectId);
+    }
+
+    @Override
+    public Optional<Long> resolveToModuleId(Long projectId, String deliverablePathOrName) {
+        if (StringUtils.isBlank(deliverablePathOrName)) {
+            return Optional.empty();
+        }
+        List<ApiDeliverable> pathList = this.apiDeliverableMapper.selectApiDeliverablePathList(projectId);
+        return ApiDeliverablePathMatch.find(pathList, deliverablePathOrName).map(ApiDeliverable::getDeliverableId);
+    }
+
+    @Override
+    public long resolveParentModulePid(Long projectId, String parentDeliverablePathOrName) {
+        if (StringUtils.isBlank(parentDeliverablePathOrName)) {
+            return 0L;
+        }
+        return resolveToModuleId(projectId, parentDeliverablePathOrName).orElse(-1L);
+    }
+
+    @Override
+    public Optional<ApiDeliverable> buildApiViewByPathOrName(Long projectId, String deliverablePathOrName) {
+        Optional<Long> moduleIdOpt = resolveToModuleId(projectId, deliverablePathOrName);
+        if (!moduleIdOpt.isPresent()) {
+            return Optional.empty();
+        }
+        Long moduleId = moduleIdOpt.get();
+        SysModule module = this.sysModuleService.selectSysModuleByModuleId(moduleId);
+        if (module == null || !projectId.equals(module.getProjectId())) {
+            return Optional.empty();
+        }
+        List<ApiDeliverable> pathList = this.apiDeliverableMapper.selectApiDeliverablePathList(projectId);
+        String path = ApiDeliverablePathMatch.find(pathList, deliverablePathOrName)
+                .map(ApiDeliverable::getDeliverablePath)
+                .orElse(module.getModuleName());
+        ApiDeliverable out = new ApiDeliverable();
+        out.setDeliverableName(module.getModuleName());
+        out.setDeliverablePath(path);
+        out.setRemark(module.getRemark());
+        out.setChildrenCount(this.apiDeliverableMapper.countModuleChildren(projectId, moduleId));
+        return Optional.of(out);
     }
 }

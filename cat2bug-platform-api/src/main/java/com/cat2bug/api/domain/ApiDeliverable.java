@@ -1,5 +1,6 @@
 package com.cat2bug.api.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 /**
@@ -10,12 +11,14 @@ import lombok.Data;
 @Data
 public class ApiDeliverable {
     /**
-     * 交付物ID
+     * 交付物ID（Open API 响应中不输出，仅服务层使用）
      */
+    @JsonIgnore
     private Long deliverableId;
     /**
-     * 交付物父ID
+     * 交付物父ID（Open API 响应中不输出，仅服务层使用）
      */
+    @JsonIgnore
     private Long deliverablePid;
     /**
      * 交付物名称

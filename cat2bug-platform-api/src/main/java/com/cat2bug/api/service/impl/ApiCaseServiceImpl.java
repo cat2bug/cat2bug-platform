@@ -6,6 +6,7 @@ import com.cat2bug.api.mapper.ApiCaseMapper;
 import com.cat2bug.api.mapper.ApiDeliverableMapper;
 import com.cat2bug.api.service.ApiService;
 import com.cat2bug.api.service.IApiCaseService;
+import com.cat2bug.api.support.ApiDeliverablePathMatch;
 import com.cat2bug.common.utils.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -37,10 +38,9 @@ public class ApiCaseServiceImpl implements IApiCaseService {
 
         // 根据交付物的全路径取查询要查询的交付物ID
         if(StringUtils.isNotBlank(apiCase.getDeliverableName())) {
-            Optional<ApiDeliverable> deliverable = deliverableList.stream().filter(c->c.getDeliverableName().equals(apiCase.getDeliverableName())).findFirst();
-            // 如果要查询的交付物路径在数据库中存在，就设置交付物ID，否则设置-1使之无法查到
-            if(deliverable.isPresent()) {
-                apiCase.setDeliverableId(deliverable.get().getDeliverableId());
+            Optional<ApiDeliverable> matched = ApiDeliverablePathMatch.find(deliverableList, apiCase.getDeliverableName());
+            if (matched.isPresent()) {
+                apiCase.setDeliverableId(matched.get().getDeliverableId());
             } else {
                 apiCase.setDeliverableId(-1L);
             }
@@ -59,5 +59,21 @@ public class ApiCaseServiceImpl implements IApiCaseService {
             }
             return c;
         }).collect(Collectors.toList());
+    }
+
+    @Override
+    public ApiCase selectApiCaseByCaseNum(Long caseNum) {
+        final Long projectId = this.apiService.getProjectId();
+        ApiCase c = this.apiCaseMapper.selectApiCaseByCaseNum(projectId, caseNum);
+        if (c == null) {
+            return null;
+        }
+        List<ApiDeliverable> deliverableList = this.apiDeliverableMapper.selectApiDeliverablePathList(projectId);
+        final Map<Long, ApiDeliverable> allPathApiDeliverableMap = deliverableList.stream()
+                .collect(Collectors.toMap(ApiDeliverable::getDeliverableId, d -> d));
+        if (c.getDeliverableId() != null && allPathApiDeliverableMap.containsKey(c.getDeliverableId())) {
+            c.setDeliverableName(allPathApiDeliverableMap.get(c.getDeliverableId()).getDeliverablePath());
+        }
+        return c;
     }
 }

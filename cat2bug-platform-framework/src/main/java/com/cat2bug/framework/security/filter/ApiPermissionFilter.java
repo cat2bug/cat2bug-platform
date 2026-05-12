@@ -71,7 +71,7 @@ public class ApiPermissionFilter extends OncePerRequestFilter {
         // 交付物管理权限
         Map<String, String> deliverablePermissions = new HashMap<>();
         deliverablePermissions.put("GET:/api/deliverable", "deliverable.list");
-        deliverablePermissions.put("GET:/api/deliverable/{id}", "deliverable.query");
+        deliverablePermissions.put("GET:/api/deliverable/info", "deliverable.query");
         deliverablePermissions.put("POST:/api/deliverable", "deliverable.create");
         PERMISSION_MAPPING.put("deliverable", deliverablePermissions);
 

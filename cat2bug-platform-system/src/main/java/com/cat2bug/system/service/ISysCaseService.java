@@ -30,6 +30,11 @@ public interface ISysCaseService
     public SysCase selectSysCaseByCaseId(Long caseId);
 
     /**
+     * 按项目与用例编号查询（Open API）
+     */
+    SysCase selectSysCaseByCaseNum(Long projectId, Long caseNum);
+
+    /**
      * 查询指定用例的上一个用例
      * @param sysCase
      * @return
@@ -116,4 +121,9 @@ public interface ISysCaseService
      * @return 结果
      */
     public int deleteSysCaseByCaseId(Long caseId);
+
+    /**
+     * 按项目与用例编号删除（Open API）
+     */
+    int deleteSysCaseByCaseNum(Long projectId, Long caseNum);
 }
