@@ -137,10 +137,6 @@ export default {
 .dashboard-row > * {
   flex: 1;
 }
-/* 与测试用例页一致：仅图表行之间留白，勿给首子项 project-label 叠 margin-top */
-.app-container > *:not(:first-child) {
-  margin-top: 10px;
-}
 .action-block {
   flex: 1;
   width: 100%;
