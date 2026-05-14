@@ -159,7 +159,9 @@ export default {
             Cookies.remove('rememberMe');
           }
           this.$store.dispatch("Login", this.loginForm).then(() => {
-            this.$router.push({ path: this.redirect || "/" }).catch(()=>{});
+            /* 从登录页进入主框架时默认折叠侧栏（避免历史 sidebarStatus=1 等仍保持展开） */
+            this.$store.dispatch("app/closeSideBar", { withoutAnimation: true });
+            this.$router.push({ path: this.redirect || "/" }).catch(() => {});
           }).catch(() => {
             this.loading = false;
             if (this.captchaEnabled) {

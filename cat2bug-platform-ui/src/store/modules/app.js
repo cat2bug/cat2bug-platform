@@ -2,7 +2,8 @@ import Cookies from 'js-cookie'
 
 const state = {
   sidebar: {
-    opened: Cookies.get('sidebarStatus') ? !!+Cookies.get('sidebarStatus') : false,
+    /* 仅当用户曾明确展开并写入 cookie 为 1 时保持展开；首次访问或无/非法值默认折叠 */
+    opened: Cookies.get('sidebarStatus') === '1',
     withoutAnimation: false,
     hide: false
   },
