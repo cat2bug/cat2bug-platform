@@ -1,50 +1,52 @@
 <template>
   <div class="app-container">
     <project-label />
-    <div class="dashboard-row">
-      <el-card class="box-card">
-        <case-statistics-chart />
-      </el-card>
-      <el-card class="box-card">
-        <defect-statistics-chart />
-      </el-card>
-      <el-card class="box-card">
-        <module-statistics-chart />
-      </el-card>
-      <el-card class="box-card">
-        <report-statistics-chart />
-      </el-card>
-      <el-card class="box-card">
-        <document-statistics-chart />
-      </el-card>
-      <el-card class="box-card">
-        <member-statistics-chart />
-      </el-card>
-    </div>
-    <div class="dashboard-row">
-      <el-card class="box-card">
-        <defect-state-chart />
-      </el-card>
-      <el-card class="box-card">
-        <member-of-defect-line />
-      </el-card>
-    </div>
-    <div class="dashboard-row">
-      <el-card class="box-card">
-        <plan-statistics-chart />
-      </el-card>
-    </div>
-    <div class="action-block dashboard-row">
-      <el-card class="box-card">
-        <action-list />
-      </el-card>
-      <div class="dashboard-col action-right">
+    <div class="dashboard-col">
+      <div class="dashboard-row">
         <el-card class="box-card">
-          <member-of-defect-rank />
+          <case-statistics-chart />
         </el-card>
         <el-card class="box-card">
-          <plan-burndown-chart />
+          <defect-statistics-chart />
         </el-card>
+        <el-card class="box-card">
+          <module-statistics-chart />
+        </el-card>
+        <el-card class="box-card">
+          <report-statistics-chart />
+        </el-card>
+        <el-card class="box-card">
+          <document-statistics-chart />
+        </el-card>
+        <el-card class="box-card">
+          <member-statistics-chart />
+        </el-card>
+      </div>
+      <div class="dashboard-row">
+        <el-card class="box-card">
+          <defect-state-chart />
+        </el-card>
+        <el-card class="box-card">
+          <member-of-defect-line />
+        </el-card>
+      </div>
+      <div class="dashboard-row">
+        <el-card class="box-card">
+          <plan-statistics-chart />
+        </el-card>
+      </div>
+      <div class="action-block dashboard-row">
+        <el-card class="box-card">
+          <action-list />
+        </el-card>
+        <div class="dashboard-col action-right">
+          <el-card class="box-card">
+            <member-of-defect-rank />
+          </el-card>
+          <el-card class="box-card">
+            <plan-burndown-chart />
+          </el-card>
+        </div>
       </div>
     </div>
   </div>
