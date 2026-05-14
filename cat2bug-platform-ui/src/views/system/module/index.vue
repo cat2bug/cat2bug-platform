@@ -1,6 +1,6 @@
 <template>
-  <div class="app-container">
-    <project-label />
+  <div class="app-container case-body module-page">
+    <project-label class="module-project-label" />
     <div ref="moduleTools" class="module-tools" :class="{ 'wrapped-tools': moduleToolsWrapped }">
       <el-form class="left" :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="120px">
         <el-form-item prop="moduleName">
@@ -250,6 +250,17 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
+.app-container.case-body.module-page {
+  padding: 20px 20px 0;
+  box-sizing: border-box;
+}
+.module-page {
+  --case-toolbar-v-gap: 8px;
+}
+.module-page ::v-deep h3.module-project-label {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
 .module-tools {
   width: 100%;
   display: flex;
@@ -260,7 +271,8 @@ export default {
   align-content: flex-start;
   column-gap: 12px;
   row-gap: 8px;
-  margin-bottom: 10px;
+  margin-top: var(--case-toolbar-v-gap, 8px);
+  margin-bottom: var(--case-toolbar-v-gap, 8px);
   .el-form-item {
     margin-bottom: 0;
   }

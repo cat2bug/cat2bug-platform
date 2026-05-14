@@ -1,6 +1,6 @@
 <template>
-  <div class="app-container document-page">
-    <project-label />
+  <div class="app-container case-body document-page document-list-layout">
+    <project-label class="document-project-label" />
     <div ref="documentTools" class="document-tools" :class="{ 'wrapped-tools': documentToolsWrapped }">
       <el-form class="left" :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="120px">
         <el-form-item label="" prop="docName">
@@ -50,6 +50,8 @@
       </div>
     </div>
 
+    <div ref="documentListBody" class="document-list-body">
+      <div class="document-table-x-scroll">
     <cat2-bug-table
       ref="cat2BugTable"
       cache-key="document-table"
@@ -57,6 +59,7 @@
       :columns="documentTableColumnDefaults"
       :data="documentList"
       :loading="loading"
+      :table-max-height="documentTableBodyMaxHeight"
       @selection-change="handleSelectionChange"
       @columns-change="onDocTableColumnsChange"
     >
@@ -120,8 +123,9 @@
         </el-table-column>
       </template>
     </cat2-bug-table>
+      </div>
 
-    <div v-show="total>0" class="document-table-pagination-band">
+    <div v-show="total>0" ref="documentPaginationBand" class="document-table-pagination-band">
       <pagination
         class="document-table-pagination"
         :total="total"
@@ -129,6 +133,7 @@
         :limit.sync="queryParams.pageSize"
         @pagination="getList"
       />
+    </div>
     </div>
 
     <!-- 添加或修改文档对话框 -->
@@ -224,6 +229,7 @@ export default {
       docColumnPickerRev: 0,
       docPickerColumnList: null,
       documentToolsWrapped: false,
+      documentTableBodyMaxHeight: null,
       // 弹出层标题
       title: "",
       fileFieldName: "",
@@ -298,15 +304,59 @@ export default {
     this.initFloatMenu();
     this.$nextTick(() => {
       this.syncDocumentToolsWrapped();
+      this.initDocumentListBodyResizeObserver();
+      this.syncDocumentTableBodyMaxHeight();
     });
     window.addEventListener("resize", this.syncDocumentToolsWrapped);
+    window.addEventListener("resize", this.syncDocumentTableBodyMaxHeight);
   },
   // 移除滚动条监听
   destroyed() {
     this.$floatMenu.windowsDestory();
     window.removeEventListener("resize", this.syncDocumentToolsWrapped);
+    window.removeEventListener("resize", this.syncDocumentTableBodyMaxHeight);
+    this.destroyDocumentListBodyResizeObserver();
   },
   methods: {
+    initDocumentListBodyResizeObserver() {
+      if (typeof ResizeObserver === 'undefined') return;
+      this.destroyDocumentListBodyResizeObserver();
+      const el = this.$refs.documentListBody;
+      if (!el) return;
+      this._documentListBodyResizeObserver = new ResizeObserver(() => {
+        this.syncDocumentTableBodyMaxHeight();
+      });
+      this._documentListBodyResizeObserver.observe(el);
+    },
+    destroyDocumentListBodyResizeObserver() {
+      if (this._documentListBodyResizeObserver) {
+        this._documentListBodyResizeObserver.disconnect();
+        this._documentListBodyResizeObserver = null;
+      }
+    },
+    syncDocumentTableBodyMaxHeight() {
+      this.$nextTick(() => {
+        const body = this.$refs.documentListBody;
+        if (!body || !body.clientHeight) return;
+        const pagEl = this.$refs.documentPaginationBand;
+        let reserveBelowTable = 0;
+        if (this.total > 0 && pagEl && pagEl.offsetParent !== null) {
+          const st = window.getComputedStyle(pagEl);
+          reserveBelowTable =
+            pagEl.offsetHeight +
+            parseFloat(st.marginTop || "0") +
+            parseFloat(st.marginBottom || "0");
+        }
+        const next = Math.max(120, Math.floor(body.clientHeight - reserveBelowTable - 2));
+        if (this.documentTableBodyMaxHeight !== next) {
+          this.documentTableBodyMaxHeight = next;
+          this.$nextTick(() => {
+            const tbl = this.$refs.cat2BugTable;
+            if (tbl && typeof tbl.doLayout === "function") tbl.doLayout();
+          });
+        }
+      });
+    },
     syncDocumentToolsWrapped() {
       const measure = () => {
         const tools = this.$refs.documentTools;
@@ -361,6 +411,10 @@ export default {
       const picker = columns.filter(c => c.showInColumnPicker !== false).map(c => ({ ...c }));
       this.$set(this, 'docPickerColumnList', picker);
       this.columnPickerCheckedKeys = columns.filter(c => c.visible && c.showInColumnPicker !== false).map(c => c.key);
+      this.$nextTick(() => {
+        this.$refs.cat2BugTable && this.$refs.cat2BugTable.doLayout();
+        this.syncDocumentTableBodyMaxHeight();
+      });
     },
     onDocColumnPickerChange(keys) {
       this.$refs.cat2BugTable && this.$refs.cat2BugTable.setColumnsVisible(keys);
@@ -382,6 +436,9 @@ export default {
         this.total = response.total;
         this.loading = false;
         this.syncDocumentToolsWrapped();
+        this.$nextTick(() => {
+          this.syncDocumentTableBodyMaxHeight();
+        });
       });
     },
     /** 取消按钮 */
@@ -584,6 +641,36 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
+.app-container.case-body {
+  padding: 20px 20px 0;
+  box-sizing: border-box;
+}
+.document-page.document-list-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  min-height: 0;
+  flex: 1 1 auto;
+  width: 100%;
+  box-sizing: border-box;
+  --case-toolbar-v-gap: 8px;
+}
+.document-list-body {
+  flex: 1 1 0%;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  --defect-pagination-v-gap: 28px;
+}
+.document-table-x-scroll {
+  width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
 .doc-picker-head.row {
   display: flex;
   flex-direction: row;
@@ -597,6 +684,10 @@ export default {
   display: flex;
   flex-direction: column;
 }
+.document-page ::v-deep h3.document-project-label {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
 .document-tools {
   width: 100%;
   display: flex;
@@ -607,8 +698,8 @@ export default {
   align-content: flex-start;
   column-gap: 12px;
   row-gap: 8px;
-  margin-top: 10px;
-  margin-bottom: 10px;
+  margin-top: var(--case-toolbar-v-gap, 8px);
+  margin-bottom: var(--case-toolbar-v-gap, 8px);
   .el-form-item {
     margin-bottom: 0;
   }
@@ -694,29 +785,18 @@ export default {
   align-items: center;
   gap: 10px;
 }
-/* 与缺陷列表分页底部留白一致（defect/list/table.vue） */
-.document-page {
-  --defect-pagination-v-gap: 28px;
-  --defect-page-bottom-pad: 20px;
-  --defect-pagination-extra-bottom: 14px;
-}
+/* 与缺陷列表 .defect-table-pagination-band 一致 */
 .document-table-pagination-band {
   flex-shrink: 0;
   margin-top: var(--defect-pagination-v-gap);
-  margin-bottom: max(
-    0px,
-    calc(
-      var(--defect-pagination-v-gap) - var(--defect-page-bottom-pad) -
-        env(safe-area-inset-bottom, 0px) + var(--defect-pagination-extra-bottom)
-    )
-  );
+  margin-bottom: calc(40px + env(safe-area-inset-bottom, 0px));
 }
 ::v-deep .document-table-pagination.pagination-container {
   margin-top: 0 !important;
   margin-bottom: 0 !important;
   padding-top: 0 !important;
   padding-bottom: 0 !important;
-  padding-left: 16px;
-  padding-right: 20px;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
 }
 </style>

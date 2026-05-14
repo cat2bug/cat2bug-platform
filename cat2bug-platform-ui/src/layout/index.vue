@@ -111,7 +111,6 @@ export default {
   }
   .main-container {
     overflow: auto;
-    /* 纵向滚动条占位，避免右侧「前往」等与滚动条叠在同一竖带（Windows 明显） */
-    scrollbar-gutter: stable;
+    /* 不用 scrollbar-gutter，避免无纵向滚动条时右侧仍预留槽位、与左侧 20px 不对称 */
   }
 </style>

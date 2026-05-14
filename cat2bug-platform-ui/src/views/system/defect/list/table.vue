@@ -58,6 +58,7 @@
           :data="defectList"
           :loading="loading"
           :enable-header-sort="false"
+          :table-max-height="defectTableBodyMaxHeight"
           v-resize="setDragComponentSize"
           @sort-change="sortChangeHandle"
           @columns-change="onTableColumnsChange">
@@ -136,7 +137,7 @@
         </cat2-bug-table>
         </div>
 
-        <div v-show="total>0" class="defect-table-pagination-band">
+        <div v-show="total>0" ref="defectPaginationBand" class="defect-table-pagination-band">
           <pagination
             class="defect-table-pagination"
             :total="total"
@@ -236,6 +237,8 @@ export default {
       defectPickerColumnList: null,
       /** 交付物列表标题栏高度（px），与右侧缺陷表 thead 行高对齐 */
       defectTreeToolbarHeight: null,
+      /** 表体 max-height（与用例页一致：表体内纵向滚动） */
+      defectTableBodyMaxHeight: null,
     }
   },
   props: {
@@ -329,11 +332,13 @@ export default {
     this.getTreeModuleWidth();
     this.$nextTick(() => {
       this.initDefectTableHeaderHeightSync();
+      this.initDefectTableBodyResizeObserver();
       this.setDragComponentSize();
     });
   },
   destroyed() {
     this.destroyDefectTableHeaderHeightSync();
+    this.destroyDefectTableBodyResizeObserver();
   },
   methods: {
     init() {
@@ -380,9 +385,49 @@ export default {
     },
     /** 表格 doLayout + 分隔条手柄（竖线随 resizer 高度置底） */
     setDragComponentSize() {
+      this.syncDefectTableBodyMaxHeight();
       this.$nextTick(() => {
         this.$refs.cat2BugTable && this.$refs.cat2BugTable.doLayout && this.$refs.cat2BugTable.doLayout();
         this.scheduleSyncPaneResizerHandle();
+      });
+    },
+    initDefectTableBodyResizeObserver() {
+      if (typeof ResizeObserver === "undefined") return;
+      this.destroyDefectTableBodyResizeObserver();
+      const el = this.$refs.defectTableContext;
+      if (!el) return;
+      this._defectTableBodyResizeObserver = new ResizeObserver(() => {
+        this.syncDefectTableBodyMaxHeight();
+      });
+      this._defectTableBodyResizeObserver.observe(el);
+    },
+    destroyDefectTableBodyResizeObserver() {
+      if (this._defectTableBodyResizeObserver) {
+        this._defectTableBodyResizeObserver.disconnect();
+        this._defectTableBodyResizeObserver = null;
+      }
+    },
+    syncDefectTableBodyMaxHeight() {
+      this.$nextTick(() => {
+        const body = this.$refs.defectTableContext;
+        if (!body || !body.clientHeight) return;
+        const pagEl = this.$refs.defectPaginationBand;
+        let reserveBelowTable = 0;
+        if (this.total > 0 && pagEl && pagEl.offsetParent !== null) {
+          const st = window.getComputedStyle(pagEl);
+          reserveBelowTable =
+            pagEl.offsetHeight +
+            parseFloat(st.marginTop || "0") +
+            parseFloat(st.marginBottom || "0");
+        }
+        const next = Math.max(120, Math.floor(body.clientHeight - reserveBelowTable - 2));
+        if (this.defectTableBodyMaxHeight !== next) {
+          this.defectTableBodyMaxHeight = next;
+          this.$nextTick(() => {
+            const tbl = this.$refs.cat2BugTable;
+            if (tbl && typeof tbl.doLayout === "function") tbl.doLayout();
+          });
+        }
       });
     },
     syncDefectTreeToolbarWithTableHeader() {
@@ -524,18 +569,13 @@ export default {
   min-height: 0;
 }
 /*
- * 表体区域：按内容增高，max-height 不超过父级，行数多时在本层纵向滚动。
- * 勿用 flex:1 撑满父列：会在表底与分页之间塞入大块空白，改变「列表—分页」间距观感。
+ * 与用例页 .case-table-x-scroll：高度随表格，勿 flex:1 撑满否则分页被顶到视口底
  */
 .defect-table-x-scroll {
-  flex: 0 1 auto;
   min-width: 0;
-  min-height: 0;
-  max-height: 100%;
   width: 100%;
   overflow-x: auto;
-  overflow-y: auto;
-  /* 固定列 / 宽表时确保横向滚动发生在本层，减轻外层出现双横条 */
+  overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
 }
 .defect-table-tools-bar {
@@ -604,33 +644,20 @@ export default {
   overflow-y: hidden;
   display: flex;
   flex-direction: column;
-  /*
-   * 分页上下留白：父级 defect-page 底 padding 为 0（竖线可贴底），此处将 --defect-page-bottom-pad 置 0，
-   * margin-bottom 计算比原先少减 20px，等效为分页区相对底部多留约 20px，与原先「页底 padding + 分页边距」观感一致；safe-area 仍参与 calc。
-   */
   --defect-pagination-v-gap: 28px;
-  --defect-page-bottom-pad: 0px;
-  /* 分页整体略上移，加大与页面内容底的间距 */
-  --defect-pagination-extra-bottom: 14px;
 }
 .defect-table-pagination-band {
   flex-shrink: 0;
   margin-top: var(--defect-pagination-v-gap);
-  margin-bottom: max(
-    0px,
-    calc(
-      var(--defect-pagination-v-gap) - var(--defect-page-bottom-pad) -
-        env(safe-area-inset-bottom, 0px) + var(--defect-pagination-extra-bottom)
-    )
-  );
+  margin-bottom: calc(40px + env(safe-area-inset-bottom, 0px));
 }
 ::v-deep .defect-table-pagination.pagination-container {
   margin-top: 0 !important;
   margin-bottom: 0 !important;
   padding-top: 0 !important;
   padding-bottom: 0 !important;
-  padding-left: 5px;
-  padding-right: 5px;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
 }
 .defect-sidebar-expand-trigger {
   display: inline-flex;

@@ -144,14 +144,24 @@ export default {
 .between-row-1 {
   display: inline-flex;
   flex-direction: row;
+  flex-wrap: nowrap;
   justify-content: space-between;
   align-items: center;
   gap: 5px;
+  max-width: 100%;
   .prefix-project-name {
-    flex: 1;
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   .el-icon-arrow-down {
+    flex-shrink: 0;
     color: #909399;
+  }
+  .start-switch {
+    flex-shrink: 0;
   }
 }
 .prefix-project-name {
@@ -160,8 +170,16 @@ export default {
 .row {
   display: inline-flex;
   flex-direction: row;
+  flex-wrap: nowrap;
   align-items: center;
   gap: 5px;
+  max-width: 100%;
+  .prefix-project-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }
 .col {
   display: flex;

@@ -1,6 +1,6 @@
 <template>
-  <div class="app-container report-page">
-    <project-label :project-id="projectId" />
+  <div class="app-container case-body report-page report-list-layout">
+    <project-label class="report-project-label" :project-id="projectId" />
     <div ref="reportTools" class="report-tools" :class="{ 'wrapped-tools': reportToolsWrapped }">
       <el-form class="left" :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
         <el-form-item label="" prop="reportTitle">
@@ -71,6 +71,8 @@
             :project-id="projectId" />
       </div>
     </div>
+    <div ref="reportListBody" class="report-list-body">
+      <div class="report-table-x-scroll">
     <cat2-bug-table
       ref="cat2BugTable"
       cache-key="report-table"
@@ -78,6 +80,7 @@
       :columns="reportTableColumnDefaults"
       :data="reportList"
       :loading="loading"
+      :table-max-height="reportTableBodyMaxHeight"
       @selection-change="handleSelectionChange"
       @row-click="rowClickHandle"
       @columns-change="onReportTableColumnsChange"
@@ -111,8 +114,9 @@
         </el-table-column>
       </template>
     </cat2-bug-table>
+      </div>
 
-    <div v-show="total>0" class="report-table-pagination-band">
+    <div v-show="total>0" ref="reportPaginationBand" class="report-table-pagination-band">
       <pagination
         class="report-table-pagination"
         :total="total"
@@ -120,6 +124,7 @@
         :limit.sync="queryParams.pageSize"
         @pagination="getList"
       />
+    </div>
     </div>
 
     <!-- 添加或修改报告对话框 -->
@@ -194,6 +199,7 @@ export default {
       reportColumnPickerRev: 0,
       reportPickerColumnList: null,
       reportToolsWrapped: false,
+      reportTableBodyMaxHeight: null,
       // 弹出层标题
       title: "",
       // 是否显示弹出层
@@ -261,15 +267,59 @@ export default {
     this.initFloatMenu();
     this.$nextTick(() => {
       this.syncReportToolsWrapped();
+      this.initReportListBodyResizeObserver();
+      this.syncReportTableBodyMaxHeight();
     });
     window.addEventListener("resize", this.syncReportToolsWrapped);
+    window.addEventListener("resize", this.syncReportTableBodyMaxHeight);
   },
   // 移除滚动条监听
   destroyed() {
     this.$floatMenu.windowsDestory();
     window.removeEventListener("resize", this.syncReportToolsWrapped);
+    window.removeEventListener("resize", this.syncReportTableBodyMaxHeight);
+    this.destroyReportListBodyResizeObserver();
   },
   methods: {
+    initReportListBodyResizeObserver() {
+      if (typeof ResizeObserver === 'undefined') return;
+      this.destroyReportListBodyResizeObserver();
+      const el = this.$refs.reportListBody;
+      if (!el) return;
+      this._reportListBodyResizeObserver = new ResizeObserver(() => {
+        this.syncReportTableBodyMaxHeight();
+      });
+      this._reportListBodyResizeObserver.observe(el);
+    },
+    destroyReportListBodyResizeObserver() {
+      if (this._reportListBodyResizeObserver) {
+        this._reportListBodyResizeObserver.disconnect();
+        this._reportListBodyResizeObserver = null;
+      }
+    },
+    syncReportTableBodyMaxHeight() {
+      this.$nextTick(() => {
+        const body = this.$refs.reportListBody;
+        if (!body || !body.clientHeight) return;
+        const pagEl = this.$refs.reportPaginationBand;
+        let reserveBelowTable = 0;
+        if (this.total > 0 && pagEl && pagEl.offsetParent !== null) {
+          const st = window.getComputedStyle(pagEl);
+          reserveBelowTable =
+            pagEl.offsetHeight +
+            parseFloat(st.marginTop || "0") +
+            parseFloat(st.marginBottom || "0");
+        }
+        const next = Math.max(120, Math.floor(body.clientHeight - reserveBelowTable - 2));
+        if (this.reportTableBodyMaxHeight !== next) {
+          this.reportTableBodyMaxHeight = next;
+          this.$nextTick(() => {
+            const tbl = this.$refs.cat2BugTable;
+            if (tbl && typeof tbl.doLayout === "function") tbl.doLayout();
+          });
+        }
+      });
+    },
     syncReportToolsWrapped() {
       const measure = () => {
         const tools = this.$refs.reportTools;
@@ -318,6 +368,9 @@ export default {
         this.total = response.total;
         this.loading = false;
         this.syncReportToolsWrapped();
+        this.$nextTick(() => {
+          this.syncReportTableBodyMaxHeight();
+        });
       });
     },
     // 取消按钮
@@ -399,6 +452,10 @@ export default {
       const picker = columns.filter(c => c.showInColumnPicker !== false).map(c => ({ ...c }));
       this.$set(this, 'reportPickerColumnList', picker);
       this.columnPickerCheckedKeys = columns.filter(c => c.visible && c.showInColumnPicker !== false).map(c => c.key);
+      this.$nextTick(() => {
+        this.$refs.cat2BugTable && this.$refs.cat2BugTable.doLayout();
+        this.syncReportTableBodyMaxHeight();
+      });
     },
     onReportColumnPickerChange(keys) {
       this.$refs.cat2BugTable && this.$refs.cat2BugTable.setColumnsVisible(keys);
@@ -444,6 +501,40 @@ export default {
 }
 </style>
 <style lang="scss" scoped>
+.app-container.case-body {
+  padding: 20px 20px 0;
+  box-sizing: border-box;
+}
+.report-page.report-list-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  min-height: 0;
+  flex: 1 1 auto;
+  width: 100%;
+  box-sizing: border-box;
+  --case-toolbar-v-gap: 8px;
+}
+.report-page ::v-deep h3.report-project-label {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+.report-list-body {
+  flex: 1 1 0%;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  --defect-pagination-v-gap: 28px;
+}
+.report-table-x-scroll {
+  width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
 .report-tools {
   width: 100%;
   display: flex;
@@ -454,7 +545,8 @@ export default {
   align-content: flex-start;
   column-gap: 12px;
   row-gap: 8px;
-  margin-bottom: 10px;
+  margin-top: var(--case-toolbar-v-gap, 8px);
+  margin-bottom: var(--case-toolbar-v-gap, 8px);
   .el-form-item {
     margin-bottom: 0;
   }
@@ -563,29 +655,18 @@ export default {
   line-height: 1.4;
   padding-left: 8px;
 }
-/* 与缺陷列表分页底部留白一致（defect/list/table.vue） */
-.report-page {
-  --defect-pagination-v-gap: 28px;
-  --defect-page-bottom-pad: 20px;
-  --defect-pagination-extra-bottom: 14px;
-}
+/* 与缺陷列表 .defect-table-pagination-band 一致 */
 .report-table-pagination-band {
   flex-shrink: 0;
   margin-top: var(--defect-pagination-v-gap);
-  margin-bottom: max(
-    0px,
-    calc(
-      var(--defect-pagination-v-gap) - var(--defect-page-bottom-pad) -
-        env(safe-area-inset-bottom, 0px) + var(--defect-pagination-extra-bottom)
-    )
-  );
+  margin-bottom: calc(40px + env(safe-area-inset-bottom, 0px));
 }
 ::v-deep .report-table-pagination.pagination-container {
   margin-top: 0 !important;
   margin-bottom: 0 !important;
   padding-top: 0 !important;
   padding-bottom: 0 !important;
-  padding-left: 16px;
-  padding-right: 20px;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
 }
 </style>

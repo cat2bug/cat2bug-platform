@@ -1,10 +1,14 @@
 <template>
   <div
-    ref="defectMain"
-    class="app-container defect-page"
-    :class="{ 'defect-page--excel-view': defectContentComponent === 'DefectExcel' }"
-    :style="defectPageRootStyle"
+    class="defect-route-host"
+    :class="{ 'defect-route-host--excel': defectContentComponent === 'DefectExcel' }"
   >
+    <div
+      ref="defectMain"
+      class="app-container case-body defect-page"
+      :class="{ 'defect-page--excel-view': defectContentComponent === 'DefectExcel' }"
+      :style="defectPageRootStyle"
+    >
     <project-label class="defect-project-label" />
     <!-- 缺陷页标签-->
     <div class="defect-tools-tab">
@@ -136,6 +140,7 @@
     <defect-tab-dialog ref="defectTabDialog" :project-id="getProjectId()" :member-id="userId" @add="tabAddHandle" />
     <!-- 导入缺陷 -->
     <defect-import ref="defectImportDialog" :project-id="getProjectId()" @upload="search(queryParams)" />
+    </div>
   </div>
 </template>
 
@@ -157,9 +162,6 @@ import store from '@/store'
 import DefectTable from './list/table'
 import DefectExcel from './list/excel'
 
-/** 与 AppMain 一致：顶栏 50px；开启 TagsView 时再 34px（Excel 根节点 min-height 与顶栏对齐） */
-const LAYOUT_NAVBAR_PX = 50
-const LAYOUT_TAGS_STRIP_PX = 34
 /** 记录Tab标签选项 */
 const DEFECT_TAB_CACHE_KEY = 'defect-tab'
 /** 缺陷列表/日历/Excel 视图组件名，与 el-radio-button label 一致；默认 DefectTable */
@@ -252,21 +254,14 @@ export default {
       return {}
     },
     /**
-     * Excel：固定 height/maxHeight，组件内滚动。
-     * 表格模式：高度交给 AppMain 首子 flex:1 铺满，避免 min-height 与 padding-top 盒模型叠算后仍留底空白；
-     * 竖线高度仍只用树/表实际高度（table.vue setDragComponentSize），勿用 body.scrollHeight，避免把 multipane 撑出假高度。
+     * Excel：在 host 内 height:100% 铺满主列（与表格模式一致），勿再用 host flex-end 造成顶栏下大块留白。
      */
     defectPageRootStyle() {
-      const tagsOn = !!this.$store.state.tagsView
-      const offset = LAYOUT_NAVBAR_PX + (tagsOn ? LAYOUT_TAGS_STRIP_PX : 0)
-      const fillH = `calc(100vh - ${offset}px)`
       if (this.defectContentComponent === 'DefectExcel') {
         return {
-          height: fillH,
-          maxHeight: fillH,
-          paddingTop: '20px',
-          paddingLeft: '5px',
-          paddingRight: '5px',
+          height: '100%',
+          maxHeight: '100%',
+          minHeight: 0,
           paddingBottom: 'env(safe-area-inset-bottom, 0px)',
           boxSizing: 'border-box',
           overflow: 'hidden'
@@ -613,20 +608,34 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
+/* AppMain 首子列内占位；与用例页同级，勿对 Excel 使用 flex-end 以免顶栏下留白过大 */
+.defect-route-host {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
 /*
  * 高度与滚动：
- * - 表格模式：根节点在 AppMain 内 flex:1 铺满主列；内容区 flex:1 吃满剩余高度（table.vue 内表体区再 flex:1）。
- * - Excel 模式：内联 height/maxHeight + overflow:hidden，仅组件内滚动。
+ * - 表格 / Excel：内层 .defect-page 在 host 内 flex:1 铺满；Excel 根 height:100%，内滚动在 excel 组件。
  */
+.app-container.case-body.defect-page {
+  /* 与用例页 .case-body 一致：顶左右 20px，底边交给内容区 / safe-area */
+  padding: 20px 20px 0;
+  box-sizing: border-box;
+}
 .defect-page {
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  /* 左右与计划抽屉列表区一致 5px；顶栏保留 20px */
-  padding: 20px 5px 0;
   overflow: visible;
   /* 查询条上、下与 Tab / 主内容区的留白一致（子树继承） */
   --defect-toolbar-v-gap: 8px;
+}
+/* Excel：与 defectPageRootStyle 一致，避免仅靠内联时 scoped 的 visible 参与级联 */
+.defect-page.defect-page--excel-view {
+  overflow: hidden;
 }
 .defect-page:not(.defect-page--excel-view) {
   flex: 1 1 auto;
@@ -634,7 +643,9 @@ export default {
   width: 100%;
 }
 .defect-page.defect-page--excel-view {
-  flex: 0 0 auto;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
 }
 .defect-page .defect-content-slot {
   flex: 0 1 auto;
@@ -658,8 +669,9 @@ export default {
   min-height: 0;
   overflow: hidden;
 }
-.defect-project-label {
-  margin-bottom: 10px;
+.defect-page ::v-deep h3.defect-project-label {
+  margin-top: 0;
+  margin-bottom: 0;
 }
 /*
  * 查询条：全宽保留（不再在窄屏隐藏）。宽屏与工具栏同一行时由父级 flex 让右侧先换行；
@@ -817,9 +829,9 @@ export default {
     margin: 0px 5px 0px 0px;
   }
 }
-/* 与测试用例页 project-label → 工具条观感一致：块流可 margin 折叠，flex 子项不可，故此处 margin-top 为 0 */
+/* 与用例页：h3 下 10px + 本行上 8px（flex 子项不折叠 margin） */
 .defect-tools-tab {
-  margin-top: 0;
+  margin-top: var(--defect-toolbar-v-gap, 8px);
   position: relative;
   height: 40px;
   /* el-tabs 默认表头 margin-bottom:15px + 空 content，会在 Tab 与下方查询条之间多出一段空白 */
@@ -1011,5 +1023,24 @@ export default {
 }
 .defect-page .defect-view-toolbar .table-tools.row > * {
   margin-bottom: 0 !important;
+}
+
+/*
+ * Excel：主区 .main-container 为 overflow:auto，子树总高略大于视口即出现「整页」滚动条。
+ * 将路由根高度钳在视口减顶栏（与 AppMain 中 navbar / tags 占位一致），滚动留在 Excel 内部。
+ */
+.main-container.hasTagsView .defect-route-host--excel {
+  height: calc(100vh - 84px);
+  max-height: calc(100vh - 84px);
+  min-height: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+.main-container:not(.hasTagsView) .defect-route-host--excel {
+  height: calc(100vh - 50px);
+  max-height: calc(100vh - 50px);
+  min-height: 0;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 </style>

@@ -1,27 +1,12 @@
 <template>
   <div class="app-container case-body case-page">
-    <div class="case-page-head">
-      <project-label class="case-project-label" />
-      <div class="case-page-head-right">
-        <svg-icon
-          class="case-statistic-toggle"
-          icon-class="view-statistic"
-          @click.native="toggleCaseStatisticPanel"
-        />
-      </div>
-    </div>
-    <cat2-bug-statistic
-      v-show="caseStatisticPanelVisible"
-      class="case-tools-statistic"
-      :params="{}"
-      :draggable="true"
-    />
+    <project-label class="case-project-label" />
     <div
       ref="caseTools"
-      class="case-view-toolbar defect-table-tools-bar"
+      class="case-view-toolbar case-table-tools defect-table-tools-bar defect-view-toolbar"
       :class="{ 'wrapped-tools': caseToolsWrapped }"
     >
-      <div class="case-tools-search">
+        <div class="case-tools-search">
         <el-form v-show="showSearch" ref="queryForm" class="left" :model="queryParams" size="small" :inline="true" label-width="0px">
           <el-form-item prop="caseNum">
             <el-input
@@ -47,9 +32,9 @@
             <cat2-bug-select-level v-model="queryParams.caseLevel" icon="el-icon-s-data" :clearable="true" @change="handleQuery" />
           </el-form-item>
         </el-form>
-      </div>
+        </div>
 
-      <div ref="caseToolsRight" class="table-tools row case-right-tools" :class="{ 'buttons-wrapped': caseRightButtonsWrapped }">
+        <div ref="caseToolsRight" class="table-tools row case-right-tools" :class="{ 'buttons-wrapped': caseRightButtonsWrapped }">
         <el-popover placement="top" trigger="click">
           <div class="row">
             <i class="el-icon-s-fold" />
@@ -112,7 +97,7 @@
             <!--              <el-dropdown-item @click.native="handleCloudCaseAdd2"><svg-icon icon-class="robot" />{{ $t('case.ai-create') }}2</el-dropdown-item>-->
           </el-dropdown-menu>
         </el-dropdown>
-      </div>
+        </div>
     </div>
     <!--    模块树和用例列表区域-->
     <multipane ref="multiPane" layout="vertical" class="custom-resizer" :class="{ 'custom-resizer--tree-hidden': !showModuleTree }" @paneResizeStop="dragStopHandle">
@@ -198,9 +183,11 @@
               </div>
               <span v-else-if="column.prop==='updateTime'">{{ parseTime(scope.row.updateTime, '{y}-{m}-{d}') }}</span>
               <template v-else-if="column.prop==='defectProcessingCount'">
-                <p class="table-font table-font-red" @click="handleGoDefect($event, scope.row, $t('PENDING'),[0,3])">{{ $t('PENDING') }}:{{ scope.row.defectProcessingCount }}</p>
-                <p class="table-font table-font-orange" @click="handleGoDefect($event, scope.row, $t('PROCESSING'), [1])">{{ $t('PROCESSING') }}:{{ scope.row.defectAuditCount }}</p>
-                <p class="table-font table-font-green" @click="handleGoDefect($event, scope.row, $t('CLOSED'),[4])">{{ $t('CLOSED') }}:{{ scope.row.defectCloseCount }}</p>
+                <div class="case-defect-status-lines">
+                  <p class="table-font table-font-red" @click="handleGoDefect($event, scope.row, $t('PENDING'),[0,3])">{{ $t('PENDING') }}:{{ scope.row.defectProcessingCount }}</p>
+                  <p class="table-font table-font-orange" @click="handleGoDefect($event, scope.row, $t('PROCESSING'), [1])">{{ $t('PROCESSING') }}:{{ scope.row.defectAuditCount }}</p>
+                  <p class="table-font table-font-green" @click="handleGoDefect($event, scope.row, $t('CLOSED'),[4])">{{ $t('CLOSED') }}:{{ scope.row.defectCloseCount }}</p>
+                </div>
               </template>
               <span v-else>{{ scope.row[column.prop] }}</span>
             </template>
@@ -293,7 +280,6 @@ import CloudCase2 from '@/components/Cloud/CloudCase2'
 import FocusMemberList from '@/components/FocusMemberList'
 import Cat2BugPreviewImage from '@/components/Cat2BugPreviewImage'
 import Cat2BugTable from '@/components/Cat2BugTable'
-import Cat2BugStatistic from '@/components/Cat2BugStatistic'
 import { CaseTableColumnDefaults } from '@/views/system/case/case-table-options'
 import { checkPermi } from '@/utils/permission'
 import { strFormat } from '@/utils'
@@ -305,13 +291,11 @@ import paneResizerHandleViewport from '@/mixins/paneResizerHandleViewport'
 const TREE_MODULE_WIDTH_CACHE_KEY = 'case_tree_module_width'
 /** 用例页左侧交付物树是否展开（本地缓存） */
 const CASE_TREE_MODULE_VISIBLE_CACHE_KEY = 'case_tree_module_visible'
-/** 与缺陷页一致：分析统计面板是否展开 */
-const CACHE_KEY_CASE_STATISTIC_VISIBLE = 'case.statisticPanelVisible'
 
 export default {
   name: 'Case',
   mixins: [paneResizerHandleViewport],
-  components: { ProjectLabel, AddCase, Cat2BugLevel, Step, TreeModule, Multipane, MultipaneResizer, AddDefect, CloudCase, CloudCase2, FocusMemberList, Cat2BugPreviewImage, Cat2BugSelectLevel, Cat2BugText, Cat2BugTable, Cat2BugStatistic },
+  components: { ProjectLabel, AddCase, Cat2BugLevel, Step, TreeModule, Multipane, MultipaneResizer, AddDefect, CloudCase, CloudCase2, FocusMemberList, Cat2BugPreviewImage, Cat2BugSelectLevel, Cat2BugText, Cat2BugTable },
   directives: {
     resize: {
       // 指令的名称
@@ -359,8 +343,6 @@ export default {
       multiple: true,
       // 显示搜索条件
       showSearch: true,
-      /** 与缺陷页一致：顶部统计面板显隐（本地缓存） */
-      caseStatisticPanelVisible: this.$cache.local.get(CACHE_KEY_CASE_STATISTIC_VISIBLE) != 'false',
       // 总条数
       total: 0,
       // 测试用例表格数据
@@ -499,11 +481,6 @@ export default {
     this.destroyCaseTableBodyResizeObserver()
   },
   methods: {
-    toggleCaseStatisticPanel() {
-      this.caseStatisticPanelVisible = !this.caseStatisticPanelVisible
-      this.$cache.local.set(CACHE_KEY_CASE_STATISTIC_VISIBLE, this.caseStatisticPanelVisible + '')
-      this.$nextTick(() => this.setDragComponentSize())
-    },
     initCaseToolsObserver() {
       if (typeof ResizeObserver === 'undefined') return
       this.destroyCaseToolsObserver()
@@ -952,38 +929,23 @@ export default {
 .case-page {
   --case-toolbar-v-gap: 8px;
 }
-.case-page-head {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  column-gap: 12px;
-  row-gap: 8px;
-  width: 100%;
-  box-sizing: border-box;
+/* ProjectLabel 根为 h3，类名在 h3 上：用 ::v-deep 覆盖子组件 scoped 的 h3 下边距 */
+.case-page ::v-deep h3.case-project-label {
+  margin-top: 0;
   margin-bottom: 10px;
 }
-.case-project-label {
-  flex: 1 1 auto;
-  min-width: 0;
+@media screen and (max-width: 576px) {
+  .case-page {
+    --case-toolbar-v-gap: 6px;
+  }
+  .case-page ::v-deep h3.case-project-label {
+    margin-bottom: 6px;
+  }
 }
-.case-page-head-right {
-  flex: 0 0 auto;
-  display: inline-flex;
-  align-items: center;
-}
-.case-statistic-toggle {
-  cursor: pointer;
-  color: #606266;
-  font-size: 18px;
-}
-.case-statistic-toggle:hover {
-  color: #409eff;
-}
-/* 与缺陷页 .defect-tools-search 一致：表单项可换行；窄屏纵向铺满 */
+/* 与缺陷页 .defect-tools-search 一致：表单项可换行；父级为 .case-view-toolbar（与 defect-view-toolbar 同级 flex） */
 .case-tools-search {
-  flex: 1 1 auto;
+  /* 与缺陷页观感一致：左侧随表单项定宽，不把同行剩余空间全部吃掉（缺陷无「表单项 flex:1 1 180px」） */
+  flex: 0 1 auto;
   min-width: 0;
   max-width: 100%;
   box-sizing: border-box;
@@ -997,6 +959,13 @@ export default {
     max-width: 100%;
     box-sizing: border-box;
   }
+  @media screen and (min-width: 577px) {
+    ::v-deep .el-form.el-form--inline {
+      /* 宽屏：随表单项内容定宽，避免 width:100% 把父级撑满整行 */
+      width: auto;
+      max-width: 100%;
+    }
+  }
   ::v-deep .el-form--inline .el-form-item {
     margin-right: 0;
     margin-bottom: 0;
@@ -1005,16 +974,22 @@ export default {
     vertical-align: middle;
   }
   @media screen and (max-width: 576px) {
+    flex: 1 1 100%;
     width: 100%;
     max-width: 100%;
     ::v-deep .el-form.el-form--inline {
       flex-direction: column;
       align-items: stretch;
+      row-gap: 6px;
+      column-gap: 0;
     }
     ::v-deep .el-form--inline .el-form-item {
       width: 100%;
       max-width: 100%;
       min-width: 0;
+      /* 列布局下禁止 flex-grow，否则与宽屏表单项 flex 叠加会纵向均分撑满 */
+      flex: 0 0 auto;
+      align-self: stretch;
     }
     ::v-deep .el-form--inline .el-form-item .el-form-item__content {
       width: 100% !important;
@@ -1023,9 +998,15 @@ export default {
       box-sizing: border-box;
     }
     ::v-deep .el-form--inline .el-form-item .el-input,
-    ::v-deep .el-form--inline .el-form-item .cat2-bug-select-level {
+    ::v-deep .el-form--inline .el-form-item .el-select.case-level-input {
       width: 100% !important;
       max-width: 100%;
+    }
+    ::v-deep .el-form--inline .el-form-item .el-select.case-level-input {
+      display: block;
+    }
+    ::v-deep .el-form--inline .el-form-item .el-select.case-level-input .el-input {
+      width: 100% !important;
     }
     ::v-deep .el-form--inline .el-form-item .el-input__inner {
       width: 100% !important;
@@ -1038,11 +1019,11 @@ export default {
   flex-direction: column;
   align-items: stretch;
   min-height: 0;
-  /* 与缺陷页 defect-page 一致：在 AppMain 内铺满，底边 padding 交给分页区 margin；左右 5px */
+  /* 与缺陷页 defect-page 一致：在 AppMain 内铺满，底边 padding 交给分页区 margin；左右 20px */
   flex: 1 1 auto;
   width: 100%;
   box-sizing: border-box;
-  padding: 20px 5px 0;
+  padding: 20px 20px 0;
 }
 .case-body > .custom-resizer.multipane {
   flex: 1 1 0%;
@@ -1104,15 +1085,16 @@ export default {
 }
 .case-table-pagination-band {
   margin-top: var(--defect-pagination-v-gap);
-  margin-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  /* 分页与视口底至少 40px，刘海屏叠加 safe-area */
+  margin-bottom: calc(40px + env(safe-area-inset-bottom, 0px));
 }
 ::v-deep .case-table-pagination.pagination-container {
   margin-top: 0 !important;
   margin-bottom: 0 !important;
   padding-top: 0 !important;
   padding-bottom: 0 !important;
-  padding-left: 5px;
-  padding-right: 5px;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
 }
 .case-sidebar-expand-trigger {
   display: inline-flex;
@@ -1177,61 +1159,67 @@ export default {
   margin-left: 0;
   flex: 1 1 100%;
   width: 100%;
-  display: inline-flex;
+  max-width: 100%;
+  display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
+  /* 换行独占一行时与缺陷观感一致：工具从左排，勿 flex-end 整行贴右 */
   justify-content: flex-start;
   align-items: center;
 }
 .case-view-toolbar.wrapped-tools .case-right-tools > * {
   flex: 0 0 auto;
   width: auto;
-  min-width: 0;
 }
 .case-view-toolbar.wrapped-tools .case-right-tools ::v-deep .case-field-picker-btn,
 .case-view-toolbar.wrapped-tools .case-right-tools > .case-batch-delete-btn {
   flex: 0 0 auto;
   white-space: nowrap;
 }
-.case-view-toolbar.wrapped-tools .case-right-tools > .case-batch-delete-btn,
-.case-view-toolbar.wrapped-tools .case-right-tools > .case-add-dropdown,
-.case-view-toolbar.wrapped-tools .case-right-tools > .case-ai-add-dropdown {
+.case-view-toolbar.wrapped-tools .case-right-tools > .case-batch-delete-btn {
   flex: 0 0 auto;
   width: auto;
   display: flex;
 }
-.case-view-toolbar.wrapped-tools .case-right-tools.buttons-wrapped > .case-batch-delete-btn,
+/* split 下拉整块参与工具栏换行；组内主键+箭头始终同一行 */
+.case-view-toolbar.wrapped-tools .case-right-tools > .case-add-dropdown,
+.case-view-toolbar.wrapped-tools .case-right-tools > .case-ai-add-dropdown {
+  flex: 0 0 auto;
+  min-width: 118px;
+  max-width: 100%;
+  width: auto;
+  display: flex;
+}
+.case-view-toolbar.wrapped-tools .case-right-tools.buttons-wrapped > .case-batch-delete-btn {
+  flex: 1 1 0;
+  min-width: 92px;
+  width: 100%;
+  max-width: 100%;
+}
 .case-view-toolbar.wrapped-tools .case-right-tools.buttons-wrapped > .case-add-dropdown,
 .case-view-toolbar.wrapped-tools .case-right-tools.buttons-wrapped > .case-ai-add-dropdown {
   flex: 1 1 0;
-  min-width: 0;
+  min-width: 118px;
   width: 100%;
+  max-width: 100%;
 }
 .case-view-toolbar.wrapped-tools .case-right-tools ::v-deep .el-button-group {
-  width: 100%;
-  display: flex;
+  display: inline-flex;
   flex-wrap: nowrap;
+  align-items: stretch;
+  width: auto;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 .case-view-toolbar.wrapped-tools .case-right-tools ::v-deep .el-button-group > .el-button:not(.el-dropdown__caret-button) {
   flex: 1 1 auto;
+  min-width: 0;
 }
 .case-view-toolbar.wrapped-tools .case-right-tools ::v-deep .el-button-group > .el-button {
   min-width: 0;
 }
 .case-view-toolbar.wrapped-tools .case-right-tools ::v-deep .el-button-group > .el-dropdown__caret-button {
   flex: 0 0 auto;
-}
-/* 宽屏：表单项与缺陷查询行类似，可伸缩 */
-.case-tools-search ::v-deep .el-form--inline .el-form-item {
-  flex: 1 1 180px;
-  min-width: 140px;
-  max-width: 100%;
-}
-.case-tools-search ::v-deep .el-form-item .el-form-item__content,
-.case-tools-search ::v-deep .el-form-item .el-input,
-.case-tools-search ::v-deep .el-form-item .cat2-bug-select-level {
-  width: 100%;
-  min-width: 0;
 }
 .red {
   color: #f56c6c;
@@ -1343,6 +1331,17 @@ export default {
 .table-font-green {
   color: rgb(103, 194, 58);
 }
+.case-defect-status-lines {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+.case-defect-status-lines .table-font {
+  line-height: 1.2;
+  margin: 0;
+  padding: 0 5px;
+}
 .case-table-operate {
   padding-left: 10px;
 }
@@ -1376,23 +1375,69 @@ export default {
     justify-content: center;
   }
 }
-.case-right-tools {
-  flex: 0 0 auto;
-  display: inline-flex;
+/* 与缺陷 list/table.vue .defect-table-tools 一致：本页工具条为 flex 容器 */
+.case-view-toolbar.case-table-tools {
+  display: flex;
   flex-direction: row;
-  justify-content: flex-start;
+  flex-wrap: wrap;
   align-items: center;
-  flex-wrap: nowrap;
-  gap: 10px;
+  align-content: flex-start;
+  row-gap: 8px;
+  column-gap: 12px;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  > * {
+    display: block;
+    justify-content: flex-start;
+    margin-bottom: 0;
+    ::v-deep .el-form-item {
+      margin-bottom: 0;
+    }
+  }
+  .table-tools {
+    align-items: center;
+    > * {
+      margin-bottom: 0;
+    }
+  }
+}
+.case-right-tools {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  /* 与下方 .case-page 无 scoped 规则一致：每项最小宽 */
+  > *:first-child {
+    min-width: 36px;
+  }
+  > .case-batch-delete-btn {
+    min-width: 92px;
+  }
+  > .case-add-dropdown,
+  > .case-ai-add-dropdown {
+    min-width: 118px;
+  }
   > * {
     flex: 0 0 auto;
     width: auto;
-    min-width: 0;
+  }
+}
+@media screen and (max-width: 576px) {
+  .case-right-tools {
+    width: 100%;
+    max-width: 100%;
+    row-gap: 8px;
   }
 }
 </style>
 
-<!-- 与缺陷页工具栏、仪表盘统计栅格一致（不受 scoped 限制） -->
+<!-- 与缺陷页 defect/index.vue 中 .defect-page .defect-view-toolbar 对齐（用例根为 .case-page，须单独写选择器） -->
 <style lang="scss">
 .case-page .case-view-toolbar {
   box-sizing: border-box;
@@ -1404,16 +1449,21 @@ export default {
   justify-content: space-between;
   column-gap: 12px;
   row-gap: 8px;
+  width: 100%;
   padding-top: 0;
   padding-bottom: 0;
 }
 .case-page .case-view-toolbar > *:first-child {
-  flex: 1 1 auto;
+  /* 宽屏左侧查询区不随视口横向拉长；同行两子项时仍由 justify-content: space-between 把右侧工具顶到行末 */
+  flex: 0 1 auto;
   min-width: 0;
 }
 .case-page .case-view-toolbar > *:nth-child(2) {
-  flex: 0 0 auto;
-  display: inline-flex;
+  /* 0 1 auto：主区变窄时允许收缩，配合内部 flex-wrap 换行（0 0 auto 会整坨溢出裁切） */
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-start;
@@ -1424,7 +1474,8 @@ export default {
     width: 100%;
     max-width: 100%;
     justify-content: flex-start;
-    flex-wrap: nowrap !important;
+    /* 允许多个工具换行，避免窄屏整行 nowrap 裁切 */
+    flex-wrap: wrap !important;
   }
   .case-page .case-view-toolbar .table-tools {
     width: 100%;
@@ -1432,62 +1483,68 @@ export default {
     box-sizing: border-box;
     display: flex !important;
     flex-direction: row !important;
-    flex-wrap: nowrap !important;
+    flex-wrap: wrap !important;
     align-items: center !important;
     column-gap: 8px;
+    row-gap: 8px;
   }
   .case-page .case-view-toolbar .table-tools > *:first-child {
     flex-shrink: 0;
   }
   .case-page .case-view-toolbar .table-tools .case-add-dropdown,
   .case-page .case-view-toolbar .table-tools .case-ai-add-dropdown {
-    flex: 1 1 auto;
-    min-width: 0;
+    /* 整块换行，不在 split 内部拆主键与箭头 */
+    flex: 0 0 auto;
     width: auto !important;
-    max-width: none;
+    min-width: 118px;
+    max-width: 100%;
     box-sizing: border-box;
   }
   .case-page .case-view-toolbar .case-add-dropdown .el-button-group,
   .case-page .case-view-toolbar .case-ai-add-dropdown .el-button-group {
-    width: 100%;
-    display: flex;
+    width: auto;
+    max-width: 100%;
+    box-sizing: border-box;
+    display: inline-flex;
+    flex-wrap: nowrap;
+    align-items: stretch;
   }
-  .case-page .case-view-toolbar .case-add-dropdown .el-button-group > .el-button:first-child,
-  .case-page .case-view-toolbar .case-ai-add-dropdown .el-button-group > .el-button:first-child {
+  .case-page .case-view-toolbar .case-add-dropdown .el-button-group > .el-button:not(.el-dropdown__caret-button),
+  .case-page .case-view-toolbar .case-ai-add-dropdown .el-button-group > .el-button:not(.el-dropdown__caret-button) {
     flex: 1 1 auto;
     min-width: 0;
+  }
+  .case-page .case-view-toolbar .case-add-dropdown .el-button-group > .el-dropdown__caret-button,
+  .case-page .case-view-toolbar .case-ai-add-dropdown .el-button-group > .el-dropdown__caret-button {
+    flex: 0 0 auto;
   }
 }
 .case-page .case-view-toolbar .table-tools {
   padding-top: 0 !important;
   align-items: center !important;
-  display: inline-flex;
+  display: flex;
   flex-wrap: wrap;
   row-gap: 8px;
   justify-content: flex-start;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 .case-page .case-view-toolbar .table-tools.row > * {
   margin-bottom: 0 !important;
 }
-
-.case-page .case-tools-statistic {
-  width: 100%;
-  box-sizing: border-box;
-  margin-bottom: 10px;
+.case-page .case-view-toolbar .case-right-tools.row > * {
+  margin-right: 0 !important;
 }
-@media screen and (max-width: 1650px) {
-  .case-page .case-tools-statistic .statistic-tools > * {
-    flex: 1 1 auto;
-    min-width: 320px;
-    max-width: 100%;
-    box-sizing: border-box;
-  }
+/* 右侧工具每项最小宽度（列字段 / 批量删除 / split 新建 / split AI） */
+.case-page .case-view-toolbar .table-tools > *:first-child {
+  min-width: 36px;
 }
-@media screen and (min-width: 1650px) {
-  .case-page .case-tools-statistic .statistic-tools > * {
-    flex: 1;
-    min-width: 200px;
-    box-sizing: border-box;
-  }
+.case-page .case-view-toolbar .table-tools > .case-batch-delete-btn {
+  min-width: 92px;
+}
+.case-page .case-view-toolbar .table-tools > .case-add-dropdown,
+.case-page .case-view-toolbar .table-tools > .case-ai-add-dropdown {
+  min-width: 118px;
 }
 </style>
