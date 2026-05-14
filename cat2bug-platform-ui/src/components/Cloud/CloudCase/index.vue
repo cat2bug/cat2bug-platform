@@ -151,14 +151,30 @@
       <div class="case-data">
         <div class="case-table">
           <div class="case-table-tools">
-            <div>
-              <el-button :disabled="ids.size==0" class="el-icon-delete" type="danger" size="mini" @click="batchRemoveCase">
-                {{ $t('batch-delete') }}</el-button>
-              <el-button :disabled="ids.size==0" class="el-icon-download" type="primary" size="mini" @click="batchImportCase">{{ $t('batch-import') }}</el-button>
+            <div class="case-table-batch-btns">
+              <el-button
+                :disabled="ids.size==0"
+                type="danger"
+                size="mini"
+                icon="el-icon-delete"
+                :title="$t('batch-delete')"
+                @click="batchRemoveCase"
+              >
+                <span class="case-table-batch-btn-label">{{ $t('batch-delete') }}</span>
+              </el-button>
+              <el-button
+                :disabled="ids.size==0"
+                type="primary"
+                size="mini"
+                icon="el-icon-download"
+                :title="$t('batch-import')"
+                @click="batchImportCase"
+              >
+                <span class="case-table-batch-btn-label">{{ $t('batch-import') }}</span>
+              </el-button>
             </div>
-            <div>
+            <div class="case-table-tools-pagination">
               <el-pagination
-                style="float: right"
                 :current-page.sync="pageIndex"
                 :page-size="pageSize"
                 layout="total, prev, pager, next"
@@ -239,7 +255,7 @@
           </el-pagination>
         </div>
         <div ref="caseContext" class="case-context" v-show="caseContextVisible">
-          <case-form class="case-form" ref="caseForm" :form.sync="currentCase" :style="caseFormStyle" />
+          <case-form class="case-form" ref="caseForm" :form.sync="currentCase" />
         </div>
       </div>
     </div>
@@ -313,7 +329,6 @@ export default {
       currentCase: {
         projectId: this.projectId
       },
-      caseFormStyle:null,
       importDialogVisible: false,
       importForm: {},
       casePromptVisible: false,
@@ -491,30 +506,15 @@ export default {
       this.$floatMenu.windowsInit(document.querySelector('.main-container'));
       this.$floatMenu.resetMenus();
     },
-    bodyScrollHandle(event) {
-      const scrollTop = event.target.scrollTop;
-      const height = this.$refs.caseSearch.offsetHeight + this.$refs.caseHistory.offsetHeight + 30;
-      if(scrollTop>height) {
-        this.caseFormStyle = 'position: fixed;top: 70px;';
-      } else {
-        this.caseFormStyle = '';
-      }
-    },
     open() {
       this.visible = true;
       if (!this.aiAccountLoaded) {
         this.getOpenAIAccountList();
       }
-      this.$nextTick(()=>{
-        const container = document.querySelector('.el-drawer__body');
-        container.addEventListener('scroll',this.bodyScrollHandle);
-      });
       this.initFloatMenu();
     },
     close() {
       this.$emit('close')
-      const container = document.querySelector('.el-drawer__body');
-      container.removeEventListener('scroll',this.bodyScrollHandle);
       this.visible = false;
       this.resetPrompt();
     },
@@ -611,8 +611,15 @@ export default {
             context: this.prompt.context
           });
           this.$nextTick(() => {
-            const container = this.$refs.caseHistory;
-            container.scrollTop = container.scrollHeight;
+            requestAnimationFrame(() => {
+              const container = this.$refs.caseHistory;
+              if (!container || container.offsetParent === null) {
+                return;
+              }
+              if (container.scrollHeight > container.clientHeight) {
+                container.scrollTop = container.scrollHeight;
+              }
+            });
           });
           this.caseList = res.data.cases.map(c => {
             c.projectId = this.projectId;
@@ -840,8 +847,36 @@ export default {
     border-color: #c2e7b0;
     color: #67c23a;
   }
-  .cloud-case-prompt-select {
-    width: 300px;
+  /* 仅 AI 用例抽屉：底部工具条拉满可用宽度，模型下拉随容器伸缩 */
+  .case-search .cat2bug-textarea .tools {
+    left: 44px;
+    right: 10px;
+    width: auto;
+    box-sizing: border-box;
+  }
+  .case-search .cloud-case-input-tools {
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 5px;
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: 100%;
+  }
+  .case-search .cloud-case-prompt-select.el-select {
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: 120px;
+    width: 100% !important;
+  }
+  @media (max-width: 599px) {
+    .case-search .cloud-case-input-tools {
+      display: none !important;
+    }
+  }
+  .case-search .cloud-case-prompt-select .el-input {
+    width: 100%;
   }
   .cloud-case-prompt-select>div>.el-input__suffix {
     display: inline-flex;
@@ -882,6 +917,8 @@ export default {
   flex-direction: column;
   padding: 20px;
   width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   .case-history {
     max-height: 150px;
     overflow-y: auto;
@@ -904,9 +941,12 @@ export default {
     }
   }
   .case-search {
-    display: inline-flex;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: stretch;
     width: 100%;
-    margin-bottom: 20px;
+    min-width: 0;
+    margin-bottom: 10px;
     .cat2-bug-textarea-button {
       color: #67c23a;
       background-color: white;
@@ -918,7 +958,8 @@ export default {
       border:1px solid #67c23a;
     }
     .cat2bug-textarea {
-      flex: 1;
+      flex: 1 1 200px;
+      min-width: 0;
       ::v-deep textarea {
         height: 100%;
         border-radius: 5px 0 0 5px;
@@ -954,32 +995,130 @@ export default {
       margin: 0px;
       border-radius: 0px 5px 5px 0px;
     }
+    ::v-deep > .el-dropdown {
+      flex: 0 0 auto;
+      display: flex;
+    }
+    ::v-deep > .el-dropdown > .el-button-group {
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
   }
   .case-data {
     display: flex;
     flex-direction: row;
     width: 100%;
+    min-width: 0;
+    align-items: flex-start;
     .case-table {
       flex: 1;
+      min-width: 280px;
+      overflow-x: auto;
       .el-table, .case-table-tools {
         width: 100%;
       }
       .case-table-tools {
         display: flex;
-        flex-direction: row;
+        flex-flow: row nowrap;
+        align-items: center;
         justify-content: space-between;
+        gap: 8px;
         margin-bottom: 10px;
+        min-width: 0;
+        container-type: inline-size;
+        container-name: case-table-tools;
+      }
+      .case-table-batch-btns {
+        display: flex;
+        flex-flow: row nowrap;
+        align-items: center;
+        gap: 10px;
+        flex-shrink: 0;
+        ::v-deep > .el-button:last-child {
+          margin-left: 0;
+        }
+        ::v-deep > .el-button.el-button--mini {
+          display: inline-flex !important;
+          align-items: center;
+          justify-content: center;
+        }
+      }
+      .case-table-tools-pagination {
+        min-width: 0;
+        flex: 1 1 auto;
+        display: flex;
+        justify-content: flex-end;
+        ::v-deep .el-pagination {
+          flex-wrap: nowrap;
+        }
+      }
+      @container case-table-tools (max-width: 520px) {
+        .case-table-batch-btn-label {
+          display: none;
+        }
+        .case-table-batch-btns ::v-deep .el-button--mini {
+          padding-left: 8px;
+          padding-right: 8px;
+        }
+        .case-table-batch-btns ::v-deep .el-button--mini > i[class^='el-icon-'],
+        .case-table-batch-btns ::v-deep .el-button--mini > [class*='el-icon-'] {
+          margin-right: 0 !important;
+          margin-left: 0 !important;
+        }
       }
     }
     .case-context {
-      right: 20px;
+      position: sticky;
+      top: 12px;
+      align-self: flex-start;
+      max-height: calc(100vh - 100px);
+      overflow-y: auto;
+      overflow-x: hidden;
+      flex: 0 1 800px;
+      min-width: 0;
+      width: 100%;
+      max-width: 800px;
       border-left: 1px solid #EBEEF5;
       margin-left: 20px;
     }
   }
 }
 .case-form, .case-context {
-  width: 800px;
+  width: 100%;
+  max-width: 800px;
+  min-width: 0;
+  box-sizing: border-box;
+}
+/* 不支持容器查询时：窄屏仍隐藏批量按钮文案，避免换行 */
+@supports not (container-type: inline-size) {
+  @media (max-width: 900px) {
+    .case .case-table-tools .case-table-batch-btn-label {
+      display: none;
+    }
+    .case .case-table-tools .case-table-batch-btns ::v-deep .el-button--mini > i[class^='el-icon-'],
+    .case .case-table-tools .case-table-batch-btns ::v-deep .el-button--mini > [class*='el-icon-'] {
+      margin-right: 0 !important;
+      margin-left: 0 !important;
+    }
+  }
+}
+@media (max-width: 992px) {
+  .case .case-data {
+    flex-direction: column;
+    align-items: stretch;
+    .case-context {
+      margin-left: 0;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-left: none;
+      border-top: 1px solid #ebeef5;
+      max-height: none;
+      position: relative;
+      top: 0;
+      align-self: stretch;
+      flex: 1 1 auto;
+    }
+  }
 }
 .case-info {
   .case-base {
@@ -1014,11 +1153,15 @@ export default {
   justify-content: space-between;
   align-items: center;
   flex-direction: row;
+  min-width: 0;
+  width: 100%;
   .case-search-title {
     display: inline-flex;
     justify-content: flex-start;
     align-items: center;
     flex-direction: row;
+    min-width: 0;
+    flex: 1;
     .el-icon-arrow-left {
       font-size: 22px;
     }
@@ -1027,10 +1170,9 @@ export default {
       color: #909399;
     }
     .case-search-title-name {
-      max-width: 400px;
+      max-width: min(400px, 100%);
       overflow: hidden;
       white-space: nowrap;
-      overflow: hidden;
       text-overflow: ellipsis;
       font-size: 20px;
       color: #303133;
@@ -1053,6 +1195,11 @@ export default {
 ::v-deep .el-drawer {
   border-left: 3px solid #67c23a;
 }
+::v-deep .el-drawer__body {
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
 ::v-deep .el-drawer__header {
   margin-bottom: 0px;
 }
@@ -1067,12 +1214,5 @@ export default {
     color: #13ce66;
     font-size: 18px;
   }
-}
-.cloud-case-input-tools {
-  display: inline-flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-  gap: 5px;
 }
 </style>

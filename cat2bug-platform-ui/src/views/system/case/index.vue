@@ -1412,10 +1412,6 @@ export default {
   min-width: 0;
   max-width: 100%;
   box-sizing: border-box;
-  /* 与下方 .case-page 无 scoped 规则一致：每项最小宽 */
-  > *:first-child {
-    min-width: 36px;
-  }
   > .case-batch-delete-btn {
     min-width: 92px;
   }
@@ -1535,10 +1531,6 @@ export default {
 }
 .case-page .case-view-toolbar .case-right-tools.row > * {
   margin-right: 0 !important;
-}
-/* 右侧工具每项最小宽度（列字段 / 批量删除 / split 新建 / split AI） */
-.case-page .case-view-toolbar .table-tools > *:first-child {
-  min-width: 36px;
 }
 .case-page .case-view-toolbar .table-tools > .case-batch-delete-btn {
   min-width: 92px;
