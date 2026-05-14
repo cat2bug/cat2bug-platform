@@ -389,7 +389,7 @@ export default {
       excelDefectCreateQueueDraining: false,
       /** 计划时间保存中，防止 @change 与自定义「清除」等路径重复打 updateDefect */
       planTimePickerSaving: false,
-      /** 工具栏「显示字段」el-popover，滚动表格时关闭 */
+      /** 工具栏「显示字段」el-popover；不因表格 scroll 关闭（见 dismissExcelFloatingPanelsOnTableScroll） */
       excelToolbarColumnPickerVisible: false,
       /** 交付物 SelectModule：三角打开，与计划时间锚层互斥 */
       excelModulePickerVisible: false,
@@ -2851,7 +2851,9 @@ export default {
         this.tryLoadMoreDefectsForExcel();
       }, 200);
     },
-    /** 表格 tableContent 上下/左右滚动时收起本页自定义浮层（交付物、计划时间、显示字段、缩略图预览） */
+    /** 表格 tableContent 上下/左右滚动时收起本页自定义浮层（交付物、计划时间、缩略图预览）。
+     * 「显示字段」popover 不在此关闭：勾选会触发布局并可能产生 scroll，否则弹层会立刻消失、无法连续勾选。
+     */
     dismissExcelFloatingPanelsOnTableScroll() {
       if (this.excelModulePickerVisible) this.closeExcelModulePicker();
       if (this.planTimePickerVisible) {
@@ -2863,7 +2865,6 @@ export default {
         }
         this.resetPlanTimePickerState();
       }
-      if (this.excelToolbarColumnPickerVisible) this.excelToolbarColumnPickerVisible = false;
       if (this.excelImageViewerVisible) this.closeExcelImageViewer();
     },
     /**
