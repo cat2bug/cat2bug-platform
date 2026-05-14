@@ -61,7 +61,6 @@
         :localized-label="excelEditorLocalizedLabel"
         no-paging
         no-mouse-scroll
-        no-footer
         no-header-edit
         @update="handleSheetUpdate"
         @setting="onExcelEditorSettingFromLibrary"
@@ -312,6 +311,8 @@ const EXCEL_LAST_DATA_ROW_NEAR_BOTTOM_PX = 160;
 const EXCEL_DATA_ROW_ESTIMATE_PX = 26;
 /** 表格可视区底部相对 .defect-excel-context 内底的留白(px)；高度优先用 context.clientHeight − gap */
 const EXCEL_VIEWPORT_BOTTOM_GAP = 20;
+/** 底部自定义横条区在宿主中的占位(px)，与下方 ::v-deep .footer 高度一致（≈ 库默认 25px 的 1/3） */
+const VUE_EXCEL_EDITOR_FOOTER_BAR_PX = Math.round(25 / 3);
 /** 占位行状态列：批量创建队列中的展示（仅存于 defectStateText，非接口值） */
 const EXCEL_CREATE_ROW_QUEUED = "__CAT2BUG_EXCEL_CREATE_QUEUED__";
 const EXCEL_CREATE_ROW_RUNNING = "__CAT2BUG_EXCEL_CREATE_RUNNING__";
@@ -744,7 +745,8 @@ export default {
         }
         space = Math.max(0, Math.floor(bottomBoundary - top - gap));
       }
-      this.excelEditorHeightPx = Math.max(120, space);
+      /* 为底部 .footer（含横向 h-scroll）留出高度，避免整坨挤出 .defect-excel-context */
+      this.excelEditorHeightPx = Math.max(120, space - VUE_EXCEL_EDITOR_FOOTER_BAR_PX);
       const h = this.excelEditorHeightPx;
       this.$nextTick(() => {
         const ed = this.$refs.excelEditor;
@@ -3473,6 +3475,24 @@ export default {
 .defect-vue-excel-editor ::v-deep .table-content {
   text-shadow: none;
   font-size: 12px;
+}
+/* 库底部横向拖条为自定义 .h-scroll（table-content 原生条宽高为 0）。整栏默认 25px，改为约 1/3 */
+.defect-vue-excel-editor ::v-deep .footer {
+  height: 8px !important;
+  min-height: 0;
+  line-height: 1 !important;
+  box-sizing: border-box;
+}
+.defect-vue-excel-editor ::v-deep .footer .left-block {
+  height: 8px !important;
+}
+.defect-vue-excel-editor ::v-deep .footer .h-scroll {
+  z-index: 2;
+  height: 8px !important;
+}
+/* no-paging 时底部仍渲染英文 Selected|Filtered|Loaded，与本页无关，隐藏仅保留横条 */
+.defect-vue-excel-editor ::v-deep .footer > span:last-child {
+  display: none !important;
 }
 /* 库内 systable 为 z-index:-1，会把整块表压在选区 overlay 之下，格线像「消失」；提到 0 与 overlay 同属一层叠上下文后再靠透明 overlay 露格线 */
 .defect-vue-excel-editor ::v-deep table.systable {
