@@ -80,6 +80,8 @@ export default {
       _customXResizeListener: null,
       _customXRo: null,
       _customXBoundBody: null,
+      _doLayoutTimer: null,
+      _rowSyncRafId: null,
     }
   },
   props: {
@@ -146,16 +148,22 @@ export default {
   },
   watch: {
     "$i18n.locale": function () {
-      this.$nextTick(() => {
-        this.$refs.elTable && this.$refs.elTable.doLayout();
-      });
+      this.$nextTick(() => this.scheduleDoLayout());
     },
     tableKey() {
       this.teardownCustomHorizontalScrollbar();
-      this.$nextTick(() => this.setupCustomHorizontalScrollbar());
+      this.$nextTick(() => {
+        this.setupCustomHorizontalScrollbar();
+        this.scheduleDoLayout();
+      });
     },
     data() {
-      this.$nextTick(() => this.updateCustomHorizontalScrollbar());
+      this.$nextTick(() => this.scheduleDoLayout());
+    },
+    loading(val) {
+      if (val === false) {
+        this.$nextTick(() => this.scheduleDoLayout());
+      }
     },
   },
   created() {
@@ -169,12 +177,124 @@ export default {
   mounted() {
     this.initSort();
     this.initColumnDrag();
-    this.$nextTick(() => this.setupCustomHorizontalScrollbar());
+    this.$nextTick(() => {
+      this.setupCustomHorizontalScrollbar();
+      this.scheduleDoLayout();
+    });
   },
   beforeDestroy() {
+    if (this._doLayoutTimer) {
+      clearTimeout(this._doLayoutTimer);
+      this._doLayoutTimer = null;
+    }
+    if (this._rowSyncRafId != null) {
+      cancelAnimationFrame(this._rowSyncRafId);
+      this._rowSyncRafId = null;
+    }
     this.teardownCustomHorizontalScrollbar();
   },
   methods: {
+    /**
+     * 固定列区域是独立 table，主表体与固定列行高依赖同一套列宽与 scrollY gutter。
+     * 数据/插槽渲染后延迟 doLayout，避免中间列换行高度与固定列不一致。
+     */
+    scheduleDoLayout() {
+      if (this._doLayoutTimer) clearTimeout(this._doLayoutTimer);
+      this._doLayoutTimer = setTimeout(() => {
+        this._doLayoutTimer = null;
+        const t = this.$refs.elTable;
+        if (t) {
+          t.doLayout();
+          this.$nextTick(() => {
+            this.$nextTick(() => {
+              requestAnimationFrame(() => {
+                this.syncFixedDataRowHeights();
+                this.updateCustomHorizontalScrollbar();
+              });
+            });
+          });
+        }
+      }, 50);
+    },
+
+    /** 主表与左右固定表各行 tr 上的行内 height，便于重新测量 */
+    clearDataRowHeights(tableRoot) {
+      if (!tableRoot) return;
+      const sel = "tbody tr.el-table__row";
+      const mainBw = tableRoot.querySelector(".el-table__body-wrapper");
+      if (mainBw) {
+        mainBw.querySelectorAll(sel).forEach((tr) => {
+          tr.style.height = "";
+        });
+      }
+      const fixedL = tableRoot.querySelector(".el-table__fixed");
+      const fixedR = tableRoot.querySelector(".el-table__fixed-right");
+      [fixedL, fixedR].forEach((fx) => {
+        if (!fx) return;
+        const fbw = fx.querySelector(".el-table__fixed-body-wrapper");
+        if (fbw) {
+          fbw.querySelectorAll(sel).forEach((tr) => {
+            tr.style.height = "";
+          });
+        }
+      });
+    },
+
+    /**
+     * Element 固定列为独立 table，仅靠 is-hidden + visibility 仍可能出现行高与斑马纹逐行错位。
+     * 以主表体行为基准，取主表 / 左固定 / 右固定同一索引行的最大高度，写回三处 tr。
+     */
+    syncFixedDataRowHeights() {
+      const t = this.$refs.elTable;
+      if (!t || !t.$el) return;
+      const root = t.$el;
+      const fixedL = root.querySelector(".el-table__fixed");
+      const fixedR = root.querySelector(".el-table__fixed-right");
+      if (!fixedL && !fixedR) return;
+
+      const mainBw = root.querySelector(".el-table__body-wrapper");
+      if (!mainBw) return;
+
+      const sel = "tbody tr.el-table__row";
+      this.clearDataRowHeights(root);
+      void root.offsetHeight;
+
+      const mainRows = mainBw.querySelectorAll(sel);
+      if (!mainRows.length) return;
+
+      let leftRows = null;
+      let rightRows = null;
+      if (fixedL) {
+        const fbw = fixedL.querySelector(".el-table__fixed-body-wrapper");
+        if (fbw) leftRows = fbw.querySelectorAll(sel);
+      }
+      if (fixedR) {
+        const fbw = fixedR.querySelector(".el-table__fixed-body-wrapper");
+        if (fbw) rightRows = fbw.querySelectorAll(sel);
+      }
+
+      let n = mainRows.length;
+      if (leftRows && leftRows.length < n) n = leftRows.length;
+      if (rightRows && rightRows.length < n) n = rightRows.length;
+      for (let i = 0; i < n; i++) {
+        let h = mainRows[i].offsetHeight;
+        if (leftRows && leftRows[i]) h = Math.max(h, leftRows[i].offsetHeight);
+        if (rightRows && rightRows[i]) h = Math.max(h, rightRows[i].offsetHeight);
+        h = Math.ceil(h);
+        mainRows[i].style.height = h + "px";
+        if (leftRows && leftRows[i]) leftRows[i].style.height = h + "px";
+        if (rightRows && rightRows[i]) rightRows[i].style.height = h + "px";
+      }
+    },
+
+    /** ResizeObserver 可能高频触发，合并到单次 rAF */
+    requestFixedRowHeightSync() {
+      if (this._rowSyncRafId != null) cancelAnimationFrame(this._rowSyncRafId);
+      this._rowSyncRafId = requestAnimationFrame(() => {
+        this._rowSyncRafId = null;
+        this.syncFixedDataRowHeights();
+      });
+    },
     columnsStorageKey() {
       if (this.fieldListCacheKey) return this.fieldListCacheKey;
       if (this.cacheKey != null && this.cacheKey !== '') return this.cacheKey + TABLE_FIELD_LIST_CACHE_KEY;
@@ -344,7 +464,10 @@ export default {
     initColumnDrag() {
       this.bindSortable('.el-table__header-wrapper thead tr', 'normal');
       this.bindSortable('.el-table__fixed-header-wrapper thead tr', 'fixed');
-      this.$nextTick(() => this.updateCustomHorizontalScrollbar());
+      this.$nextTick(() => {
+        this.updateCustomHorizontalScrollbar();
+        this.requestFixedRowHeightSync();
+      });
     },
     getTableBodyWrapper() {
       const t = this.$refs.elTable;
@@ -363,11 +486,18 @@ export default {
       this._customXWheelListener = (e) => this.handleCustomXWheel(e);
       wrap.addEventListener('wheel', this._customXWheelListener, { passive: false, capture: true });
 
-      this._customXResizeListener = () =>
-        this.$nextTick(() => this.updateCustomHorizontalScrollbar());
+      this._customXResizeListener = () => {
+        this.$nextTick(() => {
+          this.updateCustomHorizontalScrollbar();
+          this.requestFixedRowHeightSync();
+        });
+      };
       window.addEventListener('resize', this._customXResizeListener);
 
-      this._customXRo = new ResizeObserver(() => this.updateCustomHorizontalScrollbar());
+      this._customXRo = new ResizeObserver(() => {
+        this.updateCustomHorizontalScrollbar();
+        this.requestFixedRowHeightSync();
+      });
       this._customXRo.observe(wrap);
       this._customXRo.observe(bw);
       const root = this.$refs.elTable.$el;
@@ -624,8 +754,17 @@ export default {
       this.$refs.elTable.sort(prop, order);
     },
     doLayout() {
-      this.$refs.elTable && this.$refs.elTable.doLayout();
-      this.$nextTick(() => this.updateCustomHorizontalScrollbar());
+      const t = this.$refs.elTable;
+      if (!t) return;
+      t.doLayout();
+      this.$nextTick(() => {
+        this.$nextTick(() => {
+          requestAnimationFrame(() => {
+            this.syncFixedDataRowHeights();
+            this.updateCustomHorizontalScrollbar();
+          });
+        });
+      });
     },
     handleClickColumnsPin(column) {
       column.fixed = !column.fixed;
@@ -659,7 +798,12 @@ export default {
         if (!this.$refs.elTable) return;
         this.$refs.elTable.doLayout();
         this.initColumnDrag();
-        this.updateCustomHorizontalScrollbar();
+        this.$nextTick(() => {
+          requestAnimationFrame(() => {
+            this.syncFixedDataRowHeights();
+            this.updateCustomHorizontalScrollbar();
+          });
+        });
       });
     }
   }
@@ -719,5 +863,12 @@ export default {
 
 ::v-deep tbody > .el-table__row > .el-table__cell {
   padding: 5px 0;
+}
+
+/* 行高由 syncFixedDataRowHeights 统一三表 tr 高度；单元格内容垂直居中 */
+::v-deep .el-table__body-wrapper .el-table__body td.el-table__cell,
+::v-deep .el-table__fixed .el-table__fixed-body-wrapper td.el-table__cell,
+::v-deep .el-table__fixed-right .el-table__fixed-body-wrapper td.el-table__cell {
+  vertical-align: middle;
 }
 </style>
