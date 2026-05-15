@@ -16,7 +16,7 @@
 
 1. 进入项目设置 → 项目信息 → 基本信息
 2. 修改项目名称、描述或上传项目图标
-3. 点击【保存】按钮完成修改
+3. 点击「保存」按钮完成修改
 
 ![基本信息](../../../../../images/user-guide/current-project/project-setting/project-setting-base-info.png)
 

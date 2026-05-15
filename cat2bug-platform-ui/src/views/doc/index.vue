@@ -892,6 +892,45 @@ export default {
       // 第一级前不要有 /，用 / 连接面包屑
       return breadcrumbs.join(' / ')
     },
+    /** 将「当前文档路径 + 相对链接」解析为 docs 树中的标准 path（处理 ../、./） */
+    resolveDocRelativePath(currentDoc, relativePath) {
+      const rel = (relativePath || '').replace(/^\.\//, '')
+      const dir = currentDoc && currentDoc.includes('/')
+        ? currentDoc.substring(0, currentDoc.lastIndexOf('/'))
+        : ''
+      const segments = []
+      if (dir) {
+        segments.push(...dir.split('/').filter(Boolean))
+      }
+      segments.push(...rel.split('/').filter(Boolean))
+      const out = []
+      for (const s of segments) {
+        if (s === '..') {
+          if (out.length) out.pop()
+        } else if (s !== '.' && s !== '') {
+          out.push(s)
+        }
+      }
+      return out.join('/')
+    },
+    /** 仅根据 path 在 docs 树中还原面包屑（用于 Markdown 内链跳转，无 Tree 节点上下文时） */
+    buildBreadcrumbByPath(docPath) {
+      const findTrail = (nodes, targetPath, trail = []) => {
+        for (const node of nodes) {
+          const next = [...trail, node.label]
+          if (node.path === targetPath) {
+            return next
+          }
+          if (node.children && node.children.length) {
+            const hit = findTrail(node.children, targetPath, next)
+            if (hit) return hit
+          }
+        }
+        return null
+      }
+      const labels = findTrail(this.docs, docPath)
+      return labels ? labels.join(' / ') : ''
+    },
     async loadDoc(docPath, addToHistory = true) {
       try {
         const urlPath = `/docs/${docPath}`
@@ -920,6 +959,11 @@ export default {
 
         this.renderedContent = html
         this.currentDoc = docPath
+
+        const crumb = this.buildBreadcrumbByPath(docPath)
+        if (crumb) {
+          this.currentDocTitle = crumb
+        }
 
         // 设置左侧目录树的当前激活节点，并展开其父节点
         this.$nextTick(() => {
@@ -1115,16 +1159,12 @@ export default {
             // 解析链接路径和锚点
             const [path, hash] = href.split('#')
 
-            // 计算完整路径
+            // 计算完整路径（解析 ./、../，与侧栏 path 一致）
             let fullPath = path
-            if (path.startsWith('./')) {
-              // 相对于当前文档的路径
-              const currentDir = this.currentDoc.substring(0, this.currentDoc.lastIndexOf('/'))
-              fullPath = currentDir ? `${currentDir}/${path.substring(2)}` : path.substring(2)
-            } else if (!path.startsWith('/')) {
-              // 相对路径，需要基于当前文档目录
-              const currentDir = this.currentDoc.substring(0, this.currentDoc.lastIndexOf('/'))
-              fullPath = currentDir ? `${currentDir}/${path}` : path
+            if (path.startsWith('/')) {
+              fullPath = path.replace(/^\/?docs\//, '')
+            } else {
+              fullPath = this.resolveDocRelativePath(this.currentDoc, path)
             }
 
             // 将当前文档添加到历史记录

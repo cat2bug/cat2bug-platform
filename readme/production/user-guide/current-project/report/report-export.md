@@ -57,7 +57,7 @@
 
 #### 2. 点击导出按钮
 
-点击报告详情页右上角的【导出】图标按钮。
+点击报告详情页右上角的「导出」图标按钮。
 
 ![报告导出](../../../images/user-guide/current-project/report/report_export.png)
 

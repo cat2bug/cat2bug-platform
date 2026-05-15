@@ -20,7 +20,7 @@
 
 ### 2. 点击导出
 
-点击缺陷列表右上角的【导出缺陷】按钮导出文件。
+点击缺陷列表右上角的「导出缺陷」按钮导出文件。
 
 ![导出缺陷](../../../images/user-guide/current-project/defect/defect-export.png)
 

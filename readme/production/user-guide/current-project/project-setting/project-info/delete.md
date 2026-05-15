@@ -5,9 +5,9 @@
 ## 操作步骤
 
 1. 进入项目设置 → 项目信息 → 删除项目
-2. 点击【删除项目】按钮
+2. 点击「删除项目」按钮
 3. 在确认对话框中输入当前用户的密码进行二次确认
-4. 点击【确定】按钮完成删除
+4. 点击「确定」按钮完成删除
 
 ![删除项目](../../../../../images/user-guide/current-project/project-setting/project-setting-delete.png)
 

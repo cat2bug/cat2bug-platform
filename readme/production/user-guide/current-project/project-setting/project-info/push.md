@@ -18,7 +18,7 @@
 
 1. 进入项目设置 → 项目信息 → 同步到云端
 2. 输入从云端项目获取的同步密钥
-3. 点击【同步】按钮
+3. 点击「同步」按钮
 4. 等待同步完成
 
 ![同步到云端](../../../../../images/user-guide/current-project/project-setting/project-setting-sync.png)

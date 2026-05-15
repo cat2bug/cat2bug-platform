@@ -13,7 +13,7 @@
 
 ### 1. 进入模版列表
 
-在报告管理页面，点击【生成报告】按钮，下拉显示模版列表页面。
+在报告管理页面，点击「生成报告」按钮，下拉显示模版列表页面。
 
 ![模版列表](../../../images/user-guide/current-project/report/report-template-list.png)
 

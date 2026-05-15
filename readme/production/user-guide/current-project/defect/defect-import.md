@@ -13,7 +13,7 @@
 
 ### 1. 下载导入模板
 
-在缺陷列表页面，点击【导入缺陷】按钮，在弹出的对话框中点击【下载模板】。
+在缺陷列表页面，点击「导入缺陷」按钮，在弹出的对话框中点击「下载模板」。
 
 ![导入缺陷按钮](../../../images/user-guide/current-project/defect/defect-import-button.png)
 
@@ -38,13 +38,13 @@
 
 ### 3. 上传文件
 
-点击【选择文件】按钮，选择填写好的 Excel 文件。
+点击「选择文件」按钮，选择填写好的 Excel 文件。
 
 ![点击上传](../../../images/user-guide/current-project/defect/defect-import-upload.png)
 
 ### 4. 确认导入
 
-确认无误后，点击【确定】按钮完成导入。
+确认无误后，点击「确定」按钮完成导入。
 
 ## 导入规则
 

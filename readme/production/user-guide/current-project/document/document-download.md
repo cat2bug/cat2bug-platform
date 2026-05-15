@@ -5,7 +5,7 @@
 ## 操作步骤
 
 1. 在文档列表中找到要下载的文档
-2. 点击右侧操作栏的【下载】按钮
+2. 点击右侧操作栏的「下载」按钮
 3. 文档将自动下载到浏览器默认下载目录
 
 ![下载文档](../../../../../../images/user-guide/current-project/document/document-downlaod.png)
