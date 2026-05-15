@@ -134,7 +134,7 @@ export default {
           this.title = this.$i18n.t('module.modify');
         });
       } else {
-        this.title = this.$i18n.t('module.add');
+        this.title = this.$i18n.t('module.new');
         this.form.modulePid = modulePid;
         this.visible = true;
       }

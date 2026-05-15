@@ -30,7 +30,7 @@
             size="small"
             @click="handleAdd"
             v-hasPermi="['system:module:add']"
-          >{{ $t('module.create') }}</el-button>
+          >{{ $t('module.new') }}</el-button>
       </div>
     </div>
     <el-table
@@ -183,12 +183,12 @@ export default {
         click : this.toggleExpandAll
       },{
         id: 'moduleExpandAll',
-        name: 'module.create',
+        name: 'module.new',
         visible: true,
         plain: true,
         type: 'primary',
         icon: 'add-tab',
-        prompt: 'module.create',
+        prompt: 'module.new',
         permissions: ['system:module:add'],
         click : this.handleAdd
       }]);

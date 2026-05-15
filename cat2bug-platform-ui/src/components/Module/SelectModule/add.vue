@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-button v-show="!formVisible" type="text" icon="el-icon-plus" class="select-module-add-full select-module-add-button" @click="formVisible=!formVisible">{{$t('module.create')}}</el-button>
+    <el-button v-show="!formVisible" type="text" icon="el-icon-plus" class="select-module-add-full select-module-add-button" @click="formVisible=!formVisible">{{$t('module.new')}}</el-button>
     <el-form v-show="formVisible"
              ref="form"
              :model="form"
