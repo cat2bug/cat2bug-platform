@@ -38,7 +38,7 @@
             size="mini"
             @click="handleAdd"
             v-hasPermi="['ai:account:add']"
-          >{{ $t('project.ai.create') }}</el-button>
+          >{{ $t('project.ai.new-account') }}</el-button>
         </el-col>
 <!--        <el-col :span="1.5">-->
 <!--          <el-button-->
@@ -116,7 +116,7 @@
       @pagination="getList"
     />
 
-    <!-- 添加或修改OpenAI账号对话框 -->
+    <!-- 新建或修改 OpenAI 账号对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="100px">
         <el-form-item :label="$t('project.ai.account-name')" prop="accountName">
@@ -259,7 +259,7 @@ export default {
     handleAdd() {
       this.reset();
       this.open = true;
-      this.title = "添加OpenAI账号";
+      this.title = this.$t("project.ai.new-account");
     },
     /** 测试 OpenAI 接口 */
     handleTest(row) {

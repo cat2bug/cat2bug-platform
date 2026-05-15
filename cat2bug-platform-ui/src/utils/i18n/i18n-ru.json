@@ -325,7 +325,7 @@
   "project.ai-manager-describe":"Управление конфигурацией функций больших моделей в проекте",
   "project.ai-model-manager":"Модель Ollama",
   "project.ai-account-manager":"Управление учетными записями OpenAI",
-  "project.ai.create":"Создать учетную запись OpenAI",
+  "project.ai.new-account":"Новая учётная запись OpenAI",
   "project.ai.account-name":"Название учетной записи",
   "project.ai.url":"Адрес сервиса ИИ",
   "project.ai.model-name":"Название модели",

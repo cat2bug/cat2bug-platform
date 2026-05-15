@@ -325,7 +325,7 @@
   "project.ai-manager-describe": "Configuration management related to the use of large model functionality in the project",
   "project.ai-model-manager": "Ollama Model",
   "project.ai-account-manager": "OpenAI Account",
-  "project.ai.create": "Create OpenAI",
+  "project.ai.new-account": "New OpenAI Account",
   "project.ai.account-name": "Account Name",
   "project.ai.url": "AI Url",
   "project.ai.model-name": "Model Name",

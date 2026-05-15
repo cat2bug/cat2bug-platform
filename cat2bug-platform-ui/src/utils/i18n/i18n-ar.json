@@ -324,7 +324,7 @@
   "project.ai-manager-describe":"إدارة الإعدادات المتعلقة باستخدام وظائف النماذج الكبيرة في المشروع",
   "project.ai-model-manager":"نموذج Ollama",
   "project.ai-account-manager":"إدارة حسابات OpenAI",
-  "project.ai.create":"إنشاء حساب OpenAI",
+  "project.ai.new-account":"حساب OpenAI جديد",
   "project.ai.account-name":"اسم الحساب",
   "project.ai.url":"عنوان خدمة الذكاء الاصطناعي",
   "project.ai.model-name":"اسم النموذج",

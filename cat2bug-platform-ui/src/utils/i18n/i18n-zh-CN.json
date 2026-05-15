@@ -325,7 +325,7 @@
   "project.ai-manager-describe": "项目中运用大模型功能的相关配置管理",
   "project.ai-model-manager": "Ollama模型",
   "project.ai-account-manager": "OpenAI账号管理",
-  "project.ai.create": "创建OpenAI账号",
+  "project.ai.new-account": "新建OpenAI账号",
   "project.ai.account-name": "账号名称",
   "project.ai.url": "AI服务地址",
   "project.ai.model-name": "模型名称",
