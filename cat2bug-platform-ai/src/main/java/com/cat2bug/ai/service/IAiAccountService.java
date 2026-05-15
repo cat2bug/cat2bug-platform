@@ -58,4 +58,12 @@ public interface IAiAccountService
      * @return 结果
      */
     public int deleteAiAccountByAccountId(Long accountId);
+
+    /**
+     * 使用账号配置发起最小对话请求，验证 OpenAI 兼容接口是否可用
+     *
+     * @param accountId 账号主键
+     * @return 成功时的提示文案
+     */
+    public String testOpenAiConnection(Long accountId);
 }

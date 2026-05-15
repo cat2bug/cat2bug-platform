@@ -54,6 +54,16 @@ public class SysAiAccountController extends BaseController
     }
 
     /**
+     * 连通性测试：使用账号存储的地址、密钥与模型发起最小对话请求
+     */
+    @PreAuthorize("@ss.hasPermi('ai:account:edit')")
+    @PostMapping("/test/{accountId}")
+    public AjaxResult testConnection(@PathVariable("accountId") Long accountId)
+    {
+        return success(aiAccountService.testOpenAiConnection(accountId));
+    }
+
+    /**
      * 获取OpenAI账号详细信息
      */
     @PreAuthorize("@ss.hasPermi('ai:account:query')")

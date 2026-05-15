@@ -42,3 +42,12 @@ export function delAccount(accountId) {
     method: 'delete'
   })
 }
+
+// 测试 OpenAI 兼容接口连通性
+export function testAccount(accountId) {
+  return request({
+    url: '/system/ai/account/test/' + accountId,
+    method: 'post',
+    silentError: true
+  })
+}

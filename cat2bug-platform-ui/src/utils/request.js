@@ -96,8 +96,11 @@ service.interceptors.response.use(res => {
     } else if (code > 10000) {
       return Promise.reject(res.data)
     } else if (code === 500) {
-      Message({ message: msg, type: 'error' })
-      return Promise.reject(new Error(msg))
+      const silent = res.config.silentError === true
+      if (!silent) {
+        Message({ message: msg, type: 'error' })
+      }
+      return silent ? Promise.reject(res.data) : Promise.reject(new Error(msg))
     } else if (code === 601) {
       Message({ message: msg, type: 'warning' })
       return Promise.reject('error')
@@ -118,8 +121,11 @@ service.interceptors.response.use(res => {
     } else if (message.includes("Request failed with status code")) {
       message = i18n.t('system.interface') + ' ' + message.substr(message.length - 3) + ' ' + i18n.t('exception');
     }
-    Message({ message: message, type: 'error', duration: 5 * 1000 })
-    return Promise.reject(error)
+    const silent = error.config && error.config.silentError === true
+    if (!silent) {
+      Message({ message: message, type: 'error', duration: 5 * 1000 })
+    }
+    return Promise.reject(silent ? { msg: message } : error)
   }
 )
 

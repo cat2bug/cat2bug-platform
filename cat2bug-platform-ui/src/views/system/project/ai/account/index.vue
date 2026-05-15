@@ -80,9 +80,16 @@
       <el-table-column :label="$t('project.ai.url')" align="center" prop="aiUrl" />
       <el-table-column :label="$t('project.ai.model-name')" align="center" prop="modelName" width="200" />
       <el-table-column :label="$t('project.ai.max-token')" align="center" prop="maxCompletionTokens" width="100" />
-      <el-table-column :label="$t('project.ai.app-key')" align="center" prop="apiKey" width="300"/>
-      <el-table-column :label="$t('operate')" align="center" class-name="small-padding fixed-width" width="150">
+      <el-table-column :label="$t('operate')" align="center" class-name="small-padding fixed-width" width="220">
         <template slot-scope="scope">
+          <el-button
+            size="mini"
+            type="text"
+            icon="el-icon-video-play"
+            :loading="scope.row._testing === true"
+            @click="handleTest(scope.row)"
+            v-hasPermi="['ai:account:edit']"
+          >{{ $t('project.ai.test') }}</el-button>
           <el-button
             size="mini"
             type="text"
@@ -137,7 +144,7 @@
 </template>
 
 <script>
-import { listAccount, getAccount, delAccount, addAccount, updateAccount } from "@/api/ai/AIAccount";
+import { listAccount, getAccount, delAccount, addAccount, updateAccount, testAccount } from "@/api/ai/AIAccount";
 
 export default {
   name: "Account",
@@ -253,6 +260,35 @@ export default {
       this.reset();
       this.open = true;
       this.title = "添加OpenAI账号";
+    },
+    /** 测试 OpenAI 接口 */
+    handleTest(row) {
+      this.$set(row, "_testing", true);
+      const showTestFail = (detail) => {
+        const name =
+          row.accountName && String(row.accountName).trim()
+            ? row.accountName
+            : String(this.$t("project.ai.test-account-id", { id: row.accountId }));
+        this.$modal.msgError(
+          String(this.$t("project.ai.test-failed-msg", { name, detail }))
+        );
+      };
+      testAccount(row.accountId)
+        .then((response) => {
+          this.$modal.msgSuccess(response.msg || this.$t("project.ai.test-success"));
+        })
+        .catch((err) => {
+          const detail =
+            err && err.msg
+              ? err.msg
+              : err && err.message
+                ? err.message
+                : String(this.$t("project.ai.test-failed-unknown"));
+          showTestFail(detail);
+        })
+        .finally(() => {
+          this.$set(row, "_testing", false);
+        });
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
