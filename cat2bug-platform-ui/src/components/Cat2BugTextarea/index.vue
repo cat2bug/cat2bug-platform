@@ -215,7 +215,10 @@ export default {
     flex-direction: row;
     justify-content: flex-end;
     align-items: center;
-    gap:2px;
+    gap: 0;
+    /* 与 ProjectAiModelSelect 组合条 hover：同色、同圆角、同高度感 */
+    $tools-icon-hover-bg: #f0f7ff;
+    $tools-icon-radius: 3px;
     .text-length, .el-button {
       height: 24px;
       background: #FFFFFF;
@@ -225,17 +228,22 @@ export default {
       padding-right: 4px;
       color: #909399;
       font-size: 12px;
-      border-radius: 3px;
+      border-radius: $tools-icon-radius;
       text-align: center;
       line-height: 24px;
     }
+    /* 水平留白左右对称（略窄于原先左侧 8px） */
+    $tools-icon-pad-h: 4px;
     .el-button {
-      padding: 0px 4px;
+      padding: 0 $tools-icon-pad-h;
       margin: 0px;
       line-height: 12px;
+      border-radius: $tools-icon-radius;
+      transition: background-color 0.2s ease;
     }
-    .el-button:hover {
-      background-color: #EBEEF5;
+    .el-button:hover,
+    .el-button:focus {
+      background-color: $tools-icon-hover-bg !important;
     }
   }
 }

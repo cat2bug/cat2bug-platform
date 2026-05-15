@@ -48,16 +48,6 @@
           <span v-else>{{ fileSizeUnit(scope.row.size) }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('ai.business-model')" align="center" width="150">
-        <template slot-scope="scope">
-          <el-radio v-model="modelOption.businessModule" :label="scope.row.name" @input="handleUpdateProjectModule">&nbsp;</el-radio>
-        </template>
-      </el-table-column>
-      <el-table-column :label="$t('ai.image-model')" align="center" width="150">
-      <template slot-scope="scope">
-        <el-radio v-model="modelOption.imageModule"  :label="scope.row.name" @input="handleUpdateProjectModule">&nbsp;</el-radio>
-      </template>
-    </el-table-column>
       <el-table-column :label="$t('operate')" align="center" class-name="small-padding fixed-width" width="100">
         <template slot-scope="scope">
           <el-button
@@ -93,7 +83,6 @@ import {
   downloadModel,
   delModel,
   defaultListAiModelList,
-  updateProjectModelOption
 } from "@/api/system/ai";
 const AI_MODEL_SEARCH_LIST = 'ai_model_search_list';
 const AI_MODEL_PULL_CACHE = 'ai_model_pull_cache';
@@ -109,10 +98,6 @@ export default {
       searchModelSet: [],
       tableKey: new Date().getTime(),
       topicId: null,
-      modelOption: {
-        businessModule:'',
-        imageModule:''
-      },
       // 遮罩层
       loading: true,
       // 选中数组
@@ -133,8 +118,6 @@ export default {
       queryParams: {
         pageNum: 1,
         pageSize: 10,
-        businessModule: null,
-        imageModule: null,
         projectId: null,
         createById: null,
       },
@@ -314,12 +297,6 @@ export default {
           m.size = m.size||0;
           m.layer = null;
 
-          if(m.businessModule) {
-            this.modelOption.businessModule = m.businessModule;
-          }
-          if(m.imageModule) {
-            this.modelOption.imageModule = m.imageModule;
-          }
           return m;
         });
         let emptyModels = rows.filter(m=>m.state==AI_MODEL_EMPTY_STATE);
@@ -342,8 +319,6 @@ export default {
     reset() {
       this.form = {
         aiId: null,
-        businessModule: null,
-        imageModule: null,
         projectId: null,
         createTime: null,
         createById: null,
@@ -452,12 +427,6 @@ export default {
             ...this.aiList
           ];
         }
-      });
-    },
-    handleUpdateProjectModule(name) {
-      this.modelOption.projectId = this.getProjectId();
-      updateProjectModelOption(this.modelOption).then(res=>{
-        this.$message.success(this.$i18n.t('ai.set-model-success').toString());
       });
     }
   }

@@ -7,17 +7,15 @@ import com.cat2bug.common.core.domain.AjaxResult;
 import com.cat2bug.common.core.domain.entity.SysDefect;
 import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.common.core.domain.type.SysDefectTypeEnum;
-import com.cat2bug.system.domain.SysAiModuleConfig;
+import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.system.domain.SysUserConfig;
 import com.cat2bug.system.domain.SysVersion;
-import com.cat2bug.system.service.ISysAiModuleConfigService;
 import com.cat2bug.system.service.ISysModuleService;
 import com.cat2bug.system.service.ISysUserConfigService;
 import com.cat2bug.system.service.ISysUserProjectService;
 import com.cat2bug.system.service.impl.SysDefectServiceImpl;
+import com.cat2bug.web.service.AiInferenceModelResolver;
 import com.cat2bug.web.vo.*;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -39,9 +37,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/ai/defect")
 public class AiDefectController extends BaseController {
-    private final static Logger log = LogManager.getLogger(AiDefectController.class);
-    private final static String SERVICE_TYPE_OPEN_ID = "openai";
-    private final static String SERVICE_TYPE_OLLAMA = "ollama";
+    private final static String SERVICE_TYPE_OPEN_ID = AiInferenceModelResolver.SERVICE_OPENAI;
     @Autowired(required = false)
     private Map<String, IAiService> aiServiceMap;
     @Autowired
@@ -53,7 +49,37 @@ public class AiDefectController extends BaseController {
     @Autowired
     private SysDefectServiceImpl sysDefectService;
     @Autowired
-    private ISysAiModuleConfigService sysAiModuleConfigService;
+    private AiInferenceModelResolver aiInferenceModelResolver;
+
+    private AjaxResult guardAi(AiDescribe describe) {
+        if (describe == null || describe.getProjectId() == null) {
+            return error("项目 ID 不能为空");
+        }
+        String st = aiInferenceModelResolver.normalizeServiceType(describe.getServiceType());
+        IAiService aiService = aiServiceMap != null ? aiServiceMap.get(st) : null;
+        if (aiService == null) {
+            return error("当前环境未启用对应的 AI 服务：" + st);
+        }
+        String moduleKey = SERVICE_TYPE_OPEN_ID.equals(st)
+                ? aiInferenceModelResolver.resolveOpenAiAccountId(describe.getModelId(), describe.getProjectId())
+                : aiInferenceModelResolver.resolveOllamaModelName(describe.getModelId());
+        if (StringUtils.isBlank(moduleKey)) {
+            return error("未找到可用的 AI 模型，请在描述框旁选择模型，或先在项目中配置 Ollama / OpenAI 账号。");
+        }
+        return null;
+    }
+
+    private IAiService aiServiceFor(AiDescribe describe) {
+        String st = aiInferenceModelResolver.normalizeServiceType(describe.getServiceType());
+        return aiServiceMap.get(st);
+    }
+
+    private String moduleKeyFor(AiDescribe describe) {
+        String st = aiInferenceModelResolver.normalizeServiceType(describe.getServiceType());
+        return SERVICE_TYPE_OPEN_ID.equals(st)
+                ? aiInferenceModelResolver.resolveOpenAiAccountId(describe.getModelId(), describe.getProjectId())
+                : aiInferenceModelResolver.resolveOllamaModelName(describe.getModelId());
+    }
 
     /**
      * 根据描述自动生产缺陷对象
@@ -63,10 +89,14 @@ public class AiDefectController extends BaseController {
     @PreAuthorize("@ss.hasPermi('system:defect:add')")
     @PostMapping()
     public AjaxResult auto(@RequestBody AiDescribe describe) throws Exception {
-        IAiService aiService = aiServiceMap.get(SERVICE_TYPE_OLLAMA);
-        SysAiModuleConfig sysAiModuleConfig = sysAiModuleConfigService.selectSysAiModuleConfigByProjectId(describe.getProjectId());
+        AjaxResult bad = guardAi(describe);
+        if (bad != null) {
+            return bad;
+        }
+        IAiService aiService = aiServiceFor(describe);
+        String moduleKey = moduleKeyFor(describe);
         String prompt = String.format("请根据( %s )的描述，生成一个核心思想的标题,标题只能有中英文或数字,不要有其他任何符号或字符，且最多128个字符",describe);
-        AiDefectTitle title = aiService.generate(sysAiModuleConfig.getBusinessModule(),prompt,false, null, AiDefectTitle.class);
+        AiDefectTitle title = aiService.generate(moduleKey,prompt,false, null, AiDefectTitle.class);
         SysDefect defect = new SysDefect();
         defect.setDefectName(title.getTitle());
         defect.setDefectDescribe(describe.getDescribe());
@@ -79,18 +109,26 @@ public class AiDefectController extends BaseController {
     @PreAuthorize("@ss.hasPermi('system:defect:add')")
     @PostMapping("/title")
     public AjaxResult makeTitle(@RequestBody AiDescribe describe) throws Exception {
-        IAiService aiService = aiServiceMap.get(SERVICE_TYPE_OLLAMA);
-        SysAiModuleConfig sysAiModuleConfig = sysAiModuleConfigService.selectSysAiModuleConfigByProjectId(describe.getProjectId());
+        AjaxResult bad = guardAi(describe);
+        if (bad != null) {
+            return bad;
+        }
+        IAiService aiService = aiServiceFor(describe);
+        String moduleKey = moduleKeyFor(describe);
         String prompt = String.format("请根据( %s )的描述，生成一个标题,标题只能有中英文或数字,不要有其他任何符号或字符",describe);
-        AiDefectTitle title = aiService.generate(sysAiModuleConfig.getBusinessModule(),prompt,false, null, AiDefectTitle.class);
+        AiDefectTitle title = aiService.generate(moduleKey,prompt,false, null, AiDefectTitle.class);
         return success(title);
     }
 
     @PreAuthorize("@ss.hasPermi('system:defect:add')")
     @PostMapping("/module")
     public AjaxResult makeModule(@RequestBody AiDescribe describe) throws Exception {
-        IAiService aiService = aiServiceMap.get(SERVICE_TYPE_OLLAMA);
-        SysAiModuleConfig sysAiModuleConfig = sysAiModuleConfigService.selectSysAiModuleConfigByProjectId(describe.getProjectId());
+        AjaxResult bad = guardAi(describe);
+        if (bad != null) {
+            return bad;
+        }
+        IAiService aiService = aiServiceFor(describe);
+        String moduleKey = moduleKeyFor(describe);
         SysUserConfig userConfig = sysUserConfigService.selectSysUserConfigByUserId(getUserId());
         List<Map<String, Object>> modules = sysModuleService.selectSysModulePathList(userConfig.getCurrentProjectId()).stream().map(m->{
             Map<String,Object> module = new HashMap<>();
@@ -102,26 +140,34 @@ public class AiDefectController extends BaseController {
             return success();
         }
         String prompt = String.format("请根据JSON( %s )数组中的数据，以及描述的信息( %s )，选择一个最符合的moduleId",JSON.toJSONString(modules),describe);
-        AiDefectModule module = aiService.generate(sysAiModuleConfig.getBusinessModule(),prompt,false, null, AiDefectModule.class);
+        AiDefectModule module = aiService.generate(moduleKey,prompt,false, null, AiDefectModule.class);
         return success(module);
     }
 
     @PreAuthorize("@ss.hasPermi('system:defect:add')")
     @PostMapping("/type")
     public AjaxResult makeType(@RequestBody AiDescribe describe) throws Exception {
-        IAiService aiService = aiServiceMap.get(SERVICE_TYPE_OLLAMA);
-        SysAiModuleConfig sysAiModuleConfig = sysAiModuleConfigService.selectSysAiModuleConfigByProjectId(describe.getProjectId());
+        AjaxResult bad = guardAi(describe);
+        if (bad != null) {
+            return bad;
+        }
+        IAiService aiService = aiServiceFor(describe);
+        String moduleKey = moduleKeyFor(describe);
         List<String> types = Arrays.stream(SysDefectTypeEnum.values()).map(t->t.name()).collect(Collectors.toList());
         String prompt = String.format("请根据JSON( %s )数组中的数据，以及描述的信息( %s )，选择一个最符合的类型type，一般选择BUG的概率不较大",JSON.toJSONString(types),describe);
-        AiDefectType type = aiService.generate(sysAiModuleConfig.getBusinessModule(),prompt,false, null, AiDefectType.class);
+        AiDefectType type = aiService.generate(moduleKey,prompt,false, null, AiDefectType.class);
         return success(type);
     }
 
     @PreAuthorize("@ss.hasPermi('system:defect:add')")
     @PostMapping("/member")
     public AjaxResult makeMember(@RequestBody AiDescribe describe) throws Exception {
-        IAiService aiService = aiServiceMap.get(SERVICE_TYPE_OLLAMA);
-        SysAiModuleConfig sysAiModuleConfig = sysAiModuleConfigService.selectSysAiModuleConfigByProjectId(describe.getProjectId());
+        AjaxResult bad = guardAi(describe);
+        if (bad != null) {
+            return bad;
+        }
+        IAiService aiService = aiServiceFor(describe);
+        String moduleKey = moduleKeyFor(describe);
         SysUserConfig userConfig = sysUserConfigService.selectSysUserConfigByUserId(getUserId());
         List<Map<String, Object>> members = sysUserProjectService.selectSysUserListByProjectId(userConfig.getCurrentProjectId(),new SysUser()).stream().map(m->{
             Map<String,Object> member = new HashMap<>();
@@ -130,22 +176,26 @@ public class AiDefectController extends BaseController {
             return member;
         }).collect(Collectors.toList());
         String prompt = String.format("请根据JSON( %s )数组中的成员数据，以及描述的信息( %s )，选择一个最符合的成员memberId",JSON.toJSONString(members),describe);
-        AiDefectMember member = aiService.generate(sysAiModuleConfig.getBusinessModule(),prompt,false, null, AiDefectMember.class);
+        AiDefectMember member = aiService.generate(moduleKey,prompt,false, null, AiDefectMember.class);
         return success(member);
     }
 
     @PreAuthorize("@ss.hasPermi('system:defect:add')")
     @PostMapping("/version")
     public AjaxResult makeVersion(@RequestBody AiDescribe describe) throws Exception {
-        IAiService aiService = aiServiceMap.get(SERVICE_TYPE_OLLAMA);
-        SysAiModuleConfig sysAiModuleConfig = sysAiModuleConfigService.selectSysAiModuleConfigByProjectId(describe.getProjectId());
+        AjaxResult bad = guardAi(describe);
+        if (bad != null) {
+            return bad;
+        }
+        IAiService aiService = aiServiceFor(describe);
+        String moduleKey = moduleKeyFor(describe);
         SysUserConfig userConfig = sysUserConfigService.selectSysUserConfigByUserId(getUserId());
         List<SysVersion> versions = sysDefectService.selectVersionList(userConfig.getCurrentProjectId());
         if(versions==null || versions.size()==0) {
             return success(new AiDefectVersion("1.0.0"));
         } else {
             String prompt = String.format("请根据JSON( %s )数组中的历史版本，给我一个最新的version,最新的createTime如果超过两周了新建一个version", JSON.toJSONString(versions));
-            AiDefectVersion version = aiService.generate(sysAiModuleConfig.getBusinessModule(), prompt, false, null, AiDefectVersion.class);
+            AiDefectVersion version = aiService.generate(moduleKey, prompt, false, null, AiDefectVersion.class);
             return success(version);
         }
     }

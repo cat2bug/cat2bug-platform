@@ -99,9 +99,9 @@ public class OllamaAiServieImpl implements IAiService {
 
     @PostConstruct
     public void init() {
-        // 对没有的模型进行下载
+        // 对没有的模型进行下载（仅默认业务模型；图像模型列已从产品中移除，不在此自动拉取）
         Set<String> storeModules = this.getModuleList(OllamaModuleListItem.class).stream().map(item->item.getName()).collect(Collectors.toSet());
-        Arrays.asList(defaultBusinessModel,defaultImageModel).forEach(m->{
+        Arrays.asList(defaultBusinessModel).forEach(m->{
             if(StringUtils.isNotBlank(m) && storeModules.contains(m)==false) {
                 log.info("开始下载模型：{}",m);
                 pullModule(m,true);

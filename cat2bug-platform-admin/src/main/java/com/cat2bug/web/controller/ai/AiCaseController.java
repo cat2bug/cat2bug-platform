@@ -1,25 +1,16 @@
 package com.cat2bug.web.controller.ai;
 
-import com.alibaba.fastjson.JSON;
 import com.cat2bug.ai.service.IAiService;
 import com.cat2bug.ai.utils.PromptUtils;
 import com.cat2bug.common.core.controller.BaseController;
 import com.cat2bug.common.core.domain.AjaxResult;
-import com.cat2bug.common.utils.StringUtils;
-import com.cat2bug.common.core.domain.entity.SysDefect;
-import com.cat2bug.system.domain.SysAiModuleConfig;
-import com.cat2bug.system.domain.SysCaseStep;
-import com.cat2bug.system.service.ISysAiModuleConfigService;
+import com.cat2bug.web.service.AiInferenceModelResolver;
 import com.cat2bug.web.vo.AiCaseList;
-import com.cat2bug.web.vo.AiPrompt;
 import com.cat2bug.web.vo.AiSysPrompt;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -30,15 +21,14 @@ import java.util.Map;
 @RestController
 @RequestMapping("/ai/case")
 public class AiCaseController extends BaseController {
-    private final static Logger log = LogManager.getLogger(AiCaseController.class);
 
-    private final static String SERVICE_TYPE_OPEN_ID = "openai";
-    private final static String SERVICE_TYPE_OLLAMA = "ollama";
+    private final static String SERVICE_TYPE_OPEN_ID = AiInferenceModelResolver.SERVICE_OPENAI;
+    private final static String SERVICE_TYPE_OLLAMA = AiInferenceModelResolver.SERVICE_OLLAMA;
     @Autowired(required = false)
     private Map<String, IAiService> aiServiceMap;
 
     @Autowired
-    private ISysAiModuleConfigService sysAiModuleConfigService;
+    private AiInferenceModelResolver aiInferenceModelResolver;
     /**
      * 查询测试用例列表
      */
@@ -53,11 +43,9 @@ public class AiCaseController extends BaseController {
                 cases = aiService.generate(prompt.getModelId(), json,false, prompt.getContext(), AiCaseList.class);
                 break;
             case SERVICE_TYPE_OLLAMA:
-                SysAiModuleConfig sysAiModuleConfig = sysAiModuleConfigService.selectSysAiModuleConfigByProjectId(prompt.getProjectId());
-                String ollamaModule = StringUtils.isNotBlank(prompt.getModelId())
-                        ? prompt.getModelId()
-                        : (sysAiModuleConfig != null ? sysAiModuleConfig.getBusinessModule() : null);
+                String ollamaModule = aiInferenceModelResolver.resolveOllamaModelName(prompt.getModelId());
                 cases = aiService.generate(ollamaModule, json,false, prompt.getContext(), AiCaseList.class);
+                break;
         }
         return success(cases);
     }

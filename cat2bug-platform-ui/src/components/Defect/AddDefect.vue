@@ -52,70 +52,90 @@
             </el-form-item>
           </el-col>
         </el-row>
-        <el-col :span="12">
-          <el-form-item :label="$t('handle-by')" prop="handleBy">
-            <select-project-member v-model="form.handleBy" :project-id="projectId"  />
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item :label="$t('version')" prop="moduleVersion">
-            <el-input v-model="form.moduleVersion" :placeholder="$t('defect.enter-version')" maxlength="128" style="max-width: 300px;" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item :label="$t('module')" prop="moduleId">
-            <select-module v-model="form.moduleId" :project-id="projectId" @input="moduleChangeHandle"/>
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item :label="$t('plan-time')" prop="planEndTime">
-            <el-date-picker
-              v-model="planTimeRange"
-              type="datetimerange"
-              :range-separator="$t('time-to')"
-              :start-placeholder="$t('plan-start-time')"
-              :end-placeholder="$t('plan-end-time')"
-              value-format="yyyy-MM-dd HH:mm:ss"
-              :placeholder="$t('defect.please-select-end-time')">
-            </el-date-picker>
-          </el-form-item>
-        </el-col>
-        <el-col :span="24">
-        <el-form-item :label="$t('case')" prop="caseId">
-          <select-case ref="selectCase" v-model="form.caseId" :module-id="form.moduleId" :step-index="form.caseStepId" @step-change="stepChangeHandle" />
-        </el-form-item>
-        </el-col>
-        <el-col :span="24">
-          <el-form-item :label="$t('describe')" prop="defectDescribe">
-            <cat2-bug-textarea
-              ref="cat2bugTextarea"
-              :name="$t('describe').toString()"
-              :placeholder="$t('defect.enter-markdown-describe').toString()"
-              :tools = "describeTools"
-              v-model="form.defectDescribe"
-              maxlength="65536"
-              rows="8"
-              show-word-limit
-              show-tools
-            >
-              <template v-slot:tools>
-                <el-tooltip class="item" effect="dark" :content="$t('defect.ai-filling-in')" placement="top">
-                  <el-button :handle="aiButtonLoading?'true':'false'" class="cat2-bug-textarea-button" type="text" @click="createDefectByAiHandle"><svg-icon icon-class="robot"></svg-icon><span v-show="aiButtonLoading">分析中...</span></el-button>
-                </el-tooltip>
-              </template>
-            </cat2-bug-textarea>
-          </el-form-item>
-        </el-col>
-        <el-col :span="24">
-          <el-form-item :label="$t('image')" prop="imgUrls">
-            <image-upload v-model="form.imgUrls" :limit="9"></image-upload>
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item :label="$t('annex')" prop="annexUrls">
-            <file-upload v-model="form.annexUrls" :limit="9" :file-type="[]"/>
-          </el-form-item>
-        </el-col>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item :label="$t('handle-by')" prop="handleBy">
+              <select-project-member v-model="form.handleBy" :project-id="projectId"  />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item :label="$t('version')" prop="moduleVersion">
+              <el-input v-model="form.moduleVersion" :placeholder="$t('defect.enter-version')" maxlength="128" style="max-width: 300px;" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item :label="$t('module')" prop="moduleId">
+              <select-module v-model="form.moduleId" :project-id="projectId" @input="moduleChangeHandle"/>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item :label="$t('plan-time')" prop="planEndTime">
+              <el-date-picker
+                class="defect-plan-datetimerange"
+                v-model="planTimeRange"
+                type="datetimerange"
+                :range-separator="$t('time-to')"
+                :start-placeholder="$t('plan-start-time')"
+                :end-placeholder="$t('plan-end-time')"
+                value-format="yyyy-MM-dd HH:mm:ss"
+                :placeholder="$t('defect.please-select-end-time')">
+              </el-date-picker>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="24">
+            <el-form-item :label="$t('case')" prop="caseId">
+              <select-case ref="selectCase" v-model="form.caseId" :module-id="form.moduleId" :step-index="form.caseStepId" @step-change="stepChangeHandle" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="24">
+            <el-form-item :label="$t('describe')" prop="defectDescribe">
+              <cat2-bug-textarea
+                ref="cat2bugTextarea"
+                :name="$t('describe').toString()"
+                :placeholder="$t('defect.enter-markdown-describe').toString()"
+                :tools = "describeTools"
+                v-model="form.defectDescribe"
+                maxlength="65536"
+                rows="8"
+                show-word-limit
+                show-tools
+              >
+                <template v-slot:tools>
+                  <project-ai-model-select
+                    v-if="projectId"
+                    :project-id="projectId"
+                    v-model="defectAiModelId"
+                    embed-ai-button
+                    :ai-loading="aiButtonLoading"
+                    :ai-tooltip="$t('defect.ai-filling-in').toString()"
+                    @service-type="defectAiServiceType = $event"
+                    @ai-click="createDefectByAiHandle"
+                  />
+                </template>
+              </cat2-bug-textarea>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="24">
+            <el-form-item :label="$t('image')" prop="imgUrls">
+              <image-upload v-model="form.imgUrls" :limit="9"></image-upload>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item :label="$t('annex')" prop="annexUrls">
+              <file-upload v-model="form.annexUrls" :limit="9" :file-type="[]"/>
+            </el-form-item>
+          </el-col>
+        </el-row>
   <!--      <el-form-item label="测试用例id" prop="caseId">-->
   <!--        <el-input v-model="form.caseId" placeholder="请输入测试用例id" />-->
   <!--      </el-form-item>-->
@@ -146,6 +166,7 @@ import SelectModule from "@/components/Module/SelectModule"
 import ImageUpload from "@/components/ImageUpload";
 import SelectCase from "@/components/Case/SelectCase";
 import Cat2BugTextarea from "@/components/Cat2BugTextarea";
+import ProjectAiModelSelect from "@/components/Ai/ProjectAiModelSelect.vue";
 import {upload} from "@/api/common/upload";
 import {
   makeDefect,
@@ -165,7 +186,7 @@ const FORM_CACHE_KEY = 'defect-add-form-cache';
 export default {
   name: "AddDefect",
   dicts: ['defect_level'],
-  components: { ImageUpload, SelectProjectMember, SelectModule,SelectCase,Cat2BugTextarea },
+  components: { ImageUpload, SelectProjectMember, SelectModule,SelectCase,Cat2BugTextarea, ProjectAiModelSelect },
   data() {
     return {
       // 是否缓存缺陷表单
@@ -174,6 +195,8 @@ export default {
       planTimeRange:[],
       // AI按钮加载是否显示
       aiButtonLoading: false,
+      defectAiModelId: null,
+      defectAiServiceType: 'ollama',
       // 显示窗口
       visible: false,
       config: {},
@@ -307,6 +330,8 @@ export default {
     // 表单重置
     reset(data) {
       this.planTimeRange=[];
+      this.defectAiModelId = null;
+      this.defectAiServiceType = 'ollama';
       data = data || {};
       this.form = {
         defectId: null,
@@ -399,11 +424,17 @@ export default {
         this.$message.error(this.$i18n.t('defect.describe-cannot-empty').toString());
         return;
       }
+      if(!this.defectAiModelId) {
+        this.$message.error(this.$i18n.t('case.model-content-not-empty').toString());
+        return;
+      }
       this.aiButtonLoading = true;
       let makeTitle,makeModule,makeType,makeMember,makeVersion;
       const params = {
         projectId: this.projectId,
-        describe: this.form.defectDescribe
+        describe: this.form.defectDescribe,
+        modelId: this.defectAiModelId != null ? String(this.defectAiModelId) : null,
+        serviceType: this.defectAiServiceType || 'ollama'
       }
       if(!this.form.defectName) {
         makeTitle=makeDefectTitle(params).then(res => {
@@ -530,6 +561,13 @@ export default {
     }
     .el-form-item--medium .el-form-item__content {
       line-height: 35px !important;
+    }
+    /* Element 主题里 datetimerange 默认 400px，在 el-col span=12 时会撑出抽屉 */
+    .defect-plan-datetimerange.el-date-editor--datetimerange.el-input__inner {
+      width: 100% !important;
+      max-width: 100%;
+      min-width: 0 !important;
+      box-sizing: border-box;
     }
   }
 </style>

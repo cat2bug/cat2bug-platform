@@ -54,6 +54,7 @@
           <el-col :span="12" class="selectTime">
             <el-form-item :label="$t('plan-time')" prop="planEndTime">
               <el-date-picker
+                class="defect-plan-datetimerange"
                 v-model="planTimeRange"
                 type="datetimerange"
                 :range-separator="$t('time-to')"
@@ -81,17 +82,16 @@
             show-tools
           >
             <template v-slot:tools>
-              <el-tooltip class="item" effect="dark" :content="$t('defect.ai-filling-in')" placement="top">
-                <el-button
-                  :handle="aiButtonLoading ? 'true' : 'false'"
-                  class="cat2-bug-textarea-button"
-                  type="text"
-                  @click="createDefectByAiHandle"
-                >
-                  <svg-icon icon-class="robot" />
-                  <span v-show="aiButtonLoading">分析中...</span>
-                </el-button>
-              </el-tooltip>
+              <project-ai-model-select
+                v-if="projectId"
+                :project-id="projectId"
+                v-model="defectAiModelId"
+                embed-ai-button
+                :ai-loading="aiButtonLoading"
+                :ai-tooltip="$t('defect.ai-filling-in').toString()"
+                @service-type="defectAiServiceType = $event"
+                @ai-click="createDefectByAiHandle"
+              />
             </template>
           </cat2-bug-textarea>
         </el-form-item>
@@ -117,6 +117,7 @@ import SelectModule from "@/components/Module/SelectModule"
 import ImageUpload from "@/components/ImageUpload";
 import SelectCase from "@/components/Case/SelectCase";
 import Cat2BugTextarea from "@/components/Cat2BugTextarea";
+import ProjectAiModelSelect from "@/components/Ai/ProjectAiModelSelect.vue";
 import {
   makeDefectMember,
   makeDefectModule,
@@ -129,11 +130,13 @@ import {strFormat} from "@/utils";
 export default {
   name: "EditDefect",
   dicts: ['defect_level'],
-  components: { ImageUpload, SelectProjectMember, SelectModule, SelectCase, Cat2BugTextarea },
+  components: { ImageUpload, SelectProjectMember, SelectModule, SelectCase, Cat2BugTextarea, ProjectAiModelSelect },
   data() {
     return {
       describeTools: [],
       aiButtonLoading: false,
+      defectAiModelId: null,
+      defectAiServiceType: 'ollama',
       // 计划时间范围
       planTimeRange:[],
       // 标题
@@ -222,6 +225,8 @@ export default {
     // 表单重置
     reset() {
       this.planTimeRange = [];
+      this.defectAiModelId = null;
+      this.defectAiServiceType = 'ollama';
       this.form = {
         defectId: null,
         defectType: null,
@@ -283,6 +288,10 @@ export default {
         this.$message.error(this.$i18n.t("defect.describe-cannot-empty").toString());
         return;
       }
+      if (!this.defectAiModelId) {
+        this.$message.error(this.$i18n.t("case.model-content-not-empty").toString());
+        return;
+      }
       this.aiButtonLoading = true;
       let makeTitle;
       let makeModule;
@@ -292,6 +301,8 @@ export default {
       const params = {
         projectId: this.projectId,
         describe: this.form.defectDescribe,
+        modelId: this.defectAiModelId != null ? String(this.defectAiModelId) : null,
+        serviceType: this.defectAiServiceType || "ollama",
       };
       if (!this.form.defectName) {
         makeTitle = makeDefectTitle(params).then((res) => {
@@ -380,8 +391,11 @@ export default {
   text-align: right;
 }
 
-.selectTime .el-date-editor--datetimerange.el-input__inner{
-  width: 100%;
+.selectTime .defect-plan-datetimerange.el-date-editor--datetimerange.el-input__inner {
+  width: 100% !important;
+  max-width: 100%;
+  min-width: 0 !important;
+  box-sizing: border-box;
 }
 
 .cat2-bug-textarea-button {

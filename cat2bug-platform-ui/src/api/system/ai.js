@@ -9,6 +9,15 @@ export function listAi(query) {
   })
 }
 
+/** 项目内 AI 模型选项：已下载 Ollama + OpenAI 账号（分组下拉用） */
+export function projectAiModelOptions(projectId) {
+  return request({
+    url: '/system/ai/project-model-options',
+    method: 'get',
+    params: { projectId }
+  })
+}
+
 // 查询AI默认模型列表
 export function defaultListAiModelList() {
   return request({

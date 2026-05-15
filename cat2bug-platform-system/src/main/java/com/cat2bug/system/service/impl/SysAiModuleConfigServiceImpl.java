@@ -4,7 +4,6 @@ import java.util.List;
 import com.cat2bug.common.utils.DateUtils;
 import com.cat2bug.common.utils.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import com.cat2bug.system.mapper.SysAiModuleConfigMapper;
 import com.cat2bug.system.domain.SysAiModuleConfig;
@@ -19,12 +18,6 @@ import com.cat2bug.system.service.ISysAiModuleConfigService;
 @Service
 public class SysAiModuleConfigServiceImpl implements ISysAiModuleConfigService 
 {
-    @Value("${cat2bug.ai.default-business-model}")
-    private String defaultBusinessModel;
-
-    @Value("${cat2bug.ai.default-image-model}")
-    private String defaultImageModel;
-
     @Autowired
     private SysAiModuleConfigMapper sysAiModuleConfigMapper;
 
@@ -48,15 +41,7 @@ public class SysAiModuleConfigServiceImpl implements ISysAiModuleConfigService
      */
     @Override
     public SysAiModuleConfig selectSysAiModuleConfigByProjectId(Long projectId) {
-        SysAiModuleConfig sysAiModuleConfig = sysAiModuleConfigMapper.selectSysAiModuleConfigByProjectId(projectId);
-        if(sysAiModuleConfig==null) {
-            // 如果数据库里没有模型配置，就用默认配置
-            sysAiModuleConfig = new SysAiModuleConfig();
-            sysAiModuleConfig.setProjectId(projectId);
-            sysAiModuleConfig.setBusinessModule(this.defaultBusinessModel);
-            sysAiModuleConfig.setImageModule(this.defaultImageModel);
-        }
-        return sysAiModuleConfig;
+        return sysAiModuleConfigMapper.selectSysAiModuleConfigByProjectId(projectId);
     }
 
     /**
@@ -101,11 +86,9 @@ public class SysAiModuleConfigServiceImpl implements ISysAiModuleConfigService
             sysAiModuleConfig.setUpdateById(SecurityUtils.getUserId());
             return sysAiModuleConfigMapper.insertSysAiModuleConfig(sysAiModuleConfig);
         } else {
-            oldSysAiModuleConfig.setBusinessModule(sysAiModuleConfig.getBusinessModule());
-            oldSysAiModuleConfig.setImageModule(sysAiModuleConfig.getImageModule());
             oldSysAiModuleConfig.setUpdateById(SecurityUtils.getUserId());
             oldSysAiModuleConfig.setUpdateTime(DateUtils.getNowDate());
-            return sysAiModuleConfigMapper.updateSysAiModuleConfig(sysAiModuleConfig);
+            return sysAiModuleConfigMapper.updateSysAiModuleConfig(oldSysAiModuleConfig);
         }
 
     }

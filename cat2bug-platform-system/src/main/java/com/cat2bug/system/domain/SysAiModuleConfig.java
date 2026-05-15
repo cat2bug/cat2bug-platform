@@ -18,14 +18,6 @@ public class SysAiModuleConfig extends BaseEntity
     /** 模型ID */
     private Long aiId;
 
-    /** 业务模型名称 */
-    @Excel(name = "业务模型名称")
-    private String businessModule;
-
-    /** 图片识别模型名称 */
-    @Excel(name = "图片识别模型名称")
-    private String imageModule;
-
     /** 项目ID */
     @Excel(name = "项目ID")
     private Long projectId;
@@ -44,24 +36,6 @@ public class SysAiModuleConfig extends BaseEntity
     public Long getAiId() 
     {
         return aiId;
-    }
-    public void setBusinessModule(String businessModule) 
-    {
-        this.businessModule = businessModule;
-    }
-
-    public String getBusinessModule() 
-    {
-        return businessModule;
-    }
-    public void setImageModule(String imageModule) 
-    {
-        this.imageModule = imageModule;
-    }
-
-    public String getImageModule() 
-    {
-        return imageModule;
     }
     public void setProjectId(Long projectId) 
     {
@@ -95,8 +69,6 @@ public class SysAiModuleConfig extends BaseEntity
     public String toString() {
         return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)
             .append("aiId", getAiId())
-            .append("businessModule", getBusinessModule())
-            .append("imageModule", getImageModule())
             .append("projectId", getProjectId())
             .append("createTime", getCreateTime())
             .append("createById", getCreateById())

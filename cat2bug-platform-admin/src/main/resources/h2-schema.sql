@@ -2086,8 +2086,6 @@ COMMIT;
 DROP TABLE IF EXISTS `sys_ai_module_config`;
 CREATE TABLE `sys_ai_module_config` (
                                         `ai_id` bigint NOT NULL AUTO_INCREMENT COMMENT '模型ID',
-                                        `business_module` varchar(255) DEFAULT NULL COMMENT '业务模型名称',
-                                        `image_module` varchar(255) DEFAULT NULL COMMENT '图片识别模型名称',
                                         `project_id` bigint DEFAULT NULL COMMENT '项目ID',
                                         `create_time` datetime DEFAULT NULL COMMENT '创建时间',
                                         `create_by_id` bigint DEFAULT NULL COMMENT '创建人ID',

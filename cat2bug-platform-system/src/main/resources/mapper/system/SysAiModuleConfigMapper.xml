@@ -6,8 +6,6 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     
     <resultMap type="SysAiModuleConfig" id="SysAiModuleConfigResult">
         <result property="aiId"    column="ai_id"    />
-        <result property="businessModule"    column="business_module"    />
-        <result property="imageModule"    column="image_module"    />
         <result property="projectId"    column="project_id"    />
         <result property="createTime"    column="create_time"    />
         <result property="createById"    column="create_by_id"    />
@@ -16,14 +14,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </resultMap>
 
     <sql id="selectSysAiModuleConfigVo">
-        select ai_id, business_module, image_module, project_id, create_time, create_by_id, update_time, update_by_id from sys_ai_module_config
+        select ai_id, project_id, create_time, create_by_id, update_time, update_by_id from sys_ai_module_config
     </sql>
 
     <select id="selectSysAiModuleConfigList" parameterType="SysAiModuleConfig" resultMap="SysAiModuleConfigResult">
         <include refid="selectSysAiModuleConfigVo"/>
         <where>  
-            <if test="businessModule != null  and businessModule != ''"> and business_module = #{businessModule}</if>
-            <if test="imageModule != null  and imageModule != ''"> and image_module = #{imageModule}</if>
             <if test="projectId != null "> and project_id = #{projectId}</if>
             <if test="createById != null "> and create_by_id = #{createById}</if>
         </where>
@@ -43,8 +39,6 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         insert into sys_ai_module_config
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="aiId != null">ai_id,</if>
-            <if test="businessModule != null">business_module,</if>
-            <if test="imageModule != null">image_module,</if>
             <if test="projectId != null">project_id,</if>
             <if test="createTime != null">create_time,</if>
             <if test="createById != null">create_by_id,</if>
@@ -53,8 +47,6 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
          </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="aiId != null">#{aiId},</if>
-            <if test="businessModule != null">#{businessModule},</if>
-            <if test="imageModule != null">#{imageModule},</if>
             <if test="projectId != null">#{projectId},</if>
             <if test="createTime != null">#{createTime},</if>
             <if test="createById != null">#{createById},</if>
@@ -66,8 +58,6 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <update id="updateSysAiModuleConfig" parameterType="SysAiModuleConfig">
         update sys_ai_module_config
         <trim prefix="SET" suffixOverrides=",">
-            <if test="businessModule != null">business_module = #{businessModule},</if>
-            <if test="imageModule != null">image_module = #{imageModule},</if>
             <if test="projectId != null">project_id = #{projectId},</if>
             <if test="createTime != null">create_time = #{createTime},</if>
             <if test="createById != null">create_by_id = #{createById},</if>

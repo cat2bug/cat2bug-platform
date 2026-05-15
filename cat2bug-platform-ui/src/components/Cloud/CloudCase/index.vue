@@ -326,12 +326,10 @@ import {strFormat} from "@/utils";
 import {makeCaseList} from "@/api/ai/AiCase";
 import i18n from "@/utils/i18n/i18n";
 import {delCasePrompt, listCasePrompt} from "@/api/system/CasePrompt";
-import {listAccount} from "@/api/ai/AIAccount"
-import { listAi } from "@/api/system/ai";
+import { projectAiModelOptions } from "@/api/system/ai";
 
 const DEFAULT_ROW_COUNT_KEY = 'case_default_row_count';
 const CASE_AI_MODEL_ID_PREFIX = 'case_ai_model_id_';
-const AI_MODEL_COMPLETED_STATE = 'COMPLETED';
 const PATTERN = /\$\{\s*[0-9a-zA-z]{1,255}\s*\}/g;
 
 export default {
@@ -472,57 +470,50 @@ export default {
     },
     /** 合并加载 Ollama 已下载模型与 OpenAI 账号列表 */
     getOpenAIAccountList() {
-      const params = {
-        projectId: this.projectId,
-        pageNum: 1,
-        pageSize: 99999
-      };
-      Promise.all([
-        listAi(params).catch(() => ({ rows: [] })),
-        listAccount(params).catch(() => ({ rows: [] }))
-      ]).then(([aiRes, accRes]) => {
-        const rows = aiRes.rows || [];
-        const downloaded = rows.filter(m => m.state === AI_MODEL_COMPLETED_STATE);
-        this.aiAccountGroup[0].options = downloaded.map(m => ({
-          label: m.name,
-          key: m.name
-        }));
-        const bizRow = rows.find(m => m.businessModule);
-        const defaultBusinessModel = bizRow ? bizRow.businessModule : null;
+      projectAiModelOptions(this.projectId)
+        .then((res) => {
+          const data = res.data || {};
+          const ollama = data.ollama || [];
+          const openai = data.openai || [];
+          this.aiAccountGroup[0].options = ollama.map((m) => ({
+            label: m.label || m.key,
+            key: m.key
+          }));
+          this.aiAccountGroup[1].options = openai.map((a) => ({
+            label: a.label || a.key,
+            key: a.key
+          }));
 
-        this.aiAccountGroup[1].options = (accRes.rows || []).map(a => ({
-          label: a.accountName,
-          key: a.accountId
-        }));
+          const ollamaOpts = this.aiAccountGroup[0].options;
+          const openaiOpts = this.aiAccountGroup[1].options;
+          const allOpts = [...ollamaOpts, ...openaiOpts];
 
-        const ollamaOpts = this.aiAccountGroup[0].options;
-        const openaiOpts = this.aiAccountGroup[1].options;
-        const allOpts = [...ollamaOpts, ...openaiOpts];
+          const pickServerDefaultModelId = () => {
+            if (ollamaOpts.length > 0) {
+              return ollamaOpts[0].key;
+            }
+            if (openaiOpts.length > 0) {
+              return openaiOpts[0].key;
+            }
+            return null;
+          };
 
-        const pickServerDefaultModelId = () => {
-          if (defaultBusinessModel && ollamaOpts.some(o => this.caseAiModelKeyEquals(o.key, defaultBusinessModel))) {
-            return defaultBusinessModel;
+          const stored = this.getStoredCaseAiModelId();
+          const storedOpt = stored ? allOpts.find((o) => this.caseAiModelKeyEquals(o.key, stored)) : null;
+
+          if (storedOpt) {
+            this.prompt.modelId = storedOpt.key;
+          } else {
+            this.prompt.modelId = pickServerDefaultModelId();
           }
-          if (ollamaOpts.length > 0) {
-            return ollamaOpts[0].key;
-          }
-          if (openaiOpts.length > 0) {
-            return openaiOpts[0].key;
-          }
-          return null;
-        };
 
-        const stored = this.getStoredCaseAiModelId();
-        const storedOpt = stored ? allOpts.find(o => this.caseAiModelKeyEquals(o.key, stored)) : null;
-
-        if (storedOpt) {
-          this.prompt.modelId = storedOpt.key;
-        } else {
-          this.prompt.modelId = pickServerDefaultModelId();
-        }
-
-        this.aiAccountLoaded = true;
-      });
+          this.aiAccountLoaded = true;
+        })
+        .catch(() => {
+          this.aiAccountGroup[0].options = [];
+          this.aiAccountGroup[1].options = [];
+          this.aiAccountLoaded = true;
+        });
     },
     /** 设置要产出的默认行数 */
     setDefaultRowCount(row) {

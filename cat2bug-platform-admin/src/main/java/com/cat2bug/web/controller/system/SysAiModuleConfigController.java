@@ -1,5 +1,7 @@
 package com.cat2bug.web.controller.system;
 
+import com.cat2bug.ai.domain.AiAccount;
+import com.cat2bug.ai.service.IAiAccountService;
 import com.cat2bug.ai.service.IAiService;
 import com.cat2bug.ai.vo.AiModule;
 import com.cat2bug.ai.vo.AiModuleStateEnum;
@@ -38,7 +40,9 @@ public class SysAiModuleConfigController extends BaseController
     @Autowired
     private ISysAiModuleConfigService sysAiModuleConfigService;
 
-    private final static String SERVICE_TYPE_OPEN_ID = "openai";
+    @Autowired
+    private IAiAccountService aiAccountService;
+
     private final static String SERVICE_TYPE_OLLAMA = "ollama";
     @Autowired(required = false)
     private Map<String, IAiService> aiServiceMap;
@@ -48,13 +52,50 @@ public class SysAiModuleConfigController extends BaseController
      */
     private List<String> models;
     /**
-     * 配置项：默认使用的业务模型名
+     * 配置项：推荐拉取的默认业务模型名（仅用于列表中 EMPTY 占位，不再写入数据库列）
      */
     private String defaultBusinessModel;
+
     /**
-     * 配置项：默认使用的图片处理模型名
+     * 项目内 AI 推理可选模型：已下载 Ollama 模型 + OpenAI 账号（供用例/缺陷等下拉框使用）
      */
-    private String defaultImageModel;
+    @PreAuthorize("@ss.hasPermi('system:ai:list') || @ss.hasPermi('system:case:add') || @ss.hasPermi('system:defect:add')")
+    @GetMapping("/project-model-options")
+    public AjaxResult projectModelOptions(@RequestParam Long projectId)
+    {
+        IAiService aiService = aiServiceMap != null ? aiServiceMap.get(SERVICE_TYPE_OLLAMA) : null;
+        List<Map<String, Object>> ollamaOpts = new ArrayList<>();
+        if (aiService != null) {
+            List<AiModule> downloadedList = aiService.getModuleList(AiModule.class);
+            ollamaOpts = downloadedList.stream()
+                    .filter(m -> m != null && m.getState() == AiModuleStateEnum.COMPLETED && StringUtils.isNotBlank(m.getName()))
+                    .map(m -> {
+                        Map<String, Object> row = new LinkedHashMap<>();
+                        row.put("key", m.getName());
+                        row.put("label", m.getName());
+                        return row;
+                    })
+                    .collect(Collectors.toList());
+        }
+        AiAccount accQuery = new AiAccount();
+        accQuery.setProjectId(projectId);
+        List<AiAccount> accounts = aiAccountService != null ? aiAccountService.selectAiAccountList(accQuery) : Collections.emptyList();
+        List<Map<String, Object>> openaiOpts = accounts.stream()
+                .filter(a -> a != null && a.getAccountId() != null)
+                .map(a -> {
+                    Map<String, Object> row = new LinkedHashMap<>();
+                    String key = String.valueOf(a.getAccountId());
+                    row.put("key", key);
+                    row.put("label", StringUtils.isNotBlank(a.getAccountName()) ? a.getAccountName() : key);
+                    row.put("accountId", a.getAccountId());
+                    return row;
+                })
+                .collect(Collectors.toList());
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("ollama", ollamaOpts);
+        body.put("openai", openaiOpts);
+        return success(body);
+    }
 
     /**
      * 查询AI模型配置列表
@@ -64,7 +105,6 @@ public class SysAiModuleConfigController extends BaseController
     public TableDataInfo list(SysAiModuleConfig sysAiModuleConfig)
     {
         IAiService aiService = aiServiceMap.get(SERVICE_TYPE_OLLAMA);
-        SysAiModuleConfig config = sysAiModuleConfigService.selectSysAiModuleConfigByProjectId(sysAiModuleConfig.getProjectId());
         List<AiModule>  downloadedList = aiService.getModuleList(AiModule.class);
         List<Map<String, Object>> list = Stream.of(
                 downloadedList,
@@ -81,14 +121,6 @@ public class SysAiModuleConfigController extends BaseController
                     map.put("name",m.getName());
                     map.put("size",m.getSize());
                     map.put("state",m.getState());
-                    if(config!=null) {
-                        if(m.getName().equals(config.getBusinessModule())) {
-                            map.put("businessModule", config.getBusinessModule());
-                        }
-                        if(m.getName().equals(config.getImageModule())) {
-                            map.put("imageModule", config.getImageModule());
-                        }
-                    }
                     return map;
                 }).collect(Collectors.toList());
         return getDataTable(list);
@@ -181,10 +213,12 @@ public class SysAiModuleConfigController extends BaseController
     }
 
     /**
-     * 获取默认模型列表
+     * 获取默认模型列表（推荐下载的模型名）
      * @return
      */
     private List<String> getDefaultModelList() {
-        return Arrays.asList(defaultBusinessModel,defaultImageModel).stream().filter(m-> StringUtils.isNotBlank(m)).collect(Collectors.toList());
+        return StringUtils.isNotBlank(defaultBusinessModel)
+                ? Collections.singletonList(defaultBusinessModel)
+                : Collections.emptyList();
     }
 }
