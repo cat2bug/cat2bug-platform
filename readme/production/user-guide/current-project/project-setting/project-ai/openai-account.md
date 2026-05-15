@@ -1,4 +1,4 @@
-# OpenAI账号管理 [/system/project/ai/account](/system/project/ai/account)
+# OpenAI账号管理 [/project/openai](/project/openai)
 
 管理项目的OpenAI账号配置。
 

@@ -1,4 +1,4 @@
-# AI大模型 [/project/project-ai](/project/project-ai)
+# Ollama模型 [/project/ollama](/project/ollama)
 
 配置项目使用的AI大模型服务。系统集成了Ollama API，可以方便地管理和使用本地或远程的大语言模型。
 

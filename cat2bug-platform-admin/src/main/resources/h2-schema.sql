@@ -3970,7 +3970,7 @@ INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
                        , `component`, `query`, `is_frame`, `is_cache`, `menu_type`
                        , `visible`, `status`, `perms`, `icon`, `create_by`
                        , `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`)
-VALUES (2100, 'AI模型配置', 2013, 97, 'project-ai'
+VALUES (2100, 'AI模型配置', 2013, 97, 'ollama'
        , 'system/project/ai/index', NULL, 1, 0, 'C'
        , '1', '0', 'system:ai:list', '#', 'admin'
        , '2024-06-20 16:49:15', 'admin', '2024-06-20 16:53:20', 'AI模型配置菜单', NULL);
@@ -4194,7 +4194,7 @@ INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
                        , `component`, `query`, `is_frame`, `is_cache`, `menu_type`
                        , `visible`, `status`, `perms`, `icon`, `create_by`
                        , `create_time`, `update_by`, `update_time`, `remark`, `menu_name_i18n_key`)
-VALUES (2126, 'OpenAI账号', 2013, 1, 'system/project/ai/account'
+VALUES (2126, 'OpenAI账号', 2013, 1, 'openai'
        , 'system/project/ai/account/index', NULL, 1, 0, 'C'
        , '1', '0', 'ai:account:list', '#', 'admin'
        , '2025-12-28 14:57:42', 'admin', '2025-12-28 16:02:12', 'OpenAI账号菜单', NULL);

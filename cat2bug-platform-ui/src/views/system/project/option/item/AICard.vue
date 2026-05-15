@@ -7,8 +7,8 @@
         <span>{{$t('project.ai-manager-describe')}}</span>
       </div>
     </div>
-    <router-link to="project-ai" v-hasPermi="['system:ai:list']"><el-link>{{$t('project.ai-model-manager')}}</el-link></router-link>
-    <router-link to="system/project/ai/account" v-hasPermi="['ai:account:list']"><el-link>{{$t('project.ai-account-manager')}}</el-link></router-link>
+    <router-link to="ollama" v-hasPermi="['system:ai:list']"><el-link>{{$t('project.ai-model-manager')}}</el-link></router-link>
+    <router-link to="openai" v-hasPermi="['ai:account:list']"><el-link>{{$t('project.ai-account-manager')}}</el-link></router-link>
   </el-card>
 </template>
 
