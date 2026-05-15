@@ -52,6 +52,7 @@
 import MarkdownIt from 'markdown-it'
 import MarkdownItContainer from 'markdown-it-container'
 import MarkdownItAnchor from 'markdown-it-anchor'
+import { setHeader } from '@/utils/request'
 
 export default {
   name: 'DocViewer',
@@ -812,6 +813,12 @@ export default {
         this.$router.go(-1)
       }
     },
+    /** 与 axios 一致，为 fetch 附加 Token 等头信息（否则 /docs 会 401） */
+    docFetchHeaders(urlPath) {
+      const headers = {}
+      setHeader(urlPath, headers)
+      return headers
+    },
     initExpandedKeys() {
       // 收集所有一级目录的key（有children的节点）
       const keys = []
@@ -843,7 +850,8 @@ export default {
       // 预加载所有文档内容
       for (const path of allPaths) {
         try {
-          const response = await fetch(`/docs/${path}`)
+          const urlPath = `/docs/${path}`
+          const response = await fetch(urlPath, { headers: this.docFetchHeaders(urlPath) })
           if (response.ok) {
             const content = await response.text()
             this.docContents[path] = content
@@ -886,7 +894,8 @@ export default {
     },
     async loadDoc(docPath, addToHistory = true) {
       try {
-        const response = await fetch(`/docs/${docPath}`)
+        const urlPath = `/docs/${docPath}`
+        const response = await fetch(urlPath, { headers: this.docFetchHeaders(urlPath) })
         if (!response.ok) {
           throw new Error('文档加载失败')
         }

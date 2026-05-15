@@ -134,6 +134,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
                 .antMatchers("/login", "/**/login", "/**/bind", "/logout", "/register", "/captchaImage", "/version", "/system/defect/*/shard/**", "/websocket/**").permitAll()
                 // 静态资源，可匿名访问
                 .antMatchers(HttpMethod.GET, "/", "/index","/static/**","/*.html", "/**/*.html", "/**/*.css", "/**/*.js", "/profile/**").permitAll()
+                // 帮助文档内图片由 <img> 直接请求，无法带 Token；Markdown 仍走鉴权（前端 fetch 带头）
+                .antMatchers(HttpMethod.GET, "/docs/images/**").permitAll()
                 .antMatchers("doc.html", "/swagger-ui.html", "/swagger-ui/**", "/swagger-resources/**", "/webjars/**", "/*/api-docs", "/druid/**","/h2/**").permitAll()
                 // 所有过滤类中的匹配网址
                 .antMatchers(filterMatchers.toArray(new String[]{})).permitAll()
