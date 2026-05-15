@@ -184,13 +184,21 @@
           </div>
           <el-table ref="caseTable" :data="pageList" @row-click="handleUpdate" @selection-change="handleSelectionChange">
             <el-table-column type="selection" width="50" align="center" />
-            <el-table-column :label="$t('case')" align="center" >
+            <el-table-column :label="$t('case')" align="center" class-name="cloud-case-table-case-cell">
               <template slot-scope="scope">
                 <div class="case-info">
                   <div class="case-base">
-                    <div>
-                      <label>{{ $t('title') }}</label>
-                      <span>{{ scope.row.caseName }}</span>
+                    <div class="case-base-title-with-state">
+                      <div class="case-title-label-cell">
+                        <el-tag
+                          class="case-state-tag"
+                          :type="importStateType(scope.row)"
+                          size="mini"
+                          effect="plain"
+                        >{{ importStateName(scope.row) }}</el-tag>
+                        <label>{{ $t('title') }}</label>
+                      </div>
+                      <span class="case-title-name">{{ scope.row.caseName }}</span>
                     </div>
                     <div>
                       <label>{{ $t('module') }}</label>
@@ -202,11 +210,43 @@
                     </div>
                     <div>
                       <label>{{ $t('preconditions') }}</label>
-                      <span>{{ scope.row.casePreconditions }}</span>
+                      <div class="case-field-value-wrap">
+                        <el-tooltip
+                          v-if="scope.row.casePreconditions"
+                          effect="dark"
+                          placement="top"
+                          :open-delay="200"
+                          popper-class="case-cell-tooltip-popper"
+                          :content="String(scope.row.casePreconditions)"
+                        >
+                          <div class="case-field-clamp-shell">
+                            <div class="case-field-clamp-9">{{ scope.row.casePreconditions }}</div>
+                          </div>
+                        </el-tooltip>
+                        <div v-else class="case-field-clamp-shell">
+                          <div class="case-field-clamp-9">{{ scope.row.casePreconditions }}</div>
+                        </div>
+                      </div>
                     </div>
                     <div>
                       <label>{{ $t('expect') }}</label>
-                      <span>{{ scope.row.caseExpect }}</span>
+                      <div class="case-field-value-wrap">
+                        <el-tooltip
+                          v-if="scope.row.caseExpect"
+                          effect="dark"
+                          placement="top"
+                          :open-delay="200"
+                          popper-class="case-cell-tooltip-popper"
+                          :content="String(scope.row.caseExpect)"
+                        >
+                          <div class="case-field-clamp-shell">
+                            <div class="case-field-clamp-9">{{ scope.row.caseExpect }}</div>
+                          </div>
+                        </el-tooltip>
+                        <div v-else class="case-field-clamp-shell">
+                          <div class="case-field-clamp-9">{{ scope.row.caseExpect }}</div>
+                        </div>
+                      </div>
                     </div>
                     <div>
                       <label>{{ $t('step') }}</label>
@@ -216,33 +256,25 @@
                 </div>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('state')" align="center" prop="createTime" width="100">
-              <template slot-scope="scope">
-                <div class="case-state">
-                <el-tag :type="importStateType(scope.row)" size="mini" >{{ importStateName(scope.row) }}</el-tag>
-                <span>{{
-                    parseTime(scope.row.searchTime, '{h}:{i}:{s}')
-                  }}</span>
-                </div>
-              </template>
-            </el-table-column>
             <el-table-column :label="$t('operate')" align="center" class-name="small-padding fixed-width" width="120">
               <template slot-scope="scope">
-                <el-button
-                  size="mini"
-                  type="text"
-                  class="red"
-                  icon="el-icon-download"
-                  @click="handleImport($event,scope.row)"
-                  v-hasPermi="['system:case:import']"
-                >{{ $t('import') }}</el-button>
-                <el-button
-                  size="mini"
-                  type="text"
-                  class="red"
-                  icon="el-icon-delete"
-                  @click="handleDelete($event,scope.row)"
-                >{{ $t('delete') }}</el-button>
+                <div class="case-table-actions">
+                  <el-button
+                    size="mini"
+                    type="text"
+                    class="red"
+                    icon="el-icon-download"
+                    @click="handleImport($event,scope.row)"
+                    v-hasPermi="['system:case:import']"
+                  >{{ $t('import') }}</el-button>
+                  <el-button
+                    size="mini"
+                    type="text"
+                    class="red"
+                    icon="el-icon-delete"
+                    @click="handleDelete($event,scope.row)"
+                  >{{ $t('delete') }}</el-button>
+                </div>
               </template>
             </el-table-column>
           </el-table>
@@ -289,7 +321,6 @@ import AddCasePrompt from "@/components/Cloud/CloudCase/AddCasePrompt";
 import HandleCasePrompt from "@/components/Cloud/CloudCase/HandleCasePrompt";
 import { Multipane, MultipaneResizer } from 'vue-multipane';
 import Label from "@/components/Cat2BugStatistic/Components/Label";
-import {parseTime} from "@/utils/ruoyi"
 import {addCase, batchAddCase, updateCase} from "@/api/system/case";
 import {strFormat} from "@/utils";
 import {makeCaseList} from "@/api/ai/AiCase";
@@ -500,7 +531,6 @@ export default {
     getDefaultRowCount() {
       return this.$cache.local.get(DEFAULT_ROW_COUNT_KEY) || 5;
     },
-    parseTime,
     /** 初始化浮动菜单 */
     initFloatMenu() {
       this.$floatMenu.windowsInit(document.querySelector('.main-container'));
@@ -910,6 +940,12 @@ export default {
     width: 100%;
     white-space: pre;
   }
+  .case-cell-tooltip-popper {
+    max-width: 420px;
+    word-break: break-word;
+    line-height: 1.5;
+    white-space: pre-wrap;
+  }
 </style>
 <style lang="scss" scoped>
 .case {
@@ -1012,10 +1048,15 @@ export default {
     align-items: flex-start;
     .case-table {
       flex: 1;
-      min-width: 280px;
+      min-width: 450px;
       overflow-x: auto;
       .el-table, .case-table-tools {
         width: 100%;
+      }
+      ::v-deep .el-table td.cloud-case-table-case-cell .cell {
+        white-space: normal !important;
+        word-break: break-word;
+        text-align: left !important;
       }
       .case-table-tools {
         display: flex;
@@ -1041,6 +1082,7 @@ export default {
           display: inline-flex !important;
           align-items: center;
           justify-content: center;
+          box-sizing: border-box;
         }
       }
       .case-table-tools-pagination {
@@ -1053,15 +1095,18 @@ export default {
         }
       }
       @container case-table-tools (max-width: 520px) {
-        .case-table-batch-btn-label {
-          display: none;
+        /* Element：icon 为 i，默认插槽包在紧随的 span 里；隐藏该 span，避免只隐藏内层仍占位 */
+        .case-table-batch-btns ::v-deep .el-button.el-button--mini > span {
+          display: none !important;
         }
-        .case-table-batch-btns ::v-deep .el-button--mini {
-          padding-left: 8px;
-          padding-right: 8px;
+        .case-table-batch-btns ::v-deep .el-button.el-button--mini {
+          padding: 6px 0 !important;
+          min-width: 32px;
+          width: 32px;
+          justify-content: center !important;
         }
-        .case-table-batch-btns ::v-deep .el-button--mini > i[class^='el-icon-'],
-        .case-table-batch-btns ::v-deep .el-button--mini > [class*='el-icon-'] {
+        .case-table-batch-btns ::v-deep .el-button--mini i[class^='el-icon-'],
+        .case-table-batch-btns ::v-deep .el-button--mini [class*='el-icon-'] {
           margin-right: 0 !important;
           margin-left: 0 !important;
         }
@@ -1092,11 +1137,17 @@ export default {
 /* 不支持容器查询时：窄屏仍隐藏批量按钮文案，避免换行 */
 @supports not (container-type: inline-size) {
   @media (max-width: 900px) {
-    .case .case-table-tools .case-table-batch-btn-label {
-      display: none;
+    .case .case-table-tools .case-table-batch-btns ::v-deep .el-button.el-button--mini > span {
+      display: none !important;
     }
-    .case .case-table-tools .case-table-batch-btns ::v-deep .el-button--mini > i[class^='el-icon-'],
-    .case .case-table-tools .case-table-batch-btns ::v-deep .el-button--mini > [class*='el-icon-'] {
+    .case .case-table-tools .case-table-batch-btns ::v-deep .el-button.el-button--mini {
+      padding: 6px 0 !important;
+      min-width: 32px;
+      width: 32px;
+      justify-content: center !important;
+    }
+    .case .case-table-tools .case-table-batch-btns ::v-deep .el-button--mini i[class^='el-icon-'],
+    .case .case-table-tools .case-table-batch-btns ::v-deep .el-button--mini [class*='el-icon-'] {
       margin-right: 0 !important;
       margin-left: 0 !important;
     }
@@ -1122,6 +1173,54 @@ export default {
 }
 .case-info {
   .case-base {
+    .case-base-title-with-state {
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      min-width: 0;
+      .case-title-label-cell {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-end;
+        flex-wrap: nowrap;
+        gap: 6px;
+        flex-shrink: 0;
+        margin-right: 10px;
+        label {
+          margin-right: 0;
+          min-width: 80px;
+          text-align: right;
+        }
+        label:after {
+          content: ':';
+        }
+      }
+      .case-title-name {
+        flex: 1;
+        min-width: 0;
+        font-size: 14px;
+        line-height: 1.5;
+        color: #303133;
+        word-break: break-word;
+        text-align: left;
+      }
+      .case-state-tag {
+        flex-shrink: 0;
+        height: 18px;
+        line-height: 16px;
+        padding: 0 5px;
+        font-size: 10px;
+        border-radius: 2px;
+      }
+      .case-state-tag ::v-deep .el-tag__content {
+        font-size: 10px;
+        line-height: 1;
+      }
+      .case-state-tag.el-tag--plain {
+        background-color: #fff;
+      }
+    }
     > div {
       display: flex;
       flex-direction: row;
@@ -1133,19 +1232,57 @@ export default {
       label:after {
         content: ':';
       }
-      span {
+      > span {
         flex: 1;
         text-align: left;
+        min-width: 0;
       }
+    }
+    > div .case-field-value-wrap {
+      flex: 1;
+      min-width: 0;
+      min-height: 0;
+      text-align: left;
+      /* el-tooltip 根节点不要 overflow:hidden，否则会破坏子节点 line-clamp 的省略号 */
+      ::v-deep .el-tooltip {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100%;
+        vertical-align: top;
+      }
+    }
+    .case-field-clamp-shell {
+      display: block;
+      width: 100%;
+      min-width: 0;
+      max-width: 100%;
+    }
+    .case-field-clamp-9 {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 9;
+      line-clamp: 9;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+      line-height: 1.5em;
+      max-height: calc(1.5em * 9);
+      width: 100%;
+      box-sizing: border-box;
     }
   }
 }
-.case-state {
+.case-table-actions {
   display: flex;
   flex-direction: column;
+  align-items: center;
   justify-content: center;
-  > * {
-    margin-bottom: 5px;
+  gap: 2px;
+  ::v-deep .el-button--mini {
+    margin-left: 0 !important;
+    padding-top: 4px;
+    padding-bottom: 4px;
   }
 }
 .case-search-header {
