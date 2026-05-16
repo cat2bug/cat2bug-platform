@@ -129,7 +129,7 @@
             <el-table-column :label="$t('operate')" align="center" class-name="no-drag small-padding fixed-width" min-width="250" fixed="right">
               <template slot-scope="scope">
                 <div class="row">
-                  <defect-tools class="defect-row-tools" :is-text="true" :defect="scope.row" size="mini" :is-show-icon="true" @view="handleClickTableRow" @delete="refreshSearch" @update="refreshSearch" @log="refreshSearch"></defect-tools>
+                  <defect-tools class="defect-row-tools" :is-text="true" :defect="scope.row" size="mini" :is-show-icon="true" @view="handleClickTableRow" @delete="refreshSearch" @restore="refreshSearch" @update="refreshSearch" @log="refreshSearch"></defect-tools>
                 </div>
               </template>
             </el-table-column>

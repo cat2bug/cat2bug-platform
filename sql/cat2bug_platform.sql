@@ -777,6 +777,7 @@ CREATE TABLE `sys_defect` (
   `plan_end_time` datetime DEFAULT NULL COMMENT '计划完成时间',
   `extend_properties` json DEFAULT NULL COMMENT '扩展属性',
   `sponsor` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '发起人',
+  `del_flag` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT '0' COMMENT '删除标志（0存在 2删除）',
   PRIMARY KEY (`defect_id`),
   KEY `describe_name_` (`defect_name`(255)),
   KEY `defect_key` (`defect_key`(255)),

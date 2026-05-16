@@ -64,6 +64,9 @@
           size="medium"
         />
       </el-form-item>
+      <el-form-item :label="$t('defect.show-deleted')">
+        <el-switch v-model="form.config.params.delFlag" active-value="2" inactive-value="0" />
+      </el-form-item>
       <el-form-item>
         <el-button type="primary" @click="onCreateTab">{{$t('create')}}</el-button>
         <el-button @click="close">{{$t('cancel')}}</el-button>
@@ -129,7 +132,9 @@ export default {
         projectId: this.projectId,
         userId: this.memberId,
         config: {
-          params: {}
+          params: {
+            delFlag: '0'
+          }
         }
       }
       this.resetForm("form");

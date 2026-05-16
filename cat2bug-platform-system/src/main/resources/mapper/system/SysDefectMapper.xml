@@ -44,6 +44,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="planStartTime"    column="plan_start_time"    />
         <result property="planEndTime"    column="plan_end_time"    />
         <result property="sponsor"    column="sponsor"    />
+        <result property="delFlag"    column="del_flag"    />
     </resultMap>
 
     <resultMap type="SysVersion" id="SysVersionResult">
@@ -80,6 +81,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                     d.plan_start_time,
                     d.plan_end_time,
                     d.sponsor,
+                    d.del_flag,
                     un.user_infos AS handle_by_list,
                     cm.user_infos AS create_member,
                     cm.nick_name AS create_member_name,
@@ -192,6 +194,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         d.plan_start_time,
         d.plan_end_time,
         d.sponsor,
+        d.del_flag,
         (
         SELECT CONCAT('[', GROUP_CONCAT(
         CONCAT(
@@ -262,7 +265,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </sql>
 
     <select id="getProjectDefectMaxNum" resultType="Long">
-        select IFNULL(MAX(project_num),0) from sys_defect where project_id=#{projectId}
+        select IFNULL(MAX(project_num),0) from sys_defect where project_id=#{projectId} and del_flag = '0'
     </select>
 
     <select id="selectSysDefectList" resultMap="SysDefectResult">
@@ -375,6 +378,14 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                     </if>
                 )
             </if>
+            <choose>
+                <when test="defect.params != null and defect.params.delFlag != null and (defect.params.delFlag == '2' or defect.params.delFlag == 2)">
+                    and d.del_flag = '2'
+                </when>
+                <otherwise>
+                    and d.del_flag = '0'
+                </otherwise>
+            </choose>
         </where>
     </select>
     
@@ -384,7 +395,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </select>
 
     <select id="selectVersionList" resultMap="SysVersionResult">
-        select module_version as version, max(create_time) as create_time from sys_defect where module_version is not null and project_id=#{projectId} group by module_version
+        select module_version as version, max(create_time) as create_time from sys_defect where module_version is not null and project_id=#{projectId} and del_flag = '0' group by module_version
     </select>
 
     <insert id="insertSysDefect" parameterType="com.cat2bug.common.core.domain.entity.SysDefect" useGeneratedKeys="true" keyProperty="defectId">
@@ -519,18 +530,19 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="planEndTime != null">plan_end_time = #{planEndTime},</if>
             <if test="planEndTime == null and params != null and params.clearPlanEndTime != null">plan_end_time = null,</if>
             <if test="sponsor != null">sponsor = #{sponsor},</if>
+            <if test="delFlag != null and delFlag != ''">del_flag = #{delFlag},</if>
         </trim>
         where defect_id = #{defectId}
     </update>
 
-    <delete id="deleteSysDefectByDefectId" parameterType="Long">
-        delete from sys_defect where defect_id = #{defectId}
-    </delete>
+    <update id="deleteSysDefectByDefectId" parameterType="Long">
+        update sys_defect set del_flag = '2' where defect_id = #{defectId} and del_flag = '0'
+    </update>
 
-    <delete id="deleteSysDefectByDefectIds" parameterType="String">
-        delete from sys_defect where defect_id in 
+    <update id="deleteSysDefectByDefectIds" parameterType="String">
+        update sys_defect set del_flag = '2' where del_flag = '0' and defect_id in
         <foreach item="defectId" collection="array" open="(" separator="," close=")">
             #{defectId}
         </foreach>
-    </delete>
+    </update>
 </mapper>

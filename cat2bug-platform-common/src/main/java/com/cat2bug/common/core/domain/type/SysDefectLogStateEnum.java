@@ -24,4 +24,8 @@ public enum SysDefectLogStateEnum {
     UPDATE,
     /** 导入 */
     IMPORT,
+    /** 删除 */
+    DELETE,
+    /** 恢复 */
+    RESTORE,
 }

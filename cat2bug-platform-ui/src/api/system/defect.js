@@ -126,6 +126,14 @@ export function delDefect(defectId) {
   })
 }
 
+// 恢复已删除缺陷
+export function restoreDefect(defectId) {
+  return request({
+    url: '/system/defect/' + defectId + '/restore',
+    method: 'put'
+  })
+}
+
 // 修改用户缺陷
 export function updateUserDefect(defectId, data) {
   data.srcHost = `${window.location.protocol}//${window.location.host}`;

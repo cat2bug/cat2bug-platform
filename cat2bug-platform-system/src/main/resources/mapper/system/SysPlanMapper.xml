@@ -350,6 +350,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="defect.params.beginHandleTime != null and defect.params.beginHandleTime != '' and defect.params.endHandleTime != null and defect.params.endHandleTime != ''"> and d.handle_time between #{defect.params.beginHandleTime} and #{defect.params.endHandleTime}</if>
             <if test="defect.defectLevel != null  and defect.defectLevel != ''"> and d.defect_level = #{defect.defectLevel}</if>
             <if test="defect.params.caseLevel != null "> and c.case_level = #{defect.params.caseLevel}</if>
+            and d.del_flag = '0'
         </where>
     </select>
     

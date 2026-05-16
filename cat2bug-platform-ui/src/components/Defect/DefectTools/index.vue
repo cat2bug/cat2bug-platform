@@ -1,8 +1,8 @@
 <template>
   <div class="defect-tools">
     <slot name="left"></slot>
-    <share-card :params="defect" />
-    <star-switch v-model="defect.collect" @change="clickCollectHandle($event, defect, false)"></star-switch>
+    <share-card v-show="!isDeleted" :params="defect" />
+    <star-switch v-show="!isDeleted" v-model="defect.collect" @change="clickCollectHandle($event, defect, false)"></star-switch>
     <el-button v-show="assignVisible" :icon="isShowIcon?'el-icon-refresh':''" :size="size" :type="isText?'text':'info'" :class="isText?'orange':''" @click="assignHandle">{{$i18n.t('assign')}}</el-button>
     <el-button v-show="repairVisible" :icon="isShowIcon?'el-icon-document-checked':''" :size="size" :type="isText?'text':'primary'" :class="isText?'orange':''" @click="repairDialogHandle">{{$i18n.t('repair')}}</el-button>
     <el-button v-show="rejectVisible" :icon="isShowIcon?'el-icon-document-delete':''" :size="size" :type="isText?'text':'warning'" :class="isText?'orange':''" @click="rejectHandle">{{$i18n.t('reject')}}</el-button>
@@ -12,6 +12,7 @@
     <el-button v-show="viewVisible" :icon="isShowIcon?'el-icon-view':''" :size="size" :type="isText?'text':'warning'" @click="viewHandle">{{$i18n.t('view')}}</el-button>
     <el-button v-show="editVisible" :icon="isShowIcon?'el-icon-edit':''" :size="size" :type="isText?'text':'success'" :class="isText?'green':''" :plain="!isShowIcon" @click="editDialogHandle" >{{ $t('modify') }}</el-button>
     <el-button v-show="deleteVisible" :icon="isShowIcon?'el-icon-delete':''" :size="size" :type="isText?'text':'danger'" :class="isText?'red':''" :plain="!isShowIcon" @click="handleDelete">{{$i18n.t('delete')}}</el-button>
+    <el-button v-show="restoreVisible" :icon="isShowIcon?'el-icon-refresh-left':''" :size="size" :type="isText?'text':'warning'" :class="isText?'restore-orange':''" :plain="!isShowIcon" @click="handleRestore">{{$i18n.t('defect.restore')}}</el-button>
 
     <assign-dialog ref="assignDialog" :project-id="defect.projectId" :defect-id="defect.defectId" @log="logHandle" />
     <repair-dialog ref="repairDialog" :project-id="defect.projectId" :defect-id="defect.defectId" @log="logHandle" />
@@ -34,7 +35,7 @@ import OpenDialog from "@/components/Defect/DefectTools/OpenDialog";
 import EditDefectDialog from "@/components/Defect/EditDefectDialog";
 import StarSwitch from "@/components/StarSwitch";
 import ShareCard from "@/components/ShareCard";
-import {delDefect, updateUserDefect} from "@/api/system/defect";
+import {delDefect, restoreDefect, updateUserDefect} from "@/api/system/defect";
 import {checkPermi} from "@/utils/permission";
 import i18n from "@/utils/i18n/i18n";
 
@@ -82,9 +83,13 @@ export default {
     currentUserId: function() {
       return this.$store.state.user.id;
     },
+    isDeleted() {
+      const f = this.defect && this.defect.delFlag;
+      return f === '2' || f === 2;
+    },
     // 指派
     assignVisible: function () {
-      return !this.exclusions.includes('assign') && (this.defect.defectStateName!=CLOSE_STATE && this.defect.defectStateName!=RESOLVED_STATE && checkPermi(['system:defect:assign']) &&
+      return !this.isDeleted && !this.exclusions.includes('assign') && (this.defect.defectStateName!=CLOSE_STATE && this.defect.defectStateName!=RESOLVED_STATE && checkPermi(['system:defect:assign']) &&
         (
           (this.defect.createById && this.defect.createById == this.currentUserId) ||
           (this.defect.handleBy && this.defect.handleBy.indexOf(this.currentUserId)!==-1)
@@ -92,35 +97,38 @@ export default {
     },
     // 修复
     repairVisible: function () {
-      return !this.exclusions.includes('repair') && ((this.defect.defectStateName==PROCESSING_STATE || this.defect.defectStateName==REJECTED_STATE) && checkPermi(['system:defect:repair']) &&
+      return !this.isDeleted && !this.exclusions.includes('repair') && ((this.defect.defectStateName==PROCESSING_STATE || this.defect.defectStateName==REJECTED_STATE) && checkPermi(['system:defect:repair']) &&
         (this.defect.handleBy && this.defect.handleBy.indexOf(this.currentUserId)!==-1));
     },
     // 驳回
     rejectVisible: function () {
-      return !this.exclusions.includes('reject') && (this.defect.defectStateName==AUDIT_STATE && checkPermi(['system:defect:reject']) &&
+      return !this.isDeleted && !this.exclusions.includes('reject') && (this.defect.defectStateName==AUDIT_STATE && checkPermi(['system:defect:reject']) &&
         (this.defect.handleBy && this.defect.handleBy.indexOf(this.currentUserId)!==-1));
     },
     // 通过
     passVisible: function () {
-      return !this.exclusions.includes('pass') && (this.defect.defectStateName==AUDIT_STATE && checkPermi(['system:defect:pass']) &&
+      return !this.isDeleted && !this.exclusions.includes('pass') && (this.defect.defectStateName==AUDIT_STATE && checkPermi(['system:defect:pass']) &&
         (this.defect.handleBy && this.defect.handleBy.indexOf(this.currentUserId)!==-1));
     },
     // 关闭
     closeVisible: function () {
-      return !this.exclusions.includes('close') && (this.defect.defectStateName!=CLOSE_STATE && this.defect.defectStateName!=RESOLVED_STATE && checkPermi(['system:defect:close']));
+      return !this.isDeleted && !this.exclusions.includes('close') && (this.defect.defectStateName!=CLOSE_STATE && this.defect.defectStateName!=RESOLVED_STATE && checkPermi(['system:defect:close']));
     },
     // 开启
     openVisible: function () {
-      return !this.exclusions.includes('open') && (this.defect.defectStateName==CLOSE_STATE && checkPermi(['system:defect:open']));
+      return !this.isDeleted && !this.exclusions.includes('open') && (this.defect.defectStateName==CLOSE_STATE && checkPermi(['system:defect:open']));
     },
     deleteVisible: function () {
-      return !this.exclusions.includes('delete') && (this.defect.createById==this.currentUserId || checkPermi(['system:defect:remove']));
+      return !this.isDeleted && !this.exclusions.includes('delete') && (this.defect.createById==this.currentUserId || checkPermi(['system:defect:remove']));
     },
     editVisible: function () {
-      return !this.exclusions.includes('edit') && (this.defect.createById==this.currentUserId || checkPermi(['system:defect:edit']));
+      return !this.isDeleted && !this.exclusions.includes('edit') && (this.defect.createById==this.currentUserId || checkPermi(['system:defect:edit']));
     },
     viewVisible: function () {
       return !this.exclusions.includes('view') && (this.defect.createById==this.currentUserId || checkPermi(['system:defect:query']));
+    },
+    restoreVisible: function () {
+      return this.isDeleted && !this.exclusions.includes('restore') && (this.defect.createById==this.currentUserId || checkPermi(['system:defect:remove']));
     },
   },
   methods:{
@@ -180,6 +188,24 @@ export default {
         }
       });
     },
+    handleRestore(event) {
+      const defectId = this.defect.defectId;
+      this.$modal.confirm(
+        this.$i18n.t('defect.restore'),
+        this.$i18n.t('prompted').toString(),
+        {
+          confirmButtonText: i18n.t('defect.restore').toString(),
+          cancelButtonText: i18n.t('cancel').toString(),
+          type: 'warning'
+        }).then(function() {
+        return restoreDefect(defectId);
+      }).then(() => {
+        this.$emit('restore', this.defect);
+        this.$emit('log', this.defect);
+        this.$modal.msgSuccess(this.$i18n.t('defect.restore-success'));
+      }).catch(() => {});
+      if (event) event.stopPropagation();
+    },
     /** 删除按钮操作 */
     handleDelete(event) {
       const defectIds = this.defect.defectId;
@@ -225,5 +251,12 @@ export default {
   }
   .orange {
     color: #606266;
+  }
+  .restore-orange {
+    color: #ffba00;
+  }
+  .restore-orange:hover,
+  .restore-orange:focus {
+    color: #ffc933;
   }
 </style>

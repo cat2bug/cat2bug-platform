@@ -8,6 +8,7 @@ import com.cat2bug.common.core.domain.type.SysDefectTypeEnum;
 import com.cat2bug.common.utils.DateUtils;
 import com.cat2bug.common.utils.MessageUtils;
 import com.cat2bug.common.utils.SecurityUtils;
+import com.cat2bug.common.exception.ServiceException;
 import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.im.domain.IMUserConfig;
 import com.cat2bug.im.service.IIMUserConfigService;
@@ -266,6 +267,7 @@ public class SysDefectServiceImpl implements ISysDefectService
         sysDefect.setUpdateBy(SecurityUtils.getUsername());
         sysDefect.setCreateById(SecurityUtils.getUserId());
         sysDefect.setUpdateById(SecurityUtils.getUserId());
+        sysDefect.setDelFlag("0");
         long count = sysDefectMapper.getProjectDefectMaxNum(sysDefect.getProjectId(), SecurityUtils.getUserId());
         sysDefect.setProjectNum(count+1);
         Preconditions.checkState(sysDefectMapper.insertSysDefect(sysDefect)>0,MessageUtils.message("defect.insert_fail"));
@@ -323,12 +325,24 @@ public class SysDefectServiceImpl implements ISysDefectService
     @Transactional
     public int updateSysDefect(SysDefect sysDefect)
     {
+        if (sysDefect.getDefectId() != null && (sysDefect.getDelFlag() == null || !"0".equals(sysDefect.getDelFlag()))) {
+            this.ensureDefectActive(sysDefect.getDefectId());
+        }
         sysDefect.setUpdateTime(DateUtils.getNowDate());
         Long memberId = SecurityUtils.getUserId();
         sysDefect.setUpdateBy(String.valueOf(memberId));
         int ret = this.sysDefectMapper.updateSysDefect(sysDefect);
         Preconditions.checkState(ret>0, MessageUtils.message("defect.update_fail"));
         return ret;
+    }
+
+    private void ensureDefectActive(Long defectId) {
+        SysDefect existing = this.sysDefectMapper.selectSysDefectByDefectId(
+                defectId, SecurityUtils.getUserId(), DateUtils.getNowDate());
+        Preconditions.checkNotNull(existing, MessageUtils.message("defect.not_found"));
+        if ("2".equals(existing.getDelFlag())) {
+            throw new ServiceException(MessageUtils.message("defect.deleted_cannot_edit"));
+        }
     }
 
     /**
@@ -345,6 +359,9 @@ public class SysDefectServiceImpl implements ISysDefectService
         SysDefect oldDefect = this.sysDefectMapper.selectSysDefectByDefectId(
                 sysDefect.getDefectId(), memberId, DateUtils.getNowDate());
         Preconditions.checkNotNull(oldDefect, MessageUtils.message("defect.not_found"));
+        if ("2".equals(oldDefect.getDelFlag())) {
+            throw new ServiceException(MessageUtils.message("defect.deleted_cannot_edit"));
+        }
 
         int ret = this.updateSysDefect(sysDefect);
 
@@ -429,9 +446,16 @@ public class SysDefectServiceImpl implements ISysDefectService
      * @return 结果
      */
     @Override
+    @Transactional
     public int deleteSysDefectByDefectIds(Long[] defectIds)
     {
-        return sysDefectMapper.deleteSysDefectByDefectIds(defectIds);
+        int count = 0;
+        if (defectIds != null) {
+            for (Long defectId : defectIds) {
+                count += this.deleteSysDefectByDefectId(defectId);
+            }
+        }
+        return count;
     }
 
     /**
@@ -441,9 +465,41 @@ public class SysDefectServiceImpl implements ISysDefectService
      * @return 结果
      */
     @Override
+    @Transactional
     public int deleteSysDefectByDefectId(Long defectId)
     {
-        return sysDefectMapper.deleteSysDefectByDefectId(defectId);
+        SysDefect existing = sysDefectMapper.selectSysDefectByDefectId(
+                defectId, SecurityUtils.getUserId(), DateUtils.getNowDate());
+        Preconditions.checkNotNull(existing, MessageUtils.message("defect.not_found"));
+        if ("2".equals(existing.getDelFlag())) {
+            return 0;
+        }
+        int ret = sysDefectMapper.deleteSysDefectByDefectId(defectId);
+        if (ret > 0) {
+            this.inertLog(defectId, null, null, SysDefectLogStateEnum.DELETE);
+        }
+        return ret;
+    }
+
+    @Override
+    @Transactional
+    public int restoreSysDefectByDefectId(Long defectId)
+    {
+        SysDefect existing = sysDefectMapper.selectSysDefectByDefectId(
+                defectId, SecurityUtils.getUserId(), DateUtils.getNowDate());
+        Preconditions.checkNotNull(existing, MessageUtils.message("defect.not_found"));
+        Preconditions.checkState("2".equals(existing.getDelFlag()), MessageUtils.message("defect.not_deleted"));
+        SysDefect patch = new SysDefect();
+        patch.setDefectId(defectId);
+        patch.setDelFlag("0");
+        patch.setUpdateTime(DateUtils.getNowDate());
+        patch.setUpdateBy(SecurityUtils.getUsername());
+        patch.setUpdateById(SecurityUtils.getUserId());
+        int ret = sysDefectMapper.updateSysDefect(patch);
+        if (ret > 0) {
+            this.inertLog(defectId, null, null, SysDefectLogStateEnum.RESTORE);
+        }
+        return ret;
     }
 
     /**

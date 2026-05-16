@@ -8,6 +8,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <if test="memberId != null "> LEFT JOIN sys_user_defect ud ON ud.defect_id = d.defect_id</if>
         <where>
             d.project_id=#{projectId}
+            and d.del_flag = '0'
             <if test="memberId != null ">AND (ud.user_id = #{memberId} or d.create_by_id = #{memberId})</if>
         </where>
         GROUP BY d.defect_type
@@ -22,6 +23,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <if test="memberId != null "> LEFT JOIN sys_user_defect ud ON ud.defect_id = d.defect_id</if>
         <where>
             d.project_id=#{projectId}
+            and d.del_flag = '0'
             <if test="memberId != null ">AND (ud.user_id = #{memberId} or d.create_by_id = #{memberId})</if>
         </where>
         GROUP BY d.defect_state
@@ -38,6 +40,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         LEFT JOIN sys_module m ON m.module_id = d.module_id
         <where>
             d.project_id=#{projectId}
+            and d.del_flag = '0'
         </where>
         GROUP BY d.module_id) s
         ORDER BY s.f/s.a ASC, s.a DESC

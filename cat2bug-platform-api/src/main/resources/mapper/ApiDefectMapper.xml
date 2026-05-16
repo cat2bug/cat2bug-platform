@@ -128,7 +128,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </sql>
 
     <select id="getProjectDefectMaxNum" resultType="Long">
-        select IFNULL(MAX(project_num),0) from sys_defect where project_id=#{projectId}
+        select IFNULL(MAX(project_num),0) from sys_defect where project_id=#{projectId} and del_flag = '0'
     </select>
 
     <select id="selectApiDefectListByDefectName" resultMap="ApiDefectResult">
@@ -142,6 +142,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <include refid="selectApiDefectVo"/>
         <where>
             d.project_id=#{projectId}
+            and d.del_flag = '0'
             <if test="defect.defectNum != null "> and d.project_num = #{defect.defectNum}</if>
             <if test="defect.defectType != null "> and d.defect_type = #{defect.defectType, typeHandler=com.cat2bug.api.domain.handle.ApiDefectTypeEnumTypeHandler }</if>
             <if test="defect.defectName != null  and defect.defectName != ''"> and d.defect_name like concat('%', #{defect.defectName}, '%')</if>
@@ -175,6 +176,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         select defect_id from sys_defect
         where
             project_id = #{projectId}
+            and del_flag = '0'
         <if test="defectKey != null and defectKey !=''">
             and defect_key = #{defectKey}
         </if>

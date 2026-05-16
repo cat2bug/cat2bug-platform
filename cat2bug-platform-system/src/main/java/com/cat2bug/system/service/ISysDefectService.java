@@ -126,6 +126,14 @@ public interface ISysDefectService
     public int deleteSysDefectByDefectId(Long defectId);
 
     /**
+     * 恢复已软删除的缺陷
+     *
+     * @param defectId 缺陷主键
+     * @return 结果
+     */
+    public int restoreSysDefectByDefectId(Long defectId);
+
+    /**
      * 获取项目中的历史版本
      * @param projectId 项目ID
      * @return  版本集合

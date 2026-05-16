@@ -242,6 +242,17 @@ public class SysDefectController extends BaseController
     }
 
     /**
+     * 恢复已删除缺陷
+     */
+    @PreAuthorize("@ss.hasPermi('system:defect:remove')")
+    @Log(title = "缺陷", businessType = BusinessType.UPDATE)
+    @PutMapping("/{defectId}/restore")
+    public AjaxResult restore(@PathVariable Long defectId)
+    {
+        return toAjax(sysDefectService.restoreSysDefectByDefectId(defectId));
+    }
+
+    /**
      * 导出缺陷列表
      */
     @PreAuthorize("@ss.hasPermi('system:defect:add')")

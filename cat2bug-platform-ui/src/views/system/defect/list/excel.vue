@@ -364,6 +364,8 @@ export default {
       sheetRows: [],
       queryParams: this.query,
       syncing: false,
+      /** 已删行编辑提示节流（毫秒时间戳） */
+      _deletedDefectEditWarnAt: 0,
       /** 与 vue-excel-column 的 options 引用保持一致；字典/配置异步到达后再写入，避免 map 列一直用空表 */
       defectTypeSelectMap: {},
       defectLevelSelectMap: {},
@@ -995,6 +997,17 @@ export default {
       if (map && typeof map === "object") {
         Object.keys(map).forEach((k) => this.$set(target, k, map[k]));
       }
+    },
+    isDeletedDefectRow(row) {
+      if (!row) return false;
+      const f = row.delFlag;
+      return f === "2" || f === 2;
+    },
+    notifyDeletedDefectCannotEdit() {
+      const now = Date.now();
+      if (now - (this._deletedDefectEditWarnAt || 0) < 800) return;
+      this._deletedDefectEditWarnAt = now;
+      this.$modal.msgWarning(String(this.$t("defect.deleted-cannot-edit")));
     },
     refreshExcelEditorView() {
       this.$nextTick(() => {
@@ -1961,6 +1974,11 @@ export default {
         return;
       }
       if (this.excelModulePickerSaving) return;
+      if (this.isDeletedDefectRow(row)) {
+        this.notifyDeletedDefectCannotEdit();
+        this.closeExcelModulePicker();
+        return;
+      }
       const newId =
         moduleId != null && moduleId !== "" && Number.isFinite(Number(moduleId)) ? Number(moduleId) : null;
       const newName = mod && mod.moduleName != null ? String(mod.moduleName) : "";
@@ -2038,6 +2056,12 @@ export default {
         return;
       }
       if (this.planTimePickerSaving) return;
+      if (this.isDeletedDefectRow(row)) {
+        this.notifyDeletedDefectCannotEdit();
+        this.planTimePickerVisible = false;
+        this.resetPlanTimePickerState();
+        return;
+      }
       this.planTimePickerSaving = true;
       this.syncing = true;
       try {
@@ -2379,7 +2403,10 @@ export default {
     },
     async executeExcelInlineImageRemove(defectId, pathRel) {
       const row = this.sheetRows.find((r) => String(r.defectId) === String(defectId));
-      if (!row) return;
+      if (!row || this.isDeletedDefectRow(row)) {
+        if (row) this.notifyDeletedDefectCannotEdit();
+        return;
+      }
       const parts = this.excelCommaUrlParts(row.imgUrls);
       const next = parts.filter((p) => String(p) !== String(pathRel));
       if (next.length === parts.length) return;
@@ -2422,7 +2449,10 @@ export default {
     },
     async executeExcelInlineAnnexRemove(defectId, pathRel) {
       const row = this.sheetRows.find((r) => String(r.defectId) === String(defectId));
-      if (!row) return;
+      if (!row || this.isDeletedDefectRow(row)) {
+        if (row) this.notifyDeletedDefectCannotEdit();
+        return;
+      }
       const parts = this.excelCommaUrlParts(row.annexUrls);
       const next = parts.filter((p) => String(p) !== String(pathRel));
       if (next.length === parts.length) return;
@@ -2555,6 +2585,10 @@ export default {
     /** 内联「添加图片」与剪贴板粘贴共用：校验、上传、updateDefect、刷新单元格 */
     async excelInlineUploadImagesForRow(row, files) {
       if (!row || !files || !files.length) return;
+      if (this.isDeletedDefectRow(row)) {
+        this.notifyDeletedDefectCannotEdit();
+        return;
+      }
       const existing = this.excelCommaUrlParts(row.imgUrls);
       if (existing.length + files.length > EXCEL_INLINE_IMG_LIMIT) {
         this.$modal.msgError(strFormat(this.$t("upload.number-exceeds-range"), EXCEL_INLINE_IMG_LIMIT));
@@ -2608,6 +2642,10 @@ export default {
     /** 内联「上传附件」与剪贴板粘贴共用 */
     async excelInlineUploadAnnexesForRow(row, files) {
       if (!row || !files || !files.length) return;
+      if (this.isDeletedDefectRow(row)) {
+        this.notifyDeletedDefectCannotEdit();
+        return;
+      }
       const existing = this.excelCommaUrlParts(row.annexUrls);
       if (existing.length + files.length > EXCEL_INLINE_ANNEX_LIMIT) {
         this.$modal.msgError(strFormat(this.$t("upload.number-exceeds-range"), EXCEL_INLINE_ANNEX_LIMIT));
@@ -2974,6 +3012,7 @@ export default {
       if (!Array.isArray(buf) || this.syncing) return;
       const items = [];
       const touchedPlaceholderIds = new Set();
+      let deletedEditAttempted = false;
       for (const rec of buf) {
         if (rec.err) continue;
         const col = COLS.find((c) => c.key === rec.name);
@@ -2984,6 +3023,15 @@ export default {
         if (nv === ov) continue;
         const row = this.sheetRows.find((r) => r.$id === rec.$id);
         if (!row) continue;
+        if (this.isDeletedDefectRow(row)) {
+          deletedEditAttempted = true;
+          this.syncing = true;
+          this.$set(row, rec.name, rec.oldVal == null ? "" : rec.oldVal);
+          this.$nextTick(() => {
+            this.syncing = false;
+          });
+          continue;
+        }
         if (!row.defectId) {
           touchedPlaceholderIds.add(rec.$id);
           if (col.required && (!nv || nv === "")) {
@@ -3009,6 +3057,7 @@ export default {
         }
         items.push({ row, key: col.key, nv });
       }
+      if (deletedEditAttempted) this.notifyDeletedDefectCannotEdit();
       if (!items.length && touchedPlaceholderIds.size === 0) return;
       const run = async () => {
         try {
@@ -3264,6 +3313,7 @@ export default {
       try {
         for (let i = 0; i < items.length; i++) {
           const it = items[i];
+          if (this.isDeletedDefectRow(it.row)) continue;
           try {
             const payload = {
               defectId: it.row.defectId,

@@ -2226,7 +2226,8 @@ CREATE TABLE `sys_defect` (
                               `plan_start_time` datetime DEFAULT NULL COMMENT '计划开始时间',
                               `plan_end_time` datetime DEFAULT NULL COMMENT '计划完成时间',
                               `extend_properties` json DEFAULT NULL COMMENT '扩展属性',
-                              `sponsor` varchar(128) DEFAULT NULL COMMENT '发起人'
+                              `sponsor` varchar(128) DEFAULT NULL COMMENT '发起人',
+                              `del_flag` char(1) NOT NULL DEFAULT '0' COMMENT '删除标志（0存在 2删除）'
 );
 
 COMMIT;

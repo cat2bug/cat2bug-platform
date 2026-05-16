@@ -14,12 +14,23 @@
     <div class="defect-tools-tab">
       <el-tabs v-model="activeDefectTabName" @tab-click="selectDefectTabHandle">
         <el-tab-pane v-for="tab in config.tabs" :key="tab.tabId+''" :name="tab.tabId+''">
-          <span slot="label">{{ tab.tabName }}
+          <span slot="label" class="defect-tab-label">
+            <svg-icon icon-class="list2" class="defect-tab-icon" />
+            {{ tab.tabName }}
             <i style="width: 14px;" class="el-icon-close" @click.stop="removeDefectTabHandle(tab.tabId)" />
           </span>
         </el-tab-pane>
         <el-tab-pane key="all-tab" :name="allTab">
-          <span slot="label">{{ $t('defect.all-defect') }}</span>
+          <span slot="label" class="defect-tab-label">
+            <svg-icon icon-class="all" class="defect-tab-icon" />
+            {{ $t('defect.all-defect') }}
+          </span>
+        </el-tab-pane>
+        <el-tab-pane key="deleted-tab" :name="deletedTab">
+          <span slot="label" class="defect-tab-label">
+            <svg-icon icon-class="delete" class="defect-tab-icon" />
+            {{ $t('defect.deleted-defect') }}
+          </span>
         </el-tab-pane>
       </el-tabs>
       <div class="defect-tools-tab-right">
@@ -112,6 +123,7 @@
       </template>
       <template slot="right-tools">
         <el-dropdown
+          v-if="!isDeletedDefectTab"
           v-hasPermi="['system:defect:add']"
           class="defect-add-dropdown"
           split-button
@@ -169,6 +181,7 @@ const DEFECT_CONTENT_VIEW_CACHE_KEY = 'defect.contentViewComponent'
 const DEFECT_CONTENT_VIEW_ALLOWED = ['DefectTable', 'DefectExcel']
 /** 名称等于所有选项的name */
 const ALL_TAB_NAME = 'all-tab'
+const DELETED_TAB_NAME = 'deleted-tab'
 
 /** 记录分析模版是否显示的缓存变量名 */
 const CACHE_KEY_STATISTIC_PANEL_VISIBLE = 'defect.statisticPanelVisible'
@@ -183,6 +196,7 @@ export default {
       // tab相关配置
       // 所有tab的名称
       allTab: ALL_TAB_NAME,
+      deletedTab: DELETED_TAB_NAME,
       // 当前缺陷的tab页名
       activeDefectTabName: ALL_TAB_NAME, // this.$i18n.t('project.my-participated-in'),
 
@@ -224,7 +238,8 @@ export default {
         handleTime: null,
         defectLevel: null,
         params: {
-          defectStates: []
+          defectStates: [],
+          delFlag: '0'
         }
       }
     }
@@ -256,6 +271,9 @@ export default {
     /**
      * Excel：在 host 内 height:100% 铺满主列（与表格模式一致），勿再用 host flex-end 造成顶栏下大块留白。
      */
+    isDeletedDefectTab() {
+      return this.activeDefectTabName === this.deletedTab
+    },
     defectPageRootStyle() {
       if (this.defectContentComponent === 'DefectExcel') {
         return {
@@ -412,7 +430,10 @@ export default {
           // 从本地缓存取激活的页标签名称
           this.activeDefectTabName = this.$cache.local.get(DEFECT_TAB_CACHE_KEY) // || ALL_TAB_NAME;
           // 查看所有页标签里是否保护激活页标签，如果没有，设置页标签为"全部"
-          if (!this.activeDefectTabName || this.config.tabs.filter(t => t.tabId + '' == this.activeDefectTabName).length == 0) {
+          if (!this.activeDefectTabName ||
+            (this.activeDefectTabName !== this.allTab &&
+              this.activeDefectTabName !== this.deletedTab &&
+              this.config.tabs.filter(t => t.tabId + '' == this.activeDefectTabName).length == 0)) {
             this.activeDefectTabName = this.allTab
           }
         }
@@ -489,7 +510,8 @@ export default {
         handleTime: null,
         defectLevel: null,
         params: {
-          defectStates: []
+          defectStates: [],
+          delFlag: '0'
         }
       }
     },
@@ -512,19 +534,44 @@ export default {
      * 页签处理方法
      * ============================================ /
 
-    /** 切换页标签 */
-    selectDefectTabHandle() {
+    /** 切换页标签；tab-click 触发时 v-model 尚未更新，须用事件参数 tab.name */
+    selectDefectTabHandle(tab) {
+      const activeName = tab && tab.name != null ? String(tab.name) : String(this.activeDefectTabName)
+      if (activeName === this.allTab) {
+        this.reset()
+        if (!this.queryParams.params) {
+          this.$set(this.queryParams, 'params', {})
+        }
+        this.$set(this.queryParams.params, 'delFlag', '0')
+        this.handleQuery()
+        this.$cache.local.set(DEFECT_TAB_CACHE_KEY, activeName)
+        return
+      }
+      if (activeName === this.deletedTab) {
+        this.reset()
+        if (!this.queryParams.params) {
+          this.$set(this.queryParams, 'params', {})
+        }
+        this.$set(this.queryParams.params, 'delFlag', '2')
+        this.handleQuery()
+        this.$cache.local.set(DEFECT_TAB_CACHE_KEY, activeName)
+        return
+      }
       if (this.config && this.config.tabs) {
-        const tab = this.config.tabs.find(t => t.tabId == this.activeDefectTabName)
-        if (tab && tab.config) {
-          tab.config.isAsc = 'desc'
-          tab.config.orderByColumn = 'updateTime'
-          if (!tab.config.params) {
-            tab.config.params = {
-              defectStates: []
+        const tabItem = this.config.tabs.find(t => String(t.tabId) === activeName)
+        if (tabItem && tabItem.config) {
+          tabItem.config.isAsc = 'desc'
+          tabItem.config.orderByColumn = 'updateTime'
+          if (!tabItem.config.params) {
+            tabItem.config.params = {
+              defectStates: [],
+              delFlag: '0'
             }
           }
-          const tc = tab.config
+          if (tabItem.config.params.delFlag == null || tabItem.config.params.delFlag === '') {
+            this.$set(tabItem.config.params, 'delFlag', '0')
+          }
+          const tc = tabItem.config
           const tp = tc.params
           if (tp.nameVersionKeyword != null && String(tp.nameVersionKeyword).trim() !== '') {
             if (tc.nameVersionKeyword == null || String(tc.nameVersionKeyword).trim() === '') {
@@ -540,13 +587,13 @@ export default {
             tc.defectName = null
             tc.moduleVersion = null
           }
-          this.queryParams = tab.config
+          this.queryParams = tabItem.config
         } else {
           this.reset()
         }
         this.handleQuery()
       }
-      this.$cache.local.set(DEFECT_TAB_CACHE_KEY, this.activeDefectTabName)
+      this.$cache.local.set(DEFECT_TAB_CACHE_KEY, activeName)
     },
     /** 打开添加缺陷页签对话框 */
     addDefectTabHandle() {
@@ -862,6 +909,18 @@ export default {
 }
 .defect-tools-button:hover {
   color: #409EFF;
+}
+.defect-tab-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.defect-tab-label {
+  ::v-deep .defect-tab-icon {
+    font-size: 14px;
+    flex-shrink: 0;
+    vertical-align: middle;
+  }
 }
 .defect-add-dropdown {
   margin-right: 0px;

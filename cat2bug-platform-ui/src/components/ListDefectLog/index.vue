@@ -27,6 +27,8 @@ import PASS from "@/components/ListDefectLog/pass";
 import CLOSED from "@/components/ListDefectLog/close";
 import OPEN from "@/components/ListDefectLog/open";
 import UPDATE from "@/components/ListDefectLog/update";
+import DELETE from "@/components/ListDefectLog/delete";
+import RESTORE from "@/components/ListDefectLog/restore";
 import Cat2BugAvatar from "@/components/Cat2BugAvatar";
 import CommentInput from "@/components/Comment/CommentInput";
 import CommentView from "@/components/Comment/CommentView";
@@ -35,12 +37,12 @@ import {checkPermi} from "@/utils/permission";
 
 /** 与后端 SysDefectLogStateEnum.ordinal() 一致，兼容接口返回枚举序号而非名称的情况 */
 const DEFECT_LOG_TYPE_ORDER = [
-  'CREATE', 'ASSIGN', 'REJECT', 'PASS', 'REJECTED', 'REPAIR', 'CLOSED', 'OPEN', 'UPDATE', 'IMPORT'
+  'CREATE', 'ASSIGN', 'REJECT', 'PASS', 'REJECTED', 'REPAIR', 'CLOSED', 'OPEN', 'UPDATE', 'IMPORT', 'DELETE', 'RESTORE'
 ];
 
 export default {
   name: "ListDefectLog",
-  components:{ CREATE,IMPORT,ASSIGN,REJECTED,REPAIR,PASS,CLOSED,OPEN,Cat2BugAvatar, CommentInput, CommentView,UPDATE },
+  components:{ CREATE,IMPORT,ASSIGN,REJECTED,REPAIR,PASS,CLOSED,OPEN,UPDATE,DELETE,RESTORE,Cat2BugAvatar, CommentInput, CommentView },
   data() {
     return {
       defectId: null,

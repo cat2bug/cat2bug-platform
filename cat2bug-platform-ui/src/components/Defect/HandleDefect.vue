@@ -26,7 +26,7 @@
           </div>
         </div>
         <div class="report-edit-tools">
-          <defect-tools :exclusions="exclusions" :defect="defect" size="mini" @delete="deleteHandle" @log="logHandle"></defect-tools>
+          <defect-tools :exclusions="defectToolsExclusions" :defect="defect" size="mini" @delete="deleteHandle" @restore="restoreHandle" @log="logHandle"></defect-tools>
         </div>
       </div>
     </template>
@@ -201,6 +201,14 @@ export default {
         return lifeTime(defect);
       }
     },
+    defectToolsExclusions() {
+      const f = this.defect && this.defect.delFlag;
+      if (f === '2' || f === 2) {
+        /* 抽屉内已是查看态，仅保留恢复；「查看」仅在列表操作列展示 */
+        return ['view', 'assign', 'repair', 'reject', 'pass', 'open', 'close', 'edit', 'delete'];
+      }
+      return this.exclusions;
+    },
   },
   // 移除滚动条监听
   destroyed() {
@@ -348,6 +356,10 @@ export default {
     },
     deleteHandle() {
       this.$emit('delete',this.defect);
+      this.cancel();
+    },
+    restoreHandle() {
+      this.$emit('change', this.defect);
       this.cancel();
     },
   }

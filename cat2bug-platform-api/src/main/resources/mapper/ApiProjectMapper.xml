@@ -38,7 +38,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <!-- 获取项目统计信息 -->
     <select id="getProjectStatistics" parameterType="Long" resultType="map">
         select
-            (select count(*) from sys_defect where project_id = #{projectId}) as defectCount,
+            (select count(*) from sys_defect where project_id = #{projectId} and del_flag = '0') as defectCount,
             (select count(*) from sys_case where project_id = #{projectId}) as caseCount,
             (select count(*) from sys_user_project where project_id = #{projectId}) as memberCount,
             (select count(*) from sys_module where project_id = #{projectId}) as deliverableCount
