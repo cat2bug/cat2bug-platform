@@ -37,6 +37,11 @@
             <template v-slot:tools>
               <div class="cloud-case-input-tools">
                 <el-select class="cloud-case-prompt-select" v-model="prompt.modelId" size="mini" :placeholder="$t('please-select')" @change="handleCaseAiModelChange">
+                  <template slot="prefix">
+                    <span class="cloud-case-model-select-robot" aria-hidden="true">
+                      <svg-icon icon-class="robot" />
+                    </span>
+                  </template>
                   <el-option-group
                     v-for="group in aiAccountGroup"
                     :key="group.label"
@@ -860,6 +865,19 @@ export default {
   .el-input-number__decrease:hover:not(.is-disabled) ~ .el-input .el-input__inner:not(.is-disabled) {
     border-color: #67c23a;
   }
+  .case-search .cloud-case-prompt-select .el-input__prefix {
+    left: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  }
+  .case-search .cloud-case-model-select-robot .svg-icon {
+    width: 13px;
+    height: 13px;
+    display: block;
+    color: #67c23a;
+  }
   .cloud-case-prompt-select>div>.el-input__inner, .cloud-case-prompt-input-number>div>.el-input__inner {
     height: 22px;
     line-height: 22px;
@@ -867,6 +885,10 @@ export default {
     padding: 0 20px;
     border-color: #c2e7b0;
     color: #67c23a;
+  }
+  /* prefix 机器人：避免与选中模型文案重叠 */
+  .case-search .cloud-case-prompt-select.el-select .el-input.el-input--prefix .el-input__inner {
+    padding-left: 28px;
   }
   /* 仅 AI 用例抽屉：底部工具条拉满可用宽度，模型下拉随容器伸缩 */
   .case-search .cat2bug-textarea .tools {
