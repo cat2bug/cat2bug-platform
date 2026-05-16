@@ -24,7 +24,7 @@
       </el-tabs>
       <div class="defect-tools-tab-right">
         <svg-icon class="defect-tools-button" icon-class="add-tab" @click.native="addDefectTabHandle" />
-        <svg-icon v-show="statisticPanelVisible" icon-class="view-statistic" @click="addStatisticHandle" />
+        <svg-icon v-show="statisticPanelVisible" class="defect-tools-button" icon-class="view-statistic" @click.native="addStatisticHandle" />
       </div>
     </div>
     <!-- 统计板块-->
