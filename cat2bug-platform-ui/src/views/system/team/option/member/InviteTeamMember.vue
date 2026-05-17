@@ -19,8 +19,7 @@
                 :key="item.userId"
                 :label="item.nickName"
                 :value="item.userId">
-                <el-avatar shape="circle" v-if="item.avatar" :src="item.avatar" fit="cover" size="small"></el-avatar>
-                <el-avatar shape="circle" size="small" v-else>{{item.userName}}</el-avatar>
+                <cat2-bug-avatar :member="item" size="small" />
                 <p>{{ item.nickName }}</p>
               </el-option>
             </el-select>
@@ -59,9 +58,11 @@ import {
   updateTeam
 } from "@/api/system/team";
 import {getUser} from "@/api/system/user";
+import Cat2BugAvatar from "@/components/Cat2BugAvatar";
 
 export default {
   name: "CreateTeamMember",
+  components: { Cat2BugAvatar },
   data() {
     return {
       // 遮罩层

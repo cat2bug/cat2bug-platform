@@ -1,28 +1,30 @@
 <template>
   <div class="member-nameplate">
     <slot name="icon" v-if="iconVisible">
-      <el-avatar v-if="member.avatar" :src="imgUrl" fit="cover" size="small"></el-avatar>
-      <el-avatar v-else size="small">{{member.userName}}</el-avatar>
+      <cat2-bug-avatar :member="member" size="small" />
     </slot>
     <div class="member-nameplate-content">
       <slot name="title">
-        <p>{{member.nickName}}</p>
+        <p>{{ member.nickName }}</p>
       </slot>
       <slot name="body" v-if="bodyVisible">
-        <span>{{$t('phone-number')}}: {{member.phoneNumber}}</span>
-        <span>{{$t('email')}}: {{member.email}}</span>
+        <span>{{ $t('phone-number') }}: {{ member.phoneNumber }}</span>
+        <span>{{ $t('email') }}: {{ member.email }}</span>
       </slot>
     </div>
   </div>
 </template>
 
 <script>
+import Cat2BugAvatar from '@/components/Cat2BugAvatar'
+
 export default {
-  name: "MemberNameplate",
+  name: 'MemberNameplate',
+  components: { Cat2BugAvatar },
   props: {
     member: {
       type: Object,
-      default: {}
+      default: () => ({})
     },
     iconVisible: {
       type: Boolean,
@@ -32,43 +34,34 @@ export default {
       type: Boolean,
       default: true
     }
-  },
-  computed: {
-    imgUrl: function () {
-      return this.member.avatar?process.env.VUE_APP_BASE_API + this.member.avatar:''
-    }
   }
 }
 </script>
 
 <style lang="scss" scoped>
-  .member-nameplate {
+.member-nameplate {
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  padding: 5px;
+  > * {
+    margin-right: 10px;
+  }
+  .member-nameplate-content {
     display: flex;
-    align-items: center;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    justify-content: flex-start;
-    padding: 5px;
-    .el-avatar {
-      font-size: 12px;
-      flex-shrink: 0;
+    align-items: flex-start;
+    flex-direction: column;
+    p {
+      margin: 0;
     }
-    > * {
-      margin-right: 10px;
-    }
-    .member-nameplate-content {
-      display: flex;
-      align-items: flex-start;
-      flex-direction: column;
-      p {
-        margin: 0px;
-      }
-      span {
-        font-size: 10px;
-        color: #C0C4CC;
-        line-height: 12px;
-        height: 12px;
-      }
+    span {
+      font-size: 10px;
+      color: #c0c4cc;
+      line-height: 12px;
+      height: 12px;
     }
   }
+}
 </style>

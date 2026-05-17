@@ -2,9 +2,13 @@
   <div class="member-avatar" v-if="isVisible">
     <el-avatar
       :isStatistics="member.isStatistics?'true':'false'"
-      :src="imgUrl"
-      fit="cover" :size="size">
-      {{member.avatar?'': member.nickName || member.userName || member.name}}
+      :src="displayImgUrl"
+      :class="{ 'cat2bug-avatar--text-initial': isTextInitial }"
+      :style="textAvatarStyle"
+      fit="cover"
+      :size="size"
+      @error.native="onAvatarImgError">
+      {{ textInitial }}
     </el-avatar>
     <span v-if="online && member.online" class="online"></span>
     <slot name="extend"></slot>
@@ -12,6 +16,14 @@
 </template>
 
 <script>
+import {
+  getAvatarInitial,
+  getAvatarColorKey,
+  getAvatarPaletteStyle,
+  resolveMemberDisplayName,
+  resolveMemberAvatarUrl
+} from '@/utils/member-avatar'
+
 export default {
   name: "Cat2BugAvatar",
   model: {
@@ -32,15 +44,48 @@ export default {
       default: false
     }
   },
+  data() {
+    return {
+      photoLoadFailed: false
+    }
+  },
+  watch: {
+    member: {
+      handler() {
+        this.photoLoadFailed = false
+      },
+      deep: true
+    }
+  },
   computed: {
-    isVisible: function () {
-      return this.member.avatar || this.member.nickName || this.member.userName || this.member.name
+    isVisible() {
+      return this.member.avatar || this.member.avatarUrl || this.member.nickName || this.member.userName || this.member.name
     },
-    imgUrl: function () {
-      if(this.member.avatarUrl) {
-        return this.member.avatarUrl;
-      }
-      return this.member.avatar?process.env.VUE_APP_BASE_API + this.member.avatar:''
+    imgUrl() {
+      return resolveMemberAvatarUrl(this.member, process.env.VUE_APP_BASE_API)
+    },
+    displayImgUrl() {
+      if (this.photoLoadFailed || !this.imgUrl) return undefined
+      return this.imgUrl
+    },
+    displayName() {
+      return resolveMemberDisplayName(this.member)
+    },
+    isTextInitial() {
+      return !this.member.isStatistics
+    },
+    textInitial() {
+      if (this.member.isStatistics) return ''
+      return getAvatarInitial(this.displayName)
+    },
+    textAvatarStyle() {
+      if (this.member.isStatistics) return {}
+      return getAvatarPaletteStyle(getAvatarColorKey(this.displayName))
+    }
+  },
+  methods: {
+    onAvatarImgError() {
+      this.photoLoadFailed = true
     }
   }
 }
@@ -84,6 +129,9 @@ export default {
 .el-avatar[isStatistics='true'] {
   background-color: #E4E7ED;
   color: #909399;
+}
+.el-avatar.cat2bug-avatar--text-initial {
+  font-weight: 700;
 }
 .member-avatar {
   position: relative;
