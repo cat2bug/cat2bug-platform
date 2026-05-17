@@ -132,6 +132,22 @@ export default {
 }
 .el-avatar.cat2bug-avatar--text-initial {
   font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  line-height: 1;
+  text-align: center;
+  box-sizing: border-box;
+}
+.el-avatar--medium.cat2bug-avatar--text-initial {
+  line-height: 1;
+}
+.el-avatar--small.cat2bug-avatar--text-initial {
+  line-height: 1;
+}
+.el-avatar--large.cat2bug-avatar--text-initial {
+  line-height: 1;
 }
 .member-avatar {
   position: relative;
