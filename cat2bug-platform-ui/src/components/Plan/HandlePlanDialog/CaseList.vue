@@ -161,9 +161,9 @@
         <span v-else>{{ scope.row[column.prop] }}</span>
       </template>
       <template #append>
-        <el-table-column :label="$t('operate')" align="start" class-name="no-drag small-padding fixed-width" fixed="right" width="270">
+        <el-table-column :label="$t('operate')" align="left" class-name="no-drag cat2bug-operate-column" fixed="right">
           <template slot-scope="scope">
-            <div class="plan-operate">
+            <div class="plan-operate cat2bug-operate-tools">
               <plan-item-tools v-model="scope.row" :plan="parentPlan" :project-id="projectId" @change="getPlanItemList" @close="initFloatMenu" />
             </div>
           </template>

@@ -50,7 +50,7 @@
         </template>
       </el-table-column>
       <el-table-column :label="$t('remark')" align="center" prop="remark" />
-      <el-table-column :label="$t('operate')" align="center" class-name="small-padding fixed-width" width="200">
+      <el-table-column :label="$t('operate')" align="left" class-name="small-padding fixed-width" width="200">
         <template slot-scope="scope">
           <el-button
             size="small"

@@ -1,5 +1,5 @@
 <template>
-  <div class="cat2-bug-table-wrap">
+  <div class="cat2-bug-table-wrap" :style="operateColumnWrapStyle">
     <el-table ref="elTable"
               :key="tableKey"
               v-loading="loading"
@@ -62,6 +62,15 @@ const TABLE_FIELD_LIST_CACHE_KEY = 'defect-table-field-list';
 const TABLE_SORT_COLUMN = 'defect_table_sort_column_key';
 const TABLE_SORT_TYPE = 'defect_table_sort_type_key';
 const DEFAULT_COLUMN_WIDTH = 180;
+/** append 操作列 class-name 需含此类名以启用自动列宽 */
+const OPERATE_COLUMN_CLASS = 'cat2bug-operate-column';
+/** 操作列内容容器 class，用于测量与换行；无此 class 时回退测量 .cell 内可见子节点 */
+const OPERATE_TOOLS_CLASS = 'cat2bug-operate-tools';
+const DEFAULT_OPERATE_COLUMN_MAX_WIDTH = 200;
+const DEFAULT_OPERATE_COLUMN_MIN_WIDTH = 88;
+const DEFAULT_OPERATE_COLUMN_HEADER_MIN = 56;
+/** 操作列 .cell 左右内边距（单侧 px，列宽计算时按两侧合计） */
+const DEFAULT_OPERATE_COLUMN_PADDING_X = 20;
 
 export default {
   name: "Cat2BugTable",
@@ -126,9 +135,36 @@ export default {
     tableMaxHeight: {
       type: [Number, String],
       default: null
+    },
+    /** 为 true 时，对 class-name 含 cat2bug-operate-column 的 append 列按内容自动设宽 */
+    operateColumnAutoWidth: {
+      type: Boolean,
+      default: true
+    },
+    operateColumnMaxWidth: {
+      type: Number,
+      default: DEFAULT_OPERATE_COLUMN_MAX_WIDTH
+    },
+    operateColumnMinWidth: {
+      type: Number,
+      default: DEFAULT_OPERATE_COLUMN_MIN_WIDTH
+    },
+    operateColumnHeaderMin: {
+      type: Number,
+      default: DEFAULT_OPERATE_COLUMN_HEADER_MIN
+    },
+    operateColumnPaddingX: {
+      type: Number,
+      default: DEFAULT_OPERATE_COLUMN_PADDING_X
     }
   },
   computed: {
+    operateColumnWrapStyle() {
+      return {
+        '--cat2bug-operate-col-max-width': `${this.operateColumnMaxWidth}px`,
+        '--cat2bug-operate-col-padding-x': `${this.operateColumnPaddingX}px`
+      };
+    },
     elTableMaxHeight() {
       const v = this.tableMaxHeight;
       if (v === null || v === undefined || v === '') return undefined;
@@ -208,6 +244,7 @@ export default {
           this.$nextTick(() => {
             this.$nextTick(() => {
               requestAnimationFrame(() => {
+                this.syncOperateColumnWidths();
                 this.syncFixedDataRowHeights();
                 this.updateCustomHorizontalScrollbar();
               });
@@ -760,9 +797,81 @@ export default {
       this.$nextTick(() => {
         this.$nextTick(() => {
           requestAnimationFrame(() => {
+            this.syncOperateColumnWidths();
             this.syncFixedDataRowHeights();
             this.updateCustomHorizontalScrollbar();
           });
+        });
+      });
+    },
+    isOperateColumn(col) {
+      return col && col.className && col.className.indexOf(OPERATE_COLUMN_CLASS) !== -1;
+    },
+    getOperateColumns() {
+      const t = this.$refs.elTable;
+      if (!t || !t.store || !t.store.states || !t.store.states.columns) return [];
+      return t.store.states.columns.filter((col) => this.isOperateColumn(col));
+    },
+    /** 累加容器内可见子节点宽度（勿用容器 scrollWidth，会被单元格撑满） */
+    measureOperateContentWidth(container) {
+      if (!container) return 0;
+      const inner = container.classList.contains(OPERATE_TOOLS_CLASS)
+        ? container
+        : container.querySelector(`.${OPERATE_TOOLS_CLASS}`) || container;
+      const gap = 10;
+      const visible = Array.from(inner.children).filter((node) => {
+        if (!(node instanceof HTMLElement)) return false;
+        if (node.offsetWidth <= 0) return false;
+        const st = window.getComputedStyle(node);
+        return st.display !== "none" && st.visibility !== "hidden";
+      });
+      if (!visible.length) return 0;
+      let total = 0;
+      visible.forEach((node, index) => {
+        if (index > 0) total += gap;
+        total += node.getBoundingClientRect().width;
+      });
+      return Math.ceil(total);
+    },
+    /** 按当前页各行操作内容同步 append 操作列宽度（列宽全表统一） */
+    syncOperateColumnWidths() {
+      if (!this.operateColumnAutoWidth) return;
+      const t = this.$refs.elTable;
+      if (!t || !t.$el) return;
+
+      const operateCols = this.getOperateColumns();
+      if (!operateCols.length) return;
+
+      const cells = t.$el.querySelectorAll(`td.${OPERATE_COLUMN_CLASS} .cell`);
+      let maxContent = 0;
+      cells.forEach((cell) => {
+        maxContent = Math.max(maxContent, this.measureOperateContentWidth(cell));
+      });
+
+      const next = Math.min(
+        this.operateColumnMaxWidth,
+        Math.max(
+          this.operateColumnHeaderMin,
+          this.operateColumnMinWidth,
+          Math.ceil(maxContent + this.operateColumnPaddingX * 2)
+        )
+      );
+
+      let changed = false;
+      operateCols.forEach((col) => {
+        if (col.width !== next || col.minWidth !== next) {
+          col.width = next;
+          col.minWidth = next;
+          changed = true;
+        }
+      });
+      if (!changed) return;
+
+      t.doLayout();
+      this.$nextTick(() => {
+        requestAnimationFrame(() => {
+          this.syncFixedDataRowHeights();
+          this.updateCustomHorizontalScrollbar();
         });
       });
     },
@@ -800,6 +909,7 @@ export default {
         this.initColumnDrag();
         this.$nextTick(() => {
           requestAnimationFrame(() => {
+            this.syncOperateColumnWidths();
             this.syncFixedDataRowHeights();
             this.updateCustomHorizontalScrollbar();
           });
@@ -870,5 +980,28 @@ export default {
 ::v-deep .el-table__fixed .el-table__fixed-body-wrapper td.el-table__cell,
 ::v-deep .el-table__fixed-right .el-table__fixed-body-wrapper td.el-table__cell {
   vertical-align: middle;
+}
+
+/* append 操作列：class-name 含 cat2bug-operate-column，内容包在 cat2bug-operate-tools 内 */
+::v-deep th.cat2bug-operate-column .cell,
+::v-deep td.cat2bug-operate-column .cell {
+  overflow: visible;
+  text-align: left;
+  padding-left: var(--cat2bug-operate-col-padding-x, 20px);
+  padding-right: var(--cat2bug-operate-col-padding-x, 20px);
+  max-width: var(--cat2bug-operate-col-max-width, 200px);
+}
+
+::v-deep .cat2bug-operate-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  row-gap: 4px;
+  width: 100%;
+  max-width: 100%;
+  >* {
+    margin: 0;
+  }
 }
 </style>

@@ -86,9 +86,9 @@
         <span v-else>{{ scope.row[column.prop] }}</span>
       </template>
       <template #append>
-        <el-table-column :label="$t('operate')" align="center" class-name="small-padding fixed-width no-drag" width="200" fixed="right">
+        <el-table-column :label="$t('operate')" align="left" class-name="no-drag cat2bug-operate-column" fixed="right">
           <template slot-scope="scope">
-            <div v-show="scope.row.docType>-1">
+            <div v-show="scope.row.docType>-1" class="cat2bug-operate-tools">
               <el-button
                 v-if="scope.row.docType==1"
                 size="mini"

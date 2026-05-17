@@ -192,9 +192,9 @@
               <span v-else>{{ scope.row[column.prop] }}</span>
             </template>
             <template #append>
-              <el-table-column :label="$t('operate')" align="left" class-name="small-padding fixed-width no-drag" fixed="right" min-width="150">
+              <el-table-column :label="$t('operate')" align="left" class-name="no-drag cat2bug-operate-column" fixed="right">
                 <template slot-scope="scope">
-                  <div class="case-table-operate">
+                  <div class="cat2bug-operate-tools">
                     <el-button
                       v-hasPermi="['system:case:edit']"
                       size="small"
@@ -1341,9 +1341,6 @@ export default {
   line-height: 1.2;
   margin: 0;
   padding: 0 5px;
-}
-.case-table-operate {
-  padding-left: 10px;
 }
 .annex-list {
   display: inline-flex;

@@ -107,9 +107,9 @@
         <span v-else>{{ scope.row[column.prop] }}</span>
       </template>
       <template #append>
-        <el-table-column :label="$t('operate')" align="center" class-name="small-padding fixed-width no-drag" width="90" fixed="right">
+        <el-table-column :label="$t('operate')" align="left" class-name="no-drag cat2bug-operate-column" fixed="right">
           <template slot-scope="scope">
-            <report-tools :report="scope.row" :is-text="true" :is-show-icon="true" @delete="getList" />
+            <report-tools class="cat2bug-operate-tools" :report="scope.row" :is-text="true" :is-show-icon="true" @delete="getList" />
           </template>
         </el-table-column>
       </template>
@@ -537,7 +537,7 @@ export default {
 }
 .report-tools {
   width: 100%;
-  display: flex;
+  display: inline-flex;
   flex-direction: row;
   flex-wrap: wrap;
   justify-content: flex-start;

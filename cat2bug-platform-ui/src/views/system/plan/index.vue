@@ -83,9 +83,9 @@
         <span v-else>{{ scope.row[column.prop] }}</span>
       </template>
       <template #append>
-        <el-table-column :label="$t('operate')" align="center" class-name="small-padding fixed-width no-drag" fixed="right" width="260">
+        <el-table-column :label="$t('operate')" align="left" class-name="no-drag cat2bug-operate-column" fixed="right">
           <template slot-scope="scope">
-            <div class="table-operate">
+            <div class="table-operate cat2bug-operate-tools">
               <el-button
                 size="mini"
                 type="text"
@@ -632,12 +632,11 @@ export default {
   align-items: flex-start;
 }
 .table-operate {
-  padding-left: 6px;
   display: inline-flex;
   flex-direction: row;
   justify-content: flex-start;
   align-items: center;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   white-space: nowrap;
 }
 .plan-field-divider {

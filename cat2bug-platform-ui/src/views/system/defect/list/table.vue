@@ -126,11 +126,9 @@
             <span v-else>{{ scope.row[column.prop] }}</span>
           </template>
           <template #append>
-            <el-table-column :label="$t('operate')" align="center" class-name="no-drag small-padding fixed-width" min-width="250" fixed="right">
+            <el-table-column :label="$t('operate')" align="left" class-name="no-drag cat2bug-operate-column" fixed="right">
               <template slot-scope="scope">
-                <div class="row">
-                  <defect-tools class="defect-row-tools" :is-text="true" :defect="scope.row" size="mini" :is-show-icon="true" @view="handleClickTableRow" @delete="refreshSearch" @restore="refreshSearch" @update="refreshSearch" @log="refreshSearch"></defect-tools>
-                </div>
+                <defect-tools class="defect-row-tools cat2bug-operate-tools" :is-text="true" :defect="scope.row" size="mini" :is-show-icon="true" @view="handleClickTableRow" @delete="refreshSearch" @restore="refreshSearch" @update="refreshSearch" @log="refreshSearch"></defect-tools>
               </template>
             </el-table-column>
           </template>
@@ -171,7 +169,6 @@ import paneResizerHandleViewport from "@/mixins/paneResizerHandleViewport";
 const DEFECT_TREE_MODULE_WIDTH_CACHE_KEY = "defect_tree_module_width";
 /** 缺陷列表左侧交付物树是否展开（本地缓存） */
 const DEFECT_TREE_MODULE_VISIBLE_CACHE_KEY = "defect_tree_module_visible";
-
 export default {
   name: "DefectTable",
   dicts: ['defect_level'],
@@ -820,6 +817,9 @@ export default {
 }
 .defect-row-tools {
   margin-left: 10px;
+}
+.defect-row-tools.cat2bug-operate-tools {
+  margin-left: 0;
 }
 .annex-list {
   display: inline-flex;

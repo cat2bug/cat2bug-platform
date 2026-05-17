@@ -163,10 +163,10 @@
         <span v-else>{{ scope.row[column.prop] }}</span>
       </template>
       <template #append>
-        <el-table-column :label="$t('operate')" align="left" class-name="no-drag small-padding fixed-width" min-width="250" fixed="right">
+        <el-table-column :label="$t('operate')" align="left" class-name="no-drag cat2bug-operate-column" fixed="right">
           <template slot-scope="scope">
             <defect-tools
-              class="defect-row-tools"
+              class="defect-row-tools cat2bug-operate-tools"
               :exclusions="defectToolsExclusions"
               :is-text="true"
               :defect="scope.row"

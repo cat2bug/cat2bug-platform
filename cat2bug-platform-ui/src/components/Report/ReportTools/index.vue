@@ -76,7 +76,7 @@ export default {
     flex-direction: row;
     gap: 10px;
     align-items: center;
-    justify-content: center !important;
+    justify-content: flex-start;
     font-size: 12px;
     margin-bottom: 0px !important;
     > * {
