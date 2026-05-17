@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container case-body case-page">
+  <div class="app-container case-body case-page project-list-page-host">
     <project-label class="case-project-label" />
     <div
       ref="caseTools"

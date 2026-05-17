@@ -1,6 +1,6 @@
 <template>
   <div
-    class="defect-route-host"
+    class="defect-route-host project-list-page-host"
     :class="{ 'defect-route-host--excel': defectContentComponent === 'DefectExcel' }"
   >
     <div
@@ -676,7 +676,7 @@ export default {
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  overflow: visible;
+  overflow: hidden;
   /* 查询条上、下与 Tab / 主内容区的留白一致（子树继承） */
   --defect-toolbar-v-gap: 8px;
 }
@@ -1084,22 +1084,4 @@ export default {
   margin-bottom: 0 !important;
 }
 
-/*
- * Excel：主区 .main-container 为 overflow:auto，子树总高略大于视口即出现「整页」滚动条。
- * 将路由根高度钳在视口减顶栏（与 AppMain 中 navbar / tags 占位一致），滚动留在 Excel 内部。
- */
-.main-container.hasTagsView .defect-route-host--excel {
-  height: calc(100vh - 84px);
-  max-height: calc(100vh - 84px);
-  min-height: 0;
-  overflow: hidden;
-  box-sizing: border-box;
-}
-.main-container:not(.hasTagsView) .defect-route-host--excel {
-  height: calc(100vh - 50px);
-  max-height: calc(100vh - 50px);
-  min-height: 0;
-  overflow: hidden;
-  box-sizing: border-box;
-}
 </style>

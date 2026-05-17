@@ -9,6 +9,7 @@ import '@/assets/styles/ruoyi.scss' // ruoyi css
 // 不使用 default-passive-events：其全局劫持 addEventListener 可能影响依赖 passive 检测的组件。
 import '@/assets/styles/cat2bug.scss'
 import '@/assets/styles/el-table-scrollbar.scss'
+import '@/assets/styles/project-list-page.scss'
 import App from './App'
 import store from './store'
 import router from './router'

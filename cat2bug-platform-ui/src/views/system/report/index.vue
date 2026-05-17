@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container case-body report-page report-list-layout">
+  <div class="app-container case-body report-page report-list-layout project-list-page-host">
     <project-label class="report-project-label" :project-id="projectId" />
     <div ref="reportTools" class="report-tools" :class="{ 'wrapped-tools': reportToolsWrapped }">
       <el-form class="left" :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">

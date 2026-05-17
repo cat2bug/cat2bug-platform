@@ -2,6 +2,7 @@ import auth from '@/plugins/auth'
 import router, { constantRoutes, dynamicRoutes, resetRouter } from '@/router'
 import { getRouters } from '@/api/menu'
 import Layout from '@/layout/index'
+import { isProjectListPageView } from '@/utils/project-list-page'
 import ParentView from '@/components/ParentView'
 import InnerLink from '@/layout/components/InnerLink'
 
@@ -69,6 +70,9 @@ function filterAsyncRouter(asyncRouterMap, lastRouter = false, type = false) {
       route.children = filterChildren(route.children)
     }
     if (route.component) {
+      if (isProjectListPageView(route.component)) {
+        route.meta = { ...(route.meta || {}), projectListPage: true }
+      }
       // Layout ParentView 组件特殊处理
       if (route.component === 'Layout') {
         route.component = Layout

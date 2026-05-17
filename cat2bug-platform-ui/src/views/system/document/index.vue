@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container case-body document-page document-list-layout">
+  <div class="app-container case-body document-page document-list-layout project-list-page-host">
     <project-label class="document-project-label" />
     <div ref="documentTools" class="document-tools" :class="{ 'wrapped-tools': documentToolsWrapped }">
       <el-form class="left" :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="120px">

@@ -1,0 +1,87 @@
+/**
+ * 用例 / 缺陷 / 测试计划 / 报告 / 文档等列表页：
+ * 路由切换时由 layout 立即加 .main-container--project-list（不依赖子组件 mount），避免滚动条闪现。
+ */
+.main-container.main-container--project-list,
+.main-container:has(.project-list-page-host) {
+  overflow: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+    width: 0 !important;
+    height: 0 !important;
+  }
+}
+
+/* 子组件 mount 前钳住 AppMain，避免过渡瞬间撑出 main-container 滚动条 */
+.main-container.hasTagsView.main-container--project-list > .app-main {
+  height: calc(100vh - 84px);
+  max-height: calc(100vh - 84px);
+  min-height: 0;
+  overflow: hidden;
+}
+
+.main-container:not(.hasTagsView).main-container--project-list > .app-main {
+  height: calc(100vh - 50px);
+  max-height: calc(100vh - 50px);
+  min-height: 0;
+  overflow: hidden;
+}
+
+.main-container.hasTagsView .project-list-page-host,
+.main-container.hasTagsView.main-container--project-list .project-list-page-host {
+  height: calc(100vh - 84px);
+  max-height: calc(100vh - 84px);
+}
+
+.main-container:not(.hasTagsView) .project-list-page-host,
+.main-container:not(.hasTagsView).main-container--project-list .project-list-page-host {
+  height: calc(100vh - 50px);
+  max-height: calc(100vh - 50px);
+}
+
+.project-list-page-host {
+  min-height: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+  flex: 1 1 auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.project-list-page-host.case-body,
+.project-list-page-host > .case-body.defect-page,
+.project-list-page-host .case-page,
+.project-list-page-host .defect-page,
+.project-list-page-host .plan-page,
+.project-list-page-host .report-page,
+.project-list-page-host .document-page {
+  overflow: hidden;
+}
+
+/* 表格外层横滑由 Cat2BugTable 自定义条承担；挂载前也不露出原生横条 */
+.project-list-page-host .case-table-x-scroll,
+.project-list-page-host .defect-table-x-scroll,
+.project-list-page-host .plan-table-x-scroll,
+.project-list-page-host .report-table-x-scroll,
+.project-list-page-host .document-table-x-scroll,
+.main-container--project-list .case-table-x-scroll,
+.main-container--project-list .defect-table-x-scroll,
+.main-container--project-list .plan-table-x-scroll,
+.main-container--project-list .report-table-x-scroll,
+.main-container--project-list .document-table-x-scroll {
+  overflow-x: hidden;
+  overflow-y: hidden;
+}
+
+/* Cat2BugTable 完成布局前，避免 el-table 原生滚动条闪一下 */
+.main-container--project-list .cat2-bug-table-wrap .el-table__body-wrapper {
+  overflow-x: hidden !important;
+}
+
+.main-container--project-list .cat2-bug-table-wrap.cat2bug-hide-native-x .el-table__body-wrapper {
+  overflow-x: hidden !important;
+}

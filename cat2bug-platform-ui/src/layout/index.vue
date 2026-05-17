@@ -2,7 +2,14 @@
   <div :class="classObj" class="app-wrapper" :style="{'--current-color': theme}">
     <div v-if="device==='mobile'&&sidebar.opened" class="drawer-bg" @click="handleClickOutside"/>
     <sidebar v-if="!sidebar.hide" class="sidebar-container"/>
-    <div :class="{hasTagsView:needTagsView,sidebarHide:sidebar.hide}" class="main-container">
+    <div
+      :class="{
+        hasTagsView: needTagsView,
+        sidebarHide: sidebar.hide,
+        'main-container--project-list': isProjectListPage
+      }"
+      class="main-container"
+    >
       <div :class="{'fixed-header':fixedHeader}">
         <navbar/>
         <tags-view v-if="needTagsView"/>
@@ -22,6 +29,7 @@ import ResizeMixin from './mixin/ResizeHandler'
 import ViewBackMixin from "@/layout/mixin/ViewBackHandle";
 import { mapState } from 'vuex'
 import variables from '@/assets/styles/variables.scss'
+import { isProjectListPageRoute } from '@/utils/project-list-page'
 
 export default {
   name: 'Layout',
@@ -50,6 +58,9 @@ export default {
         withoutAnimation: this.sidebar.withoutAnimation,
         mobile: this.device === 'mobile'
       }
+    },
+    isProjectListPage() {
+      return isProjectListPageRoute(this.$route)
     },
     variables() {
       return variables;
