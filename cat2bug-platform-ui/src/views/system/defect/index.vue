@@ -11,8 +11,8 @@
     >
     <project-label class="defect-project-label" />
     <!-- 缺陷页标签-->
-    <div class="defect-tools-tab">
-      <el-tabs v-model="activeDefectTabName" @tab-click="selectDefectTabHandle">
+    <div class="defect-tools-tab" ref="defectToolsTab">
+      <el-tabs ref="defectTabs" v-model="activeDefectTabName" @tab-click="selectDefectTabHandle">
         <el-tab-pane v-for="tab in config.tabs" :key="tab.tabId+''" :name="tab.tabId+''">
           <span slot="label" class="defect-tab-label">
             <svg-icon icon-class="list2" class="defect-tab-icon" />
@@ -32,9 +32,17 @@
             {{ $t('defect.deleted-defect') }}
           </span>
         </el-tab-pane>
+        <el-tab-pane :name="defectAddTabPaneName" disabled class="defect-tab-add-pane">
+          <svg-icon
+            slot="label"
+            icon-class="add-tab"
+            class-name="defect-tab-label defect-tab-add-btn"
+            :title="$t('defect.tab')"
+            @click.stop="addDefectTabHandle"
+          />
+        </el-tab-pane>
       </el-tabs>
       <div class="defect-tools-tab-right">
-        <svg-icon class="defect-tools-button" icon-class="add-tab" @click.native="addDefectTabHandle" />
         <svg-icon v-show="statisticPanelVisible" class="defect-tools-button" icon-class="view-statistic" @click.native="addStatisticHandle" />
       </div>
     </div>
@@ -182,6 +190,8 @@ const DEFECT_CONTENT_VIEW_ALLOWED = ['DefectTable', 'DefectExcel']
 /** 名称等于所有选项的name */
 const ALL_TAB_NAME = 'all-tab'
 const DELETED_TAB_NAME = 'deleted-tab'
+/** 添加 Tab 占位 pane，不作为真实页签选中 */
+const DEFECT_ADD_TAB_PANE_NAME = '__defect_add_tab__'
 
 /** 记录分析模版是否显示的缓存变量名 */
 const CACHE_KEY_STATISTIC_PANEL_VISIBLE = 'defect.statisticPanelVisible'
@@ -197,6 +207,7 @@ export default {
       // 所有tab的名称
       allTab: ALL_TAB_NAME,
       deletedTab: DELETED_TAB_NAME,
+      defectAddTabPaneName: DEFECT_ADD_TAB_PANE_NAME,
       // 当前缺陷的tab页名
       activeDefectTabName: ALL_TAB_NAME, // this.$i18n.t('project.my-participated-in'),
 
@@ -431,6 +442,7 @@ export default {
           this.activeDefectTabName = this.$cache.local.get(DEFECT_TAB_CACHE_KEY) // || ALL_TAB_NAME;
           // 查看所有页标签里是否保护激活页标签，如果没有，设置页标签为"全部"
           if (!this.activeDefectTabName ||
+            this.activeDefectTabName === this.defectAddTabPaneName ||
             (this.activeDefectTabName !== this.allTab &&
               this.activeDefectTabName !== this.deletedTab &&
               this.config.tabs.filter(t => t.tabId + '' == this.activeDefectTabName).length == 0)) {
@@ -537,6 +549,9 @@ export default {
     /** 切换页标签；tab-click 触发时 v-model 尚未更新，须用事件参数 tab.name */
     selectDefectTabHandle(tab) {
       const activeName = tab && tab.name != null ? String(tab.name) : String(this.activeDefectTabName)
+      if (activeName === this.defectAddTabPaneName) {
+        return
+      }
       if (activeName === this.allTab) {
         this.reset()
         if (!this.queryParams.params) {
@@ -890,16 +905,57 @@ export default {
   }
   .el-tabs {
     position: absolute;
+    left: 0;
+    top: 0;
     width: 100%;
+  }
+  ::v-deep #tab-__defect_add_tab__.el-tabs__item {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    line-height: normal !important;
+    padding: 0 4px;
+    cursor: default;
+    color: #303133;
+    &:hover {
+      color: #303133;
+    }
+  }
+  ::v-deep .defect-tab-add-btn {
+    position: relative;
+    top: 1px;
+    flex-shrink: 0;
+    width: 15px !important;
+    height: 15px !important;
+    box-sizing: border-box;
+    padding: 2px !important;
+    border: 1px solid #c0c4cc;
+    border-radius: 2px;
+    background: #fff;
+    color: #606266;
+    display: inline-block;
+    line-height: 0;
+    cursor: pointer;
+    vertical-align: middle !important;
+    overflow: visible !important;
+    transition: color 0.2s, border-color 0.2s, background-color 0.2s;
+    &:hover {
+      color: #409eff;
+      border-color: #c6e2ff;
+      background-color: #ecf5ff;
+    }
   }
   .defect-tools-tab-right {
     position: absolute;
-    right: 0px;
+    right: 0;
+    top: 0;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100%;
     padding-bottom: 5px;
+    z-index: 2;
   }
 }
 .defect-tools-button {
