@@ -1,8 +1,10 @@
 <template>
   <div class="app-container">
-    <el-page-header @back="goBack" :content="$t('ding')">
-    </el-page-header>
-      <el-row class="project-add-page-container">
+    <el-row class="project-add-page-header">
+      <el-page-header @back="goBack" :content="$t('ding')">
+      </el-page-header>
+    </el-row>
+    <el-row class="project-add-page-container">
         <el-col :xs="24" :sm="24" :md="10" :lg="10" :xl="10">
           <el-form ref="form" :model="form" :rules="rules" label-width="120px">
             <el-form-item :label="$t('ding.app-id')" prop="appKey">
@@ -151,7 +153,7 @@ export default {
   > *:first-child {
     border-left: 0px;
     padding-left: 0px;
-    padding-top: 30px;
+    padding-top: 10px;
   }
   > *:last-child {
   }

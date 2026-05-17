@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <el-row class="project-add-page-header">
+    <el-row class="project-add-page-header project-add-page-header--with-filter">
       <el-page-header @back="goBack" :content="$t('member.manage')">
       </el-page-header>
     </el-row>
@@ -42,7 +42,7 @@
         </el-row>
 
         <el-table v-loading="loading" :data="memberList">
-          <el-table-column :label="$t('member.name')" align="left" key="nickName" prop="nickName" :show-overflow-tooltip="true">
+          <el-table-column :label="$t('member.name')" align="left" key="nickName" prop="nickName" min-width="260" :show-overflow-tooltip="true">
             <template slot-scope="scope">
               <member-nameplate :member="scope.row"></member-nameplate>
             </template>

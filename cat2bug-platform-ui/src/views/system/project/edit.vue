@@ -1,7 +1,9 @@
 <template>
   <div class="app-container">
-    <el-page-header @back="goBack" :content="$t('project.info')">
-    </el-page-header>
+    <el-row class="project-add-page-header">
+      <el-page-header @back="goBack" :content="$t('project.info')">
+      </el-page-header>
+    </el-row>
     <el-row class="project-add-page-container">
       <el-form ref="form" :model="form" :rules="rules" label-width="120px">
 <!--        基础信息-->

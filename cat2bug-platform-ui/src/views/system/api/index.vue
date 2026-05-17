@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <el-row class="project-add-page-header">
+    <el-row class="project-add-page-header project-add-page-header--with-filter">
       <el-page-header @back="goBack" :content="$t('project.api-key')">
       </el-page-header>
     </el-row>

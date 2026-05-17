@@ -23,6 +23,25 @@
   margin-bottom: 20px;
 }
 
+/* 项目设置（project/option）子页面：保留 el-page-header 默认 padding-bottom: 20px */
+.project-add-page-header {
+  margin-bottom: 0;
+
+  .el-page-header {
+    margin-bottom: 0;
+  }
+}
+
+/* 表单等内容页：页头与正文 20px */
+.app-container > .project-add-page-header + * {
+  margin-top: 20px;
+}
+
+/* 带列表筛选页：页头与筛选区 10px */
+.app-container > .project-add-page-header.project-add-page-header--with-filter + * {
+  margin-top: 10px;
+}
+
 .red {
   color: #f56c6c;
 }
