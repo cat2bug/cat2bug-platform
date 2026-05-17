@@ -83,10 +83,16 @@ export function resolveMemberAvatarUrl(member, baseApi = '') {
   if (!hasMemberPhoto(member)) return ''
   if (isNonEmptyAvatarPath(member.avatarUrl)) {
     const url = member.avatarUrl.trim()
-    return /^https?:\/\//i.test(url) ? url : baseApi + url
+    if (/^https?:\/\//i.test(url) || url.startsWith('/') || url.startsWith('data:')) {
+      return url
+    }
+    return baseApi + url
   }
   const avatar = member.avatar.trim()
-  return /^https?:\/\//i.test(avatar) ? avatar : baseApi + avatar
+  if (/^https?:\/\//i.test(avatar) || avatar.startsWith('/') || avatar.startsWith('data:')) {
+    return avatar
+  }
+  return baseApi + avatar
 }
 
 /** @param {{ nickName?: string, userName?: string, name?: string }} member */

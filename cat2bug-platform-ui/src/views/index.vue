@@ -305,7 +305,7 @@ import Cat2BugAvatar from "@/components/Cat2BugAvatar";
 
 export default {
   name: "Index",
-  components: {Cat2BugAvatar},
+  components: { Cat2BugAvatar },
   data() {
     return {
       // 版本号
@@ -449,7 +449,7 @@ export default {
     > ::v-deep .el-card__body {
       > .member-avatar {
         margin-right: 0px !important;
-        width: calc( 100% / 4 );
+        width: calc(100% / 4);
         justify-content: start;
       }
     }
