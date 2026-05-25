@@ -19,7 +19,7 @@
 
 在缺陷详情页面下方找到「日志」区域。
 
-![缺陷日志评论](../../../images/user-guide/current-project/defect/defect-comment.png)
+![缺陷日志评论](../../../../../images/user-guide/current-project/defect/defect-comment.png)
 
 ### 3. 输入评论内容
 

@@ -2,7 +2,7 @@
 
 当缺陷问题已经解决，或者当前不再考虑处理此问题，可直接将其关闭。
 
-![关闭缺陷](../../../images/user-guide/current-project/defect/defect-close.png)
+![关闭缺陷](../../../../../images/user-guide/current-project/defect/defect-close.png)
 
 ## 使用场景
 

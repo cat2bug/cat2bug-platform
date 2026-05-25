@@ -66,16 +66,24 @@ Cat2Bug-Platform 专门针对测试工作的各个环节及不同角色，开发
   - [缺陷介绍](user-guide/current-project/defect.md) - 缺陷管理介绍和名词解释
   - [页标签](user-guide/current-project/defect/defect-tabs.md) - 自定义缺陷列表筛选视图
   - [数据统计](user-guide/current-project/defect/defect-statistics.md) - 缺陷统计分析和报表
-  - [新建缺陷](user-guide/current-project/defect/defect-create.md) - 创建新的缺陷记录
-  - [修改缺陷](user-guide/current-project/defect/defect-edit.md) - 修改缺陷信息
-  - [指派缺陷](user-guide/current-project/defect/defect-assign.md) - 更改缺陷处理人
-  - [修复缺陷](user-guide/current-project/defect/defect-repair.md) - 开发人员提交修复
-  - [驳回缺陷](user-guide/current-project/defect/defect-reject.md) - 测试人员驳回修复
-  - [通过缺陷](user-guide/current-project/defect/defect-pass.md) - 测试人员验证通过
-  - [开启缺陷](user-guide/current-project/defect/defect-reopen.md) - 重新开启已关闭的缺陷
-  - [关闭缺陷](user-guide/current-project/defect/defect-close.md) - 关闭缺陷
-  - [删除缺陷](user-guide/current-project/defect/defect-delete.md) - 删除缺陷记录
-  - [新建评论](user-guide/current-project/defect/defect-comment.md) - 对缺陷添加评论和讨论
+  - 缺陷显示模式
+    - Table模式
+      - [Table模式介绍](user-guide/current-project/defect/display-mode/table-mode/table-mode-intro.md) - Table 模式概述与工作流程
+      - [新建缺陷](user-guide/current-project/defect/display-mode/table-mode/defect-create.md) - 创建新的缺陷记录
+      - [修改缺陷](user-guide/current-project/defect/display-mode/table-mode/defect-edit.md) - 修改缺陷信息
+      - [指派缺陷](user-guide/current-project/defect/display-mode/table-mode/defect-assign.md) - 更改缺陷处理人
+      - [修复缺陷](user-guide/current-project/defect/display-mode/table-mode/defect-repair.md) - 开发人员提交修复
+      - [驳回缺陷](user-guide/current-project/defect/display-mode/table-mode/defect-reject.md) - 测试人员驳回修复
+      - [通过缺陷](user-guide/current-project/defect/display-mode/table-mode/defect-pass.md) - 测试人员验证通过
+      - [开启缺陷](user-guide/current-project/defect/display-mode/table-mode/defect-reopen.md) - 重新开启已关闭的缺陷
+      - [关闭缺陷](user-guide/current-project/defect/display-mode/table-mode/defect-close.md) - 关闭缺陷
+      - [删除缺陷](user-guide/current-project/defect/display-mode/table-mode/defect-delete.md) - 删除缺陷记录
+      - [新建评论](user-guide/current-project/defect/display-mode/table-mode/defect-comment.md) - 对缺陷添加评论和讨论
+    - Excel模式
+      - [Excel模式介绍](user-guide/current-project/defect/display-mode/excel-mode/excel-mode-intro.md) - Excel 模式概述与适用场景
+      - [新建缺陷](user-guide/current-project/defect/display-mode/excel-mode/defect-create.md) - 空白行填必填项自动创建
+      - [修改缺陷](user-guide/current-project/defect/display-mode/excel-mode/defect-edit.md) - 单元格直接编辑实时保存
+      - [删除缺陷](user-guide/current-project/defect/display-mode/excel-mode/defect-delete.md) - 选中行按 Del 键删除
   - [导入缺陷](user-guide/current-project/defect/defect-import.md) - 批量导入缺陷数据
   - [导出缺陷](user-guide/current-project/defect/defect-export.md) - 导出缺陷为 Excel 文件
 - 交付物管理

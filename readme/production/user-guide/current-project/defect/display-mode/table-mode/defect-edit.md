@@ -2,7 +2,7 @@
 
 在缺陷列表页面，点击缺陷右侧的「修改」按钮，从右侧弹出修改对话框，调整相关数据后点击「保存」按钮提交。
 
-![修改缺陷](../../../images/user-guide/current-project/defect/defect-edit.png)
+![修改缺陷](../../../../../images/user-guide/current-project/defect/defect-edit.png)
 
 ## 使用场景
 
@@ -71,7 +71,7 @@
   - 左侧：Markdown 工具条和输入框
   - 右侧：实时渲染预览
 
-![缺陷描述](../../../images/user-guide/current-project/defect/defect-remark.png)
+![缺陷描述](../../../../../images/user-guide/current-project/defect/defect-remark.png)
 
 ### 11. 图片
 

@@ -25,17 +25,7 @@
 | 驳回次数 | 缺陷从最近一次开始时间算起，直到结束或至今的时间区间内，反复被驳回的次数总和         |
 | 处理人 | 当前负责处理缺陷的人员，通常是开发人员或测试人员                       |
 
-## 缺陷生命周期
-
-缺陷的生命周期如下图所示：
-
-![缺陷流程](../../../images/user-guide/current-project/defect/defect-flow.png)
-
-**主要状态流转：**
-1. **处理中** - 手动开启缺陷或测试人员创建缺陷后，等待发人员修复问题时的状态
-2. **待验证** - 开发人员修复缺陷后，等待测试人员验证时的状态
-3. **已驳回** - 测试人员验证未通过，驳回缺陷时的状态
-4. **已关闭** - 手动关闭缺陷或测试人员验证通过后，通过缺陷后的状态
+缺陷状态流转与操作说明见 [Table模式介绍](defect/display-mode/table-mode/table-mode-intro.md#缺陷生命周期与工作流程)。
 
 ## 页面介绍
 
@@ -52,15 +42,24 @@
 - [页标签](defect/defect-tabs.md) - 自定义缺陷列表筛选视图
 - [数据统计](defect/defect-statistics.md) - 缺陷统计分析和报表
 
-- [新建缺陷](defect/defect-create.md) - 创建新的缺陷记录
-- [修改缺陷](defect/defect-edit.md) - 修改缺陷信息
-- [指派缺陷](defect/defect-assign.md) - 更改缺陷处理人
-- [修复缺陷](defect/defect-repair.md) - 开发人员提交修复
-- [驳回缺陷](defect/defect-reject.md) - 测试人员驳回修复
-- [通过缺陷](defect/defect-pass.md) - 测试人员验证通过
-- [开启缺陷](defect/defect-reopen.md) - 重新开启已关闭的缺陷
-- [关闭缺陷](defect/defect-close.md) - 关闭缺陷
-- [删除缺陷](defect/defect-delete.md) - 删除缺陷记录
+- 缺陷显示模式
+  - Table模式
+    - [Table模式介绍](defect/display-mode/table-mode/table-mode-intro.md) - Table 模式概述与工作流程
+    - [新建缺陷](defect/display-mode/table-mode/defect-create.md) - 创建新的缺陷记录
+    - [修改缺陷](defect/display-mode/table-mode/defect-edit.md) - 修改缺陷信息
+    - [指派缺陷](defect/display-mode/table-mode/defect-assign.md) - 更改缺陷处理人
+    - [修复缺陷](defect/display-mode/table-mode/defect-repair.md) - 开发人员提交修复
+    - [驳回缺陷](defect/display-mode/table-mode/defect-reject.md) - 测试人员驳回修复
+    - [通过缺陷](defect/display-mode/table-mode/defect-pass.md) - 测试人员验证通过
+    - [开启缺陷](defect/display-mode/table-mode/defect-reopen.md) - 重新开启已关闭的缺陷
+    - [关闭缺陷](defect/display-mode/table-mode/defect-close.md) - 关闭缺陷
+    - [删除缺陷](defect/display-mode/table-mode/defect-delete.md) - 删除缺陷记录
+    - [新建评论](defect/display-mode/table-mode/defect-comment.md) - 对缺陷添加评论和讨论
+  - Excel模式
+    - [Excel模式介绍](defect/display-mode/excel-mode/excel-mode-intro.md) - Excel 模式概述与适用场景
+    - [新建缺陷](defect/display-mode/excel-mode/defect-create.md) - 空白行填必填项自动创建
+    - [修改缺陷](defect/display-mode/excel-mode/defect-edit.md) - 单元格直接编辑实时保存
+    - [删除缺陷](defect/display-mode/excel-mode/defect-delete.md) - 选中行按 Del 键删除
 - [导入缺陷](defect/defect-import.md) - 批量导入缺陷数据
 - [导出缺陷](defect/defect-export.md) - 导出缺陷为 Excel 文件
 

@@ -320,54 +320,97 @@ export default {
                       icon: 'el-icon-data-line'
                     },
                     {
-                      label: '新建缺陷',
-                      path: 'user-guide/current-project/defect/defect-create.md',
-                      icon: 'el-icon-plus'
-                    },
-                    {
-                      label: '修改缺陷',
-                      path: 'user-guide/current-project/defect/defect-edit.md',
-                      icon: 'el-icon-edit'
-                    },
-                    {
-                      label: '指派缺陷',
-                      path: 'user-guide/current-project/defect/defect-assign.md',
-                      icon: 'el-icon-user'
-                    },
-                    {
-                      label: '修复缺陷',
-                      path: 'user-guide/current-project/defect/defect-repair.md',
-                      icon: 'el-icon-check'
-                    },
-                    {
-                      label: '驳回缺陷',
-                      path: 'user-guide/current-project/defect/defect-reject.md',
-                      icon: 'el-icon-close'
-                    },
-                    {
-                      label: '通过缺陷',
-                      path: 'user-guide/current-project/defect/defect-pass.md',
-                      icon: 'el-icon-circle-check'
-                    },
-                    {
-                      label: '开启缺陷',
-                      path: 'user-guide/current-project/defect/defect-reopen.md',
-                      icon: 'el-icon-refresh'
-                    },
-                    {
-                      label: '关闭缺陷',
-                      path: 'user-guide/current-project/defect/defect-close.md',
-                      icon: 'el-icon-turn-off'
-                    },
-                    {
-                      label: '删除缺陷',
-                      path: 'user-guide/current-project/defect/defect-delete.md',
-                      icon: 'el-icon-delete'
-                    },
-                    {
-                      label: '新建评论',
-                      path: 'user-guide/current-project/defect/defect-comment.md',
-                      icon: 'el-icon-chat-line-round'
+                      label: '缺陷显示模式',
+                      icon: 'eye-open',
+                      children: [
+                        {
+                          label: 'Table模式',
+                          icon: 'table',
+                          children: [
+                            {
+                              label: 'Table模式介绍',
+                              path: 'user-guide/current-project/defect/display-mode/table-mode/table-mode-intro.md',
+                              icon: 'el-icon-document'
+                            },
+                            {
+                              label: '新建缺陷',
+                              path: 'user-guide/current-project/defect/display-mode/table-mode/defect-create.md',
+                              icon: 'el-icon-plus'
+                            },
+                            {
+                              label: '修改缺陷',
+                              path: 'user-guide/current-project/defect/display-mode/table-mode/defect-edit.md',
+                              icon: 'el-icon-edit'
+                            },
+                            {
+                              label: '指派缺陷',
+                              path: 'user-guide/current-project/defect/display-mode/table-mode/defect-assign.md',
+                              icon: 'el-icon-user'
+                            },
+                            {
+                              label: '修复缺陷',
+                              path: 'user-guide/current-project/defect/display-mode/table-mode/defect-repair.md',
+                              icon: 'el-icon-check'
+                            },
+                            {
+                              label: '驳回缺陷',
+                              path: 'user-guide/current-project/defect/display-mode/table-mode/defect-reject.md',
+                              icon: 'el-icon-close'
+                            },
+                            {
+                              label: '通过缺陷',
+                              path: 'user-guide/current-project/defect/display-mode/table-mode/defect-pass.md',
+                              icon: 'el-icon-circle-check'
+                            },
+                            {
+                              label: '开启缺陷',
+                              path: 'user-guide/current-project/defect/display-mode/table-mode/defect-reopen.md',
+                              icon: 'el-icon-refresh'
+                            },
+                            {
+                              label: '关闭缺陷',
+                              path: 'user-guide/current-project/defect/display-mode/table-mode/defect-close.md',
+                              icon: 'el-icon-turn-off'
+                            },
+                            {
+                              label: '删除缺陷',
+                              path: 'user-guide/current-project/defect/display-mode/table-mode/defect-delete.md',
+                              icon: 'el-icon-delete'
+                            },
+                            {
+                              label: '新建评论',
+                              path: 'user-guide/current-project/defect/display-mode/table-mode/defect-comment.md',
+                              icon: 'el-icon-chat-line-round'
+                            }
+                          ]
+                        },
+                        {
+                          label: 'Excel模式',
+                          icon: 'excel2',
+                          children: [
+                            {
+                              label: 'Excel模式介绍',
+                              path: 'user-guide/current-project/defect/display-mode/excel-mode/excel-mode-intro.md',
+                              icon: 'el-icon-document'
+                            },
+                            {
+                              label: '新建缺陷',
+                              path: 'user-guide/current-project/defect/display-mode/excel-mode/defect-create.md',
+                              icon: 'el-icon-plus'
+                            },
+                            {
+                              label: '修改缺陷',
+                              path: 'user-guide/current-project/defect/display-mode/excel-mode/defect-edit.md',
+                              icon: 'el-icon-edit'
+                            },
+                            {
+                              label: '删除缺陷',
+                              path: 'user-guide/current-project/defect/display-mode/excel-mode/defect-delete.md',
+                              icon: 'el-icon-delete'
+                            }
+                          ]
+                        }
+                      ]
                     },
                     {
                       label: '导入缺陷',

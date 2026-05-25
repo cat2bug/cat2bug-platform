@@ -2,7 +2,7 @@
 
 在缺陷列表页面，点击「新建缺陷」按钮，从右侧弹出新建对话框，填写相关数据后点击「新建」按钮保存提交。
 
-![新建缺陷](../../../images/user-guide/current-project/defect/defect-create.png)
+![新建缺陷](../../../../../images/user-guide/current-project/defect/defect-create.png)
 
 ## 使用场景
 
@@ -70,7 +70,7 @@
   - 左侧：Markdown 工具条和输入框
   - 右侧：实时渲染预览
 
-![缺陷描述](../../../images/user-guide/current-project/defect/defect-remark.png)
+![缺陷描述](../../../../../images/user-guide/current-project/defect/defect-remark.png)
 
 **好的缺陷描述应包含：**
 1. **问题现象** - 发生了什么

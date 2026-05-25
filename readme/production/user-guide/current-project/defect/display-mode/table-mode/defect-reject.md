@@ -2,7 +2,7 @@
 
 当开发人员修复缺陷后，测试人员进行回归测试，如发现问题依旧没有解决，将会驳回此缺陷。
 
-![驳回缺陷](../../../images/user-guide/current-project/defect/defect-reject.png)
+![驳回缺陷](../../../../../images/user-guide/current-project/defect/defect-reject.png)
 
 ## 使用场景
 
