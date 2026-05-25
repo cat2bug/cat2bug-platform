@@ -194,6 +194,7 @@ import { listMemberOfProject } from "@/api/system/project";
 import { upload } from "@/api/common/upload";
 import { strFormat } from "@/utils";
 import { checkPermi } from "@/utils/permission";
+import errorCode from "@/utils/errorCode";
 import { TableOptions } from "@/views/system/defect/list/table-options";
 
 /**
@@ -3086,12 +3087,16 @@ export default {
      */
     async handleExcelDeleteSelectedRows(rows) {
       if (!Array.isArray(rows) || !rows.length) return;
+      const persisted = rows.filter((r) => r && r.defectId);
       if (!checkPermi(["system:defect:remove"])) {
-        this.$modal.msgError(this.$t("defect.excel-save-failed").toString());
-        return;
+        const currentUserId = this.$store.state.user.id;
+        const allPersistedOwnedByCurrentUser = persisted.every((r) => r.createById == currentUserId);
+        if (!allPersistedOwnedByCurrentUser) {
+          this.$modal.msgError(errorCode["403"]);
+          return;
+        }
       }
       const remove$ids = new Set(rows.map((r) => String(r.$id)));
-      const persisted = rows.filter((r) => r && r.defectId);
       try {
         await this.$modal.confirm(
           String(strFormat(this.$t("defect.excel-delete-rows-confirm-any"), rows.length)),

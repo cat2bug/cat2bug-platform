@@ -346,6 +346,24 @@ public class SysDefectServiceImpl implements ISysDefectService
     }
 
     /**
+     * 校验当前用户是否可删除/恢复缺陷：持 remove 权限或通过创建人校验则返回缺陷实体。
+     */
+    private SysDefect assertCanDeleteOrRestore(Long defectId) {
+        SysDefect existing = sysDefectMapper.selectSysDefectByDefectId(
+                defectId, SecurityUtils.getUserId(), DateUtils.getNowDate());
+        if (existing == null) {
+            throw new ServiceException(MessageUtils.message("defect.not_found"));
+        }
+        if (SecurityUtils.hasPermi("system:defect:remove")) {
+            return existing;
+        }
+        if (!SecurityUtils.getUserId().equals(existing.getCreateById())) {
+            throw new ServiceException(MessageUtils.message("no-permission"));
+        }
+        return existing;
+    }
+
+    /**
      * 业务编辑入口：先抓快照、再走 updateSysDefect、有差异时写一条 UPDATE 日志并发送通知。
      * 只在 Controller `edit` 入口调用，状态动作走各自的 assign/repair/... 不会经过这里。
      */
@@ -468,9 +486,7 @@ public class SysDefectServiceImpl implements ISysDefectService
     @Transactional
     public int deleteSysDefectByDefectId(Long defectId)
     {
-        SysDefect existing = sysDefectMapper.selectSysDefectByDefectId(
-                defectId, SecurityUtils.getUserId(), DateUtils.getNowDate());
-        Preconditions.checkNotNull(existing, MessageUtils.message("defect.not_found"));
+        SysDefect existing = assertCanDeleteOrRestore(defectId);
         if ("2".equals(existing.getDelFlag())) {
             return 0;
         }
@@ -485,9 +501,7 @@ public class SysDefectServiceImpl implements ISysDefectService
     @Transactional
     public int restoreSysDefectByDefectId(Long defectId)
     {
-        SysDefect existing = sysDefectMapper.selectSysDefectByDefectId(
-                defectId, SecurityUtils.getUserId(), DateUtils.getNowDate());
-        Preconditions.checkNotNull(existing, MessageUtils.message("defect.not_found"));
+        SysDefect existing = assertCanDeleteOrRestore(defectId);
         Preconditions.checkState("2".equals(existing.getDelFlag()), MessageUtils.message("defect.not_deleted"));
         SysDefect patch = new SysDefect();
         patch.setDefectId(defectId);

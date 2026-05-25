@@ -233,7 +233,7 @@ public class SysDefectController extends BaseController
     /**
      * 删除缺陷
      */
-    @PreAuthorize("@ss.hasPermi('system:defect:remove')")
+    @PreAuthorize("@ss.hasPermi('system:defect:remove') || @ss.hasPermi('system:defect:edit') || @ss.hasPermi('system:defect:add')")
     @Log(title = "缺陷", businessType = BusinessType.DELETE)
 	@DeleteMapping("/{defectIds}")
     public AjaxResult remove(@PathVariable Long[] defectIds)
@@ -244,7 +244,7 @@ public class SysDefectController extends BaseController
     /**
      * 恢复已删除缺陷
      */
-    @PreAuthorize("@ss.hasPermi('system:defect:remove')")
+    @PreAuthorize("@ss.hasPermi('system:defect:remove') || @ss.hasPermi('system:defect:edit') || @ss.hasPermi('system:defect:add')")
     @Log(title = "缺陷", businessType = BusinessType.UPDATE)
     @PutMapping("/{defectId}/restore")
     public AjaxResult restore(@PathVariable Long defectId)
