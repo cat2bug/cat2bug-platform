@@ -111,6 +111,19 @@
             <span>{{$t('ecosystem')}}</span>
           </div>
           <el-collapse accordion>
+            <el-collapse-item title="Cat2Bug-MCP">
+              <div class="body">
+                <p>
+                  <i class="el-icon-s-order"></i> {{$t('project.introduction')}}：
+                  Cat2Bug-Platform MCP服务
+                </p>
+                <p>
+                  <i class="el-icon-s-home"></i>{{$t('source-code-address')}}：<el-link
+                  href="https://gitee.com/cat2bug/cat2bug-mcp"
+                  target="_blank">https://gitee.com/cat2bug/cat2bug-mcp</el-link>
+                </p>
+              </div>
+            </el-collapse-item>
             <el-collapse-item title="Cat2Bug-JUnit">
               <div class="body">
                 <p>
@@ -146,6 +159,19 @@
             <span>{{$t('update-log')}}</span>
           </div>
           <el-collapse accordion>
+            <el-collapse-item title="v0.6.2 - 2026-05-25">
+              <ol>
+                <li>添加飞书通知接收</li>
+                <li>API KEY中添加权限设置</li>
+                <li>【AI大模型】改为【Ollama模型】，在AI创建测试用例、缺陷AI运用中，可以选择指定模型</li>
+                <li>缺陷页面添加Excel显示模式，删除了日历显示模式</li>
+                <li>缺陷页面表格模式左侧添加交付物列表</li>
+                <li>缺陷页面Tab中添加【已删除缺陷】标签，并在新建中添加【已删除】选项</li>
+                <li>添加AI模型的MCP功能</li>
+                <li>添加系统使用文档</li>
+                <li>优化整体页面</li>
+              </ol>
+            </el-collapse-item>
             <el-collapse-item title="v0.6.1 - 2026-01-10">
               <ol>
                 <li>添加繁体中文、俄语、日语、韩语、阿拉伯语显示</li>
