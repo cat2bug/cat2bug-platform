@@ -16,20 +16,20 @@
         <el-tab-pane v-for="tab in config.tabs" :key="tab.tabId+''" :name="tab.tabId+''">
           <span slot="label" class="defect-tab-label">
             <svg-icon icon-class="list2" class="defect-tab-icon" />
-            {{ tab.tabName }}
+            <span class="defect-tab-text" :title="tab.tabName">{{ tab.tabName }}</span>
             <i style="width: 14px;" class="el-icon-close" @click.stop="removeDefectTabHandle(tab.tabId)" />
           </span>
         </el-tab-pane>
         <el-tab-pane key="all-tab" :name="allTab">
           <span slot="label" class="defect-tab-label">
             <svg-icon icon-class="all" class="defect-tab-icon" />
-            {{ $t('defect.all-defect') }}
+            <span class="defect-tab-text" :title="$t('defect.all-defect')">{{ $t('defect.all-defect') }}</span>
           </span>
         </el-tab-pane>
         <el-tab-pane key="deleted-tab" :name="deletedTab">
           <span slot="label" class="defect-tab-label">
             <svg-icon icon-class="delete" class="defect-tab-icon" />
-            {{ $t('defect.deleted-defect') }}
+            <span class="defect-tab-text" :title="$t('defect.deleted-defect')">{{ $t('defect.deleted-defect') }}</span>
           </span>
         </el-tab-pane>
         <el-tab-pane :name="defectAddTabPaneName" disabled class="defect-tab-add-pane">
@@ -893,9 +893,12 @@ export default {
 }
 /* 与用例页：h3 下 10px + 本行上 8px（flex 子项不折叠 margin） */
 .defect-tools-tab {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
   margin-top: var(--defect-toolbar-v-gap, 8px);
-  position: relative;
   height: 40px;
+  min-width: 0;
   /* el-tabs 默认表头 margin-bottom:15px + 空 content，会在 Tab 与下方查询条之间多出一段空白 */
   ::v-deep .el-tabs__header {
     margin-bottom: 0 !important;
@@ -904,10 +907,11 @@ export default {
     display: none !important;
   }
   .el-tabs {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  ::v-deep .el-tabs__item:not(#tab-__defect_add_tab__) {
+    max-width: 200px;
   }
   ::v-deep #tab-__defect_add_tab__.el-tabs__item {
     display: inline-flex !important;
@@ -947,15 +951,12 @@ export default {
     }
   }
   .defect-tools-tab-right {
-    position: absolute;
-    right: 0;
-    top: 0;
+    flex: 0 0 auto;
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100%;
+    padding-left: 8px;
     padding-bottom: 5px;
-    z-index: 2;
   }
 }
 .defect-tools-button {
@@ -970,13 +971,23 @@ export default {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-}
-.defect-tab-label {
+  max-width: 100%;
+  min-width: 0;
   ::v-deep .defect-tab-icon {
     font-size: 14px;
     flex-shrink: 0;
     vertical-align: middle;
   }
+  .el-icon-close {
+    flex-shrink: 0;
+  }
+}
+.defect-tab-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .defect-add-dropdown {
   margin-right: 0px;
