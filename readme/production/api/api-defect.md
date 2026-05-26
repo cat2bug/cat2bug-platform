@@ -71,6 +71,74 @@
 | defectLogDescribe | 字符型 | 是 | 缺陷日志描述 |
 | createTime | 字符型 | 是 | 日志创建时间，格式 `yyyy-MM-dd HH:mm:ss` |
 
+
+::: code-tabs
+```bash title=cURL
+curl -G "${baseUrl}/api/defect?pageNum=1&pageSize=10&handlerAccountList=demo" \
+  -H "CAT2BUG-API-KEY: ${apiKey}"
+```
+```java title=Java
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+
+public class Example {
+  public static void main(String[] args) throws Exception {
+    HttpClient client = HttpClient.newHttpClient();
+    HttpRequest request = HttpRequest.newBuilder()
+        .uri(URI.create("${baseUrl}/api/defect?pageNum=1&pageSize=10&handlerAccountList=demo"))
+        .header("CAT2BUG-API-KEY", "${apiKey}")
+        .GET()
+        .build();
+    HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+    System.out.println(response.statusCode());
+    System.out.println(response.body());
+  }
+}
+```
+```python title=Python
+import urllib.request
+
+url = "${baseUrl}/api/defect?pageNum=1&pageSize=10&handlerAccountList=demo"
+req = urllib.request.Request(url, method="GET", headers={"CAT2BUG-API-KEY": "${apiKey}"})
+with urllib.request.urlopen(req) as resp:
+    print(resp.status)
+    print(resp.read().decode())
+```
+```javascript title=Node.js
+const url = new URL('/api/defect', '${baseUrl}');
+url.searchParams.set('pageNum', '1');
+url.searchParams.set('pageSize', '10');
+url.searchParams.append('handlerAccountList', 'demo');
+const response = await fetch(url, { headers: { 'CAT2BUG-API-KEY': '${apiKey}' } });
+console.log(response.status, await response.text());
+```
+```php title=PHP
+<?php
+$url = '${baseUrl}/api/defect?pageNum=1&pageSize=10&handlerAccountList=demo';
+$ch = curl_init($url);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_HTTPHEADER, ['CAT2BUG-API-KEY: ${apiKey}']);
+echo curl_exec($ch);
+curl_close($ch);
+```
+```csharp title=C#
+using System;
+using System.Net.Http;
+using System.Threading.Tasks;
+
+class Program {
+  static async Task Main() {
+    using var client = new HttpClient();
+    client.DefaultRequestHeaders.Add("CAT2BUG-API-KEY", "${apiKey}");
+    var response = await client.GetAsync("${baseUrl}/api/defect?pageNum=1&pageSize=10&handlerAccountList=demo");
+    Console.WriteLine(await response.Content.ReadAsStringAsync());
+  }
+}
+```
+:::
+
 ---
 
 ## 创建缺陷
@@ -107,6 +175,108 @@
 
 **data 中缺陷对象的格式说明**（字段含义与列表中缺陷对象一致；含 `handlerList`、`currentLog`、`creator` 等。）
 
+
+::: code-tabs
+```bash title=cURL
+curl -X POST "${baseUrl}/api/defect" \
+  -H "Content-Type: application/json" \
+  -H "CAT2BUG-API-KEY: ${apiKey}" \
+  -d '{"defectName":"示例缺陷","defectType":"BUG","defectLevel":"MIDDLE","handlerAccountList":["demo"]}'
+```
+```java title=Java
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+
+public class Example {
+  public static void main(String[] args) throws Exception {
+    String body = "{\"defectName\":\"示例缺陷\",\"defectType\":\"BUG\",\"defectLevel\":\"MIDDLE\",\"handlerAccountList\":[\"demo\"]}";
+    HttpClient client = HttpClient.newHttpClient();
+    HttpRequest request = HttpRequest.newBuilder()
+        .uri(URI.create("${baseUrl}/api/defect"))
+        .header("CAT2BUG-API-KEY", "${apiKey}")
+        .header("Content-Type", "application/json")
+        .POST(HttpRequest.BodyPublishers.ofString(body))
+        .build();
+    HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+    System.out.println(response.statusCode());
+    System.out.println(response.body());
+  }
+}
+```
+```python title=Python
+import json
+import urllib.request
+
+url = "${baseUrl}/api/defect"
+payload = {
+    "defectName": "示例缺陷",
+    "defectType": "BUG",
+    "defectLevel": "MIDDLE",
+    "handlerAccountList": [
+        "demo"
+    ]
+}
+body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+req = urllib.request.Request(
+    url,
+    data=body,
+    method="POST",
+    headers={"CAT2BUG-API-KEY": "${apiKey}", "Content-Type": "application/json"},
+)
+with urllib.request.urlopen(req) as resp:
+    print(resp.status)
+    print(resp.read().decode())
+```
+```javascript title=Node.js
+const response = await fetch('${baseUrl}/api/defect', {
+  method: 'POST',
+  headers: {
+    'CAT2BUG-API-KEY': '${apiKey}',
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+  "defectName": "示例缺陷",
+  "defectType": "BUG",
+  "defectLevel": "MIDDLE",
+  "handlerAccountList": [
+    "demo"
+  ]
+}),
+});
+console.log(response.status, await response.text());
+```
+```php title=PHP
+<?php
+$url = '${baseUrl}/api/defect';
+$payload = ['defectName' => '示例缺陷', 'defectType' => 'BUG', 'defectLevel' => 'MIDDLE', 'handlerAccountList' => ['demo']];
+$ch = curl_init($url);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload, JSON_UNESCAPED_UNICODE));
+curl_setopt($ch, CURLOPT_HTTPHEADER, ['CAT2BUG-API-KEY: ${apiKey}', 'Content-Type: application/json']);
+echo curl_exec($ch);
+curl_close($ch);
+```
+```csharp title=C#
+using System;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
+
+class Program {
+  static async Task Main() {
+    using var client = new HttpClient();
+    client.DefaultRequestHeaders.Add("CAT2BUG-API-KEY", "${apiKey}");
+    var content = new StringContent("{\"defectName\":\"示例缺陷\",\"defectType\":\"BUG\",\"defectLevel\":\"MIDDLE\",\"handlerAccountList\":[\"demo\"]}", Encoding.UTF8, "application/json");
+    var response = await client.PostAsync("${baseUrl}/api/defect", content);
+    Console.WriteLine(await response.Content.ReadAsStringAsync());
+  }
+}
+```
+:::
+
 ---
 
 ## 修改缺陷
@@ -141,6 +311,106 @@
 | code | 字符型 | 是 | 返回码，正常返回 200 |
 | msg | 字符型 | 是 | 接口返回消息 |
 
+
+::: code-tabs
+```bash title=cURL
+curl -X PUT "${baseUrl}/api/defect" \
+  -H "Content-Type: application/json" \
+  -H "CAT2BUG-API-KEY: ${apiKey}" \
+  -d '{"defectNum":1001,"defectState":"PROCESSING","handlerAccountList":["demo"]}'
+```
+```java title=Java
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+
+public class Example {
+  public static void main(String[] args) throws Exception {
+    String body = "{\"defectNum\":1001,\"defectState\":\"PROCESSING\",\"handlerAccountList\":[\"demo\"]}";
+    HttpClient client = HttpClient.newHttpClient();
+    HttpRequest request = HttpRequest.newBuilder()
+        .uri(URI.create("${baseUrl}/api/defect"))
+        .header("CAT2BUG-API-KEY", "${apiKey}")
+        .header("Content-Type", "application/json")
+        .PUT(HttpRequest.BodyPublishers.ofString(body))
+        .build();
+    HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+    System.out.println(response.statusCode());
+    System.out.println(response.body());
+  }
+}
+```
+```python title=Python
+import json
+import urllib.request
+
+url = "${baseUrl}/api/defect"
+payload = {
+    "defectNum": 1001,
+    "defectState": "PROCESSING",
+    "handlerAccountList": [
+        "demo"
+    ]
+}
+body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+req = urllib.request.Request(
+    url,
+    data=body,
+    method="PUT",
+    headers={"CAT2BUG-API-KEY": "${apiKey}", "Content-Type": "application/json"},
+)
+with urllib.request.urlopen(req) as resp:
+    print(resp.status)
+    print(resp.read().decode())
+```
+```javascript title=Node.js
+const response = await fetch('${baseUrl}/api/defect', {
+  method: 'PUT',
+  headers: {
+    'CAT2BUG-API-KEY': '${apiKey}',
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+  "defectNum": 1001,
+  "defectState": "PROCESSING",
+  "handlerAccountList": [
+    "demo"
+  ]
+}),
+});
+console.log(response.status, await response.text());
+```
+```php title=PHP
+<?php
+$url = '${baseUrl}/api/defect';
+$payload = ['defectNum' => 1001, 'defectState' => 'PROCESSING', 'handlerAccountList' => ['demo']];
+$ch = curl_init($url);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');
+curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload, JSON_UNESCAPED_UNICODE));
+curl_setopt($ch, CURLOPT_HTTPHEADER, ['CAT2BUG-API-KEY: ${apiKey}', 'Content-Type: application/json']);
+echo curl_exec($ch);
+curl_close($ch);
+```
+```csharp title=C#
+using System;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
+
+class Program {
+  static async Task Main() {
+    using var client = new HttpClient();
+    client.DefaultRequestHeaders.Add("CAT2BUG-API-KEY", "${apiKey}");
+    var content = new StringContent("{\"defectNum\":1001,\"defectState\":\"PROCESSING\",\"handlerAccountList\":[\"demo\"]}", Encoding.UTF8, "application/json");
+    var response = await client.PutAsync("${baseUrl}/api/defect", content);
+    Console.WriteLine(await response.Content.ReadAsStringAsync());
+  }
+}
+```
+:::
+
 ---
 
 ## 查看缺陷详情
@@ -162,6 +432,72 @@
 | msg | 字符型 | 是 | 接口返回消息 |
 
 **data 中缺陷对象的格式说明**（与列表一致，含 `handlerList`、`currentLog`、`creator` 等。）
+
+
+::: code-tabs
+```bash title=cURL
+curl -G "${baseUrl}/api/defect/1001" \
+  -H "CAT2BUG-API-KEY: ${apiKey}"
+```
+```java title=Java
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+
+public class Example {
+  public static void main(String[] args) throws Exception {
+    HttpClient client = HttpClient.newHttpClient();
+    HttpRequest request = HttpRequest.newBuilder()
+        .uri(URI.create("${baseUrl}/api/defect/1001"))
+        .header("CAT2BUG-API-KEY", "${apiKey}")
+        .GET()
+        .build();
+    HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+    System.out.println(response.statusCode());
+    System.out.println(response.body());
+  }
+}
+```
+```python title=Python
+import urllib.request
+
+url = "${baseUrl}/api/defect/1001"
+req = urllib.request.Request(url, method="GET", headers={"CAT2BUG-API-KEY": "${apiKey}"})
+with urllib.request.urlopen(req) as resp:
+    print(resp.status)
+    print(resp.read().decode())
+```
+```javascript title=Node.js
+const response = await fetch('${baseUrl}/api/defect/1001', {
+  headers: { 'CAT2BUG-API-KEY': '${apiKey}' },
+});
+console.log(response.status, await response.text());
+```
+```php title=PHP
+<?php
+$url = '${baseUrl}/api/defect/1001';
+$ch = curl_init($url);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_HTTPHEADER, ['CAT2BUG-API-KEY: ${apiKey}']);
+echo curl_exec($ch);
+curl_close($ch);
+```
+```csharp title=C#
+using System;
+using System.Net.Http;
+using System.Threading.Tasks;
+
+class Program {
+  static async Task Main() {
+    using var client = new HttpClient();
+    client.DefaultRequestHeaders.Add("CAT2BUG-API-KEY", "${apiKey}");
+    var response = await client.GetAsync("${baseUrl}/api/defect/1001");
+    Console.WriteLine(await response.Content.ReadAsStringAsync());
+  }
+}
+```
+:::
 
 ---
 
@@ -216,6 +552,106 @@
 | code | 字符型 | 是 | 返回码，正常返回 200 |
 | msg | 字符型 | 是 | 接口返回消息 |
 
+
+::: code-tabs
+```bash title=cURL
+curl -X POST "${baseUrl}/api/defect/1001/repair" \
+  -H "Content-Type: application/json" \
+  -H "CAT2BUG-API-KEY: ${apiKey}" \
+  -d '{"handlerAccountList":["zhangsan","lisi"],"describe":"已修复"}'
+```
+```java title=Java
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+
+public class Example {
+  public static void main(String[] args) throws Exception {
+    String body = "{\"handlerAccountList\":[\"zhangsan\",\"lisi\"],\"describe\":\"已修复\"}";
+    HttpClient client = HttpClient.newHttpClient();
+    HttpRequest request = HttpRequest.newBuilder()
+        .uri(URI.create("${baseUrl}/api/defect/1001/repair"))
+        .header("CAT2BUG-API-KEY", "${apiKey}")
+        .header("Content-Type", "application/json")
+        .POST(HttpRequest.BodyPublishers.ofString(body))
+        .build();
+    HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+    System.out.println(response.statusCode());
+    System.out.println(response.body());
+  }
+}
+```
+```python title=Python
+import json
+import urllib.request
+
+url = "${baseUrl}/api/defect/1001/repair"
+payload = {
+    "handlerAccountList": [
+        "zhangsan",
+        "lisi"
+    ],
+    "describe": "已修复"
+}
+body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+req = urllib.request.Request(
+    url,
+    data=body,
+    method="POST",
+    headers={"CAT2BUG-API-KEY": "${apiKey}", "Content-Type": "application/json"},
+)
+with urllib.request.urlopen(req) as resp:
+    print(resp.status)
+    print(resp.read().decode())
+```
+```javascript title=Node.js
+const response = await fetch('${baseUrl}/api/defect/1001/repair', {
+  method: 'POST',
+  headers: {
+    'CAT2BUG-API-KEY': '${apiKey}',
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+  "handlerAccountList": [
+    "zhangsan",
+    "lisi"
+  ],
+  "describe": "已修复"
+}),
+});
+console.log(response.status, await response.text());
+```
+```php title=PHP
+<?php
+$url = '${baseUrl}/api/defect/1001/repair';
+$payload = ['handlerAccountList' => ['zhangsan', 'lisi'], 'describe' => '已修复'];
+$ch = curl_init($url);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload, JSON_UNESCAPED_UNICODE));
+curl_setopt($ch, CURLOPT_HTTPHEADER, ['CAT2BUG-API-KEY: ${apiKey}', 'Content-Type: application/json']);
+echo curl_exec($ch);
+curl_close($ch);
+```
+```csharp title=C#
+using System;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
+
+class Program {
+  static async Task Main() {
+    using var client = new HttpClient();
+    client.DefaultRequestHeaders.Add("CAT2BUG-API-KEY", "${apiKey}");
+    var content = new StringContent("{\"handlerAccountList\":[\"zhangsan\",\"lisi\"],\"describe\":\"已修复\"}", Encoding.UTF8, "application/json");
+    var response = await client.PostAsync("${baseUrl}/api/defect/1001/repair", content);
+    Console.WriteLine(await response.Content.ReadAsStringAsync());
+  }
+}
+```
+:::
+
 ---
 
 ## 通过缺陷
@@ -238,6 +674,98 @@
 | code | 字符型 | 是 | 返回码，正常返回 200 |
 | msg | 字符型 | 是 | 接口返回消息 |
 
+
+::: code-tabs
+```bash title=cURL
+curl -X POST "${baseUrl}/api/defect/1001/pass" \
+  -H "Content-Type: application/json" \
+  -H "CAT2BUG-API-KEY: ${apiKey}" \
+  -d '{"describe":"验证通过"}'
+```
+```java title=Java
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+
+public class Example {
+  public static void main(String[] args) throws Exception {
+    String body = "{\"describe\":\"验证通过\"}";
+    HttpClient client = HttpClient.newHttpClient();
+    HttpRequest request = HttpRequest.newBuilder()
+        .uri(URI.create("${baseUrl}/api/defect/1001/pass"))
+        .header("CAT2BUG-API-KEY", "${apiKey}")
+        .header("Content-Type", "application/json")
+        .POST(HttpRequest.BodyPublishers.ofString(body))
+        .build();
+    HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+    System.out.println(response.statusCode());
+    System.out.println(response.body());
+  }
+}
+```
+```python title=Python
+import json
+import urllib.request
+
+url = "${baseUrl}/api/defect/1001/pass"
+payload = {
+    "describe": "验证通过"
+}
+body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+req = urllib.request.Request(
+    url,
+    data=body,
+    method="POST",
+    headers={"CAT2BUG-API-KEY": "${apiKey}", "Content-Type": "application/json"},
+)
+with urllib.request.urlopen(req) as resp:
+    print(resp.status)
+    print(resp.read().decode())
+```
+```javascript title=Node.js
+const response = await fetch('${baseUrl}/api/defect/1001/pass', {
+  method: 'POST',
+  headers: {
+    'CAT2BUG-API-KEY': '${apiKey}',
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+  "describe": "验证通过"
+}),
+});
+console.log(response.status, await response.text());
+```
+```php title=PHP
+<?php
+$url = '${baseUrl}/api/defect/1001/pass';
+$payload = ['describe' => '验证通过'];
+$ch = curl_init($url);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload, JSON_UNESCAPED_UNICODE));
+curl_setopt($ch, CURLOPT_HTTPHEADER, ['CAT2BUG-API-KEY: ${apiKey}', 'Content-Type: application/json']);
+echo curl_exec($ch);
+curl_close($ch);
+```
+```csharp title=C#
+using System;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
+
+class Program {
+  static async Task Main() {
+    using var client = new HttpClient();
+    client.DefaultRequestHeaders.Add("CAT2BUG-API-KEY", "${apiKey}");
+    var content = new StringContent("{\"describe\":\"验证通过\"}", Encoding.UTF8, "application/json");
+    var response = await client.PostAsync("${baseUrl}/api/defect/1001/pass", content);
+    Console.WriteLine(await response.Content.ReadAsStringAsync());
+  }
+}
+```
+:::
+
 ---
 
 ## 驳回缺陷
@@ -259,6 +787,98 @@
 | data | 对象 | 是 | 缺陷对象，结构同缺陷详情 |
 | code | 字符型 | 是 | 返回码，正常返回 200 |
 | msg | 字符型 | 是 | 接口返回消息 |
+
+
+::: code-tabs
+```bash title=cURL
+curl -X POST "${baseUrl}/api/defect/1001/reject" \
+  -H "Content-Type: application/json" \
+  -H "CAT2BUG-API-KEY: ${apiKey}" \
+  -d '{"describe":"不符合要求"}'
+```
+```java title=Java
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+
+public class Example {
+  public static void main(String[] args) throws Exception {
+    String body = "{\"describe\":\"不符合要求\"}";
+    HttpClient client = HttpClient.newHttpClient();
+    HttpRequest request = HttpRequest.newBuilder()
+        .uri(URI.create("${baseUrl}/api/defect/1001/reject"))
+        .header("CAT2BUG-API-KEY", "${apiKey}")
+        .header("Content-Type", "application/json")
+        .POST(HttpRequest.BodyPublishers.ofString(body))
+        .build();
+    HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+    System.out.println(response.statusCode());
+    System.out.println(response.body());
+  }
+}
+```
+```python title=Python
+import json
+import urllib.request
+
+url = "${baseUrl}/api/defect/1001/reject"
+payload = {
+    "describe": "不符合要求"
+}
+body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+req = urllib.request.Request(
+    url,
+    data=body,
+    method="POST",
+    headers={"CAT2BUG-API-KEY": "${apiKey}", "Content-Type": "application/json"},
+)
+with urllib.request.urlopen(req) as resp:
+    print(resp.status)
+    print(resp.read().decode())
+```
+```javascript title=Node.js
+const response = await fetch('${baseUrl}/api/defect/1001/reject', {
+  method: 'POST',
+  headers: {
+    'CAT2BUG-API-KEY': '${apiKey}',
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+  "describe": "不符合要求"
+}),
+});
+console.log(response.status, await response.text());
+```
+```php title=PHP
+<?php
+$url = '${baseUrl}/api/defect/1001/reject';
+$payload = ['describe' => '不符合要求'];
+$ch = curl_init($url);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload, JSON_UNESCAPED_UNICODE));
+curl_setopt($ch, CURLOPT_HTTPHEADER, ['CAT2BUG-API-KEY: ${apiKey}', 'Content-Type: application/json']);
+echo curl_exec($ch);
+curl_close($ch);
+```
+```csharp title=C#
+using System;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
+
+class Program {
+  static async Task Main() {
+    using var client = new HttpClient();
+    client.DefaultRequestHeaders.Add("CAT2BUG-API-KEY", "${apiKey}");
+    var content = new StringContent("{\"describe\":\"不符合要求\"}", Encoding.UTF8, "application/json");
+    var response = await client.PostAsync("${baseUrl}/api/defect/1001/reject", content);
+    Console.WriteLine(await response.Content.ReadAsStringAsync());
+  }
+}
+```
+:::
 
 ---
 
@@ -283,6 +903,104 @@
 | code | 字符型 | 是 | 返回码，正常返回 200 |
 | msg | 字符型 | 是 | 接口返回消息 |
 
+
+::: code-tabs
+```bash title=cURL
+curl -X POST "${baseUrl}/api/defect/1001/assign" \
+  -H "Content-Type: application/json" \
+  -H "CAT2BUG-API-KEY: ${apiKey}" \
+  -d '{"handlerAccountList":["zhangsan"],"describe":"请处理"}'
+```
+```java title=Java
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+
+public class Example {
+  public static void main(String[] args) throws Exception {
+    String body = "{\"handlerAccountList\":[\"zhangsan\"],\"describe\":\"请处理\"}";
+    HttpClient client = HttpClient.newHttpClient();
+    HttpRequest request = HttpRequest.newBuilder()
+        .uri(URI.create("${baseUrl}/api/defect/1001/assign"))
+        .header("CAT2BUG-API-KEY", "${apiKey}")
+        .header("Content-Type", "application/json")
+        .POST(HttpRequest.BodyPublishers.ofString(body))
+        .build();
+    HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+    System.out.println(response.statusCode());
+    System.out.println(response.body());
+  }
+}
+```
+```python title=Python
+import json
+import urllib.request
+
+url = "${baseUrl}/api/defect/1001/assign"
+payload = {
+    "handlerAccountList": [
+        "zhangsan"
+    ],
+    "describe": "请处理"
+}
+body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+req = urllib.request.Request(
+    url,
+    data=body,
+    method="POST",
+    headers={"CAT2BUG-API-KEY": "${apiKey}", "Content-Type": "application/json"},
+)
+with urllib.request.urlopen(req) as resp:
+    print(resp.status)
+    print(resp.read().decode())
+```
+```javascript title=Node.js
+const response = await fetch('${baseUrl}/api/defect/1001/assign', {
+  method: 'POST',
+  headers: {
+    'CAT2BUG-API-KEY': '${apiKey}',
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+  "handlerAccountList": [
+    "zhangsan"
+  ],
+  "describe": "请处理"
+}),
+});
+console.log(response.status, await response.text());
+```
+```php title=PHP
+<?php
+$url = '${baseUrl}/api/defect/1001/assign';
+$payload = ['handlerAccountList' => ['zhangsan'], 'describe' => '请处理'];
+$ch = curl_init($url);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload, JSON_UNESCAPED_UNICODE));
+curl_setopt($ch, CURLOPT_HTTPHEADER, ['CAT2BUG-API-KEY: ${apiKey}', 'Content-Type: application/json']);
+echo curl_exec($ch);
+curl_close($ch);
+```
+```csharp title=C#
+using System;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
+
+class Program {
+  static async Task Main() {
+    using var client = new HttpClient();
+    client.DefaultRequestHeaders.Add("CAT2BUG-API-KEY", "${apiKey}");
+    var content = new StringContent("{\"handlerAccountList\":[\"zhangsan\"],\"describe\":\"请处理\"}", Encoding.UTF8, "application/json");
+    var response = await client.PostAsync("${baseUrl}/api/defect/1001/assign", content);
+    Console.WriteLine(await response.Content.ReadAsStringAsync());
+  }
+}
+```
+:::
+
 ---
 
 ## 关闭缺陷
@@ -305,6 +1023,98 @@
 | code | 字符型 | 是 | 返回码，正常返回 200 |
 | msg | 字符型 | 是 | 接口返回消息 |
 
+
+::: code-tabs
+```bash title=cURL
+curl -X POST "${baseUrl}/api/defect/1001/close" \
+  -H "Content-Type: application/json" \
+  -H "CAT2BUG-API-KEY: ${apiKey}" \
+  -d '{"describe":"关闭原因说明"}'
+```
+```java title=Java
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+
+public class Example {
+  public static void main(String[] args) throws Exception {
+    String body = "{\"describe\":\"关闭原因说明\"}";
+    HttpClient client = HttpClient.newHttpClient();
+    HttpRequest request = HttpRequest.newBuilder()
+        .uri(URI.create("${baseUrl}/api/defect/1001/close"))
+        .header("CAT2BUG-API-KEY", "${apiKey}")
+        .header("Content-Type", "application/json")
+        .POST(HttpRequest.BodyPublishers.ofString(body))
+        .build();
+    HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+    System.out.println(response.statusCode());
+    System.out.println(response.body());
+  }
+}
+```
+```python title=Python
+import json
+import urllib.request
+
+url = "${baseUrl}/api/defect/1001/close"
+payload = {
+    "describe": "关闭原因说明"
+}
+body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+req = urllib.request.Request(
+    url,
+    data=body,
+    method="POST",
+    headers={"CAT2BUG-API-KEY": "${apiKey}", "Content-Type": "application/json"},
+)
+with urllib.request.urlopen(req) as resp:
+    print(resp.status)
+    print(resp.read().decode())
+```
+```javascript title=Node.js
+const response = await fetch('${baseUrl}/api/defect/1001/close', {
+  method: 'POST',
+  headers: {
+    'CAT2BUG-API-KEY': '${apiKey}',
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+  "describe": "关闭原因说明"
+}),
+});
+console.log(response.status, await response.text());
+```
+```php title=PHP
+<?php
+$url = '${baseUrl}/api/defect/1001/close';
+$payload = ['describe' => '关闭原因说明'];
+$ch = curl_init($url);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload, JSON_UNESCAPED_UNICODE));
+curl_setopt($ch, CURLOPT_HTTPHEADER, ['CAT2BUG-API-KEY: ${apiKey}', 'Content-Type: application/json']);
+echo curl_exec($ch);
+curl_close($ch);
+```
+```csharp title=C#
+using System;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
+
+class Program {
+  static async Task Main() {
+    using var client = new HttpClient();
+    client.DefaultRequestHeaders.Add("CAT2BUG-API-KEY", "${apiKey}");
+    var content = new StringContent("{\"describe\":\"关闭原因说明\"}", Encoding.UTF8, "application/json");
+    var response = await client.PostAsync("${baseUrl}/api/defect/1001/close", content);
+    Console.WriteLine(await response.Content.ReadAsStringAsync());
+  }
+}
+```
+:::
+
 ---
 
 ## 开启缺陷
@@ -326,3 +1136,94 @@
 | data | 对象 | 是 | 缺陷对象，结构同缺陷详情 |
 | code | 字符型 | 是 | 返回码，正常返回 200 |
 | msg | 字符型 | 是 | 接口返回消息 |
+::: code-tabs
+```bash title=cURL
+curl -X POST "${baseUrl}/api/defect/1001/open" \
+  -H "Content-Type: application/json" \
+  -H "CAT2BUG-API-KEY: ${apiKey}" \
+  -d '{"describe":"重新开启"}'
+```
+```java title=Java
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+
+public class Example {
+  public static void main(String[] args) throws Exception {
+    String body = "{\"describe\":\"重新开启\"}";
+    HttpClient client = HttpClient.newHttpClient();
+    HttpRequest request = HttpRequest.newBuilder()
+        .uri(URI.create("${baseUrl}/api/defect/1001/open"))
+        .header("CAT2BUG-API-KEY", "${apiKey}")
+        .header("Content-Type", "application/json")
+        .POST(HttpRequest.BodyPublishers.ofString(body))
+        .build();
+    HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+    System.out.println(response.statusCode());
+    System.out.println(response.body());
+  }
+}
+```
+```python title=Python
+import json
+import urllib.request
+
+url = "${baseUrl}/api/defect/1001/open"
+payload = {
+    "describe": "重新开启"
+}
+body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+req = urllib.request.Request(
+    url,
+    data=body,
+    method="POST",
+    headers={"CAT2BUG-API-KEY": "${apiKey}", "Content-Type": "application/json"},
+)
+with urllib.request.urlopen(req) as resp:
+    print(resp.status)
+    print(resp.read().decode())
+```
+```javascript title=Node.js
+const response = await fetch('${baseUrl}/api/defect/1001/open', {
+  method: 'POST',
+  headers: {
+    'CAT2BUG-API-KEY': '${apiKey}',
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+  "describe": "重新开启"
+}),
+});
+console.log(response.status, await response.text());
+```
+```php title=PHP
+<?php
+$url = '${baseUrl}/api/defect/1001/open';
+$payload = ['describe' => '重新开启'];
+$ch = curl_init($url);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload, JSON_UNESCAPED_UNICODE));
+curl_setopt($ch, CURLOPT_HTTPHEADER, ['CAT2BUG-API-KEY: ${apiKey}', 'Content-Type: application/json']);
+echo curl_exec($ch);
+curl_close($ch);
+```
+```csharp title=C#
+using System;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
+
+class Program {
+  static async Task Main() {
+    using var client = new HttpClient();
+    client.DefaultRequestHeaders.Add("CAT2BUG-API-KEY", "${apiKey}");
+    var content = new StringContent("{\"describe\":\"重新开启\"}", Encoding.UTF8, "application/json");
+    var response = await client.PostAsync("${baseUrl}/api/defect/1001/open", content);
+    Console.WriteLine(await response.Content.ReadAsStringAsync());
+  }
+}
+```
+:::
+

@@ -12,6 +12,7 @@
     "build:stage": "vue-cli-service build --mode staging --report",
     "preview": "node build/index.js --preview",
     "lint": "eslint --ext .js,.vue src",
+    "validate:api-docs": "node scripts/validate-api-doc-examples.cjs",
     "test:e2e": "playwright test",
     "test:e2e:local": "PLAYWRIGHT_NO_WEB_SERVER=1 PW_CHANNEL=chrome playwright test",
     "postinstall": "patch-package",

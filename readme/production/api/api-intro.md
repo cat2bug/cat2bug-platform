@@ -20,20 +20,22 @@
 
 ## 接口调用
 
-第三方系统调用 Cat2Bug-Platform 接口时，需要在接口请求头部添加之前创建的「API KEY」，变量名为 `CAT2BUG-API-KEY`，如下示例：
+第三方系统调用 Cat2Bug-Platform 接口时，需要在接口请求头部添加之前创建的「API KEY」，变量名为 `CAT2BUG-API-KEY`：
 
 **项目范围**：`CAT2BUG-API-KEY` 与项目是绑定的，Open API 请求**不需要**也不应再传 `projectId`；各子文档中的请求参数均不包含项目 ID。
 
 **名称化参数**：测试用例、交付物等接口使用**用例编号**、**交付物全路径**（多级用 `/` 分隔）等与界面一致的可读标识；请勿传 `caseId`、`moduleId`、`deliverableId` 等数字主键（响应 JSON 中亦不返回此类字段，详见各子文档）。
 
-```bash
-curl --location -X POST 'http://localhost:2020/api/defect' \
--H 'Content-Type: application/json' \
--H 'CAT2BUG-API-KEY: 202411011547433W484U00XIEXL3U6' \
--d '{"defectType":"BUG","defectName":"defectName","defectDescribe":"defectDescribe","defectLevel":"MIDDLE","handlerAccountList":["demo"]}'
-```
+### 服务地址
 
-说明：创建缺陷时 `defectType`、`defectLevel` 为字符串枚举；`handlerAccountList` 为成员登录账号数组（与成员接口返回的 `memberAccount` 一致），勿传用户数字 ID。
+示例代码中的 `${baseUrl}` 为**不含末尾斜杠**的 Open API 根地址。按当前仓库默认开发配置，取值如下（第三方系统、脚本联调请用「直连后端」一行；与浏览器里前台页面同源访问时，与前台请求一致，用「经前台调用 API」一行）：
+
+| 部署场景 | 地址 |
+|----------|------|
+| 直连后端（Open API / 脚本推荐） | `${baseUrlDirect}` |
+| 经前台调用 API（与浏览器访问前台一致） | `${baseUrl}` |
+
+完整请求 URL 写法：`${baseUrl}/api/***`（不要在 `${baseUrl}` 后多加 `/` 再拼路径）。
 
 ## 接口列表
 

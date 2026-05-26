@@ -328,3 +328,131 @@
 .markdown-body .custom-block.tip p:last-child {
   margin-bottom: 0;
 }
+
+/* API 文档 code-tabs */
+.markdown-body .code-tabs {
+  margin: 16px 0 24px;
+  border: 1px solid #e1e4e8;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.markdown-body .code-tabs__caption {
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #24292f;
+  background: #fff;
+  border-bottom: 1px solid #e1e4e8;
+  line-height: 1.4;
+}
+
+.markdown-body .code-tabs__header {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0;
+  background: #f6f8fa;
+  border-bottom: 1px solid #e1e4e8;
+}
+
+.markdown-body .code-tabs__tabs {
+  display: flex;
+  flex: 1;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  min-width: 0;
+  -webkit-overflow-scrolling: touch;
+}
+
+.markdown-body .code-tabs__tab {
+  flex: 0 0 auto;
+  border: none;
+  background: transparent;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #57606a;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+}
+
+.markdown-body .code-tabs__tab:hover {
+  color: #24292f;
+}
+
+.markdown-body .code-tabs__tab.is-active {
+  color: #0969da;
+  border-bottom-color: #0969da;
+  font-weight: 600;
+  background: #fff;
+}
+
+.markdown-body .code-tabs__panel {
+  display: none;
+}
+
+.markdown-body .code-tabs__panel.is-active {
+  display: block;
+}
+
+.markdown-body .code-tabs__copy {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  margin: 0 4px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #57606a;
+}
+
+.markdown-body .code-tabs__copy:hover {
+  background: #eaeef2;
+  color: #24292f;
+}
+
+.markdown-body .code-tabs__copy-icon {
+  display: block;
+}
+
+.markdown-body .code-tabs__pre {
+  margin: 0;
+  padding: 12px 0;
+  overflow: auto;
+  background: #f6f8fa;
+  font-size: 13px;
+  line-height: 1.5;
+  border-radius: 0;
+}
+
+.markdown-body .code-tabs__pre code.hljs-line-numbers {
+  display: block;
+  padding: 0 12px 0 0;
+  background: transparent;
+}
+
+.markdown-body .code-tabs__pre .hljs-line {
+  display: block;
+  padding-left: 3.2em;
+  position: relative;
+  min-height: 1.5em;
+}
+
+.markdown-body .code-tabs__pre .hljs-line::before {
+  content: attr(data-line);
+  position: absolute;
+  left: 0;
+  width: 2.5em;
+  text-align: right;
+  color: #8b949e;
+  user-select: none;
+  padding-right: 0.8em;
+  border-right: 1px solid #e1e4e8;
+  margin-right: 0.5em;
+}

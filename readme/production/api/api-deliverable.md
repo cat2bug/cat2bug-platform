@@ -38,6 +38,86 @@ Open API 使用**交付物全路径**（多级用 `/` 分隔）或**节点名称
 | childrenCount | 整型 | 是 | 直接子交付物数量 |
 | remark | 字符型 | 否 | 备注 |
 
+::: code-tabs
+```bash title=cURL
+curl -G "${baseUrl}/api/deliverable" \
+  -H "CAT2BUG-API-KEY: ${apiKey}" \
+  --data-urlencode "pageNum=1" \
+  --data-urlencode "pageSize=10" \
+  --data-urlencode "parentDeliverablePath=模块A"
+```
+```java title=Java
+import java.net.URI;
+import java.net.URLEncoder;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+
+String query = "pageNum=1&pageSize=10"
+    + "&parentDeliverablePath=" + URLEncoder.encode("模块A", StandardCharsets.UTF_8);
+HttpClient client = HttpClient.newHttpClient();
+HttpRequest request = HttpRequest.newBuilder()
+    .uri(URI.create("${baseUrl}/api/deliverable?" + query))
+    .header("CAT2BUG-API-KEY", "${apiKey}")
+    .GET()
+    .build();
+HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+System.out.println(response.body());
+```
+```python title=Python
+import urllib.parse
+import urllib.request
+
+params = urllib.parse.urlencode({
+    "pageNum": 1,
+    "pageSize": 10,
+    "parentDeliverablePath": "模块A",
+})
+req = urllib.request.Request(
+    f"${baseUrl}/api/deliverable?{params}",
+    headers={"CAT2BUG-API-KEY": "${apiKey}"},
+    method="GET",
+)
+with urllib.request.urlopen(req) as resp:
+    print(resp.read().decode())
+```
+```javascript title=Node.js
+const params = new URLSearchParams({
+  pageNum: "1",
+  pageSize: "10",
+  parentDeliverablePath: "模块A",
+});
+const response = await fetch(`${baseUrl}/api/deliverable?${params}`, {
+  headers: { "CAT2BUG-API-KEY": "${apiKey}" },
+});
+console.log(await response.text());
+```
+```php title=PHP
+$query = http_build_query([
+    "pageNum" => 1,
+    "pageSize" => 10,
+    "parentDeliverablePath" => "模块A",
+]);
+$ch = curl_init("${baseUrl}/api/deliverable?" . $query);
+curl_setopt_array($ch, [
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_HTTPHEADER => ["CAT2BUG-API-KEY: ${apiKey}"],
+]);
+$response = curl_exec($ch);
+curl_close($ch);
+echo $response;
+```
+```csharp title=C#
+using var client = new HttpClient();
+client.DefaultRequestHeaders.Add("CAT2BUG-API-KEY", "${apiKey}");
+var url = "${baseUrl}/api/deliverable?pageNum=1&pageSize=10"
+    + "&parentDeliverablePath=" + Uri.EscapeDataString("模块A");
+var response = await client.GetAsync(url);
+Console.WriteLine(await response.Content.ReadAsStringAsync());
+```
+:::
+
 ---
 
 ## 查看交付物详情
@@ -62,6 +142,71 @@ Open API 使用**交付物全路径**（多级用 `/` 分隔）或**节点名称
 
 若路径或名称无法匹配当前项目下的交付物，返回错误信息，`data` 为空。
 
+::: code-tabs
+```bash title=cURL
+curl -G "${baseUrl}/api/deliverable/info" \
+  -H "CAT2BUG-API-KEY: ${apiKey}" \
+  --data-urlencode "deliverablePath=模块A/子模块B"
+```
+```java title=Java
+import java.net.URI;
+import java.net.URLEncoder;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+
+String query = "deliverablePath=" + URLEncoder.encode("模块A/子模块B", StandardCharsets.UTF_8);
+HttpClient client = HttpClient.newHttpClient();
+HttpRequest request = HttpRequest.newBuilder()
+    .uri(URI.create("${baseUrl}/api/deliverable/info?" + query))
+    .header("CAT2BUG-API-KEY", "${apiKey}")
+    .GET()
+    .build();
+HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+System.out.println(response.body());
+```
+```python title=Python
+import urllib.parse
+import urllib.request
+
+params = urllib.parse.urlencode({"deliverablePath": "模块A/子模块B"})
+req = urllib.request.Request(
+    f"${baseUrl}/api/deliverable/info?{params}",
+    headers={"CAT2BUG-API-KEY": "${apiKey}"},
+    method="GET",
+)
+with urllib.request.urlopen(req) as resp:
+    print(resp.read().decode())
+```
+```javascript title=Node.js
+const params = new URLSearchParams({ deliverablePath: "模块A/子模块B" });
+const response = await fetch(`${baseUrl}/api/deliverable/info?${params}`, {
+  headers: { "CAT2BUG-API-KEY": "${apiKey}" },
+});
+console.log(await response.text());
+```
+```php title=PHP
+$query = http_build_query(["deliverablePath" => "模块A/子模块B"]);
+$ch = curl_init("${baseUrl}/api/deliverable/info?" . $query);
+curl_setopt_array($ch, [
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_HTTPHEADER => ["CAT2BUG-API-KEY: ${apiKey}"],
+]);
+$response = curl_exec($ch);
+curl_close($ch);
+echo $response;
+```
+```csharp title=C#
+using var client = new HttpClient();
+client.DefaultRequestHeaders.Add("CAT2BUG-API-KEY", "${apiKey}");
+var url = "${baseUrl}/api/deliverable/info?deliverablePath="
+    + Uri.EscapeDataString("模块A/子模块B");
+var response = await client.GetAsync(url);
+Console.WriteLine(await response.Content.ReadAsStringAsync());
+```
+:::
+
 ---
 
 ## 创建交付物
@@ -85,3 +230,112 @@ Open API 使用**交付物全路径**（多级用 `/` 分隔）或**节点名称
 | data | 对象 | 是 | 创建后的交付物对象，字段同列表 `rows` 中单条说明 |
 | code | 字符型 | 是 | 返回码，正常返回200 |
 | msg | 字符型 | 是 | 接口返回消息 |
+
+::: code-tabs
+```bash title=cURL
+curl -X POST "${baseUrl}/api/deliverable" \
+  -H "CAT2BUG-API-KEY: ${apiKey}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "deliverableName": "子模块B",
+    "parentDeliverablePath": "模块A",
+    "remark": "API 创建"
+  }'
+```
+```java title=Java
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+
+String json = """
+    {
+      "deliverableName": "子模块B",
+      "parentDeliverablePath": "模块A",
+      "remark": "API 创建"
+    }
+    """;
+HttpClient client = HttpClient.newHttpClient();
+HttpRequest request = HttpRequest.newBuilder()
+    .uri(URI.create("${baseUrl}/api/deliverable"))
+    .header("CAT2BUG-API-KEY", "${apiKey}")
+    .header("Content-Type", "application/json")
+    .POST(HttpRequest.BodyPublishers.ofString(json))
+    .build();
+HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+System.out.println(response.body());
+```
+```python title=Python
+import json
+import urllib.request
+
+body = json.dumps({
+    "deliverableName": "子模块B",
+    "parentDeliverablePath": "模块A",
+    "remark": "API 创建",
+}).encode()
+req = urllib.request.Request(
+    "${baseUrl}/api/deliverable",
+    data=body,
+    headers={
+        "CAT2BUG-API-KEY": "${apiKey}",
+        "Content-Type": "application/json",
+    },
+    method="POST",
+)
+with urllib.request.urlopen(req) as resp:
+    print(resp.read().decode())
+```
+```javascript title=Node.js
+const response = await fetch("${baseUrl}/api/deliverable", {
+  method: "POST",
+  headers: {
+    "CAT2BUG-API-KEY": "${apiKey}",
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    deliverableName: "子模块B",
+    parentDeliverablePath: "模块A",
+    remark: "API 创建",
+  }),
+});
+console.log(await response.text());
+```
+```php title=PHP
+$payload = json_encode([
+    "deliverableName" => "子模块B",
+    "parentDeliverablePath" => "模块A",
+    "remark" => "API 创建",
+], JSON_UNESCAPED_UNICODE);
+$ch = curl_init("${baseUrl}/api/deliverable");
+curl_setopt_array($ch, [
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_POST => true,
+    CURLOPT_POSTFIELDS => $payload,
+    CURLOPT_HTTPHEADER => [
+        "CAT2BUG-API-KEY: ${apiKey}",
+        "Content-Type: application/json",
+    ],
+]);
+$response = curl_exec($ch);
+curl_close($ch);
+echo $response;
+```
+```csharp title=C#
+using System.Net.Http;
+using System.Text;
+
+using var client = new HttpClient();
+client.DefaultRequestHeaders.Add("CAT2BUG-API-KEY", "${apiKey}");
+var json = """
+    {
+      "deliverableName": "子模块B",
+      "parentDeliverablePath": "模块A",
+      "remark": "API 创建"
+    }
+    """;
+var content = new StringContent(json, Encoding.UTF8, "application/json");
+var response = await client.PostAsync("${baseUrl}/api/deliverable", content);
+Console.WriteLine(await response.Content.ReadAsStringAsync());
+```
+:::

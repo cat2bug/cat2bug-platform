@@ -37,7 +37,7 @@
         </div>
       </div>
       <div class="doc-content" ref="docContent">
-        <div class="markdown-body" v-html="renderedContent"></div>
+        <div class="markdown-body" ref="markdownBody" v-html="renderedContent"></div>
         <el-backtop target=".doc-content" :visibility-height="300" :right="40" :bottom="40">
           <div class="backtop-button">
             <i class="el-icon-top"></i>
@@ -53,6 +53,14 @@ import MarkdownIt from 'markdown-it'
 import MarkdownItContainer from 'markdown-it-container'
 import MarkdownItAnchor from 'markdown-it-anchor'
 import { setHeader } from '@/utils/request'
+import {
+  preprocessCodeTabs,
+  initCodeTabs,
+  safeHighlight,
+  resolveApiDocBaseUrls,
+  applyApiDocPlaceholders
+} from '@/utils/doc-code-tabs'
+import 'highlight.js/styles/github-gist.css'
 
 export default {
   name: 'DocViewer',
@@ -767,10 +775,16 @@ export default {
       ).join('<span style="color: #909399;"> / </span>')
       const lastPart = `<span style="color: #303133;">${parts[parts.length - 1]}</span>`
       return `${grayParts}<span style="color: #909399;"> / </span>${lastPart}`
-    }
+    },
   },
   mounted() {
-    this.md = new MarkdownIt()
+    this.md = new MarkdownIt({
+      html: true,
+      highlight: (str, lang) => {
+        const highlighted = safeHighlight(str, lang)
+        return `<pre class="hljs"><code>${highlighted}</code></pre>`
+      }
+    })
 
     // 配置 markdown-it-anchor 插件，直接使用标题文本作为 ID
     this.md.use(MarkdownItAnchor, {
@@ -982,7 +996,16 @@ export default {
           throw new Error('文档加载失败')
         }
         const markdown = await response.text()
-        let html = this.md.render(markdown)
+        const isApiDoc = /^api\//.test(docPath)
+        let md = markdown
+        let tabOptions = {}
+        if (isApiDoc) {
+          const urls = resolveApiDocBaseUrls()
+          tabOptions = { baseUrl: urls.baseUrl, apiKey: '' }
+          md = applyApiDocPlaceholders(markdown, urls)
+        }
+        const processed = preprocessCodeTabs(md, tabOptions)
+        let html = this.md.render(processed)
         // 修复图片路径：将相对路径转换为绝对路径
         html = html.replace(/src="(\.\.\/)+images\//g, 'src="/docs/images/')
         html = html.replace(/src="\.\/images\//g, 'src="/docs/images/')
@@ -1021,7 +1044,7 @@ export default {
         // 等待DOM更新后，为文档内的链接添加点击事件处理，并滚动到顶部
         this.$nextTick(() => {
           this.handleDocLinks()
-          // 滚动到文档内容区域顶部
+          initCodeTabs(this.$refs.markdownBody)
           const docContent = document.querySelector('.doc-content')
           if (docContent) {
             docContent.scrollTop = 0
