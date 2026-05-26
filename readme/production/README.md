@@ -115,6 +115,9 @@ Cat2Bug-Platform 专门针对测试工作的各个环节及不同角色，开发
 - [角色管理](admin-guide/admin-role.md) - 系统角色配置
 - [成员管理](admin-guide/admin-member.md) - 系统成员管理
 
+### AI 指南
+- [MCP 接入](ai-guide/mcp.md) - 通过 npm 包 @cat2bug/mcp 将 Cursor 等 AI 客户端接入平台 Open API
+
 ### API 文档
 - [API 介绍](api/api-intro.md) - API 接口说明
 - [交付物接口](api/api-deliverable.md) - 交付物相关接口

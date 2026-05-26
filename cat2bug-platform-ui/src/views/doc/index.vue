@@ -697,6 +697,17 @@ export default {
           ]
         },
         {
+          label: 'AI 指南',
+          icon: 'robot',
+          children: [
+            {
+              label: 'MCP 接入',
+              path: 'ai-guide/mcp.md',
+              icon: 'el-icon-connection'
+            }
+          ]
+        },
+        {
           label: 'API 文档',
           icon: 'el-icon-connection',
           children: [
