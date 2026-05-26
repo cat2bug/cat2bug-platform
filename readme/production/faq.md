@@ -78,7 +78,7 @@ A: 在"个人中心"-"通知设置"中配置。
 A: 默认位置：`./data/cat2bug_platform.mv.db`
 
 ### Q: 如何切换到 MySQL？
-A: 修改 `application.yml` 中的 `spring.profiles.active=mysql`，并配置 MySQL 连接信息。
+A: 在 `cat2bug-platform-admin/src/main/resources/application.yml` 中，将 `spring.database-type` 由 `h2` 改为 `mysql`（系统会据此自动激活 `application-mysql.yml` 配置）。随后在 `application-mysql.yml` 中按需修改数据源连接地址、用户名、密码等信息。
 
 ### Q: 数据库迁移失败？
 A: 检查 Flyway 版本脚本是否正确，查看日志获取详细错误信息。
@@ -88,8 +88,7 @@ A: 检查 Flyway 版本脚本是否正确，查看日志获取详细错误信息
 ### Q: 如何联系技术支持？
 A:
 - 官方网站：https://www.cat2bug.com
-- GitHub Issues：https://github.com/cat2bug/cat2bug-platform/issues
-- 邮箱：support@cat2bug.com
+- Gitee：https://gitee.com/cat2bug/cat2bug-platform
 
 ### Q: 系统支持哪些浏览器？
 A: 推荐使用 Chrome、Firefox、Edge 等现代浏览器，IE 不支持。
