@@ -2,6 +2,8 @@
 
 Excel 模式支持通过键盘快速删除缺陷，适合批量清理误录数据。
 
+![Excel模式删除缺陷](../../../../../images/user-guide/current-project/defect/excel-mode-delete.png)
+
 ## 操作步骤
 
 1. 在 Excel 模式中，用鼠标在表格**最左侧行号列**点选一行或多行（按住 Ctrl / Shift 可多选）。

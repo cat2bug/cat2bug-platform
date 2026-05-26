@@ -2,6 +2,8 @@
 
 Excel 模式支持在表格中**直接修改**已有缺陷，无需打开详情或流程按钮。
 
+![Excel模式修改缺陷](../../../../../images/user-guide/current-project/defect/excel-mode-modify.png)
+
 ## 操作步骤
 
 1. 在 Excel 模式中找到要修改的缺陷行。

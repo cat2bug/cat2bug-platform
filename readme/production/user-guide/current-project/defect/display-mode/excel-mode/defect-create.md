@@ -2,6 +2,8 @@
 
 在 Excel 模式中，无需点击「新建缺陷」按钮打开对话框，可在表格底部的**空白行**直接录入。
 
+![Excel模式新建缺陷](../../../../../images/user-guide/current-project/defect/excel-mode-create.png)
+
 ## 操作步骤
 
 1. 切换到 [Excel 模式](excel-mode-intro.md)，滚动到表格末尾的空白行。
