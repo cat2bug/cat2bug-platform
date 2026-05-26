@@ -41,7 +41,7 @@ Cat2Bug-Platform 专门针对测试工作的各个环节及不同角色，开发
 - [个人中心](user-guide/user-management/user-profile.md) - 个人信息管理
 
 #### 团队和项目
-- [团队管理](user-guide/team-manage.md) - 创建和管理团队
+- [团队列表](user-guide/team-manage.md) - 创建、切换与管理团队
 - [项目管理](user-guide/project-manage.md) - 创建和管理项目
 
 #### 当前项目功能

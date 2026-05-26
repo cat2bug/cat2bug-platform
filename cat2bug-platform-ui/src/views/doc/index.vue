@@ -205,7 +205,7 @@ export default {
               ]
             },
             {
-              label: '团队管理',
+              label: '团队列表',
               path: 'user-guide/team-manage.md',
               icon: 'el-icon-office-building'
             },
