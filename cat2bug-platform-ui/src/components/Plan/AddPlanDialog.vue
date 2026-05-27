@@ -90,7 +90,9 @@
           <multipane-resizer ref="paneResizer" v-show="showModuleTree" :style="[multipaneStyle, paneResizerRuleVars]"></multipane-resizer>
           <!--      用例列表-->
           <div ref="caseContext" class="case-context">
-          <el-table ref="planItemTable" v-loading="loading" :data="caseList" v-resize="setDragComponentSize" @select="handleSelectionChange" @select-all="handleAllSelectionChange">
+          <div ref="planAddCaseContextBody" class="case-context-body plan-add-case-context-body">
+          <div class="plan-add-case-table-scroll">
+          <el-table ref="planItemTable" v-loading="loading" :data="caseList" :max-height="planAddTableBodyMaxHeight" v-resize="setDragComponentSize" @select="handleSelectionChange" @select-all="handleAllSelectionChange">
             <el-table-column
               v-if="!showModuleTree"
               key="plan-add-sidebar-expand-col"
@@ -169,14 +171,18 @@
               </template>
             </el-table-column>
           </el-table>
+          </div>
 
-          <pagination
-            v-show="total>0"
-            :total="total"
-            :page.sync="caseQueryParams.pageNum"
-            :limit.sync="caseQueryParams.pageSize"
-            @pagination="getPlanItemCaseList"
-          />
+          <div v-show="total>0" ref="planAddPaginationBand" class="plan-add-table-pagination-band">
+            <pagination
+              class="plan-add-table-pagination"
+              :total="total"
+              :page.sync="caseQueryParams.pageNum"
+              :limit.sync="caseQueryParams.pageSize"
+              @pagination="getPlanItemCaseList"
+            />
+          </div>
+          </div>
           </div>
         </multipane>
       </div>
@@ -260,6 +266,8 @@ export default {
       showModuleTree: true,
       /** 与右侧 el-table 表头行高对齐（px） */
       planAddTreeToolbarSyncHeight: null,
+      /** 弹窗内用例表 max-height（为底部分页预留空间） */
+      planAddTableBodyMaxHeight: null,
     }
   },
   watch: {
@@ -267,10 +275,12 @@ export default {
       if (val) {
         this.$nextTick(() => {
           this.initPlanAddTableHeaderHeightSync();
+          this.initPlanAddTableBodyResizeObserver();
           this.setDragComponentSize();
         });
       } else {
         this.destroyPlanAddTableHeaderHeightSync();
+        this.destroyPlanAddTableBodyResizeObserver();
       }
     },
   },
@@ -329,6 +339,7 @@ export default {
   },
   destroyed() {
     this.destroyPlanAddTableHeaderHeightSync();
+    this.destroyPlanAddTableBodyResizeObserver();
   },
   methods: {
     syncPlanAddTreeToolbarWithTableHeader() {
@@ -610,8 +621,59 @@ export default {
         this.$nextTick(() => this.syncPlanAddTreeToolbarWithTableHeader());
       });
     },
+    syncPlanAddTableBodyMaxHeight() {
+      this.$nextTick(() => {
+        const body = this.$refs.planAddCaseContextBody;
+        if (!body || !body.clientHeight) {
+          return;
+        }
+        const pagEl = this.$refs.planAddPaginationBand;
+        let reserveBelowTable = 0;
+        if (this.total > 0 && pagEl && pagEl.offsetParent !== null) {
+          const st = window.getComputedStyle(pagEl);
+          reserveBelowTable =
+            pagEl.offsetHeight +
+            parseFloat(st.marginTop || '0') +
+            parseFloat(st.marginBottom || '0');
+        }
+        const next = Math.max(120, Math.floor(body.clientHeight - reserveBelowTable - 2));
+        if (this.planAddTableBodyMaxHeight !== next) {
+          this.planAddTableBodyMaxHeight = next;
+          this.$nextTick(() => {
+            const tbl = this.$refs.planItemTable;
+            if (tbl && typeof tbl.doLayout === 'function') {
+              tbl.doLayout();
+            }
+          });
+        }
+      });
+    },
+    initPlanAddTableBodyResizeObserver() {
+      this.destroyPlanAddTableBodyResizeObserver();
+      const body = this.$refs.planAddCaseContextBody;
+      if (!body) {
+        this.syncPlanAddTableBodyMaxHeight();
+        return;
+      }
+      if (typeof ResizeObserver === 'undefined') {
+        this.syncPlanAddTableBodyMaxHeight();
+        return;
+      }
+      this._planAddTableBodyResizeObserver = new ResizeObserver(() => {
+        this.syncPlanAddTableBodyMaxHeight();
+      });
+      this._planAddTableBodyResizeObserver.observe(body);
+      this.syncPlanAddTableBodyMaxHeight();
+    },
+    destroyPlanAddTableBodyResizeObserver() {
+      if (this._planAddTableBodyResizeObserver) {
+        this._planAddTableBodyResizeObserver.disconnect();
+        this._planAddTableBodyResizeObserver = null;
+      }
+    },
     /** 表格 doLayout + 分隔条手柄 */
     setDragComponentSize() {
+      this.syncPlanAddTableBodyMaxHeight();
       this.$nextTick(() => {
         this.$refs.planItemTable && this.$refs.planItemTable.doLayout && this.$refs.planItemTable.doLayout();
         this.scheduleSyncPaneResizerHandle();
@@ -676,7 +738,7 @@ export default {
 }
 .custom-resizer {
   flex: 1 1 auto;
-  min-height: 0;
+  min-height: 280px;
   width: 100%;
   height: auto;
   align-items: stretch;
@@ -780,12 +842,31 @@ export default {
   flex-direction: column;
 }
 .case-context {
-  flex: 1 1 auto;
+  flex: 1 1 0%;
   min-width: 0;
   min-height: 0;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+}
+.plan-add-case-context-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+  --defect-pagination-v-gap: 12px;
+  display: flex;
+  flex-direction: column;
+}
+.plan-add-case-table-scroll {
+  flex: 0 1 auto;
+  align-self: stretch;
+  width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
   /* 表格可横向滚动但不显示滚动条（仍可用触控板 / Shift+滚轮） */
   ::v-deep .el-table__body-wrapper,
   ::v-deep .el-table__fixed-body-wrapper {
@@ -796,6 +877,28 @@ export default {
       height: 0 !important;
     }
   }
+}
+.plan-add-table-pagination-band {
+  flex-shrink: 0;
+  margin-top: var(--defect-pagination-v-gap);
+  margin-bottom: 8px;
+}
+::v-deep .plan-add-table-pagination.pagination-container {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  height: auto !important;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+}
+::v-deep .plan-add-table-pagination.pagination-container .el-pagination {
+  position: relative !important;
+  right: auto !important;
 }
 .annex-list {
   display: inline-flex;
