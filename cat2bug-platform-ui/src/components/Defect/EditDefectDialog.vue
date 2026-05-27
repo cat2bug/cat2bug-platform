@@ -14,7 +14,7 @@
           </el-col>
           <el-col :span="12">
             <el-form-item :label="$t('type')" prop="defectType">
-              <el-select v-model="form.defectType" :placeholder="$t('defect.select-type')">
+              <el-select v-model="form.defectType" clearable :placeholder="$t('defect.select-type')">
                 <el-option
                   v-for="type in config.types"
                   :key="type.key"
@@ -26,7 +26,7 @@
           </el-col>
           <el-col :span="12">
             <el-form-item :label="$t('priority')" prop="defectLevel">
-              <el-select v-model="form.defectLevel" :placeholder="$t('defect.select-level')">
+              <el-select v-model="form.defectLevel" clearable :placeholder="$t('defect.select-level')">
                 <el-option
                   v-for="dict in dict.type.defect_level"
                   :key="dict.value"
@@ -126,6 +126,7 @@ import {
   makeDefectVersion
 } from "@/api/ai/AiDefect";
 import {strFormat} from "@/utils";
+import {normalizeDefectTypeAndLevel} from "@/utils/defect-defaults";
 
 export default {
   name: "EditDefect",
@@ -152,17 +153,11 @@ export default {
       },
       // 表单校验
       rules: {
-        defectType: [
-          { required: true, message: this.$i18n.t('defect.defect-type-cannot-empty'), trigger: "change" }
-        ],
         handleBy: [
           { required: true, message: this.$i18n.t('defect.handle-by-cannot-empty'), trigger: "input" }
         ],
         defectName: [
           { required: true, message: this.$i18n.t('defect.defect-name-cannot-empty'), trigger: "input" }
-        ],
-        defectLevel: [
-          { required: true, message: this.$i18n.t('defect.defect-level-cannot-empty'), trigger: "input" }
         ],
       },
     }
@@ -256,6 +251,7 @@ export default {
     submitForm() {
       this.$refs["form"].validate(valid => {
         if (valid) {
+          normalizeDefectTypeAndLevel(this.form);
           if(this.planTimeRange.length>1) {
             this.form.planStartTime = this.planTimeRange[0];
             this.form.planEndTime = this.planTimeRange[1];

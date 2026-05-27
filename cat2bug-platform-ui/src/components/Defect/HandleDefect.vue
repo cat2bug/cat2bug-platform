@@ -117,6 +117,7 @@ import {getCase} from "@/api/system/case";
 import MarkdownItVue from "markdown-it-vue"
 import 'markdown-it-vue/dist/markdown-it-vue.css'
 import {lifeTime} from "@/utils/defect";
+import {normalizeDefectTypeAndLevel} from "@/utils/defect-defaults";
 
 export default {
   name: "EditDefect",
@@ -141,17 +142,11 @@ export default {
       },
       // 表单校验
       rules: {
-        defectType: [
-          { required: true, message: this.$i18n.t('defect.defect-type-cannot-empty'), trigger: "change" }
-        ],
         handleBy: [
           { required: true, message: this.$i18n.t('defect.handle-by-cannot-empty'), trigger: "input" }
         ],
         defectName: [
           { required: true, message: this.$i18n.t('defect.defect-name-cannot-empty'), trigger: "input" }
-        ],
-        defectLevel: [
-          { required: true, message: this.$i18n.t('defect.defect-level-cannot-empty'), trigger: "input" }
         ],
         defectDescribe: [
           { required: true, message: this.$i18n.t('defect.describe-cannot-empty'), trigger: "input" }
@@ -323,6 +318,7 @@ export default {
     submitForm() {
       this.$refs["form"].validate(valid => {
         if (valid) {
+          normalizeDefectTypeAndLevel(this.form);
           this.form.projectId = this.projectId;
           if (this.form.defectId != null) {
             updateDefect(this.form).then(res => {

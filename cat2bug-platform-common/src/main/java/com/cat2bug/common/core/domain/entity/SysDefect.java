@@ -37,10 +37,10 @@ public class SysDefect extends BaseEntity
 
     /** 缺陷类型 */
     @JsonFormat(shape = JsonFormat.Shape.STRING)
-    @Excel(name = "类型", i18nNameKey = "type", type=Excel.Type.EXPORT,handler = com.cat2bug.common.core.domain.excel.DefectTypeHandler.class, comboHandler = com.cat2bug.common.core.domain.excel.DefectTypeComboHandlerAdapter.class, headerColor = IndexedColors.RED, headerBackgroundColor = IndexedColors.GREY_25_PERCENT)
+    @Excel(name = "类型", i18nNameKey = "type", type=Excel.Type.EXPORT,handler = com.cat2bug.common.core.domain.excel.DefectTypeHandler.class, comboHandler = com.cat2bug.common.core.domain.excel.DefectTypeComboHandlerAdapter.class, headerBackgroundColor = IndexedColors.GREY_25_PERCENT)
     private SysDefectTypeEnum defectType;
 
-    @Excel(name = "类型", i18nNameKey = "type", type=Excel.Type.IMPORT, comboHandler = com.cat2bug.common.core.domain.excel.DefectTypeComboHandlerAdapter.class, headerColor = IndexedColors.RED, headerBackgroundColor = IndexedColors.GREY_25_PERCENT)
+    @Excel(name = "类型", i18nNameKey = "type", type=Excel.Type.IMPORT, comboHandler = com.cat2bug.common.core.domain.excel.DefectTypeComboHandlerAdapter.class, headerBackgroundColor = IndexedColors.GREY_25_PERCENT)
     private String defectTypeImportName;
 
     private SysDefectTypeEnum defectTypeName;
@@ -62,10 +62,10 @@ public class SysDefect extends BaseEntity
 
     /** 缺陷状态 */
     @JsonFormat(shape = JsonFormat.Shape.NUMBER)
-    @Excel(name = "缺陷状态", i18nNameKey = "defect.state", type=Excel.Type.EXPORT,handler = com.cat2bug.common.core.domain.excel.DefectStateHandler.class, comboHandler = com.cat2bug.common.core.domain.excel.DefectStateComboHandlerAdapter.class, headerColor = IndexedColors.RED, headerBackgroundColor = IndexedColors.GREY_25_PERCENT)
+    @Excel(name = "缺陷状态", i18nNameKey = "defect.state", type=Excel.Type.EXPORT,handler = com.cat2bug.common.core.domain.excel.DefectStateHandler.class, comboHandler = com.cat2bug.common.core.domain.excel.DefectStateComboHandlerAdapter.class, headerBackgroundColor = IndexedColors.GREY_25_PERCENT)
     private SysDefectStateEnum defectState;
 
-    @Excel(name = "缺陷状态", i18nNameKey = "defect.state", type=Excel.Type.IMPORT, comboHandler = com.cat2bug.common.core.domain.excel.DefectStateComboHandlerAdapter.class, headerColor = IndexedColors.RED, headerBackgroundColor = IndexedColors.GREY_25_PERCENT)
+    @Excel(name = "缺陷状态", i18nNameKey = "defect.state", type=Excel.Type.IMPORT, comboHandler = com.cat2bug.common.core.domain.excel.DefectStateComboHandlerAdapter.class, headerBackgroundColor = IndexedColors.GREY_25_PERCENT)
     private String defectStateImportName;
 
     /** 缺陷状态 */

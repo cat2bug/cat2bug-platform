@@ -1,7 +1,11 @@
 import i18n from "@/utils/i18n/i18n";
 import cache from '../plugins/cache'
 
-import {exp} from "qrcode/lib/core/galois-field";
+export {
+  DEFECT_DEFAULT_TYPE,
+  DEFECT_DEFAULT_LEVEL,
+  normalizeDefectTypeAndLevel,
+} from './defect-defaults'
 
 const DEFECT_TEMP_TAB_KEY = "defect-temp-tab-key";
 

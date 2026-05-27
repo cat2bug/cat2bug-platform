@@ -139,9 +139,9 @@ public @interface Excel
     public ColumnType cellType() default ColumnType.STRING;
 
     /**
-     * 导出列头背景颜色
+     * 导出列头背景颜色（默认浅灰，与缺陷/用例导出模版一致）
      */
-    public IndexedColors headerBackgroundColor() default IndexedColors.GREY_50_PERCENT;
+    public IndexedColors headerBackgroundColor() default IndexedColors.GREY_25_PERCENT;
 
     /**
      * 导出列头字体颜色

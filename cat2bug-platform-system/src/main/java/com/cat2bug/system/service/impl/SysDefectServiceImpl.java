@@ -1,5 +1,6 @@
 package com.cat2bug.system.service.impl;
 
+import com.cat2bug.common.core.domain.DefectDefaults;
 import com.cat2bug.common.core.domain.entity.SysDefect;
 import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.common.core.domain.type.SysDefectLogStateEnum;
@@ -74,7 +75,7 @@ public class SysDefectServiceImpl implements ISysDefectService
         SysDefect sd = new SysDefect();
         sd.setDefectId(sysDefectLog.getDefectId());
         sd.setHandleBy(sysDefectLog.getReceiveBy());
-        this.updateSysDefect(sd);
+        this.doUpdateSysDefect(sd);
 
         // 发送通知
         SysDefect sysDefect = sysDefectMapper.selectSysDefectByDefectId(sysDefectLog.getDefectId(), SecurityUtils.getUserId(), DateUtils.getNowDate());
@@ -99,7 +100,7 @@ public class SysDefectServiceImpl implements ISysDefectService
         Preconditions.checkNotNull(sd,MessageUtils.message("defect.not_found"));
         sd.setDefectState(SysDefectStateEnum.REJECTED);
         sd.setHandleBy(Arrays.asList(Long.valueOf(sd.getUpdateBy())));
-        this.updateSysDefect(sd);
+        this.doUpdateSysDefect(sd);
 
         // 发送通知
         SysDefect sysDefect = sysDefectMapper.selectSysDefectByDefectId(sysDefectLog.getDefectId(), SecurityUtils.getUserId(), DateUtils.getNowDate());
@@ -125,7 +126,7 @@ public class SysDefectServiceImpl implements ISysDefectService
         sd.setDefectId(sysDefectLog.getDefectId());
         sd.setDefectState(SysDefectStateEnum.AUDIT);
         sd.setHandleBy(sysDefectLog.getReceiveBy());
-        this.updateSysDefect(sd);
+        this.doUpdateSysDefect(sd);
 
         // 发送通知
         SysDefect sysDefect = sysDefectMapper.selectSysDefectByDefectId(sysDefectLog.getDefectId(), SecurityUtils.getUserId(), DateUtils.getNowDate());
@@ -150,7 +151,7 @@ public class SysDefectServiceImpl implements ISysDefectService
         SysDefect sd = new SysDefect();
         sd.setDefectId(sysDefectLog.getDefectId());
         sd.setDefectState(SysDefectStateEnum.CLOSED);
-        this.updateSysDefect(sd);
+        this.doUpdateSysDefect(sd);
 
         // 发送通知
         SysDefect sysDefect = sysDefectMapper.selectSysDefectByDefectId(sysDefectLog.getDefectId(),SecurityUtils.getUserId(), DateUtils.getNowDate());
@@ -169,7 +170,7 @@ public class SysDefectServiceImpl implements ISysDefectService
         SysDefect sd = new SysDefect();
         sd.setDefectId(sysDefectLog.getDefectId());
         sd.setDefectState(SysDefectStateEnum.CLOSED);
-        this.updateSysDefect(sd);
+        this.doUpdateSysDefect(sd);
 
         // 发送通知
         SysDefect sysDefect = sysDefectMapper.selectSysDefectByDefectId(sysDefectLog.getDefectId(),SecurityUtils.getUserId(), DateUtils.getNowDate());
@@ -189,7 +190,7 @@ public class SysDefectServiceImpl implements ISysDefectService
         sd.setDefectId(sysDefectLog.getDefectId());
         sd.setDefectState(SysDefectStateEnum.PROCESSING);
         sd.setHandleBy(sysDefectLog.getReceiveBy());
-        this.updateSysDefect(sd);
+        this.doUpdateSysDefect(sd);
 
         SysDefect sysDefect = sysDefectMapper.selectSysDefectByDefectId(sysDefectLog.getDefectId(),SecurityUtils.getUserId(), DateUtils.getNowDate());
         // 发送通知
@@ -262,7 +263,7 @@ public class SysDefectServiceImpl implements ISysDefectService
         // 新建缺陷数据
         sysDefect.setCreateTime(DateUtils.getNowDate());
         sysDefect.setUpdateTime(DateUtils.getNowDate());
-        sysDefect.setDefectState(SysDefectStateEnum.PROCESSING);
+        DefectDefaults.applyDefectDefaults(sysDefect);
         sysDefect.setCreateBy(SecurityUtils.getUsername());
         sysDefect.setUpdateBy(SecurityUtils.getUsername());
         sysDefect.setCreateById(SecurityUtils.getUserId());
@@ -324,6 +325,13 @@ public class SysDefectServiceImpl implements ISysDefectService
     @Override
     @Transactional
     public int updateSysDefect(SysDefect sysDefect)
+    {
+        DefectDefaults.applyDefectDefaults(sysDefect);
+        return doUpdateSysDefect(sysDefect);
+    }
+
+    /** 状态流转等局部更新：不补全类型/优先级/状态默认值，避免误改未传字段。 */
+    private int doUpdateSysDefect(SysDefect sysDefect)
     {
         if (sysDefect.getDefectId() != null && (sysDefect.getDelFlag() == null || !"0".equals(sysDefect.getDelFlag()))) {
             this.ensureDefectActive(sysDefect.getDefectId());
@@ -509,7 +517,7 @@ public class SysDefectServiceImpl implements ISysDefectService
         patch.setUpdateTime(DateUtils.getNowDate());
         patch.setUpdateBy(SecurityUtils.getUsername());
         patch.setUpdateById(SecurityUtils.getUserId());
-        int ret = sysDefectMapper.updateSysDefect(patch);
+        int ret = doUpdateSysDefect(patch);
         if (ret > 0) {
             this.inertLog(defectId, null, null, SysDefectLogStateEnum.RESTORE);
         }
@@ -645,8 +653,6 @@ public class SysDefectServiceImpl implements ISysDefectService
                 } else {
                     invalidCell.add(MessageUtils.message("defect.state"));
                 }
-            } else {
-                emptyCell.add(MessageUtils.message("defect.state"));
             }
             if (StringUtils.isNotBlank(d.getDefectTypeImportName())) {
                 SysDefectTypeEnum type = com.cat2bug.common.core.domain.excel.DefectImportLabelResolver
@@ -656,8 +662,6 @@ public class SysDefectServiceImpl implements ISysDefectService
                 } else {
                     invalidCell.add(MessageUtils.message("type"));
                 }
-            } else {
-                emptyCell.add(MessageUtils.message("type"));
             }
 
             if(StringUtils.isNotBlank(d.getModuleName())){
@@ -698,6 +702,7 @@ public class SysDefectServiceImpl implements ISysDefectService
             d.setImgUrls(d.getImgObjects());
         }
         if(sb.size()==0) {
+            list.forEach(DefectDefaults::applyDefectDefaults);
             // 批量添加数据
             List<List<SysDefect>> batchList = Lists.partition(list, 50);
             for (int i = 0; i < batchList.size(); i++) {

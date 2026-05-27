@@ -58,7 +58,7 @@ public final class ExcelColumnExportSupport
         DEFECT_TEMPLATE_MAP = Collections.unmodifiableMap(defectTemplate);
 
         DEFECT_TEMPLATE_REQUIRED = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
-                "defectName", "defectTypeImportName", "defectStateImportName", "handleByNames")));
+                "defectName", "handleByNames")));
 
         Map<String, String> caseData = new LinkedHashMap<>();
         caseData.put("caseNum", "caseNum");

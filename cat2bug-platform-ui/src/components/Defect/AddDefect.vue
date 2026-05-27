@@ -29,7 +29,7 @@
         <el-row>
           <el-col :span="12">
             <el-form-item :label="$t('type')" prop="defectType">
-              <el-select v-model="form.defectType" :placeholder="$t('defect.select-type')">
+              <el-select v-model="form.defectType" clearable :placeholder="$t('defect.select-type')">
                 <el-option
                   v-for="type in config.types"
                   :key="type.value"
@@ -41,7 +41,7 @@
           </el-col>
           <el-col :span="12">
             <el-form-item :label="$t('priority')" prop="defectLevel">
-              <el-select v-model="form.defectLevel" :placeholder="$t('defect.select-level')">
+              <el-select v-model="form.defectLevel" clearable :placeholder="$t('defect.select-level')">
                 <el-option
                   v-for="dict in dict.type.defect_level"
                   :key="dict.value"
@@ -177,6 +177,7 @@ import {
   makeDefectVersion
 } from "@/api/ai/AiDefect";
 import {strFormat} from "@/utils";
+import {normalizeDefectTypeAndLevel} from "@/utils/defect-defaults";
 
 // 是否保存缺陷添加表单缓存的key键值
 const IS_SAVE_FORM_CACHE_KEY = 'defect-is-save-add-form-cache';
@@ -202,21 +203,16 @@ export default {
       config: {},
       // 表单参数
       form: {
+        defectType: 'BUG',
         defectLevel: 'middle'
       },
       // 表单校验
       rules: {
-        defectType: [
-          { required: true, message: this.$i18n.t('defect.defect-type-cannot-empty'), trigger: "change" }
-        ],
         handleBy: [
           { required: true, message: this.$i18n.t('defect.handle-by-cannot-empty'), trigger: "input" }
         ],
         defectName: [
           { required: true, message: this.$i18n.t('defect.defect-name-cannot-empty'), trigger: "input" }
-        ],
-        defectLevel: [
-          { required: true, message: this.$i18n.t('defect.defect-level-cannot-empty'), trigger: "input" }
         ],
         // defectDescribe: [
         //   { required: true, message: this.$i18n.t('defect.describe-cannot-empty'), trigger: "input" }
@@ -259,14 +255,24 @@ export default {
     saveIsSaveFormCacheValue() {
       const isCache = this.$cache.local.set(IS_SAVE_FORM_CACHE_KEY,this.isSaveFormCache);
     },
-    /** 获取添加的表单本地缓存 */
+    /** 获取添加的表单本地缓存（覆盖 reset 后的默认值，用于连续新建） */
     readAddFormCache() {
-      const cacheForm = this.$cache.local.getJSON(FORM_CACHE_KEY)||{};
-      this.form.defectType = this.form.defectType || cacheForm.defectType;
-      this.form.defectLevel = this.form.defectLevel || cacheForm.defectLevel;
-      this.form.handleBy = this.form.handleBy || cacheForm.handleBy;
-      this.form.moduleVersion = this.form.moduleVersion || cacheForm.moduleVersion;
-      this.form.moduleId = this.form.moduleId || cacheForm.moduleId;
+      const cacheForm = this.$cache.local.getJSON(FORM_CACHE_KEY) || {};
+      if (cacheForm.defectType != null && cacheForm.defectType !== '') {
+        this.form.defectType = cacheForm.defectType;
+      }
+      if (cacheForm.defectLevel != null && cacheForm.defectLevel !== '') {
+        this.form.defectLevel = cacheForm.defectLevel;
+      }
+      if (cacheForm.handleBy != null) {
+        this.form.handleBy = cacheForm.handleBy;
+      }
+      if (cacheForm.moduleVersion != null && cacheForm.moduleVersion !== '') {
+        this.form.moduleVersion = cacheForm.moduleVersion;
+      }
+      if (cacheForm.moduleId != null) {
+        this.form.moduleId = cacheForm.moduleId;
+      }
     },
     /** 保存添加表单本地缓存 */
     saveAddFormCache() {
@@ -335,7 +341,7 @@ export default {
       data = data || {};
       this.form = {
         defectId: null,
-        defectType: null,
+        defectType: 'BUG',
         defectName: null,
         defectDescribe: null,
         annexUrls: null,
@@ -367,6 +373,7 @@ export default {
     submitForm() {
       this.$refs["form"].validate(valid => {
         if (valid) {
+          normalizeDefectTypeAndLevel(this.form);
           this.form.projectId = this.projectId;
           if(this.planTimeRange.length>1) {
             this.form.planStartTime = this.planTimeRange[0];
@@ -383,12 +390,22 @@ export default {
             });
           } else {
             addDefect(this.form).then(res => {
-              if(this.isSaveFormCache) {
+              if (this.isSaveFormCache) {
                 this.saveAddFormCache();
               }
               this.$modal.msgSuccess(this.$i18n.t('create-success'));
-              this.cancel();
-              this.$emit('added',res.data)
+              this.$emit('added', res.data);
+              if (this.isSaveFormCache) {
+                this.reset();
+                this.$nextTick(() => {
+                  this.$refs.defectNameInput && this.$refs.defectNameInput.focus();
+                  if (this.form.moduleId && this.$refs.selectCase) {
+                    this.$refs.selectCase.search(this.form.moduleId);
+                  }
+                });
+              } else {
+                this.cancel();
+              }
             });
           }
         }

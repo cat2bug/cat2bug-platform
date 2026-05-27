@@ -1,10 +1,4 @@
-# Spec: Excel 导出与表格列同步
-
-## Requirements
-
-### REQ-1 数据导出列集
-
-当请求带 `exportScope=data` 且 `exportColumns` 有效时，导出 Excel 仅包含 `visible=true` 的列，列顺序与 `exportColumns` 数组顺序一致。
+## MODIFIED Requirements
 
 ### REQ-2 导入模版列集
 
@@ -23,15 +17,3 @@
 
 - **WHEN** 用户表格配置中类型、状态、优先级列为可见
 - **THEN** 导入模版仍导出这些列供填写，但允许留空
-
-### REQ-3 向后兼容
-
-未传 `exportColumns` 时，行为与变更前相同。
-
-### REQ-4 用例关联缺陷数
-
-`defectProcessingCount` 可在数据导出中出现；不得出现在导入模版中。
-
-### REQ-5 缺陷 Excel 视图
-
-缺陷表格视图与 Excel 视图共用列缓存，导出使用同一套列配置。

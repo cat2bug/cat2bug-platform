@@ -239,9 +239,9 @@ const PLAN_TIME_SELECT_TRIANGLE_BG = Object.freeze({
 
 const COLS = [
   { key: "projectNum", titleKey: "id", width: 90, editable: false, showInColumnPicker: false },
-  { key: "defectType", titleKey: "type", width: 120, editable: true, fieldType: "map", required: true },
+  { key: "defectType", titleKey: "type", width: 120, editable: true, fieldType: "map" },
   { key: "defectName", titleKey: "defect.name", width: 260, editable: true, required: true },
-  { key: "defectLevel", titleKey: "priority", width: 100, editable: true, fieldType: "map", required: true },
+  { key: "defectLevel", titleKey: "priority", width: 100, editable: true, fieldType: "map" },
   /** map：成员 userId 字符串 -> 昵称；Excel 中只编辑首位处理人，保存为 handleBy: [id] */
   { key: "excelHandleByMemberId", titleKey: "handle-by", width: 180, editable: true, fieldType: "map", required: true },
   /** 格内存状态枚举序号字符串 "0".."4"；占位行排队/进行中仍为哨兵串 */
@@ -269,6 +269,9 @@ KEYS_IN_EXCEL_FOR_PICKER.add("id");
 
 /** 优先级下拉顺序：与 sys_dict_data.defect_level 值（急/高/中/低）一致 */
 const DEFECT_LEVEL_DICT_VALUE_ORDER = Object.freeze(["urgent", "height", "middle", "low"]);
+/** 类型/优先级留空时的持久化默认值（与后端 DefectDefaults 一致） */
+const DEFAULT_DEFECT_TYPE = "BUG";
+const DEFAULT_DEFECT_LEVEL = "middle";
 
 /** 与 Excel「显示字段」勾选列表一致（含编号 id ↔ projectNum） */
 function isExcelPickerTableOption(c) {
@@ -286,9 +289,7 @@ function isExcelDragReorderTableOption(c) {
 
 /** 必填列被清空时的提示文案（与 i18n 中 defect.*-cannot-empty 一致；勿误用单一「处理人」文案） */
 const EXCEL_REQUIRED_EMPTY_MSG_I18N = Object.freeze({
-  defectType: "defect.defect-type-cannot-empty",
   defectName: "defect.defect-name-cannot-empty",
-  defectLevel: "defect.defect-level-cannot-empty",
   excelHandleByMemberId: "defect.handle-by-cannot-empty",
 });
 
@@ -3056,6 +3057,14 @@ export default {
           });
           continue;
         }
+        if (col.key === "defectStateText" && (!nv || String(nv).trim() === "")) {
+          this.syncing = true;
+          this.$set(row, col.key, ov);
+          this.$nextTick(() => {
+            this.syncing = false;
+          });
+          continue;
+        }
         items.push({ row, key: col.key, nv });
       }
       if (deletedEditAttempted) this.notifyDeletedDefectCannotEdit();
@@ -3254,9 +3263,10 @@ export default {
       if (!queueMode) this.syncing = true;
       if (!queueSilent) this.$modal.loading(this.$t("upload.uploading").toString());
       try {
+        const typeRaw = row.defectType == null ? "" : String(row.defectType).trim();
         const payload = {
           projectId: Number(projectId),
-          defectType: row.defectType,
+          defectType: typeRaw !== "" ? row.defectType : DEFAULT_DEFECT_TYPE,
           defectName: String(row.defectName).trim(),
           defectLevel: this.coerceDefectLevelValue(row.defectLevel),
           handleBy: row.excelHandleByMemberId ? [Number(row.excelHandleByMemberId)] : [],
@@ -3324,12 +3334,16 @@ export default {
               defectId: it.row.defectId,
               projectId: it.row.projectId,
             };
-            if (it.key === "defectLevel") {
+            if (it.key === "defectType") {
+              const typeRaw = String(it.nv != null ? it.nv : "").trim();
+              payload.defectType = typeRaw !== "" ? it.nv : DEFAULT_DEFECT_TYPE;
+            } else if (it.key === "defectLevel") {
               payload.defectLevel = this.coerceDefectLevelValue(it.nv);
             } else if (it.key === "excelHandleByMemberId") {
               payload.handleBy = it.nv ? [Number(it.nv)] : [];
             } else if (it.key === "defectStateText") {
               const raw = String(it.nv != null ? it.nv : "").trim();
+              if (raw === "") continue;
               if (raw === EXCEL_CREATE_ROW_QUEUED || raw === EXCEL_CREATE_ROW_RUNNING) continue;
               const n = Number(raw);
               if (!Number.isFinite(n) || n < 0 || n > 4) continue;
@@ -3368,7 +3382,8 @@ export default {
     },
     /** 与字典项 value 类型对齐，避免 number / string 混用导致后端校验失败 */
     coerceDefectLevelValue(v) {
-      const raw = v == null ? "" : String(v);
+      const raw = v == null ? "" : String(v).trim();
+      if (raw === "") return DEFAULT_DEFECT_LEVEL;
       const list = this.dict.type.defect_level || [];
       const hit = list.find((d) => String(d.value) === raw);
       if (hit) return hit.value;
