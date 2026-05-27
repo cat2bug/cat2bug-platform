@@ -37,6 +37,11 @@ public @interface Excel
     public String i18nNameKey() default "";
 
     /**
+     * 导入表头备用 i18n key（如历史模板 {@code case.name_excel}），参与多语言列名匹配
+     */
+    public String[] alternateI18nKeys() default {};
+
+    /**
      * 日期格式, 如: yyyy-MM-dd
      */
     public String dateFormat() default "";

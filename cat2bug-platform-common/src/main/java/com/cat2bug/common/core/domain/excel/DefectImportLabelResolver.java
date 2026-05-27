@@ -93,25 +93,7 @@ public final class DefectImportLabelResolver
                 }
             }
         }
-        putStateAlias(map, "处理中", SysDefectStateEnum.PROCESSING);
-        putStateAlias(map, "Processing", SysDefectStateEnum.PROCESSING);
-        putStateAlias(map, "待验证", SysDefectStateEnum.AUDIT);
-        putStateAlias(map, "Audit", SysDefectStateEnum.AUDIT);
-        putStateAlias(map, "已解决", SysDefectStateEnum.RESOLVED);
-        putStateAlias(map, "Resolved", SysDefectStateEnum.RESOLVED);
-        putStateAlias(map, "已驳回", SysDefectStateEnum.REJECTED);
-        putStateAlias(map, "Rejected", SysDefectStateEnum.REJECTED);
-        putStateAlias(map, "已关闭", SysDefectStateEnum.CLOSED);
-        putStateAlias(map, "Close", SysDefectStateEnum.CLOSED);
         return map;
-    }
-
-    private static void putStateAlias(Map<String, SysDefectStateEnum> map, String label, SysDefectStateEnum state)
-    {
-        if (StringUtils.isNotEmpty(label))
-        {
-            map.put(label.trim(), state);
-        }
     }
 
     private static Map<String, SysDefectTypeEnum> buildTypeMap()
@@ -136,20 +118,6 @@ public final class DefectImportLabelResolver
                 }
             }
         }
-        putTypeAlias(map, "BUG", SysDefectTypeEnum.BUG);
-        putTypeAlias(map, "Bug", SysDefectTypeEnum.BUG);
-        putTypeAlias(map, "Task", SysDefectTypeEnum.TASK);
-        putTypeAlias(map, "任务", SysDefectTypeEnum.TASK);
-        putTypeAlias(map, "Demand", SysDefectTypeEnum.DEMAND);
-        putTypeAlias(map, "需求", SysDefectTypeEnum.DEMAND);
         return map;
-    }
-
-    private static void putTypeAlias(Map<String, SysDefectTypeEnum> map, String label, SysDefectTypeEnum type)
-    {
-        if (StringUtils.isNotEmpty(label))
-        {
-            map.put(label.trim(), type);
-        }
     }
 }

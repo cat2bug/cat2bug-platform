@@ -15,7 +15,6 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.*;
 
-import com.cat2bug.common.utils.LocaleUtils;
 import com.cat2bug.common.utils.MessageUtils;
 import com.cat2bug.common.utils.file.IFileService;
 import com.cat2bug.common.utils.spring.SpringUtils;
@@ -24,7 +23,6 @@ import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.context.MessageSource;
 import org.apache.poi.common.usermodel.HyperlinkType;
 import org.apache.poi.hssf.usermodel.HSSFClientAnchor;
 import org.apache.poi.hssf.usermodel.HSSFPicture;
@@ -380,7 +378,7 @@ public class ExcelUtil<T>
      */
     private Integer resolveImportColumn(Map<String, Integer> cellMap, Excel attr)
     {
-        for (String title : collectImportHeaderCandidates(attr))
+        for (String title : ExcelImportHeaderSupport.collectImportHeaderCandidates(attr))
         {
             Integer column = cellMap.get(title);
             if (column != null)
@@ -389,46 +387,6 @@ public class ExcelUtil<T>
             }
         }
         return null;
-    }
-
-    private Set<String> collectImportHeaderCandidates(Excel attr)
-    {
-        LinkedHashSet<String> candidates = new LinkedHashSet<>();
-        String currentTitle = getTitleName(attr);
-        if (StringUtils.isNotEmpty(currentTitle))
-        {
-            candidates.add(currentTitle.trim());
-        }
-        if (StringUtils.isNotEmpty(attr.name()))
-        {
-            candidates.add(attr.name().trim());
-        }
-        if (StringUtils.isNotEmpty(attr.i18nNameKey()))
-        {
-            try
-            {
-                MessageSource messageSource = SpringUtils.getBean(MessageSource.class);
-                for (Locale locale : LocaleUtils.MESSAGE_BUNDLE_LOCALES)
-                {
-                    try
-                    {
-                        String msg = messageSource.getMessage(attr.i18nNameKey(), null, locale);
-                        if (StringUtils.isNotEmpty(msg))
-                        {
-                            candidates.add(msg.trim());
-                        }
-                    }
-                    catch (Exception ignored)
-                    {
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                log.debug("collectImportHeaderCandidates: {}", e.getMessage());
-            }
-        }
-        return candidates;
     }
 
     /**

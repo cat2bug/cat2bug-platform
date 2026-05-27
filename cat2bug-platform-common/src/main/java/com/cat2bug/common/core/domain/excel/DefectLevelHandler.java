@@ -16,7 +16,15 @@ import java.util.Map;
 public class DefectLevelHandler implements ExcelHandlerAdapter {
     @Override
     public Object format(Object value, String[] args, Cell cell, Workbook wb, Map<String, Object> requestParams) {
-        String v = (String) value;
-        return MessageUtils.message(v);
+        if (value == null) {
+            return null;
+        }
+        String v = String.valueOf(value);
+        String dictValue = DefectLevelImportLabelResolver.resolve(v);
+        if (cell == null) {
+            return dictValue != null ? dictValue : v;
+        }
+        String canonical = dictValue != null ? dictValue : v;
+        return MessageUtils.message(canonical);
     }
 }

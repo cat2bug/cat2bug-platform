@@ -45,7 +45,7 @@ public class SysCase extends BaseEntity
     private Long caseNum;
 
     /** 用例名称 */
-    @Excel(name = "用例名称(必填)", i18nNameKey = "case.name", sort = 20, align = HorizontalAlignment.LEFT, width = 50, headerColor = IndexedColors.RED, headerBackgroundColor = IndexedColors.GREY_25_PERCENT)
+    @Excel(name = "用例名称(必填)", i18nNameKey = "case.name", alternateI18nKeys = { "case.name_excel" }, sort = 20, align = HorizontalAlignment.LEFT, width = 50, headerColor = IndexedColors.RED, headerBackgroundColor = IndexedColors.GREY_25_PERCENT)
     private String caseName;
 
     /** 模块id */
@@ -103,7 +103,7 @@ public class SysCase extends BaseEntity
     private String caseData;
 
     /** 预期 */
-    @Excel(name = "预期(必填)", i18nNameKey = "expect", sort = 80, align = HorizontalAlignment.LEFT, width = 50, headerColor = IndexedColors.RED, headerBackgroundColor = IndexedColors.GREY_25_PERCENT)
+    @Excel(name = "预期(必填)", i18nNameKey = "expect", alternateI18nKeys = { "case.expected_excel" }, sort = 80, align = HorizontalAlignment.LEFT, width = 50, headerColor = IndexedColors.RED, headerBackgroundColor = IndexedColors.GREY_25_PERCENT)
     private String caseExpect;
 
     /** 图片 */

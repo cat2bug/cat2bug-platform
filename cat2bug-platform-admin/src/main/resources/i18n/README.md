@@ -24,3 +24,4 @@ python3 scripts/sync-i18n-messages.py
 ```
 
 3. 新增键若需非英文译文，在 `scripts/sync-i18n-messages.py` 的 `LOCALE_OVERRIDES` 中补充审定译文后再次执行同步。
+4. **Excel 导入**：新增语言时须同步更新 `com.cat2bug.common.utils.LocaleUtils.MESSAGE_BUNDLE_LOCALES`；缺陷/用例导入表头与下拉文案按该列表遍历各 `messages_*` 匹配，与当前界面语言无关。

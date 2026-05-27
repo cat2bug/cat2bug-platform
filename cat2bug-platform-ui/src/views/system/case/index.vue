@@ -440,9 +440,7 @@ export default {
     this.queryParams.orderByColumn = this.$cache.local.get('case_table_sort_column_key') || null
     this.queryParams.isAsc = this.$cache.local.get('case_table_sort_type_key') || null
     this.handleQuery()
-    const headers = {}
-    setHeader('/system/case/importData', headers)
-    this.upload.headers = headers
+    this.refreshUploadHeaders()
   },
   mounted() {
     this.queryParams.projectId = this.projectId
@@ -833,8 +831,15 @@ export default {
       this.$refs.addDefect.openByCase(caseObj)
       e.stopPropagation()
     },
+    /** 与当前界面语言同步上传请求头（切换语言后导出/导入须一致） */
+    refreshUploadHeaders() {
+      const headers = {}
+      setHeader('/system/case/importData', headers)
+      this.upload.headers = headers
+    },
     /** 导入按钮操作 */
     handleImport() {
+      this.refreshUploadHeaders()
       this.upload.title = this.$i18n.t('case.import')
       this.upload.open = true
     },
@@ -871,6 +876,7 @@ export default {
     },
     /** 提交上传文件 */
     submitFileForm() {
+      this.refreshUploadHeaders()
       this.$refs.upload.submit()
     },
     /** 跳转到缺陷页面 */
