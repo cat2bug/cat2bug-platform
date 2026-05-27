@@ -11,7 +11,7 @@
  Target Server Version : 90600 (9.6.0)
  File Encoding         : 65001
 
- Date: 14/05/2026 15:35:24
+ Date: 26/05/2026 17:46:26
 */
 
 SET NAMES utf8mb4;
@@ -32,7 +32,7 @@ CREATE TABLE `ai_account` (
   `account_name` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '账号名称',
   PRIMARY KEY (`account_id`) USING BTREE,
   KEY `idx_project_id` (`project_id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ROW_FORMAT=DYNAMIC COMMENT='OpenAI账号';
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ROW_FORMAT=DYNAMIC COMMENT='OpenAI账号';
 
 -- ----------------------------
 -- Records of ai_account
@@ -588,6 +588,8 @@ COMMIT;
 DROP TABLE IF EXISTS `sys_ai_module_config`;
 CREATE TABLE `sys_ai_module_config` (
   `ai_id` bigint NOT NULL AUTO_INCREMENT COMMENT '模型ID',
+  `business_module` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '业务模型名称',
+  `image_module` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '图片识别模型名称',
   `project_id` bigint DEFAULT NULL COMMENT '项目ID',
   `create_time` datetime DEFAULT NULL COMMENT '创建时间',
   `create_by_id` bigint DEFAULT NULL COMMENT '创建人ID',
@@ -595,7 +597,7 @@ CREATE TABLE `sys_ai_module_config` (
   `update_by_id` bigint DEFAULT NULL COMMENT '更新人ID',
   PRIMARY KEY (`ai_id`),
   KEY `project_id_` (`project_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='AI模型配置';
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='AI模型配置';
 
 -- ----------------------------
 -- Records of sys_ai_module_config
@@ -630,7 +632,7 @@ CREATE TABLE `sys_case` (
   UNIQUE KEY `id_num_` (`case_id`,`case_num`),
   UNIQUE KEY `project_id_namd_module_` (`case_name`,`module_id`,`project_id`),
   KEY `project_id_case_name` (`case_name`,`project_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=10005 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_bin COMMENT='测试用例表';
+) ENGINE=InnoDB AUTO_INCREMENT=10006 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_bin COMMENT='测试用例表';
 
 -- ----------------------------
 -- Records of sys_case
@@ -783,7 +785,7 @@ CREATE TABLE `sys_defect` (
   KEY `defect_key` (`defect_key`(255)),
   KEY `defect_group_key` (`defect_group_key`(255)),
   KEY `project_id_` (`project_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1101 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='缺陷表';
+) ENGINE=InnoDB AUTO_INCREMENT=1106 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='缺陷表';
 
 -- ----------------------------
 -- Records of sys_defect
@@ -806,7 +808,7 @@ CREATE TABLE `sys_defect_log` (
   `defect_id` bigint NOT NULL COMMENT '缺陷id',
   PRIMARY KEY (`defect_log_id`),
   KEY `defect_id_` (`defect_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=14359 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='缺陷日志表';
+) ENGINE=InnoDB AUTO_INCREMENT=14417 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='缺陷日志表';
 
 -- ----------------------------
 -- Records of sys_defect_log
@@ -1059,7 +1061,7 @@ CREATE TABLE `sys_logininfor` (
   PRIMARY KEY (`info_id`),
   KEY `idx_sys_logininfor_s` (`status`),
   KEY `idx_sys_logininfor_lt` (`login_time`)
-) ENGINE=InnoDB AUTO_INCREMENT=2091 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='系统访问记录';
+) ENGINE=InnoDB AUTO_INCREMENT=2149 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='系统访问记录';
 
 -- ----------------------------
 -- Records of sys_logininfor
@@ -1329,33 +1331,6 @@ CREATE TABLE `sys_module` (
 -- Records of sys_module
 -- ----------------------------
 BEGIN;
-INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`, `create_by_id`, `create_time`, `update_by_id`, `update_time`, `annex_urls`) VALUES (362, '测试交付物', NULL, 1, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`, `create_by_id`, `create_time`, `update_by_id`, `update_time`, `annex_urls`) VALUES (363, '测试交付物', NULL, 1, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`, `create_by_id`, `create_time`, `update_by_id`, `update_time`, `annex_urls`) VALUES (364, '测试交付物', NULL, 1, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`, `create_by_id`, `create_time`, `update_by_id`, `update_time`, `annex_urls`) VALUES (365, '测试交付物', NULL, 1, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`, `create_by_id`, `create_time`, `update_by_id`, `update_time`, `annex_urls`) VALUES (366, '测试交付物', NULL, 1, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`, `create_by_id`, `create_time`, `update_by_id`, `update_time`, `annex_urls`) VALUES (367, '测试交付物', NULL, 1, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`, `create_by_id`, `create_time`, `update_by_id`, `update_time`, `annex_urls`) VALUES (368, '测试交付物', NULL, 1, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`, `create_by_id`, `create_time`, `update_by_id`, `update_time`, `annex_urls`) VALUES (369, '测试交付物', NULL, 1, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`, `create_by_id`, `create_time`, `update_by_id`, `update_time`, `annex_urls`) VALUES (370, '测试交付物', NULL, 1, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`, `create_by_id`, `create_time`, `update_by_id`, `update_time`, `annex_urls`) VALUES (371, '测试交付物', NULL, 1, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`, `create_by_id`, `create_time`, `update_by_id`, `update_time`, `annex_urls`) VALUES (372, '测试交付物', NULL, 1, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`, `create_by_id`, `create_time`, `update_by_id`, `update_time`, `annex_urls`) VALUES (373, '测试交付物', NULL, 1, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`, `create_by_id`, `create_time`, `update_by_id`, `update_time`, `annex_urls`) VALUES (374, '测试交付物', NULL, 1, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`, `create_by_id`, `create_time`, `update_by_id`, `update_time`, `annex_urls`) VALUES (375, '测试交付物', NULL, 1, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`, `create_by_id`, `create_time`, `update_by_id`, `update_time`, `annex_urls`) VALUES (377, 'Cat2Bug', NULL, 60, 0, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`, `create_by_id`, `create_time`, `update_by_id`, `update_time`, `annex_urls`) VALUES (378, '登陆', NULL, 60, 377, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`, `create_by_id`, `create_time`, `update_by_id`, `update_time`, `annex_urls`) VALUES (379, '首页', NULL, 60, 377, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`, `create_by_id`, `create_time`, `update_by_id`, `update_time`, `annex_urls`) VALUES (380, '团队管理', NULL, 60, 377, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`, `create_by_id`, `create_time`, `update_by_id`, `update_time`, `annex_urls`) VALUES (381, '项目管理', NULL, 60, 377, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`, `create_by_id`, `create_time`, `update_by_id`, `update_time`, `annex_urls`) VALUES (382, '仪表盘', NULL, 60, 381, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`, `create_by_id`, `create_time`, `update_by_id`, `update_time`, `annex_urls`) VALUES (383, '测试用例', NULL, 60, 381, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`, `create_by_id`, `create_time`, `update_by_id`, `update_time`, `annex_urls`) VALUES (384, '测试计划', NULL, 60, 381, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`, `create_by_id`, `create_time`, `update_by_id`, `update_time`, `annex_urls`) VALUES (385, '缺陷管理', NULL, 60, 381, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`, `create_by_id`, `create_time`, `update_by_id`, `update_time`, `annex_urls`) VALUES (386, '交付物管理', NULL, 60, 381, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`, `create_by_id`, `create_time`, `update_by_id`, `update_time`, `annex_urls`) VALUES (387, '报告管理', NULL, 60, 381, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`, `create_by_id`, `create_time`, `update_by_id`, `update_time`, `annex_urls`) VALUES (388, '文档管理', NULL, 60, 381, NULL, NULL, NULL, NULL, NULL);
-INSERT INTO `sys_module` (`module_id`, `module_name`, `remark`, `project_id`, `module_pid`, `create_by_id`, `create_time`, `update_by_id`, `update_time`, `annex_urls`) VALUES (389, '项目设置', NULL, 60, 381, NULL, NULL, NULL, NULL, NULL);
 COMMIT;
 
 -- ----------------------------
@@ -1414,7 +1389,7 @@ CREATE TABLE `sys_oper_log` (
   KEY `idx_sys_oper_log_bt` (`business_type`),
   KEY `idx_sys_oper_log_s` (`status`),
   KEY `idx_sys_oper_log_ot` (`oper_time`)
-) ENGINE=InnoDB AUTO_INCREMENT=20331 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='操作日志记录';
+) ENGINE=InnoDB AUTO_INCREMENT=20766 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='操作日志记录';
 
 -- ----------------------------
 -- Records of sys_oper_log
@@ -1543,13 +1518,43 @@ CREATE TABLE `sys_project_api` (
   `expire_time` datetime DEFAULT NULL COMMENT '有效时间',
   `remark` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin DEFAULT NULL COMMENT '备注',
   `enabled` tinyint(1) DEFAULT '1' COMMENT '是否启用',
-  `features` varchar(2000) COLLATE utf8mb4_0900_bin DEFAULT NULL COMMENT '功能权限配置(JSON格式)',
+  `features` varchar(2000) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin DEFAULT NULL COMMENT '功能权限配置(JSON格式)',
   PRIMARY KEY (`api_id`) USING BTREE,
   UNIQUE KEY `project_user_` (`project_id`,`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_bin COMMENT='项目API表';
 
 -- ----------------------------
 -- Records of sys_project_api
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Table structure for sys_project_cicd_env
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_project_cicd_env`;
+CREATE TABLE `sys_project_cicd_env` (
+  `env_id` bigint NOT NULL AUTO_INCREMENT COMMENT '环境ID',
+  `project_id` bigint NOT NULL COMMENT '项目ID',
+  `env_name` varchar(100) NOT NULL COMMENT '环境名称',
+  `nomad_address` varchar(255) NOT NULL COMMENT 'Nomad地址',
+  `nomad_namespace` varchar(100) DEFAULT 'default' COMMENT 'Nomad命名空间',
+  `nomad_datacenter` varchar(100) DEFAULT 'dc1' COMMENT 'Nomad数据中心',
+  `nomad_token` varchar(500) DEFAULT NULL COMMENT 'Nomad认证Token(加密存储)',
+  `default_variables` text COMMENT '默认变量(JSON)',
+  `enabled` char(1) DEFAULT '1' COMMENT '启用状态(0=禁用,1=启用)',
+  `remark` varchar(500) DEFAULT NULL COMMENT '备注',
+  `create_by` varchar(64) DEFAULT NULL COMMENT '创建者',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  `update_by` varchar(64) DEFAULT NULL COMMENT '更新者',
+  `update_time` datetime DEFAULT NULL COMMENT '更新时间',
+  PRIMARY KEY (`env_id`),
+  UNIQUE KEY `uk_project_env` (`project_id`,`env_name`),
+  KEY `idx_project_id` (`project_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='项目CI/CD环境配置表';
+
+-- ----------------------------
+-- Records of sys_project_cicd_env
 -- ----------------------------
 BEGIN;
 COMMIT;
@@ -1568,10 +1573,155 @@ CREATE TABLE `sys_project_defect_tabs` (
   `create_time` datetime DEFAULT NULL COMMENT '创建时间',
   PRIMARY KEY (`tab_id`),
   KEY `user_id_` (`project_id`,`user_id`) COMMENT '查询用户所在项目的Tab配置'
-) ENGINE=InnoDB AUTO_INCREMENT=164 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='项目缺陷页签配置';
+) ENGINE=InnoDB AUTO_INCREMENT=171 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='项目缺陷页签配置';
 
 -- ----------------------------
 -- Records of sys_project_defect_tabs
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Table structure for sys_project_mcp
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_project_mcp`;
+CREATE TABLE `sys_project_mcp` (
+  `mcp_id` bigint NOT NULL AUTO_INCREMENT COMMENT 'MCP配置ID',
+  `project_id` bigint NOT NULL COMMENT '项目ID',
+  `enabled` tinyint(1) DEFAULT '0' COMMENT '是否启用',
+  `create_by` varchar(64) DEFAULT NULL COMMENT '创建者',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  `update_by` varchar(64) DEFAULT NULL COMMENT '更新者',
+  `update_time` datetime DEFAULT NULL COMMENT '更新时间',
+  PRIMARY KEY (`mcp_id`),
+  UNIQUE KEY `uk_project_id` (`project_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='项目MCP配置表';
+
+-- ----------------------------
+-- Records of sys_project_mcp
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Table structure for sys_project_pipeline
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_project_pipeline`;
+CREATE TABLE `sys_project_pipeline` (
+  `pipeline_id` bigint NOT NULL AUTO_INCREMENT COMMENT '流水线ID',
+  `project_id` bigint NOT NULL COMMENT '项目ID',
+  `pipeline_name` varchar(100) NOT NULL COMMENT '流水线名称',
+  `default_env_id` bigint DEFAULT NULL COMMENT '默认环境ID',
+  `enabled` char(1) DEFAULT '1' COMMENT '启用状态(0=禁用,1=启用)',
+  `trigger_type` varchar(20) DEFAULT 'MANUAL' COMMENT '触发方式(MANUAL=手动,AUTO=自动)',
+  `description` varchar(500) DEFAULT NULL COMMENT '描述',
+  `last_run_status` varchar(20) DEFAULT NULL COMMENT '最后执行状态',
+  `last_run_time` datetime DEFAULT NULL COMMENT '最后执行时间',
+  `create_by` varchar(64) DEFAULT NULL COMMENT '创建者',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  `update_by` varchar(64) DEFAULT NULL COMMENT '更新者',
+  `update_time` datetime DEFAULT NULL COMMENT '更新时间',
+  PRIMARY KEY (`pipeline_id`),
+  UNIQUE KEY `uk_project_pipeline` (`project_id`,`pipeline_name`),
+  KEY `idx_project_id` (`project_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='项目流水线定义表';
+
+-- ----------------------------
+-- Records of sys_project_pipeline
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Table structure for sys_project_pipeline_run
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_project_pipeline_run`;
+CREATE TABLE `sys_project_pipeline_run` (
+  `run_id` bigint NOT NULL AUTO_INCREMENT COMMENT '执行实例ID',
+  `project_id` bigint NOT NULL COMMENT '项目ID',
+  `pipeline_id` bigint NOT NULL COMMENT '流水线ID',
+  `env_id` bigint DEFAULT NULL COMMENT '执行环境ID',
+  `run_status` varchar(20) DEFAULT 'PENDING' COMMENT '执行状态(PENDING/RUNNING/SUCCESS/FAILED/STOPPED)',
+  `trigger_by` varchar(64) DEFAULT NULL COMMENT '触发人',
+  `trigger_type` varchar(20) DEFAULT NULL COMMENT '触发方式(MANUAL/AUTO)',
+  `nomad_job_id` varchar(200) DEFAULT NULL COMMENT 'Nomad Job ID',
+  `context_snapshot` text COMMENT '上下文快照(JSON)',
+  `error_message` text COMMENT '错误信息',
+  `start_time` datetime DEFAULT NULL COMMENT '开始时间',
+  `end_time` datetime DEFAULT NULL COMMENT '结束时间',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  PRIMARY KEY (`run_id`),
+  KEY `idx_project_id` (`project_id`),
+  KEY `idx_pipeline_id` (`pipeline_id`),
+  KEY `idx_run_status` (`run_status`),
+  KEY `idx_create_time` (`create_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='流水线执行实例表';
+
+-- ----------------------------
+-- Records of sys_project_pipeline_run
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Table structure for sys_project_pipeline_run_step
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_project_pipeline_run_step`;
+CREATE TABLE `sys_project_pipeline_run_step` (
+  `run_step_id` bigint NOT NULL AUTO_INCREMENT COMMENT '执行步骤ID',
+  `run_id` bigint NOT NULL COMMENT '执行实例ID',
+  `pipeline_id` bigint NOT NULL COMMENT '流水线ID(冗余)',
+  `project_id` bigint NOT NULL COMMENT '项目ID(冗余)',
+  `step_id` bigint NOT NULL COMMENT '步骤定义ID',
+  `step_order` int NOT NULL COMMENT '步骤顺序',
+  `step_name` varchar(100) DEFAULT NULL COMMENT '步骤名称',
+  `step_type` varchar(20) DEFAULT NULL COMMENT '步骤类型',
+  `step_status` varchar(20) DEFAULT 'PENDING' COMMENT '步骤状态(PENDING/RUNNING/SUCCESS/FAILED/STOPPED)',
+  `nomad_allocation_id` varchar(200) DEFAULT NULL COMMENT 'Nomad Allocation ID',
+  `nomad_deployment_id` varchar(200) DEFAULT NULL COMMENT 'Nomad Deployment ID',
+  `log_summary` text COMMENT '日志摘要',
+  `start_time` datetime DEFAULT NULL COMMENT '开始时间',
+  `end_time` datetime DEFAULT NULL COMMENT '结束时间',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  PRIMARY KEY (`run_step_id`),
+  KEY `idx_run_id` (`run_id`),
+  KEY `idx_project_id` (`project_id`),
+  KEY `idx_step_status` (`step_status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='步骤执行记录表';
+
+-- ----------------------------
+-- Records of sys_project_pipeline_run_step
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Table structure for sys_project_pipeline_step
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_project_pipeline_step`;
+CREATE TABLE `sys_project_pipeline_step` (
+  `step_id` bigint NOT NULL AUTO_INCREMENT COMMENT '步骤ID',
+  `pipeline_id` bigint NOT NULL COMMENT '流水线ID',
+  `project_id` bigint NOT NULL COMMENT '项目ID(冗余)',
+  `step_order` int NOT NULL COMMENT '步骤顺序',
+  `step_name` varchar(100) NOT NULL COMMENT '步骤名称',
+  `step_type` varchar(20) NOT NULL COMMENT '步骤类型(BUILD/TEST/DEPLOY/AGENT_*)',
+  `template_id` varchar(100) DEFAULT NULL COMMENT '模板标识',
+  `command_params` text COMMENT '命令参数(JSON)',
+  `default_context` text COMMENT '默认上下文(JSON)',
+  `enabled` char(1) DEFAULT '1' COMMENT '启用状态(0=禁用,1=启用)',
+  `create_by` varchar(64) DEFAULT NULL COMMENT '创建者',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  `update_by` varchar(64) DEFAULT NULL COMMENT '更新者',
+  `update_time` datetime DEFAULT NULL COMMENT '更新时间',
+  PRIMARY KEY (`step_id`),
+  UNIQUE KEY `uk_pipeline_step` (`pipeline_id`,`step_order`),
+  KEY `idx_project_id` (`project_id`),
+  KEY `idx_pipeline_id` (`pipeline_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='流水线步骤定义表';
+
+-- ----------------------------
+-- Records of sys_project_pipeline_step
 -- ----------------------------
 BEGIN;
 COMMIT;
@@ -2451,7 +2601,7 @@ CREATE TABLE `sys_user` (
   `dept_id` bigint(20) unsigned zerofill DEFAULT '00000000000000000000' COMMENT '部门ID',
   `user_name` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '用户账号',
   `nick_name` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '用户昵称',
-  `user_type` varchar(2) COLLATE utf8mb4_bin DEFAULT '00' COMMENT '用户类型（00系统用户;01API;02机器人用户）',
+  `user_type` varchar(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT '00' COMMENT '用户类型（00系统用户;01API;02机器人用户）',
   `email` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT '' COMMENT '用户邮箱',
   `phonenumber` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '手机号码',
   `sex` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT '0' COMMENT '用户性别（0男 1女 2未知）',
@@ -2469,17 +2619,17 @@ CREATE TABLE `sys_user` (
   `ding_user_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '钉钉账号',
   `wechat_user_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '微信账号',
   `wechat_mp_user_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '微信小程序openid',
-  `user_config` varchar(2000) COLLATE utf8mb4_bin DEFAULT NULL COMMENT '用户配置（机器人配置等，JSON格式）',
+  `user_config` varchar(2000) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '用户配置（机器人配置等，JSON格式）',
   PRIMARY KEY (`user_id`),
   UNIQUE KEY `phone_` (`phonenumber`),
   KEY `idx_wechat_mp_user_id` (`wechat_mp_user_id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=243 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='用户信息表';
+) ENGINE=InnoDB AUTO_INCREMENT=244 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='用户信息表';
 
 -- ----------------------------
 -- Records of sys_user
 -- ----------------------------
 BEGIN;
-INSERT INTO `sys_user` (`user_id`, `dept_id`, `user_name`, `nick_name`, `user_type`, `email`, `phonenumber`, `sex`, `avatar`, `password`, `status`, `del_flag`, `login_ip`, `login_date`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `ding_user_id`, `wechat_user_id`, `wechat_mp_user_id`, `user_config`) VALUES (1, 00000000000000000000, 'admin', '黑猫警长', '00', 'admin@cat2bug.com', '18888888888', '0', '/profile/avatar/2026/04/20/blob_20260420163139A001.png', '$2a$10$/YbsRyezA9pg13iJhCNE.u5yOvWbuq7NZhOlliUvycEfBIgJN6qHK', '0', '0', '127.0.0.1', '2026-05-09 17:00:08', 'admin', '2023-11-12 15:34:51', '', '2026-05-09 09:00:07', '管理员', NULL, NULL, NULL, NULL);
+INSERT INTO `sys_user` (`user_id`, `dept_id`, `user_name`, `nick_name`, `user_type`, `email`, `phonenumber`, `sex`, `avatar`, `password`, `status`, `del_flag`, `login_ip`, `login_date`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `ding_user_id`, `wechat_user_id`, `wechat_mp_user_id`, `user_config`) VALUES (1, 00000000000000000000, 'admin', '黑猫警长', '00', 'admin@cat2bug.com', '18888888888', '0', '/profile/avatar/2026/04/20/blob_20260420163139A001.png', '$2a$10$/YbsRyezA9pg13iJhCNE.u5yOvWbuq7NZhOlliUvycEfBIgJN6qHK', '0', '0', '127.0.0.1', '2026-05-26 10:29:24', 'admin', '2023-11-12 15:34:51', '', '2026-05-26 02:29:24', '管理员', NULL, NULL, NULL, NULL);
 COMMIT;
 
 -- ----------------------------
@@ -2573,7 +2723,7 @@ CREATE TABLE `sys_user_project_role` (
   `role_id` bigint NOT NULL COMMENT '角色id',
   PRIMARY KEY (`user_project_role_id`),
   UNIQUE KEY `user_project_role_` (`user_project_id`,`role_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=351 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='用户项目角色表';
+) ENGINE=InnoDB AUTO_INCREMENT=354 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='用户项目角色表';
 
 -- ----------------------------
 -- Records of sys_user_project_role

@@ -469,6 +469,7 @@ export default {
       }
       this.syncCaseTableBodyMaxHeight()
       this.setDragComponentSize()
+      this.syncCaseToolsWrapped()
       this.$nextTick(() => this.syncTreeToolbarWithTableHeader())
     })
   },
@@ -567,31 +568,38 @@ export default {
         if (!tools || !left || !right) {
           this.caseToolsWrapped = false
           this.caseRightButtonsWrapped = false
-          return
+          return false
         }
-        const leftTop = left.offsetTop || 0
-        const leftBottom = leftTop + (left.offsetHeight || 0)
-        const rightTop = right.offsetTop || 0
-        // 仅当右侧工具条真正落到左侧筛选区域“下一行”时，才进入 wrapped 态
-        this.caseToolsWrapped = rightTop >= leftBottom - 1
-
-        // 仅当右侧按钮组自身出现多行时，才让主按钮等分填充。
-        const buttonItems = Array.from(right.children || [])
-        if (!buttonItems.length) {
+        // 左侧筛选区高度未稳定时不判定换行，避免首次进入误加 wrapped-tools
+        if ((left.offsetHeight || 0) < 8) {
+          this.caseToolsWrapped = false
           this.caseRightButtonsWrapped = false
-          return
+          return false
+        }
+        // 与报告页一致：比较左右区域纵向偏移，而非 leftBottom 与 rightTop
+        this.caseToolsWrapped = (right.offsetTop - left.offsetTop) > 4
+
+        const buttonItems = Array.from(right.children || [])
+        if (!this.caseToolsWrapped || !buttonItems.length) {
+          this.caseRightButtonsWrapped = false
+          return true
         }
         const firstTop = buttonItems[0].offsetTop
-        this.caseRightButtonsWrapped = buttonItems.some(item => Math.abs((item.offsetTop || 0) - firstTop) > 2)
+        this.caseRightButtonsWrapped = buttonItems.some(
+          item => Math.abs((item.offsetTop || 0) - firstTop) > 2
+        )
+        return true
       }
-      this.$nextTick(() => {
-        if (this.caseToolsWrapped) {
-          this.caseToolsWrapped = false
-          this.$nextTick(measure)
-          return
-        }
-        measure()
-      })
+      const runMeasure = (retryLeft = 2) => {
+        this.caseToolsWrapped = false
+        this.caseRightButtonsWrapped = false
+        this.$nextTick(() => {
+          if (measure()) return
+          if (retryLeft <= 0) return
+          requestAnimationFrame(() => runMeasure(retryLeft - 1))
+        })
+      }
+      this.$nextTick(() => runMeasure())
     },
     /** 处理鼠标在表格点下事件 */
     handleTableMouseDown(e) {
@@ -1206,10 +1214,13 @@ export default {
 .case-view-toolbar.wrapped-tools .case-right-tools ::v-deep .el-button-group {
   display: inline-flex;
   flex-wrap: nowrap;
-  align-items: stretch;
+  align-items: center;
   width: auto;
   max-width: 100%;
   box-sizing: border-box;
+}
+.case-view-toolbar.wrapped-tools .case-right-tools.buttons-wrapped ::v-deep .el-button-group {
+  align-items: stretch;
 }
 .case-view-toolbar.wrapped-tools .case-right-tools ::v-deep .el-button-group > .el-button:not(.el-dropdown__caret-button) {
   flex: 1 1 auto;
@@ -1261,6 +1272,10 @@ export default {
     display: flex;
     flex-direction: row;
     flex-wrap: nowrap;
+    align-items: center;
+  }
+  ::v-deep .el-button-group > .el-button {
+    height: 32px;
   }
   ::v-deep button {
     color: #1890ff;
@@ -1289,6 +1304,10 @@ export default {
     display: flex;
     flex-direction: row;
     flex-wrap: nowrap;
+    align-items: center;
+  }
+  ::v-deep .el-button-group > .el-button {
+    height: 32px;
   }
   ::v-deep button {
     color: #fff;
@@ -1500,7 +1519,7 @@ export default {
     box-sizing: border-box;
     display: inline-flex;
     flex-wrap: nowrap;
-    align-items: stretch;
+    align-items: center;
   }
   .case-page .case-view-toolbar .case-add-dropdown .el-button-group > .el-button:not(.el-dropdown__caret-button),
   .case-page .case-view-toolbar .case-ai-add-dropdown .el-button-group > .el-button:not(.el-dropdown__caret-button) {
