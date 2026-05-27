@@ -1,6 +1,6 @@
 package com.cat2bug.framework.web.exception;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import com.cat2bug.system.exception.AjaxResultException;
 import org.slf4j.Logger;

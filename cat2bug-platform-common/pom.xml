@@ -52,6 +52,12 @@
             <artifactId>lombok</artifactId>
         </dependency>
 
+        <!-- MyBatis（SB3 需 3.0.x starter） -->
+        <dependency>
+            <groupId>org.mybatis.spring.boot</groupId>
+            <artifactId>mybatis-spring-boot-starter</artifactId>
+        </dependency>
+
         <!-- pagehelper 分页插件 -->
         <dependency>
             <groupId>com.github.pagehelper</groupId>
@@ -80,7 +86,7 @@
 		<dependency>
 			<groupId>com.baomidou</groupId>
 			<artifactId>dynamic-datasource-spring-boot-starter</artifactId>
-			<version>3.5.2</version>
+			<version>${dynamic-datasource.version}</version>
 		</dependency>
 
         <!-- 阿里JSON解析器 -->
@@ -110,16 +116,20 @@
             <artifactId>snakeyaml</artifactId>
         </dependency>
 
-        <!-- Token生成与解析-->
+        <!-- JWT -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt</artifactId>
+            <artifactId>jjwt-api</artifactId>
         </dependency>
-
-        <!-- Jaxb -->
         <dependency>
-            <groupId>javax.xml.bind</groupId>
-            <artifactId>jaxb-api</artifactId>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <scope>runtime</scope>
         </dependency>
 
         <!-- redis 缓存操作 -->
@@ -139,22 +149,20 @@
             <artifactId>UserAgentUtils</artifactId>
         </dependency>
 
-        <!-- servlet包 -->
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-        </dependency>
-
         <!-- 通用工具-->
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
         </dependency>
 
+        <!-- J2Cache（Spring Boot 3 自动配置，替代 j2cache-spring-boot2-starter） -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+        </dependency>
         <dependency>
             <groupId>net.oschina.j2cache</groupId>
             <artifactId>j2cache-core</artifactId>
-            <version>2.8.5-release</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
@@ -162,11 +170,19 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
         <dependency>
             <groupId>net.oschina.j2cache</groupId>
             <artifactId>j2cache-spring-boot2-starter</artifactId>
-            <version>2.8.0-release</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-autoconfigure</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>

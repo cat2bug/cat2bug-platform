@@ -5,7 +5,7 @@ import com.cat2bug.api.mapper.ApiMemberMapper;
 import com.cat2bug.api.service.ApiService;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.List;
 
 /**

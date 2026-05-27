@@ -16,7 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import javax.websocket.Session;
+import jakarta.websocket.Session;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 

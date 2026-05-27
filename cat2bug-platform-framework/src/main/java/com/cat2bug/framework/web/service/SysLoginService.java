@@ -1,6 +1,6 @@
 package com.cat2bug.framework.web.service;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -40,7 +40,7 @@ public class SysLoginService
     @Autowired
     private TokenService tokenService;
 
-    @Resource
+    @Resource(name = "manageAuthenticationManager")
     private AuthenticationManager authenticationManager;
 
     @Autowired

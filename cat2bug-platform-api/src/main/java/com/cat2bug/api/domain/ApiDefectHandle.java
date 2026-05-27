@@ -2,7 +2,7 @@ package com.cat2bug.api.domain;
 
 import lombok.Data;
 
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.Size;
 import java.util.List;
 
 /**

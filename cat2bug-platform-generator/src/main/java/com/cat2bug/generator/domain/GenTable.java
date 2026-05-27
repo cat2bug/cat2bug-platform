@@ -1,8 +1,8 @@
 package com.cat2bug.generator.domain;
 
 import java.util.List;
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import org.apache.commons.lang3.ArrayUtils;
 import com.cat2bug.common.constant.GenConstants;
 import com.cat2bug.common.core.domain.BaseEntity;

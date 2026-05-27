@@ -10,7 +10,7 @@ import com.cat2bug.api.support.ApiDeliverablePathMatch;
 import com.cat2bug.common.utils.StringUtils;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;

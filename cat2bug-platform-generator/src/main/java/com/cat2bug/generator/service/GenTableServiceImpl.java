@@ -39,7 +39,7 @@ import com.cat2bug.generator.util.GenUtils;
 import com.cat2bug.generator.util.VelocityInitializer;
 import com.cat2bug.generator.util.VelocityUtils;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 /**
  * 业务 服务层实现

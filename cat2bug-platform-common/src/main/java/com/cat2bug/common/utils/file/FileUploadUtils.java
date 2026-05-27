@@ -20,7 +20,7 @@ import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.common.utils.uuid.Seq;
 
 import javax.imageio.ImageIO;
-import javax.xml.bind.DatatypeConverter;
+import java.util.Base64;
 
 /**
  * 文件上传工具类
@@ -177,7 +177,7 @@ public class FileUploadUtils
         String imageData = matcher.group(2);
         BufferedImage image;
         byte[] data;
-        data = DatatypeConverter.parseBase64Binary(imageData);
+        data = Base64.getDecoder().decode(imageData);
         ByteArrayInputStream bis = new ByteArrayInputStream(data);
         image = ImageIO.read(new ByteArrayInputStream(data));
         bis.close();

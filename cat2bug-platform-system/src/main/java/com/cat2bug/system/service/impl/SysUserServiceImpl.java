@@ -3,7 +3,7 @@ package com.cat2bug.system.service.impl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import javax.validation.Validator;
+import jakarta.validation.Validator;
 
 import com.cat2bug.system.domain.SysUserConfig;
 import com.cat2bug.system.service.ISysUserConfigService;

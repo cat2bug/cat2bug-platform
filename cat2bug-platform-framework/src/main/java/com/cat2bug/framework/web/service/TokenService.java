@@ -12,14 +12,18 @@ import com.cat2bug.common.utils.uuid.IdUtils;
 import eu.bitwalker.useragentutils.UserAgent;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
+import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -50,6 +54,9 @@ public class TokenService
     protected static final long MILLIS_MINUTE = 60 * MILLIS_SECOND;
 
     private static final Long MILLIS_MINUTE_TEN = 20 * 60 * 1000L;
+
+    /** HS512 要求密钥长度 >= 512 bit（64 字节），见 RFC 7518 §3.2 */
+    private static final int HS512_MIN_KEY_BYTES = 64;
 
     @Autowired
     private RedisCache redisCache;
@@ -175,12 +182,28 @@ public class TokenService
      * @param claims 数据声明
      * @return 令牌
      */
+    private SecretKey signingKey() {
+        byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
+        if (keyBytes.length < HS512_MIN_KEY_BYTES) {
+            keyBytes = sha512(keyBytes);
+        }
+        return Keys.hmacShaKeyFor(keyBytes);
+    }
+
+    private static byte[] sha512(byte[] input) {
+        try {
+            return MessageDigest.getInstance("SHA-512").digest(input);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("SHA-512 not available", e);
+        }
+    }
+
     private String createToken(Map<String, Object> claims)
     {
-        String token = Jwts.builder()
-                .setClaims(claims)
-                .signWith(SignatureAlgorithm.HS512, secret).compact();
-        return token;
+        return Jwts.builder()
+                .claims(claims)
+                .signWith(signingKey(), Jwts.SIG.HS512)
+                .compact();
     }
 
     /**
@@ -192,9 +215,10 @@ public class TokenService
     private Claims parseToken(String token)
     {
         return Jwts.parser()
-                .setSigningKey(secret)
-                .parseClaimsJws(token)
-                .getBody();
+                .verifyWith(signingKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
     }
 
     /**

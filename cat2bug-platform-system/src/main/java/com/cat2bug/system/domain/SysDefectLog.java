@@ -8,7 +8,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import com.cat2bug.common.annotation.Excel;
 import com.cat2bug.common.core.domain.BaseEntity;
 
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.Size;
 import java.util.List;
 
 /**

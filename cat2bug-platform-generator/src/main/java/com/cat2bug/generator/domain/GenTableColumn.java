@@ -1,6 +1,6 @@
 package com.cat2bug.generator.domain;
 
-import javax.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotBlank;
 import com.cat2bug.common.core.domain.BaseEntity;
 import com.cat2bug.common.utils.StringUtils;
 

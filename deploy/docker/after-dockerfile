@@ -1,4 +1,4 @@
-FROM openjdk:11-jre
+FROM eclipse-temurin:17-jre
 MAINTAINER yuzhantao@qq.com
 # 创建目录
 RUN mkdir -p /home

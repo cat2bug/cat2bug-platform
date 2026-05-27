@@ -108,6 +108,9 @@ caffeine:
 
 # Spring配置
 spring:
+  # 与 SB2 行为一致：框架内存在历史循环依赖（如 API Token 过滤器）
+  main:
+    allow-circular-references: true
   database-type: h2
   flyway:
     # 是否开启数据库自动更新
@@ -212,12 +215,19 @@ pagehelper:
   supportMethodsArguments: true
   params: count=countSql
 
-# Swagger配置
+# OpenAPI / Knife4j（原 swagger 开关仍用 swagger.enabled）
 swagger:
-  # 是否开启swagger
   enabled: false
-  # 请求前缀
   pathMapping: /dev-api
+
+springdoc:
+  api-docs:
+    enabled: ${swagger.enabled:false}
+  swagger-ui:
+    enabled: ${swagger.enabled:false}
+
+knife4j:
+  enable: ${swagger.enabled:false}
 
 # 防止XSS攻击
 xss:

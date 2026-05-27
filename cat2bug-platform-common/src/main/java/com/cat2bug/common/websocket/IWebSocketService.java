@@ -1,6 +1,6 @@
 package com.cat2bug.common.websocket;
 
-import javax.websocket.Session;
+import jakarta.websocket.Session;
 
 /**
  * websocket服务

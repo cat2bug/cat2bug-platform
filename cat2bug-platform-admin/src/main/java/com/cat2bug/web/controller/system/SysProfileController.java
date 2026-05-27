@@ -24,7 +24,7 @@ import com.cat2bug.common.utils.file.MimeTypeUtils;
 import com.cat2bug.framework.web.service.TokenService;
 import com.cat2bug.system.service.ISysUserService;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 /**
  * 个人信息 业务处理

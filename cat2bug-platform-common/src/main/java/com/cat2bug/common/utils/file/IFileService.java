@@ -4,7 +4,7 @@ import com.cat2bug.common.exception.file.InvalidExtensionException;
 import org.apache.poi.openxml4j.opc.PackagePart;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 

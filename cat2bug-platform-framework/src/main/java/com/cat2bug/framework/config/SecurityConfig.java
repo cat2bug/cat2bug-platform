@@ -1,184 +1,135 @@
 package com.cat2bug.framework.config;
 
 import com.cat2bug.framework.config.properties.PermitAllUrlProperties;
-import com.cat2bug.framework.security.config.AbstractSecurityConfigurerAdapter;
 import com.cat2bug.framework.security.filter.JwtAuthenticationTokenFilter;
 import com.cat2bug.framework.security.handle.AuthenticationEntryPointImpl;
 import com.cat2bug.framework.security.handle.LogoutSuccessHandlerImpl;
 import com.cat2bug.framework.web.service.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.filter.CorsFilter;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 /**
- * spring security配置
- * 
- * @author ruoyi
+ * Spring Security 6 配置（主站）
  */
+@Configuration
+@EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true, securedEnabled = true)
 @Order(2)
-@EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
-public class SecurityConfig extends WebSecurityConfigurerAdapter
-{
-    /**
-     * 自定义用户认证逻辑
-     */
+public class SecurityConfig {
+
     @Autowired
     private UserDetailsServiceImpl userDetailsService;
-    
-    /**
-     * 认证失败处理类
-     */
+
     @Autowired
     private AuthenticationEntryPointImpl unauthorizedHandler;
 
-    /**
-     * 退出处理类
-     */
     @Autowired
     private LogoutSuccessHandlerImpl logoutSuccessHandler;
 
-    /**
-     * token认证过滤器
-     */
     @Autowired
     private JwtAuthenticationTokenFilter authenticationTokenFilter;
 
-    /**
-     * 跨域过滤器
-     */
     @Autowired
     private CorsFilter corsFilter;
 
-    /**
-     * 允许匿名访问的地址
-     */
     @Autowired
     private PermitAllUrlProperties permitAllUrl;
 
-    /**
-     * 所有安全配置
-     */
-    @Autowired(required = false)
-    List<AbstractSecurityConfigurerAdapter> securityConfigurerAdapterList;
-    /**
-     * 解决 无法直接注入 AuthenticationManager
-     *
-     * @return
-     * @throws Exception
-     */
-    @Bean("manageAuthenticationManager")
-    @Primary
-    @Override
-    public AuthenticationManager authenticationManagerBean() throws Exception
-    {
-        return super.authenticationManagerBean();
-    }
-
-    /**
-     * anyRequest          |   匹配所有请求路径
-     * access              |   SpringEl表达式结果为true时可以访问
-     * anonymous           |   匿名可以访问
-     * denyAll             |   用户不能访问
-     * fullyAuthenticated  |   用户完全认证可以访问（非remember-me下自动登录）
-     * hasAnyAuthority     |   如果有参数，参数表示权限，则其中任何一个权限可以访问
-     * hasAnyRole          |   如果有参数，参数表示角色，则其中任何一个角色可以访问
-     * hasAuthority        |   如果有参数，参数表示权限，则其权限可以访问
-     * hasIpAddress        |   如果有参数，参数表示IP地址，如果用户IP和参数匹配，则可以访问
-     * hasRole             |   如果有参数，参数表示角色，则其角色可以访问
-     * permitAll           |   用户可以任意访问
-     * rememberMe          |   允许通过remember-me登录的用户访问
-     * authenticated       |   用户登录后可访问
-     */
-    @Override
-    protected void configure(HttpSecurity httpSecurity) throws Exception
-    {
-        // 注解标记允许匿名访问的url
-        ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry registry = httpSecurity.authorizeRequests();
-        permitAllUrl.getUrls().forEach(url -> registry.antMatchers(url).permitAll());
-
-        List<String> filterMatchers = new ArrayList<>();
-        if(this.securityConfigurerAdapterList!=null) {
-            this.securityConfigurerAdapterList.forEach(c -> {
-                filterMatchers.addAll(Arrays.asList(c.getMatchers()));
-            });
-        }
-        httpSecurity
-                // CSRF禁用，因为不使用session
-                .csrf().disable()
-                // 禁用HTTP响应标头
-                .headers().cacheControl().disable().and()
-                // 认证失败处理类
-                .exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
-                // 基于token，所以不需要session
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
-                // 过滤请求
-                .authorizeRequests()
-                // 对于登录login 注册register 验证码captchaImage 允许匿名访问
-                .antMatchers("/login", "/**/login", "/**/bind", "/logout", "/register", "/captchaImage", "/version", "/system/defect/*/shard/**", "/websocket/**").permitAll()
-                // 静态资源，可匿名访问
-                .antMatchers(HttpMethod.GET, "/", "/index","/static/**","/*.html", "/**/*.html", "/**/*.css", "/**/*.js", "/profile/**").permitAll()
-                // 帮助文档内图片由 <img> 直接请求，无法带 Token；Markdown 仍走鉴权（前端 fetch 带头）
-                .antMatchers(HttpMethod.GET, "/docs/images/**").permitAll()
-                .antMatchers("doc.html", "/swagger-ui.html", "/swagger-ui/**", "/swagger-resources/**", "/webjars/**", "/*/api-docs", "/druid/**","/h2/**").permitAll()
-                // 所有过滤类中的匹配网址
-                .antMatchers(filterMatchers.toArray(new String[]{})).permitAll()
-                // 除上面外的所有请求全部需要鉴权认证
-                .anyRequest().authenticated()
-                .and()
-                .headers().frameOptions().disable();
-        // 添加Logout filter
-        httpSecurity.logout().logoutUrl("/logout").logoutSuccessHandler(logoutSuccessHandler);
-        // 添加JWT filter
-        httpSecurity.addFilterBefore(authenticationTokenFilter, UsernamePasswordAuthenticationFilter.class);
-        // 扫描所有过滤类并加入到httpSecurity中
-
-        if(this.securityConfigurerAdapterList!=null) {
-            this.securityConfigurerAdapterList.forEach(c-> {
-                try {
-                    httpSecurity.apply(c);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            });
-        }
-//        filters.forEach(f->f.joinHttpSecurity(httpSecurity));
-        // 添加CORS filter
-        httpSecurity.addFilterBefore(corsFilter, JwtAuthenticationTokenFilter.class);
-        httpSecurity.addFilterBefore(corsFilter, LogoutFilter.class);
-    }
-
-    /**
-     * 强散列哈希加密实现
-     */
     @Bean
-    public BCryptPasswordEncoder bCryptPasswordEncoder()
-    {
+    public BCryptPasswordEncoder bCryptPasswordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    /**
-     * 身份认证接口
-     */
-    @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception
-    {
-        auth.userDetailsService(userDetailsService).passwordEncoder(bCryptPasswordEncoder());
+    @Bean
+    public DaoAuthenticationProvider daoAuthenticationProvider() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(userDetailsService);
+        provider.setPasswordEncoder(bCryptPasswordEncoder());
+        return provider;
+    }
+
+    @Bean("manageAuthenticationManager")
+    public AuthenticationManager manageAuthenticationManager(AuthenticationConfiguration configuration) throws Exception {
+        return configuration.getAuthenticationManager();
+    }
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
+        httpSecurity
+                .authenticationProvider(daoAuthenticationProvider())
+                .csrf(csrf -> csrf.disable())
+                .headers(headers -> headers.cacheControl(cache -> cache.disable()).frameOptions(frame -> frame.disable()))
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(unauthorizedHandler))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(registry -> {
+                    // @Anonymous 扫描的 URL 与 Ant 风格通配（含 {id}→*），避免 PathPattern 解析失败
+                    permitAllUrl.getUrls().forEach(url ->
+                            registry.requestMatchers(new AntPathRequestMatcher(url)).permitAll());
+                    registry.requestMatchers(
+                            ant("/login"),
+                            ant("/**/login"),
+                            ant("/**/bind"),
+                            ant("/logout"),
+                            ant("/register"),
+                            ant("/captchaImage"),
+                            ant("/version"),
+                            ant("/system/defect/*/shard/**"),
+                            ant("/websocket/**")
+                    ).permitAll();
+                    registry.requestMatchers(
+                            ant(HttpMethod.GET, "/"),
+                            ant(HttpMethod.GET, "/index"),
+                            ant(HttpMethod.GET, "/static/**"),
+                            ant(HttpMethod.GET, "/*.html"),
+                            ant(HttpMethod.GET, "/**/*.html"),
+                            ant(HttpMethod.GET, "/**/*.css"),
+                            ant(HttpMethod.GET, "/**/*.js"),
+                            ant(HttpMethod.GET, "/profile/**"),
+                            ant(HttpMethod.GET, "/docs/images/**")
+                    ).permitAll();
+                    registry.requestMatchers(
+                            ant("/doc.html"),
+                            ant("/swagger-ui.html"),
+                            ant("/swagger-ui/**"),
+                            ant("/swagger-resources/**"),
+                            ant("/webjars/**"),
+                            ant("/*/api-docs"),
+                            ant("/druid/**"),
+                            ant("/h2/**"),
+                            ant("/v3/api-docs/**"),
+                            ant("/doc.html/**")
+                    ).permitAll();
+                    registry.anyRequest().authenticated();
+                })
+                .logout(logout -> logout.logoutUrl("/logout").logoutSuccessHandler(logoutSuccessHandler));
+
+        httpSecurity.addFilterBefore(authenticationTokenFilter, UsernamePasswordAuthenticationFilter.class);
+        httpSecurity.addFilterBefore(corsFilter, LogoutFilter.class);
+
+        return httpSecurity.build();
+    }
+
+    private static AntPathRequestMatcher ant(String pattern) {
+        return new AntPathRequestMatcher(pattern);
+    }
+
+    private static AntPathRequestMatcher ant(HttpMethod method, String pattern) {
+        return new AntPathRequestMatcher(pattern, method.name());
     }
 }

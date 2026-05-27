@@ -21,23 +21,31 @@
         <cat2bug.version>0.6.2</cat2bug.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <java.version>1.8</java.version>
+        <!-- Spring Boot 3.3 线最新补丁；CI/Dependabot 仅 bump 3.3.* -->
+        <spring-boot.version>3.3.13</spring-boot.version>
+        <java.version>17</java.version>
         <maven-jar-plugin.version>3.1.1</maven-jar-plugin.version>
-        <druid.version>1.2.16</druid.version>
+        <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
+        <druid.version>1.2.23</druid.version>
         <bitwalker.version>1.21</bitwalker.version>
-        <swagger.version>3.0.0</swagger.version>
+        <springdoc.version>2.6.0</springdoc.version>
+        <knife4j.version>4.5.0</knife4j.version>
         <kaptcha.version>2.3.3</kaptcha.version>
-        <pagehelper.boot.version>1.4.6</pagehelper.boot.version>
+        <pagehelper.boot.version>2.1.0</pagehelper.boot.version>
+        <mybatis-spring-boot.version>3.0.4</mybatis-spring-boot.version>
+        <dynamic-datasource.version>4.3.1</dynamic-datasource.version>
         <fastjson.version>2.0.60</fastjson.version>
         <oshi.version>6.4.6</oshi.version>
         <commons.io.version>2.19.0</commons.io.version>
         <commons.collections.version>3.2.2</commons.collections.version>
         <poi.version>5.4.1</poi.version>
         <velocity.version>2.3</velocity.version>
-        <jwt.version>0.9.1</jwt.version>
+        <jjwt.version>0.12.6</jjwt.version>
         <guava.version>32.1.3-jre</guava.version>
         <hutool.version>5.8.25</hutool.version>
         <okhttp.version>4.12.0</okhttp.version>
+        <j2cache.core.version>2.8.5-release</j2cache.core.version>
+        <j2cache.spring-boot2-starter.version>2.8.0-release</j2cache.spring-boot2-starter.version>
     </properties>
 
     <!-- 依赖声明 -->
@@ -57,24 +65,18 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-            <!-- SpringBoot的依赖配置-->
+            <!-- Spring Boot 3.3.x BOM -->
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
-                <version>2.5.15</version>
+                <version>${spring-boot.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
-            </dependency>
-            <!--websocket-->
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-websocket</artifactId>
-                <version>2.5.15</version>
             </dependency>
             <!-- 阿里数据库连接池 -->
             <dependency>
                 <groupId>com.alibaba</groupId>
-                <artifactId>druid-spring-boot-starter</artifactId>
+                <artifactId>druid-spring-boot-3-starter</artifactId>
                 <version>${druid.version}</version>
             </dependency>
 
@@ -92,6 +94,24 @@
                 <version>${pagehelper.boot.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>com.baomidou</groupId>
+                <artifactId>dynamic-datasource-spring-boot-starter</artifactId>
+                <version>${dynamic-datasource.version}</version>
+            </dependency>
+
+            <!-- MyBatis Spring Boot 3（覆盖 pagehelper 传递的 2.x，兼容 Spring Framework 6.2+） -->
+            <dependency>
+                <groupId>org.mybatis.spring.boot</groupId>
+                <artifactId>mybatis-spring-boot-starter</artifactId>
+                <version>${mybatis-spring-boot.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mybatis</groupId>
+                <artifactId>mybatis-spring</artifactId>
+                <version>${mybatis-spring-boot.version}</version>
+            </dependency>
+
             <!-- 获取系统信息 -->
             <dependency>
                 <groupId>com.github.oshi</groupId>
@@ -99,17 +119,16 @@
                 <version>${oshi.version}</version>
             </dependency>
 
-            <!-- Swagger3依赖 -->
+            <!-- OpenAPI 3（springdoc） -->
             <dependency>
-                <groupId>io.springfox</groupId>
-                <artifactId>springfox-boot-starter</artifactId>
-                <version>${swagger.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>io.swagger</groupId>
-                        <artifactId>swagger-models</artifactId>
-                    </exclusion>
-                </exclusions>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+                <version>${springdoc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.xiaoymin</groupId>
+                <artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
+                <version>${knife4j.version}</version>
             </dependency>
 
             <!-- io常用工具类 -->
@@ -158,11 +177,31 @@
                 <version>${fastjson.version}</version>
             </dependency>
 
-            <!-- Token生成与解析-->
+            <!-- JWT -->
             <dependency>
                 <groupId>io.jsonwebtoken</groupId>
-                <artifactId>jjwt</artifactId>
-                <version>${jwt.version}</version>
+                <artifactId>jjwt-api</artifactId>
+                <version>${jjwt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-impl</artifactId>
+                <version>${jjwt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-jackson</artifactId>
+                <version>${jjwt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.oschina.j2cache</groupId>
+                <artifactId>j2cache-core</artifactId>
+                <version>${j2cache.core.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.oschina.j2cache</groupId>
+                <artifactId>j2cache-spring-boot2-starter</artifactId>
+                <version>${j2cache.spring-boot2-starter.version}</version>
             </dependency>
 
             <!-- 验证码 -->
@@ -257,12 +296,40 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.5.0</version>
+                <executions>
+                    <execution>
+                        <id>enforce-jdk17</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <phase>validate</phase>
+                        <configuration>
+                            <rules>
+                                <requireJavaVersion>
+                                    <version>[17,)</version>
+                                    <message>
+                                        需要 JDK 17 或更高版本构建本项目（当前 Maven 使用的 Java 版本过低）。
+                                        macOS Homebrew 示例:
+                                        export JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home
+                                        export PATH="$JAVA_HOME/bin:$PATH"
+                                        或使用: ./scripts/mvn-jdk17.sh clean install
+                                    </message>
+                                </requireJavaVersion>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.1</version>
+                <version>${maven-compiler-plugin.version}</version>
                 <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
+                    <release>${java.version}</release>
                     <encoding>${project.build.sourceEncoding}</encoding>
+                    <parameters>true</parameters>
                 </configuration>
             </plugin>
 <!--            <plugin>-->
