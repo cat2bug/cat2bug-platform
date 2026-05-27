@@ -546,7 +546,7 @@
   "case.import-result": "导入结果",
   "case.import-file-format": "仅允许导入{0}格式文件。",
   "case.import-prompt": "将文件拖到此处，或",
-  "case.template-file-name": "测试用例",
+  "case.template-file-name": "用例",
   "case.ai-search-success-result": "本次用例生成用时{0}秒,共创建{1}条测试用例",
   "case.ai-search-fail-result": "您输入的内容无法正确解析，请调整语句后重新查询!",
   "case.is-batch-import": "是否导入选中的用例到系统中?",

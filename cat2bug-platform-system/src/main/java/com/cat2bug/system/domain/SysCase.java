@@ -64,7 +64,7 @@ public class SysCase extends BaseEntity
 
     /** 模块名称 */
     @Excel(name = "交付物",
-            i18nNameKey = "module.required",
+            i18nNameKey = "module",
             sort = 30,
             align = HorizontalAlignment.LEFT,
             width = 40,

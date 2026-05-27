@@ -24,10 +24,11 @@ public class SysCaseExcelTepmplate extends BaseEntity
 
     /** 交付物名称 */
     @Excel(name = "交付物",
-            i18nNameKey = "module.required",
+            i18nNameKey = "module",
             width = 40,
             handler = SysModuleNameHandlerAdapter.class,
             comboHandler = SysModuleComboHandlerAdapter.class,
+            headerColor = IndexedColors.RED,
             headerBackgroundColor=IndexedColors.GREY_25_PERCENT)
     private String moduleName;
 
