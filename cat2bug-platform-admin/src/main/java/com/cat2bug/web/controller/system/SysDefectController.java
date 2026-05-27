@@ -6,6 +6,7 @@ import com.cat2bug.common.core.domain.AjaxResult;
 import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.common.core.page.TableDataInfo;
 import com.cat2bug.common.enums.BusinessType;
+import com.cat2bug.common.utils.MessageUtils;
 import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.common.utils.poi.ExcelUtil;
 import com.cat2bug.common.core.domain.entity.SysDefect;
@@ -302,6 +303,6 @@ public class SysDefectController extends BaseController
 
         List<String> userList = sysUserProjectService.selectSysUserListByProjectId(userConfig.getCurrentProjectId(),new SysUser()).stream().map(u->u.getNickName()).collect(Collectors.toList());
         params.put("memberList",userList);
-        util.importTemplateExcel(response, "缺陷数据",params);
+        util.importTemplateExcel(response, MessageUtils.message("defect.test_defect"), params);
     }
 }

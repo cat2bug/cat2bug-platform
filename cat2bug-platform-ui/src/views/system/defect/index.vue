@@ -702,7 +702,7 @@ export default {
       if (host) {
         payload.params = { ...(payload.params || {}), host }
       }
-      this.download('system/defect/export', payload, `defect_${new Date().getTime()}.xlsx`)
+      this.download('system/defect/export', payload, `${this.$i18n.t('defect.export-file-name')}_${new Date().getTime()}.xlsx`)
     }
   }
 }

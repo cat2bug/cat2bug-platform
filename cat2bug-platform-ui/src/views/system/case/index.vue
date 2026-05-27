@@ -819,7 +819,7 @@ export default {
       if (host) {
         payload.params = { ...(payload.params || {}), host }
       }
-      this.download('system/case/export', payload, `${this.$i18n.t('case.export')}_${new Date().getTime()}.xlsx`)
+      this.download('system/case/export', payload, `${this.$i18n.t('case.export-file-name')}_${new Date().getTime()}.xlsx`)
     },
     /** 点击模块树中的某个模块操作 */
     moduleClickHandle(moduleId) {
@@ -846,7 +846,7 @@ export default {
     /** 下载模板操作 */
     importTemplate() {
       this.download('system/case/importTemplate?projectId=' + this.projectId, {
-      }, this.$i18n.t('case.template-file-name') + `${new Date().getTime()}.xlsx`)
+      }, this.$i18n.t('case.template-file-name') + this.$i18n.t('excel.import-template-word') + `${new Date().getTime()}.xlsx`)
     },
     /** 文件上传中处理 */
     handleFileUploadProgress(event, file, fileList) {

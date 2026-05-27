@@ -79,7 +79,7 @@ export default {
     /** 下载模板操作 */
     importTemplate() {
       this.download('system/defect/importTemplate', {
-      }, `defect_template_${new Date().getTime()}.xlsx`)
+      }, this.$i18n.t('defect.template-file-name') + this.$i18n.t('excel.import-template-word') + `${new Date().getTime()}.xlsx`)
     },
     // 文件上传中处理
     handleFileUploadProgress(event, file, fileList) {
