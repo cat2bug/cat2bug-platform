@@ -8,6 +8,7 @@ import com.cat2bug.common.core.page.TableDataInfo;
 import com.cat2bug.common.enums.BusinessType;
 import com.cat2bug.common.utils.MessageUtils;
 import com.cat2bug.common.utils.StringUtils;
+import com.cat2bug.common.utils.poi.ExcelColumnExportSupport;
 import com.cat2bug.common.utils.poi.ExcelUtil;
 import com.cat2bug.system.domain.SysCase;
 import com.cat2bug.system.domain.vo.ExcelImportResultVo;
@@ -100,12 +101,14 @@ public class SysCaseController extends BaseController
         Map<String, Object> params = new HashMap<>();
         params.put("type", "export");
         if (sysCase.getParams() != null) {
+            params.putAll(sysCase.getParams());
             Object host = sysCase.getParams().get("host");
             if (host != null && StringUtils.isNotEmpty(String.valueOf(host))) {
                 params.put("host", String.valueOf(host).trim());
             }
         }
         ExcelUtil<SysCase> util = new ExcelUtil<SysCase>(SysCase.class);
+        ExcelColumnExportSupport.apply(util, params, ExcelColumnExportSupport.CASE_DATA_MAP, null, null);
         util.exportExcel(response, list, "测试用例数据", params);
     }
 
@@ -133,10 +136,16 @@ public class SysCaseController extends BaseController
      * @param projectId 项目id
      */
     @PostMapping("/importTemplate")
-    public void importTemplate(HttpServletResponse response,Long projectId)
+    public void importTemplate(HttpServletResponse response, Long projectId, SysCase sysCase)
     {
+        Map<String, Object> params = new HashMap<>();
+        if (sysCase != null && sysCase.getParams() != null) {
+            params.putAll(sysCase.getParams());
+        }
         ExcelUtil<SysCase> util = new ExcelUtil<SysCase>(SysCase.class);
-        util.importTemplateExcel(response, MessageUtils.message("case.test_case"));
+        ExcelColumnExportSupport.apply(util, params, ExcelColumnExportSupport.CASE_TEMPLATE_MAP,
+                ExcelColumnExportSupport.CASE_TEMPLATE_REQUIRED, ExcelColumnExportSupport.CASE_TEMPLATE_EXCLUDED);
+        util.importTemplateExcel(response, MessageUtils.message("case.test_case"), params);
     }
 
     /**

@@ -8,6 +8,7 @@ import com.cat2bug.common.core.page.TableDataInfo;
 import com.cat2bug.common.enums.BusinessType;
 import com.cat2bug.common.utils.MessageUtils;
 import com.cat2bug.common.utils.StringUtils;
+import com.cat2bug.common.utils.poi.ExcelColumnExportSupport;
 import com.cat2bug.common.utils.poi.ExcelUtil;
 import com.cat2bug.common.core.domain.entity.SysDefect;
 import com.cat2bug.system.domain.SysDefectImportTemplate;
@@ -269,12 +270,14 @@ public class SysDefectController extends BaseController
         }).collect(Collectors.toList());
 
         ExcelUtil<SysDefect> util = new ExcelUtil<SysDefect>(SysDefect.class);
+        Map<String, Object> params = sysDefect.getParams() != null ? sysDefect.getParams() : new HashMap<>();
         List<String> moduleNameList = sysModuleService.selectSysModulePathList(sysDefect.getProjectId()).stream().map(m->m.getModulePath()).collect(Collectors.toList());
-        sysDefect.getParams().put("moduleNameList",moduleNameList);
+        params.put("moduleNameList", moduleNameList);
 
         List<String> userList = sysUserProjectService.selectSysUserListByProjectId(sysDefect.getProjectId(),new SysUser()).stream().map(u->u.getNickName()).collect(Collectors.toList());
-        sysDefect.getParams().put("memberList",userList);
-        util.exportExcel(response, list, "缺陷数据",sysDefect.getParams());
+        params.put("memberList", userList);
+        ExcelColumnExportSupport.apply(util, params, ExcelColumnExportSupport.DEFECT_DATA_MAP, null, null);
+        util.exportExcel(response, list, "缺陷数据", params);
     }
 
     @Log(title = "缺陷", businessType = BusinessType.IMPORT)
@@ -293,16 +296,21 @@ public class SysDefectController extends BaseController
     }
 
     @PostMapping("/importTemplate")
-    public void importTemplate(HttpServletResponse response)
+    public void importTemplate(HttpServletResponse response, SysDefect sysDefect)
     {
         SysUserConfig userConfig = sysUserConfigService.selectSysUserConfigByUserId(getUserId());
         Map<String, Object> params = new HashMap<>();
+        if (sysDefect != null && sysDefect.getParams() != null) {
+            params.putAll(sysDefect.getParams());
+        }
         ExcelUtil<SysDefectImportTemplate> util = new ExcelUtil<SysDefectImportTemplate>(SysDefectImportTemplate.class);
         List<String> moduleNameList = sysModuleService.selectSysModulePathList(userConfig.getCurrentProjectId()).stream().map(m->m.getModulePath()).collect(Collectors.toList());
-        params.put("moduleNameList",moduleNameList);
+        params.put("moduleNameList", moduleNameList);
 
         List<String> userList = sysUserProjectService.selectSysUserListByProjectId(userConfig.getCurrentProjectId(),new SysUser()).stream().map(u->u.getNickName()).collect(Collectors.toList());
-        params.put("memberList",userList);
+        params.put("memberList", userList);
+        ExcelColumnExportSupport.apply(util, params, ExcelColumnExportSupport.DEFECT_TEMPLATE_MAP,
+                ExcelColumnExportSupport.DEFECT_TEMPLATE_REQUIRED, null);
         util.importTemplateExcel(response, MessageUtils.message("defect.test_defect"), params);
     }
 }

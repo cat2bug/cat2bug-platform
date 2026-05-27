@@ -128,7 +128,8 @@ public class SysCase extends BaseEntity
     /** 焦点成员 */
     private List<SysUser> focusList;
 
-    /** 关联通过的缺陷数量 */
+    /** 关联处理中的缺陷数量（仅数据导出） */
+    @Excel(name = "关联缺陷", i18nNameKey = "defect.state", type = Excel.Type.EXPORT, sort = 120, headerBackgroundColor = IndexedColors.GREY_25_PERCENT)
     private int defectProcessingCount;
     /** 关联失败的缺陷数量 */
     private int defectAuditCount;

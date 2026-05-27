@@ -471,6 +471,13 @@ export default {
       }
       return cached;
     },
+    getColumnConfigForExport() {
+      return this.tableFieldList.map(col => ({
+        key: col.key,
+        prop: col.prop,
+        visible: col.visible !== false
+      }));
+    },
     /** 按勾选的可显示列 key 更新显隐（不参与列设置的列保持可见） */
     setColumnsVisible(showColumns) {
       const showSet = new Set(showColumns);

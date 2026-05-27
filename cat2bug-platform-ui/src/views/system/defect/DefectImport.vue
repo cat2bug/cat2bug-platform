@@ -31,6 +31,13 @@
 import {getToken} from "@/utils/auth";
 import {strFormat} from "@/utils";
 import {setHeader} from "@/utils/request";
+import { TableOptions } from "@/views/system/defect/list/table-options";
+import {
+  appendExportColumnParams,
+  DEFECT_FIELD_LIST_KEY,
+  getColumnsFromCat2BugTable,
+  mergeTableColumns
+} from "@/utils/excel-export-columns";
 
 export default {
   name: "DefectImport",
@@ -78,8 +85,11 @@ export default {
     },
     /** 下载模板操作 */
     importTemplate() {
-      this.download('system/defect/importTemplate', {
-      }, this.$i18n.t('defect.template-file-name') + this.$i18n.t('excel.import-template-word') + `${new Date().getTime()}.xlsx`)
+      const payload = {};
+      const columns = mergeTableColumns(TableOptions, DEFECT_FIELD_LIST_KEY, this.$cache.local);
+      appendExportColumnParams(payload, columns, 'importTemplate', 'defect');
+      this.download('system/defect/importTemplate', payload,
+        this.$i18n.t('defect.template-file-name') + this.$i18n.t('excel.import-template-word') + `${new Date().getTime()}.xlsx`);
     },
     // 文件上传中处理
     handleFileUploadProgress(event, file, fileList) {

@@ -284,6 +284,12 @@ import { CaseTableColumnDefaults } from '@/views/system/case/case-table-options'
 import { checkPermi } from '@/utils/permission'
 import { strFormat } from '@/utils'
 import { resolveExportAssetHost } from '@/utils/ruoyi'
+import {
+  appendExportColumnParams,
+  CASE_FIELD_LIST_KEY,
+  getColumnsFromCat2BugTable,
+  mergeTableColumns
+} from '@/utils/excel-export-columns'
 import { getToken } from '@/utils/auth'
 import { setDefectTempTab } from '@/utils/defect'
 import { setHeader } from '@/utils/request'
@@ -819,6 +825,9 @@ export default {
       if (host) {
         payload.params = { ...(payload.params || {}), host }
       }
+      const columns = getColumnsFromCat2BugTable(this.$refs.cat2BugTable) ||
+        mergeTableColumns(this.caseTableColumnDefaults, CASE_FIELD_LIST_KEY, this.$cache.local)
+      appendExportColumnParams(payload, columns, 'data', 'case')
       this.download('system/case/export', payload, `${this.$i18n.t('case.export-file-name')}_${new Date().getTime()}.xlsx`)
     },
     /** 点击模块树中的某个模块操作 */
@@ -845,8 +854,11 @@ export default {
     },
     /** 下载模板操作 */
     importTemplate() {
-      this.download('system/case/importTemplate?projectId=' + this.projectId, {
-      }, this.$i18n.t('case.template-file-name') + this.$i18n.t('excel.import-template-word') + `${new Date().getTime()}.xlsx`)
+      const payload = {}
+      const columns = mergeTableColumns(this.caseTableColumnDefaults, CASE_FIELD_LIST_KEY, this.$cache.local)
+      appendExportColumnParams(payload, columns, 'importTemplate', 'case')
+      this.download('system/case/importTemplate?projectId=' + this.projectId, payload,
+        this.$i18n.t('case.template-file-name') + this.$i18n.t('excel.import-template-word') + `${new Date().getTime()}.xlsx`)
     },
     /** 文件上传中处理 */
     handleFileUploadProgress(event, file, fileList) {

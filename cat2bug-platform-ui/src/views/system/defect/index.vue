@@ -177,6 +177,13 @@ import DefectImport from '@/views/system/defect/DefectImport'
 import i18n from '@/utils/i18n/i18n'
 import { getDefectTempTab, lifeTime, removeDefectTempTab } from '@/utils/defect'
 import { resolveExportAssetHost } from '@/utils/ruoyi'
+import {
+  appendExportColumnParams,
+  DEFECT_FIELD_LIST_KEY,
+  getColumnsFromCat2BugTable,
+  mergeTableColumns
+} from '@/utils/excel-export-columns'
+import { TableOptions } from '@/views/system/defect/list/table-options'
 import store from '@/store'
 import DefectTable from './list/table'
 import DefectExcel from './list/excel'
@@ -702,6 +709,15 @@ export default {
       if (host) {
         payload.params = { ...(payload.params || {}), host }
       }
+      const c = this.$refs.defectContentComponent
+      let columns = null
+      if (c && c.$refs && c.$refs.cat2BugTable) {
+        columns = getColumnsFromCat2BugTable(c.$refs.cat2BugTable)
+      }
+      if (!columns) {
+        columns = mergeTableColumns(TableOptions, DEFECT_FIELD_LIST_KEY, this.$cache.local)
+      }
+      appendExportColumnParams(payload, columns, 'data', 'defect')
       this.download('system/defect/export', payload, `${this.$i18n.t('defect.export-file-name')}_${new Date().getTime()}.xlsx`)
     }
   }

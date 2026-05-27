@@ -217,6 +217,11 @@ public class ExcelUtil<T>
      */
     public String[] excludeFields;
 
+    /**
+     * 仅导出的字段白名单（按参数顺序输出，设置后不再按 @Excel.sort 排序）
+     */
+    private String[] includeFields;
+
     public ExcelUtil(Class<T> clazz)
     {
         this.clazz = clazz;
@@ -295,6 +300,14 @@ public class ExcelUtil<T>
     public void hideColumn(String... fields)
     {
         this.excludeFields = fields;
+    }
+
+    /**
+     * 仅导出指定字段，顺序与参数一致
+     */
+    public void includeFields(String... fields)
+    {
+        this.includeFields = fields;
     }
 
     public void init(List<T> list, String sheetName, String title, Type type, Map<String,Object> params, IExcelListener excelListener )
@@ -1680,8 +1693,31 @@ public class ExcelUtil<T>
      */
     private void createExcelField()
     {
-        this.fields = getFields();
-        this.fields = this.fields.stream().sorted(Comparator.comparing(objects -> ((Excel) objects[1]).sort())).collect(Collectors.toList());
+        List<Object[]> allFields = getFields();
+        if (includeFields != null && includeFields.length > 0)
+        {
+            Map<String, Object[]> fieldMap = new HashMap<>();
+            for (Object[] objects : allFields)
+            {
+                Field field = (Field) objects[0];
+                fieldMap.put(field.getName(), objects);
+            }
+            List<Object[]> ordered = new ArrayList<>();
+            for (String name : includeFields)
+            {
+                Object[] entry = fieldMap.get(name);
+                if (entry != null)
+                {
+                    ordered.add(entry);
+                }
+            }
+            this.fields = ordered;
+        }
+        else
+        {
+            this.fields = allFields;
+            this.fields = this.fields.stream().sorted(Comparator.comparing(objects -> ((Excel) objects[1]).sort())).collect(Collectors.toList());
+        }
         this.maxHeight = getRowHeight();
     }
 
