@@ -2115,7 +2115,7 @@ export default {
       const col = name ? COLS.find((c) => c.key === name) : null;
       const text = col ? String(this.$t(col.titleKey)) : String(label == null ? "" : label);
       if (!col || !col.required) return esc(text);
-      return `<span style="color:#f56c6c">*${esc(text)}</span>`;
+      return `<span style="color:#f56c6c">${esc(text)}</span>`;
     },
     /** 同步 vue-excel-editor 内部 fields[].label（组件只在 created 里 register 一次） */
     applyExcelEditorI18nHeaders() {

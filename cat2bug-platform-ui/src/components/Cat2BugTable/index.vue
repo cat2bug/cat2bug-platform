@@ -24,11 +24,11 @@
                        :sort-orders="columnSortOrders(col)"
                        :sortable="columnSortableMode(col)">
         <template v-slot:header>
-          <div v-if="col.pinFixedToggle !== false" class="table-header">
+          <div v-if="col.pinFixedToggle !== false" :class="['table-header', { 'table-header--required': col.required }]">
             <svg-icon :icon-class="col.fixed ? 'header-right' : 'header-left'" @click.stop="handleClickColumnsPin(col)"></svg-icon>
-            <span class="header-title">{{ columnHeaderLabel(col) }}</span>
+            <span :class="['header-title', { 'header-title--required': col.required }]">{{ columnHeaderLabel(col) }}</span>
           </div>
-          <span v-else class="header-title-only">{{ columnHeaderLabel(col) }}</span>
+          <span v-else :class="['header-title-only', { 'header-title--required': col.required }]">{{ columnHeaderLabel(col) }}</span>
         </template>
         <template slot-scope="scope">
           <slot name="columns" :scope="scope" :column="col"></slot>
@@ -959,6 +959,15 @@ export default {
 
 .header-title-only {
   display: inline-block;
+}
+
+.header-title--required {
+  color: #f56c6c;
+}
+
+/* 必填列：固定/取消固定图标与标题同色（svg-icon 使用 currentColor） */
+.table-header--required {
+  color: #f56c6c;
 }
 
 ::v-deep .table-header-ghost {

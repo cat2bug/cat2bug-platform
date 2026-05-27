@@ -13,6 +13,7 @@ export const TableOptions=[{
   prop: 'defectTypeName',
   fixed: false,
   visible: true,
+  required: true,
   align: 'center',
   width: 100,
   width_ja_JP: 120,
@@ -22,6 +23,7 @@ export const TableOptions=[{
   prop: 'defectName',
   fixed: false,
   visible: true,
+  required: true,
   width: 400,
   width_ru: 500,
   /** 列表格内展示标题中的换行（见 table.vue .defect-name-col） */
@@ -41,6 +43,7 @@ export const TableOptions=[{
   prop: 'defectState',
   fixed: false,
   visible: true,
+  required: true,
   align: 'center',
   width: 100,
   width_ja_JP: 140,
@@ -128,6 +131,7 @@ export const TableOptions=[{
   prop: 'handleBy',
   fixed: false,
   visible: true,
+  required: true,
   width: 170,
   width_ja_JP: 170,
   width_ar: 170
