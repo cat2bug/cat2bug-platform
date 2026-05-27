@@ -24,25 +24,7 @@ public class DefectStateHandler implements ExcelHandlerAdapter {
             SysDefectStateEnum v = (SysDefectStateEnum) value;
             return MessageUtils.message(v.name());
         } else {
-            String v = (String) value;
-            switch (v) {
-                case "处理中":
-                case "Processing":
-                    return SysDefectStateEnum.PROCESSING;
-                case "待验证":
-                case "Audit":
-                    return SysDefectStateEnum.AUDIT;
-                case "已解决":
-                    return SysDefectStateEnum.RESOLVED;
-                case "已驳回":
-                case "Rejected":
-                    return SysDefectStateEnum.REJECTED;
-                case "已关闭":
-                case "Close":
-                    return SysDefectStateEnum.CLOSED;
-                default:
-                    return null;
-            }
+            return DefectImportLabelResolver.resolveState((String) value);
         }
     }
 }

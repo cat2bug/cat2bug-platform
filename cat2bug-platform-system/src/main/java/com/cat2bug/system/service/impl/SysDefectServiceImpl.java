@@ -637,45 +637,24 @@ public class SysDefectServiceImpl implements ISysDefectService
             if(StringUtils.isBlank(d.getDefectName())) {
                 emptyCell.add(MessageUtils.message("defect.name"));
             }
-            if(StringUtils.isNotBlank(d.getDefectStateImportName())){
-                switch (d.getDefectStateImportName()){
-                    case "处理中":
-                    case "Processing":
-                        d.setDefectState(SysDefectStateEnum.PROCESSING);
-                        break;
-                    case "待验证":
-                    case "Audit":
-                        d.setDefectState(SysDefectStateEnum.AUDIT);
-                        break;
-                    case "已解决":
-                        d.setDefectState(SysDefectStateEnum.RESOLVED);
-                        break;
-                    case "已驳回":
-                    case "Rejected":
-                        d.setDefectState(SysDefectStateEnum.REJECTED);
-                        break;
-                    case "已关闭":
-                    case "Close":
-                        d.setDefectState(SysDefectStateEnum.CLOSED);
-                        break;
+            if (StringUtils.isNotBlank(d.getDefectStateImportName())) {
+                SysDefectStateEnum state = com.cat2bug.common.core.domain.excel.DefectImportLabelResolver
+                        .resolveState(d.getDefectStateImportName());
+                if (state != null) {
+                    d.setDefectState(state);
+                } else {
+                    invalidCell.add(MessageUtils.message("defect.state"));
                 }
             } else {
                 emptyCell.add(MessageUtils.message("defect.state"));
             }
-            if(StringUtils.isNotBlank(d.getDefectTypeImportName())) {
-                switch (d.getDefectTypeImportName()){
-                    case "BUG":
-                    case "Bug":
-                        d.setDefectType(SysDefectTypeEnum.BUG);
-                        break;
-                    case "Task":
-                    case "任务":
-                        d.setDefectType(SysDefectTypeEnum.TASK);
-                        break;
-                    case "Demand":
-                    case "需求":
-                        d.setDefectType(SysDefectTypeEnum.DEMAND);
-                        break;
+            if (StringUtils.isNotBlank(d.getDefectTypeImportName())) {
+                SysDefectTypeEnum type = com.cat2bug.common.core.domain.excel.DefectImportLabelResolver
+                        .resolveType(d.getDefectTypeImportName());
+                if (type != null) {
+                    d.setDefectType(type);
+                } else {
+                    invalidCell.add(MessageUtils.message("type"));
                 }
             } else {
                 emptyCell.add(MessageUtils.message("type"));

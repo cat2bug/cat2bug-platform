@@ -22,6 +22,7 @@ public class DefectStateComboHandlerAdapter  implements ExcelComboHandlerAdapter
         return Arrays.asList(
                 MessageUtils.message("PROCESSING"),
                 MessageUtils.message("AUDIT"),
+                MessageUtils.message("RESOLVED"),
                 MessageUtils.message("REJECTED"),
                 MessageUtils.message("CLOSED"));
     }

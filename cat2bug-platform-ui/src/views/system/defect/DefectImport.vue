@@ -60,15 +60,20 @@ export default {
     }
   },
   created() {
-    let headers = {};
-    setHeader('/system/defect/import', headers);
-    this.upload.headers = headers;
+    this.refreshUploadHeaders();
   },
   methods: {
     strFormat,
+    /** 与当前界面语言同步上传请求头（切换语言后导出/导入须一致） */
+    refreshUploadHeaders() {
+      const headers = {};
+      setHeader('/system/defect/import', headers);
+      this.upload.headers = headers;
+    },
     /** 导入按钮操作 */
     open() {
-      this.upload.title = "缺陷导入";
+      this.refreshUploadHeaders();
+      this.upload.title = this.$t('defect.import');
       this.upload.open = true;
     },
     /** 下载模板操作 */
@@ -90,6 +95,7 @@ export default {
     },
     // 提交上传文件
     submitFileForm() {
+      this.refreshUploadHeaders();
       this.$refs.upload.submit();
     }
   }

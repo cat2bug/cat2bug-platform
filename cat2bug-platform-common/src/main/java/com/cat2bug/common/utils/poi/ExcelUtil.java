@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.*;
 
+import com.cat2bug.common.utils.LocaleUtils;
 import com.cat2bug.common.utils.MessageUtils;
 import com.cat2bug.common.utils.file.IFileService;
 import com.cat2bug.common.utils.spring.SpringUtils;
@@ -23,6 +24,7 @@ import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.MessageSource;
 import org.apache.poi.common.usermodel.HyperlinkType;
 import org.apache.poi.hssf.usermodel.HSSFClientAnchor;
 import org.apache.poi.hssf.usermodel.HSSFPicture;
@@ -374,6 +376,62 @@ public class ExcelUtil<T>
     }
 
     /**
+     * 导入时按表头匹配列：当前语言、注解默认名、各语言包译文（避免导出/导入 language 头不一致）。
+     */
+    private Integer resolveImportColumn(Map<String, Integer> cellMap, Excel attr)
+    {
+        for (String title : collectImportHeaderCandidates(attr))
+        {
+            Integer column = cellMap.get(title);
+            if (column != null)
+            {
+                return column;
+            }
+        }
+        return null;
+    }
+
+    private Set<String> collectImportHeaderCandidates(Excel attr)
+    {
+        LinkedHashSet<String> candidates = new LinkedHashSet<>();
+        String currentTitle = getTitleName(attr);
+        if (StringUtils.isNotEmpty(currentTitle))
+        {
+            candidates.add(currentTitle.trim());
+        }
+        if (StringUtils.isNotEmpty(attr.name()))
+        {
+            candidates.add(attr.name().trim());
+        }
+        if (StringUtils.isNotEmpty(attr.i18nNameKey()))
+        {
+            try
+            {
+                MessageSource messageSource = SpringUtils.getBean(MessageSource.class);
+                for (Locale locale : LocaleUtils.MESSAGE_BUNDLE_LOCALES)
+                {
+                    try
+                    {
+                        String msg = messageSource.getMessage(attr.i18nNameKey(), null, locale);
+                        if (StringUtils.isNotEmpty(msg))
+                        {
+                            candidates.add(msg.trim());
+                        }
+                    }
+                    catch (Exception ignored)
+                    {
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                log.debug("collectImportHeaderCandidates: {}", e.getMessage());
+            }
+        }
+        return candidates;
+    }
+
+    /**
      * 对excel表单默认第一个索引名转换成list
      * 
      * @param is 输入流
@@ -467,7 +525,7 @@ public class ExcelUtil<T>
                 Cell cell = heard.getCell(i);
                 if (StringUtils.isNotNull(cell))
                 {
-                    String value = this.getCellValue(heard, i).toString();
+                    String value = this.getCellValue(heard, i).toString().trim();
                     cellMap.put(value, i);
                 }
                 else
@@ -481,7 +539,7 @@ public class ExcelUtil<T>
             for (Object[] objects : fields)
             {
                 Excel attr = (Excel) objects[1];
-                Integer column = cellMap.get(this.getTitleName(attr));
+                Integer column = resolveImportColumn(cellMap, attr);
                 if (column != null)
                 {
                     fieldsMap.put(column, objects);

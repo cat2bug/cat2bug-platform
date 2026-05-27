@@ -22,20 +22,7 @@ public class DefectTypeHandler  implements ExcelHandlerAdapter {
             SysDefectTypeEnum v = (SysDefectTypeEnum)value;
             return MessageUtils.message(v.toString());
         } else {
-            String v = (String)value;
-            switch (v) {
-                case "BUG":
-                case "Bug":
-                    return SysDefectTypeEnum.BUG;
-                case "Task":
-                case "任务":
-                    return SysDefectTypeEnum.TASK;
-                case "Demand":
-                case "需求":
-                    return SysDefectTypeEnum.DEMAND;
-                default:
-                    return null;
-            }
+            return DefectImportLabelResolver.resolveType((String) value);
         }
     }
 }
