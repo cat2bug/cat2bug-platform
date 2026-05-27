@@ -111,6 +111,19 @@
             <span>{{$t('ecosystem')}}</span>
           </div>
           <el-collapse accordion>
+            <el-collapse-item title="Cat2Bug-APP">
+              <div class="body">
+                <p>
+                  <i class="el-icon-s-order"></i> {{$t('project.introduction')}}：
+                  Cat2Bug-APP移动端
+                </p>
+                <p>
+                  <i class="el-icon-s-home"></i>{{$t('source-code-address')}}：<el-link
+                  href="https://gitee.com/cat2bug/cat2bug-app"
+                  target="_blank">https://gitee.com/cat2bug/cat2bug-app</el-link>
+                </p>
+              </div>
+            </el-collapse-item>
             <el-collapse-item title="Cat2Bug-MCP">
               <div class="body">
                 <p>
