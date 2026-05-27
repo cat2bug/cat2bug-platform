@@ -947,15 +947,46 @@ export default {
 }
 /* 与用例页：h3 下 10px + 本行上 8px（flex 子项不折叠 margin） */
 .defect-tools-tab {
+  position: relative;
   display: flex;
   flex-direction: row;
-  align-items: center;
+  align-items: stretch;
   margin-top: var(--defect-toolbar-v-gap, 8px);
   height: 40px;
   min-width: 0;
+  box-sizing: border-box;
+  /* 伪元素底线与 active-bar 同处 bottom:0，避免 border-bottom 挤占内容区导致蓝条偏高 */
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    background-color: #ebeef5;
+    pointer-events: none;
+    z-index: 1;
+  }
+  /* 全宽底线覆盖右侧统计按钮；避免与 el-tabs 内置 nav-wrap 底线叠成双线 */
+  ::v-deep .el-tabs__nav-wrap::after {
+    display: none !important;
+  }
   /* el-tabs 默认表头 margin-bottom:15px + 空 content，会在 Tab 与下方查询条之间多出一段空白 */
   ::v-deep .el-tabs__header {
     margin-bottom: 0 !important;
+    height: 100%;
+    display: flex;
+    align-items: stretch;
+  }
+  ::v-deep .el-tabs__nav-wrap {
+    flex: 1;
+    min-height: 100%;
+    margin-bottom: 0 !important;
+  }
+  ::v-deep .el-tabs__active-bar {
+    height: 2px !important;
+    bottom: 0 !important;
+    z-index: 2;
   }
   ::v-deep .el-tabs__content {
     display: none !important;
@@ -963,6 +994,9 @@ export default {
   .el-tabs {
     flex: 1 1 auto;
     min-width: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
   }
   ::v-deep .el-tabs__item:not(#tab-__defect_add_tab__) {
     max-width: 200px;
@@ -1010,7 +1044,6 @@ export default {
     justify-content: center;
     align-items: center;
     padding-left: 8px;
-    padding-bottom: 5px;
   }
 }
 .defect-tools-button {
