@@ -9,6 +9,7 @@ import com.cat2bug.common.enums.BusinessType;
 import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.common.utils.poi.ExcelUtil;
 import com.cat2bug.common.core.domain.entity.SysDefect;
+import com.cat2bug.system.domain.SysDefectImportTemplate;
 import com.cat2bug.system.domain.SysDefectLog;
 import com.cat2bug.system.domain.SysProjectDefectTabs;
 import com.cat2bug.system.domain.SysUserConfig;
@@ -295,7 +296,7 @@ public class SysDefectController extends BaseController
     {
         SysUserConfig userConfig = sysUserConfigService.selectSysUserConfigByUserId(getUserId());
         Map<String, Object> params = new HashMap<>();
-        ExcelUtil<SysDefect> util = new ExcelUtil<SysDefect>(SysDefect.class);
+        ExcelUtil<SysDefectImportTemplate> util = new ExcelUtil<SysDefectImportTemplate>(SysDefectImportTemplate.class);
         List<String> moduleNameList = sysModuleService.selectSysModulePathList(userConfig.getCurrentProjectId()).stream().map(m->m.getModulePath()).collect(Collectors.toList());
         params.put("moduleNameList",moduleNameList);
 

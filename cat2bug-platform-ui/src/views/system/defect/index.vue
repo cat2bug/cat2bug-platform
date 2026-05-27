@@ -131,8 +131,7 @@
       </template>
       <template slot="right-tools">
         <el-dropdown
-          v-if="!isDeletedDefectTab"
-          v-hasPermi="['system:defect:add']"
+          v-if="defectAddToolbarVisible"
           class="defect-add-dropdown"
           split-button
           size="small"
@@ -192,6 +191,17 @@ const ALL_TAB_NAME = 'all-tab'
 const DELETED_TAB_NAME = 'deleted-tab'
 /** 添加 Tab 占位 pane，不作为真实页签选中 */
 const DEFECT_ADD_TAB_PANE_NAME = '__defect_add_tab__'
+
+/** 从本地缓存解析缺陷页签：不恢复「已删除」页签，避免刷新后新建按钮被隐藏 */
+function resolveDefectTabFromCache(raw) {
+  if (!raw || raw === DEFECT_ADD_TAB_PANE_NAME || raw === DELETED_TAB_NAME) {
+    return null
+  }
+  if (raw === ALL_TAB_NAME) {
+    return ALL_TAB_NAME
+  }
+  return String(raw)
+}
 
 /** 记录分析模版是否显示的缓存变量名 */
 const CACHE_KEY_STATISTIC_PANEL_VISIBLE = 'defect.statisticPanelVisible'
@@ -285,6 +295,10 @@ export default {
     isDeletedDefectTab() {
       return this.activeDefectTabName === this.deletedTab
     },
+    /** 工具栏新建/导入/导出：非已删除页签且具备新增权限 */
+    defectAddToolbarVisible() {
+      return !this.isDeletedDefectTab && this.checkPermi(['system:defect:add'])
+    },
     defectPageRootStyle() {
       if (this.defectContentComponent === 'DefectExcel') {
         return {
@@ -321,6 +335,7 @@ export default {
     } else {
       this.defectContentComponent = 'DefectTable'
     }
+    this.applyDefectTabCacheEarly()
   },
   mounted() {
     /** 根据项目ID跳转 */
@@ -354,6 +369,22 @@ export default {
   },
   methods: {
     checkPermi,
+    /** 首屏同步页签缓存，避免先渲染「全部」再切到「已删除」导致新建按钮一闪消失 */
+    applyDefectTabCacheEarly() {
+      const raw = this.$cache.local.get(DEFECT_TAB_CACHE_KEY)
+      if (raw === DELETED_TAB_NAME) {
+        this.$cache.local.set(DEFECT_TAB_CACHE_KEY, ALL_TAB_NAME)
+      }
+      const tab = resolveDefectTabFromCache(raw === DELETED_TAB_NAME ? ALL_TAB_NAME : raw)
+      if (!tab) {
+        return
+      }
+      this.activeDefectTabName = tab
+      if (!this.queryParams.params) {
+        this.$set(this.queryParams, 'params', { defectStates: [], delFlag: '0' })
+      }
+      this.$set(this.queryParams.params, 'delFlag', '0')
+    },
     init() {
       this.queryParams.projectId = this.projectId
       // 初始化对象
@@ -438,8 +469,15 @@ export default {
           this.config.tabs.unshift(tab)
           this.activeDefectTabName = tab.tabId + ''
         } else if (this.config.tabs) {
-          // 从本地缓存取激活的页标签名称
-          this.activeDefectTabName = this.$cache.local.get(DEFECT_TAB_CACHE_KEY) // || ALL_TAB_NAME;
+          let cachedTab = this.$cache.local.get(DEFECT_TAB_CACHE_KEY)
+          if (cachedTab === this.deletedTab) {
+            cachedTab = this.allTab
+            this.$cache.local.set(DEFECT_TAB_CACHE_KEY, this.allTab)
+          }
+          const resolved = resolveDefectTabFromCache(cachedTab)
+          if (resolved) {
+            this.activeDefectTabName = resolved
+          }
           // 查看所有页标签里是否保护激活页标签，如果没有，设置页标签为"全部"
           if (!this.activeDefectTabName ||
             this.activeDefectTabName === this.defectAddTabPaneName ||
@@ -569,7 +607,7 @@ export default {
         }
         this.$set(this.queryParams.params, 'delFlag', '2')
         this.handleQuery()
-        this.$cache.local.set(DEFECT_TAB_CACHE_KEY, activeName)
+        // 不缓存「已删除」页签，避免刷新后仍停留在此且工具栏无新建按钮
         return
       }
       if (this.config && this.config.tabs) {
