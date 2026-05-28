@@ -10,6 +10,11 @@ tests/**/coverage/
 tests/e2e/reports
 selenium-debug.log
 
+# 本地 E2E / 脚本 / Playwright 产物（不纳入版本库）
+e2e/
+scripts/
+test-results/
+
 # Editor directories and files
 .idea
 .vscode

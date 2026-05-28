@@ -9,6 +9,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="deptId"       column="dept_id"      />
         <result property="userName"     column="user_name"    />
         <result property="nickName"     column="nick_name"    />
+        <result property="userType"     column="user_type"    />
         <result property="email"        column="email"        />
         <result property="phoneNumber"  column="phonenumber"  />
         <result property="sex"          column="sex"          />
@@ -48,8 +49,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="status"       column="role_status"    />
     </resultMap>
 	
+	<!-- 管理端用户列表仅展示系统用户（00），排除 API Key、机器人等 -->
+	<sql id="systemUserOnly">
+		AND u.user_type = '00'
+	</sql>
+	
 	<sql id="selectUserVo">
-        select u.user_id, u.dept_id, u.user_name, u.nick_name, u.email, u.avatar, u.phonenumber, u.password, u.sex, u.status, u.del_flag, u.login_ip, u.login_date, u.create_by, u.create_time, u.remark, u.ding_user_id, u.wechat_user_id,
+        select u.user_id, u.dept_id, u.user_name, u.nick_name, u.user_type, u.email, u.avatar, u.phonenumber, u.password, u.sex, u.status, u.del_flag, u.login_ip, u.login_date, u.create_by, u.create_time, u.remark, u.ding_user_id, u.wechat_user_id,
         d.dept_id, d.parent_id, d.ancestors, d.dept_name, d.order_num, d.leader, d.status as dept_status,
         r.role_id, r.role_name, r.role_key, r.role_sort, r.data_scope, r.status as role_status
         from sys_user u
@@ -72,6 +78,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 		select u.user_id, u.dept_id, u.nick_name, u.user_name, u.email, u.avatar, u.phonenumber, u.sex, u.status, u.del_flag, u.login_ip, u.login_date, u.create_by, u.create_time, u.remark, d.dept_name, d.leader from sys_user u
 		left join sys_dept d on u.dept_id = d.dept_id
 		where u.del_flag = '0'
+		<include refid="systemUserOnly"/>
 		<if test="userId != null and userId != 0">
 			AND u.user_id = #{userId}
 		</if>
@@ -107,6 +114,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 		left join sys_user_team_role utr on tr.user_team_id = utr.user_team_id
 		left join sys_role r on r.role_id = utr.role_id
 		where u.del_flag = '0' and tr.team_id = #{teamId}
+		<include refid="systemUserOnly"/>
 		<if test="sysUser.params != null and sysUser.params.search != null and sysUser.params.search != ''">
 			and u.nick_name like concat('%', #{sysUser.params.search}, '%')
 		</if>
@@ -129,6 +137,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 		left join sys_user_team_role utr on tr.user_team_id = utr.user_team_id
 		left join sys_role r on r.role_id = utr.role_id
 		where u.del_flag = '0' and u.user_id not in (select user_id from sys_user_team where team_id=#{teamId})
+		<include refid="systemUserOnly"/>
 		<if test="sysUser.params != null and sysUser.params.search != null and sysUser.params.search != ''">
 			and u.nick_name like concat('%', #{sysUser.params.search}, '%')
 		</if>
@@ -142,6 +151,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 			 left join sys_user_role ur on u.user_id = ur.user_id
 			 left join sys_role r on r.role_id = ur.role_id
 	    where u.del_flag = '0' and r.role_id = #{roleId}
+		<include refid="systemUserOnly"/>
 	    <if test="userName != null and userName != ''">
 			AND u.user_name like concat('%', #{userName}, '%')
 		</if>
@@ -160,6 +170,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 			 left join sys_role r on r.role_id = ur.role_id
 	    where u.del_flag = '0' and (r.role_id != #{roleId} or r.role_id IS NULL)
 	    and u.user_id not in (select u.user_id from sys_user u inner join sys_user_role ur on u.user_id = ur.user_id and ur.role_id = #{roleId})
+		<include refid="systemUserOnly"/>
 	    <if test="userName != null and userName != ''">
 			AND u.user_name like concat('%', #{userName}, '%')
 		</if>
@@ -208,6 +219,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
  			<if test="deptId != null and deptId != 0">dept_id,</if>
  			<if test="userName != null and userName != ''">user_name,</if>
  			<if test="nickName != null and nickName != ''">nick_name,</if>
+ 			<if test="userType != null and userType != ''">user_type,</if>
  			<if test="email != null and email != ''">email,</if>
  			<if test="avatar != null and avatar != ''">avatar,</if>
  			<if test="phoneNumber != null and phoneNumber != ''">phonenumber,</if>
@@ -224,6 +236,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
  			<if test="deptId != null and deptId != ''">#{deptId},</if>
  			<if test="userName != null and userName != ''">#{userName},</if>
  			<if test="nickName != null and nickName != ''">#{nickName},</if>
+ 			<if test="userType != null and userType != ''">#{userType},</if>
  			<if test="email != null and email != ''">#{email},</if>
  			<if test="avatar != null and avatar != ''">#{avatar},</if>
  			<if test="phoneNumber != null and phoneNumber != ''">#{phoneNumber},</if>
@@ -234,7 +247,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
  			<if test="remark != null and remark != ''">#{remark},</if>
 			<if test="dingUserId != null and dingUserId != ''">#{dingUserId},</if>
 			<if test="wechatUserId != null and wechatUserId != ''">#{wechatUserId},</if>
- 			sysdate()
+ 			NOW()
  		)
 	</insert>
 	
@@ -244,6 +257,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
  			<if test="deptId != null and deptId != 0">dept_id = #{deptId},</if>
  			<if test="userName != null and userName != ''">user_name = #{userName},</if>
  			<if test="nickName != null and nickName != ''">nick_name = #{nickName},</if>
+ 			<if test="userType != null and userType != ''">user_type = #{userType},</if>
  			<if test="email != null ">email = #{email},</if>
  			<if test="phoneNumber != null ">phonenumber = #{phoneNumber},</if>
  			<if test="sex != null and sex != ''">sex = #{sex},</if>
@@ -256,7 +270,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
  			<if test="remark != null">remark = #{remark},</if>
 			<if test="dingUserId != null">ding_user_id = #{dingUserId},</if>
 			<if test="wechatUserId != null">wechat_user_id = #{wechatUserId},</if>
- 			update_time = sysdate()
+ 			update_time = NOW()
  		</set>
  		where user_id = #{userId}
 	</update>

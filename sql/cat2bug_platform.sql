@@ -709,7 +709,7 @@ BEGIN;
 INSERT INTO `sys_config` (`config_id`, `config_name`, `config_key`, `config_value`, `config_type`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `project_id`, `receiver_id`, `read`) VALUES (1, '主框架页-默认皮肤样式名称', 'sys.index.skinName', 'skin-blue', 'Y', 'admin', '2023-11-12 15:34:52', '', NULL, '蓝色 skin-blue、绿色 skin-green、紫色 skin-purple、红色 skin-red、黄色 skin-yellow', NULL, NULL, 0);
 INSERT INTO `sys_config` (`config_id`, `config_name`, `config_key`, `config_value`, `config_type`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `project_id`, `receiver_id`, `read`) VALUES (2, '用户管理-账号初始密码', 'sys.member.initPassword', '123456', 'Y', 'admin', '2023-11-12 15:34:52', 'admin', '2024-01-07 12:36:32', '初始化密码 123456', NULL, NULL, 0);
 INSERT INTO `sys_config` (`config_id`, `config_name`, `config_key`, `config_value`, `config_type`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `project_id`, `receiver_id`, `read`) VALUES (3, '主框架页-侧边栏主题', 'sys.index.sideTheme', 'theme-dark', 'Y', 'admin', '2023-11-12 15:34:52', '', NULL, '深色主题theme-dark，浅色主题theme-light', NULL, NULL, 0);
-INSERT INTO `sys_config` (`config_id`, `config_name`, `config_key`, `config_value`, `config_type`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `project_id`, `receiver_id`, `read`) VALUES (4, '账号自助-验证码开关', 'sys.account.captchaEnabled', 'false', 'Y', 'admin', '2023-11-12 15:34:52', 'admin', '2023-11-12 16:14:31', '是否开启验证码功能（true开启，false关闭）', NULL, NULL, 0);
+INSERT INTO `sys_config` (`config_id`, `config_name`, `config_key`, `config_value`, `config_type`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `project_id`, `receiver_id`, `read`) VALUES (4, '登录验证码', 'sys.account.captchaEnabled', 'false', 'Y', 'admin', '2023-11-12 15:34:52', 'admin', '2023-11-12 16:14:31', '是否开启登录验证码（true开启，false关闭，仅作用于登录）', NULL, NULL, 0);
 INSERT INTO `sys_config` (`config_id`, `config_name`, `config_key`, `config_value`, `config_type`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `project_id`, `receiver_id`, `read`) VALUES (5, '账号自助-是否开启用户注册功能', 'sys.account.registerUser', 'true', 'Y', 'admin', '2023-11-12 15:34:52', 'admin', '2023-11-12 16:13:43', '是否开启注册用户功能（true开启，false关闭）', NULL, NULL, 0);
 INSERT INTO `sys_config` (`config_id`, `config_name`, `config_key`, `config_value`, `config_type`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`, `project_id`, `receiver_id`, `read`) VALUES (6, '用户登录-黑名单列表', 'sys.login.blackIPList', '', 'Y', 'admin', '2023-11-12 15:34:52', '', NULL, '设置登录IP黑名单限制，多个匹配项以;分隔，支持匹配（*通配、网段）', NULL, NULL, 0);
 COMMIT;
@@ -2633,6 +2633,69 @@ CREATE TABLE `sys_user_team_role` (
 -- ----------------------------
 BEGIN;
 COMMIT;
+
+-- ----------------------------
+-- Table structure for sys_robot_agent (V0_6_2, 与 Flyway mysql/h2 迁移一致)
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_robot_agent`;
+CREATE TABLE `sys_robot_agent` (
+  `agent_id` bigint NOT NULL AUTO_INCREMENT COMMENT '智能体ID',
+  `agent_name` varchar(100) NOT NULL COMMENT '智能体名称',
+  `agent_type` varchar(50) NOT NULL COMMENT '智能体类型：case-generation, defect-handling, report-generation, bdd-testing',
+  `scope_type` varchar(20) NOT NULL COMMENT '作用域类型：project, team',
+  `scope_id` bigint NOT NULL COMMENT '作用域ID（项目ID或团队ID）',
+  `container_image` varchar(255) NOT NULL COMMENT '容器镜像',
+  `env_vars` text COMMENT '环境变量（JSON格式）',
+  `resource_cpu` int DEFAULT '1000' COMMENT 'CPU限制（毫核，1000=1核）',
+  `resource_memory` int DEFAULT '512' COMMENT '内存限制（MB）',
+  `resource_disk` int DEFAULT '1024' COMMENT '磁盘限制（MB）',
+  `timeout_seconds` int DEFAULT '300' COMMENT '超时时间（秒）',
+  `status` varchar(20) DEFAULT 'active' COMMENT '状态：active, disabled',
+  `remark` varchar(500) DEFAULT NULL COMMENT '备注',
+  `create_by` varchar(64) DEFAULT NULL COMMENT '创建者',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  `update_by` varchar(64) DEFAULT NULL COMMENT '更新者',
+  `update_time` datetime DEFAULT NULL COMMENT '更新时间',
+  PRIMARY KEY (`agent_id`),
+  KEY `idx_robot_agent_scope` (`scope_type`,`scope_id`),
+  KEY `idx_robot_agent_type` (`agent_type`),
+  KEY `idx_robot_agent_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='智能体配置表';
+
+-- ----------------------------
+-- Table structure for sys_agent_task (V0_6_2, 与 Flyway mysql/h2 迁移一致)
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_agent_task`;
+CREATE TABLE `sys_agent_task` (
+  `task_id` bigint NOT NULL AUTO_INCREMENT COMMENT '任务ID',
+  `agent_id` bigint NOT NULL COMMENT '智能体ID',
+  `task_type` varchar(50) NOT NULL COMMENT '任务类型',
+  `task_params` text COMMENT '任务参数（JSON格式）',
+  `priority` int DEFAULT '0' COMMENT '优先级（数值越大优先级越高）',
+  `status` varchar(20) DEFAULT 'pending' COMMENT '状态：pending, running, completed, failed, cancelled, timeout',
+  `progress` int DEFAULT '0' COMMENT '进度（0-100）',
+  `progress_desc` varchar(255) DEFAULT NULL COMMENT '进度描述',
+  `result` text COMMENT '任务结果（JSON格式）',
+  `error_message` text COMMENT '错误信息',
+  `retry_count` int DEFAULT '0' COMMENT '重试次数',
+  `max_retry` int DEFAULT '3' COMMENT '最大重试次数',
+  `timeout_seconds` int DEFAULT '300' COMMENT '超时时间（秒）',
+  `orchestrator_job_id` varchar(100) DEFAULT NULL COMMENT '容器编排系统的任务ID',
+  `orchestrator_type` varchar(20) DEFAULT 'nomad' COMMENT '容器编排系统类型：nomad, k8s',
+  `submit_time` datetime DEFAULT NULL COMMENT '提交时间',
+  `start_time` datetime DEFAULT NULL COMMENT '开始时间',
+  `end_time` datetime DEFAULT NULL COMMENT '结束时间',
+  `create_by` varchar(64) DEFAULT NULL COMMENT '创建者',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  `project_id` bigint DEFAULT NULL COMMENT '项目ID',
+  PRIMARY KEY (`task_id`),
+  KEY `idx_agent_task_status` (`status`),
+  KEY `idx_agent_task_priority` (`priority`),
+  KEY `idx_agent_task_submit_time` (`submit_time`),
+  KEY `idx_agent_task_agent_id` (`agent_id`),
+  KEY `idx_agent_task_project_id` (`project_id`),
+  KEY `idx_agent_task_orchestrator` (`orchestrator_job_id`,`orchestrator_type`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='智能体任务队列表';
 
 -- ----------------------------
 -- View structure for v_plan_item_module

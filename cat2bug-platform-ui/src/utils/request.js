@@ -81,7 +81,15 @@ service.interceptors.response.use(res => {
       return res.data
     }
     if (code === 401) {
-      if (!isRelogin.show) {
+      const requestUrl = (res.config && res.config.url) || ''
+      const headers = res.config && res.config.headers
+      const isTokenDisabled = headers && (headers.isToken === false || headers['isToken'] === false)
+      const skipReloginPrompt = res.config && (
+        res.config.silentError === true
+        || isTokenDisabled
+        || requestUrl.includes('/setup/')
+      )
+      if (!skipReloginPrompt && !isRelogin.show) {
         isRelogin.show = true;
         MessageBox.confirm(i18n.t('http.login-expired').toString(), i18n.t('prompted').toString(), { confirmButtonText: i18n.t('login-again').toString(), cancelButtonText: i18n.t('cancel').toString(), type: 'warning' }).then(() => {
           isRelogin.show = false;

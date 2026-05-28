@@ -48,6 +48,11 @@ export const constantRoutes = [
     hidden: true
   },
   {
+    path: '/setup',
+    component: () => import('@/views/setup/index'),
+    hidden: true
+  },
+  {
     path: '/shard/defect',
     component: () => import('@/views/system/defect/DefectShardInfo'),
     hidden: true

@@ -34,6 +34,13 @@ public interface ISysConfigService
     public boolean selectCaptchaEnabled();
 
     /**
+     * 是否开启用户自助注册
+     *
+     * @return true 开启，false 关闭
+     */
+    public boolean selectRegisterEnabled();
+
+    /**
      * 查询参数配置列表
      * 
      * @param config 参数配置信息

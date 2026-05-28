@@ -179,10 +179,14 @@ public class RedisCache
      * @param collection 多个对象
      * @return
      */
-    public boolean deleteObject(final String group, final Collection collection)
+    public boolean deleteObject(final String group, final Collection<String> collection)
     {
-        String[] keys = (String[])collection.toArray();
-        cacheChannel.evict(group,keys);
+        if (collection == null || collection.isEmpty())
+        {
+            return true;
+        }
+        String[] keys = collection.toArray(new String[0]);
+        cacheChannel.evict(group, keys);
         return true;
 //        return redisTemplate.delete(collection) > 0;
     }

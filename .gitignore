@@ -48,9 +48,13 @@ nbdist/
 uploadPath/
 uploadTemp/
 
+# 安装向导生成的本地配置（含数据库连接等敏感信息，仅仓库根目录）
+/config/
+
 ######################################################################
-# Claude AI
+# Claude AI / Cursor IDE
 .claude/
+.cursor/
 .worktree/
 .worktrees/
 worktrees/

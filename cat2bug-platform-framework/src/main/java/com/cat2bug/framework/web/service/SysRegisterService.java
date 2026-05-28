@@ -2,20 +2,15 @@ package com.cat2bug.framework.web.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import com.cat2bug.common.constant.CacheConstants;
 import com.cat2bug.common.constant.Constants;
 import com.cat2bug.common.constant.UserConstants;
 import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.common.core.domain.model.RegisterBody;
-import com.cat2bug.common.core.redis.RedisCache;
-import com.cat2bug.common.exception.user.CaptchaException;
-import com.cat2bug.common.exception.user.CaptchaExpireException;
 import com.cat2bug.common.utils.MessageUtils;
 import com.cat2bug.common.utils.SecurityUtils;
 import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.framework.manager.AsyncManager;
 import com.cat2bug.framework.manager.factory.AsyncFactory;
-import com.cat2bug.system.service.ISysConfigService;
 import com.cat2bug.system.service.ISysUserService;
 
 /**
@@ -28,12 +23,6 @@ public class SysRegisterService
 {
     @Autowired
     private ISysUserService userService;
-
-    @Autowired
-    private ISysConfigService configService;
-
-    @Autowired
-    private RedisCache redisCache;
 
     /**
      * 注册
@@ -50,13 +39,6 @@ public class SysRegisterService
         sysUser.setPhoneNumber(phoneNumber);
         sysUser.setNickName(nickName);
         sysUser.setPassword(SecurityUtils.encryptPassword(password));
-
-        // 验证码开关
-        boolean captchaEnabled = configService.selectCaptchaEnabled();
-        if (captchaEnabled)
-        {
-            validateCaptcha(username, registerBody.getCode(), registerBody.getUuid());
-        }
 
         if (StringUtils.isEmpty(username))
         {
@@ -104,28 +86,5 @@ public class SysRegisterService
             throw new RuntimeException(msg);
         }
         return sysUser;
-    }
-
-    /**
-     * 校验验证码
-     * 
-     * @param username 用户名
-     * @param code 验证码
-     * @param uuid 唯一标识
-     * @return 结果
-     */
-    public void validateCaptcha(String username, String code, String uuid)
-    {
-        String verifyKey = CacheConstants.CAPTCHA_CODE_KEY + StringUtils.nvl(uuid, "");
-        String captcha = redisCache.getCacheObject(RedisCache.VERIFY_CODE_CACHE_REGION, verifyKey);
-        redisCache.deleteObject(RedisCache.VERIFY_CODE_CACHE_REGION, verifyKey);
-        if (captcha == null)
-        {
-            throw new CaptchaExpireException();
-        }
-        if (!code.equalsIgnoreCase(captcha))
-        {
-            throw new CaptchaException();
-        }
     }
 }

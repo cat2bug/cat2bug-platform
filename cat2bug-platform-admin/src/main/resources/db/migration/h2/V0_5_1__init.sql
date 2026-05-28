@@ -2165,8 +2165,8 @@ VALUES (3, '主框架页-侧边栏主题', 'sys.index.sideTheme', 'theme-dark', 
 INSERT INTO `sys_config` (`config_id`, `config_name`, `config_key`, `config_value`, `config_type`
                          , `create_by`, `create_time`, `update_by`, `update_time`, `remark`
                          , `project_id`, `receiver_id`, `read`)
-VALUES (4, '账号自助-验证码开关', 'sys.account.captchaEnabled', 'false', 'Y'
-       , 'admin', '2023-11-12 15:34:52', 'admin', '2023-11-12 16:14:31', '是否开启验证码功能（true开启，false关闭）'
+VALUES (4, '登录验证码', 'sys.account.captchaEnabled', 'false', 'Y'
+       , 'admin', '2023-11-12 15:34:52', 'admin', '2023-11-12 16:14:31', '是否开启登录验证码（true开启，false关闭，仅作用于登录）'
        , NULL, NULL, 0);
 INSERT INTO `sys_config` (`config_id`, `config_name`, `config_key`, `config_value`, `config_type`
                          , `create_by`, `create_time`, `update_by`, `update_time`, `remark`

@@ -20,6 +20,8 @@ import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.system.mapper.SysDictDataMapper;
 import com.cat2bug.system.mapper.SysDictTypeMapper;
 import com.cat2bug.system.service.ISysDictTypeService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 字典 业务层处理
@@ -30,6 +32,8 @@ import com.cat2bug.system.service.ISysDictTypeService;
 @DependsOn("h2Config")
 public class SysDictTypeServiceImpl implements ISysDictTypeService
 {
+    private static final Logger log = LoggerFactory.getLogger(SysDictTypeServiceImpl.class);
+
     @Autowired
     private SysDictTypeMapper dictTypeMapper;
 
@@ -42,7 +46,14 @@ public class SysDictTypeServiceImpl implements ISysDictTypeService
     @PostConstruct
     public void init()
     {
-        loadingDictCache();
+        try
+        {
+            loadingDictCache();
+        }
+        catch (Exception e)
+        {
+            log.warn("字典缓存未加载（数据库可能尚未初始化）: {}", e.getMessage());
+        }
     }
 
     /**

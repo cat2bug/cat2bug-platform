@@ -1,5 +1,5 @@
 <template>
-  <div class="register">
+  <div class="register" v-if="registerEnabled">
     <el-form ref="registerForm" :model="registerForm" :rules="registerRules" class="register-form">
       <h3 class="title">{{$t('system-name')}}</h3>
       <el-form-item prop="username">
@@ -47,21 +47,6 @@
           <svg-icon slot="prefix" icon-class="password" class="el-input__icon input-icon" />
         </el-input>
       </el-form-item>
-      <el-form-item prop="code" v-if="captchaEnabled">
-        <el-input
-          v-model="registerForm.code"
-          auto-complete="off"
-          :placeholder="$t('verification-code')"
-          style="width: 63%"
-          @keyup.enter.native="handleRegister"
-          maxlength="4"
-        >
-          <svg-icon slot="prefix" icon-class="validCode" class="el-input__icon input-icon" />
-        </el-input>
-        <div class="register-code">
-          <img :src="codeUrl" @click="getCode" class="register-code-img"/>
-        </div>
-      </el-form-item>
       <el-form-item style="width:100%;">
         <el-button
           :loading="loading"
@@ -86,7 +71,7 @@
 </template>
 
 <script>
-import { getCodeImg, register } from "@/api/login";
+import { register, getCodeImg } from "@/api/login";
 import {strFormat} from "@/utils";
 
 export default {
@@ -100,14 +85,11 @@ export default {
       }
     };
     return {
-      codeUrl: "",
       registerForm: {
         username: "",
         password: "",
         phoneNumber: "",
-        confirmPassword: "",
-        code: "",
-        uuid: ""
+        confirmPassword: ""
       },
       registerRules: {
         registerUserName: [
@@ -129,27 +111,29 @@ export default {
         confirmPassword: [
           {required: true, trigger: "blur", message: this.$i18n.t('please-enter-your-password-again')},
           {required: true, validator: equalToPassword, trigger: "blur"}
-        ],
-        code: [{required: true, trigger: "blur", message: this.$i18n.t('please-enter-verification-code')}]
+        ]
       },
       loading: false,
-      captchaEnabled: true
+      registerEnabled: true
     };
   },
   created() {
-    this.getCode();
+    getCodeImg().then(res => {
+      this.registerEnabled = res.registerEnabled === undefined ? true : res.registerEnabled;
+      if (!this.registerEnabled) {
+        this.$message.warning(this.$t('registration-closed'));
+        this.$router.replace('/login');
+      }
+    }).catch(() => {
+      this.$router.replace('/login');
+    });
   },
   methods: {
-    getCode() {
-      getCodeImg().then(res => {
-        this.captchaEnabled = res.captchaEnabled === undefined ? true : res.captchaEnabled;
-        if (this.captchaEnabled) {
-          this.codeUrl = "data:image/gif;base64," + res.img;
-          this.registerForm.uuid = res.uuid;
-        }
-      });
-    },
     handleRegister() {
+      if (!this.registerEnabled) {
+        this.$message.warning(this.$t('registration-closed'));
+        return;
+      }
       this.$refs.registerForm.validate(valid => {
         if (valid) {
           this.loading = true;
@@ -163,9 +147,6 @@ export default {
             }).catch(() => {});
           }).catch(() => {
             this.loading = false;
-            if (this.captchaEnabled) {
-              this.getCode();
-            }
           })
         }
       });
@@ -212,15 +193,6 @@ export default {
   text-align: center;
   color: #bfbfbf;
 }
-.register-code {
-  width: 33%;
-  height: 38px;
-  float: right;
-  img {
-    cursor: pointer;
-    vertical-align: middle;
-  }
-}
 .el-register-footer {
   height: 40px;
   line-height: 40px;
@@ -232,8 +204,5 @@ export default {
   font-family: Arial;
   font-size: 12px;
   letter-spacing: 1px;
-}
-.register-code-img {
-  height: 38px;
 }
 </style>

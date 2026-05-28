@@ -1,4 +1,4 @@
--- 缺陷表不再使用独立 remark 列（描述使用 defect_describe）；若曾执行过 0.6.3 加列则删除
+-- 缺陷表不再使用独立 remark 列（描述使用 defect_describe）；若存在则删除
 SET @db := DATABASE();
 SET @exists := (
   SELECT COUNT(*) FROM information_schema.COLUMNS

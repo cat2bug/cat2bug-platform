@@ -1,4 +1,10 @@
-# 数据源配置
+# H2 profile：连接池与引导期默认连接（已安装时 datasource 由 application-install.yml 覆盖）
+cat2bug:
+  cache:
+    type: local
+  profile: uploadPath
+  temp: uploadTemp
+
 spring:
     h2:
         console:
@@ -7,30 +13,22 @@ spring:
             path: /h2
             # 开启浏览器访问
             enabled: false
-#    sql:
-#        init:
-#            mode: ALWAYS
-#            schema-locations:
-#                - classpath:h2-schema.sql
     datasource:
         type: com.alibaba.druid.pool.DruidDataSource
         driverClassName: org.h2.Driver
-        url: jdbc:h2:file:./data/cat2bug;MODE=MySQL;DATABASE_TO_LOWER=TRUE;
-        username: root
-        password: cat2bug_password
         druid:
-            # 主库数据源
-#            master:
-#                url: jdbc:h2:file:./cat2bug;DATABASE_TO_LOWER=TRUE;
-#                username: root
-#                password: cat2bug_password
+            # 主库数据源（引导期默认；安装后由 application-install.yml 覆盖）
+            master:
+                url: jdbc:h2:file:./data/cat2bug;MODE=MySQL;DATABASE_TO_LOWER=TRUE;
+                username: root
+                password: cat2bug_password
             # 从库数据源
             slave:
                 # 从数据源开关/默认关闭
                 enabled: false
-                url: 
-                username: 
-                password: 
+                url:
+                username:
+                password:
             # 初始连接数
             initialSize: 5
             # 最小连接池数量
@@ -54,7 +52,7 @@ spring:
             testWhileIdle: true
             testOnBorrow: false
             testOnReturn: false
-            webStatFilter: 
+            webStatFilter:
                 enabled: true
             statViewServlet:
                 enabled: true

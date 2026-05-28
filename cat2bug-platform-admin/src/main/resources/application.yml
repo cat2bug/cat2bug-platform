@@ -1,5 +1,10 @@
 # 项目相关配置
 cat2bug:
+  install:
+    # 安装向导写入的外部配置（可选导入，见 spring.config.import）
+    config-path: ./config/install/application-install.yml
+    # 为 true 时跳过安装向导；也可设置环境变量 CAT2BUG_INSTALL_SKIP=true
+    skip: false
   # 名称
   name: Cat2Bug
   # 版本
@@ -8,10 +13,6 @@ cat2bug:
   copyrightYear: 2025
   # 是否启动系统自动更新
   auto-update: false
-  # 文件路径
-  profile: uploadPath
-  # 临时文件夹路径
-  temp: uploadTemp
   # 获取ip地址开关
   addressEnabled: false
   # 验证码类型 math 数字计算 char 字符验证
@@ -46,11 +47,8 @@ cat2bug:
       project-key: 202403081039179f174l0igbcrgs66
       handler: demo
   # 智能服务(旧版本，将在下一个大版本中删除)
+  # enabled / host 由安装向导写入 application-install.yml；此处仅保留超时与模型等非向导项
   ai:
-    # 是否启动链接ai服务
-    enabled: true
-    # AI服务地址(https://www.cat2bug.com:8023是共享给大家的一个用于免费测试和开发的AI服务,生产环境请链接自有的AI服务)
-    host: https://www.cat2bug.com:8023
     # AI服务接口超时时间（秒）
     timeout: 300
     # 默认使用的模型，系统启动时会自动下载
@@ -100,7 +98,7 @@ user:
     lockTime: 10
 
 j2cache:
-  config-location: classpath:${spring.database-type}-j2cache.properties
+  config-location: classpath:${cat2bug.cache.type:local}-j2cache.properties
   open-spring-cache: true
   allow-null-values: true
 caffeine:
@@ -108,9 +106,13 @@ caffeine:
 
 # Spring配置
 spring:
+  config:
+    # 安装完成后由向导写入；存在时覆盖下方 bootstrap 默认值及 profile 中的连接/路径项
+    import: optional:file:./config/install/application-install.yml
   # 与 SB2 行为一致：框架内存在历史循环依赖（如 API Token 过滤器）
   main:
     allow-circular-references: true
+  # 未安装前的引导默认库类型；已安装时由 application-install.yml 覆盖
   database-type: h2
   flyway:
     # 是否开启数据库自动更新

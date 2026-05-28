@@ -23,7 +23,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <if test="projectId != null">#{projectId},</if>
         <if test="group != null and group != ''">#{group},</if>
         <if test="receiveMemberId != null">#{receiveMemberId},</if>
-        sysdate()
+        NOW()
         )
     </insert>
 

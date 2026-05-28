@@ -40,6 +40,28 @@ public class Cat2BugConfig
     /** 验证码类型 */
     private static String captchaType;
 
+    /** 临时目录（与 cat2bug.temp 对应） */
+    private String temp;
+
+    /** 缓存配置 */
+    private Cache cache = new Cache();
+
+    public static class Cache
+    {
+        /** local：仅 Caffeine；redis：Caffeine + Redis L2 */
+        private String type = "local";
+
+        public String getType()
+        {
+            return type;
+        }
+
+        public void setType(String type)
+        {
+            this.type = type;
+        }
+    }
+
     public String getName()
     {
         return name;
@@ -106,6 +128,26 @@ public class Cat2BugConfig
 
     public void setCaptchaType(String captchaType) {
         Cat2BugConfig.captchaType = captchaType;
+    }
+
+    public String getTemp()
+    {
+        return temp;
+    }
+
+    public void setTemp(String temp)
+    {
+        this.temp = temp;
+    }
+
+    public Cache getCache()
+    {
+        return cache;
+    }
+
+    public void setCache(Cache cache)
+    {
+        this.cache = cache;
     }
 
     /**

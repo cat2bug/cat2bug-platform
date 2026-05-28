@@ -297,6 +297,7 @@ public class SysUserServiceImpl implements ISysUserService
     @Transactional
     public int insertUser(SysUser user)
     {
+        applyDefaultUserType(user);
         // 新增用户信息
         int rows = userMapper.insertUser(user);
         // 新增用户岗位关联
@@ -316,6 +317,7 @@ public class SysUserServiceImpl implements ISysUserService
     @Transactional
     public boolean registerUser(SysUser user)
     {
+        applyDefaultUserType(user);
         // 新增用户信息
         int rows =  userMapper.insertUser(user);
         user.setRoleIds(new Long[]{DEFAULT_ROLE_ID});
@@ -611,5 +613,14 @@ public class SysUserServiceImpl implements ISysUserService
     @Override
     public boolean clearLoginInfo(Long userId) {
         return userMapper.clearLoginInfo(userId);
+    }
+
+    /** 未指定时默认为系统用户（00） */
+    private static void applyDefaultUserType(SysUser user)
+    {
+        if (StringUtils.isEmpty(user.getUserType()))
+        {
+            user.setUserType(UserConstants.USER_TYPE_SYSTEM);
+        }
     }
 }

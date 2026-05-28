@@ -181,7 +181,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
  			<if test="createBy != null and createBy != ''">#{createBy},</if>
 			<if test="isTeamRole != null">#{isTeamRole},</if>
 			<if test="isProjectRole != null">#{isProjectRole},</if>
- 			sysdate()
+ 			NOW()
  		)
 	</insert>
 	
@@ -200,7 +200,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
  			<if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
 			<if test="isTeamRole != null">is_team_role = #{isTeamRole},</if>
 			<if test="isProjectRole != null">is_project_role = #{isProjectRole},</if>
- 			update_time = sysdate()
+ 			update_time = NOW()
  		</set>
  		where role_id = #{roleId}
 	</update>

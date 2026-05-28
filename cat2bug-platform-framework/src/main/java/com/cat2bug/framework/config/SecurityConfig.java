@@ -14,6 +14,8 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import com.cat2bug.framework.service.InstallService;
+import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -51,6 +53,9 @@ public class SecurityConfig {
     @Autowired
     private PermitAllUrlProperties permitAllUrl;
 
+    @Autowired
+    private InstallService installService;
+
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
         return new BCryptPasswordEncoder();
@@ -81,6 +86,10 @@ public class SecurityConfig {
                     // @Anonymous 扫描的 URL 与 Ant 风格通配（含 {id}→*），避免 PathPattern 解析失败
                     permitAllUrl.getUrls().forEach(url ->
                             registry.requestMatchers(new AntPathRequestMatcher(url)).permitAll());
+                    // 已安装后仍允许查询安装状态，供前端路由判断（与 SetupFilter 一致）
+                    registry.requestMatchers(ant(HttpMethod.GET, "/setup/status")).permitAll();
+                    registry.requestMatchers(ant("/setup/**")).access((authentication, context) ->
+                            new AuthorizationDecision(!installService.isInstalled()));
                     registry.requestMatchers(
                             ant("/login"),
                             ant("/**/login"),

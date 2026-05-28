@@ -1,5 +1,6 @@
 package com.cat2bug;
 
+import com.cat2bug.common.config.InstallStartupSupport;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
@@ -16,7 +17,10 @@ public class Cat2BugApplication
 {
     public static void main(String[] args) throws InterruptedException, IOException {
         // System.setProperty("spring.devtools.restart.enabled", "false");
-        SpringApplication.run(Cat2BugApplication.class, args);
+        args = InstallStartupSupport.prepare(args);
+        SpringApplication application = new SpringApplication(Cat2BugApplication.class);
+        InstallStartupSupport.applyDefaultProperties(application);
+        application.run(args);
         System.out.println("(♥◠‿◠)ﾉﾞ  Cat2Bug-Platform 启动成功   ლ(´ڡ`ლ)ﾞ ");
         Cat2BugApplication.drawColorLine();
     }

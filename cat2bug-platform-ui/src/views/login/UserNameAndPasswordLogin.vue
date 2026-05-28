@@ -110,8 +110,8 @@ export default {
       loading: false,
       // 验证码开关
       captchaEnabled: true,
-      // 注册开关
-      register: true,
+      // 注册开关（由 /captchaImage 返回的 registerEnabled 决定）
+      register: false,
       redirect: undefined
     }
   },
@@ -129,6 +129,7 @@ export default {
     getCode() {
       getCodeImg().then(res => {
         this.captchaEnabled = res.captchaEnabled === undefined ? true : res.captchaEnabled;
+        this.register = res.registerEnabled === undefined ? true : res.registerEnabled;
         if (this.captchaEnabled) {
           this.codeUrl = "data:image/gif;base64," + res.img;
           this.loginForm.uuid = res.uuid;

@@ -7,58 +7,88 @@ import { getToken } from '@/utils/auth'
 import { isRelogin } from '@/utils/request'
 import { isLockTeamPath } from '@/utils/team'
 import { isLockProjectPath } from '@/utils/project'
+import { resolveSetupInstalled } from '@/utils/setup-status'
+import { getCodeImg } from '@/api/login'
+import i18n from '@/utils/i18n/i18n'
 
 NProgress.configure({ showSpinner: false })
 
-const whiteList = ['/login', '/register', '/tools/browser', '/shard/defect']
+const whiteList = ['/login', '/register', '/tools/browser', '/shard/defect', '/setup']
 
-router.beforeEach((to, from, next) => {
-  NProgress.start()
+function proceedWithAuth(to, from, next) {
   if (getToken()) {
     to.meta.title && store.dispatch('settings/setTitle', to.meta.title)
-    /* has token*/
     if (to.path === '/login') {
       next({ path: '/' })
       NProgress.done()
-    } else {
-      // 如果项目被禁用，跳到报错界面
-      if (isLockTeamPath(to.path)) {
-        next({ path: '/error/team-lock', replace: true })
-      } else if (isLockProjectPath(to.path)) {
-        next({ path: '/error/project-lock', replace: true })
-      }
-      // 如果没有角色权限，直接获取
-      else if (store.getters.roles.length === 0) {
-        isRelogin.show = true
-        // 判断当前用户是否已拉取完user_info信息
-        store.dispatch('GetInfo').then((res) => {
-          isRelogin.show = false
-          store.dispatch('GenerateRoutes').then(() => {
-            // GenerateRoutes 内已对 router 执行 addRoutes，此处勿重复注册
-            next({ ...to, replace: true })
-          })
-        }).catch(err => {
-          store.dispatch('LogOut').then(() => {
-            Message.error(err)
-            next({ path: '/' })
-          })
+    } else if (isLockTeamPath(to.path)) {
+      next({ path: '/error/team-lock', replace: true })
+    } else if (isLockProjectPath(to.path)) {
+      next({ path: '/error/project-lock', replace: true })
+    } else if (store.getters.roles.length === 0) {
+      isRelogin.show = true
+      store.dispatch('GetInfo').then(() => {
+        isRelogin.show = false
+        store.dispatch('GenerateRoutes').then(() => {
+          next({ ...to, replace: true })
         })
-      }
-      // 否则跳转页面
-      else {
-        next()
-      }
-    }
-  } else {
-    // 没有token
-    if (whiteList.indexOf(to.path) !== -1) {
-      // 在免登录白名单，直接进入
-      next()
+      }).catch(err => {
+        store.dispatch('LogOut').then(() => {
+          Message.error(err)
+          next({ path: '/' })
+        })
+      })
     } else {
-      next(`/login?redirect=${encodeURIComponent(to.fullPath)}`) // 否则全部重定向到登录页
-      NProgress.done()
+      next()
     }
+  } else if (whiteList.indexOf(to.path) !== -1) {
+    next()
+  } else {
+    next(`/login?redirect=${encodeURIComponent(to.fullPath)}`)
+    NProgress.done()
   }
+}
+
+router.beforeEach((to, from, next) => {
+  NProgress.start()
+  resolveSetupInstalled().then(installed => {
+    if (!installed) {
+      if (to.path === '/setup') {
+        next()
+      } else {
+        next('/setup')
+      }
+      NProgress.done()
+      return
+    }
+    if (to.path === '/setup') {
+      next({ path: '/login' })
+      NProgress.done()
+      return
+    }
+    if (to.path === '/login' && getToken()) {
+      store.dispatch('FedLogOut').finally(() => next())
+      NProgress.done()
+      return
+    }
+    if (to.path === '/register') {
+      getCodeImg().then(res => {
+        const registerEnabled = res.registerEnabled === undefined ? true : res.registerEnabled
+        if (!registerEnabled) {
+          Message.warning(i18n.t('registration-closed').toString())
+          next('/login')
+          NProgress.done()
+        } else {
+          proceedWithAuth(to, from, next)
+        }
+      }).catch(() => {
+        next('/login')
+        NProgress.done()
+      })
+      return
+    }
+    proceedWithAuth(to, from, next)
+  })
 })
 
 router.afterEach(() => {

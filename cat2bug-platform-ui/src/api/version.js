@@ -4,6 +4,9 @@ import request from '@/utils/request'
 export const getVersion = () => {
   return request({
     url: '/version',
+    headers: {
+      isToken: false
+    },
     method: 'get'
   })
 }

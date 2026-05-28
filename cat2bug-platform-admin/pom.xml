@@ -74,6 +74,12 @@
             <artifactId>mysql-connector-j</artifactId>
         </dependency>
 
+        <!-- Setup Redis 连接测试（J2Cache 使用 Jedis） -->
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>

@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.cat2bug.common.core.controller.BaseController;
 import com.cat2bug.common.core.domain.AjaxResult;
 import com.cat2bug.common.core.domain.model.RegisterBody;
-import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.framework.web.service.SysRegisterService;
 import com.cat2bug.system.service.ISysConfigService;
 
@@ -28,7 +27,7 @@ public class SysRegisterController extends BaseController
     @PostMapping("/register")
     public AjaxResult register(@RequestBody RegisterBody user)
     {
-        if (!("true".equals(configService.selectConfigByKey("sys.account.registerUser"))))
+        if (!configService.selectRegisterEnabled())
         {
             return error("当前系统没有开启注册功能！");
         }

@@ -1,7 +1,12 @@
-# 数据源配置
+# MySQL profile：连接池与引导期默认连接（已安装时 datasource 由 application-install.yml 覆盖）
+cat2bug:
+  cache:
+    type: local
+  profile: uploadPath
+  temp: uploadTemp
+
 spring:
-    database-type: mysql
-    # redis 配置
+    # redis 配置（仅 cat2bug.cache.type=redis 时使用；安装向导可写入 application-install.yml 覆盖）
     redis:
         # 是否开启内嵌redis服务
         embed: true
@@ -29,7 +34,7 @@ spring:
         type: com.alibaba.druid.pool.DruidDataSource
         driverClassName: com.mysql.cj.jdbc.Driver
         druid:
-            # 主库数据源
+            # 主库数据源（引导期默认；安装后由 application-install.yml 覆盖）
             master:
                 url: jdbc:mysql://localhost:3306/cat2bug_platform?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
                 username: root

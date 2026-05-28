@@ -19,6 +19,8 @@ import com.cat2bug.quartz.mapper.SysJobMapper;
 import com.cat2bug.quartz.service.ISysJobService;
 import com.cat2bug.quartz.util.CronUtils;
 import com.cat2bug.quartz.util.ScheduleUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 定时任务调度信息 服务层
@@ -29,6 +31,8 @@ import com.cat2bug.quartz.util.ScheduleUtils;
 @DependsOn("h2Config")
 public class SysJobServiceImpl implements ISysJobService
 {
+    private static final Logger log = LoggerFactory.getLogger(SysJobServiceImpl.class);
+
     @Autowired
     private Scheduler scheduler;
 
@@ -39,13 +43,20 @@ public class SysJobServiceImpl implements ISysJobService
      * 项目启动时，初始化定时器 主要是防止手动修改数据库导致未同步到定时任务处理（注：不能手动修改数据库ID和任务组名，否则会导致脏数据）
      */
     @PostConstruct
-    public void init() throws SchedulerException, TaskException
+    public void init()
     {
-        scheduler.clear();
-        List<SysJob> jobList = jobMapper.selectJobAll();
-        for (SysJob job : jobList)
+        try
         {
-            ScheduleUtils.createScheduleJob(scheduler, job);
+            scheduler.clear();
+            List<SysJob> jobList = jobMapper.selectJobAll();
+            for (SysJob job : jobList)
+            {
+                ScheduleUtils.createScheduleJob(scheduler, job);
+            }
+        }
+        catch (Exception e)
+        {
+            log.warn("定时任务未加载（数据库可能尚未初始化）: {}", e.getMessage());
         }
     }
 

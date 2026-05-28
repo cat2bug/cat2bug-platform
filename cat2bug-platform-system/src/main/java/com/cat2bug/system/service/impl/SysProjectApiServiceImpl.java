@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import com.cat2bug.common.constant.UserConstants;
 import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.common.utils.MessageUtils;
 import com.cat2bug.common.utils.uuid.UUID;
@@ -102,6 +103,7 @@ public class SysProjectApiServiceImpl implements ISysProjectApiService
         user = new SysUser();
         user.setUserName(key);
         user.setNickName(apiProjectApi.getApiName());
+        user.setUserType(UserConstants.USER_TYPE_API);
         int num = sysUserMapper.insertUser(user);
         Preconditions.checkState(num>0,MessageUtils.message("user.register.fail"));
         

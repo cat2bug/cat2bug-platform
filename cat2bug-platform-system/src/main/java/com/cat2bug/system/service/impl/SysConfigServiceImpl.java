@@ -11,6 +11,8 @@ import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.system.domain.SysConfig;
 import com.cat2bug.system.mapper.SysConfigMapper;
 import com.cat2bug.system.service.ISysConfigService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
@@ -28,6 +30,8 @@ import java.util.List;
 @DependsOn("h2Config")
 public class SysConfigServiceImpl implements ISysConfigService
 {
+    private static final Logger log = LoggerFactory.getLogger(SysConfigServiceImpl.class);
+
     @Autowired
     private SysConfigMapper configMapper;
 
@@ -40,7 +44,14 @@ public class SysConfigServiceImpl implements ISysConfigService
     @PostConstruct
     public void init()
     {
-        loadingConfigCache();
+        try
+        {
+            loadingConfigCache();
+        }
+        catch (Exception e)
+        {
+            log.warn("参数缓存未加载（数据库可能尚未初始化）: {}", e.getMessage());
+        }
     }
 
     /**
@@ -94,9 +105,20 @@ public class SysConfigServiceImpl implements ISysConfigService
         String captchaEnabled = selectConfigByKey("sys.account.captchaEnabled");
         if (StringUtils.isEmpty(captchaEnabled))
         {
-            return true;
+            return false;
         }
         return Convert.toBool(captchaEnabled);
+    }
+
+    @Override
+    public boolean selectRegisterEnabled()
+    {
+        String registerUser = selectConfigByKey("sys.account.registerUser");
+        if (StringUtils.isEmpty(registerUser))
+        {
+            return true;
+        }
+        return Convert.toBool(registerUser);
     }
 
     /**

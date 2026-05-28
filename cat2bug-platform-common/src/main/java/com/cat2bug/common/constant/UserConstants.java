@@ -75,4 +75,13 @@ public class UserConstants
      */
     public static final int PASSWORD_MIN_LENGTH = 5;
     public static final int PASSWORD_MAX_LENGTH = 20;
+
+    /** 用户类型：系统用户 */
+    public static final String USER_TYPE_SYSTEM = "00";
+
+    /** 用户类型：API Key 用户 */
+    public static final String USER_TYPE_API = "01";
+
+    /** 用户类型：机器人用户 */
+    public static final String USER_TYPE_ROBOT = "02";
 }
