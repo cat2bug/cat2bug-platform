@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container">
+  <div class="app-container project-form-page">
     <el-row class="project-add-page-header">
       <el-page-header @back="goBack" :content="$t('project.info')">
       </el-page-header>
@@ -7,7 +7,7 @@
     <el-row class="project-add-page-container">
       <el-form ref="form" :model="form" :rules="rules" label-width="120px">
 <!--        基础信息-->
-        <el-row :gutter="100" class="step1">
+        <el-row :gutter="24" class="step1">
           <el-col :xs="24" :sm="24" :md="16" :lg="16" :xl="12">
             <el-form-item :label="$t('project.name')" prop="projectName">
               <el-input v-model="form.projectName" maxlength="64" :placeholder="$t('project.enter-project-name')"></el-input>
@@ -217,6 +217,9 @@ export default {
 
 <style lang="scss" scoped>
   .project-add-page-container {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
     .step2 {
       display: flex;
       display: -webkit-flex; /* Safari */

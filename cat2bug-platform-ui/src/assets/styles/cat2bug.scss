@@ -32,6 +32,13 @@
   }
 }
 
+/* 项目创建/编辑表单页：避免 el-row gutter 负边距撑出横向滚动条 */
+.app-container.project-form-page {
+  overflow-x: hidden;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
 /* 表单等内容页：页头与正文 20px */
 .app-container > .project-add-page-header + * {
   margin-top: 20px;
