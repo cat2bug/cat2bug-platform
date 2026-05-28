@@ -60,6 +60,15 @@ CLAUDE.md
 # Docs
 cat2bug-platform-ui/docs
 cat2bug-platform-ui/public/docs
+/docs/
+CHANGELOG.md
+.java-version
+
+######################################################################
+# Repo-local tooling (not versioned)
+/scripts/
+/.github/
+/.playwright-mcp/
 
 ######################################################################
 # Node.js
