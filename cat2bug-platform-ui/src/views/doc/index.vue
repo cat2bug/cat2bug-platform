@@ -36,13 +36,28 @@
           </el-tree>
         </div>
       </div>
-      <div class="doc-content" ref="docContent">
-        <div class="markdown-body" ref="markdownBody" v-html="renderedContent"></div>
-        <el-backtop target=".doc-content" :visibility-height="300" :right="40" :bottom="40">
-          <div class="backtop-button">
-            <i class="el-icon-top"></i>
-          </div>
-        </el-backtop>
+      <div class="doc-main" ref="docScroll" @scroll.passive="onDocContentScroll">
+        <div class="doc-content">
+          <div class="markdown-body" ref="markdownBody" v-html="renderedContent"></div>
+          <el-backtop
+            target=".doc-main"
+            :visibility-height="300"
+            :right="40"
+            :bottom="40"
+          >
+            <div class="backtop-button">
+              <i class="el-icon-top"></i>
+            </div>
+          </el-backtop>
+        </div>
+        <doc-page-outline
+          :title="$t('doc.on-this-page')"
+          :print-label="$t('doc.print')"
+          :items="outlineItems"
+          :active-id="activeOutlineId"
+          @click="scrollToOutlineHeading"
+          @print="printCurrentDoc"
+        />
       </div>
     </div>
   </div>
@@ -61,9 +76,11 @@ import {
   applyApiDocPlaceholders
 } from '@/utils/doc-code-tabs'
 import 'highlight.js/styles/github-gist.css'
+import DocPageOutline from '@/components/Doc/DocPageOutline.vue'
 
 export default {
   name: 'DocViewer',
+  components: { DocPageOutline },
   data() {
     return {
       searchText: '',
@@ -78,6 +95,9 @@ export default {
       },
       docContents: {}, // 缓存文档内容
       docHistory: [], // 文档浏览历史记录
+      outlineItems: [],
+      activeOutlineId: '',
+      outlineScrollRaf: null,
       docs: [
         {
           label: '系统介绍',
@@ -788,6 +808,12 @@ export default {
       return `${grayParts}<span style="color: #909399;"> / </span>${lastPart}`
     },
   },
+  beforeDestroy() {
+    if (this.outlineScrollRaf) {
+      cancelAnimationFrame(this.outlineScrollRaf)
+      this.outlineScrollRaf = null
+    }
+  },
   mounted() {
     this.md = new MarkdownIt({
       html: true,
@@ -1056,10 +1082,12 @@ export default {
         this.$nextTick(() => {
           this.handleDocLinks()
           initCodeTabs(this.$refs.markdownBody)
-          const docContent = document.querySelector('.doc-content')
-          if (docContent) {
-            docContent.scrollTop = 0
+          this.buildOutline()
+          const scrollEl = this.$refs.docScroll
+          if (scrollEl) {
+            scrollEl.scrollTop = 0
           }
+          this.updateActiveOutline()
         })
       } catch (error) {
         this.$message.error('加载文档失败: ' + error.message)
@@ -1132,6 +1160,134 @@ export default {
     escapeRegExp(string) {
       // 转义正则表达式特殊字符
       return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    },
+    buildOutline() {
+      const root = this.$refs.markdownBody
+      if (!root) {
+        this.outlineItems = []
+        this.activeOutlineId = ''
+        return
+      }
+      const headings = root.querySelectorAll('h2, h3')
+      const items = []
+      headings.forEach((heading) => {
+        const text = (heading.textContent || '').trim()
+        if (!text) return
+        let id = heading.id
+        if (!id) {
+          id = text
+          heading.id = id
+        }
+        const level = parseInt(heading.tagName.charAt(1), 10)
+        items.push({ id, text, level })
+      })
+      this.outlineItems = items
+      this.activeOutlineId = items.length ? items[0].id : ''
+    },
+    onDocContentScroll() {
+      if (!this.outlineItems.length) return
+      if (this.outlineScrollRaf) return
+      this.outlineScrollRaf = requestAnimationFrame(() => {
+        this.outlineScrollRaf = null
+        this.updateActiveOutline()
+      })
+    },
+    updateActiveOutline() {
+      const container = this.$refs.docScroll
+      if (!container || !this.outlineItems.length) return
+
+      const containerTop = container.getBoundingClientRect().top
+      const threshold = 72
+      let active = this.outlineItems[0].id
+
+      for (const item of this.outlineItems) {
+        const el = document.getElementById(item.id)
+        if (!el) continue
+        const offset = el.getBoundingClientRect().top - containerTop
+        if (offset <= threshold) {
+          active = item.id
+        }
+      }
+      this.activeOutlineId = active
+    },
+    scrollToOutlineHeading(id) {
+      const container = this.$refs.docScroll
+      const el = document.getElementById(id)
+      if (!container || !el) return
+
+      const containerTop = container.getBoundingClientRect().top
+      const elTop = el.getBoundingClientRect().top
+      const scrollTop = container.scrollTop + (elTop - containerTop) - 16
+      container.scrollTo({ top: Math.max(0, scrollTop), behavior: 'smooth' })
+      this.activeOutlineId = id
+    },
+    printCurrentDoc() {
+      const bodyEl = this.$refs.markdownBody
+      if (!bodyEl) return
+
+      const titlePart = (this.currentDocTitle || '').split(' / ').pop()
+      const title = titlePart || this.$t('system-doc')
+
+      const iframe = document.createElement('iframe')
+      iframe.setAttribute('aria-hidden', 'true')
+      Object.assign(iframe.style, {
+        position: 'fixed',
+        width: '0',
+        height: '0',
+        border: '0',
+        visibility: 'hidden'
+      })
+      document.body.appendChild(iframe)
+
+      const win = iframe.contentWindow
+      const doc = win.document
+      doc.open()
+      doc.write('<!DOCTYPE html><html><head><meta charset="utf-8"></head><body></body></html>')
+      doc.close()
+      doc.title = title
+
+      const printStyle = doc.createElement('style')
+      printStyle.textContent = `
+        @page { margin: 16mm; }
+        body { margin: 0; padding: 0; background: #fff; }
+        .doc-print-body { max-width: none !important; margin: 0 !important; }
+        img { max-width: 100%; }
+        pre { white-space: pre-wrap; word-break: break-word; }
+      `
+      doc.head.appendChild(printStyle)
+
+      const styleNeedle = ['markdown-body', '.hljs', 'custom-block', 'doc-code-tabs']
+      document.querySelectorAll('style').forEach((node) => {
+        const text = node.textContent || ''
+        if (!styleNeedle.some((key) => text.includes(key))) return
+        const clone = doc.createElement('style')
+        // 去掉 Vue scoped 的 data-v 选择器，以便在独立打印文档中生效
+        clone.textContent = text.replace(/\s*\[data-v-[a-f0-9]+\]/g, '')
+        doc.head.appendChild(clone)
+      })
+
+      const container = doc.createElement('div')
+      container.className = 'markdown-body doc-print-body'
+      container.innerHTML = bodyEl.innerHTML
+      doc.body.appendChild(container)
+
+      const cleanup = () => {
+        if (iframe.parentNode) {
+          iframe.parentNode.removeChild(iframe)
+        }
+      }
+
+      const doPrint = () => {
+        try {
+          win.focus()
+          win.print()
+        } finally {
+          setTimeout(cleanup, 500)
+        }
+      }
+
+      win.addEventListener('afterprint', cleanup, { once: true })
+      setTimeout(doPrint, 300)
     },
     checkPermission(route) {
       // 检查用户是否有访问该路由的权限
@@ -1303,7 +1459,9 @@ export default {
 .doc-viewer-wrapper {
   display: flex;
   flex-direction: column;
+  width: 100%;
   height: calc(100vh - 50px);
+  background-color: #fff;
 
   .doc-header {
     padding: 10px 24px 0 24px;
@@ -1316,23 +1474,28 @@ export default {
   .doc-viewer {
     display: flex;
     flex: 1;
+    width: 100%;
     overflow: hidden;
+    background-color: #fff;
 
     .doc-sidebar {
       width: 280px;
+      box-sizing: border-box;
+      padding-left: 24px;
       border-right: 1px solid #e8e8e8;
+      background-color: #fff;
       display: flex;
       flex-direction: column;
 
       .search-box {
-        padding: 16px;
+        padding: 16px 16px 16px 0;
         border-bottom: 1px solid #e8e8e8;
       }
 
       .doc-tree {
         flex: 1;
         overflow-y: auto;
-        padding: 16px 8px;
+        padding: 16px 8px 16px 0;
 
         .custom-tree-node {
           display: flex;
@@ -1359,11 +1522,22 @@ export default {
       }
     }
 
+    .doc-main {
+      display: flex;
+      flex: 1;
+      min-width: 0;
+      align-items: flex-start;
+      overflow-x: hidden;
+      overflow-y: auto;
+      background-color: #fff;
+    }
+
     .doc-content {
       flex: 1;
-      overflow-y: auto;
-      padding: 0px 48px 24px 48px;
+      min-width: 0;
+      padding: 0 48px 24px;
       position: relative;
+      background-color: #fff;
 
       .markdown-body {
         max-width: 1000px;
