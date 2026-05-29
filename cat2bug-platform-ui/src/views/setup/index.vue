@@ -326,7 +326,7 @@
               </div>
               <div class="setup-panel-footer-nav">
                 <el-button v-if="activeStep > 0" size="small" @click="prevStep">{{ $t('setup.prev') }}</el-button>
-                <el-button v-if="activeStep < 5" type="primary" size="small" @click="nextStep">{{ $t('setup.next') }}</el-button>
+                <el-button v-if="activeStep < 5" type="primary" size="small" :loading="nextStepLoading" @click="nextStep">{{ $t('setup.next') }}</el-button>
                 <el-button v-else type="primary" size="small" :loading="submitting" @click="handleSubmit">{{ $t('setup.submit') }}</el-button>
               </div>
             </footer>
@@ -372,6 +372,30 @@ function isTestSuccess(res) {
 
 function testErrorMessage(res, fallback) {
   return (res && (res.message || res.msg)) || fallback
+}
+
+function resolveOllamaTestErrorMessage(resOrErr, t) {
+  const raw = (resOrErr && (resOrErr.message || resOrErr.msg)) || ''
+  const lower = String(raw).toLowerCase()
+  if (!raw) {
+    return t('setup.ai.testFailed')
+  }
+  if (lower.includes('connection refused')
+    || lower.includes('connectexception')
+    || lower.includes('拒绝连接')
+    || lower.includes('无法连接')) {
+    return t('setup.ai.testFailedUnreachable')
+  }
+  if (lower.includes('timeout') || lower.includes('timed out') || lower.includes('超时')) {
+    return t('setup.ai.testFailedTimeout')
+  }
+  if (lower.includes('unknown host')
+    || lower.includes('name or service not known')
+    || lower.includes('nodename nor servname')
+    || lower.includes('无法解析')) {
+    return t('setup.ai.testFailedBadHost')
+  }
+  return t('setup.ai.testFailed')
 }
 
 export default {
@@ -459,6 +483,9 @@ export default {
     },
     currentStepTitle() {
       return this.$t(this.stepKeys[this.activeStep] || 'setup.title')
+    },
+    nextStepLoading() {
+      return this.dbTesting || this.redisTesting || this.ollamaTesting
     },
     cacheTypeLabel() {
       return this.form.cacheType === 'redis'
@@ -620,77 +647,126 @@ export default {
       }
       return payload
     },
-    handleTestDatabase() {
-      const formRef = this.$refs.dbForm
-      if (!formRef) return
-      formRef.validate(valid => {
-        if (!valid) return
-        this.dbTesting = true
-        this.dbTestPassed = false
-        testDatabase(this.buildDatabasePayload())
+    runDatabaseTest(options = {}) {
+      const { silentSuccess = false } = options
+      return new Promise((resolve, reject) => {
+        const formRef = this.$refs.dbForm
+        if (!formRef) {
+          reject()
+          return
+        }
+        formRef.validate(valid => {
+          if (!valid) {
+            reject()
+            return
+          }
+          this.dbTesting = true
+          this.dbTestPassed = false
+          testDatabase(this.buildDatabasePayload())
+            .then(res => {
+              if (isTestSuccess(res)) {
+                this.dbTestPassed = true
+                if (!silentSuccess) {
+                  this.$message.success(this.$t('setup.testPassed'))
+                }
+                resolve()
+              } else {
+                this.$message.error(testErrorMessage(res, this.$t('setup.testFailed')))
+                reject()
+              }
+            })
+            .catch(err => {
+              this.$message.error(testErrorMessage(err, this.$t('setup.testFailed')))
+              reject()
+            })
+            .finally(() => {
+              this.dbTesting = false
+            })
+        })
+      })
+    },
+    runRedisTest(options = {}) {
+      const { silentSuccess = false } = options
+      return new Promise((resolve, reject) => {
+        const formRef = this.$refs.cacheForm
+        if (!formRef) {
+          reject()
+          return
+        }
+        formRef.validate(valid => {
+          if (!valid) {
+            reject()
+            return
+          }
+          this.redisTesting = true
+          this.redisTestPassed = false
+          testRedis(this.buildRedisPayload())
+            .then(res => {
+              if (isTestSuccess(res)) {
+                this.redisTestPassed = true
+                if (!silentSuccess) {
+                  this.$message.success(this.$t('setup.testPassed'))
+                }
+                resolve()
+              } else {
+                this.$message.error(testErrorMessage(res, this.$t('setup.testFailed')))
+                reject()
+              }
+            })
+            .catch(err => {
+              this.$message.error(testErrorMessage(err, this.$t('setup.testFailed')))
+              reject()
+            })
+            .finally(() => {
+              this.redisTesting = false
+            })
+        })
+      })
+    },
+    runOllamaTest(options = {}) {
+      const { silentSuccess = false } = options
+      return new Promise((resolve, reject) => {
+        if (!this.form.aiEnabled) {
+          resolve()
+          return
+        }
+        if (!this.form.aiHost) {
+          this.$message.warning(this.$t('setup.ai.hostRequired'))
+          reject()
+          return
+        }
+        this.ollamaTesting = true
+        this.ollamaTestPassed = false
+        testOllama({ enabled: true, host: this.form.aiHost })
           .then(res => {
             if (isTestSuccess(res)) {
-              this.dbTestPassed = true
-              this.$message.success(this.$t('setup.testPassed'))
+              this.ollamaTestPassed = true
+              if (!silentSuccess) {
+                this.$message.success(this.$t('setup.testPassed'))
+              }
+              resolve()
             } else {
-              this.$message.error(testErrorMessage(res, this.$t('setup.testFailed')))
+              this.$message.error(resolveOllamaTestErrorMessage(res, this.$t.bind(this)))
+              reject()
             }
           })
           .catch(err => {
-            this.$message.error(testErrorMessage(err, this.$t('setup.testFailed')))
+            this.$message.error(resolveOllamaTestErrorMessage(err, this.$t.bind(this)))
+            reject()
           })
           .finally(() => {
-            this.dbTesting = false
+            this.ollamaTesting = false
           })
       })
+    },
+    handleTestDatabase() {
+      this.runDatabaseTest().catch(() => {})
     },
     handleTestRedis() {
-      const formRef = this.$refs.cacheForm
-      if (!formRef) return
-      formRef.validate(valid => {
-        if (!valid) return
-        this.redisTesting = true
-        this.redisTestPassed = false
-        testRedis(this.buildRedisPayload())
-          .then(res => {
-            if (isTestSuccess(res)) {
-              this.redisTestPassed = true
-              this.$message.success(this.$t('setup.testPassed'))
-            } else {
-              this.$message.error(testErrorMessage(res, this.$t('setup.testFailed')))
-            }
-          })
-          .catch(err => {
-            this.$message.error(testErrorMessage(err, this.$t('setup.testFailed')))
-          })
-          .finally(() => {
-            this.redisTesting = false
-          })
-      })
+      this.runRedisTest().catch(() => {})
     },
     handleTestOllama() {
-      if (!this.form.aiEnabled) return
-      if (!this.form.aiHost) {
-        this.$message.warning(this.$t('setup.ai.hostRequired'))
-        return
-      }
-      this.ollamaTesting = true
-      this.ollamaTestPassed = false
-      testOllama({ enabled: true, host: this.form.aiHost })
-        .then(res => {
-          if (isTestSuccess(res)) {
-            this.ollamaTestPassed = true
-            this.$message.success(this.$t('setup.testPassed'))
-          } else {
-            this.$message.error(testErrorMessage(res, this.$t('setup.testFailed')))
-          }
-        })
-        .catch(err => {
-          this.$message.error(testErrorMessage(err, this.$t('setup.testFailed')))
-        })
-        .finally(() => {
-          this.ollamaTesting = false
-        })
+      this.runOllamaTest().catch(() => {})
     },
     validateCurrentStep() {
       return new Promise((resolve, reject) => {
@@ -698,8 +774,8 @@ export default {
           this.$refs.dbForm.validate(valid => {
             if (!valid) return reject()
             if (this.form.databaseType === 'mysql' && !this.dbTestPassed) {
-              this.$message.warning(this.$t('setup.database.testRequired'))
-              return reject()
+              this.runDatabaseTest({ silentSuccess: true }).then(resolve).catch(reject)
+              return
             }
             resolve()
           })
@@ -709,8 +785,8 @@ export default {
           this.$refs.cacheForm.validate(valid => {
             if (!valid) return reject()
             if (this.form.cacheType === 'redis' && !this.redisTestPassed) {
-              this.$message.warning(this.$t('setup.cache.testRequired'))
-              return reject()
+              this.runRedisTest({ silentSuccess: true }).then(resolve).catch(reject)
+              return
             }
             resolve()
           })
@@ -725,8 +801,7 @@ export default {
         }
         if (this.activeStep === 3) {
           if (this.form.aiEnabled && !this.ollamaTestPassed) {
-            this.$message.warning(this.$t('setup.ai.testRequired'))
-            reject()
+            this.runOllamaTest({ silentSuccess: true }).then(resolve).catch(reject)
             return
           }
           resolve()
@@ -1113,7 +1188,7 @@ $setup-wm-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
   flex: 1 1 auto;
   width: 2px;
   min-height: 10px;
-  margin: 6px 0 2px;
+  margin: 4px 0;
   background: #e4e7ed;
 }
 
