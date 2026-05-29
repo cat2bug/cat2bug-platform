@@ -16,14 +16,6 @@
             size="mini"
             icon="el-icon-cloudy"
             plain
-            @click="goTarget('https://github.com/cat2bug/cat2bug-platform')"
-          >{{$t('visit-github')}}</el-button
-          >
-          <el-button
-            type="primary"
-            size="mini"
-            icon="el-icon-cloudy"
-            plain
             @click="goTarget('https://gitee.com/cat2bug/cat2bug-platform')"
             >{{$t('visit-gitee')}}</el-button
           >
