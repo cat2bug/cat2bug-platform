@@ -1,180 +1,284 @@
 <template>
-  <div class="logo-page setup-page">
-    <div class="login setup-layout">
-      <div class="login-introduce setup-introduce">
-        <h1>{{ $t('setup.title') }}</h1>
-        <p>{{ $t('setup.introduce1') }}</p>
-        <p>{{ $t('setup.introduce2') }}</p>
-        <p v-if="!finished">{{ $t('setup.introduce3') }}</p>
-      </div>
+  <div
+    class="setup-page"
+    :class="{ 'setup-page--rtl': isRtl }"
+    :dir="isRtl ? 'rtl' : 'ltr'"
+  >
+    <div class="setup-page-watermark" aria-hidden="true">
+      <div class="setup-page-watermark__pattern" />
+    </div>
+    <div class="setup-layout">
+      <header class="setup-hero">
+        <div class="setup-hero-bg" aria-hidden="true" />
+        <div class="setup-hero-head">
+          <h1>{{ $t('setup.title') }}</h1>
+          <p class="setup-intro-lead">{{ $t('setup.introduce1') }}</p>
+        </div>
+        <div class="setup-hero-art" aria-hidden="true">
+          <img
+            class="setup-hero-art-img"
+            :src="brandLogoSrc"
+            alt=""
+          >
+        </div>
+      </header>
+
       <div class="setup-body">
-        <el-image
-          class="setup-logo"
-          :src="require('@/assets/images/cat2bug-logo.gif')"
-        />
-        <div class="login-form setup-form">
+      <aside class="setup-aside">
+        <div class="setup-aside-content">
+          <h2 class="setup-roadmap-title">{{ $t('setup.roadmapTitle') }}</h2>
+          <ol class="setup-roadmap">
+            <li
+              v-for="(key, index) in stepKeys"
+              :key="key"
+              class="setup-roadmap-item"
+              :class="{
+                'is-active': !finished && activeStep === index,
+                'is-done': finished || activeStep > index
+              }"
+            >
+              <div class="setup-roadmap-marker-col">
+                <span class="setup-roadmap-marker">
+                  <i v-if="finished || activeStep > index" class="el-icon-check" />
+                  <span v-else>{{ index + 1 }}</span>
+                </span>
+                <span
+                  v-if="index < stepKeys.length - 1"
+                  class="setup-roadmap-connector"
+                  aria-hidden="true"
+                />
+              </div>
+              <span class="setup-roadmap-text">{{ $t(key) }}</span>
+            </li>
+          </ol>
+        </div>
+        <p v-if="!finished" class="setup-intro-note">{{ $t('setup.introduce3') }}</p>
+      </aside>
+
+      <main class="setup-main">
+        <div class="setup-panel">
           <template v-if="finished">
-            <div class="setup-success">
+            <div class="setup-success setup-panel-fill">
               <i class="el-icon-success setup-success-icon" />
               <h3>{{ $t('setup.success.title') }}</h3>
               <p>{{ $t('setup.success.message') }}</p>
-              <p class="setup-success-hint">{{ $t('setup.success.restart') }}</p>
-              <p v-if="installWarning" class="setup-success-hint setup-success-warning">{{ installWarning }}</p>
+              <p class="setup-tip setup-tip--warn">{{ $t('setup.success.restart') }}</p>
+              <p v-if="installWarning" class="setup-tip setup-tip--warn">{{ installWarning }}</p>
               <p class="setup-success-countdown">
                 {{ $t('setup.success.redirectCountdown', { seconds: redirectCountdown }) }}
               </p>
-              <el-link type="primary" class="setup-success-login-link" @click="goToLogin">
+              <el-button type="primary" size="small" @click="goToLogin">
                 {{ $t('setup.success.goLoginNow') }}
-              </el-link>
+              </el-button>
             </div>
           </template>
-          <template v-else>
-            <el-steps :active="activeStep" align-center finish-status="success" class="setup-steps">
-              <el-step :title="$t('setup.step.database')" />
-              <el-step :title="$t('setup.step.cache')" />
-              <el-step :title="$t('setup.step.storage')" />
-              <el-step :title="$t('setup.step.ai')" />
-              <el-step :title="$t('setup.step.admin')" />
-              <el-step :title="$t('setup.step.confirm')" />
-            </el-steps>
 
-            <div class="setup-step-content">
+          <template v-else>
+            <header class="setup-panel-header">
+              <div class="setup-panel-header-row">
+                <h2 class="setup-panel-title">{{ currentStepTitle }}</h2>
+                <span class="setup-panel-step">{{ $t('setup.progress', { current: activeStep + 1, total: stepKeys.length }) }}</span>
+              </div>
+              <el-progress
+                :percentage="progressPercent"
+                :show-text="false"
+                :stroke-width="4"
+                class="setup-progress-bar"
+              />
+            </header>
+
+            <div class="setup-panel-body">
               <!-- Step 0: Database -->
-              <div v-show="activeStep === 0">
-                <el-form ref="dbForm" :model="form" :rules="dbRules" label-position="top">
-                  <el-form-item :label="$t('setup.database.type')" prop="databaseType">
-                    <el-radio-group v-model="form.databaseType" @change="onDatabaseTypeChange">
-                      <el-radio label="h2">H2</el-radio>
-                      <el-radio label="mysql">MySQL</el-radio>
-                    </el-radio-group>
+              <div v-show="activeStep === 0" class="setup-step-panel">
+                <el-form ref="dbForm" :model="form" :rules="dbRules" label-position="top" size="small" class="setup-inner-form">
+                  <el-form-item :label="$t('setup.database.type')" prop="databaseType" class="setup-form-item-compact">
+                    <div class="setup-pick-grid setup-pick-grid--2">
+                      <button
+                        type="button"
+                        class="setup-pick"
+                        :class="{ 'is-active': form.databaseType === 'h2' }"
+                        @click="pickDatabaseType('h2')"
+                      >
+                        <i class="el-icon-coin setup-pick-icon" />
+                        <strong>H2</strong>
+                        <span>{{ $t('setup.database.h2CardDesc') }}</span>
+                      </button>
+                      <button
+                        type="button"
+                        class="setup-pick"
+                        :class="{ 'is-active': form.databaseType === 'mysql' }"
+                        @click="pickDatabaseType('mysql')"
+                      >
+                        <i class="el-icon-connection setup-pick-icon" />
+                        <strong>MySQL</strong>
+                        <span>{{ $t('setup.database.mysqlCardDesc') }}</span>
+                      </button>
+                    </div>
                   </el-form-item>
                   <template v-if="form.databaseType === 'mysql'">
-                    <el-form-item :label="$t('setup.database.host')" prop="mysqlHost">
-                      <el-input v-model="form.mysqlHost" placeholder="127.0.0.1" />
-                    </el-form-item>
-                    <el-form-item :label="$t('setup.database.port')" prop="mysqlPort">
-                      <el-input-number v-model="form.mysqlPort" :min="1" :max="65535" controls-position="right" />
-                    </el-form-item>
+                    <div class="setup-form-row">
+                      <el-form-item :label="$t('setup.database.host')" prop="mysqlHost" class="setup-form-row-item">
+                        <el-input v-model="form.mysqlHost" placeholder="127.0.0.1" />
+                      </el-form-item>
+                      <el-form-item :label="$t('setup.database.port')" prop="mysqlPort" class="setup-form-row-item setup-form-row-item--sm">
+                        <el-input-number v-model="form.mysqlPort" :min="1" :max="65535" controls-position="right" class="setup-full-width" />
+                      </el-form-item>
+                    </div>
                     <el-form-item :label="$t('setup.database.database')" prop="mysqlDatabase">
                       <el-input v-model="form.mysqlDatabase" placeholder="cat2bug_platform" />
                     </el-form-item>
-                    <el-form-item :label="$t('setup.database.username')" prop="mysqlUsername">
-                      <el-input v-model="form.mysqlUsername" />
-                    </el-form-item>
-                    <el-form-item :label="$t('setup.database.password')" prop="mysqlPassword">
-                      <el-input v-model="form.mysqlPassword" type="password" show-password />
-                    </el-form-item>
+                    <div class="setup-form-row">
+                      <el-form-item :label="$t('setup.database.username')" prop="mysqlUsername" class="setup-form-row-item">
+                        <el-input v-model="form.mysqlUsername" />
+                      </el-form-item>
+                      <el-form-item :label="$t('setup.database.password')" prop="mysqlPassword" class="setup-form-row-item">
+                        <el-input v-model="form.mysqlPassword" type="password" show-password />
+                      </el-form-item>
+                    </div>
+                    <div class="setup-test-row">
+                      <el-button :loading="dbTesting" @click="handleTestDatabase">{{ $t('setup.testConnection') }}</el-button>
+                      <span v-if="dbTestPassed" class="setup-test-ok"><i class="el-icon-success" /> {{ $t('setup.testPassed') }}</span>
+                    </div>
+                    <p class="setup-tip">{{ $t('setup.database.mysqlAutoCreateHint') }}</p>
                   </template>
-                  <p v-else class="setup-hint">{{ $t('setup.database.h2Hint') }}</p>
-                  <el-form-item v-if="form.databaseType === 'mysql'">
-                    <el-button :loading="dbTesting" @click="handleTestDatabase">{{ $t('setup.testConnection') }}</el-button>
-                    <span v-if="dbTestPassed" class="setup-test-ok"><i class="el-icon-success" /> {{ $t('setup.testPassed') }}</span>
-                  </el-form-item>
-                  <p v-if="form.databaseType === 'mysql'" class="setup-hint">{{ $t('setup.database.mysqlAutoCreateHint') }}</p>
+                  <div v-else class="setup-feature-box">
+                    <p class="setup-tip setup-tip--success">
+                      <i class="el-icon-circle-check" /> {{ $t('setup.database.h2Hint') }}
+                    </p>
+                  </div>
                 </el-form>
               </div>
 
               <!-- Step 1: Cache -->
-              <div v-show="activeStep === 1">
-                <el-form ref="cacheForm" :model="form" :rules="cacheRules" label-position="top">
-                  <el-form-item :label="$t('setup.cache.type')" prop="cacheType">
-                    <el-radio-group v-model="form.cacheType" @change="onCacheTypeChange">
-                      <el-radio label="local">{{ $t('setup.cache.local') }}</el-radio>
-                      <el-radio label="redis">{{ $t('setup.cache.redis') }}</el-radio>
-                    </el-radio-group>
+              <div v-show="activeStep === 1" class="setup-step-panel">
+                <el-form ref="cacheForm" :model="form" :rules="cacheRules" label-position="top" size="small" class="setup-inner-form">
+                  <el-form-item :label="$t('setup.cache.type')" prop="cacheType" class="setup-form-item-compact">
+                    <div class="setup-pick-grid setup-pick-grid--2">
+                      <button
+                        type="button"
+                        class="setup-pick"
+                        :class="{ 'is-active': form.cacheType === 'local' }"
+                        @click="pickCacheType('local')"
+                      >
+                        <i class="el-icon-box setup-pick-icon" />
+                        <strong>{{ $t('setup.cache.local') }}</strong>
+                        <span>{{ $t('setup.cache.localCardDesc') }}</span>
+                      </button>
+                      <button
+                        type="button"
+                        class="setup-pick"
+                        :class="{ 'is-active': form.cacheType === 'redis' }"
+                        @click="pickCacheType('redis')"
+                      >
+                        <i class="el-icon-cpu setup-pick-icon" />
+                        <strong>Redis</strong>
+                        <span>{{ $t('setup.cache.redisCardDesc') }}</span>
+                      </button>
+                    </div>
                   </el-form-item>
                   <template v-if="form.cacheType === 'redis'">
-                    <el-form-item :label="$t('setup.cache.host')" prop="redisHost">
-                      <el-input v-model="form.redisHost" placeholder="127.0.0.1" />
-                    </el-form-item>
-                    <el-form-item :label="$t('setup.cache.port')" prop="redisPort">
-                      <el-input-number v-model="form.redisPort" :min="1" :max="65535" controls-position="right" />
-                    </el-form-item>
-                    <el-form-item :label="$t('setup.cache.password')">
-                      <el-input v-model="form.redisPassword" type="password" show-password />
-                    </el-form-item>
-                    <el-form-item :label="$t('setup.cache.database')">
-                      <el-input-number v-model="form.redisDatabase" :min="0" :max="15" controls-position="right" />
-                    </el-form-item>
-                    <el-form-item>
+                    <div class="setup-form-row">
+                      <el-form-item :label="$t('setup.cache.host')" prop="redisHost" class="setup-form-row-item">
+                        <el-input v-model="form.redisHost" placeholder="127.0.0.1" />
+                      </el-form-item>
+                      <el-form-item :label="$t('setup.cache.port')" prop="redisPort" class="setup-form-row-item setup-form-row-item--sm">
+                        <el-input-number v-model="form.redisPort" :min="1" :max="65535" controls-position="right" class="setup-full-width" />
+                      </el-form-item>
+                    </div>
+                    <div class="setup-form-row">
+                      <el-form-item :label="$t('setup.cache.password')" class="setup-form-row-item">
+                        <el-input v-model="form.redisPassword" type="password" show-password />
+                      </el-form-item>
+                      <el-form-item :label="$t('setup.cache.database')" class="setup-form-row-item setup-form-row-item--sm">
+                        <el-input-number v-model="form.redisDatabase" :min="0" :max="15" controls-position="right" class="setup-full-width" />
+                      </el-form-item>
+                    </div>
+                    <div class="setup-test-row">
                       <el-button :loading="redisTesting" @click="handleTestRedis">{{ $t('setup.testConnection') }}</el-button>
                       <span v-if="redisTestPassed" class="setup-test-ok"><i class="el-icon-success" /> {{ $t('setup.testPassed') }}</span>
-                    </el-form-item>
+                    </div>
                   </template>
-                  <p v-else class="setup-hint">{{ $t('setup.cache.localHint') }}</p>
+                  <div v-else class="setup-feature-box">
+                    <p class="setup-tip setup-tip--success">
+                      <i class="el-icon-circle-check" /> {{ $t('setup.cache.localHint') }}
+                    </p>
+                  </div>
                 </el-form>
               </div>
 
-              <!-- Step 2: Storage & log -->
-              <div v-show="activeStep === 2">
-                <el-form ref="pathForm" :model="form" :rules="pathRules" label-position="top">
+              <!-- Step 2: Storage -->
+              <div v-show="activeStep === 2" class="setup-step-panel">
+                <el-form ref="pathForm" :model="form" :rules="pathRules" label-position="top" size="small" class="setup-inner-form">
                   <el-form-item :label="$t('setup.storage.profile')" prop="profile">
-                    <el-input v-model="form.profile" :placeholder="$t('setup.storage.profilePlaceholder')" />
+                    <el-input v-model="form.profile" :placeholder="$t('setup.storage.profilePlaceholder')">
+                      <i slot="prefix" class="el-input__icon el-icon-folder" />
+                    </el-input>
                   </el-form-item>
                   <el-form-item :label="$t('setup.storage.logPath')" prop="logPath">
-                    <el-input v-model="form.logPath" :placeholder="$t('setup.storage.logPlaceholder')" />
+                    <el-input v-model="form.logPath" :placeholder="$t('setup.storage.logPlaceholder')">
+                      <i slot="prefix" class="el-input__icon el-icon-document" />
+                    </el-input>
                   </el-form-item>
-                  <p class="setup-hint">{{ $t('setup.storage.restartHint') }}</p>
+                  <p class="setup-tip">{{ $t('setup.storage.restartHint') }}</p>
                 </el-form>
               </div>
 
               <!-- Step 3: AI -->
-              <div v-show="activeStep === 3">
-                <el-form ref="aiForm" :model="form" label-position="top">
-                  <el-form-item :label="$t('setup.ai.enabled')">
+              <div v-show="activeStep === 3" class="setup-step-panel">
+                <el-form ref="aiForm" :model="form" label-position="top" size="small" class="setup-inner-form">
+                  <el-form-item :label="$t('setup.ai.enabled')" class="setup-switch-line">
                     <el-switch v-model="form.aiEnabled" @change="onAiEnabledChange" />
                   </el-form-item>
                   <template v-if="form.aiEnabled">
                     <el-form-item :label="$t('setup.ai.host')" prop="aiHost">
                       <el-input v-model="form.aiHost" placeholder="http://127.0.0.1:11434" />
-                      <p class="setup-hint setup-ai-host-hint">
+                      <p class="setup-tip setup-tip--inline">
                         {{ $t('setup.ai.hostHintPrefix') }}
-                        <span class="setup-ai-demo-url">{{ ollamaDemoUrl }}</span>
+                        <span class="setup-link">{{ ollamaDemoUrl }}</span>
                         <el-tooltip :content="$t('setup.ai.copyDemoUrlToInput')" placement="top">
-                          <el-button
-                            type="text"
-                            class="setup-ai-demo-copy"
-                            icon="el-icon-document-copy"
-                            @click="fillOllamaDemoUrl"
-                          />
+                          <el-button type="text" class="setup-copy-btn" icon="el-icon-document-copy" @click="fillOllamaDemoUrl" />
                         </el-tooltip>
                         {{ $t('setup.ai.hostHintSuffix') }}
                       </p>
                     </el-form-item>
-                    <el-form-item>
+                    <div class="setup-test-row">
                       <el-button :loading="ollamaTesting" @click="handleTestOllama">{{ $t('setup.testConnection') }}</el-button>
                       <span v-if="ollamaTestPassed" class="setup-test-ok"><i class="el-icon-success" /> {{ $t('setup.testPassed') }}</span>
-                    </el-form-item>
+                    </div>
                   </template>
-                  <p v-else class="setup-hint">{{ $t('setup.ai.disabledHint') }}</p>
+                  <p v-else class="setup-tip">{{ $t('setup.ai.disabledHint') }}</p>
                 </el-form>
               </div>
 
-              <!-- Step 4: Admin & security -->
-              <div v-show="activeStep === 4">
-                <el-form ref="adminForm" :model="form" :rules="adminRules" label-position="top">
+              <!-- Step 4: Admin -->
+              <div v-show="activeStep === 4" class="setup-step-panel">
+                <el-form ref="adminForm" :model="form" :rules="adminRules" label-position="top" size="small" class="setup-inner-form">
                   <el-form-item :label="$t('setup.admin.username')" prop="adminUsername">
                     <el-input v-model="form.adminUsername" maxlength="30" />
                   </el-form-item>
-                  <el-form-item :label="$t('setup.admin.password')" prop="adminPassword">
-                    <el-input v-model="form.adminPassword" type="password" show-password maxlength="50" />
-                  </el-form-item>
-                  <el-form-item :label="$t('setup.admin.confirmPassword')" prop="adminPasswordConfirm">
-                    <el-input v-model="form.adminPasswordConfirm" type="password" show-password maxlength="50" />
-                  </el-form-item>
-                  <el-form-item :label="$t('setup.security.registerUser')">
-                    <el-switch v-model="form.registerUser" />
-                    <span class="setup-switch-hint">{{ $t('setup.security.registerUserHint') }}</span>
-                  </el-form-item>
-                  <el-form-item :label="$t('setup.security.loginCaptcha')">
-                    <el-switch v-model="form.loginCaptchaEnabled" />
-                    <span class="setup-switch-hint">{{ $t('setup.security.loginCaptchaHint') }}</span>
-                  </el-form-item>
+                  <div class="setup-form-row">
+                    <el-form-item :label="$t('setup.admin.password')" prop="adminPassword" class="setup-form-row-item">
+                      <el-input v-model="form.adminPassword" type="password" show-password maxlength="50" />
+                    </el-form-item>
+                    <el-form-item :label="$t('setup.admin.confirmPassword')" prop="adminPasswordConfirm" class="setup-form-row-item">
+                      <el-input v-model="form.adminPasswordConfirm" type="password" show-password maxlength="50" />
+                    </el-form-item>
+                  </div>
+                  <div class="setup-panel-box">
+                    <el-form-item :label="$t('setup.security.registerUser')" class="setup-switch-line">
+                      <el-switch v-model="form.registerUser" />
+                      <span class="setup-switch-hint">{{ $t('setup.security.registerUserHint') }}</span>
+                    </el-form-item>
+                    <el-form-item :label="$t('setup.security.loginCaptcha')" class="setup-switch-line">
+                      <el-switch v-model="form.loginCaptchaEnabled" />
+                      <span class="setup-switch-hint">{{ $t('setup.security.loginCaptchaHint') }}</span>
+                    </el-form-item>
+                  </div>
                 </el-form>
               </div>
 
               <!-- Step 5: Confirm -->
-              <div v-show="activeStep === 5">
+              <div v-show="activeStep === 5" class="setup-step-panel">
                 <p class="setup-step-desc">{{ $t('setup.confirm.desc') }}</p>
                 <el-descriptions :column="1" border size="small" class="setup-summary">
                   <el-descriptions-item :label="$t('setup.database.type')">{{ form.databaseType.toUpperCase() }}</el-descriptions-item>
@@ -190,64 +294,49 @@
                   <el-descriptions-item :label="$t('setup.security.registerUser')">{{ form.registerUser ? $t('setup.yes') : $t('setup.no') }}</el-descriptions-item>
                   <el-descriptions-item :label="$t('setup.security.loginCaptcha')">{{ form.loginCaptchaEnabled ? $t('setup.yes') : $t('setup.no') }}</el-descriptions-item>
                 </el-descriptions>
-                <p class="setup-hint setup-confirm-warning">{{ $t('setup.confirm.restartWarning') }}</p>
+                <p class="setup-tip setup-tip--warn">{{ $t('setup.confirm.restartWarning') }}</p>
               </div>
             </div>
 
-            <div class="setup-actions between-row">
-              <div class="lang-group">
-                <svg-icon
-                  icon-class="lang_zh_CN"
-                  :class="{ 'lang-active': currentLocale === 'zh_CN' }"
-                  @click="changeLang('zh_CN')"
-                />
-                <svg-icon
-                  icon-class="lang_zh_TW"
-                  :class="{ 'lang-active': currentLocale === 'zh_TW' }"
-                  @click="changeLang('zh_TW')"
-                />
-                <svg-icon
-                  icon-class="lang_en_US"
-                  :class="{ 'lang-active': currentLocale === 'en_US' }"
-                  @click="changeLang('en_US')"
-                />
-                <svg-icon
-                  icon-class="lang_ru"
-                  :class="{ 'lang-active': currentLocale === 'ru' }"
-                  @click="changeLang('ru')"
-                />
-                <svg-icon
-                  icon-class="lang_ja_JP"
-                  :class="{ 'lang-active': currentLocale === 'ja_JP' }"
-                  @click="changeLang('ja_JP')"
-                />
-                <svg-icon
-                  icon-class="lang_ko_KR"
-                  :class="{ 'lang-active': currentLocale === 'ko_KR' }"
-                  @click="changeLang('ko_KR')"
-                />
-                <svg-icon
-                  icon-class="lang_ar"
-                  :class="{ 'lang-active': currentLocale === 'ar' }"
-                  @click="changeLang('ar')"
-                />
+            <footer class="setup-panel-footer">
+              <div class="setup-panel-footer-lang">
+                <label class="setup-lang-label" for="setup-lang-select">{{ $t('setup.language') }}</label>
+                <div class="setup-lang-control">
+                  <svg-icon :icon-class="currentLangIcon" class="setup-lang-flag" />
+                  <el-select
+                    id="setup-lang-select"
+                    :value="currentLocale"
+                    size="small"
+                    class="setup-lang-select"
+                    @change="changeLang"
+                  >
+                    <el-option
+                      v-for="lang in langOptions"
+                      :key="lang.code"
+                      :label="lang.label"
+                      :value="lang.code"
+                    >
+                      <span class="setup-lang-option">
+                        <svg-icon :icon-class="lang.icon" />
+                        <span>{{ lang.label }}</span>
+                      </span>
+                    </el-option>
+                  </el-select>
+                </div>
               </div>
-              <div class="setup-nav-buttons">
-                <el-button v-if="activeStep > 0" @click="prevStep">{{ $t('setup.prev') }}</el-button>
-                <el-button v-if="activeStep < 5" type="primary" @click="nextStep">{{ $t('setup.next') }}</el-button>
-                <el-button v-else type="primary" :loading="submitting" @click="handleSubmit">{{ $t('setup.submit') }}</el-button>
+              <div class="setup-panel-footer-nav">
+                <el-button v-if="activeStep > 0" size="small" @click="prevStep">{{ $t('setup.prev') }}</el-button>
+                <el-button v-if="activeStep < 5" type="primary" size="small" @click="nextStep">{{ $t('setup.next') }}</el-button>
+                <el-button v-else type="primary" size="small" :loading="submitting" @click="handleSubmit">{{ $t('setup.submit') }}</el-button>
               </div>
-            </div>
+            </footer>
           </template>
         </div>
-        <span class="login-copyright">{{ $t('copyright') }}</span>
+      </main>
       </div>
+
+      <p class="setup-copyright">{{ $t('copyright') }}</p>
     </div>
-    <el-image
-      class="login-mouse"
-      style="width: 150px;"
-      :src="require('@/assets/images/cat2bug-mouse.gif')"
-    />
   </div>
 </template>
 
@@ -262,6 +351,15 @@ import { resetSetupStatusCache } from '@/utils/setup-status'
 import store from '@/store'
 
 const I18N_LOCALE_KEY = 'i18n-locale'
+
+const STEP_KEYS = [
+  'setup.step.database',
+  'setup.step.cache',
+  'setup.step.storage',
+  'setup.step.ai',
+  'setup.step.admin',
+  'setup.step.confirm'
+]
 
 function isTestSuccess(res) {
   if (res == null) return false
@@ -285,6 +383,16 @@ export default {
       }
     }
     return {
+      stepKeys: STEP_KEYS,
+      langOptions: [
+        { code: 'zh_CN', label: '简体中文', icon: 'lang_zh_CN' },
+        { code: 'zh_TW', label: '繁體中文', icon: 'lang_zh_CN' },
+        { code: 'en_US', label: 'English', icon: 'lang_en_US' },
+        { code: 'ru', label: 'Русский', icon: 'lang_ru' },
+        { code: 'ja_JP', label: '日本語', icon: 'lang_ja_JP' },
+        { code: 'ko_KR', label: '한국어', icon: 'lang_ko_KR' },
+        { code: 'ar', label: 'العربية', icon: 'lang_ar' }
+      ],
       activeStep: 0,
       ollamaDemoUrl: 'https://www.cat2bug.com:8023',
       finished: false,
@@ -335,10 +443,26 @@ export default {
     currentLocale() {
       return this.$i18n.locale
     },
+    currentLangIcon() {
+      const found = this.langOptions.find(item => item.code === this.currentLocale)
+      return found ? found.icon : 'lang_zh_CN'
+    },
+    isRtl() {
+      return this.currentLocale === 'ar'
+    },
+    progressPercent() {
+      return Math.round(((this.activeStep + 1) / this.stepKeys.length) * 100)
+    },
+    currentStepTitle() {
+      return this.$t(this.stepKeys[this.activeStep] || 'setup.title')
+    },
     cacheTypeLabel() {
       return this.form.cacheType === 'redis'
         ? this.$t('setup.cache.redis')
         : this.$t('setup.cache.local')
+    },
+    brandLogoSrc() {
+      return require('@/assets/images/setup-wizard-mascot.png')
     },
     dbRules() {
       const rules = {
@@ -371,11 +495,13 @@ export default {
     }
   },
   created() {
+    document.documentElement.classList.add('setup-wizard-active')
     const lang = this.$cache.local.get(I18N_LOCALE_KEY) || 'zh_CN'
     this.$i18n.locale = lang
     this.refreshFormRuleMessages()
   },
   beforeDestroy() {
+    document.documentElement.classList.remove('setup-wizard-active')
     this.clearRedirectCountdown()
   },
   methods: {
@@ -383,6 +509,24 @@ export default {
       this.$i18n.locale = lang
       this.$cache.local.set(I18N_LOCALE_KEY, lang)
       this.refreshFormRuleMessages()
+    },
+    pickDatabaseType(type) {
+      this.form.databaseType = type
+      this.onDatabaseTypeChange()
+      this.$nextTick(() => {
+        if (this.$refs.dbForm) {
+          this.$refs.dbForm.validateField('databaseType')
+        }
+      })
+    },
+    pickCacheType(type) {
+      this.form.cacheType = type
+      this.onCacheTypeChange()
+      this.$nextTick(() => {
+        if (this.$refs.cacheForm) {
+          this.$refs.cacheForm.validateField('cacheType')
+        }
+      })
     },
     refreshFormRuleMessages() {
       this.adminRules.adminUsername[0].message = this.$t('setup.admin.usernameRequired')
@@ -655,246 +799,660 @@ export default {
 }
 </script>
 
-<style rel="stylesheet/scss" lang="scss">
-body {
-  overflow: hidden;
-}
-
-.logo-page {
-  height: 100%;
-  overflow: hidden;
-}
-
-.login {
-  display: flex;
-  align-items: center;
-  height: 100%;
-  background-size: cover;
-  background-color: white;
-}
-
-.login-introduce {
-  float: right;
-  max-width: 45%;
-  font-size: 22px;
-  padding-right: 80px;
-  border-right: 1px solid #DCDFE6;
-}
-
-.login-mouse {
-  position: absolute;
-  bottom: 0;
-  width: 150px;
-  animation: setup-mouse-move 16s linear infinite;
-  left: 100%;
-}
-
-@keyframes setup-mouse-move {
-  0% {
-    left: 100%;
-    transform: rotateY(0deg);
-  }
-  15% {
-    left: calc(0% - 200px);
-    transform: rotateY(0deg);
-  }
-  41% {
-    left: calc(0% - 200px);
-    transform: rotateY(-180deg);
-  }
-  55% {
-    left: 100%;
-    transform: rotateY(-180deg);
-  }
-  56% {
-    left: 100%;
-    transform: rotateY(0deg);
-  }
-  100% {
-    left: 100%;
-    transform: rotateY(0deg);
-  }
-}
-
-.between-row {
-  width: 100%;
-  display: inline-flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-
-  .lang-group {
-    display: inline-flex;
-    flex-direction: row;
-    justify-content: flex-end;
-
-    > * {
-      font-size: 22px;
-      margin-left: 3px;
-      cursor: pointer;
-      opacity: 0.45;
-      transition: opacity 0.15s ease;
-
-      &.lang-active {
-        opacity: 1;
-      }
-
-      &:hover {
-        opacity: 0.85;
-      }
-
-      &.lang-active:hover {
-        opacity: 1;
-      }
-    }
-  }
-}
-
-.login-copyright {
-  font-family: Arial;
-  font-size: 14px;
-  color: #606266;
-}
-
-.login-form {
-  border-radius: 6px;
-  background: #ffffff;
-  border: 3px solid #5A5A59;
-
-  .el-input {
-    height: 38px;
-
-    input {
-      height: 38px;
-    }
-  }
-}
+<style rel="stylesheet/scss" lang="scss" scoped>
+$setup-text: #303133;
+$setup-muted: #606266;
+$setup-muted-light: #909399;
+$setup-border: #e4e7ed;
+$setup-aside-bg: #f5f7fa;
+$setup-wm-tile: 168px;
+$setup-wm-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='168' height='168' viewBox='0 0 168 168'%3E%3Ctext x='8' y='96' font-family='system-ui,-apple-system,sans-serif' font-size='24' font-weight='700' fill='rgba(64,158,255,0.1)' letter-spacing='0.06em'%3ECat2Bug%3C/text%3E%3C/svg%3E");
 
 .setup-page {
-  overflow: auto;
+  position: relative;
+  width: 100%;
+  max-width: 100vw;
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
+  background: linear-gradient(165deg, #f0f5fc 0%, #f8fafc 42%, #fff 100%);
+  box-sizing: border-box;
+}
+
+.setup-page-watermark {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* 层旋转 -45° 后，仅沿层内 X 轴位移 → 屏幕上是纯 45° 斜向滚动 */
+.setup-page-watermark__pattern {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 320vmax;
+  height: 320vmax;
+  margin-top: -160vmax;
+  margin-left: -160vmax;
+  background-image: $setup-wm-pattern;
+  background-repeat: repeat;
+  background-size: $setup-wm-tile $setup-wm-tile;
+  transform: rotate(-45deg);
+  animation: setup-watermark-bg 32s linear infinite;
+  will-change: background-position;
+}
+
+@keyframes setup-watermark-bg {
+  0% {
+    background-position: 0 0;
+  }
+
+  100% {
+    background-position: $setup-wm-tile 0;
+  }
 }
 
 .setup-layout {
-  min-height: 100%;
-  padding: 24px 0;
-}
-
-.setup-introduce {
-  max-width: 40%;
-}
-
-.setup-body {
-  float: right;
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  max-width: 620px;
   width: 100%;
+  max-width: 1200px;
+  height: 100%;
+  margin: 0 auto;
+  padding: 20px 40px 10px;
+  box-sizing: border-box;
+  overflow: visible;
 }
 
-.setup-logo {
-  width: 320px;
-  height: auto;
+.setup-hero {
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+  display: block;
+  min-height: 0;
+  margin: 0 0 12px;
+  padding: 0;
+  padding-inline-end: 320px;
+  -webkit-padding-end: 320px;
+  border-radius: 12px;
+  box-sizing: border-box;
+  overflow: visible;
+  isolation: isolate;
+}
+
+.setup-hero-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  background: linear-gradient(105deg, rgba(255, 255, 255, 0.92) 0%, rgba(245, 247, 250, 0.88) 55%, rgba(236, 244, 255, 0.5) 100%);
+  border: 1px solid rgba(228, 231, 237, 0.9);
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04);
+  pointer-events: none;
+
+  &::after {
+    content: '';
+    position: absolute;
+    right: 8%;
+    bottom: -20%;
+    width: 280px;
+    height: 280px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(64, 158, 255, 0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+}
+
+.setup-hero-head {
+  position: relative;
   z-index: 2;
-  margin-top: -40px;
-}
+  min-width: 0;
+  max-width: 640px;
+  padding-block: 40px;
+  padding-inline: 20px 0;
+  box-sizing: border-box;
 
-.setup-form {
-  width: 100%;
-  max-width: 620px;
-  margin-top: -20px;
-  padding: 20px 25px 15px;
-}
-
-.setup-steps {
-  margin-bottom: 24px;
-
-  .el-step__title {
-    font-size: 12px;
+  h1 {
+    margin: 0 0 6px;
+    font-size: 20px;
+    font-weight: 600;
+    color: $setup-text;
     line-height: 1.3;
   }
 }
 
-.setup-step-content {
-  min-height: 220px;
+.setup-hero-art {
+  position: absolute;
+  z-index: 1;
+  top: -30px;
+  right: auto;
+  bottom: -36px;
+  left: max(0px, calc(100% - 448px));
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  width: 440px;
+  height: auto;
+  box-sizing: border-box;
+  pointer-events: none;
 }
 
-.setup-step-desc {
-  color: #606266;
-  margin-bottom: 16px;
-  line-height: 1.6;
+.setup-hero-art-img {
+  display: block;
+  width: 440px;
+  max-width: none;
+  height: 240px;
+  max-height: 240px;
+  object-fit: contain;
+  object-position: right bottom;
+  user-select: none;
+  filter: drop-shadow(0 10px 28px rgba(15, 23, 42, 0.1));
 }
 
-.setup-hint {
-  color: #909399;
+.setup-intro-lead {
+  margin: 0;
   font-size: 13px;
   line-height: 1.5;
-  margin: 0 0 12px;
+  color: $setup-muted;
 }
 
-.setup-ai-host-hint {
-  margin: 8px 0 0;
+.setup-body {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(260px, 340px) minmax(0, 1fr);
+  align-items: stretch;
+  gap: 20px;
+
+  > .setup-aside,
+  > .setup-main {
+    min-height: 0;
+    height: 100%;
+  }
 }
 
-.setup-ai-demo-url {
+.setup-aside {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  padding: 12px 10px;
+  background: $setup-aside-bg;
+  border: 1px solid $setup-border;
+  border-radius: 12px;
+  box-sizing: border-box;
+}
+
+.setup-aside-content {
+  flex: 1;
+  min-height: 0;
+  padding-inline: 12px;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.setup-roadmap-title {
+  margin: 0 0 8px;
+  padding-bottom: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: $setup-text;
+  line-height: 1.4;
+  border-bottom: 1px solid #ebeef5;
+}
+
+.setup-intro-note {
+  flex-shrink: 0;
+  margin: auto 12px 0;
+  padding: 8px 10px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: $setup-muted;
+  background: #fff;
+  border-radius: 6px;
+  border: 1px solid #ebeef5;
+}
+
+.setup-roadmap {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.setup-roadmap-item {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+  padding: 0;
+  min-height: 44px;
+
+  &.is-active .setup-roadmap-marker {
+    background: #409eff;
+    border-color: #409eff;
+    color: #fff;
+  }
+
+  &.is-done .setup-roadmap-marker {
+    background: #ecf5ff;
+    border-color: #409eff;
+    color: #409eff;
+  }
+
+  &.is-active .setup-roadmap-text {
+    color: $setup-text;
+    font-weight: 600;
+  }
+}
+
+.setup-roadmap-marker-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  width: 28px;
+  align-self: stretch;
+}
+
+.setup-roadmap-marker {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid #dcdfe6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: $setup-muted-light;
+  background: #fff;
+  z-index: 1;
+}
+
+.setup-roadmap-connector {
+  flex: 1 1 auto;
+  width: 2px;
+  min-height: 10px;
+  margin: 6px 0 2px;
+  background: #e4e7ed;
+}
+
+.setup-roadmap-item.is-done .setup-roadmap-connector {
+  background: #b3d8ff;
+}
+
+.setup-roadmap-text {
+  padding-top: 4px;
+  font-size: 14px;
+  line-height: 1.35;
+  color: $setup-muted;
+}
+
+.setup-main {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.setup-panel {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid $setup-border;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+  overflow: hidden;
+}
+
+.setup-panel-fill {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.setup-panel-header {
+  flex-shrink: 0;
+  padding: 12px 18px 10px;
+  border-bottom: 1px solid #ebeef5;
+  background: #fafbfc;
+}
+
+.setup-panel-header-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.setup-panel-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: $setup-text;
+}
+
+.setup-panel-step {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: $setup-muted-light;
+}
+
+.setup-panel-body {
+  flex: 1;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 12px 18px;
+}
+
+.setup-panel-footer {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 18px;
+  border-top: 1px solid #ebeef5;
+  background: #fafbfc;
+}
+
+.setup-panel-footer-lang {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.setup-panel-footer-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.setup-progress-bar {
+  ::v-deep .el-progress-bar__outer {
+    border-radius: 4px;
+    background: #ebeef5;
+  }
+
+  ::v-deep .el-progress-bar__inner {
+    border-radius: 4px;
+  }
+}
+
+.setup-step-panel {
+  animation: setup-in 0.2s ease;
+}
+
+@keyframes setup-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .setup-step-panel {
+    animation: none;
+  }
+
+}
+
+.setup-inner-form {
+  ::v-deep .el-form-item {
+    margin-bottom: 12px;
+  }
+
+  ::v-deep .el-form-item__label {
+    padding-bottom: 4px;
+    line-height: 1.3;
+    font-weight: 500;
+    color: $setup-text;
+  }
+}
+
+.setup-form-item-compact {
+  margin-bottom: 12px;
+}
+
+.setup-pick-grid {
+  display: grid;
+  gap: 12px;
+  width: 100%;
+
+  &--2 {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.setup-pick {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  width: 100%;
+  padding: 10px 12px;
+  text-align: start;
+  border: 2px solid #dcdfe6;
+  border-radius: 8px;
+  background: #fafafa;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+
+  strong {
+    font-size: 15px;
+    color: $setup-text;
+  }
+
+  span {
+    font-size: 12px;
+    line-height: 1.45;
+    color: $setup-muted;
+  }
+
+  &:hover {
+    border-color: #c6e2ff;
+    background: #f5faff;
+  }
+
+  &.is-active {
+    border-color: #409eff;
+    background: #ecf5ff;
+    box-shadow: 0 0 0 1px rgba(64, 158, 255, 0.25);
+  }
+}
+
+.setup-pick-icon {
+  font-size: 22px;
   color: #409eff;
 }
 
-.setup-ai-demo-copy {
-  padding: 0 4px;
-  margin: 0 2px;
-  vertical-align: middle;
-  color: #909399;
+.setup-form-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
 
-  &:hover,
-  &:focus {
-    color: #409eff;
+.setup-form-row-item {
+  flex: 1 1 180px;
+  min-width: 0;
+  margin-bottom: 0;
+
+  &--sm {
+    flex: 0 1 110px;
+  }
+}
+
+.setup-full-width {
+  width: 100%;
+}
+
+.setup-feature-box {
+  margin-top: 4px;
+}
+
+.setup-tip {
+  margin: 8px 0 0;
+  padding: 10px 12px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: $setup-muted;
+  background: #f5f7fa;
+  border-radius: 6px;
+  border: 1px solid #ebeef5;
+
+  &--success {
+    background: #f0f9eb;
+    border-color: #e1f3d8;
+    color: #529b2e;
+
+    i {
+      margin-right: 4px;
+    }
+  }
+
+  &--warn {
+    background: #fdf6ec;
+    border-color: #faecd8;
+    color: #b88230;
+  }
+
+  &--inline {
+    margin-top: 8px;
+    padding: 10px 12px;
+  }
+}
+
+.setup-link {
+  color: #409eff;
+  word-break: break-all;
+}
+
+.setup-copy-btn {
+  padding: 0 4px;
+  vertical-align: middle;
+}
+
+.setup-test-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.setup-test-ok {
+  font-size: 13px;
+  color: #67c23a;
+}
+
+.setup-switch-line {
+  ::v-deep .el-form-item__content {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
   }
 }
 
 .setup-switch-hint {
-  margin-left: 12px;
-  color: #909399;
+  flex: 1 1 180px;
   font-size: 13px;
+  color: $setup-muted-light;
+  line-height: 1.5;
 }
 
-.setup-test-ok {
-  margin-left: 12px;
-  color: #67c23a;
-  font-size: 13px;
+.setup-panel-box {
+  padding: 4px 16px 8px;
+  background: #fafafa;
+  border: 1px solid #ebeef5;
+  border-radius: 6px;
 }
 
-.setup-actions {
-  margin-top: 16px;
-  width: 100%;
-}
-
-.setup-nav-buttons {
-  display: flex;
-  gap: 8px;
+.setup-step-desc {
+  margin: 0 0 14px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: $setup-muted;
 }
 
 .setup-summary {
   margin-bottom: 12px;
 }
 
-.setup-confirm-warning {
-  color: #e6a23c;
+.setup-lang-label {
+  font-size: 12px;
+  color: $setup-muted;
+  white-space: nowrap;
+}
+
+.setup-lang-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.setup-lang-flag {
+  flex-shrink: 0;
+  font-size: 22px;
+}
+
+.setup-lang-select {
+  width: 148px;
+}
+
+.setup-lang-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  .svg-icon {
+    flex-shrink: 0;
+    font-size: 20px;
+  }
+}
+
+.setup-copyright {
+  flex-shrink: 0;
+  margin: 10px 0 0;
+  font-size: 12px;
+  color: $setup-muted-light;
+  text-align: center;
 }
 
 .setup-success {
   text-align: center;
-  padding: 32px 16px;
+  padding: 24px 20px;
 
   h3 {
     margin: 16px 0 8px;
-    color: #303133;
+    color: $setup-text;
   }
 
   p {
-    color: #606266;
+    margin: 0;
     line-height: 1.6;
+    color: $setup-muted;
   }
 }
 
@@ -903,35 +1461,166 @@ body {
   color: #67c23a;
 }
 
-.setup-success-hint {
-  margin-top: 16px;
-  font-weight: 500;
-  color: #e6a23c;
-}
-
-.setup-success-warning {
-  margin-top: 12px;
-}
-
 .setup-success-countdown {
-  margin-top: 20px;
-  color: #909399;
-  font-size: 14px;
+  margin-top: 16px !important;
+  font-size: 13px !important;
+  color: $setup-muted-light !important;
 }
 
-.setup-success-login-link {
-  display: inline-block;
-  margin-top: 12px;
-  font-size: 15px;
+.setup-page--rtl {
+  .setup-hero-art {
+    right: auto;
+    left: max(0px, calc(100% - 448px));
+    justify-content: flex-start;
+  }
+
+  .setup-hero-art-img {
+    object-position: left bottom;
+  }
+
+  .setup-hero-bg::after {
+    right: auto;
+    left: 8%;
+  }
+
+  .setup-tip--success i {
+    margin-right: 0;
+    margin-left: 4px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .setup-page-watermark__pattern {
+    animation: none;
+  }
+
+  .setup-hero-art-img {
+    filter: none;
+  }
 }
 
 @media screen and (max-width: 980px) {
-  .setup-introduce {
-    display: none;
+  .setup-page {
+    height: auto;
+    max-height: none;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  .setup-layout {
+    height: auto;
+    max-width: 100%;
+    padding: 12px 16px 20px;
+    overflow-x: hidden;
   }
 
   .setup-body {
-    padding: 0 16px;
+    grid-template-columns: 1fr;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .setup-aside {
+    display: none;
+  }
+
+  .setup-body > .setup-main {
+    height: auto;
+  }
+
+  .setup-main {
+    min-height: 0;
+    width: 100%;
+  }
+
+  .setup-panel {
+    height: auto;
+    max-width: 100%;
+  }
+
+  .setup-panel-body {
+    max-height: none;
+  }
+
+  .setup-panel-footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .setup-panel-footer-lang {
+    flex-wrap: wrap;
+  }
+
+  .setup-lang-control {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .setup-lang-select {
+    flex: 1;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .setup-panel-footer-nav {
+    justify-content: stretch;
+
+    .el-button {
+      flex: 1;
+      min-width: 0;
+    }
+  }
+
+  .setup-pick-grid--2 {
+    grid-template-columns: 1fr;
+  }
+
+  .setup-form-row-item--sm {
+    flex: 1 1 100%;
+  }
+}
+
+@media screen and (max-width: 550px) {
+  .setup-hero {
+    padding-inline-end: 0;
+    -webkit-padding-end: 0;
+  }
+
+  .setup-hero-art {
+    display: none;
+  }
+
+  .setup-hero-head {
+    max-width: none;
+    padding-block: 40px;
+    padding-inline: 20px;
+  }
+}
+
+</style>
+
+<style lang="scss">
+html.setup-wizard-active,
+html.setup-wizard-active body {
+  width: 100%;
+  max-width: 100vw;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+html.setup-wizard-active #app {
+  width: 100%;
+  max-width: 100vw;
+  height: 100%;
+  overflow-x: hidden;
+}
+
+@media screen and (max-width: 980px) {
+  html.setup-wizard-active,
+  html.setup-wizard-active body {
+    overflow-x: hidden;
+    overflow-y: auto;
   }
 }
 </style>
