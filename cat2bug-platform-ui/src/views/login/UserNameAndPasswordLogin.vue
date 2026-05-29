@@ -43,7 +43,11 @@
           <svg-icon slot="prefix" icon-class="validCode" class="el-input__icon input-icon" />
         </el-input>
         <div class="login-code">
-          <img :src="codeUrl" @click="getCode" class="login-code-img"/>
+          <pixel-captcha-canvas
+            v-if="captchaExpr"
+            :expression="captchaExpr"
+            @refresh="getCode"
+          />
         </div>
       </el-form-item>
       <div class="between-row">
@@ -83,15 +87,17 @@
 
 <script>
 import {getCodeImg} from "@/api/login";
+import PixelCaptchaCanvas from "@/components/Captcha/PixelCaptchaCanvas.vue";
 import Cookies from "js-cookie";
 import {decrypt, encrypt} from "@/utils/jsencrypt";
 import { resetSetupStatusCache } from '@/utils/setup-status'
 
 export default {
   name: "UserNameAndPasswordLogin",
+  components: { PixelCaptchaCanvas },
   data() {
     return {
-      codeUrl: "",
+      captchaExpr: "",
       loginForm: {
         username: "",
         password: "",
@@ -132,7 +138,7 @@ export default {
         this.captchaEnabled = res.captchaEnabled === undefined ? true : res.captchaEnabled;
         this.register = res.registerEnabled === undefined ? true : res.registerEnabled;
         if (this.captchaEnabled) {
-          this.codeUrl = "data:image/png;base64," + res.img;
+          this.captchaExpr = res.captchaExpr || "";
           this.loginForm.uuid = res.uuid;
         }
       });
@@ -206,7 +212,7 @@ export default {
   border:3px solid #5A5A59;
   .el-input {
     height: 38px;
-    input {
+    ::v-deep input {
       height: 38px;
     }
   }
@@ -226,22 +232,16 @@ export default {
   height: 38px;
   float: right;
   box-sizing: border-box;
-  border: 2px solid #5A5A59;
-  border-radius: 6px;
+  border: 1px solid #5A5A59;
+  border-radius: 4px;
   overflow: hidden;
-  background: #fff8eb;
+  background: #FFC145;
+  cursor: pointer;
 }
 .login-copyright {
   font-family: Arial;
   font-size: 14px;
   color: #606266;
-}
-.login-code-img {
-  width: 100%;
-  height: 100%;
-  display: block;
-  cursor: pointer;
-  object-fit: cover;
 }
 .login-form-title {
   display: flex;

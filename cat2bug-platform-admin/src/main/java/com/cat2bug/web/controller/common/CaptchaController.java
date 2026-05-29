@@ -78,7 +78,6 @@ public class CaptchaController
 
 //        redisCache.setCacheObject(verifyKey, code, Constants.CAPTCHA_EXPIRATION, TimeUnit.MINUTES);
         redisCache.setCacheObject("verifyCode",verifyKey, code);
-        // 转换流信息写出
         FastByteArrayOutputStream os = new FastByteArrayOutputStream();
         try
         {
@@ -90,6 +89,7 @@ public class CaptchaController
         }
 
         ajax.put("uuid", uuid);
+        ajax.put("captchaExpr", capStr);
         ajax.put("img", Base64.encode(os.toByteArray()));
         return ajax;
     }
