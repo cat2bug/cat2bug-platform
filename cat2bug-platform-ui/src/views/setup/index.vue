@@ -1054,8 +1054,8 @@ $setup-wm-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
   display: block;
   width: 440px;
   max-width: none;
-  height: 240px;
-  max-height: 240px;
+  height: 160px;
+  max-height: 160px;
   object-fit: contain;
   object-position: right bottom;
   user-select: none;
