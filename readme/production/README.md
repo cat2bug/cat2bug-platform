@@ -110,6 +110,7 @@ Cat2Bug-Platform 专门针对测试工作的各个环节及不同角色，开发
   - [删除文档](user-guide/current-project/document/document-delete.md) - 删除不需要的文档
 
 ### 管理员指南
+- [安装向导](admin-guide/install-wizard.md) - 系统安装向导与首次部署配置
 - [团队管理](admin-guide/admin-team.md) - 系统管理员的团队管理
 - [项目管理](admin-guide/admin-project.md) - 系统管理员的项目管理
 - [角色管理](admin-guide/admin-role.md) - 系统角色配置

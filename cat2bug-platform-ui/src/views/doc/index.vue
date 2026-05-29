@@ -695,6 +695,11 @@ export default {
           icon: 'admin',
           children: [
             {
+              label: '安装向导',
+              path: 'admin-guide/install-wizard.md',
+              icon: 'el-icon-setting'
+            },
+            {
               label: '团队管理',
               path: 'admin-guide/admin-team.md',
               icon: 'el-icon-office-building'
