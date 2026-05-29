@@ -25,34 +25,18 @@ public class SetupInstallJdbcWriter
         String encrypted = SecurityUtils.encryptPassword(request.getAdminPassword());
         String nickName = StringUtils.isNotEmpty(request.getAdminNickName()) ? request.getAdminNickName() : username;
 
-        List<Long> userIds = jdbc.query(
-                "SELECT user_id FROM sys_user WHERE user_name = ? AND del_flag = '0'",
-                (rs, rowNum) -> rs.getLong(1),
-                username);
-        if (!userIds.isEmpty())
-        {
-            jdbc.update(
-                    "UPDATE sys_user SET password = ?, nick_name = ?, update_by = 'setup', update_time = NOW() WHERE user_id = ?",
-                    encrypted, nickName, userIds.get(0));
-            return;
-        }
+        // 删除已存在的超管用户(userId = 1)或任何同名用户，以保证新建的超管用户不冲突
+        jdbc.update("DELETE FROM sys_user WHERE user_id = 1 OR user_name = ?", username);
+        jdbc.update("DELETE FROM sys_user_role WHERE user_id = 1");
 
+        // 插入固定 userId = 1 的全新超管用户
         jdbc.update(
-                "INSERT INTO sys_user (dept_id, user_name, nick_name, user_type, password, status, del_flag, create_by, create_time) "
-                        + "VALUES (0, ?, ?, ?, ?, '0', '0', 'setup', NOW())",
+                "INSERT INTO sys_user (user_id, dept_id, user_name, nick_name, user_type, password, status, del_flag, create_by, create_time) "
+                        + "VALUES (1, 0, ?, ?, ?, ?, '0', '0', 'setup', NOW())",
                 username, nickName, UserConstants.USER_TYPE_SYSTEM, encrypted);
-        Long userId = jdbc.queryForObject(
-                "SELECT user_id FROM sys_user WHERE user_name = ? AND del_flag = '0'",
-                Long.class,
-                username);
-        Integer roleCount = jdbc.queryForObject(
-                "SELECT COUNT(*) FROM sys_user_role WHERE user_id = ? AND role_id = 1",
-                Integer.class,
-                userId);
-        if (roleCount == null || roleCount == 0)
-        {
-            jdbc.update("INSERT INTO sys_user_role (user_id, role_id) VALUES (?, 1)", userId);
-        }
+
+        // 绑定系统管理员角色 (role_id = 1)
+        jdbc.update("INSERT INTO sys_user_role (user_id, role_id) VALUES (1, 1)");
     }
 
     public void upsertConfig(DataSource dataSource, String key, String value, String name)
