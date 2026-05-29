@@ -7,13 +7,14 @@ import { getToken } from '@/utils/auth'
 import { isRelogin } from '@/utils/request'
 import { isLockTeamPath } from '@/utils/team'
 import { isLockProjectPath } from '@/utils/project'
+import { resolveUpgradeStatus } from '@/utils/upgrade-status'
 import { resolveSetupStatus } from '@/utils/setup-status'
 import { getCodeImg } from '@/api/login'
 import i18n from '@/utils/i18n/i18n'
 
 NProgress.configure({ showSpinner: false })
 
-const whiteList = ['/login', '/register', '/tools/browser', '/shard/defect', '/setup']
+const whiteList = ['/login', '/register', '/tools/browser', '/shard/defect', '/setup', '/upgrade']
 
 function proceedWithAuth(to, from, next) {
   if (getToken()) {
@@ -58,9 +59,52 @@ function proceedWithAuth(to, from, next) {
 
 router.beforeEach((to, from, next) => {
   NProgress.start()
+  const refreshUpgradeStatus = (from.path === '/login' && !!getToken()) || to.path === '/login'
+  resolveUpgradeStatus(refreshUpgradeStatus).then(upgradeStatus => {
+    const state = upgradeStatus.state || ''
+    const wizardLocked = ['pending', 'running', 'failed'].includes(state)
+    if (wizardLocked) {
+      if (to.path !== '/upgrade') {
+        next('/upgrade')
+        NProgress.done()
+        return
+      }
+      next()
+      return
+    }
+    // 升级已提交，等待重启：允许登录页，不再强制回到升级向导
+    if (state === 'restart_required' || upgradeStatus.restartRequired) {
+      if (to.path === '/upgrade' || to.path === '/login') {
+        next()
+        return
+      }
+      next('/login')
+      NProgress.done()
+      return
+    }
+    if (to.path === '/upgrade') {
+      if (upgradeStatus.upgradeRequired || wizardLocked) {
+        next()
+        return
+      }
+      next({ path: '/login' })
+      NProgress.done()
+      return
+    }
+
   const refreshSetupStatus = (from.path === '/login' && !!getToken()) || to.path === '/login'
   resolveSetupStatus(refreshSetupStatus).then(status => {
     if (status.restartRequired) {
+      const upgradeRestart = state === 'restart_required' || upgradeStatus.restartRequired
+      if (upgradeRestart) {
+        if (to.path === '/upgrade' || to.path === '/login') {
+          next()
+        } else {
+          next('/upgrade')
+        }
+        NProgress.done()
+        return
+      }
       if (to.path === '/setup') {
         next()
       } else {
@@ -70,6 +114,18 @@ router.beforeEach((to, from, next) => {
       return
     }
     if (!status.installed) {
+      if (upgradeStatus.upgradeRequired) {
+        const upgradeWizardActive = ['pending', 'running', 'failed'].includes(state)
+        if (upgradeWizardActive) {
+          if (to.path === '/upgrade') {
+            next()
+          } else {
+            next('/upgrade')
+          }
+          NProgress.done()
+          return
+        }
+      }
       if (to.path === '/setup') {
         next()
       } else {
@@ -105,6 +161,7 @@ router.beforeEach((to, from, next) => {
       return
     }
     proceedWithAuth(to, from, next)
+  })
   })
 })
 

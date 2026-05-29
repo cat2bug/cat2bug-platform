@@ -99,7 +99,40 @@ A: 推荐使用 Chrome、Firefox、Edge 等现代浏览器，IE 不支持。
 
 ### Q: 如何升级系统版本？
 A:
-1. 备份数据库和文件
-2. 下载新版本
-3. 运行数据库迁移脚本
-4. 重启服务
+
+**准备**
+
+1. 在维护窗口内操作，并**备份**数据库、`config/install/`、上传目录等业务数据
+2. 确保**仅运行一个** Cat2Bug 进程（升级向导不支持多实例协调）
+3. 停止旧版本，替换为新版本 JAR 或镜像
+
+**有 Legacy 数据或待执行 Flyway 脚本时（升级向导）**
+
+适用于：磁盘无 completed 的 `application-install.yml`，但库中已有旧版数据（如 `sys_user.user_id=1`），或新版本存在未执行的 Flyway migration。
+
+1. 启动应用后浏览器会进入 **`/upgrade`**（5 步：概览、配置确认、预检、执行、完成/失败重试）
+2. 升级进行中系统**全锁**：无法登录或访问业务 API，仅可访问升级接口与静态资源
+3. 在向导中确认配置（**默认保留**已有 JDBC、路径等，模板仅补缺失项），通过预检后提交
+4. 提交成功会写入/更新 `config/install/application-install.yml` 并执行 Flyway；成功后状态为 `restart_required`，**必须重启**应用
+5. 若迁移失败：查看向导中的 `lastError`，修复后点击**重试**（`POST /upgrade/retry`，按 `lastStep` 幂等续跑）
+6. 重启后 `upgradeRequired` 为 false，可正常登录
+
+**仅替换 JAR、无 pending migration、且已有 completed install 时**
+
+直接重启即可，通常无需进入 `/upgrade`。
+
+**跳过升级向导（Docker / 自动化）**
+
+与旧版静默迁移行为一致，可自动写出 completed install 文件：
+
+```bash
+export CAT2BUG_UPGRADE_SKIP=true
+```
+
+或配置 `cat2bug.upgrade.skip=true`。
+
+**全新空库**
+
+无 legacy 数据时仍走 **`/setup`** 首次安装向导，不会进入 `/upgrade`。
+
+手工测试清单见 `openspec/changes/legacy-upgrade-wizard/TESTING.md`。

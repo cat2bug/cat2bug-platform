@@ -20,7 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -36,6 +36,9 @@ class InstallConfigMigrationRunnerTest
     @Mock
     private InstallService installService;
 
+    @Mock
+    private UpgradeService upgradeService;
+
     @InjectMocks
     private InstallConfigMigrationRunner migrationRunner;
 
@@ -49,15 +52,28 @@ class InstallConfigMigrationRunnerTest
     }
 
     @Test
-    void run_skipsWhenInstallFileAlreadyPresent(@TempDir Path dir) throws Exception
+    void run_skipsWhenInstallAlreadyCompleted() throws Exception
     {
-        Path installFile = dir.resolve("application-install.yml");
-        Files.writeString(installFile, "cat2bug:\n  install:\n    completed: true\n");
         when(installProperties.isInstallConfigPresent()).thenReturn(true);
+        when(installProperties.isInstallCompletedOnDisk()).thenReturn(true);
 
         migrationRunner.run(mock(ApplicationArguments.class));
 
         verify(installService, never()).hasLegacyInstallation();
+    }
+
+    @Test
+    void run_marksPendingWhenInstallFilePresentButNotCompleted() throws Exception
+    {
+        when(installProperties.isInstallConfigPresent()).thenReturn(true);
+        when(installProperties.isInstallCompletedOnDisk()).thenReturn(false);
+        when(installService.isInstallSkipped()).thenReturn(false);
+        when(installService.hasLegacyInstallation()).thenReturn(true);
+        when(upgradeService.isUpgradeSkipped()).thenReturn(false);
+
+        migrationRunner.run(mock(ApplicationArguments.class));
+
+        verify(upgradeService).markPending();
     }
 
     @Test
@@ -74,12 +90,27 @@ class InstallConfigMigrationRunnerTest
     }
 
     @Test
-    void run_writesCompletedInstallWhenLegacyDetected(@TempDir Path dir) throws Exception
+    void run_marksPendingWhenLegacyDetectedAndUpgradeNotSkipped() throws Exception
+    {
+        when(installProperties.isInstallConfigPresent()).thenReturn(false);
+        when(installService.isInstallSkipped()).thenReturn(false);
+        when(installService.hasLegacyInstallation()).thenReturn(true);
+        when(upgradeService.isUpgradeSkipped()).thenReturn(false);
+
+        migrationRunner.run(mock(ApplicationArguments.class));
+
+        verify(upgradeService).markPending();
+        verify(installProperties, never()).resolveConfigPath();
+    }
+
+    @Test
+    void run_writesCompletedInstallWhenLegacyDetectedAndUpgradeSkipped(@TempDir Path dir) throws Exception
     {
         Path installFile = dir.resolve("application-install.yml");
         when(installProperties.isInstallConfigPresent()).thenReturn(false);
         when(installService.isInstallSkipped()).thenReturn(false);
         when(installService.hasLegacyInstallation()).thenReturn(true);
+        when(upgradeService.isUpgradeSkipped()).thenReturn(true);
         when(installProperties.resolveConfigPath()).thenReturn(installFile);
 
         Map<String, Object> props = new HashMap<>();
@@ -99,8 +130,7 @@ class InstallConfigMigrationRunnerTest
         Map<String, Object> root = new Yaml().load(Files.readString(installFile));
         assertEquals(true, nested(root, "cat2bug", "install", "completed"));
         assertEquals("mysql", nested(root, "spring", "database-type"));
-        assertTrue(String.valueOf(nested(root, "spring", "datasource", "druid", "master", "url")).contains("cat2bug_platform"));
-        assertNotNull(nested(root, "spring", "datasource", "druid", "initialSize"));
+        assertFalse(root.containsKey("upgrade"));
     }
 
     @SuppressWarnings("unchecked")

@@ -31,6 +31,9 @@ public class InstallConfigMigrationRunner implements ApplicationRunner
     private InstallService installService;
 
     @Autowired
+    private UpgradeService upgradeService;
+
+    @Autowired
     private Environment environment;
 
     @Override
@@ -40,12 +43,19 @@ public class InstallConfigMigrationRunner implements ApplicationRunner
         {
             return;
         }
-        if (installProperties.isInstallConfigPresent())
+        if (installProperties.isInstallConfigPresent() && installProperties.isInstallCompletedOnDisk())
         {
             return;
         }
         if (!installService.hasLegacyInstallation() && !installService.isSchemaPresent())
         {
+            return;
+        }
+
+        if (!upgradeService.isUpgradeSkipped())
+        {
+            upgradeService.markPending();
+            log.info("Legacy 实例已标记为待升级，请通过 /upgrade 向导完成配置与迁移");
             return;
         }
 

@@ -5,6 +5,8 @@ import com.cat2bug.common.core.domain.AjaxResult;
 import com.cat2bug.common.utils.ServletUtils;
 import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.framework.service.InstallService;
+import com.cat2bug.common.config.UpgradeSupport;
+import com.cat2bug.framework.service.UpgradeService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,6 +29,9 @@ public class SetupFilter extends OncePerRequestFilter
     @Autowired
     private InstallService installService;
 
+    @Autowired
+    private UpgradeService upgradeService;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException
@@ -40,6 +45,12 @@ public class SetupFilter extends OncePerRequestFilter
                 chain.doFilter(request, response);
                 return;
             }
+            if (UpgradeSupport.STATE_RESTART_REQUIRED.equals(upgradeService.resolveState())
+                    && isAllowedDuringUpgradeRestart(path, request.getMethod()))
+            {
+                chain.doFilter(request, response);
+                return;
+            }
             ServletUtils.renderString(response, JSON.toJSONString(
                     AjaxResult.error("安装配置已保存，请重启应用后再登录；切换 MySQL 或 Redis 后必须重启才能生效")));
             return;
@@ -49,18 +60,39 @@ public class SetupFilter extends OncePerRequestFilter
 
         if (!installed)
         {
-            if (isAllowedBeforeInstall(path, request.getMethod()))
+            if (upgradeService.isUpgradeRequired())
+            {
+                if (UpgradeSupport.STATE_RESTART_REQUIRED.equals(upgradeService.resolveState()))
+                {
+                    if (isAllowedDuringUpgradeRestart(path, request.getMethod()))
+                    {
+                        chain.doFilter(request, response);
+                        return;
+                    }
+                }
+                if (isAllowedDuringUpgrade(path, request.getMethod()))
+                {
+                    chain.doFilter(request, response);
+                    return;
+                }
+                ServletUtils.renderString(response, JSON.toJSONString(
+                        AjaxResult.error("系统正在升级，请先完成升级向导")));
+                return;
+            }
+            if (isAllowedDuringRestartPending(path, request.getMethod()) || "/captchaImage".equals(path))
             {
                 chain.doFilter(request, response);
                 return;
             }
-            ServletUtils.renderString(response, JSON.toJSONString(AjaxResult.error("系统尚未完成安装，请先完成安装向导")));
+            ServletUtils.renderString(response, JSON.toJSONString(
+                    AjaxResult.error("系统尚未完成安装，请先完成安装向导")));
             return;
         }
 
         if (isSetupPath(path) && !isSetupStatusPath(path))
         {
-            ServletUtils.renderString(response, JSON.toJSONString(AjaxResult.error("系统已完成安装，无法再次访问安装接口")));
+            ServletUtils.renderString(response, JSON.toJSONString(
+                    AjaxResult.error("系统已完成安装，无法再次访问安装接口")));
             return;
         }
 
@@ -87,15 +119,6 @@ public class SetupFilter extends OncePerRequestFilter
     private static boolean isSetupStatusPath(String path)
     {
         return "/setup/status".equals(path);
-    }
-
-    private static boolean isAllowedBeforeInstall(String path, String method)
-    {
-        if (isAllowedDuringRestartPending(path, method))
-        {
-            return true;
-        }
-        return "/captchaImage".equals(path);
     }
 
     /** 安装已提交但未重启：仅允许 setup 页与静态资源 */
@@ -125,5 +148,52 @@ public class SetupFilter extends OncePerRequestFilter
             }
         }
         return false;
+    }
+
+    private static boolean isAllowedDuringUpgrade(String path, String method)
+    {
+        if (path.equals("/upgrade") || path.startsWith("/upgrade/"))
+        {
+            return true;
+        }
+        if (UpgradeFilter.isSetupTestPath(path))
+        {
+            return true;
+        }
+        if ("/setup/status".equals(path))
+        {
+            return true;
+        }
+        if ("/version".equals(path))
+        {
+            return true;
+        }
+        if (HttpMethod.GET.matches(method))
+        {
+            if (path.equals("/") || path.equals("/index"))
+            {
+                return true;
+            }
+            if (path.startsWith("/static/") || path.startsWith("/profile/") || path.startsWith("/docs/images/"))
+            {
+                return true;
+            }
+            if (path.endsWith(".html") || path.endsWith(".css") || path.endsWith(".js"))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isAllowedDuringUpgradeRestart(String path, String method)
+    {
+        if (isAllowedDuringUpgrade(path, method))
+        {
+            return true;
+        }
+        return "/login".equals(path)
+                || "/register".equals(path)
+                || "/captchaImage".equals(path);
     }
 }

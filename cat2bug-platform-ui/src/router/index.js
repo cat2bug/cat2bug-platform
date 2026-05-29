@@ -53,6 +53,11 @@ export const constantRoutes = [
     hidden: true
   },
   {
+    path: '/upgrade',
+    component: () => import('@/views/upgrade/index'),
+    hidden: true
+  },
+  {
     path: '/shard/defect',
     component: () => import('@/views/system/defect/DefectShardInfo'),
     hidden: true

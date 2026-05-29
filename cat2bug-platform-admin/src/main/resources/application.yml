@@ -5,6 +5,9 @@ cat2bug:
     config-path: ./config/install/application-install.yml
     # 为 true 时跳过安装向导；也可设置环境变量 CAT2BUG_INSTALL_SKIP=true
     skip: false
+  upgrade:
+    # 为 true 时跳过升级向导；也可设置环境变量 CAT2BUG_UPGRADE_SKIP=true
+    skip: false
   # 名称
   name: Cat2Bug
   # 版本

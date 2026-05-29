@@ -15,6 +15,7 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import com.cat2bug.framework.service.InstallService;
+import com.cat2bug.framework.service.UpgradeService;
 import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -56,6 +57,9 @@ public class SecurityConfig {
     @Autowired
     private InstallService installService;
 
+    @Autowired
+    private UpgradeService upgradeService;
+
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
         return new BCryptPasswordEncoder();
@@ -88,8 +92,13 @@ public class SecurityConfig {
                             registry.requestMatchers(new AntPathRequestMatcher(url)).permitAll());
                     // 已安装后仍允许查询安装状态，供前端路由判断（与 SetupFilter 一致）
                     registry.requestMatchers(ant(HttpMethod.GET, "/setup/status")).permitAll();
+                    registry.requestMatchers(ant(HttpMethod.GET, "/upgrade/status")).permitAll();
+                    registry.requestMatchers(ant("/setup/test/**")).access((authentication, context) ->
+                            new AuthorizationDecision(!installService.isInstalled() || upgradeService.isUpgradeRequired()));
                     registry.requestMatchers(ant("/setup/**")).access((authentication, context) ->
-                            new AuthorizationDecision(!installService.isInstalled()));
+                            new AuthorizationDecision(!installService.isInstalled() && !upgradeService.isUpgradeRequired()));
+                    registry.requestMatchers(ant("/upgrade/**")).access((authentication, context) ->
+                            new AuthorizationDecision(upgradeService.isUpgradeRequired()));
                     registry.requestMatchers(
                             ant("/login"),
                             ant("/**/login"),

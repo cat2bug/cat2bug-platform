@@ -64,6 +64,10 @@ public final class InstallConfigExporter
         {
             return false;
         }
+        if (key.startsWith("cat2bug.upgrade."))
+        {
+            return false;
+        }
         if ("spring.profiles.active".equals(key))
         {
             return false;

@@ -37,7 +37,7 @@ public class SetupConfigWriter
         return target;
     }
 
-    Map<String, Object> buildYamlRoot(SetupSubmitRequest request)
+    public Map<String, Object> buildYamlRoot(SetupSubmitRequest request)
     {
         String databaseType = request.getDatabaseType().toLowerCase();
         String cacheType = StringUtils.isNotEmpty(request.getCacheType())
