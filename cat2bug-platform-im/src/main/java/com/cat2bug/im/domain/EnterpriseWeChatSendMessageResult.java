@@ -1,6 +1,7 @@
 package com.cat2bug.im.domain;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * @Author: yuzhantao
@@ -8,6 +9,7 @@ import lombok.Data;
  * @Version: 1.0.0
  * 企业微信发送消息的返回体
  */
+@EqualsAndHashCode(callSuper = false)
 @Data
 public class EnterpriseWeChatSendMessageResult extends EnterpriseWeChatResult {
     /** 不合法的userid，不区分大小写，统一转为小写 */

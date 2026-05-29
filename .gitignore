@@ -48,8 +48,9 @@ nbdist/
 uploadPath/
 uploadTemp/
 
-# 安装向导生成的本地配置（含数据库连接等敏感信息，仅仓库根目录）
-/config/
+# 安装向导生成的本地配置（含数据库连接等敏感信息）
+config/install/application-install.yml
+!config/install/.gitkeep
 
 ######################################################################
 # Claude AI / Cursor IDE

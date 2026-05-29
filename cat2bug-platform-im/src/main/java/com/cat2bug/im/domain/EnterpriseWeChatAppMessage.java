@@ -2,6 +2,7 @@ package com.cat2bug.im.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * @Author: yuzhantao
@@ -9,6 +10,7 @@ import lombok.Data;
  * @Version: 1.0.0
  * 企业微信APP消息
  */
+@EqualsAndHashCode(callSuper = false)
 @Data
 public class EnterpriseWeChatAppMessage extends IMMessage<String> {
     /**

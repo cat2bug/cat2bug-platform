@@ -32,6 +32,19 @@ public class SetupFilter extends OncePerRequestFilter
             throws ServletException, IOException
     {
         String path = requestUriPath(request);
+
+        if (installService.needsRestart())
+        {
+            if (isAllowedDuringRestartPending(path, request.getMethod()))
+            {
+                chain.doFilter(request, response);
+                return;
+            }
+            ServletUtils.renderString(response, JSON.toJSONString(
+                    AjaxResult.error("安装配置已保存，请重启应用后再登录；切换 MySQL 或 Redis 后必须重启才能生效")));
+            return;
+        }
+
         boolean installed = installService.isInstalled();
 
         if (!installed)
@@ -78,11 +91,21 @@ public class SetupFilter extends OncePerRequestFilter
 
     private static boolean isAllowedBeforeInstall(String path, String method)
     {
+        if (isAllowedDuringRestartPending(path, method))
+        {
+            return true;
+        }
+        return "/captchaImage".equals(path);
+    }
+
+    /** 安装已提交但未重启：仅允许 setup 页与静态资源 */
+    private static boolean isAllowedDuringRestartPending(String path, String method)
+    {
         if (isSetupPath(path))
         {
             return true;
         }
-        if ("/captchaImage".equals(path) || "/version".equals(path))
+        if ("/version".equals(path))
         {
             return true;
         }

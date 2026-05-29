@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import com.cat2bug.common.annotation.Excel;
@@ -16,6 +17,7 @@ import com.cat2bug.common.core.domain.BaseEntity;
  * @author yuzhantao
  * @date 2024-02-11
  */
+@EqualsAndHashCode(callSuper = false)
 @Data
 public class SysProjectApi extends BaseEntity
 {

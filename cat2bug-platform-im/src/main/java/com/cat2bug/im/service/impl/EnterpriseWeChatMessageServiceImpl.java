@@ -97,7 +97,7 @@ public class EnterpriseWeChatMessageServiceImpl implements IIMService<Enterprise
         if (StringUtils.isNotBlank(config.getMobile())) {
             body.put("mentioned_mobile_list", new String[]{config.getMobile()});
         }
-        RequestBody formBody = RequestBody.create(FORM_CONTENT_TYPE, body.toJSONString());
+        RequestBody formBody = RequestBody.create(body.toJSONString(), FORM_CONTENT_TYPE);
         Request request = new Request.Builder().url(config.getHook()).post(formBody).build();
         Response response = client.newCall(request).execute();
         String json = response.body() != null ? response.body().string() : "";
@@ -151,7 +151,7 @@ public class EnterpriseWeChatMessageServiceImpl implements IIMService<Enterprise
         String url = String.format(GET_USERID_BY_MOBILE_URL, token);
         JSONObject body = new JSONObject();
         body.put("mobile", mobile);
-        RequestBody formBody = RequestBody.create(FORM_CONTENT_TYPE, body.toJSONString());
+        RequestBody formBody = RequestBody.create(body.toJSONString(), FORM_CONTENT_TYPE);
         Request request = new Request.Builder().url(url).post(formBody).build();
         Response response = client.newCall(request).execute();
         String json = response.body() != null ? response.body().string() : "";
@@ -169,7 +169,7 @@ public class EnterpriseWeChatMessageServiceImpl implements IIMService<Enterprise
     private void sendMessage(OkHttpClient client, String token, EnterpriseWeChatAppMessage message) throws IOException {
         String url = String.format(SEND_MESSAGE_URL,token);
         String body = JSON.toJSONString(message);
-        RequestBody formBody = RequestBody.create(FORM_CONTENT_TYPE, body);
+        RequestBody formBody = RequestBody.create(body, FORM_CONTENT_TYPE);
         Request request = new Request.Builder()
                 .url(url)
                 .post(formBody).build();

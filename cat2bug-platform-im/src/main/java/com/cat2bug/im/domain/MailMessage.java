@@ -1,6 +1,7 @@
 package com.cat2bug.im.domain;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * @Author: yuzhantao
@@ -8,6 +9,7 @@ import lombok.Data;
  * @Version: 1.0.0
  * 邮件消息
  */
+@EqualsAndHashCode(callSuper = false)
 @Data
 public class MailMessage extends IMMessage<String> {
     /**

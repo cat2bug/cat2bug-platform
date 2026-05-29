@@ -1,0 +1,19 @@
+cat2bug:
+  install:
+    completed: false
+  cache:
+    type: local
+  profile: uploadPath
+  temp: uploadTemp
+
+spring:
+  database-type: h2
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    druid:
+      master:
+        url: jdbc:h2:file:./data/cat2bug
+        username: root
+        password: cat2bug_password
+      initialSize: 5
+      maxActive: 20

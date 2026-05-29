@@ -85,6 +85,7 @@
 import {getCodeImg} from "@/api/login";
 import Cookies from "js-cookie";
 import {decrypt, encrypt} from "@/utils/jsencrypt";
+import { resetSetupStatusCache } from '@/utils/setup-status'
 
 export default {
   name: "UserNameAndPasswordLogin",
@@ -160,14 +161,17 @@ export default {
             Cookies.remove('rememberMe');
           }
           this.$store.dispatch("Login", this.loginForm).then(() => {
+            resetSetupStatusCache()
             /* 从登录页进入主框架时默认折叠侧栏（避免历史 sidebarStatus=1 等仍保持展开） */
             this.$store.dispatch("app/closeSideBar", { withoutAnimation: true });
-            this.$router.push({ path: this.redirect || "/" }).catch(() => {});
+            const redirect = this.$route.query.redirect || this.redirect || '/'
+            return this.$router.push({ path: redirect })
           }).catch(() => {
-            this.loading = false;
             if (this.captchaEnabled) {
               this.getCode();
             }
+          }).finally(() => {
+            this.loading = false
           });
         }
       });

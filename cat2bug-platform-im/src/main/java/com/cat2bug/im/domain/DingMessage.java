@@ -3,6 +3,7 @@ package com.cat2bug.im.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.util.Arrays;
@@ -14,6 +15,7 @@ import java.util.List;
  * @Version: 1.0.0
  * 钉钉消息
  */
+@EqualsAndHashCode(callSuper = false)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

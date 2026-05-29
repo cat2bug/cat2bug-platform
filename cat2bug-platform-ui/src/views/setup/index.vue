@@ -62,14 +62,14 @@
               <i class="el-icon-success setup-success-icon" />
               <h3>{{ $t('setup.success.title') }}</h3>
               <p>{{ $t('setup.success.message') }}</p>
-              <p class="setup-tip setup-tip--warn">{{ $t('setup.success.restart') }}</p>
+              <p class="setup-tip setup-tip--warn" v-if="restartRequired">{{ $t('setup.success.restarting') }}</p>
               <p v-if="installWarning" class="setup-tip setup-tip--warn">{{ installWarning }}</p>
-              <p class="setup-success-countdown">
-                {{ $t('setup.success.redirectCountdown', { seconds: redirectCountdown }) }}
+              <p class="setup-success-wait">
+                {{ restartRequired ? $t('setup.success.waitingRestart') : $t('setup.success.waitingReady') }}
               </p>
-              <el-button type="primary" size="small" @click="goToLogin">
-                {{ $t('setup.success.goLoginNow') }}
-              </el-button>
+              <p class="setup-success-countdown">
+                {{ $t('setup.success.waitElapsed', { seconds: waitElapsed }) }}
+              </p>
             </div>
           </template>
 
@@ -342,6 +342,7 @@
 
 <script>
 import {
+  getSetupStatus,
   testDatabase,
   testRedis,
   testOllama,
@@ -351,6 +352,7 @@ import { resetSetupStatusCache } from '@/utils/setup-status'
 import store from '@/store'
 
 const I18N_LOCALE_KEY = 'i18n-locale'
+const SETUP_AWAITING_READY_KEY = 'cat2bug.setup.awaitingReady'
 
 const STEP_KEYS = [
   'setup.step.database',
@@ -396,9 +398,11 @@ export default {
       activeStep: 0,
       ollamaDemoUrl: 'https://www.cat2bug.com:8023',
       finished: false,
+      restartRequired: false,
       installWarning: null,
-      redirectCountdown: 30,
-      redirectTimer: null,
+      waitElapsed: 0,
+      waitElapsedTimer: null,
+      waitPollTimer: null,
       submitting: false,
       dbTesting: false,
       redisTesting: false,
@@ -499,10 +503,24 @@ export default {
     const lang = this.$cache.local.get(I18N_LOCALE_KEY) || 'zh_CN'
     this.$i18n.locale = lang
     this.refreshFormRuleMessages()
+    getSetupStatus().then(res => {
+      const payload = (res && res.data) ? res.data : (res || {})
+      if (payload.restartRequired || sessionStorage.getItem(SETUP_AWAITING_READY_KEY) === '1') {
+        this.finished = true
+        this.restartRequired = payload.restartRequired === true
+        this.startWaitingForReady()
+      }
+    }).catch(() => {
+      if (sessionStorage.getItem(SETUP_AWAITING_READY_KEY) === '1') {
+        this.finished = true
+        this.restartRequired = true
+        this.startWaitingForReady()
+      }
+    })
   },
   beforeDestroy() {
     document.documentElement.classList.remove('setup-wizard-active')
-    this.clearRedirectCountdown()
+    this.clearWaitTimers()
   },
   methods: {
     changeLang(lang) {
@@ -761,35 +779,51 @@ export default {
           resetSetupStatusCache()
           const payload = (res && res.data) ? res.data : (res || {})
           this.installWarning = payload.mysqlManualImportHint || null
+          this.restartRequired = payload.restartRequired === true
           this.finished = true
-          this.$nextTick(() => {
-            this.startRedirectCountdown()
-          })
+          sessionStorage.setItem(SETUP_AWAITING_READY_KEY, '1')
+          this.startWaitingForReady()
         })
         .catch(() => {})
         .finally(() => {
           this.submitting = false
         })
     },
-    startRedirectCountdown() {
-      this.clearRedirectCountdown()
-      this.redirectCountdown = 30
-      this.redirectTimer = setInterval(() => {
-        if (this.redirectCountdown <= 1) {
-          this.goToLogin()
-          return
-        }
-        this.redirectCountdown -= 1
+    startWaitingForReady() {
+      this.clearWaitTimers()
+      this.waitElapsed = 0
+      this.waitElapsedTimer = setInterval(() => {
+        this.waitElapsed += 1
       }, 1000)
+      this.pollApplicationReady()
+      this.waitPollTimer = setInterval(() => {
+        this.pollApplicationReady()
+      }, 2000)
     },
-    clearRedirectCountdown() {
-      if (this.redirectTimer) {
-        clearInterval(this.redirectTimer)
-        this.redirectTimer = null
+    pollApplicationReady() {
+      resetSetupStatusCache()
+      getSetupStatus()
+        .then(res => {
+          const payload = (res && res.data) ? res.data : (res || {})
+          if (payload.installed === true && payload.restartRequired !== true) {
+            this.goToLogin()
+          }
+        })
+        .catch(() => {})
+    },
+    clearWaitTimers() {
+      if (this.waitElapsedTimer) {
+        clearInterval(this.waitElapsedTimer)
+        this.waitElapsedTimer = null
+      }
+      if (this.waitPollTimer) {
+        clearInterval(this.waitPollTimer)
+        this.waitPollTimer = null
       }
     },
     goToLogin() {
-      this.clearRedirectCountdown()
+      this.clearWaitTimers()
+      sessionStorage.removeItem(SETUP_AWAITING_READY_KEY)
       store.dispatch('FedLogOut').finally(() => {
         resetSetupStatusCache()
         window.location.href = '/login'
@@ -1382,10 +1416,18 @@ $setup-wm-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 }
 
 .setup-panel-box {
-  padding: 4px 16px 8px;
+  padding: 14px 16px;
   background: #fafafa;
   border: 1px solid #ebeef5;
   border-radius: 6px;
+
+  ::v-deep .el-form-item {
+    margin-bottom: 14px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
 }
 
 .setup-step-desc {

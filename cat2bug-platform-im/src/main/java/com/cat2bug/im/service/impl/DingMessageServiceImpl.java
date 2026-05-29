@@ -1,6 +1,7 @@
 package com.cat2bug.im.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.cat2bug.common.core.redis.RedisCache;
 import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.im.domain.DingErrorResponse;
@@ -116,7 +117,7 @@ public class DingMessageServiceImpl implements IIMService<DingMessage, IMDingPla
 
     private void sendInternalRobotMessage(OkHttpClient client, String token, DingMessage message) throws Exception {
         String body = JSON.toJSONString(message);
-        RequestBody formBody = RequestBody.create(FORM_CONTENT_TYPE, body);
+        RequestBody formBody = RequestBody.create(body, FORM_CONTENT_TYPE);
         Request request = new Request.Builder()
                 .header("x-acs-dingtalk-access-token", token)
                 .url(SEND_INTERNAL_ROBOT_MESSAGE_URL)
@@ -170,7 +171,7 @@ public class DingMessageServiceImpl implements IIMService<DingMessage, IMDingPla
         params.put("appKey",message.getAppKey());
         params.put("appSecret",message.getAppSecret());
         String body = JSON.toJSONString(params);
-        RequestBody formBody = RequestBody.create(FORM_CONTENT_TYPE, body);
+        RequestBody formBody = RequestBody.create(body, FORM_CONTENT_TYPE);
         Request request = new Request.Builder()
                 .url(GET_TOKEN_URL)
                 .post(formBody).build();
@@ -190,7 +191,7 @@ public class DingMessageServiceImpl implements IIMService<DingMessage, IMDingPla
     private void sendHookMessage(OkHttpClient client, DingMessage message, IMDingPlatformConfig config) throws Exception {
         message.getText().setContent(message.getText().getContent());
         String body = JSON.toJSONString(message);
-        RequestBody formBody = RequestBody.create(FORM_CONTENT_TYPE, body);
+        RequestBody formBody = RequestBody.create(body, FORM_CONTENT_TYPE);
 
         // 构建请求URL，如果配置了secret则添加签名参数
         String url = config.getHook();
@@ -289,7 +290,7 @@ public class DingMessageServiceImpl implements IIMService<DingMessage, IMDingPla
         Map<String, String> requestBody = new HashMap<>();
         requestBody.put("mobile", mobile);
 
-        RequestBody body = RequestBody.create(FORM_CONTENT_TYPE, JSON.toJSONString(requestBody));
+        RequestBody body = RequestBody.create(JSON.toJSONString(requestBody), FORM_CONTENT_TYPE);
         Request request = new Request.Builder()
                 .url(GET_USER_BY_MOBILE_URL + "?access_token=" + accessToken)
                 .post(body)
@@ -299,12 +300,12 @@ public class DingMessageServiceImpl implements IIMService<DingMessage, IMDingPla
         String responseBody = response.body().string();
         log.info("通过手机号获取用户ID响应: {}", responseBody);
 
-        Map<String, Object> result = JSON.parseObject(responseBody, Map.class);
-        Integer errcode = (Integer) result.get("errcode");
+        JSONObject result = JSON.parseObject(responseBody);
+        Integer errcode = result.getInteger("errcode");
 
         if (errcode != null && errcode == 0) {
-            Map<String, Object> resultData = (Map<String, Object>) result.get("result");
-            return (String) resultData.get("userid");
+            JSONObject resultData = result.getJSONObject("result");
+            return resultData.getString("userid");
         } else if (errcode != null && (errcode == 40014 || errcode == 88)) {
             // Token 无效（errcode=40014 或 88），刷新 token 并重试
             log.warn("获取用户ID时token无效(errcode={}，尝试刷新token并重试", errcode);
@@ -315,7 +316,7 @@ public class DingMessageServiceImpl implements IIMService<DingMessage, IMDingPla
             // 重试一次
             return getUserIdByMobileRetry(client, newToken, mobile);
         } else {
-            throw new Exception("获取用户ID失败: " + result.get("errmsg"));
+            throw new Exception("获取用户ID失败: " + result.getString("errmsg"));
         }
     }
 
@@ -326,7 +327,7 @@ public class DingMessageServiceImpl implements IIMService<DingMessage, IMDingPla
         Map<String, String> requestBody = new HashMap<>();
         requestBody.put("mobile", mobile);
 
-        RequestBody body = RequestBody.create(FORM_CONTENT_TYPE, JSON.toJSONString(requestBody));
+        RequestBody body = RequestBody.create(JSON.toJSONString(requestBody), FORM_CONTENT_TYPE);
         Request request = new Request.Builder()
                 .url(GET_USER_BY_MOBILE_URL + "?access_token=" + accessToken)
                 .post(body)
@@ -336,12 +337,12 @@ public class DingMessageServiceImpl implements IIMService<DingMessage, IMDingPla
         String responseBody = response.body().string();
         log.info("重试通过手机号获取用户ID响应: {}", responseBody);
 
-        Map<String, Object> result = JSON.parseObject(responseBody, Map.class);
-        if (result.get("errcode") != null && (Integer) result.get("errcode") == 0) {
-            Map<String, Object> resultData = (Map<String, Object>) result.get("result");
-            return (String) resultData.get("userid");
+        JSONObject result = JSON.parseObject(responseBody);
+        if (result.getInteger("errcode") != null && result.getInteger("errcode") == 0) {
+            JSONObject resultData = result.getJSONObject("result");
+            return resultData.getString("userid");
         } else {
-            throw new Exception("获取用户ID失败: " + result.get("errmsg"));
+            throw new Exception("获取用户ID失败: " + result.getString("errmsg"));
         }
     }
 }

@@ -3,6 +3,7 @@ package com.cat2bug.system.domain;
 import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.common.core.domain.type.SysDefectLogStateEnum;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import com.cat2bug.common.annotation.Excel;
@@ -17,6 +18,7 @@ import java.util.List;
  * @author yuzhantao
  * @date 2023-11-23
  */
+@EqualsAndHashCode(callSuper = false)
 @Data
 public class SysDefectLog extends BaseEntity
 {

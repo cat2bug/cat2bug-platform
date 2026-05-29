@@ -1180,6 +1180,10 @@
   "setup.success.title": "安装完成",
   "setup.success.message": "配置已保存，系统已完成首次安装。",
   "setup.success.restart": "请重启应用后再访问登录页；若切换了 MySQL 或 Redis，重启尤为重要。",
+  "setup.success.restarting": "Redis 缓存需重启进程，应用正在自动重启…",
+  "setup.success.waitingRestart": "正在等待应用重启并就绪",
+  "setup.success.waitingReady": "正在等待应用就绪",
+  "setup.success.waitElapsed": "已等待 {seconds} 秒，就绪后将自动进入登录页",
   "setup.success.redirectCountdown": "{seconds} 秒后自动跳转到登录页",
   "setup.success.goLoginNow": "立即前往登录"
 }

@@ -7,7 +7,7 @@ import { getToken } from '@/utils/auth'
 import { isRelogin } from '@/utils/request'
 import { isLockTeamPath } from '@/utils/team'
 import { isLockProjectPath } from '@/utils/project'
-import { resolveSetupInstalled } from '@/utils/setup-status'
+import { resolveSetupStatus } from '@/utils/setup-status'
 import { getCodeImg } from '@/api/login'
 import i18n from '@/utils/i18n/i18n'
 
@@ -31,11 +31,18 @@ function proceedWithAuth(to, from, next) {
         isRelogin.show = false
         store.dispatch('GenerateRoutes').then(() => {
           next({ ...to, replace: true })
+        }).catch(err => {
+          isRelogin.show = false
+          store.dispatch('LogOut').then(() => {
+            Message.error(err && err.message ? err.message : err)
+            next(`/login?redirect=${encodeURIComponent(to.fullPath)}`)
+          })
         })
       }).catch(err => {
+        isRelogin.show = false
         store.dispatch('LogOut').then(() => {
-          Message.error(err)
-          next({ path: '/' })
+          Message.error(err && err.message ? err.message : err)
+          next(`/login?redirect=${encodeURIComponent(to.fullPath)}`)
         })
       })
     } else {
@@ -51,8 +58,18 @@ function proceedWithAuth(to, from, next) {
 
 router.beforeEach((to, from, next) => {
   NProgress.start()
-  resolveSetupInstalled().then(installed => {
-    if (!installed) {
+  const refreshSetupStatus = (from.path === '/login' && !!getToken()) || to.path === '/login'
+  resolveSetupStatus(refreshSetupStatus).then(status => {
+    if (status.restartRequired) {
+      if (to.path === '/setup') {
+        next()
+      } else {
+        next('/setup')
+      }
+      NProgress.done()
+      return
+    }
+    if (!status.installed) {
       if (to.path === '/setup') {
         next()
       } else {
@@ -67,7 +84,7 @@ router.beforeEach((to, from, next) => {
       return
     }
     if (to.path === '/login' && getToken()) {
-      store.dispatch('FedLogOut').finally(() => next())
+      next({ path: '/' })
       NProgress.done()
       return
     }

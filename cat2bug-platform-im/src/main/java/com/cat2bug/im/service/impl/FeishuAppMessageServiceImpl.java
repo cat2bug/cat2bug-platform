@@ -65,7 +65,7 @@ public class FeishuAppMessageServiceImpl implements IIMService<FeishuAppMessage,
 
     private String getTenantAccessToken(OkHttpClient client, FeishuAppMessage message) throws IOException {
         String body = JSON.toJSONString(new TokenRequest(message.getAppId(), message.getAppSecret()));
-        RequestBody requestBody = RequestBody.create(JSON_CONTENT_TYPE, body);
+        RequestBody requestBody = RequestBody.create(body, JSON_CONTENT_TYPE);
         Request request = new Request.Builder().url(GET_TOKEN_URL).post(requestBody).build();
         Response response = client.newCall(request).execute();
         String json = response.body() != null ? response.body().string() : "";
@@ -79,7 +79,7 @@ public class FeishuAppMessageServiceImpl implements IIMService<FeishuAppMessage,
 
     private String lookupUserIdByMobile(OkHttpClient client, String token, String mobile) throws IOException {
         String body = JSON.toJSONString(new LookupUserRequest(mobile));
-        RequestBody requestBody = RequestBody.create(JSON_CONTENT_TYPE, body);
+        RequestBody requestBody = RequestBody.create(body, JSON_CONTENT_TYPE);
         Request request = new Request.Builder()
                 .url(LOOKUP_USER_URL)
                 .addHeader("Authorization", "Bearer " + token)
@@ -97,7 +97,7 @@ public class FeishuAppMessageServiceImpl implements IIMService<FeishuAppMessage,
 
     private void sendMessage(OkHttpClient client, String token, FeishuAppMessage message) throws IOException {
         String body = JSON.toJSONString(message);
-        RequestBody requestBody = RequestBody.create(JSON_CONTENT_TYPE, body);
+        RequestBody requestBody = RequestBody.create(body, JSON_CONTENT_TYPE);
         Request request = new Request.Builder()
                 .url(SEND_MESSAGE_URL)
                 .addHeader("Authorization", "Bearer " + token)

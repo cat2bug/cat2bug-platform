@@ -1,6 +1,7 @@
 package com.cat2bug.framework.service;
 
 import com.cat2bug.common.config.InstallProperties;
+import com.cat2bug.common.config.InstallStartupSupport;
 import com.cat2bug.common.utils.FlywaySchemaSupport;
 import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.system.domain.SysConfig;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
@@ -41,6 +43,9 @@ public class InstallService implements ApplicationRunner
     @Autowired
     private ISysConfigService configService;
 
+    @Autowired
+    private Environment environment;
+
     @Override
     public void run(ApplicationArguments args)
     {
@@ -53,8 +58,8 @@ public class InstallService implements ApplicationRunner
     }
 
     /**
-     * 已安装：跳过标志，或安装向导写入的 {@code application-install.yml} 已存在。
-     * 不以 sys_config 中的 {@link #INSTALL_COMPLETED_KEY} 判定，避免删配置后仍无法进入向导。
+     * 已安装：跳过标志，或磁盘 install 中 {@code cat2bug.install.completed == true}。
+     * 不以 install 文件是否存在、也不以 sys_config 中的 {@link #INSTALL_COMPLETED_KEY} 判定。
      */
     public boolean isInstalled()
     {
@@ -62,7 +67,25 @@ public class InstallService implements ApplicationRunner
         {
             return true;
         }
-        return installProperties.isInstallConfigPresent();
+        return installProperties.isInstallCompletedOnDisk();
+    }
+
+    /**
+     * 安装文件已写入但当前 JVM 仍处于引导模式（未重启加载 install 配置）。
+     * 此状态下业务 API 仍使用引导期 H2，MySQL 等配置尚未生效。
+     */
+    public boolean needsRestart()
+    {
+        if (isInstallSkipped())
+        {
+            return false;
+        }
+        if (!installProperties.isInstallCompletedOnDisk())
+        {
+            return false;
+        }
+        return "true".equalsIgnoreCase(
+                environment.getProperty(InstallStartupSupport.BOOTSTRAP_MODE_PROPERTY, "false"));
     }
 
     /**

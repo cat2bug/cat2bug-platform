@@ -33,10 +33,16 @@ public class InstallProperties
         return InstallConfigSupport.resolveConfigPath(configPath);
     }
 
-    /** 安装配置文件已生成则视为已完成安装配置 */
+    /** 磁盘 install 配置文件是否存在（不参与安装完成判定） */
     public boolean isInstallConfigPresent()
     {
         return InstallConfigSupport.isConfigFilePresent(configPath);
+    }
+
+    /** 磁盘 install 中 {@code cat2bug.install.completed} 是否为 true */
+    public boolean isInstallCompletedOnDisk()
+    {
+        return InstallConfigSupport.isInstallCompletedOnDisk(configPath);
     }
 
     public boolean isSkip()

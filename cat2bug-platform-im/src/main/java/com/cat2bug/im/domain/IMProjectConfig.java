@@ -1,6 +1,7 @@
 package com.cat2bug.im.domain;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import com.cat2bug.common.annotation.Excel;
@@ -12,6 +13,7 @@ import com.cat2bug.common.core.domain.BaseEntity;
  * @author yuzhantao
  * @date 2024-07-27
  */
+@EqualsAndHashCode(callSuper = false)
 @Data
 public class IMProjectConfig extends BaseEntity
 {

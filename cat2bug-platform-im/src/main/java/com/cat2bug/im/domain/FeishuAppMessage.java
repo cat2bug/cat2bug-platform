@@ -3,11 +3,13 @@ package com.cat2bug.im.domain;
 import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 /**
  * 飞书企业应用单发消息
  */
+@EqualsAndHashCode(callSuper = false)
 @Data
 @NoArgsConstructor
 public class FeishuAppMessage extends IMMessage<String> {

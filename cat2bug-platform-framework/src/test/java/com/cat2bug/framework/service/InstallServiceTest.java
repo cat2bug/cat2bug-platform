@@ -1,17 +1,25 @@
 package com.cat2bug.framework.service;
 
 import com.cat2bug.common.config.InstallProperties;
+import com.cat2bug.common.config.InstallStartupSupport;
 import com.cat2bug.system.domain.SysConfig;
 import com.cat2bug.system.service.ISysConfigService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.ApplicationArguments;
+import org.springframework.core.env.MapPropertySource;
+import org.springframework.core.env.StandardEnvironment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.util.ReflectionTestUtils;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -54,7 +62,7 @@ class InstallServiceTest
         when(installProperties.isSkip()).thenReturn(true);
 
         assertTrue(installService.isInstalled());
-        verify(installProperties, never()).isInstallConfigPresent();
+        verify(installProperties, never()).isInstallCompletedOnDisk();
     }
 
     @Test
@@ -64,17 +72,44 @@ class InstallServiceTest
         when(installProperties.isSkipFromEnv()).thenReturn(true);
 
         assertTrue(installService.isInstalled());
+        verify(installProperties, never()).isInstallCompletedOnDisk();
     }
 
     @Test
-    void isInstalled_returnsTrueWhenInstallConfigPresent()
+    void isInstalled_returnsTrueWhenCompletedTrueOnDisk(@TempDir Path dir) throws Exception
     {
-        when(installProperties.isSkip()).thenReturn(false);
-        when(installProperties.isSkipFromEnv()).thenReturn(false);
-        when(installProperties.isInstallConfigPresent()).thenReturn(true);
+        Path installFile = dir.resolve("application-install.yml");
+        Files.writeString(installFile, """
+                cat2bug:
+                  install:
+                    completed: true
+                """);
+        useRealInstallProperties(installFile);
 
         assertTrue(installService.isInstalled());
-        verify(jdbcTemplate, never()).queryForObject(any(), eq(String.class), any());
+    }
+
+    @Test
+    void isInstalled_returnsFalseWhenFileExistsWithoutCompleted(@TempDir Path dir) throws Exception
+    {
+        Path installFile = dir.resolve("application-install.yml");
+        Files.writeString(installFile, """
+                cat2bug:
+                  cache:
+                    type: local
+                """);
+        useRealInstallProperties(installFile);
+
+        assertFalse(installService.isInstalled());
+    }
+
+    @Test
+    void isInstalled_returnsFalseWhenNoInstallFile(@TempDir Path dir)
+    {
+        Path missing = dir.resolve("missing-install.yml");
+        useRealInstallProperties(missing);
+
+        assertFalse(installService.isInstalled());
     }
 
     @Test
@@ -82,20 +117,33 @@ class InstallServiceTest
     {
         when(installProperties.isSkip()).thenReturn(false);
         when(installProperties.isSkipFromEnv()).thenReturn(false);
-        when(installProperties.isInstallConfigPresent()).thenReturn(false);
+        when(installProperties.isInstallCompletedOnDisk()).thenReturn(false);
 
         assertFalse(installService.isInstalled());
         verify(jdbcTemplate, never()).queryForObject(any(), eq(String.class), any());
     }
 
     @Test
-    void isInstalled_returnsFalseWhenNoInstallConfig()
+    void needsRestart_returnsTrueWhenBootstrapModeAndCompletedOnDisk()
     {
         when(installProperties.isSkip()).thenReturn(false);
-        when(installProperties.isSkipFromEnv()).thenReturn(false);
-        when(installProperties.isInstallConfigPresent()).thenReturn(false);
+        when(installProperties.isInstallCompletedOnDisk()).thenReturn(true);
+        StandardEnvironment environment = new StandardEnvironment();
+        environment.getPropertySources().addFirst(new MapPropertySource("test",
+                Map.of(InstallStartupSupport.BOOTSTRAP_MODE_PROPERTY, "true")));
+        ReflectionTestUtils.setField(installService, "environment", environment);
 
-        assertFalse(installService.isInstalled());
+        assertTrue(installService.needsRestart());
+    }
+
+    @Test
+    void needsRestart_returnsFalseAfterRestart()
+    {
+        when(installProperties.isSkip()).thenReturn(false);
+        when(installProperties.isInstallCompletedOnDisk()).thenReturn(true);
+        ReflectionTestUtils.setField(installService, "environment", new StandardEnvironment());
+
+        assertFalse(installService.needsRestart());
     }
 
     @Test
@@ -117,12 +165,17 @@ class InstallServiceTest
     @Test
     void run_doesNotAutoMarkCompletedOnLegacyAdmin()
     {
-        when(installProperties.isSkip()).thenReturn(false);
-
         installService.run(mock(ApplicationArguments.class));
 
         verify(configService, never()).insertConfig(any());
         verify(configService, never()).updateConfig(any());
+    }
+
+    private void useRealInstallProperties(Path installFile)
+    {
+        InstallProperties real = new InstallProperties();
+        real.setConfigPath(installFile.toString());
+        ReflectionTestUtils.setField(installService, "installProperties", real);
     }
 
     private void mockLegacyAdminCount(int count)

@@ -40,24 +40,28 @@ const permission = {
     },
     // 生成路由
     GenerateRoutes({ commit }) {
-      return new Promise(resolve => {
-        // 向后端请求路由数据
+      return new Promise((resolve, reject) => {
         getRouters().then(res => {
-          const sdata = JSON.parse(JSON.stringify(res.data))
-          const rdata = JSON.parse(JSON.stringify(res.data))
-          const sidebarRoutes = filterAsyncRouter(sdata)
-          const rewriteRoutes = filterAsyncRouter(rdata, false, true)
-          const asyncRoutes = filterDynamicRoutes(dynamicRoutes);
-          rewriteRoutes.push({ path: '*', redirect: '/404', hidden: true })
-          resetRouter()
-          router.addRoutes(rewriteRoutes)
-          router.addRoutes(asyncRoutes)
-          commit('SET_ROUTES', rewriteRoutes)
-          commit('SET_SIDEBAR_ROUTERS', constantRoutes.concat(sidebarRoutes))
-          commit('SET_DEFAULT_ROUTES', sidebarRoutes)
-          commit('SET_TOPBAR_ROUTES', sidebarRoutes)
-          resolve(rewriteRoutes)
-        })
+          try {
+            const routeData = Array.isArray(res.data) ? res.data : []
+            const sdata = JSON.parse(JSON.stringify(routeData))
+            const rdata = JSON.parse(JSON.stringify(routeData))
+            const sidebarRoutes = filterAsyncRouter(sdata)
+            const rewriteRoutes = filterAsyncRouter(rdata, false, true)
+            const asyncRoutes = filterDynamicRoutes(dynamicRoutes)
+            rewriteRoutes.push({ path: '*', redirect: '/404', hidden: true })
+            resetRouter()
+            router.addRoutes(rewriteRoutes)
+            router.addRoutes(asyncRoutes)
+            commit('SET_ROUTES', rewriteRoutes)
+            commit('SET_SIDEBAR_ROUTERS', constantRoutes.concat(sidebarRoutes))
+            commit('SET_DEFAULT_ROUTES', sidebarRoutes)
+            commit('SET_TOPBAR_ROUTES', sidebarRoutes)
+            resolve(rewriteRoutes)
+          } catch (error) {
+            reject(error)
+          }
+        }).catch(reject)
       })
     }
   }

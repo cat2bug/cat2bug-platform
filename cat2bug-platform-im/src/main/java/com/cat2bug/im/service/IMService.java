@@ -43,7 +43,7 @@ public class IMService {
     private DefaultMessageTemplateImpl defaultMessageTemplateImpl;
 
     @Autowired
-    private List<IIMService> iimServiceList;
+    private List<IIMService<?, ?>> iimServiceList;
     /**
      * 发送文本消息
      * @param projectId     项目ID
@@ -56,7 +56,7 @@ public class IMService {
         String sn = IdUtils.simpleUUID(); // 流水号
 
         // 飞书群机器人：项目级配置，每次事件只发一条消息到群，无需按用户循环
-        Optional<IIMService> feishuOpt = this.iimServiceList.stream().filter(s->s.getMessageFactoryName().equals(FeishuMessageServiceImpl.MESSAGE_FACTORY_NAME)).findFirst();
+        Optional<IIMService<?, ?>> feishuOpt = this.iimServiceList.stream().filter(s->s.getMessageFactoryName().equals(FeishuMessageServiceImpl.MESSAGE_FACTORY_NAME)).findFirst();
         if(feishuOpt.isPresent()) {
             if(!recipientIds.isEmpty()) {
                 IMUserConfig anyUserConfig = imUserConfigService.selectImUserConfigByProjectAndMember(projectId, recipientIds.get(0), defaultOption);
@@ -77,8 +77,8 @@ public class IMService {
         }
 
         // 飞书企业应用单发：按用户逐个发送
-        Optional<IIMService> feishuAppOpt = this.iimServiceList.stream().filter(s->s.getMessageFactoryName().equals(FeishuAppMessageServiceImpl.MESSAGE_FACTORY_NAME)).findFirst();
-        Optional<IIMService> wechatOpt = this.iimServiceList.stream().filter(s->s.getMessageFactoryName().equals(EnterpriseWeChatMessageServiceImpl.MESSAGE_FACTORY_NAME)).findFirst();
+        Optional<IIMService<?, ?>> feishuAppOpt = this.iimServiceList.stream().filter(s->s.getMessageFactoryName().equals(FeishuAppMessageServiceImpl.MESSAGE_FACTORY_NAME)).findFirst();
+        Optional<IIMService<?, ?>> wechatOpt = this.iimServiceList.stream().filter(s->s.getMessageFactoryName().equals(EnterpriseWeChatMessageServiceImpl.MESSAGE_FACTORY_NAME)).findFirst();
 
         // 企业微信群发 webhook：只发送一次
         if(wechatOpt.isPresent() && !recipientIds.isEmpty()) {
@@ -99,7 +99,7 @@ public class IMService {
         recipientIds.stream().forEach(recipientId->{
            IMUserConfig userConfig = imUserConfigService.selectImUserConfigByProjectAndMember(projectId,  recipientId, defaultOption);
             if(userConfig.getConfig().getPlatforms().getSystem().isConfigSwitch()){
-                Optional<IIMService> opt = this.iimServiceList.stream().filter(s->s.getMessageFactoryName().equals(NoticeMessageServiceImpl.MESSAGE_FACTORY_NAME)).findFirst();
+                Optional<IIMService<?, ?>> opt = this.iimServiceList.stream().filter(s->s.getMessageFactoryName().equals(NoticeMessageServiceImpl.MESSAGE_FACTORY_NAME)).findFirst();
                 if(opt.isPresent())
                     this.sendMessage(sn, opt.get(),userConfig.getConfig(),userConfig.getConfig().getPlatforms().getSystem(),projectId,group,senderId,recipientId,title,content,src,messageTemplate);
                 opt = this.iimServiceList.stream().filter(s->s.getMessageFactoryName().equals(PanelNoticeMessageServiceImpl.MESSAGE_FACTORY_NAME)).findFirst();
@@ -107,13 +107,13 @@ public class IMService {
                     this.sendMessage(sn, opt.get(),userConfig.getConfig(),userConfig.getConfig().getPlatforms().getSystem(),projectId,group,senderId,recipientId,title,content,src,messageTemplate);
             }
             if(userConfig.getConfig().getPlatforms().getMail().isConfigSwitch()){
-                Optional<IIMService> opt = this.iimServiceList.stream().filter(s->s.getMessageFactoryName().equals(MailMessageServiceImpl.MESSAGE_FACTORY_NAME)).findFirst();
+                Optional<IIMService<?, ?>> opt = this.iimServiceList.stream().filter(s->s.getMessageFactoryName().equals(MailMessageServiceImpl.MESSAGE_FACTORY_NAME)).findFirst();
                 if(opt.isPresent())
                     this.sendMessage(sn, opt.get(), userConfig.getConfig(),userConfig.getConfig().getPlatforms().getMail(), projectId,group,senderId,recipientId,title,content,src,messageTemplate);
             }
             IMDingPlatformConfig dingPlatform = userConfig.getConfig().getPlatforms().getDing();
             if(dingPlatform != null){
-                Optional<IIMService> opt = this.iimServiceList.stream().filter(s->s.getMessageFactoryName().equals(DingMessageServiceImpl.MESSAGE_FACTORY_NAME)).findFirst();
+                Optional<IIMService<?, ?>> opt = this.iimServiceList.stream().filter(s->s.getMessageFactoryName().equals(DingMessageServiceImpl.MESSAGE_FACTORY_NAME)).findFirst();
                 if(opt.isPresent()) {
                     Boolean singleSwitch = dingPlatform.getSingleSwitch();
                     Boolean groupSwitch = dingPlatform.getGroupSwitch();
@@ -131,7 +131,7 @@ public class IMService {
             }
             EnterpriseWeChatPlatformConfig wechatPlatform = userConfig.getConfig().getPlatforms().getWechat();
             if(wechatPlatform != null){
-                Optional<IIMService> opt = wechatOpt;
+                Optional<IIMService<?, ?>> opt = wechatOpt;
                 Boolean wechatSingleSwitch = wechatPlatform.getSingleSwitch();
                 // 循环内只处理单发（mobile）
                 if(opt.isPresent() && Boolean.TRUE.equals(wechatSingleSwitch) && StringUtils.isNotBlank(wechatPlatform.getMobile())) {
@@ -156,7 +156,8 @@ public class IMService {
         });
     }
 
-    private  <T> void sendMessage(String sn, IIMService im, IMConfig config, IMBasePlatformConfig platformConfig, Long projectId, String group, Long senderId, Long recipientId, String title, T content, String src, IMessageTemplate messageTemplate) {
+    @SuppressWarnings("unchecked")
+    private <T> void sendMessage(String sn, IIMService<?, ?> im, IMConfig config, IMBasePlatformConfig platformConfig, Long projectId, String group, Long senderId, Long recipientId, String title, T content, String src, IMessageTemplate messageTemplate) {
         IIMFactoryService factory = SpringUtils.getBean(im.getMessageFactoryName());
         if(factory==null) {
             log.error("Bean 实例 {} 未找到，无法发送IM信息",im.getMessageFactoryName());
@@ -167,16 +168,18 @@ public class IMService {
 
         messageList.forEach(m->{
             m.setSn(sn);
-            es.submit(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        im.sendNoticeMessage(m,platformConfig);
-                    } catch (Exception e) {
-                        log.error(e);
-                    }
+            es.submit(() -> {
+                try {
+                    sendNoticeMessageUnchecked(im, m, platformConfig);
+                } catch (Exception e) {
+                    log.error(e);
                 }
             });
         });
+    }
+
+    @SuppressWarnings("unchecked")
+    private void sendNoticeMessageUnchecked(IIMService<?, ?> im, IMMessage message, IMBasePlatformConfig platformConfig) throws Exception {
+        ((IIMService<IMMessage, IMBasePlatformConfig>) im).sendNoticeMessage(message, platformConfig);
     }
 }

@@ -3,11 +3,13 @@ package com.cat2bug.system.domain;
 import com.cat2bug.common.annotation.Excel;
 import com.cat2bug.common.core.domain.BaseEntity;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.apache.poi.ss.usermodel.IndexedColors;
 
 /**
  * 缺陷 Excel 导入模板（仅用于生成导入模版，与 {@link com.cat2bug.common.core.domain.entity.SysDefect} 导入逻辑字段一致）。
  */
+@EqualsAndHashCode(callSuper = false)
 @Data
 public class SysDefectImportTemplate extends BaseEntity
 {

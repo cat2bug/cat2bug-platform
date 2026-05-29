@@ -383,7 +383,7 @@ public class SysProjectServiceImpl implements ISysProjectService
         RequestBody requestBody = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
                 .addFormDataPart("version", this.systemVersion)
-                .addFormDataPart("file", fileName, RequestBody.create(MediaType.parse("application/zip"), compressFile))
+                .addFormDataPart("file", fileName, RequestBody.create(compressFile, MediaType.parse("application/zip")))
                 .build();
         Request request = new Request.Builder()
                 .url(url)

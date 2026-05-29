@@ -50,19 +50,28 @@ public class ReportMessageOfNoticeTemplateImpl implements IMessageTemplate<SysRe
     }
 
     private boolean isValid(Map<String, Object> params) {
-        if(params.containsKey(REPORT_CONFIG_KEY)==false) return false;
-        Map<String, Object> reportParams = (Map<String, Object>) params.get(REPORT_CONFIG_KEY);
-        // 查看通知事件配置
-//        if(reportParams.containsKey(EVENT_CONFIG_KEY)==false) return false;
-//        Map<String, Object> eventParams = (Map<String, Object>) reportParams.get(EVENT_CONFIG_KEY);
-//        if(eventParams.containsKey(NEW_REPORT_CONFIG_KEY)==false) return false;
-//        if((boolean) eventParams.get(NEW_REPORT_CONFIG_KEY)==false) return false;
-        // 查看触发方式
-        if(reportParams.containsKey(OPTION_CONFIG_KEY)==false) return false;
-        Map<String, Object> optionParams = (Map<String, Object>) reportParams.get(OPTION_CONFIG_KEY);
-        if(optionParams.containsKey(OPTION_REALTIME_CONFIG_KEY)==false) return false;
-        Map<String, Object> intervalParams = (Map<String, Object>) optionParams.get(OPTION_REALTIME_CONFIG_KEY);
-        if(intervalParams.containsKey(SWITCH_KEY)==false) return false;
-        return (boolean) intervalParams.get(SWITCH_KEY);
+        Map<String, Object> reportParams = getNestedMap(params, REPORT_CONFIG_KEY);
+        if (reportParams == null) {
+            return false;
+        }
+        Map<String, Object> optionParams = getNestedMap(reportParams, OPTION_CONFIG_KEY);
+        if (optionParams == null) {
+            return false;
+        }
+        Map<String, Object> intervalParams = getNestedMap(optionParams, OPTION_REALTIME_CONFIG_KEY);
+        if (intervalParams == null || !intervalParams.containsKey(SWITCH_KEY)) {
+            return false;
+        }
+        Object switchValue = intervalParams.get(SWITCH_KEY);
+        return switchValue instanceof Boolean && (Boolean) switchValue;
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> getNestedMap(Map<String, Object> parent, String key) {
+        Object value = parent.get(key);
+        if (value instanceof Map<?, ?> nested) {
+            return (Map<String, Object>) nested;
+        }
+        return null;
     }
 }

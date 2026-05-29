@@ -2,6 +2,7 @@ package com.cat2bug.im.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 /**
@@ -11,6 +12,7 @@ import lombok.NoArgsConstructor;
  * 飞书自定义机器人消息（Webhook）
  * 参考：https://open.feishu.cn/document/client-docs/bot-v3/add-custom-bot
  */
+@EqualsAndHashCode(callSuper = false)
 @Data
 @NoArgsConstructor
 public class FeishuMessage extends IMMessage<FeishuMessage.Content> {

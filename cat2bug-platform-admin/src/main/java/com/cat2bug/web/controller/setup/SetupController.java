@@ -52,9 +52,10 @@ public class SetupController extends BaseController
     @GetMapping("/status")
     public AjaxResult status()
     {
-        Map<String, Object> data = new HashMap<>(2);
+        Map<String, Object> data = new HashMap<>(3);
         data.put("installed", installService.isInstalled());
         data.put("skipped", installService.isInstallSkipped());
+        data.put("restartRequired", installService.needsRestart());
         return success(data);
     }
 

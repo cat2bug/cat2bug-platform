@@ -6,13 +6,13 @@ import org.springframework.boot.SpringApplication;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
 /**
- * 首次安装前启动引导：在 Spring 加载 profile 配置前强制使用 H2，避免连接尚未配置的外部数据库。
+ * 首次安装前启动引导：在磁盘 install 不存在时从 classpath H2 模板注入内存配置，避免连接尚未配置的外部数据库。
  */
 public final class InstallStartupSupport
 {
@@ -36,7 +36,7 @@ public final class InstallStartupSupport
         }
         String[] filtered = filterDatabaseArgs(args);
         applyBootstrapProperties(decision.configPath());
-        log.info("未找到安装配置文件 {}，首次安装引导模式：暂使用 H2 启动，完成向导并重启后生效所选数据库",
+        log.info("未找到安装配置文件 {}，首次安装引导模式：暂使用 H2 classpath 模板启动，完成向导并重启后生效所选数据库",
                 decision.configPath());
         return filtered;
     }
@@ -48,11 +48,7 @@ public final class InstallStartupSupport
         {
             return;
         }
-        Map<String, Object> defaults = new HashMap<>(3);
-        defaults.put("spring.database-type", "h2");
-        defaults.put("spring.profiles.active", "h2");
-        defaults.put(BOOTSTRAP_MODE_PROPERTY, "true");
-        application.setDefaultProperties(defaults);
+        application.setDefaultProperties(bootstrapProperties());
     }
 
     public static BootstrapDecision evaluate(String configPath, String skipProperty)
@@ -71,11 +67,13 @@ public final class InstallStartupSupport
         return BootstrapDecision.enabled(path);
     }
 
+    /**
+     * 引导期注入 Environment 的扁平属性（H2 classpath 模板 + bootstrap-mode）。
+     */
     public static Map<String, Object> bootstrapProperties()
     {
-        Map<String, Object> bootstrap = new HashMap<>(3);
-        bootstrap.put("spring.database-type", "h2");
-        bootstrap.put("spring.profiles.active", "h2");
+        Map<String, Object> bootstrap = new LinkedHashMap<>(
+                InstallTemplateLoader.flattenToProperties(InstallTemplateLoader.loadH2Template()));
         bootstrap.put(BOOTSTRAP_MODE_PROPERTY, "true");
         return bootstrap;
     }
@@ -92,9 +90,13 @@ public final class InstallStartupSupport
 
     private static void applyBootstrapProperties(Path configPath)
     {
-        System.setProperty("spring.database-type", "h2");
-        System.setProperty("spring.profiles.active", "h2");
-        System.setProperty(BOOTSTRAP_MODE_PROPERTY, "true");
+        bootstrapProperties().forEach((key, value) ->
+        {
+            if (value != null)
+            {
+                System.setProperty(key, String.valueOf(value));
+            }
+        });
     }
 
     static String[] filterDatabaseArgs(String[] args)

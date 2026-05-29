@@ -5,6 +5,7 @@ import com.cat2bug.common.core.domain.BaseEntity;
 import com.cat2bug.system.domain.handle.SysModuleComboHandlerAdapter;
 import com.cat2bug.system.domain.handle.SysModuleNameHandlerAdapter;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.apache.poi.ss.usermodel.IndexedColors;
 
 /**
@@ -13,6 +14,7 @@ import org.apache.poi.ss.usermodel.IndexedColors;
  * @author yuzhantao
  * @date 2024-01-28
  */
+@EqualsAndHashCode(callSuper = false)
 @Data
 public class SysCaseExcelTepmplate extends BaseEntity
 {

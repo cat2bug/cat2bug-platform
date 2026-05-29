@@ -50,6 +50,12 @@ public class SetupInstallService
     @Autowired
     private ISysConfigService configService;
 
+    @Autowired
+    private InstallRuntimeActivator installRuntimeActivator;
+
+    @Autowired
+    private InstallApplicationRestarter installApplicationRestarter;
+
     @Transactional(rollbackFor = Exception.class)
     public Map<String, Object> submit(SetupSubmitRequest request) throws Exception
     {
@@ -61,9 +67,12 @@ public class SetupInstallService
 
         String databaseType = request.getDatabaseType().toLowerCase();
         String mysqlWarning = null;
+        DruidDataSource mysqlDataSource = null;
         if (SetupSubmitDataSourceFactory.isMysql(request))
         {
-            mysqlWarning = applyMysqlInstall(request);
+            MysqlInstallResult mysqlInstall = applyMysqlInstall(request);
+            mysqlDataSource = mysqlInstall.dataSource();
+            mysqlWarning = mysqlInstall.warningMessage();
         }
         else
         {
@@ -72,10 +81,16 @@ public class SetupInstallService
 
         setupConfigWriter.write(request);
 
+        boolean runtimeReady = installRuntimeActivator.activateAfterSetup(request, mysqlDataSource);
         safeResetConfigCache();
 
-        Map<String, Object> result = new HashMap<>(4);
-        result.put("restartRequired", true);
+        Map<String, Object> result = new HashMap<>(5);
+        result.put("restartRequired", !runtimeReady);
+        result.put("restarting", !runtimeReady);
+        if (!runtimeReady)
+        {
+            installApplicationRestarter.scheduleRestartAfterSetup();
+        }
         String message = SetupMessages.msg("setup.install.completed");
         if (StringUtils.isNotEmpty(mysqlWarning))
         {
@@ -86,34 +101,32 @@ public class SetupInstallService
         return result;
     }
 
-    private String applyMysqlInstall(SetupSubmitRequest request)
+    private MysqlInstallResult applyMysqlInstall(SetupSubmitRequest request)
     {
         SetupMysqlDatabaseService.MysqlDatabasePrepareResult prepareResult = setupMysqlDatabaseService.prepare(request);
         DruidDataSource mysqlDataSource = setupSubmitDataSourceFactory.createMysqlDataSource(request);
-        try
+        if (!setupInstallJdbcWriter.isSchemaPresent(mysqlDataSource))
         {
-            if (!setupInstallJdbcWriter.isSchemaPresent(mysqlDataSource))
-            {
-                setupMigrationService.migrate("mysql", mysqlDataSource);
-            }
-            if (!setupInstallJdbcWriter.isSchemaPresent(mysqlDataSource))
-            {
-                throw new ServiceException(SetupMessages.msg("setup.install.schema.missing"));
-            }
-            setupInstallJdbcWriter.createOrUpdateAdmin(mysqlDataSource, request);
-            setupInstallJdbcWriter.upsertConfig(mysqlDataSource, "sys.account.registerUser",
-                    Boolean.TRUE.equals(request.getRegisterUser()) ? "true" : "false",
-                    "账号自助-是否开启用户注册功能");
-            setupInstallJdbcWriter.upsertConfig(mysqlDataSource, "sys.account.captchaEnabled",
-                    Boolean.TRUE.equals(request.getCaptchaEnabled()) ? "true" : "false",
-                    "登录验证码");
-            setupInstallJdbcWriter.markInstallCompleted(mysqlDataSource);
-            return prepareResult.warningMessage();
+            setupMigrationService.migrate("mysql", mysqlDataSource);
         }
-        finally
+        if (!setupInstallJdbcWriter.isSchemaPresent(mysqlDataSource))
         {
             mysqlDataSource.close();
+            throw new ServiceException(SetupMessages.msg("setup.install.schema.missing"));
         }
+        setupInstallJdbcWriter.createOrUpdateAdmin(mysqlDataSource, request);
+        setupInstallJdbcWriter.upsertConfig(mysqlDataSource, "sys.account.registerUser",
+                Boolean.TRUE.equals(request.getRegisterUser()) ? "true" : "false",
+                "账号自助-是否开启用户注册功能");
+        setupInstallJdbcWriter.upsertConfig(mysqlDataSource, "sys.account.captchaEnabled",
+                Boolean.TRUE.equals(request.getCaptchaEnabled()) ? "true" : "false",
+                "登录验证码");
+        setupInstallJdbcWriter.markInstallCompleted(mysqlDataSource);
+        return new MysqlInstallResult(mysqlDataSource, prepareResult.warningMessage());
+    }
+
+    private record MysqlInstallResult(DruidDataSource dataSource, String warningMessage)
+    {
     }
 
     private void applyH2Install(SetupSubmitRequest request, String databaseType)

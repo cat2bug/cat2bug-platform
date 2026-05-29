@@ -15,6 +15,8 @@ import com.cat2bug.system.domain.SysOperLog;
 import com.cat2bug.system.service.ISysLogininforService;
 import com.cat2bug.system.service.ISysOperLogService;
 import eu.bitwalker.useragentutils.UserAgent;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 /**
  * 异步工厂（产生任务用）
@@ -37,8 +39,10 @@ public class AsyncFactory
     public static TimerTask recordLogininfor(final String username, final String status, final String message,
             final Object... args)
     {
-        final UserAgent userAgent = UserAgent.parseUserAgentString(ServletUtils.getRequest().getHeader("User-Agent"));
-        final String ip = IpUtils.getIpAddr();
+        HttpServletRequest request = currentRequest();
+        final String userAgentHeader = request != null ? StringUtils.defaultString(request.getHeader("User-Agent")) : "";
+        final UserAgent userAgent = UserAgent.parseUserAgentString(userAgentHeader);
+        final String ip = request != null ? IpUtils.getIpAddr(request) : "127.0.0.1";
         return new TimerTask()
         {
             @Override
@@ -78,6 +82,12 @@ public class AsyncFactory
                 SpringUtils.getBean(ISysLogininforService.class).insertLogininfor(logininfor);
             }
         };
+    }
+
+    private static HttpServletRequest currentRequest()
+    {
+        ServletRequestAttributes attributes = ServletUtils.getRequestAttributes();
+        return attributes != null ? attributes.getRequest() : null;
     }
 
     /**

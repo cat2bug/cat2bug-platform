@@ -2,6 +2,7 @@ package com.cat2bug.system.domain;
 
 import com.cat2bug.common.core.domain.entity.SysUser;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import com.cat2bug.common.annotation.Excel;
@@ -15,6 +16,7 @@ import java.util.List;
  * @author yuzhantao
  * @date 2024-02-29
  */
+@EqualsAndHashCode(callSuper = false)
 @Data
 public class SysComment extends BaseEntity
 {

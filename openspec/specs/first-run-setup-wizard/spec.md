@@ -2,27 +2,36 @@
 
 ### Requirement: System detects first-run installation state
 
-The system SHALL expose whether initial setup is complete. When `cat2bug.install.completed` in `sys_config` is absent or not `true`, and no user with username `admin` exists in `sys_user`, the system MUST treat the instance as not installed.
+The system SHALL expose whether initial setup is complete. The system MUST treat the instance as installed when `cat2bug.install.completed` is `true` in the disk install file at `cat2bug.install.config-path`, or when install skip is enabled via `cat2bug.install.skip` or environment variable `CAT2BUG_INSTALL_SKIP=true`.
+
+The system MUST treat the instance as not installed when the disk install file is absent, or when `cat2bug.install.completed` is absent or not `true`.
+
+The system MUST NOT treat mere presence of the disk install file as installed.
 
 #### Scenario: Fresh deployment is not installed
 
-- **WHEN** the application starts with an empty database and no install completion flag
+- **WHEN** the application starts with no disk install file and install skip is false
 - **THEN** `GET /setup/status` returns `installed: false`
 
 #### Scenario: Completed installation is installed
 
-- **WHEN** `cat2bug.install.completed` is `true` in `sys_config`
+- **WHEN** the disk install file contains `cat2bug.install.completed: true`
 - **THEN** `GET /setup/status` returns `installed: true`
 
-#### Scenario: Legacy existing deployment auto-marked
+#### Scenario: Disk install file without completed flag is not installed
 
-- **WHEN** an existing database has a row in `sys_user` with username `admin` (as seeded by SQL migrations)
-- **THEN** the system MAY set `cat2bug.install.completed` to `true` on startup without showing the wizard
-
-#### Scenario: Empty database without admin user is not installed
-
-- **WHEN** `sys_user` has no row with username `admin` and `cat2bug.install.completed` is not `true`
+- **WHEN** a disk install file exists but `cat2bug.install.completed` is not `true`
 - **THEN** `GET /setup/status` returns `installed: false`
+
+#### Scenario: Legacy migration marks installed without wizard
+
+- **WHEN** legacy data exists, no disk install file exists, and startup migration generates install with `completed: true`
+- **THEN** `GET /setup/status` returns `installed: true`
+
+#### Scenario: Developer first run uses wizard
+
+- **WHEN** a developer starts the application from a fresh clone without a disk install file
+- **THEN** the UI navigates to `/setup` and install file is created only after successful submit
 
 ### Requirement: Uninstalled instance routes users to setup
 
@@ -118,7 +127,7 @@ The system SHALL provide APIs to test database connectivity, Redis connectivity 
 
 ### Requirement: Setup creates administrator and persists configuration
 
-On successful submit, the system SHALL write `config/install/application-install.yml` (or configured path), run schema initialization via Flyway when needed, create the administrator account with the user-provided or default credentials, write `sys.account.registerUser` and `sys.account.captchaEnabled`, set `cat2bug.install.completed` to `true`. The system MUST NOT reject password `cat2bug`.
+On successful submit, the system SHALL write `config/install/application-install.yml` (or configured path) with **complete** infrastructure settings merged from classpath templates and wizard input, run schema initialization via Flyway when needed, create the administrator account with the user-provided or default credentials, write `sys.account.registerUser` and `sys.account.captchaEnabled`, set `cat2bug.install.completed` to `true` in the disk install file, and write `cat2bug.install.completed` to `sys_config` for audit. The system MUST NOT reject password `cat2bug`.
 
 #### Scenario: Administrator account created on install
 
@@ -140,6 +149,11 @@ On successful submit, the system SHALL write `config/install/application-install
 - **WHEN** the user completes setup
 - **THEN** the wizard has not collected or changed `sys.member.initPassword`
 
+#### Scenario: Install file is self-contained after submit
+
+- **WHEN** setup submit succeeds with MySQL and local cache
+- **THEN** the disk install file contains datasource, `spring.database-type`, and `cat2bug.cache.type` without requiring `application-mysql.yml`
+
 ### Requirement: Setup defaults login captcha to disabled
 
 The system SHALL default `sys.account.captchaEnabled` to `false` when created by the setup wizard unless the user explicitly enables login captcha.
@@ -156,9 +170,14 @@ The system SHALL default `sys.account.captchaEnabled` to `false` when created by
 
 ### Requirement: Docker may skip setup when preconfigured
 
-When environment variable `CAT2BUG_INSTALL_SKIP` is `true`, the system SHALL skip forcing the setup wizard if datasource and install completion are already configured.
+When environment variable `CAT2BUG_INSTALL_SKIP` is `true`, or `cat2bug.install.skip` is `true`, the system SHALL skip forcing the setup wizard. Preconfiguration MUST be supplied via a disk install file with `cat2bug.install.completed: true` and/or environment property overrides for datasource and related settings.
 
-#### Scenario: Docker compose with skip flag
+#### Scenario: Docker compose with skip flag and install file
 
-- **WHEN** the container starts with `CAT2BUG_INSTALL_SKIP=true` and valid env-based datasource
+- **WHEN** the container starts with `CAT2BUG_INSTALL_SKIP=true` and a mounted install file with `completed: true`
 - **THEN** the application does not redirect to `/setup`
+
+#### Scenario: Skip without completed install still allows bootstrap
+
+- **WHEN** `CAT2BUG_INSTALL_SKIP=true` and no disk install file exists
+- **THEN** the application does not force `/setup` (existing skip semantics preserved)

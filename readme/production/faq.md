@@ -78,7 +78,11 @@ A: 在"个人中心"-"通知设置"中配置。
 A: 默认位置：`./data/cat2bug_platform.mv.db`
 
 ### Q: 如何切换到 MySQL？
-A: 在 `cat2bug-platform-admin/src/main/resources/application.yml` 中，将 `spring.database-type` 由 `h2` 改为 `mysql`（系统会据此自动激活 `application-mysql.yml` 配置）。随后在 `application-mysql.yml` 中按需修改数据源连接地址、用户名、密码等信息。
+A: 运行期数据库与连接池等基础设施配置**仅**由外部安装文件 `./config/install/application-install.yml` 提供（路径可通过 `cat2bug.install.config-path` 调整）。**不要**再编辑 `application-mysql.yml` 或设置 `spring.profiles.active`。
+
+- **首次安装**：克隆仓库后磁盘上无 `application-install.yml`，启动应用会进入 `/setup` 安装向导；向导按所选数据库类型从 JAR 内 classpath 模板（`defaults/application-install-h2.yml` / `defaults/application-install-mysql.yml`）合并写入完整 install 文件，并设置 `cat2bug.install.completed: true`。提交后**需重启**应用，新数据源才会生效。
+- **已安装实例**：直接编辑 `config/install/application-install.yml`，将 `spring.database-type` 改为 `mysql`，并按模板结构填写 `spring.datasource.druid.master` 的 URL、用户名、密码等（可参考 classpath 中的 MySQL 模板字段）。修改后**重启**应用。
+- **Docker / 自动化**：挂载带 `cat2bug.install.completed: true` 的 install 文件，或设置 `CAT2BUG_INSTALL_SKIP=true` 并预配置数据源（见安装变更测试清单）。
 
 ### Q: 数据库迁移失败？
 A: 检查 Flyway 版本脚本是否正确，查看日志获取详细错误信息。

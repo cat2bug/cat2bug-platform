@@ -2,6 +2,7 @@ package com.cat2bug.im.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 /**
@@ -9,6 +10,7 @@ import lombok.NoArgsConstructor;
  * @CreateTime: 2024-07-26 16:57
  * @Version: 1.0.0
  */
+@EqualsAndHashCode(callSuper = false)
 @AllArgsConstructor
 @NoArgsConstructor
 @Data

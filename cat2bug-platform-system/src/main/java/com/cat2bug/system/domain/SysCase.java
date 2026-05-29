@@ -6,6 +6,7 @@ import com.cat2bug.system.domain.handle.SysModuleIdHandlerAdapter;
 import com.cat2bug.system.domain.handle.SysModuleNameHandlerAdapter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import com.cat2bug.common.annotation.Excel;
@@ -22,6 +23,7 @@ import java.util.List;
  * @author yuzhantao
  * @date 2024-01-28
  */
+@EqualsAndHashCode(callSuper = false)
 @Data
 public class SysCase extends BaseEntity
 {

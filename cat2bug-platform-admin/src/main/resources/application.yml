@@ -107,7 +107,7 @@ caffeine:
 # Spring配置
 spring:
   config:
-    # 安装完成后由向导写入；存在时覆盖下方 bootstrap 默认值及 profile 中的连接/路径项
+    # 安装完成后由向导写入；存在时覆盖下方 bootstrap 默认值
     import: optional:file:./config/install/application-install.yml
   # 与 SB2 行为一致：框架内存在历史循环依赖（如 API Token 过滤器）
   main:
@@ -153,8 +153,6 @@ spring:
   messages:
     # 国际化资源文件路径
     basename: i18n/messages
-  profiles:
-    active: ${spring.database-type}
   # 文件上传
   servlet:
     multipart:

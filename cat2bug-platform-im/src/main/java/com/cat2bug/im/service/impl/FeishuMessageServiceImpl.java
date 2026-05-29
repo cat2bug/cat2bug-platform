@@ -60,7 +60,7 @@ public class FeishuMessageServiceImpl implements IIMService<FeishuMessage, IMBas
         // 构建 JSON body
         String body = buildRequestBody(message, secret);
 
-        RequestBody requestBody = RequestBody.create(JSON_CONTENT_TYPE, body);
+        RequestBody requestBody = RequestBody.create(body, JSON_CONTENT_TYPE);
         Request.Builder requestBuilder = new Request.Builder()
                 .url(hook)
                 .post(requestBody);

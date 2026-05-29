@@ -1,12 +1,14 @@
 package com.cat2bug.im.domain;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * @Author: yuzhantao
  * @CreateTime: 2024-07-08 14:03
  * @Version: 1.0.0
  */
+@EqualsAndHashCode(callSuper = false)
 @Data
 public class NoticeMessage extends IMMessage<String> {
     /**

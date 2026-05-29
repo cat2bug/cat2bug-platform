@@ -9,7 +9,7 @@ import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
 
 /**
- * 在 ConfigData 加载 profile 配置之前，将首次安装引导强制为 H2。
+ * 在 ConfigData 加载可选 install 之前，将首次安装引导所需的 H2 classpath 模板注入 Environment。
  */
 public class InstallEnvironmentPostProcessor implements EnvironmentPostProcessor, Ordered
 {
@@ -31,7 +31,7 @@ public class InstallEnvironmentPostProcessor implements EnvironmentPostProcessor
 
         environment.getPropertySources().addFirst(
                 new MapPropertySource(BOOTSTRAP_PROPERTY_SOURCE, InstallStartupSupport.bootstrapProperties()));
-        log.info("EnvironmentPostProcessor: 首次安装引导，强制 H2（配置文件 {} 尚未生成）", decision.configPath());
+        log.info("EnvironmentPostProcessor: 首次安装引导，注入 H2 classpath 模板（配置文件 {} 尚未生成）", decision.configPath());
     }
 
     @Override
