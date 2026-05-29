@@ -43,11 +43,12 @@ public class UpgradePreflightService
         Map<String, Object> template = InstallTemplateLoader.loadTemplate(databaseType);
         Map<String, Object> merged = UpgradeConfigMerger.mergePreserveExisting(base, template, Map.of());
 
+        Map<String, Object> status = upgradeService.getStatus();
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("databaseType", databaseType);
-        result.put("currentVersion", upgradeService.getStatus().get("currentVersion"));
-        result.put("targetVersion", upgradeService.getStatus().get("targetVersion"));
-        result.put("pendingMigrations", upgradeService.listPendingMigrations());
+        result.put("currentVersion", status.get("currentVersion"));
+        result.put("targetVersion", status.get("targetVersion"));
+        result.put("pendingMigrations", status.get("pendingMigrations"));
         result.put("diffs", buildDiffs(base, template, merged));
         result.put("suggestedConfig", merged);
         return result;

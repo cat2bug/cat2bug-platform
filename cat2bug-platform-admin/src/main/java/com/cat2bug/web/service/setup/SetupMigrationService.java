@@ -24,12 +24,19 @@ public class SetupMigrationService implements UpgradeMigrationInspector
     @Autowired
     private DataSource dataSource;
 
+    private final Object pendingCacheLock = new Object();
+
+    private volatile List<String> pendingCache;
+
+    private volatile String pendingCacheKey;
+
     public void migrate(String databaseType, DataSource dataSourceOverride)
     {
         String type = StringUtils.isNotEmpty(databaseType) ? databaseType.toLowerCase() : "h2";
         try
         {
             buildFlyway(type, dataSourceOverride != null ? dataSourceOverride : dataSource).migrate();
+            invalidatePendingMigrationCache();
         }
         catch (FlywayException e)
         {
@@ -45,15 +52,41 @@ public class SetupMigrationService implements UpgradeMigrationInspector
         }
         String type = StringUtils.isNotEmpty(databaseType) ? databaseType.toLowerCase() : "h2";
         buildFlyway(type, dataSourceOverride != null ? dataSourceOverride : dataSource).repair();
+        invalidatePendingMigrationCache();
     }
 
     @Override
     public List<String> listPendingMigrations(String databaseType)
     {
         String type = StringUtils.isNotEmpty(databaseType) ? databaseType.toLowerCase() : "h2";
+        List<String> cached = pendingCache;
+        if (cached != null && type.equals(pendingCacheKey))
+        {
+            return cached;
+        }
+        synchronized (pendingCacheLock)
+        {
+            if (pendingCache != null && type.equals(pendingCacheKey))
+            {
+                return pendingCache;
+            }
+            pendingCache = List.copyOf(loadPendingMigrations(type));
+            pendingCacheKey = type;
+            return pendingCache;
+        }
+    }
+
+    public void invalidatePendingMigrationCache()
+    {
+        pendingCache = null;
+        pendingCacheKey = null;
+    }
+
+    private List<String> loadPendingMigrations(String databaseType)
+    {
         try
         {
-            MigrationInfoService info = buildFlyway(type, dataSource).info();
+            MigrationInfoService info = buildFlyway(databaseType, dataSource).info();
             List<String> pending = new ArrayList<>();
             for (MigrationInfo migration : info.pending())
             {

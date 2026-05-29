@@ -75,6 +75,8 @@
 	<logger name="com.cat2bug" level="info" />
 	<!-- Spring日志级别控制  -->
 	<logger name="org.springframework" level="warn" />
+	<!-- Flyway info() 查询待迁移脚本时避免重复刷 banner；migrate 仍可通过 com.cat2bug 日志观察 -->
+	<logger name="org.flywaydb" level="warn" />
 
 	<root level="info">
 		<appender-ref ref="console" />

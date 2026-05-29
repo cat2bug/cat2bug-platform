@@ -1,7 +1,5 @@
 package com.cat2bug.common.config;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.env.EnvironmentPostProcessor;
 import org.springframework.core.Ordered;
@@ -13,8 +11,6 @@ import org.springframework.core.env.MapPropertySource;
  */
 public class InstallEnvironmentPostProcessor implements EnvironmentPostProcessor, Ordered
 {
-    private static final Logger log = LoggerFactory.getLogger(InstallEnvironmentPostProcessor.class);
-
     static final String BOOTSTRAP_PROPERTY_SOURCE = "cat2bugInstallBootstrap";
 
     @Override
@@ -31,7 +27,7 @@ public class InstallEnvironmentPostProcessor implements EnvironmentPostProcessor
 
         environment.getPropertySources().addFirst(
                 new MapPropertySource(BOOTSTRAP_PROPERTY_SOURCE, InstallStartupSupport.bootstrapProperties()));
-        log.info("EnvironmentPostProcessor: 首次安装引导，注入 H2 classpath 模板（配置文件 {} 尚未生成）", decision.configPath());
+        InstallStartupSupport.logBootstrapNotice(decision.configPath());
     }
 
     @Override

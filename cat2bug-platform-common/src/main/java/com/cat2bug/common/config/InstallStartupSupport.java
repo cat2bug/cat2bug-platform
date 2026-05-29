@@ -18,6 +18,8 @@ public final class InstallStartupSupport
 {
     private static final Logger log = LoggerFactory.getLogger(InstallStartupSupport.class);
 
+    private static volatile boolean bootstrapNoticeLogged;
+
     public static final String BOOTSTRAP_MODE_PROPERTY = "cat2bug.install.bootstrap-mode";
 
     private InstallStartupSupport()
@@ -36,8 +38,7 @@ public final class InstallStartupSupport
         }
         String[] filtered = filterDatabaseArgs(args);
         applyBootstrapProperties(decision.configPath());
-        log.info("未找到安装配置文件 {}，首次安装引导模式：暂使用 H2 classpath 模板启动，完成向导并重启后生效所选数据库",
-                decision.configPath());
+        logBootstrapNotice(decision.configPath());
         return filtered;
     }
 
@@ -120,6 +121,18 @@ public final class InstallStartupSupport
             filtered.add(arg);
         }
         return filtered.toArray(new String[0]);
+    }
+
+    /** DevTools 重启会再次进入引导逻辑，安装提示只输出一次。 */
+    public static void logBootstrapNotice(Path configPath)
+    {
+        if (bootstrapNoticeLogged)
+        {
+            return;
+        }
+        bootstrapNoticeLogged = true;
+        log.info("未找到安装配置文件 {}，首次安装引导模式：暂使用 H2 classpath 模板启动，完成向导并重启后生效所选数据库",
+                configPath);
     }
 
     private static boolean shouldSkipDatabaseArg(String arg)
