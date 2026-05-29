@@ -49,13 +49,13 @@
       <div class="between-row">
         <el-checkbox v-model="loginForm.rememberMe">{{$t("remember-password")}}</el-checkbox>
         <div class="lang-group">
-          <svg-icon icon-class="lang_zh_CN" @mouseenter="changeLang('zh_CN')" />
-          <svg-icon icon-class="lang_zh_CN" @mouseenter="changeLang('zh_TW')" />
-          <svg-icon icon-class="lang_en_US" @mouseenter="changeLang('en_US')" />
-          <svg-icon icon-class="lang_ru" @mouseenter="changeLang('ru')" />
-          <svg-icon icon-class="lang_ja_JP" @mouseenter="changeLang('ja_JP')" />
-          <svg-icon icon-class="lang_ko_KR" @mouseenter="changeLang('ko_KR')" />
-          <svg-icon icon-class="lang_ar" @mouseenter="changeLang('ar')" />
+          <svg-icon icon-class="lang_zh_CN" @click="changeLang('zh_CN')" />
+          <svg-icon icon-class="lang_zh_CN" @click="changeLang('zh_TW')" />
+          <svg-icon icon-class="lang_en_US" @click="changeLang('en_US')" />
+          <svg-icon icon-class="lang_ru" @click="changeLang('ru')" />
+          <svg-icon icon-class="lang_ja_JP" @click="changeLang('ja_JP')" />
+          <svg-icon icon-class="lang_ko_KR" @click="changeLang('ko_KR')" />
+          <svg-icon icon-class="lang_ar" @click="changeLang('ar')" />
         </div>
       </div>
       <div>
@@ -132,7 +132,7 @@ export default {
         this.captchaEnabled = res.captchaEnabled === undefined ? true : res.captchaEnabled;
         this.register = res.registerEnabled === undefined ? true : res.registerEnabled;
         if (this.captchaEnabled) {
-          this.codeUrl = "data:image/gif;base64," + res.img;
+          this.codeUrl = "data:image/png;base64," + res.img;
           this.loginForm.uuid = res.uuid;
         }
       });
@@ -225,10 +225,11 @@ export default {
   width: 33%;
   height: 38px;
   float: right;
-img {
-  cursor: pointer;
-  vertical-align: middle;
-}
+  box-sizing: border-box;
+  border: 2px solid #5A5A59;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #fff8eb;
 }
 .login-copyright {
   font-family: Arial;
@@ -236,7 +237,11 @@ img {
   color: #606266;
 }
 .login-code-img {
-  height: 38px;
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: pointer;
+  object-fit: cover;
 }
 .login-form-title {
   display: flex;

@@ -265,6 +265,7 @@ body {
     > * {
       font-size: 22px;
       margin-left: 3px;
+      cursor: pointer;
     }
   }
 }

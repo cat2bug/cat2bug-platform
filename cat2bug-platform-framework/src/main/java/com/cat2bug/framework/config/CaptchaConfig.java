@@ -15,29 +15,46 @@ import static com.google.code.kaptcha.Constants.*;
 @Configuration
 public class CaptchaConfig
 {
+    /** 登录表单描边色 #5A5A59，与 cat2bug-logo 插画线稿一致 */
+    private static final String BRAND_BORDER = "90,90,89";
+    /** 深灰字符，贴近 logo 描边色 */
+    private static final String BRAND_TEXT = "74,74,73";
+    /** 暖白 → 柔黄背景，呼应 logo 圆形光晕 */
+    private static final String BRAND_BG_FROM = "255,252,245";
+    private static final String BRAND_BG_TO = "255,243,214";
+    /** 浅灰干扰，避免喧宾夺主 */
+    private static final String BRAND_NOISE = "190,188,184";
+
+    private static final String CAPTCHA_WIDTH = "150";
+    private static final String CAPTCHA_HEIGHT = "38";
+
+    private static void applyBrandStyle(Properties properties, String fontSize, String charLength, String charSpace)
+    {
+        properties.setProperty(KAPTCHA_BORDER, "yes");
+        properties.setProperty(KAPTCHA_BORDER_COLOR, BRAND_BORDER);
+        properties.setProperty(KAPTCHA_BORDER_THICKNESS, "2");
+        properties.setProperty(KAPTCHA_TEXTPRODUCER_FONT_COLOR, BRAND_TEXT);
+        properties.setProperty(KAPTCHA_IMAGE_WIDTH, CAPTCHA_WIDTH);
+        properties.setProperty(KAPTCHA_IMAGE_HEIGHT, CAPTCHA_HEIGHT);
+        properties.setProperty(KAPTCHA_TEXTPRODUCER_FONT_SIZE, fontSize);
+        properties.setProperty(KAPTCHA_TEXTPRODUCER_CHAR_LENGTH, charLength);
+        properties.setProperty(KAPTCHA_TEXTPRODUCER_CHAR_SPACE, charSpace);
+        properties.setProperty(KAPTCHA_TEXTPRODUCER_FONT_NAMES, "Arial");
+        properties.setProperty(KAPTCHA_BACKGROUND_CLR_FROM, BRAND_BG_FROM);
+        properties.setProperty(KAPTCHA_BACKGROUND_CLR_TO, BRAND_BG_TO);
+        properties.setProperty(KAPTCHA_BACKGROUND_IMPL, "com.cat2bug.framework.config.Cat2BugKaptchaBackground");
+        properties.setProperty(KAPTCHA_NOISE_COLOR, BRAND_NOISE);
+        properties.setProperty(KAPTCHA_NOISE_IMPL, "com.cat2bug.framework.config.Cat2BugKaptchaNoise");
+        properties.setProperty(KAPTCHA_OBSCURIFICATOR_IMPL, "com.google.code.kaptcha.impl.WaterRipple");
+    }
+
     @Bean(name = "captchaProducer")
     public DefaultKaptcha getKaptchaBean()
     {
         DefaultKaptcha defaultKaptcha = new DefaultKaptcha();
         Properties properties = new Properties();
-        // 是否有边框 默认为true 我们可以自己设置yes，no
-        properties.setProperty(KAPTCHA_BORDER, "yes");
-        // 验证码文本字符颜色 默认为Color.BLACK
-        properties.setProperty(KAPTCHA_TEXTPRODUCER_FONT_COLOR, "black");
-        // 验证码图片宽度 默认为200
-        properties.setProperty(KAPTCHA_IMAGE_WIDTH, "160");
-        // 验证码图片高度 默认为50
-        properties.setProperty(KAPTCHA_IMAGE_HEIGHT, "60");
-        // 验证码文本字符大小 默认为40
-        properties.setProperty(KAPTCHA_TEXTPRODUCER_FONT_SIZE, "38");
-        // KAPTCHA_SESSION_KEY
+        applyBrandStyle(properties, "30", "4", "4");
         properties.setProperty(KAPTCHA_SESSION_CONFIG_KEY, "kaptchaCode");
-        // 验证码文本字符长度 默认为5
-        properties.setProperty(KAPTCHA_TEXTPRODUCER_CHAR_LENGTH, "4");
-        // 验证码文本字体样式 默认为new Font("Arial", 1, fontSize), new Font("Courier", 1, fontSize)
-        properties.setProperty(KAPTCHA_TEXTPRODUCER_FONT_NAMES, "Arial,Courier");
-        // 图片样式 水纹com.google.code.kaptcha.impl.WaterRipple 鱼眼com.google.code.kaptcha.impl.FishEyeGimpy 阴影com.google.code.kaptcha.impl.ShadowGimpy
-        properties.setProperty(KAPTCHA_OBSCURIFICATOR_IMPL, "com.google.code.kaptcha.impl.ShadowGimpy");
         Config config = new Config(properties);
         defaultKaptcha.setConfig(config);
         return defaultKaptcha;
@@ -48,34 +65,9 @@ public class CaptchaConfig
     {
         DefaultKaptcha defaultKaptcha = new DefaultKaptcha();
         Properties properties = new Properties();
-        // 是否有边框 默认为true 我们可以自己设置yes，no
-        properties.setProperty(KAPTCHA_BORDER, "yes");
-        // 边框颜色 默认为Color.BLACK
-        properties.setProperty(KAPTCHA_BORDER_COLOR, "105,179,90");
-        // 验证码文本字符颜色 默认为Color.BLACK
-        properties.setProperty(KAPTCHA_TEXTPRODUCER_FONT_COLOR, "blue");
-        // 验证码图片宽度 默认为200
-        properties.setProperty(KAPTCHA_IMAGE_WIDTH, "160");
-        // 验证码图片高度 默认为50
-        properties.setProperty(KAPTCHA_IMAGE_HEIGHT, "60");
-        // 验证码文本字符大小 默认为40
-        properties.setProperty(KAPTCHA_TEXTPRODUCER_FONT_SIZE, "35");
-        // KAPTCHA_SESSION_KEY
+        applyBrandStyle(properties, "28", "6", "3");
         properties.setProperty(KAPTCHA_SESSION_CONFIG_KEY, "kaptchaCodeMath");
-        // 验证码文本生成器
         properties.setProperty(KAPTCHA_TEXTPRODUCER_IMPL, "com.cat2bug.framework.config.KaptchaTextCreator");
-        // 验证码文本字符间距 默认为2
-        properties.setProperty(KAPTCHA_TEXTPRODUCER_CHAR_SPACE, "3");
-        // 验证码文本字符长度 默认为5
-        properties.setProperty(KAPTCHA_TEXTPRODUCER_CHAR_LENGTH, "6");
-        // 验证码文本字体样式 默认为new Font("Arial", 1, fontSize), new Font("Courier", 1, fontSize)
-        properties.setProperty(KAPTCHA_TEXTPRODUCER_FONT_NAMES, "Arial,Courier");
-        // 验证码噪点颜色 默认为Color.BLACK
-        properties.setProperty(KAPTCHA_NOISE_COLOR, "white");
-        // 干扰实现类
-        properties.setProperty(KAPTCHA_NOISE_IMPL, "com.google.code.kaptcha.impl.NoNoise");
-        // 图片样式 水纹com.google.code.kaptcha.impl.WaterRipple 鱼眼com.google.code.kaptcha.impl.FishEyeGimpy 阴影com.google.code.kaptcha.impl.ShadowGimpy
-        properties.setProperty(KAPTCHA_OBSCURIFICATOR_IMPL, "com.google.code.kaptcha.impl.ShadowGimpy");
         Config config = new Config(properties);
         defaultKaptcha.setConfig(config);
         return defaultKaptcha;
