@@ -69,29 +69,129 @@ class UpgradeServiceTest
     }
 
     @Test
-    void isUpgradeRequired_returnsTrueWhenLegacyWithoutInstallFile()
+    void isUpgradeRequired_returnsFalseWhenInstallNotCompletedOnDisk()
     {
-        when(installService.hasLegacyInstallation()).thenReturn(true);
-
-        assertTrue(upgradeService.isUpgradeRequired());
+        assertFalse(upgradeService.isUpgradeRequired());
     }
 
     @Test
-    void isUpgradeRequired_returnsFalseWhenEmptyDatabaseEvenIfSchemaPendingWouldExist()
+    void isUpgradeRequired_returnsFalseWhenUpgradeFailedButInstallIncomplete(@TempDir Path dir) throws Exception
     {
-        when(installService.hasLegacyInstallation()).thenReturn(false);
-        when(installService.isSchemaPresent()).thenReturn(false);
+        Path installFile = dir.resolve("application-install.yml");
+        installProperties.setConfigPath(installFile.toString());
+        Map<String, Object> root = new LinkedHashMap<>();
+        Map<String, Object> cat2bug = new LinkedHashMap<>();
+        Map<String, Object> install = new LinkedHashMap<>();
+        install.put("completed", false);
+        cat2bug.put("install", install);
+        Map<String, Object> upgrade = new LinkedHashMap<>();
+        upgrade.put("state", UpgradeSupport.STATE_FAILED);
+        upgrade.put("lastError", "checksum");
+        cat2bug.put("upgrade", upgrade);
+        root.put("cat2bug", cat2bug);
+        InstallConfigSupport.writeInstallConfig(installFile, root);
+
+        assertTrue(upgradeService.isUpgradeActive());
+        assertFalse(upgradeService.isUpgradeRequired());
+    }
+
+    @Test
+    void isUpgradeRequired_returnsFalseWhenSkippedEvenWithCompletedInstallAndPending(@TempDir Path dir) throws Exception
+    {
+        Path installFile = dir.resolve("application-install.yml");
+        installProperties.setConfigPath(installFile.toString());
+        Map<String, Object> root = new LinkedHashMap<>();
+        Map<String, Object> cat2bug = new LinkedHashMap<>();
+        Map<String, Object> install = new LinkedHashMap<>();
+        install.put("completed", true);
+        cat2bug.put("install", install);
+        root.put("cat2bug", cat2bug);
+        InstallConfigSupport.writeInstallConfig(installFile, root);
+        upgradeProperties.setSkip(true);
+
+        UpgradeMigrationInspector inspector = new UpgradeMigrationInspector()
+        {
+            @Override
+            public java.util.List<String> listPendingMigrations(String databaseType)
+            {
+                return java.util.List.of("0.6.3 add column");
+            }
+
+            @Override
+            public boolean hasPendingMigrations(String databaseType)
+            {
+                return true;
+            }
+        };
+        ReflectionTestUtils.setField(upgradeService, "migrationInspector", inspector);
 
         assertFalse(upgradeService.isUpgradeRequired());
     }
 
     @Test
-    void isUpgradeRequired_returnsTrueWhenFlywayHistoryPresentWithoutAdmin()
+    void isUpgradeRequired_returnsTrueWhenInstallCompletedAndPendingMigrations(@TempDir Path dir) throws Exception
     {
-        when(installService.hasLegacyInstallation()).thenReturn(false);
-        when(installService.isSchemaPresent()).thenReturn(true);
+        when(installService.needsRestart()).thenReturn(false);
+        Path installFile = dir.resolve("application-install.yml");
+        installProperties.setConfigPath(installFile.toString());
+        Map<String, Object> root = new LinkedHashMap<>();
+        Map<String, Object> cat2bug = new LinkedHashMap<>();
+        Map<String, Object> install = new LinkedHashMap<>();
+        install.put("completed", true);
+        cat2bug.put("install", install);
+        root.put("cat2bug", cat2bug);
+        InstallConfigSupport.writeInstallConfig(installFile, root);
+
+        UpgradeMigrationInspector inspector = new UpgradeMigrationInspector()
+        {
+            @Override
+            public java.util.List<String> listPendingMigrations(String databaseType)
+            {
+                return java.util.List.of("0.6.3 add column");
+            }
+
+            @Override
+            public boolean hasPendingMigrations(String databaseType)
+            {
+                return true;
+            }
+        };
+        ReflectionTestUtils.setField(upgradeService, "migrationInspector", inspector);
 
         assertTrue(upgradeService.isUpgradeRequired());
+    }
+
+    @Test
+    void isUpgradeRequired_returnsFalseWhileInstallNeedsRestart(@TempDir Path dir) throws Exception
+    {
+        when(installService.needsRestart()).thenReturn(true);
+        Path installFile = dir.resolve("application-install.yml");
+        installProperties.setConfigPath(installFile.toString());
+        Map<String, Object> root = new LinkedHashMap<>();
+        Map<String, Object> cat2bug = new LinkedHashMap<>();
+        Map<String, Object> install = new LinkedHashMap<>();
+        install.put("completed", true);
+        cat2bug.put("install", install);
+        root.put("cat2bug", cat2bug);
+        InstallConfigSupport.writeInstallConfig(installFile, root);
+
+        UpgradeMigrationInspector inspector = new UpgradeMigrationInspector()
+        {
+            @Override
+            public java.util.List<String> listPendingMigrations(String databaseType)
+            {
+                return java.util.List.of("0.6.3 add column");
+            }
+
+            @Override
+            public boolean hasPendingMigrations(String databaseType)
+            {
+                return true;
+            }
+        };
+        ReflectionTestUtils.setField(upgradeService, "migrationInspector", inspector);
+
+        assertFalse(upgradeService.isUpgradeRequired());
     }
 
     @Test
@@ -112,10 +212,8 @@ class UpgradeServiceTest
     }
 
     @Test
-    void isUpgradeActive_returnsFalseForCompletedStateWhenFullyInstalled()
+    void isUpgradeActive_returnsFalseForCompletedState()
     {
-        when(installService.hasLegacyInstallation()).thenReturn(false);
-        when(installService.isSchemaPresent()).thenReturn(false);
         upgradeProperties.setState(UpgradeSupport.STATE_COMPLETED);
 
         assertFalse(upgradeService.isUpgradeActive());
@@ -123,13 +221,12 @@ class UpgradeServiceTest
     }
 
     @Test
-    void resolveState_normalizesDefaultCompletedToPendingWhenLegacyStillNeedsUpgrade()
+    void resolveState_keepsCompletedWhenInstallNotCompletedOnDisk()
     {
-        when(installService.hasLegacyInstallation()).thenReturn(true);
         upgradeProperties.setState(UpgradeSupport.STATE_COMPLETED);
 
-        assertTrue(upgradeService.isUpgradeActive());
-        assertEquals(UpgradeSupport.STATE_PENDING, upgradeService.resolveState());
+        assertFalse(upgradeService.isUpgradeActive());
+        assertEquals(UpgradeSupport.STATE_COMPLETED, upgradeService.resolveState());
     }
 
     @Test
@@ -165,6 +262,107 @@ class UpgradeServiceTest
         upgradeService.markPending();
 
         assertEquals(UpgradeSupport.STATE_FAILED, upgradeService.resolveState());
+    }
+
+    @Test
+    void run_syncsPendingWhenInstallCompletedButSchemaDrift(@TempDir Path dir) throws Exception
+    {
+        when(installService.needsRestart()).thenReturn(false);
+        Path installFile = dir.resolve("application-install.yml");
+        installProperties.setConfigPath(installFile.toString());
+        Map<String, Object> root = new LinkedHashMap<>();
+        Map<String, Object> cat2bug = new LinkedHashMap<>();
+        Map<String, Object> install = new LinkedHashMap<>();
+        install.put("completed", true);
+        cat2bug.put("install", install);
+        Map<String, Object> upgrade = new LinkedHashMap<>();
+        upgrade.put("state", UpgradeSupport.STATE_COMPLETED);
+        upgrade.put("completedVersion", "0.6.2");
+        cat2bug.put("upgrade", upgrade);
+        root.put("cat2bug", cat2bug);
+        InstallConfigSupport.writeInstallConfig(installFile, root);
+
+        UpgradeMigrationInspector inspector = new UpgradeMigrationInspector()
+        {
+            @Override
+            public java.util.List<String> listPendingMigrations(String databaseType)
+            {
+                return java.util.List.of("0.6.1 team project of admin");
+            }
+
+            @Override
+            public boolean hasPendingMigrations(String databaseType)
+            {
+                return true;
+            }
+        };
+        ReflectionTestUtils.setField(upgradeService, "migrationInspector", inspector);
+
+        upgradeService.run(null);
+
+        assertEquals(UpgradeSupport.STATE_PENDING, upgradeService.resolveState());
+        assertTrue(upgradeService.isUpgradeRequired());
+    }
+
+    @Test
+    void getStatus_syncsPendingWhenSchemaDrift(@TempDir Path dir) throws Exception
+    {
+        when(installService.needsRestart()).thenReturn(false);
+        Path installFile = dir.resolve("application-install.yml");
+        installProperties.setConfigPath(installFile.toString());
+        Map<String, Object> root = new LinkedHashMap<>();
+        Map<String, Object> cat2bug = new LinkedHashMap<>();
+        Map<String, Object> install = new LinkedHashMap<>();
+        install.put("completed", true);
+        cat2bug.put("install", install);
+        Map<String, Object> upgrade = new LinkedHashMap<>();
+        upgrade.put("state", UpgradeSupport.STATE_COMPLETED);
+        cat2bug.put("upgrade", upgrade);
+        root.put("cat2bug", cat2bug);
+        InstallConfigSupport.writeInstallConfig(installFile, root);
+
+        UpgradeMigrationInspector inspector = new UpgradeMigrationInspector()
+        {
+            @Override
+            public java.util.List<String> listPendingMigrations(String databaseType)
+            {
+                return java.util.List.of("0.6.1 team project of admin");
+            }
+
+            @Override
+            public boolean hasPendingMigrations(String databaseType)
+            {
+                return true;
+            }
+        };
+        ReflectionTestUtils.setField(upgradeService, "migrationInspector", inspector);
+
+        Map<String, Object> status = upgradeService.getStatus();
+
+        assertEquals(UpgradeSupport.STATE_PENDING, status.get("state"));
+        assertEquals(Boolean.TRUE, status.get("upgradeRequired"));
+    }
+
+    @Test
+    void run_marksInstallCompletedAfterUpgradeRestart(@TempDir Path dir) throws Exception
+    {
+        Path installFile = dir.resolve("application-install.yml");
+        installProperties.setConfigPath(installFile.toString());
+        Map<String, Object> root = new LinkedHashMap<>();
+        Map<String, Object> cat2bug = new LinkedHashMap<>();
+        Map<String, Object> install = new LinkedHashMap<>();
+        install.put("completed", false);
+        cat2bug.put("install", install);
+        Map<String, Object> upgrade = new LinkedHashMap<>();
+        upgrade.put("state", UpgradeSupport.STATE_RESTART_REQUIRED);
+        cat2bug.put("upgrade", upgrade);
+        root.put("cat2bug", cat2bug);
+        InstallConfigSupport.writeInstallConfig(installFile, root);
+
+        upgradeService.run(null);
+
+        assertTrue(InstallConfigSupport.isInstallCompletedOnDisk(installFile.toString()));
+        assertEquals(UpgradeSupport.STATE_COMPLETED, upgradeService.resolveState());
     }
 
     @SuppressWarnings("unchecked")

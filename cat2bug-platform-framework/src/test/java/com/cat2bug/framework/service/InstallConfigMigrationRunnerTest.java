@@ -63,7 +63,7 @@ class InstallConfigMigrationRunnerTest
     }
 
     @Test
-    void run_marksPendingWhenInstallFilePresentButNotCompleted() throws Exception
+    void run_skipsWhenInstallFilePresentButNotCompletedAndUpgradeNotSkipped() throws Exception
     {
         when(installProperties.isInstallConfigPresent()).thenReturn(true);
         when(installProperties.isInstallCompletedOnDisk()).thenReturn(false);
@@ -73,7 +73,8 @@ class InstallConfigMigrationRunnerTest
 
         migrationRunner.run(mock(ApplicationArguments.class));
 
-        verify(upgradeService).markPending();
+        verify(upgradeService, never()).markPending();
+        verify(installProperties, never()).resolveConfigPath();
     }
 
     @Test
@@ -90,7 +91,7 @@ class InstallConfigMigrationRunnerTest
     }
 
     @Test
-    void run_marksPendingWhenLegacyDetectedAndUpgradeNotSkipped() throws Exception
+    void run_doesNotMarkPendingWhenLegacyWithoutInstallFileAndUpgradeNotSkipped() throws Exception
     {
         when(installProperties.isInstallConfigPresent()).thenReturn(false);
         when(installService.isInstallSkipped()).thenReturn(false);
@@ -99,7 +100,7 @@ class InstallConfigMigrationRunnerTest
 
         migrationRunner.run(mock(ApplicationArguments.class));
 
-        verify(upgradeService).markPending();
+        verify(upgradeService, never()).markPending();
         verify(installProperties, never()).resolveConfigPath();
     }
 

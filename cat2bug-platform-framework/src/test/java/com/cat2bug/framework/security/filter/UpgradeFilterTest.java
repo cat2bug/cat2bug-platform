@@ -49,7 +49,6 @@ class UpgradeFilterTest
     void doFilterInternal_passesThroughForFreshInstallSetup() throws Exception
     {
         when(installService.isInstalled()).thenReturn(false);
-        when(upgradeService.isUpgradeRequired()).thenReturn(false);
         MockHttpServletRequest request = new MockHttpServletRequest("POST", "/setup/submit");
 
         upgradeFilter.doFilterInternal(request, response, filterChain);
@@ -61,7 +60,7 @@ class UpgradeFilterTest
     @Test
     void doFilterInternal_passesThroughWhenUpgradeNotActive() throws Exception
     {
-        when(upgradeService.isUpgradeActive()).thenReturn(false);
+        when(upgradeService.resolveState()).thenReturn(UpgradeSupport.STATE_COMPLETED);
         MockHttpServletRequest request = new MockHttpServletRequest("POST", "/login");
 
         upgradeFilter.doFilterInternal(request, response, filterChain);
@@ -73,7 +72,7 @@ class UpgradeFilterTest
     @Test
     void doFilterInternal_blocksLoginWhenUpgradePending() throws Exception
     {
-        when(upgradeService.isUpgradeActive()).thenReturn(true);
+        when(upgradeService.resolveState()).thenReturn(UpgradeSupport.STATE_PENDING);
         MockHttpServletRequest request = new MockHttpServletRequest("POST", "/login");
 
         upgradeFilter.doFilterInternal(request, response, filterChain);
@@ -83,22 +82,20 @@ class UpgradeFilterTest
     }
 
     @Test
-    void doFilterInternal_blocksLoginWhenUpgradeRequiredButNotYetActive() throws Exception
+    void doFilterInternal_passesThroughWhenCompletedEvenIfUpgradeRequired() throws Exception
     {
-        when(upgradeService.isUpgradeActive()).thenReturn(false);
-        when(upgradeService.isUpgradeRequired()).thenReturn(true);
-        when(upgradeService.resolveState()).thenReturn(UpgradeSupport.STATE_PENDING);
+        when(upgradeService.resolveState()).thenReturn(UpgradeSupport.STATE_COMPLETED);
         MockHttpServletRequest request = new MockHttpServletRequest("POST", "/login");
 
         upgradeFilter.doFilterInternal(request, response, filterChain);
 
-        verify(filterChain, never()).doFilter(request, response);
+        verify(filterChain).doFilter(request, response);
     }
 
     @Test
     void doFilterInternal_allowsUpgradeStatusWhenActive() throws Exception
     {
-        when(upgradeService.isUpgradeActive()).thenReturn(true);
+        when(upgradeService.resolveState()).thenReturn(UpgradeSupport.STATE_PENDING);
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/upgrade/status");
 
         upgradeFilter.doFilterInternal(request, response, filterChain);

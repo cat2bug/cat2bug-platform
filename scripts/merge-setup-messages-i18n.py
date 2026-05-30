@@ -60,6 +60,16 @@ LOCALES = {
         "setup.install.path.label.profile": "File storage path",
         "setup.install.path.label.temp": "Temporary directory",
         "setup.install.path.label.log": "Log directory",
+        "upgrade.backup.dir.failed": "Failed to create backup directory: {0}",
+        "upgrade.backup.file.invalid": "Invalid backup file name. Use letters, digits, underscores, hyphens, and end with .sql",
+        "upgrade.backup.file.missing": "Backup file does not exist or is not readable",
+        "upgrade.backup.mysql.failed": "MySQL backup failed",
+        "upgrade.backup.mysql.client.missing": "{0} command not found. Install MySQL client and add it to PATH",
+        "upgrade.backup.h2.failed": "H2 backup failed: {0}",
+        "upgrade.rollback.mysql.failed": "MySQL rollback failed",
+        "upgrade.rollback.h2.failed": "H2 rollback failed: {0}",
+        "upgrade.rollback.no.backup": "No upgrade backup file available for rollback",
+        "upgrade.rollback.completed": "Database restored from pre-upgrade backup. Verify data and retry upgrade",
     },
     "messages_zh_TW.properties": {
         "setup.test.connection.success": "連線成功",
@@ -321,7 +331,7 @@ def parse_bundle(path: Path) -> dict[str, str]:
 
 
 def strip_setup_keys(text: str) -> str:
-    return re.sub(r"^setup\.[^\n]+\n", "", text, flags=re.MULTILINE)
+    return re.sub(r"^(setup|upgrade)\.[^\n]+\n", "", text, flags=re.MULTILINE)
 
 
 def merge_file(name: str, zh: dict[str, str]) -> None:

@@ -36,27 +36,27 @@ public class UpgradeFilter extends OncePerRequestFilter
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException
     {
-        // 全新空库首次安装：setup API 由 SetupFilter 放行，此处不拦截
-        if (!installService.isInstalled() && !upgradeService.isUpgradeRequired())
+        // 未安装：仅 setup 路径，由 SetupFilter 管控，此处不拦截
+        if (!installService.isInstalled())
+        {
+            chain.doFilter(request, response);
+            return;
+        }
+        if (upgradeService.isUpgradeSkipped() || installService.needsRestart())
         {
             chain.doFilter(request, response);
             return;
         }
 
-        if (!upgradeService.isUpgradeActive() && !upgradeService.isUpgradeRequired())
-        {
-            chain.doFilter(request, response);
-            return;
-        }
-        if (UpgradeSupport.STATE_COMPLETED.equals(upgradeService.resolveState())
-                && !upgradeService.isUpgradeRequired())
+        // 热路径仅读磁盘升级状态，禁止在此触发 Flyway（避免与业务争抢连接池）
+        String state = upgradeService.resolveState();
+        if (!UpgradeSupport.isActiveState(state) && !UpgradeSupport.STATE_RESTART_REQUIRED.equals(state))
         {
             chain.doFilter(request, response);
             return;
         }
 
         String path = requestUriPath(request);
-        String state = upgradeService.resolveState();
         if (UpgradeSupport.STATE_RESTART_REQUIRED.equals(state))
         {
             if (isAllowedDuringUpgradeRestart(path, request.getMethod()))

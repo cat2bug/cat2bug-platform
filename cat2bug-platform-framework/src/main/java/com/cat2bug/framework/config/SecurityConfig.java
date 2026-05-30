@@ -14,9 +14,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
-import com.cat2bug.framework.service.InstallService;
-import com.cat2bug.framework.service.UpgradeService;
-import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -54,12 +51,6 @@ public class SecurityConfig {
     @Autowired
     private PermitAllUrlProperties permitAllUrl;
 
-    @Autowired
-    private InstallService installService;
-
-    @Autowired
-    private UpgradeService upgradeService;
-
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
         return new BCryptPasswordEncoder();
@@ -93,12 +84,9 @@ public class SecurityConfig {
                     // 已安装后仍允许查询安装状态，供前端路由判断（与 SetupFilter 一致）
                     registry.requestMatchers(ant(HttpMethod.GET, "/setup/status")).permitAll();
                     registry.requestMatchers(ant(HttpMethod.GET, "/upgrade/status")).permitAll();
-                    registry.requestMatchers(ant("/setup/test/**")).access((authentication, context) ->
-                            new AuthorizationDecision(!installService.isInstalled() || upgradeService.isUpgradeRequired()));
-                    registry.requestMatchers(ant("/setup/**")).access((authentication, context) ->
-                            new AuthorizationDecision(!installService.isInstalled() && !upgradeService.isUpgradeRequired()));
-                    registry.requestMatchers(ant("/upgrade/**")).access((authentication, context) ->
-                            new AuthorizationDecision(upgradeService.isUpgradeRequired()));
+                    // 安装/升级向导由 SetupFilter、UpgradeFilter 管控；此处 permitAll 避免匿名请求被误判 401
+                    registry.requestMatchers(ant("/setup/**")).permitAll();
+                    registry.requestMatchers(ant("/upgrade/**")).permitAll();
                     registry.requestMatchers(
                             ant("/login"),
                             ant("/**/login"),

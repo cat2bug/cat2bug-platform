@@ -54,8 +54,14 @@ public class InstallConfigMigrationRunner implements ApplicationRunner
 
         if (!upgradeService.isUpgradeSkipped())
         {
-            upgradeService.markPending();
-            log.info("Legacy 实例已标记为待升级，请通过 /upgrade 向导完成配置与迁移");
+            if (!installProperties.isInstallConfigPresent())
+            {
+                log.debug("无 install 文件且未启用升级跳过，请通过 /setup 附着已有数据库");
+            }
+            else
+            {
+                log.debug("install 未完成，请通过 /setup 附着已有数据库完成安装");
+            }
             return;
         }
 

@@ -60,6 +60,8 @@ services:
       SPRING_DATASOURCE_DRUID_MASTER_PASSWORD: cat2bug_password
       REDIS_HOSTS: cat2bug-platform-redis:6379
       SPRING_REDIS_HOST: cat2bug-platform-redis
+      # 已 completed install + 换 JAR 有待执行 Flyway 时：跳过 /upgrade UI，启动期静默 migrate；失败则容器 exit 1
+      # CAT2BUG_UPGRADE_SKIP: "true"
     volumes:
       - ./uploadPath:/home/uploadPath
       - ./logs:/home/logs

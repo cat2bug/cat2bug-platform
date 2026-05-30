@@ -12,6 +12,7 @@ import com.cat2bug.framework.service.InstallService;
 import com.cat2bug.framework.service.UpgradeService;
 import com.cat2bug.web.domain.setup.SetupSubmitRequest;
 import com.cat2bug.web.service.setup.SetupConfigWriter;
+import com.cat2bug.web.service.setup.SetupMessages;
 import com.cat2bug.web.service.setup.SetupMigrationService;
 import com.cat2bug.web.service.setup.InstallApplicationRestarter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,11 +21,12 @@ import org.springframework.stereotype.Service;
 
 import javax.sql.DataSource;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 升级提交：配置 merge 写入、Flyway 迁移、标记重启。
+ * 升级提交：备份、配置 merge 写入、Flyway 迁移、标记重启。
  */
 @Service
 public class UpgradeInstallService
@@ -48,10 +50,16 @@ public class UpgradeInstallService
     private SetupMigrationService setupMigrationService;
 
     @Autowired
+    private UpgradeDatabaseBackupService upgradeDatabaseBackupService;
+
+    @Autowired
     private DataSource dataSource;
 
     @Autowired
     private InstallApplicationRestarter installApplicationRestarter;
+
+    @Autowired
+    private UpgradeAdminAuthService upgradeAdminAuthService;
 
     public Map<String, Object> submit(SetupSubmitRequest request, boolean retry)
     {
@@ -63,16 +71,31 @@ public class UpgradeInstallService
         {
             throw new ServiceException("当前无需升级");
         }
-        String lastStep = upgradeService.getLastStep();
+        upgradeAdminAuthService.verifyAdministrator(request);
+        String step = upgradeService.getLastStep();
         upgradeService.markRunning();
+        String runningStep = step;
+        boolean configCompletedThisRun = false;
         try
         {
-            if (shouldRunConfigStep(lastStep))
+            if (shouldRunBackupStep(step, request))
             {
-                writeMergedConfig(request);
+                runningStep = UpgradeSupport.STEP_BACKUP;
+                Path backupPath = upgradeDatabaseBackupService.backup(request, request.getBackupFileName());
+                upgradeService.recordLastBackupFile(backupPath.toString());
+                upgradeService.updateLastStep(UpgradeSupport.STEP_CONFIG);
+                step = UpgradeSupport.STEP_CONFIG;
             }
-            if (shouldRunMigrationStep(lastStep))
+            if (shouldRunConfigStep(step))
             {
+                runningStep = UpgradeSupport.STEP_CONFIG;
+                writeMergedConfig(request);
+                configCompletedThisRun = true;
+                step = InstallConfigSupport.UPGRADE_LAST_STEP_MIGRATION;
+            }
+            if (configCompletedThisRun || shouldRunMigrationStep(step))
+            {
+                runningStep = InstallConfigSupport.UPGRADE_LAST_STEP_MIGRATION;
                 String databaseType = resolveDatabaseType(request);
                 if (retry)
                 {
@@ -88,11 +111,26 @@ public class UpgradeInstallService
         }
         catch (Exception e)
         {
-            String step = shouldRunConfigStep(lastStep)
-                    ? UpgradeSupport.STEP_CONFIG : InstallConfigSupport.UPGRADE_LAST_STEP_MIGRATION;
-            upgradeService.markFailed(step, e.getMessage());
+            upgradeService.markFailed(runningStep, e.getMessage());
             throw new ServiceException(e.getMessage());
         }
+    }
+
+    public Map<String, Object> rollback(SetupSubmitRequest request)
+    {
+        upgradeAdminAuthService.verifyAdministrator(request);
+        String backupPath = upgradeService.getLastBackupFile();
+        if (StringUtils.isEmpty(backupPath))
+        {
+            throw new ServiceException(SetupMessages.msg("upgrade.rollback.no.backup"));
+        }
+        upgradeDatabaseBackupService.restore(request, Paths.get(backupPath));
+        setupMigrationService.invalidatePendingMigrationCache();
+        upgradeService.resetAfterRollback(SetupMessages.msg("upgrade.rollback.completed"));
+        Map<String, Object> result = new HashMap<>(4);
+        result.put("message", SetupMessages.msg("upgrade.rollback.completed"));
+        result.put("lastBackupFile", backupPath);
+        return result;
     }
 
     private Map<String, Object> scheduleRestartResult(String message)
@@ -105,27 +143,46 @@ public class UpgradeInstallService
         return result;
     }
 
+    private boolean isBackupEnabled(SetupSubmitRequest request)
+    {
+        return request == null || request.getBackupEnabled() == null || Boolean.TRUE.equals(request.getBackupEnabled());
+    }
+
+    private boolean shouldRunBackupStep(String lastStep, SetupSubmitRequest request)
+    {
+        if (!isBackupEnabled(request))
+        {
+            return false;
+        }
+        return StringUtils.isEmpty(lastStep) || UpgradeSupport.STEP_BACKUP.equals(lastStep);
+    }
+
     private boolean shouldRunConfigStep(String lastStep)
     {
-        return StringUtils.isEmpty(lastStep) || UpgradeSupport.STEP_CONFIG.equals(lastStep);
+        return StringUtils.isEmpty(lastStep)
+                || UpgradeSupport.STEP_BACKUP.equals(lastStep)
+                || UpgradeSupport.STEP_CONFIG.equals(lastStep);
     }
 
     private boolean shouldRunMigrationStep(String lastStep)
     {
-        return StringUtils.isEmpty(lastStep)
-                || UpgradeSupport.STEP_CONFIG.equals(lastStep)
-                || InstallConfigSupport.UPGRADE_LAST_STEP_MIGRATION.equals(lastStep);
+        return InstallConfigSupport.UPGRADE_LAST_STEP_MIGRATION.equals(lastStep);
     }
 
     private void writeMergedConfig(SetupSubmitRequest request) throws Exception
     {
         String databaseType = resolveDatabaseType(request);
-        Map<String, Object> base = InstallConfigExporter.exportFromEnvironment(environment);
+        boolean installCompleted = installProperties.isInstallCompletedOnDisk();
+        Map<String, Object> base = InstallConfigSupport.loadYamlMap(installProperties.resolveConfigPath());
+        if (base == null || base.isEmpty())
+        {
+            base = InstallConfigExporter.exportFromEnvironment(environment);
+        }
         Map<String, Object> template = InstallTemplateLoader.loadTemplate(databaseType);
         Map<String, Object> wizardOverrides = setupConfigWriter.buildYamlRoot(request);
-        InstallConfigSupport.setInstallCompleted(wizardOverrides, false);
+        InstallConfigSupport.setInstallCompleted(wizardOverrides, installCompleted);
         Map<String, Object> root = UpgradeConfigMerger.mergePreserveExisting(base, template, wizardOverrides);
-        InstallConfigSupport.setInstallCompleted(root, false);
+        InstallConfigSupport.setInstallCompleted(root, installCompleted);
         Path target = installProperties.resolveConfigPath();
         InstallConfigSupport.writeInstallConfig(target, root);
         upgradeService.updateLastStep(InstallConfigSupport.UPGRADE_LAST_STEP_MIGRATION);

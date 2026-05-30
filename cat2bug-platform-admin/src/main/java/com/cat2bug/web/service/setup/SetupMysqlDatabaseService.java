@@ -90,10 +90,7 @@ public class SetupMysqlDatabaseService
 
     static void assertValidDatabaseName(String database)
     {
-        if (StringUtils.isEmpty(database) || !database.matches("^[A-Za-z0-9_]+$"))
-        {
-            throw new ServiceException(SetupMessages.msg("setup.test.database.name.invalid"));
-        }
+        DatabaseExistenceProbe.assertValidDatabaseName(database);
     }
 
     private Connection openServerConnection(SetupSubmitRequest request) throws Exception

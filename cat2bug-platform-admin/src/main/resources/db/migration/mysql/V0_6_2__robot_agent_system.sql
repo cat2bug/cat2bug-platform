@@ -1,7 +1,7 @@
--- V0.6.2: 智能体系统 - 创建智能体配置表和任务队列表
+-- V0.6.2: 智能体系统 - 创建智能体配置表和任务队列表（legacy 可能已存在表结构，幂等处理）
+SET @db := DATABASE();
 
--- 智能体配置表
-CREATE TABLE sys_robot_agent (
+CREATE TABLE IF NOT EXISTS sys_robot_agent (
   agent_id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '智能体ID',
   agent_name VARCHAR(100) NOT NULL COMMENT '智能体名称',
   agent_type VARCHAR(50) NOT NULL COMMENT '智能体类型：case-generation, defect-handling, report-generation, bdd-testing',
@@ -21,8 +21,7 @@ CREATE TABLE sys_robot_agent (
   update_time DATETIME COMMENT '更新时间'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='智能体配置表';
 
--- 任务队列表
-CREATE TABLE sys_agent_task (
+CREATE TABLE IF NOT EXISTS sys_agent_task (
   task_id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '任务ID',
   agent_id BIGINT NOT NULL COMMENT '智能体ID',
   task_type VARCHAR(50) NOT NULL COMMENT '任务类型',
@@ -46,15 +45,65 @@ CREATE TABLE sys_agent_task (
   project_id BIGINT COMMENT '项目ID'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='智能体任务队列表';
 
--- 为任务队列表添加索引
-CREATE INDEX idx_agent_task_status ON sys_agent_task(status);
-CREATE INDEX idx_agent_task_priority ON sys_agent_task(priority);
-CREATE INDEX idx_agent_task_submit_time ON sys_agent_task(submit_time);
-CREATE INDEX idx_agent_task_agent_id ON sys_agent_task(agent_id);
-CREATE INDEX idx_agent_task_project_id ON sys_agent_task(project_id);
-CREATE INDEX idx_agent_task_orchestrator ON sys_agent_task(orchestrator_job_id, orchestrator_type);
+SET @exists := (
+  SELECT COUNT(*) FROM information_schema.STATISTICS
+  WHERE TABLE_SCHEMA = @db AND TABLE_NAME = 'sys_agent_task' AND INDEX_NAME = 'idx_agent_task_status'
+);
+SET @q := IF(@exists = 0, 'CREATE INDEX idx_agent_task_status ON sys_agent_task(status)', 'SELECT 1');
+PREPARE s FROM @q; EXECUTE s; DEALLOCATE PREPARE s;
 
--- 为智能体配置表添加索引
-CREATE INDEX idx_robot_agent_scope ON sys_robot_agent(scope_type, scope_id);
-CREATE INDEX idx_robot_agent_type ON sys_robot_agent(agent_type);
-CREATE INDEX idx_robot_agent_status ON sys_robot_agent(status);
+SET @exists := (
+  SELECT COUNT(*) FROM information_schema.STATISTICS
+  WHERE TABLE_SCHEMA = @db AND TABLE_NAME = 'sys_agent_task' AND INDEX_NAME = 'idx_agent_task_priority'
+);
+SET @q := IF(@exists = 0, 'CREATE INDEX idx_agent_task_priority ON sys_agent_task(priority)', 'SELECT 1');
+PREPARE s FROM @q; EXECUTE s; DEALLOCATE PREPARE s;
+
+SET @exists := (
+  SELECT COUNT(*) FROM information_schema.STATISTICS
+  WHERE TABLE_SCHEMA = @db AND TABLE_NAME = 'sys_agent_task' AND INDEX_NAME = 'idx_agent_task_submit_time'
+);
+SET @q := IF(@exists = 0, 'CREATE INDEX idx_agent_task_submit_time ON sys_agent_task(submit_time)', 'SELECT 1');
+PREPARE s FROM @q; EXECUTE s; DEALLOCATE PREPARE s;
+
+SET @exists := (
+  SELECT COUNT(*) FROM information_schema.STATISTICS
+  WHERE TABLE_SCHEMA = @db AND TABLE_NAME = 'sys_agent_task' AND INDEX_NAME = 'idx_agent_task_agent_id'
+);
+SET @q := IF(@exists = 0, 'CREATE INDEX idx_agent_task_agent_id ON sys_agent_task(agent_id)', 'SELECT 1');
+PREPARE s FROM @q; EXECUTE s; DEALLOCATE PREPARE s;
+
+SET @exists := (
+  SELECT COUNT(*) FROM information_schema.STATISTICS
+  WHERE TABLE_SCHEMA = @db AND TABLE_NAME = 'sys_agent_task' AND INDEX_NAME = 'idx_agent_task_project_id'
+);
+SET @q := IF(@exists = 0, 'CREATE INDEX idx_agent_task_project_id ON sys_agent_task(project_id)', 'SELECT 1');
+PREPARE s FROM @q; EXECUTE s; DEALLOCATE PREPARE s;
+
+SET @exists := (
+  SELECT COUNT(*) FROM information_schema.STATISTICS
+  WHERE TABLE_SCHEMA = @db AND TABLE_NAME = 'sys_agent_task' AND INDEX_NAME = 'idx_agent_task_orchestrator'
+);
+SET @q := IF(@exists = 0, 'CREATE INDEX idx_agent_task_orchestrator ON sys_agent_task(orchestrator_job_id, orchestrator_type)', 'SELECT 1');
+PREPARE s FROM @q; EXECUTE s; DEALLOCATE PREPARE s;
+
+SET @exists := (
+  SELECT COUNT(*) FROM information_schema.STATISTICS
+  WHERE TABLE_SCHEMA = @db AND TABLE_NAME = 'sys_robot_agent' AND INDEX_NAME = 'idx_robot_agent_scope'
+);
+SET @q := IF(@exists = 0, 'CREATE INDEX idx_robot_agent_scope ON sys_robot_agent(scope_type, scope_id)', 'SELECT 1');
+PREPARE s FROM @q; EXECUTE s; DEALLOCATE PREPARE s;
+
+SET @exists := (
+  SELECT COUNT(*) FROM information_schema.STATISTICS
+  WHERE TABLE_SCHEMA = @db AND TABLE_NAME = 'sys_robot_agent' AND INDEX_NAME = 'idx_robot_agent_type'
+);
+SET @q := IF(@exists = 0, 'CREATE INDEX idx_robot_agent_type ON sys_robot_agent(agent_type)', 'SELECT 1');
+PREPARE s FROM @q; EXECUTE s; DEALLOCATE PREPARE s;
+
+SET @exists := (
+  SELECT COUNT(*) FROM information_schema.STATISTICS
+  WHERE TABLE_SCHEMA = @db AND TABLE_NAME = 'sys_robot_agent' AND INDEX_NAME = 'idx_robot_agent_status'
+);
+SET @q := IF(@exists = 0, 'CREATE INDEX idx_robot_agent_status ON sys_robot_agent(status)', 'SELECT 1');
+PREPARE s FROM @q; EXECUTE s; DEALLOCATE PREPARE s;

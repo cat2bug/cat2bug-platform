@@ -32,7 +32,8 @@ export function submitUpgrade(data) {
     headers: upgradeHeaders,
     method: 'post',
     data,
-    timeout: 300000
+    timeout: 300000,
+    silentError: true
   })
 }
 
@@ -40,6 +41,18 @@ export function submitUpgrade(data) {
 export function retryUpgrade(data) {
   return request({
     url: '/upgrade/retry',
+    headers: upgradeHeaders,
+    method: 'post',
+    data,
+    timeout: 300000,
+    silentError: true
+  })
+}
+
+/** 回滚到升级前备份 */
+export function rollbackUpgrade(data) {
+  return request({
+    url: '/upgrade/rollback',
     headers: upgradeHeaders,
     method: 'post',
     data,

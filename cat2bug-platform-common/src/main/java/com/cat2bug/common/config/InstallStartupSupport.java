@@ -10,6 +10,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * 首次安装前启动引导：在磁盘 install 不存在时从 classpath H2 模板注入内存配置，避免连接尚未配置的外部数据库。
@@ -22,6 +23,12 @@ public final class InstallStartupSupport
 
     public static final String BOOTSTRAP_MODE_PROPERTY = "cat2bug.install.bootstrap-mode";
 
+    /** 引导期专用 H2 文件，与用户选择的 {@code cat2bug_platform} 等库名隔离，避免误判 existing。 */
+    public static final String BOOTSTRAP_H2_JDBC_URL =
+            "jdbc:h2:file:./data/.cat2bug_bootstrap;MODE=MySQL;DATABASE_TO_LOWER=TRUE;";
+
+    private static final String DRUID_MASTER_URL_PROPERTY = "spring.datasource.druid.master.url";
+
     private InstallStartupSupport()
     {
     }
@@ -31,6 +38,7 @@ public final class InstallStartupSupport
      */
     public static String[] prepare(String[] args)
     {
+        pinResolvedInstallConfigPathIfPresent();
         BootstrapDecision decision = evaluate(null, null);
         if (!decision.bootstrap())
         {
@@ -56,16 +64,37 @@ public final class InstallStartupSupport
     {
         String resolvedPath = configPath != null ? configPath : resolveConfigPathProperty();
         String skip = skipProperty != null ? skipProperty : System.getProperty("cat2bug.install.skip", "false");
-        Path path = InstallConfigSupport.resolveConfigPath(resolvedPath);
+        Path path = InstallConfigSupport.resolveWorkingDirectoryConfigPath(resolvedPath);
         if (InstallConfigSupport.isConfigFilePresent(resolvedPath))
         {
-            return BootstrapDecision.disabled(path);
+            return BootstrapDecision.disabled(InstallConfigSupport.resolveConfigPath(resolvedPath));
         }
         if (InstallConfigSupport.isInstallSkipped(skip))
         {
             return BootstrapDecision.disabled(path);
         }
         return BootstrapDecision.enabled(path);
+    }
+
+    /**
+     * 将已定位的 install 配置绝对路径写入系统属性，供 Spring {@code config.import} 与 {@link InstallProperties} 使用。
+     */
+    static void pinResolvedInstallConfigPathIfPresent()
+    {
+        String configPathProperty = resolveConfigPathProperty();
+        Optional<Path> located = InstallConfigSupport.locateExistingConfigFile(configPathProperty);
+        if (located.isEmpty())
+        {
+            return;
+        }
+        Path resolved = located.get();
+        Path workingDirectoryCandidate = InstallConfigSupport.resolveWorkingDirectoryConfigPath(configPathProperty);
+        System.setProperty("cat2bug.install.config-path", resolved.toString());
+        System.setProperty("spring.config.import", "optional:file:" + resolved);
+        if (!resolved.equals(workingDirectoryCandidate))
+        {
+            log.info("工作目录未找到安装配置，已从 JAR 同目录加载: {}", resolved);
+        }
     }
 
     /**
@@ -76,6 +105,7 @@ public final class InstallStartupSupport
         Map<String, Object> bootstrap = new LinkedHashMap<>(
                 InstallTemplateLoader.flattenToProperties(InstallTemplateLoader.loadH2Template()));
         bootstrap.put(BOOTSTRAP_MODE_PROPERTY, "true");
+        bootstrap.put(DRUID_MASTER_URL_PROPERTY, BOOTSTRAP_H2_JDBC_URL);
         return bootstrap;
     }
 

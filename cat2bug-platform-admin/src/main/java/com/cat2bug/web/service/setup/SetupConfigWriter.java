@@ -73,6 +73,11 @@ public class SetupConfigWriter
             master.put("username", request.getMysqlUsername());
             master.put("password", request.getMysqlPassword());
         }
+        else if ("h2".equals(databaseType))
+        {
+            String h2Database = DatabaseExistenceProbe.resolveH2DatabaseName(request);
+            master.put("url", DatabaseExistenceProbe.resolveH2JdbcUrl(h2Database));
+        }
         Map<String, Object> druid = new LinkedHashMap<>();
         druid.put("master", master);
         Map<String, Object> datasource = new LinkedHashMap<>();

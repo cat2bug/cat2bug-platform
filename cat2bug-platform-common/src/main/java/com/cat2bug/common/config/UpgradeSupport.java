@@ -20,6 +20,8 @@ public final class UpgradeSupport
     public static final String STATE_RESTART_REQUIRED = InstallConfigSupport.UPGRADE_STATE_RESTART_REQUIRED;
     public static final String STATE_COMPLETED = InstallConfigSupport.UPGRADE_STATE_COMPLETED;
 
+    public static final String STEP_BACKUP = InstallConfigSupport.UPGRADE_LAST_STEP_BACKUP;
+
     public static final String STEP_CONFIG = InstallConfigSupport.UPGRADE_LAST_STEP_CONFIG;
 
     public static final String STEP_MIGRATION = InstallConfigSupport.UPGRADE_LAST_STEP_MIGRATION;

@@ -56,4 +56,11 @@ public class UpgradeController extends BaseController
         Map<String, Object> data = upgradeInstallService.submit(request, true);
         return AjaxResult.success(String.valueOf(data.get("message")), data);
     }
+
+    @PostMapping("/rollback")
+    public AjaxResult rollback(@RequestBody SetupSubmitRequest request)
+    {
+        Map<String, Object> data = upgradeInstallService.rollback(request);
+        return AjaxResult.success(String.valueOf(data.get("message")), data);
+    }
 }

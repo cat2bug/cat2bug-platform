@@ -62,7 +62,7 @@
               <i class="el-icon-success setup-success-icon" />
               <h3>{{ $t('setup.success.title') }}</h3>
               <p>{{ $t('setup.success.message') }}</p>
-              <p class="setup-tip setup-tip--warn" v-if="restartRequired">{{ $t('setup.success.restarting') }}</p>
+              <p class="setup-tip setup-tip--warn" v-if="restartRequired">{{ restartHintText }}</p>
               <p v-if="installWarning" class="setup-tip setup-tip--warn">{{ installWarning }}</p>
               <p class="setup-success-wait">
                 {{ restartRequired ? $t('setup.success.waitingRestart') : $t('setup.success.waitingReady') }}
@@ -115,37 +115,50 @@
                       </button>
                     </div>
                   </el-form-item>
+                  <el-form-item :label="$t('setup.database.database')" prop="databaseName">
+                    <el-input
+                      v-model="form.databaseName"
+                      placeholder="cat2bug_platform"
+                      @input="invalidateDatabaseTest"
+                    />
+                  </el-form-item>
                   <template v-if="form.databaseType === 'mysql'">
                     <div class="setup-form-row">
                       <el-form-item :label="$t('setup.database.host')" prop="mysqlHost" class="setup-form-row-item">
-                        <el-input v-model="form.mysqlHost" placeholder="127.0.0.1" />
+                        <el-input v-model="form.mysqlHost" placeholder="127.0.0.1" @input="invalidateDatabaseTest" />
                       </el-form-item>
                       <el-form-item :label="$t('setup.database.port')" prop="mysqlPort" class="setup-form-row-item setup-form-row-item--sm">
-                        <el-input-number v-model="form.mysqlPort" :min="1" :max="65535" controls-position="right" class="setup-full-width" />
+                        <el-input-number
+                          v-model="form.mysqlPort"
+                          :min="1"
+                          :max="65535"
+                          controls-position="right"
+                          class="setup-full-width"
+                          @change="invalidateDatabaseTest"
+                        />
                       </el-form-item>
                     </div>
-                    <el-form-item :label="$t('setup.database.database')" prop="mysqlDatabase">
-                      <el-input v-model="form.mysqlDatabase" placeholder="cat2bug_platform" />
-                    </el-form-item>
                     <div class="setup-form-row">
                       <el-form-item :label="$t('setup.database.username')" prop="mysqlUsername" class="setup-form-row-item">
-                        <el-input v-model="form.mysqlUsername" />
+                        <el-input v-model="form.mysqlUsername" @input="invalidateDatabaseTest" />
                       </el-form-item>
                       <el-form-item :label="$t('setup.database.password')" prop="mysqlPassword" class="setup-form-row-item">
-                        <el-input v-model="form.mysqlPassword" type="password" show-password />
+                        <el-input v-model="form.mysqlPassword" type="password" show-password @input="invalidateDatabaseTest" />
                       </el-form-item>
                     </div>
-                    <div class="setup-test-row">
-                      <el-button :loading="dbTesting" @click="handleTestDatabase">{{ $t('setup.testConnection') }}</el-button>
-                      <span v-if="dbTestPassed" class="setup-test-ok"><i class="el-icon-success" /> {{ $t('setup.testPassed') }}</span>
-                    </div>
-                    <p class="setup-tip">{{ $t('setup.database.mysqlAutoCreateHint') }}</p>
                   </template>
-                  <div v-else class="setup-feature-box">
-                    <p class="setup-tip setup-tip--success">
-                      <i class="el-icon-circle-check" /> {{ $t('setup.database.h2Hint') }}
-                    </p>
+                  <div class="setup-test-row">
+                    <el-button :loading="dbTesting" @click="handleTestDatabase">{{ $t('setup.testConnection') }}</el-button>
+                    <span v-if="dbTestPassed" class="setup-test-ok"><i class="el-icon-success" /> {{ $t('setup.testPassed') }}</span>
                   </div>
+                  <p v-if="dbTestPassed && databaseMode === 'new'" class="setup-tip setup-tip--success">
+                    <i class="el-icon-info" /> {{ $t('setup.database.modeNew') }}
+                  </p>
+                  <p v-else-if="dbTestPassed && databaseMode === 'existing'" class="setup-tip setup-tip--warn">
+                    <i class="el-icon-warning" /> {{ $t('setup.database.modeExisting') }}
+                  </p>
+                  <p v-if="form.databaseType === 'mysql'" class="setup-tip">{{ $t('setup.database.mysqlTestHint') }}</p>
+                  <p v-else class="setup-tip">{{ $t('setup.database.h2FileHint') }}</p>
                 </el-form>
               </div>
 
@@ -254,14 +267,14 @@
               <div v-show="activeStep === 4" class="setup-step-panel">
                 <el-form ref="adminForm" :model="form" :rules="adminRules" label-position="top" size="small" class="setup-inner-form">
                   <el-form-item :label="$t('setup.admin.username')" prop="adminUsername">
-                    <el-input v-model="form.adminUsername" maxlength="30" />
+                    <el-input v-model="form.adminUsername" maxlength="30" autocomplete="username" />
                   </el-form-item>
                   <div class="setup-form-row">
                     <el-form-item :label="$t('setup.admin.password')" prop="adminPassword" class="setup-form-row-item">
-                      <el-input v-model="form.adminPassword" type="password" show-password maxlength="50" />
+                      <el-input v-model="form.adminPassword" type="password" show-password maxlength="50" autocomplete="new-password" />
                     </el-form-item>
                     <el-form-item :label="$t('setup.admin.confirmPassword')" prop="adminPasswordConfirm" class="setup-form-row-item">
-                      <el-input v-model="form.adminPasswordConfirm" type="password" show-password maxlength="50" />
+                      <el-input v-model="form.adminPasswordConfirm" type="password" show-password maxlength="50" autocomplete="new-password" />
                     </el-form-item>
                   </div>
                   <div class="setup-panel-box">
@@ -282,8 +295,12 @@
                 <p class="setup-step-desc">{{ $t('setup.confirm.desc') }}</p>
                 <el-descriptions :column="1" border size="small" class="setup-summary">
                   <el-descriptions-item :label="$t('setup.database.type')">{{ form.databaseType.toUpperCase() }}</el-descriptions-item>
+                  <el-descriptions-item :label="$t('setup.database.database')">{{ form.databaseName }}</el-descriptions-item>
+                  <el-descriptions-item v-if="databaseMode" :label="$t('setup.database.modeLabel')">
+                    {{ databaseMode === 'existing' ? $t('setup.database.modeExistingShort') : $t('setup.database.modeNewShort') }}
+                  </el-descriptions-item>
                   <el-descriptions-item v-if="form.databaseType === 'mysql'" :label="$t('setup.database.connection')">
-                    {{ form.mysqlHost }}:{{ form.mysqlPort }}/{{ form.mysqlDatabase }}
+                    {{ form.mysqlHost }}:{{ form.mysqlPort }}/{{ form.databaseName }}
                   </el-descriptions-item>
                   <el-descriptions-item :label="$t('setup.cache.type')">{{ cacheTypeLabel }}</el-descriptions-item>
                   <el-descriptions-item :label="$t('setup.storage.profile')">{{ form.profile }}</el-descriptions-item>
@@ -353,6 +370,7 @@ import store from '@/store'
 
 const I18N_LOCALE_KEY = 'i18n-locale'
 const SETUP_AWAITING_READY_KEY = 'cat2bug.setup.awaitingReady'
+const SETUP_AWAITING_RESTART_KEY = 'cat2bug.setup.awaitingRestart'
 
 const STEP_KEYS = [
   'setup.step.database',
@@ -372,6 +390,20 @@ function isTestSuccess(res) {
 
 function testErrorMessage(res, fallback) {
   return (res && (res.message || res.msg)) || fallback
+}
+
+const DATABASE_NAME_PATTERN = /^[A-Za-z0-9_]+$/
+
+function extractSetupApiData(res) {
+  if (res && res.data != null && typeof res.data === 'object' && !Array.isArray(res.data)) {
+    return res.data
+  }
+  return res || {}
+}
+
+function resolveDatabaseMode(res) {
+  const mode = extractSetupApiData(res).databaseMode
+  return mode === 'existing' || mode === 'new' ? mode : null
 }
 
 function resolveOllamaTestErrorMessage(resOrErr, t) {
@@ -431,14 +463,15 @@ export default {
       dbTesting: false,
       redisTesting: false,
       ollamaTesting: false,
-      dbTestPassed: true,
+      dbTestPassed: false,
+      databaseMode: null,
       redisTestPassed: false,
       ollamaTestPassed: false,
       form: {
         databaseType: 'h2',
+        databaseName: 'cat2bug_platform',
         mysqlHost: '127.0.0.1',
         mysqlPort: 3306,
-        mysqlDatabase: 'cat2bug_platform',
         mysqlUsername: 'root',
         mysqlPassword: '',
         cacheType: 'local',
@@ -481,6 +514,11 @@ export default {
     progressPercent() {
       return Math.round(((this.activeStep + 1) / this.stepKeys.length) * 100)
     },
+    restartHintText() {
+      return this.form.cacheType === 'redis'
+        ? this.$t('setup.success.restartingRedis')
+        : this.$t('setup.success.restarting')
+    },
     currentStepTitle() {
       return this.$t(this.stepKeys[this.activeStep] || 'setup.title')
     },
@@ -496,13 +534,28 @@ export default {
       return require('@/assets/images/setup-wizard-mascot.png')
     },
     dbRules() {
+      const validateDatabaseName = (rule, value, callback) => {
+        const name = (value || '').trim()
+        if (!name) {
+          callback(new Error(this.$t('setup.database.databaseRequired')))
+          return
+        }
+        if (!DATABASE_NAME_PATTERN.test(name)) {
+          callback(new Error(this.$t('setup.database.namePatternInvalid')))
+          return
+        }
+        callback()
+      }
       const rules = {
-        databaseType: [{ required: true, message: this.$t('setup.database.typeRequired'), trigger: 'change' }]
+        databaseType: [{ required: true, message: this.$t('setup.database.typeRequired'), trigger: 'change' }],
+        databaseName: [
+          { required: true, message: this.$t('setup.database.databaseRequired'), trigger: 'blur' },
+          { validator: validateDatabaseName, trigger: 'blur' }
+        ]
       }
       if (this.form.databaseType === 'mysql') {
         rules.mysqlHost = [{ required: true, message: this.$t('setup.database.hostRequired'), trigger: 'blur' }]
         rules.mysqlPort = [{ required: true, message: this.$t('setup.database.portRequired'), trigger: 'change' }]
-        rules.mysqlDatabase = [{ required: true, message: this.$t('setup.database.databaseRequired'), trigger: 'blur' }]
         rules.mysqlUsername = [{ required: true, message: this.$t('setup.database.usernameRequired'), trigger: 'blur' }]
         rules.mysqlPassword = [{ required: true, message: this.$t('setup.database.passwordRequired'), trigger: 'blur' }]
       }
@@ -535,12 +588,13 @@ export default {
       if (payload.restartRequired || sessionStorage.getItem(SETUP_AWAITING_READY_KEY) === '1') {
         this.finished = true
         this.restartRequired = payload.restartRequired === true
+          || sessionStorage.getItem(SETUP_AWAITING_RESTART_KEY) === '1'
         this.startWaitingForReady()
       }
     }).catch(() => {
       if (sessionStorage.getItem(SETUP_AWAITING_READY_KEY) === '1') {
         this.finished = true
-        this.restartRequired = true
+        this.restartRequired = sessionStorage.getItem(SETUP_AWAITING_RESTART_KEY) === '1'
         this.startWaitingForReady()
       }
     })
@@ -579,7 +633,11 @@ export default {
       this.adminRules.adminPasswordConfirm[0].message = this.$t('setup.admin.passwordRequired')
     },
     onDatabaseTypeChange() {
-      this.dbTestPassed = this.form.databaseType === 'h2'
+      this.invalidateDatabaseTest()
+    },
+    invalidateDatabaseTest() {
+      this.dbTestPassed = false
+      this.databaseMode = null
     },
     onCacheTypeChange() {
       this.redisTestPassed = false
@@ -600,11 +658,13 @@ export default {
       return p + 'Temp'
     },
     buildDatabasePayload() {
-      const payload = { databaseType: this.form.databaseType }
+      const payload = {
+        databaseType: this.form.databaseType,
+        database: (this.form.databaseName || '').trim()
+      }
       if (this.form.databaseType === 'mysql') {
         payload.host = this.form.mysqlHost
         payload.port = this.form.mysqlPort
-        payload.database = this.form.mysqlDatabase
         payload.username = this.form.mysqlUsername
         payload.password = this.form.mysqlPassword
       }
@@ -619,25 +679,29 @@ export default {
       }
     },
     buildSubmitPayload() {
+      const databaseName = (this.form.databaseName || '').trim()
       const payload = {
         databaseType: this.form.databaseType,
+        databaseMode: this.databaseMode,
         cacheType: this.form.cacheType,
         profile: this.form.profile,
         temp: this.form.temp || this.resolveDefaultTemp(this.form.profile),
         logPath: this.form.logPath,
-        adminUsername: this.form.adminUsername,
-        adminPassword: this.form.adminPassword,
         registerUser: this.form.registerUser,
         captchaEnabled: this.form.loginCaptchaEnabled,
         aiEnabled: this.form.aiEnabled,
-        aiHost: this.form.aiHost
+        aiHost: this.form.aiHost,
+        adminUsername: (this.form.adminUsername || '').trim(),
+        adminPassword: this.form.adminPassword
       }
       if (this.form.databaseType === 'mysql') {
         payload.mysqlHost = this.form.mysqlHost
         payload.mysqlPort = this.form.mysqlPort
-        payload.mysqlDatabase = this.form.mysqlDatabase
+        payload.mysqlDatabase = databaseName
         payload.mysqlUsername = this.form.mysqlUsername
         payload.mysqlPassword = this.form.mysqlPassword
+      } else {
+        payload.h2Database = databaseName
       }
       if (this.form.cacheType === 'redis') {
         payload.redisHost = this.form.redisHost
@@ -661,11 +725,12 @@ export default {
             return
           }
           this.dbTesting = true
-          this.dbTestPassed = false
+          this.invalidateDatabaseTest()
           testDatabase(this.buildDatabasePayload())
             .then(res => {
               if (isTestSuccess(res)) {
                 this.dbTestPassed = true
+                this.databaseMode = resolveDatabaseMode(res)
                 if (!silentSuccess) {
                   this.$message.success(this.$t('setup.testPassed'))
                 }
@@ -773,7 +838,7 @@ export default {
         if (this.activeStep === 0) {
           this.$refs.dbForm.validate(valid => {
             if (!valid) return reject()
-            if (this.form.databaseType === 'mysql' && !this.dbTestPassed) {
+            if (!this.dbTestPassed) {
               this.runDatabaseTest({ silentSuccess: true }).then(resolve).catch(reject)
               return
             }
@@ -830,7 +895,7 @@ export default {
       }
     },
     validateBeforeSubmit() {
-      if (this.form.databaseType === 'mysql' && !this.dbTestPassed) {
+      if (!this.dbTestPassed || !this.databaseMode) {
         this.$message.warning(this.$t('setup.database.testRequired'))
         return Promise.reject()
       }
@@ -857,6 +922,11 @@ export default {
           this.restartRequired = payload.restartRequired === true
           this.finished = true
           sessionStorage.setItem(SETUP_AWAITING_READY_KEY, '1')
+          if (this.restartRequired) {
+            sessionStorage.setItem(SETUP_AWAITING_RESTART_KEY, '1')
+          } else {
+            sessionStorage.removeItem(SETUP_AWAITING_RESTART_KEY)
+          }
           this.startWaitingForReady()
         })
         .catch(() => {})
@@ -899,6 +969,7 @@ export default {
     goToLogin() {
       this.clearWaitTimers()
       sessionStorage.removeItem(SETUP_AWAITING_READY_KEY)
+      sessionStorage.removeItem(SETUP_AWAITING_RESTART_KEY)
       store.dispatch('FedLogOut').finally(() => {
         resetSetupStatusCache()
         window.location.href = '/login'

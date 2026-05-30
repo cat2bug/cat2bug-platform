@@ -75,12 +75,23 @@ A: 在"个人中心"-"通知设置"中配置。
 ## 数据库问题
 
 ### Q: H2 数据库文件在哪里？
-A: 默认位置：`./data/cat2bug_platform.mv.db`
+A: 默认位置：`./data/{数据库名}.mv.db`（安装向导中数据库名默认为 `cat2bug_platform`，即 `./data/cat2bug_platform.mv.db`）。首次安装引导期使用独立文件 `./data/.cat2bug_bootstrap.mv.db`，不会占用上述默认库名。若曾使用旧版默认名 `cat2bug`，对应文件为 `./data/cat2bug.mv.db`。
+
+**安装完成后提示「正在升级」**：多为引导期误创建了空的 `cat2bug_platform.mv.db` 导致安装时走了「附着已有库」且未执行建表。请删除空的 `./data/cat2bug_platform.mv.db` 后重新安装（应显示「新建库」），或进入 `/upgrade` 完成 schema 迁移后再登录。
+
+### Q: 如何附着已有数据库（H2 / MySQL）？
+A: 删除 `config/install/` 后重启，进入 **`/setup`**（**不是** `/upgrade`）。在数据库步骤填写库名并测试连接：
+
+- 检测到 **`databaseMode: existing`**：表示 `./data/{name}.mv.db`（H2）或 MySQL schema 已存在
+- 完成向导时会**跳过 Flyway** 与 MySQL `CREATE DATABASE`，但会**覆盖** `user_id=1` 的管理员用户名与密码
+- 若 schema 版本落后于当前 JAR，**重启后**进入 `/upgrade` 追赶迁移；Docker 可设 `CAT2BUG_UPGRADE_SKIP=true` 静默 migrate（见下方升级说明）
+
+全新空库仍显示 **`databaseMode: new`**，setup 阶段会正常执行 Flyway。
 
 ### Q: 如何切换到 MySQL？
 A: 运行期数据库与连接池等基础设施配置**仅**由外部安装文件 `./config/install/application-install.yml` 提供（路径可通过 `cat2bug.install.config-path` 调整）。**不要**再编辑 `application-mysql.yml` 或设置 `spring.profiles.active`。
 
-- **首次安装**：克隆仓库后磁盘上无 `application-install.yml`，启动应用会进入 `/setup` 安装向导；向导按所选数据库类型从 JAR 内 classpath 模板（`defaults/application-install-h2.yml` / `defaults/application-install-mysql.yml`）合并写入完整 install 文件，并设置 `cat2bug.install.completed: true`。提交后**需重启**应用，新数据源才会生效。
+- **首次安装**：克隆仓库后磁盘上无 `application-install.yml`，启动应用会进入 `/setup` 安装向导；向导按所选数据库类型从 JAR 内 classpath 模板（`defaults/application-install-h2.yml` / `defaults/application-install-mysql.yml`）合并写入完整 install 文件，并设置 `cat2bug.install.completed: true`。提交后应用会**自动重启**（约 2 秒后退出并拉起新进程；Docker 由容器 `restart` 策略拉起），无需手动重启。
 - **已安装实例**：直接编辑 `config/install/application-install.yml`，将 `spring.database-type` 改为 `mysql`，并按模板结构填写 `spring.datasource.druid.master` 的 URL、用户名、密码等（可参考 classpath 中的 MySQL 模板字段）。修改后**重启**应用。
 - **Docker / 自动化**：挂载带 `cat2bug.install.completed: true` 的 install 文件，或设置 `CAT2BUG_INSTALL_SKIP=true` 并预配置数据源（见安装变更测试清单）。
 
@@ -108,7 +119,9 @@ A:
 
 **有 Legacy 数据或待执行 Flyway 脚本时（升级向导）**
 
-适用于：磁盘无 completed 的 `application-install.yml`，但库中已有旧版数据（如 `sys_user.user_id=1`），或新版本存在未执行的 Flyway migration。
+适用于：**已完成 install**（`cat2bug.install.completed=true`）且新版本存在未执行的 Flyway migration；或 install 文件存在但未 completed 的 legacy 场景。
+
+**无 install 文件的 legacy 数据**：先走 **`/setup`** 附着旧库（`databaseMode: existing`），**不会**直接进入 `/upgrade`。
 
 1. 启动应用后浏览器会进入 **`/upgrade`**（5 步：概览、配置确认、预检、执行、完成/失败重试）
 2. 升级进行中系统**全锁**：无法登录或访问业务 API，仅可访问升级接口与静态资源
@@ -123,16 +136,19 @@ A:
 
 **跳过升级向导（Docker / 自动化）**
 
-与旧版静默迁移行为一致，可自动写出 completed install 文件：
+`CAT2BUG_UPGRADE_SKIP=true`（或 `cat2bug.upgrade.skip=true`）有两种语义：
+
+1. **无 install 的 legacy 实例**：启动时仍自动写出 completed install 文件（与旧版一致），不进入 `/setup` 或 `/upgrade`。
+2. **install 已完成 + 有待执行 Flyway 脚本**：**不**进入 `/upgrade` UI，启动时由 `PostInstallFlywayRunner` **后台静默 migrate**；成功则正常提供服务，**失败则进程以非零状态退出**（fail-fast，避免半升级状态）。
 
 ```bash
 export CAT2BUG_UPGRADE_SKIP=true
 ```
 
-或配置 `cat2bug.upgrade.skip=true`。
+或配置 `cat2bug.upgrade.skip=true`。Docker Compose 示例见 `deploy/docker/README.md`。
 
 **全新空库**
 
 无 legacy 数据时仍走 **`/setup`** 首次安装向导，不会进入 `/upgrade`。
 
-手工测试清单见 `openspec/changes/legacy-upgrade-wizard/TESTING.md`。
+手工测试清单见 `openspec/changes/setup-existing-database-attach/TESTING.md` 与 `openspec/changes/legacy-upgrade-wizard/TESTING.md`。

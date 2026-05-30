@@ -7,6 +7,12 @@ public class SetupSubmitRequest
 {
     private String databaseType;
 
+    /** new | existing，由数据库测试 API 判定 */
+    private String databaseMode;
+
+    /** H2 库名，默认 cat2bug */
+    private String h2Database;
+
     private String cacheType;
 
     private String mysqlHost;
@@ -52,6 +58,12 @@ public class SetupSubmitRequest
 
     private Boolean captchaEnabled;
 
+    /** 升级前是否备份数据库，默认 true */
+    private Boolean backupEnabled;
+
+    /** 备份 SQL 文件名（不含目录），默认由服务端生成 */
+    private String backupFileName;
+
     public String getDatabaseType()
     {
         return databaseType;
@@ -60,6 +72,26 @@ public class SetupSubmitRequest
     public void setDatabaseType(String databaseType)
     {
         this.databaseType = databaseType;
+    }
+
+    public String getDatabaseMode()
+    {
+        return databaseMode;
+    }
+
+    public void setDatabaseMode(String databaseMode)
+    {
+        this.databaseMode = databaseMode;
+    }
+
+    public String getH2Database()
+    {
+        return h2Database;
+    }
+
+    public void setH2Database(String h2Database)
+    {
+        this.h2Database = h2Database;
     }
 
     public String getCacheType()
@@ -270,5 +302,25 @@ public class SetupSubmitRequest
     public void setCaptchaEnabled(Boolean captchaEnabled)
     {
         this.captchaEnabled = captchaEnabled;
+    }
+
+    public Boolean getBackupEnabled()
+    {
+        return backupEnabled;
+    }
+
+    public void setBackupEnabled(Boolean backupEnabled)
+    {
+        this.backupEnabled = backupEnabled;
+    }
+
+    public String getBackupFileName()
+    {
+        return backupFileName;
+    }
+
+    public void setBackupFileName(String backupFileName)
+    {
+        this.backupFileName = backupFileName;
     }
 }

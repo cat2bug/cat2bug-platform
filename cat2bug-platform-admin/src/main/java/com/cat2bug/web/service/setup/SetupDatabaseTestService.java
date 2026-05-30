@@ -2,6 +2,7 @@ package com.cat2bug.web.service.setup;
 
 import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.web.domain.setup.SetupDatabaseTestRequest;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.Connection;
@@ -20,9 +21,12 @@ public class SetupDatabaseTestService
 {
     private static final int LOGIN_TIMEOUT_SECONDS = 10;
 
+    @Autowired
+    private DatabaseExistenceProbe databaseExistenceProbe;
+
     public Map<String, Object> test(SetupDatabaseTestRequest request)
     {
-        Map<String, Object> result = new HashMap<>(2);
+        Map<String, Object> result = new HashMap<>(3);
         if (request == null || StringUtils.isEmpty(request.getDatabaseType()))
         {
             result.put("success", false);
@@ -38,12 +42,30 @@ public class SetupDatabaseTestService
             String password;
             if ("h2".equals(databaseType))
             {
+                String databaseName = DatabaseExistenceProbe.resolveH2DatabaseName(request);
+                DatabaseExistenceProbe.assertValidDatabaseName(databaseName);
                 driver = "org.h2.Driver";
                 jdbcUrl = StringUtils.isNotEmpty(request.getJdbcUrl())
                         ? request.getJdbcUrl()
-                        : "jdbc:h2:file:./data/cat2bug;MODE=MySQL;DATABASE_TO_LOWER=TRUE;";
+                        : DatabaseExistenceProbe.resolveH2JdbcUrl(databaseName);
                 username = StringUtils.isNotEmpty(request.getUsername()) ? request.getUsername() : "root";
                 password = request.getPassword() != null ? request.getPassword() : "cat2bug_password";
+                Class.forName(driver);
+                DriverManager.setLoginTimeout(LOGIN_TIMEOUT_SECONDS);
+                try (Connection connection = DriverManager.getConnection(jdbcUrl, username, password))
+                {
+                    if (connection.isValid(LOGIN_TIMEOUT_SECONDS))
+                    {
+                        result.put("success", true);
+                        result.put("message", SetupMessages.msg("setup.test.connection.success"));
+                        result.put("databaseMode", databaseExistenceProbe.probeH2Mode(connection));
+                    }
+                    else
+                    {
+                        result.put("success", false);
+                        result.put("message", SetupMessages.msg("setup.test.connection.invalid"));
+                    }
+                }
             }
             else if ("mysql".equals(databaseType))
             {
@@ -53,22 +75,6 @@ public class SetupDatabaseTestService
             {
                 result.put("success", false);
                 result.put("message", SetupMessages.msg("setup.test.database.type.unsupported", request.getDatabaseType()));
-                return result;
-            }
-            Class.forName(driver);
-            DriverManager.setLoginTimeout(LOGIN_TIMEOUT_SECONDS);
-            try (Connection connection = DriverManager.getConnection(jdbcUrl, username, password))
-            {
-                if (connection.isValid(LOGIN_TIMEOUT_SECONDS))
-                {
-                    result.put("success", true);
-                    result.put("message", SetupMessages.msg("setup.test.connection.success"));
-                }
-                else
-                {
-                    result.put("success", false);
-                    result.put("message", SetupMessages.msg("setup.test.connection.invalid"));
-                }
             }
         }
         catch (Exception e)
@@ -81,7 +87,7 @@ public class SetupDatabaseTestService
 
     private Map<String, Object> testMysql(SetupDatabaseTestRequest request)
     {
-        Map<String, Object> result = new HashMap<>(2);
+        Map<String, Object> result = new HashMap<>(3);
         if (StringUtils.isEmpty(request.getDatabase()))
         {
             result.put("success", false);
@@ -89,7 +95,7 @@ public class SetupDatabaseTestService
             return result;
         }
         String database = request.getDatabase().trim();
-        SetupMysqlDatabaseService.assertValidDatabaseName(database);
+        DatabaseExistenceProbe.assertValidDatabaseName(database);
         String driver = "com.mysql.cj.jdbc.Driver";
         String username = request.getUsername();
         String password = request.getPassword();
@@ -106,14 +112,12 @@ public class SetupDatabaseTestService
                     result.put("message", SetupMessages.msg("setup.test.connection.invalid"));
                     return result;
                 }
-                if (mysqlDatabaseExists(connection, database))
-                {
-                    result.put("success", false);
-                    result.put("message", SetupMessages.msg("setup.test.database.mysql.exists", database));
-                    return result;
-                }
+                boolean exists = mysqlDatabaseExists(connection, database);
                 result.put("success", true);
-                result.put("message", SetupMessages.msg("setup.test.database.mysql.server.ready"));
+                result.put("databaseMode", exists ? DatabaseExistenceProbe.MODE_EXISTING : DatabaseExistenceProbe.MODE_NEW);
+                result.put("message", exists
+                        ? SetupMessages.msg("setup.test.connection.success")
+                        : SetupMessages.msg("setup.test.database.mysql.server.ready"));
             }
         }
         catch (Exception e)

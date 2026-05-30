@@ -57,111 +57,125 @@ function proceedWithAuth(to, from, next) {
   }
 }
 
+function handleInstallRestartWait(to, next, upgradeStatus) {
+  const upgradeRestart = upgradeStatus.state === 'restart_required' || upgradeStatus.restartRequired
+  if (upgradeRestart) {
+    if (to.path === '/upgrade' || to.path === '/login') {
+      next()
+    } else {
+      next('/upgrade')
+    }
+    NProgress.done()
+    return true
+  }
+  if (to.path === '/setup') {
+    next()
+  } else {
+    next('/setup')
+  }
+  NProgress.done()
+  return true
+}
+
 router.beforeEach((to, from, next) => {
   NProgress.start()
-  const refreshUpgradeStatus = (from.path === '/login' && !!getToken()) || to.path === '/login'
-  resolveUpgradeStatus(refreshUpgradeStatus).then(upgradeStatus => {
-    const state = upgradeStatus.state || ''
-    const wizardLocked = ['pending', 'running', 'failed'].includes(state)
-    if (wizardLocked) {
-      if (to.path !== '/upgrade') {
-        next('/upgrade')
-        NProgress.done()
-        return
-      }
-      next()
+  const refreshSetupStatus = (from.path === '/login' && !!getToken()) || to.path === '/login'
+
+    resolveSetupStatus(refreshSetupStatus).then(setupStatus => {
+    if (setupStatus.restartRequired) {
+      resolveUpgradeStatus(true).then(upgradeStatus => {
+        handleInstallRestartWait(to, next, upgradeStatus)
+      }).catch(() => {
+        handleInstallRestartWait(to, next, { state: '', restartRequired: false })
+      })
       return
     }
-    // 升级已提交，等待重启：允许登录页，不再强制回到升级向导
-    if (state === 'restart_required' || upgradeStatus.restartRequired) {
-      if (to.path === '/upgrade' || to.path === '/login') {
+
+    if (!setupStatus.installed) {
+      if (to.path === '/setup') {
         next()
-        return
+      } else {
+        next('/setup')
       }
-      next('/login')
-      NProgress.done()
-      return
-    }
-    if (to.path === '/upgrade') {
-      if (upgradeStatus.upgradeRequired || wizardLocked) {
-        next()
-        return
-      }
-      next({ path: '/login' })
       NProgress.done()
       return
     }
 
-  const refreshSetupStatus = (from.path === '/login' && !!getToken()) || to.path === '/login'
-  resolveSetupStatus(refreshSetupStatus).then(status => {
-    if (status.restartRequired) {
-      const upgradeRestart = state === 'restart_required' || upgradeStatus.restartRequired
-      if (upgradeRestart) {
-        if (to.path === '/upgrade' || to.path === '/login') {
-          next()
-        } else {
+    const refreshUpgradeStatus = to.path === '/upgrade' || from.path === '/upgrade'
+    resolveUpgradeStatus(refreshUpgradeStatus).then(upgradeStatus => {
+      const state = upgradeStatus.state || ''
+      const wizardLocked = ['pending', 'running', 'failed'].includes(state)
+
+      if (wizardLocked) {
+        if (to.path !== '/upgrade') {
           next('/upgrade')
-        }
-        NProgress.done()
-        return
-      }
-      if (to.path === '/setup') {
-        next()
-      } else {
-        next('/setup')
-      }
-      NProgress.done()
-      return
-    }
-    if (!status.installed) {
-      if (upgradeStatus.upgradeRequired) {
-        const upgradeWizardActive = ['pending', 'running', 'failed'].includes(state)
-        if (upgradeWizardActive) {
-          if (to.path === '/upgrade') {
-            next()
-          } else {
-            next('/upgrade')
-          }
           NProgress.done()
           return
         }
-      }
-      if (to.path === '/setup') {
         next()
-      } else {
-        next('/setup')
+        return
       }
-      NProgress.done()
-      return
-    }
-    if (to.path === '/setup') {
-      next({ path: '/login' })
-      NProgress.done()
-      return
-    }
-    if (to.path === '/login' && getToken()) {
-      next({ path: '/' })
-      NProgress.done()
-      return
-    }
-    if (to.path === '/register') {
-      getCodeImg().then(res => {
-        const registerEnabled = res.registerEnabled === undefined ? true : res.registerEnabled
-        if (!registerEnabled) {
-          Message.warning(i18n.t('registration-closed').toString())
-          next('/login')
-          NProgress.done()
-        } else {
-          proceedWithAuth(to, from, next)
+
+      if (upgradeStatus.upgradeRequired
+          && state !== 'restart_required'
+          && !upgradeStatus.restartRequired
+          && to.path !== '/upgrade') {
+        next('/upgrade')
+        NProgress.done()
+        return
+      }
+
+      if (state === 'restart_required' || upgradeStatus.restartRequired) {
+        if (to.path === '/upgrade' || to.path === '/login') {
+          next()
+          return
         }
-      }).catch(() => {
         next('/login')
         NProgress.done()
-      })
-      return
-    }
-    proceedWithAuth(to, from, next)
-  })
+        return
+      }
+
+      if (to.path === '/upgrade') {
+        if (upgradeStatus.upgradeRequired || wizardLocked) {
+          next()
+          return
+        }
+        next({ path: '/login' })
+        NProgress.done()
+        return
+      }
+
+      if (to.path === '/setup') {
+        next({ path: '/login' })
+        NProgress.done()
+        return
+      }
+
+      if (to.path === '/login' && getToken()) {
+        next({ path: '/' })
+        NProgress.done()
+        return
+      }
+
+      if (to.path === '/register') {
+        getCodeImg().then(res => {
+          const registerEnabled = res.registerEnabled === undefined ? true : res.registerEnabled
+          if (!registerEnabled) {
+            Message.warning(i18n.t('registration-closed').toString())
+            next('/login')
+            NProgress.done()
+          } else {
+            proceedWithAuth(to, from, next)
+          }
+        }).catch(() => {
+          next('/login')
+          NProgress.done()
+        })
+        return
+      }
+
+      proceedWithAuth(to, from, next)
+    })
   })
 })
 

@@ -29,21 +29,21 @@
             <h2 class="setup-roadmap-title">{{ $t('upgrade.roadmapTitle') }}</h2>
             <ol class="setup-roadmap">
               <li
-                v-for="(key, index) in stepKeys"
+                v-for="(key, index) in visibleStepKeys"
                 :key="key"
                 class="setup-roadmap-item"
                 :class="{
                   'is-active': activeStep === index,
-                  'is-done': activeStep > index || (activeStep === 4 && isSuccessResult)
+                  'is-done': activeStep > index || (activeStep === resultStepIndex && isSuccessResult)
                 }"
               >
                 <div class="setup-roadmap-marker-col">
                   <span class="setup-roadmap-marker">
-                    <i v-if="activeStep > index || (activeStep === 4 && isSuccessResult)" class="el-icon-check" />
+                    <i v-if="activeStep > index || (activeStep === resultStepIndex && isSuccessResult)" class="el-icon-check" />
                     <span v-else>{{ index + 1 }}</span>
                   </span>
                   <span
-                    v-if="index < stepKeys.length - 1"
+                    v-if="index < visibleStepKeys.length - 1"
                     class="setup-roadmap-connector"
                     aria-hidden="true"
                   />
@@ -60,7 +60,7 @@
             <header class="setup-panel-header">
               <div class="setup-panel-header-row">
                 <h2 class="setup-panel-title">{{ currentStepTitle }}</h2>
-                <span class="setup-panel-step">{{ $t('setup.progress', { current: activeStep + 1, total: stepKeys.length }) }}</span>
+                <span class="setup-panel-step">{{ $t('setup.progress', { current: activeStep + 1, total: visibleStepKeys.length }) }}</span>
               </div>
               <el-progress
                 :percentage="progressPercent"
@@ -71,7 +71,7 @@
             </header>
 
             <div class="setup-panel-body">
-              <div v-show="activeStep === 0" class="setup-step-panel">
+              <div v-show="currentStepKey === 'upgrade.step.overview'" class="setup-step-panel">
                 <el-descriptions :column="1" border size="small" class="setup-summary">
                   <el-descriptions-item :label="$t('upgrade.overview.currentVersion')">{{ preflight.currentVersion || '-' }}</el-descriptions-item>
                   <el-descriptions-item :label="$t('upgrade.overview.targetVersion')">{{ status.targetVersion || '-' }}</el-descriptions-item>
@@ -91,11 +91,10 @@
                     <span v-else>-</span>
                   </el-descriptions-item>
                 </el-descriptions>
-                <p class="setup-tip setup-tip--warn">{{ $t('upgrade.overview.backupReminder') }}</p>
                 <p class="setup-tip">{{ $t('upgrade.overview.singleInstanceNotice') }}</p>
               </div>
 
-              <div v-show="activeStep === 1" class="setup-step-panel">
+              <div v-show="currentStepKey === 'upgrade.step.diff'" class="setup-step-panel">
                 <p class="setup-step-desc">{{ $t('upgrade.diff.desc') }}</p>
                 <el-table :data="diffRows" size="mini" border class="upgrade-diff-table" :row-class-name="diffRowClassName">
                   <el-table-column prop="key" :label="$t('upgrade.diff.key')" min-width="240" />
@@ -122,83 +121,41 @@
                 </p>
               </div>
 
-              <div v-show="activeStep === 2" class="setup-step-panel">
-                <el-form ref="preflightForm" :model="form" label-position="top" size="small" class="setup-inner-form">
-                  <el-form-item :label="$t('setup.database.type')" class="setup-form-item-compact">
-                    <el-input :value="form.databaseType.toUpperCase()" disabled />
+              <div v-show="currentStepKey === 'upgrade.step.auth'" class="setup-step-panel">
+                <p class="setup-step-desc">{{ $t('upgrade.auth.desc') }}</p>
+                <p v-if="status.lastError && isAuthErrorMessage(status.lastError)" class="setup-tip setup-tip--warn">{{ status.lastError }}</p>
+                <el-form ref="adminForm" :model="form" :rules="adminRules" label-position="top" size="small" class="setup-inner-form">
+                  <el-form-item :label="$t('setup.admin.username')" prop="adminUsername">
+                    <el-input v-model="form.adminUsername" maxlength="30" autocomplete="username" />
                   </el-form-item>
-                  <div v-if="form.databaseType === 'mysql'" class="setup-form-row">
-                    <el-form-item :label="$t('setup.database.host')" class="setup-form-row-item">
-                      <el-input v-model="form.mysqlHost" />
-                    </el-form-item>
-                    <el-form-item :label="$t('setup.database.port')" class="setup-form-row-item setup-form-row-item--sm">
-                      <el-input-number v-model="form.mysqlPort" :min="1" :max="65535" controls-position="right" class="setup-full-width" />
-                    </el-form-item>
-                  </div>
-                  <el-form-item v-if="form.databaseType === 'mysql'" :label="$t('setup.database.database')">
-                    <el-input v-model="form.mysqlDatabase" />
+                  <el-form-item :label="$t('setup.admin.password')" prop="adminPassword">
+                    <el-input v-model="form.adminPassword" type="password" show-password maxlength="50" autocomplete="current-password" />
                   </el-form-item>
-                  <div v-if="form.databaseType === 'mysql'" class="setup-form-row">
-                    <el-form-item :label="$t('setup.database.username')" class="setup-form-row-item">
-                      <el-input v-model="form.mysqlUsername" />
-                    </el-form-item>
-                    <el-form-item :label="$t('setup.database.password')" class="setup-form-row-item">
-                      <el-input v-model="form.mysqlPassword" type="password" show-password />
-                    </el-form-item>
-                  </div>
-                  <div v-if="form.databaseType === 'mysql'" class="setup-test-row">
-                    <el-button :loading="dbTesting" @click="handleTestDatabase">{{ $t('setup.testConnection') }}</el-button>
-                    <span v-if="dbTestPassed" class="setup-test-ok"><i class="el-icon-success" /> {{ $t('setup.testPassed') }}</span>
-                  </div>
-                  <p v-else class="setup-tip setup-tip--success"><i class="el-icon-circle-check" /> {{ $t('upgrade.preflight.h2AutoPass') }}</p>
-
-                  <el-form-item :label="$t('setup.cache.type')" class="setup-form-item-compact">
-                    <el-input :value="cacheTypeLabel" disabled />
-                  </el-form-item>
-                  <div v-if="form.cacheType === 'redis'" class="setup-form-row">
-                    <el-form-item :label="$t('setup.cache.host')" class="setup-form-row-item">
-                      <el-input v-model="form.redisHost" />
-                    </el-form-item>
-                    <el-form-item :label="$t('setup.cache.port')" class="setup-form-row-item setup-form-row-item--sm">
-                      <el-input-number v-model="form.redisPort" :min="1" :max="65535" controls-position="right" class="setup-full-width" />
-                    </el-form-item>
-                  </div>
-                  <div v-if="form.cacheType === 'redis'" class="setup-form-row">
-                    <el-form-item :label="$t('setup.cache.password')" class="setup-form-row-item">
-                      <el-input v-model="form.redisPassword" type="password" show-password />
-                    </el-form-item>
-                    <el-form-item :label="$t('setup.cache.database')" class="setup-form-row-item setup-form-row-item--sm">
-                      <el-input-number v-model="form.redisDatabase" :min="0" :max="15" controls-position="right" class="setup-full-width" />
-                    </el-form-item>
-                  </div>
-                  <div v-if="form.cacheType === 'redis'" class="setup-test-row">
-                    <el-button :loading="redisTesting" @click="handleTestRedis">{{ $t('setup.testConnection') }}</el-button>
-                    <span v-if="redisTestPassed" class="setup-test-ok"><i class="el-icon-success" /> {{ $t('setup.testPassed') }}</span>
-                  </div>
-                  <p v-else class="setup-tip setup-tip--success"><i class="el-icon-circle-check" /> {{ $t('upgrade.preflight.localCacheAutoPass') }}</p>
-
-                  <el-form-item :label="$t('setup.storage.profile')">
-                    <el-input v-model="form.profile" />
-                  </el-form-item>
-                  <el-form-item :label="$t('setup.storage.logPath')">
-                    <el-input v-model="form.logPath" />
-                  </el-form-item>
-                  <div class="setup-test-row">
-                    <el-button :loading="pathTesting" @click="handleTestPath">{{ $t('setup.testPath') }}</el-button>
-                    <span v-if="pathTestPassed" class="setup-test-ok"><i class="el-icon-success" /> {{ $t('setup.testPassed') }}</span>
-                  </div>
                 </el-form>
               </div>
 
-              <div v-show="activeStep === 3" class="setup-step-panel">
+              <div v-show="currentStepKey === 'upgrade.step.execute'" class="setup-step-panel">
                 <p class="setup-step-desc">{{ $t('upgrade.execute.desc') }}</p>
+                <el-form label-position="top" size="small" class="setup-inner-form">
+                  <el-form-item>
+                    <el-checkbox v-model="form.backupEnabled">{{ $t('upgrade.backup.enable') }}</el-checkbox>
+                  </el-form-item>
+                  <el-form-item v-if="form.backupEnabled" :label="$t('upgrade.backup.fileName')">
+                    <el-input
+                      v-model="form.backupFileName"
+                      :placeholder="$t('upgrade.backup.fileNamePlaceholder')"
+                    />
+                    <p v-if="backupDirectory" class="setup-tip">{{ $t('upgrade.backup.directory', { dir: backupDirectory }) }}</p>
+                  </el-form-item>
+                </el-form>
                 <el-alert
                   :title="$t('upgrade.execute.currentState', { state: stateLabel })"
                   type="info"
                   :closable="false"
                   show-icon
                 />
-                <el-steps :active="executeStepIndex" finish-status="success" align-center class="upgrade-steps">
+                <el-steps :active="executeProgressIndex" finish-status="success" align-center class="upgrade-steps">
+                  <el-step :title="$t('upgrade.execute.stepBackup')" />
                   <el-step :title="$t('upgrade.execute.stepConfig')" />
                   <el-step :title="$t('upgrade.execute.stepMigration')" />
                   <el-step :title="$t('upgrade.execute.stepRestart')" />
@@ -206,18 +163,22 @@
                 <p v-if="status.lastError" class="setup-tip setup-tip--warn">{{ status.lastError }}</p>
               </div>
 
-              <div v-show="activeStep === 4" class="setup-step-panel">
+              <div v-show="currentStepKey === 'upgrade.step.result'" class="setup-step-panel">
                 <div v-if="isSuccessResult" class="setup-success setup-panel-fill">
                   <i class="el-icon-success setup-success-icon" />
                   <h3>{{ $t('upgrade.success.title') }}</h3>
                   <p>{{ $t('upgrade.success.message') }}</p>
-                  <p v-if="waitingForRestart" class="setup-tip setup-tip--warn">{{ $t('upgrade.success.restarting') }}</p>
+                  <p v-if="applicationReady" class="setup-tip setup-tip--success">{{ $t('upgrade.success.readyToLogin') }}</p>
+                  <p v-else-if="waitingForRestart" class="setup-tip setup-tip--warn">{{ $t('upgrade.success.restarting') }}</p>
                   <p v-else class="setup-tip setup-tip--warn">{{ $t('upgrade.success.restartPrompt') }}</p>
+                  <p v-if="waitingForRestart && !applicationReady" class="setup-success-wait">{{ $t('upgrade.success.waitingReady') }}</p>
+                  <p v-if="waitingForRestart && !applicationReady" class="setup-success-countdown">{{ $t('upgrade.success.waitElapsed', { seconds: waitElapsed }) }}</p>
                 </div>
                 <div v-else class="setup-success setup-panel-fill">
                   <i class="el-icon-error" style="font-size:64px;color:#f56c6c;" />
                   <h3>{{ $t('upgrade.failure.title') }}</h3>
                   <p>{{ status.lastError || $t('upgrade.failure.message') }}</p>
+                  <p v-if="status.lastBackupFile" class="setup-tip">{{ $t('upgrade.failure.lastBackup', { file: status.lastBackupFile }) }}</p>
                   <p class="setup-tip">{{ $t('upgrade.failure.lastStep', { step: status.lastStep || '-' }) }}</p>
                 </div>
               </div>
@@ -250,15 +211,21 @@
                 </div>
               </div>
               <div class="setup-panel-footer-nav">
-                <el-button v-if="activeStep > 0 && activeStep < 4" size="small" @click="prevStep">{{ $t('setup.prev') }}</el-button>
-                <el-button v-if="activeStep < 3" type="primary" size="small" :loading="preflightChecking" @click="nextStep">{{ $t('setup.next') }}</el-button>
-                <el-button v-if="activeStep === 3 && !status.restartRequired && status.state !== 'restart_required'" type="primary" size="small" :loading="executing" @click="handleExecute">
+                <el-button v-if="activeStep > 0 && activeStep < resultStepIndex" size="small" @click="prevStep">{{ $t('setup.prev') }}</el-button>
+                <el-button v-if="activeStep < wizardExecuteStepIndex" type="primary" size="small" @click="nextStep">{{ $t('setup.next') }}</el-button>
+                <el-button v-if="currentStepKey === 'upgrade.step.execute' && !status.restartRequired && status.state !== 'restart_required'" type="primary" size="small" :loading="executing" :disabled="!canStartUpgrade" @click="handleExecute">
                   {{ isFailureResult ? $t('upgrade.execute.retry') : $t('upgrade.execute.submit') }}
                 </el-button>
-                <el-button v-if="activeStep === 4 && isFailureResult" type="danger" size="small" :loading="executing" @click="retryNow">
+                <el-button v-if="currentStepKey === 'upgrade.step.result' && isFailureResult && status.lastBackupFile" type="warning" size="small" :loading="rollingBack" @click="handleRollback">
+                  {{ $t('upgrade.rollback.submit') }}
+                </el-button>
+                <el-button v-if="currentStepKey === 'upgrade.step.result' && isFailureResult" size="small" @click="goBackToAuth">
+                  {{ $t('upgrade.failure.backToAuth') }}
+                </el-button>
+                <el-button v-if="currentStepKey === 'upgrade.step.result' && isFailureResult" type="danger" size="small" :loading="executing" @click="retryNow">
                   {{ $t('upgrade.execute.retry') }}
                 </el-button>
-                <el-button v-if="activeStep === 4 && isSuccessResult" type="primary" size="small" @click="goToLogin">
+                <el-button v-if="currentStepKey === 'upgrade.step.result' && isSuccessResult" type="primary" size="small" :disabled="waitingForRestart && !applicationReady" @click="goToLogin">
                   {{ $t('upgrade.success.goLogin') }}
                 </el-button>
               </div>
@@ -273,33 +240,23 @@
 </template>
 
 <script>
-import { getUpgradePreflight, getUpgradeStatus, retryUpgrade, submitUpgrade } from '@/api/upgrade'
-import { getSetupStatus, testDatabase, testPath, testRedis } from '@/api/setup'
+import { getUpgradePreflight, getUpgradeStatus, retryUpgrade, rollbackUpgrade, submitUpgrade } from '@/api/upgrade'
+import { getSetupStatus } from '@/api/setup'
 import { resetUpgradeStatusCache } from '@/utils/upgrade-status'
 import { resetSetupStatusCache } from '@/utils/setup-status'
 import store from '@/store'
 
 const I18N_LOCALE_KEY = 'i18n-locale'
 const UPGRADE_AWAITING_READY_KEY = 'upgrade-awaiting-ready'
+const UPGRADE_SUCCESS_NOTIFIED_KEY = 'upgrade-success-notified'
 
 const STEP_KEYS = [
   'upgrade.step.overview',
   'upgrade.step.diff',
-  'upgrade.step.preflight',
+  'upgrade.step.auth',
   'upgrade.step.execute',
   'upgrade.step.result'
 ]
-
-function isTestSuccess(res) {
-  if (res == null) return false
-  if (res.success === true) return true
-  if (res.success === false) return false
-  return res.code === 200 || res.code === undefined
-}
-
-function testErrorMessage(res, fallback) {
-  return (res && (res.message || res.msg)) || fallback
-}
 
 export default {
   name: 'UpgradeWizard',
@@ -317,14 +274,9 @@ export default {
       ],
       activeStep: 0,
       executing: false,
-      dbTesting: false,
-      redisTesting: false,
-      pathTesting: false,
-      preflightChecking: false,
-      dbTestPassed: false,
-      redisTestPassed: false,
-      pathTestPassed: false,
+      rollingBack: false,
       waitingForRestart: false,
+      applicationReady: false,
       waitElapsed: 0,
       waitElapsedTimer: null,
       waitPollTimer: null,
@@ -335,15 +287,20 @@ export default {
         pendingMigrations: [],
         lastError: '',
         lastStep: '',
+        lastBackupFile: '',
         restartRequired: false
       },
       preflight: {
         currentVersion: '',
         databaseType: '',
-        diffs: []
+        diffs: [],
+        defaultBackupFileName: '',
+        backupDirectory: ''
       },
       form: {
         databaseType: 'h2',
+        backupEnabled: true,
+        backupFileName: '',
         mysqlHost: '127.0.0.1',
         mysqlPort: 3306,
         mysqlDatabase: 'cat2bug_platform',
@@ -358,7 +315,13 @@ export default {
         temp: './uploadTemp',
         logPath: './logs',
         aiEnabled: false,
-        aiHost: 'http://127.0.0.1:11434'
+        aiHost: 'http://127.0.0.1:11434',
+        adminUsername: '',
+        adminPassword: ''
+      },
+      adminRules: {
+        adminUsername: [{ required: true, message: '', trigger: 'blur' }],
+        adminPassword: [{ required: true, message: '', trigger: 'blur' }]
       }
     }
   },
@@ -374,10 +337,31 @@ export default {
       return this.currentLocale === 'ar'
     },
     progressPercent() {
-      return Math.round(((this.activeStep + 1) / this.stepKeys.length) * 100)
+      return Math.round(((this.activeStep + 1) / this.visibleStepKeys.length) * 100)
+    },
+    visibleStepKeys() {
+      if (this.hasConfigDiffs) {
+        return STEP_KEYS
+      }
+      return STEP_KEYS.filter(key => key !== 'upgrade.step.diff')
+    },
+    hasConfigDiffs() {
+      return this.diffRows.length > 0
+    },
+    currentStepKey() {
+      return this.visibleStepKeys[this.activeStep] || STEP_KEYS[0]
+    },
+    wizardExecuteStepIndex() {
+      return this.visibleStepKeys.indexOf('upgrade.step.execute')
+    },
+    wizardAuthStepIndex() {
+      return this.visibleStepKeys.indexOf('upgrade.step.auth')
+    },
+    resultStepIndex() {
+      return this.visibleStepKeys.indexOf('upgrade.step.result')
     },
     currentStepTitle() {
-      return this.$t(this.stepKeys[this.activeStep] || 'upgrade.title')
+      return this.$t(this.currentStepKey || 'upgrade.title')
     },
     migrationList() {
       const list = Array.isArray(this.status.pendingMigrations) ? this.status.pendingMigrations : []
@@ -396,17 +380,16 @@ export default {
     missingDiffCount() {
       return this.diffRows.filter(row => this.isMissingRow(row)).length
     },
-    cacheTypeLabel() {
-      return this.form.cacheType === 'redis'
-        ? this.$t('setup.cache.redis')
-        : this.$t('setup.cache.local')
+    backupDirectory() {
+      return this.preflight.backupDirectory || ''
     },
-    executeStepIndex() {
-      if (this.status.restartRequired || this.status.state === 'restart_required') return 3
-      if (this.status.state === 'completed' && !this.status.upgradeRequired) return 3
-      if (this.status.lastStep === 'restart') return 3
-      if (this.status.lastStep === 'migration') return 2
-      if (this.status.lastStep === 'config') return 1
+    executeProgressIndex() {
+      if (this.status.restartRequired || this.status.state === 'restart_required') return 4
+      if (this.status.state === 'completed' && !this.status.upgradeRequired) return 4
+      if (this.status.lastStep === 'restart') return 4
+      if (this.status.lastStep === 'migration') return 3
+      if (this.status.lastStep === 'config') return 2
+      if (this.status.lastStep === 'backup') return 1
       if (this.status.state === 'running') return 1
       return 0
     },
@@ -421,16 +404,28 @@ export default {
       return this.status.state === 'completed' && !this.status.upgradeRequired
     },
     isFailureResult() {
-      return this.status.state === 'failed'
+      if (this.status.state === 'failed') {
+        return true
+      }
+      return this.activeStep === this.resultStepIndex
+        && !!this.status.lastError
+        && !this.isSuccessResult
     },
     brandLogoSrc() {
       return require('@/assets/images/update-wizard-mascot.png')
+    },
+    canStartUpgrade() {
+      if (!this.form.backupEnabled) {
+        return true
+      }
+      return !!(this.form.backupFileName || '').trim()
     }
   },
   created() {
     document.documentElement.classList.add('setup-wizard-active')
     const lang = this.$cache.local.get(I18N_LOCALE_KEY) || 'zh_CN'
     this.$i18n.locale = lang
+    this.syncAdminRuleMessages()
     this.initialize()
   },
   beforeDestroy() {
@@ -441,11 +436,16 @@ export default {
     changeLang(lang) {
       this.$i18n.locale = lang
       this.$cache.local.set(I18N_LOCALE_KEY, lang)
+      this.syncAdminRuleMessages()
+    },
+    syncAdminRuleMessages() {
+      this.adminRules.adminUsername[0].message = this.$t('setup.admin.usernameRequired')
+      this.adminRules.adminPassword[0].message = this.$t('setup.admin.passwordRequired')
     },
     initialize() {
       Promise.all([this.refreshStatus(), this.loadPreflight()]).then(() => {
         if (this.isSuccessResult || this.isFailureResult) {
-          this.activeStep = 4
+          this.activeStep = this.resultStepIndex
         }
         if (this.isSuccessResult || sessionStorage.getItem(UPGRADE_AWAITING_READY_KEY) === '1') {
           this.waitingForRestart = true
@@ -453,12 +453,24 @@ export default {
         }
       }).catch(() => {
         if (sessionStorage.getItem(UPGRADE_AWAITING_READY_KEY) === '1') {
-          this.activeStep = 4
+          this.activeStep = this.resultStepIndex
           this.status.restartRequired = true
           this.status.state = 'restart_required'
           this.waitingForRestart = true
           this.startWaitingForReady()
         }
+      })
+    },
+    notifyUpgradeCompleteOnce() {
+      if (sessionStorage.getItem(UPGRADE_SUCCESS_NOTIFIED_KEY) === '1') {
+        return
+      }
+      sessionStorage.setItem(UPGRADE_SUCCESS_NOTIFIED_KEY, '1')
+      this.$notify({
+        title: this.$t('upgrade.success.title').toString(),
+        message: this.$t('upgrade.success.readyNotify').toString(),
+        type: 'success',
+        duration: 6000
       })
     },
     refreshStatus() {
@@ -471,6 +483,7 @@ export default {
           pendingMigrations: Array.isArray(payload.pendingMigrations) ? payload.pendingMigrations : [],
           lastError: payload.lastError || '',
           lastStep: payload.lastStep || '',
+          lastBackupFile: payload.lastBackupFile || '',
           restartRequired: payload.restartRequired === true
         }
       })
@@ -502,6 +515,10 @@ export default {
       this.form.redisPort = preflight.redisPort || this.form.redisPort
       this.form.redisPassword = preflight.redisPassword || this.form.redisPassword
       this.form.redisDatabase = preflight.redisDatabase !== undefined ? preflight.redisDatabase : this.form.redisDatabase
+
+      if (preflight.defaultBackupFileName) {
+        this.form.backupFileName = preflight.defaultBackupFileName
+      }
     },
     isMissingRow(row) {
       return row && row.missing === true
@@ -520,37 +537,21 @@ export default {
       }
     },
     nextStep() {
-      if (this.activeStep === 2) {
-        this.validatePreflight().then(() => {
-          this.activeStep = 3
-        }).catch(err => {
-          if (err && err.message) {
-            this.$message.error(err.message)
+      if (this.currentStepKey === 'upgrade.step.auth') {
+        const form = this.$refs.adminForm
+        if (!form) {
+          return
+        }
+        form.validate(valid => {
+          if (valid && this.activeStep < this.wizardExecuteStepIndex) {
+            this.status.lastError = ''
+            this.activeStep += 1
           }
         })
         return
       }
-      if (this.activeStep < 3) {
+      if (this.activeStep < this.wizardExecuteStepIndex) {
         this.activeStep += 1
-      }
-    },
-    buildDatabasePayload() {
-      const payload = { databaseType: this.form.databaseType }
-      if (this.form.databaseType === 'mysql') {
-        payload.host = this.form.mysqlHost
-        payload.port = this.form.mysqlPort
-        payload.database = this.form.mysqlDatabase
-        payload.username = this.form.mysqlUsername
-        payload.password = this.form.mysqlPassword
-      }
-      return payload
-    },
-    buildRedisPayload() {
-      return {
-        host: this.form.redisHost,
-        port: this.form.redisPort,
-        password: this.form.redisPassword || undefined,
-        database: this.form.redisDatabase
       }
     },
     buildSubmitPayload() {
@@ -561,7 +562,11 @@ export default {
         temp: this.form.temp,
         logPath: this.form.logPath,
         aiEnabled: this.form.aiEnabled,
-        aiHost: this.form.aiHost
+        aiHost: this.form.aiHost,
+        backupEnabled: this.form.backupEnabled,
+        backupFileName: (this.form.backupFileName || '').trim(),
+        adminUsername: (this.form.adminUsername || '').trim(),
+        adminPassword: this.form.adminPassword
       }
       if (this.form.databaseType === 'mysql') {
         payload.mysqlHost = this.form.mysqlHost
@@ -578,143 +583,20 @@ export default {
       }
       return payload
     },
-    runDatabaseTest(silent = false) {
-      if (this.form.databaseType !== 'mysql') {
-        this.dbTestPassed = true
-        return Promise.resolve(true)
-      }
-      if (this.dbTestPassed) {
-        return Promise.resolve(true)
-      }
-      this.dbTesting = true
-      return testDatabase(this.buildDatabasePayload())
-        .then(res => {
-          if (isTestSuccess(res)) {
-            this.dbTestPassed = true
-            if (!silent) {
-              this.$message.success(this.$t('setup.testPassed'))
-            }
-            return true
-          }
-          const msg = testErrorMessage(res, this.$t('setup.testFailed'))
-          if (!silent) {
-            this.$message.error(msg)
-          }
-          return Promise.reject(new Error(msg))
-        })
-        .catch(err => {
-          const msg = err && err.message ? err.message : this.$t('setup.testFailed')
-          if (!silent) {
-            this.$message.error(msg)
-          }
-          return Promise.reject(err instanceof Error ? err : new Error(msg))
-        })
-        .finally(() => {
-          this.dbTesting = false
-        })
-    },
-    runRedisTest(silent = false) {
-      if (this.form.cacheType !== 'redis') {
-        this.redisTestPassed = true
-        return Promise.resolve(true)
-      }
-      if (this.redisTestPassed) {
-        return Promise.resolve(true)
-      }
-      this.redisTesting = true
-      return testRedis(this.buildRedisPayload())
-        .then(res => {
-          if (isTestSuccess(res)) {
-            this.redisTestPassed = true
-            if (!silent) {
-              this.$message.success(this.$t('setup.testPassed'))
-            }
-            return true
-          }
-          const msg = testErrorMessage(res, this.$t('setup.testFailed'))
-          if (!silent) {
-            this.$message.error(msg)
-          }
-          return Promise.reject(new Error(msg))
-        })
-        .catch(err => {
-          const msg = err && err.message ? err.message : this.$t('setup.testFailed')
-          if (!silent) {
-            this.$message.error(msg)
-          }
-          return Promise.reject(err instanceof Error ? err : new Error(msg))
-        })
-        .finally(() => {
-          this.redisTesting = false
-        })
-    },
-    runPathTest(silent = false) {
-      const profile = (this.form.profile || '').trim()
-      const logPath = (this.form.logPath || '').trim()
-      if (!profile || !logPath) {
-        const msg = this.$t('upgrade.preflight.pathRequired').toString()
-        if (!silent) {
-          this.$message.warning(msg)
-        }
-        return Promise.reject(new Error(msg))
-      }
-      if (this.pathTestPassed) {
-        return Promise.resolve(true)
-      }
-      this.pathTesting = true
-      return testPath({ path: profile })
-        .then(res => {
-          if (!isTestSuccess(res)) {
-            throw new Error(testErrorMessage(res, this.$t('setup.testFailed')))
-          }
-          return testPath({ path: logPath })
-        })
-        .then(res => {
-          if (isTestSuccess(res)) {
-            this.pathTestPassed = true
-            if (!silent) {
-              this.$message.success(this.$t('setup.testPassed'))
-            }
-            return true
-          }
-          const msg = testErrorMessage(res, this.$t('setup.testFailed'))
-          if (!silent) {
-            this.$message.error(msg)
-          }
-          return Promise.reject(new Error(msg))
-        })
-        .catch(err => {
-          const msg = err && err.message ? err.message : this.$t('setup.testFailed')
-          if (!silent) {
-            this.$message.error(msg)
-          }
-          return Promise.reject(err instanceof Error ? err : new Error(msg))
-        })
-        .finally(() => {
-          this.pathTesting = false
-        })
-    },
-    handleTestDatabase() {
-      this.runDatabaseTest(false).catch(() => {})
-    },
-    handleTestRedis() {
-      this.runRedisTest(false).catch(() => {})
-    },
-    handleTestPath() {
-      this.runPathTest(false).catch(() => {})
-    },
-    validatePreflight() {
-      this.preflightChecking = true
-      return this.runDatabaseTest(true)
-        .then(() => this.runRedisTest(true))
-        .then(() => this.runPathTest(true))
-        .finally(() => {
-          this.preflightChecking = false
-        })
-    },
     handleExecute() {
+      if (!this.canStartUpgrade) {
+        this.$message.warning(this.$t('upgrade.backup.fileNameRequired'))
+        return
+      }
+      if (!this.form.adminUsername || !this.form.adminPassword) {
+        this.$message.warning(this.$t('setup.admin.passwordRequired'))
+        if (this.wizardAuthStepIndex >= 0) {
+          this.activeStep = this.wizardAuthStepIndex
+        }
+        return
+      }
       if (this.status.restartRequired || this.status.state === 'restart_required') {
-        this.activeStep = 4
+        this.activeStep = this.resultStepIndex
         this.waitingForRestart = true
         this.startWaitingForReady()
         return
@@ -722,36 +604,110 @@ export default {
       this.executing = true
       const payload = this.buildSubmitPayload()
       const requestFn = this.isFailureResult ? retryUpgrade : submitUpgrade
+      resetUpgradeStatusCache()
       requestFn(payload)
-        .then(res => {
-          resetUpgradeStatusCache()
-          const data = (res && res.data) ? res.data : (res || {})
-          this.status.restartRequired = data.restartRequired === true
-          if (this.status.restartRequired) {
-            this.status.state = 'restart_required'
-          }
-          this.activeStep = 4
-          if (this.isSuccessResult) {
-            sessionStorage.setItem(UPGRADE_AWAITING_READY_KEY, '1')
-            this.waitingForRestart = true
-            this.startWaitingForReady()
-            this.$message.success(this.$t('upgrade.success.message'))
-          } else if (this.isFailureResult) {
-            this.$message.error(this.status.lastError || this.$t('upgrade.failure.message'))
-          }
-        })
-        .catch(() => {})
+        .then(res => this.handleExecuteResponse(res))
+        .catch(err => this.handleExecuteFailure(err))
         .finally(() => {
           this.executing = false
         })
     },
+    handleExecuteResponse(res) {
+      const data = (res && res.data) ? res.data : (res || {})
+      const restarting = data.restartRequired === true || data.restarting === true
+
+      if (restarting) {
+        this.status = {
+          ...this.status,
+          restartRequired: true,
+          state: 'restart_required',
+          lastError: ''
+        }
+        this.activeStep = this.resultStepIndex
+        sessionStorage.setItem(UPGRADE_AWAITING_READY_KEY, '1')
+        this.waitingForRestart = true
+        this.applicationReady = false
+        this.startWaitingForReady()
+        return Promise.resolve()
+      }
+
+      return this.refreshStatus().then(() => {
+        this.activeStep = this.resultStepIndex
+        if (this.isSuccessResult) {
+          sessionStorage.setItem(UPGRADE_AWAITING_READY_KEY, '1')
+          this.waitingForRestart = true
+          this.applicationReady = false
+          this.startWaitingForReady()
+        }
+      })
+    },
+    handleExecuteFailure(err) {
+      const apiMsg = err && (err.msg || err.message)
+      if (this.isAuthErrorMessage(apiMsg)) {
+        if (apiMsg) {
+          this.status.lastError = apiMsg
+        }
+        this.goBackToAuth()
+        this.$message.error(apiMsg || this.$t('upgrade.auth.denied'))
+        return Promise.resolve()
+      }
+      return this.refreshStatus().then(() => {
+        this.activeStep = this.resultStepIndex
+        if (apiMsg && !this.status.lastError) {
+          this.status.lastError = apiMsg
+        }
+      }).catch(() => {
+        this.activeStep = this.resultStepIndex
+        if (apiMsg) {
+          this.status.lastError = apiMsg
+        }
+      })
+    },
+    isAuthErrorMessage(message) {
+      if (!message) {
+        return false
+      }
+      const text = String(message)
+      return /upgrade\.auth\.|管理员账号或密码|管理员|administrator account|administrator username|Invalid administrator|System administrator username|仅系统管理员|Only system administrators/i.test(text)
+    },
+    goBackToAuth() {
+      if (this.wizardAuthStepIndex >= 0) {
+        this.activeStep = this.wizardAuthStepIndex
+      }
+    },
+    handleRollback() {
+      this.$confirm(this.$t('upgrade.rollback.confirm').toString(), this.$t('prompted').toString(), {
+        confirmButtonText: this.$t('upgrade.rollback.submit').toString(),
+        cancelButtonText: this.$t('cancel').toString(),
+        type: 'warning'
+      }).then(() => {
+        this.rollingBack = true
+        return rollbackUpgrade(this.buildSubmitPayload())
+      }).then(() => {
+        resetUpgradeStatusCache()
+        return this.refreshStatus()
+      }).then(() => {
+        this.$message.success(this.$t('upgrade.rollback.success'))
+        this.activeStep = this.wizardExecuteStepIndex
+      }).catch(() => {}).finally(() => {
+        this.rollingBack = false
+      })
+    },
     retryNow() {
-      this.activeStep = 3
-      this.handleExecute()
+      if (!this.form.adminUsername || !this.form.adminPassword) {
+        this.goBackToAuth()
+        this.$message.warning(this.$t('setup.admin.passwordRequired'))
+        return
+      }
+      this.activeStep = this.wizardExecuteStepIndex
     },
     goToLogin() {
+      if (this.waitingForRestart && !this.applicationReady) {
+        return
+      }
       this.clearWaitTimers()
       sessionStorage.removeItem(UPGRADE_AWAITING_READY_KEY)
+      sessionStorage.removeItem(UPGRADE_SUCCESS_NOTIFIED_KEY)
       resetUpgradeStatusCache()
       resetSetupStatusCache()
       store.dispatch('FedLogOut').finally(() => {
@@ -775,7 +731,13 @@ export default {
         .then(res => {
           const payload = (res && res.data) ? res.data : (res || {})
           if (payload.installed === true && payload.restartRequired !== true) {
-            this.goToLogin()
+            if (!this.applicationReady) {
+              this.applicationReady = true
+              this.waitingForRestart = false
+              this.clearWaitTimers()
+              sessionStorage.removeItem(UPGRADE_AWAITING_READY_KEY)
+              this.notifyUpgradeCompleteOnce()
+            }
           }
         })
         .catch(() => {})
@@ -916,23 +878,34 @@ $setup-wm-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
   min-height: 0;
   display: grid;
   grid-template-columns: minmax(260px, 340px) minmax(0, 1fr);
+  align-items: stretch;
   gap: 20px;
+
+  > .setup-aside,
+  > .setup-main {
+    min-height: 0;
+    height: 100%;
+  }
 }
 
 .setup-aside {
   display: flex;
   flex-direction: column;
   min-height: 0;
+  height: 100%;
   padding: 12px 10px;
   background: $setup-aside-bg;
   border: 1px solid $setup-border;
   border-radius: 12px;
+  box-sizing: border-box;
 }
 
 .setup-aside-content {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   padding-inline: 12px;
+  box-sizing: border-box;
 }
 
 .setup-roadmap-title {
@@ -945,6 +918,7 @@ $setup-wm-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 }
 
 .setup-intro-note {
+  flex-shrink: 0;
   margin: auto 12px 0;
   padding: 8px 10px;
   font-size: 12px;
@@ -1015,12 +989,16 @@ $setup-wm-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 
 .setup-main {
   display: flex;
+  flex-direction: column;
   min-height: 0;
+  height: 100%;
+  min-width: 0;
 }
 
 .setup-panel {
-  flex: 1;
+  flex: 1 1 auto;
   min-height: 0;
+  height: 100%;
   display: flex;
   flex-direction: column;
   background: #fff;
@@ -1057,6 +1035,8 @@ $setup-wm-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 
 .setup-panel-body {
   flex: 1;
+  min-height: 0;
+  overflow-x: hidden;
   overflow-y: auto;
   padding: 12px 18px;
 }
@@ -1148,6 +1128,19 @@ $setup-wm-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 
 .setup-summary {
   margin-bottom: 12px;
+
+  ::v-deep .el-descriptions-item__label {
+    width: 148px;
+    min-width: 148px;
+    white-space: nowrap;
+    vertical-align: top;
+    line-height: 1.5;
+  }
+
+  ::v-deep .el-descriptions-item__content {
+    vertical-align: top;
+    word-break: break-word;
+  }
 }
 
 .setup-test-row {
@@ -1200,6 +1193,18 @@ $setup-wm-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 .setup-success-icon {
   font-size: 64px;
   color: #67c23a;
+}
+
+.setup-success-wait {
+  margin-top: 16px;
+  font-size: 14px;
+  color: $setup-muted;
+}
+
+.setup-success-countdown {
+  margin-top: 8px;
+  font-size: 13px;
+  color: $setup-muted-light;
 }
 
 .setup-copyright {

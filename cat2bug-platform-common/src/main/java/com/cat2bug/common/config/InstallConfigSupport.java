@@ -5,12 +5,15 @@ import org.yaml.snakeyaml.Yaml;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * 安装配置文件路径解析（供启动早期 EnvironmentPostProcessor 与运行时共用）
@@ -31,6 +34,8 @@ public final class InstallConfigSupport
 
     public static final String UPGRADE_STATE_COMPLETED = "completed";
 
+    public static final String UPGRADE_LAST_STEP_BACKUP = "backup";
+
     public static final String UPGRADE_LAST_STEP_CONFIG = "config";
 
     public static final String UPGRADE_LAST_STEP_MIGRATION = "migration";
@@ -45,15 +50,141 @@ public final class InstallConfigSupport
     {
     }
 
+    /**
+     * 解析 install 配置路径：若磁盘上已存在则返回实际位置（含 JAR 同目录回退），否则返回工作目录下的目标路径（供写入）。
+     */
     public static Path resolveConfigPath(String configPath)
     {
-        String path = configPath != null && !configPath.isBlank() ? configPath : DEFAULT_CONFIG_PATH;
+        return locateExistingConfigFile(configPath).orElseGet(() -> resolveWorkingDirectoryConfigPath(configPath));
+    }
+
+    public static Path resolveWorkingDirectoryConfigPath(String configPath)
+    {
+        String path = normalizeConfigPath(configPath);
         return Paths.get(path).toAbsolutePath().normalize();
     }
 
     public static boolean isConfigFilePresent(String configPath)
     {
-        return Files.isRegularFile(resolveConfigPath(configPath));
+        return locateExistingConfigFile(configPath).isPresent();
+    }
+
+    /**
+     * 查找已存在的 install 配置文件：优先工作目录，其次 JAR（或 classes）所在目录下的相对路径。
+     */
+    public static Optional<Path> locateExistingConfigFile(String configPath)
+    {
+        return locateExistingConfigFile(configPath, resolveJarDirectory());
+    }
+
+    static Optional<Path> locateExistingConfigFile(String configPath, Path jarDirectory)
+    {
+        String path = normalizeConfigPath(configPath);
+        Path workingDirectoryCandidate = Paths.get(path).toAbsolutePath().normalize();
+        if (Files.isRegularFile(workingDirectoryCandidate))
+        {
+            return Optional.of(workingDirectoryCandidate);
+        }
+        if (Paths.get(path).isAbsolute() || jarDirectory == null)
+        {
+            return Optional.empty();
+        }
+        Path jarDirectoryCandidate = jarDirectory.resolve(path).toAbsolutePath().normalize();
+        if (Files.isRegularFile(jarDirectoryCandidate))
+        {
+            return Optional.of(jarDirectoryCandidate);
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * 可执行 JAR 或 IDE {@code target/classes} 的父目录（即 JAR 同目录）。
+     */
+    public static Path resolveJarDirectory()
+    {
+        Path fromCodeSource = resolveJarDirectoryFromCodeSource();
+        if (fromCodeSource != null)
+        {
+            return fromCodeSource;
+        }
+        return resolveJarDirectoryFromClassPath();
+    }
+
+    private static Path resolveJarDirectoryFromCodeSource()
+    {
+        try
+        {
+            var protectionDomain = InstallConfigSupport.class.getProtectionDomain();
+            if (protectionDomain == null || protectionDomain.getCodeSource() == null)
+            {
+                return null;
+            }
+            Path codePath = toLocalPath(protectionDomain.getCodeSource().getLocation().toURI());
+            if (codePath == null)
+            {
+                return null;
+            }
+            codePath = codePath.toAbsolutePath().normalize();
+            if (Files.isRegularFile(codePath))
+            {
+                Path parent = codePath.getParent();
+                return parent != null ? parent.toAbsolutePath().normalize() : null;
+            }
+            if (Files.isDirectory(codePath))
+            {
+                Path parent = codePath.getParent();
+                return parent != null ? parent.toAbsolutePath().normalize() : null;
+            }
+        }
+        catch (URISyntaxException | SecurityException ignored)
+        {
+            return null;
+        }
+        return null;
+    }
+
+    /**
+     * {@code java -jar app.jar} 时 {@code java.class.path} 即为可执行 JAR 路径。
+     */
+    private static Path resolveJarDirectoryFromClassPath()
+    {
+        String classPath = System.getProperty("java.class.path", "");
+        if (classPath.isBlank() || classPath.contains(java.io.File.pathSeparator))
+        {
+            return null;
+        }
+        Path jarFile = Paths.get(classPath).toAbsolutePath().normalize();
+        if (!Files.isRegularFile(jarFile) || !jarFile.getFileName().toString().endsWith(".jar"))
+        {
+            return null;
+        }
+        Path parent = jarFile.getParent();
+        return parent != null ? parent.toAbsolutePath().normalize() : null;
+    }
+
+    static Path toLocalPath(URI location) throws URISyntaxException
+    {
+        if (location == null)
+        {
+            return null;
+        }
+        if ("file".equalsIgnoreCase(location.getScheme()))
+        {
+            return Paths.get(location);
+        }
+        if ("jar".equalsIgnoreCase(location.getScheme()))
+        {
+            String spec = location.getRawSchemeSpecificPart();
+            int separator = spec.indexOf('!');
+            String fileUri = separator >= 0 ? spec.substring(0, separator) : spec;
+            return Paths.get(URI.create(fileUri));
+        }
+        return null;
+    }
+
+    private static String normalizeConfigPath(String configPath)
+    {
+        return configPath != null && !configPath.isBlank() ? configPath : DEFAULT_CONFIG_PATH;
     }
 
     public static boolean isInstallSkipped(String skipProperty)

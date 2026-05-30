@@ -60,25 +60,6 @@ public class SetupFilter extends OncePerRequestFilter
 
         if (!installed)
         {
-            if (upgradeService.isUpgradeRequired())
-            {
-                if (UpgradeSupport.STATE_RESTART_REQUIRED.equals(upgradeService.resolveState()))
-                {
-                    if (isAllowedDuringUpgradeRestart(path, request.getMethod()))
-                    {
-                        chain.doFilter(request, response);
-                        return;
-                    }
-                }
-                if (isAllowedDuringUpgrade(path, request.getMethod()))
-                {
-                    chain.doFilter(request, response);
-                    return;
-                }
-                ServletUtils.renderString(response, JSON.toJSONString(
-                        AjaxResult.error("系统正在升级，请先完成升级向导")));
-                return;
-            }
             if (isAllowedDuringRestartPending(path, request.getMethod()) || "/captchaImage".equals(path))
             {
                 chain.doFilter(request, response);
@@ -91,6 +72,12 @@ public class SetupFilter extends OncePerRequestFilter
 
         if (isSetupPath(path) && !isSetupStatusPath(path))
         {
+            if (UpgradeFilter.isSetupTestPath(path)
+                    && (upgradeService.isUpgradeRequired() || upgradeService.isUpgradeActive()))
+            {
+                chain.doFilter(request, response);
+                return;
+            }
             ServletUtils.renderString(response, JSON.toJSONString(
                     AjaxResult.error("系统已完成安装，无法再次访问安装接口")));
             return;

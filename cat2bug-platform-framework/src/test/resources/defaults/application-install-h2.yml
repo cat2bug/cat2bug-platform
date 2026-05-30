@@ -12,7 +12,7 @@ spring:
     type: com.alibaba.druid.pool.DruidDataSource
     druid:
       master:
-        url: jdbc:h2:file:./data/cat2bug
+        url: jdbc:h2:file:./data/cat2bug_platform
         username: root
         password: cat2bug_password
       initialSize: 5
