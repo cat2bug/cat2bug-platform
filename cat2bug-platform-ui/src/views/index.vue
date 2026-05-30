@@ -8,9 +8,7 @@
           <b>{{ $t('version') }}:</b> <span>v{{ version }}</span>
         </p>
         <p>
-          <el-tag type="danger">{{$t('free-open-source')}}</el-tag>
-        </p>
-        <p>
+          <el-tag type="danger" style="margin-right: 10px;">{{$t('free-open-source')}}</el-tag>
           <el-button
             type="primary"
             size="mini"
@@ -448,7 +446,8 @@ export default {
   h2 {
     margin-top: 10px;
     font-size: 26px;
-    font-weight: 100;
+    font-weight: 600;
+    color: var(--text-color-primary) !important;
   }
 
   p {
@@ -463,6 +462,9 @@ export default {
     width: 130px;
     height: 130px;
     margin-right: 10px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    overflow: hidden;
     :last-child {
       margin-right: 0px;
     }

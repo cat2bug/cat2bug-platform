@@ -61,18 +61,18 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
     <!-- H2 可能将 defect_ids 推断为 JSON，与 BIGINT 直接 LIKE 比较会报错 -->
     <sql id="planItemDefectIdMatch">
-        CAST(${planItemAlias}.defect_ids AS VARCHAR) like concat('%,', CAST(${defectIdExpr} AS VARCHAR), ',%')
-        or CAST(${planItemAlias}.defect_ids AS VARCHAR) like concat('%', CAST(${defectIdExpr} AS VARCHAR), ',%')
-        or CAST(${planItemAlias}.defect_ids AS VARCHAR) like concat('%,', CAST(${defectIdExpr} AS VARCHAR), '%')
+        CAST(${planItemAlias}.defect_ids AS CHAR(3000)) like concat('%,', CAST(${defectIdExpr} AS CHAR(255)), ',%')
+        or CAST(${planItemAlias}.defect_ids AS CHAR(3000)) like concat('%', CAST(${defectIdExpr} AS CHAR(255)), ',%')
+        or CAST(${planItemAlias}.defect_ids AS CHAR(3000)) like concat('%,', CAST(${defectIdExpr} AS CHAR(255)), '%')
     </sql>
 
     <!-- H2 中 receive_by 为 JSON，不能与 BIGINT 的 user_id 直接比较 -->
     <sql id="defectLogReceiveByMatchUser">
         (
-            CAST(${logAlias}.receive_by AS VARCHAR) = CAST(${userIdExpr} AS VARCHAR)
-            OR CAST(${logAlias}.receive_by AS VARCHAR) LIKE concat('%,', CAST(${userIdExpr} AS VARCHAR), ',%')
-            OR CAST(${logAlias}.receive_by AS VARCHAR) LIKE concat(CAST(${userIdExpr} AS VARCHAR), ',%')
-            OR CAST(${logAlias}.receive_by AS VARCHAR) LIKE concat('%,', CAST(${userIdExpr} AS VARCHAR))
+            CAST(${logAlias}.receive_by AS CHAR(3000)) = CAST(${userIdExpr} AS CHAR(255))
+            OR CAST(${logAlias}.receive_by AS CHAR(3000)) LIKE concat('%,', CAST(${userIdExpr} AS CHAR(255)), ',%')
+            OR CAST(${logAlias}.receive_by AS CHAR(3000)) LIKE concat(CAST(${userIdExpr} AS CHAR(255)), ',%')
+            OR CAST(${logAlias}.receive_by AS CHAR(3000)) LIKE concat('%,', CAST(${userIdExpr} AS CHAR(255)))
         )
     </sql>
 
@@ -245,7 +245,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
     <sql id="selectSysDefectOfPlanVo">
         <include refid="com.cat2bug.system.mapper.SysDefectMapper.selectSysDefectVo"/>
-        LEFT JOIN sys_plan_item spi ON spi.defect_ids IS NOT NULL AND CAST(spi.defect_ids AS VARCHAR) LIKE CONCAT('%,', CAST(d.defect_id AS VARCHAR))
+        LEFT JOIN sys_plan_item spi ON spi.defect_ids IS NOT NULL AND CAST(spi.defect_ids AS CHAR(3000)) LIKE CONCAT('%,', CAST(d.defect_id AS CHAR(255)))
         LEFT JOIN sys_case c ON c.case_id = d.case_id
     </sql>
     <select id="getProjectPlanMaxNum" resultType="Long">

@@ -27,7 +27,7 @@
           <!--          项目图标-->
           <el-col :xs="24" :sm="24" :md="8" :lg="6" :xl="6" class="step2">
             <el-image
-              style="width: 150px; height: 150px"
+              style="width: 150px; height: 150px; border-radius: 4px; overflow: hidden;"
               :src="form.projectIcon"
               fit="cover"></el-image>
             <el-popover
@@ -35,18 +35,18 @@
               popper-class="project-icon-popper"
               placement="bottom"
               trigger="click">
-              <el-row class="project-icon-popper" :gutter="6">
-                <el-col :span="6" v-for="i in 10" :key="i">
+              <div class="project-icon-popper">
+                <div class="project-icon-item" v-for="i in 10" :key="i">
                   <el-image
                     @click="clickProjectIconHandle(i)"
                     :src="activeProjectIconUrl(i)"
                     fit="cover"
                   ></el-image>
-                </el-col>
-                <el-col :span="6">
-                  <image-upload v-model="projectIcon" :limit="1" :file-type="[]" :is-show-tip="false" :is-show-clipboard-button="false" @input="handleSelectSelfImage" />
-                </el-col>
-              </el-row>
+                </div>
+                <div class="project-icon-item">
+                  <image-upload v-model="projectIcon" :limit="1" :file-type="[]" :is-show-tip="false" :is-show-clipboard-button="false" buttonStyle="width: 130px; height: 130px;" @input="handleSelectSelfImage" />
+                </div>
+              </div>
               <!--              选择项目图标按钮-->
               <el-button slot="reference" size="mini">{{$t('project.change-icon')}}</el-button>
             </el-popover>
@@ -226,7 +226,7 @@ export default {
       flex-direction: column;
       column-gap: 10px;
       row-gap: 10px;
-      border-left: #EBEEF5 1px solid;
+      border-left: var(--border-color-light) 1px solid;
       :first-child {
         margin-bottom: 10px;
       }
@@ -236,8 +236,23 @@ export default {
     }
   }
   .project-icon-popper {
-    width: 608px;
-    .el-image:hover {
+    width: 550px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 0;
+    margin: 0;
+    .project-icon-item {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 0;
+      margin: 0;
+    }
+    .el-image {
+      width: 130px;
+      height: 130px;
+      border-radius: 4px;
       cursor: pointer;
     }
   }

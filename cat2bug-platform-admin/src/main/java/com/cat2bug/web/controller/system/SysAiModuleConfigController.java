@@ -94,6 +94,7 @@ public class SysAiModuleConfigController extends BaseController
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("ollama", ollamaOpts);
         body.put("openai", openaiOpts);
+        body.put("aiEnabled", aiService != null);
         return success(body);
     }
 

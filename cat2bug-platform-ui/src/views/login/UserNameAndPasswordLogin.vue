@@ -213,11 +213,11 @@ export default {
 .login-form {
   margin-top: -77px;
   border-radius: 6px;
-  background: #ffffff;
+  background: var(--card-bg);
   width: 500px;
   margin-bottom: 10px;
   padding: 25px 25px 5px 25px;
-  border:3px solid #5A5A59;
+  border: 3px solid var(--border-color-base);
   .el-input {
     height: 38px;
     ::v-deep input {
@@ -240,7 +240,7 @@ export default {
   height: 38px;
   float: right;
   box-sizing: border-box;
-  border: 1px solid #5A5A59;
+  border: 1px solid var(--border-color-base);
   border-radius: 4px;
   overflow: hidden;
   background: #FFC145;
@@ -249,7 +249,7 @@ export default {
 .login-copyright {
   font-family: Arial;
   font-size: 14px;
-  color: #606266;
+  color: var(--text-color-secondary);
 }
 .login-form-title {
   display: flex;
@@ -260,11 +260,11 @@ export default {
   .title {
     margin: 0px 10px;
     text-align: center;
-    color: #707070;
+    color: var(--text-color-primary);
   }
   .version {
     font-size: 14px;
-    color: #707070;
+    color: var(--text-color-secondary);
   }
 }
 </style>

@@ -153,6 +153,7 @@ body {
 .logo-page {
   height: 100%;
   overflow: hidden;
+  background-color: var(--bg-color-base);
 }
 .login {
   display: flex;
@@ -161,7 +162,7 @@ body {
   height: 100%;
   //background-image: url("../assets/img/login-background.jpg");
   background-size: cover;
-  background-color: white;
+  background-color: var(--bg-color-base);
 }
 .login-type {
   margin: 10px 0px 25px 0px;
@@ -215,7 +216,15 @@ body {
   max-width: 45%;
   font-size: 22px;
   padding-right: 80px;
-  border-right: 1px solid #DCDFE6;
+  border-right: 1px solid var(--border-color-base);
+  color: var(--text-color-primary);
+  h1 {
+    color: var(--text-color-primary) !important;
+  }
+  p {
+    color: var(--text-color-regular) !important;
+    opacity: 0.95;
+  }
 }
 .login-mouse {
   position: absolute;

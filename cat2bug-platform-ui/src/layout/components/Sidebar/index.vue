@@ -6,8 +6,8 @@
             v-show="!teamLock && teamId"
             :default-active="activeMenu"
             :collapse="isCollapse"
-            :background-color="settings.sideTheme === 'theme-dark' ? variables.menuBackground : variables.menuLightBackground"
-            :text-color="settings.sideTheme === 'theme-dark' ? variables.menuColor : variables.menuLightColor"
+            :background-color="menuBackgroundColor"
+            :text-color="menuTextColor"
             :unique-opened="true"
             :active-text-color="settings.theme"
             :collapse-transition="false"
@@ -27,8 +27,8 @@
               v-show="!teamLock && teamId && !projectLock && projectId && projectRouters.length > 0 && !routesRefreshing"
               :default-active="activeMenu"
               :collapse="isCollapse"
-              :background-color="settings.sideTheme === 'theme-dark' ? variables.menuBackground : variables.menuLightBackground"
-              :text-color="settings.sideTheme === 'theme-dark' ? variables.menuColor : variables.menuLightColor"
+              :background-color="menuBackgroundColor"
+              :text-color="menuTextColor"
               :unique-opened="true"
               :active-text-color="settings.theme"
               :collapse-transition="false"
@@ -48,8 +48,8 @@
             v-show="teamId"
             :default-active="activeMenu"
             :collapse="isCollapse"
-            :background-color="settings.sideTheme === 'theme-dark' ? variables.menuBackground : variables.menuLightBackground"
-            :text-color="settings.sideTheme === 'theme-dark' ? variables.menuColor : variables.menuLightColor"
+            :background-color="menuBackgroundColor"
+            :text-color="menuTextColor"
             :unique-opened="true"
             :active-text-color="settings.theme"
             :collapse-transition="false"
@@ -90,8 +90,8 @@
         <el-menu
           :default-active="activeMenu"
           :collapse="isCollapse"
-          :background-color="settings.sideTheme === 'theme-dark' ? variables.menuBackground : variables.menuLightBackground"
-          :text-color="settings.sideTheme === 'theme-dark' ? variables.menuColor : variables.menuLightColor"
+          :background-color="menuBackgroundColor"
+          :text-color="menuTextColor"
           :unique-opened="true"
           :active-text-color="settings.theme"
           :collapse-transition="false"
@@ -123,6 +123,24 @@ export default {
     computed: {
         ...mapState(["settings"]),
         ...mapGetters(["sidebarRouters", "sidebar", "routesRefreshing"]),
+      /** 侧栏菜单背景：暗黑模式跟随 CSS 变量，避免 Element 内联白底 */
+      menuBackgroundColor() {
+        if (this.settings.themeMode === 'dark') {
+          return 'var(--sidebar-bg)'
+        }
+        return this.settings.sideTheme === 'theme-dark'
+          ? variables.menuBackground
+          : variables.menuLightBackground
+      },
+      /** 侧栏菜单文字色：暗黑模式跟随 CSS 变量 */
+      menuTextColor() {
+        if (this.settings.themeMode === 'dark') {
+          return 'var(--sidebar-text)'
+        }
+        return this.settings.sideTheme === 'theme-dark'
+          ? variables.menuColor
+          : variables.menuLightColor
+      },
       teamId() {
           return this.$store.state.user.config.currentTeamId;
       },

@@ -574,6 +574,7 @@ export default {
   overflow-x: auto;
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
+  background: transparent;
 }
 .defect-table-tools-bar {
   flex-shrink: 0;
@@ -687,6 +688,10 @@ export default {
 ::v-deep .defect-sidebar-expand-header-cell {
   padding: 0 !important;
   text-align: center;
+  border-top-left-radius: 5px;
+}
+.defect-table-root ::v-deep .cat2-bug-table-wrap {
+  background: transparent;
 }
 ::v-deep .defect-sidebar-expand-header-cell .cell {
   padding: 0 !important;

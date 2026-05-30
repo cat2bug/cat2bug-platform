@@ -3489,7 +3489,7 @@ export default {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  background: #fff;
+  background: transparent;
 }
 /* 去掉外层边框，只保留库内 .component-content 一层 1px，避免「双边框」显粗 */
 .defect-vue-excel-editor {
@@ -3509,7 +3509,9 @@ export default {
 /* 与系统 Element 表格色系一致：浅边框 + 浅表头，避免过重 */
 .defect-vue-excel-editor ::v-deep .component-content {
   border: 1px solid #dcdfe6;
-  border-radius: 2px;
+  border-radius: 5px 5px 0 0;
+  overflow: hidden;
+  transform: translate3d(0, 0, 0);
   /* 库默认 max-width: fit-content，列变宽会撑大整块编辑器；限制为 100%，宽表在 .table-content 内横向滚动 */
   max-width: 100%;
   width: 100%;
@@ -3626,7 +3628,13 @@ export default {
   position: sticky !important;
   top: 0 !important;
 }
-/* 库内结构为 th > div(标题) + div.col-sep(绝对定位在右侧)，仅设 th 的 text-align 不足以水平居中标题文案 */
+.defect-vue-excel-editor ::v-deep .systable thead tr:first-child th.first-col {
+  border-top-left-radius: 5px;
+  top: 0 !important;
+}
+.defect-vue-excel-editor ::v-deep .systable thead tr:first-child th:last-child {
+  border-top-right-radius: 5px;
+}
 .defect-vue-excel-editor ::v-deep .systable thead tr:first-child th > div:first-child {
   display: flex;
   align-items: center;
@@ -3670,9 +3678,6 @@ export default {
   position: sticky !important;
   left: 0 !important;
   z-index: 18 !important;
-}
-.defect-vue-excel-editor ::v-deep .systable thead tr:first-child th.first-col {
-  top: 0 !important;
 }
 .defect-vue-excel-editor ::v-deep .systable tbody td.first-col {
   background-color: #f5f7fa !important;
@@ -4218,6 +4223,9 @@ export default {
 .defect-excel-root .defect-vue-excel-editor table.systable tbody td.select:not(.readonly),
 .defect-excel-root .defect-vue-excel-editor table.systable tbody td.datepick:not(.readonly) {
   vertical-align: middle !important;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23909399' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>") !important;
+  background-repeat: no-repeat !important;
+  background-size: 12px 12px !important;
   background-position: right 6px center !important;
 }
 .defect-excel-root .defect-vue-excel-editor table.systable tbody td.cell-html {
@@ -4231,9 +4239,9 @@ export default {
   position: relative !important;
   overflow-x: hidden !important;
   padding-right: 18px !important;
-  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAMAAABhEH5lAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAASUExURQAAANra2tfX19ra2tnZ2dnZ2c8lDs8AAAAFdFJOUwAwQL/PKlwehgAAAAlwSFlzAAAXEQAAFxEByibzPwAAAEdJREFUKFNdyskBACAIA8F49d+yiBEh+9rHYC5poPGiDmUDUGZI2EHCHBV2UWFEiT2UWKBgHwVLiCwjsoKcVeRMkDFFxoiADtH4AyvGhvOPAAAAAElFTkSuQmCC") !important;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23909399' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>") !important;
   background-repeat: no-repeat !important;
-  background-size: 8px 8px !important;
+  background-size: 12px 12px !important;
   background-position: right 6px center !important;
   vertical-align: middle !important;
 }

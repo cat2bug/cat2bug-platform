@@ -7,12 +7,13 @@
         <span>{{$t('project.ai-manager-describe')}}</span>
       </div>
     </div>
-    <router-link to="ollama" v-hasPermi="['system:ai:list']"><el-link>{{$t('project.ai-model-manager')}}</el-link></router-link>
+    <router-link v-if="aiEnabled" to="ollama" v-hasPermi="['system:ai:list']"><el-link>{{$t('project.ai-model-manager')}}</el-link></router-link>
     <router-link to="openai" v-hasPermi="['ai:account:list']"><el-link>{{$t('project.ai-account-manager')}}</el-link></router-link>
   </el-card>
 </template>
 
 <script>
+import { projectAiModelOptions } from "@/api/system/ai";
 
 export default {
   name: "AICard",
@@ -25,8 +26,29 @@ export default {
       default: {}
     }
   },
+  data() {
+    return {
+      aiEnabled: true
+    };
+  },
+  computed: {
+    projectId() {
+      return parseInt(this.$store.state.user.config.currentProjectId);
+    }
+  },
+  created() {
+    this.checkAiEnabled();
+  },
   methods: {
-
+    checkAiEnabled() {
+      if (this.projectId) {
+        projectAiModelOptions(this.projectId).then(res => {
+          this.aiEnabled = res.aiEnabled !== false;
+        }).catch(() => {
+          this.aiEnabled = true;
+        });
+      }
+    }
   }
 }
 </script>

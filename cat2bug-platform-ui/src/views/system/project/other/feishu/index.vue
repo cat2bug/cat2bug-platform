@@ -123,7 +123,7 @@ export default {
     padding-top: 10px;
   }
   > * {
-    border-left: 1px solid #EBEEF5;
+    border-left: 1px solid var(--border-color-light);
     padding-left: 50px;
     padding-right: 50px;
   }

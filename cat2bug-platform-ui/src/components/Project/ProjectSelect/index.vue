@@ -138,7 +138,7 @@ export default {
 
 <style lang="scss" scoped>
 .el-divider {
-  background-color: #EBEEF5;
+  background-color: var(--border-color-light);
   margin: 10px 0px;
 }
 .between-row-1 {
@@ -164,9 +164,9 @@ export default {
     flex-shrink: 0;
   }
 }
-.prefix-project-name {
-  margin: 5px;
-}
+  .prefix-project-name {
+    margin: 5px 0px;
+  }
 .row {
   display: inline-flex;
   flex-direction: row;

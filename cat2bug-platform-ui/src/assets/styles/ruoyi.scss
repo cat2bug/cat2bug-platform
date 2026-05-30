@@ -76,6 +76,10 @@
 }
 
 .el-table {
+	border-radius: 5px !important;
+	overflow: hidden !important;
+	// 强制 WebKit 浏览器对 border-radius 进行 overflow: hidden 裁剪，防止表头出现白色尖角
+	transform: translate3d(0, 0, 0) !important;
 	.el-table__header-wrapper, .el-table__fixed-header-wrapper {
 		th {
 			word-break: break-word;
@@ -103,6 +107,19 @@
 				justify-content: flex-start;
 			}
 		}
+	}
+	/* 固定列/滚动条补丁层不参与主表头裁剪，单独补左上/右上圆角，避免 WebKit 圆角白尖 */
+	.el-table__header-wrapper thead tr:first-child > th:first-child,
+	.el-table__fixed-header-wrapper thead tr:first-child > th:first-child {
+		border-top-left-radius: 5px;
+	}
+	.el-table__header-wrapper thead tr:first-child > th:last-child,
+	.el-table__fixed-header-wrapper thead tr:first-child > th:last-child,
+	.el-table__fixed-right .el-table__fixed-header-wrapper thead tr:first-child > th:last-child {
+		border-top-right-radius: 5px;
+	}
+	.el-table__fixed-right-patch {
+		border-top-right-radius: 5px;
 	}
 	.el-table__body-wrapper {
 		.el-button [class*="el-icon-"] + span {

@@ -105,7 +105,7 @@
                 />
               </el-select>
             </el-form-item>
-            <el-form-item prop="handleBy" class="padding-top-3px">
+            <el-form-item prop="handleBy">
               <select-project-member
                 v-model="queryParams.handleBy"
                 :project-id="projectId"

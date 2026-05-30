@@ -34,6 +34,8 @@ export default {
     overflow: hidden;
     .el-image {
       flex-shrink: 0;
+      border-radius: 4px;
+      overflow: hidden;
     }
     > * {
       margin-right: 10px;

@@ -31,7 +31,7 @@
           <span>/</span>
           <span class="click" style="color: #909399;">{{$t('unexecuted')}}</span>
           <span>/</span>
-          <span class="click" style="font-weight: 500;">{{$t('total')}}</span>
+          <span class="click case-total" style="font-weight: 500;">{{$t('total')}}</span>
         </template>
         <template slot="formatter">
           <span class="click" style="color: rgb(19, 206, 102);">{{selectPlan.passCount||0}}</span>
@@ -40,7 +40,7 @@
           <span>/</span>
           <span class="click" style="color: #909399;">{{selectPlan.unexecutedCount||0}}</span>
           <span>/</span>
-          <span class="click" style="font-weight: 500;">{{selectPlan.itemTotal||0}}{{ $t('a') }}</span>
+          <span class="click case-total" style="font-weight: 500;">{{selectPlan.itemTotal||0}}{{ $t('a') }}</span>
         </template>
       </el-statistic>
       <!--          缺陷总数-->
@@ -224,7 +224,7 @@ export default {
   >* {
     flex: 1;
     min-width: 100px;
-    border-right: 1px solid #E4E7ED;
+    border-right: 1px solid var(--border-color-light);
     margin-bottom: 10px;
     padding: 0 5px;
   }

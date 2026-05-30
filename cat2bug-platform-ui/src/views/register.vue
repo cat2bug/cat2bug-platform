@@ -163,19 +163,20 @@ export default {
   height: 100%;
   //background-image: url("../assets/img/login-background.jpg");
   background-size: cover;
+  background-color: var(--bg-color-base);
 }
 .title {
   margin: 0px auto 30px auto;
   text-align: center;
-  color: #707070;
+  color: var(--text-color-primary);
 }
 
 .register-form {
   border-radius: 6px;
-  background: #ffffff;
+  background: var(--card-bg);
   width: 400px;
   padding: 25px 25px 5px 25px;
-  border: 2px solid #5A5A59;
+  border: 2px solid var(--border-color-base);
   .el-input {
     height: 38px;
     input {
@@ -200,7 +201,7 @@ export default {
   bottom: 0;
   width: 100%;
   text-align: center;
-  color: #fff;
+  color: var(--text-color-secondary);
   font-family: Arial;
   font-size: 12px;
   letter-spacing: 1px;
