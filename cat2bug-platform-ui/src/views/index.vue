@@ -166,6 +166,7 @@
           <el-collapse accordion>
             <el-collapse-item title="v0.6.2 - 2026-05-25">
               <ol>
+                <li>添加全新的图形化首次安装/升级向导，简化系统部署和数据库/缓存/账号初始化配置</li>
                 <li>添加飞书通知接收</li>
                 <li>API KEY中添加权限设置</li>
                 <li>【AI大模型】改为【Ollama模型】，在AI创建测试用例、缺陷AI运用中，可以选择指定模型</li>

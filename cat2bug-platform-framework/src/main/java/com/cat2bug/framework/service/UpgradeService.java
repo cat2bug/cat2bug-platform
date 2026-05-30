@@ -59,6 +59,7 @@ public class UpgradeService implements ApplicationRunner
         syncFromDisk();
         resetStaleUpgradeStateWhenInstallIncomplete();
         syncPendingUpgradeStateWhenSchemaDrift();
+        syncCompletedUpgradeStateWhenNoWorkNeeded();
         if (UpgradeSupport.STATE_RESTART_REQUIRED.equals(readRawState()))
         {
             Map<String, Object> section = readSection();
@@ -97,20 +98,22 @@ public class UpgradeService implements ApplicationRunner
         {
             return false;
         }
-        if (UpgradeSupport.isActiveState(normalizeState(rawState)))
+        if (!installProperties.isInstallCompletedOnDisk())
         {
-            return installProperties.isInstallCompletedOnDisk();
+            return false;
         }
-        if (installProperties.isInstallCompletedOnDisk())
+        String state = normalizeState(rawState);
+        if (UpgradeSupport.STATE_RESTART_REQUIRED.equals(state) || UpgradeSupport.STATE_RUNNING.equals(state))
         {
-            return pendingMigrations != null && !pendingMigrations.isEmpty();
+            return true;
         }
-        return false;
+        return pendingMigrations != null && !pendingMigrations.isEmpty();
     }
 
     public Map<String, Object> getStatus()
     {
         syncPendingUpgradeStateWhenSchemaDrift();
+        syncCompletedUpgradeStateWhenNoWorkNeeded();
         Map<String, Object> section = readSection();
         Map<String, Object> status = new HashMap<>(12);
         String state = normalizeState(stringValue(section.get("state")));
@@ -265,6 +268,48 @@ public class UpgradeService implements ApplicationRunner
         section.put("completedVersion", "");
         writeSection(section);
         log.info("安装未完成，已清除无效的升级状态，请通过 /setup 完成安装");
+    }
+
+    /**
+     * install 已 completed 且 Flyway 无待执行脚本时，将残留的 pending/failed 升级状态标记为 completed。
+     */
+    private void syncCompletedUpgradeStateWhenNoWorkNeeded()
+    {
+        if (isUpgradeSkipped() || !installProperties.isInstallCompletedOnDisk())
+        {
+            return;
+        }
+        if (installService.needsRestart())
+        {
+            return;
+        }
+        if (hasPendingSchemaUpgrade())
+        {
+            return;
+        }
+        String state = readRawState();
+        if (UpgradeSupport.STATE_RESTART_REQUIRED.equals(state) || UpgradeSupport.STATE_RUNNING.equals(state))
+        {
+            return;
+        }
+        if (UpgradeSupport.STATE_PENDING.equals(state) || UpgradeSupport.STATE_FAILED.equals(state))
+        {
+            markUpgradeCompleted("无待执行数据库迁移，升级状态已标记为 completed");
+        }
+    }
+
+    private void markUpgradeCompleted(String logMessage)
+    {
+        Map<String, Object> section = readSection();
+        section.put("state", UpgradeSupport.STATE_COMPLETED);
+        section.put("completedVersion", cat2BugConfig.getVersion());
+        section.put("lastError", "");
+        section.put("lastStep", "");
+        writeSection(section);
+        if (StringUtils.isNotEmpty(logMessage))
+        {
+            log.info(logMessage);
+        }
     }
 
     /**

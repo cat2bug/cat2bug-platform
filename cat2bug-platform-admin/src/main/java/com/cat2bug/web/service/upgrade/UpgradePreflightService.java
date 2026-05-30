@@ -50,7 +50,7 @@ public class UpgradePreflightService
         result.put("currentVersion", status.get("currentVersion"));
         result.put("targetVersion", status.get("targetVersion"));
         result.put("pendingMigrations", status.get("pendingMigrations"));
-        result.put("diffs", buildDiffs(base, merged));
+        result.put("diffs", buildDiffs(base, template));
         result.put("suggestedConfig", merged);
         result.put("databaseName", upgradeDatabaseBackupService.resolveDatabaseName(buildSubmitFromBase(base, databaseType)));
         result.put("defaultBackupFileName", upgradeDatabaseBackupService.defaultBackupFileName(
@@ -302,6 +302,10 @@ public class UpgradePreflightService
         {
             String key = entry.getKey();
             String path = prefix.isEmpty() ? key : prefix + "." + key;
+            if (shouldSkipDiffPath(path))
+            {
+                continue;
+            }
             Object mergedValue = entry.getValue();
             Object baseValue = base.get(key);
 
@@ -325,6 +329,15 @@ public class UpgradePreflightService
             row.put("action", missing ? "suggest" : "preserve");
             diffs.add(row);
         }
+    }
+
+    /** 安装/升级运行时状态，不参与与模板的差异展示 */
+    private static boolean shouldSkipDiffPath(String path)
+    {
+        return path.startsWith("cat2bug.install.")
+                || path.startsWith("cat2bug.upgrade.")
+                || "cat2bug.install".equals(path)
+                || "cat2bug.upgrade".equals(path);
     }
 
     private static boolean valuesEqual(Object baseValue, Object mergedValue)

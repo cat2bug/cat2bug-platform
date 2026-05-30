@@ -104,7 +104,8 @@ router.beforeEach((to, from, next) => {
     const refreshUpgradeStatus = to.path === '/upgrade' || from.path === '/upgrade'
     resolveUpgradeStatus(refreshUpgradeStatus).then(upgradeStatus => {
       const state = upgradeStatus.state || ''
-      const wizardLocked = ['pending', 'running', 'failed'].includes(state)
+      const wizardLocked = upgradeStatus.upgradeRequired
+        && ['pending', 'running', 'failed'].includes(state)
 
       if (wizardLocked) {
         if (to.path !== '/upgrade') {

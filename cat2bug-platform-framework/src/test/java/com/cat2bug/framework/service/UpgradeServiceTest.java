@@ -344,6 +344,53 @@ class UpgradeServiceTest
     }
 
     @Test
+    void isUpgradeRequired_returnsFalseWhenPendingButNoMigrations(@TempDir Path dir) throws Exception
+    {
+        when(installService.needsRestart()).thenReturn(false);
+        Path installFile = dir.resolve("application-install.yml");
+        installProperties.setConfigPath(installFile.toString());
+        Map<String, Object> root = new LinkedHashMap<>();
+        Map<String, Object> cat2bug = new LinkedHashMap<>();
+        Map<String, Object> install = new LinkedHashMap<>();
+        install.put("completed", true);
+        cat2bug.put("install", install);
+        Map<String, Object> upgrade = new LinkedHashMap<>();
+        upgrade.put("state", UpgradeSupport.STATE_PENDING);
+        cat2bug.put("upgrade", upgrade);
+        root.put("cat2bug", cat2bug);
+        InstallConfigSupport.writeInstallConfig(installFile, root);
+
+        ReflectionTestUtils.setField(upgradeService, "migrationInspector", null);
+
+        assertFalse(upgradeService.isUpgradeRequired());
+    }
+
+    @Test
+    void getStatus_autoCompletesWhenPendingButNoMigrations(@TempDir Path dir) throws Exception
+    {
+        when(installService.needsRestart()).thenReturn(false);
+        Path installFile = dir.resolve("application-install.yml");
+        installProperties.setConfigPath(installFile.toString());
+        Map<String, Object> root = new LinkedHashMap<>();
+        Map<String, Object> cat2bug = new LinkedHashMap<>();
+        Map<String, Object> install = new LinkedHashMap<>();
+        install.put("completed", true);
+        cat2bug.put("install", install);
+        Map<String, Object> upgrade = new LinkedHashMap<>();
+        upgrade.put("state", UpgradeSupport.STATE_PENDING);
+        cat2bug.put("upgrade", upgrade);
+        root.put("cat2bug", cat2bug);
+        InstallConfigSupport.writeInstallConfig(installFile, root);
+
+        ReflectionTestUtils.setField(upgradeService, "migrationInspector", null);
+
+        Map<String, Object> status = upgradeService.getStatus();
+
+        assertEquals(UpgradeSupport.STATE_COMPLETED, status.get("state"));
+        assertEquals(Boolean.FALSE, status.get("upgradeRequired"));
+    }
+
+    @Test
     void run_marksInstallCompletedAfterUpgradeRestart(@TempDir Path dir) throws Exception
     {
         Path installFile = dir.resolve("application-install.yml");

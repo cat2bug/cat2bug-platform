@@ -77,7 +77,7 @@
                   <el-descriptions-item :label="$t('upgrade.overview.targetVersion')">{{ status.targetVersion || '-' }}</el-descriptions-item>
                   <el-descriptions-item :label="$t('upgrade.overview.databaseType')">{{ (preflight.databaseType || form.databaseType || '-').toUpperCase() }}</el-descriptions-item>
                   <el-descriptions-item :label="$t('upgrade.overview.pendingMigrations')">
-                    <div v-if="migrationList.length">
+                    <div v-if="hasPendingMigrations">
                       <el-tag
                         v-for="item in migrationList"
                         :key="item"
@@ -88,37 +88,46 @@
                         {{ item }}
                       </el-tag>
                     </div>
-                    <span v-else>-</span>
+                    <span v-else class="upgrade-no-migration-text">{{ $t('upgrade.overview.noPendingMigrationsShort') }}</span>
                   </el-descriptions-item>
                 </el-descriptions>
-                <p class="setup-tip">{{ $t('upgrade.overview.singleInstanceNotice') }}</p>
-              </div>
-
-              <div v-show="currentStepKey === 'upgrade.step.diff'" class="setup-step-panel">
-                <p class="setup-step-desc">{{ $t('upgrade.diff.desc') }}</p>
-                <el-table :data="diffRows" size="mini" border class="upgrade-diff-table" :row-class-name="diffRowClassName">
-                  <el-table-column prop="key" :label="$t('upgrade.diff.key')" min-width="240" />
-                  <el-table-column prop="currentValue" :label="$t('upgrade.diff.currentValue')" min-width="180">
-                    <template slot-scope="scope">
-                      <span>{{ formatDiffValue(scope.row.currentValue) }}</span>
-                    </template>
-                  </el-table-column>
-                  <el-table-column prop="suggestedValue" :label="$t('upgrade.diff.suggestedValue')" min-width="180">
-                    <template slot-scope="scope">
-                      <span>{{ formatDiffValue(scope.row.suggestedValue) }}</span>
-                    </template>
-                  </el-table-column>
-                  <el-table-column prop="action" :label="$t('upgrade.diff.action')" width="150">
-                    <template slot-scope="scope">
-                      <el-tag :type="isMissingRow(scope.row) ? 'warning' : 'info'" size="mini">
-                        {{ isMissingRow(scope.row) ? $t('upgrade.diff.fillMissing') : $t('upgrade.diff.preserve') }}
-                      </el-tag>
-                    </template>
-                  </el-table-column>
-                </el-table>
-                <p class="setup-tip">
-                  {{ $t('upgrade.diff.missingSummary', { count: missingDiffCount }) }}
-                </p>
+                <el-alert
+                  v-if="!hasPendingMigrations"
+                  type="warning"
+                  :closable="false"
+                  show-icon
+                  :title="$t('upgrade.overview.noPendingMigrations')"
+                  class="upgrade-overview-alert"
+                />
+                <el-collapse v-if="hasConfigDiffs" class="upgrade-config-diff-collapse">
+                  <el-collapse-item :title="$t('upgrade.overview.configDiffOptional')" name="config-diff">
+                    <p class="setup-step-desc">{{ $t('upgrade.diff.desc') }}</p>
+                    <el-table :data="diffRows" size="mini" border class="upgrade-diff-table" :row-class-name="diffRowClassName">
+                      <el-table-column prop="key" :label="$t('upgrade.diff.key')" min-width="240" />
+                      <el-table-column prop="currentValue" :label="$t('upgrade.diff.currentValue')" min-width="180">
+                        <template slot-scope="scope">
+                          <span>{{ formatDiffValue(scope.row.currentValue) }}</span>
+                        </template>
+                      </el-table-column>
+                      <el-table-column prop="suggestedValue" :label="$t('upgrade.diff.suggestedValue')" min-width="180">
+                        <template slot-scope="scope">
+                          <span>{{ formatDiffValue(scope.row.suggestedValue) }}</span>
+                        </template>
+                      </el-table-column>
+                      <el-table-column prop="action" :label="$t('upgrade.diff.action')" width="150">
+                        <template slot-scope="scope">
+                          <el-tag :type="isMissingRow(scope.row) ? 'warning' : 'info'" size="mini">
+                            {{ isMissingRow(scope.row) ? $t('upgrade.diff.fillMissing') : $t('upgrade.diff.preserve') }}
+                          </el-tag>
+                        </template>
+                      </el-table-column>
+                    </el-table>
+                    <p class="setup-tip">
+                      {{ $t('upgrade.diff.summary', { missing: missingDiffCount, preserve: preserveDiffCount }) }}
+                    </p>
+                  </el-collapse-item>
+                </el-collapse>
+                <p v-if="showSingleInstanceNotice" class="setup-tip">{{ $t('upgrade.overview.singleInstanceNotice') }}</p>
               </div>
 
               <div v-show="currentStepKey === 'upgrade.step.auth'" class="setup-step-panel">
@@ -126,10 +135,10 @@
                 <p v-if="status.lastError && isAuthErrorMessage(status.lastError)" class="setup-tip setup-tip--warn">{{ status.lastError }}</p>
                 <el-form ref="adminForm" :model="form" :rules="adminRules" label-position="top" size="small" class="setup-inner-form">
                   <el-form-item :label="$t('setup.admin.username')" prop="adminUsername">
-                    <el-input v-model="form.adminUsername" maxlength="30" autocomplete="username" />
+                    <el-input v-model="form.adminUsername" :maxlength="LOGIN_USERNAME_MAX_LENGTH" autocomplete="username" />
                   </el-form-item>
                   <el-form-item :label="$t('setup.admin.password')" prop="adminPassword">
-                    <el-input v-model="form.adminPassword" type="password" show-password maxlength="50" autocomplete="current-password" />
+                    <el-input v-model="form.adminPassword" type="password" show-password :maxlength="LOGIN_PASSWORD_MAX_LENGTH" autocomplete="current-password" />
                   </el-form-item>
                 </el-form>
               </div>
@@ -137,6 +146,10 @@
               <div v-show="currentStepKey === 'upgrade.step.execute'" class="setup-step-panel">
                 <p class="setup-step-desc">{{ $t('upgrade.execute.desc') }}</p>
                 <el-form label-position="top" size="small" class="setup-inner-form">
+                  <el-form-item v-if="missingDiffCount > 0">
+                    <el-checkbox v-model="form.applyConfigChanges">{{ $t('upgrade.config.applySuggested') }}</el-checkbox>
+                    <p class="setup-tip">{{ $t('upgrade.config.applyHint') }}</p>
+                  </el-form-item>
                   <el-form-item>
                     <el-checkbox v-model="form.backupEnabled">{{ $t('upgrade.backup.enable') }}</el-checkbox>
                   </el-form-item>
@@ -244,6 +257,11 @@ import { getUpgradePreflight, getUpgradeStatus, retryUpgrade, rollbackUpgrade, s
 import { getSetupStatus } from '@/api/setup'
 import { resetUpgradeStatusCache } from '@/utils/upgrade-status'
 import { resetSetupStatusCache } from '@/utils/setup-status'
+import {
+  buildAdminCredentialRules,
+  LOGIN_PASSWORD_MAX_LENGTH,
+  LOGIN_USERNAME_MAX_LENGTH
+} from '@/utils/login-credential-rules'
 import store from '@/store'
 
 const I18N_LOCALE_KEY = 'i18n-locale'
@@ -252,7 +270,6 @@ const UPGRADE_SUCCESS_NOTIFIED_KEY = 'upgrade-success-notified'
 
 const STEP_KEYS = [
   'upgrade.step.overview',
-  'upgrade.step.diff',
   'upgrade.step.auth',
   'upgrade.step.execute',
   'upgrade.step.result'
@@ -273,6 +290,8 @@ export default {
         { code: 'ar', label: 'العربية', icon: 'lang_ar' }
       ],
       activeStep: 0,
+      LOGIN_USERNAME_MAX_LENGTH,
+      LOGIN_PASSWORD_MAX_LENGTH,
       executing: false,
       rollingBack: false,
       waitingForRestart: false,
@@ -301,6 +320,7 @@ export default {
         databaseType: 'h2',
         backupEnabled: true,
         backupFileName: '',
+        applyConfigChanges: true,
         mysqlHost: '127.0.0.1',
         mysqlPort: 3306,
         mysqlDatabase: 'cat2bug_platform',
@@ -319,10 +339,7 @@ export default {
         adminUsername: '',
         adminPassword: ''
       },
-      adminRules: {
-        adminUsername: [{ required: true, message: '', trigger: 'blur' }],
-        adminPassword: [{ required: true, message: '', trigger: 'blur' }]
-      }
+      adminRules: {}
     }
   },
   computed: {
@@ -340,10 +357,7 @@ export default {
       return Math.round(((this.activeStep + 1) / this.visibleStepKeys.length) * 100)
     },
     visibleStepKeys() {
-      if (this.hasConfigDiffs) {
-        return STEP_KEYS
-      }
-      return STEP_KEYS.filter(key => key !== 'upgrade.step.diff')
+      return STEP_KEYS
     },
     hasConfigDiffs() {
       return this.diffRows.length > 0
@@ -367,6 +381,12 @@ export default {
       const list = Array.isArray(this.status.pendingMigrations) ? this.status.pendingMigrations : []
       return list
     },
+    hasPendingMigrations() {
+      return this.migrationList.length > 0
+    },
+    showSingleInstanceNotice() {
+      return this.hasPendingMigrations || this.hasConfigDiffs
+    },
     diffRows() {
       const list = Array.isArray(this.preflight.diffs) ? this.preflight.diffs : []
       return list.map((item, index) => ({
@@ -379,6 +399,9 @@ export default {
     },
     missingDiffCount() {
       return this.diffRows.filter(row => this.isMissingRow(row)).length
+    },
+    preserveDiffCount() {
+      return this.diffRows.filter(row => !this.isMissingRow(row)).length
     },
     backupDirectory() {
       return this.preflight.backupDirectory || ''
@@ -439,8 +462,7 @@ export default {
       this.syncAdminRuleMessages()
     },
     syncAdminRuleMessages() {
-      this.adminRules.adminUsername[0].message = this.$t('setup.admin.usernameRequired')
-      this.adminRules.adminPassword[0].message = this.$t('setup.admin.passwordRequired')
+      this.adminRules = buildAdminCredentialRules(key => this.$t(key))
     },
     initialize() {
       Promise.all([this.refreshStatus(), this.loadPreflight()]).then(() => {
@@ -565,6 +587,7 @@ export default {
         aiHost: this.form.aiHost,
         backupEnabled: this.form.backupEnabled,
         backupFileName: (this.form.backupFileName || '').trim(),
+        applyConfigChanges: this.form.applyConfigChanges,
         adminUsername: (this.form.adminUsername || '').trim(),
         adminPassword: this.form.adminPassword
       }
@@ -588,13 +611,22 @@ export default {
         this.$message.warning(this.$t('upgrade.backup.fileNameRequired'))
         return
       }
-      if (!this.form.adminUsername || !this.form.adminPassword) {
-        this.$message.warning(this.$t('setup.admin.passwordRequired'))
-        if (this.wizardAuthStepIndex >= 0) {
-          this.activeStep = this.wizardAuthStepIndex
-        }
+      const adminForm = this.$refs.adminForm
+      if (adminForm) {
+        adminForm.validate(valid => {
+          if (!valid) {
+            if (this.wizardAuthStepIndex >= 0) {
+              this.activeStep = this.wizardAuthStepIndex
+            }
+            return
+          }
+          this.runExecuteSubmit()
+        })
         return
       }
+      this.runExecuteSubmit()
+    },
+    runExecuteSubmit() {
       if (this.status.restartRequired || this.status.state === 'restart_required') {
         this.activeStep = this.resultStepIndex
         this.waitingForRestart = true
@@ -694,10 +726,18 @@ export default {
       })
     },
     retryNow() {
-      if (!this.form.adminUsername || !this.form.adminPassword) {
-        this.goBackToAuth()
-        this.$message.warning(this.$t('setup.admin.passwordRequired'))
-        return
+      if (this.wizardAuthStepIndex >= 0) {
+        const form = this.$refs.adminForm
+        if (form) {
+          form.validate(valid => {
+            if (!valid) {
+              this.activeStep = this.wizardAuthStepIndex
+              return
+            }
+            this.activeStep = this.wizardExecuteStepIndex
+          })
+          return
+        }
       }
       this.activeStep = this.wizardExecuteStepIndex
     },
@@ -1225,6 +1265,24 @@ $setup-wm-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 
 .upgrade-diff-table ::v-deep .upgrade-diff-row--missing {
   background: #fff8e1;
+}
+
+.upgrade-overview-alert {
+  margin-bottom: 12px;
+}
+
+.upgrade-no-migration-text {
+  color: #e6a23c;
+}
+
+.upgrade-config-diff-collapse {
+  margin-bottom: 12px;
+
+  ::v-deep .el-collapse-item__header {
+    font-size: 13px;
+    font-weight: 600;
+    color: #606266;
+  }
 }
 
 @media screen and (max-width: 980px) {

@@ -147,4 +147,37 @@ class UpgradePreflightServiceTest
         assertEquals("root", preflight.get("mysqlUsername"));
         assertEquals("cat2bug_password", preflight.get("mysqlPassword"));
     }
+
+    @Test
+    void buildPreflight_diffsCompareAgainstTemplate_notMerged(@TempDir Path dir) throws Exception
+    {
+        Path installFile = dir.resolve("application-install.yml");
+        installProperties.setConfigPath(installFile.toString());
+
+        Map<String, Object> root = new LinkedHashMap<>();
+        Map<String, Object> cat2bug = new LinkedHashMap<>();
+        Map<String, Object> cache = new LinkedHashMap<>();
+        cache.put("type", "local");
+        cat2bug.put("cache", cache);
+        cat2bug.put("profile", "./custom-upload");
+        root.put("cat2bug", cat2bug);
+
+        Map<String, Object> spring = new LinkedHashMap<>();
+        spring.put("database-type", "h2");
+        root.put("spring", spring);
+
+        InstallConfigSupport.writeInstallConfig(installFile, root);
+        when(upgradeService.getStatus()).thenReturn(Map.of(
+                "currentVersion", "0.6.2",
+                "targetVersion", "0.6.2",
+                "pendingMigrations", List.of()));
+
+        Map<String, Object> preflight = upgradePreflightService.buildPreflight();
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> diffs = (List<Map<String, Object>>) preflight.get("diffs");
+
+        assertTrue(diffs.stream().anyMatch(row ->
+                "cat2bug.profile".equals(row.get("key")) && "preserve".equals(row.get("action"))));
+        assertFalse(diffs.stream().anyMatch(row -> "cat2bug.install.completed".equals(row.get("key"))));
+    }
 }

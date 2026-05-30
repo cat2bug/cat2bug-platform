@@ -89,8 +89,15 @@ public class UpgradeInstallService
             if (shouldRunConfigStep(step))
             {
                 runningStep = UpgradeSupport.STEP_CONFIG;
-                writeMergedConfig(request);
-                configCompletedThisRun = true;
+                if (shouldWriteConfig(request))
+                {
+                    writeMergedConfig(request);
+                    configCompletedThisRun = true;
+                }
+                else
+                {
+                    upgradeService.updateLastStep(InstallConfigSupport.UPGRADE_LAST_STEP_MIGRATION);
+                }
                 step = InstallConfigSupport.UPGRADE_LAST_STEP_MIGRATION;
             }
             if (configCompletedThisRun || shouldRunMigrationStep(step))
@@ -162,6 +169,24 @@ public class UpgradeInstallService
         return StringUtils.isEmpty(lastStep)
                 || UpgradeSupport.STEP_BACKUP.equals(lastStep)
                 || UpgradeSupport.STEP_CONFIG.equals(lastStep);
+    }
+
+    private boolean shouldWriteConfig(SetupSubmitRequest request)
+    {
+        if (isApplyConfigChanges(request))
+        {
+            return true;
+        }
+        return !InstallConfigSupport.isConfigFilePresent(installProperties.getConfigPath());
+    }
+
+    private static boolean isApplyConfigChanges(SetupSubmitRequest request)
+    {
+        if (request == null || request.getApplyConfigChanges() == null)
+        {
+            return true;
+        }
+        return Boolean.TRUE.equals(request.getApplyConfigChanges());
     }
 
     private boolean shouldRunMigrationStep(String lastStep)

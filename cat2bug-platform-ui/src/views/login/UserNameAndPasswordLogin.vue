@@ -15,7 +15,7 @@
           type="text"
           auto-complete="off"
           :placeholder="$t('account')"
-          maxlength="30"
+          :maxlength="LOGIN_USERNAME_MAX_LENGTH"
         >
           <svg-icon slot="prefix" icon-class="user" class="el-input__icon input-icon" />
         </el-input>
@@ -26,7 +26,7 @@
           type="password"
           auto-complete="off"
           :placeholder="$t('password')"
-          maxlength="30"
+          :maxlength="LOGIN_PASSWORD_MAX_LENGTH"
           @keyup.enter.native="handleLogin"
         >
           <svg-icon slot="prefix" icon-class="password" class="el-input__icon input-icon" />
@@ -91,12 +91,19 @@ import PixelCaptchaCanvas from "@/components/Captcha/PixelCaptchaCanvas.vue";
 import Cookies from "js-cookie";
 import {decrypt, encrypt} from "@/utils/jsencrypt";
 import { resetSetupStatusCache } from '@/utils/setup-status'
+import {
+  buildLoginCredentialRules,
+  LOGIN_PASSWORD_MAX_LENGTH,
+  LOGIN_USERNAME_MAX_LENGTH
+} from '@/utils/login-credential-rules'
 
 export default {
   name: "UserNameAndPasswordLogin",
   components: { PixelCaptchaCanvas },
   data() {
     return {
+      LOGIN_USERNAME_MAX_LENGTH,
+      LOGIN_PASSWORD_MAX_LENGTH,
       captchaExpr: "",
       loginForm: {
         username: "",
@@ -105,15 +112,7 @@ export default {
         code: "",
         uuid: ""
       },
-      loginRules: {
-        username: [
-          { required: true, trigger: "blur", message: this.$i18n.t('please-enter-your-account') }
-        ],
-        password: [
-          { required: true, trigger: "blur", message: this.$i18n.t('please-enter-your-password') }
-        ],
-        code: [{ required: true, trigger: "change", message: this.$i18n.t('please-enter-verification-code') }]
-      },
+      loginRules: {},
       loading: false,
       // 验证码开关
       captchaEnabled: true,
@@ -129,10 +128,18 @@ export default {
     }
   },
   created() {
+    this.syncLoginRules()
     this.getCode();
     this.getCookie();
   },
   methods: {
+    syncLoginRules() {
+      const credentialRules = buildLoginCredentialRules(key => this.$i18n.t(key))
+      this.loginRules = {
+        ...credentialRules,
+        code: [{ required: true, trigger: 'change', message: this.$i18n.t('please-enter-verification-code') }]
+      }
+    },
     getCode() {
       getCodeImg().then(res => {
         this.captchaEnabled = res.captchaEnabled === undefined ? true : res.captchaEnabled;
@@ -184,6 +191,7 @@ export default {
     },
     changeLang(lang){
       this.$emit('lang', lang);
+      this.syncLoginRules();
     }
   }
 }

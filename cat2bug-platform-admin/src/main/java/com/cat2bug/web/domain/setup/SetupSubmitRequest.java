@@ -64,6 +64,9 @@ public class SetupSubmitRequest
     /** 备份 SQL 文件名（不含目录），默认由服务端生成 */
     private String backupFileName;
 
+    /** 升级时是否写入 merge 后的 install 配置（默认 true；false 时若已有 install 文件则跳过配置写入） */
+    private Boolean applyConfigChanges;
+
     public String getDatabaseType()
     {
         return databaseType;
@@ -322,5 +325,15 @@ public class SetupSubmitRequest
     public void setBackupFileName(String backupFileName)
     {
         this.backupFileName = backupFileName;
+    }
+
+    public Boolean getApplyConfigChanges()
+    {
+        return applyConfigChanges;
+    }
+
+    public void setApplyConfigChanges(Boolean applyConfigChanges)
+    {
+        this.applyConfigChanges = applyConfigChanges;
     }
 }
