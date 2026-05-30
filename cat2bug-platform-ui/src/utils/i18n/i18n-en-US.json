@@ -1268,5 +1268,7 @@
   "setup.success.waitingReady": "Waiting for the application to become ready",
   "setup.success.waitElapsed": "Waited {seconds}s — you will be redirected to login when ready",
   "setup.success.redirectCountdown": "Redirecting to login in {seconds} seconds",
-  "setup.success.goLoginNow": "Go to login now"
+  "setup.success.goLoginNow": "Go to login now",
+  "theme.switch-dark": "Switch to Dark Mode",
+  "theme.switch-light": "Switch to Light Mode"
 }

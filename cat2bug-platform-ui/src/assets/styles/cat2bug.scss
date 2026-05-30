@@ -1,7 +1,7 @@
 .el-page-header {
   padding-bottom: 20px;
   margin-bottom: 40px;
-  border-bottom: #EBEEF5 1px solid;
+  border-bottom: var(--border-color-light) 1px solid;
 }
 .el-pagination__editor.el-input .el-input__inner {
   line-height: 28px;

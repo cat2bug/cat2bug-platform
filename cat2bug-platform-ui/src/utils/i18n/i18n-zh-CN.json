@@ -1269,5 +1269,7 @@
   "setup.success.waitingReady": "正在等待应用就绪",
   "setup.success.waitElapsed": "已等待 {seconds} 秒，就绪后将自动进入登录页",
   "setup.success.redirectCountdown": "{seconds} 秒后自动跳转到登录页",
-  "setup.success.goLoginNow": "立即前往登录"
+  "setup.success.goLoginNow": "立即前往登录",
+  "theme.switch-dark": "切换至暗黑模式",
+  "theme.switch-light": "切换至明亮模式"
 }

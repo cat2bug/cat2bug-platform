@@ -1262,5 +1262,7 @@
   "setup.success.message": "تم حفظ الإعدادات. اكتمل الإعداد الأولي.",
   "setup.success.restart": "أعد تشغيل التطبيق قبل تسجيل الدخول؛ مهم خاصة عند التبديل إلى MySQL أو Redis.",
   "setup.success.redirectCountdown": "إعادة التوجيه إلى تسجيل الدخول خلال {seconds} ثانية",
-  "setup.success.goLoginNow": "الانتقال لتسجيل الدخول الآن"
+  "setup.success.goLoginNow": "الانتقال لتسجيل الدخول الآن",
+  "theme.switch-dark": "التبديل إلى الوضع الداكن",
+  "theme.switch-light": "التبديل إلى الوضع الفاتح"
 }

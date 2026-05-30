@@ -16,6 +16,11 @@
             inactive-color="#ff4949">
           </el-switch>
         </el-tooltip>
+        <el-tooltip :content="themeMode === 'dark' ? $t('theme.switch-light') : $t('theme.switch-dark')" effect="dark" placement="bottom">
+          <div class="right-menu-item hover-effect" @click="toggleThemeMode">
+            <svg-icon :icon-class="themeMode === 'dark' ? 'sun' : 'moon'" />
+          </div>
+        </el-tooltip>
         <el-tooltip :content="$t('website')" effect="dark" placement="bottom">
           <cat2-bug-site class="right-menu-item hover-effect" />
         </el-tooltip>
@@ -100,6 +105,7 @@ export default {
       'avatar',
       'device',
       'name',
+      'themeMode'
     ]),
     member: {
       get() {
@@ -218,6 +224,10 @@ export default {
     },
     handleFloatMenuVisible(visible) {
       this.$floatMenu.setVisible(visible);
+    },
+    toggleThemeMode() {
+      const mode = this.themeMode === 'dark' ? 'light' : 'dark'
+      this.$store.dispatch('settings/changeThemeMode', mode)
     }
   }
 }

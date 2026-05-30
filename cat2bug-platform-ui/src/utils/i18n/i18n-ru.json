@@ -1262,5 +1262,7 @@
   "setup.success.message": "Конфигурация сохранена. Первоначальная настройка завершена.",
   "setup.success.restart": "Перезапустите приложение перед входом; особенно важно при переходе на MySQL или Redis.",
   "setup.success.redirectCountdown": "Переход на страницу входа через {seconds} с",
-  "setup.success.goLoginNow": "Перейти к входу сейчас"
+  "setup.success.goLoginNow": "Перейти к входу сейчас",
+  "theme.switch-dark": "Переключить на темный режим",
+  "theme.switch-light": "Переключить на светлый режим"
 }

@@ -1262,5 +1262,7 @@
   "setup.success.message": "設定已儲存，系統已完成首次安裝。",
   "setup.success.restart": "請重新啟動應用程式後再存取登入頁；若切換了 MySQL 或 Redis，重新啟動尤為重要。",
   "setup.success.redirectCountdown": "{seconds} 秒後自動跳轉到登入頁",
-  "setup.success.goLoginNow": "立即前往登入"
+  "setup.success.goLoginNow": "立即前往登入",
+  "theme.switch-dark": "切換至暗黑模式",
+  "theme.switch-light": "切換至明亮模式"
 }

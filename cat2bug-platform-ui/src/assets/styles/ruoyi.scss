@@ -79,8 +79,8 @@
 	.el-table__header-wrapper, .el-table__fixed-header-wrapper {
 		th {
 			word-break: break-word;
-			background-color: #f8f8f9;
-			color: #515a6e;
+			background-color: var(--table-header-bg);
+			color: var(--table-header-color);
 			/* 与 Element 默认表头 .el-table__cell 上下 padding(12px) + 单行/图标一致，避免写 40px 被内容撑高后与侧栏树标题不齐 */
 			height: 48px;
 			min-height: 48px;
@@ -132,8 +132,8 @@
 /* tree border */
 .tree-border {
     margin-top: 5px;
-    border: 1px solid #e5e6e7;
-    background: #FFFFFF none;
+    border: 1px solid var(--border-color-light);
+    background: var(--bg-color-base) none;
     border-radius:4px;
 }
 

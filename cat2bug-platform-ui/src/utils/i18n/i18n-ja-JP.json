@@ -1262,5 +1262,7 @@
   "setup.success.message": "設定を保存しました。初回セットアップが完了しました。",
   "setup.success.restart": "サインインする前にアプリケーションを再起動してください。MySQL または Redis に切り替えた場合は特に重要です。",
   "setup.success.redirectCountdown": "{seconds} 秒後にログインページへ移動します",
-  "setup.success.goLoginNow": "今すぐログインへ"
+  "setup.success.goLoginNow": "今すぐログインへ",
+  "theme.switch-dark": "ダークモードに切り替え",
+  "theme.switch-light": "ライトモードに切り替え"
 }

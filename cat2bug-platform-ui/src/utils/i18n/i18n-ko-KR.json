@@ -1262,5 +1262,7 @@
   "setup.success.message": "설정이 저장되었습니다. 초기 설치가 완료되었습니다.",
   "setup.success.restart": "로그인하기 전에 애플리케이션을 다시 시작하세요. MySQL 또는 Redis로 전환한 경우 특히 중요합니다.",
   "setup.success.redirectCountdown": "{seconds}초 후 로그인 페이지로 이동합니다",
-  "setup.success.goLoginNow": "지금 로그인으로 이동"
+  "setup.success.goLoginNow": "지금 로그인으로 이동",
+  "theme.switch-dark": "다크 모드로 전환",
+  "theme.switch-light": "라이트 모드로 전환"
 }

@@ -1,0 +1,859 @@
+// Theme Variables and Dark Mode Adaptations
+
+:root {
+  // Light Mode (Default)
+  --bg-color-base: #ffffff;
+  --bg-color-page: #f4f6f8;
+  --bg-color-block: #f8f8f9;
+  
+  --text-color-primary: #303133;
+  --text-color-regular: #606266;
+  --text-color-secondary: #909399;
+  --text-color-placeholder: #c0c4cc;
+  
+  --border-color-base: #dcdfe6;
+  --border-color-light: #ebeef5;
+  --border-color-lighter: #f2f6fc;
+  
+  --card-bg: #ffffff;
+  --dialog-bg: #ffffff;
+  --drawer-bg: #ffffff;
+  --collapse-bg: #ffffff;
+  --dropdown-bg: #ffffff;
+  --input-bg: #ffffff;
+  --input-border: #dcdfe6;
+  --input-color: #606266;
+  
+  --table-header-bg: #f8f8f9;
+  --table-header-color: #515a6e;
+  --table-bg: #ffffff;
+  --table-row-hover-bg: #f5f7fa;
+  --table-border-color: #ebeef5;
+
+  --sidebar-bg: #304156;
+  --sidebar-text: #bfcbd9;
+  --sidebar-active-text: #409eff;
+
+  --navbar-bg: #ffffff;
+  --navbar-text: #303133;
+  --tags-view-bg: #ffffff;
+  --tags-view-border: #d8dce5;
+}
+
+html.dark {
+  // Dark Mode
+  --bg-color-base: #141414;
+  --bg-color-page: #0a0a0a;
+  --bg-color-block: #1d1d1d;
+  
+  --text-color-primary: #e5eaf3;
+  --text-color-regular: #a8abb2;
+  --text-color-secondary: #909399;
+  --text-color-placeholder: #4c4d4f;
+  
+  --border-color-base: #4c4d4f;
+  --border-color-light: #363637;
+  --border-color-lighter: #2b2b2c;
+  
+  --card-bg: #1d1d1d;
+  --dialog-bg: #1d1d1d;
+  --drawer-bg: #1d1d1d;
+  --collapse-bg: #1d1d1d;
+  --dropdown-bg: #1d1d1d;
+  --input-bg: #141414;
+  --input-border: #4c4d4f;
+  --input-color: #e5eaf3;
+  
+  --table-header-bg: #1d1d1d;
+  --table-header-color: #c0c4cc;
+  --table-bg: #141414;
+  --table-row-hover-bg: #262727;
+  --table-border-color: #363637;
+
+  --sidebar-bg: #141414;
+  --sidebar-text: #a8abb2;
+  --sidebar-active-text: #409eff;
+
+  --navbar-bg: #141414;
+  --navbar-text: #e5eaf3;
+  --tags-view-bg: #141414;
+  --tags-view-border: #363637;
+}
+
+// Smooth transitions
+body, html, .app-main, .main-container, .navbar, .sidebar-container, .tags-view-container,
+.el-card, .el-dialog, .el-drawer, .el-table, .el-collapse, .el-collapse-item__header, .el-collapse-item__content,
+.el-input__inner, .el-textarea__inner, .el-dropdown-menu, .el-dropdown-menu__item, .el-menu, .el-menu-item, .el-submenu__title {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+// Global elements using CSS variables
+body {
+  background-color: var(--bg-color-page);
+  color: var(--text-color-primary);
+}
+
+// Dark Mode Overrides
+html.dark {
+  background-color: var(--bg-color-page);
+  color: var(--text-color-primary);
+
+  // Layout Overrides
+  .main-container {
+    background-color: var(--bg-color-page);
+  }
+
+  .navbar {
+    background: var(--navbar-bg) !important;
+    color: var(--navbar-text) !important;
+    border-bottom: 1px solid var(--border-color-light);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3) !important;
+
+    .hamburger-container:hover {
+      background: rgba(255, 255, 255, 0.05) !important;
+    }
+
+    .right-menu .right-menu-item:hover {
+      background: rgba(255, 255, 255, 0.05) !important;
+    }
+  }
+
+  .tags-view-container {
+    background: var(--tags-view-bg) !important;
+    border-bottom: 1px solid var(--tags-view-border) !important;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3) !important;
+
+    .tags-view-item {
+      background: var(--bg-color-block) !important;
+      color: var(--text-color-regular) !important;
+      border: 1px solid var(--border-color-light) !important;
+
+      &.active {
+        background-color: #42b983 !important;
+        color: #fff !important;
+        border-color: #42b983 !important;
+      }
+    }
+  }
+
+  // Sidebar Overrides
+  .sidebar-container {
+    background-color: var(--sidebar-bg) !important;
+    box-shadow: 2px 0 6px rgba(0, 0, 0, 0.5) !important;
+
+    .sidebar-logo-container {
+      background-color: var(--sidebar-bg) !important;
+      border-bottom: 1px solid var(--border-color-light);
+      
+      .sidebar-title {
+        color: var(--text-color-primary) !important;
+      }
+    }
+
+    .el-menu {
+      background-color: var(--sidebar-bg) !important;
+    }
+
+    .el-menu-item, .el-submenu__title {
+      color: var(--sidebar-text) !important;
+
+      i {
+        color: var(--sidebar-text) !important;
+      }
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.05) !important;
+        color: var(--sidebar-active-text) !important;
+
+        i {
+          color: var(--sidebar-active-text) !important;
+        }
+      }
+    }
+
+    .el-menu-item.is-active, .el-submenu .el-menu-item.is-active {
+      color: var(--sidebar-active-text) !important;
+      background-color: rgba(255, 255, 255, 0.08) !important;
+
+      i {
+        color: var(--sidebar-active-text) !important;
+      }
+    }
+  }
+
+  // Element UI Components Overrides
+  .el-card {
+    background-color: var(--card-bg) !important;
+    border: 1px solid var(--border-color-light) !important;
+    color: var(--text-color-primary) !important;
+
+    .el-card__header {
+      border-bottom: 1px solid var(--border-color-light) !important;
+    }
+  }
+
+  .el-dialog {
+    background-color: var(--dialog-bg) !important;
+    border: 1px solid var(--border-color-light) !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+
+    .el-dialog__title {
+      color: var(--text-color-primary) !important;
+    }
+
+    .el-dialog__body {
+      color: var(--text-color-regular) !important;
+    }
+
+    .el-dialog__footer {
+      border-top: 1px solid var(--border-color-light) !important;
+    }
+  }
+
+  .el-drawer {
+    background-color: var(--drawer-bg) !important;
+    border-left: 1px solid var(--border-color-light) !important;
+    color: var(--text-color-primary) !important;
+
+    .el-drawer__header {
+      color: var(--text-color-primary) !important;
+      border-bottom: 1px solid var(--border-color-light) !important;
+      margin-bottom: 0;
+      padding: 15px 20px;
+    }
+  }
+
+  .el-table {
+    background-color: var(--table-bg) !important;
+    color: var(--text-color-regular) !important;
+    border: 1px solid var(--table-border-color) !important;
+
+    &::before, &::after {
+      background-color: var(--table-border-color) !important;
+    }
+
+    th.el-table__cell {
+      background-color: var(--table-header-bg) !important;
+      color: var(--table-header-color) !important;
+      border-bottom: 1px solid var(--table-border-color) !important;
+    }
+
+    td.el-table__cell {
+      border-bottom: 1px solid var(--table-border-color) !important;
+    }
+
+    .el-table__row {
+      background-color: var(--table-bg) !important;
+
+      &:hover > td.el-table__cell, &.hover-row > td.el-table__cell {
+        background-color: var(--table-row-hover-bg) !important;
+      }
+    }
+
+    .el-table__body tr.hover-row > td.el-table__cell {
+      background-color: var(--table-row-hover-bg) !important;
+    }
+  }
+
+  .el-collapse {
+    border-top: 1px solid var(--border-color-light) !important;
+    border-bottom: 1px solid var(--border-color-light) !important;
+
+    .el-collapse-item__header {
+      background-color: var(--collapse-bg) !important;
+      color: var(--text-color-primary) !important;
+      border-bottom: 1px solid var(--border-color-light) !important;
+    }
+
+    .el-collapse-item__wrap {
+      background-color: var(--collapse-bg) !important;
+      border-bottom: 1px solid var(--border-color-light) !important;
+    }
+
+    .el-collapse-item__content {
+      background-color: var(--collapse-bg) !important;
+      color: var(--text-color-regular) !important;
+    }
+  }
+
+  .el-input__inner {
+    background-color: var(--input-bg) !important;
+    border-color: var(--input-border) !important;
+    color: var(--input-color) !important;
+
+    &::placeholder {
+      color: var(--text-color-placeholder) !important;
+    }
+
+    &:focus {
+      border-color: #409eff !important;
+    }
+  }
+
+  .el-textarea__inner {
+    background-color: var(--input-bg) !important;
+    border-color: var(--input-border) !important;
+    color: var(--input-color) !important;
+
+    &::placeholder {
+      color: var(--text-color-placeholder) !important;
+    }
+
+    &:focus {
+      border-color: #409eff !important;
+    }
+  }
+
+  .el-input-number {
+    .el-input-number__decrease,
+    .el-input-number__increase {
+      background-color: var(--bg-color-block) !important;
+      border-color: var(--border-color-base) !important;
+      color: var(--text-color-regular) !important;
+
+      &:hover:not(.is-disabled), &:focus:not(.is-disabled) {
+        color: #409eff !important;
+      }
+
+      &.is-disabled {
+        color: var(--text-color-placeholder) !important;
+      }
+    }
+
+    .el-input__inner {
+      border-color: var(--border-color-base) !important;
+    }
+  }
+
+  .el-dropdown-menu {
+    background-color: var(--dropdown-bg) !important;
+    border-color: var(--border-color-light) !important;
+
+    .el-dropdown-menu__item {
+      color: var(--text-color-regular) !important;
+
+      &:not(.is-disabled):hover, &:focus {
+        background-color: var(--table-row-hover-bg) !important;
+        color: #409eff !important;
+      }
+    }
+  }
+
+  // Other common Element UI components for dark mode completeness
+  .el-select-dropdown {
+    background-color: var(--dropdown-bg) !important;
+    border-color: var(--border-color-light) !important;
+
+    .el-select-dropdown__item {
+      color: var(--text-color-regular) !important;
+
+      &.hover, &:hover {
+        background-color: var(--table-row-hover-bg) !important;
+      }
+
+      &.selected {
+        color: #409eff !important;
+        font-weight: bold;
+      }
+    }
+  }
+
+  .el-pagination {
+    button:disabled {
+      background-color: var(--bg-color-block) !important;
+      color: var(--text-color-placeholder) !important;
+    }
+
+    .btn-prev, .btn-next, .el-pager li {
+      background-color: var(--bg-color-block) !important;
+      color: var(--text-color-regular) !important;
+      border-color: var(--border-color-light) !important;
+
+      &.active {
+        color: #409eff !important;
+      }
+    }
+  }
+
+  .el-tabs--border-card {
+    background-color: var(--card-bg) !important;
+    border: 1px solid var(--border-color-light) !important;
+
+    > .el-tabs__header {
+      background-color: var(--bg-color-block) !important;
+      border-bottom: 1px solid var(--border-color-light) !important;
+
+      .el-tabs__item {
+        color: var(--text-color-regular) !important;
+
+        &.is-active {
+          background-color: var(--card-bg) !important;
+          border-right-color: var(--border-color-light) !important;
+          border-left-color: var(--border-color-light) !important;
+          color: #409eff !important;
+        }
+      }
+    }
+  }
+
+  .el-message-box {
+    background-color: var(--dialog-bg) !important;
+    border-color: var(--border-color-light) !important;
+
+    .el-message-box__title {
+      color: var(--text-color-primary) !important;
+    }
+
+    .el-message-box__content {
+      color: var(--text-color-regular) !important;
+    }
+  }
+
+  .tree-border {
+    border-color: var(--border-color-light) !important;
+    background-color: var(--bg-color-base) !important;
+  }
+
+  .el-tree {
+    background-color: var(--bg-color-base) !important;
+    color: var(--text-color-regular) !important;
+
+    .el-tree-node__content:hover, .el-tree-node:focus > .el-tree-node__content {
+      background-color: var(--table-row-hover-bg) !important;
+    }
+  }
+
+  .el-checkbox__inner {
+    background-color: var(--input-bg) !important;
+    border-color: var(--input-border) !important;
+  }
+
+  .el-checkbox__input.is-checked .el-checkbox__inner {
+    background-color: #409eff !important;
+    border-color: #409eff !important;
+  }
+
+  .el-radio__inner {
+    background-color: var(--input-bg) !important;
+    border-color: var(--input-border) !important;
+  }
+
+  .el-radio__input.is-checked .el-radio__inner {
+    background-color: #409eff !important;
+    border-color: #409eff !important;
+  }
+
+  .el-switch {
+    .el-switch__core {
+      border-color: #4c4d4f !important;
+      background-color: #4c4d4f !important;
+
+      &:after {
+        background-color: #ffffff !important;
+      }
+    }
+
+    &.is-checked {
+      .el-switch__core {
+        border-color: #409eff !important;
+        background-color: #409eff !important;
+      }
+    }
+
+    .el-switch__label {
+      color: var(--text-color-regular) !important;
+
+      &.is-active {
+        color: #409eff !important;
+      }
+    }
+
+    &.is-disabled {
+      opacity: 0.6;
+    }
+  }
+
+  .el-loading-mask {
+    background-color: rgba(20, 20, 20, 0.7) !important;
+  }
+
+  // 1. 左上角 TeamSelect 团队选择组件适配
+  .team-select {
+    .el-input--prefix {
+      background-color: transparent !important;
+      color: var(--text-color-primary) !important;
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.08) !important;
+      }
+
+      .prefix-team-name {
+        color: var(--text-color-primary) !important;
+      }
+    }
+
+    // 针对 add.svg (左上角加号图标)
+    .el-avatar img[src*="add.svg"] {
+      filter: invert(1) brightness(0.8) !important;
+    }
+  }
+
+  // 下拉菜单底部 .team-select-footer
+  .team-select-footer {
+    background-color: var(--card-bg) !important;
+    border-top: 1px solid var(--border-color-light) !important;
+
+    &.hover, &:hover {
+      background-color: var(--card-bg) !important;
+    }
+
+    .el-button {
+      background-color: var(--bg-color-block) !important;
+      border-color: var(--border-color-light) !important;
+      color: var(--text-color-primary) !important;
+
+      &:hover, &:focus {
+        background-color: rgba(255, 255, 255, 0.08) !important;
+        border-color: var(--border-color-base) !important;
+        color: #409eff !important;
+      }
+    }
+  }
+
+  // 2. 左下角管理菜单适配
+  .sidebar-container {
+    .sidebar-divider {
+      .el-divider {
+        background-color: var(--border-color-light) !important;
+      }
+    }
+
+    // 确保左下角固定定位区域下的 .el-menu 背景色同样为 var(--sidebar-bg)
+    div[style*="position: absolute"] {
+      background-color: var(--sidebar-bg) !important;
+
+      .el-menu {
+        background-color: var(--sidebar-bg) !important;
+      }
+    }
+  }
+
+  // 3. Cat2BugAvatar 头像组件边框适配
+  .member-avatar {
+    .el-avatar {
+      border: var(--border-color-light) 2px solid !important;
+    }
+  }
+
+  // 4. 安装与升级向导（/setup & /upgrade）暗黑模式适配
+  .setup-page {
+    background: linear-gradient(165deg, #0a0a0a 0%, #141414 42%, #1d1d1d 100%) !important;
+
+    // 水印深色透明度
+    .setup-page-watermark__pattern {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='168' height='168' viewBox='0 0 168 168'%3E%3Ctext x='8' y='96' font-family='system-ui,-apple-system,sans-serif' font-size='24' font-weight='700' fill='rgba(255,255,255,0.02)' letter-spacing='0.06em'%3ECat2Bug%3C/text%3E%3C/svg%3E") !important;
+    }
+
+    // 页头卡片
+    .setup-hero {
+      h1 {
+        color: var(--text-color-primary) !important;
+      }
+    }
+
+    .setup-hero-bg {
+      background: linear-gradient(105deg, rgba(29, 29, 29, 0.95) 0%, rgba(20, 20, 20, 0.9) 55%, rgba(10, 10, 10, 0.6) 100%) !important;
+      border-color: var(--border-color-light) !important;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+
+      &::after {
+        background: radial-gradient(circle, rgba(64, 158, 255, 0.08) 0%, transparent 70%) !important;
+      }
+    }
+
+    .setup-intro-lead {
+      color: var(--text-color-regular) !important;
+    }
+
+    // 侧边栏
+    .setup-aside {
+      background: var(--bg-color-block) !important;
+      border-color: var(--border-color-light) !important;
+    }
+
+    .setup-roadmap-title {
+      color: var(--text-color-primary) !important;
+      border-bottom-color: var(--border-color-light) !important;
+    }
+
+    .setup-intro-note {
+      background: var(--card-bg) !important;
+      border-color: var(--border-color-light) !important;
+      color: var(--text-color-regular) !important;
+    }
+
+    // 步骤条
+    .setup-roadmap-marker {
+      border-color: var(--border-color-base) !important;
+      background-color: var(--bg-color-base) !important;
+      color: var(--text-color-placeholder) !important;
+    }
+
+    .setup-roadmap-connector {
+      background: var(--border-color-light) !important;
+    }
+
+    .setup-roadmap-text {
+      color: var(--text-color-regular) !important;
+    }
+
+    .setup-roadmap-item {
+      &.is-active {
+        .setup-roadmap-marker {
+          background: #409eff !important;
+          border-color: #409eff !important;
+          color: #fff !important;
+        }
+        .setup-roadmap-text {
+          color: var(--text-color-primary) !important;
+        }
+      }
+
+      &.is-done {
+        .setup-roadmap-marker {
+          background: rgba(64, 158, 255, 0.15) !important;
+          border-color: #409eff !important;
+          color: #409eff !important;
+        }
+        .setup-roadmap-connector {
+          background: rgba(64, 158, 255, 0.4) !important;
+        }
+        .setup-roadmap-text {
+          color: var(--text-color-regular) !important;
+        }
+      }
+    }
+
+    // 主面板
+    .setup-panel {
+      background: var(--card-bg) !important;
+      border-color: var(--border-color-light) !important;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    .setup-panel-header,
+    .setup-panel-footer {
+      background: var(--bg-color-block) !important;
+      border-color: var(--border-color-light) !important;
+    }
+
+    .setup-panel-title {
+      color: var(--text-color-primary) !important;
+    }
+
+    .setup-panel-step {
+      color: var(--text-color-secondary) !important;
+    }
+
+    // 内容组件
+    .setup-step-desc {
+      color: var(--text-color-regular) !important;
+    }
+
+    .setup-inner-form {
+      ::v-deep .el-form-item__label {
+        color: var(--text-color-primary) !important;
+      }
+    }
+
+    .el-form-item__label {
+      color: var(--text-color-primary) !important;
+      font-weight: 600 !important; // 加粗提升对比度
+    }
+
+    .el-form-item.is-required:not(.is-no-asterisk) > .el-form-item__label:before {
+      color: #f56c6c !important; // 确保必填星号在暗黑模式下颜色鲜明
+    }
+
+    .setup-panel-box {
+      background: var(--bg-color-block) !important;
+      border-color: var(--border-color-light) !important;
+    }
+
+    .setup-switch-hint {
+      color: var(--text-color-secondary) !important;
+    }
+
+    .setup-lang-label {
+      color: var(--text-color-regular) !important;
+    }
+
+    .setup-copyright {
+      color: var(--text-color-secondary) !important;
+    }
+
+    .setup-success {
+      h3 {
+        color: var(--text-color-primary) !important;
+      }
+      p {
+        color: var(--text-color-regular) !important;
+      }
+    }
+
+    .setup-success-countdown {
+      color: var(--text-color-secondary) !important;
+    }
+
+    // 数据库选择大卡片
+    .setup-pick {
+      border-color: var(--border-color-base) !important;
+      background: var(--bg-color-block) !important;
+
+      strong {
+        color: var(--text-color-primary) !important;
+      }
+
+      span {
+        color: var(--text-color-regular) !important;
+      }
+
+      &:hover {
+        border-color: #409eff !important;
+        background: rgba(64, 158, 255, 0.08) !important;
+      }
+
+      &.is-active {
+        border-color: #409eff !important;
+        background: rgba(64, 158, 255, 0.15) !important;
+        box-shadow: 0 0 0 1px rgba(64, 158, 255, 0.35) !important;
+
+        strong {
+          color: #409eff !important;
+        }
+      }
+    }
+
+    // 提示框
+    .setup-tip {
+      background: var(--bg-color-block) !important;
+      border-color: var(--border-color-light) !important;
+      color: var(--text-color-regular) !important;
+
+      &--success {
+        background: rgba(103, 194, 58, 0.15) !important;
+        border-color: rgba(103, 194, 58, 0.3) !important;
+        color: #67c23a !important;
+      }
+
+      &--warn {
+        background: rgba(230, 162, 44, 0.15) !important;
+        border-color: rgba(230, 162, 44, 0.3) !important;
+        color: #e6a23c !important;
+      }
+    }
+
+    // 测试行及相关组件
+    .upgrade-diff-table {
+      ::v-deep .upgrade-diff-row--missing {
+        background: rgba(230, 162, 44, 0.15) !important;
+      }
+    }
+
+    .upgrade-config-diff-collapse {
+      border-color: var(--border-color-light) !important;
+
+      ::v-deep .el-collapse-item__header {
+        color: var(--text-color-regular) !important;
+        background-color: var(--collapse-bg) !important;
+        border-bottom-color: var(--border-color-light) !important;
+      }
+
+      ::v-deep .el-collapse-item__wrap {
+        background-color: var(--collapse-bg) !important;
+        border-bottom-color: var(--border-color-light) !important;
+      }
+
+      ::v-deep .el-collapse-item__content {
+        background-color: var(--collapse-bg) !important;
+        color: var(--text-color-regular) !important;
+      }
+    }
+
+    // 默认按钮适配（如：测试连接等无type属性按钮）
+    .el-button:not([type]),
+    .el-button--default {
+      background-color: var(--bg-color-block) !important;
+      border-color: var(--border-color-base) !important;
+      color: var(--text-color-regular) !important;
+
+      &:hover, &:focus {
+        background-color: rgba(64, 158, 255, 0.15) !important;
+        border-color: #409eff !important;
+        color: #409eff !important;
+      }
+
+      &:active {
+        background-color: rgba(64, 158, 255, 0.25) !important;
+      }
+    }
+  }
+
+  // Element UI Descriptions Component Overrides
+  .el-descriptions {
+    border-radius: 8px !important;
+    overflow: hidden !important;
+    border: 1px solid #363637 !important; // 外层大框
+
+    table {
+      border-collapse: collapse !important;
+      width: 100% !important;
+      background-color: transparent !important;
+    }
+
+    .el-descriptions__body {
+      background-color: #18181c !important;
+      color: #e5eaf3 !important;
+      border-radius: 8px !important;
+      overflow: hidden !important;
+    }
+
+    .el-descriptions-item__label,
+    .el-descriptions-item__content {
+      border: none !important; // 移除所有默认边框
+      padding: 12px 16px !important; // 增加内边距使其更舒展
+    }
+
+    tbody:nth-child(odd) {
+      .el-descriptions-item__label {
+        background-color: #1a1a1e !important;
+        color: #909399 !important;
+        font-weight: bold !important;
+      }
+      .el-descriptions-item__content {
+        background-color: #121214 !important;
+        color: #e5eaf3 !important;
+      }
+    }
+
+    tbody:nth-child(even) {
+      .el-descriptions-item__label {
+        background-color: #222226 !important; // 稍微拉开一点差距，使对比明显
+        color: #909399 !important;
+        font-weight: bold !important;
+      }
+      .el-descriptions-item__content {
+        background-color: #161618 !important;
+        color: #e5eaf3 !important;
+      }
+    }
+
+    // 移除最后一行单元格的底部边框，防止与外边框重叠
+    .el-descriptions-row:last-child {
+      .el-descriptions-item__label,
+      .el-descriptions-item__content {
+        border-bottom: none !important;
+      }
+    }
+  }
+}

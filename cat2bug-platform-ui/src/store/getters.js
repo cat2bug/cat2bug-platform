@@ -16,5 +16,6 @@ const getters = {
   defaultRoutes:state => state.permission.defaultRoutes,
   sidebarRouters:state => state.permission.sidebarRouters,
   routesRefreshing: state => state.permission.routesRefreshing,
+  themeMode: state => state.settings.themeMode,
 }
 export default getters

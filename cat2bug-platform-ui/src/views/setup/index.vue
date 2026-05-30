@@ -579,6 +579,15 @@ export default {
     }
   },
   created() {
+    // 探测并应用当前主题模式，使安装向导完美跟随系统黑白主题
+    const cachedMode = localStorage.getItem('theme-mode')
+    const themeMode = cachedMode || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+    if (themeMode === 'dark') {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
+
     document.documentElement.classList.add('setup-wizard-active')
     const lang = this.$cache.local.get(I18N_LOCALE_KEY) || 'zh_CN'
     this.$i18n.locale = lang
