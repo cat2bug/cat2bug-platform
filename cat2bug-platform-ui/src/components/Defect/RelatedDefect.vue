@@ -85,6 +85,11 @@
             </div>
           </template>
         </el-table-column>
+        <el-table-column v-if="showField('handle-by')" :label="$t('handle-by')" :key="$t('handle-by')" align="center" min-width="160" prop="handleBy">
+          <template slot-scope="scope">
+            <row-list-member :members="scope.row.handleByList"></row-list-member>
+          </template>
+        </el-table-column>
         <el-table-column v-if="showField('priority')" :label="$t('priority')" :key="$t('priority')" align="center" prop="defectLevel" width="100" sortable >
           <template slot-scope="scope">
             <level-tag :options="dict.type.defect_level" :value="scope.row.defectLevel"/>
@@ -127,11 +132,6 @@
         <el-table-column v-if="showField('createBy')" :label="$t('createBy')" :key="$t('createBy')" align="center" min-width="160" prop="createMember">
           <template slot-scope="scope">
             <row-list-member :members="[scope.row.createMember]"></row-list-member>
-          </template>
-        </el-table-column>
-        <el-table-column v-if="showField('handle-by')" :label="$t('handle-by')" :key="$t('handle-by')" align="center" min-width="160" prop="handleBy">
-          <template slot-scope="scope">
-            <row-list-member :members="scope.row.handleByList"></row-list-member>
           </template>
         </el-table-column>
         <el-table-column :label="$t('operate')" align="center" class-name="small-padding fixed-width" width="100" fixed="right">
@@ -215,7 +215,7 @@ export default {
       relatedIds: [],
       // 表格里全部列数据集合
       tableAllFieldList: [
-        'id','type','defect.name','priority','state','module','version','image','annex','update-time','plan-start-time','plan-end-time','createBy','handle-by'
+        'id','type','defect.name','handle-by','priority','state','module','version','image','annex','update-time','plan-start-time','plan-end-time','createBy'
       ],
     };
   },

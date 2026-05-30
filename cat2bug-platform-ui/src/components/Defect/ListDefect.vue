@@ -20,6 +20,11 @@
             <el-link type="primary" @click="editDefectHandle(scope.row)">{{ scope.row.defectName }}</el-link>
           </template>
         </el-table-column>
+        <el-table-column :label="$t('handle-by')" align="left" prop="handleBy">
+          <template slot-scope="scope">
+            <row-list-member :members="scope.row.handleByList"></row-list-member>
+          </template>
+        </el-table-column>
         <el-table-column :label="$t('priority')" align="left" prop="defectLevel" width="100" sortable >
           <template slot-scope="scope">
             <level-tag :options="dict.type.defect_level" :value="scope.row.defectLevel"/>
@@ -27,11 +32,6 @@
         </el-table-column>
         <el-table-column :label="$t('state')" align="left" prop="defectStateName" width="120" sortable />
         <el-table-column :label="$t('module')" align="left" prop="moduleName" width="150" sortable />
-        <el-table-column :label="$t('handle-by')" align="left" prop="handleBy">
-          <template slot-scope="scope">
-            <row-list-member :members="scope.row.handleByList"></row-list-member>
-          </template>
-        </el-table-column>
         <el-table-column :label="$t('image')" align="left" prop="imgUrls">
           <template slot-scope="scope">
             <el-image

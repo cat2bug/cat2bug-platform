@@ -1,12 +1,10 @@
 package com.cat2bug.web.controller.system;
 
-import com.cat2bug.common.config.Cat2BugConfig;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
- * 首页
+ * 首页（无内嵌前端时的 Thymeleaf 欢迎页；内嵌模式下由 {@link com.cat2bug.framework.config.EmbeddedSpaFallbackFilter} 优先响应）
  *
  * @author ruoyi
  */

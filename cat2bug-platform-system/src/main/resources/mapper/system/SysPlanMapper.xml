@@ -59,6 +59,23 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="defectIds"    column="sub_defect_ids"  typeHandler="com.cat2bug.system.domain.handle.LongArrayTypeHandle"   />
     </resultMap>
 
+    <!-- H2 可能将 defect_ids 推断为 JSON，与 BIGINT 直接 LIKE 比较会报错 -->
+    <sql id="planItemDefectIdMatch">
+        CAST(${planItemAlias}.defect_ids AS VARCHAR) like concat('%,', CAST(${defectIdExpr} AS VARCHAR), ',%')
+        or CAST(${planItemAlias}.defect_ids AS VARCHAR) like concat('%', CAST(${defectIdExpr} AS VARCHAR), ',%')
+        or CAST(${planItemAlias}.defect_ids AS VARCHAR) like concat('%,', CAST(${defectIdExpr} AS VARCHAR), '%')
+    </sql>
+
+    <!-- H2 中 receive_by 为 JSON，不能与 BIGINT 的 user_id 直接比较 -->
+    <sql id="defectLogReceiveByMatchUser">
+        (
+            CAST(${logAlias}.receive_by AS VARCHAR) = CAST(${userIdExpr} AS VARCHAR)
+            OR CAST(${logAlias}.receive_by AS VARCHAR) LIKE concat('%,', CAST(${userIdExpr} AS VARCHAR), ',%')
+            OR CAST(${logAlias}.receive_by AS VARCHAR) LIKE concat(CAST(${userIdExpr} AS VARCHAR), ',%')
+            OR CAST(${logAlias}.receive_by AS VARCHAR) LIKE concat('%,', CAST(${userIdExpr} AS VARCHAR))
+        )
+    </sql>
+
     <sql id="selectSysPlanVo">
         SELECT
             p.plan_id,
@@ -139,7 +156,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                             count(distinct d3.defect_id ) AS defect_count
                         FROM
                             ( SELECT a.* FROM sys_plan_item a JOIN sys_case c ON c.case_id = a.case_id JOIN sys_module m ON m.module_id = c.module_id ) pi3
-                                JOIN sys_defect d3 ON pi3.defect_ids like concat('%,',d3.defect_id ,',%') or pi3.defect_ids like concat('%',d3.defect_id ,',%') or pi3.defect_ids like concat('%,',d3.defect_id ,'%')
+                                JOIN sys_defect d3 ON <include refid="planItemDefectIdMatch"><property name="planItemAlias" value="pi3"/><property name="defectIdExpr" value="d3.defect_id"/></include>
                                 JOIN (
                                 SELECT
                                     defect_id,
@@ -177,8 +194,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                             ( SELECT a.* FROM sys_plan_item a JOIN sys_case c ON c.case_id = a.case_id ) pi5
                                 JOIN sys_plan p5 ON p5.plan_id = pi5.plan_id
                                 JOIN sys_defect_log l5 ON l5.defect_log_type = 0
-                                AND (pi5.defect_ids like concat('%,', l5.defect_id, ',%') or pi5.defect_ids like concat('%', l5.defect_id, ',%') or pi5.defect_ids like concat('%,', l5.defect_id, '%'))
-                                JOIN sys_user_project up5 ON up5.project_id = p5.project_id and l5.receive_by=up5.user_id
+                                AND (<include refid="planItemDefectIdMatch"><property name="planItemAlias" value="pi5"/><property name="defectIdExpr" value="l5.defect_id"/></include>)
+                                JOIN sys_user_project up5 ON up5.project_id = p5.project_id AND <include refid="defectLogReceiveByMatchUser"><property name="logAlias" value="l5"/><property name="userIdExpr" value="up5.user_id"/></include>
                                 JOIN sys_user_project_role upr5 ON up5.user_project_id = upr5.user_project_id
                         GROUP BY
                             pi5.plan_item_id
@@ -228,7 +245,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
     <sql id="selectSysDefectOfPlanVo">
         <include refid="com.cat2bug.system.mapper.SysDefectMapper.selectSysDefectVo"/>
-        LEFT JOIN sys_plan_item spi ON spi.defect_ids IS NOT NULL AND spi.defect_ids LIKE CONCAT('%,', d.defect_id)
+        LEFT JOIN sys_plan_item spi ON spi.defect_ids IS NOT NULL AND CAST(spi.defect_ids AS VARCHAR) LIKE CONCAT('%,', CAST(d.defect_id AS VARCHAR))
         LEFT JOIN sys_case c ON c.case_id = d.case_id
     </sql>
     <select id="getProjectPlanMaxNum" resultType="Long">
