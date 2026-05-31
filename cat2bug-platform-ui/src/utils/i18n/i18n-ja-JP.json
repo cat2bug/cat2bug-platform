@@ -422,6 +422,8 @@
   "defect.excel-delete-rows-confirm-any": "選択した {0} 行を削除しますか？",
   "defect.module-ranking": "デリバラブルランキング",
   "defect.status-statistics": "ステータス別統計",
+  "defect.my-open-todo": "自分の未完了",
+  "defect.team-open-workload": "チーム負荷",
   "defect.statistic.view": "プレビューエリア",
   "defect.statistic.select": "テンプレート選択エリア",
   "defect.online-member": "メンバー",

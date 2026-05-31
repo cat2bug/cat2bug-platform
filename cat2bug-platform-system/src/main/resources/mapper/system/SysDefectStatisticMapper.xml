@@ -45,4 +45,97 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         GROUP BY d.module_id) s
         ORDER BY s.f/s.a ASC, s.a DESC
     </select>
+
+    <resultMap id="SysDefectOpenWorkloadResult" type="com.cat2bug.system.domain.SysDefectOpenWorkload">
+        <id property="userId" column="user_id"/>
+        <result property="nickName" column="nick_name"/>
+        <result property="avatar" column="avatar"/>
+        <result property="total" column="total"/>
+        <result property="processing" column="processing"/>
+        <result property="audit" column="audit"/>
+        <result property="rejected" column="rejected"/>
+    </resultMap>
+
+    <resultMap id="SysDefectOpenWorkloadSummaryResult" type="com.cat2bug.system.domain.SysDefectOpenWorkloadSummary">
+        <result property="total" column="total"/>
+        <result property="processing" column="processing"/>
+        <result property="audit" column="audit"/>
+        <result property="rejected" column="rejected"/>
+    </resultMap>
+
+    <select id="openWorkloadByProject" resultMap="SysDefectOpenWorkloadResult">
+        SELECT
+            u.user_id,
+            u.nick_name,
+            u.avatar,
+            COUNT(d.defect_id) AS total,
+            SUM(CASE WHEN d.defect_state = 0 THEN 1 ELSE 0 END) AS processing,
+            SUM(CASE WHEN d.defect_state = 1 THEN 1 ELSE 0 END) AS audit,
+            SUM(CASE WHEN d.defect_state = 3 THEN 1 ELSE 0 END) AS rejected
+        FROM sys_user_project up
+        INNER JOIN sys_user u ON u.user_id = up.user_id AND u.del_flag = '0'
+        INNER JOIN sys_defect d ON d.project_id = up.project_id
+            AND d.del_flag = '0'
+            AND d.defect_state != 4
+            AND JSON_CONTAINS(d.handle_by, CAST(u.user_id AS JSON))
+        WHERE up.project_id = #{projectId}
+        GROUP BY u.user_id, u.nick_name, u.avatar
+        HAVING COUNT(d.defect_id) > 0
+        ORDER BY total DESC
+        LIMIT 5
+    </select>
+
+    <select id="openWorkloadByMember" resultMap="SysDefectOpenWorkloadSummaryResult">
+        SELECT
+            COUNT(d.defect_id) AS total,
+            SUM(CASE WHEN d.defect_state = 0 THEN 1 ELSE 0 END) AS processing,
+            SUM(CASE WHEN d.defect_state = 1 THEN 1 ELSE 0 END) AS audit,
+            SUM(CASE WHEN d.defect_state = 3 THEN 1 ELSE 0 END) AS rejected
+        FROM sys_defect d
+        WHERE d.project_id = #{projectId}
+            AND d.del_flag = '0'
+            AND d.defect_state != 4
+            AND JSON_CONTAINS(d.handle_by, CAST(#{userId} AS JSON))
+    </select>
+
+    <select id="openWorkloadByProject" resultMap="SysDefectOpenWorkloadResult" databaseId="h2">
+        SELECT
+            u.user_id,
+            u.nick_name,
+            u.avatar,
+            COUNT(d.defect_id) AS total,
+            SUM(CASE WHEN d.defect_state = 0 THEN 1 ELSE 0 END) AS processing,
+            SUM(CASE WHEN d.defect_state = 1 THEN 1 ELSE 0 END) AS audit,
+            SUM(CASE WHEN d.defect_state = 3 THEN 1 ELSE 0 END) AS rejected
+        FROM sys_user_project up
+        INNER JOIN sys_user u ON u.user_id = up.user_id AND u.del_flag = '0'
+        INNER JOIN sys_defect d ON d.project_id = up.project_id
+            AND d.del_flag = '0'
+            AND d.defect_state != 4
+            AND (
+                d.handle_by REGEXP CONCAT('\b',u.user_id,'\b')
+                OR d.handle_by REGEXP CONCAT('\\b',u.user_id,'\\b')
+            )
+        WHERE up.project_id = #{projectId}
+        GROUP BY u.user_id, u.nick_name, u.avatar
+        HAVING COUNT(d.defect_id) > 0
+        ORDER BY total DESC
+        LIMIT 5
+    </select>
+
+    <select id="openWorkloadByMember" resultMap="SysDefectOpenWorkloadSummaryResult" databaseId="h2">
+        SELECT
+            COUNT(d.defect_id) AS total,
+            SUM(CASE WHEN d.defect_state = 0 THEN 1 ELSE 0 END) AS processing,
+            SUM(CASE WHEN d.defect_state = 1 THEN 1 ELSE 0 END) AS audit,
+            SUM(CASE WHEN d.defect_state = 3 THEN 1 ELSE 0 END) AS rejected
+        FROM sys_defect d
+        WHERE d.project_id = #{projectId}
+            AND d.del_flag = '0'
+            AND d.defect_state != 4
+            AND (
+                d.handle_by REGEXP CONCAT('\b',#{userId},'\b')
+                OR d.handle_by REGEXP CONCAT('\\b',#{userId},'\\b')
+            )
+    </select>
 </mapper>

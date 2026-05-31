@@ -38,3 +38,19 @@ export function statisticModule(projectId, query) {
     params: query
   })
 }
+
+/** 团队未关闭待办工作量统计 */
+export function statisticOpenWorkload(projectId) {
+  return request({
+    url: '/system/defect/statistic/open-workload/' + projectId,
+    method: 'get'
+  })
+}
+
+/** 我的未关闭待办工作量统计 */
+export function statisticMyOpenWorkload(projectId) {
+  return request({
+    url: '/system/defect/statistic/open-workload/' + projectId + '/my',
+    method: 'get'
+  })
+}

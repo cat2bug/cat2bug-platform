@@ -76,4 +76,24 @@ public class SysDefectStatisticController extends BaseController {
         List<Map<String, Object>> list = sysDefectStatisticService.moduleStatistic(projectId);
         return getDataTable(list);
     }
+
+    /**
+     * 团队未关闭待办负载 Top5
+     */
+    @PreAuthorize("@ss.hasPermi('system:defect:query')")
+    @GetMapping(value = "/open-workload/{projectId}")
+    public AjaxResult getOpenWorkload(@PathVariable("projectId") Long projectId)
+    {
+        return success(sysDefectStatisticService.openWorkload(projectId));
+    }
+
+    /**
+     * 我的未关闭待办汇总
+     */
+    @PreAuthorize("@ss.hasPermi('system:defect:query')")
+    @GetMapping(value = "/open-workload/{projectId}/my")
+    public AjaxResult getMyOpenWorkload(@PathVariable("projectId") Long projectId)
+    {
+        return success(sysDefectStatisticService.openWorkloadMy(projectId, getUserId()));
+    }
 }

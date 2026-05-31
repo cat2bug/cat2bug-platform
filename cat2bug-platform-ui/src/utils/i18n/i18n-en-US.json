@@ -423,6 +423,8 @@
   "defect.excel-delete-rows-confirm-any": "Delete the {0} selected row(s)?",
   "defect.module-ranking": "Deliverable Ranking",
   "defect.status-statistics": "Status Statistics",
+  "defect.my-open-todo": "My Open Items",
+  "defect.team-open-workload": "Team Workload",
   "defect.statistic.view": "Preview Area",
   "defect.statistic.select": "Template Selection Area",
   "defect.online-member": "Member",

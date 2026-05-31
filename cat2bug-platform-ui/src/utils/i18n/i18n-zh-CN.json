@@ -424,6 +424,8 @@
   "defect.excel-delete-rows-confirm-any": "是否确认删除选中的 {0} 行？",
   "defect.module-ranking": "交付物排行",
   "defect.status-statistics": "状态统计",
+  "defect.my-open-todo": "我的待办",
+  "defect.team-open-workload": "团队待办负载",
   "defect.statistic.view": "预览区",
   "defect.statistic.select": "模版选择区",
   "defect.online-member": "成员",

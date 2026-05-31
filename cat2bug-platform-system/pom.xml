@@ -58,6 +58,13 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- H2（统计 SQL 单测） -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
 </project>

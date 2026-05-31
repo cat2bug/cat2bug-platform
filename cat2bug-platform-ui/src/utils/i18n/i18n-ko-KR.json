@@ -422,6 +422,8 @@
   "defect.excel-delete-rows-confirm-any": "선택한 {0}개 행을 삭제하시겠습니까?",
   "defect.module-ranking": "전달물 순위",
   "defect.status-statistics": "상태 통계",
+  "defect.my-open-todo": "내 미완료",
+  "defect.team-open-workload": "팀 업무량",
   "defect.statistic.view": "미리보기 영역",
   "defect.statistic.select": "템플릿 선택 영역",
   "defect.online-member": "멤버",

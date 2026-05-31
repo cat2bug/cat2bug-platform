@@ -1,5 +1,7 @@
 package com.cat2bug.system.mapper;
 
+import com.cat2bug.system.domain.SysDefectOpenWorkload;
+import com.cat2bug.system.domain.SysDefectOpenWorkloadSummary;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -31,4 +33,14 @@ public interface SysDefectStatisticMapper {
      * @return
      */
     public List<Map<String, Object>> moduleStatistic(@Param("projectId") Long projectId);
+
+    /**
+     * 团队未关闭待办负载 Top5（handle_by 含成员且 defect_state != CLOSED）
+     */
+    List<SysDefectOpenWorkload> openWorkloadByProject(@Param("projectId") Long projectId);
+
+    /**
+     * 当前用户未关闭待办汇总
+     */
+    SysDefectOpenWorkloadSummary openWorkloadByMember(@Param("projectId") Long projectId, @Param("userId") Long userId);
 }

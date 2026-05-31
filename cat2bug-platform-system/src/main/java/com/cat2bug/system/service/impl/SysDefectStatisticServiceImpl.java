@@ -2,6 +2,8 @@ package com.cat2bug.system.service.impl;
 
 import com.cat2bug.common.core.domain.type.SysDefectStateEnum;
 import com.cat2bug.common.core.domain.type.SysDefectTypeEnum;
+import com.cat2bug.system.domain.SysDefectOpenWorkload;
+import com.cat2bug.system.domain.SysDefectOpenWorkloadSummary;
 import com.cat2bug.system.mapper.SysDefectStatisticMapper;
 import com.cat2bug.system.service.ISysDefectStatisticService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,5 +68,19 @@ public class SysDefectStatisticServiceImpl implements ISysDefectStatisticService
     @Override
     public List<Map<String, Object>> moduleStatistic(Long projectId) {
         return sysDefectStatisticMapper.moduleStatistic(projectId);
+    }
+
+    @Override
+    public List<SysDefectOpenWorkload> openWorkload(Long projectId) {
+        return sysDefectStatisticMapper.openWorkloadByProject(projectId);
+    }
+
+    @Override
+    public SysDefectOpenWorkloadSummary openWorkloadMy(Long projectId, Long userId) {
+        SysDefectOpenWorkloadSummary summary = sysDefectStatisticMapper.openWorkloadByMember(projectId, userId);
+        if (summary == null) {
+            summary = new SysDefectOpenWorkloadSummary();
+        }
+        return summary;
     }
 }

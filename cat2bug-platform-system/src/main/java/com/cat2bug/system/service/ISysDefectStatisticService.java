@@ -1,5 +1,7 @@
 package com.cat2bug.system.service;
 
+import com.cat2bug.system.domain.SysDefectOpenWorkload;
+import com.cat2bug.system.domain.SysDefectOpenWorkloadSummary;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -30,4 +32,14 @@ public interface ISysDefectStatisticService {
      * @return
      */
     public List<Map<String, Object>> moduleStatistic(@Param("projectId") Long projectId);
+
+    /**
+     * 团队未关闭待办负载 Top5
+     */
+    List<SysDefectOpenWorkload> openWorkload(Long projectId);
+
+    /**
+     * 个人未关闭待办汇总
+     */
+    SysDefectOpenWorkloadSummary openWorkloadMy(Long projectId, Long userId);
 }

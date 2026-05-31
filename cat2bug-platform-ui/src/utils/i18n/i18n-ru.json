@@ -422,6 +422,8 @@
   "defect.excel-delete-rows-confirm-any": "Удалить выбранные строки ({0})?",
   "defect.module-ranking": "Рейтинг поставляемых продуктов",
   "defect.status-statistics": "Статистика по состояниям",
+  "defect.my-open-todo": "Мои открытые",
+  "defect.team-open-workload": "Нагрузка команды",
   "defect.statistic.view": "Область предварительного просмотра",
   "defect.statistic.select": "Область выбора шаблона",
   "defect.online-member": "Участники",

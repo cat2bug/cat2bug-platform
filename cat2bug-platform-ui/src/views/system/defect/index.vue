@@ -47,7 +47,7 @@
       </div>
     </div>
     <!-- 统计板块-->
-    <cat2-bug-statistic v-show="statisticPanelVisible" class="defect-tools-statistic" :params="{}" :draggable="true" />
+    <cat2-bug-statistic ref="defectStatistic" v-show="statisticPanelVisible" class="defect-tools-statistic" :params="{}" :draggable="true" />
     <!-- 动态缺陷显示组件-->
     <!--    <keep-alive>-->
     <component
@@ -501,6 +501,10 @@ export default {
     handleRefreshQuery() {
       this.queryParams.projectId = this.projectId
       this.$refs.defectContentComponent.search(this.queryParams)
+      const statistic = this.$refs.defectStatistic
+      if (statistic && typeof statistic.refreshData === 'function') {
+        statistic.refreshData()
+      }
       this.$forceUpdate()
     },
     /** 新增按钮操作 */

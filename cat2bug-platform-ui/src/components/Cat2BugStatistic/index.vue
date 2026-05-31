@@ -30,6 +30,7 @@
         >
           <component
             :is="sc.name"
+            ref="statisticItem"
             :read="read"
             :tools="tools"
             :params="sc.params"
@@ -48,9 +49,11 @@
         >
           <component
             :is="sc.name"
+            ref="statisticItem"
             :read="read"
             :tools="tools"
             :params="sc.params"
+            :parent="parent"
             @click.native="clickHandle($event,sc)"
             @tools-click="toolsHandle($event,sc)"
           />
@@ -87,6 +90,17 @@ files.keys().forEach(key=>{
   });
   modules[name] = files(key).default||files(key)
 });
+
+/** 无统计模板时缺陷页默认统计块（含 ECharts 待办块） */
+const DEFAULT_DEFECT_STATISTIC_TEMPLATE = [
+  { name: 'DefectMemberOnline' },
+  { name: 'DefectModule' },
+  { name: 'DefectState' },
+  { name: 'DefectType' },
+  { name: 'MyOpenTodoGauge' },
+  { name: 'TeamOpenWorkloadBar' },
+  { name: 'MyLife' }
+]
 
 export default {
   name: "Cat2BugStatistic",
@@ -234,6 +248,33 @@ export default {
     refresh() {
       this.getStatisticList();
     },
+    /** 缺陷变更后刷新各统计块数据 */
+    refreshData() {
+      const refs = this.$refs.statisticItem
+      if (!refs) {
+        return
+      }
+      const items = Array.isArray(refs) ? refs : [refs]
+      const refreshMethods = [
+        'refreshData',
+        'getStatistic',
+        'getStatisticModule',
+        'getStatisticDefectState',
+        'getStatisticDefectType',
+        'getMemberList'
+      ]
+      items.forEach(comp => {
+        if (!comp) {
+          return
+        }
+        for (const method of refreshMethods) {
+          if (typeof comp[method] === 'function') {
+            comp[method]()
+            break
+          }
+        }
+      })
+    },
     search(params) {
       this.$parent.search && this.$parent.search(params);
     },
@@ -249,6 +290,8 @@ export default {
           let statisticList=[];
           if(res.rows.length>0) {
             statisticList = JSON.parse(res.rows[0].statisticTemplatConfig);
+          } else {
+            statisticList = DEFAULT_DEFECT_STATISTIC_TEMPLATE.map(item => ({ ...item }));
           }
           this.statisticList = statisticList;
           this.$emit('change',statisticList);
@@ -503,5 +546,17 @@ export default {
     --statistic-item-width: max-content;
     --statistic-item-min-width: var(--statistic-item-width-life-min, var(--statistic-item-width-life, 236px));
     --statistic-item-max-width: var(--statistic-item-width-life-max, 360px);
+  }
+
+  .statistic-item--MyOpenTodoGauge {
+    width: max-content;
+    --statistic-item-width: max-content;
+    --statistic-item-min-width: 168px;
+  }
+
+  .statistic-item--TeamOpenWorkloadBar {
+    width: max-content;
+    --statistic-item-width: max-content;
+    --statistic-item-min-width: 168px;
   }
 </style>

@@ -21,4 +21,4 @@
 ## 5. 验证
 
 - [x] 5.1 全库 grep 无 `$floatMenu` / `initFloatMenu` / `Cat2BugFloatMenu` 残留
-- [ ] 5.2 冒烟：计划/缺陷/用例列表工具栏新建；Navbar 无悬浮开关；页面无右侧浮动按钮
+- [x] 5.2 冒烟：计划/缺陷/用例列表工具栏新建；Navbar 无悬浮开关；页面无右侧浮动按钮

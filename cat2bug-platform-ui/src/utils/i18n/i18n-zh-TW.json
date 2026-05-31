@@ -422,6 +422,8 @@
   "defect.excel-delete-rows-confirm-any": "是否確認刪除選中的 {0} 行？",
   "defect.module-ranking": "交付物排行",
   "defect.status-statistics": "狀態統計",
+  "defect.my-open-todo": "我的待辦",
+  "defect.team-open-workload": "團隊待辦負載",
   "defect.statistic.view": "預覽區",
   "defect.statistic.select": "範本選擇區",
   "defect.online-member": "成員",

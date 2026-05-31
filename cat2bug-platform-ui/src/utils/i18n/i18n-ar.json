@@ -422,6 +422,8 @@
   "defect.excel-delete-rows-confirm-any": "هل تريد حذف الصفوف المحددة ({0})؟",
   "defect.module-ranking": "تصنيف المخرجات",
   "defect.status-statistics": "إحصاءات الحالات",
+  "defect.my-open-todo": "مهامي المفتوحة",
+  "defect.team-open-workload": "عبء الفريق",
   "defect.statistic.view": "منطقة المعاينة",
   "defect.statistic.select": "منطقة اختيار القالب",
   "defect.online-member": "الأعضاء المتصلون",
