@@ -1,0 +1,37 @@
+/**
+ * 交付物树 + 表格 multipane：树展开时右侧表格左缘与分隔条对齐，左上/左下为直角；
+ * 收起树（.custom-resizer--tree-hidden）时由 ruoyi.scss 恢复 5px 圆角。
+ */
+.custom-resizer:not(.custom-resizer--tree-hidden) {
+  .el-table {
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+
+    .el-table__header-wrapper thead tr:first-child > th:first-child,
+    .el-table__fixed-header-wrapper thead tr:first-child > th:first-child {
+      border-top-left-radius: 0 !important;
+    }
+
+    .el-table__body-wrapper tbody tr:last-child > td:first-child,
+    .el-table__fixed-body-wrapper tbody tr:last-child > td:first-child {
+      border-bottom-left-radius: 0 !important;
+    }
+  }
+}
+
+html.dark .custom-resizer:not(.custom-resizer--tree-hidden) {
+  .el-table {
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+
+    .el-table__header-wrapper thead tr:first-child > th:first-child,
+    .el-table__fixed-header-wrapper thead tr:first-child > th:first-child {
+      border-top-left-radius: 0 !important;
+    }
+
+    .el-table__body-wrapper tbody tr:last-child > td:first-child,
+    .el-table__fixed-body-wrapper tbody tr:last-child > td:first-child {
+      border-bottom-left-radius: 0 !important;
+    }
+  }
+}

@@ -666,7 +666,7 @@ export default {
   padding: 0;
   box-sizing: border-box;
   cursor: pointer;
-  color: #909399;
+  color: var(--text-color-secondary);
   font-size: 12px;
   line-height: 1;
   flex-shrink: 0;
@@ -674,7 +674,7 @@ export default {
 }
 .defect-sidebar-expand-trigger:hover {
   color: #409eff;
-  background-color: #ecf5ff;
+  background-color: var(--sidebar-expand-trigger-hover-bg, #ecf5ff);
 }
 .defect-sidebar-expand-trigger:focus-visible {
   box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.35);

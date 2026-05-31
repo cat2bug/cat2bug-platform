@@ -712,10 +712,6 @@ export default {
   overflow-y: hidden;
 }
 /* 表体底色；表头 gutter / 滚动槽见 assets/styles/el-table-scrollbar.scss */
-.plan-drawer-case-list-pane ::v-deep .el-table__body-wrapper,
-.plan-drawer-case-list-pane ::v-deep .el-table__fixed-body-wrapper {
-  background-color: #fff !important;
-}
 /* ruoyi.scss 给分页容器 height:25px + 内部 absolute，预留高度不足会压住上方表格 */
 .plan-drawer-case-list-pane ::v-deep .pagination-container {
   flex-shrink: 0;
@@ -870,7 +866,7 @@ export default {
 }
 .plan-case-sidebar-expand-trigger:hover {
   color: #409eff;
-  background-color: #ecf5ff;
+  background-color: var(--sidebar-expand-trigger-hover-bg, #ecf5ff);
 }
 .plan-case-sidebar-expand-trigger:focus-visible {
   box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.35);

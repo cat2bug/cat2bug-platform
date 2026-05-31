@@ -751,10 +751,6 @@ export default {
   overflow-x: auto;
   overflow-y: hidden;
 }
-.plan-drawer-defect-list-pane ::v-deep .el-table__body-wrapper,
-.plan-drawer-defect-list-pane ::v-deep .el-table__fixed-body-wrapper {
-  background-color: #fff !important;
-}
 /* ruoyi.scss 给分页容器 height:25px + 内部 absolute，预留高度不足会压住上方表格 */
 .plan-drawer-defect-list-pane ::v-deep .pagination-container {
   flex-shrink: 0;
@@ -893,7 +889,7 @@ export default {
 }
 .plan-defect-sidebar-expand-trigger:hover {
   color: #409eff;
-  background-color: #ecf5ff;
+  background-color: var(--sidebar-expand-trigger-hover-bg, #ecf5ff);
 }
 .plan-defect-sidebar-expand-trigger:focus-visible {
   box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.35);

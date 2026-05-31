@@ -331,7 +331,7 @@ export default {
   margin-bottom: 0;
   font-size: 13px;
   font-weight: 500;
-  color: #515a6e;
+  color: var(--table-header-color);
   box-sizing: border-box;
   /* 外层左右 5px：父级 AddPlanDialog / HandlePlanDialog .custom-resizer；树/优先级列表在 Tab 内容区内再留 5px，避免贴边 */
   ::v-deep .el-tabs {
@@ -345,7 +345,7 @@ export default {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    background-color: #f8f8f9;
+    background-color: var(--table-header-bg);
   }
   /* 与右侧 el-table 表头同色同高：固定 height（不只 min-height），避免 Tab 默认行高低于 th */
   ::v-deep .tree-plan-item-tabs > .el-tabs__header {
@@ -355,7 +355,7 @@ export default {
     min-height: var(--plan-tree-tabs-sync-height, 48px);
     display: flex;
     align-items: stretch;
-    border-bottom: 1px solid #dfe6ec;
+    border-bottom: 1px solid var(--border-color-light);
   }
   ::v-deep .tree-plan-item-tabs > .el-tabs__header .el-tabs__nav-wrap {
     flex: 1;
@@ -398,6 +398,7 @@ export default {
     padding-right: 8px;
     border-bottom: none !important;
     box-sizing: border-box;
+    color: var(--table-header-color);
   }
   ::v-deep .tree-plan-item-tabs .el-tabs__item.is-active {
     color: #1890ff;
@@ -419,7 +420,7 @@ export default {
     overflow: hidden;
     padding: 10px 5px 0;
     box-sizing: border-box;
-    background-color: #fff;
+    background-color: var(--table-bg);
   }
   ::v-deep .el-tab-pane {
     height: 100%;

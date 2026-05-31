@@ -1,5 +1,6 @@
 <template>
   <el-popover
+    popper-class="select-project-member-popover"
     placement="bottom-start"
     width="350"
     v-model="popoverVisible"

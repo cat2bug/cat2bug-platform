@@ -676,13 +676,45 @@ export default {
   flex-direction: row;
   align-items: center;
   gap: 10px;
+
+  > * {
+    margin: 0;
+  }
+}
+.doc-picker-head h4 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.3;
 }
 .doc-picker-divider {
   margin: 8px 0;
 }
+/** 与缺陷列表「显示字段」同款：用 gap 控制间距，去掉 checkbox 默认大块外边距 */
 .doc-picker-col {
   display: flex;
   flex-direction: column;
+  gap: 6px;
+  min-width: 220px;
+  max-height: 380px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.doc-picker-col ::v-deep .el-checkbox {
+  display: flex;
+  align-items: center;
+  margin-right: 0;
+  margin-bottom: 0;
+  height: auto;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+.doc-picker-col ::v-deep .el-checkbox__input {
+  flex-shrink: 0;
+}
+.doc-picker-col ::v-deep .el-checkbox__label {
+  line-height: 1.4;
+  padding-left: 8px;
 }
 .document-page ::v-deep h3.document-project-label {
   margin-top: 0;

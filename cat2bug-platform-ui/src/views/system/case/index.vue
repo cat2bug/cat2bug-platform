@@ -1139,7 +1139,7 @@ export default {
 }
 .case-sidebar-expand-trigger:hover {
   color: #409eff;
-  background-color: #ecf5ff;
+  background-color: var(--sidebar-expand-trigger-hover-bg, #ecf5ff);
 }
 .case-sidebar-expand-trigger:focus-visible {
   box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.35);

@@ -220,13 +220,13 @@ export default {
   width: 100%;
   height: 48px;
   line-height: 48px;
-  border-bottom: 1px solid #dfe6ec;
-  background-color: #f8f8f9;
+  border-bottom: 1px solid var(--border-color-light);
+  background-color: var(--table-header-bg);
   padding: 0px 10px;
   margin-bottom: 0;
   font-size: 13px;
   font-weight: 500;
-  color: #515a6e;
+  color: var(--table-header-color);
   display: flex;
   flex-direction: row;
   align-items: center;

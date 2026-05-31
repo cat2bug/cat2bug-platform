@@ -3913,8 +3913,8 @@ export default {
 .defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-img-wrap {
   position: relative;
   flex: 0 0 auto;
-  width: 80px;
-  height: 80px;
+  width: 60px;
+  height: 60px;
   line-height: 0;
 }
 .defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-img-remove {
@@ -3947,8 +3947,8 @@ export default {
   min-width: 1px;
 }
 .defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-img-tile {
-  width: 80px;
-  height: 80px;
+  width: 60px;
+  height: 60px;
   object-fit: cover;
   border-radius: 3px;
   flex: 0 0 auto;

@@ -930,13 +930,66 @@ export default {
 <style lang="scss" scoped>
 .cat2-bug-table-wrap {
   position: relative;
+
+  /* 覆盖 Element UI 默认 .el-table { background: #FFF } / .el-table tr { background: #FFF } */
+  ::v-deep .el-table {
+    background-color: var(--table-bg) !important;
+  }
+
+  ::v-deep .el-table__body-wrapper,
+  ::v-deep .el-table__fixed-body-wrapper {
+    background-color: var(--cat2bug-table-row-bg, var(--table-bg));
+  }
+
+  /* 表头 tr/th：覆盖 Element UI .el-table tr / th { background:#FFF } */
+  ::v-deep thead tr {
+    background-color: var(--table-header-bg) !important;
+  }
+
+  ::v-deep thead tr > th.el-table__cell,
+  ::v-deep .el-table__fixed thead tr > th.el-table__cell,
+  ::v-deep .el-table__fixed-right thead tr > th.el-table__cell {
+    background-color: var(--table-header-bg) !important;
+    border-bottom: 1px solid var(--border-color-light) !important;
+  }
+
+  /* 表体：非固定列与固定列分层（参考浅色：主体 table-bg，固定列 block 色） */
+  ::v-deep tbody tr {
+    background-color: var(--cat2bug-table-row-bg, var(--table-bg)) !important;
+  }
+
+  ::v-deep .el-table__body-wrapper tbody tr > td.el-table__cell {
+    background-color: var(--cat2bug-table-row-bg, var(--table-bg)) !important;
+  }
+
+  ::v-deep .el-table__fixed tbody tr > td.el-table__cell,
+  ::v-deep .el-table__fixed-right tbody tr > td.el-table__cell {
+    background-color: var(--cat2bug-table-fixed-row-bg, var(--cat2bug-table-row-bg, var(--table-bg))) !important;
+  }
+
+  ::v-deep .el-table__body-wrapper tbody tr:hover > td.el-table__cell,
+  ::v-deep .el-table__body-wrapper tbody tr.hover-row > td.el-table__cell {
+    background-color: var(--table-row-hover-bg) !important;
+  }
+
+  ::v-deep .el-table__fixed tbody tr:hover > td.el-table__cell,
+  ::v-deep .el-table__fixed tbody tr.hover-row > td.el-table__cell,
+  ::v-deep .el-table__fixed-right tbody tr:hover > td.el-table__cell,
+  ::v-deep .el-table__fixed-right tbody tr.hover-row > td.el-table__cell {
+    background-color: var(--table-row-hover-bg) !important;
+  }
+
+  ::v-deep tbody tr:hover,
+  ::v-deep tbody tr.hover-row {
+    background-color: var(--table-row-hover-bg) !important;
+  }
 }
 
 .cat2bug-custom-xbar {
   position: absolute;
   z-index: 45;
   box-sizing: border-box;
-  background: #f2f3f5;
+  background: var(--cat2bug-xbar-track);
   border-radius: 3px;
   overflow: hidden;
   padding: 0;
@@ -948,13 +1001,13 @@ export default {
   left: 0;
   box-sizing: border-box;
   cursor: pointer;
-  background: #e3e6eb;
+  background: var(--cat2bug-xbar-thumb);
   border-radius: 3px;
   border: none;
 }
 
 .cat2bug-custom-xbar__thumb:hover {
-  background: #d9dde4;
+  background: var(--cat2bug-xbar-thumb-hover);
 }
 
 .header-title-only {
@@ -981,10 +1034,15 @@ export default {
   align-items: center;
   flex-direction: row;
   gap: 5px;
+
+  ::v-deep .svg-icon {
+    cursor: pointer;
+    flex-shrink: 0;
+  }
 }
 
 ::v-deep thead .no-drag {
-  background-color: #f0f0f1;
+  background-color: var(--table-header-bg);
 }
 
 ::v-deep tbody > .el-table__row > .el-table__cell {
@@ -1019,5 +1077,40 @@ export default {
   >* {
     margin: 0;
   }
+}
+</style>
+
+<!-- 非 scoped：覆盖 Element UI 默认白底，明暗主题均由 CSS 变量驱动 -->
+<style lang="scss">
+.cat2-bug-table-wrap .el-table thead tr,
+.cat2-bug-table-wrap .el-table thead tr > th.el-table__cell,
+.cat2-bug-table-wrap .el-table__fixed thead tr > th.el-table__cell,
+.cat2-bug-table-wrap .el-table__fixed-right thead tr > th.el-table__cell,
+.cat2-bug-table-wrap .el-table__header-wrapper thead th.gutter,
+.cat2-bug-table-wrap .el-table__header-wrapper thead th.el-table__gutter,
+.cat2-bug-table-wrap .el-table__fixed-header-wrapper thead th.gutter,
+.cat2-bug-table-wrap .el-table__fixed-header-wrapper thead th.el-table__gutter,
+.cat2-bug-table-wrap .el-table__fixed-right-patch {
+  background-color: var(--table-header-bg) !important;
+  border-bottom: 1px solid var(--border-color-light) !important;
+}
+
+.cat2-bug-table-wrap .el-table__body-wrapper tbody tr,
+.cat2-bug-table-wrap .el-table__body-wrapper tbody tr > td.el-table__cell {
+  background-color: var(--cat2bug-table-row-bg, var(--table-bg)) !important;
+}
+
+.cat2-bug-table-wrap .el-table__fixed tbody tr > td.el-table__cell,
+.cat2-bug-table-wrap .el-table__fixed-right tbody tr > td.el-table__cell {
+  background-color: var(--cat2bug-table-fixed-row-bg, var(--cat2bug-table-row-bg, var(--table-bg))) !important;
+}
+
+.cat2-bug-table-wrap .el-table__body-wrapper tbody tr:hover > td.el-table__cell,
+.cat2-bug-table-wrap .el-table__body-wrapper tbody tr.hover-row > td.el-table__cell,
+.cat2-bug-table-wrap .el-table__fixed tbody tr:hover > td.el-table__cell,
+.cat2-bug-table-wrap .el-table__fixed tbody tr.hover-row > td.el-table__cell,
+.cat2-bug-table-wrap .el-table__fixed-right tbody tr:hover > td.el-table__cell,
+.cat2-bug-table-wrap .el-table__fixed-right tbody tr.hover-row > td.el-table__cell {
+  background-color: var(--table-row-hover-bg) !important;
 }
 </style>
