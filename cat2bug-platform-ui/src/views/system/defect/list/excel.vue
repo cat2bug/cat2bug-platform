@@ -35,7 +35,7 @@
               $t(c.key)
             }}</el-checkbox>
           </el-checkbox-group>
-          <el-button slot="reference" style="padding: 9px" plain size="mini" icon="el-icon-s-fold" />
+          <el-button slot="reference" style="padding: 9px" plain size="small" icon="el-icon-s-fold" />
         </el-popover>
         <slot name="right-tools" />
       </div>
@@ -313,8 +313,8 @@ const EXCEL_LAST_DATA_ROW_NEAR_BOTTOM_PX = 160;
 const EXCEL_DATA_ROW_ESTIMATE_PX = 26;
 /** 表格可视区底部相对 .defect-excel-context 内底的留白(px)；高度优先用 context.clientHeight − gap */
 const EXCEL_VIEWPORT_BOTTOM_GAP = 20;
-/** 底部自定义横条区在宿主中的占位(px)，与下方 ::v-deep .footer 高度一致（≈ 库默认 25px 的 1/3） */
-const VUE_EXCEL_EDITOR_FOOTER_BAR_PX = Math.round(25 / 3);
+/** 底部自定义横条区在宿主中的占位(px)，与下方 ::v-deep .footer 高度一致（与 Cat2BugTable 横条 6px 对齐） */
+const VUE_EXCEL_EDITOR_FOOTER_BAR_PX = 6;
 /** 占位行状态列：批量创建队列中的展示（仅存于 defectStateText，非接口值） */
 const EXCEL_CREATE_ROW_QUEUED = "__CAT2BUG_EXCEL_CREATE_QUEUED__";
 const EXCEL_CREATE_ROW_RUNNING = "__CAT2BUG_EXCEL_CREATE_RUNNING__";
@@ -3509,7 +3509,7 @@ export default {
 /* 与系统 Element 表格色系一致：浅边框 + 浅表头，避免过重 */
 .defect-vue-excel-editor ::v-deep .component-content {
   border: 1px solid #dcdfe6;
-  border-radius: 5px 5px 0 0;
+  border-radius: 4px 4px 0 0;
   overflow: hidden;
   transform: translate3d(0, 0, 0);
   /* 库默认 max-width: fit-content，列变宽会撑大整块编辑器；限制为 100%，宽表在 .table-content 内横向滚动 */
@@ -3549,19 +3549,31 @@ export default {
   text-shadow: none;
   font-size: 12px;
 }
-/* 库底部横向拖条为自定义 .h-scroll（table-content 原生条宽高为 0）。整栏默认 25px，改为约 1/3 */
+/* 库底部横向拖条为自定义 .h-scroll（table-content 原生条宽高为 0）；与 Cat2BugTable .cat2bug-custom-xbar 共用 token */
 .defect-vue-excel-editor ::v-deep .footer {
-  height: 8px !important;
+  height: 6px !important;
   min-height: 0;
   line-height: 1 !important;
   box-sizing: border-box;
+  background-color: var(--cat2bug-xbar-track) !important;
+  border-top: 1px solid var(--border-color-light) !important;
+  overflow: hidden !important;
 }
 .defect-vue-excel-editor ::v-deep .footer .left-block {
-  height: 8px !important;
+  height: 6px !important;
+  background-color: var(--table-header-bg) !important;
+  border-right: 1px solid var(--border-color-light) !important;
 }
 .defect-vue-excel-editor ::v-deep .footer .h-scroll {
   z-index: 2;
-  height: 8px !important;
+  height: 6px !important;
+  background-color: var(--cat2bug-xbar-thumb) !important;
+  border-radius: 3px !important;
+}
+.defect-vue-excel-editor ::v-deep .footer .h-scroll:hover,
+.defect-vue-excel-editor ::v-deep .footer .h-scroll.focus,
+.defect-vue-excel-editor ::v-deep .footer:hover .h-scroll {
+  background-color: var(--cat2bug-xbar-thumb-hover) !important;
 }
 /* no-paging 时底部仍渲染英文 Selected|Filtered|Loaded，与本页无关，隐藏仅保留横条 */
 .defect-vue-excel-editor ::v-deep .footer > span:last-child {
@@ -3629,11 +3641,11 @@ export default {
   top: 0 !important;
 }
 .defect-vue-excel-editor ::v-deep .systable thead tr:first-child th.first-col {
-  border-top-left-radius: 5px;
+  border-top-left-radius: 4px;
   top: 0 !important;
 }
 .defect-vue-excel-editor ::v-deep .systable thead tr:first-child th:last-child {
-  border-top-right-radius: 5px;
+  border-top-right-radius: 4px;
 }
 .defect-vue-excel-editor ::v-deep .systable thead tr:first-child th > div:first-child {
   display: flex;

@@ -1,7 +1,11 @@
 <template>
   <div>
     <div class="user-info-head" @click="editCropper()">
-      <img v-bind:src="user.avatar" title="点击上传头像" class="img-circle img-lg" />
+      <cat2-bug-avatar
+        :member="member"
+        :size="120"
+        class="profile-user-avatar"
+      />
     </div>
     <el-dialog :title="title" :visible.sync="open" width="800px" append-to-body @opened="modalOpened"  @close="closeDialog">
       <el-row>
@@ -64,6 +68,12 @@ import Cat2BugAvatar from "@/components/Cat2BugAvatar";
 
 export default {
   components: { VueCropper, Cat2BugAvatar },
+  props: {
+    profileUser: {
+      type: Object,
+      default: () => ({})
+    }
+  },
   data() {
     return {
       // 是否显示弹出层
@@ -87,10 +97,12 @@ export default {
     };
   },
   computed: {
-    user: function () {
+    member() {
+      const profile = this.profileUser || {}
       return {
-        name: this.options.name,  // 当前用户名
-        avatar: process.env.VUE_APP_BASE_API + this.avatar, //裁剪图片的地址
+        avatar: this.avatar,
+        nickName: profile.nickName,
+        userName: profile.userName || this.options.name
       }
     }
   },
@@ -174,25 +186,34 @@ export default {
 .user-info-head {
   position: relative;
   display: inline-block;
-  height: 120px;
-  width: 120px;
+  cursor: pointer;
+
+  ::v-deep .profile-user-avatar.member-avatar .el-avatar {
+    width: 120px;
+    height: 120px;
+    font-size: 48px;
+    border: 2px solid var(--border-color-light) !important;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease;
+  }
 }
 
-.user-info-head:hover:after {
+.user-info-head:hover::after {
   content: '+';
   position: absolute;
   left: 0;
   right: 0;
   top: 0;
   bottom: 0;
-  color: #eee;
-  background: rgba(0, 0, 0, 0.5);
-  font-size: 24px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.45);
+  font-size: 32px;
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   cursor: pointer;
   line-height: 120px;
   border-radius: 50%;
+  pointer-events: none;
 }
 </style>

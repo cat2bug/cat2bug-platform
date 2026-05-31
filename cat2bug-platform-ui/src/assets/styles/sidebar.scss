@@ -309,4 +309,15 @@ html.dark #app {
       padding-left: 0 !important;
     }
   }
+
+  .sidebar-container {
+    & .theme-dark .nest-menu .el-submenu > .el-submenu__title,
+    & .theme-dark .el-submenu .el-menu-item {
+      background-color: transparent !important;
+
+      &:hover {
+        background-color: transparent !important;
+      }
+    }
+  }
 }

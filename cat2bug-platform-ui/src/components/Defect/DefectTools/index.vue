@@ -234,7 +234,8 @@ export default {
     display: flex;
     flex-wrap: wrap;
     flex-direction: row;
-    column-gap: 10px;
+    column-gap: var(--cat2bug-operate-tools-gap, 10px);
+    row-gap: var(--cat2bug-operate-tools-row-gap, 0);
     align-items: center;
     justify-content: flex-start !important;
     font-size: 12px;

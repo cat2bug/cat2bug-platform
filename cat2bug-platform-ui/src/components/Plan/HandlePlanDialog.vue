@@ -589,7 +589,8 @@ export default {
   display: inline-flex;
   flex-direction: row;
   flex-wrap: wrap;
-  gap: 10px;
+  column-gap: var(--cat2bug-operate-tools-gap, 10px);
+  row-gap: var(--cat2bug-operate-tools-row-gap, 0);
   padding: 0 10px;
   > ::v-deep button {
     margin: 0;
@@ -597,7 +598,7 @@ export default {
 }
 .list-switch {
   margin-left: 0;
-  margin-right: 10px;
+  margin-right: 0;
   margin-bottom: 0;
   flex-shrink: 0;
   white-space: nowrap;

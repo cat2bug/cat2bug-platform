@@ -253,7 +253,8 @@ export default {
 .plan-item-tools {
   display: inline-flex;
   flex-direction: row;
-  gap: 10px;
+  column-gap: var(--cat2bug-operate-tools-gap, 10px);
+  row-gap: var(--cat2bug-operate-tools-row-gap, 0);
   flex-wrap: wrap;
   > * {
     margin: 0;

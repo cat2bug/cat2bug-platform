@@ -211,6 +211,8 @@ import {listCase, listPlanCaseId, listPlanCaseLevel} from "@/api/system/case";
 const TREE_MODULE_WIDTH_CACHE_KEY = 'plan_case_tree_module_width';
 /** 新建/编辑计划弹窗：左侧树是否展开（与缺陷列表一致用 local） */
 const PLAN_ADD_DIALOG_TREE_VISIBLE_CACHE_KEY = 'plan_add_dialog_tree_module_visible';
+/** 弹窗内用例表最大高度（行多时内部滚动，行少时不撑出大块空白） */
+const PLAN_ADD_TABLE_MAX_HEIGHT = 480;
 
 export default {
   name: "AddPlanDialog",
@@ -636,7 +638,24 @@ export default {
             parseFloat(st.marginTop || '0') +
             parseFloat(st.marginBottom || '0');
         }
-        const next = Math.max(120, Math.floor(body.clientHeight - reserveBelowTable - 2));
+        const cap = Math.max(120, Math.min(
+          Math.floor(body.clientHeight - reserveBelowTable - 2),
+          PLAN_ADD_TABLE_MAX_HEIGHT
+        ));
+        let contentH = cap;
+        const tbl = this.$refs.planItemTable;
+        if (tbl && tbl.$el) {
+          const headerEl = tbl.$el.querySelector('.el-table__header-wrapper');
+          const rows = tbl.$el.querySelectorAll('.el-table__body-wrapper tbody tr');
+          if (headerEl) {
+            let rowsH = 0;
+            rows.forEach(row => {
+              rowsH += row.offsetHeight;
+            });
+            contentH = headerEl.offsetHeight + rowsH + 1;
+          }
+        }
+        const next = Math.max(120, Math.min(contentH, cap));
         if (this.planAddTableBodyMaxHeight !== next) {
           this.planAddTableBodyMaxHeight = next;
           this.$nextTick(() => {
@@ -709,7 +728,7 @@ export default {
   flex-direction: column;
   width: 100%;
   min-height: 0;
-  flex: 1 1 auto;
+  flex: 0 1 auto;
 }
 .plan-add-case-toolbar {
   flex-shrink: 0;
@@ -722,28 +741,26 @@ export default {
   flex-wrap: wrap;
   align-items: center;
   align-content: flex-start;
-  row-gap: 8px;
-  column-gap: 12px;
+  row-gap: var(--cat2bug-toolbar-row-gap, 8px);
+  column-gap: var(--cat2bug-toolbar-section-gap, 10px);
   margin: 5px 0 10px 0;
 }
 .plan-add-case-toolbar .case-tools {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  row-gap: 8px;
-  column-gap: 8px;
+  row-gap: var(--cat2bug-toolbar-row-gap, 8px);
+  column-gap: var(--cat2bug-toolbar-item-gap, 10px);
   ::v-deep .el-form-item {
     margin-bottom: 0;
   }
 }
 .custom-resizer {
-  flex: 1 1 auto;
-  min-height: 280px;
+  flex: 0 1 auto;
+  min-height: 0;
   width: 100%;
   height: auto;
   align-items: stretch;
-  padding-left: 5px;
-  padding-right: 5px;
   box-sizing: border-box;
   user-select: none;
   -webkit-user-select: none;
@@ -842,7 +859,7 @@ export default {
   flex-direction: column;
 }
 .case-context {
-  flex: 1 1 0%;
+  flex: 0 1 auto;
   min-width: 0;
   min-height: 0;
   overflow: hidden;
@@ -850,13 +867,13 @@ export default {
   flex-direction: column;
 }
 .plan-add-case-context-body {
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   min-height: 0;
   min-width: 0;
   width: 100%;
   overflow: hidden;
   box-sizing: border-box;
-  --defect-pagination-v-gap: 12px;
+  --defect-pagination-v-gap: 6px;
   display: flex;
   flex-direction: column;
 }
@@ -881,7 +898,7 @@ export default {
 .plan-add-table-pagination-band {
   flex-shrink: 0;
   margin-top: var(--defect-pagination-v-gap);
-  margin-bottom: 8px;
+  margin-bottom: 0;
 }
 ::v-deep .plan-add-table-pagination.pagination-container {
   margin-top: 0 !important;

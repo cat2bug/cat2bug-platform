@@ -6,7 +6,7 @@
           v-if="(item.raw.listClass == 'default' || item.raw.listClass == '') && (item.raw.cssClass == '' || item.raw.cssClass == null)"
           :key="item.value"
           :index="index"
-          :class="item.raw.cssClass"
+          :class="['dict-status-text', 'dict-status-' + item.value]"
           >{{ item.label + " " }}</span
         >
         <el-tag
@@ -15,7 +15,8 @@
           :key="item.value"
           :index="index"
           :type="item.raw.listClass == 'primary' ? '' : item.raw.listClass"
-          :class="item.raw.cssClass"
+          :effect="tagEffect"
+          :class="['dict-status-tag', item.raw.cssClass, 'dict-status-' + item.value]"
         >
           {{ $te(item.value) ? $t(item.value):item.label + " " }}
         </el-tag>
@@ -28,6 +29,8 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex';
+
 export default {
   name: "DictTag",
   props: {
@@ -48,6 +51,10 @@ export default {
     }
   },
   computed: {
+    ...mapGetters(['themeMode']),
+    tagEffect() {
+      return this.themeMode === 'dark' ? 'plain' : 'light';
+    },
     values() {
       if (this.value !== null && typeof this.value !== "undefined") {
         return Array.isArray(this.value) ? this.value : [String(this.value)];

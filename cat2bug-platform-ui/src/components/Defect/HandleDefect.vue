@@ -442,11 +442,18 @@ export default {
     border:#E4E7ED 1px solid;
     border-radius: 5px;
     padding: 15px 15px 12px 15px;
-    margin-bottom: 10px;
+    margin-bottom: 20px;
   }
   ::v-deep .el-collapse {
     .el-collapse-item__header {
       font-size: 16px;
+    }
+    .el-collapse-item__content {
+      padding-top: 20px;
+
+      > :first-child {
+        margin-top: 0;
+      }
     }
     border-width: 0px;
     .el-collapse-item:last-child {

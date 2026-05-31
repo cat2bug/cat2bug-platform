@@ -1,7 +1,7 @@
 <template>
-    <div :class="{'has-logo':showLogo}" :style="{ backgroundColor: settings.sideTheme === 'theme-dark' ? variables.menuBackground : variables.menuLightBackground }">
+    <div :class="{'has-logo':showLogo}" :style="{ backgroundColor: sidebarShellBackground }">
         <team-select v-if="showLogo" :collapse="isCollapse" v-model="teamId"></team-select>
-        <el-scrollbar :class="settings.sideTheme" wrap-class="scrollbar-wrapper">
+        <el-scrollbar :class="scrollbarThemeClass" wrap-class="scrollbar-wrapper">
           <el-menu
             v-show="!teamLock && teamId"
             :default-active="activeMenu"
@@ -123,7 +123,7 @@ export default {
     computed: {
         ...mapState(["settings"]),
         ...mapGetters(["sidebarRouters", "sidebar", "routesRefreshing"]),
-      /** 侧栏菜单背景：暗黑模式跟随 CSS 变量，避免 Element 内联白底 */
+      /** 侧栏菜单背景：暗黑模式跟随 CSS 变量，避免与 html.dark 不同步闪烁 */
       menuBackgroundColor() {
         if (this.settings.themeMode === 'dark') {
           return 'var(--sidebar-bg)'
@@ -131,6 +131,21 @@ export default {
         return this.settings.sideTheme === 'theme-dark'
           ? variables.menuBackground
           : variables.menuLightBackground
+      },
+      /** 侧栏外壳背景：与 themeMode 同步，勿仅用 sideTheme 内联浅色 */
+      sidebarShellBackground() {
+        if (this.settings.themeMode === 'dark') {
+          return 'var(--sidebar-bg)'
+        }
+        return this.settings.sideTheme === 'theme-dark'
+          ? variables.menuBackground
+          : variables.menuLightBackground
+      },
+      scrollbarThemeClass() {
+        if (this.settings.themeMode === 'dark') {
+          return 'theme-dark'
+        }
+        return this.settings.sideTheme
       },
       /** 侧栏菜单文字色：暗黑模式跟随 CSS 变量 */
       menuTextColor() {

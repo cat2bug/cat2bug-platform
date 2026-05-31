@@ -1,8 +1,240 @@
-.el-page-header {
-  padding-bottom: 20px;
-  margin-bottom: 40px;
-  border-bottom: var(--border-color-light) 1px solid;
+/* 全系统返回栏（el-page-header）统一高度，参考 project/project-base-info */
+:root {
+  --page-header-padding-bottom: 20px;
+  --page-header-line-height: 24px;
+  --cat2bug-dialog-content-footer-gap: 20px;
+  --cat2bug-toolbar-control-height: 32px;
+  --cat2bug-toolbar-control-line-height: 30px;
 }
+
+/* 全站列表页工具栏：查询项与操作按钮横向间距统一（与 --cat2bug-toolbar-item-gap 一致） */
+.defect-table-tools-bar,
+.defect-view-toolbar,
+.case-view-toolbar.case-table-tools,
+.plan-item-query.defect-table-tools-bar,
+.plan-add-case-toolbar.defect-table-tools-bar,
+.plan-tools,
+.module-tools,
+.document-tools,
+.report-tools,
+.defect-excel-tools.defect-view-toolbar {
+  column-gap: var(--cat2bug-toolbar-section-gap, 10px) !important;
+  row-gap: var(--cat2bug-toolbar-row-gap, 8px) !important;
+}
+
+.defect-page .defect-view-toolbar,
+.case-page .case-view-toolbar {
+  column-gap: var(--cat2bug-toolbar-section-gap, 10px) !important;
+  row-gap: var(--cat2bug-toolbar-row-gap, 8px) !important;
+}
+
+.defect-tools-search .el-form--inline,
+.case-tools-search .el-form--inline,
+.plan-query-main .el-form--inline,
+.plan-add-case-toolbar .el-form--inline,
+.defect-table-tools-bar .el-form--inline,
+.plan-tools > .left,
+.module-tools > .left,
+.document-tools > .left,
+.report-tools > .left {
+  column-gap: var(--cat2bug-toolbar-item-gap, 10px) !important;
+  row-gap: var(--cat2bug-toolbar-row-gap, 8px) !important;
+}
+
+.defect-tools-search .el-form--inline .el-form-item,
+.case-tools-search .el-form--inline .el-form-item,
+.plan-query-main .el-form--inline .el-form-item,
+.plan-add-case-toolbar .el-form--inline .el-form-item,
+.defect-table-tools-bar .el-form--inline .el-form-item {
+  margin-right: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+.table-tools,
+.table-tools.row,
+.handle-plan-tools-right,
+.case-right-tools,
+.plan-tools-right,
+.module-tools-right,
+.document-tools-right,
+.report-tools-right,
+.defect-excel-tools-right {
+  gap: var(--cat2bug-toolbar-item-gap, 10px) !important;
+}
+
+.list-switch,
+.defect-content-view-switch {
+  margin-right: 0 !important;
+  margin-left: 0 !important;
+}
+
+/* 列表页工具栏：左侧查询与右侧操作按钮统一高度（与 Element small / 32px 一致） */
+.defect-table-tools,
+.defect-table-tools-bar,
+.defect-view-toolbar,
+.defect-tools-search,
+.case-view-toolbar,
+.case-tools-search,
+.case-table-tools,
+.plan-item-query,
+.plan-query-main,
+.plan-add-case-toolbar,
+.plan-tools,
+.module-tools,
+.document-tools,
+.report-tools,
+.defect-excel-tools,
+.defect-excel-tools-left,
+.defect-excel-tools-right,
+.ai-account-tools,
+.api-tools,
+.member-tools,
+.project-tools,
+.handle-plan-tools-right,
+.table-tools,
+.table-tools.row,
+.case-right-tools,
+.plan-tools-right,
+.module-tools-right,
+.document-tools-right,
+.report-tools-right,
+.app-container > .el-form.el-form--inline,
+.app-container > .el-form.el-form--inline + .el-row.mb8 {
+  .el-form--inline .el-form-item {
+    display: inline-flex;
+    align-items: center;
+    vertical-align: middle;
+  }
+
+  .el-form--inline .el-form-item__label {
+    line-height: var(--cat2bug-toolbar-control-height);
+  }
+
+  .el-form--inline .el-form-item__content {
+    line-height: var(--cat2bug-toolbar-control-height);
+  }
+
+  .el-input:not(.el-textarea) .el-input__inner,
+  .el-select .el-input__inner,
+  .el-date-editor.el-input .el-input__inner,
+  .el-date-editor.el-input__inner,
+  .el-range-editor.el-input__inner,
+  .select-project-member-input-small,
+  .select-project-member-input-mini {
+    height: var(--cat2bug-toolbar-control-height) !important;
+    min-height: var(--cat2bug-toolbar-control-height) !important;
+    max-height: var(--cat2bug-toolbar-control-height) !important;
+    line-height: var(--cat2bug-toolbar-control-line-height) !important;
+  }
+
+  .el-input-number {
+    line-height: var(--cat2bug-toolbar-control-line-height);
+  }
+
+  .el-input-number .el-input__inner {
+    height: var(--cat2bug-toolbar-control-height) !important;
+    line-height: var(--cat2bug-toolbar-control-line-height) !important;
+  }
+
+  .el-button:not(.el-button--text):not(.is-circle) {
+    height: var(--cat2bug-toolbar-control-height) !important;
+    line-height: 1 !important;
+    padding-top: 9px !important;
+    padding-bottom: 9px !important;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .el-button-group > .el-button:not(.el-button--text),
+  .el-dropdown .el-button-group > .el-button:not(.el-button--text) {
+    height: var(--cat2bug-toolbar-control-height) !important;
+  }
+
+  .el-radio-group .el-radio-button__inner {
+    height: var(--cat2bug-toolbar-control-height) !important;
+    line-height: calc(var(--cat2bug-toolbar-control-height) - 2px) !important;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .el-row.mb8 {
+    margin-bottom: 0 !important;
+  }
+}
+
+/* 表格操作列：Cat2BugTable / el-table 行内按钮 flex 间距统一 */
+.cat2bug-operate-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: var(--cat2bug-operate-tools-gap, 10px);
+  row-gap: var(--cat2bug-operate-tools-row-gap, 0);
+  width: 100%;
+  max-width: 100%;
+
+  > * {
+    margin: 0 !important;
+  }
+
+  /* 避免外层 + 内层双层 flex 导致间距不一致 */
+  .plan-item-tools,
+  .table-operate,
+  .report-tools {
+    display: contents;
+  }
+
+  .el-button + .el-button {
+    margin-left: 0 !important;
+  }
+}
+
+.el-table td.small-padding.fixed-width .cell,
+.el-table td.cat2bug-operate-column .cell,
+.cat2-bug-table-wrap td.cat2bug-operate-column .cell {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: var(--cat2bug-operate-tools-gap, 10px);
+  row-gap: var(--cat2bug-operate-tools-row-gap, 0);
+
+  > .el-button,
+  > .el-dropdown,
+  > .el-link {
+    margin: 0 !important;
+  }
+
+  .el-button + .el-button {
+    margin-left: 0 !important;
+  }
+}
+
+.el-table td.is-center.small-padding .cell,
+.el-table td.is-center.cat2bug-operate-column .cell {
+  justify-content: center;
+}
+
+.el-page-header {
+  padding-bottom: var(--page-header-padding-bottom);
+  margin-bottom: 0;
+  border-bottom: 1px solid var(--border-color-light);
+  line-height: var(--page-header-line-height);
+
+  .el-page-header__left,
+  .el-page-header__content,
+  .el-page-header__title {
+    line-height: var(--page-header-line-height);
+  }
+
+  .el-page-header__content {
+    font-size: 14px;
+    font-weight: 500;
+  }
+}
+
 .el-pagination__editor.el-input .el-input__inner {
   line-height: 28px;
 }
@@ -17,19 +249,37 @@
   color: #fff !important;
 }
 .el-dialog__body {
-  padding-top: 0px;
-}
-.el-page-header {
-  margin-bottom: 20px;
+  padding-top: 0;
+  padding-bottom: 0;
 }
 
-/* 项目设置（project/option）子页面：保留 el-page-header 默认 padding-bottom: 20px */
+.el-dialog__footer {
+  padding-top: var(--cat2bug-dialog-content-footer-gap, 20px);
+}
+
+/* 避免最后一项 form-item 下边距叠加 */
+.el-dialog__body .el-form > .el-form-item:last-child {
+  margin-bottom: 0;
+}
+
+/* 项目设置（project/option）子页面：与 project-base-info 一致，页头无额外下边距 */
 .project-add-page-header {
   margin-bottom: 0;
+  width: 100%;
 
   .el-page-header {
     margin-bottom: 0;
+    padding-bottom: var(--page-header-padding-bottom);
   }
+}
+
+/* 未包 project-add-page-header 的页头：与正文保留 20px 间距 */
+.app-container > .el-page-header + * {
+  margin-top: 20px;
+}
+
+.app-container > .el-row:first-child:not(.project-add-page-header) + * {
+  margin-top: 20px;
 }
 
 /* 项目创建/编辑表单页：避免 el-row gutter 负边距撑出横向滚动条 */

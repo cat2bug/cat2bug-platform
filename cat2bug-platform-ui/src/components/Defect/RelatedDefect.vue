@@ -40,7 +40,7 @@
               plain
               slot="reference"
               icon="el-icon-s-fold"
-              size="mini"
+              size="small"
             ></el-button>
           </el-popover>
           <div>

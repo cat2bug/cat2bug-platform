@@ -979,8 +979,8 @@ export default {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    row-gap: 8px;
-    column-gap: 8px;
+    row-gap: var(--cat2bug-toolbar-row-gap, 8px);
+    column-gap: var(--cat2bug-toolbar-item-gap, 10px);
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
@@ -1188,7 +1188,7 @@ export default {
   max-width: 100%;
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--cat2bug-toolbar-item-gap, 10px);
   /* 换行独占一行时与缺陷观感一致：工具从左排，勿 flex-end 整行贴右 */
   justify-content: flex-start;
   align-items: center;
@@ -1416,8 +1416,8 @@ export default {
   flex-wrap: wrap;
   align-items: center;
   align-content: flex-start;
-  row-gap: 8px;
-  column-gap: 12px;
+  row-gap: var(--cat2bug-toolbar-row-gap, 8px);
+  column-gap: var(--cat2bug-toolbar-section-gap, 10px);
   width: 100%;
   min-width: 0;
   box-sizing: border-box;
@@ -1442,7 +1442,7 @@ export default {
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-start;
-  gap: 8px;
+  gap: var(--cat2bug-toolbar-item-gap, 10px);
   min-width: 0;
   max-width: 100%;
   box-sizing: border-box;
@@ -1477,8 +1477,8 @@ export default {
   align-items: center;
   align-content: flex-start;
   justify-content: space-between;
-  column-gap: 12px;
-  row-gap: 8px;
+  column-gap: var(--cat2bug-toolbar-section-gap, 10px);
+  row-gap: var(--cat2bug-toolbar-row-gap, 8px);
   width: 100%;
   padding-top: 0;
   padding-bottom: 0;

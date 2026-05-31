@@ -227,10 +227,4 @@ export default {
 .margin-right-30 {
   margin-right: 30px;
 }
-::v-deep .el-dialog__body {
-  padding-bottom: 10px;
-}
-::v-deep .el-dialog__footer {
-  padding-top: 8px;
-}
 </style>

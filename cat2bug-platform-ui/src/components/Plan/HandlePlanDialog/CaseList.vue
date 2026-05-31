@@ -741,8 +741,8 @@ export default {
 }
 .plan-item-query.defect-table-tools.defect-table-tools-bar {
   flex-wrap: wrap;
-  row-gap: 8px;
-  column-gap: 12px;
+  row-gap: var(--cat2bug-toolbar-row-gap, 8px);
+  column-gap: var(--cat2bug-toolbar-section-gap, 10px);
   align-content: flex-start;
   align-items: center;
 }
@@ -765,8 +765,8 @@ export default {
   display: flex !important;
   flex-wrap: wrap;
   align-items: center;
-  row-gap: 8px;
-  column-gap: 8px;
+  row-gap: var(--cat2bug-toolbar-row-gap, 8px);
+  column-gap: var(--cat2bug-toolbar-item-gap, 10px);
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
@@ -813,7 +813,7 @@ export default {
   display: inline-flex;
   flex-direction: row;
   flex-shrink: 0;
-  gap: 10px;
+  gap: var(--cat2bug-toolbar-item-gap, 10px);
 }
 .plan-item-field-divider {
   margin: 8px 0px;

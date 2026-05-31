@@ -96,7 +96,19 @@
               </el-dropdown>
             </el-form-item>
             <el-form-item prop="defectState">
-              <el-select v-model="queryParams.params.defectStates" size="small" multiple collapse-tags clearable :placeholder="$t('defect.select-state')" @change="handleQuery()">
+              <el-select
+                v-model="queryParams.params.defectStates"
+                class="defect-state-select"
+                size="small"
+                multiple
+                collapse-tags
+                clearable
+                :placeholder="$t('defect.select-state')"
+                @change="handleQuery()"
+              >
+                <template v-slot:prefix>
+                  <i class="select-header-icon el-icon-finished"></i>
+                </template>
                 <el-option
                   v-for="state in config.states"
                   :key="state.key"
@@ -803,8 +815,8 @@ export default {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    row-gap: 8px;
-    column-gap: 8px;
+    row-gap: var(--cat2bug-toolbar-row-gap, 8px);
+    column-gap: var(--cat2bug-toolbar-item-gap, 10px);
     /* 相对 .defect-tools-search 盒宽铺满；父级勿 width:100% 占满整行 flex */
     width: 100%;
     max-width: 100%;
@@ -910,7 +922,8 @@ export default {
       max-width: 100%;
       box-sizing: border-box;
     }
-    ::v-deep .el-form--inline .el-form-item:nth-child(3) .el-select {
+    ::v-deep .el-form--inline .el-form-item:nth-child(3) .el-select,
+  ::v-deep .el-form--inline .el-form-item:nth-child(3) .el-select.defect-state-select {
       display: block;
     }
     ::v-deep .el-form--inline .el-form-item:nth-child(3) .el-select,
@@ -935,6 +948,11 @@ export default {
       width: 100% !important;
       box-sizing: border-box;
     }
+  }
+  .select-header-icon {
+    margin-left: 5px;
+    color: var(--text-color-placeholder);
+    font-size: 14px;
   }
 }
 .row {
@@ -1147,8 +1165,8 @@ export default {
   align-content: flex-start;
   /* space-between：同行时左右拉开；右侧单独换行时该行仅一项，会靠主轴起点（左） */
   justify-content: space-between;
-  column-gap: 12px;
-  row-gap: 8px;
+  column-gap: var(--cat2bug-toolbar-section-gap, 10px);
+  row-gap: var(--cat2bug-toolbar-row-gap, 8px);
   margin-top: var(--defect-toolbar-v-gap, 8px);
   margin-bottom: var(--defect-toolbar-v-gap, 8px);
   padding-top: 0;

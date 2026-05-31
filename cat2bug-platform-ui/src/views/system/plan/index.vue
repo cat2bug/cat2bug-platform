@@ -39,7 +39,7 @@
           >
             <el-checkbox v-for="c in planColumnPickerOptions" :key="c.key" :label="c.key">{{ $t(c.key) }}</el-checkbox>
           </el-checkbox-group>
-          <el-button style="padding: 9px;" plain slot="reference" icon="el-icon-s-fold" size="mini"></el-button>
+          <el-button style="padding: 9px;" plain slot="reference" icon="el-icon-s-fold" size="small"></el-button>
         </el-popover>
         <el-button
           type="primary"
@@ -494,8 +494,8 @@ export default {
   align-content: flex-start;
   /* 同行时左右拉开；右侧单独换行时该行仅一项，会靠左 */
   justify-content: flex-start;
-  column-gap: 12px;
-  row-gap: 8px;
+  column-gap: var(--cat2bug-toolbar-section-gap, 10px);
+  row-gap: var(--cat2bug-toolbar-row-gap, 8px);
   margin-top: var(--case-toolbar-v-gap, 8px);
   margin-bottom: var(--case-toolbar-v-gap, 8px);
   .el-form-item {
@@ -514,8 +514,8 @@ export default {
   /* 默认先不换行，优先触发右侧换到下一行 */
   flex-wrap: nowrap;
   align-items: center;
-  row-gap: 8px;
-  column-gap: 8px;
+  row-gap: var(--cat2bug-toolbar-row-gap, 8px);
+  column-gap: var(--cat2bug-toolbar-item-gap, 10px);
   box-sizing: border-box;
   ::v-deep .el-form-item {
     margin-right: 0;
@@ -529,7 +529,7 @@ export default {
   flex-wrap: wrap;
   justify-content: flex-start;
   align-items: center;
-  gap: 8px;
+  gap: var(--cat2bug-toolbar-item-gap, 10px);
   margin-left: auto;
 }
 
@@ -579,7 +579,7 @@ export default {
     display: flex;
     flex-wrap: nowrap;
     align-items: center;
-    gap: 8px;
+    gap: var(--cat2bug-toolbar-item-gap, 10px);
   }
   .plan-tools-right > *:first-child {
     flex-shrink: 0;

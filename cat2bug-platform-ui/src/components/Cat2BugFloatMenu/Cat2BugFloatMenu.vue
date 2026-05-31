@@ -217,11 +217,11 @@ export default {
     width: 40px;
     font-size: 0.8rem;
     border-radius: 3px;
-    background-color: #65686c22;
+    background-color: var(--float-menu-drag-bg, rgba(101, 104, 108, 0.13));
     cursor: move;
   }
   .cat2bug-float-menu-draggable-el:hover {
-    background-color: #65686c44;
+    background-color: var(--float-menu-drag-hover-bg, rgba(101, 104, 108, 0.27));
   }
   .tools {
     position: relative;
@@ -234,9 +234,9 @@ export default {
     border-radius: 50%;
     width: 40px;
     height: 40px;
-    background: #fff;
-    border: 1px solid #dcdfe6;
-    color: #606266;
+    background: var(--float-menu-btn-bg, #fff);
+    border: 1px solid var(--float-menu-btn-border, #dcdfe6);
+    color: var(--float-menu-btn-color, #606266);
     cursor: pointer;
   }
   .tooltipText {
@@ -275,9 +275,9 @@ export default {
     visibility: visible;
   }
   .button:hover {
-    color: #409eff;
-    border-color: #c6e2ff;
-    background-color: #ecf5ff;
+    color: var(--float-menu-btn-hover-color, #409eff);
+    border-color: var(--float-menu-btn-hover-border, #c6e2ff);
+    background-color: var(--float-menu-btn-hover-bg, #ecf5ff);
     scale: 110%;
   }
   .button[plain='true'] {

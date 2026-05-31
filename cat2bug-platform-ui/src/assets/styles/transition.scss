@@ -15,7 +15,7 @@
 .fade-transform--move,
 .fade-transform-leave-active,
 .fade-transform-enter-active {
-  transition: all .5s;
+  transition: opacity 0.28s ease, transform 0.28s ease;
 }
 
 .fade-transform-enter {
@@ -26,6 +26,20 @@
 .fade-transform-leave-to {
   opacity: 0;
   transform: translateX(30px);
+}
+
+/* 离场页脱离文档流，避免 out-in 过渡期间与 min-height 叠加撑出 main-container 滚动条 */
+.fade-transform-leave-active {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 0;
+}
+
+.fade-transform-enter-active {
+  position: relative;
+  z-index: 1;
 }
 
 /* breadcrumb transition */

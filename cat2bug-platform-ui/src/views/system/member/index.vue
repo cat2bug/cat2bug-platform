@@ -33,7 +33,7 @@
             type="primary"
             plain
             icon="el-icon-plus"
-            size="mini"
+            size="small"
             @click="handleAdd"
             v-hasPermi="['system:member:add']"
           >{{ $t('member.add') }}</el-button>

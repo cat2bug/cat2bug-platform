@@ -89,9 +89,6 @@ export default {
   position: absolute;
   top: 0px;
   bottom: 0px;
-  .el-page-header {
-    margin-bottom: 10px;
-  }
 }
 .row {
   display: inline-flex;

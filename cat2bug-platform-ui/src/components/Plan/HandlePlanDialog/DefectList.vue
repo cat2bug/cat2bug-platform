@@ -17,7 +17,19 @@
             />
           </el-form-item>
           <el-form-item prop="defectState">
-            <el-select size="small" v-model="queryParams.params.defectStates" multiple collapse-tags clearable :placeholder="$t('defect.select-state')" @change="search()">
+            <el-select
+              class="defect-state-select"
+              size="small"
+              v-model="queryParams.params.defectStates"
+              multiple
+              collapse-tags
+              clearable
+              :placeholder="$t('defect.select-state')"
+              @change="search()"
+            >
+              <template v-slot:prefix>
+                <i class="select-header-icon el-icon-finished"></i>
+              </template>
               <el-option
                 v-for="state in defectStates"
                 :key="state.key"
@@ -61,7 +73,7 @@
             plain
             slot="reference"
             icon="el-icon-s-fold"
-            size="mini"
+            size="small"
           ></el-button>
         </el-popover>
       </div>
@@ -780,8 +792,8 @@ export default {
 }
 .plan-item-query.defect-table-tools.defect-table-tools-bar {
   flex-wrap: wrap;
-  row-gap: 8px;
-  column-gap: 12px;
+  row-gap: var(--cat2bug-toolbar-row-gap, 8px);
+  column-gap: var(--cat2bug-toolbar-section-gap, 10px);
   align-content: flex-start;
   align-items: center;
 }
@@ -804,8 +816,8 @@ export default {
   display: flex !important;
   flex-wrap: wrap;
   align-items: center;
-  row-gap: 8px;
-  column-gap: 8px;
+  row-gap: var(--cat2bug-toolbar-row-gap, 8px);
+  column-gap: var(--cat2bug-toolbar-item-gap, 10px);
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
@@ -852,7 +864,7 @@ export default {
   display: inline-flex;
   flex-direction: row;
   flex-shrink: 0;
-  gap: 10px;
+  gap: var(--cat2bug-toolbar-item-gap, 10px);
 }
 .plan-item-field-divider {
   margin: 8px 0px;

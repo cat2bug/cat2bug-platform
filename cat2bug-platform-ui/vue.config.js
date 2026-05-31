@@ -2,6 +2,7 @@
 const path = require('path')
 const https = require('https');
 const fs = require('fs');
+const express = require('express')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 
 function resolve(dir) {
@@ -15,6 +16,9 @@ const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPl
 const name = process.env.VUE_APP_TITLE || '猫陪我改BUG' // 网页标题
 
 const port = process.env.port || process.env.npm_config_port || 2222 // 端口
+
+/** 系统文档 Markdown 源目录（与 CopyWebpackPlugin 生产拷贝源一致） */
+const docsStaticDir = path.resolve(__dirname, '../readme/production')
 
 // vue.config.js 配置说明
 //官方vue.config.js 参考文档 https://cli.vuejs.org/zh/config/#css-loaderoptions
@@ -50,6 +54,10 @@ module.exports = {
     transportMode: {
       client: 'ws',
       server: 'ws',
+    },
+    // 开发环境提供 /docs/**，避免 history 回退到 index.html 导致系统文档页白屏
+    before(app) {
+      app.use('/docs', express.static(docsStaticDir))
     },
     // https: {
     //   cert: fs.readFileSync(path.join(__dirname, 'ssl/default.crt')),
@@ -122,7 +130,7 @@ module.exports = {
         }),
         new CopyWebpackPlugin([
           {
-            from: path.resolve(__dirname, '../readme/production'),
+            from: docsStaticDir,
             to: path.resolve(__dirname, process.env.NODE_ENV === "embedded" ? '../cat2bug-platform-admin/src/main/resources/static/docs' : 'dist/docs'),
             toType: 'dir'
           }

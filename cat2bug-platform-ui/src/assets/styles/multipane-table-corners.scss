@@ -1,6 +1,6 @@
 /**
  * 交付物树 + 表格 multipane：树展开时右侧表格左缘与分隔条对齐，左上/左下为直角；
- * 收起树（.custom-resizer--tree-hidden）时由 ruoyi.scss 恢复 5px 圆角。
+ * 收起树（.custom-resizer--tree-hidden）时由 ruoyi.scss 恢复 4px 圆角。
  */
 .custom-resizer:not(.custom-resizer--tree-hidden) {
   .el-table {

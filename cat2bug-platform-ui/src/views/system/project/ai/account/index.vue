@@ -35,7 +35,7 @@
             type="primary"
             plain
             icon="el-icon-plus"
-            size="mini"
+            size="small"
             @click="handleAdd"
             v-hasPermi="['ai:account:add']"
           >{{ $t('project.ai.new-account') }}</el-button>

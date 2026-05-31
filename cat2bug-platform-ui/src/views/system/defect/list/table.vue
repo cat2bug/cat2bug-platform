@@ -23,7 +23,7 @@
             plain
             slot="reference"
             icon="el-icon-s-fold"
-            size="mini"
+            size="small"
           ></el-button>
         </el-popover>
         <slot name="right-tools"></slot>
@@ -688,7 +688,7 @@ export default {
 ::v-deep .defect-sidebar-expand-header-cell {
   padding: 0 !important;
   text-align: center;
-  border-top-left-radius: 5px;
+  border-top-left-radius: 4px;
 }
 .defect-table-root ::v-deep .cat2-bug-table-wrap {
   background: transparent;
@@ -721,8 +721,8 @@ export default {
   flex-wrap: wrap;
   align-items: center;
   align-content: flex-start;
-  row-gap: 8px;
-  column-gap: 12px;
+  row-gap: var(--cat2bug-toolbar-row-gap, 8px);
+  column-gap: var(--cat2bug-toolbar-section-gap, 10px);
   > * {
     display: block;
     justify-content: flex-start;
@@ -768,7 +768,7 @@ export default {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 10px;
+  gap: var(--cat2bug-toolbar-item-gap, 10px);
   > * {
     margin: 0px;
   }

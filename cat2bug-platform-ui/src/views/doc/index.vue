@@ -1,6 +1,6 @@
 <template>
   <div class="doc-viewer-wrapper">
-    <div class="doc-header">
+    <div class="doc-header project-add-page-header">
       <el-page-header @back="handleBack">
         <template slot="content">
           <span v-html="formattedTitle"></span>
@@ -1466,13 +1466,14 @@ export default {
   flex-direction: column;
   width: 100%;
   height: calc(100vh - 50px);
-  background-color: #fff;
+  background-color: var(--table-bg, #fff);
 
   .doc-header {
-    padding: 10px 24px 0 24px;
-    >.el-page-header {
-      margin: 0;
-      padding-bottom: 10px;
+    padding: 20px 24px 0;
+    background-color: var(--table-bg, #fff);
+
+    > .el-page-header {
+      background-color: transparent;
     }
   }
 
@@ -1481,7 +1482,7 @@ export default {
     flex: 1;
     width: 100%;
     overflow: hidden;
-    background-color: #fff;
+    background-color: var(--table-bg, #fff);
 
     .doc-sidebar {
       width: 280px;
@@ -1500,7 +1501,21 @@ export default {
       .doc-tree {
         flex: 1;
         overflow-y: auto;
-        padding: 16px 8px 16px 0;
+        padding: 16px 8px 16px 4px;
+
+        ::v-deep .el-tree-node__content {
+          border-radius: 3px;
+          margin-right: 4px;
+        }
+
+        ::v-deep .el-tree-node.is-current > .el-tree-node__content {
+          background-color: #ecf5ff;
+          color: #409eff;
+        }
+
+        ::v-deep .el-tree-node__content:hover {
+          border-radius: 3px;
+        }
 
         .custom-tree-node {
           display: flex;
@@ -1534,7 +1549,7 @@ export default {
       align-items: flex-start;
       overflow-x: hidden;
       overflow-y: auto;
-      background-color: #fff;
+      background-color: var(--table-bg, #fff);
     }
 
     .doc-content {
@@ -1542,7 +1557,7 @@ export default {
       min-width: 0;
       padding: 0 48px 24px;
       position: relative;
-      background-color: #fff;
+      background-color: var(--table-bg, #fff);
 
       .markdown-body {
         max-width: 1000px;

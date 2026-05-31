@@ -333,7 +333,7 @@ export default {
   font-weight: 500;
   color: var(--table-header-color);
   box-sizing: border-box;
-  /* 外层左右 5px：父级 AddPlanDialog / HandlePlanDialog .custom-resizer；树/优先级列表在 Tab 内容区内再留 5px，避免贴边 */
+  /* 树/优先级列表在 Tab 内容区内留 5px，避免贴边 */
   ::v-deep .el-tabs {
     display: flex;
     flex-direction: column;

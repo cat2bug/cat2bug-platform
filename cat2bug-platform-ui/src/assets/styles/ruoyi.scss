@@ -76,7 +76,7 @@
 }
 
 .el-table {
-	border-radius: 5px !important;
+	border-radius: 4px !important;
 	overflow: hidden !important;
 	// 强制 WebKit 浏览器对 border-radius 进行 overflow: hidden 裁剪，防止表头出现白色尖角
 	transform: translate3d(0, 0, 0) !important;
@@ -111,15 +111,15 @@
 	/* 固定列/滚动条补丁层不参与主表头裁剪，单独补左上/右上圆角，避免 WebKit 圆角白尖 */
 	.el-table__header-wrapper thead tr:first-child > th:first-child,
 	.el-table__fixed-header-wrapper thead tr:first-child > th:first-child {
-		border-top-left-radius: 5px;
+		border-top-left-radius: 4px;
 	}
 	.el-table__header-wrapper thead tr:first-child > th:last-child,
 	.el-table__fixed-header-wrapper thead tr:first-child > th:last-child,
 	.el-table__fixed-right .el-table__fixed-header-wrapper thead tr:first-child > th:last-child {
-		border-top-right-radius: 5px;
+		border-top-right-radius: 4px;
 	}
 	.el-table__fixed-right-patch {
-		border-top-right-radius: 5px;
+		border-top-right-radius: 4px;
 	}
 	.el-table__body-wrapper {
 		.el-button [class*="el-icon-"] + span {
@@ -202,11 +202,12 @@
 }
 
 .list-group-item {
-	border-bottom: 1px solid #e7eaec;
-	border-top: 1px solid #e7eaec;
-	margin-bottom: -1px;
-	padding: 11px 0px;
-	font-size: 13px;
+  border-bottom: 1px solid var(--border-color-light, #e7eaec);
+  border-top: 1px solid var(--border-color-light, #e7eaec);
+  margin-bottom: -1px;
+  padding: 11px 0px;
+  font-size: 13px;
+  color: var(--text-color-regular, inherit);
 }
 
 .pull-right {

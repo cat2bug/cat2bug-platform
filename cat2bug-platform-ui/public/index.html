@@ -7,8 +7,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <link rel="icon" href="<%= BASE_URL %>favicon.ico">
     <title><%= webpackConfig.name %></title>
+    <script>
+      (function () {
+        try {
+          var m = localStorage.getItem('theme-mode');
+          if (m !== 'dark' && m !== 'light') {
+            m = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          }
+          var root = document.documentElement;
+          if (m === 'dark') {
+            root.classList.add('dark');
+            root.style.colorScheme = 'dark';
+          } else {
+            root.style.colorScheme = 'light';
+          }
+        } catch (e) {}
+      })();
+    </script>
     <!--[if lt IE 11]><script>window.location.href='/html/ie.html';</script><![endif]-->
 	  <style>
+    html {
+      background-color: #fafbfc;
+      color-scheme: light;
+    }
+    html.dark {
+      background-color: #121214;
+      color-scheme: dark;
+    }
     html,
     body,
     #app {

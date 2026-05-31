@@ -356,10 +356,13 @@ export default {
     flex-direction: row;
     max-width: 300px;
     width: 100%;
-    height: auto;
-    line-height: 0;
+    box-sizing: border-box;
+    line-height: 1;
     align-items: center;
+    padding-top: 0;
+    padding-bottom: 0;
     padding-left: 5px;
+    vertical-align: middle;
     .selectProjectMemberInput_content {
       display: inline-flex;
       flex-direction: row;
@@ -367,7 +370,8 @@ export default {
       flex-wrap: wrap;
       flex-grow: 1;
       overflow: hidden;
-      min-height: 30px;
+      min-height: 0;
+      height: 100%;
       padding: 0px 10px 0px 0px;
       .select-project-member-tag {
         margin: 0px 3px;
@@ -379,14 +383,18 @@ export default {
       .el-input {
         flex-grow: 1;
         width: 0.1%;
-        height: 22px;
+        min-height: 0;
+        height: 100%;
         .el-input__inner {
           padding-left: 10px;
           padding-right: 0px;
+          padding-top: 0;
+          padding-bottom: 0;
           border-width: 0px;
-          height: 22px;
-          line-height: 22px;
-          display: inline;
+          height: 100%;
+          min-height: 0;
+          line-height: 1;
+          display: block;
         }
       }
     }
@@ -401,20 +409,20 @@ export default {
     }
   }
   ::v-deep .select-project-member-input-medium {
-    .selectProjectMemberInput_content {
-      min-height: 34px;
-    }
+    height: 36px;
+    min-height: 36px;
+    max-height: 36px;
   }
 
   ::v-deep .select-project-member-input-small {
-    .selectProjectMemberInput_content {
-      min-height: 30px;
-    }
+    height: 32px;
+    min-height: 32px;
+    max-height: 32px;
   }
   ::v-deep .select-project-member-input-mini {
-    .selectProjectMemberInput_content {
-      min-height: 26px;
-    }
+    height: 28px;
+    min-height: 28px;
+    max-height: 28px;
   }
 
   .select-project-member-input:focus {
@@ -465,6 +473,9 @@ export default {
     float: right;
   }
   ::v-deep .el-popover__reference-wrapper {
-    display: flex;
+    display: inline-flex;
+    align-items: center;
+    vertical-align: middle;
+    line-height: 0;
   }
 </style>

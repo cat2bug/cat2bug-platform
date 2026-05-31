@@ -172,8 +172,16 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.defect-state-chart:hover {
-  cursor: pointer;
+.defect-state-chart {
+  > h1 {
+    margin: 5px 0 0;
+    font-size: 24px;
+    color: var(--text-color-primary);
+  }
+
+  &:hover {
+    cursor: pointer;
+  }
 }
 .planSelect {
   width: 100%;
@@ -190,29 +198,40 @@ export default {
       font-size: 1rem;
     }
   }
+  ::v-deep .el-input,
+  ::v-deep .el-input__inner {
+    background-color: transparent !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+  }
   ::v-deep input {
     width: 100%;
     height: 50px;
     line-height: 48px;
     border: 0px solid #DCDFE6;
-    color: #0000;
+    color: transparent !important;
+    -webkit-text-fill-color: transparent !important;
+    background-color: transparent !important;
   }
   ::v-deep .el-select__caret {
     height: 38px;
+    color: var(--text-color-secondary);
   }
   ::v-deep .el-input__prefix {
     width: 100%;
     display: inline-flex;
     flex-direction: row;
     justify-content: flex-start;
-    >* {
-      width: 100%;
-      color: rgb(48, 49, 51);
-      text-align: start;
-    }
-    h1 {
-      margin: 5px 0px;
-      font-size: 24px;
+    pointer-events: none;
+    .prefix {
+      h1 {
+        margin: 5px 0;
+        font-size: 24px;
+        color: var(--text-color-primary);
+      }
+      span {
+        color: var(--text-color-secondary);
+      }
     }
   }
 }

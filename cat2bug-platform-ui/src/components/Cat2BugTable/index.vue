@@ -960,11 +960,13 @@ export default {
 
   ::v-deep .el-table__body-wrapper tbody tr > td.el-table__cell {
     background-color: var(--cat2bug-table-row-bg, var(--table-bg)) !important;
+    border-bottom: 1px solid var(--border-color-light) !important;
   }
 
   ::v-deep .el-table__fixed tbody tr > td.el-table__cell,
   ::v-deep .el-table__fixed-right tbody tr > td.el-table__cell {
     background-color: var(--cat2bug-table-fixed-row-bg, var(--cat2bug-table-row-bg, var(--table-bg))) !important;
+    border-bottom: 1px solid var(--border-color-light) !important;
   }
 
   ::v-deep .el-table__body-wrapper tbody tr:hover > td.el-table__cell,
@@ -1067,16 +1069,8 @@ export default {
 }
 
 ::v-deep .cat2bug-operate-tools {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px;
-  row-gap: 4px;
-  width: 100%;
-  max-width: 100%;
-  >* {
-    margin: 0;
-  }
+  column-gap: var(--cat2bug-operate-tools-gap, 10px);
+  row-gap: var(--cat2bug-operate-tools-row-gap, 0);
 }
 </style>
 
@@ -1095,14 +1089,15 @@ export default {
   border-bottom: 1px solid var(--border-color-light) !important;
 }
 
-.cat2-bug-table-wrap .el-table__body-wrapper tbody tr,
 .cat2-bug-table-wrap .el-table__body-wrapper tbody tr > td.el-table__cell {
   background-color: var(--cat2bug-table-row-bg, var(--table-bg)) !important;
+  border-bottom: 1px solid var(--border-color-light) !important;
 }
 
 .cat2-bug-table-wrap .el-table__fixed tbody tr > td.el-table__cell,
 .cat2-bug-table-wrap .el-table__fixed-right tbody tr > td.el-table__cell {
   background-color: var(--cat2bug-table-fixed-row-bg, var(--cat2bug-table-row-bg, var(--table-bg))) !important;
+  border-bottom: 1px solid var(--border-color-light) !important;
 }
 
 .cat2-bug-table-wrap .el-table__body-wrapper tbody tr:hover > td.el-table__cell,

@@ -12,7 +12,7 @@
           </div>
           <div>
             <div class="text-center">
-              <userAvatar />
+              <userAvatar :profile-user="user" />
             </div>
             <ul class="list-group list-group-striped">
               <li class="list-group-item">

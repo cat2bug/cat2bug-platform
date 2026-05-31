@@ -118,11 +118,12 @@ export default {
     padding: 3px 5px;
   }
 }
-.action-row:nth-child(even):hover {
-  background-color: #EBEEF5;
+.action-row:nth-child(even):hover,
+.action-row:hover {
+  background-color: var(--table-row-hover-bg);
 }
 .action-row:nth-child(even) {
-  background-color: #F2F6FC;
+  background-color: var(--action-row-stripe-bg);
 }
 .action-row {
   width: 100%;
@@ -132,7 +133,7 @@ export default {
   gap: 10px;
   padding: 5px 15px;
   border-radius: 5px;
-  border-bottom: 1px solid #EBEEF5;
+  border-bottom: 1px solid var(--border-color-light);
   > span {
     font-size: 0.8rem;
   }

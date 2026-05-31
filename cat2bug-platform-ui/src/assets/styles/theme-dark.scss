@@ -37,6 +37,28 @@
   --cat2bug-table-row-bg: var(--table-bg);
   --cat2bug-table-fixed-row-bg: var(--table-bg);
 
+  --action-row-stripe-bg: #f2f6fc;
+
+  /* 列表页工具栏：查询项、切换组、右侧操作按钮横向间距 */
+  --cat2bug-toolbar-item-gap: 10px;
+  --cat2bug-toolbar-row-gap: 8px;
+  --cat2bug-toolbar-section-gap: 10px;
+  --cat2bug-toolbar-control-height: 32px;
+  --cat2bug-toolbar-control-line-height: 30px;
+
+  /* 表格操作列：行内按钮/链接横向间距 */
+  --cat2bug-operate-tools-gap: 10px;
+  --cat2bug-operate-tools-row-gap: 0;
+
+  --float-menu-btn-bg: #ffffff;
+  --float-menu-btn-border: #dcdfe6;
+  --float-menu-btn-color: #606266;
+  --float-menu-btn-hover-bg: #ecf5ff;
+  --float-menu-btn-hover-border: #c6e2ff;
+  --float-menu-btn-hover-color: #409eff;
+  --float-menu-drag-bg: rgba(101, 104, 108, 0.13);
+  --float-menu-drag-hover-bg: rgba(101, 104, 108, 0.27);
+
   --sidebar-expand-trigger-hover-bg: #ecf5ff;
 
   --sidebar-bg: #304156;
@@ -86,6 +108,8 @@ html.dark {
   --cat2bug-table-row-bg: var(--table-bg);
   --cat2bug-table-fixed-row-bg: var(--bg-color-block);
 
+  --action-row-stripe-bg: rgba(255, 255, 255, 0.05);
+
   --sidebar-expand-trigger-hover-bg: rgba(64, 158, 255, 0.12);
 
   --sidebar-bg: #1e1e20;
@@ -96,13 +120,23 @@ html.dark {
   --navbar-text: #e5eaf3;
   --tags-view-bg: #1e1e20;
   --tags-view-border: #363637;
+
+  --float-menu-btn-bg: transparent;
+  --float-menu-btn-border: var(--border-color-light);
+  --float-menu-btn-color: var(--sidebar-text);
+  --float-menu-btn-hover-bg: var(--sidebar-expand-trigger-hover-bg);
+  --float-menu-btn-hover-border: rgba(64, 158, 255, 0.35);
+  --float-menu-btn-hover-color: #409eff;
+  --float-menu-drag-bg: transparent;
+  --float-menu-drag-hover-bg: var(--sidebar-expand-trigger-hover-bg);
 }
 
-// Smooth transitions
-body, html, .app-main, .main-container, .navbar, .sidebar-container, .tags-view-container,
-.el-card, .el-dialog, .el-drawer, .el-table, .el-collapse, .el-collapse-item__header, .el-collapse-item__content,
-.el-input__inner, .el-textarea__inner, .el-dropdown-menu, .el-dropdown-menu__item, .el-menu, .el-menu-item, .el-submenu__title {
-  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+/* 主题切换瞬间禁用过渡，避免亮/暗色逐块渐变闪烁 */
+html.theme-switching,
+html.theme-switching *,
+html.theme-switching *::before,
+html.theme-switching *::after {
+  transition: none !important;
 }
 
 // Global elements using CSS variables
@@ -232,6 +266,21 @@ html.dark {
     .el-card__header {
       border-bottom: 1px solid var(--border-color-light) !important;
     }
+
+    .el-card__body {
+      .el-link.el-link--default {
+        color: var(--text-color-regular) !important;
+
+        &:hover {
+          color: #79bbff !important;
+        }
+      }
+
+      .router-link-active .el-link.el-link--default,
+      .router-link-exact-active .el-link.el-link--default {
+        color: #409eff !important;
+      }
+    }
   }
 
   .el-dialog {
@@ -265,12 +314,12 @@ html.dark {
     }
   }
 
-  // 列表表格与浅色主题一致：无外框、无单元格分割线（显式 border 属性的表格除外）
+  // 列表表格：无外框，保留行间分割线（与浅色主题 el-table 默认一致）
   .el-table:not(.el-table--border) {
     background-color: var(--table-bg) !important;
     color: var(--text-color-regular) !important;
     border: none !important;
-    border-radius: 5px !important;
+    border-radius: 4px !important;
     overflow: hidden !important;
     // 强制 WebKit 浏览器对 border-radius 进行 overflow: hidden 裁剪，防止表头出现白色尖角
     transform: translate3d(0, 0, 0) !important;
@@ -309,17 +358,17 @@ html.dark {
     /* 固定列/补丁层单独补圆角，避免表头白尖 */
     .el-table__header-wrapper thead tr:first-child > th:first-child,
     .el-table__fixed-header-wrapper thead tr:first-child > th:first-child {
-      border-top-left-radius: 5px !important;
+      border-top-left-radius: 4px !important;
     }
 
     .el-table__header-wrapper thead tr:first-child > th:last-child,
     .el-table__fixed-header-wrapper thead tr:first-child > th:last-child,
     .el-table__fixed-right .el-table__fixed-header-wrapper thead tr:first-child > th:last-child {
-      border-top-right-radius: 5px !important;
+      border-top-right-radius: 4px !important;
     }
 
     .el-table__fixed-right-patch {
-      border-top-right-radius: 5px !important;
+      border-top-right-radius: 4px !important;
     }
 
     th.el-table__cell {
@@ -333,7 +382,7 @@ html.dark {
     }
 
     td.el-table__cell {
-      border-bottom: none !important;
+      border-bottom: 1px solid var(--border-color-light) !important;
       background-color: var(--cat2bug-table-row-bg) !important;
     }
 
@@ -534,6 +583,25 @@ html.dark {
         color: #409eff !important;
       }
     }
+
+    .el-dropdown-menu__item--divided {
+      border-top-color: var(--border-color-light) !important;
+
+      &::before {
+        background-color: var(--dropdown-bg) !important;
+      }
+    }
+  }
+
+  // 个人中心等 list-group 列表分隔线
+  .list-group-item {
+    border-top-color: var(--border-color-light) !important;
+    border-bottom-color: var(--border-color-light) !important;
+    color: var(--text-color-regular) !important;
+
+    .pull-right {
+      color: var(--text-color-secondary) !important;
+    }
   }
 
   // Other common Element UI components for dark mode completeness
@@ -544,6 +612,8 @@ html.dark {
   .el-select-dropdown {
     background-color: var(--dropdown-bg) !important;
     border-color: var(--border-color-light) !important;
+    border-radius: 4px !important;
+    overflow: hidden !important;
 
     // 适配下拉菜单的小三角 (popper arrow)
     &[x-placement^="bottom"] {
@@ -563,6 +633,14 @@ html.dark {
       }
     }
 
+    .el-select-group__title {
+      color: var(--text-color-secondary) !important;
+    }
+
+    .el-select-group__wrap:not(:last-of-type)::after {
+      background-color: var(--border-color-light) !important;
+    }
+
     .el-select-dropdown__item {
       color: var(--text-color-regular) !important;
 
@@ -573,6 +651,23 @@ html.dark {
       &.selected {
         color: #409eff !important;
         font-weight: bold;
+      }
+
+      &.is-disabled {
+        color: var(--text-color-secondary) !important;
+      }
+    }
+
+    // 多选下拉：覆盖 Element UI 默认 #F5F7FA 选中白底
+    &.is-multiple {
+      .el-select-dropdown__item {
+        &.selected {
+          background-color: rgba(64, 158, 255, 0.12) !important;
+
+          &.hover, &:hover {
+            background-color: var(--table-row-hover-bg) !important;
+          }
+        }
       }
     }
   }
@@ -696,6 +791,49 @@ html.dark {
         background-color: #f56c6c !important;
       }
     }
+  }
+
+  // 字典状态标签 DictTag（测试计划状态等）暗黑模式
+  .dict-status-tag.el-tag {
+    border-width: 1px;
+    border-style: solid;
+  }
+
+  .dict-status-tag.el-tag--info,
+  .dict-status-tag.dict-status-unexecuted {
+    background-color: rgba(144, 147, 153, 0.14) !important;
+    border-color: rgba(144, 147, 153, 0.35) !important;
+    color: #b1b3b8 !important;
+  }
+
+  .dict-status-tag.el-tag--danger,
+  .dict-status-tag.dict-status-not_pass {
+    background-color: rgba(245, 108, 108, 0.14) !important;
+    border-color: rgba(245, 108, 108, 0.4) !important;
+    color: #f89898 !important;
+  }
+
+  .dict-status-tag.el-tag--success,
+  .dict-status-tag.dict-status-pass {
+    background-color: rgba(103, 194, 58, 0.14) !important;
+    border-color: rgba(103, 194, 58, 0.4) !important;
+    color: #85ce61 !important;
+  }
+
+  .dict-status-tag.el-tag--warning {
+    background-color: rgba(230, 162, 60, 0.14) !important;
+    border-color: rgba(230, 162, 60, 0.4) !important;
+    color: #eebe77 !important;
+  }
+
+  .dict-status-tag.el-tag:not(.el-tag--info):not(.el-tag--danger):not(.el-tag--success):not(.el-tag--warning) {
+    background-color: rgba(64, 158, 255, 0.14) !important;
+    border-color: rgba(64, 158, 255, 0.4) !important;
+    color: #79bbff !important;
+  }
+
+  .dict-status-text.dict-status-pass {
+    color: #85ce61 !important;
   }
 
   .el-pagination {
@@ -915,6 +1053,78 @@ html.dark {
 
       .el-menu {
         background-color: var(--sidebar-bg) !important;
+      }
+    }
+  }
+
+  // 2.1 悬浮快捷菜单：plain 类型默认透明底（覆盖组件内浅色实心样式）
+  .cat2bug-float-menu {
+    .button[plain='true'][type='primary'],
+    .button[plain='true'][type='danger'],
+    .button[plain='true'][type='warning'],
+    .button[plain='true'][type='success'],
+    .button[plain='true'][type='info'] {
+      background-color: transparent !important;
+      border-color: var(--float-menu-btn-border) !important;
+    }
+
+    .button[plain='true'][type='primary'] {
+      color: #409eff !important;
+    }
+
+    .button[plain='true'][type='danger'] {
+      color: #f89898 !important;
+    }
+
+    .button[plain='true'][type='warning'] {
+      color: #eebe77 !important;
+    }
+
+    .button[plain='true'][type='success'] {
+      color: #85ce61 !important;
+    }
+
+    .button[plain='true'][type='info'] {
+      color: var(--text-color-secondary) !important;
+    }
+
+    .button[plain='true'][type='primary']:hover {
+      background-color: var(--float-menu-btn-hover-bg) !important;
+      border-color: var(--float-menu-btn-hover-border) !important;
+      color: var(--float-menu-btn-hover-color) !important;
+    }
+
+    .button[plain='true'][type='danger']:hover {
+      background-color: rgba(245, 108, 108, 0.14) !important;
+      border-color: rgba(245, 108, 108, 0.4) !important;
+      color: #f89898 !important;
+    }
+
+    .button[plain='true'][type='warning']:hover {
+      background-color: rgba(230, 162, 60, 0.14) !important;
+      border-color: rgba(230, 162, 60, 0.4) !important;
+      color: #eebe77 !important;
+    }
+
+    .button[plain='true'][type='success']:hover {
+      background-color: rgba(103, 194, 58, 0.14) !important;
+      border-color: rgba(103, 194, 58, 0.4) !important;
+      color: #85ce61 !important;
+    }
+
+    .button[plain='true'][type='info']:hover {
+      background-color: rgba(144, 147, 153, 0.14) !important;
+      border-color: rgba(144, 147, 153, 0.35) !important;
+      color: var(--text-color-regular) !important;
+    }
+
+    .button[type='danger'],
+    .button[type='warning'],
+    .button[type='success'],
+    .button[type='info'],
+    .button[type='primary'] {
+      &:not(:hover) {
+        background-color: transparent !important;
       }
     }
   }
@@ -1326,11 +1536,13 @@ html.dark {
 
     .el-table__body-wrapper tbody tr > td.el-table__cell {
       background-color: var(--cat2bug-table-row-bg) !important;
+      border-bottom: 1px solid var(--border-color-light) !important;
     }
 
     .el-table__fixed tbody tr > td.el-table__cell,
     .el-table__fixed-right tbody tr > td.el-table__cell {
       background-color: var(--cat2bug-table-fixed-row-bg) !important;
+      border-bottom: 1px solid var(--border-color-light) !important;
     }
 
     tbody tr {
@@ -1508,20 +1720,15 @@ html.dark {
   .action-row {
     border-bottom: 1px solid var(--border-color-light) !important;
 
-    &:nth-child(even) {
-      background-color: var(--bg-color-page) !important;
-    }
-
     &:nth-child(even):hover,
     &:hover {
       background-color: var(--table-row-hover-bg) !important;
     }
   }
 
-  // 报表/文档时间标签
-  .time {
+  // 报表/文档时间标签（页头 pill，不含缺陷日志 .time）
+  .project-add-page-header .time {
     background-color: var(--bg-color-block) !important;
-    border: 1px solid var(--border-color-light) !important;
     color: var(--text-color-regular) !important;
   }
 
@@ -1754,6 +1961,87 @@ html.dark {
         background-color: rgba(64, 158, 255, 0.12) !important;
         color: #409eff !important;
       }
+
+      // 描述区 AI 机器人组合条
+      .c2b-model-select-wrap--combo {
+        background-color: var(--bg-color-block) !important;
+
+        &:hover,
+        &:focus-within {
+          background-color: rgba(64, 158, 255, 0.12) !important;
+        }
+      }
+
+      .c2b-model-select__robot.el-button {
+        background-color: transparent !important;
+
+        &:hover,
+        &:focus {
+          background-color: transparent !important;
+          color: #409eff !important;
+        }
+      }
+    }
+  }
+
+  // el-tooltip 提示框（AI 机器人等）
+  .el-tooltip__popper.is-dark {
+    background: var(--bg-color-block) !important;
+    color: var(--text-color-primary) !important;
+    border: 1px solid var(--border-color-light) !important;
+
+    &[x-placement^="bottom"] .popper__arrow {
+      border-bottom-color: var(--border-color-light) !important;
+
+      &::after {
+        border-bottom-color: var(--bg-color-block) !important;
+      }
+    }
+
+    &[x-placement^="top"] .popper__arrow {
+      border-top-color: var(--border-color-light) !important;
+
+      &::after {
+        border-top-color: var(--bg-color-block) !important;
+      }
+    }
+
+    &[x-placement^="left"] .popper__arrow {
+      border-left-color: var(--border-color-light) !important;
+
+      &::after {
+        border-left-color: var(--bg-color-block) !important;
+      }
+    }
+
+    &[x-placement^="right"] .popper__arrow {
+      border-right-color: var(--border-color-light) !important;
+
+      &::after {
+        border-right-color: var(--bg-color-block) !important;
+      }
+    }
+  }
+
+  .el-tooltip__popper.is-light {
+    background: var(--dropdown-bg) !important;
+    color: var(--text-color-primary) !important;
+    border: 1px solid var(--border-color-light) !important;
+
+    &[x-placement^="bottom"] .popper__arrow {
+      border-bottom-color: var(--border-color-light) !important;
+
+      &::after {
+        border-bottom-color: var(--dropdown-bg) !important;
+      }
+    }
+
+    &[x-placement^="top"] .popper__arrow {
+      border-top-color: var(--border-color-light) !important;
+
+      &::after {
+        border-top-color: var(--dropdown-bg) !important;
+      }
     }
   }
 
@@ -1881,7 +2169,7 @@ html.dark {
     background-color: var(--bg-color-base) !important;
     color: var(--text-color-regular) !important;
     border: 1px solid var(--border-color-light) !important; // 整体外边框和table表的一样灰色
-    border-radius: 5px 5px 0 0 !important;
+    border-radius: 4px 4px 0 0 !important;
     overflow: hidden !important;
     transform: translate3d(0, 0, 0) !important;
 
@@ -1993,18 +2281,9 @@ html.dark {
       }
     }
 
-    // 底部工具栏/滚动条区域
+    // 底部横向滚动条：颜色/圆角由 excel.vue 与 Cat2BugTable 共用 --cat2bug-xbar-* token
     .footer {
-      background-color: var(--bg-color-block) !important;
-      border-top: 1px solid var(--border-color-light) !important;
-      
-      .left-block {
-        background-color: #0a0a0a !important; // 底部左侧占位块背景
-      }
-
-      .h-scroll {
-        background-color: #0a0a0a !important; // 更深的滚动条轨道背景
-      }
+      color: var(--text-color-secondary) !important;
     }
 
     // 适配 Excel 编辑器内置的下拉选择框（容器 ul.autocomplete-results + 选项 li.autocomplete-result）
@@ -2059,6 +2338,49 @@ html.dark {
   }
 
   // 22. 适配处理人/项目成员选择组件 (SelectProjectMember) 暗黑模式
+  .select-project-member-input.el-input__inner {
+    background-color: var(--input-bg) !important;
+    border-color: var(--input-border) !important;
+    color: var(--text-color-primary) !important;
+
+    .select-project-member-input__icon {
+      color: var(--text-color-placeholder) !important;
+    }
+
+    .el-input .el-input__inner {
+      background-color: transparent !important;
+      color: var(--text-color-primary) !important;
+    }
+
+    .select-project-member-tag.el-tag--info {
+      background-color: var(--bg-color-base) !important;
+      border-color: var(--border-color-light) !important;
+      color: var(--text-color-primary) !important;
+    }
+
+    .select-project-member-tag.el-tag--success {
+      background-color: rgba(103, 194, 58, 0.15) !important;
+      border-color: rgba(103, 194, 58, 0.35) !important;
+      color: #95d475 !important;
+    }
+
+    .select-project-member-tag.el-tag:not(.el-tag--info):not(.el-tag--success) {
+      background-color: rgba(64, 158, 255, 0.15) !important;
+      border-color: rgba(64, 158, 255, 0.35) !important;
+      color: #79bbff !important;
+    }
+
+    .select-project-member-tag .el-tag__close {
+      color: var(--text-color-secondary) !important;
+      background-color: transparent !important;
+
+      &:hover {
+        color: #ffffff !important;
+        background-color: #f56c6c !important;
+      }
+    }
+  }
+
   .el-popover.select-project-member-popover {
     background-color: var(--dropdown-bg) !important;
     border: 1px solid var(--border-color-light) !important;
@@ -2122,6 +2444,24 @@ html.dark {
       &[active='true'] {
         .member-nameplate-content p {
           color: #409eff !important;
+        }
+
+        .el-tag.el-tag--info {
+          background-color: var(--bg-color-base) !important;
+          border-color: var(--border-color-light) !important;
+          color: var(--text-color-primary) !important;
+        }
+
+        .el-tag.el-tag--success {
+          background-color: rgba(103, 194, 58, 0.15) !important;
+          border-color: rgba(103, 194, 58, 0.35) !important;
+          color: #95d475 !important;
+        }
+
+        .el-tag:not(.el-tag--info):not(.el-tag--success) {
+          background-color: rgba(64, 158, 255, 0.15) !important;
+          border-color: rgba(64, 158, 255, 0.35) !important;
+          color: #79bbff !important;
         }
       }
     }
@@ -2316,6 +2656,42 @@ html.dark {
         color: #409eff !important;
       }
     }
+
+    .case-card {
+      label {
+        color: var(--text-color-secondary) !important;
+      }
+
+      span:not(.step-state) {
+        color: var(--text-color-primary) !important;
+      }
+
+      .footer {
+        border-top-color: var(--border-color-light) !important;
+      }
+    }
+
+    .step-row span {
+      color: var(--text-color-primary) !important;
+    }
+
+    .step-row[state='case.pass-tested'] {
+      background-color: rgba(103, 194, 58, 0.12) !important;
+      border-color: rgba(103, 194, 58, 0.35) !important;
+
+      span {
+        color: #95d475 !important;
+      }
+    }
+
+    .step-row[state='case.failed-tested'] {
+      background-color: rgba(245, 108, 108, 0.12) !important;
+      border-color: rgba(245, 108, 108, 0.35) !important;
+
+      span {
+        color: #f89898 !important;
+      }
+    }
   }
 
   .cat2bug-select-case {
@@ -2344,7 +2720,44 @@ html.dark {
         background-color: var(--table-row-hover-bg) !important;
       }
     }
+
+    .case-card {
+      label {
+        color: var(--text-color-secondary) !important;
+      }
+
+      span:not(.step-state) {
+        color: var(--text-color-primary) !important;
+      }
+
+      .footer {
+        border-top-color: var(--border-color-light) !important;
+      }
+    }
+
+    .step-row span {
+      color: var(--text-color-primary) !important;
+    }
+
+    .step-row[state='case.pass-tested'] {
+      background-color: rgba(103, 194, 58, 0.12) !important;
+      border-color: rgba(103, 194, 58, 0.35) !important;
+
+      span {
+        color: #95d475 !important;
+      }
+    }
+
+    .step-row[state='case.failed-tested'] {
+      background-color: rgba(245, 108, 108, 0.12) !important;
+      border-color: rgba(245, 108, 108, 0.35) !important;
+
+      span {
+        color: #f89898 !important;
+      }
+    }
   }
+
 
   // 26. 适配通知详情抽屉 (ViewNotice) 暗黑模式
   .el-drawer {
@@ -2410,6 +2823,100 @@ html.dark {
         }
       }
     }
+
+    // 适配缺陷处理抽屉 (HandleDefect) 暗黑模式
+    .defect-edit-title-num,
+    .defect-edit-title-content {
+      color: var(--text-color-primary) !important;
+    }
+
+    .defect-edit-body {
+      .defect-edit-body-log-first {
+        border-color: var(--border-color-light) !important;
+      }
+
+      .defect-edit-body-base {
+        .el-col {
+          label {
+            color: var(--text-color-secondary) !important;
+          }
+
+          span {
+            color: var(--text-color-primary) !important;
+          }
+        }
+      }
+
+      h5 {
+        color: var(--text-color-primary) !important;
+      }
+
+      .markdown-body {
+        background-color: transparent !important;
+        color: var(--text-color-regular) !important;
+
+        h1, h2, h3, h4, h5, h6 {
+          color: var(--text-color-primary) !important;
+        }
+
+        p, li, span {
+          color: var(--text-color-regular) !important;
+        }
+      }
+
+      [class*="defect-log-"] {
+        color: var(--text-color-regular) !important;
+
+        .user {
+          color: var(--text-color-primary) !important;
+        }
+      }
+    }
+
+    // 缺陷日志/评论时间：纯文字，无边框
+    .list-defect-log-row .time,
+    .comment-view .time {
+      background-color: transparent !important;
+      border: none !important;
+      color: var(--text-color-secondary) !important;
+    }
+  }
+
+  // 缺陷更新日志 diff（scoped 内 .new 为 #303133，深色下不可读）
+  .defect-log-update {
+    .defect-log-update-change {
+      color: var(--text-color-regular) !important;
+
+      .field {
+        color: var(--text-color-secondary) !important;
+      }
+
+      .old,
+      .plain-old,
+      .media-side.media-old,
+      .type-enum-empty {
+        color: var(--text-color-secondary) !important;
+      }
+
+      .new,
+      .plain-new,
+      .media-side.media-new,
+      .media-new-main {
+        color: var(--text-color-primary) !important;
+      }
+
+      .media-new-delta {
+        color: var(--text-color-secondary) !important;
+      }
+
+      .arrow {
+        color: var(--text-color-placeholder) !important;
+      }
+    }
+
+    .defect-log-update-raw {
+      color: var(--text-color-regular) !important;
+    }
   }
 
   // 27. 适配统计模版页面 (StatisticTemplate) 暗黑模式
@@ -2427,6 +2934,48 @@ html.dark {
     .markdown-tools {
       background-color: var(--bg-color-block) !important;
       border-bottom: 1px solid var(--border-color-light) !important;
+
+      .tools-menu.el-menu,
+      .tools-menu.el-menu--horizontal {
+        background-color: transparent !important;
+        border-bottom: none !important;
+
+        > .el-menu-item,
+        > .el-submenu .el-submenu__title {
+          color: var(--text-color-regular) !important;
+          background-color: transparent !important;
+          border-bottom: none !important;
+        }
+
+        > .el-menu-item:hover,
+        > .el-menu-item:focus,
+        > .el-submenu:hover .el-submenu__title,
+        > .el-submenu .el-submenu__title:hover {
+          color: #409eff !important;
+          background-color: rgba(64, 158, 255, 0.12) !important;
+          border-bottom: none !important;
+        }
+
+        > .el-menu-item.is-active {
+          color: #409eff !important;
+          border-bottom: none !important;
+        }
+
+        .siding {
+          background-color: var(--border-color-light) !important;
+        }
+
+        .icon,
+        .svg-icon {
+          color: var(--text-color-regular) !important;
+        }
+
+        > .el-menu-item:hover .icon,
+        > .el-menu-item:hover .svg-icon,
+        > .el-submenu:hover .svg-icon {
+          color: #409eff !important;
+        }
+      }
     }
 
     .markdown-body {
@@ -2456,8 +3005,23 @@ html.dark {
             border-bottom-color: var(--border-color-light) !important;
           }
 
-          p, li, span, code {
+          p, li, span {
             color: var(--text-color-regular) !important;
+          }
+
+          pre {
+            background-color: var(--bg-color-base) !important;
+            border: 1px solid var(--border-color-light) !important;
+          }
+
+          pre code {
+            background-color: transparent !important;
+            color: var(--text-color-regular) !important;
+          }
+
+          :not(pre) > code {
+            background-color: rgba(255, 255, 255, 0.08) !important;
+            color: #e6c07b !important;
           }
 
           hr {
@@ -2465,6 +3029,66 @@ html.dark {
           }
         }
       }
+    }
+  }
+
+  // Markdown 工具栏子菜单弹出层
+  .el-menu.el-menu--popup {
+    background-color: var(--dropdown-bg) !important;
+    border: 1px solid var(--border-color-light) !important;
+
+    .el-menu-item {
+      color: var(--text-color-regular) !important;
+      background-color: transparent !important;
+
+      &:hover,
+      &:focus {
+        color: #409eff !important;
+        background-color: var(--table-row-hover-bg) !important;
+      }
+    }
+
+    .line {
+      border-bottom-color: var(--border-color-light) !important;
+    }
+
+    .row span {
+      color: inherit !important;
+    }
+  }
+
+  // 描述编辑模式全屏弹框
+  .cat2bug-textarea-dialog {
+    .el-dialog__body {
+      background-color: var(--dialog-bg) !important;
+    }
+  }
+
+  // 全局 Markdown 预览代码块（编辑模式、缺陷描述等）
+  .markdown-body {
+    pre {
+      background-color: var(--bg-color-base) !important;
+      border: 1px solid var(--border-color-light) !important;
+    }
+
+    pre code {
+      background-color: transparent !important;
+      color: var(--text-color-regular) !important;
+    }
+
+    :not(pre) > code {
+      background-color: rgba(255, 255, 255, 0.08) !important;
+      color: #e6c07b !important;
+    }
+
+    pre[class*="language-"]::before {
+      color: var(--text-color-secondary) !important;
+    }
+
+    pre.hljs,
+    code.hljs {
+      background: var(--bg-color-base) !important;
+      color: var(--text-color-regular) !important;
     }
   }
 
@@ -2718,6 +3342,245 @@ html.dark {
           background: #f56c6c !important;
         }
       }
+    }
+  }
+
+  // 34. 系统文档页 (DocViewer /system/doc) 暗黑模式
+  .doc-viewer-wrapper {
+    background-color: var(--table-bg) !important;
+
+    .doc-header {
+      background-color: var(--table-bg) !important;
+
+      .el-page-header {
+        background-color: transparent !important;
+        border-bottom-color: var(--border-color-light) !important;
+      }
+
+      .el-page-header__content span {
+        color: var(--text-color-primary) !important;
+      }
+    }
+
+    .doc-viewer {
+      background-color: var(--table-bg) !important;
+
+      .doc-sidebar {
+        background-color: var(--bg-color-block) !important;
+        border-right-color: var(--border-color-light) !important;
+
+        .search-box {
+          border-bottom-color: var(--border-color-light) !important;
+        }
+
+        .doc-tree {
+          .el-tree {
+            background-color: transparent !important;
+            color: var(--text-color-regular) !important;
+          }
+
+          .el-tree-node__content {
+            color: var(--text-color-regular) !important;
+            border-radius: 3px !important;
+            margin-right: 4px;
+          }
+
+          .el-tree-node.is-current > .el-tree-node__content {
+            background-color: rgba(64, 158, 255, 0.12) !important;
+            color: #409eff !important;
+            border-radius: 3px !important;
+          }
+
+          .el-tree-node__content:hover {
+            border-radius: 3px !important;
+          }
+
+          .custom-tree-node mark {
+            background-color: rgba(230, 162, 60, 0.35) !important;
+            color: var(--text-color-primary) !important;
+          }
+        }
+      }
+
+      .doc-main {
+        background-color: var(--table-bg) !important;
+      }
+
+      .doc-content {
+        background-color: var(--table-bg) !important;
+
+        .markdown-body mark {
+          background-color: rgba(230, 162, 60, 0.35) !important;
+          color: var(--text-color-primary) !important;
+        }
+      }
+    }
+  }
+
+  .doc-page-outline {
+    background-color: var(--table-bg) !important;
+
+    &__title {
+      color: var(--text-color-primary) !important;
+    }
+
+    &__print {
+      color: var(--text-color-secondary) !important;
+
+      &:hover {
+        color: #409eff !important;
+      }
+    }
+
+    &__link {
+      color: var(--text-color-secondary) !important;
+
+      &:hover {
+        color: #409eff !important;
+      }
+
+      &.is-active {
+        color: #409eff !important;
+        border-left-color: #409eff !important;
+      }
+    }
+  }
+
+  .doc-viewer-wrapper .markdown-body {
+    color: var(--text-color-regular) !important;
+
+    h1, h2, h3, h4, h5, h6 {
+      color: var(--text-color-primary) !important;
+      border-bottom-color: var(--border-color-light) !important;
+    }
+
+    h6 {
+      color: var(--text-color-secondary) !important;
+    }
+
+    p, li, td, th, strong, em, del {
+      color: var(--text-color-regular) !important;
+    }
+
+    code {
+      background-color: var(--bg-color-base) !important;
+      color: #e6c07b !important;
+    }
+
+    pre {
+      background-color: var(--bg-color-base) !important;
+    }
+
+    pre code {
+      color: var(--text-color-regular) !important;
+    }
+
+    blockquote {
+      color: var(--text-color-regular) !important;
+      background-color: rgba(230, 162, 60, 0.12) !important;
+      border-left-color: #e6a23c !important;
+    }
+
+    blockquote strong {
+      color: var(--text-color-primary) !important;
+    }
+
+    table th {
+      background-color: var(--table-header-bg) !important;
+      color: var(--text-color-primary) !important;
+      border-color: var(--border-color-light) !important;
+    }
+
+    table td {
+      border-color: var(--border-color-light) !important;
+    }
+
+    table tr {
+      background-color: var(--table-bg) !important;
+      border-top-color: var(--border-color-light) !important;
+    }
+
+    table tr:nth-child(2n) {
+      background-color: var(--bg-color-block) !important;
+    }
+
+    a {
+      color: #79bbff !important;
+    }
+
+    img {
+      background-color: var(--bg-color-block) !important;
+    }
+
+    hr {
+      background-color: var(--border-color-light) !important;
+    }
+
+    .custom-block.tip {
+      background-color: rgba(103, 194, 58, 0.12) !important;
+      border-color: #67c23a !important;
+      color: var(--text-color-regular) !important;
+    }
+
+    .custom-block.tip .custom-block-title {
+      color: #95d475 !important;
+    }
+
+    .tip, .warning, .danger {
+      color: var(--text-color-regular) !important;
+    }
+
+    .warning {
+      background-color: rgba(230, 162, 60, 0.12) !important;
+      border-color: #e6a23c !important;
+    }
+
+    .danger {
+      background-color: rgba(245, 108, 108, 0.12) !important;
+      border-color: #f56c6c !important;
+    }
+
+    .code-tabs {
+      background: var(--bg-color-block) !important;
+      border-color: var(--border-color-light) !important;
+    }
+
+    .code-tabs__caption {
+      color: var(--text-color-primary) !important;
+      background: var(--bg-color-block) !important;
+      border-bottom-color: var(--border-color-light) !important;
+    }
+
+    .code-tabs__header {
+      background: var(--table-header-bg) !important;
+      border-bottom-color: var(--border-color-light) !important;
+    }
+
+    .code-tabs__tab {
+      color: var(--text-color-secondary) !important;
+
+      &:hover {
+        color: var(--text-color-primary) !important;
+      }
+
+      &.is-active {
+        color: #409eff !important;
+        border-bottom-color: #409eff !important;
+        background: var(--bg-color-block) !important;
+      }
+    }
+
+    .code-tabs__copy {
+      color: var(--text-color-secondary) !important;
+
+      &:hover {
+        background: var(--table-row-hover-bg) !important;
+        color: var(--text-color-primary) !important;
+      }
+    }
+
+    .code-tabs__pre {
+      background: var(--bg-color-base) !important;
     }
   }
 }

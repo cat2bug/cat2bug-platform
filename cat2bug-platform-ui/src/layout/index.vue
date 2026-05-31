@@ -121,7 +121,8 @@ export default {
     width: 100%;
   }
   .main-container {
-    overflow: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
     /* 不用 scrollbar-gutter，避免无纵向滚动条时右侧仍预留槽位、与左侧 20px 不对称 */
   }
 </style>

@@ -1,14 +1,11 @@
 import defaultSettings from '@/settings'
+import { applyThemeMode, readStoredThemeMode, THEME_MODE_STORAGE_KEY } from '@/utils/theme-mode'
 
 const { sideTheme, showSettings, topNav, tagsView, fixedHeader, sidebarLogo, dynamicTitle } = defaultSettings
 
 const initThemeMode = () => {
-  const mode = localStorage.getItem('theme-mode') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
-  if (mode === 'dark') {
-    document.documentElement.classList.add('dark')
-  } else {
-    document.documentElement.classList.remove('dark')
-  }
+  const mode = readStoredThemeMode()
+  applyThemeMode(mode)
   return mode
 }
 
@@ -33,12 +30,8 @@ const mutations = {
   },
   SET_THEME_MODE: (state, themeMode) => {
     state.themeMode = themeMode
-    localStorage.setItem('theme-mode', themeMode)
-    if (themeMode === 'dark') {
-      document.documentElement.classList.add('dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-    }
+    localStorage.setItem(THEME_MODE_STORAGE_KEY, themeMode)
+    applyThemeMode(themeMode)
   }
 }
 

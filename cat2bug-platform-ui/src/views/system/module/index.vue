@@ -269,8 +269,8 @@ export default {
   justify-content: flex-start;
   align-items: center;
   align-content: flex-start;
-  column-gap: 12px;
-  row-gap: 8px;
+  column-gap: var(--cat2bug-toolbar-section-gap, 10px);
+  row-gap: var(--cat2bug-toolbar-row-gap, 8px);
   margin-top: var(--case-toolbar-v-gap, 8px);
   margin-bottom: var(--case-toolbar-v-gap, 8px);
   .el-form-item {
@@ -286,7 +286,7 @@ export default {
   flex-wrap: nowrap;
   align-items: center;
   row-gap: 8px;
-  column-gap: 8px;
+  column-gap: var(--cat2bug-toolbar-item-gap, 10px);
   box-sizing: border-box;
   ::v-deep .el-form-item {
     flex: 0 0 auto;
@@ -304,7 +304,7 @@ export default {
   flex-wrap: nowrap;
   justify-content: flex-start;
   align-items: center;
-  gap: 10px;
+  gap: var(--cat2bug-toolbar-item-gap, 10px);
   > * {
     flex: 0 0 auto;
     width: auto;
@@ -340,7 +340,7 @@ export default {
     width: 100%;
     display: inline-flex;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: var(--cat2bug-toolbar-item-gap, 10px);
     justify-content: flex-start;
     align-items: center;
   }
