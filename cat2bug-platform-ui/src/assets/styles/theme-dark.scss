@@ -81,6 +81,7 @@ html.dark {
   --text-color-regular: #e5eaf3;
   --text-color-secondary: #909399;
   --text-color-placeholder: #4c4d4f;
+  --form-label-color: #edf0f5;
   
   --border-color-base: #4c4d4f;
   --border-color-light: #363637;
@@ -418,6 +419,19 @@ html.dark {
       background-color: var(--collapse-bg) !important;
       color: var(--text-color-regular) !important;
     }
+  }
+
+  // 全局表单 label（Element UI 默认 #606266，暗黑背景下对比不足）
+  .el-form-item__label {
+    color: var(--form-label-color) !important;
+
+    label {
+      color: inherit;
+    }
+  }
+
+  .el-form-item.is-required:not(.is-no-asterisk) > .el-form-item__label::before {
+    color: #f56c6c !important;
   }
 
   .el-input__inner {
@@ -1253,13 +1267,13 @@ html.dark {
 
     .setup-inner-form {
       ::v-deep .el-form-item__label {
-        color: var(--text-color-primary) !important;
+        color: var(--form-label-color) !important;
       }
     }
 
     .el-form-item__label {
-      color: var(--text-color-primary) !important;
-      font-weight: 600 !important; // 加粗提升对比度
+      color: var(--form-label-color) !important;
+      font-weight: 600 !important;
     }
 
     .el-form-item.is-required:not(.is-no-asterisk) > .el-form-item__label:before {
@@ -1390,11 +1404,11 @@ html.dark {
     }
   }
 
-  // Element UI Descriptions Component Overrides
+  // Element UI Descriptions Component Overrides（安装/升级向导概览表）
   .el-descriptions {
     border-radius: 8px !important;
     overflow: hidden !important;
-    border: 1px solid #363637 !important; // 外层大框
+    border: 1px solid var(--border-color-light) !important;
 
     table {
       border-collapse: collapse !important;
@@ -1403,52 +1417,45 @@ html.dark {
     }
 
     .el-descriptions__body {
-      background-color: #18181c !important;
-      color: #e5eaf3 !important;
+      background-color: var(--table-bg) !important;
+      color: var(--text-color-regular) !important;
       border-radius: 8px !important;
       overflow: hidden !important;
     }
 
     .el-descriptions-item__label,
     .el-descriptions-item__content {
-      border: none !important; // 移除所有默认边框
-      padding: 12px 16px !important; // 增加内边距使其更舒展
+      padding: 12px 16px !important;
+      border-top: none !important;
+      border-left: none !important;
+      border-right: none !important;
+      border-bottom: 1px solid var(--border-color-light) !important;
     }
 
     .el-descriptions-item__label {
-      border-left: 1px solid #363637 !important;
+      color: var(--text-color-secondary) !important;
+      font-weight: 600 !important;
     }
 
     .el-descriptions-item__content {
-      border-right: 1px solid #363637 !important;
+      color: var(--text-color-regular) !important;
     }
 
     tbody:nth-child(odd) {
-      .el-descriptions-item__label {
-        background-color: #1a1a1e !important;
-        color: #909399 !important;
-        font-weight: bold !important;
-      }
+      .el-descriptions-item__label,
       .el-descriptions-item__content {
-        background-color: #121214 !important;
-        color: #e5eaf3 !important;
+        background-color: var(--table-bg) !important;
       }
     }
 
     tbody:nth-child(even) {
-      .el-descriptions-item__label {
-        background-color: #222226 !important; // 稍微拉开一点差距，使对比明显
-        color: #909399 !important;
-        font-weight: bold !important;
-      }
+      .el-descriptions-item__label,
       .el-descriptions-item__content {
-        background-color: #161618 !important;
-        color: #e5eaf3 !important;
+        background-color: var(--bg-color-block) !important;
       }
     }
 
-    // 移除最后一行单元格的底部边框，防止与外边框重叠
-    .el-descriptions-row:last-child {
+    tbody:last-child {
       .el-descriptions-item__label,
       .el-descriptions-item__content {
         border-bottom: none !important;

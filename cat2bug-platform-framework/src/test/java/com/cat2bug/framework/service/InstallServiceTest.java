@@ -147,6 +147,22 @@ class InstallServiceTest
     }
 
     @Test
+    void needsRestart_returnsFalseWhenUpgradeAwaitingRestart()
+    {
+        when(installProperties.isSkip()).thenReturn(false);
+        when(installProperties.isInstallCompletedOnDisk()).thenReturn(true);
+        StandardEnvironment environment = new StandardEnvironment();
+        environment.getPropertySources().addFirst(new MapPropertySource("test",
+                Map.of(InstallStartupSupport.BOOTSTRAP_MODE_PROPERTY, "true")));
+        ReflectionTestUtils.setField(installService, "environment", environment);
+        UpgradeService upgradeService = mock(UpgradeService.class);
+        when(upgradeService.resolveState()).thenReturn("restart_required");
+        ReflectionTestUtils.setField(installService, "upgradeService", upgradeService);
+
+        assertFalse(installService.needsRestart());
+    }
+
+    @Test
     void hasLegacyAdminUser_returnsTrueWhenAdminPresent()
     {
         mockLegacyAdminCount(2);

@@ -16,6 +16,8 @@ NProgress.configure({ showSpinner: false })
 
 const whiteList = ['/login', '/register', '/tools/browser', '/shard/defect', '/setup', '/upgrade']
 
+const UPGRADE_AWAITING_READY_KEY = 'upgrade-awaiting-ready'
+
 function proceedWithAuth(to, from, next) {
   if (getToken()) {
     to.meta.title && store.dispatch('settings/setTitle', to.meta.title)
@@ -57,13 +59,23 @@ function proceedWithAuth(to, from, next) {
   }
 }
 
-function handleInstallRestartWait(to, next, upgradeStatus) {
+function handleInstallRestartWait(to, next, upgradeStatus, setupStatus) {
   const upgradeRestart = upgradeStatus.state === 'restart_required' || upgradeStatus.restartRequired
-  if (upgradeRestart) {
+  const upgradeFlowHint = sessionStorage.getItem(UPGRADE_AWAITING_READY_KEY) === '1'
+  if (upgradeRestart || (setupStatus.installed && upgradeFlowHint)) {
     if (to.path === '/upgrade' || to.path === '/login') {
       next()
     } else {
       next('/upgrade')
+    }
+    NProgress.done()
+    return true
+  }
+  if (setupStatus.installed) {
+    if (to.path === '/setup' || to.path === '/login') {
+      next()
+    } else {
+      next('/setup')
     }
     NProgress.done()
     return true
@@ -84,9 +96,9 @@ router.beforeEach((to, from, next) => {
     resolveSetupStatus(refreshSetupStatus).then(setupStatus => {
     if (setupStatus.restartRequired) {
       resolveUpgradeStatus(true).then(upgradeStatus => {
-        handleInstallRestartWait(to, next, upgradeStatus)
+        handleInstallRestartWait(to, next, upgradeStatus, setupStatus)
       }).catch(() => {
-        handleInstallRestartWait(to, next, { state: '', restartRequired: false })
+        handleInstallRestartWait(to, next, { state: '', restartRequired: false }, setupStatus)
       })
       return
     }

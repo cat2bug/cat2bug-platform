@@ -2,6 +2,7 @@ package com.cat2bug.framework.service;
 
 import com.cat2bug.common.config.InstallProperties;
 import com.cat2bug.common.config.InstallStartupSupport;
+import com.cat2bug.common.config.UpgradeSupport;
 import com.cat2bug.common.utils.FlywaySchemaSupport;
 import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.system.domain.SysConfig;
@@ -43,6 +44,10 @@ public class InstallService implements ApplicationRunner
     @Autowired
     private ISysConfigService configService;
 
+    @Lazy
+    @Autowired
+    private UpgradeService upgradeService;
+
     @Autowired
     private Environment environment;
 
@@ -82,6 +87,12 @@ public class InstallService implements ApplicationRunner
         }
         if (!installProperties.isInstallCompletedOnDisk())
         {
+            return false;
+        }
+        if (upgradeService != null
+                && UpgradeSupport.STATE_RESTART_REQUIRED.equals(upgradeService.resolveState()))
+        {
+            // 升级向导已接管「重启后生效」流程，避免 /setup/status.restartRequired 误导向 /setup
             return false;
         }
         return "true".equalsIgnoreCase(
