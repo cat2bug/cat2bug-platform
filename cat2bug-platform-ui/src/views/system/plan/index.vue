@@ -132,8 +132,8 @@
       />
     </div>
     </div>
-    <add-plan-dialog ref="planDialog" @add="getList" @update="getList" @close="initFloatMenu" />
-    <handle-plan-dialog ref="handlePlanDialog" @change="getList" @close="initFloatMenu" />
+    <add-plan-dialog ref="planDialog" @add="getList" @update="getList" />
+    <handle-plan-dialog ref="handlePlanDialog" @change="getList" />
     <dict-option-dialog ref="planItemState" title="测试状态管理" :dictType="dict.type.plan_item_state" />
   </div>
 </template>
@@ -255,7 +255,6 @@ export default {
     this.getList();
   },
   mounted() {
-    this.initFloatMenu();
     this.$nextTick(() => {
       this.syncPlanToolsWrapped();
       this.initPlanListBodyResizeObserver();
@@ -270,7 +269,6 @@ export default {
   },
   destroyed() {
     // 移除滚动条监听
-    this.$floatMenu.windowsDestory();
     window.removeEventListener("resize", this.syncPlanToolsWrapped);
     window.removeEventListener("resize", this.syncPlanTableBodyMaxHeight);
     this.destroyPlanListBodyResizeObserver();
@@ -351,21 +349,6 @@ export default {
     },
     onPlanColumnPickerChange(keys) {
       this.$refs.cat2BugTable && this.$refs.cat2BugTable.setColumnsVisible(keys);
-    },
-    /** 初始化浮动菜单 */
-    initFloatMenu() {
-      this.$floatMenu.windowsInit(document.querySelector('.main-container'));
-      this.$floatMenu.resetMenus([{
-        id: 'addPlan',
-        name: 'plan.create',
-        visible: true,
-        plain: true,
-        type: 'primary',
-        icon: 'add-tab',
-        prompt: 'plan.create',
-        permissions: ['system:plan:add'],
-        click : this.handleAdd
-      }]);
     },
     /** 查询测试计划列表 */
     getList() {

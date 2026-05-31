@@ -138,14 +138,12 @@ export default {
   },
   mounted() {
     // 初始化浮动菜单
-    this.initFloatMenu();
     this.$nextTick(() => {
       this.syncModuleToolsWrapped();
     });
     window.addEventListener("resize", this.syncModuleToolsWrapped);
   },
   destroyed() {
-    this.$floatMenu.windowsDestory();
     window.removeEventListener("resize", this.syncModuleToolsWrapped);
   },
   methods: {
@@ -168,30 +166,6 @@ export default {
         }
         measure();
       });
-    },
-    /** 初始化浮动菜单 */
-    initFloatMenu() {
-      this.$floatMenu.windowsInit(document.querySelector('.main-container'));
-      this.$floatMenu.resetMenus([{
-        id: 'moduleExpandAll',
-        name: 'module.expand-collapse',
-        visible: true,
-        plain: true,
-        type: 'info',
-        icon: 'up_down_switch',
-        prompt: 'module.expand-collapse',
-        click : this.toggleExpandAll
-      },{
-        id: 'moduleExpandAll',
-        name: 'module.new',
-        visible: true,
-        plain: true,
-        type: 'primary',
-        icon: 'add-tab',
-        prompt: 'module.new',
-        permissions: ['system:module:add'],
-        click : this.handleAdd
-      }]);
     },
     /** 查询模块列表 */
     getList() {

@@ -224,24 +224,8 @@ export default {
     this.getCollectList();
   },
   mounted() {
-    this.initFloatMenu();
   },
   methods: {
-    /** 初始化浮动菜单 */
-    initFloatMenu() {
-      this.$floatMenu.windowsInit(document.querySelector('.main-container'));
-      this.$floatMenu.resetMenus([{
-        id: 'addProject',
-        name: 'project.create-project',
-        visible: true,
-        plain: true,
-        type: 'primary',
-        icon: 'add-tab',
-        prompt: 'project.create-project',
-        permissions: ['system:project:add'],
-        click : this.handleAdd
-      }]);
-    },
     /** 选择项目分组 */
     selectProjectTabHandle(){
       this.reset();

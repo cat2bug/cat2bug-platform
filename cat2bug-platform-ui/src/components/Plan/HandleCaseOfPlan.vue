@@ -22,7 +22,7 @@
           <el-button v-if="!isAddMode"@click="prevCase" type="text" icon="el-icon-arrow-left" size="mini"></el-button>
           <el-button v-if="!isAddMode"@click="nextCase" type="text" icon="el-icon-arrow-right" size="mini"></el-button>
           <el-button @click="cancel" icon="el-icon-close" :class="isAddMode?'':'green-button'" size="mini">{{$t('close')}}</el-button>
-          <plan-item-tools v-model="planItem" :plan="plan" type="primary" :project-id="projectId" @change="handlePlanItemChange" @close="initFloatMenu" />
+          <plan-item-tools v-model="planItem" :plan="plan" type="primary" :project-id="projectId" @change="handlePlanItemChange" />
         </div>
       </div>
     </template>
@@ -186,12 +186,6 @@ export default {
     },
   },
   methods: {
-    /** 初始化浮动菜单 */
-    initFloatMenu() {
-      this.$floatMenu.windowsInit(document.querySelector('.main-container'));
-      let tools = [];
-      this.$floatMenu.resetMenus(tools);
-    },
     open(plan, planItem, caseId, params) {
       this.plan = plan;
       this.planItem = planItem;
@@ -203,11 +197,9 @@ export default {
           this.loading = false;
           this.visible = true;
           this.form = response.data;
-          this.initFloatMenu();
         }).catch(()=>this.loading = true);
       } else {
         this.visible = true;
-        this.initFloatMenu();
       }
     },
     /** 关闭缺陷抽屉窗口 */

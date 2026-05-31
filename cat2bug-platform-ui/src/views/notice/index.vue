@@ -101,7 +101,7 @@
       :limit.sync="queryParams.pageSize"
       @pagination="getList"
     />
-    <view-notice ref="viewNotice" @read="refreshData" @close="initFloatMenu"></view-notice>
+    <view-notice ref="viewNotice" @read="refreshData"></view-notice>
     <option-notice ref="noticeOption" :member-id="getUserId()" />
     <send-notice-dialog ref="sendNoticeDialog" @send="refreshData" />
   </div>
@@ -169,38 +169,11 @@ export default {
     if(this.$route.query.noticeId) {
       this.handleNotice(this.$route.query);
     }
-    this.initFloatMenu();
   },
   // 移除滚动条监听
   destroyed() {
-    this.$floatMenu.windowsDestory();
   },
   methods: {
-    /** 初始化浮动菜单 */
-    initFloatMenu() {
-      this.$floatMenu.windowsInit(document.querySelector('.main-container'));
-      this.$floatMenu.resetMenus([{
-        id: 'batchDeleteNotice',
-        name: 'batch-delete',
-        visible: true,
-        plain: true,
-        type: 'danger',
-        icon: 'delete',
-        prompt: 'batch-delete',
-        permissions: ['notice:remove'],
-        click : this.handleDelete
-      },{
-        id: 'sendNotice',
-        name: 'notice.send',
-        visible: true,
-        plain: true,
-        type: 'primary',
-        icon: 'guide',
-        prompt: 'notice.send',
-        permissions: ['notice:send'],
-        click : this.handleSendNotice
-      }]);
-    },
     /** 获取项目id */
     getProjectId() {
       return parseInt(this.$store.state.user.config.currentProjectId || 0);

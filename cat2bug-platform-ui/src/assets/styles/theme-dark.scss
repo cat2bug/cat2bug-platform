@@ -50,15 +50,6 @@
   --cat2bug-operate-tools-gap: 10px;
   --cat2bug-operate-tools-row-gap: 0;
 
-  --float-menu-btn-bg: #ffffff;
-  --float-menu-btn-border: #dcdfe6;
-  --float-menu-btn-color: #606266;
-  --float-menu-btn-hover-bg: #ecf5ff;
-  --float-menu-btn-hover-border: #c6e2ff;
-  --float-menu-btn-hover-color: #409eff;
-  --float-menu-drag-bg: rgba(101, 104, 108, 0.13);
-  --float-menu-drag-hover-bg: rgba(101, 104, 108, 0.27);
-
   --sidebar-expand-trigger-hover-bg: #ecf5ff;
 
   --sidebar-bg: #304156;
@@ -121,15 +112,6 @@ html.dark {
   --navbar-text: #e5eaf3;
   --tags-view-bg: #1e1e20;
   --tags-view-border: #363637;
-
-  --float-menu-btn-bg: transparent;
-  --float-menu-btn-border: var(--border-color-light);
-  --float-menu-btn-color: var(--sidebar-text);
-  --float-menu-btn-hover-bg: var(--sidebar-expand-trigger-hover-bg);
-  --float-menu-btn-hover-border: rgba(64, 158, 255, 0.35);
-  --float-menu-btn-hover-color: #409eff;
-  --float-menu-drag-bg: transparent;
-  --float-menu-drag-hover-bg: var(--sidebar-expand-trigger-hover-bg);
 }
 
 /* 主题切换瞬间禁用过渡，避免亮/暗色逐块渐变闪烁 */
@@ -1067,78 +1049,6 @@ html.dark {
 
       .el-menu {
         background-color: var(--sidebar-bg) !important;
-      }
-    }
-  }
-
-  // 2.1 悬浮快捷菜单：plain 类型默认透明底（覆盖组件内浅色实心样式）
-  .cat2bug-float-menu {
-    .button[plain='true'][type='primary'],
-    .button[plain='true'][type='danger'],
-    .button[plain='true'][type='warning'],
-    .button[plain='true'][type='success'],
-    .button[plain='true'][type='info'] {
-      background-color: transparent !important;
-      border-color: var(--float-menu-btn-border) !important;
-    }
-
-    .button[plain='true'][type='primary'] {
-      color: #409eff !important;
-    }
-
-    .button[plain='true'][type='danger'] {
-      color: #f89898 !important;
-    }
-
-    .button[plain='true'][type='warning'] {
-      color: #eebe77 !important;
-    }
-
-    .button[plain='true'][type='success'] {
-      color: #85ce61 !important;
-    }
-
-    .button[plain='true'][type='info'] {
-      color: var(--text-color-secondary) !important;
-    }
-
-    .button[plain='true'][type='primary']:hover {
-      background-color: var(--float-menu-btn-hover-bg) !important;
-      border-color: var(--float-menu-btn-hover-border) !important;
-      color: var(--float-menu-btn-hover-color) !important;
-    }
-
-    .button[plain='true'][type='danger']:hover {
-      background-color: rgba(245, 108, 108, 0.14) !important;
-      border-color: rgba(245, 108, 108, 0.4) !important;
-      color: #f89898 !important;
-    }
-
-    .button[plain='true'][type='warning']:hover {
-      background-color: rgba(230, 162, 60, 0.14) !important;
-      border-color: rgba(230, 162, 60, 0.4) !important;
-      color: #eebe77 !important;
-    }
-
-    .button[plain='true'][type='success']:hover {
-      background-color: rgba(103, 194, 58, 0.14) !important;
-      border-color: rgba(103, 194, 58, 0.4) !important;
-      color: #85ce61 !important;
-    }
-
-    .button[plain='true'][type='info']:hover {
-      background-color: rgba(144, 147, 153, 0.14) !important;
-      border-color: rgba(144, 147, 153, 0.35) !important;
-      color: var(--text-color-regular) !important;
-    }
-
-    .button[type='danger'],
-    .button[type='warning'],
-    .button[type='success'],
-    .button[type='info'],
-    .button[type='primary'] {
-      &:not(:hover) {
-        background-color: transparent !important;
       }
     }
   }

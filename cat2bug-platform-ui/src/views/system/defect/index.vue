@@ -164,9 +164,9 @@
     <!-- 缺陷日历-->
     <!--    <defect-calendar v-else-if="defectContentId=='calendar'" ref="defectCalendar" />-->
     <!-- 添加或修改缺陷对话框 -->
-    <add-defect ref="addDefectForm" :project-id="getProjectId()" @added="search(queryParams)" @close="initFloatMenu" />
+    <add-defect ref="addDefectForm" :project-id="getProjectId()" @added="search(queryParams)" />
     <!-- 浏览缺陷对话框 -->
-    <handle-defect ref="editDefectForm" :project-id="getProjectId()" @change="handleRefreshQuery" @delete="handleRefreshQuery" @close="initFloatMenu" />
+    <handle-defect ref="editDefectForm" :project-id="getProjectId()" @change="handleRefreshQuery" @delete="handleRefreshQuery" />
     <!-- 添加页签对话框 -->
     <defect-tab-dialog ref="defectTabDialog" :project-id="getProjectId()" :member-id="userId" @add="tabAddHandle" />
     <!-- 导入缺陷 -->
@@ -384,7 +384,6 @@ export default {
   },
   // 移除滚动条监听
   destroyed() {
-    this.$floatMenu.windowsDestory()
   },
   methods: {
     checkPermi,
@@ -414,42 +413,6 @@ export default {
       if (this.$route.query.defectId) {
         this.$refs.editDefectForm.open(this.$route.query.defectId)
       }
-      this.initFloatMenu()
-    },
-    /** 初始化浮动菜单 */
-    initFloatMenu() {
-      this.$floatMenu.windowsInit(document.querySelector('.main-container'))
-      this.$floatMenu.resetMenus([{
-        id: 'addDefect',
-        name: 'defect.create',
-        visible: true,
-        plain: true,
-        type: 'primary',
-        icon: 'add-tab',
-        prompt: 'defect.create',
-        permissions: ['system:defect:add'],
-        click: this.handleAdd
-      }, {
-        id: 'importDefect',
-        name: 'defect.import',
-        visible: true,
-        plain: true,
-        type: 'info',
-        icon: 'import',
-        prompt: 'defect.import',
-        permissions: ['system:defect:add'],
-        click: this.handleImport
-      }, {
-        id: 'exportDefect',
-        name: 'defect.export',
-        visible: true,
-        plain: true,
-        type: 'warning',
-        icon: 'export',
-        prompt: 'defect.export',
-        permissions: ['system:defect:add'],
-        click: this.handleExport
-      }])
     },
     /** 查询缺陷 */
     search(params) {

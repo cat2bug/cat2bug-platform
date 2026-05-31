@@ -61,20 +61,6 @@ export default {
     }
   },
   methods:{
-    /** 初始化浮动菜单 */
-    initFloatMenu() {
-      this.$floatMenu.windowsInit(document.querySelector('.main-container'));
-      this.$floatMenu.resetMenus([{
-        id: 'closeViewNotice',
-        name: 'close',
-        visible: true,
-        plain: true,
-        type: '',
-        icon: 'close',
-        prompt: 'close',
-        click : this.cancel
-      }]);
-    },
     // 获取缺陷信息
     getNoticeInfo(noticeId) {
       this.loading = true;
@@ -91,7 +77,6 @@ export default {
       this.visible = true;
       // this.reset();
       this.getNoticeInfo(noticeId);
-      this.initFloatMenu();
     },
     // 取消按钮
     cancel() {

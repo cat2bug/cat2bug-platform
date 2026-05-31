@@ -256,18 +256,11 @@ export default {
     });
   },
   mounted() {
-    this.initFloatMenu();
   },
   destroyed() {
     // 移除滚动条监听
-    this.$floatMenu.windowsDestory();
   },
   methods: {
-    /** 初始化浮动菜单 */
-    initFloatMenu() {
-      this.$floatMenu.windowsInit(document.querySelector('.main-container'));
-      this.$floatMenu.resetMenus();
-    },
     goBack() {
       this.$router.back();
     },

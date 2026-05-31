@@ -527,17 +527,11 @@ export default {
     getDefaultRowCount() {
       return this.$cache.local.get(DEFAULT_ROW_COUNT_KEY) || 5;
     },
-    /** 初始化浮动菜单 */
-    initFloatMenu() {
-      this.$floatMenu.windowsInit(document.querySelector('.main-container'));
-      this.$floatMenu.resetMenus();
-    },
     open() {
       this.visible = true;
       if (!this.aiAccountLoaded) {
         this.getOpenAIAccountList();
       }
-      this.initFloatMenu();
     },
     close() {
       this.$emit('close')

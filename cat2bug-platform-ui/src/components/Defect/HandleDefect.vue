@@ -207,7 +207,6 @@ export default {
   },
   // 移除滚动条监听
   destroyed() {
-    this.$floatMenu.windowsDestory();
   },
   watch: {
     defectId(id) {
@@ -217,11 +216,6 @@ export default {
     },
   },
   methods:{
-    /** 初始化浮动菜单 */
-    initFloatMenu() {
-      this.$floatMenu.windowsInit(document.querySelector('.main-container'));
-      this.$floatMenu.resetMenus();
-    },
     // 获取缺陷信息
     getDefectInfo(defectId) {
       this.loading = true;
@@ -278,7 +272,6 @@ export default {
       this.reset();
       this.defectId = defectId;
       this.getDefectInfo(defectId);
-      this.initFloatMenu();
     },
     // 取消按钮
     cancel() {

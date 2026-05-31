@@ -401,11 +401,6 @@ export default {
       }
       this._planAddTableHeaderObservedEl = null;
     },
-    /** 初始化浮动菜单 */
-    initFloatMenu() {
-      this.$floatMenu.windowsInit(document.querySelector('.main-container'));
-      this.$floatMenu.resetMenus([]);
-    },
     /** 表单重置 */
     reset() {
       this.selectCaseIdSet.clear();
@@ -465,7 +460,6 @@ export default {
       this.getPlanItemCaseList();
       this.$nextTick(() => {
         this.$refs.treeModuleRef && this.$refs.treeModuleRef.reloadData();
-        this.initFloatMenu();
       });
     },
     /** 修改按钮操作 */
@@ -484,7 +478,6 @@ export default {
       this.getTreeModuleWidth();
       this.caseQueryParams.params.planId= planId;
       this.getPlanItemCaseList();
-      this.initFloatMenu();
     },
     /** 提交按钮 */
     submitForm() {

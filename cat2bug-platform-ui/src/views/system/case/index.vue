@@ -230,10 +230,10 @@
         </div>
       </div>
     </multipane>
-    <add-case ref="addCaseDialog" :module-id="queryParams.params.modulePid" @added="reloadData" @close="initFloatMenu" />
-    <add-defect ref="addDefect" :project-id="projectId" @added="reloadData" @close="initFloatMenu" />
-    <cloud-case ref="cloudCaseDialog" @added="reloadData" @close="initFloatMenu" />
-    <cloud-case2 ref="cloudCaseDialog2" @added="reloadData" @close="initFloatMenu" />
+    <add-case ref="addCaseDialog" :module-id="queryParams.params.modulePid" @added="reloadData" />
+    <add-defect ref="addDefect" :project-id="projectId" @added="reloadData" />
+    <cloud-case ref="cloudCaseDialog" @added="reloadData" />
+    <cloud-case2 ref="cloudCaseDialog2" @added="reloadData" />
     <!-- 用户导入对话框 -->
     <el-dialog :title="upload.title" :visible.sync="upload.open" width="400px" append-to-body>
       <el-upload
@@ -451,7 +451,6 @@ export default {
   mounted() {
     this.queryParams.projectId = this.projectId
     this.getTreeModuleWidth()
-    this.initFloatMenu()
     this.$nextTick(() => {
         this.syncCaseToolsWrapped()
         this.initCaseToolsObserver()
@@ -479,7 +478,6 @@ export default {
   },
   destroyed() {
     // 移除滚动条监听
-    this.$floatMenu.windowsDestory()
     window.removeEventListener('resize', this.syncCaseToolsWrapped)
     this.destroyCaseToolsObserver()
     this.destroyCaseTableHeaderHeightSync()
@@ -642,51 +640,6 @@ export default {
       }
     },
     /** 初始化排序数据 */
-    /** 初始化浮动菜单 */
-    initFloatMenu() {
-      this.$floatMenu.windowsInit(document.querySelector('.main-container'))
-      this.$floatMenu.resetMenus([{
-        id: 'addCase',
-        name: 'case.create',
-        visible: true,
-        plain: true,
-        type: 'primary',
-        icon: 'add-tab',
-        prompt: 'case.create',
-        permissions: ['system:case:add'],
-        click: this.handleAdd
-      }, {
-        id: 'importCase',
-        name: 'case.import',
-        visible: true,
-        plain: true,
-        type: 'info',
-        icon: 'import',
-        prompt: 'case.import',
-        permissions: ['system:case:add'],
-        click: this.handleImport
-      }, {
-        id: 'exportCase',
-        name: 'case.export',
-        visible: true,
-        plain: true,
-        type: 'info',
-        icon: 'export',
-        prompt: 'case.export',
-        permissions: ['system:case:add'],
-        click: this.handleExport
-      }, {
-        id: 'aiAddCase',
-        name: 'case.ai-create',
-        visible: true,
-        plain: false,
-        type: 'success',
-        icon: 'robot',
-        prompt: 'case.ai-create',
-        permissions: ['system:case:add'],
-        click: this.handleCloudCaseAdd
-      }])
-    },
     /** 设置列表显示的属性字段 */
     /** 获取树模型宽度 */
     getTreeModuleWidth() {

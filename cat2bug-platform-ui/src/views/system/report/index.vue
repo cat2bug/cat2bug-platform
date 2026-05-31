@@ -264,7 +264,6 @@ export default {
         this.$refs.viewReport.open(this.$route.query.reportId);
       }
     }
-    this.initFloatMenu();
     this.$nextTick(() => {
       this.syncReportToolsWrapped();
       this.initReportListBodyResizeObserver();
@@ -275,7 +274,6 @@ export default {
   },
   // 移除滚动条监听
   destroyed() {
-    this.$floatMenu.windowsDestory();
     window.removeEventListener("resize", this.syncReportToolsWrapped);
     window.removeEventListener("resize", this.syncReportTableBodyMaxHeight);
     this.destroyReportListBodyResizeObserver();
@@ -339,21 +337,6 @@ export default {
         }
         measure();
       });
-    },
-    /** 初始化浮动菜单 */
-    initFloatMenu() {
-      this.$floatMenu.windowsInit(document.querySelector('.main-container'));
-      this.$floatMenu.resetMenus([{
-        id: 'batchDeleteReport',
-        name: 'batch-delete',
-        visible: true,
-        plain: true,
-        type: 'danger',
-        icon: 'delete',
-        prompt: 'batch-delete',
-        permissions: ['system:report:remove'],
-        click : this.handleDelete
-      }]);
     },
     /** 查询报告列表 */
     getList() {

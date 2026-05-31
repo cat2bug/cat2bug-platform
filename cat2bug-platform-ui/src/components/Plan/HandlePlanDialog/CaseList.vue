@@ -164,7 +164,7 @@
         <el-table-column :label="$t('operate')" align="left" class-name="no-drag cat2bug-operate-column" fixed="right">
           <template slot-scope="scope">
             <div class="plan-operate cat2bug-operate-tools">
-              <plan-item-tools v-model="scope.row" :plan="parentPlan" :project-id="projectId" @change="getPlanItemList" @close="initFloatMenu" />
+              <plan-item-tools v-model="scope.row" :plan="parentPlan" :project-id="projectId" @change="getPlanItemList" />
             </div>
           </template>
         </el-table-column>
@@ -178,7 +178,7 @@
       :limit.sync="query.pageSize"
       @pagination="getPlanItemList"
     />
-    <handle-case-of-plan ref="handleCaseDialog" :module-id="planItem.moduleId" :append-to-body="true" @change="getPlanItemList" @close="initFloatMenu" />
+    <handle-case-of-plan ref="handleCaseDialog" :module-id="planItem.moduleId" :append-to-body="true" @change="getPlanItemList" />
       </div>
     </multipane>
   </div>
@@ -459,9 +459,6 @@ export default {
         this._deliverableTableHeaderResizeObserver = null;
       }
       this._deliverableTableHeaderObservedEl = null;
-    },
-    initFloatMenu() {
-      this.$emit('init-float-menu');
     },
     open(planId, projectId, query) {
       this.projectId = projectId;

@@ -38,9 +38,6 @@ import ImagePreview from "@/components/ImagePreview"
 import DictTag from '@/components/DictTag'
 // 站点版权
 import SiteCopyright from '@/components/SiteCopyright'
-// 悬浮菜单
-import floatMenu from '@/components/Cat2BugFloatMenu/index'
-
 // 头部标签组件
 import VueMeta from 'vue-meta'
 
@@ -78,7 +75,6 @@ Vue.component('ImagePreview', ImagePreview)
 Vue.use(directive)
 Vue.use(plugins)
 Vue.use(VueMeta)
-Vue.use(floatMenu)
 Vue.use(VueHotkey)
 Vue.use(VueExcelEditor)
 DictData.install()

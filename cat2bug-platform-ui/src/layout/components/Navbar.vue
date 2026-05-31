@@ -7,15 +7,6 @@
 
     <div class="right-menu">
       <template v-if="device!=='mobile'">
-        <el-tooltip :content="floatMenuContent" effect="dark" placement="bottom">
-          <el-switch
-            class="right-menu-item"
-            @change="handleFloatMenuVisible"
-            v-model="floatMenuVisible"
-            active-color="#13ce66"
-            inactive-color="#ff4949">
-          </el-switch>
-        </el-tooltip>
         <el-tooltip :content="themeMode === 'dark' ? $t('theme.switch-light') : $t('theme.switch-dark')" effect="dark" placement="bottom">
           <div class="right-menu-item hover-effect" @click="toggleThemeMode">
             <svg-icon :icon-class="themeMode === 'dark' ? 'sun' : 'moon'" />
@@ -76,7 +67,6 @@ import { checkPermi } from "@/utils/permission";
 export default {
   data() {
     return {
-      floatMenuVisible: false,
       audio: null,
       noticeCount: 0,
       topicId: null,
@@ -126,11 +116,6 @@ export default {
         })
       },
     },
-    floatMenuContent: {
-      get() {
-        return this.$i18n.t(this.$floatMenu.getVisible()?'close':'open')+this.$i18n.t('char-span')+this.$i18n.t('float-menu')
-      }
-    },
     topNav: {
       get() {
         return this.$store.state.settings.topNav
@@ -138,7 +123,6 @@ export default {
     }
   },
   created() {
-    this.floatMenuVisible = this.$floatMenu.getVisible();
     this.guoNoticeCount();
   },
   mounted() {
@@ -221,9 +205,6 @@ export default {
           location.href = '/index';
         })
       }).catch(() => {});
-    },
-    handleFloatMenuVisible(visible) {
-      this.$floatMenu.setVisible(visible);
     },
     toggleThemeMode() {
       const mode = this.themeMode === 'dark' ? 'light' : 'dark'

@@ -227,11 +227,6 @@ export default {
   },
   methods: {
     checkPermi,
-    /** 初始化浮动菜单 */
-    initFloatMenu() {
-      this.$floatMenu.windowsInit(document.querySelector('.main-container'));
-      this.$floatMenu.resetMenus([]);
-    },
     reset() {
       this.query = {
         pageNum: 1,
@@ -257,7 +252,6 @@ export default {
         this.loading = true;
         this.getPlanInfo(planId, true);
         this.handleListTypeChanged(this.activeListType);
-        this.initFloatMenu();
       });
     },
     /** 获取计划信息 */

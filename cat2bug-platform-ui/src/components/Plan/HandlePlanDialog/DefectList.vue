@@ -529,9 +529,6 @@ export default {
       }
       this._deliverableTableHeaderObservedEl = null;
     },
-    initFloatMenu() {
-      this.$emit('init-float-menu');
-    },
     open(planId, projectId, query) {
       this.queryParams.projectId = projectId;
       this.queryParams = {...this.queryParams, ...query}

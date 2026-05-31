@@ -166,46 +166,6 @@ export default {
     }
   },
   methods: {
-    /** 初始化浮动菜单 */
-    initFloatMenu() {
-      this.$floatMenu.windowsInit(document.querySelector('.main-container'));
-      let tools = [{
-        id: 'closeAddCase',
-        name: 'close',
-        visible: true,
-        plain: true,
-        type: '',
-        icon: 'close',
-        prompt: 'close',
-        click : this.cancel
-      }];
-      if(this.isAddMode) {
-        tools.push({
-          id: 'saveAddCase',
-          name: 'create',
-          visible: true,
-          plain: false,
-          type: 'primary',
-          icon: 'finish',
-          prompt: 'create',
-          permissions: ['system:case:add'],
-          click : this.submitForm
-        })
-      } else {
-        tools.push({
-          id: 'editAddCase',
-          name: 'modify',
-          visible: true,
-          plain: false,
-          type: 'success',
-          icon: 'finish',
-          prompt: 'modify',
-          permissions: ['system:case:edit'],
-          click : this.submitForm
-        })
-      }
-      this.$floatMenu.resetMenus(tools);
-    },
     open(caseId, params) {
       let self = this;
       this.params = params;
@@ -219,14 +179,12 @@ export default {
           this.$nextTick(()=>{
             self.$refs['caseStepPanel'].reset();
           });
-          this.initFloatMenu();
         }).catch(()=>this.loading = true);
       } else {
         this.visible = true;
         this.$nextTick(()=>{
           self.$refs['caseStepPanel'].reset();
         });
-        this.initFloatMenu();
       }
     },
     /** 关闭缺陷抽屉窗口 */

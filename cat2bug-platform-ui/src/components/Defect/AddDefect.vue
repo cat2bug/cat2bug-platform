@@ -284,30 +284,6 @@ export default {
         moduleId: this.form.moduleId
       });
     },
-    /** 初始化浮动菜单 */
-    initFloatMenu() {
-      this.$floatMenu.windowsInit(document.querySelector('.main-container'));
-      this.$floatMenu.resetMenus([{
-        id: 'closeAddDefect',
-        name: 'close',
-        visible: true,
-        plain: true,
-        type: '',
-        icon: 'close',
-        prompt: 'close',
-        click : this.cancel
-      },{
-        id: 'saveAddDefect',
-        name: 'defect.save',
-        visible: true,
-        plain: false,
-        type: 'primary',
-        icon: 'finish',
-        prompt: 'defect.save',
-        permissions: ['system:defect:add'],
-        click : this.submitForm
-      }]);
-    },
     getDefectConfig() {
       configDefect().then(res=>{
         this.config = res.data;
@@ -316,7 +292,6 @@ export default {
     open(data) {
       this.reset(data);
       this.visible = true;
-      this.initFloatMenu();
       this.$nextTick(() => {
         this.$refs.defectNameInput.focus();
       });
@@ -327,7 +302,6 @@ export default {
     // 取消按钮
     cancel(isReset) {
       this.visible = false;
-      this.$floatMenu.windowsDestory();
       if(isReset){
         this.reset();
       }
