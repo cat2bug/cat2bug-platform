@@ -25,12 +25,12 @@ The repository MUST NOT commit a runnable `config/install/application-install.ym
 
 ### Requirement: Bootstrap applies in-memory H2 template before install exists
 
-When no disk install file exists and install is not skipped, the system SHALL inject properties from the H2 classpath template into the Environment as a high-precedence property source without writing the file to disk. The system MUST set `cat2bug.install.bootstrap-mode` to `true` during this phase.
+When no disk install file exists and install is not skipped, the system SHALL inject properties from the H2 classpath template into the Environment as a high-precedence property source without writing the file to disk. The bootstrap H2 JDBC URL MUST use the default database name `cat2bug_platform` at `./data/cat2bug_platform` until setup submit writes the chosen name to the install file.
 
 #### Scenario: Bootstrap does not create disk file
 
 - **WHEN** the application starts for the first time without `config/install/application-install.yml`
-- **THEN** no `application-install.yml` file is created on disk until setup submit or legacy migration
+- **THEN** no `application-install.yml` file is created on disk until setup submit or upgrade-skip legacy migration
 
 #### Scenario: Bootstrap enables setup APIs
 
@@ -53,17 +53,45 @@ On successful setup submit, the system SHALL write the configured install path w
 
 ### Requirement: Legacy deployments auto-generate disk install
 
-When no disk install file exists and the database indicates a legacy installation (admin user with `user_id=1` exists, or Flyway has successful migrations), the system SHALL generate `config/install/application-install.yml` from the current Environment, set `cat2bug.install.completed` to `true`, and MUST NOT show the setup wizard on subsequent requests in the same run after migration.
+When no disk install file exists and upgrade skip is enabled (`cat2bug.upgrade.skip=true` or `CAT2BUG_UPGRADE_SKIP=true`), the system MAY auto-generate `config/install/application-install.yml` from the current Environment and set `cat2bug.install.completed` to `true` without showing setup or upgrade wizards.
 
-#### Scenario: Legacy MySQL instance receives install file
+When no disk install file exists and upgrade skip is false, the system MUST NOT auto-generate a completed install file solely because legacy data or Flyway history exists. Legacy attach MUST occur through the setup wizard using `databaseMode: existing`.
 
-- **WHEN** an upgraded instance previously used MySQL profile configuration and has legacy data
-- **THEN** startup migration writes an install file reflecting effective datasource and cache settings
+When upgrade skip is disabled and a completed install file exists, the system MUST defer writing `cat2bug.install.completed` until the user completes the upgrade wizard submit successfully when upgrade is required.
+
+#### Scenario: Legacy MySQL instance with upgrade skip receives install file
+
+- **WHEN** an instance previously used MySQL profile configuration, has legacy data, upgrade skip is true, and no disk install file exists
+- **THEN** startup migration writes a completed install file reflecting effective datasource and cache settings
+
+#### Scenario: Legacy instance without skip uses setup attach
+
+- **WHEN** legacy data exists, no disk install file exists, and upgrade skip is false
+- **THEN** the system does not write a completed install file until setup submit with `databaseMode: existing`
 
 #### Scenario: Fresh empty database does not auto-migrate
 
 - **WHEN** the database is empty and no legacy admin exists
 - **THEN** the system does not write a completed install file until setup submit
+
+#### Scenario: Upgrade skip writes install file silently
+
+- **WHEN** legacy data exists, no disk install file exists, and `CAT2BUG_UPGRADE_SKIP=true`
+- **THEN** startup migration MAY write an install file with `cat2bug.install.completed: true` without showing the upgrade wizard
+
+### Requirement: Upgrade config merge preserves existing values
+
+When merging configuration for upgrade submit, the system SHALL preserve existing non-empty values from the Environment and partial disk install files over classpath template defaults. Template values MUST be applied only for keys that are missing or empty in the existing configuration, except when the user explicitly overrides a field in the upgrade wizard.
+
+#### Scenario: Custom log path preserved
+
+- **WHEN** the Environment contains a non-empty `logging.file.path` and the template proposes a different default
+- **THEN** the merged install file retains the Environment log path
+
+#### Scenario: Template fills missing Redis section
+
+- **WHEN** the user selects Redis cache in the upgrade wizard but no `spring.redis` section exists in existing configuration
+- **THEN** the merged install file includes Redis settings from the template merged with wizard input
 
 ### Requirement: Database profile YAML files are removed
 

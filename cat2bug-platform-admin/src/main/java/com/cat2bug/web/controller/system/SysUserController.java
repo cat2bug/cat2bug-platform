@@ -126,6 +126,8 @@ public class SysUserController extends BaseController
     @PostMapping
     public AjaxResult add(@Validated @RequestBody SysUser user)
     {
+        user.setPhoneNumber(StringUtils.trimToNull(user.getPhoneNumber()));
+        user.setEmail(StringUtils.trimToNull(user.getEmail()));
         if (!userService.checkUserNameUnique(user))
         {
             return error("新增用户'" + user.getUserName() + "'失败，登录账号已存在");
@@ -151,6 +153,8 @@ public class SysUserController extends BaseController
     @PutMapping
     public AjaxResult edit(@Validated @RequestBody SysUser user)
     {
+        user.setPhoneNumber(StringUtils.trimToNull(user.getPhoneNumber()));
+        user.setEmail(StringUtils.trimToNull(user.getEmail()));
         userService.checkUserAllowed(user);
         userService.checkUserDataScope(user.getUserId());
         if (!userService.checkUserNameUnique(user))

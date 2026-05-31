@@ -12,17 +12,6 @@
           <svg-icon slot="prefix" icon-class="name" class="el-input__icon input-icon" />
         </el-input>
       </el-form-item>
-      <el-form-item prop="phoneNumber">
-        <el-input
-          v-model="registerForm.phoneNumber"
-          type="text"
-          auto-complete="off"
-          :placeholder="$t('member.please-enter-phone-number')"
-          maxlength="16"
-        >
-          <svg-icon slot="prefix" icon-class="shoujihao" class="el-input__icon input-icon" />
-        </el-input>
-      </el-form-item>
       <el-form-item prop="password">
         <el-input
           v-model="registerForm.password"
@@ -65,7 +54,7 @@
     </el-form>
     <!--  底部  -->
     <div class="el-register-footer">
-      <span>Copyright © 2023-2024 cat2but.com All Rights Reserved.</span>
+      <site-copyright />
     </div>
   </div>
 </template>
@@ -87,22 +76,18 @@ export default {
     return {
       registerForm: {
         username: "",
+        nickName: "",
         password: "",
-        phoneNumber: "",
         confirmPassword: ""
       },
       registerRules: {
-        registerUserName: [
+        username: [
           {required: true, trigger: "blur", message: this.$i18n.t('please-enter-your-account')},
           {min: 2, max: 30, message: this.$i18n.t('account-size-exception'), trigger: 'blur'}
         ],
-        registerNickName: [
+        nickName: [
           {required: true, trigger: "blur", message: this.$i18n.t('please-enter-your-name')},
           {min: 2, max: 30, message: this.$i18n.t('account-size-exception'), trigger: 'blur'}
-        ],
-        phoneNumber: [
-          {required: true, trigger: "blur", message: this.$i18n.t('please-enter-phone')},
-          {min: 11, max: 16, message: this.$i18n.t('phone-size-exception'), trigger: 'blur'}
         ],
         password: [
           {required: true, trigger: "blur", message: this.$i18n.t('please-enter-your-password')},
@@ -203,7 +188,7 @@ export default {
   text-align: center;
   color: var(--text-color-secondary);
   font-family: Arial;
-  font-size: 12px;
+  font-size: 14px;
   letter-spacing: 1px;
 }
 </style>

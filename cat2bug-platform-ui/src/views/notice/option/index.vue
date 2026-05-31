@@ -17,6 +17,14 @@
         </div>
       </el-tab-pane>
       <el-tab-pane :label="$t('notice.receive-platform-option')" name="platform">
+        <el-alert
+          v-if="contactProfileHintVisible"
+          type="info"
+          :closable="false"
+          show-icon
+          class="notice-contact-hint"
+          :title="$t('notice.contact-profile-hint')"
+        />
         <el-tabs v-model="activePlatformName" type="border-card">
           <el-tab-pane :label="$t('system.internal-notification')" name="asystem">
             <component
@@ -53,6 +61,7 @@
 <script>
 
 import {getIMConfig, saveConfig} from "@/api/im/config";
+import { getUserProfile } from "@/api/system/user";
 
 const path = require('path');
 const moduleFiles = require.context('./module/', true, /\.vue$/);
@@ -95,11 +104,20 @@ export default {
       },
       moduleList: allModuleList,
       platformList: allPlatformList,
+      profileContact: {
+        phoneNumber: '',
+        email: ''
+      }
     }
   },
   computed: {
     externalPlatformList() {
       return this.platformList.filter(p => p.name !== 'asystem' && p.name !== 'bmail');
+    },
+    contactProfileHintVisible() {
+      const phone = (this.profileContact.phoneNumber || '').trim();
+      const email = (this.profileContact.email || '').trim();
+      return !phone || !email;
     }
   },
   mounted() {
@@ -145,11 +163,21 @@ export default {
         this.loading = false;
       });
     },
+    loadProfileContact() {
+      getUserProfile().then(res => {
+        const user = (res && res.data) ? res.data : {};
+        this.profileContact = {
+          phoneNumber: user.phoneNumber || '',
+          email: user.email || ''
+        };
+      }).catch(() => {});
+    },
     /** 打开配置窗口 */
     open() {
       this.dialogVisible = true;
       this.$nextTick(()=>{
         this.reset();
+        this.loadProfileContact();
         this.getConfig();
       });
     },
@@ -214,6 +242,9 @@ export default {
 }
 .el-divider {
   margin: 10px 0px 15px 0px;
+}
+.notice-contact-hint {
+  margin-bottom: 12px;
 }
 .row {
   display: inline-flex;

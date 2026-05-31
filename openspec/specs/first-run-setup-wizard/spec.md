@@ -8,6 +8,8 @@ The system MUST treat the instance as not installed when the disk install file i
 
 The system MUST NOT treat mere presence of the disk install file as installed.
 
+When legacy data exists without a completed disk install file and upgrade is required, the system MUST NOT mark the instance as installed until the upgrade wizard completes successfully.
+
 #### Scenario: Fresh deployment is not installed
 
 - **WHEN** the application starts with no disk install file and install skip is false
@@ -23,34 +25,83 @@ The system MUST NOT treat mere presence of the disk install file as installed.
 - **WHEN** a disk install file exists but `cat2bug.install.completed` is not `true`
 - **THEN** `GET /setup/status` returns `installed: false`
 
-#### Scenario: Legacy migration marks installed without wizard
+#### Scenario: Legacy data with upgrade pending is not installed
 
-- **WHEN** legacy data exists, no disk install file exists, and startup migration generates install with `completed: true`
-- **THEN** `GET /setup/status` returns `installed: true`
+- **WHEN** legacy data exists, no completed disk install file exists, upgrade skip is false, and upgrade is pending
+- **THEN** `GET /setup/status` returns `installed: false` and the UI routes to `/upgrade`
 
 #### Scenario: Developer first run uses wizard
 
-- **WHEN** a developer starts the application from a fresh clone without a disk install file
+- **WHEN** a developer starts the application from a fresh clone without a disk install file and without legacy data
 - **THEN** the UI navigates to `/setup` and install file is created only after successful submit
 
 ### Requirement: Uninstalled instance routes users to setup
 
-The system SHALL redirect unauthenticated clients to the setup wizard when not installed. API requests outside setup endpoints MUST be rejected or redirected except for setup, health, and static setup assets.
+The system SHALL redirect unauthenticated clients to the setup wizard when not installed and upgrade is not required. When upgrade is required, the system MUST redirect to the upgrade wizard instead. API requests outside setup or upgrade endpoints MUST be rejected or redirected except for setup, upgrade, health, and static assets.
+
+When no completed disk install file exists, the system MUST route users to `/setup` regardless of legacy data presence in the database. The system MUST NOT redirect such users to `/upgrade` solely because legacy admin or Flyway history exists.
 
 #### Scenario: User opens application root before install
 
-- **WHEN** `installed` is `false` and the user navigates to `/`
+- **WHEN** `installed` is `false`, upgrade is not required, and the user navigates to `/`
 - **THEN** the UI navigates to `/setup`
+
+#### Scenario: Legacy database without install file shows setup
+
+- **WHEN** legacy data exists, no completed install file exists, and upgrade skip is false
+- **THEN** the user is redirected to `/setup` and not to `/upgrade`
 
 #### Scenario: Setup API is accessible without login before install
 
-- **WHEN** `installed` is `false` and the client calls `POST /setup/submit` with valid payload
+- **WHEN** `installed` is `false`, upgrade is not required, and the client calls `POST /setup/submit` with valid payload
 - **THEN** the request is accepted without authentication
 
 #### Scenario: Setup API blocked after install
 
 - **WHEN** `installed` is `true` and the client calls `POST /setup/submit`
 - **THEN** the request is rejected with an appropriate error
+
+#### Scenario: Setup API blocked during upgrade pending
+
+- **WHEN** `upgradeRequired` is `true` and the client calls `POST /setup/submit`
+- **THEN** the request is rejected with an appropriate error
+
+### Requirement: Setup wizard is shown when installation is not completed
+
+The system SHALL redirect unauthenticated and authenticated users to `/setup` when `cat2bug.install.completed` is not `true` and install skip is not enabled.
+
+#### Scenario: Fresh empty database shows setup
+
+- **WHEN** the database is empty and no install file exists
+- **THEN** the user is redirected to `/setup`
+
+#### Scenario: Install skip bypasses setup
+
+- **WHEN** `CAT2BUG_INSTALL_SKIP=true` or `cat2bug.install.skip=true`
+- **THEN** the setup wizard is not required
+
+### Requirement: Database configuration step validates connectivity
+
+The setup wizard database step SHALL collect database type, connection parameters, and database name. The user MUST successfully test database connectivity before proceeding. The test result MUST display whether the database is `new` or `existing`.
+
+#### Scenario: User cannot proceed without successful database test
+
+- **WHEN** the user has not passed database connectivity test
+- **THEN** the wizard does not allow advancing past the database step
+
+#### Scenario: Test result shows attach mode
+
+- **WHEN** database test succeeds for an existing H2 or MySQL database
+- **THEN** the UI indicates that setup will attach to an existing database without running migrations during install
+
+### Requirement: Setup submit carries database attach mode
+
+The setup submit API SHALL accept `databaseMode` (`new` or `existing`) alongside database connection fields. The frontend MUST send the mode returned by the latest successful database test for the same connection parameters.
+
+#### Scenario: Submit includes database mode from test
+
+- **WHEN** the user completes setup after a successful database test returning `existing`
+- **THEN** the submit payload includes `databaseMode: existing`
 
 ### Requirement: Setup wizard collects infrastructure configuration
 

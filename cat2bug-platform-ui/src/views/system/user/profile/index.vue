@@ -22,11 +22,11 @@
               </li>
               <li class="list-group-item">
                 <svg-icon icon-class="phone" />{{ $t('phone-number') }}
-                <div class="pull-right">{{ user.phoneNumber }}</div>
+                <div class="pull-right contact-display" :class="{ 'is-empty': !hasContact(user.phoneNumber) }">{{ formatContact(user.phoneNumber) }}</div>
               </li>
               <li class="list-group-item">
                 <svg-icon icon-class="email" />{{ $t('email') }}
-                <div class="pull-right">{{ user.email }}</div>
+                <div class="pull-right contact-display" :class="{ 'is-empty': !hasContact(user.email) }">{{ formatContact(user.email) }}</div>
               </li>
               <li class="list-group-item">
                 <svg-icon icon-class="date" />{{ $t('create-time') }}
@@ -60,6 +60,7 @@ import userAvatar from "./userAvatar";
 import userInfo from "./userInfo";
 import resetPwd from "./resetPwd";
 import { getUserProfile } from "@/api/system/user";
+import { formatContactDisplay } from "@/utils/user-contact-rules";
 
 export default {
   name: "Profile",
@@ -98,6 +99,12 @@ export default {
         this.roleGroup = response.roleGroup;
         this.postGroup = response.postGroup;
       });
+    },
+    formatContact(value) {
+      return formatContactDisplay(value, this.$t('member.not-set'));
+    },
+    hasContact(value) {
+      return !!(value || '').trim();
     }
   }
 };
@@ -107,5 +114,8 @@ export default {
   .svg-icon {
     margin-right: 5px;
   }
+}
+.contact-display.is-empty {
+  color: var(--text-color-secondary);
 }
 </style>

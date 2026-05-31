@@ -19,6 +19,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -42,7 +43,6 @@ class SysRegisterServiceTest
         body.setUuid(null);
 
         when(userService.checkUserNameUnique(any(SysUser.class))).thenReturn(true);
-        when(userService.checkPhoneUnique(any(SysUser.class))).thenReturn(true);
         when(userService.registerUser(any(SysUser.class))).thenReturn(true);
 
         try (MockedStatic<SpringUtils> springUtils = mockStatic(SpringUtils.class))
@@ -68,7 +68,6 @@ class SysRegisterServiceTest
         body.setUuid("stale-uuid");
 
         when(userService.checkUserNameUnique(any(SysUser.class))).thenReturn(true);
-        when(userService.checkPhoneUnique(any(SysUser.class))).thenReturn(true);
         when(userService.registerUser(any(SysUser.class))).thenReturn(true);
 
         try (MockedStatic<SpringUtils> springUtils = mockStatic(SpringUtils.class))
@@ -84,12 +83,36 @@ class SysRegisterServiceTest
         }
     }
 
+    @Test
+    void register_succeedsWithoutPhoneNumber()
+    {
+        RegisterBody body = validRegisterBody();
+        body.setPhoneNumber(null);
+
+        when(userService.checkUserNameUnique(any(SysUser.class))).thenReturn(true);
+        when(userService.registerUser(any(SysUser.class))).thenReturn(true);
+
+        try (MockedStatic<SpringUtils> springUtils = mockStatic(SpringUtils.class))
+        {
+            MessageSource messageSource = mock(MessageSource.class);
+            ScheduledExecutorService executor = mock(ScheduledExecutorService.class);
+            when(messageSource.getMessage(anyString(), any(), any())).thenReturn("ok");
+            springUtils.when(() -> SpringUtils.getBean(MessageSource.class)).thenReturn(messageSource);
+            springUtils.when(() -> SpringUtils.getBean("scheduledExecutorService")).thenReturn(executor);
+
+            SysUser result = registerService.register(body);
+
+            assertNotNull(result);
+            verify(userService).registerUser(any(SysUser.class));
+            verify(userService, never()).checkPhoneUnique(any(SysUser.class));
+        }
+    }
+
     private RegisterBody validRegisterBody()
     {
         RegisterBody body = new RegisterBody();
         body.setUsername("newuser");
         body.setPassword("password123");
-        body.setPhoneNumber("13800138000");
         body.setNickName("New User");
         return body;
     }

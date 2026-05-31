@@ -81,7 +81,7 @@
         </div>
       </el-form-item>
     </el-form>
-    <span class="login-copyright">{{ $t('copyright') }}</span>
+    <site-copyright class="login-copyright" />
   </div>
 </template>
 

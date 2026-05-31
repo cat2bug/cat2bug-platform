@@ -36,6 +36,8 @@ import ImageUpload from "@/components/ImageUpload"
 import ImagePreview from "@/components/ImagePreview"
 // 字典标签组件
 import DictTag from '@/components/DictTag'
+// 站点版权
+import SiteCopyright from '@/components/SiteCopyright'
 // 悬浮菜单
 import floatMenu from '@/components/Cat2BugFloatMenu/index'
 
@@ -65,6 +67,7 @@ Vue.prototype.handleTree = handleTree
 
 // 全局组件挂载
 Vue.component('DictTag', DictTag)
+Vue.component('SiteCopyright', SiteCopyright)
 Vue.component('Pagination', Pagination)
 Vue.component('RightToolbar', RightToolbar)
 Vue.component('Editor', Editor)

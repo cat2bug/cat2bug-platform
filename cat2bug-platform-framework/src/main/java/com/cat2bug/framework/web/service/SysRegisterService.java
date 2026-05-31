@@ -32,11 +32,9 @@ public class SysRegisterService
         String msg = "";
         String username = registerBody.getUsername();
         String password = registerBody.getPassword();
-        String phoneNumber = registerBody.getPhoneNumber();
         String nickName = registerBody.getNickName();
         SysUser sysUser = new SysUser();
         sysUser.setUserName(username);
-        sysUser.setPhoneNumber(phoneNumber);
         sysUser.setNickName(nickName);
         sysUser.setPassword(SecurityUtils.encryptPassword(password));
 
@@ -47,10 +45,6 @@ public class SysRegisterService
         else if (StringUtils.isEmpty(password))
         {
             msg = MessageUtils.message("user.password.not_empty");
-        }
-        else if(StringUtils.isEmpty(phoneNumber))
-        {
-            msg = MessageUtils.message("user.phone_number.not_empty");
         }
         else if (username.length() < UserConstants.USERNAME_MIN_LENGTH
                 || username.length() > UserConstants.USERNAME_MAX_LENGTH)
@@ -65,9 +59,6 @@ public class SysRegisterService
         else if (!userService.checkUserNameUnique(sysUser))
         {
             msg = MessageUtils.message("user.register.fail.username-exists", username);
-        }
-        else if(!userService.checkPhoneUnique(sysUser)) {
-            msg = MessageUtils.message("user.register.fail.phone-exists", username);
         }
         else
         {

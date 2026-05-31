@@ -7,6 +7,7 @@ import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.common.utils.DateUtils;
 import com.cat2bug.common.utils.MessageUtils;
 import com.cat2bug.common.utils.SecurityUtils;
+import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.system.domain.*;
 import com.cat2bug.system.domain.vo.BatchUserRoleVo;
 import com.cat2bug.system.mapper.*;
@@ -184,11 +185,16 @@ public class SysTeamServiceImpl implements ISysTeamService
     @Override
     @Transactional
     public int insertSysUser(Long teamId, SysUser user) {
+        user.setPhoneNumber(StringUtils.trimToNull(user.getPhoneNumber()));
+        user.setEmail(StringUtils.trimToNull(user.getEmail()));
         if (!sysUserService.checkUserNameUnique(user)) {
             throw new RuntimeException(MessageUtils.message("user.create.fail.username-exists",user.getNickName(), user.getUserName()));
         }
-        if(!sysUserService.checkPhoneUnique(user)) {
+        if (StringUtils.isNotEmpty(user.getPhoneNumber()) && !sysUserService.checkPhoneUnique(user)) {
             throw new RuntimeException(MessageUtils.message("user.create.fail.phone-exists",user.getNickName(), user.getPhoneNumber()));
+        }
+        if (StringUtils.isNotEmpty(user.getEmail()) && !sysUserService.checkEmailUnique(user)) {
+            throw new RuntimeException("创建用户'" + user.getNickName() + "'失败，邮箱账号已存在");
         }
 
         // 插入用户信息

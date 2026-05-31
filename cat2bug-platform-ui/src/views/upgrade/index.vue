@@ -247,7 +247,7 @@
         </main>
       </div>
 
-      <p class="setup-copyright">{{ $t('copyright') }}</p>
+      <site-copyright tag="p" class="setup-copyright" />
     </div>
   </div>
 </template>

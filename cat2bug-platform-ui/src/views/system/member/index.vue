@@ -112,12 +112,12 @@
           </el-col>
           <el-col :span="12">
             <el-form-item :label="$t('phone-number')" prop="phoneNumber">
-              <el-input v-model="form.phoneNumber" :placeholder="$t('member.please-enter-phone-number')" maxlength="11" />
+              <el-input v-model="form.phoneNumber" :placeholder="$t('member.phone-number-optional-placeholder')" maxlength="11" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item :label="$t('email')" prop="email">
-              <el-input v-model="form.email" :placeholder="$t('member.please-enter-email')" maxlength="50" />
+              <el-input v-model="form.email" :placeholder="$t('member.email-optional-placeholder')" maxlength="50" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
@@ -158,6 +158,7 @@ import { listUser, getUser, delUser, addUser, updateUser, resetUserPwd, changeUs
 import { getToken } from "@/utils/auth";
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
 import {strFormat} from "@/utils";
+import { optionalPhoneRule, optionalEmailRule, normalizeContactFields } from "@/utils/user-contact-rules";
 
 export default {
   name: "User",
@@ -233,20 +234,10 @@ export default {
           { min: 5, max: 20, message: this.$t('member.password-length-must-exception'), trigger: 'blur' }
         ],
         email: [
-          { required: true, message: this.$t('member.email-cannot-empty'), trigger: "blur" },
-          {
-            type: "email",
-            message: this.$t('member.email-format-exception'),
-            trigger: ["blur", "change"]
-          }
+          optionalEmailRule(key => this.$i18n.t(key))
         ],
         phoneNumber: [
-          { required: true, message: this.$t('member.phone-number-cannot-empty'), trigger: "blur" },
-          {
-            pattern: /^1[3|4|5|6|7|8|9][0-9]\d{8}$/,
-            message: this.$t('member.phone-number-format-exception'),
-            trigger: "blur"
-          }
+          optionalPhoneRule(key => this.$i18n.t(key))
         ]
       },
     };
@@ -421,14 +412,16 @@ export default {
     submitForm: function() {
       this.$refs["form"].validate(valid => {
         if (valid) {
+          const payload = { ...this.form };
+          normalizeContactFields(payload);
           if (this.form.userId != undefined) {
-            updateUser(this.form).then(response => {
+            updateUser(payload).then(response => {
               this.$modal.msgSuccess(this.$i18n.t('modify-success'));
               this.open = false;
               this.getList();
             });
           } else {
-            addUser(this.form).then(response => {
+            addUser(payload).then(response => {
               this.$modal.msgSuccess(this.$i18n.t('add-success'));
               this.open = false;
               this.getList();
