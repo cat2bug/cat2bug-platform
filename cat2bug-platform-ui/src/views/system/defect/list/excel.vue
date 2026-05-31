@@ -2358,7 +2358,7 @@ export default {
                 `<span class="defect-excel-annex-item">` +
                 `<span class="defect-excel-annex-line" data-url="${escAttr(full)}" data-annex-path="${escPath}" title="${escAttr(
                   label
-                )}">${escText(label)}</span>` +
+                )}"><i class="el-icon-paperclip"></i><span class="defect-excel-annex-label">${escText(label)}</span></span>` +
                 `<span class="defect-excel-annex-remove" data-defect-id="${escAttr(String(record.defectId))}" data-annex-path="${escPath}" title="${removeTitle}" role="button" tabindex="0"><i class="el-icon-close"></i></span>` +
                 `</span>`
               );
@@ -4064,16 +4064,27 @@ export default {
   font-size: 11px;
 }
 .defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-annex-line {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   max-width: 100%;
+  min-width: 0;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   cursor: pointer;
   color: #409eff;
   text-align: left;
 }
-.defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-annex-line:hover {
+.defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-annex-line .el-icon-paperclip {
+  flex-shrink: 0;
+  font-size: 12px;
+}
+.defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-annex-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+.defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-annex-line:hover .defect-excel-annex-label {
   text-decoration: underline;
 }
 .defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-annex-line--placeholder {
