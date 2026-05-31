@@ -165,6 +165,7 @@ import {listDefect} from "@/api/system/defect";
 import {lifeTime} from "@/utils/defect";
 import { TableOptions } from "@/views/system/defect/list/table-options";
 import paneResizerHandleViewport from "@/mixins/paneResizerHandleViewport";
+import multipaneTreeTableHeightSync from "@/mixins/multipaneTreeTableHeightSync";
 
 const DEFECT_TREE_MODULE_WIDTH_CACHE_KEY = "defect_tree_module_width";
 /** 缺陷列表左侧交付物树是否展开（本地缓存） */
@@ -172,7 +173,7 @@ const DEFECT_TREE_MODULE_VISIBLE_CACHE_KEY = "defect_tree_module_visible";
 export default {
   name: "DefectTable",
   dicts: ['defect_level'],
-  mixins: [paneResizerHandleViewport],
+  mixins: [paneResizerHandleViewport, multipaneTreeTableHeightSync],
   components: {
     Multipane,
     MultipaneResizer,
@@ -385,6 +386,7 @@ export default {
       this.syncDefectTableBodyMaxHeight();
       this.$nextTick(() => {
         this.$refs.cat2BugTable && this.$refs.cat2BugTable.doLayout && this.$refs.cat2BugTable.doLayout();
+        this.syncMultipaneTreeTableHeight('cat2BugTable');
         this.scheduleSyncPaneResizerHandle();
       });
     },

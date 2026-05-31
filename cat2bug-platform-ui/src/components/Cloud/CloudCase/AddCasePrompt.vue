@@ -106,12 +106,3 @@ export default {
   margin-left: 0px !important;
 }
 </style>
-<style scoped>
-.add-case-prompt-dialog-footer {
-  display: inline-flex;
-  flex-direction: row;
-  justify-content: flex-end;
-  align-items: center;
-  width: 100%;
-}
-</style>

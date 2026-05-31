@@ -36,11 +36,13 @@ export default {
     align-items: center;
     border-width: 1px;
     border-style: solid;
-    border-radius: 3px;
+    border-radius: var(--cat2bug-border-radius, 3px);
     gap: 2px;
     font-size: 13px;
     padding: 0px 5px;
-    background-color: #FFFFFF;
+    background-color: var(--defect-type-default-bg, #ffffff);
+    border-color: var(--defect-type-default-border, #dcdfe6);
+    color: var(--defect-type-default-color, #606266);
     .el-image {
       width: 15px;
       height: 15px;
@@ -51,15 +53,18 @@ export default {
     }
   }
   .bug {
-    border-color: #ff4949;
-    color: #ff4949;
+    background-color: var(--defect-type-bug-bg, #ffffff);
+    border-color: var(--defect-type-bug-border, #ff4949);
+    color: var(--defect-type-bug-color, #ff4949);
   }
   .task {
-    border-color: #13ce66;
-    color: #13ce66;
+    background-color: var(--defect-type-task-bg, #ffffff);
+    border-color: var(--defect-type-task-border, #13ce66);
+    color: var(--defect-type-task-color, #13ce66);
   }
   .demand {
-    border-color: #ffba00;
-    color: #ffba00;
+    background-color: var(--defect-type-demand-bg, #ffffff);
+    border-color: var(--defect-type-demand-border, #ffba00);
+    color: var(--defect-type-demand-color, #ffba00);
   }
 </style>

@@ -31,12 +31,13 @@
               <el-form-item :label="$t('team.introduce')" prop="introduce">
                 <el-input v-model="form.introduce" :placeholder="$t('team.please-enter-introduce')" type="textarea" maxlength="255" rows="5" show-word-limit />
               </el-form-item>
+              <el-form-item class="page-form-actions">
+                <div class="page-form-actions__buttons">
+                  <el-button @click="goBack">{{$t('cancel')}}</el-button>
+                  <el-button type="primary" @click="submitForm">{{$t('save')}}</el-button>
+                </div>
+              </el-form-item>
             </el-form>
-            <el-row>
-              <el-col :span="24">
-                <el-button type="primary" @click="submitForm">{{$t('save')}}</el-button>
-              </el-col>
-            </el-row>
           </template>
         </el-skeleton>
       </el-col>
@@ -111,8 +112,3 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped>
-.el-button {
-  width: 100%;
-}
-</style>

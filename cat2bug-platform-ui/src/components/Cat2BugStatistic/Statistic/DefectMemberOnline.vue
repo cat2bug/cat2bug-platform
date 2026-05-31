@@ -1,11 +1,13 @@
 <template>
-  <cat2-bug-card :title="$i18n.t('defect.online-member').toString()" v-loading="loading" :tools="tools" @tools-click="toolsHandle">
-    <template slot="content">
-      <div class="member-list">
-        <cat2-bug-avatar class="click" :member="member" :online="true" v-for="member in memberList" :key="member.userId" @click.native="clickHandle(member)" />
-      </div>
-    </template>
-  </cat2-bug-card>
+  <div class="member-statistic-root">
+    <cat2-bug-card :title="$i18n.t('defect.online-member').toString()" v-loading="loading" :tools="tools" @tools-click="toolsHandle">
+      <template slot="content">
+        <div class="member-list">
+          <cat2-bug-avatar class="click" size="small" :member="member" :online="true" v-for="member in memberList" :key="member.userId" @click.native="clickHandle(member)" />
+        </div>
+      </template>
+    </cat2-bug-card>
+  </div>
 </template>
 
 <script>
@@ -115,13 +117,44 @@ export default {
 .click:hover {
   cursor: pointer;
 }
+
+.member-statistic-root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: 100%;
+  min-height: 0;
+  width: 100%;
+  box-sizing: border-box;
+
+  ::v-deep .statistic-box {
+    flex: 1 1 auto;
+    height: 100%;
+    max-height: 100%;
+    min-height: 0;
+    width: 100%;
+  }
+
+  ::v-deep .statistic-box-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+  }
+}
+
 .member-list {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-  max-width: 280px;
-  min-width: 230px;
+  gap: 4px;
+  flex: 1 1 auto;
+  align-content: flex-start;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 0;
+  max-height: 100%;
   overflow-x: hidden;
   overflow-y: auto;
+  padding: 1px 0;
 }
 </style>

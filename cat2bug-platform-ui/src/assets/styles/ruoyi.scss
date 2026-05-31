@@ -76,7 +76,7 @@
 }
 
 .el-table {
-	border-radius: 4px !important;
+	border-radius: var(--cat2bug-border-radius, 4px) !important;
 	overflow: hidden !important;
 	// 强制 WebKit 浏览器对 border-radius 进行 overflow: hidden 裁剪，防止表头出现白色尖角
 	transform: translate3d(0, 0, 0) !important;

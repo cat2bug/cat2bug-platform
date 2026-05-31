@@ -626,7 +626,6 @@ export default {
   flex: 1 1 auto;
   width: 100%;
   box-sizing: border-box;
-  --case-toolbar-v-gap: 8px;
 }
 .document-list-body {
   flex: 1 1 0%;
@@ -691,7 +690,7 @@ export default {
 }
 .document-page ::v-deep h3.document-project-label {
   margin-top: 0;
-  margin-bottom: 10px;
+  margin-bottom: 0;
 }
 .document-tools {
   width: 100%;
@@ -703,8 +702,8 @@ export default {
   align-content: flex-start;
   column-gap: var(--cat2bug-toolbar-section-gap, 10px);
   row-gap: var(--cat2bug-toolbar-row-gap, 8px);
-  margin-top: var(--case-toolbar-v-gap, 8px);
-  margin-bottom: var(--case-toolbar-v-gap, 8px);
+  margin-top: 0;
+  margin-bottom: var(--case-toolbar-v-gap, 10px);
   .el-form-item {
     margin-bottom: 0;
   }

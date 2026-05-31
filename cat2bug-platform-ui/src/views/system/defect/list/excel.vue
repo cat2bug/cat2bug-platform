@@ -313,8 +313,8 @@ const EXCEL_LAST_DATA_ROW_NEAR_BOTTOM_PX = 160;
 const EXCEL_DATA_ROW_ESTIMATE_PX = 26;
 /** 表格可视区底部相对 .defect-excel-context 内底的留白(px)；高度优先用 context.clientHeight − gap */
 const EXCEL_VIEWPORT_BOTTOM_GAP = 20;
-/** 底部自定义横条区在宿主中的占位(px)，与下方 ::v-deep .footer 高度一致（与 Cat2BugTable 横条 6px 对齐） */
-const VUE_EXCEL_EDITOR_FOOTER_BAR_PX = 6;
+/** 底部自定义横条 fallback(px)；与 ::v-deep .footer 高度一致 */
+const VUE_EXCEL_EDITOR_FOOTER_BAR_PX = 8;
 /** 占位行状态列：批量创建队列中的展示（仅存于 defectStateText，非接口值） */
 const EXCEL_CREATE_ROW_QUEUED = "__CAT2BUG_EXCEL_CREATE_QUEUED__";
 const EXCEL_CREATE_ROW_RUNNING = "__CAT2BUG_EXCEL_CREATE_RUNNING__";
@@ -728,6 +728,7 @@ export default {
       const wrap = this.$refs.defectExcelContext;
       if (!wrap) return;
       const gap = Math.max(0, Number(this.viewportBottomGap) || 0);
+      const bottomChrome = this.measureExcelEditorBottomChromePx();
       /*
        * 优先用 flex 已分配给 .defect-excel-context 的 clientHeight，避免用「视口/缺陷页底 − top」在
        * 主内容区高于 .defect-page 底、或首轮 layout 未稳时算矮，导致表格下方大块留白。
@@ -749,8 +750,8 @@ export default {
         }
         space = Math.max(0, Math.floor(bottomBoundary - top - gap));
       }
-      /* 为底部 .footer（含横向 h-scroll）留出高度，避免整坨挤出 .defect-excel-context */
-      this.excelEditorHeightPx = Math.max(120, space - VUE_EXCEL_EDITOR_FOOTER_BAR_PX);
+      /* 为底部 .footer 横条 + 编辑器/component-content 外框留出高度，避免被 .defect-excel-context overflow:hidden 裁切 */
+      this.excelEditorHeightPx = Math.max(120, space - bottomChrome);
       const h = this.excelEditorHeightPx;
       this.$nextTick(() => {
         const ed = this.$refs.excelEditor;
@@ -759,6 +760,48 @@ export default {
           if (!this.isExcelEditorColSepDragging()) this.scheduleExcelEditorLayoutFix();
         }
       });
+    },
+    /** table-content 之外占用的高度：footer 横条 + 编辑器/component-content 上下边框，避免底部滚动条被裁切 */
+    measureExcelEditorBottomChromePx() {
+      const ed = this.$refs.excelEditor;
+      if (!ed || !ed.$el) {
+        return VUE_EXCEL_EDITOR_FOOTER_BAR_PX + 3;
+      }
+
+      /* 优先量 table-content 底到编辑器外壳底，含 footer + 外框，避免固定常量和 border-box 估算偏差 */
+      if (ed.tableContent && typeof ed.tableContent.getBoundingClientRect === "function") {
+        const tcBottom = ed.tableContent.getBoundingClientRect().bottom;
+        const shellBottom = ed.$el.getBoundingClientRect().bottom;
+        const measured = shellBottom - tcBottom;
+        if (measured > 0) {
+          return Math.ceil(measured) + 2;
+        }
+      }
+
+      let chrome = VUE_EXCEL_EDITOR_FOOTER_BAR_PX;
+      const footer = ed.$refs && ed.$refs.footer;
+      if (footer && typeof footer.getBoundingClientRect === "function") {
+        const fh = footer.getBoundingClientRect().height;
+        if (fh > 0) chrome = fh;
+      }
+
+      if (ed.$el) {
+        const shellStyle = window.getComputedStyle(ed.$el);
+        const shellBorderY =
+          (parseFloat(shellStyle.borderTopWidth) || 0) + (parseFloat(shellStyle.borderBottomWidth) || 0);
+        if (shellBorderY > 0) {
+          chrome += shellBorderY;
+        } else {
+          const cc = ed.$el.querySelector(".component-content");
+          if (cc) {
+            const ccStyle = window.getComputedStyle(cc);
+            chrome +=
+              (parseFloat(ccStyle.borderTopWidth) || 0) + (parseFloat(ccStyle.borderBottomWidth) || 0);
+          }
+        }
+      }
+
+      return Math.ceil(chrome) + 2;
     },
     /**
      * 用内联 !important 锁死首行表头高度（压过 vue-excel-editor mounted 里异步写回的 height），
@@ -3490,6 +3533,8 @@ export default {
   display: flex;
   flex-direction: column;
   background: transparent;
+  padding-bottom: 2px;
+  box-sizing: border-box;
 }
 /* 去掉外层边框，只保留库内 .component-content 一层 1px，避免「双边框」显粗 */
 .defect-vue-excel-editor {
@@ -3511,8 +3556,7 @@ export default {
   border: 1px solid #dcdfe6;
   border-radius: 4px 4px 0 0;
   overflow: hidden;
-  transform: translate3d(0, 0, 0);
-  /* 库默认 max-width: fit-content，列变宽会撑大整块编辑器；限制为 100%，宽表在 .table-content 内横向滚动 */
+  /* 勿 transform：会破坏库内 .autocomplete-results(position:fixed) 相对视口定位，下拉会跑偏 */
   max-width: 100%;
   width: 100%;
   min-width: 0;
@@ -3551,22 +3595,26 @@ export default {
 }
 /* 库底部横向拖条为自定义 .h-scroll（table-content 原生条宽高为 0）；与 Cat2BugTable .cat2bug-custom-xbar 共用 token */
 .defect-vue-excel-editor ::v-deep .footer {
-  height: 6px !important;
-  min-height: 0;
+  height: 8px !important;
+  min-height: 8px !important;
   line-height: 1 !important;
   box-sizing: border-box;
   background-color: var(--cat2bug-xbar-track) !important;
   border-top: 1px solid var(--border-color-light) !important;
-  overflow: hidden !important;
+  overflow: visible !important;
 }
 .defect-vue-excel-editor ::v-deep .footer .left-block {
-  height: 6px !important;
+  height: 100% !important;
+  max-height: 7px;
+  box-sizing: border-box;
   background-color: var(--table-header-bg) !important;
   border-right: 1px solid var(--border-color-light) !important;
 }
 .defect-vue-excel-editor ::v-deep .footer .h-scroll {
   z-index: 2;
-  height: 6px !important;
+  height: 100% !important;
+  max-height: 7px;
+  box-sizing: border-box;
   background-color: var(--cat2bug-xbar-thumb) !important;
   border-radius: 3px !important;
 }

@@ -456,7 +456,7 @@ export default {
     height: 130px;
     margin-right: 10px;
     margin-bottom: 10px;
-    border-radius: 8px;
+    border-radius: var(--cat2bug-border-radius, 4px);
     overflow: hidden;
     :last-child {
       margin-right: 0px;

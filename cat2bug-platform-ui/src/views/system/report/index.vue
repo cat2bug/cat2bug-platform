@@ -496,11 +496,10 @@ export default {
   flex: 1 1 auto;
   width: 100%;
   box-sizing: border-box;
-  --case-toolbar-v-gap: 8px;
 }
 .report-page ::v-deep h3.report-project-label {
   margin-top: 0;
-  margin-bottom: 10px;
+  margin-bottom: 0;
 }
 .report-list-body {
   flex: 1 1 0%;
@@ -528,8 +527,8 @@ export default {
   align-content: flex-start;
   column-gap: var(--cat2bug-toolbar-section-gap, 10px);
   row-gap: var(--cat2bug-toolbar-row-gap, 8px);
-  margin-top: var(--case-toolbar-v-gap, 8px);
-  margin-bottom: var(--case-toolbar-v-gap, 8px);
+  margin-top: 0;
+  margin-bottom: var(--case-toolbar-v-gap, 10px);
   .el-form-item {
     margin-bottom: 0;
   }

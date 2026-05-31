@@ -17,9 +17,11 @@
           <el-input v-model="form.corpSecret" maxlength="64" :show-password="true" :placeholder="$t('enterprise-wechat.enter-app-secret')"></el-input>
         </el-form-item>
       <!--            保存取消按钮-->
-        <el-form-item>
-          <el-button type="primary" @click="onSubmit">{{$t('save')}}</el-button>
-          <el-button @click="goBack">{{$t('cancel')}}</el-button>
+        <el-form-item class="page-form-actions">
+          <div class="page-form-actions__buttons">
+            <el-button @click="goBack">{{$t('cancel')}}</el-button>
+            <el-button type="primary" @click="onSubmit">{{$t('save')}}</el-button>
+          </div>
         </el-form-item>
       </el-form>
       </el-col>

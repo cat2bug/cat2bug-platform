@@ -1,7 +1,7 @@
 <template>
   <!-- 添加或修改测试计划对话框 -->
-  <el-dialog :title="$t(title)" :visible.sync="open" width="80%" append-to-body @closed="cancel">
-    <el-form ref="form" :model="form" :rules="rules" label-width="120px">
+  <el-dialog :title="$t(title)" :visible.sync="open" width="80%" custom-class="plan-add-dialog" append-to-body @closed="cancel" @opened="onPlanAddDialogOpened">
+    <el-form ref="form" class="plan-add-dialog__form" :model="form" :rules="rules" label-width="120px">
       <el-form-item :label="$t('plan.name')" prop="planName">
         <el-input v-model="form.planName" :placeholder="$t('plan.enter-name')" maxlength="255" />
       </el-form-item>
@@ -36,9 +36,9 @@
           </el-form-item>
         </el-col>
       </el-row>
-      <el-divider content-position="center">{{ $t('plan.select-case') }}</el-divider>
+      <el-divider class="plan-add-dialog__case-divider" content-position="center">{{ $t('plan.select-case') }}</el-divider>
       <!-- 与缺陷 list/table.vue：查询条单独一行，下方再树 + 表 -->
-      <div class="plan-add-case-select">
+      <div ref="planAddCaseSelect" class="plan-add-case-select">
         <div class="plan-add-case-toolbar defect-table-tools defect-table-tools-bar">
           <div class="case-tools">
             <el-form :model="caseQueryParams" ref="queryForm" size="small" :inline="true" label-width="68px">
@@ -204,6 +204,7 @@ import Cat2BugSelectLevel from "@/components/Cat2BugSelectLevel";
 import Cat2BugPreviewImage from "@/components/Cat2BugPreviewImage";
 import { Multipane, MultipaneResizer } from 'vue-multipane';
 import paneResizerHandleViewport from '@/mixins/paneResizerHandleViewport';
+import multipaneTreeTableHeightSync from '@/mixins/multipaneTreeTableHeightSync';
 import {addPlan, getPlan, updatePlan} from "@/api/system/plan";
 import {listPlanItemCase} from "@/api/system/PlanItem";
 import {listCase, listPlanCaseId, listPlanCaseLevel} from "@/api/system/case";
@@ -211,13 +212,11 @@ import {listCase, listPlanCaseId, listPlanCaseLevel} from "@/api/system/case";
 const TREE_MODULE_WIDTH_CACHE_KEY = 'plan_case_tree_module_width';
 /** 新建/编辑计划弹窗：左侧树是否展开（与缺陷列表一致用 local） */
 const PLAN_ADD_DIALOG_TREE_VISIBLE_CACHE_KEY = 'plan_add_dialog_tree_module_visible';
-/** 弹窗内用例表最大高度（行多时内部滚动，行少时不撑出大块空白） */
-const PLAN_ADD_TABLE_MAX_HEIGHT = 480;
 
 export default {
   name: "AddPlanDialog",
   dicts: ['plan_item_state'],
-  mixins: [paneResizerHandleViewport],
+  mixins: [paneResizerHandleViewport, multipaneTreeTableHeightSync],
   components: { Cat2BugLevel,Step,TreePlanItemModule,Multipane,MultipaneResizer, FocusMemberList, Cat2BugPreviewImage,Cat2BugText, Cat2BugSelectLevel },
   data() {
     return {
@@ -278,7 +277,9 @@ export default {
         this.$nextTick(() => {
           this.initPlanAddTableHeaderHeightSync();
           this.initPlanAddTableBodyResizeObserver();
-          this.setDragComponentSize();
+          this.$nextTick(() => {
+            this.setDragComponentSize();
+          });
         });
       } else {
         this.destroyPlanAddTableHeaderHeightSync();
@@ -344,6 +345,16 @@ export default {
     this.destroyPlanAddTableBodyResizeObserver();
   },
   methods: {
+    onPlanAddDialogOpened() {
+      this.$nextTick(() => {
+        this.syncPlanAddTableBodyMaxHeight();
+        this.setDragComponentSize();
+        requestAnimationFrame(() => {
+          this.syncPlanAddTableBodyMaxHeight();
+          this.setDragComponentSize();
+        });
+      });
+    },
     syncPlanAddTreeToolbarWithTableHeader() {
       this.$nextTick(() => {
         const tbl = this.$refs.planItemTable;
@@ -631,24 +642,7 @@ export default {
             parseFloat(st.marginTop || '0') +
             parseFloat(st.marginBottom || '0');
         }
-        const cap = Math.max(120, Math.min(
-          Math.floor(body.clientHeight - reserveBelowTable - 2),
-          PLAN_ADD_TABLE_MAX_HEIGHT
-        ));
-        let contentH = cap;
-        const tbl = this.$refs.planItemTable;
-        if (tbl && tbl.$el) {
-          const headerEl = tbl.$el.querySelector('.el-table__header-wrapper');
-          const rows = tbl.$el.querySelectorAll('.el-table__body-wrapper tbody tr');
-          if (headerEl) {
-            let rowsH = 0;
-            rows.forEach(row => {
-              rowsH += row.offsetHeight;
-            });
-            contentH = headerEl.offsetHeight + rowsH + 1;
-          }
-        }
-        const next = Math.max(120, Math.min(contentH, cap));
+        const next = Math.max(120, Math.floor(body.clientHeight - reserveBelowTable - 2));
         if (this.planAddTableBodyMaxHeight !== next) {
           this.planAddTableBodyMaxHeight = next;
           this.$nextTick(() => {
@@ -662,8 +656,8 @@ export default {
     },
     initPlanAddTableBodyResizeObserver() {
       this.destroyPlanAddTableBodyResizeObserver();
-      const body = this.$refs.planAddCaseContextBody;
-      if (!body) {
+      const pane = this.$refs.planAddCaseSelect || this.$refs.planAddCaseContextBody;
+      if (!pane) {
         this.syncPlanAddTableBodyMaxHeight();
         return;
       }
@@ -674,7 +668,7 @@ export default {
       this._planAddTableBodyResizeObserver = new ResizeObserver(() => {
         this.syncPlanAddTableBodyMaxHeight();
       });
-      this._planAddTableBodyResizeObserver.observe(body);
+      this._planAddTableBodyResizeObserver.observe(pane);
       this.syncPlanAddTableBodyMaxHeight();
     },
     destroyPlanAddTableBodyResizeObserver() {
@@ -688,6 +682,7 @@ export default {
       this.syncPlanAddTableBodyMaxHeight();
       this.$nextTick(() => {
         this.$refs.planItemTable && this.$refs.planItemTable.doLayout && this.$refs.planItemTable.doLayout();
+        this.syncMultipaneTreeTableHeight('planItemTable');
         this.scheduleSyncPaneResizerHandle();
       });
     },
@@ -721,7 +716,7 @@ export default {
   flex-direction: column;
   width: 100%;
   min-height: 0;
-  flex: 0 1 auto;
+  flex: 1 1 0%;
 }
 .plan-add-case-toolbar {
   flex-shrink: 0;
@@ -749,7 +744,7 @@ export default {
   }
 }
 .custom-resizer {
-  flex: 0 1 auto;
+  flex: 1 1 0%;
   min-height: 0;
   width: 100%;
   height: auto;
@@ -852,7 +847,7 @@ export default {
   flex-direction: column;
 }
 .case-context {
-  flex: 0 1 auto;
+  flex: 1 1 0%;
   min-width: 0;
   min-height: 0;
   overflow: hidden;
@@ -860,7 +855,7 @@ export default {
   flex-direction: column;
 }
 .plan-add-case-context-body {
-  flex: 0 1 auto;
+  flex: 1 1 0%;
   min-height: 0;
   min-width: 0;
   width: 100%;
@@ -871,10 +866,11 @@ export default {
   flex-direction: column;
 }
 .plan-add-case-table-scroll {
-  flex: 0 1 auto;
+  flex: 1 1 0%;
   align-self: stretch;
   width: 100%;
   min-width: 0;
+  min-height: 0;
   overflow-x: auto;
   overflow-y: hidden;
   /* 表格可横向滚动但不显示滚动条（仍可用触控板 / Shift+滚轮） */
@@ -920,6 +916,72 @@ export default {
   }
   > * {
     border-bottom: 1px dashed #E4E7ED;
+  }
+}
+</style>
+
+<style lang="scss">
+/* append-to-body：弹窗在 body 下，需非 scoped */
+.plan-add-dialog.el-dialog {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 12vh);
+  max-height: calc(100vh - 12vh);
+  min-height: 560px;
+  margin-top: 6vh !important;
+  margin-bottom: 6vh !important;
+
+  .el-dialog__header {
+    flex-shrink: 0;
+  }
+
+  .el-dialog__body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .el-dialog__footer {
+    flex-shrink: 0;
+  }
+
+  .plan-add-dialog__form {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .plan-add-dialog__form > .el-form-item,
+  .plan-add-dialog__form > .el-row {
+    flex-shrink: 0;
+  }
+
+  .plan-add-dialog__case-divider {
+    flex-shrink: 0;
+    margin: 8px 0;
+  }
+
+  .plan-add-case-select {
+    flex: 1 1 0%;
+    min-height: 240px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* 左侧交付物/优先级树：不要外层边框盒子，与弹框背景一致 */
+  .custom-resizer:not(.custom-resizer--tree-hidden) > .tree-module > .tree {
+    background-color: transparent !important;
+  }
+
+  /* 右侧用例表格：与左侧一致，不要外框 */
+  .el-table:not(.el-table--border) {
+    border: none !important;
   }
 }
 </style>

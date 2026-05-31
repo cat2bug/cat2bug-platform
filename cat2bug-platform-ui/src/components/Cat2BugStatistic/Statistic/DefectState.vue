@@ -1,26 +1,42 @@
 <template>
   <cat2-bug-card :title="$i18n.t('defect.status-statistics').toString()" v-loading="loading" :tools="tools" @tools-click="toolsHandle">
     <template slot="content">
-      <cat2-but-label @click.native="clickHandle" class="defect-state-label" icon="all" icon-color="#409EFF" :label="$t('all').toString()" content="12">
-        <template slot="content">
-          <span>{{ total }}</span>
-          <span class="width50">{{ $t('today') }}</span>
-          <span class="width50">{{ $t('this-week') }}</span>
-        </template>
-      </cat2-but-label>
-      <cat2-but-label @click.native="clickHandle($event,state)"
-                      class="defect-state-label"
-                      icon="pending-processing"
-                      :icon-color="iconColor(index)"
-                      v-for="(state,index) in stateList"
-                      :key="index"
-                      :label="$t(state.k).toString()">
-        <template slot="content">
-          <span>{{ state.a }}</span>
-          <span class="width50" :flag="flag(state.d)">{{ flag(state.d) + state.d }}</span>
-          <span class="width50" :flag="flag(state.w)">{{ flag(state.w) + state.w }}</span>
-        </template>
-      </cat2-but-label>
+      <div class="defect-state-panel">
+      <el-tooltip
+        effect="dark"
+        placement="top"
+        :open-delay="200"
+        :content="formatStateTooltip($t('all'), total, stateDeltaTotal('d'), stateDeltaTotal('w'))"
+      >
+        <cat2-but-label @click.native="clickHandle" class="defect-state-label" icon="all" icon-color="#409EFF" :label="$t('all').toString()" content="12">
+          <template slot="content">
+            <span>{{ total }}</span>
+            <span>{{ stateDeltaTotal('d') >= 0 ? '+' + stateDeltaTotal('d') : stateDeltaTotal('d') }}</span>
+            <span>{{ stateDeltaTotal('w') >= 0 ? '+' + stateDeltaTotal('w') : stateDeltaTotal('w') }}</span>
+          </template>
+        </cat2-but-label>
+      </el-tooltip>
+      <el-tooltip
+        v-for="(state,index) in stateList"
+        :key="index"
+        effect="dark"
+        placement="top"
+        :open-delay="200"
+        :content="formatStateTooltip($t(state.k), state.a, state.d, state.w)"
+      >
+        <cat2-but-label @click.native="clickHandle($event,state)"
+                        class="defect-state-label"
+                        icon="pending-processing"
+                        :icon-color="iconColor(index)"
+                        :label="$t(state.k).toString()">
+          <template slot="content">
+            <span>{{ state.a }}</span>
+            <span :flag="flag(state.d)">{{ flag(state.d) + state.d }}</span>
+            <span :flag="flag(state.w)">{{ flag(state.w) + state.w }}</span>
+          </template>
+        </cat2-but-label>
+      </el-tooltip>
+      </div>
     </template>
   </cat2-bug-card>
 </template>
@@ -76,6 +92,13 @@ export default {
       let all = 0;
       this.stateList.forEach(s=>all+=s.a);
       return all;
+    },
+    stateDeltaTotal() {
+      return function (field) {
+        let sum = 0;
+        this.stateList.forEach(s => { sum += (s[field] || 0); });
+        return sum;
+      };
     },
     iconColor: function () {
       return function (index) {
@@ -147,28 +170,70 @@ export default {
     },
     toolsHandle(e,tool) {
       this.$emit('tools-click',tool);
+    },
+    formatDelta(num) {
+      const value = num || 0;
+      if (value > 0) {
+        return '+' + value;
+      }
+      if (value < 0) {
+        return String(value);
+      }
+      return '0';
+    },
+    formatStateTooltip(label, total, dayDelta, weekDelta) {
+      return `${label}：${total} / ${this.$t('today')}：${this.formatDelta(dayDelta)} / ${this.$t('this-week')}：${this.formatDelta(weekDelta)}`;
     }
   }
 }
 </script>
 
 <style lang="scss" scoped>
-  .width50 {
-    width: 50px;
-    min-width: 50px;
-  }
-  .cat2bug-statistic-label {
-    span[flag="+"] {
-      color: orangered;
+  .defect-state-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+
+    ::v-deep .el-tooltip {
+      display: block;
+      width: 100%;
     }
-    span[flag="-"] {
-      color: #67C23A;
-    }
   }
-  .defect-state-label {
+
+  .defect-state-panel ::v-deep .el-tooltip.defect-state-label {
+    display: grid;
+    grid-template-columns: 16px minmax(48px, 1fr) 28px 36px 36px;
+    column-gap: 6px;
+    align-items: center;
     cursor: pointer;
+    padding-left: 5px;
+    padding-right: 5px;
+    border-radius: 2px;
+    transition: background-color 0.15s;
+
+    &:hover {
+      background-color: rgba(64, 158, 255, 0.06);
+    }
+
+    &:hover .cat2bug-statistic-label__name {
+      color: #409eff;
+    }
   }
-  .defect-state-label:hover {
-    color: #409EFF;
+
+  .defect-state-panel ::v-deep span[flag="+"] {
+    color: #f56c6c;
+  }
+
+  .defect-state-panel ::v-deep span[flag="-"] {
+    color: #67c23a;
+  }
+
+  .defect-state-panel ::v-deep .el-tooltip.defect-state-label + .el-tooltip.defect-state-label {
+    border-top: 1px dashed var(--border-color-lighter, #f2f6fc);
   }
 </style>

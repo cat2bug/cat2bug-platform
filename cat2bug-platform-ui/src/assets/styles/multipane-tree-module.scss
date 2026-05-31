@@ -1,0 +1,65 @@
+/**
+ * 交付物树列：左缘圆角；表体有滚动时与 el-table 等高，无滚动时纵向置底撑满。
+ * 分隔条高度与左侧树列外框一致。
+ */
+.custom-resizer:not(.custom-resizer--tree-hidden) {
+  > .defect-tree-module,
+  > .tree-module {
+    align-self: flex-start !important;
+
+    &.tree-module--sync-table-height {
+      height: var(--tree-module-sync-height);
+      min-height: var(--tree-module-sync-height);
+      max-height: var(--tree-module-sync-height);
+    }
+
+    &.tree-module--stretch-bottom {
+      align-self: stretch !important;
+      height: auto;
+      min-height: 0;
+    }
+
+    > .tree {
+      height: 100%;
+      min-height: 0;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+      border-radius: var(--cat2bug-border-radius, 4px);
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+      overflow: hidden;
+      background-color: var(--table-bg, #ffffff);
+    }
+
+    .tree-tools {
+      flex-shrink: 0;
+      border-top-left-radius: var(--cat2bug-border-radius, 4px);
+      border-top-right-radius: 0;
+    }
+
+    .tree-plan-item-tabs > .el-tabs__header {
+      border-top-left-radius: var(--cat2bug-border-radius, 4px);
+      overflow: hidden;
+    }
+
+    .el-tree {
+      flex: 1 1 0%;
+      min-height: 0;
+      overflow-y: auto;
+      background-color: var(--table-bg, #ffffff);
+      border-bottom-left-radius: var(--cat2bug-border-radius, 4px);
+    }
+  }
+
+  > .multipane-resizer {
+    align-self: flex-start !important;
+    min-height: 0;
+
+    &.multipane-resizer--sync-tree-height {
+      height: var(--multipane-resizer-sync-height) !important;
+      max-height: var(--multipane-resizer-sync-height);
+    }
+  }
+}

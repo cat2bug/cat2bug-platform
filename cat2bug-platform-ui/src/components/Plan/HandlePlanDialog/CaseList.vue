@@ -200,6 +200,7 @@ import {parseTime} from "@/utils/ruoyi";
 import {checkPermi} from "@/utils/permission";
 import { Multipane, MultipaneResizer } from "vue-multipane";
 import paneResizerHandleViewport from "@/mixins/paneResizerHandleViewport";
+import multipaneTreeTableHeightSync from "@/mixins/multipaneTreeTableHeightSync";
 
 const TREE_MODULE_WIDTH_CACHE_KEY = "plan_case_tree_module_width";
 
@@ -212,7 +213,7 @@ const PLAN_ITEM_SORT_TYPE = 'plan_item_sort_type_key';
 export default {
   name: "CaseList",
   dicts: ['plan_item_state'],
-  mixins: [paneResizerHandleViewport],
+  mixins: [paneResizerHandleViewport, multipaneTreeTableHeightSync],
   components: { Multipane, MultipaneResizer, HandleCaseOfPlan, PlanItemTools, Cat2BugText, Cat2BugPreviewImage, Cat2BugLevel, Cat2BugTable, DictTag, RowListMember, Step },
   props: {
     /** 与缺陷页 table.vue：为 false 时在表格首列显示「展开交付物树」 */
@@ -356,6 +357,7 @@ export default {
         this.updatePlanDrawerTableMaxHeight();
         this.$nextTick(() => {
           this.$refs.cat2BugTable && this.$refs.cat2BugTable.doLayout && this.$refs.cat2BugTable.doLayout();
+          this.syncMultipaneTreeTableHeight('cat2BugTable');
           this.scheduleSyncPaneResizerHandle();
           this.$emit("resize");
         });

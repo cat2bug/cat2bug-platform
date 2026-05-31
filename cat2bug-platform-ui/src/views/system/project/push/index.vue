@@ -8,9 +8,11 @@
       <el-form-item :label="$t('project.push.key')" prop="pullKey">
         <el-input v-model="form.pullKey"></el-input>
       </el-form-item>
-      <el-form-item>
-        <el-button type="primary" @click="onSubmit">{{ $t('sync') }}</el-button>
-        <el-button>{{ $t('cancel') }}</el-button>
+      <el-form-item class="page-form-actions">
+        <div class="page-form-actions__buttons">
+          <el-button @click="goBack">{{ $t('cancel') }}</el-button>
+          <el-button type="primary" @click="onSubmit">{{ $t('sync') }}</el-button>
+        </div>
       </el-form-item>
     </el-form>
   </div>

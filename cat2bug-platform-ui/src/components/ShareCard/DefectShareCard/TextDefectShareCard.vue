@@ -125,7 +125,8 @@ export default {
   display: inline-flex;
   flex-direction: column;
   justify-content: flex-start;
-  background-color: #f4f4f4;
+  background-color: var(--share-card-bg, #f4f4f4);
+  color: var(--text-color-primary);
   padding: 0px 10px 10px 10px;
   border-radius: 5px;
 }
@@ -135,6 +136,10 @@ export default {
   justify-content: flex-start;
   align-items: center;
   gap: 10px;
+  .defect-title-num,
+  .defect-title-name {
+    color: var(--text-color-primary);
+  }
   .defect-title-num {
     margin-left: 5px;
   }
@@ -147,15 +152,17 @@ export default {
 }
 .body {
   padding: 15px 10px;
-  background-color: #FFFFFF;
+  background-color: var(--share-card-surface-bg, #ffffff);
+  color: var(--text-color-regular);
   border-radius: 5px;
 }
 .link {
   padding-top: 10px;
+  color: var(--text-color-regular);
   .el-link {
-    color: #1890ff;
+    color: var(--share-card-link-color, #1890ff);
     text-decoration: underline;
-    text-decoration-color: #1890ff;
+    text-decoration-color: var(--share-card-link-color, #1890ff);
   }
 }
 .body, .link {

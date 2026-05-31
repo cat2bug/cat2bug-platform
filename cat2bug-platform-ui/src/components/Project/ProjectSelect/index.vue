@@ -205,15 +205,15 @@ export default {
   font-size: 1rem;
 }
 .start-switch[collect="true"] {
-  color: rgb(247, 186, 42);
-  -webkit-text-stroke:3px transparent;
-  background: rgb(247, 186, 42) top left / 100% 100%;
+  color: var(--star-switch-on-color, rgb(247, 186, 42));
+  -webkit-text-stroke: 3px transparent;
+  background: var(--star-switch-on-fill, rgb(247, 186, 42)) top left / 100% 100%;
   -webkit-background-clip: text;
 }
 .start-switch {
-  color: #FFFFFF;
-  -webkit-text-stroke:3px transparent;
-  background: rgb(198, 209, 222) top left / 100% 100%;
+  color: var(--star-switch-off-color, #ffffff);
+  -webkit-text-stroke: 3px transparent;
+  background: var(--star-switch-off-fill, rgb(198, 209, 222)) top left / 100% 100%;
   -webkit-background-clip: text;
 }
 .title {

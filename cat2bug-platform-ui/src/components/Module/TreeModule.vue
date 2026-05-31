@@ -32,6 +32,7 @@
           <el-button
             type="text"
             size="mini"
+            class="tree-node-remove-btn"
             v-show="removeNodeButtonVisible(data)"
             @click="remove($event, node, data)">
             <i class="el-icon-close" />
@@ -215,8 +216,17 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.tree {
+  height: 100%;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
 /* 与全局 .el-table th 一致（ruoyi.scss：表头行 48px / font-size 13px），与含 padding 的表头视觉同高 */
 .tree-tools {
+  flex-shrink: 0;
   width: 100%;
   height: 48px;
   line-height: 48px;
@@ -283,6 +293,13 @@ export default {
   font-size: 14px;
   padding-right: 8px;
 }
+.tree-node-remove-btn {
+  color: #f56c6c !important;
+  &:hover,
+  &:focus {
+    color: #f78989 !important;
+  }
+}
 .active {
   background-color: #00afff;
 }
@@ -291,6 +308,7 @@ export default {
   overflow-x: auto;
   width: 100%;
   ::v-deep > div[role="treeitem"]:first-child{
+    margin-top: 5px;
     .el-checkbox {
       display: none;
     }

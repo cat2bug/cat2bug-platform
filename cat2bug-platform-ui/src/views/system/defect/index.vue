@@ -721,8 +721,6 @@ export default {
   flex-direction: column;
   box-sizing: border-box;
   overflow: hidden;
-  /* 查询条上、下与 Tab / 主内容区的留白一致（子树继承） */
-  --defect-toolbar-v-gap: 8px;
 }
 /* Excel：与 defectPageRootStyle 一致，避免仅靠内联时 scoped 的 visible 参与级联 */
 .defect-page.defect-page--excel-view {
@@ -742,7 +740,6 @@ export default {
   flex: 0 1 auto;
   display: flex;
   flex-direction: column;
-  /* 与 Tab/统计区之间的纵向留白改由 .defect-view-toolbar 的 margin-top 承担，避免 padding+margin 叠在不同盒子上导致观感不对称 */
   padding-top: 0;
   box-sizing: border-box;
 }
@@ -777,7 +774,8 @@ export default {
   ::v-deep .el-form.el-form--inline {
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
+    align-items: flex-start;
+    align-content: flex-start;
     row-gap: var(--cat2bug-toolbar-row-gap, 8px);
     column-gap: var(--cat2bug-toolbar-item-gap, 10px);
     /* 相对 .defect-tools-search 盒宽铺满；父级勿 width:100% 占满整行 flex */
@@ -789,8 +787,18 @@ export default {
     margin-right: 0;
     margin-bottom: 0;
     display: flex;
-    align-items: center;
-    vertical-align: middle;
+    align-items: flex-start;
+    vertical-align: top;
+  }
+  ::v-deep .el-form--inline .el-form-item__label {
+    display: none;
+  }
+  ::v-deep .el-form--inline .el-form-item__content {
+    display: inline-flex !important;
+    align-items: flex-start !important;
+    line-height: 1 !important;
+    vertical-align: top !important;
+    min-height: var(--cat2bug-toolbar-control-height, 32px);
   }
   @media screen and (max-width: 576px) {
     width: 100%;
@@ -914,7 +922,6 @@ export default {
   }
   .select-header-icon {
     margin-left: 5px;
-    color: var(--text-color-placeholder);
     font-size: 14px;
   }
 }
@@ -926,15 +933,17 @@ export default {
     margin: 0px 5px 0px 0px;
   }
 }
-/* 与用例页：h3 下 10px + 本行上 8px（flex 子项不折叠 margin） */
+/* Tab 行：顶/底间距由 .defect-page gap 承担；裁切 el-tabs 空 content 溢出 */
 .defect-tools-tab {
   position: relative;
   display: flex;
   flex-direction: row;
   align-items: stretch;
-  margin-top: var(--defect-toolbar-v-gap, 8px);
+  margin: 0;
   height: 40px;
   min-width: 0;
+  flex-shrink: 0;
+  overflow: hidden;
   box-sizing: border-box;
   /* 伪元素底线与 active-bar 同处 bottom:0，避免 border-bottom 挤占内容区导致蓝条偏高 */
   &::after {
@@ -971,6 +980,11 @@ export default {
   }
   ::v-deep .el-tabs__content {
     display: none !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
   }
   .el-tabs {
     flex: 1 1 auto;
@@ -978,6 +992,8 @@ export default {
     display: flex;
     flex-direction: column;
     height: 100%;
+    max-height: 100%;
+    overflow: hidden;
   }
   ::v-deep .el-tabs__item:not(#tab-__defect_add_tab__) {
     max-width: 200px;
@@ -1004,7 +1020,7 @@ export default {
     box-sizing: border-box;
     padding: 2px !important;
     border: 1px solid #c0c4cc;
-    border-radius: 2px;
+    border-radius: var(--cat2bug-border-radius, 4px);
     background: #fff;
     color: #606266;
     display: inline-block;
@@ -1086,7 +1102,8 @@ export default {
   margin-bottom: 5px;
 }
 .defect-content-view-switch {
-  vertical-align: middle;
+  display: inline-flex;
+  vertical-align: top;
   flex-shrink: 0;
   /* 三等分格：等宽等高，避免 table/date/excel2 矢量留白不同导致「格与格」观感不一 */
   ::v-deep .el-radio-button__inner {
@@ -1124,14 +1141,14 @@ export default {
   flex-shrink: 0;
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-start;
   align-content: flex-start;
   /* space-between：同行时左右拉开；右侧单独换行时该行仅一项，会靠主轴起点（左） */
   justify-content: space-between;
   column-gap: var(--cat2bug-toolbar-section-gap, 10px);
   row-gap: var(--cat2bug-toolbar-row-gap, 8px);
-  margin-top: var(--defect-toolbar-v-gap, 8px);
-  margin-bottom: var(--defect-toolbar-v-gap, 8px);
+  margin-top: 0;
+  margin-bottom: var(--defect-toolbar-v-gap, 10px);
   padding-top: 0;
   padding-bottom: 0;
 }
@@ -1144,7 +1161,7 @@ export default {
   flex: 0 0 auto;
   display: inline-flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-start;
   justify-content: flex-start;
 }
 @media screen and (max-width: 576px) {
@@ -1209,7 +1226,7 @@ export default {
 }
 .defect-page .defect-view-toolbar .table-tools {
   padding-top: 0 !important;
-  align-items: center !important;
+  align-items: flex-start !important;
   display: inline-flex;
   flex-wrap: wrap;
   row-gap: 8px;

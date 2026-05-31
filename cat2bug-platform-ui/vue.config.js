@@ -100,6 +100,8 @@ module.exports = {
   },
   configureWebpack: {
     name: name,
+    // 开发默认 eval-cheap-module-source-map 会把 xlsx（~2MB）包成单行 eval()，Safari 解析报 Unexpected EOF
+    ...(isDev ? { devtool: 'cheap-module-source-map' } : {}),
     resolve: {
       alias: {
         '@': resolve('src'),

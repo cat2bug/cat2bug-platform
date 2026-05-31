@@ -383,10 +383,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.dialog-footer {
-  text-align: right;
-}
-
 .selectTime .defect-plan-datetimerange.el-date-editor--datetimerange.el-input__inner {
   width: 100% !important;
   max-width: 100%;

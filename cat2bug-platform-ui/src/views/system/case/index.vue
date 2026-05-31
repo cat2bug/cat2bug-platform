@@ -294,13 +294,14 @@ import { getToken } from '@/utils/auth'
 import { setDefectTempTab } from '@/utils/defect'
 import { setHeader } from '@/utils/request'
 import paneResizerHandleViewport from '@/mixins/paneResizerHandleViewport'
+import multipaneTreeTableHeightSync from '@/mixins/multipaneTreeTableHeightSync'
 const TREE_MODULE_WIDTH_CACHE_KEY = 'case_tree_module_width'
 /** 用例页左侧交付物树是否展开（本地缓存） */
 const CASE_TREE_MODULE_VISIBLE_CACHE_KEY = 'case_tree_module_visible'
 
 export default {
   name: 'Case',
-  mixins: [paneResizerHandleViewport],
+  mixins: [paneResizerHandleViewport, multipaneTreeTableHeightSync],
   components: { ProjectLabel, AddCase, Cat2BugLevel, Step, TreeModule, Multipane, MultipaneResizer, AddDefect, CloudCase, CloudCase2, FocusMemberList, Cat2BugPreviewImage, Cat2BugSelectLevel, Cat2BugText, Cat2BugTable },
   directives: {
     resize: {
@@ -676,6 +677,7 @@ export default {
         if (this.$refs.cat2BugTable && this.$refs.cat2BugTable.doLayout) {
           this.$refs.cat2BugTable.doLayout()
         }
+        this.syncMultipaneTreeTableHeight('cat2BugTable')
         this.scheduleSyncPaneResizerHandle()
       })
     },
@@ -905,21 +907,10 @@ export default {
 .case-field-divider {
   margin: 8px 0px;
 }
-.case-page {
-  --case-toolbar-v-gap: 8px;
-}
 /* ProjectLabel 根为 h3，类名在 h3 上：用 ::v-deep 覆盖子组件 scoped 的 h3 下边距 */
 .case-page ::v-deep h3.case-project-label {
   margin-top: 0;
-  margin-bottom: 10px;
-}
-@media screen and (max-width: 576px) {
-  .case-page {
-    --case-toolbar-v-gap: 6px;
-  }
-  .case-page ::v-deep h3.case-project-label {
-    margin-bottom: 6px;
-  }
+  margin-bottom: 0;
 }
 /* 与缺陷页 .defect-tools-search 一致：表单项可换行；父级为 .case-view-toolbar（与 defect-view-toolbar 同级 flex） */
 .case-tools-search {
@@ -1131,8 +1122,8 @@ export default {
 }
 /* 查询条上下留白（与缺陷页 --defect-toolbar-v-gap 一致） */
 .case-view-toolbar {
-  margin-top: var(--case-toolbar-v-gap, 8px);
-  margin-bottom: var(--case-toolbar-v-gap, 8px);
+  margin-top: 0;
+  margin-bottom: var(--case-toolbar-v-gap, 10px);
 }
 .case-view-toolbar.wrapped-tools .case-right-tools {
   margin-left: 0;

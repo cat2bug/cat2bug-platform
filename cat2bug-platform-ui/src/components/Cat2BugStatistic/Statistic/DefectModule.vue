@@ -1,8 +1,9 @@
 <template>
   <cat2-bug-card :title="$i18n.t('defect.module-ranking').toString()" :tools="tools" @tools-click="toolsHandle">
     <template slot="content">
+      <div class="defect-module-panel">
       <div v-if="!showModuleList || showModuleList.length==0">
-        <div @click="getStatisticModule" class="defect-module-row" v-for="n in 4" :key="n">
+        <div @click="getStatisticModule" class="defect-module-row" v-for="n in 3" :key="n">
           <h5 class="skeleton">{{ n+1 }}</h5><div class="skeleton width100"></div><div class="skeleton width120"></div><div class="skeleton width30"></div>
         </div>
       </div>
@@ -19,6 +20,7 @@
           :total="total"
           @current-change="getStatisticModule">
         </el-pagination>
+      </div>
       </div>
 
     </template>
@@ -138,79 +140,113 @@ export default {
 </script>
 
 <style scoped>
+  .defect-module-panel {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
   .el-progress {
-    width: 150px;
+    flex: 1 1 auto;
+    min-width: 60px;
+    max-width: 120px;
+    margin-right: 4px;
   }
   .width30 {
-    width: 30px;
+    width: 28px;
   }
   .width100 {
-    width: 100px;
+    width: 72px;
   }
   .width120 {
-    width: 120px;
+    width: 88px;
   }
   h5 {
-    border-radius: 5px;
-    color: #FFFFFF;
-    font-size: 12px;
-    font-weight: 500;
-    float: left;
-    width: 16px;
-    height: 16px;
-    line-height: 16px;
+    border-radius: 3px;
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: 600;
+    flex-shrink: 0;
+    width: 14px;
+    height: 14px;
+    line-height: 14px;
     text-align: center;
-    margin-top: 0px;
-    margin-bottom: 0px;
+    margin: 0;
   }
   h4 {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 500;
-    margin: 0 10px 0 5px;
-    width: 100px;
+    margin: 0 6px 0 4px;
+    flex: 0 1 72px;
+    min-width: 0;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+    color: var(--text-color-regular, #606266);
   }
   span {
-    font-size: 13px;
-  }
-  .el-carousel {
-    width: 300px;
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    flex-shrink: 0;
+    color: var(--text-color-secondary, #909399);
   }
   .defect-module-row {
     display: flex;
     flex-direction: row;
     align-items: center;
-    margin-top: 5px;
-    margin-bottom: 5px;
+    min-height: var(--statistic-module-row-min-height, 17px);
+    margin: 0;
+    padding: var(--statistic-module-row-padding-y, 1px) 5px;
     cursor: pointer;
+    gap: 2px;
+    border-radius: 2px;
+    transition: background-color 0.15s;
+  }
+  .defect-module-row + .defect-module-row {
+    border-top: 1px dashed var(--border-color-lighter, #f2f6fc);
   }
   .defect-module-row:hover {
-    color: #409EFF;
+    background-color: rgba(64, 158, 255, 0.06);
   }
-  .el-progress {
-    margin-right: 5px;
+  .defect-module-row:hover h4 {
+    color: #409eff;
   }
   ::v-deep .el-progress-bar {
-    margin-right: 10px;
-    padding-right: 0px;
+    margin-right: 0;
+    padding-right: 0;
   }
   ::v-deep .el-progress__text {
     display: none;
   }
+  ::v-deep .el-progress-bar__outer {
+    height: 4px !important;
+    background-color: var(--border-color-lighter, #f2f6fc) !important;
+  }
   .skeleton {
-    height: 16px;
-    background-color: #E4E7ED;
-    border-radius: 5px;
-    margin-left: 10px;
+    height: 12px;
+    background-color: var(--border-color-lighter, #e4e7ed);
+    border-radius: 3px;
+    margin-left: 6px;
   }
   .el-pagination {
     display: flex;
     justify-content: flex-end;
     align-items: center;
+    margin-top: 2px;
+    padding-top: 2px;
+    line-height: 1;
   }
-  ::v-deep .el-pagination .number,::v-deep .el-pagination .el-icon {
+  ::v-deep .el-pagination .number,
+  ::v-deep .el-pagination .el-icon {
     font-size: 10px !important;
+  }
+  ::v-deep .el-pagination button,
+  ::v-deep .el-pagination .el-pager li {
+    min-width: calc(var(--statistic-pagination-control-height, 15px) + 5px) !important;
+    height: var(--statistic-pagination-control-height, 15px) !important;
+    line-height: var(--statistic-pagination-control-height, 15px) !important;
   }
 </style>

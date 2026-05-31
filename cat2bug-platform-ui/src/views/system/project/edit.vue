@@ -53,9 +53,11 @@
           </el-col>
           <!--            保存取消按钮-->
           <el-col :xs="24" :sm="24" :md="16" :lg="16" :xl="12">
-            <el-form-item>
-              <el-button type="primary" @click="onSubmit">{{$t('update')}}</el-button>
-              <el-button @click="goBack">{{$t('cancel')}}</el-button>
+            <el-form-item class="page-form-actions">
+              <div class="page-form-actions__buttons">
+                <el-button @click="goBack">{{$t('cancel')}}</el-button>
+                <el-button type="primary" @click="onSubmit">{{$t('update')}}</el-button>
+              </div>
             </el-form-item>
           </el-col>
         </el-row>

@@ -10,7 +10,9 @@
         <slot name="right-tools"></slot>
       </div>
     </div>
-    <slot name="content"></slot>
+    <div class="statistic-box-body">
+      <slot name="content"></slot>
+    </div>
   </div>
 </template>
 
@@ -40,37 +42,63 @@ export default {
 
 <style lang="scss" scoped>
   .statistic-box {
-    background-color: #FFFFFF;
-    border: 1px solid #EBEEF5;
-    padding: 10px 30px;
-    border-radius: 5px;
+    box-sizing: border-box;
+    background-color: var(--statistic-card-bg, #f8f8f9);
+    border: 1px solid var(--border-color-light, #ebeef5);
+    padding: var(--statistic-card-padding, 8px 12px);
+    border-radius: var(--cat2bug-border-radius, 4px);
     display: flex;
     flex-direction: column;
+    width: 100%;
+    height: 100%;
+    min-height: var(--statistic-card-min-height, 0);
+
     .statistic-box-header {
-      display: inline-flex;
+      display: flex;
       flex-direction: row;
       justify-content: space-between;
       align-items: center;
-      width: 100%;
+      gap: 8px;
+      min-height: var(--statistic-card-header-min-height, 17px);
+      margin-bottom: var(--statistic-card-header-gap, 6px);
+      padding-bottom: var(--statistic-card-header-gap, 6px);
+      border-bottom: 1px solid var(--border-color-lighter, #f2f6fc);
+
       .cat2-bug-title {
-        flex: 1
+        flex: 1;
+        min-width: 0;
       }
+
       .statistic-box-tools {
-        margin-right: -5px;
-        font-size: 14px;
+        flex-shrink: 0;
+        display: inline-flex;
+        align-items: center;
+        font-size: 12px;
+
         .statistic-box-button {
           cursor: pointer;
-          color: #C0C4CC;
-          margin: 0px 5px;
-        }
-        .statistic-box-button:hover {
-          color: #409EFF;
+          color: var(--cat2bug-input-icon-color, #c0c4cc);
+          width: 14px;
+          height: 14px;
+          margin: 0;
+          padding: 2px;
+          border-radius: 2px;
+          transition: color 0.2s, background-color 0.2s;
+
+          &:hover {
+            color: #409eff;
+            background-color: rgba(64, 158, 255, 0.08);
+          }
         }
       }
     }
-  }
-  .cat2-but-title {
-    height: 100px;
-    width: 100%;
+
+    .statistic-box-body {
+      min-height: 0;
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
   }
 </style>

@@ -22,7 +22,7 @@
       @mouseenter="showClearButtonHandle(true)"
       @mouseleave="showClearButtonHandle(false)"
     >
-      <i :class="icon" v-if="icon" style="margin: 0px 0px 0px 10px; color: #C0C4CC;"></i>
+      <i :class="icon" v-if="icon" class="select-module-input__prefix-icon"></i>
       <div class="selectProjectMemberInput_content">
         <el-input ref="selectProjectModuleInput" :size="size" :class="icon?'padding-left-8':''" readonly :placeholder="$t(placeholder)" v-model="queryMember.params.search" @input="searchChangeHandle"></el-input>
       </div>
@@ -326,9 +326,13 @@ export default {
         padding-left: 8px;
       }
     }
+    .select-module-input__prefix-icon {
+      margin: 0 0 0 10px;
+      flex-shrink: 0;
+    }
     .select-module-input__icon {
       display: inline;
-      color: #C0C4CC;
+      color: var(--cat2bug-input-icon-color, #c0c4cc);
       font-size: 14px;
       transition: transform 0.3s, -webkit-transform 0.3s;
       -webkit-transform: rotateZ(180deg);

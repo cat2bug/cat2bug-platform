@@ -140,3 +140,15 @@
     }
   }
 }
+
+/* 暗黑主题：覆盖上方浅色 gutter / 滚动条轨道，避免列表页出现白边 */
+html.dark {
+  .el-table__header-wrapper thead th.gutter,
+  .el-table__header-wrapper thead th.el-table__gutter,
+  .el-table__fixed-header-wrapper thead th.gutter,
+  .el-table__fixed-header-wrapper thead th.el-table__gutter,
+  .el-table__fixed-right-patch {
+    background-color: var(--table-header-bg) !important;
+    border-bottom-color: var(--border-color-light) !important;
+  }
+}

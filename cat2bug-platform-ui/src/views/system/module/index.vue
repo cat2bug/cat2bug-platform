@@ -229,11 +229,10 @@ export default {
   box-sizing: border-box;
 }
 .module-page {
-  --case-toolbar-v-gap: 8px;
 }
 .module-page ::v-deep h3.module-project-label {
   margin-top: 0;
-  margin-bottom: 10px;
+  margin-bottom: 0;
 }
 .module-tools {
   width: 100%;
@@ -245,8 +244,8 @@ export default {
   align-content: flex-start;
   column-gap: var(--cat2bug-toolbar-section-gap, 10px);
   row-gap: var(--cat2bug-toolbar-row-gap, 8px);
-  margin-top: var(--case-toolbar-v-gap, 8px);
-  margin-bottom: var(--case-toolbar-v-gap, 8px);
+  margin-top: 0;
+  margin-bottom: var(--case-toolbar-v-gap, 10px);
   .el-form-item {
     margin-bottom: 0;
   }

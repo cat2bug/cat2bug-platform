@@ -16,9 +16,11 @@
             <el-form-item :label="$t('ding.robot-code')" prop="robotCode">
               <el-input v-model="form.robotCode" maxlength="64" :placeholder="$t('ding.enter-robot-code')"></el-input>
             </el-form-item>
-            <el-form-item>
-              <el-button type="primary" @click="onSubmit">{{$t('save')}}</el-button>
-              <el-button @click="goBack">{{$t('cancel')}}</el-button>
+            <el-form-item class="page-form-actions">
+              <div class="page-form-actions__buttons">
+                <el-button @click="goBack">{{$t('cancel')}}</el-button>
+                <el-button type="primary" @click="onSubmit">{{$t('save')}}</el-button>
+              </div>
             </el-form-item>
           </el-form>
       </el-col>

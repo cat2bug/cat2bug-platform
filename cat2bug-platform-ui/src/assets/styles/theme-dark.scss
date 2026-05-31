@@ -10,6 +10,8 @@
   --text-color-regular: #606266;
   --text-color-secondary: #909399;
   --text-color-placeholder: #c0c4cc;
+  /* 输入框 / 下拉框内 prefix、suffix、caret 等图标 */
+  --cat2bug-input-icon-color: #c0c4cc;
   
   --border-color-base: #dcdfe6;
   --border-color-light: #ebeef5;
@@ -34,6 +36,13 @@
   --cat2bug-xbar-thumb: #e3e6eb;
   --cat2bug-xbar-thumb-hover: #d9dde4;
 
+  --progress-track-bg: #ebeef5;
+  --progress-track-border: transparent;
+  --progress-fill-color: #409eff;
+  --progress-fill-success: #67c23a;
+  --progress-fill-warning: #e6a23c;
+  --progress-fill-exception: #f56c6c;
+
   --cat2bug-table-row-bg: var(--table-bg);
   --cat2bug-table-fixed-row-bg: var(--table-bg);
 
@@ -49,6 +58,18 @@
   /* 表格操作列：行内按钮/链接横向间距 */
   --cat2bug-operate-tools-gap: 10px;
   --cat2bug-operate-tools-row-gap: 0;
+
+  /* 收藏星标 StarSwitch：未选中 / 已选中 */
+  --star-switch-off-color: #ffffff;
+  --star-switch-off-fill: rgb(198, 209, 222);
+  --star-switch-on-color: rgb(247, 186, 42);
+  --star-switch-on-fill: rgb(247, 186, 42);
+
+  /* 缺陷共享弹框 ShareCard */
+  --share-card-bg: #f4f4f4;
+  --share-card-surface-bg: #ffffff;
+  --share-card-title-bg: #f4f4f4;
+  --share-card-link-color: #1890ff;
 
   --sidebar-expand-trigger-hover-bg: #ecf5ff;
 
@@ -72,7 +93,22 @@ html.dark {
   --text-color-regular: #e5eaf3;
   --text-color-secondary: #909399;
   --text-color-placeholder: #4c4d4f;
+  --cat2bug-input-icon-color: #c0c4cc;
   --form-label-color: #edf0f5;
+
+  /* 缺陷类型标签 DefectTypeFlag */
+  --defect-type-bug-bg: rgba(255, 73, 73, 0.14);
+  --defect-type-bug-border: rgba(255, 73, 73, 0.4);
+  --defect-type-bug-color: #f89898;
+  --defect-type-task-bg: rgba(19, 206, 102, 0.14);
+  --defect-type-task-border: rgba(19, 206, 102, 0.4);
+  --defect-type-task-color: #85ce61;
+  --defect-type-demand-bg: rgba(255, 186, 0, 0.14);
+  --defect-type-demand-border: rgba(255, 186, 0, 0.4);
+  --defect-type-demand-color: #eebe77;
+  --defect-type-default-bg: rgba(144, 147, 153, 0.14);
+  --defect-type-default-border: rgba(144, 147, 153, 0.35);
+  --defect-type-default-color: #b1b3b8;
   
   --border-color-base: #4c4d4f;
   --border-color-light: #363637;
@@ -97,6 +133,14 @@ html.dark {
   --cat2bug-xbar-thumb: #4c4d4f;
   --cat2bug-xbar-thumb-hover: #606266;
 
+  /* el-progress：暗色轨道深黑，填充保留主题色（与浅色一致，轨道无边框） */
+  --progress-track-bg: #0a0a0a;
+  --progress-track-border: transparent;
+  --progress-fill-color: #409eff;
+  --progress-fill-success: #67c23a;
+  --progress-fill-warning: #e6a23c;
+  --progress-fill-exception: #f56c6c;
+
   --cat2bug-table-row-bg: var(--table-bg);
   --cat2bug-table-fixed-row-bg: var(--bg-color-block);
 
@@ -112,6 +156,16 @@ html.dark {
   --navbar-text: #e5eaf3;
   --tags-view-bg: #1e1e20;
   --tags-view-border: #363637;
+
+  --star-switch-off-color: var(--table-bg);
+  --star-switch-off-fill: var(--text-color-placeholder);
+  --star-switch-on-color: rgb(247, 186, 42);
+  --star-switch-on-fill: rgb(247, 186, 42);
+
+  --share-card-bg: var(--bg-color-block);
+  --share-card-surface-bg: var(--table-bg);
+  --share-card-title-bg: var(--table-row-hover-bg);
+  --share-card-link-color: #409eff;
 }
 
 /* 主题切换瞬间禁用过渡，避免亮/暗色逐块渐变闪烁 */
@@ -282,6 +336,28 @@ html.dark {
     .el-dialog__footer {
       border-top: 1px solid var(--border-color-light) !important;
     }
+
+    /* 弹框内表格：表头与 dialog 背景 (#252529) 同色会融在一起，改用略浅的表头底 */
+    .el-table:not(.el-table--border) {
+      th.el-table__cell,
+      thead tr {
+        background-color: var(--table-row-hover-bg) !important;
+      }
+
+      .el-table__fixed thead th.el-table__cell,
+      .el-table__fixed-right thead th.el-table__cell {
+        background-color: var(--table-row-hover-bg) !important;
+      }
+
+      .el-table__fixed-right-patch {
+        background-color: var(--table-row-hover-bg) !important;
+      }
+    }
+
+    /* 新建计划等无边框表格的弹框：仅保留表头对比，不加外框 */
+    &:not(.plan-add-dialog) .el-table:not(.el-table--border) {
+      border: 1px solid var(--border-color-light) !important;
+    }
   }
 
   .el-drawer {
@@ -302,7 +378,7 @@ html.dark {
     background-color: var(--table-bg) !important;
     color: var(--text-color-regular) !important;
     border: none !important;
-    border-radius: 4px !important;
+    border-radius: var(--cat2bug-border-radius, 4px) !important;
     overflow: hidden !important;
     // 强制 WebKit 浏览器对 border-radius 进行 overflow: hidden 裁剪，防止表头出现白色尖角
     transform: translate3d(0, 0, 0) !important;
@@ -379,6 +455,42 @@ html.dark {
 
     .el-table__body tr.hover-row > td.el-table__cell {
       background-color: var(--table-row-hover-bg) !important;
+    }
+  }
+
+  /* el-progress 暗黑：轨道深黑，避免 Element 默认浅灰/白底 */
+  .el-progress {
+    .el-progress-bar__outer {
+      background-color: var(--progress-track-bg, #0a0a0a) !important;
+      border: none !important;
+    }
+
+    .el-progress-bar__inner {
+      background-color: var(--progress-fill-color, #409eff) !important;
+      border-radius: inherit;
+    }
+
+    &.is-success .el-progress-bar__inner {
+      background-color: var(--progress-fill-success, #67c23a) !important;
+    }
+
+    &.is-warning .el-progress-bar__inner {
+      background-color: var(--progress-fill-warning, #e6a23c) !important;
+    }
+
+    &.is-exception .el-progress-bar__inner {
+      background-color: var(--progress-fill-exception, #f56c6c) !important;
+    }
+
+    .el-progress__text {
+      color: var(--text-color-regular) !important;
+    }
+  }
+
+  .plan-progress {
+    > span {
+      color: var(--text-color-regular) !important;
+      font-variant-numeric: tabular-nums;
     }
   }
 
@@ -608,7 +720,7 @@ html.dark {
   .el-select-dropdown {
     background-color: var(--dropdown-bg) !important;
     border-color: var(--border-color-light) !important;
-    border-radius: 4px !important;
+    border-radius: var(--cat2bug-border-radius, 4px) !important;
     overflow: hidden !important;
 
     // 适配下拉菜单的小三角 (popper arrow)
@@ -833,20 +945,64 @@ html.dark {
   }
 
   .el-pagination {
+    color: var(--text-color-regular) !important;
+
+    .el-pagination__total,
+    .el-pagination__jump {
+      color: var(--text-color-regular) !important;
+    }
+
+    .el-select .el-input .el-input__inner,
+    .el-pagination__editor.el-input .el-input__inner {
+      background-color: var(--input-bg) !important;
+      border-color: var(--input-border) !important;
+      color: var(--input-color) !important;
+    }
+
     button:disabled {
-      background-color: var(--bg-color-block) !important;
+      background-color: var(--bg-color-base) !important;
       color: var(--text-color-placeholder) !important;
     }
 
-    .btn-prev, .btn-next, .el-pager li {
+    .btn-prev,
+    .btn-next,
+    .el-pager li {
       background-color: var(--bg-color-block) !important;
       color: var(--text-color-regular) !important;
-      border-color: var(--border-color-light) !important;
+      border: none !important;
+      box-shadow: none !important;
 
-      &.active {
+      &:not(.disabled):hover {
         color: #409eff !important;
       }
     }
+
+    &.is-background {
+      .btn-prev,
+      .btn-next,
+      .el-pager li {
+        background-color: var(--bg-color-block) !important;
+        color: var(--text-color-regular) !important;
+        border: none !important;
+        box-shadow: none !important;
+      }
+
+      .el-pager li:not(.disabled).active {
+        background-color: #409eff !important;
+        color: #fff !important;
+      }
+
+      .btn-prev.disabled,
+      .btn-next.disabled,
+      .el-pager li.disabled {
+        background-color: var(--bg-color-base) !important;
+        color: var(--text-color-placeholder) !important;
+      }
+    }
+  }
+
+  .pagination-container {
+    background: transparent !important;
   }
 
   .el-tabs--border-card {
@@ -1392,6 +1548,9 @@ html.dark {
   .el-table .el-table__fixed-body-wrapper,
   .case-table-x-scroll,
   .defect-table-x-scroll,
+  .plan-table-x-scroll,
+  .report-table-x-scroll,
+  .document-table-x-scroll,
   .plan-drawer-table-scroll,
   .cat2bug-scrollbar-measure-host,
   .cat2bug-custom-xbar {
@@ -1496,6 +1655,14 @@ html.dark {
   .plan-defect-sidebar-expand-header-cell,
   .plan-add-sidebar-expand-header-cell {
     background-color: var(--table-header-bg) !important;
+  }
+
+  .el-dialog .case-sidebar-expand-header-cell,
+  .el-dialog .defect-sidebar-expand-header-cell,
+  .el-dialog .plan-case-sidebar-expand-header-cell,
+  .el-dialog .plan-defect-sidebar-expand-header-cell,
+  .el-dialog .plan-add-sidebar-expand-header-cell {
+    background-color: var(--table-row-hover-bg) !important;
   }
 
   .case-sidebar-expand-body-cell,
@@ -1618,6 +1785,20 @@ html.dark {
     }
   }
 
+  // split-button 竖向分隔线（缺陷页「全部类型」、新建 split 下拉等）
+  .el-button-group > .el-dropdown__caret-button::before {
+    background: var(--border-color-base) !important;
+    opacity: 1 !important;
+  }
+
+  .el-button-group > .el-button--primary:not(.is-plain) + .el-dropdown__caret-button::before {
+    background: rgba(255, 255, 255, 0.28) !important;
+  }
+
+  .el-button-group > .el-button--success:not(.is-plain) + .el-dropdown__caret-button::before {
+    background: rgba(255, 255, 255, 0.32) !important;
+  }
+
   // 7. 额外的组件和零散的硬编码边框/背景色深度适配
   .permissions-config {
     .permission-group {
@@ -1651,10 +1832,31 @@ html.dark {
 
   // 统计分析卡片 Card 适配
   .statistic-box {
-    background-color: var(--card-bg) !important;
+    background-color: var(--statistic-card-bg, var(--card-bg)) !important;
     border: 1px solid var(--border-color-light) !important;
     color: var(--text-color-primary) !important;
+
+    .statistic-box-header {
+      border-bottom-color: var(--border-color-light) !important;
+    }
+
+    .cat2-bug-title {
+      color: var(--text-color-secondary) !important;
+    }
   }
+
+  .statistic-scroll-btn {
+    background: rgba(0, 0, 0, 0.55) !important;
+    color: #fff !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35) !important;
+
+    &:hover:not(:disabled) {
+      background: rgba(0, 0, 0, 0.72) !important;
+      color: #fff !important;
+    }
+  }
+
+  --statistic-card-bg: var(--bg-color-block);
 
   // 编辑器工具栏分割线
   .tools-row {
@@ -1744,17 +1946,6 @@ html.dark {
       }
     }
 
-    // 适配收藏星星未激活状态的底色
-    .start-switch {
-      background: rgb(76, 77, 79) top left / 100% 100% !important;
-      -webkit-background-clip: text !important;
-    }
-
-    // 适配收藏星星激活状态的亮黄色
-    .start-switch[collect="true"] {
-      background: rgb(247, 186, 42) top left / 100% 100% !important;
-      -webkit-background-clip: text !important;
-    }
   }
 
   // 适配交付物列表/模块树头部工具栏 (TreeModule)
@@ -1770,6 +1961,15 @@ html.dark {
     &:hover {
       background-color: rgba(64, 158, 255, 0.12) !important;
       color: #409eff !important;
+    }
+  }
+
+  .tree-node-remove-btn {
+    color: #f56c6c !important;
+
+    &:hover,
+    &:focus {
+      color: #f78989 !important;
     }
   }
 
@@ -2088,7 +2288,7 @@ html.dark {
     border: 1px solid var(--border-color-light) !important; // 整体外边框和table表的一样灰色
     border-radius: 4px 4px 0 0 !important;
     overflow: hidden !important;
-    transform: translate3d(0, 0, 0) !important;
+    /* 勿 transform：库内 map 下拉 .autocomplete-results 为 position:fixed，transform 会导致坐标相对本容器而跑偏 */
 
     // 覆盖 component-content 的白框
     .component-content {
@@ -2106,6 +2306,22 @@ html.dark {
         background-color: var(--table-header-bg) !important;
         color: var(--table-header-color) !important;
         border-color: var(--table-border-color) !important;
+      }
+
+      // 列间竖线：压过库内 lightgray，与暗色表头一致
+      thead th:not(:last-child),
+      thead td:not(:last-child),
+      tbody td:not(:last-child) {
+        border-right: 1px solid var(--table-border-color) !important;
+      }
+
+      tbody tr:not(:last-child) td {
+        border-bottom: 1px solid var(--table-border-color) !important;
+      }
+
+      thead th,
+      thead td {
+        border-bottom: 1px solid var(--table-border-color) !important;
       }
 
       // 适配 Excel 左侧行号列 (first-col) 暗黑模式
@@ -2222,6 +2438,32 @@ html.dark {
         color: #409eff !important;
       }
     }
+
+    // 活动格 / 选区 / 右下角填充柄：库内 rb-square 用 white 描边，暗色底上发白
+    .input-square {
+      border-color: #409eff !important;
+    }
+
+    .input-square.input-square--editing {
+      background-color: var(--input-bg) !important;
+      border-color: #409eff !important;
+    }
+
+    .input-square .rb-square,
+    .rb-square {
+      border: none !important;
+      background-color: #409eff !important;
+    }
+
+    .cell-range-overlay {
+      border-color: #409eff !important;
+      background: rgba(64, 158, 255, 0.08) !important;
+    }
+
+    .fill-drag-overlay {
+      border-color: #409eff !important;
+      background: rgba(64, 158, 255, 0.1) !important;
+    }
   }
 
   // 21. 适配缺陷表格内的生命周期与驳回统计标签 (defect-statistics)
@@ -2261,7 +2503,7 @@ html.dark {
     color: var(--text-color-primary) !important;
 
     .select-project-member-input__icon {
-      color: var(--text-color-placeholder) !important;
+      color: var(--cat2bug-input-icon-color, #c0c4cc) !important;
     }
 
     .el-input .el-input__inner {
@@ -2567,7 +2809,7 @@ html.dark {
     border-color: var(--input-border) !important;
 
     .select-case-input__icon {
-      color: var(--text-color-secondary) !important;
+      color: var(--cat2bug-input-icon-color, #c0c4cc) !important;
 
       &:hover {
         color: #409eff !important;
@@ -2981,6 +3223,107 @@ html.dark {
     }
   }
 
+  // 「我的人生」统计卡片正文
+  .my-life-statistic-root .life-body {
+    color: var(--color, var(--text-color-primary)) !important;
+  }
+
+  // 「我的人生」设置弹框
+  .my-life-dialog {
+    .el-dialog__body {
+      background-color: var(--dialog-bg) !important;
+    }
+
+    .my-life-dialog__tip.el-alert--success {
+      background-color: rgba(103, 194, 58, 0.12) !important;
+      border: 1px solid rgba(103, 194, 58, 0.35) !important;
+
+      .el-alert__title {
+        color: #85ce61 !important;
+      }
+
+      .el-alert__icon {
+        color: #85ce61 !important;
+      }
+    }
+
+    .my-life-dialog__font-size {
+      .el-radio.is-bordered {
+        background-color: var(--input-bg) !important;
+        border-color: var(--input-border) !important;
+        height: 28px !important;
+        line-height: 26px !important;
+
+        .el-radio__label {
+          color: var(--text-color-regular) !important;
+          font-size: 12px !important;
+        }
+
+        .el-radio__inner {
+          width: 12px !important;
+          height: 12px !important;
+        }
+      }
+
+      .el-radio.is-bordered.is-checked {
+        border-color: #409eff !important;
+        background-color: rgba(64, 158, 255, 0.12) !important;
+
+        .el-radio__label {
+          color: #79bbff !important;
+        }
+      }
+    }
+
+    .my-life-dialog__color-picker.el-color-picker {
+      .el-color-picker__trigger {
+        border-color: var(--input-border) !important;
+        background-color: var(--input-bg) !important;
+        box-shadow: none !important;
+      }
+
+      .el-color-picker__color {
+        border: none !important;
+      }
+
+      .el-color-picker__icon {
+        color: var(--cat2bug-input-icon-color, #c0c4cc) !important;
+      }
+    }
+
+    .my-life-dialog__textarea .el-textarea__inner {
+      background-color: var(--input-bg) !important;
+      border-color: var(--input-border) !important;
+      color: var(--input-color) !important;
+
+      &::placeholder {
+        color: var(--text-color-placeholder) !important;
+      }
+    }
+
+    .el-input__count {
+      background: transparent !important;
+      color: var(--text-color-secondary) !important;
+    }
+  }
+
+  // 「我的人生」颜色选择下拉面板
+  .my-life-dialog__color-dropdown.el-color-picker__panel,
+  .my-life-dialog__color-dropdown {
+    background-color: var(--dropdown-bg) !important;
+    border-color: var(--border-color-light) !important;
+
+    .el-color-dropdown__link-btn {
+      color: #409eff !important;
+    }
+
+    .el-input__inner {
+      background-color: var(--input-bg) !important;
+      border-color: var(--input-border) !important;
+      color: var(--input-color) !important;
+    }
+  }
+
   // 全局 Markdown 预览代码块（编辑模式、缺陷描述等）
   .markdown-body {
     pre {
@@ -3031,9 +3374,9 @@ html.dark {
 
     // 适配计划用例树形模块/优先级 Tabs 容器 (TreePlanItemModule)
     .tree-module .tree-tools {
-      border: 1px solid var(--border-color-light) !important;
-      border-radius: 4px;
-      overflow: hidden;
+      border: none !important;
+      border-radius: 0;
+      overflow: visible;
 
       .el-tabs__header {
         background-color: var(--table-header-bg) !important;

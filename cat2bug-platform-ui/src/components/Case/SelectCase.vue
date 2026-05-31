@@ -9,7 +9,7 @@
     ref="popover"
   >
     <div slot="reference" class="el-input__inner select-case-input" @mouseenter="showClearButtonHandle(true)" @mouseleave="showClearButtonHandle(false)">
-      <i :class="icon" v-if="icon" style="margin: 0px 0px 0px 10px; color: #C0C4CC;"></i>
+      <i :class="icon" v-if="icon" class="select-case-input__prefix-icon"></i>
       <case-card ref="caseCard" class="select-case-input_content" :case-model="currentCase" :state-visible="true" :edit="true" v-bind="$attrs" @change="stepChangeHandle" />
       <i class="select-case-input__icon el-icon-arrow-up" v-show="isClearButtonVisible==false"></i>
       <i class="select-case-input__icon el-icon-circle-close" v-show="isClearButtonVisible==true" @click="clearSelectModuleHandle"></i>
@@ -179,9 +179,13 @@ export default {
       padding: 3px 10px 3px 0px;
       width: calc(100% - 100px);
     }
+    .select-case-input__prefix-icon {
+      margin: 0 0 0 10px;
+      flex-shrink: 0;
+    }
     .select-case-input__icon {
       display: inline;
-      color: #C0C4CC;
+      color: var(--cat2bug-input-icon-color, #c0c4cc);
       font-size: 14px;
       transition: transform 0.3s, -webkit-transform 0.3s;
       -webkit-transform: rotateZ(180deg);

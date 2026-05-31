@@ -151,6 +151,9 @@ export default {
 .share-card-loading .el-icon-document-copy {
   font-size: 40px;
 }
+html.dark .share-card-loading .el-loading-mask {
+  background-color: rgba(0, 0, 0, 0.45) !important;
+}
 </style>
 <style lang="scss" scoped>
   .shard-context {
@@ -158,9 +161,14 @@ export default {
       margin: 0 5px 5px 5px;
     }
     > .title {
-      background-color: #f4f4f4;
+      background-color: var(--share-card-title-bg, #f4f4f4);
       border-radius: 3px;
       padding: 3px 5px;
+      color: var(--text-color-regular);
+
+      label {
+        color: inherit;
+      }
     }
   }
   .share-list {
@@ -179,7 +187,7 @@ export default {
     cursor: pointer;
   }
   .button {
-    color: #8c8c8c;
+    color: var(--text-color-secondary, #8c8c8c);
   }
   .el-form-item {
     margin-bottom: 0px;

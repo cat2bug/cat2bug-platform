@@ -53,9 +53,11 @@ export const TableOptions=[{
   visible: true,
   align: 'center',
   width: 100,
+  width_en_US: 120,
   width_ja_JP: 140,
   width_ar: 140,
-  width_ru: 160
+  width_ru: 160,
+  className: 'defect-state-col',
 },{
   key: 'module',
   prop: 'moduleName',

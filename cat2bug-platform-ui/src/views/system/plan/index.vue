@@ -442,8 +442,6 @@ export default {
   flex: 1 1 auto;
   width: 100%;
   box-sizing: border-box;
-  /* 与用例页 .case-page 工具条上下留白一致 */
-  --case-toolbar-v-gap: 8px;
 }
 /* 与缺陷列表 .defect-table-context：占满工具条下主区剩余高度，短表时表体仍用 max-height 撑满，分页置底 */
 .plan-list-body {
@@ -465,9 +463,9 @@ export default {
 /* ProjectLabel 根为 h3：类在根上，与用例页 h3 下边距一致 */
 .plan-page ::v-deep h3.plan-project-label {
   margin-top: 0;
-  margin-bottom: 10px;
+  margin-bottom: 0;
 }
-/* 与用例页 .case-view-toolbar：上下 8px，勿再叠 10px + 组件 h3 默认 20px */
+/* 与用例页 .case-view-toolbar：上下留白见 --project-list-toolbar-v-gap */
 .plan-tools {
   width: 100%;
   display: flex;
@@ -479,8 +477,8 @@ export default {
   justify-content: flex-start;
   column-gap: var(--cat2bug-toolbar-section-gap, 10px);
   row-gap: var(--cat2bug-toolbar-row-gap, 8px);
-  margin-top: var(--case-toolbar-v-gap, 8px);
-  margin-bottom: var(--case-toolbar-v-gap, 8px);
+  margin-top: 0;
+  margin-bottom: var(--case-toolbar-v-gap, 10px);
   .el-form-item {
     margin-bottom: 0;
   }
@@ -590,6 +588,10 @@ export default {
       padding-right: 5px;
       > .el-progress-bar__outer {
         width: 100%;
+        background-color: var(--progress-track-bg, #ebeef5);
+      }
+      > .el-progress-bar__inner {
+        background-color: var(--progress-fill-color, #409eff);
       }
     }
     ::v-deep .el-progress__text {

@@ -1,10 +1,12 @@
 <template>
   <div class="cat2bug-statistic-label">
-    <svg-icon :icon-class="icon" :style="`color: ${iconColor||'#606266'};`" />
-    <h5>{{ label }}</h5>
-    <slot name="content">
-      <span>{{ content }}</span>
-    </slot>
+    <svg-icon class="cat2bug-statistic-label__icon" :icon-class="icon" :style="iconStyle" />
+    <h5 class="cat2bug-statistic-label__name">{{ label }}</h5>
+    <div class="cat2bug-statistic-label__values">
+      <slot name="content">
+        <span>{{ content }}</span>
+      </slot>
+    </div>
   </div>
 </template>
 
@@ -25,8 +27,13 @@ export default {
       default: null
     },
     content: {
-      type: [String,Number],
+      type: [String, Number],
       default: null
+    }
+  },
+  computed: {
+    iconStyle() {
+      return { color: this.iconColor || 'var(--text-color-secondary, #909399)' };
     }
   }
 }
@@ -34,21 +41,45 @@ export default {
 
 <style scoped>
   .cat2bug-statistic-label {
-    margin: 5px 0px;
-    display: flex;
-    flex-direction: row;
+    margin: 0;
+    padding: var(--statistic-label-padding-y, 2px) 0;
+    display: grid;
+    grid-template-columns: 16px minmax(48px, 1fr) 28px 36px 36px;
+    column-gap: 6px;
     align-items: center;
-    justify-content: flex-start;
+    min-height: var(--statistic-label-min-height, 18px);
+    line-height: 1.2;
   }
-  h5 {
-    font-size: 13px;
+
+  .cat2bug-statistic-label__icon {
+    width: 14px !important;
+    height: 14px !important;
+    flex-shrink: 0;
+  }
+
+  .cat2bug-statistic-label__name {
+    font-size: 12px;
     font-weight: 500;
-    margin: 0 10px 0 5px;
-    min-width: 60px;
+    margin: 0;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text-color-regular, #606266);
   }
-  span {
-    font-size: 13px;
+
+  .cat2bug-statistic-label__values {
+    display: contents;
+  }
+
+  .cat2bug-statistic-label__values ::v-deep span {
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
     text-align: right;
-    min-width: 80px;
+    color: var(--text-color-primary, #303133);
+  }
+
+  .cat2bug-statistic-label__values ::v-deep span:nth-child(1) {
+    font-weight: 600;
   }
 </style>

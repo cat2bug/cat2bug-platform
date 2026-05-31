@@ -224,6 +224,7 @@ import {listDefectOfPlan} from "@/api/system/plan";
 import {getDefectState} from "@/api/system/DefectState";
 import { Multipane, MultipaneResizer } from "vue-multipane";
 import paneResizerHandleViewport from "@/mixins/paneResizerHandleViewport";
+import multipaneTreeTableHeightSync from "@/mixins/multipaneTreeTableHeightSync";
 
 const TREE_MODULE_WIDTH_CACHE_KEY = "plan_case_tree_module_width";
 
@@ -234,7 +235,7 @@ const DEFECT_TABLE_SORT_TYPE = 'plan-defect_table_sort_type_key';
 export default {
   name: "DefectList",
   dicts: ['defect_level'],
-  mixins: [paneResizerHandleViewport],
+  mixins: [paneResizerHandleViewport, multipaneTreeTableHeightSync],
   components: { Multipane, MultipaneResizer, LevelTag, Cat2BugText, RowListMember, Cat2BugPreviewImage, FocusMemberList, DefectTypeFlag, DefectStateFlag, DefectTools, Cat2BugTable, SelectModule, SelectProjectMember },
   props: {
     showModuleTree: {
@@ -426,6 +427,7 @@ export default {
         this.updatePlanDrawerTableMaxHeight();
         this.$nextTick(() => {
           this.$refs.cat2BugTable && this.$refs.cat2BugTable.doLayout && this.$refs.cat2BugTable.doLayout();
+          this.syncMultipaneTreeTableHeight('cat2BugTable');
           this.scheduleSyncPaneResizerHandle();
           this.$emit("resize");
         });

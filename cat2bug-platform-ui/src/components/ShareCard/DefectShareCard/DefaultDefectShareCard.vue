@@ -18,11 +18,18 @@
     </div>
     <div class="body">
       <div v-show="params.imgUrls" class="img-list">
-        <canvas ref="canvas" :class="`defectSvg${index}`"
-             :key="index"
-             :index="index"
-             v-for="(img,index) in getUrl(params.imgUrls)"
-        ></canvas>
+        <div
+          v-for="(img,index) in getUrl(params.imgUrls)"
+          :key="index"
+          class="share-img-wrap"
+          :class="{ 'share-img-wrap--hero': index === 0 }"
+        >
+          <canvas
+            ref="canvas"
+            :class="`defectSvg${index}`"
+            :index="index"
+          ></canvas>
+        </div>
       </div>
 
       <div class="flag">
@@ -34,7 +41,9 @@
       </div>
     </div>
     <div class="footer">
-      <canvas ref="qrcode" class="qr" id="defect-qr-canvas" ></canvas>
+      <div class="qr-wrap">
+        <canvas ref="qrcode" class="qr" id="defect-qr-canvas"></canvas>
+      </div>
       <span>{{$t('defect.shard.click-qrcode-info')}}</span>
     </div>
     <div class="link">
@@ -280,7 +289,8 @@ export default {
    display: inline-flex;
    flex-direction: column;
    justify-content: flex-start;
-   background-color: #f4f4f4;
+   background-color: var(--share-card-bg, #f4f4f4);
+   color: var(--text-color-primary);
    padding: 0px 10px 10px 10px;
    border-radius: 5px;
    position: relative;
@@ -291,6 +301,10 @@ export default {
     justify-content: flex-start;
     align-items: center;
     gap: 10px;
+    .defect-title-num,
+    .defect-title-name {
+      color: var(--text-color-primary);
+    }
     .defect-title-num {
       margin-left: 5px;
     }
@@ -303,27 +317,41 @@ export default {
   }
   .body {
     padding: 10px 10px;
-    background-color: #FFFFFF;
+    background-color: var(--share-card-surface-bg, #ffffff);
+    color: var(--text-color-regular);
     border-radius: 5px;
     margin-bottom: 10px;
     font-size: 12px;
+
+    label {
+      color: var(--text-color-secondary);
+    }
   }
  .img-list {
     width: 100%;
     display: inline-flex;
     flex-direction: row;
     flex-wrap: wrap;
+    gap: 6px;
     margin-bottom: 10px;
-    > canvas:first-child {
-     width: 100%;
-     height: 150px;
-     flex: auto;
+  }
+  .share-img-wrap {
+    flex: 1;
+    width: 0;
+    height: 50px;
+    border-radius: var(--cat2bug-border-radius, 4px);
+    overflow: hidden;
+
+    &--hero {
+      width: 100%;
+      height: 150px;
+      flex: auto;
     }
-    > canvas {
-      padding:3px;
-      flex: 1;
-      width: 0px;
-      height: 50px;
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
     }
   }
   .footer {
@@ -331,18 +359,31 @@ export default {
     flex-direction: row;
     justify-content: flex-start;
     align-items: center;
+    gap: 5px;
     padding: 15px 10px;
-    background-color: #FFFFFF;
+    background-color: var(--share-card-surface-bg, #ffffff);
+    color: var(--text-color-regular);
     border-radius: 5px;
     width: 100%;
     overflow: hidden;
+    box-sizing: border-box;
+  }
+  .qr-wrap {
+    flex-shrink: 0;
+    width: 100px;
+    height: 100px;
+    border-radius: var(--cat2bug-border-radius, 4px);
+    overflow: hidden;
+
     .qr {
-      width: 100px !important;
-      height: 100px !important;
+      display: block;
+      width: 100% !important;
+      height: 100% !important;
     }
-    > span {
-      flex: 1;
-    }
+  }
+  .footer > span {
+    flex: 1;
+    min-width: 0;
   }
   .describe {
     margin-top: 10px;
@@ -377,9 +418,9 @@ export default {
     padding-right: 10px;
   }
   .el-link {
-    color: #1890ff;
+    color: var(--share-card-link-color, #1890ff);
     text-decoration: underline;
-    text-decoration-color: #1890ff;
+    text-decoration-color: var(--share-card-link-color, #1890ff);
   }
   .myImg {
     opacity: 0;

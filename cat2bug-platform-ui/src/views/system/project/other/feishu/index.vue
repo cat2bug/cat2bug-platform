@@ -13,9 +13,11 @@
           <el-form-item :label="$t('feishu.appSecret')" prop="appSecret">
             <el-input v-model="form.appSecret" maxlength="255" :show-password="true" :placeholder="$t('feishu.enter-appSecret')"></el-input>
           </el-form-item>
-          <el-form-item>
-            <el-button type="primary" @click="onSubmit">{{$t('save')}}</el-button>
-            <el-button @click="goBack">{{$t('cancel')}}</el-button>
+          <el-form-item class="page-form-actions">
+            <div class="page-form-actions__buttons">
+              <el-button @click="goBack">{{$t('cancel')}}</el-button>
+              <el-button type="primary" @click="onSubmit">{{$t('save')}}</el-button>
+            </div>
           </el-form-item>
         </el-form>
       </el-col>

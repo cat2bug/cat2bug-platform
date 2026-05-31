@@ -3,8 +3,178 @@
   --page-header-padding-bottom: 20px;
   --page-header-line-height: 24px;
   --cat2bug-dialog-content-footer-gap: 20px;
+  --cat2bug-dialog-footer-gap: 10px;
   --cat2bug-toolbar-control-height: 32px;
   --cat2bug-toolbar-control-line-height: 30px;
+  /* 项目列表页：Tab/统计区/查询条之间的纵向留白 */
+  --project-list-toolbar-v-gap: 10px;
+  --case-toolbar-v-gap: var(--project-list-toolbar-v-gap);
+  --defect-toolbar-v-gap: var(--project-list-toolbar-v-gap);
+  /* 全站控件圆角，与 el-table 一致 */
+  --cat2bug-border-radius: 4px;
+  /* 缺陷/列表页统计卡片（紧凑：较默认再低约 1/4） */
+  --statistic-tools-gap: 10px;
+  --statistic-card-padding: 6px 10px;
+  --statistic-card-header-gap: 4px;
+  --statistic-card-header-min-height: 17px;
+  --statistic-label-min-height: 18px;
+  --statistic-label-padding-y: 2px;
+  --statistic-module-row-min-height: 17px;
+  --statistic-module-row-padding-y: 1px;
+  --statistic-pagination-control-height: 15px;
+  --statistic-card-bg: var(--bg-color-block, #f8f8f9);
+  --statistic-item-width-member: 148px;
+  --statistic-item-width-member-min: 108px;
+  --statistic-item-width-member-max: 228px;
+  --statistic-item-width-module: 248px;
+  --statistic-item-width-state: 272px;
+  --statistic-item-width-type: 208px;
+  --statistic-item-width-life: 236px;
+  --statistic-item-width-life-min: 236px;
+  --statistic-item-width-life-max: 360px;
+  /* 统计块统一固定高度；宽度由各块 min/max 或内容自适应 */
+  --statistic-card-height: 115px;
+  --statistic-life-card-height: var(--statistic-card-height);
+
+  /* el-progress 轨道 / 填充（浅色默认） */
+  --progress-track-bg: #ebeef5;
+  --progress-track-border: transparent;
+  --progress-fill-color: #409eff;
+  --progress-fill-success: #67c23a;
+  --progress-fill-warning: #e6a23c;
+  --progress-fill-exception: #f56c6c;
+}
+
+/* ========== 全站圆角统一（输入框 / 选择框 / 按钮 / 表格 / 分页等） ========== */
+$cat2bug-radius: var(--cat2bug-border-radius, 4px);
+
+.el-input:not(.is-disabled) .el-input__inner,
+.el-textarea__inner,
+.el-select .el-input__inner,
+.el-date-editor.el-input .el-input__inner,
+.el-date-editor.el-input__inner,
+.el-range-editor.el-input__inner,
+.el-input-number .el-input__inner,
+.el-pagination__editor.el-input .el-input__inner,
+.select-project-member-input {
+  border-radius: $cat2bug-radius !important;
+}
+
+.el-button:not(.is-circle):not(.el-button--text) {
+  border-radius: $cat2bug-radius !important;
+}
+
+.el-button-group {
+  > .el-button:not(.is-circle):not(:only-child):not(:first-child) {
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+  }
+  > .el-button:not(.is-circle):not(:only-child):not(:last-child) {
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+  }
+}
+
+.el-radio-button:not(:last-child) .el-radio-button__inner {
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+.el-radio-button:not(:first-child) .el-radio-button__inner {
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+}
+.el-radio-button:first-child .el-radio-button__inner {
+  border-top-left-radius: $cat2bug-radius !important;
+  border-bottom-left-radius: $cat2bug-radius !important;
+}
+.el-radio-button:last-child .el-radio-button__inner {
+  border-top-right-radius: $cat2bug-radius !important;
+  border-bottom-right-radius: $cat2bug-radius !important;
+}
+
+.el-pagination.is-background .btn-prev,
+.el-pagination.is-background .btn-next,
+.el-pagination.is-background .el-pager li,
+.el-pagination .el-pager li:not(.more),
+.el-pagination button:not(.is-circle) {
+  border-radius: $cat2bug-radius !important;
+}
+
+.el-select-dropdown,
+.el-dropdown-menu {
+  border-radius: $cat2bug-radius !important;
+  overflow: hidden;
+}
+
+.el-table {
+  border-radius: $cat2bug-radius !important;
+}
+
+.el-card,
+.statistic-box {
+  border-radius: $cat2bug-radius !important;
+}
+
+.el-tag {
+  border-radius: $cat2bug-radius !important;
+}
+
+/* el-input 自定义 prefix 槽（如状态下拉的 select-header-icon）垂直居中 */
+.el-input__prefix {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center;
+  line-height: 1 !important;
+}
+
+.el-input__prefix .select-header-icon {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+}
+
+/* 输入框 / 下拉框内图标颜色统一（与 Element prefix-icon 默认 #c0c4cc 一致） */
+.el-input__prefix,
+.el-input__suffix {
+  color: var(--cat2bug-input-icon-color, #c0c4cc) !important;
+}
+
+.el-input__icon,
+.el-select__caret,
+.el-input__clear,
+.select-header-icon,
+.select-project-member-input__prefix-icon,
+.select-module-input__prefix-icon,
+.select-case-input__prefix-icon,
+.select-project-member-input > i[class*="el-icon"],
+.select-project-member-input__icon,
+.select-module-input > i[class*="el-icon"],
+.select-module-input__icon,
+.select-case-input > i[class*="el-icon"],
+.select-case-input__icon {
+  color: var(--cat2bug-input-icon-color, #c0c4cc) !important;
+}
+
+.el-input__prefix .svg-icon,
+.el-input__suffix .svg-icon {
+  color: var(--cat2bug-input-icon-color, #c0c4cc) !important;
+  fill: currentColor;
+}
+
+/* suffix 内 caret / clear 与 32px 工具栏高度对齐 */
+.el-input__suffix {
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+.el-input--small .el-input__icon,
+.el-input--small .el-select__caret {
+  line-height: var(--cat2bug-toolbar-control-height, 32px) !important;
+}
+
+/* el-badge 圆点/数字：去掉 Element 默认白边（深浅色主题均适用） */
+.el-badge__content {
+  border: none !important;
 }
 
 /* 全站列表页工具栏：查询项与操作按钮横向间距统一（与 --cat2bug-toolbar-item-gap 一致） */
@@ -37,6 +207,9 @@
 .module-tools > .left,
 .document-tools > .left,
 .report-tools > .left {
+  display: flex !important;
+  flex-wrap: wrap;
+  align-items: center;
   column-gap: var(--cat2bug-toolbar-item-gap, 10px) !important;
   row-gap: var(--cat2bug-toolbar-row-gap, 8px) !important;
 }
@@ -166,6 +339,74 @@
   }
 }
 
+/* 缺陷页查询条：控件顶对齐，避免切换按钮与下拉/ input baseline 不一致 */
+.defect-page .defect-view-toolbar,
+.defect-page .defect-tools-search,
+.defect-page .defect-tools-search .el-form.el-form--inline {
+  align-items: flex-start;
+  align-content: flex-start;
+}
+
+.defect-page .defect-tools-search {
+  display: flex;
+  align-items: flex-start;
+}
+
+.defect-page .defect-tools-search .el-form--inline .el-form-item {
+  align-items: flex-start;
+  align-self: flex-start;
+}
+
+.defect-page .defect-tools-search .el-form--inline .el-form-item__label {
+  display: none;
+}
+
+.defect-page .defect-tools-search .el-form--inline .el-form-item__content {
+  display: inline-flex !important;
+  align-items: flex-start !important;
+  align-self: flex-start !important;
+  line-height: 1 !important;
+  vertical-align: top !important;
+  min-height: var(--cat2bug-toolbar-control-height);
+}
+
+.defect-page .defect-tools-search .el-form--inline .el-form-item__content > .el-dropdown,
+.defect-page .defect-tools-search .el-form--inline .el-form-item__content > .el-select,
+.defect-page .defect-tools-search .el-form--inline .el-form-item__content > .el-input,
+.defect-page .defect-tools-search .el-form--inline .el-form-item__content > .el-popover,
+.defect-page .defect-tools-search .el-form--inline .el-form-item__content > .defect-content-view-switch {
+  flex-shrink: 0;
+  vertical-align: top !important;
+}
+
+.defect-page .defect-tools-search .el-dropdown,
+.defect-page .defect-tools-search .el-select,
+.defect-page .defect-tools-search .el-input {
+  vertical-align: top !important;
+}
+
+.defect-page .defect-tools-search .el-dropdown .el-button-group {
+  display: inline-flex;
+  vertical-align: top;
+  height: var(--cat2bug-toolbar-control-height);
+}
+
+.defect-page .defect-tools-search .el-popover__reference-wrapper {
+  display: inline-flex !important;
+  vertical-align: top !important;
+  line-height: 0 !important;
+  align-items: flex-start !important;
+}
+
+.defect-page .defect-tools-search .select-project-member-input {
+  vertical-align: top !important;
+}
+
+.defect-page .defect-view-toolbar > *:nth-child(2),
+.defect-page .defect-view-toolbar .table-tools {
+  align-items: flex-start;
+}
+
 /* 表格操作列：Cat2BugTable / el-table 行内按钮 flex 间距统一 */
 .cat2bug-operate-tools {
   display: flex;
@@ -217,6 +458,13 @@
   justify-content: center;
 }
 
+/* 缺陷状态列：避免英文 Processing 等被 .cell 默认 ellipsis 截断 */
+.el-table td.defect-state-col .cell,
+.cat2-bug-table-wrap td.defect-state-col .cell {
+  overflow: visible;
+  text-overflow: clip;
+}
+
 .el-page-header {
   padding-bottom: var(--page-header-padding-bottom);
   margin-bottom: 0;
@@ -250,16 +498,106 @@
 }
 .el-dialog__body {
   padding-top: 0;
-  padding-bottom: 0;
+  padding-bottom: var(--cat2bug-dialog-content-footer-gap, 20px);
+}
+
+/* 弹框底部按钮：全局居右；取消左、主操作右 */
+@mixin cat2bug-dialog-footer-buttons {
+  .el-button {
+    order: 1;
+    margin-left: 0 !important;
+  }
+
+  .el-button--primary,
+  .el-button--success:not(.is-plain),
+  .el-button--warning:not(.is-plain),
+  .el-button--danger:not(.is-plain) {
+    order: 10;
+  }
+}
+
+@mixin cat2bug-dialog-footer-layout {
+  display: flex !important;
+  flex-wrap: wrap;
+  justify-content: flex-end !important;
+  align-items: center;
+  gap: var(--cat2bug-dialog-footer-gap, 10px);
+  width: 100%;
+  box-sizing: border-box;
+  text-align: right !important;
+}
+
+.dialog-footer {
+  @include cat2bug-dialog-footer-layout;
+  @include cat2bug-dialog-footer-buttons;
 }
 
 .el-dialog__footer {
   padding-top: var(--cat2bug-dialog-content-footer-gap, 20px);
+  @include cat2bug-dialog-footer-layout;
+  @include cat2bug-dialog-footer-buttons;
+
+  > .dialog-footer,
+  > span,
+  > div {
+    @include cat2bug-dialog-footer-layout;
+    margin: 0;
+    padding: 0;
+    @include cat2bug-dialog-footer-buttons;
+  }
+}
+
+.el-dialog--center .el-dialog__footer {
+  text-align: right !important;
+  justify-content: flex-end !important;
+}
+
+/* MessageBox 确认框：与 el-dialog 相同布局 */
+.el-message-box__btns {
+  @include cat2bug-dialog-footer-layout;
+  @include cat2bug-dialog-footer-buttons;
+}
+
+/* Drawer 底部操作区（若使用 slot="footer"） */
+.el-drawer__footer {
+  @include cat2bug-dialog-footer-layout;
+  @include cat2bug-dialog-footer-buttons;
+
+  > .dialog-footer,
+  > span,
+  > div {
+    @include cat2bug-dialog-footer-layout;
+    margin: 0;
+    padding: 0;
+    @include cat2bug-dialog-footer-buttons;
+  }
 }
 
 /* 避免最后一项 form-item 下边距叠加 */
 .el-dialog__body .el-form > .el-form-item:last-child {
   margin-bottom: 0;
+}
+
+/* 页面表单底部操作区：取消左、主操作右，与上方输入框左缘对齐 */
+.el-form-item.page-form-actions {
+  .page-form-actions__buttons {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--cat2bug-dialog-footer-gap, 10px);
+
+    .el-button {
+      order: 1;
+      margin-left: 0 !important;
+    }
+
+    .el-button--primary,
+    .el-button--success:not(.is-plain),
+    .el-button--warning:not(.is-plain),
+    .el-button--danger:not(.is-plain) {
+      order: 10;
+    }
+  }
 }
 
 /* 项目设置（project/option）子页面：与 project-base-info 一致，页头无额外下边距 */

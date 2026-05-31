@@ -9,7 +9,7 @@
     trigger="click">
     <template #reference>
     <div :class="'el-input__inner select-project-member-input select-project-member-input-'+size">
-      <i :class="icon" v-if="icon" style="margin: 0px 0px 0px 5px; color: #C0C4CC;"></i>
+      <i :class="icon" v-if="icon" class="select-project-member-input__prefix-icon"></i>
       <div class="selectProjectMemberInput_content">
         <el-tag class="select-project-member-tag" size="mini" v-for="member in selectMemberList()" :key="member.userId" closable @close="clickMenuHandle(member,$event)" :type="tagType(member)">{{member.nickName}}</el-tag>
         <el-input ref="selectProjectMemberInput" :size="size" :placeholder="selectMembers.size>0?'':$t(placeholder)" v-model="queryMember.params.search" @input="searchChangeHandle" @keydown.native="searchKeyDownHandle"></el-input>
@@ -398,9 +398,13 @@ export default {
         }
       }
     }
+    .select-project-member-input__prefix-icon {
+      margin: 0 0 0 5px;
+      flex-shrink: 0;
+    }
     .select-project-member-input__icon {
       display: inline;
-      color: #C0C4CC;
+      color: var(--cat2bug-input-icon-color, #c0c4cc);
       font-size: 14px;
       transition: transform 0.3s, -webkit-transform 0.3s;
       -webkit-transform: rotateZ(180deg);

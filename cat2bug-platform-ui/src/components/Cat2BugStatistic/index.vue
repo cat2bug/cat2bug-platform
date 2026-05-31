@@ -1,29 +1,71 @@
 <template>
-  <div>
-    <draggable v-if="draggable" tag="div" v-model="list" @change="updateStatisticPanel" class="statistic-tools">
-      <component
-        @click.native="clickHandle($event,sc)"
-        @tools-click="toolsHandle($event,sc)"
-        :read="read"
-        :tools="tools"
-        :is="sc.name"
-        :params="sc.params"
-        :parent="parent"
-        v-for="(sc,index) in list"
-        :key="index"
-      />
-    </draggable>
-    <div v-else class="statistic-tools">
-      <component
-        @click.native="clickHandle($event,sc)"
-        @tools-click="toolsHandle($event,sc)"
-        :read="read"
-        :tools="tools"
-        :is="sc.name"
-        :params="sc.params"
-        v-for="(sc,index) in list"
-        :key="index"
-      />
+  <div
+    class="statistic-panel"
+    :class="{ 'is-scrollable': scrollOverflow }"
+    :style="emptyHiddenStyle"
+  >
+    <div class="statistic-scroll-wrap">
+      <button
+        v-show="scrollOverflow"
+        type="button"
+        class="statistic-scroll-btn statistic-scroll-btn--prev"
+        :disabled="!canScrollLeft"
+        @click="scrollPrev"
+      >
+        <i class="el-icon-arrow-left" />
+      </button>
+      <div ref="viewport" class="statistic-scroll-viewport" @scroll="updateScrollState">
+      <draggable
+        v-if="draggable"
+        tag="div"
+        v-model="list"
+        class="statistic-tools"
+        @change="updateStatisticPanel"
+      >
+        <div
+          v-for="(sc,index) in list"
+          :key="sc.name + '_' + index"
+          class="statistic-item"
+          :class="'statistic-item--' + sc.name"
+        >
+          <component
+            :is="sc.name"
+            :read="read"
+            :tools="tools"
+            :params="sc.params"
+            :parent="parent"
+            @click.native="clickHandle($event,sc)"
+            @tools-click="toolsHandle($event,sc)"
+          />
+        </div>
+      </draggable>
+      <div v-else class="statistic-tools">
+        <div
+          v-for="(sc,index) in list"
+          :key="sc.name + '_' + index"
+          class="statistic-item"
+          :class="'statistic-item--' + sc.name"
+        >
+          <component
+            :is="sc.name"
+            :read="read"
+            :tools="tools"
+            :params="sc.params"
+            @click.native="clickHandle($event,sc)"
+            @tools-click="toolsHandle($event,sc)"
+          />
+        </div>
+      </div>
+      </div>
+      <button
+        v-show="scrollOverflow"
+        type="button"
+        class="statistic-scroll-btn statistic-scroll-btn--next"
+        :disabled="!canScrollRight"
+        @click="scrollNext"
+      >
+        <i class="el-icon-arrow-right" />
+      </button>
     </div>
   </div>
 </template>
@@ -57,6 +99,9 @@ export default {
     return {
       activeNames: null,
       statisticList: [],
+      canScrollLeft: false,
+      canScrollRight: false,
+      scrollOverflow: false,
       // 统计工具
       statisticToolsList: [{
         icon: 'close'
@@ -123,6 +168,18 @@ export default {
     },
     memberId() {
       return parseInt(this.$store.state.user.id);
+    },
+    /** 无统计块时不占位（配合缺陷页 .defect-tools-statistic flex gap） */
+    emptyHiddenStyle() {
+      return this.list && this.list.length > 0 ? {} : { display: 'none' };
+    }
+  },
+  watch: {
+    list: {
+      handler() {
+        this.$nextTick(this.updateScrollState);
+      },
+      deep: true
     }
   },
   mounted() {
@@ -134,11 +191,15 @@ export default {
         this.getAllStatisticList();
         break;
     }
+    this.$nextTick(this.initScrollObserver);
   },
   created() {
   },
-  // 移除滚动条监听
-  destroyed() {
+  beforeDestroy() {
+    if (this._scrollResizeObserver) {
+      this._scrollResizeObserver.disconnect();
+      this._scrollResizeObserver = null;
+    }
   },
   methods: {
     /** 更新统计面板 */
@@ -227,26 +288,220 @@ export default {
     },
     mouseDownHandle(e) {
       e.stopPropagation();
+    },
+    initScrollObserver() {
+      this.updateScrollState();
+      if (typeof ResizeObserver === 'undefined' || !this.$refs.viewport) {
+        return;
+      }
+      this._scrollResizeObserver = new ResizeObserver(() => {
+        this.updateScrollState();
+      });
+      this._scrollResizeObserver.observe(this.$refs.viewport);
+    },
+    updateScrollState() {
+      const el = this.$refs.viewport;
+      if (!el) {
+        return;
+      }
+      const maxScroll = el.scrollWidth - el.clientWidth;
+      this.scrollOverflow = maxScroll > 1;
+      this.canScrollLeft = el.scrollLeft > 1;
+      this.canScrollRight = maxScroll > 1 && el.scrollLeft < maxScroll - 1;
+    },
+    scrollPrev() {
+      const el = this.$refs.viewport;
+      if (!el) {
+        return;
+      }
+      const target = this.getAdjacentScrollTarget('prev');
+      el.scrollTo({ left: target, behavior: 'smooth' });
+      window.setTimeout(this.updateScrollState, 320);
+    },
+    scrollNext() {
+      const el = this.$refs.viewport;
+      if (!el) {
+        return;
+      }
+      const target = this.getAdjacentScrollTarget('next');
+      el.scrollTo({ left: target, behavior: 'smooth' });
+      window.setTimeout(this.updateScrollState, 320);
+    },
+    /** 按相邻统计块计算滚动目标位置 */
+    getAdjacentScrollTarget(direction) {
+      const el = this.$refs.viewport;
+      if (!el) {
+        return 0;
+      }
+      const items = Array.from(el.querySelectorAll('.statistic-item'));
+      if (!items.length) {
+        return 0;
+      }
+      const scrollLeft = el.scrollLeft;
+      const maxScroll = Math.max(0, el.scrollWidth - el.clientWidth);
+      if (direction === 'next') {
+        const next = items.find(item => item.offsetLeft > scrollLeft + 4);
+        return next ? Math.min(next.offsetLeft, maxScroll) : maxScroll;
+      }
+      let prev = null;
+      items.forEach(item => {
+        if (item.offsetLeft < scrollLeft - 4) {
+          prev = item;
+        }
+      });
+      return prev ? prev.offsetLeft : 0;
     }
   }
 }
 </script>
 
-<div  style="width:20px;position: absolute;right:5px;top:28px;border:1px solid green;display: flex;flex-direction: column;justify-content: center;">
-<div :style="{width:'8px', height:'8px',borderRadius:'100%',backgroundColor:item.lamplightColour }" v-for="item in cabinetAreaLight" :key="item" style="margin:3px 0px;"/>
-</div>
-
 <style lang="scss" scoped>
+  .statistic-panel {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .statistic-scroll-wrap {
+    position: relative;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .statistic-scroll-viewport {
+    width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+      width: 0;
+      height: 0;
+    }
+  }
+
+  .statistic-scroll-btn {
+    position: absolute;
+    top: 50%;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    margin: 0;
+    border: none;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.45);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+    cursor: pointer;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(-50%);
+    transition: opacity 0.2s ease, visibility 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
+
+    &--prev {
+      left: 6px;
+    }
+
+    &--next {
+      right: 6px;
+    }
+
+    i {
+      font-size: 14px;
+      line-height: 1;
+      font-weight: 600;
+    }
+
+    &:hover:not(:disabled) {
+      background: rgba(0, 0, 0, 0.62);
+      transform: translateY(-50%) scale(1.05);
+    }
+
+    &:disabled {
+      opacity: 0 !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
+    }
+  }
+
+  .statistic-panel.is-scrollable:hover .statistic-scroll-btn:not(:disabled) {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
   .statistic-tools {
     display: flex;
-    justify-content: flex-start;
-    align-content: center;
     flex-direction: row;
-    flex-wrap: wrap;
-    gap:15px;
-    border-width: 0px;
-    > * {
-      margin-bottom: 10px;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    gap: var(--statistic-tools-gap, 10px);
+    width: max-content;
+    border-width: 0;
+
+    > .statistic-item {
+      margin-bottom: 0;
     }
+  }
+
+  .statistic-item {
+    flex: 0 0 auto;
+    align-self: flex-start;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    min-width: var(--statistic-item-min-width, 0);
+    width: var(--statistic-item-width, auto);
+    max-width: var(--statistic-item-max-width, none);
+    height: var(--statistic-card-height, var(--statistic-life-card-height, 115px));
+    max-height: var(--statistic-card-height, var(--statistic-life-card-height, 115px));
+
+    ::v-deep .statistic-box {
+      flex: 1 1 auto;
+      height: 100%;
+      max-height: 100%;
+      min-height: 0;
+      width: 100%;
+    }
+  }
+
+  .statistic-item--DefectMemberOnline {
+    width: max-content;
+    --statistic-item-width: max-content;
+    --statistic-item-min-width: var(--statistic-item-width-member-min, 108px);
+    --statistic-item-max-width: var(--statistic-item-width-member-max, 228px);
+  }
+
+  .statistic-item--DefectModule {
+    width: max-content;
+    --statistic-item-width: max-content;
+    --statistic-item-min-width: var(--statistic-item-width-module, 248px);
+  }
+
+  .statistic-item--DefectState {
+    width: max-content;
+    --statistic-item-width: max-content;
+    --statistic-item-min-width: var(--statistic-item-width-state, 272px);
+  }
+
+  .statistic-item--DefectType {
+    width: max-content;
+    --statistic-item-width: max-content;
+    --statistic-item-min-width: var(--statistic-item-width-type, 208px);
+  }
+
+  .statistic-item--MyLife {
+    width: max-content;
+    --statistic-item-width: max-content;
+    --statistic-item-min-width: var(--statistic-item-width-life-min, var(--statistic-item-width-life, 236px));
+    --statistic-item-max-width: var(--statistic-item-width-life-max, 360px);
   }
 </style>
