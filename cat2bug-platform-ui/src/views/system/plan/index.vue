@@ -58,12 +58,14 @@
       ref="cat2BugTable"
       cache-key="plan-table"
       field-list-cache-key="plan-table-field-list"
-      :persist-sort="false"
+      sort-column-cache-key="plan_table_sort_column_key"
+      sort-type-cache-key="plan_table_sort_type_key"
       :columns="planTableColumnDefaults"
       :data="planList"
       :loading="loading"
       :table-max-height="planTableBodyMaxHeight"
       @columns-change="onPlanTableColumnsChange"
+      @sort-change="handleSortChange"
     >
       <template #columns="{ scope, column }">
         <span v-if="column.prop==='planNumber'">{{ planNumber(scope.row) }}</span>
@@ -187,7 +189,9 @@ export default {
         createById: null,
         updateById: null,
         projectId: this.projectId,
-        reportId: null
+        reportId: null,
+        orderByColumn: null,
+        isAsc: null
       },
       planTableColumnDefaults: PlanTableColumnDefaults.map(c => ({ ...c })),
       columnPickerCheckedKeys: [],
@@ -252,6 +256,8 @@ export default {
     },
   },
   created() {
+    this.queryParams.orderByColumn = this.$cache.local.get('plan_table_sort_column_key') || null
+    this.queryParams.isAsc = this.$cache.local.get('plan_table_sort_type_key') || null
     this.getList();
   },
   mounted() {
@@ -349,6 +355,12 @@ export default {
     },
     onPlanColumnPickerChange(keys) {
       this.$refs.cat2BugTable && this.$refs.cat2BugTable.setColumnsVisible(keys);
+    },
+    handleSortChange(column) {
+      this.queryParams.orderByColumn = column.order ? column.prop : null
+      this.queryParams.isAsc = column.order
+      this.queryParams.pageNum = 1
+      this.getList()
     },
     /** 查询测试计划列表 */
     getList() {

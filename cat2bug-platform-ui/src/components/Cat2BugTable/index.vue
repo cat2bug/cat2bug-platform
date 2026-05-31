@@ -21,7 +21,6 @@
                        :fixed="col.fixed ? 'left' : false"
                        :align="col.align || 'left'"
                        :sort-by="columnSortBy(col)"
-                       :sort-orders="columnSortOrders(col)"
                        :sortable="columnSortableMode(col)">
         <template v-slot:header>
           <div v-if="col.pinFixedToggle !== false" :class="['table-header', { 'table-header--required': col.required }]">
@@ -372,10 +371,6 @@ export default {
     columnSortBy(col) {
       const mode = this.columnSortableMode(col);
       return mode === 'custom' || mode === true ? col.prop : undefined;
-    },
-    columnSortOrders(col) {
-      if (this.columnSortableMode(col) !== 'custom') return undefined;
-      return col.prop === this.orderByColumn ? [this.isAsc] : [null];
     },
     mergeCachedColumns(defaults) {
       const list = defaults && defaults.length ? defaults.map(d => ({ ...d })) : [];
@@ -1036,11 +1031,33 @@ export default {
   align-items: center;
   flex-direction: row;
   gap: 5px;
+  min-width: 0;
+  flex: 1 1 auto;
 
   ::v-deep .svg-icon {
     cursor: pointer;
     flex-shrink: 0;
   }
+}
+
+.header-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 自定义表头 slot 后仍保留 Element 排序箭头，避免被挤没或点不到 */
+::v-deep th.is-sortable .cell {
+  display: inline-flex !important;
+  align-items: center;
+  vertical-align: middle;
+  max-width: 100%;
+}
+
+::v-deep th.is-sortable .caret-wrapper {
+  flex-shrink: 0;
+  margin-left: 2px;
 }
 
 ::v-deep thead .no-drag {

@@ -166,6 +166,10 @@ html.dark {
   --share-card-surface-bg: var(--table-bg);
   --share-card-title-bg: var(--table-row-hover-bg);
   --share-card-link-color: #409eff;
+
+  /* Cat2BugTable 表头排序箭头（暗色：非激活箭头提高对比，激活保持主题蓝） */
+  --cat2bug-table-sort-caret-inactive: #a8abb2;
+  --cat2bug-table-sort-caret-active: #409eff;
 }
 
 /* 主题切换瞬间禁用过渡，避免亮/暗色逐块渐变闪烁 */
@@ -428,6 +432,16 @@ html.dark {
 
     .el-table__fixed-right-patch {
       border-top-right-radius: 4px !important;
+    }
+
+    .el-table__body-wrapper tbody tr:last-child > td:last-child,
+    .el-table__fixed-right .el-table__fixed-body-wrapper tbody tr:last-child > td:last-child {
+      border-bottom-right-radius: var(--cat2bug-border-radius, 4px) !important;
+    }
+
+    .el-table__body-wrapper tbody tr:last-child > td:first-child,
+    .el-table__fixed .el-table__fixed-body-wrapper tbody tr:last-child > td:first-child {
+      border-bottom-left-radius: var(--cat2bug-border-radius, 4px) !important;
     }
 
     th.el-table__cell {

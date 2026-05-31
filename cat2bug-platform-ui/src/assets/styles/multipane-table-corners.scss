@@ -1,37 +1,87 @@
 /**
- * 交付物树 + 表格 multipane：树展开时右侧表格左缘直角、左侧树左缘圆角（见 multipane-tree-module.scss）；
- * 收起树（.custom-resizer--tree-hidden）时由 ruoyi.scss 恢复 4px 圆角。
+ * 交付物树 + Cat2BugTable（multipane）圆角：
+ * - 展开树：表格左缘直角，右下角始终 4px 圆角
+ * - 收起树（.custom-resizer--tree-hidden）：左下 + 右下均为圆角
+ * 勿在 .cat2-bug-table-wrap 上使用 overflow:hidden（会阻断 el-table 表体 max-height 内滚动）
+ * 左侧树列圆角见 multipane-tree-module.scss
  */
-.custom-resizer:not(.custom-resizer--tree-hidden) {
-  .el-table {
-    border-top-left-radius: 0 !important;
-    border-bottom-left-radius: 0 !important;
+$mp-table-radius: var(--cat2bug-border-radius, 4px);
 
-    .el-table__header-wrapper thead tr:first-child > th:first-child,
-    .el-table__fixed-header-wrapper thead tr:first-child > th:first-child {
-      border-top-left-radius: 0 !important;
-    }
+@mixin mp-table-bottom-right-cells {
+  .el-table__body-wrapper tbody tr:last-child > td:last-child {
+    border-bottom-right-radius: $mp-table-radius !important;
+  }
 
-    .el-table__body-wrapper tbody tr:last-child > td:first-child,
-    .el-table__fixed-body-wrapper tbody tr:last-child > td:first-child {
-      border-bottom-left-radius: 0 !important;
-    }
+  .el-table__fixed-right .el-table__fixed-body-wrapper tbody tr:last-child > td:last-child {
+    border-bottom-right-radius: $mp-table-radius !important;
   }
 }
 
-html.dark .custom-resizer:not(.custom-resizer--tree-hidden) {
-  .el-table {
-    border-top-left-radius: 0 !important;
-    border-bottom-left-radius: 0 !important;
-
-    .el-table__header-wrapper thead tr:first-child > th:first-child,
-    .el-table__fixed-header-wrapper thead tr:first-child > th:first-child {
-      border-top-left-radius: 0 !important;
-    }
-
-    .el-table__body-wrapper tbody tr:last-child > td:first-child,
-    .el-table__fixed-body-wrapper tbody tr:last-child > td:first-child {
-      border-bottom-left-radius: 0 !important;
-    }
+@mixin mp-table-bottom-left-cells {
+  .el-table__body-wrapper tbody tr:last-child > td:first-child {
+    border-bottom-left-radius: $mp-table-radius !important;
   }
+
+  .el-table__fixed .el-table__fixed-body-wrapper tbody tr:last-child > td:first-child {
+    border-bottom-left-radius: $mp-table-radius !important;
+  }
+}
+
+@mixin mp-table-top-left-cells {
+  .el-table__header-wrapper thead tr:first-child > th:first-child,
+  .el-table__fixed-header-wrapper thead tr:first-child > th:first-child {
+    border-top-left-radius: $mp-table-radius !important;
+  }
+}
+
+@mixin mp-table-top-right-cells {
+  .el-table__header-wrapper thead tr:first-child > th:last-child,
+  .el-table__fixed-header-wrapper thead tr:first-child > th:last-child,
+  .el-table__fixed-right .el-table__fixed-header-wrapper thead tr:first-child > th:last-child {
+    border-top-right-radius: $mp-table-radius !important;
+  }
+
+  .el-table__fixed-right-patch {
+    border-top-right-radius: $mp-table-radius !important;
+  }
+}
+
+@mixin mp-table-square-bottom-left-cells {
+  .el-table__body-wrapper tbody tr:last-child > td:first-child,
+  .el-table__fixed .el-table__fixed-body-wrapper tbody tr:last-child > td:first-child {
+    border-bottom-left-radius: 0 !important;
+  }
+}
+
+@mixin mp-table-square-top-left-cells {
+  .el-table__header-wrapper thead tr:first-child > th:first-child,
+  .el-table__fixed-header-wrapper thead tr:first-child > th:first-child {
+    border-top-left-radius: 0 !important;
+  }
+}
+
+/* 右下角始终圆角 */
+.custom-resizer .cat2-bug-table-wrap > .el-table {
+  border-bottom-right-radius: $mp-table-radius !important;
+
+  @include mp-table-top-right-cells;
+  @include mp-table-bottom-right-cells;
+}
+
+/* 展开交付物树：表格左缘直角 */
+.custom-resizer:not(.custom-resizer--tree-hidden) .cat2-bug-table-wrap > .el-table {
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+
+  @include mp-table-square-top-left-cells;
+  @include mp-table-square-bottom-left-cells;
+}
+
+/* 收起交付物树：左下圆角（右下仍由上方规则保持） */
+.custom-resizer.custom-resizer--tree-hidden .cat2-bug-table-wrap > .el-table {
+  border-bottom-left-radius: $mp-table-radius !important;
+  border-top-left-radius: $mp-table-radius !important;
+
+  @include mp-table-bottom-left-cells;
+  @include mp-table-top-left-cells;
 }

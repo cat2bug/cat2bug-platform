@@ -93,13 +93,15 @@ export const TableOptions=[{
   align: 'center',
   width: 160,
   width_ja_JP: 160,
-  width_ar: 160
+  width_ar: 160,
+  sortable: false
 },{
   key: 'annex',
   prop: 'annexUrls',
   fixed: false,
   visible: true,
-  width: 400
+  width: 400,
+  sortable: false
 },{
   key: 'update-time',
   prop: 'updateTime',

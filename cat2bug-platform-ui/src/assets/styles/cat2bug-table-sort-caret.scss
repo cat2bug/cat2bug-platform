@@ -1,0 +1,65 @@
+/**
+ * Cat2BugTable / 列表页 el-table 表头排序：圆角小三角（替代 Element border 尖角 caret）
+ * 颜色：--cat2bug-table-sort-caret-inactive / --cat2bug-table-sort-caret-active（明暗见 cat2bug.scss、theme-dark.scss）
+ */
+$cat2bug-sort-caret-up-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 5'%3E%3Cpath d='M4 0.75 7.25 4.25H0.75z' fill='%23000' stroke='%23000' stroke-width='0.45' stroke-linejoin='round'/%3E%3C/svg%3E");
+$cat2bug-sort-caret-down-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 5'%3E%3Cpath d='M4 4.25 0.75 0.75H7.25z' fill='%23000' stroke='%23000' stroke-width='0.45' stroke-linejoin='round'/%3E%3C/svg%3E");
+
+@mixin cat2bug-rounded-sort-caret-shape {
+  border: none !important;
+  width: 8px !important;
+  height: 5px !important;
+  left: 3px !important;
+  -webkit-mask-repeat: no-repeat !important;
+  mask-repeat: no-repeat !important;
+  -webkit-mask-size: 100% 100% !important;
+  mask-size: 100% 100% !important;
+  -webkit-mask-position: center !important;
+  mask-position: center !important;
+}
+
+@mixin cat2bug-table-sort-caret-rules($root) {
+  #{$root} th.is-sortable .caret-wrapper {
+    width: 14px !important;
+    height: 16px !important;
+    flex-shrink: 0;
+    margin-left: 2px;
+
+    .sort-caret.ascending {
+      @include cat2bug-rounded-sort-caret-shape;
+      top: 1px !important;
+      background-color: var(--cat2bug-table-sort-caret-inactive, #c0c4cc) !important;
+      -webkit-mask-image: $cat2bug-sort-caret-up-mask !important;
+      mask-image: $cat2bug-sort-caret-up-mask !important;
+    }
+
+    .sort-caret.descending {
+      @include cat2bug-rounded-sort-caret-shape;
+      bottom: 1px !important;
+      background-color: var(--cat2bug-table-sort-caret-inactive, #c0c4cc) !important;
+      -webkit-mask-image: $cat2bug-sort-caret-down-mask !important;
+      mask-image: $cat2bug-sort-caret-down-mask !important;
+    }
+  }
+
+  /* 选中态须不低于上方 .caret-wrapper 路径，否则 inactive 的 !important 会盖住 active */
+  #{$root} th.is-sortable.ascending .caret-wrapper .sort-caret.ascending {
+    background-color: var(--cat2bug-table-sort-caret-active, #409eff) !important;
+  }
+
+  #{$root} th.is-sortable.descending .caret-wrapper .sort-caret.descending {
+    background-color: var(--cat2bug-table-sort-caret-active, #409eff) !important;
+  }
+
+  #{$root} th.is-sortable.ascending .caret-wrapper .sort-caret.descending {
+    background-color: var(--cat2bug-table-sort-caret-inactive, #c0c4cc) !important;
+  }
+
+  #{$root} th.is-sortable.descending .caret-wrapper .sort-caret.ascending {
+    background-color: var(--cat2bug-table-sort-caret-inactive, #c0c4cc) !important;
+  }
+}
+
+@include cat2bug-table-sort-caret-rules('.cat2-bug-table-wrap .el-table__header-wrapper');
+@include cat2bug-table-sort-caret-rules('.cat2-bug-table-wrap .el-table__fixed-header-wrapper');
+@include cat2bug-table-sort-caret-rules('.cat2-bug-table-wrap .el-table__fixed-right .el-table__fixed-header-wrapper');

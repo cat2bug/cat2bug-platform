@@ -57,7 +57,6 @@
           :columns="tableColumnDefaults"
           :data="defectList"
           :loading="loading"
-          :enable-header-sort="false"
           :table-max-height="defectTableBodyMaxHeight"
           v-resize="setDragComponentSize"
           @sort-change="sortChangeHandle"

@@ -76,7 +76,8 @@
     <cat2-bug-table
       ref="cat2BugTable"
       cache-key="report-table"
-      :persist-sort="false"
+      sort-column-cache-key="report_table_sort_column_key"
+      sort-type-cache-key="report_table_sort_type_key"
       :columns="reportTableColumnDefaults"
       :data="reportList"
       :loading="loading"
@@ -84,6 +85,7 @@
       @selection-change="handleSelectionChange"
       @row-click="rowClickHandle"
       @columns-change="onReportTableColumnsChange"
+      @sort-change="handleSortChange"
     >
       <template #prepend>
         <el-table-column type="selection" width="50" align="center" />
@@ -214,6 +216,8 @@ export default {
         reportTime: null,
         reportDataType: null,
         createById: null,
+        orderByColumn: null,
+        isAsc: null,
         params:{
           createByIds:[]
         }
@@ -248,6 +252,10 @@ export default {
         }
       }
     },
+  },
+  created() {
+    this.queryParams.orderByColumn = this.$cache.local.get('report_table_sort_column_key') || null
+    this.queryParams.isAsc = this.$cache.local.get('report_table_sort_type_key') || null
   },
   mounted() {
     if(this.$route.query.projectId) {
@@ -382,6 +390,12 @@ export default {
     handleQuery() {
       this.queryParams.pageNum = 1;
       this.getList();
+    },
+    handleSortChange(column) {
+      this.queryParams.orderByColumn = column.order ? column.prop : null
+      this.queryParams.isAsc = column.order
+      this.queryParams.pageNum = 1
+      this.getList()
     },
     /** 重置按钮操作 */
     resetQuery() {

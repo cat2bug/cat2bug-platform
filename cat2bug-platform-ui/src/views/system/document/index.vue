@@ -55,13 +55,15 @@
     <cat2-bug-table
       ref="cat2BugTable"
       cache-key="document-table"
-      :persist-sort="false"
+      sort-column-cache-key="document_table_sort_column_key"
+      sort-type-cache-key="document_table_sort_type_key"
       :columns="documentTableColumnDefaults"
       :data="documentList"
       :loading="loading"
       :table-max-height="documentTableBodyMaxHeight"
       @selection-change="handleSelectionChange"
       @columns-change="onDocTableColumnsChange"
+      @sort-change="handleSortChange"
     >
       <template #columns="{ scope, column }">
         <template v-if="column.prop==='docName'">
@@ -246,6 +248,8 @@ export default {
         createById: null,
         updateById: null,
         docPid: 0,
+        orderByColumn: null,
+        isAsc: null,
       },
       // 表单参数
       form: {},
@@ -298,6 +302,8 @@ export default {
     }
   },
   created() {
+    this.queryParams.orderByColumn = this.$cache.local.get('document_table_sort_column_key') || null
+    this.queryParams.isAsc = this.$cache.local.get('document_table_sort_type_key') || null
     this.getList();
   },
   mounted() {
@@ -443,6 +449,12 @@ export default {
       this.queryParams.pageNum = 1;
       this.queryParams.projectId = this.projectId;
       this.getList();
+    },
+    handleSortChange(column) {
+      this.queryParams.orderByColumn = column.order ? column.prop : null
+      this.queryParams.isAsc = column.order
+      this.queryParams.pageNum = 1
+      this.getList()
     },
     /** 重置按钮操作 */
     resetQuery() {

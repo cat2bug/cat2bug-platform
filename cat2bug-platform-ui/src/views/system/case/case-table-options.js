@@ -8,8 +8,8 @@ export const CaseTableColumnDefaults = [
   { key: 'step', prop: 'caseStep', fixed: false, visible: true, align: 'left', width: 300 },
   { key: 'data', prop: 'caseData', fixed: false, visible: true, align: 'left', minWidth: 250 },
   { key: 'expect', prop: 'caseExpect', fixed: false, visible: true, align: 'left', minWidth: 250, required: true },
-  { key: 'image', prop: 'imgUrls', fixed: false, visible: true, align: 'center', width: 120 },
-  { key: 'annex', prop: 'annexUrls', fixed: false, visible: true, align: 'left', minWidth: 300 },
+  { key: 'image', prop: 'imgUrls', fixed: false, visible: true, align: 'center', width: 120, sortable: false },
+  { key: 'annex', prop: 'annexUrls', fixed: false, visible: true, align: 'left', minWidth: 300, sortable: false },
   { key: 'update-time', prop: 'updateTime', fixed: false, visible: true, align: 'left', width: 150 },
   { key: 'defect.state', prop: 'defectProcessingCount', fixed: false, visible: true, align: 'left', width: 150 }
 ]

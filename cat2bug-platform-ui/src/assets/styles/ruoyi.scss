@@ -121,6 +121,19 @@
 	.el-table__fixed-right-patch {
 		border-top-right-radius: 4px;
 	}
+	/* 表体末行：固定列场景下右下角在 fixed-right，左下角在 fixed / 首列 */
+	.el-table__body-wrapper tbody tr:last-child > td:last-child {
+		border-bottom-right-radius: var(--cat2bug-border-radius, 4px);
+	}
+	.el-table__fixed-right .el-table__fixed-body-wrapper tbody tr:last-child > td:last-child {
+		border-bottom-right-radius: var(--cat2bug-border-radius, 4px);
+	}
+	.el-table__body-wrapper tbody tr:last-child > td:first-child {
+		border-bottom-left-radius: var(--cat2bug-border-radius, 4px);
+	}
+	.el-table__fixed .el-table__fixed-body-wrapper tbody tr:last-child > td:first-child {
+		border-bottom-left-radius: var(--cat2bug-border-radius, 4px);
+	}
 	.el-table__body-wrapper {
 		.el-button [class*="el-icon-"] + span {
 			margin-left: 1px;
