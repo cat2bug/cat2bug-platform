@@ -89,3 +89,11 @@ export function statisticPlanMetrics(projectId) {
     method: 'get'
   })
 }
+
+/** 测试计划倒计时摘要 */
+export function statisticPlanCountdownSummary(planId) {
+  return request({
+    url: '/system/defect/statistic/plan/' + planId + '/summary',
+    method: 'get'
+  })
+}

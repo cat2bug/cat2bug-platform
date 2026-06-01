@@ -140,4 +140,14 @@ public class SysDefectStatisticController extends BaseController {
     {
         return success(sysDefectStatisticService.planMetrics(projectId));
     }
+
+    /**
+     * 测试计划倒计时摘要
+     */
+    @PreAuthorize("@ss.hasPermi('system:defect:query')")
+    @GetMapping(value = "/plan/{planId}/summary")
+    public AjaxResult getPlanCountdownSummary(@PathVariable("planId") String planId)
+    {
+        return success(sysDefectStatisticService.planCountdownSummary(planId));
+    }
 }

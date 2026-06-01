@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.stream.IntStream;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -146,6 +147,29 @@ public class SysDefectStatisticServicePlanParticipationTest {
         assertEquals(31, chart.size());
         assertEquals(5, chart.get(0).getValue());
         verify(sysDashboardService).planBurndown("p1");
+    }
+
+    @Test
+    public void planCountdownSummary_returnsCountFields() {
+        SysPlan plan = new SysPlan();
+        plan.setPlanId("p1");
+        plan.setPlanName("Plan A");
+        plan.setItemTotal(13);
+        plan.setUnexecutedCount(3);
+        plan.setPassCount(10);
+        plan.setDefectCount(20);
+        plan.setDefectCloseStateCount(15);
+        when(sysPlanService.selectSysPlanByPlanId("p1")).thenReturn(plan);
+
+        com.cat2bug.system.domain.SysPlanCountdownSummary summary =
+                sysDefectStatisticService.planCountdownSummary("p1");
+
+        assertNotNull(summary);
+        assertEquals(13, summary.getItemTotal());
+        assertEquals(10, summary.getPassCount());
+        assertEquals(3, summary.getUnexecutedCount());
+        assertEquals(20, summary.getDefectCount());
+        assertEquals(15, summary.getDefectCloseStateCount());
     }
 
     @Test

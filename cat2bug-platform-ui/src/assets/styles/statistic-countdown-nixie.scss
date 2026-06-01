@@ -1,0 +1,74 @@
+/* 缺陷统计条倒计时：七段电子时钟字体（DSEG7 Classic，字体在 main.js 中引入） */
+.statistic-countdown-nixie {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.06em;
+  font-family: 'DSEG7 Classic', 'Courier New', monospace;
+  font-weight: 400;
+  font-style: normal;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  color: #4a4a4a;
+  text-shadow: none;
+}
+
+.statistic-countdown-nixie-digit {
+  display: inline-block;
+  min-width: 0.55em;
+  text-align: center;
+  font-family: inherit;
+  font-weight: inherit;
+  font-variant-numeric: inherit;
+  color: inherit;
+  text-shadow: inherit;
+
+  &.is-sep {
+    min-width: 0.28em;
+    letter-spacing: 0;
+  }
+}
+
+.statistic-countdown-nixie--hero {
+  width: auto;
+  max-width: none;
+  max-height: none;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.02em;
+  letter-spacing: 0;
+  white-space: nowrap;
+
+  .statistic-countdown-nixie-digit {
+    flex: 0 0 auto;
+    min-width: 0;
+
+    &.is-digit {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      min-width: 0;
+      padding: 0;
+    }
+
+    &.is-sep {
+      align-self: center;
+      min-width: 0;
+      padding: 0 0.04em;
+    }
+  }
+}
+
+html.dark .statistic-countdown-nixie {
+  color: #ffffff;
+}
+
+.statistic-countdown-nixie--overdue {
+  color: #f56c6c !important;
+}
+
+html.dark .statistic-countdown-nixie--overdue {
+  color: #ff6b6b !important;
+}

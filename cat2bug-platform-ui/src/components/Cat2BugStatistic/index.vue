@@ -104,7 +104,12 @@ const DEFAULT_DEFECT_STATISTIC_TEMPLATE = [
 ]
 
 /** 模版选择区：个人 / 团队分组 */
-export const PERSONAL_STATISTIC_NAMES = ['MyOpenTodoGauge', 'MyLife', 'MyParticipationHeatmap']
+export const PERSONAL_STATISTIC_NAMES = [
+  'MyOpenTodoGauge',
+  'MyLife',
+  'MyParticipationHeatmap',
+  'PersonalRemindTimer'
+]
 export const TEAM_STATISTIC_NAMES = [
   'DefectMemberOnline',
   'DefectModule',
@@ -112,7 +117,8 @@ export const TEAM_STATISTIC_NAMES = [
   'DefectType',
   'TeamOpenWorkloadBar',
   'TeamPlanBurndown',
-  'TeamPlanMetricsRadar'
+  'TeamPlanMetricsRadar',
+  'TeamPlanCountdown'
 ]
 
 export default {
@@ -239,6 +245,35 @@ export default {
     }
   },
   methods: {
+    /** 保存单个统计块的 params（报时规则、计划选择等） */
+    saveStatisticItemParams(name, paramsPatch) {
+      if (this.read) {
+        return
+      }
+      const list = (this.list || []).map(item => {
+        if (item.name !== name) {
+          return item
+        }
+        return {
+          ...item,
+          params: { ...(item.params || {}), ...paramsPatch }
+        }
+      })
+      if (this.statisticComponents) {
+        this.$emit('change', list)
+        return
+      }
+      this.statisticList = list
+      const body = {
+        userId: this.memberId,
+        projectId: this.projectId,
+        moduleType: 1,
+        statisticTemplatConfig: JSON.stringify(list)
+      }
+      addStatistic(body).then(() => {
+        this.$emit('change', list)
+      })
+    },
     /** 更新统计面板 */
     updateStatisticPanel: function (){
       let params = {
@@ -628,6 +663,20 @@ export default {
     --statistic-item-min-width: 168px;
     --statistic-item-max-width: 168px;
     overflow: visible;
+  }
+
+  .statistic-item--PersonalRemindTimer {
+    width: max-content;
+    --statistic-item-width: max-content;
+    --statistic-item-min-width: 280px;
+    --statistic-item-max-width: 280px;
+  }
+
+  .statistic-item--TeamPlanCountdown {
+    width: max-content;
+    --statistic-item-width: max-content;
+    --statistic-item-min-width: 258px;
+    --statistic-item-max-width: 258px;
   }
 
   .statistic-panel.is-wrap {

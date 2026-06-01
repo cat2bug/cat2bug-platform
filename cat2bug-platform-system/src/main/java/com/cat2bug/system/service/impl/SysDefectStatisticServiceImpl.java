@@ -7,6 +7,7 @@ import com.cat2bug.system.domain.SysDefectOpenWorkload;
 import com.cat2bug.system.domain.SysDefectOpenWorkloadSummary;
 import com.cat2bug.system.domain.SysDefectParticipationDay;
 import com.cat2bug.system.domain.SysPlan;
+import com.cat2bug.system.domain.SysPlanCountdownSummary;
 import com.cat2bug.system.domain.SysPlanMetricsItem;
 import com.cat2bug.system.mapper.SysDefectStatisticMapper;
 import com.cat2bug.system.service.ISysDashboardService;
@@ -175,6 +176,24 @@ public class SysDefectStatisticServiceImpl implements ISysDefectStatisticService
         } catch (NumberFormatException e) {
             return 0;
         }
+    }
+
+    @Override
+    public SysPlanCountdownSummary planCountdownSummary(String planId) {
+        SysPlan plan = sysPlanService.selectSysPlanByPlanId(planId);
+        if (plan == null) {
+            return null;
+        }
+        SysPlanCountdownSummary summary = new SysPlanCountdownSummary();
+        summary.setPlanId(plan.getPlanId());
+        summary.setPlanName(plan.getPlanName());
+        summary.setPlanEndTime(plan.getPlanEndTime());
+        summary.setItemTotal(plan.getItemTotal());
+        summary.setUnexecutedCount(plan.getUnexecutedCount());
+        summary.setPassCount(plan.getPassCount());
+        summary.setDefectCount(plan.getDefectCount());
+        summary.setDefectCloseStateCount(plan.getDefectCloseStateCount());
+        return summary;
     }
 
     private SysPlanMetricsItem toPlanMetricsItem(SysPlan plan) {

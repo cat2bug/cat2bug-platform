@@ -4,6 +4,9 @@
   --page-header-line-height: 24px;
   --cat2bug-dialog-content-footer-gap: 20px;
   --cat2bug-dialog-footer-gap: 10px;
+  --cat2bug-dialog-padding-x: 10px;
+  --border-color-light: #ebeef5;
+  --border-color-lighter: #f2f6fc;
   --cat2bug-toolbar-control-height: 32px;
   --cat2bug-toolbar-control-line-height: 30px;
   /* 项目列表页：项目切换条与 Tab/工具条/列表等区块之间的纵向间距（缺陷页同源） */
@@ -580,12 +583,27 @@ $cat2bug-radius: var(--cat2bug-border-radius, 4px);
   border-color: #f78989 !important;
   color: #fff !important;
 }
+.el-dialog__header {
+  padding: 20px var(--cat2bug-dialog-padding-x, 10px) 10px !important;
+}
+
+.el-dialog__headerbtn {
+  right: var(--cat2bug-dialog-padding-x, 10px) !important;
+}
+
 .el-dialog__body {
-  padding-top: 0;
-  padding-bottom: var(--cat2bug-dialog-content-footer-gap, 20px);
+  padding: 0 var(--cat2bug-dialog-padding-x, 10px) var(--cat2bug-dialog-content-footer-gap, 20px) !important;
+}
+
+.el-dialog--center .el-dialog__body {
+  padding: 0 var(--cat2bug-dialog-padding-x, 10px) var(--cat2bug-dialog-content-footer-gap, 20px) !important;
 }
 
 /* 弹框底部按钮：全局居右；取消左、主操作右 */
+@mixin cat2bug-dialog-footer-separator {
+  border-top: 1px solid var(--border-color-light, #ebeef5);
+}
+
 @mixin cat2bug-dialog-footer-buttons {
   .el-button {
     order: 1;
@@ -617,7 +635,8 @@ $cat2bug-radius: var(--cat2bug-border-radius, 4px);
 }
 
 .el-dialog__footer {
-  padding-top: var(--cat2bug-dialog-content-footer-gap, 20px);
+  @include cat2bug-dialog-footer-separator;
+  padding: var(--cat2bug-dialog-content-footer-gap, 20px) var(--cat2bug-dialog-padding-x, 10px) 20px !important;
   @include cat2bug-dialog-footer-layout;
   @include cat2bug-dialog-footer-buttons;
 
@@ -638,12 +657,14 @@ $cat2bug-radius: var(--cat2bug-border-radius, 4px);
 
 /* MessageBox 确认框：与 el-dialog 相同布局 */
 .el-message-box__btns {
+  @include cat2bug-dialog-footer-separator;
   @include cat2bug-dialog-footer-layout;
   @include cat2bug-dialog-footer-buttons;
 }
 
 /* Drawer 底部操作区（若使用 slot="footer"） */
 .el-drawer__footer {
+  @include cat2bug-dialog-footer-separator;
   @include cat2bug-dialog-footer-layout;
   @include cat2bug-dialog-footer-buttons;
 

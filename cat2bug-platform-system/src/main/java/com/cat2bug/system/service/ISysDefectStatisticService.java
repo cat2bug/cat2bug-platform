@@ -4,6 +4,7 @@ import com.cat2bug.system.domain.SysColumnsInChart;
 import com.cat2bug.system.domain.SysDefectOpenWorkload;
 import com.cat2bug.system.domain.SysDefectOpenWorkloadSummary;
 import com.cat2bug.system.domain.SysDefectParticipationDay;
+import com.cat2bug.system.domain.SysPlanCountdownSummary;
 import com.cat2bug.system.domain.SysPlanMetricsItem;
 import org.apache.ibatis.annotations.Param;
 
@@ -65,4 +66,9 @@ public interface ISysDefectStatisticService {
      * 项目测试计划质量指标（雷达图）
      */
     List<SysPlanMetricsItem> planMetrics(Long projectId);
+
+    /**
+     * 测试计划倒计时摘要（缺陷统计域）
+     */
+    SysPlanCountdownSummary planCountdownSummary(String planId);
 }
