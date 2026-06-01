@@ -124,7 +124,7 @@
     </cat2-bug-table>
       </div>
 
-    <div v-show="total>0" ref="planPaginationBand" class="plan-table-pagination-band">
+    <div v-show="total>0" ref="planPaginationBand" class="plan-table-pagination-band table-pagination-band">
       <pagination
         class="plan-table-pagination"
         :total="total"
@@ -463,7 +463,6 @@ export default {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  --defect-pagination-v-gap: 28px;
 }
 .plan-table-x-scroll {
   width: 100%;
@@ -647,18 +646,7 @@ export default {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
-/* 与缺陷列表 .defect-table-pagination-band 一致 */
 .plan-table-pagination-band {
   flex-shrink: 0;
-  margin-top: var(--defect-pagination-v-gap);
-  margin-bottom: calc(40px + env(safe-area-inset-bottom, 0px));
-}
-::v-deep .plan-table-pagination.pagination-container {
-  margin-top: 0 !important;
-  margin-bottom: 0 !important;
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
-  padding-left: 0 !important;
-  padding-right: 0 !important;
 }
 </style>

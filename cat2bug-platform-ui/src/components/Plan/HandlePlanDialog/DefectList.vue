@@ -765,7 +765,6 @@ export default {
 /* ruoyi.scss 给分页容器 height:25px + 内部 absolute，预留高度不足会压住上方表格 */
 .plan-drawer-defect-list-pane ::v-deep .pagination-container {
   flex-shrink: 0;
-  margin-bottom: 30px !important;
   height: auto !important;
   display: flex;
   justify-content: flex-end;

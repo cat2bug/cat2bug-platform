@@ -173,7 +173,7 @@
           </el-table>
           </div>
 
-          <div v-show="total>0" ref="planAddPaginationBand" class="plan-add-table-pagination-band">
+          <div v-show="total>0" ref="planAddPaginationBand" class="plan-add-table-pagination-band table-pagination-band">
             <pagination
               class="plan-add-table-pagination"
               :total="total"
@@ -861,7 +861,6 @@ export default {
   width: 100%;
   overflow: hidden;
   box-sizing: border-box;
-  --defect-pagination-v-gap: 6px;
   display: flex;
   flex-direction: column;
 }
@@ -886,25 +885,6 @@ export default {
 }
 .plan-add-table-pagination-band {
   flex-shrink: 0;
-  margin-top: var(--defect-pagination-v-gap);
-  margin-bottom: 0;
-}
-::v-deep .plan-add-table-pagination.pagination-container {
-  margin-top: 0 !important;
-  margin-bottom: 0 !important;
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
-  padding-left: 0 !important;
-  padding-right: 0 !important;
-  height: auto !important;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  flex-wrap: wrap;
-}
-::v-deep .plan-add-table-pagination.pagination-container .el-pagination {
-  position: relative !important;
-  right: auto !important;
 }
 .annex-list {
   display: inline-flex;

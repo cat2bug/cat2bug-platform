@@ -118,7 +118,7 @@
     </cat2-bug-table>
       </div>
 
-    <div v-show="total>0" ref="reportPaginationBand" class="report-table-pagination-band">
+    <div v-show="total>0" ref="reportPaginationBand" class="report-table-pagination-band table-pagination-band">
       <pagination
         class="report-table-pagination"
         :total="total"
@@ -522,7 +522,6 @@ export default {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  --defect-pagination-v-gap: 28px;
 }
 .report-table-x-scroll {
   width: 100%;
@@ -651,18 +650,7 @@ export default {
   line-height: 1.4;
   padding-left: 8px;
 }
-/* 与缺陷列表 .defect-table-pagination-band 一致 */
 .report-table-pagination-band {
   flex-shrink: 0;
-  margin-top: var(--defect-pagination-v-gap);
-  margin-bottom: calc(40px + env(safe-area-inset-bottom, 0px));
-}
-::v-deep .report-table-pagination.pagination-container {
-  margin-top: 0 !important;
-  margin-bottom: 0 !important;
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
-  padding-left: 0 !important;
-  padding-right: 0 !important;
 }
 </style>

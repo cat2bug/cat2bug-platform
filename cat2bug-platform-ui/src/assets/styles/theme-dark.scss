@@ -1053,6 +1053,24 @@ html.dark {
         color: var(--text-color-placeholder) !important;
       }
     }
+
+    &.statistic-pagination {
+      button:disabled {
+        background-color: transparent !important;
+        color: var(--text-color-placeholder) !important;
+      }
+
+      .btn-prev,
+      .btn-next {
+        background-color: transparent !important;
+        color: var(--text-color-regular) !important;
+
+        &.disabled {
+          background-color: transparent !important;
+          color: var(--text-color-placeholder) !important;
+        }
+      }
+    }
   }
 
   .pagination-container {

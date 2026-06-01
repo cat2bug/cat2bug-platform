@@ -97,7 +97,7 @@
                 v-model="scope.row.focusList"
                 module-name="defect"
                 :data-id="scope.row.defectId" />
-              <el-link type="primary" @click="handleClickTableRow(scope.row)">{{ scope.row.defectName }}</el-link>
+              <el-link type="primary" :title="scope.row.defectName" @click="handleClickTableRow(scope.row)">{{ scope.row.defectName }}</el-link>
               <div class="defect-statistics">
                 <div>
                   <i class="el-icon-time"></i>
@@ -134,7 +134,7 @@
         </cat2-bug-table>
         </div>
 
-        <div v-show="total>0" ref="defectPaginationBand" class="defect-table-pagination-band">
+        <div v-show="total>0" ref="defectPaginationBand" class="defect-table-pagination-band table-pagination-band">
           <pagination
             class="defect-table-pagination"
             :total="total"
@@ -643,20 +643,9 @@ export default {
   overflow-y: hidden;
   display: flex;
   flex-direction: column;
-  --defect-pagination-v-gap: 28px;
 }
 .defect-table-pagination-band {
   flex-shrink: 0;
-  margin-top: var(--defect-pagination-v-gap);
-  margin-bottom: calc(40px + env(safe-area-inset-bottom, 0px));
-}
-::v-deep .defect-table-pagination.pagination-container {
-  margin-top: 0 !important;
-  margin-bottom: 0 !important;
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
-  padding-left: 0 !important;
-  padding-right: 0 !important;
 }
 .defect-sidebar-expand-trigger {
   display: inline-flex;
@@ -774,22 +763,31 @@ export default {
     margin: 0px;
   }
 }
-/* 缺陷名称列：覆盖 el-table .cell 默认 nowrap，使标题内 \\n 在表格中换行展示 */
+/* 缺陷名称列：标题最多 4 行，超出省略；单元格内 \\n 仍可换行 */
 .defect-table-root ::v-deep td.defect-name-col .cell {
-  white-space: pre-line !important;
+  white-space: normal !important;
   word-break: break-word;
 }
 .table-defect-title {
-  display: inline-flex;
+  display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: flex-start;
+  width: 100%;
+  max-width: 100%;
   .el-link {
-    flex: 1;
+    flex: 0 1 auto;
+    width: 100%;
+    max-width: 100%;
     padding-left: 5px;
-    white-space: inherit;
+    white-space: pre-line;
     word-break: break-word;
     line-height: 1.45;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 4;
+    line-clamp: 4;
   }
 }
 .el-table {

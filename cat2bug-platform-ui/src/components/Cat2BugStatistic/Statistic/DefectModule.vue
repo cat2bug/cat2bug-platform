@@ -12,9 +12,10 @@
           <h5 :style="`background-color:${flagColor(index)}`">{{ rankingNumber(index) }}</h5><h4>{{ $te(m.k)?$t(m.k):m.k }}</h4><el-progress :percentage="percentage(m)" :format="format" :color="customColors"></el-progress><span>{{ m.f }}/{{ m.a }}</span>
         </div>
         <el-pagination
+          class="statistic-pagination"
           small
           :hide-on-single-page="total<formParams.pageSize"
-          layout="prev, pager, next"
+          layout="prev, next"
           :current-page.sync="formParams.pageNum"
           :page-size.sync="formParams.pageSize"
           :total="total"
@@ -150,19 +151,20 @@ export default {
     overflow-y: auto;
   }
   .el-progress {
-    flex: 1 1 auto;
-    min-width: 60px;
-    max-width: 120px;
+    flex: 0 0 72px;
+    width: 72px;
+    min-width: 72px;
+    max-width: 72px;
     margin-right: 4px;
   }
   .width30 {
-    width: 28px;
+    width: 32px;
   }
   .width100 {
     width: 72px;
   }
   .width120 {
-    width: 88px;
+    width: 72px;
   }
   h5 {
     border-radius: 3px;
@@ -190,7 +192,9 @@ export default {
   span {
     font-size: 11px;
     font-variant-numeric: tabular-nums;
-    flex-shrink: 0;
+    flex: 0 0 32px;
+    min-width: 32px;
+    text-align: right;
     color: var(--text-color-secondary, #909399);
   }
   .defect-module-row {
@@ -215,6 +219,7 @@ export default {
     color: #409eff;
   }
   ::v-deep .el-progress-bar {
+    width: 100%;
     margin-right: 0;
     padding-right: 0;
   }
@@ -223,7 +228,16 @@ export default {
   }
   ::v-deep .el-progress-bar__outer {
     height: 4px !important;
-    background-color: var(--border-color-lighter, #f2f6fc) !important;
+    border-radius: 2px !important;
+    overflow: hidden;
+    background-color: var(--progress-track-bg, #ebeef5) !important;
+    border: none !important;
+  }
+  ::v-deep .el-progress-bar__inner {
+    height: 100% !important;
+    line-height: 1 !important;
+    border-radius: 0 !important;
+    vertical-align: top;
   }
   .skeleton {
     height: 12px;
@@ -239,12 +253,10 @@ export default {
     padding-top: 2px;
     line-height: 1;
   }
-  ::v-deep .el-pagination .number,
   ::v-deep .el-pagination .el-icon {
     font-size: 10px !important;
   }
-  ::v-deep .el-pagination button,
-  ::v-deep .el-pagination .el-pager li {
+  ::v-deep .el-pagination button {
     min-width: calc(var(--statistic-pagination-control-height, 15px) + 5px) !important;
     height: var(--statistic-pagination-control-height, 15px) !important;
     line-height: var(--statistic-pagination-control-height, 15px) !important;

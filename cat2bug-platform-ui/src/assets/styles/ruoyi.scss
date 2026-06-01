@@ -153,10 +153,15 @@
 /** 表格布局 **/
 .pagination-container {
 	position: relative;
-	height: 25px;
-	margin-bottom: 10px;
-	margin-top: 15px;
-	padding: 10px 20px !important;
+	height: auto;
+	margin: 0;
+	padding: var(--cat2bug-table-pagination-gap-top, 10px)
+		var(--cat2bug-table-pagination-gap-x, 20px)
+		var(--cat2bug-table-pagination-gap-bottom, 10px) !important;
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+	flex-wrap: wrap;
 }
 
 /* tree border */
@@ -168,8 +173,8 @@
 }
 
 .pagination-container .el-pagination {
-	right: 0;
-	position: absolute;
+	right: auto;
+	position: relative;
 }
 
 @media ( max-width : 768px) {

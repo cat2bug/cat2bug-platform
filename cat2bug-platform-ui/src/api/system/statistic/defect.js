@@ -39,11 +39,12 @@ export function statisticModule(projectId, query) {
   })
 }
 
-/** 团队未关闭待办工作量统计 */
-export function statisticOpenWorkload(projectId) {
+/** 团队未关闭待办工作量统计（分页） */
+export function statisticOpenWorkload(projectId, query) {
   return request({
     url: '/system/defect/statistic/open-workload/' + projectId,
-    method: 'get'
+    method: 'get',
+    params: query
   })
 }
 

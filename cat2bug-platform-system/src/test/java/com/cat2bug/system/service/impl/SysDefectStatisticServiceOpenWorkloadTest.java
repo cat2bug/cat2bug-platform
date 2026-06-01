@@ -68,6 +68,8 @@ public class SysDefectStatisticServiceOpenWorkloadTest {
             stmt.execute("INSERT INTO sys_user(user_id, nick_name, avatar, del_flag) VALUES (2, 'u2', 'a2', '0')");
             stmt.execute("INSERT INTO sys_user_project(user_project_id, user_id, project_id) VALUES (11, 1, 100)");
             stmt.execute("INSERT INTO sys_user_project(user_project_id, user_id, project_id) VALUES (12, 2, 100)");
+            stmt.execute("INSERT INTO sys_user(user_id, nick_name, avatar, del_flag) VALUES (3, 'u3', 'a3', '0')");
+            stmt.execute("INSERT INTO sys_user_project(user_project_id, user_id, project_id) VALUES (13, 3, 100)");
             stmt.execute("INSERT INTO sys_defect(defect_id, project_id, del_flag, defect_state, handle_by) VALUES (101, 100, '0', 0, '[1,2]')");
             stmt.execute("INSERT INTO sys_defect(defect_id, project_id, del_flag, defect_state, handle_by) VALUES (102, 100, '0', 3, '[1]')");
             stmt.execute("INSERT INTO sys_defect(defect_id, project_id, del_flag, defect_state, handle_by) VALUES (103, 100, '0', 4, '[1,2]')");
@@ -150,14 +152,17 @@ public class SysDefectStatisticServiceOpenWorkloadTest {
         try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
             SysDefectStatisticMapper mapper = sqlSession.getMapper(SysDefectStatisticMapper.class);
             List<SysDefectOpenWorkload> workloads = mapper.openWorkloadByProject(100L);
-            assertEquals(2, workloads.size());
+            assertEquals(3, workloads.size());
 
             SysDefectOpenWorkload user1 = workloads.stream().filter(w -> Long.valueOf(1L).equals(w.getUserId())).findFirst().orElse(null);
             SysDefectOpenWorkload user2 = workloads.stream().filter(w -> Long.valueOf(2L).equals(w.getUserId())).findFirst().orElse(null);
+            SysDefectOpenWorkload user3 = workloads.stream().filter(w -> Long.valueOf(3L).equals(w.getUserId())).findFirst().orElse(null);
             assertNotNull(user1);
             assertNotNull(user2);
+            assertNotNull(user3);
             assertEquals(2, user1.getTotal());
             assertEquals(1, user2.getTotal());
+            assertEquals(0, user3.getTotal());
 
             SysDefectOpenWorkloadSummary my = mapper.openWorkloadByMember(100L, 1L);
             assertNotNull(my);

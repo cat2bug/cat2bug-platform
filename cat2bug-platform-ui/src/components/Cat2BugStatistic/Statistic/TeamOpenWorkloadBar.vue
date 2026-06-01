@@ -15,10 +15,20 @@
             class="team-workload-row"
             @click="clickHandle(item)"
           >
-            <h5 :style="`background-color:${flagColor(index)}`">{{ index + 1 }}</h5>
+            <h5 :style="`background-color:${flagColor(index)}`">{{ rankingNumber(index) }}</h5>
             <h4 :title="item.nickName">{{ formatName(item.nickName) }}</h4>
             <span class="team-workload-count">{{ item.total }}</span>
           </div>
+          <el-pagination
+            class="statistic-pagination"
+            small
+            :hide-on-single-page="total <= formParams.pageSize"
+            layout="prev, next"
+            :current-page.sync="formParams.pageNum"
+            :page-size.sync="formParams.pageSize"
+            :total="total"
+            @current-change="getStatistic"
+          />
         </template>
       </div>
     </template>
@@ -37,7 +47,12 @@ export default {
   data() {
     return {
       loading: false,
-      workloadList: []
+      total: 0,
+      workloadList: [],
+      formParams: {
+        pageNum: 1,
+        pageSize: 3
+      }
     }
   },
   props: {
@@ -51,7 +66,10 @@ export default {
       return parseInt(this.$store.state.user.config.currentProjectId)
     },
     isEmpty() {
-      return !this.workloadList.length
+      return this.total === 0
+    },
+    rankingNumber() {
+      return (index) => (this.formParams.pageNum - 1) * this.formParams.pageSize + index + 1
     }
   },
   mounted() {
@@ -60,13 +78,13 @@ export default {
   methods: {
     getStatistic() {
       this.loading = true
-      statisticOpenWorkload(this.currentProjectId).then(res => {
-        const data = Array.isArray(res.data) ? res.data : []
-        this.workloadList = data.slice(0, 5).map(item => ({
+      statisticOpenWorkload(this.currentProjectId, this.formParams).then(res => {
+        this.workloadList = (res.rows || []).map(item => ({
           userId: item.userId,
           nickName: item.nickName || item.userName || '-',
           total: item.total || 0
         }))
+        this.total = res.total || 0
       }).finally(() => {
         this.loading = false
       })
@@ -177,5 +195,24 @@ h4 {
   min-width: 16px;
   text-align: right;
   color: var(--text-color-primary, #303133);
+}
+
+.el-pagination {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 2px;
+  padding-top: 2px;
+  line-height: 1;
+}
+
+::v-deep .el-pagination .el-icon {
+  font-size: 10px !important;
+}
+
+::v-deep .el-pagination button {
+  min-width: calc(var(--statistic-pagination-control-height, 15px) + 5px) !important;
+  height: var(--statistic-pagination-control-height, 15px) !important;
+  line-height: var(--statistic-pagination-control-height, 15px) !important;
 }
 </style>

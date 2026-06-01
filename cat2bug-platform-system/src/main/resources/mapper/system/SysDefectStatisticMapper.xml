@@ -68,21 +68,19 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             u.user_id,
             u.nick_name,
             u.avatar,
-            COUNT(d.defect_id) AS total,
-            SUM(CASE WHEN d.defect_state = 0 THEN 1 ELSE 0 END) AS processing,
-            SUM(CASE WHEN d.defect_state = 1 THEN 1 ELSE 0 END) AS audit,
-            SUM(CASE WHEN d.defect_state = 3 THEN 1 ELSE 0 END) AS rejected
+            IFNULL(COUNT(d.defect_id), 0) AS total,
+            IFNULL(SUM(CASE WHEN d.defect_state = 0 THEN 1 ELSE 0 END), 0) AS processing,
+            IFNULL(SUM(CASE WHEN d.defect_state = 1 THEN 1 ELSE 0 END), 0) AS audit,
+            IFNULL(SUM(CASE WHEN d.defect_state = 3 THEN 1 ELSE 0 END), 0) AS rejected
         FROM sys_user_project up
         INNER JOIN sys_user u ON u.user_id = up.user_id AND u.del_flag = '0'
-        INNER JOIN sys_defect d ON d.project_id = up.project_id
+        LEFT JOIN sys_defect d ON d.project_id = up.project_id
             AND d.del_flag = '0'
             AND d.defect_state != 4
             AND JSON_CONTAINS(d.handle_by, CAST(u.user_id AS JSON))
         WHERE up.project_id = #{projectId}
         GROUP BY u.user_id, u.nick_name, u.avatar
-        HAVING COUNT(d.defect_id) > 0
-        ORDER BY total DESC
-        LIMIT 5
+        ORDER BY total DESC, u.nick_name ASC
     </select>
 
     <select id="openWorkloadByMember" resultMap="SysDefectOpenWorkloadSummaryResult">
@@ -103,13 +101,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             u.user_id,
             u.nick_name,
             u.avatar,
-            COUNT(d.defect_id) AS total,
-            SUM(CASE WHEN d.defect_state = 0 THEN 1 ELSE 0 END) AS processing,
-            SUM(CASE WHEN d.defect_state = 1 THEN 1 ELSE 0 END) AS audit,
-            SUM(CASE WHEN d.defect_state = 3 THEN 1 ELSE 0 END) AS rejected
+            IFNULL(COUNT(d.defect_id), 0) AS total,
+            IFNULL(SUM(CASE WHEN d.defect_state = 0 THEN 1 ELSE 0 END), 0) AS processing,
+            IFNULL(SUM(CASE WHEN d.defect_state = 1 THEN 1 ELSE 0 END), 0) AS audit,
+            IFNULL(SUM(CASE WHEN d.defect_state = 3 THEN 1 ELSE 0 END), 0) AS rejected
         FROM sys_user_project up
         INNER JOIN sys_user u ON u.user_id = up.user_id AND u.del_flag = '0'
-        INNER JOIN sys_defect d ON d.project_id = up.project_id
+        LEFT JOIN sys_defect d ON d.project_id = up.project_id
             AND d.del_flag = '0'
             AND d.defect_state != 4
             AND (
@@ -118,9 +116,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             )
         WHERE up.project_id = #{projectId}
         GROUP BY u.user_id, u.nick_name, u.avatar
-        HAVING COUNT(d.defect_id) > 0
-        ORDER BY total DESC
-        LIMIT 5
+        ORDER BY total DESC, u.nick_name ASC
     </select>
 
     <select id="openWorkloadByMember" resultMap="SysDefectOpenWorkloadSummaryResult" databaseId="h2">

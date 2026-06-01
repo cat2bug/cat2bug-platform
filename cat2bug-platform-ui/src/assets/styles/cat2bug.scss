@@ -47,6 +47,12 @@
   /* Cat2BugTable 表头排序箭头（浅色） */
   --cat2bug-table-sort-caret-inactive: #c0c4cc;
   --cat2bug-table-sort-caret-active: #409eff;
+
+  /* 列表底部分页：与表格、页面底各 10px */
+  --cat2bug-table-pagination-gap-top: 10px;
+  --cat2bug-table-pagination-gap-bottom: 10px;
+  --cat2bug-table-pagination-gap-x: 20px;
+  --defect-pagination-v-gap: var(--cat2bug-table-pagination-gap-top);
 }
 
 /* ========== 全站圆角统一（输入框 / 选择框 / 按钮 / 表格 / 分页等） ========== */
@@ -117,6 +123,79 @@ $cat2bug-radius: var(--cat2bug-border-radius, 4px);
 .el-card,
 .statistic-box {
   border-radius: $cat2bug-radius !important;
+}
+
+/* 统计卡片内迷你分页：无按钮底色，首尾页禁用为灰色图标 */
+.el-pagination.statistic-pagination {
+  button,
+  .btn-prev,
+  .btn-next {
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: var(--text-color-regular, #606266);
+  }
+
+  button:not(:disabled):not(.disabled):hover,
+  .btn-prev:not(.disabled):hover,
+  .btn-next:not(.disabled):hover {
+    color: #409eff !important;
+    background-color: transparent !important;
+  }
+
+  button:disabled,
+  button.disabled,
+  .btn-prev.disabled,
+  .btn-next.disabled {
+    background: transparent !important;
+    background-color: transparent !important;
+    color: var(--text-color-placeholder, #c0c4cc) !important;
+    cursor: not-allowed;
+  }
+}
+
+/* 列表底部分页容器：表格与分页、分页与页面底各 10px，内容右对齐 */
+.pagination-container {
+  background: transparent;
+  position: relative;
+  height: auto;
+  margin: 0;
+  padding: var(--cat2bug-table-pagination-gap-top, 10px)
+    var(--cat2bug-table-pagination-gap-x, 20px)
+    var(--cat2bug-table-pagination-gap-bottom, 10px);
+  box-sizing: border-box;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.pagination-container .el-pagination {
+  position: relative;
+  right: auto;
+}
+
+/* 列表页底部分页外层：间距由 band 承担，内部容器不再叠 padding */
+.table-pagination-band {
+  flex-shrink: 0;
+  margin-top: var(--cat2bug-table-pagination-gap-top, 10px);
+  margin-bottom: calc(var(--cat2bug-table-pagination-gap-bottom, 10px) + env(safe-area-inset-bottom, 0px));
+}
+
+.table-pagination-band > .pagination-container {
+  margin: 0 !important;
+  padding: 0 !important;
+  height: auto !important;
+  display: flex !important;
+  justify-content: flex-end !important;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.table-pagination-band > .pagination-container .el-pagination {
+  position: relative !important;
+  right: auto !important;
 }
 
 .el-tag {

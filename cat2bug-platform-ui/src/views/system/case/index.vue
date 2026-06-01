@@ -218,7 +218,7 @@
           </cat2-bug-table>
           </div>
 
-          <div v-show="total>0" ref="casePaginationBand" class="case-table-pagination-band">
+          <div v-show="total>0" ref="casePaginationBand" class="case-table-pagination-band table-pagination-band">
             <pagination
               class="case-table-pagination"
               :total="total"
@@ -1044,7 +1044,6 @@ export default {
   width: 100%;
   overflow: hidden;
   box-sizing: border-box;
-  --defect-pagination-v-gap: 28px;
 }
 .case-table-x-scroll {
   width: 100%;
@@ -1054,17 +1053,7 @@ export default {
   -webkit-overflow-scrolling: touch;
 }
 .case-table-pagination-band {
-  margin-top: var(--defect-pagination-v-gap);
-  /* 分页与视口底至少 40px，刘海屏叠加 safe-area */
-  margin-bottom: calc(40px + env(safe-area-inset-bottom, 0px));
-}
-::v-deep .case-table-pagination.pagination-container {
-  margin-top: 0 !important;
-  margin-bottom: 0 !important;
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
-  padding-left: 0 !important;
-  padding-right: 0 !important;
+  flex-shrink: 0;
 }
 .case-sidebar-expand-trigger {
   display: inline-flex;

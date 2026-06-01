@@ -10,7 +10,7 @@
     </div>
     <h4>{{ $t('defect.statistic.select') }}</h4>
     <div class="templates-panel">
-      <cat2-bug-statistic show-type="all" :read="true" :statistic-tools="[]" @click-template-node="clickAddTemplate" />
+      <cat2-bug-statistic show-type="all" :read="true" :wrap="true" :statistic-tools="[]" @click-template-node="clickAddTemplate" />
     </div>
   </div>
 </template>
@@ -96,15 +96,18 @@ export default {
   }
   .view-panel, .templates-panel {
     width: 100%;
-    min-height: 162px;
     background-color: #F2F6FC;
     border-radius: 5px;
-    padding: 10px 15px 5px 15px;
+    padding: 10px;
+    box-sizing: border-box;
     ::v-deep .statistic-box:hover {
       cursor: pointer;
     }
   }
+  .view-panel {
+    min-height: 162px;
+  }
   .templates-panel {
-    overflow-y: scroll;
+    overflow-y: auto;
   }
 </style>

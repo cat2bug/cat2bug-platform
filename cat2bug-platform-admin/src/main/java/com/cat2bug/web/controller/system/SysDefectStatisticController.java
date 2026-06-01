@@ -2,7 +2,7 @@ package com.cat2bug.web.controller.system;
 
 import com.cat2bug.common.core.controller.BaseController;
 import com.cat2bug.common.core.domain.AjaxResult;
-import com.cat2bug.common.core.domain.entity.SysDictData;
+import com.cat2bug.system.domain.SysDefectOpenWorkload;
 import com.cat2bug.common.core.page.TableDataInfo;
 import com.cat2bug.system.service.ISysDefectStatisticService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,13 +78,15 @@ public class SysDefectStatisticController extends BaseController {
     }
 
     /**
-     * 团队未关闭待办负载 Top5
+     * 团队未关闭待办负载（分页，含全部项目成员）
      */
     @PreAuthorize("@ss.hasPermi('system:defect:query')")
     @GetMapping(value = "/open-workload/{projectId}")
-    public AjaxResult getOpenWorkload(@PathVariable("projectId") Long projectId)
+    public TableDataInfo getOpenWorkload(@PathVariable("projectId") Long projectId)
     {
-        return success(sysDefectStatisticService.openWorkload(projectId));
+        startPage();
+        List<SysDefectOpenWorkload> list = sysDefectStatisticService.openWorkload(projectId);
+        return getDataTable(list);
     }
 
     /**

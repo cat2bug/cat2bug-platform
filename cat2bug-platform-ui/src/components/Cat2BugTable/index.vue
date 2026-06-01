@@ -257,11 +257,13 @@ export default {
     clearDataRowHeights(tableRoot) {
       if (!tableRoot) return;
       const sel = "tbody tr.el-table__row";
+      const reset = (tr) => {
+        tr.style.height = "";
+        tr.style.minHeight = "";
+      };
       const mainBw = tableRoot.querySelector(".el-table__body-wrapper");
       if (mainBw) {
-        mainBw.querySelectorAll(sel).forEach((tr) => {
-          tr.style.height = "";
-        });
+        mainBw.querySelectorAll(sel).forEach(reset);
       }
       const fixedL = tableRoot.querySelector(".el-table__fixed");
       const fixedR = tableRoot.querySelector(".el-table__fixed-right");
@@ -269,11 +271,22 @@ export default {
         if (!fx) return;
         const fbw = fx.querySelector(".el-table__fixed-body-wrapper");
         if (fbw) {
-          fbw.querySelectorAll(sel).forEach((tr) => {
-            tr.style.height = "";
-          });
+          fbw.querySelectorAll(sel).forEach(reset);
         }
       });
+    },
+
+    /** 单行自然内容高度（取该行各单元格最大值） */
+    measureDataRowContentHeight(tr) {
+      if (!tr) return 0;
+      let max = 0;
+      tr.querySelectorAll("td.el-table__cell").forEach((td) => {
+        max = Math.max(max, td.getBoundingClientRect().height);
+      });
+      if (max <= 0) {
+        max = tr.getBoundingClientRect().height;
+      }
+      return max;
     },
 
     /**
@@ -293,7 +306,6 @@ export default {
 
       const sel = "tbody tr.el-table__row";
       this.clearDataRowHeights(root);
-      void root.offsetHeight;
 
       const mainRows = mainBw.querySelectorAll(sel);
       if (!mainRows.length) return;
@@ -312,14 +324,31 @@ export default {
       let n = mainRows.length;
       if (leftRows && leftRows.length < n) n = leftRows.length;
       if (rightRows && rightRows.length < n) n = rightRows.length;
+
       for (let i = 0; i < n; i++) {
-        let h = mainRows[i].offsetHeight;
-        if (leftRows && leftRows[i]) h = Math.max(h, leftRows[i].offsetHeight);
-        if (rightRows && rightRows[i]) h = Math.max(h, rightRows[i].offsetHeight);
-        h = Math.ceil(h);
-        mainRows[i].style.height = h + "px";
-        if (leftRows && leftRows[i]) leftRows[i].style.height = h + "px";
-        if (rightRows && rightRows[i]) rightRows[i].style.height = h + "px";
+        mainRows[i].style.height = "auto";
+        if (leftRows && leftRows[i]) leftRows[i].style.height = "auto";
+        if (rightRows && rightRows[i]) rightRows[i].style.height = "auto";
+      }
+      void root.offsetHeight;
+
+      const heights = [];
+      for (let i = 0; i < n; i++) {
+        let h = this.measureDataRowContentHeight(mainRows[i]);
+        if (leftRows && leftRows[i]) {
+          h = Math.max(h, this.measureDataRowContentHeight(leftRows[i]));
+        }
+        if (rightRows && rightRows[i]) {
+          h = Math.max(h, this.measureDataRowContentHeight(rightRows[i]));
+        }
+        heights.push(Math.max(1, Math.ceil(h)));
+      }
+
+      for (let i = 0; i < n; i++) {
+        const px = `${heights[i]}px`;
+        mainRows[i].style.height = px;
+        if (leftRows && leftRows[i]) leftRows[i].style.height = px;
+        if (rightRows && rightRows[i]) rightRows[i].style.height = px;
       }
     },
 
@@ -1068,7 +1097,7 @@ export default {
   padding: 5px 0;
 }
 
-/* 行高由 syncFixedDataRowHeights 统一三表 tr 高度；单元格内容垂直居中 */
+/* 行高由 syncFixedDataRowHeights 按内容逐行同步三表 tr；单元格内容垂直居中 */
 ::v-deep .el-table__body-wrapper .el-table__body td.el-table__cell,
 ::v-deep .el-table__fixed .el-table__fixed-body-wrapper td.el-table__cell,
 ::v-deep .el-table__fixed-right .el-table__fixed-body-wrapper td.el-table__cell {

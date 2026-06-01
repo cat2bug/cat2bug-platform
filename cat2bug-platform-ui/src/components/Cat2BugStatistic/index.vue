@@ -1,7 +1,7 @@
 <template>
   <div
     class="statistic-panel"
-    :class="{ 'is-scrollable': scrollOverflow }"
+    :class="{ 'is-scrollable': scrollOverflow && !wrap, 'is-wrap': wrap }"
     :style="emptyHiddenStyle"
   >
     <div class="statistic-scroll-wrap">
@@ -145,6 +145,11 @@ export default {
       default: ()=> {}
     },
     read: {
+      type: Boolean,
+      default: false
+    },
+    /** 为 true 时统计块自动换行（用于模版选择区）；默认单行横向滚动 */
+    wrap: {
       type: Boolean,
       default: false
     }
@@ -343,6 +348,12 @@ export default {
       this._scrollResizeObserver.observe(this.$refs.viewport);
     },
     updateScrollState() {
+      if (this.wrap) {
+        this.scrollOverflow = false;
+        this.canScrollLeft = false;
+        this.canScrollRight = false;
+        return;
+      }
       const el = this.$refs.viewport;
       if (!el) {
         return;
@@ -558,5 +569,25 @@ export default {
     width: max-content;
     --statistic-item-width: max-content;
     --statistic-item-min-width: 168px;
+  }
+
+  .statistic-panel.is-wrap {
+    .statistic-scroll-viewport {
+      overflow: visible;
+    }
+
+    .statistic-tools {
+      flex-wrap: wrap;
+      width: 100%;
+      row-gap: var(--statistic-tools-gap, 10px);
+      column-gap: var(--statistic-tools-gap, 10px);
+    }
+
+    .statistic-tools > .statistic-item {
+      margin-bottom: 0;
+      height: auto;
+      max-height: none;
+      min-height: var(--statistic-card-height, var(--statistic-life-card-height, 115px));
+    }
   }
 </style>
