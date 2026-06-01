@@ -6,10 +6,11 @@
   --cat2bug-dialog-footer-gap: 10px;
   --cat2bug-toolbar-control-height: 32px;
   --cat2bug-toolbar-control-line-height: 30px;
-  /* 项目列表页：Tab/统计区/查询条之间的纵向留白 */
-  --project-list-toolbar-v-gap: 10px;
-  --case-toolbar-v-gap: var(--project-list-toolbar-v-gap);
-  --defect-toolbar-v-gap: var(--project-list-toolbar-v-gap);
+  /* 项目列表页：项目切换条与 Tab/工具条/列表等区块之间的纵向间距（缺陷页同源） */
+  --project-list-section-v-gap: 10px;
+  --project-list-toolbar-v-gap: var(--project-list-section-v-gap);
+  --case-toolbar-v-gap: var(--project-list-section-v-gap);
+  --defect-toolbar-v-gap: var(--project-list-section-v-gap);
   /* 全站控件圆角，与 el-table 一致 */
   --cat2bug-border-radius: 4px;
   /* 缺陷/列表页统计卡片（紧凑：较默认再低约 1/4） */

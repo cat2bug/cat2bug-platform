@@ -131,25 +131,25 @@ html.dark {
   --defect-type-default-border: rgba(144, 147, 153, 0.35);
   --defect-type-default-color: #b1b3b8;
 
-  /* 缺陷状态标签 DefectStateFlag */
-  --defect-state-processing-bg: rgba(245, 108, 108, 0.18);
-  --defect-state-processing-border: rgba(245, 108, 108, 0.45);
-  --defect-state-processing-color: #f89898;
-  --defect-state-audit-bg: rgba(64, 158, 255, 0.18);
-  --defect-state-audit-border: rgba(64, 158, 255, 0.45);
-  --defect-state-audit-color: #79bbff;
-  --defect-state-resolved-bg: rgba(103, 194, 58, 0.18);
-  --defect-state-resolved-border: rgba(103, 194, 58, 0.45);
-  --defect-state-resolved-color: #85ce61;
-  --defect-state-rejected-bg: rgba(230, 162, 60, 0.18);
-  --defect-state-rejected-border: rgba(230, 162, 60, 0.45);
-  --defect-state-rejected-color: #eebe77;
-  --defect-state-closed-bg: rgba(144, 147, 153, 0.14);
-  --defect-state-closed-border: rgba(144, 147, 153, 0.35);
-  --defect-state-closed-color: #b1b3b8;
-  --defect-state-unknown-bg: rgba(144, 147, 153, 0.14);
-  --defect-state-unknown-border: rgba(144, 147, 153, 0.35);
-  --defect-state-unknown-color: #b1b3b8;
+  /* 缺陷状态标签 DefectStateFlag：与亮色主题同色实心标签；已关闭不用白底，改深色描边样式 */
+  --defect-state-processing-bg: #f56c6c;
+  --defect-state-processing-border: #f56c6c;
+  --defect-state-processing-color: #ffffff;
+  --defect-state-audit-bg: #409eff;
+  --defect-state-audit-border: #409eff;
+  --defect-state-audit-color: #ffffff;
+  --defect-state-resolved-bg: #67c23a;
+  --defect-state-resolved-border: #67c23a;
+  --defect-state-resolved-color: #ffffff;
+  --defect-state-rejected-bg: #e6a23c;
+  --defect-state-rejected-border: #e6a23c;
+  --defect-state-rejected-color: #ffffff;
+  --defect-state-closed-bg: var(--bg-color-base, #1e1e20);
+  --defect-state-closed-border: var(--border-color-base, #4c4d4f);
+  --defect-state-closed-color: var(--text-color-secondary, #909399);
+  --defect-state-unknown-bg: #909399;
+  --defect-state-unknown-border: #909399;
+  --defect-state-unknown-color: #ffffff;
   
   --border-color-base: #4c4d4f;
   --border-color-light: #363637;

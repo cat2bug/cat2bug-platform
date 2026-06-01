@@ -380,6 +380,8 @@ export default {
   flex: 0 0 auto;
   width: 100%;
   min-width: 0;
+  /* 标题区分割线与统计卡片上沿间距 */
+  padding-top: 10px;
 }
 .handle-plan-dialog .plan-run-content > .plan-run-list-wrap {
   flex: 1 1 auto;
@@ -442,7 +444,7 @@ export default {
 .plan-run-statistics-band {
   width: 100%;
   box-sizing: border-box;
-  padding-top: 0;
+  padding-top: 10px;
   .plan-statistical {
     min-width: 0;
     box-sizing: border-box;

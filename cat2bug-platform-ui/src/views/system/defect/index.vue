@@ -1220,7 +1220,7 @@ export default {
   column-gap: var(--cat2bug-toolbar-section-gap, 10px);
   row-gap: var(--cat2bug-toolbar-row-gap, 8px);
   margin-top: 0;
-  margin-bottom: var(--defect-toolbar-v-gap, 10px);
+  margin-bottom: var(--project-list-section-v-gap, 10px);
   padding-top: 0;
   padding-bottom: 0;
 }

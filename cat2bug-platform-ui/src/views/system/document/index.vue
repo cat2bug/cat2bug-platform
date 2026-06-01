@@ -714,7 +714,7 @@ export default {
   column-gap: var(--cat2bug-toolbar-section-gap, 10px);
   row-gap: var(--cat2bug-toolbar-row-gap, 8px);
   margin-top: 0;
-  margin-bottom: var(--case-toolbar-v-gap, 10px);
+  margin-bottom: 0;
   .el-form-item {
     margin-bottom: 0;
   }

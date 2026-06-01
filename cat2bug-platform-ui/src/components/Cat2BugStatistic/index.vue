@@ -625,8 +625,8 @@ export default {
   .statistic-item--TeamPlanMetricsRadar {
     width: max-content;
     --statistic-item-width: max-content;
-    --statistic-item-min-width: 200px;
-    --statistic-item-max-width: 200px;
+    --statistic-item-min-width: 168px;
+    --statistic-item-max-width: 168px;
     overflow: visible;
   }
 

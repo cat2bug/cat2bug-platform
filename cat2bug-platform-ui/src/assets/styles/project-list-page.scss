@@ -86,13 +86,17 @@
   overflow-x: hidden !important;
 }
 
-.project-list-page-host .case-page,
-.project-list-page-host .plan-page,
-.project-list-page-host .report-page,
-.project-list-page-host .document-page,
+/* host 与 *-page 常在同节点（用例/计划等）；缺陷页为 host > .defect-page 嵌套 */
+.project-list-page-host.case-page,
+.project-list-page-host.plan-page,
+.project-list-page-host.report-page,
+.project-list-page-host.document-page,
+.project-list-page-host.module-page,
 .project-list-page-host > .case-body.defect-page,
 .project-list-page-host .defect-page {
-  gap: var(--project-list-toolbar-v-gap, 10px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--project-list-section-v-gap, 10px);
 }
 
 /* 缺陷统计区：纵向留白由 .defect-page gap 承担，勿再叠 padding / margin */
@@ -116,14 +120,20 @@
   margin-bottom: 0;
 }
 
-/* 列表页区块间距由父级 gap 承担，工具栏顶边不再叠 margin-top */
+/* 列表页区块间距由父级 gap 承担，工具栏不再叠 margin 避免与 gap 双倍留白 */
 .project-list-page-host .case-view-toolbar,
 .project-list-page-host .plan-tools,
 .project-list-page-host .report-tools,
 .project-list-page-host .document-tools,
-.project-list-page-host .module-tools,
+.project-list-page-host .module-tools {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+/* 缺陷页查询条在表格组件内，与下方树表无父级 gap，须保留底边距 */
 .project-list-page-host .defect-page .defect-view-toolbar {
   margin-top: 0 !important;
+  margin-bottom: var(--project-list-section-v-gap, 10px) !important;
 }
 
 .project-list-page-host .case-page ::v-deep h3.case-project-label,

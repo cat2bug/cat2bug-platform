@@ -42,8 +42,8 @@ const RADAR_I18N = [
 const RADAR_COLORS = ['#409eff', '#67c23a', '#e6a23c', '#f56c6c', '#909399', '#6f7ad3']
 const PLAN_METRICS_LIMIT = 4
 const LEGEND_NAME_MAX = 9
-const LEGEND_GAP_PX = 6
-const RADAR_SIZE_RATIO = 0.48
+const LEGEND_GAP_PX = 4
+const RADAR_SIZE_RATIO = 0.46
 const RADAR_EDGE_PAD_PX = 3
 const RADAR_LEFT_PAD_PX = 4
 

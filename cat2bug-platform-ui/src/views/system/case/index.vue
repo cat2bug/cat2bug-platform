@@ -1110,9 +1110,10 @@ export default {
   visibility: hidden;
 }
 /* 查询条上下留白（与缺陷页 --defect-toolbar-v-gap 一致） */
+/* 与项目条、列表区间距由 .project-list-page-host gap（--project-list-section-v-gap）承担 */
 .case-view-toolbar {
   margin-top: 0;
-  margin-bottom: var(--case-toolbar-v-gap, 10px);
+  margin-bottom: 0;
 }
 .case-view-toolbar.wrapped-tools .case-right-tools {
   margin-left: 0;

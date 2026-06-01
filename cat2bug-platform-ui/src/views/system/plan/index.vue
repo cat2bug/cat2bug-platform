@@ -476,7 +476,7 @@ export default {
   margin-top: 0;
   margin-bottom: 0;
 }
-/* 与用例页 .case-view-toolbar：上下留白见 --project-list-toolbar-v-gap */
+/* 与用例页：区块间距见 --project-list-section-v-gap（父级 gap） */
 .plan-tools {
   width: 100%;
   display: flex;
@@ -489,7 +489,7 @@ export default {
   column-gap: var(--cat2bug-toolbar-section-gap, 10px);
   row-gap: var(--cat2bug-toolbar-row-gap, 8px);
   margin-top: 0;
-  margin-bottom: var(--case-toolbar-v-gap, 10px);
+  margin-bottom: 0;
   .el-form-item {
     margin-bottom: 0;
   }
