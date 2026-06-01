@@ -63,7 +63,7 @@
               </div>
               <div>#{{ d.projectNum }} {{ d.defectName }}</div>
               <div class="defect-images">
-                <el-image
+                <cat2-bug-image
                   v-for="(img,index) in getUrl(d.imgUrls)"
                   :key="index"
                   :src="img"

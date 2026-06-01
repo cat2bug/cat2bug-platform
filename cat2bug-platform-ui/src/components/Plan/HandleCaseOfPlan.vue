@@ -66,12 +66,12 @@
         </el-form-item>
         <el-form-item :label="$t('image')" prop="imgUrls">
           <div class="case-image">
-            <el-image
+            <cat2-bug-image
               v-for="(img,index) in getUrl(form.imgUrls)"
               :key="index"
               :src="img"
               :preview-src-list="getUrl(form.imgUrls)"
-              fit="contain"></el-image>
+              fit="contain"></cat2-bug-image>
           </div>
         </el-form-item>
         <el-form-item :label="$t('annex')" prop="annexUrls">

@@ -26,10 +26,10 @@
           </el-col>
           <!--          项目图标-->
           <el-col :xs="24" :sm="24" :md="8" :lg="6" :xl="6" class="step2">
-            <el-image
+            <cat2-bug-image
               style="width: 150px; height: 150px; border-radius: 4px; overflow: hidden;"
-              :src="form.projectIcon"
-              fit="cover"></el-image>
+              :src="projectIconPreviewUrl"
+              fit="cover"></cat2-bug-image>
             <el-popover
               v-model="projectIconPopperVisible"
               popper-class="project-icon-popper"
@@ -70,6 +70,7 @@
 import {addProject, getProject, listProjectRole, updateProject} from "@/api/system/project";
 import { listMember } from "@/api/system/team";
 import MemberNameplate from "@/components/MemberNameplate"
+import { resolveProjectIconUrl } from '@/utils/upload-asset'
 
 export default {
   name: "ProjectEdit",
@@ -112,6 +113,9 @@ export default {
       return function (index){
         return require('@/assets/images/project/project_icon'+index+'.svg')
       }
+    },
+    projectIconPreviewUrl() {
+      return resolveProjectIconUrl(this.form.projectIcon)
     }
   },
   created() {

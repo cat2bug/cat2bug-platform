@@ -34,14 +34,14 @@
         <el-table-column :label="$t('module')" align="left" prop="moduleName" width="150" sortable />
         <el-table-column :label="$t('image')" align="left" prop="imgUrls">
           <template slot-scope="scope">
-            <el-image
-              @click="clickImageHandle"
+            <cat2-bug-image
               v-for="(img,index) in getUrl(scope.row.imgUrls)"
               :key="index"
+              @click="clickImageHandle"
               style="width: 50px; height: 50px"
               :src="img"
-              :preview-src-list="[img]"
-              fit="contain"></el-image>
+              :preview-src-list="getUrl(scope.row.imgUrls)"
+              fit="contain"></cat2-bug-image>
           </template>
         </el-table-column>
         <el-table-column :label="$t('operate')" align="left" class-name="small-padding fixed-width" width="150">

@@ -1,10 +1,10 @@
 <template>
   <div class="project-nameplate">
-    <el-image
+    <cat2-bug-image
       style="width: 50px; height: 50px;flex-basis:auto;"
-      :src="project.projectIcon"
+      :src="projectIconUrl"
       fit="cover"
-    ></el-image>
+    ></cat2-bug-image>
     <div class="project-nameplate-content">
       <p>{{ project.projectName }}</p>
       <span v-if="project.projectIntroduce">{{ project.projectIntroduce }}</span>
@@ -14,12 +14,21 @@
 </template>
 
 <script>
+import Cat2BugImage from '@/components/Cat2BugImage'
+import { resolveProjectIconUrl } from '@/utils/upload-asset'
+
 export default {
   name: "ProjectNameplate",
+  components: { Cat2BugImage },
   props: {
     project: {
       type: Object,
       default: {}
+    }
+  },
+  computed: {
+    projectIconUrl() {
+      return resolveProjectIconUrl(this.project && this.project.projectIcon)
     }
   }
 }

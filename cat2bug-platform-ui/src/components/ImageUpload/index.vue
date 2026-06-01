@@ -47,6 +47,7 @@
       <img
         :src="dialogImageUrl"
         style="display: block; max-width: 100%; margin: 0 auto"
+        @error="onPreviewImageError"
       />
     </el-dialog>
   </div>
@@ -59,6 +60,7 @@ import {strFormat} from "@/utils";
 import i18n from "@/utils/i18n/i18n";
 import {delDefect} from "@/api/system/defect";
 import {setHeader} from "@/utils/request";
+import { DEFAULT_IMAGE, applyDefaultImageOnError } from '@/utils/upload-asset'
 
 export default {
   props: {
@@ -134,6 +136,12 @@ export default {
       immediate: true
     }
   },
+  mounted() {
+    this.bindThumbnailErrors()
+  },
+  updated() {
+    this.$nextTick(() => this.bindThumbnailErrors())
+  },
   computed: {
     // 是否显示提示
     showTip() {
@@ -141,6 +149,20 @@ export default {
     },
   },
   methods: {
+    bindThumbnailErrors() {
+      if (!this.$el) {
+        return
+      }
+      this.$el.querySelectorAll('.el-upload-list__item-thumbnail').forEach((img) => {
+        applyDefaultImageOnError(img)
+      })
+    },
+    onPreviewImageError(event) {
+      if (event && event.target) {
+        event.target.onerror = null
+        event.target.src = DEFAULT_IMAGE
+      }
+    },
     // var imageUrl = URL.createObjectURL(blob);
     async clipboardImageHandle(event) {
       this.dialogVisible = false;

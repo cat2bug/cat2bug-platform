@@ -19,7 +19,7 @@
           trigger="hover">
           <div class="team-menu">
             <div class="team-row" :style="{cursor:team.lock?'not-allowed':'pointer'}" v-for="(team, teamIndex) in teamList" :key="teamIndex" @click="handleTeamClick(team)">
-              <el-avatar class="team-row-icon" shape="square" v-if="team.teamIcon" :src="iconUrl(team)" fit="cover"></el-avatar>
+              <el-avatar class="team-row-icon" shape="square" v-if="team.teamIcon" :src="teamAvatarSrc(team)" fit="cover" @error.native="onTeamAvatarError(team)"></el-avatar>
               <el-avatar class="team-row-icon" shape="square" v-else>{{team.teamName}}</el-avatar>
               <p>
                 {{ team.teamName }}
@@ -38,22 +38,19 @@
 import {myListTeam} from "@/api/system/team";
 import {updateConfig} from "@/api/system/user-config";
 import store from "@/store";
+import { resolveTeamIconUrl } from '@/utils/upload-asset'
 
 export default {
   name: "TeamLockError",
   data() {
     return {
       teamList:[],
+      failedTeamIcons: {}
     }
   },
   computed: {
     lockRemark() {
       return this.$store.state.user.config.currentTeamLockRemark;
-    },
-    iconUrl: function (){
-      return function (team){
-        return process.env.VUE_APP_BASE_API + team.teamIcon
-      }
     },
     teamId() {
       return this.$store.state.user.config.currentTeamId;
@@ -63,6 +60,20 @@ export default {
     this.getTeamList();
   },
   methods: {
+    teamAvatarSrc(team) {
+      if (!team || !team.teamIcon) {
+        return ''
+      }
+      if (this.failedTeamIcons[team.teamId]) {
+        return resolveTeamIconUrl(null)
+      }
+      return resolveTeamIconUrl(team.teamIcon)
+    },
+    onTeamAvatarError(team) {
+      if (team && team.teamId != null) {
+        this.$set(this.failedTeamIcons, team.teamId, true)
+      }
+    },
     /** 获取当前人所能访问的团队列表 */
     getTeamList() {
       myListTeam().then(res=>{

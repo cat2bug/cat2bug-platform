@@ -108,13 +108,13 @@
             </el-row>
           </el-collapse-item>
           <el-collapse-item v-if="defect.imgUrls" :title="$i18n.t('image')" name="imgUrls">
-            <el-image
+            <cat2-bug-image
               v-for="(img,index) in getUrl(defect.imgUrls)"
               :key="index"
               style="width: 100px; height: 100px"
               :src="img"
               :preview-src-list="getUrl(defect.imgUrls)"
-              fit="contain"></el-image>
+              fit="contain"></cat2-bug-image>
           </el-collapse-item>
           <el-collapse-item :title="$i18n.t('describe')" name="defectDescribe">
             <markdown-it-vue :content="defect.defectDescribe+''" />

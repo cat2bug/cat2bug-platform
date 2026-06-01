@@ -3,7 +3,7 @@
     <el-select class="team-select" :collapse="collapse" v-model="currentTeamId" :popper-append-to-body="false" @change="selectTeamChangedHandle">
       <template slot="prefix">
         <el-avatar :size="collapse?'small':'medium'"  shape="square" v-if="!currentTeam" :src="imgUrl('add.svg')" fit="cover"></el-avatar>
-        <el-avatar :size="collapse?'small':'medium'"  shape="square" v-else-if="currentTeam.teamIcon" :src="iconUrl(currentTeam)" fit="cover"></el-avatar>
+        <el-avatar :size="collapse?'small':'medium'"  shape="square" v-else-if="currentTeam.teamIcon" :src="teamAvatarSrc(currentTeam)" fit="cover" @error.native="onTeamAvatarError(currentTeam)"></el-avatar>
         <el-avatar :size="collapse?'small':'medium'" shape="square" v-else>{{currentTeam.name}}</el-avatar>
         <p class="prefix-team-name" v-if="!collapse">{{currentTeam?currentTeam.teamName: $t('team.create')}}</p>
       </template>
@@ -13,7 +13,7 @@
         :key="team.teamId"
         :label="team.teamName"
         :value="team.teamId">
-        <el-avatar shape="square" v-if="team.teamIcon" :src="iconUrl(team)" fit="cover"></el-avatar>
+        <el-avatar shape="square" v-if="team.teamIcon" :src="teamAvatarSrc(team)" fit="cover" @error.native="onTeamAvatarError(team)"></el-avatar>
         <el-avatar shape="square" v-else>{{team.teamName}}</el-avatar>
         <p>{{ team.teamName }}</p>
       </el-option>
@@ -32,6 +32,7 @@
 import { myListTeam } from "@/api/system/team";
 import { updateConfig } from "@/api/system/user-config";
 import store from "@/store";
+import { resolveTeamIconUrl } from '@/utils/upload-asset'
 
 export default {
   name: "TeamSelect",
@@ -39,6 +40,7 @@ export default {
     return {
       teamList:[],
       currentTeamId:null,
+      failedTeamIcons: {}
     }
   },
   props:{
@@ -64,11 +66,6 @@ export default {
       }
       return null;
     },
-    iconUrl: function (){
-      return function (team){
-        return process.env.VUE_APP_BASE_API + team.teamIcon
-      }
-    },
     imgUrl: function () {
       return function (index){
         return require('@/assets/images/'+index)
@@ -79,6 +76,20 @@ export default {
     this.getTeamList();
   },
   methods:{
+    teamAvatarSrc(team) {
+      if (!team || !team.teamIcon) {
+        return ''
+      }
+      if (this.failedTeamIcons[team.teamId]) {
+        return resolveTeamIconUrl(null)
+      }
+      return resolveTeamIconUrl(team.teamIcon)
+    },
+    onTeamAvatarError(team) {
+      if (team && team.teamId != null) {
+        this.$set(this.failedTeamIcons, team.teamId, true)
+      }
+    },
     /** 获取当前人所能访问的团队列表 */
     getTeamList() {
       myListTeam().then(res=>{

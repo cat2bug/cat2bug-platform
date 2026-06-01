@@ -1,10 +1,10 @@
 <template>
   <div class="team-nameplate">
-    <el-image
+    <cat2-bug-image
       style="width: 50px; height: 50px;flex-basis:auto;"
-      :src="iconUrl(team)"
+      :src="iconUrl"
       fit="cover"
-    ></el-image>
+    ></cat2-bug-image>
     <div class="team-nameplate-content">
       <p>{{ team.teamName }}</p>
       <span v-if="team.introduce">{{ team.introduce }}</span>
@@ -14,8 +14,12 @@
 </template>
 
 <script>
+import Cat2BugImage from '@/components/Cat2BugImage'
+import { resolveTeamIconUrl } from '@/utils/upload-asset'
+
 export default {
   name: "TeamNameplate",
+  components: { Cat2BugImage },
   props: {
     team: {
       type: Object,
@@ -23,10 +27,8 @@ export default {
     }
   },
   computed: {
-    iconUrl: function (){
-      return function (team){
-        return process.env.VUE_APP_BASE_API + team.teamIcon
-      }
+    iconUrl() {
+      return resolveTeamIconUrl(this.team && this.team.teamIcon)
     },
   }
 }

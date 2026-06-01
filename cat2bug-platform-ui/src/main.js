@@ -34,6 +34,8 @@ import FileUpload from "@/components/FileUpload"
 import ImageUpload from "@/components/ImageUpload"
 // 图片预览组件
 import ImagePreview from "@/components/ImagePreview"
+// 带默认占位图的图片组件
+import Cat2BugImage from "@/components/Cat2BugImage"
 // 字典标签组件
 import DictTag from '@/components/DictTag'
 // 站点版权
@@ -71,6 +73,7 @@ Vue.component('Editor', Editor)
 Vue.component('FileUpload', FileUpload)
 Vue.component('ImageUpload', ImageUpload)
 Vue.component('ImagePreview', ImagePreview)
+Vue.component('Cat2BugImage', Cat2BugImage)
 
 Vue.use(directive)
 Vue.use(plugins)

@@ -77,12 +77,12 @@
         </el-collapse-item>
         <el-collapse-item v-if="defect.imgUrls" :title="$i18n.t('image')" name="imgUrls">
           <div class="defect-image">
-            <el-image
+            <cat2-bug-image
               v-for="(img,index) in getUrl(defect.imgUrls)"
               :key="index"
               :src="img"
               :preview-src-list="getUrl(defect.imgUrls)"
-              fit="contain"></el-image>
+              fit="contain"></cat2-bug-image>
           </div>
         </el-collapse-item>
         <el-collapse-item v-if="defect.annexUrls" :title="$i18n.t('annex')" name="annexUrls">

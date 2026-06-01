@@ -6,14 +6,14 @@
           placement="left-start"
           trigger="hover">
           <div style="display: inline-flex; flex-direction: row; gap: 5px; max-width: 900px">
-            <el-image
+            <cat2-bug-image
               v-for="(img,index) in list(caseModel.imgUrls)"
               :key="index"
               style="width: 100px; height: 100px"
               :src="img"
               class="image-click"
               :preview-src-list="list(caseModel.imgUrls)"
-              fit="cover"></el-image>
+              fit="cover"></cat2-bug-image>
           </div>
           <el-badge :value="num(caseModel.imgUrls)" class="item" slot="reference" v-if="num(caseModel.imgUrls)">
             <el-button icon="el-icon-picture-outline" size="mini"></el-button>

@@ -1,17 +1,18 @@
 <template>
   <div @click="handleClickPreview" class="cat2bug-preview-image">
     <div v-if="imageCount==1">
-      <el-image
+      <cat2-bug-image
         v-for="(img,index) in images"
         :key="index"
         @click="handleClickPreview"
         @close="handleViewClose"
         :style="`width: 60px;height: 60px;`"
-        :src="img"
+        :src="resolveImage(img, index)"
         class="click"
-        :preview-src-list="images"
+        :preview-src-list="resolvedPreviewList"
         fit="contain"
-      ></el-image>
+        @error="onImageError(index)"
+      ></cat2-bug-image>
     </div>
     <el-popover
       v-else-if="imageCount>1"
@@ -20,27 +21,28 @@
       popper-class="cat2bug-preview-image-popover"
       >
       <div class="row-image">
-        <el-image
+        <cat2-bug-image
           v-for="(img,index) in images"
           :key="index"
           @click="handleClickPreview"
           @close="handleViewClose"
           :style="`width: ${width}px;height: ${height}px;`"
-          :src="img"
+          :src="resolveImage(img, index)"
           class="click"
-          :preview-src-list="images"
+          :preview-src-list="resolvedPreviewList"
           fit="contain"
-        ></el-image>
+          @error="onImageError(index)"
+        ></cat2-bug-image>
       </div>
       <div slot="reference" class="preview" :style="`width: 60px;height: 60px;`">
-        <el-image
+        <cat2-bug-image
           class="button"
           @click="handleClickPreview"
           style="width: 100%; height: 100%;"
           :src="previewUrl"
-          :preview-src-list="images"
+          :preview-src-list="resolvedPreviewList"
           fit="contain"
-        ></el-image>
+        ></cat2-bug-image>
         <span v-if="imageCount>1" class="number">+{{ imageCount }}</span>
       </div>
     </el-popover>
@@ -48,12 +50,17 @@
 </template>
 
 <script>
+import Cat2BugImage from '@/components/Cat2BugImage'
+import { DEFAULT_IMAGE } from '@/utils/upload-asset'
+
 export default {
   name: "Cat2BugPreviewImage",
+  components: { Cat2BugImage },
   data() {
     return {
       isPreview: true,
       isView: false,
+      failedIndexes: {}
     }
   },
   props: {
@@ -70,15 +77,38 @@ export default {
       default: 100
     }
   },
+  watch: {
+    images: {
+      handler() {
+        this.failedIndexes = {}
+      },
+      deep: true
+    }
+  },
   computed: {
     previewUrl: function () {
-      return  this.images.length>0?this.images[0]:'';
+      if (!this.images.length) {
+        return DEFAULT_IMAGE
+      }
+      return this.resolveImage(this.images[0], 0)
     },
     imageCount: function () {
       return this.images.length;
+    },
+    resolvedPreviewList() {
+      return this.images.map((img, index) => this.resolveImage(img, index))
     }
   },
   methods: {
+    resolveImage(url, index) {
+      if (this.failedIndexes[index]) {
+        return DEFAULT_IMAGE
+      }
+      return url
+    },
+    onImageError(index) {
+      this.$set(this.failedIndexes, index, true)
+    },
     handleClickPreview(event){
       this.isView = true;
       event.stopPropagation();
@@ -86,17 +116,17 @@ export default {
     handleViewClose() {
       this.isView = false;
       this.isPreview = true;
-      alert('1')
     },
   }
 }
 </script>
 
 <style lang="scss" scoped>
-.el-image {
+::v-deep .el-image {
   background-color: #F2F6FC;
   padding: 5px;
   border-radius: 5px;
+  box-sizing: border-box;
 }
 .el-image:hover, .button:hover {
   background-color: #e8f4ff;

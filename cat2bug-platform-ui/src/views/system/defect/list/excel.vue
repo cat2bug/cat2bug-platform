@@ -196,6 +196,7 @@ import { strFormat } from "@/utils";
 import { checkPermi } from "@/utils/permission";
 import errorCode from "@/utils/errorCode";
 import { TableOptions } from "@/views/system/defect/list/table-options";
+import { DEFAULT_IMAGE } from '@/utils/upload-asset'
 
 /**
  * 与 list/table.vue 中 cat2-bug-table 的 cache-key="defect-table" 及 Cat2BugTable columnsStorageKey()
@@ -2247,6 +2248,7 @@ export default {
         .map((s) => s.trim())
         .filter(Boolean);
       const baseApi = String(process.env.VUE_APP_BASE_API || "");
+      const defaultImg = escAttr(DEFAULT_IMAGE);
       const removeTitle = escAttr(String(this.$t("delete")));
       const tiles = rawParts.length
         ? rawParts
@@ -2255,7 +2257,7 @@ export default {
               const escPath = escAttr(pathRel);
               return (
                 `<span class="defect-excel-img-wrap">` +
-                `<img class="defect-excel-img-tile" src="${escAttr(full)}" alt="" loading="lazy" />` +
+                `<img class="defect-excel-img-tile" src="${escAttr(full)}" alt="" loading="lazy" onerror="this.onerror=null;this.src='${defaultImg}'" />` +
                 `<span class="defect-excel-img-remove" data-defect-id="${escAttr(String(record.defectId))}" data-img-path="${escPath}" title="${removeTitle}" role="button" tabindex="0"><i class="el-icon-close"></i></span>` +
                 `</span>`
               );
@@ -3828,7 +3830,7 @@ export default {
   overflow-x: hidden;
   overflow-y: visible;
   text-overflow: clip;
-  vertical-align: top !important;
+  vertical-align: middle !important;
 }
 /* 缺陷名称：换行与行高同其它纯文本列；不设 flex（会破坏 td 表格对齐），仅用 vertical-align 做格内上下居中 */
 .defect-vue-excel-editor ::v-deep .systable tbody td[id$="-defectName"]:not(.first-col) {
@@ -3919,6 +3921,12 @@ export default {
   padding-top: 2px !important;
   padding-bottom: 2px !important;
   text-align: left !important;
+  vertical-align: middle !important;
+}
+.defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .vue-excel-cell-html {
+  display: flex;
+  align-items: center;
+  min-height: 24px;
 }
 /* 两列 Grid：避免 flex-wrap 把上传钮挤到「下一行」贴底；右侧钮与左侧内容垂直居中 */
 .defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-attach-cell {
@@ -3972,10 +3980,18 @@ export default {
 }
 .defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-img-wrap {
   position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex: 0 0 auto;
   width: 60px;
   height: 60px;
   line-height: 0;
+  overflow: hidden;
+  background-color: #ebeef5;
+  border: 1px solid #ebeef5;
+  border-radius: 3px;
+  box-sizing: border-box;
 }
 .defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-img-remove {
   position: absolute;
@@ -4007,19 +4023,23 @@ export default {
   min-width: 1px;
 }
 .defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-img-tile {
-  width: 60px;
-  height: 60px;
-  object-fit: cover;
-  border-radius: 3px;
+  display: block;
   flex: 0 0 auto;
-  border: 1px solid #ebeef5;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  object-position: center center;
+  border: none;
+  border-radius: 0;
   box-sizing: border-box;
   cursor: pointer;
+  vertical-align: middle;
 }
 .defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-img-wrap .defect-excel-img-tile {
-  display: block;
-  width: 100%;
-  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
 }
 .defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-annex-stack {
   display: flex;
@@ -4217,7 +4237,7 @@ export default {
   word-break: break-word;
   overflow-x: hidden;
   text-overflow: clip;
-  vertical-align: top !important;
+  vertical-align: middle !important;
 }
 .defect-excel-root .defect-vue-excel-editor table.systable tbody td[id$="-defectName"]:not(.first-col) {
   height: auto !important;
@@ -4302,6 +4322,11 @@ export default {
 .defect-excel-root .defect-vue-excel-editor table.systable tbody td.cell-html {
   vertical-align: middle !important;
   text-align: left !important;
+}
+.defect-excel-root .defect-vue-excel-editor table.systable tbody td.cell-html .vue-excel-cell-html {
+  display: flex;
+  align-items: center;
+  min-height: 24px;
 }
 /* 计划开始/结束、交付物：与库内 td.select 相同三角；三角在 padding 区内，横向溢出仍裁切 */
 .defect-excel-root .defect-vue-excel-editor table.systable tbody td[id$="-planStartTime"]:not(.first-col),

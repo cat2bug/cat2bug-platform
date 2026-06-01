@@ -1,21 +1,20 @@
 <template>
-  <el-image
-    :src="`${realSrc}`"
+  <cat2-bug-image
+    :src="realSrc"
     fit="cover"
     :style="`width:${realWidth};height:${realHeight};`"
     :preview-src-list="realSrcList"
-  >
-    <div slot="error" class="image-slot">
-      <i class="el-icon-picture-outline"></i>
-    </div>
-  </el-image>
+  />
 </template>
 
 <script>
 import { isExternal } from "@/utils/validate";
+import Cat2BugImage from '@/components/Cat2BugImage'
+import { DEFAULT_IMAGE, resolveUploadUrl } from '@/utils/upload-asset'
 
 export default {
   name: "ImagePreview",
+  components: { Cat2BugImage },
   props: {
     src: {
       type: String,
@@ -33,17 +32,17 @@ export default {
   computed: {
     realSrc() {
       if (!this.src) {
-        return;
+        return DEFAULT_IMAGE;
       }
       let real_src = this.src.split(",")[0];
       if (isExternal(real_src)) {
         return real_src;
       }
-      return process.env.VUE_APP_BASE_API + real_src;
+      return resolveUploadUrl(real_src);
     },
     realSrcList() {
       if (!this.src) {
-        return;
+        return [DEFAULT_IMAGE];
       }
       let real_src_list = this.src.split(",");
       let srcList = [];
@@ -51,7 +50,7 @@ export default {
         if (isExternal(item)) {
           return srcList.push(item);
         }
-        return srcList.push(process.env.VUE_APP_BASE_API + item);
+        return srcList.push(resolveUploadUrl(item));
       });
       return srcList;
     },
@@ -66,25 +65,16 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.el-image {
+::v-deep .el-image {
   border-radius: 5px;
   background-color: #ebeef5;
   box-shadow: 0 0 5px 1px #ccc;
-  ::v-deep .el-image__inner {
+  .el-image__inner {
     transition: all 0.3s;
     cursor: pointer;
     &:hover {
       transform: scale(1.2);
     }
-  }
-  ::v-deep .image-slot {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    height: 100%;
-    color: #909399;
-    font-size: 30px;
   }
 }
 </style>
