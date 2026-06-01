@@ -111,6 +111,11 @@ export default {
 <style lang="scss" scoped>
   .first-title {
     margin-top: 10px;
+    margin-bottom: 10px;
+  }
+  h4:not(.first-title) {
+    margin-top: 12px;
+    margin-bottom: 10px;
   }
   .app-container {
     width: 100%;
@@ -131,7 +136,14 @@ export default {
     }
   }
   .view-panel {
-    min-height: 162px;
+    /* 上下 padding 各 10px + 统计块高度，避免 min-height 过大导致底部留白 */
+    min-height: calc(var(--statistic-card-height, 115px) + 20px);
+    display: flex;
+    flex-direction: column;
+
+    ::v-deep .statistic-panel {
+      flex: 0 0 auto;
+    }
   }
   .templates-groups {
     flex: 1 1 auto;

@@ -106,7 +106,8 @@
 html.dark {
   // Dark Mode
   --bg-color-base: #1e1e20;
-  --bg-color-page: #121214;
+  /* 与导航/侧栏/表格底一致，避免页面缝隙 (#121214) 比卡片层更深 */
+  --bg-color-page: var(--bg-color-base);
   --bg-color-block: #252529;
   
   --text-color-primary: #f5f7fa;
@@ -169,7 +170,7 @@ html.dark {
   --table-row-hover-bg: #2d2d31;
   --table-border-color: #363637;
 
-  --cat2bug-xbar-track: #0a0a0a;
+  --cat2bug-xbar-track: var(--bg-color-block);
   --cat2bug-xbar-thumb: #4c4d4f;
   --cat2bug-xbar-thumb-hover: #606266;
 
