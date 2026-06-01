@@ -17,9 +17,14 @@
             :autoCrop="options.autoCrop"
             :autoCropWidth="options.autoCropWidth"
             :autoCropHeight="options.autoCropHeight"
+            :fixed="options.fixed"
+            :fixedNumber="options.fixedNumber"
             :fixedBox="options.fixedBox"
+            :centerBox="options.centerBox"
+            :canMoveBox="options.canMoveBox"
             :outputType="options.outputType"
             @realTime="realTime"
+            @imgLoad="onCropperImgLoad"
             v-if="visible"
           />
         </el-col>
@@ -61,10 +66,11 @@
 
 <script>
 import store from "@/store";
-import  { VueCropper } from "vue-cropper";
+import { VueCropper } from "vue-cropper";
 import { uploadAvatar } from "@/api/system/user";
 import { debounce } from '@/utils'
 import Cat2BugAvatar from "@/components/Cat2BugAvatar";
+import { isNonEmptyUploadPath, resolveUploadUrl } from '@/utils/upload-asset'
 
 export default {
   components: { VueCropper, Cat2BugAvatar },
@@ -84,11 +90,15 @@ export default {
       title: "修改头像",
       options: {
         name: store.getters.name,  // 当前用户名
-        avatar: store.getters.avatar, //裁剪图片的地址
+        avatar: '', // vue-cropper 需完整 URL，打开弹窗时再解析
         autoCrop: true, // 是否默认生成截图框
         autoCropWidth: 200, // 默认生成截图框宽度
         autoCropHeight: 200, // 默认生成截图框高度
+        fixed: true, // 固定 1:1 比例
+        fixedNumber: [1, 1],
         fixedBox: true, // 固定截图框大小 不允许改变
+        centerBox: true, // 截图框限制在图片内
+        canMoveBox: false, // 固定截图框，拖动图片调整
         outputType:"png" // 默认生成截图为PNG格式
       },
       avatar: store.getters.avatar, //裁剪图片的地址
@@ -106,13 +116,78 @@ export default {
       }
     }
   },
+  watch: {
+    profileUser: {
+      handler(user) {
+        const next = (user && user.avatar) || store.getters.avatar || ''
+        if (next !== this.avatar) {
+          this.avatar = next
+        }
+      },
+      immediate: true,
+      deep: true
+    }
+  },
   methods: {
+    resolveCropperImage(path) {
+      if (!isNonEmptyUploadPath(path)) {
+        return ''
+      }
+      const trimmed = path.trim()
+      if (trimmed.startsWith('data:')) {
+        return trimmed
+      }
+      return resolveUploadUrl(trimmed, process.env.VUE_APP_BASE_API)
+    },
+    syncCropperImage() {
+      const path = this.avatar || store.getters.avatar || ''
+      this.options.avatar = this.resolveCropperImage(path)
+    },
+    onCropperImgLoad(status) {
+      if (status !== 'success') {
+        return
+      }
+      this.$nextTick(() => {
+        this.fitImageToCropBox()
+      })
+    },
+    fitImageToCropBox() {
+      const cropper = this.$refs.cropper
+      if (!cropper || !cropper.imgs) {
+        return
+      }
+      cropper.goAutoCrop()
+      this.$nextTick(() => {
+        const {
+          trueWidth,
+          trueHeight,
+          cropW,
+          cropH,
+          cropOffsertX,
+          cropOffsertY
+        } = cropper
+        if (!trueWidth || !trueHeight || !cropW || !cropH) {
+          return
+        }
+        const scale = Math.min(cropW / trueWidth, cropH / trueHeight)
+        cropper.scale = scale
+        const displayW = trueWidth * scale
+        const displayH = trueHeight * scale
+        cropper.x = cropOffsertX + (cropW - displayW) / 2 - trueWidth * (1 - scale) / 2
+        cropper.y = cropOffsertY + (cropH - displayH) / 2 - trueHeight * (1 - scale) / 2
+        if (typeof cropper.showPreview === 'function') {
+          cropper.showPreview()
+        }
+      })
+    },
     // 编辑头像
     editCropper() {
+      this.syncCropperImage()
       this.open = true;
     },
     // 打开弹出层结束时的回调
     modalOpened() {
+      this.syncCropperImage()
       this.visible = true;
       if (!this.resizeHandler) {
         this.resizeHandler = debounce(() => {
@@ -159,13 +234,18 @@ export default {
         let formData = new FormData();
         formData.append("avatarfile", data);
         uploadAvatar(formData).then(response => {
-          this.open = false;
-          this.options.avatar = response.imgUrl;
-          this.avatar = response.imgUrl;
-          store.commit('SET_AVATAR', this.options.avatar);
-          this.$modal.msgSuccess(this.$i18n.t('modify-success'));
-          this.visible = false;
-        });
+          const imgUrl = response && response.imgUrl
+          if (!imgUrl) {
+            this.$modal.msgError(this.$i18n.t('member.upload-file-format-exception'))
+            return
+          }
+          this.avatar = imgUrl
+          store.commit('SET_AVATAR', imgUrl)
+          this.$emit('updated', imgUrl)
+          this.$modal.msgSuccess(this.$i18n.t('modify-success'))
+          this.visible = false
+          this.open = false
+        })
       });
     },
     // 实时预览
@@ -174,9 +254,8 @@ export default {
     },
     // 关闭窗口
     closeDialog() {
-      this.options.avatar = store.getters.avatar
-      this.avatar = store.getters.avatar
-      this.visible = false;
+      this.options.avatar = ''
+      this.visible = false
       window.removeEventListener("resize", this.resizeHandler)
     }
   }

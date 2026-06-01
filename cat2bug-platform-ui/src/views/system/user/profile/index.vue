@@ -12,7 +12,7 @@
           </div>
           <div>
             <div class="text-center">
-              <userAvatar :profile-user="user" />
+              <userAvatar :profile-user="user" @updated="onAvatarUpdated" />
             </div>
             <ul class="list-group list-group-striped">
               <li class="list-group-item">
@@ -98,6 +98,11 @@ export default {
     },
     hasContact(value) {
       return !!(value || '').trim();
+    },
+    onAvatarUpdated(imgUrl) {
+      if (this.user) {
+        this.$set(this.user, 'avatar', imgUrl)
+      }
     }
   }
 };

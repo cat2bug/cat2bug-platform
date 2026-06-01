@@ -1,6 +1,7 @@
 <template>
   <div class="member-avatar" v-if="isVisible">
     <el-avatar
+      :key="avatarRenderKey"
       :isStatistics="member.isStatistics?'true':'false'"
       :src="displayImgUrl"
       :class="{ 'cat2bug-avatar--text-initial': isTextInitial }"
@@ -72,14 +73,18 @@ export default {
       return resolveMemberDisplayName(this.member)
     },
     isTextInitial() {
-      return !this.member.isStatistics
+      if (this.member.isStatistics) return false
+      return !this.displayImgUrl
+    },
+    avatarRenderKey() {
+      return this.imgUrl || this.displayName || 'avatar'
     },
     textInitial() {
       if (this.member.isStatistics) return ''
       return getAvatarInitial(this.displayName)
     },
     textAvatarStyle() {
-      if (this.member.isStatistics) return {}
+      if (!this.isTextInitial) return {}
       return getAvatarPaletteStyle(getAvatarColorKey(this.displayName))
     }
   },

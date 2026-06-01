@@ -2,6 +2,8 @@
  * 成员文字头像：首字/首字母 + 固定色板白字（不依赖拼音库）。
  */
 
+import { resolveUploadUrl } from '@/utils/upload-asset'
+
 /** 主流 SaaS 文字头像色板（白字对比度） */
 export const AVATAR_PALETTE = [
   '#1890ff',
@@ -81,18 +83,10 @@ export function hasMemberPhoto(member) {
  */
 export function resolveMemberAvatarUrl(member, baseApi = '') {
   if (!hasMemberPhoto(member)) return ''
-  if (isNonEmptyAvatarPath(member.avatarUrl)) {
-    const url = member.avatarUrl.trim()
-    if (/^https?:\/\//i.test(url) || url.startsWith('/') || url.startsWith('data:')) {
-      return url
-    }
-    return baseApi + url
-  }
-  const avatar = member.avatar.trim()
-  if (/^https?:\/\//i.test(avatar) || avatar.startsWith('/') || avatar.startsWith('data:')) {
-    return avatar
-  }
-  return baseApi + avatar
+  const path = isNonEmptyAvatarPath(member.avatarUrl)
+    ? member.avatarUrl.trim()
+    : member.avatar.trim()
+  return resolveUploadUrl(path, baseApi)
 }
 
 /** @param {{ nickName?: string, userName?: string, name?: string }} member */
