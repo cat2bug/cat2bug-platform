@@ -9,8 +9,33 @@
       <cat2-bug-statistic :read="true" v-model="selectTemplate" :draggable="true" />
     </div>
     <h4>{{ $t('defect.statistic.select') }}</h4>
-    <div class="templates-panel">
-      <cat2-bug-statistic show-type="all" :read="true" :wrap="true" :statistic-tools="[]" @click-template-node="clickAddTemplate" />
+    <div class="templates-groups">
+      <div class="templates-group">
+        <h5 class="templates-group-title">{{ $t('defect.statistic.personal-template') }}</h5>
+        <div class="templates-panel">
+          <cat2-bug-statistic
+            show-type="all"
+            template-group="personal"
+            :read="true"
+            :wrap="true"
+            :statistic-tools="[]"
+            @click-template-node="clickAddTemplate"
+          />
+        </div>
+      </div>
+      <div class="templates-group">
+        <h5 class="templates-group-title">{{ $t('defect.statistic.team-template') }}</h5>
+        <div class="templates-panel">
+          <cat2-bug-statistic
+            show-type="all"
+            template-group="team"
+            :read="true"
+            :wrap="true"
+            :statistic-tools="[]"
+            @click-template-node="clickAddTemplate"
+          />
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -19,6 +44,7 @@
 import ProjectLabel from "@/components/Project/ProjectLabel";
 import Cat2BugStatistic from "@/components/Cat2BugStatistic"
 import {addStatistic, listStatistic} from "@/api/system/statistic/template";
+import { resolveCurrentProjectId } from '@/components/Cat2BugStatistic/utils/project-id'
 
 // 统计模版
 export default {
@@ -36,7 +62,7 @@ export default {
     },
     /** 获取项目id */
     projectId: function() {
-      return parseInt(this.$store.state.user.config.currentProjectId);
+      return resolveCurrentProjectId(this);
     },
   },
   created() {
@@ -107,7 +133,21 @@ export default {
   .view-panel {
     min-height: 162px;
   }
-  .templates-panel {
+  .templates-groups {
+    flex: 1 1 auto;
+    min-height: 0;
     overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .templates-group-title {
+    margin: 0 0 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-color-regular, #606266);
+  }
+  .templates-panel {
+    overflow: visible;
   }
 </style>

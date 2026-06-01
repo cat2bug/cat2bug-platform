@@ -2,6 +2,7 @@ package com.cat2bug.system.mapper;
 
 import com.cat2bug.system.domain.SysDefectOpenWorkload;
 import com.cat2bug.system.domain.SysDefectOpenWorkloadSummary;
+import com.cat2bug.system.domain.SysDefectParticipationDay;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -43,4 +44,11 @@ public interface SysDefectStatisticMapper {
      * 当前用户未关闭待办汇总
      */
     SysDefectOpenWorkloadSummary openWorkloadByMember(@Param("projectId") Long projectId, @Param("userId") Long userId);
+
+    /**
+     * 按日统计当前用户在项目缺陷日志中的参与（distinct defect_id）
+     */
+    List<SysDefectParticipationDay> participationByDay(@Param("projectId") Long projectId,
+                                                       @Param("userId") Long userId,
+                                                       @Param("startDate") String startDate);
 }

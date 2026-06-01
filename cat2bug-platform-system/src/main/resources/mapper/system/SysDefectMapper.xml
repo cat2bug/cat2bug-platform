@@ -51,6 +51,29 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="version"    column="version"    />
         <result property="createTime"    column="create_time"    />
     </resultMap>
+
+    <sql id="participationLogFilter">
+        <if test="defect.params != null and defect.params.participationLogDate != null and defect.params.participationLogDate != '' and defect.params.participationUserId != null">
+            AND EXISTS (
+                SELECT 1 FROM sys_defect_log l
+                WHERE l.defect_id = d.defect_id
+                    AND l.create_by = #{defect.params.participationUserId}
+                    AND date(l.create_time) = #{defect.params.participationLogDate}
+            )
+        </if>
+    </sql>
+
+    <sql id="participationLogFilter" databaseId="h2">
+        <if test="defect.params != null and defect.params.participationLogDate != null and defect.params.participationLogDate != '' and defect.params.participationUserId != null">
+            AND EXISTS (
+                SELECT 1 FROM sys_defect_log l
+                WHERE l.defect_id = d.defect_id
+                    AND l.create_by = #{defect.params.participationUserId}
+                    AND PARSEDATETIME(FORMATDATETIME(l.create_time, '%Y-%m-%d'), '%Y-%m-%d') = PARSEDATETIME(#{defect.params.participationLogDate}, '%Y-%m-%d')
+            )
+        </if>
+    </sql>
+
     <sql id="selectSysDefectVo" databaseId="h2">
                 SELECT
                     d.defect_id,
@@ -363,6 +386,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                 )
             </if>
             <if test="defect.params.beginHandleTime != null and defect.params.beginHandleTime != '' and defect.params.endHandleTime != null and defect.params.endHandleTime != ''"> and d.handle_time between #{defect.params.beginHandleTime} and #{defect.params.endHandleTime}</if>
+            <include refid="participationLogFilter"/>
             <if test="defect.defectLevel != null  and defect.defectLevel != ''"> and d.defect_level = #{defect.defectLevel}</if>
             <if test="defect.sponsor != null  and defect.sponsor != ''"> and (d.sponsor like concat('%', #{sponsor}, '%') or d.sponsor=#{defect.sponsor})</if>
             <if test="defect.params.search != null and defect.params.search != ''">

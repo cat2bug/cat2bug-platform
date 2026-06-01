@@ -2,6 +2,7 @@ package com.cat2bug.system.service.impl;
 
 import com.cat2bug.system.domain.SysDefectOpenWorkload;
 import com.cat2bug.system.domain.SysDefectOpenWorkloadSummary;
+import com.cat2bug.system.domain.SysDefectParticipationDay;
 import com.cat2bug.system.mapper.SysDefectStatisticMapper;
 import org.apache.ibatis.builder.xml.XMLMapperBuilder;
 import org.apache.ibatis.mapping.DatabaseIdProvider;
@@ -58,12 +59,14 @@ public class SysDefectStatisticServiceOpenWorkloadTest {
 
         h2Connection = dataSource.getConnection();
         try (Statement stmt = h2Connection.createStatement()) {
+            stmt.execute("DROP TABLE IF EXISTS sys_defect_log");
             stmt.execute("DROP TABLE IF EXISTS sys_defect");
             stmt.execute("DROP TABLE IF EXISTS sys_user_project");
             stmt.execute("DROP TABLE IF EXISTS sys_user");
             stmt.execute("CREATE TABLE sys_user (user_id BIGINT PRIMARY KEY, nick_name VARCHAR(32), avatar VARCHAR(255), del_flag CHAR(1))");
             stmt.execute("CREATE TABLE sys_user_project (user_project_id BIGINT PRIMARY KEY, user_id BIGINT, project_id BIGINT)");
             stmt.execute("CREATE TABLE sys_defect (defect_id BIGINT PRIMARY KEY, project_id BIGINT, del_flag CHAR(1), defect_state INT, handle_by VARCHAR(255))");
+            stmt.execute("CREATE TABLE sys_defect_log (log_id BIGINT PRIMARY KEY, defect_id BIGINT, create_by BIGINT, create_time TIMESTAMP)");
             stmt.execute("INSERT INTO sys_user(user_id, nick_name, avatar, del_flag) VALUES (1, 'u1', 'a1', '0')");
             stmt.execute("INSERT INTO sys_user(user_id, nick_name, avatar, del_flag) VALUES (2, 'u2', 'a2', '0')");
             stmt.execute("INSERT INTO sys_user_project(user_project_id, user_id, project_id) VALUES (11, 1, 100)");
@@ -73,6 +76,10 @@ public class SysDefectStatisticServiceOpenWorkloadTest {
             stmt.execute("INSERT INTO sys_defect(defect_id, project_id, del_flag, defect_state, handle_by) VALUES (101, 100, '0', 0, '[1,2]')");
             stmt.execute("INSERT INTO sys_defect(defect_id, project_id, del_flag, defect_state, handle_by) VALUES (102, 100, '0', 3, '[1]')");
             stmt.execute("INSERT INTO sys_defect(defect_id, project_id, del_flag, defect_state, handle_by) VALUES (103, 100, '0', 4, '[1,2]')");
+            stmt.execute("INSERT INTO sys_defect_log(log_id, defect_id, create_by, create_time) VALUES (1001, 101, 1, PARSEDATETIME('2026-05-31 10:00:00', 'yyyy-MM-dd HH:mm:ss'))");
+            stmt.execute("INSERT INTO sys_defect_log(log_id, defect_id, create_by, create_time) VALUES (1002, 101, 1, PARSEDATETIME('2026-05-31 11:00:00', 'yyyy-MM-dd HH:mm:ss'))");
+            stmt.execute("INSERT INTO sys_defect_log(log_id, defect_id, create_by, create_time) VALUES (1003, 102, 1, PARSEDATETIME('2026-05-31 12:00:00', 'yyyy-MM-dd HH:mm:ss'))");
+            stmt.execute("INSERT INTO sys_defect_log(log_id, defect_id, create_by, create_time) VALUES (1004, 101, 2, PARSEDATETIME('2026-05-31 13:00:00', 'yyyy-MM-dd HH:mm:ss'))");
         }
 
         Configuration configuration = new Configuration();
@@ -170,6 +177,17 @@ public class SysDefectStatisticServiceOpenWorkloadTest {
             assertEquals(1, my.getProcessing());
             assertEquals(0, my.getAudit());
             assertEquals(1, my.getRejected());
+        }
+    }
+
+    @Test
+    public void h2MapperQuery_participationByDay_countsDistinctDefectPerDay() {
+        try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
+            SysDefectStatisticMapper mapper = sqlSession.getMapper(SysDefectStatisticMapper.class);
+            List<SysDefectParticipationDay> days = mapper.participationByDay(100L, 1L, "2026-05-31");
+            assertEquals(1, days.size());
+            assertEquals("2026-05-31", days.get(0).getDate());
+            assertEquals(2, days.get(0).getCount());
         }
     }
 }

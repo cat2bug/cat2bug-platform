@@ -55,3 +55,37 @@ export function statisticMyOpenWorkload(projectId) {
     method: 'get'
   })
 }
+
+/** 我的缺陷日志参与（按日） */
+export function statisticMyParticipation(projectId, days = 30) {
+  return request({
+    url: '/system/defect/statistic/participation/' + projectId + '/my',
+    method: 'get',
+    params: { days }
+  })
+}
+
+/** 项目测试计划列表（轻量） */
+export function statisticPlanList(projectId) {
+  return request({
+    url: '/system/defect/statistic/plan/list',
+    method: 'get',
+    params: { projectId }
+  })
+}
+
+/** 测试计划燃尽 */
+export function statisticPlanBurndown(planId) {
+  return request({
+    url: '/system/defect/statistic/plan/' + planId + '/burndown',
+    method: 'get'
+  })
+}
+
+/** 测试计划质量指标（雷达） */
+export function statisticPlanMetrics(projectId) {
+  return request({
+    url: '/system/defect/statistic/plan-metrics/' + projectId,
+    method: 'get'
+  })
+}

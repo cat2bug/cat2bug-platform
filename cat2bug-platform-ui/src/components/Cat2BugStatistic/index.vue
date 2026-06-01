@@ -77,6 +77,7 @@
 import Cat2ButTitle from "./Components/Title"
 import draggable from 'vuedraggable'
 import {addStatistic, listStatistic} from "@/api/system/statistic/template";
+import { resolveCurrentProjectId } from './utils/project-id'
 
 const path = require('path');
 const files = require.context('./Statistic/', true, /\.vue$/);
@@ -100,6 +101,18 @@ const DEFAULT_DEFECT_STATISTIC_TEMPLATE = [
   { name: 'MyOpenTodoGauge' },
   { name: 'TeamOpenWorkloadBar' },
   { name: 'MyLife' }
+]
+
+/** 模版选择区：个人 / 团队分组 */
+export const PERSONAL_STATISTIC_NAMES = ['MyOpenTodoGauge', 'MyLife', 'MyParticipationHeatmap']
+export const TEAM_STATISTIC_NAMES = [
+  'DefectMemberOnline',
+  'DefectModule',
+  'DefectState',
+  'DefectType',
+  'TeamOpenWorkloadBar',
+  'TeamPlanBurndown',
+  'TeamPlanMetricsRadar'
 ]
 
 export default {
@@ -152,6 +165,11 @@ export default {
     wrap: {
       type: Boolean,
       default: false
+    },
+    /** 模版选择区分组：personal | team；为空则展示全部 */
+    templateGroup: {
+      type: String,
+      default: null
     }
   },
   computed: {
@@ -183,7 +201,7 @@ export default {
     },
     /** 获取项目id */
     projectId() {
-      return parseInt(this.$store.state.user.config.currentProjectId);
+      return resolveCurrentProjectId(this)
     },
     memberId() {
       return parseInt(this.$store.state.user.id);
@@ -263,6 +281,8 @@ export default {
       const refreshMethods = [
         'refreshData',
         'getStatistic',
+        'getParticipation',
+        'getPlanMetrics',
         'getStatisticModule',
         'getStatisticDefectState',
         'getStatisticDefectType',
@@ -282,6 +302,11 @@ export default {
     },
     search(params) {
       this.$parent.search && this.$parent.search(params);
+    },
+    searchByParticipation(participationLogDate, participationUserId) {
+      if (this.$parent.searchByParticipation) {
+        this.$parent.searchByParticipation(participationLogDate, participationUserId);
+      }
     },
     /** 获取分析模块 */
     getStatisticList() {
@@ -304,7 +329,13 @@ export default {
       }
     },
     getAllStatisticList() {
-      this.statisticList = allStatisticList;
+      let list = allStatisticList
+      if (this.templateGroup === 'personal') {
+        list = allStatisticList.filter(item => PERSONAL_STATISTIC_NAMES.includes(item.name))
+      } else if (this.templateGroup === 'team') {
+        list = allStatisticList.filter(item => TEAM_STATISTIC_NAMES.includes(item.name))
+      }
+      this.statisticList = list
     },
     clickHandle(e,sc){
       e.stopPropagation();
@@ -571,6 +602,27 @@ export default {
     --statistic-item-min-width: 168px;
   }
 
+  .statistic-item--MyParticipationHeatmap {
+    width: max-content;
+    --statistic-item-width: max-content;
+    --statistic-item-min-width: 0;
+    --statistic-item-max-width: none;
+  }
+
+  .statistic-item--TeamPlanBurndown {
+    width: max-content;
+    --statistic-item-width: max-content;
+    --statistic-item-min-width: 320px;
+  }
+
+  .statistic-item--TeamPlanMetricsRadar {
+    width: max-content;
+    --statistic-item-width: max-content;
+    --statistic-item-min-width: 200px;
+    --statistic-item-max-width: 200px;
+    overflow: visible;
+  }
+
   .statistic-panel.is-wrap {
     .statistic-scroll-viewport {
       overflow: visible;
@@ -585,9 +637,8 @@ export default {
 
     .statistic-tools > .statistic-item {
       margin-bottom: 0;
-      height: auto;
-      max-height: none;
-      min-height: var(--statistic-card-height, var(--statistic-life-card-height, 115px));
+      height: var(--statistic-card-height, var(--statistic-life-card-height, 115px));
+      max-height: var(--statistic-card-height, var(--statistic-life-card-height, 115px));
     }
   }
 </style>

@@ -97,7 +97,7 @@
     "xlsx": "^0.17.5"
   },
   "devDependencies": {
-    "@playwright/test": "^1.59.1",
+    "@playwright/test": "^1.60.0",
     "@vue/cli-plugin-babel": "4.4.6",
     "@vue/cli-plugin-eslint": "4.4.6",
     "@vue/cli-service": "4.4.6",

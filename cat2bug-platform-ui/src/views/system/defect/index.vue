@@ -335,6 +335,16 @@ export default {
     }
   },
   watch: {
+    statisticPanelVisible(val) {
+      if (val) {
+        this.$nextTick(() => {
+          const statistic = this.$refs.defectStatistic
+          if (statistic && typeof statistic.refreshData === 'function') {
+            statistic.refreshData()
+          }
+        })
+      }
+    },
     'queryParams.defectType': function(newVal, oldVal) {
       if (newVal != oldVal) {
         // this.defectTypeChangeHandle(newVal);
@@ -417,6 +427,22 @@ export default {
     /** 查询缺陷 */
     search(params) {
       this._setProperty(this.queryParams, params)
+      this.handleQuery()
+    },
+    /** 热力图点击：重置其它条件后仅按参与日筛选 */
+    searchByParticipation(participationLogDate, participationUserId) {
+      this.reset()
+      this.activeDefectTypeName = 'defect.all-type'
+      if (this.activeDefectTabName !== this.allTab) {
+        this.activeDefectTabName = this.allTab
+        this.$cache.local.set(DEFECT_TAB_CACHE_KEY, this.allTab)
+      }
+      this.$set(this.queryParams, 'params', {
+        defectStates: [],
+        delFlag: '0',
+        participationLogDate,
+        participationUserId
+      })
       this.handleQuery()
     },
     /** 设置查询属性 */

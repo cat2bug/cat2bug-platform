@@ -1,7 +1,10 @@
 package com.cat2bug.system.service;
 
+import com.cat2bug.system.domain.SysColumnsInChart;
 import com.cat2bug.system.domain.SysDefectOpenWorkload;
 import com.cat2bug.system.domain.SysDefectOpenWorkloadSummary;
+import com.cat2bug.system.domain.SysDefectParticipationDay;
+import com.cat2bug.system.domain.SysPlanMetricsItem;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -42,4 +45,24 @@ public interface ISysDefectStatisticService {
      * 个人未关闭待办汇总
      */
     SysDefectOpenWorkloadSummary openWorkloadMy(Long projectId, Long userId);
+
+    /**
+     * 个人按日缺陷日志参与统计（补齐缺失日期为 0）
+     */
+    List<SysDefectParticipationDay> participationMy(Long projectId, Long userId, int days);
+
+    /**
+     * 项目测试计划轻量列表
+     */
+    List<Map<String, Object>> planList(Long projectId);
+
+    /**
+     * 测试计划燃尽图（含日期轴补齐）
+     */
+    List<SysColumnsInChart> planBurndownChart(String planId);
+
+    /**
+     * 项目测试计划质量指标（雷达图）
+     */
+    List<SysPlanMetricsItem> planMetrics(Long projectId);
 }

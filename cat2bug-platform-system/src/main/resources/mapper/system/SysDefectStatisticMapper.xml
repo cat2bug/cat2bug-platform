@@ -119,6 +119,39 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         ORDER BY total DESC, u.nick_name ASC
     </select>
 
+    <resultMap id="SysDefectParticipationDayResult" type="com.cat2bug.system.domain.SysDefectParticipationDay">
+        <result property="date" column="participation_day"/>
+        <result property="count" column="cnt"/>
+    </resultMap>
+
+    <select id="participationByDay" resultMap="SysDefectParticipationDayResult">
+        SELECT
+            date_format(l.create_time, '%Y-%m-%d') AS participation_day,
+            COUNT(DISTINCT l.defect_id) AS cnt
+        FROM sys_defect_log l
+        INNER JOIN sys_defect d ON d.defect_id = l.defect_id
+        WHERE d.project_id = #{projectId}
+            AND d.del_flag = '0'
+            AND l.create_by = #{userId}
+            AND l.create_time &gt;= #{startDate}
+        GROUP BY date_format(l.create_time, '%Y-%m-%d')
+        ORDER BY participation_day
+    </select>
+
+    <select id="participationByDay" resultMap="SysDefectParticipationDayResult" databaseId="h2">
+        SELECT
+            FORMATDATETIME(l.create_time, 'yyyy-MM-dd') AS participation_day,
+            COUNT(DISTINCT l.defect_id) AS cnt
+        FROM sys_defect_log l
+        INNER JOIN sys_defect d ON d.defect_id = l.defect_id
+        WHERE d.project_id = #{projectId}
+            AND d.del_flag = '0'
+            AND l.create_by = #{userId}
+            AND l.create_time &gt;= PARSEDATETIME(#{startDate}, 'yyyy-MM-dd')
+        GROUP BY FORMATDATETIME(l.create_time, 'yyyy-MM-dd')
+        ORDER BY participation_day
+    </select>
+
     <select id="openWorkloadByMember" resultMap="SysDefectOpenWorkloadSummaryResult" databaseId="h2">
         SELECT
             COUNT(d.defect_id) AS total,

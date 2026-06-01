@@ -10,6 +10,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -97,5 +98,46 @@ public class SysDefectStatisticController extends BaseController {
     public AjaxResult getMyOpenWorkload(@PathVariable("projectId") Long projectId)
     {
         return success(sysDefectStatisticService.openWorkloadMy(projectId, getUserId()));
+    }
+
+    /**
+     * 我的缺陷日志参与热力（按日）
+     */
+    @PreAuthorize("@ss.hasPermi('system:defect:query')")
+    @GetMapping(value = "/participation/{projectId}/my")
+    public AjaxResult getMyParticipation(@PathVariable("projectId") Long projectId,
+                                         @RequestParam(value = "days", defaultValue = "30") int days)
+    {
+        return success(sysDefectStatisticService.participationMy(projectId, getUserId(), days));
+    }
+
+    /**
+     * 项目测试计划列表（轻量）
+     */
+    @PreAuthorize("@ss.hasPermi('system:defect:query')")
+    @GetMapping(value = "/plan/list")
+    public AjaxResult getPlanList(@RequestParam("projectId") Long projectId)
+    {
+        return success(sysDefectStatisticService.planList(projectId));
+    }
+
+    /**
+     * 测试计划燃尽图
+     */
+    @PreAuthorize("@ss.hasPermi('system:defect:query')")
+    @GetMapping(value = "/plan/{planId}/burndown")
+    public AjaxResult getPlanBurndown(@PathVariable("planId") String planId)
+    {
+        return success(sysDefectStatisticService.planBurndownChart(planId));
+    }
+
+    /**
+     * 项目测试计划质量指标
+     */
+    @PreAuthorize("@ss.hasPermi('system:defect:query')")
+    @GetMapping(value = "/plan-metrics/{projectId}")
+    public AjaxResult getPlanMetrics(@PathVariable("projectId") Long projectId)
+    {
+        return success(sysDefectStatisticService.planMetrics(projectId));
     }
 }

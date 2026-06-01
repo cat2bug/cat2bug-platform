@@ -173,8 +173,8 @@ html.dark {
   --cat2bug-xbar-thumb: #4c4d4f;
   --cat2bug-xbar-thumb-hover: #606266;
 
-  /* el-progress：暗色轨道深黑，填充保留主题色（与浅色一致，轨道无边框） */
-  --progress-track-bg: #0a0a0a;
+  /* el-progress：暗色轨道与卡片/边框层级一致，避免纯黑块 */
+  --progress-track-bg: rgba(255, 255, 255, 0.1);
   --progress-track-border: transparent;
   --progress-fill-color: #409eff;
   --progress-fill-success: #67c23a;
@@ -512,10 +512,10 @@ html.dark {
     }
   }
 
-  /* el-progress 暗黑：轨道深黑，避免 Element 默认浅灰/白底 */
+  /* el-progress 暗黑：轨道半透明灰，避免 Element 默认浅灰/白底 */
   .el-progress {
     .el-progress-bar__outer {
-      background-color: var(--progress-track-bg, #0a0a0a) !important;
+      background-color: var(--progress-track-bg, rgba(255, 255, 255, 0.1)) !important;
       border: none !important;
     }
 
