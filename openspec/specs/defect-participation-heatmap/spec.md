@@ -63,13 +63,14 @@ H2 与 MySQL MUST 均提供等效实现。
 #### Scenario: 点击某日联动列表
 
 - **WHEN** 用户在缺陷页（非 `read` 模式）点击有 `count > 0` 的日期格
-- **THEN** 先清空其它筛选并切换到「全部」页签，再以 `params.participationLogDate` 与 `params.participationUserId` 筛选缺陷列表
+- **THEN** 通过 `searchQuery({ stack: false, extension: { participationLogDate, participationUserId }, common: { params: { defectStates: [], delFlag: '0' } } })` 筛选列表
+- **THEN** 激活 Tab 为「全部」
 - **THEN** MUST NOT 弹出「已筛选」类 Message 提示
 
 #### Scenario: 模版预览不联动
 
 - **WHEN** 组件处于 `read` 模式（StatisticTemplate 预览）
-- **THEN** 点击格子 MUST NOT 调用 `parent.search`
+- **THEN** 点击格子 MUST NOT 调用 `searchQuery` 或 `parent.search`
 
 ### Requirement: H2 与 MySQL 双数据库支持
 

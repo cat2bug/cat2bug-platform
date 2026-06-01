@@ -128,8 +128,8 @@ export default {
     clickHandle(m) {
       if(this.read) return;
       let id = this.prevClickModuleId==m.id?null:m.id;
-      this.parent.search({
-        moduleId: id
+      this.parent.searchQuery({
+        common: { moduleId: id }
       });
       this.prevClickModuleId = id;
     },

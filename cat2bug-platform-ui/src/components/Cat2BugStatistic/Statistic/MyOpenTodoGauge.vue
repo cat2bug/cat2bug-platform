@@ -93,9 +93,11 @@ export default {
   methods: {
     clickHandle() {
       if (this.read) return
-      this.parent.search({
-        handleBy: [this.currentUserId],
-        params: { defectStates: OPEN_DEFECT_STATE_IDS }
+      this.parent.searchQuery({
+        common: {
+          handleBy: [this.currentUserId],
+          params: { defectStates: OPEN_DEFECT_STATE_IDS }
+        }
       })
     },
     getStatistic() {

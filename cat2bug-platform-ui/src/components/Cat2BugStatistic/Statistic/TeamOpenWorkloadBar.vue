@@ -106,9 +106,11 @@ export default {
     },
     clickHandle(item) {
       if (this.read || !item || !item.userId) return
-      this.parent.search({
-        handleBy: [item.userId],
-        params: { defectStates: OPEN_DEFECT_STATE_IDS }
+      this.parent.searchQuery({
+        common: {
+          handleBy: [item.userId],
+          params: { defectStates: OPEN_DEFECT_STATE_IDS }
+        }
       })
     },
     refreshData() {

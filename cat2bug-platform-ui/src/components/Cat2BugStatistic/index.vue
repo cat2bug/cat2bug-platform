@@ -300,13 +300,20 @@ export default {
         }
       })
     },
+    searchQuery(opts) {
+      if (this.$parent && typeof this.$parent.searchQuery === 'function') {
+        this.$parent.searchQuery(opts);
+      }
+    },
     search(params) {
-      this.$parent.search && this.$parent.search(params);
+      this.searchQuery({ common: params });
     },
     searchByParticipation(participationLogDate, participationUserId) {
-      if (this.$parent.searchByParticipation) {
-        this.$parent.searchByParticipation(participationLogDate, participationUserId);
-      }
+      this.searchQuery({
+        stack: false,
+        extension: { participationLogDate, participationUserId },
+        common: { params: { defectStates: [], delFlag: '0' } }
+      });
     },
     /** 获取分析模块 */
     getStatisticList() {

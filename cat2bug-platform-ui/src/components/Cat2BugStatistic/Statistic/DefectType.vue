@@ -92,7 +92,7 @@ export default {
     },
     clickHandle(type) {
       if(this.read) return;
-      this.parent.search({defectType: type?type.id:null})
+      this.parent.searchQuery({ common: { defectType: type ? type.id : null } })
     },
     toolsHandle(e,tool) {
       this.$emit('tools-click',tool);

@@ -199,6 +199,7 @@ import { TableOptions } from '@/views/system/defect/list/table-options'
 import store from '@/store'
 import DefectTable from './list/table'
 import DefectExcel from './list/excel'
+import { clearExtensionParams, hasParticipationExtension } from './query-extension'
 
 /** 记录Tab标签选项 */
 const DEFECT_TAB_CACHE_KEY = 'defect-tab'
@@ -424,26 +425,65 @@ export default {
         this.$refs.editDefectForm.open(this.$route.query.defectId)
       }
     },
-    /** 查询缺陷 */
-    search(params) {
-      this._setProperty(this.queryParams, params)
+    /**
+     * 统一列表查询入口：通用条件与扩展条件分离，避免扩展键在统计块切换时残留。
+     * @param {Object} [options]
+     * @param {Object} [options.common] 合并进 queryParams 的通用字段
+     * @param {Object} [options.extension] 写入 queryParams.params 的扩展字段
+     * @param {boolean} [options.stack=true] false 时整页重建（我的参与专用）
+     */
+    searchQuery({ common, extension, stack = true } = {}) {
+      if (!stack) {
+        this.reset()
+        this.activeDefectTypeName = 'defect.all-type'
+        if (hasParticipationExtension(extension) && this.activeDefectTabName !== this.allTab) {
+          this.activeDefectTabName = this.allTab
+          this.$cache.local.set(DEFECT_TAB_CACHE_KEY, this.allTab)
+        }
+        clearExtensionParams(this.queryParams, this)
+        if (common) {
+          this._setProperty(this.queryParams, common)
+        }
+        this.applyQueryExtension(extension)
+        this.handleQuery()
+        return
+      }
+      clearExtensionParams(this.queryParams, this)
+      if (common) {
+        this._setProperty(this.queryParams, common)
+      }
+      this.applyQueryExtension(extension)
       this.handleQuery()
     },
-    /** 热力图点击：重置其它条件后仅按参与日筛选 */
-    searchByParticipation(participationLogDate, participationUserId) {
-      this.reset()
-      this.activeDefectTypeName = 'defect.all-type'
-      if (this.activeDefectTabName !== this.allTab) {
-        this.activeDefectTabName = this.allTab
-        this.$cache.local.set(DEFECT_TAB_CACHE_KEY, this.allTab)
+    applyQueryExtension(extension) {
+      if (!extension) {
+        return
       }
-      this.$set(this.queryParams, 'params', {
-        defectStates: [],
-        delFlag: '0',
-        participationLogDate,
-        participationUserId
+      if (!this.queryParams.params) {
+        this.$set(this.queryParams, 'params', {})
+      }
+      Object.keys(extension).forEach(key => {
+        this.$set(this.queryParams.params, key, extension[key])
       })
-      this.handleQuery()
+    },
+    /** 按当前 Tab 恢复基准查询并清除扩展参数（工具栏无独立重置按钮时，类型下拉主按钮等同此逻辑） */
+    resetQueryByCurrentTab() {
+      clearExtensionParams(this.queryParams, this)
+      this.selectDefectTabHandle({ name: this.activeDefectTabName })
+    },
+    /** @deprecated 请使用 searchQuery({ common: params }) */
+    search(params) {
+      this.searchQuery({ common: params })
+    },
+    /** 热力图点击：委托 searchQuery，不叠加其它条件 */
+    searchByParticipation(participationLogDate, participationUserId) {
+      this.searchQuery({
+        stack: false,
+        extension: { participationLogDate, participationUserId },
+        common: {
+          params: { defectStates: [], delFlag: '0' }
+        }
+      })
     },
     /** 设置查询属性 */
     _setProperty(parent, obj) {
@@ -602,6 +642,7 @@ export default {
       if (activeName === this.defectAddTabPaneName) {
         return
       }
+      clearExtensionParams(this.queryParams, this)
       if (activeName === this.allTab) {
         this.reset()
         if (!this.queryParams.params) {
@@ -653,6 +694,7 @@ export default {
             tc.moduleVersion = null
           }
           this.queryParams = tabItem.config
+          clearExtensionParams(this.queryParams, this)
         } else {
           this.reset()
         }

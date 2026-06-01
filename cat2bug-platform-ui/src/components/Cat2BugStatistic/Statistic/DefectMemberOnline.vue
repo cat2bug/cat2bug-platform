@@ -95,7 +95,7 @@ export default {
   methods:{
     clickHandle(member) {
       if(this.read) return;
-      this.parent.search({handleBy: [member.userId]})
+      this.parent.searchQuery({ common: { handleBy: [member.userId] } })
     },
     toolsHandle(e,tool) {
       this.$emit('tools-click',tool);

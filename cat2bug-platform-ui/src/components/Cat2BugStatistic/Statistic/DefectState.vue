@@ -119,9 +119,11 @@ export default {
   methods: {
     clickHandle(event, state) {
       if(this.read) return;
-      this.parent.search({
-        params: {
-          defectStates: state?JSON.parse(JSON.stringify(state.id)):null
+      this.parent.searchQuery({
+        common: {
+          params: {
+            defectStates: state ? JSON.parse(JSON.stringify(state.id)) : null
+          }
         }
       });
       event.stopPropagation();

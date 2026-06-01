@@ -255,13 +255,19 @@ export default {
     },
     onCellClick(slot) {
       if (slot.pad || !slot.date || this.read || !this.currentUserId) return
-      const searchParticipation = this.parent && typeof this.parent.searchByParticipation === 'function'
-        ? this.parent.searchByParticipation
-        : null
-      if (!searchParticipation) return
+      if (!this.parent || typeof this.parent.searchQuery !== 'function') return
       this.selectedDate = slot.date
       this.hideHoverTip()
-      searchParticipation(slot.date, this.currentUserId)
+      this.parent.searchQuery({
+        stack: false,
+        extension: {
+          participationLogDate: slot.date,
+          participationUserId: this.currentUserId
+        },
+        common: {
+          params: { defectStates: [], delFlag: '0' }
+        }
+      })
     },
     refreshData() {
       this.getParticipation()
