@@ -81,6 +81,13 @@ export default {
       ]
     }
   },
+  watch: {
+    '$i18n.locale'() {
+      if (this.chart && !this.isEmpty) {
+        this.initChart()
+      }
+    }
+  },
   mounted() {
     this.getStatistic()
   },
@@ -145,7 +152,7 @@ export default {
         },
         series: [{
           type: 'pie',
-          radius: ['52%', '82%'],
+          radius: ['54%', '84%'],
           center: ['50%', '50%'],
           silent: false,
           label: { show: false },
@@ -164,7 +171,7 @@ export default {
               style: {
                 text: String(this.workload.total),
                 fill: this.chartCenterColor,
-                fontSize: 20,
+                fontSize: 24,
                 fontWeight: 600,
                 textAlign: 'center',
                 textVerticalAlign: 'middle'
@@ -201,9 +208,9 @@ export default {
 }
 
 .statistic-echarts-chart-wrap {
-  flex: 0 0 68px;
-  width: 68px;
-  height: 68px;
+  flex: 0 0 86px;
+  width: 86px;
+  height: 86px;
 }
 
 .statistic-echarts-canvas {

@@ -54,26 +54,26 @@ export default {
 }
 
 .defect-state-tag.processing {
-  background-color: var(--defect-state-processing-bg, #f56c6c);
-  border-color: var(--defect-state-processing-border, #f56c6c);
+  background-color: var(--defect-state-processing-bg, #e04e4e);
+  border-color: var(--defect-state-processing-border, #e04e4e);
   color: var(--defect-state-processing-color, #ffffff);
 }
 
 .defect-state-tag.audit {
-  background-color: var(--defect-state-audit-bg, #409eff);
-  border-color: var(--defect-state-audit-border, #409eff);
+  background-color: var(--defect-state-audit-bg, #337ecc);
+  border-color: var(--defect-state-audit-border, #337ecc);
   color: var(--defect-state-audit-color, #ffffff);
 }
 
 .defect-state-tag.resolved {
-  background-color: var(--defect-state-resolved-bg, #67c23a);
-  border-color: var(--defect-state-resolved-border, #67c23a);
+  background-color: var(--defect-state-resolved-bg, #5daf34);
+  border-color: var(--defect-state-resolved-border, #5daf34);
   color: var(--defect-state-resolved-color, #ffffff);
 }
 
 .defect-state-tag.rejected {
-  background-color: var(--defect-state-rejected-bg, #e6a23c);
-  border-color: var(--defect-state-rejected-border, #e6a23c);
+  background-color: var(--defect-state-rejected-bg, #cf9236);
+  border-color: var(--defect-state-rejected-border, #cf9236);
   color: var(--defect-state-rejected-color, #ffffff);
 }
 

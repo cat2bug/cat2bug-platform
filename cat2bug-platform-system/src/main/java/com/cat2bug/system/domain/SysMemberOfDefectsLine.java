@@ -15,6 +15,8 @@ public class SysMemberOfDefectsLine {
     private String userName;
     /** 成员头显 */
     private String avatar;
+    /** 成员用户 ID（日志 create_by） */
+    private Long userId;
     /** 缺陷处理总数量 */
     private String createTime;
     /** 今日缺陷处理数量 */

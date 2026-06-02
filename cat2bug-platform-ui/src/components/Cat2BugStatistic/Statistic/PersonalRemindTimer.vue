@@ -1,7 +1,7 @@
 <template>
   <div class="personal-remind-timer-root">
     <cat2-bug-card
-      :title="$t('defect.personal-remind-timer').toString()"
+      :title="cardTitle"
       v-loading="loading"
       :tools="tools"
       @tools-click="toolsHandle"
@@ -12,12 +12,6 @@
             {{ $t('defect.personal-remind-timer.empty') }}
           </div>
           <template v-else>
-            <div class="remind-timer-top">
-              <div class="remind-timer-name">
-                {{ activeRow.timer.label || $t('defect.personal-remind-timer.unnamed') }}
-              </div>
-              <div class="remind-timer-schedule">{{ formatScheduleSummary(activeRow.timer) }}</div>
-            </div>
             <div ref="countdownWrap" class="remind-timer-countdown-wrap">
               <span
                 v-if="activeRow.countdownText && !ringingTimerId"
@@ -217,6 +211,14 @@ export default {
     }
   },
   computed: {
+    cardTitle() {
+      if (!this.activeRow || !this.activeRow.timer) {
+        return this.$t('defect.personal-remind-timer').toString()
+      }
+      const timer = this.activeRow.timer
+      const label = timer.label || this.$t('defect.personal-remind-timer.unnamed').toString()
+      return `${label}[${this.formatScheduleBracket(timer)}]`
+    },
     countdownFontStyle() {
       return { fontSize: `${this.countdownFontSize}px` }
     },
@@ -470,7 +472,7 @@ export default {
     isCountdownDigit(ch) {
       return /[0-9]/.test(ch)
     },
-    formatScheduleSummary(timer) {
+    formatScheduleBracket(timer) {
       const schedule = (timer && timer.schedule) || {}
       const time = schedule.time || '09:00'
       const type = schedule.type || 'daily'
@@ -486,6 +488,9 @@ export default {
         return `${typeLabel} ${schedule.day || 1} ${time}`
       }
       return `${typeLabel} ${time}`
+    },
+    formatScheduleSummary(timer) {
+      return this.formatScheduleBracket(timer)
     },
     setupCountdownResizeObserver() {
       this.teardownCountdownResizeObserver()
@@ -557,9 +562,8 @@ export default {
       let maxHeight = wrap.clientHeight
       if (maxHeight <= 0) {
         const body = wrap.closest('.remind-timer-body')
-        const top = wrap.previousElementSibling
         if (body) {
-          maxHeight = Math.max(0, body.clientHeight - (top ? top.offsetHeight : 0) - 2)
+          maxHeight = body.clientHeight
         }
       }
       if (maxWidth <= 0) {
@@ -679,57 +683,25 @@ export default {
   height: 100%;
   min-height: 0;
   overflow: hidden;
-  gap: 2px;
+  align-items: stretch;
+  justify-content: center;
 }
 
 .remind-timer-empty {
   flex: 1;
   display: flex;
   align-items: center;
+  justify-content: center;
+  text-align: center;
   color: var(--text-color-secondary, #909399);
   font-size: 11px;
-}
-
-.remind-timer-top {
-  flex: 0 0 auto;
-  display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 6px;
-  min-width: 0;
-  width: 100%;
-  line-height: 1.15;
-}
-
-.remind-timer-name {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 11px;
-  font-weight: 600;
-  line-height: 1.2;
-  color: var(--text-color-primary, #303133);
-}
-
-.remind-timer-schedule {
-  flex-shrink: 0;
-  max-width: 55%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 10px;
-  line-height: 1.2;
-  text-align: right;
-  color: var(--text-color-secondary, #909399);
 }
 
 .remind-timer-countdown-wrap {
   flex: 1 1 auto;
   min-height: 0;
   width: 100%;
+  height: 100%;
   position: relative;
   display: flex;
   align-items: center;
@@ -889,8 +861,20 @@ export default {
   }
 
   .remind-when-day {
-    width: 72px;
+    width: 100px;
     flex-shrink: 0;
+
+    &.el-input-number.is-controls-right {
+      .el-input {
+        width: 100%;
+      }
+
+      .el-input__inner {
+        padding-left: 8px;
+        padding-right: 34px;
+        text-align: left;
+      }
+    }
   }
 
   .remind-sound-cell {

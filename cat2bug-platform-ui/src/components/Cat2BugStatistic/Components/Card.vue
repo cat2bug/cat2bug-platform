@@ -4,10 +4,10 @@
       <cat2-bug-title :title="title"></cat2-bug-title>
       <div class="statistic-box-tools">
         <slot name="left-tools"></slot>
+        <slot name="right-tools"></slot>
         <slot name="default-tools">
           <svg-icon class="statistic-box-button" v-for="(tool,index) in tools" :key="index" :icon-class="tool.icon" @click="toolsHandle($event,tool)" />
         </slot>
-        <slot name="right-tools"></slot>
       </div>
     </div>
     <div class="statistic-box-body">
@@ -73,6 +73,7 @@ export default {
         flex-shrink: 0;
         display: inline-flex;
         align-items: center;
+        gap: 4px;
         font-size: 12px;
 
         .statistic-box-button {

@@ -12,7 +12,7 @@
           maxlength="32"
           clearable></el-input>
       </el-form-item>
-      <el-form-item :label="$t('defect.name-or-version')" prop="nameVersionKeyword">
+      <el-form-item :label="$t('defect.keyword')" prop="nameVersionKeyword">
         <el-input
           v-model="form.config.nameVersionKeyword"
           :placeholder="$t('defect.enter-name-or-version')"
@@ -68,8 +68,8 @@
         <el-switch v-model="form.config.params.delFlag" active-value="2" inactive-value="0" />
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" @click="onCreateTab">{{$t('create')}}</el-button>
         <el-button @click="close">{{$t('cancel')}}</el-button>
+        <el-button type="primary" @click="onCreateTab">{{$t('create')}}</el-button>
       </el-form-item>
     </el-form>
   </el-dialog>

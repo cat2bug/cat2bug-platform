@@ -14,6 +14,7 @@ import com.cat2bug.system.service.ISysDashboardService;
 import com.cat2bug.system.service.ISysDefectStatisticService;
 import com.cat2bug.system.service.ISysPlanService;
 import com.cat2bug.system.util.PlanBurndownUtil;
+import com.cat2bug.system.util.SysDefectTrendLineHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -176,6 +177,18 @@ public class SysDefectStatisticServiceImpl implements ISysDefectStatisticService
         } catch (NumberFormatException e) {
             return 0;
         }
+    }
+
+    @Override
+    public Map<String, Object> defectStateLine(Long projectId, String timeType) {
+        return SysDefectTrendLineHelper.buildDefectStateLineResult(
+                sysDashboardService.defectLine(projectId, timeType), timeType);
+    }
+
+    @Override
+    public Map<String, Object> memberDefectLine(Long projectId, String timeType) {
+        return SysDefectTrendLineHelper.buildMemberDefectLineResult(
+                sysDashboardService.memberOfDefectsLine(projectId, timeType), timeType);
     }
 
     @Override

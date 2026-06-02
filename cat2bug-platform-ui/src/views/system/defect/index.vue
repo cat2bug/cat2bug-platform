@@ -1083,9 +1083,10 @@ export default {
       color: #303133;
     }
   }
+  ::v-deep .defect-tab-add-btn.svg-icon {
+    vertical-align: middle !important;
+  }
   ::v-deep .defect-tab-add-btn {
-    position: relative;
-    top: 1px;
     flex-shrink: 0;
     width: 15px !important;
     height: 15px !important;
@@ -1097,9 +1098,9 @@ export default {
     color: #606266;
     display: inline-block;
     line-height: 0;
-    cursor: pointer;
     vertical-align: middle !important;
     overflow: visible !important;
+    cursor: pointer;
     transition: color 0.2s, border-color 0.2s, background-color 0.2s;
     &:hover {
       color: #409eff;

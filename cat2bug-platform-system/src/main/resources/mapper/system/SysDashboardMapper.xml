@@ -69,6 +69,7 @@
         <result property="nickName"    column="nick_name"    />
         <result property="userName"     column="user_name"  />
         <result property="avatar"     column="avatar"  />
+        <result property="userId"     column="user_id"  />
         <result property="createTime"     column="create_time"  />
         <result property="defectTodayCount"     column="defect_today_count"  />
     </resultMap>
@@ -306,6 +307,7 @@
             u.nick_name,
             u.user_name,
             u.avatar,
+            d.update_by_id AS user_id,
             d.create_time,
             d.defect_today_count
         FROM
@@ -342,6 +344,7 @@
         u.nick_name,
         u.user_name,
         u.avatar,
+        d.update_by_id AS user_id,
         d.create_time,
         d.defect_today_count
         FROM

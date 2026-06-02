@@ -118,7 +118,9 @@ export const TEAM_STATISTIC_NAMES = [
   'TeamOpenWorkloadBar',
   'TeamPlanBurndown',
   'TeamPlanMetricsRadar',
-  'TeamPlanCountdown'
+  'TeamPlanCountdown',
+  'TeamDefectStateTrend',
+  'TeamMemberDefectTrend'
 ]
 
 export default {
@@ -675,8 +677,23 @@ export default {
   .statistic-item--TeamPlanCountdown {
     width: max-content;
     --statistic-item-width: max-content;
-    --statistic-item-min-width: 258px;
-    --statistic-item-max-width: 258px;
+    --statistic-item-min-width: 0;
+    --statistic-item-max-width: none;
+    overflow: visible;
+
+    ::v-deep .statistic-box {
+      width: max-content;
+      max-width: 100%;
+      flex: 0 1 auto;
+    }
+  }
+
+  .statistic-item--TeamDefectStateTrend,
+  .statistic-item--TeamMemberDefectTrend {
+    width: max-content;
+    --statistic-item-width: max-content;
+    --statistic-item-min-width: 320px;
+    overflow: visible;
   }
 
   .statistic-panel.is-wrap {

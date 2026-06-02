@@ -41,7 +41,9 @@
               <span class="plan-countdown-no-end">{{ $t('defect.team-plan-countdown.no-end') }}</span>
             </template>
             <template v-else-if="dayState === 'today'">
-              <span class="plan-countdown-label">{{ $t('defect.team-plan-countdown.today') }}</span>
+              <span class="plan-countdown-label">{{ $t('defect.team-plan-countdown.remain') }}</span>
+              <span class="statistic-countdown-nixie">0</span>
+              <span class="plan-countdown-unit">{{ $t('defect.team-plan-countdown.days') }}</span>
             </template>
             <template v-else-if="dayState === 'overdue'">
               <span class="plan-countdown-label">{{ $t('defect.team-plan-countdown.overdue') }}</span>
@@ -50,25 +52,32 @@
             </template>
             <template v-else>
               <span class="plan-countdown-label">{{ $t('defect.team-plan-countdown.remain') }}</span>
-              <span class="statistic-countdown-nixie">{{ remainDays }}</span>
+              <span class="statistic-countdown-nixie statistic-countdown-nixie--remain">{{ remainDays }}</span>
               <span class="plan-countdown-unit">{{ $t('defect.team-plan-countdown.days') }}</span>
             </template>
           </div>
           <div class="plan-countdown-stats">
-            <div class="plan-stat-line plan-stat-line--case">
-              <svg-icon class="plan-stat-icon" icon-class="case" />
-              <span class="plan-stat-text">
-                <span class="plan-stat-kind">{{ $t('defect.team-plan-countdown.case-short') }}</span>
-                <span class="plan-stat-ratio">{{ caseRatioText }}</span>
-              </span>
-            </div>
-            <div class="plan-stat-line plan-stat-line--defect" :class="{ 'is-all-closed': defectAllClosed }">
-              <svg-icon class="plan-stat-icon" icon-class="bug" />
-              <span class="plan-stat-text">
-                <span class="plan-stat-kind">{{ $t('defect.team-plan-countdown.defect-short') }}</span>
-                <span class="plan-stat-ratio">{{ defectRatioText }}</span>
-              </span>
-            </div>
+            <el-tooltip effect="dark" :content="caseTooltip" placement="top">
+              <div class="plan-stat-line plan-stat-line--case">
+                <svg-icon class="plan-stat-icon" icon-class="case" />
+                <span class="plan-stat-text">
+                  <span class="plan-stat-kind">{{ $t('defect.team-plan-countdown.case-short') }}</span>
+                  <span class="plan-stat-ratio">{{ caseRatioText }}</span>
+                </span>
+              </div>
+            </el-tooltip>
+            <el-tooltip effect="dark" :content="defectTooltip" placement="top">
+              <div
+                class="plan-stat-line plan-stat-line--defect"
+                :class="{ 'is-all-closed': defectAllClosed }"
+              >
+                <svg-icon class="plan-stat-icon" icon-class="bug" />
+                <span class="plan-stat-text">
+                  <span class="plan-stat-kind">{{ $t('defect.team-plan-countdown.defect-short') }}</span>
+                  <span class="plan-stat-ratio">{{ defectRatioText }}</span>
+                </span>
+              </div>
+            </el-tooltip>
           </div>
         </template>
       </div>
@@ -164,6 +173,31 @@ export default {
     },
     defectAllClosed() {
       return this.defectTotalCount > 0 && this.defectClosedCount >= this.defectTotalCount
+    },
+    caseUnexecCount() {
+      if (!this.summary) return 0
+      const u = Number(this.summary.unexecutedCount)
+      if (Number.isFinite(u) && u >= 0) {
+        return u
+      }
+      return Math.max(0, this.caseTotalCount - this.casePassCount)
+    },
+    defectOpenCount() {
+      return Math.max(0, this.defectTotalCount - this.defectClosedCount)
+    },
+    caseTooltip() {
+      return this.$t('defect.team-plan-countdown.case-tooltip', {
+        pass: this.casePassCount,
+        unexec: this.caseUnexecCount,
+        total: this.caseTotalCount
+      }).toString()
+    },
+    defectTooltip() {
+      return this.$t('defect.team-plan-countdown.defect-tooltip', {
+        closed: this.defectClosedCount,
+        open: this.defectOpenCount,
+        total: this.defectTotalCount
+      }).toString()
     }
   },
   watch: {
@@ -241,32 +275,44 @@ export default {
 
 <style lang="scss" scoped>
 .team-plan-countdown-card {
+  width: max-content;
+  max-width: 100%;
+  align-self: flex-start;
+
   ::v-deep .statistic-box-header {
+    width: max-content;
+    max-width: 100%;
     min-height: var(--statistic-card-header-min-height, 17px);
     align-items: center;
+    flex-wrap: nowrap;
   }
 
   ::v-deep .statistic-box-header .cat2-bug-title {
+    flex: 0 1 auto;
+    width: auto;
     display: flex;
     align-items: center;
     line-height: var(--statistic-card-header-min-height, 17px);
   }
 
   ::v-deep .statistic-box-header .statistic-box-tools {
+    flex-shrink: 0;
     gap: 5px;
     align-items: center;
   }
 
   ::v-deep .statistic-box-body {
+    width: max-content;
+    max-width: 100%;
     padding: 0;
-    overflow: hidden;
+    overflow: visible;
     align-items: flex-start;
     justify-content: flex-start;
   }
 }
 
 .plan-countdown-select {
-  max-width: 140px;
+  max-width: 108px;
   vertical-align: middle;
 
   ::v-deep .el-input {
@@ -301,7 +347,8 @@ export default {
   flex-direction: column;
   gap: 4px;
   min-height: 0;
-  width: 100%;
+  width: max-content;
+  max-width: 100%;
   height: 100%;
   font-size: 11px;
   line-height: 1.25;
@@ -310,24 +357,30 @@ export default {
   &.has-data {
     flex-direction: row;
     align-items: center;
-    gap: 4px;
-    padding: 2px 2px 4px 6px;
+    justify-content: flex-start;
+    gap: 6px;
+    padding: 0 4px 2px 4px;
   }
 }
 
 .plan-countdown-stats {
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   min-width: 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
   gap: 5px;
+
+  ::v-deep .el-tooltip {
+    display: block;
+    line-height: 1.25;
+  }
 }
 
 .plan-stat-line {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 0;
   min-width: 0;
   line-height: 1.25;
 }
@@ -336,6 +389,7 @@ export default {
   flex-shrink: 0;
   width: 14px !important;
   height: 14px !important;
+  margin-right: 10px;
   color: inherit;
 }
 
@@ -379,22 +433,25 @@ export default {
 
 .plan-countdown-main {
   flex: 0 0 auto;
+  flex-shrink: 0;
   display: flex;
   align-items: baseline;
   flex-wrap: nowrap;
   justify-content: flex-start;
-  gap: 2px;
-  min-width: 0;
-  margin-right: 4px;
+  gap: 4px;
+  min-width: max-content;
+  overflow: visible;
 
   .statistic-countdown-nixie {
-    font-size: 28px;
+    flex-shrink: 0;
+    font-size: var(--plan-countdown-nixie-size, 44px);
     line-height: 1;
+    letter-spacing: 0.06em;
   }
 
   &.is-overdue .statistic-countdown-nixie--overdue {
-    font-size: 48px;
-    letter-spacing: 0.02em;
+    font-size: var(--plan-countdown-nixie-size, 44px);
+    letter-spacing: 0.06em;
   }
 }
 

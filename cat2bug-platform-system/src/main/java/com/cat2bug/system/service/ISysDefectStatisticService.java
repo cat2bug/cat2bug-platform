@@ -71,4 +71,14 @@ public interface ISysDefectStatisticService {
      * 测试计划倒计时摘要（缺陷统计域）
      */
     SysPlanCountdownSummary planCountdownSummary(String planId);
+
+    /**
+     * 缺陷状态走势（与仪表盘 defect-line 一致）
+     */
+    Map<String, Object> defectStateLine(Long projectId, String timeType);
+
+    /**
+     * 成员处理缺陷走势（与仪表盘 member-defect-line 一致，含 userId）
+     */
+    Map<String, Object> memberDefectLine(Long projectId, String timeType);
 }

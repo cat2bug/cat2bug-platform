@@ -1,5 +1,9 @@
 <template>
-  <i :collect="collect?'true':'false'" class="el-icon-star-on start-switch" @click="clickCollectHandle"></i>
+  <i
+    :collect="collect ? 'true' : 'false'"
+    :class="[collect ? 'el-icon-star-on' : 'el-icon-star-off', 'start-switch']"
+    @click="clickCollectHandle"
+  />
 </template>
 
 <script>
@@ -24,19 +28,26 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  .start-switch:hover {
-    cursor: pointer;
-  }
-  .start-switch[collect="true"] {
-    color: var(--star-switch-on-color, rgb(247, 186, 42));
-    -webkit-text-stroke: 3px transparent;
-    background: var(--star-switch-on-fill, rgb(247, 186, 42)) top left / 100% 100%;
-    -webkit-background-clip: text;
-  }
-  .start-switch {
-    color: var(--star-switch-off-color, #ffffff);
-    -webkit-text-stroke: 3px transparent;
-    background: var(--star-switch-off-fill, rgb(198, 209, 222)) top left / 100% 100%;
-    -webkit-background-clip: text;
-  }
+.start-switch {
+  font-size: inherit;
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* 已收藏：color 作描边，background-clip 作填充（勿在未选中态加 background !important，否则会盖掉本段） */
+.start-switch[collect="true"] {
+  color: var(--star-switch-on-stroke, var(--star-switch-on-color, rgb(247, 186, 42)));
+  -webkit-text-stroke: 3px transparent;
+  background: var(--star-switch-on-fill, var(--star-switch-on-color, rgb(247, 186, 42))) top left / 100% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.start-switch:not([collect="true"]) {
+  color: var(--star-switch-off-stroke, var(--star-switch-off-color, #c0c4cc));
+  background: transparent;
+  -webkit-background-clip: unset;
+  background-clip: unset;
+  -webkit-text-stroke: 0;
+}
 </style>

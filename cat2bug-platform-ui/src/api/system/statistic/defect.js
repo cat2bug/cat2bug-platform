@@ -97,3 +97,21 @@ export function statisticPlanCountdownSummary(planId) {
     method: 'get'
   })
 }
+
+/** 缺陷状态走势 */
+export function statisticDefectStateLine(projectId, query) {
+  return request({
+    url: '/system/defect/statistic/defect-state-line/' + projectId,
+    method: 'get',
+    params: query
+  })
+}
+
+/** 成员处理缺陷走势 */
+export function statisticMemberDefectLine(projectId, query) {
+  return request({
+    url: '/system/defect/statistic/member-defect-line/' + projectId,
+    method: 'get',
+    params: query
+  })
+}

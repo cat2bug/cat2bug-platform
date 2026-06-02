@@ -104,6 +104,11 @@ export default {
       if (this.metricsList.length) {
         this.renderChart()
       }
+    },
+    '$i18n.locale'() {
+      if (this.metricsList.length) {
+        this.renderChart()
+      }
     }
   },
   mounted() {

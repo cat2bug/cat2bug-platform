@@ -5,7 +5,7 @@
 
 /** @type {Record<string, string[]>} */
 export const DEFECT_QUERY_EXTENSION_KEYS = {
-  participation: ['participationLogDate', 'participationUserId']
+  participation: ['participationLogDate', 'participationLogMonth', 'participationUserId']
 }
 
 function getAllExtensionKeys() {
@@ -41,7 +41,9 @@ export function hasParticipationExtension(extension) {
   if (!extension) {
     return false
   }
-  return DEFECT_QUERY_EXTENSION_KEYS.participation.some(
-    k => extension[k] != null && extension[k] !== ''
-  )
+  if (extension.participationUserId == null || extension.participationUserId === '') {
+    return false
+  }
+  return (extension.participationLogDate != null && extension.participationLogDate !== '')
+    || (extension.participationLogMonth != null && extension.participationLogMonth !== '')
 }

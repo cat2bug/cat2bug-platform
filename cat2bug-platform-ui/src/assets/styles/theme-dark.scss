@@ -60,8 +60,10 @@
   --cat2bug-operate-tools-row-gap: 0;
 
   /* 收藏星标 StarSwitch：未选中 / 已选中 */
+  --star-switch-off-stroke: #c0c4cc;
   --star-switch-off-color: #ffffff;
   --star-switch-off-fill: rgb(198, 209, 222);
+  --star-switch-on-stroke: rgb(247, 186, 42);
   --star-switch-on-color: rgb(247, 186, 42);
   --star-switch-on-fill: rgb(247, 186, 42);
 
@@ -72,17 +74,17 @@
   --share-card-link-color: #1890ff;
 
   /* 缺陷状态标签 DefectStateFlag */
-  --defect-state-processing-bg: #f56c6c;
-  --defect-state-processing-border: #f56c6c;
+  --defect-state-processing-bg: #e04e4e;
+  --defect-state-processing-border: #e04e4e;
   --defect-state-processing-color: #ffffff;
-  --defect-state-audit-bg: #409eff;
-  --defect-state-audit-border: #409eff;
+  --defect-state-audit-bg: #337ecc;
+  --defect-state-audit-border: #337ecc;
   --defect-state-audit-color: #ffffff;
-  --defect-state-resolved-bg: #67c23a;
-  --defect-state-resolved-border: #67c23a;
+  --defect-state-resolved-bg: #5daf34;
+  --defect-state-resolved-border: #5daf34;
   --defect-state-resolved-color: #ffffff;
-  --defect-state-rejected-bg: #e6a23c;
-  --defect-state-rejected-border: #e6a23c;
+  --defect-state-rejected-bg: #cf9236;
+  --defect-state-rejected-border: #cf9236;
   --defect-state-rejected-color: #ffffff;
   --defect-state-closed-bg: #ffffff;
   --defect-state-closed-border: #d3d4d6;
@@ -131,18 +133,18 @@ html.dark {
   --defect-type-default-border: rgba(144, 147, 153, 0.35);
   --defect-type-default-color: #b1b3b8;
 
-  /* 缺陷状态标签 DefectStateFlag：与亮色主题同色实心标签；已关闭不用白底，改深色描边样式 */
-  --defect-state-processing-bg: #f56c6c;
-  --defect-state-processing-border: #f56c6c;
+  /* 缺陷状态标签 DefectStateFlag：非灰色状态加深；已关闭保持灰描边样式 */
+  --defect-state-processing-bg: #c93838;
+  --defect-state-processing-border: #c93838;
   --defect-state-processing-color: #ffffff;
-  --defect-state-audit-bg: #409eff;
-  --defect-state-audit-border: #409eff;
+  --defect-state-audit-bg: #256fc9;
+  --defect-state-audit-border: #256fc9;
   --defect-state-audit-color: #ffffff;
-  --defect-state-resolved-bg: #67c23a;
-  --defect-state-resolved-border: #67c23a;
+  --defect-state-resolved-bg: #3d8f22;
+  --defect-state-resolved-border: #3d8f22;
   --defect-state-resolved-color: #ffffff;
-  --defect-state-rejected-bg: #e6a23c;
-  --defect-state-rejected-border: #e6a23c;
+  --defect-state-rejected-bg: #b87518;
+  --defect-state-rejected-border: #b87518;
   --defect-state-rejected-color: #ffffff;
   --defect-state-closed-bg: var(--bg-color-base, #1e1e20);
   --defect-state-closed-border: var(--border-color-base, #4c4d4f);
@@ -198,8 +200,11 @@ html.dark {
   --tags-view-bg: #1e1e20;
   --tags-view-border: #363637;
 
-  --star-switch-off-color: var(--table-bg);
-  --star-switch-off-fill: var(--text-color-placeholder);
+  /* 未收藏：空心星描边，无实心灰底 */
+  --star-switch-off-stroke: var(--text-color-secondary, #909399);
+  --star-switch-off-color: var(--star-switch-off-stroke);
+  --star-switch-off-fill: transparent;
+  --star-switch-on-stroke: rgb(247, 186, 42);
   --star-switch-on-color: rgb(247, 186, 42);
   --star-switch-on-fill: rgb(247, 186, 42);
 

@@ -65,6 +65,14 @@ html.dark .statistic-countdown-nixie {
   color: #ffffff;
 }
 
+.statistic-countdown-nixie--remain {
+  color: #409eff !important;
+}
+
+html.dark .statistic-countdown-nixie--remain {
+  color: #79bbff !important;
+}
+
 .statistic-countdown-nixie--overdue {
   color: #f56c6c !important;
 }
