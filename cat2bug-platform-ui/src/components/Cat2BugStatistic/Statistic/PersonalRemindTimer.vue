@@ -637,7 +637,7 @@ export default {
     refreshData() {
       this.tickDisplay()
     },
-    toolsHandle(tool) {
+    toolsHandle(e, tool) {
       this.$emit('tools-click', tool)
     }
   }

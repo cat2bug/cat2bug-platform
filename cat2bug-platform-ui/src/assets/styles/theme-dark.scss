@@ -3121,11 +3121,21 @@ html.dark {
     border: 1px solid var(--border-color-light) !important;
     color: var(--text-color-regular) !important;
 
+    // 面板主体（datetime 切换「选择日期/选择时间」时，此处默认白底会露出白条）
+    .el-picker-panel__body-wrapper,
+    .el-picker-panel__body {
+      background-color: var(--dropdown-bg) !important;
+    }
+
+    .el-picker-panel__content {
+      background-color: transparent !important;
+    }
+
     // 头部/标题
     .el-date-picker__header,
     .el-date-range-picker__header {
       color: var(--text-color-primary) !important;
-      
+
       div, span {
         color: var(--text-color-primary) !important;
       }
@@ -3135,6 +3145,34 @@ html.dark {
         &:hover {
           color: #409eff !important;
         }
+      }
+    }
+
+    // datetime：「选择日期 / 选择时间」切换
+    .el-date-picker__header--bordered {
+      border-bottom-color: var(--border-color-light) !important;
+    }
+
+    .el-date-picker__header-label {
+      color: var(--text-color-secondary) !important;
+
+      &:hover {
+        color: #409eff !important;
+      }
+
+      &.active {
+        color: #409eff !important;
+      }
+    }
+
+    .el-date-picker__time-header {
+      background-color: var(--dropdown-bg) !important;
+      border-bottom-color: var(--border-color-light) !important;
+
+      .el-input__inner {
+        background-color: var(--input-bg) !important;
+        border-color: var(--input-border) !important;
+        color: var(--text-color-regular) !important;
       }
     }
 
@@ -3192,6 +3230,15 @@ html.dark {
       background-color: var(--bg-color-block) !important;
       border-top: 1px solid var(--border-color-light) !important;
 
+      .el-button--text,
+      .el-picker-panel__link-btn {
+        color: var(--text-color-regular) !important;
+
+        &:hover {
+          color: #409eff !important;
+        }
+      }
+
       .el-button.is-plain {
         background-color: var(--bg-color-block) !important;
         border-color: var(--border-color-base) !important;
@@ -3239,6 +3286,26 @@ html.dark {
       .el-icon-arrow-right {
         color: var(--text-color-secondary) !important;
       }
+    }
+  }
+
+  // 23b. Excel 缺陷时间列日期面板（teleport 到 body，与全局 el-picker-panel 规则对齐）
+  .defect-excel-plan-datetime-panel.el-picker-panel {
+    background-color: var(--dropdown-bg) !important;
+    border-color: var(--border-color-light) !important;
+
+    .el-picker-panel__body-wrapper,
+    .el-picker-panel__body {
+      background-color: var(--dropdown-bg) !important;
+    }
+
+    .el-date-picker__header--bordered {
+      border-bottom-color: var(--border-color-light) !important;
+    }
+
+    .el-date-picker__time-header {
+      background-color: var(--dropdown-bg) !important;
+      border-bottom-color: var(--border-color-light) !important;
     }
   }
 

@@ -266,7 +266,7 @@ export default {
         this.loadPlans()
       }
     },
-    toolsHandle(tool) {
+    toolsHandle(e, tool) {
       this.$emit('tools-click', tool)
     }
   }
