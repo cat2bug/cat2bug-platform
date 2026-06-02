@@ -16,6 +16,8 @@ const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPl
 const name = process.env.VUE_APP_TITLE || '猫陪我改BUG' // 网页标题
 
 const port = process.env.port || process.env.npm_config_port || 2222 // 端口
+/** 开发服务监听地址：默认 localhost，避免 0.0.0.0 时 HMR 客户端连局域网 IP 触发 ECONNRESET；局域网访问用 DEV_HOST=0.0.0.0 */
+const devHost = process.env.DEV_HOST || 'localhost'
 
 /** 系统文档 Markdown 源目录（与 CopyWebpackPlugin 生产拷贝源一致） */
 const docsStaticDir = path.resolve(__dirname, '../readme/production')
@@ -36,25 +38,26 @@ module.exports = {
   outputDir: process.env.NODE_ENV === "embedded" ? '../cat2bug-platform-admin/src/main/resources/static' : 'dist',
   // 用于放置生成的静态资源 (js、css、img、fonts) 的；（项目打包之后，静态资源会放在这个文件夹下）
   assetsDir: process.env.VUE_APP_STATIC_PATH,
-  // 是否开启eslint保存检测，有效值：ture | false | 'error'
-  lintOnSave: process.env.NODE_ENV === 'development',
+  // 开发构建不走 eslint-loader（macOS/Node16 下子进程易出现 ECONNRESET）；提交前请 npm run lint
+  lintOnSave: false,
   transpileDependencies: [/vue-excel-editor/],
   // 如果你不需要生产环境的 source map，可以将其设置为 false 以加速生产环境构建。
   productionSourceMap: false,
   // webpack-dev-server 相关配置
   devServer: {
-    host: '0.0.0.0',
+    host: devHost,
     port: port,
+    public: `${devHost}:${port}`,
     open: true,
     /**
-     * 通过局域网 IP 访问（如 http://192.168.31.31:2222）时，默认 SockJS 请求 /sockjs-node/info
-     * 易出现 net::ERR_EMPTY_RESPONSE，热更新客户端连不上（页面仍可正常用，只是无 HMR）。
-     * 改为 ws 传输（webpack-dev-server 3.11+），与浏览器同源 WebSocket，一般更稳。
+     * 通过局域网 IP 访问时设 DEV_HOST=0.0.0.0，并建议 CAT2BUG_DEV_HMR=1 启用 ws 热更新。
      */
-    transportMode: {
-      client: 'ws',
-      server: 'ws',
-    },
+    ...(process.env.DEV_HOST === '0.0.0.0' || process.env.CAT2BUG_DEV_HMR === '1' ? {
+      transportMode: {
+        client: 'ws',
+        server: 'ws',
+      },
+    } : {}),
     // 开发环境提供 /docs/**，避免 history 回退到 index.html 导致系统文档页白屏
     before(app) {
       app.use('/docs', express.static(docsStaticDir))
@@ -150,6 +153,9 @@ module.exports = {
     }
   },
   chainWebpack(config) {
+    if (isDev) {
+      config.plugins.delete('eslint')
+    }
     config.plugins.delete('preload') // TODO: need test
     config.plugins.delete('prefetch') // TODO: need test
     // set svg-sprite-loader

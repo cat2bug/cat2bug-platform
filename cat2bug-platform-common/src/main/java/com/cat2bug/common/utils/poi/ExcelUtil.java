@@ -310,6 +310,28 @@ public class ExcelUtil<T>
         this.includeFields = fields;
     }
 
+    public Workbook getWorkbook()
+    {
+        return wb;
+    }
+
+    public Sheet getSheet()
+    {
+        return sheet;
+    }
+
+    /** 表头行索引（无大标题时为 0） */
+    public int getHeaderRowIndex()
+    {
+        return Math.max(0, rownum);
+    }
+
+    /** 首行数据行索引 */
+    public int getDataStartRowIndex()
+    {
+        return getHeaderRowIndex() + 1;
+    }
+
     public void init(List<T> list, String sheetName, String title, Type type, Map<String,Object> params, IExcelListener excelListener )
     {
         if (list == null)
@@ -823,7 +845,7 @@ public class ExcelUtil<T>
         try
         {
             writeSheet();
-            wb.write(response.getOutputStream());
+            writeWorkbookToResponse(response);
         }
         catch (Exception e)
         {
@@ -832,6 +854,25 @@ public class ExcelUtil<T>
         finally
         {
             IOUtils.closeQuietly(wb);
+        }
+    }
+
+    /**
+     * 将当前 workbook 写入响应（不调用 writeSheet）。
+     * 用于先 writeSheet、再对 Sheet 做列后处理（如缺陷自定义字段插入）的场景。
+     */
+    public void writeWorkbookToResponse(HttpServletResponse response)
+    {
+        try
+        {
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setCharacterEncoding("utf-8");
+            wb.write(response.getOutputStream());
+        }
+        catch (Exception e)
+        {
+            log.error("导出Excel异常{}", e.getMessage());
+            throw new UtilException("导出Excel失败，请联系网站管理员！");
         }
     }
 
@@ -1369,6 +1410,25 @@ public class ExcelUtil<T>
             dataValidation.setSuppressDropDownArrow(false);
         }
         sheet.addValidationData(dataValidation);
+    }
+
+    /**
+     * 为指定列设置下拉列表（与 {@link #setDataValidation} 规则一致，供自定义字段等后处理列使用）。
+     *
+     * @param column   列索引（0-based）
+     * @param textlist 下拉选项（显示文本）
+     * @param firstRow 起始行（0-based，通常为表头下一行）
+     * @param endRow   结束行（0-based，可与 {@link #sheetSize} 一致以预留空行）
+     */
+    public void applyColumnListValidation(int column, String[] textlist, int firstRow, int endRow) {
+        if (sheet == null || textlist == null || textlist.length == 0) {
+            return;
+        }
+        if (textlist.length > 15 || StringUtils.join(textlist, ",").length() > 255) {
+            setXSSFValidationWithHidden(sheet, textlist, null, firstRow, endRow, column, column);
+        } else {
+            setPromptOrValidation(sheet, textlist, null, firstRow, endRow, column, column);
+        }
     }
 
     /**

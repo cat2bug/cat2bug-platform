@@ -7,12 +7,12 @@
     <div class="app-container defect-edit-body">
       <el-form ref="form" :model="form" :rules="rules" label-width="100px">
         <el-row>
-          <el-col :span="24">
+          <el-col v-if="isBuiltinDefectFieldVisible('defectName')" :span="24">
             <el-form-item :label="$t('defect.name')" prop="defectName">
               <el-input v-model="form.defectName" :placeholder="$t('defect.enter-name')" maxlength="128" />
             </el-form-item>
           </el-col>
-          <el-col :span="12">
+          <el-col v-if="isBuiltinDefectFieldVisible('defectType')" :span="12">
             <el-form-item :label="$t('type')" prop="defectType">
               <el-select v-model="form.defectType" clearable :placeholder="$t('defect.select-type')">
                 <el-option
@@ -24,7 +24,7 @@
               </el-select>
             </el-form-item>
           </el-col>
-          <el-col :span="12">
+          <el-col v-if="isBuiltinDefectFieldVisible('defectLevel')" :span="12">
             <el-form-item :label="$t('priority')" prop="defectLevel">
               <el-select v-model="form.defectLevel" clearable :placeholder="$t('defect.select-level')">
                 <el-option
@@ -36,22 +36,22 @@
               </el-select>
             </el-form-item>
           </el-col>
-          <el-col :span="12">
+          <el-col v-if="isBuiltinDefectFieldVisible('handleBy')" :span="12">
             <el-form-item :label="$t('handle-by')" prop="handleBy">
               <select-project-member v-model="form.handleBy" :project-id="projectId"  />
             </el-form-item>
           </el-col>
-          <el-col :span="12">
+          <el-col v-if="isBuiltinDefectFieldVisible('moduleVersion')" :span="12">
             <el-form-item :label="$t('version')" prop="moduleVersion">
               <el-input v-model="form.moduleVersion" :placeholder="$t('defect.enter-version')" maxlength="128" style="max-width: 300px;" />
             </el-form-item>
           </el-col>
-          <el-col :span="12">
+          <el-col v-if="isBuiltinDefectFieldVisible('moduleId')" :span="12">
             <el-form-item :label="$t('module')" prop="moduleId">
               <select-module v-model="form.moduleId" :project-id="projectId"/>
             </el-form-item>
           </el-col>
-          <el-col :span="12" class="selectTime">
+          <el-col v-if="isBuiltinDefectFieldVisible('planStartTime') || isBuiltinDefectFieldVisible('planEndTime')" :span="12" class="selectTime">
             <el-form-item :label="$t('plan-time')" prop="planEndTime">
               <el-date-picker
                 class="defect-plan-datetimerange"
@@ -66,10 +66,15 @@
             </el-form-item>
           </el-col>
         </el-row>
-        <el-form-item :label="$t('case')" prop="caseId">
+        <el-form-item v-if="isBuiltinDefectFieldVisible('caseId')" :label="$t('case')" prop="caseId">
           <select-case ref="selectCase" v-model="form.caseId" :module-id="form.moduleId" :step-index="form.caseStepId" @step-change="stepChangeHandle" />
         </el-form-item>
-        <el-form-item :label="$t('describe')" prop="defectDescribe">
+        <defect-custom-fields-section
+          v-if="projectId"
+          :project-id="projectId"
+          v-model="form.customFields"
+        />
+        <el-form-item v-if="isBuiltinDefectFieldVisible('defectDescribe')" :label="$t('describe')" prop="defectDescribe">
           <cat2-bug-textarea
             ref="cat2bugTextarea"
             :name="$t('describe').toString()"
@@ -95,10 +100,10 @@
             </template>
           </cat2-bug-textarea>
         </el-form-item>
-        <el-form-item :label="$t('image')" prop="imgUrls">
+        <el-form-item v-if="isBuiltinDefectFieldVisible('imgUrls')" :label="$t('image')" prop="imgUrls">
           <image-upload v-model="form.imgUrls" :limit="9"></image-upload>
         </el-form-item>
-        <el-form-item :label="$t('annex')" prop="annexUrls">
+        <el-form-item v-if="isBuiltinDefectFieldVisible('annexUrls')" :label="$t('annex')" prop="annexUrls">
           <file-upload v-model="form.annexUrls" :limit="9" :file-type="[]"/>
         </el-form-item>
       </el-form>
@@ -127,11 +132,13 @@ import {
 } from "@/api/ai/AiDefect";
 import {strFormat} from "@/utils";
 import {normalizeDefectTypeAndLevel} from "@/utils/defect-defaults";
+import defectBuiltinFieldVisibility from "@/mixins/defect-builtin-field-visibility";
 
 export default {
   name: "EditDefect",
   dicts: ['defect_level'],
-  components: { ImageUpload, SelectProjectMember, SelectModule, SelectCase, Cat2BugTextarea, ProjectAiModelSelect },
+  mixins: [defectBuiltinFieldVisibility],
+  components: { ImageUpload, SelectProjectMember, SelectModule, SelectCase, Cat2BugTextarea, ProjectAiModelSelect, DefectCustomFieldsSection: () => import('@/components/DefectCustomField/DefectCustomFieldsSection') },
   data() {
     return {
       describeTools: [],
@@ -186,6 +193,20 @@ export default {
     }
   },
   methods:{
+    applyDefectFormRulesForBuiltinLayout() {
+      const rules = {}
+      if (this.isBuiltinDefectFieldVisible('handleBy')) {
+        rules.handleBy = [
+          { required: true, message: this.$i18n.t('defect.handle-by-cannot-empty'), trigger: 'input' }
+        ]
+      }
+      if (this.isBuiltinDefectFieldVisible('defectName')) {
+        rules.defectName = [
+          { required: true, message: this.$i18n.t('defect.defect-name-cannot-empty'), trigger: 'input' }
+        ]
+      }
+      this.rules = rules
+    },
     /** 获取缺陷配置 */
     getDefectConfig() {
       configDefect().then(res=>{
@@ -243,7 +264,8 @@ export default {
         caseStepId: null,
         handleBy: null,
         handleTime: null,
-        defectLevel: 'middle'
+        defectLevel: 'middle',
+        customFields: {}
       };
       this.resetForm("form");
     },

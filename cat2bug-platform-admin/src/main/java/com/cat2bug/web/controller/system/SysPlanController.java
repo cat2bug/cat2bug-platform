@@ -13,6 +13,7 @@ import com.cat2bug.system.service.ISysModuleService;
 import com.cat2bug.system.service.ISysPlanService;
 import com.cat2bug.system.service.ISysUserProjectService;
 import com.cat2bug.system.util.DefectListKeywordSupport;
+import com.cat2bug.system.util.DefectListQuerySupport;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -90,7 +91,7 @@ public class SysPlanController extends BaseController
             sysDefect.getParams().put("moduleIdsOfProject", Arrays.asList(0));
         }
         DefectListKeywordSupport.fillNameVersionKeywordHandleBy(sysDefect, sysUserProjectService);
-        startPage();
+        DefectListQuerySupport.startDefectListPage();
         List<SysDefect> list = sysPlanService.selectSysDefectList(planId, sysDefect);
         TableDataInfo tableDataInfo = getDataTable(list);
         List<SysDefect> newList = new ArrayList<>(list);

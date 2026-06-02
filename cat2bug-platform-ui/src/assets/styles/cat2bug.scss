@@ -16,6 +16,8 @@
   --defect-toolbar-v-gap: var(--project-list-section-v-gap);
   /* 全站控件圆角，与 el-table 一致 */
   --cat2bug-border-radius: 4px;
+  /* 缺陷日志列表容器圆角（无外边框） */
+  --defect-log-panel-radius: 5px;
   /* 缺陷/列表页统计卡片（紧凑：较默认再低约 1/4） */
   --statistic-tools-gap: 10px;
   --statistic-card-padding: 6px 10px;
@@ -51,6 +53,10 @@
   /* Cat2BugTable 表头排序箭头（浅色） */
   --cat2bug-table-sort-caret-inactive: #c0c4cc;
   --cat2bug-table-sort-caret-active: #409eff;
+
+  /* 图片占位 / 加载失败（Cat2BugImage、原生 img 回退统一） */
+  --cat2bug-image-placeholder-bg: #ebeef5;
+  --cat2bug-image-error-bg: #ebeef5;
 
   /* 列表底部分页：与表格、页面底各 10px */
   --cat2bug-table-pagination-gap-top: 10px;
@@ -157,6 +163,60 @@ $cat2bug-radius: var(--cat2bug-border-radius, 4px);
     color: var(--text-color-placeholder, #c0c4cc) !important;
     cursor: not-allowed;
   }
+}
+
+/* 全系统图片加载失败 / 占位（Cat2BugImage error 槽、upload-asset 原生 img 回退） */
+.cat2bug-image-error,
+.el-image__error .cat2bug-image-error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  background-color: var(--cat2bug-image-error-bg);
+  box-sizing: border-box;
+}
+
+.cat2bug-image-error__img,
+img.cat2bug-image-error__img {
+  display: block;
+  max-width: 72%;
+  max-height: 72%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  object-position: center center;
+  background-color: var(--cat2bug-image-error-bg);
+  box-sizing: border-box;
+}
+
+.el-image {
+  background-color: var(--cat2bug-image-placeholder-bg);
+}
+
+/* 缺陷类型 tag 内小图标不用全局 el-image 占位底 */
+.defect-type-tag .el-image {
+  background-color: transparent !important;
+}
+
+.el-image__error {
+  background-color: var(--cat2bug-image-error-bg) !important;
+}
+
+.el-image__placeholder {
+  background-color: var(--cat2bug-image-placeholder-bg) !important;
+}
+
+/* 缺陷列表操作列：按钮在前，关注头像 / 分享 / 收藏在后 */
+.defect-operate-cell {
+  display: inline-flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  column-gap: var(--cat2bug-operate-tools-gap, 10px);
+  white-space: nowrap;
 }
 
 /* 列表底部分页容器：表格与分页、分页与页面底各 10px，内容右对齐 */
@@ -494,18 +554,20 @@ $cat2bug-radius: var(--cat2bug-border-radius, 4px);
   align-items: flex-start;
 }
 
-/* 表格操作列：Cat2BugTable / el-table 行内按钮 flex 间距统一 */
+/* 表格操作列：Cat2BugTable / el-table 行内按钮单行、列宽由 Cat2BugTable 按内容自适应 */
 .cat2bug-operate-tools {
-  display: flex;
-  flex-wrap: wrap;
+  display: inline-flex;
+  flex-wrap: nowrap;
   align-items: center;
+  white-space: nowrap;
   column-gap: var(--cat2bug-operate-tools-gap, 10px);
   row-gap: var(--cat2bug-operate-tools-row-gap, 0);
-  width: 100%;
-  max-width: 100%;
+  width: max-content;
+  max-width: none;
 
   > * {
     margin: 0 !important;
+    flex-shrink: 0;
   }
 
   /* 避免外层 + 内层双层 flex 导致间距不一致 */
@@ -518,14 +580,53 @@ $cat2bug-radius: var(--cat2bug-border-radius, 4px);
   .el-button + .el-button {
     margin-left: 0 !important;
   }
+
+  /* text 操作按钮语义色：亮色/暗色由 theme-dark.scss 的 --cat2bug-operate-text-* 控制 */
+  .el-button--text.orange {
+    color: var(--cat2bug-operate-text-muted, #606266);
+
+    &:hover,
+    &:focus {
+      color: var(--cat2bug-operate-text-muted-hover, #409eff);
+    }
+  }
+
+  .el-button--text.red {
+    color: var(--cat2bug-operate-text-danger, #f56c6c);
+
+    &:hover,
+    &:focus {
+      color: var(--cat2bug-operate-text-danger-hover, #f78989);
+    }
+  }
+
+  .el-button--text.green {
+    color: var(--cat2bug-operate-text-success, #67c23a);
+
+    &:hover,
+    &:focus {
+      color: var(--cat2bug-operate-text-success-hover, #85ce61);
+    }
+  }
+
+  .el-button--text.restore-orange {
+    color: var(--cat2bug-operate-text-warning, #ffba00);
+
+    &:hover,
+    &:focus {
+      color: var(--cat2bug-operate-text-warning-hover, #ffc933);
+    }
+  }
 }
 
 .el-table td.small-padding.fixed-width .cell,
 .el-table td.cat2bug-operate-column .cell,
 .cat2-bug-table-wrap td.cat2bug-operate-column .cell {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
+  white-space: nowrap;
+  max-width: none;
   column-gap: var(--cat2bug-operate-tools-gap, 10px);
   row-gap: var(--cat2bug-operate-tools-row-gap, 0);
 
@@ -550,6 +651,20 @@ $cat2bug-radius: var(--cat2bug-border-radius, 4px);
 .cat2-bug-table-wrap td.defect-state-col .cell {
   overflow: visible;
   text-overflow: clip;
+}
+
+/* 处理人列：裁剪叠放头像，避免负边距与 z-index 压住右侧固定操作列 */
+.el-table td.defect-handle-by-col .cell,
+.cat2-bug-table-wrap td.defect-handle-by-col .cell {
+  overflow: hidden !important;
+  position: relative;
+  z-index: 0;
+}
+
+/* 固定右侧操作列始终盖在主体表格单元格之上 */
+.cat2-bug-table-wrap .el-table__fixed-right,
+.cat2-bug-table-wrap .el-table__fixed-right-patch {
+  z-index: 30 !important;
 }
 
 .el-page-header {

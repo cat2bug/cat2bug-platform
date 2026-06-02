@@ -22,7 +22,7 @@ index 889c82a..ae03194 100644
      }
    }
 diff --git a/node_modules/vue-excel-editor/src/VueExcelEditor.vue b/node_modules/vue-excel-editor/src/VueExcelEditor.vue
-index 6411a01..7f2146e 100644
+index 6411a01..2e1473d 100644
 --- a/node_modules/vue-excel-editor/src/VueExcelEditor.vue
 +++ b/node_modules/vue-excel-editor/src/VueExcelEditor.vue
 @@ -28,19 +28,10 @@
@@ -1690,7 +1690,7 @@ index 6411a01..7f2146e 100644
      },
      mouseOver () {
        this.mousein = true
-@@ -2306,7 +3474,28 @@ export default {
+@@ -2306,7 +3474,29 @@ export default {
  
      /* *** InputBox *****************************************************************************************
       */
@@ -1709,6 +1709,7 @@ index 6411a01..7f2146e 100644
 +      ta.style.setProperty('height', h + 'px', 'important')
 +    },
 +    onInputBoxNativeInput () {
++      if (this.inputBoxShow) this.inputBoxChanged = true
 +      const f = this.currentField
 +      if (f && !f.readonly && f.type !== 'date' && !f.options && this.inputBoxShow)
 +        this.$nextTick(() => this.syncDefectNameInputBoxLayout())
@@ -1719,7 +1720,7 @@ index 6411a01..7f2146e 100644
        this.textTip = ''
        if (colPos < 0) return false
        const top = this.pageTop
-@@ -2390,6 +3579,10 @@ export default {
+@@ -2390,6 +3580,10 @@ export default {
          row.children[0].classList.add('focus')
          this.labelTr.children[colPos + 1].classList.add('focus')
        }
@@ -1730,7 +1731,7 @@ index 6411a01..7f2146e 100644
        return true
      },
      inputSquareClick () {
-@@ -2405,12 +3598,12 @@ export default {
+@@ -2405,12 +3599,12 @@ export default {
        let cursor = 'text'
        if (!this.currentField.readonly
          && (this.currentField.options || this.currentField.type === 'date')
@@ -1745,7 +1746,7 @@ index 6411a01..7f2146e 100644
        if (this.currentField.readonly) return
        if (this.currentField.options) {
          e.preventDefault()
-@@ -2511,12 +3704,9 @@ export default {
+@@ -2511,12 +3705,9 @@ export default {
        return rec
      },
      deleteSelectedRecords () {
@@ -1761,7 +1762,39 @@ index 6411a01..7f2146e 100644
      },
      deleteRecord (valueRowPos, isUndo) {
        if (this.currentRowPos === valueRowPos) this.moveNorth()
-@@ -2663,7 +3853,9 @@ export default {
+@@ -2607,9 +3798,21 @@ export default {
+         this.processing = false
+       }, 0)
+     },
++    /** field.name 可能含 ':'（如 custom:num），不能用 querySelector('td#…') */
++    getSystableTdByDomId (domId) {
++      if (domId == null || domId === '' || !this.systable) return null
++      const id = String(domId)
++      const doc = this.systable.ownerDocument || document
++      const byId = doc.getElementById(id)
++      if (byId && byId.tagName === 'TD' && this.systable.contains(byId)) return byId
++      if (typeof CSS !== 'undefined' && typeof CSS.escape === 'function') {
++        return this.systable.querySelector('td#' + CSS.escape(id))
++      }
++      return this.systable.querySelector('td[id="' + id.replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"]')
++    },
+     setFieldError (error, row, field) {
+       const id = `id-${row.$id}-${field.name}`
+-      const selector = this.systable.querySelector('td#'+id)
++      const selector = this.getSystableTdByDomId(id)
+       if (error) {
+         this.errmsg[id] = error
+         this.$emit('validate-error', error, row, field)
+@@ -2624,7 +3827,7 @@ export default {
+     },
+     setRowError (error, row) {
+       const rid = `rid-${row.$id}`
+-      const selector = this.systable.querySelector('td#'+rid)
++      const selector = this.getSystableTdByDomId(rid)
+       if (error) {
+         this.rowerr[rid] = error
+         this.$emit('validate-error', error, row)
+@@ -2663,7 +3866,9 @@ export default {
                else list = list.slice()
                if (this.inputBoxShow)
                  list = list.filter(element => element.toUpperCase().includes(value))
@@ -1772,7 +1805,7 @@ index 6411a01..7f2146e 100644
                // this.autocompleteSelect = list.findIndex(element => element.toUpperCase().includes(value))
              }
              else if (Object.values(field.options).length > 0) {
-@@ -2672,7 +3864,8 @@ export default {
+@@ -2672,7 +3877,8 @@ export default {
                else list = list.slice()
                if (this.inputBoxShow)
                  list = list.filter(element => element.toUpperCase().includes(value))
@@ -1782,7 +1815,36 @@ index 6411a01..7f2146e 100644
                // this.autocompleteSelect = list.findIndex(element => element.toUpperCase().includes(value))
              }
            }
-@@ -2767,6 +3960,11 @@ export default {
+@@ -2737,10 +3943,18 @@ export default {
+         return a = ((a << 5) - a) + b.charCodeAt(0) | 0
+       }, 0)
+     },
++    /** 匿名箭头函数 toString 相同会导致 lazy 回调互相覆盖，@update 等事件丢失 */
++    veeLazyCallbackKey (p) {
++      if (!p._veeLazyKey) {
++        const seq = (this._veeLazyKeySeq = (this._veeLazyKeySeq || 0) + 1)
++        Object.defineProperty(p, '_veeLazyKey', { value: 'vee-lazy-' + seq, enumerable: false })
++      }
++      return p._veeLazyKey
++    },
+     lazy (p, delay, p1) {
+       if (typeof p !== 'function') return this.lazyBuf(p, delay, p1)
+       if (!delay) delay = 20
+-      const hash = this.hashCode(p.name + p.toString())
++      const hash = this.veeLazyCallbackKey(p)
+       if (this.lazyTimeout[hash]) clearTimeout(this.lazyTimeout[hash])
+       this.lazyTimeout[hash] = setTimeout(() => {
+         p()
+@@ -2749,7 +3963,7 @@ export default {
+     },
+     lazyBuf (item, p, delay) {
+       if (!delay) delay = 20
+-      const hash = this.hashCode(p.name + p.toString())
++      const hash = this.veeLazyCallbackKey(p)
+       if (this.lazyBuffer[hash])
+         this.lazyBuffer[hash].push(item)
+       else
+@@ -2767,6 +3981,11 @@ export default {
  </script>
  
  <style scoped>
@@ -1794,7 +1856,7 @@ index 6411a01..7f2146e 100644
  input:focus, input:active:focus, input.active:focus {
    outline: none;
    box-shadow: inset 0 -1px 0 #ddd;
-@@ -2774,13 +3972,42 @@ input:focus, input:active:focus, input.active:focus {
+@@ -2774,13 +3993,42 @@ input:focus, input:active:focus, input.active:focus {
  *, *::before, *::after {
    box-sizing: border-box;
  }
@@ -1838,7 +1900,7 @@ index 6411a01..7f2146e 100644
  .no-transition {
    transition: none !important;
  }
-@@ -2789,8 +4016,8 @@ input:focus, input:active:focus, input.active:focus {
+@@ -2789,8 +4037,8 @@ input:focus, input:active:focus, input.active:focus {
    position: fixed;
    padding: 3px;
    margin: -1px;
@@ -1849,7 +1911,7 @@ index 6411a01..7f2146e 100644
    /*height: fit-content;*/
    overflow-y: scroll;
    font-size: 0.88rem;
-@@ -2813,7 +4040,7 @@ input:focus, input:active:focus, input.active:focus {
+@@ -2813,7 +4061,7 @@ input:focus, input:active:focus, input.active:focus {
    cursor: pointer
  }
  .autocomplete-result.select {
@@ -1858,7 +1920,7 @@ index 6411a01..7f2146e 100644
  }
  .rb-square {
    width: 9px;
-@@ -2822,11 +4049,12 @@ input:focus, input:active:focus, input.active:focus {
+@@ -2822,11 +4070,12 @@ input:focus, input:active:focus, input.active:focus {
    border-left: 2px solid white;
    border-bottom: 0;
    border-right: 0;
@@ -1872,7 +1934,7 @@ index 6411a01..7f2146e 100644
  }
  .input-box {
    opacity: 0;
-@@ -2915,7 +4143,7 @@ input:focus, input:active:focus, input.active:focus {
+@@ -2915,7 +4164,7 @@ input:focus, input:active:focus, input.active:focus {
    text-align: left;
  }
  .systable tr.select td {
@@ -1881,7 +1943,7 @@ index 6411a01..7f2146e 100644
  }
  .systable th, .systable td {
    vertical-align: bottom;
-@@ -2979,22 +4207,24 @@ input:focus, input:active:focus, input.active:focus {
+@@ -2979,22 +4228,24 @@ input:focus, input:active:focus, input.active:focus {
    text-overflow: ellipsis;
  }
  .systable th.focus {
@@ -1910,7 +1972,7 @@ index 6411a01..7f2146e 100644
  }
  .systable .first-col {
    background:#e9ecef;
-@@ -3286,4 +4516,35 @@ a:disabled {
+@@ -3286,4 +4537,35 @@ a:disabled {
    left: 50%;
    transform: translate(-50%, 0%);
  }

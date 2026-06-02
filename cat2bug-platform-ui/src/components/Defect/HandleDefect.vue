@@ -1,5 +1,6 @@
 <template>
   <el-drawer
+    custom-class="defect-drawer-accent"
     size="55%"
     :visible.sync="visible"
     direction="rtl"
@@ -39,41 +40,13 @@
           <markdown-it-vue v-if="defect.defectDescribe" :content="defect.defectDescribe+''" />
           <el-empty v-else :description="$t('no-data')"></el-empty>
         </el-collapse-item>
-        <el-collapse-item :title="$i18n.t('defect.base-info')" name="base">
-          <el-row class="defect-edit-body-base" :gutter="20">
-            <el-col :span="12">
-              <label>{{$t('project')}}:</label>
-              <span>{{defect.projectName}}</span>
-            </el-col>
-            <el-col :span="12">
-              <label>{{$t('module')}}:</label>
-              <span>{{defect.moduleName}}</span>
-            </el-col>
-            <el-col :span="12">
-              <label>{{$t('version')}}:</label>
-              <span>{{defect.moduleVersion}}</span>
-            </el-col>
-            <el-col :span="12">
-              <label>{{$t('state')}}:</label>
-              <span>{{ $t(defect.defectStateName)}}</span>
-            </el-col>
-            <el-col :span="12">
-              <label>{{$t('plan-start-time')}}:</label>
-              <span>{{ $t(defect.planStartTime)}}</span>
-            </el-col>
-            <el-col :span="12">
-              <label>{{$t('plan-end-time')}}:</label>
-              <span>{{ $t(defect.planEndTime)}}</span>
-            </el-col>
-            <el-col :span="12">
-              <label>{{$t('defect.life-time')}}:</label>
-              <span>{{ defectLife(defect)}}</span>
-            </el-col>
-            <el-col :span="12">
-              <label>{{$t('reject')}}:</label>
-              <span>{{ defect.rejectCount }}</span>
-            </el-col>
-          </el-row>
+        <el-collapse-item :title="$i18n.t('defect.base-info')" name="customFields">
+          <defect-custom-fields-display
+            :project-id="defect.projectId"
+            :defect="defect"
+            :defect-case="defectCase"
+            :custom-fields="defect.customFields"
+          />
         </el-collapse-item>
         <el-collapse-item v-if="defect.imgUrls" :title="$i18n.t('image')" name="imgUrls">
           <div class="defect-image">
@@ -94,7 +67,7 @@
           <case-card :case-model="defectCase" :state-visible="true" :step-index.sync="defect.caseStepId" :edit="false" />
         </el-collapse-item>
         <el-collapse-item :title="$i18n.t('log')" name="log">
-          <list-defect-log ref="defectLog" :pageSize="10" show-comment />
+          <list-defect-log ref="defectLog" :pageSize="5" show-comment />
         </el-collapse-item>
       </el-collapse>
       <div slot="footer" class="dialog-footer"></div>
@@ -116,13 +89,12 @@ import FocusMemberList from "@/components/FocusMemberList";
 import {getCase} from "@/api/system/case";
 import MarkdownItVue from "markdown-it-vue"
 import 'markdown-it-vue/dist/markdown-it-vue.css'
-import {lifeTime} from "@/utils/defect";
 import {normalizeDefectTypeAndLevel} from "@/utils/defect-defaults";
 
 export default {
   name: "EditDefect",
   dicts: ['defect_level'],
-  components: { ImageUpload, SelectProjectMember, SelectModule, ListDefectLog, DefectTools, DefectTypeFlag, DefectStateFlag, CaseCard, MarkdownItVue,FocusMemberList },
+  components: { ImageUpload, SelectProjectMember, SelectModule, ListDefectLog, DefectTools, DefectTypeFlag, DefectStateFlag, CaseCard, MarkdownItVue, FocusMemberList, DefectCustomFieldsDisplay: () => import('@/components/DefectCustomField/DefectCustomFieldsDisplay') },
   data() {
     return {
       loading: false,
@@ -191,11 +163,6 @@ export default {
         return arr[arr.length-1];
       }
     },
-    defectLife: function () {
-      return function (defect) {
-        return lifeTime(defect);
-      }
-    },
     defectToolsExclusions() {
       const f = this.defect && this.defect.delFlag;
       if (f === '2' || f === 2) {
@@ -219,7 +186,7 @@ export default {
     // 获取缺陷信息
     getDefectInfo(defectId) {
       this.loading = true;
-      this.activeNames = ['base','log']
+      this.activeNames = ['log', 'customFields']
       getDefect(defectId).then(res=>{
         this.loading = false;
         this.defect = res.data;
@@ -304,7 +271,7 @@ export default {
         handleTime: null,
         defectLevel: 'middle'
       };
-      this.activeNames = ['base','log']
+      this.activeNames = ['log', 'customFields']
       this.resetForm("form");
     },
     /** 提交按钮 */
@@ -395,26 +362,24 @@ export default {
       //white-space: nowrap;
       //text-overflow: ellipsis;
     }
-    .defect-edit-title-content{
+    .defect-edit-title-content {
+      display: inline-flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 5px;
       font-size: 20px;
       color: #303133;
       font-weight: 500;
       line-height: 36px;
-    }
-    .defect-edit-title-content .defect-type-tag{
-      float: left;
-      margin-right: 2px;
-      margin-top: 5px;
-      padding: 1px 10px;
-    }
-    .defect-edit-title-content .project-member-icons{
-      float: left;
-      margin-right:10px;
-    }
-    .defect-edit-title-content .el-tag--dark.el-tag--danger{
-      float: left;
-      margin-right:10px;
-      margin-top: 5px;
+      vertical-align: middle;
+
+      ::v-deep .defect-type-tag,
+      ::v-deep .project-member-icons,
+      ::v-deep .defect-state-tag,
+      ::v-deep .el-tag--dark.el-tag--danger {
+        float: none;
+        margin: 0;
+      }
     }
     .defect-edit-title-num, .defect-edit-title-name {
       font-size: 20px;
@@ -432,9 +397,6 @@ export default {
   padding-left: 30px;
   padding-right: 30px;
   .defect-edit-body-log-first {
-    border:#E4E7ED 1px solid;
-    border-radius: 5px;
-    padding: 15px 15px 12px 15px;
     margin-bottom: 20px;
   }
   ::v-deep .el-collapse {
@@ -489,9 +451,11 @@ export default {
   flex-direction: row;
   gap: 10px;
   flex-wrap: wrap;
-  > .el-image {
+  ::v-deep .el-image {
     width: 150px;
     height: 150px;
+    border-radius: var(--cat2bug-border-radius, 4px);
+    overflow: hidden;
   }
 }
 

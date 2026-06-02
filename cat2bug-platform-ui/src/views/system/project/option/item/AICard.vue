@@ -1,19 +1,22 @@
 <template>
-  <el-card class="box-card">
-    <div slot="header" class="clearfix">
-      <i class="el-icon-s-flag"></i>
-      <div>
-        <span>{{$t('project.ai-manager')}}</span>
-        <span>{{$t('project.ai-manager-describe')}}</span>
+  <el-col v-if="cardVisible" :span="6">
+    <el-card class="box-card">
+      <div slot="header" class="clearfix">
+        <i class="el-icon-s-flag"></i>
+        <div>
+          <span>{{$t('project.ai-manager')}}</span>
+          <span>{{$t('project.ai-manager-describe')}}</span>
+        </div>
       </div>
-    </div>
-    <router-link v-if="aiEnabled" to="ollama" v-hasPermi="['system:ai:list']"><el-link>{{$t('project.ai-model-manager')}}</el-link></router-link>
-    <router-link to="openai" v-hasPermi="['ai:account:list']"><el-link>{{$t('project.ai-account-manager')}}</el-link></router-link>
-  </el-card>
+      <router-link v-if="canManageAiModel" to="ollama"><el-link>{{$t('project.ai-model-manager')}}</el-link></router-link>
+      <router-link v-if="canManageAiAccount" to="openai"><el-link>{{$t('project.ai-account-manager')}}</el-link></router-link>
+    </el-card>
+  </el-col>
 </template>
 
 <script>
 import { projectAiModelOptions } from "@/api/system/ai";
+import { hasAnyPermi } from '@/utils/project-option-card'
 
 export default {
   name: "AICard",
@@ -34,6 +37,15 @@ export default {
   computed: {
     projectId() {
       return parseInt(this.$store.state.user.config.currentProjectId);
+    },
+    canManageAiModel() {
+      return this.aiEnabled && hasAnyPermi(['system:ai:list'])
+    },
+    canManageAiAccount() {
+      return hasAnyPermi(['ai:account:list'])
+    },
+    cardVisible() {
+      return this.canManageAiModel || this.canManageAiAccount
     }
   },
   created() {

@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat2bug.system.mapper.SysProjectDefectFieldMapper">
+
+    <resultMap type="com.cat2bug.system.domain.SysProjectDefectField" id="SysProjectDefectFieldResult">
+        <result property="fieldId" column="field_id"/>
+        <result property="projectId" column="project_id"/>
+        <result property="fieldKey" column="field_key"/>
+        <result property="fieldLabel" column="field_label"/>
+        <result property="fieldType" column="field_type"/>
+        <result property="maxLength" column="max_length"/>
+        <result property="required" column="required"/>
+        <result property="nullable" column="nullable"/>
+        <result property="enabled" column="enabled"/>
+        <result property="isSystem" column="is_system"/>
+        <result property="sortOrder" column="sort_order"/>
+        <result property="typeConfig" column="type_config" typeHandler="com.cat2bug.system.domain.handle.JsonMapTypeHandler"/>
+        <result property="defaultValue" column="default_value" typeHandler="com.cat2bug.system.domain.handle.JsonValueTypeHandler"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="selectVo">
+        select field_id, project_id, field_key, field_label, field_type, max_length,
+               required, nullable, enabled, is_system, sort_order, type_config, default_value, create_time, update_time
+        from sys_project_defect_field
+    </sql>
+
+    <select id="selectByFieldId" resultMap="SysProjectDefectFieldResult">
+        <include refid="selectVo"/>
+        where field_id = #{fieldId}
+    </select>
+
+    <select id="selectByProjectIdAndFieldKey" resultMap="SysProjectDefectFieldResult">
+        <include refid="selectVo"/>
+        where project_id = #{projectId} and field_key = #{fieldKey}
+    </select>
+
+    <select id="selectListByProjectId" resultMap="SysProjectDefectFieldResult">
+        <include refid="selectVo"/>
+        where project_id = #{projectId}
+        order by sort_order asc, field_id asc
+    </select>
+
+    <select id="selectEnabledListByProjectId" resultMap="SysProjectDefectFieldResult">
+        <include refid="selectVo"/>
+        where project_id = #{projectId} and enabled = 1
+        order by sort_order asc, field_id asc
+    </select>
+
+    <select id="countEnabledByProjectId" resultType="int">
+        select count(1) from sys_project_defect_field
+        where project_id = #{projectId} and enabled = 1
+    </select>
+
+    <!-- 缺陷 custom_fields 中该 field_key 是否存在非空值 -->
+    <select id="countCustomFieldKeyUsed" resultType="int" databaseId="h2">
+        select count(1) from sys_defect d
+        where d.project_id = #{projectId}
+          and d.del_flag = '0'
+          and d.custom_fields is not null
+          and JSON_VALUE(d.custom_fields, CONCAT('$.', #{fieldKey})) is not null
+          and trim(coalesce(JSON_VALUE(d.custom_fields, CONCAT('$.', #{fieldKey})), '')) not in ('', 'null', '[]', '{}')
+    </select>
+
+    <select id="countCustomFieldKeyUsed" resultType="int">
+        select count(1) from sys_defect d
+        where d.project_id = #{projectId}
+          and d.del_flag = '0'
+          and d.custom_fields is not null
+          and JSON_UNQUOTE(JSON_EXTRACT(d.custom_fields, CONCAT('$.', #{fieldKey}))) is not null
+          and trim(JSON_UNQUOTE(JSON_EXTRACT(d.custom_fields, CONCAT('$.', #{fieldKey})))) not in ('', 'null', '[]', '{}')
+    </select>
+
+    <insert id="insert" parameterType="com.cat2bug.system.domain.SysProjectDefectField" useGeneratedKeys="true" keyProperty="fieldId" keyColumn="field_id">
+        insert into sys_project_defect_field
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="projectId != null">project_id,</if>
+            <if test="fieldKey != null">field_key,</if>
+            <if test="fieldLabel != null">field_label,</if>
+            <if test="fieldType != null">field_type,</if>
+            <if test="maxLength != null">max_length,</if>
+            <if test="required != null">required,</if>
+            <if test="nullable != null">nullable,</if>
+            <if test="enabled != null">enabled,</if>
+            <if test="isSystem != null">is_system,</if>
+            <if test="sortOrder != null">sort_order,</if>
+            <if test="typeConfig != null">type_config,</if>
+            default_value,
+            <if test="createTime != null">create_time,</if>
+            <if test="updateTime != null">update_time,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="projectId != null">#{projectId},</if>
+            <if test="fieldKey != null">#{fieldKey},</if>
+            <if test="fieldLabel != null">#{fieldLabel},</if>
+            <if test="fieldType != null">#{fieldType},</if>
+            <if test="maxLength != null">#{maxLength},</if>
+            <if test="required != null">#{required},</if>
+            <if test="nullable != null">#{nullable},</if>
+            <if test="enabled != null">#{enabled},</if>
+            <if test="isSystem != null">#{isSystem},</if>
+            <if test="sortOrder != null">#{sortOrder},</if>
+            <if test="typeConfig != null">#{typeConfig, typeHandler=com.cat2bug.system.domain.handle.JsonMapTypeHandler},</if>
+            #{defaultValue, typeHandler=com.cat2bug.system.domain.handle.JsonValueTypeHandler},
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+        </trim>
+    </insert>
+
+    <update id="update" parameterType="com.cat2bug.system.domain.SysProjectDefectField">
+        update sys_project_defect_field
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="fieldLabel != null">field_label = #{fieldLabel},</if>
+            <if test="fieldType != null">field_type = #{fieldType},</if>
+            <if test="maxLength != null">max_length = #{maxLength},</if>
+            <if test="required != null">required = #{required},</if>
+            <if test="nullable != null">nullable = #{nullable},</if>
+            <if test="enabled != null">enabled = #{enabled},</if>
+            <if test="sortOrder != null">sort_order = #{sortOrder},</if>
+            <if test="typeConfig != null">type_config = #{typeConfig, typeHandler=com.cat2bug.system.domain.handle.JsonMapTypeHandler},</if>
+            default_value = #{defaultValue, typeHandler=com.cat2bug.system.domain.handle.JsonValueTypeHandler},
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        where field_id = #{fieldId} and project_id = #{projectId}
+    </update>
+
+    <update id="softDelete">
+        update sys_project_defect_field set enabled = 0, update_time = #{updateTime,jdbcType=TIMESTAMP}
+        where field_id = #{fieldId} and project_id = #{projectId}
+    </update>
+
+    <select id="selectDefectBuiltinFieldConfig" resultType="java.lang.String">
+        select defect_builtin_field_config from sys_project where project_id = #{projectId}
+    </select>
+
+    <update id="updateDefectBuiltinFieldConfig">
+        update sys_project
+        set defect_builtin_field_config = #{config},
+            update_time = #{updateTime,jdbcType=TIMESTAMP}
+        where project_id = #{projectId}
+    </update>
+</mapper>

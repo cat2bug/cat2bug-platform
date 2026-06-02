@@ -191,11 +191,8 @@ import { getDefectTempTab, lifeTime, removeDefectTempTab } from '@/utils/defect'
 import { resolveExportAssetHost } from '@/utils/ruoyi'
 import {
   appendExportColumnParams,
-  DEFECT_FIELD_LIST_KEY,
-  getColumnsFromCat2BugTable,
-  mergeTableColumns
+  resolveDefectExportColumns
 } from '@/utils/excel-export-columns'
-import { TableOptions } from '@/views/system/defect/list/table-options'
 import store from '@/store'
 import DefectTable from './list/table'
 import DefectExcel from './list/excel'
@@ -466,6 +463,16 @@ export default {
         this.$set(this.queryParams.params, key, extension[key])
       })
     },
+    /** Tab config.customFieldFilters → queryParams.params.customFieldFilters */
+    applyTabCustomFieldFilters(tabConfig) {
+      if (!tabConfig || !Array.isArray(tabConfig.customFieldFilters) || !tabConfig.customFieldFilters.length) {
+        return
+      }
+      if (!this.queryParams.params) {
+        this.$set(this.queryParams, 'params', {})
+      }
+      this.$set(this.queryParams.params, 'customFieldFilters', tabConfig.customFieldFilters)
+    },
     /** 按当前 Tab 恢复基准查询并清除扩展参数（工具栏无独立重置按钮时，类型下拉主按钮等同此逻辑） */
     resetQueryByCurrentTab() {
       clearExtensionParams(this.queryParams, this)
@@ -695,6 +702,7 @@ export default {
           }
           this.queryParams = tabItem.config
           clearExtensionParams(this.queryParams, this)
+          this.applyTabCustomFieldFilters(tabItem.config)
         } else {
           this.reset()
         }
@@ -750,20 +758,19 @@ export default {
       this.$refs.defectImportDialog.open()
     },
     /** 导出按钮操作 */
-    handleExport() {
+    async handleExport() {
       const host = resolveExportAssetHost()
       const payload = { ...this.queryParams }
       if (host) {
         payload.params = { ...(payload.params || {}), host }
       }
       const c = this.$refs.defectContentComponent
-      let columns = null
-      if (c && c.$refs && c.$refs.cat2BugTable) {
-        columns = getColumnsFromCat2BugTable(c.$refs.cat2BugTable)
-      }
-      if (!columns) {
-        columns = mergeTableColumns(TableOptions, DEFECT_FIELD_LIST_KEY, this.$cache.local)
-      }
+      const columns = await resolveDefectExportColumns({
+        projectId: this.projectId,
+        cache: this.$cache.local,
+        tableRef: c && c.$refs ? c.$refs.cat2BugTable : null,
+        excelRef: c
+      })
       appendExportColumnParams(payload, columns, 'data', 'defect')
       this.download('system/defect/export', payload, `${this.$i18n.t('defect.export-file-name')}_${new Date().getTime()}.xlsx`)
     }

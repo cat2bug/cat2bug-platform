@@ -211,11 +211,23 @@ export default {
 .upload-file-uploader {
   margin-bottom: 5px;
 }
+.upload-file-list {
+  margin: 0;
+  padding: 0;
+}
 .upload-file-list .el-upload-list__item {
-  border: 1px solid #e4e7ed;
+  border: none;
+  background-color: transparent;
+  border-radius: 0;
   line-height: 2;
-  margin-bottom: 10px;
+  margin-bottom: 0;
+  padding: 8px 0;
   position: relative;
+  color: var(--text-color-regular, inherit);
+
+  &:not(:last-child) {
+    border-bottom: 1px solid var(--upload-file-divider-color, var(--border-color-light, #ebeef5));
+  }
 }
 .upload-file-list .ele-upload-list__item-content {
   display: flex;

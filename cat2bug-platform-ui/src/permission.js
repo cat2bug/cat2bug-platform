@@ -9,6 +9,7 @@ import { isLockTeamPath } from '@/utils/team'
 import { isLockProjectPath } from '@/utils/project'
 import { resolveUpgradeStatus } from '@/utils/upgrade-status'
 import { resolveSetupStatus } from '@/utils/setup-status'
+import { isUpgradeAwaitingReady } from '@/utils/upgrade-await'
 import { getCodeImg } from '@/api/login'
 import i18n from '@/utils/i18n/i18n'
 
@@ -16,7 +17,18 @@ NProgress.configure({ showSpinner: false })
 
 const whiteList = ['/login', '/register', '/tools/browser', '/shard/defect', '/setup', '/upgrade']
 
-const UPGRADE_AWAITING_READY_KEY = 'upgrade-awaiting-ready'
+function handleUpgradeAwaitingReadyRoute(to, next) {
+  if (!isUpgradeAwaitingReady()) {
+    return false
+  }
+  if (to.path === '/upgrade') {
+    next()
+  } else {
+    next('/upgrade')
+  }
+  NProgress.done()
+  return true
+}
 
 function proceedWithAuth(to, from, next) {
   if (getToken()) {
@@ -61,7 +73,7 @@ function proceedWithAuth(to, from, next) {
 
 function handleInstallRestartWait(to, next, upgradeStatus, setupStatus) {
   const upgradeRestart = upgradeStatus.state === 'restart_required' || upgradeStatus.restartRequired
-  const upgradeFlowHint = sessionStorage.getItem(UPGRADE_AWAITING_READY_KEY) === '1'
+  const upgradeFlowHint = isUpgradeAwaitingReady()
   if (upgradeRestart || (setupStatus.installed && upgradeFlowHint)) {
     if (to.path === '/upgrade' || to.path === '/login') {
       next()
@@ -91,9 +103,12 @@ function handleInstallRestartWait(to, next, upgradeStatus, setupStatus) {
 
 router.beforeEach((to, from, next) => {
   NProgress.start()
+  if (handleUpgradeAwaitingReadyRoute(to, next)) {
+    return
+  }
   const refreshSetupStatus = (from.path === '/login' && !!getToken()) || to.path === '/login'
 
-    resolveSetupStatus(refreshSetupStatus).then(setupStatus => {
+  resolveSetupStatus(refreshSetupStatus).then(setupStatus => {
     if (setupStatus.restartRequired) {
       resolveUpgradeStatus(true).then(upgradeStatus => {
         handleInstallRestartWait(to, next, upgradeStatus, setupStatus)
@@ -139,17 +154,21 @@ router.beforeEach((to, from, next) => {
       }
 
       if (state === 'restart_required' || upgradeStatus.restartRequired) {
-        if (to.path === '/upgrade' || to.path === '/login') {
+        if (to.path === '/upgrade') {
           next()
           return
         }
-        next('/login')
+        next('/upgrade')
         NProgress.done()
         return
       }
 
       if (to.path === '/upgrade') {
         if (upgradeStatus.upgradeRequired || wizardLocked) {
+          next()
+          return
+        }
+        if (isUpgradeAwaitingReady()) {
           next()
           return
         }

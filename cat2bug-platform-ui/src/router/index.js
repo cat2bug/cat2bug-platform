@@ -315,6 +315,25 @@ export const dynamicRoutes = [
         meta: { title: '调度日志', activeMenu: '/monitor/job' }
       }
     ]
+  },
+  {
+    path: '/project/defect-fields',
+    component: Layout,
+    hidden: true,
+    permissions: ['system:project:defect-field:list'],
+    children: [
+      {
+        path: '',
+        component: () => import('@/views/system/project/defect-fields/index'),
+        name: 'ProjectDefectFields',
+        meta: {
+          title: i18n.t('defect.custom-field.title'),
+          titleI18nKey: 'defect.custom-field.title',
+          activeMenu: '/project/option',
+          projectListPage: true
+        }
+      }
+    ]
   }
 ]
 

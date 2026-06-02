@@ -58,7 +58,8 @@
 .project-list-page-host .defect-page,
 .project-list-page-host .plan-page,
 .project-list-page-host .report-page,
-.project-list-page-host .document-page {
+.project-list-page-host .document-page,
+.project-list-page-host .defect-field-page {
   overflow: hidden;
 }
 
@@ -68,11 +69,13 @@
 .project-list-page-host .plan-table-x-scroll,
 .project-list-page-host .report-table-x-scroll,
 .project-list-page-host .document-table-x-scroll,
+.project-list-page-host .defect-field-table-x-scroll,
 .main-container--project-list .case-table-x-scroll,
 .main-container--project-list .defect-table-x-scroll,
 .main-container--project-list .plan-table-x-scroll,
 .main-container--project-list .report-table-x-scroll,
-.main-container--project-list .document-table-x-scroll {
+.main-container--project-list .document-table-x-scroll,
+.main-container--project-list .defect-field-table-x-scroll {
   overflow-x: hidden;
   overflow-y: hidden;
 }
@@ -91,6 +94,7 @@
 .project-list-page-host.plan-page,
 .project-list-page-host.report-page,
 .project-list-page-host.document-page,
+.project-list-page-host.defect-field-page,
 .project-list-page-host.module-page,
 .project-list-page-host > .case-body.defect-page,
 .project-list-page-host .defect-page {
@@ -125,7 +129,8 @@
 .project-list-page-host .plan-tools,
 .project-list-page-host .report-tools,
 .project-list-page-host .document-tools,
-.project-list-page-host .module-tools {
+.project-list-page-host .module-tools,
+.project-list-page-host .defect-field-tools {
   margin-top: 0 !important;
   margin-bottom: 0 !important;
 }

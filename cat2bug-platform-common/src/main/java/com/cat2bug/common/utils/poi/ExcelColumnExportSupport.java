@@ -29,6 +29,7 @@ public final class ExcelColumnExportSupport
     {
         Map<String, String> defectData = new LinkedHashMap<>();
         defectData.put("projectNum", "projectNum");
+        defectData.put("id", "projectNum");
         defectData.put("defectTypeName", "defectType");
         defectData.put("defectName", "defectName");
         defectData.put("defectLevel", "defectLevel");

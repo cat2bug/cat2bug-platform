@@ -2,9 +2,7 @@
   <div class="app-container">
     <project-label />
     <el-row :gutter="20">
-      <el-col :span="6" v-for="(m, index) in itemList" :key="index">
-        <component :is="m.name" v-model="project"></component>
-      </el-col>
+      <component :is="m.name" v-for="(m, index) in itemList" :key="index" v-model="project"></component>
     </el-row>
   </div>
 </template>
@@ -53,6 +51,17 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
+  $project-option-card-gap: 20px;
+
+  /* gutter 仅控制列间距，补相同 row-gap 使行列间隔一致 */
+  ::v-deep .el-row {
+    margin-bottom: -$project-option-card-gap;
+  }
+
+  ::v-deep .el-col {
+    margin-bottom: $project-option-card-gap;
+  }
+
   ::v-deep .el-card__header {
     font-weight: 600;
     div:first-child {

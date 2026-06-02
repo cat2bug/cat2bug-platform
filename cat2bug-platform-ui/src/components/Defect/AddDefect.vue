@@ -1,5 +1,6 @@
 <template>
   <el-drawer
+    custom-class="defect-drawer-accent"
     size="65%"
     :visible.sync="visible"
     direction="rtl"
@@ -23,11 +24,11 @@
         <el-form-item>
           <el-checkbox class="save-form-cache" v-model="isSaveFormCache" @change="handleSaveFormCache">{{ $t('defect.added-save-form-cache') }}</el-checkbox>
         </el-form-item>
-        <el-form-item :label="$t('defect.name')" prop="defectName">
+        <el-form-item v-if="isBuiltinDefectFieldVisible('defectName')" :label="$t('defect.name')" prop="defectName">
           <el-input ref="defectNameInput" v-model="form.defectName" :placeholder="$t('defect.enter-name')" maxlength="128" />
         </el-form-item>
-        <el-row>
-          <el-col :span="12">
+        <el-row v-if="isBuiltinDefectFieldVisible('defectType') || isBuiltinDefectFieldVisible('defectLevel')">
+          <el-col v-if="isBuiltinDefectFieldVisible('defectType')" :span="12">
             <el-form-item :label="$t('type')" prop="defectType">
               <el-select v-model="form.defectType" clearable :placeholder="$t('defect.select-type')">
                 <el-option
@@ -39,7 +40,7 @@
               </el-select>
             </el-form-item>
           </el-col>
-          <el-col :span="12">
+          <el-col v-if="isBuiltinDefectFieldVisible('defectLevel')" :span="12">
             <el-form-item :label="$t('priority')" prop="defectLevel">
               <el-select v-model="form.defectLevel" clearable :placeholder="$t('defect.select-level')">
                 <el-option
@@ -52,25 +53,25 @@
             </el-form-item>
           </el-col>
         </el-row>
-        <el-row>
-          <el-col :span="12">
+        <el-row v-if="isBuiltinDefectFieldVisible('handleBy') || isBuiltinDefectFieldVisible('moduleVersion')">
+          <el-col v-if="isBuiltinDefectFieldVisible('handleBy')" :span="12">
             <el-form-item :label="$t('handle-by')" prop="handleBy">
               <select-project-member v-model="form.handleBy" :project-id="projectId"  />
             </el-form-item>
           </el-col>
-          <el-col :span="12">
+          <el-col v-if="isBuiltinDefectFieldVisible('moduleVersion')" :span="12">
             <el-form-item :label="$t('version')" prop="moduleVersion">
               <el-input v-model="form.moduleVersion" :placeholder="$t('defect.enter-version')" maxlength="128" style="max-width: 300px;" />
             </el-form-item>
           </el-col>
         </el-row>
-        <el-row>
-          <el-col :span="12">
+        <el-row v-if="isBuiltinDefectFieldVisible('moduleId') || isBuiltinDefectFieldVisible('planStartTime') || isBuiltinDefectFieldVisible('planEndTime')">
+          <el-col v-if="isBuiltinDefectFieldVisible('moduleId')" :span="12">
             <el-form-item :label="$t('module')" prop="moduleId">
               <select-module v-model="form.moduleId" :project-id="projectId" @input="moduleChangeHandle"/>
             </el-form-item>
           </el-col>
-          <el-col :span="12">
+          <el-col v-if="isBuiltinDefectFieldVisible('planStartTime') || isBuiltinDefectFieldVisible('planEndTime')" :span="12">
             <el-form-item :label="$t('plan-time')" prop="planEndTime">
               <el-date-picker
                 class="defect-plan-datetimerange"
@@ -85,14 +86,19 @@
             </el-form-item>
           </el-col>
         </el-row>
-        <el-row>
+        <el-row v-if="isBuiltinDefectFieldVisible('caseId')">
           <el-col :span="24">
             <el-form-item :label="$t('case')" prop="caseId">
               <select-case ref="selectCase" v-model="form.caseId" :module-id="form.moduleId" :step-index="form.caseStepId" @step-change="stepChangeHandle" />
             </el-form-item>
           </el-col>
         </el-row>
-        <el-row>
+        <defect-custom-fields-section
+          v-if="projectId"
+          :project-id="projectId"
+          v-model="form.customFields"
+        />
+        <el-row v-if="isBuiltinDefectFieldVisible('defectDescribe')">
           <el-col :span="24">
             <el-form-item :label="$t('describe')" prop="defectDescribe">
               <cat2-bug-textarea
@@ -122,14 +128,14 @@
             </el-form-item>
           </el-col>
         </el-row>
-        <el-row>
+        <el-row v-if="isBuiltinDefectFieldVisible('imgUrls')">
           <el-col :span="24">
             <el-form-item :label="$t('image')" prop="imgUrls">
               <image-upload v-model="form.imgUrls" :limit="9"></image-upload>
             </el-form-item>
           </el-col>
         </el-row>
-        <el-row>
+        <el-row v-if="isBuiltinDefectFieldVisible('annexUrls')">
           <el-col :span="12">
             <el-form-item :label="$t('annex')" prop="annexUrls">
               <file-upload v-model="form.annexUrls" :limit="9" :file-type="[]"/>
@@ -178,6 +184,7 @@ import {
 } from "@/api/ai/AiDefect";
 import {strFormat} from "@/utils";
 import {normalizeDefectTypeAndLevel} from "@/utils/defect-defaults";
+import defectBuiltinFieldVisibility from "@/mixins/defect-builtin-field-visibility";
 
 // 是否保存缺陷添加表单缓存的key键值
 const IS_SAVE_FORM_CACHE_KEY = 'defect-is-save-add-form-cache';
@@ -187,7 +194,8 @@ const FORM_CACHE_KEY = 'defect-add-form-cache';
 export default {
   name: "AddDefect",
   dicts: ['defect_level'],
-  components: { ImageUpload, SelectProjectMember, SelectModule,SelectCase,Cat2BugTextarea, ProjectAiModelSelect },
+  mixins: [defectBuiltinFieldVisibility],
+  components: { ImageUpload, SelectProjectMember, SelectModule, SelectCase, Cat2BugTextarea, ProjectAiModelSelect, DefectCustomFieldsSection: () => import('@/components/DefectCustomField/DefectCustomFieldsSection') },
   data() {
     return {
       // 是否缓存缺陷表单
@@ -204,7 +212,8 @@ export default {
       // 表单参数
       form: {
         defectType: 'BUG',
-        defectLevel: 'middle'
+        defectLevel: 'middle',
+        customFields: {}
       },
       // 表单校验
       rules: {
@@ -242,6 +251,20 @@ export default {
 
   },
   methods:{
+    applyDefectFormRulesForBuiltinLayout() {
+      const rules = {}
+      if (this.isBuiltinDefectFieldVisible('handleBy')) {
+        rules.handleBy = [
+          { required: true, message: this.$i18n.t('defect.handle-by-cannot-empty'), trigger: 'input' }
+        ]
+      }
+      if (this.isBuiltinDefectFieldVisible('defectName')) {
+        rules.defectName = [
+          { required: true, message: this.$i18n.t('defect.defect-name-cannot-empty'), trigger: 'input' }
+        ]
+      }
+      this.rules = rules
+    },
     /** 处理保存表单缓存开关状态改变的操作 */
     handleSaveFormCache() {
       this.saveIsSaveFormCacheValue();

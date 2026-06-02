@@ -67,6 +67,11 @@
       <el-form-item :label="$t('defect.show-deleted')">
         <el-switch v-model="form.config.params.delFlag" active-value="2" inactive-value="0" />
       </el-form-item>
+      <custom-field-filter-builder
+        v-if="enabledFields.length"
+        v-model="form.config.customFieldFilters"
+        :fields="enabledFields"
+      />
       <el-form-item>
         <el-button @click="close">{{$t('cancel')}}</el-button>
         <el-button type="primary" @click="onCreateTab">{{$t('create')}}</el-button>
@@ -79,19 +84,23 @@
 import {configDefect} from "@/api/system/defect";
 import SelectProjectMember from "@/components/Project/SelectProjectMember";
 import SelectModule from "@/components/Module/SelectModule";
+import CustomFieldFilterBuilder from "@/components/DefectCustomField/CustomFieldFilterBuilder";
 import {addTabs} from "@/api/system/DefectTabs";
+import {listEnabledFields} from "@/api/system/defect-field";
 
 export default {
   name: "DefectTabDialog",
-  components: {SelectProjectMember, SelectModule},
+  components: {SelectProjectMember, SelectModule, CustomFieldFilterBuilder},
   data() {
     return {
       dialogVisible: false,
       config: {},
+      enabledFields: [],
       form: {
         projectId: null,
         config: {
-          params: {}
+          params: {},
+          customFieldFilters: []
         }
       },
       rules: {
@@ -125,13 +134,26 @@ export default {
     },
     open() {
       this.reset();
+      this.loadEnabledFields();
       this.dialogVisible = true;
+    },
+    loadEnabledFields() {
+      if (!this.projectId) {
+        this.enabledFields = [];
+        return;
+      }
+      listEnabledFields(this.projectId).then(res => {
+        this.enabledFields = res.data || [];
+      }).catch(() => {
+        this.enabledFields = [];
+      });
     },
     reset() {
       this.form = {
         projectId: this.projectId,
         userId: this.memberId,
         config: {
+          customFieldFilters: [],
           params: {
             delFlag: '0'
           }

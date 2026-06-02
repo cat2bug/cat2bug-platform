@@ -128,7 +128,7 @@
             <case-card :case-model="defectCase" :state-visible="true" :step-index.sync="defect.caseStepId" :edit="false" />
           </el-collapse-item>
           <el-collapse-item :title="$i18n.t('log')" name="log">
-            <list-defect-log ref="defectLog" :pageSize="10" show-comment />
+            <list-defect-log ref="defectLog" :pageSize="5" show-comment />
           </el-collapse-item>
         </el-collapse>
       </div>
@@ -358,26 +358,24 @@ export default {
       //white-space: nowrap;
       //text-overflow: ellipsis;
     }
-    .defect-edit-title-content{
+    .defect-edit-title-content {
+      display: inline-flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 5px;
       font-size: 20px;
       color: #303133;
       font-weight: 500;
       line-height: 36px;
-    }
-    .defect-edit-title-content .defect-type-tag{
-      float: left;
-      margin-right:10px;
-      margin-top: 5px;
-      padding: 1px 5px;
-    }
-    .defect-edit-title-content .project-member-icons{
-      float: left;
-      margin-right:10px;
-    }
-    .defect-edit-title-content .el-tag--dark.el-tag--danger{
-      float: left;
-      margin-right:10px;
-      margin-top: 5px;
+      vertical-align: middle;
+
+      ::v-deep .defect-type-tag,
+      ::v-deep .project-member-icons,
+      ::v-deep .defect-state-tag,
+      ::v-deep .el-tag--dark.el-tag--danger {
+        float: none;
+        margin: 0;
+      }
     }
     .defect-edit-title-num, .defect-edit-title-name {
       font-size: 20px;

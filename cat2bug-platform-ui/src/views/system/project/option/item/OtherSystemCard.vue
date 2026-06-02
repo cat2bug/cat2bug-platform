@@ -1,23 +1,22 @@
 <template>
-  <el-card class="box-card">
-    <div slot="header" class="clearfix">
-      <i class="el-icon-s-flag"></i>
-      <div>
-        <span>{{$t('project.other-system')}}</span>
-        <span>{{$t('project.other-system-describe')}}</span>
+  <el-col v-if="cardVisible" :span="6">
+    <el-card class="box-card">
+      <div slot="header" class="clearfix">
+        <i class="el-icon-s-flag"></i>
+        <div>
+          <span>{{$t('project.other-system')}}</span>
+          <span>{{$t('project.other-system-describe')}}</span>
+        </div>
       </div>
-    </div>
-    <router-link to="ding" v-hasPermi="['ding:list']"><el-link>{{$t('ding')}}</el-link></router-link>
-    <router-link to="feishu" v-hasPermi="['feishu:list']"><el-link>{{$t('feishu')}}</el-link></router-link>
-    <router-link to="enterprise-wechat" v-hasPermi="['wechat:list']"><el-link>{{$t('enterprise-wechat')}}</el-link></router-link>
-  </el-card>
+      <router-link v-if="canManageDing" to="ding"><el-link>{{$t('ding')}}</el-link></router-link>
+      <router-link v-if="canManageFeishu" to="feishu"><el-link>{{$t('feishu')}}</el-link></router-link>
+      <router-link v-if="canManageWechat" to="enterprise-wechat"><el-link>{{$t('enterprise-wechat')}}</el-link></router-link>
+    </el-card>
+  </el-col>
 </template>
 
 <script>
-import {strFormat} from "@/utils";
-import {delProject} from "@/api/system/project";
-import i18n from "@/utils/i18n/i18n";
-import store from "@/store";
+import { hasAnyPermi } from '@/utils/project-option-card'
 
 export default {
   name: "OtherSystemCard",
@@ -30,29 +29,19 @@ export default {
       default: {}
     }
   },
-  methods: {
-    /** 删除按钮操作 */
-    handleDelete() {
-      let msg = this.$i18n.t('project.is-delete-project');
-      let _this=this;
-      this.$modal.prompt(strFormat(msg,'[ '+this.project.projectName+' ]'),
-        i18n.t('prompted').toString(),
-        {
-          confirmButtonText: i18n.t('delete').toString(),
-          cancelButtonText: i18n.t('cancel').toString(),
-          inputPlaceholder: i18n.t('please-enter-your-password').toString(),
-          confirmButtonClass: 'delete-button',
-          inputType: 'password',
-          type: "warning",
-        }).then(function(res) {
-        delProject(_this.project.projectId, res.value).then(()=>{
-          _this.$modal.msgSuccess(_this.$i18n.t('delete-success'));
-          store.dispatch('GetInfo').then(() => {
-            _this.$router.push({path:'/team/index'});
-          });
-        });
-      }).catch(() => {});
+  computed: {
+    canManageDing() {
+      return hasAnyPermi(['ding:list'])
     },
+    canManageFeishu() {
+      return hasAnyPermi(['feishu:list'])
+    },
+    canManageWechat() {
+      return hasAnyPermi(['wechat:list'])
+    },
+    cardVisible() {
+      return hasAnyPermi(['ding:list', 'feishu:list', 'wechat:list'])
+    }
   }
 }
 </script>

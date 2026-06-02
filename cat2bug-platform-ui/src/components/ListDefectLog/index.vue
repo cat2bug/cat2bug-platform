@@ -1,6 +1,16 @@
 <template>
-  <div>
-    <el-row v-for="(log,logIndex) in logList" :key="logIndex+'-'+log.defectLogId">
+  <div
+    class="list-defect-log"
+    v-loading="loading"
+    :element-loading-text="$t('loading')"
+  >
+    <div class="list-defect-log-panel">
+    <el-row
+      v-for="(log,logIndex) in logList"
+      :key="logIndex+'-'+log.defectLogId"
+      class="list-defect-log-item"
+      :class="{ 'list-defect-log-item--divider': logIndex < logList.length - 1 }"
+    >
       <el-col class="list-defect-log-row" :span="24">
         <component :is="logComponentType(log)" :log="log"></component>
         <div>
@@ -13,6 +23,19 @@
         <comment-view :comment="comment" @delete="getLog" />
       </el-col>
     </el-row>
+    <div v-if="pagerVisible" class="list-defect-log-pager">
+      <el-pagination
+        class="statistic-pagination"
+        small
+        layout="prev, next"
+        :hide-on-single-page="true"
+        :current-page="currentPage"
+        :page-size="pageSize"
+        :total="total"
+        @current-change="handlePageChange"
+      />
+    </div>
+    </div>
   </div>
 </template>
 
@@ -29,7 +52,6 @@ import OPEN from "@/components/ListDefectLog/open";
 import UPDATE from "@/components/ListDefectLog/update";
 import DELETE from "@/components/ListDefectLog/delete";
 import RESTORE from "@/components/ListDefectLog/restore";
-import Cat2BugAvatar from "@/components/Cat2BugAvatar";
 import CommentInput from "@/components/Comment/CommentInput";
 import CommentView from "@/components/Comment/CommentView";
 import {addComment} from "@/api/system/comment";
@@ -42,12 +64,15 @@ const DEFECT_LOG_TYPE_ORDER = [
 
 export default {
   name: "ListDefectLog",
-  components:{ CREATE,IMPORT,ASSIGN,REJECTED,REPAIR,PASS,CLOSED,OPEN,UPDATE,DELETE,RESTORE,Cat2BugAvatar, CommentInput, CommentView },
+  components:{ CREATE,IMPORT,ASSIGN,REJECTED,REPAIR,PASS,CLOSED,OPEN,UPDATE,DELETE,RESTORE, CommentInput, CommentView },
   data() {
     return {
       defectId: null,
       logList: [],
       commentList: [],
+      currentPage: 1,
+      total: 0,
+      loading: false,
     }
   },
   props: {
@@ -57,7 +82,7 @@ export default {
     },
     pageSize: {
       type: Number,
-      default: 10
+      default: 5
     },
     showComment: {
       type: Boolean,
@@ -65,6 +90,9 @@ export default {
     }
   },
   computed: {
+    pagerVisible() {
+      return this.pageSize > 1;
+    },
     commentPermi: function () {
       return this.showComment && checkPermi(['system:defect:list']);
     },
@@ -78,14 +106,6 @@ export default {
         }
       }
     },
-    member: function () {
-      return function (log) {
-        return {
-          nickName: log.createByName,
-          avatar: log.createByAvatar
-        }
-      }
-    }
   },
   methods: {
     logComponentType(log) {
@@ -106,6 +126,7 @@ export default {
     },
     open(defectId) {
       this.defectId = defectId;
+      this.currentPage = this.pageNum || 1;
       this.getLog();
     },
     refresh(logs) {
@@ -114,17 +135,38 @@ export default {
         return l;
       });
     },
-    getLog() {
-      listLog({
-        pageNum: this.pageNum,
-        pageSize: this.pageSize,
-        defectId: this.defectId
-      }).then(res=>{
-        this.logList = res.rows.map(l=>{
+    async getLog() {
+      if (!this.defectId) {
+        return;
+      }
+      this.loading = true;
+      try {
+        const fetchPage = async (pageNum) => {
+          const res = await listLog({
+            pageNum,
+            pageSize: this.pageSize,
+            defectId: this.defectId
+          });
+          return res;
+        };
+        let res = await fetchPage(this.currentPage);
+        this.total = res.total || 0;
+        const maxPage = Math.max(1, Math.ceil(this.total / this.pageSize));
+        if (this.currentPage > maxPage) {
+          this.currentPage = maxPage;
+          res = await fetchPage(this.currentPage);
+        }
+        this.logList = (res.rows || []).map(l => {
           l.visibleCommentInput = false;
           return l;
         });
-      })
+      } finally {
+        this.loading = false;
+      }
+    },
+    handlePageChange(page) {
+      this.currentPage = page;
+      this.getLog();
     },
     addLog(log) {
       this.logList.unshift(log);
@@ -153,12 +195,26 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.list-defect-log {
+  position: relative;
+  min-height: 48px;
+}
+.list-defect-log-panel {
+  border-radius: var(--defect-log-panel-radius, 5px);
+  padding: 0;
+  box-sizing: border-box;
+}
+.list-defect-log-item--divider {
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
 .list-defect-log-row {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 5px;
+  margin-bottom: 4px;
 
   /* 左侧日志正文占满剩余宽度，右侧「评论 + 时间」固定在同一行顶端（与单行日志一致） */
   > :first-child {
@@ -185,5 +241,33 @@ export default {
 }
 .list-comment-row {
   padding-left: 20px;
+}
+.list-defect-log-pager {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+  padding-top: 4px;
+
+  ::v-deep .el-pagination.statistic-pagination {
+    padding: 0;
+
+    button,
+    .btn-prev,
+    .btn-next {
+      padding: 0 6px;
+      min-width: 28px;
+      background: transparent !important;
+      background-color: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+    }
+
+    .btn-prev.disabled,
+    .btn-next.disabled,
+    button:disabled {
+      background: transparent !important;
+      background-color: transparent !important;
+    }
+  }
 }
 </style>

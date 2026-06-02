@@ -35,7 +35,8 @@ export const TableOptions=[{
   required: true,
   width: 170,
   width_ja_JP: 170,
-  width_ar: 170
+  width_ar: 170,
+  className: 'defect-handle-by-col',
 },{
   key: 'priority',
   prop: 'defectLevel',
@@ -74,6 +75,14 @@ export const TableOptions=[{
   width: 130,
   width_ja_JP: 130,
   width_ar: 130
+},{
+  key: 'case',
+  prop: 'caseId',
+  fixed: false,
+  visible: true,
+  showInColumnPicker: true,
+  width: 180,
+  sortable: false
 },{
   key: 'describe',
   prop: 'defectDescribe',

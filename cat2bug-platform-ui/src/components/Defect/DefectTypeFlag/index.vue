@@ -1,14 +1,14 @@
 <template>
   <div class="defect-type-tag bug" v-if="defect.defectTypeName=='BUG'">
-    <el-image :src="require('@/assets/images/bug.png')" />
+    <img class="defect-type-tag__icon" :src="bugIcon" alt="" />
     <span>{{$i18n.t(defect.defectTypeName)}}</span>
   </div>
   <div class="defect-type-tag task" v-else-if="defect.defectTypeName=='TASK'">
-    <el-image :src="require('@/assets/images/task.png')" />
+    <img class="defect-type-tag__icon" :src="taskIcon" alt="" />
     <span>{{$i18n.t(defect.defectTypeName)}}</span>
   </div>
   <div class="defect-type-tag demand" v-else-if="defect.defectTypeName=='DEMAND'">
-    <el-image :src="require('@/assets/images/demand.png')" />
+    <img class="defect-type-tag__icon" :src="demandIcon" alt="" />
     <span>{{$i18n.t(defect.defectTypeName)}}</span>
   </div>
   <div class="defect-type-tag" v-else>
@@ -17,6 +17,10 @@
 </template>
 
 <script>
+const bugIcon = require('@/assets/images/bug.png')
+const taskIcon = require('@/assets/images/task.png')
+const demandIcon = require('@/assets/images/demand.png')
+
 export default {
   name: "DefectTypeFlag",
   props:{
@@ -25,6 +29,9 @@ export default {
       default: ()=>{}
     }
   },
+  data() {
+    return { bugIcon, taskIcon, demandIcon }
+  }
 }
 </script>
 
@@ -43,9 +50,13 @@ export default {
     background-color: var(--defect-type-default-bg, #ffffff);
     border-color: var(--defect-type-default-border, #dcdfe6);
     color: var(--defect-type-default-color, #606266);
-    .el-image {
+    .defect-type-tag__icon {
       width: 15px;
       height: 15px;
+      display: block;
+      flex-shrink: 0;
+      object-fit: contain;
+      background: transparent;
     }
     span {
       line-height: 15px;

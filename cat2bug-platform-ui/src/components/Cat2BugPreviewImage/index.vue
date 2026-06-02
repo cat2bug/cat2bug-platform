@@ -123,13 +123,13 @@ export default {
 
 <style lang="scss" scoped>
 ::v-deep .el-image {
-  background-color: #F2F6FC;
+  background-color: var(--cat2bug-image-placeholder-bg, #f2f6fc);
   padding: 5px;
-  border-radius: 5px;
+  border-radius: var(--cat2bug-border-radius, 4px);
   box-sizing: border-box;
 }
 .el-image:hover, .button:hover {
-  background-color: #e8f4ff;
+  background-color: var(--table-row-hover-bg, #e8f4ff);
 }
 .row-image {
   display: inline-flex;

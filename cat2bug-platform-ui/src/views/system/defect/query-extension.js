@@ -5,7 +5,8 @@
 
 /** @type {Record<string, string[]>} */
 export const DEFECT_QUERY_EXTENSION_KEYS = {
-  participation: ['participationLogDate', 'participationLogMonth', 'participationUserId']
+  participation: ['participationLogDate', 'participationLogMonth', 'participationUserId'],
+  customFields: ['customFieldFilters']
 }
 
 function getAllExtensionKeys() {

@@ -49,12 +49,13 @@ export function closeEditWindow(defectId) {
 }
 
 // 修改缺陷
-export function updateDefect(data) {
+export function updateDefect(data, axiosConfig) {
   data.srcHost = `${window.location.protocol}//${window.location.host}`;
   return request({
     url: '/system/defect',
     method: 'put',
-    data: data
+    data: data,
+    ...(axiosConfig || {}),
   })
 }
 

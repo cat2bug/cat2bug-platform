@@ -1,15 +1,14 @@
 <template>
   <div class="defect-log-create">
-    <span class="user">[{{log.createByName}}]</span>
+    <defect-log-user size="medium" :name="log.createByName" :avatar="log.createByAvatar" />
     <span class="state red">{{ $i18n.t('repair') }}</span>
     <span class="state">{{ $i18n.t('defect.reviewed-by') }}</span>
-    <div v-if="log.receiveByList && log.receiveByList.length>1">
-      <span class="user">[{{head}}]</span>
-      <span class="state">{{$i18n.t('head-up')}},</span>
-      <span class="user">[{{assistant}}]</span>
-      <span class="state orange">{{$i18n.t('assist')}}</span>
-    </div>
-    <span v-else-if="log.receiveByList" class="user">[{{head}}]</span>
+    <row-list-member
+      v-if="log.receiveByList && log.receiveByList.length > 1"
+      :members="log.receiveByList"
+      size="small"
+    />
+    <defect-log-user v-else-if="log.receiveByList && log.receiveByList.length" :member="log.receiveByList[0]" />
     <span>,</span>
     <div>
       <span>{{$i18n.t('describe')}}:</span>
@@ -19,22 +18,18 @@
 </template>
 
 <script>
+import DefectLogUser from './DefectLogUser'
+import RowListMember from '@/components/RowListMember'
+
 export default {
   name: "REPAIR",
+  components: { DefectLogUser, RowListMember },
   props:{
     log: {
       type: Object,
       default: ()=>{}
     }
-  },
-  computed: {
-    head: function () {
-      return this.log.receiveByList[0].nickName;
-    },
-    assistant: function () {
-      return this.log.receiveByList.filter((l,i)=>i!=0).map(l=>l.nickName).join(',');
-    }
-  },
+  }
 }
 </script>
 

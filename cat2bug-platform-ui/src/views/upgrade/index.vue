@@ -181,11 +181,13 @@
                   <i class="el-icon-success setup-success-icon" />
                   <h3>{{ $t('upgrade.success.title') }}</h3>
                   <p>{{ $t('upgrade.success.message') }}</p>
-                  <p v-if="applicationReady" class="setup-tip setup-tip--success">{{ $t('upgrade.success.readyToLogin') }}</p>
-                  <p v-else-if="waitingForRestart" class="setup-tip setup-tip--warn">{{ $t('upgrade.success.restarting') }}</p>
-                  <p v-else class="setup-tip setup-tip--warn">{{ $t('upgrade.success.restartPrompt') }}</p>
-                  <p v-if="waitingForRestart && !applicationReady" class="setup-success-wait">{{ $t('upgrade.success.waitingReady') }}</p>
-                  <p v-if="waitingForRestart && !applicationReady" class="setup-success-countdown">{{ $t('upgrade.success.waitElapsed', { seconds: waitElapsed }) }}</p>
+                  <p v-if="upgradeRestartRequired" class="setup-tip setup-tip--warn">{{ restartHintText }}</p>
+                  <p class="setup-success-wait">
+                    {{ upgradeRestartRequired ? $t('upgrade.success.restarting') : $t('upgrade.success.waitingReady') }}
+                  </p>
+                  <p class="setup-success-countdown">
+                    {{ $t('upgrade.success.waitElapsed', { seconds: waitElapsed }) }}
+                  </p>
                 </div>
                 <div v-else class="setup-success setup-panel-fill">
                   <i class="el-icon-error" style="font-size:64px;color:#f56c6c;" />
@@ -238,9 +240,6 @@
                 <el-button v-if="currentStepKey === 'upgrade.step.result' && isFailureResult" type="danger" size="small" :loading="executing" @click="retryNow">
                   {{ $t('upgrade.execute.retry') }}
                 </el-button>
-                <el-button v-if="currentStepKey === 'upgrade.step.result' && isSuccessResult" type="primary" size="small" :disabled="waitingForRestart && !applicationReady" @click="goToLogin">
-                  {{ $t('upgrade.success.goLogin') }}
-                </el-button>
               </div>
             </footer>
           </div>
@@ -258,6 +257,11 @@ import { getSetupStatus } from '@/api/setup'
 import { resetUpgradeStatusCache } from '@/utils/upgrade-status'
 import { resetSetupStatusCache } from '@/utils/setup-status'
 import {
+  clearUpgradeAwaitingReady,
+  isUpgradeAwaitingReady,
+  markUpgradeAwaitingReady
+} from '@/utils/upgrade-await'
+import {
   buildAdminCredentialRules,
   LOGIN_PASSWORD_MAX_LENGTH,
   LOGIN_USERNAME_MAX_LENGTH
@@ -265,8 +269,7 @@ import {
 import store from '@/store'
 
 const I18N_LOCALE_KEY = 'i18n-locale'
-const UPGRADE_AWAITING_READY_KEY = 'upgrade-awaiting-ready'
-const UPGRADE_SUCCESS_NOTIFIED_KEY = 'upgrade-success-notified'
+const REQUIRED_READY_CONFIRM_COUNT = 2
 
 const STEP_KEYS = [
   'upgrade.step.overview',
@@ -295,8 +298,8 @@ export default {
       executing: false,
       rollingBack: false,
       waitingForRestart: false,
-      applicationReady: false,
       waitElapsed: 0,
+      readyConfirmCount: 0,
       waitElapsedTimer: null,
       waitPollTimer: null,
       status: {
@@ -420,6 +423,12 @@ export default {
       const key = this.status.state || 'pending'
       return this.$t(`upgrade.state.${key}`)
     },
+    upgradeRestartRequired() {
+      return this.status.restartRequired === true || this.status.state === 'restart_required'
+    },
+    restartHintText() {
+      return this.$t('upgrade.success.restartPrompt')
+    },
     isSuccessResult() {
       if (this.status.restartRequired || this.status.state === 'restart_required') {
         return true
@@ -442,6 +451,18 @@ export default {
         return true
       }
       return !!(this.form.backupFileName || '').trim()
+    }
+  },
+  watch: {
+    currentStepKey(key) {
+      if (key === 'upgrade.step.execute') {
+        this.ensureDefaultBackupFileName()
+      }
+    },
+    'form.backupEnabled'(enabled) {
+      if (enabled) {
+        this.ensureDefaultBackupFileName()
+      }
     }
   },
   created() {
@@ -478,30 +499,18 @@ export default {
         if (this.isSuccessResult || this.isFailureResult) {
           this.activeStep = this.resultStepIndex
         }
-        if (this.isSuccessResult || sessionStorage.getItem(UPGRADE_AWAITING_READY_KEY) === '1') {
+        if (this.isSuccessResult || isUpgradeAwaitingReady()) {
           this.waitingForRestart = true
           this.startWaitingForReady()
         }
       }).catch(() => {
-        if (sessionStorage.getItem(UPGRADE_AWAITING_READY_KEY) === '1') {
+        if (isUpgradeAwaitingReady()) {
           this.activeStep = this.resultStepIndex
           this.status.restartRequired = true
           this.status.state = 'restart_required'
           this.waitingForRestart = true
           this.startWaitingForReady()
         }
-      })
-    },
-    notifyUpgradeCompleteOnce() {
-      if (sessionStorage.getItem(UPGRADE_SUCCESS_NOTIFIED_KEY) === '1') {
-        return
-      }
-      sessionStorage.setItem(UPGRADE_SUCCESS_NOTIFIED_KEY, '1')
-      this.$notify({
-        title: this.$t('upgrade.success.title').toString(),
-        message: this.$t('upgrade.success.readyNotify').toString(),
-        type: 'success',
-        duration: 6000
       })
     },
     refreshStatus() {
@@ -547,9 +556,27 @@ export default {
       this.form.redisPassword = preflight.redisPassword || this.form.redisPassword
       this.form.redisDatabase = preflight.redisDatabase !== undefined ? preflight.redisDatabase : this.form.redisDatabase
 
-      if (preflight.defaultBackupFileName) {
-        this.form.backupFileName = preflight.defaultBackupFileName
+      this.ensureDefaultBackupFileName()
+    },
+    buildDefaultBackupFileName() {
+      const rawDb = this.form.databaseType === 'mysql'
+        ? (this.form.mysqlDatabase || this.preflight.databaseName || 'cat2bug_platform')
+        : (this.preflight.databaseName || 'cat2bug_platform')
+      const token = String(rawDb).trim().replace(/[^A-Za-z0-9_-]/g, '_') || 'database'
+      const now = new Date()
+      const pad = n => String(n).padStart(2, '0')
+      const ts = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`
+      return `${token}_${ts}.sql`
+    },
+    ensureDefaultBackupFileName() {
+      if (!this.form.backupEnabled) {
+        return
       }
+      if ((this.form.backupFileName || '').trim()) {
+        return
+      }
+      const fromPreflight = (this.preflight.defaultBackupFileName || '').trim()
+      this.form.backupFileName = fromPreflight || this.buildDefaultBackupFileName()
     },
     isMissingRow(row) {
       return row && row.missing === true
@@ -665,9 +692,8 @@ export default {
           lastError: ''
         }
         this.activeStep = this.resultStepIndex
-        sessionStorage.setItem(UPGRADE_AWAITING_READY_KEY, '1')
+        markUpgradeAwaitingReady()
         this.waitingForRestart = true
-        this.applicationReady = false
         this.startWaitingForReady()
         return Promise.resolve()
       }
@@ -675,9 +701,8 @@ export default {
       return this.refreshStatus().then(() => {
         this.activeStep = this.resultStepIndex
         if (this.isSuccessResult) {
-          sessionStorage.setItem(UPGRADE_AWAITING_READY_KEY, '1')
+          markUpgradeAwaitingReady()
           this.waitingForRestart = true
-          this.applicationReady = false
           this.startWaitingForReady()
         }
       })
@@ -751,12 +776,8 @@ export default {
       this.activeStep = this.wizardExecuteStepIndex
     },
     goToLogin() {
-      if (this.waitingForRestart && !this.applicationReady) {
-        return
-      }
       this.clearWaitTimers()
-      sessionStorage.removeItem(UPGRADE_AWAITING_READY_KEY)
-      sessionStorage.removeItem(UPGRADE_SUCCESS_NOTIFIED_KEY)
+      clearUpgradeAwaitingReady()
       resetUpgradeStatusCache()
       resetSetupStatusCache()
       store.dispatch('FedLogOut').finally(() => {
@@ -766,6 +787,7 @@ export default {
     startWaitingForReady() {
       this.clearWaitTimers()
       this.waitElapsed = 0
+      this.readyConfirmCount = 0
       this.waitElapsedTimer = setInterval(() => {
         this.waitElapsed += 1
       }, 1000)
@@ -775,21 +797,50 @@ export default {
       }, 2000)
     },
     pollApplicationReady() {
+      resetUpgradeStatusCache()
       resetSetupStatusCache()
-      getSetupStatus()
+      getUpgradeStatus()
         .then(res => {
-          const payload = (res && res.data) ? res.data : (res || {})
-          if (payload.installed === true && payload.restartRequired !== true) {
-            if (!this.applicationReady) {
-              this.applicationReady = true
-              this.waitingForRestart = false
-              this.clearWaitTimers()
-              sessionStorage.removeItem(UPGRADE_AWAITING_READY_KEY)
-              this.notifyUpgradeCompleteOnce()
-            }
+          const upgrade = (res && res.data) ? res.data : (res || {})
+          if (!this.isUpgradeRuntimeReady(upgrade)) {
+            this.readyConfirmCount = 0
+            return null
+          }
+          return getSetupStatus().then(setupRes => ({ upgrade, setupRes }))
+        })
+        .then(result => {
+          if (!result) {
+            return
+          }
+          const setup = (result.setupRes && result.setupRes.data) ? result.setupRes.data : (result.setupRes || {})
+          if (!this.isApplicationReady(result.upgrade, setup)) {
+            this.readyConfirmCount = 0
+            return
+          }
+          this.readyConfirmCount += 1
+          if (this.readyConfirmCount >= REQUIRED_READY_CONFIRM_COUNT) {
+            this.goToLogin()
           }
         })
-        .catch(() => {})
+        .catch(() => {
+          this.readyConfirmCount = 0
+        })
+    },
+    isApplicationReady(upgrade, setup) {
+      if (!this.isUpgradeRuntimeReady(upgrade)) {
+        return false
+      }
+      return setup.installed === true && setup.restartRequired !== true
+    },
+    isUpgradeRuntimeReady(upgrade) {
+      const state = (upgrade && upgrade.state) || ''
+      if (state === 'restart_required' || upgrade.restartRequired === true) {
+        return false
+      }
+      if (state === 'running' || state === 'pending' || state === 'failed') {
+        return false
+      }
+      return upgrade.upgradeRequired !== true
     },
     clearWaitTimers() {
       if (this.waitElapsedTimer) {

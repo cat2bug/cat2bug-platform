@@ -1,13 +1,16 @@
 <template>
   <div class="defect-log-create">
-    <span class="user">[{{ log.createByName }}]</span>
+    <defect-log-user size="medium" :name="log.createByName" :avatar="log.createByAvatar" />
     <span class="state red">{{ $i18n.t('delete') }}</span>
   </div>
 </template>
 
 <script>
+import DefectLogUser from './DefectLogUser'
+
 export default {
   name: 'DELETE',
+  components: { DefectLogUser },
   props: {
     log: {
       type: Object,

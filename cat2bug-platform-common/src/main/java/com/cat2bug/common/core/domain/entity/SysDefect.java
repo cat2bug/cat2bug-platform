@@ -12,6 +12,7 @@ import org.apache.poi.ss.usermodel.IndexedColors;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 缺陷对象 sys_defect
@@ -201,6 +202,9 @@ public class SysDefect extends BaseEntity
 
     /** 删除标志（0代表存在 2代表删除） */
     private String delFlag;
+
+    /** 自定义字段值（键为 field_key） */
+    private Map<String, Object> customFields;
 
     @Override
     public String toString() {

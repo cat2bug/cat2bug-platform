@@ -1,7 +1,7 @@
 <template>
   <div class="defect-log-update">
     <div class="defect-log-update-header">
-      <span class="user">[{{log.createByName}}]</span>
+      <defect-log-user size="medium" :name="log.createByName" :avatar="log.createByAvatar" />
       <span class="state">{{$i18n.t('defect.update-summary',{count:changes.length})}}</span>
     </div>
     <ul v-if="changes.length>0" class="defect-log-update-changes">
@@ -31,28 +31,29 @@
         </template>
         <template v-else-if="change.type==='users'">
           <span class="handle-by-tags-wrap handle-by-side-old" :title="change.oldDisplay">
-            <template v-if="splitHandleByNames(change, 'old').length">
-              <el-tag
-                v-for="(name, idx) in splitHandleByNames(change, 'old')"
-                :key="'hb-o-' + index + '-' + idx"
-                class="defect-log-handle-tag"
-                size="mini"
-                :type="idx === 0 ? '' : 'success'"
-              >{{ name }}</el-tag>
-            </template>
+            <row-list-member
+              v-if="handleByMembers(change, 'old').length > 1"
+              :members="handleByMembers(change, 'old')"
+              size="small"
+            />
+            <defect-log-user
+              v-else-if="handleByMembers(change, 'old').length === 1"
+              :member="handleByMembers(change, 'old')[0]"
+              muted
+            />
             <span v-else class="plain-old">{{ displayOrEmpty(change.oldDisplay) }}</span>
           </span>
           <i class="el-icon-right arrow"></i>
           <span class="handle-by-tags-wrap" :title="change.newDisplay">
-            <template v-if="splitHandleByNames(change, 'new').length">
-              <el-tag
-                v-for="(name, idx) in splitHandleByNames(change, 'new')"
-                :key="'hb-n-' + index + '-' + idx"
-                class="defect-log-handle-tag"
-                size="mini"
-                :type="idx === 0 ? '' : 'success'"
-              >{{ name }}</el-tag>
-            </template>
+            <row-list-member
+              v-if="handleByMembers(change, 'new').length > 1"
+              :members="handleByMembers(change, 'new')"
+              size="small"
+            />
+            <defect-log-user
+              v-else-if="handleByMembers(change, 'new').length === 1"
+              :member="handleByMembers(change, 'new')[0]"
+            />
             <span v-else class="plain-new">{{ displayOrEmpty(change.newDisplay) }}</span>
           </span>
         </template>
@@ -121,12 +122,14 @@
 
 <script>
 import DefectTypeFlag from '@/components/Defect/DefectTypeFlag';
+import DefectLogUser from './DefectLogUser';
+import RowListMember from '@/components/RowListMember';
 
 const TRUNCATE_LIMIT = 60;
 
 export default {
   name: "UPDATE",
-  components: { DefectTypeFlag },
+  components: { DefectTypeFlag, DefectLogUser, RowListMember },
   props:{
     log: {
       type: Object,
@@ -181,13 +184,15 @@ export default {
       }
       return value;
     },
-    /** 与处理人选择框一致：首位默认标签（负责人），其余 success（协助） */
     splitHandleByNames(change, side) {
       const disp = side === 'old' ? change.oldDisplay : change.newDisplay;
       if (disp == null || disp === '') {
         return [];
       }
       return String(disp).split(',').map(s => s.trim()).filter(Boolean);
+    },
+    handleByMembers(change, side) {
+      return this.splitHandleByNames(change, side).map(name => ({ nickName: name, userName: name }));
     },
     /** 兼容旧日志里的「3 (+1/-2)」展示格式 */
     parseLegacyMediaDisplay(newDisplay) {
@@ -279,9 +284,6 @@ export default {
       padding-left: 2px;
       padding-right: 2px;
     }
-    .user {
-      font-weight: 500;
-    }
     .state {
       color: #409EFF;
     }
@@ -360,12 +362,8 @@ export default {
       max-width: 300px;
       vertical-align: middle;
     }
-    .handle-by-side-old ::v-deep .el-tag {
-      text-decoration: line-through;
+    .handle-by-side-old {
       opacity: 0.75;
-    }
-    .defect-log-handle-tag {
-      flex-shrink: 0;
     }
     .media-change-row {
       display: inline-flex;

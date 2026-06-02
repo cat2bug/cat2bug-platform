@@ -5,7 +5,9 @@
   "author": "yuzhantao",
   "license": "MIT",
   "scripts": {
-    "dev": "vue-cli-service serve",
+    "dev": "node scripts/dev-serve.js",
+    "dev:raw": "vue-cli-service serve",
+    "dev:lan": "DEV_HOST=0.0.0.0 CAT2BUG_DEV_HMR=1 node scripts/dev-serve.js",
     "build:prod": "vue-cli-service build --report",
     "build:cloud": "vue-cli-service build --mode cloud --report",
     "build:embedded": "vue-cli-service build --mode embedded --report",

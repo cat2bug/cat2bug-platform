@@ -31,8 +31,12 @@
             class="defect-column-picker"
             @change="onExcelColumnPickerChange"
           >
-            <el-checkbox v-for="c in excelTableColumnPickerOptions" :key="c.key" :label="c.key">{{
-              $t(c.key)
+            <el-checkbox
+              v-for="c in excelTableColumnPickerOptions"
+              :key="c.key"
+              :label="c.key"
+            >{{
+              c.isCustomField && c.fieldLabel ? c.fieldLabel : (c.label || $t(c.key))
             }}</el-checkbox>
           </el-checkbox-group>
           <el-button slot="reference" style="padding: 9px" plain size="small" icon="el-icon-s-fold" />
@@ -103,7 +107,6 @@
           :allow-keys="columnAllowKeys(c)"
           :width="c.width + 'px'"
           :options="columnOptions(c)"
-          :auto-fill-width="c.key === 'defectName' || c.key === 'defectDescribe'"
           :cell-html="excelColumnCellHtml(c)"
           :to-text="excelColumnToText(c)"
           :sort="excelColumnNoSortFn"
@@ -172,7 +175,7 @@
       ref="excelInlineImgFileInput"
       type="file"
       class="defect-excel-inline-file-input"
-      accept="image/png,image/jpeg,image/jpg"
+      :accept="excelInlineImageAccept"
       multiple
       @change="onExcelInlineImgFileChange"
     />
@@ -196,7 +199,30 @@ import { strFormat } from "@/utils";
 import { checkPermi } from "@/utils/permission";
 import errorCode from "@/utils/errorCode";
 import { TableOptions } from "@/views/system/defect/list/table-options";
-import { DEFAULT_IMAGE } from '@/utils/upload-asset'
+import {
+  buildImageUploadAccept,
+  buildNativeImageOnerrorScript,
+  isAllowedImageUploadFile,
+  WEB_IMAGE_UPLOAD_EXTENSIONS
+} from '@/utils/upload-asset'
+import {
+  clearCustomFieldColumnsCache,
+  loadDefectColumnLayout,
+  pruneDefectTableColumnCacheFromColumns,
+  buildDefectTableColumnDefaults,
+  syncNewDefectTableColumnsIntoFieldListCache
+} from "@/utils/defect-custom-field-columns";
+import {
+  defectDisplayFieldCheckedKeys,
+  defectDisplayFieldPickerOptions,
+  excelDataColumnKeysFromMerged,
+  reorderColsByKeyOrder,
+  resolveDefectMergedColumns
+} from "@/utils/defect-display-field";
+import {
+  filterExcelColsByBuiltin,
+  orderExcelColsByFieldManage
+} from "@/utils/defect-field-layout";
 
 /**
  * 与 list/table.vue 中 cat2-bug-table 的 cache-key="defect-table" 及 Cat2BugTable columnsStorageKey()
@@ -207,6 +233,18 @@ const DEFECT_TABLE_FIELD_LIST_STORAGE_KEY =
   DEFECT_LIST_TABLE_CACHE_KEY + "defect-table-field-list";
 /** 缺陷 Excel 视图列宽（field.name -> \"NNNpx\"），与表格列缓存分开存储 */
 const DEFECT_EXCEL_COLUMN_WIDTH_STORAGE_KEY = DEFECT_LIST_TABLE_CACHE_KEY + "-excel-col-widths";
+/**
+ * vue-excel-editor columnFillWidth 在总列宽大于可视区时会从 auto-fill 列「减宽」，
+ * 缺陷名称/描述易被压到极窄；禁止这两列 auto-fill，并设持久化与运行时下限。
+ */
+const EXCEL_COL_WIDTH_MIN_PX = Object.freeze({
+  defectName: 160,
+  defectDescribe: 120,
+});
+const EXCEL_COL_WIDTH_DEFAULT_PX = Object.freeze({
+  defectName: 260,
+  defectDescribe: 200,
+});
 /** 表头拖列：超过该位移(px)才视为拖曳，避免误触 */
 const EXCEL_HEADER_COL_DRAG_THRESHOLD_PX = 8;
 /** 首行表头固定高度(px)，与样式中 thead 首行一致；calCellTop2 与库筛选行对齐也用此值 */
@@ -218,9 +256,12 @@ const PLAN_TIME_CELL_OPTIONS_MARKER = Object.freeze({ __excelPlanTimeMarker: "" 
 /** 与 AddDefect / EditDefectDialog 中 ImageUpload、FileUpload 的 limit 一致 */
 const EXCEL_INLINE_IMG_LIMIT = 9;
 const EXCEL_INLINE_ANNEX_LIMIT = 9;
-const EXCEL_INLINE_IMG_FILE_TYPES = Object.freeze(["png", "jpg", "jpeg"]);
+const EXCEL_INLINE_IMG_FILE_TYPES = WEB_IMAGE_UPLOAD_EXTENSIONS;
 const EXCEL_INLINE_IMG_MAX_MB = 5;
 const EXCEL_INLINE_ANNEX_MAX_MB = 30;
+
+/** Excel 保存失败单元格文字色（Element danger） */
+const EXCEL_PERSIST_ERROR_TEXT_COLOR = "#F56C6C";
 
 /**
  * 与 node_modules/vue-excel-editor/src/VueExcelEditor.vue 中
@@ -262,6 +303,215 @@ const COLS = [
   { key: "updateTime", titleKey: "update-time", width: 170, editable: false },
 ];
 
+/** 将启用自定义字段合并进 COLS（列 key 为 custom:{fieldKey}，表头用 field_label） */
+export function mergeCustomFieldsIntoCols(baseCols, enabledFields) {
+  if (!enabledFields || !enabledFields.length) {
+    return baseCols;
+  }
+  const customCols = enabledFields.map((def) => {
+    const fieldKey = def.fieldKey;
+    const colKey = `custom:${fieldKey}`;
+    const mapTypes = new Set(["enum", "boolean"]);
+    const attachTypes = new Set(["image", "file"]);
+    const dateTypes = new Set(["datetime"]);
+    const width =
+      def.fieldType === "image" ? 220 : def.fieldType === "file" ? 400 : 140;
+    let excelFieldType = "string";
+    if (mapTypes.has(def.fieldType)) excelFieldType = "map";
+    else if (attachTypes.has(def.fieldType)) excelFieldType = "attach";
+    else if (dateTypes.has(def.fieldType)) excelFieldType = "datetime";
+    return {
+      key: colKey,
+      titleKey: colKey,
+      fieldLabel: def.fieldLabel,
+      fieldKey,
+      fieldType: def.fieldType,
+      typeConfig: def.typeConfig || {},
+      width,
+      /* 图片/附件与内置 excelImgUrlsText 一致：可点上传区，仅禁止单元格文本回写 */
+      editable: true,
+      isCustomField: true,
+      required: def.required === 1,
+      excelFieldType,
+    };
+  });
+  return baseCols.concat(customCols);
+}
+
+/** 自定义列 key → fieldKey */
+function customColFieldKey(colKey) {
+  return String(colKey || "").startsWith("custom:") ? String(colKey).slice(7) : null;
+}
+
+/** 格式化 custom_fields 值为 Excel 单元格文本（枚举导出 label） */
+function formatCustomFieldExcelText(value, col) {
+  if (value == null || value === "") return "";
+  if (col.fieldType === "enum") {
+    const opts = (col.typeConfig && col.typeConfig.options) || [];
+    const sk = String(value);
+    const hit = opts.find((o) => String(o.key) === sk);
+    if (hit && hit.label != null) return String(hit.label);
+    return sk;
+  }
+  if (col.fieldType === "boolean") {
+    return value === true || value === "true" ? "true" : value === false || value === "false" ? "false" : String(value);
+  }
+  if (Array.isArray(value)) {
+    if (col.fieldType === "image" || col.fieldType === "file") {
+      return "";
+    }
+    return value.map((v) => formatCustomFieldExcelText(v, { ...col, fieldType: col.fieldType === "array" ? "string" : col.fieldType })).join(", ");
+  }
+  if (typeof value === "object") {
+    try {
+      return JSON.stringify(value);
+    } catch (e) {
+      return String(value);
+    }
+  }
+  return String(value);
+}
+
+/** 导入：label/key 解析为存库值（枚举优先 key，其次 label） */
+function parseCustomFieldExcelImportText(text, col) {
+  const raw = text == null ? "" : String(text).trim();
+  if (raw === "") return "";
+  if (col.fieldType === "enum") {
+    const opts = (col.typeConfig && col.typeConfig.options) || [];
+    for (let i = 0; i < opts.length; i++) {
+      const o = opts[i];
+      if (String(o.key) === raw) return o.key;
+      if (o.label != null && String(o.label) === raw) return o.key;
+    }
+    return raw;
+  }
+  if (col.fieldType === "boolean") {
+    if (raw === "true" || raw === "1") return true;
+    if (raw === "false" || raw === "0") return false;
+    return raw;
+  }
+  if (col.fieldType === "number") {
+    const n = Number(raw);
+    return Number.isFinite(n) ? n : raw;
+  }
+  if (col.fieldType === "object") {
+    if (raw === "") return "";
+    try {
+      return JSON.parse(raw);
+    } catch (e) {
+      return raw;
+    }
+  }
+  if (col.fieldType === "datetime") {
+    return raw;
+  }
+  if (col.fieldType === "image" || col.fieldType === "file" || col.fieldType === "array") {
+    return raw.split(/[,，]/).map((s) => s.trim()).filter(Boolean);
+  }
+  return raw;
+}
+
+/**
+ * 单元格写入值：经 toValue 后可能已是 number/boolean/object，不能对 object 直接 String()。
+ */
+function normalizeCustomFieldCellValue(value, col) {
+  if (value == null || value === "") return "";
+  if (col.fieldType === "object" && typeof value === "object" && !Array.isArray(value)) {
+    return value;
+  }
+  if (col.fieldType === "number" && typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+  if (col.fieldType === "boolean" && typeof value === "boolean") {
+    return value;
+  }
+  return parseCustomFieldExcelImportText(value, col);
+}
+
+function customFieldDisplayFromCellValue(col, value) {
+  const parsed = normalizeCustomFieldCellValue(value, col);
+  if (parsed === "" || parsed == null) return "";
+  return String(formatCustomFieldExcelText(parsed, col));
+}
+
+/** 与后端 DefectCustomFieldsValidator 对齐的存库值校验（用于 Excel 保存前定位真正无效列） */
+function isCustomFieldStorageValueValid(val, col) {
+  if (!col || col.fieldType === "image" || col.fieldType === "file") return true;
+  if (val === "" || val == null) return !col.required;
+  switch (col.fieldType) {
+    case "string":
+      return typeof val === "string";
+    case "number":
+      return typeof val === "number" && Number.isFinite(val);
+    case "boolean":
+      return typeof val === "boolean";
+    case "datetime":
+      return typeof val === "string" && String(val).trim() !== "";
+    case "enum": {
+      const opts = (col.typeConfig && col.typeConfig.options) || [];
+      const sk = String(val);
+      return opts.some((o) => o && String(o.key) === sk);
+    }
+    case "object":
+      return val !== null && typeof val === "object" && !Array.isArray(val);
+    case "array":
+      return Array.isArray(val);
+    default:
+      return true;
+  }
+}
+
+/** @returns {{ colKey: string, label: string } | null} */
+function findInvalidCustomFieldInPayload(row, customFieldsPayload, cols) {
+  if (!row || !Array.isArray(cols)) return null;
+  for (let i = 0; i < cols.length; i++) {
+    const col = cols[i];
+    if (!col || !col.isCustomField || col.fieldType === "image" || col.fieldType === "file") continue;
+    const fk = col.fieldKey || customColFieldKey(col.key);
+    if (!fk) continue;
+    let val;
+    if (customFieldsPayload && Object.prototype.hasOwnProperty.call(customFieldsPayload, fk)) {
+      val = customFieldsPayload[fk];
+    } else if (row.customFields && Object.prototype.hasOwnProperty.call(row.customFields, fk)) {
+      val = row.customFields[fk];
+    } else {
+      const cell = row[col.key];
+      if (cell == null || cell === "") {
+        if (col.required) {
+          return { colKey: col.key, label: col.fieldLabel || fk };
+        }
+        continue;
+      }
+      val = normalizeCustomFieldCellValue(cell, col);
+    }
+    if ((val === "" || val == null) && col.required) {
+      return { colKey: col.key, label: col.fieldLabel || fk };
+    }
+    if (val === "" || val == null) continue;
+    if (!isCustomFieldStorageValueValid(val, col)) {
+      return { colKey: col.key, label: col.fieldLabel || fk };
+    }
+  }
+  return null;
+}
+
+/** 从单元格 td#id-{row$id}-{fieldName} 解析行与列（fieldName 可含 custom: 前缀） */
+function resolveExcelCellFromTdId(tdId, sheetRows, cols) {
+  if (!tdId || !String(tdId).startsWith("id-") || !Array.isArray(cols)) return null;
+  const sorted = cols.slice().sort((a, b) => String(b.key).length - String(a.key).length);
+  for (let i = 0; i < sorted.length; i++) {
+    const c = sorted[i];
+    if (!c || !c.key) continue;
+    const suf = `-${c.key}`;
+    if (!String(tdId).endsWith(suf)) continue;
+    const rowId = String(tdId).slice(3, String(tdId).length - suf.length);
+    const row = (sheetRows || []).find((r) => String(r.$id) === rowId);
+    if (!row) return null;
+    return { row, col: c, fieldName: c.key };
+  }
+  return null;
+}
+
 const KEYS_IN_EXCEL_FOR_PICKER = new Set(
   COLS.filter((c) => c.key !== "projectNum").map((c) => String(c.titleKey))
 );
@@ -274,13 +524,13 @@ const DEFECT_LEVEL_DICT_VALUE_ORDER = Object.freeze(["urgent", "height", "middle
 const DEFAULT_DEFECT_TYPE = "BUG";
 const DEFAULT_DEFECT_LEVEL = "middle";
 
-/** 与 Excel「显示字段」勾选列表一致（含编号 id ↔ projectNum） */
+/** 与 Excel「显示字段」勾选列表一致（含编号 id ↔ projectNum、custom: 自定义列） */
 function isExcelPickerTableOption(c) {
-  return (
-    c &&
-    c.showInColumnPicker !== false &&
-    KEYS_IN_EXCEL_FOR_PICKER.has(String(c.key))
-  );
+  if (!c || c.showInColumnPicker === false) return false;
+  if (c.isCustomField || String(c.key || "").startsWith("custom:")) {
+    return true;
+  }
+  return KEYS_IN_EXCEL_FOR_PICKER.has(String(c.key));
 }
 
 /** 表头拖列只重排数据列，不把「编号」并入可拖动的中间块（避免写缓存时把 id 挤到末尾） */
@@ -367,6 +617,8 @@ export default {
       sheetRows: [],
       queryParams: this.query,
       syncing: false,
+      /** 单元格 PUT 失败时标记 td#id，用于红色文字与库内 .error 角标 */
+      excelPersistErrorCellIds: {},
       /** 已删行编辑提示节流（毫秒时间戳） */
       _deletedDefectEditWarnAt: 0,
       /** 与 vue-excel-column 的 options 引用保持一致；字典/配置异步到达后再写入，避免 map 列一直用空表 */
@@ -422,10 +674,12 @@ export default {
       excelLateClampTimers: [],
       /** 库内 fields 深监听会频繁 @setting，合并后再写缓存与 excelColumnPickerCheckedKeys */
       excelSettingSyncTimer: null,
-      /** 数据列顺序（不含 projectNum）；null 表示与 COLS 默认一致 */
+      /** 数据列顺序（不含 projectNum）；null 表示与字段管理默认顺序一致 */
       excelDataColumnKeyOrder: null,
       /** 与 $cache 列顺序联动：递增后强制重算 excelTableColumnPickerOptions（local 非响应式） */
       excelColumnPickerOrderRev: 0,
+      /** 拖列后的列顺序快照，供「显示字段」列表即时排序（不依赖 $cache 响应式） */
+      excelColumnPickerLiveColumns: null,
       /** 表头拖列调整顺序：移动中用于光标与样式 */
       excelColDragActive: false,
       _excelColDrag: null,
@@ -446,11 +700,23 @@ export default {
       _excelScrollBound: null,
       _excelTableContentEl: null,
       _excelScrollLoadDebounceTimer: null,
+      /** 与 table.vue 一致的列定义（字段管理顺序 + 自定义列） */
+      tableColumnDefaults: TableOptions.map((c) => ({ ...c })),
+      /** 项目启用的自定义字段定义（动态 COLS） */
+      enabledCustomFields: [],
+      enabledBuiltinFieldKeys: null,
+      /** 字段管理已启用字段排序（与表格视图 orderedEnabledFieldKeys 一致） */
+      orderedEnabledFieldKeys: [],
+      /** 枚举列 options：custom:{fieldKey} -> { key: label } */
+      customFieldEnumSelectMaps: {},
       /** 首屏/追加后若仍无纵向滚动条，自动再拉页的上限，防止死循环 */
       excelViewportAutoFetchCount: 0,
     };
   },
   computed: {
+    excelInlineImageAccept() {
+      return buildImageUploadAccept(EXCEL_INLINE_IMG_FILE_TYPES);
+    },
     /** vue-excel-editor map：key 为接口值，value 为展示文案 */
     defectTypeMap() {
       const m = {};
@@ -498,51 +764,48 @@ export default {
       return m;
     },
     projectNumColumnDef() {
-      return COLS.find((c) => c.key === "projectNum") || COLS[0];
+      return this.effectiveCols.find((c) => c.key === "projectNum") || COLS[0];
     },
-    colsWithoutProjectNum() {
-      const base = COLS.filter((c) => c.key !== "projectNum");
-      const order = this.excelDataColumnKeyOrder;
-      if (!order || !Array.isArray(order) || !order.length) return base;
-      const byKey = new Map(base.map((c) => [c.key, c]));
-      const out = [];
-      const seen = new Set();
-      order.forEach((k) => {
-        const c = byKey.get(k);
-        if (c) {
-          out.push(c);
-          seen.add(k);
-        }
-      });
-      base.forEach((c) => {
-        if (!seen.has(c.key)) out.push(c);
-      });
-      return out;
+    effectiveCols() {
+      const base = filterExcelColsByBuiltin(COLS, this.enabledBuiltinFieldKeys);
+      let cols = mergeCustomFieldsIntoCols(base, this.enabledCustomFields);
+      return orderExcelColsByFieldManage(cols, this.orderedEnabledFieldKeys);
     },
-    /**
-     * 与 table.vue / Cat2BugTable 共用 DEFECT_TABLE_FIELD_LIST_STORAGE_KEY 中的列顺序；
-     * 含编号 id（对应 Excel 的 projectNum 列）。
-     */
+    resolvedDefectMergedColumns() {
+      return resolveDefectMergedColumns(
+        this.$cache.local,
+        this.tableColumnDefaults,
+        DEFECT_TABLE_FIELD_LIST_STORAGE_KEY
+      );
+    },
+    /** 与表格「显示字段」同一套选项与顺序 */
     excelTableColumnPickerOptions() {
       void this.excelColumnPickerOrderRev;
-      const defaults = TableOptions.map((d) => ({ ...d }));
-      const merged = this.mergeTableOptionsWithCache(defaults, DEFECT_TABLE_FIELD_LIST_STORAGE_KEY);
-      const out = [];
-      const seen = new Set();
-      merged.forEach((m) => {
-        if (!isExcelPickerTableOption(m)) return;
-        const base = TableOptions.find((x) => String(x.key) === String(m.key));
-        if (!base) return;
-        out.push({ ...base, fixed: !!m.fixed, visible: m.visible !== false });
-        seen.add(String(m.key));
-      });
-      TableOptions.filter(isExcelPickerTableOption).forEach((base) => {
-        if (!seen.has(String(base.key))) out.push({ ...base });
-      });
-      return out;
+      const src =
+        this.excelColumnPickerLiveColumns && this.excelColumnPickerLiveColumns.length
+          ? this.excelColumnPickerLiveColumns
+          : this.resolvedDefectMergedColumns;
+      return defectDisplayFieldPickerOptions(src);
     },
     defaultExcelColumnPickerKeys() {
-      return TableOptions.filter(isExcelPickerTableOption).map((c) => c.key);
+      return defectDisplayFieldPickerOptions(this.resolvedDefectMergedColumns).map(
+        (c) => c.key
+      );
+    },
+    colsWithoutProjectNum() {
+      const base = this.effectiveCols.filter((c) => c.key !== "projectNum");
+      const userOrder = this.excelDataColumnKeyOrder;
+      if (userOrder && userOrder.length) {
+        return reorderColsByKeyOrder(base, userOrder);
+      }
+      const mergedOrder = excelDataColumnKeysFromMerged(
+        this.resolvedDefectMergedColumns,
+        COLS
+      );
+      return reorderColsByKeyOrder(
+        base,
+        mergedOrder.length ? mergedOrder : base.map((c) => c.key)
+      );
     },
     /** 内置 PanelSetting 标题与按钮文案（与 vue3-excel-editor 默认键一致） */
     excelEditorLocalizedLabel() {
@@ -590,6 +853,8 @@ export default {
     },
     planTimeDialogPlaceholder() {
       if (this.planTimeDialogField === "planEndTime") return String(this.$t("defect.please-select-end-time"));
+      const col = this.planTimeDialogField ? this.findExcelCol(this.planTimeDialogField) : null;
+      if (col && col.isCustomField && col.fieldLabel) return String(col.fieldLabel);
       return String(this.$t("defect.please-select-start-time"));
     },
   },
@@ -617,9 +882,13 @@ export default {
     },
     projectId() {
       this.refreshProjectMembers();
+      clearCustomFieldColumnsCache();
+      this.loadEnabledCustomFields();
     },
     "queryParams.projectId"() {
       this.refreshProjectMembers();
+      clearCustomFieldColumnsCache();
+      this.loadEnabledCustomFields();
     },
     "$i18n.locale"() {
       this.$nextTick(() => {
@@ -635,12 +904,13 @@ export default {
   },
   created() {
     this.initExcelColumnPickerFromCache();
-    this.initExcelColumnOrderFromCache();
+    this.loadEnabledCustomFields();
   },
   mounted() {
     this.bindExcelLayoutObserver();
     this.refreshProjectMembers();
     this.$nextTick(() => {
+      this.ensureExcelEditorLazyCallbackKeys();
       this.applyExcelColumnVisibilityToEditorFields();
       this.applyExcelColumnOrderToEditorFields();
       this.applyPersistedExcelColumnWidthsToEditor();
@@ -673,6 +943,54 @@ export default {
     this.teardownExcelScrollLoadMoreListener();
   },
   methods: {
+    /**
+     * vue-excel-editor 的 lazy/lazyBuf 用回调 toString 做哈希，匿名函数会碰撞导致 @update 永不触发。
+     * 补丁在 node_modules 内提供 veeLazyCallbackKey；此处兜底，避免未重装依赖时仍丢保存。
+     */
+    ensureExcelEditorLazyCallbackKeys() {
+      const ed = this.$refs.excelEditor;
+      if (!ed || ed._cat2bugLazyKeyPatched || typeof ed.lazyBuf !== "function") return;
+      if (typeof ed.veeLazyCallbackKey === "function") {
+        ed._cat2bugLazyKeyPatched = true;
+        return;
+      }
+      ed._cat2bugLazyKeyPatched = true;
+      ed._veeLazyKeySeq = ed._veeLazyKeySeq || 0;
+      const keyOf = (fn) => {
+        if (!fn._veeLazyKey) {
+          ed._veeLazyKeySeq += 1;
+          Object.defineProperty(fn, "_veeLazyKey", {
+            value: "vee-lazy-" + ed._veeLazyKeySeq,
+            enumerable: false,
+          });
+        }
+        return fn._veeLazyKey;
+      };
+      const origLazyBuf = ed.lazyBuf.bind(ed);
+      ed.lazyBuf = function (item, p, delay) {
+        if (!delay) delay = 20;
+        const hash = keyOf(p);
+        if (ed.lazyBuffer[hash]) ed.lazyBuffer[hash].push(item);
+        else ed.lazyBuffer[hash] = [item];
+        if (ed.lazyTimeout[hash]) clearTimeout(ed.lazyTimeout[hash]);
+        ed.lazyTimeout[hash] = setTimeout(() => {
+          p(ed.lazyBuffer[hash]);
+          delete ed.lazyTimeout[hash];
+          delete ed.lazyBuffer[hash];
+        }, delay);
+      };
+      const origLazy = ed.lazy.bind(ed);
+      ed.lazy = function (p, delay, p1) {
+        if (typeof p !== "function") return origLazyBuf(p, delay, p1);
+        if (!delay) delay = 20;
+        const hash = keyOf(p);
+        if (ed.lazyTimeout[hash]) clearTimeout(ed.lazyTimeout[hash]);
+        ed.lazyTimeout[hash] = setTimeout(() => {
+          p();
+          delete ed.lazyTimeout[hash];
+        }, delay);
+      };
+    },
     /** 库在拖拽列宽时仍 lazy 调 calStickyLeft，其末尾 $forceUpdate 会用 fields[].width 重绑 col，与 DOM 上正在拖的宽度冲突导致左右跳 */
     isExcelEditorColSepDragging() {
       const ed = this.$refs.excelEditor;
@@ -814,6 +1132,7 @@ export default {
       const ed = this.$refs.excelEditor;
       if (!ed || !ed.labelTr || !ed.labelTr.children || !ed.labelTr.children.length) return;
       this.clampExcelEditorHeaderRow();
+      this.clampExcelCriticalColumnWidthsOnEditor();
       /* 勿调 refreshPageSize：其内部会 columnFillWidth，用旧 fields[].width 覆盖 col 上刚拖好的宽度导致弹回 */
       this.refreshExcelEditorHorizontalLayout(ed);
       if (typeof ed.calStickyLeft === "function") ed.calStickyLeft();
@@ -942,13 +1261,63 @@ export default {
         /* ignore */
       }
     },
-    normalizeExcelColWidthCss(w) {
+    excelColWidthMinPx(fieldName) {
+      if (fieldName && EXCEL_COL_WIDTH_MIN_PX[fieldName] != null) {
+        return EXCEL_COL_WIDTH_MIN_PX[fieldName];
+      }
+      return 20;
+    },
+    defaultExcelColWidthPx(fieldName) {
+      if (fieldName && EXCEL_COL_WIDTH_DEFAULT_PX[fieldName] != null) {
+        return EXCEL_COL_WIDTH_DEFAULT_PX[fieldName];
+      }
+      const col = COLS.find((c) => c.key === fieldName);
+      if (col && col.width) return Number(col.width) || 100;
+      const custom = (this.enabledCustomFields || []).find((f) => f.fieldKey === fieldName);
+      if (custom) {
+        if (custom.fieldType === "image") return 220;
+        if (custom.fieldType === "file") return 400;
+        return 140;
+      }
+      return 100;
+    },
+    normalizeExcelColWidthCss(w, fieldName) {
       const s = String(w == null ? "" : w).trim();
       if (!s) return "";
       const n = parseFloat(s.replace(/px$/i, ""));
       if (!Number.isFinite(n)) return "";
-      const clamped = Math.min(800, Math.max(20, Math.round(n)));
+      const min = this.excelColWidthMinPx(fieldName);
+      const clamped = Math.min(800, Math.max(min, Math.round(n)));
       return `${clamped}px`;
+    },
+    /** 纠正库 columnFillWidth 或历史缓存写入的过窄列宽 */
+    sanitizeExcelPersistedWidth(fieldName, widthCss) {
+      const nw = this.normalizeExcelColWidthCss(widthCss, fieldName);
+      if (!nw) return "";
+      const px = parseFloat(nw);
+      const min = this.excelColWidthMinPx(fieldName);
+      if (px < min) {
+        return `${this.defaultExcelColWidthPx(fieldName)}px`;
+      }
+      return nw;
+    },
+    clampExcelCriticalColumnWidthsOnEditor() {
+      const ed = this.$refs.excelEditor;
+      if (!ed || !Array.isArray(ed.fields)) return;
+      let changed = false;
+      ed.fields.forEach((f) => {
+        if (!f || !f.name) return;
+        const nw = this.sanitizeExcelPersistedWidth(f.name, f.width);
+        if (nw && nw !== f.width) {
+          f.width = nw;
+          changed = true;
+        }
+      });
+      if (changed) {
+        this.$nextTick(() => {
+          if (typeof ed.calStickyLeft === "function") ed.calStickyLeft();
+        });
+      }
     },
     /** 将 getSetting().fields 里的宽度写回编辑器 fields，与 colgroup 一致，避免 Vue 重渲染把 col 绑回旧 width */
     applyExcelEditorWidthsFromSettingToFields(payload) {
@@ -957,7 +1326,7 @@ export default {
       const byName = {};
       payload.fields.forEach((sf) => {
         if (!sf || !sf.name) return;
-        const nw = this.normalizeExcelColWidthCss(sf.width);
+        const nw = this.sanitizeExcelPersistedWidth(sf.name, sf.width);
         if (nw) byName[sf.name] = nw;
       });
       ed.fields.forEach((f) => {
@@ -983,7 +1352,7 @@ export default {
       const next = { ...prev };
       payload.fields.forEach((sf) => {
         if (!sf || !sf.name) return;
-        const nw = this.normalizeExcelColWidthCss(sf.width);
+        const nw = this.sanitizeExcelPersistedWidth(sf.name, sf.width);
         if (nw) next[sf.name] = nw;
       });
       this.$cache.local.setJSON(DEFECT_EXCEL_COLUMN_WIDTH_STORAGE_KEY, next);
@@ -1000,27 +1369,21 @@ export default {
       if (!saved || typeof saved !== "object") return;
       ed.fields.forEach((f) => {
         if (!f || !f.name) return;
-        const nw = this.normalizeExcelColWidthCss(saved[f.name]);
+        const nw = this.sanitizeExcelPersistedWidth(f.name, saved[f.name]);
         if (nw) f.width = nw;
       });
       this.$nextTick(() => {
+        this.clampExcelCriticalColumnWidthsOnEditor();
         if (typeof ed.calStickyLeft === "function") ed.calStickyLeft();
         if (ed.$forceUpdate) ed.$forceUpdate();
       });
     },
     maybeRunInitialExcelColumnFill() {
+      /* 不再调用库内 columnFillWidth：auto-fill 列在横向溢出时会被减宽导致缺陷名称极窄 */
       const ed = this.$refs.excelEditor;
       if (!ed) return;
-      let saved = null;
-      try {
-        saved = this.$cache.local.getJSON(DEFECT_EXCEL_COLUMN_WIDTH_STORAGE_KEY);
-      } catch (e) {
-        saved = null;
-      }
-      const hasSaved = saved && typeof saved === "object" && Object.keys(saved).length > 0;
-      if (hasSaved) return;
       this.$nextTick(() => {
-        if (typeof ed.columnFillWidth === "function") ed.columnFillWidth();
+        this.clampExcelCriticalColumnWidthsOnEditor();
         if (typeof ed.calStickyLeft === "function") ed.calStickyLeft();
       });
     },
@@ -1099,82 +1462,15 @@ export default {
       }
       overlayOnly();
     },
-    /** 与 Cat2BugTable mergeCachedColumns 逻辑一致，便于读写同一份列配置 */
-    mergeTableOptionsWithCache(list, storageKey) {
-      if (!storageKey || !list.length) return list;
-      let cached = this.$cache.local.getJSON(storageKey);
-      if (cached == null) {
-        const raw = this.$cache.local.get(storageKey);
-        if (raw) {
-          try {
-            cached = typeof raw === "string" ? JSON.parse(raw) : raw;
-          } catch (e) {
-            cached = null;
-          }
-        }
-      }
-      if (!cached || !Array.isArray(cached) || cached.length === 0) {
-        return list;
-      }
-      if (typeof cached[0] === "string") {
-        const visibleKeys = new Set(cached);
-        return list.map((d) => ({ ...d, visible: visibleKeys.has(d.key) }));
-      }
-      const defaultByKey = {};
-      list.forEach((d) => {
-        defaultByKey[d.key] = d;
-      });
-      const merged = [];
-      const used = new Set();
-      cached.forEach((c) => {
-        const base = defaultByKey[c.key];
-        if (!base) return;
-        merged.push({
-          ...base,
-          fixed: !!c.fixed,
-          visible: c.visible !== false,
-        });
-        used.add(c.key);
-      });
-      list.forEach((d) => {
-        if (!used.has(d.key)) merged.push({ ...d });
-      });
-      return merged;
-    },
-    initExcelColumnOrderFromCache() {
-      const allowed = COLS.filter((c) => c.key !== "projectNum").map((c) => c.key);
-      const defaults = TableOptions.map((d) => ({ ...d }));
-      const merged = this.mergeTableOptionsWithCache(defaults, DEFECT_TABLE_FIELD_LIST_STORAGE_KEY);
-      const keys = [];
-      const seen = new Set();
-      merged.forEach((m) => {
-        const tk = String(m.key);
-        const col = COLS.find(
-          (c) =>
-            c.key !== "projectNum" &&
-            c.titleKey != null &&
-            c.titleKey !== "" &&
-            String(c.titleKey) === tk
-        );
-        if (col && !seen.has(col.key)) {
-          keys.push(col.key);
-          seen.add(col.key);
-        }
-      });
-      allowed.forEach((k) => {
-        if (!seen.has(k)) keys.push(k);
-      });
-      const isDefault = keys.length === allowed.length && keys.every((k, i) => k === allowed[i]);
-      this.excelDataColumnKeyOrder = isDefault ? null : keys;
-    },
     /**
      * 将 Excel 数据列顺序写回与 Cat2BugTable 共用的 field-list 缓存，使表格视图 / 列选择器 / Excel 勾选列表顺序一致。
      */
     syncMergedTableFieldListOrderFromExcel(excelFieldKeysOrder) {
       const storageKey = DEFECT_TABLE_FIELD_LIST_STORAGE_KEY;
-      const defaults = TableOptions.map((d) => ({ ...d }));
-      const merged = this.mergeTableOptionsWithCache(defaults, storageKey);
-      const pickSet = new Set(TableOptions.filter(isExcelDragReorderTableOption).map((c) => String(c.key)));
+      const merged = this.resolvedDefectMergedColumns.map((c) => ({ ...c }));
+      const pickSet = new Set(
+        defectDisplayFieldPickerOptions(merged).map((c) => String(c.key))
+      );
 
       const mergedByKey = {};
       merged.forEach((m) => {
@@ -1183,7 +1479,9 @@ export default {
 
       const excelTableKeyOrder = (excelFieldKeysOrder || [])
         .map((ek) => {
-          const col = COLS.find((c) => c.key === String(ek) && c.key !== "projectNum");
+          const k = String(ek);
+          if (k.startsWith("custom:")) return k;
+          const col = COLS.find((c) => c.key === k && c.key !== "projectNum");
           return col && col.titleKey != null && col.titleKey !== "" ? String(col.titleKey) : null;
         })
         .filter(Boolean);
@@ -1221,6 +1519,7 @@ export default {
 
       const newMerged = [...before, ...excelMerged, ...after];
       this.$cache.local.setJSON(storageKey, newMerged);
+      this.excelColumnPickerLiveColumns = newMerged.map((c) => ({ ...c }));
       this.excelColumnPickerOrderRev = (this.excelColumnPickerOrderRev || 0) + 1;
     },
     /**
@@ -1516,30 +1815,41 @@ export default {
       return true;
     },
     initExcelColumnPickerFromCache() {
-      const merged = this.mergeTableOptionsWithCache(
-        TableOptions.map((d) => ({ ...d })),
-        DEFECT_TABLE_FIELD_LIST_STORAGE_KEY
-      );
-      const pickerKeys = new Set(this.defaultExcelColumnPickerKeys.map((k) => String(k)));
-      const checked = merged
-        .filter((c) => c.visible && pickerKeys.has(String(c.key)))
-        .map((c) => String(c.key));
-      const all = this.defaultExcelColumnPickerKeys.map((k) => String(k));
+      const merged = this.resolvedDefectMergedColumns;
+      const all = defectDisplayFieldPickerOptions(merged).map((c) => String(c.key));
+      const checked = defectDisplayFieldCheckedKeys(merged)
+        .map(String)
+        .filter((k) => all.includes(k));
       this.excelColumnPickerCheckedKeys = checked.length ? checked : [...all];
+      this.excelColumnPickerLiveColumns = merged.map((c) => ({ ...c }));
     },
-    /** key 为 COLS 字段名（如 defectType），勾选存的是 TableOptions.key（如 type）；projectNum 由「编号」id 控制 */
-    excelColumnVisible(excelFieldKey) {
-      const col = COLS.find((c) => c.key === excelFieldKey);
-      if (!col) return true;
-      if (col.key === "projectNum") {
-        const picked = this.excelColumnPickerCheckedKeys || [];
-        return picked.some((k) => String(k) === "id");
-      }
-      const tk = col.titleKey;
-      if (tk == null || tk === "") return true;
-      const need = String(tk);
+    /** 编号列是否出现在「显示字段」中且当前已勾选（无 id 选项时不展示 Excel 编号列） */
+    excelProjectNumColumnVisible() {
+      const pickerKeys = new Set(
+        (this.excelTableColumnPickerOptions || []).map((c) => String(c.key))
+      );
+      if (!pickerKeys.has("id")) return false;
       const picked = this.excelColumnPickerCheckedKeys || [];
-      return picked.some((k) => String(k) === need);
+      return picked.some((k) => String(k) === "id");
+    },
+    /** COLS / 自定义列 → 「显示字段」勾选 key（编号 id、custom:xxx、内置 titleKey） */
+    excelTablePickerKeyForCol(col) {
+      if (!col) return null;
+      if (col.key === "projectNum") return "id";
+      if (col.isCustomField) return String(col.key);
+      if (col.titleKey != null && col.titleKey !== "") return String(col.titleKey);
+      return null;
+    },
+    excelColumnVisible(excelFieldKey) {
+      if (excelFieldKey === "projectNum") {
+        return this.excelProjectNumColumnVisible();
+      }
+      const col = this.findExcelCol(excelFieldKey);
+      if (!col) return false;
+      const pickerKey = this.excelTablePickerKeyForCol(col);
+      if (!pickerKey) return true;
+      const picked = this.excelColumnPickerCheckedKeys || [];
+      return picked.some((k) => String(k) === pickerKey);
     },
     /**
      * 与 vue-excel-editor 内置 `PanelSetting.columnLabelClick` 相同：直接修改编辑器 `fields` 里每项的 `invisible`，
@@ -1549,6 +1859,7 @@ export default {
     applyExcelColumnVisibilityToEditorFields() {
       const ed = this.$refs.excelEditor;
       if (!ed || !Array.isArray(ed.fields)) return;
+      const picked = this.excelColumnPickerCheckedKeys || [];
       ed.fields.forEach((f) => {
         if (!f || !f.name) return;
         if (f.name === "defectId") {
@@ -1556,20 +1867,20 @@ export default {
           return;
         }
         if (f.name === "projectNum") {
-          const picked = this.excelColumnPickerCheckedKeys || [];
-          f.invisible = !picked.some((k) => String(k) === "id");
+          f.invisible = !this.excelProjectNumColumnVisible();
           return;
         }
-        const col = COLS.find((c) => c.key === f.name);
-        if (!col) return;
-        const tk = col.titleKey;
-        if (tk == null || tk === "") {
+        const col = this.findExcelCol(f.name);
+        if (!col) {
+          f.invisible = true;
+          return;
+        }
+        const pickerKey = this.excelTablePickerKeyForCol(col);
+        if (!pickerKey) {
           f.invisible = false;
           return;
         }
-        const need = String(tk);
-        const picked = this.excelColumnPickerCheckedKeys || [];
-        f.invisible = !picked.some((k) => String(k) === need);
+        f.invisible = !picked.some((k) => String(k) === pickerKey);
       });
       /* 与 PanelSetting.columnLabelClick 一致，仅 calStickyLeft；布局夹紧仍由 scheduleExcelEditorLayoutFix 负责 */
       setTimeout(() => {
@@ -1589,8 +1900,7 @@ export default {
     },
     persistDefectTableFieldListFromExcelPicker(nextVisibleTableKeys) {
       const storageKey = DEFECT_TABLE_FIELD_LIST_STORAGE_KEY;
-      const defaults = TableOptions.map((d) => ({ ...d }));
-      const merged = this.mergeTableOptionsWithCache(defaults, storageKey);
+      const merged = this.resolvedDefectMergedColumns.map((c) => ({ ...c }));
       const pickSet = new Set(this.excelTableColumnPickerOptions.map((c) => String(c.key)));
       const next = (nextVisibleTableKeys || []).map((k) => String(k));
       const nextSet = new Set(next);
@@ -1601,10 +1911,11 @@ export default {
         return { ...col };
       });
       this.$cache.local.setJSON(storageKey, updated);
+      this.excelColumnPickerLiveColumns = updated.map((c) => ({ ...c }));
     },
     onExcelColumnPickerChange(keys) {
       const all = this.defaultExcelColumnPickerKeys.map((k) => String(k));
-      const next = (keys || []).map((k) => String(k)).filter((k) => all.includes(k));
+      let next = (keys || []).map((k) => String(k)).filter((k) => all.includes(k));
       if (!next.length) {
         this.$modal.msgWarning(String(this.$t("defect.excel-column-at-least-one")));
         this.$nextTick(() => {
@@ -1615,6 +1926,7 @@ export default {
       }
       this.excelColumnPickerCheckedKeys = next;
       this.persistDefectTableFieldListFromExcelPicker(next);
+      this.excelColumnPickerOrderRev += 1;
       this.$nextTick(() => {
         this.applyExcelColumnVisibilityToEditorFields();
         this.updateExcelEditorHeight();
@@ -1635,7 +1947,10 @@ export default {
         this.syncExcelColumnPickerFromEditorSetting(payload);
       }, 60);
       /* 拖拽期间跳过的 layout，在 sep 已清除、宽度已写回 fields 后再跑一次 */
-      this.$nextTick(() => this.scheduleExcelEditorLayoutFix());
+      this.$nextTick(() => {
+        this.clampExcelCriticalColumnWidthsOnEditor();
+        this.scheduleExcelEditorLayoutFix();
+      });
     },
     syncExcelColumnPickerFromEditorSetting(payload) {
       const list = payload.fields;
@@ -1652,8 +1967,13 @@ export default {
           return;
         }
         if (sf.invisible) return;
-        const col = COLS.find((c) => c.key === name);
-        if (!col || col.titleKey == null || col.titleKey === "") return;
+        const col = this.findExcelCol(name);
+        if (!col) return;
+        if (col.isCustomField) {
+          visibleTk.push(String(col.key));
+          return;
+        }
+        if (col.titleKey == null || col.titleKey === "") return;
         const tk = String(col.titleKey);
         if (pickerKeySet.has(tk)) visibleTk.push(tk);
       });
@@ -1672,10 +1992,244 @@ export default {
     handleExcelToolbarRefresh() {
       this.search(this.queryParams);
     },
+    /** 与 Cat2BugTable.getColumnConfigForExport 一致，供缺陷列表导出/导入模版 */
+    getColumnConfigForExport() {
+      const picked = new Set((this.excelColumnPickerCheckedKeys || []).map(String));
+      const allPicked = picked.size === 0;
+      return (this.excelTableColumnPickerOptions || []).map((c) => {
+        const visible = allPicked || picked.has(String(c.key));
+        if (c.isCustomField) {
+          const fk = String(c.key || "").startsWith("custom:") ? String(c.key).slice(7) : c.fieldKey || "";
+          const meta = (this.enabledCustomFields || []).find((d) => d.fieldKey === fk);
+          return {
+            key: c.key,
+            prop: `custom_${fk}`,
+            visible,
+            required: !!(meta && (meta.required === 1 || meta.required === true)),
+          };
+        }
+        return {
+          key: c.key,
+          prop: c.prop,
+          visible,
+          required: !!c.required,
+        };
+      });
+    },
     init() {
       /* 数据由父组件 search(queryParams) 拉取，与表格视图一致 */
     },
+    loadEnabledCustomFields() {
+      const pid =
+        (this.queryParams && this.queryParams.projectId) ||
+        this.projectId ||
+        0;
+      if (!pid) {
+        this.tableColumnDefaults = TableOptions.map((c) => ({ ...c }));
+        this.enabledCustomFields = [];
+        this.enabledBuiltinFieldKeys = null;
+        this.orderedEnabledFieldKeys = [];
+        this.customFieldEnumSelectMaps = {};
+        this.initExcelColumnPickerFromCache();
+        return;
+      }
+      loadDefectColumnLayout(pid, { force: true })
+        .then((layout) => {
+          this.enabledBuiltinFieldKeys = (layout && layout.enabledBuiltinFieldKeys) || [];
+          this.enabledCustomFields = (layout && layout.customFields) || [];
+          this.orderedEnabledFieldKeys = (layout && layout.orderedEnabledFieldKeys) || [];
+          this.tableColumnDefaults = buildDefectTableColumnDefaults(
+            TableOptions.map((c) => ({ ...c })),
+            layout
+          );
+          const tableCols = this.tableColumnDefaults;
+          pruneDefectTableColumnCacheFromColumns(this.$cache.local, tableCols);
+          syncNewDefectTableColumnsIntoFieldListCache(this.$cache.local, tableCols);
+          const maps = {};
+          this.enabledCustomFields.forEach((def) => {
+            if (def.fieldType !== "enum" && def.fieldType !== "boolean") return;
+            const colKey = `custom:${def.fieldKey}`;
+            const m = {};
+            if (def.fieldType === "boolean") {
+              m.true = String(this.$t("defect.custom-field.yes"));
+              m.false = String(this.$t("defect.custom-field.no"));
+            } else {
+              const opts = (def.typeConfig && def.typeConfig.options) || [];
+              opts.forEach((o) => {
+                if (o && o.key != null) m[String(o.key)] = String(o.label != null ? o.label : o.key);
+              });
+            }
+            maps[colKey] = m;
+          });
+          this.customFieldEnumSelectMaps = maps;
+          this.excelColumnPickerOrderRev += 1;
+          this.excelDataColumnKeyOrder = null;
+          this.initExcelColumnPickerFromCache();
+          this.$nextTick(() => {
+            this.applyExcelColumnVisibilityToEditorFields();
+            this.applyExcelColumnOrderToEditorFields();
+          });
+        })
+        .catch(() => {
+          this.tableColumnDefaults = TableOptions.map((c) => ({ ...c }));
+          this.enabledCustomFields = [];
+          this.enabledBuiltinFieldKeys = null;
+          this.orderedEnabledFieldKeys = [];
+          this.customFieldEnumSelectMaps = {};
+        });
+    },
+    findExcelCol(key) {
+      return this.effectiveCols.find((c) => c.key === key);
+    },
+    /** 从 axios / 业务 reject 中取出后端 msg（配合 silentError 避免与页面提示重复） */
+    extractRequestErrorMessage(err) {
+      if (err == null) return "";
+      if (typeof err === "string") return err === "error" ? "" : String(err);
+      if (typeof err.msg === "string" && err.msg) return err.msg;
+      if (typeof err.message === "string" && err.message) return err.message;
+      return "";
+    },
+    excelPersistColumnLabel(col) {
+      if (!col) return "";
+      if (col.isCustomField && col.fieldLabel) return String(col.fieldLabel);
+      return String(this.columnLabel(col) || col.key || "");
+    },
+    /** Excel 左侧序号（1 起），与 vue-excel-editor 行号列一致 */
+    resolveExcelSheetRowNumber(row) {
+      if (!row) return null;
+      const rows = this.sheetRows || [];
+      let idx = -1;
+      if (row.$id != null && row.$id !== "") {
+        idx = rows.findIndex((r) => r && String(r.$id) === String(row.$id));
+      }
+      if (idx < 0) idx = rows.indexOf(row);
+      return idx >= 0 ? idx + 1 : null;
+    },
+    buildExcelSaveFailedMessage(row) {
+      const rowNo = this.resolveExcelSheetRowNumber(row);
+      if (rowNo != null) {
+        return String(strFormat(this.$t("defect.excel-save-failed-at-row"), rowNo));
+      }
+      return String(this.$t("defect.excel-save-failed"));
+    },
+    /** Excel 单元格保存失败：行号 + 字段名 + 值无效（不含「自定义字段」等后端原文） */
+    buildExcelPersistErrorMessage(col, row) {
+      const label = this.excelPersistColumnLabel(col);
+      const rowNo = this.resolveExcelSheetRowNumber(row);
+      if (label && rowNo != null) {
+        return String(strFormat(this.$t("defect.excel-save-failed-field-invalid"), rowNo, label));
+      }
+      if (label) {
+        return String(strFormat(this.$t("defect.excel-save-failed-field-invalid-no-row"), label));
+      }
+      return this.buildExcelSaveFailedMessage(row);
+    },
+    extractFieldLabelFromServerError(err) {
+      const msg = this.extractRequestErrorMessage(err).trim();
+      if (!msg) return "";
+      const m = msg.match(/[「『]([^」』]+)[」』]/);
+      return m ? m[1] : "";
+    },
+    findExcelColByFieldLabel(label) {
+      if (!label) return null;
+      const cols = this.effectiveCols || [];
+      for (let i = 0; i < cols.length; i++) {
+        const c = cols[i];
+        if (c && c.isCustomField && c.fieldLabel && String(c.fieldLabel) === String(label)) {
+          return c;
+        }
+      }
+      return null;
+    },
+    findInvalidCustomFieldForPersist(row, customFieldsPayload) {
+      const hit = findInvalidCustomFieldInPayload(row, customFieldsPayload, this.effectiveCols);
+      if (!hit) return null;
+      return {
+        colKey: hit.colKey,
+        label: hit.label || this.excelPersistColumnLabel(this.findExcelCol(hit.colKey)),
+      };
+    },
+    /** 保存失败时定位真正无效列（可能不是当前编辑列） */
+    resolveExcelPersistErrorColKey(row, editedColKey, err) {
+      const fromMsg = this.extractFieldLabelFromServerError(err);
+      if (fromMsg) {
+        const byLabel = this.findExcelColByFieldLabel(fromMsg);
+        if (byLabel) return byLabel.key;
+      }
+      const invalid = this.findInvalidCustomFieldForPersist(row, row.customFields);
+      if (invalid && invalid.colKey) return invalid.colKey;
+      return editedColKey;
+    },
+    reportExcelPersistFieldError(row, blameColKey, editedColKey) {
+      if (editedColKey && editedColKey !== blameColKey) {
+        this.clearExcelPersistErrorCell(row, editedColKey);
+      }
+      const col = this.findExcelCol(blameColKey);
+      const msg = this.buildExcelPersistErrorMessage(col, row);
+      const dedupeKey = `${row && row.$id != null ? String(row.$id) : ""}|${blameColKey}|${msg}`;
+      const now = Date.now();
+      if (
+        dedupeKey &&
+        this._excelPersistErrorToastKey === dedupeKey &&
+        now - (this._excelPersistErrorToastAt || 0) < 800
+      ) {
+        this.markExcelPersistErrorCell(row, blameColKey, null);
+        return;
+      }
+      this._excelPersistErrorToastKey = dedupeKey;
+      this._excelPersistErrorToastAt = now;
+      this.markExcelPersistErrorCell(row, blameColKey, null);
+      this.$modal.msgError(msg);
+    },
+    excelPersistErrorTdId(row, colKey) {
+      if (!row || row.$id == null || row.$id === "" || !colKey) return "";
+      return `id-${String(row.$id)}-${colKey}`;
+    },
+    isExcelPersistErrorCell(record, fieldName) {
+      const id = this.excelPersistErrorTdId(record, fieldName);
+      return !!(id && this.excelPersistErrorCellIds[id]);
+    },
+    markExcelPersistErrorCell(row, colKey, err) {
+      const id = this.excelPersistErrorTdId(row, colKey);
+      if (!id) return;
+      this.$set(this.excelPersistErrorCellIds, id, true);
+      const ed = this.$refs.excelEditor;
+      const msg = this.buildExcelPersistErrorMessage(this.findExcelCol(colKey), row);
+      if (ed && typeof ed.setFieldError === "function") {
+        const field = ed.fields && ed.fields.find((f) => f && f.name === colKey);
+        if (field) ed.setFieldError(msg, row, field);
+      }
+      this.$nextTick(() => this.refreshExcelEditorView());
+    },
+    clearExcelPersistErrorCell(row, colKey) {
+      const id = this.excelPersistErrorTdId(row, colKey);
+      if (!id || !this.excelPersistErrorCellIds[id]) return;
+      this.$delete(this.excelPersistErrorCellIds, id);
+      const ed = this.$refs.excelEditor;
+      if (ed && typeof ed.setFieldError === "function") {
+        const field = ed.fields && ed.fields.find((f) => f && f.name === colKey);
+        if (field) ed.setFieldError("", row, field);
+      }
+      this.$nextTick(() => this.refreshExcelEditorView());
+    },
+    /** @update 事务里的行：与 sheetRows / 编辑器 value 同一引用，$id 用字符串比对 */
+    resolveSheetRowFromUpdate(rec) {
+      if (!rec || rec.$id == null || rec.$id === "") return null;
+      const id = String(rec.$id);
+      const pools = [this.sheetRows];
+      const ed = this.$refs.excelEditor;
+      if (ed && Array.isArray(ed.value)) pools.push(ed.value);
+      if (ed && Array.isArray(ed.table)) pools.push(ed.table);
+      for (let i = 0; i < pools.length; i++) {
+        const pool = pools[i];
+        if (!pool) continue;
+        const hit = pool.find((r) => r && String(r.$id) === id);
+        if (hit) return hit;
+      }
+      return null;
+    },
     columnLabel(c) {
+      if (c && c.isCustomField && c.fieldLabel) return String(c.fieldLabel);
       return String(this.$t(c.titleKey));
     },
     /** 展示为 #编号，底层仍为数字便于与接口一致 */
@@ -1694,6 +2248,10 @@ export default {
      * map 列若用原样 to-text，格内会显示 id/字典 value 而非文案；区域复制也会带上 id，粘贴时与 toValue(按标签反查) 对不上。
      */
     excelColumnToText(c) {
+      if (c && c.isCustomField) {
+        if (c.fieldType === "image" || c.fieldType === "file") return () => "";
+        return (v) => formatCustomFieldExcelText(v, c);
+      }
       if (c && c.key === "defectStateText") return this.excelDefectStateCellToText;
       if (c && c.key === "defectType") return this.excelDefectTypeToText;
       if (c && c.key === "defectLevel") return this.excelDefectLevelToText;
@@ -1740,6 +2298,14 @@ export default {
     },
     /** 仅 map 列覆盖 toValue：支持粘贴展示名或 key(id)；非 map 不传以保持库默认 */
     excelColumnValueBind(c) {
+      if (
+        c &&
+        c.isCustomField &&
+        c.fieldType !== "image" &&
+        c.fieldType !== "file"
+      ) {
+        return { toValue: (text) => this.excelCustomFieldToValue(text, c) };
+      }
       if (!c || c.fieldType !== "map") return {};
       if (c.key === "defectLevel") return { toValue: this.excelToValueDefectLevel };
       if (c.key === "excelHandleByMemberId") return { toValue: this.excelToValueHandleByMemberId };
@@ -1766,6 +2332,9 @@ export default {
     /**
      * 将粘贴文本解析为 map 存库 key：先按 options 文案精确匹配，再按 key 本身（与复制出的 id 一致）。
      */
+    excelCustomFieldToValue(text, col) {
+      return parseCustomFieldExcelImportText(text, col);
+    },
     excelMapFieldToValue(text, optionsObj, normalizeKey) {
       const raw = text == null ? "" : String(text).trim();
       if (raw === "") return "";
@@ -1792,7 +2361,18 @@ export default {
     },
     defectExcelCellStyle(record, item) {
       if (!item || !record) return {};
-      if (item.name === "planStartTime" || item.name === "planEndTime" || item.name === "moduleName") {
+      if (this.isExcelPersistErrorCell(record, item.name)) {
+        return { color: EXCEL_PERSIST_ERROR_TEXT_COLOR };
+      }
+      if (
+        item.name === "planStartTime" ||
+        item.name === "planEndTime" ||
+        item.name === "moduleName"
+      ) {
+        return Object.assign({}, PLAN_TIME_SELECT_TRIANGLE_BG);
+      }
+      const col = item.name ? this.findExcelCol(item.name) : null;
+      if (col && col.isCustomField && col.excelFieldType === "datetime") {
         return Object.assign({}, PLAN_TIME_SELECT_TRIANGLE_BG);
       }
       return {};
@@ -1822,17 +2402,36 @@ export default {
       while (t && t.nodeType !== 1) t = t.parentNode;
       if (!t || t.tagName !== "TD" || !t.id) return;
       if (t.classList.contains("first-col")) return;
+      const resolved = resolveExcelCellFromTdId(t.id, this.sheetRows, this.effectiveCols);
       let fieldName = null;
-      if (t.id.endsWith("-planStartTime")) fieldName = "planStartTime";
-      else if (t.id.endsWith("-planEndTime")) fieldName = "planEndTime";
-      else if (t.id.endsWith("-moduleName")) fieldName = "moduleName";
-      else return;
+      let rec = null;
+      if (resolved) {
+        fieldName = resolved.fieldName;
+        rec = resolved.row;
+        const col = resolved.col;
+        if (col && col.isCustomField && col.excelFieldType !== "datetime" && fieldName !== "moduleName") {
+          return;
+        }
+        if (
+          fieldName !== "planStartTime" &&
+          fieldName !== "planEndTime" &&
+          fieldName !== "moduleName" &&
+          !(col && col.isCustomField && col.excelFieldType === "datetime")
+        ) {
+          return;
+        }
+      } else {
+        if (t.id.endsWith("-planStartTime")) fieldName = "planStartTime";
+        else if (t.id.endsWith("-planEndTime")) fieldName = "planEndTime";
+        else if (t.id.endsWith("-moduleName")) fieldName = "moduleName";
+        else return;
+        const suf = `-${fieldName}`;
+        if (!t.id.startsWith("id-") || !t.id.endsWith(suf)) return;
+        const rowId = t.id.slice(3, t.id.length - suf.length);
+        rec = (this.sheetRows || []).find((r) => String(r.$id) === rowId);
+      }
       const ed = this.$refs.excelEditor;
       if (!ed || typeof ed.tdDropdownHotZoneHit !== "function" || !ed.tdDropdownHotZoneHit(t, e.clientX)) return;
-      const suf = `-${fieldName}`;
-      if (!t.id.startsWith("id-") || !t.id.endsWith(suf)) return;
-      const rowId = t.id.slice(3, t.id.length - suf.length);
-      const rec = (this.sheetRows || []).find((r) => String(r.$id) === rowId);
       if (!rec) return;
       const field = ed.fields && ed.fields.find((f) => f.name === fieldName);
       if (!field) return;
@@ -2061,7 +2660,7 @@ export default {
       } catch (e) {
         this.$set(row, "moduleId", oldId);
         this.$set(row, "moduleName", oldName);
-        this.$modal.msgError(this.$t("defect.excel-save-failed").toString());
+        this.$modal.msgError(this.buildExcelSaveFailedMessage(row));
       } finally {
         this.excelModulePickerSaving = false;
         this.syncing = false;
@@ -2111,7 +2710,34 @@ export default {
       this.planTimePickerSaving = true;
       this.syncing = true;
       try {
-        if (!row.defectId) {
+        if (String(key).startsWith("custom:")) {
+          const col = this.findExcelCol(key);
+          if (!col || !col.isCustomField || col.fieldType !== "datetime") {
+            this.planTimePickerVisible = false;
+            this.resetPlanTimePickerState();
+            return;
+          }
+          const fk = col.fieldKey || customColFieldKey(key);
+          const prev =
+            row.customFields && typeof row.customFields === "object" ? { ...row.customFields } : {};
+          if (nv) prev[fk] = nv;
+          else delete prev[fk];
+          this.$set(row, "customFields", prev);
+          this.$set(row, key, nv);
+          if (!row.defectId) {
+            this.refreshExcelEditorView();
+            this.$modal.msgWarning(String(this.$t("defect.excel-plan-time-staged-row")));
+          } else {
+            await updateDefect({
+              defectId: row.defectId,
+              projectId: row.projectId,
+              customFields: prev,
+            });
+            this.touchRowUpdateTime(row);
+            this.refreshExcelEditorView();
+            this.$modal.msgSuccess(this.$t("defect.excel-save-success").toString());
+          }
+        } else if (!row.defectId) {
           /* 占位行无缺陷 ID：仅更新表格展示，刷新页面前不会落库 */
           this.$set(row, key, nv);
           this.refreshExcelEditorView();
@@ -2136,7 +2762,7 @@ export default {
           this.$modal.msgSuccess(this.$t("defect.excel-save-success").toString());
         }
       } catch (e) {
-        this.$modal.msgError(this.$t("defect.excel-save-failed").toString());
+        this.$modal.msgError(this.buildExcelSaveFailedMessage(row));
         this.planTimeDialogValue = oldVal || null;
       } finally {
         this.syncing = false;
@@ -2157,8 +2783,12 @@ export default {
           .replace(/>/g, "&gt;")
           .replace(/"/g, "&quot;");
       const name = field && field.name;
-      const col = name ? COLS.find((c) => c.key === name) : null;
-      const text = col ? String(this.$t(col.titleKey)) : String(label == null ? "" : label);
+      const col = name ? this.findExcelCol(name) : null;
+      const text = col
+        ? col.isCustomField && col.fieldLabel
+          ? String(col.fieldLabel)
+          : String(this.$t(col.titleKey))
+        : String(label == null ? "" : label);
       if (!col || !col.required) return esc(text);
       return `<span style="color:#f56c6c">${esc(text)}</span>`;
     },
@@ -2167,12 +2797,15 @@ export default {
       const ed = this.$refs.excelEditor;
       if (!ed || !Array.isArray(ed.fields)) return;
       ed.fields.forEach((f) => {
-        const col = COLS.find((c) => c.key === f.name);
-        if (col) f.label = String(this.$t(col.titleKey));
+        const col = this.findExcelCol(f.name);
+        if (col) {
+          f.label = col.isCustomField && col.fieldLabel ? String(col.fieldLabel) : String(this.$t(col.titleKey));
+        }
       });
       ed.$forceUpdate();
     },
     columnFieldType(c) {
+      if (c.isCustomField && c.excelFieldType === "map") return "map";
       return c.fieldType === "map" ? "map" : "string";
     },
     /** 可编辑 map 列不能 readonly；下拉由库内右侧三角热区与 input 区右侧点击打开 */
@@ -2185,13 +2818,30 @@ export default {
       return null;
     },
     columnOptions(c) {
+      if (c.isCustomField && c.excelFieldType === "map") {
+        return this.customFieldEnumSelectMaps[c.key] || {};
+      }
       if (c.key === "defectType") return this.defectTypeSelectMap;
       if (c.key === "defectLevel") return this.defectLevelSelectMap;
       if (c.key === "defectStateText") return this.defectStateSelectMap;
       if (c.key === "excelHandleByMemberId") return this.memberSelectMap;
       if (c.key === "planStartTime" || c.key === "planEndTime") return PLAN_TIME_CELL_OPTIONS_MARKER;
       if (c.key === "moduleName") return PLAN_TIME_CELL_OPTIONS_MARKER;
+      if (c.isCustomField && c.excelFieldType === "datetime") return PLAN_TIME_CELL_OPTIONS_MARKER;
       return null;
+    },
+    /** 同步 sheet 行上的 customFields 与 custom:{fieldKey} 展示列 */
+    applyCustomFieldSheetCellValue(row, col, text) {
+      if (!row || !col || !col.isCustomField) return;
+      const fk = col.fieldKey || customColFieldKey(col.key);
+      if (!fk) return;
+      const parsed = normalizeCustomFieldCellValue(text, col);
+      const prev =
+        row.customFields && typeof row.customFields === "object" ? { ...row.customFields } : {};
+      if (parsed === "" || parsed == null) delete prev[fk];
+      else prev[fk] = parsed;
+      this.$set(row, "customFields", prev);
+      this.$set(row, col.key, formatCustomFieldExcelText(parsed, col));
     },
     refreshProjectMembers() {
       const pid =
@@ -2233,9 +2883,58 @@ export default {
       if (!c) return null;
       if (c.key === "excelImgUrlsText") return (record) => this.buildExcelImageGalleryHtml(record);
       if (c.key === "excelAnnexUrlsText") return (record) => this.buildExcelAnnexUrlsHtml(record);
+      if (c.isCustomField && c.fieldType === "image") {
+        return (record) => this.buildExcelCustomImageGalleryHtml(record, c);
+      }
+      if (c.isCustomField && c.fieldType === "file") {
+        return (record) => this.buildExcelCustomAnnexUrlsHtml(record, c);
+      }
       return null;
     },
+    customFieldUrlParts(record, fieldKey) {
+      const cf = record && record.customFields;
+      if (!cf || typeof cf !== "object" || !fieldKey) return [];
+      const val = cf[fieldKey];
+      if (val == null || val === "") return [];
+      const arr = Array.isArray(val) ? val : String(val).split(",");
+      return arr.map((s) => String(s).trim()).filter(Boolean);
+    },
+    customFieldMaxCount(col) {
+      let cfg = col && col.typeConfig;
+      if (typeof cfg === "string") {
+        try {
+          cfg = JSON.parse(cfg);
+        } catch (e) {
+          cfg = {};
+        }
+      }
+      cfg = cfg || {};
+      const n = cfg.maxCount != null ? Number(cfg.maxCount) : NaN;
+      const fallback =
+        col && col.fieldType === "file" ? EXCEL_INLINE_ANNEX_LIMIT : EXCEL_INLINE_IMG_LIMIT;
+      return Number.isFinite(n) && n > 0 ? n : fallback;
+    },
+    buildExcelCustomImageGalleryHtml(record, col) {
+      if (!record || !record.defectId || !col || !col.fieldKey) return "";
+      return this.buildExcelImageGalleryHtmlForPaths(record, this.customFieldUrlParts(record, col.fieldKey), {
+        uploadKind: "custom-img",
+        customFieldKey: col.fieldKey,
+      });
+    },
+    buildExcelCustomAnnexUrlsHtml(record, col) {
+      if (!record || !record.defectId || !col || !col.fieldKey) return "";
+      return this.buildExcelAnnexUrlsHtmlForPaths(record, this.customFieldUrlParts(record, col.fieldKey), {
+        uploadKind: "custom-annex",
+        customFieldKey: col.fieldKey,
+      });
+    },
     buildExcelImageGalleryHtml(record) {
+      if (!record || !record.defectId) return "";
+      return this.buildExcelImageGalleryHtmlForPaths(record, this.excelCommaUrlParts(record.imgUrls), {
+        uploadKind: "img",
+      });
+    },
+    buildExcelImageGalleryHtmlForPaths(record, rawParts, opts = {}) {
       if (!record || !record.defectId) return "";
       const escAttr = (s) =>
         String(s)
@@ -2243,22 +2942,23 @@ export default {
           .replace(/"/g, "&quot;")
           .replace(/</g, "&lt;")
           .replace(/>/g, "&gt;");
-      const rawParts = String(record.imgUrls || "")
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean);
+      const uploadKind = opts.uploadKind || "img";
+      const customFieldKey = opts.customFieldKey || "";
       const baseApi = String(process.env.VUE_APP_BASE_API || "");
-      const defaultImg = escAttr(DEFAULT_IMAGE);
+      const imgOnerror = escAttr(buildNativeImageOnerrorScript());
       const removeTitle = escAttr(String(this.$t("delete")));
       const tiles = rawParts.length
         ? rawParts
             .map((pathRel) => {
               const full = baseApi + pathRel;
               const escPath = escAttr(pathRel);
+              const cfAttr = customFieldKey
+                ? ` data-custom-field-key="${escAttr(customFieldKey)}"`
+                : "";
               return (
                 `<span class="defect-excel-img-wrap">` +
-                `<img class="defect-excel-img-tile" src="${escAttr(full)}" alt="" loading="lazy" onerror="this.onerror=null;this.src='${defaultImg}'" />` +
-                `<span class="defect-excel-img-remove" data-defect-id="${escAttr(String(record.defectId))}" data-img-path="${escPath}" title="${removeTitle}" role="button" tabindex="0"><i class="el-icon-close"></i></span>` +
+                `<img class="defect-excel-img-tile cat2bug-image-error__img" src="${escAttr(full)}" alt="" loading="lazy" onerror="${imgOnerror}" />` +
+                `<span class="defect-excel-img-remove" data-defect-id="${escAttr(String(record.defectId))}" data-img-path="${escPath}"${cfAttr} title="${removeTitle}" role="button" tabindex="0"><i class="el-icon-close"></i></span>` +
                 `</span>`
               );
             })
@@ -2268,9 +2968,12 @@ export default {
         ? `<span class="defect-excel-img-row">${tiles}</span>`
         : `<span class="defect-excel-img-row defect-excel-img-row--empty"></span>`;
       const uploadTitle = escAttr(String(this.$t("defect.excel-upload-image")));
-      const btn = `<span class="defect-excel-inline-upload-btn" data-upload-kind="img" data-defect-id="${escAttr(
+      const cfAttr = customFieldKey
+        ? ` data-custom-field-key="${escAttr(customFieldKey)}"`
+        : "";
+      const btn = `<span class="defect-excel-inline-upload-btn" data-upload-kind="${escAttr(uploadKind)}" data-defect-id="${escAttr(
         String(record.defectId)
-      )}" data-project-id="${escAttr(String(record.projectId != null ? record.projectId : ""))}" title="${uploadTitle}" role="button" tabindex="0"><i class="el-icon-upload2"></i></span>`;
+      )}" data-project-id="${escAttr(String(record.projectId != null ? record.projectId : ""))}"${cfAttr} title="${uploadTitle}" role="button" tabindex="0"><i class="el-icon-upload2"></i></span>`;
       return `<div class="defect-excel-attach-cell">${rowInner}${btn}</div>`;
     },
     isDefectExcelPreviewThumbImg(node) {
@@ -2333,11 +3036,15 @@ export default {
     },
     buildExcelAnnexUrlsHtml(record) {
       if (!record || !record.defectId) return "";
+      return this.buildExcelAnnexUrlsHtmlForPaths(record, this.excelCommaUrlParts(record.annexUrls), {
+        uploadKind: "annex",
+      });
+    },
+    buildExcelAnnexUrlsHtmlForPaths(record, parts, opts = {}) {
+      if (!record || !record.defectId) return "";
       const base = String(process.env.VUE_APP_BASE_API || "");
-      const parts = String(record.annexUrls || "")
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean);
+      const uploadKind = opts.uploadKind || "annex";
+      const customFieldKey = opts.customFieldKey || "";
       const escAttr = (s) =>
         String(s)
           .replace(/&/g, "&amp;")
@@ -2356,12 +3063,15 @@ export default {
               const full = base + path;
               const label = this.annexFileDisplayNameFromPath(path);
               const escPath = escAttr(path);
+              const cfAttr = customFieldKey
+                ? ` data-custom-field-key="${escAttr(customFieldKey)}"`
+                : "";
               return (
                 `<span class="defect-excel-annex-item">` +
                 `<span class="defect-excel-annex-line" data-url="${escAttr(full)}" data-annex-path="${escPath}" title="${escAttr(
                   label
                 )}"><i class="el-icon-paperclip"></i><span class="defect-excel-annex-label">${escText(label)}</span></span>` +
-                `<span class="defect-excel-annex-remove" data-defect-id="${escAttr(String(record.defectId))}" data-annex-path="${escPath}" title="${removeTitle}" role="button" tabindex="0"><i class="el-icon-close"></i></span>` +
+                `<span class="defect-excel-annex-remove" data-defect-id="${escAttr(String(record.defectId))}" data-annex-path="${escPath}"${cfAttr} title="${removeTitle}" role="button" tabindex="0"><i class="el-icon-close"></i></span>` +
                 `</span>`
               );
             })
@@ -2371,9 +3081,12 @@ export default {
         ? lines
         : `<span class="defect-excel-annex-line defect-excel-annex-line--placeholder">&nbsp;</span>`;
       const uploadTitle = escAttr(String(this.$t("defect.excel-upload-annex")));
-      const btn = `<span class="defect-excel-inline-upload-btn" data-upload-kind="annex" data-defect-id="${escAttr(
+      const cfAttr = customFieldKey
+        ? ` data-custom-field-key="${escAttr(customFieldKey)}"`
+        : "";
+      const btn = `<span class="defect-excel-inline-upload-btn" data-upload-kind="${escAttr(uploadKind)}" data-defect-id="${escAttr(
         String(record.defectId)
-      )}" data-project-id="${escAttr(String(record.projectId != null ? record.projectId : ""))}" title="${uploadTitle}" role="button" tabindex="0"><i class="el-icon-upload2"></i></span>`;
+      )}" data-project-id="${escAttr(String(record.projectId != null ? record.projectId : ""))}"${cfAttr} title="${uploadTitle}" role="button" tabindex="0"><i class="el-icon-upload2"></i></span>`;
       return `<div class="defect-excel-attach-cell"><div class="defect-excel-annex-stack">${stackInner}</div>${btn}</div>`;
     },
     defectExcelClosestInlineUploadBtn(node) {
@@ -2408,17 +3121,10 @@ export default {
       return merged.join(",");
     },
     validateExcelInlineImageFile(file) {
-      const types = EXCEL_INLINE_IMG_FILE_TYPES;
-      let ext = "";
-      if (file && file.name && file.name.lastIndexOf(".") > -1) {
-        ext = file.name.slice(file.name.lastIndexOf(".") + 1).toLowerCase();
-      }
-      const okType = types.some((t) => {
-        if (file.type && String(file.type).toLowerCase().indexOf(String(t).toLowerCase()) > -1) return true;
-        return ext && ext === String(t).toLowerCase();
-      });
-      if (!okType) {
-        this.$modal.msgError(strFormat(this.$t("upload.file-format-is-incorrect"), types.join("/")));
+      if (!isAllowedImageUploadFile(file, EXCEL_INLINE_IMG_FILE_TYPES)) {
+        this.$modal.msgError(
+          strFormat(this.$t("upload.file-format-is-incorrect"), EXCEL_INLINE_IMG_FILE_TYPES.join("/"))
+        );
         return false;
       }
       if (file.size / 1024 / 1024 >= EXCEL_INLINE_IMG_MAX_MB) {
@@ -2438,6 +3144,7 @@ export default {
       if (!removeEl || typeof removeEl.getAttribute !== "function") return;
       const defectId = removeEl.getAttribute("data-defect-id");
       const pathRel = removeEl.getAttribute("data-img-path");
+      const customFieldKey = removeEl.getAttribute("data-custom-field-key");
       if (!defectId || pathRel == null || pathRel === "") return;
       this.$modal
         .confirm(String(this.$t("is-delete-img")), String(this.$t("prompted")), {
@@ -2445,34 +3152,41 @@ export default {
           cancelButtonText: String(this.$t("cancel")),
           type: "warning",
         })
-        .then(() => this.executeExcelInlineImageRemove(defectId, pathRel))
+        .then(() => this.executeExcelInlineImageRemove(defectId, pathRel, customFieldKey))
         .catch(() => {});
     },
-    async executeExcelInlineImageRemove(defectId, pathRel) {
+    async executeExcelInlineImageRemove(defectId, pathRel, customFieldKey) {
       const row = this.sheetRows.find((r) => String(r.defectId) === String(defectId));
       if (!row || this.isDeletedDefectRow(row)) {
         if (row) this.notifyDeletedDefectCannotEdit();
         return;
       }
-      const parts = this.excelCommaUrlParts(row.imgUrls);
-      const next = parts.filter((p) => String(p) !== String(pathRel));
-      if (next.length === parts.length) return;
-      const merged = next.join(",");
       const projectId = row.projectId != null && row.projectId !== "" ? row.projectId : this.queryParams.projectId;
       this.syncing = true;
       this.$modal.loading(String(this.$t("upload.img-deleting")));
       try {
-        await updateDefect({
-          defectId: row.defectId,
-          projectId,
-          imgUrls: merged,
-        });
-        this.$set(row, "imgUrls", merged);
+        if (customFieldKey) {
+          const parts = this.customFieldUrlParts(row, customFieldKey);
+          const next = parts.filter((p) => String(p) !== String(pathRel));
+          if (next.length === parts.length) return;
+          const prev = (row.customFields && typeof row.customFields === "object") ? { ...row.customFields } : {};
+          if (next.length) prev[customFieldKey] = next;
+          else delete prev[customFieldKey];
+          await updateDefect({ defectId: row.defectId, projectId, customFields: prev });
+          this.$set(row, "customFields", prev);
+        } else {
+          const parts = this.excelCommaUrlParts(row.imgUrls);
+          const next = parts.filter((p) => String(p) !== String(pathRel));
+          if (next.length === parts.length) return;
+          const merged = next.join(",");
+          await updateDefect({ defectId: row.defectId, projectId, imgUrls: merged });
+          this.$set(row, "imgUrls", merged);
+        }
         this.touchRowUpdateTime(row);
         this.refreshExcelEditorView();
         this.$modal.msgSuccess(this.$t("upload.img-delete-success").toString());
       } catch (e) {
-        this.$modal.msgError(this.$t("defect.excel-save-failed").toString());
+        this.$modal.msgError(this.buildExcelSaveFailedMessage(row));
       } finally {
         this.$modal.closeLoading();
         this.syncing = false;
@@ -2482,6 +3196,7 @@ export default {
       if (!removeEl || typeof removeEl.getAttribute !== "function") return;
       const defectId = removeEl.getAttribute("data-defect-id");
       const pathRel = removeEl.getAttribute("data-annex-path");
+      const customFieldKey = removeEl.getAttribute("data-custom-field-key");
       if (!defectId || pathRel == null || pathRel === "") return;
       const row = this.sheetRows.find((r) => String(r.defectId) === String(defectId));
       const display = row ? this.annexFileDisplayNameFromPath(pathRel) : pathRel;
@@ -2491,34 +3206,41 @@ export default {
           cancelButtonText: String(this.$t("cancel")),
           type: "warning",
         })
-        .then(() => this.executeExcelInlineAnnexRemove(defectId, pathRel))
+        .then(() => this.executeExcelInlineAnnexRemove(defectId, pathRel, customFieldKey))
         .catch(() => {});
     },
-    async executeExcelInlineAnnexRemove(defectId, pathRel) {
+    async executeExcelInlineAnnexRemove(defectId, pathRel, customFieldKey) {
       const row = this.sheetRows.find((r) => String(r.defectId) === String(defectId));
       if (!row || this.isDeletedDefectRow(row)) {
         if (row) this.notifyDeletedDefectCannotEdit();
         return;
       }
-      const parts = this.excelCommaUrlParts(row.annexUrls);
-      const next = parts.filter((p) => String(p) !== String(pathRel));
-      if (next.length === parts.length) return;
-      const merged = next.join(",");
       const projectId = row.projectId != null && row.projectId !== "" ? row.projectId : this.queryParams.projectId;
       this.syncing = true;
       this.$modal.loading(String(this.$t("upload.file-deleting")));
       try {
-        await updateDefect({
-          defectId: row.defectId,
-          projectId,
-          annexUrls: merged,
-        });
-        this.$set(row, "annexUrls", merged);
+        if (customFieldKey) {
+          const parts = this.customFieldUrlParts(row, customFieldKey);
+          const next = parts.filter((p) => String(p) !== String(pathRel));
+          if (next.length === parts.length) return;
+          const prev = (row.customFields && typeof row.customFields === "object") ? { ...row.customFields } : {};
+          if (next.length) prev[customFieldKey] = next;
+          else delete prev[customFieldKey];
+          await updateDefect({ defectId: row.defectId, projectId, customFields: prev });
+          this.$set(row, "customFields", prev);
+        } else {
+          const parts = this.excelCommaUrlParts(row.annexUrls);
+          const next = parts.filter((p) => String(p) !== String(pathRel));
+          if (next.length === parts.length) return;
+          const merged = next.join(",");
+          await updateDefect({ defectId: row.defectId, projectId, annexUrls: merged });
+          this.$set(row, "annexUrls", merged);
+        }
         this.touchRowUpdateTime(row);
         this.refreshExcelEditorView();
         this.$modal.msgSuccess(this.$t("upload.file-delete-success").toString());
       } catch (e) {
-        this.$modal.msgError(this.$t("defect.excel-save-failed").toString());
+        this.$modal.msgError(this.buildExcelSaveFailedMessage(row));
       } finally {
         this.$modal.closeLoading();
         this.syncing = false;
@@ -2530,10 +3252,14 @@ export default {
       if (input) input.value = "";
       const tgt = this.excelInlineUploadTarget;
       this.excelInlineUploadTarget = null;
-      if (!tgt || tgt.kind !== "img" || !tgt.defectId || !files.length) return;
+      if (!tgt || !tgt.defectId || !files.length) return;
       const row = this.sheetRows.find((r) => String(r.defectId) === String(tgt.defectId));
       if (!row) return;
-      await this.excelInlineUploadImagesForRow(row, files);
+      if (tgt.kind === "img") {
+        await this.excelInlineUploadImagesForRow(row, files);
+      } else if (tgt.kind === "custom-img" && tgt.customFieldKey) {
+        await this.excelInlineUploadCustomImagesForRow(row, tgt.customFieldKey, files, tgt.col);
+      }
     },
     /** 从剪贴板收集图片文件（截图、复制图片等） */
     collectClipboardImageFiles(e) {
@@ -2602,31 +3328,126 @@ export default {
       const row = this.sheetRows.find((r) => String(r.defectId) === String(rec.defectId));
       if (!row) return;
 
-      if (field.name === "excelImgUrlsText") {
+      const col = this.findExcelCol(field.name);
+      if (field.name === "excelImgUrlsText" || (col && col.isCustomField && col.fieldType === "image")) {
         const files = this.collectClipboardImageFiles(e);
         if (files.length) {
           e.preventDefault();
           e.stopPropagation();
           if (this.syncing) return;
-          void this.excelInlineUploadImagesForRow(row, files);
+          if (col && col.isCustomField && col.fieldKey) {
+            void this.excelInlineUploadCustomImagesForRow(row, col.fieldKey, files, col);
+          } else {
+            void this.excelInlineUploadImagesForRow(row, files);
+          }
           return;
         }
         e.preventDefault();
         e.stopPropagation();
         return;
       }
-      if (field.name === "excelAnnexUrlsText") {
+      if (field.name === "excelAnnexUrlsText" || (col && col.isCustomField && col.fieldType === "file")) {
         const files = this.collectClipboardFiles(e);
         if (files.length) {
           e.preventDefault();
           e.stopPropagation();
           if (this.syncing) return;
-          void this.excelInlineUploadAnnexesForRow(row, files);
+          if (col && col.isCustomField && col.fieldKey) {
+            void this.excelInlineUploadCustomAnnexesForRow(row, col.fieldKey, files, col);
+          } else {
+            void this.excelInlineUploadAnnexesForRow(row, files);
+          }
           return;
         }
         e.preventDefault();
         e.stopPropagation();
         return;
+      }
+    },
+    async excelInlineUploadCustomImagesForRow(row, fieldKey, files, col) {
+      if (!row || !fieldKey || !files || !files.length) return;
+      if (this.isDeletedDefectRow(row)) {
+        this.notifyDeletedDefectCannotEdit();
+        return;
+      }
+      const limit = col ? this.customFieldMaxCount(col) : EXCEL_INLINE_IMG_LIMIT;
+      const existing = this.customFieldUrlParts(row, fieldKey);
+      if (existing.length + files.length > limit) {
+        this.$modal.msgError(strFormat(this.$t("upload.number-exceeds-range"), limit));
+        return;
+      }
+      for (let i = 0; i < files.length; i++) {
+        if (!this.validateExcelInlineImageFile(files[i])) return;
+      }
+      const projectId = row.projectId != null && row.projectId !== "" ? row.projectId : this.queryParams.projectId;
+      this.syncing = true;
+      this.$modal.loading(this.$t("upload.img-loading").toString());
+      try {
+        const newNames = [];
+        for (let i = 0; i < files.length; i++) {
+          const fd = new FormData();
+          fd.append("file", files[i]);
+          const res = await upload(fd);
+          if (!res || res.code !== 200 || !res.fileName) {
+            throw new Error((res && res.msg) || "upload");
+          }
+          newNames.push(res.fileName);
+        }
+        const prev = (row.customFields && typeof row.customFields === "object") ? { ...row.customFields } : {};
+        prev[fieldKey] = [...existing, ...newNames];
+        await updateDefect({ defectId: row.defectId, projectId, customFields: prev });
+        this.$set(row, "customFields", prev);
+        this.touchRowUpdateTime(row);
+        this.refreshExcelEditorView();
+        this.$modal.msgSuccess(this.$t("defect.excel-save-success").toString());
+      } catch (e) {
+        this.$modal.msgError(this.$t("upload.img-fail").toString());
+      } finally {
+        this.$modal.closeLoading();
+        this.syncing = false;
+      }
+    },
+    async excelInlineUploadCustomAnnexesForRow(row, fieldKey, files, col) {
+      if (!row || !fieldKey || !files || !files.length) return;
+      if (this.isDeletedDefectRow(row)) {
+        this.notifyDeletedDefectCannotEdit();
+        return;
+      }
+      const limit = col ? this.customFieldMaxCount(col) : EXCEL_INLINE_ANNEX_LIMIT;
+      const existing = this.customFieldUrlParts(row, fieldKey);
+      if (existing.length + files.length > limit) {
+        this.$modal.msgError(strFormat(this.$t("upload.number-exceeds-range"), limit));
+        return;
+      }
+      for (let i = 0; i < files.length; i++) {
+        if (!this.validateExcelInlineAnnexFile(files[i])) return;
+      }
+      const projectId = row.projectId != null && row.projectId !== "" ? row.projectId : this.queryParams.projectId;
+      this.syncing = true;
+      this.$modal.loading(this.$t("upload.uploading").toString());
+      try {
+        const newNames = [];
+        for (let i = 0; i < files.length; i++) {
+          const fd = new FormData();
+          fd.append("file", files[i]);
+          const res = await upload(fd);
+          if (!res || res.code !== 200 || !res.fileName) {
+            throw new Error((res && res.msg) || "upload");
+          }
+          newNames.push(res.fileName);
+        }
+        const prev = (row.customFields && typeof row.customFields === "object") ? { ...row.customFields } : {};
+        prev[fieldKey] = [...existing, ...newNames];
+        await updateDefect({ defectId: row.defectId, projectId, customFields: prev });
+        this.$set(row, "customFields", prev);
+        this.touchRowUpdateTime(row);
+        this.refreshExcelEditorView();
+        this.$modal.msgSuccess(this.$t("defect.excel-save-success").toString());
+      } catch (e) {
+        this.$modal.msgError(this.$t("upload.file-fail").toString());
+      } finally {
+        this.$modal.closeLoading();
+        this.syncing = false;
       }
     },
     /** 内联「添加图片」与剪贴板粘贴共用：校验、上传、updateDefect、刷新单元格 */
@@ -2681,10 +3502,14 @@ export default {
       if (input) input.value = "";
       const tgt = this.excelInlineUploadTarget;
       this.excelInlineUploadTarget = null;
-      if (!tgt || tgt.kind !== "annex" || !tgt.defectId || !files.length) return;
+      if (!tgt || !tgt.defectId || !files.length) return;
       const row = this.sheetRows.find((r) => String(r.defectId) === String(tgt.defectId));
       if (!row) return;
-      await this.excelInlineUploadAnnexesForRow(row, files);
+      if (tgt.kind === "annex") {
+        await this.excelInlineUploadAnnexesForRow(row, files);
+      } else if (tgt.kind === "custom-annex" && tgt.customFieldKey) {
+        await this.excelInlineUploadCustomAnnexesForRow(row, tgt.customFieldKey, files, tgt.col);
+      }
     },
     /** 内联「上传附件」与剪贴板粘贴共用 */
     async excelInlineUploadAnnexesForRow(row, files) {
@@ -2761,10 +3586,12 @@ export default {
         e.stopPropagation();
         const kind = uploadBtn.getAttribute("data-upload-kind");
         const defectId = uploadBtn.getAttribute("data-defect-id");
+        const customFieldKey = uploadBtn.getAttribute("data-custom-field-key");
         if (!defectId) return;
-        this.excelInlineUploadTarget = { kind, defectId };
+        const col = customFieldKey ? this.findExcelCol(`custom:${customFieldKey}`) : null;
+        this.excelInlineUploadTarget = { kind, defectId, customFieldKey: customFieldKey || null, col };
         this.$nextTick(() => {
-          if (kind === "img") {
+          if (kind === "img" || kind === "custom-img") {
             const el = this.$refs.excelInlineImgFileInput;
             if (el) el.click();
           } else {
@@ -3052,24 +3879,54 @@ export default {
       COLS.forEach((c) => {
         row[c.key] = "";
       });
+      this.effectiveCols.forEach((c) => {
+        if (c.isCustomField && row[c.key] == null) row[c.key] = "";
+      });
       row.moduleId = null;
       return row;
     },
     handleSheetUpdate(buf) {
       if (!Array.isArray(buf) || this.syncing) return;
+      const dedupeKey = buf
+        .filter((r) => r && !r.err)
+        .map((r) => `${r.$id}|${r.name}|${String(r.newVal)}`)
+        .sort()
+        .join(";");
+      const now = Date.now();
+      if (
+        dedupeKey &&
+        this._sheetUpdateDedupeKey === dedupeKey &&
+        now - (this._sheetUpdateDedupeAt || 0) < 800
+      ) {
+        return;
+      }
+      if (dedupeKey) {
+        this._sheetUpdateDedupeKey = dedupeKey;
+        this._sheetUpdateDedupeAt = now;
+      }
       const items = [];
       const touchedPlaceholderIds = new Set();
       let deletedEditAttempted = false;
       for (const rec of buf) {
         if (rec.err) continue;
-        const col = COLS.find((c) => c.key === rec.name);
+        const colKey = rec.name || (rec.field && rec.field.name);
+        const col = colKey ? this.findExcelCol(colKey) : null;
         if (!col || !col.editable) continue;
         if (col.key === "excelImgUrlsText" || col.key === "excelAnnexUrlsText") continue;
+        if (col.isCustomField && (col.fieldType === "image" || col.fieldType === "file")) continue;
+        if (col.isCustomField && col.fieldType === "datetime") continue;
         const nv = rec.newVal == null ? "" : String(rec.newVal);
         const ov = rec.oldVal == null ? "" : String(rec.oldVal);
-        if (nv === ov) continue;
-        const row = this.sheetRows.find((r) => r.$id === rec.$id);
+        const row = this.resolveSheetRowFromUpdate(rec);
         if (!row) continue;
+        if (col.isCustomField) {
+          if (customFieldDisplayFromCellValue(col, rec.oldVal) === customFieldDisplayFromCellValue(col, rec.newVal)) {
+            continue;
+          }
+          this.applyCustomFieldSheetCellValue(row, col, rec.newVal);
+        } else if (nv === ov) {
+          continue;
+        }
         if (this.isDeletedDefectRow(row)) {
           deletedEditAttempted = true;
           this.syncing = true;
@@ -3110,10 +3967,15 @@ export default {
           });
           continue;
         }
-        items.push({ row, key: col.key, nv });
+        items.push({
+          row,
+          key: col.key,
+          nv: col.isCustomField ? rec.newVal : nv,
+        });
       }
       if (deletedEditAttempted) this.notifyDeletedDefectCannotEdit();
       if (!items.length && touchedPlaceholderIds.size === 0) return;
+      if (items.length) this.syncing = true;
       const run = async () => {
         try {
           if (items.length) await this.persistSheetCellsAsync(items);
@@ -3218,13 +4080,25 @@ export default {
         planStartTime: r.planStartTime ? this.parseTime(r.planStartTime, "{y}-{m}-{d} {h}:{i}:{s}") : "",
         planEndTime: r.planEndTime ? this.parseTime(r.planEndTime, "{y}-{m}-{d} {h}:{i}:{s}") : "",
         updateTime: r.updateTime ? this.parseTime(r.updateTime, "{y}-{m}-{d} {h}:{i}:{s}") : "",
+        ...(this.mapCustomFieldsForExcelRow(r.customFields)),
       };
+    },
+    mapCustomFieldsForExcelRow(customFields) {
+      const out = {};
+      const cf = customFields || {};
+      this.effectiveCols.forEach((col) => {
+        if (!col.isCustomField) return;
+        const fk = col.fieldKey || customColFieldKey(col.key);
+        if (!fk) return;
+        out[col.key] = formatCustomFieldExcelText(cf[fk], col);
+      });
+      return out;
     },
     /** 无 defectId 的占位行：COLS 中 required+editable 均已非空则可新建 */
     excelPlaceholderRowAllRequiredFilled(row) {
       if (!row || row.defectId) return false;
-      for (let i = 0; i < COLS.length; i++) {
-        const c = COLS[i];
+      for (let i = 0; i < this.effectiveCols.length; i++) {
+        const c = this.effectiveCols[i];
         if (!c.required || !c.editable) continue;
         const v = row[c.key];
         if (v == null || String(v).trim() === "") return false;
@@ -3294,13 +4168,13 @@ export default {
       const lockKey = row.$id != null && row.$id !== "" ? String(row.$id) : `idx-${this.sheetRows.indexOf(row)}`;
       if (this.excelPlaceholderRowSubmitLock[lockKey]) return false;
       if (!checkPermi(["system:defect:add"])) {
-        this.$modal.msgError(this.$t("defect.excel-save-failed").toString());
+        this.$modal.msgError(this.buildExcelSaveFailedMessage(row));
         this.$set(row, "defectStateText", "");
         return false;
       }
       const projectId = row.projectId != null && row.projectId !== "" ? row.projectId : this.queryParams.projectId;
       if (projectId == null || projectId === "") {
-        this.$modal.msgError(this.$t("defect.excel-save-failed").toString());
+        this.$modal.msgError(this.buildExcelSaveFailedMessage(row));
         this.$set(row, "defectStateText", "");
         return false;
       }
@@ -3354,7 +4228,7 @@ export default {
         if (!queueSilent) this.$modal.msgSuccess(this.$t("create-success").toString());
         return true;
       } catch (e) {
-        this.$modal.msgError(this.$t("defect.excel-save-failed").toString());
+        this.$modal.msgError(this.buildExcelSaveFailedMessage(row));
         this.$set(row, "defectStateText", "");
         return false;
       } finally {
@@ -3374,6 +4248,7 @@ export default {
         for (let i = 0; i < items.length; i++) {
           const it = items[i];
           if (this.isDeletedDefectRow(it.row)) continue;
+          this.clearExcelPersistErrorCell(it.row, it.key);
           try {
             const payload = {
               defectId: it.row.defectId,
@@ -3406,14 +4281,35 @@ export default {
             } else if (it.key === "moduleName") {
               /* 交付物仅通过三角 SelectModule 与 moduleId 同步，忽略单元格纯文本回写 */
               continue;
+            } else if (String(it.key).startsWith("custom:")) {
+              const col = this.findExcelCol(it.key);
+              if (!col || !col.isCustomField) continue;
+              if (col.fieldType === "image" || col.fieldType === "file") continue;
+              const fk = col.fieldKey || customColFieldKey(col.key);
+              const parsed = normalizeCustomFieldCellValue(it.nv, col);
+              const prev = (it.row.customFields && typeof it.row.customFields === "object") ? { ...it.row.customFields } : {};
+              if (parsed === "" || parsed == null) {
+                delete prev[fk];
+              } else {
+                prev[fk] = parsed;
+              }
+              payload.customFields = prev;
+              this.$set(it.row, "customFields", prev);
+              this.$set(it.row, it.key, formatCustomFieldExcelText(prev[fk], col));
+              const invalid = this.findInvalidCustomFieldForPersist(it.row, prev);
+              if (invalid) {
+                this.reportExcelPersistFieldError(it.row, invalid.colKey, it.key);
+                return;
+              }
             } else {
               payload[it.key] = it.nv;
             }
-            await updateDefect(payload);
+            await updateDefect(payload, { silentError: true });
             this.touchRowUpdateTime(it.row);
             ok++;
           } catch (e) {
-            this.$modal.msgError(this.$t("defect.excel-save-failed").toString());
+            const blameKey = this.resolveExcelPersistErrorColKey(it.row, it.key, e);
+            this.reportExcelPersistFieldError(it.row, blameKey, it.key);
             return;
           }
         }
@@ -3767,14 +4663,17 @@ export default {
 .defect-vue-excel-editor ::v-deep .systable tbody tr:hover td {
   background-color: #fafafa;
 }
-/* 整行选中：蓝色描边由库内 cell-range-overlay（TD 并集 bbox）绘制；勿对 tr 用 outline（高行时底边会短） */
-.defect-vue-excel-editor ::v-deep .systable tbody tr.select td,
-.defect-vue-excel-editor ::v-deep .systable tbody tr.select td.first-col {
+/* 整行选中：数据格浅蓝底；行号列保持灰底（暗黑见 html.dark 与 theme-dark.scss） */
+.defect-vue-excel-editor ::v-deep .systable tbody tr.select td:not(.first-col) {
   background-color: #ecf5ff !important;
 }
-.defect-vue-excel-editor ::v-deep .systable tbody tr.select:hover td,
-.defect-vue-excel-editor ::v-deep .systable tbody tr.select:hover td.first-col {
+.defect-vue-excel-editor ::v-deep .systable tbody tr.select:hover td:not(.first-col) {
   background-color: #d9ecff !important;
+}
+.defect-vue-excel-editor ::v-deep .systable tbody tr.select td.first-col,
+.defect-vue-excel-editor ::v-deep .systable tbody tr.select:hover td.first-col {
+  background-color: #f0f2f5 !important;
+  color: #909399 !important;
 }
 /* 只读数据格：浅红斜线底纹（行号列除外；::before 在内容之下，不挡三角/文字） */
 .defect-vue-excel-editor ::v-deep .systable tbody td.readonly:not(.first-col) {
@@ -3812,6 +4711,25 @@ export default {
   position: relative;
   z-index: 1;
 }
+/* 保存失败：单元格文字红色（与库内 td.error 角标配合） */
+.defect-vue-excel-editor ::v-deep .systable tbody td.error:not(.first-col),
+.defect-vue-excel-editor ::v-deep .systable tbody td.error:not(.first-col) .vue-excel-cell-html {
+  color: #f56c6c !important;
+}
+html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep .systable tbody td.error:not(.first-col),
+html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep .systable tbody td.error:not(.first-col) .vue-excel-cell-html {
+  color: #f78989 !important;
+}
+html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep .systable tbody tr.select td.first-col,
+html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep .systable tbody tr.select:hover td.first-col {
+  background-color: var(--table-header-bg, #252529) !important;
+  color: var(--text-color-regular, #cfcfcf) !important;
+}
+html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep .systable tbody td.first-col.focus {
+  background-color: var(--table-row-hover-bg, #2d2d31) !important;
+  color: var(--text-color-primary, #e5e5e5) !important;
+  border-right: 1px solid #409eff !important;
+}
 /* 覆盖 vue-excel-editor 默认 td vertical-align: bottom */
 .defect-vue-excel-editor ::v-deep .systable tbody td[id$="-projectNum"] {
   vertical-align: middle !important;
@@ -3836,13 +4754,18 @@ export default {
 .defect-vue-excel-editor ::v-deep .systable tbody td[id$="-defectName"]:not(.first-col) {
   height: auto !important;
   min-height: 24px;
+  min-width: 160px;
   white-space: pre-wrap !important;
-  word-break: break-word;
+  word-break: normal;
+  overflow-wrap: break-word;
   overflow-x: hidden;
   overflow-y: visible;
   text-overflow: clip;
   vertical-align: middle !important;
   box-sizing: border-box;
+}
+.defect-vue-excel-editor ::v-deep .systable thead th[id$="-defectName"] {
+  min-width: 160px;
 }
 /* 交付物(moduleName)、版本(moduleVersion)：与缺陷名称一致，格内上下居中 */
 .defect-vue-excel-editor ::v-deep .systable tbody td[id$="-moduleName"]:not(.first-col),
@@ -3860,8 +4783,10 @@ export default {
 .defect-vue-excel-editor ::v-deep .systable tbody td[id$="-defectDescribe"]:not(.first-col) {
   height: auto !important;
   min-height: 24px;
+  min-width: 120px;
   white-space: pre-wrap !important;
-  word-break: break-word;
+  word-break: normal;
+  overflow-wrap: break-word;
   overflow-x: hidden;
   overflow-y: visible;
   text-overflow: clip;
@@ -3886,6 +4811,20 @@ export default {
   word-break: break-word;
   overflow-x: hidden !important;
   overflow-y: auto !important;
+}
+html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep .input-square.input-square--editing {
+  background-color: var(--input-bg) !important;
+}
+html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep textarea.input-box {
+  background-color: var(--input-bg) !important;
+  color: var(--input-color) !important;
+  caret-color: var(--text-color-primary) !important;
+}
+html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep textarea.input-box:focus,
+html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep textarea.input-box:active {
+  background-color: var(--input-bg) !important;
+  color: var(--input-color) !important;
+  box-shadow: none !important;
 }
 /* 与补丁 .input-square--defect-name 一致：宿主提高优先级，凡可编辑非日期列编辑时文本在格内上下居中 */
 .defect-vue-excel-editor ::v-deep .input-square.input-square--defect-name > div:first-child {
@@ -3988,9 +4927,9 @@ export default {
   height: 60px;
   line-height: 0;
   overflow: hidden;
-  background-color: #ebeef5;
-  border: 1px solid #ebeef5;
-  border-radius: 3px;
+  background-color: var(--cat2bug-image-error-bg, #ebeef5);
+  border: 1px solid var(--cat2bug-image-placeholder-bg, #ebeef5);
+  border-radius: var(--cat2bug-border-radius, 4px);
   box-sizing: border-box;
 }
 .defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-img-remove {
@@ -4032,7 +4971,7 @@ export default {
   object-fit: contain;
   object-position: center center;
   border: none;
-  border-radius: 0;
+  border-radius: var(--cat2bug-border-radius, 4px);
   box-sizing: border-box;
   cursor: pointer;
   vertical-align: middle;
@@ -4227,8 +5166,26 @@ export default {
   vertical-align: middle !important;
   text-align: center !important;
 }
+html.dark .defect-excel-root .defect-vue-excel-editor table.systable tbody tr.select td.first-col,
+html.dark .defect-excel-root .defect-vue-excel-editor table.systable tbody tr.select:hover td.first-col {
+  background-color: var(--table-header-bg, #252529) !important;
+  color: var(--text-color-regular, #cfcfcf) !important;
+}
+html.dark .defect-excel-root .defect-vue-excel-editor table.systable tbody td.first-col.focus {
+  background-color: var(--table-row-hover-bg, #2d2d31) !important;
+  color: var(--text-color-primary, #e5e5e5) !important;
+  border-right: 1px solid #409eff !important;
+}
 .defect-excel-root .defect-vue-excel-editor table.systable tbody td:not(.first-col):not([id$="-projectNum"]) {
   vertical-align: middle !important;
+}
+.defect-excel-root .defect-vue-excel-editor table.systable tbody td.error:not(.first-col),
+.defect-excel-root .defect-vue-excel-editor table.systable tbody td.error:not(.first-col) .vue-excel-cell-html {
+  color: #f56c6c !important;
+}
+html.dark .defect-excel-root .defect-vue-excel-editor table.systable tbody td.error:not(.first-col),
+html.dark .defect-excel-root .defect-vue-excel-editor table.systable tbody td.error:not(.first-col) .vue-excel-cell-html {
+  color: #f78989 !important;
 }
 .defect-excel-root .defect-vue-excel-editor table.systable tbody td:not(.first-col):not([id$="-projectNum"]):not([id$="-defectName"]):not([id$="-moduleName"]):not([id$="-moduleVersion"]):not([id$="-defectDescribe"]):not([id$="-createByText"]):not([id$="-updateTime"]):not(.cell-html):not(.select):not(.datepick) {
   height: auto !important;
@@ -4242,13 +5199,18 @@ export default {
 .defect-excel-root .defect-vue-excel-editor table.systable tbody td[id$="-defectName"]:not(.first-col) {
   height: auto !important;
   min-height: 24px;
+  min-width: 160px;
   white-space: pre-wrap !important;
-  word-break: break-word;
+  word-break: normal;
+  overflow-wrap: break-word;
   overflow-x: hidden;
   overflow-y: visible;
   text-overflow: clip;
   vertical-align: middle !important;
   box-sizing: border-box;
+}
+.defect-excel-root .defect-vue-excel-editor table.systable thead th[id$="-defectName"] {
+  min-width: 160px;
 }
 .defect-excel-root .defect-vue-excel-editor table.systable tbody td[id$="-moduleName"]:not(.first-col),
 .defect-excel-root .defect-vue-excel-editor table.systable tbody td[id$="-moduleVersion"]:not(.first-col) {
@@ -4328,7 +5290,7 @@ export default {
   align-items: center;
   min-height: 24px;
 }
-/* 计划开始/结束、交付物：与库内 td.select 相同三角；三角在 padding 区内，横向溢出仍裁切 */
+/* 计划开始/结束、交付物：与库内 td.select 相同三角；自定义时间列由 defectExcelCellStyle + columnOptions 控制，勿用 custom: 通配 */
 .defect-excel-root .defect-vue-excel-editor table.systable tbody td[id$="-planStartTime"]:not(.first-col),
 .defect-excel-root .defect-vue-excel-editor table.systable tbody td[id$="-planEndTime"]:not(.first-col),
 .defect-excel-root .defect-vue-excel-editor table.systable tbody td[id$="-moduleName"]:not(.first-col) {

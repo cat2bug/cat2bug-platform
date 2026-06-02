@@ -59,6 +59,16 @@
   --cat2bug-operate-tools-gap: 10px;
   --cat2bug-operate-tools-row-gap: 0;
 
+  /* 表格操作列：text 按钮语义色（DefectTools 指派/驳回/通过/关闭等） */
+  --cat2bug-operate-text-muted: #606266;
+  --cat2bug-operate-text-muted-hover: #409eff;
+  --cat2bug-operate-text-danger: #f56c6c;
+  --cat2bug-operate-text-danger-hover: #f78989;
+  --cat2bug-operate-text-success: #67c23a;
+  --cat2bug-operate-text-success-hover: #85ce61;
+  --cat2bug-operate-text-warning: #ffba00;
+  --cat2bug-operate-text-warning-hover: #ffc933;
+
   /* 收藏星标 StarSwitch：未选中 / 已选中 */
   --star-switch-off-stroke: #c0c4cc;
   --star-switch-off-color: #ffffff;
@@ -155,6 +165,8 @@ html.dark {
   
   --border-color-base: #4c4d4f;
   --border-color-light: #363637;
+  --upload-picture-add-bg: var(--input-bg);
+  --upload-picture-add-border: var(--border-color-base);
   --border-color-lighter: #2b2b2c;
   
   --card-bg: #252529;
@@ -213,9 +225,31 @@ html.dark {
   --share-card-title-bg: var(--table-row-hover-bg);
   --share-card-link-color: #409eff;
 
+  /* 表格操作列：text 按钮语义色（暗色提高对比，避免 #606266 贴底看不清） */
+  --cat2bug-operate-text-muted: #c8ccd3;
+  --cat2bug-operate-text-muted-hover: #79bbff;
+  --cat2bug-operate-text-danger: #f78989;
+  --cat2bug-operate-text-danger-hover: #fab6b6;
+  --cat2bug-operate-text-success: #85ce61;
+  --cat2bug-operate-text-success-hover: #a4da89;
+  --cat2bug-operate-text-warning: #eebe77;
+  --cat2bug-operate-text-warning-hover: #f3d19e;
+
   /* Cat2BugTable 表头排序箭头（暗色：非激活箭头提高对比，激活保持主题蓝） */
   --cat2bug-table-sort-caret-inactive: #a8abb2;
   --cat2bug-table-sort-caret-active: #409eff;
+
+  /* 图片占位 / 加载失败 */
+  --cat2bug-image-placeholder-bg: var(--bg-color-block);
+  --cat2bug-image-error-bg: var(--input-bg);
+
+  .cat2bug-image-error__img {
+    opacity: 0.72;
+  }
+
+  .el-upload-list--picture-card .el-upload-list__item-thumbnail {
+    background-color: var(--cat2bug-image-error-bg) !important;
+  }
 }
 
 /* 主题切换瞬间禁用过渡，避免亮/暗色逐块渐变闪烁 */
@@ -423,6 +457,11 @@ html.dark {
     }
   }
 
+  /* 缺陷新建/处理抽屉：与浅色主题一致的左侧红色标识边 */
+  .el-drawer.defect-drawer-accent {
+    border-left: 3px solid #ff4949 !important;
+  }
+
   // 列表表格：无外框，保留行间分割线（与浅色主题 el-table 默认一致）
   .el-table:not(.el-table--border) {
     background-color: var(--table-bg) !important;
@@ -518,6 +557,47 @@ html.dark {
     }
   }
 
+  // 带边框表格（弹窗内枚举选项等）：覆盖 Element 默认白底
+  .el-table.el-table--border {
+    background-color: var(--table-bg) !important;
+    color: var(--text-color-regular) !important;
+    border-color: var(--border-color-light) !important;
+
+    &::before,
+    &::after {
+      background-color: var(--border-color-light) !important;
+    }
+
+    th.el-table__cell,
+    td.el-table__cell {
+      border-color: var(--border-color-light) !important;
+      color: var(--text-color-regular) !important;
+    }
+
+    thead th.el-table__cell {
+      background-color: var(--table-header-bg) !important;
+      color: var(--table-header-color) !important;
+    }
+
+    tbody td.el-table__cell {
+      background-color: var(--cat2bug-table-row-bg) !important;
+    }
+
+    .el-table__row {
+      background-color: var(--cat2bug-table-row-bg) !important;
+
+      &:hover > td.el-table__cell {
+        background-color: var(--table-row-hover-bg) !important;
+      }
+    }
+  }
+
+  .el-dialog .el-table.el-table--border {
+    border: 1px solid var(--border-color-light) !important;
+    border-radius: var(--cat2bug-border-radius, 4px) !important;
+    overflow: hidden !important;
+  }
+
   /* el-progress 暗黑：轨道半透明灰，避免 Element 默认浅灰/白底 */
   .el-progress {
     .el-progress-bar__outer {
@@ -602,6 +682,120 @@ html.dark {
     }
   }
 
+  // 禁用/只读：与可编辑输入区分（背景更暗、文字次要色、不可点击光标）
+  .el-input.is-disabled .el-input__inner,
+  .el-textarea.is-disabled .el-textarea__inner {
+    background-color: var(--bg-color-block, #2b2b2c) !important;
+    border-color: var(--border-color-base) !important;
+    color: var(--text-color-secondary) !important;
+    -webkit-text-fill-color: var(--text-color-secondary) !important;
+    cursor: not-allowed !important;
+  }
+
+  .el-select .el-input.is-disabled .el-input__inner {
+    background-color: var(--bg-color-block, #2b2b2c) !important;
+    border-color: var(--border-color-base) !important;
+    color: var(--text-color-secondary) !important;
+    -webkit-text-fill-color: var(--text-color-secondary) !important;
+    cursor: not-allowed !important;
+  }
+
+  .el-input-number.is-disabled .el-input__inner,
+  .el-input-number.is-disabled .el-input-number__decrease,
+  .el-input-number.is-disabled .el-input-number__increase {
+    background-color: var(--bg-color-block, #2b2b2c) !important;
+    border-color: var(--border-color-base) !important;
+    color: var(--text-color-secondary) !important;
+    cursor: not-allowed !important;
+  }
+
+  // el-color-picker：触发器与下拉面板（append-to-body，全局生效）
+  .el-color-picker__trigger {
+    border-color: var(--input-border) !important;
+    background-color: var(--input-bg) !important;
+    box-shadow: none !important;
+  }
+
+  .el-color-picker__color {
+    border: 1px solid var(--border-color-light) !important;
+  }
+
+  .el-color-picker__icon {
+    color: var(--cat2bug-input-icon-color, #c0c4cc) !important;
+  }
+
+  .el-color-picker__panel,
+  .el-color-dropdown,
+  .cat2bug-color-picker-dropdown.el-color-picker__panel,
+  .cat2bug-color-picker-dropdown {
+    background-color: var(--dropdown-bg) !important;
+    border: 1px solid var(--border-color-light) !important;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45) !important;
+    color: var(--text-color-regular) !important;
+  }
+
+  .el-color-dropdown__main-wrapper {
+    background-color: transparent !important;
+  }
+
+  .el-color-dropdown__btns {
+    border-top: 1px solid var(--border-color-light) !important;
+    background-color: var(--dropdown-bg) !important;
+  }
+
+  .el-color-dropdown__value {
+    color: var(--text-color-regular) !important;
+  }
+
+  .el-color-dropdown__link-btn {
+    color: #409eff !important;
+
+    &:hover {
+      color: #66b1ff !important;
+    }
+  }
+
+  .el-color-dropdown__btn {
+    background-color: var(--bg-color-block) !important;
+    border: 1px solid var(--border-color-base) !important;
+    color: var(--text-color-primary) !important;
+
+    &:hover {
+      background-color: var(--table-row-hover-bg) !important;
+      border-color: #409eff !important;
+      color: #409eff !important;
+    }
+  }
+
+  .el-color-picker__panel .el-input__inner,
+  .el-color-dropdown .el-input__inner,
+  .cat2bug-color-picker-dropdown .el-input__inner {
+    background-color: var(--input-bg) !important;
+    border-color: var(--input-border) !important;
+    color: var(--input-color) !important;
+  }
+
+  .el-color-hue-slider__thumb,
+  .el-color-svpanel__cursor > div {
+    box-shadow: 0 0 0 1.5px #fff, inset 0 0 1px 1px rgba(0, 0, 0, 0.3) !important;
+  }
+
+  .el-color-predefine {
+    border-top: 1px solid var(--border-color-light) !important;
+
+    &::after {
+      background-color: var(--border-color-light) !important;
+    }
+  }
+
+  .el-color-predefine__color-selector {
+    border: 1px solid var(--border-color-light) !important;
+
+    &.selected {
+      box-shadow: 0 0 3px 2px #409eff !important;
+    }
+  }
+
   .el-textarea__inner {
     background-color: var(--input-bg) !important;
     border-color: var(--input-border) !important;
@@ -655,8 +849,19 @@ html.dark {
   // 适配 Element UI 上传组件 (el-upload) 暗黑模式
   .el-upload-list--picture-card .el-upload-list__item {
     background-color: var(--input-bg) !important;
-    border: 1px dashed var(--input-border) !important;
+    border: 1px dashed var(--border-color-base) !important;
     color: var(--text-color-regular) !important;
+  }
+
+  .upload-file-list .el-upload-list__item,
+  .el-upload-list--text .el-upload-list__item {
+    background-color: transparent !important;
+    border: none !important;
+    color: var(--text-color-regular) !important;
+
+    &:not(:last-child) {
+      border-bottom: 1px solid var(--border-color-light) !important;
+    }
   }
 
   .el-upload--picture-card {
@@ -664,8 +869,8 @@ html.dark {
     border: none !important;
 
     .update-button {
-      background-color: var(--input-bg) !important;
-      border: 1px dashed var(--input-border) !important;
+      background-color: var(--upload-picture-add-bg, var(--input-bg)) !important;
+      border: 1px dashed var(--upload-picture-add-border, var(--border-color-base)) !important;
       color: var(--text-color-regular) !important;
 
       i {
@@ -1502,10 +1707,52 @@ html.dark {
       }
     }
 
-    // 测试行及相关组件
+    // 概览：待执行迁移标签
+    .upgrade-tag.el-tag--warning {
+      background-color: rgba(230, 162, 60, 0.18) !important;
+      border-color: rgba(230, 162, 60, 0.45) !important;
+      color: #eebe77 !important;
+    }
+
+    // 概览：无待迁移提示
+    .upgrade-overview-alert.el-alert--warning {
+      background-color: rgba(230, 162, 60, 0.12) !important;
+      border: 1px solid rgba(230, 162, 60, 0.28) !important;
+
+      .el-alert__title {
+        color: #eebe77 !important;
+      }
+
+      .el-alert__icon {
+        color: #e6a23c !important;
+      }
+    }
+
+    // 配置差异表格（缺失行高亮 + 处理策略标签）
     .upgrade-diff-table {
-      ::v-deep .upgrade-diff-row--missing {
+      &.el-table--border {
+        border-color: var(--border-color-light) !important;
+      }
+
+      &.el-table--border th.el-table__cell,
+      &.el-table--border td.el-table__cell {
+        border-color: var(--border-color-light) !important;
+      }
+
+      .upgrade-diff-row--missing > td.el-table__cell {
         background: rgba(230, 162, 44, 0.15) !important;
+      }
+
+      .el-tag--info {
+        background-color: rgba(144, 147, 153, 0.18) !important;
+        border-color: rgba(144, 147, 153, 0.4) !important;
+        color: #c8ccd3 !important;
+      }
+
+      .el-tag--warning {
+        background-color: rgba(230, 162, 60, 0.18) !important;
+        border-color: rgba(230, 162, 60, 0.45) !important;
+        color: #eebe77 !important;
       }
     }
 
@@ -1527,6 +1774,84 @@ html.dark {
         background-color: var(--collapse-bg) !important;
         color: var(--text-color-regular) !important;
       }
+    }
+
+    // 升级执行步骤条（Element 默认 is-process 标题 #303133，暗色底上不可读）
+    .upgrade-steps {
+      .el-step__title {
+        &.is-process {
+          color: #79bbff !important;
+          font-weight: 600;
+        }
+
+        &.is-wait {
+          color: var(--text-color-secondary) !important;
+        }
+
+        &.is-success {
+          color: #85ce61 !important;
+        }
+      }
+
+      .el-step__head {
+        &.is-process {
+          color: #409eff !important;
+          border-color: #409eff !important;
+        }
+
+        &.is-wait {
+          color: var(--text-color-secondary) !important;
+          border-color: var(--border-color-base) !important;
+        }
+
+        &.is-success {
+          color: #67c23a !important;
+          border-color: #67c23a !important;
+        }
+      }
+
+      .el-step__line {
+        background-color: var(--border-color-base) !important;
+      }
+
+      .el-step__icon.is-text {
+        background: var(--card-bg) !important;
+      }
+
+      .is-process .el-step__icon.is-text {
+        background: #409eff !important;
+        border-color: #409eff !important;
+        color: #fff !important;
+      }
+
+      .is-wait .el-step__icon.is-text {
+        border-color: var(--border-color-base) !important;
+        color: var(--text-color-secondary) !important;
+      }
+
+      .is-success .el-step__icon.is-text {
+        background: #67c23a !important;
+        border-color: #67c23a !important;
+        color: #fff !important;
+      }
+    }
+
+    // 执行页状态提示（默认 info 白底）
+    .el-alert--info {
+      background-color: rgba(64, 158, 255, 0.12) !important;
+      border: 1px solid rgba(64, 158, 255, 0.28) !important;
+
+      .el-alert__title {
+        color: var(--text-color-regular) !important;
+      }
+
+      .el-alert__icon {
+        color: #409eff !important;
+      }
+    }
+
+    .upgrade-no-migration-text {
+      color: #eebe77 !important;
     }
 
     // 默认按钮适配（如：测试连接等无type属性按钮）
@@ -1860,6 +2185,56 @@ html.dark {
     &--danger:not(.is-plain) {
       background-color: #c62828 !important;
       border-color: #c62828 !important;
+    }
+  }
+
+  /* 表格操作列 text 按钮：与 --cat2bug-operate-text-* 变量一致，覆盖 scoped 硬编码色 */
+  .defect-tools,
+  .cat2bug-operate-tools {
+    .el-button--text.orange {
+      color: var(--cat2bug-operate-text-muted) !important;
+
+      &:hover,
+      &:focus {
+        color: var(--cat2bug-operate-text-muted-hover) !important;
+      }
+    }
+
+    .el-button--text.red {
+      color: var(--cat2bug-operate-text-danger) !important;
+
+      &:hover,
+      &:focus {
+        color: var(--cat2bug-operate-text-danger-hover) !important;
+      }
+    }
+
+    .el-button--text.green {
+      color: var(--cat2bug-operate-text-success) !important;
+
+      &:hover,
+      &:focus {
+        color: var(--cat2bug-operate-text-success-hover) !important;
+      }
+    }
+
+    .el-button--text.restore-orange {
+      color: var(--cat2bug-operate-text-warning) !important;
+
+      &:hover,
+      &:focus {
+        color: var(--cat2bug-operate-text-warning-hover) !important;
+      }
+    }
+
+    /* 查看等无语义 class 的 text 按钮（warning 类型） */
+    .el-button--text:not(.orange):not(.red):not(.green):not(.restore-orange) {
+      color: var(--cat2bug-operate-text-warning) !important;
+
+      &:hover,
+      &:focus {
+        color: var(--cat2bug-operate-text-warning-hover) !important;
+      }
     }
   }
 
@@ -2415,7 +2790,20 @@ html.dark {
         background-color: var(--table-row-hover-bg) !important;
       }
 
-      // 覆盖表头首行，防止白边
+      // 行号多选 (tr.select) / 当前行 (td.first-col.focus)：序列列保持暗色，勿用 excel.vue 亮色 #ecf5ff
+      tbody tr.select td.first-col,
+      tbody tr.select:hover td.first-col {
+        background-color: var(--table-header-bg) !important;
+        color: var(--text-color-regular) !important;
+      }
+
+      tbody td.first-col.focus {
+        background-color: var(--table-row-hover-bg) !important;
+        color: var(--text-color-primary) !important;
+        border-right: 1px solid #409eff !important;
+      }
+
+      // 覆盖 table.systable
       thead tr:first-child th {
         border-bottom-color: var(--table-border-color) !important;
         border-top-color: var(--table-border-color) !important;
@@ -2525,6 +2913,19 @@ html.dark {
     .input-square.input-square--editing {
       background-color: var(--input-bg) !important;
       border-color: #409eff !important;
+    }
+
+    textarea.input-box {
+      background-color: var(--input-bg) !important;
+      color: var(--input-color) !important;
+      caret-color: var(--text-color-primary) !important;
+    }
+
+    textarea.input-box:focus,
+    textarea.input-box:active {
+      background-color: var(--input-bg) !important;
+      color: var(--input-color) !important;
+      box-shadow: none !important;
     }
 
     .input-square .rb-square,
@@ -3069,7 +3470,7 @@ html.dark {
 
     .defect-edit-body {
       .defect-edit-body-log-first {
-        border-color: var(--border-color-light) !important;
+        margin-bottom: 20px;
       }
 
       .defect-edit-body-base {
@@ -3117,6 +3518,23 @@ html.dark {
       border: none !important;
       color: var(--text-color-secondary) !important;
     }
+
+    .list-defect-log-item--divider {
+      border-bottom-color: rgba(255, 255, 255, 0.06) !important;
+    }
+
+    // 评论发言框（contenteditable 易被 scoped 浅色兜底覆盖）
+    .comment-input-content {
+      background-color: var(--input-bg) !important;
+      color: var(--input-color) !important;
+      border-color: var(--input-border) !important;
+      caret-color: var(--input-color) !important;
+    }
+
+    .comment-input[type='textarea'] .comment-input-content:after {
+      background-color: var(--input-bg) !important;
+      color: var(--text-color-secondary) !important;
+    }
   }
 
   // 缺陷更新日志 diff（scoped 内 .new 为 #303133，深色下不可读）
@@ -3148,6 +3566,18 @@ html.dark {
 
       .arrow {
         color: var(--text-color-placeholder) !important;
+      }
+
+      .defect-log-handle-tag.el-tag--dark.el-tag--info {
+        background-color: var(--bg-color-base, #303133) !important;
+        border-color: var(--border-color-light, #4c4d4f) !important;
+        color: var(--text-color-primary, #e5eaf3) !important;
+      }
+
+      .defect-log-handle-tag.el-tag--dark.el-tag--success {
+        background-color: rgba(103, 194, 58, 0.22) !important;
+        border-color: rgba(103, 194, 58, 0.45) !important;
+        color: #95d475 !important;
       }
     }
 
@@ -3385,21 +3815,11 @@ html.dark {
     }
   }
 
-  // 「我的人生」颜色选择下拉面板
+  // 「我的人生」颜色选择下拉面板（继承全局 el-color-picker 暗黑样式）
   .my-life-dialog__color-dropdown.el-color-picker__panel,
   .my-life-dialog__color-dropdown {
     background-color: var(--dropdown-bg) !important;
     border-color: var(--border-color-light) !important;
-
-    .el-color-dropdown__link-btn {
-      color: #409eff !important;
-    }
-
-    .el-input__inner {
-      background-color: var(--input-bg) !important;
-      border-color: var(--input-border) !important;
-      color: var(--input-color) !important;
-    }
   }
 
   // 全局 Markdown 预览代码块（编辑模式、缺陷描述等）

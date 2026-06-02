@@ -4,6 +4,7 @@
       <el-upload
         multiple
         :action="uploadImgUrl"
+        :accept="uploadAccept"
         list-type="picture-card"
         :on-success="handleUploadSuccess"
         :before-upload="handleBeforeUpload"
@@ -34,7 +35,7 @@
     <div class="el-upload__tip" slot="tip" v-if="showTip">
       {{$t('upload.please-upload')}}
       <template v-if="fileSize"> {{$t('upload.size-not-exceeding')}} <b style="color: #f56c6c">{{ fileSize }}MB</b> </template>
-      <template v-if="fileType"> {{$t('upload.format-is')}} <b style="color: #f56c6c">{{ fileType.join("/") }}</b> </template>
+      <template v-if="fileType && fileType.length"> {{$t('upload.format-is')}} <b style="color: #f56c6c" :title="fileType.join('/')">{{ fileTypeHint }}</b> </template>
       {{$t('upload.files')}}
     </div>
 
@@ -45,9 +46,9 @@
       append-to-body
     >
       <img
+        v-img-fallback
         :src="dialogImageUrl"
         style="display: block; max-width: 100%; margin: 0 auto"
-        @error="onPreviewImageError"
       />
     </el-dialog>
   </div>
@@ -60,7 +61,12 @@ import {strFormat} from "@/utils";
 import i18n from "@/utils/i18n/i18n";
 import {delDefect} from "@/api/system/defect";
 import {setHeader} from "@/utils/request";
-import { DEFAULT_IMAGE, applyDefaultImageOnError } from '@/utils/upload-asset'
+import {
+  applyDefaultImageOnError,
+  buildImageUploadAccept,
+  isAllowedImageUploadFile,
+  WEB_IMAGE_UPLOAD_EXTENSIONS
+} from '@/utils/upload-asset'
 
 export default {
   props: {
@@ -75,10 +81,10 @@ export default {
       type: Number,
       default: 5,
     },
-    // 文件类型, 例如['png', 'jpg', 'jpeg']
+    // 文件类型扩展名，默认常见 Web 图片格式
     fileType: {
       type: Array,
-      default: () => ["png", "jpg", "jpeg"],
+      default: () => WEB_IMAGE_UPLOAD_EXTENSIONS.slice(),
     },
     // 是否显示剪切按钮
     isShowClipboardButton: {
@@ -101,6 +107,7 @@ export default {
     return {
       number: 0,
       uploadList: [],
+      pendingUploadCount: 0,
       dialogImageUrl: "",
       dialogVisible: false,
       hideUpload: false,
@@ -113,24 +120,10 @@ export default {
   watch: {
     value: {
       handler(val) {
-        if (val) {
-          // 首先将值转为数组
-          const list = Array.isArray(val) ? val : this.value.split(',');
-          // 然后将数组转为对象数组
-          this.fileList = list.map(item => {
-            if (typeof item === "string") {
-              if (item.indexOf(this.baseUrl) === -1) {
-                item = { name: this.baseUrl + item, url: this.baseUrl + item };
-              } else {
-                item = { name: item, url: item };
-              }
-            }
-            return item;
-          });
-        } else {
-          this.fileList = [];
-          return [];
+        if (this.pendingUploadCount > 0) {
+          return;
         }
+        this.syncFileListFromValue(val);
       },
       deep: true,
       immediate: true
@@ -147,8 +140,48 @@ export default {
     showTip() {
       return this.isShowTip && (this.fileType || this.fileSize);
     },
+    /** 与 fileType 一致，限制系统文件选择对话框可选类型（上传前仍会 beforeUpload 校验） */
+    uploadAccept() {
+      return buildImageUploadAccept(this.fileType);
+    },
+    fileTypeHint() {
+      const types = this.fileType;
+      if (!types || !types.length) {
+        return "";
+      }
+      if (types.length <= 5) {
+        return types.join("/");
+      }
+      return types.slice(0, 5).join("/") + "/…";
+    },
   },
   methods: {
+    syncFileListFromValue(val) {
+      if (val) {
+        const list = Array.isArray(val) ? val : String(val).split(',');
+        this.fileList = list.filter(Boolean).map(item => {
+          if (typeof item === "string") {
+            if (item.indexOf(this.baseUrl) === -1) {
+              return { name: this.baseUrl + item, url: this.baseUrl + item };
+            }
+            return { name: item, url: item };
+          }
+          return item;
+        });
+      } else {
+        this.fileList = [];
+      }
+    },
+    finishUploadLoading() {
+      if (this.pendingUploadCount > 0) {
+        this.pendingUploadCount--;
+        this.$modal.closeLoading();
+      }
+      if (this.pendingUploadCount <= 0) {
+        this.pendingUploadCount = 0;
+        this.$modal.closeAllLoading();
+      }
+    },
     bindThumbnailErrors() {
       if (!this.$el) {
         return
@@ -156,12 +189,6 @@ export default {
       this.$el.querySelectorAll('.el-upload-list__item-thumbnail').forEach((img) => {
         applyDefaultImageOnError(img)
       })
-    },
-    onPreviewImageError(event) {
-      if (event && event.target) {
-        event.target.onerror = null
-        event.target.src = DEFAULT_IMAGE
-      }
     },
     // var imageUrl = URL.createObjectURL(blob);
     async clipboardImageHandle(event) {
@@ -195,20 +222,7 @@ export default {
     },
     // 上传前loading加载
     handleBeforeUpload(file) {
-      let isImg = false;
-      if (this.fileType.length) {
-        let fileExtension = "";
-        if (file.name.lastIndexOf(".") > -1) {
-          fileExtension = file.name.slice(file.name.lastIndexOf(".") + 1);
-        }
-        isImg = this.fileType.some(type => {
-          if (file.type.indexOf(type) > -1) return true;
-          if (fileExtension && fileExtension.indexOf(type) > -1) return true;
-          return false;
-        });
-      } else {
-        isImg = file.type.indexOf("image") > -1;
-      }
+      const isImg = isAllowedImageUploadFile(file, this.fileType);
 
       if (!isImg) {
         this.$modal.msgError(strFormat(i18n.t('upload.file-format-is-incorrect'),this.fileType.join("/")));
@@ -221,6 +235,7 @@ export default {
           return false;
         }
       }
+      this.pendingUploadCount++;
       this.$modal.loading(this.$i18n.t('upload.img-loading'));
       this.number++;
     },
@@ -230,14 +245,17 @@ export default {
     },
     // 上传成功回调
     handleUploadSuccess(res, file) {
-      if (res.code === 200) {
-        this.uploadList.push({ name: res.fileName, url: res.fileName });
+      const fileName = res && (res.fileName || (res.data && res.data.fileName));
+      if (res && res.code === 200 && fileName) {
+        this.uploadList.push({ name: fileName, url: fileName });
         this.uploadedSuccessfully();
       } else {
-        this.number--;
-        this.$modal.closeLoading();
-        this.$modal.msgError(res.msg);
-        this.$refs.imageUpload.handleRemove(file);
+        this.number = Math.max(0, this.number - 1);
+        this.finishUploadLoading();
+        this.$modal.msgError((res && res.msg) || this.$i18n.t('upload.img-fail'));
+        if (this.$refs.imageUpload) {
+          this.$refs.imageUpload.handleRemove(file);
+        }
         this.uploadedSuccessfully();
       }
     },
@@ -264,8 +282,10 @@ export default {
     },
     // 上传失败
     handleUploadError() {
+      this.number = Math.max(0, this.number - 1);
+      this.finishUploadLoading();
       this.$modal.msgError(this.$i18n.t('upload.img-fail'));
-      this.$modal.closeLoading();
+      this.uploadedSuccessfully();
     },
     // 上传结束处理
     uploadedSuccessfully() {
@@ -273,8 +293,13 @@ export default {
         this.fileList = this.fileList.concat(this.uploadList);
         this.uploadList = [];
         this.number = 0;
+        this.pendingUploadCount = 0;
         this.$emit("input", this.listToString(this.fileList));
-        this.$modal.closeLoading();
+        this.$modal.closeAllLoading();
+        this.syncFileListFromValue(this.value);
+      } else if (this.pendingUploadCount > 0) {
+        this.pendingUploadCount = 0;
+        this.$modal.closeAllLoading();
       }
     },
     // 预览
@@ -314,12 +339,19 @@ export default {
 .update-button {
   width: 148px;
   height: 148px;
-  background-color: #fbfdff;
-  border: 1px dashed #c0ccda;
-  border-radius: 6px;
+  background-color: var(--upload-picture-add-bg, #fbfdff);
+  border: 1px dashed var(--upload-picture-add-border, #c0ccda);
+  border-radius: var(--cat2bug-border-radius, 4px);
   cursor: pointer;
   font-size: 26px;
   flex-shrink: 0;
+}
+::v-deep .el-upload-list--picture-card .el-upload-list__item {
+  border-radius: var(--cat2bug-border-radius, 4px);
+  overflow: hidden;
+}
+::v-deep .el-upload-list--picture-card .el-upload-list__item-thumbnail {
+  border-radius: var(--cat2bug-border-radius, 4px);
 }
 .update-button:hover {
   border-color: #1890ff;

@@ -1,17 +1,21 @@
 <template>
-  <el-card class="box-card">
-    <div slot="header" class="clearfix">
-      <i class="el-icon-user-solid"></i>
-      <div>
-        <span>{{$t('project.project-and-member')}}</span>
-        <span>{{$t('project.project-and-member-describe')}}</span>
+  <el-col v-if="cardVisible" :span="6">
+    <el-card class="box-card">
+      <div slot="header" class="clearfix">
+        <i class="el-icon-user-solid"></i>
+        <div>
+          <span>{{$t('project.project-and-member')}}</span>
+          <span>{{$t('project.project-and-member-describe')}}</span>
+        </div>
       </div>
-    </div>
-    <router-link to="project-member" v-hasPermi="['system:project:member']"><el-link>{{$t('member.manage')}}</el-link></router-link>
-  </el-card>
+      <router-link v-if="canManageMember" to="project-member"><el-link>{{$t('member.manage')}}</el-link></router-link>
+    </el-card>
+  </el-col>
 </template>
 
 <script>
+import { hasAnyPermi } from '@/utils/project-option-card'
+
 export default {
   name: "ProjectMemberCard",
   model: {
@@ -21,6 +25,14 @@ export default {
     project: {
       type: Object,
       default: {}
+    }
+  },
+  computed: {
+    canManageMember() {
+      return hasAnyPermi(['system:project:member'])
+    },
+    cardVisible() {
+      return this.canManageMember
     }
   },
 }

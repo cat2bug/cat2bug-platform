@@ -64,11 +64,6 @@
         <el-table-column v-if="showField('defect.name')" :label="$t('defect.name')" :key="$t('defect.name')" align="left" prop="defectName" width="300" sortable>
           <template slot-scope="scope">
             <div class="table-defect-title">
-              <focus-member-list
-                v-show="scope.row.focusList && scope.row.focusList.length>0"
-                v-model="scope.row.focusList"
-                module-name="defect"
-                :data-id="scope.row.defectId" />
               <span>{{ scope.row.defectName }}</span>
               <div class="defect-statistics">
                 <div>

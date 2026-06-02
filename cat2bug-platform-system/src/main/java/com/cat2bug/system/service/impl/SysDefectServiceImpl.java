@@ -21,6 +21,7 @@ import com.cat2bug.system.mapper.*;
 import com.cat2bug.system.service.ISysDefectService;
 import com.cat2bug.system.util.DefectChange;
 import com.cat2bug.system.util.DefectChangeUtil;
+import com.cat2bug.system.util.DefectCustomFieldsValidator;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import org.apache.logging.log4j.LogManager;
@@ -63,6 +64,8 @@ public class SysDefectServiceImpl implements ISysDefectService
     private SysUserMapper sysUserMapper;
     @Autowired
     private SysCaseMapper sysCaseMapper;
+    @Autowired
+    private DefectCustomFieldsValidator defectCustomFieldsValidator;
     /**
      * 指派
      * @param sysDefectLog 缺陷日志
@@ -269,6 +272,7 @@ public class SysDefectServiceImpl implements ISysDefectService
         sysDefect.setCreateById(SecurityUtils.getUserId());
         sysDefect.setUpdateById(SecurityUtils.getUserId());
         sysDefect.setDelFlag("0");
+        prepareCustomFieldsForSave(sysDefect, true);
         long count = sysDefectMapper.getProjectDefectMaxNum(sysDefect.getProjectId(), SecurityUtils.getUserId());
         sysDefect.setProjectNum(count+1);
         Preconditions.checkState(sysDefectMapper.insertSysDefect(sysDefect)>0,MessageUtils.message("defect.insert_fail"));
@@ -336,12 +340,46 @@ public class SysDefectServiceImpl implements ISysDefectService
         if (sysDefect.getDefectId() != null && (sysDefect.getDelFlag() == null || !"0".equals(sysDefect.getDelFlag()))) {
             this.ensureDefectActive(sysDefect.getDefectId());
         }
+        prepareCustomFieldsForSave(sysDefect, false);
         sysDefect.setUpdateTime(DateUtils.getNowDate());
         Long memberId = SecurityUtils.getUserId();
         sysDefect.setUpdateBy(String.valueOf(memberId));
         int ret = this.sysDefectMapper.updateSysDefect(sysDefect);
         Preconditions.checkState(ret>0, MessageUtils.message("defect.update_fail"));
         return ret;
+    }
+
+    /**
+     * 保存前校验 custom_fields：创建时始终校验；更新时仅当请求携带 customFields 时合并后校验。
+     */
+    private void prepareCustomFieldsForSave(SysDefect defect, boolean insert) {
+        if (!insert && defect.getCustomFields() == null) {
+            return;
+        }
+        Long projectId = defect.getProjectId();
+        if (projectId == null && defect.getDefectId() != null) {
+            SysDefect existing = sysDefectMapper.selectSysDefectByDefectId(
+                    defect.getDefectId(), SecurityUtils.getUserId(), DateUtils.getNowDate());
+            if (existing != null) {
+                projectId = existing.getProjectId();
+                defect.setProjectId(projectId);
+            }
+        }
+        if (projectId == null) {
+            return;
+        }
+        Map<String, Object> merged = new LinkedHashMap<>();
+        if (!insert && defect.getDefectId() != null) {
+            SysDefect existing = sysDefectMapper.selectSysDefectByDefectId(
+                    defect.getDefectId(), SecurityUtils.getUserId(), DateUtils.getNowDate());
+            if (existing != null && existing.getCustomFields() != null) {
+                merged.putAll(existing.getCustomFields());
+            }
+        }
+        if (defect.getCustomFields() != null) {
+            merged.putAll(defect.getCustomFields());
+        }
+        defect.setCustomFields(defectCustomFieldsValidator.validateAndStrip(projectId, merged));
     }
 
     private void ensureDefectActive(Long defectId) {
@@ -690,6 +728,12 @@ public class SysDefectServiceImpl implements ISysDefectService
             }
             if(invalidCell.size()>0){
                 sb.add(MessageUtils.message("line-data-not-empty",line,invalidCell.stream().collect(Collectors.joining("、"))));
+            }
+            try {
+                d.setCustomFields(defectCustomFieldsValidator.validateAndStrip(projectId,
+                        d.getCustomFields() != null ? d.getCustomFields() : new java.util.LinkedHashMap<>()));
+            } catch (com.cat2bug.common.exception.ServiceException ex) {
+                sb.add(MessageUtils.message("line-data-not-empty", line, ex.getMessage()));
             }
             d.setProjectNum(++count);
             d.setProjectId(projectId);

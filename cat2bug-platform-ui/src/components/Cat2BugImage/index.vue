@@ -5,18 +5,18 @@
     :src="displaySrc"
     :preview-src-list="displayPreviewList"
   >
-    <div slot="error" class="cat2bug-image-error">
-      <img :src="defaultImage" class="cat2bug-image-error__img" alt="" />
-    </div>
+    <image-error-slot slot="error" />
     <slot slot="placeholder" name="placeholder"></slot>
   </el-image>
 </template>
 
 <script>
 import { DEFAULT_IMAGE } from '@/utils/upload-asset'
+import ImageErrorSlot from './ImageErrorSlot.vue'
 
 export default {
   name: 'Cat2BugImage',
+  components: { ImageErrorSlot },
   inheritAttrs: false,
   props: {
     src: {
@@ -35,9 +35,6 @@ export default {
     }
   },
   computed: {
-    defaultImage() {
-      return DEFAULT_IMAGE
-    },
     previewListProp() {
       if (this.previewSrcList !== undefined) {
         return this.previewSrcList
@@ -107,7 +104,8 @@ export default {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  background-color: #ebeef5;
+  border-radius: var(--cat2bug-border-radius, 4px);
+  background-color: var(--cat2bug-image-placeholder-bg, #ebeef5);
   box-sizing: border-box;
 }
 ::v-deep .el-image__inner {
@@ -119,22 +117,5 @@ export default {
   object-fit: contain;
   object-position: center center;
   vertical-align: middle;
-}
-.cat2bug-image-error {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  height: 100%;
-  background-color: #ebeef5;
-}
-.cat2bug-image-error__img {
-  display: block;
-  max-width: 72%;
-  max-height: 72%;
-  width: auto;
-  height: auto;
-  object-fit: contain;
-  object-position: center center;
 }
 </style>

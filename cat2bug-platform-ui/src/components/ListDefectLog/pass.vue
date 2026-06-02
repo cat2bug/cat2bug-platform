@@ -1,6 +1,6 @@
 <template>
   <div class="defect-log-create">
-    <span class="user">[{{log.createByName}}]</span>
+    <defect-log-user size="medium" :name="log.createByName" :avatar="log.createByAvatar" />
     <span class="state red">{{ $i18n.t('pass') }}</span>
     <span>,</span>
     <div>
@@ -11,22 +11,17 @@
 </template>
 
 <script>
+import DefectLogUser from './DefectLogUser'
+
 export default {
   name: "PASS",
+  components: { DefectLogUser },
   props:{
     log: {
       type: Object,
       default: ()=>{}
     }
-  },
-  computed: {
-    head: function () {
-      return this.log.receiveByList[0].nickName;
-    },
-    assistant: function () {
-      return this.log.receiveByList.filter((l,i)=>i!=0).map(l=>l.nickName).join(',');
-    }
-  },
+  }
 }
 </script>
 

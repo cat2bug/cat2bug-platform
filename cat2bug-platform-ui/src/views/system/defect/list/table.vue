@@ -16,7 +16,11 @@
             class="defect-column-picker"
             @change="onColumnPickerChange"
           >
-            <el-checkbox v-for="c in defectColumnPickerOptions" :key="c.key" :label="c.key">{{ $t(c.key) }}</el-checkbox>
+            <el-checkbox
+              v-for="c in defectColumnPickerOptions"
+              :key="c.key"
+              :label="c.key"
+            >{{ c.isCustomField && c.fieldLabel ? c.fieldLabel : (c.label || $t(c.key)) }}</el-checkbox>
           </el-checkbox-group>
           <el-button
             style="padding: 9px;"
@@ -52,9 +56,11 @@
         <!-- 宽表横向滚动限制在本层，避免整页 main-container 底部出现横向条与分页同一底边叠在一起「压住」分页 -->
         <div class="defect-table-x-scroll">
         <cat2-bug-table
+          v-if="defectTableColumnsReady"
           ref="cat2BugTable"
           cache-key="defect-table"
-          :columns="tableColumnDefaults"
+          preserve-column-order
+          :columns="resolvedDefectTableColumns"
           :data="defectList"
           :loading="loading"
           :table-max-height="defectTableBodyMaxHeight"
@@ -92,11 +98,6 @@
             <span v-if="column.prop==='projectNum'" >{{ '#' + scope.row[column.prop] }}</span>
             <defect-type-flag v-else-if="column.prop==='defectTypeName'" :defect="scope.row" />
             <div v-else-if="column.prop==='defectName'" class="table-defect-title">
-              <focus-member-list
-                v-show="scope.row.focusList && scope.row.focusList.length>0"
-                v-model="scope.row.focusList"
-                module-name="defect"
-                :data-id="scope.row.defectId" />
               <el-link type="primary" :title="scope.row.defectName" @click="handleClickTableRow(scope.row)">{{ scope.row.defectName }}</el-link>
               <div class="defect-statistics">
                 <div>
@@ -122,12 +123,37 @@
             <span v-else-if="column.prop==='planEndTime'">{{ parseTime(scope.row.planEndTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
             <row-list-member v-else-if="column.prop==='createMember'" :members="[scope.row.createMember]"></row-list-member>
             <row-list-member v-else-if="column.prop==='handleBy'" :members="scope.row.handleByList"></row-list-member>
+            <cat2-bug-preview-image
+              v-else-if="column.customFieldKey && isCustomFieldType(column, 'image')"
+              :images="customFieldUrls(scope.row, column)"
+            />
+            <div v-else-if="column.customFieldKey && isCustomFieldType(column, 'file')" class="annex-list">
+              <cat2-bug-text
+                :content="file"
+                type="down"
+                :tooltip="file"
+                v-for="(file, index) in customFieldUrls(scope.row, column)"
+                :key="index"
+              />
+            </div>
+            <span
+              v-else-if="column.customFieldKey"
+              :style="customFieldEnumCellStyle(scope.row, column)"
+            >{{ formatCustomFieldCell(scope.row, column) }}</span>
             <span v-else>{{ scope.row[column.prop] }}</span>
           </template>
           <template #append>
             <el-table-column :label="$t('operate')" align="left" class-name="no-drag cat2bug-operate-column" fixed="right">
               <template slot-scope="scope">
-                <defect-tools class="defect-row-tools cat2bug-operate-tools" :is-text="true" :defect="scope.row" size="mini" :is-show-icon="true" @view="handleClickTableRow" @delete="refreshSearch" @restore="refreshSearch" @update="refreshSearch" @log="refreshSearch"></defect-tools>
+                <div class="defect-operate-cell cat2bug-operate-tools">
+                  <defect-tools class="defect-row-tools" :is-text="true" :defect="scope.row" size="mini" :is-show-icon="true" @view="handleClickTableRow" @delete="refreshSearch" @restore="refreshSearch" @update="refreshSearch" @log="refreshSearch"></defect-tools>
+                  <focus-member-list
+                    v-show="scope.row.focusList && scope.row.focusList.length>0"
+                    v-model="scope.row.focusList"
+                    module-name="defect"
+                    :data-id="scope.row.defectId"
+                  />
+                </div>
               </template>
             </el-table-column>
           </template>
@@ -163,6 +189,20 @@ import Cat2BugTable from "@/components/Cat2BugTable";
 import {listDefect} from "@/api/system/defect";
 import {lifeTime} from "@/utils/defect";
 import { TableOptions } from "@/views/system/defect/list/table-options";
+import {
+  buildDefectTableColumnDefaults,
+  clearCustomFieldColumnsCache,
+  loadDefectColumnLayout,
+  pruneDefectTableColumnCacheFromColumns,
+  resolveDefectTableOrderByColumn,
+  syncNewDefectTableColumnsIntoFieldListCache
+} from "@/utils/defect-custom-field-columns";
+import {
+  defectDisplayFieldCheckedKeys,
+  defectDisplayFieldPickerOptions,
+  resolveDefectMergedColumns
+} from "@/utils/defect-display-field";
+import { enumOptionTextStyle, enumOptions, formatCustomFieldValue } from "@/components/DefectCustomField/format";
 import paneResizerHandleViewport from "@/mixins/paneResizerHandleViewport";
 import multipaneTreeTableHeightSync from "@/mixins/multipaneTreeTableHeightSync";
 
@@ -230,8 +270,10 @@ export default {
       tableColumnDefaults: TableOptions.map(c => ({ ...c })),
       columnPickerCheckedKeys: [],
       defectColumnPickerRev: 0,
-      /** 与 Cat2BugTable 列顺序一致，供「显示字段」勾选列表排序（含 Excel 拖列写回缓存后） */
-      defectPickerColumnList: null,
+      /** 拖列后的列顺序快照，供「显示字段」列表即时排序（$cache 非响应式） */
+      defectColumnPickerLiveColumns: null,
+      /** 字段管理列布局已加载后再挂载表格，避免 TableOptions 默认序写入缓存 */
+      defectTableColumnsReady: false,
       /** 交付物列表标题栏高度（px），与右侧缺陷表 thead 行高对齐 */
       defectTreeToolbarHeight: null,
       /** 表体 max-height（与用例页一致：表体内纵向滚动） */
@@ -275,12 +317,17 @@ export default {
     }
   },
   computed: {
+    resolvedDefectTableColumns() {
+      if (!this.defectTableColumnsReady) return [];
+      return resolveDefectMergedColumns(this.$cache.local, this.tableColumnDefaults);
+    },
     defectColumnPickerOptions() {
-      const ordered = this.defectPickerColumnList;
-      if (ordered && ordered.length) {
-        return ordered.map((c) => ({ ...c }));
-      }
-      return TableOptions.filter((c) => c.showInColumnPicker !== false);
+      void this.defectColumnPickerRev;
+      const src =
+        this.defectColumnPickerLiveColumns && this.defectColumnPickerLiveColumns.length
+          ? this.defectColumnPickerLiveColumns
+          : this.resolvedDefectTableColumns;
+      return defectDisplayFieldPickerOptions(src);
     },
     defectLife: function () {
       return function (defect) {
@@ -314,6 +361,12 @@ export default {
     },
   },
   watch: {
+    projectId(val, oldVal) {
+      if (val !== oldVal) {
+        clearCustomFieldColumnsCache();
+        this.loadCustomFieldColumns();
+      }
+    },
     "$i18n.locale": function () {
       this.$nextTick(() => {
         this.$refs.cat2BugTable && this.$refs.cat2BugTable.doLayout();
@@ -327,6 +380,7 @@ export default {
   },
   mounted() {
     this.getTreeModuleWidth();
+    this.loadCustomFieldColumns();
     this.$nextTick(() => {
       this.initDefectTableHeaderHeightSync();
       this.initDefectTableBodyResizeObserver();
@@ -338,7 +392,74 @@ export default {
     this.destroyDefectTableBodyResizeObserver();
   },
   methods: {
+    isCustomFieldType(column, fieldType) {
+      const meta = column && column.customFieldMeta;
+      return !!(meta && meta.fieldType === fieldType);
+    },
+    customFieldUrls(row, column) {
+      const key = column.customFieldKey;
+      const cf = row.customFields;
+      const val = cf && typeof cf === 'object' ? cf[key] : undefined;
+      if (val == null || val === '') return [];
+      const parts = Array.isArray(val) ? val : String(val).split(',');
+      const base = process.env.VUE_APP_BASE_API || '';
+      return parts
+        .map((s) => String(s).trim())
+        .filter(Boolean)
+        .map((u) => (u.startsWith('http') ? u : base + u));
+    },
+    formatCustomFieldCell(row, column) {
+      const key = column.customFieldKey;
+      const meta = column.customFieldMeta;
+      if (meta && (meta.fieldType === 'image' || meta.fieldType === 'file')) {
+        return '';
+      }
+      const cf = row.customFields;
+      const val = cf && typeof cf === 'object' ? cf[key] : undefined;
+      return formatCustomFieldValue(meta, val);
+    },
+    customFieldEnumCellStyle(row, column) {
+      const meta = column.customFieldMeta;
+      if (!meta || meta.fieldType !== 'enum') return {};
+      const key = column.customFieldKey;
+      const cf = row.customFields;
+      const val = cf && typeof cf === 'object' ? cf[key] : undefined;
+      const opt = enumOptions(meta).find(o => o.key === val);
+      return enumOptionTextStyle(opt);
+    },
+    loadCustomFieldColumns() {
+      clearCustomFieldColumnsCache();
+      this.defectTableColumnsReady = false;
+      const baseOptions = TableOptions.map(c => ({ ...c }));
+      if (!this.projectId) {
+        this.tableColumnDefaults = baseOptions;
+        this.defectTableColumnsReady = true;
+        this.applyTableColumnsToCat2BugTable();
+        return;
+      }
+      loadDefectColumnLayout(this.projectId, { force: true }).then(layout => {
+        this.tableColumnDefaults = buildDefectTableColumnDefaults(baseOptions, layout);
+        pruneDefectTableColumnCacheFromColumns(this.$cache.local, this.tableColumnDefaults);
+        this.defectTableColumnsReady = true;
+        this.$nextTick(() => {
+          syncNewDefectTableColumnsIntoFieldListCache(this.$cache.local, this.tableColumnDefaults);
+          this.applyTableColumnsToCat2BugTable();
+        });
+      });
+    },
+    applyTableColumnsToCat2BugTable() {
+      this.$nextTick(() => {
+        const table = this.$refs.cat2BugTable;
+        if (!table || !table.setColumns) return;
+        const merged = this.resolvedDefectTableColumns.map(c => ({ ...c }));
+        table.setColumns(merged);
+        this.defectColumnPickerLiveColumns = merged.map(c => ({ ...c }));
+        this.columnPickerCheckedKeys = defectDisplayFieldCheckedKeys(merged);
+        this.defectColumnPickerRev += 1;
+      });
+    },
     init() {
+      this.loadCustomFieldColumns();
       this.$nextTick(() => {
         if (this.$refs.treeModuleRef) {
           this.$refs.treeModuleRef.reloadData();
@@ -489,34 +610,29 @@ export default {
       this._defectTableHeaderObservedEl = null;
     },
     onTableColumnsChange(columns) {
+      this.defectColumnPickerLiveColumns = (columns || []).map(c => ({ ...c }));
       this.defectColumnPickerRev += 1;
-      const picker = columns.filter((c) => c.showInColumnPicker !== false).map((c) => ({ ...c }));
-      this.$set(this, 'defectPickerColumnList', picker);
-      this.columnPickerCheckedKeys = columns
-        .filter((c) => c.visible && c.showInColumnPicker !== false)
-        .map((c) => c.key);
+      this.columnPickerCheckedKeys = defectDisplayFieldCheckedKeys(columns);
       this.$nextTick(() => this.syncDefectTreeToolbarWithTableHeader());
     },
     onColumnPickerChange(keys) {
-      this.$refs.cat2BugTable && this.$refs.cat2BugTable.setColumnsVisible(keys);
+      this.columnPickerCheckedKeys = keys || [];
+      this.$refs.cat2BugTable && this.$refs.cat2BugTable.setColumnsVisible(this.columnPickerCheckedKeys);
     },
     sortChangeHandle(e) {
-      if(e.order){
-        switch (e.prop) {
-          case 'defectStateName':
-            this.queryParams.orderByColumn='defectState';
-            break;
-          case 'defectTypeName':
-            this.queryParams.orderByColumn='defectType';
-            break;
-          default:
-            this.queryParams.orderByColumn=e.prop;
-            break;
+      if (e.order) {
+        const resolved = resolveDefectTableOrderByColumn(e.prop);
+        if (!resolved) {
+          this.queryParams.orderByColumn = null;
+          this.queryParams.isAsc = null;
+          this.$refs.cat2BugTable && this.$refs.cat2BugTable.clearSort();
+        } else {
+          this.queryParams.orderByColumn = resolved;
+          this.queryParams.isAsc = e.order;
         }
-        this.queryParams.isAsc=e.order;
       } else {
-        this.queryParams.orderByColumn=null;
-        this.queryParams.isAsc=null;
+        this.queryParams.orderByColumn = null;
+        this.queryParams.isAsc = null;
       }
       this.queryParams.pageNum = 1;
       this.search(this.queryParams);
@@ -820,9 +936,6 @@ export default {
   word-break: break-all;
 }
 .defect-row-tools {
-  margin-left: 10px;
-}
-.defect-row-tools.cat2bug-operate-tools {
   margin-left: 0;
 }
 .annex-list {

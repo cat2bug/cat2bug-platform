@@ -231,9 +231,10 @@ export default {
 
 <style lang="scss" scoped>
   .defect-tools {
-    display: flex;
-    flex-wrap: wrap;
+    display: inline-flex;
+    flex-wrap: nowrap;
     flex-direction: row;
+    white-space: nowrap;
     column-gap: var(--cat2bug-operate-tools-gap, 10px);
     row-gap: var(--cat2bug-operate-tools-row-gap, 0);
     align-items: center;
@@ -245,19 +246,31 @@ export default {
     }
   }
   .red {
-    color: #f56c6c;
+    color: var(--cat2bug-operate-text-danger, #f56c6c);
+  }
+  .red:hover,
+  .red:focus {
+    color: var(--cat2bug-operate-text-danger-hover, #f78989);
   }
   .green {
-    color: #67c23a;
+    color: var(--cat2bug-operate-text-success, #67c23a);
+  }
+  .green:hover,
+  .green:focus {
+    color: var(--cat2bug-operate-text-success-hover, #85ce61);
   }
   .orange {
-    color: #606266;
+    color: var(--cat2bug-operate-text-muted, #606266);
+  }
+  .orange:hover,
+  .orange:focus {
+    color: var(--cat2bug-operate-text-muted-hover, #409eff);
   }
   .restore-orange {
-    color: #ffba00;
+    color: var(--cat2bug-operate-text-warning, #ffba00);
   }
   .restore-orange:hover,
   .restore-orange:focus {
-    color: #ffc933;
+    color: var(--cat2bug-operate-text-warning-hover, #ffc933);
   }
 </style>

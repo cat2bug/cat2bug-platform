@@ -45,6 +45,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="planEndTime"    column="plan_end_time"    />
         <result property="sponsor"    column="sponsor"    />
         <result property="delFlag"    column="del_flag"    />
+        <result property="customFields"    column="custom_fields"    typeHandler="com.cat2bug.system.domain.handle.JsonMapTypeHandler"    />
     </resultMap>
 
     <resultMap type="SysVersion" id="SysVersionResult">
@@ -96,6 +97,84 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         </if>
     </sql>
 
+    <!-- 自定义字段 JSON 筛选（MySQL：JSON_EXTRACT） -->
+    <sql id="customFieldFilters">
+        <if test="defect.params != null and defect.params.customFieldFilters != null and defect.params.customFieldFilters.size() &gt; 0">
+            <foreach collection="defect.params.customFieldFilters" item="cf">
+                <if test="cf != null and cf.fieldKey != null and cf.fieldKey != '' and cf.op != null and cf.op != ''">
+                    <choose>
+                        <when test="cf.op == 'isEmpty'">
+                            AND (
+                                d.custom_fields IS NULL
+                                OR JSON_UNQUOTE(JSON_EXTRACT(d.custom_fields, CONCAT('$.', #{cf.fieldKey}))) IS NULL
+                                OR TRIM(COALESCE(JSON_UNQUOTE(JSON_EXTRACT(d.custom_fields, CONCAT('$.', #{cf.fieldKey}))), '')) IN ('', 'null', '[]', '{}')
+                            )
+                        </when>
+                        <when test="cf.op == 'isNotEmpty' or cf.op == 'hasValue'">
+                            AND d.custom_fields IS NOT NULL
+                            AND JSON_UNQUOTE(JSON_EXTRACT(d.custom_fields, CONCAT('$.', #{cf.fieldKey}))) IS NOT NULL
+                            AND TRIM(COALESCE(JSON_UNQUOTE(JSON_EXTRACT(d.custom_fields, CONCAT('$.', #{cf.fieldKey}))), '')) NOT IN ('', 'null', '[]', '{}')
+                        </when>
+                        <when test="cf.op == 'eq' and cf.value != null">
+                            AND JSON_UNQUOTE(JSON_EXTRACT(d.custom_fields, CONCAT('$.', #{cf.fieldKey}))) = #{cf.value}
+                        </when>
+                        <when test="cf.op == 'contains' and cf.value != null and cf.value != ''">
+                            AND JSON_UNQUOTE(JSON_EXTRACT(d.custom_fields, CONCAT('$.', #{cf.fieldKey}))) LIKE CONCAT('%', #{cf.value}, '%')
+                        </when>
+                        <when test="cf.op == 'in' and cf.value != null and cf.value.size() &gt; 0">
+                            AND JSON_UNQUOTE(JSON_EXTRACT(d.custom_fields, CONCAT('$.', #{cf.fieldKey}))) IN
+                            <foreach collection="cf.value" item="v" open="(" separator="," close=")">
+                                #{v}
+                            </foreach>
+                        </when>
+                        <when test="cf.op == 'between' and cf.value != null and cf.value.size() &gt;= 2">
+                            AND JSON_UNQUOTE(JSON_EXTRACT(d.custom_fields, CONCAT('$.', #{cf.fieldKey}))) BETWEEN #{cf.value[0]} AND #{cf.value[1]}
+                        </when>
+                    </choose>
+                </if>
+            </foreach>
+        </if>
+    </sql>
+
+    <!-- 自定义字段 JSON 筛选（H2：JSON_VALUE） -->
+    <sql id="customFieldFilters" databaseId="h2">
+        <if test="defect.params != null and defect.params.customFieldFilters != null and defect.params.customFieldFilters.size() &gt; 0">
+            <foreach collection="defect.params.customFieldFilters" item="cf">
+                <if test="cf != null and cf.fieldKey != null and cf.fieldKey != '' and cf.op != null and cf.op != ''">
+                    <choose>
+                        <when test="cf.op == 'isEmpty'">
+                            AND (
+                                d.custom_fields IS NULL
+                                OR JSON_VALUE(d.custom_fields, CONCAT('$.', #{cf.fieldKey})) IS NULL
+                                OR TRIM(COALESCE(JSON_VALUE(d.custom_fields, CONCAT('$.', #{cf.fieldKey})), '')) IN ('', 'null', '[]', '{}')
+                            )
+                        </when>
+                        <when test="cf.op == 'isNotEmpty' or cf.op == 'hasValue'">
+                            AND d.custom_fields IS NOT NULL
+                            AND JSON_VALUE(d.custom_fields, CONCAT('$.', #{cf.fieldKey})) IS NOT NULL
+                            AND TRIM(COALESCE(JSON_VALUE(d.custom_fields, CONCAT('$.', #{cf.fieldKey})), '')) NOT IN ('', 'null', '[]', '{}')
+                        </when>
+                        <when test="cf.op == 'eq' and cf.value != null">
+                            AND JSON_VALUE(d.custom_fields, CONCAT('$.', #{cf.fieldKey})) = #{cf.value}
+                        </when>
+                        <when test="cf.op == 'contains' and cf.value != null and cf.value != ''">
+                            AND JSON_VALUE(d.custom_fields, CONCAT('$.', #{cf.fieldKey})) LIKE CONCAT('%', #{cf.value}, '%')
+                        </when>
+                        <when test="cf.op == 'in' and cf.value != null and cf.value.size() &gt; 0">
+                            AND JSON_VALUE(d.custom_fields, CONCAT('$.', #{cf.fieldKey})) IN
+                            <foreach collection="cf.value" item="v" open="(" separator="," close=")">
+                                #{v}
+                            </foreach>
+                        </when>
+                        <when test="cf.op == 'between' and cf.value != null and cf.value.size() &gt;= 2">
+                            AND JSON_VALUE(d.custom_fields, CONCAT('$.', #{cf.fieldKey})) BETWEEN #{cf.value[0]} AND #{cf.value[1]}
+                        </when>
+                    </choose>
+                </if>
+            </foreach>
+        </if>
+    </sql>
+
     <sql id="selectSysDefectVo" databaseId="h2">
                 SELECT
                     d.defect_id,
@@ -127,6 +206,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                     d.plan_end_time,
                     d.sponsor,
                     d.del_flag,
+                    d.custom_fields,
                     un.user_infos AS handle_by_list,
                     cm.user_infos AS create_member,
                     cm.nick_name AS create_member_name,
@@ -240,6 +320,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         d.plan_end_time,
         d.sponsor,
         d.del_flag,
+        d.custom_fields,
         (
         SELECT CONCAT('[', GROUP_CONCAT(
         CONCAT(
@@ -410,6 +491,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="defect.params.beginHandleTime != null and defect.params.beginHandleTime != '' and defect.params.endHandleTime != null and defect.params.endHandleTime != ''"> and d.handle_time between #{defect.params.beginHandleTime} and #{defect.params.endHandleTime}</if>
             <include refid="participationLogFilter"/>
             <include refid="participationLogMonthFilter"/>
+            <include refid="customFieldFilters"/>
             <if test="defect.defectLevel != null  and defect.defectLevel != ''"> and d.defect_level = #{defect.defectLevel}</if>
             <if test="defect.sponsor != null  and defect.sponsor != ''"> and (d.sponsor like concat('%', #{sponsor}, '%') or d.sponsor=#{defect.sponsor})</if>
             <if test="defect.params.search != null and defect.params.search != ''">
@@ -475,6 +557,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="planStartTime != null">plan_start_time,</if>
             <if test="planEndTime != null">plan_end_time,</if>
             <if test="sponsor != null">sponsor,</if>
+            <if test="customFields != null">custom_fields,</if>
          </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="projectNum != null">#{projectNum},</if>
@@ -504,6 +587,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="planStartTime != null">#{planStartTime},</if>
             <if test="planEndTime != null">#{planEndTime},</if>
             <if test="sponsor != null">#{sponsor},</if>
+            <if test="customFields != null">#{customFields, typeHandler=com.cat2bug.system.domain.handle.JsonMapTypeHandler},</if>
          </trim>
     </insert>
 
@@ -513,7 +597,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             project_num,defect_type,defect_name,defect_describe,
             annex_urls,img_urls,project_id,module_id,module_version,
             create_by,create_by_id,update_time,create_time,update_by,update_by_id,
-            defect_state,handle_by,handle_time,defect_level,defect_group_key,defect_key,plan_start_time,plan_end_time,sponsor
+            defect_state,handle_by,handle_time,defect_level,defect_group_key,defect_key,plan_start_time,plan_end_time,sponsor,custom_fields
         </trim>
         values
         <foreach collection="defectList" separator="," item="defect">
@@ -541,7 +625,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             #{defect.defectKey},
             #{defect.planStartTime},
             #{defect.planEndTime},
-            #{defect.sponsor}
+            #{defect.sponsor},
+            #{defect.customFields, typeHandler=com.cat2bug.system.domain.handle.JsonMapTypeHandler}
             )
         </foreach>
     </insert>
@@ -578,6 +663,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="planEndTime == null and params != null and params.clearPlanEndTime != null">plan_end_time = null,</if>
             <if test="sponsor != null">sponsor = #{sponsor},</if>
             <if test="delFlag != null and delFlag != ''">del_flag = #{delFlag},</if>
+            <if test="customFields != null">custom_fields = #{customFields, typeHandler=com.cat2bug.system.domain.handle.JsonMapTypeHandler},</if>
         </trim>
         where defect_id = #{defectId}
     </update>

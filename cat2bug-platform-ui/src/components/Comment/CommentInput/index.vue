@@ -319,14 +319,23 @@ export default {
     position: absolute;
     top: 105px;
     right: 10px;
-    background-color: #F2F6FC88;
-    color: #909399;
+    background-color: var(--input-bg, rgba(242, 246, 252, 0.53));
+    color: var(--text-color-secondary, #909399);
   }
 }
 .comment-input-content {
-  background-color: #F2F6FC;
+  background-color: var(--input-bg, #f2f6fc);
+  color: var(--input-color, #303133);
+  border: 1px solid var(--input-border, #e4e7ed);
   border-radius: 5px;
   padding: 10px 20px;
+  box-sizing: border-box;
+  caret-color: var(--input-color, #303133);
+
+  &:focus {
+    outline: none;
+    border-color: var(--sidebar-active-text, #409eff);
+  }
   br {
     display: block;
     content: "";

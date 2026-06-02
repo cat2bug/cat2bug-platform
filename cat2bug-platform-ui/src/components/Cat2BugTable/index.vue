@@ -65,7 +65,7 @@ const DEFAULT_COLUMN_WIDTH = 180;
 const OPERATE_COLUMN_CLASS = 'cat2bug-operate-column';
 /** 操作列内容容器 class，用于测量与换行；无此 class 时回退测量 .cell 内可见子节点 */
 const OPERATE_TOOLS_CLASS = 'cat2bug-operate-tools';
-const DEFAULT_OPERATE_COLUMN_MAX_WIDTH = 200;
+const DEFAULT_OPERATE_COLUMN_MAX_WIDTH = 960;
 const DEFAULT_OPERATE_COLUMN_MIN_WIDTH = 88;
 const DEFAULT_OPERATE_COLUMN_HEADER_MIN = 56;
 /** 操作列 .cell 左右内边距（单侧 px，列宽计算时按两侧合计） */
@@ -104,6 +104,11 @@ export default {
     columns: {
       type: Array,
       default: () => []
+    },
+    /** 为 true 时列顺序以父组件 columns 为准，本地缓存仅由父组件合并显隐/固定后再传入 */
+    preserveColumnOrder: {
+      type: Boolean,
+      default: false
     },
     data: {
       type: Array,
@@ -200,14 +205,23 @@ export default {
         this.$nextTick(() => this.scheduleDoLayout());
       }
     },
+    columns: {
+      deep: true,
+      handler(cols) {
+        if (!this.preserveColumnOrder) return;
+        const next = (cols || []).map(c => ({ ...c }));
+        this.tableFieldList = next;
+        this.$emit('columns-change', next);
+      }
+    },
   },
   created() {
-    const merged = this.mergeCachedColumns(this.columns);
+    const merged = this.preserveColumnOrder
+      ? (this.columns || []).map(c => ({ ...c }))
+      : this.mergeCachedColumns(this.columns);
     this.tableFieldList = merged;
     this.$emit('columns-change', merged);
-    if (this.columnsStorageKey()) {
-      this.saveShowColumns(merged);
-    }
+    /* 不在 created 写入列缓存：父组件异步加载字段管理顺序前，columns 常为 TableOptions 默认序，会污染本地缓存 */
   },
   mounted() {
     this.initSort();
@@ -394,8 +408,15 @@ export default {
     columnSortableMode(col) {
       if (!this.enableHeaderSort) return false;
       if (col.sortable === false) return false;
+      if (col.customFieldKey) return false;
+      if (col.prop && String(col.prop).startsWith('custom_')) return false;
       if (col.sortable === true) return true;
       return 'custom';
+    },
+    isUnsupportedSortProp(prop) {
+      if (prop == null || prop === '') return false;
+      const s = String(prop);
+      return s.startsWith('custom_') || s.startsWith('custom:');
     },
     columnSortBy(col) {
       const mode = this.columnSortableMode(col);
@@ -456,10 +477,32 @@ export default {
       }
       this.isAsc = this.$cache.local.get(tk) || null;
       this.orderByColumn = this.$cache.local.get(ck) || null;
+      if (this.isUnsupportedSortProp(this.orderByColumn)) {
+        this.clearPersistedSort();
+        return;
+      }
       this.sort(this.orderByColumn, this.isAsc);
+    },
+    clearPersistedSort() {
+      this.orderByColumn = null;
+      this.isAsc = null;
+      if (!this.persistSort) return;
+      const ck = this.sortColumnStorageKey();
+      const tk = this.sortTypeStorageKey();
+      if (ck) this.$cache.local.remove(ck);
+      if (tk) this.$cache.local.remove(tk);
+    },
+    clearSort() {
+      this.clearPersistedSort();
+      if (this.$refs.elTable) this.$refs.elTable.clearSort();
     },
     sortChangeHandle(e) {
       if (!this.enableHeaderSort) return;
+      if (e.prop != null && this.isUnsupportedSortProp(e.prop)) {
+        this.clearSort();
+        this.$emit('sort-change', { prop: null, order: null, column: e.column });
+        return;
+      }
       this.isAsc = e.order;
       this.orderByColumn = e.prop;
       if (this.persistSort) {
@@ -849,7 +892,8 @@ export default {
       const inner = container.classList.contains(OPERATE_TOOLS_CLASS)
         ? container
         : container.querySelector(`.${OPERATE_TOOLS_CLASS}`) || container;
-      const gap = 10;
+      const gapCss = window.getComputedStyle(inner).columnGap;
+      const gap = gapCss && gapCss !== 'normal' ? parseFloat(gapCss) || 10 : 10;
       const visible = Array.from(inner.children).filter((node) => {
         if (!(node instanceof HTMLElement)) return false;
         if (node.offsetWidth <= 0) return false;
@@ -1111,7 +1155,10 @@ export default {
   text-align: left;
   padding-left: var(--cat2bug-operate-col-padding-x, 20px);
   padding-right: var(--cat2bug-operate-col-padding-x, 20px);
-  max-width: var(--cat2bug-operate-col-max-width, 200px);
+  max-width: none;
+  white-space: nowrap;
+  position: relative;
+  z-index: 1;
 }
 
 ::v-deep .cat2bug-operate-tools {

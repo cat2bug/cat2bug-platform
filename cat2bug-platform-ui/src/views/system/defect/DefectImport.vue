@@ -31,12 +31,9 @@
 import {getToken} from "@/utils/auth";
 import {strFormat} from "@/utils";
 import {setHeader} from "@/utils/request";
-import { TableOptions } from "@/views/system/defect/list/table-options";
 import {
   appendExportColumnParams,
-  DEFECT_FIELD_LIST_KEY,
-  getColumnsFromCat2BugTable,
-  mergeTableColumns
+  resolveDefectExportColumns
 } from "@/utils/excel-export-columns";
 
 export default {
@@ -84,9 +81,12 @@ export default {
       this.upload.open = true;
     },
     /** 下载模板操作 */
-    importTemplate() {
+    async importTemplate() {
       const payload = {};
-      const columns = mergeTableColumns(TableOptions, DEFECT_FIELD_LIST_KEY, this.$cache.local);
+      const columns = await resolveDefectExportColumns({
+        projectId: this.projectId,
+        cache: this.$cache.local
+      });
       appendExportColumnParams(payload, columns, 'importTemplate', 'defect');
       this.download('system/defect/importTemplate', payload,
         this.$i18n.t('defect.template-file-name') + this.$i18n.t('excel.import-template-word') + `${new Date().getTime()}.xlsx`);
