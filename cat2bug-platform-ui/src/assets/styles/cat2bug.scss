@@ -219,6 +219,42 @@ img.cat2bug-image-error__img {
   white-space: nowrap;
 }
 
+/* 缺陷列表表格：操作列固定宽，允许换行（覆盖上方 nowrap / max-content） */
+.defect-table-root td.defect-operate-column-fixed .defect-operate-cell,
+.defect-table-root td.defect-operate-column-fixed .cat2bug-operate-tools,
+.defect-table-root td.defect-operate-column-fixed .defect-tools {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  flex-wrap: wrap !important;
+  white-space: normal !important;
+  box-sizing: border-box;
+}
+
+.defect-table-root td.defect-operate-column-fixed .defect-tools {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.defect-table-root th.defect-operate-column-fixed,
+.defect-table-root td.defect-operate-column-fixed {
+  width: 450px !important;
+  min-width: 450px !important;
+  max-width: 450px !important;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.defect-table-root td.defect-operate-column-fixed .cell,
+.defect-table-root th.defect-operate-column-fixed .cell {
+  width: 450px !important;
+  max-width: 450px !important;
+  overflow: hidden;
+  flex-wrap: wrap;
+  white-space: normal;
+  box-sizing: border-box;
+}
+
 /* 列表底部分页容器：表格与分页、分页与页面底各 10px，内容右对齐 */
 .pagination-container {
   background: transparent;
@@ -619,16 +655,29 @@ img.cat2bug-image-error__img {
   }
 }
 
+/* Cat2BugTable 内操作列受 operateColumnMaxWidth 约束，覆盖全局 max-content */
+.cat2-bug-table-wrap .cat2bug-operate-tools,
+.cat2-bug-table-wrap .defect-operate-cell {
+  width: auto !important;
+  max-width: 100% !important;
+  min-width: 0;
+  flex-wrap: wrap;
+  white-space: normal;
+  box-sizing: border-box;
+}
+
 .el-table td.small-padding.fixed-width .cell,
 .el-table td.cat2bug-operate-column .cell,
 .cat2-bug-table-wrap td.cat2bug-operate-column .cell {
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   align-items: center;
-  white-space: nowrap;
-  max-width: none;
+  white-space: normal;
+  max-width: var(--cat2bug-operate-col-max-width, none);
   column-gap: var(--cat2bug-operate-tools-gap, 10px);
   row-gap: var(--cat2bug-operate-tools-row-gap, 0);
+  box-sizing: border-box;
+  overflow: hidden;
 
   > .el-button,
   > .el-dropdown,

@@ -878,13 +878,39 @@ export default {
         });
       });
     },
+    resolveOperateColumnClassName(col) {
+      if (!col) return '';
+      return col.className
+        || (col.columnConfig && col.columnConfig.className)
+        || '';
+    },
     isOperateColumn(col) {
-      return col && col.className && col.className.indexOf(OPERATE_COLUMN_CLASS) !== -1;
+      const className = this.resolveOperateColumnClassName(col);
+      if (className.indexOf(OPERATE_COLUMN_CLASS) !== -1) {
+        return true;
+      }
+      // append 操作列常无 prop，且固定在右侧
+      return !col.property && col.fixed === 'right';
     },
     getOperateColumns() {
       const t = this.$refs.elTable;
       if (!t || !t.store || !t.store.states || !t.store.states.columns) return [];
       return t.store.states.columns.filter((col) => this.isOperateColumn(col));
+    },
+    applyOperateColumnDomWidth(widthPx) {
+      const t = this.$refs.elTable;
+      if (!t || !t.$el || widthPx == null) return;
+      const cap = `${widthPx}px`;
+      t.$el.querySelectorAll(`th.${OPERATE_COLUMN_CLASS}, td.${OPERATE_COLUMN_CLASS}`).forEach((el) => {
+        el.style.setProperty('width', cap, 'important');
+        el.style.setProperty('max-width', cap, 'important');
+        el.style.setProperty('min-width', '0', 'important');
+        el.style.setProperty('overflow', 'hidden', 'important');
+      });
+      const patch = t.$el.querySelector('.el-table__fixed-right-patch');
+      if (patch) {
+        patch.style.setProperty('max-width', cap, 'important');
+      }
     },
     /** 累加容器内可见子节点宽度（勿用容器 scrollWidth，会被单元格撑满） */
     measureOperateContentWidth(container) {
@@ -906,25 +932,33 @@ export default {
         if (index > 0) total += gap;
         total += node.getBoundingClientRect().width;
       });
-      return Math.ceil(total);
+      const innerMax = Math.max(0, this.operateColumnMaxWidth - this.operateColumnPaddingX * 2);
+      return Math.min(innerMax, Math.ceil(total));
     },
-    /** 按当前页各行操作内容同步 append 操作列宽度（列宽全表统一） */
+    /** 按当前页各行操作内容同步 append 操作列宽度（列宽全表统一，不超过 operateColumnMaxWidth） */
     syncOperateColumnWidths() {
-      if (!this.operateColumnAutoWidth) return;
       const t = this.$refs.elTable;
       if (!t || !t.$el) return;
 
-      const operateCols = this.getOperateColumns();
-      if (!operateCols.length) return;
+      const cap = this.operateColumnMaxWidth;
+      if (!this.operateColumnAutoWidth) {
+        return;
+      }
 
+      const operateCols = this.getOperateColumns();
       const cells = t.$el.querySelectorAll(`td.${OPERATE_COLUMN_CLASS} .cell`);
       let maxContent = 0;
       cells.forEach((cell) => {
         maxContent = Math.max(maxContent, this.measureOperateContentWidth(cell));
       });
 
+      const operateHeader = t.$el.querySelector(`th.${OPERATE_COLUMN_CLASS} .cell`);
+      if (operateHeader) {
+        maxContent = Math.max(maxContent, Math.ceil(operateHeader.getBoundingClientRect().width));
+      }
+
       const next = Math.min(
-        this.operateColumnMaxWidth,
+        cap,
         Math.max(
           this.operateColumnHeaderMin,
           this.operateColumnMinWidth,
@@ -934,17 +968,25 @@ export default {
 
       let changed = false;
       operateCols.forEach((col) => {
-        if (col.width !== next || col.minWidth !== next) {
+        const floor = this.operateColumnMinWidth;
+        if (col.width !== next || col.minWidth !== floor || col.realWidth !== next) {
           col.width = next;
-          col.minWidth = next;
+          col.minWidth = floor;
+          col.realWidth = next;
           changed = true;
         }
       });
-      if (!changed) return;
+
+      this.applyOperateColumnDomWidth(next);
+
+      if (!changed && operateCols.length) {
+        return;
+      }
 
       t.doLayout();
       this.$nextTick(() => {
         requestAnimationFrame(() => {
+          this.applyOperateColumnDomWidth(next);
           this.syncFixedDataRowHeights();
           this.updateCustomHorizontalScrollbar();
         });
@@ -1149,16 +1191,34 @@ export default {
 }
 
 /* append 操作列：class-name 含 cat2bug-operate-column，内容包在 cat2bug-operate-tools 内 */
+::v-deep th.cat2bug-operate-column,
+::v-deep td.cat2bug-operate-column {
+  max-width: var(--cat2bug-operate-col-max-width, 960px);
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
 ::v-deep th.cat2bug-operate-column .cell,
 ::v-deep td.cat2bug-operate-column .cell {
-  overflow: visible;
+  overflow: hidden;
   text-align: left;
   padding-left: var(--cat2bug-operate-col-padding-x, 20px);
   padding-right: var(--cat2bug-operate-col-padding-x, 20px);
-  max-width: none;
-  white-space: nowrap;
+  max-width: var(--cat2bug-operate-col-max-width, 960px);
+  box-sizing: border-box;
+  flex-wrap: wrap;
+  white-space: normal;
   position: relative;
   z-index: 1;
+}
+
+::v-deep td.cat2bug-operate-column .cat2bug-operate-tools,
+::v-deep td.cat2bug-operate-column .defect-operate-cell {
+  max-width: 100%;
+  min-width: 0;
+  width: auto;
+  flex-wrap: wrap;
+  box-sizing: border-box;
 }
 
 ::v-deep .cat2bug-operate-tools {
