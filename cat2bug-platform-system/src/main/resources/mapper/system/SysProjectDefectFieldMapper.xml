@@ -38,6 +38,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         where project_id = #{projectId} and field_key = #{fieldKey}
     </select>
 
+    <select id="selectByProjectIdAndFieldLabel" resultMap="SysProjectDefectFieldResult">
+        <include refid="selectVo"/>
+        where project_id = #{projectId}
+          and lower(trim(field_label)) = lower(trim(#{fieldLabel}))
+    </select>
+
     <select id="selectListByProjectId" resultMap="SysProjectDefectFieldResult">
         <include refid="selectVo"/>
         where project_id = #{projectId}

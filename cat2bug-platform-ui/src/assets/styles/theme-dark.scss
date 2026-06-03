@@ -3929,6 +3929,64 @@ html.dark {
     }
   }
 
+  // 适配「选择报告模版」下拉 (Cat2BugReportTemplateSelect)
+  .el-popover.report-template-select-popper {
+    background-color: var(--dropdown-bg) !important;
+    border: 1px solid var(--border-color-light) !important;
+
+    &[x-placement^="bottom"] {
+      .popper__arrow {
+        border-bottom-color: var(--border-color-light) !important;
+
+        &::after {
+          border-bottom-color: var(--dropdown-bg) !important;
+        }
+      }
+    }
+
+    &[x-placement^="top"] {
+      .popper__arrow {
+        border-top-color: var(--border-color-light) !important;
+
+        &::after {
+          border-top-color: var(--dropdown-bg) !important;
+        }
+      }
+    }
+
+    .template-header span {
+      color: var(--text-color-primary) !important;
+    }
+
+    .template-list-item {
+      border-color: var(--border-color-light) !important;
+      background-color: var(--bg-color-base) !important;
+
+      &:hover {
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35) !important;
+        background-color: var(--table-row-hover-bg) !important;
+      }
+
+      .el-image {
+        background-color: var(--input-bg) !important;
+
+        .el-image__inner,
+        .el-image__placeholder,
+        .el-image__error {
+          background-color: var(--input-bg) !important;
+        }
+      }
+
+      span {
+        color: var(--text-color-regular) !important;
+      }
+
+      .menu button:hover {
+        background-color: rgba(64, 158, 255, 0.12) !important;
+      }
+    }
+  }
+
   // 29. 适配新建/编辑测试计划弹窗 (AddPlanDialog) 暗黑模式
   .el-dialog {
     // 适配分割线 (el-divider) 文字背景

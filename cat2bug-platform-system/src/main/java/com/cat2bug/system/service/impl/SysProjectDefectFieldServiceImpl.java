@@ -172,6 +172,7 @@ public class SysProjectDefectFieldServiceImpl implements ISysProjectDefectFieldS
         if (DefectBuiltinFieldRegistry.definitionByKey().containsKey(field.getFieldKey())) {
             throw new ServiceException(MessageUtils.message("defect.field.key_reserved"));
         }
+        assertFieldLabelUnique(field.getProjectId(), null, field.getFieldLabel());
         assertEnabledLimit(field.getProjectId(), null, field.getEnabled());
 
         field.setCreateTime(DateUtils.getNowDate());
@@ -214,6 +215,9 @@ public class SysProjectDefectFieldServiceImpl implements ISysProjectDefectFieldS
 
         Integer newEnabled = field.getEnabled() != null ? field.getEnabled() : existing.getEnabled();
         assertEnabledLimit(existing.getProjectId(), existing.getFieldId(), newEnabled);
+
+        String newLabel = field.getFieldLabel() != null ? field.getFieldLabel() : existing.getFieldLabel();
+        assertFieldLabelUnique(existing.getProjectId(), existing.getFieldId(), newLabel);
 
         field.setFieldKey(existing.getFieldKey());
         field.setProjectId(existing.getProjectId());
@@ -383,6 +387,23 @@ public class SysProjectDefectFieldServiceImpl implements ISysProjectDefectFieldS
         }
         if (count >= MAX_ENABLED_FIELDS) {
             throw new ServiceException(MessageUtils.message("defect.field.enabled_limit", MAX_ENABLED_FIELDS));
+        }
+    }
+
+    private void assertFieldLabelUnique(Long projectId, Long excludeFieldId, String fieldLabel) {
+        if (StringUtils.isBlank(fieldLabel)) {
+            return;
+        }
+        String normalized = fieldLabel.trim().toLowerCase();
+        for (BuiltinDef def : DefectBuiltinFieldRegistry.definitions()) {
+            String builtinLabel = resolveBuiltinLabel(def.fieldKey).trim().toLowerCase();
+            if (builtinLabel.equals(normalized)) {
+                throw new ServiceException(MessageUtils.message("defect.field.label_duplicate"));
+            }
+        }
+        SysProjectDefectField existing = fieldMapper.selectByProjectIdAndFieldLabel(projectId, fieldLabel);
+        if (existing != null && (excludeFieldId == null || !existing.getFieldId().equals(excludeFieldId))) {
+            throw new ServiceException(MessageUtils.message("defect.field.label_duplicate"));
         }
     }
 }

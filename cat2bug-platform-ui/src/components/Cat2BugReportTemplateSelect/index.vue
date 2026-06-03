@@ -2,7 +2,8 @@
   <el-popover
     placement="bottom"
     width="613"
-    trigger="hover">
+    trigger="hover"
+    popper-class="report-template-select-popper">
     <div class="template-header">
       <span>{{$t('report.select-template')}}</span>
       <div>
@@ -192,6 +193,7 @@ export default {
   width: 100%;
   span {
     font-size: 16px;
+    color: var(--text-color-primary);
   }
   .el-link {
     color: #1890ff;
@@ -215,7 +217,8 @@ export default {
     justify-content: center;
     padding: 5px;
     border-radius: 5px;
-    border: 1px solid #E4E7ED;
+    border: 1px solid var(--border-color-light);
+    background-color: var(--bg-color-block);
     .menu {
       display: inline-flex;
       flex-direction: row;
@@ -228,12 +231,15 @@ export default {
         margin: 0px;
       }
       button:hover {
-        background-color: rgb(236, 245, 255);
+        background-color: var(--table-row-hover-bg);
       }
     }
     .el-image {
       width: 180px;
       height: 120px;
+      background-color: var(--input-bg);
+      border-radius: 4px;
+      overflow: hidden;
     }
     span {
       width: 180px;
@@ -245,6 +251,7 @@ export default {
       text-overflow: ellipsis;
       white-space: normal;
       padding-top: 10px;
+      color: var(--text-color-regular);
     }
   }
 }

@@ -7,6 +7,7 @@
           <el-input
             v-model="queryParams.docName"
             :placeholder="$t('doc.please-enter-name')"
+            prefix-icon="el-icon-search"
             clearable
             size="small"
             @input="handleQuery"

@@ -2,6 +2,7 @@ package com.cat2bug.system.service.impl;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.cat2bug.common.exception.ServiceException;
+import com.cat2bug.common.utils.MessageUtils;
 import com.cat2bug.system.domain.SysProjectDefectField;
 import com.cat2bug.system.domain.SysProjectDefectFieldColumnLayout;
 import com.cat2bug.system.mapper.SysProjectDefectFieldMapper;
@@ -94,6 +95,7 @@ public class SysProjectDefectFieldServiceTest {
     @Test
     public void insert_validEnum_returnsField() {
         when(fieldMapper.selectByProjectIdAndFieldKey(any(), any())).thenReturn(null);
+        when(fieldMapper.selectByProjectIdAndFieldLabel(any(), any())).thenReturn(null);
         when(fieldMapper.countEnabledByProjectId(1L)).thenReturn(0);
         when(fieldMapper.insert(any())).thenAnswer(inv -> {
             SysProjectDefectField f = inv.getArgument(0);
@@ -128,6 +130,49 @@ public class SysProjectDefectFieldServiceTest {
         assertEquals(true, layout.getOrderedEnabledFieldKeys().contains("defectType"));
         assertEquals(true, layout.getOrderedEnabledFieldKeys().indexOf("defectType")
                 < layout.getOrderedEnabledFieldKeys().indexOf("handleBy"));
+    }
+
+    @Test
+    public void insert_duplicateFieldLabel_throws() {
+        when(fieldMapper.selectByProjectIdAndFieldKey(any(), any())).thenReturn(null);
+        SysProjectDefectField existing = new SysProjectDefectField();
+        existing.setFieldId(10L);
+        existing.setFieldLabel("严重程度");
+        when(fieldMapper.selectByProjectIdAndFieldLabel(eq(1L), eq("严重程度"))).thenReturn(existing);
+
+        SysProjectDefectField field = new SysProjectDefectField();
+        field.setProjectId(1L);
+        field.setFieldKey("severity2");
+        field.setFieldLabel("严重程度");
+        field.setFieldType("string");
+        field.setEnabled(1);
+
+        try {
+            fieldService.insert(field);
+            fail("expected ServiceException");
+        } catch (ServiceException e) {
+            assertNotNull(e.getMessage());
+        }
+    }
+
+    @Test
+    public void insert_builtinFieldLabelConflict_throws() {
+        when(fieldMapper.selectByProjectIdAndFieldKey(any(), any())).thenReturn(null);
+        when(fieldMapper.selectByProjectIdAndFieldLabel(any(), any())).thenReturn(null);
+
+        SysProjectDefectField field = new SysProjectDefectField();
+        field.setProjectId(1L);
+        field.setFieldKey("custom_name");
+        field.setFieldLabel(MessageUtils.message("defect.builtin-field.defectName"));
+        field.setFieldType("string");
+        field.setEnabled(1);
+
+        try {
+            fieldService.insert(field);
+            fail("expected ServiceException");
+        } catch (ServiceException e) {
+            assertNotNull(e.getMessage());
+        }
     }
 
     private static Map<String, Object> optionConfig(String key, String label) {

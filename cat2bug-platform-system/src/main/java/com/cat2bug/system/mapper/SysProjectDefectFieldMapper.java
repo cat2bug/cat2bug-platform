@@ -15,6 +15,9 @@ public interface SysProjectDefectFieldMapper {
     SysProjectDefectField selectByProjectIdAndFieldKey(
             @Param("projectId") Long projectId, @Param("fieldKey") String fieldKey);
 
+    SysProjectDefectField selectByProjectIdAndFieldLabel(
+            @Param("projectId") Long projectId, @Param("fieldLabel") String fieldLabel);
+
     List<SysProjectDefectField> selectListByProjectId(@Param("projectId") Long projectId);
 
     List<SysProjectDefectField> selectEnabledListByProjectId(@Param("projectId") Long projectId);

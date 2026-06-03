@@ -23,8 +23,6 @@
       :data="paginatedFieldList"
       :row-key="rowKey"
       :max-height="tableBodyMaxHeight"
-      :default-sort="{ prop: 'sortOrder', order: 'ascending' }"
-      @sort-change="handleSortChange"
     >
       <el-table-column
         :label="$t('defect.custom-field.field-source')"
@@ -32,8 +30,6 @@
         :width="sourceColumnWidth"
         align="center"
         class-name="defect-field-source-col"
-        sortable="custom"
-        :sort-method="sortBySource"
       >
         <template slot-scope="scope">
           <el-tag
@@ -57,16 +53,12 @@
         prop="fieldKey"
         min-width="120"
         show-overflow-tooltip
-        sortable="custom"
-        :sort-method="(a, b) => compareText(a.fieldKey, b.fieldKey)"
       />
       <el-table-column
         :label="$t('defect.custom-field.field-label')"
         prop="_displayLabel"
         min-width="120"
         show-overflow-tooltip
-        sortable="custom"
-        :sort-method="(a, b) => compareText(a._displayLabel, b._displayLabel)"
       >
         <template slot-scope="scope">
           {{ displayFieldLabel(scope.row) }}
@@ -77,8 +69,6 @@
         prop="fieldType"
         width="116"
         align="center"
-        sortable="custom"
-        :sort-method="(a, b) => compareText(a.fieldType, b.fieldType)"
       >
         <template slot-scope="scope">
           {{ fieldTypeLabel(scope.row.fieldType) }}
@@ -89,8 +79,6 @@
         prop="maxLength"
         width="108"
         align="center"
-        sortable="custom"
-        :sort-method="sortByMaxLength"
       >
         <template slot-scope="scope">
           <span>{{ scope.row.maxLength != null ? scope.row.maxLength : '—' }}</span>
@@ -111,8 +99,6 @@
         prop="required"
         width="80"
         align="center"
-        sortable="custom"
-        :sort-method="(a, b) => compareTruthy(a.required, b.required)"
       >
         <template slot-scope="scope">
           <span>{{ isTruthy(scope.row.required) ? $t('defect.custom-field.yes') : $t('defect.custom-field.no') }}</span>
@@ -123,8 +109,6 @@
         prop="nullable"
         width="80"
         align="center"
-        sortable="custom"
-        :sort-method="(a, b) => compareTruthy(a.nullable, b.nullable)"
       >
         <template slot-scope="scope">
           <span>{{ isTruthy(scope.row.nullable) ? $t('defect.custom-field.yes') : $t('defect.custom-field.no') }}</span>
@@ -135,8 +119,6 @@
         prop="enabled"
         width="90"
         align="center"
-        sortable="custom"
-        :sort-method="(a, b) => compareTruthy(a.enabled, b.enabled)"
       >
         <template slot-scope="scope">
           <el-switch
@@ -372,17 +354,6 @@ export default {
   name: 'ProjectDefectFields',
   components: { DefectFieldDefaultValueInput },
   data() {
-    const validateFieldKey = (rule, value, callback) => {
-      if (!value) {
-        callback(new Error(this.$t('defect.custom-field.field-key-required')))
-        return
-      }
-      if (!FIELD_KEY_PATTERN.test(value)) {
-        callback(new Error(this.$t('defect.custom-field.field-key-format')))
-        return
-      }
-      callback()
-    }
     return {
       loading: false,
       total: 0,
@@ -400,8 +371,8 @@ export default {
       enumOptions: [],
       form: {},
       rules: {
-        fieldKey: [{ required: true, validator: validateFieldKey, trigger: 'blur' }],
-        fieldLabel: [{ required: true, message: this.$i18n.t('defect.custom-field.field-label-required'), trigger: 'blur' }],
+        fieldKey: [{ required: true, validator: this.validateFieldKeyRule, trigger: 'blur' }],
+        fieldLabel: [{ required: true, validator: this.validateFieldLabelRule, trigger: 'blur' }],
         fieldType: [{ required: true, message: this.$i18n.t('defect.custom-field.field-type-required'), trigger: 'change' }]
       }
     }
@@ -596,6 +567,59 @@ export default {
     goBack() {
       this.$router.back()
     },
+    normalizeLabelForCompare(label) {
+      return String(label || '').trim().toLowerCase()
+    },
+    isFieldKeyDuplicated(key, excludeFieldId) {
+      const normalizedKey = String(key || '').trim()
+      if (!normalizedKey) {
+        return false
+      }
+      return this.fieldList.some(row => {
+        if (!this.isBuiltinField(row) && excludeFieldId && row.fieldId === excludeFieldId) {
+          return false
+        }
+        return String(row.fieldKey || '').trim() === normalizedKey
+      })
+    },
+    isFieldLabelDuplicated(label, excludeFieldId) {
+      const normalizedLabel = this.normalizeLabelForCompare(label)
+      if (!normalizedLabel) {
+        return false
+      }
+      return this.fieldList.some(row => {
+        if (!this.isBuiltinField(row) && excludeFieldId && row.fieldId === excludeFieldId) {
+          return false
+        }
+        return this.normalizeLabelForCompare(this.displayFieldLabel(row)) === normalizedLabel
+      })
+    },
+    validateFieldKeyRule(rule, value, callback) {
+      if (!value) {
+        callback(new Error(this.$t('defect.custom-field.field-key-required')))
+        return
+      }
+      if (!FIELD_KEY_PATTERN.test(value)) {
+        callback(new Error(this.$t('defect.custom-field.field-key-format')))
+        return
+      }
+      if (!this.form.fieldId && this.isFieldKeyDuplicated(value, null)) {
+        callback(new Error(this.$t('defect.custom-field.field-key-duplicate')))
+        return
+      }
+      callback()
+    },
+    validateFieldLabelRule(rule, value, callback) {
+      if (!value || !String(value).trim()) {
+        callback(new Error(this.$t('defect.custom-field.field-label-required')))
+        return
+      }
+      if (this.isFieldLabelDuplicated(value, this.form.fieldId || null)) {
+        callback(new Error(this.$t('defect.custom-field.field-label-duplicate')))
+        return
+      }
+      callback()
+    },
     isTruthy(val) {
       return val === true || val === 1 || val === '1'
     },
@@ -697,79 +721,8 @@ export default {
     nextUnifiedSortOrder() {
       return this.fieldList.length
     },
-    sortBySource(a, b) {
-      return (a._sourceOrder ?? 0) - (b._sourceOrder ?? 0)
-    },
-    sortBySortOrder(a, b) {
-      const na = a.sortOrder != null ? Number(a.sortOrder) : 0
-      const nb = b.sortOrder != null ? Number(b.sortOrder) : 0
-      if (Number.isFinite(na) && Number.isFinite(nb)) {
-        return na - nb
-      }
-      return 0
-    },
-    sortByMaxLength(a, b) {
-      const na = a.maxLength != null ? Number(a.maxLength) : -1
-      const nb = b.maxLength != null ? Number(b.maxLength) : -1
-      if (Number.isFinite(na) && Number.isFinite(nb)) {
-        return na - nb
-      }
-      return 0
-    },
     compareText(a, b) {
       return String(a == null ? '' : a).localeCompare(String(b == null ? '' : b), undefined, { sensitivity: 'base' })
-    },
-    compareTruthy(a, b) {
-      return (this.isTruthy(a) ? 1 : 0) - (this.isTruthy(b) ? 1 : 0)
-    },
-    handleSortChange({ prop, order }) {
-      if (!order) {
-        this.sortFieldList()
-        this.queryParams.pageNum = 1
-        return
-      }
-      const dir = order === 'ascending' ? 1 : -1
-      const compare = (a, b) => {
-        let cmp = 0
-        switch (prop) {
-          case '_sourceOrder':
-            cmp = this.sortBySource(a, b)
-            break
-          case 'fieldKey':
-            cmp = this.compareText(a.fieldKey, b.fieldKey)
-            break
-          case '_displayLabel':
-            cmp = this.compareText(a._displayLabel, b._displayLabel)
-            break
-          case 'fieldType':
-            cmp = this.compareText(a.fieldType, b.fieldType)
-            break
-          case 'maxLength':
-            cmp = this.sortByMaxLength(a, b)
-            break
-          case 'sortOrder':
-            cmp = this.sortBySortOrder(a, b)
-            break
-          case 'required':
-            cmp = this.compareTruthy(a.required, b.required)
-            break
-          case 'nullable':
-            cmp = this.compareTruthy(a.nullable, b.nullable)
-            break
-          case 'enabled':
-            cmp = this.compareTruthy(a.enabled, b.enabled)
-            break
-          default:
-            cmp = this.compareByDefaultOrder(a, b)
-        }
-        if (cmp !== 0) return cmp * dir
-        return this.compareByDefaultOrder(a, b) * dir
-      }
-      this.fieldList.sort(compare)
-      this.queryParams.pageNum = 1
-      this.$nextTick(() => {
-        this.syncDefectFieldTableBodyMaxHeight()
-      })
     },
     findRowIndex(row) {
       const key = this.rowKey(row)
