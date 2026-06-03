@@ -13,11 +13,49 @@ const CompressionPlugin = require('compression-webpack-plugin')
 
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
 
+/** 忽略 dev-server / 代理侧 ECONNRESET，避免 Node 因未处理 socket error 直接退出 */
+function ignoreSocketReset(err) {
+  if (err && (err.code === 'ECONNRESET' || err.code === 'EPIPE')) {
+    return
+  }
+  console.error(err)
+}
+
+function attachDevServerSocketGuard(server) {
+  const httpServer = server && (server.listeningApp || server)
+  if (!httpServer || typeof httpServer.on !== 'function') {
+    return
+  }
+  httpServer.on('connection', socket => {
+    socket.on('error', ignoreSocketReset)
+  })
+  httpServer.on('clientError', (err, socket) => {
+    ignoreSocketReset(err)
+    if (socket && !socket.destroyed) {
+      socket.destroy()
+    }
+  })
+}
+
+function proxyOnError(err, req, res) {
+  ignoreSocketReset(err)
+  if (res && !res.headersSent && typeof res.writeHead === 'function') {
+    res.writeHead(502, { 'Content-Type': 'text/plain' })
+    res.end('Bad gateway')
+  }
+}
+
+function proxyOnProxyReqWs(_proxyReq, _req, socket) {
+  if (socket && typeof socket.on === 'function') {
+    socket.on('error', ignoreSocketReset)
+  }
+}
+
 const name = process.env.VUE_APP_TITLE || '猫陪我改BUG' // 网页标题
 
 const port = process.env.port || process.env.npm_config_port || 2222 // 端口
-/** 开发服务监听地址：默认 localhost，避免 0.0.0.0 时 HMR 客户端连局域网 IP 触发 ECONNRESET；局域网访问用 DEV_HOST=0.0.0.0 */
-const devHost = process.env.DEV_HOST || 'localhost'
+/** 默认 0.0.0.0：Local 显示 localhost，Network 显示本机局域网 IP；仅本机时可 DEV_HOST=localhost */
+const devHost = process.env.DEV_HOST || '0.0.0.0'
 
 /** 系统文档 Markdown 源目录（与 CopyWebpackPlugin 生产拷贝源一致） */
 const docsStaticDir = path.resolve(__dirname, '../readme/production')
@@ -47,19 +85,19 @@ module.exports = {
   devServer: {
     host: devHost,
     port: port,
-    public: `${devHost}:${port}`,
     open: true,
     /**
-     * 通过局域网 IP 访问时设 DEV_HOST=0.0.0.0，并建议 CAT2BUG_DEV_HMR=1 启用 ws 热更新。
+     * 局域网 IP 访问且热更新异常时，可设 CAT2BUG_DEV_HMR=1 启用 ws 传输。
      */
-    ...(process.env.DEV_HOST === '0.0.0.0' || process.env.CAT2BUG_DEV_HMR === '1' ? {
+    ...(process.env.CAT2BUG_DEV_HMR === '1' ? {
       transportMode: {
         client: 'ws',
         server: 'ws',
       },
     } : {}),
     // 开发环境提供 /docs/**，避免 history 回退到 index.html 导致系统文档页白屏
-    before(app) {
+    before(app, server) {
+      attachDevServerSocketGuard(server)
       app.use('/docs', express.static(docsStaticDir))
     },
     // https: {
@@ -71,6 +109,8 @@ module.exports = {
       [process.env.VUE_APP_BASE_API]: {
         target: `http://localhost:2020`,
         changeOrigin: true,
+        onError: proxyOnError,
+        onProxyReqWs: proxyOnProxyReqWs,
         pathRewrite: {
           ['^' + process.env.VUE_APP_BASE_API]: ''
         }
@@ -79,6 +119,8 @@ module.exports = {
         target: `ws://localhost:2020`,
         changeOrigin: true,
         ws: true,
+        onError: proxyOnError,
+        onProxyReqWs: proxyOnProxyReqWs,
         pathRewrite: {
           ['^' + process.env.VUE_APP_BASE_WEBSOCKET]: ''
         }
@@ -87,6 +129,8 @@ module.exports = {
         target: `ws://localhost:8012`,
         changeOrigin: true,
         ws: true,
+        onError: proxyOnError,
+        onProxyReqWs: proxyOnProxyReqWs,
         pathRewrite: {
           ['^' + process.env.VUE_APP_FILE_VIEW]: ''
         }
@@ -155,6 +199,22 @@ module.exports = {
   chainWebpack(config) {
     if (isDev) {
       config.plugins.delete('eslint')
+      // 开发模式禁用 cache-loader，避免 macOS/Node 下子进程 IPC 触发 ECONNRESET
+      const stripCacheLoader = rule => {
+        if (rule.uses.has('cache-loader')) {
+          rule.uses.delete('cache-loader')
+        }
+      }
+      ;['vue', 'js', 'ts', 'tsx'].forEach(name => {
+        if (config.module.rules.has(name)) {
+          stripCacheLoader(config.module.rule(name))
+        }
+      })
+      ;['css', 'postcss', 'scss', 'sass', 'less', 'stylus'].forEach(name => {
+        if (config.module.rules.has(name)) {
+          config.module.rule(name).oneOfs.store.forEach(oneOf => stripCacheLoader(oneOf))
+        }
+      })
     }
     config.plugins.delete('preload') // TODO: need test
     config.plugins.delete('prefetch') // TODO: need test
