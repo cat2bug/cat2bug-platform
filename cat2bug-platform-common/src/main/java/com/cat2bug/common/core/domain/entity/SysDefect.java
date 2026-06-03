@@ -79,6 +79,9 @@ public class SysDefect extends BaseEntity
     @Excel(name = "交付物", i18nNameKey = "module", width = 50, comboHandler = com.cat2bug.common.core.domain.excel.ModuleComboHandlerAdapter.class)
     private String moduleName;
 
+    /** 交付物全路径（查询时填充，非持久化） */
+    private String modulePath;
+
     /** 版本 */
     @Excel(name = "版本", i18nNameKey = "version")
     private String moduleVersion;

@@ -18,6 +18,15 @@ export function treeModule(query) {
   })
 }
 
+/** 查询项目交付物全路径（moduleId → modulePath） */
+export function listModulePath(projectId) {
+  return request({
+    url: '/system/module/path-list',
+    method: 'get',
+    params: { projectId }
+  })
+}
+
 // 查询模块详细
 export function getModule(moduleId) {
   return request({

@@ -48,21 +48,6 @@
             :custom-fields="defect.customFields"
           />
         </el-collapse-item>
-        <el-collapse-item v-if="defect.imgUrls" :title="$i18n.t('image')" name="imgUrls">
-          <div class="defect-image">
-            <cat2-bug-image
-              v-for="(img,index) in getUrl(defect.imgUrls)"
-              :key="index"
-              :src="img"
-              :preview-src-list="getUrl(defect.imgUrls)"
-              fit="contain"></cat2-bug-image>
-          </div>
-        </el-collapse-item>
-        <el-collapse-item v-if="defect.annexUrls" :title="$i18n.t('annex')" name="annexUrls">
-          <div class="defect-edit-body-annex">
-            <el-link type="primary" v-for="(file,index) in getUrl(defect.annexUrls)" :key="index" :href="file">{{getFileName(file)}}</el-link>
-          </div>
-        </el-collapse-item>
         <el-collapse-item v-if="defectCase && defectCase.caseId" :title="$i18n.t('case')" name="caseId">
           <case-card :case-model="defectCase" :state-visible="true" :step-index.sync="defect.caseStepId" :edit="false" />
         </el-collapse-item>
@@ -79,7 +64,6 @@
 import {addDefect, closeEditWindow, getDefect, updateDefect} from "@/api/system/defect";
 import SelectProjectMember from "@/components/Project/SelectProjectMember"
 import SelectModule from "@/components/Module/SelectModule"
-import ImageUpload from "@/components/ImageUpload";
 import ListDefectLog from "@/components/ListDefectLog";
 import DefectTools from "@/components/Defect/DefectTools";
 import DefectTypeFlag from "@/components/Defect/DefectTypeFlag";
@@ -94,7 +78,7 @@ import {normalizeDefectTypeAndLevel} from "@/utils/defect-defaults";
 export default {
   name: "EditDefect",
   dicts: ['defect_level'],
-  components: { ImageUpload, SelectProjectMember, SelectModule, ListDefectLog, DefectTools, DefectTypeFlag, DefectStateFlag, CaseCard, MarkdownItVue, FocusMemberList, DefectCustomFieldsDisplay: () => import('@/components/DefectCustomField/DefectCustomFieldsDisplay') },
+  components: { SelectProjectMember, SelectModule, ListDefectLog, DefectTools, DefectTypeFlag, DefectStateFlag, CaseCard, MarkdownItVue, FocusMemberList, DefectCustomFieldsDisplay: () => import('@/components/DefectCustomField/DefectCustomFieldsDisplay') },
   data() {
     return {
       loading: false,
@@ -148,21 +132,6 @@ export default {
     }
   },
   computed: {
-    getUrl: function () {
-      return function (urls){
-        let imgs = urls?urls.split(','):[];
-        return imgs.map(i=>{
-          return process.env.VUE_APP_BASE_API + i;
-        })
-      }
-    },
-    getFileName: function () {
-      return function (url) {
-        if(!url) return null;
-        let arr = url.split('\/');
-        return arr[arr.length-1];
-      }
-    },
     defectToolsExclusions() {
       const f = this.defect && this.defect.delFlag;
       if (f === '2' || f === 2) {
@@ -192,12 +161,6 @@ export default {
         this.defect = res.data;
         if(this.defect.defectDescribe) {
           this.activeNames.push('defectDescribe');
-        }
-        if(this.defect.imgUrls && this.defect.imgUrls.length>0) {
-          this.activeNames.push('imgUrls');
-        }
-        if(this.defect.annexUrls && this.defect.annexUrls.length>0) {
-          this.activeNames.push('annexUrls');
         }
         if(this.defect){
           this.activeNames.push('caseId');
@@ -436,29 +399,10 @@ export default {
       }
     }
   }
-  .defect-edit-body-annex {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: flex-start;
-  }
 }
 ::v-deep .el-drawer__close-btn {
   display: none;
 }
-.defect-image {
-  display: inline-flex;
-  flex-direction: row;
-  gap: 10px;
-  flex-wrap: wrap;
-  ::v-deep .el-image {
-    width: 150px;
-    height: 150px;
-    border-radius: var(--cat2bug-border-radius, 4px);
-    overflow: hidden;
-  }
-}
-
 ::v-deep.el-tag{
   font-size: 13px !important;
   vertical-align: 1px;

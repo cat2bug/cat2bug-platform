@@ -238,7 +238,31 @@ public class SysDefectServiceImpl implements ISysDefectService
         if(sysDefect.getHandleByList()!=null){
             sysDefect.setHandleByList(sysDefect.getHandleByList().stream().filter(h->h.getUserId()>0).collect(Collectors.toList()));
         }
+        enrichModulePath(sysDefect);
         return sysDefect;
+    }
+
+    /** 详情展示用：填充交付物全路径 */
+    private void enrichModulePath(SysDefect sysDefect) {
+        if (sysDefect == null || sysDefect.getModuleId() == null || sysDefect.getProjectId() == null) {
+            return;
+        }
+        try {
+            List<SysModule> pathList = sysModuleMapper.selectSysModulePathList(sysDefect.getProjectId());
+            if (pathList == null) {
+                return;
+            }
+            for (SysModule m : pathList) {
+                if (m != null && sysDefect.getModuleId().equals(m.getModuleId())) {
+                    if (StringUtils.isNotBlank(m.getModulePath())) {
+                        sysDefect.setModulePath(m.getModulePath());
+                    }
+                    return;
+                }
+            }
+        } catch (Exception e) {
+            log.warn("enrich module path failed, defectId=" + sysDefect.getDefectId(), e);
+        }
     }
 
     /**

@@ -8,6 +8,7 @@ export default {
   data() {
     return {
       defectBuiltinFieldKeys: null,
+      defectFieldLayout: null,
       _defectBuiltinLayoutLoading: false
     }
   },
@@ -24,6 +25,7 @@ export default {
       const pid = Number(projectId)
       if (!pid) {
         this.defectBuiltinFieldKeys = null
+        this.defectFieldLayout = null
         return
       }
       this._defectBuiltinLayoutLoading = true
@@ -31,10 +33,12 @@ export default {
         .then(res => {
           const data = res.data || {}
           const keys = data.enabledBuiltinFieldKeys
+          this.defectFieldLayout = data
           this.defectBuiltinFieldKeys = normalizeEnabledBuiltinKeys(keys)
           this.applyDefectFormRulesForBuiltinLayout && this.applyDefectFormRulesForBuiltinLayout()
         })
         .catch(() => {
+          this.defectFieldLayout = null
           this.defectBuiltinFieldKeys = normalizeEnabledBuiltinKeys(null)
         })
         .finally(() => {

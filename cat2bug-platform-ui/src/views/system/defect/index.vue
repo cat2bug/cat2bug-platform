@@ -38,7 +38,8 @@
             icon-class="add-tab"
             class-name="defect-tab-label defect-tab-add-btn"
             :title="$t('defect.tab')"
-            @click.stop="addDefectTabHandle"
+            @click.native.stop="addDefectTabHandle"
+            @mousedown.native.stop.prevent
           />
         </el-tab-pane>
       </el-tabs>
@@ -647,6 +648,8 @@ export default {
     selectDefectTabHandle(tab) {
       const activeName = tab && tab.name != null ? String(tab.name) : String(this.activeDefectTabName)
       if (activeName === this.defectAddTabPaneName) {
+        const restoreTab = resolveDefectTabFromCache(this.$cache.local.get(DEFECT_TAB_CACHE_KEY)) || this.allTab
+        this.activeDefectTabName = restoreTab
         return
       }
       clearExtensionParams(this.queryParams, this)
@@ -712,7 +715,16 @@ export default {
     },
     /** 打开添加缺陷页签对话框 */
     addDefectTabHandle() {
+      const restoreTab =
+        this.activeDefectTabName !== this.defectAddTabPaneName
+          ? this.activeDefectTabName
+          : (resolveDefectTabFromCache(this.$cache.local.get(DEFECT_TAB_CACHE_KEY)) || this.allTab)
       this.$refs.defectTabDialog.open()
+      this.$nextTick(() => {
+        if (this.activeDefectTabName === this.defectAddTabPaneName) {
+          this.activeDefectTabName = restoreTab
+        }
+      })
     },
     /** 添加页签处理 */
     tabAddHandle(tab) {

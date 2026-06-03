@@ -5,9 +5,7 @@ import { defectDisplayFieldPickerOptions } from '@/utils/defect-display-field'
 export const DEFECT_DETAIL_SKIP_TABLE_KEYS = new Set([
   'id',
   'defect.name',
-  'describe',
-  'image',
-  'annex'
+  'describe'
 ])
 
 /** 详情区固定展示的统计项（不在「显示字段」勾选列表中） */

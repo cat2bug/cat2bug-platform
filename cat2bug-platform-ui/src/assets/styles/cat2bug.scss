@@ -4,7 +4,7 @@
   --page-header-line-height: 24px;
   --cat2bug-dialog-content-footer-gap: 20px;
   --cat2bug-dialog-footer-gap: 10px;
-  --cat2bug-dialog-padding-x: 10px;
+  --cat2bug-dialog-padding-x: 20px;
   --border-color-light: #ebeef5;
   --border-color-lighter: #f2f6fc;
   --cat2bug-toolbar-control-height: 32px;
@@ -748,19 +748,19 @@ img.cat2bug-image-error__img {
   color: #fff !important;
 }
 .el-dialog__header {
-  padding: 20px var(--cat2bug-dialog-padding-x, 10px) 10px !important;
+  padding: 20px var(--cat2bug-dialog-padding-x, 20px) 10px !important;
 }
 
 .el-dialog__headerbtn {
-  right: var(--cat2bug-dialog-padding-x, 10px) !important;
+  right: var(--cat2bug-dialog-padding-x, 20px) !important;
 }
 
 .el-dialog__body {
-  padding: 0 var(--cat2bug-dialog-padding-x, 10px) var(--cat2bug-dialog-content-footer-gap, 20px) !important;
+  padding: 0 var(--cat2bug-dialog-padding-x, 20px) var(--cat2bug-dialog-content-footer-gap, 20px) !important;
 }
 
 .el-dialog--center .el-dialog__body {
-  padding: 0 var(--cat2bug-dialog-padding-x, 10px) var(--cat2bug-dialog-content-footer-gap, 20px) !important;
+  padding: 0 var(--cat2bug-dialog-padding-x, 20px) var(--cat2bug-dialog-content-footer-gap, 20px) !important;
 }
 
 /* 弹框底部按钮：全局居右；取消左、主操作右 */
@@ -800,7 +800,7 @@ img.cat2bug-image-error__img {
 
 .el-dialog__footer {
   @include cat2bug-dialog-footer-separator;
-  padding: var(--cat2bug-dialog-content-footer-gap, 20px) var(--cat2bug-dialog-padding-x, 10px) 20px !important;
+  padding: var(--cat2bug-dialog-content-footer-gap, 20px) var(--cat2bug-dialog-padding-x, 20px) 20px !important;
   @include cat2bug-dialog-footer-layout;
   @include cat2bug-dialog-footer-buttons;
 

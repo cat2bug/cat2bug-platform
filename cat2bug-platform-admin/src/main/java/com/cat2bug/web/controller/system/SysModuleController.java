@@ -45,6 +45,17 @@ public class SysModuleController extends BaseController
     }
 
     /**
+     * 查询项目下交付物全路径列表（moduleId → modulePath）
+     */
+    @PreAuthorize("@ss.hasPermi('system:defect:list') || @ss.hasPermi('system:module:list')")
+    @GetMapping("/path-list")
+    public AjaxResult pathList(@RequestParam("projectId") Long projectId)
+    {
+        Preconditions.checkNotNull(projectId);
+        return success(sysModuleService.selectSysModulePathList(projectId));
+    }
+
+    /**
      * 查询模块树形结构
      */
     @PreAuthorize("@ss.hasPermi('system:defect:list') || @ss.hasPermi('system:module:list')")

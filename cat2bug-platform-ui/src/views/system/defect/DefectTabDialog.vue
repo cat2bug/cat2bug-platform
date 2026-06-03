@@ -3,8 +3,9 @@
     :title="$t('defect.create-tab')"
     :visible.sync="dialogVisible"
     width="40%"
-    :before-close="close">
-    <el-form ref="form" :rules="rules" :model="form" label-width="120px">
+    :before-close="handleBeforeClose"
+    @closed="handleClosed">
+    <el-form v-if="dialogVisible" ref="form" :rules="rules" :model="form" label-width="120px">
       <el-form-item :label="$t('defect.tab-name')" prop="tabName">
         <el-input
           v-model="form.tabName"
@@ -20,82 +21,48 @@
           clearable
         />
       </el-form-item>
-      <el-form-item :label="$t('defect.my-following')">
-        <el-switch v-model="form.config.params.collect" active-value="1" inactive-value="0"></el-switch>
-      </el-form-item>
-      <el-form-item :label="$t('defect.type')" prop="defectType">
-        <el-select v-model="form.config.defectType" clearable collapse-tags :placeholder="$t('defect.select-type')">
-          <el-option
-            v-for="type in config.types"
-            :key="type.key"
-            :label="$i18n.t(type.value)"
-            :value="type.value">
-          </el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item :label="$t('defect.state')" prop="defectState">
-        <el-select v-model="form.config.params.defectStates" clearable multiple collapse-tags :placeholder="$t('defect.select-state')">
-          <el-option
-            v-for="state in config.states"
-            :key="state.key"
-            :label="$i18n.t(state.value)"
-            :value="state.key">
-          </el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item :label="$t('module')" prop="moduleId">
-        <select-module v-model="form.config.moduleId" :project-id="form.projectId" :is-edit="false" size="medium" />
-      </el-form-item>
-      <el-form-item :label="$t('create-by')" prop="createByIds">
-        <select-project-member
-          v-model="form.config.createByIds"
-          :project-id="projectId"
-          :placeholder="$t('defect.select-create-by').toString()"
-          :is-head="false"
-          size="medium"
-        />
-      </el-form-item>
-      <el-form-item :label="$t('handle-by')" prop="handleBy">
-        <select-project-member
-          v-model="form.config.handleBy"
-          :project-id="projectId"
-          :placeholder="$t('defect.select-handle-by').toString()"
-          :is-head="false"
-          size="medium"
-        />
-      </el-form-item>
-      <el-form-item :label="$t('defect.show-deleted')">
-        <el-switch v-model="form.config.params.delFlag" active-value="2" inactive-value="0" />
-      </el-form-item>
-      <custom-field-filter-builder
-        v-if="enabledFields.length"
-        v-model="form.config.customFieldFilters"
-        :fields="enabledFields"
+      <el-row :gutter="16" class="defect-tab-switch-row">
+        <el-col :span="12">
+          <el-form-item :label="$t('defect.my-following')" label-width="120px">
+            <el-switch v-model="form.config.params.collect" active-value="1" inactive-value="0" />
+          </el-form-item>
+        </el-col>
+        <el-col :span="12">
+          <el-form-item :label="$t('defect.show-deleted')" label-width="120px">
+            <el-switch v-model="form.config.params.delFlag" active-value="2" inactive-value="0" />
+          </el-form-item>
+        </el-col>
+      </el-row>
+      <defect-tab-ordered-filter-fields
+        v-if="projectId"
+        :project-id="projectId"
+        :config="form.config"
+        :field-layout="fieldLayout"
+        :defect-types="config.types || []"
+        :defect-states-options="config.states || []"
       />
-      <el-form-item>
-        <el-button @click="close">{{$t('cancel')}}</el-button>
-        <el-button type="primary" @click="onCreateTab">{{$t('create')}}</el-button>
-      </el-form-item>
     </el-form>
+    <div slot="footer" class="dialog-footer">
+      <el-button @click="close">{{ $t('cancel') }}</el-button>
+      <el-button type="primary" @click="onCreateTab">{{ $t('create') }}</el-button>
+    </div>
   </el-dialog>
 </template>
 
 <script>
 import {configDefect} from "@/api/system/defect";
-import SelectProjectMember from "@/components/Project/SelectProjectMember";
-import SelectModule from "@/components/Module/SelectModule";
-import CustomFieldFilterBuilder from "@/components/DefectCustomField/CustomFieldFilterBuilder";
+import DefectTabOrderedFilterFields from "@/components/Defect/DefectTabOrderedFilterFields";
 import {addTabs} from "@/api/system/DefectTabs";
-import {listEnabledFields} from "@/api/system/defect-field";
+import { loadDefectColumnLayout } from '@/utils/defect-custom-field-columns'
 
 export default {
   name: "DefectTabDialog",
-  components: {SelectProjectMember, SelectModule, CustomFieldFilterBuilder},
+  components: { DefectTabOrderedFilterFields },
   data() {
     return {
       dialogVisible: false,
       config: {},
-      enabledFields: [],
+      fieldLayout: null,
       form: {
         projectId: null,
         config: {
@@ -130,23 +97,32 @@ export default {
       })
     },
     close() {
-      this.dialogVisible = false;
+      this.dialogVisible = false
+    },
+    handleBeforeClose(done) {
+      this.close()
+      if (typeof done === 'function') {
+        done()
+      }
+    },
+    handleClosed() {
+      this.fieldLayout = null
     },
     open() {
       this.reset();
-      this.loadEnabledFields();
+      this.loadFieldLayout();
       this.dialogVisible = true;
     },
-    loadEnabledFields() {
+    loadFieldLayout() {
       if (!this.projectId) {
-        this.enabledFields = [];
-        return;
+        this.fieldLayout = null
+        return
       }
-      listEnabledFields(this.projectId).then(res => {
-        this.enabledFields = res.data || [];
+      loadDefectColumnLayout(this.projectId).then(layout => {
+        this.fieldLayout = layout
       }).catch(() => {
-        this.enabledFields = [];
-      });
+        this.fieldLayout = null
+      })
     },
     reset() {
       this.form = {
@@ -155,7 +131,9 @@ export default {
         config: {
           customFieldFilters: [],
           params: {
-            delFlag: '0'
+            delFlag: '0',
+            collect: '0',
+            defectStates: []
           }
         }
       }
@@ -177,5 +155,18 @@ export default {
 </script>
 
 <style scoped>
+.defect-tab-switch-row ::v-deep .el-form-item {
+  margin-bottom: 18px;
+}
 
+.defect-tab-switch-row ::v-deep .el-form-item__label {
+  line-height: 32px;
+}
+
+.defect-tab-switch-row ::v-deep .el-form-item__content {
+  display: flex;
+  align-items: center;
+  min-height: 32px;
+  line-height: 32px;
+}
 </style>

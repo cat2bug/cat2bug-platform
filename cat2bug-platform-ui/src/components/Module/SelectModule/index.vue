@@ -23,9 +23,15 @@
       @mouseleave="showClearButtonHandle(false)"
     >
       <i :class="icon" v-if="icon" class="select-module-input__prefix-icon"></i>
-      <div class="selectProjectMemberInput_content">
-        <el-input ref="selectProjectModuleInput" :size="size" :class="icon?'padding-left-8':''" readonly :placeholder="$t(placeholder)" v-model="queryMember.params.search" @input="searchChangeHandle"></el-input>
-      </div>
+      <el-tooltip
+        :content="moduleFullPath"
+        placement="top"
+        :disabled="!moduleFullPath || moduleFullPath === queryMember.params.search"
+      >
+        <div class="selectProjectMemberInput_content">
+          <el-input ref="selectProjectModuleInput" :size="size" :class="icon?'padding-left-8':''" readonly :placeholder="$t(placeholder)" v-model="queryMember.params.search" @input="searchChangeHandle"></el-input>
+        </div>
+      </el-tooltip>
       <i class="select-module-input__icon el-icon-arrow-up" v-show="!readonly && isClearButtonVisible==false"></i>
       <i class="select-module-input__icon el-icon-circle-close" v-show="!readonly && isClearButtonVisible==true" @click="clearSelectModuleHandle"></i>
     </div>
@@ -48,7 +54,8 @@
 import { checkPermi } from "@/utils/permission";
 import MemberNameplate from "@/components/MemberNameplate";
 import ModuleMenu from "@/components/Module/SelectModule/menu";
-import {getModule} from "@/api/system/module";
+import { getModule, listModulePath } from "@/api/system/module";
+import { formatDeliverablePath } from "@/utils/deliverable-path-display";
 
 export default {
   name: "SelectModule",
@@ -70,7 +77,9 @@ export default {
       queryMember: {
         params: {}
       },
-      addModule: null
+      addModule: null,
+      moduleFullPath: '',
+      modulePathById: {}
     }
   },
   props: {
@@ -139,6 +148,12 @@ export default {
     }
   },
   watch: {
+    projectId: {
+      immediate: true,
+      handler(id) {
+        this.reloadModulePathMap(id)
+      }
+    },
     moduleId: function (newVal, oldVal) {
       if(newVal!=oldVal) {
         if(newVal) {
@@ -168,11 +183,75 @@ export default {
   },
   methods: {
     checkPermi,
+    reloadModulePathMap(projectId) {
+      const pid = Number(projectId)
+      if (!pid) {
+        this.modulePathById = {}
+        return
+      }
+      listModulePath(pid).then((res) => {
+        const map = {}
+        ;(res.data || []).forEach((m) => {
+          if (m && m.moduleId != null && m.modulePath) {
+            map[m.moduleId] = m.modulePath
+          }
+        })
+        this.modulePathById = map
+        if (this.selectModule) {
+          this.syncModuleDisplay(this.selectModule)
+        }
+      }).catch(() => {
+        this.modulePathById = {}
+      })
+    },
+    resolveModuleFullPath(module) {
+      if (!module) return ''
+      if (module.modulePath) {
+        return String(module.modulePath).trim()
+      }
+      const id = module.moduleId
+      if (id != null && this.modulePathById[id]) {
+        return String(this.modulePathById[id]).trim()
+      }
+      return module.moduleName != null ? String(module.moduleName).trim() : ''
+    },
+    syncModuleDisplay(module) {
+      if (!module) {
+        this.moduleFullPath = ''
+        this.queryMember.params.search = null
+        return
+      }
+      const full = this.resolveModuleFullPath(module)
+      this.moduleFullPath = full
+      this.$nextTick(() => {
+        const applyFormatted = () => {
+          const formatted = formatDeliverablePath(full, this.getDisplayMaxLength())
+          this.queryMember.params.search = formatted.short || formatted.full || ''
+        }
+        applyFormatted()
+        const input = this.$refs.selectProjectModuleInput
+        const inner = input && input.$el ? input.$el.querySelector('.el-input__inner') : null
+        if (!inner || inner.clientWidth === 0) {
+          this.$nextTick(applyFormatted)
+        }
+      })
+    },
+    /** 按输入框可视宽度估算可展示字符数 */
+    getDisplayMaxLength() {
+      const input = this.$refs.selectProjectModuleInput
+      const inner = input && input.$el ? input.$el.querySelector('.el-input__inner') : null
+      if (inner && inner.clientWidth > 0) {
+        const style = window.getComputedStyle(inner)
+        const fontSize = parseFloat(style.fontSize) || 14
+        return Math.max(10, Math.floor(inner.clientWidth / (fontSize * 0.58)))
+      }
+      return 20
+    },
     /** directMenu：同步当前交付物文案与内部状态，不关 popover、不 emit（避免与 openDirectMenu 抢状态导致闪烁） */
     applyModuleDataWithoutClosingPopover (module) {
       if (!module) return
       this.selectModule = module
-      this.queryMember.params.search = module.moduleName != null ? String(module.moduleName) : ''
+      this.syncModuleDisplay(module)
     },
     /** 缺陷 Excel 等场景：不点伪输入，直接打开 popover 并刷新首级交付物菜单 */
     openDirectMenu () {
@@ -222,7 +301,7 @@ export default {
     /** 点击菜单事件的处理 */
     clickMenuHandle(module,index){
       this.selectModule = module;
-      this.queryMember.params.search=this.selectModule.moduleName;
+      this.syncModuleDisplay(module);
       this.popoverVisible=false;
       this.$emit('input',this.selectModule.moduleId,this.selectModule);
       this.resetMenu();
@@ -244,6 +323,7 @@ export default {
     clearSelectModuleHandle(event) {
       this.queryMember.params.search=null;
       this.selectModule=null;
+      this.moduleFullPath = '';
       this.popoverVisible = false;
       this.$forceUpdate();
       if(event) {
@@ -301,25 +381,34 @@ export default {
     line-height: 0;
     align-items: center;
     padding-left: 0px;
+    overflow: hidden;
     .selectProjectMemberInput_content {
       display: inline-flex;
       flex-direction: row;
       justify-content: flex-start;
       align-items: center;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
       flex-grow: 1;
+      flex-shrink: 1;
+      min-width: 0;
       overflow: hidden;
       min-height: 30px;
       margin: 0px 10px 0px 0px;
       .el-input {
         flex-grow: 1;
-        width: 0.1%;
+        flex-shrink: 1;
+        width: 0;
+        min-width: 0;
         height: 26px;
         .el-input__inner {
           border-width: 0px;
           height: 26px;
           line-height: 26px;
-          display: inline;
+          display: block;
+          width: 100%;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
         }
       }
       .padding-left-8 input {

@@ -72,7 +72,7 @@
     overflow: auto;
 	overflow-x: hidden;
 	max-height: 70vh;
-	padding: 10px 20px 0;
+	padding: 10px var(--cat2bug-dialog-padding-x, 20px) 0;
 }
 
 .el-table {

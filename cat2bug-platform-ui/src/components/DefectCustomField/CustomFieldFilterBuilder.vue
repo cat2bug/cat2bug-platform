@@ -186,7 +186,8 @@ export default {
   },
   data() {
     return {
-      filterState: {}
+      filterState: {},
+      suppressFilterEmit: false
     }
   },
   watch: {
@@ -251,9 +252,14 @@ export default {
         }
         next[field.fieldKey] = { op, value: val }
       })
+      this.suppressFilterEmit = true
       this.filterState = next
+      this.$nextTick(() => {
+        this.suppressFilterEmit = false
+      })
     },
     emitFilters() {
+      if (this.suppressFilterEmit) return
       const out = []
       this.fields.forEach(field => {
         const st = this.filterState[field.fieldKey]
@@ -277,7 +283,11 @@ export default {
         }
         out.push(entry)
       })
+      if (this.filtersEqual(out, this.value)) return
       this.$emit('input', out)
+    },
+    filtersEqual(a, b) {
+      return JSON.stringify(a || []) === JSON.stringify(b || [])
     }
   }
 }

@@ -24,124 +24,32 @@
         <el-form-item>
           <el-checkbox class="save-form-cache" v-model="isSaveFormCache" @change="handleSaveFormCache">{{ $t('defect.added-save-form-cache') }}</el-checkbox>
         </el-form-item>
-        <el-form-item v-if="isBuiltinDefectFieldVisible('defectName')" :label="$t('defect.name')" prop="defectName">
-          <el-input ref="defectNameInput" v-model="form.defectName" :placeholder="$t('defect.enter-name')" maxlength="128" />
-        </el-form-item>
-        <el-row v-if="isBuiltinDefectFieldVisible('defectType') || isBuiltinDefectFieldVisible('defectLevel')">
-          <el-col v-if="isBuiltinDefectFieldVisible('defectType')" :span="12">
-            <el-form-item :label="$t('type')" prop="defectType">
-              <el-select v-model="form.defectType" clearable :placeholder="$t('defect.select-type')">
-                <el-option
-                  v-for="type in config.types"
-                  :key="type.value"
-                  :label="$t(type.value)"
-                  :value="type.value"
-                ></el-option>
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col v-if="isBuiltinDefectFieldVisible('defectLevel')" :span="12">
-            <el-form-item :label="$t('priority')" prop="defectLevel">
-              <el-select v-model="form.defectLevel" clearable :placeholder="$t('defect.select-level')">
-                <el-option
-                  v-for="dict in dict.type.defect_level"
-                  :key="dict.value"
-                  :label="$t(dict.value)?$t(dict.value):dict.label"
-                  :value="dict.value"
-                ></el-option>
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row v-if="isBuiltinDefectFieldVisible('handleBy') || isBuiltinDefectFieldVisible('moduleVersion')">
-          <el-col v-if="isBuiltinDefectFieldVisible('handleBy')" :span="12">
-            <el-form-item :label="$t('handle-by')" prop="handleBy">
-              <select-project-member v-model="form.handleBy" :project-id="projectId"  />
-            </el-form-item>
-          </el-col>
-          <el-col v-if="isBuiltinDefectFieldVisible('moduleVersion')" :span="12">
-            <el-form-item :label="$t('version')" prop="moduleVersion">
-              <el-input v-model="form.moduleVersion" :placeholder="$t('defect.enter-version')" maxlength="128" style="max-width: 300px;" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row v-if="isBuiltinDefectFieldVisible('moduleId') || isBuiltinDefectFieldVisible('planStartTime') || isBuiltinDefectFieldVisible('planEndTime')">
-          <el-col v-if="isBuiltinDefectFieldVisible('moduleId')" :span="12">
-            <el-form-item :label="$t('module')" prop="moduleId">
-              <select-module v-model="form.moduleId" :project-id="projectId" @input="moduleChangeHandle"/>
-            </el-form-item>
-          </el-col>
-          <el-col v-if="isBuiltinDefectFieldVisible('planStartTime') || isBuiltinDefectFieldVisible('planEndTime')" :span="12">
-            <el-form-item :label="$t('plan-time')" prop="planEndTime">
-              <el-date-picker
-                class="defect-plan-datetimerange"
-                v-model="planTimeRange"
-                type="datetimerange"
-                :range-separator="$t('time-to')"
-                :start-placeholder="$t('plan-start-time')"
-                :end-placeholder="$t('plan-end-time')"
-                value-format="yyyy-MM-dd HH:mm:ss"
-                :placeholder="$t('defect.please-select-end-time')">
-              </el-date-picker>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row v-if="isBuiltinDefectFieldVisible('caseId')">
-          <el-col :span="24">
-            <el-form-item :label="$t('case')" prop="caseId">
-              <select-case ref="selectCase" v-model="form.caseId" :module-id="form.moduleId" :step-index="form.caseStepId" @step-change="stepChangeHandle" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <defect-custom-fields-section
+        <defect-form-ordered-fields
           v-if="projectId"
+          ref="orderedFields"
           :project-id="projectId"
-          v-model="form.customFields"
-        />
-        <el-row v-if="isBuiltinDefectFieldVisible('defectDescribe')">
-          <el-col :span="24">
-            <el-form-item :label="$t('describe')" prop="defectDescribe">
-              <cat2-bug-textarea
-                ref="cat2bugTextarea"
-                :name="$t('describe').toString()"
-                :placeholder="$t('defect.enter-markdown-describe').toString()"
-                :tools = "describeTools"
-                v-model="form.defectDescribe"
-                maxlength="65536"
-                rows="8"
-                show-word-limit
-                show-tools
-              >
-                <template v-slot:tools>
-                  <project-ai-model-select
-                    v-if="projectId"
-                    :project-id="projectId"
-                    v-model="defectAiModelId"
-                    embed-ai-button
-                    :ai-loading="aiButtonLoading"
-                    :ai-tooltip="$t('defect.ai-filling-in').toString()"
-                    @service-type="defectAiServiceType = $event"
-                    @ai-click="createDefectByAiHandle"
-                  />
-                </template>
-              </cat2-bug-textarea>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row v-if="isBuiltinDefectFieldVisible('imgUrls')">
-          <el-col :span="24">
-            <el-form-item :label="$t('image')" prop="imgUrls">
-              <image-upload v-model="form.imgUrls" :limit="9"></image-upload>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row v-if="isBuiltinDefectFieldVisible('annexUrls')">
-          <el-col :span="12">
-            <el-form-item :label="$t('annex')" prop="annexUrls">
-              <file-upload v-model="form.annexUrls" :limit="9" :file-type="[]"/>
-            </el-form-item>
-          </el-col>
-        </el-row>
+          :form="form"
+          :config="config"
+          :plan-time-range.sync="planTimeRange"
+          :describe-tools="describeTools"
+          :defect-field-layout="defectFieldLayout"
+          :is-builtin-defect-field-visible="isBuiltinDefectFieldVisible"
+          @module-change="moduleChangeHandle"
+          @step-change="stepChangeHandle"
+        >
+          <template #describe-tools>
+            <project-ai-model-select
+              v-if="projectId"
+              :project-id="projectId"
+              v-model="defectAiModelId"
+              embed-ai-button
+              :ai-loading="aiButtonLoading"
+              :ai-tooltip="$t('defect.ai-filling-in').toString()"
+              @service-type="defectAiServiceType = $event"
+              @ai-click="createDefectByAiHandle"
+            />
+          </template>
+        </defect-form-ordered-fields>
   <!--      <el-form-item label="测试用例id" prop="caseId">-->
   <!--        <el-input v-model="form.caseId" placeholder="请输入测试用例id" />-->
   <!--      </el-form-item>-->
@@ -167,12 +75,8 @@
 
 <script>
 import {addDefect, configDefect, updateDefect} from "@/api/system/defect";
-import SelectProjectMember from "@/components/Project/SelectProjectMember"
-import SelectModule from "@/components/Module/SelectModule"
-import ImageUpload from "@/components/ImageUpload";
-import SelectCase from "@/components/Case/SelectCase";
-import Cat2BugTextarea from "@/components/Cat2BugTextarea";
 import ProjectAiModelSelect from "@/components/Ai/ProjectAiModelSelect.vue";
+import DefectFormOrderedFields from "@/components/Defect/DefectFormOrderedFields";
 import {upload} from "@/api/common/upload";
 import {
   makeDefect,
@@ -195,7 +99,7 @@ export default {
   name: "AddDefect",
   dicts: ['defect_level'],
   mixins: [defectBuiltinFieldVisibility],
-  components: { ImageUpload, SelectProjectMember, SelectModule, SelectCase, Cat2BugTextarea, ProjectAiModelSelect, DefectCustomFieldsSection: () => import('@/components/DefectCustomField/DefectCustomFieldsSection') },
+  components: { ProjectAiModelSelect, DefectFormOrderedFields },
   data() {
     return {
       // 是否缓存缺陷表单
@@ -316,7 +220,8 @@ export default {
       this.reset(data);
       this.visible = true;
       this.$nextTick(() => {
-        this.$refs.defectNameInput.focus();
+        this.$refs.orderedFields && this.$refs.orderedFields.refreshCustomFieldDefaults();
+        this.$refs.orderedFields && this.$refs.orderedFields.focusDefectName();
       });
     },
     openByCase(data) {
@@ -358,7 +263,8 @@ export default {
         caseStepId: 0,
         handleBy: null,
         handleTime: null,
-        defectLevel: 'middle'
+        defectLevel: 'middle',
+        customFields: {}
       };
       this.resetForm("form");
       this.readIsSaveFormCacheValue();
@@ -395,9 +301,10 @@ export default {
               if (this.isSaveFormCache) {
                 this.reset();
                 this.$nextTick(() => {
-                  this.$refs.defectNameInput && this.$refs.defectNameInput.focus();
-                  if (this.form.moduleId && this.$refs.selectCase) {
-                    this.$refs.selectCase.search(this.form.moduleId);
+                  this.$refs.orderedFields && this.$refs.orderedFields.focusDefectName();
+                  const selectCase = this.$refs.orderedFields && this.$refs.orderedFields.getSelectCaseRef();
+                  if (this.form.moduleId && selectCase) {
+                    selectCase.search(this.form.moduleId);
                   }
                 });
               } else {
@@ -416,7 +323,8 @@ export default {
       // console.log(members,this.form.handleBy);
     },
     moduleChangeHandle() {
-      this.$refs.selectCase.search(this.form.moduleId);
+      const selectCase = this.$refs.orderedFields && this.$refs.orderedFields.getSelectCaseRef();
+      selectCase && selectCase.search(this.form.moduleId);
     },
     stepChangeHandle(index){
       this.form.caseStepId = index;
