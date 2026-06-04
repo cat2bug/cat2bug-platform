@@ -73,6 +73,8 @@ const FORM_BARRIER_OFFSET = 0
 const FORM_BARRIER_Y_EPS = 8
 const Z_MOUSE_ABOVE_FORM = 4
 const Z_MOUSE_BEHIND_FORM = 1
+/** Retina 屏 Canvas 按 DPR 放大位图，避免 CSS 拉伸导致块状/发糊 */
+const MAX_DEVICE_PIXEL_RATIO = 2
 
 export default {
   name: 'MouseRunner',
@@ -87,7 +89,10 @@ export default {
       rmbDown: false,
       reducedMotion: false,
       reducedMotionMq: null,
-      boundsResizeObserver: null
+      boundsResizeObserver: null,
+      playWidth: 0,
+      playHeight: 0,
+      canvasDpr: 1
     }
   },
   mounted() {
@@ -219,22 +224,34 @@ export default {
         this.enterSitLook()
       }
     },
-    initCanvas() {
+    resizeCanvas() {
       const canvas = this.$refs.canvas
       const container = this.$refs.container
       if (!canvas || !container) return
-      canvas.width = container.clientWidth
-      canvas.height = container.clientHeight
-      this.ctx = canvas.getContext('2d')
+      const dpr = Math.min(window.devicePixelRatio || 1, MAX_DEVICE_PIXEL_RATIO)
+      const w = Math.max(1, container.clientWidth)
+      const h = Math.max(1, container.clientHeight)
+      canvas.width = Math.round(w * dpr)
+      canvas.height = Math.round(h * dpr)
+      canvas.style.width = `${w}px`
+      canvas.style.height = `${h}px`
+      const ctx = canvas.getContext('2d')
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      ctx.imageSmoothingEnabled = true
+      if (typeof ctx.imageSmoothingQuality !== 'undefined') {
+        ctx.imageSmoothingQuality = 'high'
+      }
+      this.ctx = ctx
+      this.canvasDpr = dpr
+      this.playWidth = w
+      this.playHeight = h
       this.syncPlayBounds(canvas)
     },
+    initCanvas() {
+      this.resizeCanvas()
+    },
     handleResize() {
-      const canvas = this.$refs.canvas
-      const container = this.$refs.container
-      if (!canvas || !container) return
-      canvas.width = container.clientWidth
-      canvas.height = container.clientHeight
-      this.syncPlayBounds(canvas)
+      this.resizeCanvas()
     },
     refreshPlayBounds() {
       const canvas = this.$refs.canvas
@@ -264,7 +281,8 @@ export default {
     syncPlayBounds(canvas) {
       const canvasRect = canvas.getBoundingClientRect()
       const form = document.querySelector('.logo-page .login-form')
-      let minY = Math.max(24, canvas.height * 0.2)
+      const ph = this.playHeight || canvasRect.height
+      let minY = Math.max(24, ph * 0.2)
       if (form) {
         const fr = form.getBoundingClientRect()
         const formHalfY = fr.top + fr.height / 2 - canvasRect.top
@@ -279,8 +297,8 @@ export default {
         this.formBottom = null
         this.formBarrierY = null
       }
-      this.maxMouseY = canvas.height - MOUSE_MAX_Y_INSET
-      this.groundY = Math.min(canvas.height * 0.88, this.maxMouseY)
+      this.maxMouseY = ph - MOUSE_MAX_Y_INSET
+      this.groundY = Math.min(ph * 0.88, this.maxMouseY)
       this.minMouseY = minY
       if (this.mouseY < this.minMouseY) this.mouseY = this.minMouseY
       if (this.mouseY > this.maxMouseY) this.mouseY = this.maxMouseY
@@ -294,8 +312,9 @@ export default {
       if (x < 0 || x > rect.width || y < 0 || y > rect.height) return null
       return { x, y }
     },
-    clampManualPosition(canvas) {
-      this.mouseX = Math.max(EDGE_PAD, Math.min(canvas.width - EDGE_PAD, this.mouseX))
+    clampManualPosition() {
+      const pw = this.playWidth || 0
+      this.mouseX = Math.max(EDGE_PAD, Math.min(pw - EDGE_PAD, this.mouseX))
       this.mouseY = Math.max(this.minMouseY, Math.min(this.maxMouseY, this.mouseY))
     },
     /** 折返开跑时：在基准 Y 基础上随机 ±AUTO_TURN_Y_JITTER */
@@ -409,11 +428,11 @@ export default {
       this.state = 'AUTO_RUN'
       this.direction = this.randomDirection()
       const margin = 100
-      this.mouseX = this.direction > 0 ? -margin : canvas.width + margin
+      this.mouseX = this.direction > 0 ? -margin : this.playWidth + margin
       this.farSpawn = !initial && exitY == null && Math.random() < FAR_SPAWN_CHANCE
       if (this.farSpawn) {
         this.farSpawnT = 0
-        const skyY = canvas.height * (0.35 + Math.random() * 0.2)
+        const skyY = this.playHeight * (0.35 + Math.random() * 0.2)
         this.farStartY = Math.max(this.minMouseY, skyY)
         this.mouseY = this.farStartY
         this.speed = AUTO_SPEED * 0.75
@@ -437,18 +456,19 @@ export default {
       this.direction = this.randomDirection()
       this.farSpawn = false
       this.speed = AUTO_SPEED
-      this.clampManualPosition(canvas)
+      this.clampManualPosition()
       this.spriteRow = this.direction > 0 ? SPRITE_ROW_RIGHT : SPRITE_ROW_LEFT
       this.flipX = this.direction < 0
       this.frameIndex = 0
       this.frameTimer = 0
     },
-    depthScale(canvas) {
-      const t = Math.max(0, Math.min(1, this.mouseY / canvas.height))
+    depthScale() {
+      const ph = this.playHeight || 1
+      const t = Math.max(0, Math.min(1, this.mouseY / ph))
       return 0.55 + t * 0.4
     },
-    pixelScale(canvas) {
-      const d = this.depthScale(canvas)
+    pixelScale() {
+      const d = this.depthScale()
       return d * 1.15
     },
     pickUserSpriteRow(dx, dy) {
@@ -523,8 +543,8 @@ export default {
     },
     exitScreenAndTurnBack(canvas) {
       const margin = 100
-      if (this.direction > 0 && this.mouseX > canvas.width + margin) {
-        this.mouseX = canvas.width + margin
+      if (this.direction > 0 && this.mouseX > this.playWidth + margin) {
+        this.mouseX = this.playWidth + margin
         this.beginAutoTurnWait(this.mouseY)
       } else if (this.direction < 0 && this.mouseX < -margin) {
         this.mouseX = -margin
@@ -588,7 +608,7 @@ export default {
       const prevY = this.mouseY
       this.mouseX += (tx - this.mouseX) * lerp
       this.mouseY += (ty - this.mouseY) * lerp
-      this.clampManualPosition(canvas)
+      this.clampManualPosition()
 
       const actualDx = this.mouseX - prevX
       const actualDy = this.mouseY - prevY
@@ -598,7 +618,7 @@ export default {
       if (moving) {
         this.pickUserSpriteRow(actualDx, actualDy)
 
-        const speedMul = 0.7 + this.depthScale(canvas) * 0.5
+        const speedMul = 0.7 + this.depthScale() * 0.5
         this.speed = AUTO_SPEED * speedMul
         this.createDust(actualDx / dist, actualDy / dist, canvas)
       }
@@ -610,11 +630,11 @@ export default {
 
       const prevX = this.mouseX
       const prevY = this.mouseY
-      const speedMul = 0.7 + this.depthScale(canvas) * 0.5
+      const speedMul = 0.7 + this.depthScale() * 0.5
       const speed = AUTO_SPEED * speedMul
       this.mouseX += dx * speed * dt
       this.mouseY += dy * speed * dt
-      this.clampManualPosition(canvas)
+      this.clampManualPosition()
 
       const actualDx = this.mouseX - prevX
       const actualDy = this.mouseY - prevY
@@ -689,12 +709,13 @@ export default {
       const top = this.isTopRunRow(row)
       const bottom = this.isBottomRunRow(row)
       const sit = this.isSitRow(row)
-      const pScale = this.pixelScale(canvas)
+      const pScale = this.pixelScale()
       const sizeScale = (horizontal ? RUN_SPRITE_DISPLAY_SCALE : (topLeft ? RUN_TL_SPRITE_DISPLAY_SCALE : (bottomLeft ? RUN_BL_SPRITE_DISPLAY_SCALE : (top ? RUN_T_SPRITE_DISPLAY_SCALE : (bottom ? RUN_B_SPRITE_DISPLAY_SCALE : SIT_SPRITE_DISPLAY_SCALE))))) * MOUSE_DISPLAY_SCALE
       const baseW = horizontal ? RUN_SPRITE_FRAME_W : (topLeft ? RUN_TL_SPRITE_FRAME_W : (bottomLeft ? RUN_BL_SPRITE_FRAME_W : (top ? RUN_T_SPRITE_FRAME_W : (bottom ? RUN_B_SPRITE_FRAME_W : SIT_SPRITE_FRAME_W))))
       const baseH = horizontal ? RUN_SPRITE_FRAME_H : (topLeft ? RUN_TL_SPRITE_FRAME_H : (bottomLeft ? RUN_BL_SPRITE_FRAME_H : (top ? RUN_T_SPRITE_FRAME_H : (bottom ? RUN_B_SPRITE_FRAME_H : SIT_SPRITE_FRAME_H))))
-      const drawW = baseW * pScale * sizeScale
-      const drawH = baseH * pScale * sizeScale
+      const dpr = this.canvasDpr || 1
+      const drawW = Math.round(baseW * pScale * sizeScale * dpr) / dpr
+      const drawH = Math.round(baseH * pScale * sizeScale * dpr) / dpr
       const maxCol = horizontal ? RUN_SPRITE_COLS : (topLeft ? RUN_TL_SPRITE_COLS : (bottomLeft ? RUN_BL_SPRITE_COLS : (top ? RUN_T_SPRITE_COLS : (bottom ? RUN_B_SPRITE_COLS : SIT_SPRITE_COLS))))
       const col = this.frameIndex % maxCol
       const footYRatio = horizontal
@@ -725,15 +746,15 @@ export default {
 
       ctx.save()
       ctx.imageSmoothingEnabled = true
+      if (typeof ctx.imageSmoothingQuality !== 'undefined') {
+        ctx.imageSmoothingQuality = 'high'
+      }
       if (flip) {
-        ctx.translate(Math.round(dx + drawW), Math.round(dy))
+        ctx.translate(dx + drawW, dy)
         ctx.scale(-1, 1)
         ctx.drawImage(img, sx, sy, sw, sh, 0, 0, drawW, drawH)
       } else {
-        ctx.drawImage(
-          img, sx, sy, sw, sh,
-          Math.round(dx), Math.round(dy), drawW, drawH
-        )
+        ctx.drawImage(img, sx, sy, sw, sh, dx, dy, drawW, drawH)
       }
       ctx.restore()
     },
@@ -748,7 +769,7 @@ export default {
         return
       }
 
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
+      ctx.clearRect(0, 0, this.playWidth, this.playHeight)
 
       if (this.state === 'AUTO_RUN') {
         this.updateAutoRun(dt, canvas)
