@@ -4646,4 +4646,19 @@ html.dark {
       background: var(--bg-color-base) !important;
     }
   }
+
+  // 35. Excel缺陷列表附件链接及图标颜色
+  .defect-vue-excel-editor {
+    .systable tbody td.cell-html {
+      .defect-excel-annex-line {
+        color: #FFC107 !important;
+      }
+      .defect-excel-annex-line:hover .defect-excel-annex-label {
+        text-decoration-color: #FFC107 !important;
+      }
+      .defect-excel-inline-upload-btn:hover {
+        color: #FFD54F !important;
+      }
+    }
+  }
 }
