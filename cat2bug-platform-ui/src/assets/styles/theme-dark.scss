@@ -2560,6 +2560,11 @@ html.dark {
       }
     }
 
+    // 适配各处弹出框的“显示字段”头部亮度
+    h4, .el-icon-s-fold {
+      color: var(--text-color-primary) !important;
+    }
+
     .title {
       color: var(--text-color-primary) !important;
     }
