@@ -2192,6 +2192,16 @@ html.dark {
     }
   }
 
+  /* 全局的 el-button--text 默认设为黄色 */
+  .el-button--text {
+    color: #FFC107 !important;
+
+    &:hover,
+    &:focus {
+      color: #FFD54F !important;
+    }
+  }
+
   /* 表格操作列 text 按钮：与 --cat2bug-operate-text-* 变量一致，覆盖 scoped 硬编码色 */
   .defect-tools,
   .cat2bug-operate-tools {
@@ -2233,11 +2243,11 @@ html.dark {
 
     /* 查看等无语义 class 的 text 按钮（warning 类型） */
     .el-button--text:not(.orange):not(.red):not(.green):not(.restore-orange) {
-      color: var(--cat2bug-operate-text-warning) !important;
+      color: #FFC107 !important;
 
       &:hover,
       &:focus {
-        color: var(--cat2bug-operate-text-warning-hover) !important;
+        color: #FFD54F !important;
       }
     }
   }
