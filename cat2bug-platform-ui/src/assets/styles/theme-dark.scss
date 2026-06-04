@@ -4586,7 +4586,11 @@ html.dark {
     }
 
     a {
-      color: #FFE082 !important;
+      color: #FFC107 !important;
+      
+      &:hover {
+        color: #FFD54F !important;
+      }
     }
 
     img {
