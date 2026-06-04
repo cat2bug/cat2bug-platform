@@ -229,31 +229,19 @@ export default {
     popoverShowHandle() {
       // 设置打开时tab下面的横条宽度
       this.$nextTick(_ => {
-        let index = 1;
-        let left = this.$refs.tabs.$vnode.elm.childNodes[0].childNodes[0].childNodes[0].childNodes[0].childNodes[1].offsetWidth+6;
-        for(let i=0;i<this.roleList.length;i++) {
-          const r = this.roleList[i];
-          if(this.queryMember.roleId==r.roleId) {
-            index = i+2;
-            break;
+        if (this.$refs.tabs && this.$refs.tabs.$el) {
+          const activeTab = this.$refs.tabs.$el.querySelector('.el-tabs__item.is-active');
+          const activeBar = this.$refs.tabs.$el.querySelector('.el-tabs__active-bar');
+          if (activeTab && activeBar) {
+            activeBar.style.width = activeTab.clientWidth - 16 + 'px';
+            activeBar.style.transform = `translateX(${activeTab.offsetLeft + 8}px)`;
           }
-          left += this.$refs.tabs.$vnode.elm.childNodes[0].childNodes[0].childNodes[0].childNodes[0].childNodes[i+2].clientWidth;
-        }
-        // 获取第一个tab元素
-        const tabFirstElement = this.$refs.tabs.$vnode.elm.childNodes[0].childNodes[0].childNodes[0].childNodes[0].childNodes[index];
-        // 获取高亮显示条
-        const activeBarElement = this.$refs.tabs.$vnode.elm.childNodes[0].childNodes[0].childNodes[0].childNodes[0].childNodes[0];
-
-        // 第一个tab高亮
-        if (tabFirstElement.classList.contains('is-active') && activeBarElement ) {
-
-          // el-tab默认距离右边有20边距
-          activeBarElement.style.width = tabFirstElement.clientWidth -16 + 'px'
-          activeBarElement.style.transform = `translateX(${left}px)`;
         }
       });
       this.getMemberList();
-      this.$refs.selectProjectMemberInput.focus();
+      if(this.$refs.selectProjectMemberInput) {
+        this.$refs.selectProjectMemberInput.focus();
+      }
     },
     /** 弹窗隐藏事件 */
     popoverHideHandle() {
