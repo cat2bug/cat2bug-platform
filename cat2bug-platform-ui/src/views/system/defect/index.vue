@@ -1139,9 +1139,17 @@ export default {
   cursor: pointer;
   color: #606266;
   margin: 0px 5px;
+  
+  @at-root html.dark & {
+    color: var(--text-color-regular);
+  }
 }
 .defect-tools-button:hover {
   color: #409EFF;
+  
+  @at-root html.dark & {
+    color: #FFC107 !important;
+  }
 }
 .defect-tab-label {
   display: inline-flex;
