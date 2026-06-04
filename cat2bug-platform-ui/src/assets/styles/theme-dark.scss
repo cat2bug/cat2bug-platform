@@ -443,8 +443,7 @@ html.dark {
 
   .el-link {
     &.el-link--default,
-    &.el-link--primary,
-    & {
+    &.el-link--primary {
       color: #FFC107 !important;
       
       &:hover {
@@ -457,6 +456,22 @@ html.dark {
 
       &.is-underline:hover:after {
         border-bottom-color: #FFD54F !important;
+      }
+    }
+    
+    &.el-link--danger {
+      color: #f56c6c !important;
+      
+      &:hover {
+        color: #f78989 !important;
+      }
+      
+      &.is-underline:after {
+        border-bottom-color: #f56c6c !important;
+      }
+
+      &.is-underline:hover:after {
+        border-bottom-color: #f78989 !important;
       }
     }
   }
@@ -2329,52 +2344,58 @@ html.dark {
   }
 
   /* 表格操作列 text 按钮：与 --cat2bug-operate-text-* 变量一致，覆盖 scoped 硬编码色 */
-  .defect-tools,
-  .cat2bug-operate-tools {
-    .el-button--text.orange {
-      color: var(--cat2bug-operate-text-muted) !important;
+  .el-button--text.orange,
+  .defect-tools .el-button--text.orange,
+  .cat2bug-operate-tools .el-button--text.orange {
+    color: var(--cat2bug-operate-text-muted) !important;
 
-      &:hover,
-      &:focus {
-        color: var(--cat2bug-operate-text-muted-hover) !important;
-      }
+    &:hover,
+    &:focus {
+      color: var(--cat2bug-operate-text-muted-hover) !important;
     }
+  }
 
-    .el-button--text.red {
-      color: var(--cat2bug-operate-text-danger) !important;
+  .el-button--text.red,
+  .defect-tools .el-button--text.red,
+  .cat2bug-operate-tools .el-button--text.red {
+    color: var(--cat2bug-operate-text-danger) !important;
 
-      &:hover,
-      &:focus {
-        color: var(--cat2bug-operate-text-danger-hover) !important;
-      }
+    &:hover,
+    &:focus {
+      color: var(--cat2bug-operate-text-danger-hover) !important;
     }
+  }
 
-    .el-button--text.green {
-      color: var(--cat2bug-operate-text-success) !important;
+  .el-button--text.green,
+  .defect-tools .el-button--text.green,
+  .cat2bug-operate-tools .el-button--text.green {
+    color: var(--cat2bug-operate-text-success) !important;
 
-      &:hover,
-      &:focus {
-        color: var(--cat2bug-operate-text-success-hover) !important;
-      }
+    &:hover,
+    &:focus {
+      color: var(--cat2bug-operate-text-success-hover) !important;
     }
+  }
 
-    .el-button--text.restore-orange {
-      color: var(--cat2bug-operate-text-warning) !important;
+  .el-button--text.restore-orange,
+  .defect-tools .el-button--text.restore-orange,
+  .cat2bug-operate-tools .el-button--text.restore-orange {
+    color: var(--cat2bug-operate-text-warning) !important;
 
-      &:hover,
-      &:focus {
-        color: var(--cat2bug-operate-text-warning-hover) !important;
-      }
+    &:hover,
+    &:focus {
+      color: var(--cat2bug-operate-text-warning-hover) !important;
     }
+  }
 
-    /* 查看等无语义 class 的 text 按钮（warning 类型） */
-    .el-button--text:not(.orange):not(.red):not(.green):not(.restore-orange) {
-      color: #FFC107 !important;
+  /* 查看等无语义 class 的 text 按钮（warning 类型） */
+  .defect-tools .el-button--text:not(.orange):not(.red):not(.green):not(.restore-orange),
+  .cat2bug-operate-tools .el-button--text:not(.orange):not(.red):not(.green):not(.restore-orange) {
+    color: #FFC107 !important;
 
-      &:hover,
-      &:focus {
-        color: #FFD54F !important;
-      }
+    &:hover,
+    &:focus {
+      color: #FFD54F !important;
     }
   }
 
