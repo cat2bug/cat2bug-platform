@@ -4720,6 +4720,12 @@ html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep .systable tbody t
 html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep .systable tbody td.error:not(.first-col) .vue-excel-cell-html {
   color: #f78989 !important;
 }
+html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep .systable tbody tr.select td:not(.first-col) {
+  background-color: rgba(255, 193, 7, 0.12) !important;
+}
+html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep .systable tbody tr.select:hover td:not(.first-col) {
+  background-color: rgba(255, 193, 7, 0.22) !important;
+}
 html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep .systable tbody tr.select td.first-col,
 html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep .systable tbody tr.select:hover td.first-col {
   background-color: var(--table-header-bg, #252529) !important;
@@ -5186,6 +5192,12 @@ html.dark .defect-excel-root .defect-vue-excel-editor table.systable tbody td.fi
 html.dark .defect-excel-root .defect-vue-excel-editor table.systable tbody td.error:not(.first-col),
 html.dark .defect-excel-root .defect-vue-excel-editor table.systable tbody td.error:not(.first-col) .vue-excel-cell-html {
   color: #f78989 !important;
+}
+html.dark .defect-excel-root .defect-vue-excel-editor table.systable tbody tr.select td:not(.first-col) {
+  background-color: rgba(255, 193, 7, 0.12) !important;
+}
+html.dark .defect-excel-root .defect-vue-excel-editor table.systable tbody tr.select:hover td:not(.first-col) {
+  background-color: rgba(255, 193, 7, 0.22) !important;
 }
 .defect-excel-root .defect-vue-excel-editor table.systable tbody td:not(.first-col):not([id$="-projectNum"]):not([id$="-defectName"]):not([id$="-moduleName"]):not([id$="-moduleVersion"]):not([id$="-defectDescribe"]):not([id$="-createByText"]):not([id$="-updateTime"]):not(.cell-html):not(.select):not(.datepick) {
   height: auto !important;
