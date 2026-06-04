@@ -379,6 +379,22 @@ html.dark {
   }
 
   // Element UI Components Overrides
+  .el-link {
+    &.el-link--default,
+    &.el-link--primary,
+    & {
+      color: #FFC107;
+      
+      &:hover {
+        color: #FFD54F;
+      }
+      
+      &.is-underline:hover:after {
+        border-bottom-color: #FFD54F;
+      }
+    }
+  }
+
   .el-card {
     background-color: var(--card-bg) !important;
     border: 1px solid var(--border-color-light) !important;
