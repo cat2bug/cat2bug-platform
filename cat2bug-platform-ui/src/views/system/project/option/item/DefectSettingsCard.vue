@@ -2,7 +2,7 @@
   <el-col v-if="cardVisible" :span="6">
     <el-card class="box-card">
       <div slot="header" class="clearfix">
-        <i class="el-icon-s-order"></i>
+        <svg-icon icon-class="bug" />
         <div>
           <span>{{ $t('defect.custom-field.settings') }}</span>
           <span>{{ $t('defect.custom-field.settings-describe') }}</span>

@@ -87,7 +87,7 @@ export default {
         }
       }
     }
-    i {
+    i, .svg-icon {
       color: #409EFF;
       margin-right: 10px;
       margin-top: 3px;
