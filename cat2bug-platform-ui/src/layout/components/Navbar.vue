@@ -26,7 +26,6 @@
         <el-tooltip :content="$t('system-doc')" effect="dark" placement="bottom">
           <cat2-bug-doc class="right-menu-item hover-effect" />
         </el-tooltip>
-        <screenfull id="screenfull" class="right-menu-item hover-effect" />
       </template>
       <lang-select />
       <el-dropdown class="avatar-container right-menu-item hover-effect" trigger="click">
@@ -53,7 +52,6 @@ import { mapGetters } from 'vuex'
 import Breadcrumb from '@/components/Breadcrumb'
 import TopNav from '@/components/TopNav'
 import Hamburger from '@/components/Hamburger'
-import Screenfull from '@/components/Screenfull'
 import SizeSelect from '@/components/SizeSelect'
 import Search from '@/components/HeaderSearch'
 import Cat2BugSite from '@/components/Cat2Bug/Site'
@@ -80,7 +78,6 @@ export default {
     Breadcrumb,
     TopNav,
     Hamburger,
-    Screenfull,
     SizeSelect,
     Search,
     Cat2BugSite,
