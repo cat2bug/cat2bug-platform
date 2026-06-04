@@ -383,14 +383,18 @@ html.dark {
     &.el-link--default,
     &.el-link--primary,
     & {
-      color: #FFC107;
+      color: #FFC107 !important;
       
       &:hover {
-        color: #FFD54F;
+        color: #FFD54F !important;
       }
       
+      &.is-underline:after {
+        border-bottom-color: #FFC107 !important;
+      }
+
       &.is-underline:hover:after {
-        border-bottom-color: #FFD54F;
+        border-bottom-color: #FFD54F !important;
       }
     }
   }
