@@ -2414,7 +2414,20 @@ html.dark {
   }
 
   .el-button-group > .el-button--primary:not(.is-plain) + .el-dropdown__caret-button::before {
-    background: rgba(255, 255, 255, 0.28) !important;
+    background: rgba(20, 20, 20, 0.4) !important;
+  }
+
+  .el-button-group {
+    > .el-button--primary:not(.is-plain):first-child {
+      border-right-color: #141414 !important;
+    }
+    > .el-button--primary:not(.is-plain):not(:first-child):not(:last-child) {
+      border-left-color: #141414 !important;
+      border-right-color: #141414 !important;
+    }
+    > .el-button--primary:not(.is-plain):last-child {
+      border-left-color: #141414 !important;
+    }
   }
 
   .el-button-group > .el-button--success:not(.is-plain) + .el-dropdown__caret-button::before {
