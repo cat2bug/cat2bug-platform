@@ -4427,6 +4427,12 @@ html.dark {
             background-color: rgba(230, 162, 60, 0.35) !important;
             color: var(--text-color-primary) !important;
           }
+
+          .custom-tree-node {
+            i, .svg-icon {
+              color: #FFC107 !important;
+            }
+          }
         }
       }
 
