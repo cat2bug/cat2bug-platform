@@ -1222,9 +1222,9 @@ html.dark {
 
     &.is-active {
       .el-radio-button__inner {
-        background-color: #FFB300 !important;
-        border-color: #FFB300 !important;
-        color: #ffffff !important;
+        background-color: #FFC107 !important;
+        border-color: #FFC107 !important;
+        color: #141414 !important;
         box-shadow: none !important; // 清除阴影，依靠 border-color 呈现边框
       }
     }
@@ -2298,13 +2298,13 @@ html.dark {
 
     // 强类型实色按钮
     &--primary:not(.is-plain) {
-      background-color: #FFB300 !important;
-      border-color: #FFB300 !important;
+      background-color: #FFC107 !important;
+      border-color: #FFC107 !important;
       color: #141414 !important;
 
       &:hover, &:focus {
-        background-color: #FFC107 !important;
-        border-color: #FFC107 !important;
+        background-color: #FFD54F !important;
+        border-color: #FFD54F !important;
         color: #141414 !important;
       }
     }
