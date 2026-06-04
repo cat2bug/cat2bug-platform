@@ -2238,11 +2238,12 @@ html.dark {
     &--primary:not(.is-plain) {
       background-color: #FFB300 !important;
       border-color: #FFB300 !important;
-      color: #ffffff !important;
+      color: #141414 !important;
 
       &:hover, &:focus {
         background-color: #FFC107 !important;
         border-color: #FFC107 !important;
+        color: #141414 !important;
       }
     }
     &--success:not(.is-plain) {
@@ -3331,11 +3332,12 @@ html.dark {
       .el-button--default:not(.is-plain) {
         background-color: #FFC107 !important;
         border-color: #FFC107 !important;
-        color: #ffffff !important;
+        color: #141414 !important;
 
         &:hover {
           background-color: #FFD54F !important;
           border-color: #FFD54F !important;
+          color: #141414 !important;
         }
       }
     }
