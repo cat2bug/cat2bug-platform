@@ -1174,7 +1174,29 @@ html.dark {
     }
   }
 
-  // 全局适配 Element UI 标签 (el-tag) 在暗黑模式下的多选选中状态样式 (如 el-select 选中的 tag)
+  // 全局适配 Element UI 标签 (el-tag)
+  .el-tag {
+    // 默认（primary）类型的 tag 改为黄色
+    &:not(.el-tag--info):not(.el-tag--success):not(.el-tag--warning):not(.el-tag--danger) {
+      &.el-tag--light {
+        background-color: rgba(255, 193, 7, 0.14) !important;
+        border-color: rgba(255, 193, 7, 0.4) !important;
+        color: #FFC107 !important;
+      }
+      &.el-tag--dark {
+        background-color: #FFC107 !important;
+        border-color: #FFC107 !important;
+        color: #141414 !important;
+      }
+      &.el-tag--plain {
+        background-color: transparent !important;
+        border-color: rgba(255, 193, 7, 0.4) !important;
+        color: #FFC107 !important;
+      }
+    }
+  }
+
+  // 选中的多选 tag (如 el-select 选中的 tag)
   .el-select .el-tag.el-tag--info {
     background-color: var(--bg-color-base) !important;
     border-color: var(--border-color-light) !important;
