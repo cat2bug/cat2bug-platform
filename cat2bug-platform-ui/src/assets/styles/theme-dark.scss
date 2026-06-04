@@ -1387,6 +1387,14 @@ html.dark {
     border-color: #FFC107 !important;
   }
 
+  .el-checkbox__input.is-checked + .el-checkbox__label {
+    color: #FFC107 !important;
+  }
+
+  .el-checkbox__label {
+    color: var(--text-color-regular);
+  }
+
   .el-radio__inner {
     background-color: var(--input-bg) !important;
     border-color: var(--input-border) !important;
@@ -1395,6 +1403,14 @@ html.dark {
   .el-radio__input.is-checked .el-radio__inner {
     background-color: #FFC107 !important;
     border-color: #FFC107 !important;
+  }
+
+  .el-radio__input.is-checked + .el-radio__label {
+    color: #FFC107 !important;
+  }
+
+  .el-radio__label {
+    color: var(--text-color-regular);
   }
 
   .el-switch {
