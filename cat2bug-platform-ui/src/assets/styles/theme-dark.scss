@@ -1509,6 +1509,10 @@ html.dark {
   .el-checkbox__input.is-checked .el-checkbox__inner {
     background-color: #FFC107 !important;
     border-color: #FFC107 !important;
+
+    &::after {
+      border-color: #141414 !important;
+    }
   }
 
   .el-checkbox__input.is-checked + .el-checkbox__label {
@@ -1527,6 +1531,10 @@ html.dark {
   .el-radio__input.is-checked .el-radio__inner {
     background-color: #FFC107 !important;
     border-color: #FFC107 !important;
+
+    &::after {
+      background-color: #141414 !important;
+    }
   }
 
   .el-radio__input.is-checked + .el-radio__label {
