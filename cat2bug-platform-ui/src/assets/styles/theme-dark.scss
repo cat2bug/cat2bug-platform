@@ -1529,14 +1529,14 @@ html.dark {
     }
 
     .el-button {
-      background-color: var(--bg-color-block) !important;
-      border-color: var(--border-color-light) !important;
-      color: var(--text-color-primary) !important;
+      background-color: transparent !important;
+      border-color: #FFC107 !important;
+      color: #FFC107 !important;
 
       &:hover, &:focus {
-        background-color: rgba(255, 255, 255, 0.08) !important;
-        border-color: var(--border-color-base) !important;
-        color: #FFC107 !important;
+        background-color: rgba(255, 193, 7, 0.08) !important;
+        border-color: #FFD54F !important;
+        color: #FFD54F !important;
       }
     }
   }
