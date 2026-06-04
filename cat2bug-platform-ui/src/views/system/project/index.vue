@@ -90,6 +90,7 @@
             size="small"
             type="text"
             icon="el-icon-delete"
+            class="red"
             @click="handleDelete($event, scope.row)"
             v-if="visibleDelete(scope.row)"
           >{{$t('delete')}}</el-button>
