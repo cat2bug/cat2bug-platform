@@ -1271,6 +1271,13 @@ html.dark {
         color: #FFC107 !important;
       }
     }
+    
+    // 恢复项目报告等特定 tag 的原始蓝色（主色）
+    &.report-tag.el-tag--dark {
+      background-color: #409EFF !important;
+      border-color: #409EFF !important;
+      color: #ffffff !important;
+    }
   }
 
   // 选中的多选 tag (如 el-select 选中的 tag)

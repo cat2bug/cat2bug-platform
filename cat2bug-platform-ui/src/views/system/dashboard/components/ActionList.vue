@@ -4,7 +4,7 @@
     <div v-for="actionTime in sortActionTimes">
       <h4>{{formatDate(actionTime)}}</h4>
       <div v-for="action in  actionList[actionTime]" class="action-row">
-        <el-tag v-if="action.type==='report'" effect="dark">{{ $t(action.type) }}</el-tag>
+        <el-tag v-if="action.type==='report'" class="report-tag" effect="dark">{{ $t(action.type) }}</el-tag>
         <el-tag v-else-if="action.type==='document'" type="info" effect="dark">{{ $t(action.type) }}</el-tag>
         <el-tag v-else-if="action.type==='defect'" type="danger" effect="dark">{{ $t(action.type) }}</el-tag>
         <el-tag v-else-if="action.type==='case'" type="success" effect="dark">{{ $t(action.type) }}</el-tag>
