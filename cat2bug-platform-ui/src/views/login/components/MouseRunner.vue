@@ -12,14 +12,14 @@ const RUN_SPRITE_FRAME_H = 96
 const RUN_SPRITE_DISPLAY_SCALE = 0.42
 /** 整体显示缩放（相对默认尺寸再小 1/4） */
 const MOUSE_DISPLAY_SCALE = 0.75
-/** 脚底阴影（不随 MOUSE_DISPLAY_SCALE 同比缩小，避免暗色背景下看不见） */
+/** 脚底阴影：宽高与偏移均按当前帧 drawW/drawH 同比缩放 */
 const SHADOW_RX_RATIO = 0.38
 const SHADOW_RY_RATIO = 0.14
-const SHADOW_MIN_RX = 18
-const SHADOW_MIN_RY = 6
-const SHADOW_Y_OFFSET = 4
+const SHADOW_Y_OFFSET_RATIO = 0.045
 const SHADOW_ALPHA_DARK = 0.52
 const SHADOW_ALPHA_LIGHT = 0.16
+const SHADOW_ALPHA_SIZE_FLOOR = 0.55
+const SHADOW_ALPHA_SIZE_CEIL = 1
 const RUN_SPRITE_FRAME_FOOT_Y = [1, 1, 1, 1, 1, 1, 1, 1]
 const RUN_TL_SPRITE_COLS = 8
 const RUN_TL_SPRITE_FRAME_W = 203
@@ -75,6 +75,15 @@ const Z_MOUSE_ABOVE_FORM = 4
 const Z_MOUSE_BEHIND_FORM = 1
 /** Retina 屏 Canvas 按 DPR 放大位图，避免 CSS 拉伸导致块状/发糊 */
 const MAX_DEVICE_PIXEL_RATIO = 2
+/** 朝下精灵纵向占比大，略缩小以与横向/斜向视觉一致（不随 Y 变化，保证越往下越大） */
+const DOWN_RUN_SIZE_FACTOR = 0.84
+/** 纵深：顶小底大；最底相对原 0.95 缩小 1/3 */
+const DEPTH_SCALE_MIN = 0.55
+const DEPTH_SCALE_TOP_RANGE = 0.4
+const DEPTH_SCALE_MAX = (DEPTH_SCALE_MIN + DEPTH_SCALE_TOP_RANGE) * (2 / 3)
+/** 贴底时左右奔跑、坐立动画在通用贴底缩放基础上再放大约 1/3 */
+const BOTTOM_POSE_SIZE_BOOST = 4 / 3
+const BOTTOM_POSE_BOOST_START = 0.7
 
 export default {
   name: 'MouseRunner',
@@ -112,8 +121,14 @@ export default {
     window.addEventListener('resize', this.handleResize)
     this.lastTime = performance.now()
     this.animationFrame = requestAnimationFrame(this.update)
+    if (typeof window !== 'undefined') {
+      window.__cat2bugMouseRunner = this
+    }
   },
   beforeDestroy() {
+    if (typeof window !== 'undefined' && window.__cat2bugMouseRunner === this) {
+      delete window.__cat2bugMouseRunner
+    }
     document.removeEventListener('contextmenu', this.onContextMenu)
     document.removeEventListener('mousedown', this.onDocumentMouseDown)
     document.removeEventListener('mousemove', this.onDocumentMouseMove)
@@ -371,6 +386,9 @@ export default {
     isBottomRunRow(row) {
       return row === 4 // SPRITE_ROW_DOWN
     },
+    isDownFacingRunRow(row) {
+      return this.isBottomRunRow(row) || this.isBottomLeftRunRow(row)
+    },
     isSitRow(row) {
       return row === SPRITE_ROW_SIT
     },
@@ -462,14 +480,52 @@ export default {
       this.frameIndex = 0
       this.frameTimer = 0
     },
+    playDepthT() {
+      const span = Math.max(1, (this.maxMouseY ?? 0) - (this.minMouseY ?? 0))
+      return Math.max(0, Math.min(1, (this.mouseY - (this.minMouseY ?? 0)) / span))
+    },
     depthScale() {
-      const ph = this.playHeight || 1
-      const t = Math.max(0, Math.min(1, this.mouseY / ph))
-      return 0.55 + t * 0.4
+      const t = this.playDepthT()
+      return DEPTH_SCALE_MIN + t * (DEPTH_SCALE_MAX - DEPTH_SCALE_MIN)
     },
     pixelScale() {
       const d = this.depthScale()
       return d * 1.15
+    },
+    /** 贴底段放大系数（左右奔跑、坐立） */
+    bottomPoseSizeBoost() {
+      const t = this.playDepthT()
+      if (t <= BOTTOM_POSE_BOOST_START) return 1
+      const ease = (t - BOTTOM_POSE_BOOST_START) / (1 - BOTTOM_POSE_BOOST_START)
+      return 1 + ease * (BOTTOM_POSE_SIZE_BOOST - 1)
+    },
+    /** 贴底横向奔跑时的参考 visualMax，用于阴影与老鼠大小同比 */
+    referenceHorizontalVisualMax() {
+      const refMax = RUN_SPRITE_FRAME_W * RUN_SPRITE_DISPLAY_SCALE * MOUSE_DISPLAY_SCALE
+      return refMax * DEPTH_SCALE_MAX * 1.15 * BOTTOM_POSE_SIZE_BOOST
+    },
+    /** 阴影尺寸/透明度随当前帧绘制大小实时变化 */
+    computeShadowMetrics(drawW, drawH) {
+      const ref = Math.max(1, this.referenceHorizontalVisualMax())
+      const sizeMul = Math.min(1.15, Math.max(drawW, drawH) / ref)
+      let rx = drawW * SHADOW_RX_RATIO
+      let ry = drawH * SHADOW_RY_RATIO
+      const yOffset = drawH * SHADOW_Y_OFFSET_RATIO
+      const alphaBase = document.documentElement.classList.contains('dark')
+        ? SHADOW_ALPHA_DARK
+        : SHADOW_ALPHA_LIGHT
+      let alpha = alphaBase * (
+        SHADOW_ALPHA_SIZE_FLOOR + sizeMul * (SHADOW_ALPHA_SIZE_CEIL - SHADOW_ALPHA_SIZE_FLOOR)
+      )
+      if (this.farSpawn) {
+        const airLift = Math.max(0, (this.groundY || this.mouseY) - this.mouseY)
+        const airFade = Math.min(0.28, airLift / Math.max(drawH * 2.5, 90))
+        const fade = 1 - airFade
+        rx *= fade
+        ry *= fade
+        alpha *= fade
+      }
+      return { rx, ry, yOffset, alpha, sizeMul }
     },
     pickUserSpriteRow(dx, dy) {
       if (dx === 0 && dy === 0) return
@@ -699,6 +755,50 @@ export default {
         sh: SIT_SPRITE_FRAME_H
       }
     },
+    getDrawDimensions(spriteRow = this.spriteRow) {
+      const row = spriteRow
+      const horizontal = this.isHorizontalRunRow(row)
+      const topLeft = this.isTopLeftRunRow(row)
+      const bottomLeft = this.isBottomLeftRunRow(row)
+      const top = this.isTopRunRow(row)
+      const bottom = this.isBottomRunRow(row)
+      const sit = this.isSitRow(row)
+      const pScale = this.pixelScale()
+      const baseW = horizontal ? RUN_SPRITE_FRAME_W : (topLeft ? RUN_TL_SPRITE_FRAME_W : (bottomLeft ? RUN_BL_SPRITE_FRAME_W : (top ? RUN_T_SPRITE_FRAME_W : (bottom ? RUN_B_SPRITE_FRAME_W : SIT_SPRITE_FRAME_W))))
+      const baseH = horizontal ? RUN_SPRITE_FRAME_H : (topLeft ? RUN_TL_SPRITE_FRAME_H : (bottomLeft ? RUN_BL_SPRITE_FRAME_H : (top ? RUN_T_SPRITE_FRAME_H : (bottom ? RUN_B_SPRITE_FRAME_H : SIT_SPRITE_FRAME_H))))
+      const displayMul = MOUSE_DISPLAY_SCALE
+      const dpr = this.canvasDpr || 1
+      let drawW
+      let drawH
+      const poseBoost = this.bottomPoseSizeBoost()
+      if (sit) {
+        const sizeScale = SIT_SPRITE_DISPLAY_SCALE * displayMul * poseBoost
+        drawW = Math.round(baseW * pScale * sizeScale * dpr) / dpr
+        drawH = Math.round(baseH * pScale * sizeScale * dpr) / dpr
+      } else {
+        const refW = RUN_SPRITE_FRAME_W * RUN_SPRITE_DISPLAY_SCALE * displayMul
+        const refH = RUN_SPRITE_FRAME_H * RUN_SPRITE_DISPLAY_SCALE * displayMul
+        const refMax = Math.max(refW, refH)
+        const spriteMax = Math.max(baseW, baseH)
+        let fitScale = refMax / Math.max(spriteMax, 1)
+        if (this.isHorizontalRunRow(row)) {
+          fitScale *= poseBoost
+        }
+        if (this.isDownFacingRunRow(row)) {
+          fitScale *= DOWN_RUN_SIZE_FACTOR
+        }
+        drawW = Math.round(baseW * pScale * fitScale * dpr) / dpr
+        drawH = Math.round(baseH * pScale * fitScale * dpr) / dpr
+      }
+      return {
+        spriteRow: row,
+        drawW,
+        drawH,
+        visualMax: Math.max(drawW, drawH),
+        visualArea: drawW * drawH,
+        pScale
+      }
+    },
     drawMouse(ctx, canvas) {
       if (!this.isSpriteLoaded) return
 
@@ -709,13 +809,7 @@ export default {
       const top = this.isTopRunRow(row)
       const bottom = this.isBottomRunRow(row)
       const sit = this.isSitRow(row)
-      const pScale = this.pixelScale()
-      const sizeScale = (horizontal ? RUN_SPRITE_DISPLAY_SCALE : (topLeft ? RUN_TL_SPRITE_DISPLAY_SCALE : (bottomLeft ? RUN_BL_SPRITE_DISPLAY_SCALE : (top ? RUN_T_SPRITE_DISPLAY_SCALE : (bottom ? RUN_B_SPRITE_DISPLAY_SCALE : SIT_SPRITE_DISPLAY_SCALE))))) * MOUSE_DISPLAY_SCALE
-      const baseW = horizontal ? RUN_SPRITE_FRAME_W : (topLeft ? RUN_TL_SPRITE_FRAME_W : (bottomLeft ? RUN_BL_SPRITE_FRAME_W : (top ? RUN_T_SPRITE_FRAME_W : (bottom ? RUN_B_SPRITE_FRAME_W : SIT_SPRITE_FRAME_W))))
-      const baseH = horizontal ? RUN_SPRITE_FRAME_H : (topLeft ? RUN_TL_SPRITE_FRAME_H : (bottomLeft ? RUN_BL_SPRITE_FRAME_H : (top ? RUN_T_SPRITE_FRAME_H : (bottom ? RUN_B_SPRITE_FRAME_H : SIT_SPRITE_FRAME_H))))
-      const dpr = this.canvasDpr || 1
-      const drawW = Math.round(baseW * pScale * sizeScale * dpr) / dpr
-      const drawH = Math.round(baseH * pScale * sizeScale * dpr) / dpr
+      const { drawW, drawH } = this.getDrawDimensions(row)
       const maxCol = horizontal ? RUN_SPRITE_COLS : (topLeft ? RUN_TL_SPRITE_COLS : (bottomLeft ? RUN_BL_SPRITE_COLS : (top ? RUN_T_SPRITE_COLS : (bottom ? RUN_B_SPRITE_COLS : SIT_SPRITE_COLS))))
       const col = this.frameIndex % maxCol
       const footYRatio = horizontal
@@ -726,19 +820,14 @@ export default {
       const flip = horizontal ? row === SPRITE_ROW_LEFT : (topLeft ? row === SPRITE_ROW_UP_LEFT : (bottomLeft ? row === SPRITE_ROW_DOWN_RIGHT : (sit ? false : this.flipX)))
       const dx = this.mouseX - drawW / 2
       const dy = this.mouseY - drawH * footYRatio
-      const airLift = Math.max(0, (this.groundY || this.mouseY) - this.mouseY)
-      const shadowScale = 1 - Math.min(0.35, airLift / (drawH * 2))
-
-      const isDark = document.documentElement.classList.contains('dark')
-      const shadowRx = Math.max(SHADOW_MIN_RX, drawW * SHADOW_RX_RATIO * shadowScale)
-      const shadowRy = Math.max(SHADOW_MIN_RY, drawH * SHADOW_RY_RATIO * shadowScale)
-      const shadowAlpha = (isDark ? SHADOW_ALPHA_DARK : SHADOW_ALPHA_LIGHT) * shadowScale
+      const { rx: shadowRx, ry: shadowRy, yOffset: shadowYOffset, alpha: shadowAlpha } =
+        this.computeShadowMetrics(drawW, drawH)
       ctx.beginPath()
       ctx.ellipse(
-        Math.round(this.mouseX),
-        Math.round(this.mouseY + SHADOW_Y_OFFSET),
-        Math.round(shadowRx),
-        Math.round(shadowRy),
+        this.mouseX,
+        this.mouseY + shadowYOffset,
+        shadowRx,
+        shadowRy,
         0, 0, Math.PI * 2
       )
       ctx.fillStyle = `rgba(0,0,0,${shadowAlpha})`

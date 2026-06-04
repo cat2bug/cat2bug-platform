@@ -666,7 +666,7 @@
   "login.language": "语言",
   "login.or": "或",
   "login.hero.title": "简化缺陷，夯实软件",
-  "login.hero.desc": "Cat2Bug-Cloud是从开源Cat2Bug-Platform衍生出来的线上Bug管理平台，为大家提供一个持久的云化管理服务。\n它的使用人群锁定个人或中小型软件开发团队，Cat2Bug-Platform中的所有基础功能都将永久免费开放，且不会限制人数，这将减少运营投入及成本，让个人或团队可以快速无忧的上手使用。\n平台后续将加大利用AI技术在测试及交付阶段的使用，持续解决软件质量管控中的各个痛点。",
+  "login.hero.desc": "Cat2Bug-Platform是一套永久免费开源的Bug管理平台，将毫无保留给个人及团体免费使用。\n它的使用人群锁定个人或中小型软件开发团队，Cat2Bug的理念是免去了项目管理中各种重度管理，减少运营投入及成本，让个人或团队可以快速上手，把控软件质量。\n平台采用JAVA+VUE开发，支持在各系统平台部署使用。",
   "login.features.tracking.title": "智能缺陷跟踪",
   "login.features.tracking.desc": "轻松跟踪、排序并解决问题。",
   "login.features.collaboration.title": "团队协作",

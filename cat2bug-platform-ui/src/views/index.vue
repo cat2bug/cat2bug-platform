@@ -8,7 +8,7 @@
           <b>{{ $t('version') }}:</b> <span>v{{ version }}</span>
         </p>
         <p>
-          <el-tag type="danger" style="margin-right: 10px;">{{$t('free-open-source')}}</el-tag>
+          <el-tag type="danger" class="free-open-source-tag">{{$t('free-open-source')}}</el-tag>
           <el-button
             type="primary"
             size="mini"
@@ -451,6 +451,11 @@ export default {
     }
   }
 
+  .free-open-source-tag {
+    margin-right: 10px;
+    vertical-align: middle;
+  }
+
   .qcoder {
     width: 130px;
     height: 130px;
@@ -481,6 +486,15 @@ export default {
       }
     }
   }
+}
+</style>
+
+<style lang="scss">
+/* 暗黑主题：半透明描边标签，避免默认 danger 实心亮色刺眼 */
+html.dark .home .free-open-source-tag.el-tag.el-tag--danger {
+  background-color: rgba(245, 108, 108, 0.14) !important;
+  border: 1px solid rgba(245, 108, 108, 0.4) !important;
+  color: #f89898 !important;
 }
 </style>
 

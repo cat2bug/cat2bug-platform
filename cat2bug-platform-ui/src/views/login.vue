@@ -22,7 +22,7 @@
         </div>
         <ul class="login-features">
           <li class="login-feature-item">
-            <svg-icon icon-class="bug" class="login-feature-icon" />
+            <svg-icon icon-class="mk-bug" class="login-feature-icon" />
             <div class="login-feature-text">
               <strong>{{ $t('login.features.tracking.title') }}</strong>
               <p>{{ $t('login.features.tracking.desc') }}</p>

@@ -654,7 +654,7 @@
   "login.language": "언어",
   "login.or": "또는",
   "login.hero.title": "버그를 단순화하고, 소프트웨어를 강화하세요",
-  "login.hero.desc": "Cat2Bug-Cloud는 오픈소스 Cat2Bug-Platform에서 파생된 온라인 Bug 관리 플랫폼으로, 지속적인 클라우드 관리 서비스를 제공합니다.\n개인 또는 중소형 소프트웨어 개발 팀을 대상으로 하며, Cat2Bug-Platform의 모든 기본 기능은 영구 무료이며 인원 제한이 없어 운영 비용을 줄이고 빠르게 안심하고 사용할 수 있습니다.\n앞으로 테스트 및 배포 단계에서 AI 기술 활용을 확대하여 소프트웨어 품질 관리의 각종 문제를 지속적으로 해결할 예정입니다.",
+  "login.hero.desc": "Cat2Bug-Platform은 영구적으로 무료인 오픈소스 Bug 관리 플랫폼으로, 개인 및 단체에게 조건 없이 무료로 제공됩니다.\n개인 또는 중소형 소프트웨어 개발 팀을 대상으로 합니다. Cat2Bug의 이념은 프로젝트 관리의 복잡한 관리를 없애고 운영 비용을 줄이며, 개인이나 팀이 빠르게 시작하여 소프트웨어 품질을 관리할 수 있도록 하는 것입니다.\n플랫폼은 JAVA+VUE로 개발되었으며 다양한 시스템 플랫폼에서의 배포 및 사용을 지원합니다.",
   "login.features.tracking.title": "스마트 결함 추적",
   "login.features.tracking.desc": "문제를 쉽게 추적, 우선순위 지정 및 해결.",
   "login.features.collaboration.title": "팀 협업",
