@@ -91,6 +91,10 @@ export default {
       color: #409EFF;
       margin-right: 10px;
       margin-top: 3px;
+      
+      @at-root html.dark & {
+        color: #FFC107 !important;
+      }
     }
   }
   ::v-deep .el-card__body {
