@@ -402,6 +402,11 @@ html.dark {
 
     .el-card__header {
       border-bottom: 1px solid var(--border-color-light) !important;
+      
+      // Override scoped icons color in cards (like project/team settings)
+      i {
+        color: #FFC107 !important;
+      }
     }
 
     .el-card__body {
