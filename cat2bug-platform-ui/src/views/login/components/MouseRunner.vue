@@ -63,6 +63,7 @@ const FAR_SPAWN_CHANCE = 0.3
 const AUTO_TURN_WAIT_MIN = 5
 const AUTO_TURN_WAIT_MAX = 10
 const AUTO_TURN_Y_JITTER = 50
+const EDGE_PAD = 56
 const MOUSE_MAX_Y_INSET = 50
 const MOVE_KEY_CODES = new Set([
   'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
@@ -85,7 +86,8 @@ export default {
       isSpriteLoaded: false,
       rmbDown: false,
       reducedMotion: false,
-      reducedMotionMq: null
+      reducedMotionMq: null,
+      boundsResizeObserver: null
     }
   },
   mounted() {
@@ -94,10 +96,8 @@ export default {
     this.loadSprite()
     this.setupReducedMotion()
     this.resetAutoRun(true)
-    this.$nextTick(() => {
-      const canvas = this.$refs.canvas
-      if (canvas) this.syncPlayBounds(canvas)
-    })
+    this.scheduleBoundsRefresh()
+    this.setupLayoutObserver()
     document.addEventListener('contextmenu', this.onContextMenu)
     document.addEventListener('mousedown', this.onDocumentMouseDown)
     document.addEventListener('mousemove', this.onDocumentMouseMove)
@@ -118,6 +118,10 @@ export default {
     window.removeEventListener('resize', this.handleResize)
     if (this.reducedMotionMq) {
       this.reducedMotionMq.removeEventListener('change', this.onReducedMotionChange)
+    }
+    if (this.boundsResizeObserver) {
+      this.boundsResizeObserver.disconnect()
+      this.boundsResizeObserver = null
     }
     cancelAnimationFrame(this.animationFrame)
   },
@@ -175,30 +179,15 @@ export default {
         && this.isWithinFormX()
         && Math.abs(this.mouseY - this.formBarrierY) <= FORM_BARRIER_Y_EPS
     },
-    /** 按键的原始纵向意图（-1 上 / 0 / 1 下），不受挡板截断影响 */
-    getKeyVerticalIntent() {
-      let dy = 0
-      const keys = this.keysDown
-      if (keys.has('ArrowUp') || keys.has('w') || keys.has('W')) dy -= 1
-      if (keys.has('ArrowDown') || keys.has('s') || keys.has('S')) dy += 1
-      return dy
-    },
-    /** 按键的原始横向意图（-1 左 / 0 / 1 右），不受挡板截断影响 */
-    getKeyHorizontalIntent() {
-      let dx = 0
-      const keys = this.keysDown
-      if (keys.has('ArrowLeft') || keys.has('a') || keys.has('A')) dx -= 1
-      if (keys.has('ArrowRight') || keys.has('d') || keys.has('D')) dx += 1
-      return dx
-    },
     getKeyMovement() {
       let dx = 0
-      let dy = this.getKeyVerticalIntent()
+      let dy = 0
       const keys = this.keysDown
       if (keys.has('ArrowLeft') || keys.has('a') || keys.has('A')) dx -= 1
       if (keys.has('ArrowRight') || keys.has('d') || keys.has('D')) dx += 1
-      if (this.formBarrierY != null && this.isWithinFormX()
-        && dy < 0 && this.mouseY <= this.formBarrierY + FORM_BARRIER_Y_EPS) dy = 0
+      if (keys.has('ArrowUp') || keys.has('w') || keys.has('W')) dy -= 1
+      if (keys.has('ArrowDown') || keys.has('s') || keys.has('S')) dy += 1
+      if (this.isOnFormBarrierLine() && dy < 0) dy = 0
       if (dx === 0 && dy === 0) return { dx: 0, dy: 0 }
       const len = Math.hypot(dx, dy)
       return { dx: dx / len, dy: dy / len }
@@ -247,6 +236,31 @@ export default {
       canvas.height = container.clientHeight
       this.syncPlayBounds(canvas)
     },
+    refreshPlayBounds() {
+      const canvas = this.$refs.canvas
+      if (canvas) this.syncPlayBounds(canvas)
+    },
+    scheduleBoundsRefresh() {
+      const tick = () => this.refreshPlayBounds()
+      this.$nextTick(tick)
+      requestAnimationFrame(() => requestAnimationFrame(tick))
+      setTimeout(tick, 100)
+      setTimeout(tick, 500)
+    },
+    setupLayoutObserver() {
+      if (typeof ResizeObserver === 'undefined') return
+      this.boundsResizeObserver = new ResizeObserver(() => this.refreshPlayBounds())
+      this.$nextTick(() => {
+        const form = document.querySelector('.logo-page .login-form')
+        const body = document.querySelector('.logo-page .login-body')
+        if (form) this.boundsResizeObserver.observe(form)
+        if (body) this.boundsResizeObserver.observe(body)
+        const catImg = document.querySelector('.logo-page .cat-scene-shot')
+        if (catImg && !catImg.complete) {
+          catImg.addEventListener('load', this.refreshPlayBounds, { once: true })
+        }
+      })
+    },
     syncPlayBounds(canvas) {
       const canvasRect = canvas.getBoundingClientRect()
       const form = document.querySelector('.logo-page .login-form')
@@ -280,42 +294,9 @@ export default {
       if (x < 0 || x > rect.width || y < 0 || y > rect.height) return null
       return { x, y }
     },
-    /** 横向奔跑时老鼠半宽（用于允许走出画布直至完全不可见） */
-    estimateMouseHalfWidth(canvas) {
-      const pScale = this.pixelScale(canvas)
-      return RUN_SPRITE_FRAME_W * pScale * RUN_SPRITE_DISPLAY_SCALE * MOUSE_DISPLAY_SCALE * 0.55
-    },
     clampManualPosition(canvas) {
-      const halfW = this.estimateMouseHalfWidth(canvas)
-      this.mouseX = Math.max(-halfW, Math.min(canvas.width + halfW, this.mouseX))
+      this.mouseX = Math.max(EDGE_PAD, Math.min(canvas.width - EDGE_PAD, this.mouseX))
       this.mouseY = Math.max(this.minMouseY, Math.min(this.maxMouseY, this.mouseY))
-    },
-    isFullyOffScreenX(canvas) {
-      const halfW = this.estimateMouseHalfWidth(canvas)
-      return this.mouseX + halfW <= 0 || this.mouseX - halfW >= canvas.width
-    },
-    /** 抵住上下边界且仍朝该方向移动时，改播坐立晃头（仅纯纵向，斜向改播奔跑） */
-    shouldShowSitAtVerticalLimit(verticalIntent, horizontalIntent = 0) {
-      if (Math.abs(horizontalIntent) > 0.01) return false
-      const eps = 2
-      if (verticalIntent < -0.01) {
-        if (this.mouseY <= this.minMouseY + eps) return true
-        if (this.formBarrierY != null && this.isWithinFormX()
-          && this.mouseY <= this.formBarrierY + FORM_BARRIER_Y_EPS) return true
-      }
-      if (verticalIntent > 0.01 && this.mouseY >= this.maxMouseY - eps) return true
-      return false
-    },
-    advanceSitFrames(dt) {
-      const fps = this.reducedMotion ? 3 * 0.35 : 6
-      const frameDur = 1 / fps
-      this.frameTimer += dt
-      let steps = 0
-      while (this.frameTimer >= frameDur && steps < 4) {
-        this.frameIndex = (this.frameIndex + 1) % SIT_SPRITE_COLS
-        this.frameTimer -= frameDur
-        steps += 1
-      }
     },
     /** 折返开跑时：在基准 Y 基础上随机 ±AUTO_TURN_Y_JITTER */
     jitterMouseYForTurn(baseY) {
@@ -567,7 +548,13 @@ export default {
     },
     updateSit(dt) {
       this.sitElapsed += dt
-      this.advanceSitFrames(dt)
+
+      this.frameTimer += dt
+      const fps = 3
+      if (this.frameTimer > 1 / fps) {
+        this.frameTimer = 0
+        this.frameIndex = (this.frameIndex + 1) % SIT_SPRITE_COLS
+      }
 
       if (this.sitElapsed >= this.sitDuration) {
         this.resumeAutoRunFromCurrent()
@@ -601,62 +588,32 @@ export default {
       const prevY = this.mouseY
       this.mouseX += (tx - this.mouseX) * lerp
       this.mouseY += (ty - this.mouseY) * lerp
-      if (this.formBarrierY != null && this.isWithinFormX() && this.pointerY < this.mouseY) {
-        this.mouseY = Math.max(this.mouseY, this.formBarrierY)
-      }
       this.clampManualPosition(canvas)
 
-      const verticalIntent = this.pointerY - this.mouseY
-      const horizontalIntent = this.pointerX - this.mouseX
       const actualDx = this.mouseX - prevX
       const actualDy = this.mouseY - prevY
       const dist = Math.hypot(actualDx, actualDy)
       const moving = dist > 0.4
-      const sitAtLimit = this.shouldShowSitAtVerticalLimit(verticalIntent, horizontalIntent)
 
-      if (sitAtLimit) {
-        this.spriteRow = SPRITE_ROW_SIT
-        this.advanceSitFrames(dt)
-      } else if (moving) {
+      if (moving) {
         this.pickUserSpriteRow(actualDx, actualDy)
 
         const speedMul = 0.7 + this.depthScale(canvas) * 0.5
         this.speed = AUTO_SPEED * speedMul
         this.createDust(actualDx / dist, actualDy / dist, canvas)
-        this.advanceRunFrames(dt, true)
-      } else if (this.isFullyOffScreenX(canvas)) {
-        this.frameIndex = 0
       }
+      this.advanceRunFrames(dt, moving)
     },
     updateKeyboardControl(dt, canvas) {
-      const rawVertical = this.getKeyVerticalIntent()
-      const rawHorizontal = this.getKeyHorizontalIntent()
       const { dx, dy } = this.getKeyMovement()
-      const sitAtLimit = this.shouldShowSitAtVerticalLimit(rawVertical, rawHorizontal)
-
-      if (dx === 0 && dy === 0) {
-        if (sitAtLimit) {
-          this.spriteRow = SPRITE_ROW_SIT
-          this.advanceSitFrames(dt)
-        }
-        return
-      }
+      if (dx === 0 && dy === 0) return
 
       const prevX = this.mouseX
       const prevY = this.mouseY
       const speedMul = 0.7 + this.depthScale(canvas) * 0.5
       const speed = AUTO_SPEED * speedMul
-      const halfW = this.estimateMouseHalfWidth(canvas)
-
-      let effDx = dx
-      if (dx < 0 && this.mouseX + halfW <= 0) effDx = 0
-      if (dx > 0 && this.mouseX - halfW >= canvas.width) effDx = 0
-
-      this.mouseX += effDx * speed * dt
+      this.mouseX += dx * speed * dt
       this.mouseY += dy * speed * dt
-      if (this.formBarrierY != null && this.isWithinFormX() && rawVertical < 0) {
-        this.mouseY = Math.max(this.mouseY, this.formBarrierY)
-      }
       this.clampManualPosition(canvas)
 
       const actualDx = this.mouseX - prevX
@@ -664,14 +621,13 @@ export default {
       const dist = Math.hypot(actualDx, actualDy)
       const moving = dist > 0.01
 
-      if (sitAtLimit) {
-        this.spriteRow = SPRITE_ROW_SIT
-        this.advanceSitFrames(dt)
-      } else if (moving) {
+      if (moving) {
         this.pickUserSpriteRow(actualDx, actualDy)
         this.createDust(actualDx / dist, actualDy / dist, canvas)
-        this.advanceRunFrames(dt, true)
-      } else if (this.isFullyOffScreenX(canvas)) {
+      }
+      this.advanceRunFrames(dt, true)
+
+      if (!moving) {
         this.frameIndex = 0
       }
     },

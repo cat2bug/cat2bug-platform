@@ -59,21 +59,15 @@
         <router-link v-if="register" class="register-link" :to="'/register'">{{$t('register-now')}}</router-link>
       </div>
 
-      <el-form-item class="login-btn-item">
-        <el-button
-          :loading="loading"
-          size="medium"
-          class="login-btn"
-          @click.native.prevent="handleLogin"
-        >
-          <span v-if="!loading">{{$t("login")}}<i class="el-icon-right login-btn-arrow"></i></span>
-          <span v-else>{{$t("logging-in")}}...</span>
-        </el-button>
-      </el-form-item>
+      <div class="login-divider">
+        <span class="login-divider-line"></span>
+        <span class="login-divider-text">{{$t('login.or')}}</span>
+        <span class="login-divider-line"></span>
+      </div>
 
       <div class="custom-form-item lang-section">
         <label class="item-label">
-          <svg-icon icon-class="international" /> Language
+          <svg-icon icon-class="international" /> {{$t('login.language')}}
         </label>
         <div class="lang-group">
           <svg-icon icon-class="lang_zh_CN" @click="changeLang('zh_CN')" title="简体中文" />
@@ -85,6 +79,18 @@
           <svg-icon icon-class="lang_ar" @click="changeLang('ar')" title="العربية" />
         </div>
       </div>
+
+      <el-form-item class="login-btn-item">
+        <el-button
+          :loading="loading"
+          size="medium"
+          class="login-btn"
+          @click.native.prevent="handleLogin"
+        >
+          <span v-if="!loading">{{$t("login")}}<svg-icon icon-class="login_button" class-name="login-btn-arrow" /></span>
+          <span v-else>{{$t("logging-in")}}...</span>
+        </el-button>
+      </el-form-item>
 
       <div>
         <slot name="tools"></slot>
@@ -247,7 +253,7 @@ export default {
 
   ::v-deep .el-input input:focus {
     border-color: var(--login-accent, #ffc107);
-    box-shadow: 0 0 0 2px rgba(255, 193, 7, 0.18);
+    box-shadow: 0 0 0 2px var(--login-accent-glow, rgba(255, 193, 7, 0.18));
   }
 }
 
@@ -300,18 +306,19 @@ html.dark .login-form {
   border-radius: 8px;
   border: none !important;
   background: var(--login-accent, #ffc107) !important;
-  color: #1a1a1a !important;
+  color: var(--login-on-accent, #1a1a1a) !important;
   transition: filter 0.2s, transform 0.05s;
 
   span {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 14px;
   }
 
   .login-btn-arrow {
-    font-size: 18px;
-    font-weight: 700;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
   }
 
   &:hover,
@@ -319,13 +326,13 @@ html.dark .login-form {
     filter: brightness(1.05);
     background: var(--login-accent, #ffc107) !important;
     border-color: transparent !important;
-    color: #1a1a1a !important;
+    color: var(--login-on-accent, #1a1a1a) !important;
   }
 
   &:active {
     transform: translateY(1px);
     background: var(--login-accent, #ffc107) !important;
-    color: #1a1a1a !important;
+    color: var(--login-on-accent, #1a1a1a) !important;
   }
 }
 
@@ -335,9 +342,27 @@ html.dark .login-form {
   border-color: var(--login-accent, #ffc107);
 }
 
+.login-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 18px 0 16px;
+
+  .login-divider-line {
+    flex: 1;
+    height: 1px;
+    background-color: var(--login-card-border, var(--border-color-base));
+  }
+
+  .login-divider-text {
+    flex: 0 0 auto;
+    font-size: 13px;
+    color: var(--login-text-muted, var(--text-color-secondary));
+  }
+}
+
 .lang-section {
-  margin-top: 20px;
-  margin-bottom: 4px;
+  margin-bottom: 16px;
 }
 
 .lang-group {
@@ -372,7 +397,7 @@ html.dark .login-form {
   border: 1px solid var(--login-card-border, var(--border-color-base));
   border-radius: 8px;
   overflow: hidden;
-  background: #FFC145;
+  background: var(--login-accent, #FFC145);
   cursor: pointer;
 }
 

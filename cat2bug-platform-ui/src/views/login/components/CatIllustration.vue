@@ -2,7 +2,7 @@
   <div class="cat-illustration">
     <img
       class="cat-scene-shot"
-      src="@/assets/images/login-cat-scene-dark.jpg"
+      :src="sceneImage"
       alt=""
       draggable="false"
     />
@@ -15,7 +15,35 @@
 
 <script>
 export default {
-  name: 'CatIllustration'
+  name: 'CatIllustration',
+  data() {
+    return {
+      isDark: document.documentElement.classList.contains('dark'),
+      themeObserver: null
+    }
+  },
+  computed: {
+    sceneImage() {
+      return this.isDark
+        ? require('@/assets/images/login-cat-scene-dark.jpg')
+        : require('@/assets/images/login-cat-scene-light.jpg')
+    }
+  },
+  mounted() {
+    this.themeObserver = new MutationObserver(() => {
+      this.isDark = document.documentElement.classList.contains('dark')
+    })
+    this.themeObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    })
+  },
+  beforeDestroy() {
+    if (this.themeObserver) {
+      this.themeObserver.disconnect()
+      this.themeObserver = null
+    }
+  }
 }
 </script>
 

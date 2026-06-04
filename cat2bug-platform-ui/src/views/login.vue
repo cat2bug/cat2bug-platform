@@ -2,8 +2,8 @@
   <div class="logo-page">
     <div class="login">
       <div class="login-introduce">
+        <p class="brand-welcome">{{ $t('login.hero.welcome') }}</p>
         <div class="brand-row">
-          <img class="brand-logo" src="@/assets/images/login-brand-logo.png" alt="Cat2Bug" />
           <div class="brand-text-row">
             <span class="brand-name">
               <span class="brand-name-cat2">Cat2</span><span class="brand-name-bug">Bug</span><span class="brand-name-platform">-Platform</span>
@@ -13,10 +13,16 @@
         </div>
         <div class="brand-accent-line" aria-hidden="true"></div>
         <h1 class="login-hero-title">{{ $t('login.hero.title') }}</h1>
-        <p class="login-hero-desc">{{ $t('login.hero.desc') }}</p>
+        <div class="login-hero-desc">
+          <p
+            v-for="(paragraph, index) in heroDescParagraphs"
+            :key="index"
+            class="login-hero-desc-para"
+          >{{ paragraph }}</p>
+        </div>
         <ul class="login-features">
           <li class="login-feature-item">
-            <svg-icon icon-class="login-feature-target" class="login-feature-icon" />
+            <svg-icon icon-class="bug" class="login-feature-icon" />
             <div class="login-feature-text">
               <strong>{{ $t('login.features.tracking.title') }}</strong>
               <p>{{ $t('login.features.tracking.desc') }}</p>
@@ -113,6 +119,11 @@ export default {
     },
     loginTypeList: function () {
       return this.loginComponentNameList.filter(l=>this.login && l.name!=this.login.name);
+    },
+    heroDescParagraphs() {
+      const text = this.$t('login.hero.desc');
+      if (!text) return [];
+      return String(text).split('\n').map(s => s.trim()).filter(Boolean);
     }
   },
   created() {
@@ -148,9 +159,11 @@ body {
 }
 
 .logo-page {
-  --login-bg: #f0f2f5;
+  --login-bg: #fdfdfd;
   --login-card-bg: #ffffff;
-  --login-accent: #e6a800;
+  --login-accent: #409EFF;
+  --login-on-accent: #ffffff;
+  --login-accent-glow: rgba(64, 158, 255, 0.18);
   --login-text-primary: #303133;
   --login-text-secondary: #606266;
   --login-text-muted: #909399;
@@ -172,6 +185,8 @@ html.dark .logo-page {
   --login-bg: #17181a;
   --login-card-bg: #1f2023;
   --login-accent: #ffc107;
+  --login-on-accent: #1a1a1a;
+  --login-accent-glow: rgba(255, 193, 7, 0.18);
   --login-text-primary: #ffffff;
   --login-text-secondary: #9ca3af;
   --login-text-muted: #6b7280;
@@ -198,35 +213,41 @@ html.dark .logo-page {
   max-width: 520px;
   position: relative;
   z-index: 5;
+  padding-top: 28px;
   font-size: 16px;
-  line-height: 1.8;
+  line-height: 1.6;
   color: var(--login-text-primary);
   text-align: left;
+
+  .brand-welcome {
+    margin: 0 0 4px;
+    font-size: 30px;
+    font-weight: 500;
+    line-height: 1.25;
+    color: var(--login-text-secondary);
+  }
 
   .brand-row {
     display: flex;
     align-items: center;
     gap: 12px;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
   }
 
   .brand-text-row {
     display: flex;
     align-items: baseline;
     gap: 8px;
-  }
-
-  .brand-logo {
-    width: auto;
-    height: 86px;
-    object-fit: contain;
+    flex-wrap: nowrap;
+    white-space: nowrap;
   }
 
   .brand-name {
-    font-size: 44px;
+    font-size: 56px;
     font-weight: 700;
     line-height: 1.2;
     letter-spacing: -0.5px;
+    white-space: nowrap;
   }
 
   .brand-version {
@@ -247,26 +268,34 @@ html.dark .logo-page {
   }
 
   .brand-accent-line {
-    width: 48px;
-    height: 3px;
-    margin: 0 0 28px 60px;
-    border-radius: 2px;
+    width: 72px;
+    height: 5px;
+    margin: 0 0 16px;
+    border-radius: 3px;
     background-color: var(--login-accent);
   }
 
   .login-hero-title {
-    font-size: 32px;
+    font-size: 20px;
     font-weight: 700;
-    line-height: 1.25;
-    margin: 0 0 24px;
+    line-height: 1.2;
+    margin: 0 0 10px;
     color: var(--login-text-primary) !important;
   }
 
   .login-hero-desc {
-    margin: 0 0 32px;
+    margin: 0 0 18px;
+  }
+
+  .login-hero-desc-para {
+    margin: 0 0 10px;
     color: var(--login-text-secondary) !important;
-    font-size: 15px;
-    line-height: 1.75;
+    font-size: 14px;
+    line-height: 1.45;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
   }
 
   .login-features {
@@ -275,7 +304,7 @@ html.dark .logo-page {
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 16px;
   }
 
   .login-feature-item {
@@ -296,6 +325,7 @@ html.dark .logo-page {
     padding: 5px;
     border: 1px solid var(--login-input-border, #3f3f41);
     border-radius: 10px;
+    background-color: var(--login-bg);
     color: var(--login-accent);
     font-size: 22px;
   }
@@ -306,13 +336,13 @@ html.dark .logo-page {
       font-size: 16px;
       font-weight: 600;
       color: var(--login-text-primary);
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     }
 
     p {
       margin: 0;
       font-size: 14px;
-      line-height: 1.6;
+      line-height: 1.5;
       color: var(--login-text-secondary) !important;
     }
   }
