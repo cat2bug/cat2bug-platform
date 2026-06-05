@@ -12,8 +12,10 @@ import com.cat2bug.common.core.page.TableDataInfo;
 import com.cat2bug.common.enums.BusinessType;
 import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.common.utils.poi.ExcelUtil;
+import com.cat2bug.common.exception.ServiceException;
 import com.cat2bug.system.domain.SysAiModuleConfig;
 import com.cat2bug.system.service.ISysAiModuleConfigService;
+import com.cat2bug.web.service.OllamaAvailability;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -46,6 +48,9 @@ public class SysAiModuleConfigController extends BaseController
     private final static String SERVICE_TYPE_OLLAMA = "ollama";
     @Autowired(required = false)
     private Map<String, IAiService> aiServiceMap;
+
+    @Autowired
+    private OllamaAvailability ollamaAvailability;
 
     /**
      * 推荐可使用的模型列表，配置文件
@@ -94,8 +99,18 @@ public class SysAiModuleConfigController extends BaseController
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("ollama", ollamaOpts);
         body.put("openai", openaiOpts);
-        body.put("aiEnabled", aiService != null);
+        body.put("aiEnabled", ollamaAvailability.isAvailable());
         return success(body);
+    }
+
+    private IAiService requireOllamaService()
+    {
+        IAiService aiService = aiServiceMap != null ? aiServiceMap.get(SERVICE_TYPE_OLLAMA) : null;
+        if (aiService == null)
+        {
+            throw new ServiceException("Ollama service is not enabled");
+        }
+        return aiService;
     }
 
     /**
@@ -105,7 +120,11 @@ public class SysAiModuleConfigController extends BaseController
     @GetMapping("/list")
     public TableDataInfo list(SysAiModuleConfig sysAiModuleConfig)
     {
-        IAiService aiService = aiServiceMap.get(SERVICE_TYPE_OLLAMA);
+        if (!ollamaAvailability.isAvailable())
+        {
+            return getDataTable(Collections.emptyList());
+        }
+        IAiService aiService = requireOllamaService();
         List<AiModule>  downloadedList = aiService.getModuleList(AiModule.class);
         List<Map<String, Object>> list = Stream.of(
                 downloadedList,
@@ -141,7 +160,7 @@ public class SysAiModuleConfigController extends BaseController
     @PreAuthorize("@ss.hasPermi('system:ai:add')")
     @PostMapping("/model")
     public AjaxResult downloadModel(@RequestBody AiModule aiModule) {
-        IAiService aiService = aiServiceMap.get(SERVICE_TYPE_OLLAMA);
+        IAiService aiService = requireOllamaService();
         return success(aiService.pullModule(aiModule.getName(),true));
     }
 
@@ -153,7 +172,7 @@ public class SysAiModuleConfigController extends BaseController
     @DeleteMapping("/model")
     public AjaxResult remove(@RequestBody AiModule aiModule)
     {
-        IAiService aiService = aiServiceMap.get(SERVICE_TYPE_OLLAMA);
+        IAiService aiService = requireOllamaService();
         return toAjax(aiService.removeModule(aiModule.getName()));
     }
 

@@ -331,6 +331,7 @@
   "project.ai-manager": "AI Management",
   "project.ai-manager-describe": "Configuration management related to the use of large model functionality in the project",
   "project.ai-model-manager": "Ollama Model",
+  "project.ai-ollama-unavailable": "Ollama is not configured or enabled on this system. Ollama model management is unavailable.",
   "project.ai-account-manager": "OpenAI Account",
   "project.ai.new-account": "New OpenAI Account",
   "project.ai.account-name": "Account Name",

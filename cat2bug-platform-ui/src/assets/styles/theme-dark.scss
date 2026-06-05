@@ -109,6 +109,9 @@
   --sidebar-text: #bfcbd9;
   --sidebar-active-text: #FFC107;
 
+  /* 项目/团队设置卡片标题图标 */
+  --cat2bug-option-card-icon-color: #409EFF;
+
   --navbar-bg: #ffffff;
   --navbar-text: #303133;
   --tags-view-bg: #ffffff;
@@ -207,6 +210,8 @@ html.dark {
   --sidebar-text: #a8abb2;
   --sidebar-active-text: #FFC107;
 
+  --cat2bug-option-card-icon-color: #FFC107;
+
   --navbar-bg: #1e1e20;
   --navbar-text: #e5eaf3;
   --tags-view-bg: #1e1e20;
@@ -228,8 +233,10 @@ html.dark {
   /* 表格操作列：text 按钮语义色（暗色提高对比，避免 #606266 贴底看不清） */
   --cat2bug-operate-text-muted: #c8ccd3;
   --cat2bug-operate-text-muted-hover: #FFE082;
-  --cat2bug-operate-text-danger: #f78989;
-  --cat2bug-operate-text-danger-hover: #fab6b6;
+  --cat2bug-delete-color: rgb(251, 83, 91);
+  --cat2bug-delete-color-hover: rgb(255, 120, 126);
+  --cat2bug-operate-text-danger: var(--cat2bug-delete-color);
+  --cat2bug-operate-text-danger-hover: var(--cat2bug-delete-color-hover);
   --cat2bug-operate-text-success: #85ce61;
   --cat2bug-operate-text-success-hover: #a4da89;
   --cat2bug-operate-text-warning: #eebe77;
@@ -460,18 +467,18 @@ html.dark {
     }
     
     &.el-link--danger {
-      color: #f56c6c !important;
+      color: var(--cat2bug-delete-color, rgb(251, 83, 91)) !important;
       
       &:hover {
-        color: #f78989 !important;
+        color: var(--cat2bug-delete-color-hover, rgb(255, 120, 126)) !important;
       }
       
       &.is-underline:after {
-        border-bottom-color: #f56c6c !important;
+        border-bottom-color: var(--cat2bug-delete-color, rgb(251, 83, 91)) !important;
       }
 
       &.is-underline:hover:after {
-        border-bottom-color: #f78989 !important;
+        border-bottom-color: var(--cat2bug-delete-color-hover, rgb(255, 120, 126)) !important;
       }
     }
   }
@@ -485,8 +492,10 @@ html.dark {
       border-bottom: 1px solid var(--border-color-light) !important;
       
       // Override scoped icons color in cards (like project/team settings)
-      i {
-        color: #FFC107 !important;
+      i,
+      .svg-icon {
+        color: var(--cat2bug-option-card-icon-color, #FFC107) !important;
+        fill: currentColor;
       }
     }
 
@@ -2283,7 +2292,6 @@ html.dark {
     // 默认按钮/朴素按钮
     &:not([type]),
     &--default,
-    &--primary.is-plain,
     &--success.is-plain,
     &--warning.is-plain,
     &--danger.is-plain,
@@ -2320,14 +2328,15 @@ html.dark {
     }
     &--danger.is-plain {
       &:hover, &:focus {
-        background-color: rgba(245, 108, 108, 0.15) !important;
-        border-color: #f56c6c !important;
-        color: #f56c6c !important;
+        background-color: rgba(251, 83, 91, 0.15) !important;
+        border-color: var(--cat2bug-delete-color, rgb(251, 83, 91)) !important;
+        color: var(--cat2bug-delete-color, rgb(251, 83, 91)) !important;
       }
     }
 
     // 强类型实色按钮
-    &--primary:not(.is-plain) {
+    &--primary:not(.is-plain),
+    &--primary.is-plain:not(.cat2bug-btn-outline) {
       background-color: #FFC107 !important;
       border-color: #FFC107 !important;
       color: #141414 !important;
@@ -2337,14 +2346,65 @@ html.dark {
         border-color: #FFD54F !important;
         color: #141414 !important;
       }
+
+      &:active {
+        background-color: #FFB300 !important;
+        border-color: #FFB300 !important;
+        color: #141414 !important;
+      }
+    }
+
+    // 朴素描边 primary（如「邀请成员」），不参与黄底实心样式
+    &--primary.is-plain.cat2bug-btn-outline {
+      background-color: var(--bg-color-block) !important;
+      border-color: var(--border-color-base) !important;
+      color: var(--text-color-regular) !important;
+
+      &:hover, &:focus {
+        background-color: rgba(255, 193, 7, 0.12) !important;
+        border-color: #FFC107 !important;
+        color: #FFC107 !important;
+      }
+
+      &:active {
+        background-color: rgba(255, 193, 7, 0.22) !important;
+      }
     }
     &--success:not(.is-plain) {
       background-color: #2e7d32 !important;
       border-color: #2e7d32 !important;
+      color: #ffffff !important;
+
+      &:hover,
+      &:focus {
+        background-color: #43a047 !important;
+        border-color: #43a047 !important;
+        color: #ffffff !important;
+      }
+
+      &:active {
+        background-color: #1b5e20 !important;
+        border-color: #1b5e20 !important;
+        color: #ffffff !important;
+      }
     }
     &--danger:not(.is-plain) {
       background-color: #c62828 !important;
       border-color: #c62828 !important;
+      color: #ffffff !important;
+
+      &:hover,
+      &:focus {
+        background-color: #e53935 !important;
+        border-color: #e53935 !important;
+        color: #ffffff !important;
+      }
+
+      &:active {
+        background-color: #b71c1c !important;
+        border-color: #b71c1c !important;
+        color: #ffffff !important;
+      }
     }
   }
 
@@ -2415,30 +2475,60 @@ html.dark {
   }
 
   // split-button 竖向分隔线（缺陷页「全部类型」、新建 split 下拉等）
+  .el-dropdown .el-dropdown__caret-button::before,
   .el-button-group > .el-dropdown__caret-button::before {
-    background: var(--border-color-base) !important;
+    background: #141414 !important;
+    background-color: #141414 !important;
     opacity: 1 !important;
   }
 
-  .el-button-group > .el-button--primary:not(.is-plain) + .el-dropdown__caret-button::before {
+  .el-dropdown .el-dropdown__caret-button:hover:not(.is-disabled)::before,
+  .el-button-group > .el-dropdown__caret-button:hover:not(.is-disabled)::before {
     background: #141414 !important;
+    background-color: #141414 !important;
+  }
+
+  .defect-add-dropdown,
+  .case-add-dropdown,
+  .case-ai-add-dropdown {
+    .el-dropdown__caret-button::before {
+      background: #141414 !important;
+      background-color: #141414 !important;
+    }
   }
 
   .el-button-group {
-    > .el-button--primary:not(.is-plain):first-child {
+    > .el-button--primary:not(.is-plain):first-child,
+    > .el-button--primary.is-plain:first-child,
+    > .el-button--success:not(.is-plain):first-child,
+    > .el-button--warning:not(.is-plain):first-child,
+    > .el-button--danger:not(.is-plain):first-child {
       border-right-color: #141414 !important;
     }
-    > .el-button--primary:not(.is-plain):not(:first-child):not(:last-child) {
+    > .el-button--primary:not(.is-plain):not(:first-child):not(:last-child),
+    > .el-button--primary.is-plain:not(:first-child):not(:last-child),
+    > .el-button--success:not(.is-plain):not(:first-child):not(:last-child),
+    > .el-button--warning:not(.is-plain):not(:first-child):not(:last-child),
+    > .el-button--danger:not(.is-plain):not(:first-child):not(:last-child) {
       border-left-color: #141414 !important;
       border-right-color: #141414 !important;
     }
-    > .el-button--primary:not(.is-plain):last-child {
+    > .el-button--primary:not(.is-plain):last-child,
+    > .el-button--primary.is-plain:last-child,
+    > .el-button--success:not(.is-plain):last-child,
+    > .el-button--warning:not(.is-plain):last-child,
+    > .el-button--danger:not(.is-plain):last-child {
       border-left-color: #141414 !important;
     }
   }
 
-  .el-button-group > .el-button--success:not(.is-plain) + .el-dropdown__caret-button::before {
-    background: rgba(255, 255, 255, 0.32) !important;
+  // AI 用例生成等绿色 split 按钮的下拉菜单项：悬停保持绿色
+  .el-dropdown-menu.case-ai-add-dropdown-menu {
+    .el-dropdown-menu__item:not(.is-disabled):hover,
+    .el-dropdown-menu__item:focus {
+      background-color: rgba(103, 194, 58, 0.15) !important;
+      color: #85ce61 !important;
+    }
   }
 
   // 7. 额外的组件和零散的硬编码边框/背景色深度适配
@@ -2612,11 +2702,22 @@ html.dark {
   }
 
   .tree-node-remove-btn {
-    color: #f56c6c !important;
+    color: var(--cat2bug-delete-color, rgb(251, 83, 91)) !important;
 
     &:hover,
     &:focus {
-      color: #f78989 !important;
+      color: var(--cat2bug-delete-color-hover, rgb(255, 120, 126)) !important;
+    }
+  }
+
+  .red,
+  .red-button {
+    color: var(--cat2bug-delete-color, rgb(251, 83, 91)) !important;
+    --current-color: var(--cat2bug-delete-color, rgb(251, 83, 91)) !important;
+
+    &:hover,
+    &:focus {
+      color: var(--cat2bug-delete-color-hover, rgb(255, 120, 126)) !important;
     }
   }
 
@@ -4153,6 +4254,14 @@ html.dark {
       color: var(--text-color-primary) !important;
     }
 
+    .template-header .el-link {
+      color: #FFC107 !important;
+
+      &:hover {
+        color: #FFD54F !important;
+      }
+    }
+
     .template-list-item {
       border-color: var(--border-color-light) !important;
       background-color: var(--bg-color-base) !important;
@@ -4164,16 +4273,35 @@ html.dark {
 
       .el-image {
         background-color: var(--input-bg) !important;
+        border: 1px solid var(--border-color-light) !important;
+        box-sizing: border-box;
 
         .el-image__inner,
         .el-image__placeholder,
         .el-image__error {
           background-color: var(--input-bg) !important;
         }
+
+        .el-image__inner {
+          object-fit: contain;
+          mix-blend-mode: multiply;
+          filter: brightness(0.92) contrast(1.08);
+        }
       }
 
       span {
         color: var(--text-color-regular) !important;
+      }
+
+      .menu {
+        .el-button--text {
+          color: var(--text-color-secondary) !important;
+
+          &:hover,
+          &:focus {
+            color: #FFC107 !important;
+          }
+        }
       }
 
       .menu button:hover {

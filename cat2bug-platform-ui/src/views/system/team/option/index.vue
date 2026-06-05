@@ -59,13 +59,10 @@ export default {
       }
     }
     i, .svg-icon {
-      color: #409EFF;
+      color: var(--cat2bug-option-card-icon-color, #409EFF);
+      fill: currentColor;
       margin-right: 10px;
       margin-top: 3px;
-      
-      @at-root html.dark & {
-        color: #FFC107 !important;
-      }
     }
   }
   ::v-deep .el-card__body {

@@ -330,6 +330,7 @@
   "project.ai-manager": "إدارة الذكاء الاصطناعي",
   "project.ai-manager-describe": "إدارة الإعدادات المتعلقة باستخدام وظائف النماذج الكبيرة في المشروع",
   "project.ai-model-manager": "نموذج Ollama",
+  "project.ai-ollama-unavailable": "لم يتم تكوين Ollama أو تفعيله في النظام. إدارة نماذج Ollama غير متاحة.",
   "project.ai-account-manager": "إدارة حسابات OpenAI",
   "project.ai.new-account": "حساب OpenAI جديد",
   "project.ai.account-name": "اسم الحساب",

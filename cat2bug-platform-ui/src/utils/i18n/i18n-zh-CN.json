@@ -332,6 +332,7 @@
   "project.ai-manager": "AI管理",
   "project.ai-manager-describe": "项目中运用大模型功能的相关配置管理",
   "project.ai-model-manager": "Ollama模型",
+  "project.ai-ollama-unavailable": "系统未配置或未启用 Ollama 服务，无法访问 Ollama 模型管理",
   "project.ai-account-manager": "OpenAI账号管理",
   "project.ai.new-account": "新建OpenAI账号",
   "project.ai.account-name": "账号名称",

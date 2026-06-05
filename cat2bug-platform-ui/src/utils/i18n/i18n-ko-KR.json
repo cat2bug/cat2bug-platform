@@ -330,6 +330,7 @@
   "project.ai-manager": "AI 관리",
   "project.ai-manager-describe": "프로젝트에서 대형 모델 기능을 사용하기 위한 관련 설정 관리",
   "project.ai-model-manager": "Ollama 모델",
+  "project.ai-ollama-unavailable": "시스템에 Ollama가 구성되지 않았거나 비활성화되어 Ollama 모델 관리에 접근할 수 없습니다.",
   "project.ai-account-manager": "OpenAI 계정 관리",
   "project.ai.new-account": "새 OpenAI 계정",
   "project.ai.account-name": "계정 이름",

@@ -23,6 +23,8 @@ import com.cat2bug.common.utils.SecurityUtils;
 import com.cat2bug.framework.web.service.SysLoginService;
 import com.cat2bug.framework.web.service.SysPermissionService;
 import com.cat2bug.system.service.ISysMenuService;
+import com.cat2bug.web.service.OllamaAvailability;
+import com.cat2bug.web.service.OllamaMenuFilter;
 
 /**
  * 登录验证
@@ -38,6 +40,9 @@ public class SysLoginController
 
     @Autowired
     private ISysMenuService menuService;
+
+    @Autowired
+    private OllamaAvailability ollamaAvailability;
 
     @Autowired
     private SysPermissionService permissionService;
@@ -99,6 +104,10 @@ public class SysLoginController
     {
         Long userId = SecurityUtils.getUserId();
         List<SysMenu> menus = menuService.selectMenuTreeByUserId(userId);
+        if (!ollamaAvailability.isAvailable())
+        {
+            menus = OllamaMenuFilter.removeOllamaMenus(menus);
+        }
         return AjaxResult.success(menuService.buildMenus(menus));
     }
 }

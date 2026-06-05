@@ -31,7 +31,7 @@ export default {
   },
   data() {
     return {
-      aiEnabled: true
+      aiEnabled: false
     };
   },
   computed: {
@@ -55,10 +55,13 @@ export default {
     checkAiEnabled() {
       if (this.projectId) {
         projectAiModelOptions(this.projectId).then(res => {
-          this.aiEnabled = res.aiEnabled !== false;
+          const data = res.data || {};
+          this.aiEnabled = data.aiEnabled === true;
         }).catch(() => {
-          this.aiEnabled = true;
+          this.aiEnabled = false;
         });
+      } else {
+        this.aiEnabled = false;
       }
     }
   }

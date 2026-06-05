@@ -92,7 +92,7 @@
             <svg-icon icon-class="robot" />
             <span>{{ $i18n.t('case.ai-create') }}</span>
           </div>
-          <el-dropdown-menu slot="dropdown" class="case-add-dropdown-menu">
+          <el-dropdown-menu slot="dropdown" class="case-add-dropdown-menu case-ai-add-dropdown-menu">
             <el-dropdown-item @click.native="handleCloudCaseAdd"><svg-icon icon-class="robot" />{{ $t('case.ai-create') }}</el-dropdown-item>
             <!--              <el-dropdown-item @click.native="handleCloudCaseAdd2"><svg-icon icon-class="robot" />{{ $t('case.ai-create') }}2</el-dropdown-item>-->
           </el-dropdown-menu>
@@ -1241,6 +1241,10 @@ export default {
   }
   ::v-deep .el-dropdown__caret-button::before {
     background-color: #a3d3ff;
+
+    @at-root html.dark & {
+      background-color: #141414 !important;
+    }
   }
 }
 .case-ai-add-dropdown {
@@ -1273,6 +1277,10 @@ export default {
   }
   ::v-deep .el-dropdown__caret-button::before {
     background-color: #f0f9eb;
+
+    @at-root html.dark & {
+      background-color: #141414 !important;
+    }
   }
 }
 .case-add-dropdown-menu {

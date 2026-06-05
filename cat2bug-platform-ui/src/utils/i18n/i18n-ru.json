@@ -330,6 +330,7 @@
   "project.ai-manager": "Управление ИИ",
   "project.ai-manager-describe": "Управление конфигурацией функций больших моделей в проекте",
   "project.ai-model-manager": "Модель Ollama",
+  "project.ai-ollama-unavailable": "Ollama не настроен или не включён в системе. Управление моделями Ollama недоступно.",
   "project.ai-account-manager": "Управление учетными записями OpenAI",
   "project.ai.new-account": "Новая учётная запись OpenAI",
   "project.ai.account-name": "Название учетной записи",

@@ -26,18 +26,19 @@
               plain
               icon="el-icon-plus"
               size="small"
-              @click="inviteMemberHandle"
-              v-hasPermi="['system:team:member:invite']"
-            >{{$t('team.invite-members')}}</el-button>
+              @click="createMemberHandle"
+              v-hasPermi="['system:team:member:create']"
+            >{{$t('member.create')}}</el-button>
             <el-button
               type="primary"
+              class="cat2bug-btn-outline"
               style="float: right;"
               plain
               icon="el-icon-plus"
               size="small"
-              @click="createMemberHandle"
-              v-hasPermi="['system:team:member:create']"
-            >{{$t('member.create')}}</el-button>
+              @click="inviteMemberHandle"
+              v-hasPermi="['system:team:member:invite']"
+            >{{$t('team.invite-members')}}</el-button>
           </el-col>
         </el-row>
 

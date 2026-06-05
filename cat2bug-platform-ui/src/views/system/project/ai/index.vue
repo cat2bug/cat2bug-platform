@@ -83,6 +83,7 @@ import {
   downloadModel,
   delModel,
   defaultListAiModelList,
+  projectAiModelOptions,
 } from "@/api/system/ai";
 const AI_MODEL_SEARCH_LIST = 'ai_model_search_list';
 const AI_MODEL_PULL_CACHE = 'ai_model_pull_cache';
@@ -172,8 +173,10 @@ export default {
     }
   },
   created() {
-    this.getDefaultList();
-    this.getList();
+    this.ensureOllamaEnabled().then(() => {
+      this.getDefaultList();
+      this.getList();
+    });
   },
   mounted() {
     // 订阅WebSocket下载模型消息
@@ -216,6 +219,30 @@ export default {
     this.topicId = null;
   },
   methods: {
+    /** 未启用 Ollama 时不允许访问本页 */
+    ensureOllamaEnabled() {
+      const projectId = this.getProjectId();
+      if (!projectId) {
+        this.redirectWhenOllamaDisabled();
+        return Promise.reject(new Error('ollama-disabled'));
+      }
+      return projectAiModelOptions(projectId).then(res => {
+        const data = res.data || {};
+        if (data.aiEnabled !== true) {
+          this.redirectWhenOllamaDisabled();
+          return Promise.reject(new Error('ollama-disabled'));
+        }
+      }).catch(err => {
+        if (!(err && err.message === 'ollama-disabled')) {
+          this.redirectWhenOllamaDisabled();
+        }
+        return Promise.reject(err);
+      });
+    },
+    redirectWhenOllamaDisabled() {
+      this.$message.warning(this.$t('project.ai-ollama-unavailable'));
+      this.$router.replace({ path: '/project/option' });
+    },
     /** 文件空间单位计算函数 */
     fileSizeUnit,
     /** 获取当前项目ID */

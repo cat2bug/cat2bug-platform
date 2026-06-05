@@ -1192,6 +1192,10 @@ export default {
   }
   ::v-deep .el-dropdown__caret-button::before {
       background-color: #a3d3ff;
+
+      @at-root html.dark & {
+        background-color: #141414 !important;
+      }
   }
 }
 .defect-add-dropdown-menu {

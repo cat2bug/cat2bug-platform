@@ -945,3 +945,43 @@ img.cat2bug-image-error__img {
     }
   }
 }
+
+/* 列表页「新建/添加」等 primary plain 按钮：白底蓝字改为蓝底白字（仅浅色主题） */
+html:not(.dark) .el-button--primary.is-plain:not(.cat2bug-btn-outline) {
+  background-color: #409EFF !important;
+  border-color: #409EFF !important;
+  color: #ffffff !important;
+
+  &:hover,
+  &:focus {
+    background-color: #66b1ff !important;
+    border-color: #66b1ff !important;
+    color: #ffffff !important;
+  }
+
+  &:active {
+    background-color: #3a8ee6 !important;
+    border-color: #3a8ee6 !important;
+    color: #ffffff !important;
+  }
+}
+
+/* 保持 Element 默认朴素 primary 样式（如「邀请成员」） */
+html:not(.dark) .el-button--primary.is-plain.cat2bug-btn-outline {
+  background-color: #ecf5ff !important;
+  border-color: #b3d8ff !important;
+  color: #409EFF !important;
+
+  &:hover,
+  &:focus {
+    background-color: #409EFF !important;
+    border-color: #409EFF !important;
+    color: #ffffff !important;
+  }
+
+  &:active {
+    background-color: #3a8ee6 !important;
+    border-color: #3a8ee6 !important;
+    color: #ffffff !important;
+  }
+}

@@ -12,7 +12,7 @@
     </div>
     <div class="template-list">
       <div v-for="(t,index) in templateList" class="template-list-item" :key="index" @click="createReportHandle(t)">
-        <el-image :src="iconUrl(t)" />
+        <el-image fit="contain" :src="iconUrl(t)" />
         <span>{{t.templateTitle}}</span>
         <div class="menu">
           <el-button type="text" size="mini" @click="copyReportTemplate($event,t)">

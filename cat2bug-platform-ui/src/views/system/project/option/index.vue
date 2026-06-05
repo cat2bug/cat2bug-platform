@@ -88,13 +88,16 @@ export default {
       }
     }
     i, .svg-icon {
-      color: #409EFF;
+      color: var(--cat2bug-option-card-icon-color, #409EFF);
+      fill: currentColor;
       margin-right: 10px;
       margin-top: 3px;
-      
-      @at-root html.dark & {
-        color: #FFC107 !important;
-      }
+      flex-shrink: 0;
+    }
+    .svg-icon {
+      font-size: 16px;
+      width: 1em;
+      height: 1em;
     }
   }
   ::v-deep .el-card__body {
