@@ -146,6 +146,28 @@
 <script>
 import { listAccount, getAccount, delAccount, addAccount, updateAccount, testAccount } from "@/api/ai/AIAccount";
 
+function validateAiUrl(rule, value, callback) {
+  if (value === null || value === undefined || String(value).trim() === "") {
+    callback();
+    return;
+  }
+  const text = String(value).trim();
+  try {
+    const parsed = new URL(text);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      callback(new Error("AI服务网址须以 http:// 或 https:// 开头"));
+      return;
+    }
+    if (!parsed.host) {
+      callback(new Error("AI服务网址格式不正确"));
+      return;
+    }
+    callback();
+  } catch (e) {
+    callback(new Error("AI服务网址格式不正确，请输入有效的 URL"));
+  }
+}
+
 export default {
   name: "Account",
   data() {
@@ -181,7 +203,8 @@ export default {
       // 表单校验
       rules: {
         aiUrl: [
-          { required: true, message: "AI服务网址不能为空", trigger: "blur" }
+          { required: true, message: "AI服务网址不能为空", trigger: "blur" },
+          { validator: validateAiUrl, trigger: "blur" }
         ],
         modelName: [
           { required: true, message: "模型名称不能为空", trigger: "blur" }
@@ -231,7 +254,7 @@ export default {
         accountId: null,
         aiUrl: null,
         modelName: null,
-        maxCompletionTokens: null,
+        maxCompletionTokens: 65536,
         apiKey: null,
         createBy: null,
         projectId: null,

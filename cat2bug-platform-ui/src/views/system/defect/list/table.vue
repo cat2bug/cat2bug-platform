@@ -63,8 +63,8 @@
           :columns="resolvedDefectTableColumns"
           :data="defectList"
           :loading="loading"
+          :operate-column-max-width="250"
           :table-max-height="defectTableBodyMaxHeight"
-          :operate-column-auto-width="false"
           v-resize="setDragComponentSize"
           @sort-change="sortChangeHandle"
           @columns-change="onTableColumnsChange">
@@ -147,13 +147,11 @@
             <el-table-column
               :label="$t('operate')"
               align="left"
-              :width="DEFECT_OPERATE_COLUMN_WIDTH"
-              :min-width="DEFECT_OPERATE_COLUMN_WIDTH"
-              class-name="no-drag cat2bug-operate-column defect-operate-column-fixed"
+              class-name="no-drag cat2bug-operate-column"
               fixed="right">
               <template slot-scope="scope">
                 <div class="defect-operate-cell cat2bug-operate-tools">
-                  <defect-tools class="defect-row-tools" :is-text="true" :defect="scope.row" size="mini" :is-show-icon="true" @view="handleClickTableRow" @delete="refreshSearch" @restore="refreshSearch" @update="refreshSearch" @log="refreshSearch"></defect-tools>
+                  <defect-tools class="defect-row-tools" :is-text="true" :compact="true" :defect="scope.row" size="mini" :is-show-icon="true" @view="handleClickTableRow" @delete="refreshSearch" @restore="refreshSearch" @update="refreshSearch" @log="refreshSearch"></defect-tools>
                   <focus-member-list
                     v-show="scope.row.focusList && scope.row.focusList.length>0"
                     v-model="scope.row.focusList"
@@ -216,7 +214,6 @@ import multipaneTreeTableHeightSync from "@/mixins/multipaneTreeTableHeightSync"
 const DEFECT_TREE_MODULE_WIDTH_CACHE_KEY = "defect_tree_module_width";
 /** 缺陷列表左侧交付物树是否展开（本地缓存） */
 const DEFECT_TREE_MODULE_VISIBLE_CACHE_KEY = "defect_tree_module_visible";
-const DEFECT_OPERATE_COLUMN_WIDTH = 450;
 
 export default {
   name: "DefectTable",
@@ -258,7 +255,6 @@ export default {
   },
   data() {
     return {
-      DEFECT_OPERATE_COLUMN_WIDTH,
       mouseFlag: false,
       mouseOffset: 0,
       mouseClickTime: 0,
@@ -949,40 +945,65 @@ export default {
   margin-left: 0;
 }
 
-/* 操作列固定 450px：覆盖全局 max-content / nowrap，按钮在列内换行 */
-.defect-table-root ::v-deep th.defect-operate-column-fixed,
-.defect-table-root ::v-deep td.defect-operate-column-fixed {
-  width: 450px !important;
-  min-width: 450px !important;
-  max-width: 450px !important;
-  overflow: hidden;
+/* 操作列：未超 450px 单行自适应，超出后换行（由 Cat2BugTable data-operate-at-cap 控制） */
+.defect-table-root ::v-deep .cat2-bug-table-wrap:not([data-operate-at-cap='true']) td.cat2bug-operate-column .cell {
   box-sizing: border-box;
+  overflow: hidden;
+  flex-wrap: nowrap;
+  white-space: nowrap;
 }
 
-.defect-table-root ::v-deep td.defect-operate-column-fixed .cell,
-.defect-table-root ::v-deep th.defect-operate-column-fixed .cell {
-  width: 450px !important;
-  max-width: 450px !important;
+.defect-table-root ::v-deep th.cat2bug-operate-column .cell {
   box-sizing: border-box;
-  overflow: hidden;
+  overflow: visible !important;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  width: 100%;
+  max-width: 100%;
+  color: var(--table-header-color, inherit);
+}
+
+.defect-table-root ::v-deep .cat2-bug-table-wrap[data-operate-at-cap='true'] td.cat2bug-operate-column .cell {
   flex-wrap: wrap;
+  align-items: flex-start;
   align-content: flex-start;
   white-space: normal;
+  overflow: visible !important;
 }
 
-.defect-table-root ::v-deep td.defect-operate-column-fixed .defect-operate-cell,
-.defect-table-root ::v-deep td.defect-operate-column-fixed .cat2bug-operate-tools,
-.defect-table-root ::v-deep td.defect-operate-column-fixed .defect-tools {
+.defect-table-root ::v-deep .cat2-bug-table-wrap:not([data-operate-at-cap='true']) td.cat2bug-operate-column .defect-operate-cell,
+.defect-table-root ::v-deep .cat2-bug-table-wrap:not([data-operate-at-cap='true']) td.cat2bug-operate-column .cat2bug-operate-tools,
+.defect-table-root ::v-deep .cat2-bug-table-wrap:not([data-operate-at-cap='true']) td.cat2bug-operate-column .defect-tools,
+.defect-table-root ::v-deep .cat2-bug-table-wrap:not([data-operate-at-cap='true']) td.cat2bug-operate-column .defect-tools__bar {
+  width: auto !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  display: inline-flex;
+  flex-direction: row;
+  flex-wrap: nowrap !important;
+  align-items: center;
+  white-space: nowrap !important;
+  box-sizing: border-box;
+}
+
+.defect-table-root ::v-deep .cat2-bug-table-wrap[data-operate-at-cap='true'] td.cat2bug-operate-column .defect-operate-cell,
+.defect-table-root ::v-deep .cat2-bug-table-wrap[data-operate-at-cap='true'] td.cat2bug-operate-column .cat2bug-operate-tools,
+.defect-table-root ::v-deep .cat2-bug-table-wrap[data-operate-at-cap='true'] td.cat2bug-operate-column .defect-tools,
+.defect-table-root ::v-deep .cat2-bug-table-wrap[data-operate-at-cap='true'] td.cat2bug-operate-column .defect-tools__bar {
   width: 100% !important;
   max-width: 100% !important;
   min-width: 0 !important;
+  display: inline-flex;
+  flex-direction: row;
   flex-wrap: wrap !important;
+  align-items: center;
   white-space: normal !important;
   box-sizing: border-box;
 }
 
-.defect-table-root ::v-deep td.defect-operate-column-fixed .defect-tools > * {
-  flex-shrink: 1;
+.defect-table-root ::v-deep td.cat2bug-operate-column .defect-tools__bar > *,
+.defect-table-root ::v-deep td.cat2bug-operate-column .defect-tools > * {
+  flex-shrink: 0;
 }
 
 .annex-list {

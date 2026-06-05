@@ -2,7 +2,6 @@ import router from './router'
 import store from './store'
 import { Message } from 'element-ui'
 import NProgress from 'nprogress'
-import 'nprogress/nprogress.css'
 import { getToken } from '@/utils/auth'
 import { isRelogin } from '@/utils/request'
 import { isLockTeamPath } from '@/utils/team'
@@ -14,6 +13,30 @@ import { getCodeImg } from '@/api/login'
 import i18n from '@/utils/i18n/i18n'
 
 NProgress.configure({ showSpinner: false })
+
+const PAGE_PROGRESS_COLOR = '#409eff'
+
+function paintNProgressBar() {
+  const root = document.documentElement
+  const color = getComputedStyle(root).getPropertyValue('--page-progress-color').trim() || PAGE_PROGRESS_COLOR
+  const bar = document.querySelector('#nprogress .bar')
+  if (bar) {
+    bar.style.setProperty('background', color, 'important')
+  }
+  const peg = document.querySelector('#nprogress .peg')
+  if (peg) {
+    peg.style.setProperty('box-shadow', `0 0 10px ${color}, 0 0 5px ${color}`, 'important')
+  }
+}
+
+;['start', 'set', 'inc'].forEach((method) => {
+  const original = NProgress[method].bind(NProgress)
+  NProgress[method] = function (...args) {
+    const result = original(...args)
+    requestAnimationFrame(paintNProgressBar)
+    return result
+  }
+})
 
 const whiteList = ['/login', '/register', '/tools/browser', '/shard/defect', '/setup', '/upgrade']
 

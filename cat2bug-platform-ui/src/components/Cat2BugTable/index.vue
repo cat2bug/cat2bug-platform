@@ -65,7 +65,7 @@ const DEFAULT_COLUMN_WIDTH = 180;
 const OPERATE_COLUMN_CLASS = 'cat2bug-operate-column';
 /** 操作列内容容器 class，用于测量与换行；无此 class 时回退测量 .cell 内可见子节点 */
 const OPERATE_TOOLS_CLASS = 'cat2bug-operate-tools';
-const DEFAULT_OPERATE_COLUMN_MAX_WIDTH = 960;
+const DEFAULT_OPERATE_COLUMN_MAX_WIDTH = 450;
 const DEFAULT_OPERATE_COLUMN_MIN_WIDTH = 88;
 const DEFAULT_OPERATE_COLUMN_HEADER_MIN = 56;
 /** 操作列 .cell 左右内边距（单侧 px，列宽计算时按两侧合计） */
@@ -90,6 +90,8 @@ export default {
       _customXBoundBody: null,
       _doLayoutTimer: null,
       _rowSyncRafId: null,
+      _lastOperateWidth: null,
+      _operateColRo: null,
     }
   },
   props: {
@@ -227,11 +229,14 @@ export default {
     this.initSort();
     this.initColumnDrag();
     this.$nextTick(() => {
+      this.patchTableDoLayout();
+      this.setupOperateColumnResizeGuard();
       this.setupCustomHorizontalScrollbar();
       this.scheduleDoLayout();
     });
   },
   beforeDestroy() {
+    this.teardownOperateColumnResizeGuard();
     if (this._doLayoutTimer) {
       clearTimeout(this._doLayoutTimer);
       this._doLayoutTimer = null;
@@ -793,7 +798,7 @@ export default {
         this.headerSortable[zone] = Sortable.create(el, {
           ghostClass: 'table-header-ghost',
           group: zone,
-          filter: 'th.gutter, .el-table__gutter',
+          filter: 'th.gutter, .el-table__gutter, .no-drag, .cat2bug-operate-column',
           preventOnFilter: false,
           onStart: () => {
             this.mouseFlag = false;
@@ -878,6 +883,43 @@ export default {
         });
       });
     },
+    /** 拦截 el-table.doLayout，防止布局重算后操作列被内容再次撑开 */
+    patchTableDoLayout() {
+      const t = this.$refs.elTable;
+      if (!t || t.__cat2bugOperatePatch) return;
+      const orig = t.doLayout;
+      t.doLayout = (...args) => {
+        orig.apply(t, args);
+        if (this._lastOperateWidth != null) {
+          this.applyOperateColumnDomWidth(this._lastOperateWidth);
+        }
+      };
+      t.__cat2bugOperatePatch = true;
+    },
+    setupOperateColumnResizeGuard() {
+      if (typeof ResizeObserver === 'undefined' || !this.$refs.elTable) return;
+      this.teardownOperateColumnResizeGuard();
+      const root = this.$refs.elTable.$el;
+      if (!root) return;
+      const cap = this.operateColumnMaxWidth;
+      this._operateColRo = new ResizeObserver(() => {
+        const fixedRight = root.querySelector('.el-table__fixed-right');
+        if (!fixedRight) return;
+        const w = fixedRight.getBoundingClientRect().width;
+        if (w > cap + 0.5) {
+          this.syncOperateColumnWidths();
+        }
+      });
+      this._operateColRo.observe(root);
+      const fixedRight = root.querySelector('.el-table__fixed-right');
+      if (fixedRight) this._operateColRo.observe(fixedRight);
+    },
+    teardownOperateColumnResizeGuard() {
+      if (this._operateColRo) {
+        this._operateColRo.disconnect();
+        this._operateColRo = null;
+      }
+    },
     resolveOperateColumnClassName(col) {
       if (!col) return '';
       return col.className
@@ -900,40 +942,273 @@ export default {
     applyOperateColumnDomWidth(widthPx) {
       const t = this.$refs.elTable;
       if (!t || !t.$el || widthPx == null) return;
-      const cap = `${widthPx}px`;
+      const capPx = Math.min(
+        this.operateColumnMaxWidth,
+        Math.max(0, Math.ceil(Number(widthPx) || 0))
+      );
+      const cap = `${capPx}px`;
       t.$el.querySelectorAll(`th.${OPERATE_COLUMN_CLASS}, td.${OPERATE_COLUMN_CLASS}`).forEach((el) => {
         el.style.setProperty('width', cap, 'important');
         el.style.setProperty('max-width', cap, 'important');
         el.style.setProperty('min-width', '0', 'important');
-        el.style.setProperty('overflow', 'hidden', 'important');
+        if (el.tagName === 'TH') {
+          el.style.setProperty('overflow', 'visible', 'important');
+        } else {
+          el.style.setProperty('overflow', 'hidden', 'important');
+        }
       });
+      const operateCols = this.getOperateColumns();
+      operateCols.forEach((col) => {
+        if (col && col.id) {
+          t.$el.querySelectorAll(`col[name="${col.id}"]`).forEach((colEl) => {
+            colEl.setAttribute('width', String(capPx));
+            colEl.style.setProperty('width', cap, 'important');
+          });
+        }
+      });
+      const fixedRight = t.$el.querySelector('.el-table__fixed-right');
+      if (fixedRight && operateCols.length) {
+        fixedRight.style.setProperty('width', cap, 'important');
+        fixedRight.style.setProperty('max-width', cap, 'important');
+        fixedRight.querySelectorAll('table').forEach((tableEl) => {
+          tableEl.style.setProperty('width', cap, 'important');
+          tableEl.style.setProperty('max-width', cap, 'important');
+        });
+        fixedRight.querySelectorAll('colgroup col').forEach((colEl) => {
+          colEl.setAttribute('width', String(capPx));
+          colEl.style.setProperty('width', cap, 'important');
+          colEl.style.setProperty('max-width', cap, 'important');
+        });
+      }
       const patch = t.$el.querySelector('.el-table__fixed-right-patch');
       if (patch) {
-        patch.style.setProperty('max-width', cap, 'important');
+        const gutter = Math.ceil((t.layout && t.layout.gutterWidth) || 17);
+        const gutterCap = `${gutter}px`;
+        patch.style.setProperty('width', gutterCap, 'important');
+        patch.style.setProperty('max-width', gutterCap, 'important');
+        patch.style.setProperty('min-width', gutterCap, 'important');
+      }
+      t.$el.querySelectorAll('colgroup col').forEach((colEl) => {
+        const name = colEl.getAttribute('name');
+        if (!name) return;
+        const matched = operateCols.some((col) => col && col.id === name);
+        if (matched) {
+          colEl.setAttribute('width', String(capPx));
+          colEl.style.setProperty('width', cap, 'important');
+          colEl.style.setProperty('max-width', cap, 'important');
+        }
+      });
+      if (this.$el) {
+        this.$el.style.setProperty('--cat2bug-operate-col-applied-width', cap);
       }
     },
-    /** 累加容器内可见子节点宽度（勿用容器 scrollWidth，会被单元格撑满） */
-    measureOperateContentWidth(container) {
+    /** 测量表头文字固有宽度（勿用 .cell 的 getBoundingClientRect，避免已被撑开的列宽反馈放大） */
+    measureOperateHeaderContentWidth(headerCell) {
+      if (!headerCell) return this.operateColumnHeaderMin;
+      const label = (headerCell.textContent || '').replace(/\s+/g, ' ').trim();
+      if (!label || label.length > 32) return this.operateColumnHeaderMin;
+      const probe = document.createElement('span');
+      probe.textContent = label;
+      probe.style.cssText = 'position:absolute;left:-9999px;top:-9999px;visibility:hidden;white-space:nowrap;padding:0;margin:0;border:0;';
+      const cs = window.getComputedStyle(headerCell);
+      probe.style.font = cs.font || `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+      document.body.appendChild(probe);
+      const width = Math.ceil(probe.getBoundingClientRect().width);
+      document.body.removeChild(probe);
+      return Math.max(this.operateColumnHeaderMin, width);
+    },
+    isVisibleOperateNode(node) {
+      if (!(node instanceof HTMLElement)) return false;
+      const st = window.getComputedStyle(node);
+      if (st.display === 'none' || st.visibility === 'hidden') return false;
+      return node.offsetWidth > 0 || node.offsetHeight > 0 || node.getClientRects().length > 0;
+    },
+    resolveOperateMeasureNode(node) {
+      if (!(node instanceof HTMLElement)) return null;
+      const popover = node.classList.contains('el-popover')
+        ? node
+        : node.querySelector('.el-popover');
+      if (popover) {
+        return popover.querySelector('.el-popover__reference')
+          || popover.querySelector('svg-icon.button')
+          || popover.querySelector('svg-icon')
+          || popover.querySelector('.button')
+          || null;
+      }
+      if (node.querySelector('.el-dialog__wrapper, .shard-context, [role="tooltip"]')) {
+        return null;
+      }
+      return node;
+    },
+    measureNodeNaturalWidth(node) {
+      if (!node) return 0;
+      if (!(node instanceof HTMLElement)) return 0;
+      const target = this.resolveOperateMeasureNode(node) || node;
+      const clone = target.cloneNode(true);
+      clone.style.cssText = 'position:fixed;left:-9999px;top:-9999px;visibility:hidden;white-space:nowrap;pointer-events:none;margin:0;';
+      document.body.appendChild(clone);
+      const width = Math.ceil(clone.getBoundingClientRect().width || clone.scrollWidth || 0);
+      document.body.removeChild(clone);
+      if (width > 0) return width;
+      const rect = target.getBoundingClientRect().width;
+      const scroll = target.scrollWidth || 0;
+      return Math.ceil(Math.max(rect, scroll));
+    },
+    measureOperateFlexRowNaturalWidth(root) {
+      if (!root) return 0;
+      const clone = root.cloneNode(true);
+      clone.querySelectorAll(
+        '.defect-tools__dialogs, .el-dialog__wrapper, [role="tooltip"][aria-hidden="true"]'
+      ).forEach((el) => el.remove());
+      const cs = window.getComputedStyle(root);
+      clone.style.cssText = [
+        'position:fixed',
+        'left:-9999px',
+        'top:0',
+        'visibility:hidden',
+        'pointer-events:none',
+        'margin:0',
+        'white-space:nowrap',
+        'display:inline-flex',
+        'flex-wrap:nowrap',
+        'align-items:center',
+        `column-gap:${cs.columnGap && cs.columnGap !== 'normal' ? cs.columnGap : '10px'}`,
+        'width:auto',
+        'max-width:none',
+        'min-width:0',
+      ].join(';');
+      clone.querySelectorAll('*').forEach((node) => {
+        if (!(node instanceof HTMLElement)) return;
+        node.style.maxWidth = 'none';
+        node.style.width = 'auto';
+        node.style.minWidth = '0';
+        node.style.flex = '0 0 auto';
+      });
+      document.body.appendChild(clone);
+      const width = Math.ceil(clone.getBoundingClientRect().width || clone.scrollWidth || 0);
+      document.body.removeChild(clone);
+      return width;
+    },
+    measureOperateRowInnerWidth(container) {
       if (!container) return 0;
       const inner = container.classList.contains(OPERATE_TOOLS_CLASS)
         ? container
         : container.querySelector(`.${OPERATE_TOOLS_CLASS}`) || container;
-      const gapCss = window.getComputedStyle(inner).columnGap;
-      const gap = gapCss && gapCss !== 'normal' ? parseFloat(gapCss) || 10 : 10;
-      const visible = Array.from(inner.children).filter((node) => {
-        if (!(node instanceof HTMLElement)) return false;
-        if (node.offsetWidth <= 0) return false;
-        const st = window.getComputedStyle(node);
-        return st.display !== "none" && st.visibility !== "hidden";
-      });
-      if (!visible.length) return 0;
+      const toolsRoot = inner.querySelector('.defect-tools__bar')
+        || inner.querySelector('.defect-tools')
+        || inner;
+      const gapCss = window.getComputedStyle(toolsRoot);
+      const gap = gapCss.columnGap && gapCss.columnGap !== 'normal' ? parseFloat(gapCss.columnGap) || 10 : 10;
+
       let total = 0;
+      const bar = inner.querySelector('.defect-tools__bar');
+      if (bar) {
+        total = this.measureOperateFlexRowNaturalWidth(bar);
+      } else {
+        total = this.measureOperateFlexRowNaturalWidth(toolsRoot);
+      }
+
+      const focus = inner.querySelector('.focus-member-list');
+      if (focus && this.isVisibleOperateNode(focus)) {
+        if (total > 0) total += gap;
+        total += this.measureNodeNaturalWidth(focus);
+      }
+
+      if (total > 0) return Math.ceil(total);
+
+      const visible = this.collectOperateMeasureNodes(container);
+      if (!visible.length) return 0;
+      total = 0;
       visible.forEach((node, index) => {
         if (index > 0) total += gap;
-        total += node.getBoundingClientRect().width;
+        total += this.measureNodeNaturalWidth(node);
       });
+      return Math.ceil(total);
+    },
+    /** 布局后检测操作列是否发生裁切或单行超宽，必要时强制换行 */
+    enforceOperateColumnWrapIfOverflow() {
+      const t = this.$refs.elTable;
+      if (!t || !t.$el || !this.$el) return false;
+
+      const cap = this.operateColumnMaxWidth;
+      const fixedCells = t.$el.querySelectorAll(`.el-table__fixed-right td.${OPERATE_COLUMN_CLASS} .cell`);
+      const cells = fixedCells.length
+        ? fixedCells
+        : t.$el.querySelectorAll(`td.${OPERATE_COLUMN_CLASS}:not(.is-hidden) .cell`);
+      let overflow = false;
+      let needsCap = false;
+      cells.forEach((cell) => {
+        const inner = cell.querySelector(`.${OPERATE_TOOLS_CLASS}`) || cell;
+        if (inner.scrollWidth > cell.clientWidth + 1) {
+          overflow = true;
+        }
+        const natural = this.measureOperateRowInnerWidth(cell);
+        if (Math.ceil(natural + this.operateColumnPaddingX * 2) > cap) {
+          needsCap = true;
+        }
+      });
+
+      if ((!overflow && !needsCap) || this.$el.getAttribute('data-operate-at-cap') === 'true') {
+        return false;
+      }
+
+      this.$el.setAttribute('data-operate-at-cap', 'true');
+      const operateCols = this.getOperateColumns();
+      operateCols.forEach((col) => {
+        col.width = cap;
+        col.minWidth = this.operateColumnMinWidth;
+        col.realWidth = cap;
+      });
+      this._lastOperateWidth = cap;
+      this.applyOperateColumnDomWidth(cap);
+      this.syncFixedDataRowHeights();
+      return true;
+    },
+    /** 累加容器内可见子节点宽度（勿用容器 scrollWidth，会被单元格撑满） */
+    measureOperateContentWidth(container) {
       const innerMax = Math.max(0, this.operateColumnMaxWidth - this.operateColumnPaddingX * 2);
-      return Math.min(innerMax, Math.ceil(total));
+      return Math.min(innerMax, this.measureOperateRowInnerWidth(container));
+    },
+    /** 收集操作列内用于测宽的可见节点（排除 DefectTools 内挂载的对话框等不可见大块节点） */
+    collectOperateMeasureNodes(container) {
+      if (!container) return [];
+      const inner = container.classList.contains(OPERATE_TOOLS_CLASS)
+        ? container
+        : container.querySelector(`.${OPERATE_TOOLS_CLASS}`) || container;
+      const toolSelector = '.el-button, .el-dropdown, .el-link, .share-card, .star-switch, .start-switch, .focus-member-list, .el-popover';
+      const defectTools = inner.querySelector('.defect-tools__bar') || inner.querySelector('.defect-tools');
+      if (defectTools) {
+        const directNodes = [];
+        Array.from(defectTools.children).forEach((node) => {
+          if (!(node instanceof HTMLElement)) return;
+          if (node.classList.contains('el-dialog__wrapper')) return;
+          const measureNode = this.resolveOperateMeasureNode(node);
+          if (measureNode && this.isVisibleOperateNode(measureNode)) {
+            directNodes.push(measureNode);
+          }
+        });
+        if (directNodes.length) return directNodes;
+
+        const toolNodes = Array.from(defectTools.querySelectorAll(toolSelector)).filter((node) =>
+          this.isVisibleOperateNode(node)
+        );
+        if (toolNodes.length) return toolNodes;
+      }
+
+      const innerTools = Array.from(inner.querySelectorAll(toolSelector)).filter((node) =>
+        this.isVisibleOperateNode(node)
+      );
+      if (innerTools.length) return innerTools;
+
+      const nodes = [];
+      Array.from(inner.children).forEach((node) => {
+        if (this.isVisibleOperateNode(node)) nodes.push(node);
+      });
+      if (nodes.length) return nodes;
+
+      return Array.from(container.querySelectorAll(toolSelector)).filter((node) =>
+        this.isVisibleOperateNode(node)
+      );
     },
     /** 按当前页各行操作内容同步 append 操作列宽度（列宽全表统一，不超过 operateColumnMaxWidth） */
     syncOperateColumnWidths() {
@@ -946,47 +1221,53 @@ export default {
       }
 
       const operateCols = this.getOperateColumns();
-      const cells = t.$el.querySelectorAll(`td.${OPERATE_COLUMN_CLASS} .cell`);
-      let maxContent = 0;
+      if (!operateCols.length) return;
+
+      const fixedCells = t.$el.querySelectorAll(`.el-table__fixed-right td.${OPERATE_COLUMN_CLASS} .cell`);
+      const cells = fixedCells.length
+        ? fixedCells
+        : t.$el.querySelectorAll(`td.${OPERATE_COLUMN_CLASS}:not(.is-hidden) .cell`);
+      const innerMax = Math.max(0, cap - this.operateColumnPaddingX * 2);
+      let maxSingleRowInner = 0;
       cells.forEach((cell) => {
-        maxContent = Math.max(maxContent, this.measureOperateContentWidth(cell));
+        maxSingleRowInner = Math.max(maxSingleRowInner, this.measureOperateRowInnerWidth(cell));
       });
 
-      const operateHeader = t.$el.querySelector(`th.${OPERATE_COLUMN_CLASS} .cell`);
-      if (operateHeader) {
-        maxContent = Math.max(maxContent, Math.ceil(operateHeader.getBoundingClientRect().width));
-      }
-
-      const next = Math.min(
-        cap,
-        Math.max(
-          this.operateColumnHeaderMin,
-          this.operateColumnMinWidth,
-          Math.ceil(maxContent + this.operateColumnPaddingX * 2)
-        )
+      const operateHeader = t.$el.querySelector(
+        `.el-table__fixed-right th.${OPERATE_COLUMN_CLASS} .cell, th.${OPERATE_COLUMN_CLASS}:not(.is-hidden) .cell`
       );
+      const headerContentW = operateHeader
+        ? this.measureOperateHeaderContentWidth(operateHeader)
+        : this.operateColumnHeaderMin;
 
-      let changed = false;
-      operateCols.forEach((col) => {
-        const floor = this.operateColumnMinWidth;
-        if (col.width !== next || col.minWidth !== floor || col.realWidth !== next) {
-          col.width = next;
-          col.minWidth = floor;
-          col.realWidth = next;
-          changed = true;
-        }
-      });
-
-      this.applyOperateColumnDomWidth(next);
-
-      if (!changed && operateCols.length) {
-        return;
+      const contentWithPad = Math.ceil(
+        Math.max(maxSingleRowInner, headerContentW) + this.operateColumnPaddingX * 2
+      );
+      const atCap = contentWithPad > cap;
+      if (this.$el) {
+        this.$el.setAttribute('data-operate-at-cap', atCap ? 'true' : 'false');
       }
 
-      t.doLayout();
+      const next = atCap
+        ? cap
+        : Math.max(this.operateColumnMinWidth, Math.min(cap, contentWithPad));
+
+      const floor = this.operateColumnMinWidth;
+      operateCols.forEach((col) => {
+        col.width = next;
+        col.minWidth = floor;
+        col.realWidth = next;
+      });
+
+      this._lastOperateWidth = next;
+      this.applyOperateColumnDomWidth(next);
       this.$nextTick(() => {
         requestAnimationFrame(() => {
           this.applyOperateColumnDomWidth(next);
+          if (this.enforceOperateColumnWrapIfOverflow()) {
+            this.updateCustomHorizontalScrollbar();
+            return;
+          }
           this.syncFixedDataRowHeights();
           this.updateCustomHorizontalScrollbar();
         });
@@ -1040,10 +1321,41 @@ export default {
 <style lang="scss" scoped>
 .cat2-bug-table-wrap {
   position: relative;
+  --cat2bug-operate-col-applied-width: 450px;
 
   /* 覆盖 Element UI 默认 .el-table { background: #FFF } / .el-table tr { background: #FFF } */
   ::v-deep .el-table {
     background-color: var(--table-bg) !important;
+  }
+
+  ::v-deep .el-table__fixed-right {
+    max-width: var(--cat2bug-operate-col-max-width, 450px) !important;
+    width: var(--cat2bug-operate-col-applied-width, 450px) !important;
+    box-sizing: border-box;
+    z-index: 31 !important;
+  }
+
+  /* 滚动条垫片：仅 gutter 宽，禁止与操作列同宽（否则会盖住「操作」表头） */
+  ::v-deep .el-table__fixed-right-patch {
+    width: auto !important;
+    max-width: 20px !important;
+    min-width: 0 !important;
+    z-index: 29 !important;
+    box-sizing: border-box;
+    pointer-events: none;
+  }
+
+  ::v-deep th.cat2bug-operate-column,
+  ::v-deep td.cat2bug-operate-column {
+    max-width: var(--cat2bug-operate-col-max-width, 450px) !important;
+    width: var(--cat2bug-operate-col-applied-width, 450px) !important;
+    min-width: 0 !important;
+    box-sizing: border-box;
+  }
+
+  ::v-deep th.cat2bug-operate-column .cell {
+    overflow: visible !important;
+    color: var(--table-header-color, inherit);
   }
 
   ::v-deep .el-table__body-wrapper,
@@ -1061,6 +1373,7 @@ export default {
   ::v-deep .el-table__fixed-right thead tr > th.el-table__cell {
     background-color: var(--table-header-bg) !important;
     border-bottom: 1px solid var(--border-color-light) !important;
+    color: var(--table-header-color, inherit) !important;
   }
 
   /* 表体：非固定列与固定列分层（参考浅色：主体 table-bg，固定列 block 色） */
@@ -1193,23 +1506,53 @@ export default {
 /* append 操作列：class-name 含 cat2bug-operate-column，内容包在 cat2bug-operate-tools 内 */
 ::v-deep th.cat2bug-operate-column,
 ::v-deep td.cat2bug-operate-column {
-  max-width: var(--cat2bug-operate-col-max-width, 960px);
-  overflow: hidden;
+  width: var(--cat2bug-operate-col-applied-width, auto);
+  max-width: var(--cat2bug-operate-col-max-width, 450px);
   box-sizing: border-box;
 }
 
-::v-deep th.cat2bug-operate-column .cell,
+::v-deep th.cat2bug-operate-column {
+  overflow: visible;
+}
+
+::v-deep td.cat2bug-operate-column {
+  overflow: hidden;
+}
+
+::v-deep th.cat2bug-operate-column .cell {
+  overflow: visible;
+  text-align: left;
+  padding-left: var(--cat2bug-operate-col-padding-x, 20px);
+  padding-right: var(--cat2bug-operate-col-padding-x, 20px);
+  max-width: 100%;
+  box-sizing: border-box;
+  display: block;
+  white-space: nowrap;
+  text-overflow: clip;
+  color: var(--table-header-color, inherit);
+  position: relative;
+  z-index: 1;
+}
+
 ::v-deep td.cat2bug-operate-column .cell {
   overflow: hidden;
   text-align: left;
   padding-left: var(--cat2bug-operate-col-padding-x, 20px);
   padding-right: var(--cat2bug-operate-col-padding-x, 20px);
-  max-width: var(--cat2bug-operate-col-max-width, 960px);
+  max-width: var(--cat2bug-operate-col-max-width, 450px);
   box-sizing: border-box;
-  flex-wrap: wrap;
-  white-space: normal;
+  flex-wrap: nowrap;
+  white-space: nowrap;
   position: relative;
   z-index: 1;
+}
+
+.cat2-bug-table-wrap[data-operate-at-cap='true'] ::v-deep td.cat2bug-operate-column .cell {
+  flex-wrap: wrap;
+  align-items: flex-start;
+  align-content: flex-start;
+  white-space: normal;
+  overflow: visible !important;
 }
 
 ::v-deep td.cat2bug-operate-column .cat2bug-operate-tools,
@@ -1217,8 +1560,16 @@ export default {
   max-width: 100%;
   min-width: 0;
   width: auto;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  white-space: nowrap;
   box-sizing: border-box;
+}
+
+.cat2-bug-table-wrap[data-operate-at-cap='true'] ::v-deep td.cat2bug-operate-column .cat2bug-operate-tools,
+.cat2-bug-table-wrap[data-operate-at-cap='true'] ::v-deep td.cat2bug-operate-column .defect-operate-cell {
+  width: 100%;
+  flex-wrap: wrap;
+  white-space: normal;
 }
 
 ::v-deep .cat2bug-operate-tools {

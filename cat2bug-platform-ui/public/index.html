@@ -26,6 +26,12 @@
     </script>
     <!--[if lt IE 11]><script>window.location.href='/html/ie.html';</script><![endif]-->
 	  <style>
+    :root {
+      --page-progress-color: #409eff;
+      --page-progress-glow: rgba(64, 158, 255, 0.45);
+      --page-progress-gradient-start: #337ecc;
+    }
+
     html {
       background-color: #fafbfc;
       color-scheme: light;
@@ -33,6 +39,58 @@
     html.dark {
       background-color: #121214;
       color-scheme: dark;
+      --page-progress-color: #ffc107;
+      --page-progress-glow: rgba(255, 193, 7, 0.55);
+      --page-progress-gradient-start: #e6ac00;
+    }
+
+    /* 首屏加载顶部进度条（Vue 挂载前可见） */
+    #page-load-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      width: 0;
+      background: linear-gradient(90deg, var(--page-progress-gradient-start, #337ecc), var(--page-progress-color, #409eff));
+      z-index: 1000000;
+      box-shadow: 0 0 8px var(--page-progress-glow, rgba(64, 158, 255, 0.45));
+      animation: pageLoadProgress 2.4s ease-out forwards;
+    }
+
+    @keyframes pageLoadProgress {
+      0% { width: 0; }
+      70% { width: 82%; }
+      100% { width: 92%; }
+    }
+
+    #page-load-bar.is-done {
+      width: 100% !important;
+      opacity: 0;
+      transition: opacity 0.35s ease;
+    }
+
+    html.dark #loader {
+      border-top-color: #ffc107;
+    }
+
+    html.dark #loader:before {
+      border-top-color: #e6ac00;
+    }
+
+    html.dark #loader:after {
+      border-top-color: #ffdb4d;
+    }
+
+    html.dark #loader-wrapper .loader-section {
+      background: #121214;
+    }
+
+    html.dark #loader-wrapper .load_title {
+      color: #ffc107;
+    }
+
+    html.dark #loader-wrapper .load_title span {
+      color: rgba(255, 193, 7, 0.65);
     }
     html,
     body,
@@ -221,6 +279,7 @@
   </style>
   </head>
   <body>
+    <div id="page-load-bar" aria-hidden="true"></div>
     <div id="app">
 	    <div id="loader-wrapper">
 		    <div id="loader"></div>

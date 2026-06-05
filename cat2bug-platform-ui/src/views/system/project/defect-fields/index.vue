@@ -552,7 +552,10 @@ export default {
           })
           const operateHeader = table.$el.querySelector('th.cat2bug-operate-column .cell')
           const operateHeaderW = operateHeader ? measureEl(operateHeader) : 0
-          const nextOperate = Math.max(100, Math.ceil(Math.max(maxOperate, operateHeaderW) + paddingX))
+          const nextOperate = Math.min(
+            450,
+            Math.max(100, Math.ceil(Math.max(maxOperate, operateHeaderW) + paddingX))
+          )
           if (this.operateColumnWidth !== nextOperate) {
             this.operateColumnWidth = nextOperate
             changed = true

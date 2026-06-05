@@ -109,10 +109,20 @@ Vue.use(websocket, wsUrl, {
 
 Vue.config.productionTip = false
 
+function finishPageLoadBar() {
+  const bar = document.getElementById('page-load-bar')
+  if (!bar) return
+  bar.classList.add('is-done')
+  window.setTimeout(() => bar.remove(), 400)
+}
+
 new Vue({
   el: '#app',
   i18n,
   router,
   store,
+  mounted() {
+    finishPageLoadBar()
+  },
   render: h => h(App)
 })

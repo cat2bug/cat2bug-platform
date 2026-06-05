@@ -42,6 +42,11 @@
   --statistic-card-height: 115px;
   --statistic-life-card-height: var(--statistic-card-height);
 
+  /* 顶部路由/首屏进度条（浅色主题：Element 主色蓝） */
+  --page-progress-color: #409eff;
+  --page-progress-glow: rgba(64, 158, 255, 0.45);
+  --page-progress-gradient-start: #337ecc;
+
   /* el-progress 轨道 / 填充（浅色默认） */
   --progress-track-bg: #ebeef5;
   --progress-track-border: transparent;
@@ -63,6 +68,8 @@
   --cat2bug-table-pagination-gap-bottom: 10px;
   --cat2bug-table-pagination-gap-x: 20px;
   --defect-pagination-v-gap: var(--cat2bug-table-pagination-gap-top);
+  /* 全站表格操作列默认最大宽度 */
+  --cat2bug-operate-col-max-width: 450px;
 }
 
 /* ========== 全站圆角统一（输入框 / 选择框 / 按钮 / 表格 / 分页等） ========== */
@@ -209,50 +216,39 @@ img.cat2bug-image-error__img {
   background-color: var(--cat2bug-image-placeholder-bg) !important;
 }
 
-/* 缺陷列表操作列：按钮在前，关注头像 / 分享 / 收藏在后 */
+/* 缺陷列表操作列：默认单行；超出 450px 时由 data-operate-at-cap 触发换行 */
 .defect-operate-cell {
   display: inline-flex;
   flex-direction: row;
   flex-wrap: nowrap;
   align-items: center;
   column-gap: var(--cat2bug-operate-tools-gap, 10px);
+  row-gap: var(--cat2bug-operate-tools-row-gap, 0);
   white-space: nowrap;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
-/* 缺陷列表表格：操作列固定宽，允许换行（覆盖上方 nowrap / max-content） */
-.defect-table-root td.defect-operate-column-fixed .defect-operate-cell,
-.defect-table-root td.defect-operate-column-fixed .cat2bug-operate-tools,
-.defect-table-root td.defect-operate-column-fixed .defect-tools {
-  width: 100% !important;
+/* 缺陷列表表格：操作列最大 450px，范围内自适应 */
+.defect-table-root td.cat2bug-operate-column .defect-operate-cell,
+.defect-table-root td.cat2bug-operate-column .cat2bug-operate-tools,
+.defect-table-root td.cat2bug-operate-column .defect-tools {
   max-width: 100% !important;
   min-width: 0 !important;
+  display: inline-flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.defect-table-root .cat2-bug-table-wrap[data-operate-at-cap='true'] td.cat2bug-operate-column .defect-operate-cell,
+.defect-table-root .cat2-bug-table-wrap[data-operate-at-cap='true'] td.cat2bug-operate-column .cat2bug-operate-tools,
+.defect-table-root .cat2-bug-table-wrap[data-operate-at-cap='true'] td.cat2bug-operate-column .defect-tools {
+  width: 100% !important;
   flex-wrap: wrap !important;
   white-space: normal !important;
-  box-sizing: border-box;
-}
-
-.defect-table-root td.defect-operate-column-fixed .defect-tools {
-  width: 100% !important;
-  max-width: 100% !important;
-}
-
-.defect-table-root th.defect-operate-column-fixed,
-.defect-table-root td.defect-operate-column-fixed {
-  width: 450px !important;
-  min-width: 450px !important;
-  max-width: 450px !important;
-  overflow: hidden;
-  box-sizing: border-box;
-}
-
-.defect-table-root td.defect-operate-column-fixed .cell,
-.defect-table-root th.defect-operate-column-fixed .cell {
-  width: 450px !important;
-  max-width: 450px !important;
-  overflow: hidden;
-  flex-wrap: wrap;
-  white-space: normal;
-  box-sizing: border-box;
 }
 
 /* 列表底部分页容器：表格与分页、分页与页面底各 10px，内容右对齐 */
@@ -655,25 +651,151 @@ img.cat2bug-image-error__img {
   }
 }
 
-/* Cat2BugTable 内操作列受 operateColumnMaxWidth 约束，覆盖全局 max-content */
+/* 全站表格操作列：默认最大 450px，超出换行（未测量前先用 450px 封顶，避免被内容撑开） */
+.el-table th.cat2bug-operate-column {
+  width: var(--cat2bug-operate-col-applied-width, 450px) !important;
+  max-width: var(--cat2bug-operate-col-max-width, 450px) !important;
+  min-width: 0 !important;
+  overflow: visible;
+  box-sizing: border-box;
+}
+
+.el-table td.cat2bug-operate-column {
+  width: var(--cat2bug-operate-col-applied-width, 450px) !important;
+  max-width: var(--cat2bug-operate-col-max-width, 450px) !important;
+  min-width: 0 !important;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* 操作列：DefectTools 对话框层与分享 popover 不参与列宽 */
+td.cat2bug-operate-column .defect-tools__dialogs {
+  display: none !important;
+}
+
+td.cat2bug-operate-column .defect-tools__bar {
+  display: inline-flex !important;
+  flex-wrap: nowrap;
+  align-items: center;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  overflow: hidden;
+}
+
+td.cat2bug-operate-column .share-card-trigger,
+td.cat2bug-operate-column .share-card-popover .el-popover__reference-wrapper {
+  display: inline-flex !important;
+  align-items: center;
+  flex: 0 0 14px !important;
+  width: 14px !important;
+  max-width: 14px !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+  vertical-align: middle;
+}
+
+td.cat2bug-operate-column [role='tooltip'][aria-hidden='true'] {
+  display: none !important;
+}
+
+.cat2-bug-table-wrap .el-table__fixed-right {
+  max-width: var(--cat2bug-operate-col-max-width, 450px) !important;
+  width: var(--cat2bug-operate-col-applied-width, 450px) !important;
+  box-sizing: border-box;
+  z-index: 31 !important;
+}
+
+.cat2-bug-table-wrap .el-table__fixed-right-patch {
+  width: auto !important;
+  max-width: 20px !important;
+  min-width: 0 !important;
+  z-index: 29 !important;
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+/* legacy 操作列（非 Cat2BugTable）：保留列宽设定，仅限制最大 450px */
+.el-table th.small-padding.fixed-width,
+.el-table td.small-padding.fixed-width,
+.el-table th.small-padding:not(.fixed-width),
+.el-table td.small-padding:not(.fixed-width) {
+  max-width: var(--cat2bug-operate-col-max-width, 450px) !important;
+  min-width: 0 !important;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* Cat2BugTable 内操作列：未超宽单行，超宽才换行 */
 .cat2-bug-table-wrap .cat2bug-operate-tools,
-.cat2-bug-table-wrap .defect-operate-cell {
+.cat2-bug-table-wrap .defect-operate-cell,
+.cat2-bug-table-wrap .defect-tools {
   width: auto !important;
   max-width: 100% !important;
   min-width: 0;
-  flex-wrap: wrap;
-  white-space: normal;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.cat2-bug-table-wrap[data-operate-at-cap='true'] .cat2bug-operate-tools,
+.cat2-bug-table-wrap[data-operate-at-cap='true'] .defect-operate-cell,
+.cat2-bug-table-wrap[data-operate-at-cap='true'] .defect-tools {
+  width: 100% !important;
+  flex-wrap: wrap !important;
+  white-space: normal !important;
+}
+
+.el-table th.small-padding.fixed-width .cell,
+.el-table th.small-padding:not(.fixed-width) .cell,
+.el-table th.cat2bug-operate-column .cell,
+.cat2-bug-table-wrap th.cat2bug-operate-column .cell {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: visible !important;
+  text-overflow: clip;
+  word-break: normal;
+  color: var(--table-header-color, inherit);
   box-sizing: border-box;
 }
 
 .el-table td.small-padding.fixed-width .cell,
+.el-table td.small-padding:not(.fixed-width) .cell {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  white-space: nowrap;
+  word-break: normal;
+  width: 100%;
+  max-width: 100%;
+  column-gap: var(--cat2bug-operate-tools-gap, 10px);
+  row-gap: var(--cat2bug-operate-tools-row-gap, 0);
+  box-sizing: border-box;
+  overflow: hidden;
+
+  > .el-button,
+  > .el-dropdown,
+  > .el-link {
+    margin: 0 !important;
+    flex-shrink: 0;
+  }
+
+  .el-button + .el-button {
+    margin-left: 0 !important;
+  }
+}
+
 .el-table td.cat2bug-operate-column .cell,
 .cat2-bug-table-wrap td.cat2bug-operate-column .cell {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
-  white-space: normal;
-  max-width: var(--cat2bug-operate-col-max-width, none);
+  white-space: nowrap;
+  word-break: normal;
+  width: 100%;
+  max-width: 100%;
   column-gap: var(--cat2bug-operate-tools-gap, 10px);
   row-gap: var(--cat2bug-operate-tools-row-gap, 0);
   box-sizing: border-box;
@@ -688,6 +810,27 @@ img.cat2bug-image-error__img {
   .el-button + .el-button {
     margin-left: 0 !important;
   }
+}
+
+.cat2-bug-table-wrap[data-operate-at-cap='true'] td.cat2bug-operate-column .cell {
+  flex-wrap: wrap;
+  align-items: flex-start;
+  align-content: flex-start;
+  white-space: normal;
+  word-break: break-word;
+  overflow: visible !important;
+}
+
+.cat2-bug-table-wrap[data-operate-at-cap='true'] td.cat2bug-operate-column .defect-operate-cell,
+.cat2-bug-table-wrap[data-operate-at-cap='true'] td.cat2bug-operate-column .cat2bug-operate-tools,
+.cat2-bug-table-wrap[data-operate-at-cap='true'] td.cat2bug-operate-column .defect-tools,
+.cat2-bug-table-wrap[data-operate-at-cap='true'] td.cat2bug-operate-column .defect-tools__bar {
+  overflow: visible !important;
+}
+
+.el-table th.is-center.small-padding .cell,
+.el-table th.is-center.cat2bug-operate-column .cell {
+  text-align: center;
 }
 
 .el-table td.is-center.small-padding .cell,
@@ -710,10 +853,13 @@ img.cat2bug-image-error__img {
   z-index: 0;
 }
 
-/* 固定右侧操作列始终盖在主体表格单元格之上 */
-.cat2-bug-table-wrap .el-table__fixed-right,
+/* 固定右侧操作列盖在主体表格单元格之上；patch 仅垫片层，层级低于表头 */
+.cat2-bug-table-wrap .el-table__fixed-right {
+  z-index: 31 !important;
+}
+
 .cat2-bug-table-wrap .el-table__fixed-right-patch {
-  z-index: 30 !important;
+  z-index: 29 !important;
 }
 
 .el-page-header {

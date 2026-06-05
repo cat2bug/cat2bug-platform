@@ -1,9 +1,12 @@
 <template>
   <el-popover
+    class="share-card-popover"
     placement="top"
+    trigger="click"
     :append-to-body="true"
+    popper-class="share-card-popper"
     v-model="visible">
-    <div class="shard-context" v-loading="apiLoading">
+    <div v-if="visible" class="shard-context" v-loading="apiLoading">
       <el-form :inline="true" :model="form">
         <el-form-item :label="$t('shard.aging-hour')">
           <el-select v-model="form.agingHour" size="mini" @change="refresh">
@@ -42,8 +45,9 @@
         />
       </div>
     </div>
-    <svg-icon class="button" icon-class="shard" slot="reference"
-              @click="clickHandle"></svg-icon>
+    <span slot="reference" class="share-card-trigger" @click="clickHandle">
+      <svg-icon class="button" icon-class="shard"></svg-icon>
+    </span>
   </el-popover>
 </template>
 
@@ -183,11 +187,23 @@ html.dark .share-card-loading .el-loading-mask {
   .share-list > *:first-child {
     margin-left: 0px;
   }
-  .button:hover {
+  .share-card-trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 14px;
+    max-width: 14px;
+    min-width: 0;
+    overflow: hidden;
+    line-height: 1;
+    vertical-align: middle;
     cursor: pointer;
   }
+
   .button {
     color: var(--text-color-secondary, #8c8c8c);
+    font-size: 14px;
   }
   .el-form-item {
     margin-bottom: 0px;

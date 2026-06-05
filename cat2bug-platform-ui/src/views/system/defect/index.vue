@@ -1181,21 +1181,36 @@ export default {
     flex-wrap: nowrap;
   }
   ::v-deep button {
-    color: #1890ff;
-    background: #e8f4ff;
-    border-color: #a3d3ff;
+    color: #ffffff;
+    background: #409eff;
+    border-color: #409eff;
   }
-  ::v-deep button:hover {
-    background: #1890ff;
-    border-color: #1890ff;
-    color: #FFFFFF;
+  ::v-deep button:hover,
+  ::v-deep button:focus {
+    background: #66b1ff;
+    border-color: #66b1ff;
+    color: #ffffff;
   }
   ::v-deep .el-dropdown__caret-button::before {
-      background-color: #a3d3ff;
+    background-color: rgba(255, 255, 255, 0.45);
 
-      @at-root html.dark & {
-        background-color: #141414 !important;
-      }
+    @at-root html.dark & {
+      background-color: #141414 !important;
+    }
+  }
+
+  @at-root html.dark & {
+    ::v-deep button {
+      color: #141414 !important;
+      background: #ffc107 !important;
+      border-color: #ffc107 !important;
+    }
+    ::v-deep button:hover,
+    ::v-deep button:focus {
+      color: #141414 !important;
+      background: #ffd54f !important;
+      border-color: #ffd54f !important;
+    }
   }
 }
 .defect-add-dropdown-menu {

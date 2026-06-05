@@ -278,6 +278,10 @@ html.dark {
   background-color: var(--bg-color-page);
   color: var(--text-color-primary);
 
+  --page-progress-color: #ffc107;
+  --page-progress-glow: rgba(255, 193, 7, 0.55);
+  --page-progress-gradient-start: #e6ac00;
+
   // Layout Overrides
   .main-container {
     background-color: var(--bg-color-page);
@@ -1593,6 +1597,24 @@ html.dark {
 
   .el-loading-mask {
     background-color: rgba(20, 20, 20, 0.7) !important;
+
+    .el-loading-spinner {
+      .el-loading-text {
+        color: #FFC107 !important;
+      }
+
+      .circular .path {
+        stroke: #FFC107 !important;
+      }
+
+      .el-icon-loading {
+        color: #FFC107 !important;
+      }
+
+      i {
+        color: #FFC107 !important;
+      }
+    }
   }
 
   // 1. 左上角 TeamSelect 团队选择组件适配
@@ -2179,6 +2201,11 @@ html.dark {
     thead tr > th.el-table__cell {
       background-color: var(--table-header-bg) !important;
       border-bottom: 1px solid var(--border-color-light) !important;
+      color: var(--table-header-color) !important;
+    }
+
+    .el-table__fixed-right thead th.cat2bug-operate-column .cell {
+      color: var(--table-header-color) !important;
     }
 
     .el-table__body-wrapper tbody tr > td.el-table__cell {
@@ -3250,6 +3277,44 @@ html.dark {
 
     .defect-statistics-value {
       color: var(--text-color-primary) !important;
+    }
+  }
+
+  /* 缺陷列表名称链接：暗黑模式用主文字色（白），悬停品牌黄 */
+  .table-defect-title {
+    .el-link.el-link--primary {
+      color: var(--text-color-primary, #f5f7fa) !important;
+
+      &:hover {
+        color: #ffc107 !important;
+      }
+
+      &.is-underline:after {
+        border-bottom-color: var(--text-color-primary, #f5f7fa) !important;
+      }
+
+      &.is-underline:hover:after {
+        border-bottom-color: #ffc107 !important;
+      }
+    }
+  }
+
+  /* 文件管理列表：文件/文件夹名称链接，暗黑模式同缺陷名称 */
+  .document-title {
+    .el-link.el-link--primary {
+      color: var(--text-color-primary, #f5f7fa) !important;
+
+      &:hover {
+        color: #ffc107 !important;
+      }
+
+      &.is-underline:after {
+        border-bottom-color: var(--text-color-primary, #f5f7fa) !important;
+      }
+
+      &.is-underline:hover:after {
+        border-bottom-color: #ffc107 !important;
+      }
     }
   }
 

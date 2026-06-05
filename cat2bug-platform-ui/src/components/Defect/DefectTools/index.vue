@@ -1,27 +1,31 @@
 <template>
-  <div class="defect-tools">
-    <slot name="left"></slot>
-    <share-card v-show="!isDeleted" :params="defect" />
-    <star-switch v-show="!isDeleted" v-model="defect.collect" @change="clickCollectHandle($event, defect, false)"></star-switch>
-    <el-button v-show="assignVisible" :icon="isShowIcon?'el-icon-refresh':''" :size="size" :type="isText?'text':'info'" :class="isText?'orange':''" @click="assignHandle">{{$i18n.t('assign')}}</el-button>
-    <el-button v-show="repairVisible" :icon="isShowIcon?'el-icon-document-checked':''" :size="size" :type="isText?'text':'primary'" :class="isText?'orange':''" @click="repairDialogHandle">{{$i18n.t('repair')}}</el-button>
-    <el-button v-show="rejectVisible" :icon="isShowIcon?'el-icon-document-delete':''" :size="size" :type="isText?'text':'warning'" :class="isText?'orange':''" @click="rejectHandle">{{$i18n.t('reject')}}</el-button>
-    <el-button v-show="passVisible" :icon="isShowIcon?'el-icon-finished':''" :size="size" :type="isText?'text':'success'" :class="isText?'orange':''" @click="passDialogHandle">{{$i18n.t('pass')}}</el-button>
-    <el-button v-show="openVisible" :icon="isShowIcon?'el-icon-document-copy':''" :size="size" :type="isText?'text':'danger'" :class="isText?'orange':''" @click="openDialogHandle" v-hasPermi="['system:defect:open']">{{$i18n.t('open')}}</el-button>
-    <el-button v-show="closeVisible" :icon="isShowIcon?'el-icon-takeaway-box':''" :size="size" :type="isText?'text':'danger'" :class="isText?'orange':''" @click="closeDialogHandle">{{$i18n.t('close')}}</el-button>
-    <el-button v-show="viewVisible" :icon="isShowIcon?'el-icon-view':''" :size="size" :type="isText?'text':'warning'" @click="viewHandle">{{$i18n.t('view')}}</el-button>
-    <el-button v-show="editVisible" :icon="isShowIcon?'el-icon-edit':''" :size="size" :type="isText?'text':'success'" :class="isText?'green':''" :plain="!isShowIcon" @click="editDialogHandle" >{{ $t('modify') }}</el-button>
-    <el-button v-show="deleteVisible" :icon="isShowIcon?'el-icon-delete':''" :size="size" :type="isText?'text':'danger'" :class="isText?'red':''" :plain="!isShowIcon" @click="handleDelete">{{$i18n.t('delete')}}</el-button>
-    <el-button v-show="restoreVisible" :icon="isShowIcon?'el-icon-refresh-left':''" :size="size" :type="isText?'text':'warning'" :class="isText?'restore-orange':''" :plain="!isShowIcon" @click="handleRestore">{{$i18n.t('defect.restore')}}</el-button>
-
-    <assign-dialog ref="assignDialog" :project-id="defect.projectId" :defect-id="defect.defectId" @log="logHandle" />
-    <repair-dialog ref="repairDialog" :project-id="defect.projectId" :defect-id="defect.defectId" @log="logHandle" />
-    <reject-dialog ref="rejectDialog" :project-id="defect.projectId" :defect-id="defect.defectId" @log="logHandle" />
-    <pass-dialog ref="passDialog" :project-id="defect.projectId" :defect-id="defect.defectId" @log="logHandle" />
-    <open-dialog ref="openDialog" :project-id="defect.projectId" :defect-id="defect.defectId" @log="logHandle" />
-    <close-dialog ref="closeDialog" :project-id="defect.projectId" :defect-id="defect.defectId" @log="logHandle" />
-    <edit-defect-dialog ref="editDialog"  :project-id="defect.projectId" :defect-id="defect.defectId" @log="logHandle" />
-    <slot name="right"></slot>
+  <div class="defect-tools" :class="{ 'defect-tools--compact': isCompact }">
+    <!-- 仅操作按钮参与表格列宽；对话框/弹层挂到隔离层，避免撑开操作列 -->
+    <div class="defect-tools__bar">
+      <slot name="left"></slot>
+      <share-card v-show="!isDeleted" :params="defect" />
+      <star-switch v-show="!isDeleted" v-model="defect.collect" @change="clickCollectHandle($event, defect, false)"></star-switch>
+      <el-button v-show="assignVisible" :icon="isShowIcon?'el-icon-refresh':''" :size="size" :type="isText?'text':'info'" :class="isText?'orange':''" @click="assignHandle">{{$i18n.t('assign')}}</el-button>
+      <el-button v-show="repairVisible" :icon="isShowIcon?'el-icon-document-checked':''" :size="size" :type="isText?'text':'primary'" :class="isText?'orange':''" @click="repairDialogHandle">{{$i18n.t('repair')}}</el-button>
+      <el-button v-show="rejectVisible" :icon="isShowIcon?'el-icon-document-delete':''" :size="size" :type="isText?'text':'warning'" :class="isText?'orange':''" @click="rejectHandle">{{$i18n.t('reject')}}</el-button>
+      <el-button v-show="passVisible" :icon="isShowIcon?'el-icon-finished':''" :size="size" :type="isText?'text':'success'" :class="isText?'orange':''" @click="passDialogHandle">{{$i18n.t('pass')}}</el-button>
+      <el-button v-show="openVisible" :icon="isShowIcon?'el-icon-document-copy':''" :size="size" :type="isText?'text':'danger'" :class="isText?'orange':''" @click="openDialogHandle" v-hasPermi="['system:defect:open']">{{$i18n.t('open')}}</el-button>
+      <el-button v-show="closeVisible" :icon="isShowIcon?'el-icon-takeaway-box':''" :size="size" :type="isText?'text':'danger'" :class="isText?'orange':''" @click="closeDialogHandle">{{$i18n.t('close')}}</el-button>
+      <el-button v-show="viewVisible" :icon="isShowIcon?'el-icon-view':''" :size="size" :type="isText?'text':'warning'" @click="viewHandle">{{$i18n.t('view')}}</el-button>
+      <el-button v-show="editVisible" :icon="isShowIcon?'el-icon-edit':''" :size="size" :type="isText?'text':'success'" :class="isText?'green':''" :plain="!isShowIcon" @click="editDialogHandle" >{{ $t('modify') }}</el-button>
+      <el-button v-show="deleteVisible" :icon="isShowIcon?'el-icon-delete':''" :size="size" :type="isText?'text':'danger'" :class="isText?'red':''" :plain="!isShowIcon" @click="handleDelete">{{$i18n.t('delete')}}</el-button>
+      <el-button v-show="restoreVisible" :icon="isShowIcon?'el-icon-refresh-left':''" :size="size" :type="isText?'text':'warning'" :class="isText?'restore-orange':''" :plain="!isShowIcon" @click="handleRestore">{{$i18n.t('defect.restore')}}</el-button>
+      <slot name="right"></slot>
+    </div>
+    <div class="defect-tools__dialogs" aria-hidden="true">
+      <assign-dialog ref="assignDialog" :project-id="defect.projectId" :defect-id="defect.defectId" @log="logHandle" />
+      <repair-dialog ref="repairDialog" :project-id="defect.projectId" :defect-id="defect.defectId" @log="logHandle" />
+      <reject-dialog ref="rejectDialog" :project-id="defect.projectId" :defect-id="defect.defectId" @log="logHandle" />
+      <pass-dialog ref="passDialog" :project-id="defect.projectId" :defect-id="defect.defectId" @log="logHandle" />
+      <open-dialog ref="openDialog" :project-id="defect.projectId" :defect-id="defect.defectId" @log="logHandle" />
+      <close-dialog ref="closeDialog" :project-id="defect.projectId" :defect-id="defect.defectId" @log="logHandle" />
+      <edit-defect-dialog ref="editDialog"  :project-id="defect.projectId" :defect-id="defect.defectId" @log="logHandle" />
+    </div>
   </div>
 </template>
 
@@ -77,8 +81,17 @@ export default {
       type: String,
       default: null
     },
+    /** 表格行内紧凑模式：操作栏单行展示，弹层/对话框不参与列宽 */
+    compact: {
+      type: Boolean,
+      default: null
+    },
   },
   computed: {
+    isCompact() {
+      if (this.compact != null) return this.compact;
+      return this.isText === true;
+    },
     /** 获取当前用户id */
     currentUserId: function() {
       return this.$store.state.user.id;
@@ -241,8 +254,49 @@ export default {
     justify-content: flex-start !important;
     font-size: 12px;
     margin-bottom: 0px !important;
+    max-width: 100%;
+    vertical-align: middle;
+    box-sizing: border-box;
+  }
+
+  .defect-tools__bar {
+    display: inline-flex;
+    flex-wrap: nowrap;
+    flex-direction: row;
+    align-items: center;
+    column-gap: var(--cat2bug-operate-tools-gap, 10px);
+    row-gap: var(--cat2bug-operate-tools-row-gap, 0);
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+
     > * {
       margin: 0;
+      flex-shrink: 0;
+    }
+  }
+
+  /* 对话框容器脱离文档流，避免 append 前撑开表格列宽 */
+  .defect-tools__dialogs {
+    position: fixed;
+    left: -10000px;
+    top: 0;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  .defect-tools--compact {
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
+
+    .defect-tools__bar {
+      overflow: hidden;
     }
   }
   .red {
