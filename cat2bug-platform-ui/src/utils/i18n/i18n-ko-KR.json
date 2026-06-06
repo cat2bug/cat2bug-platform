@@ -1464,6 +1464,7 @@
   "keyboard.act.query": "조회 포커스",
   "keyboard.act.switch-tab": "탭 전환",
   "keyboard.act.statistic": "통계 템플릿",
+  "keyboard.act.statistic-nav": "통계 모듈 탐색",
   "keyboard.act.stat-scroll-next": "통계 오른쪽으로",
   "keyboard.act.trend-export": "추세 차트 내보내기",
   "keyboard.act.switch-view": "보기 전환",

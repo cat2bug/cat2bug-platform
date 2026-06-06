@@ -1480,6 +1480,7 @@
   "keyboard.act.query": "Focus query",
   "keyboard.act.switch-tab": "Switch tab",
   "keyboard.act.statistic": "Statistics template",
+  "keyboard.act.statistic-nav": "Statistics module navigation",
   "keyboard.act.stat-scroll-next": "Scroll statistics right",
   "keyboard.act.trend-export": "Export trend chart",
   "keyboard.act.switch-view": "Switch view",

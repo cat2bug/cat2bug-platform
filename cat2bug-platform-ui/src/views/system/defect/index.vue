@@ -63,7 +63,15 @@
         </div>
       </div>
       <!-- 统计板块-->
-      <cat2-bug-statistic v-show="statisticPanelVisible" ref="defectStatistic" class="defect-tools-statistic" :params="{}" :draggable="true" />
+      <div
+        v-show="statisticPanelVisible"
+        ref="defectStatisticWrap"
+        class="defect-tools-statistic-wrap"
+        :class="{ 'defect-statistic-keyboard-nav': defectStatisticNavActive }"
+      >
+        <cat2-bug-statistic ref="defectStatistic" class="defect-tools-statistic" :params="{}" :draggable="true" />
+        <span class="defect-list-hint-stat-nav" aria-hidden="true" />
+      </div>
       <!-- 动态缺陷显示组件-->
       <!--    <keep-alive>-->
       <component
@@ -314,6 +322,10 @@ export default {
       defectToolbarNavActive: false,
       defectToolbarNavIndex: -1,
       defectToolbarNavSuppressBlur: false,
+      /** Cmd/Ctrl+G 后统计模块键盘导航（左右选择，Delete 移除） */
+      defectStatisticNavActive: false,
+      defectStatisticNavIndex: -1,
+      defectStatisticNavSuppressBlur: false,
       /** 键盘打开新建下拉后聚焦首项 */
       defectAddDropdownKeyboardOpen: false,
       defectAddDropdownMenuIndex: 0,
@@ -405,6 +417,9 @@ export default {
       return {
         boxSizing: 'border-box'
       }
+    },
+    defectStatisticNavLetter() {
+      return this.pageActionLetter('statisticNav') || 'G'
     }
   },
   watch: {
@@ -473,6 +488,7 @@ export default {
     this.exitDefectTabKeyboardNav()
     this.exitDefectQueryKeyboardNav()
     this.exitDefectRightToolbarNav()
+    this.exitDefectStatisticKeyboardNav()
     this.$_detachDefectAddDropdownMenuListeners()
     this.$_detachDefectColumnPickerMenuListeners()
     this.$_detachDefectTypeDropdownMenuListeners()
@@ -485,6 +501,7 @@ export default {
     this.exitDefectTabKeyboardNav()
     this.exitDefectQueryKeyboardNav()
     this.exitDefectRightToolbarNav()
+    this.exitDefectStatisticKeyboardNav()
     this.$_detachDefectAddDropdownMenuListeners()
     this.$_detachDefectColumnPickerMenuListeners()
     this.$_detachDefectTypeDropdownMenuListeners()
@@ -533,6 +550,7 @@ export default {
         { key: 'query', defaultLetter: 'S', run: () => this.shortcutFocusQuery() },
         { key: 'switchTab', defaultLetter: 'J', run: () => this.shortcutSwitchTab() },
         { key: 'statistic', defaultLetter: 'V', run: () => this.addStatisticHandle() },
+        { key: 'statisticNav', defaultLetter: 'G', run: () => this.shortcutStatisticNav() },
         { key: 'switchView', defaultLetter: 'O', run: () => this.shortcutSwitchView() },
         { key: 'prevPage', defaultLetter: 'B', run: () => this.shortcutChangePage(-1) },
         { key: 'nextPage', defaultLetter: 'P', run: () => this.shortcutChangePage(1) }
@@ -574,6 +592,14 @@ export default {
           badgeSelector: '.defect-list-hint-statistic .defect-tools-button',
           floatOffset: { placement: 'bottom-right-outset', outset: 2 },
           run: () => this.addStatisticHandle(),
+          visible: () => this.statisticPanelVisible
+        },
+        {
+          key: 'statisticNav',
+          letter: L('statisticNav', 'G'),
+          badgeSelector: '.defect-list-hint-stat-nav',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
+          run: () => this.shortcutStatisticNav(),
           visible: () => this.statisticPanelVisible
         },
         {
@@ -794,6 +820,7 @@ export default {
       if (index < 0) return
       this.exitDefectTabKeyboardNav()
       this.exitDefectRightToolbarNav()
+      this.exitDefectStatisticKeyboardNav()
       this.defectQueryNavActive = true
       this.defectQueryNavIndex = index
       this.syncDefectQueryNavFocusClass()
@@ -948,6 +975,7 @@ export default {
     enterDefectQueryKeyboardNav() {
       this.exitDefectTabKeyboardNav()
       this.exitDefectRightToolbarNav()
+      this.exitDefectStatisticKeyboardNav()
       this.showSearch = true
       const items = this.getDefectQueryNavItems()
       if (!items.length) return
@@ -1234,11 +1262,178 @@ export default {
     shortcutSwitchTab() {
       this.enterDefectTabKeyboardNav()
     },
+    /** Cmd/Ctrl+G：统计模块键盘导航（左右选择，Delete 移除） */
+    shortcutStatisticNav() {
+      this.enterDefectStatisticKeyboardNav()
+    },
+    getDefectStatisticNavItems() {
+      const stat = this.$refs.defectStatistic
+      if (!stat || !stat.list) return []
+      return Array.isArray(stat.list) ? stat.list : []
+    },
+    getDefectStatisticItemEls() {
+      const stat = this.$refs.defectStatistic
+      const viewport = stat && stat.$refs && stat.$refs.viewport
+      if (!viewport) return []
+      return Array.from(viewport.querySelectorAll('.statistic-item'))
+    },
+    clearDefectStatisticNavFocusMarks() {
+      const stat = this.$refs.defectStatistic
+      const root = stat && stat.$el
+      if (!root) return
+      root.querySelectorAll('.statistic-item.defect-statistic-nav-focused').forEach((el) => {
+        el.classList.remove('defect-statistic-nav-focused')
+        el.tabIndex = -1
+      })
+    },
+    syncDefectStatisticNavFocusClass() {
+      this.clearDefectStatisticNavFocusMarks()
+      if (!this.defectStatisticNavActive || this.defectStatisticNavIndex < 0) return
+      const els = this.getDefectStatisticItemEls()
+      const el = els[this.defectStatisticNavIndex]
+      if (el) {
+        el.classList.add('defect-statistic-nav-focused')
+        el.tabIndex = 0
+      }
+    },
+    scrollDefectStatisticItemIntoView(el) {
+      if (!el || typeof el.scrollIntoView !== 'function') return
+      el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' })
+    },
+    focusDefectStatisticNavDom(index) {
+      const els = this.getDefectStatisticItemEls()
+      const el = els[index]
+      if (el) {
+        el.tabIndex = 0
+        el.focus()
+        this.scrollDefectStatisticItemIntoView(el)
+      }
+      this.$nextTick(() => {
+        this.syncDefectStatisticNavFocusClass()
+      })
+    },
+    applyDefectStatisticNavFocus(index) {
+      const items = this.getDefectStatisticNavItems()
+      if (!items.length || index < 0 || index >= items.length) return
+      this.defectStatisticNavSuppressBlur = true
+      this.defectStatisticNavIndex = index
+      this.$nextTick(() => {
+        this.focusDefectStatisticNavDom(index)
+        this.$nextTick(() => {
+          this.defectStatisticNavSuppressBlur = false
+        })
+      })
+    },
+    enterDefectStatisticKeyboardNav() {
+      this.exitDefectTabKeyboardNav()
+      this.exitDefectQueryKeyboardNav()
+      this.exitDefectRightToolbarNav()
+      const items = this.getDefectStatisticNavItems()
+      if (!items.length) return
+      this.defectStatisticNavActive = true
+      this.defectStatisticNavIndex = 0
+      this.$nextTick(() => {
+        this.applyDefectStatisticNavFocus(0)
+        this.$nextTick(() => {
+          this.$_attachDefectStatisticNavListeners()
+        })
+      })
+    },
+    exitDefectStatisticKeyboardNav() {
+      if (!this.defectStatisticNavActive && !this.$_defectStatisticNavListenersBound) return
+      this.defectStatisticNavActive = false
+      this.defectStatisticNavIndex = -1
+      this.clearDefectStatisticNavFocusMarks()
+      const root = this.$refs.defectStatisticWrap
+      if (root && root.contains(document.activeElement)) {
+        document.activeElement.blur()
+      }
+      this.$_detachDefectStatisticNavListeners()
+    },
+    moveDefectStatisticNav(delta) {
+      const items = this.getDefectStatisticNavItems()
+      const next = this.defectStatisticNavIndex + delta
+      if (next < 0 || next >= items.length) return
+      this.applyDefectStatisticNavFocus(next)
+    },
+    removeFocusedDefectStatistic() {
+      const items = this.getDefectStatisticNavItems()
+      const sc = items[this.defectStatisticNavIndex]
+      const stat = this.$refs.defectStatistic
+      if (!sc || !stat || typeof stat.removeStatistic !== 'function') return
+      const removeIndex = this.defectStatisticNavIndex
+      stat.removeStatistic(sc)
+      this.$nextTick(() => {
+        const nextItems = this.getDefectStatisticNavItems()
+        if (!nextItems.length) {
+          this.exitDefectStatisticKeyboardNav()
+          return
+        }
+        const idx = Math.min(removeIndex, nextItems.length - 1)
+        this.applyDefectStatisticNavFocus(idx)
+      })
+    },
+    $_attachDefectStatisticNavListeners() {
+      if (this.$_defectStatisticNavListenersBound) return
+      this.$_defectStatisticNavListenersBound = true
+      this.$_onDefectStatisticNavKeydown = (e) => {
+        if (!this.defectStatisticNavActive) return
+        if (e.key === 'ArrowLeft') {
+          e.preventDefault()
+          e.stopPropagation()
+          this.moveDefectStatisticNav(-1)
+          return
+        }
+        if (e.key === 'ArrowRight') {
+          e.preventDefault()
+          e.stopPropagation()
+          this.moveDefectStatisticNav(1)
+          return
+        }
+        if (e.key === 'Delete' || e.key === 'Backspace') {
+          e.preventDefault()
+          e.stopPropagation()
+          this.removeFocusedDefectStatistic()
+          return
+        }
+        if (e.key === 'Escape') {
+          e.preventDefault()
+          e.stopPropagation()
+          this.exitDefectStatisticKeyboardNav()
+        }
+      }
+      this.$_onDefectStatisticNavFocusOut = (e) => {
+        if (!this.defectStatisticNavActive || this.defectStatisticNavSuppressBlur) return
+        const root = this.$refs.defectStatisticWrap
+        if (root && e.relatedTarget && root.contains(e.relatedTarget)) return
+        setTimeout(() => {
+          if (!this.defectStatisticNavActive || this.defectStatisticNavSuppressBlur) return
+          if (!root || !root.contains(document.activeElement)) {
+            this.exitDefectStatisticKeyboardNav()
+          }
+        }, 0)
+      }
+      document.addEventListener('keydown', this.$_onDefectStatisticNavKeydown, true)
+      const root = this.$refs.defectStatisticWrap
+      if (root) {
+        root.addEventListener('focusout', this.$_onDefectStatisticNavFocusOut, true)
+      }
+    },
+    $_detachDefectStatisticNavListeners() {
+      if (!this.$_defectStatisticNavListenersBound) return
+      this.$_defectStatisticNavListenersBound = false
+      document.removeEventListener('keydown', this.$_onDefectStatisticNavKeydown, true)
+      const root = this.$refs.defectStatisticWrap
+      if (root && this.$_onDefectStatisticNavFocusOut) {
+        root.removeEventListener('focusout', this.$_onDefectStatisticNavFocusOut, true)
+      }
+    },
     /** Cmd/Ctrl+N：打开新建缺陷下拉，左右键在右侧工具栏按钮间切换 */
     shortcutOpenAddMenu() {
       if (!this.defectAddToolbarVisible) return
       this.exitDefectTabKeyboardNav()
       this.exitDefectQueryKeyboardNav()
+      this.exitDefectStatisticKeyboardNav()
       const items = this.getDefectRightToolbarNavItems()
       const idx = items.findIndex((it) => it.key === 'addMenu')
       if (idx < 0) return
@@ -1682,6 +1877,7 @@ export default {
     enterDefectRightToolbarNav(focusKey, opts = {}) {
       this.exitDefectTabKeyboardNav()
       this.exitDefectQueryKeyboardNav()
+      this.exitDefectStatisticKeyboardNav()
       const items = this.getDefectRightToolbarNavItems()
       if (!items.length) return
       let idx = items.findIndex((it) => it.key === focusKey)
@@ -2130,6 +2326,7 @@ export default {
     enterDefectTabKeyboardNav() {
       this.exitDefectQueryKeyboardNav()
       this.exitDefectRightToolbarNav()
+      this.exitDefectStatisticKeyboardNav()
       const items = this.getDefectTabNavItems()
       if (!items.length) return
       const cur = String(this.activeDefectTabName)
@@ -2667,7 +2864,7 @@ export default {
 }
 .defect-page.defect-page--excel-view .defect-project-label,
 .defect-page.defect-page--excel-view .defect-tools-tab,
-.defect-page.defect-page--excel-view .defect-tools-statistic {
+.defect-page.defect-page--excel-view .defect-tools-statistic-wrap {
   flex-shrink: 0;
 }
 .defect-page.defect-page--excel-view .defect-content-slot.defect-content-slot--excel {
@@ -3032,6 +3229,41 @@ export default {
     align-items: center;
     padding-left: 8px;
     overflow: visible;
+  }
+}
+.defect-page .defect-tools-statistic-wrap {
+  position: relative;
+  overflow: visible;
+  flex-shrink: 0;
+  min-width: 0;
+  &.defect-statistic-keyboard-nav ::v-deep .statistic-item.defect-statistic-nav-focused {
+    position: relative;
+    z-index: 2;
+    &::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      box-sizing: border-box;
+      border: var(--cat2bug-field-focus-ring-width, 2px) solid var(--cat2bug-field-focus-color);
+      border-radius: var(--cat2bug-border-radius, 4px);
+      pointer-events: none;
+    }
+  }
+  &.defect-statistic-keyboard-nav ::v-deep .statistic-item.defect-statistic-nav-focused:focus,
+  &.defect-statistic-keyboard-nav ::v-deep .statistic-item.defect-statistic-nav-focused:focus-visible {
+    outline: none;
+  }
+  .defect-list-hint-stat-nav {
+    position: absolute;
+    right: -2px;
+    bottom: -4px;
+    width: 16px;
+    height: 16px;
+    pointer-events: none;
+    z-index: 5;
   }
 }
 .defect-page .defect-tools-statistic {

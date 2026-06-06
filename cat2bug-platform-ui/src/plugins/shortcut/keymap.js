@@ -84,6 +84,7 @@ export const DEFECT_ACTION_DEFAULTS = [
   { key: 'query', defaultLetter: 'S', titleKey: 'keyboard.act.query' },
   { key: 'switchTab', defaultLetter: 'J', titleKey: 'keyboard.act.switch-tab' },
   { key: 'statistic', defaultLetter: 'V', titleKey: 'keyboard.act.statistic' },
+  { key: 'statisticNav', defaultLetter: 'G', titleKey: 'keyboard.act.statistic-nav' },
   { key: 'switchView', defaultLetter: 'O', titleKey: 'keyboard.act.switch-view' },
   { key: 'prevPage', defaultLetter: 'B', titleKey: 'keyboard.act.prev-page' },
   { key: 'nextPage', defaultLetter: 'P', titleKey: 'keyboard.act.next-page' }

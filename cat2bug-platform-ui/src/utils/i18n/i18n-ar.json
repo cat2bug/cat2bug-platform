@@ -1464,6 +1464,7 @@
   "keyboard.act.query": "تركيز الاستعلام",
   "keyboard.act.switch-tab": "تبديل التبويب",
   "keyboard.act.statistic": "قالب الإحصاءات",
+  "keyboard.act.statistic-nav": "تنقل وحدات الإحصاءات",
   "keyboard.act.stat-scroll-next": "تمرير الإحصاءات لليمين",
   "keyboard.act.trend-export": "تصدير مخطط الاتجاه",
   "keyboard.act.switch-view": "تبديل العرض",

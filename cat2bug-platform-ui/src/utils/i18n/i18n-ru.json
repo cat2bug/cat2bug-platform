@@ -1464,6 +1464,7 @@
   "keyboard.act.query": "Фокус запроса",
   "keyboard.act.switch-tab": "Переключить вкладку",
   "keyboard.act.statistic": "Шаблон статистики",
+  "keyboard.act.statistic-nav": "Навигация по блокам статистики",
   "keyboard.act.stat-scroll-next": "Прокрутить статистику вправо",
   "keyboard.act.trend-export": "Экспорт графика тренда",
   "keyboard.act.switch-view": "Переключить вид",

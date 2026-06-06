@@ -1464,6 +1464,7 @@
   "keyboard.act.query": "検索にフォーカス",
   "keyboard.act.switch-tab": "タブを切り替え",
   "keyboard.act.statistic": "統計テンプレート",
+  "keyboard.act.statistic-nav": "統計モジュール操作",
   "keyboard.act.stat-scroll-next": "統計を右へ",
   "keyboard.act.trend-export": "トレンドをエクスポート",
   "keyboard.act.switch-view": "表示切替",
