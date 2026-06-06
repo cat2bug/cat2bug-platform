@@ -223,6 +223,14 @@ import {
   filterExcelColsByBuiltin,
   orderExcelColsByFieldManage
 } from "@/utils/defect-field-layout";
+import {
+  bindNativeFilePickerResume,
+  beginNativeFilePickerSession,
+  endNativeFilePickerSession,
+  resumeExcelEditorKeyboard,
+  suspendExcelEditorKeyboard,
+  patchExcelEditorWinKeydownForFilePicker
+} from '@/utils/native-file-picker';
 
 /**
  * 与 list/table.vue 中 cat2-bug-table 的 cache-key="defect-table" 及 Cat2BugTable columnsStorageKey()
@@ -941,6 +949,7 @@ export default {
     this.teardownExcelColumnHeaderDragSession();
     this.unbindExcelLayoutObserver();
     this.teardownExcelScrollLoadMoreListener();
+    this.resumeExcelEditorFromNativeFilePicker();
   },
   methods: {
     /**
@@ -949,6 +958,7 @@ export default {
      */
     ensureExcelEditorLazyCallbackKeys() {
       const ed = this.$refs.excelEditor;
+      patchExcelEditorWinKeydownForFilePicker(ed);
       if (!ed || ed._cat2bugLazyKeyPatched || typeof ed.lazyBuf !== "function") return;
       if (typeof ed.veeLazyCallbackKey === "function") {
         ed._cat2bugLazyKeyPatched = true;
@@ -3246,7 +3256,41 @@ export default {
         this.syncing = false;
       }
     },
+    suspendExcelEditorForNativeFilePicker() {
+      beginNativeFilePickerSession();
+      const ed = this.$refs.excelEditor;
+      if (!ed || this._excelKeyboardSuspendPrev) return;
+      this._excelKeyboardSuspendPrev = suspendExcelEditorKeyboard(ed);
+      if (this._excelNativeFilePickerResumeHandler) return;
+      this._excelNativeFilePickerResumeHandler = bindNativeFilePickerResume(() => {
+        this._excelNativeFilePickerResumeHandler = null;
+        this.resumeExcelEditorFromNativeFilePicker();
+      });
+    },
+    resumeExcelEditorFromNativeFilePicker() {
+      endNativeFilePickerSession();
+      const ed = this.$refs.excelEditor;
+      const prev = this._excelKeyboardSuspendPrev;
+      if (this._excelNativeFilePickerResumeHandler) {
+        window.removeEventListener('focus', this._excelNativeFilePickerResumeHandler, true);
+        this._excelNativeFilePickerResumeHandler = null;
+      }
+      if (!ed || !prev) {
+        this._excelKeyboardSuspendPrev = null;
+        return;
+      }
+      resumeExcelEditorKeyboard(ed, prev);
+      this._excelKeyboardSuspendPrev = null;
+    },
+    openExcelInlineNativeFilePicker(refName) {
+      this.suspendExcelEditorForNativeFilePicker();
+      this.$nextTick(() => {
+        const el = this.$refs[refName];
+        if (el && typeof el.click === 'function') el.click();
+      });
+    },
     async onExcelInlineImgFileChange(ev) {
+      this.resumeExcelEditorFromNativeFilePicker();
       const input = ev.target;
       const files = Array.from((input && input.files) || []);
       if (input) input.value = "";
@@ -3497,6 +3541,7 @@ export default {
       }
     },
     async onExcelInlineAnnexFileChange(ev) {
+      this.resumeExcelEditorFromNativeFilePicker();
       const input = ev.target;
       const files = Array.from((input && input.files) || []);
       if (input) input.value = "";
@@ -3590,15 +3635,11 @@ export default {
         if (!defectId) return;
         const col = customFieldKey ? this.findExcelCol(`custom:${customFieldKey}`) : null;
         this.excelInlineUploadTarget = { kind, defectId, customFieldKey: customFieldKey || null, col };
-        this.$nextTick(() => {
-          if (kind === "img" || kind === "custom-img") {
-            const el = this.$refs.excelInlineImgFileInput;
-            if (el) el.click();
-          } else {
-            const el = this.$refs.excelInlineAnnexFileInput;
-            if (el) el.click();
-          }
-        });
+        if (kind === "img" || kind === "custom-img") {
+          this.openExcelInlineNativeFilePicker("excelInlineImgFileInput");
+        } else {
+          this.openExcelInlineNativeFilePicker("excelInlineAnnexFileInput");
+        }
         return;
       }
       const imgRemove = this.defectExcelClosestImgRemoveBtn(e.target);

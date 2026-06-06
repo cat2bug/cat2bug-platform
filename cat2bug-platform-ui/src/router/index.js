@@ -130,6 +130,12 @@ export const constantRoutes = [
         component: () => import('@/views/system/user/profile/index'),
         name: 'Profile',
         meta: { title: i18n.t('personal-center'), titleI18nKey:'personal-center', icon: 'user' }
+      },
+      {
+        path: 'keyboard',
+        component: () => import('@/views/member/keyboard/index'),
+        name: 'KeyboardSettings',
+        meta: { title: i18n.t('keyboard.title'), titleI18nKey:'keyboard.title', icon: 'keyboard' }
       }
     ]
   },

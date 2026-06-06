@@ -1,6 +1,6 @@
 <template>
-  <div>
-    <el-button v-show="!formVisible" type="text" icon="el-icon-plus" class="select-module-add-full select-module-add-button" @click="formVisible=!formVisible">{{$t('module.new')}}</el-button>
+  <div class="select-module-add-root">
+    <el-button v-show="!formVisible" type="text" icon="el-icon-plus" class="select-module-add-full select-module-add-button" @click="openForm">{{$t('module.new')}}</el-button>
     <el-form v-show="formVisible"
              ref="form"
              :model="form"
@@ -9,10 +9,14 @@
              class="select-module-add"
              @keydown.enter.native='addProjectModule'
              @submit.native.prevent>
-      <el-form-item prop="moduleName" label-width="0">
+      <el-form-item prop="moduleName" label-width="0" class="select-module-add-item">
         <el-input
+          ref="moduleNameInput"
           :placeholder="$t('module.enter-module-name')"
-          v-model="name" @input="nameChangeHandle">
+          v-model="name"
+          size="small"
+          @input="nameChangeHandle"
+          @keydown.native.esc.stop="onInputEscape">
           <el-button slot="append" icon="el-icon-plus" size="mini"
                      @click="addProjectModule"></el-button>
         </el-input>
@@ -63,8 +67,24 @@ export default {
       this.form={};
       this.name=null;
     },
-    setFormVisible(visible) {
+    openForm() {
+      this.setFormVisible(true, true);
+    },
+    setFormVisible(visible, focus = false) {
       this.formVisible = visible;
+      if (visible && focus) {
+        this.$nextTick(() => this.focusInput());
+      }
+    },
+    focusInput() {
+      const ref = this.$refs.moduleNameInput;
+      const input = ref && ref.$refs && ref.$refs.input;
+      if (input && typeof input.focus === 'function') {
+        input.focus();
+      }
+    },
+    onInputEscape() {
+      this.$emit('input-escape');
     },
     nameChangeHandle(val){
       this.$emit('input',val);
@@ -80,8 +100,11 @@ export default {
         this.$refs["form"].validate(valid => {
           if (valid) {
             addModule(this.form).then(res=>{
-              that.$emit('added',this.name);
-              that.formVisibmpe = false;
+              that.$emit('added', {
+                module: res.data,
+                moduleName: that.name
+              });
+              that.formVisible = false;
               that.reset();
               that.$message.success(this.$i18n.t('module.create-success').toString());
             })
@@ -94,17 +117,49 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+  .select-module-add-root {
+    width: 100%;
+    box-sizing: border-box;
+  }
   .select-module-add {
-    .el-form-item {
-      margin-top: 10px;
-      margin-bottom: 0px;
+    width: 100%;
+    box-sizing: border-box;
+    .select-module-add-item {
+      margin-top: 6px;
+      margin-bottom: 0;
+    }
+    ::v-deep .el-form-item__content {
+      line-height: normal;
+    }
+    ::v-deep .el-input {
+      width: 100%;
+    }
+    ::v-deep .el-form-item__error {
+      position: relative;
+      padding-top: 2px;
+      line-height: 1.2;
+      white-space: normal;
+      word-break: break-all;
     }
   }
   .select-module-add-full {
     width: 100%;
   }
   .select-module-add-button {
-    padding: 5px 0px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+    min-height: calc(1.4em + 10px);
+    padding: 5px 10px !important;
+    margin: 0 !important;
+    line-height: 1.4;
+    box-sizing: border-box;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    border-radius: 5px;
   }
   .select-module-add-button:hover {
     background-color: #F2F6FC;

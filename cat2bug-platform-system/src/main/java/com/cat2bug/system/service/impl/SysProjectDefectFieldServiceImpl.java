@@ -36,6 +36,9 @@ public class SysProjectDefectFieldServiceImpl implements ISysProjectDefectFieldS
 
     public static final int MAX_ENABLED_FIELDS = 50;
 
+    /** 自定义字段显示名称最大长度（字符数） */
+    public static final int MAX_FIELD_LABEL_LENGTH = 6;
+
     public static final Pattern FIELD_KEY_PATTERN = Pattern.compile("^[a-z][a-z0-9_]{0,63}$");
 
     private static final Set<String> FIELD_TYPES = new HashSet<>(Arrays.asList(
@@ -172,6 +175,7 @@ public class SysProjectDefectFieldServiceImpl implements ISysProjectDefectFieldS
         if (DefectBuiltinFieldRegistry.definitionByKey().containsKey(field.getFieldKey())) {
             throw new ServiceException(MessageUtils.message("defect.field.key_reserved"));
         }
+        assertFieldLabelLength(field.getFieldLabel());
         assertFieldLabelUnique(field.getProjectId(), null, field.getFieldLabel());
         assertEnabledLimit(field.getProjectId(), null, field.getEnabled());
 
@@ -217,6 +221,7 @@ public class SysProjectDefectFieldServiceImpl implements ISysProjectDefectFieldS
         assertEnabledLimit(existing.getProjectId(), existing.getFieldId(), newEnabled);
 
         String newLabel = field.getFieldLabel() != null ? field.getFieldLabel() : existing.getFieldLabel();
+        assertFieldLabelLength(newLabel);
         assertFieldLabelUnique(existing.getProjectId(), existing.getFieldId(), newLabel);
 
         field.setFieldKey(existing.getFieldKey());
@@ -387,6 +392,15 @@ public class SysProjectDefectFieldServiceImpl implements ISysProjectDefectFieldS
         }
         if (count >= MAX_ENABLED_FIELDS) {
             throw new ServiceException(MessageUtils.message("defect.field.enabled_limit", MAX_ENABLED_FIELDS));
+        }
+    }
+
+    private void assertFieldLabelLength(String fieldLabel) {
+        if (StringUtils.isBlank(fieldLabel)) {
+            return;
+        }
+        if (fieldLabel.trim().length() > MAX_FIELD_LABEL_LENGTH) {
+            throw new ServiceException(MessageUtils.message("defect.field.label_too_long", MAX_FIELD_LABEL_LENGTH));
         }
     }
 

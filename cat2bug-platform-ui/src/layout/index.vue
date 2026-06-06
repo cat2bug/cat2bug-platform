@@ -1,7 +1,7 @@
 <template>
   <div :class="classObj" class="app-wrapper" :style="{'--current-color': theme}">
-    <div v-if="device==='mobile'&&sidebar.opened" class="drawer-bg" @click="handleClickOutside"/>
-    <sidebar v-if="!sidebar.hide" class="sidebar-container"/>
+    <div v-if="device==='mobile'&&sidebar.opened" class="drawer-bg" @click="handleClickOutside" />
+    <sidebar v-if="!sidebar.hide" class="sidebar-container" />
     <div
       :class="{
         hasTagsView: needTagsView,
@@ -11,14 +11,15 @@
       class="main-container"
     >
       <div :class="{'fixed-header':fixedHeader}">
-        <navbar/>
-        <tags-view v-if="needTagsView"/>
+        <navbar />
+        <tags-view v-if="needTagsView" />
       </div>
-      <app-main/>
+      <app-main />
       <right-panel>
-        <settings/>
+        <settings />
       </right-panel>
     </div>
+    <command-palette />
   </div>
 </template>
 
@@ -26,7 +27,7 @@
 import RightPanel from '@/components/RightPanel'
 import { AppMain, Navbar, Settings, Sidebar, TagsView } from './components'
 import ResizeMixin from './mixin/ResizeHandler'
-import ViewBackMixin from "@/layout/mixin/ViewBackHandle";
+import ViewBackMixin from '@/layout/mixin/ViewBackHandle'
 import { mapState } from 'vuex'
 import variables from '@/assets/styles/variables.scss'
 import { isProjectListPageRoute } from '@/utils/project-list-page'
@@ -41,7 +42,7 @@ export default {
     Sidebar,
     TagsView
   },
-  mixins: [ResizeMixin,ViewBackMixin],
+  mixins: [ResizeMixin, ViewBackMixin],
   computed: {
     ...mapState({
       theme: state => state.settings.theme,
@@ -63,13 +64,13 @@ export default {
       return isProjectListPageRoute(this.$route)
     },
     variables() {
-      return variables;
+      return variables
     }
   },
   methods: {
     handleClickOutside() {
       this.$store.dispatch('app/closeSideBar', { withoutAnimation: false })
-    },
+    }
   }
 }
 </script>

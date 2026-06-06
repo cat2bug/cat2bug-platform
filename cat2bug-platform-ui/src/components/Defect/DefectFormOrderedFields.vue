@@ -77,6 +77,7 @@
         prop="moduleId"
       >
         <select-module
+          ref="selectModule"
           v-model="form.moduleId"
           :project-id="projectId"
           @input="onModuleChange"
@@ -246,6 +247,10 @@ export default {
     },
     getSelectCaseRef() {
       const ref = this.$refs.selectCase
+      return Array.isArray(ref) ? ref[0] : ref
+    },
+    getSelectModuleRef() {
+      const ref = this.$refs.selectModule
       return Array.isArray(ref) ? ref[0] : ref
     },
     onModuleChange() {

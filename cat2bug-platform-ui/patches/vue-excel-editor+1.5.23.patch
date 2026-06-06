@@ -22,7 +22,7 @@ index 889c82a..ae03194 100644
      }
    }
 diff --git a/node_modules/vue-excel-editor/src/VueExcelEditor.vue b/node_modules/vue-excel-editor/src/VueExcelEditor.vue
-index 6411a01..2e1473d 100644
+index 6411a01..fd46044 100644
 --- a/node_modules/vue-excel-editor/src/VueExcelEditor.vue
 +++ b/node_modules/vue-excel-editor/src/VueExcelEditor.vue
 @@ -28,19 +28,10 @@
@@ -1163,9 +1163,15 @@ index 6411a01..2e1473d 100644
        this.inputCellWrite(text)
        e.preventDefault()
      },
-@@ -1282,6 +2210,13 @@ export default {
+@@ -1281,7 +2209,19 @@ export default {
+     },
      winKeydown (e) {
        if (e.altKey) this.systable.classList.add('alt')
++      if (e.keyCode === 27 && this.showDatePicker) {
++        e.preventDefault()
++        this.showDatePicker = false
++        return
++      }
        if (!this.mousein && !this.focused) return
 +      /* 行号多选后 Del/Backspace：删行由宿主处理（先于单元格清空逻辑） */
 +      if ((e.keyCode === 8 || e.keyCode === 46) && this.selectedCount > 0 &&
@@ -1177,7 +1183,7 @@ index 6411a01..2e1473d 100644
        if (e.ctrlKey || e.metaKey)
          switch (e.keyCode) {
            case 90: // z
-@@ -1292,7 +2227,30 @@ export default {
+@@ -1292,7 +2232,30 @@ export default {
              this.toggleSelectAllRecords()
              e.preventDefault()
              break
@@ -1209,7 +1215,7 @@ index 6411a01..2e1473d 100644
              this.inputBox.value = this.currentCell.textContent
              this.inputBox.focus()
              this.inputBox.select()
-@@ -1438,16 +2396,23 @@ export default {
+@@ -1438,16 +2401,23 @@ export default {
              this.nextPage()
              e.preventDefault()
              break
@@ -1236,7 +1242,7 @@ index 6411a01..2e1473d 100644
              this.inputBoxChanged = true
              this.inputBox.value = ''
              this.inputBoxComplete()
-@@ -1497,9 +2462,11 @@ export default {
+@@ -1497,9 +2467,11 @@ export default {
      colSepMouseDown (e) {
        e.preventDefault()
        e.stopPropagation()
@@ -1251,7 +1257,7 @@ index 6411a01..2e1473d 100644
          const pos = Array.from(me.parentElement.children).findIndex(td => td === me)
          this.insertColumn(pos)
        }
-@@ -1510,7 +2477,7 @@ export default {
+@@ -1510,7 +2482,7 @@ export default {
        this.sep = {}
        // this.sep.curCol = this.colgroupTr.children[Array.from(this.labelTr.children).indexOf(e.target.parentElement)]
        this.sep.curCol = this.colgroupTr.children[
@@ -1260,7 +1266,7 @@ index 6411a01..2e1473d 100644
        // this.sep.nxtCol = this.sep.curCol.nextElementSibling
        this.sep.pageX = e.pageX
        let padding = 0
-@@ -1520,37 +2487,44 @@ export default {
+@@ -1520,37 +2492,44 @@ export default {
          if (padLeft && padRight)
            padding = parseInt(padLeft) + parseInt(padRight)
        }
@@ -1316,7 +1322,7 @@ index 6411a01..2e1473d 100644
        }
      },
      colSepMouseMove (e) {
-@@ -1777,10 +2751,7 @@ export default {
+@@ -1777,10 +2756,7 @@ export default {
        }
      },
  
@@ -1328,7 +1334,7 @@ index 6411a01..2e1473d 100644
  
      panelFilterClick(item) {
        if (!this.disablePanelFilter)
-@@ -2006,6 +2977,33 @@ export default {
+@@ -2006,6 +2982,33 @@ export default {
      getSelectedRecords () {
        return this.table.filter((rec, i) => this.selected[i])
      },
@@ -1362,7 +1368,7 @@ index 6411a01..2e1473d 100644
      /*
      deleteSelectedRecords () {
        this.table = this.table.filter((rec, i) => typeof this.selected[i] === 'undefined')
-@@ -2014,9 +3012,29 @@ export default {
+@@ -2014,9 +3017,29 @@ export default {
      },
      */
      rowLabelClick (e) {
@@ -1394,7 +1400,7 @@ index 6411a01..2e1473d 100644
        if (e.shiftKey) {
          document.getSelection().removeAllRanges()
          if (this.prevSelect !== -1 && this.prevSelect !== rowPos) {
-@@ -2030,16 +3048,117 @@ export default {
+@@ -2030,16 +3053,117 @@ export default {
          }
        }
        else {
@@ -1483,7 +1489,7 @@ index 6411a01..2e1473d 100644
 +        if (tr) tr.classList.add('select')
 +      }
 +      this.selectedCount = Object.keys(this.selected).length
-     },
++    },
 +    rowLabelDragUp (e) {
 +      if (this._rowLabelDragMoveBound) {
 +        document.removeEventListener('mousemove', this._rowLabelDragMoveBound)
@@ -1513,12 +1519,12 @@ index 6411a01..2e1473d 100644
 +        }
 +        this.rowLabelClickOnRow(ev, d.anchorAbs)
 +      }
-+    },
+     },
 +    selectAllClick () {},
      reviseSelectedAfterTableChange () {
        this.rowIndex = {}
        this.table.forEach((rec, i) => (this.rowIndex[rec.$id] = i))
-@@ -2059,7 +3178,7 @@ export default {
+@@ -2059,7 +3183,7 @@ export default {
      selectRecord (rowPos) {
        if (typeof this.selected[rowPos] === 'undefined') {
          this.selectedCount++
@@ -1527,7 +1533,7 @@ index 6411a01..2e1473d 100644
          if (this.recordBody.children[rowPos - this.pageTop])
            this.recordBody.children[rowPos - this.pageTop].classList.add('select')
          this.lazy(rowPos, (buf) => {
-@@ -2098,10 +3217,16 @@ export default {
+@@ -2098,10 +3222,16 @@ export default {
        }
      },
      clearAllSelected () {
@@ -1548,7 +1554,7 @@ index 6411a01..2e1473d 100644
        this.selected = {}
        this.selectedCount = 0
      },
-@@ -2210,27 +3335,36 @@ export default {
+@@ -2210,27 +3340,36 @@ export default {
        return false
      },
      mouseDown (e) {
@@ -1594,7 +1600,7 @@ index 6411a01..2e1473d 100644
            setTimeout(() => {
              const r = this.$refs.texttip.getBoundingClientRect()
              if (rect.bottom + r.height > window.innerHeight) {
-@@ -2249,29 +3383,62 @@ export default {
+@@ -2249,29 +3388,62 @@ export default {
          }
          if (this.currentField.readonly) return
          this.inputBox.value = this.currentCell.textContent
@@ -1669,7 +1675,7 @@ index 6411a01..2e1473d 100644
        if (this.tipTimeout) clearTimeout(this.tipTimeout)
        if ((this.tip = this.errmsg[cell.getAttribute('id')]) === '') return
        const rect = cell.getBoundingClientRect()
-@@ -2280,8 +3447,8 @@ export default {
+@@ -2280,8 +3452,8 @@ export default {
        cell.addEventListener('mouseout', this.cellMouseOut)
      },
      numcolMouseOver (e) {
@@ -1680,7 +1686,7 @@ index 6411a01..2e1473d 100644
        if (this.tipTimeout) clearTimeout(this.tipTimeout)
        if ((this.tip = this.rowerr[cell.getAttribute('id')]) === '') return
        const rect = cell.getBoundingClientRect()
-@@ -2293,7 +3460,8 @@ export default {
+@@ -2293,7 +3465,8 @@ export default {
        this.tipTimeout = setTimeout(() => {
          this.tip = ''
        }, 1000)
@@ -1690,7 +1696,7 @@ index 6411a01..2e1473d 100644
      },
      mouseOver () {
        this.mousein = true
-@@ -2306,7 +3474,29 @@ export default {
+@@ -2306,7 +3479,29 @@ export default {
  
      /* *** InputBox *****************************************************************************************
       */
@@ -1720,7 +1726,7 @@ index 6411a01..2e1473d 100644
        this.textTip = ''
        if (colPos < 0) return false
        const top = this.pageTop
-@@ -2390,6 +3580,10 @@ export default {
+@@ -2390,6 +3585,10 @@ export default {
          row.children[0].classList.add('focus')
          this.labelTr.children[colPos + 1].classList.add('focus')
        }
@@ -1731,7 +1737,7 @@ index 6411a01..2e1473d 100644
        return true
      },
      inputSquareClick () {
-@@ -2405,12 +3599,12 @@ export default {
+@@ -2405,12 +3604,12 @@ export default {
        let cursor = 'text'
        if (!this.currentField.readonly
          && (this.currentField.options || this.currentField.type === 'date')
@@ -1746,7 +1752,7 @@ index 6411a01..2e1473d 100644
        if (this.currentField.readonly) return
        if (this.currentField.options) {
          e.preventDefault()
-@@ -2511,12 +3705,9 @@ export default {
+@@ -2511,12 +3710,9 @@ export default {
        return rec
      },
      deleteSelectedRecords () {
@@ -1762,7 +1768,7 @@ index 6411a01..2e1473d 100644
      },
      deleteRecord (valueRowPos, isUndo) {
        if (this.currentRowPos === valueRowPos) this.moveNorth()
-@@ -2607,9 +3798,21 @@ export default {
+@@ -2607,9 +3803,21 @@ export default {
          this.processing = false
        }, 0)
      },
@@ -1785,7 +1791,7 @@ index 6411a01..2e1473d 100644
        if (error) {
          this.errmsg[id] = error
          this.$emit('validate-error', error, row, field)
-@@ -2624,7 +3827,7 @@ export default {
+@@ -2624,7 +3832,7 @@ export default {
      },
      setRowError (error, row) {
        const rid = `rid-${row.$id}`
@@ -1794,7 +1800,7 @@ index 6411a01..2e1473d 100644
        if (error) {
          this.rowerr[rid] = error
          this.$emit('validate-error', error, row)
-@@ -2663,7 +3866,9 @@ export default {
+@@ -2663,7 +3871,9 @@ export default {
                else list = list.slice()
                if (this.inputBoxShow)
                  list = list.filter(element => element.toUpperCase().includes(value))
@@ -1805,7 +1811,7 @@ index 6411a01..2e1473d 100644
                // this.autocompleteSelect = list.findIndex(element => element.toUpperCase().includes(value))
              }
              else if (Object.values(field.options).length > 0) {
-@@ -2672,7 +3877,8 @@ export default {
+@@ -2672,7 +3882,8 @@ export default {
                else list = list.slice()
                if (this.inputBoxShow)
                  list = list.filter(element => element.toUpperCase().includes(value))
@@ -1815,7 +1821,7 @@ index 6411a01..2e1473d 100644
                // this.autocompleteSelect = list.findIndex(element => element.toUpperCase().includes(value))
              }
            }
-@@ -2737,10 +3943,18 @@ export default {
+@@ -2737,10 +3948,18 @@ export default {
          return a = ((a << 5) - a) + b.charCodeAt(0) | 0
        }, 0)
      },
@@ -1835,7 +1841,7 @@ index 6411a01..2e1473d 100644
        if (this.lazyTimeout[hash]) clearTimeout(this.lazyTimeout[hash])
        this.lazyTimeout[hash] = setTimeout(() => {
          p()
-@@ -2749,7 +3963,7 @@ export default {
+@@ -2749,7 +3968,7 @@ export default {
      },
      lazyBuf (item, p, delay) {
        if (!delay) delay = 20
@@ -1844,7 +1850,7 @@ index 6411a01..2e1473d 100644
        if (this.lazyBuffer[hash])
          this.lazyBuffer[hash].push(item)
        else
-@@ -2767,6 +3981,11 @@ export default {
+@@ -2767,6 +3986,11 @@ export default {
  </script>
  
  <style scoped>
@@ -1856,7 +1862,7 @@ index 6411a01..2e1473d 100644
  input:focus, input:active:focus, input.active:focus {
    outline: none;
    box-shadow: inset 0 -1px 0 #ddd;
-@@ -2774,13 +3993,42 @@ input:focus, input:active:focus, input.active:focus {
+@@ -2774,13 +3998,42 @@ input:focus, input:active:focus, input.active:focus {
  *, *::before, *::after {
    box-sizing: border-box;
  }
@@ -1900,7 +1906,7 @@ index 6411a01..2e1473d 100644
  .no-transition {
    transition: none !important;
  }
-@@ -2789,8 +4037,8 @@ input:focus, input:active:focus, input.active:focus {
+@@ -2789,8 +4042,8 @@ input:focus, input:active:focus, input.active:focus {
    position: fixed;
    padding: 3px;
    margin: -1px;
@@ -1911,7 +1917,7 @@ index 6411a01..2e1473d 100644
    /*height: fit-content;*/
    overflow-y: scroll;
    font-size: 0.88rem;
-@@ -2813,7 +4061,7 @@ input:focus, input:active:focus, input.active:focus {
+@@ -2813,7 +4066,7 @@ input:focus, input:active:focus, input.active:focus {
    cursor: pointer
  }
  .autocomplete-result.select {
@@ -1920,7 +1926,7 @@ index 6411a01..2e1473d 100644
  }
  .rb-square {
    width: 9px;
-@@ -2822,11 +4070,12 @@ input:focus, input:active:focus, input.active:focus {
+@@ -2822,11 +4075,12 @@ input:focus, input:active:focus, input.active:focus {
    border-left: 2px solid white;
    border-bottom: 0;
    border-right: 0;
@@ -1934,7 +1940,7 @@ index 6411a01..2e1473d 100644
  }
  .input-box {
    opacity: 0;
-@@ -2915,7 +4164,7 @@ input:focus, input:active:focus, input.active:focus {
+@@ -2915,7 +4169,7 @@ input:focus, input:active:focus, input.active:focus {
    text-align: left;
  }
  .systable tr.select td {
@@ -1943,7 +1949,7 @@ index 6411a01..2e1473d 100644
  }
  .systable th, .systable td {
    vertical-align: bottom;
-@@ -2979,22 +4228,24 @@ input:focus, input:active:focus, input.active:focus {
+@@ -2979,22 +4233,24 @@ input:focus, input:active:focus, input.active:focus {
    text-overflow: ellipsis;
  }
  .systable th.focus {
@@ -1972,7 +1978,7 @@ index 6411a01..2e1473d 100644
  }
  .systable .first-col {
    background:#e9ecef;
-@@ -3286,4 +4537,35 @@ a:disabled {
+@@ -3286,4 +4542,35 @@ a:disabled {
    left: 50%;
    transform: translate(-50%, 0%);
  }

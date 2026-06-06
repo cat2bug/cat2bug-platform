@@ -9,169 +9,169 @@
       :class="{ 'defect-page--excel-view': defectContentComponent === 'DefectExcel' }"
       :style="defectPageRootStyle"
     >
-    <project-label class="defect-project-label" />
-    <!-- 缺陷页标签-->
-    <div class="defect-tools-tab" ref="defectToolsTab">
-      <el-tabs ref="defectTabs" v-model="activeDefectTabName" @tab-click="selectDefectTabHandle">
-        <el-tab-pane v-for="tab in config.tabs" :key="tab.tabId+''" :name="tab.tabId+''">
-          <span slot="label" class="defect-tab-label">
-            <svg-icon icon-class="list2" class="defect-tab-icon" />
-            <span class="defect-tab-text" :title="tab.tabName">{{ tab.tabName }}</span>
-            <i style="width: 14px;" class="el-icon-close" @click.stop="removeDefectTabHandle(tab.tabId)" />
-          </span>
-        </el-tab-pane>
-        <el-tab-pane key="all-tab" :name="allTab">
-          <span slot="label" class="defect-tab-label">
-            <svg-icon icon-class="all" class="defect-tab-icon" />
-            <span class="defect-tab-text" :title="$t('defect.all-defect')">{{ $t('defect.all-defect') }}</span>
-          </span>
-        </el-tab-pane>
-        <el-tab-pane key="deleted-tab" :name="deletedTab">
-          <span slot="label" class="defect-tab-label">
-            <svg-icon icon-class="delete" class="defect-tab-icon" />
-            <span class="defect-tab-text" :title="$t('defect.deleted-defect')">{{ $t('defect.deleted-defect') }}</span>
-          </span>
-        </el-tab-pane>
-        <el-tab-pane :name="defectAddTabPaneName" disabled class="defect-tab-add-pane">
-          <svg-icon
-            slot="label"
-            icon-class="add-tab"
-            class-name="defect-tab-label defect-tab-add-btn"
-            :title="$t('defect.tab')"
-            @click.native.stop="addDefectTabHandle"
-            @mousedown.native.stop.prevent
-          />
-        </el-tab-pane>
-      </el-tabs>
-      <div class="defect-tools-tab-right">
-        <svg-icon v-show="statisticPanelVisible" class="defect-tools-button" icon-class="view-statistic" @click.native="addStatisticHandle" />
-      </div>
-    </div>
-    <!-- 统计板块-->
-    <cat2-bug-statistic ref="defectStatistic" v-show="statisticPanelVisible" class="defect-tools-statistic" :params="{}" :draggable="true" />
-    <!-- 动态缺陷显示组件-->
-    <!--    <keep-alive>-->
-    <component
-      :is="defectContentComponent"
-      ref="defectContentComponent"
-      :class="['defect-content-slot', { 'defect-content-slot--excel': defectContentComponent === 'DefectExcel' }]"
-      :query="queryParams"
-      :project-id="projectId"
-      v-bind="defectViewExtraProps"
-      @defect-click="handleDefectClick"
-      @refresh="handleRefreshQuery"
-    >
-      <template slot="left-tools">
-        <!-- 搜索-->
-        <div class="defect-tools-search">
-          <el-form v-show="showSearch" ref="queryForm" :model="queryParams" size="small" :inline="true" label-width="0">
-            <el-form-item>
-              <!-- 缺陷显示模式切换 -->
-              <el-radio-group v-model="defectContentComponent" class="defect-content-view-switch" size="mini" @input="handleDefectContentChange">
-                <!-- 表格模式 -->
-                <el-radio-button label="DefectTable">
-                  <span class="defect-content-view-switch-inner" :title="$t('table')">
-                    <svg-icon icon-class="table" />
-                  </span>
-                </el-radio-button>
-                <!--                <el-radio-button label="DefectCalendar">-->
-                <!--                  <span class="defect-content-view-switch-inner" :title="$t('calendar')">-->
-                <!--                    <svg-icon icon-class="date" />-->
-                <!--                  </span>-->
-                <!--                </el-radio-button>-->
-                <!-- Excel模式 -->
-                <el-radio-button label="DefectExcel">
-                  <span class="defect-content-view-switch-inner" :title="$t('excel')">
-                    <svg-icon icon-class="excel2" />
-                  </span>
-                </el-radio-button>
-              </el-radio-group>
-            </el-form-item>
-            <el-form-item prop="defectType">
-              <el-dropdown split-button size="small" @command="defectTypeChangeHandle" @click="selectDefectTabHandle">
-                {{ $i18n.t(activeDefectTypeName) }}
-                <el-dropdown-menu slot="dropdown">
-                  <el-dropdown-item command="">{{ $i18n.t('defect.all-type') }}</el-dropdown-item>
-                  <el-dropdown-item v-for="type in config.types" :key="'type_'+type.key" :command="type.value">{{ $i18n.t(type.value) }}</el-dropdown-item>
-                </el-dropdown-menu>
-              </el-dropdown>
-            </el-form-item>
-            <el-form-item prop="defectState">
-              <el-select
-                v-model="queryParams.params.defectStates"
-                class="defect-state-select"
-                size="small"
-                multiple
-                collapse-tags
-                clearable
-                :placeholder="$t('defect.select-state')"
-                @change="handleQuery()"
-              >
-                <template v-slot:prefix>
-                  <i class="select-header-icon el-icon-finished"></i>
-                </template>
-                <el-option
-                  v-for="state in config.states"
-                  :key="state.key"
-                  :label="$i18n.t(state.value)"
-                  :value="state.key"
-                />
-              </el-select>
-            </el-form-item>
-            <el-form-item prop="handleBy">
-              <select-project-member
-                v-model="queryParams.handleBy"
-                :project-id="projectId"
-                placeholder="defect.select-handle-by"
-                :is-head="false"
-                size="small"
-                icon="el-icon-user"
-                @input="handleQuery()"
-              />
-            </el-form-item>
-            <el-form-item prop="nameVersionKeyword">
-              <el-input
-                v-model="queryParams.nameVersionKeyword"
-                size="small"
-                :placeholder="$t('defect.enter-name-or-version')"
-                prefix-icon="el-icon-search"
-                clearable
-                @input="handleQuery()"
-              />
-            </el-form-item>
-          </el-form>
+      <project-label class="defect-project-label" />
+      <!-- 缺陷页标签-->
+      <div ref="defectToolsTab" class="defect-tools-tab">
+        <el-tabs ref="defectTabs" v-model="activeDefectTabName" @tab-click="selectDefectTabHandle">
+          <el-tab-pane v-for="tab in config.tabs" :key="tab.tabId+''" :name="tab.tabId+''">
+            <span slot="label" class="defect-tab-label">
+              <svg-icon icon-class="list2" class="defect-tab-icon" />
+              <span class="defect-tab-text" :title="tab.tabName">{{ tab.tabName }}</span>
+              <i style="width: 14px;" class="el-icon-close" @click.stop="removeDefectTabHandle(tab.tabId)" />
+            </span>
+          </el-tab-pane>
+          <el-tab-pane key="all-tab" :name="allTab">
+            <span slot="label" class="defect-tab-label">
+              <svg-icon icon-class="all" class="defect-tab-icon" />
+              <span class="defect-tab-text" :title="$t('defect.all-defect')">{{ $t('defect.all-defect') }}</span>
+            </span>
+          </el-tab-pane>
+          <el-tab-pane key="deleted-tab" :name="deletedTab">
+            <span slot="label" class="defect-tab-label">
+              <svg-icon icon-class="delete" class="defect-tab-icon" />
+              <span class="defect-tab-text" :title="$t('defect.deleted-defect')">{{ $t('defect.deleted-defect') }}</span>
+            </span>
+          </el-tab-pane>
+          <el-tab-pane :name="defectAddTabPaneName" disabled class="defect-tab-add-pane">
+            <svg-icon
+              slot="label"
+              icon-class="add-tab"
+              class-name="defect-tab-label defect-tab-add-btn"
+              :title="$t('defect.tab')"
+              @click.native.stop="addDefectTabHandle"
+              @mousedown.native.stop.prevent
+            />
+          </el-tab-pane>
+        </el-tabs>
+        <div class="defect-tools-tab-right">
+          <svg-icon v-show="statisticPanelVisible" class="defect-tools-button" icon-class="view-statistic" @click.native="addStatisticHandle" />
         </div>
-      </template>
-      <template slot="right-tools">
-        <el-dropdown
-          v-if="defectAddToolbarVisible"
-          class="defect-add-dropdown"
-          split-button
-          size="small"
-          type="primary"
-          @click="handleAdd"
-        >
-          <i class="el-icon-plus" />{{ $i18n.t('defect.create') }}
-          <el-dropdown-menu slot="dropdown" class="defect-add-dropdown-menu">
-            <el-dropdown-item @click.native="handleAdd"><i class="el-icon-plus" />{{ $i18n.t('defect.create') }}</el-dropdown-item>
-            <el-divider class="defect-add-dropdown-divider" />
-            <el-dropdown-item @click.native="handleImport"><i class="el-icon-upload2" />{{ $t('defect.import') }}</el-dropdown-item>
-            <el-dropdown-item @click.native="handleExport"><i class="el-icon-download" />{{ $t('defect.export') }}</el-dropdown-item>
-          </el-dropdown-menu>
-        </el-dropdown>
-      </template>
-    </component>
-    <!--    </keep-alive>-->
-    <!-- 缺陷日历-->
-    <!--    <defect-calendar v-else-if="defectContentId=='calendar'" ref="defectCalendar" />-->
-    <!-- 添加或修改缺陷对话框 -->
-    <add-defect ref="addDefectForm" :project-id="getProjectId()" @added="search(queryParams)" />
-    <!-- 浏览缺陷对话框 -->
-    <handle-defect ref="editDefectForm" :project-id="getProjectId()" @change="handleRefreshQuery" @delete="handleRefreshQuery" />
-    <!-- 添加页签对话框 -->
-    <defect-tab-dialog ref="defectTabDialog" :project-id="getProjectId()" :member-id="userId" @add="tabAddHandle" />
-    <!-- 导入缺陷 -->
-    <defect-import ref="defectImportDialog" :project-id="getProjectId()" @upload="search(queryParams)" />
+      </div>
+      <!-- 统计板块-->
+      <cat2-bug-statistic v-show="statisticPanelVisible" ref="defectStatistic" class="defect-tools-statistic" :params="{}" :draggable="true" />
+      <!-- 动态缺陷显示组件-->
+      <!--    <keep-alive>-->
+      <component
+        :is="defectContentComponent"
+        ref="defectContentComponent"
+        :class="['defect-content-slot', { 'defect-content-slot--excel': defectContentComponent === 'DefectExcel' }]"
+        :query="queryParams"
+        :project-id="projectId"
+        v-bind="defectViewExtraProps"
+        @defect-click="handleDefectClick"
+        @refresh="handleRefreshQuery"
+      >
+        <template slot="left-tools">
+          <!-- 搜索-->
+          <div class="defect-tools-search">
+            <el-form v-show="showSearch" ref="queryForm" :model="queryParams" size="small" :inline="true" label-width="0">
+              <el-form-item>
+                <!-- 缺陷显示模式切换 -->
+                <el-radio-group v-model="defectContentComponent" class="defect-content-view-switch" size="mini" @input="handleDefectContentChange">
+                  <!-- 表格模式 -->
+                  <el-radio-button label="DefectTable">
+                    <span class="defect-content-view-switch-inner" :title="$t('table')">
+                      <svg-icon icon-class="table" />
+                    </span>
+                  </el-radio-button>
+                  <!--                <el-radio-button label="DefectCalendar">-->
+                  <!--                  <span class="defect-content-view-switch-inner" :title="$t('calendar')">-->
+                  <!--                    <svg-icon icon-class="date" />-->
+                  <!--                  </span>-->
+                  <!--                </el-radio-button>-->
+                  <!-- Excel模式 -->
+                  <el-radio-button label="DefectExcel">
+                    <span class="defect-content-view-switch-inner" :title="$t('excel')">
+                      <svg-icon icon-class="excel2" />
+                    </span>
+                  </el-radio-button>
+                </el-radio-group>
+              </el-form-item>
+              <el-form-item prop="defectType">
+                <el-dropdown split-button size="small" @command="defectTypeChangeHandle" @click="selectDefectTabHandle">
+                  {{ $i18n.t(activeDefectTypeName) }}
+                  <el-dropdown-menu slot="dropdown">
+                    <el-dropdown-item command="">{{ $i18n.t('defect.all-type') }}</el-dropdown-item>
+                    <el-dropdown-item v-for="type in config.types" :key="'type_'+type.key" :command="type.value">{{ $i18n.t(type.value) }}</el-dropdown-item>
+                  </el-dropdown-menu>
+                </el-dropdown>
+              </el-form-item>
+              <el-form-item prop="defectState">
+                <el-select
+                  v-model="queryParams.params.defectStates"
+                  class="defect-state-select"
+                  size="small"
+                  multiple
+                  collapse-tags
+                  clearable
+                  :placeholder="$t('defect.select-state')"
+                  @change="handleQuery()"
+                >
+                  <template #prefix>
+                    <i class="select-header-icon el-icon-finished" />
+                  </template>
+                  <el-option
+                    v-for="state in config.states"
+                    :key="state.key"
+                    :label="$i18n.t(state.value)"
+                    :value="state.key"
+                  />
+                </el-select>
+              </el-form-item>
+              <el-form-item prop="handleBy">
+                <select-project-member
+                  v-model="queryParams.handleBy"
+                  :project-id="projectId"
+                  placeholder="defect.select-handle-by"
+                  :is-head="false"
+                  size="small"
+                  icon="el-icon-user"
+                  @input="handleQuery()"
+                />
+              </el-form-item>
+              <el-form-item prop="nameVersionKeyword">
+                <el-input
+                  v-model="queryParams.nameVersionKeyword"
+                  size="small"
+                  :placeholder="$t('defect.enter-name-or-version')"
+                  prefix-icon="el-icon-search"
+                  clearable
+                  @input="handleQuery()"
+                />
+              </el-form-item>
+            </el-form>
+          </div>
+        </template>
+        <template slot="right-tools">
+          <el-dropdown
+            v-if="defectAddToolbarVisible"
+            class="defect-add-dropdown"
+            split-button
+            size="small"
+            type="primary"
+            @click="handleAdd"
+          >
+            <i class="el-icon-plus" />{{ $i18n.t('defect.create') }}
+            <el-dropdown-menu slot="dropdown" class="defect-add-dropdown-menu">
+              <el-dropdown-item @click.native="handleAdd"><i class="el-icon-plus" />{{ $i18n.t('defect.create') }}</el-dropdown-item>
+              <el-divider class="defect-add-dropdown-divider" />
+              <el-dropdown-item @click.native="handleImport"><i class="el-icon-upload2" />{{ $t('defect.import') }}</el-dropdown-item>
+              <el-dropdown-item @click.native="handleExport"><i class="el-icon-download" />{{ $t('defect.export') }}</el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+        </template>
+      </component>
+      <!--    </keep-alive>-->
+      <!-- 缺陷日历-->
+      <!--    <defect-calendar v-else-if="defectContentId=='calendar'" ref="defectCalendar" />-->
+      <!-- 添加或修改缺陷对话框 -->
+      <add-defect ref="addDefectForm" :project-id="getProjectId()" @added="search(queryParams)" />
+      <!-- 浏览缺陷对话框 -->
+      <handle-defect ref="editDefectForm" :project-id="getProjectId()" @change="handleRefreshQuery" @delete="handleRefreshQuery" />
+      <!-- 添加页签对话框 -->
+      <defect-tab-dialog ref="defectTabDialog" :project-id="getProjectId()" :member-id="userId" @add="tabAddHandle" />
+      <!-- 导入缺陷 -->
+      <defect-import ref="defectImportDialog" :project-id="getProjectId()" @upload="search(queryParams)" />
     </div>
   </div>
 </template>
@@ -377,6 +377,7 @@ export default {
     }
   },
   activated() {
+    this.registerDefectShortcuts()
     /** keep-alive 返回后刷新表格布局（固定列等） */
     this.$nextTick(() => {
       const c = this.$refs.defectContentComponent
@@ -391,8 +392,12 @@ export default {
       })
     })
   },
+  deactivated() {
+    if (this.$shortcut) this.$shortcut.unregisterPage('defect')
+  },
   // 移除滚动条监听
   destroyed() {
+    if (this.$shortcut) this.$shortcut.unregisterPage('defect')
   },
   methods: {
     checkPermi,
@@ -422,6 +427,55 @@ export default {
       if (this.$route.query.defectId) {
         this.$refs.editDefectForm.open(this.$route.query.defectId)
       }
+      this.registerDefectShortcuts()
+    },
+    /** 向快捷键引擎注册缺陷页动作（动作引导键 Space 打开） */
+    registerDefectShortcuts() {
+      if (!this.$shortcut) return
+      this.$shortcut.registerPage('defect', [
+        { key: 'new', defaultLetter: 'N', run: () => this.handleAdd() },
+        { key: 'export', defaultLetter: 'E', run: () => this.handleExport() },
+        { key: 'import', defaultLetter: 'I', run: () => this.handleImport() },
+        { key: 'query', defaultLetter: 'Q', run: () => this.shortcutFocusQuery() },
+        { key: 'switchTab', defaultLetter: 'T', run: () => this.shortcutSwitchTab() },
+        { key: 'statistic', defaultLetter: 'V', run: () => this.addStatisticHandle() },
+        { key: 'prevPage', defaultLetter: 'B', run: () => this.shortcutChangePage(-1) },
+        { key: 'nextPage', defaultLetter: 'P', run: () => this.shortcutChangePage(1) }
+      ])
+    },
+    /** 聚焦关键字搜索框（查询） */
+    shortcutFocusQuery() {
+      this.showSearch = true
+      this.$nextTick(() => {
+        const form = this.$refs.queryForm && this.$refs.queryForm.$el
+        const input = form && form.querySelector('input.el-input__inner[type="text"]')
+        if (input) {
+          input.focus()
+        } else {
+          this.handleQuery()
+        }
+      })
+    },
+    /** 循环切换缺陷页签 */
+    shortcutSwitchTab() {
+      const names = []
+      if (this.config && this.config.tabs) {
+        this.config.tabs.forEach(t => names.push(String(t.tabId)))
+      }
+      names.push(this.allTab, this.deletedTab)
+      const cur = String(this.activeDefectTabName)
+      const idx = names.indexOf(cur)
+      const next = names[(idx + 1) % names.length]
+      this.activeDefectTabName = next
+      this.selectDefectTabHandle({ name: next })
+    },
+    /** 翻页（delta: -1 上一页 / 1 下一页） */
+    shortcutChangePage(delta) {
+      const cur = this.queryParams.pageNum || 1
+      const target = Math.max(1, cur + delta)
+      if (target === cur && delta < 0) return
+      this.queryParams.pageNum = target
+      this.handleRefreshQuery()
     },
     /**
      * 统一列表查询入口：通用条件与扩展条件分离，避免扩展键在统计块切换时残留。
@@ -1139,14 +1193,14 @@ export default {
   cursor: pointer;
   color: #606266;
   margin: 0px 5px;
-  
+
   @at-root html.dark & {
     color: var(--text-color-regular);
   }
 }
 .defect-tools-button:hover {
   color: #409EFF;
-  
+
   @at-root html.dark & {
     color: #FFC107 !important;
   }

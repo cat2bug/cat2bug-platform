@@ -2,8 +2,8 @@
   <div class="navbar">
     <hamburger id="hamburger-container" :is-active="sidebar.opened" class="hamburger-container" @toggleClick="toggleSideBar" />
 
-    <breadcrumb id="breadcrumb-container" class="breadcrumb-container" v-if="!topNav"/>
-    <top-nav id="topmenu-container" class="topmenu-container" v-if="topNav"/>
+    <breadcrumb v-if="!topNav" id="breadcrumb-container" class="breadcrumb-container" />
+    <top-nav v-if="topNav" id="topmenu-container" class="topmenu-container" />
 
     <div class="right-menu">
       <template v-if="device!=='mobile'">
@@ -20,7 +20,7 @@
         </el-tooltip>
         <el-tooltip :content="$t('notice')" effect="dark" placement="bottom">
           <router-link to="/notice/index" class="right-menu-item hover-effect">
-            <el-badge :hidden="noticeCount==0" is-dot class="item"><svg-icon icon-class="notice"></svg-icon></el-badge>
+            <el-badge :hidden="noticeCount==0" is-dot class="item"><svg-icon icon-class="notice" /></el-badge>
           </router-link>
         </el-tooltip>
         <el-tooltip :content="$t('system-doc')" effect="dark" placement="bottom">
@@ -35,15 +35,18 @@
         </span>
         <el-dropdown-menu slot="dropdown">
           <router-link to="/member/profile">
-            <el-dropdown-item>{{$t('my-center')}}</el-dropdown-item>
+            <el-dropdown-item>{{ $t('my-center') }}</el-dropdown-item>
+          </router-link>
+          <router-link to="/member/keyboard">
+            <el-dropdown-item>{{ $t('keyboard.title') }}</el-dropdown-item>
           </router-link>
           <el-dropdown-item divided @click.native="logout">
-            <span>{{$t('logout')}}</span>
+            <span>{{ $t('logout') }}</span>
           </el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
     </div>
-    <audio hidden :src="noticeSound" ref="audio" @ended="handleAudioEnded"></audio>
+    <audio ref="audio" hidden :src="noticeSound" @ended="handleAudioEnded" />
   </div>
 </template>
 
@@ -57,23 +60,12 @@ import Search from '@/components/HeaderSearch'
 import Cat2BugSite from '@/components/Cat2Bug/Site'
 import Cat2BugGit from '@/components/Cat2Bug/Git'
 import Cat2BugDoc from '@/components/Cat2Bug/Doc'
-import Cat2BugAvatar from "@/components/Cat2BugAvatar";
-import LangSelect from "@/components/LangSelect";
-import {groupStatisticsNotice} from "@/api/system/notice";
-import { checkPermi } from "@/utils/permission";
+import Cat2BugAvatar from '@/components/Cat2BugAvatar'
+import LangSelect from '@/components/LangSelect'
+import { groupStatisticsNotice } from '@/api/system/notice'
+import { checkPermi } from '@/utils/permission'
 
 export default {
-  data() {
-    return {
-      audio: null,
-      noticeCount: 0,
-      topicId: null,
-      panelTopicId: null,
-      langIcon: 'lang-zh-CN',
-      langName: '简体中文',
-      noticeSound: null,
-    }
-  },
   components: {
     Breadcrumb,
     TopNav,
@@ -85,6 +77,17 @@ export default {
     Cat2BugDoc,
     Cat2BugAvatar,
     LangSelect
+  },
+  data() {
+    return {
+      audio: null,
+      noticeCount: 0,
+      topicId: null,
+      panelTopicId: null,
+      langIcon: 'lang-zh-CN',
+      langName: '简体中文',
+      noticeSound: null
+    }
   },
   computed: {
     ...mapGetters([
@@ -111,7 +114,7 @@ export default {
           key: 'showSettings',
           value: val
         })
-      },
+      }
     },
     topNav: {
       get() {
@@ -120,69 +123,69 @@ export default {
     }
   },
   created() {
-    this.guoNoticeCount();
+    this.guoNoticeCount()
   },
   mounted() {
     // 订阅WebSocket下载模型消息
     this.topicId = this.$topic.subscribe(this.$topic.NOTICE_TOPIC, (name, data) => {
-      this.guoNoticeCount(data);
-    });
+      this.guoNoticeCount(data)
+    })
     this.panelTopicId = this.$topic.subscribe(this.$topic.PANEL_NOTICE_TOPIC, (name, data) => {
-      if(data && data.data) {
-        const msg = data.data;
-        let host = `${window.location.protocol}//${window.location.host}`;
-        if(msg.panel) {
+      if (data && data.data) {
+        const msg = data.data
+        const host = `${window.location.protocol}//${window.location.host}`
+        if (msg.panel) {
           this.$notify({
             title: this.$i18n.t('notice'),
             dangerouslyUseHTMLString: true,
             type: 'success',
             offset: 50,
             message: `<a target="_blank" style="color: #409eff;" href="${host}/#/notice/index?noticeId=${msg.noticeId}">${msg.title}<\a>`
-          });
+          })
         }
       }
-    });
+    })
   },
   beforeDestroy() {
     // 取消下载模型的WebSocket订阅
-    this.$topic.unsubscribe(this.topicId);
-    this.$topic.unsubscribe(this.panelTopicId);
-    this.topicId = null;
-    this.panelTopicId = null;
+    this.$topic.unsubscribe(this.topicId)
+    this.$topic.unsubscribe(this.panelTopicId)
+    this.topicId = null
+    this.panelTopicId = null
   },
   methods: {
     /** 播放音效 */
     playMusic(soundName) {
-      if(soundName) {
-        this.noticeSound = require('@/assets/sound/'+soundName)
+      if (soundName) {
+        this.noticeSound = require('@/assets/sound/' + soundName)
       } else {
         this.noticeSound = require('@/assets/sound/default.mp3')
       }
       // 播放
-      this.$nextTick(()=>{
-        this.$refs.audio.play();
-      });
+      this.$nextTick(() => {
+        this.$refs.audio.play()
+      })
     },
     /** 声音播放完成 */
     handleAudioEnded() {
-      this.$refs.audio.pause(); // 停止
-      this.$refs.audio.load();
+      this.$refs.audio.pause() // 停止
+      this.$refs.audio.load()
     },
     /** 获取通知数量 */
     guoNoticeCount(data) {
       if (!checkPermi(['notice:list'])) {
-        return;
+        return
       }
-      groupStatisticsNotice().then(res=>{
-        let count = 0;
-        res.rows.forEach(g=>{
-          count += g.notReadCount;
-        });
-        this.noticeCount = count;
-        if(data && data.data) {
-          const msg = data.data;
-          if(msg.backgroundMusic) {
-            this.playMusic(msg.backgroundMusicUrl);
+      groupStatisticsNotice().then(res => {
+        let count = 0
+        res.rows.forEach(g => {
+          count += g.notReadCount
+        })
+        this.noticeCount = count
+        if (data && data.data) {
+          const msg = data.data
+          if (msg.backgroundMusic) {
+            this.playMusic(msg.backgroundMusicUrl)
           }
         }
       })
@@ -199,9 +202,9 @@ export default {
       }).then(() => {
         // 用户登出
         this.$store.dispatch('LogOut').then(() => {
-          location.href = '/index';
+          location.href = '/index'
         })
-      }).catch(() => {});
+      }).catch(() => {})
     },
     toggleThemeMode() {
       const mode = this.themeMode === 'dark' ? 'light' : 'dark'

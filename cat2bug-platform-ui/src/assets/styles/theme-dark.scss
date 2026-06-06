@@ -116,6 +116,15 @@
   --navbar-text: #303133;
   --tags-view-bg: #ffffff;
   --tags-view-border: #d8dce5;
+
+  /* 键盘/快捷键聚焦环：浅色主题蓝色 */
+  --cat2bug-primary: #409eff;
+  --cat2bug-field-focus-color: #1890ff;
+  --cat2bug-field-focus-ring: rgba(24, 144, 255, 0.45);
+  --cat2bug-field-focus-glow: rgba(24, 144, 255, 0.6);
+  --cat2bug-field-focus-glow-bright: rgba(24, 144, 255, 0.7);
+  --cat2bug-field-focus-ring-fade: rgba(24, 144, 255, 0.35);
+  --cat2bug-field-focus-ring-none: rgba(24, 144, 255, 0);
 }
 
 html.dark {
@@ -216,6 +225,15 @@ html.dark {
   --navbar-text: #e5eaf3;
   --tags-view-bg: #1e1e20;
   --tags-view-border: #363637;
+
+  /* 键盘/快捷键聚焦环：暗色主题金色 */
+  --cat2bug-primary: #FFC107;
+  --cat2bug-field-focus-color: #ffce3a;
+  --cat2bug-field-focus-ring: rgba(255, 206, 58, 0.45);
+  --cat2bug-field-focus-glow: rgba(255, 206, 58, 0.6);
+  --cat2bug-field-focus-glow-bright: rgba(255, 206, 58, 0.7);
+  --cat2bug-field-focus-ring-fade: rgba(255, 206, 58, 0.35);
+  --cat2bug-field-focus-ring-none: rgba(255, 206, 58, 0);
 
   /* 未收藏：空心星描边，无实心灰底 */
   --star-switch-off-stroke: var(--text-color-secondary, #909399);
@@ -959,6 +977,16 @@ html.dark {
   .el-input__count {
     background-color: transparent !important;
     color: var(--text-color-secondary) !important;
+
+    .el-input__count-inner {
+      background: transparent !important;
+      color: var(--text-color-secondary) !important;
+    }
+  }
+
+  .el-textarea .el-input__count {
+    background: transparent !important;
+    color: var(--text-color-secondary) !important;
   }
 
   // 适配 Element UI 上传组件 (el-upload) 暗黑模式
@@ -1038,6 +1066,10 @@ html.dark {
 
     .el-input__inner {
       border-color: var(--border-color-base) !important;
+
+      &:focus {
+        border-color: #FFC107 !important;
+      }
     }
   }
 
@@ -1579,6 +1611,30 @@ html.dark {
       .el-switch__core {
         border-color: #FFC107 !important;
         background-color: #FFC107 !important;
+      }
+    }
+
+    /* 聚焦：仅外层单环（与 input 焦点一致），轨道保持关/开态原描边 */
+    &:focus-within {
+      border-radius: 20px;
+      box-shadow: 0 0 0 1px #FFC107;
+
+      .el-switch__core {
+        box-shadow: none !important;
+      }
+
+      &:not(.is-checked) .el-switch__core {
+        border-color: #4c4d4f !important;
+        background-color: #4c4d4f !important;
+      }
+
+      &.is-checked {
+        box-shadow: 0 0 0 1px #ffffff;
+
+        .el-switch__core {
+          border-color: #FFC107 !important;
+          background-color: #FFC107 !important;
+        }
       }
     }
 
@@ -2133,6 +2189,36 @@ html.dark {
       &:hover {
         background-color: #363637 !important;
       }
+    }
+  }
+
+  // 抽屉内容区滚动条（新建/编辑缺陷等）
+  .el-drawer .el-drawer__body {
+    scrollbar-color: #4c4d4f #1a1a1a !important;
+
+    &::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+      background-color: #1a1a1a !important;
+    }
+
+    &::-webkit-scrollbar-track,
+    &::-webkit-scrollbar-track-piece {
+      background-color: #1a1a1a !important;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background-color: #4c4d4f !important;
+      border: 2px solid #1a1a1a !important;
+      border-radius: 6px;
+
+      &:hover {
+        background-color: #606266 !important;
+      }
+    }
+
+    &::-webkit-scrollbar-corner {
+      background-color: #1a1a1a !important;
     }
   }
 
@@ -2770,13 +2856,40 @@ html.dark {
       }
     }
 
+    .select-module-menu-prev {
+      border-right-color: var(--border-color-light) !important;
+    }
+
     .select-module-menu {
-      .module-menu {
-        border-left: 1px solid var(--border-color-light) !important;
+      scrollbar-color: var(--border-color-light) transparent;
+      scrollbar-width: thin;
+
+      &::-webkit-scrollbar {
+        height: 6px;
+        width: 6px;
       }
-      .module-menu:first-child {
+      &::-webkit-scrollbar-thumb {
+        background: var(--border-color-light);
+        border-radius: 3px;
+      }
+
+      .module-menu-column {
+        border-left: 1px solid var(--border-color-light) !important;
+        scrollbar-color: var(--border-color-light) transparent;
+        scrollbar-width: thin;
+      }
+      .module-menu-column:first-child {
         border-left-width: 0 !important;
       }
+      .module-menu {
+        scrollbar-color: var(--border-color-light) transparent;
+        scrollbar-width: thin;
+      }
+    }
+
+    .module-menu-footer-divider {
+      border-top-color: var(--border-color-light) !important;
+      margin-bottom: 10px !important;
     }
 
     .module-menu-item {
@@ -2786,6 +2899,16 @@ html.dark {
         background-color: var(--table-row-hover-bg) !important;
         color: #FFC107 !important;
       }
+    }
+
+    .module-menu-item.module-menu-row.is-path-active {
+      background-color: #2e2e33 !important;
+      color: var(--text-color-regular) !important;
+    }
+
+    .module-menu-item.module-menu-row.is-keyboard-active {
+      background-color: #3a3a42 !important;
+      color: var(--text-color-regular) !important;
     }
 
     .select-module-add-button {

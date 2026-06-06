@@ -87,6 +87,11 @@ $cat2bug-radius: var(--cat2bug-border-radius, 4px);
   border-radius: $cat2bug-radius !important;
 }
 
+/* 数字输入框聚焦边框与普通 input 一致（浅色主题蓝色） */
+.el-input-number:not(.is-disabled) .el-input .el-input__inner:focus {
+  border-color: var(--cat2bug-field-focus-color, #1890ff) !important;
+}
+
 .el-button:not(.is-circle):not(.el-button--text) {
   border-radius: $cat2bug-radius !important;
 }

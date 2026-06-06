@@ -220,8 +220,10 @@
         <el-form-item :label="$t('defect.custom-field.field-label')" prop="fieldLabel">
           <el-input
             v-model="form.fieldLabel"
+            class="defect-field-label-input"
             :placeholder="$t('defect.custom-field.field-label-placeholder')"
-            maxlength="128"
+            maxlength="6"
+            show-word-limit
           />
         </el-form-item>
         <el-form-item :label="$t('defect.custom-field.field-type')" prop="fieldType">
@@ -615,6 +617,10 @@ export default {
     validateFieldLabelRule(rule, value, callback) {
       if (!value || !String(value).trim()) {
         callback(new Error(this.$t('defect.custom-field.field-label-required')))
+        return
+      }
+      if (String(value).trim().length > 6) {
+        callback(new Error(this.$t('defect.custom-field.field-label-max-length')))
         return
       }
       if (this.isFieldLabelDuplicated(value, this.form.fieldId || null)) {
@@ -1075,6 +1081,33 @@ html.dark .defect-field-page {
 }
 
 html.dark .defect-field-form-dialog {
+  .defect-field-label-input.el-input {
+    .el-input__inner {
+      background-color: var(--input-bg, #141414) !important;
+      border-color: var(--input-border, #4c4d4f) !important;
+      color: var(--input-color, #e5eaf3) !important;
+
+      &::placeholder {
+        color: var(--text-color-placeholder, #6c6e72) !important;
+      }
+
+      &:focus {
+        border-color: var(--cat2bug-field-focus-color, #ffc107) !important;
+      }
+    }
+
+    .el-input__count,
+    .el-input__count-inner {
+      background: transparent !important;
+      color: var(--text-color-secondary, #a3a6ad) !important;
+    }
+
+    &.is-exceed .el-input__count,
+    &.is-exceed .el-input__count-inner {
+      color: var(--color-danger, #f56c6c) !important;
+    }
+  }
+
   .defect-field-readonly.el-input.is-disabled .el-input__inner,
   .defect-field-readonly .el-input.is-disabled .el-input__inner {
     background-color: rgba(255, 255, 255, 0.06) !important;

@@ -1,35 +1,42 @@
 <template>
   <div class="upload-file">
-    <el-upload
-      multiple
-      :drag="drag"
-      :action="uploadFileUrl"
-      :before-upload="handleBeforeUpload"
-      :file-list="fileList"
-      :limit="limit"
-      :on-error="handleUploadError"
-      :on-exceed="handleExceed"
-      :on-success="handleUploadSuccess"
-      :show-file-list="false"
-      :headers="headers"
-      class="upload-file-uploader"
-      ref="fileUpload"
+    <div
+      ref="focusTarget"
+      class="cat2bug-upload-focus-target upload-file-focus-target"
+      tabindex="0"
+      @keydown="onFocusShellKeydown"
     >
-      <!-- 拖动图标 -->
-      <div v-if="drag">
-        <i class="el-icon-upload"></i>
-        <div class="el-upload__text">{{ $t('case.import-prompt') }}<em>{{ $t('click.upload') }}</em></div>
-      </div>
-      <!-- 上传按钮 -->
-      <el-button v-else size="mini" type="primary">{{$i18n.t('upload.select-file')}}</el-button>
-      <!-- 上传提示 -->
-      <div class="el-upload__tip" slot="tip" v-if="showTip">
-        {{$t('upload.please-upload')}}
-        <template v-if="fileSize"> {{$t('upload.size-not-exceeding')}} <b style="color: #f56c6c">{{ fileSize }}MB</b> </template>
-        <template v-if="fileType && fileType.length>0"> {{$t('upload.format-is')}} <b style="color: #f56c6c">{{ fileType.join("/") }}</b> </template>
-        {{$t('upload.files')}}
-      </div>
-    </el-upload>
+      <el-upload
+        multiple
+        :drag="drag"
+        :action="uploadFileUrl"
+        :before-upload="handleBeforeUpload"
+        :file-list="fileList"
+        :limit="limit"
+        :on-error="handleUploadError"
+        :on-exceed="handleExceed"
+        :on-success="handleUploadSuccess"
+        :show-file-list="false"
+        :headers="headers"
+        class="upload-file-uploader"
+        ref="fileUpload"
+      >
+        <!-- 拖动图标 -->
+        <div v-if="drag">
+          <i class="el-icon-upload"></i>
+          <div class="el-upload__text">{{ $t('case.import-prompt') }}<em>{{ $t('click.upload') }}</em></div>
+        </div>
+        <!-- 上传按钮 -->
+        <el-button v-else size="mini" type="primary">{{$i18n.t('upload.select-file')}}</el-button>
+        <!-- 上传提示 -->
+        <div class="el-upload__tip" slot="tip" v-if="showTip">
+          {{$t('upload.please-upload')}}
+          <template v-if="fileSize"> {{$t('upload.size-not-exceeding')}} <b style="color: #f56c6c">{{ fileSize }}MB</b> </template>
+          <template v-if="fileType && fileType.length>0"> {{$t('upload.format-is')}} <b style="color: #f56c6c">{{ fileType.join("/") }}</b> </template>
+          {{$t('upload.files')}}
+        </div>
+      </el-upload>
+    </div>
 
     <!-- 文件列表 -->
     <transition-group class="upload-file-list el-upload-list el-upload-list--text" name="el-fade-in-linear" tag="ul">
@@ -50,6 +57,7 @@ import { getToken } from "@/utils/auth";
 import i18n from "@/utils/i18n/i18n";
 import {strFormat} from "@/utils";
 import {setHeader} from "@/utils/request";
+import { observeUploadFocusTarget, patchUploadFocusTarget } from '@/utils/upload-focus-tab'
 
 export default {
   name: "FileUpload",
@@ -123,7 +131,37 @@ export default {
       return this.isShowTip && (this.fileType || this.fileSize);
     },
   },
+  mounted() {
+    this.$nextTick(() => {
+      const shell = this.$refs.focusTarget
+      if (shell) observeUploadFocusTarget(shell)
+      this.patchUploadTabStop()
+    })
+  },
+  updated() {
+    this.$nextTick(this.patchUploadTabStop);
+  },
   methods: {
+    patchUploadTabStop() {
+      patchUploadFocusTarget(this.$refs.focusTarget);
+    },
+    focus() {
+      const shell = this.$refs.focusTarget;
+      if (shell && typeof shell.focus === 'function') shell.focus();
+    },
+    onFocusShellKeydown(e) {
+      if (e.key !== 'Enter' && e.key !== ' ' && e.code !== 'Space') return;
+      e.preventDefault();
+      const uploadRoot = this.$refs.fileUpload && this.$refs.fileUpload.$el;
+      if (!uploadRoot) return;
+      const btn = uploadRoot.querySelector('.el-button');
+      const input = uploadRoot.querySelector('input[type="file"]');
+      if (btn && typeof btn.click === 'function') {
+        btn.click();
+      } else if (input && typeof input.click === 'function') {
+        input.click();
+      }
+    },
     // 上传前校检格式和大小
     handleBeforeUpload(file) {
       // 校检文件类型
@@ -208,6 +246,19 @@ export default {
 </script>
 
 <style scoped lang="scss">
+.cat2bug-upload-focus-target {
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  overflow: visible;
+  border: 1px solid transparent;
+  border-radius: var(--cat2bug-border-radius, 4px);
+  outline: none;
+  box-sizing: border-box;
+  ::v-deep .el-button:focus {
+    outline: none;
+  }
+}
 .upload-file-uploader {
   margin-bottom: 5px;
 }

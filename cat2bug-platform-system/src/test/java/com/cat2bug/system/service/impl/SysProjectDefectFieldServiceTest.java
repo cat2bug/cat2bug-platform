@@ -116,6 +116,25 @@ public class SysProjectDefectFieldServiceTest {
     }
 
     @Test
+    public void insert_fieldLabelTooLong_throws() {
+        when(fieldMapper.selectByProjectIdAndFieldKey(any(), any())).thenReturn(null);
+
+        SysProjectDefectField field = new SysProjectDefectField();
+        field.setProjectId(1L);
+        field.setFieldKey("severity");
+        field.setFieldLabel("一二三四五六七");
+        field.setFieldType("string");
+        field.setEnabled(1);
+
+        try {
+            fieldService.insert(field);
+            fail("expected ServiceException");
+        } catch (ServiceException e) {
+            assertNotNull(e.getMessage());
+        }
+    }
+
+    @Test
     public void selectColumnLayoutByProjectId_respectsBuiltinEnabledFlag() {
         when(fieldMapper.selectDefectBuiltinFieldConfig(eq(1L))).thenReturn(
                 "{\"handleBy\":{\"enabled\":0,\"sortOrder\":30},\"defectType\":{\"enabled\":1,\"sortOrder\":10}}");

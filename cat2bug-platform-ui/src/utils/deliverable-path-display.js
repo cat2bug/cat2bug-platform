@@ -33,7 +33,7 @@ export function formatDeliverablePath(fullPath, maxLength = 32) {
 }
 
 /** 单层名称过长：前导 ... + 保留末尾 */
-function truncateWithLeadingEllipsis(text, maxLength) {
+export function truncateWithLeadingEllipsis(text, maxLength) {
   if (text.length <= maxLength) {
     return text
   }
@@ -43,6 +43,23 @@ function truncateWithLeadingEllipsis(text, maxLength) {
     return prefix.slice(0, maxLength)
   }
   return prefix + text.slice(-room)
+}
+
+/** 按像素宽度估算可容纳字符数（中英文混排近似） */
+export function estimateCharsForPixelWidth(pixelWidth, fontSize = 14) {
+  if (!pixelWidth || pixelWidth <= 0) return 16
+  return Math.max(4, Math.floor(pixelWidth / (fontSize * 0.58)))
+}
+
+/** 下拉菜单项名称：过长时前导 ...，路径则折叠前层 */
+export function formatDeliverableMenuLabel(text, maxLength = 16) {
+  const full = (text == null ? '' : String(text)).trim()
+  if (!full) return ''
+  if (full.length <= maxLength) return full
+  if (full.includes('/')) {
+    return formatDeliverablePath(full, maxLength).short
+  }
+  return truncateWithLeadingEllipsis(full, maxLength)
 }
 
 /** 是否像交付物多层路径 */
