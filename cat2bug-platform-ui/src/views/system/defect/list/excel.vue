@@ -830,8 +830,8 @@ export default {
     excelEditorLocalizedLabel() {
       return {
         tableSetting: String(this.$t("display-field")),
-        exportExcel: `${String(this.$t("export"))} Excel`,
-        importExcel: `${String(this.$t("defect.import"))} Excel`,
+        exportExcel: String(this.$t('defect.export')),
+        importExcel: String(this.$t('defect.import')),
         back: String(this.$t("back")),
         reset: "Default",
         footerLeft: (top, bottom, total) => `Record ${top} to ${bottom} of ${total}`,
@@ -4550,13 +4550,15 @@ export default {
 .defect-excel-tools {
   flex-shrink: 0;
   width: 100%;
+  overflow: visible;
   /* 行内 flex 排布由父页 .defect-page .defect-view-toolbar 统一控制，右侧先换行 */
 }
 .defect-excel-tools-left {
   flex: 1 1 auto;
   min-width: 0;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  overflow: visible;
 }
 .defect-excel-tools-right {
   flex: 0 0 auto;
@@ -5118,11 +5120,11 @@ html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep textarea.input-bo
 .defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-img-tile {
   display: block;
   flex: 0 0 auto;
+  width: 100%;
+  height: 100%;
   max-width: 100%;
   max-height: 100%;
-  width: auto;
-  height: auto;
-  object-fit: contain;
+  object-fit: cover;
   object-position: center center;
   border: none;
   border-radius: var(--cat2bug-border-radius, 4px);

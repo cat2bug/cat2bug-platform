@@ -1,5 +1,5 @@
 <template>
-  <el-dialog :title="$i18n.t('open')" :visible.sync="dialogVisible" append-to-body width="30%">
+  <el-dialog :title="$i18n.t('open')" :visible.sync="dialogVisible" :close-on-press-escape="false" :before-close="onToolDialogBeforeClose" append-to-body @opened="onToolDialogOpened" width="30%">
     <el-form ref="form" :model="form" :rules="rules" label-width="120px">
       <el-form-item :label="$i18n.t('describe')" prop="defectLogDescribe">
         <el-input type="textarea"
@@ -10,20 +10,23 @@
                   show-word-limit
         ></el-input>
       </el-form-item>
-      <el-form-item>
-        <el-button type="primary" @click="onSubmit">{{$i18n.t('submit')}}</el-button>
-        <el-button @click="close">{{$i18n.t('cancel')}}</el-button>
-      </el-form-item>
     </el-form>
+    <div slot="footer" class="dialog-footer">
+      <el-button @click="requestCloseToolDialog">{{$i18n.t('cancel')}}</el-button>
+      <el-button class="defect-kbd-hint-host" type="primary" @click="onSubmit">
+        {{$i18n.t('submit')}}
+        <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
+      </el-button>
+    </div>
   </el-dialog>
 </template>
 
 <script>
-import SelectProjectMember from "@/components/Project/SelectProjectMember";
 import {open} from "@/api/system/defect";
+import defectToolDialogKbd from '@/mixins/defect-tool-dialog-kbd'
 export default {
   name: "OpenDialog",
-  components: { SelectProjectMember },
+  mixins: [defectToolDialogKbd],
   data() {
     return {
       dialogVisible: false,
@@ -58,16 +61,13 @@ export default {
       this.reset();
       this.dialogVisible = true;
     },
-    close() {
-      this.dialogVisible = false;
-    },
     onSubmit() {
       this.$refs["form"].validate(valid => {
         if (valid) {
           this.form.defectId = this.defectId;
           open(this.defectId, this.form).then(res => {
             this.$modal.msgSuccess(this.$i18n.t('defect.start-success'));
-            this.close();
+            this.doCloseToolDialog();
             this.$emit('log', res.data);
           });
         }

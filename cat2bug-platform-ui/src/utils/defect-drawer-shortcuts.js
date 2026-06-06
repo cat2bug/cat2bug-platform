@@ -1,6 +1,6 @@
 /**
- * 缺陷新建/编辑抽屉：全局 Cmd/Ctrl+Enter 保存、Esc 关闭（未保存时确认）。
- * 单例监听 + DOM/栈双路解析栈顶抽屉，避免多实例 EditDefectDialog 注册错乱。
+ * 缺陷表单表面：新建/编辑抽屉 + 工具栏操作弹框。
+ * 全局 Cmd/Ctrl+Enter 提交、Esc 关闭（抽屉未保存时确认）。
  */
 import { isNativeFilePickerOpen } from '@/utils/native-file-picker'
 import { hasBlockingUiLayer, shortcutService } from '@/plugins/shortcut/service'
@@ -9,6 +9,26 @@ const stack = []
 let installed = false
 
 const FORM_DRAWER_HEADER_SEL = '.defect-add-header, .defect-edit-form-header'
+
+const DEFECT_DRAWER_VM_NAMES = new Set(['AddDefect', 'EditDefectDialog'])
+const DEFECT_TOOL_DIALOG_VM_NAMES = new Set([
+  'AssignDialog',
+  'RepairDialog',
+  'RejectDialog',
+  'PassDialog',
+  'CloseDialog',
+  'OpenDialog'
+])
+
+const STATISTIC_DIALOG_VM_NAMES = new Set([
+  'PersonalRemindTimer',
+  'MyLife'
+])
+
+const FORM_SHORTCUT_DIALOG_VM_NAMES = new Set([
+  ...DEFECT_TOOL_DIALOG_VM_NAMES,
+  ...STATISTIC_DIALOG_VM_NAMES
+])
 
 function isModifierKeyEvent(e) {
   if (!e) return false
@@ -36,13 +56,18 @@ function isVisibleEl(el) {
   return el.getClientRects().length > 0
 }
 
-function findDrawerVmFromNode(node) {
+export function isFormShortcutSurfaceOpen(vm) {
+  if (!vm) return false
+  return vm.visible === true || vm.dialogVisible === true
+}
+
+function findFormVmFromNode(node, nameSet) {
   let el = node
   while (el) {
     let vm = el.__vue__
     while (vm) {
       const name = vm.$options && vm.$options.name
-      if (name === 'AddDefect' || name === 'EditDefectDialog') return vm
+      if (nameSet.has(name)) return vm
       vm = vm.$parent
     }
     el = el.parentElement
@@ -50,8 +75,7 @@ function findDrawerVmFromNode(node) {
   return null
 }
 
-/** 从可见 DOM 找最上层新建/编辑表单抽屉 VM（排除 HandleDefect 详情抽屉） */
-function findTopFormDrawerVmFromDom() {
+function findTopDrawerVmFromDom() {
   const candidates = []
   document.querySelectorAll('.el-drawer__wrapper').forEach((wrapper) => {
     if (!isVisibleEl(wrapper)) return
@@ -60,30 +84,68 @@ function findTopFormDrawerVmFromDom() {
     const accent = wrapper.querySelector('.defect-drawer-accent')
     if (!accent) return
     const z = parseInt(window.getComputedStyle(wrapper).zIndex, 10) || 0
-    const vm = findDrawerVmFromNode(accent) || findDrawerVmFromNode(header)
-    if (vm) candidates.push({ vm, z })
+    const vm = findFormVmFromNode(accent, DEFECT_DRAWER_VM_NAMES) ||
+      findFormVmFromNode(header, DEFECT_DRAWER_VM_NAMES)
+    if (vm && isFormShortcutSurfaceOpen(vm)) candidates.push({ vm, z })
   })
   if (!candidates.length) return null
   candidates.sort((a, b) => b.z - a.z)
   return candidates[0].vm
 }
 
-function resolveDrawerVm(preferredVm) {
-  if (preferredVm && preferredVm.visible) return preferredVm
+function findTopToolDialogVmFromDom() {
+  const candidates = []
+  document.querySelectorAll('.el-dialog__wrapper').forEach((wrapper) => {
+    if (!isVisibleEl(wrapper)) return
+    const vm = findFormVmFromNode(wrapper, FORM_SHORTCUT_DIALOG_VM_NAMES)
+    if (!vm || !isFormShortcutSurfaceOpen(vm)) return
+    const z = parseInt(window.getComputedStyle(wrapper).zIndex, 10) || 0
+    candidates.push({ vm, z })
+  })
+  if (!candidates.length) return null
+  candidates.sort((a, b) => b.z - a.z)
+  return candidates[0].vm
+}
+
+function findTopFormSurfaceVmFromDom() {
+  const drawerVm = findTopDrawerVmFromDom()
+  const dialogVm = findTopToolDialogVmFromDom()
+  if (drawerVm && dialogVm) {
+    const drawerZ = getSurfaceZIndex(drawerVm, '.el-drawer__wrapper')
+    const dialogZ = getSurfaceZIndex(dialogVm, '.el-dialog__wrapper')
+    return dialogZ >= drawerZ ? dialogVm : drawerVm
+  }
+  return dialogVm || drawerVm
+}
+
+function getSurfaceZIndex(vm, wrapperSel) {
+  let z = 0
+  const root = vm.$el
+  if (!root || typeof root.closest !== 'function') return z
+  const wrapper = root.closest(wrapperSel)
+  if (wrapper) {
+    z = parseInt(window.getComputedStyle(wrapper).zIndex, 10) || 0
+  }
+  return z
+}
+
+function resolveFormSurfaceVm(preferredVm) {
+  if (preferredVm && isFormShortcutSurfaceOpen(preferredVm)) return preferredVm
   for (let i = stack.length - 1; i >= 0; i--) {
     const vm = stack[i]
-    if (vm && vm.visible) return vm
+    if (vm && isFormShortcutSurfaceOpen(vm)) return vm
   }
-  return findTopFormDrawerVmFromDom()
+  return findTopFormSurfaceVmFromDom()
 }
 
 export function findTopFormDrawerVm() {
-  return resolveDrawerVm()
+  return resolveFormSurfaceVm()
 }
 
 function invokeSave(vm) {
   if (typeof vm.shortcutSave === 'function') vm.shortcutSave()
   else if (typeof vm.submitForm === 'function') vm.submitForm()
+  else if (typeof vm.onSubmit === 'function') vm.onSubmit()
 }
 
 function invokeClose(vm, e) {
@@ -96,6 +158,10 @@ function invokeClose(vm, e) {
     vm.requestCloseDefectFormDrawer()
     return true
   }
+  if (typeof vm.close === 'function') {
+    vm.close()
+    return true
+  }
   if (typeof vm.cancel === 'function') {
     vm.cancel()
     return true
@@ -103,19 +169,23 @@ function invokeClose(vm, e) {
   return false
 }
 
-/** 下拉/日期面板等仍打开时，Esc 先交给各浮层自身处理（不含表单抽屉自身） */
-function shouldDeferDrawerEscClose() {
-  return hasBlockingUiLayer({ excludeDefectFormDrawer: true })
+/** 下拉/日期面板等仍打开时，Esc 先交给各浮层自身处理 */
+function shouldDeferFormEscClose() {
+  return hasBlockingUiLayer({
+    excludeDefectFormDrawer: true,
+    excludeHandleDefectDrawer: true,
+    excludeDefectToolDialog: true
+  })
 }
 
 /** 供 form-field-hints 等 mixin 主动触发关闭 */
 export function tryCloseDefectDrawer(preferredVm, e) {
   if (!isEscapeCloseKey(e)) return false
-  if (shouldDeferDrawerEscClose()) return false
+  if (shouldDeferFormEscClose()) return false
   if (preferredVm && typeof preferredVm.$_invokeDrawerShortcutClose === 'function') {
     return preferredVm.$_invokeDrawerShortcutClose(e)
   }
-  const vm = resolveDrawerVm(preferredVm)
+  const vm = resolveFormSurfaceVm(preferredVm)
   if (!vm) return false
   e.preventDefault()
   e.stopImmediatePropagation()
@@ -130,16 +200,26 @@ function onKeyup(e) {
       vm.$_hidePageActionHints()
     }
   })
-  const drawer = findTopFormDrawerVm()
-  if (drawer && typeof drawer.$_hideFieldHints === 'function') {
-    drawer.$_hideFieldHints()
+  const surface = findTopFormDrawerVm()
+  if (surface && typeof surface.$_hideFieldHints === 'function') {
+    surface.$_hideFieldHints()
   }
+  document.querySelectorAll('.defect-drawer-accent').forEach((el) => {
+    let vm = el.__vue__
+    while (vm) {
+      if (typeof vm.$_hideHandleKbdHints === 'function') {
+        vm.$_hideHandleKbdHints()
+        break
+      }
+      vm = vm.$parent
+    }
+  })
 }
 
 function onKeydown(e) {
   if (e.isComposing) return
 
-  const vm = resolveDrawerVm()
+  const vm = resolveFormSurfaceVm()
   if (!vm) return
 
   if (isSaveShortcutKey(e)) {
@@ -156,7 +236,7 @@ function onKeydown(e) {
 
   if (!isEscapeCloseKey(e)) return
   if (shortcutService.palette && shortcutService.palette.open) return
-  if (shouldDeferDrawerEscClose()) return
+  if (shouldDeferFormEscClose()) return
 
   e.preventDefault()
   e.stopImmediatePropagation()
@@ -171,7 +251,6 @@ function onWindowBlur() {
   if (isNativeFilePickerOpen()) return
 }
 
-/** 每次抽屉打开时 bump 到 capture 链最前（最后注册 = 最先执行） */
 function ensureInstalled() {
   if (installed) {
     window.removeEventListener('keydown', onKeydown, true)
@@ -194,7 +273,7 @@ function ensureUninstalled() {
 export function registerDefectDrawerShortcuts(vm) {
   if (!vm) return
   for (let i = stack.length - 1; i >= 0; i--) {
-    if (!stack[i] || !stack[i].visible) stack.splice(i, 1)
+    if (!stack[i] || !isFormShortcutSurfaceOpen(stack[i])) stack.splice(i, 1)
   }
   const i = stack.indexOf(vm)
   if (i >= 0) stack.splice(i, 1)

@@ -1,5 +1,6 @@
 import { isNativeFilePickerOpen } from '@/utils/native-file-picker'
 import { dismissComboPopoverIfLeaving } from '@/utils/combo-focus-tab'
+import { closeDropdownsOnBlur } from '@/utils/dropdown-blur-close'
 
 /**
  * 表单字段快捷聚焦 mixin（弹框/抽屉内）。
@@ -143,14 +144,17 @@ export default {
       fieldHintsActive: false
     }
   },
+  computed: {
+    $_fieldHintSurfaceVisible() {
+      return this.visible === true || this.dialogVisible === true
+    }
+  },
   watch: {
     visible(val) {
-      if (val) {
-        this.$_attachFieldHintListeners()
-      } else {
-        this.$_detachFieldHintListeners()
-        this.$_hideFieldHints()
-      }
+      this.$_syncFieldHintListeners(!!val)
+    },
+    dialogVisible(val) {
+      this.$_syncFieldHintListeners(!!val)
     }
   },
   beforeDestroy() {
@@ -158,6 +162,14 @@ export default {
     this.$_hideFieldHints()
   },
   methods: {
+    $_syncFieldHintListeners(open) {
+      if (open) {
+        this.$_attachFieldHintListeners()
+      } else if (!this.$_fieldHintSurfaceVisible) {
+        this.$_detachFieldHintListeners()
+        this.$_hideFieldHints()
+      }
+    },
     $_attachFieldHintListeners() {
       if (this.$_fieldHintListenersBound) return
       this.$_fieldHintListenersBound = true
@@ -188,7 +200,7 @@ export default {
       }
     },
     $_fieldHintKeydown(e) {
-      if (!this.visible || e.isComposing) return
+      if (!this.$_fieldHintSurfaceVisible || e.isComposing) return
       if (typeof this.$_ownsTopFormDrawer === 'function' && !this.$_ownsTopFormDrawer()) return
       if ((this.$_modifierHeld || this.fieldHintsActive) &&
         !isModifierKeyEvent(e) && !(e.metaKey || e.ctrlKey)) {
@@ -252,7 +264,7 @@ export default {
       }
     },
     $_fieldHintKeyup(e) {
-      if (!this.visible) return
+      if (!this.$_fieldHintSurfaceVisible) return
       if (isModifierKeyEvent(e)) {
         this.$_modifierHeld = false
         this.$_clearRevealTimer()
@@ -288,7 +300,7 @@ export default {
       if (this.$_fieldHintScrollRefreshRaf) return
       this.$_fieldHintScrollRefreshRaf = requestAnimationFrame(() => {
         this.$_fieldHintScrollRefreshRaf = null
-        if (!this.visible || !this.$_modifierHeld ||
+        if (!this.$_fieldHintSurfaceVisible || !this.$_modifierHeld ||
           !(this.$_fieldHintMap || this.$_fieldHintRevealTimer || this.fieldHintsActive)) {
           return
         }
@@ -431,6 +443,7 @@ export default {
     $_focusControl(el) {
       if (!el) return
       dismissComboPopoverIfLeaving(document.activeElement, el)
+      closeDropdownsOnBlur(el)
       const nativelyFocusable =
         ['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'A'].indexOf(el.tagName) !== -1 ||
         el.hasAttribute('tabindex') ||
@@ -446,21 +459,6 @@ export default {
       if (typeof el.scrollIntoView === 'function') {
         el.scrollIntoView({ block: 'center', behavior: 'smooth' })
       }
-      this.$_flashField(el)
-    },
-    /** 聚焦后在所属字段行上闪烁高亮，确保开关/下拉等无明显焦点样式的控件也可见 */
-    $_flashField(el) {
-      const target = (el.closest && el.closest('.el-form-item')) || el
-      if (!target || !target.classList) return
-      target.classList.remove('cat2bug-field-flash')
-      // 强制重排以重启动画
-      void target.offsetWidth
-      target.classList.add('cat2bug-field-flash')
-      if (target.__cat2bugFlashTimer) clearTimeout(target.__cat2bugFlashTimer)
-      target.__cat2bugFlashTimer = setTimeout(() => {
-        target.classList.remove('cat2bug-field-flash')
-        target.__cat2bugFlashTimer = null
-      }, 1200)
     }
   }
 }

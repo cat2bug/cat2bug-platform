@@ -2,14 +2,12 @@
 
 ### Requirement: 抽屉表单直接组合键
 
-缺陷新建/编辑等抽屉表单 SHALL 支持以下直接组合键（不经过引导键面板），由 `dialog-form-shortcuts` mixin 在抽屉 `visible=true` 时绑定：
+缺陷新建/编辑等抽屉表单 SHALL 支持以下直接组合键（不经过引导键面板），由 `dialog-form-shortcuts` mixin 与 `defect-drawer-shortcuts` 单例在抽屉 `visible=true` 时绑定：
 
 - `Cmd/Ctrl + Enter`：保存（`submitForm` 或 `shortcutSave`）
-- `Cmd/Ctrl + B`：关闭（`cancel` 或 `shortcutClose`）
+- `Esc`：关闭（`requestCloseDefectFormDrawer`）；有未保存修改时弹出确认
 
-新建缺陷抽屉 MUST 使用 `Cmd/Ctrl + B` 关闭，单独按 `Esc` 不关闭（`:close-on-press-escape="false"`）。字母 `B` MUST NOT 分配给字段快捷键。
-
-松开 `Cmd/Ctrl` 后 MUST 立即隐藏字段徽标与保存/关闭提示。
+抽屉 MUST 设置 `:close-on-press-escape="false"`，由全局捕获监听统一处理 `Esc`。当下拉/日期等浮层仍打开时，`Esc` MUST 先交给浮层自身。
 
 #### Scenario: 抽屉内保存
 
@@ -18,8 +16,32 @@
 
 #### Scenario: 抽屉内关闭
 
-- **WHEN** 用户在新建缺陷抽屉内按下 `Cmd/Ctrl + B`
-- **THEN** 关闭抽屉
+- **WHEN** 用户在新建缺陷抽屉内按下 `Esc` 且无其它遮挡浮层
+- **THEN** 关闭抽屉；若有未保存修改则先确认
+
+#### Scenario: 有浮层时 Esc 不关闭抽屉
+
+- **WHEN** 成员选择下拉已展开且用户按下 `Esc`
+- **THEN** 关闭下拉，不关闭缺陷抽屉
+
+### Requirement: 抽屉标题栏快捷键徽标
+
+新建/编辑缺陷抽屉标题栏按钮的视觉提示 MUST 遵循：
+
+- **关闭**按钮：任何情况下不显示快捷键徽标
+- **保存缺陷**按钮：未按住 `Cmd/Ctrl` 时不显示徽标；按住 `Cmd/Ctrl` 时仅在按钮右下角显示 `↵`（表示 `Cmd/Ctrl+Enter`）
+
+松开 `Cmd/Ctrl` 后 MUST 立即隐藏保存按钮 `↵` 徽标。
+
+#### Scenario: 未按修饰键时保存按钮无徽标
+
+- **WHEN** 用户打开新建缺陷抽屉且未按住 `Cmd/Ctrl`
+- **THEN** 保存按钮不显示任何快捷键提示
+
+#### Scenario: 按住修饰键时保存按钮显示回车
+
+- **WHEN** 用户在抽屉内按住 `Cmd/Ctrl`
+- **THEN** 保存按钮右下角显示 `↵`，关闭按钮仍无徽标
 
 ### Requirement: 表单字段 Cmd/Ctrl 字母聚焦
 
@@ -149,7 +171,7 @@
 - **WHEN** 用户在缺陷表单中点击上传并打开系统文件选择框
 - **THEN** 方向键用于在系统文件列表中移动，不被 Excel 表格或上传区 focus 逻辑拦截
 
-#### Scenario: 选文件期间 Cmd+B 仍可用
+#### Scenario: 选文件期间 Esc 仍可用
 
-- **WHEN** 用户打开系统文件选择框后按下 `Cmd/Ctrl + B`
+- **WHEN** 用户打开系统文件选择框后按下 `Esc`（且无其它浮层）
 - **THEN** 仍可关闭缺陷抽屉

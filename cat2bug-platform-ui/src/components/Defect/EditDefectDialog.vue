@@ -18,13 +18,12 @@
           </h3>
         </div>
         <div>
-          <el-button class="defect-kbd-hint-host" @click="requestCloseDefectFormDrawer" icon="el-icon-close" size="small">
+          <el-button @click="requestCloseDefectFormDrawer" icon="el-icon-close" size="small">
             {{ $t('close') }}
-            <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint" aria-hidden="true">{{ dialogCloseShortcutLabel }}</span>
           </el-button>
           <el-button class="defect-kbd-hint-host" type="primary" icon="el-icon-finished" @click="submitForm" size="small">
             {{ $t('defect.save') }}
-            <span class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
+            <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
           </el-button>
         </div>
       </div>

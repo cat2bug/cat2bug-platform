@@ -1035,6 +1035,10 @@ td.cat2bug-operate-column [role='tooltip'][aria-hidden='true'] {
 /* MessageBox 确认框：与 el-dialog 相同布局 */
 .el-message-box__btns {
   @include cat2bug-dialog-footer-separator;
+  padding-top: 10px !important;
+  padding-left: var(--cat2bug-dialog-padding-x, 20px) !important;
+  padding-right: var(--cat2bug-dialog-padding-x, 20px) !important;
+  padding-bottom: 0 !important;
   @include cat2bug-dialog-footer-layout;
   @include cat2bug-dialog-footer-buttons;
 }

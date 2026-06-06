@@ -14,6 +14,9 @@
     append-to-body
     custom-class="my-life-dialog"
     :close-on-click-modal="false"
+    :close-on-press-escape="false"
+    :before-close="onToolDialogBeforeClose"
+    @opened="onToolDialogOpened"
     @closed="handleClose"
   >
     <el-alert
@@ -47,8 +50,11 @@
       </el-form-item>
     </el-form>
     <span slot="footer" class="dialog-footer">
-      <el-button @click="dialogVisible = false">{{ $t('cancel') }}</el-button>
-      <el-button type="primary" @click="onSubmit">{{ $t('update') }}</el-button>
+      <el-button @click="requestCloseToolDialog">{{ $t('cancel') }}</el-button>
+      <el-button class="defect-kbd-hint-host" type="primary" @click="onSubmit">
+        {{ $t('update') }}
+        <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
+      </el-button>
     </span>
   </el-dialog>
   </div>
@@ -56,10 +62,12 @@
 
 <script>
 import Cat2BugCard from "../Components/Card"
+import statisticDialogKbd from '@/mixins/statistic-dialog-kbd'
 import { updateConfig } from "@/api/system/user-config";
 
 export default {
   name: "MyLife",
+  mixins: [statisticDialogKbd],
   components: { Cat2BugCard },
   data() {
     return {
@@ -180,6 +188,13 @@ export default {
     handleClose() {
       this.dialogVisible = false;
     },
+    shortcutSave() {
+      this.onSubmit()
+    },
+    getFieldHintContainer() {
+      const form = this.$refs.form
+      return (form && form.$el) || this.$el
+    },
     onSubmit() {
       const param = {
         lifeContent: JSON.stringify(this.form)
@@ -187,6 +202,7 @@ export default {
       updateConfig(param).then(() => {
         this.lifeContent = this.form.lifeContent;
         this.$message.success(this.$i18n.t('update.success').toString());
+        this.toolDialogCloseBaseline = null;
         this.dialogVisible = false;
       });
     },

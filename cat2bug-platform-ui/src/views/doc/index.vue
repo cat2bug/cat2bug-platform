@@ -441,12 +441,12 @@ export default {
                       ]
                     },
                     {
-                      label: '导入缺陷',
+                      label: 'Excel导入',
                       path: 'user-guide/current-project/defect/defect-import.md',
                       icon: 'el-icon-upload2'
                     },
                     {
-                      label: '导出缺陷',
+                      label: 'Excel导出',
                       path: 'user-guide/current-project/defect/defect-export.md',
                       icon: 'el-icon-download'
                     }

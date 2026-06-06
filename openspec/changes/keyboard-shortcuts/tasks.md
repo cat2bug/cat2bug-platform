@@ -30,16 +30,19 @@
 
 ## 5. 缺陷页动作面板
 
-- [ ] 5.1 缺陷页 `activated/deactivated` 调用 `registerPage('defect', …)`
-- [ ] 5.2 绑定动作回调：新建/导出/导入/查询聚焦/切Tab/统计模版/上下页
-- [ ] 5.3 数字键 1–9 定位置顶第 N 条缺陷
+- [x] 5.1 缺陷页 `activated/deactivated` 调用 `registerPage('defect', …)`
+- [x] 5.2 绑定动作回调：L 切换项目、E 新建菜单、S 查询、J 切 Tab、I 统计模版、O 切换视图、B/P 翻页
+- [x] 5.3 `page-action-hints`：按住 `Cmd/Ctrl` 工具栏浮层徽标 + 字母直接触发
+- [x] 5.4 表格/Excel 可见行动态徽标（`defect-row-kbd-hints.js`）
+- [x] 5.5 统计区 G 导航：有模块时注册/显示，左右选择 + Delete 移除；无模块时不显示
 
 ## 6. 键盘设置页
 
-- [ ] 6.1 `views/member/keyboard/index.vue`：分组展示、启用开关、引导键展示
-- [ ] 6.2 行内编辑捕获新键 + 同作用域冲突即时标红
-- [ ] 6.3 `shortcut-store.js`：localStorage 读写（仅存 overrides 差异）+ 序列化
-- [ ] 6.4 单项 / 全局「恢复默认」
+- [x] 6.1 `views/member/keyboard/index.vue`：分组展示、启用开关、引导键展示
+- [x] 6.2 行内编辑捕获新键 + 同作用域冲突即时标红
+- [x] 6.3 `shortcut-store.js`：localStorage 读写（仅存 overrides 差异）+ 序列化
+- [x] 6.4 单项 / 全局「恢复默认」
+- [x] 6.5 「统计模版页」分组（P/G/H）+ i18n 7 语言
 
 ## 7. 入口、路由与国际化
 
@@ -58,12 +61,13 @@
 
 ## 9. 缺陷表单与组合组件键盘集成
 
-- [x] 9.1 `dialog-form-shortcuts.js`：`Cmd/Ctrl+Enter` 保存、`Cmd/Ctrl+B` 关闭；新建缺陷禁用单独 `Esc`
+- [x] 9.1 `dialog-form-shortcuts.js` + `defect-drawer-shortcuts.js`：`Cmd/Ctrl+Enter` 保存、`Esc` 关闭（未保存确认）
 - [x] 9.2 `form-field-hints.js`：按住 `Cmd/Ctrl` 显示字段字母徽标 + 字母跳转与闪动高亮
 - [x] 9.2a 视口分配：仅当前可见表单项分配键位；滚动/`Cmd+↑↓` 时刷新徽标与映射
 - [x] 9.2b 连续跳转：跳转时保留映射；`A/C/V/X/Z` 永不分配、永不拦截
 - [x] 9.2c 键位池扩展：优先字母 + 数字 `1`–`0`；固定 `O` 绑定「保存本次选项」
-- [x] 9.1a 关闭改为 `Cmd/Ctrl+B`；松开修饰键立即隐藏字段提示；`B` 不参与字段映射
+- [x] 9.1a 关闭改为 `Esc`；关闭按钮无徽标；保存按钮仅在 `Cmd/Ctrl` 按住时显示 `↵`
+- [x] 9.1b 松开修饰键立即隐藏字段提示与保存 `↵` 徽标
 - [x] 9.7a `native-file-picker.js`：选文件会话、暂停 Excel 键盘、上传 focusin 豁免、blur 不清 latch
 - [x] 9.3 `tab-direction.js`：默认 Tab 正向、`↑+Tab` 反向、`↓+Tab` 正向
 - [x] 9.4 `SelectProjectMember`：外框单 Tab 停靠点、下拉键盘（含空格选中）、tag 折叠、`Esc` 关闭
@@ -73,5 +77,13 @@
 - [x] 9.8 `AddDefect.vue`：组合组件与数字输入框聚焦边框（暗色金/浅色蓝）
 - [x] 9.9 `shortcut/service.js`：页面动作空格仅在缺陷一级列表且无遮挡层时打开（`canOpenDefectPageActions`）
 - [x] 9.10 E2E：`e2e/form-tab-order.spec.cjs`、`e2e/select-project-member-tags.spec.cjs`
-- [x] 9.11 E2E：`e2e/debug-drawer-cmd-esc.spec.cjs`（Cmd+B 关闭抽屉）
+- [x] 9.11 E2E：`e2e/debug-drawer-cmd-esc.spec.cjs`（抽屉 Esc 关闭）
 - [x] 9.12 E2E：`e2e/debug-image-filepicker-arrows.spec.cjs`（原生文件框方向键）
+
+## 10. 统计模版页快捷键
+
+- [x] 10.1 `StatisticTemplate.vue` 注册 `statistic-template` 动作（P/G/H）
+- [x] 10.2 三区键盘导航：预览左右、个人/团队网格四向
+- [x] 10.3 `statistic-grid-kbd.js` 跨区上下传递（边界行 + x 对齐）
+- [x] 10.4 Esc：导航中退出导航，否则返回上一页
+- [x] 10.5 全局 `page-kbd-hints.scss` 浮层徽标样式

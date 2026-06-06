@@ -76,7 +76,9 @@ const BLOCKING_UI_LAYER_SELECTORS = [
   '.el-cascader-menus',
   '.el-color-picker__panel',
   '.defect-column-picker-popover',
-  '.defect-excel-column-picker-popover'
+  '.defect-excel-column-picker-popover',
+  /* 缺陷页统计模块 G 导航：空格用于触发模块点击，勿打开动作面板 */
+  '.defect-statistic-keyboard-nav'
 ]
 
 /** 新建/编辑缺陷表单抽屉（Esc 关闭时不应把自身算作遮挡层） */
@@ -86,12 +88,58 @@ function isDefectFormDrawerWrapper(el) {
   return !!(el.querySelector('.defect-add-header, .defect-edit-form-header') && isVisibleLayer(el))
 }
 
+/** 处理缺陷详情抽屉（工具弹框 Esc 取消时，下层抽屉不算遮挡层） */
+function isHandleDefectDrawerWrapper(el) {
+  if (!el || !el.querySelector) return false
+  if (!el.classList || !el.classList.contains('el-drawer__wrapper')) return false
+  return !!(el.querySelector('.defect-edit-header') && isVisibleLayer(el))
+}
+
+const DEFECT_TOOL_DIALOG_NAMES = new Set([
+  'AssignDialog',
+  'RepairDialog',
+  'RejectDialog',
+  'PassDialog',
+  'CloseDialog',
+  'OpenDialog'
+])
+
+const STATISTIC_DIALOG_NAMES = new Set([
+  'PersonalRemindTimer',
+  'MyLife'
+])
+
+const FORM_SHORTCUT_DIALOG_NAMES = new Set([
+  ...DEFECT_TOOL_DIALOG_NAMES,
+  ...STATISTIC_DIALOG_NAMES
+])
+
+/** 缺陷工具栏操作弹框（Esc 关闭时不应把自身算作遮挡层） */
+function isDefectToolDialogWrapper(el) {
+  if (!el || !el.classList || !el.classList.contains('el-dialog__wrapper')) return false
+  if (!isVisibleLayer(el)) return false
+  // Element UI 2.x：AssignDialog 等挂在 wrapper.__vue__ 链上，.el-dialog 节点无 __vue__
+  let vm = el.__vue__
+  while (vm) {
+    const name = vm.$options && vm.$options.name
+    if (FORM_SHORTCUT_DIALOG_NAMES.has(name)) return true
+    vm = vm.$parent
+  }
+  return false
+}
+
 function hasBlockingUiLayer(options = {}) {
-  const { excludeDefectFormDrawer = false } = options
+  const {
+    excludeDefectFormDrawer = false,
+    excludeDefectToolDialog = false,
+    excludeHandleDefectDrawer = false
+  } = options
   return BLOCKING_UI_LAYER_SELECTORS.some((sel) =>
     Array.from(document.querySelectorAll(sel)).some((el) => {
       if (!isVisibleLayer(el)) return false
       if (excludeDefectFormDrawer && isDefectFormDrawerWrapper(el)) return false
+      if (excludeHandleDefectDrawer && isHandleDefectDrawerWrapper(el)) return false
+      if (excludeDefectToolDialog && isDefectToolDialogWrapper(el)) return false
       return true
     })
   )

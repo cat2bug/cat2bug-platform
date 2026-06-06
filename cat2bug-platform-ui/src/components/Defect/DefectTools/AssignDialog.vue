@@ -1,5 +1,5 @@
 <template>
-  <el-dialog :title="$i18n.t('assign')" :visible.sync="dialogVisible" append-to-body @close="close" width="30%">
+  <el-dialog :title="$i18n.t('assign')" :visible.sync="dialogVisible" :close-on-press-escape="false" :before-close="onToolDialogBeforeClose" append-to-body @opened="onToolDialogOpened" width="30%">
     <el-form ref="form" :model="form" :rules="rules" label-width="120px">
       <el-form-item :label="$i18n.t('defect.assigned-to')" prop="receiveBy">
         <select-project-member ref="selectProjectMember" v-model="form.receiveBy" :project-id="projectId" />
@@ -13,20 +13,24 @@
                   show-word-limit
         ></el-input>
       </el-form-item>
-      <el-form-item>
-        <el-button type="primary" @click="onSubmit">{{$i18n.t('submit')}}</el-button>
-        <el-button @click="close">{{$i18n.t('cancel')}}</el-button>
-      </el-form-item>
     </el-form>
+    <div slot="footer" class="dialog-footer">
+      <el-button @click="requestCloseToolDialog">{{$i18n.t('cancel')}}</el-button>
+      <el-button class="defect-kbd-hint-host" type="primary" @click="onSubmit">
+        {{$i18n.t('submit')}}
+        <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
+      </el-button>
+    </div>
   </el-dialog>
 </template>
 
 <script>
 import SelectProjectMember from "@/components/Project/SelectProjectMember";
-import {addProject} from "@/api/system/project";
 import {assign} from "@/api/system/defect";
+import defectToolDialogKbd from '@/mixins/defect-tool-dialog-kbd'
 export default {
   name: "AssignDialog",
+  mixins: [defectToolDialogKbd],
   components: { SelectProjectMember },
   data() {
     return {
@@ -64,17 +68,13 @@ export default {
     open() {
       this.dialogVisible = true;
     },
-    close() {
-      this.dialogVisible = false;
-      this.reset();
-    },
     onSubmit() {
       this.$refs["form"].validate(valid => {
         if (valid) {
           this.form.defectId = this.defectId;
           assign(this.defectId, this.form).then(res => {
             this.$modal.msgSuccess(this.$i18n.t('defect.assign-success'));
-            this.close();
+            this.doCloseToolDialog();
             this.$emit('log', res.data);
           });
         }

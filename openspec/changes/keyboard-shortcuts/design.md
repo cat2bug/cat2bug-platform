@@ -110,7 +110,7 @@ src/views/member/keyboard/
 |---|---|---|
 | N | 通知 | 跳转 `/notice/index` |
 | H | 帮助文档 | 打开系统使用手册（`system-doc`，面板显示「帮助文档」） |
-| L | 国际化 ▸ | 下拉 → 二级面板列语言 |
+| I | 国际化 ▸ | 下拉 → 二级面板列语言 |
 | U | 个人中心 ▸ | 下拉 → 二级面板（个人中心 / 键盘设置 / 退出） |
 | M | 主题 ▸ | 下拉 → 二级面板（浅色 / 暗色） |
 | B | 官网 | 打开官网 |
@@ -127,22 +127,40 @@ src/views/member/keyboard/
 | 个人中心 U | 个人中心 / 键盘设置 / 退出登录 | P / K / Q |
 | 主题 M | 浅色 / 暗色 | L / D |
 
-### 5. 缺陷页动作映射（动作面板 `空格`）
+### 5. 缺陷页动作映射
 
-| 键 | 动作 | 现有挂接点 |
+缺陷页支持**双通道**触发同一套动作字母（键位可用户在「键盘设置」中修改）：
+
+| 通道 | 交互 |
+|---|---|
+| 动作引导键 `空格` | 打开居中命令面板，再按字母执行 |
+| 按住 `Cmd/Ctrl` | `page-action-hints` 在控件右下角显示浮层徽标；保持修饰键再按字母直接执行（无需先按空格） |
+
+**默认字母与动作**
+
+| 键 | 动作 | 挂接说明 |
 |---|---|---|
-| N | 新建缺陷 | 触发新增入口 |
-| E | 导出缺陷 | 导出动作 |
-| I | 导入弹框 | 打开导入对话框 |
-| Q | 查询 | 聚焦搜索输入框 |
-| J | 切换 Tab | 聚焦页签条，←/→ 切换 Tab，末项 → 添加按钮 |
-| V | 统计模版 | 打开统计模版 |
+| L | 切换项目 | 打开左上角 `ProjectLabel` 项目选择浮层 |
+| E | 新建菜单 | 展开新建/导入/导出工具栏下拉（`addMenu`） |
+| S | 查询 | 聚焦查询区并进入查询键盘导航 |
+| J | 切换 Tab | 聚焦页签条；`←/→` 切换 Tab，末项 `→` 到添加按钮 |
+| I | 统计模版 | 跳转统计模版配置页 |
+| G | 统计模块导航 | **仅统计区存在模块时**注册并显示徽标；`←/→` 选择模块，`Delete` 移除 |
+| O | 切换视图 | 表格 / Excel 等视图切换 |
 | B | 上一页 | 分页上一页 |
 | P | 下一页 | 分页下一页 |
-| 1–9 | 跳到置顶第 N 条缺陷 | 滚动/选中列表第 N 行 |
 
-- 缺陷页通过 `registerPage('defect', [...])` 提供以上动作的执行回调；页面卸载即注销，避免跨页误触发。
-- **触发条件**：仅在缺陷列表**一级界面**、无任何弹框/抽屉/下拉浮层时，按空格才打开「页面动作」面板；新建/编辑缺陷抽屉打开、成员下拉展开、筛选 `el-select` 展开等场景下空格 MUST 留给组件自身（见 Decision 3、9）。
+**动态行徽标（按住 `Cmd/Ctrl`）**
+
+- 表格 / Excel 视图：为当前视口内可见行在序号列旁显示动态字母（`1`–`9` 优先，字母池补位，与工具栏字母去重）。
+- 再按对应字母：打开该行缺陷详情。
+
+**统计区 `G` 显隐**
+
+- 统计区**无模块**时：不注册 `statisticNav`、不显示 `G` 徽标、不响应 `G`；统计区与 Tab 工具栏仍保留 10px 间距（`defectStatisticWrapVisible`）。
+
+- 缺陷页通过 `registerPage('defect', [...])` 提供动作回调；`activated/deactivated` 配对注销。
+- **触发条件**：仅在缺陷列表**一级界面**、无任何弹框/抽屉/下拉浮层时，空格或 `Cmd/Ctrl` 页面动作才生效（见 Decision 3、9）。
 
 ### 6. 配置与持久化
 
@@ -159,7 +177,7 @@ localStorage key: cat2bug.shortcuts.v1
 ```
 
 - 默认映射来自代码（随菜单派生），**仅持久化用户改过的项**，升级不丢、体积小。
-- 绑定 ID 命名：`nav.<menuKey>`、`nav.top.<itemKey>`、`action.<pageKey>.<actionKey>`、`nav.top.<dropdownKey>.<subKey>`。
+- 绑定 ID 命名：`nav.<menuKey>`、`nav.top.<itemKey>`、`action.<pageKey>.<actionKey>`（如 `action.defect.query`、`action.statistic-template.preview`）、`nav.top.<dropdownKey>.<subKey>`。
 - 「键盘设置」页：分组展示（导航 / 缺陷页 / 下拉）、行内编辑捕获新键、**同面板内重复即时标红**、单项与全局「恢复默认」。
 
 ### 7. 命令面板交互细节
@@ -181,33 +199,83 @@ E 缺陷页动作面板（registerPage 接入）
 F 键盘设置页 + localStorage + 冲突检测 + 恢复默认
 G i18n 7 语言 + 「个人中心」入口 + 路由
 H 缺陷表单/抽屉键盘集成（见 Decision 9）
+I 统计模版页快捷键（见 Decision 10）
 ```
+
+### 10. 统计模版页快捷键（`StatisticTemplate.vue`）
+
+统计模版页注册 `registerPage('statistic-template', …)`，复用 `page-action-hints` 与缺陷页相同的 `Cmd/Ctrl` 浮层徽标样式（`assets/styles/page-kbd-hints.scss`）。
+
+**区域入口（按住 `Cmd/Ctrl` 显示徽标，或空格面板后按字母）**
+
+| 键 | 区域 |
+|---|---|
+| P | 预览区 |
+| G | 个人模版 |
+| H | 团队模版 |
+
+**区域内导航**
+
+| 区域 | 方向键 | 确认 / 删除 |
+|---|---|---|
+| 预览区 | 仅 `←/→` | `Delete` / `Backspace` 从预览移除 |
+| 个人 / 团队模版 | `↑↓←→` 网格导航（`statistic-grid-kbd.js`） | 空格 / `Enter` 添加到预览区 |
+
+**跨区域上下传递（边界行 + 水平 x 对齐）**
+
+```
+预览区  ←——↑——  个人模版  ←——↑——  团队模版
+        ——↓——→          ——↓——→
+```
+
+- 团队模版**首行** `↑` → 个人模版**末行**、中心 x 最接近的模块
+- 个人模版**首行** `↑` → 预览区 x 最接近的模块
+- 预览区 `↓` → 个人模版**首行** x 对齐
+- 个人模版**末行** `↓` → 团队模版**首行** x 对齐
+- 目标区域无模块时跨区失败，焦点保持不动
+
+**Esc 行为**
+
+- 处于区域导航中：先 `exitTemplateKbdNav` 退出导航
+- 未在区域导航：返回上一页（`$router.back()`）
+- 不使用 `⌘+B` 返回
+
+**键盘设置**：独立分组「统计模版页」，绑定 ID 前缀 `action.statistic-template.*`。
 
 ### 9. 缺陷表单与组合组件键盘集成
 
 在缺陷新建/编辑抽屉（`AddDefect` 等）内，全局引导键 `g`/空格在输入态会被守卫；表单另有一套**直接组合键**与 **Tab 顺序** 规则，与命令面板互补。
 
-#### 9.1 抽屉级组合键（`mixins/dialog-form-shortcuts.js`）
+#### 9.1 抽屉级组合键（`mixins/dialog-form-shortcuts.js` + `utils/defect-drawer-shortcuts.js`）
 
 | 组合键 | 动作 |
 |---|---|
 | `Cmd/Ctrl + Enter` | 保存（`submitForm` / `shortcutSave`） |
-| `Cmd/Ctrl + B` | 关闭抽屉（`cancel` / `shortcutClose`）；新建缺陷禁用 `Esc` 单独关闭，须用此组合键 |
+| `Esc` | 关闭抽屉（`requestCloseDefectFormDrawer`）；有未保存修改时弹出确认 |
 
-抽屉 `visible=true` 时在 `document` 捕获阶段绑定；关闭时解绑。
+抽屉设置 `:close-on-press-escape="false"`，由全局捕获监听统一处理 `Esc`，避免与 Element 默认行为冲突。下拉/日期等浮层仍打开时，`Esc` 先交给浮层（`hasBlockingUiLayer({ excludeDefectFormDrawer: true })`）。
 
-**Mac 兼容与宽限期：**
+**标题栏徽标（视觉提示，非引导键面板）**
 
-- `Cmd/Ctrl + B` 在按住修饰键时触发关闭；Mac 上 `Esc` 与系统冲突，故不使用 `Cmd+Esc`。
-- 松开 `Cmd/Ctrl` 后 MUST 立即隐藏字段徽标与保存/关闭提示。
-- `visible` 监听带 `immediate: true`；抽屉 `open()` 时显式 `$_bindDialogShortcuts()`，确保首次打开即生效。
+| 按钮 | 未按 `Cmd/Ctrl` | 按住 `Cmd/Ctrl` |
+|---|---|---|
+| 关闭 | 无徽标 | 无徽标 |
+| 保存缺陷 | 无徽标 | 仅显示 `↵`（表示 `Cmd/Ctrl+Enter`） |
+
+松开 `Cmd/Ctrl` 后 MUST 立即隐藏字段徽标与保存按钮 `↵` 提示。
+
+**实现要点：**
+
+- 单例栈 + DOM 解析栈顶 `AddDefect` / `EditDefectDialog` 抽屉，避免多实例注册错乱。
+- `visible` 监听带 `immediate: true`；抽屉打开时 `registerDefectDrawerShortcuts`。
 
 #### 9.2 字段快捷聚焦（`mixins/form-field-hints.js`）
 
 | 交互 | 行为 |
 |---|---|
-| 按住 `Cmd/Ctrl` | 当前**可视区域内**各可输入字段标签浮现字母/数字徽标；同时显示保存/关闭提示 |
-| 按住 `Cmd/Ctrl`（缺陷列表一级界面） | 工具栏/分页等控件浮现动作字母（N/E/I/Q/J/V/B/P），与 Space 动作面板映射一致；有抽屉/浮层时不显示 |
+| 按住 `Cmd/Ctrl` | 当前**可视区域内**各可输入字段标签浮现字母/数字徽标；保存按钮浮现 `↵`（关闭按钮无徽标） |
+| 按住 `Cmd/Ctrl`（缺陷列表一级界面） | 工具栏/分页等控件浮现动作字母（L/E/S/J/I/G/O/B/P），与 Space 动作面板映射一致；有抽屉/浮层时不显示 |
+| 按住 `Cmd/Ctrl`（统计模版页） | 预览/个人/团队三区右下角浮现 P/G/H 徽标 |
 | 保持 `Cmd/Ctrl` + 字母/数字 | 焦点跳到对应字段，控件本体金色闪动高亮；**可连续跳转**（跳转时仅隐藏徽标，保留映射） |
 | 保持 `Cmd/Ctrl` + `↑` / `↓` | 滚动表单属性区（约 40% 视口高度），徽标随滚动刷新 |
 | 松开修饰键 | 徽标与映射全部清除 |
@@ -273,17 +341,26 @@ src/plugins/upload-focus-tab.js
 src/utils/upload-focus-tab.js
 src/mixins/dialog-form-shortcuts.js
 src/mixins/form-field-hints.js
+src/mixins/page-action-hints.js              # Cmd/Ctrl 页面动作浮层徽标
+src/utils/defect-drawer-shortcuts.js         # 抽屉 Cmd+Enter / Esc 单例监听
+src/utils/defect-row-kbd-hints.js            # 缺陷列表行动态徽标分配
+src/utils/statistic-grid-kbd.js              # 统计模版网格与跨区 x 对齐
 src/utils/native-file-picker.js
 src/utils/combo-focus-tab.js
+src/assets/styles/page-kbd-hints.scss        # 页面级浮层徽标全局样式
 src/components/Project/SelectProjectMember/index.vue
+src/components/Project/ProjectLabel/index.vue
 src/components/Module/SelectModule/index.vue
 src/components/FileUpload/index.vue
 src/components/ImageUpload/index.vue
-src/components/Defect/AddDefect.vue          # 抽屉焦点环样式
-e2e/form-tab-order.spec.cjs                  # 开关/上传 Tab 单停靠点
-e2e/select-project-member-tags.spec.cjs      # 成员 tag 折叠
-e2e/debug-drawer-cmd-esc.spec.cjs            # Cmd+B 关闭抽屉
-e2e/debug-image-filepicker-arrows.spec.cjs   # 原生文件框方向键
+src/components/Defect/AddDefect.vue
+src/components/Defect/EditDefectDialog.vue
+src/views/system/defect/index.vue            # 缺陷页动作 + 统计区 G 导航
+src/views/system/defect/StatisticTemplate.vue
+e2e/form-tab-order.spec.cjs
+e2e/select-project-member-tags.spec.cjs
+e2e/debug-drawer-cmd-esc.spec.cjs            # 抽屉 Esc 关闭
+e2e/debug-image-filepicker-arrows.spec.cjs
 ```
 
 ## Risks / Mitigations

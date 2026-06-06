@@ -8,6 +8,7 @@ const POPPER_CONTENT_SELECTORS = [
   '.el-dropdown-menu',
   '.el-select-dropdown',
   '.el-picker-panel',
+  '.el-time-panel',
   '.el-cascader-panel',
   '.el-cascader-menu',
   '.el-autocomplete-suggestion',
@@ -24,6 +25,7 @@ const DROPDOWN_RELATED_SELECTORS = [
   '.el-autocomplete',
   '.el-date-editor',
   '.el-time-editor',
+  '.el-time-panel',
   '.cat2bug-combo-focus-target',
   '.el-popper',
   '.el-popover',
@@ -79,9 +81,16 @@ function findElementByAriaDescribedby(id) {
 }
 
 function resolveDropdownVm(startEl) {
-  let vm = startEl && startEl.__vue__
-  if (!vm && startEl && startEl.id) {
-    const ref = findElementByAriaDescribedby(startEl.id)
+  let rootEl = startEl
+  if (rootEl && rootEl.classList) {
+    if (rootEl.classList.contains('el-time-panel') || rootEl.classList.contains('el-picker-panel')) {
+      const editor = rootEl.closest('.el-date-editor')
+      if (editor) rootEl = editor
+    }
+  }
+  let vm = rootEl && rootEl.__vue__
+  if (!vm && rootEl && rootEl.id) {
+    const ref = findElementByAriaDescribedby(rootEl.id)
     if (ref) vm = ref.__vue__
   }
   while (vm) {
@@ -163,7 +172,34 @@ function closeDropdownVm(vm) {
   }
 }
 
+const PICKER_PANEL_SELECTORS = ['.el-time-panel', '.el-picker-panel']
+
+function isFocusInsideVisiblePickerPanel(activeEl) {
+  if (!activeEl) return false
+  for (let i = 0; i < PICKER_PANEL_SELECTORS.length; i++) {
+    const panels = document.querySelectorAll(PICKER_PANEL_SELECTORS[i])
+    for (let j = 0; j < panels.length; j++) {
+      const panel = panels[j]
+      if (isVisibleLayer(panel) && containsNode(panel, activeEl)) return true
+    }
+  }
+  return false
+}
+
+/** 日期/时间面板常 append 到 body；单时间选择器无 is-active，需遍历 .el-date-editor 查 pickerVisible */
+function closeOpenDateEditorsOnBlur(activeEl) {
+  document.querySelectorAll('.el-date-editor').forEach((editor) => {
+    const vm = resolveDropdownVm(editor)
+    if (!vm || !isDropdownOpen(vm)) return
+    const trigger = getDropdownTriggerEl(vm)
+    if (containsNode(trigger, activeEl)) return
+    if (isFocusInsideVisiblePickerPanel(activeEl)) return
+    closeDropdownVm(vm)
+  })
+}
+
 export function closeDropdownsOnBlur(activeEl = document.activeElement) {
+  closeOpenDateEditorsOnBlur(activeEl)
   getVisiblePopperRoots().forEach((popperRoot) => {
     const vm = resolveDropdownVm(popperRoot)
     if (!vm || !isDropdownOpen(vm)) return

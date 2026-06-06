@@ -5,16 +5,16 @@
       <slot name="left"></slot>
       <share-card v-show="!isDeleted" :params="defect" />
       <star-switch v-show="!isDeleted" v-model="defect.collect" @change="clickCollectHandle($event, defect, false)"></star-switch>
-      <el-button v-show="assignVisible" :icon="isShowIcon?'el-icon-refresh':''" :size="size" :type="isText?'text':'info'" :class="isText?'orange':''" @click="assignHandle">{{$i18n.t('assign')}}</el-button>
-      <el-button v-show="repairVisible" :icon="isShowIcon?'el-icon-document-checked':''" :size="size" :type="isText?'text':'primary'" :class="isText?'orange':''" @click="repairDialogHandle">{{$i18n.t('repair')}}</el-button>
-      <el-button v-show="rejectVisible" :icon="isShowIcon?'el-icon-document-delete':''" :size="size" :type="isText?'text':'warning'" :class="isText?'orange':''" @click="rejectHandle">{{$i18n.t('reject')}}</el-button>
-      <el-button v-show="passVisible" :icon="isShowIcon?'el-icon-finished':''" :size="size" :type="isText?'text':'success'" :class="isText?'orange':''" @click="passDialogHandle">{{$i18n.t('pass')}}</el-button>
-      <el-button v-show="openVisible" :icon="isShowIcon?'el-icon-document-copy':''" :size="size" :type="isText?'text':'danger'" :class="isText?'orange':''" @click="openDialogHandle" v-hasPermi="['system:defect:open']">{{$i18n.t('open')}}</el-button>
-      <el-button v-show="closeVisible" :icon="isShowIcon?'el-icon-takeaway-box':''" :size="size" :type="isText?'text':'danger'" :class="isText?'orange':''" @click="closeDialogHandle">{{$i18n.t('close')}}</el-button>
-      <el-button v-show="viewVisible" :icon="isShowIcon?'el-icon-view':''" :size="size" :type="isText?'text':'warning'" @click="viewHandle">{{$i18n.t('view')}}</el-button>
-      <el-button v-show="editVisible" :icon="isShowIcon?'el-icon-edit':''" :size="size" :type="isText?'text':'success'" :class="isText?'green':''" :plain="!isShowIcon" @click="editDialogHandle" >{{ $t('modify') }}</el-button>
-      <el-button v-show="deleteVisible" :icon="isShowIcon?'el-icon-delete':''" :size="size" :type="isText?'text':'danger'" :class="isText?'red':''" :plain="!isShowIcon" @click="handleDelete">{{$i18n.t('delete')}}</el-button>
-      <el-button v-show="restoreVisible" :icon="isShowIcon?'el-icon-refresh-left':''" :size="size" :type="isText?'text':'warning'" :class="isText?'restore-orange':''" :plain="!isShowIcon" @click="handleRestore">{{$i18n.t('defect.restore')}}</el-button>
+      <el-button v-show="assignVisible" data-defect-tool="assign" :icon="isShowIcon?'el-icon-refresh':''" :size="size" :type="isText?'text':'info'" :class="isText?'orange':''" @click="assignHandle">{{$i18n.t('assign')}}</el-button>
+      <el-button v-show="repairVisible" data-defect-tool="repair" :icon="isShowIcon?'el-icon-document-checked':''" :size="size" :type="isText?'text':'primary'" :class="isText?'orange':''" @click="repairDialogHandle">{{$i18n.t('repair')}}</el-button>
+    <el-button v-show="rejectVisible" data-defect-tool="reject" :icon="isShowIcon?'el-icon-document-delete':''" :size="size" :type="isText?'text':'warning'" :class="isText?'orange':''" @click="rejectHandle">{{$i18n.t('reject')}}</el-button>
+      <el-button v-show="passVisible" data-defect-tool="pass" :icon="isShowIcon?'el-icon-finished':''" :size="size" :type="isText?'text':'success'" :class="isText?'orange':''" @click="passDialogHandle">{{$i18n.t('pass')}}</el-button>
+      <el-button v-show="openVisible" data-defect-tool="open" :icon="isShowIcon?'el-icon-document-copy':''" :size="size" :type="isText?'text':'danger'" :class="isText?'orange':''" @click="openDialogHandle" v-hasPermi="['system:defect:open']">{{$i18n.t('open')}}</el-button>
+      <el-button v-show="closeVisible" data-defect-tool="close" :icon="isShowIcon?'el-icon-takeaway-box':''" :size="size" :type="isText?'text':'danger'" :class="isText?'orange':''" @click="closeDialogHandle">{{$i18n.t('close')}}</el-button>
+      <el-button v-show="viewVisible" data-defect-tool="view" :icon="isShowIcon?'el-icon-view':''" :size="size" :type="isText?'text':'warning'" @click="viewHandle">{{$i18n.t('view')}}</el-button>
+      <el-button v-show="editVisible" data-defect-tool="edit" :icon="isShowIcon?'el-icon-edit':''" :size="size" :type="isText?'text':'success'" :class="isText?'green':''" :plain="!isShowIcon" @click="editDialogHandle" >{{ $t('modify') }}</el-button>
+      <el-button v-show="deleteVisible" data-defect-tool="delete" :icon="isShowIcon?'el-icon-delete':''" :size="size" :type="isText?'text':'danger'" :class="isText?'red':''" :plain="!isShowIcon" @click="handleDelete">{{$i18n.t('delete')}}</el-button>
+      <el-button v-show="restoreVisible" data-defect-tool="restore" :icon="isShowIcon?'el-icon-refresh-left':''" :size="size" :type="isText?'text':'warning'" :class="isText?'restore-orange':''" :plain="!isShowIcon" @click="handleRestore">{{$i18n.t('defect.restore')}}</el-button>
       <slot name="right"></slot>
     </div>
     <div class="defect-tools__dialogs" aria-hidden="true">

@@ -15,13 +15,12 @@
           <h3>{{$t('defect.create')}}</h3>
         </div>
         <div>
-          <el-button class="defect-kbd-hint-host" @click="requestCloseDefectFormDrawer" icon="el-icon-close" size="small">
+          <el-button @click="requestCloseDefectFormDrawer" icon="el-icon-close" size="small">
             {{$t('close')}}
-            <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint" aria-hidden="true">{{ dialogCloseShortcutLabel }}</span>
           </el-button>
           <el-button class="defect-kbd-hint-host" type="primary" icon="el-icon-finished" @click="submitForm" size="small">
             {{$t('defect.save')}}
-            <span class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
+            <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
           </el-button>
         </div>
       </div>
@@ -621,58 +620,7 @@ export default {
     margin-right: 4px;
     flex-shrink: 0;
   }
-  /* 字段聚焦高亮：仅在控件本体上加边框焦点环（不整行高亮） */
-  .el-form-item.cat2bug-field-flash .el-input__inner,
-  .el-form-item.cat2bug-field-flash .el-input-number .el-input__inner,
-  .el-form-item.cat2bug-field-flash .el-textarea__inner,
-  .el-form-item.cat2bug-field-flash .cat2bug-upload-focus-target:not(.component-upload-image-focus-target):not(.upload-file-focus-target) {
-    border-color: var(--cat2bug-field-focus-color) !important;
-    box-shadow: 0 0 0 var(--cat2bug-field-focus-ring-width, 2px) var(--cat2bug-field-focus-ring), 0 0 8px var(--cat2bug-field-focus-glow) !important;
-    animation: cat2bugFieldRing 1.6s ease forwards;
-  }
-  /* 文件选择器闪烁：实线外环，无荧光 glow */
-  .el-form-item.cat2bug-field-flash .upload-file-focus-target {
-    border-color: transparent !important;
-    box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color) !important;
-    animation: cat2bugSwitchFieldRing 1.6s ease forwards;
-  }
-  /* 开关闪烁：box-shadow 外环，避免 __core 遮挡 border 中段 */
-  .el-form-item.cat2bug-field-flash .el-switch {
-    display: inline-flex;
-    align-items: center;
-    border-radius: 20px;
-    padding: 0;
-    border: none !important;
-    box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color) !important;
-    animation: cat2bugSwitchFieldRing 1.6s ease forwards;
-  }
-  .el-form-item.cat2bug-field-flash .el-switch .el-switch__core {
-    box-shadow: none !important;
-  }
-  .el-form-item.cat2bug-field-flash .component-upload-image-focus-target .update-button-add {
-    border-color: var(--cat2bug-field-focus-color) !important;
-    box-shadow: 0 0 0 var(--cat2bug-field-focus-ring-width, 2px) var(--cat2bug-field-focus-ring), 0 0 8px var(--cat2bug-field-focus-glow) !important;
-    animation: cat2bugFieldRing 1.6s ease forwards;
-  }
-  /* 成员/交付物选择器：组合键聚焦时仅外框闪动，内部 input 不重复显示焦点环 */
-  .el-form-item.cat2bug-field-flash .select-project-member-input .select-project-member-search-input .el-input__inner,
-  .el-form-item.cat2bug-field-flash .select-module-input .select-module-display-input .el-input__inner {
-    border-color: transparent !important;
-    box-shadow: none !important;
-    animation: none !important;
-  }
-  @keyframes cat2bugFieldRing {
-    0% { box-shadow: 0 0 0 0 var(--cat2bug-field-focus-ring-none); }
-    12% { box-shadow: 0 0 0 var(--cat2bug-field-focus-ring-width, 2px) var(--cat2bug-field-focus-glow-bright), 0 0 8px var(--cat2bug-field-focus-glow-bright); }
-    70% { box-shadow: 0 0 0 var(--cat2bug-field-focus-ring-width, 2px) var(--cat2bug-field-focus-ring), 0 0 8px var(--cat2bug-field-focus-glow); }
-    100% { box-shadow: 0 0 0 0 var(--cat2bug-field-focus-ring-none); }
-  }
-  @keyframes cat2bugSwitchFieldRing {
-    0% { box-shadow: 0 0 0 1px var(--cat2bug-field-focus-ring-fade); }
-    12% { box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color); }
-    70% { box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color); }
-    100% { box-shadow: 0 0 0 1px var(--cat2bug-field-focus-ring-fade); }
-  }
+  /* 字段聚焦环见 cat2bug.scss 全站统一样式（:focus / :focus-within，无临时荧光动画） */
   /* 成员/交付物组合框聚焦环见 cat2bug.scss 全站统一样式 */
   /* 开关聚焦：box-shadow 外环包裹整颗开关，不被 __core 遮挡 */
   .defect-drawer-accent .el-form-item .el-switch:focus-within {
@@ -693,16 +641,6 @@ export default {
   }
   html.dark .defect-drawer-accent .el-form-item .el-switch.is-checked:focus-within {
     box-shadow: 0 0 0 1px #ffffff;
-  }
-  html.dark .el-form-item.cat2bug-field-flash .el-switch.is-checked {
-    box-shadow: 0 0 0 1px #ffffff !important;
-    animation: cat2bugSwitchFieldRingChecked 1.6s ease forwards;
-  }
-  @keyframes cat2bugSwitchFieldRingChecked {
-    0% { box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.35); }
-    12% { box-shadow: 0 0 0 1px #ffffff; }
-    70% { box-shadow: 0 0 0 1px #ffffff; }
-    100% { box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.35); }
   }
   /* 数字输入框聚焦环见 cat2bug.scss 全站统一样式 */
   /* 文件上传：外框持久焦点环 */

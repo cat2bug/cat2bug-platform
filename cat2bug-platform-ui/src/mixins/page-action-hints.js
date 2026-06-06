@@ -93,6 +93,14 @@ function buildFloatBadgeStyle(rect, floatOffset) {
       transform: 'translate(0, -50%)'
     }
   }
+  /** 徽标在锚点单元格内水平垂直居中（用于表格行快捷键列） */
+  if (placement === 'center-cell') {
+    return {
+      left: `${rect.left + rect.width / 2 + dx}px`,
+      top: `${rect.top + rect.height / 2 + dy}px`,
+      transform: 'translate(-50%, -50%)'
+    }
+  }
   return {
     left: `${rect.right + dx + outset}px`,
     top: `${rect.bottom + dy + outset}px`,
@@ -204,7 +212,10 @@ export default {
         this.$_hidePageActionHints()
       }
       if (isModifierKeyEvent(e)) {
-        if (hasBlockingUiLayer()) return
+        if (hasBlockingUiLayer()) {
+          this.$_hidePageActionHints()
+          return
+        }
         this.$_pageActionModifierHeld = true
         this.$_preparePageActionHints()
         if (!this.pageHintsActive && !this.$_pageActionHintRevealTimer) {
@@ -235,6 +246,7 @@ export default {
         }
       }
       if (!(e.metaKey || e.ctrlKey) || e.altKey) return
+      if (hasBlockingUiLayer()) return
       if (!this.$_pageActionHintMap) {
         this.$_preparePageActionHints()
       }
@@ -357,7 +369,10 @@ export default {
     $_injectPageActionBadge(anchor, letter, floatOffset, hintKey) {
       if (!anchor) return null
       let rect = anchor.getBoundingClientRect()
-      if (floatOffset && floatOffset.anchorTextBounds) {
+      if (floatOffset && floatOffset.useCellBounds) {
+        const td = anchor.closest && anchor.closest('td')
+        if (td) rect = td.getBoundingClientRect()
+      } else if (floatOffset && floatOffset.anchorTextBounds) {
         const textRect = getElementTextRect(anchor)
         if (textRect) rect = textRect
       }

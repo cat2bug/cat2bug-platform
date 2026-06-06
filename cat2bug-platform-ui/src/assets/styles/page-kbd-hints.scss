@@ -54,3 +54,75 @@ html:not(.dark) .defect-list-kbd-hint {
   font-weight: 700;
   line-height: 1 !important;
 }
+
+/* 缺陷工具弹框 / 抽屉表单：Cmd 字段徽标与提交 ↵ */
+.cat2bug-field-hint-host {
+  position: relative !important;
+  overflow: visible !important;
+}
+
+.el-form-item__label.cat2bug-field-hint-host,
+.el-form-item__content.cat2bug-field-hint-host {
+  overflow: visible !important;
+}
+
+.cat2bug-field-hint {
+  position: absolute;
+  right: 2px;
+  bottom: 1px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  margin: 0;
+  padding: 0 4px;
+  font-family: 'SFMono-Regular', Consolas, Menlo, monospace;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1;
+  color: #ffd54f;
+  background: #2b2b2b;
+  border: 1px solid #5a5a5a;
+  border-radius: 3px;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
+  user-select: none;
+  pointer-events: none;
+  z-index: 2;
+}
+
+html:not(.dark) .cat2bug-field-hint {
+  color: #ffffff;
+  background: #303133;
+  border-color: #303133;
+}
+
+.el-dialog .defect-kbd-hint-host.el-button,
+.defect-drawer-accent .defect-kbd-hint-host.el-button {
+  position: relative;
+  overflow: visible !important;
+}
+
+.el-dialog .defect-kbd-hint-host .defect-kbd-hint,
+.defect-drawer-accent .defect-kbd-hint-host .defect-kbd-hint {
+  right: 0;
+  bottom: 0;
+  transform: translate(50%, 50%);
+  white-space: nowrap;
+  color: #e8e8e8;
+  border-color: #4a4a4a;
+}
+
+.el-dialog .defect-kbd-hint-host .defect-kbd-hint--primary,
+.defect-drawer-accent .defect-kbd-hint-host .defect-kbd-hint--primary {
+  color: #ffffff;
+  background: rgba(0, 0, 0, 0.55);
+  border-color: rgba(0, 0, 0, 0.35);
+}
+
+html:not(.dark) .el-dialog .defect-kbd-hint-host .defect-kbd-hint--primary,
+html:not(.dark) .defect-drawer-accent .defect-kbd-hint-host .defect-kbd-hint--primary {
+  color: #ffffff;
+  background: #303133;
+  border-color: #303133;
+}

@@ -258,6 +258,8 @@ import {
   resolveDefectTableRowHintAnchor,
   resolveExcelRowHintAnchor
 } from '@/utils/defect-row-kbd-hints'
+import { activateStatisticItemClick } from '@/utils/statistic-item-kbd'
+import { findTopFormDrawerVm } from '@/utils/defect-drawer-shortcuts'
 
 /** 记录Tab标签选项 */
 const DEFECT_TAB_CACHE_KEY = 'defect-tab'
@@ -665,7 +667,7 @@ export default {
       const used = (ctx && ctx.usedLetters) ? new Set(ctx.usedLetters) : new Set()
       collectHintLettersFromToolbar(this.getPageActionHints()).forEach((ch) => used.add(ch))
       if (this.defectContentComponent === 'DefectTable') {
-        const rowFloat = { placement: 'center-left-inset', outset: 4, dx: 2 }
+        const rowFloat = { placement: 'center-cell', useCellBounds: true }
         return this.buildDefectTableRowActionHints(used, rowFloat)
       }
       if (this.defectContentComponent === 'DefectExcel') {
@@ -1429,11 +1431,21 @@ export default {
         this.applyDefectStatisticNavFocus(idx)
       })
     },
+    /** 空格/回车：触发当前聚焦统计模块的主点击（筛选、打开设置等） */
+    activateFocusedDefectStatisticClick() {
+      const els = this.getDefectStatisticItemEls()
+      const el = els[this.defectStatisticNavIndex]
+      const items = this.getDefectStatisticNavItems()
+      const sc = items[this.defectStatisticNavIndex]
+      if (!el || !sc || !sc.name) return false
+      return activateStatisticItemClick(el, sc.name)
+    },
     $_attachDefectStatisticNavListeners() {
       if (this.$_defectStatisticNavListenersBound) return
       this.$_defectStatisticNavListenersBound = true
       this.$_onDefectStatisticNavKeydown = (e) => {
         if (!this.defectStatisticNavActive) return
+        if (findTopFormDrawerVm()) return
         if (e.key === 'ArrowLeft') {
           e.preventDefault()
           e.stopPropagation()
@@ -1444,6 +1456,14 @@ export default {
           e.preventDefault()
           e.stopPropagation()
           this.moveDefectStatisticNav(1)
+          return
+        }
+        const key = e.key
+        if (key === 'Enter' || key === ' ' || key === 'Spacebar' || e.code === 'Space') {
+          e.preventDefault()
+          e.stopPropagation()
+          if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation()
+          this.activateFocusedDefectStatisticClick()
           return
         }
         if (e.key === 'Delete' || e.key === 'Backspace') {
@@ -2926,7 +2946,23 @@ export default {
 .defect-page.defect-page--excel-view .defect-content-slot.defect-content-slot--excel {
   flex: 1 1 0%;
   min-height: 0;
-  overflow: hidden;
+  /* 滚动在 .defect-excel-context；此处勿 hidden，否则工具栏搜索框顶部 focus 环被裁切 */
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+}
+.defect-page.defect-page--excel-view .defect-tools-search {
+  overflow: visible !important;
+}
+.defect-page.defect-page--excel-view .defect-view-toolbar.defect-excel-tools {
+  overflow: visible;
+  padding-top: 2px;
+  box-sizing: border-box;
+}
+.defect-page.defect-page--excel-view .defect-tools-search ::v-deep .defect-list-query-nav-item.defect-query-nav-focused {
+  position: relative;
+  z-index: 2;
+  overflow: visible !important;
 }
 .defect-page ::v-deep h3.defect-project-label {
   margin-top: 0;

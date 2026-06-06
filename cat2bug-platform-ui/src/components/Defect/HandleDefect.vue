@@ -1,5 +1,6 @@
 <template>
   <el-drawer
+    ref="handleDefectDrawer"
     custom-class="defect-drawer-accent"
     size="55%"
     :visible.sync="visible"
@@ -31,27 +32,54 @@
         </div>
       </div>
     </template>
-    <div class="app-container defect-edit-body" v-loading="loading">
+    <div ref="handleDefectBody" class="app-container defect-edit-body" v-loading="loading">
       <div class="defect-edit-body-log-first">
         <list-defect-log ref="defectLogFirst" :pageSize="1" />
       </div>
       <el-collapse v-model="activeNames">
-        <el-collapse-item :title="$i18n.t('describe')" name="defectDescribe">
+        <el-collapse-item name="defectDescribe">
+          <template slot="title">
+            <span class="handle-defect-collapse-title" data-collapse-name="defectDescribe">{{ $i18n.t('describe') }}</span>
+          </template>
           <markdown-it-vue v-if="defect.defectDescribe" :content="defect.defectDescribe+''" />
           <el-empty v-else :description="$t('no-data')"></el-empty>
         </el-collapse-item>
-        <el-collapse-item :title="$i18n.t('defect.base-info')" name="customFields">
+        <el-collapse-item name="customFields">
+          <template slot="title">
+            <span class="handle-defect-collapse-title" data-collapse-name="customFields">{{ $i18n.t('defect.base-info') }}</span>
+          </template>
           <defect-custom-fields-display
+            ref="customFieldsDisplay"
             :project-id="defect.projectId"
             :defect="defect"
             :defect-case="defectCase"
             :custom-fields="defect.customFields"
+            @accordion-rows-change="onCustomFieldAccordionRowsChange"
           />
         </el-collapse-item>
-        <el-collapse-item v-if="defectCase && defectCase.caseId" :title="$i18n.t('case')" name="caseId">
+        <el-collapse-item
+          v-for="row in customFieldAccordionRows"
+          :key="row.fieldKey"
+          :name="customFieldAccordionCollapseName(row.fieldKey)"
+        >
+          <template slot="title">
+            <span
+              class="handle-defect-collapse-title"
+              :data-collapse-name="customFieldAccordionCollapseName(row.fieldKey)"
+            >{{ row.fieldLabel }}</span>
+          </template>
+          <defect-custom-field-accordion-body :row="row" />
+        </el-collapse-item>
+        <el-collapse-item v-if="defectCase && defectCase.caseId" name="caseId">
+          <template slot="title">
+            <span class="handle-defect-collapse-title" data-collapse-name="caseId">{{ $i18n.t('case') }}</span>
+          </template>
           <case-card :case-model="defectCase" :state-visible="true" :step-index.sync="defect.caseStepId" :edit="false" />
         </el-collapse-item>
-        <el-collapse-item :title="$i18n.t('log')" name="log">
+        <el-collapse-item name="log">
+          <template slot="title">
+            <span class="handle-defect-collapse-title" data-collapse-name="log">{{ $i18n.t('log') }}</span>
+          </template>
           <list-defect-log ref="defectLog" :pageSize="5" show-comment />
         </el-collapse-item>
       </el-collapse>
@@ -74,16 +102,36 @@ import {getCase} from "@/api/system/case";
 import MarkdownItVue from "markdown-it-vue"
 import 'markdown-it-vue/dist/markdown-it-vue.css'
 import {normalizeDefectTypeAndLevel} from "@/utils/defect-defaults";
+import handleDefectKbdHints from '@/mixins/handle-defect-kbd-hints'
+import {
+  accordionRowHasContent,
+  customFieldAccordionCollapseName,
+  isCustomFieldAccordionCollapseName
+} from '@/components/DefectCustomField/defect-custom-field-accordion'
 
 export default {
   name: "EditDefect",
+  mixins: [handleDefectKbdHints],
   dicts: ['defect_level'],
-  components: { SelectProjectMember, SelectModule, ListDefectLog, DefectTools, DefectTypeFlag, DefectStateFlag, CaseCard, MarkdownItVue, FocusMemberList, DefectCustomFieldsDisplay: () => import('@/components/DefectCustomField/DefectCustomFieldsDisplay') },
+  components: {
+    SelectProjectMember,
+    SelectModule,
+    ListDefectLog,
+    DefectTools,
+    DefectTypeFlag,
+    DefectStateFlag,
+    CaseCard,
+    MarkdownItVue,
+    FocusMemberList,
+    DefectCustomFieldsDisplay: () => import('@/components/DefectCustomField/DefectCustomFieldsDisplay'),
+    DefectCustomFieldAccordionBody: () => import('@/components/DefectCustomField/DefectCustomFieldAccordionBody')
+  },
   data() {
     return {
       loading: false,
       defectId: null,
       activeNames: [],
+      customFieldAccordionRows: [],
       // 显示窗口
       visible: false,
       // 缺陷对象
@@ -152,6 +200,24 @@ export default {
     },
   },
   methods:{
+    customFieldAccordionCollapseName,
+    onCustomFieldAccordionRowsChange(rows) {
+      const nextRows = rows || []
+      this.customFieldAccordionRows = nextRows
+      const validNames = new Set(
+        nextRows.map((row) => customFieldAccordionCollapseName(row.fieldKey))
+      )
+      this.activeNames = this.activeNames.filter(
+        (name) => !isCustomFieldAccordionCollapseName(name) || validNames.has(name)
+      )
+      nextRows.forEach((row) => {
+        if (!accordionRowHasContent(row)) return
+        const name = customFieldAccordionCollapseName(row.fieldKey)
+        if (!this.activeNames.includes(name)) {
+          this.activeNames.push(name)
+        }
+      })
+    },
     // 获取缺陷信息
     getDefectInfo(defectId) {
       this.loading = true;
@@ -235,6 +301,7 @@ export default {
         defectLevel: 'middle'
       };
       this.activeNames = ['log', 'customFields']
+      this.customFieldAccordionRows = []
       this.resetForm("form");
     },
     /** 提交按钮 */
@@ -302,6 +369,7 @@ export default {
   flex-wrap: wrap;
   .report-edit-tools {
     padding: 5px 0px;
+    overflow: visible;
   }
   .defect-edit-title {
     display: inline-flex;
@@ -365,13 +433,24 @@ export default {
   ::v-deep .el-collapse {
     .el-collapse-item__header {
       font-size: 16px;
+      overflow: visible;
+      position: relative;
+    }
+    .handle-defect-collapse-title {
+      position: relative;
+      display: inline-block;
+      padding-right: 4px;
     }
     .el-collapse-item__content {
       padding-top: 20px;
+      padding-bottom: 0;
 
       > :first-child {
         margin-top: 0;
       }
+    }
+    > .el-collapse-item > .el-collapse-item__wrap {
+      border-bottom: 1px solid var(--border-color-light, #ebeef5);
     }
     border-width: 0px;
     .el-collapse-item:last-child {
@@ -407,4 +486,35 @@ export default {
   font-size: 13px !important;
   vertical-align: 1px;
 }
+</style>
+
+<style lang="scss">
+  .defect-drawer-accent .defect-tools__bar [data-defect-tool].cat2bug-field-hint-host {
+    position: relative;
+    overflow: visible !important;
+  }
+  .defect-drawer-accent .defect-tools__bar .handle-defect-kbd-hint {
+    right: 0;
+    bottom: 0;
+    transform: translate(50%, 50%);
+  }
+  .defect-drawer-accent .handle-defect-collapse-title .handle-defect-kbd-hint {
+    right: -2px;
+    bottom: -2px;
+    transform: none;
+  }
+  .defect-drawer-accent .el-collapse-item__header.handle-defect-collapse-flash {
+    animation: handleDefectCollapseFlash 1.2s ease forwards;
+  }
+  @keyframes handleDefectCollapseFlash {
+    0%, 100% { background-color: transparent; }
+    15%, 45% { background-color: rgba(64, 158, 255, 0.12); }
+  }
+  html.dark .defect-drawer-accent .el-collapse-item__header.handle-defect-collapse-flash {
+    animation-name: handleDefectCollapseFlashDark;
+  }
+  @keyframes handleDefectCollapseFlashDark {
+    0%, 100% { background-color: transparent; }
+    15%, 45% { background-color: rgba(255, 206, 58, 0.15); }
+  }
 </style>

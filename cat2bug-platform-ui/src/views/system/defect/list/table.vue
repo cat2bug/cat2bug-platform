@@ -124,7 +124,11 @@
             </div>
             <level-tag v-else-if="column.prop==='defectLevel'" :options="dict.type.defect_level" :value="scope.row.defectLevel"/>
             <defect-state-flag v-else-if="column.prop==='defectState'" :defect="scope.row" />
-            <cat2-bug-preview-image v-else-if="column.prop==='imgUrls'" :images="getUrl(scope.row.imgUrls)" />
+            <cat2-bug-preview-image
+              v-else-if="column.prop==='imgUrls'"
+              class="defect-list-cell-image"
+              :images="getUrl(scope.row.imgUrls)"
+            />
             <div v-else-if="column.prop==='annexUrls'" class="annex-list">
               <cat2-bug-text :content="file" type="down" :tooltip="file" v-for="(file,index) in getUrl(scope.row.annexUrls)" :key="index" />
             </div>
@@ -135,6 +139,7 @@
             <row-list-member v-else-if="column.prop==='handleBy'" :members="scope.row.handleByList"></row-list-member>
             <cat2-bug-preview-image
               v-else-if="column.customFieldKey && isCustomFieldType(column, 'image')"
+              class="defect-list-cell-image"
               :images="customFieldUrls(scope.row, column)"
             />
             <div v-else-if="column.customFieldKey && isCustomFieldType(column, 'file')" class="annex-list">
@@ -969,6 +974,20 @@ export default {
 }
 .defect-row-tools {
   margin-left: 0;
+}
+
+/* 列表图片列：缩略图铺满单元格（cover） */
+.defect-list-cell-image {
+  ::v-deep .el-image {
+    padding: 0;
+    overflow: hidden;
+  }
+  ::v-deep .el-image__inner {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    object-position: center center;
+  }
 }
 
 /* 操作列：未超 450px 单行自适应，超出后换行（由 Cat2BugTable data-operate-at-cap 控制） */

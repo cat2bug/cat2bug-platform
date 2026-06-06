@@ -51,22 +51,25 @@
       append-to-body
       custom-class="personal-remind-timer-dialog"
       :close-on-click-modal="false"
+      :close-on-press-escape="false"
+      :before-close="onToolDialogBeforeClose"
+      @opened="onToolDialogOpened"
       @closed="onDialogClosed"
     >
-      <el-table :data="editTimers" size="mini" class="remind-timer-table">
+      <el-table ref="remindTimerTable" :data="editTimers" size="mini" class="remind-timer-table">
         <el-table-column width="58" align="center" class-name="remind-switch-col">
           <template slot-scope="scope">
-            <el-switch v-model="scope.row.enabled" />
+            <el-switch v-model="scope.row.enabled" data-remind-stop />
           </template>
         </el-table-column>
         <el-table-column :label="$t('defect.personal-remind-timer.label')" min-width="136">
           <template slot-scope="scope">
-            <el-input v-model="scope.row.label" size="mini" maxlength="32" />
+            <el-input v-model="scope.row.label" data-remind-stop="label" size="mini" maxlength="32" />
           </template>
         </el-table-column>
         <el-table-column :label="$t('defect.personal-remind-timer.type')" width="108">
           <template slot-scope="scope">
-            <el-select v-model="scope.row.schedule.type" size="mini" @change="onTypeChange(scope.row)">
+            <el-select v-model="scope.row.schedule.type" data-remind-stop size="mini" @change="onTypeChange(scope.row)">
               <el-option value="once" :label="$t('defect.personal-remind-timer.type-once')" />
               <el-option value="daily" :label="$t('defect.personal-remind-timer.type-daily')" />
               <el-option value="weekly" :label="$t('defect.personal-remind-timer.type-weekly')" />
@@ -80,6 +83,7 @@
               <el-date-picker
                 v-if="scope.row.schedule.type === 'once'"
                 v-model="scope.row.schedule.date"
+                data-remind-stop
                 type="date"
                 value-format="yyyy-MM-dd"
                 size="mini"
@@ -88,6 +92,7 @@
               <el-select
                 v-else-if="scope.row.schedule.type === 'weekly'"
                 v-model="scope.row.schedule.weekday"
+                data-remind-stop
                 size="mini"
                 class="remind-when-week"
               >
@@ -96,6 +101,7 @@
               <el-input-number
                 v-else-if="scope.row.schedule.type === 'monthly'"
                 v-model="scope.row.schedule.day"
+                data-remind-stop
                 :min="1"
                 :max="31"
                 size="mini"
@@ -104,12 +110,15 @@
               />
               <el-time-picker
                 v-model="scope.row._timePicker"
+                data-remind-stop
                 format="HH:mm"
                 value-format="HH:mm"
                 size="mini"
                 :clearable="false"
                 class="remind-when-time"
+                @focus="onRemindTimePickerFocus"
                 @change="val => onTimeChange(scope.row, val)"
+                @blur="onRemindTimePickerBlur"
               />
             </div>
           </template>
@@ -117,7 +126,7 @@
         <el-table-column :label="$t('defect.personal-remind-timer.sound')" width="176" class-name="remind-sound-col">
           <template slot-scope="scope">
             <div class="remind-sound-cell">
-              <el-select v-model="scope.row.sound" size="mini" class="remind-sound-select">
+              <el-select v-model="scope.row.sound" data-remind-stop size="mini" class="remind-sound-select">
                 <el-option
                   v-for="s in soundOptions"
                   :key="s.id"
@@ -127,6 +136,7 @@
               </el-select>
               <el-button
                 type="text"
+                data-remind-stop
                 size="mini"
                 class="remind-sound-preview"
                 @click="previewSound(scope.row.sound)"
@@ -141,9 +151,10 @@
         >
           <template slot="header">
             <el-button
+              ref="remindAddBtn"
               type="text"
               icon="el-icon-plus"
-              class="remind-add-btn"
+              class="remind-add-btn cat2bug-field-hint-host"
               :title="$t('defect.personal-remind-timer.add').toString()"
               @click="addTimer"
             />
@@ -152,6 +163,7 @@
             <el-button
               type="text"
               icon="el-icon-delete"
+              data-remind-stop
               class="remind-delete-btn"
               :title="$t('delete').toString()"
               @click="removeTimer(scope.$index)"
@@ -160,8 +172,11 @@
         </el-table-column>
       </el-table>
       <span slot="footer">
-        <el-button @click="dialogVisible = false">{{ $t('cancel') }}</el-button>
-        <el-button type="primary" @click="saveDialog">{{ $t('update') }}</el-button>
+        <el-button @click="requestCloseToolDialog">{{ $t('cancel') }}</el-button>
+        <el-button class="defect-kbd-hint-host" type="primary" @click="saveDialog">
+          {{ $t('update') }}
+          <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
+        </el-button>
       </span>
     </el-dialog>
   </div>
@@ -169,6 +184,10 @@
 
 <script>
 import Cat2BugCard from '../Components/Card'
+import statisticDialogKbd from '@/mixins/statistic-dialog-kbd'
+import remindTimerTableKbd from '@/mixins/remind-timer-table-kbd'
+import { serializeRemindTimerCloseState } from '@/utils/statistic-dialog-close-state'
+import { closeDropdownsOnBlur } from '@/utils/dropdown-blur-close'
 import {
   DEFAULT_RING_DURATION_MS,
   SOUND_OPTIONS,
@@ -181,6 +200,7 @@ import {
 
 export default {
   name: 'PersonalRemindTimer',
+  mixins: [statisticDialogKbd, remindTimerTableKbd],
   components: { Cat2BugCard },
   props: {
     params: { type: Object, default: () => ({}) },
@@ -305,6 +325,8 @@ export default {
       this.dialogVisible = true
     },
     onDialogClosed() {
+      this.$_unbindRemindTimePickerPickRefocus()
+      this._remindTimePickerVm = null
       this.editTimers = []
     },
     addTimer() {
@@ -328,9 +350,179 @@ export default {
         s.day = 1
       }
     },
+    onRemindTimePickerFocus(pickerVm) {
+      if (!pickerVm) return
+      this._remindTimePickerVm = pickerVm
+      this.$_wrapRemindTimePickerFocus(pickerVm)
+      this.$_wrapRemindTimePickerKeydown(pickerVm)
+      this.$_ensureRemindTimePickerPickRefocus(pickerVm)
+    },
+    $_wrapRemindTimePickerFocus(pickerVm) {
+      if (!pickerVm || pickerVm._remindHandleFocusWrapped) return
+      if (typeof pickerVm.handleFocus === 'function') {
+        pickerVm._remindNativeHandleFocus = pickerVm.handleFocus.bind(pickerVm)
+        pickerVm.handleFocus = function wrappedRemindTimePickerFocus() {
+          if (pickerVm._remindSilentFocus) {
+            pickerVm.$emit('focus', pickerVm)
+            return
+          }
+          pickerVm._remindNativeHandleFocus()
+        }
+      }
+      if (typeof pickerVm.blur === 'function') {
+        pickerVm._remindNativeBlur = pickerVm.blur.bind(pickerVm)
+        pickerVm.blur = function wrappedRemindTimePickerBlur() {
+          if (pickerVm._remindSuppressBlur) return
+          pickerVm._remindNativeBlur()
+        }
+      }
+      pickerVm._remindHandleFocusWrapped = true
+    },
+    $_wrapRemindTimePickerKeydown(pickerVm) {
+      if (!pickerVm || pickerVm._remindHandleKeydownWrapped) return
+      if (typeof pickerVm.handleKeydown !== 'function') return
+      const component = this
+      pickerVm._remindNativeHandleKeydown = pickerVm.handleKeydown.bind(pickerVm)
+      pickerVm.handleKeydown = function wrappedRemindTimePickerKeydown(event) {
+        const keyCode = event.keyCode
+        const panelWasOpen = pickerVm.pickerVisible
+
+        if (!pickerVm.pickerVisible && (keyCode === 40 || keyCode === 38)) {
+          if (pickerVm._remindNativeHandleFocus) {
+            pickerVm._remindNativeHandleFocus()
+          } else if (typeof pickerVm.handleFocus === 'function') {
+            pickerVm.handleFocus()
+          }
+          event.preventDefault()
+          pickerVm.$nextTick(() => {
+            if (pickerVm.picker && typeof pickerVm.picker.handleKeydown === 'function') {
+              pickerVm.picker.handleKeydown(event)
+            }
+          })
+          return
+        }
+
+        pickerVm._remindNativeHandleKeydown(event)
+
+        if (keyCode === 13 && panelWasOpen && !pickerVm.pickerVisible) {
+          component._remindTimePickerRefocusing = true
+          component.$_scheduleRemindTimePickerRefocusAfterPick(pickerVm)
+        }
+      }
+      pickerVm._remindHandleKeydownWrapped = true
+    },
+    $_ensureRemindTimePickerPickRefocus(pickerVm) {
+      if (!pickerVm || pickerVm._remindPickRefocusBound) return
+      const bindPick = () => {
+        if (pickerVm._remindPickRefocusBound) return
+        if (!pickerVm.picker) {
+          this.$nextTick(() => bindPick())
+          return
+        }
+        pickerVm._remindPickRefocusBound = true
+        pickerVm.picker.$on('pick', (date, visible, first) => {
+          if (first) return
+          // 滚轮/Spinner 变更时 visible=true，仅点「确定」关闭时 visible=false
+          if (visible) return
+          this.$_scheduleRemindTimePickerRefocusAfterPick(pickerVm)
+        })
+      }
+      bindPick()
+    },
+    $_unbindRemindTimePickerPickRefocus() {
+      const tableEl = typeof this.$_getRemindTimerTableEl === 'function' && this.$_getRemindTimerTableEl()
+      if (!tableEl) return
+      tableEl.querySelectorAll('.remind-when-time').forEach((editor) => {
+        let vm = editor.__vue__
+        while (vm) {
+          if (vm.$options && vm.$options.name === 'ElTimePicker') {
+            if (vm.picker && vm._remindPickRefocusBound) {
+              vm.picker.$off('pick')
+            }
+            vm._remindPickRefocusBound = false
+            break
+          }
+          vm = vm.$parent
+        }
+      })
+    },
+    $_scheduleRemindTimePickerRefocusAfterPick(pickerVm) {
+      this._remindTimePickerRefocusing = true
+      const attempt = () => {
+        if (!this.dialogVisible) return
+        this.$_focusRemindTimePickerInput(pickerVm)
+      }
+      window.setTimeout(attempt, 50)
+      window.setTimeout(attempt, 120)
+    },
     onTimeChange(row, val) {
       row.schedule.time = val || '09:00'
       row._timePicker = row.schedule.time
+    },
+    $_resolveRemindTimePickerInput(pickerVm) {
+      if (!pickerVm) return null
+      const ref = pickerVm.$refs && pickerVm.$refs.reference
+      if (ref && ref.$el) {
+        const inner = ref.$el.querySelector('.el-input__inner')
+        if (inner) return inner
+      }
+      return pickerVm.$el ? pickerVm.$el.querySelector('.el-input__inner') : null
+    },
+    $_focusRemindTimePickerInput(pickerVm) {
+      if (!this.dialogVisible || !pickerVm) return false
+      this.$_wrapRemindTimePickerFocus(pickerVm)
+      const input = this.$_resolveRemindTimePickerInput(pickerVm)
+      if (!input || !input.isConnected) return false
+      this._remindTimePickerRefocusing = true
+      pickerVm._remindSilentFocus = true
+      pickerVm._remindSuppressBlur = true
+      try {
+        input.focus({ preventScroll: false })
+      } catch (e) {
+        input.focus()
+      }
+      pickerVm._remindSilentFocus = false
+      if (pickerVm.pickerVisible) {
+        pickerVm.pickerVisible = false
+        if (pickerVm.picker) pickerVm.picker.visible = false
+        if (typeof pickerVm.destroyPopper === 'function') pickerVm.destroyPopper()
+        pickerVm._remindSilentFocus = true
+        try {
+          input.focus({ preventScroll: false })
+        } catch (e) {
+          input.focus()
+        }
+        pickerVm._remindSilentFocus = false
+      }
+      window.setTimeout(() => {
+        pickerVm._remindSuppressBlur = false
+        this._remindTimePickerRefocusing = false
+      }, 50)
+      return true
+    },
+    onRemindTimePickerBlur() {
+      this.$nextTick(() => {
+        const active = document.activeElement
+        if (active && active.closest && active.closest('.el-time-panel')) return
+        if (this._remindTimePickerRefocusing) return
+        if (typeof this.$_closeRemindTimerPickerPanels === 'function') {
+          this.$_closeRemindTimerPickerPanels()
+        }
+        closeDropdownsOnBlur()
+      })
+    },
+    shortcutSave() {
+      this.saveDialog()
+    },
+    getStatisticDialogCloseSnapshot() {
+      return this.editTimers
+    },
+    serializeStatisticDialogCloseSnapshot(snapshot) {
+      return serializeRemindTimerCloseState(snapshot)
+    },
+    getFieldHintContainer() {
+      const table = this.$refs.remindTimerTable
+      return (table && table.$el) || this.$el
     },
     saveDialog() {
       const timers = this.editTimers.map(row => {
@@ -341,6 +533,7 @@ export default {
         return this.normalizeTimer(rest)
       })
       this.timers = timers
+      this.toolDialogCloseBaseline = null
       this.dialogVisible = false
       this.persistTimers()
       this.tickDisplay()
@@ -775,9 +968,17 @@ export default {
   .remind-timer-table {
     width: 100%;
 
-    .el-table__body-wrapper,
+    .el-table__body-wrapper {
+      overflow: visible !important;
+    }
+
     .el-table__header-wrapper {
-      overflow: hidden !important;
+      overflow: visible !important;
+    }
+
+    tbody td {
+      padding-top: 4px;
+      padding-bottom: 4px;
     }
 
     th.remind-action-col,
@@ -809,13 +1010,14 @@ export default {
 
     th.remind-switch-col .cell,
     td.remind-switch-col .cell {
+      position: relative;
       display: flex;
       align-items: center;
       justify-content: flex-start;
       width: 100%;
       height: 100%;
       min-height: 32px;
-      padding: 0 4px 0 10px !important;
+      padding: 4px 4px 4px 10px !important;
       overflow: visible;
       box-sizing: border-box;
     }
@@ -827,7 +1029,9 @@ export default {
     }
 
     td:not(.remind-action-col):not(.remind-switch-col) .cell {
-      overflow: hidden;
+      overflow: visible;
+      padding-top: 4px !important;
+      padding-bottom: 4px !important;
     }
 
     td.remind-sound-col .cell,
@@ -847,7 +1051,7 @@ export default {
     flex-wrap: nowrap;
     gap: 8px;
     max-width: 100%;
-    overflow: hidden;
+    overflow: visible;
   }
 
   .remind-when-date {
@@ -894,8 +1098,16 @@ export default {
 
   .remind-sound-preview {
     flex: 0 0 auto;
-    padding: 0 2px;
+    min-height: 24px;
+    padding: 2px 6px;
     white-space: nowrap;
+    border-radius: 4px;
+
+    &:focus,
+    &:focus-visible {
+      outline: none !important;
+      box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, #1890ff) !important;
+    }
   }
 
   .remind-add-btn,
@@ -904,11 +1116,22 @@ export default {
     align-items: center;
     justify-content: center;
     margin: 0;
-    padding: 0;
+    min-width: 28px;
+    min-height: 28px;
+    padding: 4px;
     line-height: 1;
+    border-radius: 4px;
+
+    &:focus,
+    &:focus-visible {
+      outline: none !important;
+      box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, #1890ff) !important;
+    }
   }
 
   .remind-add-btn {
+    position: relative;
+    overflow: visible !important;
     font-size: 16px;
     color: #409eff;
   }
@@ -917,8 +1140,7 @@ export default {
     font-size: 16px;
     color: #f56c6c !important;
 
-    &:hover,
-    &:focus {
+    &:hover {
       color: #f78989 !important;
     }
   }
