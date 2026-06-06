@@ -1462,6 +1462,10 @@
   "keyboard.act.query": "Запрос",
   "keyboard.act.switch-tab": "Переключить вкладку",
   "keyboard.act.statistic": "Шаблон статистики",
+  "keyboard.act.stat-scroll-next": "Прокрутить статистику вправо",
+  "keyboard.act.trend-export": "Экспорт графика тренда",
+  "keyboard.act.switch-view": "Переключить вид",
+  "keyboard.act.display-fields": "Поля отображения",
   "keyboard.act.prev-page": "Предыдущая страница",
   "keyboard.act.next-page": "Следующая страница"
 }

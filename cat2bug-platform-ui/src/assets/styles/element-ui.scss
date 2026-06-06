@@ -1,5 +1,27 @@
 // cover some element-ui styles
 
+/* 全局 Loading：统一 Element UI 默认 SVG 圆环（v-loading / Loading.service 勿改用 el-icon-loading） */
+.el-loading-spinner {
+  .circular {
+    width: 42px;
+    height: 42px;
+    animation: loading-rotate 2s linear infinite;
+  }
+
+  .path {
+    animation: loading-dash 1.5s ease-in-out infinite;
+    stroke: #409eff;
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+
+  .el-loading-text {
+    color: #409eff;
+    margin: 3px 0;
+    font-size: 14px;
+  }
+}
+
 .el-breadcrumb__inner,
 .el-breadcrumb__inner a {
   font-weight: 400 !important;

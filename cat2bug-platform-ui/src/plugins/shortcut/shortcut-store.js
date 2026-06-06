@@ -9,7 +9,17 @@ function load() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return null
-    return JSON.parse(raw)
+    const data = JSON.parse(raw)
+    if (data.overrides) {
+      const legacyView = normalizeKey(data.overrides['action.defect.switchView'])
+      if (legacyView === 'T' || legacyView === 'M' || legacyView === 'L') {
+        delete data.overrides['action.defect.switchView']
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+        } catch (e) { /* ignore */ }
+      }
+    }
+    return data
   } catch (e) {
     return null
   }

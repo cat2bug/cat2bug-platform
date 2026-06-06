@@ -1462,6 +1462,10 @@
   "keyboard.act.query": "استعلام",
   "keyboard.act.switch-tab": "تبديل التبويب",
   "keyboard.act.statistic": "قالب الإحصاءات",
+  "keyboard.act.stat-scroll-next": "تمرير الإحصاءات لليمين",
+  "keyboard.act.trend-export": "تصدير مخطط الاتجاه",
+  "keyboard.act.switch-view": "تبديل العرض",
+  "keyboard.act.display-fields": "حقول العرض",
   "keyboard.act.prev-page": "الصفحة السابقة",
   "keyboard.act.next-page": "الصفحة التالية"
 }

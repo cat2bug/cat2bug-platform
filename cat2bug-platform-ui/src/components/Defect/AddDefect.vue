@@ -626,7 +626,7 @@ export default {
   .el-form-item.cat2bug-field-flash .el-textarea__inner,
   .el-form-item.cat2bug-field-flash .cat2bug-upload-focus-target:not(.component-upload-image-focus-target):not(.upload-file-focus-target) {
     border-color: var(--cat2bug-field-focus-color) !important;
-    box-shadow: 0 0 0 2px var(--cat2bug-field-focus-ring), 0 0 8px var(--cat2bug-field-focus-glow) !important;
+    box-shadow: 0 0 0 var(--cat2bug-field-focus-ring-width, 2px) var(--cat2bug-field-focus-ring), 0 0 8px var(--cat2bug-field-focus-glow) !important;
     animation: cat2bugFieldRing 1.6s ease forwards;
   }
   /* 文件选择器闪烁：实线外环，无荧光 glow */
@@ -650,7 +650,7 @@ export default {
   }
   .el-form-item.cat2bug-field-flash .component-upload-image-focus-target .update-button-add {
     border-color: var(--cat2bug-field-focus-color) !important;
-    box-shadow: 0 0 0 2px var(--cat2bug-field-focus-ring), 0 0 8px var(--cat2bug-field-focus-glow) !important;
+    box-shadow: 0 0 0 var(--cat2bug-field-focus-ring-width, 2px) var(--cat2bug-field-focus-ring), 0 0 8px var(--cat2bug-field-focus-glow) !important;
     animation: cat2bugFieldRing 1.6s ease forwards;
   }
   /* 成员/交付物选择器：组合键聚焦时仅外框闪动，内部 input 不重复显示焦点环 */
@@ -662,8 +662,8 @@ export default {
   }
   @keyframes cat2bugFieldRing {
     0% { box-shadow: 0 0 0 0 var(--cat2bug-field-focus-ring-none); }
-    12% { box-shadow: 0 0 0 2px var(--cat2bug-field-focus-glow-bright), 0 0 8px var(--cat2bug-field-focus-glow-bright); }
-    70% { box-shadow: 0 0 0 2px var(--cat2bug-field-focus-ring), 0 0 8px var(--cat2bug-field-focus-glow); }
+    12% { box-shadow: 0 0 0 var(--cat2bug-field-focus-ring-width, 2px) var(--cat2bug-field-focus-glow-bright), 0 0 8px var(--cat2bug-field-focus-glow-bright); }
+    70% { box-shadow: 0 0 0 var(--cat2bug-field-focus-ring-width, 2px) var(--cat2bug-field-focus-ring), 0 0 8px var(--cat2bug-field-focus-glow); }
     100% { box-shadow: 0 0 0 0 var(--cat2bug-field-focus-ring-none); }
   }
   @keyframes cat2bugSwitchFieldRing {

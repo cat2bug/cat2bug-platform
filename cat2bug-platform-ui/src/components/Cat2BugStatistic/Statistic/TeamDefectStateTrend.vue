@@ -19,7 +19,7 @@
         </el-radio-button>
       </el-radio-group>
       <el-tooltip v-if="!read" effect="dark" :content="$t('export').toString()" placement="top">
-        <el-button type="text" icon="el-icon-download" class="defect-trend-export" @click.stop="handleExport" />
+        <el-button type="text" icon="el-icon-download" class="defect-trend-export defect-list-hint-trend-export" @click.stop="handleExport" />
       </el-tooltip>
     </template>
     <template slot="content">

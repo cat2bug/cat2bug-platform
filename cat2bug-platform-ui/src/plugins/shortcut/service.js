@@ -83,6 +83,8 @@ function hasBlockingUiLayer() {
   )
 }
 
+export { hasBlockingUiLayer }
+
 /** 缺陷页空格打开「页面动作」的前置条件 */
 function canOpenDefectPageActions() {
   if (!pageRegistry.hasActions()) return false

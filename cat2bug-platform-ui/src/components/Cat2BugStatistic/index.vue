@@ -63,7 +63,7 @@
       <button
         v-show="scrollOverflow"
         type="button"
-        class="statistic-scroll-btn statistic-scroll-btn--next"
+        class="statistic-scroll-btn statistic-scroll-btn--next defect-list-hint-stat-scroll-next"
         :disabled="!canScrollRight"
         @click="scrollNext"
       >

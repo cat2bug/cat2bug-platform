@@ -1478,6 +1478,10 @@
   "keyboard.act.query": "Query",
   "keyboard.act.switch-tab": "Switch tab",
   "keyboard.act.statistic": "Statistics template",
+  "keyboard.act.stat-scroll-next": "Scroll statistics right",
+  "keyboard.act.trend-export": "Export trend chart",
+  "keyboard.act.switch-view": "Switch view",
+  "keyboard.act.display-fields": "Display fields",
   "keyboard.act.prev-page": "Previous page",
   "keyboard.act.next-page": "Next page"
 }

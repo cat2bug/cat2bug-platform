@@ -120,6 +120,7 @@
   /* 键盘/快捷键聚焦环：浅色主题蓝色 */
   --cat2bug-primary: #409eff;
   --cat2bug-field-focus-color: #1890ff;
+  --cat2bug-field-focus-ring-width: 2px;
   --cat2bug-field-focus-ring: rgba(24, 144, 255, 0.45);
   --cat2bug-field-focus-glow: rgba(24, 144, 255, 0.6);
   --cat2bug-field-focus-glow-bright: rgba(24, 144, 255, 0.7);
@@ -229,6 +230,7 @@ html.dark {
   /* 键盘/快捷键聚焦环：暗色主题金色 */
   --cat2bug-primary: #FFC107;
   --cat2bug-field-focus-color: #ffce3a;
+  --cat2bug-field-focus-ring-width: 2px;
   --cat2bug-field-focus-ring: rgba(255, 206, 58, 0.45);
   --cat2bug-field-focus-glow: rgba(255, 206, 58, 0.6);
   --cat2bug-field-focus-glow-bright: rgba(255, 206, 58, 0.7);

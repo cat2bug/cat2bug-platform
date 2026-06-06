@@ -106,11 +106,16 @@ export function tryCloseDefectDrawer(preferredVm, e) {
 }
 
 function onKeyup(e) {
-  if (isModifierKeyEvent(e)) {
-    const vm = resolveDrawerVm()
-    if (vm && typeof vm.$_hideFieldHints === 'function') {
-      vm.$_hideFieldHints()
+  if (!isModifierKeyEvent(e)) return
+  document.querySelectorAll('.defect-page').forEach((el) => {
+    const vm = el.__vue__
+    if (vm && typeof vm.$_hidePageActionHints === 'function') {
+      vm.$_hidePageActionHints()
     }
+  })
+  const drawer = findTopFormDrawerVm()
+  if (drawer && typeof drawer.$_hideFieldHints === 'function') {
+    drawer.$_hideFieldHints()
   }
 }
 

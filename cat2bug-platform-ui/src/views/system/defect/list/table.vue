@@ -25,6 +25,7 @@
           <el-button
             style="padding: 9px;"
             plain
+            class="defect-list-hint-columns"
             slot="reference"
             icon="el-icon-s-fold"
             size="small"
@@ -52,7 +53,12 @@
         />
       </div>
       <multipane-resizer ref="paneResizer" v-show="showModuleTree" :style="[multipaneStyle, paneResizerRuleVars]"></multipane-resizer>
-      <div ref="defectTableContext" class="defect-table-context">
+      <div
+        ref="defectTableContext"
+        v-loading="loading"
+        class="defect-table-context"
+        :element-loading-text="$t('loading')"
+      >
         <!-- 宽表横向滚动限制在本层，避免整页 main-container 底部出现横向条与分页同一底边叠在一起「压住」分页 -->
         <div class="defect-table-x-scroll">
         <cat2-bug-table
@@ -62,7 +68,6 @@
           preserve-column-order
           :columns="resolvedDefectTableColumns"
           :data="defectList"
-          :loading="loading"
           :operate-column-max-width="250"
           :table-max-height="defectTableBodyMaxHeight"
           v-resize="setDragComponentSize"
@@ -267,6 +272,8 @@ export default {
       multiple: true,
       total: 0,
       defectList: [],
+      /** 递增序号：忽略过期的 listDefect 响应，避免 Tab 快速切换时列表错乱 */
+      defectListRequestGen: 0,
       queryParams: this.query,
       treeModuleStyle: { "--treeModuleWidth": "300px" },
       multipaneStyle: {},
@@ -644,17 +651,25 @@ export default {
       this.search(this.queryParams);
     },
     search(params) {
-      this.loading = true;
-      this.queryParams = params;
+      const gen = ++this.defectListRequestGen
+      this.loading = true
+      this.queryParams = params
+      this.syncDefectTableBodyMaxHeight()
       listDefect(params).then(response => {
-        this.loading = false;
-        this.defectList = response.rows;
-        this.total = response.total;
+        if (gen !== this.defectListRequestGen) return
+        this.defectList = response.rows
+        this.total = response.total
         this.$nextTick(() => {
-          this.syncDefectTreeToolbarWithTableHeader();
-          this.setDragComponentSize();
-        });
-      });
+          this.syncDefectTreeToolbarWithTableHeader()
+          this.setDragComponentSize()
+        })
+      }).catch(() => {
+        if (gen !== this.defectListRequestGen) return
+      }).finally(() => {
+        if (gen === this.defectListRequestGen) {
+          this.loading = false
+        }
+      })
     },
     refreshSearch() {
       this.$emit('refresh');
@@ -765,6 +780,10 @@ export default {
   overflow-y: hidden;
   display: flex;
   flex-direction: column;
+  position: relative;
+  ::v-deep .el-loading-mask {
+    z-index: 20;
+  }
 }
 .defect-table-pagination-band {
   flex-shrink: 0;

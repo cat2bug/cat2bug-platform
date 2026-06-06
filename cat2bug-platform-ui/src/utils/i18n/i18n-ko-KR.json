@@ -1462,6 +1462,10 @@
   "keyboard.act.query": "조회",
   "keyboard.act.switch-tab": "탭 전환",
   "keyboard.act.statistic": "통계 템플릿",
+  "keyboard.act.stat-scroll-next": "통계 오른쪽으로",
+  "keyboard.act.trend-export": "추세 차트 내보내기",
+  "keyboard.act.switch-view": "보기 전환",
+  "keyboard.act.display-fields": "표시 필드",
   "keyboard.act.prev-page": "이전 페이지",
   "keyboard.act.next-page": "다음 페이지"
 }

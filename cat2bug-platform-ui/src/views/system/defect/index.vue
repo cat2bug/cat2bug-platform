@@ -11,23 +11,36 @@
     >
       <project-label class="defect-project-label" />
       <!-- 缺陷页标签-->
-      <div ref="defectToolsTab" class="defect-tools-tab">
+      <div
+        ref="defectToolsTab"
+        class="defect-tools-tab defect-list-hint-tabs"
+        :class="{ 'defect-tab-keyboard-nav': defectTabNavActive }"
+      >
         <el-tabs ref="defectTabs" v-model="activeDefectTabName" @tab-click="selectDefectTabHandle">
           <el-tab-pane v-for="tab in config.tabs" :key="tab.tabId+''" :name="tab.tabId+''">
-            <span slot="label" class="defect-tab-label">
+            <span
+              slot="label"
+              class="defect-tab-label"
+            >
               <svg-icon icon-class="list2" class="defect-tab-icon" />
               <span class="defect-tab-text" :title="tab.tabName">{{ tab.tabName }}</span>
               <i style="width: 14px;" class="el-icon-close" @click.stop="removeDefectTabHandle(tab.tabId)" />
             </span>
           </el-tab-pane>
           <el-tab-pane key="all-tab" :name="allTab">
-            <span slot="label" class="defect-tab-label">
+            <span
+              slot="label"
+              class="defect-tab-label"
+            >
               <svg-icon icon-class="all" class="defect-tab-icon" />
               <span class="defect-tab-text" :title="$t('defect.all-defect')">{{ $t('defect.all-defect') }}</span>
             </span>
           </el-tab-pane>
           <el-tab-pane key="deleted-tab" :name="deletedTab">
-            <span slot="label" class="defect-tab-label">
+            <span
+              slot="label"
+              class="defect-tab-label"
+            >
               <svg-icon icon-class="delete" class="defect-tab-icon" />
               <span class="defect-tab-text" :title="$t('defect.deleted-defect')">{{ $t('defect.deleted-defect') }}</span>
             </span>
@@ -36,7 +49,7 @@
             <svg-icon
               slot="label"
               icon-class="add-tab"
-              class-name="defect-tab-label defect-tab-add-btn"
+              :class-name="defectTabAddBtnClass"
               :title="$t('defect.tab')"
               @click.native.stop="addDefectTabHandle"
               @mousedown.native.stop.prevent
@@ -44,7 +57,9 @@
           </el-tab-pane>
         </el-tabs>
         <div class="defect-tools-tab-right">
-          <svg-icon v-show="statisticPanelVisible" class="defect-tools-button" icon-class="view-statistic" @click.native="addStatisticHandle" />
+          <span class="defect-list-hint-statistic">
+            <svg-icon v-show="statisticPanelVisible" class="defect-tools-button" icon-class="view-statistic" @click.native="addStatisticHandle" />
+          </span>
         </div>
       </div>
       <!-- 统计板块-->
@@ -67,7 +82,12 @@
             <el-form v-show="showSearch" ref="queryForm" :model="queryParams" size="small" :inline="true" label-width="0">
               <el-form-item>
                 <!-- 缺陷显示模式切换 -->
-                <el-radio-group v-model="defectContentComponent" class="defect-content-view-switch" size="mini" @input="handleDefectContentChange">
+                <el-radio-group
+                  v-model="defectContentComponent"
+                  class="defect-content-view-switch defect-list-hint-view-switch"
+                  size="mini"
+                  @input="handleDefectContentChange"
+                >
                   <!-- 表格模式 -->
                   <el-radio-button label="DefectTable">
                     <span class="defect-content-view-switch-inner" :title="$t('table')">
@@ -129,7 +149,7 @@
                   @input="handleQuery()"
                 />
               </el-form-item>
-              <el-form-item prop="nameVersionKeyword">
+              <el-form-item prop="nameVersionKeyword" class="defect-list-hint-query">
                 <el-input
                   v-model="queryParams.nameVersionKeyword"
                   size="small"
@@ -145,7 +165,7 @@
         <template slot="right-tools">
           <el-dropdown
             v-if="defectAddToolbarVisible"
-            class="defect-add-dropdown"
+            class="defect-add-dropdown defect-list-hint-new"
             split-button
             size="small"
             type="primary"
@@ -198,6 +218,8 @@ import store from '@/store'
 import DefectTable from './list/table'
 import DefectExcel from './list/excel'
 import { clearExtensionParams, hasParticipationExtension } from './query-extension'
+import pageActionHints from '@/mixins/page-action-hints'
+import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
 
 /** 记录Tab标签选项 */
 const DEFECT_TAB_CACHE_KEY = 'defect-tab'
@@ -225,6 +247,7 @@ function resolveDefectTabFromCache(raw) {
 const CACHE_KEY_STATISTIC_PANEL_VISIBLE = 'defect.statisticPanelVisible'
 export default {
   name: 'Defect',
+  mixins: [pageActionHints],
   components: { AddDefect, HandleDefect, SelectProjectMember, ProjectLabel, Cat2BugStatistic, DefectTabDialog, DefectTable, DefectExcel, DefectImport },
   data() {
     return {
@@ -252,6 +275,13 @@ export default {
 
       // 是否显示统计面板
       statisticPanelVisible: this.$cache.local.get(CACHE_KEY_STATISTIC_PANEL_VISIBLE) != 'false',
+      /** Cmd/Ctrl+J 后 Tab 条键盘导航（左右键切换，末项右切到添加按钮） */
+      defectTabNavActive: false,
+      defectTabNavIndex: -1,
+      /** 键盘导航当前聚焦的 tab name 或添加 pane name */
+      defectTabNavFocusedName: null,
+      /** Tab 切换过程中忽略 focusout，避免误退出键盘导航 */
+      defectTabNavSuppressBlur: false,
       // 查询参数
       queryParams: {
         pageNum: 1,
@@ -316,6 +346,9 @@ export default {
     /** 工具栏新建/导入/导出：非已删除页签且具备新增权限 */
     defectAddToolbarVisible() {
       return !this.isDeletedDefectTab && this.checkPermi(['system:defect:add'])
+    },
+    defectTabAddBtnClass() {
+      return 'defect-tab-label defect-tab-add-btn'
     },
     defectPageRootStyle() {
       if (this.defectContentComponent === 'DefectExcel') {
@@ -393,10 +426,14 @@ export default {
     })
   },
   deactivated() {
+    this.exitDefectTabKeyboardNav()
+    this.clearTabDataLoadTimer()
     if (this.$shortcut) this.$shortcut.unregisterPage('defect')
   },
   // 移除滚动条监听
   destroyed() {
+    this.exitDefectTabKeyboardNav()
+    this.clearTabDataLoadTimer()
     if (this.$shortcut) this.$shortcut.unregisterPage('defect')
   },
   methods: {
@@ -437,11 +474,117 @@ export default {
         { key: 'export', defaultLetter: 'E', run: () => this.handleExport() },
         { key: 'import', defaultLetter: 'I', run: () => this.handleImport() },
         { key: 'query', defaultLetter: 'Q', run: () => this.shortcutFocusQuery() },
-        { key: 'switchTab', defaultLetter: 'T', run: () => this.shortcutSwitchTab() },
+        { key: 'switchTab', defaultLetter: 'J', run: () => this.shortcutSwitchTab() },
         { key: 'statistic', defaultLetter: 'V', run: () => this.addStatisticHandle() },
+        { key: 'statScrollNext', defaultLetter: 'R', run: () => this.shortcutScrollStatisticNext() },
+        { key: 'trendExport', defaultLetter: 'G', run: () => this.shortcutExportTrendChart() },
+        { key: 'switchView', defaultLetter: 'O', run: () => this.shortcutSwitchView() },
+        { key: 'displayFields', defaultLetter: 'F', run: () => this.shortcutToggleDisplayFields() },
         { key: 'prevPage', defaultLetter: 'B', run: () => this.shortcutChangePage(-1) },
         { key: 'nextPage', defaultLetter: 'P', run: () => this.shortcutChangePage(1) }
       ])
+    },
+    getPageActionHintContainer() {
+      return this.$refs.defectMain || this.$el
+    },
+    /** Cmd/Ctrl 按住时在工具栏显示字母徽标（与 Space 动作面板映射一致） */
+    getPageActionHints() {
+      const scopeKey = 'defect'
+      const L = (key, def) => shortcutStore.getLetter(`action.${scopeKey}.${key}`, def)
+      const hints = [
+        {
+          key: 'new',
+          letter: L('new', 'N'),
+          badgeSelector: '.defect-list-hint-new.el-dropdown > .el-button-group > .el-button--primary',
+          floatOffset: { placement: 'bottom-right-outset', outset: 3 },
+          run: () => this.handleAdd(),
+          visible: () => this.defectAddToolbarVisible
+        },
+        {
+          key: 'import',
+          letter: L('import', 'I'),
+          badgeSelector: '.defect-add-dropdown .el-dropdown__caret-button',
+          floatOffset: { placement: 'bottom-right-inset', outset: 4, dx: -10 },
+          run: () => this.handleImport(),
+          visible: () => this.defectAddToolbarVisible
+        },
+        {
+          key: 'export',
+          letter: L('export', 'E'),
+          badgeSelector: '.defect-add-dropdown .el-dropdown__caret-button',
+          floatOffset: { placement: 'bottom-right-outset', outset: 3, dx: 2 },
+          run: () => this.handleExport(),
+          visible: () => this.defectAddToolbarVisible
+        },
+        {
+          key: 'query',
+          letter: L('query', 'Q'),
+          badgeSelector: '.defect-list-hint-query .el-input__inner',
+          floatOffset: { placement: 'bottom-right-inset', outset: 5 },
+          run: () => this.shortcutFocusQuery()
+        },
+        {
+          key: 'switchTab',
+          letter: L('switchTab', 'J'),
+          badgeSelector: '.defect-list-hint-tabs .el-tabs__item.is-active .defect-tab-label',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
+          run: () => this.shortcutSwitchTab()
+        },
+        {
+          key: 'statistic',
+          letter: L('statistic', 'V'),
+          badgeSelector: '.defect-list-hint-statistic .defect-tools-button',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
+          run: () => this.addStatisticHandle(),
+          visible: () => this.statisticPanelVisible
+        },
+        {
+          key: 'statScrollNext',
+          letter: L('statScrollNext', 'R'),
+          badgeSelector: '.defect-list-hint-stat-scroll-next',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
+          run: () => this.shortcutScrollStatisticNext(),
+          visible: () => this.isDefectStatScrollNextHintVisible()
+        },
+        {
+          key: 'trendExport',
+          letter: L('trendExport', 'G'),
+          badgeSelector: '.defect-list-hint-trend-export',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
+          run: () => this.shortcutExportTrendChart(),
+          visible: () => this.isDefectTrendExportHintVisible()
+        },
+        {
+          key: 'switchView',
+          letter: L('switchView', 'O'),
+          badgeSelector: '.defect-list-hint-view-switch',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
+          run: () => this.shortcutSwitchView()
+        },
+        {
+          key: 'displayFields',
+          letter: L('displayFields', 'F'),
+          badgeSelector: '.defect-list-hint-columns',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
+          run: () => this.shortcutToggleDisplayFields(),
+          visible: () => this.defectContentComponent === 'DefectTable'
+        },
+        {
+          key: 'prevPage',
+          letter: L('prevPage', 'B'),
+          badgeSelector: '.defect-table-pagination .btn-prev',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
+          run: () => this.shortcutChangePage(-1)
+        },
+        {
+          key: 'nextPage',
+          letter: L('nextPage', 'P'),
+          badgeSelector: '.defect-table-pagination .btn-next',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
+          run: () => this.shortcutChangePage(1)
+        }
+      ]
+      return hints
     },
     /** 聚焦关键字搜索框（查询） */
     shortcutFocusQuery() {
@@ -456,18 +599,250 @@ export default {
         }
       })
     },
-    /** 循环切换缺陷页签 */
+    /** Cmd/Ctrl+J：聚焦当前 Tab，左右键切换；末项 Tab 再右切到添加按钮 */
     shortcutSwitchTab() {
-      const names = []
-      if (this.config && this.config.tabs) {
-        this.config.tabs.forEach(t => names.push(String(t.tabId)))
+      this.enterDefectTabKeyboardNav()
+    },
+    isDefectStatScrollNextHintVisible() {
+      if (!this.statisticPanelVisible) return false
+      const stat = this.$refs.defectStatistic
+      return !!(stat && stat.scrollOverflow && stat.canScrollRight)
+    },
+    isDefectTrendExportHintVisible() {
+      if (!this.statisticPanelVisible) return false
+      const root = this.$refs.defectMain || this.$el
+      return !!(root && root.querySelector('.defect-list-hint-trend-export'))
+    },
+    shortcutScrollStatisticNext() {
+      const stat = this.$refs.defectStatistic
+      if (stat && typeof stat.scrollNext === 'function') {
+        stat.scrollNext()
       }
-      names.push(this.allTab, this.deletedTab)
+    },
+    shortcutExportTrendChart() {
+      const root = this.$refs.defectMain || this.$el
+      const btn = root && root.querySelector('.defect-list-hint-trend-export')
+      if (btn) {
+        btn.click()
+        return
+      }
+      const stat = this.$refs.defectStatistic
+      const items = stat && stat.$refs.statisticItem
+      const arr = items ? (Array.isArray(items) ? items : [items]) : []
+      const trend = arr.find((c) => c && c.$options && c.$options.name === 'TeamDefectStateTrend')
+      if (trend && typeof trend.handleExport === 'function') {
+        trend.handleExport()
+      }
+    },
+    /** Cmd/Ctrl+O：在表格 / Excel 显示模式间切换 */
+    shortcutSwitchView() {
+      const next = this.defectContentComponent === 'DefectExcel' ? 'DefectTable' : 'DefectExcel'
+      this.defectContentComponent = next
+      this.handleDefectContentChange()
+    },
+    shortcutToggleDisplayFields() {
+      if (this.defectContentComponent !== 'DefectTable') return
+      const root = this.$refs.defectMain || this.$el
+      const btn = root && root.querySelector('.defect-list-hint-columns')
+      if (btn) btn.click()
+    },
+    getDefectTabNavItems() {
+      const items = []
+      if (this.config && this.config.tabs) {
+        this.config.tabs.forEach((t) => {
+          items.push({ type: 'tab', name: String(t.tabId) })
+        })
+      }
+      items.push({ type: 'tab', name: this.allTab })
+      items.push({ type: 'tab', name: this.deletedTab })
+      items.push({ type: 'add' })
+      return items
+    },
+    getDefectTabItemEl(name) {
+      const root = this.$refs.defectToolsTab
+      if (!root || name == null) return null
+      return root.querySelector(`[id="tab-${String(name)}"]`)
+    },
+    getDefectTabAddButtonEl() {
+      const root = this.$refs.defectToolsTab
+      return root && root.querySelector(`#tab-${this.defectAddTabPaneName} .defect-tab-add-btn`)
+    },
+    clearDefectTabNavFocusMarks() {
+      const root = this.$refs.defectToolsTab
+      if (!root) return
+      root.querySelectorAll('.el-tabs__item.defect-tab-nav-focused').forEach((el) => {
+        el.classList.remove('defect-tab-nav-focused')
+      })
+      root.querySelectorAll('.defect-tab-add-btn.defect-tab-nav-focused').forEach((el) => {
+        el.classList.remove('defect-tab-nav-focused')
+      })
+      root.querySelectorAll('.el-tabs__item[tabindex="0"]').forEach((el) => {
+        el.tabIndex = -1
+      })
+      root.querySelectorAll('.defect-tab-add-btn[tabindex="0"]').forEach((el) => {
+        el.tabIndex = -1
+      })
+    },
+    syncDefectTabNavItemFocusClass() {
+      this.clearDefectTabNavFocusMarks()
+      if (!this.defectTabNavActive || !this.defectTabNavFocusedName) return
+      if (this.defectTabNavFocusedName === this.defectAddTabPaneName) {
+        const addBtn = this.getDefectTabAddButtonEl()
+        if (addBtn) {
+          addBtn.classList.add('defect-tab-nav-focused')
+          addBtn.tabIndex = 0
+        }
+        return
+      }
+      const tabEl = this.getDefectTabItemEl(this.defectTabNavFocusedName)
+      if (tabEl) {
+        tabEl.classList.add('defect-tab-nav-focused')
+        tabEl.tabIndex = 0
+      }
+    },
+    getDefectTabNavFocusEl(item) {
+      if (!item) return null
+      if (item.type === 'add') {
+        return this.getDefectTabAddButtonEl()
+      }
+      return this.getDefectTabItemEl(item.name)
+    },
+    focusDefectTabNavDom(item) {
+      const focusEl = this.getDefectTabNavFocusEl(item)
+      if (focusEl) {
+        focusEl.tabIndex = 0
+        focusEl.focus()
+      }
+      this.$nextTick(() => {
+        this.syncDefectTabNavItemFocusClass()
+      })
+    },
+    applyDefectTabNavFocus(index, options = {}) {
+      const activate = options.activate !== false
+      const items = this.getDefectTabNavItems()
+      const item = items[index]
+      if (!item) return
+
+      this.defectTabNavSuppressBlur = true
+      this.defectTabNavIndex = index
+      this.defectTabNavFocusedName = item.type === 'add'
+        ? this.defectAddTabPaneName
+        : item.name
+
+      if (item.type === 'add') {
+        this.$nextTick(() => {
+          this.focusDefectTabNavDom(item)
+          this.$nextTick(() => {
+            this.defectTabNavSuppressBlur = false
+          })
+        })
+        return
+      }
+
+      const activateTab = activate && String(this.activeDefectTabName) !== item.name
+      if (activateTab) {
+        this.activeDefectTabName = item.name
+        this.selectDefectTabHandle({ name: item.name })
+      }
+      this.$nextTick(() => {
+        this.$nextTick(() => {
+          this.focusDefectTabNavDom(item)
+          this.defectTabNavSuppressBlur = false
+        })
+      })
+    },
+    enterDefectTabKeyboardNav() {
+      const items = this.getDefectTabNavItems()
+      if (!items.length) return
       const cur = String(this.activeDefectTabName)
-      const idx = names.indexOf(cur)
-      const next = names[(idx + 1) % names.length]
-      this.activeDefectTabName = next
-      this.selectDefectTabHandle({ name: next })
+      let idx = items.findIndex((it) => it.type === 'tab' && it.name === cur)
+      if (idx < 0) idx = 0
+      this.defectTabNavActive = true
+      this.defectTabNavIndex = idx
+      this.$nextTick(() => {
+        this.applyDefectTabNavFocus(idx, { activate: false })
+        this.$nextTick(() => {
+          this.$_attachDefectTabNavListeners()
+        })
+      })
+    },
+    exitDefectTabKeyboardNav() {
+      if (!this.defectTabNavActive && !this.$_defectTabNavListenersBound) return
+      this.defectTabNavActive = false
+      this.defectTabNavIndex = -1
+      this.defectTabNavFocusedName = null
+      this.clearDefectTabNavFocusMarks()
+      const root = this.$refs.defectToolsTab
+      if (root && root.contains(document.activeElement)) {
+        document.activeElement.blur()
+      }
+      this.$_detachDefectTabNavListeners()
+    },
+    moveDefectTabNav(delta) {
+      const items = this.getDefectTabNavItems()
+      const next = this.defectTabNavIndex + delta
+      if (next < 0 || next >= items.length) return
+      this.applyDefectTabNavFocus(next, { activate: true })
+    },
+    $_attachDefectTabNavListeners() {
+      if (this.$_defectTabNavListenersBound) return
+      this.$_defectTabNavListenersBound = true
+      this.$_onDefectTabNavKeydown = (e) => {
+        if (!this.defectTabNavActive) return
+        if (e.key === 'ArrowLeft') {
+          e.preventDefault()
+          e.stopPropagation()
+          this.moveDefectTabNav(-1)
+          return
+        }
+        if (e.key === 'ArrowRight') {
+          e.preventDefault()
+          e.stopPropagation()
+          this.moveDefectTabNav(1)
+          return
+        }
+        if (e.key === 'Enter') {
+          const items = this.getDefectTabNavItems()
+          const item = items[this.defectTabNavIndex]
+          if (item && item.type === 'add') {
+            e.preventDefault()
+            e.stopPropagation()
+            this.addDefectTabHandle()
+            this.exitDefectTabKeyboardNav()
+          }
+          return
+        }
+        if (e.key === 'Escape') {
+          e.preventDefault()
+          e.stopPropagation()
+          this.exitDefectTabKeyboardNav()
+        }
+      }
+      this.$_onDefectTabNavFocusOut = (e) => {
+        if (!this.defectTabNavActive || this.defectTabNavSuppressBlur) return
+        const root = this.$refs.defectToolsTab
+        if (root && e.relatedTarget && root.contains(e.relatedTarget)) return
+        setTimeout(() => {
+          if (!this.defectTabNavActive || this.defectTabNavSuppressBlur) return
+          if (!root || !root.contains(document.activeElement)) {
+            this.exitDefectTabKeyboardNav()
+          }
+        }, 0)
+      }
+      document.addEventListener('keydown', this.$_onDefectTabNavKeydown, true)
+      const root = this.$refs.defectToolsTab
+      if (root) {
+        root.addEventListener('focusout', this.$_onDefectTabNavFocusOut, true)
+      }
+    },
+    $_detachDefectTabNavListeners() {
+      if (!this.$_defectTabNavListenersBound) return
+      this.$_defectTabNavListenersBound = false
+      document.removeEventListener('keydown', this.$_onDefectTabNavKeydown, true)
+      const root = this.$refs.defectToolsTab
+      if (root && this.$_onDefectTabNavFocusOut) {
+        root.removeEventListener('focusout', this.$_onDefectTabNavFocusOut, true)
+      }
     },
     /** 翻页（delta: -1 上一页 / 1 下一页） */
     shortcutChangePage(delta) {
@@ -713,7 +1088,7 @@ export default {
           this.$set(this.queryParams, 'params', {})
         }
         this.$set(this.queryParams.params, 'delFlag', '0')
-        this.handleQuery()
+        this.scheduleTabDataLoad()
         this.$cache.local.set(DEFECT_TAB_CACHE_KEY, activeName)
         return
       }
@@ -723,7 +1098,7 @@ export default {
           this.$set(this.queryParams, 'params', {})
         }
         this.$set(this.queryParams.params, 'delFlag', '2')
-        this.handleQuery()
+        this.scheduleTabDataLoad()
         // 不缓存「已删除」页签，避免刷新后仍停留在此且工具栏无新建按钮
         return
       }
@@ -763,9 +1138,29 @@ export default {
         } else {
           this.reset()
         }
-        this.handleQuery()
+        this.scheduleTabDataLoad()
       }
       this.$cache.local.set(DEFECT_TAB_CACHE_KEY, activeName)
+    },
+    /** Tab 快速切换时合并查询，只加载最终停留页签的数据 */
+    scheduleTabDataLoad() {
+      const content = this.$refs.defectContentComponent
+      if (content && Object.prototype.hasOwnProperty.call(content, 'loading')) {
+        content.loading = true
+      }
+      if (this._tabDataLoadTimer) {
+        clearTimeout(this._tabDataLoadTimer)
+      }
+      this._tabDataLoadTimer = setTimeout(() => {
+        this._tabDataLoadTimer = null
+        this.handleQuery()
+      }, 120)
+    },
+    clearTabDataLoadTimer() {
+      if (this._tabDataLoadTimer) {
+        clearTimeout(this._tabDataLoadTimer)
+        this._tabDataLoadTimer = null
+      }
     },
     /** 打开添加缺陷页签对话框 */
     addDefectTabHandle() {
@@ -1081,6 +1476,7 @@ export default {
 /* Tab 行：顶/底间距由 .defect-page gap 承担；裁切 el-tabs 空 content 溢出 */
 .defect-tools-tab {
   position: relative;
+  z-index: 30;
   display: flex;
   flex-direction: row;
   align-items: stretch;
@@ -1088,7 +1484,7 @@ export default {
   height: 40px;
   min-width: 0;
   flex-shrink: 0;
-  overflow: hidden;
+  overflow: visible;
   box-sizing: border-box;
   /* 伪元素底线与 active-bar 同处 bottom:0，避免 border-bottom 挤占内容区导致蓝条偏高 */
   &::after {
@@ -1112,11 +1508,19 @@ export default {
     height: 100%;
     display: flex;
     align-items: stretch;
+    box-sizing: border-box;
   }
   ::v-deep .el-tabs__nav-wrap {
     flex: 1;
     min-height: 100%;
     margin-bottom: 0 !important;
+    overflow: visible !important;
+  }
+  ::v-deep .el-tabs__nav-scroll {
+    overflow: visible !important;
+  }
+  ::v-deep .el-tabs__nav {
+    overflow: visible !important;
   }
   ::v-deep .el-tabs__active-bar {
     height: 2px !important;
@@ -1138,10 +1542,11 @@ export default {
     flex-direction: column;
     height: 100%;
     max-height: 100%;
-    overflow: hidden;
+    overflow: visible;
   }
   ::v-deep .el-tabs__item:not(#tab-__defect_add_tab__) {
     max-width: 200px;
+    overflow: visible !important;
   }
   ::v-deep #tab-__defect_add_tab__.el-tabs__item {
     display: inline-flex !important;
@@ -1181,13 +1586,74 @@ export default {
       background-color: #ecf5ff;
     }
   }
+  ::v-deep .el-tabs__item.is-active {
+    overflow: visible !important;
+  }
+  /* 键盘导航：聚焦环贴合 label 内容宽度，底边与 Tab 灰线重叠 */
+  &.defect-tab-keyboard-nav ::v-deep .el-tabs__item.defect-tab-nav-focused:not(#tab-__defect_add_tab__) {
+    position: relative;
+    z-index: 4;
+    overflow: visible !important;
+    outline: none;
+    box-shadow: none !important;
+
+    .defect-tab-label {
+      position: relative;
+      height: 100%;
+      box-sizing: border-box;
+      padding: 0 8px;
+
+      &::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 5px;
+        bottom: 0;
+        box-sizing: border-box;
+        border: var(--cat2bug-field-focus-ring-width, 2px) solid var(--cat2bug-field-focus-color);
+        border-radius: var(--cat2bug-border-radius, 4px) var(--cat2bug-border-radius, 4px) 0 0;
+        pointer-events: none;
+      }
+    }
+  }
+  &.defect-tab-keyboard-nav ::v-deep .el-tabs__item.defect-tab-nav-focused:focus,
+  &.defect-tab-keyboard-nav ::v-deep .el-tabs__item.defect-tab-nav-focused:focus-visible {
+    outline: none !important;
+  }
+  &.defect-tab-keyboard-nav ::v-deep .defect-tab-add-btn.defect-tab-nav-focused {
+    position: relative;
+    z-index: 4;
+    outline: none;
+    border-color: var(--cat2bug-field-focus-color);
+    box-shadow: 0 0 0 var(--cat2bug-field-focus-ring-width, 2px) var(--cat2bug-field-focus-color);
+  }
+  &.defect-tab-keyboard-nav ::v-deep .defect-tab-add-btn.defect-tab-nav-focused:focus,
+  &.defect-tab-keyboard-nav ::v-deep .defect-tab-add-btn.defect-tab-nav-focused:focus-visible {
+    outline: none !important;
+  }
+  ::v-deep .el-tabs__item:focus,
+  ::v-deep .el-tabs__item:focus-visible {
+    outline: none !important;
+  }
+  ::v-deep .el-tabs__header,
+  ::v-deep .el-tabs__nav-wrap {
+    overflow: visible !important;
+  }
   .defect-tools-tab-right {
+    position: relative;
+    z-index: 31;
     flex: 0 0 auto;
     display: flex;
     justify-content: center;
     align-items: center;
     padding-left: 8px;
+    overflow: visible;
   }
+}
+.defect-page .defect-tools-statistic {
+  position: relative;
+  z-index: 1;
 }
 .defect-tools-button {
   cursor: pointer;
@@ -1206,11 +1672,13 @@ export default {
   }
 }
 .defect-tab-label {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 4px;
   max-width: 100%;
   min-width: 0;
+  overflow: visible !important;
   ::v-deep .defect-tab-icon {
     font-size: 14px;
     flex-shrink: 0;
@@ -1407,6 +1875,60 @@ export default {
 }
 .defect-page .defect-view-toolbar .table-tools.row > * {
   margin-bottom: 0 !important;
+}
+
+/* 缺陷列表页 Cmd/Ctrl 快捷键徽标（fixed 浮层 + 内联共用样式） */
+.cat2bug-page-kbd-hint-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  pointer-events: none;
+  overflow: visible;
+}
+.cat2bug-page-kbd-hint-float {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  width: max-content !important;
+  max-width: none !important;
+  height: 16px;
+  margin: 0;
+  padding: 0 4px;
+  font-family: 'SFMono-Regular', Consolas, Menlo, monospace;
+  font-size: 10px !important;
+  font-weight: 600;
+  line-height: 1 !important;
+  letter-spacing: 0;
+  white-space: nowrap;
+  color: #ffd54f;
+  background: #2b2b2b;
+  border: 1px solid #5a5a5a;
+  border-radius: 3px;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
+  box-sizing: border-box;
+  user-select: none;
+  pointer-events: none;
+  right: auto !important;
+  bottom: auto !important;
+}
+html:not(.dark) .cat2bug-page-kbd-hint-float {
+  color: #ffffff;
+  background: #303133;
+  border-color: #303133;
+}
+.defect-page .defect-list-hint-statistic {
+  display: inline-flex;
+  position: relative;
+}
+.defect-page .defect-list-hint-tabs .el-tabs__item.is-active {
+  overflow: visible !important;
+}
+.defect-page .defect-list-hint-tabs .el-tabs__header,
+.defect-page .defect-list-hint-tabs .el-tabs__nav-wrap,
+.defect-page .defect-list-hint-tabs .el-tabs__nav-scroll,
+.defect-page .defect-list-hint-tabs .el-tabs__nav {
+  overflow: visible !important;
 }
 
 </style>

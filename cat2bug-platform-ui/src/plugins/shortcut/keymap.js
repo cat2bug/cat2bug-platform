@@ -84,8 +84,12 @@ export const DEFECT_ACTION_DEFAULTS = [
   { key: 'export', defaultLetter: 'E', titleKey: 'keyboard.act.export' },
   { key: 'import', defaultLetter: 'I', titleKey: 'keyboard.act.import' },
   { key: 'query', defaultLetter: 'Q', titleKey: 'keyboard.act.query' },
-  { key: 'switchTab', defaultLetter: 'T', titleKey: 'keyboard.act.switch-tab' },
+  { key: 'switchTab', defaultLetter: 'J', titleKey: 'keyboard.act.switch-tab' },
   { key: 'statistic', defaultLetter: 'V', titleKey: 'keyboard.act.statistic' },
+  { key: 'statScrollNext', defaultLetter: 'R', titleKey: 'keyboard.act.stat-scroll-next' },
+  { key: 'trendExport', defaultLetter: 'G', titleKey: 'keyboard.act.trend-export' },
+  { key: 'switchView', defaultLetter: 'O', titleKey: 'keyboard.act.switch-view' },
+  { key: 'displayFields', defaultLetter: 'F', titleKey: 'keyboard.act.display-fields' },
   { key: 'prevPage', defaultLetter: 'B', titleKey: 'keyboard.act.prev-page' },
   { key: 'nextPage', defaultLetter: 'P', titleKey: 'keyboard.act.next-page' }
 ]

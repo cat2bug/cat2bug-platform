@@ -1479,6 +1479,10 @@
   "keyboard.act.query": "查询",
   "keyboard.act.switch-tab": "切换页签",
   "keyboard.act.statistic": "统计模版",
+  "keyboard.act.stat-scroll-next": "统计区右滑",
+  "keyboard.act.trend-export": "导出趋势图",
+  "keyboard.act.switch-view": "切换视图",
+  "keyboard.act.display-fields": "显示字段",
   "keyboard.act.prev-page": "上一页",
   "keyboard.act.next-page": "下一页"
 }

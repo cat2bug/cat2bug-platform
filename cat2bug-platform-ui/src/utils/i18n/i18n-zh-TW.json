@@ -1464,6 +1464,10 @@
   "keyboard.act.query": "查詢",
   "keyboard.act.switch-tab": "切換頁籤",
   "keyboard.act.statistic": "統計範本",
+  "keyboard.act.stat-scroll-next": "統計區右滑",
+  "keyboard.act.trend-export": "匯出趨勢圖",
+  "keyboard.act.switch-view": "切換檢視",
+  "keyboard.act.display-fields": "顯示欄位",
   "keyboard.act.prev-page": "上一頁",
   "keyboard.act.next-page": "下一頁"
 }
