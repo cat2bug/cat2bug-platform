@@ -1,5 +1,6 @@
 <template>
   <el-drawer
+    ref="defectFormDrawer"
     custom-class="defect-drawer-accent"
     size="65%"
     :visible.sync="visible"
@@ -249,9 +250,6 @@ export default {
     open(data) {
       this.reset(data);
       this.visible = true;
-      if (typeof this.$_bindDialogShortcuts === 'function') {
-        this.$_bindDialogShortcuts();
-      }
       this.$nextTick(() => {
         const orderedFields = this.$refs.orderedFields
         if (orderedFields) {

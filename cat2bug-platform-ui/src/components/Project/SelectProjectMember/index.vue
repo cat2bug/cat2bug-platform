@@ -200,10 +200,7 @@ export default {
       if (val) {
         this.$_onPopoverEscKeydown = (e) => {
           if (e.key !== 'Escape') return;
-          // Cmd/Ctrl+Esc 用于关闭外层抽屉，不在此拦截
-          if (e.metaKey || e.ctrlKey) return;
-          if (typeof e.getModifierState === 'function' &&
-            (e.getModifierState('Meta') || e.getModifierState('Control'))) return;
+          // 单独 Esc 关闭成员下拉；Cmd/Ctrl+B 由外层抽屉处理
           e.preventDefault();
           e.stopPropagation();
           if (this.popoverVisible) this.closePopoverKeepFocus();
@@ -950,13 +947,38 @@ export default {
       ::v-deep .select-project-member-tag.el-tag {
         margin: 0;
         flex-shrink: 0;
-        max-width: 88px;
-        overflow: hidden;
+        max-width: 96px;
+        overflow: visible;
         display: inline-flex;
         align-items: center;
+        justify-content: flex-start;
+        gap: 2px;
+        height: 20px;
+        line-height: 20px;
+        padding: 0 4px 0 6px;
+        box-sizing: border-box;
         vertical-align: middle;
+        font-size: 12px;
+        .el-tag__close,
         .el-icon-close {
           flex-shrink: 0;
+          position: static;
+          top: auto !important;
+          right: auto !important;
+          margin: 0 0 0 2px !important;
+          transform: none !important;
+          width: 14px;
+          height: 14px;
+          line-height: 14px;
+          font-size: 12px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          &::before {
+            display: block;
+            line-height: 14px;
+          }
         }
       }
       .select-project-member-tag-more-measure {
@@ -970,12 +992,17 @@ export default {
         white-space: nowrap;
       }
       .select-project-member-tag__text {
-        display: inline-block;
-        max-width: 50px;
+        display: inline-flex;
+        align-items: center;
+        flex: 1 1 auto;
+        min-width: 0;
+        max-width: 56px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-        vertical-align: middle;
+        line-height: 20px;
+        height: 20px;
+        padding: 0;
       }
       .select-project-member-tag-more {
         flex-shrink: 0;

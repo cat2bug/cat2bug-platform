@@ -23,13 +23,29 @@ import { dismissComboPopoverIfLeaving } from '@/utils/combo-focus-tab'
 // A/C/V/X/Z 永不映射，保留系统全选/复制/粘贴/剪切/撤销
 const FIELD_HINT_KEYS_BLOCKED = new Set([
   'N', 'T', 'W', 'Q', 'R', 'L', 'H',
-  'A', 'C', 'V', 'X', 'Z'
+  'A', 'C', 'V', 'X', 'Z',
+  'B' // 保留给 Cmd/Ctrl+B 关闭抽屉
 ])
 
 /** 字母优先，用尽后使用数字（映射命中时会 preventDefault，避免误触 Cmd+1 切标签） */
 const FIELD_HINT_KEYS_PREFERRED = [
-  'D', 'F', 'G', 'S', 'E', 'M', 'B', 'J', 'K', 'O', 'P', 'U', 'Y', 'I'
+  'D', 'F', 'G', 'S', 'E', 'M', 'J', 'K', 'O', 'P', 'U', 'Y', 'I'
 ]
+
+function isModifierKeyEvent(e) {
+  if (!e) return false
+  const k = e.key
+  return k === 'Control' || k === 'Meta' || k === 'OS' ||
+    e.keyCode === 17 || e.keyCode === 91 || e.keyCode === 93
+}
+
+
+function isCloseShortcutKey(e) {
+  if (!e || e.altKey) return false
+  if (!(e.metaKey || e.ctrlKey)) return false
+  const k = e.key
+  return k === 'B' || k === 'b'
+}
 
 function buildFieldHintKeyPool(reservedLetters) {
   const reserved = reservedLetters || {}
@@ -161,7 +177,7 @@ export default {
         this.$_hideFieldHints()
       }
       document.addEventListener('keydown', this.$_onFieldHintKeydown, true)
-      document.addEventListener('keyup', this.$_onFieldHintKeyup, true)
+      window.addEventListener('keyup', this.$_onFieldHintKeyup, true)
       window.addEventListener('blur', this.$_onFieldHintBlur)
     },
     $_detachFieldHintListeners() {
@@ -170,7 +186,7 @@ export default {
       this.$_clearRevealTimer()
       this.$_detachViewportScrollListener()
       document.removeEventListener('keydown', this.$_onFieldHintKeydown, true)
-      document.removeEventListener('keyup', this.$_onFieldHintKeyup, true)
+      window.removeEventListener('keyup', this.$_onFieldHintKeyup, true)
       window.removeEventListener('blur', this.$_onFieldHintBlur)
     },
     $_clearRevealTimer() {
@@ -181,15 +197,27 @@ export default {
     },
     $_fieldHintKeydown(e) {
       if (!this.visible || e.isComposing) return
+      if (typeof this.$_ownsTopFormDrawer === 'function' && !this.$_ownsTopFormDrawer()) return
+      if ((this.$_modifierHeld || this.fieldHintsActive) &&
+        !isModifierKeyEvent(e) && !(e.metaKey || e.ctrlKey)) {
+        this.$_hideFieldHints()
+      }
       const k = e.key
-      // 修饰键按下：立即构建拦截映射（保证 Cmd/Ctrl+字母 可靠拦截、不触发浏览器默认行为），
-      // 仅延迟徽标显示以避免与 Cmd+C 等组合产生视觉闪烁。
-      if (k === 'Control' || k === 'Meta') {
+      if (isCloseShortcutKey(e)) {
+        if (typeof this.$_invokeDrawerShortcutClose === 'function' &&
+          this.$_invokeDrawerShortcutClose(e)) {
+          return
+        }
+      }
+      if (isModifierKeyEvent(e)) {
+        this.$_modifierHeld = true
+        this.$_modifierArmedAt = Date.now()
         this.$_prepareFieldHints()
         this.$_attachViewportScrollListener()
         if (!this.fieldHintsActive && !this.$_fieldHintRevealTimer) {
           this.$_fieldHintRevealTimer = setTimeout(() => {
             this.$_fieldHintRevealTimer = null
+            if (!this.$_modifierHeld) return
             this.$_refreshFieldHintsForViewport(true)
           }, 180)
         }
@@ -229,7 +257,7 @@ export default {
             this.$_focusControl(target.el)
           }
           this.$nextTick(() => {
-            if (e.metaKey || e.ctrlKey) {
+            if (this.$_modifierHeld && (e.metaKey || e.ctrlKey)) {
               this.$_refreshFieldHintsForViewport(true)
             }
           })
@@ -238,7 +266,9 @@ export default {
       }
     },
     $_fieldHintKeyup(e) {
-      if (e.key === 'Control' || e.key === 'Meta') {
+      if (!this.visible) return
+      if (isModifierKeyEvent(e)) {
+        this.$_modifierHeld = false
         this.$_clearRevealTimer()
         this.$_detachViewportScrollListener()
         this.$_hideFieldHints()
@@ -272,7 +302,8 @@ export default {
       if (this.$_fieldHintScrollRefreshRaf) return
       this.$_fieldHintScrollRefreshRaf = requestAnimationFrame(() => {
         this.$_fieldHintScrollRefreshRaf = null
-        if (!this.visible || !(this.$_fieldHintMap || this.$_fieldHintRevealTimer || this.fieldHintsActive)) {
+        if (!this.visible || !this.$_modifierHeld ||
+          !(this.$_fieldHintMap || this.$_fieldHintRevealTimer || this.fieldHintsActive)) {
           return
         }
         this.$_refreshFieldHintsForViewport(reveal || this.fieldHintsActive)
@@ -403,7 +434,9 @@ export default {
       if (this.fieldHintsActive) this.fieldHintsActive = false
     },
     $_hideFieldHints() {
+      this.$_modifierHeld = false
       this.$_clearViewportHintRefresh()
+      this.$_clearRevealTimer()
       this.$_detachViewportScrollListener()
       this.$_hideFieldHintBadges()
       this.$_fieldHintMap = null

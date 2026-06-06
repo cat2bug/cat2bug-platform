@@ -5,11 +5,11 @@
 缺陷新建/编辑等抽屉表单 SHALL 支持以下直接组合键（不经过引导键面板），由 `dialog-form-shortcuts` mixin 在抽屉 `visible=true` 时绑定：
 
 - `Cmd/Ctrl + Enter`：保存（`submitForm` 或 `shortcutSave`）
-- `Cmd/Ctrl + Esc`：关闭（`cancel` 或 `shortcutClose`）
+- `Cmd/Ctrl + B`：关闭（`cancel` 或 `shortcutClose`）
 
-新建缺陷抽屉 MUST 使用 `Cmd/Ctrl + Esc` 关闭，单独按 `Esc` 不关闭（`:close-on-press-escape="false"`）。
+新建缺陷抽屉 MUST 使用 `Cmd/Ctrl + B` 关闭，单独按 `Esc` 不关闭（`:close-on-press-escape="false"`）。字母 `B` MUST NOT 分配给字段快捷键。
 
-Mac 上 `Esc` 可能不带 `metaKey`；实现 MUST 使用 `getModifierState` 与修饰键 latch 兜底。松开 `Cmd/Ctrl` 后 400ms、字段徽标消失后 800ms 内仍 MUST 接受 `Esc` 关闭。原生文件选择框打开时 MUST NOT 因 `window blur` 清除 latch。
+松开 `Cmd/Ctrl` 后 MUST 立即隐藏字段徽标与保存/关闭提示。
 
 #### Scenario: 抽屉内保存
 
@@ -18,7 +18,7 @@ Mac 上 `Esc` 可能不带 `metaKey`；实现 MUST 使用 `getModifierState` 与
 
 #### Scenario: 抽屉内关闭
 
-- **WHEN** 用户在新建缺陷抽屉内按下 `Cmd/Ctrl + Esc`
+- **WHEN** 用户在新建缺陷抽屉内按下 `Cmd/Ctrl + B`
 - **THEN** 关闭抽屉
 
 ### Requirement: 表单字段 Cmd/Ctrl 字母聚焦
@@ -149,7 +149,7 @@ Mac 上 `Esc` 可能不带 `metaKey`；实现 MUST 使用 `getModifierState` 与
 - **WHEN** 用户在缺陷表单中点击上传并打开系统文件选择框
 - **THEN** 方向键用于在系统文件列表中移动，不被 Excel 表格或上传区 focus 逻辑拦截
 
-#### Scenario: 选文件期间 Cmd+Esc 仍可用
+#### Scenario: 选文件期间 Cmd+B 仍可用
 
-- **WHEN** 用户打开系统文件选择框后取消并仍按住或刚松开 `Cmd/Ctrl`
-- **THEN** `Cmd/Ctrl+Esc` 仍可关闭缺陷抽屉（修饰键 latch 不被 `window blur` 误清除）
+- **WHEN** 用户打开系统文件选择框后按下 `Cmd/Ctrl + B`
+- **THEN** 仍可关闭缺陷抽屉

@@ -58,12 +58,12 @@
 
 ## 9. 缺陷表单与组合组件键盘集成
 
-- [x] 9.1 `dialog-form-shortcuts.js`：`Cmd/Ctrl+Enter` 保存、`Cmd/Ctrl+Esc` 关闭；新建缺陷禁用单独 `Esc`
+- [x] 9.1 `dialog-form-shortcuts.js`：`Cmd/Ctrl+Enter` 保存、`Cmd/Ctrl+B` 关闭；新建缺陷禁用单独 `Esc`
 - [x] 9.2 `form-field-hints.js`：按住 `Cmd/Ctrl` 显示字段字母徽标 + 字母跳转与闪动高亮
 - [x] 9.2a 视口分配：仅当前可见表单项分配键位；滚动/`Cmd+↑↓` 时刷新徽标与映射
 - [x] 9.2b 连续跳转：跳转时保留映射；`A/C/V/X/Z` 永不分配、永不拦截
 - [x] 9.2c 键位池扩展：优先字母 + 数字 `1`–`0`；固定 `O` 绑定「保存本次选项」
-- [x] 9.1a `dialog-form-shortcuts.js`：Mac `Cmd+Esc` latch、`getModifierState`、松键/徽标宽限期
+- [x] 9.1a 关闭改为 `Cmd/Ctrl+B`；松开修饰键立即隐藏字段提示；`B` 不参与字段映射
 - [x] 9.7a `native-file-picker.js`：选文件会话、暂停 Excel 键盘、上传 focusin 豁免、blur 不清 latch
 - [x] 9.3 `tab-direction.js`：默认 Tab 正向、`↑+Tab` 反向、`↓+Tab` 正向
 - [x] 9.4 `SelectProjectMember`：外框单 Tab 停靠点、下拉键盘（含空格选中）、tag 折叠、`Esc` 关闭
@@ -73,5 +73,5 @@
 - [x] 9.8 `AddDefect.vue`：组合组件与数字输入框聚焦边框（暗色金/浅色蓝）
 - [x] 9.9 `shortcut/service.js`：页面动作空格仅在缺陷一级列表且无遮挡层时打开（`canOpenDefectPageActions`）
 - [x] 9.10 E2E：`e2e/form-tab-order.spec.cjs`、`e2e/select-project-member-tags.spec.cjs`
-- [x] 9.11 E2E：`e2e/debug-drawer-cmd-esc.spec.cjs`（Cmd+Esc 关闭抽屉）
+- [x] 9.11 E2E：`e2e/debug-drawer-cmd-esc.spec.cjs`（Cmd+B 关闭抽屉）
 - [x] 9.12 E2E：`e2e/debug-image-filepicker-arrows.spec.cjs`（原生文件框方向键）

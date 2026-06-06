@@ -192,15 +192,14 @@ H 缺陷表单/抽屉键盘集成（见 Decision 9）
 | 组合键 | 动作 |
 |---|---|
 | `Cmd/Ctrl + Enter` | 保存（`submitForm` / `shortcutSave`） |
-| `Cmd/Ctrl + Esc` | 关闭抽屉（`cancel` / `shortcutClose`）；新建缺陷禁用 `Esc` 单独关闭，须用此组合键 |
+| `Cmd/Ctrl + B` | 关闭抽屉（`cancel` / `shortcutClose`）；新建缺陷禁用 `Esc` 单独关闭，须用此组合键 |
 
 抽屉 `visible=true` 时在 `document` 捕获阶段绑定；关闭时解绑。
 
 **Mac 兼容与宽限期：**
 
-- `Esc` 事件在 Mac 上有时不带 `metaKey`，关闭逻辑通过 `getModifierState('Meta'/'Control')` 与 **修饰键 latch** 兜底。
-- 松开 `Cmd/Ctrl` 后 **400ms** 内仍接受 `Esc` 关闭；字段徽标消失后 **800ms** 内仍接受（避免松键与按 `Esc` 之间时序竞态）。
-- 原生文件选择框打开时（`native-file-picker` 会话），`window blur` 不清除 latch，避免选文件后 `Cmd+Esc` 失效。
+- `Cmd/Ctrl + B` 在按住修饰键时触发关闭；Mac 上 `Esc` 与系统冲突，故不使用 `Cmd+Esc`。
+- 松开 `Cmd/Ctrl` 后 MUST 立即隐藏字段徽标与保存/关闭提示。
 - `visible` 监听带 `immediate: true`；抽屉 `open()` 时显式 `$_bindDialogShortcuts()`，确保首次打开即生效。
 
 #### 9.2 字段快捷聚焦（`mixins/form-field-hints.js`）
@@ -262,7 +261,7 @@ H 缺陷表单/抽屉键盘集成（见 Decision 9）
 | 原生选文件会话 | 点击上传区时 `beginNativeFilePickerSession()`，关闭 input 时 `closeNativeFilePickerSession()` |
 | Excel 表格 | 会话期间 `suspendExcelEditorKeyboard()`，暂停表格方向键处理 |
 | 上传 focusin | 会话期间 `onUploadFocusIn` 不抢焦点，允许在系统文件框内用方向键选文件 |
-| 字段徽标 / 关闭 latch | 会话期间 `window blur` 不隐藏字段提示、不清除 `Cmd+Esc` 修饰键 latch |
+| 字段徽标 | 松开 `Cmd/Ctrl` 立即隐藏；`Cmd+字母` 跳转后若仍按住修饰键则刷新徽标 |
 
 #### 9.6 相关文件
 
@@ -282,7 +281,7 @@ src/components/ImageUpload/index.vue
 src/components/Defect/AddDefect.vue          # 抽屉焦点环样式
 e2e/form-tab-order.spec.cjs                  # 开关/上传 Tab 单停靠点
 e2e/select-project-member-tags.spec.cjs      # 成员 tag 折叠
-e2e/debug-drawer-cmd-esc.spec.cjs            # Cmd+Esc 关闭抽屉
+e2e/debug-drawer-cmd-esc.spec.cjs            # Cmd+B 关闭抽屉
 e2e/debug-image-filepicker-arrows.spec.cjs   # 原生文件框方向键
 ```
 
