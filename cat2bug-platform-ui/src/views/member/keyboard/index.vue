@@ -74,7 +74,7 @@
 import ShortcutBadge from '@/components/Shortcut/ShortcutBadge.vue'
 import { shortcutStore } from '@/plugins/shortcut'
 import { buildNavItems } from '@/plugins/shortcut/nav-source'
-import { DEFECT_ACTION_DEFAULTS, normalizeKey } from '@/plugins/shortcut/keymap'
+import { DEFECT_ACTION_DEFAULTS, STATISTIC_TEMPLATE_ACTION_DEFAULTS, normalizeKey } from '@/plugins/shortcut/keymap'
 
 export default {
   name: 'KeyboardSettings',
@@ -138,6 +138,19 @@ export default {
         conflict: false
       }))
       sections.push({ id: 'defect', title: this.$t('keyboard.sec-defect'), items: defectRows })
+
+      const statisticTemplateRows = STATISTIC_TEMPLATE_ACTION_DEFAULTS.map((a) => ({
+        bindingId: `action.statistic-template.${a.key}`,
+        title: this.$t(a.titleKey),
+        defaultLetter: a.defaultLetter,
+        letter: shortcutStore.getLetter(`action.statistic-template.${a.key}`, a.defaultLetter),
+        conflict: false
+      }))
+      sections.push({
+        id: 'statistic-template',
+        title: this.$t('keyboard.sec-statistic-template'),
+        items: statisticTemplateRows
+      })
 
       sections.forEach((s) => this.markConflicts(s))
       this.sections = sections

@@ -91,6 +91,13 @@ export const DEFECT_ACTION_DEFAULTS = [
   { key: 'nextPage', defaultLetter: 'P', titleKey: 'keyboard.act.next-page' }
 ]
 
+/** 统计模版页默认动作 */
+export const STATISTIC_TEMPLATE_ACTION_DEFAULTS = [
+  { key: 'preview', defaultLetter: 'P', titleKey: 'keyboard.act.statistic-template-preview' },
+  { key: 'personal', defaultLetter: 'G', titleKey: 'keyboard.act.statistic-template-personal' },
+  { key: 'team', defaultLetter: 'H', titleKey: 'keyboard.act.statistic-template-team' }
+]
+
 const LETTER_POOL = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
 const DIGIT_POOL = '123456789'.split('')
 

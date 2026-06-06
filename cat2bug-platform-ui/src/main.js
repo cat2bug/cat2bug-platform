@@ -11,6 +11,7 @@ import '@/assets/styles/ruoyi.scss' // ruoyi css
 import '@/assets/styles/cat2bug.scss'
 import '@/assets/styles/el-table-scrollbar.scss'
 import '@/assets/styles/project-list-page.scss'
+import '@/assets/styles/page-kbd-hints.scss'
 import App from './App'
 import store from './store'
 import router from './router'

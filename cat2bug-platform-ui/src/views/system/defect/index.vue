@@ -3620,46 +3620,7 @@ html.dark .defect-excel-column-picker-popover .defect-column-picker .el-checkbox
   margin-bottom: 0 !important;
 }
 
-/* 缺陷列表页 Cmd/Ctrl 快捷键徽标（fixed 浮层 + 内联共用样式） */
-.cat2bug-page-kbd-hint-layer {
-  position: fixed;
-  inset: 0;
-  z-index: 99999;
-  pointer-events: none;
-  overflow: visible;
-}
-.cat2bug-page-kbd-hint-float {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 16px;
-  width: max-content !important;
-  max-width: none !important;
-  height: 16px;
-  margin: 0;
-  padding: 0 4px;
-  font-family: 'SFMono-Regular', Consolas, Menlo, monospace;
-  font-size: 10px !important;
-  font-weight: 600;
-  line-height: 1 !important;
-  letter-spacing: 0;
-  white-space: nowrap;
-  color: #ffd54f;
-  background: #2b2b2b;
-  border: 1px solid #5a5a5a;
-  border-radius: 3px;
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
-  box-sizing: border-box;
-  user-select: none;
-  pointer-events: none;
-  right: auto !important;
-  bottom: auto !important;
-}
-html:not(.dark) .cat2bug-page-kbd-hint-float {
-  color: #ffffff;
-  background: #303133;
-  border-color: #303133;
-}
+/* 缺陷列表页快捷键锚点布局（徽标样式见 assets/styles/page-kbd-hints.scss） */
 .defect-page .defect-list-hint-statistic {
   display: inline-flex;
   position: relative;
@@ -3672,15 +3633,6 @@ html:not(.dark) .cat2bug-page-kbd-hint-float {
 .defect-page .defect-list-hint-tabs .el-tabs__nav-scroll,
 .defect-page .defect-list-hint-tabs .el-tabs__nav {
   overflow: visible !important;
-}
-
-.defect-row-kbd-hint-float {
-  min-width: 13px;
-  height: 13px;
-  padding: 0 2px;
-  font-size: 9px !important;
-  font-weight: 700;
-  line-height: 1 !important;
 }
 
 </style>

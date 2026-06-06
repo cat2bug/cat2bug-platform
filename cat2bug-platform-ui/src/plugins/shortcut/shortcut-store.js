@@ -39,6 +39,12 @@ function load() {
           localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
         } catch (e) { /* ignore */ }
       }
+      if (data.overrides['action.statistic-template.back'] != null) {
+        delete data.overrides['action.statistic-template.back']
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+        } catch (e) { /* ignore */ }
+      }
     }
     return data
   } catch (e) {
