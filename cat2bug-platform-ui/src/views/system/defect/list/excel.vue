@@ -7,6 +7,7 @@
       <div class="defect-excel-tools-right table-tools row">
         <el-tooltip :content="$t('refresh')" placement="top">
           <el-button
+            class="defect-list-hint-excel-refresh"
             icon="el-icon-refresh"
             size="small"
             circle
@@ -20,6 +21,8 @@
           placement="bottom-end"
           trigger="click"
           popper-class="defect-excel-column-picker-popover"
+          @show="emitColumnPickerVisible(true)"
+          @hide="emitColumnPickerVisible(false)"
         >
           <div class="defect-excel-picker-head">
             <i class="el-icon-s-fold"></i>
@@ -39,7 +42,7 @@
               c.isCustomField && c.fieldLabel ? c.fieldLabel : (c.label || $t(c.key))
             }}</el-checkbox>
           </el-checkbox-group>
-          <el-button slot="reference" style="padding: 9px" plain size="small" icon="el-icon-s-fold" />
+          <el-button slot="reference" class="defect-list-hint-excel-columns" style="padding: 9px" plain size="small" icon="el-icon-s-fold" />
         </el-popover>
         <slot name="right-tools" />
       </div>
@@ -257,6 +260,14 @@ const EXCEL_COL_WIDTH_DEFAULT_PX = Object.freeze({
 const EXCEL_HEADER_COL_DRAG_THRESHOLD_PX = 8;
 /** 首行表头固定高度(px)，与样式中 thead 首行一致；calCellTop2 与库筛选行对齐也用此值 */
 const EXCEL_HEAD_ROW_PX = 32;
+/** 右侧空白区填充用只读空列（不参与列选择/持久化/保存） */
+const EXCEL_FILLER_COL_PREFIX = "__cat2bug_pad_";
+const EXCEL_FILLER_COL_WIDTH_PX = 80;
+const EXCEL_NUM_COL_WIDTH_PX = 40;
+
+function isExcelFillerFieldName(name) {
+  return String(name || "").startsWith(EXCEL_FILLER_COL_PREFIX);
+}
 
 /** 非空 options 使 vue-excel-editor 给 td 加 .select（与类型/优先级列相同的右侧三角）；计划列用三角热区 + 弹层选时间 */
 const PLAN_TIME_CELL_OPTIONS_MARKER = Object.freeze({ __excelPlanTimeMarker: "" });
@@ -952,6 +963,9 @@ export default {
     this.resumeExcelEditorFromNativeFilePicker();
   },
   methods: {
+    emitColumnPickerVisible(visible) {
+      this.$emit('column-picker-visible-change', visible)
+    },
     /**
      * vue-excel-editor 的 lazy/lazyBuf 用回调 toString 做哈希，匿名函数会碰撞导致 @update 永不触发。
      * 补丁在 node_modules 内提供 veeLazyCallbackKey；此处兜底，避免未重装依赖时仍丢保存。
@@ -1143,6 +1157,7 @@ export default {
       if (!ed || !ed.labelTr || !ed.labelTr.children || !ed.labelTr.children.length) return;
       this.clampExcelEditorHeaderRow();
       this.clampExcelCriticalColumnWidthsOnEditor();
+      this.syncExcelFillerColumns(ed);
       /* 勿调 refreshPageSize：其内部会 columnFillWidth，用旧 fields[].width 覆盖 col 上刚拖好的宽度导致弹回 */
       this.refreshExcelEditorHorizontalLayout(ed);
       if (typeof ed.calStickyLeft === "function") ed.calStickyLeft();
@@ -1271,6 +1286,80 @@ export default {
         /* ignore */
       }
     },
+    measureExcelVisibleDataColumnsWidth(ed) {
+      if (!ed || !Array.isArray(ed.fields)) return EXCEL_NUM_COL_WIDTH_PX;
+      let total = EXCEL_NUM_COL_WIDTH_PX;
+      ed.fields.forEach((f) => {
+        if (!f || !f.name || isExcelFillerFieldName(f.name) || f.invisible) return;
+        const px = parseFloat(String(f.width || "").replace(/px$/i, ""));
+        total += Number.isFinite(px) ? px : 100;
+      });
+      return total;
+    },
+    createExcelFillerFieldDef(index, widthPx) {
+      const w = `${Math.max(32, Math.round(widthPx))}px`;
+      return {
+        name: `${EXCEL_FILLER_COL_PREFIX}${index}`,
+        label: "",
+        type: "string",
+        width: w,
+        validate: null,
+        change: null,
+        link: null,
+        sort: null,
+        keyField: false,
+        sticky: false,
+        allowKeys: null,
+        mandatory: false,
+        lengthLimit: 0,
+        autocomplete: null,
+        initStyle: { textAlign: "left", cursor: "default" },
+        invisible: false,
+        readonly: true,
+        pos: 9000 + index,
+        options: null,
+        summary: null,
+        toValue: () => "",
+        toText: () => "",
+        register: null,
+      };
+    },
+    excelFillerFieldsSignature(fields) {
+      return (fields || [])
+        .filter((f) => f && isExcelFillerFieldName(f.name))
+        .map((f) => `${f.name}:${f.width}`)
+        .join("|");
+    },
+    /** 视口宽于数据列时，在末尾追加只读空列填满右侧（类似 Excel 空白格） */
+    syncExcelFillerColumns(ed) {
+      if (!ed || !Array.isArray(ed.fields) || !ed.tableContent) return false;
+      const viewWidth = ed.tableContent.clientWidth;
+      if (!(viewWidth > 0)) return false;
+
+      const dataFields = ed.fields.filter((f) => f && f.name && !isExcelFillerFieldName(f.name));
+      const prevSig = this.excelFillerFieldsSignature(ed.fields);
+      let gap = viewWidth - this.measureExcelVisibleDataColumnsWidth(ed);
+      const fillers = [];
+      if (gap > 12) {
+        let i = 0;
+        while (gap > 12) {
+          const w = gap >= EXCEL_FILLER_COL_WIDTH_PX ? EXCEL_FILLER_COL_WIDTH_PX : gap;
+          fillers.push(this.createExcelFillerFieldDef(i, w));
+          gap -= w;
+          i += 1;
+        }
+      }
+      const nextSig = fillers.map((f) => `${f.name}:${f.width}`).join("|");
+      if (prevSig === nextSig) return false;
+
+      const next = [...dataFields, ...fillers];
+      ed.fields.splice(0, ed.fields.length, ...next);
+      if (typeof ed.hashCode === "function") {
+        ed.colHash = ed.hashCode(String(ed.version || "") + JSON.stringify(ed.fields));
+      }
+      ed.$forceUpdate();
+      return true;
+    },
     excelColWidthMinPx(fieldName) {
       if (fieldName && EXCEL_COL_WIDTH_MIN_PX[fieldName] != null) {
         return EXCEL_COL_WIDTH_MIN_PX[fieldName];
@@ -1292,6 +1381,7 @@ export default {
       return 100;
     },
     normalizeExcelColWidthCss(w, fieldName) {
+      if (isExcelFillerFieldName(fieldName)) return "";
       const s = String(w == null ? "" : w).trim();
       if (!s) return "";
       const n = parseFloat(s.replace(/px$/i, ""));
@@ -1302,6 +1392,7 @@ export default {
     },
     /** 纠正库 columnFillWidth 或历史缓存写入的过窄列宽 */
     sanitizeExcelPersistedWidth(fieldName, widthCss) {
+      if (isExcelFillerFieldName(fieldName)) return "";
       const nw = this.normalizeExcelColWidthCss(widthCss, fieldName);
       if (!nw) return "";
       const px = parseFloat(nw);
@@ -1317,6 +1408,7 @@ export default {
       let changed = false;
       ed.fields.forEach((f) => {
         if (!f || !f.name) return;
+        if (isExcelFillerFieldName(f.name)) return;
         const nw = this.sanitizeExcelPersistedWidth(f.name, f.width);
         if (nw && nw !== f.width) {
           f.width = nw;
@@ -1335,12 +1427,12 @@ export default {
       if (!ed || !Array.isArray(ed.fields) || !payload || !Array.isArray(payload.fields)) return;
       const byName = {};
       payload.fields.forEach((sf) => {
-        if (!sf || !sf.name) return;
+        if (!sf || !sf.name || isExcelFillerFieldName(sf.name)) return;
         const nw = this.sanitizeExcelPersistedWidth(sf.name, sf.width);
         if (nw) byName[sf.name] = nw;
       });
       ed.fields.forEach((f) => {
-        if (!f || !f.name) return;
+        if (!f || !f.name || isExcelFillerFieldName(f.name)) return;
         const nw = byName[f.name];
         if (nw) f.width = nw;
       });
@@ -1361,7 +1453,7 @@ export default {
       }
       const next = { ...prev };
       payload.fields.forEach((sf) => {
-        if (!sf || !sf.name) return;
+        if (!sf || !sf.name || isExcelFillerFieldName(sf.name)) return;
         const nw = this.sanitizeExcelPersistedWidth(sf.name, sf.width);
         if (nw) next[sf.name] = nw;
       });
@@ -1379,6 +1471,7 @@ export default {
       if (!saved || typeof saved !== "object") return;
       ed.fields.forEach((f) => {
         if (!f || !f.name) return;
+        if (isExcelFillerFieldName(f.name)) return;
         const nw = this.sanitizeExcelPersistedWidth(f.name, saved[f.name]);
         if (nw) f.width = nw;
       });
@@ -1543,7 +1636,7 @@ export default {
       const head = [];
       const rest = [];
       ed.fields.forEach((f) => {
-        if (!f || !f.name) return;
+        if (!f || !f.name || isExcelFillerFieldName(f.name)) return;
         if (headNames.includes(f.name)) head.push(f);
         else rest.push(f);
       });
@@ -1558,7 +1651,8 @@ export default {
         return String(a.name).localeCompare(String(b.name));
       });
       const next = [...head, ...rest];
-      if (next.length !== ed.fields.length) return;
+      const dataFieldCount = ed.fields.filter((f) => f && f.name && !isExcelFillerFieldName(f.name)).length;
+      if (next.length !== dataFieldCount) return;
       ed.fields.splice(0, ed.fields.length, ...next);
       ed.fields.forEach((field) => {
         if (!field) return;
@@ -1569,6 +1663,7 @@ export default {
           field.pos = oi >= 0 ? 10 + oi : 500;
         }
       });
+      this.syncExcelFillerColumns(ed);
       setTimeout(() => {
         const editor = this.$refs.excelEditor;
         if (!editor) return;
@@ -1789,7 +1884,7 @@ export default {
       if (!th) return false;
       const fromKey = this.getExcelHeaderFieldNameForTh(th);
       const allowed = this.excelReorderableFieldKeys();
-      if (!fromKey || !allowed.includes(fromKey)) return false;
+      if (!fromKey || isExcelFillerFieldName(fromKey) || !allowed.includes(fromKey)) return false;
       e.preventDefault();
       e.stopPropagation();
       this.teardownExcelColumnHeaderDragSession();
@@ -1872,6 +1967,7 @@ export default {
       const picked = this.excelColumnPickerCheckedKeys || [];
       ed.fields.forEach((f) => {
         if (!f || !f.name) return;
+        if (isExcelFillerFieldName(f.name)) return;
         if (f.name === "defectId") {
           f.invisible = true;
           return;
@@ -1892,6 +1988,7 @@ export default {
         }
         f.invisible = !picked.some((k) => String(k) === pickerKey);
       });
+      this.syncExcelFillerColumns(ed);
       /* 与 PanelSetting.columnLabelClick 一致，仅 calStickyLeft；布局夹紧仍由 scheduleExcelEditorLayoutFix 负责 */
       setTimeout(() => {
         const editor = this.$refs.excelEditor;
@@ -1970,6 +2067,7 @@ export default {
       (list || []).forEach((sf) => {
         if (!sf) return;
         const name = sf.name;
+        if (isExcelFillerFieldName(name)) return;
         if (name === "defectId") return;
         /* projectNum 对应显示字段里的「编号」TableOptions.key === id，不能跳过否则勾选会被 @setting 同步冲掉 */
         if (name === "projectNum") {
@@ -2371,6 +2469,9 @@ export default {
     },
     defectExcelCellStyle(record, item) {
       if (!item || !record) return {};
+      if (item.name && isExcelFillerFieldName(item.name)) {
+        return { cursor: "default" };
+      }
       if (this.isExcelPersistErrorCell(record, item.name)) {
         return { color: EXCEL_PERSIST_ERROR_TEXT_COLOR };
       }
@@ -2793,6 +2894,7 @@ export default {
           .replace(/>/g, "&gt;")
           .replace(/"/g, "&quot;");
       const name = field && field.name;
+      if (name && isExcelFillerFieldName(name)) return "";
       const col = name ? this.findExcelCol(name) : null;
       const text = col
         ? col.isCustomField && col.fieldLabel
@@ -2807,6 +2909,11 @@ export default {
       const ed = this.$refs.excelEditor;
       if (!ed || !Array.isArray(ed.fields)) return;
       ed.fields.forEach((f) => {
+        if (!f || !f.name) return;
+        if (isExcelFillerFieldName(f.name)) {
+          f.label = "";
+          return;
+        }
         const col = this.findExcelCol(f.name);
         if (col) {
           f.label = col.isCustomField && col.fieldLabel ? String(col.fieldLabel) : String(this.$t(col.titleKey));

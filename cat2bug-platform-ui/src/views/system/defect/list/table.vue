@@ -4,7 +4,7 @@
     <div class="defect-table-tools defect-table-tools-bar defect-view-toolbar">
       <slot name="left-tools"></slot>
       <div class="table-tools row">
-        <el-popover placement="top" trigger="click">
+        <el-popover placement="top" trigger="click" popper-class="defect-column-picker-popover" @show="emitColumnPickerVisible(true)" @hide="emitColumnPickerVisible(false)">
           <div class="row">
             <i class="el-icon-s-fold"></i>
             <h4>{{ $t('display-field') }}</h4>
@@ -409,6 +409,9 @@ export default {
     this.destroyDefectTableBodyResizeObserver();
   },
   methods: {
+    emitColumnPickerVisible(visible) {
+      this.$emit('column-picker-visible-change', visible)
+    },
     isCustomFieldType(column, fieldType) {
       const meta = column && column.customFieldMeta;
       return !!(meta && meta.fieldType === fieldType);

@@ -23,8 +23,7 @@ import { dismissComboPopoverIfLeaving } from '@/utils/combo-focus-tab'
 // A/C/V/X/Z 永不映射，保留系统全选/复制/粘贴/剪切/撤销
 const FIELD_HINT_KEYS_BLOCKED = new Set([
   'N', 'T', 'W', 'Q', 'R', 'L', 'H',
-  'A', 'C', 'V', 'X', 'Z',
-  'B' // 保留给 Cmd/Ctrl+B 关闭抽屉
+  'A', 'C', 'V', 'X', 'Z'
 ])
 
 /** 字母优先，用尽后使用数字（映射命中时会 preventDefault，避免误触 Cmd+1 切标签） */
@@ -39,13 +38,6 @@ function isModifierKeyEvent(e) {
     e.keyCode === 17 || e.keyCode === 91 || e.keyCode === 93
 }
 
-
-function isCloseShortcutKey(e) {
-  if (!e || e.altKey) return false
-  if (!(e.metaKey || e.ctrlKey)) return false
-  const k = e.key
-  return k === 'B' || k === 'b'
-}
 
 function buildFieldHintKeyPool(reservedLetters) {
   const reserved = reservedLetters || {}
@@ -203,12 +195,6 @@ export default {
         this.$_hideFieldHints()
       }
       const k = e.key
-      if (isCloseShortcutKey(e)) {
-        if (typeof this.$_invokeDrawerShortcutClose === 'function' &&
-          this.$_invokeDrawerShortcutClose(e)) {
-          return
-        }
-      }
       if (isModifierKeyEvent(e)) {
         this.$_modifierHeld = true
         this.$_modifierArmedAt = Date.now()

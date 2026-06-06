@@ -670,8 +670,15 @@ export default {
       const rowCount = this.getMenuRowCount(menu);
       if (!rowCount) return;
       let i = this.activeRowIndex < 0 ? 0 : this.activeRowIndex;
+      const prev = i;
       i += dir;
-      if (i < 0) i = 0;
+      if (i < 0) {
+        if (prev <= 0 && this.activeColumnIndex <= 0) {
+          this.closePopoverKeepFocus();
+          return;
+        }
+        i = 0;
+      }
       if (i >= rowCount) i = rowCount - 1;
       this.activeRowIndex = i;
       this.activeRowPart = this.isNewRowIndex(menu, i) ? 'new' : 'main';

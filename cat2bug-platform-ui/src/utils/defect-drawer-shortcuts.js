@@ -1,8 +1,9 @@
 /**
- * 缺陷新建/编辑抽屉：全局 Cmd/Ctrl+Enter 保存、Cmd/Ctrl+B 关闭。
+ * 缺陷新建/编辑抽屉：全局 Cmd/Ctrl+Enter 保存、Esc 关闭（未保存时确认）。
  * 单例监听 + DOM/栈双路解析栈顶抽屉，避免多实例 EditDefectDialog 注册错乱。
  */
 import { isNativeFilePickerOpen } from '@/utils/native-file-picker'
+import { hasBlockingUiLayer, shortcutService } from '@/plugins/shortcut/service'
 
 const stack = []
 let installed = false
@@ -16,11 +17,16 @@ function isModifierKeyEvent(e) {
     e.keyCode === 17 || e.keyCode === 91 || e.keyCode === 93
 }
 
-function isCloseShortcutKey(e) {
-  if (!e || e.altKey) return false
+export function isEscapeCloseKey(e) {
+  if (!e || e.isComposing) return false
+  if (e.metaKey || e.ctrlKey || e.altKey) return false
+  return e.key === 'Escape' || e.key === 'Esc' || e.keyCode === 27
+}
+
+export function isSaveShortcutKey(e) {
+  if (!e || e.isComposing || e.altKey) return false
   if (!(e.metaKey || e.ctrlKey)) return false
-  const k = e.key
-  return k === 'B' || k === 'b'
+  return e.key === 'Enter' || e.keyCode === 13
 }
 
 function isVisibleEl(el) {
@@ -80,10 +86,14 @@ function invokeSave(vm) {
   else if (typeof vm.submitForm === 'function') vm.submitForm()
 }
 
-function invokeClose(vm) {
+function invokeClose(vm, e) {
   if (!vm) return false
   if (typeof vm.shortcutClose === 'function') {
-    vm.shortcutClose()
+    vm.shortcutClose(e)
+    return true
+  }
+  if (typeof vm.requestCloseDefectFormDrawer === 'function') {
+    vm.requestCloseDefectFormDrawer()
     return true
   }
   if (typeof vm.cancel === 'function') {
@@ -93,16 +103,23 @@ function invokeClose(vm) {
   return false
 }
 
+/** 下拉/日期面板等仍打开时，Esc 先交给各浮层自身处理（不含表单抽屉自身） */
+function shouldDeferDrawerEscClose() {
+  return hasBlockingUiLayer({ excludeDefectFormDrawer: true })
+}
+
 /** 供 form-field-hints 等 mixin 主动触发关闭 */
 export function tryCloseDefectDrawer(preferredVm, e) {
+  if (!isEscapeCloseKey(e)) return false
+  if (shouldDeferDrawerEscClose()) return false
   if (preferredVm && typeof preferredVm.$_invokeDrawerShortcutClose === 'function') {
     return preferredVm.$_invokeDrawerShortcutClose(e)
   }
   const vm = resolveDrawerVm(preferredVm)
-  if (!vm || !e || !isCloseShortcutKey(e)) return false
+  if (!vm) return false
   e.preventDefault()
   e.stopImmediatePropagation()
-  return invokeClose(vm)
+  return invokeClose(vm, e)
 }
 
 function onKeyup(e) {
@@ -125,21 +142,28 @@ function onKeydown(e) {
   const vm = resolveDrawerVm()
   if (!vm) return
 
-  if ((e.metaKey || e.ctrlKey) && !e.altKey && (e.key === 'Enter' || e.keyCode === 13)) {
+  if (isSaveShortcutKey(e)) {
+    if (shortcutService.palette && shortcutService.palette.open) return
     e.preventDefault()
     e.stopImmediatePropagation()
-    invokeSave(vm)
+    if (typeof vm.$_invokeDrawerShortcutSave === 'function') {
+      vm.$_invokeDrawerShortcutSave(e)
+    } else {
+      invokeSave(vm)
+    }
     return
   }
 
-  if (isCloseShortcutKey(e)) {
-    e.preventDefault()
-    e.stopImmediatePropagation()
-    if (typeof vm.$_invokeDrawerShortcutClose === 'function') {
-      vm.$_invokeDrawerShortcutClose(e)
-    } else {
-      invokeClose(vm)
-    }
+  if (!isEscapeCloseKey(e)) return
+  if (shortcutService.palette && shortcutService.palette.open) return
+  if (shouldDeferDrawerEscClose()) return
+
+  e.preventDefault()
+  e.stopImmediatePropagation()
+  if (typeof vm.$_invokeDrawerShortcutClose === 'function') {
+    vm.$_invokeDrawerShortcutClose(e)
+  } else {
+    invokeClose(vm, e)
   }
 }
 

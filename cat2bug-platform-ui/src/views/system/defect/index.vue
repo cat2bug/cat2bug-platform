@@ -75,6 +75,7 @@
         v-bind="defectViewExtraProps"
         @defect-click="handleDefectClick"
         @refresh="handleRefreshQuery"
+        @column-picker-visible-change="onDefectColumnPickerVisibleChange"
       >
         <template slot="left-tools">
           <!-- 搜索-->
@@ -173,12 +174,15 @@
         </template>
         <template slot="right-tools">
           <el-dropdown
+            ref="defectAddDropdown"
             v-if="defectAddToolbarVisible"
-            class="defect-add-dropdown defect-list-hint-new"
+            class="defect-add-dropdown defect-list-hint-add-menu"
             split-button
+            trigger="click"
             size="small"
             type="primary"
             @click="handleAdd"
+            @visible-change="onDefectAddDropdownVisibleChange"
           >
             <i class="el-icon-plus" />{{ $i18n.t('defect.create') }}
             <el-dropdown-menu slot="dropdown" class="defect-add-dropdown-menu">
@@ -306,8 +310,19 @@ export default {
       defectQueryNavActive: false,
       defectQueryNavIndex: -1,
       defectQueryNavSuppressBlur: false,
+      /** Cmd/Ctrl+N 打开新建菜单后，左右键在右侧工具栏按钮间切换 */
+      defectToolbarNavActive: false,
+      defectToolbarNavIndex: -1,
+      defectToolbarNavSuppressBlur: false,
+      /** 键盘打开新建下拉后聚焦首项 */
+      defectAddDropdownKeyboardOpen: false,
+      defectAddDropdownMenuIndex: 0,
+      /** 键盘打开显示字段弹层后，↑↓ 在复选框行间切换 */
+      defectColumnPickerKeyboardOpen: false,
+      defectColumnPickerMenuIndex: 0,
       /** 键盘 ↓ 打开类型下拉后需将焦点移入菜单项 */
       defectTypeDropdownKeyboardOpen: false,
+      defectTypeDropdownMenuIndex: 0,
       // 查询参数
       queryParams: {
         pageNum: 1,
@@ -457,6 +472,10 @@ export default {
   deactivated() {
     this.exitDefectTabKeyboardNav()
     this.exitDefectQueryKeyboardNav()
+    this.exitDefectRightToolbarNav()
+    this.$_detachDefectAddDropdownMenuListeners()
+    this.$_detachDefectColumnPickerMenuListeners()
+    this.$_detachDefectTypeDropdownMenuListeners()
     this.$_unbindDefectQueryNavFocusIn()
     this.clearTabDataLoadTimer()
     if (this.$shortcut) this.$shortcut.unregisterPage('defect')
@@ -465,6 +484,10 @@ export default {
   destroyed() {
     this.exitDefectTabKeyboardNav()
     this.exitDefectQueryKeyboardNav()
+    this.exitDefectRightToolbarNav()
+    this.$_detachDefectAddDropdownMenuListeners()
+    this.$_detachDefectColumnPickerMenuListeners()
+    this.$_detachDefectTypeDropdownMenuListeners()
     this.$_unbindDefectQueryNavFocusIn()
     this.clearTabDataLoadTimer()
     if (this.$shortcut) this.$shortcut.unregisterPage('defect')
@@ -506,16 +529,11 @@ export default {
     registerDefectShortcuts() {
       if (!this.$shortcut) return
       this.$shortcut.registerPage('defect', [
-        { key: 'new', defaultLetter: 'N', run: () => this.handleAdd() },
-        { key: 'export', defaultLetter: 'E', run: () => this.handleExport() },
-        { key: 'import', defaultLetter: 'I', run: () => this.handleImport() },
+        { key: 'addMenu', defaultLetter: 'N', run: () => this.shortcutOpenAddMenu() },
         { key: 'query', defaultLetter: 'S', run: () => this.shortcutFocusQuery() },
         { key: 'switchTab', defaultLetter: 'J', run: () => this.shortcutSwitchTab() },
         { key: 'statistic', defaultLetter: 'V', run: () => this.addStatisticHandle() },
-        { key: 'statScrollNext', defaultLetter: 'R', run: () => this.shortcutScrollStatisticNext() },
-        { key: 'trendExport', defaultLetter: 'G', run: () => this.shortcutExportTrendChart() },
         { key: 'switchView', defaultLetter: 'O', run: () => this.shortcutSwitchView() },
-        { key: 'displayFields', defaultLetter: 'F', run: () => this.shortcutToggleDisplayFields() },
         { key: 'prevPage', defaultLetter: 'B', run: () => this.shortcutChangePage(-1) },
         { key: 'nextPage', defaultLetter: 'P', run: () => this.shortcutChangePage(1) }
       ])
@@ -529,27 +547,11 @@ export default {
       const L = (key, def) => shortcutStore.getLetter(`action.${scopeKey}.${key}`, def)
       const hints = [
         {
-          key: 'new',
-          letter: L('new', 'N'),
-          badgeSelector: '.defect-list-hint-new.el-dropdown > .el-button-group > .el-button--primary',
+          key: 'addMenu',
+          letter: L('addMenu', 'N'),
+          badgeSelector: '.defect-list-hint-add-menu.el-dropdown > .el-button-group',
           floatOffset: { placement: 'bottom-right-outset', outset: 3 },
-          run: () => this.handleAdd(),
-          visible: () => this.defectAddToolbarVisible
-        },
-        {
-          key: 'import',
-          letter: L('import', 'I'),
-          badgeSelector: '.defect-add-dropdown .el-dropdown__caret-button',
-          floatOffset: { placement: 'bottom-right-inset', outset: 4, dx: -10 },
-          run: () => this.handleImport(),
-          visible: () => this.defectAddToolbarVisible
-        },
-        {
-          key: 'export',
-          letter: L('export', 'E'),
-          badgeSelector: '.defect-add-dropdown .el-dropdown__caret-button',
-          floatOffset: { placement: 'bottom-right-outset', outset: 3, dx: 2 },
-          run: () => this.handleExport(),
+          run: () => this.shortcutOpenAddMenu(),
           visible: () => this.defectAddToolbarVisible
         },
         {
@@ -575,35 +577,11 @@ export default {
           visible: () => this.statisticPanelVisible
         },
         {
-          key: 'statScrollNext',
-          letter: L('statScrollNext', 'R'),
-          badgeSelector: '.defect-list-hint-stat-scroll-next',
-          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
-          run: () => this.shortcutScrollStatisticNext(),
-          visible: () => this.isDefectStatScrollNextHintVisible()
-        },
-        {
-          key: 'trendExport',
-          letter: L('trendExport', 'G'),
-          badgeSelector: '.defect-list-hint-trend-export',
-          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
-          run: () => this.shortcutExportTrendChart(),
-          visible: () => this.isDefectTrendExportHintVisible()
-        },
-        {
           key: 'switchView',
           letter: L('switchView', 'O'),
           badgeSelector: '.defect-list-hint-view-switch',
           floatOffset: { placement: 'bottom-right-outset', outset: 2 },
           run: () => this.shortcutSwitchView()
-        },
-        {
-          key: 'displayFields',
-          letter: L('displayFields', 'F'),
-          badgeSelector: '.defect-list-hint-columns',
-          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
-          run: () => this.shortcutToggleDisplayFields(),
-          visible: () => this.defectContentComponent === 'DefectTable'
         },
         {
           key: 'prevPage',
@@ -726,8 +704,14 @@ export default {
         key: `row-${i}`
       })).filter((item) => item.letter)
     },
-    /** ⌘+方向键：表格 / Excel 水平、垂直滚动 */
+    /** ⌘+方向键：表格 / Excel 水平、垂直滚动（新建下拉打开时让位给菜单导航） */
     handlePageModifierArrowScroll(e) {
+      if (this.isDefectAddDropdownOpen()) {
+        return false
+      }
+      if (this.isDefectColumnPickerOpen()) {
+        return false
+      }
       if (this.defectContentComponent === 'DefectTable') {
         return this.scrollDefectTableByArrow(e.key)
       }
@@ -809,6 +793,7 @@ export default {
       const index = this.getDefectQueryNavIndexByKey(key)
       if (index < 0) return
       this.exitDefectTabKeyboardNav()
+      this.exitDefectRightToolbarNav()
       this.defectQueryNavActive = true
       this.defectQueryNavIndex = index
       this.syncDefectQueryNavFocusClass()
@@ -962,6 +947,7 @@ export default {
     },
     enterDefectQueryKeyboardNav() {
       this.exitDefectTabKeyboardNav()
+      this.exitDefectRightToolbarNav()
       this.showSearch = true
       const items = this.getDefectQueryNavItems()
       if (!items.length) return
@@ -1016,8 +1002,52 @@ export default {
         dd.resetTabindex(dd.menuItems[i])
       }
       dd.menuItems[i].focus()
+      this.defectTypeDropdownMenuIndex = i
       this.clearDefectQueryNavFocusMarks()
       return true
+    },
+    isDefectTypeDropdownOpen() {
+      const dd = this.$refs.defectTypeDropdown
+      return !!(dd && dd.visible)
+    },
+    closeDefectTypeDropdown() {
+      const dd = this.$refs.defectTypeDropdown
+      if (dd && typeof dd.hide === 'function') dd.hide()
+      this.defectTypeDropdownMenuIndex = 0
+    },
+    getDefectTypeDropdownMenuEls() {
+      const dd = this.$refs.defectTypeDropdown
+      if (!dd) return []
+      if ((!dd.menuItems || !dd.menuItems.length) && typeof dd.initDomOperation === 'function') {
+        dd.initDomOperation()
+      }
+      if (dd.menuItems && dd.menuItems.length) {
+        return Array.from(dd.menuItems)
+      }
+      const menu = dd.dropdownElm || dd.popperElm
+      if (!menu) return []
+      return Array.from(menu.querySelectorAll('.el-dropdown-menu__item:not(.is-disabled)'))
+    },
+    getDefectTypeDropdownMenuIndex() {
+      const items = this.getDefectTypeDropdownMenuEls()
+      if (!items.length) return 0
+      const active = document.activeElement
+      const idx = items.indexOf(active)
+      if (idx >= 0) return idx
+      return Math.min(this.defectTypeDropdownMenuIndex || 0, items.length - 1)
+    },
+    moveDefectTypeDropdownMenuItem(delta) {
+      const items = this.getDefectTypeDropdownMenuEls()
+      if (!items.length) return false
+      const cur = this.getDefectTypeDropdownMenuIndex()
+      const next = cur + delta
+      if (next < 0 || next >= items.length) return false
+      return this.focusDefectTypeDropdownMenuItem(next)
+    },
+    activateDefectTypeDropdownMenuItem(index) {
+      const items = this.getDefectTypeDropdownMenuEls()
+      if (!items[index]) return
+      items[index].click()
     },
     openDefectTypeDropdown() {
       const dropdown = this.$refs.defectTypeDropdown
@@ -1047,6 +1077,7 @@ export default {
     },
     onDefectTypeDropdownVisibleChange(visible) {
       if (visible) {
+        this.$_attachDefectTypeDropdownMenuListeners()
         if (this.defectTypeDropdownKeyboardOpen) {
           this.clearDefectQueryNavFocusMarks()
           this.$nextTick(() => {
@@ -1058,7 +1089,9 @@ export default {
         }
         return
       }
+      this.$_detachDefectTypeDropdownMenuListeners()
       this.defectTypeDropdownKeyboardOpen = false
+      this.defectTypeDropdownMenuIndex = 0
       if (!this.defectQueryNavActive) return
       const typeIndex = this.getDefectQueryNavIndexByKey('defectType')
       if (this.defectQueryNavIndex !== typeIndex) return
@@ -1201,48 +1234,793 @@ export default {
     shortcutSwitchTab() {
       this.enterDefectTabKeyboardNav()
     },
-    isDefectStatScrollNextHintVisible() {
-      if (!this.statisticPanelVisible) return false
-      const stat = this.$refs.defectStatistic
-      return !!(stat && stat.scrollOverflow && stat.canScrollRight)
+    /** Cmd/Ctrl+N：打开新建缺陷下拉，左右键在右侧工具栏按钮间切换 */
+    shortcutOpenAddMenu() {
+      if (!this.defectAddToolbarVisible) return
+      this.exitDefectTabKeyboardNav()
+      this.exitDefectQueryKeyboardNav()
+      const items = this.getDefectRightToolbarNavItems()
+      const idx = items.findIndex((it) => it.key === 'addMenu')
+      if (idx < 0) return
+      this.defectToolbarNavActive = true
+      this.defectToolbarNavIndex = idx
+      this.openDefectAddDropdown()
+      this.$nextTick(() => {
+        this.syncDefectRightToolbarNavFocusClass()
+        this.$_attachDefectToolbarNavListeners()
+      })
     },
-    isDefectTrendExportHintVisible() {
-      if (!this.statisticPanelVisible) return false
-      const root = this.$refs.defectMain || this.$el
-      return !!(root && root.querySelector('.defect-list-hint-trend-export'))
+    getDefectAddDropdownCaretEl() {
+      const host = this.getDefectRightToolbarNavEl('addMenu')
+      return host && host.querySelector('.el-dropdown__caret-button')
     },
-    shortcutScrollStatisticNext() {
-      const stat = this.$refs.defectStatistic
-      if (stat && typeof stat.scrollNext === 'function') {
-        stat.scrollNext()
+    getDefectRightToolbarNavItems() {
+      const items = []
+      const content = this.$refs.defectContentComponent
+      if (!content || !content.$el) return items
+      if (this.defectContentComponent === 'DefectExcel') {
+        if (content.$el.querySelector('.defect-list-hint-excel-refresh')) {
+          items.push({ key: 'excelRefresh' })
+        }
+        if (content.$el.querySelector('.defect-list-hint-excel-columns')) {
+          items.push({ key: 'excelColumns' })
+        }
+      } else if (this.defectContentComponent === 'DefectTable') {
+        if (content.$el.querySelector('.defect-list-hint-columns')) {
+          items.push({ key: 'columns' })
+        }
+      }
+      if (this.defectAddToolbarVisible && this.$el.querySelector('.defect-list-hint-add-menu')) {
+        items.push({ key: 'addMenu' })
+      }
+      return items
+    },
+    getDefectRightToolbarNavEl(key) {
+      const content = this.$refs.defectContentComponent
+      const root = this.$el
+      if (!root || !key) return null
+      if (key === 'columns') {
+        return content && content.$el && content.$el.querySelector('.defect-list-hint-columns')
+      }
+      if (key === 'excelRefresh') {
+        return content && content.$el && content.$el.querySelector('.defect-list-hint-excel-refresh')
+      }
+      if (key === 'excelColumns') {
+        return content && content.$el && content.$el.querySelector('.defect-list-hint-excel-columns')
+      }
+      if (key === 'addMenu') {
+        return root.querySelector('.defect-list-hint-add-menu')
+      }
+      return null
+    },
+    getDefectRightToolbarFocusEl(key) {
+      const host = this.getDefectRightToolbarNavEl(key)
+      if (!host) return null
+      if (key === 'addMenu') {
+        return host.querySelector('.el-button-group > .el-button--primary') ||
+          host.querySelector('.el-button-group > .el-button:first-child')
+      }
+      return host
+    },
+    clearDefectRightToolbarNavFocusMarks() {
+      const root = this.$el
+      if (!root) return
+      root.querySelectorAll('.defect-toolbar-nav-focused').forEach((el) => {
+        el.classList.remove('defect-toolbar-nav-focused')
+      })
+      const content = this.$refs.defectContentComponent
+      if (content && content.$el) {
+        content.$el.querySelectorAll('.defect-toolbar-nav-focused').forEach((el) => {
+          el.classList.remove('defect-toolbar-nav-focused')
+        })
       }
     },
-    shortcutExportTrendChart() {
-      const root = this.$refs.defectMain || this.$el
-      const btn = root && root.querySelector('.defect-list-hint-trend-export')
-      if (btn) {
-        btn.click()
+    syncDefectRightToolbarNavFocusClass() {
+      this.clearDefectRightToolbarNavFocusMarks()
+      if (!this.defectToolbarNavActive || this.defectToolbarNavIndex < 0) return
+      const items = this.getDefectRightToolbarNavItems()
+      const item = items[this.defectToolbarNavIndex]
+      if (!item) return
+      const el = this.getDefectRightToolbarFocusEl(item.key) || this.getDefectRightToolbarNavEl(item.key)
+      if (el) el.classList.add('defect-toolbar-nav-focused')
+    },
+    isDefectAddDropdownOpen() {
+      const dd = this.$refs.defectAddDropdown
+      return !!(dd && dd.visible)
+    },
+    isFocusInDefectAddDropdownOverlay(target) {
+      if (!target) return false
+      const dd = this.$refs.defectAddDropdown
+      if (dd && dd.visible) {
+        const menu = dd.dropdownElm || dd.popperElm
+        if (menu && menu.contains(target)) return true
+      }
+      return false
+    },
+    isDefectRightToolbarOnAddMenu() {
+      if (!this.defectToolbarNavActive || this.defectToolbarNavIndex < 0) return false
+      const items = this.getDefectRightToolbarNavItems()
+      const item = items[this.defectToolbarNavIndex]
+      return !!(item && item.key === 'addMenu')
+    },
+    getDefectAddDropdownMenuEls() {
+      const dd = this.$refs.defectAddDropdown
+      if (!dd || !dd.visible) return []
+      if ((!dd.menuItemsArray || !dd.menuItemsArray.length) && typeof dd.initDomOperation === 'function') {
+        dd.initDomOperation()
+      }
+      if (dd.menuItemsArray && dd.menuItemsArray.length) {
+        return dd.menuItemsArray
+      }
+      const menu = dd.dropdownElm || dd.popperElm
+      if (!menu) return []
+      return Array.from(menu.querySelectorAll('.el-dropdown-menu__item:not(.is-disabled)'))
+    },
+    focusDefectAddDropdownMenuItem(index = 0) {
+      const dd = this.$refs.defectAddDropdown
+      if (!dd || !dd.visible) return false
+      const items = this.getDefectAddDropdownMenuEls()
+      if (!items.length) return false
+      const i = Math.max(0, Math.min(index, items.length - 1))
+      if (typeof dd.removeTabindex === 'function') {
+        dd.removeTabindex()
+      }
+      if (typeof dd.resetTabindex === 'function') {
+        dd.resetTabindex(items[i])
+      }
+      items[i].focus()
+      this.defectAddDropdownMenuIndex = i
+      this.syncDefectAddDropdownMenuFocusClass()
+      return true
+    },
+    getDefectAddDropdownMenuIndex() {
+      const items = this.getDefectAddDropdownMenuEls()
+      if (!items.length) return 0
+      const active = document.activeElement
+      const idx = items.indexOf(active)
+      if (idx >= 0) return idx
+      return Math.min(this.defectAddDropdownMenuIndex || 0, items.length - 1)
+    },
+    moveDefectAddDropdownMenuItem(delta) {
+      const items = this.getDefectAddDropdownMenuEls()
+      if (!items.length) return false
+      const cur = this.getDefectAddDropdownMenuIndex()
+      const next = cur + delta
+      if (next < 0 || next >= items.length) return false
+      return this.focusDefectAddDropdownMenuItem(next)
+    },
+    activateDefectAddDropdownMenuItem(index) {
+      const items = this.getDefectAddDropdownMenuEls()
+      if (!items[index]) return
+      items[index].click()
+    },
+    clearDefectAddDropdownMenuFocusMarks() {
+      const dd = this.$refs.defectAddDropdown
+      const menu = dd && (dd.dropdownElm || dd.popperElm)
+      if (!menu) return
+      menu.querySelectorAll('.el-dropdown-menu__item.defect-add-dropdown-item-focused').forEach((el) => {
+        el.classList.remove('defect-add-dropdown-item-focused')
+      })
+    },
+    syncDefectAddDropdownMenuFocusClass() {
+      this.clearDefectAddDropdownMenuFocusMarks()
+      const items = this.getDefectAddDropdownMenuEls()
+      if (!items.length) return
+      const idx = this.getDefectAddDropdownMenuIndex()
+      const el = items[idx]
+      if (el) el.classList.add('defect-add-dropdown-item-focused')
+    },
+    openDefectAddDropdown() {
+      const dd = this.$refs.defectAddDropdown
+      if (!dd) return
+      if (dd.visible) {
+        this.$_attachDefectAddDropdownMenuListeners()
+        this.focusDefectAddDropdownMenuItem(0)
         return
       }
-      const stat = this.$refs.defectStatistic
-      const items = stat && stat.$refs.statisticItem
-      const arr = items ? (Array.isArray(items) ? items : [items]) : []
-      const trend = arr.find((c) => c && c.$options && c.$options.name === 'TeamDefectStateTrend')
-      if (trend && typeof trend.handleExport === 'function') {
-        trend.handleExport()
+      this.defectAddDropdownKeyboardOpen = true
+      const caret = this.getDefectAddDropdownCaretEl()
+      if (caret) {
+        caret.click()
+      } else if (typeof dd.show === 'function') {
+        dd.show()
       }
+      const tryFocusMenu = (attempt = 0) => {
+        if (this.isDefectAddDropdownOpen()) {
+          this.$_attachDefectAddDropdownMenuListeners()
+          if (this.focusDefectAddDropdownMenuItem(0)) {
+            this.defectAddDropdownKeyboardOpen = false
+            return
+          }
+        }
+        if (attempt < 12) {
+          setTimeout(() => tryFocusMenu(attempt + 1), 40)
+        } else {
+          this.defectAddDropdownKeyboardOpen = false
+        }
+      }
+      this.$nextTick(() => tryFocusMenu())
+    },
+    closeDefectAddDropdown() {
+      const dd = this.$refs.defectAddDropdown
+      if (dd && typeof dd.hide === 'function') dd.hide()
+      this.defectAddDropdownMenuIndex = 0
+      this.clearDefectAddDropdownMenuFocusMarks()
+    },
+    closeDefectTableColumnPicker() {
+      const btn = this.getDefectRightToolbarNavEl('columns')
+      if (!btn) return
+      let vm = btn.__vue__
+      while (vm) {
+        if (vm.$options && vm.$options.name === 'ElPopover') {
+          if (typeof vm.doClose === 'function') vm.doClose()
+          vm.showPopper = false
+          return
+        }
+        vm = vm.$parent
+      }
+    },
+    closeDefectExcelColumnPicker() {
+      const content = this.$refs.defectContentComponent
+      if (content && this.defectContentComponent === 'DefectExcel') {
+        content.excelToolbarColumnPickerVisible = false
+      }
+    },
+    closeDefectColumnPicker() {
+      this.closeDefectTableColumnPicker()
+      this.closeDefectExcelColumnPicker()
+      this.defectColumnPickerMenuIndex = 0
+      this.clearDefectColumnPickerFocusMarks()
+      this.$_detachDefectColumnPickerMenuListeners()
+    },
+    getDefectColumnPickerToolbarKey() {
+      const content = this.$refs.defectContentComponent
+      if (!content || !content.$el) return null
+      if (this.defectContentComponent === 'DefectExcel') {
+        return content.$el.querySelector('.defect-list-hint-excel-columns') ? 'excelColumns' : null
+      }
+      if (this.defectContentComponent === 'DefectTable') {
+        return content.$el.querySelector('.defect-list-hint-columns') ? 'columns' : null
+      }
+      return null
+    },
+    getDefectColumnPickerPopoverVm() {
+      const key = this.getDefectColumnPickerToolbarKey()
+      if (!key) return null
+      const btn = this.getDefectRightToolbarNavEl(key)
+      if (!btn) return null
+      let vm = btn.__vue__
+      while (vm) {
+        if (vm.$options && vm.$options.name === 'ElPopover') return vm
+        vm = vm.$parent
+      }
+      return null
+    },
+    isDefectColumnPickerOpen() {
+      if (this.defectContentComponent === 'DefectExcel') {
+        const content = this.$refs.defectContentComponent
+        return !!(content && content.excelToolbarColumnPickerVisible)
+      }
+      const pop = this.getDefectColumnPickerPopoverVm()
+      return !!(pop && pop.showPopper)
+    },
+    getDefectColumnPickerPopperEl() {
+      if (this.defectContentComponent === 'DefectExcel') {
+        return document.querySelector('.defect-excel-column-picker-popover')
+      }
+      const byClass = document.querySelector('.defect-column-picker-popover')
+      if (byClass) return byClass
+      const pop = this.getDefectColumnPickerPopoverVm()
+      return (pop && pop.$refs && pop.$refs.popper) || null
+    },
+    getDefectColumnPickerCheckboxEls() {
+      const popper = this.getDefectColumnPickerPopperEl()
+      if (!popper) return []
+      return Array.from(popper.querySelectorAll('.defect-column-picker .el-checkbox:not(.is-disabled)'))
+    },
+    isFocusInDefectColumnPickerOverlay(target) {
+      if (!target) return false
+      const popper = this.getDefectColumnPickerPopperEl()
+      return !!(popper && popper.contains(target))
+    },
+    isDefectRightToolbarOnColumnPicker() {
+      if (!this.defectToolbarNavActive || this.defectToolbarNavIndex < 0) return false
+      const items = this.getDefectRightToolbarNavItems()
+      const item = items[this.defectToolbarNavIndex]
+      return !!(item && (item.key === 'columns' || item.key === 'excelColumns'))
+    },
+    clearDefectColumnPickerFocusMarks() {
+      const popper = this.getDefectColumnPickerPopperEl()
+      if (!popper) return
+      popper.querySelectorAll('.el-checkbox.defect-column-picker-item-focused').forEach((el) => {
+        el.classList.remove('defect-column-picker-item-focused')
+      })
+    },
+    syncDefectColumnPickerFocusClass() {
+      this.clearDefectColumnPickerFocusMarks()
+      const items = this.getDefectColumnPickerCheckboxEls()
+      if (!items.length) return
+      const idx = this.getDefectColumnPickerMenuIndex()
+      const el = items[idx]
+      if (el) el.classList.add('defect-column-picker-item-focused')
+    },
+    focusDefectColumnPickerItem(index = 0) {
+      const items = this.getDefectColumnPickerCheckboxEls()
+      if (!items.length) return false
+      const i = Math.max(0, Math.min(index, items.length - 1))
+      const el = items[i]
+      el.setAttribute('tabindex', '0')
+      el.focus()
+      if (typeof el.scrollIntoView === 'function') {
+        el.scrollIntoView({ block: 'nearest' })
+      }
+      this.defectColumnPickerMenuIndex = i
+      this.syncDefectColumnPickerFocusClass()
+      return true
+    },
+    getDefectColumnPickerMenuIndex() {
+      const items = this.getDefectColumnPickerCheckboxEls()
+      if (!items.length) return 0
+      const active = document.activeElement
+      let node = active
+      while (node) {
+        const idx = items.indexOf(node)
+        if (idx >= 0) return idx
+        node = node.parentElement
+      }
+      return Math.min(this.defectColumnPickerMenuIndex || 0, items.length - 1)
+    },
+    moveDefectColumnPickerItem(delta) {
+      const items = this.getDefectColumnPickerCheckboxEls()
+      if (!items.length) return false
+      const cur = this.getDefectColumnPickerMenuIndex()
+      const next = cur + delta
+      if (next < 0 || next >= items.length) return false
+      return this.focusDefectColumnPickerItem(next)
+    },
+    toggleDefectColumnPickerItem(index) {
+      const items = this.getDefectColumnPickerCheckboxEls()
+      if (!items[index]) return
+      const input = items[index].querySelector('input[type="checkbox"]')
+      if (input) {
+        input.click()
+      } else {
+        items[index].click()
+      }
+      this.$nextTick(() => {
+        this.focusDefectColumnPickerItem(index)
+      })
+    },
+    openDefectColumnPicker() {
+      if (this.isDefectColumnPickerOpen()) {
+        this.focusDefectColumnPickerItem(0)
+        this.$_attachDefectColumnPickerMenuListeners()
+        return
+      }
+      this.defectColumnPickerKeyboardOpen = true
+      const key = this.getDefectColumnPickerToolbarKey()
+      if (key === 'excelColumns') {
+        const content = this.$refs.defectContentComponent
+        if (content) content.excelToolbarColumnPickerVisible = true
+      } else if (key === 'columns') {
+        const btn = this.getDefectRightToolbarNavEl('columns')
+        let vm = btn && btn.__vue__
+        while (vm) {
+          if (vm.$options && vm.$options.name === 'ElPopover') {
+            if (typeof vm.doShow === 'function') vm.doShow()
+            else vm.showPopper = true
+            break
+          }
+          vm = vm.$parent
+        }
+      }
+      const tryFocus = (attempt = 0) => {
+        if (this.focusDefectColumnPickerItem(0)) {
+          this.defectColumnPickerKeyboardOpen = false
+          this.$_attachDefectColumnPickerMenuListeners()
+          return
+        }
+        if (attempt < 8) {
+          setTimeout(() => tryFocus(attempt + 1), 40)
+        } else {
+          this.defectColumnPickerKeyboardOpen = false
+          if (this.isDefectColumnPickerOpen()) {
+            this.$_attachDefectColumnPickerMenuListeners()
+          }
+        }
+      }
+      this.$nextTick(() => tryFocus())
+    },
+    isDefectRightToolbarOverlayOpen() {
+      if (this.isDefectAddDropdownOpen()) return true
+      if (this.isDefectColumnPickerOpen()) return true
+      return false
+    },
+    releaseDefectRightToolbarFocus(key) {
+      if (!key) return
+      if (key === 'addMenu') this.closeDefectAddDropdown()
+      if (key === 'columns' || key === 'excelColumns') this.closeDefectColumnPicker()
+      const el = this.getDefectRightToolbarFocusEl(key)
+      if (el && typeof el.blur === 'function') el.blur()
+    },
+    focusDefectRightToolbarDom(index) {
+      const items = this.getDefectRightToolbarNavItems()
+      const item = items[index]
+      if (!item) return
+      const focusEl = this.getDefectRightToolbarFocusEl(item.key)
+      if (focusEl && typeof focusEl.focus === 'function') {
+        focusEl.focus()
+      }
+      this.$nextTick(() => {
+        this.syncDefectRightToolbarNavFocusClass()
+      })
+    },
+    applyDefectRightToolbarNavFocus(index, opts = {}) {
+      const items = this.getDefectRightToolbarNavItems()
+      if (index < 0 || index >= items.length) return
+      const prevIndex = this.defectToolbarNavIndex
+      if (prevIndex >= 0 && prevIndex !== index) {
+        const prevItem = items[prevIndex]
+        if (prevItem) this.releaseDefectRightToolbarFocus(prevItem.key)
+      }
+      this.defectToolbarNavSuppressBlur = true
+      this.defectToolbarNavIndex = index
+      const item = items[index]
+      this.$nextTick(() => {
+        if (item && item.key === 'addMenu' && opts.openAddMenu) {
+          this.openDefectAddDropdown()
+        } else if (item && (item.key === 'columns' || item.key === 'excelColumns') && opts.openColumnPicker) {
+          this.openDefectColumnPicker()
+        } else {
+          this.focusDefectRightToolbarDom(index)
+        }
+        this.$nextTick(() => {
+          this.defectToolbarNavSuppressBlur = false
+        })
+      })
+    },
+    enterDefectRightToolbarNav(focusKey, opts = {}) {
+      this.exitDefectTabKeyboardNav()
+      this.exitDefectQueryKeyboardNav()
+      const items = this.getDefectRightToolbarNavItems()
+      if (!items.length) return
+      let idx = items.findIndex((it) => it.key === focusKey)
+      if (idx < 0) idx = items.length - 1
+      this.defectToolbarNavActive = true
+      this.defectToolbarNavIndex = idx
+      this.$nextTick(() => {
+        this.applyDefectRightToolbarNavFocus(idx, opts)
+        this.$nextTick(() => {
+          this.$_attachDefectToolbarNavListeners()
+        })
+      })
+    },
+    exitDefectRightToolbarNav() {
+      if (!this.defectToolbarNavActive && !this.$_defectToolbarNavListenersBound) return
+      const items = this.getDefectRightToolbarNavItems()
+      if (this.defectToolbarNavIndex >= 0 && items[this.defectToolbarNavIndex]) {
+        this.releaseDefectRightToolbarFocus(items[this.defectToolbarNavIndex].key)
+      }
+      this.defectToolbarNavActive = false
+      this.defectToolbarNavIndex = -1
+      this.clearDefectRightToolbarNavFocusMarks()
+      this.$_detachDefectToolbarNavListeners()
+    },
+    moveDefectRightToolbarNav(delta) {
+      const items = this.getDefectRightToolbarNavItems()
+      const next = this.defectToolbarNavIndex + delta
+      if (next < 0 || next >= items.length) return
+      this.applyDefectRightToolbarNavFocus(next)
+    },
+    onDefectColumnPickerVisibleChange(visible) {
+      if (visible) {
+        this.$_attachDefectColumnPickerMenuListeners()
+        if (this.defectColumnPickerKeyboardOpen || this.defectToolbarNavActive) {
+          this.$nextTick(() => {
+            if (!this.focusDefectColumnPickerItem(0)) {
+              setTimeout(() => this.focusDefectColumnPickerItem(0), 60)
+            }
+            this.defectColumnPickerKeyboardOpen = false
+          })
+        }
+        return
+      }
+      this.defectColumnPickerKeyboardOpen = false
+      this.defectColumnPickerMenuIndex = 0
+      this.clearDefectColumnPickerFocusMarks()
+      this.$_detachDefectColumnPickerMenuListeners()
+      if (!this.defectToolbarNavActive) return
+      const key = this.getDefectColumnPickerToolbarKey()
+      this.$nextTick(() => {
+        this.syncDefectRightToolbarNavFocusClass()
+        const btn = key && this.getDefectRightToolbarFocusEl(key)
+        if (btn && !this.isFocusInDefectColumnPickerOverlay(document.activeElement)) {
+          btn.focus()
+        }
+      })
+    },
+    $_attachDefectColumnPickerMenuListeners() {
+      if (this.$_defectColumnPickerMenuListenersBound) return
+      this.$_defectColumnPickerMenuListenersBound = true
+      this.$_onDefectColumnPickerMenuKeydown = (e) => {
+        if (!this.isDefectColumnPickerOpen()) return
+        const key = e.key
+        const focusedIn = this.isFocusInDefectColumnPickerOverlay(document.activeElement)
+        if (key === 'ArrowDown' || key === 'Down') {
+          e.preventDefault()
+          e.stopPropagation()
+          if (!focusedIn) {
+            this.focusDefectColumnPickerItem(0)
+          } else if (!this.moveDefectColumnPickerItem(1)) {
+            this.focusDefectColumnPickerItem(this.getDefectColumnPickerCheckboxEls().length - 1)
+          }
+          return
+        }
+        if (key === 'ArrowUp' || key === 'Up') {
+          e.preventDefault()
+          e.stopPropagation()
+          if (!focusedIn) {
+            this.focusDefectColumnPickerItem(0)
+          } else if (this.getDefectColumnPickerMenuIndex() <= 0) {
+            this.closeDefectColumnPicker()
+          } else {
+            this.moveDefectColumnPickerItem(-1)
+          }
+          return
+        }
+        if (key === ' ' || key === 'Spacebar' || e.code === 'Space' || key === 'Enter') {
+          e.preventDefault()
+          e.stopPropagation()
+          this.toggleDefectColumnPickerItem(this.getDefectColumnPickerMenuIndex())
+          return
+        }
+        if (key === 'Escape' || key === 'Esc') {
+          e.preventDefault()
+          e.stopPropagation()
+          this.closeDefectColumnPicker()
+        }
+      }
+      document.addEventListener('keydown', this.$_onDefectColumnPickerMenuKeydown, true)
+    },
+    $_detachDefectColumnPickerMenuListeners() {
+      if (!this.$_defectColumnPickerMenuListenersBound) return
+      this.$_defectColumnPickerMenuListenersBound = false
+      document.removeEventListener('keydown', this.$_onDefectColumnPickerMenuKeydown, true)
+      this.$_onDefectColumnPickerMenuKeydown = null
+    },
+    onDefectAddDropdownVisibleChange(visible) {
+      if (visible) {
+        this.$_attachDefectAddDropdownMenuListeners()
+        if (this.defectAddDropdownKeyboardOpen || this.defectToolbarNavActive) {
+          this.$nextTick(() => {
+            if (!this.focusDefectAddDropdownMenuItem(0)) {
+              setTimeout(() => this.focusDefectAddDropdownMenuItem(0), 60)
+            }
+            this.defectAddDropdownKeyboardOpen = false
+          })
+        }
+        return
+      }
+      this.$_detachDefectAddDropdownMenuListeners()
+      this.defectAddDropdownKeyboardOpen = false
+      this.defectAddDropdownMenuIndex = 0
+      this.clearDefectAddDropdownMenuFocusMarks()
+      if (!this.defectToolbarNavActive) return
+      this.$nextTick(() => {
+        this.syncDefectRightToolbarNavFocusClass()
+        const btn = this.getDefectRightToolbarFocusEl('addMenu')
+        if (btn && !this.isFocusInDefectAddDropdownOverlay(document.activeElement)) {
+          btn.focus()
+        }
+      })
+    },
+    $_attachDefectAddDropdownMenuListeners() {
+      if (this.$_defectAddDropdownMenuListenersBound) return
+      this.$_defectAddDropdownMenuListenersBound = true
+      this.$_onDefectAddDropdownMenuKeydown = (e) => {
+        if (!this.isDefectAddDropdownOpen()) return
+        const key = e.key
+        const focusedInMenu = this.isFocusInDefectAddDropdownOverlay(document.activeElement)
+        if (key === 'ArrowDown' || key === 'Down') {
+          e.preventDefault()
+          e.stopPropagation()
+          if (!focusedInMenu) {
+            this.focusDefectAddDropdownMenuItem(0)
+          } else if (!this.moveDefectAddDropdownMenuItem(1)) {
+            this.focusDefectAddDropdownMenuItem(this.getDefectAddDropdownMenuEls().length - 1)
+          }
+          return
+        }
+        if (key === 'ArrowUp' || key === 'Up') {
+          e.preventDefault()
+          e.stopPropagation()
+          if (!focusedInMenu) {
+            this.focusDefectAddDropdownMenuItem(0)
+          } else if (this.getDefectAddDropdownMenuIndex() <= 0) {
+            this.closeDefectAddDropdown()
+          } else {
+            this.moveDefectAddDropdownMenuItem(-1)
+          }
+          return
+        }
+        if (key === 'Enter') {
+          e.preventDefault()
+          e.stopPropagation()
+          this.activateDefectAddDropdownMenuItem(this.getDefectAddDropdownMenuIndex())
+          return
+        }
+        if (key === 'Escape' || key === 'Esc') {
+          e.preventDefault()
+          e.stopPropagation()
+          this.closeDefectAddDropdown()
+        }
+      }
+      document.addEventListener('keydown', this.$_onDefectAddDropdownMenuKeydown, true)
+    },
+    $_detachDefectAddDropdownMenuListeners() {
+      if (!this.$_defectAddDropdownMenuListenersBound) return
+      this.$_defectAddDropdownMenuListenersBound = false
+      document.removeEventListener('keydown', this.$_onDefectAddDropdownMenuKeydown, true)
+      this.$_onDefectAddDropdownMenuKeydown = null
+    },
+    $_attachDefectTypeDropdownMenuListeners() {
+      if (this.$_defectTypeDropdownMenuListenersBound) return
+      this.$_defectTypeDropdownMenuListenersBound = true
+      this.$_onDefectTypeDropdownMenuKeydown = (e) => {
+        if (!this.isDefectTypeDropdownOpen()) return
+        const key = e.key
+        const focusedInMenu = this.isFocusInDefectQueryOverlay(document.activeElement)
+        if (key === 'ArrowDown' || key === 'Down') {
+          e.preventDefault()
+          e.stopPropagation()
+          if (!focusedInMenu) {
+            this.focusDefectTypeDropdownMenuItem(0)
+          } else if (!this.moveDefectTypeDropdownMenuItem(1)) {
+            this.focusDefectTypeDropdownMenuItem(this.getDefectTypeDropdownMenuEls().length - 1)
+          }
+          return
+        }
+        if (key === 'ArrowUp' || key === 'Up') {
+          e.preventDefault()
+          e.stopPropagation()
+          if (!focusedInMenu) {
+            this.focusDefectTypeDropdownMenuItem(0)
+          } else if (this.getDefectTypeDropdownMenuIndex() <= 0) {
+            this.closeDefectTypeDropdown()
+          } else {
+            this.moveDefectTypeDropdownMenuItem(-1)
+          }
+          return
+        }
+        if (key === 'Enter') {
+          e.preventDefault()
+          e.stopPropagation()
+          this.activateDefectTypeDropdownMenuItem(this.getDefectTypeDropdownMenuIndex())
+          return
+        }
+        if (key === 'Escape' || key === 'Esc') {
+          e.preventDefault()
+          e.stopPropagation()
+          this.closeDefectTypeDropdown()
+        }
+      }
+      document.addEventListener('keydown', this.$_onDefectTypeDropdownMenuKeydown, true)
+    },
+    $_detachDefectTypeDropdownMenuListeners() {
+      if (!this.$_defectTypeDropdownMenuListenersBound) return
+      this.$_defectTypeDropdownMenuListenersBound = false
+      document.removeEventListener('keydown', this.$_onDefectTypeDropdownMenuKeydown, true)
+      this.$_onDefectTypeDropdownMenuKeydown = null
+    },
+    $_attachDefectToolbarNavListeners() {
+      if (this.$_defectToolbarNavListenersBound) return
+      this.$_defectToolbarNavListenersBound = true
+      this.$_onDefectToolbarNavKeydown = (e) => {
+        if (!this.defectToolbarNavActive) return
+        if (this.isDefectAddDropdownOpen()) {
+          return
+        }
+        if (this.isDefectColumnPickerOpen()) {
+          return
+        }
+        if (e.key === 'ArrowDown' && this.isDefectRightToolbarOnAddMenu()) {
+          e.preventDefault()
+          e.stopPropagation()
+          this.openDefectAddDropdown()
+          return
+        }
+        if (e.key === 'ArrowDown' && this.isDefectRightToolbarOnColumnPicker()) {
+          e.preventDefault()
+          e.stopPropagation()
+          this.openDefectColumnPicker()
+          return
+        }
+        if (e.key === 'ArrowLeft') {
+          e.preventDefault()
+          e.stopPropagation()
+          if (this.isDefectRightToolbarOverlayOpen()) {
+            this.closeDefectAddDropdown()
+            this.closeDefectColumnPicker()
+          }
+          this.moveDefectRightToolbarNav(-1)
+          return
+        }
+        if (e.key === 'ArrowRight') {
+          e.preventDefault()
+          e.stopPropagation()
+          if (this.isDefectRightToolbarOverlayOpen()) {
+            this.closeDefectAddDropdown()
+            this.closeDefectColumnPicker()
+          }
+          this.moveDefectRightToolbarNav(1)
+          return
+        }
+        if (e.key === 'Escape') {
+          e.preventDefault()
+          e.stopPropagation()
+          if (this.isDefectColumnPickerOpen()) {
+            this.closeDefectColumnPicker()
+            return
+          }
+          if (this.isDefectAddDropdownOpen()) {
+            this.closeDefectAddDropdown()
+            return
+          }
+          this.exitDefectRightToolbarNav()
+        }
+      }
+      this.$_onDefectToolbarNavFocusOut = (e) => {
+        if (!this.defectToolbarNavActive || this.defectToolbarNavSuppressBlur) return
+        const within = this.isFocusInDefectRightToolbar(e.relatedTarget)
+        if (within) return
+        if (this.isDefectRightToolbarOverlayOpen()) return
+        setTimeout(() => {
+          if (!this.defectToolbarNavActive || this.defectToolbarNavSuppressBlur) return
+          if (this.isDefectRightToolbarOverlayOpen()) return
+          if (!this.isFocusInDefectRightToolbar(document.activeElement)) {
+            this.exitDefectRightToolbarNav()
+          }
+        }, 0)
+      }
+      document.addEventListener('keydown', this.$_onDefectToolbarNavKeydown, true)
+      const root = this.$el
+      if (root) {
+        root.addEventListener('focusout', this.$_onDefectToolbarNavFocusOut, true)
+      }
+      const content = this.$refs.defectContentComponent
+      if (content && content.$el) {
+        content.$el.addEventListener('focusout', this.$_onDefectToolbarNavFocusOut, true)
+      }
+    },
+    $_detachDefectToolbarNavListeners() {
+      if (!this.$_defectToolbarNavListenersBound) return
+      this.$_defectToolbarNavListenersBound = false
+      document.removeEventListener('keydown', this.$_onDefectToolbarNavKeydown, true)
+      const root = this.$el
+      if (root && this.$_onDefectToolbarNavFocusOut) {
+        root.removeEventListener('focusout', this.$_onDefectToolbarNavFocusOut, true)
+      }
+      const content = this.$refs.defectContentComponent
+      if (content && content.$el && this.$_onDefectToolbarNavFocusOut) {
+        content.$el.removeEventListener('focusout', this.$_onDefectToolbarNavFocusOut, true)
+      }
+    },
+    isFocusInDefectRightToolbar(target) {
+      if (!target) return false
+      if (this.isFocusInDefectAddDropdownOverlay(target)) return true
+      if (this.isFocusInDefectColumnPickerOverlay(target)) return true
+      const items = this.getDefectRightToolbarNavItems()
+      for (let i = 0; i < items.length; i++) {
+        const host = this.getDefectRightToolbarNavEl(items[i].key)
+        if (host && host.contains(target)) return true
+      }
+      return false
     },
     /** Cmd/Ctrl+O：在表格 / Excel 显示模式间切换 */
     shortcutSwitchView() {
       const next = this.defectContentComponent === 'DefectExcel' ? 'DefectTable' : 'DefectExcel'
       this.defectContentComponent = next
       this.handleDefectContentChange()
-    },
-    shortcutToggleDisplayFields() {
-      if (this.defectContentComponent !== 'DefectTable') return
-      const root = this.$refs.defectMain || this.$el
-      const btn = root && root.querySelector('.defect-list-hint-columns')
-      if (btn) btn.click()
     },
     getDefectTabNavItems() {
       const items = []
@@ -1351,6 +2129,7 @@ export default {
     },
     enterDefectTabKeyboardNav() {
       this.exitDefectQueryKeyboardNav()
+      this.exitDefectRightToolbarNav()
       const items = this.getDefectTabNavItems()
       if (!items.length) return
       const cur = String(this.activeDefectTabName)
@@ -2346,6 +3125,11 @@ export default {
   margin-top: 5px;
   margin-bottom: 5px;
 }
+/* 右侧工具栏键盘导航：聚焦环由全站 :focus 绘制，此处保证不被裁切 */
+.defect-page ::v-deep .defect-toolbar-nav-focused {
+  position: relative;
+  z-index: 2;
+}
 .defect-content-view-switch {
   display: inline-flex;
   vertical-align: top;
@@ -2381,6 +3165,73 @@ export default {
 
 <!-- 三视图共用：工具栏与下方主体间距、与右侧 table-tools 对齐（不受子组件 scoped 限制） -->
 <style lang="scss">
+.defect-add-dropdown-menu .el-dropdown-menu__item.defect-add-dropdown-item-focused,
+.defect-add-dropdown-menu .el-dropdown-menu__item:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  background-color: #ecf5ff;
+  color: inherit;
+}
+html.dark .defect-add-dropdown-menu .el-dropdown-menu__item.defect-add-dropdown-item-focused,
+html.dark .defect-add-dropdown-menu .el-dropdown-menu__item:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  background-color: #3a3a42;
+  color: inherit;
+}
+/* 显示字段：键盘导航高亮，与成员下拉 is-keyboard-active 一致 */
+.defect-column-picker-popover,
+.defect-excel-column-picker-popover {
+  padding: 8px 6px;
+  box-sizing: border-box;
+}
+.defect-column-picker .el-checkbox,
+.defect-column-picker-popover .defect-column-picker .el-checkbox,
+.defect-excel-column-picker-popover .defect-column-picker .el-checkbox {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+  margin-right: 0;
+  padding: 4px 8px;
+  border-radius: 5px;
+  outline: none !important;
+  box-shadow: none !important;
+}
+.defect-column-picker .el-checkbox:focus,
+.defect-column-picker-popover .defect-column-picker .el-checkbox:focus,
+.defect-excel-column-picker-popover .defect-column-picker .el-checkbox:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+.defect-column-picker .el-checkbox.defect-column-picker-item-focused,
+.defect-column-picker-popover .defect-column-picker .el-checkbox.defect-column-picker-item-focused,
+.defect-excel-column-picker-popover .defect-column-picker .el-checkbox.defect-column-picker-item-focused {
+  background-color: #ecf5ff;
+}
+html.dark .defect-column-picker .el-checkbox.defect-column-picker-item-focused,
+html.dark .defect-column-picker-popover .defect-column-picker .el-checkbox.defect-column-picker-item-focused,
+html.dark .defect-excel-column-picker-popover .defect-column-picker .el-checkbox.defect-column-picker-item-focused {
+  background-color: #3a3a42;
+}
+/* 取消勾选时禁用过渡，避免钩子在 scaleY 动画中先闪白再消失 */
+.defect-column-picker-popover .defect-column-picker .el-checkbox__inner,
+.defect-excel-column-picker-popover .defect-column-picker .el-checkbox__inner {
+  transition: none !important;
+}
+.defect-column-picker-popover .defect-column-picker .el-checkbox__inner::after,
+.defect-excel-column-picker-popover .defect-column-picker .el-checkbox__inner::after {
+  transition: none !important;
+}
+.defect-column-picker-popover .defect-column-picker .el-checkbox__input:not(.is-checked) .el-checkbox__inner::after,
+.defect-excel-column-picker-popover .defect-column-picker .el-checkbox__input:not(.is-checked) .el-checkbox__inner::after {
+  transform: rotate(45deg) scaleY(0) !important;
+  border-color: transparent !important;
+}
+html.dark .defect-column-picker-popover .defect-column-picker .el-checkbox__input.is-checked .el-checkbox__inner::after,
+html.dark .defect-excel-column-picker-popover .defect-column-picker .el-checkbox__input.is-checked .el-checkbox__inner::after {
+  border-color: #141414 !important;
+}
 .defect-page .defect-view-toolbar {
   box-sizing: border-box;
   flex-shrink: 0;

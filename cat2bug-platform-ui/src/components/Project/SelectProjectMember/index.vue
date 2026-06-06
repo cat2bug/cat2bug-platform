@@ -200,7 +200,7 @@ export default {
       if (val) {
         this.$_onPopoverEscKeydown = (e) => {
           if (e.key !== 'Escape') return;
-          // 单独 Esc 关闭成员下拉；Cmd/Ctrl+B 由外层抽屉处理
+          // 单独 Esc 关闭成员下拉；Esc 关闭抽屉由 defect-drawer-shortcuts 处理
           e.preventDefault();
           e.stopPropagation();
           if (this.popoverVisible) this.closePopoverKeepFocus();
@@ -715,6 +715,8 @@ export default {
       if (i < 0) {
         if (this.hasPrevMemberPage()) {
           this.goMemberPage(this.queryMember.pageNum - 1, 'last');
+        } else if (this.activeIndex <= 0) {
+          this.closePopoverKeepFocus();
         } else {
           this.activeIndex = 0;
         }

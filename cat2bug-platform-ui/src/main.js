@@ -61,6 +61,7 @@ import TabDirectionPlugin from '@/plugins/tab-direction'
 import SwitchKeyboardPlugin from '@/plugins/switch-keyboard'
 import UploadFocusTabPlugin from '@/plugins/upload-focus-tab'
 import ComboFocusTabPlugin from '@/plugins/combo-focus-tab'
+import DropdownBlurClosePlugin from '@/plugins/dropdown-blur-close'
 import DatePickerEscapePlugin from '@/plugins/date-picker-escape'
 import DefectDrawerShortcutsPlugin from '@/plugins/defect-drawer-shortcuts'
 import CommandPalette from '@/components/Shortcut/CommandPalette.vue'
@@ -98,6 +99,7 @@ Vue.use(TabDirectionPlugin)
 Vue.use(SwitchKeyboardPlugin)
 Vue.use(UploadFocusTabPlugin)
 Vue.use(ComboFocusTabPlugin)
+Vue.use(DropdownBlurClosePlugin)
 Vue.component('CommandPalette', CommandPalette)
 DictData.install()
 

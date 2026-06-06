@@ -74,12 +74,26 @@ const BLOCKING_UI_LAYER_SELECTORS = [
   '.el-dropdown-menu',
   '.el-autocomplete-suggestion',
   '.el-cascader-menus',
-  '.el-color-picker__panel'
+  '.el-color-picker__panel',
+  '.defect-column-picker-popover',
+  '.defect-excel-column-picker-popover'
 ]
 
-function hasBlockingUiLayer() {
+/** 新建/编辑缺陷表单抽屉（Esc 关闭时不应把自身算作遮挡层） */
+function isDefectFormDrawerWrapper(el) {
+  if (!el || !el.querySelector) return false
+  if (!el.classList || !el.classList.contains('el-drawer__wrapper')) return false
+  return !!(el.querySelector('.defect-add-header, .defect-edit-form-header') && isVisibleLayer(el))
+}
+
+function hasBlockingUiLayer(options = {}) {
+  const { excludeDefectFormDrawer = false } = options
   return BLOCKING_UI_LAYER_SELECTORS.some((sel) =>
-    Array.from(document.querySelectorAll(sel)).some(isVisibleLayer)
+    Array.from(document.querySelectorAll(sel)).some((el) => {
+      if (!isVisibleLayer(el)) return false
+      if (excludeDefectFormDrawer && isDefectFormDrawerWrapper(el)) return false
+      return true
+    })
   )
 }
 

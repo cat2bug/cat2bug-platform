@@ -7,25 +7,24 @@
     direction="rtl"
     :append-to-body="appendToBody"
     :close-on-press-escape="false"
-    @close="cancel"
     :before-close="closeDefectDrawer">
     <template slot="title">
       <div class="defect-edit-form-header">
         <div class="defect-edit-form-title">
-          <i class="el-icon-arrow-left" @click="cancel"></i>
+          <i class="el-icon-arrow-left" @click="requestCloseDefectFormDrawer"></i>
           <h3>
             {{ $t('defect.modify') }}
             <span v-if="form.projectNum" class="defect-edit-form-num">#{{ form.projectNum }}</span>
           </h3>
         </div>
         <div>
-          <el-button class="defect-kbd-hint-host" @click="cancel" icon="el-icon-close" size="small">
+          <el-button class="defect-kbd-hint-host" @click="requestCloseDefectFormDrawer" icon="el-icon-close" size="small">
             {{ $t('close') }}
             <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint" aria-hidden="true">{{ dialogCloseShortcutLabel }}</span>
           </el-button>
           <el-button class="defect-kbd-hint-host" type="primary" icon="el-icon-finished" @click="submitForm" size="small">
             {{ $t('defect.save') }}
-            <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
+            <span class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
           </el-button>
         </div>
       </div>
@@ -78,12 +77,13 @@ import { strFormat } from '@/utils'
 import { normalizeDefectTypeAndLevel } from '@/utils/defect-defaults'
 import defectBuiltinFieldVisibility from '@/mixins/defect-builtin-field-visibility'
 import dialogFormShortcuts from '@/mixins/dialog-form-shortcuts'
+import defectFormDrawerClose from '@/mixins/defect-form-drawer-close'
 import formFieldHints from '@/mixins/form-field-hints'
 
 export default {
   name: 'EditDefectDialog',
   dicts: ['defect_level'],
-  mixins: [defectBuiltinFieldVisibility, dialogFormShortcuts, formFieldHints],
+  mixins: [defectBuiltinFieldVisibility, dialogFormShortcuts, defectFormDrawerClose, formFieldHints],
   components: { ProjectAiModelSelect, DefectFormOrderedFields },
   data() {
     return {
@@ -177,16 +177,17 @@ export default {
               selectCase.search(this.form.moduleId)
             }
           }
+          this.captureDefectFormCloseBaseline()
         })
       })
     },
-    cancel() {
+    doCloseDefectFormDrawer() {
       this.visible = false
+      this.defectFormCloseBaseline = null
       this.reset()
     },
     closeDefectDrawer(done) {
-      this.cancel()
-      if (typeof done === 'function') done()
+      this.requestCloseDefectFormDrawer({ done })
     },
     reset() {
       this.planTimeRange = []
@@ -230,7 +231,7 @@ export default {
           }
           updateDefect(this.form).then(() => {
             this.$modal.msgSuccess(this.$i18n.t('modify-success'))
-            this.visible = false
+            this.doCloseDefectFormDrawer()
             this.$emit('log', this.form)
           })
         }

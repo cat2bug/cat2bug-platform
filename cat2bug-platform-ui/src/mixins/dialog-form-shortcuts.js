@@ -1,29 +1,32 @@
 /**
  * 弹框/抽屉表单快捷键 mixin。
  *
- * Cmd/Ctrl + Enter 保存；Cmd/Ctrl + B 关闭。
+ * Cmd/Ctrl + Enter 保存；Esc 关闭（未保存时由 defect-form-drawer-close 确认）。
  */
 
 import {
   registerDefectDrawerShortcuts,
   unregisterDefectDrawerShortcuts,
-  findTopFormDrawerVm
+  findTopFormDrawerVm,
+  isEscapeCloseKey,
+  isSaveShortcutKey
 } from '@/utils/defect-drawer-shortcuts'
+import { hasBlockingUiLayer } from '@/plugins/shortcut/service'
 
 export const SAVE_SHORTCUT_LABEL = '↵'
-export const CLOSE_SHORTCUT_LABEL = 'B'
+export const CLOSE_SHORTCUT_LABEL = 'Esc'
 
-function isCloseShortcutKey(e) {
-  if (!e || e.altKey) return false
-  if (!(e.metaKey || e.ctrlKey)) return false
-  const k = e.key
-  return k === 'B' || k === 'b'
+function saveShortcutFullLabel() {
+  if (typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform)) {
+    return '⌘↵'
+  }
+  return 'Ctrl+↵'
 }
 
 export default {
   computed: {
     dialogSaveShortcutLabel() {
-      return SAVE_SHORTCUT_LABEL
+      return this.fieldHintsActive ? SAVE_SHORTCUT_LABEL : saveShortcutFullLabel()
     },
     dialogCloseShortcutLabel() {
       return CLOSE_SHORTCUT_LABEL
@@ -53,10 +56,12 @@ export default {
     },
     $_canCloseDrawerByShortcut(e) {
       if (!this.visible) return false
-      return isCloseShortcutKey(e)
+      if (!isEscapeCloseKey(e)) return false
+      return !hasBlockingUiLayer({ excludeDefectFormDrawer: true })
     },
     $_invokeDrawerShortcutSave(e) {
-      if (!this.visible) return false
+      if (!this.$_ownsTopFormDrawer()) return false
+      if (!this.visible || !isSaveShortcutKey(e)) return false
       if (e) {
         e.preventDefault()
         e.stopPropagation()
@@ -74,17 +79,18 @@ export default {
         e.stopPropagation()
         if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation()
       }
-      if (typeof this.shortcutClose === 'function') this.shortcutClose()
+      if (typeof this.shortcutClose === 'function') this.shortcutClose(e)
+      else if (typeof this.requestCloseDefectFormDrawer === 'function') this.requestCloseDefectFormDrawer()
       else if (typeof this.cancel === 'function') this.cancel()
       return true
     },
     $_handleDrawerShortcutKey(e) {
       if (!this.visible || !this.$_ownsTopFormDrawer() || e.isComposing) return
-      if ((e.metaKey || e.ctrlKey) && !e.altKey && (e.key === 'Enter' || e.keyCode === 13)) {
+      if (isSaveShortcutKey(e)) {
         this.$_invokeDrawerShortcutSave(e)
         return
       }
-      if (isCloseShortcutKey(e)) {
+      if (isEscapeCloseKey(e)) {
         this.$_invokeDrawerShortcutClose(e)
       }
     },

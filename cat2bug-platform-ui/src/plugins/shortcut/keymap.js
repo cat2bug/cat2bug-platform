@@ -80,16 +80,11 @@ export const TOP_ITEMS = [
 
 /** 缺陷页默认动作（页面运行时通过 registerPage 提供执行回调） */
 export const DEFECT_ACTION_DEFAULTS = [
-  { key: 'new', defaultLetter: 'N', titleKey: 'keyboard.act.new-defect' },
-  { key: 'export', defaultLetter: 'E', titleKey: 'keyboard.act.export' },
-  { key: 'import', defaultLetter: 'I', titleKey: 'keyboard.act.import' },
+  { key: 'addMenu', defaultLetter: 'N', titleKey: 'keyboard.act.add-menu' },
   { key: 'query', defaultLetter: 'S', titleKey: 'keyboard.act.query' },
   { key: 'switchTab', defaultLetter: 'J', titleKey: 'keyboard.act.switch-tab' },
   { key: 'statistic', defaultLetter: 'V', titleKey: 'keyboard.act.statistic' },
-  { key: 'statScrollNext', defaultLetter: 'R', titleKey: 'keyboard.act.stat-scroll-next' },
-  { key: 'trendExport', defaultLetter: 'G', titleKey: 'keyboard.act.trend-export' },
   { key: 'switchView', defaultLetter: 'O', titleKey: 'keyboard.act.switch-view' },
-  { key: 'displayFields', defaultLetter: 'F', titleKey: 'keyboard.act.display-fields' },
   { key: 'prevPage', defaultLetter: 'B', titleKey: 'keyboard.act.prev-page' },
   { key: 'nextPage', defaultLetter: 'P', titleKey: 'keyboard.act.next-page' }
 ]
