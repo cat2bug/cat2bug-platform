@@ -1,7 +1,13 @@
 <template>
   <h3 class="row">
     <span>{{$t('project')}}:</span>
-    <project-select class="margin-left-10" :team-id="currentTeamId" :project-id="currentProjectId" :member-id="currentMemberId" />
+    <project-select
+      ref="projectSelect"
+      class="margin-left-10"
+      :team-id="currentTeamId"
+      :project-id="currentProjectId"
+      :member-id="currentMemberId"
+    />
   </h3>
 </template>
 
@@ -53,6 +59,13 @@ export default {
       getProject(projectId).then(res=>{
         this.project = res.data;
       });
+    },
+    /** 打开项目切换浮层（供页面快捷键调用） */
+    openProjectSelect() {
+      const select = this.$refs.projectSelect
+      if (select && typeof select.openPopover === 'function') {
+        select.openPopover()
+      }
     }
   }
 }

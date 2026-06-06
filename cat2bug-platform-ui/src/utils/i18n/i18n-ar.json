@@ -1458,6 +1458,7 @@
   "keyboard.palette.tip-search": "بحث",
   "keyboard.palette.tip-esc": "رجوع",
   "keyboard.act.new-defect": "عيب جديد",
+  "keyboard.act.switch-project": "تبديل المشروع",
   "keyboard.act.add-menu": "فتح قائمة الإنشاء",
   "keyboard.act.export": "تصدير العيوب",
   "keyboard.act.import": "استيراد العيوب",

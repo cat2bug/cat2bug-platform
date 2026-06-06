@@ -1458,6 +1458,7 @@
   "keyboard.palette.tip-search": "Поиск",
   "keyboard.palette.tip-esc": "Назад",
   "keyboard.act.new-defect": "Новый дефект",
+  "keyboard.act.switch-project": "Переключить проект",
   "keyboard.act.add-menu": "Открыть меню создания",
   "keyboard.act.export": "Экспорт дефектов",
   "keyboard.act.import": "Импорт дефектов",

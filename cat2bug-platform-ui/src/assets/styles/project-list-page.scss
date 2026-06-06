@@ -115,6 +115,11 @@
   display: none !important;
 }
 
+/* 无模块时隐藏外层 wrap，勿占 flex 子项（否则 Tab 与查询工具栏间距异常） */
+.project-list-page-host .defect-tools-statistic-wrap:not(:has(.statistic-tools > *)) {
+  display: none !important;
+}
+
 .project-list-page-host .defect-tools-statistic .statistic-panel {
   width: 100%;
   min-width: 0;

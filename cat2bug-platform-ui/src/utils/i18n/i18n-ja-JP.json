@@ -1458,6 +1458,7 @@
   "keyboard.palette.tip-search": "検索",
   "keyboard.palette.tip-esc": "戻る",
   "keyboard.act.new-defect": "不具合を新規作成",
+  "keyboard.act.switch-project": "プロジェクト切替",
   "keyboard.act.add-menu": "新規メニューを開く",
   "keyboard.act.export": "不具合をエクスポート",
   "keyboard.act.import": "不具合をインポート",

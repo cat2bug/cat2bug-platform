@@ -25,6 +25,20 @@ function load() {
           localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
         } catch (e) { /* ignore */ }
       }
+      const legacyAddMenu = normalizeKey(data.overrides['action.defect.addMenu'])
+      if (legacyAddMenu === 'N') {
+        delete data.overrides['action.defect.addMenu']
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+        } catch (e) { /* ignore */ }
+      }
+      const legacyStatistic = normalizeKey(data.overrides['action.defect.statistic'])
+      if (legacyStatistic === 'V') {
+        delete data.overrides['action.defect.statistic']
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+        } catch (e) { /* ignore */ }
+      }
     }
     return data
   } catch (e) {

@@ -1474,6 +1474,7 @@
   "keyboard.palette.tip-search": "Search",
   "keyboard.palette.tip-esc": "Back",
   "keyboard.act.new-defect": "New defect",
+  "keyboard.act.switch-project": "Switch project",
   "keyboard.act.add-menu": "Open create menu",
   "keyboard.act.export": "Export defects",
   "keyboard.act.import": "Import defects",

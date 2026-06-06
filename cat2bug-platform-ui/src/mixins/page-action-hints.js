@@ -13,8 +13,8 @@ import { getElementTextRect } from '@/utils/defect-row-kbd-hints'
  */
 
 const OVERLAY_ID = 'cat2bug-page-kbd-overlay'
-/** T/M/Q 与浏览器或 macOS 保留键冲突（新建标签页 / 最小化 / 退出应用） */
-const RESERVED_LETTERS = new Set(['A', 'C', 'M', 'Q', 'T', 'V', 'X', 'Z'])
+/** A/C/V/X/Z 系统编辑；T/M/N/Q 浏览器或 macOS 保留（新标签 / 新窗口 / 最小化 / 退出） */
+const RESERVED_LETTERS = new Set(['A', 'C', 'M', 'N', 'Q', 'T', 'V', 'X', 'Z'])
 
 function isModifierKeyEvent(e) {
   if (!e) return false
@@ -285,6 +285,7 @@ export default {
         if (typeof item.visible === 'function' && !item.visible()) return
         const letter = normalizeKey(item.letter)
         if (!letter || map[letter]) return
+        if (RESERVED_LETTERS.has(letter)) return
         if (typeof item.run !== 'function') return
         map[letter] = { run: item.run }
         if (item.key) keyLetters[item.key] = letter

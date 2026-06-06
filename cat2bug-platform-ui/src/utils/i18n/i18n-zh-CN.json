@@ -1475,6 +1475,7 @@
   "keyboard.palette.tip-search": "搜索",
   "keyboard.palette.tip-esc": "返回",
   "keyboard.act.new-defect": "新建缺陷",
+  "keyboard.act.switch-project": "项目切换",
   "keyboard.act.add-menu": "打开新建菜单",
   "keyboard.act.export": "导出缺陷",
   "keyboard.act.import": "导入缺陷",

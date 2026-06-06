@@ -9,7 +9,7 @@
       :class="{ 'defect-page--excel-view': defectContentComponent === 'DefectExcel' }"
       :style="defectPageRootStyle"
     >
-      <project-label class="defect-project-label" />
+      <project-label ref="defectProjectLabel" class="defect-project-label" />
       <!-- 缺陷页标签-->
       <div
         ref="defectToolsTab"
@@ -64,13 +64,19 @@
       </div>
       <!-- 统计板块-->
       <div
-        v-show="statisticPanelVisible"
+        v-show="defectStatisticWrapVisible"
         ref="defectStatisticWrap"
         class="defect-tools-statistic-wrap"
         :class="{ 'defect-statistic-keyboard-nav': defectStatisticNavActive }"
       >
-        <cat2-bug-statistic ref="defectStatistic" class="defect-tools-statistic" :params="{}" :draggable="true" />
-        <span class="defect-list-hint-stat-nav" aria-hidden="true" />
+        <cat2-bug-statistic
+          ref="defectStatistic"
+          class="defect-tools-statistic"
+          :params="{}"
+          :draggable="true"
+          @change="onDefectStatisticListChange"
+        />
+        <span v-if="defectStatisticNavAvailable" class="defect-list-hint-stat-nav" aria-hidden="true" />
       </div>
       <!-- 动态缺陷显示组件-->
       <!--    <keep-alive>-->
@@ -318,7 +324,7 @@ export default {
       defectQueryNavActive: false,
       defectQueryNavIndex: -1,
       defectQueryNavSuppressBlur: false,
-      /** Cmd/Ctrl+N 打开新建菜单后，左右键在右侧工具栏按钮间切换 */
+      /** Cmd/Ctrl+E 打开新建菜单后，左右键在右侧工具栏按钮间切换 */
       defectToolbarNavActive: false,
       defectToolbarNavIndex: -1,
       defectToolbarNavSuppressBlur: false,
@@ -326,6 +332,8 @@ export default {
       defectStatisticNavActive: false,
       defectStatisticNavIndex: -1,
       defectStatisticNavSuppressBlur: false,
+      /** 统计区当前模块数量（用于 G 快捷键显隐） */
+      defectStatisticItemCount: 0,
       /** 键盘打开新建下拉后聚焦首项 */
       defectAddDropdownKeyboardOpen: false,
       defectAddDropdownMenuIndex: 0,
@@ -420,6 +428,14 @@ export default {
     },
     defectStatisticNavLetter() {
       return this.pageActionLetter('statisticNav') || 'G'
+    },
+    /** 统计区有模块时才显示/响应 G 导航快捷键 */
+    defectStatisticNavAvailable() {
+      return this.statisticPanelVisible && this.defectStatisticItemCount > 0
+    },
+    /** 无统计模块时不渲染占位 wrap，避免破坏 Tab 与工具栏间 10px gap */
+    defectStatisticWrapVisible() {
+      return this.statisticPanelVisible && this.defectStatisticItemCount > 0
     }
   },
   watch: {
@@ -430,7 +446,14 @@ export default {
           if (statistic && typeof statistic.refreshData === 'function') {
             statistic.refreshData()
           }
+          this.syncDefectStatisticItemCount()
         })
+      } else {
+        this.defectStatisticItemCount = 0
+        if (this.defectStatisticNavActive) {
+          this.exitDefectStatisticKeyboardNav()
+        }
+        this.registerDefectShortcuts()
       }
     },
     'queryParams.defectType': function(newVal, oldVal) {
@@ -545,16 +568,20 @@ export default {
     /** 向快捷键引擎注册缺陷页动作（动作引导键 Space 打开） */
     registerDefectShortcuts() {
       if (!this.$shortcut) return
-      this.$shortcut.registerPage('defect', [
-        { key: 'addMenu', defaultLetter: 'N', run: () => this.shortcutOpenAddMenu() },
+      const actions = [
+        { key: 'switchProject', defaultLetter: 'L', run: () => this.shortcutSwitchProject() },
+        { key: 'addMenu', defaultLetter: 'E', run: () => this.shortcutOpenAddMenu() },
         { key: 'query', defaultLetter: 'S', run: () => this.shortcutFocusQuery() },
         { key: 'switchTab', defaultLetter: 'J', run: () => this.shortcutSwitchTab() },
-        { key: 'statistic', defaultLetter: 'V', run: () => this.addStatisticHandle() },
-        { key: 'statisticNav', defaultLetter: 'G', run: () => this.shortcutStatisticNav() },
+        { key: 'statistic', defaultLetter: 'I', run: () => this.addStatisticHandle() },
         { key: 'switchView', defaultLetter: 'O', run: () => this.shortcutSwitchView() },
         { key: 'prevPage', defaultLetter: 'B', run: () => this.shortcutChangePage(-1) },
         { key: 'nextPage', defaultLetter: 'P', run: () => this.shortcutChangePage(1) }
-      ])
+      ]
+      if (this.defectStatisticNavAvailable) {
+        actions.splice(5, 0, { key: 'statisticNav', defaultLetter: 'G', run: () => this.shortcutStatisticNav() })
+      }
+      this.$shortcut.registerPage('defect', actions)
     },
     getPageActionHintContainer() {
       return this.$refs.defectMain || this.$el
@@ -565,8 +592,15 @@ export default {
       const L = (key, def) => shortcutStore.getLetter(`action.${scopeKey}.${key}`, def)
       const hints = [
         {
+          key: 'switchProject',
+          letter: L('switchProject', 'L'),
+          badgeSelector: '.defect-project-label .project-select-kbd-hint-anchor',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
+          run: () => this.shortcutSwitchProject()
+        },
+        {
           key: 'addMenu',
-          letter: L('addMenu', 'N'),
+          letter: L('addMenu', 'E'),
           badgeSelector: '.defect-list-hint-add-menu.el-dropdown > .el-button-group',
           floatOffset: { placement: 'bottom-right-outset', outset: 3 },
           run: () => this.shortcutOpenAddMenu(),
@@ -588,9 +622,9 @@ export default {
         },
         {
           key: 'statistic',
-          letter: L('statistic', 'V'),
+          letter: L('statistic', 'I'),
           badgeSelector: '.defect-list-hint-statistic .defect-tools-button',
-          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
+          floatOffset: { placement: 'bottom-right-outset', outset: 2, dx: 5, dy: 5 },
           run: () => this.addStatisticHandle(),
           visible: () => this.statisticPanelVisible
         },
@@ -600,7 +634,7 @@ export default {
           badgeSelector: '.defect-list-hint-stat-nav',
           floatOffset: { placement: 'bottom-right-outset', outset: 2 },
           run: () => this.shortcutStatisticNav(),
-          visible: () => this.statisticPanelVisible
+          visible: () => this.defectStatisticNavAvailable
         },
         {
           key: 'switchView',
@@ -1262,9 +1296,31 @@ export default {
     shortcutSwitchTab() {
       this.enterDefectTabKeyboardNav()
     },
+    /** Cmd/Ctrl+L：打开左上角项目切换 */
+    shortcutSwitchProject() {
+      const label = this.$refs.defectProjectLabel
+      if (label && typeof label.openProjectSelect === 'function') {
+        label.openProjectSelect()
+      }
+    },
     /** Cmd/Ctrl+G：统计模块键盘导航（左右选择，Delete 移除） */
     shortcutStatisticNav() {
+      if (!this.defectStatisticNavAvailable) return
       this.enterDefectStatisticKeyboardNav()
+    },
+    onDefectStatisticListChange(list) {
+      this.defectStatisticItemCount = Array.isArray(list) ? list.length : 0
+      if (!this.defectStatisticNavAvailable && this.defectStatisticNavActive) {
+        this.exitDefectStatisticKeyboardNav()
+      }
+      this.registerDefectShortcuts()
+    },
+    syncDefectStatisticItemCount() {
+      const items = this.getDefectStatisticNavItems()
+      this.defectStatisticItemCount = items.length
+      if (!this.defectStatisticNavAvailable && this.defectStatisticNavActive) {
+        this.exitDefectStatisticKeyboardNav()
+      }
     },
     getDefectStatisticNavItems() {
       const stat = this.$refs.defectStatistic
@@ -1428,7 +1484,7 @@ export default {
         root.removeEventListener('focusout', this.$_onDefectStatisticNavFocusOut, true)
       }
     },
-    /** Cmd/Ctrl+N：打开新建缺陷下拉，左右键在右侧工具栏按钮间切换 */
+    /** Cmd/Ctrl+E：打开新建缺陷下拉，左右键在右侧工具栏按钮间切换 */
     shortcutOpenAddMenu() {
       if (!this.defectAddToolbarVisible) return
       this.exitDefectTabKeyboardNav()

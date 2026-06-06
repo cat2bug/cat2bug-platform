@@ -1460,6 +1460,7 @@
   "keyboard.palette.tip-search": "搜尋",
   "keyboard.palette.tip-esc": "返回",
   "keyboard.act.new-defect": "新增缺陷",
+  "keyboard.act.switch-project": "專案切換",
   "keyboard.act.add-menu": "開啟新建選單",
   "keyboard.act.export": "匯出缺陷",
   "keyboard.act.import": "匯入缺陷",

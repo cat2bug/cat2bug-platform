@@ -1458,6 +1458,7 @@
   "keyboard.palette.tip-search": "검색",
   "keyboard.palette.tip-esc": "뒤로",
   "keyboard.act.new-defect": "결함 새로 만들기",
+  "keyboard.act.switch-project": "프로젝트 전환",
   "keyboard.act.add-menu": "새로 만들기 메뉴 열기",
   "keyboard.act.export": "결함 내보내기",
   "keyboard.act.import": "결함 가져오기",

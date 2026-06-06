@@ -2,7 +2,7 @@ import { normalizeKey } from '@/plugins/shortcut/keymap'
 
 /** 与 page-action-hints 一致：不可用于行/工具栏动态分配 */
 export const ROW_KBD_RESERVED = Object.freeze(
-  new Set(['A', 'C', 'M', 'Q', 'T', 'V', 'X', 'Z'])
+  new Set(['A', 'C', 'M', 'N', 'Q', 'T', 'V', 'X', 'Z'])
 )
 
 const LETTER_POOL = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
