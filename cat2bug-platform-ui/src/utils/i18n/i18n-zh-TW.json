@@ -1461,7 +1461,7 @@
   "keyboard.act.new-defect": "新增缺陷",
   "keyboard.act.export": "匯出缺陷",
   "keyboard.act.import": "匯入缺陷",
-  "keyboard.act.query": "查詢",
+  "keyboard.act.query": "聚焦查詢",
   "keyboard.act.switch-tab": "切換頁籤",
   "keyboard.act.statistic": "統計範本",
   "keyboard.act.stat-scroll-next": "統計區右滑",

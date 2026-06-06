@@ -1459,7 +1459,7 @@
   "keyboard.act.new-defect": "결함 새로 만들기",
   "keyboard.act.export": "결함 내보내기",
   "keyboard.act.import": "결함 가져오기",
-  "keyboard.act.query": "조회",
+  "keyboard.act.query": "조회 포커스",
   "keyboard.act.switch-tab": "탭 전환",
   "keyboard.act.statistic": "통계 템플릿",
   "keyboard.act.stat-scroll-next": "통계 오른쪽으로",

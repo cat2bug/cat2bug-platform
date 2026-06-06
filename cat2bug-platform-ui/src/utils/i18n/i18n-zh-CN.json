@@ -1476,7 +1476,7 @@
   "keyboard.act.new-defect": "新建缺陷",
   "keyboard.act.export": "导出缺陷",
   "keyboard.act.import": "导入缺陷",
-  "keyboard.act.query": "查询",
+  "keyboard.act.query": "聚焦查询",
   "keyboard.act.switch-tab": "切换页签",
   "keyboard.act.statistic": "统计模版",
   "keyboard.act.stat-scroll-next": "统计区右滑",

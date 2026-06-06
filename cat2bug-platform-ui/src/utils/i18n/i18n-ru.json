@@ -1459,7 +1459,7 @@
   "keyboard.act.new-defect": "Новый дефект",
   "keyboard.act.export": "Экспорт дефектов",
   "keyboard.act.import": "Импорт дефектов",
-  "keyboard.act.query": "Запрос",
+  "keyboard.act.query": "Фокус запроса",
   "keyboard.act.switch-tab": "Переключить вкладку",
   "keyboard.act.statistic": "Шаблон статистики",
   "keyboard.act.stat-scroll-next": "Прокрутить статистику вправо",

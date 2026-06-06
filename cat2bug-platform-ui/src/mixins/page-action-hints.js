@@ -2,6 +2,7 @@ import { isNativeFilePickerOpen } from '@/utils/native-file-picker'
 import { hasBlockingUiLayer } from '@/plugins/shortcut/service'
 import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
 import { normalizeKey } from '@/plugins/shortcut/keymap'
+import { getElementTextRect } from '@/utils/defect-row-kbd-hints'
 
 /**
  * 列表/页面级快捷键提示：按住 Cmd/Ctrl 在工具栏控件上显示字母徽标，再按字母触发动作。
@@ -12,8 +13,8 @@ import { normalizeKey } from '@/plugins/shortcut/keymap'
  */
 
 const OVERLAY_ID = 'cat2bug-page-kbd-overlay'
-/** T/M 与浏览器保留键冲突（新建标签页 / 最小化窗口），禁止用于页面字母快捷键 */
-const RESERVED_LETTERS = new Set(['A', 'C', 'M', 'T', 'V', 'X', 'Z'])
+/** T/M/Q 与浏览器或 macOS 保留键冲突（新建标签页 / 最小化 / 退出应用） */
+const RESERVED_LETTERS = new Set(['A', 'C', 'M', 'Q', 'T', 'V', 'X', 'Z'])
 
 function isModifierKeyEvent(e) {
   if (!e) return false
@@ -27,7 +28,7 @@ function isVisibleEl(el) {
 }
 
 function isElementInViewport(el, minPx = 4) {
-  if (!isVisibleEl(el)) return false
+  if (!el || typeof el.getBoundingClientRect !== 'function') return false
   const rect = el.getBoundingClientRect()
   if (rect.width <= 0 && rect.height <= 0) return false
   const vh = window.innerHeight || document.documentElement.clientHeight
@@ -75,6 +76,21 @@ function buildFloatBadgeStyle(rect, floatOffset) {
       left: `${rect.right + dx - outset}px`,
       top: `${rect.bottom + dy - outset}px`,
       transform: 'translate(-100%, -100%)'
+    }
+  }
+  /** 徽标在文字右缘外、紧贴文字下缘（不遮挡序号） */
+  if (placement === 'below-right-outset') {
+    return {
+      left: `${rect.right + dx + outset}px`,
+      top: `${rect.bottom + dy + outset}px`,
+      transform: 'translate(-100%, 0)'
+    }
+  }
+  if (placement === 'center-left-inset') {
+    return {
+      left: `${rect.left + dx + outset}px`,
+      top: `${rect.top + rect.height / 2 + dy}px`,
+      transform: 'translate(0, -50%)'
     }
   }
   return {
@@ -140,6 +156,47 @@ export default {
         this.$_pageActionHintRevealTimer = null
       }
     },
+    $_bindPageHintScrollRefresh() {
+      this.$_unbindPageHintScrollRefresh()
+      const roots = typeof this.getPageActionHintScrollRoots === 'function'
+        ? this.getPageActionHintScrollRoots()
+        : []
+      const bound = (roots || []).filter(Boolean)
+      if (!bound.length) return
+      this.$_pageHintScrollRoots = bound
+      this.$_pageHintScrollHandler = () => {
+        if (!this.$_pageActionModifierHeld) return
+        if (this.$_pageHintScrollRaf) return
+        this.$_pageHintScrollRaf = requestAnimationFrame(() => {
+          this.$_pageHintScrollRaf = null
+          if (this.$_pageActionModifierHeld) {
+            this.$_revealPageActionBadges()
+          }
+        })
+      }
+      bound.forEach((el) => {
+        el.addEventListener('scroll', this.$_pageHintScrollHandler, { passive: true })
+      })
+      this.$_pageHintScrollResizeHandler = this.$_pageHintScrollHandler
+      window.addEventListener('resize', this.$_pageHintScrollResizeHandler, { passive: true })
+    },
+    $_unbindPageHintScrollRefresh() {
+      if (this.$_pageHintScrollRaf) {
+        cancelAnimationFrame(this.$_pageHintScrollRaf)
+        this.$_pageHintScrollRaf = null
+      }
+      if (this.$_pageHintScrollRoots && this.$_pageHintScrollHandler) {
+        this.$_pageHintScrollRoots.forEach((el) => {
+          el.removeEventListener('scroll', this.$_pageHintScrollHandler)
+        })
+      }
+      if (this.$_pageHintScrollResizeHandler) {
+        window.removeEventListener('resize', this.$_pageHintScrollResizeHandler)
+      }
+      this.$_pageHintScrollRoots = null
+      this.$_pageHintScrollHandler = null
+      this.$_pageHintScrollResizeHandler = null
+    },
     $_pageActionHintKeydown(e) {
       if (e.isComposing || !this.isPageActionHintsEnabled()) return
       if ((this.$_pageActionModifierHeld || this.pageHintsActive) &&
@@ -158,6 +215,24 @@ export default {
           }, 180)
         }
         return
+      }
+      if ((e.metaKey || e.ctrlKey) && !e.altKey && !e.shiftKey) {
+        const arrow = e.key
+        if (arrow === 'ArrowUp' || arrow === 'ArrowDown' || arrow === 'ArrowLeft' || arrow === 'ArrowRight') {
+          if (this.$_pageActionModifierHeld || this.pageHintsActive) {
+            if (typeof this.handlePageModifierArrowScroll === 'function') {
+              const handled = this.handlePageModifierArrowScroll(e)
+              if (handled) {
+                e.preventDefault()
+                e.stopPropagation()
+                if (this.$_pageActionModifierHeld) {
+                  this.$nextTick(() => this.$_revealPageActionBadges())
+                }
+                return
+              }
+            }
+          }
+        }
       }
       if (!(e.metaKey || e.ctrlKey) || e.altKey) return
       if (!this.$_pageActionHintMap) {
@@ -200,7 +275,7 @@ export default {
     $_buildPageActionHints() {
       const list = typeof this.getPageActionHints === 'function' ? this.getPageActionHints() : []
       const container = this.$_getPageActionHintContainer()
-      if (!container || !list.length) return null
+      if (!container) return null
       const map = {}
       const pending = []
       const keyLetters = {}
@@ -218,6 +293,25 @@ export default {
         if (!anchor || !isElementInViewport(anchor)) return
         pending.push({ anchor, letter, floatOffset: item.floatOffset, key: item.key })
       })
+      const dynamic = typeof this.getPageDynamicActionHints === 'function'
+        ? this.getPageDynamicActionHints({ usedLetters: new Set(Object.keys(map)) })
+        : []
+      ;(dynamic || []).forEach((item) => {
+        if (!item || !item.anchor || typeof item.run !== 'function') return
+        const letter = normalizeKey(item.letter)
+        if (!letter || map[letter]) return
+        if (RESERVED_LETTERS.has(letter)) return
+        if (!item.skipViewportCheck && !isElementInViewport(item.anchor)) return
+        map[letter] = { run: item.run }
+        if (item.key) keyLetters[item.key] = letter
+        pending.push({
+          anchor: item.anchor,
+          letter,
+          floatOffset: item.floatOffset,
+          key: item.key
+        })
+      })
+      if (!Object.keys(map).length && !pending.length) return null
       return { map, pending, keyLetters }
     },
     $_preparePageActionHints() {
@@ -250,14 +344,28 @@ export default {
       })
       this.$_pageActionHintNodes = nodes.filter(Boolean)
       this.pageHintsActive = this.$_pageActionHintNodes.length > 0
+      if (this.pageHintsActive) {
+        if (!this.$_pageHintScrollRoots) {
+          this.$_bindPageHintScrollRefresh()
+        }
+      } else {
+        this.$_unbindPageHintScrollRefresh()
+      }
     },
     /** fixed 浮层徽标：锚点控件右下角，置顶不被 Tab/统计区遮挡 */
     $_injectPageActionBadge(anchor, letter, floatOffset, hintKey) {
       if (!anchor) return null
-      const rect = anchor.getBoundingClientRect()
+      let rect = anchor.getBoundingClientRect()
+      if (floatOffset && floatOffset.anchorTextBounds) {
+        const textRect = getElementTextRect(anchor)
+        if (textRect) rect = textRect
+      }
       const overlay = ensurePageHintOverlay()
       const badge = document.createElement('span')
       badge.className = 'cat2bug-page-kbd-hint-float defect-list-kbd-hint'
+      if (hintKey && String(hintKey).startsWith('row-')) {
+        badge.classList.add('defect-row-kbd-hint-float')
+      }
       badge.textContent = letter
       badge.setAttribute('aria-hidden', 'true')
       if (hintKey) badge.setAttribute('data-cat2bug-hint-key', hintKey)
@@ -279,6 +387,7 @@ export default {
       return { badge, anchor, float: true }
     },
     $_hidePageActionHintBadges() {
+      this.$_unbindPageHintScrollRefresh()
       clearPageHintOverlay()
       this.$_pageActionHintNodes = null
       if (this.pageHintsActive) this.pageHintsActive = false

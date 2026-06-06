@@ -87,9 +87,71 @@ $cat2bug-radius: var(--cat2bug-border-radius, 4px);
   border-radius: $cat2bug-radius !important;
 }
 
-/* 数字输入框聚焦边框与普通 input 一致（浅色主题蓝色） */
-.el-input-number:not(.is-disabled) .el-input .el-input__inner:focus {
-  border-color: var(--cat2bug-field-focus-color, #1890ff) !important;
+/* ========== 全站统一聚焦环：1px 外描边，border 色不变，避免快捷键环与 :focus 环重叠 ========== */
+@mixin cat2bug-unified-focus-ring {
+  outline: none !important;
+  box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, #1890ff) !important;
+}
+
+@mixin cat2bug-unified-focus-border {
+  border-color: var(--border-color-base, #dcdfe6) !important;
+}
+
+.el-input:not(.is-disabled) .el-input__inner:focus,
+.el-textarea:not(.is-disabled) .el-textarea__inner:focus,
+.el-input-number:not(.is-disabled) .el-input__inner:focus,
+.el-select:not(.is-disabled) .el-input.is-focus .el-input__inner,
+.el-cascader:not(.is-disabled) .el-input.is-focus .el-input__inner,
+.el-autocomplete:not(.is-disabled) .el-input.is-focus .el-input__inner,
+.el-date-editor.el-input:not(.is-disabled) .el-input__inner:focus,
+.el-date-editor.el-input__inner:focus,
+.el-range-editor.el-input__inner:focus,
+.el-range-editor.is-active {
+  @include cat2bug-unified-focus-border;
+  @include cat2bug-unified-focus-ring;
+}
+
+.select-project-member-input:focus,
+.select-project-member-input:focus-within,
+.select-module-input.cat2bug-combo-focus-target:focus,
+.select-module-input.cat2bug-combo-focus-target:focus-within {
+  @include cat2bug-unified-focus-border;
+  @include cat2bug-unified-focus-ring;
+}
+
+.select-project-member-input:focus-within .select-project-member-search-input .el-input__inner,
+.select-project-member-input .select-project-member-search-input .el-input__inner:focus,
+.select-project-member-input .select-project-member-search-input.is-focus .el-input__inner,
+.select-module-input:focus-within .select-module-display-input .el-input__inner,
+.select-module-input .select-module-display-input .el-input__inner:focus {
+  box-shadow: none !important;
+  border-color: transparent !important;
+  outline: none !important;
+}
+
+.el-button-group:focus-within {
+  @include cat2bug-unified-focus-ring;
+  border-radius: $cat2bug-radius;
+}
+
+.el-button-group:focus-within > .el-button,
+.el-button-group:focus-within > .el-button:focus {
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* split-button：组聚焦时子按钮（含下拉三角）不单独高亮，仅整体外框一环 */
+.el-button-group:focus-within > .el-button.el-button--default,
+.el-button-group:focus-within > .el-button:not([type]),
+.el-button-group:focus-within > .el-button.el-button--default:focus,
+.el-button-group:focus-within > .el-button:not([type]):focus {
+  background-color: var(--bg-color-block, var(--input-bg, #ffffff)) !important;
+  border-color: var(--border-color-base, var(--input-border, #dcdfe6)) !important;
+  color: var(--text-color-regular, #606266) !important;
+}
+
+.el-button-group:focus-within > .el-button.el-dropdown__caret-button {
+  border-left: none !important;
 }
 
 .el-button:not(.is-circle):not(.el-button--text) {

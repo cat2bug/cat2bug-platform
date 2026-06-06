@@ -18,6 +18,13 @@ function load() {
           localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
         } catch (e) { /* ignore */ }
       }
+      const legacyQuery = normalizeKey(data.overrides['action.defect.query'])
+      if (legacyQuery === 'Q') {
+        delete data.overrides['action.defect.query']
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+        } catch (e) { /* ignore */ }
+      }
     }
     return data
   } catch (e) {

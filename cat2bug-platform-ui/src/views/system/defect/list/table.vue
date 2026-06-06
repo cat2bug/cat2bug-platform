@@ -101,7 +101,11 @@
             </el-table-column>
           </template>
           <template #columns="{ scope, column }">
-            <span v-if="column.prop==='projectNum'" >{{ '#' + scope.row[column.prop] }}</span>
+            <span
+              v-if="column.prop==='projectNum'"
+              class="defect-row-kbd-hint-anchor"
+              :data-defect-id="scope.row.defectId"
+            >{{ '#' + scope.row[column.prop] }}</span>
             <defect-type-flag v-else-if="column.prop==='defectTypeName'" :defect="scope.row" />
             <div v-else-if="column.prop==='defectName'" class="table-defect-title">
               <el-link type="primary" :title="scope.row.defectName" @click="handleClickTableRow(scope.row)">{{ scope.row.defectName }}</el-link>

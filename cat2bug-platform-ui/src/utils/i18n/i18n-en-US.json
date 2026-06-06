@@ -1475,7 +1475,7 @@
   "keyboard.act.new-defect": "New defect",
   "keyboard.act.export": "Export defects",
   "keyboard.act.import": "Import defects",
-  "keyboard.act.query": "Query",
+  "keyboard.act.query": "Focus query",
   "keyboard.act.switch-tab": "Switch tab",
   "keyboard.act.statistic": "Statistics template",
   "keyboard.act.stat-scroll-next": "Scroll statistics right",

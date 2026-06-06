@@ -672,12 +672,7 @@ export default {
     70% { box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color); }
     100% { box-shadow: 0 0 0 1px var(--cat2bug-field-focus-ring-fade); }
   }
-  /* 持久焦点环：成员/交付物组合选择框用 :focus-within 在获得焦点期间持续显示边框 */
-  .defect-drawer-accent .el-form-item .select-project-member-input:focus-within,
-  .defect-drawer-accent .el-form-item .select-module-input:focus-within {
-    border-color: var(--cat2bug-field-focus-color) !important;
-    box-shadow: none !important;
-  }
+  /* 成员/交付物组合框聚焦环见 cat2bug.scss 全站统一样式 */
   /* 开关聚焦：box-shadow 外环包裹整颗开关，不被 __core 遮挡 */
   .defect-drawer-accent .el-form-item .el-switch:focus-within {
     display: inline-flex;
@@ -708,11 +703,7 @@ export default {
     70% { box-shadow: 0 0 0 1px #ffffff; }
     100% { box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.35); }
   }
-  /* 数字输入框聚焦：与普通 input 一致的边框色 */
-  .defect-drawer-accent .el-form-item .el-input-number:focus-within .el-input__inner {
-    border-color: var(--cat2bug-field-focus-color) !important;
-    box-shadow: none !important;
-  }
+  /* 数字输入框聚焦环见 cat2bug.scss 全站统一样式 */
   /* 文件上传：外框持久焦点环 */
   .defect-drawer-accent .el-form-item .cat2bug-upload-focus-target {
     overflow: visible;

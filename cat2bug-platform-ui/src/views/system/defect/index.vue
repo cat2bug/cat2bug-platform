@@ -78,7 +78,7 @@
       >
         <template slot="left-tools">
           <!-- 搜索-->
-          <div class="defect-tools-search">
+          <div class="defect-tools-search" :class="{ 'defect-query-keyboard-nav': defectQueryNavActive }">
             <el-form v-show="showSearch" ref="queryForm" :model="queryParams" size="small" :inline="true" label-width="0">
               <el-form-item>
                 <!-- 缺陷显示模式切换 -->
@@ -107,8 +107,15 @@
                   </el-radio-button>
                 </el-radio-group>
               </el-form-item>
-              <el-form-item prop="defectType">
-                <el-dropdown split-button size="small" @command="defectTypeChangeHandle" @click="selectDefectTabHandle">
+              <el-form-item prop="defectType" class="defect-list-query-nav-item" data-query-key="defectType">
+                <el-dropdown
+                  ref="defectTypeDropdown"
+                  split-button
+                  size="small"
+                  @command="defectTypeChangeHandle"
+                  @click="selectDefectTabHandle"
+                  @visible-change="onDefectTypeDropdownVisibleChange"
+                >
                   {{ $i18n.t(activeDefectTypeName) }}
                   <el-dropdown-menu slot="dropdown">
                     <el-dropdown-item command="">{{ $i18n.t('defect.all-type') }}</el-dropdown-item>
@@ -116,8 +123,9 @@
                   </el-dropdown-menu>
                 </el-dropdown>
               </el-form-item>
-              <el-form-item prop="defectState">
+              <el-form-item prop="defectState" class="defect-list-query-nav-item" data-query-key="defectState">
                 <el-select
+                  ref="defectQueryStateSelect"
                   v-model="queryParams.params.defectStates"
                   class="defect-state-select"
                   size="small"
@@ -138,8 +146,9 @@
                   />
                 </el-select>
               </el-form-item>
-              <el-form-item prop="handleBy">
+              <el-form-item prop="handleBy" class="defect-list-query-nav-item" data-query-key="handleBy">
                 <select-project-member
+                  ref="defectQueryHandleBy"
                   v-model="queryParams.handleBy"
                   :project-id="projectId"
                   placeholder="defect.select-handle-by"
@@ -149,7 +158,7 @@
                   @input="handleQuery()"
                 />
               </el-form-item>
-              <el-form-item prop="nameVersionKeyword" class="defect-list-hint-query">
+              <el-form-item prop="nameVersionKeyword" class="defect-list-query-nav-item defect-list-hint-query" data-query-key="nameVersionKeyword">
                 <el-input
                   v-model="queryParams.nameVersionKeyword"
                   size="small"
@@ -220,6 +229,17 @@ import DefectExcel from './list/excel'
 import { clearExtensionParams, hasParticipationExtension } from './query-extension'
 import pageActionHints from '@/mixins/page-action-hints'
 import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
+import {
+  assignRowHintLetters,
+  collectHintLettersFromToolbar,
+  findExcelSheetRow,
+  getDefectTableScrollBody,
+  isExcelRowVisibleInViewport,
+  isRowIntersectingContainer,
+  parseExcelRowKeyFromTdId,
+  resolveDefectTableRowHintAnchor,
+  resolveExcelRowHintAnchor
+} from '@/utils/defect-row-kbd-hints'
 
 /** 记录Tab标签选项 */
 const DEFECT_TAB_CACHE_KEY = 'defect-tab'
@@ -282,6 +302,12 @@ export default {
       defectTabNavFocusedName: null,
       /** Tab 切换过程中忽略 focusout，避免误退出键盘导航 */
       defectTabNavSuppressBlur: false,
+      /** Cmd/Ctrl+Q 后查询区键盘导航（左右键切换，默认末项名称/版本搜索框） */
+      defectQueryNavActive: false,
+      defectQueryNavIndex: -1,
+      defectQueryNavSuppressBlur: false,
+      /** 键盘 ↓ 打开类型下拉后需将焦点移入菜单项 */
+      defectTypeDropdownKeyboardOpen: false,
       // 查询参数
       queryParams: {
         pageNum: 1,
@@ -411,6 +437,9 @@ export default {
   },
   activated() {
     this.registerDefectShortcuts()
+    this.$nextTick(() => {
+      this.$_bindDefectQueryNavFocusIn()
+    })
     /** keep-alive 返回后刷新表格布局（固定列等） */
     this.$nextTick(() => {
       const c = this.$refs.defectContentComponent
@@ -427,12 +456,16 @@ export default {
   },
   deactivated() {
     this.exitDefectTabKeyboardNav()
+    this.exitDefectQueryKeyboardNav()
+    this.$_unbindDefectQueryNavFocusIn()
     this.clearTabDataLoadTimer()
     if (this.$shortcut) this.$shortcut.unregisterPage('defect')
   },
   // 移除滚动条监听
   destroyed() {
     this.exitDefectTabKeyboardNav()
+    this.exitDefectQueryKeyboardNav()
+    this.$_unbindDefectQueryNavFocusIn()
     this.clearTabDataLoadTimer()
     if (this.$shortcut) this.$shortcut.unregisterPage('defect')
   },
@@ -465,6 +498,9 @@ export default {
         this.$refs.editDefectForm.open(this.$route.query.defectId)
       }
       this.registerDefectShortcuts()
+      this.$nextTick(() => {
+        this.$_bindDefectQueryNavFocusIn()
+      })
     },
     /** 向快捷键引擎注册缺陷页动作（动作引导键 Space 打开） */
     registerDefectShortcuts() {
@@ -473,7 +509,7 @@ export default {
         { key: 'new', defaultLetter: 'N', run: () => this.handleAdd() },
         { key: 'export', defaultLetter: 'E', run: () => this.handleExport() },
         { key: 'import', defaultLetter: 'I', run: () => this.handleImport() },
-        { key: 'query', defaultLetter: 'Q', run: () => this.shortcutFocusQuery() },
+        { key: 'query', defaultLetter: 'S', run: () => this.shortcutFocusQuery() },
         { key: 'switchTab', defaultLetter: 'J', run: () => this.shortcutSwitchTab() },
         { key: 'statistic', defaultLetter: 'V', run: () => this.addStatisticHandle() },
         { key: 'statScrollNext', defaultLetter: 'R', run: () => this.shortcutScrollStatisticNext() },
@@ -518,9 +554,9 @@ export default {
         },
         {
           key: 'query',
-          letter: L('query', 'Q'),
-          badgeSelector: '.defect-list-hint-query .el-input__inner',
-          floatOffset: { placement: 'bottom-right-inset', outset: 5 },
+          letter: L('query', 'S'),
+          badgeSelector: '.defect-list-hint-query',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
           run: () => this.shortcutFocusQuery()
         },
         {
@@ -586,18 +622,580 @@ export default {
       ]
       return hints
     },
-    /** 聚焦关键字搜索框（查询） */
+    /** ⌘ 按住：表格/Excel 可见行序号列动态徽标（1–9 优先，字母补位） */
+    getPageDynamicActionHints(ctx) {
+      const used = (ctx && ctx.usedLetters) ? new Set(ctx.usedLetters) : new Set()
+      collectHintLettersFromToolbar(this.getPageActionHints()).forEach((ch) => used.add(ch))
+      if (this.defectContentComponent === 'DefectTable') {
+        const rowFloat = { placement: 'center-left-inset', outset: 4, dx: 2 }
+        return this.buildDefectTableRowActionHints(used, rowFloat)
+      }
+      if (this.defectContentComponent === 'DefectExcel') {
+        const rowFloat = { placement: 'below-right-outset', outset: 1, dx: 8, dy: -7, anchorTextBounds: true }
+        return this.buildDefectExcelRowActionHints(used, rowFloat)
+      }
+      return []
+    },
+    /** ⌘ 按住时监听滚动，刷新行徽标可见性 */
+    getPageActionHintScrollRoots() {
+      const content = this.$refs.defectContentComponent
+      if (!content) return []
+      if (this.defectContentComponent === 'DefectExcel') {
+        const tc = this.getDefectExcelTableContent(content)
+        return tc ? [tc] : []
+      }
+      if (this.defectContentComponent === 'DefectTable') {
+        const bodyWrap = this.getDefectTableScrollBody(content)
+        return bodyWrap ? [bodyWrap] : []
+      }
+      return []
+    },
+    getDefectTableRootEl(content) {
+      if (!content || !content.$el) return null
+      return (content.$refs && content.$refs.cat2BugTable && content.$refs.cat2BugTable.$el) ||
+        content.$el
+    },
+    getDefectTableScrollBody(content) {
+      return getDefectTableScrollBody(this.getDefectTableRootEl(content))
+    },
+    getDefectExcelTableContent(content) {
+      const ed = content && content.$refs && content.$refs.excelEditor
+      if (!ed) return null
+      return ed.tableContent || (ed.$refs && ed.$refs.tableContent) || null
+    },
+    buildDefectTableRowActionHints(usedLetters, rowFloat) {
+      const content = this.$refs.defectContentComponent
+      const bodyWrap = this.getDefectTableScrollBody(content)
+      if (!bodyWrap || !content) return []
+      const defectList = content.defectList || []
+      const seen = new Set()
+      const anchors = []
+      bodyWrap.querySelectorAll('tbody tr.el-table__row').forEach((tr, rowIndex) => {
+        if (!isRowIntersectingContainer(tr, bodyWrap)) return
+        const row = defectList[rowIndex]
+        if (!row || row.defectId == null) return
+        const defectId = String(row.defectId)
+        if (seen.has(defectId)) return
+        seen.add(defectId)
+        const anchor = resolveDefectTableRowHintAnchor(tr)
+        if (!anchor) return
+        anchors.push({
+          anchor,
+          skipViewportCheck: true,
+          run: () => this.handleDefectClick({ defectId: row.defectId })
+        })
+      })
+      const letters = assignRowHintLetters(anchors.length, usedLetters)
+      return anchors.map((item, i) => ({
+        ...item,
+        letter: letters[i],
+        floatOffset: rowFloat,
+        key: `row-${i}`
+      })).filter((item) => item.letter)
+    },
+    buildDefectExcelRowActionHints(usedLetters, rowFloat) {
+      const content = this.$refs.defectContentComponent
+      const tc = this.getDefectExcelTableContent(content)
+      if (!tc) return []
+      const sheetRows = content.sheetRows || []
+      const seen = new Set()
+      const anchors = []
+      tc.querySelectorAll('tbody tr').forEach((tr) => {
+        if (!isExcelRowVisibleInViewport(tr, tc)) return
+        const anchor = resolveExcelRowHintAnchor(tr)
+        if (!anchor) return
+        const cell = tr.querySelector('td[id$="-projectNum"]') || tr.querySelector('td[id^="id-"]')
+        if (!cell || !cell.id) return
+        const rowKey = parseExcelRowKeyFromTdId(cell.id)
+        const row = findExcelSheetRow(sheetRows, rowKey)
+        if (!row || !row.defectId) return
+        const defectId = String(row.defectId)
+        if (seen.has(defectId)) return
+        seen.add(defectId)
+        anchors.push({
+          anchor,
+          skipViewportCheck: true,
+          run: () => this.handleDefectClick({ defectId: row.defectId })
+        })
+      })
+      const letters = assignRowHintLetters(anchors.length, usedLetters)
+      return anchors.map((item, i) => ({
+        ...item,
+        letter: letters[i],
+        floatOffset: rowFloat,
+        key: `row-${i}`
+      })).filter((item) => item.letter)
+    },
+    /** ⌘+方向键：表格 / Excel 水平、垂直滚动 */
+    handlePageModifierArrowScroll(e) {
+      if (this.defectContentComponent === 'DefectTable') {
+        return this.scrollDefectTableByArrow(e.key)
+      }
+      if (this.defectContentComponent === 'DefectExcel') {
+        return this.scrollDefectExcelByArrow(e.key)
+      }
+      return false
+    },
+    scrollDefectTableByArrow(key) {
+      const content = this.$refs.defectContentComponent
+      const bodyWrap = this.getDefectTableScrollBody(content)
+      if (!bodyWrap) return false
+      const stepY = Math.max(48, Math.round(bodyWrap.clientHeight * 0.35))
+      const stepX = Math.max(80, Math.round(bodyWrap.clientWidth * 0.25))
+      if (key === 'ArrowUp') {
+        bodyWrap.scrollTop = Math.max(0, bodyWrap.scrollTop - stepY)
+        return true
+      }
+      if (key === 'ArrowDown') {
+        bodyWrap.scrollTop = Math.min(bodyWrap.scrollHeight - bodyWrap.clientHeight, bodyWrap.scrollTop + stepY)
+        return true
+      }
+      if (key === 'ArrowLeft') {
+        bodyWrap.scrollLeft = Math.max(0, bodyWrap.scrollLeft - stepX)
+        return true
+      }
+      if (key === 'ArrowRight') {
+        bodyWrap.scrollLeft = Math.min(bodyWrap.scrollWidth - bodyWrap.clientWidth, bodyWrap.scrollLeft + stepX)
+        return true
+      }
+      return false
+    },
+    scrollDefectExcelByArrow(key) {
+      const content = this.$refs.defectContentComponent
+      const tc = this.getDefectExcelTableContent(content)
+      const ed = content && content.$refs && content.$refs.excelEditor
+      if (!tc) return false
+      const stepY = Math.max(48, Math.round(tc.clientHeight * 0.35))
+      const stepX = Math.max(80, Math.round(tc.clientWidth * 0.25))
+      if (key === 'ArrowUp') {
+        tc.scrollTop = Math.max(0, tc.scrollTop - stepY)
+        return true
+      }
+      if (key === 'ArrowDown') {
+        tc.scrollTop = Math.min(tc.scrollHeight - tc.clientHeight, tc.scrollTop + stepY)
+        return true
+      }
+      if (key === 'ArrowLeft') {
+        tc.scrollLeft = Math.max(0, tc.scrollLeft - stepX)
+        if (ed && typeof ed.calVScroll === 'function') {
+          try { ed.calVScroll() } catch (err) { /* ignore */ }
+        }
+        return true
+      }
+      if (key === 'ArrowRight') {
+        tc.scrollLeft = Math.min(tc.scrollWidth - tc.clientWidth, tc.scrollLeft + stepX)
+        if (ed && typeof ed.calVScroll === 'function') {
+          try { ed.calVScroll() } catch (err) { /* ignore */ }
+        }
+        return true
+      }
+      return false
+    },
+    /** ⌘+S 或鼠标点击：聚焦查询区，左右键在查询控件间切换 */
     shortcutFocusQuery() {
-      this.showSearch = true
+      this.enterDefectQueryKeyboardNav()
+    },
+    getDefectQueryNavIndexByKey(key) {
+      return this.getDefectQueryNavItems().findIndex((item) => item.key === key)
+    },
+    /** 鼠标/Tab 聚焦某一查询项时同步进入键盘导航态（与 ⌘+S 行为一致） */
+    ensureDefectQueryNavFromFocus(target) {
+      if (!target || !this.showSearch) return
+      const itemEl = target.closest && target.closest('.defect-list-query-nav-item[data-query-key]')
+      if (!itemEl) return
+      const form = this.$refs.queryForm && this.$refs.queryForm.$el
+      if (!form || !form.contains(itemEl)) return
+      const key = itemEl.getAttribute('data-query-key')
+      const index = this.getDefectQueryNavIndexByKey(key)
+      if (index < 0) return
+      this.exitDefectTabKeyboardNav()
+      this.defectQueryNavActive = true
+      this.defectQueryNavIndex = index
+      this.syncDefectQueryNavFocusClass()
+      this.$_attachDefectQueryNavListeners()
+    },
+    getDefectQueryNavItems() {
+      return [
+        { key: 'defectType' },
+        { key: 'defectState' },
+        { key: 'handleBy' },
+        { key: 'nameVersionKeyword' }
+      ]
+    },
+    getDefectQueryNavItemEl(key) {
+      const form = this.$refs.queryForm && this.$refs.queryForm.$el
+      if (!form || !key) return null
+      return form.querySelector(`.defect-list-query-nav-item[data-query-key="${String(key)}"]`)
+    },
+    getDefectQueryNavFocusEl(key) {
+      const itemEl = this.getDefectQueryNavItemEl(key)
+      if (!itemEl) return null
+      if (key === 'defectType') {
+        return itemEl.querySelector('.el-dropdown .el-dropdown__caret-button') ||
+          itemEl.querySelector('.el-dropdown .el-button-group > .el-button:last-child')
+      }
+      if (key === 'defectState') {
+        return itemEl.querySelector('.defect-state-select .el-input__inner') ||
+          itemEl.querySelector('.el-select .el-input__inner')
+      }
+      if (key === 'handleBy') {
+        return itemEl.querySelector('.select-project-member-input')
+      }
+      if (key === 'nameVersionKeyword') {
+        return itemEl.querySelector('input.el-input__inner')
+      }
+      return itemEl.querySelector('input, button, [tabindex]')
+    },
+    clearDefectQueryNavFocusMarks() {
+      const form = this.$refs.queryForm && this.$refs.queryForm.$el
+      if (!form) return
+      form.querySelectorAll('.defect-list-query-nav-item.defect-query-nav-focused').forEach((el) => {
+        el.classList.remove('defect-query-nav-focused')
+      })
+    },
+    syncDefectQueryNavFocusClass() {
+      this.clearDefectQueryNavFocusMarks()
+      if (!this.defectQueryNavActive || this.defectQueryNavIndex < 0) return
+      const items = this.getDefectQueryNavItems()
+      const item = items[this.defectQueryNavIndex]
+      if (!item) return
+      const itemEl = this.getDefectQueryNavItemEl(item.key)
+      if (itemEl) {
+        itemEl.classList.add('defect-query-nav-focused')
+      }
+    },
+    focusDefectQueryNavDom(index) {
+      const items = this.getDefectQueryNavItems()
+      const item = items[index]
+      if (!item) return
+      if (item.key === 'handleBy') {
+        const comp = this.$refs.defectQueryHandleBy
+        if (comp) {
+          comp.searchInputActive = false
+          if (typeof comp.focus === 'function') {
+            comp.focus()
+          } else {
+            const shell = this.getDefectQueryNavFocusEl(item.key)
+            if (shell) shell.focus()
+          }
+          this.$nextTick(() => {
+            this.syncDefectQueryNavFocusClass()
+          })
+          return
+        }
+      }
+      const focusEl = this.getDefectQueryNavFocusEl(item.key)
+      if (focusEl) {
+        focusEl.focus()
+      }
       this.$nextTick(() => {
-        const form = this.$refs.queryForm && this.$refs.queryForm.$el
-        const input = form && form.querySelector('input.el-input__inner[type="text"]')
-        if (input) {
-          input.focus()
+        this.syncDefectQueryNavFocusClass()
+      })
+    },
+    applyDefectQueryNavFocus(index) {
+      const items = this.getDefectQueryNavItems()
+      if (index < 0 || index >= items.length) return
+      const prevIndex = this.defectQueryNavIndex
+      if (prevIndex >= 0 && prevIndex !== index) {
+        const prevItem = items[prevIndex]
+        if (prevItem) {
+          this.releaseDefectQueryNavItemFocus(prevItem.key)
+        }
+      }
+      this.defectQueryNavSuppressBlur = true
+      this.defectQueryNavIndex = index
+      this.$nextTick(() => {
+        this.focusDefectQueryNavDom(index)
+        this.$nextTick(() => {
+          this.defectQueryNavSuppressBlur = false
+        })
+      })
+    },
+    /** 离开某一查询项时关闭下拉并 blur，避免 is-focus 视觉残留 */
+    releaseDefectQueryNavItemFocus(key) {
+      if (!key) return
+      if (key === 'defectType') {
+        const dropdown = this.$refs.defectTypeDropdown
+        if (dropdown && dropdown.visible && typeof dropdown.hide === 'function') {
+          dropdown.hide()
+        }
+        const caret = this.getDefectQueryNavFocusEl('defectType')
+        if (caret && typeof caret.blur === 'function') {
+          caret.blur()
+        }
+        return
+      }
+      if (key === 'defectState') {
+        const select = this.$refs.defectQueryStateSelect
+        if (select && typeof select.blur === 'function') {
+          select.blur()
         } else {
-          this.handleQuery()
+          const el = this.getDefectQueryNavFocusEl('defectState')
+          if (el && typeof el.blur === 'function') {
+            el.blur()
+          }
+        }
+        return
+      }
+      if (key === 'handleBy') {
+        const comp = this.$refs.defectQueryHandleBy
+        if (comp) {
+          comp.searchInputActive = false
+          const inputComp = comp.$refs && comp.$refs.selectProjectMemberInput
+          const inner = inputComp && inputComp.$el && inputComp.$el.querySelector('input')
+          if (inner && typeof inner.blur === 'function') {
+            inner.blur()
+          }
+        }
+        const shell = this.getDefectQueryNavFocusEl('handleBy')
+        if (shell && typeof shell.blur === 'function') {
+          shell.blur()
+        }
+        return
+      }
+      if (key === 'nameVersionKeyword') {
+        const el = this.getDefectQueryNavFocusEl('nameVersionKeyword')
+        if (el && typeof el.blur === 'function') {
+          el.blur()
+        }
+      }
+    },
+    enterDefectQueryKeyboardNav() {
+      this.exitDefectTabKeyboardNav()
+      this.showSearch = true
+      const items = this.getDefectQueryNavItems()
+      if (!items.length) return
+      const idx = items.length - 1
+      this.defectQueryNavActive = true
+      this.defectQueryNavIndex = idx
+      this.$nextTick(() => {
+        this.applyDefectQueryNavFocus(idx)
+        this.$nextTick(() => {
+          this.$_attachDefectQueryNavListeners()
+        })
+      })
+    },
+    exitDefectQueryKeyboardNav() {
+      if (!this.defectQueryNavActive && !this.$_defectQueryNavListenersBound) return
+      const items = this.getDefectQueryNavItems()
+      if (this.defectQueryNavIndex >= 0 && items[this.defectQueryNavIndex]) {
+        this.releaseDefectQueryNavItemFocus(items[this.defectQueryNavIndex].key)
+      }
+      this.defectQueryNavActive = false
+      this.defectQueryNavIndex = -1
+      this.clearDefectQueryNavFocusMarks()
+      const form = this.$refs.queryForm && this.$refs.queryForm.$el
+      if (form && form.contains(document.activeElement)) {
+        document.activeElement.blur()
+      }
+      this.$_detachDefectQueryNavListeners()
+    },
+    moveDefectQueryNav(delta) {
+      const items = this.getDefectQueryNavItems()
+      const next = this.defectQueryNavIndex + delta
+      if (next < 0 || next >= items.length) return
+      this.applyDefectQueryNavFocus(next)
+    },
+    isDefectQueryNavItemFocused(key) {
+      const itemEl = this.getDefectQueryNavItemEl(key)
+      const active = document.activeElement
+      return !!(itemEl && active && itemEl.contains(active))
+    },
+    focusDefectTypeDropdownMenuItem(index = 0) {
+      const dd = this.$refs.defectTypeDropdown
+      if (!dd || !dd.visible) return false
+      if ((!dd.menuItems || !dd.menuItems.length) && typeof dd.initDomOperation === 'function') {
+        dd.initDomOperation()
+      }
+      if (!dd.menuItems || !dd.menuItems.length) return false
+      const i = Math.max(0, Math.min(index, dd.menuItems.length - 1))
+      if (typeof dd.removeTabindex === 'function') {
+        dd.removeTabindex()
+      }
+      if (typeof dd.resetTabindex === 'function') {
+        dd.resetTabindex(dd.menuItems[i])
+      }
+      dd.menuItems[i].focus()
+      this.clearDefectQueryNavFocusMarks()
+      return true
+    },
+    openDefectTypeDropdown() {
+      const dropdown = this.$refs.defectTypeDropdown
+      if (!dropdown || dropdown.visible) return
+      const caret = this.getDefectQueryNavFocusEl('defectType')
+      if (caret && document.activeElement !== caret) {
+        caret.focus()
+      }
+      this.defectTypeDropdownKeyboardOpen = true
+      if (typeof dropdown.show === 'function') {
+        dropdown.show()
+      } else if (caret) {
+        caret.click()
+      }
+      const tryFocusMenu = (attempt = 0) => {
+        if (this.focusDefectTypeDropdownMenuItem(0)) {
+          this.defectTypeDropdownKeyboardOpen = false
+          return
+        }
+        if (attempt < 8) {
+          setTimeout(() => tryFocusMenu(attempt + 1), 40)
+        } else {
+          this.defectTypeDropdownKeyboardOpen = false
+        }
+      }
+      this.$nextTick(() => tryFocusMenu())
+    },
+    onDefectTypeDropdownVisibleChange(visible) {
+      if (visible) {
+        if (this.defectTypeDropdownKeyboardOpen) {
+          this.clearDefectQueryNavFocusMarks()
+          this.$nextTick(() => {
+            if (!this.focusDefectTypeDropdownMenuItem(0)) {
+              setTimeout(() => this.focusDefectTypeDropdownMenuItem(0), 60)
+            }
+            this.defectTypeDropdownKeyboardOpen = false
+          })
+        }
+        return
+      }
+      this.defectTypeDropdownKeyboardOpen = false
+      if (!this.defectQueryNavActive) return
+      const typeIndex = this.getDefectQueryNavIndexByKey('defectType')
+      if (this.defectQueryNavIndex !== typeIndex) return
+      this.$nextTick(() => {
+        this.syncDefectQueryNavFocusClass()
+        const caret = this.getDefectQueryNavFocusEl('defectType')
+        if (caret && !this.isFocusInDefectQueryOverlay(document.activeElement)) {
+          caret.focus()
         }
       })
+    },
+    isDefectQueryNavDropdownOpen() {
+      const typeDd = this.$refs.defectTypeDropdown
+      if (typeDd && typeDd.visible) return true
+      const stateSelect = this.$refs.defectQueryStateSelect
+      if (stateSelect && stateSelect.visible) return true
+      const handleBy = this.$refs.defectQueryHandleBy
+      if (handleBy && handleBy.popoverVisible) return true
+      return false
+    },
+    isFocusInDefectQueryOverlay(target) {
+      if (!target) return false
+      const typeDd = this.$refs.defectTypeDropdown
+      if (typeDd && typeDd.visible) {
+        const menu = typeDd.dropdownElm || typeDd.popperElm
+        if (menu && menu.contains(target)) return true
+      }
+      const stateSelect = this.$refs.defectQueryStateSelect
+      if (stateSelect && stateSelect.visible) {
+        const popper = stateSelect.$refs.popper && stateSelect.$refs.popper.$el
+        if (popper && popper.contains(target)) return true
+      }
+      const handleBy = this.$refs.defectQueryHandleBy
+      if (handleBy && handleBy.popoverVisible) {
+        const popovers = document.querySelectorAll('.select-project-member-popover')
+        for (let i = 0; i < popovers.length; i++) {
+          if (popovers[i].contains(target)) return true
+        }
+      }
+      return false
+    },
+    $_attachDefectQueryNavListeners() {
+      if (this.$_defectQueryNavListenersBound) return
+      this.$_defectQueryNavListenersBound = true
+      this.$_onDefectQueryNavKeydown = (e) => {
+        if (e.key === 'ArrowDown' && this.isDefectQueryNavItemFocused('defectType')) {
+          const typeDd = this.$refs.defectTypeDropdown
+          if (typeDd && typeDd.visible) {
+            if (!this.isFocusInDefectQueryOverlay(document.activeElement)) {
+              e.preventDefault()
+              e.stopPropagation()
+              this.focusDefectTypeDropdownMenuItem(0)
+            }
+            return
+          }
+          if (!this.defectQueryNavActive) {
+            this.ensureDefectQueryNavFromFocus(document.activeElement)
+          } else {
+            const typeIndex = this.getDefectQueryNavIndexByKey('defectType')
+            if (typeIndex >= 0) {
+              this.defectQueryNavIndex = typeIndex
+              this.syncDefectQueryNavFocusClass()
+            }
+          }
+          e.preventDefault()
+          e.stopPropagation()
+          this.openDefectTypeDropdown()
+          return
+        }
+        if (!this.defectQueryNavActive) return
+        const items = this.getDefectQueryNavItems()
+        const item = items[this.defectQueryNavIndex]
+        if (this.isDefectQueryNavDropdownOpen()) return
+        if (e.key === 'ArrowLeft') {
+          e.preventDefault()
+          e.stopPropagation()
+          this.moveDefectQueryNav(-1)
+          return
+        }
+        if (e.key === 'ArrowRight') {
+          e.preventDefault()
+          e.stopPropagation()
+          this.moveDefectQueryNav(1)
+          return
+        }
+        if (e.key === 'Escape') {
+          e.preventDefault()
+          e.stopPropagation()
+          this.exitDefectQueryKeyboardNav()
+        }
+      }
+      this.$_onDefectQueryNavFocusOut = (e) => {
+        if (!this.defectQueryNavActive || this.defectQueryNavSuppressBlur) return
+        const form = this.$refs.queryForm && this.$refs.queryForm.$el
+        if (form && e.relatedTarget && form.contains(e.relatedTarget)) return
+        if (this.isFocusInDefectQueryOverlay(e.relatedTarget)) return
+        setTimeout(() => {
+          if (!this.defectQueryNavActive || this.defectQueryNavSuppressBlur) return
+          if (this.isFocusInDefectQueryOverlay(document.activeElement)) return
+          if (!form || !form.contains(document.activeElement)) {
+            this.exitDefectQueryKeyboardNav()
+          }
+        }, 0)
+      }
+      document.addEventListener('keydown', this.$_onDefectQueryNavKeydown, true)
+      const form = this.$refs.queryForm && this.$refs.queryForm.$el
+      if (form) {
+        form.addEventListener('focusout', this.$_onDefectQueryNavFocusOut, true)
+      }
+    },
+    $_detachDefectQueryNavListeners() {
+      if (!this.$_defectQueryNavListenersBound) return
+      this.$_defectQueryNavListenersBound = false
+      document.removeEventListener('keydown', this.$_onDefectQueryNavKeydown, true)
+      const form = this.$refs.queryForm && this.$refs.queryForm.$el
+      if (form && this.$_onDefectQueryNavFocusOut) {
+        form.removeEventListener('focusout', this.$_onDefectQueryNavFocusOut, true)
+      }
+    },
+    $_bindDefectQueryNavFocusIn() {
+      if (this.$_defectQueryNavFocusInBound) return
+      const form = this.$refs.queryForm && this.$refs.queryForm.$el
+      if (!form) return
+      this.$_defectQueryNavFocusInBound = true
+      this.$_onDefectQueryNavFocusIn = (e) => {
+        this.ensureDefectQueryNavFromFocus(e.target)
+      }
+      form.addEventListener('focusin', this.$_onDefectQueryNavFocusIn, true)
+    },
+    $_unbindDefectQueryNavFocusIn() {
+      if (!this.$_defectQueryNavFocusInBound) return
+      this.$_defectQueryNavFocusInBound = false
+      const form = this.$refs.queryForm && this.$refs.queryForm.$el
+      if (form && this.$_onDefectQueryNavFocusIn) {
+        form.removeEventListener('focusin', this.$_onDefectQueryNavFocusIn, true)
+      }
+      this.$_onDefectQueryNavFocusIn = null
     },
     /** Cmd/Ctrl+J：聚焦当前 Tab，左右键切换；末项 Tab 再右切到添加按钮 */
     shortcutSwitchTab() {
@@ -752,6 +1350,7 @@ export default {
       })
     },
     enterDefectTabKeyboardNav() {
+      this.exitDefectQueryKeyboardNav()
       const items = this.getDefectTabNavItems()
       if (!items.length) return
       const cur = String(this.activeDefectTabName)
@@ -1460,6 +2059,12 @@ export default {
       box-sizing: border-box;
     }
   }
+  /* 键盘导航：聚焦环由全站 :focus / :focus-within 统一绘制，此处仅抬升层级避免被裁切 */
+  &.defect-query-keyboard-nav ::v-deep .defect-list-query-nav-item.defect-query-nav-focused {
+    position: relative;
+    z-index: 2;
+    overflow: visible !important;
+  }
   .select-header-icon {
     margin-left: 5px;
     font-size: 14px;
@@ -1625,8 +2230,7 @@ export default {
     position: relative;
     z-index: 4;
     outline: none;
-    border-color: var(--cat2bug-field-focus-color);
-    box-shadow: 0 0 0 var(--cat2bug-field-focus-ring-width, 2px) var(--cat2bug-field-focus-color);
+    box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color);
   }
   &.defect-tab-keyboard-nav ::v-deep .defect-tab-add-btn.defect-tab-nav-focused:focus,
   &.defect-tab-keyboard-nav ::v-deep .defect-tab-add-btn.defect-tab-nav-focused:focus-visible {
@@ -1929,6 +2533,15 @@ html:not(.dark) .cat2bug-page-kbd-hint-float {
 .defect-page .defect-list-hint-tabs .el-tabs__nav-scroll,
 .defect-page .defect-list-hint-tabs .el-tabs__nav {
   overflow: visible !important;
+}
+
+.defect-row-kbd-hint-float {
+  min-width: 13px;
+  height: 13px;
+  padding: 0 2px;
+  font-size: 9px !important;
+  font-weight: 700;
+  line-height: 1 !important;
 }
 
 </style>

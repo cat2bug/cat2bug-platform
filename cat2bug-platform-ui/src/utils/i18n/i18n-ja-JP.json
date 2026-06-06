@@ -1459,7 +1459,7 @@
   "keyboard.act.new-defect": "不具合を新規作成",
   "keyboard.act.export": "不具合をエクスポート",
   "keyboard.act.import": "不具合をインポート",
-  "keyboard.act.query": "照会",
+  "keyboard.act.query": "検索にフォーカス",
   "keyboard.act.switch-tab": "タブを切り替え",
   "keyboard.act.statistic": "統計テンプレート",
   "keyboard.act.stat-scroll-next": "統計を右へ",
