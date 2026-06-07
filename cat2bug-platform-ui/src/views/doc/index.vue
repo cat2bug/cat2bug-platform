@@ -757,6 +757,17 @@ export default {
           ]
         },
         {
+          label: '高级操作',
+          icon: 'el-icon-s-operation',
+          children: [
+            {
+              label: '键盘快捷键',
+              path: 'advanced/keyboard-shortcuts.md',
+              icon: 'el-icon-setting'
+            }
+          ]
+        },
+        {
           label: 'API 文档',
           icon: 'el-icon-connection',
           children: [

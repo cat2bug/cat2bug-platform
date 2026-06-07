@@ -119,6 +119,9 @@ Cat2Bug-Platform 专门针对测试工作的各个环节及不同角色，开发
 ### AI 指南
 - [MCP 接入](ai-guide/mcp.md) - 通过 npm 包 @cat2bug/mcp 将 Cursor 等 AI 客户端接入平台 Open API
 
+### 高级操作
+- [键盘快捷键](advanced/keyboard-shortcuts.md) - 引导键导航、页面动作与自定义键位
+
 ### API 文档
 - [API 介绍](api/api-intro.md) - API 接口说明
 - [交付物接口](api/api-deliverable.md) - 交付物相关接口
