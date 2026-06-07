@@ -147,6 +147,15 @@ export const NOTICE_ACTION_DEFAULTS = [
   { key: 'nextPage', defaultLetter: 'P', titleKey: 'keyboard.act.next-page' }
 ]
 
+/** 系统文档页（/system/doc）默认动作 */
+export const DOC_ACTION_DEFAULTS = [
+  { key: 'query', defaultLetter: 'S', titleKey: 'keyboard.act.query' },
+  { key: 'back', defaultLetter: 'B', titleKey: 'keyboard.act.doc-back' },
+  { key: 'treeNav', defaultLetter: 'L', titleKey: 'keyboard.act.doc-tree-nav' },
+  { key: 'outlineNav', defaultLetter: 'D', titleKey: 'keyboard.act.doc-outline-nav' },
+  { key: 'print', defaultLetter: 'P', titleKey: 'keyboard.act.doc-print' }
+]
+
 const LETTER_POOL = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
 const DIGIT_POOL = '123456789'.split('')
 

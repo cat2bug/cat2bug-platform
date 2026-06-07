@@ -47,3 +47,23 @@
 
 - **WHEN** 用户在缺陷页按住 Shift+Cmd
 - **THEN** 显示布局导航字母，不显示缺陷页 `L/E/S` 等工具栏字母
+
+### Requirement: 布局下拉键盘导航
+
+通过 Shift+Cmd/Ctrl 字母打开的团队选择（`el-select`）、用户菜单或国际化下拉（`el-dropdown`）后，系统 MUST 进入布局下拉键盘会话，支持：
+
+- `↑` / `↓`：高亮切换下拉项（循环）
+- `Enter`：确认当前高亮项
+- `Esc`：关闭下拉并结束会话
+
+keydown MUST 由 `layout-nav-hints` mixin 统一委托至 `layout-nav-dropdown-kbd.js`，不得重复注册 document 监听。
+
+#### Scenario: 团队下拉方向键切换
+
+- **WHEN** 用户通过 Shift+Cmd 打开团队选择下拉
+- **THEN** 可按 ↑/↓ 切换团队项，Enter 选中，Esc 关闭
+
+#### Scenario: 国际化下拉键盘选择
+
+- **WHEN** 用户通过 Shift+Cmd 打开国际化下拉
+- **THEN** 可按 ↑/↓ 切换语言项，Enter 切换语言

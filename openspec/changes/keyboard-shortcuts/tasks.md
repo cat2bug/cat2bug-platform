@@ -130,3 +130,19 @@
 - [x] 17.2 Navbar / LangSelect / Hamburger 增加 `data-layout-nav` 锚点
 - [x] 17.3 与 `g` 导航共用 `buildNavItems` 字母；侧栏折叠默认 `` ` ``
 - [x] 17.4 页面级 Cmd 浮层在 `shiftKey` 时互斥跳过
+- [x] 17.5 `layout-nav-dropdown-kbd.js`：团队/用户/国际化下拉 ↑↓ 切换、Enter 确认、Esc 关闭
+
+## 18. 登录页老鼠 D-pad 操控
+
+- [x] 18.1 `MouseDpadControls.vue` + `mouse-arrow-keys.js`：⌘/Ctrl 显示 D-pad、方向键解析与 macOS keyup 兜底
+- [x] 18.2 `MouseRunner` 键盘/触控/D-pad 共用 `pressMoveKey` / `releaseMoveKey`
+- [x] 18.3 松开方向键 D-pad 高亮消失；无移动键时播放坐立动画（⌘ 仍按住亦然）
+- [x] 18.4 手动控制左右屏幕边界（精灵半宽动态 clamp）；自动奔跑折返逻辑不变
+- [x] 18.5 `login.vue` / `register.vue` 挂载；i18n D-pad 文案
+
+## 19. 通知弹框键盘
+
+- [x] 19.1 `send-notice-dialog-kbd.js`：发送弹框 Cmd/Ctrl+Enter、Esc、字段徽标、打开后聚焦
+- [x] 19.2 `notice-option-dialog-kbd.js` + `notice-option-dialog-close.js`：设置弹框保存/关闭确认
+- [x] 19.3 通知设置主 Tab（G/P）、平台子 Tab（数字）、系统开关/背景音乐固定徽标
+- [x] 19.4 Tab 切换时刷新字段徽标映射

@@ -21,6 +21,11 @@
 - **布局级导航浮层（系统级）**
   - 按住 **Shift+Cmd/Ctrl**：在左侧菜单、顶部工具栏、侧栏折叠按钮显示字母徽标（与 `g` 导航共用字母表）
   - 与仅按 **Cmd/Ctrl** 的页面级/表单级浮层互斥
+  - 通过 Shift+Cmd 字母打开的团队选择 / 用户 / 国际化下拉：**↑/↓ 切换、Enter 确认、Esc 关闭**
+- **登录页老鼠键盘操控（装饰交互，非全局快捷键引擎）**
+  - 按住 **Cmd/Ctrl** 显示左下角 D-pad；**⌘/Ctrl + 方向键** 或 D-pad 触控移动老鼠
+  - 松开方向键（⌘ 仍按住）D-pad 高亮消失；老鼠播放坐立动画
+  - 手动控制限制在屏幕左右边界内；自动奔跑仍可进出屏幕折返
 - **缺陷页动作映射**
   - 双通道：`空格` 命令面板 或 按住 `Cmd/Ctrl`（无 Shift）直接显示浮层徽标
   - 默认字母：L 切换项目、E 新建菜单、S 查询、J 切换 Tab、I 统计模版、G 统计模块导航（有模块时）、O 切换视图、B/P 翻页
@@ -42,6 +47,9 @@
 - **统计模块配置弹框**（报时提醒、我的人生等）
   - 与缺陷工具弹框同套关闭确认 + `Cmd/Ctrl+Enter`/`Esc`/字段徽标
   - 报时提醒表格：`Cmd/Ctrl+数字` 跳行、`Cmd/Ctrl++` 新增行、`Del` 删行；时间控件失焦关面板、确定/回车后回焦、`↑/↓` 重开下拉
+- **通知相关弹框键盘集成**
+  - 发送通知弹框：`Cmd/Ctrl+Enter` 发送、`Esc` 关闭、字段字母徽标
+  - 通知设置弹框：主 Tab（G 类型 / P 平台）、平台子 Tab（数字）、系统通知开关/背景音乐；未保存关闭确认
 - **统计区 G 导航增强**
   - 进入模块导航后 `Enter`/空格触发模块主点击（筛选、打开配置弹框等），与鼠标点击等效
 - **「键盘设置」配置页**
@@ -62,7 +70,9 @@
 - `keyboard-tool-dialog-actions`：缺陷工具栏操作弹框（指派/修复等）键盘与未保存关闭确认
 - `keyboard-handle-defect-actions`：处理缺陷抽屉工具栏与风琴组快捷键徽标
 - `keyboard-statistic-dialog-actions`：统计模块配置弹框（报时提醒表格、时间控件等）
-- `keyboard-layout-nav-hints`：Shift+Cmd 布局级导航浮层（侧栏菜单、顶栏、折叠按钮）
+- `keyboard-layout-nav-hints`：Shift+Cmd 布局级导航浮层（侧栏菜单、顶栏、折叠按钮、下拉键盘导航）
+- `keyboard-login-mouse-control`：登录页 ⌘+方向键 D-pad 老鼠操控（独立于全局引擎）
+- `keyboard-notice-dialog-actions`：发送通知 / 通知设置弹框键盘集成
 
 ### Modified Capabilities
 
@@ -70,13 +80,14 @@
 
 ## Impact
 
-- **模块**：仅 `cat2bug-platform-ui`
-- **新增目录**：`src/plugins/shortcut/`、`src/components/Shortcut/`、`src/views/member/keyboard/`
-- **触点**：`main.js`（注册插件）、`layout/index.vue`（挂载引擎与面板）、`layout/components/Navbar.vue`（新增「键盘设置」入口）、`router/index.js`（新增设置页路由）、缺陷页（声明动作面板）、i18n 7 语言文案
+- **模块**：主要为 `cat2bug-platform-ui`；缺陷通知模板字段渲染涉及 `cat2bug-platform-system`（与键盘无直接耦合）
+- **新增目录**：`src/plugins/shortcut/`、`src/components/Shortcut/`、`src/views/member/keyboard/`、`src/views/login/components/mouse-arrow-keys.js`、`MouseDpadControls.vue`
+- **触点**：`main.js`（注册插件）、`layout/index.vue`（挂载引擎与面板）、`layout/components/Navbar.vue`（新增「键盘设置」入口）、`router/index.js`（新增设置页路由）、缺陷页（声明动作面板）、登录页 `login.vue`（老鼠 D-pad）、通知页弹框、i18n 7 语言文案
 - **依赖**：复用 `Sidebar` 的 `sidebarRouters`（菜单树）、`Navbar` 顶部项、现有 `$router`、`localStorage`（同 `themeMode` 模式）
 - **Non-Goals（首期）**
   - 后端持久化 / 跨设备同步（仅 localStorage）
   - 缺陷页以外的页面级动作面板（首期仅做缺陷页，引擎支持后续页面扩展）
+  - 登录页老鼠操控纳入全局快捷键设置页（独立装饰交互，不走 `registerPage`）
   - 序列键宏录制、多键组合（仅「引导键 + 单字母 / 单数字」两级）
   - 移动端 / 触屏适配
 

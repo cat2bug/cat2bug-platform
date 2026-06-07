@@ -1,10 +1,10 @@
 <template>
   <aside v-if="items.length >= 2" class="doc-page-outline">
     <div class="doc-page-outline__head">
-      <span class="doc-page-outline__title">{{ title }}</span>
+      <span class="doc-page-outline__title doc-hint-outline-title">{{ title }}</span>
       <el-button
         type="text"
-        class="doc-page-outline__print"
+        class="doc-page-outline__print doc-hint-print"
         icon="el-icon-printer"
         :title="printLabel"
         :aria-label="printLabel"
@@ -19,7 +19,10 @@
         class="doc-page-outline__link"
         :class="[
           `doc-page-outline__link--h${item.level}`,
-          { 'is-active': item.id === activeId }
+          {
+            'is-active': item.id === activeId,
+            'is-kbd-focus': item.id === kbdFocusId
+          }
         ]"
         @click.prevent="$emit('click', item.id)"
       >{{ item.text }}</a>
@@ -44,6 +47,10 @@ export default {
       default: () => []
     },
     activeId: {
+      type: String,
+      default: ''
+    },
+    kbdFocusId: {
       type: String,
       default: ''
     }
@@ -117,6 +124,12 @@ export default {
       color: #409eff;
       border-left-color: #409eff;
       font-weight: 700;
+    }
+
+    &.is-kbd-focus {
+      color: #409eff;
+      border-left-color: #409eff;
+      background: rgba(64, 158, 255, 0.08);
     }
 
     &--h3 {

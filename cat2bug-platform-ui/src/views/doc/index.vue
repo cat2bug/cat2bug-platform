@@ -1,7 +1,7 @@
 <template>
   <div class="doc-viewer-wrapper">
     <div class="doc-header project-add-page-header">
-      <el-page-header @back="handleBack">
+      <el-page-header class="doc-hint-back" @back="handleBack">
         <template slot="content">
           <span v-html="formattedTitle"></span>
         </template>
@@ -12,13 +12,14 @@
         <div class="search-box">
           <el-input
             v-model="searchText"
+            class="doc-hint-search"
             :placeholder="$t('search')"
             prefix-icon="el-icon-search"
             clearable
             @input="handleSearch"
           />
         </div>
-        <div class="doc-tree">
+        <div class="doc-tree doc-hint-tree">
           <el-tree
             ref="docTree"
             :data="filteredDocs"
@@ -51,10 +52,12 @@
           </el-backtop>
         </div>
         <doc-page-outline
+          class="doc-hint-outline"
           :title="$t('doc.on-this-page')"
           :print-label="$t('doc.print')"
           :items="outlineItems"
           :active-id="activeOutlineId"
+          :kbd-focus-id="docKbdRegion === 'outline' ? docKbdOutlineFocusId : ''"
           @click="scrollToOutlineHeading"
           @print="printCurrentDoc"
         />
@@ -77,9 +80,19 @@ import {
 } from '@/utils/doc-code-tabs'
 import 'highlight.js/styles/github-gist.css'
 import DocPageOutline from '@/components/Doc/DocPageOutline.vue'
+import pageActionHints from '@/mixins/page-action-hints'
+import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
+import {
+  clampDocIndex,
+  findDocLeafIndex,
+  flattenDocTreeLeaves
+} from '@/utils/doc-page-kbd'
+
+const DOC_KBD_SCOPE = 'system-doc'
 
 export default {
   name: 'DocViewer',
+  mixins: [pageActionHints],
   components: { DocPageOutline },
   data() {
     return {
@@ -98,6 +111,9 @@ export default {
       outlineItems: [],
       activeOutlineId: '',
       outlineScrollRaf: null,
+      docKbdRegion: '',
+      docKbdTreeIndex: -1,
+      docKbdOutlineIndex: -1,
       docs: [
         {
           label: '系统介绍',
@@ -812,8 +828,16 @@ export default {
       const lastPart = `<span style="color: #303133;">${parts[parts.length - 1]}</span>`
       return `${grayParts}<span style="color: #909399;"> / </span>${lastPart}`
     },
+    docKbdOutlineFocusId() {
+      const items = this.outlineItems || []
+      if (!items.length || this.docKbdOutlineIndex < 0) return ''
+      const item = items[this.docKbdOutlineIndex]
+      return item ? item.id : ''
+    }
   },
   beforeDestroy() {
+    this.exitDocKbdRegion()
+    if (this.$shortcut) this.$shortcut.unregisterPage(DOC_KBD_SCOPE)
     if (this.outlineScrollRaf) {
       cancelAnimationFrame(this.outlineScrollRaf)
       this.outlineScrollRaf = null
@@ -855,8 +879,189 @@ export default {
     this.loadDoc('README.md')
     this.initExpandedKeys()
     this.preloadAllDocs()
+    this.registerDocShortcuts()
+  },
+  activated() {
+    this.registerDocShortcuts()
+  },
+  deactivated() {
+    this.exitDocKbdRegion()
+    if (this.$shortcut) this.$shortcut.unregisterPage(DOC_KBD_SCOPE)
   },
   methods: {
+    registerDocShortcuts() {
+      if (!this.$shortcut) return
+      this.$shortcut.registerPage(DOC_KBD_SCOPE, [
+        { key: 'query', defaultLetter: 'S', run: () => this.shortcutFocusQuery() },
+        { key: 'back', defaultLetter: 'B', run: () => this.handleBack() },
+        { key: 'treeNav', defaultLetter: 'L', run: () => this.shortcutTreeNav() },
+        { key: 'outlineNav', defaultLetter: 'D', run: () => this.shortcutOutlineNav() },
+        { key: 'print', defaultLetter: 'P', run: () => this.printCurrentDoc() }
+      ])
+    },
+    getPageActionHintContainer() {
+      return this.$el
+    },
+    getPageActionHints() {
+      const L = (key, def) => shortcutStore.getLetter(`action.${DOC_KBD_SCOPE}.${key}`, def)
+      return [
+        {
+          key: 'query',
+          letter: L('query', 'S'),
+          badgeSelector: '.doc-hint-search .el-input__inner',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
+          run: () => this.shortcutFocusQuery()
+        },
+        {
+          key: 'back',
+          letter: L('back', 'B'),
+          badgeSelector: '.doc-hint-back .el-page-header__left',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
+          run: () => this.handleBack()
+        },
+        {
+          key: 'treeNav',
+          letter: L('treeNav', 'L'),
+          badgeSelector: '.doc-hint-tree',
+          floatOffset: { placement: 'center-left-inset', outset: 8, dx: 4 },
+          run: () => this.shortcutTreeNav()
+        },
+        {
+          key: 'outlineNav',
+          letter: L('outlineNav', 'D'),
+          badgeSelector: '.doc-hint-outline-title',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
+          run: () => this.shortcutOutlineNav(),
+          visible: () => this.outlineItems.length >= 2
+        },
+        {
+          key: 'print',
+          letter: L('print', 'P'),
+          badgeSelector: '.doc-hint-print',
+          floatOffset: { placement: 'center-right', outset: 4, dx: 2 },
+          run: () => this.printCurrentDoc(),
+          visible: () => this.outlineItems.length >= 2
+        }
+      ]
+    },
+    getPageActionHintScrollRoots() {
+      const tree = this.$el && this.$el.querySelector('.doc-tree')
+      const main = this.$refs.docScroll
+      return [tree, main].filter(Boolean)
+    },
+    shortcutFocusQuery() {
+      this.exitDocKbdRegion()
+      const input = this.$el && this.$el.querySelector('.doc-hint-search input')
+      if (input && typeof input.focus === 'function') {
+        input.focus()
+        if (typeof input.select === 'function') input.select()
+      }
+    },
+    shortcutTreeNav() {
+      const leaves = flattenDocTreeLeaves(this.filteredDocs)
+      if (!leaves.length) return
+      let idx = findDocLeafIndex(leaves, this.currentDoc)
+      if (idx < 0) idx = 0
+      this.docKbdTreeIndex = idx
+      this.enterDocKbdRegion('tree')
+    },
+    shortcutOutlineNav() {
+      if (this.outlineItems.length < 2) return
+      let idx = this.outlineItems.findIndex((item) => item.id === this.activeOutlineId)
+      if (idx < 0) idx = 0
+      this.docKbdOutlineIndex = idx
+      this.enterDocKbdRegion('outline')
+    },
+    enterDocKbdRegion(region) {
+      this.docKbdRegion = region
+      this.syncDocKbdRegionHighlight()
+      if (!this.$_docKbdKeydown) {
+        this.$_docKbdKeydown = (e) => this.onDocKbdKeydown(e)
+        document.addEventListener('keydown', this.$_docKbdKeydown, true)
+      }
+    },
+    exitDocKbdRegion() {
+      this.docKbdRegion = ''
+      this.docKbdTreeIndex = -1
+      this.docKbdOutlineIndex = -1
+      if (this.$_docKbdKeydown) {
+        document.removeEventListener('keydown', this.$_docKbdKeydown, true)
+        this.$_docKbdKeydown = null
+      }
+    },
+    onDocKbdKeydown(e) {
+      if (!this.docKbdRegion || e.isComposing) return
+      if (e.metaKey || e.ctrlKey || e.altKey) return
+      const key = e.key
+      if (key === 'Escape') {
+        e.preventDefault()
+        this.exitDocKbdRegion()
+        return
+      }
+      if (key === 'ArrowUp' || key === 'ArrowDown') {
+        e.preventDefault()
+        const delta = key === 'ArrowUp' ? -1 : 1
+        if (this.docKbdRegion === 'tree') {
+          const leaves = flattenDocTreeLeaves(this.filteredDocs)
+          this.docKbdTreeIndex = clampDocIndex(this.docKbdTreeIndex + delta, leaves.length)
+          this.syncDocKbdRegionHighlight()
+        } else if (this.docKbdRegion === 'outline') {
+          this.docKbdOutlineIndex = clampDocIndex(
+            this.docKbdOutlineIndex + delta,
+            this.outlineItems.length
+          )
+          this.syncDocKbdRegionHighlight()
+        }
+        return
+      }
+      if (key === 'Enter') {
+        e.preventDefault()
+        this.activateDocKbdRegion()
+      }
+    },
+    syncDocKbdRegionHighlight() {
+      if (this.docKbdRegion === 'tree') {
+        const leaves = flattenDocTreeLeaves(this.filteredDocs)
+        const entry = leaves[this.docKbdTreeIndex]
+        const tree = this.$refs.docTree
+        if (!entry || !tree) return
+        tree.setCurrentKey(entry.data.label)
+        this.$nextTick(() => {
+          const node = tree.getNode(entry.data.label)
+          if (node && node.data && node.data.path) {
+            this.expandNodeParents(node.data.path)
+          }
+          const currentEl = tree.$el && tree.$el.querySelector('.el-tree-node.is-current')
+          if (currentEl && typeof currentEl.scrollIntoView === 'function') {
+            currentEl.scrollIntoView({ block: 'nearest' })
+          }
+        })
+      } else if (this.docKbdRegion === 'outline') {
+        const item = this.outlineItems[this.docKbdOutlineIndex]
+        if (item) {
+          this.activeOutlineId = item.id
+        }
+      }
+    },
+    activateDocKbdRegion() {
+      if (this.docKbdRegion === 'tree') {
+        const leaves = flattenDocTreeLeaves(this.filteredDocs)
+        const entry = leaves[this.docKbdTreeIndex]
+        const tree = this.$refs.docTree
+        if (!entry || !tree) return
+        const node = tree.getNode(entry.data.label)
+        if (node) {
+          this.handleNodeClick(entry.data, node)
+        }
+        this.exitDocKbdRegion()
+      } else if (this.docKbdRegion === 'outline') {
+        const item = this.outlineItems[this.docKbdOutlineIndex]
+        if (item) {
+          this.scrollToOutlineHeading(item.id)
+        }
+        this.exitDocKbdRegion()
+      }
+    },
     highlightText(text) {
       if (!this.searchText) {
         return text
@@ -902,6 +1107,7 @@ export default {
       return result
     },
     handleBack() {
+      this.exitDocKbdRegion()
       // 如果有文档浏览历史，返回上一个文档
       if (this.docHistory.length > 0) {
         const previousDoc = this.docHistory.pop()
@@ -964,6 +1170,7 @@ export default {
       // 搜索功能已通过 computed 实现
     },
     handleNodeClick(data, node) {
+      this.exitDocKbdRegion()
       // 只有叶子节点（有 path 属性）才加载文档
       if (data.path) {
         // 将当前文档添加到历史记录

@@ -53,6 +53,8 @@ STAGE 1 引导键            STAGE 2 居中悬浮面板          STAGE 3 字母/
 
 **实现：** `mixins/layout-nav-hints.js` 挂于 `layout/index.vue`；Navbar / LangSelect / Hamburger 锚点带 `data-layout-nav`；侧栏通过 `el-menu-item[index]` 与路由 `to` 匹配。徽标复用 `page-kbd-hints.scss` 浮层样式；侧栏项徽标靠左（`center-left-inset`），顶栏靠右下角。
 
+**下拉键盘会话：** 通过 Shift+Cmd 字母打开团队 `el-select`、用户 / 国际化 `el-dropdown` 后，`layout-nav-dropdown-kbd.js` 进入会话；`↑/↓` 高亮切换项、`Enter` 确认、`Esc` 关闭并结束会话。keydown 由 `layout-nav-hints` mixin 统一委托，避免重复监听导致跳项两次。
+
 **互斥：** `page-action-hints`、`form-field-hints`、`handle-defect-kbd-hints` 在 `e.shiftKey` 时跳过；布局浮层在遮挡层（dialog/drawer 等）打开时不显示。
 
 ### 2. 引擎架构
@@ -217,6 +219,80 @@ H 缺陷表单/抽屉键盘集成（见 Decision 9）
 I 统计模版页快捷键（见 Decision 10）
 J 缺陷工具弹框 + 处理缺陷抽屉徽标（见 Decision 11–12）
 K 统计模块配置弹框 + 报时提醒表格（见 Decision 13–14）
+L 登录页老鼠 D-pad 操控（见 Decision 18）
+M 通知弹框键盘（见 Decision 19）
+```
+
+### 18. 登录页老鼠键盘操控（`MouseRunner` + `MouseDpadControls`）
+
+登录页装饰老鼠与全局快捷键引擎**解耦**：不走 `registerPage`、不出现在键盘设置页，仅在 `login.vue` / `register.vue` 挂载。
+
+**触发与 UI：**
+
+| 输入 | 行为 |
+|---|---|
+| 按住 **Cmd/Ctrl** | 左下角显示四向 D-pad；聚焦隐藏 `keyboardSink`（macOS ⌘+方向键 keyup 稳定送达） |
+| **⌘/Ctrl + 方向键** | 八向奔跑移动（与 WASD 在未聚焦表单时等效） |
+| D-pad 触控 | `pointerdown` 移动、`pointerup` 停止；与键盘共用 `pressMoveKey` / `releaseMoveKey` |
+| 松开方向键 | D-pad 按钮高亮消失；老鼠进入 **坐立动画**（⌘ 仍按住亦然） |
+| 松开 Cmd/Ctrl | 清除全部移动状态、隐藏 D-pad、结束 `navigator.keyboard.lock` |
+
+**边界与状态：**
+
+- **手动控制**（键盘 / 右键拖拽 / D-pad）：`clampManualPosition()` 按当前纵深与各朝向精灵最大半宽限制左右边界，整只老鼠不得露出屏幕
+- **自动奔跑**：仍从屏外 spawn、`exitScreenAndTurnBack` 折返，不受手动边界约束
+- 表单 `input/textarea` 内方向键无修饰键时透传；**⌘/Ctrl + 方向键**在表单内仍可操控老鼠
+
+**macOS keyup 丢失兜底（`mouse-arrow-keys.js`）：**
+
+- `createArrowKeyReleasePoller`：repeat 流中断 110ms、单次 keydown 空闲 450ms 推断松键
+- `$_onMetaSync` 在 `syncActiveHighlights` 前先处理方向键 keyup
+- `keyboardSink` 失焦时自动拉回焦点
+
+**相关文件：**
+
+```
+src/views/login/components/MouseRunner.vue
+src/views/login/components/MouseDpadControls.vue
+src/views/login/components/mouse-arrow-keys.js
+src/views/login.vue
+src/views/register.vue
+```
+
+### 19. 通知弹框键盘集成
+
+**发送通知（`views/notice/send/index.vue` + `send-notice-dialog-kbd.js`）**
+
+| 交互 | 行为 |
+|---|---|
+| `Cmd/Ctrl + Enter` | 发送（`handleSend`） |
+| `Esc` | 关闭弹框 |
+| 按住 `Cmd/Ctrl` | 表单字段字母徽标（视口分配） |
+| `@opened` | 下一帧聚焦首 Tab 停靠点 |
+
+**通知设置（`views/notice/option/index.vue` + `notice-option-dialog-kbd.js`）**
+
+复用 `dialog-form-shortcuts` + `notice-option-dialog-close`（未保存确认）+ `form-field-hints`。
+
+| 固定徽标 | 作用 |
+|---|---|
+| `G` | 主 Tab「通知类型」 |
+| `P` | 主 Tab「通知平台」 |
+| `1` / `2` / `3…` | 平台子 Tab（系统 / 邮件 / 外部平台） |
+| `D` | 系统通知总开关（仅 asystem 平台 Tab） |
+| `F` | 背景音乐开关（仅 asystem 且总开关开启） |
+
+Tab 切换时若仍按住 `Cmd/Ctrl`，下一帧刷新字段徽标映射。
+
+**相关文件：**
+
+```
+src/mixins/send-notice-dialog-kbd.js
+src/mixins/notice-option-dialog-kbd.js
+src/mixins/notice-option-dialog-close.js
+src/views/notice/send/index.vue
+src/views/notice/option/index.vue
+src/views/notice/option/platform/asystem.vue
 ```
 
 ### 10. 统计模版页快捷键（`StatisticTemplate.vue`）
@@ -450,6 +526,13 @@ src/mixins/statistic-dialog-close.js
 src/mixins/remind-timer-table-kbd.js         # 报时提醒表格行快捷键
 src/mixins/layout-nav-hints.js               # ⇧⌘ 布局级导航浮层
 src/utils/layout-nav-hints.js
+src/utils/layout-nav-dropdown-kbd.js         # 布局下拉 ↑↓ Enter Esc
+src/mixins/send-notice-dialog-kbd.js         # 发送通知弹框
+src/mixins/notice-option-dialog-kbd.js       # 通知设置弹框
+src/mixins/notice-option-dialog-close.js
+src/views/login/components/MouseRunner.vue   # 登录页老鼠
+src/views/login/components/MouseDpadControls.vue
+src/views/login/components/mouse-arrow-keys.js
 src/utils/defect-drawer-shortcuts.js         # 抽屉 Cmd+Enter / Esc 单例监听
 src/utils/defect-tool-dialog-close-state.js
 src/utils/statistic-dialog-close-state.js
@@ -497,6 +580,8 @@ e2e/remind-timer-time-picker-blur.spec.cjs   # 报时时间控件失焦/回焦
 | Element 时间面板挂 body 导致失焦/回焦异常 | 组件内包装 `handleFocus`/`blur`/`handleKeydown` + `pick` 监听；`dropdown-blur-close` 遍历 `pickerVisible` |
 | 多层 dialog/drawer 快捷键串台 | `isTopDrawerVm`、单例栈、`hasBlockingUiLayer` 排除当前弹框类型 |
 | 报时表格 `Del` 与输入框删字冲突 | `shouldRemindTimerDeleteRow` 在可编辑名称/数字框内不删行 |
+| macOS ⌘+方向键丢失 keyup | `keyboardSink` 焦点 + release poller + metaSync 优先处理 arrow keyup |
+| 登录页老鼠手动控制越界 | 按精灵半宽动态 `minMouseX`/`maxMouseX`，每帧 refresh |
 
 ## Open Questions
 
