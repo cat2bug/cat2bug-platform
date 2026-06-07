@@ -168,6 +168,16 @@ export function getDefectTableScrollBody(tableRoot) {
   return wraps.find((w) => !w.closest('.el-table__fixed, .el-table__fixed-right')) || wraps[0]
 }
 
+/** 通知列表：首列勾选框右下角 */
+export function resolveNoticeTableCheckboxAnchor(tr) {
+  if (!tr) return null
+  return (
+    tr.querySelector('td.el-table-column--selection .el-checkbox') ||
+    tr.querySelector('td.el-table-column--selection .cell') ||
+    tr.querySelector('td.el-table-column--selection')
+  )
+}
+
 /** 表格行快捷键徽标锚点：编号列 > 左侧展开列 > 首个可见单元格 */
 export function resolveDefectTableRowHintAnchor(tr) {
   if (!tr) return null
@@ -178,4 +188,89 @@ export function resolveDefectTableRowHintAnchor(tr) {
     tr.querySelector('td .cell') ||
     tr
   )
+}
+
+/** 主表首列宽度（px），用于横向滚动时固定行徽标水平位置 */
+export function getDefectTableFirstColumnWidth(tableRoot) {
+  if (!tableRoot || !tableRoot.querySelector) return 90
+  const fixedHeader = tableRoot.querySelector('.el-table__fixed .el-table__fixed-header-wrapper thead tr')
+  if (fixedHeader) {
+    const th = fixedHeader.querySelector('th:first-child')
+    if (th) {
+      const w = th.getBoundingClientRect().width
+      if (w > 0) return w
+    }
+  }
+  const mainHeader =
+    tableRoot.querySelector('.el-table__header-wrapper:not(.el-table__fixed-header-wrapper) thead tr') ||
+    tableRoot.querySelector('.el-table__header-wrapper thead tr')
+  if (mainHeader) {
+    const th = mainHeader.querySelector('th:first-child')
+    if (th) {
+      const w = th.getBoundingClientRect().width
+      if (w > 0) return w
+    }
+  }
+  return 90
+}
+
+/**
+ * 行徽标定位矩形：纵坐标跟行，横坐标钉在首列（左侧 fixed 列或表体左缘），不随水平滚动漂移。
+ */
+export function resolveDefectTableRowHintPositionRect(tr, tableRoot) {
+  if (!tr || typeof tr.getBoundingClientRect !== 'function') return null
+  const rowRect = tr.getBoundingClientRect()
+  if (rowRect.height <= 0) return null
+
+  const tbody = tr.parentElement
+  const rowIndex = tbody ? Array.from(tbody.children).indexOf(tr) : -1
+
+  if (tableRoot && rowIndex >= 0) {
+    const fixedBody = tableRoot.querySelector('.el-table__fixed .el-table__fixed-body-wrapper tbody')
+    if (fixedBody) {
+      const fixedTr = fixedBody.children[rowIndex]
+      const firstTd = fixedTr && fixedTr.querySelector('td:first-child')
+      if (firstTd) {
+        const colRect = firstTd.getBoundingClientRect()
+        if (colRect.width > 0) {
+          return {
+            top: rowRect.top,
+            bottom: rowRect.bottom,
+            left: colRect.left,
+            right: colRect.right,
+            width: colRect.width,
+            height: rowRect.height
+          }
+        }
+      }
+    }
+  }
+
+  const bodyWrap = tableRoot ? getDefectTableScrollBody(tableRoot) : tr.closest('.el-table__body-wrapper')
+  if (bodyWrap) {
+    const wrapRect = bodyWrap.getBoundingClientRect()
+    const colWidth = getDefectTableFirstColumnWidth(tableRoot)
+    return {
+      top: rowRect.top,
+      bottom: rowRect.bottom,
+      left: wrapRect.left,
+      right: wrapRect.left + colWidth,
+      width: colWidth,
+      height: rowRect.height
+    }
+  }
+
+  const firstTd = tr.querySelector('td:first-child')
+  if (firstTd) {
+    const colRect = firstTd.getBoundingClientRect()
+    return {
+      top: rowRect.top,
+      bottom: rowRect.bottom,
+      left: colRect.left,
+      right: colRect.right,
+      width: colRect.width,
+      height: rowRect.height
+    }
+  }
+  return rowRect
 }

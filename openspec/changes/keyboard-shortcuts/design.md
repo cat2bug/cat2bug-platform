@@ -25,12 +25,16 @@
 
 ## Decisions
 
-### 1. 键盘模型：引导键 + 字母序列（而非修饰键组合）
+### 1. 键盘模型：引导键序列 + 双档修饰键浮层
 
 ```
 STAGE 1 引导键            STAGE 2 居中悬浮面板          STAGE 3 字母/数字
   g     ──────────────▶  导航面板(左菜单+顶部项)  ──▶  叶子项→跳转 / 下拉项→子面板
   空格  ──────────────▶  当前页动作面板            ──▶  执行动作 / 数字跳转
+
+修饰键浮层（无面板，控件角标）：
+  ⇧⌘ / Shift+Ctrl  ──▶  布局级：左侧菜单 + 顶栏 + 折叠按钮（与 g 同字母表）
+  ⌘ / Ctrl（无 Shift）──▶  页面级：缺陷工具栏 / 统计区 / 表单字段等（各页自建映射）
 ```
 
 - 引导键后进入"待接收"状态（默认超时 2000ms 自动取消），期间面板可见。
@@ -38,7 +42,18 @@ STAGE 1 引导键            STAGE 2 居中悬浮面板          STAGE 3 字母/
 - `Esc` 或点击遮罩或超时关闭面板；按未绑定键无操作并轻提示。
 - 子面板（下拉二级）为面板内栈式切换，`Esc` 返回上一级。
 
-> 取舍：放弃用户最初设想的 `Shift+Cmd+X`。原因：`Cmd+W/T/N/Q/R/V`、`Ctrl+W/T/N/P` 等在浏览器中无法 `preventDefault`，Mac 上会直接关标签/退出/粘贴。序列键是 GitHub/Linear/VIM 的成熟方案，体验等价且零冲突。
+> 取舍：放弃「单独 `Cmd+字母` 做全局导航」。原因：`Cmd+W/T/N/Q/R/V` 等浏览器保留组合无法拦截。全局导航改用 `g` 序列键；**布局级角标**则用 `Shift+Cmd+字母`——Shift 档位与页面级 `Cmd` 浮层分离，且 Shift 组合较少与浏览器冲突。
+
+### 1.1 布局级浮层（`layout-nav-hints`）
+
+| 修饰键 | 范围 | 字母来源 |
+|---|---|---|
+| **Shift+Cmd/Ctrl** | 左侧菜单项、Navbar 图标、汉堡折叠按钮 | `buildNavItems()` + `nav.layout.sidebarToggle`（默认 `` ` ``） |
+| Cmd/Ctrl alone | 当前页工具栏、表单、抽屉等 | 各页 `page-action-hints` / `form-field-hints` |
+
+**实现：** `mixins/layout-nav-hints.js` 挂于 `layout/index.vue`；Navbar / LangSelect / Hamburger 锚点带 `data-layout-nav`；侧栏通过 `el-menu-item[index]` 与路由 `to` 匹配。徽标复用 `page-kbd-hints.scss` 浮层样式；侧栏项徽标靠左（`center-left-inset`），顶栏靠右下角。
+
+**互斥：** `page-action-hints`、`form-field-hints`、`handle-defect-kbd-hints` 在 `e.shiftKey` 时跳过；布局浮层在遮挡层（dialog/drawer 等）打开时不显示。
 
 ### 2. 引擎架构
 
@@ -145,7 +160,7 @@ src/views/member/keyboard/
 | S | 查询 | 聚焦查询区并进入查询键盘导航 |
 | J | 切换 Tab | 聚焦页签条；`←/→` 切换 Tab，末项 `→` 到添加按钮 |
 | I | 统计模版 | 跳转统计模版配置页 |
-| G | 统计模块导航 | **仅统计区存在模块时**注册并显示徽标；`←/→` 选择模块，`Delete` 移除 |
+| G | 统计模块导航 | **仅统计区存在模块时**注册并显示徽标；`←/→` 选择模块，`Enter`/空格触发主点击，`Delete` 移除 |
 | O | 切换视图 | 表格 / Excel 等视图切换 |
 | B | 上一页 | 分页上一页 |
 | P | 下一页 | 分页下一页 |
@@ -200,6 +215,8 @@ F 键盘设置页 + localStorage + 冲突检测 + 恢复默认
 G i18n 7 语言 + 「个人中心」入口 + 路由
 H 缺陷表单/抽屉键盘集成（见 Decision 9）
 I 统计模版页快捷键（见 Decision 10）
+J 缺陷工具弹框 + 处理缺陷抽屉徽标（见 Decision 11–12）
+K 统计模块配置弹框 + 报时提醒表格（见 Decision 13–14）
 ```
 
 ### 10. 统计模版页快捷键（`StatisticTemplate.vue`）
@@ -242,6 +259,89 @@ I 统计模版页快捷键（见 Decision 10）
 
 **键盘设置**：独立分组「统计模版页」，绑定 ID 前缀 `action.statistic-template.*`。
 
+### 11. 缺陷工具弹框键盘集成（`DefectTools/*Dialog.vue`）
+
+缺陷列表工具栏打开的**小型操作弹框**（指派、修复、驳回、通过、打开、关闭）与新建/编辑抽屉共享同一键盘模型，但作用域为 `el-dialog` 而非 `el-drawer`。
+
+**设计思路：** 抽取三层 mixin，避免六个弹框重复实现：
+
+```
+defect-tool-dialog-kbd.js
+  ├─ dialog-form-shortcuts.js    # Cmd/Ctrl+Enter / Esc
+  ├─ defect-tool-dialog-close.js # 未保存关闭确认（序列化 form 快照对比）
+  └─ form-field-hints.js         # Cmd/Ctrl 字段字母徽标
+```
+
+| 交互 | 行为 |
+|---|---|
+| 弹框 `@opened` | 记录 `toolDialogCloseBaseline`，`requestAnimationFrame` 后聚焦第一个 Tab 停靠点 |
+| `Cmd/Ctrl + Enter` | `shortcutSave` → `onSubmit` |
+| `Esc` / 取消 / `before-close` | `requestCloseToolDialog`；脏数据时 `$modal.confirm` |
+| 按住 `Cmd/Ctrl` | 表单字段字母徽标（视口分配，与抽屉规则一致） |
+
+**关闭确认：** `defect-tool-dialog-close-state.js` 对 `form` 做稳定序列化（排序、去噪），仅比较用户可编辑字段；与统计弹框的 `statistic-dialog-close-state.js` 对称。
+
+**遮挡层：** `hasBlockingUiLayer` 对 `excludeDefectToolDialog: true` 放行，使报时提醒等统计弹框打开时，缺陷页一级动作仍被正确抑制，但工具弹框内部键盘不受影响。
+
+### 12. 处理缺陷抽屉快捷键徽标（`HandleDefect.vue`）
+
+处理缺陷是**只读详情 + 右上角工具按钮 + 风琴自定义属性**，与新建/编辑抽屉的「表单字段字母」场景不同，单独 mixin `handle-defect-kbd-hints.js`。
+
+**双区徽标：**
+
+| 区域 | 分配策略 | 触发 |
+|---|---|---|
+| 右上角工具按钮 | 固定首选字母（G 指派、F 修复、J 驳回、P 通过、O 打开、B 关闭、E 编辑、D 删除、U 恢复） | `Cmd/Ctrl+字母` 等效点击按钮 |
+| 风琴组标题 | 视口内可见组：`1`–`9`、`0` 优先，用尽后字母池 | `Cmd/Ctrl+数字/字母` 展开对应风箱 |
+
+**共用基础设施：** `panel-kbd-hints.js` 提供视口矩形检测、`assignDigitThenLetterKeys`、`assignToolbarHintKeys`、`resolveDrawerScrollContainer`；与统计模版页、报时提醒表格复用同一套「数字优先 + 字母兜底」分配器。
+
+**其它：**
+
+- 仅当 `HandleDefect` 为栈顶抽屉（`isTopDrawerVm`）时激活，避免多层抽屉错乱
+- `Cmd/Ctrl+↑/↓` 滚动 `.defect-edit-body`（约 40% 视口高度），滚动后 `requestAnimationFrame` 刷新徽标
+- 松开修饰键或窗口 `blur`（非原生文件选择会话）立即清除徽标
+
+### 13. 统计模块配置弹框（`PersonalRemindTimer`、`MyLife` 等）
+
+统计卡片点击打开的**配置型 `el-dialog`** 走 `statistic-dialog-kbd.js`（结构与缺陷工具弹框对称）：
+
+```
+statistic-dialog-kbd.js
+  ├─ dialog-form-shortcuts.js
+  ├─ statistic-dialog-close.js   # 未保存确认（组件自定义 getStatisticDialogCloseSnapshot）
+  └─ form-field-hints.js
+```
+
+| 弹框 | 特殊键盘逻辑 |
+|---|---|
+| 通用 | `Cmd/Ctrl+Enter` 保存、`Esc` 关闭确认、打开后聚焦首控件 |
+| 报时提醒 | 额外混入 `remind-timer-table-kbd.js`（表格行级快捷键，见 Decision 14） |
+
+**关闭快照：** 各组件实现 `getStatisticDialogCloseSnapshot` / `serializeStatisticDialogCloseSnapshot`（如报时提醒序列化 `timers` 数组），与工具弹框 form 序列化解耦。
+
+### 14. 报时提醒表格与时间控件键盘
+
+报时提醒弹框内是**行式表格编辑**，字段徽标不足以覆盖「跳行 / 增删行」，因此在 `form-field-hints` 之上叠加 `remind-timer-table-kbd.js`，并重写 `$_buildFieldHints`：
+
+| 按键 | 行为 |
+|---|---|
+| `Cmd/Ctrl + 1`–`9` | 聚焦对应行第一个 `[data-remind-stop]` 控件（开关列） |
+| `Cmd/Ctrl + +` / `=` | 新增一行 |
+| `Del` / `Backspace` | 删除当前行（名称等可编辑 `input` 内保留删字） |
+
+**时间选择器（Element UI 特例）：** 时间面板 Popper 挂 `body`，与输入框焦点生命周期脱节，需组件内包装：
+
+1. **失焦关面板：** `onRemindTimePickerBlur` + `dropdown-blur-close.js` / `$_closeRemindTimerPickerPanels` 遍历 `.el-date-editor` 查 `pickerVisible`
+2. **确定后回焦：** 监听 `picker.$on('pick', …)`，仅 `visible === false`（点确定）时调度回焦；Spinner 滚动时 `visible === true` 不触发
+3. **回车回焦：** 包装 `handleKeydown`，Enter 关闭面板后同样回焦（Element 默认会 `blur()` 输入框）
+4. **静默回焦：** `_remindSilentFocus` / `_remindSuppressBlur` 包装 `handleFocus`/`blur`，避免程序化 `focus()` 再次打开面板或被 `blur()` 抢走焦点
+5. **↑/↓ 重开下拉：** 面板关闭时 `ArrowUp`/`ArrowDown` 先 `handleFocus` 打开面板，再转发给 `picker.handleKeydown`
+
+**文本/图标按钮焦点环：** `.remind-sound-preview`、`.remind-delete-btn`、`.remind-add-btn` 在 `:focus` 时使用 `--cat2bug-field-focus-color` 外描边，弥补 `el-button--text` 默认焦点不明显。
+
+**行内 Tab：** 不使用 `←/→` 在行内控件间切换（已移除），用户通过 Tab / 字段徽标 / 数字跳行定位。
+
 ### 9. 缺陷表单与组合组件键盘集成
 
 在缺陷新建/编辑抽屉（`AddDefect` 等）内，全局引导键 `g`/空格在输入态会被守卫；表单另有一套**直接组合键**与 **Tab 顺序** 规则，与命令面板互补。
@@ -276,7 +376,7 @@ I 统计模版页快捷键（见 Decision 10）
 | 按住 `Cmd/Ctrl` | 当前**可视区域内**各可输入字段标签浮现字母/数字徽标；保存按钮浮现 `↵`（关闭按钮无徽标） |
 | 按住 `Cmd/Ctrl`（缺陷列表一级界面） | 工具栏/分页等控件浮现动作字母（L/E/S/J/I/G/O/B/P），与 Space 动作面板映射一致；有抽屉/浮层时不显示 |
 | 按住 `Cmd/Ctrl`（统计模版页） | 预览/个人/团队三区右下角浮现 P/G/H 徽标 |
-| 保持 `Cmd/Ctrl` + 字母/数字 | 焦点跳到对应字段，控件本体金色闪动高亮；**可连续跳转**（跳转时仅隐藏徽标，保留映射） |
+| 保持 `Cmd/Ctrl` + 字母/数字 | 焦点跳到对应字段，依赖全站统一 `:focus` / `:focus-within` 焦点环（`cat2bug.scss`）；**可连续跳转**（跳转时仅隐藏徽标，保留映射） |
 | 保持 `Cmd/Ctrl` + `↑` / `↓` | 滚动表单属性区（约 40% 视口高度），徽标随滚动刷新 |
 | 松开修饰键 | 徽标与映射全部清除 |
 
@@ -342,12 +442,27 @@ src/utils/upload-focus-tab.js
 src/mixins/dialog-form-shortcuts.js
 src/mixins/form-field-hints.js
 src/mixins/page-action-hints.js              # Cmd/Ctrl 页面动作浮层徽标
+src/mixins/defect-tool-dialog-kbd.js         # 缺陷工具弹框键盘
+src/mixins/defect-tool-dialog-close.js
+src/mixins/handle-defect-kbd-hints.js      # 处理缺陷抽屉徽标
+src/mixins/statistic-dialog-kbd.js           # 统计配置弹框键盘
+src/mixins/statistic-dialog-close.js
+src/mixins/remind-timer-table-kbd.js         # 报时提醒表格行快捷键
+src/mixins/layout-nav-hints.js               # ⇧⌘ 布局级导航浮层
+src/utils/layout-nav-hints.js
 src/utils/defect-drawer-shortcuts.js         # 抽屉 Cmd+Enter / Esc 单例监听
+src/utils/defect-tool-dialog-close-state.js
+src/utils/statistic-dialog-close-state.js
 src/utils/defect-row-kbd-hints.js            # 缺陷列表行动态徽标分配
+src/utils/statistic-item-kbd.js              # 统计模块 Enter/空格主点击映射
 src/utils/statistic-grid-kbd.js              # 统计模版网格与跨区 x 对齐
+src/utils/panel-kbd-hints.js                 # 面板/抽屉视口徽标分配
+src/utils/remind-timer-table-kbd.js
+src/utils/dropdown-blur-close.js             # 失焦关下拉（含时间面板）
 src/utils/native-file-picker.js
 src/utils/combo-focus-tab.js
 src/assets/styles/page-kbd-hints.scss        # 页面级浮层徽标全局样式
+src/assets/styles/cat2bug.scss               # 全站焦点环、MessageBox 底部间距
 src/components/Project/SelectProjectMember/index.vue
 src/components/Project/ProjectLabel/index.vue
 src/components/Module/SelectModule/index.vue
@@ -355,12 +470,16 @@ src/components/FileUpload/index.vue
 src/components/ImageUpload/index.vue
 src/components/Defect/AddDefect.vue
 src/components/Defect/EditDefectDialog.vue
+src/components/Defect/HandleDefect.vue
+src/components/Defect/DefectTools/*Dialog.vue
+src/components/Cat2BugStatistic/Statistic/PersonalRemindTimer.vue
 src/views/system/defect/index.vue            # 缺陷页动作 + 统计区 G 导航
 src/views/system/defect/StatisticTemplate.vue
 e2e/form-tab-order.spec.cjs
 e2e/select-project-member-tags.spec.cjs
 e2e/debug-drawer-cmd-esc.spec.cjs            # 抽屉 Esc 关闭
 e2e/debug-image-filepicker-arrows.spec.cjs
+e2e/remind-timer-time-picker-blur.spec.cjs   # 报时时间控件失焦/回焦
 ```
 
 ## Risks / Mitigations
@@ -375,6 +494,9 @@ e2e/debug-image-filepicker-arrows.spec.cjs
 | 与已加载的 `v-hotkey` 局部绑定冲突 | 引擎只监听 document 顶层；局部 `v-hotkey` 仍各自生效，文档约定新功能统一走引擎 |
 | 表单字段多导致快捷键不够用 | 仅对当前视口内字段分配键位，滚动后刷新；数字键 `1`–`0` 作兜底 |
 | 字段快捷键误拦复制粘贴 | `A/C/V/X/Z` 永不进入分配池；按键处理双重跳过，保留系统编辑组合 |
+| Element 时间面板挂 body 导致失焦/回焦异常 | 组件内包装 `handleFocus`/`blur`/`handleKeydown` + `pick` 监听；`dropdown-blur-close` 遍历 `pickerVisible` |
+| 多层 dialog/drawer 快捷键串台 | `isTopDrawerVm`、单例栈、`hasBlockingUiLayer` 排除当前弹框类型 |
+| 报时表格 `Del` 与输入框删字冲突 | `shouldRemindTimerDeleteRow` 在可编辑名称/数字框内不删行 |
 
 ## Open Questions
 

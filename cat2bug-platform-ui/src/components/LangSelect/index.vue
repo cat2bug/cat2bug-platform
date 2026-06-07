@@ -1,5 +1,5 @@
 <template>
-  <el-dropdown class="lang avatar-container right-menu-item hover-effect" @command="handleLanguageCommand">
+  <el-dropdown class="lang avatar-container right-menu-item hover-effect layout-nav-hint-anchor" data-layout-nav="lang" @command="handleLanguageCommand">
         <span class="dropdown-title">
           <svg-icon :icon-class="langIcon" />{{ langName }}
           <i class="el-icon-caret-bottom"></i>

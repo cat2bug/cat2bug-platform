@@ -46,6 +46,7 @@
           ref="treeModuleRef"
           :project-id="projectId"
           :show-sidebar-toggle="true"
+          sidebar-toggle-hint-class="defect-list-hint-module-tree"
           :toolbar-sync-height="defectTreeToolbarHeight"
           @toggle-sidebar="toggleModuleTreeVisible"
           @node-click="moduleTreeClickHandle"
@@ -91,7 +92,7 @@
                     @click.stop="toggleModuleTreeVisible"
                     @keyup.enter.stop.prevent="toggleModuleTreeVisible"
                   >
-                    <svg-icon icon-class="menu" class-name="defect-sidebar-expand-svg" />
+                    <svg-icon icon-class="menu" class-name="defect-sidebar-expand-svg defect-list-hint-module-tree" />
                   </span>
                 </el-tooltip>
               </template>

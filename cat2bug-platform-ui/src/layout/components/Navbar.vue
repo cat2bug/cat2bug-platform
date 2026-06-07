@@ -1,6 +1,12 @@
 <template>
   <div class="navbar">
-    <hamburger id="hamburger-container" :is-active="sidebar.opened" class="hamburger-container" @toggleClick="toggleSideBar" />
+    <hamburger
+      id="hamburger-container"
+      data-layout-nav="sidebarToggle"
+      class="hamburger-container layout-nav-hint-anchor"
+      :is-active="sidebar.opened"
+      @toggleClick="toggleSideBar"
+    />
 
     <breadcrumb v-if="!topNav" id="breadcrumb-container" class="breadcrumb-container" />
     <top-nav v-if="topNav" id="topmenu-container" class="topmenu-container" />
@@ -8,27 +14,27 @@
     <div class="right-menu">
       <template v-if="device!=='mobile'">
         <el-tooltip :content="themeMode === 'dark' ? $t('theme.switch-light') : $t('theme.switch-dark')" effect="dark" placement="bottom">
-          <div class="right-menu-item hover-effect" @click="toggleThemeMode">
+          <div class="right-menu-item hover-effect layout-nav-hint-anchor" data-layout-nav="theme" @click="toggleThemeMode">
             <svg-icon :icon-class="themeMode === 'dark' ? 'sun' : 'moon'" />
           </div>
         </el-tooltip>
         <el-tooltip :content="$t('website')" effect="dark" placement="bottom">
-          <cat2-bug-site class="right-menu-item hover-effect" />
+          <cat2-bug-site class="right-menu-item hover-effect layout-nav-hint-anchor" data-layout-nav="site" />
         </el-tooltip>
         <el-tooltip :content="$t('source-code-address')" effect="dark" placement="bottom">
-          <cat2-bug-git id="cat2bug-git" class="right-menu-item hover-effect" />
+          <cat2-bug-git id="cat2bug-git" class="right-menu-item hover-effect layout-nav-hint-anchor" data-layout-nav="git" />
         </el-tooltip>
         <el-tooltip :content="$t('notice')" effect="dark" placement="bottom">
-          <router-link to="/notice/index" class="right-menu-item hover-effect">
+          <router-link to="/notice/index" class="right-menu-item hover-effect layout-nav-hint-anchor" data-layout-nav="notice">
             <el-badge :hidden="noticeCount==0" is-dot class="item"><svg-icon icon-class="notice" /></el-badge>
           </router-link>
         </el-tooltip>
         <el-tooltip :content="$t('system-doc')" effect="dark" placement="bottom">
-          <cat2-bug-doc class="right-menu-item hover-effect" />
+          <cat2-bug-doc class="right-menu-item hover-effect layout-nav-hint-anchor" data-layout-nav="help" />
         </el-tooltip>
       </template>
       <lang-select />
-      <el-dropdown class="avatar-container right-menu-item hover-effect" trigger="click">
+      <el-dropdown class="avatar-container right-menu-item hover-effect layout-nav-hint-anchor" data-layout-nav="user" trigger="click">
         <span class="dropdown-title">
           <cat2-bug-avatar :member="member" />
           <i class="el-icon-caret-bottom" />

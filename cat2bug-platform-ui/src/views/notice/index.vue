@@ -1,13 +1,13 @@
 <template>
-  <div class="app-container">
+  <div class="app-container notice-page" ref="noticeMain">
     <el-row class="project-add-page-header">
       <el-page-header @back="goBack" :content="$t('notice')">
       </el-page-header>
     </el-row>
     <div class="tabs-tools-row">
-      <el-tabs v-model="activeTabName" @tab-click="handleQuery">
+      <el-tabs v-model="activeTabName" class="notice-hint-tabs" @tab-click="handleQuery">
         <el-tab-pane v-for="(group,index) in groupList" :key="index" :name="group.groupName">
-          <span slot="label" class="row">
+          <span slot="label" class="row notice-tab-label">
             <span>{{ tabName(group.groupName) }}</span>
             <span v-if="group.notReadCount>0" class="number">{{ group.notReadCount }}</span>
           </span>
@@ -15,12 +15,12 @@
       </el-tabs>
       <div class="right-tools">
 <!--        <svg-icon class="tools-button" icon-class="add-tab" @click.native="addNoticeTabHandle" />-->
-        <svg-icon class="tools-button" icon-class="config" @click="setNoticeOptionHandle" />
+        <svg-icon class="tools-button notice-hint-config" icon-class="config" @click="setNoticeOptionHandle" />
       </div>
     </div>
     <div class="notice-tools">
       <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
-        <el-form-item label="" prop="noticeTitle">
+        <el-form-item label="" prop="noticeTitle" class="notice-hint-query">
           <el-input
             prefix-icon="el-icon-document"
             v-model="queryParams.noticeTitle"
@@ -45,6 +45,7 @@
         </el-col>
         <el-col :span="1.5">
           <el-button
+            class="notice-hint-send"
             type="primary"
             plain
             icon="el-icon-s-promotion"
@@ -55,7 +56,14 @@
         </el-col>
       </el-row>
     </div>
-    <el-table v-loading="loading" :data="noticeList" @row-click="handleNotice" @selection-change="handleSelectionChange">
+    <el-table
+      ref="noticeTable"
+      class="notice-list-table"
+      v-loading="loading"
+      :data="noticeList"
+      @row-click="handleNotice"
+      @selection-change="handleSelectionChange"
+    >
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column :label="$t('create-time')" align="left" prop="createTime" width="170">
         <template slot-scope="scope">
@@ -96,6 +104,7 @@
 
     <pagination
       v-show="total>0"
+      class="notice-table-pagination"
       :total="total"
       :page.sync="queryParams.pageNum"
       :limit.sync="queryParams.pageSize"
@@ -112,9 +121,22 @@ import {delNotice, groupStatisticsNotice, listNotice} from "@/api/system/notice"
 import OptionNotice from "./option/index"
 import SendNoticeDialog from "./send/index"
 import ViewNotice from "@/components/Notice/ViewNotice";
+import pageActionHints from '@/mixins/page-action-hints'
+import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
+import { checkPermi } from '@/utils/permission'
+import {
+  assignRowHintLetters,
+  collectHintLettersFromToolbar,
+  getDefectTableScrollBody,
+  isRowIntersectingContainer,
+  resolveNoticeTableCheckboxAnchor
+} from '@/utils/defect-row-kbd-hints'
+
+const NOTICE_KBD_SCOPE = 'notice'
 
 export default {
   name: "Notice",
+  mixins: [pageActionHints],
   components: { ViewNotice, OptionNotice, SendNoticeDialog },
   dicts: ['sys_notice_status', 'sys_notice_type'],
   data () {
@@ -165,15 +187,162 @@ export default {
     this.getGroupStatisticsNotice();
   },
   mounted() {
+    this.registerNoticeShortcuts()
     /** 设置指定消息已读 */
     if(this.$route.query.noticeId) {
       this.handleNotice(this.$route.query);
     }
   },
-  // 移除滚动条监听
-  destroyed() {
+  activated() {
+    this.registerNoticeShortcuts()
+  },
+  deactivated() {
+    if (this.$shortcut) this.$shortcut.unregisterPage(NOTICE_KBD_SCOPE)
+  },
+  beforeDestroy() {
+    if (this.$shortcut) this.$shortcut.unregisterPage(NOTICE_KBD_SCOPE)
   },
   methods: {
+    registerNoticeShortcuts() {
+      if (!this.$shortcut) return
+      this.$shortcut.registerPage(NOTICE_KBD_SCOPE, [
+        { key: 'query', defaultLetter: 'S', run: () => this.shortcutFocusQuery() },
+        { key: 'switchTab', defaultLetter: 'J', run: () => this.shortcutSwitchTab() },
+        { key: 'config', defaultLetter: 'G', run: () => this.shortcutOpenConfig() },
+        { key: 'send', defaultLetter: 'E', run: () => this.shortcutSendNotice() },
+        { key: 'prevPage', defaultLetter: 'B', run: () => this.shortcutChangePage(-1) },
+        { key: 'nextPage', defaultLetter: 'P', run: () => this.shortcutChangePage(1) }
+      ])
+    },
+    getPageActionHintContainer() {
+      return this.$refs.noticeMain || this.$el
+    },
+    getPageActionHints() {
+      const L = (key, def) => shortcutStore.getLetter(`action.${NOTICE_KBD_SCOPE}.${key}`, def)
+      return [
+        {
+          key: 'query',
+          letter: L('query', 'S'),
+          badgeSelector: '.notice-hint-query',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
+          run: () => this.shortcutFocusQuery()
+        },
+        {
+          key: 'switchTab',
+          letter: L('switchTab', 'J'),
+          badgeSelector: '.notice-hint-tabs .el-tabs__item.is-active .notice-tab-label',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
+          run: () => this.shortcutSwitchTab()
+        },
+        {
+          key: 'config',
+          letter: L('config', 'G'),
+          badgeSelector: '.notice-hint-config',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2, dx: 5, dy: 5 },
+          run: () => this.shortcutOpenConfig()
+        },
+        {
+          key: 'send',
+          letter: L('send', 'E'),
+          badgeSelector: '.notice-hint-send',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2, dy: 5 },
+          run: () => this.shortcutSendNotice(),
+          visible: () => checkPermi(['notice:send'])
+        },
+        {
+          key: 'prevPage',
+          letter: L('prevPage', 'B'),
+          badgeSelector: '.notice-table-pagination .btn-prev',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
+          run: () => this.shortcutChangePage(-1),
+          visible: () => this.total > 0
+        },
+        {
+          key: 'nextPage',
+          letter: L('nextPage', 'P'),
+          badgeSelector: '.notice-table-pagination .btn-next',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
+          run: () => this.shortcutChangePage(1),
+          visible: () => this.total > 0
+        }
+      ]
+    },
+    /** ⌘ 按住：表格可见行勾选列动态徽标（1–9 优先） */
+    getPageDynamicActionHints(ctx) {
+      const used = (ctx && ctx.usedLetters) ? new Set(ctx.usedLetters) : new Set()
+      collectHintLettersFromToolbar(this.getPageActionHints()).forEach((ch) => used.add(ch))
+      return this.buildNoticeTableRowActionHints(used)
+    },
+    getPageActionHintScrollRoots() {
+      const table = this.$refs.noticeTable
+      if (!table || !table.$el) return []
+      const bodyWrap = getDefectTableScrollBody(table.$el)
+      return bodyWrap ? [bodyWrap] : []
+    },
+    buildNoticeTableRowActionHints(usedLetters) {
+      const table = this.$refs.noticeTable
+      if (!table || !table.$el) return []
+      const bodyWrap = getDefectTableScrollBody(table.$el)
+      if (!bodyWrap) return []
+      const list = this.noticeList || []
+      const seen = new Set()
+      const anchors = []
+      bodyWrap.querySelectorAll('tbody tr.el-table__row').forEach((tr, rowIndex) => {
+        if (!isRowIntersectingContainer(tr, bodyWrap)) return
+        const row = list[rowIndex]
+        if (!row || row.noticeId == null) return
+        const noticeId = String(row.noticeId)
+        if (seen.has(noticeId)) return
+        seen.add(noticeId)
+        const anchor = resolveNoticeTableCheckboxAnchor(tr)
+        if (!anchor) return
+        anchors.push({
+          anchor,
+          skipViewportCheck: true,
+          run: () => this.handleNotice(row)
+        })
+      })
+      const letters = assignRowHintLetters(anchors.length, usedLetters)
+      const rowFloat = { placement: 'bottom-right-outset', outset: 2 }
+      return anchors.map((item, i) => ({
+        ...item,
+        letter: letters[i],
+        floatOffset: rowFloat,
+        key: `row-${i}`
+      })).filter((item) => item.letter)
+    },
+    shortcutFocusQuery() {
+      const form = this.$refs.queryForm
+      const input = form && form.$el && form.$el.querySelector('input')
+      if (input && typeof input.focus === 'function') {
+        input.focus()
+      }
+    },
+    shortcutSwitchTab() {
+      const tabs = this.groupList || []
+      if (!tabs.length) return
+      const idx = tabs.findIndex((t) => t.groupName === this.activeTabName)
+      const next = tabs[(idx < 0 ? 0 : idx + 1) % tabs.length]
+      this.activeTabName = next.groupName
+      this.handleQuery()
+    },
+    shortcutOpenConfig() {
+      this.setNoticeOptionHandle()
+    },
+    shortcutSendNotice() {
+      if (!checkPermi(['notice:send'])) return
+      this.handleSendNotice()
+    },
+    shortcutChangePage(delta) {
+      const root = this.getPageActionHintContainer()
+      if (!root || typeof root.querySelector !== 'function') return
+      const btn = root.querySelector(
+        delta < 0 ? '.notice-table-pagination .btn-prev' : '.notice-table-pagination .btn-next'
+      )
+      if (btn && !btn.classList.contains('disabled') && typeof btn.click === 'function') {
+        btn.click()
+      }
+    },
     /** 获取项目id */
     getProjectId() {
       return parseInt(this.$store.state.user.config.currentProjectId || 0);
@@ -293,6 +462,25 @@ export default {
   padding: 3px 7px;
   margin: 0 3px;
   border-radius: 10px;
+}
+.notice-page {
+  .notice-list-table ::v-deep td.el-table-column--selection .cell {
+    overflow: visible !important;
+  }
+  .tabs-tools-row {
+    margin-bottom: 10px;
+  }
+  .notice-hint-tabs ::v-deep .el-tabs__header {
+    margin-bottom: 0;
+  }
+  .notice-hint-tabs .el-tabs__item.is-active {
+    position: relative;
+    overflow: visible !important;
+  }
+  .notice-hint-config {
+    position: relative;
+    overflow: visible !important;
+  }
 }
 .notice-tools {
   display: flex;

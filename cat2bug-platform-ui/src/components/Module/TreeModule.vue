@@ -13,7 +13,7 @@
           @click.stop="handleSidebarToggle"
           @keyup.enter.stop.prevent="handleSidebarToggle"
         >
-          <i class="el-icon-d-arrow-left" />
+          <i class="el-icon-d-arrow-left" :class="sidebarToggleHintClass" />
         </span>
       </el-tooltip>
     </div>
@@ -87,6 +87,11 @@ export default {
     toolbarSyncHeight: {
       type: Number,
       default: null
+    },
+    /** 收起按钮额外 class（缺陷页 ⌘ 快捷键徽标锚点） */
+    sidebarToggleHintClass: {
+      type: String,
+      default: ''
     }
   },
   computed: {

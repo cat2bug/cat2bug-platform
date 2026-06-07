@@ -74,7 +74,14 @@
 import ShortcutBadge from '@/components/Shortcut/ShortcutBadge.vue'
 import { shortcutStore } from '@/plugins/shortcut'
 import { buildNavItems } from '@/plugins/shortcut/nav-source'
-import { DEFECT_ACTION_DEFAULTS, STATISTIC_TEMPLATE_ACTION_DEFAULTS, normalizeKey } from '@/plugins/shortcut/keymap'
+import {
+  DEFECT_ACTION_DEFAULTS,
+  LOGIN_ACTION_DEFAULTS,
+  REGISTER_ACTION_DEFAULTS,
+  NOTICE_ACTION_DEFAULTS,
+  STATISTIC_TEMPLATE_ACTION_DEFAULTS,
+  normalizeKey
+} from '@/plugins/shortcut/keymap'
 
 export default {
   name: 'KeyboardSettings',
@@ -139,6 +146,24 @@ export default {
       }))
       sections.push({ id: 'defect', title: this.$t('keyboard.sec-defect'), items: defectRows })
 
+      const loginRows = LOGIN_ACTION_DEFAULTS.map((a) => ({
+        bindingId: `action.login.${a.key}`,
+        title: this.$t(a.titleKey),
+        defaultLetter: a.defaultLetter,
+        letter: shortcutStore.getLetter(`action.login.${a.key}`, a.defaultLetter),
+        conflict: false
+      }))
+      sections.push({ id: 'login', title: this.$t('keyboard.sec-login'), items: loginRows })
+
+      const registerRows = REGISTER_ACTION_DEFAULTS.map((a) => ({
+        bindingId: `action.register.${a.key}`,
+        title: this.$t(a.titleKey),
+        defaultLetter: a.defaultLetter,
+        letter: shortcutStore.getLetter(`action.register.${a.key}`, a.defaultLetter),
+        conflict: false
+      }))
+      sections.push({ id: 'register', title: this.$t('keyboard.sec-register'), items: registerRows })
+
       const statisticTemplateRows = STATISTIC_TEMPLATE_ACTION_DEFAULTS.map((a) => ({
         bindingId: `action.statistic-template.${a.key}`,
         title: this.$t(a.titleKey),
@@ -150,6 +175,19 @@ export default {
         id: 'statistic-template',
         title: this.$t('keyboard.sec-statistic-template'),
         items: statisticTemplateRows
+      })
+
+      const noticeRows = NOTICE_ACTION_DEFAULTS.map((a) => ({
+        bindingId: `action.notice.${a.key}`,
+        title: this.$t(a.titleKey),
+        defaultLetter: a.defaultLetter,
+        letter: shortcutStore.getLetter(`action.notice.${a.key}`, a.defaultLetter),
+        conflict: false
+      }))
+      sections.push({
+        id: 'notice',
+        title: this.$t('keyboard.sec-notice'),
+        items: noticeRows
       })
 
       sections.forEach((s) => this.markConflicts(s))

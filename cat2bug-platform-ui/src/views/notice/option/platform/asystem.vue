@@ -1,12 +1,16 @@
 <template>
   <el-form ref="form" :model="form" label-width="190px">
     <el-form-item :label="$t('notice.system.notice')">
-      <el-switch v-model="form.switch" @change="handleSwitchChange"></el-switch>
+      <span class="notice-option-asystem-switch cat2bug-field-hint-host-inline">
+        <el-switch v-model="form.switch" @change="handleSwitchChange"></el-switch>
+      </span>
     </el-form-item>
     <el-form-item :label="$t('option')">
       <div class="col">
         <div class="row">
-          <el-checkbox :label="$t('notice.system.bgm-enable')" v-model="form.backgroundMusic" @change="handleChange" :disabled="!form.switch"></el-checkbox>
+          <span class="notice-option-asystem-bgm cat2bug-field-hint-host-inline">
+            <el-checkbox :label="$t('notice.system.bgm-enable')" v-model="form.backgroundMusic" @change="handleChange" :disabled="!form.switch"></el-checkbox>
+          </span>
           <el-select v-model="form.backgroundMusicUrl" size="mini" placeholder="请选择" :disabled="!form.switch || !form.backgroundMusic">
             <el-option
               v-for="item in backgroundMusicOptions"
@@ -119,5 +123,10 @@ export default {
 .col {
   display: inline-flex;
   flex-direction: column;
+}
+.cat2bug-field-hint-host-inline {
+  position: relative;
+  display: inline-flex;
+  overflow: visible !important;
 }
 </style>

@@ -39,8 +39,32 @@ function load() {
           localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
         } catch (e) { /* ignore */ }
       }
+      if (data.overrides['action.defect.statisticPanel'] != null) {
+        if (data.overrides['action.defect.statistic'] == null) {
+          data.overrides['action.defect.statistic'] = data.overrides['action.defect.statisticPanel']
+        }
+        delete data.overrides['action.defect.statisticPanel']
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+        } catch (e) { /* ignore */ }
+      }
       if (data.overrides['action.statistic-template.back'] != null) {
         delete data.overrides['action.statistic-template.back']
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+        } catch (e) { /* ignore */ }
+      }
+      // 项目文档：W → F，规避 ⇧⌘W 浏览器保留键
+      const legacyDoc = normalizeKey(data.overrides['nav.menu.project.document'])
+      if (legacyDoc === 'W') {
+        delete data.overrides['nav.menu.project.document']
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+        } catch (e) { /* ignore */ }
+      }
+      const legacyToggle = normalizeKey(data.overrides['nav.layout.sidebarToggle'])
+      if (legacyToggle === '`') {
+        delete data.overrides['nav.layout.sidebarToggle']
         try {
           localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
         } catch (e) { /* ignore */ }

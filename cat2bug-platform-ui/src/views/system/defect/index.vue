@@ -57,6 +57,7 @@
           </el-tab-pane>
         </el-tabs>
         <div class="defect-tools-tab-right">
+          <span class="defect-list-hint-statistic-panel" aria-hidden="true" />
           <span class="defect-list-hint-statistic">
             <svg-icon v-show="statisticPanelVisible" class="defect-tools-button" icon-class="view-statistic" @click.native="addStatisticHandle" />
           </span>
@@ -187,9 +188,13 @@
           </div>
         </template>
         <template slot="right-tools">
-          <el-dropdown
+          <span v-if="defectAddToolbarVisible" class="defect-add-toolbar-kbd-wrap">
+            <span class="defect-add-kbd-anchor-host" aria-hidden="true">
+              <span class="defect-list-hint-import" />
+              <span class="defect-list-hint-export" />
+            </span>
+            <el-dropdown
             ref="defectAddDropdown"
-            v-if="defectAddToolbarVisible"
             class="defect-add-dropdown defect-list-hint-add-menu"
             split-button
             trigger="click"
@@ -206,6 +211,7 @@
               <el-dropdown-item @click.native="handleExport"><i class="el-icon-download" />{{ $t('defect.export') }}</el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
+          </span>
         </template>
       </component>
       <!--    </keep-alive>-->
@@ -256,6 +262,7 @@ import {
   isRowIntersectingContainer,
   parseExcelRowKeyFromTdId,
   resolveDefectTableRowHintAnchor,
+  resolveDefectTableRowHintPositionRect,
   resolveExcelRowHintAnchor
 } from '@/utils/defect-row-kbd-hints'
 import { activateStatisticItemClick } from '@/utils/statistic-item-kbd'
@@ -315,6 +322,8 @@ export default {
 
       // 是否显示统计面板
       statisticPanelVisible: this.$cache.local.get(CACHE_KEY_STATISTIC_PANEL_VISIBLE) != 'false',
+      /** Cmd/Ctrl+J 循环是否停在添加按钮（非真实 tab，需单独记序） */
+      defectShortcutTabAtAdd: false,
       /** Cmd/Ctrl+J 后 Tab 条键盘导航（左右键切换，末项右切到添加按钮） */
       defectTabNavActive: false,
       defectTabNavIndex: -1,
@@ -571,18 +580,13 @@ export default {
     registerDefectShortcuts() {
       if (!this.$shortcut) return
       const actions = [
-        { key: 'switchProject', defaultLetter: 'L', run: () => this.shortcutSwitchProject() },
-        { key: 'addMenu', defaultLetter: 'E', run: () => this.shortcutOpenAddMenu() },
-        { key: 'query', defaultLetter: 'S', run: () => this.shortcutFocusQuery() },
-        { key: 'switchTab', defaultLetter: 'J', run: () => this.shortcutSwitchTab() },
+        { key: 'newDefect', defaultLetter: 'E', run: () => this.handleAdd() },
+        { key: 'import', defaultLetter: 'U', run: () => this.handleImport() },
+        { key: 'export', defaultLetter: 'R', run: () => this.handleExport() },
         { key: 'statistic', defaultLetter: 'I', run: () => this.addStatisticHandle() },
-        { key: 'switchView', defaultLetter: 'O', run: () => this.shortcutSwitchView() },
         { key: 'prevPage', defaultLetter: 'B', run: () => this.shortcutChangePage(-1) },
         { key: 'nextPage', defaultLetter: 'P', run: () => this.shortcutChangePage(1) }
       ]
-      if (this.defectStatisticNavAvailable) {
-        actions.splice(5, 0, { key: 'statisticNav', defaultLetter: 'G', run: () => this.shortcutStatisticNav() })
-      }
       this.$shortcut.registerPage('defect', actions)
     },
     getPageActionHintContainer() {
@@ -592,58 +596,37 @@ export default {
     getPageActionHints() {
       const scopeKey = 'defect'
       const L = (key, def) => shortcutStore.getLetter(`action.${scopeKey}.${key}`, def)
-      const hints = [
+      return [
         {
-          key: 'switchProject',
-          letter: L('switchProject', 'L'),
-          badgeSelector: '.defect-project-label .project-select-kbd-hint-anchor',
-          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
-          run: () => this.shortcutSwitchProject()
-        },
-        {
-          key: 'addMenu',
-          letter: L('addMenu', 'E'),
-          badgeSelector: '.defect-list-hint-add-menu.el-dropdown > .el-button-group',
+          key: 'newDefect',
+          letter: L('newDefect', 'E'),
+          badgeSelector: '.defect-list-hint-add-menu .el-button-group > .el-button--primary',
           floatOffset: { placement: 'bottom-right-outset', outset: 3 },
-          run: () => this.shortcutOpenAddMenu(),
+          run: () => this.handleAdd(),
           visible: () => this.defectAddToolbarVisible
         },
         {
-          key: 'query',
-          letter: L('query', 'S'),
-          badgeSelector: '.defect-list-hint-query',
+          key: 'import',
+          letter: L('import', 'U'),
+          badgeSelector: '.defect-add-kbd-anchor-host .defect-list-hint-import',
           floatOffset: { placement: 'bottom-right-outset', outset: 2 },
-          run: () => this.shortcutFocusQuery()
+          run: () => this.handleImport(),
+          visible: () => this.defectAddToolbarVisible
         },
         {
-          key: 'switchTab',
-          letter: L('switchTab', 'J'),
-          badgeSelector: '.defect-list-hint-tabs .el-tabs__item.is-active .defect-tab-label',
+          key: 'export',
+          letter: L('export', 'R'),
+          badgeSelector: '.defect-add-kbd-anchor-host .defect-list-hint-export',
           floatOffset: { placement: 'bottom-right-outset', outset: 2 },
-          run: () => this.shortcutSwitchTab()
+          run: () => this.handleExport(),
+          visible: () => this.defectAddToolbarVisible
         },
         {
           key: 'statistic',
           letter: L('statistic', 'I'),
-          badgeSelector: '.defect-list-hint-statistic .defect-tools-button',
+          badgeSelector: '.defect-list-hint-statistic-panel',
           floatOffset: { placement: 'bottom-right-outset', outset: 2, dx: 5, dy: 5 },
-          run: () => this.addStatisticHandle(),
-          visible: () => this.statisticPanelVisible
-        },
-        {
-          key: 'statisticNav',
-          letter: L('statisticNav', 'G'),
-          badgeSelector: '.defect-list-hint-stat-nav',
-          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
-          run: () => this.shortcutStatisticNav(),
-          visible: () => this.defectStatisticNavAvailable
-        },
-        {
-          key: 'switchView',
-          letter: L('switchView', 'O'),
-          badgeSelector: '.defect-list-hint-view-switch',
-          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
-          run: () => this.shortcutSwitchView()
+          run: () => this.addStatisticHandle()
         },
         {
           key: 'prevPage',
@@ -660,14 +643,13 @@ export default {
           run: () => this.shortcutChangePage(1)
         }
       ]
-      return hints
     },
     /** ⌘ 按住：表格/Excel 可见行序号列动态徽标（1–9 优先，字母补位） */
     getPageDynamicActionHints(ctx) {
       const used = (ctx && ctx.usedLetters) ? new Set(ctx.usedLetters) : new Set()
       collectHintLettersFromToolbar(this.getPageActionHints()).forEach((ch) => used.add(ch))
       if (this.defectContentComponent === 'DefectTable') {
-        const rowFloat = { placement: 'center-cell', useCellBounds: true }
+        const rowFloat = { placement: 'center-cell' }
         return this.buildDefectTableRowActionHints(used, rowFloat)
       }
       if (this.defectContentComponent === 'DefectExcel') {
@@ -707,6 +689,7 @@ export default {
       const content = this.$refs.defectContentComponent
       const bodyWrap = this.getDefectTableScrollBody(content)
       if (!bodyWrap || !content) return []
+      const tableRoot = this.getDefectTableRootEl(content)
       const defectList = content.defectList || []
       const seen = new Set()
       const anchors = []
@@ -721,6 +704,7 @@ export default {
         if (!anchor) return
         anchors.push({
           anchor,
+          getAnchorRect: () => resolveDefectTableRowHintPositionRect(tr, tableRoot),
           skipViewportCheck: true,
           run: () => this.handleDefectClick({ defectId: row.defectId })
         })
@@ -1294,9 +1278,40 @@ export default {
       }
       this.$_onDefectQueryNavFocusIn = null
     },
-    /** Cmd/Ctrl+J：聚焦当前 Tab，左右键切换；末项 Tab 再右切到添加按钮 */
+    /** Cmd/Ctrl+J：直接切换到下一项（含添加按钮，不进入焦点导航） */
     shortcutSwitchTab() {
-      this.enterDefectTabKeyboardNav()
+      this.exitDefectTabKeyboardNav()
+      const items = this.getDefectTabNavItems()
+      if (!items.length) return
+      let idx
+      if (this.defectShortcutTabAtAdd) {
+        idx = items.findIndex((it) => it.type === 'add')
+      } else {
+        const cur = String(this.activeDefectTabName)
+        idx = items.findIndex((it) => it.type === 'tab' && it.name === cur)
+      }
+      const next = items[(idx < 0 ? 0 : idx + 1) % items.length]
+      if (next.type === 'add') {
+        this.defectShortcutTabAtAdd = true
+        this.$nextTick(() => this.syncDefectShortcutAddHighlight())
+        return
+      }
+      this.defectShortcutTabAtAdd = false
+      this.clearDefectShortcutAddHighlight()
+      this.activeDefectTabName = next.name
+      this.selectDefectTabHandle({ name: next.name })
+    },
+    syncDefectShortcutAddHighlight() {
+      this.clearDefectShortcutAddHighlight()
+      const addBtn = this.getDefectTabAddButtonEl()
+      if (addBtn) addBtn.classList.add('defect-tab-shortcut-active')
+    },
+    clearDefectShortcutAddHighlight() {
+      const root = this.$refs.defectToolsTab
+      if (!root) return
+      root.querySelectorAll('.defect-tab-add-btn.defect-tab-shortcut-active').forEach((el) => {
+        el.classList.remove('defect-tab-shortcut-active')
+      })
     },
     /** Cmd/Ctrl+L：打开左上角项目切换 */
     shortcutSwitchProject() {
@@ -2288,6 +2303,14 @@ export default {
       }
       return false
     },
+    /** Cmd/Ctrl+D：显示/隐藏左侧交付物列表（仅表格视图） */
+    shortcutToggleModuleTree() {
+      if (this.defectContentComponent !== 'DefectTable') return
+      const content = this.$refs.defectContentComponent
+      if (content && typeof content.toggleModuleTreeVisible === 'function') {
+        content.toggleModuleTreeVisible()
+      }
+    },
     /** Cmd/Ctrl+O：在表格 / Excel 显示模式间切换 */
     shortcutSwitchView() {
       const next = this.defectContentComponent === 'DefectExcel' ? 'DefectTable' : 'DefectExcel'
@@ -2419,6 +2442,8 @@ export default {
     },
     exitDefectTabKeyboardNav() {
       if (!this.defectTabNavActive && !this.$_defectTabNavListenersBound) return
+      this.defectShortcutTabAtAdd = false
+      this.clearDefectShortcutAddHighlight()
       this.defectTabNavActive = false
       this.defectTabNavIndex = -1
       this.defectTabNavFocusedName = null
@@ -2726,6 +2751,8 @@ export default {
 
     /** 切换页标签；tab-click 触发时 v-model 尚未更新，须用事件参数 tab.name */
     selectDefectTabHandle(tab) {
+      this.defectShortcutTabAtAdd = false
+      this.clearDefectShortcutAddHighlight()
       const activeName = tab && tab.name != null ? String(tab.name) : String(this.activeDefectTabName)
       if (activeName === this.defectAddTabPaneName) {
         const restoreTab = resolveDefectTabFromCache(this.$cache.local.get(DEFECT_TAB_CACHE_KEY)) || this.allTab
@@ -3237,6 +3264,11 @@ export default {
   ::v-deep .defect-tab-add-btn.svg-icon {
     vertical-align: middle !important;
   }
+  ::v-deep .defect-tab-add-btn.defect-tab-shortcut-active {
+    position: relative;
+    z-index: 4;
+    box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color);
+  }
   ::v-deep .defect-tab-add-btn {
     flex-shrink: 0;
     width: 15px !important;
@@ -3402,8 +3434,50 @@ export default {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.defect-tools-tab-right {
+  position: relative;
+  .defect-list-hint-statistic-panel {
+    position: absolute;
+    right: 2px;
+    bottom: -2px;
+    width: 14px;
+    height: 14px;
+    pointer-events: none;
+    z-index: 5;
+  }
+}
+.defect-add-toolbar-kbd-wrap {
+  position: relative;
+  display: inline-flex;
+  vertical-align: middle;
+}
+.defect-add-kbd-anchor-host {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 0;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 6;
+  .defect-list-hint-import {
+    position: absolute;
+    right: 36px;
+    bottom: -2px;
+    width: 12px;
+    height: 12px;
+  }
+  .defect-list-hint-export {
+    position: absolute;
+    right: -2px;
+    bottom: -2px;
+    width: 12px;
+    height: 12px;
+  }
+}
 .defect-add-dropdown {
   margin-right: 0px;
+  position: relative;
   ::v-deep .el-button-group {
     display: flex;
     flex-direction: row;

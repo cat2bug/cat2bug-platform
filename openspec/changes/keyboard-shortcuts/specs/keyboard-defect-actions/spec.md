@@ -65,6 +65,7 @@
 进入统计模块导航后：
 
 - `←` / `→`：在模块间移动焦点
+- `Enter` / 空格：触发当前模块主点击区（筛选、打开配置弹框等），映射见 `statistic-item-kbd.js`
 - `Delete` / `Backspace`：移除当前聚焦模块
 - `Esc`：退出统计模块导航
 
@@ -77,6 +78,16 @@
 
 - **WHEN** 统计区有模块且用户按 `Cmd/Ctrl+G` 或 `空格` 后 `G`
 - **THEN** 进入统计模块键盘导航并聚焦第一个模块
+
+#### Scenario: 导航中打开模块配置
+
+- **WHEN** 用户处于统计模块导航且当前模块为 `PersonalRemindTimer`，按下 `Enter` 或空格
+- **THEN** 等效点击模块主体，打开报时提醒配置弹框
+
+#### Scenario: 无点击交互的模块忽略确认键
+
+- **WHEN** 用户处于统计模块导航且当前模块未在 `STATISTIC_ITEM_KBD_CLICK_SELECTORS` 中配置
+- **THEN** 按 `Enter` 或空格无效果
 
 ### Requirement: 可见行动态徽标
 

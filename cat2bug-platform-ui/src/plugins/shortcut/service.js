@@ -11,7 +11,15 @@ import i18n from '@/utils/i18n/i18n'
 import { shortcutStore } from './shortcut-store'
 import { pageRegistry } from './registry'
 import { buildNavItems, navLeader, actionLeader } from './nav-source'
-import { DEFECT_ACTION_DEFAULTS, normalizeKey, assignLetters } from './keymap'
+import {
+  DEFECT_ACTION_DEFAULTS,
+  LOGIN_ACTION_DEFAULTS,
+  REGISTER_ACTION_DEFAULTS,
+  NOTICE_ACTION_DEFAULTS,
+  STATISTIC_TEMPLATE_ACTION_DEFAULTS,
+  normalizeKey,
+  assignLetters
+} from './keymap'
 
 const palette = Vue.observable({
   open: false,
@@ -78,7 +86,9 @@ const BLOCKING_UI_LAYER_SELECTORS = [
   '.defect-column-picker-popover',
   '.defect-excel-column-picker-popover',
   /* 缺陷页统计模块 G 导航：空格用于触发模块点击，勿打开动作面板 */
-  '.defect-statistic-keyboard-nav'
+  '.defect-statistic-keyboard-nav',
+  /* 统计模版页键盘导航：空格用于添加到预览区，勿打开动作面板 */
+  '.statistic-template-kbd-nav'
 ]
 
 /** 新建/编辑缺陷表单抽屉（Esc 关闭时不应把自身算作遮挡层） */
@@ -155,13 +165,28 @@ function canOpenDefectPageActions() {
   return true
 }
 
+function findPageActionDefault(key, scopeKey) {
+  if (scopeKey === 'login') {
+    return LOGIN_ACTION_DEFAULTS.find((d) => d.key === key)
+  }
+  if (scopeKey === 'register') {
+    return REGISTER_ACTION_DEFAULTS.find((d) => d.key === key)
+  }
+  if (scopeKey === 'statistic-template') {
+    return STATISTIC_TEMPLATE_ACTION_DEFAULTS.find((d) => d.key === key)
+  }
+  if (scopeKey === 'notice') {
+    return NOTICE_ACTION_DEFAULTS.find((d) => d.key === key)
+  }
+  return DEFECT_ACTION_DEFAULTS.find((d) => d.key === key)
+}
+
 /** 缺陷等页面注册的动作 → 解析为带唯一字母的面板项 */
 function buildActionItems() {
   const registered = pageRegistry.getActiveActions()
   if (!registered.length) return []
-  // 用默认顺序与默认字母（缺陷页）作为基准，叠加注册项的 run 回调
   const list = registered.map((a) => {
-    const def = DEFECT_ACTION_DEFAULTS.find((d) => d.key === a.key)
+    const def = findPageActionDefault(a.key, a.scopeKey)
     const titleKey = a.titleKey || (def && def.titleKey)
     const bindingId = `action.${a.scopeKey}.${a.key}`
     return {
@@ -198,6 +223,10 @@ export const shortcutService = {
 
   setExecutor(fn) {
     executor = fn
+  },
+
+  getExecutor() {
+    return executor
   },
 
   _onLeaderKeydown(event) {

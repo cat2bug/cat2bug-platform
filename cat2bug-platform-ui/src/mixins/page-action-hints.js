@@ -16,11 +16,35 @@ const OVERLAY_ID = 'cat2bug-page-kbd-overlay'
 /** A/C/V/X/Z 系统编辑；T/M/N/Q 浏览器或 macOS 保留（新标签 / 新窗口 / 最小化 / 退出） */
 const RESERVED_LETTERS = new Set(['A', 'C', 'M', 'N', 'Q', 'T', 'V', 'X', 'Z'])
 
+/** 跨路由切换时追踪 Cmd/Ctrl 是否仍按住（避免监听器卸载间隙丢失 keyup） */
+let pageActionGlobalMetaHeld = false
+let pageActionGlobalModifierTrackerBound = false
+
+function ensurePageActionGlobalModifierTracker() {
+  if (pageActionGlobalModifierTrackerBound) return
+  pageActionGlobalModifierTrackerBound = true
+  window.addEventListener('keydown', (e) => {
+    if (e.metaKey || e.ctrlKey) pageActionGlobalMetaHeld = true
+  }, true)
+  window.addEventListener('keyup', (e) => {
+    if (isModifierKeyEvent(e)) pageActionGlobalMetaHeld = false
+  }, true)
+  window.addEventListener('blur', () => {
+    pageActionGlobalMetaHeld = false
+  })
+}
+
 function isModifierKeyEvent(e) {
   if (!e) return false
   const k = e.key
   return k === 'Control' || k === 'Meta' || k === 'OS' ||
     e.keyCode === 17 || e.keyCode === 91 || e.keyCode === 93
+}
+
+function isShiftKeyEvent(e) {
+  if (!e) return false
+  const k = e.key
+  return k === 'Shift' || k === 'ShiftLeft' || k === 'ShiftRight'
 }
 
 function isVisibleEl(el) {
@@ -116,9 +140,11 @@ export default {
   },
   mounted() {
     this.$_attachPageActionHintListeners()
+    this.$_onPageActionHostMounted()
   },
   activated() {
     this.$_attachPageActionHintListeners()
+    this.$_onPageActionHostMounted()
   },
   deactivated() {
     this.$_detachPageActionHintListeners()
@@ -139,16 +165,73 @@ export default {
     $_attachPageActionHintListeners() {
       if (this.$_pageActionHintListenersBound) return
       this.$_pageActionHintListenersBound = true
+      ensurePageActionGlobalModifierTracker()
       this.$_onPageActionHintKeydown = this.$_pageActionHintKeydown.bind(this)
       this.$_onPageActionHintKeyup = this.$_pageActionHintKeyup.bind(this)
       this.$_onPageActionHintBlur = () => {
         if (isNativeFilePickerOpen()) return
+        pageActionGlobalMetaHeld = false
         this.$_clearPageHintRevealTimer()
         this.$_hidePageActionHints()
       }
       document.addEventListener('keydown', this.$_onPageActionHintKeydown, true)
       window.addEventListener('keyup', this.$_onPageActionHintKeyup, true)
       window.addEventListener('blur', this.$_onPageActionHintBlur)
+    },
+    /** 页面进入后聚焦宿主并同步跨路由仍按住的 Cmd/Ctrl */
+    $_onPageActionHostMounted() {
+      if (this._inactive) return
+      this.$nextTick(() => {
+        if (this._inactive) return
+        if (typeof this.shouldAutoFocusPageActionHost === 'function' && this.shouldAutoFocusPageActionHost()) {
+          this.$_focusPageActionHost()
+        }
+        requestAnimationFrame(() => {
+          if (!this._inactive) this.$_tryArmFromGlobalModifier()
+        })
+      })
+    },
+    $_isPageActionHostReady() {
+      if (this._inactive) return false
+      const el = this.$_getPageActionHintContainer()
+      if (!el || !el.isConnected) return false
+      let node = el
+      while (node && node !== document.body) {
+        const style = window.getComputedStyle(node)
+        if (style.display === 'none' || style.visibility === 'hidden') return false
+        node = node.parentElement
+      }
+      const rect = el.getBoundingClientRect()
+      return rect.width > 0 || rect.height > 0
+    },
+    $_focusPageActionHost() {
+      const root = this.$_getPageActionHintContainer()
+      if (!root || typeof root.focus !== 'function') return
+      if (!root.hasAttribute('tabindex')) {
+        root.setAttribute('tabindex', '-1')
+      }
+      root.focus({ preventScroll: true })
+    },
+    $_armPageActionModifierHints() {
+      if (!this.isPageActionHintsEnabled()) return
+      if (!this.$_isPageActionHostReady()) return
+      if (hasBlockingUiLayer()) {
+        this.$_hidePageActionHints()
+        return
+      }
+      this.$_pageActionModifierHeld = true
+      this.$_preparePageActionHints()
+      if (!this.pageHintsActive && !this.$_pageActionHintRevealTimer) {
+        this.$_pageActionHintRevealTimer = setTimeout(() => {
+          this.$_pageActionHintRevealTimer = null
+          if (!this.$_pageActionModifierHeld) return
+          this.$_revealPageActionBadges()
+        }, 180)
+      }
+    },
+    $_tryArmFromGlobalModifier() {
+      if (!pageActionGlobalMetaHeld) return
+      this.$_armPageActionModifierHints()
     },
     $_detachPageActionHintListeners() {
       if (!this.$_pageActionHintListenersBound) return
@@ -206,25 +289,24 @@ export default {
       this.$_pageHintScrollResizeHandler = null
     },
     $_pageActionHintKeydown(e) {
+      if (this._inactive) return
       if (e.isComposing || !this.isPageActionHintsEnabled()) return
+      if (!this.$_isPageActionHostReady()) return
       if ((this.$_pageActionModifierHeld || this.pageHintsActive) &&
         !isModifierKeyEvent(e) && !(e.metaKey || e.ctrlKey)) {
         this.$_hidePageActionHints()
       }
+      if (isShiftKeyEvent(e) && (e.metaKey || e.ctrlKey)) {
+        pageActionGlobalMetaHeld = false
+        this.$_pageActionModifierHeld = false
+        this.$_clearPageHintRevealTimer()
+        this.$_hidePageActionHints()
+        return
+      }
       if (isModifierKeyEvent(e)) {
-        if (hasBlockingUiLayer()) {
-          this.$_hidePageActionHints()
-          return
-        }
-        this.$_pageActionModifierHeld = true
-        this.$_preparePageActionHints()
-        if (!this.pageHintsActive && !this.$_pageActionHintRevealTimer) {
-          this.$_pageActionHintRevealTimer = setTimeout(() => {
-            this.$_pageActionHintRevealTimer = null
-            if (!this.$_pageActionModifierHeld) return
-            this.$_revealPageActionBadges()
-          }, 180)
-        }
+        if (e.shiftKey) return
+        pageActionGlobalMetaHeld = true
+        this.$_armPageActionModifierHints()
         return
       }
       if ((e.metaKey || e.ctrlKey) && !e.altKey && !e.shiftKey) {
@@ -245,7 +327,7 @@ export default {
           }
         }
       }
-      if (!(e.metaKey || e.ctrlKey) || e.altKey) return
+      if (!(e.metaKey || e.ctrlKey) || e.altKey || e.shiftKey) return
       if (hasBlockingUiLayer()) return
       if (!this.$_pageActionHintMap) {
         this.$_preparePageActionHints()
@@ -272,6 +354,7 @@ export default {
     },
     $_pageActionHintKeyup(e) {
       if (isModifierKeyEvent(e)) {
+        pageActionGlobalMetaHeld = false
         this.$_pageActionModifierHeld = false
         this.$_clearPageHintRevealTimer()
         this.$_hidePageActionHints()
@@ -303,8 +386,15 @@ export default {
         if (item.key) keyLetters[item.key] = letter
         if (!item.badgeSelector) return
         const anchor = container.querySelector(item.badgeSelector)
-        if (!anchor || !isElementInViewport(anchor)) return
-        pending.push({ anchor, letter, floatOffset: item.floatOffset, key: item.key })
+        if (!anchor) return
+        if (!item.skipViewportCheck && !isElementInViewport(anchor)) return
+        pending.push({
+          anchor,
+          letter,
+          floatOffset: item.floatOffset,
+          key: item.key,
+          getAnchorRect: item.getAnchorRect
+        })
       })
       const dynamic = typeof this.getPageDynamicActionHints === 'function'
         ? this.getPageDynamicActionHints({ usedLetters: new Set(Object.keys(map)) })
@@ -321,7 +411,8 @@ export default {
           anchor: item.anchor,
           letter,
           floatOffset: item.floatOffset,
-          key: item.key
+          key: item.key,
+          getAnchorRect: item.getAnchorRect
         })
       })
       if (!Object.keys(map).length && !pending.length) return null
@@ -352,7 +443,7 @@ export default {
       const nodes = []
       this.$_pageActionHintPending.forEach((p) => {
         if (p.anchor && p.anchor.isConnected !== false) {
-          nodes.push(this.$_injectPageActionBadge(p.anchor, p.letter, p.floatOffset, p.key))
+          nodes.push(this.$_injectPageActionBadge(p.anchor, p.letter, p.floatOffset, p.key, p.getAnchorRect))
         }
       })
       this.$_pageActionHintNodes = nodes.filter(Boolean)
@@ -366,10 +457,13 @@ export default {
       }
     },
     /** fixed 浮层徽标：锚点控件右下角，置顶不被 Tab/统计区遮挡 */
-    $_injectPageActionBadge(anchor, letter, floatOffset, hintKey) {
+    $_injectPageActionBadge(anchor, letter, floatOffset, hintKey, getAnchorRect) {
       if (!anchor) return null
       let rect = anchor.getBoundingClientRect()
-      if (floatOffset && floatOffset.useCellBounds) {
+      if (typeof getAnchorRect === 'function') {
+        const pinned = getAnchorRect()
+        if (pinned) rect = pinned
+      } else if (floatOffset && floatOffset.useCellBounds) {
         const td = anchor.closest && anchor.closest('td')
         if (td) rect = td.getBoundingClientRect()
       } else if (floatOffset && floatOffset.anchorTextBounds) {

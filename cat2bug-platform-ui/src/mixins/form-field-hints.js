@@ -208,6 +208,7 @@ export default {
       }
       const k = e.key
       if (isModifierKeyEvent(e)) {
+        if (e.shiftKey) return
         this.$_modifierHeld = true
         this.$_modifierArmedAt = Date.now()
         this.$_prepareFieldHints()
@@ -221,7 +222,7 @@ export default {
         }
         return
       }
-      if (!(e.metaKey || e.ctrlKey) || e.altKey) return
+      if (!(e.metaKey || e.ctrlKey) || e.altKey || e.shiftKey) return
       if (!this.$_fieldHintMap) {
         this.$_prepareFieldHints()
       }

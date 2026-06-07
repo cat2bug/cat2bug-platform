@@ -3,7 +3,10 @@
     :title="$t('notice.send')"
     :visible.sync="visible"
     width="40%"
-    :before-close="handleClose">
+    :close-on-click-modal="false"
+    :close-on-press-escape="false"
+    :before-close="onSendDialogBeforeClose"
+    @opened="onSendDialogOpened">
     <el-form ref="form" :model="form" :rules="rules" label-width="130px">
       <el-form-item :label="$t('notice.receiver')" prop="receiveIds">
         <select-project-member
@@ -26,8 +29,11 @@
       </el-form-item>
     </el-form>
     <span slot="footer" class="dialog-footer">
-    <el-button @click="visible = false">{{ $t('cancel') }}</el-button>
-    <el-button type="primary" @click="handleSend">{{ $t('ok') }}</el-button>
+    <el-button @click="requestCloseSendDialog">{{ $t('cancel') }}</el-button>
+    <el-button class="defect-kbd-hint-host" type="primary" @click="handleSend">
+      {{ $t('ok') }}
+      <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
+    </el-button>
   </span>
   </el-dialog>
 </template>
@@ -35,8 +41,11 @@
 <script>
 import SelectProjectMember from "@/components/Project/SelectProjectMember";
 import {sendNotice} from "@/api/system/notice";
+import sendNoticeDialogKbd from '@/mixins/send-notice-dialog-kbd'
+
 export default {
   name: "SendNoticeDialog",
+  mixins: [sendNoticeDialogKbd],
   components: { SelectProjectMember },
   data() {
     return {
@@ -63,9 +72,13 @@ export default {
         this.$refs.form.resetFields();
       }
     },
-    /** 关闭窗口的处理 */
-    handleClose(done) {
-      done();
+    onSendDialogBeforeClose(done) {
+      this.requestCloseSendDialog({ done })
+    },
+    requestCloseSendDialog(options = {}) {
+      const { done } = options
+      this.visible = false
+      if (typeof done === 'function') done()
     },
     /** 获取项目ID */
     getProjectId() {

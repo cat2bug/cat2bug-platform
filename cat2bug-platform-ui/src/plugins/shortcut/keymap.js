@@ -14,6 +14,14 @@ export const DEFAULT_LEADERS = {
   action: 'Space'
 }
 
+/** 布局级浮层：侧栏折叠（⇧⌘/Shift+Ctrl + 单键，与 g 导航字母表独立展示） */
+export const LAYOUT_SIDEBAR_TOGGLE_BINDING = 'nav.layout.sidebarToggle'
+export const LAYOUT_SIDEBAR_TOGGLE_DEFAULT_LETTER = '-'
+
+/** 布局级浮层：左上角团队选择 */
+export const LAYOUT_TEAM_SELECT_BINDING = 'nav.layout.teamSelect'
+export const LAYOUT_TEAM_SELECT_DEFAULT_LETTER = 'L'
+
 /** 引导态等待第二段按键的超时（毫秒） */
 export const LEADER_TIMEOUT = 2000
 
@@ -25,7 +33,7 @@ export const DEFAULT_MENU_LETTERS = {
   module: 'J', // 交付物
   dashboard: 'Y', // 仪表盘
   report: 'R', // 项目报告
-  document: 'W', // 文档管理
+  document: 'F', // 文档管理（避免 ⇧⌘W 与浏览器冲突）
   option: 'O', // 项目设置
   'project-list': 'X', // 项目管理
   'team-option': 'S' // 团队设置
@@ -80,13 +88,10 @@ export const TOP_ITEMS = [
 
 /** 缺陷页默认动作（页面运行时通过 registerPage 提供执行回调） */
 export const DEFECT_ACTION_DEFAULTS = [
-  { key: 'switchProject', defaultLetter: 'L', titleKey: 'keyboard.act.switch-project' },
-  { key: 'addMenu', defaultLetter: 'E', titleKey: 'keyboard.act.add-menu' },
-  { key: 'query', defaultLetter: 'S', titleKey: 'keyboard.act.query' },
-  { key: 'switchTab', defaultLetter: 'J', titleKey: 'keyboard.act.switch-tab' },
-  { key: 'statistic', defaultLetter: 'I', titleKey: 'keyboard.act.statistic' },
-  { key: 'statisticNav', defaultLetter: 'G', titleKey: 'keyboard.act.statistic-nav' },
-  { key: 'switchView', defaultLetter: 'O', titleKey: 'keyboard.act.switch-view' },
+  { key: 'newDefect', defaultLetter: 'E', titleKey: 'keyboard.act.new-defect' },
+  { key: 'import', defaultLetter: 'U', titleKey: 'keyboard.act.import' },
+  { key: 'export', defaultLetter: 'R', titleKey: 'keyboard.act.export' },
+  { key: 'statistic', defaultLetter: 'I', titleKey: 'keyboard.act.statistic-panel' },
   { key: 'prevPage', defaultLetter: 'B', titleKey: 'keyboard.act.prev-page' },
   { key: 'nextPage', defaultLetter: 'P', titleKey: 'keyboard.act.next-page' }
 ]
@@ -98,16 +103,64 @@ export const STATISTIC_TEMPLATE_ACTION_DEFAULTS = [
   { key: 'team', defaultLetter: 'H', titleKey: 'keyboard.act.statistic-template-team' }
 ]
 
+/** 登录页语言切换（与顶栏国际化下拉 1–7 一致） */
+export const LOGIN_LANG_ACTION_DEFAULTS = [
+  { key: 'langZhCN', locale: 'zh_CN', icon: 'lang_zh_CN', defaultLetter: '1', titleKey: 'keyboard.act.login-lang-zh-cn' },
+  { key: 'langZhTW', locale: 'zh_TW', icon: 'lang_zh_TW', defaultLetter: '2', titleKey: 'keyboard.act.login-lang-zh-tw' },
+  { key: 'langEnUS', locale: 'en_US', icon: 'lang_en_US', defaultLetter: '3', titleKey: 'keyboard.act.login-lang-en' },
+  { key: 'langRu', locale: 'ru', icon: 'lang_ru', defaultLetter: '4', titleKey: 'keyboard.act.login-lang-ru' },
+  { key: 'langJaJP', locale: 'ja_JP', icon: 'lang_ja_JP', defaultLetter: '5', titleKey: 'keyboard.act.login-lang-ja' },
+  { key: 'langKoKR', locale: 'ko_KR', icon: 'lang_ko_KR', defaultLetter: '6', titleKey: 'keyboard.act.login-lang-ko' },
+  { key: 'langAr', locale: 'ar', icon: 'lang_ar', defaultLetter: '7', titleKey: 'keyboard.act.login-lang-ar' }
+]
+
+/** 登录页默认动作 */
+export const LOGIN_ACTION_DEFAULTS = [
+  { key: 'username', defaultLetter: 'U', titleKey: 'keyboard.act.login-username' },
+  { key: 'password', defaultLetter: 'P', titleKey: 'keyboard.act.login-password' },
+  { key: 'submit', defaultLetter: 'L', titleKey: 'keyboard.act.login-submit' },
+  { key: 'remember', defaultLetter: 'O', titleKey: 'keyboard.act.login-remember' },
+  { key: 'register', defaultLetter: 'E', titleKey: 'keyboard.act.login-register' },
+  { key: 'captcha', defaultLetter: 'K', titleKey: 'keyboard.act.login-captcha' },
+  { key: 'refreshCaptcha', defaultLetter: 'F', titleKey: 'keyboard.act.login-captcha-refresh' },
+  ...LOGIN_LANG_ACTION_DEFAULTS
+]
+
+/** 注册页默认动作 */
+export const REGISTER_ACTION_DEFAULTS = [
+  { key: 'username', defaultLetter: 'U', titleKey: 'keyboard.act.register-username' },
+  { key: 'nickName', defaultLetter: 'H', titleKey: 'keyboard.act.register-nickname' },
+  { key: 'password', defaultLetter: 'P', titleKey: 'keyboard.act.register-password' },
+  { key: 'confirmPassword', defaultLetter: 'D', titleKey: 'keyboard.act.register-confirm-password' },
+  { key: 'submit', defaultLetter: 'E', titleKey: 'keyboard.act.register-submit' },
+  { key: 'goLogin', defaultLetter: 'L', titleKey: 'keyboard.act.register-go-login' },
+  { key: 'refreshPage', defaultLetter: 'R', titleKey: 'keyboard.act.register-refresh-page' }
+]
+
+/** 通知页默认动作 */
+export const NOTICE_ACTION_DEFAULTS = [
+  { key: 'query', defaultLetter: 'S', titleKey: 'keyboard.act.query' },
+  { key: 'switchTab', defaultLetter: 'J', titleKey: 'keyboard.act.switch-tab' },
+  { key: 'config', defaultLetter: 'G', titleKey: 'keyboard.act.notice-config' },
+  { key: 'send', defaultLetter: 'E', titleKey: 'keyboard.act.notice-send' },
+  { key: 'prevPage', defaultLetter: 'B', titleKey: 'keyboard.act.prev-page' },
+  { key: 'nextPage', defaultLetter: 'P', titleKey: 'keyboard.act.next-page' }
+]
+
 const LETTER_POOL = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
 const DIGIT_POOL = '123456789'.split('')
 
 /** 规范化按键为可比较字符（单字母大写 / 数字原样） */
+/** 布局级等特殊单键（侧栏折叠 `` ` `` 等），与字母/数字并列参与映射 */
+const LAYOUT_SINGLE_KEYS = new Set(['`', '~', '-', '=', '+', ',', '.', '/'])
+
 export function normalizeKey(raw) {
   if (!raw) return ''
   const k = String(raw)
   if (k.length === 1) {
     if (/[a-zA-Z]/.test(k)) return k.toUpperCase()
     if (/[0-9]/.test(k)) return k
+    if (LAYOUT_SINGLE_KEYS.has(k)) return k
   }
   return ''
 }

@@ -25,9 +25,14 @@ const STATISTIC_DIALOG_VM_NAMES = new Set([
   'MyLife'
 ])
 
+const NOTICE_OPTION_DIALOG_VM_NAMES = new Set([
+  'OptionNotice'
+])
+
 const FORM_SHORTCUT_DIALOG_VM_NAMES = new Set([
   ...DEFECT_TOOL_DIALOG_VM_NAMES,
-  ...STATISTIC_DIALOG_VM_NAMES
+  ...STATISTIC_DIALOG_VM_NAMES,
+  ...NOTICE_OPTION_DIALOG_VM_NAMES
 ])
 
 function isModifierKeyEvent(e) {

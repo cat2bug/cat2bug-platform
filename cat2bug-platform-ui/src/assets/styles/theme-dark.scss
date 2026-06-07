@@ -3962,6 +3962,11 @@ html.dark {
         color: var(--text-color-primary) !important;
       }
 
+      .notice-defect-title,
+      .notice-defect-title-num {
+        color: var(--text-color-primary) !important;
+      }
+
       .notice-header-body-base {
         .el-col {
           color: var(--text-color-regular) !important;

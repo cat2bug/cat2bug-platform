@@ -1,13 +1,14 @@
 <template>
-  <div class="login-body">
+  <div ref="loginBody" class="login-body" tabindex="-1">
     <cat-illustration class="login-illustration" />
     <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form">
-      <div class="custom-form-item">
+      <div class="custom-form-item login-kbd-anchor-host">
         <label class="item-label">
           <svg-icon icon-class="user" /> {{$t('account')}}
         </label>
         <el-form-item prop="username">
           <el-input
+            ref="usernameInput"
             v-model="loginForm.username"
             type="text"
             auto-complete="off"
@@ -15,14 +16,16 @@
             :maxlength="LOGIN_USERNAME_MAX_LENGTH"
           />
         </el-form-item>
+        <span class="login-kbd-hint login-kbd-hint-username" aria-hidden="true" />
       </div>
 
-      <div class="custom-form-item">
+      <div class="custom-form-item login-kbd-anchor-host">
         <label class="item-label">
           <svg-icon icon-class="password" /> {{$t('password')}}
         </label>
         <el-form-item prop="password">
           <el-input
+            ref="passwordInput"
             v-model="loginForm.password"
             type="password"
             auto-complete="off"
@@ -32,12 +35,14 @@
             show-password
           />
         </el-form-item>
+        <span class="login-kbd-hint login-kbd-hint-password" aria-hidden="true" />
       </div>
 
-      <div class="custom-form-item" v-if="captchaEnabled">
+      <div v-if="captchaEnabled" class="custom-form-item login-kbd-anchor-host">
         <label class="item-label">{{$t('verification-code')}}</label>
         <el-form-item prop="code">
           <el-input
+            ref="captchaInput"
             v-model="loginForm.code"
             auto-complete="off"
             :placeholder="$t('verification-code')"
@@ -52,11 +57,19 @@
             />
           </div>
         </el-form-item>
+        <span class="login-kbd-hint login-kbd-hint-captcha" aria-hidden="true" />
+        <span class="login-kbd-hint login-kbd-hint-captcha-refresh" aria-hidden="true" />
       </div>
 
       <div class="form-options">
-        <el-checkbox v-model="loginForm.rememberMe">{{$t("remember-password")}}</el-checkbox>
-        <router-link v-if="register" class="register-link" :to="'/register'">{{$t('register-now')}}</router-link>
+        <div class="login-remember-host login-kbd-anchor-host">
+          <el-checkbox v-model="loginForm.rememberMe">{{$t("remember-password")}}</el-checkbox>
+          <span class="login-kbd-hint login-kbd-hint-remember" aria-hidden="true" />
+        </div>
+        <router-link v-if="register" class="register-link login-kbd-anchor-host" :to="'/register'">
+          {{$t('register-now')}}
+          <span class="login-kbd-hint login-kbd-hint-register" aria-hidden="true" />
+        </router-link>
       </div>
 
       <div class="login-divider">
@@ -70,17 +83,22 @@
           <svg-icon icon-class="international" /> {{$t('login.language')}}
         </label>
         <div class="lang-group">
-          <svg-icon icon-class="lang_zh_CN" @click="changeLang('zh_CN')" title="简体中文" />
-          <svg-icon icon-class="lang_zh_TW" @click="changeLang('zh_TW')" title="繁體中文" />
-          <svg-icon icon-class="lang_en_US" @click="changeLang('en_US')" title="English" />
-          <svg-icon icon-class="lang_ru" @click="changeLang('ru')" title="Русский" />
-          <svg-icon icon-class="lang_ja_JP" @click="changeLang('ja_JP')" title="日本語" />
-          <svg-icon icon-class="lang_ko_KR" @click="changeLang('ko_KR')" title="한국어" />
-          <svg-icon icon-class="lang_ar" @click="changeLang('ar')" title="العربية" />
+          <div
+            v-for="lang in loginLangOptions"
+            :key="lang.locale"
+            class="lang-icon-host login-kbd-anchor-host"
+            :class="{ 'lang-icon-host--active': currentLocale === lang.locale }"
+            :data-login-lang="lang.locale"
+            :title="lang.title"
+            @click="changeLang(lang.locale)"
+          >
+            <svg-icon :icon-class="lang.icon" />
+          </div>
         </div>
       </div>
 
-      <el-form-item class="login-btn-item">
+      <el-form-item class="login-btn-item login-kbd-anchor-host">
+        <span class="login-kbd-hint login-kbd-hint-submit" aria-hidden="true" />
         <el-button
           :loading="loading"
           size="medium"
@@ -113,10 +131,16 @@ import {
   LOGIN_PASSWORD_MAX_LENGTH,
   LOGIN_USERNAME_MAX_LENGTH
 } from '@/utils/login-credential-rules'
+import pageActionHints from '@/mixins/page-action-hints'
+import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
+import { LOGIN_LANG_ACTION_DEFAULTS } from '@/plugins/shortcut/keymap'
+
+const LOGIN_KBD_SCOPE = 'login'
 
 export default {
   name: "UserNameAndPasswordLogin",
   components: { PixelCaptchaCanvas, CatIllustration },
+  mixins: [pageActionHints],
   data() {
     return {
       LOGIN_USERNAME_MAX_LENGTH,
@@ -142,12 +166,163 @@ export default {
       default: null
     }
   },
+  computed: {
+    currentLocale() {
+      return this.$i18n.locale
+    },
+    loginLangOptions() {
+      return LOGIN_LANG_ACTION_DEFAULTS.map((item) => ({
+        ...item,
+        title: this.$t(item.titleKey)
+      }))
+    }
+  },
   created() {
     this.syncLoginRules()
     this.getCode();
     this.getCookie();
+    this.registerLoginShortcuts()
+  },
+  mounted() {
+    this.registerLoginShortcuts()
+  },
+  beforeDestroy() {
+    if (this.$shortcut) this.$shortcut.unregisterPage(LOGIN_KBD_SCOPE)
   },
   methods: {
+    registerLoginShortcuts() {
+      if (!this.$shortcut) return
+      const langActions = LOGIN_LANG_ACTION_DEFAULTS.map((lang) => ({
+        key: lang.key,
+        defaultLetter: lang.defaultLetter,
+        run: () => this.changeLang(lang.locale)
+      }))
+      this.$shortcut.registerPage(LOGIN_KBD_SCOPE, [
+        { key: 'username', defaultLetter: 'U', run: () => this.focusLoginUsername() },
+        { key: 'password', defaultLetter: 'P', run: () => this.focusLoginPassword() },
+        { key: 'submit', defaultLetter: 'L', run: () => this.handleLogin() },
+        { key: 'remember', defaultLetter: 'O', run: () => this.toggleLoginRemember() },
+        { key: 'register', defaultLetter: 'E', run: () => this.goRegister() },
+        { key: 'captcha', defaultLetter: 'K', run: () => this.focusLoginCaptcha() },
+        { key: 'refreshCaptcha', defaultLetter: 'F', run: () => this.getCode() },
+        ...langActions
+      ])
+    },
+    shouldAutoFocusPageActionHost() {
+      return true
+    },
+    getPageActionHintContainer() {
+      return this.$refs.loginBody || this.$el
+    },
+    getPageActionHints() {
+      const L = (key, def) => shortcutStore.getLetter(`action.${LOGIN_KBD_SCOPE}.${key}`, def)
+      const float = { placement: 'bottom-right-outset', outset: 2 }
+      return [
+        {
+          key: 'username',
+          letter: L('username', 'U'),
+          badgeSelector: '.login-kbd-hint-username',
+          floatOffset: float,
+          skipViewportCheck: true,
+          run: () => this.focusLoginUsername()
+        },
+        {
+          key: 'password',
+          letter: L('password', 'P'),
+          badgeSelector: '.login-kbd-hint-password',
+          floatOffset: float,
+          skipViewportCheck: true,
+          run: () => this.focusLoginPassword()
+        },
+        {
+          key: 'submit',
+          letter: L('submit', 'L'),
+          badgeSelector: '.login-kbd-hint-submit',
+          floatOffset: float,
+          skipViewportCheck: true,
+          run: () => this.handleLogin()
+        },
+        {
+          key: 'remember',
+          letter: L('remember', 'O'),
+          badgeSelector: '.login-kbd-hint-remember',
+          floatOffset: float,
+          skipViewportCheck: true,
+          run: () => this.toggleLoginRemember()
+        },
+        {
+          key: 'register',
+          letter: L('register', 'E'),
+          badgeSelector: '.login-kbd-hint-register',
+          floatOffset: float,
+          skipViewportCheck: true,
+          visible: () => this.register,
+          run: () => this.goRegister()
+        },
+        {
+          key: 'captcha',
+          letter: L('captcha', 'K'),
+          badgeSelector: '.login-kbd-hint-captcha',
+          floatOffset: float,
+          skipViewportCheck: true,
+          visible: () => this.captchaEnabled,
+          run: () => this.focusLoginCaptcha()
+        },
+        {
+          key: 'refreshCaptcha',
+          letter: L('refreshCaptcha', 'F'),
+          badgeSelector: '.login-kbd-hint-captcha-refresh',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
+          skipViewportCheck: true,
+          visible: () => this.captchaEnabled,
+          run: () => this.getCode()
+        }
+      ]
+    },
+    getPageDynamicActionHints({ usedLetters }) {
+      const container = this.getPageActionHintContainer()
+      if (!container) return []
+      const float = { placement: 'bottom-right-outset', outset: 2 }
+      return LOGIN_LANG_ACTION_DEFAULTS.map((lang) => {
+        const anchor = container.querySelector(`[data-login-lang="${lang.locale}"]`)
+        if (!anchor) return null
+        const letter = shortcutStore.getLetter(`action.${LOGIN_KBD_SCOPE}.${lang.key}`, lang.defaultLetter)
+        const norm = String(letter || lang.defaultLetter || '')
+        if (!norm || usedLetters.has(norm)) return null
+        return {
+          key: lang.key,
+          letter: norm,
+          anchor,
+          skipViewportCheck: true,
+          floatOffset: float,
+          run: () => this.changeLang(lang.locale)
+        }
+      }).filter(Boolean)
+    },
+    focusLoginInput(refName) {
+      const comp = this.$refs[refName]
+      if (!comp) return
+      const input = comp.$refs && comp.$refs.input
+      if (input && typeof input.focus === 'function') {
+        input.focus()
+      }
+    },
+    focusLoginUsername() {
+      this.focusLoginInput('usernameInput')
+    },
+    focusLoginPassword() {
+      this.focusLoginInput('passwordInput')
+    },
+    focusLoginCaptcha() {
+      this.focusLoginInput('captchaInput')
+    },
+    toggleLoginRemember() {
+      this.loginForm.rememberMe = !this.loginForm.rememberMe
+    },
+    goRegister() {
+      if (!this.register) return
+      this.$router.push('/register')
+    },
     syncLoginRules() {
       const credentialRules = buildLoginCredentialRules(key => this.$i18n.t(key))
       this.loginRules = {
@@ -202,9 +377,14 @@ export default {
         }
       });
     },
-    changeLang(lang){
-      this.$emit('lang', lang);
-      this.syncLoginRules();
+    changeLang(lang) {
+      this.$emit('lang', lang)
+      this.syncLoginRules()
+      this.$nextTick(() => {
+        if (this.$_pageActionModifierHeld) {
+          this.$_revealPageActionBadges()
+        }
+      })
     }
   }
 }
@@ -261,6 +441,25 @@ html.dark .login-form {
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
 }
 
+.login-kbd-anchor-host {
+  position: relative;
+}
+
+.login-kbd-hint {
+  position: absolute;
+  right: -2px;
+  bottom: -4px;
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.login-kbd-hint-captcha-refresh {
+  right: 0;
+  bottom: 8px;
+}
+
 .custom-form-item {
   margin-bottom: 16px;
 
@@ -278,7 +477,20 @@ html.dark .login-form {
   }
 }
 
+.login-remember-host {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.login-kbd-hint-remember {
+  right: -8px;
+  bottom: -6px;
+}
+
 .register-link {
+  position: relative;
+  display: inline-block;
   font-size: 13px;
   color: var(--login-accent, #ffc107);
   text-decoration: none;
@@ -369,23 +581,38 @@ html.dark .login-form {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
+}
+
+.lang-icon-host {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 32px;
+  padding: 3px 6px;
+  box-sizing: border-box;
+  border: 1px solid var(--login-input-border, var(--border-color-base));
+  border-radius: 6px;
+  cursor: pointer;
+  opacity: 0.8;
+  transition: transform 0.15s, opacity 0.15s, border-color 0.15s;
 
   .svg-icon {
-    width: 38px;
-    height: 32px;
-    padding: 3px 6px;
-    box-sizing: border-box;
-    border: 1px solid var(--login-input-border, var(--border-color-base));
-    border-radius: 6px;
-    cursor: pointer;
-    opacity: 0.8;
-    transition: transform 0.15s, opacity 0.15s, border-color 0.15s;
+    width: 100%;
+    height: 100%;
+  }
 
-    &:hover {
-      opacity: 1;
-      transform: scale(1.1);
-      border-color: var(--login-accent, #ffc107);
-    }
+  &:hover {
+    opacity: 1;
+    transform: scale(1.1);
+    border-color: var(--login-accent, #ffc107);
+  }
+
+  &.lang-icon-host--active {
+    opacity: 1;
+    border-color: var(--login-accent, #ffc107);
+    box-shadow: 0 0 0 1px var(--login-accent-glow, rgba(255, 193, 7, 0.18));
   }
 }
 

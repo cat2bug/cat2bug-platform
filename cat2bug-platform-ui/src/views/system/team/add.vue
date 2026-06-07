@@ -13,7 +13,10 @@
     </el-form>
     <el-row>
       <el-col :span="24">
-        <el-button type="primary" @click="submitForm">{{ $t('team.create') }}</el-button>
+        <el-button class="defect-kbd-hint-host" type="primary" @click="submitForm">
+          {{ $t('team.create') }}
+          <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
+        </el-button>
       </el-col>
     </el-row>
   </div>
@@ -24,11 +27,15 @@ import {addTeam, listTeam, updateTeam} from "@/api/system/team";
 import {updateConfig} from "@/api/system/user-config";
 import {removeCurrentProjectId} from "@/utils/project";
 import store from "@/store";
+import dialogFormShortcuts from '@/mixins/dialog-form-shortcuts'
+import formFieldHints from '@/mixins/form-field-hints'
 
 export default {
   name: "TeamAdd",
+  mixins: [dialogFormShortcuts, formFieldHints],
   data() {
     return {
+      visible: true,
       // 遮罩层
       loading: true,
       // 表单参数
@@ -43,6 +50,11 @@ export default {
         ],
       }
     };
+  },
+  mounted() {
+    this.$nextTick(() => {
+      this.$_syncFieldHintListeners(true)
+    })
   },
   methods: {
     // 表单重置

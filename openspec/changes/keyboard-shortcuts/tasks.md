@@ -87,3 +87,46 @@
 - [x] 10.3 `statistic-grid-kbd.js` 跨区上下传递（边界行 + x 对齐）
 - [x] 10.4 Esc：导航中退出导航，否则返回上一页
 - [x] 10.5 全局 `page-kbd-hints.scss` 浮层徽标样式
+
+## 11. 缺陷工具弹框键盘
+
+- [x] 11.1 `defect-tool-dialog-kbd.js` + `defect-tool-dialog-close.js`：六个工具弹框统一 mixin
+- [x] 11.2 `Cmd/Ctrl+Enter` 提交、`Esc`/取消/关闭前未保存确认（`$modal.confirm`）
+- [x] 11.3 弹框打开后聚焦首字段 + `Cmd/Ctrl` 字段字母徽标
+- [x] 11.4 `defect-tool-dialog-close-state.js` 表单快照序列化
+
+## 12. 处理缺陷抽屉徽标
+
+- [x] 12.1 `handle-defect-kbd-hints.js`：工具栏字母 + 风琴组数字/字母徽标
+- [x] 12.2 `panel-kbd-hints.js`：视口检测与键位分配器
+- [x] 12.3 `Cmd/Ctrl+↑/↓` 滚动抽屉内容区；栈顶抽屉守卫
+
+## 13. 统计模块配置弹框
+
+- [x] 13.1 `statistic-dialog-kbd.js` + `statistic-dialog-close.js`
+- [x] 13.2 `PersonalRemindTimer` / `MyLife` 接入关闭确认与保存快捷键
+- [x] 13.3 `statistic-dialog-close-state.js` 各弹框自定义快照
+
+## 14. 报时提醒表格与时间控件
+
+- [x] 14.1 `remind-timer-table-kbd.js`：`Cmd/Ctrl+数字` 跳行、`+` 新增、`Del` 删行
+- [x] 14.2 时间控件失焦关面板、`pick`/回车回焦、`↑/↓` 重开下拉
+- [x] 14.3 试播/删除/新增按钮统一焦点环
+- [x] 14.4 E2E：`e2e/remind-timer-time-picker-blur.spec.cjs`
+
+## 15. 统计区 G 导航增强
+
+- [x] 15.1 `statistic-item-kbd.js`：模块主点击区映射表
+- [x] 15.2 导航中 `Enter`/空格触发 `activateStatisticItemClick`
+
+## 16. 表单焦点视觉统一
+
+- [x] 16.1 移除 `cat2bug-field-flash` 荧光动画，改用全站 `:focus` 焦点环
+- [x] 16.2 MessageBox 底部按钮区：分割线与按钮间距 10px（`cat2bug.scss`）
+
+## 17. 布局级 Shift+Cmd 导航浮层
+
+- [x] 17.1 `layout-nav-hints.js` mixin + `utils/layout-nav-hints.js`
+- [x] 17.2 Navbar / LangSelect / Hamburger 增加 `data-layout-nav` 锚点
+- [x] 17.3 与 `g` 导航共用 `buildNavItems` 字母；侧栏折叠默认 `` ` ``
+- [x] 17.4 页面级 Cmd 浮层在 `shiftKey` 时互斥跳过

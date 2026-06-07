@@ -28,6 +28,7 @@ import RightPanel from '@/components/RightPanel'
 import { AppMain, Navbar, Settings, Sidebar, TagsView } from './components'
 import ResizeMixin from './mixin/ResizeHandler'
 import ViewBackMixin from '@/layout/mixin/ViewBackHandle'
+import layoutNavHints from '@/mixins/layout-nav-hints'
 import { mapState } from 'vuex'
 import variables from '@/assets/styles/variables.scss'
 import { isProjectListPageRoute } from '@/utils/project-list-page'
@@ -42,7 +43,7 @@ export default {
     Sidebar,
     TagsView
   },
-  mixins: [ResizeMixin, ViewBackMixin],
+  mixins: [ResizeMixin, ViewBackMixin, layoutNavHints],
   computed: {
     ...mapState({
       theme: state => state.settings.theme,

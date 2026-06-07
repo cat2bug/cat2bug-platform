@@ -4,8 +4,12 @@ import com.cat2bug.common.core.domain.entity.SysDefect;
 import com.cat2bug.common.utils.MessageUtils;
 import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.im.service.IMessageTemplate;
+import com.cat2bug.system.util.DefectNoticeFieldSupport;
+import com.cat2bug.system.util.DefectNoticeFieldSupport.FieldLine;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -22,50 +26,49 @@ public class DefectMessageOfNoticeTemplateImpl implements IMessageTemplate<SysDe
     private final static String SWITCH_KEY = "switch";
     private final static String RECEIVER_CONFIG_KEY = "receiver";
 
+    @Autowired
+    private DefectNoticeFieldSupport defectNoticeFieldSupport;
 
     @Override
     public String toText(SysDefect obj, Map<String, Object> params) {
-        if(this.isValid(params)==false) return null;
+        if (this.isValid(params) == false) return null;
         StringBuffer sb = new StringBuffer();
-        sb.append(String.format("%s\n",MessageUtils.message("defect.notice")));
-        sb.append(String.format("%s %s/#/project/defect?projectId=%d&defectId=%d \n", MessageUtils.message("defect.click-view"), obj.getSrcHost(), obj.getProjectId(), obj.getDefectId()));
-        sb.append(String.format("%s: %s \n", MessageUtils.message("defectLevel"),MessageUtils.message(obj.getDefectLevel())));
-        sb.append(String.format("%s: %s \n", MessageUtils.message("defectTypeName"),MessageUtils.message(obj.getDefectType().name())));
-        sb.append(String.format("%s: %s \n", MessageUtils.message("defectStateName"),MessageUtils.message(obj.getDefectState().name())));
-        sb.append(String.format("%s: %s \n", MessageUtils.message("moduleName"),StringUtils.toNotBlankValue(obj.getModuleName())));
-        sb.append(String.format("%s: %s \n", MessageUtils.message("moduleVersion"),StringUtils.toNotBlankValue(obj.getModuleVersion())));
-        sb.append(String.format("%s: %s \n", MessageUtils.message("defectDescribe"),StringUtils.toNotBlankValue(obj.getDefectDescribe())));
+        sb.append(String.format("%s\n", MessageUtils.message("defect.notice")));
+        sb.append(String.format("%s %s/#/project/defect?projectId=%d&defectId=%d \n",
+                MessageUtils.message("defect.click-view"), obj.getSrcHost(), obj.getProjectId(), obj.getDefectId()));
+        appendFieldLines(sb, obj, "%s: %s \n");
         return sb.toString();
     }
 
     @Override
     public String toHtml(SysDefect obj, Map<String, Object> params) {
-        if(this.isValid(params)==false) return null;
+        if (this.isValid(params) == false) return null;
         StringBuffer sb = new StringBuffer();
-        sb.append(String.format("%s <br />",MessageUtils.message("defect.notice")));
-        sb.append(String.format("%s <a style=\"color: #409eff;\" href=\"%s/#/project/defect?projectId=%d&defectId=%d\">%s/#/project/defect?defectId=%d</a> <br />", MessageUtils.message("defect.click-view"), obj.getSrcHost(), obj.getProjectId(), obj.getDefectId(), obj.getSrcHost(), obj.getDefectId()));
-        sb.append(String.format("%s: %s <br />", MessageUtils.message("defectLevel"),MessageUtils.message(obj.getDefectLevel())));
-        sb.append(String.format("%s: %s <br />", MessageUtils.message("defectTypeName"),MessageUtils.message(obj.getDefectType().name())));
-        sb.append(String.format("%s: %s <br />", MessageUtils.message("defectStateName"),MessageUtils.message(obj.getDefectState().name())));
-        sb.append(String.format("%s: %s <br />", MessageUtils.message("moduleName"),StringUtils.toNotBlankValue(obj.getModuleName())));
-        sb.append(String.format("%s: %s <br />", MessageUtils.message("moduleVersion"),StringUtils.toNotBlankValue(obj.getModuleVersion())));
-        sb.append(String.format("%s: %s <br />", MessageUtils.message("defectDescribe"),StringUtils.toNotBlankValue(obj.getDefectDescribe())));
+        sb.append(String.format("%s <br />", MessageUtils.message("defect.notice")));
+        sb.append(String.format("%s <a style=\"color: #409eff;\" href=\"%s/#/project/defect?projectId=%d&defectId=%d\">%s/#/project/defect?defectId=%d</a> <br />",
+                MessageUtils.message("defect.click-view"), obj.getSrcHost(), obj.getProjectId(), obj.getDefectId(),
+                obj.getSrcHost(), obj.getDefectId()));
+        appendFieldLines(sb, obj, "%s: %s <br />");
         return sb.toString();
     }
 
     @Override
     public String toMarkdown(SysDefect obj, Map<String, Object> params) {
-        if(this.isValid(params)==false) return null;
+        if (this.isValid(params) == false) return null;
         StringBuffer sb = new StringBuffer();
         sb.append(String.format("## #%d %s \n\n", obj.getProjectNum(), obj.getDefectName()));
-        sb.append(String.format("%s [%s/#/project/defect?defectId=%d](%s/#/project/defect?projectId=%d&defectId=%d) \n\n", MessageUtils.message("defect.click-view"), obj.getSrcHost(), obj.getDefectId(), obj.getSrcHost(), obj.getProjectId(), obj.getDefectId()));
-        sb.append(String.format("**%s:** %s \n\n", MessageUtils.message("defectLevel"),MessageUtils.message(obj.getDefectLevel())));
-        sb.append(String.format("**%s:** %s \n\n", MessageUtils.message("defectTypeName"),MessageUtils.message(obj.getDefectType().name())));
-        sb.append(String.format("**%s:** %s \n\n", MessageUtils.message("defectStateName"),MessageUtils.message(obj.getDefectState().name())));
-        sb.append(String.format("**%s:** %s \n\n", MessageUtils.message("moduleName"), StringUtils.toNotBlankValue(obj.getModuleName())));
-        sb.append(String.format("**%s:** %s \n\n", MessageUtils.message("moduleVersion"),StringUtils.toNotBlankValue(obj.getModuleVersion())));
-        sb.append(String.format("**%s:** %s \n\n", MessageUtils.message("defectDescribe"),StringUtils.toNotBlankValue(obj.getDefectDescribe())));
+        sb.append(String.format("%s [%s/#/project/defect?defectId=%d](%s/#/project/defect?projectId=%d&defectId=%d) \n\n",
+                MessageUtils.message("defect.click-view"), obj.getSrcHost(), obj.getDefectId(),
+                obj.getSrcHost(), obj.getProjectId(), obj.getDefectId()));
+        appendFieldLines(sb, obj, "**%s:** %s \n\n");
         return sb.toString();
+    }
+
+    private void appendFieldLines(StringBuffer sb, SysDefect defect, String lineFormat) {
+        List<FieldLine> lines = defectNoticeFieldSupport.buildFieldLines(defect);
+        for (FieldLine line : lines) {
+            sb.append(String.format(lineFormat, line.getLabel(), StringUtils.toNotBlankValue(line.getValue())));
+        }
     }
 
     private boolean isValid(Map<String, Object> params) {

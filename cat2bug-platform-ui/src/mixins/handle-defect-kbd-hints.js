@@ -121,6 +121,7 @@ export default {
         this.$_hideHandleKbdHints()
       }
       if (isModifierKeyEvent(e)) {
+        if (e.shiftKey) return
         this.$_handleKbdModifierHeld = true
         this.$_prepareHandleKbdHints()
         this.$_attachHandleKbdScrollListener()
@@ -133,7 +134,7 @@ export default {
         }
         return
       }
-      if (!(e.metaKey || e.ctrlKey) || e.altKey) return
+      if (!(e.metaKey || e.ctrlKey) || e.altKey || e.shiftKey) return
       if (!this.$_handleKbdMap) this.$_prepareHandleKbdHints()
 
       const k = e.key

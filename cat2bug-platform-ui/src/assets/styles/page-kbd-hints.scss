@@ -10,6 +10,30 @@
   overflow: visible;
 }
 
+.layout-nav-hint-anchor {
+  position: relative;
+  overflow: visible !important;
+}
+
+.layout-nav-kbd-hint-float {
+  font-size: 10px !important;
+}
+
+.team-select-root.layout-nav-hint-anchor {
+  position: relative;
+  overflow: visible !important;
+}
+
+.layout-nav-kbd-dropdown-active {
+  background-color: rgba(64, 158, 255, 0.16) !important;
+  color: #409eff !important;
+}
+
+html.dark .layout-nav-kbd-dropdown-active {
+  background-color: rgba(255, 213, 79, 0.18) !important;
+  color: #ffd54f !important;
+}
+
 .cat2bug-page-kbd-hint-float,
 .defect-list-kbd-hint {
   display: inline-flex;
@@ -98,13 +122,15 @@ html:not(.dark) .cat2bug-field-hint {
 }
 
 .el-dialog .defect-kbd-hint-host.el-button,
-.defect-drawer-accent .defect-kbd-hint-host.el-button {
+.defect-drawer-accent .defect-kbd-hint-host.el-button,
+.app-container .defect-kbd-hint-host.el-button {
   position: relative;
   overflow: visible !important;
 }
 
 .el-dialog .defect-kbd-hint-host .defect-kbd-hint,
-.defect-drawer-accent .defect-kbd-hint-host .defect-kbd-hint {
+.defect-drawer-accent .defect-kbd-hint-host .defect-kbd-hint,
+.app-container .defect-kbd-hint-host .defect-kbd-hint {
   right: 0;
   bottom: 0;
   transform: translate(50%, 50%);
@@ -114,14 +140,16 @@ html:not(.dark) .cat2bug-field-hint {
 }
 
 .el-dialog .defect-kbd-hint-host .defect-kbd-hint--primary,
-.defect-drawer-accent .defect-kbd-hint-host .defect-kbd-hint--primary {
+.defect-drawer-accent .defect-kbd-hint-host .defect-kbd-hint--primary,
+.app-container .defect-kbd-hint-host .defect-kbd-hint--primary {
   color: #ffffff;
   background: rgba(0, 0, 0, 0.55);
   border-color: rgba(0, 0, 0, 0.35);
 }
 
 html:not(.dark) .el-dialog .defect-kbd-hint-host .defect-kbd-hint--primary,
-html:not(.dark) .defect-drawer-accent .defect-kbd-hint-host .defect-kbd-hint--primary {
+html:not(.dark) .defect-drawer-accent .defect-kbd-hint-host .defect-kbd-hint--primary,
+html:not(.dark) .app-container .defect-kbd-hint-host .defect-kbd-hint--primary {
   color: #ffffff;
   background: #303133;
   border-color: #303133;

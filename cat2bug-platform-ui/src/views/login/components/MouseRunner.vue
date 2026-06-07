@@ -5,6 +5,8 @@
 </template>
 
 <script>
+import { markArrowEventHandled, resolveArrowKey } from './mouse-arrow-keys'
+
 /** 横向奔跑精灵：1 行×8 列，朝右；朝左由 flipX 镜像 */
 const RUN_SPRITE_COLS = 8
 const RUN_SPRITE_FRAME_W = 214
@@ -69,6 +71,21 @@ const MOVE_KEY_CODES = new Set([
   'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
   'w', 'a', 's', 'd', 'W', 'A', 'S', 'D'
 ])
+/** 同轴反向键：避免左右/上下同时残留导致 dx/dy 抵消、老鼠不动 */
+const OPPOSITE_AXIS_KEYS = {
+  ArrowLeft: ['ArrowRight', 'd', 'D'],
+  ArrowRight: ['ArrowLeft', 'a', 'A'],
+  ArrowUp: ['ArrowDown', 's', 'S'],
+  ArrowDown: ['ArrowUp', 'w', 'W'],
+  a: ['ArrowRight', 'd', 'D'],
+  A: ['ArrowRight', 'd', 'D'],
+  d: ['ArrowLeft', 'a', 'A'],
+  D: ['ArrowLeft', 'a', 'A'],
+  w: ['ArrowDown', 's', 'S'],
+  W: ['ArrowDown', 's', 'S'],
+  s: ['ArrowUp', 'w', 'W'],
+  S: ['ArrowUp', 'w', 'W']
+}
 const FORM_BARRIER_OFFSET = 0
 const FORM_BARRIER_Y_EPS = 8
 const Z_MOUSE_ABOVE_FORM = 4
@@ -116,8 +133,8 @@ export default {
     document.addEventListener('mousedown', this.onDocumentMouseDown)
     document.addEventListener('mousemove', this.onDocumentMouseMove)
     document.addEventListener('mouseup', this.onDocumentMouseUp)
-    document.addEventListener('keydown', this.onKeyDown)
-    document.addEventListener('keyup', this.onKeyUp)
+    window.addEventListener('keydown', this.onKeyDown, true)
+    window.addEventListener('keyup', this.onKeyUp, true)
     window.addEventListener('resize', this.handleResize)
     this.lastTime = performance.now()
     this.animationFrame = requestAnimationFrame(this.update)
@@ -133,8 +150,8 @@ export default {
     document.removeEventListener('mousedown', this.onDocumentMouseDown)
     document.removeEventListener('mousemove', this.onDocumentMouseMove)
     document.removeEventListener('mouseup', this.onDocumentMouseUp)
-    document.removeEventListener('keydown', this.onKeyDown)
-    document.removeEventListener('keyup', this.onKeyUp)
+    window.removeEventListener('keydown', this.onKeyDown, true)
+    window.removeEventListener('keyup', this.onKeyUp, true)
     window.removeEventListener('resize', this.handleResize)
     if (this.reducedMotionMq) {
       this.reducedMotionMq.removeEventListener('change', this.onReducedMotionChange)
@@ -168,6 +185,8 @@ export default {
         farSpawnT: 0,
         farStartY: 0,
         keysDown: new Set(),
+        minMouseX: EDGE_PAD,
+        maxMouseX: EDGE_PAD,
         formLeft: null,
         formRight: null,
         formBottom: null,
@@ -223,21 +242,88 @@ export default {
       const aboveForm = this.mouseY > this.formBottom - FORM_BARRIER_OFFSET
       el.style.zIndex = String(aboveForm ? Z_MOUSE_ABOVE_FORM : Z_MOUSE_BEHIND_FORM)
     },
+    resolveMoveKey(e) {
+      const arrow = resolveArrowKey(e)
+      if (arrow) return arrow
+      if (!e || !MOVE_KEY_CODES.has(e.key)) return null
+      return e.key
+    },
     onKeyDown(e) {
-      if (!MOVE_KEY_CODES.has(e.key) || this.isFormField(e.target)) return
-      e.preventDefault()
-      this.keysDown.add(e.key)
-      if (this.rmbDown) return
-      this.farSpawn = false
-      this.state = 'KEYBOARD_CONTROL'
+      const key = this.resolveMoveKey(e)
+      if (!key) return
+      const isArrow = key.startsWith('Arrow')
+      if (isArrow) {
+        const inForm = this.isFormField(e.target)
+        const withModifier = e.metaKey || e.ctrlKey
+        if (inForm && !withModifier) return
+        if (inForm) e.preventDefault()
+      } else if (this.isFormField(e.target)) {
+        return
+      } else {
+        e.preventDefault()
+      }
+      this.pressMoveKey(key)
+      const dpad = typeof window !== 'undefined' ? window.__cat2bugMouseDpad : null
+      if (dpad && dpad.metaHeld && key.startsWith('Arrow') && typeof dpad.pressArrowKeyHeld === 'function') {
+        dpad.pressArrowKeyHeld(key)
+        if (typeof dpad.touchArrowKeyActivity === 'function') {
+          dpad.touchArrowKeyActivity(key, e.repeat)
+        }
+      }
     },
     onKeyUp(e) {
-      if (!MOVE_KEY_CODES.has(e.key)) return
-      this.keysDown.delete(e.key)
-      if (this.rmbDown) return
+      if (markArrowEventHandled(e)) return
+      const key = this.resolveMoveKey(e)
+      if (!key) return
+      this.releaseMoveKey(key)
+      const dpad = typeof window !== 'undefined' ? window.__cat2bugMouseDpad : null
+      if (dpad && key.startsWith('Arrow') && typeof dpad.handleArrowKeyUp === 'function') {
+        dpad.handleArrowKeyUp(key)
+      }
+    },
+    notifyMoveKeysChanged() {
+      if (typeof window === 'undefined') return
+      window.dispatchEvent(new CustomEvent('cat2bug-mouse-runner-keys'))
+    },
+    exitKeyboardControlIfIdle() {
       if (!this.hasMovementKeys() && this.state === 'KEYBOARD_CONTROL') {
         this.enterSitLook()
       }
+    },
+    clearOppositeAxisKeys(key) {
+      const opposites = OPPOSITE_AXIS_KEYS[key]
+      if (!opposites) return
+      opposites.forEach((k) => this.keysDown.delete(k))
+    },
+    /** 供左下角方向键控件调用 */
+    pressMoveKey(key) {
+      if (!MOVE_KEY_CODES.has(key)) return
+      this.clearOppositeAxisKeys(key)
+      this.keysDown.add(key)
+      if (this.rmbDown) {
+        this.notifyMoveKeysChanged()
+        return
+      }
+      this.farSpawn = false
+      this.state = 'KEYBOARD_CONTROL'
+      this.notifyMoveKeysChanged()
+    },
+    releaseMoveKey(key) {
+      if (!MOVE_KEY_CODES.has(key)) return
+      this.keysDown.delete(key)
+      if (this.rmbDown) {
+        this.notifyMoveKeysChanged()
+        return
+      }
+      this.exitKeyboardControlIfIdle()
+      this.notifyMoveKeysChanged()
+    },
+    clearMoveKeys() {
+      this.keysDown.clear()
+      if (!this.rmbDown) {
+        this.exitKeyboardControlIfIdle()
+      }
+      this.notifyMoveKeysChanged()
     },
     resizeCanvas() {
       const canvas = this.$refs.canvas
@@ -315,8 +401,10 @@ export default {
       this.maxMouseY = ph - MOUSE_MAX_Y_INSET
       this.groundY = Math.min(ph * 0.88, this.maxMouseY)
       this.minMouseY = minY
+      this.refreshHorizontalBounds()
       if (this.mouseY < this.minMouseY) this.mouseY = this.minMouseY
       if (this.mouseY > this.maxMouseY) this.mouseY = this.maxMouseY
+      if (this.isManualControlState()) this.clampManualPosition()
     },
     canvasPointFromEvent(e) {
       const canvas = this.$refs.canvas
@@ -327,9 +415,42 @@ export default {
       if (x < 0 || x > rect.width || y < 0 || y > rect.height) return null
       return { x, y }
     },
-    clampManualPosition() {
+    isManualControlState() {
+      return this.state === 'KEYBOARD_CONTROL'
+        || this.state === 'USER_CONTROL'
+        || this.state === 'SIT_LOOK_AROUND'
+    },
+    /** 各朝向精灵在当前纵深下的最大半宽，保证贴边时整只老鼠仍在画面内 */
+    maxSpriteHalfWidth() {
+      const rows = [
+        SPRITE_ROW_RIGHT,
+        SPRITE_ROW_LEFT,
+        SPRITE_ROW_UP_RIGHT,
+        SPRITE_ROW_UP_LEFT,
+        SPRITE_ROW_DOWN_RIGHT,
+        SPRITE_ROW_DOWN_LEFT,
+        0,
+        4,
+        SPRITE_ROW_SIT
+      ]
+      let maxHalf = EDGE_PAD
+      for (const row of rows) {
+        const { drawW } = this.getDrawDimensions(row)
+        maxHalf = Math.max(maxHalf, drawW / 2)
+      }
+      return maxHalf
+    },
+    refreshHorizontalBounds() {
       const pw = this.playWidth || 0
-      this.mouseX = Math.max(EDGE_PAD, Math.min(pw - EDGE_PAD, this.mouseX))
+      const half = this.maxSpriteHalfWidth()
+      this.minMouseX = half
+      this.maxMouseX = Math.max(half, pw - half)
+    },
+    clampManualPosition() {
+      this.refreshHorizontalBounds()
+      const minX = this.minMouseX ?? EDGE_PAD
+      const maxX = this.maxMouseX ?? Math.max(minX, (this.playWidth || 0) - EDGE_PAD)
+      this.mouseX = Math.max(minX, Math.min(maxX, this.mouseX))
       this.mouseY = Math.max(this.minMouseY, Math.min(this.maxMouseY, this.mouseY))
     },
     /** 折返开跑时：在基准 Y 基础上随机 ±AUTO_TURN_Y_JITTER */
@@ -654,7 +775,8 @@ export default {
       this.exitScreenAndTurnBack(canvas)
     },
     updateUserControl(dt, canvas) {
-      let tx = this.pointerX
+      this.refreshHorizontalBounds()
+      let tx = Math.max(this.minMouseX, Math.min(this.maxMouseX, this.pointerX))
       let ty = Math.max(this.minMouseY, Math.min(this.maxMouseY, this.pointerY))
       if (this.isOnFormBarrierLine()) {
         ty = Math.max(ty, this.formBarrierY)
@@ -682,7 +804,10 @@ export default {
     },
     updateKeyboardControl(dt, canvas) {
       const { dx, dy } = this.getKeyMovement()
-      if (dx === 0 && dy === 0) return
+      if (dx === 0 && dy === 0) {
+        this.exitKeyboardControlIfIdle()
+        return
+      }
 
       const prevX = this.mouseX
       const prevY = this.mouseY

@@ -1,5 +1,5 @@
 <template>
-  <div style="padding: 0 15px;" @click="toggleClick">
+  <div v-bind="$attrs" style="padding: 0 15px;" @click="toggleClick">
     <svg
       :class="{'is-active':isActive}"
       class="hamburger"
@@ -16,6 +16,7 @@
 <script>
 export default {
   name: 'Hamburger',
+  inheritAttrs: false,
   props: {
     isActive: {
       type: Boolean,

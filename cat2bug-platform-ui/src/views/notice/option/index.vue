@@ -4,9 +4,12 @@
     :visible.sync="dialogVisible"
     width="60%"
     :close-on-click-modal="false"
-    :before-close="handleClose">
-    <el-tabs v-model="activeTabName" v-loading="loading">
-      <el-tab-pane :label="$t('notice.send-option')" name="type">
+    :close-on-press-escape="false"
+    :before-close="onToolDialogBeforeClose"
+    @opened="onToolDialogOpened">
+    <el-tabs v-model="activeTabName" class="notice-option-hint-tabs" v-loading="loading">
+      <el-tab-pane name="type">
+        <span slot="label" class="notice-option-main-tab-type">{{ $t('notice.send-option') }}</span>
         <div v-for="(m,index) in moduleList">
           <component
             v-model="option.config.modules[m.name]"
@@ -16,7 +19,8 @@
           <el-divider></el-divider>
         </div>
       </el-tab-pane>
-      <el-tab-pane :label="$t('notice.receive-platform-option')" name="platform">
+      <el-tab-pane name="platform">
+        <span slot="label" class="notice-option-main-tab-platform">{{ $t('notice.receive-platform-option') }}</span>
         <el-alert
           v-if="contactProfileHintVisible"
           type="info"
@@ -25,22 +29,25 @@
           class="notice-contact-hint"
           :title="$t('notice.contact-profile-hint')"
         />
-        <el-tabs v-model="activePlatformName" type="border-card">
-          <el-tab-pane :label="$t('system.internal-notification')" name="asystem">
+        <el-tabs v-model="activePlatformName" class="notice-option-platform-hint-tabs" type="border-card">
+          <el-tab-pane name="asystem">
+            <span slot="label" class="notice-option-platform-tab-asystem">{{ $t('system.internal-notification') }}</span>
             <component
               ref="platform-asystem"
               v-model="option.config.platforms.asystem"
               is="asystem"
             />
           </el-tab-pane>
-          <el-tab-pane :label="$t('email')" name="bmail">
+          <el-tab-pane name="bmail">
+            <span slot="label" class="notice-option-platform-tab-bmail">{{ $t('email') }}</span>
             <component
               ref="platform-bmail"
               v-model="option.config.platforms.bmail"
               is="bmail"
             />
           </el-tab-pane>
-          <el-tab-pane v-for="(p,index) in externalPlatformList" :key="index" :label="getPlatformLabel(p.name)" :name="p.name">
+          <el-tab-pane v-for="(p,index) in externalPlatformList" :key="index" :name="p.name">
+            <span slot="label" :class="'notice-option-platform-tab-' + p.name">{{ getPlatformLabel(p.name) }}</span>
             <component
               :ref="`platform-${p.name}`"
               v-model="option.config.platforms[p.name]"
@@ -52,8 +59,11 @@
     </el-tabs>
 
     <span slot="footer" class="dialog-footer">
-    <el-button @click="dialogVisible = false">{{ $t('cancel') }}</el-button>
-    <el-button type="primary" @click="handleSaveOption">{{ $t('save') }}</el-button>
+    <el-button @click="requestCloseToolDialog">{{ $t('cancel') }}</el-button>
+    <el-button class="defect-kbd-hint-host" type="primary" @click="handleSaveOption">
+      {{ $t('save') }}
+      <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
+    </el-button>
   </span>
   </el-dialog>
 </template>
@@ -87,8 +97,11 @@ platformFiles.keys().forEach(key=>{
   modules[name] = platformFiles(key).default||platformFiles(key)
 });
 
+import noticeOptionDialogKbd from '@/mixins/notice-option-dialog-kbd'
+
 export default {
   name: "OptionNotice",
+  mixins: [noticeOptionDialogKbd],
   components: modules,
   data() {
     return {
@@ -159,6 +172,7 @@ export default {
       getIMConfig(this.getProjectId(), this.getUserId()).then(res=>{
         this.loading = false;
         this.option = res.data;
+        this.$nextTick(() => this.captureToolDialogCloseBaseline());
       }).catch(e=>{
         this.loading = false;
       });
@@ -180,10 +194,6 @@ export default {
         this.loadProfileContact();
         this.getConfig();
       });
-    },
-    /** 处理关闭窗口时的操作 */
-    handleClose(done) {
-      done();
     },
     /** 处理保存配置操作 */
     async handleSaveOption() {
@@ -212,6 +222,7 @@ export default {
         if (res.every(v => v)) {
           saveConfig(this.option).then(res=>{
             this.$message.success(this.$i18n.t('save-success').toString());
+            this.toolDialogCloseBaseline = null;
             this.dialogVisible = false;
             this.reset();
           })
@@ -257,5 +268,14 @@ export default {
 }
 .margin-right-30 {
   margin-right: 30px;
+}
+.notice-option-hint-tabs ::v-deep .el-tabs__item,
+.notice-option-platform-hint-tabs ::v-deep .el-tabs__item {
+  position: relative;
+  overflow: visible !important;
+}
+.notice-option-hint-tabs ::v-deep .el-tabs__header,
+.notice-option-platform-hint-tabs ::v-deep .el-tabs__header {
+  overflow: visible !important;
 }
 </style>

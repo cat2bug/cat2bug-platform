@@ -1,5 +1,5 @@
 <template>
-  <div ref="statisticTemplateRoot" class="app-container statistic-template-page">
+  <div ref="statisticTemplateRoot" class="app-container statistic-template-page" tabindex="-1">
     <el-row class="project-add-page-header">
       <el-page-header @back="goBack" :content="$t('defect.statistic-template')" />
     </el-row>
@@ -100,9 +100,9 @@ export default {
   },
   created() {
     this.getTemplate()
+    this.registerStatisticTemplateShortcuts()
   },
   mounted() {
-    this.registerStatisticTemplateShortcuts()
     this.$_attachTemplatePageEscListener()
   },
   activated() {
@@ -128,6 +128,9 @@ export default {
         { key: 'team', defaultLetter: 'H', run: () => this.enterTemplateKbdZone('team') }
       ])
     },
+    shouldAutoFocusPageActionHost() {
+      return true
+    },
     getPageActionHintContainer() {
       return this.$refs.statisticTemplateRoot || this.$el
     },
@@ -139,6 +142,7 @@ export default {
           letter: L('preview', 'P'),
           badgeSelector: '.statistic-template-preview-panel .statistic-template-hint-preview',
           floatOffset: { placement: 'bottom-right-outset', outset: 2 },
+          skipViewportCheck: true,
           run: () => this.enterTemplateKbdZone('preview')
         },
         {
@@ -146,6 +150,7 @@ export default {
           letter: L('personal', 'G'),
           badgeSelector: '.statistic-template-personal-panel .statistic-template-hint-personal',
           floatOffset: { placement: 'bottom-right-outset', outset: 2 },
+          skipViewportCheck: true,
           run: () => this.enterTemplateKbdZone('personal')
         },
         {
@@ -153,6 +158,7 @@ export default {
           letter: L('team', 'H'),
           badgeSelector: '.statistic-template-team-panel .statistic-template-hint-team',
           floatOffset: { placement: 'bottom-right-outset', outset: 2 },
+          skipViewportCheck: true,
           run: () => this.enterTemplateKbdZone('team')
         }
       ]

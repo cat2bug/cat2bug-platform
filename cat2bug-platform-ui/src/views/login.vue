@@ -70,7 +70,9 @@
         </component>
       </div>
     </div>
+    <mouse-dpad-controls />
     <mouse-runner />
+    <command-palette />
   </div>
 </template>
 
@@ -78,6 +80,7 @@
 import 'element-ui/lib/theme-chalk/display.css';
 import {getVersion} from "@/api/version";
 import MouseRunner from "./login/components/MouseRunner.vue";
+import MouseDpadControls from "./login/components/MouseDpadControls.vue";
 
 const I18N_LOCALE_KEY='i18n-locale'
 const path = require('path');
@@ -96,7 +99,7 @@ files.keys().forEach(key=>{
 
 export default {
   name: "Login",
-  components: { ...modules, MouseRunner },
+  components: { ...modules, MouseRunner, MouseDpadControls },
   data() {
     return {
       login: defaultLogin,

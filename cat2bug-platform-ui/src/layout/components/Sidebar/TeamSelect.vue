@@ -1,6 +1,12 @@
 <template>
-  <div>
-    <el-select class="team-select" :collapse="collapse" v-model="currentTeamId" :popper-append-to-body="false" @change="selectTeamChangedHandle">
+  <div class="team-select-root layout-nav-hint-anchor" data-layout-nav="team">
+    <el-select
+      class="team-select"
+      :collapse="collapse"
+      v-model="currentTeamId"
+      popper-class="team-select-kbd-popper"
+      @change="selectTeamChangedHandle"
+    >
       <template slot="prefix">
         <el-avatar :size="collapse?'small':'medium'"  shape="square" v-if="!currentTeam" :src="imgUrl('add.svg')" fit="cover"></el-avatar>
         <el-avatar :size="collapse?'small':'medium'"  shape="square" v-else-if="currentTeam.teamIcon" :src="teamAvatarSrc(currentTeam)" fit="cover" @error.native="onTeamAvatarError(currentTeam)"></el-avatar>
@@ -212,4 +218,30 @@ export default {
     justify-content: center;
     align-items: center;
   }
+</style>
+
+<!-- append-to-body 后下拉在 body，样式需挂 popper-class -->
+<style lang="scss">
+.team-select-kbd-popper.el-select-dropdown {
+  min-width: 180px !important;
+  z-index: 10000 !important;
+}
+.team-select-kbd-popper .el-select-dropdown__item {
+  height: 80px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  column-gap: 10px;
+}
+.team-select-kbd-popper .team-select-footer {
+  height: 60px;
+  padding-top: 5px;
+  background-color: #ffffff;
+}
+.team-select-kbd-popper .team-select-footer[line='true'] {
+  border-top: #ebeef5 1px solid;
+}
+.team-select-kbd-popper .el-select-dropdown__wrap {
+  max-height: 360px;
+}
 </style>
