@@ -221,6 +221,7 @@ J 缺陷工具弹框 + 处理缺陷抽屉徽标（见 Decision 11–12）
 K 统计模块配置弹框 + 报时提醒表格（见 Decision 13–14）
 L 登录页老鼠 D-pad 操控（见 Decision 18）
 M 通知弹框键盘（见 Decision 19）
+N 系统文档页快捷键（见 Decision 20）
 ```
 
 ### 18. 登录页老鼠键盘操控（`MouseRunner` + `MouseDpadControls`）
@@ -293,6 +294,55 @@ src/mixins/notice-option-dialog-close.js
 src/views/notice/send/index.vue
 src/views/notice/option/index.vue
 src/views/notice/option/platform/asystem.vue
+```
+
+### 20. 系统文档页快捷键（`views/doc/index.vue`）
+
+系统使用手册（顶部 Navbar「系统文档」→ `/system/doc`）注册 `registerPage('system-doc', …)`，复用 `page-action-hints` 与 `page-kbd-hints.scss` 浮层徽标。
+
+**动作入口（按住 `Cmd/Ctrl` 显示徽标，或空格面板后按字母）**
+
+| 键 | 动作 | 徽标锚点 |
+|---|---|---|
+| S | 聚焦搜索框（选中已有文本） | 搜索框 |
+| B | 返回上一页 | 页头返回区 |
+| L | 进入左侧目录树键盘导航 | 目录树区域（靠左 inset） |
+| D | 进入右侧本页大纲导航 | 大纲标题（≥2 项时） |
+| P | 打印当前文档 | 打印按钮（≥2 项时） |
+
+**目录树导航（`docKbdRegion === 'tree'`）**
+
+- 叶子扁平化：`utils/doc-page-kbd.js` 中 `flattenDocTreeLeaves` / `findDocLeafIndex` / `clampDocIndex`
+- 搜索框 `↓`：失焦搜索 → 从过滤后首片叶子开始（`enterTreeKbdNav({ fromSearch: true })`）
+- `L` 或 Cmd 徽标：从当前文档对应叶子开始（无则首项）
+- `↑/↓`：在叶子列表间移动；`setCurrentKey` + `scrollIntoView({ block: 'nearest' })`
+- 首项 `↑`：退出导航 → 聚焦搜索框
+- `Enter`：等效 `handleNodeClick` 打开文档
+- 重新聚焦搜索框时退出目录导航
+
+**视觉约束：** 目录键盘导航 **不得** 对侧栏容器 `focus()` 或添加 inset 蓝色聚焦框；仅使用 `el-tree` 的 `is-current` 行背景高亮。`is-kbd-tree-active` 类仅作状态标记，不附加 `:focus` 描边。
+
+**本页大纲导航（`docKbdRegion === 'outline'`）**
+
+- 组件 `DocPageOutline.vue`：`kbdFocusId` → 链接 `is-kbd-focus`（左边框 + 浅底）
+- `↑/↓` 移动；`Enter` → `scrollToOutlineHeading` 并退出导航
+- 窄屏（`<1280px`）大纲隐藏时 D/P 不可用
+
+**Esc 行为（document 捕获，`onDocPageEscKeydown`）**
+
+1. 目录或大纲导航中 → `exitDocKbdRegion`
+2. 否则（无遮挡层、非 input/textarea/select/contenteditable）→ `handleBack()`
+
+**键盘设置**：独立分组「系统文档页」，绑定 ID 前缀 `action.system-doc.*`（`DOC_ACTION_DEFAULTS` in `keymap.js`）。
+
+**相关文件：**
+
+```
+src/views/doc/index.vue
+src/components/Doc/DocPageOutline.vue
+src/utils/doc-page-kbd.js
+src/plugins/shortcut/keymap.js          # DOC_ACTION_DEFAULTS
+src/views/member/keyboard/index.vue     # 设置页分组
 ```
 
 ### 10. 统计模版页快捷键（`StatisticTemplate.vue`）
@@ -452,6 +502,7 @@ statistic-dialog-kbd.js
 | 按住 `Cmd/Ctrl` | 当前**可视区域内**各可输入字段标签浮现字母/数字徽标；保存按钮浮现 `↵`（关闭按钮无徽标） |
 | 按住 `Cmd/Ctrl`（缺陷列表一级界面） | 工具栏/分页等控件浮现动作字母（L/E/S/J/I/G/O/B/P），与 Space 动作面板映射一致；有抽屉/浮层时不显示 |
 | 按住 `Cmd/Ctrl`（统计模版页） | 预览/个人/团队三区右下角浮现 P/G/H 徽标 |
+| 按住 `Cmd/Ctrl`（系统文档页） | 搜索/返回/目录/大纲/打印浮现 S/B/L/D/P 徽标；大纲 ≥2 项时 D/P 可见 |
 | 保持 `Cmd/Ctrl` + 字母/数字 | 焦点跳到对应字段，依赖全站统一 `:focus` / `:focus-within` 焦点环（`cat2bug.scss`）；**可连续跳转**（跳转时仅隐藏徽标，保留映射） |
 | 保持 `Cmd/Ctrl` + `↑` / `↓` | 滚动表单属性区（约 40% 视口高度），徽标随滚动刷新 |
 | 松开修饰键 | 徽标与映射全部清除 |
@@ -558,6 +609,9 @@ src/components/Defect/DefectTools/*Dialog.vue
 src/components/Cat2BugStatistic/Statistic/PersonalRemindTimer.vue
 src/views/system/defect/index.vue            # 缺陷页动作 + 统计区 G 导航
 src/views/system/defect/StatisticTemplate.vue
+src/views/doc/index.vue                      # 系统文档页动作 + 目录/大纲导航
+src/components/Doc/DocPageOutline.vue
+src/utils/doc-page-kbd.js
 e2e/form-tab-order.spec.cjs
 e2e/select-project-member-tags.spec.cjs
 e2e/debug-drawer-cmd-esc.spec.cjs            # 抽屉 Esc 关闭

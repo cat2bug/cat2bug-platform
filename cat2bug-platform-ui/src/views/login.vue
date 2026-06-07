@@ -199,6 +199,13 @@ html.dark .logo-page {
   --login-zzz-color: #e5e7eb;
 }
 
+/* 黑色主题：⌘/Ctrl 字母快捷键徽标与登录页 accent 一致 */
+html.dark:has(.logo-page) #cat2bug-page-kbd-overlay .cat2bug-page-kbd-hint-float {
+  color: #ffc107;
+  border-color: rgba(255, 193, 7, 0.55);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
+}
+
 .login {
   display: flex;
   align-items: center;

@@ -11,15 +11,22 @@
       <div class="doc-sidebar">
         <div class="search-box">
           <el-input
+            ref="docSearchInput"
             v-model="searchText"
             class="doc-hint-search"
             :placeholder="$t('search')"
             prefix-icon="el-icon-search"
             clearable
             @input="handleSearch"
+            @keydown.native="onSearchInputKeydown"
+            @focus="onSearchInputFocus"
           />
         </div>
-        <div class="doc-tree doc-hint-tree">
+        <div
+          ref="docTreeWrap"
+          class="doc-tree doc-hint-tree"
+          :class="{ 'is-kbd-tree-active': docKbdRegion === 'tree' }"
+        >
           <el-tree
             ref="docTree"
             :data="filteredDocs"
@@ -81,6 +88,7 @@ import {
 import 'highlight.js/styles/github-gist.css'
 import DocPageOutline from '@/components/Doc/DocPageOutline.vue'
 import pageActionHints from '@/mixins/page-action-hints'
+import { hasBlockingUiLayer } from '@/plugins/shortcut/service'
 import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
 import {
   clampDocIndex,
@@ -837,6 +845,7 @@ export default {
   },
   beforeDestroy() {
     this.exitDocKbdRegion()
+    this.$_detachDocPageEscListener()
     if (this.$shortcut) this.$shortcut.unregisterPage(DOC_KBD_SCOPE)
     if (this.outlineScrollRaf) {
       cancelAnimationFrame(this.outlineScrollRaf)
@@ -880,12 +889,15 @@ export default {
     this.initExpandedKeys()
     this.preloadAllDocs()
     this.registerDocShortcuts()
+    this.$_attachDocPageEscListener()
   },
   activated() {
     this.registerDocShortcuts()
+    this.$_attachDocPageEscListener()
   },
   deactivated() {
     this.exitDocKbdRegion()
+    this.$_detachDocPageEscListener()
     if (this.$shortcut) this.$shortcut.unregisterPage(DOC_KBD_SCOPE)
   },
   methods: {
@@ -949,21 +961,83 @@ export default {
       const main = this.$refs.docScroll
       return [tree, main].filter(Boolean)
     },
+    $_attachDocPageEscListener() {
+      if (this.$_docPageEscBound) return
+      this.$_docPageEscBound = true
+      this.$_onDocPageEscKeydown = (e) => this.onDocPageEscKeydown(e)
+      document.addEventListener('keydown', this.$_onDocPageEscKeydown, true)
+    },
+    $_detachDocPageEscListener() {
+      if (!this.$_docPageEscBound) return
+      this.$_docPageEscBound = false
+      document.removeEventListener('keydown', this.$_onDocPageEscKeydown, true)
+      this.$_onDocPageEscKeydown = null
+    },
+    onDocPageEscKeydown(e) {
+      if (e.key !== 'Escape' && e.key !== 'Esc') return
+      if (e.isComposing) return
+      if (e.metaKey || e.ctrlKey || e.altKey) return
+      if (this.docKbdRegion) {
+        e.preventDefault()
+        e.stopPropagation()
+        this.exitDocKbdRegion()
+        return
+      }
+      if (hasBlockingUiLayer()) return
+      const el = document.activeElement
+      const tag = el && el.tagName
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (el && el.isContentEditable)) {
+        return
+      }
+      e.preventDefault()
+      e.stopPropagation()
+      this.handleBack()
+    },
     shortcutFocusQuery() {
       this.exitDocKbdRegion()
-      const input = this.$el && this.$el.querySelector('.doc-hint-search input')
+      this.focusDocSearchInput({ select: true })
+    },
+    focusDocSearchInput(opts = {}) {
+      const input = this.$refs.docSearchInput && this.$refs.docSearchInput.$refs
+        ? this.$refs.docSearchInput.$refs.input
+        : (this.$el && this.$el.querySelector('.doc-hint-search input'))
       if (input && typeof input.focus === 'function') {
-        input.focus()
-        if (typeof input.select === 'function') input.select()
+        try {
+          input.focus({ preventScroll: true })
+        } catch (err) {
+          input.focus()
+        }
+        if (opts.select && typeof input.select === 'function') input.select()
       }
     },
-    shortcutTreeNav() {
+    onSearchInputFocus() {
+      if (this.docKbdRegion === 'tree') {
+        this.exitDocKbdRegion()
+      }
+    },
+    onSearchInputKeydown(e) {
+      if (e.key !== 'ArrowDown') return
+      if (e.isComposing || e.metaKey || e.ctrlKey || e.altKey) return
       const leaves = flattenDocTreeLeaves(this.filteredDocs)
       if (!leaves.length) return
-      let idx = findDocLeafIndex(leaves, this.currentDoc)
-      if (idx < 0) idx = 0
+      e.preventDefault()
+      e.stopPropagation()
+      if (e.target && typeof e.target.blur === 'function') e.target.blur()
+      this.enterTreeKbdNav({ fromSearch: true })
+    },
+    enterTreeKbdNav(opts = {}) {
+      const leaves = flattenDocTreeLeaves(this.filteredDocs)
+      if (!leaves.length) return
+      let idx = 0
+      if (!opts.fromSearch) {
+        idx = findDocLeafIndex(leaves, this.currentDoc)
+        if (idx < 0) idx = 0
+      }
       this.docKbdTreeIndex = idx
       this.enterDocKbdRegion('tree')
+    },
+    shortcutTreeNav() {
+      this.enterTreeKbdNav()
     },
     shortcutOutlineNav() {
       if (this.outlineItems.length < 2) return
@@ -993,16 +1067,17 @@ export default {
       if (!this.docKbdRegion || e.isComposing) return
       if (e.metaKey || e.ctrlKey || e.altKey) return
       const key = e.key
-      if (key === 'Escape') {
-        e.preventDefault()
-        this.exitDocKbdRegion()
-        return
-      }
       if (key === 'ArrowUp' || key === 'ArrowDown') {
         e.preventDefault()
         const delta = key === 'ArrowUp' ? -1 : 1
         if (this.docKbdRegion === 'tree') {
           const leaves = flattenDocTreeLeaves(this.filteredDocs)
+          if (!leaves.length) return
+          if (key === 'ArrowUp' && this.docKbdTreeIndex <= 0) {
+            this.exitDocKbdRegion()
+            this.focusDocSearchInput()
+            return
+          }
           this.docKbdTreeIndex = clampDocIndex(this.docKbdTreeIndex + delta, leaves.length)
           this.syncDocKbdRegionHighlight()
         } else if (this.docKbdRegion === 'outline') {
@@ -1709,6 +1784,7 @@ export default {
         flex: 1;
         overflow-y: auto;
         padding: 16px 8px 16px 4px;
+        outline: none;
 
         ::v-deep .el-tree-node__content {
           border-radius: 3px;

@@ -345,9 +345,9 @@ export default {
       if (!this.popoverVisible) return;
       this.$nextTick(() => this.fitModulePopoverLayout());
     },
-    /** 本列新建交付物成功后：选中新建项并显示键盘高亮背景 */
+    /** 本列新建交付物成功后：选中新建项并显示键盘高亮背景，下拉保持展开 */
     onModuleMenuAdded(payload, columnIndex) {
-      if (!this.popoverVisible) return;
+      this.popoverVisible = true;
       if (columnIndex > 0) {
         this.bumpParentChildrenCount(columnIndex, payload);
       }
@@ -378,6 +378,7 @@ export default {
           this.reloadModulePathMap(this.projectId || module.projectId);
         }
         this.$nextTick(() => {
+          this.popoverVisible = true;
           this.scrollActiveModuleIntoView();
           this.focusActiveMenuOption();
         });
@@ -1459,6 +1460,7 @@ export default {
   }
   .el-popover.el-popper.select-module-popover .module-menu-add-footer {
     padding-top: 10px !important;
+    overflow: visible;
   }
   .el-popover.el-popper.select-module-popover .module-menu-footer-divider {
     margin-bottom: 10px !important;
@@ -1479,6 +1481,7 @@ export default {
   .el-popover.el-popper.select-module-popover .select-module-add {
     width: 100%;
     box-sizing: border-box;
+    overflow: visible;
   }
   .el-popover.el-popper.select-module-popover .module-menu > .el-col.module-menu-item.module-menu-row,
   .el-popover.el-popper.select-module-popover .module-menu-item.module-menu-row.is-keyboard-active,

@@ -424,10 +424,16 @@ export default {
   }
 
   &.is-active {
-    background: rgba(64, 158, 255, 0.42);
-    border-color: rgba(64, 158, 255, 0.65);
+    background: rgba(255, 193, 7, 0.28);
+    border-color: rgba(255, 193, 7, 0.65);
+    color: #ffc107;
     transform: scale(0.96);
   }
+}
+
+html.dark .mouse-dpad__btn.is-active .mouse-dpad__hint {
+  opacity: 1;
+  color: #ffc107;
 }
 
 .mouse-dpad__hint {

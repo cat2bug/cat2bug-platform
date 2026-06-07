@@ -41,6 +41,8 @@ const DROPDOWN_RELATED_SELECTORS = [
 ]
 
 let blurCloseTimer = null
+/** mousedown 落在 el-select 下拉项时，暂缓 blur 关闭，避免选项点击未生效 */
+let suppressBlurCloseUntil = 0
 
 function isVisibleLayer(el) {
   if (!el || !el.getBoundingClientRect) return false
@@ -211,6 +213,7 @@ export function closeDropdownsOnBlur(activeEl = document.activeElement) {
 }
 
 export function scheduleDropdownBlurClose() {
+  if (Date.now() < suppressBlurCloseUntil) return
   if (blurCloseTimer) clearTimeout(blurCloseTimer)
   blurCloseTimer = setTimeout(() => {
     blurCloseTimer = null
@@ -218,8 +221,27 @@ export function scheduleDropdownBlurClose() {
   }, 0)
 }
 
+/** 暂缓 blur 关闭（交付物新建、select 选中等异步点击场景） */
+export function suppressDropdownBlurClose(ms = 350) {
+  suppressBlurCloseUntil = Date.now() + ms
+}
+
+/** capture：记录用户正在 el-select / 交付物新建区域内点击 */
+export function onDropdownBlurPointerDown(e) {
+  const target = e && e.target
+  if (!target || !target.closest) return
+  if (target.closest('.el-select-dropdown') ||
+    target.closest('.select-module-add') ||
+    target.closest('.select-module-add-button') ||
+    target.closest('.select-module-popover')) {
+    suppressDropdownBlurClose(350)
+  }
+}
+
 export function onDropdownBlurFocusOut(e) {
   if (!isDropdownRelatedElement(e.target)) return
+  const related = e.relatedTarget
+  if (related && isDropdownRelatedElement(related)) return
   scheduleDropdownBlurClose()
 }
 

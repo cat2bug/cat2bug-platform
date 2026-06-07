@@ -52,11 +52,29 @@ export function enumOptionsFromTypeConfig(typeConfig) {
   }
   return list
     .filter(opt => opt != null)
-    .map(opt => ({
-      key: opt.key != null ? String(opt.key) : '',
-      label: opt.label != null ? String(opt.label) : '',
-      color: opt.color || '#409EFF'
-    }))
+    .map((opt, index) => {
+      if (typeof opt === 'string' || typeof opt === 'number' || typeof opt === 'boolean') {
+        const key = String(opt).trim()
+        return { key, label: key, color: '#409EFF' }
+      }
+      const label = opt.label != null ? String(opt.label).trim() : ''
+      let key = opt.key != null ? String(opt.key).trim() : ''
+      if (!key && opt.value != null) key = String(opt.value).trim()
+      if (!key && label) key = label
+      if (!key) key = String(index)
+      return {
+        key,
+        label: label || key,
+        color: opt.color || '#409EFF'
+      }
+    })
+    .filter(opt => opt.key !== '')
+}
+
+/** 枚举存库/表单值统一为字符串，便于与 el-option value 严格匹配 */
+export function normalizeEnumFieldValue(value) {
+  if (value == null || value === '') return value
+  return String(value)
 }
 
 export function enumOptions(field) {
@@ -83,7 +101,7 @@ export function enumSelectCssVars(fieldOrTypeConfig, selectedKey) {
     : enumOptionsFromTypeConfig(fieldOrTypeConfig && fieldOrTypeConfig.typeConfig != null
       ? fieldOrTypeConfig.typeConfig
       : fieldOrTypeConfig)
-  const opt = opts.find(o => o.key === selectedKey)
+  const opt = opts.find(o => o.key === normalizeEnumFieldValue(selectedKey))
   if (!opt || !opt.color) return {}
   return { '--defect-enum-color': opt.color }
 }

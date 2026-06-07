@@ -5,38 +5,33 @@
   >
     <el-input
       v-if="field.fieldType === 'string'"
-      :value="value"
+      v-model="fieldValue"
       :maxlength="field.maxLength || 512"
       clearable
-      @input="$emit('input', $event)"
     />
     <el-input-number
       v-else-if="field.fieldType === 'number'"
-      :value="value"
+      v-model="fieldValue"
       controls-position="right"
       class="defect-custom-field-number"
-      @input="$emit('input', $event)"
     />
     <el-switch
       v-else-if="field.fieldType === 'boolean'"
-      :value="value"
-      @input="$emit('input', $event)"
+      v-model="fieldValue"
     />
     <el-date-picker
       v-else-if="field.fieldType === 'datetime'"
-      :value="value"
+      v-model="fieldValue"
       type="datetime"
       value-format="yyyy-MM-dd HH:mm:ss"
       class="defect-custom-field-datetime"
-      @input="$emit('input', $event)"
     />
     <el-select
       v-else-if="field.fieldType === 'enum'"
-      :value="value"
+      v-model="fieldValue"
       clearable
       class="defect-custom-field-enum defect-enum-select"
-      :style="enumSelectCssVars(field, value)"
-      @input="$emit('input', $event)"
+      :style="enumSelectCssVars(field, fieldValue)"
     >
       <el-option
         v-for="opt in enumOptions(field)"
@@ -122,6 +117,7 @@ import {
   enumOptionTextStyle,
   enumOptions,
   enumSelectCssVars,
+  normalizeEnumFieldValue,
   parseTypeConfig,
   urlListFromCustomFieldValue
 } from './format'
@@ -139,6 +135,21 @@ export default {
     }
   },
   computed: {
+    fieldValue: {
+      get() {
+        if (this.field.fieldType === 'enum') {
+          return normalizeEnumFieldValue(this.value)
+        }
+        return this.value
+      },
+      set(v) {
+        if (this.field.fieldType === 'enum') {
+          this.$emit('input', normalizeEnumFieldValue(v))
+          return
+        }
+        this.$emit('input', v)
+      }
+    },
     imageFileValue() {
       const urls = urlListFromCustomFieldValue(this.value)
       return urls.length ? urls.join(',') : ''

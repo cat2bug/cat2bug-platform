@@ -3,13 +3,15 @@
  */
 import {
   onDropdownBlurFocusIn,
-  onDropdownBlurFocusOut
+  onDropdownBlurFocusOut,
+  onDropdownBlurPointerDown
 } from '@/utils/dropdown-blur-close'
 
 const DropdownBlurClosePlugin = {
   install() {
     document.addEventListener('focusout', onDropdownBlurFocusOut, true)
     document.addEventListener('focusin', onDropdownBlurFocusIn, true)
+    document.addEventListener('mousedown', onDropdownBlurPointerDown, true)
   }
 }
 

@@ -146,3 +146,13 @@
 - [x] 19.2 `notice-option-dialog-kbd.js` + `notice-option-dialog-close.js`：设置弹框保存/关闭确认
 - [x] 19.3 通知设置主 Tab（G/P）、平台子 Tab（数字）、系统开关/背景音乐固定徽标
 - [x] 19.4 Tab 切换时刷新字段徽标映射
+
+## 20. 系统文档页快捷键
+
+- [x] 20.1 `views/doc/index.vue` 注册 `system-doc` 动作（S/B/L/D/P）+ `page-action-hints` 浮层徽标
+- [x] 20.2 `utils/doc-page-kbd.js`：目录树叶子扁平化与索引
+- [x] 20.3 搜索框 `↓` ↔ 目录树 `↑/↓` 衔接；首项 `↑` 回搜索；Enter 打开文档
+- [x] 20.4 `DocPageOutline.vue` 大纲 `↑/↓` + Enter 跳转；D/P 仅大纲 ≥2 项时可用
+- [x] 20.5 Esc：先退出目录/大纲导航，否则返回上一页
+- [x] 20.6 目录导航无容器蓝框聚焦环（document 监听，不对侧栏 focus）
+- [x] 20.7 键盘设置「系统文档页」分组 + i18n 7 语言（`DOC_ACTION_DEFAULTS`）

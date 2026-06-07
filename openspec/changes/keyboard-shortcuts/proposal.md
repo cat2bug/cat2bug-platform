@@ -50,6 +50,11 @@
 - **通知相关弹框键盘集成**
   - 发送通知弹框：`Cmd/Ctrl+Enter` 发送、`Esc` 关闭、字段字母徽标
   - 通知设置弹框：主 Tab（G 类型 / P 平台）、平台子 Tab（数字）、系统通知开关/背景音乐；未保存关闭确认
+- **系统文档页（`/system/doc`）键盘**
+  - 双通道：`空格` 命令面板 或 按住 `Cmd/Ctrl` 显示浮层徽标
+  - 默认字母：S 搜索、B 返回、L 目录树导航、D 本页大纲导航、P 打印
+  - 搜索框 `↓` 进入目录树；目录 `↑/↓` 在叶子间移动，首项 `↑` 回搜索；大纲 `↑/↓` + Enter 跳转标题
+  - Esc：先退出目录/大纲导航，否则返回上一页；侧栏导航无容器蓝框聚焦环
 - **统计区 G 导航增强**
   - 进入模块导航后 `Enter`/空格触发模块主点击（筛选、打开配置弹框等），与鼠标点击等效
 - **「键盘设置」配置页**
@@ -73,6 +78,7 @@
 - `keyboard-layout-nav-hints`：Shift+Cmd 布局级导航浮层（侧栏菜单、顶栏、折叠按钮、下拉键盘导航）
 - `keyboard-login-mouse-control`：登录页 ⌘+方向键 D-pad 老鼠操控（独立于全局引擎）
 - `keyboard-notice-dialog-actions`：发送通知 / 通知设置弹框键盘集成
+- `keyboard-doc-page-actions`：系统使用手册页（`/system/doc`）动作、目录/大纲方向键导航与 Esc 返回
 
 ### Modified Capabilities
 
@@ -82,7 +88,7 @@
 
 - **模块**：主要为 `cat2bug-platform-ui`；缺陷通知模板字段渲染涉及 `cat2bug-platform-system`（与键盘无直接耦合）
 - **新增目录**：`src/plugins/shortcut/`、`src/components/Shortcut/`、`src/views/member/keyboard/`、`src/views/login/components/mouse-arrow-keys.js`、`MouseDpadControls.vue`
-- **触点**：`main.js`（注册插件）、`layout/index.vue`（挂载引擎与面板）、`layout/components/Navbar.vue`（新增「键盘设置」入口）、`router/index.js`（新增设置页路由）、缺陷页（声明动作面板）、登录页 `login.vue`（老鼠 D-pad）、通知页弹框、i18n 7 语言文案
+- **触点**：`main.js`（注册插件）、`layout/index.vue`（挂载引擎与面板）、`layout/components/Navbar.vue`（新增「键盘设置」入口）、`router/index.js`（新增设置页路由）、缺陷页（声明动作面板）、系统文档页 `views/doc/index.vue`、登录页 `login.vue`（老鼠 D-pad）、通知页弹框、i18n 7 语言文案
 - **依赖**：复用 `Sidebar` 的 `sidebarRouters`（菜单树）、`Navbar` 顶部项、现有 `$router`、`localStorage`（同 `themeMode` 模式）
 - **Non-Goals（首期）**
   - 后端持久化 / 跨设备同步（仅 localStorage）

@@ -417,6 +417,7 @@ export default {
     width: 100%;
     box-sizing: border-box;
     padding-top: 10px;
+    overflow: visible;
   }
   .module-menu-footer-divider {
     height: 0;

@@ -264,7 +264,14 @@ export default {
       if (!this.form.customFields) {
         this.$set(this.form, 'customFields', {})
       }
-      this.$set(this.form.customFields, fieldKey, value)
+      const meta = (this.orderedFormFields || []).find(
+        f => f.kind === 'custom' && f.fieldKey === fieldKey
+      )
+      const nextValue =
+        meta && meta.meta && meta.meta.fieldType === 'enum'
+          ? (value == null || value === '' ? value : String(value))
+          : value
+      this.$set(this.form.customFields, fieldKey, nextValue)
       this.syncNormalizedCustomFields()
     },
     applyCustomFieldDefaults(fields) {

@@ -1,6 +1,6 @@
 <template>
   <div class="select-module-add-root">
-    <el-button v-show="!formVisible" type="text" icon="el-icon-plus" class="select-module-add-full select-module-add-button" @click="openForm">{{$t('module.new')}}</el-button>
+    <el-button v-if="!formVisible" type="text" icon="el-icon-plus" class="select-module-add-full select-module-add-button" @click="openForm">{{$t('module.new')}}</el-button>
     <el-form v-show="formVisible"
              ref="form"
              :model="form"
@@ -10,16 +10,21 @@
              @keydown.enter.native='addProjectModule'
              @submit.native.prevent>
       <el-form-item prop="moduleName" label-width="0" class="select-module-add-item">
-        <el-input
-          ref="moduleNameInput"
-          :placeholder="$t('module.enter-module-name')"
-          v-model="name"
-          size="small"
-          @input="nameChangeHandle"
-          @keydown.native.esc.stop="onInputEscape">
-          <el-button slot="append" icon="el-icon-plus" size="mini"
-                     @click="addProjectModule"></el-button>
-        </el-input>
+        <div class="select-module-add-combo">
+          <el-input
+            ref="moduleNameInput"
+            class="select-module-add-input"
+            :placeholder="$t('module.enter-module-name')"
+            v-model="name"
+            size="small"
+            @input="nameChangeHandle"
+            @keydown.native.esc.stop="onInputEscape">
+            <el-button slot="append" icon="el-icon-plus" size="mini"
+                       class="select-module-add-submit"
+                       @mousedown.native.prevent
+                       @click.stop="addProjectModule"></el-button>
+          </el-input>
+        </div>
       </el-form-item>
     </el-form>
   </div>
@@ -27,6 +32,7 @@
 
 <script>
 import {addModule} from "@/api/system/module";
+import { suppressDropdownBlurClose } from '@/utils/dropdown-blur-close';
 
 export default {
   name: "AddModuleMenuItem",
@@ -68,6 +74,7 @@ export default {
       this.name=null;
     },
     openForm() {
+      suppressDropdownBlurClose();
       this.setFormVisible(true, true);
     },
     setFormVisible(visible, focus = false) {
@@ -91,6 +98,7 @@ export default {
     },
     addProjectModule(){
       const that = this;
+      suppressDropdownBlurClose(500);
       this.form = {
         modulePid: this.modulePid||0,
         moduleName: this.name,
@@ -100,6 +108,7 @@ export default {
         this.$refs["form"].validate(valid => {
           if (valid) {
             addModule(this.form).then(res=>{
+              suppressDropdownBlurClose(500);
               that.$emit('added', {
                 module: res.data,
                 moduleName: that.name
@@ -120,19 +129,90 @@ export default {
   .select-module-add-root {
     width: 100%;
     box-sizing: border-box;
+    overflow: visible;
   }
   .select-module-add {
     width: 100%;
     box-sizing: border-box;
+    overflow: visible;
     .select-module-add-item {
       margin-top: 6px;
       margin-bottom: 0;
     }
     ::v-deep .el-form-item__content {
       line-height: normal;
+      overflow: visible;
     }
-    ::v-deep .el-input {
+    .select-module-add-combo {
       width: 100%;
+      box-sizing: border-box;
+      border-radius: 4px;
+      overflow: visible;
+
+      &:focus-within {
+        box-shadow: inset 0 0 0 1px var(--cat2bug-field-focus-color, #1890ff);
+      }
+    }
+    ::v-deep .select-module-add-input.el-input-group {
+      width: 100%;
+      vertical-align: middle;
+      table-layout: fixed;
+
+      .el-input__inner {
+        border-top-right-radius: 0 !important;
+        border-bottom-right-radius: 0 !important;
+
+        &:focus {
+          border-color: var(--border-color-base, #dcdfe6) !important;
+          box-shadow: none !important;
+        }
+      }
+
+      &:focus-within .el-input__inner {
+        border-color: var(--border-color-base, #dcdfe6) !important;
+      }
+
+      .el-input-group__append {
+        width: 36px;
+        min-width: 36px;
+        border-top-left-radius: 0 !important;
+        border-bottom-left-radius: 0 !important;
+        padding: 0;
+        vertical-align: middle;
+
+        .select-module-add-submit.el-button {
+          width: 100%;
+          min-width: 36px;
+          height: 100%;
+          min-height: 30px;
+          padding: 0 8px;
+          border-top-left-radius: 0 !important;
+          border-bottom-left-radius: 0 !important;
+          border-left: none !important;
+          margin: 0;
+          color: var(--text-color-regular, #606266);
+
+          &:hover,
+          &:focus {
+            color: var(--cat2bug-primary, #409eff);
+            outline: none !important;
+            box-shadow: none !important;
+          }
+
+          @at-root html.dark & {
+            color: #e5eaf3;
+
+            &:hover,
+            &:focus {
+              color: #ffc107;
+            }
+          }
+        }
+      }
+
+      &:focus-within .el-input-group__append {
+        border-color: var(--border-color-base, #dcdfe6) !important;
+      }
     }
     ::v-deep .el-form-item__error {
       position: relative;

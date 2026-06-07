@@ -409,7 +409,7 @@ export default {
   max-width: 550px;
   border-radius: 16px;
   background: var(--login-card-bg, var(--card-bg, #ffffff));
-  padding: 32px 40px 28px;
+  padding: 32px 20px 28px;
   border: 1px solid var(--login-card-border, var(--border-color-base));
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.08);
   position: relative;
@@ -461,15 +461,15 @@ html.dark .login-form {
 }
 
 .custom-form-item {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 
   .item-label {
     display: flex;
     align-items: center;
-    gap: 7px;
+    gap: 6px;
     font-size: 13px;
     color: var(--login-text-secondary, var(--text-color-secondary));
-    margin-bottom: 8px;
+    margin-bottom: 6px;
 
     .svg-icon {
       font-size: 15px;
@@ -503,7 +503,7 @@ html.dark .login-form {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: 4px 0 16px;
+  margin: 2px 0 12px;
   ::v-deep .el-checkbox__label {
     font-size: 13px;
     color: var(--login-text-regular, var(--text-color-regular));
@@ -557,8 +557,8 @@ html.dark .login-form {
 .login-divider {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin: 18px 0 16px;
+  gap: 10px;
+  margin: 12px 0 10px;
 
   .login-divider-line {
     flex: 1;
@@ -574,13 +574,13 @@ html.dark .login-form {
 }
 
 .lang-section {
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 .lang-group {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 10px;
 }
 
 .lang-icon-host {
@@ -629,7 +629,7 @@ html.dark .login-form {
 }
 
 .login-copyright {
-  margin-top: 16px;
+  margin-top: 12px;
   font-size: 12px;
   color: var(--login-text-muted, var(--text-color-secondary));
   text-align: center;
