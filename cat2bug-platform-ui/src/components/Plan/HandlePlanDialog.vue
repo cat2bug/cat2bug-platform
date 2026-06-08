@@ -5,6 +5,7 @@
     size="90%"
     :visible.sync="visible"
     direction="rtl"
+    :close-on-press-escape="false"
     :before-close="closePlanDrawer">
     <!-- 仅标题与关闭钮同区；统计条移到正文，避免与 el-drawer__close-btn 同一 flex 行挤压 -->
     <template slot="title">
@@ -131,12 +132,14 @@ import DefectEscapeRate from "@/components/Plan/statistics/DefectEscapeRate";
 import DefectRepairAvgHour from "@/components/Plan/statistics/DefectRepairAvgHour";
 import { getPlan } from "@/api/system/plan";
 import {checkPermi} from "@/utils/permission";
+import planHandleDrawerKbd from '@/mixins/plan-handle-drawer-kbd';
 
 /** 执行计划抽屉：左侧树是否展开 */
 const PLAN_HANDLE_DRAWER_TREE_VISIBLE_CACHE_KEY = 'plan_handle_drawer_tree_module_visible';
 
 export default {
   name: "HandlePlanDialog",
+  mixins: [planHandleDrawerKbd],
   components: { Cat2BugLevel,Step,TreePlanItemModule,
     FocusMemberList, Cat2BugPreviewImage, HandleCaseOfPlan, RowListMember, Cat2BugText, CaseList, DefectList,
     DefectDiscoveryRate, DefectTotal, DefectRepairRate, DefectDensity, DefectDetectionRate, DefectSeverityRate, DefectRestartRate, DefectEscapeRate, DefectRepairAvgHour
@@ -240,14 +243,13 @@ export default {
     },
     /** 取消按钮 */
     cancel() {
-      this.visible = false;
-      this.reset();
-      this.$emit('close');
+      this.requestClosePlanHandleDrawer();
     },
     /** 打开窗口 */
     open(planId) {
       this.planId = planId;
       this.visible = true;
+      this.onHandlePlanDrawerOpenedKbd();
       this.$nextTick(()=>{
         this.loading = true;
         this.getPlanInfo(planId, true);
@@ -291,11 +293,6 @@ export default {
           list.setDragComponentSize();
         }
       });
-    },
-    /** 关闭缺陷抽屉窗口 */
-    closePlanDrawer(done) {
-      done();
-      this.cancel();
     },
     /** 点击模块树中的某个模块操作 */
     moduleClickHandle(moduleId) {

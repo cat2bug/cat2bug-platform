@@ -1,9 +1,9 @@
 <template>
-  <div class="app-container case-body plan-page plan-list-layout project-list-page-host">
+  <div class="app-container case-body plan-page plan-list-layout project-list-page-host" ref="planMain">
     <project-label class="plan-project-label" />
     <div ref="planTools" class="plan-tools" :class="{ 'wrapped-tools': planToolsWrapped }">
-      <el-form class="left" :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
-        <el-form-item label="" prop="planName">
+      <el-form class="left" :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px" :class="{ 'list-query-keyboard-nav': listQueryNavActive }">
+        <el-form-item label="" prop="planName" class="plan-hint-query list-query-nav-item" data-query-key="planName">
           <el-input
             v-model="queryParams.planName"
             :placeholder="$t('plan.enter-name')"
@@ -13,7 +13,7 @@
             @input="handleQuery"
           />
         </el-form-item>
-        <el-form-item label="" prop="planVersion">
+        <el-form-item label="" prop="planVersion" class="list-query-nav-item" data-query-key="planVersion">
           <el-input
             v-model="queryParams.planVersion"
             :placeholder="$t('plan.enter-version')"
@@ -42,6 +42,7 @@
           <el-button style="padding: 9px;" plain slot="reference" icon="el-icon-s-fold" size="small"></el-button>
         </el-popover>
         <el-button
+          class="plan-hint-create"
           type="primary"
           plain
           icon="el-icon-plus"
@@ -151,9 +152,15 @@ import Cat2BugTable from "@/components/Cat2BugTable";
 import { PlanTableColumnDefaults } from "@/views/system/plan/plan-table-options";
 import {strFormat} from "@/utils";
 import {checkPermi} from "@/utils/permission";
+import pageActionHints from '@/mixins/page-action-hints'
+import listQueryKeyboardNav from '@/mixins/list-query-keyboard-nav'
+import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
+
+const PLAN_KBD_SCOPE = 'plan'
 
 export default {
   name: "Plan",
+  mixins: [pageActionHints, listQueryKeyboardNav],
   dicts: ['plan_item_state'],
   components:{ ProjectLabel, AddPlanDialog, HandlePlanDialog, DictOptionDialog, RowListMember, Cat2BugTable },
   data() {
@@ -268,18 +275,100 @@ export default {
     });
     window.addEventListener("resize", this.syncPlanToolsWrapped);
     window.addEventListener("resize", this.syncPlanTableBodyMaxHeight);
+    this.registerPlanShortcuts();
     const actionPlanId = this.$route.query.planId;
     if(actionPlanId && checkPermi(['system:plan:run'])) {
       this.handlePlanRun({planId:actionPlanId})
     }
+  },
+  activated() {
+    this.registerPlanShortcuts();
+  },
+  deactivated() {
+    if (this.$shortcut) this.$shortcut.unregisterPage(PLAN_KBD_SCOPE);
   },
   destroyed() {
     // 移除滚动条监听
     window.removeEventListener("resize", this.syncPlanToolsWrapped);
     window.removeEventListener("resize", this.syncPlanTableBodyMaxHeight);
     this.destroyPlanListBodyResizeObserver();
+    if (this.$shortcut) this.$shortcut.unregisterPage(PLAN_KBD_SCOPE);
+  },
+  beforeDestroy() {
+    if (this.$shortcut) this.$shortcut.unregisterPage(PLAN_KBD_SCOPE);
   },
   methods: {
+    registerPlanShortcuts() {
+      if (!this.$shortcut) return
+      this.$shortcut.registerPage(PLAN_KBD_SCOPE, [
+        { key: 'query', defaultLetter: 'S', run: () => this.shortcutFocusQuery() },
+        { key: 'create', defaultLetter: 'E', run: () => this.shortcutCreatePlan() },
+        { key: 'prevPage', defaultLetter: 'B', run: () => this.shortcutChangePage(-1) },
+        { key: 'nextPage', defaultLetter: 'P', run: () => this.shortcutChangePage(1) }
+      ])
+    },
+    getPageActionHintContainer() {
+      return this.$refs.planMain || this.$el
+    },
+    getPageActionHints() {
+      const L = (key, def) => shortcutStore.getLetter(`action.${PLAN_KBD_SCOPE}.${key}`, def)
+      return [
+        {
+          key: 'query',
+          letter: L('query', 'S'),
+          badgeSelector: '.plan-hint-query',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
+          run: () => this.shortcutFocusQuery()
+        },
+        {
+          key: 'create',
+          letter: L('create', 'E'),
+          badgeSelector: '.plan-hint-create',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2, dy: 5 },
+          run: () => this.shortcutCreatePlan(),
+          visible: () => checkPermi(['system:plan:add'])
+        },
+        {
+          key: 'prevPage',
+          letter: L('prevPage', 'B'),
+          badgeSelector: '.plan-table-pagination .btn-prev',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
+          run: () => this.shortcutChangePage(-1),
+          visible: () => this.total > 0
+        },
+        {
+          key: 'nextPage',
+          letter: L('nextPage', 'P'),
+          badgeSelector: '.plan-table-pagination .btn-next',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
+          run: () => this.shortcutChangePage(1),
+          visible: () => this.total > 0
+        }
+      ]
+    },
+    getListQueryNavItems() {
+      return [{ key: 'planName' }, { key: 'planVersion' }]
+    },
+    getListQueryNavToolbarRef() {
+      return 'planToolsRight'
+    },
+    shortcutFocusQuery() {
+      this.enterListQueryKeyboardNav()
+    },
+    shortcutCreatePlan() {
+      if (!checkPermi(['system:plan:add'])) return
+      this.handleAdd()
+    },
+    shortcutChangePage(delta) {
+      const root = this.getPageActionHintContainer()
+      if (!root || typeof root.querySelector !== 'function') return
+      const btn = root.querySelector(
+        delta < 0 ? '.plan-table-pagination .btn-prev' : '.plan-table-pagination .btn-next'
+      )
+      if (btn && !btn.classList.contains('disabled') && typeof btn.click === 'function') {
+        btn.click()
+      }
+    },
     initPlanListBodyResizeObserver() {
       if (typeof ResizeObserver === 'undefined') return;
       this.destroyPlanListBodyResizeObserver();
@@ -648,5 +737,9 @@ export default {
 }
 .plan-table-pagination-band {
   flex-shrink: 0;
+}
+.plan-hint-create {
+  position: relative;
+  overflow: visible !important;
 }
 </style>

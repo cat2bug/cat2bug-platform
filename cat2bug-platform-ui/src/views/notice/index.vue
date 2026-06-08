@@ -19,8 +19,8 @@
       </div>
     </div>
     <div class="notice-tools">
-      <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
-        <el-form-item label="" prop="noticeTitle" class="notice-hint-query">
+      <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px" :class="{ 'list-query-keyboard-nav': listQueryNavActive }">
+        <el-form-item label="" prop="noticeTitle" class="notice-hint-query list-query-nav-item" data-query-key="noticeTitle">
           <el-input
             prefix-icon="el-icon-document"
             v-model="queryParams.noticeTitle"
@@ -31,7 +31,7 @@
         </el-form-item>
       </el-form>
 
-      <el-row :gutter="10" class="mb8">
+      <el-row ref="noticeToolsRight" :gutter="10" class="mb8">
         <el-col :span="1.5">
           <el-button
             type="danger"
@@ -122,6 +122,7 @@ import OptionNotice from "./option/index"
 import SendNoticeDialog from "./send/index"
 import ViewNotice from "@/components/Notice/ViewNotice";
 import pageActionHints from '@/mixins/page-action-hints'
+import listQueryKeyboardNav from '@/mixins/list-query-keyboard-nav'
 import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
 import { checkPermi } from '@/utils/permission'
 import {
@@ -136,7 +137,7 @@ const NOTICE_KBD_SCOPE = 'notice'
 
 export default {
   name: "Notice",
-  mixins: [pageActionHints],
+  mixins: [pageActionHints, listQueryKeyboardNav],
   components: { ViewNotice, OptionNotice, SendNoticeDialog },
   dicts: ['sys_notice_status', 'sys_notice_type'],
   data () {
@@ -312,11 +313,13 @@ export default {
       })).filter((item) => item.letter)
     },
     shortcutFocusQuery() {
-      const form = this.$refs.queryForm
-      const input = form && form.$el && form.$el.querySelector('input')
-      if (input && typeof input.focus === 'function') {
-        input.focus()
-      }
+      this.enterListQueryKeyboardNav()
+    },
+    getListQueryNavItems() {
+      return [{ key: 'noticeTitle' }]
+    },
+    getListQueryNavToolbarRef() {
+      return 'noticeToolsRight'
     },
     shortcutSwitchTab() {
       const tabs = this.groupList || []

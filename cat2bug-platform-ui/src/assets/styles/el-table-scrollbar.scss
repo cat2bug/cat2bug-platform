@@ -7,12 +7,12 @@
 .el-table__header-wrapper thead th.el-table__gutter,
 .el-table__fixed-header-wrapper thead th.gutter,
 .el-table__fixed-header-wrapper thead th.el-table__gutter {
-  background-color: #f8f8f9 !important;
-  border-bottom: 1px solid #dfe6ec !important;
+  background-color: var(--table-header-bg) !important;
+  border-bottom: 1px solid var(--table-header-border-color, var(--table-border-color)) !important;
 }
 
 .el-table__fixed-right-patch {
-  background-color: #f8f8f9 !important;
+  background-color: var(--table-header-bg) !important;
 }
 
 @mixin cat2bug-el-table-scrollbar-opaque {

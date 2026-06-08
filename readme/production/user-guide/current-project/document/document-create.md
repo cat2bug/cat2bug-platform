@@ -9,6 +9,8 @@
 3. 将文件拖拽到上传区域，或点击"点击上传"选择文件
 4. 点击「确定」按钮完成上传
 
+**键盘操作（上传区）：** Tab 至拖拽上传外框后，**Enter** / **Space** 选取文件；若已选文件，**↓** 进入下方列表，**↑↓** 切换，**Delete** 删除，首项 **↑** 回到外框。详见 [键盘快捷键 — 附件上传](../../../advanced/keyboard-shortcuts.md#附件上传fileupload)。
+
 ![新建文档](../../../../../../images/user-guide/current-project/document/document-create-doc.png)
 
 ## 支持的文件格式

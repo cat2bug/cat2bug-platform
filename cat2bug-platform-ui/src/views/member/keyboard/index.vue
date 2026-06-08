@@ -24,6 +24,16 @@
       </div>
     </el-card>
 
+    <el-collapse class="kbd-settings__reserved">
+      <el-collapse-item :title="$t('keyboard.reserved-title')" name="reserved">
+        <p class="kbd-settings__reserved-desc">{{ $t('keyboard.reserved-desc') }}</p>
+        <p class="kbd-settings__reserved-hint">{{ $t('keyboard.reserved-letters-hint') }}</p>
+        <p class="kbd-settings__reserved-list">{{ $t('keyboard.reserved-letters-list') }}</p>
+        <p class="kbd-settings__reserved-hint">{{ $t('keyboard.reserved-symbols-hint') }}</p>
+        <p class="kbd-settings__reserved-list">{{ $t('keyboard.reserved-symbols-list') }}</p>
+      </el-collapse-item>
+    </el-collapse>
+
     <el-card
       v-for="section in sections"
       :key="section.id"
@@ -43,7 +53,10 @@
               :class="{ 'is-conflict': row.conflict }"
               @input="(v) => onLetterInput(row, v)"
             />
-            <span v-if="row.conflict" class="kbd-settings__conflict">
+            <span v-if="row.reserved" class="kbd-settings__conflict">
+              {{ $t('keyboard.reserved-forbidden') }}
+            </span>
+            <span v-else-if="row.conflict" class="kbd-settings__conflict">
               {{ $t('keyboard.conflict') }}
             </span>
           </template>
@@ -81,8 +94,18 @@ import {
   NOTICE_ACTION_DEFAULTS,
   DOC_ACTION_DEFAULTS,
   STATISTIC_TEMPLATE_ACTION_DEFAULTS,
+  CASE_ACTION_DEFAULTS,
+  PLAN_ACTION_DEFAULTS,
+  MODULE_ACTION_DEFAULTS,
+  REPORT_ACTION_DEFAULTS,
+  DOCUMENT_ACTION_DEFAULTS,
+  PROJECT_OPTION_ACTION_DEFAULTS,
+  TEAM_OPTION_ACTION_DEFAULTS,
+  TEAM_MEMBER_ACTION_DEFAULTS,
+  PROFILE_ACTION_DEFAULTS,
   normalizeKey
 } from '@/plugins/shortcut/keymap'
+import { SETTINGS_NEVER_BIND } from '@/plugins/shortcut/reserved-keys'
 
 export default {
   name: 'KeyboardSettings',
@@ -143,7 +166,8 @@ export default {
         title: this.$t(a.titleKey),
         defaultLetter: a.defaultLetter,
         letter: shortcutStore.getLetter(`action.defect.${a.key}`, a.defaultLetter),
-        conflict: false
+        conflict: false,
+        reserved: false
       }))
       sections.push({ id: 'defect', title: this.$t('keyboard.sec-defect'), items: defectRows })
 
@@ -152,7 +176,8 @@ export default {
         title: this.$t(a.titleKey),
         defaultLetter: a.defaultLetter,
         letter: shortcutStore.getLetter(`action.login.${a.key}`, a.defaultLetter),
-        conflict: false
+        conflict: false,
+        reserved: false
       }))
       sections.push({ id: 'login', title: this.$t('keyboard.sec-login'), items: loginRows })
 
@@ -161,7 +186,8 @@ export default {
         title: this.$t(a.titleKey),
         defaultLetter: a.defaultLetter,
         letter: shortcutStore.getLetter(`action.register.${a.key}`, a.defaultLetter),
-        conflict: false
+        conflict: false,
+        reserved: false
       }))
       sections.push({ id: 'register', title: this.$t('keyboard.sec-register'), items: registerRows })
 
@@ -170,7 +196,8 @@ export default {
         title: this.$t(a.titleKey),
         defaultLetter: a.defaultLetter,
         letter: shortcutStore.getLetter(`action.statistic-template.${a.key}`, a.defaultLetter),
-        conflict: false
+        conflict: false,
+        reserved: false
       }))
       sections.push({
         id: 'statistic-template',
@@ -183,7 +210,8 @@ export default {
         title: this.$t(a.titleKey),
         defaultLetter: a.defaultLetter,
         letter: shortcutStore.getLetter(`action.notice.${a.key}`, a.defaultLetter),
-        conflict: false
+        conflict: false,
+        reserved: false
       }))
       sections.push({
         id: 'notice',
@@ -196,7 +224,8 @@ export default {
         title: this.$t(a.titleKey),
         defaultLetter: a.defaultLetter,
         letter: shortcutStore.getLetter(`action.system-doc.${a.key}`, a.defaultLetter),
-        conflict: false
+        conflict: false,
+        reserved: false
       }))
       sections.push({
         id: 'system-doc',
@@ -204,8 +233,38 @@ export default {
         items: docRows
       })
 
+      const phase2Sections = [
+        ['case', 'keyboard.sec-case', 'case', CASE_ACTION_DEFAULTS],
+        ['plan', 'keyboard.sec-plan', 'plan', PLAN_ACTION_DEFAULTS],
+        ['module', 'keyboard.sec-module', 'module', MODULE_ACTION_DEFAULTS],
+        ['report', 'keyboard.sec-report', 'report', REPORT_ACTION_DEFAULTS],
+        ['document', 'keyboard.sec-document', 'document', DOCUMENT_ACTION_DEFAULTS],
+        ['project-option', 'keyboard.sec-project-option', 'project-option', PROJECT_OPTION_ACTION_DEFAULTS],
+        ['team-option', 'keyboard.sec-team-option', 'team-option', TEAM_OPTION_ACTION_DEFAULTS],
+        ['team-member', 'keyboard.sec-team-member', 'team-member', TEAM_MEMBER_ACTION_DEFAULTS],
+        ['profile', 'keyboard.sec-profile', 'profile', PROFILE_ACTION_DEFAULTS]
+      ]
+      phase2Sections.forEach(([id, secKey, scopeKey, defaults]) => {
+        this.addActionSection(sections, id, secKey, scopeKey, defaults)
+      })
+
       sections.forEach((s) => this.markConflicts(s))
       this.sections = sections
+    },
+    addActionSection(sections, id, secKey, scopeKey, defaults) {
+      const prefix = `action.${scopeKey}`
+      sections.push({
+        id,
+        title: this.$t(secKey),
+        items: defaults.map((a) => ({
+          bindingId: `${prefix}.${a.key}`,
+          title: this.$t(a.titleKey),
+          defaultLetter: a.defaultLetter,
+          letter: shortcutStore.getLetter(`${prefix}.${a.key}`, a.defaultLetter),
+          conflict: false,
+          reserved: false
+        }))
+      })
     },
     toRows(items) {
       return items.map((it) => ({
@@ -213,7 +272,8 @@ export default {
         title: it.title,
         defaultLetter: it.defaultLetter || '',
         letter: shortcutStore.getLetter(it.bindingId, it.defaultLetter),
-        conflict: false
+        conflict: false,
+        reserved: false
       }))
     },
     markConflicts(section) {
@@ -224,13 +284,28 @@ export default {
       })
       section.items.forEach((r) => {
         const l = normalizeKey(r.letter)
-        r.conflict = !!l && counts[l] > 1
+        r.reserved = !!l && SETTINGS_NEVER_BIND.has(l)
+        r.conflict = !!l && (r.reserved || counts[l] > 1)
       })
     },
     onLetterInput(row, value) {
       const norm = normalizeKey(value)
+      if (norm && SETTINGS_NEVER_BIND.has(norm)) {
+        row.letter = norm
+        row.reserved = true
+        row.conflict = true
+        const section = this.sections.find((s) => s.items.includes(row))
+        if (section) this.markConflicts(section)
+        return
+      }
+      row.reserved = false
       row.letter = norm
-      shortcutStore.setOverride(row.bindingId, norm, row.defaultLetter)
+      const result = shortcutStore.setOverride(row.bindingId, norm, row.defaultLetter)
+      if (result && !result.ok) {
+        row.letter = shortcutStore.getLetter(row.bindingId, row.defaultLetter)
+        row.reserved = result.reason === 'reserved'
+        row.conflict = row.reserved
+      }
       const section = this.sections.find((s) => s.items.includes(row))
       if (section) this.markConflicts(section)
     },
@@ -284,6 +359,17 @@ export default {
   align-items: center;
   gap: 8px;
   font-size: 13px;
+}
+.kbd-settings__reserved {
+  margin-top: 16px;
+}
+.kbd-settings__reserved-desc,
+.kbd-settings__reserved-hint,
+.kbd-settings__reserved-list {
+  color: var(--el-text-color-secondary, #909399);
+  font-size: 13px;
+  line-height: 1.7;
+  margin: 0 0 8px;
 }
 .kbd-settings__section {
   margin-top: 16px;

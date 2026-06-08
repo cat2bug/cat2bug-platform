@@ -1,11 +1,36 @@
 import { normalizeKey } from '@/plugins/shortcut/keymap'
+import { ROW_KBD_RESERVED } from '@/plugins/shortcut/reserved-keys'
 
-/** 与 page-action-hints 一致：不可用于行/工具栏动态分配 */
-export const ROW_KBD_RESERVED = Object.freeze(
-  new Set(['A', 'C', 'M', 'N', 'Q', 'T', 'V', 'X', 'Z'])
-)
+export { ROW_KBD_RESERVED }
+
+/** page-action-hints 浮层 id（与 mixin 内 OVERLAY_ID 一致） */
+export const PAGE_KBD_OVERLAY_ID = 'cat2bug-page-kbd-overlay'
 
 const LETTER_POOL = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
+
+/** ⌘/Ctrl + 单键：归一化字母或数字（兼容 Digit1 / Numpad1） */
+export function resolvePageActionLetter(e) {
+  if (!e) return ''
+  const k = e.key
+  if (k && k.length === 1) {
+    if (/^\d$/.test(k)) return k
+    if (/[a-zA-Z]/.test(k)) return k.toUpperCase()
+  }
+  if (e.code && /^Digit[0-9]$/.test(e.code)) {
+    return e.code.slice(5)
+  }
+  if (e.code && /^Numpad[0-9]$/.test(e.code)) {
+    return e.code.slice(6)
+  }
+  return ''
+}
+
+/** 列表行 ⌘/Ctrl 数字徽标是否正在展示（用于避免与布局导航数字键冲突） */
+export function hasActivePageRowKbdHints() {
+  const overlay = document.getElementById(PAGE_KBD_OVERLAY_ID)
+  if (!overlay) return false
+  return overlay.querySelector('.defect-row-kbd-hint-float') != null
+}
 
 /** 为可见行顺序分配快捷键：1–9，再用未占用的字母 */
 export function assignRowHintLetters(count, usedLetters = new Set()) {
@@ -168,6 +193,36 @@ export function getDefectTableScrollBody(tableRoot) {
   return wraps.find((w) => !w.closest('.el-table__fixed, .el-table__fixed-right')) || wraps[0]
 }
 
+/** ⌘/Ctrl + 方向键：滚动表格主表体（垂直/水平） */
+export function scrollTableBodyByArrow(bodyWrap, key) {
+  if (!bodyWrap || !key) return false
+  const stepY = Math.max(48, Math.round(bodyWrap.clientHeight * 0.35))
+  const stepX = Math.max(80, Math.round(bodyWrap.clientWidth * 0.25))
+  if (key === 'ArrowUp') {
+    bodyWrap.scrollTop = Math.max(0, bodyWrap.scrollTop - stepY)
+    return true
+  }
+  if (key === 'ArrowDown') {
+    bodyWrap.scrollTop = Math.min(
+      bodyWrap.scrollHeight - bodyWrap.clientHeight,
+      bodyWrap.scrollTop + stepY
+    )
+    return true
+  }
+  if (key === 'ArrowLeft') {
+    bodyWrap.scrollLeft = Math.max(0, bodyWrap.scrollLeft - stepX)
+    return true
+  }
+  if (key === 'ArrowRight') {
+    bodyWrap.scrollLeft = Math.min(
+      bodyWrap.scrollWidth - bodyWrap.clientWidth,
+      bodyWrap.scrollLeft + stepX
+    )
+    return true
+  }
+  return false
+}
+
 /** 通知列表：首列勾选框右下角 */
 export function resolveNoticeTableCheckboxAnchor(tr) {
   if (!tr) return null
@@ -178,11 +233,25 @@ export function resolveNoticeTableCheckboxAnchor(tr) {
   )
 }
 
+/** 从 Element UI 表格行 DOM 解析行数据（含树表可见行） */
+export function resolveElTableRowData(tr) {
+  if (!tr) return null
+  let vm = tr.__vue__
+  while (vm) {
+    if (vm.row != null && typeof vm.row === 'object') return vm.row
+    vm = vm.$parent
+  }
+  return null
+}
+
 /** 表格行快捷键徽标锚点：编号列 > 左侧展开列 > 首个可见单元格 */
 export function resolveDefectTableRowHintAnchor(tr) {
   if (!tr) return null
   return (
     tr.querySelector('.defect-row-kbd-hint-anchor') ||
+    tr.querySelector('.case-row-kbd-hint-anchor') ||
+    tr.querySelector('.module-row-kbd-hint-anchor') ||
+    tr.querySelector('.report-row-kbd-hint-anchor') ||
     tr.querySelector('td.defect-sidebar-expand-body-cell') ||
     tr.querySelector('td:not(.is-hidden) .cell') ||
     tr.querySelector('td .cell') ||

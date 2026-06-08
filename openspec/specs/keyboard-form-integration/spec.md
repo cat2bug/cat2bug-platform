@@ -123,6 +123,26 @@
 - **WHEN** 用户聚焦图片上传外框后按一次 `Tab`
 - **THEN** 焦点移至下一个表单字段
 
+### Requirement: 附件上传文件列表键盘
+
+`FileUpload` 及采用相同外框模式的导入上传区（如用例 Excel 导入弹框）在已上传文件列表非空时 MUST 支持：
+
+- 外框（选取文件 / 拖拽区）获焦时 **↓**：进入下方已上传文件列表并高亮首项
+- 列表内 **↑** / **↓**：在文件行间切换高亮
+- 列表内 **Delete** / **Backspace**：删除当前高亮文件（与点击「删除」相同）
+- 首项获焦时 **↑**：回到外框选取区
+- 列表获焦时外框 MUST 隐藏外层焦点环，改由当前文件行显示焦点描边
+
+#### Scenario: 从选取按钮进入文件列表
+
+- **WHEN** 用户在缺陷表单附件区聚焦上传外框且已存在至少一个附件，并按下 **↓**
+- **THEN** 焦点逻辑进入文件列表，首行显示键盘高亮
+
+#### Scenario: 键盘删除附件
+
+- **WHEN** 用户在附件列表中高亮某文件并按下 **Delete**
+- **THEN** 该文件从列表中移除，高亮移至相邻项或回到外框
+
 ### Requirement: 成员选择器下拉键盘
 
 `SelectProjectMember` 下拉展开时 MUST 支持：
@@ -175,3 +195,25 @@
 
 - **WHEN** 用户打开系统文件选择框后按下 `Esc`（且无其它浮层）
 - **THEN** 仍可关闭缺陷抽屉
+
+### Requirement: Split 下拉按钮键盘规范
+
+列表页/工具栏上的 Element UI **split-button**（`el-dropdown split-button`，类名 `cat2bug-split-dropdown-kbd`）MUST 遵循：
+
+- 整颗按钮（`.el-button-group`）为唯一 Tab 停靠点与焦点环；内部主按钮与 caret MUST `tabindex="-1"`
+- 页面动作快捷键 MUST 为整颗按钮分配**一个**字母（如用例 **E**、AI **A**）；MUST NOT 为下拉内各菜单项单独分配 U/R 等工具栏字母
+- 按钮获焦时：**Enter** / **空格** / **↓** 展开菜单并聚焦首项；菜单内 **↑** / **↓** 移动；**Enter** / **空格** 执行当前项并**立即收起菜单**；**Esc** 关闭并回到按钮
+- 菜单已展开时，全局键盘逻辑 MUST 继续处理菜单内按键（即使 `.el-dropdown-menu` 计入遮挡层检测，也不得因此禁用 ↑↓ / Enter / Space / Esc）
+- 工具栏 **← / →** 导航 MUST 将 split-button 视为一个控件
+
+工具栏 **plain 按钮**（显示字段等）与键盘导航类 `list-query-toolbar-nav-focused` 聚焦时 MUST 仅一层 `box-shadow` 环，MUST NOT 出现 border 改色 + 外描边双边框。
+
+#### Scenario: 整颗按钮一个徽标
+
+- **WHEN** 用户在用例页按住 `Cmd/Ctrl`
+- **THEN** 「新建用例」split-button 仅显示 **E** 一个徽标（不分别在主按钮与箭头上显示 U/E/R）
+
+#### Scenario: 键盘展开并选择导入
+
+- **WHEN** 用户聚焦「新建用例」按钮并按 **↓**
+- **THEN** 展开下拉菜单；再按 **↓** 高亮「导入」；按 **Enter** 或 **空格** 打开导入流程，且下拉菜单 MUST 收起

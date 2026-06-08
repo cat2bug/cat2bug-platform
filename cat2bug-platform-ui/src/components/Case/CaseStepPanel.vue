@@ -6,13 +6,26 @@
         <el-input type="textarea" ref="caseStepDescribeRef" v-model="step.stepDescribe" :key="step.caseStepDescribeKey" :placeholder="$t('case.please-enter-step-describe')" maxlength="128" :autosize="autoSizeRang(step)" @input.native="caseStepListChangeHandle($event, caseStepList, index, 'describe')" />
         <el-input type="textarea" ref="caseStepExpectRef" v-model="step.stepExpect" :key="step.caseStepExpectKey" :placeholder="$t('case.please-enter-step-expected')" maxlength="128" :autosize="autoSizeRang(step)" @input.native="caseStepListChangeHandle($event,caseStepList, index, 'expect')" />
         <div class="case-step-row-tools">
-          <el-link :step="index" type="danger" :underline="false" @click="removeStepHandle(index)" v-show="caseStep.length>1"><i class="el-icon-error el-icon--right"></i></el-link>
-          <el-link type="success" :underline="false" @click="addStepHandle(index)"><i class="el-icon-circle-plus el-icon--right"></i></el-link>
+          <el-button
+            v-show="caseStepList.length > 1"
+            type="text"
+            class="case-step-tool-btn case-step-tool-btn--remove"
+            icon="el-icon-error"
+            :aria-label="$t('delete')"
+            @click="removeStepHandle(index)"
+          />
+          <el-button
+            type="text"
+            class="case-step-tool-btn case-step-tool-btn--add"
+            icon="el-icon-circle-plus"
+            :aria-label="$t('case.add-step')"
+            @click="addStepHandle(index)"
+          />
         </div>
       </div>
     </draggable>
     <el-input class="case-step-script-input" v-show="panelType!='list'" type="textarea" v-model="stepScript" :placeholder="$t('case.please-enter-step-script')" maxlength="10000" :autosize="{ minRows: 4, maxRows: 20 }" show-word-limit @input="scriptChangeHandle" />
-    <el-button class="button-full" type="success" size="mini" plain @click="addStepHandle(undefined)">{{ $t('case.add-step') }}</el-button>
+    <el-button class="button-full case-add-step-btn defect-kbd-hint-host" type="success" size="mini" plain @click="addStepHandle(undefined)">{{ $t('case.add-step') }}</el-button>
   </div>
 </template>
 
@@ -206,8 +219,29 @@ export default {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    ::v-deep .el-link--inner {
+    gap: 2px;
+
+    ::v-deep .case-step-tool-btn {
+      padding: 0;
+      min-width: auto;
+      margin: 0;
+      font-size: 16px;
       line-height: 20px;
+      border-radius: var(--cat2bug-border-radius, 4px);
+
+      &:focus,
+      &:focus-visible {
+        outline: 2px solid var(--cat2bug-field-focus-color, #409eff);
+        outline-offset: 2px;
+      }
+    }
+
+    ::v-deep .case-step-tool-btn--remove {
+      color: #f56c6c;
+    }
+
+    ::v-deep .case-step-tool-btn--add {
+      color: #13ce66;
     }
   }
 }

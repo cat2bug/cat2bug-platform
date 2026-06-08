@@ -1,5 +1,5 @@
 <template>
-  <el-dialog :title="$t('team.invite-members')" :visible.sync="dialogVisible" width="400px" append-to-body>
+  <el-dialog :title="$t('team.invite-members')" :visible.sync="dialogVisible" width="400px" append-to-body :close-on-press-escape="false" :before-close="onToolDialogBeforeClose" @opened="onToolDialogOpened">
     <el-form ref="form" :model="form" :rules="rules" label-width="120px">
       <el-row>
         <el-col :span="24">
@@ -41,8 +41,11 @@
       </el-row>
     </el-form>
     <div slot="footer" class="dialog-footer">
-      <el-button type="primary" @click="submitForm">{{$t('submit')}}</el-button>
-      <el-button @click="cancel">{{$t('cancel')}}</el-button>
+      <el-button class="defect-kbd-hint-host" type="primary" @click="submitForm">
+        {{$t('submit')}}
+        <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
+      </el-button>
+      <el-button @click="requestCloseToolDialog">{{$t('cancel')}}</el-button>
     </div>
   </el-dialog>
 </template>
@@ -59,9 +62,11 @@ import {
 } from "@/api/system/team";
 import {getUser} from "@/api/system/user";
 import Cat2BugAvatar from "@/components/Cat2BugAvatar";
+import defectToolDialogKbd from '@/mixins/defect-tool-dialog-kbd'
 
 export default {
   name: "CreateTeamMember",
+  mixins: [defectToolDialogKbd],
   components: { Cat2BugAvatar },
   data() {
     return {
@@ -125,17 +130,18 @@ export default {
         if (valid) {
           inviteMember(this.getTeamId(), this.form).then(res => {
             this.$modal.msgSuccess("新增成功");
-            this.dialogVisible = false;
-            this.cancel();
+            this.doCloseToolDialog();
             this.$emit("invite",res);
           });
         }
       });
     },
+    shortcutSave() {
+      this.submitForm();
+    },
     // 取消按钮
     cancel() {
-      this.dialogVisible = false;
-      this.reset();
+      this.requestCloseToolDialog();
     },
     // 表单重置
     reset() {

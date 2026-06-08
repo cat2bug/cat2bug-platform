@@ -1,9 +1,11 @@
 <template>
-  <div class="upload-file">
+  <div class="upload-file" :class="{ 'is-keyboard-list-mode': keyboardZone === 'list' }">
     <div
       ref="focusTarget"
       class="cat2bug-upload-focus-target upload-file-focus-target"
       tabindex="0"
+      @focus="onShellFocus"
+      @blur="onShellBlur"
       @keydown="onFocusShellKeydown"
     >
       <el-upload
@@ -57,7 +59,16 @@ import { getToken } from "@/utils/auth";
 import i18n from "@/utils/i18n/i18n";
 import {strFormat} from "@/utils";
 import {setHeader} from "@/utils/request";
-import { observeUploadFocusTarget, patchUploadFocusTarget } from '@/utils/upload-focus-tab'
+import { observeUploadFocusTarget, patchUploadFocusTarget, refocusUploadShellElement, scheduleUploadShellRefocusAfterPicker } from '@/utils/upload-focus-tab'
+import {
+  UPLOAD_KBD_LIST,
+  UPLOAD_KBD_SHELL,
+  applyUploadListKeyboardFocus,
+  clearUploadListKeyboardFocus,
+  handleUploadListKeydown
+} from '@/utils/upload-file-list-kbd'
+
+const UPLOAD_FILE_LIST_SELECTOR = '.upload-file-list .el-upload-list__item'
 
 export default {
   name: "FileUpload",
@@ -99,9 +110,20 @@ export default {
       uploadFileUrl: process.env.VUE_APP_BASE_API + "/common/upload", // 上传文件服务器地址
       headers: headers,
       fileList: [],
+      keyboardZone: UPLOAD_KBD_SHELL,
+      keyboardFocusIndex: 0,
     };
   },
   watch: {
+    fileList(list) {
+      if (!list.length && this.keyboardZone === UPLOAD_KBD_LIST) {
+        this.keyboardZone = UPLOAD_KBD_SHELL
+        this.keyboardFocusIndex = 0
+        this.clearKeyboardFocusVisual()
+      } else if (this.keyboardZone === UPLOAD_KBD_LIST && this.$refs.focusTarget === document.activeElement) {
+        this.$nextTick(() => this.applyKeyboardFocusVisual())
+      }
+    },
     value: {
       handler(val) {
         if (val) {
@@ -139,7 +161,12 @@ export default {
     })
   },
   updated() {
-    this.$nextTick(this.patchUploadTabStop);
+    this.$nextTick(() => {
+      this.patchUploadTabStop()
+      if (this.$refs.focusTarget && document.activeElement === this.$refs.focusTarget) {
+        this.applyKeyboardFocusVisual()
+      }
+    })
   },
   methods: {
     patchUploadTabStop() {
@@ -149,9 +176,32 @@ export default {
       const shell = this.$refs.focusTarget;
       if (shell && typeof shell.focus === 'function') shell.focus();
     },
-    onFocusShellKeydown(e) {
-      if (e.key !== 'Enter' && e.key !== ' ' && e.code !== 'Space') return;
-      e.preventDefault();
+    onShellFocus() {
+      if (this.keyboardZone !== UPLOAD_KBD_LIST || !this.fileList.length) {
+        this.keyboardZone = UPLOAD_KBD_SHELL
+        this.keyboardFocusIndex = 0
+      }
+      this.$nextTick(() => this.applyKeyboardFocusVisual())
+    },
+    onShellBlur() {
+      this.clearKeyboardFocusVisual()
+    },
+    clearKeyboardFocusVisual() {
+      clearUploadListKeyboardFocus(this.$el)
+    },
+    applyKeyboardFocusVisual() {
+      const next = applyUploadListKeyboardFocus(
+        this.$el,
+        this.keyboardZone,
+        this.keyboardFocusIndex,
+        UPLOAD_FILE_LIST_SELECTOR
+      )
+      this.keyboardZone = next.zone
+      this.keyboardFocusIndex = next.index
+    },
+    openFilePicker() {
+      const shell = this.$refs.focusTarget
+      if (shell) scheduleUploadShellRefocusAfterPicker(shell)
       const uploadRoot = this.$refs.fileUpload && this.$refs.fileUpload.$el;
       if (!uploadRoot) return;
       const btn = uploadRoot.querySelector('.el-button');
@@ -161,6 +211,33 @@ export default {
       } else if (input && typeof input.click === 'function') {
         input.click();
       }
+    },
+    deleteKeyboardFocusedFile(index) {
+      this.handleDelete(index)
+      this.$nextTick(() => {
+        if (!this.fileList.length) {
+          this.keyboardZone = UPLOAD_KBD_SHELL
+          this.keyboardFocusIndex = 0
+        } else if (this.keyboardFocusIndex >= this.fileList.length) {
+          this.keyboardFocusIndex = this.fileList.length - 1
+        }
+        this.applyKeyboardFocusVisual()
+      })
+    },
+    onFocusShellKeydown(e) {
+      const result = handleUploadListKeydown(
+        e,
+        { zone: this.keyboardZone, index: this.keyboardFocusIndex },
+        {
+          fileCount: this.fileList.length,
+          onOpenPicker: () => this.openFilePicker(),
+          onDeleteFile: (index) => this.deleteKeyboardFocusedFile(index)
+        }
+      )
+      if (!result.handled) return
+      this.keyboardZone = result.state.zone
+      this.keyboardFocusIndex = result.state.index
+      this.applyKeyboardFocusVisual()
     },
     // 上传前校检格式和大小
     handleBeforeUpload(file) {
@@ -222,6 +299,14 @@ export default {
         this.number = 0;
         this.$emit("input", this.listToString(this.fileList));
         this.$modal.closeLoading();
+        this.$nextTick(() => {
+          const shell = this.$refs.focusTarget
+          if (shell) {
+            this.keyboardZone = UPLOAD_KBD_SHELL
+            refocusUploadShellElement(shell)
+            this.applyKeyboardFocusVisual()
+          }
+        })
       }
     },
     // 获取文件名称
@@ -276,6 +361,10 @@ export default {
   position: relative;
   color: var(--text-color-regular, inherit);
 
+  &.is-keyboard-focus {
+    border-radius: var(--cat2bug-border-radius, 4px);
+  }
+
   &:not(:last-child) {
     border-bottom: 1px solid var(--upload-file-divider-color, var(--border-color-light, #ebeef5));
   }
@@ -288,5 +377,9 @@ export default {
 }
 .ele-upload-list__item-content-action .el-link {
   margin-right: 10px;
+}
+.upload-file.is-keyboard-list-mode .upload-file-focus-target:focus,
+.upload-file.is-keyboard-list-mode .upload-file-focus-target:focus-within {
+  box-shadow: none !important;
 }
 </style>

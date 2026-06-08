@@ -63,7 +63,9 @@ import SwitchKeyboardPlugin from '@/plugins/switch-keyboard'
 import UploadFocusTabPlugin from '@/plugins/upload-focus-tab'
 import ComboFocusTabPlugin from '@/plugins/combo-focus-tab'
 import DropdownBlurClosePlugin from '@/plugins/dropdown-blur-close'
+import DropdownKbdPlugin from '@/plugins/dropdown-kbd'
 import DatePickerEscapePlugin from '@/plugins/date-picker-escape'
+import DatePickerKbdPlugin from '@/plugins/date-picker-kbd'
 import DefectDrawerShortcutsPlugin from '@/plugins/defect-drawer-shortcuts'
 import CommandPalette from '@/components/Shortcut/CommandPalette.vue'
 
@@ -116,7 +118,9 @@ DictData.install()
 Vue.use(Element, {
   size: Cookies.get('size') || 'medium' // set element-ui default size
 })
+Vue.use(DropdownKbdPlugin)
 Vue.use(DatePickerEscapePlugin)
+Vue.use(DatePickerKbdPlugin)
 Vue.use(DefectDrawerShortcutsPlugin)
 
 const userId = store.state.user.id

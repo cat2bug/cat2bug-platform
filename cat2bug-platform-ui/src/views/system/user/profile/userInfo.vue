@@ -16,7 +16,10 @@
 <!--      <el-input v-model="user.wechatUserId" maxlength="32" />-->
 <!--    </el-form-item>-->
     <el-form-item>
-      <el-button type="primary" size="mini" @click="submit">{{ $t('save') }}</el-button>
+      <el-button class="defect-kbd-hint-host" type="primary" size="mini" @click="submit">
+        {{ $t('save') }}
+        <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
+      </el-button>
       <el-button type="danger" size="mini" @click="close">{{ $t('close') }}</el-button>
     </el-form-item>
   </el-form>
@@ -25,11 +28,19 @@
 <script>
 import { updateUserProfile } from "@/api/system/user";
 import { optionalPhoneRule, optionalEmailRule, normalizeContactFields } from "@/utils/user-contact-rules";
+import dialogFormShortcuts from '@/mixins/dialog-form-shortcuts'
+import formFieldHints from '@/mixins/form-field-hints'
+import pageFormClose from '@/mixins/page-form-close'
 
 export default {
+  mixins: [dialogFormShortcuts, formFieldHints, pageFormClose],
   props: {
     user: {
       type: Object
+    },
+    formActive: {
+      type: Boolean,
+      default: true
     }
   },
   data() {
@@ -48,7 +59,53 @@ export default {
       }
     };
   },
+  computed: {
+    visible() {
+      return this.formActive
+    }
+  },
+  watch: {
+    formActive(val) {
+      if (val) {
+        this.$nextTick(() => {
+          this.capturePageFormCloseBaseline()
+          this.$_syncFieldHintListeners(true)
+        })
+      } else {
+        this.$_syncFieldHintListeners(false)
+      }
+    },
+    user: {
+      deep: true,
+      handler() {
+        if (this.formActive && !this.pageFormCloseBaseline) {
+          this.$nextTick(() => this.capturePageFormCloseBaseline())
+        }
+      }
+    }
+  },
+  mounted() {
+    if (this.formActive) {
+      this.$nextTick(() => {
+        this.capturePageFormCloseBaseline()
+        this.$_syncFieldHintListeners(true)
+      })
+    }
+  },
   methods: {
+    serializePageFormCloseState() {
+      return JSON.stringify({
+        nickName: this.user.nickName,
+        phoneNumber: this.user.phoneNumber,
+        email: this.user.email
+      })
+    },
+    onPageFormShortcutClose() {
+      this.requestClosePageForm({ onClose: () => this.$tab.closePage() })
+    },
+    shortcutSave() {
+      this.submit()
+    },
     submit() {
       this.$refs["form"].validate(valid => {
         if (valid) {
@@ -62,7 +119,7 @@ export default {
       });
     },
     close() {
-      this.$tab.closePage();
+      this.onPageFormShortcutClose()
     }
   }
 };

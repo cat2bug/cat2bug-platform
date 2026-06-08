@@ -27,12 +27,16 @@ import 'mavon-editor/dist/css/index.css';
 import Cat2BugMarkdown from "@/components/Cat2BugMarkdown";
 import {getReportTemplate, updateTemplate} from "@/api/system/ReportTemplate";
 import {upload} from "@/api/common/upload";
+import dialogFormShortcuts from '@/mixins/dialog-form-shortcuts';
+import pageFormClose from '@/mixins/page-form-close';
 
 export default {
   name: "AddDefectReport",
+  mixins: [dialogFormShortcuts, pageFormClose],
   components: {Cat2BugMarkdown, mavonEditor},
   data() {
     return {
+      visible: true,
       template: {
         templateTitle: '',
         moduleType: null,
@@ -50,39 +54,88 @@ export default {
     const id = this.$route.query.templateId;
     if(id) {
       this.getReportTemplate(id);
+    } else {
+      this.$nextTick(() => this.capturePageFormCloseBaseline());
     }
   },
+  mounted() {
+    this.$nextTick(() => this.focusMarkdownEditor());
+  },
   methods: {
+    focusMarkdownEditor() {
+      const md = this.$refs.cat2bugMarkdown;
+      if (md && typeof md.focusEditor === 'function') {
+        md.focusEditor();
+      }
+    },
+    serializePageFormCloseState() {
+      return JSON.stringify({
+        templateTitle: this.template.templateTitle || '',
+        templateContent: this.template.templateContent || '',
+        templateIconUrl: this.template.templateIconUrl || ''
+      });
+    },
+    onPageFormShortcutClose() {
+      this.closeReportTemplatePage();
+    },
+    async closeReportTemplatePage() {
+      if (this._closingTemplatePage) return;
+      this._closingTemplatePage = true;
+      try {
+        if (this.pushId) {
+          clearTimeout(this.pushId);
+          this.pushId = null;
+        }
+        if (this.isPageFormCloseDirty()) {
+          await this.saveTemplateNow();
+        }
+        this.pageFormCloseBaseline = null;
+        this.$router.back();
+      } catch (e) {
+        this._closingTemplatePage = false;
+      }
+    },
+    async saveTemplateNow() {
+      const md = this.$refs.cat2bugMarkdown;
+      if (md && typeof md.getMarkdownImage === 'function') {
+        const blob = await md.getMarkdownImage();
+        if (blob && blob.type === 'image/png') {
+          const formData = new FormData();
+          formData.append('file', blob);
+          const uploadRes = await upload(formData);
+          this.template.templateIconUrl = uploadRes.fileName;
+        }
+      }
+      const res = await updateTemplate(this.template);
+      this.template = res.data;
+      await this.$nextTick();
+      this.capturePageFormCloseBaseline();
+      return res;
+    },
     getReportTemplate(id) {
       getReportTemplate(id).then(res=>{
         this.template = res.data;
+        this.$nextTick(() => {
+          this.capturePageFormCloseBaseline();
+          this.focusMarkdownEditor();
+        });
       });
     },
     /** 返回 */
     goBack() {
-      this.$router.back();
+      this.onPageFormShortcutClose();
     },
     change(value, render) {
       // render 为 markdown 解析后的结果
       this.html = render;
     },
     changeHandle(time) {
-      if(!this.pushId) {
-        const self = this;
-        this.pushId = setTimeout(async ()=>{
-          const blob = await this.$refs.cat2bugMarkdown.getMarkdownImage();
-          if(blob && blob.type=='image/png') {
-            const formData = new FormData();
-            formData.append('file', blob);
-            let res = await upload(formData);
-            this.template.templateIconUrl = res.fileName;
-          }
-          updateTemplate(this.template).then(res=>{
-            self.template = res.data;
-            clearTimeout(self.pushId);
-            self.pushId = null;
-          });
-        },time?time:1000)
+      if (!this.pushId) {
+        const delay = time ? time : 1000;
+        this.pushId = setTimeout(() => {
+          this.pushId = null;
+          this.saveTemplateNow().catch(() => {});
+        }, delay);
       }
     },
   }

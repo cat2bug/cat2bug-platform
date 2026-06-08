@@ -88,10 +88,12 @@ export const TOP_ITEMS = [
 
 /** 缺陷页默认动作（页面运行时通过 registerPage 提供执行回调） */
 export const DEFECT_ACTION_DEFAULTS = [
+  { key: 'query', defaultLetter: 'S', titleKey: 'keyboard.act.query' },
   { key: 'newDefect', defaultLetter: 'E', titleKey: 'keyboard.act.new-defect' },
-  { key: 'import', defaultLetter: 'U', titleKey: 'keyboard.act.import' },
-  { key: 'export', defaultLetter: 'R', titleKey: 'keyboard.act.export' },
+  { key: 'switchTab', defaultLetter: 'J', titleKey: 'keyboard.act.switch-tab' },
   { key: 'statistic', defaultLetter: 'I', titleKey: 'keyboard.act.statistic-panel' },
+  { key: 'statisticNav', defaultLetter: 'G', titleKey: 'keyboard.act.statistic-nav' },
+  { key: 'switchView', defaultLetter: 'O', titleKey: 'keyboard.act.switch-view' },
   { key: 'prevPage', defaultLetter: 'B', titleKey: 'keyboard.act.prev-page' },
   { key: 'nextPage', defaultLetter: 'P', titleKey: 'keyboard.act.next-page' }
 ]
@@ -156,6 +158,77 @@ export const DOC_ACTION_DEFAULTS = [
   { key: 'print', defaultLetter: 'P', titleKey: 'keyboard.act.doc-print' }
 ]
 
+/** 测试用例页默认动作 */
+export const CASE_ACTION_DEFAULTS = [
+  { key: 'query', defaultLetter: 'S', titleKey: 'keyboard.act.case-query' },
+  { key: 'create', defaultLetter: 'E', titleKey: 'keyboard.act.case-create' },
+  { key: 'aiCreate', defaultLetter: 'I', titleKey: 'keyboard.act.case-ai-create' },
+  { key: 'batchDelete', defaultLetter: 'D', titleKey: 'keyboard.act.case-batch-delete' },
+  { key: 'toggleTree', defaultLetter: 'M', titleKey: 'keyboard.act.case-toggle-tree' },
+  { key: 'treeNav', defaultLetter: 'G', titleKey: 'keyboard.act.case-tree-nav' },
+  { key: 'prevPage', defaultLetter: 'B', titleKey: 'keyboard.act.prev-page' },
+  { key: 'nextPage', defaultLetter: 'P', titleKey: 'keyboard.act.next-page' }
+]
+
+/** 测试计划页默认动作 */
+export const PLAN_ACTION_DEFAULTS = [
+  { key: 'query', defaultLetter: 'S', titleKey: 'keyboard.act.plan-query' },
+  { key: 'create', defaultLetter: 'E', titleKey: 'keyboard.act.plan-create' },
+  { key: 'prevPage', defaultLetter: 'B', titleKey: 'keyboard.act.prev-page' },
+  { key: 'nextPage', defaultLetter: 'P', titleKey: 'keyboard.act.next-page' }
+]
+
+/** 交付物页默认动作 */
+export const MODULE_ACTION_DEFAULTS = [
+  { key: 'query', defaultLetter: 'S', titleKey: 'keyboard.act.module-query' },
+  { key: 'toggleExpand', defaultLetter: 'F', titleKey: 'keyboard.act.module-toggle-expand' },
+  { key: 'treeNav', defaultLetter: 'G', titleKey: 'keyboard.act.module-tree-nav' },
+  { key: 'create', defaultLetter: 'E', titleKey: 'keyboard.act.module-create' }
+]
+
+/** 项目报告页默认动作 */
+export const REPORT_ACTION_DEFAULTS = [
+  { key: 'query', defaultLetter: 'S', titleKey: 'keyboard.act.report-query' },
+  { key: 'create', defaultLetter: 'E', titleKey: 'keyboard.act.report-create' },
+  { key: 'batchDelete', defaultLetter: 'D', titleKey: 'keyboard.act.report-batch-delete' },
+  { key: 'prevPage', defaultLetter: 'B', titleKey: 'keyboard.act.prev-page' },
+  { key: 'nextPage', defaultLetter: 'P', titleKey: 'keyboard.act.next-page' }
+]
+
+/** 文档管理页默认动作 */
+export const DOCUMENT_ACTION_DEFAULTS = [
+  { key: 'query', defaultLetter: 'S', titleKey: 'keyboard.act.document-query' },
+  { key: 'createFolder', defaultLetter: 'O', titleKey: 'keyboard.act.document-create-folder' },
+  { key: 'createFile', defaultLetter: 'I', titleKey: 'keyboard.act.document-create-file' },
+  { key: 'goUp', defaultLetter: 'U', titleKey: 'keyboard.act.document-go-up' },
+  { key: 'prevPage', defaultLetter: 'B', titleKey: 'keyboard.act.prev-page' },
+  { key: 'nextPage', defaultLetter: 'P', titleKey: 'keyboard.act.next-page' }
+]
+
+/** 项目设置枢纽页默认动作（子页返回；枢纽页入口按路由动态注册） */
+export const PROJECT_OPTION_ACTION_DEFAULTS = [
+  { key: 'back', defaultLetter: 'B', titleKey: 'keyboard.act.project-option-back' }
+]
+
+/** 团队设置枢纽页默认动作（子页返回；枢纽页入口按路由动态注册） */
+export const TEAM_OPTION_ACTION_DEFAULTS = [
+  { key: 'back', defaultLetter: 'B', titleKey: 'keyboard.act.team-option-back' }
+]
+
+/** 团队成员列表页默认动作 */
+export const TEAM_MEMBER_ACTION_DEFAULTS = [
+  { key: 'query', defaultLetter: 'S', titleKey: 'keyboard.act.team-member-query' },
+  { key: 'create', defaultLetter: 'E', titleKey: 'keyboard.act.team-member-create' },
+  { key: 'invite', defaultLetter: 'V', titleKey: 'keyboard.act.team-member-invite' },
+  { key: 'back', defaultLetter: 'B', titleKey: 'keyboard.act.team-member-back' }
+]
+
+/** 个人中心页默认动作 */
+export const PROFILE_ACTION_DEFAULTS = [
+  { key: 'switchTab', defaultLetter: 'J', titleKey: 'keyboard.act.profile-switch-tab' },
+  { key: 'back', defaultLetter: 'B', titleKey: 'keyboard.act.profile-back' }
+]
+
 const LETTER_POOL = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
 const DIGIT_POOL = '123456789'.split('')
 
@@ -217,4 +290,44 @@ export function assignLetters(items) {
     it.letter = letter
   })
   return items
+}
+
+/** 按页面 scope 返回默认动作表（供动作面板解析 titleKey / defaultLetter） */
+export function getPageActionDefaults(scopeKey) {
+  switch (scopeKey) {
+    case 'login':
+      return LOGIN_ACTION_DEFAULTS
+    case 'register':
+      return REGISTER_ACTION_DEFAULTS
+    case 'notice':
+      return NOTICE_ACTION_DEFAULTS
+    case 'statistic-template':
+      return STATISTIC_TEMPLATE_ACTION_DEFAULTS
+    case 'case':
+      return CASE_ACTION_DEFAULTS
+    case 'plan':
+      return PLAN_ACTION_DEFAULTS
+    case 'module':
+      return MODULE_ACTION_DEFAULTS
+    case 'report':
+      return REPORT_ACTION_DEFAULTS
+    case 'document':
+      return DOCUMENT_ACTION_DEFAULTS
+    case 'project-option':
+      return PROJECT_OPTION_ACTION_DEFAULTS
+    case 'team-option':
+      return TEAM_OPTION_ACTION_DEFAULTS
+    case 'team-member':
+      return TEAM_MEMBER_ACTION_DEFAULTS
+    case 'profile':
+      return PROFILE_ACTION_DEFAULTS
+    case 'doc':
+      return DOC_ACTION_DEFAULTS
+    default:
+      return DEFECT_ACTION_DEFAULTS
+  }
+}
+
+export function findPageActionDefault(key, scopeKey) {
+  return getPageActionDefaults(scopeKey).find((d) => d.key === key)
 }

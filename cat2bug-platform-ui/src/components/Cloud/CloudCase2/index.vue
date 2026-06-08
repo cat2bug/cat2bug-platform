@@ -3,12 +3,13 @@
     :visible.sync="visible"
     :direction="direction"
     size="90%"
+    :close-on-press-escape="false"
     :before-close="handleClose">
 <!--    标题-->
     <template slot="title">
       <div class="case-search-header">
         <div class="case-search-title">
-          <i class="el-icon-arrow-left" @click="close"></i>
+          <i class="el-icon-arrow-left" @click="requestCloseCloudCase2Drawer"></i>
           <h4 class="case-search-title-name"><svg-icon icon-class="robot" style="margin-right: 10px;" />{{ $t('case.ai-create') }}</h4>
         </div>
         <div>
@@ -59,7 +60,10 @@
             maxlength="65535"
             :rows="9"
             show-word-limit />
-          <el-button type="success" @click="handleCreateCaseDescribe">创建用例描述</el-button>
+          <el-button class="defect-kbd-hint-host" type="success" @click="handleCreateCaseDescribe">
+            创建用例描述
+            <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
+          </el-button>
         </div>
       </div>
     </div>
@@ -73,9 +77,11 @@ import CaseMind from "@/components/Cloud/CloudCase2/chat/CaseMind";
 import CaseList from "@/components/Cloud/CloudCase2/chat/CaseList";
 import CaseHelloWorld from "@/components/Cloud/CloudCase2/chat/CaseHelloWorld";
 import TextMessage from "@/components/Cloud/CloudCase2/chat/TextMessage";
+import cloudCase2Kbd from '@/mixins/cloud-case2-kbd'
 const AI_CASE_QUERY_KEY = 'ai_case2_query_key';
 export default {
   name: "index",
+  mixins: [cloudCase2Kbd],
   components: { CaseDemand, CaseMind, CaseList, TextMessage, ChatMessage, CaseHelloWorld },
   data() {
     return {
@@ -103,16 +109,21 @@ export default {
     open() {
       this.visible = true;
       this.readQuery();
+      this.$nextTick(() => {
+        this.captureCloudCase2CloseBaseline();
+        this.$_focusCloudCase2FirstField();
+      });
     },
     close() {
       this.visible = false;
+      this.cloudCase2CloseBaseline = null;
       this.$emit('close')
     },
     readQuery() {
       this.query.query = this.$cache.local.get(AI_CASE_QUERY_KEY)||'';
     },
     handleClose(done) {
-      done();
+      this.requestCloseCloudCase2Drawer({ done });
     },
     handleAddUserChat() {
       const newChat = {

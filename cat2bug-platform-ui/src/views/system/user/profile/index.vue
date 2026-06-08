@@ -1,6 +1,6 @@
 <template>
-  <div class="app-container">
-    <el-row>
+  <div class="app-container profile-page" ref="profileMain">
+    <el-row class="profile-hint-back">
       <el-page-header @back="goBack" :content="$t('personal-center')">
       </el-page-header>
     </el-row>
@@ -41,12 +41,12 @@
           <div slot="header" class="clearfix">
             <span>{{ $t('member.basic-info') }}</span>
           </div>
-          <el-tabs v-model="activeTab">
+          <el-tabs v-model="activeTab" class="profile-hint-tabs">
             <el-tab-pane :label="$t('member.basic-info')" name="userinfo">
-              <userInfo :user="user" />
+              <userInfo :user="user" :form-active="activeTab === 'userinfo'" />
             </el-tab-pane>
             <el-tab-pane :label="$t('modify-password')" name="resetPwd">
-              <resetPwd />
+              <resetPwd :form-active="activeTab === 'resetPwd'" />
             </el-tab-pane>
           </el-tabs>
         </el-card>
@@ -61,9 +61,15 @@ import userInfo from "./userInfo";
 import resetPwd from "./resetPwd";
 import { getUserProfile } from "@/api/system/user";
 import { formatContactDisplay } from "@/utils/user-contact-rules";
+import pageActionHints from '@/mixins/page-action-hints'
+import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
+
+const PROFILE_KBD_SCOPE = 'profile'
+const PROFILE_TABS = ['userinfo', 'resetPwd']
 
 export default {
   name: "Profile",
+  mixins: [pageActionHints],
   components: { userAvatar, userInfo, resetPwd },
   data() {
     return {
@@ -77,11 +83,52 @@ export default {
     this.getUser();
   },
   mounted() {
+    this.registerProfileShortcuts();
   },
-  // 移除滚动条监听
-  destroyed() {
+  activated() {
+    this.registerProfileShortcuts();
+  },
+  deactivated() {
+    if (this.$shortcut) this.$shortcut.unregisterPage(PROFILE_KBD_SCOPE);
+  },
+  beforeDestroy() {
+    if (this.$shortcut) this.$shortcut.unregisterPage(PROFILE_KBD_SCOPE);
   },
   methods: {
+    registerProfileShortcuts() {
+      if (!this.$shortcut) return
+      this.$shortcut.registerPage(PROFILE_KBD_SCOPE, [
+        { key: 'switchTab', defaultLetter: 'J', run: () => this.shortcutSwitchTab() },
+        { key: 'back', defaultLetter: 'B', run: () => this.goBack() }
+      ])
+    },
+    getPageActionHintContainer() {
+      return this.$refs.profileMain || this.$el
+    },
+    getPageActionHints() {
+      const L = (key, def) => shortcutStore.getLetter(`action.${PROFILE_KBD_SCOPE}.${key}`, def)
+      return [
+        {
+          key: 'switchTab',
+          letter: L('switchTab', 'J'),
+          badgeSelector: '.profile-hint-tabs .el-tabs__item.is-active',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
+          run: () => this.shortcutSwitchTab()
+        },
+        {
+          key: 'back',
+          letter: L('back', 'B'),
+          badgeSelector: '.profile-hint-back .el-page-header__left',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
+          run: () => this.goBack()
+        }
+      ]
+    },
+    shortcutSwitchTab() {
+      const idx = PROFILE_TABS.indexOf(this.activeTab)
+      const next = PROFILE_TABS[(idx < 0 ? 0 : idx + 1) % PROFILE_TABS.length]
+      this.activeTab = next
+    },
     /** 返回 */
     goBack() {
       this.$router.back();
@@ -115,5 +162,9 @@ export default {
 }
 .contact-display.is-empty {
   color: var(--text-color-secondary);
+}
+.profile-hint-tabs ::v-deep .el-tabs__item.is-active {
+  position: relative;
+  overflow: visible !important;
 }
 </style>

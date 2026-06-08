@@ -643,17 +643,9 @@ export default {
     box-shadow: 0 0 0 1px #ffffff;
   }
   /* 数字输入框聚焦环见 cat2bug.scss 全站统一样式 */
-  /* 文件上传：外框持久焦点环 */
-  .defect-drawer-accent .el-form-item .cat2bug-upload-focus-target {
+  /* 文件上传：外框持久焦点环（全站见 cat2bug.scss .upload-file-focus-target） */
+  .defect-drawer-accent .el-form-item .cat2bug-upload-focus-target.upload-file-focus-target {
     overflow: visible;
-  }
-  .defect-drawer-accent .el-form-item .upload-file-focus-target:focus,
-  .defect-drawer-accent .el-form-item .upload-file-focus-target:focus-within {
-    border-color: transparent !important;
-    box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color) !important;
-    outline: none;
-    padding: 2px 4px;
-    margin: -2px -4px;
   }
   /* 图片上传：焦点环仅落在当前键盘项（默认添加按钮），不外框整圈 */
   .defect-drawer-accent .el-form-item .component-upload-image-focus-target:focus,
@@ -664,13 +656,12 @@ export default {
     margin: 0;
   }
   .defect-drawer-accent .el-form-item .component-upload-image-focus-target .update-button.is-keyboard-focus {
-    outline: 2px solid var(--cat2bug-field-focus-color) !important;
-    outline-offset: 2px;
-    border-color: var(--cat2bug-field-focus-color) !important;
+    outline: none !important;
+    border: 1px dashed var(--cat2bug-field-focus-color) !important;
   }
   .defect-drawer-accent .el-form-item .component-upload-image-focus-target .el-upload-list__item.is-keyboard-focus {
-    outline-color: var(--cat2bug-field-focus-color) !important;
-    border-color: var(--cat2bug-field-focus-color) !important;
+    outline: none !important;
+    border: 1px dashed var(--cat2bug-field-focus-color) !important;
   }
   html:not(.dark) .cat2bug-field-hint {
     color: #ffffff;

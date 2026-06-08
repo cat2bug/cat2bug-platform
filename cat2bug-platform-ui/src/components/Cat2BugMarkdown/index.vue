@@ -499,6 +499,13 @@ export default {
         tool.content(this, tool);
       }
     },
+    /** 聚焦左侧 Markdown 编辑区 */
+    focusEditor() {
+      const markdownEdit = this.$refs.markdownEdit;
+      if (markdownEdit && typeof markdownEdit.focus === 'function') {
+        markdownEdit.focus();
+      }
+    },
     /** 插入文本内容到编辑框 */
     async insertText(text) {
       if(!text) return;

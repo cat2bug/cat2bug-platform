@@ -12,11 +12,7 @@ import { shortcutStore } from './shortcut-store'
 import { pageRegistry } from './registry'
 import { buildNavItems, navLeader, actionLeader } from './nav-source'
 import {
-  DEFECT_ACTION_DEFAULTS,
-  LOGIN_ACTION_DEFAULTS,
-  REGISTER_ACTION_DEFAULTS,
-  NOTICE_ACTION_DEFAULTS,
-  STATISTIC_TEMPLATE_ACTION_DEFAULTS,
+  findPageActionDefault,
   normalizeKey,
   assignLetters
 } from './keymap'
@@ -85,17 +81,31 @@ const BLOCKING_UI_LAYER_SELECTORS = [
   '.el-color-picker__panel',
   '.defect-column-picker-popover',
   '.defect-excel-column-picker-popover',
+  '.report-template-select-popper',
   /* 缺陷页统计模块 G 导航：空格用于触发模块点击，勿打开动作面板 */
   '.defect-statistic-keyboard-nav',
   /* 统计模版页键盘导航：空格用于添加到预览区，勿打开动作面板 */
   '.statistic-template-kbd-nav'
 ]
 
-/** 新建/编辑缺陷表单抽屉（Esc 关闭时不应把自身算作遮挡层） */
+const FORM_DRAWER_HEADER_SEL = '.defect-add-header, .defect-edit-form-header, .case-add-header, .case-search-header'
+
+/** 新建/编辑缺陷/用例表单抽屉（Esc 关闭时不应把自身算作遮挡层） */
 function isDefectFormDrawerWrapper(el) {
   if (!el || !el.querySelector) return false
   if (!el.classList || !el.classList.contains('el-drawer__wrapper')) return false
-  return !!(el.querySelector('.defect-add-header, .defect-edit-form-header') && isVisibleLayer(el))
+  return !!(el.querySelector(FORM_DRAWER_HEADER_SEL) && isVisibleLayer(el))
+}
+
+/** 可见的表单抽屉（用例/缺陷新建编辑），用于屏蔽列表页工具栏快捷键 */
+function hasVisibleFormDrawerHeader() {
+  return Array.from(document.querySelectorAll(FORM_DRAWER_HEADER_SEL)).some((header) => {
+    if (!isVisibleLayer(header)) return false
+    const drawer = header.closest('.el-drawer')
+    if (drawer && isVisibleLayer(drawer)) return true
+    const wrapper = header.closest('.el-drawer__wrapper')
+    return !!(wrapper && isVisibleLayer(wrapper))
+  })
 }
 
 /** 处理缺陷详情抽屉（工具弹框 Esc 取消时，下层抽屉不算遮挡层） */
@@ -103,6 +113,13 @@ function isHandleDefectDrawerWrapper(el) {
   if (!el || !el.querySelector) return false
   if (!el.classList || !el.classList.contains('el-drawer__wrapper')) return false
   return !!(el.querySelector('.defect-edit-header') && isVisibleLayer(el))
+}
+
+/** 查看报告抽屉（Esc 关闭时不应把自身算作遮挡层） */
+function isViewReportDrawerWrapper(el) {
+  if (!el || !el.querySelector) return false
+  if (!el.classList || !el.classList.contains('el-drawer__wrapper')) return false
+  return !!(el.querySelector('.report-drawer-accent') && isVisibleLayer(el))
 }
 
 const DEFECT_TOOL_DIALOG_NAMES = new Set([
@@ -121,8 +138,17 @@ const STATISTIC_DIALOG_NAMES = new Set([
 
 const FORM_SHORTCUT_DIALOG_NAMES = new Set([
   ...DEFECT_TOOL_DIALOG_NAMES,
-  ...STATISTIC_DIALOG_NAMES
+  ...STATISTIC_DIALOG_NAMES,
+  'ModuleDialog'
 ])
+
+/** 用例页 Excel 导入弹框（Esc 关闭时不应把自身算作遮挡层） */
+function isCaseImportDialogWrapper(el) {
+  if (!el || !el.classList || !el.classList.contains('el-dialog__wrapper')) return false
+  if (!isVisibleLayer(el)) return false
+  const dialog = el.querySelector('.case-import-dialog')
+  return !!(dialog && isVisibleLayer(dialog))
+}
 
 /** 缺陷工具栏操作弹框（Esc 关闭时不应把自身算作遮挡层） */
 function isDefectToolDialogWrapper(el) {
@@ -142,14 +168,21 @@ function hasBlockingUiLayer(options = {}) {
   const {
     excludeDefectFormDrawer = false,
     excludeDefectToolDialog = false,
-    excludeHandleDefectDrawer = false
+    excludeHandleDefectDrawer = false,
+    excludeCaseImportDialog = false,
+    excludeViewReportDrawer = false
   } = options
+  if (!excludeDefectFormDrawer && hasVisibleFormDrawerHeader()) {
+    return true
+  }
   return BLOCKING_UI_LAYER_SELECTORS.some((sel) =>
     Array.from(document.querySelectorAll(sel)).some((el) => {
       if (!isVisibleLayer(el)) return false
       if (excludeDefectFormDrawer && isDefectFormDrawerWrapper(el)) return false
       if (excludeHandleDefectDrawer && isHandleDefectDrawerWrapper(el)) return false
+      if (excludeViewReportDrawer && isViewReportDrawerWrapper(el)) return false
       if (excludeDefectToolDialog && isDefectToolDialogWrapper(el)) return false
+      if (excludeCaseImportDialog && isCaseImportDialogWrapper(el)) return false
       return true
     })
   )
@@ -163,22 +196,6 @@ function canOpenDefectPageActions() {
   if (hasBlockingUiLayer()) return false
   if (onInteractiveElement()) return false
   return true
-}
-
-function findPageActionDefault(key, scopeKey) {
-  if (scopeKey === 'login') {
-    return LOGIN_ACTION_DEFAULTS.find((d) => d.key === key)
-  }
-  if (scopeKey === 'register') {
-    return REGISTER_ACTION_DEFAULTS.find((d) => d.key === key)
-  }
-  if (scopeKey === 'statistic-template') {
-    return STATISTIC_TEMPLATE_ACTION_DEFAULTS.find((d) => d.key === key)
-  }
-  if (scopeKey === 'notice') {
-    return NOTICE_ACTION_DEFAULTS.find((d) => d.key === key)
-  }
-  return DEFECT_ACTION_DEFAULTS.find((d) => d.key === key)
 }
 
 /** 缺陷等页面注册的动作 → 解析为带唯一字母的面板项 */

@@ -1,8 +1,14 @@
 <template>
-  <el-dialog :title="title" :visible.sync="visible" width="600px" append-to-body>
+  <el-dialog :title="title" :visible.sync="visible" width="600px" append-to-body :close-on-press-escape="false" :before-close="onToolDialogBeforeClose" @opened="onToolDialogOpened">
     <el-form ref="form" rules="rules" :model="form" :rules="rules" label-width="150px">
       <el-form-item :label="$t('module.parent-module')" prop="modulePid">
-          <treeselect v-model="form.modulePid" :options="moduleOptions" :normalizer="normalizer" :placeholder="$t('module.please-select-parent-module')" />
+          <treeselect
+            v-model="form.modulePid"
+            :options="moduleOptions"
+            :normalizer="normalizer"
+            :searchable="false"
+            :placeholder="$t('module.please-select-parent-module')"
+          />
       </el-form-item>
       <el-form-item prop="moduleName" v-show="form.moduleId || addModuleMode">
         <template slot="label">
@@ -45,8 +51,11 @@
       </el-form-item>
     </el-form>
     <div slot="footer" class="dialog-footer">
-      <el-button type="primary" @click="submitForm">{{ $t('ok') }}</el-button>
-      <el-button @click="cancel">{{ $t('cancel') }}</el-button>
+      <el-button class="defect-kbd-hint-host" type="primary" @click="submitForm">
+        {{ $t('ok') }}
+        <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
+      </el-button>
+      <el-button @click="requestCloseToolDialog">{{ $t('cancel') }}</el-button>
     </div>
   </el-dialog>
 </template>
@@ -57,8 +66,10 @@ import Treeselect from "@riophae/vue-treeselect";
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
 import Label from "@/components/Cat2BugStatistic/Components/Label";
 import {strFormat} from "@/utils";
+import defectToolDialogKbd from '@/mixins/defect-tool-dialog-kbd'
 export default {
   name: "ModuleDialog",
+  mixins: [defectToolDialogKbd],
   components: {Label, Treeselect},
   data() {
     return {
@@ -170,7 +181,7 @@ export default {
             console.log(this.form, 'form')
             updateModule(this.form).then(response => {
               this.$modal.msgSuccess(this.$i18n.t('modify-success'));
-              this.visible = false;
+              this.doCloseToolDialog();
               this.$emit('updated',this.form)
             });
           } else {
@@ -179,29 +190,49 @@ export default {
             }
             addModule(this.form).then(response => {
               this.$modal.msgSuccess(this.$i18n.t('add-success'));
-              this.visible = false;
+              this.doCloseToolDialog();
               this.$emit('added',response.data)
             });
           }
         }
       });
     },
-    // 取消按钮
-    cancel() {
+    shortcutSave() {
+      this.submitForm();
+    },
+    captureToolDialogCloseBaseline() {
+      this.toolDialogCloseBaseline = JSON.stringify({
+        form: { ...(this.form || {}) },
+        addModuleMode: this.addModuleMode,
+        strAddModules: this.strAddModules || ''
+      })
+    },
+    isToolDialogCloseDirty() {
+      if (!this.toolDialogCloseBaseline) return false
+      return JSON.stringify({
+        form: { ...(this.form || {}) },
+        addModuleMode: this.addModuleMode,
+        strAddModules: this.strAddModules || ''
+      }) !== this.toolDialogCloseBaseline
+    },
+    doCloseToolDialog() {
       this.visible = false;
-      this.reset();
+      this.toolDialogCloseBaseline = null;
+      if (typeof this.reset === 'function') this.reset();
     },
     // 表单重置
     reset() {
+      this.addModuleMode = true
       this.form = {
         moduleId: null,
         modulePid: null,
         moduleName: null,
         batchModuleNames: [],
+        annexUrls: null,
         remark: null,
         projectId: this.projectId
       };
-      this.strAddModules = null;
+      this.strAddModules = '';
       this.resetForm("form");
     },
   }

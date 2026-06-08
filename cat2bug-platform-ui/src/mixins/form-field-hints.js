@@ -1,6 +1,7 @@
 import { isNativeFilePickerOpen } from '@/utils/native-file-picker'
 import { dismissComboPopoverIfLeaving } from '@/utils/combo-focus-tab'
 import { closeDropdownsOnBlur } from '@/utils/dropdown-blur-close'
+import { FIELD_HINT_BLOCKED } from '@/plugins/shortcut/reserved-keys'
 
 /**
  * 表单字段快捷聚焦 mixin（弹框/抽屉内）。
@@ -20,13 +21,6 @@ import { closeDropdownsOnBlur } from '@/utils/dropdown-blur-close'
  * 组件要求：具备响应式 `visible`；可实现 `getFieldHintContainer()` 返回扫描容器（默认 this.$el）。
  */
 
-// 不可映射：浏览器/OS 保留（N/T/W/Q/R 窗口与刷新，L Safari 地址栏，H Mac 隐藏应用）
-// A/C/V/X/Z 永不映射，保留系统全选/复制/粘贴/剪切/撤销
-const FIELD_HINT_KEYS_BLOCKED = new Set([
-  'N', 'T', 'W', 'Q', 'R', 'L', 'H',
-  'A', 'C', 'V', 'X', 'Z'
-])
-
 /** 字母优先，用尽后使用数字（映射命中时会 preventDefault，避免误触 Cmd+1 切标签） */
 const FIELD_HINT_KEYS_PREFERRED = [
   'D', 'F', 'G', 'S', 'E', 'M', 'J', 'K', 'O', 'P', 'U', 'Y', 'I'
@@ -45,13 +39,13 @@ function buildFieldHintKeyPool(reservedLetters) {
   const pool = []
   const used = new Set()
   FIELD_HINT_KEYS_PREFERRED.forEach((k) => {
-    if (reserved[k] || FIELD_HINT_KEYS_BLOCKED.has(k) || used.has(k)) return
+    if (reserved[k] || FIELD_HINT_BLOCKED.has(k) || used.has(k)) return
     pool.push(k)
     used.add(k)
   })
   for (let c = 65; c <= 90; c++) {
     const k = String.fromCharCode(c)
-    if (reserved[k] || FIELD_HINT_KEYS_BLOCKED.has(k) || used.has(k)) continue
+    if (reserved[k] || FIELD_HINT_BLOCKED.has(k) || used.has(k)) continue
     pool.push(k)
     used.add(k)
   }
@@ -244,7 +238,7 @@ export default {
       if (k && k.length === 1) {
         const letter = /^\d$/.test(k) ? k : k.toUpperCase()
         // 系统保留组合（全选/复制/粘贴等）永不拦截
-        if (FIELD_HINT_KEYS_BLOCKED.has(letter)) return
+        if (FIELD_HINT_BLOCKED.has(letter)) return
         if (this.$_fieldHintMap && this.$_fieldHintMap[letter]) {
           e.preventDefault()
           e.stopPropagation()
@@ -459,6 +453,21 @@ export default {
       }
       if (typeof el.scrollIntoView === 'function') {
         el.scrollIntoView({ block: 'center', behavior: 'smooth' })
+      }
+      if (el.classList && el.classList.contains('component-upload-image-focus-target')) {
+        let vm = el.__vue__
+        while (vm) {
+          if (typeof vm.applyKeyboardFocusVisual === 'function') {
+            vm.$nextTick(() => {
+              if (typeof vm.getDefaultKeyboardFocusIndex === 'function') {
+                vm.keyboardFocusIndex = vm.getDefaultKeyboardFocusIndex()
+              }
+              vm.applyKeyboardFocusVisual()
+            })
+            break
+          }
+          vm = vm.$parent
+        }
       }
     }
   }

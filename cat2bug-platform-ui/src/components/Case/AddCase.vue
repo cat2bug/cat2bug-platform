@@ -4,12 +4,12 @@
     :visible.sync="visible"
     direction="rtl"
     :append-to-body="appendToBody"
-    :before-close="closeDefectDrawer"
-    @closed="cancel">
+    :close-on-press-escape="false"
+    :before-close="closeDefectDrawer">
     <template slot="title">
       <div class="case-add-header">
         <div class="case-add-title">
-          <i class="el-icon-arrow-left" @click="cancel"></i>
+          <i class="el-icon-arrow-left" @click="requestCloseCaseFormDrawer"></i>
           <focus-member-list
             v-model="form.focusList"
             module-name="case"
@@ -21,16 +21,25 @@
         <div>
           <el-button v-if="!isAddMode"@click="prevCase" type="text" icon="el-icon-arrow-left" size="mini"></el-button>
           <el-button v-if="!isAddMode"@click="nextCase" type="text" icon="el-icon-arrow-right" size="mini"></el-button>
-          <el-button @click="cancel" icon="el-icon-close" :class="isAddMode?'':'green-button'" size="mini">{{$t('close')}}</el-button>
-          <el-button v-if="isAddMode" v-hasPermi="['system:case:add']" type="primary" icon="el-icon-finished" @click="submitForm" size="mini">{{$t('create')}}</el-button>
-          <el-button v-else v-hasPermi="['system:case:edit']" type="success" icon="el-icon-finished" @click="submitForm" size="mini">{{$t('modify')}}</el-button>
+          <el-button @click="requestCloseCaseFormDrawer" icon="el-icon-close" :class="isAddMode?'':'green-button'" size="mini">{{$t('close')}}</el-button>
+          <el-button v-if="isAddMode" v-hasPermi="['system:case:add']" class="defect-kbd-hint-host" type="primary" icon="el-icon-finished" @click="submitForm" size="mini">
+            {{$t('create')}}
+            <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
+          </el-button>
+          <el-button v-else v-hasPermi="['system:case:edit']" class="defect-kbd-hint-host" type="success" icon="el-icon-finished" @click="submitForm" size="mini">
+            {{$t('modify')}}
+            <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
+          </el-button>
         </div>
       </div>
     </template>
     <div class="app-container" v-loading="loading">
       <el-form ref="form" :model="form" :rules="rules" label-width="120px">
         <el-form-item>
-          <el-checkbox v-if="isAddMode" class="create-next-case" v-model="isCreateNextCase">{{ $t('case.create-next-case') }}</el-checkbox>
+          <span v-if="isAddMode" class="create-next-case-row">
+            <span v-show="fieldHintsActive" class="cat2bug-field-hint save-cache-field-hint" aria-hidden="true">O</span>
+            <el-checkbox class="create-next-case" v-model="isCreateNextCase">{{ $t('case.create-next-case') }}</el-checkbox>
+          </span>
         </el-form-item>
         <el-form-item :label="$t('case.name')" prop="caseName">
           <el-input type="textarea" v-model="form.caseName" :placeholder="$t('case.please-enter-title')" rows="3" maxlength="255" show-word-limit />
@@ -90,11 +99,15 @@ import SelectModule from "@/components/Module/SelectModule"
 import Cat2BugSelectLevel from "@/components/Cat2BugSelectLevel";
 import Label from "@/components/Cat2BugStatistic/Components/Label";
 import FocusMemberList from "@/components/FocusMemberList";
+import dialogFormShortcuts from "@/mixins/dialog-form-shortcuts";
+import formFieldHints from "@/mixins/form-field-hints";
+import caseDrawerClose from "@/mixins/case-drawer-close";
 
 const CASE_STEP_PANEL_TYPE_CACHE_KEY = 'case-step-panel-type';
 
 export default {
   name: "AddCase",
+  mixins: [dialogFormShortcuts, formFieldHints, caseDrawerClose],
   components: {Label,CaseStepPanel,SelectModule,Cat2BugSelectLevel,FocusMemberList},
   data() {
     return {
@@ -166,6 +179,32 @@ export default {
     }
   },
   methods: {
+    getFieldHintContainer() {
+      return (this.$refs.form && this.$refs.form.$el) || this.$el;
+    },
+    getFixedFieldHints() {
+      const hints = [
+        {
+          letter: 'B',
+          badgeSelector: '.case-add-step-btn',
+          onActivate: () => {
+            const panel = this.$refs.caseStepPanel
+            if (panel && typeof panel.addStepHandle === 'function') {
+              panel.addStepHandle(undefined)
+            }
+          }
+        }
+      ]
+      if (!this.isAddMode) return hints
+      hints.push({
+        letter: 'O',
+        injectBadge: false,
+        onActivate: () => {
+          this.isCreateNextCase = !this.isCreateNextCase
+        }
+      })
+      return hints
+    },
     open(caseId, params) {
       let self = this;
       this.params = params;
@@ -178,29 +217,32 @@ export default {
           this.form = response.data;
           this.$nextTick(()=>{
             self.$refs['caseStepPanel'].reset();
+            self.captureCaseFormCloseBaseline();
           });
         }).catch(()=>this.loading = true);
       } else {
         this.visible = true;
         this.$nextTick(()=>{
           self.$refs['caseStepPanel'].reset();
+          self.captureCaseFormCloseBaseline();
         });
       }
     },
-    /** 关闭缺陷抽屉窗口 */
+    /** 关闭用例抽屉（遮罩 / Esc / 关闭按钮，未保存时确认） */
     closeDefectDrawer(done) {
-      // 如果是编辑，点击背景关闭
-      // if(this.isAddMode==false){
-      //   done();
-      //   return;
-      // }
-      // closeEditWindow();
+      this.requestCloseCaseFormDrawer({ done });
+    },
+    doCloseCaseFormDrawer(isReset) {
+      this.visible = false;
+      this.caseFormCloseBaseline = null;
+      if (isReset !== false) {
+        this.reset();
+      }
+      this.$emit('close');
     },
     // 取消按钮
     cancel() {
-      this.$emit('close');
-      this.visible = false;
-      this.reset();
+      this.doCloseCaseFormDrawer();
     },
     /** 循环时的重设 */
     loopReset() {
@@ -266,18 +308,17 @@ export default {
             addCase(this.form).then(response => {
               this.$modal.msgSuccess(this.$i18n.t('create-success'));
               if(this.isCreateNextCase==false) {
-                this.visible = false;
-                this.reset();
+                this.doCloseCaseFormDrawer();
               } else {
                 this.loopReset();
+                this.captureCaseFormCloseBaseline();
               }
               this.$emit('added');
             });
           } else {
             updateCase(this.form).then(response => {
               this.$modal.msgSuccess(this.$i18n.t('modify-success'));
-              this.reset();
-              this.visible = false;
+              this.doCloseCaseFormDrawer();
               this.$emit('added');
             });
           }
@@ -297,6 +338,7 @@ export default {
           this.visible = true;
           this.$nextTick(()=>{
             self.$refs['caseStepPanel'].reset();
+            self.captureCaseFormCloseBaseline();
           });
         }
       }).catch(()=>this.loading = false);
@@ -311,6 +353,7 @@ export default {
           this.visible = true;
           this.$nextTick(()=>{
             self.$refs['caseStepPanel'].reset();
+            self.captureCaseFormCloseBaseline();
           });
         }
       }).catch(()=>this.loading = false);
@@ -353,8 +396,14 @@ export default {
     }
   }
 }
-.create-next-case {
+.create-next-case-row {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
   left: -25px;
+}
+.create-next-case {
+  margin-left: 0;
 }
 .form-item-case-step {
   display:flex;

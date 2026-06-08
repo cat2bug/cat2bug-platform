@@ -85,6 +85,7 @@
 			word-break: break-word;
 			background-color: var(--table-header-bg);
 			color: var(--table-header-color);
+			border-bottom: 1px solid var(--table-header-border-color, var(--table-border-color));
 			/* 与 Element 默认表头 .el-table__cell 上下 padding(12px) + 单行/图标一致，避免写 40px 被内容撑高后与侧栏树标题不齐 */
 			height: 48px;
 			min-height: 48px;

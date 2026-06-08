@@ -191,7 +191,13 @@ export default {
     },
     focus() {
       const shell = this.$refs.focusTarget;
-      if (shell && typeof shell.focus === 'function') shell.focus();
+      if (!shell || typeof shell.focus !== 'function') return;
+      shell.focus();
+      this.$nextTick(() => {
+        if (document.activeElement !== shell) return;
+        this.keyboardFocusIndex = this.getDefaultKeyboardFocusIndex();
+        this.applyKeyboardFocusVisual();
+      });
     },
     getDefaultKeyboardFocusIndex() {
       const items = this.getKeyboardItems();
@@ -647,14 +653,13 @@ export default {
   border-radius: var(--cat2bug-border-radius, 4px);
 }
 ::v-deep .el-upload-list--picture-card .el-upload-list__item.is-keyboard-focus {
-  outline: 2px solid var(--cat2bug-field-focus-color, #409eff);
-  outline-offset: 2px;
+  outline: none !important;
+  border: 1px dashed var(--cat2bug-field-focus-color, #409eff) !important;
   z-index: 1;
 }
-.update-button.is-keyboard-focus {
-  outline: 2px solid var(--cat2bug-field-focus-color, #409eff);
-  outline-offset: 2px;
-  border-color: var(--cat2bug-field-focus-color, #1890ff);
+::v-deep .update-button.is-keyboard-focus {
+  outline: none !important;
+  border: 1px dashed var(--cat2bug-field-focus-color, #1890ff) !important;
 }
 .update-button:hover {
   border-color: #1890ff;

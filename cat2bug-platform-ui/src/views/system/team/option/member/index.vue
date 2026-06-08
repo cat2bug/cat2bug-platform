@@ -1,6 +1,6 @@
 <template>
-  <div class="app-container">
-    <el-row class="project-add-page-header project-add-page-header--with-filter">
+  <div class="app-container team-member-page" ref="teamMemberMain">
+    <el-row class="project-add-page-header project-add-page-header--with-filter team-member-hint-back">
       <el-page-header @back="goBack" :content="$t('member.manage')">
       </el-page-header>
     </el-row>
@@ -10,6 +10,7 @@
         <el-row :gutter="10" class="mb8" type="flex" justify="space-between">
           <el-col :span="8">
             <el-input
+              class="team-member-hint-query"
               v-model="queryParams.params.search"
               prefix-icon="el-icon-search"
               :placeholder="$t('team.search-placeholder')"
@@ -21,6 +22,17 @@
           </el-col>
           <el-col :span="8" class="member-tools">
             <el-button
+              class="team-member-hint-invite cat2bug-btn-outline"
+              type="primary"
+              style="float: right;"
+              plain
+              icon="el-icon-plus"
+              size="small"
+              @click="inviteMemberHandle"
+              v-hasPermi="['system:team:member:invite']"
+            >{{$t('team.invite-members')}}</el-button>
+            <el-button
+              class="team-member-hint-create"
               type="primary"
               style="float: right;"
               plain
@@ -29,16 +41,6 @@
               @click="createMemberHandle"
               v-hasPermi="['system:team:member:create']"
             >{{$t('member.create')}}</el-button>
-            <el-button
-              type="primary"
-              class="cat2bug-btn-outline"
-              style="float: right;"
-              plain
-              icon="el-icon-plus"
-              size="small"
-              @click="inviteMemberHandle"
-              v-hasPermi="['system:team:member:invite']"
-            >{{$t('team.invite-members')}}</el-button>
           </el-col>
         </el-row>
 
@@ -134,9 +136,15 @@ import CreateTeamMember from "@/views/system/team/option/member/CreateTeamMember
 import InviteTeamMember from "@/views/system/team/option/member/InviteTeamMember";
 import MemberNameplate from "@/components/MemberNameplate";
 import {getUser} from "@/api/system/user";
+import pageActionHints from '@/mixins/page-action-hints'
+import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
+import { checkPermi } from '@/utils/permission'
+
+const TEAM_MEMBER_KBD_SCOPE = 'team-member'
 
 export default {
   name: "TeamMemberManage",
+  mixins: [pageActionHints],
   components: { CreateTeamMember, InviteTeamMember, MemberNameplate },
   data() {
     return {
@@ -186,7 +194,81 @@ export default {
     this.init();
     this.getMemberList();
   },
+  mounted() {
+    this.registerTeamMemberShortcuts();
+  },
+  activated() {
+    this.registerTeamMemberShortcuts();
+  },
+  deactivated() {
+    if (this.$shortcut) this.$shortcut.unregisterPage(TEAM_MEMBER_KBD_SCOPE);
+  },
+  beforeDestroy() {
+    if (this.$shortcut) this.$shortcut.unregisterPage(TEAM_MEMBER_KBD_SCOPE);
+  },
   methods: {
+    registerTeamMemberShortcuts() {
+      if (!this.$shortcut) return
+      this.$shortcut.registerPage(TEAM_MEMBER_KBD_SCOPE, [
+        { key: 'query', defaultLetter: 'S', run: () => this.shortcutFocusQuery() },
+        { key: 'create', defaultLetter: 'E', run: () => this.shortcutCreateMember() },
+        { key: 'invite', defaultLetter: 'V', run: () => this.shortcutInviteMember() },
+        { key: 'back', defaultLetter: 'B', run: () => this.goBack() }
+      ])
+    },
+    getPageActionHintContainer() {
+      return this.$refs.teamMemberMain || this.$el
+    },
+    getPageActionHints() {
+      const L = (key, def) => shortcutStore.getLetter(`action.${TEAM_MEMBER_KBD_SCOPE}.${key}`, def)
+      return [
+        {
+          key: 'query',
+          letter: L('query', 'S'),
+          badgeSelector: '.team-member-hint-query',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
+          run: () => this.shortcutFocusQuery()
+        },
+        {
+          key: 'create',
+          letter: L('create', 'E'),
+          badgeSelector: '.team-member-hint-create',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2, dy: 5 },
+          run: () => this.shortcutCreateMember(),
+          visible: () => checkPermi(['system:team:member:create'])
+        },
+        {
+          key: 'invite',
+          letter: L('invite', 'V'),
+          badgeSelector: '.team-member-hint-invite',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2, dy: 5 },
+          run: () => this.shortcutInviteMember(),
+          visible: () => checkPermi(['system:team:member:invite'])
+        },
+        {
+          key: 'back',
+          letter: L('back', 'B'),
+          badgeSelector: '.team-member-hint-back .el-page-header__left',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
+          run: () => this.goBack()
+        }
+      ]
+    },
+    shortcutFocusQuery() {
+      const root = this.getPageActionHintContainer()
+      const input = root && root.querySelector('.team-member-hint-query input')
+      if (input && typeof input.focus === 'function') {
+        input.focus()
+      }
+    },
+    shortcutCreateMember() {
+      if (!checkPermi(['system:team:member:create'])) return
+      this.createMemberHandle()
+    },
+    shortcutInviteMember() {
+      if (!checkPermi(['system:team:member:invite'])) return
+      this.inviteMemberHandle()
+    },
     /** 初始化数据 */
     init() {
       // 获取当前用户信息

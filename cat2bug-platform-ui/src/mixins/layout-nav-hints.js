@@ -8,6 +8,7 @@ import {
   openLayoutNavDropdown,
   openLayoutTeamSelect
 } from '@/utils/layout-nav-hints'
+import { hasActivePageRowKbdHints } from '@/utils/defect-row-kbd-hints'
 import {
   handleLayoutNavDropdownKeydown,
   hasLayoutNavDropdownSession,
@@ -238,6 +239,7 @@ export default {
 
       const letter = resolveLayoutHintLetter(e)
       if (letter) {
+        if (/^\d$/.test(letter) && hasActivePageRowKbdHints()) return
         if (this.$_layoutNavHintMap && this.$_layoutNavHintMap[letter]) {
           e.preventDefault()
           e.stopPropagation()

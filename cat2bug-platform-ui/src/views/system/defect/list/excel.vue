@@ -152,6 +152,7 @@
     >
       <el-date-picker
         ref="planTimeDatePicker"
+        class="cat2bug-date-open-on-focus"
         v-model="planTimeDialogValue"
         type="datetime"
         value-format="yyyy-MM-dd HH:mm:ss"

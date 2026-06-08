@@ -4,6 +4,7 @@
  */
 
 import { shortcutService } from '@/plugins/shortcut/service'
+import { closeDatePickerPanelKeepFocus, resolveDatePickerVm } from '@/utils/date-picker-kbd'
 
 function isEscapeKey(e) {
   return e && (e.key === 'Escape' || e.key === 'Esc' || e.keyCode === 27)
@@ -23,8 +24,12 @@ function hasOpenPickerPanel() {
 function closeActiveElementPickers() {
   let closed = false
   document.querySelectorAll('.el-date-editor.is-active, .el-range-editor.is-active').forEach((el) => {
-    const vm = el.__vue__
+    const vm = resolveDatePickerVm(el) || el.__vue__
     if (!vm) return
+    if (closeDatePickerPanelKeepFocus(vm)) {
+      closed = true
+      return
+    }
     if (typeof vm.handleClose === 'function') {
       vm.handleClose()
       closed = true

@@ -154,3 +154,159 @@ html:not(.dark) .app-container .defect-kbd-hint-host .defect-kbd-hint--primary {
   background: #303133;
   border-color: #303133;
 }
+
+/** 报告查看抽屉：工具栏与返回 Esc 快捷键徽标 */
+.report-drawer-accent .report-tools__bar [data-report-tool].cat2bug-field-hint-host,
+.report-drawer-accent .report-view-export.cat2bug-field-hint-host {
+  position: relative;
+  overflow: visible !important;
+}
+
+.report-drawer-accent .report-tools__bar .view-report-kbd-hint,
+.report-drawer-accent .report-view-export .view-report-kbd-hint {
+  right: 0;
+  bottom: 0;
+  transform: translate(50%, 50%);
+  white-space: nowrap;
+}
+
+/** 列表页查询区键盘导航：环由内部控件 :focus 绘制，wrapper 不再额外出描边 */
+.list-query-keyboard-nav ::v-deep .list-query-nav-item.list-query-nav-focused {
+  outline: none;
+  box-shadow: none;
+}
+
+/** 列表页右侧工具栏键盘导航：与全站 plain 按钮一致，单环 box-shadow（见 cat2bug.scss） */
+.list-query-toolbar-nav-focused {
+  outline: none !important;
+}
+
+/** Split-button 下拉：整组单环，与 cat2bug-unified-focus-ring 一致 */
+.cat2bug-split-dropdown-kbd .cat2bug-split-dropdown-focus-target:focus,
+.cat2bug-split-dropdown-kbd.cat2bug-split-dropdown-host-focused .cat2bug-split-dropdown-focus-target,
+.list-query-toolbar-nav-focused.cat2bug-split-dropdown-focus-target {
+  outline: none !important;
+  box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, #1890ff) !important;
+  border-radius: 4px;
+}
+
+html.dark .cat2bug-split-dropdown-kbd .cat2bug-split-dropdown-focus-target:focus,
+html.dark .cat2bug-split-dropdown-kbd.cat2bug-split-dropdown-host-focused .cat2bug-split-dropdown-focus-target,
+html.dark .list-query-toolbar-nav-focused.cat2bug-split-dropdown-focus-target {
+  box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, #ffce3a) !important;
+}
+
+.el-dropdown-menu__item.cat2bug-split-dropdown-item-focused {
+  background-color: rgba(64, 158, 255, 0.12);
+}
+
+html.dark .el-dropdown-menu__item.cat2bug-split-dropdown-item-focused {
+  background-color: rgba(255, 206, 58, 0.15);
+}
+
+.report-template-select-popper .template-list-item.report-template-card-kbd-current {
+  box-shadow: 0 0 0 2px var(--primary-color, #409eff);
+  outline: none;
+}
+
+html.dark .report-template-select-popper .template-list-item.report-template-card-kbd-current {
+  box-shadow: 0 0 0 2px var(--cat2bug-field-focus-color, #ffce3a);
+}
+
+.report-template-popover-hint-layer {
+  z-index: 100002 !important;
+  pointer-events: none;
+}
+
+/** 暗色主题：plain 按钮 :focus 勿改 border 为 hover 色，仅 box-shadow 单环 */
+html.dark .el-button.is-plain.el-button--default:focus,
+html.dark .el-button.is-plain:not(.el-button--primary):not(.el-button--success):not(.el-button--warning):not(.el-button--danger):not(.el-button--info):focus,
+html.dark .el-button.is-plain.el-button--default.list-query-toolbar-nav-focused,
+html.dark .el-button.is-plain:not(.el-button--primary):not(.el-button--success):not(.el-button--warning):not(.el-button--danger):not(.el-button--info).list-query-toolbar-nav-focused {
+  background-color: var(--bg-color-block, #1e1e1e) !important;
+  border-color: var(--border-color-base, #4c4d4f) !important;
+  color: var(--text-color-regular, #cfd3dc) !important;
+  box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, #ffce3a) !important;
+}
+
+html.dark .el-button--primary.is-plain:focus,
+html.dark .el-button--primary.is-plain.list-query-toolbar-nav-focused {
+  border-color: rgba(64, 158, 255, 0.45) !important;
+  background-color: rgba(64, 158, 255, 0.12) !important;
+  color: #409eff !important;
+}
+
+html.dark .report-template-select-kbd.is-popover-open .report-hint-create.el-button--primary.is-plain,
+html.dark .report-template-select-kbd .report-hint-create.el-button--primary.is-plain:focus,
+html.dark .report-template-select-kbd .report-hint-create.el-button--primary.is-plain:hover {
+  background-color: #FFD54F !important;
+  border-color: #FFD54F !important;
+  color: #141414 !important;
+  box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, #ffce3a) !important;
+}
+
+html.dark .el-button--danger.is-plain:focus,
+html.dark .el-button--danger.is-plain.list-query-toolbar-nav-focused,
+html.dark .el-button--danger.is-plain.is-disabled.list-query-toolbar-nav-focused {
+  border-color: rgba(245, 108, 108, 0.45) !important;
+  background-color: rgba(245, 108, 108, 0.12) !important;
+  color: #f56c6c !important;
+  box-shadow: 0 0 0 1px var(--cat2bug-danger-focus-color, #f56c6c) !important;
+}
+
+html.dark .el-button--danger:not(.is-plain):not(.el-button--text):not(.is-circle):focus,
+html.dark .el-button--danger:not(.is-plain):not(.el-button--text):not(.is-circle).list-query-toolbar-nav-focused {
+  box-shadow: 0 0 0 1px var(--cat2bug-danger-focus-color, #f56c6c) !important;
+}
+
+html.dark .el-button--success.is-plain:focus,
+html.dark .el-button--success.is-plain.list-query-toolbar-nav-focused {
+  border-color: rgba(103, 194, 58, 0.45) !important;
+  background-color: rgba(103, 194, 58, 0.12) !important;
+  color: #67c23a !important;
+  box-shadow: 0 0 0 1px var(--cat2bug-success-focus-color, #67c23a) !important;
+}
+
+html.dark .el-button--success:not(.is-plain):not(.el-button--text):not(.is-circle):focus,
+html.dark .el-button--success:not(.is-plain):not(.el-button--text):not(.is-circle).list-query-toolbar-nav-focused {
+  box-shadow: 0 0 0 1px var(--cat2bug-success-focus-color, #67c23a) !important;
+}
+
+html.dark .el-button-group:focus-within:has(> .el-button--success) {
+  box-shadow: 0 0 0 1px var(--cat2bug-success-focus-color, #67c23a) !important;
+}
+
+/* 日期范围：键盘方向键移动时的当前格高亮 */
+.el-date-table td.cat2bug-date-kbd-current div {
+  span {
+    background-color: #409eff;
+    color: #fff;
+    font-weight: 700;
+  }
+}
+
+html.dark .el-date-table td.cat2bug-date-kbd-current div span {
+  background-color: #ffc107;
+  color: #1a1a1a;
+}
+
+.cat2bug-date-panel-kbd-hint {
+  position: fixed;
+  z-index: 100001;
+  min-width: 16px;
+  padding: 0 4px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+  border-radius: 3px;
+  pointer-events: none;
+  color: #fff;
+  background: rgba(64, 158, 255, 0.92);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+}
+
+html.dark .cat2bug-date-panel-kbd-hint {
+  color: #1a1a1a;
+  background: rgba(255, 193, 7, 0.95);
+}

@@ -59,9 +59,22 @@ export default {
           this.aiEnabled = data.aiEnabled === true;
         }).catch(() => {
           this.aiEnabled = false;
+        }).finally(() => {
+          this.refreshProjectOptionShortcuts()
         });
       } else {
         this.aiEnabled = false;
+        this.refreshProjectOptionShortcuts()
+      }
+    },
+    refreshProjectOptionShortcuts() {
+      let parent = this.$parent
+      while (parent) {
+        if (typeof parent.registerProjectOptionShortcuts === 'function') {
+          parent.$nextTick(() => parent.registerProjectOptionShortcuts())
+          return
+        }
+        parent = parent.$parent
       }
     }
   }

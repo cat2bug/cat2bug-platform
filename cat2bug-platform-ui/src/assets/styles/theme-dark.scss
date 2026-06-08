@@ -26,8 +26,9 @@
   --input-border: #dcdfe6;
   --input-color: #606266;
   
-  --table-header-bg: #f8f8f9;
+  --table-header-bg: #f4f4f4;
   --table-header-color: #515a6e;
+  --table-header-border-color: #dfe6ec;
   --table-bg: #ffffff;
   --table-row-hover-bg: #f5f7fa;
   --table-border-color: #ebeef5;
@@ -120,6 +121,8 @@
   /* 键盘/快捷键聚焦环：浅色主题蓝色 */
   --cat2bug-primary: #409eff;
   --cat2bug-field-focus-color: #1890ff;
+  --cat2bug-danger-focus-color: #f56c6c;
+  --cat2bug-success-focus-color: #67c23a;
   --cat2bug-field-focus-ring-width: 1px;
   --cat2bug-field-focus-ring: rgba(24, 144, 255, 0.45);
   --cat2bug-field-focus-glow: rgba(24, 144, 255, 0.6);
@@ -193,6 +196,7 @@ html.dark {
   
   --table-header-bg: #252529;
   --table-header-color: #c0c4cc;
+  --table-header-border-color: var(--table-border-color);
   --table-bg: #1e1e20;
   --table-row-hover-bg: #2d2d31;
   --table-border-color: #363637;
@@ -230,6 +234,8 @@ html.dark {
   /* 键盘/快捷键聚焦环：暗色主题金色 */
   --cat2bug-primary: #FFC107;
   --cat2bug-field-focus-color: #ffce3a;
+  --cat2bug-danger-focus-color: #f56c6c;
+  --cat2bug-success-focus-color: #67c23a;
   --cat2bug-field-focus-ring-width: 1px;
   --cat2bug-field-focus-ring: rgba(255, 206, 58, 0.45);
   --cat2bug-field-focus-glow: rgba(255, 206, 58, 0.6);
@@ -595,6 +601,11 @@ html.dark {
   /* 缺陷新建/处理抽屉：与浅色主题一致的左侧红色标识边 */
   .el-drawer.defect-drawer-accent {
     border-left: 3px solid #ff4949 !important;
+  }
+
+  /* 报告查看抽屉：与浅色主题一致的左侧黄色标识边 */
+  .el-drawer.report-drawer-accent {
+    border-left: 3px solid #ffbe00 !important;
   }
 
   // 列表表格：无外框，保留行间分割线（与浅色主题 el-table 默认一致）
@@ -1029,7 +1040,20 @@ html.dark {
           color: #FFC107 !important;
         }
       }
+
+      &.is-keyboard-focus {
+        border: 1px dashed var(--cat2bug-field-focus-color, #FFC107) !important;
+        color: var(--cat2bug-field-focus-color, #FFC107) !important;
+        i,
+        .svg-icon {
+          color: var(--cat2bug-field-focus-color, #FFC107) !important;
+        }
+      }
     }
+  }
+
+  .el-upload-list--picture-card .el-upload-list__item.is-keyboard-focus {
+    border: 1px dashed var(--cat2bug-field-focus-color, #FFC107) !important;
   }
 
   // 适配拖拽上传区域 (el-upload-dragger)
@@ -2604,8 +2628,7 @@ html.dark {
   }
 
   .defect-add-dropdown,
-  .case-add-dropdown,
-  .case-ai-add-dropdown {
+  .case-add-dropdown {
     .el-dropdown__caret-button::before {
       background: #141414 !important;
       background-color: #141414 !important;
@@ -2634,15 +2657,6 @@ html.dark {
     > .el-button--warning:not(.is-plain):last-child,
     > .el-button--danger:not(.is-plain):last-child {
       border-left-color: #141414 !important;
-    }
-  }
-
-  // AI 用例生成等绿色 split 按钮的下拉菜单项：悬停保持绿色
-  .el-dropdown-menu.case-ai-add-dropdown-menu {
-    .el-dropdown-menu__item:not(.is-disabled):hover,
-    .el-dropdown-menu__item:focus {
-      background-color: rgba(103, 194, 58, 0.15) !important;
-      color: #85ce61 !important;
     }
   }
 
@@ -3773,6 +3787,47 @@ html.dark {
         color: var(--text-color-secondary) !important;
       }
     }
+
+    // 下拉小三角（teleport 到 body，须与面板背景/边框一致）
+    &[x-placement^="bottom"] {
+      .popper__arrow {
+        border-bottom-color: var(--border-color-light) !important;
+
+        &::after {
+          border-bottom-color: var(--dropdown-bg) !important;
+        }
+      }
+    }
+
+    &[x-placement^="top"] {
+      .popper__arrow {
+        border-top-color: var(--border-color-light) !important;
+
+        &::after {
+          border-top-color: var(--dropdown-bg) !important;
+        }
+      }
+    }
+
+    &[x-placement^="left"] {
+      .popper__arrow {
+        border-left-color: var(--border-color-light) !important;
+
+        &::after {
+          border-left-color: var(--dropdown-bg) !important;
+        }
+      }
+    }
+
+    &[x-placement^="right"] {
+      .popper__arrow {
+        border-right-color: var(--border-color-light) !important;
+
+        &::after {
+          border-right-color: var(--dropdown-bg) !important;
+        }
+      }
+    }
   }
 
   // 23b. Excel 缺陷时间列日期面板（teleport 到 body，与全局 el-picker-panel 规则对齐）
@@ -4503,6 +4558,16 @@ html.dark {
         background-color: rgba(255, 193, 7, 0.12) !important;
       }
     }
+  }
+
+  // 生成报告：浮层展开时触发按钮保持黄色主题（勿用 plain primary 的蓝色 focus）
+  .report-template-select-kbd.is-popover-open .report-hint-create.el-button--primary.is-plain,
+  .report-template-select-kbd .report-hint-create.el-button--primary.is-plain:hover,
+  .report-template-select-kbd .report-hint-create.el-button--primary.is-plain:focus {
+    background-color: #FFD54F !important;
+    border-color: #FFD54F !important;
+    color: #141414 !important;
+    box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, #ffce3a) !important;
   }
 
   // 29. 适配新建/编辑测试计划弹窗 (AddPlanDialog) 暗黑模式

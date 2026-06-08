@@ -191,6 +191,7 @@ export default {
       this.dialogVisible = true;
       this.$nextTick(()=>{
         this.reset();
+        this.captureToolDialogCloseBaseline();
         this.loadProfileContact();
         this.getConfig();
       });

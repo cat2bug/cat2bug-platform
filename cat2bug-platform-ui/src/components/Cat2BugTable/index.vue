@@ -24,7 +24,12 @@
                        :sortable="columnSortableMode(col)">
         <template v-slot:header>
           <div v-if="col.pinFixedToggle !== false" :class="['table-header', { 'table-header--required': col.required }]">
-            <svg-icon :icon-class="col.fixed ? 'header-right' : 'header-left'" @click.stop="handleClickColumnsPin(col)"></svg-icon>
+            <svg-icon
+              :icon-class="col.fixed ? 'header-right' : 'header-left'"
+              class="table-header-pin"
+              @mousedown.stop
+              @click.stop="handleClickColumnsPin(col)"
+            ></svg-icon>
             <span :class="['header-title', { 'header-title--required': col.required }]">{{ columnHeaderLabel(col) }}</span>
           </div>
           <span v-else :class="['header-title-only', { 'header-title--required': col.required }]">{{ columnHeaderLabel(col) }}</span>
@@ -798,7 +803,7 @@ export default {
         this.headerSortable[zone] = Sortable.create(el, {
           ghostClass: 'table-header-ghost',
           group: zone,
-          filter: 'th.gutter, .el-table__gutter, .no-drag, .cat2bug-operate-column',
+          filter: 'th.gutter, .el-table__gutter, .no-drag, .cat2bug-operate-column, .table-header, .table-header-pin',
           preventOnFilter: false,
           onStart: () => {
             this.mouseFlag = false;
@@ -942,9 +947,16 @@ export default {
     applyOperateColumnDomWidth(widthPx) {
       const t = this.$refs.elTable;
       if (!t || !t.$el || widthPx == null) return;
+      let parsed = Number(widthPx);
+      if (!Number.isFinite(parsed) && typeof widthPx === 'string') {
+        parsed = parseFloat(widthPx);
+      }
+      if (!Number.isFinite(parsed) || parsed <= 0) {
+        parsed = this.operateColumnMinWidth;
+      }
       const capPx = Math.min(
         this.operateColumnMaxWidth,
-        Math.max(0, Math.ceil(Number(widthPx) || 0))
+        Math.max(this.operateColumnMinWidth, Math.ceil(parsed))
       );
       const cap = `${capPx}px`;
       t.$el.querySelectorAll(`th.${OPERATE_COLUMN_CLASS}, td.${OPERATE_COLUMN_CLASS}`).forEach((el) => {
@@ -1159,8 +1171,8 @@ export default {
         col.minWidth = this.operateColumnMinWidth;
         col.realWidth = cap;
       });
-      this._lastOperateWidth = cap;
-      this.applyOperateColumnDomWidth(cap);
+      this._lastOperateWidth = capPx;
+      this.applyOperateColumnDomWidth(capPx);
       this.syncFixedDataRowHeights();
       return true;
     },
@@ -1231,6 +1243,13 @@ export default {
       let maxSingleRowInner = 0;
       cells.forEach((cell) => {
         maxSingleRowInner = Math.max(maxSingleRowInner, this.measureOperateRowInnerWidth(cell));
+        const tools = cell.querySelector(`.${OPERATE_TOOLS_CLASS}`);
+        if (tools) {
+          const liveW = Math.ceil(
+            Math.max(tools.scrollWidth || 0, tools.getBoundingClientRect().width || 0)
+          );
+          maxSingleRowInner = Math.max(maxSingleRowInner, liveW);
+        }
       });
 
       const operateHeader = t.$el.querySelector(
@@ -1275,9 +1294,8 @@ export default {
     },
     handleClickColumnsPin(column) {
       column.fixed = !column.fixed;
-      if (this.columnsStorageKey()) this.saveShowColumns(this.tableFieldList);
-      this.tableKey = (new Date()).getMilliseconds();
-      this.initColumnDrag();
+      this.reorderColumns();
+      this.tableKey = Date.now();
     },
     handleSelectionChange(selection) {
       this.$emit('selection-change', selection);
@@ -1333,6 +1351,12 @@ export default {
     width: var(--cat2bug-operate-col-applied-width, 450px) !important;
     box-sizing: border-box;
     z-index: 31 !important;
+  }
+
+  ::v-deep .el-table__fixed-right table {
+    table-layout: fixed;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   /* 滚动条垫片：仅 gutter 宽，禁止与操作列同宽（否则会盖住「操作」表头） */
@@ -1526,7 +1550,11 @@ export default {
   padding-right: var(--cat2bug-operate-col-padding-x, 20px);
   max-width: 100%;
   box-sizing: border-box;
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 0;
+  line-height: normal;
   white-space: nowrap;
   text-overflow: clip;
   color: var(--table-header-color, inherit);
@@ -1539,10 +1567,14 @@ export default {
   text-align: left;
   padding-left: var(--cat2bug-operate-col-padding-x, 20px);
   padding-right: var(--cat2bug-operate-col-padding-x, 20px);
-  max-width: var(--cat2bug-operate-col-max-width, 450px);
+  max-width: 100%;
   box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
   flex-wrap: nowrap;
   white-space: nowrap;
+  width: 100%;
   position: relative;
   z-index: 1;
 }

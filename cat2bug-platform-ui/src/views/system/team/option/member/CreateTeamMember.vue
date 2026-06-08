@@ -1,5 +1,5 @@
 <template>
-  <el-dialog :title="$t('member.create')" :visible.sync="dialogVisible" width="800px" append-to-body>
+  <el-dialog :title="$t('member.create')" :visible.sync="dialogVisible" width="800px" append-to-body :close-on-press-escape="false" :before-close="onToolDialogBeforeClose" @opened="onToolDialogOpened">
     <el-form ref="form" :model="form" :rules="rules" label-width="120px">
       <el-row>
         <el-col :span="12">
@@ -78,8 +78,11 @@
       </el-row>
     </el-form>
     <div slot="footer" class="dialog-footer">
-      <el-button type="primary" @click="submitForm">{{$t('submit')}}</el-button>
-      <el-button @click="cancel">{{$t('cancel')}}</el-button>
+      <el-button class="defect-kbd-hint-host" type="primary" @click="submitForm">
+        {{$t('submit')}}
+        <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
+      </el-button>
+      <el-button @click="requestCloseToolDialog">{{$t('cancel')}}</el-button>
     </div>
   </el-dialog>
 </template>
@@ -88,9 +91,11 @@
 import {addMember, addTeam, getMemberByTeam, listTeamRole, updateTeam} from "@/api/system/team";
 import {getUser} from "@/api/system/user";
 import { optionalPhoneRule, optionalEmailRule, normalizeContactFields } from "@/utils/user-contact-rules";
+import defectToolDialogKbd from '@/mixins/defect-tool-dialog-kbd'
 
 export default {
   name: "CreateTeamMember",
+  mixins: [defectToolDialogKbd],
   dicts: ['sys_normal_disable', 'sys_user_sex'],
   data() {
     return {
@@ -160,17 +165,18 @@ export default {
           normalizeContactFields(payload);
           addMember(this.$store.state.user.config.currentTeamId, payload).then(res => {
             this.$modal.msgSuccess("新增成功");
-            this.dialogVisible = false;
-            this.cancel();
+            this.doCloseToolDialog();
             this.$emit("create",res);
           });
         }
       });
     },
+    shortcutSave() {
+      this.submitForm();
+    },
     // 取消按钮
     cancel() {
-      this.dialogVisible = false;
-      this.reset();
+      this.requestCloseToolDialog();
     },
     // 表单重置
     reset() {

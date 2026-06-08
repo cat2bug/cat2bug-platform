@@ -3,12 +3,13 @@
     :visible.sync="visible"
     :direction="direction"
     size="90%"
+    :close-on-press-escape="false"
     :before-close="handleClose">
 <!--    标题-->
     <template slot="title">
       <div class="case-search-header">
         <div class="case-search-title">
-          <i class="el-icon-arrow-left" @click="close"></i>
+          <i class="el-icon-arrow-left" @click="requestCloseCloudCaseDrawer"></i>
           <h4 class="case-search-title-name"><svg-icon icon-class="robot" style="margin-right: 10px;" />{{ $t('case.ai-create') }}</h4>
         </div>
         <div>
@@ -145,8 +146,9 @@
               </div>
             </template>
           </cat2-bug-textarea>
-        <el-dropdown split-button type="success" :disabled="loading" @click="searchHandle" @command="searchCommandHandle">
+        <el-dropdown split-button type="success" class="defect-kbd-hint-host" :disabled="loading" @click="searchHandle" @command="searchCommandHandle">
           {{ $t('case.add-ai-case-prompt') }}
+          <span v-show="fieldHintsActive && !importDialogVisible" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
           <el-dropdown-menu slot="dropdown">
             <el-dropdown-item command="add">{{ $t('case.add-ai-case-prompt') }}</el-dropdown-item>
             <el-dropdown-item command="new">{{ $t('case.new-ai-case-prompt') }}</el-dropdown-item>
@@ -297,7 +299,7 @@
       </div>
     </div>
     <!-- 将用例导入到系统对话框 -->
-    <el-dialog :title="$t('import')" :visible.sync="importDialogVisible" width="500px" append-to-body>
+    <el-dialog :title="$t('import')" :visible.sync="importDialogVisible" :close-on-press-escape="false" :before-close="onToolDialogBeforeClose" append-to-body width="500px" @opened="onImportDialogOpened">
       <el-form ref="form" :model="importForm" label-width="100px">
         <el-form-item :label="$t('module')" prop="teamName">
           <div class="import-dialog-module-form-item">
@@ -307,8 +309,11 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitImportForm">{{ $t('ok') }}</el-button>
-        <el-button @click="cancelImportForm">{{ $t('cancel') }}</el-button>
+        <el-button @click="requestCloseToolDialog">{{ $t('cancel') }}</el-button>
+        <el-button class="defect-kbd-hint-host" type="primary" @click="submitImportForm">
+          {{ $t('ok') }}
+          <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
+        </el-button>
       </div>
     </el-dialog>
     <handle-case-prompt ref="handCasePrompt" @submit="handleCasePromptCorrect" />
@@ -332,6 +337,7 @@ import {makeCaseList} from "@/api/ai/AiCase";
 import i18n from "@/utils/i18n/i18n";
 import {delCasePrompt, listCasePrompt} from "@/api/system/CasePrompt";
 import { projectAiModelOptions } from "@/api/system/ai";
+import cloudCaseKbd from '@/mixins/cloud-case-kbd'
 
 const DEFAULT_ROW_COUNT_KEY = 'case_default_row_count';
 const CASE_AI_MODEL_ID_PREFIX = 'case_ai_model_id_';
@@ -339,6 +345,7 @@ const PATTERN = /\$\{\s*[0-9a-zA-z]{1,255}\s*\}/g;
 
 export default {
   name: "index",
+  mixins: [cloudCaseKbd],
   components: { Label, Cat2BugLevel, Step, Multipane, MultipaneResizer, CaseForm, CaseCard, SelectModule, Cat2BugTextarea, AddCasePrompt, HandleCasePrompt },
   data() {
     return {
@@ -475,7 +482,7 @@ export default {
     },
     /** 合并加载 Ollama 已下载模型与 OpenAI 账号列表 */
     getOpenAIAccountList() {
-      projectAiModelOptions(this.projectId)
+      return projectAiModelOptions(this.projectId)
         .then((res) => {
           const data = res.data || {};
           const ollama = data.ollama || [];
@@ -529,17 +536,25 @@ export default {
     },
     open() {
       this.visible = true;
+      const captureBaselineWhenReady = () => {
+        this.$nextTick(() => {
+          if (this.visible) this.captureCloudCaseCloseBaseline();
+        });
+      };
       if (!this.aiAccountLoaded) {
-        this.getOpenAIAccountList();
+        this.getOpenAIAccountList().finally(captureBaselineWhenReady);
+        return;
       }
+      captureBaselineWhenReady();
     },
     close() {
       this.$emit('close')
       this.visible = false;
+      this.cloudCaseCloseBaseline = null;
       this.resetPrompt();
     },
     handleClose(done) {
-      // done();
+      this.requestCloseCloudCaseDrawer({ done });
     },
     selectHistoryHandle(prompt) {
       this.caseList = prompt.list;
@@ -575,6 +590,9 @@ export default {
       }
       this.casePromptList = [];
       this.$refs['caseForm'].reset();
+      if (this.visible) {
+        this.$nextTick(() => this.captureCloudCaseCloseBaseline());
+      }
     },
     /** 新话题 */
     newPrompt() {
@@ -777,7 +795,7 @@ export default {
       })
     },
     cancelImportForm() {
-      this.importDialogVisible = false;
+      this.requestCloseToolDialog();
     },
     importFormModuleChangeHandle(moduleId,module) {
       this.importForm.moduleName = module.moduleName;

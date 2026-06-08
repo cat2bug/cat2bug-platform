@@ -1,6 +1,6 @@
 <template>
   <!-- 添加或修改测试计划对话框 -->
-  <el-dialog :title="$t(title)" :visible.sync="open" width="80%" custom-class="plan-add-dialog" append-to-body @closed="cancel" @opened="onPlanAddDialogOpened">
+  <el-dialog :title="$t(title)" :visible.sync="open" width="80%" custom-class="plan-add-dialog" append-to-body :close-on-press-escape="false" :before-close="onToolDialogBeforeClose" @closed="cancel" @opened="onPlanAddDialogOpened">
     <el-form ref="form" class="plan-add-dialog__form" :model="form" :rules="rules" label-width="120px">
       <el-form-item :label="$t('plan.name')" prop="planName">
         <el-input v-model="form.planName" :placeholder="$t('plan.enter-name')" maxlength="255" />
@@ -42,7 +42,7 @@
         <div class="plan-add-case-toolbar defect-table-tools defect-table-tools-bar">
           <div class="case-tools">
             <el-form :model="caseQueryParams" ref="queryForm" size="small" :inline="true" label-width="68px">
-              <el-form-item prop="caseNum">
+              <el-form-item prop="caseNum" class="plan-add-hint-query">
                 <el-input
                   v-model="caseQueryParams.caseNum"
                   size="small"
@@ -188,8 +188,11 @@
       </div>
     </el-form>
     <div slot="footer" class="dialog-footer">
-      <el-button type="primary" @click="submitForm">{{ $t('plan.save') }}</el-button>
-      <el-button @click="cancel">{{ $t('cancel') }}</el-button>
+      <el-button type="primary" class="defect-kbd-hint-host" @click="submitForm">
+        {{ $t('plan.save') }}
+        <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
+      </el-button>
+      <el-button @click="requestCloseToolDialog">{{ $t('cancel') }}</el-button>
     </div>
   </el-dialog>
 </template>
@@ -205,6 +208,7 @@ import Cat2BugPreviewImage from "@/components/Cat2BugPreviewImage";
 import { Multipane, MultipaneResizer } from 'vue-multipane';
 import paneResizerHandleViewport from '@/mixins/paneResizerHandleViewport';
 import multipaneTreeTableHeightSync from '@/mixins/multipaneTreeTableHeightSync';
+import planAddDialogKbd from '@/mixins/plan-add-dialog-kbd';
 import {addPlan, getPlan, updatePlan} from "@/api/system/plan";
 import {listPlanItemCase} from "@/api/system/PlanItem";
 import {listCase, listPlanCaseId, listPlanCaseLevel} from "@/api/system/case";
@@ -216,7 +220,7 @@ const PLAN_ADD_DIALOG_TREE_VISIBLE_CACHE_KEY = 'plan_add_dialog_tree_module_visi
 export default {
   name: "AddPlanDialog",
   dicts: ['plan_item_state'],
-  mixins: [paneResizerHandleViewport, multipaneTreeTableHeightSync],
+  mixins: [paneResizerHandleViewport, multipaneTreeTableHeightSync, planAddDialogKbd],
   components: { Cat2BugLevel,Step,TreePlanItemModule,Multipane,MultipaneResizer, FocusMemberList, Cat2BugPreviewImage,Cat2BugText, Cat2BugSelectLevel },
   data() {
     return {
@@ -346,6 +350,7 @@ export default {
   },
   methods: {
     onPlanAddDialogOpened() {
+      this.onPlanAddDialogOpenedKbd();
       this.$nextTick(() => {
         this.syncPlanAddTableBodyMaxHeight();
         this.setDragComponentSize();

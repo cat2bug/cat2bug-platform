@@ -75,11 +75,6 @@ export default {
     onSendDialogBeforeClose(done) {
       this.requestCloseSendDialog({ done })
     },
-    requestCloseSendDialog(options = {}) {
-      const { done } = options
-      this.visible = false
-      if (typeof done === 'function') done()
-    },
     /** 获取项目ID */
     getProjectId() {
       return parseInt(this.$store.state.user.config.currentProjectId);

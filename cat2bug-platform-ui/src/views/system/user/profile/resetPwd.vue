@@ -10,7 +10,10 @@
       <el-input v-model="user.confirmPassword" :placeholder="$t('member.please-enter-new-password')" type="password" show-password maxlength="20" minlength="6" />
     </el-form-item>
     <el-form-item>
-      <el-button type="primary" size="mini" @click="submit">{{ $t('save') }}</el-button>
+      <el-button class="defect-kbd-hint-host" type="primary" size="mini" @click="submit">
+        {{ $t('save') }}
+        <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
+      </el-button>
       <el-button type="danger" size="mini" @click="close">{{ $t('close') }}</el-button>
     </el-form-item>
   </el-form>
@@ -18,8 +21,18 @@
 
 <script>
 import { updateUserPwd } from "@/api/system/user";
+import dialogFormShortcuts from '@/mixins/dialog-form-shortcuts'
+import formFieldHints from '@/mixins/form-field-hints'
+import pageFormClose from '@/mixins/page-form-close'
 
 export default {
+  mixins: [dialogFormShortcuts, formFieldHints, pageFormClose],
+  props: {
+    formActive: {
+      type: Boolean,
+      default: true
+    }
+  },
   data() {
     const equalToPassword = (rule, value, callback) => {
       if (this.user.newPassword !== value) {
@@ -50,7 +63,45 @@ export default {
       }
     };
   },
+  computed: {
+    visible() {
+      return this.formActive
+    }
+  },
+  watch: {
+    formActive(val) {
+      if (val) {
+        this.$nextTick(() => {
+          this.capturePageFormCloseBaseline()
+          this.$_syncFieldHintListeners(true)
+        })
+      } else {
+        this.$_syncFieldHintListeners(false)
+      }
+    }
+  },
+  mounted() {
+    if (this.formActive) {
+      this.$nextTick(() => {
+        this.capturePageFormCloseBaseline()
+        this.$_syncFieldHintListeners(true)
+      })
+    }
+  },
   methods: {
+    serializePageFormCloseState() {
+      return JSON.stringify({
+        oldPassword: this.user.oldPassword,
+        newPassword: this.user.newPassword,
+        confirmPassword: this.user.confirmPassword
+      })
+    },
+    onPageFormShortcutClose() {
+      this.requestClosePageForm({ onClose: () => this.$tab.closePage() })
+    },
+    shortcutSave() {
+      this.submit()
+    },
     submit() {
       this.$refs["form"].validate(valid => {
         if (valid) {
@@ -61,7 +112,7 @@ export default {
       });
     },
     close() {
-      this.$tab.closePage();
+      this.onPageFormShortcutClose()
     }
   }
 };

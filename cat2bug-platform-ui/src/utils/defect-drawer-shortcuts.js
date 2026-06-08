@@ -8,9 +8,9 @@ import { hasBlockingUiLayer, shortcutService } from '@/plugins/shortcut/service'
 const stack = []
 let installed = false
 
-const FORM_DRAWER_HEADER_SEL = '.defect-add-header, .defect-edit-form-header'
+const FORM_DRAWER_HEADER_SEL = '.defect-add-header, .defect-edit-form-header, .case-add-header, .case-search-header'
 
-const DEFECT_DRAWER_VM_NAMES = new Set(['AddDefect', 'EditDefectDialog'])
+const FORM_DRAWER_VM_NAMES = new Set(['AddDefect', 'EditDefectDialog', 'AddCase'])
 const DEFECT_TOOL_DIALOG_VM_NAMES = new Set([
   'AssignDialog',
   'RepairDialog',
@@ -32,7 +32,8 @@ const NOTICE_OPTION_DIALOG_VM_NAMES = new Set([
 const FORM_SHORTCUT_DIALOG_VM_NAMES = new Set([
   ...DEFECT_TOOL_DIALOG_VM_NAMES,
   ...STATISTIC_DIALOG_VM_NAMES,
-  ...NOTICE_OPTION_DIALOG_VM_NAMES
+  ...NOTICE_OPTION_DIALOG_VM_NAMES,
+  'ModuleDialog'
 ])
 
 function isModifierKeyEvent(e) {
@@ -87,10 +88,9 @@ function findTopDrawerVmFromDom() {
     const header = wrapper.querySelector(FORM_DRAWER_HEADER_SEL)
     if (!header || !isVisibleEl(header)) return
     const accent = wrapper.querySelector('.defect-drawer-accent')
-    if (!accent) return
     const z = parseInt(window.getComputedStyle(wrapper).zIndex, 10) || 0
-    const vm = findFormVmFromNode(accent, DEFECT_DRAWER_VM_NAMES) ||
-      findFormVmFromNode(header, DEFECT_DRAWER_VM_NAMES)
+    const vm = (accent && findFormVmFromNode(accent, FORM_DRAWER_VM_NAMES)) ||
+      findFormVmFromNode(header, FORM_DRAWER_VM_NAMES)
     if (vm && isFormShortcutSurfaceOpen(vm)) candidates.push({ vm, z })
   })
   if (!candidates.length) return null
@@ -163,6 +163,10 @@ function invokeClose(vm, e) {
     vm.requestCloseDefectFormDrawer()
     return true
   }
+  if (typeof vm.requestCloseCaseFormDrawer === 'function') {
+    vm.requestCloseCaseFormDrawer()
+    return true
+  }
   if (typeof vm.close === 'function') {
     vm.close()
     return true
@@ -179,7 +183,9 @@ function shouldDeferFormEscClose() {
   return hasBlockingUiLayer({
     excludeDefectFormDrawer: true,
     excludeHandleDefectDrawer: true,
-    excludeDefectToolDialog: true
+    excludeViewReportDrawer: true,
+    excludeDefectToolDialog: true,
+    excludeCaseImportDialog: true
   })
 }
 

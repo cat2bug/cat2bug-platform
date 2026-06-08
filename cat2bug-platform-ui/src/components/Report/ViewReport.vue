@@ -1,14 +1,17 @@
 <template>
   <el-drawer
+    ref="viewReportDrawer"
+    custom-class="report-drawer-accent"
     size="90%"
     v-loading="loading"
     :visible.sync="visible"
     direction="rtl"
+    :close-on-press-escape="false"
     :before-close="closeReportDrawer">
     <template slot="title">
       <div class="report-edit-header">
         <div class="report-edit-title">
-          <i class="el-icon-arrow-left" @click="cancel"></i>
+          <i class="el-icon-arrow-left report-view-back" @click="cancel"></i>
           <report-type-flag :report="report" />
           <focus-member-list
             v-model="report.focusList"
@@ -20,8 +23,12 @@
         </div>
         <div class="report-edit-tools">
           <report-tools :report="report" @delete="handleDelete" />
-          <el-dropdown @command="handleExport">
-            <el-button size="mini">
+          <el-dropdown
+            ref="exportDropdown"
+            class="report-view-export cat2bug-split-dropdown-kbd"
+            data-report-tool="export"
+            @command="handleExport">
+            <el-button size="mini" plain>
               <i class="el-icon-download"></i>
             </el-button>
             <el-dropdown-menu slot="dropdown">
@@ -63,9 +70,11 @@ import {LeftPointPlugin} from "@/components/Cat2BugMarkdown/plugins/LeftPointPlu
 import {RightPointPlugin} from "@/components/Cat2BugMarkdown/plugins/RightPointPlugin";
 import {CenterPointPlugin} from "@/components/Cat2BugMarkdown/plugins/CenterPointPlugin";
 import {PlanVariablePlugin} from "@/components/Cat2BugMarkdown/plugins/PlanVariablePlugin";
+import viewReportKbd from '@/mixins/view-report-kbd'
 
 export default {
   name: "ViewReport",
+  mixins: [viewReportKbd],
   components: { MarkdownItVue,ReportTools,FocusMemberList,ReportTypeFlag },
   data() {
     return {
@@ -357,12 +366,15 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
-  ::v-deep .el-drawer {
+  ::v-deep .el-drawer.report-drawer-accent {
     border-left: 3px solid #ffbe00;
   }
-  ::v-deep .el-drawer__header {
+  ::v-deep .el-drawer.report-drawer-accent .el-drawer__header {
     margin-bottom: 0px;
     max-width: calc(100vw);
+    background-color: #303133;
+    color: #ffffff;
+    padding: 12px 20px;
   }
   .report-edit-header {
     width: 100%;
@@ -373,26 +385,27 @@ export default {
     flex-wrap: wrap;
     .report-edit-tools {
       padding: 5px 0px;
-      display: inline-flex;
-      gap: 10px;
+      overflow: visible;
     }
     .report-edit-title {
-      display: inline-block;
       display: inline-flex;
       justify-content: flex-start;
       align-items: center;
       flex-direction: row;
       overflow: hidden;
       flex: 1;
+      min-width: 0;
       > * {
         float:left;
       }
-      .el-icon-arrow-left {
+      .report-view-back {
         font-size: 22px;
+        color: #ffffff;
+        flex-shrink: 0;
       }
-      .el-icon-arrow-left:hover {
+      .report-view-back:hover {
         cursor: pointer;
-        color: #909399;
+        color: rgba(255, 255, 255, 0.75);
       }
       .report-edit-title-name {
         flex: 1;
@@ -402,7 +415,7 @@ export default {
       }
       .report-edit-title-num, .report-edit-title-name {
         font-size: 20px;
-        color: #303133;
+        color: #ffffff;
         font-weight: 500;
         margin-top: 10px;
         margin-bottom: 10px;

@@ -1,6 +1,6 @@
 <template>
   <div class="app-container project-form-page">
-    <el-row class="project-add-page-header">
+    <el-row class="project-add-page-header project-option-sub-hint-back">
       <el-page-header @back="goBack" :content="$t('project.info')">
       </el-page-header>
     </el-row>
@@ -56,7 +56,10 @@
             <el-form-item class="page-form-actions">
               <div class="page-form-actions__buttons">
                 <el-button @click="goBack">{{$t('cancel')}}</el-button>
-                <el-button type="primary" @click="onSubmit">{{$t('update')}}</el-button>
+                <el-button class="defect-kbd-hint-host" type="primary" @click="onSubmit">
+                  {{$t('update')}}
+                  <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
+                </el-button>
               </div>
             </el-form-item>
           </el-col>
@@ -71,12 +74,21 @@ import {addProject, getProject, listProjectRole, updateProject} from "@/api/syst
 import { listMember } from "@/api/system/team";
 import MemberNameplate from "@/components/MemberNameplate"
 import { resolveProjectIconUrl } from '@/utils/upload-asset'
+import dialogFormShortcuts from '@/mixins/dialog-form-shortcuts'
+import formFieldHints from '@/mixins/form-field-hints'
+import pageActionHints from '@/mixins/page-action-hints'
+import pageFormClose from '@/mixins/page-form-close'
+import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
+
+const PROJECT_OPTION_KBD_SCOPE = 'project-option'
 
 export default {
   name: "ProjectEdit",
+  mixins: [dialogFormShortcuts, formFieldHints, pageActionHints, pageFormClose],
   components:{ MemberNameplate },
   data() {
     return {
+      visible: true,
       memberParams: {
         params: {
           excludeMembers: [],
@@ -122,13 +134,61 @@ export default {
     this.getProject();
     this.getRoleList();
   },
+  mounted() {
+    this.registerProjectOptionSubShortcuts();
+    this.$nextTick(() => this.$_syncFieldHintListeners(true));
+  },
+  activated() {
+    this.registerProjectOptionSubShortcuts();
+  },
+  deactivated() {
+    if (this.$shortcut) this.$shortcut.unregisterPage(PROJECT_OPTION_KBD_SCOPE);
+  },
+  beforeDestroy() {
+    if (this.$shortcut) this.$shortcut.unregisterPage(PROJECT_OPTION_KBD_SCOPE);
+  },
   methods: {
+    registerProjectOptionSubShortcuts() {
+      if (!this.$shortcut) return
+      this.$shortcut.registerPage(PROJECT_OPTION_KBD_SCOPE, [
+        { key: 'back', defaultLetter: 'B', run: () => this.goBack() }
+      ])
+    },
+    getPageActionHintContainer() {
+      return this.$el
+    },
+    getPageActionHints() {
+      const L = (key, def) => shortcutStore.getLetter(`action.${PROJECT_OPTION_KBD_SCOPE}.${key}`, def)
+      return [
+        {
+          key: 'back',
+          letter: L('back', 'B'),
+          badgeSelector: '.project-option-sub-hint-back .el-page-header__left',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
+          run: () => this.goBack()
+        }
+      ]
+    },
+    shortcutSave() {
+      this.onSubmit()
+    },
+    serializePageFormCloseState() {
+      return JSON.stringify({
+        form: { ...this.form },
+        activeProjectIconIndex: this.activeProjectIconIndex,
+        projectIcon: this.projectIcon
+      })
+    },
+    onPageFormShortcutClose() {
+      this.requestClosePageForm({ onClose: () => this.$router.back() })
+    },
     getProjectId() {
       return parseInt(this.$store.state.user.config.currentProjectId);
     },
     getProject() {
       getProject(this.getProjectId()).then(res=>{
         this.form = res.data;
+        this.$nextTick(() => this.capturePageFormCloseBaseline());
       });
     },
     getRoleList() {
@@ -189,7 +249,7 @@ export default {
     },
     /** 返回 */
     goBack() {
-      this.$router.back();
+      this.onPageFormShortcutClose();
     },
     /** 点击选中的项目图标处理方法 */
     clickProjectIconHandle(index) {

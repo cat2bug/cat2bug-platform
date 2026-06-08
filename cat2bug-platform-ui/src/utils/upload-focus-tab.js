@@ -16,7 +16,8 @@ import {
 } from '@/utils/tab-direction-intent'
 import {
   beginNativeFilePickerSession,
-  isNativeFilePickerOpen
+  isNativeFilePickerOpen,
+  bindNativeFilePickerResume
 } from '@/utils/native-file-picker'
 
 /** 上传区内需要移出 Tab 序列的元素（含尚未打 tabindex 的原生控件） */
@@ -111,6 +112,25 @@ export function onUploadFocusIn(e) {
   }
 }
 
+/** 原生文件框关闭后恢复上传外框焦点（选取按钮 / 拖拽区） */
+export function refocusUploadShellElement(shell) {
+  if (!shell || !document.contains(shell) || typeof shell.focus !== 'function') return
+  requestAnimationFrame(() => {
+    try {
+      shell.focus({ preventScroll: true })
+    } catch (_) {
+      shell.focus()
+    }
+  })
+}
+
+export function scheduleUploadShellRefocusAfterPicker(shell) {
+  if (!shell) return
+  bindNativeFilePickerResume(() => {
+    refocusUploadShellElement(shell)
+  })
+}
+
 /** 点击上传区内的选文件按钮 / file input 时标记原生文件框会话，避免 focusin 抢焦点 */
 export function onUploadAreaClickCapture(e) {
   const t = e.target
@@ -122,6 +142,7 @@ export function onUploadAreaClickCapture(e) {
     !!t.closest('.el-upload') &&
     !!(t.closest('button') || t.closest('.update-button') || t.closest('.el-upload-dragger'))
   if (!onFileInput && !onUploadTrigger) return
+  scheduleUploadShellRefocusAfterPicker(shell)
   beginNativeFilePickerSession()
   const active = document.activeElement
   if (active && typeof active.blur === 'function' && shell.contains(active)) {

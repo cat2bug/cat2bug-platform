@@ -1,9 +1,9 @@
 <template>
-  <div class="app-container case-body report-page report-list-layout project-list-page-host">
+  <div class="app-container case-body report-page report-list-layout project-list-page-host" ref="reportMain">
     <project-label class="report-project-label" :project-id="projectId" />
     <div ref="reportTools" class="report-tools" :class="{ 'wrapped-tools': reportToolsWrapped }">
-      <el-form class="left" :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
-        <el-form-item label="" prop="reportTitle">
+      <el-form class="left" :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px" :class="{ 'list-query-keyboard-nav': listQueryNavActive }">
+        <el-form-item label="" prop="reportTitle" class="report-hint-query list-query-nav-item" data-query-key="reportTitle">
           <el-input
             v-model="queryParams.reportTitle"
             :placeholder="$t('report.please-enter-title')"
@@ -13,7 +13,7 @@
             @input="handleQuery"
           />
         </el-form-item>
-        <el-form-item label="">
+        <el-form-item label="" class="list-query-nav-item" data-query-key="reportTime">
           <el-date-picker
             v-model="daterangeReportTime"
             size="small"
@@ -26,7 +26,7 @@
             @change="handleQuery"
           ></el-date-picker>
         </el-form-item>
-        <el-form-item label="" prop="createById">
+        <el-form-item label="" prop="createById" class="list-query-nav-item" data-query-key="createById">
           <select-project-member
             v-model="queryParams.createByIds"
             :project-id="projectId"
@@ -56,6 +56,7 @@
             <el-button style="padding: 9px;" plain slot="reference" icon="el-icon-s-fold" size="small"></el-button>
           </el-popover>
           <el-button
+            class="report-hint-batch-delete"
             type="danger"
             plain
             icon="el-icon-delete"
@@ -65,6 +66,7 @@
             v-hasPermi="['system:report:remove']"
           >{{ $t('batch-delete') }}</el-button>
           <cat2-bug-report-template-select
+            ref="reportTemplateSelect"
             size="small"
             v-hasPermi="['system:report:add']"
             @create="createReportHandle"
@@ -97,7 +99,7 @@
             v-model="scope.row.focusList"
             module-name="report"
             :data-id="scope.row.reportId" />
-          <span>{{ scope.row.reportTitle }}</span>
+          <span class="report-row-kbd-hint-anchor">{{ scope.row.reportTitle }}</span>
         </div>
         <span v-else-if="column.prop==='reportTime'">{{ parseTime(scope.row.reportTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
         <span v-else-if="column.prop==='reportSource'">{{ scope.row.reportSource }}</span>
@@ -176,9 +178,26 @@ import store from "@/store";
 
 import Cat2BugTable from "@/components/Cat2BugTable";
 import { ReportTableColumnDefaults } from "@/views/system/report/report-table-options";
+import pageActionHints from '@/mixins/page-action-hints'
+import listQueryKeyboardNav from '@/mixins/list-query-keyboard-nav'
+import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
+import { checkPermi } from '@/utils/permission'
+import {
+  assignRowHintLetters,
+  collectHintLettersFromToolbar,
+  getDefectTableScrollBody,
+  isRowIntersectingContainer,
+  resolveDefectTableRowHintAnchor,
+  resolveDefectTableRowHintPositionRect,
+  resolveElTableRowData,
+  scrollTableBodyByArrow
+} from '@/utils/defect-row-kbd-hints'
+
+const REPORT_KBD_SCOPE = 'report'
 
 export default {
   name: "Report",
+  mixins: [pageActionHints, listQueryKeyboardNav],
   components: { Step, ProjectLabel, ViewReport, ReportTools, FocusMemberList, ReportTypeFlag, Cat2BugReportTemplateSelect, Cat2BugAvatar, SelectProjectMember, Cat2BugTable },
   data() {
     return {
@@ -279,14 +298,221 @@ export default {
     });
     window.addEventListener("resize", this.syncReportToolsWrapped);
     window.addEventListener("resize", this.syncReportTableBodyMaxHeight);
+    this.registerReportShortcuts();
+  },
+  activated() {
+    this.registerReportShortcuts();
+    this.$nextTick(() => {
+      this.$_bindListQueryNavFocusIn();
+      this.$_bindListQueryNavToolbarFocusIn();
+    });
+  },
+  deactivated() {
+    if (this.$shortcut) this.$shortcut.unregisterPage(REPORT_KBD_SCOPE);
   },
   // 移除滚动条监听
   destroyed() {
     window.removeEventListener("resize", this.syncReportToolsWrapped);
     window.removeEventListener("resize", this.syncReportTableBodyMaxHeight);
     this.destroyReportListBodyResizeObserver();
+    if (this.$shortcut) this.$shortcut.unregisterPage(REPORT_KBD_SCOPE);
+  },
+  beforeDestroy() {
+    if (this.$shortcut) this.$shortcut.unregisterPage(REPORT_KBD_SCOPE);
   },
   methods: {
+    registerReportShortcuts() {
+      if (!this.$shortcut) return
+      this.$shortcut.registerPage(REPORT_KBD_SCOPE, [
+        { key: 'query', defaultLetter: 'S', run: () => this.shortcutFocusQuery() },
+        { key: 'create', defaultLetter: 'E', run: () => this.shortcutCreateReport() },
+        { key: 'batchDelete', defaultLetter: 'D', run: () => this.shortcutBatchDelete() },
+        { key: 'prevPage', defaultLetter: 'B', run: () => this.shortcutChangePage(-1) },
+        { key: 'nextPage', defaultLetter: 'P', run: () => this.shortcutChangePage(1) }
+      ])
+    },
+    getPageActionHintContainer() {
+      return this.$refs.reportMain || this.$el
+    },
+    getReportCreateHintAnchor() {
+      const sel = this.$refs.reportTemplateSelect
+      const ref = sel && sel.$refs && sel.$refs.triggerButton
+      return ref ? (ref.$el || ref) : null
+    },
+    getPageActionHints() {
+      const L = (key, def) => shortcutStore.getLetter(`action.${REPORT_KBD_SCOPE}.${key}`, def)
+      return [
+        {
+          key: 'query',
+          letter: L('query', 'S'),
+          badgeSelector: '.report-hint-query',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
+          run: () => this.shortcutFocusQuery()
+        },
+        {
+          key: 'create',
+          letter: L('create', 'E'),
+          badgeSelector: '.report-hint-create',
+          resolveAnchor: () => this.getReportCreateHintAnchor(),
+          floatOffset: { placement: 'bottom-right-outset', outset: 2, dy: 5 },
+          run: () => this.shortcutCreateReport(),
+          visible: () => checkPermi(['system:report:add'])
+        },
+        {
+          key: 'batchDelete',
+          letter: L('batchDelete', 'D'),
+          badgeSelector: '.report-hint-batch-delete',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2, dy: 5 },
+          run: () => this.shortcutBatchDelete(),
+          visible: () => checkPermi(['system:report:remove']) && !this.multiple
+        },
+        {
+          key: 'prevPage',
+          letter: L('prevPage', 'B'),
+          badgeSelector: '.report-table-pagination .btn-prev',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
+          run: () => this.shortcutChangePage(-1),
+          visible: () => this.total > 0
+        },
+        {
+          key: 'nextPage',
+          letter: L('nextPage', 'P'),
+          badgeSelector: '.report-table-pagination .btn-next',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
+          run: () => this.shortcutChangePage(1),
+          visible: () => this.total > 0
+        }
+      ]
+    },
+    /** ⌘ 按住：表格可见行标题列动态徽标（1–9 优先，字母补位） */
+    getPageDynamicActionHints(ctx) {
+      const used = (ctx && ctx.usedLetters) ? new Set(ctx.usedLetters) : new Set()
+      collectHintLettersFromToolbar(this.getPageActionHints()).forEach((ch) => used.add(ch))
+      const rowFloat = { placement: 'center-cell' }
+      return this.buildReportTableRowActionHints(used, rowFloat)
+    },
+    buildReportTableRowActionHints(usedLetters, rowFloat) {
+      if (this.loading || this.isReportViewDrawerOpen() || this.open) return []
+      const cat = this.$refs.cat2BugTable
+      if (!cat || !cat.$el) return []
+      const bodyWrap = getDefectTableScrollBody(cat.$el)
+      if (!bodyWrap) return []
+      const tableRoot = cat.$el
+      const list = this.reportList || []
+      const seen = new Set()
+      const anchors = []
+      bodyWrap.querySelectorAll('tbody tr.el-table__row').forEach((tr, rowIndex) => {
+        if (!isRowIntersectingContainer(tr, bodyWrap)) return
+        const row = resolveElTableRowData(tr) || list[rowIndex]
+        if (!row || row.reportId == null) return
+        const reportId = String(row.reportId)
+        if (seen.has(reportId)) return
+        seen.add(reportId)
+        const anchor = tr.querySelector('.report-row-kbd-hint-anchor') || resolveDefectTableRowHintAnchor(tr)
+        if (!anchor) return
+        anchors.push({
+          anchor,
+          getAnchorRect: () => resolveDefectTableRowHintPositionRect(tr, tableRoot),
+          skipViewportCheck: true,
+          run: () => this.rowClickHandle(row)
+        })
+      })
+      const letters = assignRowHintLetters(anchors.length, usedLetters)
+      return anchors.map((item, i) => ({
+        ...item,
+        letter: letters[i],
+        floatOffset: rowFloat,
+        key: `row-${i}`
+      })).filter((item) => item.letter)
+    },
+    getListQueryNavItems() {
+      return [
+        { key: 'reportTitle' },
+        { key: 'reportTime' },
+        { key: 'createById' }
+      ]
+    },
+    getListQueryNavToolbarRef() {
+      return 'reportToolsRight'
+    },
+    getListQueryNavFocusEl(key) {
+      const itemEl = this.getListQueryNavItemEl(key)
+      if (!itemEl) return null
+      if (key === 'reportTime') {
+        return itemEl.querySelector('.el-range-input') ||
+          itemEl.querySelector('input.el-input__inner')
+      }
+      if (key === 'createById') {
+        return itemEl.querySelector('.select-project-member-input')
+      }
+      return itemEl.querySelector('input.el-input__inner')
+    },
+    getPageActionHintScrollRoots() {
+      const cat = this.$refs.cat2BugTable
+      if (!cat || !cat.$el) return []
+      const bodyWrap = getDefectTableScrollBody(cat.$el)
+      return bodyWrap ? [bodyWrap] : []
+    },
+    isReportViewDrawerOpen() {
+      const vr = this.$refs.viewReport
+      return !!(vr && vr.visible)
+    },
+    isReportColumnPickerOpen() {
+      const picker = document.querySelector('.report-column-picker')
+      return !!(picker && picker.offsetParent !== null)
+    },
+    getReportTableScrollBody() {
+      const cat = this.$refs.cat2BugTable
+      if (!cat || !cat.$el) return null
+      return getDefectTableScrollBody(cat.$el)
+    },
+    /** ⌘/Ctrl + 方向键：报告列表垂直/水平滚动 */
+    handlePageModifierArrowScroll(e) {
+      if (this.isReportViewDrawerOpen() || this.open || this.isReportColumnPickerOpen()) {
+        return false
+      }
+      const bodyWrap = this.getReportTableScrollBody()
+      if (!bodyWrap) return false
+      return scrollTableBodyByArrow(bodyWrap, e.key)
+    },
+    shortcutFocusQuery() {
+      this.enterListQueryKeyboardNav()
+    },
+    shortcutCreateReport() {
+      if (!checkPermi(['system:report:add'])) return
+      const sel = this.$refs.reportTemplateSelect
+      if (sel && typeof sel.openTemplatePopover === 'function') {
+        sel.openTemplatePopover()
+        this.$nextTick(() => {
+          const pop = sel.$refs && sel.$refs.templatePopover
+          if (pop && pop.showPopper) return
+          const btn = this.getReportCreateHintAnchor()
+          if (btn && typeof btn.click === 'function') {
+            btn.click()
+          }
+        })
+        return
+      }
+      const btn = this.getReportCreateHintAnchor() ||
+        (this.getPageActionHintContainer() && this.getPageActionHintContainer().querySelector('.report-hint-create'))
+      if (btn && typeof btn.click === 'function') {
+        btn.click()
+      }
+    },
+    shortcutBatchDelete() {
+      if (!checkPermi(['system:report:remove']) || this.multiple) return
+      this.handleDelete({ stopPropagation() {} })
+    },
+    shortcutChangePage(delta) {
+      const root = this.getPageActionHintContainer()
+      if (!root || typeof root.querySelector !== 'function') return
+      const btn = root.querySelector(
+        delta < 0 ? '.report-table-pagination .btn-prev' : '.report-table-pagination .btn-next'
+      )
+      if (btn && !btn.classList.contains('disabled') && typeof btn.click === 'function') {
+        btn.click()
+      }
+    },
     initReportListBodyResizeObserver() {
       if (typeof ResizeObserver === 'undefined') return;
       this.destroyReportListBodyResizeObserver();
@@ -652,5 +878,10 @@ export default {
 }
 .report-table-pagination-band {
   flex-shrink: 0;
+}
+.report-hint-batch-delete,
+::v-deep .report-hint-create {
+  position: relative;
+  overflow: visible !important;
 }
 </style>

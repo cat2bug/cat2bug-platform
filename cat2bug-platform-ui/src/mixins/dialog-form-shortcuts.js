@@ -12,6 +12,7 @@ import {
   isSaveShortcutKey
 } from '@/utils/defect-drawer-shortcuts'
 import { hasBlockingUiLayer } from '@/plugins/shortcut/service'
+import { dismissToolbarSplitDropdownSessions } from '@/utils/split-dropdown-kbd'
 
 export const SAVE_SHORTCUT_LABEL = '↵'
 
@@ -48,6 +49,7 @@ export default {
       if (open) {
         this.$_dialogShortcutsRegistered = true
         registerDefectDrawerShortcuts(this)
+        this.$_hideAncestorPageActionHints()
       } else if (!this.$_formShortcutSurfaceVisible) {
         this.$_unbindDialogShortcuts()
       }
@@ -63,7 +65,9 @@ export default {
       return !hasBlockingUiLayer({
         excludeDefectFormDrawer: true,
         excludeHandleDefectDrawer: true,
-        excludeDefectToolDialog: true
+        excludeViewReportDrawer: true,
+        excludeDefectToolDialog: true,
+        excludeCaseImportDialog: true
       })
     },
     $_invokeDrawerShortcutSave(e) {
@@ -88,6 +92,7 @@ export default {
       }
       if (typeof this.shortcutClose === 'function') this.shortcutClose(e)
       else if (typeof this.requestCloseDefectFormDrawer === 'function') this.requestCloseDefectFormDrawer()
+      else if (typeof this.requestCloseCaseFormDrawer === 'function') this.requestCloseCaseFormDrawer()
       else if (typeof this.close === 'function') this.close()
       else if (typeof this.cancel === 'function') this.cancel()
       return true
@@ -100,6 +105,20 @@ export default {
       }
       if (isEscapeCloseKey(e)) {
         this.$_invokeDrawerShortcutClose(e)
+      }
+    },
+    $_hideAncestorPageActionHints() {
+      let parent = this.$parent
+      while (parent) {
+        if (typeof parent.$_hidePageActionHints === 'function') {
+          parent.$_hidePageActionHints()
+          if (parent.$el) dismissToolbarSplitDropdownSessions(parent.$el)
+        }
+        if (typeof parent.exitListQueryKeyboardNav === 'function') {
+          parent.exitListQueryKeyboardNav()
+        }
+        if (typeof parent.$_hidePageActionHints === 'function') return
+        parent = parent.$parent
       }
     },
     $_unbindDialogShortcuts() {

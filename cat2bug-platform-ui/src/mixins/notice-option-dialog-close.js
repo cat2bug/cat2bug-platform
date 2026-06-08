@@ -25,6 +25,7 @@ export default {
       )
     },
     isToolDialogCloseDirty() {
+      if (this.loading) return false
       if (!this.toolDialogCloseBaseline) return false
       return this.serializeNoticeOptionCloseSnapshot(
         this.getNoticeOptionCloseSnapshot()

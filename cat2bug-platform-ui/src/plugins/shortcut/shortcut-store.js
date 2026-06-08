@@ -4,6 +4,28 @@
  */
 import Vue from 'vue'
 import { STORAGE_KEY, DEFAULT_LEADERS, normalizeKey } from './keymap'
+import { isReservedForScope, isReservedSymbol } from './reserved-keys'
+
+/** @param {string} letter @param {'page'|'field'|'settings'|'row'} [scope='settings'] */
+export function isBindingLetterAllowed(letter, scope = 'settings') {
+  const norm = normalizeKey(letter)
+  if (!norm) return true
+  return !isReservedForScope(norm, scope)
+}
+
+export function validateOverride(bindingId, letter, defaultLetter) {
+  if (isReservedSymbol(letter)) {
+    return { ok: false, reason: 'reserved' }
+  }
+  const norm = normalizeKey(letter)
+  if (!norm || norm === normalizeKey(defaultLetter)) {
+    return { ok: true }
+  }
+  if (isReservedForScope(norm, 'settings')) {
+    return { ok: false, reason: 'reserved' }
+  }
+  return { ok: true }
+}
 
 function load() {
   try {
@@ -127,6 +149,8 @@ export const shortcutStore = {
 
   /** 设置用户覆盖；传入与默认相同的值或空则视为清除覆盖 */
   setOverride(bindingId, letter, defaultLetter) {
+    const validation = validateOverride(bindingId, letter, defaultLetter)
+    if (!validation.ok) return validation
     const norm = normalizeKey(letter)
     if (!norm || norm === normalizeKey(defaultLetter)) {
       Vue.delete(state.overrides, bindingId)
@@ -134,6 +158,7 @@ export const shortcutStore = {
       Vue.set(state.overrides, bindingId, norm)
     }
     persist()
+    return { ok: true }
   },
 
   resetBinding(bindingId) {

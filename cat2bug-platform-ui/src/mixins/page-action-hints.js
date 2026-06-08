@@ -1,8 +1,14 @@
 import { isNativeFilePickerOpen } from '@/utils/native-file-picker'
 import { hasBlockingUiLayer } from '@/plugins/shortcut/service'
+import { findTopFormDrawerVm } from '@/utils/defect-drawer-shortcuts'
 import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
 import { normalizeKey } from '@/plugins/shortcut/keymap'
-import { getElementTextRect } from '@/utils/defect-row-kbd-hints'
+import {
+  getElementTextRect,
+  PAGE_KBD_OVERLAY_ID,
+  resolvePageActionLetter
+} from '@/utils/defect-row-kbd-hints'
+import { PAGE_ACTION_RESERVED } from '@/plugins/shortcut/reserved-keys'
 
 /**
  * 列表/页面级快捷键提示：按住 Cmd/Ctrl 在工具栏控件上显示字母徽标，再按字母触发动作。
@@ -12,9 +18,7 @@ import { getElementTextRect } from '@/utils/defect-row-kbd-hints'
  *   { key?, letter, badgeSelector, floatOffset?: { dx, dy }, run, visible? }
  */
 
-const OVERLAY_ID = 'cat2bug-page-kbd-overlay'
-/** A/C/V/X/Z 系统编辑；T/M/N/Q 浏览器或 macOS 保留（新标签 / 新窗口 / 最小化 / 退出） */
-const RESERVED_LETTERS = new Set(['A', 'C', 'M', 'N', 'Q', 'T', 'V', 'X', 'Z'])
+const OVERLAY_ID = PAGE_KBD_OVERLAY_ID
 
 /** 跨路由切换时追踪 Cmd/Ctrl 是否仍按住（避免监听器卸载间隙丢失 keyup） */
 let pageActionGlobalMetaHeld = false
@@ -49,6 +53,10 @@ function isShiftKeyEvent(e) {
 
 function isVisibleEl(el) {
   return !!(el && el.offsetParent !== null)
+}
+
+function shouldDeferPageActionShortcuts() {
+  return hasBlockingUiLayer() || !!findTopFormDrawerVm()
 }
 
 function isElementInViewport(el, minPx = 4) {
@@ -215,7 +223,7 @@ export default {
     $_armPageActionModifierHints() {
       if (!this.isPageActionHintsEnabled()) return
       if (!this.$_isPageActionHostReady()) return
-      if (hasBlockingUiLayer()) {
+      if (shouldDeferPageActionShortcuts()) {
         this.$_hidePageActionHints()
         return
       }
@@ -328,28 +336,27 @@ export default {
         }
       }
       if (!(e.metaKey || e.ctrlKey) || e.altKey || e.shiftKey) return
-      if (hasBlockingUiLayer()) return
-      if (!this.$_pageActionHintMap) {
-        this.$_preparePageActionHints()
-      }
-      const k = e.key
-      if (k && k.length === 1) {
-        const letter = /^\d$/.test(k) ? k : k.toUpperCase()
-        if (RESERVED_LETTERS.has(letter)) return
-        if (this.$_pageActionHintMap && this.$_pageActionHintMap[letter]) {
-          e.preventDefault()
-          e.stopPropagation()
-          const target = this.$_pageActionHintMap[letter]
-          this.$_hidePageActionHintBadges()
-          if (target && typeof target.run === 'function') {
-            target.run()
-          }
-          this.$nextTick(() => {
-            if (this.$_pageActionModifierHeld && (e.metaKey || e.ctrlKey)) {
-              this.$_revealPageActionBadges()
-            }
-          })
+      if (shouldDeferPageActionShortcuts()) return
+      this.$_preparePageActionHints()
+      const letter = resolvePageActionLetter(e)
+      if (!letter) return
+      if (PAGE_ACTION_RESERVED.has(letter)) return
+      if (this.$_pageActionHintMap && this.$_pageActionHintMap[letter]) {
+        e.preventDefault()
+        e.stopPropagation()
+        if (/^\d$/.test(letter) && typeof e.stopImmediatePropagation === 'function') {
+          e.stopImmediatePropagation()
         }
+        const target = this.$_pageActionHintMap[letter]
+        this.$_hidePageActionHintBadges()
+        if (target && typeof target.run === 'function') {
+          target.run()
+        }
+        this.$nextTick(() => {
+          if (this.$_pageActionModifierHeld && (e.metaKey || e.ctrlKey)) {
+            this.$_revealPageActionBadges()
+          }
+        })
       }
     },
     $_pageActionHintKeyup(e) {
@@ -380,12 +387,17 @@ export default {
         if (typeof item.visible === 'function' && !item.visible()) return
         const letter = normalizeKey(item.letter)
         if (!letter || map[letter]) return
-        if (RESERVED_LETTERS.has(letter)) return
+        if (PAGE_ACTION_RESERVED.has(letter)) return
         if (typeof item.run !== 'function') return
         map[letter] = { run: item.run }
         if (item.key) keyLetters[item.key] = letter
-        if (!item.badgeSelector) return
-        const anchor = container.querySelector(item.badgeSelector)
+        let anchor = null
+        if (typeof item.resolveAnchor === 'function') {
+          anchor = item.resolveAnchor(this)
+        }
+        if (!anchor && item.badgeSelector) {
+          anchor = container.querySelector(item.badgeSelector)
+        }
         if (!anchor) return
         if (!item.skipViewportCheck && !isElementInViewport(anchor)) return
         pending.push({
@@ -403,7 +415,7 @@ export default {
         if (!item || !item.anchor || typeof item.run !== 'function') return
         const letter = normalizeKey(item.letter)
         if (!letter || map[letter]) return
-        if (RESERVED_LETTERS.has(letter)) return
+        if (PAGE_ACTION_RESERVED.has(letter)) return
         if (!item.skipViewportCheck && !isElementInViewport(item.anchor)) return
         map[letter] = { run: item.run }
         if (item.key) keyLetters[item.key] = letter

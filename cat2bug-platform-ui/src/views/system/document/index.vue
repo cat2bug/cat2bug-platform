@@ -1,9 +1,9 @@
 <template>
-  <div class="app-container case-body document-page document-list-layout project-list-page-host">
+  <div class="app-container case-body document-page document-list-layout project-list-page-host" ref="documentMain">
     <project-label class="document-project-label" />
     <div ref="documentTools" class="document-tools" :class="{ 'wrapped-tools': documentToolsWrapped }">
-      <el-form class="left" :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="120px">
-        <el-form-item label="" prop="docName">
+      <el-form class="left" :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="120px" :class="{ 'list-query-keyboard-nav': listQueryNavActive }">
+        <el-form-item label="" prop="docName" class="document-hint-query list-query-nav-item" data-query-key="docName">
           <el-input
             v-model="queryParams.docName"
             :placeholder="$t('doc.please-enter-name')"
@@ -33,6 +33,7 @@
             <el-button style="padding: 9px;" plain slot="reference" icon="el-icon-s-fold" size="small"></el-button>
           </el-popover>
           <el-button
+            class="document-hint-create-folder"
             type="primary"
             plain
             icon="el-icon-plus"
@@ -41,6 +42,7 @@
             v-hasPermi="['system:document:add']"
           >{{ $t('doc.create-folder') }}</el-button>
           <el-button
+            class="document-hint-create-file"
             type="primary"
             plain
             icon="el-icon-plus"
@@ -140,7 +142,7 @@
     </div>
 
     <!-- 添加或修改文档对话框 -->
-    <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
+    <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body :close-on-press-escape="false" :before-close="onToolDialogBeforeClose" @opened="onCreateDialogOpened">
       <el-form ref="form" :model="form" :rules="rules" label-width="100px">
         <el-form-item :label="fileFieldName" prop="docName">
           <el-input ref="docNameInput" v-model="form.docName" :placeholder="$t('doc.please-enter-name')" maxlength="255" />
@@ -153,14 +155,17 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">{{ $t('ok') }}</el-button>
-        <el-button @click="cancel">{{ $t('cancel') }}</el-button>
+        <el-button class="defect-kbd-hint-host" type="primary" @click="submitForm">
+          {{ $t('ok') }}
+          <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
+        </el-button>
+        <el-button @click="requestCloseToolDialog">{{ $t('cancel') }}</el-button>
       </div>
     </el-dialog>
 
     <!-- 移动文档对话框 -->
-    <el-dialog :title="$t('doc.move-to')" :visible.sync="moveDialogVisible" width="500px" append-to-body>
-      <el-form ref="form" :model="folderForm" :rules="rules" label-width="0px">
+    <el-dialog :title="$t('doc.move-to')" :visible.sync="moveDialogVisible" width="500px" append-to-body :close-on-press-escape="false" :before-close="onToolDialogBeforeClose" @opened="onMoveDialogOpened">
+      <el-form ref="moveForm" :model="folderForm" :rules="rules" label-width="0px">
         <el-form-item class="margin-bottom-0" label="" prop="docId">
           <el-tree
             lazy
@@ -177,8 +182,11 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" :disabled="!isClickFolder" @click="handleMoveFolder">{{ $t('ok') }}</el-button>
-        <el-button @click="cancelFolderDialog">{{ $t('cancel') }}</el-button>
+        <el-button class="defect-kbd-hint-host" type="primary" :disabled="!isClickFolder" @click="handleMoveFolder">
+          {{ $t('ok') }}
+          <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
+        </el-button>
+        <el-button @click="requestCloseToolDialog">{{ $t('cancel') }}</el-button>
       </div>
     </el-dialog>
   </div>
@@ -193,9 +201,17 @@ import { listDocument, getDocument, delDocument, addDocument, updateDocument } f
 import {strFormat} from "@/utils";
 import {toBase64} from "js-base64";
 import {checkPermi} from "@/utils/permission";
+import pageActionHints from '@/mixins/page-action-hints'
+import listQueryKeyboardNav from '@/mixins/list-query-keyboard-nav'
+import defectToolDialogKbd from '@/mixins/defect-tool-dialog-kbd'
+import { serializeToolDialogFormCloseState } from '@/utils/defect-tool-dialog-close-state'
+import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
+
+const DOCUMENT_KBD_SCOPE = 'document'
 
 export default {
   name: "Document",
+  mixins: [pageActionHints, listQueryKeyboardNav, defectToolDialogKbd],
   components: { ProjectLabel, Cat2BugAvatar, Cat2BugTable },
   data() {
     return {
@@ -268,6 +284,9 @@ export default {
     };
   },
   computed: {
+    $_formShortcutSurfaceVisible() {
+      return this.open === true || this.moveDialogVisible === true
+    },
     documentColumnPickerOptions() {
       const ordered = this.docPickerColumnList;
       if (ordered && ordered.length) {
@@ -302,6 +321,14 @@ export default {
       }
     }
   },
+  watch: {
+    open(val) {
+      this.$_syncFormShortcutBinding(!!val)
+    },
+    moveDialogVisible(val) {
+      this.$_syncFormShortcutBinding(!!val)
+    }
+  },
   created() {
     this.queryParams.orderByColumn = this.$cache.local.get('document_table_sort_column_key') || null
     this.queryParams.isAsc = this.$cache.local.get('document_table_sort_type_key') || null
@@ -315,14 +342,122 @@ export default {
     });
     window.addEventListener("resize", this.syncDocumentToolsWrapped);
     window.addEventListener("resize", this.syncDocumentTableBodyMaxHeight);
+    this.registerDocumentShortcuts();
+  },
+  activated() {
+    this.registerDocumentShortcuts();
+  },
+  deactivated() {
+    if (this.$shortcut) this.$shortcut.unregisterPage(DOCUMENT_KBD_SCOPE);
   },
   // 移除滚动条监听
   destroyed() {
     window.removeEventListener("resize", this.syncDocumentToolsWrapped);
     window.removeEventListener("resize", this.syncDocumentTableBodyMaxHeight);
     this.destroyDocumentListBodyResizeObserver();
+    if (this.$shortcut) this.$shortcut.unregisterPage(DOCUMENT_KBD_SCOPE);
+  },
+  beforeDestroy() {
+    if (this.$shortcut) this.$shortcut.unregisterPage(DOCUMENT_KBD_SCOPE);
   },
   methods: {
+    registerDocumentShortcuts() {
+      if (!this.$shortcut) return
+      this.$shortcut.registerPage(DOCUMENT_KBD_SCOPE, [
+        { key: 'query', defaultLetter: 'S', run: () => this.shortcutFocusQuery() },
+        { key: 'createFolder', defaultLetter: 'O', run: () => this.shortcutCreateFolder() },
+        { key: 'createFile', defaultLetter: 'I', run: () => this.shortcutCreateFile() },
+        { key: 'goUp', defaultLetter: 'U', run: () => this.shortcutGoUp() },
+        { key: 'prevPage', defaultLetter: 'B', run: () => this.shortcutChangePage(-1) },
+        { key: 'nextPage', defaultLetter: 'P', run: () => this.shortcutChangePage(1) }
+      ])
+    },
+    getPageActionHintContainer() {
+      return this.$refs.documentMain || this.$el
+    },
+    getPageActionHints() {
+      const L = (key, def) => shortcutStore.getLetter(`action.${DOCUMENT_KBD_SCOPE}.${key}`, def)
+      return [
+        {
+          key: 'query',
+          letter: L('query', 'S'),
+          badgeSelector: '.document-hint-query',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
+          run: () => this.shortcutFocusQuery()
+        },
+        {
+          key: 'createFolder',
+          letter: L('createFolder', 'O'),
+          badgeSelector: '.document-hint-create-folder',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2, dy: 5 },
+          run: () => this.shortcutCreateFolder(),
+          visible: () => checkPermi(['system:document:add'])
+        },
+        {
+          key: 'createFile',
+          letter: L('createFile', 'I'),
+          badgeSelector: '.document-hint-create-file',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2, dy: 5 },
+          run: () => this.shortcutCreateFile(),
+          visible: () => checkPermi(['system:document:add'])
+        },
+        {
+          key: 'goUp',
+          letter: L('goUp', 'U'),
+          badgeSelector: '.document-title .el-link',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
+          run: () => this.shortcutGoUp(),
+          visible: () => !!(this.currentFolder && this.currentFolder.docId > 0)
+        },
+        {
+          key: 'prevPage',
+          letter: L('prevPage', 'B'),
+          badgeSelector: '.document-table-pagination .btn-prev',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
+          run: () => this.shortcutChangePage(-1),
+          visible: () => this.total > 0
+        },
+        {
+          key: 'nextPage',
+          letter: L('nextPage', 'P'),
+          badgeSelector: '.document-table-pagination .btn-next',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
+          run: () => this.shortcutChangePage(1),
+          visible: () => this.total > 0
+        }
+      ]
+    },
+    shortcutFocusQuery() {
+      this.enterListQueryKeyboardNav()
+    },
+    getListQueryNavItems() {
+      return [{ key: 'docName' }]
+    },
+    getListQueryNavToolbarRef() {
+      return 'documentToolsRight'
+    },
+    shortcutCreateFolder() {
+      if (!checkPermi(['system:document:add'])) return
+      this.handleAddDir()
+    },
+    shortcutCreateFile() {
+      if (!checkPermi(['system:document:add'])) return
+      this.handleAddFile()
+    },
+    shortcutGoUp() {
+      if (!this.currentFolder || !this.currentFolder.docId) return
+      this.goFolder({ docId: this.currentFolder.docPid })
+    },
+    shortcutChangePage(delta) {
+      const root = this.getPageActionHintContainer()
+      if (!root || typeof root.querySelector !== 'function') return
+      const btn = root.querySelector(
+        delta < 0 ? '.document-table-pagination .btn-prev' : '.document-table-pagination .btn-next'
+      )
+      if (btn && !btn.classList.contains('disabled') && typeof btn.click === 'function') {
+        btn.click()
+      }
+    },
     initDocumentListBodyResizeObserver() {
       if (typeof ResizeObserver === 'undefined') return;
       this.destroyDocumentListBodyResizeObserver();
@@ -423,8 +558,58 @@ export default {
     },
     /** 取消按钮 */
     cancel() {
-      this.open = false;
-      this.reset();
+      this.requestCloseToolDialog();
+    },
+    getActiveToolDialogForm() {
+      if (this.moveDialogVisible) return this.folderForm
+      return this.form
+    },
+    captureToolDialogCloseBaseline() {
+      this.toolDialogCloseBaseline = serializeToolDialogFormCloseState(this.getActiveToolDialogForm())
+    },
+    isToolDialogCloseDirty() {
+      if (!this.toolDialogCloseBaseline) return false
+      return serializeToolDialogFormCloseState(this.getActiveToolDialogForm()) !== this.toolDialogCloseBaseline
+    },
+    doCloseToolDialog() {
+      if (this.moveDialogVisible) {
+        this.moveDialogVisible = false
+        this.isClickFolder = false
+      } else {
+        this.open = false
+        if (typeof this.reset === 'function') this.reset()
+      }
+      this.toolDialogCloseBaseline = null
+    },
+    onCreateDialogOpened() {
+      this.$nextTick(() => {
+        requestAnimationFrame(() => {
+          this.captureToolDialogCloseBaseline()
+          this.$_focusToolDialogFirstField()
+        })
+      })
+    },
+    onMoveDialogOpened() {
+      this.$nextTick(() => {
+        requestAnimationFrame(() => {
+          this.captureToolDialogCloseBaseline()
+        })
+      })
+    },
+    shortcutSave() {
+      if (this.moveDialogVisible) {
+        if (this.isClickFolder) this.handleMoveFolder()
+      } else if (this.open) {
+        this.submitForm()
+      }
+    },
+    getFieldHintContainer() {
+      if (this.moveDialogVisible) {
+        const form = this.$refs.moveForm
+        return (form && form.$el) || this.$el
+      }
+      const form = this.$refs.form
+      return (form && form.$el) || this.$el
     },
     /** 表单重置 */
     reset() {
@@ -515,7 +700,7 @@ export default {
           if (this.form.docId != null) {
             updateDocument(this.form).then(response => {
               this.$modal.msgSuccess(this.$i18n.t('modify-success'));
-              this.open = false;
+              this.doCloseToolDialog();
               this.getList();
             });
           } else {
@@ -524,7 +709,7 @@ export default {
             }
             addDocument(this.form).then(response => {
               this.$modal.msgSuccess(this.$i18n.t('create-success'));
-              this.open = false;
+              this.doCloseToolDialog();
               this.getList();
             });
           }
@@ -603,7 +788,7 @@ export default {
     },
     /** 取消移动对话框 */
     cancelFolderDialog() {
-      this.moveDialogVisible = false;
+      this.requestCloseToolDialog();
     },
     /** 移动文件夹 */
     handleMoveFolder() {
@@ -613,8 +798,7 @@ export default {
       }
       updateDocument(this.folderForm).then(response => {
         this.$modal.msgSuccess(strFormat(this.$i18n.t('doc.move-success'),));
-        this.moveDialogVisible = false;
-        this.isClickFolder = false;
+        this.doCloseToolDialog();
         this.getList();
       });
     },
@@ -803,5 +987,10 @@ export default {
 }
 .document-table-pagination-band {
   flex-shrink: 0;
+}
+.document-hint-create-folder,
+.document-hint-create-file {
+  position: relative;
+  overflow: visible !important;
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container">
+  <div class="app-container project-option-page" ref="optionMain">
     <project-label />
     <el-row :gutter="20">
       <component :is="m.name" v-for="(m, index) in itemList" :key="index" v-model="project"></component>
@@ -10,6 +10,12 @@
 <script>
 import {getProject} from "@/api/system/project";
 import ProjectLabel from "@/components/Project/ProjectLabel";
+import pageActionHints from '@/mixins/page-action-hints'
+import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
+import {
+  buildOptionCardActionHints,
+  buildOptionCardRegisterActions
+} from '@/utils/option-card-kbd-hints'
 
 const path = require('path');
 const files = require.context('./item/', true, /\.vue$/);
@@ -23,8 +29,12 @@ files.keys().forEach(key=>{
   });
   modules[name] = files(key).default||files(key)
 });
+
+const PROJECT_OPTION_KBD_SCOPE = 'project-option'
+
 export default {
   name: "ProjectOption",
+  mixins: [pageActionHints],
   components: modules,
   data() {
     return {
@@ -34,17 +44,51 @@ export default {
   },
   mounted() {
     this.getProject();
+    this.registerProjectOptionShortcuts();
   },
-  // 移除滚动条监听
-  destroyed() {
+  activated() {
+    this.registerProjectOptionShortcuts();
+  },
+  deactivated() {
+    if (this.$shortcut) this.$shortcut.unregisterPage(PROJECT_OPTION_KBD_SCOPE);
+  },
+  beforeDestroy() {
+    if (this.$shortcut) this.$shortcut.unregisterPage(PROJECT_OPTION_KBD_SCOPE);
   },
   methods: {
+    registerProjectOptionShortcuts() {
+      if (!this.$shortcut) return
+      const container = this.getPageActionHintContainer()
+      const L = (key, def) => shortcutStore.getLetter(`action.${PROJECT_OPTION_KBD_SCOPE}.${key}`, def)
+      const actions = buildOptionCardRegisterActions({
+        container,
+        letterForKey: L
+      })
+      this.$shortcut.registerPage(PROJECT_OPTION_KBD_SCOPE, actions)
+    },
+    getPageActionHintContainer() {
+      return this.$refs.optionMain || this.$el
+    },
+    getPageActionHints() {
+      return []
+    },
+    getPageDynamicActionHints(ctx) {
+      const used = (ctx && ctx.usedLetters) ? new Set(ctx.usedLetters) : new Set()
+      const container = this.getPageActionHintContainer()
+      const L = (key, def) => shortcutStore.getLetter(`action.${PROJECT_OPTION_KBD_SCOPE}.${key}`, def)
+      return buildOptionCardActionHints({
+        container,
+        letterForKey: L,
+        usedLetters: used
+      })
+    },
     getProjectId() {
       return parseInt(this.$store.state.user.config.currentProjectId);
     },
     getProject() {
       getProject(this.getProjectId()).then(res=>{
         this.project = res.data;
+        this.$nextTick(() => this.registerProjectOptionShortcuts())
       });
     },
   }
@@ -109,5 +153,9 @@ export default {
       margin-left: 20px;
       margin-bottom: 15px;
     }
+  }
+  ::v-deep .el-card__header {
+    position: relative;
+    overflow: visible !important;
   }
 </style>

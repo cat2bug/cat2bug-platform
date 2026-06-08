@@ -93,6 +93,16 @@ $cat2bug-radius: var(--cat2bug-border-radius, 4px);
   box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, #1890ff) !important;
 }
 
+@mixin cat2bug-danger-focus-ring {
+  outline: none !important;
+  box-shadow: 0 0 0 1px var(--cat2bug-danger-focus-color, #f56c6c) !important;
+}
+
+@mixin cat2bug-success-focus-ring {
+  outline: none !important;
+  box-shadow: 0 0 0 1px var(--cat2bug-success-focus-color, #67c23a) !important;
+}
+
 @mixin cat2bug-unified-focus-border {
   border-color: var(--border-color-base, #dcdfe6) !important;
 }
@@ -106,6 +116,7 @@ $cat2bug-radius: var(--cat2bug-border-radius, 4px);
 .el-date-editor.el-input:not(.is-disabled) .el-input__inner:focus,
 .el-date-editor.el-input__inner:focus,
 .el-range-editor.el-input__inner:focus,
+.el-range-editor.el-input__inner:focus-within,
 .el-range-editor.is-active {
   @include cat2bug-unified-focus-border;
   @include cat2bug-unified-focus-ring;
@@ -129,9 +140,90 @@ $cat2bug-radius: var(--cat2bug-border-radius, 4px);
   outline: none !important;
 }
 
+/* 附件/文件上传外框（Tab 停靠点）：外圈焦点环，避免与内部 primary 按钮同色 1px 环难以辨认 */
+.cat2bug-upload-focus-target.upload-file-focus-target,
+.cat2bug-upload-focus-target.case-import-upload-focus-target {
+  overflow: visible;
+}
+
+.cat2bug-upload-focus-target.upload-file-focus-target:focus,
+.cat2bug-upload-focus-target.upload-file-focus-target:focus-within,
+.cat2bug-upload-focus-target.case-import-upload-focus-target:focus,
+.cat2bug-upload-focus-target.case-import-upload-focus-target:focus-within {
+  border-color: transparent !important;
+  outline: none !important;
+  padding: 1px 3px;
+  margin: -1px -3px;
+  border-radius: var(--cat2bug-border-radius, 4px);
+  box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, #1890ff) !important;
+}
+
+html.dark .cat2bug-upload-focus-target.upload-file-focus-target:focus,
+html.dark .cat2bug-upload-focus-target.upload-file-focus-target:focus-within,
+html.dark .cat2bug-upload-focus-target.case-import-upload-focus-target:focus,
+html.dark .cat2bug-upload-focus-target.case-import-upload-focus-target:focus-within {
+  box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, #ffce3a) !important;
+}
+
+.cat2bug-upload-focus-target.upload-file-focus-target .el-button:focus,
+.cat2bug-upload-focus-target.upload-file-focus-target:focus-within .el-button,
+.cat2bug-upload-focus-target.case-import-upload-focus-target .el-button:focus,
+.cat2bug-upload-focus-target.case-import-upload-focus-target:focus-within .el-button {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* 附件上传：↓ 进入已上传列表时，外框环让位给当前文件行 */
+.upload-file.is-keyboard-list-mode .cat2bug-upload-focus-target.upload-file-focus-target:focus,
+.upload-file.is-keyboard-list-mode .cat2bug-upload-focus-target.upload-file-focus-target:focus-within,
+.case-import-upload-focus-target.is-keyboard-list-mode:focus,
+.case-import-upload-focus-target.is-keyboard-list-mode:focus-within {
+  box-shadow: none !important;
+}
+
+/* 键盘漫游文件列表：外框左右各 5px 间距，内容与边框内缘再留 5px */
+.upload-file.is-keyboard-list-mode .upload-file-list .el-upload-list__item,
+.case-import-upload-focus-target.is-keyboard-list-mode .el-upload-list__item {
+  margin-left: 5px;
+  margin-right: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+.upload-file-list .el-upload-list__item.is-keyboard-focus,
+.case-import-upload-focus-target.is-keyboard-list-mode .el-upload-list__item.is-keyboard-focus {
+  position: relative;
+  outline: none !important;
+  z-index: 1;
+  border-radius: var(--cat2bug-border-radius, 4px) !important;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, #1890ff);
+}
+
+html.dark .upload-file-list .el-upload-list__item.is-keyboard-focus,
+html.dark .case-import-upload-focus-target.is-keyboard-list-mode .el-upload-list__item.is-keyboard-focus {
+  box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, #ffce3a);
+}
+
+/* 图片上传：键盘高亮仅用虚线边框（覆盖暗色主题 el-button border !important） */
+.component-upload-image-focus-target .update-button.is-keyboard-focus,
+.component-upload-image-focus-target .el-upload-list--picture-card .el-upload-list__item.is-keyboard-focus {
+  outline: none !important;
+  border: 1px dashed var(--cat2bug-field-focus-color, #1890ff) !important;
+}
+
+html.dark .component-upload-image-focus-target .update-button.is-keyboard-focus,
+html.dark .component-upload-image-focus-target .el-upload-list--picture-card .el-upload-list__item.is-keyboard-focus {
+  border: 1px dashed var(--cat2bug-field-focus-color, #ffce3a) !important;
+}
+
 .el-button-group:focus-within {
   @include cat2bug-unified-focus-ring;
   border-radius: $cat2bug-radius;
+}
+
+.el-button-group:focus-within:has(> .el-button--success) {
+  @include cat2bug-success-focus-ring;
 }
 
 .el-button-group:focus-within > .el-button,
@@ -152,6 +244,82 @@ $cat2bug-radius: var(--cat2bug-border-radius, 4px);
 
 .el-button-group:focus-within > .el-button.el-dropdown__caret-button {
   border-left: none !important;
+}
+
+/* plain / 工具栏图标按钮：:focus 仅一层环，border 色不变，避免双边框 */
+.el-button.is-plain:focus,
+.el-button.is-plain.list-query-toolbar-nav-focused,
+.el-button.is-disabled.list-query-toolbar-nav-focused {
+  outline: none !important;
+  @include cat2bug-unified-focus-ring;
+}
+
+.el-button.is-plain.el-button--default:focus,
+.el-button.is-plain:not(.el-button--primary):not(.el-button--success):not(.el-button--warning):not(.el-button--danger):not(.el-button--info):focus,
+.el-button.is-plain.el-button--default.list-query-toolbar-nav-focused,
+.el-button.is-plain:not(.el-button--primary):not(.el-button--success):not(.el-button--warning):not(.el-button--danger):not(.el-button--info).list-query-toolbar-nav-focused {
+  @include cat2bug-unified-focus-border;
+  background-color: #fff !important;
+  color: #606266 !important;
+}
+
+.el-button--primary.is-plain:focus,
+.el-button--primary.is-plain.list-query-toolbar-nav-focused {
+  border-color: #b3d8ff !important;
+  background-color: #ecf5ff !important;
+  color: #409eff !important;
+}
+
+.el-button--success.is-plain:focus,
+.el-button--success.is-plain.list-query-toolbar-nav-focused {
+  border-color: #c2e7b0 !important;
+  background-color: #f0f9eb !important;
+  color: #67c23a !important;
+  @include cat2bug-success-focus-ring;
+}
+
+.el-button--success:not(.is-plain):not(.el-button--text):not(.is-circle):focus,
+.el-button--success:not(.is-plain):not(.el-button--text):not(.is-circle).list-query-toolbar-nav-focused {
+  @include cat2bug-success-focus-ring;
+}
+
+.el-button--danger.is-plain:focus,
+.el-button--danger.is-plain.list-query-toolbar-nav-focused,
+.el-button--danger.is-plain.is-disabled.list-query-toolbar-nav-focused {
+  border-color: #fbc4c4 !important;
+  background-color: #fef0f0 !important;
+  color: #f56c6c !important;
+  @include cat2bug-danger-focus-ring;
+}
+
+.el-button--danger:not(.is-plain):not(.el-button--text):not(.is-circle):focus,
+.el-button--danger:not(.is-plain):not(.el-button--text):not(.is-circle).list-query-toolbar-nav-focused {
+  @include cat2bug-danger-focus-ring;
+}
+
+.el-button--warning.is-plain:focus,
+.el-button--warning.is-plain.list-query-toolbar-nav-focused {
+  border-color: #f5dab1 !important;
+  background-color: #fdf6ec !important;
+  color: #e6a23c !important;
+}
+
+.el-button--info.is-plain:focus,
+.el-button--info.is-plain.list-query-toolbar-nav-focused {
+  border-color: #d3d4d6 !important;
+  background-color: #f4f4f5 !important;
+  color: #909399 !important;
+}
+
+.el-button:not(.is-plain):not(.el-button--text):not(.is-circle):focus,
+.el-button:not(.is-plain):not(.el-button--text):not(.is-circle).list-query-toolbar-nav-focused {
+  outline: none !important;
+  @include cat2bug-unified-focus-ring;
+}
+
+.el-button:not(.is-plain):not(.el-button--text):not(.is-circle):focus,
+.el-button:not(.is-plain):not(.el-button--text):not(.is-circle).list-query-toolbar-nav-focused {
+  @include cat2bug-unified-focus-border;
 }
 
 .el-button:not(.is-circle):not(.el-button--text) {
@@ -585,6 +753,39 @@ img.cat2bug-image-error__img {
   }
 }
 
+/* 报告查看抽屉工具栏：32px（与缺陷详情右上角按钮 / 工具栏控件一致） */
+.report-drawer-accent .report-edit-tools {
+  display: inline-flex;
+  align-items: center;
+  column-gap: var(--cat2bug-operate-tools-gap, 10px);
+
+  .report-tools,
+  .report-view-export {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .el-button:not(.el-button--text):not(.is-circle) {
+    height: var(--cat2bug-toolbar-control-height, 32px) !important;
+    min-height: var(--cat2bug-toolbar-control-height, 32px) !important;
+    max-height: var(--cat2bug-toolbar-control-height, 32px) !important;
+    line-height: 1 !important;
+    padding-top: 9px !important;
+    padding-bottom: 9px !important;
+    padding-left: 15px !important;
+    padding-right: 15px !important;
+    box-sizing: border-box !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .report-view-export > .el-button.el-button--mini {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+}
+
 /* 缺陷页查询条：控件顶对齐，避免切换按钮与下拉/ input baseline 不一致 */
 .defect-page .defect-view-toolbar,
 .defect-page .defect-tools-search,
@@ -661,8 +862,8 @@ img.cat2bug-image-error__img {
   white-space: nowrap;
   column-gap: var(--cat2bug-operate-tools-gap, 10px);
   row-gap: var(--cat2bug-operate-tools-row-gap, 0);
-  width: max-content;
-  max-width: none;
+  width: auto;
+  max-width: 100%;
 
   > * {
     margin: 0 !important;
@@ -772,6 +973,17 @@ td.cat2bug-operate-column [role='tooltip'][aria-hidden='true'] {
   z-index: 31 !important;
 }
 
+/* WebKit/Safari：固定列头/体表为独立 table，须 table-layout:fixed 才能与 col 宽一致 */
+.cat2-bug-table-wrap .el-table__fixed-right table {
+  table-layout: fixed;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.cat2-bug-table-wrap .el-table__fixed-right .el-table__fixed-header-wrapper {
+  z-index: 32;
+}
+
 .cat2-bug-table-wrap .el-table__fixed-right-patch {
   width: auto !important;
   max-width: 20px !important;
@@ -816,16 +1028,22 @@ td.cat2bug-operate-column [role='tooltip'][aria-hidden='true'] {
 .el-table th.small-padding:not(.fixed-width) .cell,
 .el-table th.cat2bug-operate-column .cell,
 .cat2-bug-table-wrap th.cat2bug-operate-column .cell {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
   width: 100%;
   max-width: 100%;
   min-width: 0;
+  min-height: 0;
+  line-height: normal;
   white-space: nowrap;
   overflow: visible !important;
   text-overflow: clip;
   word-break: normal;
   color: var(--table-header-color, inherit);
   box-sizing: border-box;
+  padding-left: var(--cat2bug-operate-col-padding-x, 20px);
+  padding-right: var(--cat2bug-operate-col-padding-x, 20px);
 }
 
 .el-table td.small-padding.fixed-width .cell,
@@ -856,16 +1074,17 @@ td.cat2bug-operate-column [role='tooltip'][aria-hidden='true'] {
 
 .el-table td.cat2bug-operate-column .cell,
 .cat2-bug-table-wrap td.cat2bug-operate-column .cell {
-  display: flex;
+  display: inline-flex;
   flex-wrap: nowrap;
   align-items: center;
+  justify-content: flex-start;
   white-space: nowrap;
   word-break: normal;
   width: 100%;
   max-width: 100%;
+  box-sizing: border-box;
   column-gap: var(--cat2bug-operate-tools-gap, 10px);
   row-gap: var(--cat2bug-operate-tools-row-gap, 0);
-  box-sizing: border-box;
   overflow: hidden;
 
   > .el-button,
