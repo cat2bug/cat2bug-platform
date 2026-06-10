@@ -1,6 +1,7 @@
 package com.cat2bug.system.mapper;
 
 import java.util.List;
+import org.apache.ibatis.annotations.Param;
 import com.cat2bug.system.domain.SysComment;
 
 /**
@@ -26,6 +27,16 @@ public interface SysCommentMapper
      * @return 评论集合
      */
     public List<SysComment> selectSysCommentList(SysComment sysComment);
+
+    /**
+     * 按模块类型与关联 ID 批量查询评论
+     *
+     * @param moduleType 模块类型
+     * @param correlationIds 关联 ID 集合
+     * @return 评论集合
+     */
+    public List<SysComment> selectSysCommentListByModuleAndCorrelationIds(@Param("moduleType") String moduleType,
+            @Param("correlationIds") List<Long> correlationIds);
 
     /**
      * 新增评论

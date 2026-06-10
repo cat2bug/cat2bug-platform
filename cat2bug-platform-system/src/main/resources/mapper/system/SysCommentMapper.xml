@@ -39,6 +39,16 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         </where>
         ORDER BY c.create_time DESC
     </select>
+
+    <select id="selectSysCommentListByModuleAndCorrelationIds" resultMap="SysCommentResult">
+        <include refid="selectSysCommentVo"/>
+        where c.module_type = #{moduleType}
+        and c.correlation_id in
+        <foreach item="correlationId" collection="correlationIds" open="(" separator="," close=")">
+            #{correlationId}
+        </foreach>
+        ORDER BY c.create_time DESC
+    </select>
     
     <select id="selectSysCommentByCommentId" parameterType="Long" resultMap="SysCommentResult">
         <include refid="selectSysCommentVo"/>

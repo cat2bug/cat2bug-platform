@@ -13,7 +13,6 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="createTime"    column="create_time"    />
         <result property="defectLogType"    column="defect_log_type"   typeHandler="com.cat2bug.common.core.domain.handle.SysDefectLogStateEnumTypeHandle"  />
         <result property="receiveBy"    column="receive_by"   typeHandler="com.cat2bug.common.core.domain.handle.LongArrayTypeHandler"   />
-        <result property="receiveByList"    column="receive_by_list"   typeHandler="com.cat2bug.system.domain.handle.SysUserArrayTypeHandler"   />
         <result property="annexUrls"    column="annex_urls"    />
         <result property="defectId"    column="defect_id"    />
     </resultMap>
@@ -28,31 +27,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             dl.create_time,
             dl.defect_log_type,
             dl.receive_by,
-            un.user_infos AS receive_by_list,
             dl.annex_urls,
             dl.defect_id
         FROM
             sys_defect_log dl
-                LEFT JOIN sys_user u1 ON u1.user_id=dl.create_by
-                LEFT JOIN (
-                SELECT
-                    dl1.defect_log_id,
-                    CONCAT('[', GROUP_CONCAT( CONCAT('{"userId":',
-                         CASE WHEN u.user_id IS NOT NULL THEN user_id ELSE 0 END,
-                         ',"nickName":',
-                         CASE WHEN u.nick_name IS NOT NULL THEN CONCAT('"',u.nick_name,'"') ELSE 'null' END,
-                         ',"userName":',
-                         CASE WHEN u.user_name IS NOT NULL THEN CONCAT('"',u.user_name,'"') ELSE 'null' END,
-                         ',"avatar":',
-                         CASE WHEN u.avatar IS NOT NULL THEN CONCAT('"',u.avatar,'"') ELSE 'null' END,
-
-                         '}')), ']') AS user_infos
-                FROM
-                    sys_defect_log dl1
-                        LEFT JOIN sys_user u ON dl1.receive_by REGEXP CONCAT('\b',u.user_id,'\b') OR dl1.receive_by REGEXP CONCAT('\\b',u.user_id,'\\b')
-                GROUP BY
-                    dl1.defect_log_id
-            ) un ON un.defect_log_id = dl.defect_log_id
+                LEFT JOIN sys_user u1 ON u1.user_id = dl.create_by
     </sql>
 
     <select id="selectSysDefectLogList" parameterType="SysDefectLog" resultMap="SysDefectLogResult">
