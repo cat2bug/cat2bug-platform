@@ -1,5 +1,5 @@
 <template>
-  <div class="team-select-root layout-nav-hint-anchor" data-layout-nav="team">
+  <div class="team-select-root layout-nav-hint-anchor" :class="{ 'team-select-root--collapse': collapse }" data-layout-nav="team">
     <el-select
       class="team-select"
       :collapse="collapse"
@@ -190,8 +190,11 @@ export default {
     .el-input__prefix {
       left: 6px;
     }
-    .el-input__suffix {
-      display: none;
+  }
+
+  .team-select-root--collapse {
+    ::v-deep .team-select .el-input__suffix {
+      display: none !important;
     }
   }
 
