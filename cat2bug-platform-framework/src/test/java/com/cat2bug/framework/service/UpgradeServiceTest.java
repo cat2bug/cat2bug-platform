@@ -45,7 +45,7 @@ class UpgradeServiceTest
         upgradeProperties = new UpgradeProperties();
         installProperties = new InstallProperties();
         cat2BugConfig = new Cat2BugConfig();
-        cat2BugConfig.setVersion("0.6.2");
+        cat2BugConfig.setVersion("1.0.0");
         ReflectionTestUtils.setField(upgradeService, "upgradeProperties", upgradeProperties);
         ReflectionTestUtils.setField(upgradeService, "installProperties", installProperties);
         ReflectionTestUtils.setField(upgradeService, "cat2BugConfig", cat2BugConfig);
@@ -242,7 +242,7 @@ class UpgradeServiceTest
         @SuppressWarnings("unchecked")
         Map<String, Object> root = new Yaml().load(Files.readString(stateFile));
         assertEquals(UpgradeSupport.STATE_PENDING, nested(root, "cat2bug", "upgrade", "state"));
-        assertEquals("0.6.2", nested(root, "cat2bug", "upgrade", "targetVersion"));
+        assertEquals("1.0.0", nested(root, "cat2bug", "upgrade", "targetVersion"));
     }
 
     @Test
@@ -277,7 +277,7 @@ class UpgradeServiceTest
         cat2bug.put("install", install);
         Map<String, Object> upgrade = new LinkedHashMap<>();
         upgrade.put("state", UpgradeSupport.STATE_COMPLETED);
-        upgrade.put("completedVersion", "0.6.2");
+        upgrade.put("completedVersion", "1.0.0");
         cat2bug.put("upgrade", upgrade);
         root.put("cat2bug", cat2bug);
         InstallConfigSupport.writeInstallConfig(installFile, root);

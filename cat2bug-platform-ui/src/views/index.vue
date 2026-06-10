@@ -162,6 +162,13 @@
             <span>{{$t('update-log')}}</span>
           </div>
           <el-collapse accordion>
+            <el-collapse-item title="v1.0.0 - 2026-06-10">
+              <ol>
+                <li>正式发布 1.0.0：前后端版本号统一，快捷键体系与系统文档完善</li>
+                <li>缺陷 Excel 暗色主题与 Safari 行号列滚动体验优化</li>
+                <li>安装向导补充 H2 旧版数据库文件格式不兼容提示</li>
+              </ol>
+            </el-collapse-item>
             <el-collapse-item title="v0.6.2 - 2026-05-25">
               <ol>
                 <li>添加全新的图形化首次安装/升级向导，简化系统部署和数据库/缓存/账号初始化配置</li>

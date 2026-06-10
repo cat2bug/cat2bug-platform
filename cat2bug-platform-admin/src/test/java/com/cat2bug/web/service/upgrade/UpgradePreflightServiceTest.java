@@ -82,8 +82,8 @@ class UpgradePreflightServiceTest
         InstallConfigSupport.writeInstallConfig(installFile, root);
 
         when(upgradeService.getStatus()).thenReturn(Map.of(
-                "currentVersion", "0.6.2",
-                "targetVersion", "0.6.2",
+                "currentVersion", "1.0.0",
+                "targetVersion", "1.0.0",
                 "pendingMigrations", List.of()));
 
         Map<String, Object> preflight = upgradePreflightService.buildPreflight();
@@ -134,8 +134,8 @@ class UpgradePreflightServiceTest
 
         InstallConfigSupport.writeInstallConfig(installFile, root);
         when(upgradeService.getStatus()).thenReturn(Map.of(
-                "currentVersion", "0.6.2",
-                "targetVersion", "0.6.2",
+                "currentVersion", "1.0.0",
+                "targetVersion", "1.0.0",
                 "pendingMigrations", List.of()));
 
         Map<String, Object> preflight = upgradePreflightService.buildPreflight();
@@ -168,8 +168,8 @@ class UpgradePreflightServiceTest
 
         InstallConfigSupport.writeInstallConfig(installFile, root);
         when(upgradeService.getStatus()).thenReturn(Map.of(
-                "currentVersion", "0.6.2",
-                "targetVersion", "0.6.2",
+                "currentVersion", "1.0.0",
+                "targetVersion", "1.0.0",
                 "pendingMigrations", List.of()));
 
         Map<String, Object> preflight = upgradePreflightService.buildPreflight();

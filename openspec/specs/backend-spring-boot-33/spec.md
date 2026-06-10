@@ -12,7 +12,7 @@
 #### Scenario: 运行环境
 
 - **WHEN** 用户部署官方构建的 `cat2bug-admin` JAR
-- **THEN** 必须使用 JDK 17 或更高版本启动；文档中 MUST 说明此要求且 Maven 坐标版本仍为 **0.6.2**
+- **THEN** 必须使用 JDK 17 或更高版本启动；文档中 MUST 说明此要求且 Maven 坐标版本为 **1.0.0**
 
 ### Requirement: Jakarta 命名空间迁移
 
