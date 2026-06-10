@@ -7,42 +7,47 @@
     <el-row :gutter="20">
       <!--用户数据-->
       <el-col :span="24">
-        <el-row :gutter="10" class="mb8" type="flex" justify="space-between">
-          <el-col :span="8">
-            <el-input
-              class="team-member-hint-query"
-              v-model="queryParams.params.search"
-              prefix-icon="el-icon-search"
-              :placeholder="$t('team.search-placeholder')"
-              clearable
-              style="width: 320px"
-              size="small"
-              @input="memberSearchHandle"
-            />
-          </el-col>
-          <el-col :span="8" class="member-tools">
-            <el-button
-              class="team-member-hint-invite cat2bug-btn-outline"
-              type="primary"
-              style="float: right;"
-              plain
-              icon="el-icon-plus"
-              size="small"
-              @click="inviteMemberHandle"
-              v-hasPermi="['system:team:member:invite']"
-            >{{$t('team.invite-members')}}</el-button>
+        <div class="team-member-tools project-option-list-tools mb8">
+          <el-form
+            ref="queryForm"
+            size="small"
+            :inline="true"
+            class="left"
+            :class="{ 'list-query-keyboard-nav': listQueryNavActive }"
+          >
+            <el-form-item class="list-query-nav-item team-member-hint-query" data-query-key="search">
+              <el-input
+                v-model="queryParams.params.search"
+                prefix-icon="el-icon-search"
+                :placeholder="$t('team.search-placeholder')"
+                clearable
+                style="width: 320px"
+                size="small"
+                @input="memberSearchHandle"
+              />
+            </el-form-item>
+          </el-form>
+          <div ref="teamMemberToolsRight" class="project-option-list-tools-right">
             <el-button
               class="team-member-hint-create"
               type="primary"
-              style="float: right;"
               plain
               icon="el-icon-plus"
               size="small"
               @click="createMemberHandle"
               v-hasPermi="['system:team:member:create']"
             >{{$t('member.create')}}</el-button>
-          </el-col>
-        </el-row>
+            <el-button
+              class="team-member-hint-invite cat2bug-btn-outline"
+              type="primary"
+              plain
+              icon="el-icon-plus"
+              size="small"
+              @click="inviteMemberHandle"
+              v-hasPermi="['system:team:member:invite']"
+            >{{$t('team.invite-members')}}</el-button>
+          </div>
+        </div>
 
         <el-table v-loading="loading" :data="memberList">
           <el-table-column :label="$t('member.name')" align="left" key="nickName" prop="nickName" min-width="260" :show-overflow-tooltip="true">
@@ -117,6 +122,7 @@
           </el-table-column>
         </el-table>
         <pagination
+          class="team-member-table-pagination"
           v-show="total>0"
           :total="total"
           :page.sync="queryParams.pageNum"
@@ -137,14 +143,20 @@ import InviteTeamMember from "@/views/system/team/option/member/InviteTeamMember
 import MemberNameplate from "@/components/MemberNameplate";
 import {getUser} from "@/api/system/user";
 import pageActionHints from '@/mixins/page-action-hints'
+import listQueryKeyboardNav from '@/mixins/list-query-keyboard-nav'
+import teamMemberListKbd from '@/mixins/team-member-list-kbd'
 import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
 import { checkPermi } from '@/utils/permission'
+import {
+  buildProjectOptionSubPaginationShortcuts,
+  clickProjectOptionSubPagination
+} from '@/utils/project-option-sub-list-kbd'
 
 const TEAM_MEMBER_KBD_SCOPE = 'team-member'
 
 export default {
   name: "TeamMemberManage",
-  mixins: [pageActionHints],
+  mixins: [pageActionHints, listQueryKeyboardNav, teamMemberListKbd],
   components: { CreateTeamMember, InviteTeamMember, MemberNameplate },
   data() {
     return {
@@ -196,9 +208,17 @@ export default {
   },
   mounted() {
     this.registerTeamMemberShortcuts();
+    this.$nextTick(() => {
+      this.$_bindListQueryNavFocusIn()
+      this.$_bindListQueryNavToolbarFocusIn()
+    })
   },
   activated() {
     this.registerTeamMemberShortcuts();
+    this.$nextTick(() => {
+      this.$_bindListQueryNavFocusIn()
+      this.$_bindListQueryNavToolbarFocusIn()
+    })
   },
   deactivated() {
     if (this.$shortcut) this.$shortcut.unregisterPage(TEAM_MEMBER_KBD_SCOPE);
@@ -209,11 +229,13 @@ export default {
   methods: {
     registerTeamMemberShortcuts() {
       if (!this.$shortcut) return
+      const pagination = buildProjectOptionSubPaginationShortcuts(this)
       this.$shortcut.registerPage(TEAM_MEMBER_KBD_SCOPE, [
         { key: 'query', defaultLetter: 'S', run: () => this.shortcutFocusQuery() },
         { key: 'create', defaultLetter: 'E', run: () => this.shortcutCreateMember() },
-        { key: 'invite', defaultLetter: 'V', run: () => this.shortcutInviteMember() },
-        { key: 'back', defaultLetter: 'B', run: () => this.goBack() }
+        { key: 'invite', defaultLetter: 'I', run: () => this.shortcutInviteMember() },
+        { key: 'back', defaultLetter: 'B', run: () => this.goBack() },
+        ...pagination.register
       ])
     },
     getPageActionHintContainer() {
@@ -221,6 +243,7 @@ export default {
     },
     getPageActionHints() {
       const L = (key, def) => shortcutStore.getLetter(`action.${TEAM_MEMBER_KBD_SCOPE}.${key}`, def)
+      const pagination = buildProjectOptionSubPaginationShortcuts(this)
       return [
         {
           key: 'query',
@@ -239,7 +262,7 @@ export default {
         },
         {
           key: 'invite',
-          letter: L('invite', 'V'),
+          letter: L('invite', 'I'),
           badgeSelector: '.team-member-hint-invite',
           floatOffset: { placement: 'bottom-right-outset', outset: 2, dy: 5 },
           run: () => this.shortcutInviteMember(),
@@ -251,15 +274,27 @@ export default {
           badgeSelector: '.team-member-hint-back .el-page-header__left',
           floatOffset: { placement: 'bottom-right-outset', outset: 2 },
           run: () => this.goBack()
-        }
+        },
+        ...pagination.hints
       ]
     },
+    getListQueryNavItems() {
+      return [{ key: 'search' }]
+    },
+    getListQueryNavToolbarRef() {
+      return 'teamMemberToolsRight'
+    },
+    getProjectOptionSubKbdScope() {
+      return TEAM_MEMBER_KBD_SCOPE
+    },
+    getProjectOptionSubPaginationSelector() {
+      return '.team-member-table-pagination'
+    },
+    shortcutChangePage(delta) {
+      clickProjectOptionSubPagination(this, delta)
+    },
     shortcutFocusQuery() {
-      const root = this.getPageActionHintContainer()
-      const input = root && root.querySelector('.team-member-hint-query input')
-      if (input && typeof input.focus === 'function') {
-        input.focus()
-      }
+      this.enterListQueryKeyboardNav()
     },
     shortcutCreateMember() {
       if (!checkPermi(['system:team:member:create'])) return
@@ -348,9 +383,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  .member-tools>* {
-    margin-left: 10px;
-  }
   ::v-deep .member-operate .el-input__inner, ::v-deep .member-operate .el-select__tags {
     min-width: 250px;
     display: flex;

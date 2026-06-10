@@ -1549,6 +1549,8 @@
   "keyboard.sec-project-option": "项目设置页动作",
   "keyboard.sec-team-option": "团队设置页动作",
   "keyboard.sec-team-member": "团队成员页动作",
+  "keyboard.sec-project-manage": "项目管理页动作",
+  "keyboard.sec-project-create": "创建项目页动作",
   "keyboard.sec-profile": "个人中心页动作",
   "keyboard.act.case-query": "聚焦查询",
   "keyboard.act.case-create": "新建用例",
@@ -1581,6 +1583,7 @@
   "keyboard.act.project-option-card-8": "设置卡片 8",
   "keyboard.act.project-option-card-9": "设置卡片 9",
   "keyboard.act.project-option-back": "返回",
+  "keyboard.act.project-change-icon": "更改封面",
   "keyboard.act.team-option-card-1": "设置卡片 1",
   "keyboard.act.team-option-card-2": "设置卡片 2",
   "keyboard.act.team-option-card-3": "设置卡片 3",
@@ -1595,6 +1598,11 @@
   "keyboard.act.team-member-create": "创建成员",
   "keyboard.act.team-member-invite": "邀请成员",
   "keyboard.act.team-member-back": "返回",
+  "keyboard.act.project-manage-query": "聚焦查询",
+  "keyboard.act.project-manage-create": "创建项目",
+  "keyboard.act.project-manage-tab-mine": "我参与的项目",
+  "keyboard.act.project-manage-tab-all": "全部项目",
+  "keyboard.act.project-create-back": "返回",
   "keyboard.act.profile-switch-tab": "切换页签",
   "keyboard.act.profile-back": "返回"
 }

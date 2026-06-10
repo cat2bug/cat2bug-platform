@@ -25,6 +25,8 @@ API KEY页面提供以下功能：
    - **权限配置** - 勾选该API密钥可以访问的功能模块和操作权限
 4. 点击「确定」按钮完成创建
 
+弹框打开后支持键盘操作：按住 **⌘/Ctrl** 查看字段字母徽标；**⌘/Ctrl + Enter** 保存；**Esc** 关闭（有未保存修改时会确认）。
+
 ![添加项目API](../../../../../images/user-guide/current-project/project-setting/project-setting-api-create.png)
 
 ### 权限配置说明

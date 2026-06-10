@@ -30,26 +30,43 @@
               style="width: 150px; height: 150px; border-radius: 4px; overflow: hidden;"
               :src="projectIconPreviewUrl"
               fit="cover"></cat2-bug-image>
-            <el-popover
-              v-model="projectIconPopperVisible"
-              popper-class="project-icon-popper"
-              placement="bottom"
-              trigger="click">
-              <div class="project-icon-popper">
-                <div class="project-icon-item" v-for="i in 10" :key="i">
-                  <el-image
-                    @click="clickProjectIconHandle(i)"
-                    :src="activeProjectIconUrl(i)"
-                    fit="cover"
-                  ></el-image>
+            <div :class="[PROJECT_ICON_POPOVER_HOST_CLASS, { 'is-popover-open': projectIconPopperVisible }]">
+              <el-popover
+                ref="projectIconPopover"
+                v-model="projectIconPopperVisible"
+                popper-class="project-icon-popper"
+                placement="bottom"
+                trigger="click">
+                <div class="project-icon-popper">
+                  <div
+                    class="project-icon-item"
+                    v-for="i in 10"
+                    :key="i"
+                    role="button"
+                    :aria-label="$t('project.change-icon') + ' ' + i"
+                    tabindex="-1"
+                  >
+                    <el-image
+                      @click="clickProjectIconHandle(i)"
+                      :src="activeProjectIconUrl(i)"
+                      fit="cover"
+                    ></el-image>
+                  </div>
+                  <div class="project-icon-item" role="button" :aria-label="$t('upload.upload')" tabindex="-1">
+                    <image-upload v-model="projectIcon" :limit="1" :file-type="[]" :is-show-tip="false" :is-show-clipboard-button="false" buttonStyle="width: 130px; height: 130px;" @input="handleSelectSelfImage" />
+                  </div>
                 </div>
-                <div class="project-icon-item">
-                  <image-upload v-model="projectIcon" :limit="1" :file-type="[]" :is-show-tip="false" :is-show-clipboard-button="false" buttonStyle="width: 130px; height: 130px;" @input="handleSelectSelfImage" />
-                </div>
-              </div>
-              <!--              选择项目图标按钮-->
-              <el-button slot="reference" size="mini">{{$t('project.change-icon')}}</el-button>
-            </el-popover>
+                <!--              选择项目图标按钮-->
+                <el-button
+                  ref="projectIconTrigger"
+                  slot="reference"
+                  size="mini"
+                  class="project-icon-hint-change defect-kbd-hint-host"
+                >{{$t('project.change-icon')}}
+                  <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint" aria-hidden="true">{{ changeIconHintLetter }}</span>
+                </el-button>
+              </el-popover>
+            </div>
           </el-col>
           <!--            保存取消按钮-->
           <el-col :xs="24" :sm="24" :md="16" :lg="16" :xl="12">
@@ -74,21 +91,23 @@ import {addProject, getProject, listProjectRole, updateProject} from "@/api/syst
 import { listMember } from "@/api/system/team";
 import MemberNameplate from "@/components/MemberNameplate"
 import { resolveProjectIconUrl } from '@/utils/upload-asset'
-import dialogFormShortcuts from '@/mixins/dialog-form-shortcuts'
-import formFieldHints from '@/mixins/form-field-hints'
-import pageActionHints from '@/mixins/page-action-hints'
-import pageFormClose from '@/mixins/page-form-close'
+import projectOptionSubFormKbd from '@/mixins/project-option-sub-form-kbd'
 import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
-
-const PROJECT_OPTION_KBD_SCOPE = 'project-option'
+import { PROJECT_OPTION_KBD_SCOPE } from '@/mixins/project-option-sub-kbd'
+import {
+  PROJECT_ICON_POPOVER_HOST_CLASS,
+  destroyProjectIconPopoverKbd,
+  initProjectIconPopoverKbd,
+  shortcutOpenProjectIconPopover
+} from '@/utils/project-icon-popover-kbd'
 
 export default {
   name: "ProjectEdit",
-  mixins: [dialogFormShortcuts, formFieldHints, pageActionHints, pageFormClose],
+  mixins: [projectOptionSubFormKbd],
   components:{ MemberNameplate },
   data() {
     return {
-      visible: true,
+      PROJECT_ICON_POPOVER_HOST_CLASS,
       memberParams: {
         params: {
           excludeMembers: [],
@@ -128,6 +147,9 @@ export default {
     },
     projectIconPreviewUrl() {
       return resolveProjectIconUrl(this.form.projectIcon)
+    },
+    changeIconHintLetter() {
+      return shortcutStore.getLetter(`action.${PROJECT_OPTION_KBD_SCOPE}.changeIcon`, 'I')
     }
   },
   created() {
@@ -135,39 +157,47 @@ export default {
     this.getRoleList();
   },
   mounted() {
-    this.registerProjectOptionSubShortcuts();
-    this.$nextTick(() => this.$_syncFieldHintListeners(true));
+    this.$nextTick(() => initProjectIconPopoverKbd(this))
   },
   activated() {
-    this.registerProjectOptionSubShortcuts();
-  },
-  deactivated() {
-    if (this.$shortcut) this.$shortcut.unregisterPage(PROJECT_OPTION_KBD_SCOPE);
+    this.$nextTick(() => initProjectIconPopoverKbd(this))
   },
   beforeDestroy() {
-    if (this.$shortcut) this.$shortcut.unregisterPage(PROJECT_OPTION_KBD_SCOPE);
+    destroyProjectIconPopoverKbd(this)
   },
   methods: {
-    registerProjectOptionSubShortcuts() {
-      if (!this.$shortcut) return
-      this.$shortcut.registerPage(PROJECT_OPTION_KBD_SCOPE, [
-        { key: 'back', defaultLetter: 'B', run: () => this.goBack() }
-      ])
-    },
-    getPageActionHintContainer() {
-      return this.$el
-    },
-    getPageActionHints() {
-      const L = (key, def) => shortcutStore.getLetter(`action.${PROJECT_OPTION_KBD_SCOPE}.${key}`, def)
+    getProjectOptionSubRegisterActions() {
       return [
         {
-          key: 'back',
-          letter: L('back', 'B'),
-          badgeSelector: '.project-option-sub-hint-back .el-page-header__left',
-          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
-          run: () => this.goBack()
+          key: 'changeIcon',
+          defaultLetter: 'I',
+          titleKey: 'keyboard.act.project-change-icon',
+          run: () => this.shortcutOpenProjectIconPopover()
         }
       ]
+    },
+    getProjectOptionSubActionHints() {
+      const L = (key, def) => shortcutStore.getLetter(`action.${PROJECT_OPTION_KBD_SCOPE}.${key}`, def)
+      return [{
+        key: 'changeIcon',
+        letter: L('changeIcon', 'I'),
+        badgeSelector: '.project-icon-hint-change',
+        floatOffset: { placement: 'bottom-right-outset', outset: 2 },
+        run: () => this.shortcutOpenProjectIconPopover()
+      }]
+    },
+    getFixedFieldHints() {
+      return [{
+        letter: shortcutStore.getLetter(`action.${PROJECT_OPTION_KBD_SCOPE}.changeIcon`, 'I'),
+        injectBadge: false,
+        onActivate: () => this.shortcutOpenProjectIconPopover()
+      }]
+    },
+    shortcutOpenProjectIconPopover() {
+      shortcutOpenProjectIconPopover(this)
+    },
+    shouldProjectOptionSubEscGoBack() {
+      return !this.projectIconPopperVisible
     },
     shortcutSave() {
       this.onSubmit()
@@ -178,9 +208,6 @@ export default {
         activeProjectIconIndex: this.activeProjectIconIndex,
         projectIcon: this.projectIcon
       })
-    },
-    onPageFormShortcutClose() {
-      this.requestClosePageForm({ onClose: () => this.$router.back() })
     },
     getProjectId() {
       return parseInt(this.$store.state.user.config.currentProjectId);
@@ -199,6 +226,7 @@ export default {
         }):[];
         this.getMemberList();
         this.dialogVisible = true;
+        this.$nextTick(() => initProjectIconPopoverKbd(this));
       });
     },
     /** 获取待添加的成员 */
@@ -246,10 +274,6 @@ export default {
       } else {
         this.form.members = this.form.members.filter(m=>m.isSelect);
       }
-    },
-    /** 返回 */
-    goBack() {
-      this.onPageFormShortcutClose();
     },
     /** 点击选中的项目图标处理方法 */
     clickProjectIconHandle(index) {
@@ -300,6 +324,13 @@ export default {
         width: 150px;
       }
     }
+  }
+  ::v-deep .project-icon-hint-change.defect-kbd-hint-host .defect-kbd-hint {
+    width: max-content !important;
+    min-width: 16px;
+    padding: 0 2px;
+    box-sizing: border-box;
+    transform: translate(50%, calc(50% + 10px));
   }
   .project-icon-popper {
     width: 550px;

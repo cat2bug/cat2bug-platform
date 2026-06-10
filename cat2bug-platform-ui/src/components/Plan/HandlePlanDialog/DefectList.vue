@@ -54,8 +54,13 @@
       <div class="handle-plan-tools-right">
         <el-popover
           placement="top"
-          trigger="click">
-          <div class="row">
+          trigger="click"
+          popper-class="defect-column-picker-popover"
+          v-model="planDefectColumnPickerVisible"
+          @show="onColumnPickerPopoverShow"
+          @hide="onColumnPickerPopoverHide"
+        >
+          <div class="defect-column-picker-head">
             <i class="el-icon-s-fold"></i>
             <h4>{{$t('defect.display-field')}}</h4>
           </div>
@@ -63,7 +68,7 @@
           <el-checkbox-group
             :key="'plan-defect-colpick-' + planDefectColumnPickerRev"
             v-model="columnPickerCheckedKeys"
-            class="col"
+            class="defect-column-picker"
             @change="onColumnPickerChange"
           >
             <el-checkbox
@@ -73,6 +78,7 @@
             >{{ c.label || (c.customFieldMeta && c.customFieldMeta.fieldLabel) || $t(c.key) }}</el-checkbox>
           </el-checkbox-group>
           <el-button
+            class="plan-handle-hint-columns"
             style="padding: 9px;"
             plain
             slot="reference"
@@ -263,6 +269,7 @@ import {getDefectState} from "@/api/system/DefectState";
 import { Multipane, MultipaneResizer } from "vue-multipane";
 import paneResizerHandleViewport from "@/mixins/paneResizerHandleViewport";
 import multipaneTreeTableHeightSync from "@/mixins/multipaneTreeTableHeightSync";
+import columnPickerPopoverKbd from '@/mixins/column-picker-popover-kbd'
 
 const TREE_MODULE_WIDTH_CACHE_KEY = "plan_case_tree_module_width";
 
@@ -274,7 +281,7 @@ const PLAN_DEFECT_FIELD_LIST_CACHE_KEY = 'plan-defect-table-field-list';
 export default {
   name: "DefectList",
   dicts: ['defect_level'],
-  mixins: [paneResizerHandleViewport, multipaneTreeTableHeightSync],
+  mixins: [paneResizerHandleViewport, multipaneTreeTableHeightSync, columnPickerPopoverKbd],
   components: { Multipane, MultipaneResizer, LevelTag, Cat2BugText, RowListMember, Cat2BugPreviewImage, FocusMemberList, DefectTypeFlag, DefectStateFlag, DefectTools, Cat2BugTable, SelectModule, SelectProjectMember },
   props: {
     showModuleTree: {
@@ -290,6 +297,7 @@ export default {
       planDefectSortTypeKey: DEFECT_TABLE_SORT_TYPE,
       planDefectTableColumns: TableOptions.map((c) => ({ ...c })),
       columnPickerCheckedKeys: [],
+      planDefectColumnPickerVisible: false,
       planDefectColumnPickerRev: 0,
       defectPickerColumnList: null,
       // 鼠标是否点击
@@ -451,6 +459,12 @@ export default {
     this.loadPlanDefectTableColumns();
   },
   methods: {
+    getColumnPickerTriggerEl() {
+      return this.$el && this.$el.querySelector('.plan-handle-hint-columns')
+    },
+    closeColumnPickerPopoverKbd() {
+      this.planDefectColumnPickerVisible = false
+    },
     isCustomFieldType(column, fieldType) {
       const meta = column && column.customFieldMeta;
       return !!(meta && meta.fieldType === fieldType);
@@ -981,9 +995,6 @@ export default {
   flex-shrink: 0;
   gap: var(--cat2bug-toolbar-item-gap, 10px);
 }
-.plan-item-field-divider {
-  margin: 8px 0px;
-}
 .row {
   display: flex;
   flex-direction: row;
@@ -995,9 +1006,6 @@ export default {
 .col {
   display: flex;
   flex-direction: column;
-}
-.defect-field-divider {
-  margin: 8px 0px;
 }
 .plan-defect-sidebar-expand-trigger {
   display: inline-flex;

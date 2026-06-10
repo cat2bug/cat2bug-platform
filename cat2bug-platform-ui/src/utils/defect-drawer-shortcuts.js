@@ -3,6 +3,7 @@
  * 全局 Cmd/Ctrl+Enter 提交、Esc 关闭（抽屉未保存时确认）。
  */
 import { isNativeFilePickerOpen } from '@/utils/native-file-picker'
+import { isAnyProjectIconPopoverOpenInDom } from '@/utils/project-icon-popover-kbd'
 import { hasBlockingUiLayer, shortcutService } from '@/plugins/shortcut/service'
 
 const stack = []
@@ -33,7 +34,12 @@ const FORM_SHORTCUT_DIALOG_VM_NAMES = new Set([
   ...DEFECT_TOOL_DIALOG_VM_NAMES,
   ...STATISTIC_DIALOG_VM_NAMES,
   ...NOTICE_OPTION_DIALOG_VM_NAMES,
-  'ModuleDialog'
+  'ModuleDialog',
+  'Account',
+  'CreateTeamMember',
+  'InviteTeamMember',
+  'AddProjectMember',
+  'Document'
 ])
 
 function isModifierKeyEvent(e) {
@@ -180,6 +186,7 @@ function invokeClose(vm, e) {
 
 /** 下拉/日期面板等仍打开时，Esc 先交给各浮层自身处理 */
 function shouldDeferFormEscClose() {
+  if (isAnyProjectIconPopoverOpenInDom()) return true
   return hasBlockingUiLayer({
     excludeDefectFormDrawer: true,
     excludeHandleDefectDrawer: true,

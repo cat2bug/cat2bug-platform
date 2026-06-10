@@ -1,40 +1,29 @@
-/** @jest-environment jsdom */
-
 import {
-  collectVisibleOptionCardActions,
-  resolveOptionActionKey
+  hrefToOptionActionRouteKey,
+  resolveOptionActionKey,
+  PROJECT_OPTION_CARD_CATALOG
 } from '@/utils/option-card-kbd-hints'
+import { PROJECT_OPTION_ACTION_DEFAULTS } from '@/utils/option-card-kbd-catalog'
 
 describe('option-card-kbd-hints', () => {
-  beforeEach(() => {
-    document.body.innerHTML = ''
-  })
-
-  it('collects each visible action in card body order', () => {
-    document.body.innerHTML = `
-      <div id="root">
-        <div class="el-col">
-          <div class="box-card">
-            <div class="el-card__header">Header</div>
-            <div class="el-card__body">
-              <a href="#/project-base-info"><span class="el-link">基本信息</span></a>
-              <a href="#/project-api"><span class="el-link">API</span></a>
-              <span class="el-link">删除</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    `
-    const root = document.getElementById('root')
-    const actions = collectVisibleOptionCardActions(root)
-    expect(actions).toHaveLength(3)
-    expect(actions[0].key).toBe('route-project-base-info')
-    expect(actions[1].key).toBe('route-project-api')
-    expect(actions[2].key).toMatch(/^text-/)
+  it('hrefToOptionActionRouteKey normalizes project routes', () => {
+    expect(hrefToOptionActionRouteKey('#/project/project-base-info')).toBe('route-project-base-info')
+    expect(hrefToOptionActionRouteKey('/project/push')).toBe('route-push')
+    expect(hrefToOptionActionRouteKey('#/team/team-member')).toBe('route-team-member')
   })
 
   it('resolveOptionActionKey falls back to card index', () => {
-    const el = document.createElement('span')
+    const el = { getAttribute: () => null, closest: () => null, textContent: '' }
     expect(resolveOptionActionKey(el, 2, 1)).toBe('card2-action1')
+  })
+
+  it('PROJECT_OPTION_ACTION_DEFAULTS lists card button titleKeys', () => {
+    const baseInfo = PROJECT_OPTION_ACTION_DEFAULTS.find((d) => d.key === 'route-project-base-info')
+    expect(baseInfo).toBeDefined()
+    expect(baseInfo.titleKey).toBe('project.base-info')
+    expect(baseInfo.defaultLetter).toBe('1')
+    expect(PROJECT_OPTION_ACTION_DEFAULTS.length).toBe(PROJECT_OPTION_CARD_CATALOG.length + 4)
+    expect(PROJECT_OPTION_ACTION_DEFAULTS.find((d) => d.key === 'changeIcon').titleKey)
+      .toBe('keyboard.act.project-change-icon')
   })
 })

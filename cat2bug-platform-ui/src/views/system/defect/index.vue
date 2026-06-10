@@ -2457,6 +2457,9 @@ export default {
         }
         // 执行激活页标签方法
         this.selectDefectTabHandle()
+        if (this.$route.query.openDefectTabDialog === '1') {
+          this.$nextTick(() => this.addDefectTabHandle())
+        }
       })
     },
     /** 查找缺陷状态改变的处理 */
@@ -3383,59 +3386,6 @@ html.dark .defect-add-dropdown-menu .el-dropdown-menu__item:focus {
   box-shadow: none !important;
   background-color: #3a3a42;
   color: inherit;
-}
-/* 显示字段：键盘导航高亮，与成员下拉 is-keyboard-active 一致 */
-.defect-column-picker-popover,
-.defect-excel-column-picker-popover {
-  padding: 8px 6px;
-  box-sizing: border-box;
-}
-.defect-column-picker .el-checkbox,
-.defect-column-picker-popover .defect-column-picker .el-checkbox,
-.defect-excel-column-picker-popover .defect-column-picker .el-checkbox {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  box-sizing: border-box;
-  margin-right: 0;
-  padding: 4px 8px;
-  border-radius: 5px;
-  outline: none !important;
-  box-shadow: none !important;
-}
-.defect-column-picker .el-checkbox:focus,
-.defect-column-picker-popover .defect-column-picker .el-checkbox:focus,
-.defect-excel-column-picker-popover .defect-column-picker .el-checkbox:focus {
-  outline: none !important;
-  box-shadow: none !important;
-}
-.defect-column-picker .el-checkbox.defect-column-picker-item-focused,
-.defect-column-picker-popover .defect-column-picker .el-checkbox.defect-column-picker-item-focused,
-.defect-excel-column-picker-popover .defect-column-picker .el-checkbox.defect-column-picker-item-focused {
-  background-color: #ecf5ff;
-}
-html.dark .defect-column-picker .el-checkbox.defect-column-picker-item-focused,
-html.dark .defect-column-picker-popover .defect-column-picker .el-checkbox.defect-column-picker-item-focused,
-html.dark .defect-excel-column-picker-popover .defect-column-picker .el-checkbox.defect-column-picker-item-focused {
-  background-color: #3a3a42;
-}
-/* 取消勾选时禁用过渡，避免钩子在 scaleY 动画中先闪白再消失 */
-.defect-column-picker-popover .defect-column-picker .el-checkbox__inner,
-.defect-excel-column-picker-popover .defect-column-picker .el-checkbox__inner {
-  transition: none !important;
-}
-.defect-column-picker-popover .defect-column-picker .el-checkbox__inner::after,
-.defect-excel-column-picker-popover .defect-column-picker .el-checkbox__inner::after {
-  transition: none !important;
-}
-.defect-column-picker-popover .defect-column-picker .el-checkbox__input:not(.is-checked) .el-checkbox__inner::after,
-.defect-excel-column-picker-popover .defect-column-picker .el-checkbox__input:not(.is-checked) .el-checkbox__inner::after {
-  transform: rotate(45deg) scaleY(0) !important;
-  border-color: transparent !important;
-}
-html.dark .defect-column-picker-popover .defect-column-picker .el-checkbox__input.is-checked .el-checkbox__inner::after,
-html.dark .defect-excel-column-picker-popover .defect-column-picker .el-checkbox__input.is-checked .el-checkbox__inner::after {
-  border-color: #141414 !important;
 }
 .defect-page .defect-view-toolbar {
   box-sizing: border-box;

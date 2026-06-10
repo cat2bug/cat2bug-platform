@@ -24,7 +24,7 @@
           @show="emitColumnPickerVisible(true)"
           @hide="emitColumnPickerVisible(false)"
         >
-          <div class="defect-excel-picker-head">
+          <div class="defect-excel-picker-head defect-column-picker-head">
             <i class="el-icon-s-fold"></i>
             <h4>{{ $t("display-field") }}</h4>
           </div>
@@ -5222,43 +5222,6 @@ html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep textarea.input-bo
   flex-direction: row;
   align-items: center;
   gap: 8px;
-}
-.defect-excel-picker-head {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 8px;
-}
-.defect-excel-picker-head h4 {
-  margin: 0;
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1;
-}
-.defect-field-divider {
-  margin: 8px 0;
-}
-.defect-column-picker {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 220px;
-  max-height: 380px;
-  overflow-y: auto;
-  padding-right: 4px;
-}
-.defect-column-picker ::v-deep .el-checkbox {
-  display: flex;
-  align-items: center;
-  margin-right: 0;
-  white-space: nowrap;
-}
-.defect-column-picker ::v-deep .el-checkbox__input {
-  flex-shrink: 0;
-}
-.defect-column-picker ::v-deep .el-checkbox__label {
-  line-height: 1.4;
-  padding-left: 8px;
 }
 /* 内置 Table Setting：Default 会 resetColumn([]) 清空 fields，与声明式列不兼容，隐藏该按钮；面板内导入/导出与本页流程无关，一并隐藏 */
 .defect-vue-excel-editor ::v-deep #panelModal .panel-footer > button.panel-button:first-of-type {

@@ -43,9 +43,11 @@
           </div>
           <el-tabs v-model="activeTab" class="profile-hint-tabs">
             <el-tab-pane :label="$t('member.basic-info')" name="userinfo">
+              <span slot="label" class="profile-tab-label">{{ $t('member.basic-info') }}</span>
               <userInfo :user="user" :form-active="activeTab === 'userinfo'" />
             </el-tab-pane>
             <el-tab-pane :label="$t('modify-password')" name="resetPwd">
+              <span slot="label" class="profile-tab-label">{{ $t('modify-password') }}</span>
               <resetPwd :form-active="activeTab === 'resetPwd'" />
             </el-tab-pane>
           </el-tabs>
@@ -63,6 +65,7 @@ import { getUserProfile } from "@/api/system/user";
 import { formatContactDisplay } from "@/utils/user-contact-rules";
 import pageActionHints from '@/mixins/page-action-hints'
 import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
+import { hasBlockingUiLayer } from '@/plugins/shortcut/service'
 
 const PROFILE_KBD_SCOPE = 'profile'
 const PROFILE_TABS = ['userinfo', 'resetPwd']
@@ -111,7 +114,7 @@ export default {
         {
           key: 'switchTab',
           letter: L('switchTab', 'J'),
-          badgeSelector: '.profile-hint-tabs .el-tabs__item.is-active',
+          badgeSelector: '.profile-hint-tabs .el-tabs__item.is-active .profile-tab-label',
           floatOffset: { placement: 'bottom-right-outset', outset: 2 },
           run: () => this.shortcutSwitchTab()
         },
@@ -128,6 +131,10 @@ export default {
       const idx = PROFILE_TABS.indexOf(this.activeTab)
       const next = PROFILE_TABS[(idx < 0 ? 0 : idx + 1) % PROFILE_TABS.length]
       this.activeTab = next
+    },
+    /** 子表单激活时仍显示 Tab 切换徽标（J 保留给页级动作，不交给字段分配） */
+    shouldDeferPageActionHints() {
+      return hasBlockingUiLayer()
     },
     /** 返回 */
     goBack() {
@@ -163,8 +170,18 @@ export default {
 .contact-display.is-empty {
   color: var(--text-color-secondary);
 }
+.profile-hint-tabs ::v-deep .el-tabs__header,
+.profile-hint-tabs ::v-deep .el-tabs__nav-wrap,
+.profile-hint-tabs ::v-deep .el-tabs__nav-scroll,
+.profile-hint-tabs ::v-deep .el-tabs__nav {
+  overflow: visible !important;
+}
 .profile-hint-tabs ::v-deep .el-tabs__item.is-active {
   position: relative;
   overflow: visible !important;
+}
+.profile-hint-tabs ::v-deep .profile-tab-label {
+  position: relative;
+  display: inline-block;
 }
 </style>

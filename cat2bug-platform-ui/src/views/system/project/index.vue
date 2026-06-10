@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container">
+  <div class="app-container project-manage-page" ref="projectManageMain">
     <el-tabs v-model="activeProjectTabName" @tab-click="selectProjectTabHandle">
       <el-tab-pane :label="$t('project.my-participated-in')" :name="$t('project.my-participated-in')"></el-tab-pane>
 <!--      <el-tab-pane :label="$t('project.my-manage')" :name="$t('project.my-manage')"></el-tab-pane>-->
@@ -36,9 +36,18 @@
     </el-row>
 <!--    项目列表-->
     <h4>{{$t('project.project-list')}}</h4>
-    <div class="project-tools">
-      <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="0">
-        <el-form-item prop="defectName">
+    <div class="project-manage-tools">
+      <el-form
+        :model="queryParams"
+        ref="queryForm"
+        size="small"
+        :inline="true"
+        v-show="showSearch"
+        label-width="0"
+        class="left"
+        :class="{ 'list-query-keyboard-nav': listQueryNavActive }"
+      >
+        <el-form-item prop="defectName" class="project-manage-hint-query list-query-nav-item" data-query-key="projectName">
           <el-input
             v-model="queryParams.projectName"
             :placeholder="$t('project.enter-project-name')"
@@ -49,8 +58,9 @@
           />
         </el-form-item>
       </el-form>
-      <div>
+      <div ref="projectManageToolsRight" class="project-manage-tools-right">
         <el-button
+          class="project-manage-hint-create"
           type="primary"
           plain
           icon="el-icon-plus"
@@ -60,10 +70,15 @@
         >{{$t("project.create-project")}}</el-button>
       </div>
     </div>
-    <el-table v-loading="loading" :data="projectList">
+    <el-table ref="projectTable" v-loading="loading" :data="projectList">
       <el-table-column :label="$t('project.name')" align="left" prop="projectName">
         <template slot-scope="scope">
-          <project-nameplate class="project-list-title" :project="scope.row" @click.native="clickProject(scope.row)"></project-nameplate>
+          <span
+            class="project-row-kbd-hint-anchor project-list-title"
+            @click="clickProject(scope.row)"
+          >
+            <project-nameplate :project="scope.row" />
+          </span>
         </template>
       </el-table-column>
       <el-table-column :label="$t('update-time')" align="left" prop="updateTime" width="180">
@@ -99,6 +114,7 @@
     </el-table>
 
     <pagination
+      class="project-manage-table-pagination"
       v-show="total>0"
       :total="total"
       :page.sync="queryParams.pageNum"
@@ -137,10 +153,24 @@ import store from "@/store";
 import i18n from "@/utils/i18n/i18n";
 import {mapGetters, mapState} from "vuex";
 import {checkPermi} from "@/utils/permission";
-import router from "@/router";
+import pageActionHints from '@/mixins/page-action-hints'
+import listQueryKeyboardNav from '@/mixins/list-query-keyboard-nav'
+import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
+import {
+  assignRowHintLetters,
+  collectHintLettersFromToolbar,
+  getDefectTableScrollBody,
+  isRowIntersectingContainer,
+  resolveElTableRowData,
+  resolveTableRowFirstColumnHintAnchor,
+  resolveTableRowFirstColumnKbdBadgeLayout
+} from '@/utils/defect-row-kbd-hints'
+
+const PROJECT_MANAGE_KBD_SCOPE = 'project-manage'
 
 export default {
   name: "Project",
+  mixins: [pageActionHints, listQueryKeyboardNav],
   components: { ProjectNameplate, RowListMember,StarSwitch },
   data() {
     return {
@@ -225,8 +255,169 @@ export default {
     this.getCollectList();
   },
   mounted() {
+    this.registerProjectManageShortcuts();
+    this.$nextTick(() => {
+      this.$_bindListQueryNavFocusIn();
+      this.$_bindListQueryNavToolbarFocusIn();
+    });
+  },
+  activated() {
+    this.registerProjectManageShortcuts();
+    this.$nextTick(() => {
+      this.$_bindListQueryNavFocusIn();
+      this.$_bindListQueryNavToolbarFocusIn();
+    });
+  },
+  deactivated() {
+    if (this.$shortcut) this.$shortcut.unregisterPage(PROJECT_MANAGE_KBD_SCOPE);
+  },
+  beforeDestroy() {
+    if (this.$shortcut) this.$shortcut.unregisterPage(PROJECT_MANAGE_KBD_SCOPE);
   },
   methods: {
+    registerProjectManageShortcuts() {
+      if (!this.$shortcut) return
+      this.$shortcut.registerPage(PROJECT_MANAGE_KBD_SCOPE, [
+        { key: 'query', defaultLetter: 'S', run: () => this.shortcutFocusQuery() },
+        { key: 'create', defaultLetter: 'E', run: () => this.shortcutCreateProject() },
+        { key: 'tabMine', defaultLetter: 'M', run: () => this.switchTabParticipated() },
+        { key: 'tabAll', defaultLetter: 'A', run: () => this.switchTabAll() },
+        { key: 'prevPage', defaultLetter: 'B', run: () => this.shortcutChangePage(-1) },
+        { key: 'nextPage', defaultLetter: 'P', run: () => this.shortcutChangePage(1) }
+      ])
+    },
+    getPageActionHintContainer() {
+      return this.$refs.projectManageMain || this.$el
+    },
+    getPageActionHints() {
+      const L = (key, def) => shortcutStore.getLetter(`action.${PROJECT_MANAGE_KBD_SCOPE}.${key}`, def)
+      return [
+        {
+          key: 'query',
+          letter: L('query', 'S'),
+          badgeSelector: '.project-manage-hint-query',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
+          run: () => this.shortcutFocusQuery()
+        },
+        {
+          key: 'create',
+          letter: L('create', 'E'),
+          badgeSelector: '.project-manage-hint-create',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2, dy: 5 },
+          run: () => this.shortcutCreateProject(),
+          visible: () => checkPermi(['system:project:add'])
+        },
+        {
+          key: 'tabMine',
+          letter: L('tabMine', 'M'),
+          badgeSelector: '.project-manage-page .el-tabs__header .el-tabs__item:nth-child(1)',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
+          run: () => this.switchTabParticipated()
+        },
+        {
+          key: 'tabAll',
+          letter: L('tabAll', 'A'),
+          badgeSelector: '.project-manage-page .el-tabs__header .el-tabs__item:nth-child(2)',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
+          run: () => this.switchTabAll()
+        },
+        {
+          key: 'prevPage',
+          letter: L('prevPage', 'B'),
+          badgeSelector: '.project-manage-table-pagination .btn-prev',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
+          run: () => this.shortcutChangePage(-1),
+          visible: () => this.total > 0
+        },
+        {
+          key: 'nextPage',
+          letter: L('nextPage', 'P'),
+          badgeSelector: '.project-manage-table-pagination .btn-next',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
+          run: () => this.shortcutChangePage(1),
+          visible: () => this.total > 0
+        }
+      ]
+    },
+    getPageDynamicActionHints(ctx) {
+      const used = (ctx && ctx.usedLetters) ? new Set(ctx.usedLetters) : new Set()
+      collectHintLettersFromToolbar(this.getPageActionHints()).forEach((ch) => used.add(ch))
+      return this.buildProjectTableRowActionHints(used)
+    },
+    getPageActionHintScrollRoots() {
+      const table = this.$refs.projectTable
+      if (!table || !table.$el) return []
+      const bodyWrap = getDefectTableScrollBody(table.$el)
+      return bodyWrap ? [bodyWrap] : []
+    },
+    buildProjectTableRowActionHints(usedLetters) {
+      if (this.loading || this.open) return []
+      const table = this.$refs.projectTable
+      if (!table || !table.$el) return []
+      const bodyWrap = getDefectTableScrollBody(table.$el)
+      if (!bodyWrap) return []
+      const tableRoot = table.$el
+      const list = this.projectList || []
+      const seen = new Set()
+      const anchors = []
+      bodyWrap.querySelectorAll('tbody tr.el-table__row').forEach((tr, rowIndex) => {
+        if (!isRowIntersectingContainer(tr, bodyWrap)) return
+        const row = resolveElTableRowData(tr) || list[rowIndex]
+        if (!row || row.projectId == null) return
+        if (!this.isViewDefect(row)) return
+        const projectId = String(row.projectId)
+        if (seen.has(projectId)) return
+        seen.add(projectId)
+        const anchor = tr.querySelector('.project-row-kbd-hint-anchor') || resolveTableRowFirstColumnHintAnchor(tr)
+        if (!anchor) return
+        const layout = resolveTableRowFirstColumnKbdBadgeLayout(tr, tableRoot)
+        if (!anchor || !layout.rect) return
+        anchors.push({
+          anchor,
+          getAnchorRect: () => layout.rect,
+          floatOffset: layout.floatOffset,
+          skipViewportCheck: true,
+          run: () => this.clickProject(row)
+        })
+      })
+      const letters = assignRowHintLetters(anchors.length, usedLetters)
+      return anchors.map((item, i) => ({
+        ...item,
+        letter: letters[i],
+        key: `row-${i}`
+      })).filter((item) => item.letter)
+    },
+    getListQueryNavItems() {
+      return [{ key: 'projectName' }]
+    },
+    getListQueryNavToolbarRef() {
+      return 'projectManageToolsRight'
+    },
+    shortcutFocusQuery() {
+      this.enterListQueryKeyboardNav()
+    },
+    shortcutCreateProject() {
+      if (!checkPermi(['system:project:add'])) return
+      this.handleAdd()
+    },
+    switchTabParticipated() {
+      this.activeProjectTabName = this.$i18n.t('project.my-participated-in')
+      this.selectProjectTabHandle()
+    },
+    switchTabAll() {
+      this.activeProjectTabName = ''
+      this.selectProjectTabHandle()
+    },
+    shortcutChangePage(delta) {
+      const root = this.getPageActionHintContainer()
+      if (!root || typeof root.querySelector !== 'function') return
+      const btn = root.querySelector(
+        delta < 0 ? '.project-manage-table-pagination .btn-prev' : '.project-manage-table-pagination .btn-next'
+      )
+      if (btn && !btn.classList.contains('disabled') && typeof btn.click === 'function') {
+        btn.click()
+      }
+    },
     /** 选择项目分组 */
     selectProjectTabHandle(){
       this.reset();
@@ -467,7 +658,7 @@ h4 {
   .project-list-title:hover, .project-block:hover {
     cursor: pointer;
   }
-  .project-tools {
+  .project-manage-tools {
     display: flex;
     justify-content: space-between;
     align-items: center;

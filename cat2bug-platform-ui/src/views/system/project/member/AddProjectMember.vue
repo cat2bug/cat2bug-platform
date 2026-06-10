@@ -1,5 +1,15 @@
 <template>
-  <el-dialog :title="$t('project.add-member')" :visible.sync="dialogVisible" width="400px" append-to-body>
+  <el-dialog
+    :title="$t('project.add-member')"
+    :visible.sync="dialogVisible"
+    width="400px"
+    append-to-body
+    :close-on-click-modal="false"
+    custom-class="cat2bug-form-shortcut-dialog project-add-member-dialog"
+    :close-on-press-escape="false"
+    :before-close="onToolDialogBeforeClose"
+    @opened="onToolDialogOpened"
+  >
     <el-form ref="form" :model="form" :rules="rules" label-width="120px">
       <el-row>
         <el-col :span="24">
@@ -41,48 +51,36 @@
       </el-row>
     </el-form>
     <div slot="footer" class="dialog-footer">
-      <el-button type="primary" @click="submitForm">{{$t('submit')}}</el-button>
-      <el-button @click="cancel">{{$t('cancel')}}</el-button>
+      <el-button class="defect-kbd-hint-host" type="primary" @click="submitForm">
+        {{$t('submit')}}
+        <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
+      </el-button>
+      <el-button @click="requestCloseToolDialog">{{$t('cancel')}}</el-button>
     </div>
   </el-dialog>
 </template>
 
 <script>
-import {
-  addMember,
-  addTeam,
-  getMemberByTeam,
-  inviteMember,
-  listMember,
-  listNotMember,
-  updateTeam
-} from "@/api/system/team";
-import {getUser} from "@/api/system/user";
 import {addProjectMembers, listNotMemberOfProject, listProjectRole} from "@/api/system/project";
 import Cat2BugAvatar from "@/components/Cat2BugAvatar";
+import defectToolDialogKbd from '@/mixins/defect-tool-dialog-kbd'
 
 export default {
   name: "AddProjectMember",
+  mixins: [defectToolDialogKbd],
   components: { Cat2BugAvatar },
   data() {
     return {
-      // 遮罩层
       loading: true,
       selectMemberList: [],
       memberOptions: [],
-      // 是否显示弹出层
       dialogVisible: false,
-      // 表单参数
       form: {
         projectId: this.getProjectId(),
         memberIds: [],
         roleIds: []
       },
-      // 表单校验
-      rules: {
-
-      },
-      // 角色选项
+      rules: {},
       roleOptions: [],
       initPassword: null,
     }
@@ -91,7 +89,6 @@ export default {
     open(){
       this.getRoleList();
     },
-    /** 获取项目权限列表 */
     getRoleList() {
       listProjectRole(0).then(res => {
         this.roleOptions = res.rows?res.rows.filter(r=>r.projectCreateBy==false).map(r=>{
@@ -102,15 +99,9 @@ export default {
         this.dialogVisible = true;
       });
     },
-    /** 获取团队id */
-    getTeamId() {
-      return this.$store.state.user.config.currentTeamId;
-    },
-    /** 获取项目id */
     getProjectId() {
       return parseInt(this.$store.state.user.config.currentProjectId);
     },
-    /** 获取团队成员列表 */
     searchMemberHandle(query) {
       this.loading = true;
       listNotMemberOfProject(this.getProjectId(),{params:{search:query}}).then(res => {
@@ -118,29 +109,23 @@ export default {
         this.memberOptions = res.rows;
       });
     },
-    /** 返回 */
-    goBack() {
-      this.$router.back();
-    },
-    /** 提交按钮 */
     submitForm() {
       this.$refs["form"].validate(valid => {
         if (valid) {
           addProjectMembers(this.getProjectId(), this.form).then(res => {
             this.$modal.msgSuccess(this.$i18n.t('add-success'));
-            this.dialogVisible = false;
-            this.cancel();
-            this.$emit("invite",res);
+            this.doCloseToolDialog();
+            this.$emit("invite", res);
           });
         }
       });
     },
-    // 取消按钮
-    cancel() {
-      this.dialogVisible = false;
-      this.reset();
+    shortcutSave() {
+      this.submitForm();
     },
-    // 表单重置
+    cancel() {
+      this.requestCloseToolDialog();
+    },
     reset() {
       this.form = {
         projectId: this.getProjectId(),
@@ -170,4 +155,3 @@ export default {
   }
 }
 </style>
-

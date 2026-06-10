@@ -25,21 +25,35 @@
         </el-form-item>
       </el-form>
       <div ref="planToolsRight" class="plan-tools-right">
-        <el-popover placement="top" trigger="click">
-          <div class="row">
+        <el-popover
+          placement="top"
+          trigger="click"
+          popper-class="defect-column-picker-popover"
+          v-model="planColumnPickerVisible"
+          @show="onColumnPickerPopoverShow"
+          @hide="onColumnPickerPopoverHide"
+        >
+          <div class="defect-column-picker-head">
             <i class="el-icon-s-fold"></i>
             <h4>{{ $t('display-field') }}</h4>
           </div>
-          <el-divider class="plan-field-divider"></el-divider>
+          <el-divider class="defect-field-divider"></el-divider>
           <el-checkbox-group
             :key="'plan-list-colpick-' + planColumnPickerRev"
             v-model="columnPickerCheckedKeys"
-            class="col"
+            class="defect-column-picker"
             @change="onPlanColumnPickerChange"
           >
             <el-checkbox v-for="c in planColumnPickerOptions" :key="c.key" :label="c.key">{{ $t(c.key) }}</el-checkbox>
           </el-checkbox-group>
-          <el-button style="padding: 9px;" plain slot="reference" icon="el-icon-s-fold" size="small"></el-button>
+          <el-button
+            class="plan-list-hint-columns"
+            style="padding: 9px;"
+            plain
+            slot="reference"
+            icon="el-icon-s-fold"
+            size="small"
+          ></el-button>
         </el-popover>
         <el-button
           class="plan-hint-create"
@@ -154,13 +168,26 @@ import {strFormat} from "@/utils";
 import {checkPermi} from "@/utils/permission";
 import pageActionHints from '@/mixins/page-action-hints'
 import listQueryKeyboardNav from '@/mixins/list-query-keyboard-nav'
+import columnPickerPopoverKbd from '@/mixins/column-picker-popover-kbd'
 import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
+import {
+  assignRowHintLetters,
+  collectHintLettersFromToolbar,
+  getDefectTableScrollBody,
+  isRowIntersectingContainer,
+  resolveElTableRowData,
+  resolveElTableRoot,
+  resolveTableRowFirstColumnHintAnchor,
+  resolveTableRowFirstColumnKbdBadgeLayout,
+} from '@/utils/defect-row-kbd-hints'
+
+const PLAN_ROW_KEY_FIELD = 'planId'
 
 const PLAN_KBD_SCOPE = 'plan'
 
 export default {
   name: "Plan",
-  mixins: [pageActionHints, listQueryKeyboardNav],
+  mixins: [pageActionHints, listQueryKeyboardNav, columnPickerPopoverKbd],
   dicts: ['plan_item_state'],
   components:{ ProjectLabel, AddPlanDialog, HandlePlanDialog, DictOptionDialog, RowListMember, Cat2BugTable },
   data() {
@@ -202,6 +229,7 @@ export default {
       },
       planTableColumnDefaults: PlanTableColumnDefaults.map(c => ({ ...c })),
       columnPickerCheckedKeys: [],
+      planColumnPickerVisible: false,
       planColumnPickerRev: 0,
       /** 与 Cat2BugTable columns-change 列顺序一致 */
       planPickerColumnList: null,
@@ -346,11 +374,84 @@ export default {
         }
       ]
     },
+    /** ⌘ 按住：表格可见行编号列动态徽标（1–9 优先，字母补位） */
+    getPageDynamicActionHints(ctx) {
+      const used = (ctx && ctx.usedLetters) ? new Set(ctx.usedLetters) : new Set()
+      collectHintLettersFromToolbar(this.getPageActionHints()).forEach((ch) => used.add(ch))
+      return this.buildPlanTableRowActionHints(used)
+    },
+    getPageActionHintScrollRoots() {
+      const cat = this.$refs.cat2BugTable
+      if (!cat) return []
+      const tableRoot = resolveElTableRoot(cat.$refs.elTable && cat.$refs.elTable.$el) || resolveElTableRoot(cat.$el)
+      if (!tableRoot) return []
+      const bodyWrap = getDefectTableScrollBody(tableRoot)
+      return bodyWrap ? [bodyWrap] : []
+    },
+    buildPlanTableRowActionHints(usedLetters) {
+      if (this.loading || this.isPlanListRowKbdBlocked()) return []
+      const cat = this.$refs.cat2BugTable
+      if (!cat) return []
+      const tableRoot = resolveElTableRoot(cat.$refs.elTable && cat.$refs.elTable.$el) || resolveElTableRoot(cat.$el)
+      if (!tableRoot) return []
+      const bodyWrap = getDefectTableScrollBody(tableRoot)
+      if (!bodyWrap) return []
+      const list = this.planList || []
+      const seen = new Set()
+      const anchors = []
+      bodyWrap.querySelectorAll('tbody tr.el-table__row').forEach((tr, rowIndex) => {
+        if (!isRowIntersectingContainer(tr, bodyWrap)) return
+        const row = resolveElTableRowData(tr) || list[rowIndex]
+        if (!row || row.planId == null) return
+        const planId = String(row.planId)
+        if (seen.has(planId)) return
+        seen.add(planId)
+        const rowKey = { field: PLAN_ROW_KEY_FIELD, value: planId }
+        const layout = resolveTableRowFirstColumnKbdBadgeLayout(tr, tableRoot, null, rowKey)
+        const anchor = resolveTableRowFirstColumnHintAnchor(tr, tableRoot, null, rowKey)
+        if (!anchor || !layout.rect) return
+        anchors.push({
+          anchor,
+          getAnchorRect: () => layout.rect,
+          floatOffset: layout.floatOffset,
+          skipViewportCheck: true,
+          run: () => this.shortcutPlanRowOpen(row)
+        })
+      })
+      const letters = assignRowHintLetters(anchors.length, usedLetters)
+      return anchors.map((item, i) => ({
+        ...item,
+        letter: letters[i],
+        key: `row-${i}`
+      })).filter((item) => item.letter)
+    },
+    isPlanListRowKbdBlocked() {
+      if (this.planColumnPickerVisible) return true
+      const planDialog = this.$refs.planDialog
+      if (planDialog && planDialog.open) return true
+      const handleDialog = this.$refs.handlePlanDialog
+      if (handleDialog && handleDialog.visible) return true
+      const stateDialog = this.$refs.planItemState
+      if (stateDialog && stateDialog.visible) return true
+      return false
+    },
+    shortcutPlanRowOpen(plan) {
+      if (!plan || plan.planId == null) return
+      if (!checkPermi(['system:plan:run'])) return
+      this.handlePlanRun(plan)
+    },
     getListQueryNavItems() {
       return [{ key: 'planName' }, { key: 'planVersion' }]
     },
     getListQueryNavToolbarRef() {
       return 'planToolsRight'
+    },
+    getColumnPickerTriggerEl() {
+      const root = this.getPageActionHintContainer()
+      return root && root.querySelector('.plan-list-hint-columns')
+    },
+    closeColumnPickerPopoverKbd() {
+      this.planColumnPickerVisible = false
     },
     shortcutFocusQuery() {
       this.enterListQueryKeyboardNav()
@@ -708,11 +809,6 @@ export default {
     margin: 0px;
   }
 }
-.col {
-  display: inline-flex;
-  flex-direction: column;
-  justify-content: center;
-}
 .col-center {
   align-items: flex-start;
 }
@@ -724,10 +820,6 @@ export default {
   flex-wrap: wrap;
   white-space: nowrap;
 }
-.plan-field-divider {
-  margin: 8px 0px;
-}
-/* plan-tools-right 已在上方按响应式统一定义 */
 .text-row3 {
   word-break: break-all;
   display: -webkit-box;

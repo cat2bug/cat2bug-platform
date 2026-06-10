@@ -208,6 +208,35 @@
 
 工具栏 **plain 按钮**（显示字段等）与键盘导航类 `list-query-toolbar-nav-focused` 聚焦时 MUST 仅一层 `box-shadow` 环，MUST NOT 出现 border 改色 + 外描边双边框。
 
+### Requirement: 显示字段浮层键盘规范
+
+列表/抽屉工具栏「显示字段」`el-popover`（`popper-class="defect-column-picker-popover"`，勾选列表 `class="defect-column-picker"`）MUST 遵循：
+
+- 浮层打开后 MUST 默认高亮并聚焦**第一项**（`.defect-column-picker-item-focused`）
+- **↓** / **↑** 在选项间移动高亮；到末项 **↓** 循环至末项，到首项 **↑** MUST **关闭浮层**并回到触发按钮
+- **Enter** / **空格** 切换当前项勾选状态
+- **Esc** 关闭浮层
+
+#### Scenario: 打开后聚焦首项
+
+- **WHEN** 用户点击或通过工具栏 **↓** 打开「显示字段」浮层
+- **THEN** 第一项获得键盘焦点与高亮样式
+
+#### Scenario: 首项按上键关闭
+
+- **WHEN** 浮层打开且高亮在第一项，用户按 **↑**
+- **THEN** 浮层关闭，焦点回到「显示字段」触发按钮
+
+#### Scenario: 上下键切换选项
+
+- **WHEN** 浮层已打开且用户在第二项，按 **↑**
+- **THEN** 高亮移至第一项；再按 **↓** 回到第二项
+
+#### Scenario: 空格切换勾选
+
+- **WHEN** 用户在高亮某项时按 **Enter** 或 **空格**
+- **THEN** 该项勾选状态切换，高亮仍停留在该项
+
 #### Scenario: 整颗按钮一个徽标
 
 - **WHEN** 用户在用例页按住 `Cmd/Ctrl`
@@ -217,3 +246,17 @@
 
 - **WHEN** 用户聚焦「新建用例」按钮并按 **↓**
 - **THEN** 展开下拉菜单；再按 **↓** 高亮「导入」；按 **Enter** 或 **空格** 打开导入流程，且下拉菜单 MUST 收起
+
+### Requirement: 列表页查询区 ← / → 导航
+
+含多个查询控件或「查询区 + 右侧工具栏」的列表页 MUST 接入 `list-query-keyboard-nav` mixin（或等价实现），并满足：
+
+- 查询表单项 MUST 标记 `list-query-nav-item` 与 `data-query-key`
+- 右侧工具栏 MUST 可通过 `getListQueryNavToolbarRef` 桥接；**→** 从最右查询项进入工具栏首按钮
+- **S** 快捷键 SHOULD 调用 `enterListQueryKeyboardNav()` 而非仅 `focus` 单个输入框
+- 含分页的列表页 SHOULD 注册 **B**/**P**（一级列表）或 **U**/**P**（与返回 **B** 共存的设置子页）
+
+#### Scenario: 设置子页查询工具栏桥接
+
+- **WHEN** 用户在项目成员列表按 **S**，再连续按 **→**
+- **THEN** 焦点从搜索框移至「添加成员」按钮

@@ -8,6 +8,185 @@ export const PAGE_KBD_OVERLAY_ID = 'cat2bug-page-kbd-overlay'
 
 const LETTER_POOL = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
 
+/** 表格首列行徽标默认浮层参数（有文字/无文字时由 resolveTableRowFirstColumnKbdBadgeLayout 覆盖 placement） */
+export const TABLE_ROW_KBD_FLOAT_TEXT_BOTTOM_RIGHT = {
+  placement: 'bottom-right-outset',
+  outset: 2
+}
+
+const ROW_KBD_HINT_ANCHOR_SELECTORS = [
+  '.defect-row-kbd-hint-anchor',
+  '.case-row-kbd-hint-anchor',
+  '.plan-row-kbd-hint-anchor',
+  '.module-row-kbd-hint-anchor',
+  '.report-row-kbd-hint-anchor',
+  '.ai-account-row-kbd-hint-anchor',
+  '.defect-field-row-kbd-hint-anchor',
+  '.project-row-kbd-hint-anchor'
+].join(', ')
+
+const ROW_KBD_ROW_KEY_ATTRS = ['data-plan-id', 'data-case-id', 'data-defect-id', 'data-report-id']
+
+function escapeAttrSelectorValue(value) {
+  return String(value).replace(/\\/g, '\\\\').replace(/"/g, '\\"')
+}
+
+/** Cat2BugTable 外层 wrap 或 el-table 根节点 → `.el-table` */
+export function resolveElTableRoot(tableRoot) {
+  if (!tableRoot) return null
+  if (tableRoot.classList && tableRoot.classList.contains('el-table')) return tableRoot
+  const inner = tableRoot.querySelector && tableRoot.querySelector('.el-table')
+  return inner || tableRoot
+}
+
+/**
+ * 主表体行 → 左侧固定列对应行（行数据 field 匹配 > data-* > 行号）。
+ * @param {{ attr?: string, field?: string, value: string|number }} [rowKey]
+ */
+export function findFixedTableRow(tr, tableRoot, anchorSelector, rowKey) {
+  const root = resolveElTableRoot(tableRoot)
+  if (!root || !tr) return null
+  const fixedRoot = root.querySelector('.el-table__fixed')
+  if (!fixedRoot) return null
+
+  const sel = anchorSelector || ROW_KBD_HINT_ANCHOR_SELECTORS
+  const fixedBody = fixedRoot.querySelector('.el-table__fixed-body-wrapper tbody')
+
+  const matchByRowData = () => {
+    if (!fixedBody || !rowKey || rowKey.field == null || rowKey.value == null || rowKey.value === '') {
+      return null
+    }
+    const want = String(rowKey.value)
+    for (let i = 0; i < fixedBody.children.length; i++) {
+      const fixedTr = fixedBody.children[i]
+      const data = resolveElTableRowData(fixedTr)
+      if (data && String(data[rowKey.field]) === want) return fixedTr
+    }
+    return null
+  }
+
+  const matchByAttr = (attr, value) => {
+    if (attr == null || value == null || value === '') return null
+    const scoped = fixedBody
+      ? fixedBody.querySelector(`[${attr}="${escapeAttrSelectorValue(value)}"]`)
+      : fixedRoot.querySelector(`[${attr}="${escapeAttrSelectorValue(value)}"]`)
+    return scoped ? scoped.closest('tr') : null
+  }
+
+  const byRowData = matchByRowData()
+  if (byRowData) return byRowData
+
+  if (rowKey && rowKey.attr) {
+    const byKey = matchByAttr(rowKey.attr, rowKey.value)
+    if (byKey) return byKey
+  }
+
+  const mainAnchor = tr.querySelector(sel)
+  if (mainAnchor) {
+    for (let i = 0; i < ROW_KBD_ROW_KEY_ATTRS.length; i++) {
+      const attr = ROW_KBD_ROW_KEY_ATTRS[i]
+      const val = mainAnchor.getAttribute(attr)
+      if (val != null && val !== '') {
+        const byAttr = matchByAttr(attr, val)
+        if (byAttr) return byAttr
+      }
+    }
+  }
+
+  const tbody = tr.parentElement
+  const rowIndex = tbody ? Array.from(tbody.children).indexOf(tr) : -1
+  if (fixedBody && rowIndex >= 0 && fixedBody.children[rowIndex]) {
+    return fixedBody.children[rowIndex]
+  }
+  return null
+}
+
+/** 行内第一个可见 td（跳过 is-hidden / 零宽列） */
+export function resolveTableRowFirstVisibleTd(tr) {
+  if (!tr) return null
+  const tds = tr.querySelectorAll('td.el-table__cell, td')
+  for (let i = 0; i < tds.length; i++) {
+    const td = tds[i]
+    if (td.classList.contains('is-hidden')) continue
+    const rect = td.getBoundingClientRect()
+    if (rect.width < 1 || rect.height < 1) continue
+    return td
+  }
+  return tr.querySelector('td:first-child')
+}
+
+/** 行内第一个可见单元格内容区（.cell） */
+export function resolveTableRowFirstVisibleCell(tr) {
+  const td = resolveTableRowFirstVisibleTd(tr)
+  if (!td) return null
+  return td.querySelector('.cell') || td
+}
+
+/**
+ * 表格行快捷键锚点：固定列行 / 主表体行的**第一个可见列**。
+ * @param {{ attr?: string, field?: string, value: string|number }} [rowKey]
+ */
+export function resolveTableRowFirstColumnHintAnchor(tr, tableRoot, anchorSelector, rowKey) {
+  const root = resolveElTableRoot(tableRoot)
+
+  const fixedTr = findFixedTableRow(tr, root, anchorSelector, rowKey)
+  if (fixedTr) {
+    const cell = resolveTableRowFirstVisibleCell(fixedTr)
+    if (cell) return cell
+  }
+
+  const cell = resolveTableRowFirstVisibleCell(tr)
+  if (cell) return cell
+
+  const sel = anchorSelector || ROW_KBD_HINT_ANCHOR_SELECTORS
+  const inRow = tr && tr.querySelector(sel)
+  if (inRow) return inRow
+  return resolveDefectTableRowHintAnchor(tr)
+}
+
+/** 首列单元格是否有可见文字（非空白） */
+export function hasTableCellVisibleText(el) {
+  if (!el) return false
+  return String(el.textContent || '').trim().length > 0
+}
+
+/**
+ * 表格首列行徽标布局：有文字 → 文字右下角；内容为空 → 单元格居中。
+ * @returns {{ rect: DOMRect|object|null, floatOffset: { placement: string, outset?: number } }}
+ */
+export function resolveTableRowFirstColumnKbdBadgeLayout(tr, tableRoot, anchorSelector, rowKey) {
+  const root = resolveElTableRoot(tableRoot)
+  const colRect = resolveDefectTableRowHintPositionRect(tr, root, anchorSelector, rowKey)
+  const anchor = resolveTableRowFirstColumnHintAnchor(tr, root, anchorSelector, rowKey)
+
+  let cellRect = colRect
+  if ((!cellRect || cellRect.width <= 0 || cellRect.height <= 0) && anchor) {
+    cellRect = anchor.getBoundingClientRect()
+  }
+
+  let textRect = null
+  if (anchor && hasTableCellVisibleText(anchor)) {
+    textRect = getElementTextRect(anchor)
+  }
+
+  if (textRect && textRect.width > 0 && textRect.height > 0) {
+    return {
+      rect: textRect,
+      floatOffset: { placement: 'bottom-right-outset', outset: 2 }
+    }
+  }
+
+  return {
+    rect: cellRect,
+    floatOffset: { placement: 'center-cell', outset: 0 }
+  }
+}
+
+/** @deprecated 请用 resolveTableRowFirstColumnKbdBadgeLayout */
+export function resolveTableRowFirstColumnHintTextRect(tr, tableRoot, anchorSelector, rowKey) {
+  return resolveTableRowFirstColumnKbdBadgeLayout(tr, tableRoot, anchorSelector, rowKey).rect
+}
+
 /** ⌘/Ctrl + 单键：归一化字母或数字（兼容 Digit1 / Numpad1） */
 export function resolvePageActionLetter(e) {
   if (!e) return ''
@@ -250,8 +429,10 @@ export function resolveDefectTableRowHintAnchor(tr) {
   return (
     tr.querySelector('.defect-row-kbd-hint-anchor') ||
     tr.querySelector('.case-row-kbd-hint-anchor') ||
+    tr.querySelector('.plan-row-kbd-hint-anchor') ||
     tr.querySelector('.module-row-kbd-hint-anchor') ||
     tr.querySelector('.report-row-kbd-hint-anchor') ||
+    tr.querySelector('.ai-account-row-kbd-hint-anchor') ||
     tr.querySelector('td.defect-sidebar-expand-body-cell') ||
     tr.querySelector('td:not(.is-hidden) .cell') ||
     tr.querySelector('td .cell') ||
@@ -286,39 +467,34 @@ export function getDefectTableFirstColumnWidth(tableRoot) {
 /**
  * 行徽标定位矩形：纵坐标跟行，横坐标钉在首列（左侧 fixed 列或表体左缘），不随水平滚动漂移。
  */
-export function resolveDefectTableRowHintPositionRect(tr, tableRoot) {
+export function resolveDefectTableRowHintPositionRect(tr, tableRoot, anchorSelector, rowKey) {
   if (!tr || typeof tr.getBoundingClientRect !== 'function') return null
   const rowRect = tr.getBoundingClientRect()
   if (rowRect.height <= 0) return null
 
-  const tbody = tr.parentElement
-  const rowIndex = tbody ? Array.from(tbody.children).indexOf(tr) : -1
-
-  if (tableRoot && rowIndex >= 0) {
-    const fixedBody = tableRoot.querySelector('.el-table__fixed .el-table__fixed-body-wrapper tbody')
-    if (fixedBody) {
-      const fixedTr = fixedBody.children[rowIndex]
-      const firstTd = fixedTr && fixedTr.querySelector('td:first-child')
-      if (firstTd) {
-        const colRect = firstTd.getBoundingClientRect()
-        if (colRect.width > 0) {
-          return {
-            top: rowRect.top,
-            bottom: rowRect.bottom,
-            left: colRect.left,
-            right: colRect.right,
-            width: colRect.width,
-            height: rowRect.height
-          }
+  const root = resolveElTableRoot(tableRoot)
+  const fixedTr = findFixedTableRow(tr, root, anchorSelector, rowKey)
+  if (fixedTr) {
+    const firstTd = resolveTableRowFirstVisibleTd(fixedTr)
+    if (firstTd) {
+      const colRect = firstTd.getBoundingClientRect()
+      if (colRect.width > 0) {
+        return {
+          top: rowRect.top,
+          bottom: rowRect.bottom,
+          left: colRect.left,
+          right: colRect.right,
+          width: colRect.width,
+          height: rowRect.height
         }
       }
     }
   }
 
-  const bodyWrap = tableRoot ? getDefectTableScrollBody(tableRoot) : tr.closest('.el-table__body-wrapper')
+  const bodyWrap = root ? getDefectTableScrollBody(root) : tr.closest('.el-table__body-wrapper')
   if (bodyWrap) {
     const wrapRect = bodyWrap.getBoundingClientRect()
-    const colWidth = getDefectTableFirstColumnWidth(tableRoot)
+    const colWidth = getDefectTableFirstColumnWidth(root)
     return {
       top: rowRect.top,
       bottom: rowRect.bottom,
@@ -329,7 +505,7 @@ export function resolveDefectTableRowHintPositionRect(tr, tableRoot) {
     }
   }
 
-  const firstTd = tr.querySelector('td:first-child')
+  const firstTd = resolveTableRowFirstVisibleTd(tr)
   if (firstTd) {
     const colRect = firstTd.getBoundingClientRect()
     return {

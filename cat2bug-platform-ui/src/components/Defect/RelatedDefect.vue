@@ -26,13 +26,14 @@
         <div class="table-tools row">
           <el-popover
             placement="top"
-            trigger="click">
-            <div class="row">
+            trigger="click"
+            popper-class="defect-column-picker-popover">
+            <div class="defect-column-picker-head">
               <i class="el-icon-s-fold"></i>
               <h4>{{$t('defect.display-field')}}</h4>
             </div>
             <el-divider class="defect-field-divider"></el-divider>
-            <el-checkbox-group v-model="tableShowFieldList" class="col" @change="checkedFieldListChange">
+            <el-checkbox-group v-model="tableShowFieldList" class="defect-column-picker" @change="checkedFieldListChange">
               <el-checkbox v-for="field in tableAllFieldList" :label="field" :key="field">{{$t(field)}}</el-checkbox>
             </el-checkbox-group>
             <el-button

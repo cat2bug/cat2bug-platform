@@ -1530,6 +1530,8 @@
   "keyboard.sec-project-option": "Действия настроек проекта",
   "keyboard.sec-team-option": "Действия настроек команды",
   "keyboard.sec-team-member": "Действия страницы участников",
+  "keyboard.sec-project-manage": "Действия страницы управления проектами",
+  "keyboard.sec-project-create": "Действия страницы создания проекта",
   "keyboard.sec-profile": "Действия личного кабинета",
   "keyboard.act.case-query": "Фокус запроса",
   "keyboard.act.case-create": "Новый тест-кейс",
@@ -1562,6 +1564,7 @@
   "keyboard.act.project-option-card-8": "Карточка настроек 8",
   "keyboard.act.project-option-card-9": "Карточка настроек 9",
   "keyboard.act.project-option-back": "Назад",
+  "keyboard.act.project-change-icon": "Изменить обложку",
   "keyboard.act.team-option-card-1": "Карточка настроек 1",
   "keyboard.act.team-option-card-2": "Карточка настроек 2",
   "keyboard.act.team-option-card-3": "Карточка настроек 3",
@@ -1576,6 +1579,11 @@
   "keyboard.act.team-member-create": "Создать участника",
   "keyboard.act.team-member-invite": "Пригласить участника",
   "keyboard.act.team-member-back": "Назад",
+  "keyboard.act.project-manage-query": "Фокус на поиск",
+  "keyboard.act.project-manage-create": "Создать проект",
+  "keyboard.act.project-manage-tab-mine": "Мои проекты",
+  "keyboard.act.project-manage-tab-all": "Все проекты",
+  "keyboard.act.project-create-back": "Назад",
   "keyboard.act.profile-switch-tab": "Переключить вкладку",
   "keyboard.act.profile-back": "Назад"
 }

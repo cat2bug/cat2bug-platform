@@ -1,12 +1,13 @@
 <template>
-  <div class="app-container case-body defect-field-page defect-field-list-layout project-list-page-host">
-    <el-row class="project-add-page-header project-add-page-header--with-filter">
+  <div class="app-container case-body defect-field-page defect-field-list-layout project-list-page-host" ref="projectOptionSubMain">
+    <el-row class="project-add-page-header project-add-page-header--with-filter project-option-sub-hint-back">
       <el-page-header @back="goBack" :content="$t('defect.custom-field.title')">
       </el-page-header>
     </el-row>
 
     <div v-if="canAddDefectField" ref="defectFieldTools" class="defect-field-tools">
       <el-button
+        class="project-defect-field-hint-add"
         type="primary"
         icon="el-icon-plus"
         size="small"
@@ -61,7 +62,7 @@
         show-overflow-tooltip
       >
         <template slot-scope="scope">
-          {{ displayFieldLabel(scope.row) }}
+          <span class="defect-field-row-kbd-hint-anchor">{{ displayFieldLabel(scope.row) }}</span>
         </template>
       </el-table-column>
       <el-table-column
@@ -204,9 +205,12 @@
       width="720px"
       append-to-body
       :close-on-click-modal="false"
-      custom-class="defect-field-form-dialog"
+      custom-class="cat2bug-form-shortcut-dialog defect-field-form-dialog"
+      :close-on-press-escape="false"
+      :before-close="onToolDialogBeforeClose"
+      @opened="onToolDialogOpened"
     >
-      <el-form ref="form" :model="form" :rules="rules" label-width="120px">
+      <el-form ref="form" :model="form" :rules="rules" label-width="120px" class="project-defect-field-dialog-form">
         <el-form-item :label="$t('defect.custom-field.field-key')" prop="fieldKey">
           <el-input
             v-model="form.fieldKey"
@@ -313,8 +317,11 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="cancel">{{ $t('cancel') }}</el-button>
-        <el-button type="primary" @click="submitForm">{{ $t('ok') }}</el-button>
+        <el-button class="defect-kbd-hint-host" type="primary" @click="submitForm">
+          {{ $t('ok') }}
+          <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
+        </el-button>
+        <el-button @click="requestCloseToolDialog">{{ $t('cancel') }}</el-button>
       </div>
     </el-dialog>
   </div>
@@ -348,12 +355,25 @@ import {
   supportsFieldMaxLength
 } from '@/components/DefectCustomField/format'
 import { hasAnyPermi } from '@/utils/project-option-card'
+import projectOptionSubKbd, { PROJECT_OPTION_KBD_SCOPE } from '@/mixins/project-option-sub-kbd'
+import defectToolDialogKbd from '@/mixins/defect-tool-dialog-kbd'
+import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
+import {
+  assignRowHintLetters,
+  collectHintLettersFromToolbar,
+  getDefectTableScrollBody,
+  isRowIntersectingContainer,
+  resolveElTableRowData,
+  resolveTableRowFirstColumnHintAnchor,
+  resolveTableRowFirstColumnKbdBadgeLayout
+} from '@/utils/defect-row-kbd-hints'
 
 const FIELD_TYPES = ['string', 'number', 'boolean', 'datetime', 'enum', 'object', 'image', 'file', 'array']
 const FIELD_KEY_PATTERN = /^[a-z][a-z0-9_]{0,63}$/
 
 export default {
   name: 'ProjectDefectFields',
+  mixins: [projectOptionSubKbd, defectToolDialogKbd],
   components: { DefectFieldDefaultValueInput },
   data() {
     return {
@@ -428,9 +448,23 @@ export default {
             color: opt.color
           }))
       }
+    },
+    /** 供弹框快捷键 mixin 识别 open 状态 */
+    dialogVisible: {
+      get() {
+        return this.open
+      },
+      set(val) {
+        this.open = val
+      }
     }
   },
   watch: {
+    open(val) {
+      if (typeof this.$_syncFormShortcutBinding === 'function') {
+        this.$_syncFormShortcutBinding(!!val)
+      }
+    },
     '$i18n.locale'() {
       this.$nextTick(() => this.syncDefectFieldAdaptiveColumnWidths())
     },
@@ -479,6 +513,117 @@ export default {
     this.destroyDefectFieldListBodyResizeObserver()
   },
   methods: {
+    shouldProjectOptionSubEscGoBack() {
+      return !this.open
+    },
+    shortcutSave() {
+      this.submitForm()
+    },
+    doCloseToolDialog() {
+      this.open = false
+      this.toolDialogCloseBaseline = null
+      this.reset()
+    },
+    serializeDefectFieldDialogCloseState() {
+      return JSON.stringify({
+        form: this.form,
+        enumOptions: this.enumOptions
+      })
+    },
+    captureToolDialogCloseBaseline() {
+      this.toolDialogCloseBaseline = this.serializeDefectFieldDialogCloseState()
+    },
+    isToolDialogCloseDirty() {
+      if (!this.toolDialogCloseBaseline) return false
+      return this.serializeDefectFieldDialogCloseState() !== this.toolDialogCloseBaseline
+    },
+    getFieldHintScrollContainer() {
+      const form = this.$refs.form
+      if (form && form.$el) {
+        const body = form.$el.closest('.el-dialog__body')
+        if (body) return body
+      }
+      return typeof this.getFieldHintContainer === 'function' ? this.getFieldHintContainer() : null
+    },
+    getProjectOptionSubPaginationSelector() {
+      return '.defect-field-table-pagination'
+    },
+    getProjectOptionSubRegisterActions() {
+      return [
+        { key: 'create', defaultLetter: 'E', run: () => this.shortcutAddDefectField() }
+      ]
+    },
+    getProjectOptionSubActionHints() {
+      const L = (key, def) => shortcutStore.getLetter(`action.${PROJECT_OPTION_KBD_SCOPE}.${key}`, def)
+      return [
+        {
+          key: 'create',
+          letter: L('create', 'E'),
+          badgeSelector: '.project-defect-field-hint-add',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2, dy: 5 },
+          run: () => this.shortcutAddDefectField(),
+          visible: () => this.canAddDefectField
+        }
+      ]
+    },
+    shortcutAddDefectField() {
+      if (!this.canAddDefectField) return
+      this.handleAdd()
+    },
+    /** ⌘ 按住：表格可见自定义字段行「字段名称」列动态徽标（1–9 优先，字母补位） */
+    getPageDynamicActionHints(ctx) {
+      const used = (ctx && ctx.usedLetters) ? new Set(ctx.usedLetters) : new Set()
+      collectHintLettersFromToolbar(this.getPageActionHints()).forEach((ch) => used.add(ch))
+      return this.buildDefectFieldTableRowActionHints(used)
+    },
+    getPageActionHintScrollRoots() {
+      const table = this.$refs.defectFieldTable
+      if (!table || !table.$el) return []
+      const bodyWrap = getDefectTableScrollBody(table.$el)
+      return bodyWrap ? [bodyWrap] : []
+    },
+    buildDefectFieldTableRowActionHints(usedLetters) {
+      if (this.loading || this.open || !this.canEditDefectField) return []
+      const table = this.$refs.defectFieldTable
+      if (!table || !table.$el) return []
+      const bodyWrap = getDefectTableScrollBody(table.$el)
+      if (!bodyWrap) return []
+      const tableRoot = table.$el
+      const list = this.paginatedFieldList || []
+      const seen = new Set()
+      const anchors = []
+      bodyWrap.querySelectorAll('tbody tr.el-table__row').forEach((tr, rowIndex) => {
+        if (!isRowIntersectingContainer(tr, bodyWrap)) return
+        const row = resolveElTableRowData(tr) || list[rowIndex]
+        if (!row || this.isBuiltinField(row) || row.fieldId == null) return
+        const fieldId = String(row.fieldId)
+        if (seen.has(fieldId)) return
+        seen.add(fieldId)
+        const rowKey = { field: 'fieldId', value: fieldId }
+        const layout = resolveTableRowFirstColumnKbdBadgeLayout(
+          tr, tableRoot, '.defect-field-row-kbd-hint-anchor', rowKey
+        )
+        const anchor = tr.querySelector('.defect-field-row-kbd-hint-anchor') ||
+          resolveTableRowFirstColumnHintAnchor(tr, tableRoot, '.defect-field-row-kbd-hint-anchor', rowKey)
+        if (!anchor || !layout.rect) return
+        anchors.push({
+          anchor,
+          getAnchorRect: () => layout.rect,
+          floatOffset: layout.floatOffset,
+          skipViewportCheck: true,
+          run: () => {
+            if (!this.canEditDefectField) return
+            this.handleUpdate(row)
+          }
+        })
+      })
+      const letters = assignRowHintLetters(anchors.length, usedLetters)
+      return anchors.map((item, i) => ({
+        ...item,
+        letter: letters[i],
+        key: `row-${i}`
+      })).filter((item) => item.letter)
+    },
     initDefectFieldListBodyResizeObserver() {
       if (typeof ResizeObserver === 'undefined') return
       this.destroyDefectFieldListBodyResizeObserver()
@@ -568,9 +713,6 @@ export default {
           }
         })
       })
-    },
-    goBack() {
-      this.$router.back()
     },
     normalizeLabelForCompare(label) {
       return String(label || '').trim().toLowerCase()
@@ -857,13 +999,16 @@ export default {
       this.resetForm('form')
     },
     cancel() {
-      this.open = false
-      this.reset()
+      this.requestCloseToolDialog()
     },
     handleAdd() {
       this.reset()
       this.open = true
       this.title = this.$t('defect.custom-field.add-field')
+      this.$nextTick(() => {
+        const btn = this.$el && this.$el.querySelector('.project-defect-field-hint-add')
+        if (btn && typeof btn.blur === 'function') btn.blur()
+      })
     },
     loadEnumOptionsFromTypeConfig(typeConfig) {
       this.enumOptions = enumOptionsFromTypeConfig(typeConfig)

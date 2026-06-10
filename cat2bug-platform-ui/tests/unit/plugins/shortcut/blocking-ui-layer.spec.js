@@ -93,4 +93,34 @@ describe('hasBlockingUiLayer', () => {
       excludeDefectToolDialog: true
     })).toBe(false)
   })
+
+  it('does not block Esc close path when cat2bug-form-shortcut-dialog class is present', () => {
+    document.body.innerHTML = `
+      <div class="el-dialog__wrapper" style="position:fixed;inset:0;width:100px;height:100px;">
+        <div class="el-dialog cat2bug-form-shortcut-dialog" style="width:400px;height:200px;">
+          <div class="el-dialog__body"></div>
+        </div>
+      </div>
+    `
+    expect(hasBlockingUiLayer()).toBe(true)
+    expect(hasBlockingUiLayer({
+      excludeDefectFormDrawer: true,
+      excludeHandleDefectDrawer: true,
+      excludeDefectToolDialog: true
+    })).toBe(false)
+  })
+
+  it('blocks page Esc when project icon popover is open', () => {
+    document.body.innerHTML = `
+      <div class="el-popover project-icon-popper" style="position:fixed;width:550px;height:300px;">
+        <div class="project-icon-popper"></div>
+      </div>
+    `
+    expect(hasBlockingUiLayer()).toBe(true)
+    expect(hasBlockingUiLayer({
+      excludeDefectFormDrawer: true,
+      excludeHandleDefectDrawer: true,
+      excludeDefectToolDialog: true
+    })).toBe(true)
+  })
 })

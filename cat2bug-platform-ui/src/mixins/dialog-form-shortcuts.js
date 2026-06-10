@@ -11,6 +11,7 @@ import {
   isEscapeCloseKey,
   isSaveShortcutKey
 } from '@/utils/defect-drawer-shortcuts'
+import { isAnyProjectIconPopoverOpenInDom } from '@/utils/project-icon-popover-kbd'
 import { hasBlockingUiLayer } from '@/plugins/shortcut/service'
 import { dismissToolbarSplitDropdownSessions } from '@/utils/split-dropdown-kbd'
 
@@ -62,6 +63,7 @@ export default {
     $_canCloseDrawerByShortcut(e) {
       if (!this.$_formShortcutSurfaceVisible) return false
       if (!isEscapeCloseKey(e)) return false
+      if (isAnyProjectIconPopoverOpenInDom()) return false
       return !hasBlockingUiLayer({
         excludeDefectFormDrawer: true,
         excludeHandleDefectDrawer: true,

@@ -1,5 +1,5 @@
 <template>
-  <el-dialog :title="$t('team.invite-members')" :visible.sync="dialogVisible" width="400px" append-to-body :close-on-press-escape="false" :before-close="onToolDialogBeforeClose" @opened="onToolDialogOpened">
+  <el-dialog :title="$t('team.invite-members')" :visible.sync="dialogVisible" width="400px" append-to-body :close-on-click-modal="false" custom-class="cat2bug-form-shortcut-dialog team-invite-member-dialog" :close-on-press-escape="false" :before-close="onToolDialogBeforeClose" @opened="onToolDialogOpened">
     <el-form ref="form" :model="form" :rules="rules" label-width="120px">
       <el-row>
         <el-col :span="24">
@@ -52,20 +52,14 @@
 
 <script>
 import {
-  addMember,
-  addTeam,
-  getMemberByTeam,
   inviteMember,
-  listMember,
-  listNotMember, listTeamRole,
-  updateTeam
+  listNotMember, listTeamRole
 } from "@/api/system/team";
-import {getUser} from "@/api/system/user";
 import Cat2BugAvatar from "@/components/Cat2BugAvatar";
 import defectToolDialogKbd from '@/mixins/defect-tool-dialog-kbd'
 
 export default {
-  name: "CreateTeamMember",
+  name: "InviteTeamMember",
   mixins: [defectToolDialogKbd],
   components: { Cat2BugAvatar },
   data() {
@@ -99,6 +93,7 @@ export default {
   },
   methods: {
     open(){
+      this.reset();
       this.searchMemberHandle();
       listTeamRole(this.teamId).then(res => {
         this.roleOptions = res.data?res.data.filter(r=>r.isTeamRole && r.teamCreateBy==false).map(r=>{
@@ -129,7 +124,7 @@ export default {
       this.$refs["form"].validate(valid => {
         if (valid) {
           inviteMember(this.getTeamId(), this.form).then(res => {
-            this.$modal.msgSuccess("新增成功");
+            this.$modal.msgSuccess(this.$i18n.t('add-success'));
             this.doCloseToolDialog();
             this.$emit("invite",res);
           });

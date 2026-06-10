@@ -1,6 +1,6 @@
 <template>
-  <div class="app-container">
-    <el-row class="project-add-page-header project-add-page-header--with-filter">
+  <div class="app-container" ref="projectOptionSubMain">
+    <el-row class="project-add-page-header project-add-page-header--with-filter project-option-sub-hint-back">
       <el-page-header @back="goBack" :content="$t('project.ai-model-manager')">
       </el-page-header>
     </el-row>
@@ -16,6 +16,7 @@
           @select="handleSelectSearchModel"
         ></el-autocomplete>
         <el-button
+          class="project-ai-hint-download"
           type="primary"
           style="float: right;"
           plain
@@ -92,8 +93,13 @@ const AI_MODEL_COMPLETED_STATE = 'COMPLETED';
 const AI_MODEL_PULLING_STATE = 'PULLING';
 const AI_MODEL_ERROR_STATE = 'ERROR';
 const AI_MODEL_SUCCESS_STATE = 'SUCCESS';
+import projectOptionSubKbd, { PROJECT_OPTION_KBD_SCOPE } from '@/mixins/project-option-sub-kbd'
+import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
+import { checkPermi } from '@/utils/permission'
+
 export default {
   name: "Ai",
+  mixins: [projectOptionSubKbd],
   data() {
     return {
       searchModelSet: [],
@@ -219,6 +225,28 @@ export default {
     this.topicId = null;
   },
   methods: {
+    getProjectOptionSubRegisterActions() {
+      return [
+        { key: 'create', defaultLetter: 'E', run: () => this.shortcutDownloadModel() }
+      ]
+    },
+    getProjectOptionSubActionHints() {
+      const L = (key, def) => shortcutStore.getLetter(`action.${PROJECT_OPTION_KBD_SCOPE}.${key}`, def)
+      return [
+        {
+          key: 'create',
+          letter: L('create', 'E'),
+          badgeSelector: '.project-ai-hint-download',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2, dy: 5 },
+          run: () => this.shortcutDownloadModel(),
+          visible: () => checkPermi(['system:ai:add'])
+        }
+      ]
+    },
+    shortcutDownloadModel() {
+      if (!checkPermi(['system:ai:add'])) return
+      this.downloadModelHandle()
+    },
     /** 未启用 Ollama 时不允许访问本页 */
     ensureOllamaEnabled() {
       const projectId = this.getProjectId();
@@ -289,10 +317,6 @@ export default {
     searchDownloadModelAutocomplete(queryString, cb) {
       let results = queryString ? this.searchModelSet.filter(m=>m.value && m.value.indexOf(queryString)>-1) : this.searchModelSet;
       cb(results);
-    },
-    /** 返回上一页 */
-    goBack() {
-      this.$router.back();
     },
     /** 选择模型名称 */
     handleSelectSearchModel(modelName) {

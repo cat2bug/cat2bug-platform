@@ -1,6 +1,6 @@
 <template>
   <el-dialog :title="title" :visible.sync="visible" width="600px" append-to-body :close-on-press-escape="false" :before-close="onToolDialogBeforeClose" @opened="onToolDialogOpened">
-    <el-form ref="form" rules="rules" :model="form" :rules="rules" label-width="150px">
+    <el-form ref="form" rules="rules" :model="form" :rules="rules" label-width="150px" class="module-dialog-form">
       <el-form-item :label="$t('module.parent-module')" prop="modulePid">
           <treeselect
             v-model="form.modulePid"
@@ -10,32 +10,38 @@
             :placeholder="$t('module.please-select-parent-module')"
           />
       </el-form-item>
-      <el-form-item prop="moduleName" v-show="form.moduleId || addModuleMode">
+      <el-form-item :prop="moduleNameFormProp" class="module-name-row cat2bug-field-hint-exclude is-no-asterisk">
         <template slot="label">
           <div class="module-switch-title">
-            <label>{{ $t('module.name') }}</label>
-            <el-switch
-              v-show="!form.moduleId"
-              v-model="addModuleMode"
-              active-color="#13ce66"
-              inactive-color="#ff4949">
-            </el-switch>
+            <label class="module-name-label-hint">
+              <span v-if="!form.moduleId" class="module-name-required" aria-hidden="true">*</span>{{ moduleNameLabelText }}
+            </label>
+            <span v-show="!form.moduleId" class="module-mode-switch-hint">
+              <el-switch
+                v-model="addModuleMode"
+                active-color="#13ce66"
+                inactive-color="#ff4949">
+              </el-switch>
+            </span>
           </div>
         </template>
-        <el-input v-model="form.moduleName" :placeholder="$t('module.enter-module-name')" maxlength="128" />
-      </el-form-item>
-      <el-form-item prop="batchModuleNames" v-show="!form.moduleId && !addModuleMode">
-        <template slot="label">
-          <div class="module-switch-title">
-            <label>{{ $t('module.names') }}</label>
-            <el-switch
-              v-model="addModuleMode"
-              active-color="#13ce66"
-              inactive-color="#ff4949">
-            </el-switch>
-          </div>
-        </template>
-        <el-input type="textarea" rows="8" v-model="strAddModules" :placeholder="$t('module.enter-module-names')" maxlength="65536" show-word-limit />
+        <div class="module-name-hint-host">
+          <el-input
+            v-if="form.moduleId || addModuleMode"
+            v-model="form.moduleName"
+            :placeholder="$t('module.enter-module-name')"
+            maxlength="128"
+          />
+          <el-input
+            v-else
+            type="textarea"
+            rows="8"
+            v-model="strAddModules"
+            :placeholder="$t('module.enter-module-names')"
+            maxlength="65536"
+            show-word-limit
+          />
+        </div>
       </el-form-item>
       <el-form-item v-show="addModuleMode" :label="$t('annex')" prop="annexUrls">
         <file-upload v-model="form.annexUrls" :limit="9" :file-type="[]"/>
@@ -134,7 +140,72 @@ export default {
       default: null
     }
   },
+  computed: {
+    moduleNameFormProp() {
+      return (this.form.moduleId || this.addModuleMode) ? 'moduleName' : 'batchModuleNames'
+    },
+    moduleNameLabelText() {
+      return (this.form.moduleId || this.addModuleMode)
+        ? this.$t('module.name')
+        : this.$t('module.names')
+    }
+  },
   methods: {
+    getFixedFieldHints() {
+      const hints = [
+        {
+          letter: 'F',
+          badgeSelector: this.$_moduleNameHintBadgeSelector(),
+          onActivate: () => this.$_focusModuleNameField()
+        }
+      ]
+      if (!this.form.moduleId) {
+        hints.push({
+          letter: 'M',
+          badgeSelector: this.$_moduleModeSwitchBadgeSelector(),
+          onActivate: () => this.$_toggleModuleAddMode()
+        })
+      }
+      return hints
+    },
+    $_moduleNameHintBadgeSelector() {
+      return '.module-name-row .module-name-label-hint'
+    },
+    $_moduleModeSwitchBadgeSelector() {
+      return '.module-name-row .module-mode-switch-hint'
+    },
+    $_focusModuleNameField() {
+      const container = this.getFieldHintContainer()
+      if (!container) return
+      const host = container.querySelector('.module-name-row .module-name-hint-host')
+      const input = host && (host.querySelector('textarea') || host.querySelector('input:not([type="hidden"])'))
+      if (input && typeof this.$_focusControl === 'function') {
+        this.$_focusControl(input)
+      }
+    },
+    $_toggleModuleAddMode() {
+      const container = this.getFieldHintContainer()
+      if (!container) return
+      const switchRoot = container.querySelector('.module-name-row .module-mode-switch-hint .el-switch')
+      const switchCore = switchRoot && switchRoot.querySelector('.el-switch__core')
+      if (switchCore) {
+        switchCore.click()
+      } else {
+        this.addModuleMode = !this.addModuleMode
+      }
+      this.$_fieldHintMap = null
+      this.$_fieldHintPending = null
+      this.$_hideFieldHintBadges()
+      this.$nextTick(() => {
+        const nextInput = container.querySelector('.module-name-row .module-mode-switch-hint .el-switch__input')
+        if (nextInput && typeof this.$_focusControl === 'function') {
+          this.$_focusControl(nextInput)
+        }
+        if (this.$_modifierHeld) {
+          this.$_refreshFieldHintsForViewport(true)
+        }
+      })
+    },
     open(moduleId, modulePid) {
       this.getTreeselect();
       this.reset();
@@ -240,13 +311,67 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.module-switch-title {
-  display: inline-grid;
-  flex-direction: column;
-  justify-content: center;
-  align-items: flex-end;
-  .el-switch {
-    display: inline;
+.module-name-row.el-form-item {
+  display: flex;
+  align-items: flex-start;
+
+  &::before,
+  &::after {
+    display: none;
   }
+
+  :deep(.el-form-item__label) {
+    float: none;
+    flex: 0 0 150px;
+    width: 150px !important;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-end;
+    padding-top: 0;
+    line-height: 20px;
+  }
+
+  :deep(.el-form-item__content) {
+    margin-left: 0 !important;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+}
+.module-switch-title {
+  box-sizing: border-box;
+  width: 100%;
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: stretch;
+  gap: 6px;
+}
+.module-name-label-hint,
+.module-mode-switch-hint {
+  position: relative;
+  display: block;
+  box-sizing: border-box;
+  width: calc(100% + 12px);
+  max-width: calc(100% + 12px);
+  margin-right: -12px;
+  padding-right: 12px;
+  text-align: right;
+}
+.module-name-label-hint {
+  margin: 0;
+  padding-right: 12px;
+  white-space: nowrap;
+  line-height: 20px;
+}
+.module-name-required {
+  color: #f56c6c;
+  margin-right: 4px;
+}
+.module-mode-switch-hint {
+  margin: 0 -12px 0 0;
+  padding: 0 12px 0 0;
+  line-height: 1;
+}
+.module-mode-switch-hint .el-switch {
+  vertical-align: top;
 }
 </style>

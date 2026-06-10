@@ -1,12 +1,21 @@
 <template>
-  <div class="app-container">
-    <el-row class="project-add-page-header project-add-page-header--with-filter">
+  <div class="app-container" ref="projectOptionSubMain">
+    <el-row class="project-add-page-header project-add-page-header--with-filter project-option-sub-hint-back">
       <el-page-header @back="goBack" :content="$t('project.ai-account-manager')">
       </el-page-header>
     </el-row>
-    <div class="ai-account-tools">
-      <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="80px">
-        <el-form-item label="" prop="accountName">
+    <div class="ai-account-tools project-option-list-tools">
+      <el-form
+        :model="queryParams"
+        ref="queryForm"
+        size="small"
+        :inline="true"
+        v-show="showSearch"
+        label-width="80px"
+        class="left"
+        :class="{ 'list-query-keyboard-nav': listQueryNavActive }"
+      >
+        <el-form-item label="" prop="accountName" class="list-query-nav-item project-ai-account-hint-query-name" data-query-key="accountName">
           <el-input
             prefix-icon="el-icon-setting"
             v-model="queryParams.accountName"
@@ -15,7 +24,7 @@
             @keyup.enter.native="handleQuery"
           />
         </el-form-item>
-        <el-form-item label="" prop="modelName">
+        <el-form-item label="" prop="modelName" class="list-query-nav-item" data-query-key="modelName">
           <el-input
             prefix-icon="el-icon-coin"
             v-model="queryParams.modelName"
@@ -24,59 +33,26 @@
             @keyup.enter.native="handleQuery"
           />
         </el-form-item>
-<!--        <el-form-item>-->
-<!--          <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>-->
-<!--          <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>-->
-<!--        </el-form-item>-->
       </el-form>
-      <el-row :gutter="10" class="mb8">
-        <el-col :span="1.5">
-          <el-button
-            type="primary"
-            plain
-            icon="el-icon-plus"
-            size="small"
-            @click="handleAdd"
-            v-hasPermi="['ai:account:add']"
-          >{{ $t('project.ai.new-account') }}</el-button>
-        </el-col>
-<!--        <el-col :span="1.5">-->
-<!--          <el-button-->
-<!--            type="success"-->
-<!--            plain-->
-<!--            icon="el-icon-edit"-->
-<!--            size="mini"-->
-<!--            :disabled="single"-->
-<!--            @click="handleUpdate"-->
-<!--            v-hasPermi="['ai:account:edit']"-->
-<!--          >修改</el-button>-->
-<!--        </el-col>-->
-<!--        <el-col :span="1.5">-->
-<!--          <el-button-->
-<!--            type="danger"-->
-<!--            plain-->
-<!--            icon="el-icon-delete"-->
-<!--            size="mini"-->
-<!--            :disabled="multiple"-->
-<!--            @click="handleDelete"-->
-<!--            v-hasPermi="['ai:account:remove']"-->
-<!--          >删除</el-button>-->
-<!--        </el-col>-->
-<!--        <el-col :span="1.5">-->
-<!--          <el-button-->
-<!--            type="warning"-->
-<!--            plain-->
-<!--            icon="el-icon-download"-->
-<!--            size="mini"-->
-<!--            @click="handleExport"-->
-<!--            v-hasPermi="['ai:account:export']"-->
-<!--          >导出</el-button>-->
-<!--        <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>-->
-      </el-row>
+      <div ref="aiAccountToolsRight" class="project-option-list-tools-right">
+        <el-button
+          class="project-ai-account-hint-create"
+          type="primary"
+          plain
+          icon="el-icon-plus"
+          size="small"
+          @click="handleAdd"
+          v-hasPermi="['ai:account:add']"
+        >{{ $t('project.ai.new-account') }}</el-button>
+      </div>
     </div>
-    <el-table v-loading="loading" :data="accountList" @selection-change="handleSelectionChange">
+    <el-table ref="aiAccountTable" v-loading="loading" :data="accountList" @selection-change="handleSelectionChange">
 <!--      <el-table-column type="selection" width="55" align="center" />-->
-      <el-table-column :label="$t('project.ai.account-name')" align="center" prop="accountName" width="200" />
+      <el-table-column :label="$t('project.ai.account-name')" align="center" prop="accountName" width="200">
+        <template slot-scope="scope">
+          <span class="ai-account-row-kbd-hint-anchor">{{ scope.row.accountName }}</span>
+        </template>
+      </el-table-column>
       <el-table-column :label="$t('project.ai.url')" align="center" prop="aiUrl" />
       <el-table-column :label="$t('project.ai.model-name')" align="center" prop="modelName" width="200" />
       <el-table-column :label="$t('project.ai.max-token')" align="center" prop="maxCompletionTokens" width="100" />
@@ -109,6 +85,7 @@
     </el-table>
 
     <pagination
+      class="project-ai-account-table-pagination"
       v-show="total>0"
       :total="total"
       :page.sync="queryParams.pageNum"
@@ -117,8 +94,17 @@
     />
 
     <!-- 新建或修改 OpenAI 账号对话框 -->
-    <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
-      <el-form ref="form" :model="form" :rules="rules" label-width="100px">
+    <el-dialog
+      :title="title"
+      :visible.sync="open"
+      width="500px"
+      append-to-body
+      custom-class="cat2bug-form-shortcut-dialog"
+      :close-on-press-escape="false"
+      :before-close="onToolDialogBeforeClose"
+      @opened="onToolDialogOpened"
+    >
+      <el-form ref="form" :model="form" :rules="rules" label-width="100px" class="project-ai-account-dialog-form">
         <el-form-item :label="$t('project.ai.account-name')" prop="accountName">
           <el-input v-model="form.accountName" placeholder="请输入账号名称" :maxlength="64" />
         </el-form-item>
@@ -136,8 +122,11 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
-        <el-button @click="cancel">取 消</el-button>
+        <el-button class="defect-kbd-hint-host" type="primary" @click="submitForm">
+          确 定
+          <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
+        </el-button>
+        <el-button @click="requestCloseToolDialog">取 消</el-button>
       </div>
     </el-dialog>
   </div>
@@ -145,6 +134,20 @@
 
 <script>
 import { listAccount, getAccount, delAccount, addAccount, updateAccount, testAccount } from "@/api/ai/AIAccount";
+import projectOptionSubListKbd from '@/mixins/project-option-sub-list-kbd'
+import defectToolDialogKbd from '@/mixins/defect-tool-dialog-kbd'
+import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
+import { PROJECT_OPTION_KBD_SCOPE } from '@/mixins/project-option-sub-kbd'
+import { checkPermi } from '@/utils/permission'
+import {
+  assignRowHintLetters,
+  collectHintLettersFromToolbar,
+  getDefectTableScrollBody,
+  isRowIntersectingContainer,
+  resolveElTableRowData,
+  resolveTableRowFirstColumnHintAnchor,
+  resolveTableRowFirstColumnKbdBadgeLayout
+} from '@/utils/defect-row-kbd-hints'
 
 function validateAiUrl(rule, value, callback) {
   if (value === null || value === undefined || String(value).trim() === "") {
@@ -170,6 +173,7 @@ function validateAiUrl(rule, value, callback) {
 
 export default {
   name: "Account",
+  mixins: [projectOptionSubListKbd, defectToolDialogKbd],
   data() {
     return {
       // 遮罩层
@@ -225,14 +229,141 @@ export default {
     currentProjectId: function () {
       return parseInt(this.$store.state.user.config.currentProjectId);
     },
+    /** 供弹框快捷键 mixin 识别 open 状态 */
+    dialogVisible: {
+      get() {
+        return this.open
+      },
+      set(val) {
+        this.open = val
+      }
+    }
   },
   created() {
     this.getList();
   },
+  watch: {
+    open(val) {
+      if (typeof this.$_syncFormShortcutBinding === 'function') {
+        this.$_syncFormShortcutBinding(!!val)
+      }
+    }
+  },
   methods: {
-    /** 返回上一页 */
-    goBack() {
-      this.$router.back();
+    shouldProjectOptionSubEscGoBack() {
+      return !this.open
+    },
+    shortcutSave() {
+      this.submitForm()
+    },
+    doCloseToolDialog() {
+      this.open = false
+      this.toolDialogCloseBaseline = null
+      this.reset()
+    },
+    getFieldHintScrollContainer() {
+      const form = this.$refs.form
+      if (form && form.$el) {
+        const body = form.$el.closest('.el-dialog__body')
+        if (body) return body
+      }
+      return typeof this.getFieldHintContainer === 'function' ? this.getFieldHintContainer() : null
+    },
+    getListQueryNavItems() {
+      return [
+        { key: 'accountName' },
+        { key: 'modelName' }
+      ]
+    },
+    getListQueryNavToolbarRef() {
+      return 'aiAccountToolsRight'
+    },
+    getProjectOptionSubPaginationSelector() {
+      return '.project-ai-account-table-pagination'
+    },
+    getProjectOptionSubRegisterActions() {
+      return [
+        { key: 'query', defaultLetter: 'S', run: () => this.shortcutFocusQuery() },
+        { key: 'create', defaultLetter: 'E', run: () => this.shortcutCreateAccount() }
+      ]
+    },
+    getProjectOptionSubActionHints() {
+      const L = (key, def) => shortcutStore.getLetter(`action.${PROJECT_OPTION_KBD_SCOPE}.${key}`, def)
+      return [
+        {
+          key: 'query',
+          letter: L('query', 'S'),
+          badgeSelector: '.project-ai-account-hint-query-name',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
+          run: () => this.shortcutFocusQuery()
+        },
+        {
+          key: 'create',
+          letter: L('create', 'E'),
+          badgeSelector: '.project-ai-account-hint-create',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2, dy: 5 },
+          run: () => this.shortcutCreateAccount(),
+          visible: () => checkPermi(['ai:account:add'])
+        }
+      ]
+    },
+    /** ⌘ 按住：表格可见行账号名称列动态徽标（1–9 优先，字母补位） */
+    getPageDynamicActionHints(ctx) {
+      const used = (ctx && ctx.usedLetters) ? new Set(ctx.usedLetters) : new Set()
+      collectHintLettersFromToolbar(this.getPageActionHints()).forEach((ch) => used.add(ch))
+      return this.buildAiAccountTableRowActionHints(used)
+    },
+    getPageActionHintScrollRoots() {
+      const table = this.$refs.aiAccountTable
+      if (!table || !table.$el) return []
+      const bodyWrap = getDefectTableScrollBody(table.$el)
+      return bodyWrap ? [bodyWrap] : []
+    },
+    buildAiAccountTableRowActionHints(usedLetters) {
+      if (this.loading || this.open || !checkPermi(['ai:account:edit'])) return []
+      const table = this.$refs.aiAccountTable
+      if (!table || !table.$el) return []
+      const bodyWrap = getDefectTableScrollBody(table.$el)
+      if (!bodyWrap) return []
+      const tableRoot = table.$el
+      const list = this.accountList || []
+      const seen = new Set()
+      const anchors = []
+      bodyWrap.querySelectorAll('tbody tr.el-table__row').forEach((tr, rowIndex) => {
+        if (!isRowIntersectingContainer(tr, bodyWrap)) return
+        const row = resolveElTableRowData(tr) || list[rowIndex]
+        if (!row || row.accountId == null) return
+        const accountId = String(row.accountId)
+        if (seen.has(accountId)) return
+        seen.add(accountId)
+        const rowKey = { field: 'accountId', value: accountId }
+        const layout = resolveTableRowFirstColumnKbdBadgeLayout(
+          tr, tableRoot, '.ai-account-row-kbd-hint-anchor', rowKey
+        )
+        const anchor = tr.querySelector('.ai-account-row-kbd-hint-anchor') ||
+          resolveTableRowFirstColumnHintAnchor(tr, tableRoot, '.ai-account-row-kbd-hint-anchor', rowKey)
+        if (!anchor || !layout.rect) return
+        anchors.push({
+          anchor,
+          getAnchorRect: () => layout.rect,
+          floatOffset: layout.floatOffset,
+          skipViewportCheck: true,
+          run: () => {
+            if (!checkPermi(['ai:account:edit'])) return
+            this.handleUpdate(row)
+          }
+        })
+      })
+      const letters = assignRowHintLetters(anchors.length, usedLetters)
+      return anchors.map((item, i) => ({
+        ...item,
+        letter: letters[i],
+        key: `row-${i}`
+      })).filter((item) => item.letter)
+    },
+    shortcutCreateAccount() {
+      if (!checkPermi(['ai:account:add'])) return
+      this.handleAdd()
     },
     /** 查询OpenAI账号列表 */
     getList() {
@@ -243,10 +374,9 @@ export default {
         this.loading = false;
       });
     },
-    // 取消按钮
+    // 取消按钮（保留供其他调用；弹框内请用 requestCloseToolDialog）
     cancel() {
-      this.open = false;
-      this.reset();
+      this.requestCloseToolDialog()
     },
     // 表单重置
     reset() {
@@ -283,6 +413,10 @@ export default {
       this.reset();
       this.open = true;
       this.title = this.$t("project.ai.new-account");
+      this.$nextTick(() => {
+        const btn = this.$el && this.$el.querySelector('.project-ai-account-hint-create')
+        if (btn && typeof btn.blur === 'function') btn.blur()
+      })
     },
     /** 测试 OpenAI 接口 */
     handleTest(row) {

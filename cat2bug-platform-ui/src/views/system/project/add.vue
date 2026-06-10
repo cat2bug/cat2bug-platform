@@ -1,7 +1,9 @@
 <template>
-  <div class="app-container project-form-page">
-    <el-page-header @back="goBack" :content="$t('project.create-project')">
-    </el-page-header>
+  <div class="app-container project-form-page" ref="projectCreateMain">
+    <el-row class="project-add-page-header project-create-hint-back">
+      <el-page-header @back="goBack" :content="$t('project.create-project')">
+      </el-page-header>
+    </el-row>
     <el-row class="project-add-page-container">
       <el-form ref="form" :model="form" :rules="rules" label-width="120px">
 <!--        基础信息-->
@@ -28,26 +30,42 @@
               style="width: 150px; height: 150px; border-radius: 4px; overflow: hidden;"
               :src="projectIconPreviewUrl"
               fit="cover"></cat2-bug-image>
-            <el-popover
-              v-model="projectIconPopperVisible"
-              popper-class="project-icon-popper"
-              placement="bottom"
-              trigger="click">
-              <div class="project-icon-popper">
-                <div class="project-icon-item" v-for="i in 10" :key="i">
-                  <el-image
-                    @click="clickProjectIconHandle(i)"
-                    :src="activeProjectIconUrl(i)"
-                    fit="cover"
-                  ></el-image>
+            <div :class="[PROJECT_ICON_POPOVER_HOST_CLASS, { 'is-popover-open': projectIconPopperVisible }]">
+              <el-popover
+                ref="projectIconPopover"
+                v-model="projectIconPopperVisible"
+                popper-class="project-icon-popper"
+                placement="bottom"
+                trigger="click">
+                <div class="project-icon-popper">
+                  <div
+                    class="project-icon-item"
+                    v-for="i in 10"
+                    :key="i"
+                    role="button"
+                    :aria-label="$t('project.change-icon') + ' ' + i"
+                    tabindex="-1"
+                  >
+                    <el-image
+                      @click="clickProjectIconHandle(i)"
+                      :src="activeProjectIconUrl(i)"
+                      fit="cover"
+                    ></el-image>
+                  </div>
+                  <div class="project-icon-item" role="button" :aria-label="$t('upload.upload')" tabindex="-1">
+                    <image-upload v-model="projectIcon" :limit="1" :file-type="[]" :is-show-tip="false" :is-show-clipboard-button="false" buttonStyle="width: 130px; height: 130px;" @input="handleSelectSelfImage" />
+                  </div>
                 </div>
-                <div class="project-icon-item">
-                  <image-upload v-model="projectIcon" :limit="1" :file-type="[]" :is-show-tip="false" :is-show-clipboard-button="false" buttonStyle="width: 130px; height: 130px;" @input="handleSelectSelfImage" />
-                </div>
-              </div>
-              <!--              选择项目图标按钮-->
-              <el-button slot="reference" size="mini">{{$t('project.change-icon')}}</el-button>
-            </el-popover>
+                <el-button
+                  ref="projectIconTrigger"
+                  slot="reference"
+                  size="mini"
+                  class="project-icon-hint-change defect-kbd-hint-host"
+                >{{$t('project.change-icon')}}
+                  <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint" aria-hidden="true">{{ changeIconHintLetter }}</span>
+                </el-button>
+              </el-popover>
+            </div>
           </el-col>
           <el-col :xs="24" :sm="24" :md="16" :lg="16" :xl="12">
             <el-form-item :label="$t('project.member')">
@@ -62,6 +80,7 @@
                 <el-col :span="24" v-if="projectMemberSwitch">
 <!--                  添加成员按钮-->
                   <el-popover
+                    v-model="memberPopoverVisible"
                     placement="bottom"
                     width="400"
                     @show="getMemberList"
@@ -127,9 +146,14 @@
               </el-row>
             </el-form-item>
 <!--            保存取消按钮-->
-            <el-form-item>
-              <el-button type="primary" @click="onSubmit">{{$t('finish')}}</el-button>
-              <el-button @click="goBack">{{$t('cancel')}}</el-button>
+            <el-form-item class="page-form-actions">
+              <div class="page-form-actions__buttons">
+                <el-button @click="goBack">{{$t('cancel')}}</el-button>
+                <el-button class="defect-kbd-hint-host" type="primary" @click="onSubmit">
+                  {{$t('finish')}}
+                  <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
+                </el-button>
+              </div>
             </el-form-item>
           </el-col>
         </el-row>
@@ -143,32 +167,46 @@ import {addProject, listProjectRole} from "@/api/system/project";
 import { listMember } from "@/api/system/team";
 import MemberNameplate from "@/components/MemberNameplate"
 import { resolveProjectIconUrl } from '@/utils/upload-asset'
+import projectCreateFormKbd from '@/mixins/project-create-form-kbd'
+import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
+import { PROJECT_CREATE_KBD_SCOPE } from '@/mixins/project-create-kbd'
+import {
+  PROJECT_ICON_POPOVER_HOST_CLASS,
+  destroyProjectIconPopoverKbd,
+  initProjectIconPopoverKbd,
+  isAnyProjectIconPopoverOpenInDom,
+  shortcutOpenProjectIconPopover
+} from '@/utils/project-icon-popover-kbd'
+import { isEscapeCloseKey } from '@/utils/defect-drawer-shortcuts'
+import { hasBlockingUiLayer } from '@/plugins/shortcut/service'
 
 export default {
   name: "ProjectAdd",
+  mixins: [projectCreateFormKbd],
   components:{ MemberNameplate },
   data() {
     return {
+      PROJECT_ICON_POPOVER_HOST_CLASS,
       memberParams: {
         params: {
           excludeMembers: [],
           search: null
         }
-      },                                // 用户查询条件
-      roleOptions: [],                  // 角色选项
-      memberList:[],                    // 成员列表
-      projectMemberSwitch: false,       // 项目成员开关
+      },
+      roleOptions: [],
+      memberList:[],
+      projectMemberSwitch: false,
       projectIcon: null,
+      memberPopoverVisible: false,
       form:{
-        teamId: this.currentTeamId,     // 团队id
-        projectName: null,              // 项目名称
-        projectIntroduce: null,         // 项目介绍
-        projectIcon: null,              // 项目图标
-        members: []                     // 项目成员
-      },                                // 提交的表单
-      projectIconPopperVisible: false,  // 是否显示项目图标弹窗
-      activeProjectIconIndex: 1,        // 当前选中的项目图标索引
-      // 表单校验
+        teamId: this.currentTeamId,
+        projectName: null,
+        projectIntroduce: null,
+        projectIcon: null,
+        members: []
+      },
+      projectIconPopperVisible: false,
+      activeProjectIconIndex: 1,
       rules: {
         projectName: [
           { required: true, message: this.$i18n.t('project.project-name-cannot-empty'), trigger: "blur" }
@@ -180,13 +218,11 @@ export default {
     }
   },
   computed: {
-    /** 计算当前项目图标地址 */
     activeProjectIconUrl: function () {
       return function (index){
         return require('@/assets/images/project/project_icon'+index+'.svg')
       }
     },
-    /** 获取角色选项 */
     selectRoleOptions: function (){
       return function (member){
         if(this.currentUserId == member.userId){
@@ -196,28 +232,89 @@ export default {
         }
       }
     },
-    /** 获取当前用户id */
     currentUserId: function () {
       return this.$store.state.user.id;
     },
-    /** 获取团队id */
     currentTeamId: function () {
       return this.$store.state.user.config.currentTeamId;
     },
     projectIconPreviewUrl() {
       return resolveProjectIconUrl(this.form.projectIcon)
     },
+    changeIconHintLetter() {
+      return shortcutStore.getLetter(`action.${PROJECT_CREATE_KBD_SCOPE}.changeIcon`, 'I')
+    }
   },
   created() {
     this.form.projectIcon = this.activeProjectIconUrl(1);
     this.getRoleList();
+    this.$nextTick(() => this.capturePageFormCloseBaseline())
   },
   mounted() {
+    this.$nextTick(() => initProjectIconPopoverKbd(this))
   },
-  // 移除滚动条监听
-  destroyed() {
+  activated() {
+    this.$nextTick(() => initProjectIconPopoverKbd(this))
+  },
+  beforeDestroy() {
+    destroyProjectIconPopoverKbd(this)
   },
   methods: {
+    getProjectCreateRegisterActions() {
+      return [{
+        key: 'changeIcon',
+        defaultLetter: 'I',
+        titleKey: 'keyboard.act.project-change-icon',
+        run: () => this.shortcutOpenProjectIconPopover()
+      }]
+    },
+    getProjectCreateActionHints() {
+      const L = (key, def) => shortcutStore.getLetter(`action.${PROJECT_CREATE_KBD_SCOPE}.${key}`, def)
+      return [{
+        key: 'changeIcon',
+        letter: L('changeIcon', 'I'),
+        badgeSelector: '.project-icon-hint-change',
+        floatOffset: { placement: 'bottom-right-outset', outset: 2 },
+        run: () => this.shortcutOpenProjectIconPopover()
+      }]
+    },
+    getFixedFieldHints() {
+      return [{
+        letter: shortcutStore.getLetter(`action.${PROJECT_CREATE_KBD_SCOPE}.changeIcon`, 'I'),
+        injectBadge: false,
+        onActivate: () => this.shortcutOpenProjectIconPopover()
+      }]
+    },
+    shortcutOpenProjectIconPopover() {
+      shortcutOpenProjectIconPopover(this)
+    },
+    shouldProjectCreateEscGoBack() {
+      return !this.projectIconPopperVisible && !this.memberPopoverVisible
+    },
+    $_canCloseDrawerByShortcut(e) {
+      if (this.memberPopoverVisible) return false
+      if (!this.$_formShortcutSurfaceVisible) return false
+      if (!isEscapeCloseKey(e)) return false
+      if (isAnyProjectIconPopoverOpenInDom()) return false
+      return !hasBlockingUiLayer({
+        excludeDefectFormDrawer: true,
+        excludeHandleDefectDrawer: true,
+        excludeViewReportDrawer: true,
+        excludeDefectToolDialog: true,
+        excludeCaseImportDialog: true
+      })
+    },
+    shortcutSave() {
+      this.onSubmit()
+    },
+    serializePageFormCloseState() {
+      return JSON.stringify({
+        form: { ...this.form },
+        activeProjectIconIndex: this.activeProjectIconIndex,
+        projectIcon: this.projectIcon,
+        projectMemberSwitch: this.projectMemberSwitch
+      })
+    },
     getRoleList() {
       listProjectRole(0).then(res => {
         this.roleOptions = res.rows?res.rows.map(r=>{
@@ -225,18 +322,17 @@ export default {
           return r;
         }):[];
         this.getMemberList();
-        this.dialogVisible = true;
+        this.$nextTick(() => {
+          initProjectIconPopoverKbd(this)
+          this.capturePageFormCloseBaseline()
+        })
       });
     },
-    /** 获取待添加的成员 */
     getMemberList(){
       this.memberParams.params.excludeMembers = this.form.members.map(m=>m.userId);
       listMember(this.currentTeamId,this.memberParams).then(res=>{
-        // 赋值成员列表
         this.memberList = res.rows.map(m=> {
-          // 设置不选中
           m.isSelect=false;
-          // 设置默认角色
           if(this.roleOptions && this.roleOptions.length>0){
             m.roleIds=[this.roleOptions.filter(r=>r.projectCreateBy==false)[0].roleId];
           } else {
@@ -251,7 +347,6 @@ export default {
         });
       });
     },
-    /** 删除选中成员 */
     deleteMemberHandle(member){
       member.isSelect = false;
       this.form.members = this.form.members.filter(m=>m.isSelect);
@@ -264,7 +359,6 @@ export default {
         }
       };
     },
-    /** 选中添加的成员 */
     selectAddMemberHandle(member) {
       member.isSelect = !member.isSelect;
       if(member.isSelect){
@@ -275,33 +369,27 @@ export default {
         this.form.members = this.form.members.filter(m=>m.isSelect);
       }
     },
-    /** 返回 */
-    goBack() {
-      this.$router.back();
-    },
-    /** 点击选中的项目图标处理方法 */
     clickProjectIconHandle(index) {
-      this.activeProjectIconIndex = index;                      // 赋值当前所选索引
-      this.form.projectIcon = this.activeProjectIconUrl(index); // 赋值项目图标
-      this.projectIconPopperVisible = false;                    // 隐藏图标选择组件
+      this.activeProjectIconIndex = index;
+      this.form.projectIcon = this.activeProjectIconUrl(index);
+      this.projectIconPopperVisible = false;
     },
-    /** 点击选择自定义图片处理方法 */
     handleSelectSelfImage(url) {
       if(url) {
-        this.form.projectIcon = process.env.VUE_APP_BASE_API + url;                              // 赋值项目图标
+        this.form.projectIcon = process.env.VUE_APP_BASE_API + url;
         this.projectIconPopperVisible = false;
       } else {
         this.clickProjectIconHandle(1);
       }
     },
-    /** 提交按钮 */
     onSubmit() {
       this.form.teamId = this.currentTeamId;
       this.$refs["form"].validate(valid => {
         if (valid) {
-          addProject(this.form).then(response => {
+          addProject(this.form).then(() => {
             this.$modal.msgSuccess(this.$i18n.t('add-success'));
-            this.goBack();
+            this.pageFormCloseBaseline = null
+            this.$router.back();
           });
         }
       });
@@ -317,7 +405,7 @@ export default {
     overflow-x: hidden;
     .step2 {
       display: flex;
-      display: -webkit-flex; /* Safari */
+      display: -webkit-flex;
       flex-direction: column;
       column-gap: 10px;
       row-gap: 10px;

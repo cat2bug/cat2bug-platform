@@ -5,7 +5,7 @@
       <slot name="left-tools"></slot>
       <div class="table-tools row">
         <el-popover placement="top" trigger="click" popper-class="defect-column-picker-popover" @show="emitColumnPickerVisible(true)" @hide="emitColumnPickerVisible(false)">
-          <div class="row">
+          <div class="defect-column-picker-head">
             <i class="el-icon-s-fold"></i>
             <h4>{{ $t('display-field') }}</h4>
           </div>
@@ -881,32 +881,6 @@ export default {
       margin-bottom: 0;
     }
   }
-}
-.defect-field-divider {
-  margin: 8px 0px;
-}
-/** 显示字段：勿限制 checkbox-group 宽高（原先 15px 会导致选项重叠错乱） */
-.defect-column-picker {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 220px;
-  max-height: 380px;
-  overflow-y: auto;
-  padding-right: 4px;
-}
-.defect-column-picker ::v-deep .el-checkbox {
-  display: flex;
-  align-items: center;
-  margin-right: 0;
-  white-space: nowrap;
-}
-.defect-column-picker ::v-deep .el-checkbox__input {
-  flex-shrink: 0;
-}
-.defect-column-picker ::v-deep .el-checkbox__label {
-  line-height: 1.4;
-  padding-left: 8px;
 }
 .row {
   display: flex;

@@ -39,21 +39,28 @@
         </el-form-item>
       </el-form>
       <div ref="reportToolsRight" class="report-tools-right">
-          <el-popover placement="top" trigger="click">
-            <div class="report-picker-head row">
+          <el-popover
+            placement="top"
+            trigger="click"
+            popper-class="defect-column-picker-popover"
+            v-model="reportColumnPickerVisible"
+            @show="onColumnPickerPopoverShow"
+            @hide="onColumnPickerPopoverHide"
+          >
+            <div class="defect-column-picker-head">
               <i class="el-icon-s-fold"></i>
               <h4>{{ $t('display-field') }}</h4>
             </div>
-            <el-divider class="report-picker-divider"></el-divider>
+            <el-divider class="defect-field-divider"></el-divider>
             <el-checkbox-group
               :key="'report-colpick-' + reportColumnPickerRev"
               v-model="columnPickerCheckedKeys"
-              class="report-column-picker"
+              class="defect-column-picker"
               @change="onReportColumnPickerChange"
             >
               <el-checkbox v-for="c in reportColumnPickerOptions" :key="c.key" :label="c.key">{{ $t(c.key) }}</el-checkbox>
             </el-checkbox-group>
-            <el-button style="padding: 9px;" plain slot="reference" icon="el-icon-s-fold" size="small"></el-button>
+            <el-button class="report-list-hint-columns" style="padding: 9px;" plain slot="reference" icon="el-icon-s-fold" size="small"></el-button>
           </el-popover>
           <el-button
             class="report-hint-batch-delete"
@@ -180,6 +187,7 @@ import Cat2BugTable from "@/components/Cat2BugTable";
 import { ReportTableColumnDefaults } from "@/views/system/report/report-table-options";
 import pageActionHints from '@/mixins/page-action-hints'
 import listQueryKeyboardNav from '@/mixins/list-query-keyboard-nav'
+import columnPickerPopoverKbd from '@/mixins/column-picker-popover-kbd'
 import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
 import { checkPermi } from '@/utils/permission'
 import {
@@ -197,7 +205,7 @@ const REPORT_KBD_SCOPE = 'report'
 
 export default {
   name: "Report",
-  mixins: [pageActionHints, listQueryKeyboardNav],
+  mixins: [pageActionHints, listQueryKeyboardNav, columnPickerPopoverKbd],
   components: { Step, ProjectLabel, ViewReport, ReportTools, FocusMemberList, ReportTypeFlag, Cat2BugReportTemplateSelect, Cat2BugAvatar, SelectProjectMember, Cat2BugTable },
   data() {
     return {
@@ -217,6 +225,7 @@ export default {
       reportList: [],
       reportTableColumnDefaults: ReportTableColumnDefaults.map(c => ({ ...c })),
       columnPickerCheckedKeys: [],
+      reportColumnPickerVisible: false,
       reportColumnPickerRev: 0,
       reportPickerColumnList: null,
       reportToolsWrapped: false,
@@ -364,7 +373,7 @@ export default {
           badgeSelector: '.report-hint-batch-delete',
           floatOffset: { placement: 'bottom-right-outset', outset: 2, dy: 5 },
           run: () => this.shortcutBatchDelete(),
-          visible: () => checkPermi(['system:report:remove']) && !this.multiple
+          visible: () => checkPermi(['system:report:remove'])
         },
         {
           key: 'prevPage',
@@ -435,6 +444,13 @@ export default {
     getListQueryNavToolbarRef() {
       return 'reportToolsRight'
     },
+    getColumnPickerTriggerEl() {
+      const root = this.getPageActionHintContainer()
+      return root && root.querySelector('.report-list-hint-columns')
+    },
+    closeColumnPickerPopoverKbd() {
+      this.reportColumnPickerVisible = false
+    },
     getListQueryNavFocusEl(key) {
       const itemEl = this.getListQueryNavItemEl(key)
       if (!itemEl) return null
@@ -458,8 +474,10 @@ export default {
       return !!(vr && vr.visible)
     },
     isReportColumnPickerOpen() {
-      const picker = document.querySelector('.report-column-picker')
-      return !!(picker && picker.offsetParent !== null)
+      const popper = document.querySelector('.defect-column-picker-popover')
+      if (!popper || popper.getAttribute('aria-hidden') === 'true') return false
+      const rect = popper.getBoundingClientRect()
+      return rect.width > 0 && rect.height > 0
     },
     getReportTableScrollBody() {
       const cat = this.$refs.cat2BugTable
@@ -834,47 +852,6 @@ export default {
   display: inline-flex;
   flex-direction: column;
   align-items: flex-start;
-}
-.report-picker-head.row {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: var(--cat2bug-toolbar-item-gap, 10px);
-}
-.report-picker-head h4 {
-  margin: 0;
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.3;
-}
-.report-picker-divider {
-  margin: 8px 0;
-}
-/** 与缺陷列表「显示字段」同款：用 gap 控制间距，去掉 checkbox 默认大块外边距 */
-.report-column-picker {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 220px;
-  max-height: 380px;
-  overflow-y: auto;
-  padding-right: 4px;
-}
-.report-column-picker ::v-deep .el-checkbox {
-  display: flex;
-  align-items: center;
-  margin-right: 0;
-  margin-bottom: 0;
-  height: auto;
-  line-height: 1.4;
-  white-space: nowrap;
-}
-.report-column-picker ::v-deep .el-checkbox__input {
-  flex-shrink: 0;
-}
-.report-column-picker ::v-deep .el-checkbox__label {
-  line-height: 1.4;
-  padding-left: 8px;
 }
 .report-table-pagination-band {
   flex-shrink: 0;

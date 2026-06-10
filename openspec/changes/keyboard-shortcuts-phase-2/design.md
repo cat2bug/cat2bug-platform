@@ -187,7 +187,7 @@ export function isReservedForScope(letter, scope) { ... }
 
 #### 3.7 团队设置 `scopeKey: team-option`
 
-同项目设置卡片模式。成员列表页 `team-member` scope：S 搜索、E 创建、V 邀请、B 返回。
+同项目设置卡片模式。成员列表页 `team-member` scope：S 搜索、E 创建、I 邀请、B 返回。
 
 #### 3.8 个人中心 `scopeKey: profile`
 

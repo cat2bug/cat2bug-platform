@@ -7,6 +7,11 @@
  * 不使用 Cmd/Ctrl 修饰组合，规避浏览器/OS 保留键冲突。
  */
 
+export {
+  PROJECT_OPTION_ACTION_DEFAULTS,
+  TEAM_OPTION_ACTION_DEFAULTS
+} from '@/utils/option-card-kbd-catalog'
+
 export const STORAGE_KEY = 'cat2bug.shortcuts.v1'
 
 export const DEFAULT_LEADERS = {
@@ -205,22 +210,30 @@ export const DOCUMENT_ACTION_DEFAULTS = [
   { key: 'nextPage', defaultLetter: 'P', titleKey: 'keyboard.act.next-page' }
 ]
 
-/** 项目设置枢纽页默认动作（子页返回；枢纽页入口按路由动态注册） */
-export const PROJECT_OPTION_ACTION_DEFAULTS = [
-  { key: 'back', defaultLetter: 'B', titleKey: 'keyboard.act.project-option-back' }
-]
-
-/** 团队设置枢纽页默认动作（子页返回；枢纽页入口按路由动态注册） */
-export const TEAM_OPTION_ACTION_DEFAULTS = [
-  { key: 'back', defaultLetter: 'B', titleKey: 'keyboard.act.team-option-back' }
-]
-
 /** 团队成员列表页默认动作 */
 export const TEAM_MEMBER_ACTION_DEFAULTS = [
   { key: 'query', defaultLetter: 'S', titleKey: 'keyboard.act.team-member-query' },
   { key: 'create', defaultLetter: 'E', titleKey: 'keyboard.act.team-member-create' },
-  { key: 'invite', defaultLetter: 'V', titleKey: 'keyboard.act.team-member-invite' },
-  { key: 'back', defaultLetter: 'B', titleKey: 'keyboard.act.team-member-back' }
+  { key: 'invite', defaultLetter: 'I', titleKey: 'keyboard.act.team-member-invite' },
+  { key: 'back', defaultLetter: 'B', titleKey: 'keyboard.act.team-member-back' },
+  { key: 'prevPage', defaultLetter: 'U', titleKey: 'keyboard.act.prev-page' },
+  { key: 'nextPage', defaultLetter: 'P', titleKey: 'keyboard.act.next-page' }
+]
+
+/** 团队项目管理页默认动作 */
+export const PROJECT_MANAGE_ACTION_DEFAULTS = [
+  { key: 'query', defaultLetter: 'S', titleKey: 'keyboard.act.project-manage-query' },
+  { key: 'create', defaultLetter: 'E', titleKey: 'keyboard.act.project-manage-create' },
+  { key: 'tabMine', defaultLetter: 'M', titleKey: 'keyboard.act.project-manage-tab-mine' },
+  { key: 'tabAll', defaultLetter: 'A', titleKey: 'keyboard.act.project-manage-tab-all' },
+  { key: 'prevPage', defaultLetter: 'B', titleKey: 'keyboard.act.prev-page' },
+  { key: 'nextPage', defaultLetter: 'P', titleKey: 'keyboard.act.next-page' }
+]
+
+/** 创建项目页默认动作 */
+export const PROJECT_CREATE_ACTION_DEFAULTS = [
+  { key: 'back', defaultLetter: 'B', titleKey: 'keyboard.act.project-create-back' },
+  { key: 'changeIcon', defaultLetter: 'I', titleKey: 'keyboard.act.project-change-icon' }
 ]
 
 /** 个人中心页默认动作 */
@@ -319,6 +332,10 @@ export function getPageActionDefaults(scopeKey) {
       return TEAM_OPTION_ACTION_DEFAULTS
     case 'team-member':
       return TEAM_MEMBER_ACTION_DEFAULTS
+    case 'project-manage':
+      return PROJECT_MANAGE_ACTION_DEFAULTS
+    case 'project-create':
+      return PROJECT_CREATE_ACTION_DEFAULTS
     case 'profile':
       return PROFILE_ACTION_DEFAULTS
     case 'doc':

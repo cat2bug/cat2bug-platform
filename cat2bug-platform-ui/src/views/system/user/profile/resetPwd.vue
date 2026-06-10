@@ -24,6 +24,7 @@ import { updateUserPwd } from "@/api/system/user";
 import dialogFormShortcuts from '@/mixins/dialog-form-shortcuts'
 import formFieldHints from '@/mixins/form-field-hints'
 import pageFormClose from '@/mixins/page-form-close'
+import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
 
 export default {
   mixins: [dialogFormShortcuts, formFieldHints, pageFormClose],
@@ -89,6 +90,10 @@ export default {
     }
   },
   methods: {
+    getFieldHintReservedLetters() {
+      const letter = shortcutStore.getLetter('action.profile.switchTab', 'J')
+      return letter ? { [String(letter).toUpperCase()]: true } : { J: true }
+    },
     serializePageFormCloseState() {
       return JSON.stringify({
         oldPassword: this.user.oldPassword,

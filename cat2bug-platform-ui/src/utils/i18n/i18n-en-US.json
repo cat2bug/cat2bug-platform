@@ -1548,6 +1548,8 @@
   "keyboard.sec-project-option": "Project settings page actions",
   "keyboard.sec-team-option": "Team settings page actions",
   "keyboard.sec-team-member": "Team member page actions",
+  "keyboard.sec-project-manage": "Project management page actions",
+  "keyboard.sec-project-create": "Create project page actions",
   "keyboard.sec-profile": "Profile page actions",
   "keyboard.act.case-query": "Focus query",
   "keyboard.act.case-create": "New test case",
@@ -1580,6 +1582,7 @@
   "keyboard.act.project-option-card-8": "Settings card 8",
   "keyboard.act.project-option-card-9": "Settings card 9",
   "keyboard.act.project-option-back": "Go back",
+  "keyboard.act.project-change-icon": "Change cover",
   "keyboard.act.team-option-card-1": "Settings card 1",
   "keyboard.act.team-option-card-2": "Settings card 2",
   "keyboard.act.team-option-card-3": "Settings card 3",
@@ -1594,6 +1597,11 @@
   "keyboard.act.team-member-create": "Create member",
   "keyboard.act.team-member-invite": "Invite member",
   "keyboard.act.team-member-back": "Go back",
+  "keyboard.act.project-manage-query": "Focus query",
+  "keyboard.act.project-manage-create": "Create project",
+  "keyboard.act.project-manage-tab-mine": "My projects",
+  "keyboard.act.project-manage-tab-all": "All projects",
+  "keyboard.act.project-create-back": "Go back",
   "keyboard.act.profile-switch-tab": "Switch tab",
   "keyboard.act.profile-back": "Go back"
 }

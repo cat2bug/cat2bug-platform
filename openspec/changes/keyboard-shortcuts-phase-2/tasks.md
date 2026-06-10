@@ -12,7 +12,7 @@
 
 ## 1. keymap 与设置页
 
-- [x] 1.1 `keymap.js` 增加 `CASE/PLAN/MODULE/REPORT/DOCUMENT/PROJECT_OPTION/TEAM_OPTION/TEAM_MEMBER/PROFILE_ACTION_DEFAULTS`
+- [x] 1.1 `keymap.js` 增加 `CASE/PLAN/MODULE/REPORT/DOCUMENT/PROJECT_OPTION/TEAM_OPTION/TEAM_MEMBER/PROJECT_MANAGE/PROJECT_CREATE/PROFILE_ACTION_DEFAULTS`
 - [x] 1.2 `member/keyboard/index.vue` 增加 Phase 2 分组展示与编辑
 
 ## 2a. 列表页一级动作
@@ -43,6 +43,8 @@
 - [x] 2c.3 `team/option/index.vue` 卡片 1–9
 - [x] 2c.4 `team/option/member/index.vue`
 - [x] 2c.5 `user/profile/index.vue` + userInfo + resetPwd
+- [x] 2c.6 `project/index.vue` 项目管理列表（`project-manage`）
+- [x] 2c.7 `project/add.vue` 创建项目表单（`project-create`）
 
 ## 3. 文档（可并行 keyboard-shortcuts-user-guide）
 

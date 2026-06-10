@@ -11,7 +11,7 @@
       <router-link v-if="canEditProject" to="project-base-info"><el-link>{{$t('project.base-info')}}</el-link></router-link>
       <router-link v-if="canManageApi" to="project-api"><el-link>{{$t('project.api-key')}}</el-link></router-link>
       <router-link v-if="canPushProject" to="/project/push"><el-link>{{$t('project.push')}}</el-link></router-link>
-      <el-link v-if="canRemoveProject" @click="handleDelete" type="danger">{{$t('project.delete')}}</el-link>
+      <el-link v-if="canRemoveProject" data-cat2bug-kbd-key="delete-project" @click="handleDelete" type="danger">{{$t('project.delete')}}</el-link>
     </el-card>
   </el-col>
 </template>

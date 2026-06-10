@@ -1530,6 +1530,8 @@
   "keyboard.sec-project-option": "プロジェクト設定ページ操作",
   "keyboard.sec-team-option": "チーム設定ページ操作",
   "keyboard.sec-team-member": "チームメンバーページ操作",
+  "keyboard.sec-project-manage": "プロジェクト管理ページ操作",
+  "keyboard.sec-project-create": "プロジェクト作成ページ操作",
   "keyboard.sec-profile": "マイページ操作",
   "keyboard.act.case-query": "検索にフォーカス",
   "keyboard.act.case-create": "新規テストケース",
@@ -1562,6 +1564,7 @@
   "keyboard.act.project-option-card-8": "設定カード 8",
   "keyboard.act.project-option-card-9": "設定カード 9",
   "keyboard.act.project-option-back": "戻る",
+  "keyboard.act.project-change-icon": "カバーを変更",
   "keyboard.act.team-option-card-1": "設定カード 1",
   "keyboard.act.team-option-card-2": "設定カード 2",
   "keyboard.act.team-option-card-3": "設定カード 3",
@@ -1576,6 +1579,11 @@
   "keyboard.act.team-member-create": "メンバー作成",
   "keyboard.act.team-member-invite": "メンバー招待",
   "keyboard.act.team-member-back": "戻る",
+  "keyboard.act.project-manage-query": "検索にフォーカス",
+  "keyboard.act.project-manage-create": "プロジェクト作成",
+  "keyboard.act.project-manage-tab-mine": "参加中のプロジェクト",
+  "keyboard.act.project-manage-tab-all": "すべてのプロジェクト",
+  "keyboard.act.project-create-back": "戻る",
   "keyboard.act.profile-switch-tab": "タブ切替",
   "keyboard.act.profile-back": "戻る"
 }

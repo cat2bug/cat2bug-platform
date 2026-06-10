@@ -102,6 +102,8 @@ import {
   PROJECT_OPTION_ACTION_DEFAULTS,
   TEAM_OPTION_ACTION_DEFAULTS,
   TEAM_MEMBER_ACTION_DEFAULTS,
+  PROJECT_MANAGE_ACTION_DEFAULTS,
+  PROJECT_CREATE_ACTION_DEFAULTS,
   PROFILE_ACTION_DEFAULTS,
   normalizeKey
 } from '@/plugins/shortcut/keymap'
@@ -242,6 +244,8 @@ export default {
         ['project-option', 'keyboard.sec-project-option', 'project-option', PROJECT_OPTION_ACTION_DEFAULTS],
         ['team-option', 'keyboard.sec-team-option', 'team-option', TEAM_OPTION_ACTION_DEFAULTS],
         ['team-member', 'keyboard.sec-team-member', 'team-member', TEAM_MEMBER_ACTION_DEFAULTS],
+        ['project-manage', 'keyboard.sec-project-manage', 'project-manage', PROJECT_MANAGE_ACTION_DEFAULTS],
+        ['project-create', 'keyboard.sec-project-create', 'project-create', PROJECT_CREATE_ACTION_DEFAULTS],
         ['profile', 'keyboard.sec-profile', 'profile', PROFILE_ACTION_DEFAULTS]
       ]
       phase2Sections.forEach(([id, secKey, scopeKey, defaults]) => {

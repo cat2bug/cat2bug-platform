@@ -1530,6 +1530,8 @@
   "keyboard.sec-project-option": "프로젝트 설정 페이지 동작",
   "keyboard.sec-team-option": "팀 설정 페이지 동작",
   "keyboard.sec-team-member": "팀 멤버 페이지 동작",
+  "keyboard.sec-project-manage": "프로젝트 관리 페이지 동작",
+  "keyboard.sec-project-create": "프로젝트 생성 페이지 동작",
   "keyboard.sec-profile": "개인 센터 페이지 동작",
   "keyboard.act.case-query": "검색 포커스",
   "keyboard.act.case-create": "새 테스트 케이스",
@@ -1562,6 +1564,7 @@
   "keyboard.act.project-option-card-8": "설정 카드 8",
   "keyboard.act.project-option-card-9": "설정 카드 9",
   "keyboard.act.project-option-back": "뒤로",
+  "keyboard.act.project-change-icon": "커버 변경",
   "keyboard.act.team-option-card-1": "설정 카드 1",
   "keyboard.act.team-option-card-2": "설정 카드 2",
   "keyboard.act.team-option-card-3": "설정 카드 3",
@@ -1576,6 +1579,11 @@
   "keyboard.act.team-member-create": "멤버 생성",
   "keyboard.act.team-member-invite": "멤버 초대",
   "keyboard.act.team-member-back": "뒤로",
+  "keyboard.act.project-manage-query": "검색 포커스",
+  "keyboard.act.project-manage-create": "프로젝트 만들기",
+  "keyboard.act.project-manage-tab-mine": "참여 중인 프로젝트",
+  "keyboard.act.project-manage-tab-all": "전체 프로젝트",
+  "keyboard.act.project-create-back": "뒤로",
   "keyboard.act.profile-switch-tab": "탭 전환",
   "keyboard.act.profile-back": "뒤로"
 }

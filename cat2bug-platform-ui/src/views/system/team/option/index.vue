@@ -46,7 +46,8 @@ export default {
       const L = (key, def) => shortcutStore.getLetter(`action.${TEAM_OPTION_KBD_SCOPE}.${key}`, def)
       const actions = buildOptionCardRegisterActions({
         container,
-        letterForKey: L
+        letterForKey: L,
+        scopeKey: TEAM_OPTION_KBD_SCOPE
       })
       this.$shortcut.registerPage(TEAM_OPTION_KBD_SCOPE, actions)
     },
@@ -63,7 +64,8 @@ export default {
       return buildOptionCardActionHints({
         container,
         letterForKey: L,
-        usedLetters: used
+        usedLetters: used,
+        scopeKey: TEAM_OPTION_KBD_SCOPE
       })
     },
   }

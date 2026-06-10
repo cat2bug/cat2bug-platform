@@ -1,6 +1,6 @@
 <template>
-  <div class="app-container">
-    <el-row class="project-add-page-header">
+  <div class="app-container" ref="projectOptionSubMain">
+    <el-row class="project-add-page-header project-option-sub-hint-back">
       <el-page-header @back="goBack" :content="$t('ding')">
       </el-page-header>
     </el-row>
@@ -19,12 +19,15 @@
             <el-form-item class="page-form-actions">
               <div class="page-form-actions__buttons">
                 <el-button @click="goBack">{{$t('cancel')}}</el-button>
-                <el-button type="primary" @click="onSubmit">{{$t('save')}}</el-button>
+                <el-button class="defect-kbd-hint-host" type="primary" @click="onSubmit">
+                  {{$t('save')}}
+                  <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
+                </el-button>
               </div>
             </el-form-item>
           </el-form>
       </el-col>
-      <el-col :xs="24" :sm="24" :md="14" :lg="14" :xl="14" class="doc">
+      <el-col :xs="24" :sm="24" :md="14" :lg="14" :xl="14" ref="projectImConfigDoc" class="doc">
         <h1 style="font-size: 2rem;">钉钉配置说明</h1>
         <h2>钉钉开发者平台配置</h2>
         <p>当前配置目的是发送个人通知到钉钉平台，此功能是通过钉钉【人与机器人会话接口】实现的，目前标准版接口累计可调用次数为1万次/月，如需更多次数调用，可升级钉钉专业版；调用此接口需要在钉钉开发者平台创建应用机器人，并将配置完成的账号ID配置到Cat2Bug-Platform平台，步骤如下。</p>
@@ -60,12 +63,12 @@
 <script>
 import MarkdownItVue from "markdown-it-vue"
 import {getDingConfig, saveDingConfig} from "@/api/im/ding";
-// import marked from 'marked';
-// import { ref } from 'vue';
-// import { readFileSync } from 'fs';
+import projectOptionSubFormKbd from '@/mixins/project-option-sub-form-kbd'
+import projectImConfigDocKbd from '@/mixins/project-im-config-doc-kbd'
 
 export default {
   name: "EnterpriseWeChat",
+  mixins: [projectOptionSubFormKbd, projectImConfigDocKbd],
   components:{ MarkdownItVue },
   data() {
     return {
@@ -96,6 +99,12 @@ export default {
     this.getConfig();
   },
   methods: {
+    shortcutSave() {
+      this.onSubmit()
+    },
+    serializePageFormCloseState() {
+      return JSON.stringify({ form: { ...this.form } })
+    },
     /** 获取项目ID */
     getProjectId() {
       return parseInt(this.$store.state.user.config.currentProjectId);
@@ -113,6 +122,7 @@ export default {
         } else {
           this.reset();
         }
+        this.$nextTick(() => this.capturePageFormCloseBaseline())
       });
     },
     /** 重置表单 */
@@ -124,10 +134,6 @@ export default {
         corpSecret: null,         // 应用密钥
       }
       this.resetForm("form");
-    },
-    /** 返回 */
-    goBack() {
-      this.$router.back();
     },
     /** 提交按钮 */
     onSubmit() {

@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container case-body module-page project-list-page-host" ref="moduleMain">
+  <div class="app-container case-body module-page module-list-layout project-list-page-host" ref="moduleMain">
     <project-label class="module-project-label" />
     <div ref="moduleTools" class="module-tools" :class="{ 'wrapped-tools': moduleToolsWrapped }">
       <el-form class="left" :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="120px" :class="{ 'list-query-keyboard-nav': listQueryNavActive }">
@@ -35,6 +35,7 @@
           >{{ $t('module.new') }}</el-button>
       </div>
     </div>
+    <div ref="moduleListBody" class="module-list-body">
     <div
       ref="moduleTableWrap"
       class="module-table-wrap module-hint-tree-nav"
@@ -48,6 +49,7 @@
       v-if="refreshTable"
       v-loading="loading"
       :data="moduleList"
+      :max-height="moduleTableMaxHeight"
       row-key="moduleId"
       :default-expand-all="isExpandAll"
       :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
@@ -92,6 +94,7 @@
         </template>
       </el-table-column>
     </el-table>
+    </div>
     </div>
 
     <!-- 添加或修改模块对话框 -->
@@ -142,6 +145,8 @@ export default {
       refreshTable: true,
       moduleToolsWrapped: false,
       moduleTableFocused: false,
+      /** 表体 max-height：列表区撑满视口剩余高度，超出在表内滚动 */
+      moduleTableMaxHeight: null,
       // 查询参数
       queryParams: {
         modulePid: null,
@@ -170,22 +175,27 @@ export default {
     this.getList();
   },
   mounted() {
-    // 初始化浮动菜单
     this.$nextTick(() => {
       this.syncModuleToolsWrapped();
+      this.initModuleListBodyResizeObserver();
+      this.syncModuleTableMaxHeight();
     });
     window.addEventListener("resize", this.syncModuleToolsWrapped);
+    window.addEventListener("resize", this.syncModuleTableMaxHeight);
     this.registerModuleShortcuts();
     this.bindModuleTableKeys();
   },
   activated() {
     this.registerModuleShortcuts();
+    this.$nextTick(() => this.syncModuleTableMaxHeight());
   },
   deactivated() {
     if (this.$shortcut) this.$shortcut.unregisterPage(MODULE_KBD_SCOPE);
   },
   destroyed() {
     window.removeEventListener("resize", this.syncModuleToolsWrapped);
+    window.removeEventListener("resize", this.syncModuleTableMaxHeight);
+    this.destroyModuleListBodyResizeObserver();
     this.unbindModuleTableKeys();
     if (this.$shortcut) this.$shortcut.unregisterPage(MODULE_KBD_SCOPE);
   },
@@ -449,6 +459,36 @@ export default {
         measure();
       });
     },
+    initModuleListBodyResizeObserver() {
+      if (typeof ResizeObserver === 'undefined') return;
+      this.destroyModuleListBodyResizeObserver();
+      const el = this.$refs.moduleListBody;
+      if (!el) return;
+      this._moduleListBodyResizeObserver = new ResizeObserver(() => {
+        this.syncModuleTableMaxHeight();
+      });
+      this._moduleListBodyResizeObserver.observe(el);
+    },
+    destroyModuleListBodyResizeObserver() {
+      if (this._moduleListBodyResizeObserver) {
+        this._moduleListBodyResizeObserver.disconnect();
+        this._moduleListBodyResizeObserver = null;
+      }
+    },
+    syncModuleTableMaxHeight() {
+      this.$nextTick(() => {
+        const body = this.$refs.moduleListBody;
+        if (!body || !body.clientHeight) return;
+        const next = Math.max(120, Math.floor(body.clientHeight - 2));
+        if (this.moduleTableMaxHeight !== next) {
+          this.moduleTableMaxHeight = next;
+          this.$nextTick(() => {
+            const table = this.$refs.moduleTable;
+            if (table && typeof table.doLayout === 'function') table.doLayout();
+          });
+        }
+      });
+    },
     /** 查询模块列表 */
     getList() {
       this.loading = true;
@@ -456,6 +496,7 @@ export default {
         this.moduleList = this.handleTree(response.data, "moduleId", "modulePid");
         this.loading = false;
         this.syncModuleToolsWrapped();
+        this.$nextTick(() => this.syncModuleTableMaxHeight());
       });
     },
     /** 获取项目id操作 */
@@ -487,6 +528,7 @@ export default {
       this.isExpandAll = !this.isExpandAll;
       this.$nextTick(() => {
         this.refreshTable = true;
+        this.$nextTick(() => this.syncModuleTableMaxHeight());
       });
     },
     /** 修改按钮操作 */
@@ -607,7 +649,28 @@ export default {
     align-items: center;
   }
 }
+.module-page.module-list-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  min-height: 0;
+  flex: 1 1 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+.module-list-body {
+  flex: 1 1 0%;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
 .module-table-wrap {
+  flex: 1 1 0%;
+  min-height: 0;
+  width: 100%;
+  overflow: hidden;
   outline: none;
   &:focus-visible {
     outline: 2px solid var(--cat2bug-field-focus-color, #409eff);

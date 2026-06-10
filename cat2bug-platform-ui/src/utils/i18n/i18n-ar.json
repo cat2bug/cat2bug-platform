@@ -1530,6 +1530,8 @@
   "keyboard.sec-project-option": "إجراءات إعدادات المشروع",
   "keyboard.sec-team-option": "إجراءات إعدادات الفريق",
   "keyboard.sec-team-member": "إجراءات صفحة أعضاء الفريق",
+  "keyboard.sec-project-manage": "إجراءات صفحة إدارة المشاريع",
+  "keyboard.sec-project-create": "إجراءات صفحة إنشاء المشروع",
   "keyboard.sec-profile": "إجراءات الملف الشخصي",
   "keyboard.act.case-query": "التركيز على البحث",
   "keyboard.act.case-create": "حالة اختبار جديدة",
@@ -1562,6 +1564,7 @@
   "keyboard.act.project-option-card-8": "بطاقة الإعدادات 8",
   "keyboard.act.project-option-card-9": "بطاقة الإعدادات 9",
   "keyboard.act.project-option-back": "رجوع",
+  "keyboard.act.project-change-icon": "تغيير الغلاف",
   "keyboard.act.team-option-card-1": "بطاقة الإعدادات 1",
   "keyboard.act.team-option-card-2": "بطاقة الإعدادات 2",
   "keyboard.act.team-option-card-3": "بطاقة الإعدادات 3",
@@ -1576,6 +1579,11 @@
   "keyboard.act.team-member-create": "إنشاء عضو",
   "keyboard.act.team-member-invite": "دعوة عضو",
   "keyboard.act.team-member-back": "رجوع",
+  "keyboard.act.project-manage-query": "التركيز على البحث",
+  "keyboard.act.project-manage-create": "إنشاء مشروع",
+  "keyboard.act.project-manage-tab-mine": "مشاريعي",
+  "keyboard.act.project-manage-tab-all": "جميع المشاريع",
+  "keyboard.act.project-create-back": "رجوع",
   "keyboard.act.profile-switch-tab": "تبديل التبويب",
   "keyboard.act.profile-back": "رجوع"
 }

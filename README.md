@@ -1,4 +1,8 @@
-<div align="center"><img src="readme/images/logo.png" style="width: 300px;" /></div>
+<div align="center">
+  <!-- 与登录页 CatIllustration 同源（login-cat-scene-light/dark.jpg） -->
+  <img src="readme/images/login-cat-scene-light.jpg#gh-light-mode-only" width="550" alt="猫陪我改 BUG — Cat2Bug Platform" style="max-width: 100%; height: auto; border-radius: 16px 16px 0 0;" />
+  <img src="readme/images/login-cat-scene-dark.jpg#gh-dark-mode-only" width="550" alt="猫陪我改 BUG — Cat2Bug Platform" style="max-width: 100%; height: auto; border-radius: 16px 16px 0 0;" />
+</div>
 <h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">Cat2Bug-Platform v0.6.2</h1>
 <h4 align="center">轻量化智能BUG管理平台</h4>
 

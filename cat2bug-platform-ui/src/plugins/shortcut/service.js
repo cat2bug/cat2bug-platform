@@ -13,8 +13,7 @@ import { pageRegistry } from './registry'
 import { buildNavItems, navLeader, actionLeader } from './nav-source'
 import {
   findPageActionDefault,
-  normalizeKey,
-  assignLetters
+  normalizeKey
 } from './keymap'
 
 const palette = Vue.observable({
@@ -82,6 +81,7 @@ const BLOCKING_UI_LAYER_SELECTORS = [
   '.defect-column-picker-popover',
   '.defect-excel-column-picker-popover',
   '.report-template-select-popper',
+  '.el-popover.project-icon-popper',
   /* 缺陷页统计模块 G 导航：空格用于触发模块点击，勿打开动作面板 */
   '.defect-statistic-keyboard-nav',
   /* 统计模版页键盘导航：空格用于添加到预览区，勿打开动作面板 */
@@ -139,8 +139,16 @@ const STATISTIC_DIALOG_NAMES = new Set([
 const FORM_SHORTCUT_DIALOG_NAMES = new Set([
   ...DEFECT_TOOL_DIALOG_NAMES,
   ...STATISTIC_DIALOG_NAMES,
-  'ModuleDialog'
+  'ModuleDialog',
+  'Account',
+  'CreateTeamMember',
+  'InviteTeamMember',
+  'AddProjectMember',
+  'Document'
 ])
+
+/** 接入 dialog-form-shortcuts 的 el-dialog 标记（Esc 关闭时不应把自身算作遮挡层） */
+export const FORM_SHORTCUT_DIALOG_CUSTOM_CLASS = 'cat2bug-form-shortcut-dialog'
 
 /** 用例页 Excel 导入弹框（Esc 关闭时不应把自身算作遮挡层） */
 function isCaseImportDialogWrapper(el) {
@@ -150,10 +158,12 @@ function isCaseImportDialogWrapper(el) {
   return !!(dialog && isVisibleLayer(dialog))
 }
 
-/** 缺陷工具栏操作弹框（Esc 关闭时不应把自身算作遮挡层） */
+/** 缺陷工具栏操作弹框 / 表单快捷键弹框（Esc 关闭时不应把自身算作遮挡层） */
 function isDefectToolDialogWrapper(el) {
   if (!el || !el.classList || !el.classList.contains('el-dialog__wrapper')) return false
   if (!isVisibleLayer(el)) return false
+  const marked = el.querySelector(`.${FORM_SHORTCUT_DIALOG_CUSTOM_CLASS}`)
+  if (marked && isVisibleLayer(marked)) return true
   // Element UI 2.x：AssignDialog 等挂在 wrapper.__vue__ 链上，.el-dialog 节点无 __vue__
   let vm = el.__vue__
   while (vm) {
@@ -202,21 +212,22 @@ function canOpenDefectPageActions() {
 function buildActionItems() {
   const registered = pageRegistry.getActiveActions()
   if (!registered.length) return []
-  const list = registered.map((a) => {
+  return registered.map((a) => {
     const def = findPageActionDefault(a.key, a.scopeKey)
     const titleKey = a.titleKey || (def && def.titleKey)
     const bindingId = `action.${a.scopeKey}.${a.key}`
+    const defaultLetter = a.defaultLetter || (def && def.defaultLetter) || ''
+    const letter = shortcutStore.getLetter(bindingId, defaultLetter)
     return {
       bindingId,
       type: 'action',
       title: a.title || (titleKey ? i18n.t(titleKey) : a.key),
       run: a.run,
-      preferred: shortcutStore.getLetter(bindingId, a.defaultLetter || (def && def.defaultLetter)),
-      defaultLetter: a.defaultLetter || (def && def.defaultLetter)
+      preferred: letter,
+      defaultLetter,
+      letter
     }
   })
-  assignLetters(list)
-  return list
 }
 
 function currentLevel() {

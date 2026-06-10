@@ -9,7 +9,11 @@ import {
 } from '@/utils/split-dropdown-kbd'
 import { isDatePickerPanelOpen } from '@/utils/date-picker-kbd'
 
-const QUERY_NAV_OVERLAY_SELECTORS = ['.el-picker-panel', '.select-project-member-popover']
+const QUERY_NAV_OVERLAY_SELECTORS = [
+  '.el-picker-panel',
+  '.select-project-member-popover',
+  '.defect-column-picker-popover'
+]
 
 function isVisibleOverlay(el) {
   if (!el || !el.getBoundingClientRect) return false

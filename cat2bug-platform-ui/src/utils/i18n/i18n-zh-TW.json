@@ -1532,6 +1532,8 @@
   "keyboard.sec-project-option": "專案設定頁動作",
   "keyboard.sec-team-option": "團隊設定頁動作",
   "keyboard.sec-team-member": "團隊成員頁動作",
+  "keyboard.sec-project-manage": "專案管理頁動作",
+  "keyboard.sec-project-create": "建立專案頁動作",
   "keyboard.sec-profile": "個人中心頁動作",
   "keyboard.act.case-query": "聚焦查詢",
   "keyboard.act.case-create": "新建用例",
@@ -1564,6 +1566,7 @@
   "keyboard.act.project-option-card-8": "設定卡片 8",
   "keyboard.act.project-option-card-9": "設定卡片 9",
   "keyboard.act.project-option-back": "返回",
+  "keyboard.act.project-change-icon": "變更封面",
   "keyboard.act.team-option-card-1": "設定卡片 1",
   "keyboard.act.team-option-card-2": "設定卡片 2",
   "keyboard.act.team-option-card-3": "設定卡片 3",
@@ -1578,6 +1581,11 @@
   "keyboard.act.team-member-create": "建立成員",
   "keyboard.act.team-member-invite": "邀請成員",
   "keyboard.act.team-member-back": "返回",
+  "keyboard.act.project-manage-query": "聚焦查詢",
+  "keyboard.act.project-manage-create": "建立專案",
+  "keyboard.act.project-manage-tab-mine": "我參與的專案",
+  "keyboard.act.project-manage-tab-all": "全部專案",
+  "keyboard.act.project-create-back": "返回",
   "keyboard.act.profile-switch-tab": "切換頁籤",
   "keyboard.act.profile-back": "返回"
 }

@@ -213,6 +213,27 @@ html.dark .report-template-select-popper .template-list-item.report-template-car
   box-shadow: 0 0 0 2px var(--cat2bug-field-focus-color, #ffce3a);
 }
 
+/** 项目信息「更改封面」浮层：方向键焦点环（popover teleport 到 body，须全局样式） */
+.el-popover.project-icon-popper .project-icon-item.project-icon-item-kbd-current .el-image {
+  border: 2px solid #FFC107 !important;
+  box-shadow: 0 0 0 2px rgba(255, 193, 7, 0.35);
+}
+
+.el-popover.project-icon-popper .project-icon-item.project-icon-item-kbd-current .cat2bug-upload-focus-target {
+  outline: 2px solid #FFC107;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+html:not(.dark) .el-popover.project-icon-popper .project-icon-item.project-icon-item-kbd-current .el-image {
+  border-color: var(--primary-color, #409eff) !important;
+  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.35);
+}
+
+html:not(.dark) .el-popover.project-icon-popper .project-icon-item.project-icon-item-kbd-current .cat2bug-upload-focus-target {
+  outline-color: var(--primary-color, #409eff);
+}
+
 .report-template-popover-hint-layer {
   z-index: 100002 !important;
   pointer-events: none;
@@ -229,11 +250,20 @@ html.dark .el-button.is-plain:not(.el-button--primary):not(.el-button--success):
   box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, #ffce3a) !important;
 }
 
-html.dark .el-button--primary.is-plain:focus,
-html.dark .el-button--primary.is-plain.list-query-toolbar-nav-focused {
-  border-color: rgba(64, 158, 255, 0.45) !important;
-  background-color: rgba(64, 158, 255, 0.12) !important;
-  color: #409eff !important;
+html.dark .el-button--primary.is-plain:not(.cat2bug-btn-outline):focus,
+html.dark .el-button--primary.is-plain:not(.cat2bug-btn-outline).list-query-toolbar-nav-focused {
+  background-color: #FFD54F !important;
+  border-color: #FFD54F !important;
+  color: #141414 !important;
+  box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, #ffce3a) !important;
+}
+
+html.dark .el-button--primary.is-plain.cat2bug-btn-outline:focus,
+html.dark .el-button--primary.is-plain.cat2bug-btn-outline.list-query-toolbar-nav-focused {
+  background-color: rgba(255, 193, 7, 0.12) !important;
+  border-color: #FFC107 !important;
+  color: #FFC107 !important;
+  box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, #ffce3a) !important;
 }
 
 html.dark .report-template-select-kbd.is-popover-open .report-hint-create.el-button--primary.is-plain,

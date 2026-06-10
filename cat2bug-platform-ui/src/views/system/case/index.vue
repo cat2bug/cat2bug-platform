@@ -36,21 +36,28 @@
         </div>
 
         <div ref="caseToolsRight" class="table-tools row case-right-tools" :class="{ 'buttons-wrapped': caseRightButtonsWrapped }">
-        <el-popover placement="top" trigger="click">
-          <div class="row">
+        <el-popover
+          placement="top"
+          trigger="click"
+          popper-class="defect-column-picker-popover"
+          v-model="caseColumnPickerVisible"
+          @show="onColumnPickerPopoverShow"
+          @hide="onColumnPickerPopoverHide"
+        >
+          <div class="defect-column-picker-head">
             <i class="el-icon-s-fold" />
             <h4>{{ $t('display-field') }}</h4>
           </div>
-          <el-divider class="case-field-divider" />
+          <el-divider class="defect-field-divider" />
           <el-checkbox-group
             :key="'case-colpick-' + caseColumnPickerRev"
             v-model="columnPickerCheckedKeys"
-            class="col"
+            class="defect-column-picker"
             @change="onCaseColumnPickerChange"
           >
             <el-checkbox v-for="c in caseColumnPickerOptions" :key="c.key" :label="c.key">{{ $t(c.key) }}</el-checkbox>
           </el-checkbox-group>
-          <el-button slot="reference" class="case-field-picker-btn" style="padding: 9px;" plain icon="el-icon-s-fold" size="small" />
+          <el-button slot="reference" class="case-field-picker-btn case-list-hint-columns" style="padding: 9px;" plain icon="el-icon-s-fold" size="small" />
         </el-popover>
         <el-button
           v-hasPermi="['system:case:remove']"
@@ -312,6 +319,7 @@ import paneResizerHandleViewport from '@/mixins/paneResizerHandleViewport'
 import multipaneTreeTableHeightSync from '@/mixins/multipaneTreeTableHeightSync'
 import pageActionHints from '@/mixins/page-action-hints'
 import listQueryKeyboardNav from '@/mixins/list-query-keyboard-nav'
+import columnPickerPopoverKbd from '@/mixins/column-picker-popover-kbd'
 import splitDropdownKbd from '@/mixins/split-dropdown-kbd'
 import caseImportDialogKbd from '@/mixins/case-import-dialog-kbd'
 import { shortcutOpenSplitDropdown } from '@/utils/split-dropdown-kbd'
@@ -331,7 +339,7 @@ const CASE_TREE_MODULE_VISIBLE_CACHE_KEY = 'case_tree_module_visible'
 
 export default {
   name: 'Case',
-  mixins: [paneResizerHandleViewport, multipaneTreeTableHeightSync, pageActionHints, listQueryKeyboardNav, splitDropdownKbd, caseImportDialogKbd],
+  mixins: [paneResizerHandleViewport, multipaneTreeTableHeightSync, pageActionHints, listQueryKeyboardNav, columnPickerPopoverKbd, splitDropdownKbd, caseImportDialogKbd],
   components: { ProjectLabel, AddCase, Cat2BugLevel, Step, TreeModule, Multipane, MultipaneResizer, AddDefect, CloudCase, CloudCase2, FocusMemberList, Cat2BugPreviewImage, Cat2BugSelectLevel, Cat2BugText, Cat2BugTable },
   directives: {
     resize: {
@@ -367,6 +375,7 @@ export default {
       showModuleTree: true,
       caseTableColumnDefaults: CaseTableColumnDefaults.map(c => ({ ...c })),
       columnPickerCheckedKeys: [],
+      caseColumnPickerVisible: false,
       /** 与 Cat2BugTable columns-change 列顺序一致，供「显示字段」列表排序 */
       caseColumnPickerRev: 0,
       casePickerColumnList: null,
@@ -687,6 +696,12 @@ export default {
     },
     getListQueryNavToolbarRef() {
       return 'caseToolsRight'
+    },
+    getColumnPickerTriggerEl() {
+      return this.$el && this.$el.querySelector('.case-list-hint-columns')
+    },
+    closeColumnPickerPopoverKbd() {
+      this.caseColumnPickerVisible = false
     },
     getListQueryNavFocusEl(key) {
       const itemEl = this.getListQueryNavItemEl(key)
@@ -1256,9 +1271,6 @@ export default {
   > * {
     margin: 0px 5px 0px 0px;
   }
-}
-.case-field-divider {
-  margin: 8px 0px;
 }
 /* ProjectLabel 根为 h3，类名在 h3 上：用 ::v-deep 覆盖子组件 scoped 的 h3 下边距 */
 .case-page ::v-deep h3.case-project-label {

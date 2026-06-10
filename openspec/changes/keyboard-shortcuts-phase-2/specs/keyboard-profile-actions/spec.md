@@ -16,6 +16,16 @@
 - **WHEN** 用户在基本信息 Tab 按 J
 - **THEN** 切换到修改密码 Tab
 
+#### Scenario: 激活 Tab 右下角徽标
+
+- **WHEN** 用户按住 ⌘/Ctrl 且位于基本信息或修改密码 Tab
+- **THEN** 当前激活 Tab 标签右下角显示 **J** 徽标；再按 **J** 切换到另一 Tab
+
+#### Scenario: J 不与字段冲突
+
+- **WHEN** 子表单（userInfo / resetPwd）激活且用户按住 ⌘/Ctrl
+- **THEN** **J** 不分配给表单字段，保留给 Tab 切换
+
 ### Requirement: 基本信息表单
 
 `userInfo.vue` MUST 启用 `form-field-hints`；`Cmd/Ctrl+Enter` 触发保存。

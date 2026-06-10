@@ -1,6 +1,6 @@
 <template>
-  <div class="app-container">
-    <el-row class="project-add-page-header">
+  <div class="app-container" ref="teamOptionSubMain">
+    <el-row class="project-add-page-header team-option-sub-hint-back">
       <el-page-header @back="goBack" :content="$t('team.info')">
       </el-page-header>
     </el-row>
@@ -34,7 +34,10 @@
               <el-form-item class="page-form-actions">
                 <div class="page-form-actions__buttons">
                   <el-button @click="goBack">{{$t('cancel')}}</el-button>
-                  <el-button type="primary" @click="submitForm">{{$t('save')}}</el-button>
+                  <el-button class="defect-kbd-hint-host" type="primary" @click="submitForm">
+                    {{$t('save')}}
+                    <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
+                  </el-button>
                 </div>
               </el-form-item>
             </el-form>
@@ -46,17 +49,16 @@
 </template>
 
 <script>
-import {addTeam, getTeam, listTeam, updateTeam} from "@/api/system/team";
+import {getTeam, updateTeam} from "@/api/system/team";
+import teamOptionSubFormKbd from '@/mixins/team-option-sub-form-kbd'
 
 export default {
   name: "TeamBaseInfo",
+  mixins: [teamOptionSubFormKbd],
   data() {
     return {
-      // 遮罩层
       loading: true,
-      // 表单参数
       form: {},
-      // 表单校验
       rules: {
         teamName: [
           { required: true, message: this.$t('team.name-cannot-empty'), trigger: "blur" }
@@ -71,23 +73,23 @@ export default {
     this.getTeamInfo();
   },
   methods: {
-    /** 获取团队id */
     getTeamId() {
       return this.$store.state.user.config.currentTeamId;
     },
-    /** 获取团队 */
     getTeamInfo(){
       this.loading = true;
       getTeam(this.getTeamId()).then(res=>{
         this.loading = false;
         this.form = res.data;
+        this.$nextTick(() => this.capturePageFormCloseBaseline())
       });
     },
-    /** 返回 */
-    goBack() {
-      this.$router.back();
+    shortcutSave() {
+      this.submitForm()
     },
-    /** 表单重置 */
+    serializePageFormCloseState() {
+      return JSON.stringify({ form: { ...this.form } })
+    },
     reset() {
       this.form = {
         teamId: this.getTeamId(),
@@ -97,12 +99,12 @@ export default {
       };
       this.resetForm("form");
     },
-    /** 提交按钮 */
     submitForm() {
       this.$refs["form"].validate(valid => {
         if (valid) {
-          updateTeam(this.form).then(response => {
+          updateTeam(this.form).then(() => {
             this.$modal.msgSuccess(this.$t('save.success'));
+            this.capturePageFormCloseBaseline()
             this.$router.go(0);
           });
         }
@@ -111,4 +113,3 @@ export default {
   }
 }
 </script>
-

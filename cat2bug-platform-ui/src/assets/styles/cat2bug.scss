@@ -217,6 +217,45 @@ html.dark .component-upload-image-focus-target .el-upload-list--picture-card .el
   border: 1px dashed var(--cat2bug-field-focus-color, #ffce3a) !important;
 }
 
+/* Element UI 开关：inline-flex 对齐轨道，隐藏 input 原生 outline，:focus-within 外环贴合 */
+.el-form-item .el-switch,
+.module-mode-switch-hint .el-switch {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  line-height: 1;
+}
+
+.el-form-item .el-switch__input,
+.module-mode-switch-hint .el-switch__input {
+  outline: none !important;
+}
+
+.el-form-item .el-switch__input:focus,
+.el-form-item .el-switch__input:focus-visible,
+.module-mode-switch-hint .el-switch__input:focus,
+.module-mode-switch-hint .el-switch__input:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.el-form-item .el-switch:focus-within,
+.module-mode-switch-hint .el-switch:focus-within {
+  border-radius: 20px;
+  outline: none !important;
+  @include cat2bug-unified-focus-ring;
+}
+
+.el-form-item .el-switch:focus-within .el-switch__core,
+.module-mode-switch-hint .el-switch:focus-within .el-switch__core {
+  box-shadow: none !important;
+}
+
+html.dark .el-form-item .el-switch.is-checked:focus-within,
+html.dark .module-mode-switch-hint .el-switch.is-checked:focus-within {
+  box-shadow: 0 0 0 1px #ffffff !important;
+}
+
 .el-button-group:focus-within {
   @include cat2bug-unified-focus-ring;
   border-radius: $cat2bug-radius;
@@ -601,6 +640,8 @@ img.cat2bug-image-error__img {
 .module-tools,
 .document-tools,
 .report-tools,
+.project-manage-tools,
+.project-option-list-tools,
 .defect-excel-tools.defect-view-toolbar {
   column-gap: var(--cat2bug-toolbar-section-gap, 10px) !important;
   row-gap: var(--cat2bug-toolbar-row-gap, 8px) !important;
@@ -620,7 +661,8 @@ img.cat2bug-image-error__img {
 .plan-tools > .left,
 .module-tools > .left,
 .document-tools > .left,
-.report-tools > .left {
+.report-tools > .left,
+.project-option-list-tools > .left {
   display: flex !important;
   flex-wrap: wrap;
   align-items: center;
@@ -632,7 +674,8 @@ img.cat2bug-image-error__img {
 .case-tools-search .el-form--inline .el-form-item,
 .plan-query-main .el-form--inline .el-form-item,
 .plan-add-case-toolbar .el-form--inline .el-form-item,
-.defect-table-tools-bar .el-form--inline .el-form-item {
+.defect-table-tools-bar .el-form--inline .el-form-item,
+.project-option-list-tools > .left .el-form-item {
   margin-right: 0 !important;
   margin-bottom: 0 !important;
 }
@@ -645,8 +688,19 @@ img.cat2bug-image-error__img {
 .module-tools-right,
 .document-tools-right,
 .report-tools-right,
+.project-manage-tools-right,
+.project-option-list-tools-right,
 .defect-excel-tools-right {
   gap: var(--cat2bug-toolbar-item-gap, 10px) !important;
+
+  > * {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  .el-button + .el-button {
+    margin-left: 0 !important;
+  }
 }
 
 .list-switch,
@@ -670,6 +724,8 @@ img.cat2bug-image-error__img {
 .module-tools,
 .document-tools,
 .report-tools,
+.project-manage-tools,
+.project-option-list-tools,
 .defect-excel-tools,
 .defect-excel-tools-left,
 .defect-excel-tools-right,
@@ -1420,4 +1476,50 @@ html:not(.dark) .el-button--primary.is-plain.cat2bug-btn-outline {
     border-color: #3a8ee6 !important;
     color: #ffffff !important;
   }
+}
+
+/* 项目/团队设置列表子页：查询区 + 右侧工具栏（与 report-tools 同类布局） */
+.project-option-list-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+
+  > .left {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+}
+
+.project-option-list-tools-right {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--cat2bug-toolbar-item-gap, 10px);
+  flex-shrink: 0;
+
+  /* 键盘 ←/→ 导航：单环聚焦（border 色不变，避免 border 高亮 + box-shadow 视觉上双环） */
+  .el-button.is-plain:focus,
+  .el-button.is-plain.list-query-toolbar-nav-focused {
+    outline: none !important;
+    @include cat2bug-unified-focus-border;
+    @include cat2bug-unified-focus-ring;
+  }
+}
+
+html.dark .project-option-list-tools-right .el-button--primary.is-plain:not(.cat2bug-btn-outline):focus,
+html.dark .project-option-list-tools-right .el-button--primary.is-plain:not(.cat2bug-btn-outline).list-query-toolbar-nav-focused {
+  background-color: #FFD54F !important;
+  border-color: #FFC107 !important;
+  color: #141414 !important;
+  box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, #ffce3a) !important;
+}
+
+html.dark .project-option-list-tools-right .el-button--primary.is-plain.cat2bug-btn-outline:focus,
+html.dark .project-option-list-tools-right .el-button--primary.is-plain.cat2bug-btn-outline.list-query-toolbar-nav-focused {
+  background-color: rgba(255, 193, 7, 0.12) !important;
+  border-color: var(--border-color-base) !important;
+  color: #FFC107 !important;
+  box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, #ffce3a) !important;
 }

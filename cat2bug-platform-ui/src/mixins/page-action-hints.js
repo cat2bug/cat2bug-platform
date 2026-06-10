@@ -59,6 +59,13 @@ function shouldDeferPageActionShortcuts() {
   return hasBlockingUiLayer() || !!findTopFormDrawerVm()
 }
 
+function shouldDeferPageActionHintsForVm(vm) {
+  if (vm && typeof vm.shouldDeferPageActionHints === 'function') {
+    return vm.shouldDeferPageActionHints()
+  }
+  return shouldDeferPageActionShortcuts()
+}
+
 function isElementInViewport(el, minPx = 4) {
   if (!el || typeof el.getBoundingClientRect !== 'function') return false
   const rect = el.getBoundingClientRect()
@@ -223,7 +230,7 @@ export default {
     $_armPageActionModifierHints() {
       if (!this.isPageActionHintsEnabled()) return
       if (!this.$_isPageActionHostReady()) return
-      if (shouldDeferPageActionShortcuts()) {
+      if (shouldDeferPageActionHintsForVm(this)) {
         this.$_hidePageActionHints()
         return
       }
@@ -336,7 +343,7 @@ export default {
         }
       }
       if (!(e.metaKey || e.ctrlKey) || e.altKey || e.shiftKey) return
-      if (shouldDeferPageActionShortcuts()) return
+      if (shouldDeferPageActionHintsForVm(this)) return
       this.$_preparePageActionHints()
       const letter = resolvePageActionLetter(e)
       if (!letter) return

@@ -1,36 +1,44 @@
 <template>
-  <div class="app-container">
-    <el-row class="project-add-page-header project-add-page-header--with-filter">
+  <div class="app-container" ref="projectOptionSubMain">
+    <el-row class="project-add-page-header project-add-page-header--with-filter project-option-sub-hint-back">
       <el-page-header @back="goBack" :content="$t('project.member-manage')">
       </el-page-header>
     </el-row>
     <el-row :gutter="20">
       <!--用户数据-->
       <el-col :span="24">
-        <el-row :gutter="10" class="mb8" type="flex" justify="space-between">
-          <el-col :span="8">
-            <el-input
-              v-model="queryParams.params.search"
-              prefix-icon="el-icon-search"
-              :placeholder="$t('member.search-placeholder')"
-              clearable
-              style="width: 320px"
-              size="small"
-              @input="memberSearchHandle"
-            />
-          </el-col>
-          <el-col :span="8" class="member-tools">
+        <div class="project-member-tools project-option-list-tools mb8">
+          <el-form
+            ref="queryForm"
+            size="small"
+            :inline="true"
+            class="left"
+            :class="{ 'list-query-keyboard-nav': listQueryNavActive }"
+          >
+            <el-form-item class="list-query-nav-item project-member-hint-query" data-query-key="search">
+              <el-input
+                v-model="queryParams.params.search"
+                prefix-icon="el-icon-search"
+                :placeholder="$t('member.search-placeholder')"
+                clearable
+                style="width: 320px"
+                size="small"
+                @input="memberSearchHandle"
+              />
+            </el-form-item>
+          </el-form>
+          <div ref="memberToolsRight" class="project-option-list-tools-right member-tools">
             <el-button
+              class="project-member-hint-add"
               type="primary"
-              style="float: right;"
               plain
               icon="el-icon-user-solid"
               size="small"
               @click="addMemberHandle"
               v-hasPermi="['system:project:list']"
             >{{$t('project.add-member')}}</el-button>
-          </el-col>
-        </el-row>
+          </div>
+        </div>
 
         <el-table v-loading="loading" :data="memberList">
           <el-table-column :label="$t('member.name')" align="left" key="nickName" prop="nickName" min-width="200" :show-overflow-tooltip="true">
@@ -96,6 +104,7 @@
           </el-table-column>
         </el-table>
         <pagination
+          class="project-member-table-pagination"
           v-show="total>0"
           :total="total"
           :page.sync="queryParams.pageNum"
@@ -120,9 +129,13 @@ import {
 import {strFormat} from "@/utils";
 import i18n from "@/utils/i18n/i18n";
 import {checkPermi} from "@/utils/permission";
+import projectOptionSubListKbd from '@/mixins/project-option-sub-list-kbd'
+import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
+import { PROJECT_OPTION_KBD_SCOPE } from '@/mixins/project-option-sub-kbd'
 
 export default {
   name: "ProjectMemberManage",
+  mixins: [projectOptionSubListKbd],
   components: { AddProjectMember, MemberNameplate },
   data() {
     return {
@@ -180,6 +193,49 @@ export default {
     },
   },
   methods: {
+    shouldProjectOptionSubEscGoBack() {
+      const dlg = this.$refs.addProjectMemberDialog
+      return !(dlg && dlg.dialogVisible)
+    },
+    getListQueryNavItems() {
+      return [{ key: 'search' }]
+    },
+    getListQueryNavToolbarRef() {
+      return 'memberToolsRight'
+    },
+    getProjectOptionSubPaginationSelector() {
+      return '.project-member-table-pagination'
+    },
+    getProjectOptionSubRegisterActions() {
+      return [
+        { key: 'query', defaultLetter: 'S', run: () => this.shortcutFocusQuery() },
+        { key: 'create', defaultLetter: 'E', run: () => this.shortcutAddMember() }
+      ]
+    },
+    getProjectOptionSubActionHints() {
+      const L = (key, def) => shortcutStore.getLetter(`action.${PROJECT_OPTION_KBD_SCOPE}.${key}`, def)
+      return [
+        {
+          key: 'query',
+          letter: L('query', 'S'),
+          badgeSelector: '.project-member-hint-query',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
+          run: () => this.shortcutFocusQuery()
+        },
+        {
+          key: 'create',
+          letter: L('create', 'E'),
+          badgeSelector: '.project-member-hint-add',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2, dy: 5 },
+          run: () => this.shortcutAddMember(),
+          visible: () => checkPermi(['system:project:list'])
+        }
+      ]
+    },
+    shortcutAddMember() {
+      if (!checkPermi(['system:project:list'])) return
+      this.addMemberHandle()
+    },
     /** 获取角色 */
     getRoleList() {
       listProjectRole(0).then(res => {
@@ -217,10 +273,6 @@ export default {
       }).catch(()=>{
         this.getMemberList();
       });
-    },
-    /** 返回 */
-    goBack() {
-      this.$router.back();
     },
     /** 添加成员按钮操作 */
     addMemberHandle() {

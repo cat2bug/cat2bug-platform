@@ -40,21 +40,27 @@
       <div class="handle-plan-tools-right">
         <el-popover
           placement="top"
-          trigger="click">
-          <div class="row">
+          trigger="click"
+          popper-class="defect-column-picker-popover"
+          v-model="planCaseColumnPickerVisible"
+          @show="onColumnPickerPopoverShow"
+          @hide="onColumnPickerPopoverHide"
+        >
+          <div class="defect-column-picker-head">
             <i class="el-icon-s-fold"></i>
             <h4>{{$t('defect.display-field')}}</h4>
           </div>
-          <el-divider class="plan-item-field-divider"></el-divider>
+          <el-divider class="defect-field-divider"></el-divider>
           <el-checkbox-group
             :key="'plan-case-colpick-' + planCaseColumnPickerRev"
             v-model="columnPickerCheckedKeys"
-            class="col"
+            class="defect-column-picker"
             @change="onPlanCaseColumnPickerChange"
           >
             <el-checkbox v-for="c in planCaseColumnPickerOptions" :key="c.key" :label="c.key">{{ $t(c.key) }}</el-checkbox>
           </el-checkbox-group>
           <el-button
+            class="plan-handle-hint-columns"
             style="padding: 9px;"
             plain
             slot="reference"
@@ -201,6 +207,7 @@ import {checkPermi} from "@/utils/permission";
 import { Multipane, MultipaneResizer } from "vue-multipane";
 import paneResizerHandleViewport from "@/mixins/paneResizerHandleViewport";
 import multipaneTreeTableHeightSync from "@/mixins/multipaneTreeTableHeightSync";
+import columnPickerPopoverKbd from '@/mixins/column-picker-popover-kbd'
 
 const TREE_MODULE_WIDTH_CACHE_KEY = "plan_case_tree_module_width";
 
@@ -213,7 +220,7 @@ const PLAN_ITEM_SORT_TYPE = 'plan_item_sort_type_key';
 export default {
   name: "CaseList",
   dicts: ['plan_item_state'],
-  mixins: [paneResizerHandleViewport, multipaneTreeTableHeightSync],
+  mixins: [paneResizerHandleViewport, multipaneTreeTableHeightSync, columnPickerPopoverKbd],
   components: { Multipane, MultipaneResizer, HandleCaseOfPlan, PlanItemTools, Cat2BugText, Cat2BugPreviewImage, Cat2BugLevel, Cat2BugTable, DictTag, RowListMember, Step },
   props: {
     /** 与缺陷页 table.vue：为 false 时在表格首列显示「展开交付物树」 */
@@ -230,6 +237,7 @@ export default {
       planItemSortTypeKey: PLAN_ITEM_SORT_TYPE,
       planCaseTableColumns: PlanItemCaseTableOptions.map((c) => ({ ...c })),
       columnPickerCheckedKeys: [],
+      planCaseColumnPickerVisible: false,
       planCaseColumnPickerRev: 0,
       planCasePickerColumnList: null,
       // 鼠标是否点击
@@ -347,6 +355,12 @@ export default {
     this.query.orderByColumn = this.$cache.local.get(PLAN_ITEM_SORT_COLUMN) || null;
   },
   methods: {
+    getColumnPickerTriggerEl() {
+      return this.$el && this.$el.querySelector('.plan-handle-hint-columns')
+    },
+    closeColumnPickerPopoverKbd() {
+      this.planCaseColumnPickerVisible = false
+    },
     checkPermi,
     parseTime,
     emitExpandModuleTree() {
@@ -812,9 +826,6 @@ export default {
   flex-direction: row;
   flex-shrink: 0;
   gap: var(--cat2bug-toolbar-item-gap, 10px);
-}
-.plan-item-field-divider {
-  margin: 8px 0px;
 }
 .row {
   display: flex;

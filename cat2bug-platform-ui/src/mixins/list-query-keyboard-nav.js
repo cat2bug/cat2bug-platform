@@ -11,6 +11,10 @@ import {
   isFocusInToolbar,
   isQueryNavOverlayOpen
 } from '@/utils/list-query-toolbar-nav'
+import {
+  isColumnPickerOpenInToolbar,
+  openColumnPickerFromToolbarFocus
+} from '@/utils/column-picker-popover-kbd'
 import { focusDatePickerInputSilently, handleActiveDateRangeKeydown, isDatePickerFocusEl, isDatePickerPanelOpen, patchDatePickerKeyboard } from '@/utils/date-picker-kbd'
 import {
   bindSplitDropdownHost,
@@ -68,6 +72,7 @@ export default {
     isListQueryNavToolbarOverlayOpen() {
       const toolbar = this.getListQueryNavToolbarEl()
       if (!toolbar) return false
+      if (isColumnPickerOpenInToolbar(toolbar)) return true
       const hosts = toolbar.querySelectorAll(DROPDOWN_HOST_SELECTOR)
       for (let i = 0; i < hosts.length; i++) {
         if (isSplitDropdownOpen(hosts[i])) return true
@@ -137,7 +142,18 @@ export default {
       if (!this.listQueryNavActive || this.listQueryNavToolbarIndex < 0) return
       const list = getToolbarFocusables(toolbar)
       const el = list[this.listQueryNavToolbarIndex]
-      if (el) el.classList.add(TOOLBAR_FOCUS_CLASS)
+      if (!el) return
+      const disabled = !!(el.disabled || el.getAttribute('aria-disabled') === 'true')
+      if (disabled) {
+        el.classList.add(TOOLBAR_FOCUS_CLASS)
+        return
+      }
+      const active = document.activeElement
+      const hasNativeFocus = el === active || (active && el.contains && el.contains(active))
+      // 已有原生 :focus 时不再叠加导航 class，避免同一按钮出现双层焦点环
+      if (!hasNativeFocus) {
+        el.classList.add(TOOLBAR_FOCUS_CLASS)
+      }
     },
     syncListQueryNavToolbarIndexFromFocus(target) {
       const toolbar = this.getListQueryNavToolbarEl()
@@ -202,6 +218,11 @@ export default {
       const item = items[index]
       const itemEl = this.getListQueryNavItemEl(item.key)
       const form = this.getListQueryNavFormEl()
+      const toolbar = this.getListQueryNavToolbarEl()
+      const prevActive = document.activeElement
+      if (prevActive && toolbar && toolbar.contains(prevActive) && typeof prevActive.blur === 'function') {
+        prevActive.blur()
+      }
       if (form) patchDatePickerKeyboard(form)
 
       let focusEl = this.getListQueryNavFocusEl(item.key)
@@ -235,7 +256,16 @@ export default {
       this.listQueryNavToolbarIndex = index
       this.listQueryNavActive = true
       this.clearListQueryNavFocusMarks()
+      this.clearListQueryNavToolbarFocusMarks()
       const prevActive = document.activeElement
+      const form = this.getListQueryNavFormEl()
+      if (prevActive) {
+        if (toolbar && toolbar.contains(prevActive) && prevActive !== list[index] && typeof prevActive.blur === 'function') {
+          prevActive.blur()
+        } else if (form && form.contains(prevActive) && typeof prevActive.blur === 'function') {
+          prevActive.blur()
+        }
+      }
       const { focused, el, disabled } = focusToolbarAtIndex(toolbar, index)
       if (el && el.classList.contains(SPLIT_DROPDOWN_FOCUS_CLASS)) {
         const host = resolveSplitDropdownHost(el)
@@ -252,6 +282,7 @@ export default {
       this.$_attachListQueryNavListeners()
       this.$nextTick(() => {
         this.listQueryNavSuppressBlur = false
+        this.syncListQueryNavToolbarFocusClass()
       })
       return true
     },
@@ -375,6 +406,11 @@ export default {
         }
         if (inToolbar && (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar' || e.key === 'ArrowDown')) {
           const toolbar = this.getListQueryNavToolbarEl()
+          if (e.key === 'ArrowDown' && openColumnPickerFromToolbarFocus(toolbar)) {
+            e.preventDefault()
+            e.stopPropagation()
+            return
+          }
           if (tryOpenToolbarFocusedSplitDropdown(toolbar)) {
             e.preventDefault()
             e.stopPropagation()

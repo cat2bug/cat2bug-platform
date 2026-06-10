@@ -109,6 +109,9 @@ public class SysProjectApiServiceImpl implements ISysProjectApiService
         
         apiProjectApi.setUserId(user.getUserId());
         apiProjectApi.setApiId(key);
+        if (apiProjectApi.getEnabled() == null) {
+            apiProjectApi.setEnabled(Boolean.TRUE);
+        }
         return sysProjectApiMapper.insertSysProjectApi(apiProjectApi);
     }
 
@@ -128,6 +131,9 @@ public class SysProjectApiServiceImpl implements ISysProjectApiService
             user.setUserId(sysProjectApi.getUserId());
             user.setNickName(sysProjectApi.getApiName());
             sysUserMapper.updateUser(user);
+        }
+        if (sysProjectApi.getEnabled() == null) {
+            sysProjectApi.setEnabled(Boolean.TRUE);
         }
 
         return sysProjectApiMapper.updateSysProjectApi(sysProjectApi);

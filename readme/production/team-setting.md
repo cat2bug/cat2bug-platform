@@ -18,7 +18,9 @@
 |------|------|
 | 1–9 | 按**可见卡片**顺序激活首个链接 |
 
-进入子路由后：**B** 通过页头返回枢纽。团队成员列表页快捷键见 [组织和成员](user-guide/team-setting/team-member/member-manage.md#键盘快捷键)。
+进入子路由后：**B** 通过页头返回枢纽；**Esc** 同 **B**（表单页有未保存修改时会确认）。团队成员列表页快捷键见 [组织和成员](user-guide/team-setting/team-member/member-manage.md#键盘快捷键)（含 **← / →** 查询/工具栏导航，**U** / **P** 分页）。
+
+团队基本信息等表单子页另支持 **⌘/Ctrl + Enter** 保存；按住 **⌘/Ctrl** 可查看字段字母徽标。详见 [团队基本信息](user-guide/team-setting/team-info/base-info.md#键盘快捷键)。
 
 ## 团队信息
 

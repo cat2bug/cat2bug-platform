@@ -1,7 +1,8 @@
 import { isNativeFilePickerOpen } from '@/utils/native-file-picker'
 import { dismissComboPopoverIfLeaving } from '@/utils/combo-focus-tab'
-import { closeDropdownsOnBlur } from '@/utils/dropdown-blur-close'
+import { releaseControlFocusBeforeJump, syncFieldFocusVisual } from '@/utils/dropdown-blur-close'
 import { FIELD_HINT_BLOCKED } from '@/plugins/shortcut/reserved-keys'
+import { scrollVerticalContainerByArrow } from '@/utils/scroll-vertical-by-arrow'
 
 /**
  * 表单字段快捷聚焦 mixin（弹框/抽屉内）。
@@ -220,25 +221,22 @@ export default {
       if (!this.$_fieldHintMap) {
         this.$_prepareFieldHints()
       }
-      // 修饰键 + 上/下：滚动属性区滚动条
+      // 修饰键 + 上/下：滚动属性区或页面声明的辅助滚动区（如 IM 配置说明）
       if (k === 'ArrowDown' || k === 'ArrowUp') {
-        if (this.$_fieldHintMap) {
-          const sc = this.$_getScrollContainer()
-          if (sc) {
-            e.preventDefault()
-            e.stopPropagation()
-            const delta = Math.max(120, Math.round(sc.clientHeight * 0.4))
-            sc.scrollBy({ top: k === 'ArrowDown' ? delta : -delta, behavior: 'smooth' })
-            this.$_scheduleViewportHintRefresh()
-            return
-          }
+        const arrowSc = typeof this.getFieldHintArrowScrollContainer === 'function'
+          ? this.getFieldHintArrowScrollContainer()
+          : null
+        const sc = arrowSc || (this.$_fieldHintMap ? this.$_getScrollContainer() : null)
+        if (sc && scrollVerticalContainerByArrow(sc, k)) {
+          e.preventDefault()
+          e.stopPropagation()
+          this.$_scheduleViewportHintRefresh()
+          return
         }
       }
       // 修饰键 + 字母：直达字段 / 触发固定动作（映射已在修饰键按下时同步构建）
       if (k && k.length === 1) {
         const letter = /^\d$/.test(k) ? k : k.toUpperCase()
-        // 系统保留组合（全选/复制/粘贴等）永不拦截
-        if (FIELD_HINT_BLOCKED.has(letter)) return
         if (this.$_fieldHintMap && this.$_fieldHintMap[letter]) {
           e.preventDefault()
           e.stopPropagation()
@@ -254,7 +252,10 @@ export default {
               this.$_refreshFieldHintsForViewport(true)
             }
           })
+          return
         }
+        // 系统保留组合（全选/复制/粘贴等）永不拦截
+        if (FIELD_HINT_BLOCKED.has(letter)) return
         // 非映射字母（如 Cmd+C 复制）：放行浏览器默认行为
       }
     },
@@ -332,6 +333,9 @@ export default {
       const map = {}
       const pending = []
       const reserved = {}
+      if (typeof this.getFieldHintReservedLetters === 'function') {
+        Object.assign(reserved, this.getFieldHintReservedLetters())
+      }
 
       // 1) 组件声明的固定快捷键（如复选框等无 label 的控件）
       const fixed =
@@ -363,6 +367,7 @@ export default {
       let idx = 0
       for (const item of items) {
         if (idx >= pool.length) break
+        if (item.classList && item.classList.contains('cat2bug-field-hint-exclude')) continue
         if (!isElementInViewportRect(item, viewportRect)) continue
         const label = item.querySelector('.el-form-item__label')
         const text = label && label.textContent && label.textContent.trim()
@@ -437,8 +442,10 @@ export default {
     },
     $_focusControl(el) {
       if (!el) return
+      const container =
+        (typeof this.getFieldHintContainer === 'function' && this.getFieldHintContainer()) || this.$el
       dismissComboPopoverIfLeaving(document.activeElement, el)
-      closeDropdownsOnBlur(el)
+      releaseControlFocusBeforeJump(el, container)
       const nativelyFocusable =
         ['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'A'].indexOf(el.tagName) !== -1 ||
         el.hasAttribute('tabindex') ||
@@ -451,6 +458,8 @@ export default {
       } catch (err) {
         if (typeof el.focus === 'function') el.focus()
       }
+      syncFieldFocusVisual(container, el)
+      this.$nextTick(() => syncFieldFocusVisual(container, el))
       if (typeof el.scrollIntoView === 'function') {
         el.scrollIntoView({ block: 'center', behavior: 'smooth' })
       }

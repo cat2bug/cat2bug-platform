@@ -212,6 +212,57 @@ export function closeDropdownsOnBlur(activeEl = document.activeElement) {
   })
 }
 
+const DROPDOWN_FIELD_ROOT_SELECTORS = '.el-select, .el-cascader, .el-autocomplete, .el-date-editor'
+
+/** 快捷键 / Tab 跳字段前：blur 上一控件并清掉 Element UI 残留的 is-focus */
+export function releaseControlFocusBeforeJump(nextTarget, scopeRoot) {
+  const prev = document.activeElement
+  if (!prev || !nextTarget) return
+  if (prev === nextTarget || containsNode(nextTarget, prev)) return
+
+  closeDropdownsOnBlur(nextTarget)
+  blurDropdownRelatedControl(prev)
+
+  if (typeof prev.blur === 'function' && prev !== nextTarget && !containsNode(nextTarget, prev)) {
+    try {
+      prev.blur()
+    } catch (e) {
+      /* ignore */
+    }
+  }
+
+  if (scopeRoot && scopeRoot.querySelectorAll) {
+    clearStaleInputFocusStates(scopeRoot, nextTarget)
+  }
+}
+
+function blurDropdownRelatedControl(el) {
+  if (!el || !el.closest) return
+  const root = el.closest(DROPDOWN_FIELD_ROOT_SELECTORS)
+  if (!root) return
+  const vm = resolveDropdownVm(root)
+  if (vm && typeof vm.blur === 'function') {
+    vm.blur()
+  }
+}
+
+function clearStaleInputFocusStates(scopeRoot, nextTarget) {
+  const nextRoot = nextTarget && nextTarget.closest
+    ? nextTarget.closest(DROPDOWN_FIELD_ROOT_SELECTORS)
+    : null
+  scopeRoot.querySelectorAll('.el-input.is-focus').forEach((wrap) => {
+    const owner = wrap.closest(DROPDOWN_FIELD_ROOT_SELECTORS)
+    if (owner && nextRoot && owner === nextRoot) return
+    wrap.classList.remove('is-focus')
+  })
+}
+
+/** 聚焦完成后再次对齐 is-focus，避免 Element UI 异步残留 */
+export function syncFieldFocusVisual(scopeRoot, focusedEl) {
+  if (!scopeRoot || !focusedEl) return
+  clearStaleInputFocusStates(scopeRoot, focusedEl)
+}
+
 export function scheduleDropdownBlurClose() {
   if (Date.now() < suppressBlurCloseUntil) return
   if (blurCloseTimer) clearTimeout(blurCloseTimer)

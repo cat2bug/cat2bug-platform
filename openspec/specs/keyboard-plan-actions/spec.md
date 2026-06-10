@@ -20,7 +20,7 @@
 
 ### Requirement: 计划列表行跳转
 
-按住 `Cmd/Ctrl` 时 SHOULD 为可见行分配 1–9；按数字 SHOULD 聚焦该行。Enter（可选 P2）打开计划执行 `handlePlanRun`。
+按住 `Cmd/Ctrl` 时，系统 MUST 为**当前视口内可见**的计划行在编号列分配动态字母（`1`–`9` 优先，字母池补位，与工具栏已占用字母去重）。再按对应字母 MUST 打开该计划执行（`handlePlanRun`，需 `system:plan:run` 权限）。
 
 #### Scenario: 行数字打开执行
 

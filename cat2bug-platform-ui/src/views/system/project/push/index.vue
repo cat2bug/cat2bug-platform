@@ -1,6 +1,6 @@
 <template>
-  <div class="app-container">
-    <el-row class="project-add-page-header">
+  <div class="app-container" ref="projectOptionSubMain">
+    <el-row class="project-add-page-header project-option-sub-hint-back">
       <el-page-header @back="goBack" :content="$t('project.push')">
       </el-page-header>
     </el-row>
@@ -11,7 +11,10 @@
       <el-form-item class="page-form-actions">
         <div class="page-form-actions__buttons">
           <el-button @click="goBack">{{ $t('cancel') }}</el-button>
-          <el-button type="primary" @click="onSubmit">{{ $t('sync') }}</el-button>
+          <el-button class="defect-kbd-hint-host" type="primary" @click="onSubmit">
+            {{ $t('sync') }}
+            <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
+          </el-button>
         </div>
       </el-form-item>
     </el-form>
@@ -20,9 +23,11 @@
 
 <script>
 import {pullProject} from "@/api/system/project";
+import projectOptionSubFormKbd from '@/mixins/project-option-sub-form-kbd'
 
 export default {
   name: "index",
+  mixins: [projectOptionSubFormKbd],
   data() {
     return {
       form: {
@@ -43,10 +48,15 @@ export default {
       return this.$store.state.user.config.currentProjectId
     },
   },
+  mounted() {
+    this.$nextTick(() => this.capturePageFormCloseBaseline())
+  },
   methods: {
-    /** 返回 */
-    goBack() {
-      this.$router.back();
+    shortcutSave() {
+      this.onSubmit()
+    },
+    serializePageFormCloseState() {
+      return JSON.stringify({ form: { ...this.form } })
     },
     /** 提交项目同步操作 */
     onSubmit() {

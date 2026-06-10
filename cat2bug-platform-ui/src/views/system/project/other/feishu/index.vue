@@ -1,6 +1,6 @@
 <template>
-  <div class="app-container">
-    <el-row class="project-add-page-header">
+  <div class="app-container" ref="projectOptionSubMain">
+    <el-row class="project-add-page-header project-option-sub-hint-back">
       <el-page-header @back="goBack" :content="$t('feishu.robot')">
       </el-page-header>
     </el-row>
@@ -16,12 +16,15 @@
           <el-form-item class="page-form-actions">
             <div class="page-form-actions__buttons">
               <el-button @click="goBack">{{$t('cancel')}}</el-button>
-              <el-button type="primary" @click="onSubmit">{{$t('save')}}</el-button>
+              <el-button class="defect-kbd-hint-host" type="primary" @click="onSubmit">
+                {{$t('save')}}
+                <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
+              </el-button>
             </div>
           </el-form-item>
         </el-form>
       </el-col>
-      <el-col :xs="24" :sm="24" :md="14" :lg="14" :xl="14" class="doc">
+      <el-col :xs="24" :sm="24" :md="14" :lg="14" :xl="14" ref="projectImConfigDoc" class="doc">
         <h1 style="font-size: 2rem;">飞书企业应用配置说明</h1>
         <h2>飞书企业自建应用配置</h2>
         <p>当前配置目的是通过飞书企业应用发送通知消息给指定用户。企业应用支持发送个人消息，配置步骤如下。</p>
@@ -43,9 +46,12 @@
 
 <script>
 import {getFeishuConfig, saveFeishuConfig} from "@/api/im/feishu";
+import projectOptionSubFormKbd from '@/mixins/project-option-sub-form-kbd'
+import projectImConfigDocKbd from '@/mixins/project-im-config-doc-kbd'
 
 export default {
   name: "FeishuConfig",
+  mixins: [projectOptionSubFormKbd, projectImConfigDocKbd],
   data() {
     return {
       feishuConfig: {},
@@ -67,6 +73,12 @@ export default {
     this.getConfig();
   },
   methods: {
+    shortcutSave() {
+      this.onSubmit()
+    },
+    serializePageFormCloseState() {
+      return JSON.stringify({ form: { ...this.form } })
+    },
     /** 获取项目ID */
     getProjectId() {
       return parseInt(this.$store.state.user.config.currentProjectId);
@@ -84,6 +96,7 @@ export default {
         } else {
           this.reset();
         }
+        this.$nextTick(() => this.capturePageFormCloseBaseline())
       });
     },
     /** 重置表单 */
@@ -94,10 +107,6 @@ export default {
         appSecret: null,
       };
       this.resetForm("form");
-    },
-    /** 返回 */
-    goBack() {
-      this.$router.back();
     },
     /** 提交按钮 */
     onSubmit() {

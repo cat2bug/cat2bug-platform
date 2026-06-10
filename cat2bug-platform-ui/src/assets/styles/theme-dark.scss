@@ -5078,4 +5078,13 @@ html.dark {
       }
     }
   }
+
+  // 36. 通知列表页 Tab 行右侧配置图标
+  .notice-page .tabs-tools-row .notice-hint-config.tools-button {
+    color: #ffffff !important;
+
+    &:hover {
+      color: #FFD54F !important;
+    }
+  }
 }

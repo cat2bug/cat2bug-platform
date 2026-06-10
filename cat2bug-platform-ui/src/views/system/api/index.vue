@@ -1,12 +1,21 @@
 <template>
-  <div class="app-container">
-    <el-row class="project-add-page-header project-add-page-header--with-filter">
+  <div class="app-container" ref="projectOptionSubMain">
+    <el-row class="project-add-page-header project-add-page-header--with-filter project-option-sub-hint-back">
       <el-page-header @back="goBack" :content="$t('project.api-key')">
       </el-page-header>
     </el-row>
-    <div class="api-tools">
-      <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
-        <el-form-item label="" prop="apiName">
+    <div class="api-tools project-option-list-tools">
+      <el-form
+        :model="queryParams"
+        ref="queryForm"
+        size="small"
+        :inline="true"
+        v-show="showSearch"
+        label-width="68px"
+        class="left"
+        :class="{ 'list-query-keyboard-nav': listQueryNavActive }"
+      >
+        <el-form-item label="" prop="apiName" class="list-query-nav-item project-api-hint-query" data-query-key="apiName">
           <el-input
             v-model="queryParams.apiName"
             size="small"
@@ -18,18 +27,17 @@
         </el-form-item>
       </el-form>
 
-      <el-row :gutter="10" class="mb8">
-        <el-col :span="1.5">
-          <el-button
-            type="primary"
-            plain
-            icon="el-icon-plus"
-            size="small"
-            @click="handleAdd"
-            v-hasPermi="['system:api:add']"
-          >{{ $t('project.api.create-key') }}</el-button>
-        </el-col>
-      </el-row>
+      <div ref="apiToolsRight" class="project-option-list-tools-right">
+        <el-button
+          class="project-api-hint-create"
+          type="primary"
+          plain
+          icon="el-icon-plus"
+          size="small"
+          @click="handleAdd"
+          v-hasPermi="['system:api:add']"
+        >{{ $t('project.api.create-key') }}</el-button>
+      </div>
     </div>
     <el-table v-loading="loading" :data="apiList" @selection-change="handleSelectionChange">
       <el-table-column :label="$t('project.api.name')" align="center" prop="apiName" />
@@ -87,6 +95,7 @@
     </el-table>
 
     <pagination
+      class="project-api-table-pagination"
       v-show="total>0"
       :total="total"
       :page.sync="queryParams.pageNum"
@@ -95,8 +104,17 @@
     />
 
     <!-- 添加或修改项目API对话框 -->
-    <el-dialog :title="title" :visible.sync="open" width="800px" append-to-body>
-      <el-form ref="form" :model="form" :rules="rules" label-width="100px">
+    <el-dialog
+      :title="title"
+      :visible.sync="open"
+      width="800px"
+      append-to-body
+      custom-class="cat2bug-form-shortcut-dialog"
+      :close-on-press-escape="false"
+      :before-close="onToolDialogBeforeClose"
+      @opened="onToolDialogOpened"
+    >
+      <el-form ref="form" :model="form" :rules="rules" label-width="100px" class="project-api-dialog-form">
         <el-form-item :label="$t('project.api.name')" prop="apiName">
           <el-input v-model="form.apiName" :placeholder="$t('project.api.please-enter-name')" maxlength="30" />
         </el-form-item>
@@ -217,8 +235,11 @@
       </el-form>
 
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">{{ $t('ok') }}</el-button>
-        <el-button @click="cancel">{{ $t('cancel') }}</el-button>
+        <el-button class="defect-kbd-hint-host" type="primary" @click="submitForm">
+          {{ $t('ok') }}
+          <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
+        </el-button>
+        <el-button @click="requestCloseToolDialog">{{ $t('cancel') }}</el-button>
       </div>
     </el-dialog>
   </div>
@@ -227,9 +248,15 @@
 <script>
 import ProjectLabel from "@/components/Project/ProjectLabel";
 import { listApi, getApi, delApi, addApi, updateApi } from "@/api/system/api";
+import projectOptionSubListKbd from '@/mixins/project-option-sub-list-kbd'
+import defectToolDialogKbd from '@/mixins/defect-tool-dialog-kbd'
+import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
+import { PROJECT_OPTION_KBD_SCOPE } from '@/mixins/project-option-sub-kbd'
+import { checkPermi } from '@/utils/permission'
 
 export default {
   name: "Api",
+  mixins: [projectOptionSubListKbd, defectToolDialogKbd],
   components: {ProjectLabel},
   data() {
     return {
@@ -297,8 +324,22 @@ export default {
     projectId() {
       return parseInt(this.$store.state.user.config.currentProjectId);
     },
+    /** 供弹框快捷键 mixin 识别 open 状态 */
+    dialogVisible: {
+      get() {
+        return this.open
+      },
+      set(val) {
+        this.open = val
+      }
+    }
   },
   watch: {
+    open(val) {
+      if (typeof this.$_syncFormShortcutBinding === 'function') {
+        this.$_syncFormShortcutBinding(!!val)
+      }
+    },
     'permissions.defect': {
       handler() {
         this.updateCheckAllState('defect');
@@ -328,9 +369,76 @@ export default {
     this.getList();
   },
   methods: {
-    /** 返回 */
-    goBack() {
-      this.$router.back();
+    shouldProjectOptionSubEscGoBack() {
+      return !this.open
+    },
+    shortcutSave() {
+      this.submitForm()
+    },
+    doCloseToolDialog() {
+      this.open = false
+      this.toolDialogCloseBaseline = null
+      this.reset()
+    },
+    serializeApiDialogCloseState() {
+      return JSON.stringify({
+        form: this.form,
+        permissions: this.permissions
+      })
+    },
+    captureToolDialogCloseBaseline() {
+      this.toolDialogCloseBaseline = this.serializeApiDialogCloseState()
+    },
+    isToolDialogCloseDirty() {
+      if (!this.toolDialogCloseBaseline) return false
+      return this.serializeApiDialogCloseState() !== this.toolDialogCloseBaseline
+    },
+    getFieldHintScrollContainer() {
+      const form = this.$refs.form
+      if (form && form.$el) {
+        const body = form.$el.closest('.el-dialog__body')
+        if (body) return body
+      }
+      return typeof this.getFieldHintContainer === 'function' ? this.getFieldHintContainer() : null
+    },
+    getListQueryNavItems() {
+      return [{ key: 'apiName' }]
+    },
+    getListQueryNavToolbarRef() {
+      return 'apiToolsRight'
+    },
+    getProjectOptionSubPaginationSelector() {
+      return '.project-api-table-pagination'
+    },
+    getProjectOptionSubRegisterActions() {
+      return [
+        { key: 'query', defaultLetter: 'S', run: () => this.shortcutFocusQuery() },
+        { key: 'create', defaultLetter: 'E', run: () => this.shortcutCreateApi() }
+      ]
+    },
+    getProjectOptionSubActionHints() {
+      const L = (key, def) => shortcutStore.getLetter(`action.${PROJECT_OPTION_KBD_SCOPE}.${key}`, def)
+      return [
+        {
+          key: 'query',
+          letter: L('query', 'S'),
+          badgeSelector: '.project-api-hint-query',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
+          run: () => this.shortcutFocusQuery()
+        },
+        {
+          key: 'create',
+          letter: L('create', 'E'),
+          badgeSelector: '.project-api-hint-create',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2, dy: 5 },
+          run: () => this.shortcutCreateApi(),
+          visible: () => checkPermi(['system:api:add'])
+        }
+      ]
+    },
+    shortcutCreateApi() {
+      if (!checkPermi(['system:api:add'])) return
+      this.handleAdd()
     },
     /** 查询项目API列表 */
     getList() {
@@ -344,8 +452,7 @@ export default {
     },
     // 取消按钮
     cancel() {
-      this.open = false;
-      this.reset();
+      this.requestCloseToolDialog()
     },
     // 表单重置
     reset() {
@@ -395,7 +502,11 @@ export default {
     handleAdd() {
       this.reset();
       this.open = true;
-      this.title = "添加项目API";
+      this.title = this.$t('project.api.create-key');
+      this.$nextTick(() => {
+        const btn = this.$el && this.$el.querySelector('.project-api-hint-create')
+        if (btn && typeof btn.blur === 'function') btn.blur()
+      })
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
@@ -413,7 +524,7 @@ export default {
         // 加载权限配置
         this.loadPermissions();
         this.open = true;
-        this.title = "修改项目API";
+        this.title = this.$t('modify');
       });
     },
     /** 提交按钮 */

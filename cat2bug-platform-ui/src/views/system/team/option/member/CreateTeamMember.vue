@@ -1,5 +1,5 @@
 <template>
-  <el-dialog :title="$t('member.create')" :visible.sync="dialogVisible" width="800px" append-to-body :close-on-press-escape="false" :before-close="onToolDialogBeforeClose" @opened="onToolDialogOpened">
+  <el-dialog :title="$t('member.create')" :visible.sync="dialogVisible" width="800px" append-to-body :close-on-click-modal="false" custom-class="cat2bug-form-shortcut-dialog team-create-member-dialog" :close-on-press-escape="false" :before-close="onToolDialogBeforeClose" @opened="onToolDialogOpened">
     <el-form ref="form" :model="form" :rules="rules" label-width="120px">
       <el-row>
         <el-col :span="12">

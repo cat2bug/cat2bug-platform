@@ -16,21 +16,28 @@
       </el-form>
 
       <div ref="documentToolsRight" class="document-tools-right">
-          <el-popover placement="top" trigger="click">
-            <div class="doc-picker-head row">
+          <el-popover
+            placement="top"
+            trigger="click"
+            popper-class="defect-column-picker-popover"
+            v-model="docColumnPickerVisible"
+            @show="onColumnPickerPopoverShow"
+            @hide="onColumnPickerPopoverHide"
+          >
+            <div class="defect-column-picker-head">
               <i class="el-icon-s-fold"></i>
               <h4>{{ $t('display-field') }}</h4>
             </div>
-            <el-divider class="doc-picker-divider"></el-divider>
+            <el-divider class="defect-field-divider"></el-divider>
             <el-checkbox-group
               :key="'doc-colpick-' + docColumnPickerRev"
               v-model="columnPickerCheckedKeys"
-              class="doc-picker-col"
+              class="defect-column-picker"
               @change="onDocColumnPickerChange"
             >
               <el-checkbox v-for="c in documentColumnPickerOptions" :key="c.key" :label="c.key">{{ $t(c.key) }}</el-checkbox>
             </el-checkbox-group>
-            <el-button style="padding: 9px;" plain slot="reference" icon="el-icon-s-fold" size="small"></el-button>
+            <el-button class="document-list-hint-columns" style="padding: 9px;" plain slot="reference" icon="el-icon-s-fold" size="small"></el-button>
           </el-popover>
           <el-button
             class="document-hint-create-folder"
@@ -203,6 +210,7 @@ import {toBase64} from "js-base64";
 import {checkPermi} from "@/utils/permission";
 import pageActionHints from '@/mixins/page-action-hints'
 import listQueryKeyboardNav from '@/mixins/list-query-keyboard-nav'
+import columnPickerPopoverKbd from '@/mixins/column-picker-popover-kbd'
 import defectToolDialogKbd from '@/mixins/defect-tool-dialog-kbd'
 import { serializeToolDialogFormCloseState } from '@/utils/defect-tool-dialog-close-state'
 import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
@@ -211,7 +219,7 @@ const DOCUMENT_KBD_SCOPE = 'document'
 
 export default {
   name: "Document",
-  mixins: [pageActionHints, listQueryKeyboardNav, defectToolDialogKbd],
+  mixins: [pageActionHints, listQueryKeyboardNav, columnPickerPopoverKbd, defectToolDialogKbd],
   components: { ProjectLabel, Cat2BugAvatar, Cat2BugTable },
   data() {
     return {
@@ -245,6 +253,7 @@ export default {
       documentList: [],
       documentTableColumnDefaults: DocumentTableColumnDefaults.map(c => ({ ...c })),
       columnPickerCheckedKeys: [],
+      docColumnPickerVisible: false,
       docColumnPickerRev: 0,
       docPickerColumnList: null,
       documentToolsWrapped: false,
@@ -435,6 +444,13 @@ export default {
     },
     getListQueryNavToolbarRef() {
       return 'documentToolsRight'
+    },
+    getColumnPickerTriggerEl() {
+      const root = this.getPageActionHintContainer()
+      return root && root.querySelector('.document-list-hint-columns')
+    },
+    closeColumnPickerPopoverKbd() {
+      this.docColumnPickerVisible = false
     },
     shortcutCreateFolder() {
       if (!checkPermi(['system:document:add'])) return
@@ -838,51 +854,6 @@ export default {
   overflow-x: auto;
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
-}
-.doc-picker-head.row {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: var(--cat2bug-toolbar-item-gap, 10px);
-
-  > * {
-    margin: 0;
-  }
-}
-.doc-picker-head h4 {
-  margin: 0;
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.3;
-}
-.doc-picker-divider {
-  margin: 8px 0;
-}
-/** 与缺陷列表「显示字段」同款：用 gap 控制间距，去掉 checkbox 默认大块外边距 */
-.doc-picker-col {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 220px;
-  max-height: 380px;
-  overflow-y: auto;
-  padding-right: 4px;
-}
-.doc-picker-col ::v-deep .el-checkbox {
-  display: flex;
-  align-items: center;
-  margin-right: 0;
-  margin-bottom: 0;
-  height: auto;
-  line-height: 1.4;
-  white-space: nowrap;
-}
-.doc-picker-col ::v-deep .el-checkbox__input {
-  flex-shrink: 0;
-}
-.doc-picker-col ::v-deep .el-checkbox__label {
-  line-height: 1.4;
-  padding-left: 8px;
 }
 .document-page ::v-deep h3.document-project-label {
   margin-top: 0;
