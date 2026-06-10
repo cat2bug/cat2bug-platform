@@ -582,13 +582,10 @@ export default {
     registerDefectShortcuts() {
       if (!this.$shortcut) return
       const actions = [
-        { key: 'query', defaultLetter: 'S', run: () => this.shortcutFocusQuery() },
         { key: 'newDefect', defaultLetter: 'E', run: () => this.shortcutOpenDefectAddDropdown() },
         { key: 'switchTab', defaultLetter: 'J', run: () => this.shortcutSwitchTab() },
         { key: 'statistic', defaultLetter: 'I', run: () => this.addStatisticHandle() },
-        { key: 'switchView', defaultLetter: 'O', run: () => this.shortcutSwitchView() },
-        { key: 'prevPage', defaultLetter: 'B', run: () => this.shortcutChangePage(-1) },
-        { key: 'nextPage', defaultLetter: 'P', run: () => this.shortcutChangePage(1) }
+        { key: 'switchView', defaultLetter: 'O', run: () => this.shortcutSwitchView() }
       ]
       if (this.defectStatisticNavAvailable) {
         actions.splice(4, 0, { key: 'statisticNav', defaultLetter: 'G', run: () => this.shortcutStatisticNav() })
@@ -603,14 +600,6 @@ export default {
       const scopeKey = 'defect'
       const L = (key, def) => shortcutStore.getLetter(`action.${scopeKey}.${key}`, def)
       return [
-        {
-          key: 'query',
-          letter: L('query', 'S'),
-          badgeSelector: '.defect-list-hint-query input.el-input__inner',
-          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
-          run: () => this.shortcutFocusQuery(),
-          visible: () => this.showSearch
-        },
         {
           key: 'newDefect',
           letter: L('newDefect', 'E'),
@@ -647,20 +636,6 @@ export default {
           badgeSelector: '.defect-list-hint-view-switch',
           floatOffset: { placement: 'bottom-right-outset', outset: 2 },
           run: () => this.shortcutSwitchView()
-        },
-        {
-          key: 'prevPage',
-          letter: L('prevPage', 'B'),
-          badgeSelector: '.defect-table-pagination .btn-prev',
-          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
-          run: () => this.shortcutChangePage(-1)
-        },
-        {
-          key: 'nextPage',
-          letter: L('nextPage', 'P'),
-          badgeSelector: '.defect-table-pagination .btn-next',
-          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
-          run: () => this.shortcutChangePage(1)
         }
       ]
     },
@@ -3073,6 +3048,9 @@ export default {
   }
   ::v-deep .defect-tab-add-btn.svg-icon {
     vertical-align: middle !important;
+    width: 15px !important;
+    height: 15px !important;
+    font-size: 11px;
   }
   ::v-deep .defect-tab-add-btn.defect-tab-shortcut-active {
     position: relative;
@@ -3084,13 +3062,15 @@ export default {
     width: 15px !important;
     height: 15px !important;
     box-sizing: border-box;
-    padding: 2px !important;
+    padding: 0 !important;
     border: 1px solid #c0c4cc;
     border-radius: var(--cat2bug-border-radius, 4px);
     background: #fff;
     color: #606266;
-    display: inline-block;
-    line-height: 0;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    line-height: 1;
     vertical-align: middle !important;
     overflow: visible !important;
     cursor: pointer;

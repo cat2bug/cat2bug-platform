@@ -99,14 +99,16 @@ import {
   MODULE_ACTION_DEFAULTS,
   REPORT_ACTION_DEFAULTS,
   DOCUMENT_ACTION_DEFAULTS,
-  PROJECT_OPTION_ACTION_DEFAULTS,
-  TEAM_OPTION_ACTION_DEFAULTS,
   TEAM_MEMBER_ACTION_DEFAULTS,
   PROJECT_MANAGE_ACTION_DEFAULTS,
   PROJECT_CREATE_ACTION_DEFAULTS,
   PROFILE_ACTION_DEFAULTS,
   normalizeKey
 } from '@/plugins/shortcut/keymap'
+import {
+  PROJECT_OPTION_HUB_ACTION_DEFAULTS,
+  TEAM_OPTION_HUB_ACTION_DEFAULTS
+} from '@/utils/option-card-kbd-hints'
 import { SETTINGS_NEVER_BIND } from '@/plugins/shortcut/reserved-keys'
 
 export default {
@@ -241,8 +243,8 @@ export default {
         ['module', 'keyboard.sec-module', 'module', MODULE_ACTION_DEFAULTS],
         ['report', 'keyboard.sec-report', 'report', REPORT_ACTION_DEFAULTS],
         ['document', 'keyboard.sec-document', 'document', DOCUMENT_ACTION_DEFAULTS],
-        ['project-option', 'keyboard.sec-project-option', 'project-option', PROJECT_OPTION_ACTION_DEFAULTS],
-        ['team-option', 'keyboard.sec-team-option', 'team-option', TEAM_OPTION_ACTION_DEFAULTS],
+        ['project-option', 'keyboard.sec-project-option', 'project-option', PROJECT_OPTION_HUB_ACTION_DEFAULTS],
+        ['team-option', 'keyboard.sec-team-option', 'team-option', TEAM_OPTION_HUB_ACTION_DEFAULTS],
         ['team-member', 'keyboard.sec-team-member', 'team-member', TEAM_MEMBER_ACTION_DEFAULTS],
         ['project-manage', 'keyboard.sec-project-manage', 'project-manage', PROJECT_MANAGE_ACTION_DEFAULTS],
         ['project-create', 'keyboard.sec-project-create', 'project-create', PROJECT_CREATE_ACTION_DEFAULTS],

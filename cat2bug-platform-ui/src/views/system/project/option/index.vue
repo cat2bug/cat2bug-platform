@@ -13,7 +13,7 @@ import ProjectLabel from "@/components/Project/ProjectLabel";
 import pageActionHints from '@/mixins/page-action-hints'
 import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
 import {
-  buildOptionCardActionHints,
+  buildOptionCardPageActionHints,
   buildOptionCardRegisterActions
 } from '@/utils/option-card-kbd-hints'
 
@@ -71,16 +71,11 @@ export default {
       return this.$refs.optionMain || this.$el
     },
     getPageActionHints() {
-      return []
-    },
-    getPageDynamicActionHints(ctx) {
-      const used = (ctx && ctx.usedLetters) ? new Set(ctx.usedLetters) : new Set()
       const container = this.getPageActionHintContainer()
       const L = (key, def) => shortcutStore.getLetter(`action.${PROJECT_OPTION_KBD_SCOPE}.${key}`, def)
-      return buildOptionCardActionHints({
+      return buildOptionCardPageActionHints({
         container,
         letterForKey: L,
-        usedLetters: used,
         scopeKey: PROJECT_OPTION_KBD_SCOPE
       })
     },

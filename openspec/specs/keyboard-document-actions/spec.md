@@ -8,22 +8,18 @@
 
 | 键 | 动作 |
 |----|------|
-| S | 聚焦文档名查询 |
 | O | 新建文件夹 |
 | I | 新建文件 |
-| U | 返回上级目录 |
-| B | 上一页 |
-| P | 下一页 |
 
 #### Scenario: O 新建文件夹
 
 - **WHEN** 用户有 `system:document:add` 且按 O
 - **THEN** 打开新建文件夹流程
 
-#### Scenario: U 返回上级
+#### Scenario: I 新建文件
 
-- **WHEN** 当前不在根目录且用户按 U
-- **THEN** 进入上级目录（等效点击「上级目录」）
+- **WHEN** 用户有 `system:document:add` 且按 I
+- **THEN** 打开新建文件流程
 
 ### Requirement: 文档弹框
 
@@ -31,7 +27,7 @@
 
 ### Requirement: 文档编辑页（c2d）
 
-`/document/c2d` 编辑页 SHOULD 在后续迭代接入简化动作（S 搜索、Esc 返回）；本变更 MUST 至少保证打开 c2d 时列表页动作已注销。
+`/document/c2d` 编辑页 SHOULD 在后续迭代接入简化动作（Esc 返回）；本变更 MUST 至少保证打开 c2d 时列表页动作已注销。
 
 #### Scenario: 进入 c2d 注销列表动作
 

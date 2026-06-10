@@ -26,7 +26,7 @@ Excel 模式以电子表格形式展示、编辑缺陷数据，适合**习惯用
 
 ## 键盘快捷键
 
-通用说明见 [键盘快捷键](../../../../advanced/keyboard-shortcuts.md)。列表级动作（E/U/R/I/B/P、打开行详情）见 [缺陷管理](../../../defect.md#键盘快捷键)。
+通用说明见 [键盘快捷键](../../../../advanced/keyboard-shortcuts.md)。列表级动作（E/J/I/G/O、打开行详情）见 [缺陷管理](../../../defect.md#键盘快捷键)。
 
 Excel 模式补充说明：
 

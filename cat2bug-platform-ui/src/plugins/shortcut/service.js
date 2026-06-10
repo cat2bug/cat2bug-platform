@@ -144,7 +144,9 @@ const FORM_SHORTCUT_DIALOG_NAMES = new Set([
   'CreateTeamMember',
   'InviteTeamMember',
   'AddProjectMember',
-  'Document'
+  'Document',
+  'SendNoticeDialog',
+  'OptionNotice'
 ])
 
 /** 接入 dialog-form-shortcuts 的 el-dialog 标记（Esc 关闭时不应把自身算作遮挡层） */

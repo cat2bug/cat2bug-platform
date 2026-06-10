@@ -13,6 +13,8 @@ import {
 export {
   PROJECT_OPTION_CARD_CATALOG,
   TEAM_OPTION_CARD_CATALOG,
+  PROJECT_OPTION_HUB_ACTION_DEFAULTS,
+  TEAM_OPTION_HUB_ACTION_DEFAULTS,
   PROJECT_OPTION_ACTION_DEFAULTS,
   TEAM_OPTION_ACTION_DEFAULTS
 } from '@/utils/option-card-kbd-catalog'
@@ -184,6 +186,20 @@ function buildOptionCardEntries({ container, letterForKey, usedLetters = new Set
  */
 export function buildOptionCardActionHints({ container, letterForKey, usedLetters, scopeKey }) {
   return buildOptionCardEntries({ container, letterForKey, usedLetters, scopeKey })
+}
+
+/**
+ * 构建 page-action-hints 静态项（与空格动作面板 / registerPage 同一套卡片入口）。
+ */
+export function buildOptionCardPageActionHints({ container, letterForKey, usedLetters, scopeKey }) {
+  return buildOptionCardActionHints({ container, letterForKey, usedLetters, scopeKey }).map((item) => ({
+    key: item.key,
+    letter: item.letter,
+    resolveAnchor: () => (item.anchor && item.anchor.isConnected !== false ? item.anchor : null),
+    floatOffset: item.floatOffset,
+    skipViewportCheck: item.skipViewportCheck,
+    run: item.run
+  }))
 }
 
 /**

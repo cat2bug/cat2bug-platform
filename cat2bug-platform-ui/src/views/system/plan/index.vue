@@ -329,10 +329,7 @@ export default {
     registerPlanShortcuts() {
       if (!this.$shortcut) return
       this.$shortcut.registerPage(PLAN_KBD_SCOPE, [
-        { key: 'query', defaultLetter: 'S', run: () => this.shortcutFocusQuery() },
-        { key: 'create', defaultLetter: 'E', run: () => this.shortcutCreatePlan() },
-        { key: 'prevPage', defaultLetter: 'B', run: () => this.shortcutChangePage(-1) },
-        { key: 'nextPage', defaultLetter: 'P', run: () => this.shortcutChangePage(1) }
+        { key: 'create', defaultLetter: 'E', run: () => this.shortcutCreatePlan() }
       ])
     },
     getPageActionHintContainer() {
@@ -342,35 +339,12 @@ export default {
       const L = (key, def) => shortcutStore.getLetter(`action.${PLAN_KBD_SCOPE}.${key}`, def)
       return [
         {
-          key: 'query',
-          letter: L('query', 'S'),
-          badgeSelector: '.plan-hint-query',
-          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
-          run: () => this.shortcutFocusQuery()
-        },
-        {
           key: 'create',
           letter: L('create', 'E'),
           badgeSelector: '.plan-hint-create',
           floatOffset: { placement: 'bottom-right-outset', outset: 2, dy: 5 },
           run: () => this.shortcutCreatePlan(),
           visible: () => checkPermi(['system:plan:add'])
-        },
-        {
-          key: 'prevPage',
-          letter: L('prevPage', 'B'),
-          badgeSelector: '.plan-table-pagination .btn-prev',
-          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
-          run: () => this.shortcutChangePage(-1),
-          visible: () => this.total > 0
-        },
-        {
-          key: 'nextPage',
-          letter: L('nextPage', 'P'),
-          badgeSelector: '.plan-table-pagination .btn-next',
-          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
-          run: () => this.shortcutChangePage(1),
-          visible: () => this.total > 0
         }
       ]
     },

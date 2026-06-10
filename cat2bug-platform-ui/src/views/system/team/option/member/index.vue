@@ -231,7 +231,6 @@ export default {
       if (!this.$shortcut) return
       const pagination = buildProjectOptionSubPaginationShortcuts(this)
       this.$shortcut.registerPage(TEAM_MEMBER_KBD_SCOPE, [
-        { key: 'query', defaultLetter: 'S', run: () => this.shortcutFocusQuery() },
         { key: 'create', defaultLetter: 'E', run: () => this.shortcutCreateMember() },
         { key: 'invite', defaultLetter: 'I', run: () => this.shortcutInviteMember() },
         { key: 'back', defaultLetter: 'B', run: () => this.goBack() },
@@ -245,13 +244,6 @@ export default {
       const L = (key, def) => shortcutStore.getLetter(`action.${TEAM_MEMBER_KBD_SCOPE}.${key}`, def)
       const pagination = buildProjectOptionSubPaginationShortcuts(this)
       return [
-        {
-          key: 'query',
-          letter: L('query', 'S'),
-          badgeSelector: '.team-member-hint-query',
-          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
-          run: () => this.shortcutFocusQuery()
-        },
         {
           key: 'create',
           letter: L('create', 'E'),

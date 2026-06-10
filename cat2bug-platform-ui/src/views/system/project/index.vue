@@ -278,12 +278,7 @@ export default {
     registerProjectManageShortcuts() {
       if (!this.$shortcut) return
       this.$shortcut.registerPage(PROJECT_MANAGE_KBD_SCOPE, [
-        { key: 'query', defaultLetter: 'S', run: () => this.shortcutFocusQuery() },
-        { key: 'create', defaultLetter: 'E', run: () => this.shortcutCreateProject() },
-        { key: 'tabMine', defaultLetter: 'M', run: () => this.switchTabParticipated() },
-        { key: 'tabAll', defaultLetter: 'A', run: () => this.switchTabAll() },
-        { key: 'prevPage', defaultLetter: 'B', run: () => this.shortcutChangePage(-1) },
-        { key: 'nextPage', defaultLetter: 'P', run: () => this.shortcutChangePage(1) }
+        { key: 'create', defaultLetter: 'E', run: () => this.shortcutCreateProject() }
       ])
     },
     getPageActionHintContainer() {
@@ -293,49 +288,12 @@ export default {
       const L = (key, def) => shortcutStore.getLetter(`action.${PROJECT_MANAGE_KBD_SCOPE}.${key}`, def)
       return [
         {
-          key: 'query',
-          letter: L('query', 'S'),
-          badgeSelector: '.project-manage-hint-query',
-          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
-          run: () => this.shortcutFocusQuery()
-        },
-        {
           key: 'create',
           letter: L('create', 'E'),
           badgeSelector: '.project-manage-hint-create',
           floatOffset: { placement: 'bottom-right-outset', outset: 2, dy: 5 },
           run: () => this.shortcutCreateProject(),
           visible: () => checkPermi(['system:project:add'])
-        },
-        {
-          key: 'tabMine',
-          letter: L('tabMine', 'M'),
-          badgeSelector: '.project-manage-page .el-tabs__header .el-tabs__item:nth-child(1)',
-          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
-          run: () => this.switchTabParticipated()
-        },
-        {
-          key: 'tabAll',
-          letter: L('tabAll', 'A'),
-          badgeSelector: '.project-manage-page .el-tabs__header .el-tabs__item:nth-child(2)',
-          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
-          run: () => this.switchTabAll()
-        },
-        {
-          key: 'prevPage',
-          letter: L('prevPage', 'B'),
-          badgeSelector: '.project-manage-table-pagination .btn-prev',
-          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
-          run: () => this.shortcutChangePage(-1),
-          visible: () => this.total > 0
-        },
-        {
-          key: 'nextPage',
-          letter: L('nextPage', 'P'),
-          badgeSelector: '.project-manage-table-pagination .btn-next',
-          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
-          run: () => this.shortcutChangePage(1),
-          visible: () => this.total > 0
         }
       ]
     },

@@ -3,7 +3,6 @@ import {
   resolveOptionActionKey,
   PROJECT_OPTION_CARD_CATALOG
 } from '@/utils/option-card-kbd-hints'
-import { PROJECT_OPTION_ACTION_DEFAULTS } from '@/utils/option-card-kbd-catalog'
 
 describe('option-card-kbd-hints', () => {
   it('hrefToOptionActionRouteKey normalizes project routes', () => {
@@ -17,13 +16,13 @@ describe('option-card-kbd-hints', () => {
     expect(resolveOptionActionKey(el, 2, 1)).toBe('card2-action1')
   })
 
-  it('PROJECT_OPTION_ACTION_DEFAULTS lists card button titleKeys', () => {
-    const baseInfo = PROJECT_OPTION_ACTION_DEFAULTS.find((d) => d.key === 'route-project-base-info')
+  it('PROJECT_OPTION_HUB_ACTION_DEFAULTS lists card link entries only', () => {
+    const { PROJECT_OPTION_HUB_ACTION_DEFAULTS, PROJECT_OPTION_SUB_ACTION_DEFAULTS } = require('@/utils/option-card-kbd-catalog')
+    const baseInfo = PROJECT_OPTION_HUB_ACTION_DEFAULTS.find((d) => d.key === 'route-project-base-info')
     expect(baseInfo).toBeDefined()
     expect(baseInfo.titleKey).toBe('project.base-info')
     expect(baseInfo.defaultLetter).toBe('1')
-    expect(PROJECT_OPTION_ACTION_DEFAULTS.length).toBe(PROJECT_OPTION_CARD_CATALOG.length + 4)
-    expect(PROJECT_OPTION_ACTION_DEFAULTS.find((d) => d.key === 'changeIcon').titleKey)
-      .toBe('keyboard.act.project-change-icon')
+    expect(PROJECT_OPTION_HUB_ACTION_DEFAULTS.length).toBe(PROJECT_OPTION_CARD_CATALOG.length)
+    expect(PROJECT_OPTION_SUB_ACTION_DEFAULTS.find((d) => d.key === 'back')).toBeDefined()
   })
 })

@@ -123,6 +123,7 @@ import SendNoticeDialog from "./send/index"
 import ViewNotice from "@/components/Notice/ViewNotice";
 import pageActionHints from '@/mixins/page-action-hints'
 import listQueryKeyboardNav from '@/mixins/list-query-keyboard-nav'
+import noticeListKbd from '@/mixins/notice-list-kbd'
 import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
 import { checkPermi } from '@/utils/permission'
 import {
@@ -137,7 +138,7 @@ const NOTICE_KBD_SCOPE = 'notice'
 
 export default {
   name: "Notice",
-  mixins: [pageActionHints, listQueryKeyboardNav],
+  mixins: [pageActionHints, listQueryKeyboardNav, noticeListKbd],
   components: { ViewNotice, OptionNotice, SendNoticeDialog },
   dicts: ['sys_notice_status', 'sys_notice_type'],
   data () {
@@ -207,12 +208,9 @@ export default {
     registerNoticeShortcuts() {
       if (!this.$shortcut) return
       this.$shortcut.registerPage(NOTICE_KBD_SCOPE, [
-        { key: 'query', defaultLetter: 'S', run: () => this.shortcutFocusQuery() },
-        { key: 'switchTab', defaultLetter: 'J', run: () => this.shortcutSwitchTab() },
         { key: 'config', defaultLetter: 'G', run: () => this.shortcutOpenConfig() },
         { key: 'send', defaultLetter: 'E', run: () => this.shortcutSendNotice() },
-        { key: 'prevPage', defaultLetter: 'B', run: () => this.shortcutChangePage(-1) },
-        { key: 'nextPage', defaultLetter: 'P', run: () => this.shortcutChangePage(1) }
+        { key: 'switchTab', defaultLetter: 'J', run: () => this.shortcutSwitchTab() }
       ])
     },
     getPageActionHintContainer() {
@@ -221,20 +219,6 @@ export default {
     getPageActionHints() {
       const L = (key, def) => shortcutStore.getLetter(`action.${NOTICE_KBD_SCOPE}.${key}`, def)
       return [
-        {
-          key: 'query',
-          letter: L('query', 'S'),
-          badgeSelector: '.notice-hint-query',
-          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
-          run: () => this.shortcutFocusQuery()
-        },
-        {
-          key: 'switchTab',
-          letter: L('switchTab', 'J'),
-          badgeSelector: '.notice-hint-tabs .el-tabs__item.is-active .notice-tab-label',
-          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
-          run: () => this.shortcutSwitchTab()
-        },
         {
           key: 'config',
           letter: L('config', 'G'),
@@ -251,20 +235,11 @@ export default {
           visible: () => checkPermi(['notice:send'])
         },
         {
-          key: 'prevPage',
-          letter: L('prevPage', 'B'),
-          badgeSelector: '.notice-table-pagination .btn-prev',
+          key: 'switchTab',
+          letter: L('switchTab', 'J'),
+          badgeSelector: '.notice-hint-tabs .el-tabs__item.is-active .notice-tab-label',
           floatOffset: { placement: 'bottom-right-outset', outset: 2 },
-          run: () => this.shortcutChangePage(-1),
-          visible: () => this.total > 0
-        },
-        {
-          key: 'nextPage',
-          letter: L('nextPage', 'P'),
-          badgeSelector: '.notice-table-pagination .btn-next',
-          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
-          run: () => this.shortcutChangePage(1),
-          visible: () => this.total > 0
+          run: () => this.shortcutSwitchTab()
         }
       ]
     },
@@ -470,13 +445,29 @@ export default {
   .notice-list-table ::v-deep td.el-table-column--selection .cell {
     overflow: visible !important;
   }
+  > .project-add-page-header + .tabs-tools-row {
+    margin-top: 10px;
+  }
   .tabs-tools-row {
     margin-bottom: 10px;
+  }
+  .notice-hint-tabs ::v-deep .el-tabs__nav-wrap::after {
+    display: none !important;
   }
   .notice-hint-tabs ::v-deep .el-tabs__header {
     margin-bottom: 0;
   }
+  .notice-hint-tabs ::v-deep .el-tabs__header,
+  .notice-hint-tabs ::v-deep .el-tabs__nav-wrap,
+  .notice-hint-tabs ::v-deep .el-tabs__nav-scroll,
+  .notice-hint-tabs ::v-deep .el-tabs__nav {
+    overflow: visible !important;
+  }
   .notice-hint-tabs .el-tabs__item.is-active {
+    position: relative;
+    overflow: visible !important;
+  }
+  .notice-tab-label {
     position: relative;
     overflow: visible !important;
   }

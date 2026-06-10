@@ -90,6 +90,29 @@ html:not(.dark) .defect-list-kbd-hint {
   overflow: visible !important;
 }
 
+.el-select.cat2bug-field-hint-host,
+.el-checkbox.cat2bug-field-hint-host {
+  overflow: visible !important;
+}
+
+.el-dialog .notice-option-test-btn.cat2bug-field-hint-host {
+  position: relative !important;
+  overflow: visible !important;
+  z-index: 2;
+
+  .cat2bug-field-hint {
+    right: -3px;
+    bottom: -4px;
+    z-index: 10;
+  }
+}
+
+.notice-option-dialog .notice-option-asystem-bgm-select.cat2bug-field-hint-host,
+.notice-option-dialog .notice-option-asystem-bgm-cb.cat2bug-field-hint-host,
+.notice-option-dialog .notice-option-asystem-panel-cb.cat2bug-field-hint-host {
+  overflow: visible !important;
+}
+
 .cat2bug-field-hint {
   position: absolute;
   right: 2px;

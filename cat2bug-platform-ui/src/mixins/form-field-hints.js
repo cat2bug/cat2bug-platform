@@ -361,13 +361,24 @@ export default {
         }
       })
 
-      // 2) 视口内表单字段自动分配（跳过已被固定占用的字母）
+      const assignMode = typeof this.getFieldHintAssignMode === 'function'
+        ? this.getFieldHintAssignMode()
+        : null
+
+      // 2a) 逐 checkbox / 下拉框分配（通知设置等）
+      if (assignMode === 'checkbox-first') {
+        this.$_assignPerCheckboxFieldHints(container, viewportRect, map, pending, reserved, fixed)
+        this.$_assignPerSelectFieldHints(container, viewportRect, map, pending, reserved, fixed)
+      }
+
+      // 2b) 视口内表单字段自动分配（跳过已被固定占用的字母）
       const pool = buildFieldHintKeyPool(reserved)
       const items = Array.from(container.querySelectorAll('.el-form-item'))
       let idx = 0
       for (const item of items) {
         if (idx >= pool.length) break
         if (item.classList && item.classList.contains('cat2bug-field-hint-exclude')) continue
+        if (assignMode === 'checkbox-first' && this.$_formItemIsCheckboxOnly(item)) continue
         if (!isElementInViewportRect(item, viewportRect)) continue
         const label = item.querySelector('.el-form-item__label')
         const text = label && label.textContent && label.textContent.trim()
@@ -379,7 +390,91 @@ export default {
         pending.push({ anchor: label, letter })
       }
 
+      if (assignMode === 'checkbox-first') {
+        this.$_assignPerTestButtonFieldHints(container, viewportRect, map, pending, pool, idx)
+      }
+
       return { map, pending }
+    },
+    /** 表单项内是否仅有 checkbox（已由逐 checkbox 分配覆盖） */
+    $_formItemIsCheckboxOnly(item) {
+      const content = item.querySelector('.el-form-item__content') || item
+      if (!content.querySelector('.el-checkbox')) return false
+      if (content.querySelector('.el-switch') && isVisibleEl(content.querySelector('.el-switch'))) return false
+      if (content.querySelector('textarea')) return false
+      if (content.querySelector('input:not([type="checkbox"]):not([type="hidden"])')) return false
+      if (content.querySelector('.el-select') && isVisibleEl(content.querySelector('.el-select'))) return false
+      if (content.querySelector('.cat2bug-upload-focus-target')) return false
+      return true
+    },
+    /** 为视口内每个可见 checkbox 分配字母；跳过固定徽标宿主内的勾选框 */
+    $_assignPerCheckboxFieldHints(container, viewportRect, map, pending, reserved, fixed) {
+      const fixedHosts = []
+      ;(fixed || []).forEach((f) => {
+        if (!f || !f.badgeSelector || f.injectBadge === false) return
+        const host = container.querySelector(f.badgeSelector)
+        if (host) fixedHosts.push(host)
+      })
+      const pool = buildFieldHintKeyPool(reserved)
+      let idx = 0
+      const checkboxes = Array.from(container.querySelectorAll('.el-checkbox'))
+      for (const cb of checkboxes) {
+        if (idx >= pool.length) break
+        if (!isVisibleEl(cb) || cb.classList.contains('is-disabled')) continue
+        if (!isElementInViewportRect(cb, viewportRect)) continue
+        if (fixedHosts.some((host) => host.contains(cb))) continue
+        const letter = pool[idx++]
+        map[letter] = { run: () => this.$_activateCheckbox(cb) }
+        pending.push({ anchor: cb, letter })
+        reserved[letter] = true
+      }
+    },
+    /** 为视口内每个可见 el-select 分配字母（聚焦下拉触发器） */
+    $_assignPerSelectFieldHints(container, viewportRect, map, pending, reserved, fixed) {
+      const fixedHosts = []
+      ;(fixed || []).forEach((f) => {
+        if (!f || !f.badgeSelector || f.injectBadge === false) return
+        const host = container.querySelector(f.badgeSelector)
+        if (host) fixedHosts.push(host)
+      })
+      const pool = buildFieldHintKeyPool(reserved)
+      let idx = 0
+      const selects = Array.from(container.querySelectorAll('.el-select'))
+      for (const sel of selects) {
+        if (idx >= pool.length) break
+        if (!isVisibleEl(sel) || sel.classList.contains('is-disabled')) continue
+        if (!isElementInViewportRect(sel, viewportRect)) continue
+        if (fixedHosts.some((host) => host.contains(sel))) continue
+        const input = sel.querySelector('input')
+        if (!input || input.disabled) continue
+        const letter = pool[idx++]
+        map[letter] = { el: input }
+        pending.push({ anchor: sel, letter })
+        reserved[letter] = true
+      }
+    },
+    /** 通知设置等平台：单发/群发测试等 append 按钮各占一键 */
+    $_assignPerTestButtonFieldHints(container, viewportRect, map, pending, pool, startIdx) {
+      let idx = startIdx
+      const buttons = Array.from(container.querySelectorAll('.notice-option-test-btn'))
+      for (const btn of buttons) {
+        if (idx >= pool.length) break
+        if (!isVisibleEl(btn) || btn.disabled || btn.classList.contains('is-disabled')) continue
+        if (!isElementInViewportRect(btn, viewportRect)) continue
+        const letter = pool[idx++]
+        map[letter] = { run: () => btn.click() }
+        pending.push({ anchor: btn, letter })
+      }
+    },
+    /** Cmd/Ctrl+字母：切换 checkbox（与点击勾选框等效） */
+    $_activateCheckbox(checkboxEl) {
+      if (!checkboxEl || checkboxEl.classList.contains('is-disabled')) return
+      const input = checkboxEl.querySelector('input[type="checkbox"]')
+      if (input && !input.disabled) {
+        input.click()
+        return
+      }
+      if (typeof checkboxEl.click === 'function') checkboxEl.click()
     },
     /** 真正注入徽标 DOM 并标记激活（延迟调用，避免闪烁） */
     $_revealBadges() {

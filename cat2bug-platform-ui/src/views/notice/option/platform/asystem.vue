@@ -1,27 +1,31 @@
 <template>
   <el-form ref="form" :model="form" label-width="190px">
-    <el-form-item :label="$t('notice.system.notice')">
+    <el-form-item :label="$t('notice.system.notice')" class="cat2bug-field-hint-exclude">
       <span class="notice-option-asystem-switch cat2bug-field-hint-host-inline">
         <el-switch v-model="form.switch" @change="handleSwitchChange"></el-switch>
       </span>
     </el-form-item>
-    <el-form-item :label="$t('option')">
-      <div class="col">
+    <el-form-item :label="$t('option')" class="cat2bug-field-hint-exclude">
+      <div class="col notice-option-asystem-options">
         <div class="row">
-          <span class="notice-option-asystem-bgm cat2bug-field-hint-host-inline">
+          <span class="notice-option-asystem-bgm-cb cat2bug-field-hint-host-inline">
             <el-checkbox :label="$t('notice.system.bgm-enable')" v-model="form.backgroundMusic" @change="handleChange" :disabled="!form.switch"></el-checkbox>
           </span>
-          <el-select v-model="form.backgroundMusicUrl" size="mini" placeholder="请选择" :disabled="!form.switch || !form.backgroundMusic">
-            <el-option
-              v-for="item in backgroundMusicOptions"
-              :key="item.value"
-              :label="$t(item.label)"
-              :value="item.value">
-            </el-option>
-          </el-select>
+          <span class="notice-option-asystem-bgm-select cat2bug-field-hint-host-inline">
+            <el-select v-model="form.backgroundMusicUrl" size="mini" placeholder="请选择" :disabled="!form.switch || !form.backgroundMusic">
+              <el-option
+                v-for="item in backgroundMusicOptions"
+                :key="item.value"
+                :label="$t(item.label)"
+                :value="item.value">
+              </el-option>
+            </el-select>
+          </span>
         </div>
         <div class="row">
-          <el-checkbox :label="$t('notice.system.panel')" v-model="form.panel" @change="handleChange" :disabled="!form.switch"></el-checkbox>
+          <span class="notice-option-asystem-panel-cb cat2bug-field-hint-host-inline">
+            <el-checkbox :label="$t('notice.system.panel')" v-model="form.panel" @change="handleChange" :disabled="!form.switch"></el-checkbox>
+          </span>
         </div>
       </div>
     </el-form-item>
@@ -123,6 +127,12 @@ export default {
 .col {
   display: inline-flex;
   flex-direction: column;
+}
+.notice-option-asystem-options {
+  overflow: visible !important;
+}
+.notice-option-asystem-options .row {
+  overflow: visible !important;
 }
 .cat2bug-field-hint-host-inline {
   position: relative;

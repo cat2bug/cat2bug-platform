@@ -8,24 +8,28 @@
 
 | 键 | 动作 |
 |----|------|
-| S | 聚焦模块名查询 |
-| T | 展开/折叠全部 |
+| F | 展开/折叠全部 |
 | E | 新建根模块 |
+
+#### Scenario: F 展开/折叠全部
+
+- **WHEN** 用户按 F（空格或 Cmd 通道）
+- **THEN** 切换 `toggleExpandAll` 状态
+
+#### Scenario: E 新建交付物
+
+- **WHEN** 用户有 `system:module:add` 权限且按 E
+- **THEN** 打开根级新建交付物对话框
 
 ### Requirement: 树表键盘导航
 
-交付物树表 SHOULD 支持键盘导航模式（Enter 进入/Space 面板 T 后可选专用模式）：
+交付物树表 SHOULD 支持键盘导航（焦点在树表行上时）：
 
 - `↑/↓`：上/下一行
 - `Enter`：编辑当前行（`handleUpdate`）
 - `→`：展开节点
 - `←`：折叠节点
 - `Esc`：退出行焦点
-
-#### Scenario: T 折叠全部
-
-- **WHEN** 用户按 T
-- **THEN** 切换 `toggleExpandAll` 状态
 
 ### Requirement: ModuleDialog
 

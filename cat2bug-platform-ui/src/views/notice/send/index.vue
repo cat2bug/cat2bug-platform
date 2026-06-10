@@ -3,6 +3,7 @@
     :title="$t('notice.send')"
     :visible.sync="visible"
     width="40%"
+    custom-class="cat2bug-form-shortcut-dialog send-notice-dialog"
     :close-on-click-modal="false"
     :close-on-press-escape="false"
     :before-close="onSendDialogBeforeClose"

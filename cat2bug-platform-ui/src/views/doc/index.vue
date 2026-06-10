@@ -915,7 +915,6 @@ export default {
     registerDocShortcuts() {
       if (!this.$shortcut) return
       this.$shortcut.registerPage(DOC_KBD_SCOPE, [
-        { key: 'query', defaultLetter: 'S', run: () => this.shortcutFocusQuery() },
         { key: 'back', defaultLetter: 'B', run: () => this.handleBack() },
         { key: 'treeNav', defaultLetter: 'L', run: () => this.shortcutTreeNav() },
         { key: 'outlineNav', defaultLetter: 'D', run: () => this.shortcutOutlineNav() },
@@ -928,13 +927,6 @@ export default {
     getPageActionHints() {
       const L = (key, def) => shortcutStore.getLetter(`action.${DOC_KBD_SCOPE}.${key}`, def)
       return [
-        {
-          key: 'query',
-          letter: L('query', 'S'),
-          badgeSelector: '.doc-hint-search .el-input__inner',
-          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
-          run: () => this.shortcutFocusQuery()
-        },
         {
           key: 'back',
           letter: L('back', 'B'),

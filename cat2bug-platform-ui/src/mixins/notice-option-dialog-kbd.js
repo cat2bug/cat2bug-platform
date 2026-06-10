@@ -20,6 +20,7 @@ export default {
     onToolDialogOpened() {
       this.$nextTick(() => {
         requestAnimationFrame(() => {
+          this.captureToolDialogCloseBaseline()
           this.$_focusToolDialogFirstField()
         })
       })
@@ -58,6 +59,9 @@ export default {
     getFieldHintScrollContainer() {
       const body = this.$el && this.$el.querySelector('.el-dialog__body')
       return body || this.getFieldHintContainer()
+    },
+    getFieldHintAssignMode() {
+      return 'checkbox-first'
     },
     getNoticeOptionMainTabs() {
       return [
@@ -104,9 +108,19 @@ export default {
             onActivate: () => this.$_toggleAsystemSwitch()
           })
           hints.push({
+            letter: 'E',
+            badgeSelector: '.notice-option-asystem-bgm-cb',
+            onActivate: () => this.$_toggleAsystemField('backgroundMusic')
+          })
+          hints.push({
             letter: 'F',
-            badgeSelector: '.notice-option-asystem-bgm',
-            onActivate: () => this.$_toggleAsystemBgm()
+            badgeSelector: '.notice-option-asystem-bgm-select',
+            onActivate: () => this.$_focusAsystemBgmSelect()
+          })
+          hints.push({
+            letter: 'S',
+            badgeSelector: '.notice-option-asystem-panel-cb',
+            onActivate: () => this.$_toggleAsystemField('panel')
           })
         }
       }
@@ -118,11 +132,22 @@ export default {
       com.form.switch = !com.form.switch
       if (typeof com.handleSwitchChange === 'function') com.handleSwitchChange()
     },
-    $_toggleAsystemBgm() {
+    $_toggleAsystemField(field) {
       const com = this.$refs['platform-asystem']
       if (!com || !com.form || !com.form.switch) return
-      com.form.backgroundMusic = !com.form.backgroundMusic
+      com.form[field] = !com.form[field]
       if (typeof com.handleChange === 'function') com.handleChange()
+    },
+    $_focusAsystemBgmSelect() {
+      const com = this.$refs['platform-asystem']
+      if (!com || !com.form || !com.form.switch || !com.form.backgroundMusic) return
+      const container = typeof this.getFieldHintContainer === 'function'
+        ? this.getFieldHintContainer()
+        : this.$el
+      const input = container && container.querySelector('.notice-option-asystem-bgm-select input')
+      if (input && !input.disabled && typeof this.$_focusControl === 'function') {
+        this.$_focusControl(input)
+      }
     }
   }
 }

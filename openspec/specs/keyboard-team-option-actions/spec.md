@@ -2,7 +2,7 @@
 
 ### Requirement: 团队设置枢纽页
 
-团队设置索引页 SHALL `registerPage('team-option', …)`，卡片 1–9 规则同 `keyboard-project-option-actions`。
+团队设置索引页 SHALL `registerPage('team-option', …)`；卡片入口规则同 `keyboard-project-option-actions`（空格面板与 ⌘/Ctrl 徽标一致）。
 
 ### Requirement: 团队成员管理页
 
@@ -10,14 +10,13 @@
 
 | 键 | 动作 |
 |----|------|
-| S | 聚焦成员搜索 |
 | E | 创建成员 |
 | I | 邀请成员 |
 | B | 返回 |
 | U | 上一页（有分页时；与返回 B 错开） |
 | P | 下一页（有分页时） |
 
-列表页 MUST 接入 `list-query-keyboard-nav`：**S** 进入查询导航后 **← / →** 在搜索框与工具栏按钮间切换。
+列表页 MUST 接入 `list-query-keyboard-nav`：焦点在查询条内时 **← / →** 在搜索框与工具栏按钮间切换。
 
 #### Scenario: I 邀请成员
 

@@ -373,12 +373,8 @@ export default {
     registerDocumentShortcuts() {
       if (!this.$shortcut) return
       this.$shortcut.registerPage(DOCUMENT_KBD_SCOPE, [
-        { key: 'query', defaultLetter: 'S', run: () => this.shortcutFocusQuery() },
         { key: 'createFolder', defaultLetter: 'O', run: () => this.shortcutCreateFolder() },
-        { key: 'createFile', defaultLetter: 'I', run: () => this.shortcutCreateFile() },
-        { key: 'goUp', defaultLetter: 'U', run: () => this.shortcutGoUp() },
-        { key: 'prevPage', defaultLetter: 'B', run: () => this.shortcutChangePage(-1) },
-        { key: 'nextPage', defaultLetter: 'P', run: () => this.shortcutChangePage(1) }
+        { key: 'createFile', defaultLetter: 'I', run: () => this.shortcutCreateFile() }
       ])
     },
     getPageActionHintContainer() {
@@ -387,13 +383,6 @@ export default {
     getPageActionHints() {
       const L = (key, def) => shortcutStore.getLetter(`action.${DOCUMENT_KBD_SCOPE}.${key}`, def)
       return [
-        {
-          key: 'query',
-          letter: L('query', 'S'),
-          badgeSelector: '.document-hint-query',
-          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
-          run: () => this.shortcutFocusQuery()
-        },
         {
           key: 'createFolder',
           letter: L('createFolder', 'O'),
@@ -409,30 +398,6 @@ export default {
           floatOffset: { placement: 'bottom-right-outset', outset: 2, dy: 5 },
           run: () => this.shortcutCreateFile(),
           visible: () => checkPermi(['system:document:add'])
-        },
-        {
-          key: 'goUp',
-          letter: L('goUp', 'U'),
-          badgeSelector: '.document-title .el-link',
-          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
-          run: () => this.shortcutGoUp(),
-          visible: () => !!(this.currentFolder && this.currentFolder.docId > 0)
-        },
-        {
-          key: 'prevPage',
-          letter: L('prevPage', 'B'),
-          badgeSelector: '.document-table-pagination .btn-prev',
-          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
-          run: () => this.shortcutChangePage(-1),
-          visible: () => this.total > 0
-        },
-        {
-          key: 'nextPage',
-          letter: L('nextPage', 'P'),
-          badgeSelector: '.document-table-pagination .btn-next',
-          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
-          run: () => this.shortcutChangePage(1),
-          visible: () => this.total > 0
         }
       ]
     },

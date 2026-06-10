@@ -3238,28 +3238,24 @@ html.dark {
         border-bottom: 1px solid var(--table-border-color) !important;
       }
 
-      // 适配 Excel 左侧行号列 (first-col) 暗黑模式
+      tbody tr:not(:last-child) td.first-col {
+        border-bottom-color: var(--table-border-color) !important;
+      }
+
+      // 适配 Excel 左侧行号列 (first-col) 暗黑模式：底色由 excel.vue inset box-shadow + CSS 变量承担
       thead th.first-col,
       thead td.first-col,
       tbody td.first-col {
-        background-color: var(--table-header-bg) !important;
         color: var(--table-header-color) !important;
         border-color: var(--table-border-color) !important;
       }
 
-      tbody tr:hover td.first-col {
-        background-color: var(--table-row-hover-bg) !important;
-      }
-
-      // 行号多选 (tr.select) / 当前行 (td.first-col.focus)：序列列保持暗色，勿用 excel.vue 亮色 rgba(255, 193, 7, 0.1)
       tbody tr.select td.first-col,
       tbody tr.select:hover td.first-col {
-        background-color: var(--table-header-bg) !important;
         color: var(--text-color-regular) !important;
       }
 
       tbody td.first-col.focus {
-        background-color: var(--table-row-hover-bg) !important;
         color: var(--text-color-primary) !important;
         border-right: 1px solid #FFC107 !important;
       }
@@ -3279,8 +3275,8 @@ html.dark {
         }
       }
 
-      // 数据行
-      tbody td {
+      // 数据行（行号列底色由 excel.vue inset box-shadow 承担，勿设 background-color）
+      tbody td:not(.first-col) {
         background-color: var(--table-bg) !important;
         color: var(--text-color-regular) !important;
         border-color: var(--table-border-color) !important;

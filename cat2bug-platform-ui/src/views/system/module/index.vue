@@ -206,9 +206,7 @@ export default {
     registerModuleShortcuts() {
       if (!this.$shortcut) return
       this.$shortcut.registerPage(MODULE_KBD_SCOPE, [
-        { key: 'query', defaultLetter: 'S', run: () => this.shortcutFocusQuery() },
         { key: 'toggleExpand', defaultLetter: 'F', run: () => this.toggleExpandAll() },
-        { key: 'treeNav', defaultLetter: 'G', run: () => this.shortcutTreeNav() },
         { key: 'create', defaultLetter: 'E', run: () => this.shortcutCreateModule() }
       ])
     },
@@ -219,25 +217,11 @@ export default {
       const L = (key, def) => shortcutStore.getLetter(`action.${MODULE_KBD_SCOPE}.${key}`, def)
       return [
         {
-          key: 'query',
-          letter: L('query', 'S'),
-          badgeSelector: '.module-hint-query',
-          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
-          run: () => this.shortcutFocusQuery()
-        },
-        {
           key: 'toggleExpand',
           letter: L('toggleExpand', 'F'),
           badgeSelector: '.module-hint-toggle',
           floatOffset: { placement: 'bottom-right-outset', outset: 2, dy: 5 },
           run: () => this.toggleExpandAll()
-        },
-        {
-          key: 'treeNav',
-          letter: L('treeNav', 'G'),
-          badgeSelector: '.module-hint-tree-nav',
-          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
-          run: () => this.shortcutTreeNav()
         },
         {
           key: 'create',

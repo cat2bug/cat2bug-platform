@@ -48,9 +48,14 @@ nbdist/
 uploadPath/
 uploadTemp/
 
-# 安装向导生成的本地配置（含数据库连接等敏感信息）
-config/install/application-install.yml
-!config/install/.gitkeep
+# 本地运行时目录（仓库根目录，勿与源码路径 cat2bug-platform-ui/src/assets 等混淆）
+/assets/
+/backup/
+/config/
+/data/
+/logs/
+/upload/
+/venv/
 
 ######################################################################
 # Claude AI / Cursor IDE

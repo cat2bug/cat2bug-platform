@@ -3,6 +3,7 @@
     :title="$t('notice.option')"
     :visible.sync="dialogVisible"
     width="60%"
+    custom-class="cat2bug-form-shortcut-dialog notice-option-dialog"
     :close-on-click-modal="false"
     :close-on-press-escape="false"
     :before-close="onToolDialogBeforeClose"
@@ -278,5 +279,35 @@ export default {
 .notice-option-hint-tabs ::v-deep .el-tabs__header,
 .notice-option-platform-hint-tabs ::v-deep .el-tabs__header {
   overflow: visible !important;
+}
+</style>
+
+<!-- 通知设置：输入框 + 测试按钮拼接处直角衔接 -->
+<style lang="scss">
+.notice-option-dialog .notice-option-input-group.el-input-group {
+  overflow: visible !important;
+
+  .el-input__inner {
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+  }
+
+  .el-input-group__append {
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+    padding: 0;
+    overflow: visible !important;
+    position: relative;
+    z-index: 1;
+
+    .notice-option-test-btn.el-button {
+      border-top-left-radius: 0 !important;
+      border-bottom-left-radius: 0 !important;
+      border-left: none !important;
+      margin: 0;
+      height: 100%;
+      overflow: visible !important;
+    }
+  }
 }
 </style>

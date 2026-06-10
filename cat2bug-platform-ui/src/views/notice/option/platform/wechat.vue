@@ -16,9 +16,10 @@
           </el-tooltip>
         </div>
       </template>
-      <el-input v-model="form.mobile" @input="handleMobileInput" :placeholder="$t('enterprise-wechat.enter-mobile')" maxlength="32" :disabled="!form.singleSwitch">
+      <el-input v-model="form.mobile" class="notice-option-input-group" @input="handleMobileInput" :placeholder="$t('enterprise-wechat.enter-mobile')" maxlength="32" :disabled="!form.singleSwitch">
         <el-button
           slot="append"
+          class="notice-option-test-btn notice-option-test-btn--single"
           :loading="mobileTestLoading"
           :disabled="!form.singleSwitch || !hasMobile"
           @click="handleMobileTest">{{$t('enterprise-wechat.single-test')}}</el-button>
@@ -49,9 +50,10 @@
           </el-tooltip>
         </div>
       </template>
-      <el-input v-model="form.hook" @input="handleHookInput" :placeholder="$t('enterprise-wechat.enter-hook-url')" maxlength="255" :disabled="!form.groupSwitch">
+      <el-input v-model="form.hook" class="notice-option-input-group" @input="handleHookInput" :placeholder="$t('enterprise-wechat.enter-hook-url')" maxlength="255" :disabled="!form.groupSwitch">
         <el-button
           slot="append"
+          class="notice-option-test-btn notice-option-test-btn--group"
           :loading="groupTestLoading"
           :disabled="!form.groupSwitch || !hasHook"
           @click="handleGroupTest">{{$t('enterprise-wechat.group-test')}}</el-button>

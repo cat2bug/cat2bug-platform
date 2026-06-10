@@ -13,52 +13,41 @@
 
 用例页 SHALL 混入 `page-action-hints`，按住 `Cmd/Ctrl` 时在工具栏显示与动作面板一致的字母徽标。
 
-#### Scenario: 按住 Cmd 显示 S 查询徽标
+#### Scenario: 按住 Cmd 显示 E 新建徽标
 
-- **WHEN** 用户在一级用例列表按住 `Cmd/Ctrl`
-- **THEN** 查询区显示默认字母 S 徽标
+- **WHEN** 用户在一级用例列表按住 `Cmd/Ctrl` 且有新建权限
+- **THEN** 「新建用例」按钮显示默认字母 E 徽标
 
 ### Requirement: 用例页默认动作字母
 
 | 键 | 动作 |
 |----|------|
-| S | 聚焦查询区 |
 | E | 新建用例（`handleAdd`） |
 | U | 导入 |
 | R | 导出 |
-| A | AI 创建 |
-| D | 批量删除（已勾选时） |
-| M | 切换模块树显隐 |
-| G | 模块树键盘导航（树可见时） |
-| B | 上一页 |
-| P | 下一页 |
+| I | AI 创建 |
 
-字母 MUST 符合 `PAGE_ACTION_RESERVED` 约束；U/R/A/D/M/G/B/P/S/E 均允许。
+字母 MUST 符合 `PAGE_ACTION_RESERVED` 约束；U/R/I/E 均允许。
 
 #### Scenario: E 新建用例
 
 - **WHEN** 用户按空格后 E，或按住 `Cmd/Ctrl` 后 E
 - **THEN** 打开新建用例抽屉
 
-#### Scenario: M 切换模块树
+#### Scenario: U 导入用例
 
-- **WHEN** 用户按 M 且模块树当前可见
-- **THEN** 隐藏模块树；再次按 M 显示
+- **WHEN** 用户按空格后 U，或按住 `Cmd/Ctrl` 后 U
+- **THEN** 打开导入用例对话框
 
-### Requirement: 模块树导航（G）
+#### Scenario: R 导出用例
 
-模块树可见时，系统 MUST 注册 G。进入导航后：
+- **WHEN** 用户按空格后 R，或按住 `Cmd/Ctrl` 后 R
+- **THEN** 执行导出用例
 
-- `↑/↓`：在树节点间移动焦点
-- `Enter`：选中当前模块（等效点击）
-- `Esc`：退出树导航
+#### Scenario: I AI 创建用例
 
-树隐藏时 MUST NOT 注册或响应 G。
-
-#### Scenario: 树隐藏时不响应 G
-
-- **WHEN** 模块树已折叠隐藏
-- **THEN** 不显示 G 徽标，按 G 无效果
+- **WHEN** 用户按空格后 I，或按住 `Cmd/Ctrl` 后 I
+- **THEN** 打开 AI 用例生成
 
 ### Requirement: 表格行动态徽标
 
@@ -71,7 +60,7 @@
 
 ### Requirement: 查询区左右键导航
 
-用例页查询条 MUST 支持 **← / →** 在「用例编号 → 标题 → 级别」间切换（见 `keyboard-shortcut-engine` 列表查询区导航）。按 **S** 进入查询导航并聚焦首项。
+用例页查询条 MUST 支持 **← / →** 在「用例编号 → 标题 → 级别」间切换（见 `keyboard-shortcut-engine` 列表查询区导航）。该导航不通过页面动作快捷键触发。
 
 #### Scenario: 查询区内左右切换
 

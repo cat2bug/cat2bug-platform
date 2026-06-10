@@ -333,11 +333,7 @@ export default {
     registerReportShortcuts() {
       if (!this.$shortcut) return
       this.$shortcut.registerPage(REPORT_KBD_SCOPE, [
-        { key: 'query', defaultLetter: 'S', run: () => this.shortcutFocusQuery() },
-        { key: 'create', defaultLetter: 'E', run: () => this.shortcutCreateReport() },
-        { key: 'batchDelete', defaultLetter: 'D', run: () => this.shortcutBatchDelete() },
-        { key: 'prevPage', defaultLetter: 'B', run: () => this.shortcutChangePage(-1) },
-        { key: 'nextPage', defaultLetter: 'P', run: () => this.shortcutChangePage(1) }
+        { key: 'create', defaultLetter: 'E', run: () => this.shortcutCreateReport() }
       ])
     },
     getPageActionHintContainer() {
@@ -352,13 +348,6 @@ export default {
       const L = (key, def) => shortcutStore.getLetter(`action.${REPORT_KBD_SCOPE}.${key}`, def)
       return [
         {
-          key: 'query',
-          letter: L('query', 'S'),
-          badgeSelector: '.report-hint-query',
-          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
-          run: () => this.shortcutFocusQuery()
-        },
-        {
           key: 'create',
           letter: L('create', 'E'),
           badgeSelector: '.report-hint-create',
@@ -366,30 +355,6 @@ export default {
           floatOffset: { placement: 'bottom-right-outset', outset: 2, dy: 5 },
           run: () => this.shortcutCreateReport(),
           visible: () => checkPermi(['system:report:add'])
-        },
-        {
-          key: 'batchDelete',
-          letter: L('batchDelete', 'D'),
-          badgeSelector: '.report-hint-batch-delete',
-          floatOffset: { placement: 'bottom-right-outset', outset: 2, dy: 5 },
-          run: () => this.shortcutBatchDelete(),
-          visible: () => checkPermi(['system:report:remove'])
-        },
-        {
-          key: 'prevPage',
-          letter: L('prevPage', 'B'),
-          badgeSelector: '.report-table-pagination .btn-prev',
-          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
-          run: () => this.shortcutChangePage(-1),
-          visible: () => this.total > 0
-        },
-        {
-          key: 'nextPage',
-          letter: L('nextPage', 'P'),
-          badgeSelector: '.report-table-pagination .btn-next',
-          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
-          run: () => this.shortcutChangePage(1),
-          visible: () => this.total > 0
         }
       ]
     },

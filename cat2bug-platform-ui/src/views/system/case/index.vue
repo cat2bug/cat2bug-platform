@@ -90,6 +90,10 @@
               <el-dropdown-item @click.native="handleExport"><i class="el-icon-download" />{{ $t('case.export') }}</el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
+          <span class="case-add-kbd-anchor-host" aria-hidden="true">
+            <span class="case-hint-import"></span>
+            <span class="case-hint-export"></span>
+          </span>
         </span>
         <el-button
           v-hasPermi="['system:case:add']"
@@ -548,17 +552,11 @@ export default {
     registerCaseShortcuts() {
       if (!this.$shortcut) return
       const actions = [
-        { key: 'query', defaultLetter: 'S', run: () => this.shortcutFocusQuery() },
-        { key: 'newCase', defaultLetter: 'E', run: () => this.shortcutOpenCaseAddDropdown() },
-        { key: 'aiCreate', defaultLetter: 'I', run: () => this.shortcutOpenCaseAi() },
-        { key: 'batchDelete', defaultLetter: 'D', run: () => this.shortcutBatchDelete() },
-        { key: 'toggleModuleTree', defaultLetter: 'M', run: () => this.toggleModuleTreeVisible() },
-        { key: 'prevPage', defaultLetter: 'B', run: () => this.shortcutChangePage(-1) },
-        { key: 'nextPage', defaultLetter: 'P', run: () => this.shortcutChangePage(1) }
+        { key: 'create', defaultLetter: 'E', run: () => this.handleAdd() },
+        { key: 'import', defaultLetter: 'U', run: () => this.handleImport() },
+        { key: 'export', defaultLetter: 'R', run: () => this.handleExport() },
+        { key: 'aiCreate', defaultLetter: 'I', run: () => this.shortcutOpenCaseAi() }
       ]
-      if (this.showModuleTree) {
-        actions.push({ key: 'treeNav', defaultLetter: 'G', run: () => this.shortcutTreeNav() })
-      }
       this.$shortcut.registerPage(CASE_KBD_SCOPE, actions)
     },
     getPageActionHintContainer() {
@@ -567,20 +565,29 @@ export default {
     /** Cmd/Ctrl 按住时在工具栏显示字母徽标（与 Space 动作面板映射一致） */
     getPageActionHints() {
       const L = (key, def) => shortcutStore.getLetter(`action.${CASE_KBD_SCOPE}.${key}`, def)
-      const hints = [
+      return [
         {
-          key: 'query',
-          letter: L('query', 'S'),
-          badgeSelector: '.case-hint-query-input .el-input__inner',
-          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
-          run: () => this.shortcutFocusQuery()
+          key: 'create',
+          letter: L('create', 'E'),
+          badgeSelector: '.case-add-dropdown.cat2bug-split-dropdown-kbd > .el-button--primary',
+          floatOffset: { placement: 'bottom-right-outset', outset: 3 },
+          run: () => this.handleAdd(),
+          visible: () => checkPermi(['system:case:add'])
         },
         {
-          key: 'newCase',
-          letter: L('newCase', 'E'),
-          badgeSelector: '.case-add-dropdown.cat2bug-split-dropdown-kbd .cat2bug-split-dropdown-focus-target',
-          floatOffset: { placement: 'bottom-right-outset', outset: 3 },
-          run: () => this.shortcutOpenCaseAddDropdown(),
+          key: 'import',
+          letter: L('import', 'U'),
+          badgeSelector: '.case-add-kbd-anchor-host .case-hint-import',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
+          run: () => this.handleImport(),
+          visible: () => checkPermi(['system:case:add'])
+        },
+        {
+          key: 'export',
+          letter: L('export', 'R'),
+          badgeSelector: '.case-add-kbd-anchor-host .case-hint-export',
+          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
+          run: () => this.handleExport(),
           visible: () => checkPermi(['system:case:add'])
         },
         {
@@ -590,51 +597,8 @@ export default {
           floatOffset: { placement: 'bottom-right-outset', outset: 3 },
           run: () => this.shortcutOpenCaseAi(),
           visible: () => checkPermi(['system:case:add'])
-        },
-        {
-          key: 'batchDelete',
-          letter: L('batchDelete', 'D'),
-          badgeSelector: '.case-hint-batch-delete',
-          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
-          run: () => this.shortcutBatchDelete(),
-          visible: () => checkPermi(['system:case:remove'])
-        },
-        {
-          key: 'toggleModuleTree',
-          letter: L('toggleModuleTree', 'M'),
-          badgeSelector: this.showModuleTree
-            ? '.case-hint-module-tree'
-            : '.case-sidebar-expand-trigger.case-hint-module-tree',
-          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
-          run: () => this.toggleModuleTreeVisible()
-        },
-        {
-          key: 'prevPage',
-          letter: L('prevPage', 'B'),
-          badgeSelector: '.case-table-pagination .btn-prev',
-          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
-          run: () => this.shortcutChangePage(-1),
-          visible: () => this.total > 0
-        },
-        {
-          key: 'nextPage',
-          letter: L('nextPage', 'P'),
-          badgeSelector: '.case-table-pagination .btn-next',
-          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
-          run: () => this.shortcutChangePage(1),
-          visible: () => this.total > 0
         }
       ]
-      if (this.showModuleTree) {
-        hints.push({
-          key: 'treeNav',
-          letter: L('treeNav', 'G'),
-          badgeSelector: '.case-hint-tree .tree-tools-title',
-          floatOffset: { placement: 'center-left-inset', outset: 8, dx: 4 },
-          run: () => this.shortcutTreeNav()
-        })
-      }
-      return hints
     },
     /** ⌘ 按住：表格可见行编号列动态徽标（1–9 优先，字母补位） */
     getPageDynamicActionHints(ctx) {

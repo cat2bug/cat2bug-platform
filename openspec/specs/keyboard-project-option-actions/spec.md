@@ -4,14 +4,19 @@
 
 项目设置索引页（`/project/option`）SHALL `registerPage('project-option', …)`。
 
-### Requirement: 卡片数字跳转
+### Requirement: 卡片入口快捷键
 
-按住 `Cmd/Ctrl` 或空格面板 MUST 为当前可见设置卡片按 DOM 顺序分配 **1–9**（跳过无权限卡片）。按数字 MUST 激活该卡片内**第一个**可见 `router-link` / 可点击入口。
+按住 `Cmd/Ctrl` 与空格动作面板 MUST 为当前**可见卡片内各功能入口**（`router-link` / 可点击链接）按 DOM 顺序注册同一套动作；字母默认见 catalog（1–9 优先，超出后补位字母）。按字母 MUST 激活对应入口（等效点击该链接/按钮）。
 
-#### Scenario: 按 1 进入首个卡片链接
+#### Scenario: 按 1 进入基本信息
 
-- **WHEN** 用户有项目基本信息权限且卡片排序第一
-- **THEN** 按 1 导航至 `project-base-info`
+- **WHEN** 用户有项目基本信息权限且该入口可见
+- **THEN** 按 1（空格面板或 ⌘/Ctrl 通道）导航至 `project-base-info`
+
+#### Scenario: 空格面板与 ⌘ 徽标一致
+
+- **WHEN** 用户在项目设置枢纽页打开空格动作面板
+- **THEN** 列表项与按住 ⌘/Ctrl 时卡片内显示的徽标一一对应（仅含当前可见入口）
 
 ### Requirement: 子页返回
 

@@ -283,20 +283,12 @@ export default {
     },
     getProjectOptionSubRegisterActions() {
       return [
-        { key: 'query', defaultLetter: 'S', run: () => this.shortcutFocusQuery() },
         { key: 'create', defaultLetter: 'E', run: () => this.shortcutCreateAccount() }
       ]
     },
     getProjectOptionSubActionHints() {
       const L = (key, def) => shortcutStore.getLetter(`action.${PROJECT_OPTION_KBD_SCOPE}.${key}`, def)
       return [
-        {
-          key: 'query',
-          letter: L('query', 'S'),
-          badgeSelector: '.project-ai-account-hint-query-name',
-          floatOffset: { placement: 'bottom-right-outset', outset: 2 },
-          run: () => this.shortcutFocusQuery()
-        },
         {
           key: 'create',
           letter: L('create', 'E'),

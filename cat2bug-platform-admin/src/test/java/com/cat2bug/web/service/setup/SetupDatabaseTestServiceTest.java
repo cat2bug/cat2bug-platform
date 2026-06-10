@@ -39,6 +39,33 @@ class SetupDatabaseTestServiceTest
     }
 
     @Test
+    void isH2FileFormatMismatchError_detectsWriteFormatMessage()
+    {
+        assertTrue(SetupDatabaseTestService.isH2FileFormatMismatchError(new RuntimeException(
+                "The write format 2 is smaller than the supported format 3 [2.2.224/5]")));
+    }
+
+    @Test
+    void isH2FileFormatMismatchError_returnsFalseForOtherErrors()
+    {
+        assertFalse(SetupDatabaseTestService.isH2FileFormatMismatchError(
+                new RuntimeException("Access denied for user")));
+    }
+
+    @Test
+    void formatConnectionError_returnsFriendlyMessageForLegacyH2Format()
+    {
+        SetupTestSupport.runWithMessages(() ->
+        {
+            Exception error = new Exception(new RuntimeException(
+                    "The write format 2 is smaller than the supported format 3 [2.2.224/5]"));
+            String message = ReflectionTestUtils.invokeMethod(
+                    SetupDatabaseTestService.class, "formatConnectionError", error);
+            assertEquals(SetupMessages.msg("setup.test.database.h2.format.mismatch"), message);
+        });
+    }
+
+    @Test
     void mysqlDatabaseExists_returnsTrueWhenSchemaPresent() throws Exception
     {
         Connection connection = mock(Connection.class);

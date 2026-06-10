@@ -25,12 +25,23 @@ export const TEAM_OPTION_CARD_CATALOG = [
   { key: 'route-team-member', titleKey: 'member.manage', defaultLetter: '3' }
 ]
 
-export const PROJECT_OPTION_ACTION_DEFAULTS = [
-  ...PROJECT_OPTION_CARD_CATALOG,
+export const PROJECT_OPTION_SUB_ACTION_DEFAULTS = [
   { key: 'back', defaultLetter: 'B', titleKey: 'keyboard.act.project-option-back' },
   { key: 'changeIcon', defaultLetter: 'I', titleKey: 'keyboard.act.project-change-icon' },
   { key: 'prevPage', defaultLetter: 'U', titleKey: 'keyboard.act.prev-page' },
   { key: 'nextPage', defaultLetter: 'P', titleKey: 'keyboard.act.next-page' }
+]
+
+/** 项目设置枢纽页（卡片内可见入口，供空格面板 / ⌘ 徽标 / 键盘设置） */
+export const PROJECT_OPTION_HUB_ACTION_DEFAULTS = [...PROJECT_OPTION_CARD_CATALOG]
+
+/** 团队设置枢纽页（卡片内可见入口） */
+export const TEAM_OPTION_HUB_ACTION_DEFAULTS = [...TEAM_OPTION_CARD_CATALOG]
+
+/** 项目设置 scope 全量默认（含子页，供运行时 titleKey 解析） */
+export const PROJECT_OPTION_ACTION_DEFAULTS = [
+  ...PROJECT_OPTION_CARD_CATALOG,
+  ...PROJECT_OPTION_SUB_ACTION_DEFAULTS
 ]
 
 export const TEAM_OPTION_ACTION_DEFAULTS = [

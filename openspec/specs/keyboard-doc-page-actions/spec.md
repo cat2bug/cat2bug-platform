@@ -4,7 +4,7 @@
 
 系统使用手册页（`/system/doc`，`views/doc/index.vue`）SHALL 在 `activated` 时注册 `registerPage('system-doc', …)`，离开页面 MUST 注销。
 
-页面 MUST 混入 `page-action-hints`：按住 `Cmd/Ctrl` 时在搜索框、返回、目录树、本页大纲、打印按钮等处显示浮层徽标；也可通过动作引导键 `空格` 打开命令面板后按字母触发。
+页面 MUST 混入 `page-action-hints`：按住 `Cmd/Ctrl` 时在返回、目录树、本页大纲、打印按钮等处显示浮层徽标；也可通过动作引导键 `空格` 打开命令面板后按字母触发。
 
 #### Scenario: 离开页面注销
 
@@ -17,18 +17,12 @@
 
 | 键 | 动作 |
 |---|---|
-| S | 聚焦搜索框（并选中已有文本） |
 | B | 返回上一页 |
 | L | 进入左侧目录树键盘导航 |
 | D | 进入右侧本页大纲键盘导航（大纲项 ≥ 2 时可用） |
 | P | 打印当前文档（大纲项 ≥ 2 时可用） |
 
 大纲导航与打印 MUST 在 `outlineItems.length < 2` 时不显示徽标、不响应快捷键。
-
-#### Scenario: Cmd/Ctrl 聚焦搜索
-
-- **WHEN** 用户在系统文档页按住 `Cmd/Ctrl` 后按 `S`，或按 `空格` 后按 `S`
-- **THEN** 搜索框获得焦点且选中已有内容，并退出目录/大纲导航会话
 
 #### Scenario: 进入目录树导航
 
@@ -98,9 +92,9 @@
 
 ### Requirement: 键盘设置分组
 
-键盘设置页 MUST 包含「系统文档页」独立分组，绑定 ID 为 `action.system-doc.query`、`action.system-doc.back`、`action.system-doc.treeNav`、`action.system-doc.outlineNav`、`action.system-doc.print`。
+键盘设置页 MUST 包含「系统文档页」独立分组，绑定 ID 为 `action.system-doc.back`、`action.system-doc.treeNav`、`action.system-doc.outlineNav`、`action.system-doc.print`。
 
 #### Scenario: 设置页显示系统文档分组
 
 - **WHEN** 用户打开键盘设置页
-- **THEN** 可见「系统文档页」分组及 S/B/L/D/P 五项可编辑快捷键
+- **THEN** 可见「系统文档页」分组及 B/L/D/P 四项可编辑快捷键

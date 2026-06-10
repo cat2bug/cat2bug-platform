@@ -143,6 +143,10 @@ public class SetupDatabaseTestService
 
     private static String formatConnectionError(Exception e)
     {
+        if (isH2FileFormatMismatchError(e))
+        {
+            return SetupMessages.msg("setup.test.database.h2.format.mismatch");
+        }
         Throwable root = e;
         while (root.getCause() != null)
         {
@@ -204,6 +208,32 @@ public class SetupDatabaseTestService
             if (message != null && message.toLowerCase(Locale.ROOT).contains("unknown database"))
             {
                 return true;
+            }
+            current = current.getCause();
+        }
+        return false;
+    }
+
+    /**
+     * H2 1.x 文件格式（write format 2）无法用 H2 2.x 直接打开写入。
+     */
+    static boolean isH2FileFormatMismatchError(Throwable error)
+    {
+        Throwable current = error;
+        while (current != null)
+        {
+            String message = current.getMessage();
+            if (message != null)
+            {
+                String lower = message.toLowerCase(Locale.ROOT);
+                if (lower.contains("write format") && lower.contains("supported format"))
+                {
+                    return true;
+                }
+                if (lower.contains("file version") && lower.contains("is not supported"))
+                {
+                    return true;
+                }
             }
             current = current.getCause();
         }

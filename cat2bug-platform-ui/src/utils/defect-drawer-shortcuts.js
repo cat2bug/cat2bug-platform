@@ -39,7 +39,8 @@ const FORM_SHORTCUT_DIALOG_VM_NAMES = new Set([
   'CreateTeamMember',
   'InviteTeamMember',
   'AddProjectMember',
-  'Document'
+  'Document',
+  'SendNoticeDialog'
 ])
 
 function isModifierKeyEvent(e) {
