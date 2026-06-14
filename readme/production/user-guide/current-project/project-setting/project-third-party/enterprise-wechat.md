@@ -21,32 +21,32 @@
 1. 使用**企业管理员**登录 [企业微信管理后台](https://work.weixin.qq.com)。
 2. 进入 **应用管理**，点击 **创建应用**。
 
-![创建应用](../../../../images/user-guide/current-project/project-setting/third-party/wechat/wechat-create-app.png)
+![创建应用](../../../../images/user-guide/current-project/project-setting/third-party/wechat/images/user-guide/current-project/project-setting/third-party/wechat/wechat-create-app.png)
 
 3. 上传图标、填写应用名称，**可见范围**选择需接收消息的部门，点击 **创建应用**。
 
-![创建应用详情](../../../../images/user-guide/current-project/project-setting/third-party/wechat/wechat-create-app-page1.png)
+![创建应用详情](../../../../images/user-guide/current-project/project-setting/third-party/wechat/images/user-guide/current-project/project-setting/third-party/wechat/wechat-create-app-page1.png)
 
 4. 在应用内配置 **企业可信 IP**（须为 Cat2Bug 平台对外的公网 IP，未配置将无法收到通知）。
 
-![可信 IP](../../../../images/user-guide/current-project/project-setting/third-party/wechat/wechat-create-app-page2.png)
+![可信 IP](../../../../images/user-guide/current-project/project-setting/third-party/wechat/images/user-guide/current-project/project-setting/third-party/wechat/wechat-create-app-page2.png)
 
 5. 将应用详情中的 **AgentId** 填入本页 **应用ID**，**Secret** 填入 **应用凭证**。
 
-![应用 ID 与 Secret](../../../../images/user-guide/current-project/project-setting/third-party/wechat/wechat-app-id.png)
+![应用 ID 与 Secret](../../../../images/user-guide/current-project/project-setting/third-party/wechat/images/user-guide/current-project/project-setting/third-party/wechat/wechat-app-id.png)
 
 6. 在 **我的企业** 中复制 **企业ID** 填入本页 **企业ID**，点击 **保存**。
 
-![企业 ID](../../../../images/user-guide/current-project/project-setting/third-party/wechat/wechat-enterprise-id.png)
+![企业 ID](../../../../images/user-guide/current-project/project-setting/third-party/wechat/images/user-guide/current-project/project-setting/third-party/wechat/wechat-enterprise-id.png)
 
 ## 配置成员接收（单发）
 
 1. 管理员在 **通讯录** 中打开成员，复制其**成员账号**。
 2. 成员在 Cat2Bug：**通知图标 → 配置 → 接收平台 → 企业微信**，开启 **单发配置**，填写 **成员账号**（或手机号，以通知页选项为准），保存并测试。
 
-![成员账号](../../../../images/user-guide/current-project/project-setting/third-party/wechat/wechat-user-id.png)
+![成员账号](../../../../images/user-guide/current-project/project-setting/third-party/wechat/images/user-guide/current-project/project-setting/third-party/wechat/wechat-user-id.png)
 
-![个人通知配置](../../../../images/user-guide/current-project/project-setting/third-party/wechat/wechat-user-config.png)
+![个人通知配置](../../../../images/user-guide/current-project/project-setting/third-party/wechat/images/user-guide/current-project/project-setting/third-party/wechat/wechat-user-config.png)
 
 未在个人通知中配置时，将使用 **个人中心** 中的默认企业微信账号。
 

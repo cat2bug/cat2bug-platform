@@ -26,13 +26,13 @@
 
 2. 进入指定企业组织后，选择「通讯录」->「成员管理」菜单，在右侧成员列表中点击需要查看的成员信息，在右侧弹出界面上侧，查看并复制手机号。
 
-![查看成员信息](../../../images/user-guide/user-management/notification/ding/ding_oa_member.png)
+![查看成员信息](../../../images/user-guide/current-project/project-setting/third-party/ding/images/user-guide/current-project/project-setting/third-party/ding/ding_oa_member.png)
 
 3. 进入Cat2Bug-Platform系统，点击右上角的通知图标，进入通知页面后选择右侧配置按钮，选择「接收平台」->「钉钉」页面，开启“单发配置”开关。
 
 4. 将从钉钉平台中获取的手机号设置在「接收平台」->「钉钉」->「企业用户手机号」中并点击"保存"按钮。
 
-![配置用户信息](../../../images/user-guide/user-management/notification/ding/ding_member_config.png)
+![配置用户信息](../../../images/user-guide/user-management/notification/ding/images/user-guide/current-project/project-setting/third-party/ding/ding_member_config.png)
 
 5. 点击"单发测试"按钮，系统提示"测试消息发送成功"，并且在钉钉客户端可以收到机器人发来的测试消息，表示配置成功。
 

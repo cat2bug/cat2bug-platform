@@ -25,31 +25,31 @@
 1. 使用**企业管理员**账号登录 [钉钉开发者平台](https://open-dev.dingtalk.com)。
 2. 创建应用（见下图步骤）。
 
-![创建应用](../../../../images/user-guide/current-project/project-setting/third-party/ding/ding_create_app.png)
+![创建应用](../../../../images/user-guide/current-project/project-setting/third-party/ding/images/user-guide/current-project/project-setting/third-party/ding/ding_create_app.png)
 
 3. 填写应用信息后点击 **保存**。
 
-![应用配置](../../../../images/user-guide/current-project/project-setting/third-party/ding/ding_create_app_page1.png)
+![应用配置](../../../../images/user-guide/current-project/project-setting/third-party/ding/images/user-guide/current-project/project-setting/third-party/ding/ding_create_app_page1.png)
 
 4. 点击 **添加应用能力**，为应用添加**机器人**服务。
 
-![添加机器人能力](../../../../images/user-guide/current-project/project-setting/third-party/ding/ding_create_app_page2.png)
+![添加机器人能力](../../../../images/user-guide/current-project/project-setting/third-party/ding/images/user-guide/current-project/project-setting/third-party/ding/ding_create_app_page2.png)
 
 5. 按需求配置机器人选项。
 
-![机器人选项](../../../../images/user-guide/current-project/project-setting/third-party/ding/ding_create_app_page3.png)
+![机器人选项](../../../../images/user-guide/current-project/project-setting/third-party/ding/images/user-guide/current-project/project-setting/third-party/ding/ding_create_app_page3.png)
 
 6. 发布版本，使应用处于 **已上线** 状态。
 
-![发布版本](../../../../images/user-guide/current-project/project-setting/third-party/ding/ding_create_version.png)
+![发布版本](../../../../images/user-guide/current-project/project-setting/third-party/ding/images/user-guide/current-project/project-setting/third-party/ding/ding_create_version.png)
 
 7. 将 **Client ID**、**Client Secret** 填入本页左侧对应栏位。
 
-![应用凭证](../../../../images/user-guide/current-project/project-setting/third-party/ding/ding_view_app.png)
+![应用凭证](../../../../images/user-guide/current-project/project-setting/third-party/ding/images/user-guide/current-project/project-setting/third-party/ding/ding_view_app.png)
 
 8. 将 **Robot Code** 填入左侧 **Robot Code** 栏位。
 
-![Robot Code](../../../../images/user-guide/current-project/project-setting/third-party/ding/ding_view_robot.png)
+![Robot Code](../../../../images/user-guide/current-project/project-setting/third-party/ding/images/user-guide/current-project/project-setting/third-party/ding/ding_view_robot.png)
 
 9. 点击 **保存** 完成项目级配置。
 
@@ -60,9 +60,9 @@
 1. 管理员登录 [钉钉 OA](https://oa.dingtalk.com)，在 **通讯录 → 成员管理** 中打开成员，复制其 **UserId**（或通过手机号由系统自动解析，见用户通知配置）。
 2. 成员在 Cat2Bug：**通知图标 → 配置 → 接收平台 → 钉钉**，开启 **单发配置**，填写 **企业用户手机号**，保存并 **单发测试**。
 
-![成员 UserId](../../../../images/user-guide/current-project/project-setting/third-party/ding/ding_oa_member.png)
+![成员 UserId](../../../../images/user-guide/current-project/project-setting/third-party/ding/images/user-guide/current-project/project-setting/third-party/ding/ding_oa_member.png)
 
-![个人通知配置](../../../../images/user-guide/current-project/project-setting/third-party/ding/ding_member_config.png)
+![个人通知配置](../../../../images/user-guide/current-project/project-setting/third-party/ding/images/user-guide/current-project/project-setting/third-party/ding/ding_member_config.png)
 
 未在个人通知中配置时，将使用 **个人中心** 中的默认钉钉 User ID。
 

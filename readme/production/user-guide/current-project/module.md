@@ -41,7 +41,7 @@
 
 交付物列表展示了项目中的所有交付物，以树形结构呈现交付物的层级关系。
 
-![交付物列表](../../../images/user-guide/current-project/module/deliverable-list.png)
+![交付物列表](../../../images/user-guide/current-project/defect/deliverable-list.png)
 
 ### 列表信息
 

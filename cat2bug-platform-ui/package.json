@@ -7,17 +7,23 @@
   "scripts": {
     "dev": "vue-cli-service serve",
     "dev:lan": "CAT2BUG_DEV_HMR=1 vue-cli-service serve",
-    "build:prod": "vue-cli-service build --report",
-    "build:cloud": "vue-cli-service build --mode cloud --report",
-    "build:embedded": "vue-cli-service build --mode embedded --report",
-    "build:stage": "vue-cli-service build --mode staging --report",
+    "build:prod": "vue-cli-service build",
+    "build:cloud": "vue-cli-service build --mode cloud",
+    "build:embedded": "vue-cli-service build --mode embedded",
+    "build:stage": "vue-cli-service build --mode staging",
+    "analyze": "ANALYZE=true vue-cli-service build --mode embedded",
     "preview": "node build/index.js --preview",
     "lint": "eslint --ext .js,.vue src",
     "test:e2e": "playwright test",
     "test:e2e:local": "PLAYWRIGHT_NO_WEB_SERVER=1 PW_CHANNEL=chrome playwright test",
     "postinstall": "patch-package",
     "docs:dev": "vuepress dev docs",
-    "docs:build": "vuepress build docs"
+    "docs:build": "vuepress build docs",
+    "optimize:docs-images": "bash ../deploy/scripts/optimize-docs-images.sh",
+    "optimize:docs-images:dry-run": "bash ../deploy/scripts/optimize-docs-images.sh --dry-run --report ../openspec/changes/prod-docs-images-slim/METRICS-dry-run.md",
+    "check:docs-images": "bash ../deploy/scripts/check-docs-images.sh",
+    "dedupe:docs-images": "bash ../deploy/scripts/dedupe-docs-images.sh",
+    "dedupe:docs-images:dry-run": "bash ../deploy/scripts/dedupe-docs-images.sh --dry-run"
   },
   "husky": {
     "hooks": {
