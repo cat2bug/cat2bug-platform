@@ -81,8 +81,8 @@ CHANGELOG.md
 /.playwright-mcp/
 
 ######################################################################
-# Node.js
-node_modules/
+# Native Docker 本地构建缓存（勿提交二进制）
+deploy/docker/**/.build-stage/
 package-lock.json
 yarn.lock
 

@@ -7,6 +7,7 @@
 | 产物 | 命令 | 输出路径 |
 |------|------|----------|
 | JVM embedded JAR | `mvn -pl cat2bug-platform-admin -am package -DskipTests` | `cat2bug-platform-admin/target/cat2bug-admin.jar` |
+| JVM release slim JAR | `mvn -pl cat2bug-platform-admin -am package -DskipTests -Prelease` | 同上（约 **112 MB**，剔除 POI 栈 + lombok） |
 | Native embedded（amd64） | `./deploy/build-native-spring.sh x86_64` | `cat2bug-platform-admin/target/cat2bug-admin-linux-amd64` |
 | Native embedded（arm64） | `./deploy/build-native-spring.sh aarch64` | `cat2bug-platform-admin/target/cat2bug-admin-linux-arm64` |
 | 仅 UPX（已有二进制） | `./deploy/upx-native-binary.sh <binary>` | `<binary>.upx` |
@@ -46,6 +47,8 @@ PORT=2024 BIN=.../cat2bug-admin-linux-arm64.upx ./deploy/docker/run-native-sprin
 | 未压缩 Mach-O arm64（本机 dev） | — | **296 MB** / UPX **87 MB**（Phase 1） |
 | 冷启动至 `/version`（UPX） | ~0.3–1.5 s | 构建冒烟 **OK**（port 2023）；精确计时 _待 Docker 补测_ |
 | 空闲 RSS | ~80–150 MB | _TBD_ |
+| JVM fat JAR（embedded，含 POI） | — | **127 MB**（2026-06-14） |
+| JVM fat JAR（`-Prelease`，无 POI） | — | **112 MB**（**-15 MB**） |
 | libawt.so | 无 | native-image 仍打包 **libawt**（POI/kaptcha 仍在 classpath）；**运行时 Captcha 走 CaptchaPngRenderer** |
 
 ## Stretch 目标（非硬卡）
