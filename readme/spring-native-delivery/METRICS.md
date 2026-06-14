@@ -45,8 +45,8 @@ PORT=2024 BIN=.../cat2bug-admin-linux-arm64.upx ./deploy/docker/run-native-sprin
 | 未压缩 ELF arm64 | ~190 MB | **333 MB**（Phase 3，2026-06-14） |
 | UPX arm64 | ~42 MB | **89 MB**（26.8%） |
 | 未压缩 Mach-O arm64（本机 dev） | — | **296 MB** / UPX **87 MB**（Phase 1） |
-| 冷启动至 `/version`（UPX） | ~0.3–1.5 s | 构建冒烟 **OK**（port 2023）；精确计时 _待 Docker 补测_ |
-| 空闲 RSS | ~80–150 MB | _TBD_ |
+| 冷启动至 `/version`（UPX，amd64 Debian） | ~0.3–1.5 s | **~9.9 s**（2026-06-14，含容器启动；`time` 测至 curl 成功） |
+| 空闲 RSS（UPX amd64） | ~80–150 MB | **~803 MiB**（Docker stats，启动后约 10s） |
 | JVM fat JAR（embedded，含 POI） | — | **127 MB**（2026-06-14） |
 | JVM fat JAR（`-Pslim-jar`，无 POI） | — | **112 MB**（**-15 MB**） |
 | libawt.so | 无 | native-image 仍打包 **libawt**（POI/kaptcha 仍在 classpath）；**运行时 Captcha 走 CaptchaPngRenderer** |
@@ -57,7 +57,7 @@ PORT=2024 BIN=.../cat2bug-admin-linux-arm64.upx ./deploy/docker/run-native-sprin
 |------|------|--------------|------|
 | 未压缩 raw | < 250 MB | **333 MB** | **未达标**（较 Phase 1 **-24 MB**） |
 | UPX | < 65 MB | **89 MB** | **未达标**（较 Phase 1 **-5 MB**）；不阻塞 Phase 4 |
-| 冷启动（UPX） | < 5 s | 冒烟通过 | 精确秒数待补 |
+| 冷启动（UPX） | < 5 s | **~9.9 s**（amd64） | **未达标**（UPX 解压 + Graal 启动；待 raw 对比） |
 
 ## 体积演进（Spring arm64 ELF，API-only）
 

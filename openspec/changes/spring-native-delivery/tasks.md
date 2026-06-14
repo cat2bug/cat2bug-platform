@@ -16,8 +16,8 @@
 - [x] 1.4 修复 Phase 1 运行时 blocker：MapperFactoryBean 构造参数 Class vs String（进行中）；Security/Flyway/H2 数据源 — 2026-06-14：`MyBatisConfig` AOT `databaseId=h2`；Native 启动与 H2 SQL 冒烟通过
 - [x] 1.5 Linux 容器冒烟：`GET /` 返回 HTML；`GET /static/js/*.js` 200；`GET /login`（Accept: text/html）SPA fallback；`POST /login` API 可用 — 2026-06-14：embedded arm64 容器 `/`、`/static/js/app.js`、登录 API 均 200
 - [x] 1.6 arm64 容器构建通过（`build-native-spring.sh aarch64`）— 2026-06-14：`cat2bug-admin-linux-arm64` 338MB raw / 82MB UPX
-- [x] 1.7 记录 Phase 1 体积至 `METRICS.md`（raw，未优化）— arm64 raw/UPX 已填；冷启动/RSS 待补
-- [x] 1.8 编写 `PHASE-1.md` + Kill Gate 结论：8 周内未通过 → 文档化 blocker 并评估终止 / 保留 Quarkus 交付路径 — Kill Gate **通过**（arm64 embedded + API/H2/SPA 冒烟）；amd64 构建待验
+- [x] 1.7 记录 Phase 1 体积至 `METRICS.md`（raw，未优化）— 双架构 raw/UPX 已填；冷启动 ~9.9s / RSS ~803MiB（amd64 UPX，2026-06-14）
+- [x] 1.8 编写 `PHASE-1.md` + Kill Gate 结论 — **通过**（arm64 embedded + amd64 API-only + SPA/API/H2 冒烟）
 
 ## 3. Phase 2 — 全功能 Native parity
 
@@ -41,7 +41,7 @@
 - [x] 3.2 Graal 裁剪：评估 `-H:-AddAllCharsets`、移除 unused autoconfig、按部署裁剪 locale（保留 zh）— 见 `PHASE-3.md`
 - [ ] 3.3 验证 Native 二进制不含 `libawt.so`（Captcha/上传路径）— `target/libawt.so` 仍存在
 - [x] 3.4 `deploy/build-native-spring.sh` 默认 UPX；RPM 仍用未压缩 ELF — `UPX_COMPRESS` 默认 true；`run-native-spring-minimal.sh` 优先 `.upx`
-- [ ] 3.5 amd64 + arm64 实测：raw 体积、UPX 体积、冷启动（未压缩 vs UPX）、空闲 RSS → 填入 `METRICS.md` — arm64 体积已填；amd64/冷启动/RSS 待补
+- [ ] 3.5 amd64 + arm64 实测：raw 体积、UPX 体积、冷启动（未压缩 vs UPX）、空闲 RSS → 填入 `METRICS.md` — 双架构体积 + amd64 冷启动/RSS 已填；raw 冷启动待补
 - [x] 3.6 stretch 目标评估：raw **< 250MB**、UPX **< 65MB**；未达标则文档化原因与后续项，**不阻塞 Phase 4** — 338MB/82MB，未达标已文档化
 - [x] 3.7 编写 `PHASE-3.md`
 
@@ -49,11 +49,11 @@
 
 - [ ] 4.1 `deploy/rpm/cat2bug/`：支持 Spring Native 二进制打包（`build-rpm-spring.sh` 或参数化）；systemd unit 无 `java-*` Requires — **进行中**：骨架已建（2026-06-14）；AlmaLinux 实机冒烟待验
 - [ ] 4.2 AlmaLinux 9：`smoke-install.sh` 对 Spring Native RPM 通过（`/version`、health、setup status）— 脚本已建；待 RPM 实机构建验证
-- [ ] 4.3 Docker：`deploy/docker/native-minimal/` + `run-native-minimal.sh` 默认指向 Spring Native `.upx` 或未压缩版 — **进行中**：`native-spring-minimal/` + `run-native-spring-minimal.sh` 可用；OpenSpec 路径名未对齐
-- [ ] 4.4 CI：`deploy/ci/spring-native.yml`（双架构构建 + 冒烟 job 草案）— **进行中**：`deploy/ci/spring-native.yml` + `.github/workflows/spring-native.yml` 草案已建（2026-06-14）；CI 实跑待验
-- [ ] 4.5 更新根 `README.md`、`deploy/README.md`、`CLAUDE.md`：默认 Release = `./deploy/build-native-spring.sh`；JVM JAR 作 dev/回滚说明
+- [ ] 4.3 Docker：`deploy/docker/native-minimal/` + `run-native-minimal.sh` 默认指向 Spring Native `.upx` 或未压缩版 — **基本完成**：别名脚本 + symlink 已建；见 `deploy/README.md`
+- [ ] 4.4 CI：`deploy/ci/spring-native.yml`（双架构构建 + 冒烟 job 草案）— **进行中**：`deploy/ci/spring-native.yml` 草案已建；CI 实跑待验
+- [ ] 4.5 更新根 `README.md`、`deploy/README.md`、`CLAUDE.md`：默认 Release = `./deploy/build-native-spring.sh`；JVM JAR 作 dev/回滚说明 — **进行中**：`deploy/README.md` 已建
 - [ ] 4.6 标注 `feature/quarkus-full-migration` 为 archived/reference；记录 Quarkus → Spring Native 决策摘要
-- [ ] 4.7 编写 `PHASE-4.md` 与 Go-Live 检查清单
+- [ ] 4.7 编写 `PHASE-4.md` 与 Go-Live 检查清单 — **进行中**：`PHASE-4.md` 草案 + Go-Live 清单已建
 
 ## 6. 横切任务
 

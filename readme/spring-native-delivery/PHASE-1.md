@@ -77,7 +77,7 @@ SKIP_EMBEDDED=true UPX_COMPRESS=false CONTAINER_BUILD=false ./deploy/build-nativ
 - [x] Docker 容器 Linux amd64 构建验证 — 2026-06-14：333M raw / 84M UPX；`:2021` API+H2 冒烟通过
 - [x] arm64 容器构建 — 2026-06-14：`cat2bug-admin-linux-arm64` 338MB raw / 82MB UPX（`build-native-spring.sh aarch64`，非 `SKIP_EMBEDDED`）
 - [x] SPA `/`、`/static/**`、登录 API 冒烟 — 2026-06-14：`GET /`、`/static/js/app.js`、登录 API 均在 Native 容器内 200
-- [ ] 填入 `METRICS.md` 冷启动 / RSS
+- [ ] 填入 `METRICS.md` 冷启动 / RSS — amd64 UPX：冷启动 **~9.9s**、空闲 RSS **~803 MiB**（2026-06-14）
 
 ## Kill Gate
 
