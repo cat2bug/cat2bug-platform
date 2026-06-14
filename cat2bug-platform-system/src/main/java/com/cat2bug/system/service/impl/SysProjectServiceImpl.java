@@ -17,6 +17,7 @@ import lombok.extern.log4j.Log4j2;
 import okhttp3.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -67,6 +68,7 @@ public class SysProjectServiceImpl implements ISysProjectService
     @Autowired
     private ISysModuleService sysModuleService;
     @Autowired
+    @Lazy
     private ISysReportService sysReportService;
     @Autowired
     private ISysReportTemplateService sysReportTemplateService;

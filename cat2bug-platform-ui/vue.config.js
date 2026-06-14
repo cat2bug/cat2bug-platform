@@ -63,7 +63,11 @@ const docsStaticDir = path.resolve(__dirname, '../readme/production')
 // vue.config.js 配置说明
 //官方vue.config.js 参考文档 https://cli.vuejs.org/zh/config/#css-loaderoptions
 // 这里只列一部分，具体配置参考文档
+const webpack = require('webpack')
 const isDev = process.env.NODE_ENV === 'development'
+const isEmbedded = process.env.NODE_ENV === 'embedded'
+const isAnalyze = process.env.ANALYZE === 'true'
+const devToolsEnabled = process.env.VUE_APP_ENABLE_DEV_TOOLS === 'true'
 
 module.exports = {
   // 开发模式下关闭 thread-loader，避免部分 macOS/Node 环境子进程 ECONNRESET
@@ -73,7 +77,9 @@ module.exports = {
   // 例如 https://www.ruoyi.vip/。如果应用被部署在一个子路径上，你就需要用这个选项指定这个子路径。例如，如果你的应用被部署在 https://www.ruoyi.vip/admin/，则设置 baseUrl 为 /admin/。
   publicPath: process.env.NODE_ENV === "production" ? "/" : "/",
   // 在npm run build 或 yarn build 时 ，生成文件的目录名称（要和baseUrl的生产环境路径一致）（默认dist）
-  outputDir: process.env.NODE_ENV === "embedded" ? '../cat2bug-platform-admin/src/main/resources/static' : 'dist',
+  outputDir: isAnalyze
+    ? 'analyze'
+    : (isEmbedded ? '../cat2bug-platform-admin/src/main/resources/static' : 'dist'),
   // 用于放置生成的静态资源 (js、css、img、fonts) 的；（项目打包之后，静态资源会放在这个文件夹下）
   assetsDir: process.env.VUE_APP_STATIC_PATH,
   // 开发构建不走 eslint-loader（macOS/Node16 下子进程易出现 ECONNRESET）；提交前请 npm run lint
@@ -168,19 +174,26 @@ module.exports = {
           algorithm: 'gzip',              // 使用gzip压缩
           minRatio: 1                   // 压缩率小于1才会压缩
         }),
-        new BundleAnalyzerPlugin({
-          analyzerMode: 'static',
-          reportFilename: 'report.html',
-          defaultSizes: 'gzip',
-          generateStatsFile: true, // 如果为true，则Webpack Stats JSON文件将在bundle输出目录中生成
-          openAnalyzer: false, // 默认在浏览器中自动打开报告
-          statsFilename: 'stats.json', // 如果generateStatsFile为true，将会生成Webpack Stats JSON文件的名字
-          statsOptions: { source: false }
-        }),
+        ...(isAnalyze ? [
+          new BundleAnalyzerPlugin({
+            analyzerMode: 'static',
+            reportFilename: 'report.html',
+            defaultSizes: 'gzip',
+            generateStatsFile: true,
+            openAnalyzer: false,
+            statsFilename: 'stats.json',
+            statsOptions: { source: false }
+          })
+        ] : []),
+        ...(!devToolsEnabled ? [
+          new webpack.IgnorePlugin({
+            resourceRegExp: /[\\/]views[\\/]tool[\\/]/
+          })
+        ] : []),
         new CopyWebpackPlugin([
           {
             from: docsStaticDir,
-            to: path.resolve(__dirname, process.env.NODE_ENV === "embedded" ? '../cat2bug-platform-admin/src/main/resources/static/docs' : 'dist/docs'),
+            to: path.resolve(__dirname, isEmbedded ? '../cat2bug-platform-admin/src/main/resources/static/docs' : 'dist/docs'),
             toType: 'dir'
           }
         ])

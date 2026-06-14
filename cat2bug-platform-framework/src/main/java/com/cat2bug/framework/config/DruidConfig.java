@@ -1,26 +1,24 @@
 package com.cat2bug.framework.config;
 
 import com.alibaba.druid.pool.DruidDataSource;
-import com.alibaba.druid.spring.boot3.autoconfigure.DruidDataSourceBuilder;
 import com.alibaba.druid.spring.boot3.autoconfigure.properties.DruidStatProperties;
 import com.alibaba.druid.util.Utils;
 import com.cat2bug.common.enums.DataSourceType;
 import com.cat2bug.common.utils.spring.SpringUtils;
+import com.cat2bug.framework.config.properties.DruidMasterDataSourceProperties;
 import com.cat2bug.framework.config.properties.DruidProperties;
+import com.cat2bug.framework.config.properties.DruidSlaveDataSourceProperties;
 import com.cat2bug.framework.datasource.DynamicDataSource;
 import com.google.common.base.Preconditions;
 import org.apache.ibatis.mapping.DatabaseIdProvider;
 import org.apache.ibatis.mapping.VendorDatabaseIdProvider;
-import org.mybatis.spring.SqlSessionFactoryBean;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
 import jakarta.servlet.*;
 import javax.sql.DataSource;
@@ -34,14 +32,12 @@ import java.util.Properties;
  * 
  * @author ruoyi
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
+@EnableConfigurationProperties({ DruidMasterDataSourceProperties.class, DruidSlaveDataSourceProperties.class })
 public class DruidConfig
 {
-    @Value("${mybatis.mapperLocations}")
-    private String mapperLocations;
-
-    @Value("${mybatis.typeAliasesPackage}")
-    private String typeAliasesPackage;
+    @Value("${spring.datasource.driverClassName:}")
+    private String driverClassName;
 
     @Bean
     public DatabaseIdProvider getDatabaseIdProvider() {
@@ -61,20 +57,35 @@ public class DruidConfig
     }
 
     @Bean
-    @ConfigurationProperties("spring.datasource.druid.master")
-    public DataSource masterDataSource(DruidProperties druidProperties)
+    public DataSource masterDataSource(DruidProperties druidProperties,
+            DruidMasterDataSourceProperties masterProperties)
     {
-        DruidDataSource dataSource = DruidDataSourceBuilder.create().build();
+        DruidDataSource dataSource = new DruidDataSource();
+        applyConnectionProperties(dataSource, masterProperties.getUrl(), masterProperties.getUsername(),
+                masterProperties.getPassword());
         return druidProperties.dataSource(dataSource);
     }
 
     @Bean
-    @ConfigurationProperties("spring.datasource.druid.slave")
     @ConditionalOnProperty(prefix = "spring.datasource.druid.slave", name = "enabled", havingValue = "true")
-    public DataSource slaveDataSource(DruidProperties druidProperties)
+    public DataSource slaveDataSource(DruidProperties druidProperties,
+            DruidSlaveDataSourceProperties slaveProperties)
     {
-        DruidDataSource dataSource = DruidDataSourceBuilder.create().build();
+        DruidDataSource dataSource = new DruidDataSource();
+        applyConnectionProperties(dataSource, slaveProperties.getUrl(), slaveProperties.getUsername(),
+                slaveProperties.getPassword());
         return druidProperties.dataSource(dataSource);
+    }
+
+    private void applyConnectionProperties(DruidDataSource dataSource, String url, String username, String password)
+    {
+        dataSource.setUrl(url);
+        dataSource.setUsername(username);
+        dataSource.setPassword(password);
+        if (driverClassName != null && !driverClassName.isBlank())
+        {
+            dataSource.setDriverClassName(driverClassName);
+        }
     }
 
     @Bean(name = "dynamicDataSource")
@@ -85,17 +96,6 @@ public class DruidConfig
         targetDataSources.put(DataSourceType.MASTER.name(), masterDataSource);
         setDataSource(targetDataSources, DataSourceType.SLAVE.name(), "slaveDataSource");
         return new DynamicDataSource(masterDataSource, targetDataSources);
-    }
-
-    @Primary
-    @Bean
-    public SqlSessionFactoryBean sqlSessionFactoryBean(@Qualifier("dynamicDataSource") DataSource dataSource) throws Exception {
-        SqlSessionFactoryBean factoryBean = new SqlSessionFactoryBean();
-        factoryBean.setDataSource(dataSource);
-        factoryBean.setDatabaseIdProvider(getDatabaseIdProvider());
-        factoryBean.setTypeAliasesPackage(typeAliasesPackage);
-        factoryBean.setMapperLocations(new PathMatchingResourcePatternResolver().getResources(mapperLocations));
-        return factoryBean;
     }
     
     /**

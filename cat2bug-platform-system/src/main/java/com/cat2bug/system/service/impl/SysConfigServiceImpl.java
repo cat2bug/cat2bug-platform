@@ -78,17 +78,46 @@ public class SysConfigServiceImpl implements ISysConfigService
     @Override
     public String selectConfigByKey(String configKey)
     {
-        String configValue = Convert.toStr(redisCache.getCacheObject(RedisCache.CONFIG_CACHE_REGION, getCacheKey(configKey)));
+        String configValue = readConfigFromCache(configKey);
         if (StringUtils.isNotEmpty(configValue))
         {
             return configValue;
         }
+        return readConfigFromDatabase(configKey);
+    }
+
+    private String readConfigFromCache(String configKey)
+    {
+        try
+        {
+            return Convert.toStr(redisCache.getCacheObject(
+                    RedisCache.CONFIG_CACHE_REGION, getCacheKey(configKey)));
+        }
+        catch (RuntimeException e)
+        {
+            log.debug("配置缓存读取失败，回落数据库: key={}, cause={}", configKey, e.toString());
+            return StringUtils.EMPTY;
+        }
+    }
+
+    private String readConfigFromDatabase(String configKey)
+    {
         SysConfig config = new SysConfig();
         config.setConfigKey(configKey);
         SysConfig retConfig = configMapper.selectConfig(config);
         if (StringUtils.isNotNull(retConfig))
         {
-            redisCache.setCacheObject(RedisCache.CONFIG_CACHE_REGION, getCacheKey(configKey), retConfig.getConfigValue());
+            try
+            {
+                redisCache.setCacheObject(
+                        RedisCache.CONFIG_CACHE_REGION,
+                        getCacheKey(configKey),
+                        retConfig.getConfigValue());
+            }
+            catch (RuntimeException e)
+            {
+                log.debug("配置缓存写入失败: key={}, cause={}", configKey, e.toString());
+            }
             return retConfig.getConfigValue();
         }
         return StringUtils.EMPTY;

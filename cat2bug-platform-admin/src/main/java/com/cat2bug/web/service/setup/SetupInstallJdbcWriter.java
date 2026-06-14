@@ -66,6 +66,6 @@ public class SetupInstallJdbcWriter
 
     public boolean isSchemaPresent(DataSource dataSource)
     {
-        return FlywaySchemaSupport.hasSuccessfulMigration(new JdbcTemplate(dataSource));
+        return FlywaySchemaSupport.hasCoreSchema(new JdbcTemplate(dataSource));
     }
 }

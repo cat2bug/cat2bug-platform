@@ -6,6 +6,18 @@ import { isProjectListPageView } from '@/utils/project-list-page'
 import ParentView from '@/components/ParentView'
 import InnerLink from '@/layout/components/InnerLink'
 
+const devToolsEnabled = process.env.VUE_APP_ENABLE_DEV_TOOLS === 'true'
+
+function isDevToolMenuComponent(component) {
+  if (typeof component !== 'string') {
+    return false
+  }
+  return component === 'tool/build/index'
+    || component === 'tool/gen/index'
+    || component.startsWith('tool/build/')
+    || component.startsWith('tool/gen/')
+}
+
 const permission = {
   state: {
     routes: [],
@@ -70,6 +82,9 @@ const permission = {
 // 遍历后台传来的路由字符串，转换为组件对象
 function filterAsyncRouter(asyncRouterMap, lastRouter = false, type = false) {
   return asyncRouterMap.filter(route => {
+    if (!devToolsEnabled && isDevToolMenuComponent(route.component)) {
+      return false
+    }
     if (type && route.children) {
       route.children = filterChildren(route.children)
     }
@@ -143,13 +158,14 @@ export function filterDynamicRoutes(routes) {
   return res
 }
 
+const LOAD_VIEW_USE_REQUIRE = ['development', 'embedded', 'embedded-quarkus']
+
 export const loadView = (view) => {
-  if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'embedded') {
+  if (LOAD_VIEW_USE_REQUIRE.includes(process.env.NODE_ENV)) {
     return (resolve) => require([`@/views/${view}`], resolve)
-  } else {
-    // 使用 import 实现生产环境的路由懒加载
-    return () => import(`@/views/${view}`)
   }
+  // 使用 import 实现生产环境的路由懒加载
+  return () => import(`@/views/${view}`)
 }
 
 export default permission

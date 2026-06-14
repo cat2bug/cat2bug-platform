@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.sql.DataSource;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -308,16 +309,23 @@ public class SetupMigrationService implements UpgradeMigrationInspector
 
     private Flyway buildFlyway(String databaseType, DataSource dataSourceOverride)
     {
-        var config = Flyway.configure()
-                .locations("classpath:db/migration/" + databaseType)
-                .table(FlywayConstants.SCHEMA_HISTORY_TABLE)
-                .encoding("UTF-8")
-                .baselineOnMigrate(true)
-                .baselineVersion("0.5.0")
-                .baselineDescription("BaseLineInitialize")
-                .validateOnMigrate(true)
-                .outOfOrder(false)
-                .dataSource(dataSourceOverride != null ? dataSourceOverride : dataSource);
-        return config.load();
+        try
+        {
+            var config = Flyway.configure()
+                    .locations(FlywayNativeLocationSupport.resolveMigrationLocation(databaseType))
+                    .table(FlywayConstants.SCHEMA_HISTORY_TABLE)
+                    .encoding("UTF-8")
+                    .baselineOnMigrate(true)
+                    .baselineVersion("0.5.0")
+                    .baselineDescription("BaseLineInitialize")
+                    .validateOnMigrate(true)
+                    .outOfOrder(false)
+                    .dataSource(dataSourceOverride != null ? dataSourceOverride : dataSource);
+            return config.load();
+        }
+        catch (IOException e)
+        {
+            throw new ServiceException(SetupMessages.msg("setup.install.migration.failed", e.getMessage()));
+        }
     }
 }

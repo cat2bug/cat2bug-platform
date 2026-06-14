@@ -108,11 +108,11 @@ public class DatabaseExistenceProbe
     }
 
     /**
-     * 已有库：H2 文件存在且 Flyway 已成功迁移；仅存在空文件时仍视为 new。
+     * 已有库：H2 文件存在且业务表已初始化；仅 Flyway baseline 或空库仍视为 new。
      */
     public static String probeH2Mode(Connection connection)
     {
-        return FlywaySchemaSupport.hasSuccessfulMigration(connection) ? MODE_EXISTING : MODE_NEW;
+        return FlywaySchemaSupport.hasCoreSchema(connection) ? MODE_EXISTING : MODE_NEW;
     }
 
     static String defaultH2Username()

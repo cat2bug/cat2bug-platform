@@ -1,10 +1,13 @@
 package com.cat2bug.common.core.redis;
 
+import com.cat2bug.common.utils.NativeImageSupport;
 import net.oschina.j2cache.CacheChannel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -55,6 +58,39 @@ public class RedisCache
     @Autowired
     private CacheChannel cacheChannel;
 
+    /** Native 下 J2Cache/Caffeine 动态类缺失时的进程内兜底（验证码、配置等短生命周期数据）。 */
+    private static final Map<String, Map<String, Object>> NATIVE_FALLBACK = new ConcurrentHashMap<>();
+
+    private static Map<String, Object> nativeBucket(String group)
+    {
+        return NATIVE_FALLBACK.computeIfAbsent(group, ignored -> new ConcurrentHashMap<>());
+    }
+
+    private static boolean useNativeFallback()
+    {
+        return NativeImageSupport.isRunningNativeImage();
+    }
+
+    private static <T> T getNativeCacheObject(String group, String key)
+    {
+        return (T) nativeBucket(group).get(key);
+    }
+
+    private static void setNativeCacheObject(String group, String key, Object value)
+    {
+        nativeBucket(group).put(key, value);
+    }
+
+    private static void deleteNativeCacheObject(String group, String key)
+    {
+        nativeBucket(group).remove(key);
+    }
+
+    private static boolean hasNativeKey(String group, String key)
+    {
+        return nativeBucket(group).containsKey(key);
+    }
+
 //    /**
 //     * 缓存基本的对象，Integer、String、实体类等
 //     *
@@ -89,7 +125,19 @@ public class RedisCache
      */
     public <T> void setCacheObject(final String group, final String key, final T value)
     {
-        cacheChannel.set(group, key, value);
+        if (useNativeFallback())
+        {
+            setNativeCacheObject(group, key, value);
+            return;
+        }
+        try
+        {
+            cacheChannel.set(group, key, value);
+        }
+        catch (RuntimeException e)
+        {
+            setNativeCacheObject(group, key, value);
+        }
     }
 //    /**
 //     * 设置有效时间
@@ -135,6 +183,10 @@ public class RedisCache
      */
     public Boolean hasKey(final String group, String key)
     {
+        if (useNativeFallback())
+        {
+            return hasNativeKey(group, key);
+        }
         return cacheChannel.exists(group, key);
 //        return redisTemplate.hasKey(key);
     }
@@ -156,9 +208,18 @@ public class RedisCache
      */
     public <T> T getCacheObject(final String group, final String key)
     {
-        return (T)cacheChannel.get(group,key).getValue();
-//        ValueOperations<String, T> operation = redisTemplate.opsForValue();
-//        return operation.get(key);
+        if (useNativeFallback())
+        {
+            return getNativeCacheObject(group, key);
+        }
+        try
+        {
+            return (T) cacheChannel.get(group, key).getValue();
+        }
+        catch (RuntimeException e)
+        {
+            return getNativeCacheObject(group, key);
+        }
     }
 
     /**
@@ -168,9 +229,20 @@ public class RedisCache
      */
     public boolean deleteObject(final String group, final String key)
     {
-        cacheChannel.evict(group,key);
+        if (useNativeFallback())
+        {
+            deleteNativeCacheObject(group, key);
+            return true;
+        }
+        try
+        {
+            cacheChannel.evict(group, key);
+        }
+        catch (RuntimeException e)
+        {
+            deleteNativeCacheObject(group, key);
+        }
         return true;
-//        return redisTemplate.delete(key);
     }
 
     /**

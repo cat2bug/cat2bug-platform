@@ -8,7 +8,6 @@ import com.cat2bug.system.service.ISysConfigService;
 import com.cat2bug.web.domain.setup.SetupSubmitRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -55,7 +54,6 @@ public class SetupInstallService
     @Autowired
     private InstallRuntimeActivator installRuntimeActivator;
 
-    @Transactional(rollbackFor = Exception.class)
     public Map<String, Object> submit(SetupSubmitRequest request) throws Exception
     {
         if (installService.isInstalled())
@@ -124,10 +122,7 @@ public class SetupInstallService
         DruidDataSource mysqlDataSource = setupSubmitDataSourceFactory.createMysqlDataSource(request);
         if (isNew)
         {
-            if (!setupInstallJdbcWriter.isSchemaPresent(mysqlDataSource))
-            {
-                setupMigrationService.migrate("mysql", mysqlDataSource);
-            }
+            setupMigrationService.migrate("mysql", mysqlDataSource);
             if (!setupInstallJdbcWriter.isSchemaPresent(mysqlDataSource))
             {
                 mysqlDataSource.close();
@@ -166,10 +161,7 @@ public class SetupInstallService
         }
         if (!attachExisting)
         {
-            if (!schemaPresent)
-            {
-                setupMigrationService.migrate(databaseType, h2DataSource);
-            }
+            setupMigrationService.migrate(databaseType, h2DataSource);
             if (!setupInstallJdbcWriter.isSchemaPresent(h2DataSource))
             {
                 h2DataSource.close();

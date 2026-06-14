@@ -78,16 +78,6 @@ export const constantRoutes = [
     hidden: true
   },
   {
-    path: '/tools/browser',
-    component: () => import('@/views/tool/project/browser/index'),
-    hidden: true
-  },
-  {
-    path: '/tools/browser/proxy',
-    component: () => import('@/views/tool/project/browser/proxy'),
-    hidden: true
-  },
-  {
     path: '/error',
     component: Layout,
     hidden: true,
@@ -222,7 +212,7 @@ export const constantRoutes = [
       }
     ]
   },
-  {
+  ...(process.env.VUE_APP_ENABLE_DEV_TOOLS === 'true' ? [{
     path: '/tool/gen-edit/',
     component: Layout,
     hidden: true,
@@ -233,7 +223,7 @@ export const constantRoutes = [
         name: 'GenEdit',
       }
     ]
-  },
+  }] : []),
   {
     path: '/notice',
     component: Layout,

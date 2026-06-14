@@ -6,6 +6,7 @@ import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.framework.web.service.ApiTokenService;
 import com.cat2bug.framework.web.service.TokenService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -30,16 +31,17 @@ import java.io.IOException;
 public class ApiAuthenticationTokenFilter  extends OncePerRequestFilter
 {
     @Autowired
-    private ApiTokenService tokenService;
+    @Qualifier("apiTokenService")
+    private ApiTokenService apiTokenService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException
     {
-        LoginUser loginUser = tokenService.getLoginUser(request);
+        LoginUser loginUser = apiTokenService.getLoginUser(request);
         if (StringUtils.isNotNull(loginUser) && StringUtils.isNull(SecurityUtils.getAuthentication()))
         {
-            tokenService.verifyToken(loginUser);
+            apiTokenService.verifyToken(loginUser);
             UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(loginUser, null, loginUser.getAuthorities());
             authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);

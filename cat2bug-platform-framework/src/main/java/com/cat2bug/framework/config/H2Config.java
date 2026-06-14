@@ -60,8 +60,12 @@ public class H2Config
         }
         catch (Exception e)
         {
-            log.warn("H2 空库检测失败，尝试 legacy 灌入: {}", e.getMessage());
-            initData();
+            log.warn("H2 空库检测失败: {}", e.getMessage());
+            if (sqlScript.exists())
+            {
+                log.info("尝试 legacy h2-schema.sql 灌入");
+                initData();
+            }
         }
     }
 

@@ -50,6 +50,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <!-- MyBatis（SB3 需 3.0.x starter） -->
@@ -101,7 +102,7 @@
             <artifactId>commons-io</artifactId>
         </dependency>
 
-        <!-- excel工具 -->
+        <!-- excel工具（Native 排除 POI 需 Phase 2.10 FastExcel 完成后在 admin 层 provided） -->
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>

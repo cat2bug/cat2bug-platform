@@ -10,16 +10,16 @@ import com.cat2bug.framework.security.context.AuthenticationContextHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.annotation.DependsOn;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
-import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.concurrent.TimeUnit;
 
@@ -49,7 +49,9 @@ public class ApiTokenService {
     @Value("${token.expireTime}")
     private int expireTime;
 
-    @Resource(name="apiAuthenticationManager")
+    @Autowired
+    @Lazy
+    @Qualifier("apiAuthenticationManager")
     private AuthenticationManager apiAuthenticationManager;
 
     protected static final long MILLIS_SECOND = 1000;

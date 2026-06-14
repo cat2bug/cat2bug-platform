@@ -3,6 +3,7 @@ package com.cat2bug.framework.config;
 import java.util.Properties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import com.google.code.kaptcha.impl.DefaultKaptcha;
 import com.google.code.kaptcha.util.Config;
 import static com.google.code.kaptcha.Constants.*;
@@ -13,6 +14,7 @@ import static com.google.code.kaptcha.Constants.*;
  * @author ruoyi
  */
 @Configuration
+@Profile("!native")
 public class CaptchaConfig
 {
     /** 插画线稿/表单描边 #5A5A59 */

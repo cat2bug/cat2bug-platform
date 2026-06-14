@@ -46,6 +46,14 @@
         <okhttp.version>4.12.0</okhttp.version>
         <j2cache.core.version>2.8.5-release</j2cache.core.version>
         <j2cache.spring-boot2-starter.version>2.8.0-release</j2cache.spring-boot2-starter.version>
+        <!-- GraalVM Native Build Tools（与 Spring Boot 3.3.x 配套） -->
+        <native-buildtools.version>0.10.5</native-buildtools.version>
+        <native.image.name>cat2bug-admin</native.image.name>
+        <native.image.jvmargs>-J-Xmx5g -H:DeadlockWatchdogInterval=7200</native.image.jvmargs>
+        <native.image.threads>4</native.image.threads>
+        <fastexcel.version>0.20.1</fastexcel.version>
+        <!-- native profile 设为 exec，主 artifact 保持 thin JAR 供 native-image 使用 -->
+        <repackage.classifier></repackage.classifier>
     </properties>
 
     <!-- 依赖声明 -->
@@ -120,6 +128,11 @@
             </dependency>
 
             <!-- OpenAPI 3（springdoc） -->
+            <dependency>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-starter-webmvc-api</artifactId>
+                <version>${springdoc.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.springdoc</groupId>
                 <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
@@ -293,6 +306,21 @@
     <packaging>pom</packaging>
 
     <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.graalvm.buildtools</groupId>
+                    <artifactId>native-maven-plugin</artifactId>
+                    <version>${native-buildtools.version}</version>
+                    <extensions>true</extensions>
+                    <configuration>
+                        <metadataRepository>
+                            <enabled>true</enabled>
+                        </metadataRepository>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -332,12 +360,28 @@
                     <parameters>true</parameters>
                 </configuration>
             </plugin>
-<!--            <plugin>-->
-<!--                <groupId>org.graalvm.buildtools</groupId>-->
-<!--                <artifactId>native-maven-plugin</artifactId>-->
-<!--            </plugin>-->
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>native</id>
+            <properties>
+                <repackage.classifier>exec</repackage.classifier>
+                <spring-boot.aot.enabled>true</spring-boot.aot.enabled>
+                <spring.profiles.active>native</spring.profiles.active>
+            </properties>
+        </profile>
+        <profile>
+            <id>embedded</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+        </profile>
+        <profile>
+            <id>release</id>
+        </profile>
+    </profiles>
 
     <repositories>
         <repository>

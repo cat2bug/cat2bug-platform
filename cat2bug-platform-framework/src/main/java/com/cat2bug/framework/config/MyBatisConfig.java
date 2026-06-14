@@ -7,12 +7,14 @@ import java.util.HashSet;
 import java.util.List;
 import javax.sql.DataSource;
 import org.apache.ibatis.io.VFS;
+import org.apache.ibatis.mapping.DatabaseIdProvider;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.boot.autoconfigure.SpringBootVFS;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
@@ -23,22 +25,38 @@ import org.springframework.core.type.classreading.MetadataReader;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.util.ClassUtils;
 import com.cat2bug.common.utils.StringUtils;
+import com.cat2bug.common.nativeimage.NativeDomainEntityRegistry;
 
 /**
  * Mybatis支持*匹配扫描包
  * 
  * @author ruoyi
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 public class MyBatisConfig
 {
+    /**
+     * GraalVM Native 下 classpath 通配扫描不可用，使用显式包列表。
+     */
+    private static final String NATIVE_TYPE_ALIASES_PACKAGES =
+            "com.cat2bug.system.domain,com.cat2bug.generator.domain,com.cat2bug.quartz.domain,"
+                    + "com.cat2bug.common.core.domain,com.cat2bug.api.domain,com.cat2bug.ai.domain,"
+                    + "com.cat2bug.im.domain,com.cat2bug.framework.web.domain,com.cat2bug.web.domain.setup";
+
     @Autowired
     private Environment env;
+
+    @Autowired
+    private DatabaseIdProvider databaseIdProvider;
 
     static final String DEFAULT_RESOURCE_PATTERN = "**/*.class";
 
     public static String setTypeAliasesPackage(String typeAliasesPackage)
     {
+        if (runningNativeImage())
+        {
+            return NATIVE_TYPE_ALIASES_PACKAGES;
+        }
         ResourcePatternResolver resolver = (ResourcePatternResolver) new PathMatchingResourcePatternResolver();
         MetadataReaderFactory metadataReaderFactory = new CachingMetadataReaderFactory(resolver);
         List<String> allResult = new ArrayList<String>();
@@ -81,7 +99,7 @@ public class MyBatisConfig
             }
             else
             {
-                throw new RuntimeException("mybatis typeAliasesPackage 路径扫描错误,参数typeAliasesPackage:" + typeAliasesPackage + "未找到任何包");
+                return NATIVE_TYPE_ALIASES_PACKAGES;
             }
         }
         catch (IOException e)
@@ -91,9 +109,25 @@ public class MyBatisConfig
         return typeAliasesPackage;
     }
 
+    private static boolean runningNativeImage()
+    {
+        return System.getProperty("org.graalvm.nativeimage.imagecode") != null;
+    }
+
     public Resource[] resolveMapperLocations(String[] mapperLocations)
     {
         ResourcePatternResolver resourceResolver = new PathMatchingResourcePatternResolver();
+        if (runningNativeImage())
+        {
+            try
+            {
+                return resourceResolver.getResources("classpath*:mapper/**/*Mapper.xml");
+            }
+            catch (IOException e)
+            {
+                return new Resource[0];
+            }
+        }
         List<Resource> resources = new ArrayList<Resource>();
         if (mapperLocations != null)
         {
@@ -114,6 +148,7 @@ public class MyBatisConfig
     }
 
     @Bean
+    @Primary
     public SqlSessionFactory sqlSessionFactory(DataSource dataSource) throws Exception
     {
         String typeAliasesPackage = env.getProperty("mybatis.typeAliasesPackage");
@@ -124,9 +159,39 @@ public class MyBatisConfig
 
         final SqlSessionFactoryBean sessionFactory = new SqlSessionFactoryBean();
         sessionFactory.setDataSource(dataSource);
-        sessionFactory.setTypeAliasesPackage(typeAliasesPackage);
+        if (runningNativeImage())
+        {
+            sessionFactory.setTypeAliases(
+                    NativeDomainEntityRegistry.ensureInitialized(Thread.currentThread().getContextClassLoader()));
+        }
+        else
+        {
+            sessionFactory.setTypeAliasesPackage(typeAliasesPackage);
+        }
         sessionFactory.setMapperLocations(resolveMapperLocations(StringUtils.split(mapperLocations, ",")));
         sessionFactory.setConfigLocation(new DefaultResourceLoader().getResource(configLocation));
+        sessionFactory.setDatabaseIdProvider(this::resolveDatabaseId);
         return sessionFactory.getObject();
+    }
+
+    private String resolveDatabaseId(DataSource dataSource)
+    {
+        String configured = env.getProperty("spring.database-type");
+        if (StringUtils.isEmpty(configured) && runningNativeImage())
+        {
+            configured = "h2";
+        }
+        if (StringUtils.isNotEmpty(configured))
+        {
+            return configured;
+        }
+        try
+        {
+            return databaseIdProvider.getDatabaseId(dataSource);
+        }
+        catch (Exception ex)
+        {
+            throw new IllegalStateException("无法解析 MyBatis databaseId", ex);
+        }
     }
 }
