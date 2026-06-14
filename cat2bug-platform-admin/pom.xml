@@ -234,6 +234,47 @@
         </profile>
         <profile>
             <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.springframework.boot</groupId>
+                        <artifactId>spring-boot-maven-plugin</artifactId>
+                        <configuration combine.children="append">
+                            <!-- release：POI 栈不进 fat JAR（编译仍保留 POI；Excel 需 Phase 2.10 FastExcel） -->
+                            <excludes combine.children="append">
+                                <exclude>
+                                    <groupId>org.projectlombok</groupId>
+                                    <artifactId>lombok</artifactId>
+                                </exclude>
+                                <exclude>
+                                    <groupId>org.apache.poi</groupId>
+                                    <artifactId>poi</artifactId>
+                                </exclude>
+                                <exclude>
+                                    <groupId>org.apache.poi</groupId>
+                                    <artifactId>poi-ooxml</artifactId>
+                                </exclude>
+                                <exclude>
+                                    <groupId>org.apache.poi</groupId>
+                                    <artifactId>poi-ooxml-lite</artifactId>
+                                </exclude>
+                                <exclude>
+                                    <groupId>org.apache.xmlbeans</groupId>
+                                    <artifactId>xmlbeans</artifactId>
+                                </exclude>
+                                <exclude>
+                                    <groupId>org.apache.commons</groupId>
+                                    <artifactId>commons-math3</artifactId>
+                                </exclude>
+                                <exclude>
+                                    <groupId>com.github.virtuald</groupId>
+                                    <artifactId>curvesapi</artifactId>
+                                </exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
 
@@ -300,6 +341,12 @@
                     <fork>true</fork> <!-- 如果没有该配置，devtools不会生效 -->
                     <!-- -Pnative 时 repackage.classifier=exec，fat JAR 为 *-exec.jar，主 artifact 供 native-image -->
                     <classifier>${repackage.classifier}</classifier>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
                 </configuration>
                 <executions>
                     <execution>
