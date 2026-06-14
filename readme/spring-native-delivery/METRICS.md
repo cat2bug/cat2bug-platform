@@ -40,8 +40,8 @@ PORT=2024 BIN=.../cat2bug-admin-linux-arm64.upx ./deploy/docker/run-native-sprin
 
 | 指标 | Quarkus embedded Native | Spring Native（arm64 ELF，API-only） |
 |------|------------------------|--------------------------------------|
-| 未压缩 ELF amd64 | ~190 MB | _待双架构 CI_ |
-| UPX amd64 | ~42 MB | _TBD_ |
+| 未压缩 ELF amd64 | ~190 MB | **333 MB**（2026-06-14，API-only） |
+| UPX amd64 | ~42 MB | **84 MB**（25.1%） |
 | 未压缩 ELF arm64 | ~190 MB | **333 MB**（Phase 3，2026-06-14） |
 | UPX arm64 | ~42 MB | **89 MB**（26.8%） |
 | 未压缩 Mach-O arm64（本机 dev） | — | **296 MB** / UPX **87 MB**（Phase 1） |

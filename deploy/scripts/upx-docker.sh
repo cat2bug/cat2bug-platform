@@ -18,12 +18,28 @@ UPX_DOCKER_IMAGE="${UPX_DOCKER_IMAGE:-cat2bug-upx-compress:alpine}"
 UPX_DOCKERFILE="${UPX_DOCKERFILE:-$ROOT/deploy/docker/upx-compress/Dockerfile}"
 
 upx_docker_ensure_image() {
+  local platform="${1:-}"
+  if [[ -n "$platform" ]] && docker image inspect "$UPX_DOCKER_IMAGE" >/dev/null 2>&1; then
+    local img_arch
+    img_arch="$(docker image inspect "$UPX_DOCKER_IMAGE" --format '{{.Os}}/{{.Architecture}}' 2>/dev/null || true)"
+    if [[ -n "$img_arch" && "$img_arch" != "${platform#linux/}" && "$img_arch" != "$platform" ]]; then
+      case "$platform" in
+        linux/amd64) [[ "$img_arch" == "linux/amd64" ]] || docker rmi -f "$UPX_DOCKER_IMAGE" 2>/dev/null || true ;;
+        linux/arm64) [[ "$img_arch" == "linux/arm64" ]] || docker rmi -f "$UPX_DOCKER_IMAGE" 2>/dev/null || true ;;
+      esac
+    fi
+  fi
   if docker image inspect "$UPX_DOCKER_IMAGE" >/dev/null 2>&1; then
     return 0
   fi
-  echo "==> 构建 UPX 压缩镜像: $UPX_DOCKER_IMAGE"
-  docker build -t "$UPX_DOCKER_IMAGE" -f "$UPX_DOCKERFILE" \
-    "$(dirname "$UPX_DOCKERFILE")"
+  echo "==> 构建 UPX 压缩镜像: $UPX_DOCKER_IMAGE${platform:+ ($platform)}"
+  if [[ -n "$platform" ]]; then
+    docker build --platform "$platform" -t "$UPX_DOCKER_IMAGE" -f "$UPX_DOCKERFILE" \
+      "$(dirname "$UPX_DOCKERFILE")"
+  else
+    docker build -t "$UPX_DOCKER_IMAGE" -f "$UPX_DOCKERFILE" \
+      "$(dirname "$UPX_DOCKERFILE")"
+  fi
 }
 
 upx_docker_detect_platform() {
@@ -65,7 +81,7 @@ upx_compress_in_docker() {
   cp -f "$src" "$dst"
   chmod +x "$dst"
 
-  upx_docker_ensure_image
+  upx_docker_ensure_image "$platform"
 
   read -r -a upx_args <<< "$(upx_build_args)"
   echo "==> UPX in Docker (${UPX_MODE:-best}, $platform): $dst"
