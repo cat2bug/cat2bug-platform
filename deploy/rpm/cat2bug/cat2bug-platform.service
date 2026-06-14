@@ -1,0 +1,23 @@
+# Cat2Bug Platform — Spring Native systemd unit（无 java-* 依赖）
+[Unit]
+Description=Cat2Bug Platform (Spring Native)
+Documentation=https://www.cat2bug.com
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/var/lib/cat2bug-platform
+ExecStart=/usr/bin/cat2bug-admin
+Environment=SPRING_PROFILES_ACTIVE=native
+Environment=SPRING_CONFIG_ADDITIONAL_LOCATION=file:/etc/cat2bug/platform.properties
+Environment=JAVA_TOOL_OPTIONS=-Djava.io.tmpdir=/var/lib/cat2bug-platform/tmp
+Restart=on-failure
+RestartSec=5
+LimitNOFILE=65536
+
+# 可选：安装完成后追加 runtime 配置
+# Environment=SPRING_CONFIG_IMPORT=optional:file:/etc/cat2bug/platform.properties,optional:file:/var/lib/cat2bug-platform/config/install/application-install.yml
+
+[Install]
+WantedBy=multi-user.target

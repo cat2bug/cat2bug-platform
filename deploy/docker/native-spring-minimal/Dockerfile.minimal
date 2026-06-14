@@ -1,0 +1,33 @@
+# 最小 scratch 镜像：仅 glibc + zlib + CA + 二进制（通常比 distroless/debian 更小）
+# 构建时由脚本传入 GNU_ARCH、LD_LINUX、LD_LINUX_DIR（UPX 从 /lib/ld-linux-* 加载）
+ARG GNU_ARCH=aarch64
+ARG LD_LINUX=ld-linux-aarch64.so.1
+ARG LD_LINUX_DIR=/lib
+
+FROM debian:bookworm-slim AS rootfs
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates zlib1g \
+    && rm -rf /var/lib/apt/lists/* \
+    && mkdir -p /app/logs /app/tmp /app/data /app/upload /app/config/install /tmp \
+    && chmod 1777 /tmp \
+    && chown -R 65532:65532 /app
+
+FROM scratch
+ARG GNU_ARCH
+ARG LD_LINUX
+ARG LD_LINUX_DIR
+COPY --from=rootfs /lib/${GNU_ARCH}-linux-gnu/${LD_LINUX} /lib/${GNU_ARCH}-linux-gnu/
+COPY --from=rootfs ${LD_LINUX_DIR}/${LD_LINUX} ${LD_LINUX_DIR}/${LD_LINUX}
+COPY --from=rootfs /lib/${GNU_ARCH}-linux-gnu/libc.so.6 /lib/${GNU_ARCH}-linux-gnu/
+COPY --from=rootfs /lib/${GNU_ARCH}-linux-gnu/libz.so.1 /lib/${GNU_ARCH}-linux-gnu/
+COPY --from=rootfs /lib/${GNU_ARCH}-linux-gnu/libz.so.1.* /lib/${GNU_ARCH}-linux-gnu/
+COPY --from=rootfs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=rootfs /etc/nsswitch.conf /etc/
+COPY --from=rootfs /etc/passwd /etc/
+COPY --from=rootfs /etc/group /etc/
+COPY --from=rootfs /tmp /tmp
+COPY --from=rootfs /app /app
+COPY cat2bug-admin /cat2bug-admin
+WORKDIR /app
+EXPOSE 2020
+ENTRYPOINT ["/cat2bug-admin"]
