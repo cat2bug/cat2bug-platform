@@ -234,13 +234,16 @@
         </profile>
         <profile>
             <id>release</id>
+        </profile>
+        <!-- JVM fat JAR 瘦身：仅 repackage 剔除 POI/lombok；勿与 -Pnative 同用（process-aot 需 POI classpath） -->
+        <profile>
+            <id>slim-jar</id>
             <build>
                 <plugins>
                     <plugin>
                         <groupId>org.springframework.boot</groupId>
                         <artifactId>spring-boot-maven-plugin</artifactId>
                         <configuration combine.children="append">
-                            <!-- release：POI 栈不进 fat JAR（编译仍保留 POI；Excel 需 Phase 2.10 FastExcel） -->
                             <excludes combine.children="append">
                                 <exclude>
                                     <groupId>org.projectlombok</groupId>
