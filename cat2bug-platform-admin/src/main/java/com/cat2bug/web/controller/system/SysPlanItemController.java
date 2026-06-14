@@ -5,7 +5,6 @@ import com.cat2bug.common.core.controller.BaseController;
 import com.cat2bug.common.core.domain.AjaxResult;
 import com.cat2bug.common.core.page.TableDataInfo;
 import com.cat2bug.common.enums.BusinessType;
-import com.cat2bug.common.utils.poi.ExcelUtil;
 import com.cat2bug.system.domain.SysCase;
 import com.cat2bug.system.domain.SysPlanItem;
 import com.cat2bug.system.domain.SysPlanItemModule;
@@ -14,7 +13,10 @@ import com.cat2bug.system.service.ISysDefectService;
 import com.cat2bug.system.service.ISysModuleService;
 import com.cat2bug.system.service.ISysPlanItemService;
 import com.cat2bug.system.service.ISysUserConfigService;
+import com.cat2bug.web.excel.ExcelHttpSupport;
+import com.cat2bug.web.service.excel.SystemExcelExportService;
 import org.springframework.beans.factory.annotation.Autowired;
+import java.io.IOException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,6 +36,9 @@ public class SysPlanItemController extends BaseController
 {
     @Autowired
     private ISysPlanItemService sysPlanItemService;
+
+    @Autowired
+    private SystemExcelExportService systemExcelExportService;
     @Autowired
     private ISysModuleService sysModuleService;
 
@@ -97,11 +102,9 @@ public class SysPlanItemController extends BaseController
     @PreAuthorize("@ss.hasPermi('system:PlanItem:export')")
     @Log(title = "测试计划子项", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
-    public void export(HttpServletResponse response, SysPlanItem sysPlanItem)
+    public void export(HttpServletResponse response, SysPlanItem sysPlanItem) throws IOException
     {
-        List<SysPlanItem> list = sysPlanItemService.selectSysPlanItemList(sysPlanItem);
-        ExcelUtil<SysPlanItem> util = new ExcelUtil<SysPlanItem>(SysPlanItem.class);
-        util.exportExcel(response, list, "测试计划子项数据");
+        ExcelHttpSupport.write(response, systemExcelExportService.exportPlanItems(sysPlanItem), "测试计划子项数据.xlsx");
     }
 
     /**

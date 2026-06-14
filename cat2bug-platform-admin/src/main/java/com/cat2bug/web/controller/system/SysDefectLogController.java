@@ -5,10 +5,12 @@ import com.cat2bug.common.core.controller.BaseController;
 import com.cat2bug.common.core.domain.AjaxResult;
 import com.cat2bug.common.core.page.TableDataInfo;
 import com.cat2bug.common.enums.BusinessType;
-import com.cat2bug.common.utils.poi.ExcelUtil;
 import com.cat2bug.system.domain.SysDefectLog;
 import com.cat2bug.system.service.ISysDefectLogService;
+import com.cat2bug.web.excel.ExcelHttpSupport;
+import com.cat2bug.web.service.excel.SystemExcelExportService;
 import org.springframework.beans.factory.annotation.Autowired;
+import java.io.IOException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,6 +30,9 @@ public class SysDefectLogController extends BaseController
     @Autowired
     private ISysDefectLogService sysDefectLogService;
 
+    @Autowired
+    private SystemExcelExportService systemExcelExportService;
+
     /**
      * 查询缺陷日志列表
      */
@@ -46,11 +51,9 @@ public class SysDefectLogController extends BaseController
     @PreAuthorize("@ss.hasPermi('system:defect:log:export')")
     @Log(title = "缺陷日志", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
-    public void export(HttpServletResponse response, SysDefectLog sysDefectLog)
+    public void export(HttpServletResponse response, SysDefectLog sysDefectLog) throws IOException
     {
-        List<SysDefectLog> list = sysDefectLogService.selectSysDefectLogList(sysDefectLog);
-        ExcelUtil<SysDefectLog> util = new ExcelUtil<SysDefectLog>(SysDefectLog.class);
-        util.exportExcel(response, list, "缺陷日志数据");
+        ExcelHttpSupport.write(response, systemExcelExportService.exportDefectLogs(sysDefectLog), "缺陷日志数据.xlsx");
     }
 
     /**

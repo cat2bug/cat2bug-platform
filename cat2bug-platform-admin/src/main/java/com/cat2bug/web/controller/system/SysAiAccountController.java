@@ -7,8 +7,10 @@ import com.cat2bug.common.core.controller.BaseController;
 import com.cat2bug.common.core.domain.AjaxResult;
 import com.cat2bug.common.core.page.TableDataInfo;
 import com.cat2bug.common.enums.BusinessType;
-import com.cat2bug.common.utils.poi.ExcelUtil;
+import com.cat2bug.web.excel.ExcelHttpSupport;
+import com.cat2bug.web.service.excel.SystemExcelExportService;
 import org.springframework.beans.factory.annotation.Autowired;
+import java.io.IOException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,6 +30,9 @@ public class SysAiAccountController extends BaseController
     @Autowired
     private IAiAccountService aiAccountService;
 
+    @Autowired
+    private SystemExcelExportService systemExcelExportService;
+
     /**
      * 查询OpenAI账号列表
      */
@@ -46,11 +51,9 @@ public class SysAiAccountController extends BaseController
     @PreAuthorize("@ss.hasPermi('ai:account:export')")
     @Log(title = "OpenAI账号", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
-    public void export(HttpServletResponse response, AiAccount aiAccount)
+    public void export(HttpServletResponse response, AiAccount aiAccount) throws IOException
     {
-        List<AiAccount> list = aiAccountService.selectAiAccountList(aiAccount);
-        ExcelUtil<AiAccount> util = new ExcelUtil<AiAccount>(AiAccount.class);
-        util.exportExcel(response, list, "OpenAI账号数据");
+        ExcelHttpSupport.write(response, systemExcelExportService.exportAiAccounts(aiAccount), "OpenAI账号数据.xlsx");
     }
 
     /**

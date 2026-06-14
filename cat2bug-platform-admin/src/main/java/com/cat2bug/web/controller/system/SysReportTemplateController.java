@@ -5,10 +5,12 @@ import com.cat2bug.common.core.controller.BaseController;
 import com.cat2bug.common.core.domain.AjaxResult;
 import com.cat2bug.common.core.page.TableDataInfo;
 import com.cat2bug.common.enums.BusinessType;
-import com.cat2bug.common.utils.poi.ExcelUtil;
 import com.cat2bug.system.domain.SysReportTemplate;
 import com.cat2bug.system.service.ISysReportTemplateService;
+import com.cat2bug.web.excel.ExcelHttpSupport;
+import com.cat2bug.web.service.excel.SystemExcelExportService;
 import org.springframework.beans.factory.annotation.Autowired;
+import java.io.IOException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,6 +30,9 @@ public class SysReportTemplateController extends BaseController
     @Autowired
     private ISysReportTemplateService sysReportTemplateService;
 
+    @Autowired
+    private SystemExcelExportService systemExcelExportService;
+
     /**
      * 查询报告模版列表
      */
@@ -46,11 +51,9 @@ public class SysReportTemplateController extends BaseController
     @PreAuthorize("@ss.hasPermi('system:report:export')")
     @Log(title = "报告模版", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
-    public void export(HttpServletResponse response, SysReportTemplate sysReportTemplate)
+    public void export(HttpServletResponse response, SysReportTemplate sysReportTemplate) throws IOException
     {
-        List<SysReportTemplate> list = sysReportTemplateService.selectSysReportTemplateList(sysReportTemplate);
-        ExcelUtil<SysReportTemplate> util = new ExcelUtil<SysReportTemplate>(SysReportTemplate.class);
-        util.exportExcel(response, list, "报告模版数据");
+        ExcelHttpSupport.write(response, systemExcelExportService.exportReportTemplates(sysReportTemplate), "报告模版数据.xlsx");
     }
 
     /**

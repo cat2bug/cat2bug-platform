@@ -55,11 +55,9 @@ if [[ "$CONTAINER_BUILD" == "true" ]]; then
     aarch64|arm64) [[ "$HOST_ARCH" != "arm64" && "$HOST_ARCH" != "aarch64" ]] && NEED_PLATFORM=true ;;
   esac
   DOCKER_RUN=(docker run --rm --entrypoint /bin/bash)
-  if [[ "$NEED_PLATFORM" == "true" ]]; then
-    export DOCKER_DEFAULT_PLATFORM="$DOCKER_PLATFORM"
-    DOCKER_RUN+=(--platform "$DOCKER_PLATFORM")
-    echo "==> Docker platform: $DOCKER_PLATFORM"
-  fi
+  export DOCKER_DEFAULT_PLATFORM="$DOCKER_PLATFORM"
+  DOCKER_RUN+=(--platform "$DOCKER_PLATFORM")
+  echo "==> Docker platform: $DOCKER_PLATFORM"
   DOCKER_RUN+=(
     -v "$ROOT:/project"
     -v "${HOME}/.m2:/root/.m2"

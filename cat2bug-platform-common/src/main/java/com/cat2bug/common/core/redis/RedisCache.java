@@ -187,8 +187,14 @@ public class RedisCache
         {
             return hasNativeKey(group, key);
         }
-        return cacheChannel.exists(group, key);
-//        return redisTemplate.hasKey(key);
+        try
+        {
+            return cacheChannel.exists(group, key);
+        }
+        catch (RuntimeException e)
+        {
+            return hasNativeKey(group, key);
+        }
     }
 
     /**
@@ -197,7 +203,18 @@ public class RedisCache
      * @return
      */
     public Collection<String> getKeys(final String group) {
-        return cacheChannel.keys(group);
+        if (useNativeFallback())
+        {
+            return nativeBucket(group).keySet();
+        }
+        try
+        {
+            return cacheChannel.keys(group);
+        }
+        catch (RuntimeException e)
+        {
+            return nativeBucket(group).keySet();
+        }
     }
 
     /**
@@ -257,10 +274,23 @@ public class RedisCache
         {
             return true;
         }
-        String[] keys = collection.toArray(new String[0]);
-        cacheChannel.evict(group, keys);
+        if (useNativeFallback())
+        {
+            Map<String, Object> bucket = nativeBucket(group);
+            collection.forEach(bucket::remove);
+            return true;
+        }
+        try
+        {
+            String[] keys = collection.toArray(new String[0]);
+            cacheChannel.evict(group, keys);
+        }
+        catch (RuntimeException e)
+        {
+            Map<String, Object> bucket = nativeBucket(group);
+            collection.forEach(bucket::remove);
+        }
         return true;
-//        return redisTemplate.delete(collection) > 0;
     }
 //
 //    /**
@@ -397,6 +427,21 @@ public class RedisCache
      */
     public Collection<String> keys(final String group, final String pattern)
     {
-        return cacheChannel.keys(group).stream().filter(n->n.indexOf(pattern)>-1).collect(Collectors.toList());
+        if (useNativeFallback())
+        {
+            return nativeBucket(group).keySet().stream()
+                    .filter(n -> n.indexOf(pattern) > -1)
+                    .collect(Collectors.toList());
+        }
+        try
+        {
+            return cacheChannel.keys(group).stream().filter(n -> n.indexOf(pattern) > -1).collect(Collectors.toList());
+        }
+        catch (RuntimeException e)
+        {
+            return nativeBucket(group).keySet().stream()
+                    .filter(n -> n.indexOf(pattern) > -1)
+                    .collect(Collectors.toList());
+        }
     }
 }

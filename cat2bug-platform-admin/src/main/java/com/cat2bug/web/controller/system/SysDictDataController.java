@@ -3,7 +3,10 @@ package com.cat2bug.web.controller.system;
 import java.util.ArrayList;
 import java.util.List;
 import jakarta.servlet.http.HttpServletResponse;
+import com.cat2bug.web.excel.ExcelHttpSupport;
+import com.cat2bug.web.service.excel.SystemExcelExportService;
 import org.springframework.beans.factory.annotation.Autowired;
+import java.io.IOException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -21,7 +24,6 @@ import com.cat2bug.common.core.domain.entity.SysDictData;
 import com.cat2bug.common.core.page.TableDataInfo;
 import com.cat2bug.common.enums.BusinessType;
 import com.cat2bug.common.utils.StringUtils;
-import com.cat2bug.common.utils.poi.ExcelUtil;
 import com.cat2bug.system.service.ISysDictDataService;
 import com.cat2bug.system.service.ISysDictTypeService;
 
@@ -38,6 +40,9 @@ public class SysDictDataController extends BaseController
     private ISysDictDataService dictDataService;
 
     @Autowired
+    private SystemExcelExportService systemExcelExportService;
+
+    @Autowired
     private ISysDictTypeService dictTypeService;
 
     @PreAuthorize("@ss.hasPermi('system:dict:list')")
@@ -52,11 +57,9 @@ public class SysDictDataController extends BaseController
     @Log(title = "字典数据", businessType = BusinessType.EXPORT)
     @PreAuthorize("@ss.hasPermi('system:dict:export')")
     @PostMapping("/export")
-    public void export(HttpServletResponse response, SysDictData dictData)
+    public void export(HttpServletResponse response, SysDictData dictData) throws IOException
     {
-        List<SysDictData> list = dictDataService.selectDictDataList(dictData);
-        ExcelUtil<SysDictData> util = new ExcelUtil<SysDictData>(SysDictData.class);
-        util.exportExcel(response, list, "字典数据");
+        ExcelHttpSupport.write(response, systemExcelExportService.exportDictData(dictData), "字典数据.xlsx");
     }
 
     /**

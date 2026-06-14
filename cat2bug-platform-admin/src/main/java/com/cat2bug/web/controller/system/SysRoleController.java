@@ -2,7 +2,10 @@ package com.cat2bug.web.controller.system;
 
 import java.util.List;
 import jakarta.servlet.http.HttpServletResponse;
+import com.cat2bug.web.excel.ExcelHttpSupport;
+import com.cat2bug.web.service.excel.SystemExcelExportService;
 import org.springframework.beans.factory.annotation.Autowired;
+import java.io.IOException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -23,7 +26,6 @@ import com.cat2bug.common.core.domain.model.LoginUser;
 import com.cat2bug.common.core.page.TableDataInfo;
 import com.cat2bug.common.enums.BusinessType;
 import com.cat2bug.common.utils.StringUtils;
-import com.cat2bug.common.utils.poi.ExcelUtil;
 import com.cat2bug.framework.web.service.SysPermissionService;
 import com.cat2bug.framework.web.service.TokenService;
 import com.cat2bug.system.domain.SysUserRole;
@@ -42,6 +44,9 @@ public class SysRoleController extends BaseController
 {
     @Autowired
     private ISysRoleService roleService;
+
+    @Autowired
+    private SystemExcelExportService systemExcelExportService;
 
     @Autowired
     private TokenService tokenService;
@@ -67,11 +72,9 @@ public class SysRoleController extends BaseController
     @Log(title = "角色管理", businessType = BusinessType.EXPORT)
     @PreAuthorize("@ss.hasPermi('system:role:export')")
     @PostMapping("/export")
-    public void export(HttpServletResponse response, SysRole role)
+    public void export(HttpServletResponse response, SysRole role) throws IOException
     {
-        List<SysRole> list = roleService.selectRoleList(role);
-        ExcelUtil<SysRole> util = new ExcelUtil<SysRole>(SysRole.class);
-        util.exportExcel(response, list, "角色数据");
+        ExcelHttpSupport.write(response, systemExcelExportService.exportRoles(role), "角色数据.xlsx");
     }
 
     /**

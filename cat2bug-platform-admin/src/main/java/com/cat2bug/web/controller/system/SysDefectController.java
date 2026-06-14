@@ -8,18 +8,20 @@ import com.cat2bug.common.core.page.TableDataInfo;
 import com.cat2bug.common.enums.BusinessType;
 import com.cat2bug.common.utils.MessageUtils;
 import com.cat2bug.common.utils.StringUtils;
-import com.cat2bug.common.utils.poi.ExcelColumnExportSupport;
-import com.cat2bug.common.utils.poi.ExcelUtil;
 import com.cat2bug.common.core.domain.entity.SysDefect;
-import com.cat2bug.system.domain.SysDefectImportTemplate;
 import com.cat2bug.system.domain.SysDefectLog;
 import com.cat2bug.system.domain.SysProjectDefectTabs;
 import com.cat2bug.system.domain.SysUserConfig;
 import com.cat2bug.system.service.*;
 import com.cat2bug.system.domain.SysProjectDefectField;
-import com.cat2bug.system.util.DefectCustomFieldExcelSupport;
 import com.cat2bug.system.util.DefectListKeywordSupport;
 import com.cat2bug.system.util.DefectListQuerySupport;
+import com.cat2bug.web.excel.ExcelHttpSupport;
+import com.cat2bug.web.service.excel.DefectExcelService;
+import com.cat2bug.web.service.excel.DefectImportTemplateService;
+import com.cat2bug.common.utils.LocaleUtils;
+import java.io.IOException;
+import java.util.Locale;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -63,6 +65,10 @@ public class SysDefectController extends BaseController
     private ISysUserProjectService sysUserProjectService;
     @Autowired
     private ISysProjectDefectFieldService sysProjectDefectFieldService;
+    @Autowired
+    private DefectExcelService defectExcelService;
+    @Autowired
+    private DefectImportTemplateService defectImportTemplateService;
     /**
      * 查询缺陷配置
      */
@@ -267,45 +273,21 @@ public class SysDefectController extends BaseController
     @PreAuthorize("@ss.hasPermi('system:defect:add')")
     @Log(title = "缺陷", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
-    public void export(HttpServletResponse response, SysDefect sysDefect) {
-        List<SysDefect> list = sysDefectService.selectSysDefectList(sysDefect).stream().map(d->{
-            if(d.getHandleByList()!=null) {
-                d.setHandleByNames(d.getHandleByList().stream().map(m->m.getNickName()).collect(Collectors.joining("/")));
-            }
-            return d;
-        }).collect(Collectors.toList());
-
-        ExcelUtil<SysDefect> util = new ExcelUtil<SysDefect>(SysDefect.class);
-        Map<String, Object> params = sysDefect.getParams() != null ? sysDefect.getParams() : new HashMap<>();
-        List<String> moduleNameList = sysModuleService.selectSysModulePathList(sysDefect.getProjectId()).stream().map(m->m.getModulePath()).collect(Collectors.toList());
-        params.put("moduleNameList", moduleNameList);
-
-        List<String> userList = sysUserProjectService.selectSysUserListByProjectId(sysDefect.getProjectId(),new SysUser()).stream().map(u->u.getNickName()).collect(Collectors.toList());
-        params.put("memberList", userList);
-        List<SysProjectDefectField> customFieldDefs = sysProjectDefectFieldService
-                .selectEnabledListByProjectId(sysDefect.getProjectId());
-        ExcelColumnExportSupport.apply(util, params, ExcelColumnExportSupport.DEFECT_DATA_MAP, null, null);
-        util.init(list, "缺陷数据", StringUtils.EMPTY, com.cat2bug.common.annotation.Excel.Type.EXPORT, params, null);
-        util.writeSheet();
-        DefectCustomFieldExcelSupport.applyCustomColumnsAfterWrite(util, params,
-                ExcelColumnExportSupport.DEFECT_DATA_MAP, null, null, list, customFieldDefs);
-        util.writeWorkbookToResponse(response);
-        org.apache.poi.util.IOUtils.closeQuietly(util.getWorkbook());
+    public void export(HttpServletResponse response, HttpServletRequest request, SysDefect sysDefect) throws IOException {
+        Map<String, Object> params = sysDefect.getParams() != null ? new HashMap<>(sysDefect.getParams()) : new HashMap<>();
+        byte[] workbook = defectExcelService.buildExportWorkbook(sysDefect, params, resolveLocale(request));
+        ExcelHttpSupport.write(response, workbook, "缺陷数据.xlsx");
     }
 
     @Log(title = "缺陷", businessType = BusinessType.IMPORT)
     @PreAuthorize("@ss.hasPermi('system:defect:add')")
     @PostMapping("/import")
-    public AjaxResult importData(MultipartFile file, boolean updateSupport) throws Exception
+    public AjaxResult importData(MultipartFile file, HttpServletRequest request, boolean updateSupport) throws Exception
     {
-        SysUserConfig userConfig = sysUserConfigService.selectSysUserConfigByUserId(getUserId());
-        Long projectId = userConfig.getCurrentProjectId();
-        List<SysProjectDefectField> customFieldDefs = sysProjectDefectFieldService.selectEnabledListByProjectId(projectId);
-        ExcelUtil<SysDefect> util = new ExcelUtil<SysDefect>(SysDefect.class);
         byte[] fileBytes = file.getBytes();
-        List<SysDefect> defectList = util.importExcel(new java.io.ByteArrayInputStream(fileBytes));
-        DefectCustomFieldExcelSupport.mergeCustomFieldsFromImport(
-                new java.io.ByteArrayInputStream(fileBytes), defectList, customFieldDefs);
+        Long projectId = defectExcelService.resolveCurrentProjectId();
+        Map<String, Object> params = new HashMap<>();
+        List<SysDefect> defectList = defectExcelService.parseImportWorkbook(fileBytes, projectId, params, resolveLocale(request));
         String message = sysDefectService.importDefect(projectId, defectList);
         if(StringUtils.isNotBlank(message)) {
             return success(message);
@@ -314,30 +296,18 @@ public class SysDefectController extends BaseController
     }
 
     @PostMapping("/importTemplate")
-    public void importTemplate(HttpServletResponse response, SysDefect sysDefect)
+    public void importTemplate(HttpServletResponse response, HttpServletRequest request, SysDefect sysDefect) throws IOException
     {
-        SysUserConfig userConfig = sysUserConfigService.selectSysUserConfigByUserId(getUserId());
         Map<String, Object> params = new HashMap<>();
         if (sysDefect != null && sysDefect.getParams() != null) {
             params.putAll(sysDefect.getParams());
         }
-        Long projectId = userConfig.getCurrentProjectId();
-        ExcelUtil<SysDefectImportTemplate> util = new ExcelUtil<SysDefectImportTemplate>(SysDefectImportTemplate.class);
-        List<String> moduleNameList = sysModuleService.selectSysModulePathList(projectId).stream().map(m->m.getModulePath()).collect(Collectors.toList());
-        params.put("moduleNameList", moduleNameList);
+        byte[] workbook = defectImportTemplateService.buildTemplateWorkbook(params, resolveLocale(request));
+        ExcelHttpSupport.write(response, workbook, MessageUtils.message("defect.test_defect") + ".xlsx");
+    }
 
-        List<String> userList = sysUserProjectService.selectSysUserListByProjectId(projectId,new SysUser()).stream().map(u->u.getNickName()).collect(Collectors.toList());
-        params.put("memberList", userList);
-        List<SysProjectDefectField> customFieldDefs = sysProjectDefectFieldService.selectEnabledListByProjectId(projectId);
-        ExcelColumnExportSupport.apply(util, params, ExcelColumnExportSupport.DEFECT_TEMPLATE_MAP,
-                ExcelColumnExportSupport.DEFECT_TEMPLATE_REQUIRED, null);
-        util.init(null, MessageUtils.message("defect.test_defect"), StringUtils.EMPTY,
-                com.cat2bug.common.annotation.Excel.Type.IMPORT, params, null);
-        util.writeSheet();
-        DefectCustomFieldExcelSupport.applyCustomColumnsAfterWrite(util, params,
-                ExcelColumnExportSupport.DEFECT_TEMPLATE_MAP, ExcelColumnExportSupport.DEFECT_TEMPLATE_REQUIRED,
-                null, Collections.emptyList(), customFieldDefs);
-        util.writeWorkbookToResponse(response);
-        org.apache.poi.util.IOUtils.closeQuietly(util.getWorkbook());
+    private static Locale resolveLocale(HttpServletRequest request) {
+        String language = request != null ? request.getHeader("language") : null;
+        return LocaleUtils.parseLanguageHeader(language);
     }
 }

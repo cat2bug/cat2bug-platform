@@ -7,7 +7,6 @@ import com.cat2bug.common.core.domain.entity.SysRole;
 import com.cat2bug.common.core.page.TableDataInfo;
 import com.cat2bug.common.enums.BusinessType;
 import com.cat2bug.common.utils.MessageUtils;
-import com.cat2bug.common.utils.poi.ExcelUtil;
 import com.cat2bug.framework.web.service.SysLoginService;
 import com.cat2bug.framework.web.service.SysPermissionService;
 import com.cat2bug.system.domain.SysProject;
@@ -19,7 +18,10 @@ import com.cat2bug.system.service.ISysUserConfigService;
 import com.cat2bug.system.service.ISysUserProjectService;
 import com.cat2bug.web.vo.PullProject;
 import com.google.common.base.Preconditions;
+import com.cat2bug.web.excel.ExcelHttpSupport;
+import com.cat2bug.web.service.excel.SystemExcelExportService;
 import org.springframework.beans.factory.annotation.Autowired;
+import java.io.IOException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,6 +41,9 @@ public class SysProjectController extends BaseController
 {
     @Autowired
     private SysLoginService loginService;
+
+    @Autowired
+    private SystemExcelExportService systemExcelExportService;
 
     @Autowired
     private ISysProjectService sysProjectService;
@@ -73,11 +78,9 @@ public class SysProjectController extends BaseController
     @PreAuthorize("@ss.hasPermi('system:project:export')")
     @Log(title = "项目", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
-    public void export(HttpServletResponse response, SysProject sysProject)
+    public void export(HttpServletResponse response, SysProject sysProject) throws IOException
     {
-        List<SysProject> list = sysProjectService.selectSysProjectList(sysProject);
-        ExcelUtil<SysProject> util = new ExcelUtil<SysProject>(SysProject.class);
-        util.exportExcel(response, list, "项目数据");
+        ExcelHttpSupport.write(response, systemExcelExportService.exportProjects(sysProject), "项目数据.xlsx");
     }
 
     /**

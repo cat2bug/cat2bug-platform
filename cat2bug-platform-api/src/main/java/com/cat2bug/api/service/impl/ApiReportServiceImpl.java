@@ -20,7 +20,7 @@ import com.cat2bug.common.utils.DateUtils;
 import com.cat2bug.common.utils.MessageUtils;
 import com.cat2bug.common.utils.SecurityUtils;
 import com.google.common.base.Preconditions;
-import org.apache.commons.collections4.ListUtils;
+import com.google.common.collect.Lists;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -118,7 +118,7 @@ public class ApiReportServiceImpl implements IApiReportService {
      * @param list          缺陷列表
      */
     void insertDefects(List<Long> handlerIds,List<ApiDefectRequest> list) {
-        List<List<ApiDefectRequest>> partition = ListUtils.partition(list,50);
+        List<List<ApiDefectRequest>> partition = Lists.partition(list, 50);
         AtomicLong count = new AtomicLong(apiDefectMapper.getProjectDefectMaxNum(this.apiService.getProjectId()));
         for(List<ApiDefectRequest> l : partition) {
             l.forEach(ll-> {

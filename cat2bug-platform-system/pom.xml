@@ -44,6 +44,17 @@
             <groupId>cn.hutool</groupId>
             <artifactId>hutool-all</artifactId>
         </dependency>
+        <!-- @Excel 注解与 JVM 导出路径；Native profile 下 scope=provided，不进入镜像 -->
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi</artifactId>
+            <scope>${excel.poi.scope}</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <scope>${excel.poi.scope}</scope>
+        </dependency>
 
         <!-- JUnit 测试依赖 -->
         <dependency>
@@ -67,5 +78,27 @@
         </dependency>
 
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>native</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <configuration combine.children="append">
+                            <excludes combine.children="append">
+                                <exclude>**/util/DefectCustomFieldExcelSupport.java</exclude>
+                            </excludes>
+                            <testExcludes combine.children="append">
+                                <testExclude>**/util/DefectCustomFieldExcelSupportTest.java</testExclude>
+                            </testExcludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>

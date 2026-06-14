@@ -6,11 +6,13 @@ import com.cat2bug.common.core.domain.AjaxResult;
 import com.cat2bug.common.core.page.TableDataInfo;
 import com.cat2bug.common.enums.BusinessType;
 import com.cat2bug.common.utils.MessageUtils;
-import com.cat2bug.common.utils.poi.ExcelUtil;
 import com.cat2bug.framework.web.service.PermissionService;
 import com.cat2bug.system.domain.SysDocument;
 import com.cat2bug.system.service.ISysDocumentService;
+import com.cat2bug.web.excel.ExcelHttpSupport;
+import com.cat2bug.web.service.excel.SystemExcelExportService;
 import org.springframework.beans.factory.annotation.Autowired;
+import java.io.IOException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,6 +31,9 @@ public class SysDocumentController extends BaseController
 {
     @Autowired
     private ISysDocumentService sysDocumentService;
+
+    @Autowired
+    private SystemExcelExportService systemExcelExportService;
     @Autowired
     private PermissionService permissionService;
     /**
@@ -49,11 +54,9 @@ public class SysDocumentController extends BaseController
     @PreAuthorize("@ss.hasPermi('system:document:export')")
     @Log(title = "文档", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
-    public void export(HttpServletResponse response, SysDocument sysDocument)
+    public void export(HttpServletResponse response, SysDocument sysDocument) throws IOException
     {
-        List<SysDocument> list = sysDocumentService.selectSysDocumentList(sysDocument);
-        ExcelUtil<SysDocument> util = new ExcelUtil<SysDocument>(SysDocument.class);
-        util.exportExcel(response, list, "文档数据");
+        ExcelHttpSupport.write(response, systemExcelExportService.exportDocuments(sysDocument), "文档数据.xlsx");
     }
 
     /**

@@ -7,14 +7,16 @@ import com.cat2bug.common.core.domain.entity.SysDefect;
 import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.common.core.page.TableDataInfo;
 import com.cat2bug.common.enums.BusinessType;
-import com.cat2bug.common.utils.poi.ExcelUtil;
 import com.cat2bug.system.domain.SysPlan;
 import com.cat2bug.system.service.ISysModuleService;
 import com.cat2bug.system.service.ISysPlanService;
 import com.cat2bug.system.service.ISysUserProjectService;
 import com.cat2bug.system.util.DefectListKeywordSupport;
 import com.cat2bug.system.util.DefectListQuerySupport;
+import com.cat2bug.web.excel.ExcelHttpSupport;
+import com.cat2bug.web.service.excel.SystemExcelExportService;
 import org.springframework.beans.factory.annotation.Autowired;
+import java.io.IOException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,6 +36,9 @@ public class SysPlanController extends BaseController
 {
     @Autowired
     private ISysPlanService sysPlanService;
+
+    @Autowired
+    private SystemExcelExportService systemExcelExportService;
     @Autowired
     private ISysModuleService sysModuleService;
     @Autowired
@@ -57,11 +62,9 @@ public class SysPlanController extends BaseController
     @PreAuthorize("@ss.hasPermi('system:plan:export')")
     @Log(title = "测试计划", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
-    public void export(HttpServletResponse response, SysPlan sysPlan)
+    public void export(HttpServletResponse response, SysPlan sysPlan) throws IOException
     {
-        List<SysPlan> list = sysPlanService.selectSysPlanList(sysPlan);
-        ExcelUtil<SysPlan> util = new ExcelUtil<SysPlan>(SysPlan.class);
-        util.exportExcel(response, list, "测试计划数据");
+        ExcelHttpSupport.write(response, systemExcelExportService.exportPlans(sysPlan), "测试计划数据.xlsx");
     }
 
     /**

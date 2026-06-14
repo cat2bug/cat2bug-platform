@@ -5,10 +5,12 @@ import com.cat2bug.common.core.controller.BaseController;
 import com.cat2bug.common.core.domain.AjaxResult;
 import com.cat2bug.common.core.page.TableDataInfo;
 import com.cat2bug.common.enums.BusinessType;
-import com.cat2bug.common.utils.poi.ExcelUtil;
 import com.cat2bug.system.domain.SysProjectApi;
 import com.cat2bug.system.service.ISysProjectApiService;
+import com.cat2bug.web.excel.ExcelHttpSupport;
+import com.cat2bug.web.service.excel.SystemExcelExportService;
 import org.springframework.beans.factory.annotation.Autowired;
+import java.io.IOException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,6 +30,9 @@ public class SysProjectApiController extends BaseController
     @Autowired
     private ISysProjectApiService sysProjectApiService;
 
+    @Autowired
+    private SystemExcelExportService systemExcelExportService;
+
     /**
      * 查询项目API列表
      */
@@ -46,11 +51,9 @@ public class SysProjectApiController extends BaseController
     @PreAuthorize("@ss.hasPermi('system:api:export')")
     @Log(title = "项目API", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
-    public void export(HttpServletResponse response, SysProjectApi sysProjectApi)
+    public void export(HttpServletResponse response, SysProjectApi sysProjectApi) throws IOException
     {
-        List<SysProjectApi> list = sysProjectApiService.selectSysProjectApiList(sysProjectApi);
-        ExcelUtil<SysProjectApi> util = new ExcelUtil<SysProjectApi>(SysProjectApi.class);
-        util.exportExcel(response, list, "项目API数据");
+        ExcelHttpSupport.write(response, systemExcelExportService.exportProjectApis(sysProjectApi), "项目API数据.xlsx");
     }
 
     /**

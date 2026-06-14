@@ -8,7 +8,6 @@ import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.common.core.page.TableDataInfo;
 import com.cat2bug.common.enums.BusinessType;
 import com.cat2bug.common.utils.StringUtils;
-import com.cat2bug.common.utils.poi.ExcelUtil;
 import com.cat2bug.system.domain.SysTeam;
 import com.cat2bug.system.domain.SysUserTeam;
 import com.cat2bug.system.domain.vo.BatchUserRoleVo;
@@ -16,7 +15,10 @@ import com.cat2bug.system.service.ISysRoleService;
 import com.cat2bug.system.service.ISysTeamService;
 import com.cat2bug.system.service.ISysUserTeamRoleService;
 import com.cat2bug.system.service.ISysUserTeamService;
+import com.cat2bug.web.excel.ExcelHttpSupport;
+import com.cat2bug.web.service.excel.SystemExcelExportService;
 import org.springframework.beans.factory.annotation.Autowired;
+import java.io.IOException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,6 +41,9 @@ public class SysTeamController extends BaseController
 {
     @Autowired
     private ISysRoleService roleService;
+
+    @Autowired
+    private SystemExcelExportService systemExcelExportService;
 
     @Autowired
     private ISysTeamService sysTeamService;
@@ -116,11 +121,9 @@ public class SysTeamController extends BaseController
     @PreAuthorize("@ss.hasPermi('system:team:export')")
     @Log(title = "团队", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
-    public void export(HttpServletResponse response, SysTeam sysTeam)
+    public void export(HttpServletResponse response, SysTeam sysTeam) throws IOException
     {
-        List<SysTeam> list = sysTeamService.selectSysTeamList(sysTeam);
-        ExcelUtil<SysTeam> util = new ExcelUtil<SysTeam>(SysTeam.class);
-        util.exportExcel(response, list, "团队数据");
+        ExcelHttpSupport.write(response, systemExcelExportService.exportTeams(sysTeam), "团队数据.xlsx");
     }
 
     /**

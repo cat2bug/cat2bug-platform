@@ -97,6 +97,65 @@ public final class ExcelColumnExportSupport
     {
     }
 
+    public static List<String> resolveOrderedFieldNames(Map<String, Object> params, Map<String, String> propToField,
+            Set<String> requiredFields, Set<String> templateExcludedProps)
+    {
+        if (params == null || propToField == null)
+        {
+            return Collections.emptyList();
+        }
+        JSONArray columns = parseExportColumns(params.get(PARAM_EXPORT_COLUMNS));
+        if (columns == null || columns.isEmpty())
+        {
+            return Collections.emptyList();
+        }
+        String scope = String.valueOf(params.getOrDefault(PARAM_EXPORT_SCOPE, SCOPE_DATA));
+        if (requiredFields == null)
+        {
+            requiredFields = Collections.emptySet();
+        }
+        if (templateExcludedProps == null)
+        {
+            templateExcludedProps = Collections.emptySet();
+        }
+        List<String> orderedFieldNames = new ArrayList<>();
+        for (int i = 0; i < columns.size(); i++)
+        {
+            JSONObject col = columns.getJSONObject(i);
+            if (col == null)
+            {
+                continue;
+            }
+            String prop = col.getString("prop");
+            String key = col.getString("key");
+            boolean visible = col.getBooleanValue("visible");
+            if (SCOPE_IMPORT_TEMPLATE.equals(scope)
+                    && (templateExcludedProps.contains(prop) || templateExcludedProps.contains(key)))
+            {
+                continue;
+            }
+            String fieldName = resolveFieldName(propToField, prop, key);
+            if (fieldName == null)
+            {
+                continue;
+            }
+            boolean include;
+            if (SCOPE_IMPORT_TEMPLATE.equals(scope))
+            {
+                include = visible || requiredFields.contains(fieldName);
+            }
+            else
+            {
+                include = visible;
+            }
+            if (include)
+            {
+                orderedFieldNames.add(fieldName);
+            }
+        }
+        return orderedFieldNames;
+    }
+
     /**
      * 按 exportColumns / exportScope 设置 ExcelUtil 的列白名单。
      *

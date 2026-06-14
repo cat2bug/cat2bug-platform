@@ -5,10 +5,12 @@ import com.cat2bug.common.core.controller.BaseController;
 import com.cat2bug.common.core.domain.AjaxResult;
 import com.cat2bug.common.core.page.TableDataInfo;
 import com.cat2bug.common.enums.BusinessType;
-import com.cat2bug.common.utils.poi.ExcelUtil;
 import com.cat2bug.system.domain.SysUserStatisticTemplate;
 import com.cat2bug.system.service.ISysUserStatisticTemplateService;
+import com.cat2bug.web.excel.ExcelHttpSupport;
+import com.cat2bug.web.service.excel.SystemExcelExportService;
 import org.springframework.beans.factory.annotation.Autowired;
+import java.io.IOException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,6 +30,9 @@ public class SysUserStatisticTemplateController extends BaseController
     @Autowired
     private ISysUserStatisticTemplateService sysUserStatisticTemplateService;
 
+    @Autowired
+    private SystemExcelExportService systemExcelExportService;
+
     /**
      * 查询用户统计模版列表
      */
@@ -46,11 +51,9 @@ public class SysUserStatisticTemplateController extends BaseController
     @PreAuthorize("@ss.hasPermi('system:statistic:export')")
     @Log(title = "用户统计模版", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
-    public void export(HttpServletResponse response, SysUserStatisticTemplate sysUserStatisticTemplate)
+    public void export(HttpServletResponse response, SysUserStatisticTemplate sysUserStatisticTemplate) throws IOException
     {
-        List<SysUserStatisticTemplate> list = sysUserStatisticTemplateService.selectSysUserStatisticTemplateList(sysUserStatisticTemplate);
-        ExcelUtil<SysUserStatisticTemplate> util = new ExcelUtil<SysUserStatisticTemplate>(SysUserStatisticTemplate.class);
-        util.exportExcel(response, list, "用户统计模版数据");
+        ExcelHttpSupport.write(response, systemExcelExportService.exportStatisticTemplates(sysUserStatisticTemplate), "用户统计模版数据.xlsx");
     }
 
     /**

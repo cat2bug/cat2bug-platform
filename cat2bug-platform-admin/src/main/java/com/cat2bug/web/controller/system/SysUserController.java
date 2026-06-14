@@ -6,6 +6,11 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import com.cat2bug.system.domain.SysTeam;
 import org.apache.commons.lang3.ArrayUtils;
+import com.cat2bug.web.excel.ExcelHttpSupport;
+import com.cat2bug.web.service.excel.UserExcelExportService;
+import com.cat2bug.web.service.excel.UserExcelImportService;
+import com.cat2bug.web.service.excel.UserImportTemplateService;
+import java.io.IOException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -28,7 +33,6 @@ import com.cat2bug.common.core.page.TableDataInfo;
 import com.cat2bug.common.enums.BusinessType;
 import com.cat2bug.common.utils.SecurityUtils;
 import com.cat2bug.common.utils.StringUtils;
-import com.cat2bug.common.utils.poi.ExcelUtil;
 import com.cat2bug.system.service.ISysDeptService;
 import com.cat2bug.system.service.ISysPostService;
 import com.cat2bug.system.service.ISysRoleService;
@@ -45,6 +49,15 @@ public class SysUserController extends BaseController
 {
     @Autowired
     private ISysUserService userService;
+
+    @Autowired
+    private UserImportTemplateService userImportTemplateService;
+
+    @Autowired
+    private UserExcelImportService userExcelImportService;
+
+    @Autowired
+    private UserExcelExportService userExcelExportService;
 
     @Autowired
     private ISysRoleService roleService;
@@ -70,31 +83,30 @@ public class SysUserController extends BaseController
     @Log(title = "用户管理", businessType = BusinessType.EXPORT)
     @PreAuthorize("@ss.hasPermi('system:user:export')")
     @PostMapping("/export")
-    public void export(HttpServletResponse response, SysUser user)
+    public void export(HttpServletResponse response, SysUser user) throws IOException
     {
-        List<SysUser> list = userService.selectUserList(user);
-        ExcelUtil<SysUser> util = new ExcelUtil<SysUser>(SysUser.class);
-        util.exportExcel(response, list, "用户数据");
+        ExcelHttpSupport.write(response, userExcelExportService.buildExportWorkbook(user), "用户数据.xlsx");
     }
+
 
     @Log(title = "用户管理", businessType = BusinessType.IMPORT)
     @PreAuthorize("@ss.hasPermi('system:user:import')")
     @PostMapping("/importData")
     public AjaxResult importData(MultipartFile file, boolean updateSupport) throws Exception
     {
-        ExcelUtil<SysUser> util = new ExcelUtil<SysUser>(SysUser.class);
-        List<SysUser> userList = util.importExcel(file.getInputStream());
+        List<SysUser> userList = userExcelImportService.parseWorkbook(file.getInputStream());
         String operName = getUsername();
         String message = userService.importUser(userList, updateSupport, operName);
         return success(message);
     }
 
+
     @PostMapping("/importTemplate")
-    public void importTemplate(HttpServletResponse response)
+    public void importTemplate(HttpServletResponse response) throws IOException
     {
-        ExcelUtil<SysUser> util = new ExcelUtil<SysUser>(SysUser.class);
-        util.importTemplateExcel(response, "用户数据");
+        ExcelHttpSupport.write(response, userImportTemplateService.buildTemplateWorkbook(), "用户数据.xlsx");
     }
+
 
     /**
      * 根据用户编号获取详细信息

@@ -107,6 +107,18 @@
             <artifactId>cat2bug-quartz</artifactId>
         </dependency>
 
+        <!-- FastExcel（Native 默认 Excel 引擎，JVM 与 POI 双实现并存） -->
+        <dependency>
+            <groupId>org.dhatim</groupId>
+            <artifactId>fastexcel</artifactId>
+            <version>${fastexcel.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.dhatim</groupId>
+            <artifactId>fastexcel-reader</artifactId>
+            <version>${fastexcel.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
@@ -161,8 +173,32 @@
         </profile>
         <profile>
             <id>native</id>
+            <dependencies>
+                <!-- process-aot 需 POI 在 classpath；common 中 provided 不传递，admin 显式声明 -->
+                <dependency>
+                    <groupId>org.apache.poi</groupId>
+                    <artifactId>poi</artifactId>
+                    <scope>compile</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.poi</groupId>
+                    <artifactId>poi-ooxml</artifactId>
+                    <scope>compile</scope>
+                </dependency>
+            </dependencies>
             <build>
                 <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <configuration combine.children="append">
+                            <excludes combine.children="append">
+                                <exclude>**/web/excel/Poi*.java</exclude>
+                                <exclude>**/web/service/excel/Poi*.java</exclude>
+                                <exclude>**/web/service/DefectTrendExcelExport.java</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-dependency-plugin</artifactId>
@@ -217,6 +253,7 @@
                                 <buildArg>-H:IncludeResources=db/migration/.*\.sql</buildArg>
                                 <buildArg>--report-unsupported-elements-at-runtime</buildArg>
                                 <buildArg>--initialize-at-run-time=org.apache.logging.log4j,org.apache.logging.slf4j,com.github.benmanes.caffeine,io.jsonwebtoken</buildArg>
+                                <buildArg>--initialize-at-build-time=com.fasterxml.aalto</buildArg>
                             </buildArgs>
                         </configuration>
                         <executions>

@@ -9,7 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import com.cat2bug.common.annotation.Log;
 import com.cat2bug.common.enums.BusinessType;
-import com.cat2bug.web.service.DefectTrendExcelExport;
+import com.cat2bug.web.excel.ExcelHttpSupport;
+import com.cat2bug.web.service.excel.DefectTrendExcelExportService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -33,7 +35,7 @@ public class SysDefectStatisticController extends BaseController {
     @Autowired
     private ISysDefectStatisticService sysDefectStatisticService;
     @Autowired
-    private DefectTrendExcelExport defectTrendExcelExport;
+    private DefectTrendExcelExportService defectTrendExcelExportService;
     /**
      * 获取缺陷分类统计
      */
@@ -185,9 +187,10 @@ public class SysDefectStatisticController extends BaseController {
     @PostMapping(value = "/defect-state-line/{projectId}/export")
     public void exportDefectStateLine(HttpServletResponse response,
                                       @PathVariable("projectId") Long projectId,
-                                      @RequestParam("timeType") String timeType) throws Exception
+                                      @RequestParam("timeType") String timeType) throws IOException
     {
-        defectTrendExcelExport.exportDefectStateLine(response, projectId, timeType);
+        byte[] workbook = defectTrendExcelExportService.exportDefectStateLine(projectId, timeType);
+        ExcelHttpSupport.write(response, workbook, "缺陷状态走势.xlsx");
     }
 
     @PreAuthorize("@ss.hasPermi('system:defect:query')")
@@ -195,8 +198,9 @@ public class SysDefectStatisticController extends BaseController {
     @PostMapping(value = "/member-defect-line/{projectId}/export")
     public void exportMemberDefectLine(HttpServletResponse response,
                                        @PathVariable("projectId") Long projectId,
-                                       @RequestParam("timeType") String timeType) throws Exception
+                                       @RequestParam("timeType") String timeType) throws IOException
     {
-        defectTrendExcelExport.exportMemberDefectLine(response, projectId, timeType);
+        byte[] workbook = defectTrendExcelExportService.exportMemberDefectLine(projectId, timeType);
+        ExcelHttpSupport.write(response, workbook, "成员缺陷走势.xlsx");
     }
 }

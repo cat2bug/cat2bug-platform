@@ -9,18 +9,25 @@ import com.cat2bug.common.enums.BusinessType;
 import com.cat2bug.common.utils.MessageUtils;
 import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.common.utils.poi.ExcelColumnExportSupport;
-import com.cat2bug.common.utils.poi.ExcelUtil;
 import com.cat2bug.system.domain.SysCase;
 import com.cat2bug.system.domain.vo.ExcelImportResultVo;
 import com.cat2bug.system.service.IMemberFocusService;
 import com.cat2bug.system.service.ISysCaseService;
 import com.cat2bug.system.service.ISysModuleService;
 import com.cat2bug.system.service.ISysReportService;
+import com.cat2bug.web.excel.ExcelHttpSupport;
+import com.cat2bug.web.service.excel.CaseExcelExportService;
+import com.cat2bug.web.service.excel.CaseExcelImportService;
+import com.cat2bug.web.service.excel.CaseImportTemplateService;
+import com.cat2bug.common.utils.LocaleUtils;
+import java.io.IOException;
+import java.util.Locale;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.List;
@@ -44,6 +51,15 @@ public class SysCaseController extends BaseController
 
     @Autowired
     private ISysCaseService sysCaseService;
+
+    @Autowired
+    private CaseImportTemplateService caseImportTemplateService;
+
+    @Autowired
+    private CaseExcelImportService caseExcelImportService;
+
+    @Autowired
+    private CaseExcelExportService caseExcelExportService;
     @Autowired
     private ISysModuleService sysModuleService;
 
@@ -92,12 +108,8 @@ public class SysCaseController extends BaseController
     @PreAuthorize("@ss.hasPermi('system:case:export')")
     @Log(title = "测试用例", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
-    public void export(HttpServletResponse response, SysCase sysCase)
+    public void export(HttpServletResponse response, HttpServletRequest request, SysCase sysCase) throws IOException
     {
-        List<SysCase> list = sysCaseService.selectSysCaseList(sysCase);
-        for (SysCase c : list) {
-            c.setCaseExportUpdateTime(c.getUpdateTime());
-        }
         Map<String, Object> params = new HashMap<>();
         params.put("type", "export");
         if (sysCase.getParams() != null) {
@@ -107,10 +119,10 @@ public class SysCaseController extends BaseController
                 params.put("host", String.valueOf(host).trim());
             }
         }
-        ExcelUtil<SysCase> util = new ExcelUtil<SysCase>(SysCase.class);
-        ExcelColumnExportSupport.apply(util, params, ExcelColumnExportSupport.CASE_DATA_MAP, null, null);
-        util.exportExcel(response, list, "测试用例数据", params);
+        byte[] workbook = caseExcelExportService.buildExportWorkbook(sysCase, params, resolveLocale(request));
+        ExcelHttpSupport.write(response, workbook, "测试用例数据.xlsx");
     }
+
 
     /**
      * 导入数据
@@ -122,13 +134,14 @@ public class SysCaseController extends BaseController
     @Log(title = "测试用例", businessType = BusinessType.IMPORT)
     @PreAuthorize("@ss.hasPermi('system:case:import')")
     @PostMapping("/importData")
-    public AjaxResult importData(MultipartFile file, Long projectId) throws Exception
+    public AjaxResult importData(MultipartFile file, Long projectId, HttpServletRequest request) throws Exception
     {
-        ExcelUtil<SysCase> util = new ExcelUtil<SysCase>(SysCase.class);
-        List<SysCase> caseList = util.importExcel(file.getInputStream());
+        Map<String, Object> params = new HashMap<>();
+        List<SysCase> caseList = caseExcelImportService.parseWorkbook(file.getInputStream(), projectId, params, resolveLocale(request));
         ExcelImportResultVo message = sysCaseService.importCase(caseList, projectId);
         return success(message);
     }
+
 
     /**
      * 下载导入模版
@@ -136,17 +149,21 @@ public class SysCaseController extends BaseController
      * @param projectId 项目id
      */
     @PostMapping("/importTemplate")
-    public void importTemplate(HttpServletResponse response, Long projectId, SysCase sysCase)
+    public void importTemplate(HttpServletResponse response, HttpServletRequest request, Long projectId, SysCase sysCase) throws IOException
     {
         Map<String, Object> params = new HashMap<>();
         if (sysCase != null && sysCase.getParams() != null) {
             params.putAll(sysCase.getParams());
         }
-        ExcelUtil<SysCase> util = new ExcelUtil<SysCase>(SysCase.class);
-        ExcelColumnExportSupport.apply(util, params, ExcelColumnExportSupport.CASE_TEMPLATE_MAP,
-                ExcelColumnExportSupport.CASE_TEMPLATE_REQUIRED, ExcelColumnExportSupport.CASE_TEMPLATE_EXCLUDED);
-        util.importTemplateExcel(response, MessageUtils.message("case.test_case"), params);
+        byte[] workbook = caseImportTemplateService.buildTemplateWorkbook(projectId, params, resolveLocale(request));
+        ExcelHttpSupport.write(response, workbook, MessageUtils.message("case.test_case") + ".xlsx");
     }
+
+    private static Locale resolveLocale(HttpServletRequest request) {
+        String language = request != null ? request.getHeader("language") : null;
+        return LocaleUtils.parseLanguageHeader(language);
+    }
+
 
     /**
      * 获取测试用例详细信息

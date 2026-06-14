@@ -52,6 +52,7 @@
         <native.image.jvmargs>-J-Xmx5g -H:DeadlockWatchdogInterval=7200</native.image.jvmargs>
         <native.image.threads>4</native.image.threads>
         <fastexcel.version>0.20.1</fastexcel.version>
+        <excel.poi.scope>compile</excel.poi.scope>
         <!-- native profile 设为 exec，主 artifact 保持 thin JAR 供 native-image 使用 -->
         <repackage.classifier></repackage.classifier>
     </properties>
@@ -370,6 +371,7 @@
                 <repackage.classifier>exec</repackage.classifier>
                 <spring-boot.aot.enabled>true</spring-boot.aot.enabled>
                 <spring.profiles.active>native</spring.profiles.active>
+                <excel.poi.scope>provided</excel.poi.scope>
             </properties>
         </profile>
         <profile>

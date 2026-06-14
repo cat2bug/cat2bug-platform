@@ -102,14 +102,16 @@
             <artifactId>commons-io</artifactId>
         </dependency>
 
-        <!-- excel工具（-Pslim-jar 时 spring-boot repackage 剔除 POI 栈） -->
+        <!-- excel工具（Native profile 下 scope=provided，运行时走 FastExcel） -->
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>
+            <scope>${excel.poi.scope}</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
+            <scope>${excel.poi.scope}</scope>
         </dependency>
         <!-- yml解析器 -->
         <dependency>

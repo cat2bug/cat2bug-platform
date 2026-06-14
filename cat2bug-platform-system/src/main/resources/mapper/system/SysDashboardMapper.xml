@@ -160,10 +160,10 @@
         count(*) as defect_count,
         <choose>
             <when test="timeType=='month'">
-                PARSEDATETIME(FORMATDATETIME(update_time, '%Y-%m'), '%Y-%m') AS defect_time,
+                FORMATDATETIME(update_time, 'yyyy-MM') AS defect_time,
             </when>
             <otherwise>
-                PARSEDATETIME(FORMATDATETIME(update_time, '%Y-%m-%d'), '%Y-%m-%d') AS defect_time,
+                FORMATDATETIME(update_time, 'yyyy-MM-dd') AS defect_time,
             </otherwise>
         </choose>
         defect_state
@@ -215,7 +215,7 @@
     <select id="planBurndown" parameterType="String" resultMap="SysColumnsInChartResult" databaseId="h2">
         SELECT
             plan_id,
-            PARSEDATETIME(FORMATDATETIME(update_time, '%Y-%m-%d'), '%Y-%m-%d') AS handle_time,
+            FORMATDATETIME(update_time, 'yyyy-MM-dd') AS handle_time,
             SUM( CASE WHEN plan_item_state = 'pass' THEN 1 ELSE 0 END ) AS pass_count
         FROM
             sys_plan_item pi
@@ -287,7 +287,7 @@
                 SELECT
                     l.create_by AS update_by_id,
                     count( DISTINCT l.defect_id ) AS defect_total,
-                    count( DISTINCT CASE WHEN PARSEDATETIME(FORMATDATETIME(l.create_time, '%Y-%m-%d'), '%Y-%m-%d') = PARSEDATETIME(FORMATDATETIME(NOW(), '%Y-%m-%d'), '%Y-%m-%d') THEN l.defect_id ELSE NULL END ) AS defect_today_count
+                    count( DISTINCT CASE WHEN FORMATDATETIME(l.create_time, 'yyyy-MM-dd') = FORMATDATETIME(NOW(), 'yyyy-MM-dd') THEN l.defect_id ELSE NULL END ) AS defect_today_count
                 FROM
                     sys_defect_log l
                         JOIN sys_defect e ON e.defect_id = l.defect_id
@@ -353,10 +353,10 @@
         e.project_id,
         <choose>
             <when test="timeType=='month'">
-                PARSEDATETIME(FORMATDATETIME(l.create_time, '%Y-%m'), '%Y-%m') AS create_time,
+                FORMATDATETIME(l.create_time, 'yyyy-MM') AS create_time,
             </when>
             <otherwise>
-                PARSEDATETIME(FORMATDATETIME(l.create_time, '%Y-%m-%d'), '%Y-%m') AS create_time,
+                FORMATDATETIME(l.create_time, 'yyyy-MM-dd') AS create_time,
             </otherwise>
         </choose>
         l.create_by AS update_by_id,

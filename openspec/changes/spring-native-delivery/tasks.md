@@ -30,7 +30,7 @@
 - [ ] 2.7 Quartz：定时 Job Native 启动无报错（或 Native profile 改用 `@Scheduled` + 文档说明差异）
 - [ ] 2.8 Setup 向导：`/setup/status`、test/submit、H2/MySQL 安装写 `config/install`、安装后重启流程 — 2026-06-14：`GET /setup/status` L5 冒烟通过；完整安装流程待验
 - [ ] 2.9 Upgrade 向导：pending 检测、submit/retry/rollback、Legacy 库抽样
-- [ ] 2.10 Excel：cherry-pick Quarkus **FastExcel** 路径；Native **排除 POI**；导入导出冒烟
+- [ ] 2.10 Excel：cherry-pick Quarkus **FastExcel** 路径；Native **排除 POI**；导入导出冒烟 — **部分完成（2026-06-14）**：SPI + 业务服务已移植；P0 Controller 已接线；FastExcel 单测 2 项通过；`deploy/test/native-excel-smoke.sh` **5/5 通过**（arm64 Native @2020）；修复 H2 `SysDashboardMapper` FORMATDATETIME；Native 构建需 admin 显式 POI compile（process-aot）+ `--initialize-at-build-time=com.fasterxml.aalto`；**POI 仍可达**（binary strings ~60 处，待 Phase 2 后续剔除 monitor/ExcelUtil 路径）
 - [ ] 2.11 Captcha：cherry-pick **CaptchaPngRenderer**（无 AWT）；`/captchaImage` Native 验证 — 2026-06-14：`GET /captchaImage` L1/L5 冒烟通过；`libawt.so` 剔除待验
 - [ ] 2.12 native profile 排除：generator、devtools、Knife4j UI、swagger-ui
 - [ ] 2.13 回归：`mvn test` 关键模块通过；编写 `PHASE-2.md` 手工清单（对照 JVM 版）

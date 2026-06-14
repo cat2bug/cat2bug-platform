@@ -53,7 +53,7 @@ public final class DefectCustomFieldExcelSupport {
         }
         com.alibaba.fastjson2.JSONArray exportColumns = parseExportColumns(
                 params.get(ExcelColumnExportSupport.PARAM_EXPORT_COLUMNS));
-        List<ColumnSlot> slots = buildOrderedSlots(params, propToField, requiredFields, templateExcludedProps);
+        List<ColumnSlot> slots = buildOrderedSlotsInternal(params, propToField, requiredFields, templateExcludedProps);
         List<ColumnSlot> customSlots = slots.stream().filter(ColumnSlot::isCustom).collect(Collectors.toList());
         Map<String, SysProjectDefectField> defByKey = indexDefinitions(fieldDefinitions);
         Sheet sheet = util.getSheet();
@@ -150,7 +150,58 @@ public final class DefectCustomFieldExcelSupport {
         }
     }
 
-    private static List<ColumnSlot> buildOrderedSlots(Map<String, Object> params, Map<String, String> propToField,
+    /**
+     * 从二维表文本合并自定义字段（B9 FastExcel：无 POI 依赖）。
+     */
+    public static void mergeCustomFieldsFromRows(List<List<String>> rows, List<SysDefect> defects,
+            List<SysProjectDefectField> fieldDefinitions) {
+        if (rows == null || rows.isEmpty() || defects == null || defects.isEmpty()
+                || fieldDefinitions == null || fieldDefinitions.isEmpty()) {
+            return;
+        }
+        int headerRowIndex = findHeaderRowIndex(rows);
+        if (headerRowIndex < 0 || headerRowIndex >= rows.size()) {
+            return;
+        }
+        List<String> headerCells = rows.get(headerRowIndex);
+        Map<Integer, SysProjectDefectField> colIndexToDef = mapCustomColumnsByHeader(headerCells, fieldDefinitions);
+        if (colIndexToDef.isEmpty()) {
+            return;
+        }
+        for (int r = headerRowIndex + 1; r < rows.size(); r++) {
+            List<String> row = rows.get(r);
+            if (row == null || isEmptyTextRow(row)) {
+                continue;
+            }
+            int defectIndex = r - headerRowIndex - 1;
+            if (defectIndex < 0 || defectIndex >= defects.size()) {
+                break;
+            }
+            SysDefect defect = defects.get(defectIndex);
+            Map<String, Object> custom = defect.getCustomFields() != null
+                    ? new LinkedHashMap<>(defect.getCustomFields()) : new LinkedHashMap<>();
+            for (Map.Entry<Integer, SysProjectDefectField> e : colIndexToDef.entrySet()) {
+                String text = cellText(row, e.getKey());
+                Object parsed = parseImportCellValue(text, e.getValue());
+                if (parsed != null && !isEmptyValue(parsed)) {
+                    custom.put(e.getValue().getFieldKey(), parsed);
+                }
+            }
+            if (!custom.isEmpty()) {
+                defect.setCustomFields(custom);
+            }
+        }
+    }
+
+    /**
+     * B9：供 {@link com.cat2bug.web.service.excel.DefectExcelColumnSupport} 读取列顺序。
+     */
+    public static List<ColumnSlot> buildOrderedSlots(Map<String, Object> params, Map<String, String> propToField,
+            Set<String> requiredFields, Set<String> templateExcludedProps) {
+        return buildOrderedSlotsInternal(params, propToField, requiredFields, templateExcludedProps);
+    }
+
+    private static List<ColumnSlot> buildOrderedSlotsInternal(Map<String, Object> params, Map<String, String> propToField,
             Set<String> requiredFields, Set<String> templateExcludedProps) {
         com.alibaba.fastjson2.JSONArray columns = parseExportColumns(params.get(ExcelColumnExportSupport.PARAM_EXPORT_COLUMNS));
         if (columns == null || columns.isEmpty()) {
@@ -318,7 +369,7 @@ public final class DefectCustomFieldExcelSupport {
     }
 
     /** 下拉显示枚举 label（无 label 时用 key） */
-    private static String[] resolveEnumComboLabels(SysProjectDefectField def) {
+    public static String[] resolveEnumComboLabels(SysProjectDefectField def) {
         if (def == null || !"enum".equals(def.getFieldType())) {
             return new String[0];
         }
@@ -522,6 +573,39 @@ public final class DefectCustomFieldExcelSupport {
         return text;
     }
 
+    private static Map<Integer, SysProjectDefectField> mapCustomColumnsByHeader(List<String> headerCells,
+            List<SysProjectDefectField> fieldDefinitions) {
+        Map<Integer, SysProjectDefectField> map = new HashMap<>();
+        Set<String> standardHeaders = buildStandardImportHeaderTexts();
+        Map<String, SysProjectDefectField> byKey = new HashMap<>();
+        Map<String, SysProjectDefectField> byLabel = new HashMap<>();
+        for (SysProjectDefectField def : fieldDefinitions) {
+            if (def == null) {
+                continue;
+            }
+            if (StringUtils.isNotEmpty(def.getFieldKey())) {
+                byKey.put(def.getFieldKey().trim(), def);
+            }
+            if (StringUtils.isNotEmpty(def.getFieldLabel())) {
+                byLabel.put(def.getFieldLabel().trim(), def);
+            }
+        }
+        for (int c = 0; c < headerCells.size(); c++) {
+            String headerText = cellText(headerCells, c);
+            if (StringUtils.isEmpty(headerText) || standardHeaders.contains(headerText)) {
+                continue;
+            }
+            SysProjectDefectField def = byKey.get(headerText);
+            if (def == null) {
+                def = byLabel.get(headerText);
+            }
+            if (def != null) {
+                map.put(c, def);
+            }
+        }
+        return map;
+    }
+
     private static Map<Integer, SysProjectDefectField> mapCustomColumnsByHeader(Row header,
             List<SysProjectDefectField> fieldDefinitions) {
         Map<Integer, SysProjectDefectField> map = new HashMap<>();
@@ -575,6 +659,42 @@ public final class DefectCustomFieldExcelSupport {
         return set;
     }
 
+    private static int findHeaderRowIndex(List<List<String>> rows) {
+        int limit = Math.min(5, rows.size());
+        for (int r = 0; r < limit; r++) {
+            List<String> row = rows.get(r);
+            if (row == null) {
+                continue;
+            }
+            for (String cell : row) {
+                if (StringUtils.isNotEmpty(cell)) {
+                    return r;
+                }
+            }
+        }
+        return 0;
+    }
+
+    private static boolean isEmptyTextRow(List<String> row) {
+        if (row == null) {
+            return true;
+        }
+        for (String cell : row) {
+            if (StringUtils.isNotBlank(cell)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static String cellText(List<String> row, int columnIndex) {
+        if (row == null || columnIndex < 0 || columnIndex >= row.size()) {
+            return "";
+        }
+        String value = row.get(columnIndex);
+        return value == null ? "" : value.trim();
+    }
+
     private static int findHeaderRowIndex(Sheet sheet) {
         for (int r = 0; r <= Math.min(5, sheet.getLastRowNum()); r++) {
             Row row = sheet.getRow(r);
@@ -617,7 +737,7 @@ public final class DefectCustomFieldExcelSupport {
         return false;
     }
 
-    private static final class ColumnSlot {
+    public static final class ColumnSlot {
         private final boolean custom;
         private final String fieldKey;
         private final String standardFieldName;
@@ -628,16 +748,24 @@ public final class DefectCustomFieldExcelSupport {
             this.standardFieldName = standardFieldName;
         }
 
-        static ColumnSlot custom(String fieldKey) {
+        public static ColumnSlot custom(String fieldKey) {
             return new ColumnSlot(true, fieldKey, null);
         }
 
-        static ColumnSlot standard(String fieldName) {
+        public static ColumnSlot standard(String fieldName) {
             return new ColumnSlot(false, null, fieldName);
         }
 
-        boolean isCustom() {
+        public boolean isCustom() {
             return custom;
+        }
+
+        public String getFieldKey() {
+            return fieldKey;
+        }
+
+        public String getStandardFieldName() {
+            return standardFieldName;
         }
     }
 }

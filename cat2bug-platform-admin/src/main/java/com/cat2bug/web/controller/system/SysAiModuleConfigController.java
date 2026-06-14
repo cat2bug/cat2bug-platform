@@ -11,13 +11,15 @@ import com.cat2bug.common.core.domain.AjaxResult;
 import com.cat2bug.common.core.page.TableDataInfo;
 import com.cat2bug.common.enums.BusinessType;
 import com.cat2bug.common.utils.StringUtils;
-import com.cat2bug.common.utils.poi.ExcelUtil;
 import com.cat2bug.common.exception.ServiceException;
 import com.cat2bug.system.domain.SysAiModuleConfig;
 import com.cat2bug.system.service.ISysAiModuleConfigService;
 import com.cat2bug.web.service.OllamaAvailability;
 import lombok.Data;
+import com.cat2bug.web.excel.ExcelHttpSupport;
+import com.cat2bug.web.service.excel.SystemExcelExportService;
 import org.springframework.beans.factory.annotation.Autowired;
+import java.io.IOException;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -41,6 +43,9 @@ public class SysAiModuleConfigController extends BaseController
 {
     @Autowired
     private ISysAiModuleConfigService sysAiModuleConfigService;
+
+    @Autowired
+    private SystemExcelExportService systemExcelExportService;
 
     @Autowired
     private IAiAccountService aiAccountService;
@@ -182,11 +187,9 @@ public class SysAiModuleConfigController extends BaseController
     @PreAuthorize("@ss.hasPermi('system:ai:export')")
     @Log(title = "AI模型配置", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
-    public void export(HttpServletResponse response, SysAiModuleConfig sysAiModuleConfig)
+    public void export(HttpServletResponse response, SysAiModuleConfig sysAiModuleConfig) throws IOException
     {
-        List<SysAiModuleConfig> list = sysAiModuleConfigService.selectSysAiModuleConfigList(sysAiModuleConfig);
-        ExcelUtil<SysAiModuleConfig> util = new ExcelUtil<SysAiModuleConfig>(SysAiModuleConfig.class);
-        util.exportExcel(response, list, "AI模型配置数据");
+        ExcelHttpSupport.write(response, systemExcelExportService.exportAiModuleConfigs(sysAiModuleConfig), "AI模型配置数据.xlsx");
     }
 
     /**

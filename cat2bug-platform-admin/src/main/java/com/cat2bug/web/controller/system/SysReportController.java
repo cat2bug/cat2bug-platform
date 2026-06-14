@@ -6,13 +6,15 @@ import com.cat2bug.common.core.domain.AjaxResult;
 import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.common.core.page.TableDataInfo;
 import com.cat2bug.common.enums.BusinessType;
-import com.cat2bug.common.utils.poi.ExcelUtil;
 import com.cat2bug.common.core.domain.entity.SysReport;
 import com.cat2bug.system.service.IMemberFocusService;
 import com.cat2bug.system.service.ISysReportService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import com.cat2bug.web.excel.ExcelHttpSupport;
+import com.cat2bug.web.service.excel.SystemExcelExportService;
 import org.springframework.beans.factory.annotation.Autowired;
+import java.io.IOException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,6 +40,9 @@ public class SysReportController extends BaseController
     private ISysReportService sysReportService;
 
     @Autowired
+    private SystemExcelExportService systemExcelExportService;
+
+    @Autowired
     private IMemberFocusService memberFocusService;
     /**
      * 查询报告列表
@@ -61,11 +66,9 @@ public class SysReportController extends BaseController
     @PreAuthorize("@ss.hasPermi('system:report:export')")
     @Log(title = "报告", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
-    public void export(HttpServletResponse response, SysReport sysReport)
+    public void export(HttpServletResponse response, SysReport sysReport) throws IOException
     {
-        List<SysReport> list = sysReportService.selectSysReportList(sysReport);
-        ExcelUtil<SysReport> util = new ExcelUtil<SysReport>(SysReport.class);
-        util.exportExcel(response, list, "报告数据");
+        ExcelHttpSupport.write(response, systemExcelExportService.exportReports(sysReport), "报告数据.xlsx");
     }
 
     /**

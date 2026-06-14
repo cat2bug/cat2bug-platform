@@ -1,13 +1,16 @@
 package com.cat2bug.common.core.domain.excel;
 
+import com.cat2bug.common.core.domain.entity.SysDictData;
 import com.cat2bug.common.core.domain.type.SysDefectStateEnum;
 import com.cat2bug.common.core.domain.type.SysDefectTypeEnum;
 import com.cat2bug.common.utils.LocaleUtils;
+import com.cat2bug.common.utils.MessageUtils;
 import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.common.utils.spring.SpringUtils;
 import org.springframework.context.MessageSource;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -39,6 +42,57 @@ public final class DefectImportLabelResolver
             return null;
         }
         return typeByLabel().get(label.trim());
+    }
+
+    public static String formatType(SysDefectTypeEnum defectType)
+    {
+        if (defectType == null)
+        {
+            return "";
+        }
+        try
+        {
+            return MessageUtils.message(defectType.name());
+        }
+        catch (Exception ignored)
+        {
+            return defectType.name();
+        }
+    }
+
+    public static String formatState(SysDefectStateEnum defectState)
+    {
+        if (defectState == null)
+        {
+            return "";
+        }
+        try
+        {
+            return MessageUtils.message(defectState.name());
+        }
+        catch (Exception ignored)
+        {
+            return defectState.name();
+        }
+    }
+
+    public static String formatLevel(String defectLevel, List<SysDictData> dictData)
+    {
+        if (StringUtils.isEmpty(defectLevel))
+        {
+            return "";
+        }
+        if (dictData != null)
+        {
+            for (SysDictData dict : dictData)
+            {
+                if (defectLevel.equals(dict.getDictValue()))
+                {
+                    return dict.getDictLabel() != null ? dict.getDictLabel() : dict.getDictValue();
+                }
+            }
+        }
+        return defectLevel;
     }
 
     private static Map<String, SysDefectStateEnum> stateByLabel()

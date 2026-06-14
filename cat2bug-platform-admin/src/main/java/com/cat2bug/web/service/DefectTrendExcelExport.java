@@ -1,5 +1,7 @@
 package com.cat2bug.web.service;
 
+import org.springframework.stereotype.Service;
+import org.springframework.context.annotation.Profile;
 import com.cat2bug.common.core.domain.type.SysDefectStateEnum;
 import com.cat2bug.common.utils.MessageUtils;
 import com.cat2bug.system.domain.SysDefectLine;
@@ -14,7 +16,6 @@ import org.apache.poi.xddf.usermodel.chart.*;
 import org.apache.poi.xssf.usermodel.*;
 import org.apache.poi.util.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.*;
@@ -25,6 +26,7 @@ import static com.cat2bug.common.utils.poi.ExcelUtil.applyLineChartsColors;
 /**
  * 缺陷 / 成员走势 Excel 导出（与 SysDashboardController 导出结构一致）
  */
+@Profile("!native")
 @Service
 public class DefectTrendExcelExport {
 
