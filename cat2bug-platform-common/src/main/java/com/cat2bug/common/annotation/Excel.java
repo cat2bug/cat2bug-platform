@@ -6,9 +6,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.math.BigDecimal;
 
+import com.cat2bug.common.enums.ExcelHorizontalAlign;
+import com.cat2bug.common.enums.ExcelIndexedColor;
 import com.cat2bug.common.utils.poi.ExcelComboHandlerAdapter;
-import org.apache.poi.ss.usermodel.HorizontalAlignment;
-import org.apache.poi.ss.usermodel.IndexedColors;
 import com.cat2bug.common.utils.poi.ExcelHandlerAdapter;
 
 /**
@@ -141,27 +141,27 @@ public @interface Excel
     /**
      * 导出列头背景颜色（默认浅灰，与缺陷/用例导出模版一致）
      */
-    public IndexedColors headerBackgroundColor() default IndexedColors.GREY_25_PERCENT;
+    public ExcelIndexedColor headerBackgroundColor() default ExcelIndexedColor.GREY_25_PERCENT;
 
     /**
      * 导出列头字体颜色
      */
-    public IndexedColors headerColor() default IndexedColors.WHITE;
+    public ExcelIndexedColor headerColor() default ExcelIndexedColor.WHITE;
 
     /**
      * 导出单元格背景颜色
      */
-    public IndexedColors backgroundColor() default IndexedColors.WHITE;
+    public ExcelIndexedColor backgroundColor() default ExcelIndexedColor.WHITE;
 
     /**
      * 导出单元格字体颜色
      */
-    public IndexedColors color() default IndexedColors.BLACK;
+    public ExcelIndexedColor color() default ExcelIndexedColor.BLACK;
 
     /**
      * 导出字段对齐方式
      */
-    public HorizontalAlignment align() default HorizontalAlignment.CENTER;
+    public ExcelHorizontalAlign align() default ExcelHorizontalAlign.CENTER;
 
     /**
      * 自定义数据处理器

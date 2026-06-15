@@ -15,9 +15,10 @@ import com.cat2bug.common.core.controller.BaseController;
 import com.cat2bug.common.core.domain.AjaxResult;
 import com.cat2bug.common.core.page.TableDataInfo;
 import com.cat2bug.common.enums.BusinessType;
-import com.cat2bug.common.utils.poi.ExcelUtil;
+import com.cat2bug.common.exception.ServiceException;
 import com.cat2bug.quartz.domain.SysJobLog;
 import com.cat2bug.quartz.service.ISysJobLogService;
+import com.cat2bug.quartz.service.QuartzExcelExporter;
 
 /**
  * 调度日志操作处理
@@ -30,6 +31,9 @@ public class SysJobLogController extends BaseController
 {
     @Autowired
     private ISysJobLogService jobLogService;
+
+    @Autowired(required = false)
+    private QuartzExcelExporter quartzExcelExporter;
 
     /**
      * 查询定时任务调度日志列表
@@ -52,8 +56,10 @@ public class SysJobLogController extends BaseController
     public void export(HttpServletResponse response, SysJobLog sysJobLog)
     {
         List<SysJobLog> list = jobLogService.selectJobLogList(sysJobLog);
-        ExcelUtil<SysJobLog> util = new ExcelUtil<SysJobLog>(SysJobLog.class);
-        util.exportExcel(response, list, "调度日志");
+        if (quartzExcelExporter == null) {
+            throw new ServiceException("Native 环境暂不支持 POI 导出，请使用 JVM 版");
+        }
+        quartzExcelExporter.exportJobLogs(response, list);
     }
     
     /**

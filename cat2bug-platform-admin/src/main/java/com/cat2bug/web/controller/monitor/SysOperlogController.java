@@ -15,9 +15,10 @@ import com.cat2bug.common.core.controller.BaseController;
 import com.cat2bug.common.core.domain.AjaxResult;
 import com.cat2bug.common.core.page.TableDataInfo;
 import com.cat2bug.common.enums.BusinessType;
-import com.cat2bug.common.utils.poi.ExcelUtil;
+import com.cat2bug.common.exception.ServiceException;
 import com.cat2bug.system.domain.SysOperLog;
 import com.cat2bug.system.service.ISysOperLogService;
+import com.cat2bug.web.service.excel.MonitorExcelExportService;
 
 /**
  * 操作日志记录
@@ -30,6 +31,9 @@ public class SysOperlogController extends BaseController
 {
     @Autowired
     private ISysOperLogService operLogService;
+
+    @Autowired(required = false)
+    private MonitorExcelExportService monitorExcelExportService;
 
     @PreAuthorize("@ss.hasPermi('monitor:operlog:list')")
     @GetMapping("/list")
@@ -46,8 +50,10 @@ public class SysOperlogController extends BaseController
     public void export(HttpServletResponse response, SysOperLog operLog)
     {
         List<SysOperLog> list = operLogService.selectOperLogList(operLog);
-        ExcelUtil<SysOperLog> util = new ExcelUtil<SysOperLog>(SysOperLog.class);
-        util.exportExcel(response, list, "操作日志");
+        if (monitorExcelExportService == null) {
+            throw new ServiceException("Native 环境暂不支持 POI 导出，请使用 JVM 版");
+        }
+        monitorExcelExportService.exportOperLogs(response, list);
     }
 
     @Log(title = "操作日志", businessType = BusinessType.DELETE)

@@ -2,18 +2,18 @@ package com.cat2bug.framework.config;
 
 import com.cat2bug.framework.security.filter.ApiAuthenticationTokenFilter;
 import com.cat2bug.framework.security.filter.ApiPermissionFilter;
+import com.cat2bug.framework.web.service.ApiTokenService;
 import com.cat2bug.framework.web.service.ApiUserDetailsServiceImpl;
+import com.cat2bug.system.service.ISysProjectApiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -27,14 +27,17 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class ApiSecurityConfig {
 
     @Autowired
-    @Lazy
-    private ApiAuthenticationTokenFilter authenticationTokenFilter;
-
-    @Autowired
-    private ApiPermissionFilter apiPermissionFilter;
-
-    @Autowired
     private ApiUserDetailsServiceImpl apiUserDetailsServiceImpl;
+
+    @Bean
+    public ApiAuthenticationTokenFilter apiAuthenticationTokenFilter(ApiTokenService apiTokenService) {
+        return new ApiAuthenticationTokenFilter(apiTokenService);
+    }
+
+    @Bean
+    public ApiPermissionFilter apiPermissionFilter(ISysProjectApiService sysProjectApiService) {
+        return new ApiPermissionFilter(sysProjectApiService);
+    }
 
     @Bean("apiAuthenticationManager")
     public AuthenticationManager apiAuthenticationManager() {
@@ -59,7 +62,9 @@ public class ApiSecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain apiFilterChain(HttpSecurity httpSecurity) throws Exception {
+    public SecurityFilterChain apiFilterChain(HttpSecurity httpSecurity,
+            ApiAuthenticationTokenFilter authenticationTokenFilter,
+            ApiPermissionFilter apiPermissionFilter) throws Exception {
         httpSecurity
                 .securityMatcher("/api/**")
                 .csrf(csrf -> csrf.disable())

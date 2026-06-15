@@ -2,6 +2,7 @@ package com.cat2bug.system.util;
 
 import com.cat2bug.common.core.domain.entity.SysDefect;
 import com.cat2bug.common.utils.poi.ExcelColumnExportSupport;
+import com.cat2bug.common.utils.poi.ExcelUtilJvmBridge;
 import com.cat2bug.common.utils.poi.ExcelUtil;
 import com.cat2bug.system.domain.SysProjectDefectField;
 import org.apache.poi.ss.usermodel.DataValidation;
@@ -43,7 +44,7 @@ public class DefectCustomFieldExcelSupportTest {
         params.put(ExcelColumnExportSupport.PARAM_EXPORT_SCOPE, ExcelColumnExportSupport.SCOPE_DATA);
 
         ExcelUtil<SysDefect> util = new ExcelUtil<>(SysDefect.class);
-        ExcelColumnExportSupport.apply(util, params, ExcelColumnExportSupport.DEFECT_DATA_MAP, null, null);
+        ExcelUtilJvmBridge.apply(util, params, ExcelColumnExportSupport.DEFECT_DATA_MAP, null, null);
         util.init(Collections.singletonList(defect), "缺陷数据", "", com.cat2bug.common.annotation.Excel.Type.EXPORT, params, null);
         util.writeSheet();
         DefectCustomFieldExcelSupport.applyCustomColumnsAfterWrite(util, params,
@@ -103,7 +104,7 @@ public class DefectCustomFieldExcelSupportTest {
         params.put(ExcelColumnExportSupport.PARAM_EXPORT_SCOPE, ExcelColumnExportSupport.SCOPE_DATA);
 
         ExcelUtil<SysDefect> util = new ExcelUtil<>(SysDefect.class);
-        ExcelColumnExportSupport.apply(util, params, ExcelColumnExportSupport.DEFECT_DATA_MAP, null, null);
+        ExcelUtilJvmBridge.apply(util, params, ExcelColumnExportSupport.DEFECT_DATA_MAP, null, null);
         util.init(Collections.singletonList(defect), "缺陷数据", "", com.cat2bug.common.annotation.Excel.Type.EXPORT, params, null);
         util.writeSheet();
         DefectCustomFieldExcelSupport.applyCustomColumnsAfterWrite(util, params,

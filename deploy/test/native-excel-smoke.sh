@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 # Native Excel 导出冒烟：登录后调用关键 xlsx 接口，校验 Content-Type 与 PK 头
 set -euo pipefail
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BASE="${1:-http://127.0.0.1:2020}"
 FAIL=0
 TOKEN=""
-PROJECT_ID="${PROJECT_ID:-1}"
+PROJECT_ID=""
 
 log_ok() { echo "OK   $1"; }
 log_fail() { echo "FAIL $1: $2"; FAIL=1; }
@@ -30,26 +31,15 @@ assert_xlsx() {
   log_ok "$name"
 }
 
-echo "==> Native Excel smoke @ $BASE (projectId=$PROJECT_ID)"
-echo
-
-body=$(curl -s "$BASE/captchaImage")
-uuid=$(echo "$body" | python3 -c 'import sys,json; print(json.load(sys.stdin).get("uuid",""))' 2>/dev/null || echo "")
-
-body=$(curl -s -X POST "$BASE/login" -H 'Content-Type: application/json' \
-  -d "{\"username\":\"demo\",\"password\":\"123456\",\"code\":\"\",\"uuid\":\"$uuid\"}")
-TOKEN=$(echo "$body" | python3 -c 'import sys,json; print(json.load(sys.stdin).get("token",""))' 2>/dev/null || echo "")
-if [[ -z "$TOKEN" ]]; then
-  echo "WARN login failed, trying admin/cat2bug"
-  body=$(curl -s -X POST "$BASE/login" -H 'Content-Type: application/json' \
-    -d "{\"username\":\"admin\",\"password\":\"cat2bug\",\"code\":\"\",\"uuid\":\"$uuid\"}")
-  TOKEN=$(echo "$body" | python3 -c 'import sys,json; print(json.load(sys.stdin).get("token",""))' 2>/dev/null || echo "")
-fi
-if [[ -z "$TOKEN" ]]; then
-  log_fail "login" "no token"
+eval "$("$SCRIPT_DIR/native-smoke-bootstrap.sh" "$BASE")"
+if [[ -z "$PROJECT_ID" ]]; then
+  log_fail "bootstrap" "no project id"
   exit 1
 fi
-log_ok "login"
+
+echo "==> Native Excel smoke @ $BASE (projectId=$PROJECT_ID)"
+echo
+log_ok "login + bootstrap (team/project/userConfig)"
 
 tmpdir=$(mktemp -d)
 trap 'rm -rf "$tmpdir"' EXIT

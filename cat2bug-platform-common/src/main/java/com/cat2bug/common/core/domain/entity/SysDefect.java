@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.apache.poi.ss.usermodel.IndexedColors;
+import com.cat2bug.common.enums.ExcelIndexedColor;
 
 import java.util.Date;
 import java.util.List;
@@ -38,16 +38,16 @@ public class SysDefect extends BaseEntity
 
     /** 缺陷类型 */
     @JsonFormat(shape = JsonFormat.Shape.STRING)
-    @Excel(name = "类型", i18nNameKey = "type", type=Excel.Type.EXPORT,handler = com.cat2bug.common.core.domain.excel.DefectTypeHandler.class, comboHandler = com.cat2bug.common.core.domain.excel.DefectTypeComboHandlerAdapter.class, headerBackgroundColor = IndexedColors.GREY_25_PERCENT)
+    @Excel(name = "类型", i18nNameKey = "type", type=Excel.Type.EXPORT,handler = com.cat2bug.common.core.domain.excel.DefectTypeHandler.class, comboHandler = com.cat2bug.common.core.domain.excel.DefectTypeComboHandlerAdapter.class, headerBackgroundColor = ExcelIndexedColor.GREY_25_PERCENT)
     private SysDefectTypeEnum defectType;
 
-    @Excel(name = "类型", i18nNameKey = "type", type=Excel.Type.IMPORT, comboHandler = com.cat2bug.common.core.domain.excel.DefectTypeComboHandlerAdapter.class, headerBackgroundColor = IndexedColors.GREY_25_PERCENT)
+    @Excel(name = "类型", i18nNameKey = "type", type=Excel.Type.IMPORT, comboHandler = com.cat2bug.common.core.domain.excel.DefectTypeComboHandlerAdapter.class, headerBackgroundColor = ExcelIndexedColor.GREY_25_PERCENT)
     private String defectTypeImportName;
 
     private SysDefectTypeEnum defectTypeName;
 
     /** 缺陷标题 */
-    @Excel(name = "缺陷名称", i18nNameKey = "defect.name", width = 100, headerColor = IndexedColors.RED, headerBackgroundColor = IndexedColors.GREY_25_PERCENT)
+    @Excel(name = "缺陷名称", i18nNameKey = "defect.name", width = 100, headerColor = ExcelIndexedColor.RED, headerBackgroundColor = ExcelIndexedColor.GREY_25_PERCENT)
     private String defectName;
 
     /** 缺陷描述 */
@@ -63,10 +63,10 @@ public class SysDefect extends BaseEntity
 
     /** 缺陷状态 */
     @JsonFormat(shape = JsonFormat.Shape.NUMBER)
-    @Excel(name = "缺陷状态", i18nNameKey = "defect.state", type=Excel.Type.EXPORT,handler = com.cat2bug.common.core.domain.excel.DefectStateHandler.class, comboHandler = com.cat2bug.common.core.domain.excel.DefectStateComboHandlerAdapter.class, headerBackgroundColor = IndexedColors.GREY_25_PERCENT)
+    @Excel(name = "缺陷状态", i18nNameKey = "defect.state", type=Excel.Type.EXPORT,handler = com.cat2bug.common.core.domain.excel.DefectStateHandler.class, comboHandler = com.cat2bug.common.core.domain.excel.DefectStateComboHandlerAdapter.class, headerBackgroundColor = ExcelIndexedColor.GREY_25_PERCENT)
     private SysDefectStateEnum defectState;
 
-    @Excel(name = "缺陷状态", i18nNameKey = "defect.state", type=Excel.Type.IMPORT, comboHandler = com.cat2bug.common.core.domain.excel.DefectStateComboHandlerAdapter.class, headerBackgroundColor = IndexedColors.GREY_25_PERCENT)
+    @Excel(name = "缺陷状态", i18nNameKey = "defect.state", type=Excel.Type.IMPORT, comboHandler = com.cat2bug.common.core.domain.excel.DefectStateComboHandlerAdapter.class, headerBackgroundColor = ExcelIndexedColor.GREY_25_PERCENT)
     private String defectStateImportName;
 
     /** 缺陷状态 */
@@ -140,7 +140,7 @@ public class SysDefect extends BaseEntity
     private List<SysUser> handleByList;
 
     /** 处理人名称 */
-    @Excel(name = "处理人", i18nNameKey = "handle-by", comboHandler = com.cat2bug.common.core.domain.excel.MemberComboHandlerAdapter.class, headerColor = IndexedColors.RED, headerBackgroundColor = IndexedColors.GREY_25_PERCENT)
+    @Excel(name = "处理人", i18nNameKey = "handle-by", comboHandler = com.cat2bug.common.core.domain.excel.MemberComboHandlerAdapter.class, headerColor = ExcelIndexedColor.RED, headerBackgroundColor = ExcelIndexedColor.GREY_25_PERCENT)
     private String handleByNames;
 
     /** 项目id */

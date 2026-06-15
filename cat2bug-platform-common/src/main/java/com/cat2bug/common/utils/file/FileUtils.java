@@ -12,7 +12,6 @@ import com.cat2bug.common.utils.DateUtils;
 import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.common.utils.uuid.IdUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.poi.openxml4j.opc.PackagePart;
 
 /**
  * 文件处理工具类
@@ -22,22 +21,6 @@ import org.apache.poi.openxml4j.opc.PackagePart;
 public class FileUtils
 {
     public static String FILENAME_PATTERN = "[a-zA-Z0-9_\\-\\|\\.\\u4e00-\\u9fa5]+";
-
-    /**
-     * 输出指定文件的byte数组
-     * 
-     * @param part Poi文件对象
-     * @return
-     */
-    public static String writePackagePart(PackagePart part) throws IOException {
-        String uploadDir = Cat2BugConfig.getImportPath();
-        int lastIndex = part.getPartName().getName().lastIndexOf("/");
-        String fileName = part.getPartName().getName().substring(lastIndex + 1);
-        String pathName = DateUtils.datePath() + File.separator + IdUtils.fastUUID() + "-" + fileName;
-        File file = FileUploadUtils.getAbsoluteFile(uploadDir, pathName);
-        FileUtils.copyInputStreamToFile(part.getInputStream(),file);
-        return FileUploadUtils.getPathFileName(uploadDir, pathName);
-    }
 
     /**
      * 拷贝输入流到文件

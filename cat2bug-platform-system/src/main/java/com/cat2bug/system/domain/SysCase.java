@@ -11,8 +11,8 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import com.cat2bug.common.annotation.Excel;
 import com.cat2bug.common.core.domain.BaseEntity;
-import org.apache.poi.ss.usermodel.HorizontalAlignment;
-import org.apache.poi.ss.usermodel.IndexedColors;
+import com.cat2bug.common.enums.ExcelHorizontalAlign;
+import com.cat2bug.common.enums.ExcelIndexedColor;
 
 import java.util.Date;
 import java.util.List;
@@ -39,27 +39,27 @@ public class SysCase extends BaseEntity
     private Long projectId;
 
     /** 备注 */
-    @Excel(name = "备注", i18nNameKey = "remark", sort = 85, align = HorizontalAlignment.LEFT, width = 40, headerBackgroundColor = IndexedColors.GREY_25_PERCENT)
+    @Excel(name = "备注", i18nNameKey = "remark", sort = 85, align = ExcelHorizontalAlign.LEFT, width = 40, headerBackgroundColor = ExcelIndexedColor.GREY_25_PERCENT)
     private String remark;
 
     /** 用例号码 */
-    @Excel(name = "用例编号", i18nNameKey = "id", sort = 10, type = Excel.Type.EXPORT, headerBackgroundColor = IndexedColors.GREY_25_PERCENT)
+    @Excel(name = "用例编号", i18nNameKey = "id", sort = 10, type = Excel.Type.EXPORT, headerBackgroundColor = ExcelIndexedColor.GREY_25_PERCENT)
     private Long caseNum;
 
     /** 用例名称 */
-    @Excel(name = "用例名称(必填)", i18nNameKey = "case.name", alternateI18nKeys = { "case.name_excel" }, sort = 20, align = HorizontalAlignment.LEFT, width = 50, headerColor = IndexedColors.RED, headerBackgroundColor = IndexedColors.GREY_25_PERCENT)
+    @Excel(name = "用例名称(必填)", i18nNameKey = "case.name", alternateI18nKeys = { "case.name_excel" }, sort = 20, align = ExcelHorizontalAlign.LEFT, width = 50, headerColor = ExcelIndexedColor.RED, headerBackgroundColor = ExcelIndexedColor.GREY_25_PERCENT)
     private String caseName;
 
     /** 模块id */
     @Excel(name = "交付物(必填)",
             i18nNameKey = "module",
             sort = 30,
-            align = HorizontalAlignment.LEFT,
+            align = ExcelHorizontalAlign.LEFT,
             width = 40,
             handler = SysModuleIdHandlerAdapter.class,
             comboHandler = SysModuleComboHandlerAdapter.class,
-            headerColor = IndexedColors.RED,
-            headerBackgroundColor = IndexedColors.GREY_25_PERCENT,
+            headerColor = ExcelIndexedColor.RED,
+            headerBackgroundColor = ExcelIndexedColor.GREY_25_PERCENT,
             type = Excel.Type.EXPORT
     )
     private Long moduleId;
@@ -68,44 +68,44 @@ public class SysCase extends BaseEntity
     @Excel(name = "交付物",
             i18nNameKey = "module",
             sort = 30,
-            align = HorizontalAlignment.LEFT,
+            align = ExcelHorizontalAlign.LEFT,
             width = 40,
             handler = SysModuleNameHandlerAdapter.class,
             comboHandler = SysModuleComboHandlerAdapter.class,
-            headerColor = IndexedColors.RED,
-            headerBackgroundColor = IndexedColors.GREY_25_PERCENT,
+            headerColor = ExcelIndexedColor.RED,
+            headerBackgroundColor = ExcelIndexedColor.GREY_25_PERCENT,
             type = Excel.Type.IMPORT
     )
     private String moduleName;
 
     /** 用例级别 */
     @Excel(name = "用例级别", i18nNameKey = "level", sort = 40, combo = "P0,P1,P2,P3,P4",
-            headerBackgroundColor = IndexedColors.GREY_25_PERCENT,
+            headerBackgroundColor = ExcelIndexedColor.GREY_25_PERCENT,
             type = Excel.Type.IMPORT,
             handler = com.cat2bug.system.domain.excel.CaseLevelAdapter.class
     )
     private Long caseLevel;
 
     /** 用例级别 */
-    @Excel(name = "用例级别", i18nNameKey = "level", sort = 40, combo = "P0,P1,P2,P3,P4", headerBackgroundColor = IndexedColors.GREY_25_PERCENT, type = Excel.Type.EXPORT)
+    @Excel(name = "用例级别", i18nNameKey = "level", sort = 40, combo = "P0,P1,P2,P3,P4", headerBackgroundColor = ExcelIndexedColor.GREY_25_PERCENT, type = Excel.Type.EXPORT)
     private String caseLevelName;
 
     /** 前置条件 */
-    @Excel(name = "前置条件", i18nNameKey = "case.prerequisite", sort = 50, align = HorizontalAlignment.LEFT, width = 50, headerBackgroundColor = IndexedColors.GREY_25_PERCENT)
+    @Excel(name = "前置条件", i18nNameKey = "case.prerequisite", sort = 50, align = ExcelHorizontalAlign.LEFT, width = 50, headerBackgroundColor = ExcelIndexedColor.GREY_25_PERCENT)
     private String casePreconditions;
 
     /** 步骤 */
-    @Excel(name = "步骤", i18nNameKey = "case.step", sort = 60, width = 50, align = HorizontalAlignment.LEFT, type = Excel.Type.EXPORT, headerBackgroundColor = IndexedColors.GREY_25_PERCENT, handler = com.cat2bug.system.domain.excel.CaseStepAdapter.class)
+    @Excel(name = "步骤", i18nNameKey = "case.step", sort = 60, width = 50, align = ExcelHorizontalAlign.LEFT, type = Excel.Type.EXPORT, headerBackgroundColor = ExcelIndexedColor.GREY_25_PERCENT, handler = com.cat2bug.system.domain.excel.CaseStepAdapter.class)
     private List<SysCaseStep> caseStep;
 
-    @Excel(name = "步骤", i18nNameKey = "case.step", sort = 60, width = 50, align = HorizontalAlignment.LEFT, type = Excel.Type.IMPORT, headerBackgroundColor = IndexedColors.GREY_25_PERCENT)
+    @Excel(name = "步骤", i18nNameKey = "case.step", sort = 60, width = 50, align = ExcelHorizontalAlign.LEFT, type = Excel.Type.IMPORT, headerBackgroundColor = ExcelIndexedColor.GREY_25_PERCENT)
     private String caseStepScript;
 
-    @Excel(name = "数据", i18nNameKey = "case.data", sort = 70, width = 50, align = HorizontalAlignment.LEFT, headerBackgroundColor = IndexedColors.GREY_25_PERCENT)
+    @Excel(name = "数据", i18nNameKey = "case.data", sort = 70, width = 50, align = ExcelHorizontalAlign.LEFT, headerBackgroundColor = ExcelIndexedColor.GREY_25_PERCENT)
     private String caseData;
 
     /** 预期 */
-    @Excel(name = "预期(必填)", i18nNameKey = "expect", alternateI18nKeys = { "case.expected_excel" }, sort = 80, align = HorizontalAlignment.LEFT, width = 50, headerColor = IndexedColors.RED, headerBackgroundColor = IndexedColors.GREY_25_PERCENT)
+    @Excel(name = "预期(必填)", i18nNameKey = "expect", alternateI18nKeys = { "case.expected_excel" }, sort = 80, align = ExcelHorizontalAlign.LEFT, width = 50, headerColor = ExcelIndexedColor.RED, headerBackgroundColor = ExcelIndexedColor.GREY_25_PERCENT)
     private String caseExpect;
 
     /** 图片 */
@@ -124,14 +124,14 @@ public class SysCase extends BaseEntity
      * 仅用于导出：列头与列表「更新时间」一致，值在导出接口中从 updateTime 复制。
      */
     @JsonIgnore
-    @Excel(name = "更新时间", i18nNameKey = "update-time", sort = 110, width = 20, dateFormat = "yyyy-MM-dd", type = Excel.Type.EXPORT, headerBackgroundColor = IndexedColors.GREY_25_PERCENT)
+    @Excel(name = "更新时间", i18nNameKey = "update-time", sort = 110, width = 20, dateFormat = "yyyy-MM-dd", type = Excel.Type.EXPORT, headerBackgroundColor = ExcelIndexedColor.GREY_25_PERCENT)
     private Date caseExportUpdateTime;
 
     /** 焦点成员 */
     private List<SysUser> focusList;
 
     /** 关联处理中的缺陷数量（仅数据导出） */
-    @Excel(name = "关联缺陷", i18nNameKey = "defect.state", type = Excel.Type.EXPORT, sort = 120, headerBackgroundColor = IndexedColors.GREY_25_PERCENT)
+    @Excel(name = "关联缺陷", i18nNameKey = "defect.state", type = Excel.Type.EXPORT, sort = 120, headerBackgroundColor = ExcelIndexedColor.GREY_25_PERCENT)
     private int defectProcessingCount;
     /** 关联失败的缺陷数量 */
     private int defectAuditCount;

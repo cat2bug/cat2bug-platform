@@ -12,10 +12,10 @@ import java.util.*;
  */
 public final class ExcelColumnExportSupport
 {
-    public static final String PARAM_EXPORT_COLUMNS = "exportColumns";
-    public static final String PARAM_EXPORT_SCOPE = "exportScope";
-    public static final String SCOPE_DATA = "data";
-    public static final String SCOPE_IMPORT_TEMPLATE = "importTemplate";
+    public static final String PARAM_EXPORT_COLUMNS = ExcelExportColumnParams.PARAM_EXPORT_COLUMNS;
+    public static final String PARAM_EXPORT_SCOPE = ExcelExportColumnParams.PARAM_EXPORT_SCOPE;
+    public static final String SCOPE_DATA = ExcelExportColumnParams.SCOPE_DATA;
+    public static final String SCOPE_IMPORT_TEMPLATE = ExcelExportColumnParams.SCOPE_IMPORT_TEMPLATE;
 
     public static final Map<String, String> DEFECT_DATA_MAP;
     public static final Map<String, String> DEFECT_TEMPLATE_MAP;
@@ -156,78 +156,7 @@ public final class ExcelColumnExportSupport
         return orderedFieldNames;
     }
 
-    /**
-     * 按 exportColumns / exportScope 设置 ExcelUtil 的列白名单。
-     *
-     * @param util                  Excel 工具
-     * @param params                请求 params（含 exportColumns、exportScope）
-     * @param propToField           表格 prop → Java 字段名
-     * @param requiredFields        导入模版必填 Java 字段名（importTemplate 作用域）
-     * @param templateExcludedProps 导入模版排除的表格 prop
-     */
-    public static void apply(ExcelUtil<?> util, Map<String, Object> params, Map<String, String> propToField,
-            Set<String> requiredFields, Set<String> templateExcludedProps)
-    {
-        if (params == null || propToField == null)
-        {
-            return;
-        }
-        JSONArray columns = parseExportColumns(params.get(PARAM_EXPORT_COLUMNS));
-        if (columns == null || columns.isEmpty())
-        {
-            return;
-        }
-        String scope = String.valueOf(params.getOrDefault(PARAM_EXPORT_SCOPE, SCOPE_DATA));
-        if (requiredFields == null)
-        {
-            requiredFields = Collections.emptySet();
-        }
-        if (templateExcludedProps == null)
-        {
-            templateExcludedProps = Collections.emptySet();
-        }
-        List<String> orderedFieldNames = new ArrayList<>();
-        for (int i = 0; i < columns.size(); i++)
-        {
-            JSONObject col = columns.getJSONObject(i);
-            if (col == null)
-            {
-                continue;
-            }
-            String prop = col.getString("prop");
-            String key = col.getString("key");
-            boolean visible = col.getBooleanValue("visible");
-            if (SCOPE_IMPORT_TEMPLATE.equals(scope)
-                    && (templateExcludedProps.contains(prop) || templateExcludedProps.contains(key)))
-            {
-                continue;
-            }
-            String fieldName = resolveFieldName(propToField, prop, key);
-            if (fieldName == null)
-            {
-                continue;
-            }
-            boolean include;
-            if (SCOPE_IMPORT_TEMPLATE.equals(scope))
-            {
-                include = visible || requiredFields.contains(fieldName);
-            }
-            else
-            {
-                include = visible;
-            }
-            if (include)
-            {
-                orderedFieldNames.add(fieldName);
-            }
-        }
-        if (!orderedFieldNames.isEmpty())
-        {
-            util.includeFields(orderedFieldNames.toArray(new String[0]));
-        }
-    }
-
-    private static String resolveFieldName(Map<String, String> propToField, String prop, String key)
+    static String resolveFieldName(Map<String, String> propToField, String prop, String key)
     {
         if (StringUtils.isNotEmpty(prop) && propToField.containsKey(prop))
         {
@@ -240,7 +169,7 @@ public final class ExcelColumnExportSupport
         return null;
     }
 
-    private static JSONArray parseExportColumns(Object raw)
+    static JSONArray parseExportColumns(Object raw)
     {
         if (raw == null)
         {

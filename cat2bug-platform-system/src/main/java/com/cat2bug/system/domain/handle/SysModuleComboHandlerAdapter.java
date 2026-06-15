@@ -7,8 +7,6 @@ import com.cat2bug.system.domain.SysModule;
 import com.cat2bug.system.domain.SysUserConfig;
 import com.cat2bug.system.service.ISysModuleService;
 import com.cat2bug.system.service.ISysUserConfigService;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Workbook;
 
 import java.util.Arrays;
 import java.util.List;
@@ -22,7 +20,7 @@ import java.util.stream.Collectors;
  */
 public class SysModuleComboHandlerAdapter implements ExcelComboHandlerAdapter {
     @Override
-    public List<String> format(Map<String,Object> args, Cell cell, Workbook wb) {
+    public List<String> format(Map<String,Object> args) {
         ISysUserConfigService sysUserConfigService = SpringUtils.getBean(ISysUserConfigService.class);
         SysUserConfig config = sysUserConfigService.selectSysUserConfigByUserId(SecurityUtils.getUserId());
         if(config!=null){

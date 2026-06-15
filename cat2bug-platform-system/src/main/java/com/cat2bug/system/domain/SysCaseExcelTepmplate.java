@@ -6,7 +6,7 @@ import com.cat2bug.system.domain.handle.SysModuleComboHandlerAdapter;
 import com.cat2bug.system.domain.handle.SysModuleNameHandlerAdapter;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.apache.poi.ss.usermodel.IndexedColors;
+import com.cat2bug.common.enums.ExcelIndexedColor;
 
 /**
  * 测试用例对象 sys_case
@@ -21,7 +21,7 @@ public class SysCaseExcelTepmplate extends BaseEntity
     private static final long serialVersionUID = 1L;
 
     /** 用例名称 */
-    @Excel(name = "用例名称(必填)", i18nNameKey = "case.name_excel", width = 50, headerColor = IndexedColors.RED,headerBackgroundColor=IndexedColors.GREY_25_PERCENT)
+    @Excel(name = "用例名称(必填)", i18nNameKey = "case.name_excel", width = 50, headerColor = ExcelIndexedColor.RED,headerBackgroundColor=ExcelIndexedColor.GREY_25_PERCENT)
     private String caseName;
 
     /** 交付物名称 */
@@ -30,24 +30,24 @@ public class SysCaseExcelTepmplate extends BaseEntity
             width = 40,
             handler = SysModuleNameHandlerAdapter.class,
             comboHandler = SysModuleComboHandlerAdapter.class,
-            headerColor = IndexedColors.RED,
-            headerBackgroundColor=IndexedColors.GREY_25_PERCENT)
+            headerColor = ExcelIndexedColor.RED,
+            headerBackgroundColor=ExcelIndexedColor.GREY_25_PERCENT)
     private String moduleName;
 
     /** 用例级别 */
-    @Excel(name = "用例级别",i18nNameKey = "case.level", combo = "1,2,3,4,5",headerBackgroundColor=IndexedColors.GREY_25_PERCENT)
+    @Excel(name = "用例级别",i18nNameKey = "case.level", combo = "1,2,3,4,5",headerBackgroundColor=ExcelIndexedColor.GREY_25_PERCENT)
     private Long caseLevel;
 
     /** 前置条件 */
-    @Excel(name = "前置条件",i18nNameKey = "case.prerequisite", width = 50, headerBackgroundColor=IndexedColors.GREY_25_PERCENT)
+    @Excel(name = "前置条件",i18nNameKey = "case.prerequisite", width = 50, headerBackgroundColor=ExcelIndexedColor.GREY_25_PERCENT)
     private String casePreconditions;
 
     /** 预期 */
-    @Excel(name = "预期(必填)", i18nNameKey = "case.expected_excel", width = 50, headerColor = IndexedColors.RED,headerBackgroundColor=IndexedColors.GREY_25_PERCENT)
+    @Excel(name = "预期(必填)", i18nNameKey = "case.expected_excel", width = 50, headerColor = ExcelIndexedColor.RED,headerBackgroundColor=ExcelIndexedColor.GREY_25_PERCENT)
     private String caseExpect;
 
     /** 步骤 */
-    @Excel(name = "步骤", i18nNameKey = "case.step", width = 50, headerBackgroundColor=IndexedColors.GREY_25_PERCENT)
+    @Excel(name = "步骤", i18nNameKey = "case.step", width = 50, headerBackgroundColor=ExcelIndexedColor.GREY_25_PERCENT)
     private String caseStep;
 
 }

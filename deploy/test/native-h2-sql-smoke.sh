@@ -34,7 +34,13 @@ done
 
 TOKEN=$(curl -s -X POST "$BASE/login" -H 'Content-Type: application/json' \
   -d '{"username":"demo","password":"123456","code":"","uuid":""}' \
-  | python3 -c 'import sys,json; print(json.load(sys.stdin).get("token",""))')
+  | python3 -c 'import sys,json; print(json.load(sys.stdin).get("token",""))' 2>/dev/null || echo "")
+if [[ -z "$TOKEN" ]]; then
+  echo "WARN demo login failed, trying admin/cat2bug"
+  TOKEN=$(curl -s -X POST "$BASE/login" -H 'Content-Type: application/json' \
+    -d '{"username":"admin","password":"cat2bug","code":"","uuid":""}' \
+    | python3 -c 'import sys,json; print(json.load(sys.stdin).get("token",""))' 2>/dev/null || echo "")
+fi
 [[ -n "$TOKEN" ]] || { echo "login failed"; exit 1; }
 
 PID=$(curl -s "$BASE/system/project/list?pageNum=1&pageSize=1" -H "Authorization: Bearer $TOKEN" \

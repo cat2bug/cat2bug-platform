@@ -66,7 +66,7 @@ if [[ "$CONTAINER_BUILD" == "true" ]]; then
   )
   MVN_CMD="microdnf install -y maven tar gzip >/dev/null 2>&1 || true; mvn ${NATIVE_PROFILES[*]} -pl cat2bug-platform-admin -am ${MVN_GOAL[*]} -DskipTests -Dnative.image.jvmargs='-J-Xmx8g -H:DeadlockWatchdogInterval=7200' -Dnative.image.threads=4"
   echo "==> Spring Native build in container: $NATIVE_BUILDER_IMAGE"
-  echo "[HINT] Docker Desktop 内存建议 ≥12GB；当前若 <8GB 可能在 native-image 阶段 OOM（exit 137）"
+  echo "[HINT] Docker Desktop 内存建议 ≥12GB（amd64 交叉编译建议 ≥16GB）；当前若不足可能在 native-image 阶段 OOM（exit 137）"
   if ! "${DOCKER_RUN[@]}" -lc "$MVN_CMD"; then
     echo "" >&2
     echo "[HINT] 容器内 Native 构建失败。可尝试本机构建: CONTAINER_BUILD=false $0 $ARCH" >&2
@@ -111,6 +111,9 @@ chmod +x "$OUT"
 
 if [[ "$BINARY_INFO" == *"ELF"* ]]; then
   "$ROOT/deploy/scripts/verify-native-no-awt.sh" "$OUT" || true
+  "$ROOT/deploy/scripts/verify-native-no-kaptcha.sh" "$OUT" || true
+  [[ -x "$ROOT/deploy/scripts/verify-native-no-poi.sh" ]] && \
+    "$ROOT/deploy/scripts/verify-native-no-poi.sh" "$OUT" || true
 fi
 
 RAW_SIZE="$(du -h "$OUT" | cut -f1)"

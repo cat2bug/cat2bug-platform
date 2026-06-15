@@ -1,8 +1,6 @@
 package com.cat2bug.common.core.domain.excel;
 
 import com.cat2bug.common.utils.poi.ExcelHandlerAdapter;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Workbook;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -15,7 +13,7 @@ import java.util.stream.Collectors;
  */
 public class UrlListHandler implements ExcelHandlerAdapter {
     @Override
-    public Object format(Object value, String[] args, Cell cell, Workbook wb, Map<String, Object> requestParams) {
+    public Object format(Object value, String[] args, Map<String, Object> requestParams) {
         String v = (String)value;
         if(v==null || "".equals(v)) {
             return "";

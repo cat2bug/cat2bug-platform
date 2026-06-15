@@ -28,7 +28,33 @@ environment:
 - **全新空库**：无 install 文件 → 浏览器进入 `/setup`
 - **已有 H2 `.mv.db` 或 MySQL schema**：无 install 文件 → 仍进入 `/setup`（`databaseMode: existing`），setup 阶段不 Flyway；install 完成后若 schema 落后，再进入 `/upgrade` 或由 `CAT2BUG_UPGRADE_SKIP` 静默 migrate
 
-## 启动
+## Spring Native 最小镜像（4.3）
+
+默认 Release 冒烟使用 **Spring Native ELF**，非 Compose 全栈：
+
+| 脚本 | 说明 |
+|------|------|
+| [`run-native-spring-minimal.sh`](../run-native-spring-minimal.sh) | **主入口**：Debian/Distroless 运行 UPX 或未压缩二进制 |
+| [`run-native-minimal.sh`](../run-native-minimal.sh) | **OpenSpec 兼容别名**，`exec` 委托 spring 脚本 |
+
+```bash
+# 构建（示例 arm64）
+./deploy/build-native-spring.sh aarch64
+
+# 二者等价
+PORT=2020 ./deploy/docker/run-native-spring-minimal.sh run-bg debian
+PORT=2020 ./deploy/docker/run-native-minimal.sh run-bg debian
+
+# 冒烟
+./deploy/test/native-api-smoke.sh http://127.0.0.1:2020
+./deploy/test/native-h2-sql-smoke.sh http://127.0.0.1:2020
+./deploy/test/native-parity-smoke.sh http://127.0.0.1:2020
+./deploy/test/native-upgrade-smoke.sh   # 隔离卷 @2028，勿设 CAT2BUG_UPGRADE_SKIP
+```
+
+更多脚本见 [`deploy/README.md`](../README.md)。
+
+## Compose 全栈启动
 
 ```bash
 cd deploy/docker

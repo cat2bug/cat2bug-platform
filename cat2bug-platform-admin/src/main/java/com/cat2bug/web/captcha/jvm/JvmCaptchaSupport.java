@@ -1,4 +1,4 @@
-package com.cat2bug.web.captcha;
+package com.cat2bug.web.captcha.jvm;
 
 import com.cat2bug.common.config.Cat2BugConfig;
 import com.cat2bug.common.constant.CacheConstants;
@@ -20,7 +20,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 /**
- * JVM 验证码（kaptcha + AWT），Native profile 不加载此类。
+ * JVM 验证码（kaptcha + AWT），Native profile 不编译/不加载。
  */
 @Profile("!native")
 @Component

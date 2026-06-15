@@ -20,10 +20,11 @@ import com.cat2bug.common.core.domain.AjaxResult;
 import com.cat2bug.common.core.page.TableDataInfo;
 import com.cat2bug.common.enums.BusinessType;
 import com.cat2bug.common.exception.job.TaskException;
+import com.cat2bug.common.exception.ServiceException;
 import com.cat2bug.common.utils.StringUtils;
-import com.cat2bug.common.utils.poi.ExcelUtil;
 import com.cat2bug.quartz.domain.SysJob;
 import com.cat2bug.quartz.service.ISysJobService;
+import com.cat2bug.quartz.service.QuartzExcelExporter;
 import com.cat2bug.quartz.util.CronUtils;
 import com.cat2bug.quartz.util.ScheduleUtils;
 
@@ -38,6 +39,9 @@ public class SysJobController extends BaseController
 {
     @Autowired
     private ISysJobService jobService;
+
+    @Autowired(required = false)
+    private QuartzExcelExporter quartzExcelExporter;
 
     /**
      * 查询定时任务列表
@@ -60,8 +64,10 @@ public class SysJobController extends BaseController
     public void export(HttpServletResponse response, SysJob sysJob)
     {
         List<SysJob> list = jobService.selectJobList(sysJob);
-        ExcelUtil<SysJob> util = new ExcelUtil<SysJob>(SysJob.class);
-        util.exportExcel(response, list, "定时任务");
+        if (quartzExcelExporter == null) {
+            throw new ServiceException("Native 环境暂不支持 POI 导出，请使用 JVM 版");
+        }
+        quartzExcelExporter.exportJobs(response, list);
     }
 
     /**

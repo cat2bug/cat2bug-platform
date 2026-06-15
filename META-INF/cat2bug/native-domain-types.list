@@ -109,7 +109,6 @@ com.cat2bug.common.core.domain.excel.DefectStateComboHandlerAdapter
 com.cat2bug.common.core.domain.excel.DefectStateHandler
 com.cat2bug.common.core.domain.excel.DefectTypeComboHandlerAdapter
 com.cat2bug.common.core.domain.excel.DefectTypeHandler
-com.cat2bug.common.core.domain.excel.ImageListHandler
 com.cat2bug.common.core.domain.excel.MemberComboHandlerAdapter
 com.cat2bug.common.core.domain.excel.ModuleComboHandlerAdapter
 com.cat2bug.common.core.domain.excel.UrlListHandler

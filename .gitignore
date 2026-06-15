@@ -83,6 +83,9 @@ CHANGELOG.md
 ######################################################################
 # Native Docker 本地构建缓存（勿提交二进制）
 deploy/docker/**/.build-stage/
+deploy/rpm/cat2bug/stage/
+deploy/rpm/cat2bug/stage-*/
+deploy/.native-size-cache/
 package-lock.json
 yarn.lock
 

@@ -16,8 +16,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import javax.xml.parsers.*;
 
 import com.cat2bug.common.utils.MessageUtils;
+import com.cat2bug.common.utils.file.FileUploadUtils;
 import com.cat2bug.common.utils.file.IFileService;
 import com.cat2bug.common.utils.spring.SpringUtils;
+import com.cat2bug.common.utils.uuid.IdUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
@@ -1086,13 +1088,13 @@ public class ExcelUtil<T>
                 style.cloneStyleFrom(styles.get("data"));
                 style.setAlignment(HorizontalAlignment.CENTER);
                 style.setVerticalAlignment(VerticalAlignment.CENTER);
-                style.setFillForegroundColor(excel.headerBackgroundColor().index);
+                style.setFillForegroundColor(PoiStyleBridge.colorIndex(excel.headerBackgroundColor()));
                 style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
                 Font headerFont = wb.createFont();
                 headerFont.setFontName("Arial");
                 headerFont.setFontHeightInPoints((short) 10);
                 headerFont.setBold(true);
-                headerFont.setColor(excel.headerColor().index);
+                headerFont.setColor(PoiStyleBridge.colorIndex(excel.headerColor()));
                 style.setFont(headerFont);
                 headerStyles.put(key, style);
             }
@@ -1116,7 +1118,7 @@ public class ExcelUtil<T>
             if (!styles.containsKey(key))
             {
                 CellStyle style = wb.createCellStyle();
-                style.setAlignment(excel.align());
+                style.setAlignment(PoiStyleBridge.alignment(excel.align()));
                 style.setVerticalAlignment(VerticalAlignment.CENTER);
                 style.setBorderRight(BorderStyle.THIN);
                 style.setRightBorderColor(IndexedColors.GREY_50_PERCENT.getIndex());
@@ -1127,11 +1129,11 @@ public class ExcelUtil<T>
                 style.setBorderBottom(BorderStyle.THIN);
                 style.setBottomBorderColor(IndexedColors.GREY_50_PERCENT.getIndex());
                 style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-                style.setFillForegroundColor(excel.backgroundColor().getIndex());
+                style.setFillForegroundColor(PoiStyleBridge.colorIndex(excel.backgroundColor()));
                 Font dataFont = wb.createFont();
                 dataFont.setFontName("Arial");
                 dataFont.setFontHeightInPoints((short) 10);
-                dataFont.setColor(excel.color().index);
+                dataFont.setColor(PoiStyleBridge.colorIndex(excel.color()));
                 style.setFont(dataFont);
                 styles.put(key, style);
             }
@@ -1594,8 +1596,8 @@ public class ExcelUtil<T>
         try
         {
             Object instance = excel.comboHandler().newInstance();
-            Method formatMethod = excel.comboHandler().getMethod("format", new Class[] { Map.class, Cell.class, Workbook.class });
-            return (List<String>)formatMethod.invoke(instance,  this.params, cell, this.wb);
+            Method formatMethod = excel.comboHandler().getMethod("format", Map.class);
+            return (List<String>) formatMethod.invoke(instance, this.params);
         }
         catch (Exception e)
         {
@@ -1616,8 +1618,12 @@ public class ExcelUtil<T>
         try
         {
             Object instance = excel.handler().newInstance();
-            Method formatMethod = excel.handler().getMethod("format", new Class[] { Object.class, String[].class, Cell.class, Workbook.class,Map.class });
-            value = formatMethod.invoke(instance, value, excel.args(), cell, this.wb, this.params);
+            Method formatMethod = excel.handler().getMethod("format", Object.class, String[].class, Map.class);
+            Map<String, Object> invokeParams = this.params != null ? new HashMap<>(this.params) : new HashMap<>();
+            if (cell == null) {
+                invokeParams.put("_excelImportMode", Boolean.TRUE);
+            }
+            value = formatMethod.invoke(instance, value, excel.args(), invokeParams);
         }
         catch (Exception e)
         {
@@ -2149,11 +2155,21 @@ public class ExcelUtil<T>
                 // 找到匹配的图片
                 PackagePart part = picturePath.get(imgId);
                 // 写图片到静态资源路径
-                IFileService fileService = SpringUtils.getBean(IFileService.class);
-                return fileService.uploadPackagePart(part, true);
+                return writePackagePartToImport(part);
             }
         }
         return null;
+    }
+
+    private static String writePackagePartToImport(PackagePart part) throws IOException
+    {
+        String uploadDir = Cat2BugConfig.getImportPath();
+        int lastIndex = part.getPartName().getName().lastIndexOf("/");
+        String fileName = part.getPartName().getName().substring(lastIndex + 1);
+        String pathName = DateUtils.datePath() + File.separator + IdUtils.fastUUID() + "-" + fileName;
+        File file = FileUploadUtils.getAbsoluteFile(uploadDir, pathName);
+        com.cat2bug.common.utils.file.FileUtils.copyInputStreamToFile(part.getInputStream(), file);
+        return FileUploadUtils.getPathFileName(uploadDir, pathName);
     }
 
     /**

@@ -9,7 +9,7 @@ import java.lang.reflect.Type;
 import java.util.Date;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
-import org.apache.poi.ss.usermodel.DateUtil;
+import com.cat2bug.common.utils.poi.ExcelSerialDateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.cat2bug.common.core.text.Convert;
@@ -201,7 +201,7 @@ public class ReflectUtils
                         }
                         else
                         {
-                            args[i] = DateUtil.getJavaDate((Double) args[i]);
+                            args[i] = ExcelSerialDateUtils.toJavaDate((Double) args[i]);
                         }
                     }
                     else if (cs[i] == boolean.class || cs[i] == Boolean.class)

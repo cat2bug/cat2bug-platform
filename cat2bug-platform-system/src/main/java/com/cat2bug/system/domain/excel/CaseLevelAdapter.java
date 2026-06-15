@@ -1,8 +1,6 @@
 package com.cat2bug.system.domain.excel;
 
 import com.cat2bug.common.utils.poi.ExcelHandlerAdapter;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Workbook;
 
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -15,7 +13,7 @@ import java.util.regex.Pattern;
  */
 public class CaseLevelAdapter implements ExcelHandlerAdapter {
     @Override
-    public Object format(Object value, String[] args, Cell cell, Workbook wb, Map<String, Object> requestParams) {
+    public Object format(Object value, String[] args, Map<String, Object> requestParams) {
         Pattern pattern = Pattern.compile("\\d+");
         Matcher matcher = pattern.matcher(String.valueOf(value));
 

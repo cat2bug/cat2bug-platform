@@ -3,8 +3,6 @@ package com.cat2bug.common.core.domain.excel;
 import com.cat2bug.common.utils.DictUtils;
 import com.cat2bug.common.utils.MessageUtils;
 import com.cat2bug.common.utils.poi.ExcelComboHandlerAdapter;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Workbook;
 
 import java.util.List;
 import java.util.Map;
@@ -17,7 +15,7 @@ import java.util.stream.Collectors;
  */
 public class DefectLevelComboHandlerAdapter implements ExcelComboHandlerAdapter {
     @Override
-    public List<String> format(Map<String, Object> args, Cell cell, Workbook wb) {
+    public List<String> format(Map<String, Object> args) {
         return DictUtils.getDictCache("defect_level").stream().map(d->{
             String v = d.getDictValue();
             return MessageUtils.message(v);

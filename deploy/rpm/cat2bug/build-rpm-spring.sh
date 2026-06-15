@@ -7,6 +7,14 @@
 #   NFPM_VERSION=1.0.0 ./deploy/rpm/cat2bug/build-rpm-spring.sh aarch64
 set -euo pipefail
 
+if ! command -v nfpm >/dev/null 2>&1; then
+  echo "nfpm is required to build RPM packages." >&2
+  echo "  macOS:   brew install nfpm" >&2
+  echo "  Linux:   go install github.com/goreleaser/nfpm/v2/cmd/nfpm@latest" >&2
+  echo "  Docs:    https://nfpm.goreleaser.com/install/" >&2
+  exit 1
+fi
+
 ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
 ADMIN="$ROOT/cat2bug-platform-admin"
 RPM_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -28,7 +36,7 @@ if [[ ! -f "$BIN" ]] || [[ "$(file -b "$BIN")" != *"ELF"* ]]; then
 fi
 
 VERSION="${NFPM_VERSION:-1.0.0}"
-STAGE="$RPM_DIR/stage-$RPM_ARCH"
+STAGE="$RPM_DIR/stage"
 rm -rf "$STAGE"
 mkdir -p "$STAGE/usr/bin" "$STAGE/etc/cat2bug" "$STAGE/lib/systemd/system"
 cp "$BIN" "$STAGE/usr/bin/cat2bug-admin"
@@ -39,6 +47,10 @@ cp "$RPM_DIR/application.properties" "$STAGE/etc/cat2bug/platform.properties"
 mkdir -p "$RPM_DIR/dist"
 export NFPM_ARCH="$RPM_ARCH"
 export NFPM_VERSION="$VERSION"
-nfpm package -f "$RPM_DIR/nfpm.yaml" -t "$RPM_DIR/dist" --packager rpm
+cd "$RPM_DIR"
+nfpm package -f nfpm.yaml -t dist --packager rpm
+BUILT="$(ls -1 dist/cat2bug-platform-*.${RPM_ARCH}.rpm | head -1)"
+OUT="dist/cat2bug-platform_${VERSION}_${RPM_ARCH}.rpm"
+mv -f "$BUILT" "$OUT"
 
-echo "RPM: $RPM_DIR/dist/cat2bug-platform_${VERSION}_${RPM_ARCH}.rpm"
+echo "RPM: $RPM_DIR/$OUT"

@@ -4,7 +4,7 @@ import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.cat2bug.common.core.domain.entity.SysDefect;
 import com.cat2bug.common.utils.StringUtils;
-import com.cat2bug.common.utils.poi.ExcelColumnExportSupport;
+import com.cat2bug.common.utils.poi.ExcelExportColumnParams;
 import com.cat2bug.system.domain.SysProjectDefectField;
 
 import java.util.ArrayList;
@@ -80,12 +80,12 @@ public final class DefectCustomFieldFastExcelSupport {
 
     private static List<ColumnSlot> buildOrderedSlotsInternal(Map<String, Object> params, Map<String, String> propToField,
             Set<String> requiredFields, Set<String> templateExcludedProps) {
-        com.alibaba.fastjson2.JSONArray columns = parseExportColumns(params.get(ExcelColumnExportSupport.PARAM_EXPORT_COLUMNS));
+        com.alibaba.fastjson2.JSONArray columns = parseExportColumns(params.get(ExcelExportColumnParams.PARAM_EXPORT_COLUMNS));
         if (columns == null || columns.isEmpty()) {
             return Collections.emptyList();
         }
-        String scope = String.valueOf(params.getOrDefault(ExcelColumnExportSupport.PARAM_EXPORT_SCOPE,
-                ExcelColumnExportSupport.SCOPE_DATA));
+        String scope = String.valueOf(params.getOrDefault(ExcelExportColumnParams.PARAM_EXPORT_SCOPE,
+                ExcelExportColumnParams.SCOPE_DATA));
         if (requiredFields == null) {
             requiredFields = Collections.emptySet();
         }
@@ -101,13 +101,13 @@ public final class DefectCustomFieldFastExcelSupport {
             String prop = col.getString("prop");
             String key = col.getString("key");
             boolean visible = col.getBooleanValue("visible");
-            if (ExcelColumnExportSupport.SCOPE_IMPORT_TEMPLATE.equals(scope)
+            if (ExcelExportColumnParams.SCOPE_IMPORT_TEMPLATE.equals(scope)
                     && (templateExcludedProps.contains(prop) || templateExcludedProps.contains(key))) {
                 continue;
             }
             String fieldKey = resolveCustomFieldKey(prop, key);
             if (fieldKey != null) {
-                boolean include = ExcelColumnExportSupport.SCOPE_IMPORT_TEMPLATE.equals(scope)
+                boolean include = ExcelExportColumnParams.SCOPE_IMPORT_TEMPLATE.equals(scope)
                         ? visible || isCustomRequired(col)
                         : visible;
                 if (include) {
@@ -120,7 +120,7 @@ public final class DefectCustomFieldFastExcelSupport {
                 continue;
             }
             boolean include;
-            if (ExcelColumnExportSupport.SCOPE_IMPORT_TEMPLATE.equals(scope)) {
+            if (ExcelExportColumnParams.SCOPE_IMPORT_TEMPLATE.equals(scope)) {
                 include = visible || requiredFields.contains(fieldName);
             } else {
                 include = visible;

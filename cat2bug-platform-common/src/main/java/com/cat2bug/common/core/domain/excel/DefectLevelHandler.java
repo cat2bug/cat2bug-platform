@@ -3,8 +3,6 @@ package com.cat2bug.common.core.domain.excel;
 import com.cat2bug.common.core.domain.type.SysDefectTypeEnum;
 import com.cat2bug.common.utils.MessageUtils;
 import com.cat2bug.common.utils.poi.ExcelHandlerAdapter;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Workbook;
 
 import java.util.Map;
 
@@ -15,16 +13,16 @@ import java.util.Map;
  */
 public class DefectLevelHandler implements ExcelHandlerAdapter {
     @Override
-    public Object format(Object value, String[] args, Cell cell, Workbook wb, Map<String, Object> requestParams) {
+    public Object format(Object value, String[] args, Map<String, Object> requestParams) {
         if (value == null) {
             return null;
         }
         String v = String.valueOf(value);
         String dictValue = DefectLevelImportLabelResolver.resolve(v);
-        if (cell == null) {
-            return dictValue != null ? dictValue : v;
-        }
         String canonical = dictValue != null ? dictValue : v;
+        if (requestParams != null && Boolean.TRUE.equals(requestParams.get("_excelImportMode"))) {
+            return canonical;
+        }
         return MessageUtils.message(canonical);
     }
 }

@@ -4,8 +4,6 @@ import com.cat2bug.common.utils.DictUtils;
 import com.cat2bug.common.utils.MessageUtils;
 import com.cat2bug.common.utils.bean.BeanUtils;
 import com.cat2bug.common.utils.poi.ExcelComboHandlerAdapter;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Workbook;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +17,7 @@ import java.util.stream.Collectors;
  */
 public class ModuleComboHandlerAdapter implements ExcelComboHandlerAdapter {
     @Override
-    public List<String> format(Map<String, Object> args, Cell cell, Workbook wb) {
+    public List<String> format(Map<String, Object> args) {
         if(args.containsKey("moduleNameList")) {
             return (List)args.get("moduleNameList");
         } else {

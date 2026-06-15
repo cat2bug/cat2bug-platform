@@ -5,9 +5,10 @@ import com.cat2bug.common.core.controller.BaseController;
 import com.cat2bug.common.core.domain.AjaxResult;
 import com.cat2bug.common.core.page.TableDataInfo;
 import com.cat2bug.common.enums.BusinessType;
-import com.cat2bug.common.utils.poi.ExcelUtil;
+import com.cat2bug.common.exception.ServiceException;
 import com.cat2bug.system.domain.SysScreenSize;
 import com.cat2bug.system.service.ISysScreenSizeService;
+import com.cat2bug.web.service.excel.MonitorExcelExportService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -27,6 +28,9 @@ public class SysScreenSizeController extends BaseController
 {
     @Autowired
     private ISysScreenSizeService sysScreenSizeService;
+
+    @Autowired(required = false)
+    private MonitorExcelExportService monitorExcelExportService;
 
     /**
      * 查询屏幕尺寸列表
@@ -49,8 +53,10 @@ public class SysScreenSizeController extends BaseController
     public void export(HttpServletResponse response, SysScreenSize sysScreenSize)
     {
         List<SysScreenSize> list = sysScreenSizeService.selectSysScreenSizeList(sysScreenSize);
-        ExcelUtil<SysScreenSize> util = new ExcelUtil<SysScreenSize>(SysScreenSize.class);
-        util.exportExcel(response, list, "屏幕尺寸数据");
+        if (monitorExcelExportService == null) {
+            throw new ServiceException("Native 环境暂不支持 POI 导出，请使用 JVM 版");
+        }
+        monitorExcelExportService.exportScreenSizes(response, list);
     }
 
     /**

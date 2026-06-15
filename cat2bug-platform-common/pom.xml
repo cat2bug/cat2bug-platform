@@ -207,4 +207,26 @@
         </dependency>
     </dependencies>
 
+    <profiles>
+        <profile>
+            <id>native</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <configuration combine.children="append">
+                            <excludes combine.children="append">
+                                <exclude>**/utils/poi/ExcelUtil.java</exclude>
+                                <exclude>**/utils/poi/PoiStyleBridge.java</exclude>
+                                <exclude>**/utils/poi/IExcelListener.java</exclude>
+                                <exclude>**/utils/poi/ExcelUtilJvmBridge.java</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
 </project>

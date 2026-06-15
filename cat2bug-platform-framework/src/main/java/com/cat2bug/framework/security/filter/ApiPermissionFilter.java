@@ -8,10 +8,7 @@ import com.cat2bug.system.domain.SysProjectApi;
 import com.cat2bug.system.service.ISysProjectApiService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import jakarta.servlet.FilterChain;
@@ -22,21 +19,20 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- * API KEY 权限验证过滤器
- *
- * @author yuzhantao
- * @date 2024-04-08
+ * API KEY 权限验证过滤器（勿加 @Component，避免 Native 下 CGLIB 代理 OncePerRequestFilter NPE）。
  */
-@Component
-@ConditionalOnProperty(prefix = "cat2bug.api", name = "enabled", havingValue = "true")
 public class ApiPermissionFilter extends OncePerRequestFilter {
 
     private static final Logger log = LoggerFactory.getLogger(ApiPermissionFilter.class);
 
     private static final String AUTH_TOKEN_HEADER_NAME = "CAT2BUG-API-KEY";
 
-    @Autowired
-    private ISysProjectApiService sysProjectApiService;
+    private final ISysProjectApiService sysProjectApiService;
+
+    public ApiPermissionFilter(ISysProjectApiService sysProjectApiService)
+    {
+        this.sysProjectApiService = sysProjectApiService;
+    }
 
     /**
      * 权限映射：请求路径和方法 -> 所需权限
@@ -85,6 +81,11 @@ public class ApiPermissionFilter extends OncePerRequestFilter {
         projectPermissions.put("GET:/api/project", "project.info");
         projectPermissions.put("GET:/api/member", "project.members");
         PERMISSION_MAPPING.put("project", projectPermissions);
+    }
+
+    @Override
+    protected String getAlreadyFilteredAttributeName() {
+        return "FILTERED_" + getClass().getName();
     }
 
     @Override

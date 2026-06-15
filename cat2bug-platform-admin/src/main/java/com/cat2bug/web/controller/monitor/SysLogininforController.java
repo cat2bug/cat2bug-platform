@@ -15,10 +15,11 @@ import com.cat2bug.common.core.controller.BaseController;
 import com.cat2bug.common.core.domain.AjaxResult;
 import com.cat2bug.common.core.page.TableDataInfo;
 import com.cat2bug.common.enums.BusinessType;
-import com.cat2bug.common.utils.poi.ExcelUtil;
+import com.cat2bug.common.exception.ServiceException;
 import com.cat2bug.framework.web.service.SysPasswordService;
 import com.cat2bug.system.domain.SysLogininfor;
 import com.cat2bug.system.service.ISysLogininforService;
+import com.cat2bug.web.service.excel.MonitorExcelExportService;
 
 /**
  * 系统访问记录
@@ -35,6 +36,9 @@ public class SysLogininforController extends BaseController
     @Autowired
     private SysPasswordService passwordService;
 
+    @Autowired(required = false)
+    private MonitorExcelExportService monitorExcelExportService;
+
     @PreAuthorize("@ss.hasPermi('monitor:logininfor:list')")
     @GetMapping("/list")
     public TableDataInfo list(SysLogininfor logininfor)
@@ -50,8 +54,10 @@ public class SysLogininforController extends BaseController
     public void export(HttpServletResponse response, SysLogininfor logininfor)
     {
         List<SysLogininfor> list = logininforService.selectLogininforList(logininfor);
-        ExcelUtil<SysLogininfor> util = new ExcelUtil<SysLogininfor>(SysLogininfor.class);
-        util.exportExcel(response, list, "登录日志");
+        if (monitorExcelExportService == null) {
+            throw new ServiceException("Native 环境暂不支持 POI 导出，请使用 JVM 版");
+        }
+        monitorExcelExportService.exportLogininfor(response, list);
     }
 
     @PreAuthorize("@ss.hasPermi('monitor:logininfor:remove')")

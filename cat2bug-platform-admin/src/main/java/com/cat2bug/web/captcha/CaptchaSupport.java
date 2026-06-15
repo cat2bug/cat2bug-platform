@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.util.FastByteArrayOutputStream;
 
@@ -22,8 +23,10 @@ import java.io.IOException;
 import java.security.SecureRandom;
 
 /**
- * 验证码生成（JVM 用 kaptcha+AWT，Native 用 {@link CaptchaPngRenderer}，不依赖 @Profile AOT 裁剪）。
+ * @deprecated 由 {@link JvmCaptchaSupport} / {@link NativeCaptchaSupport} 按 profile 分流；保留供回滚对照。
  */
+@Deprecated
+@Profile("!native")
 @Component
 public class CaptchaSupport
 {

@@ -53,6 +53,7 @@
         <native.image.threads>4</native.image.threads>
         <fastexcel.version>0.20.1</fastexcel.version>
         <excel.poi.scope>compile</excel.poi.scope>
+        <kaptcha.scope>compile</kaptcha.scope>
         <!-- native profile 设为 exec，主 artifact 保持 thin JAR 供 native-image 使用 -->
         <repackage.classifier></repackage.classifier>
     </properties>
@@ -372,6 +373,9 @@
                 <spring-boot.aot.enabled>true</spring-boot.aot.enabled>
                 <spring.profiles.active>native</spring.profiles.active>
                 <excel.poi.scope>provided</excel.poi.scope>
+                <kaptcha.scope>provided</kaptcha.scope>
+                <skip.jvm.excel.sources>true</skip.jvm.excel.sources>
+                <maven.main.skip.jvm.excel>true</maven.main.skip.jvm.excel>
             </properties>
         </profile>
         <profile>

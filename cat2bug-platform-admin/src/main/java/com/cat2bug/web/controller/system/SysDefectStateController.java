@@ -9,7 +9,6 @@ import com.cat2bug.common.core.domain.type.SysDefectStateEnum;
 import com.cat2bug.common.core.page.TableDataInfo;
 import com.cat2bug.common.enums.BusinessType;
 import com.cat2bug.common.utils.StringUtils;
-import com.cat2bug.common.utils.poi.ExcelUtil;
 import com.cat2bug.system.domain.SysDefectLog;
 import com.cat2bug.system.domain.SysProjectDefectTabs;
 import com.cat2bug.system.domain.SysUserConfig;

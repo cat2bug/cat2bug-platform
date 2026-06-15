@@ -23,6 +23,19 @@ if command -v ldd >/dev/null 2>&1; then
   exit 0
 fi
 
+# macOS 等无 ldd 时：用本机 debian 容器检查（勿指定 --platform，使用本地 arm64 镜像）
+if command -v docker >/dev/null 2>&1 && docker image inspect debian:bookworm-slim >/dev/null 2>&1; then
+  if docker run --rm -v "$BIN:/bin/cat2bug:ro" debian:bookworm-slim \
+    bash -lc 'ldd /bin/cat2bug 2>/dev/null | grep -qi awt'; then
+    echo "[FAIL] 容器 ldd 检测到 AWT 依赖" >&2
+    docker run --rm -v "$BIN:/bin/cat2bug:ro" debian:bookworm-slim \
+      bash -lc 'ldd /bin/cat2bug 2>/dev/null | grep -i awt' >&2
+    exit 1
+  fi
+  echo "[OK] debian 容器 ldd 未检出 libawt"
+  exit 0
+fi
+
 if command -v readelf >/dev/null 2>&1; then
   if readelf -d "$BIN" 2>/dev/null | grep -qi awt; then
     echo "[FAIL] readelf 检测到 AWT 相关 NEEDED 条目" >&2

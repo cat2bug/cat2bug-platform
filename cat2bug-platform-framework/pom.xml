@@ -39,10 +39,11 @@
             <artifactId>druid-spring-boot-3-starter</artifactId>
         </dependency>
 
-        <!-- 验证码 -->
+        <!-- 验证码（Native profile 下 scope=provided 且源码不编译） -->
         <dependency>
             <groupId>pro.fessional</groupId>
             <artifactId>kaptcha</artifactId>
+            <scope>${kaptcha.scope}</scope>
             <exclusions>
                 <exclusion>
                     <artifactId>servlet-api</artifactId>
@@ -95,5 +96,26 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>native</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <configuration combine.children="append">
+                            <excludes combine.children="append">
+                                <exclude>**/config/CaptchaConfig.java</exclude>
+                                <exclude>**/config/Cat2BugKaptcha*.java</exclude>
+                                <exclude>**/config/KaptchaTextCreator.java</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>

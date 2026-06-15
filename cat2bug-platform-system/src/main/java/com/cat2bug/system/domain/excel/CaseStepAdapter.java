@@ -3,8 +3,6 @@ package com.cat2bug.system.domain.excel;
 import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.common.utils.poi.ExcelHandlerAdapter;
 import com.cat2bug.system.domain.SysCaseStep;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Workbook;
 
 import java.util.List;
 import java.util.Map;
@@ -16,9 +14,7 @@ import java.util.Map;
  */
 public class CaseStepAdapter implements ExcelHandlerAdapter {
     @Override
-    public Object format(Object value, String[] args, Cell cell, Workbook wb, Map<String, Object> requestParams) {
-        cell.getCellStyle().setWrapText(true);
-        cell.getRow().setHeight((short) -1);
+    public Object format(Object value, String[] args, Map<String, Object> requestParams) {
         if (!(value instanceof List<?> rawList)) {
             return "";
         }

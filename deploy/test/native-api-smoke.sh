@@ -38,7 +38,13 @@ assert_no_native_err "L1 GET /setup/status" "$body" "$code"
 
 body=$(curl -s -X POST "$BASE/login" -H 'Content-Type: application/json' \
   -d '{"username":"demo","password":"123456","code":"","uuid":""}')
-TOKEN=$(echo "$body" | python3 -c 'import sys,json; print(json.load(sys.stdin).get("token",""))')
+TOKEN=$(echo "$body" | python3 -c 'import sys,json; print(json.load(sys.stdin).get("token",""))' 2>/dev/null || echo "")
+if [[ -z "$TOKEN" ]]; then
+  echo "WARN demo login failed, trying admin/cat2bug"
+  body=$(curl -s -X POST "$BASE/login" -H 'Content-Type: application/json' \
+    -d '{"username":"admin","password":"cat2bug","code":"","uuid":""}')
+  TOKEN=$(echo "$body" | python3 -c 'import sys,json; print(json.load(sys.stdin).get("token",""))' 2>/dev/null || echo "")
+fi
 code=$(echo "$body" | python3 -c 'import sys,json; print(json.load(sys.stdin).get("code",500))')
 assert_no_native_err "L2 POST /login" "$body" "$code"
 

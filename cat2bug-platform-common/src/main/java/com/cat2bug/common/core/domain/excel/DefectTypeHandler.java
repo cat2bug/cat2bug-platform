@@ -3,8 +3,6 @@ package com.cat2bug.common.core.domain.excel;
 import com.cat2bug.common.core.domain.type.SysDefectTypeEnum;
 import com.cat2bug.common.utils.MessageUtils;
 import com.cat2bug.common.utils.poi.ExcelHandlerAdapter;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Workbook;
 
 import java.util.Map;
 
@@ -15,7 +13,7 @@ import java.util.Map;
  */
 public class DefectTypeHandler  implements ExcelHandlerAdapter {
     @Override
-    public Object format(Object value, String[] args, Cell cell, Workbook wb, Map<String, Object> requestParams) {
+    public Object format(Object value, String[] args, Map<String, Object> requestParams) {
         if(value == null) {
             return null;
         } else if(value instanceof SysDefectTypeEnum) {

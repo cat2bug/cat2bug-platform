@@ -13,15 +13,15 @@ homepage: https://www.cat2bug.com
 depends:
   - glibc >= 2.28
 contents:
-  - src: stage-${NFPM_ARCH}/usr/bin/cat2bug-admin
+  - src: stage/usr/bin/cat2bug-admin
     dst: /usr/bin/cat2bug-admin
     file_info:
       mode: 0755
-  - src: stage-${NFPM_ARCH}/etc/cat2bug/platform.properties
+  - src: stage/etc/cat2bug/platform.properties
     dst: /etc/cat2bug/platform.properties
     file_info:
       mode: 0644
-  - src: stage-${NFPM_ARCH}/lib/systemd/system/cat2bug-platform.service
+  - src: stage/lib/systemd/system/cat2bug-platform.service
     dst: /lib/systemd/system/cat2bug-platform.service
     file_info:
       mode: 0644
@@ -50,7 +50,4 @@ contents:
     file_info:
       mode: 0755
 scripts:
-  postinstall: |
-    systemctl daemon-reload || true
-    echo "Cat2Bug Platform installed. Enable: systemctl enable --now cat2bug-platform"
-    echo "Then open http://<host>:2020/setup for first-run wizard."
+  postinstall: scripts/postinstall.sh
