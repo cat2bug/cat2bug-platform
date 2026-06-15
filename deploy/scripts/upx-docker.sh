@@ -14,7 +14,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 # shellcheck source=upx-args.sh
 source "$ROOT/deploy/scripts/upx-args.sh"
 
-UPX_DOCKER_IMAGE="${UPX_DOCKER_IMAGE:-cat2bug-upx-compress:alpine}"
+UPX_DOCKER_IMAGE="${UPX_DOCKER_IMAGE:-cat2bug-upx-compress:bookworm-slim}"
 UPX_DOCKERFILE="${UPX_DOCKERFILE:-$ROOT/deploy/docker/upx-compress/Dockerfile}"
 
 upx_docker_ensure_image() {

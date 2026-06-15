@@ -36,10 +36,10 @@ docker run --rm -v "$PWD/cat2bug-platform-admin/target/cat2bug-admin-linux-arm64
 PORT=2024 BIN=.../cat2bug-admin-linux-arm64.upx ./deploy/docker/run-native-spring-minimal.sh run-bg debian
 /usr/bin/time -p sh -c 'for i in $(seq 1 150); do curl -sf http://127.0.0.1:2024/version && exit 0; sleep 0.1; done'
 
-# raw vs UPX 冷启动（本机 arm64，隔离 H2 卷，已完成 install）
-# 勿与正在运行的冒烟容器共用 cat2bug-spring-native-data（H2 文件锁）
+# raw vs UPX 冷启动（隔离 H2 卷，已完成 install；勿共用 cat2bug-spring-native-data，避免 H2 文件锁）
 DATA_VOL=cat2bug-native-coldstart-data CONFIG_VOL=cat2bug-native-coldstart-config
-# 见 deploy/test/measure-native-coldstart.sh（可选封装）
+./deploy/test/measure-native-coldstart.sh raw 3          # arm64 Mac 默认
+ARCH=amd64 ./deploy/test/measure-native-coldstart.sh raw 3   # x86_64 Linux / ubuntu-latest CI（需 cat2bug-admin-linux-amd64）
 ```
 
 ## 参考对照（Quarkus embedded，非 Spring 实测）
@@ -79,7 +79,32 @@ DATA_VOL=cat2bug-native-coldstart-data CONFIG_VOL=cat2bug-native-coldstart-confi
 | arm64 | raw | 304 MB | **1.06**（0.91–1.20） | ~293 MiB |
 | arm64 | UPX | 76 MB | **4.14**（4.05–4.23） | ~675 MiB |
 | amd64 | UPX | 84 MB | **~9.9**（2026-06-14） | ~803 MiB |
-| amd64 | raw | 333 MB | **待测**（需 `build-native-spring.sh x86_64`） | 待测 |
+| amd64 | raw | 333 MB | **待 CI ubuntu-latest 实测**（`ARCH=amd64 ./deploy/test/measure-native-coldstart.sh raw 3`） | 待 CI 实测 |
+
+
+## CI 自动填充 amd64 raw 冷启动（OpenSpec 1.7 / 3.5）
+
+GitHub Actions workflow [`.github/workflows/spring-native.yml`](../../.github/workflows/spring-native.yml)（与 [`deploy/ci/spring-native.yml`](../../deploy/ci/spring-native.yml) 同步）矩阵包含：
+
+| Runner | 架构 | Artifact 名称 |
+|--------|------|----------------|
+| `ubuntu-latest` | x86_64 / amd64 | `cat2bug-admin-spring-x86_64` |
+| `ubuntu-24.04-arm` | aarch64 / arm64 | `cat2bug-admin-spring-aarch64` |
+
+**流程：**
+
+1. CI 在 `ubuntu-latest` 上执行 `build-native-spring.sh x86_64` 并 `upload-artifact`（含 `cat2bug-admin-linux-amd64` 与 `.upx`）。
+2. 在 **同一 amd64 Linux 环境**（Actions runner 或下载 artifact 后的机器）执行冷启动脚本并回填本表：
+
+   ```bash
+   # artifact 解压到 cat2bug-platform-admin/target/ 后
+   ARCH=amd64 ./deploy/test/measure-native-coldstart.sh raw 3
+   ```
+
+3. 将输出的 `avg` / `min` / `max` / `RSS` 写入上文「冷启动对比」表中 **amd64 raw** 行（替换「待 CI ubuntu-latest 实测」占位）。
+
+**arm64 Mac 开发机：** 可测 arm64 raw/UPX；amd64 raw 以 CI 数据为准，本地仅作 QEMU/跨平台试跑，不写入正式度量 unless 在 x86_64 Linux 复现。
+
 
 **说明：** 早期 amd64 UPX ~9.9s 可能含首次 Flyway/空库或不同卷条件；本次 arm64 在**已安装实例**上 raw 明显快于 UPX。测量时勿与其它容器共用 H2 卷（`MVStoreException: file is locked`）。
 

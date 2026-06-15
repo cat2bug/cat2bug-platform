@@ -2,8 +2,22 @@
 # 测量 Native ELF 冷启动（docker run → curl /version）
 #
 # 用法:
-#   ./deploy/test/measure-native-coldstart.sh raw 3              # arm64 raw
-#   ARCH=amd64 ./deploy/test/measure-native-coldstart.sh upx 3 # amd64 UPX
+#   ./deploy/test/measure-native-coldstart.sh raw 3                    # 默认 arm64 raw
+#   ARCH=amd64 ./deploy/test/measure-native-coldstart.sh upx 3       # amd64 UPX（需 linux-amd64 二进制）
+#   ARCH=amd64 ./deploy/test/measure-native-coldstart.sh raw 3       # amd64 raw（见下）
+#
+# amd64 raw 测量说明:
+#   - 二进制须为 x86_64 Linux ELF：`./deploy/build-native-spring.sh x86_64`（或在 CI 下载 artifact）。
+#   - 在 x86_64 Linux 上执行（GitHub Actions `ubuntu-latest` 矩阵 job 即 amd64）:
+#       ARCH=amd64 ./deploy/test/measure-native-coldstart.sh raw 3
+#   - 脚本通过 DOCKER_PLATFORM=linux/amd64 在容器内跑原生 amd64 二进制；Apple Silicon 上测 amd64 需
+#     已有 cat2bug-admin-linux-amd64 且 Docker 可拉取/运行 linux/amd64 镜像（较慢，正式数据以 CI 为准）。
+#
+# arm64 Mac 开发机:
+#   - 本机默认 ARCH=arm64，可测 arm64 raw/UPX。
+#   - amd64 raw 冷启动/RSS 见 readme/spring-native-delivery/METRICS.md「amd64 raw 待 CI ubuntu-latest 实测」行；
+#     CI workflow `spring-native` 在 ubuntu-latest 构建并上传 `cat2bug-admin-spring-x86_64` artifact 后，
+#     在 runner 或下载 artifact 的 x86_64 Linux 上跑上述命令，将结果回填 METRICS.md。
 #
 # 环境变量: ARCH (arm64|amd64)、PORT、DATA_VOL、CONFIG_VOL
 set -euo pipefail
@@ -17,6 +31,13 @@ CONTAINER="${CONTAINER:-cat2bug-coldstart-measure}"
 DATA_VOL="${DATA_VOL:-cat2bug-native-coldstart-data}"
 CONFIG_VOL="${CONFIG_VOL:-cat2bug-native-coldstart-config}"
 STAGE="$ROOT/deploy/docker/native-spring-minimal/.build-stage"
+
+HOST_UNAME="$(uname -m)"
+if [[ "$HOST_UNAME" == "arm64" && "$ARCH" == "amd64" && "$MODE" == "raw" ]]; then
+  echo "[NOTE] 当前为 arm64 Mac，amd64 raw 正式度量请在 ubuntu-latest CI 或 x86_64 Linux 执行:" >&2
+  echo "       ARCH=amd64 ./deploy/test/measure-native-coldstart.sh raw 3" >&2
+  echo "       占位见 readme/spring-native-delivery/METRICS.md" >&2
+fi
 
 case "$ARCH" in
   arm64|aarch64) GOARCH=arm64; DOCKER_PLATFORM=linux/arm64 ;;

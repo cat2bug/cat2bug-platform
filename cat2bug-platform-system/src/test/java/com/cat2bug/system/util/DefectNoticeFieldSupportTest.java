@@ -7,6 +7,8 @@ import com.cat2bug.common.utils.MessageUtils;
 import com.cat2bug.system.domain.SysProjectDefectFieldColumnLayout;
 import com.cat2bug.system.mapper.SysCaseMapper;
 import com.cat2bug.system.service.ISysProjectDefectFieldService;
+import com.cat2bug.system.support.MessageSourceTestSupport;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,6 +24,7 @@ import java.util.stream.Collectors;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -36,11 +39,14 @@ public class DefectNoticeFieldSupportTest {
     @InjectMocks
     private DefectNoticeFieldSupport support;
 
+    private Runnable messageSourceCleanup;
+
     private SysDefect defect;
     private SysProjectDefectFieldColumnLayout layout;
 
     @Before
     public void setUp() {
+        messageSourceCleanup = MessageSourceTestSupport.installMessageSource();
         defect = new SysDefect();
         defect.setProjectId(1L);
         defect.setDefectType(SysDefectTypeEnum.BUG);
@@ -57,7 +63,14 @@ public class DefectNoticeFieldSupportTest {
         layout.setCustomFields(Collections.emptyList());
 
         when(projectDefectFieldService.selectColumnLayoutByProjectId(1L)).thenReturn(layout);
-        when(sysCaseMapper.selectSysCaseByCaseId(anyLong())).thenReturn(null);
+        lenient().when(sysCaseMapper.selectSysCaseByCaseId(anyLong())).thenReturn(null);
+    }
+
+    @After
+    public void tearDown() {
+        if (messageSourceCleanup != null) {
+            messageSourceCleanup.run();
+        }
     }
 
     @Test

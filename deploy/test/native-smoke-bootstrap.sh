@@ -3,9 +3,18 @@
 # 用法：
 #   eval "$(./deploy/test/native-smoke-bootstrap.sh http://127.0.0.1:2025)"
 #   echo "TOKEN=$TOKEN PROJECT_ID=$PROJECT_ID"
+# 相关冒烟（可独立执行）：
+#   ./deploy/test/native-spa-smoke.sh $BASE
+#   SKIP_SPA_SMOKE=1 可跳过本脚本内嵌的 SPA 检查（避免与 CI 重复）
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BASE="${1:-http://127.0.0.1:2020}"
+BASE="${BASE%/}"
+
+if [[ "${SKIP_SPA_SMOKE:-0}" != "1" ]]; then
+  "$SCRIPT_DIR/native-spa-smoke.sh" "$BASE"
+fi
 TOKEN=""
 TEAM_ID=""
 PROJECT_ID=""

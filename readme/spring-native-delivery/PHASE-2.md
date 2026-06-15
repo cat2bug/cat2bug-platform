@@ -14,7 +14,7 @@
 |------|------|------|------|
 | 2.1 | MyBatis RuntimeHints + PageHelper | **通过** | `MyBatisNativeConfiguration`；`native-h2-sql-smoke.sh` |
 | 2.2 | Security JWT + `@PreAuthorize` | **通过** | `JwtNativeRuntimeHints`、`SecurityNativeRuntimeHints`；`native-api-smoke.sh` L2–L4 |
-| 2.3 | J2Cache / 缓存 | **通过（单实例）** | `RedisCache` Native 进程内兜底；生产 Redis 见 `application-native.properties` 注释 |
+| 2.3 | J2Cache / 缓存 | **通过（单实例）** | `RedisCache` Native 进程内兜底；详见 [`J2CACHE-NATIVE.md`](J2CACHE-NATIVE.md)；`native-redis-smoke.sh` |
 | 2.4 | Open API `/api/**` | **通过**（2026-06-15） | `native-parity-smoke.sh`；`ApiSecurityConfig` `@Bean` 注册过滤器（修复 Native CGLIB NPE） |
 | 2.5 | WebSocket / IM | **通过**（2026-06-15） | `native-websocket-smoke.py` HTTP 101 握手 |
 | 2.6 | AI `/ai/**` | **通过**（2026-06-15） | `GET /system/ai/project-model-options`、`/system/ai/list` 无 Native 崩溃 |
@@ -36,7 +36,9 @@
 PORT=2020 ./deploy/docker/run-native-spring-minimal.sh run-bg debian
 
 # 自动化
+./deploy/test/native-spa-smoke.sh
 ./deploy/test/native-api-smoke.sh
+./deploy/test/native-redis-smoke.sh --with-redis   # Redis 连通 + Setup 测试（可选）
 ./deploy/test/native-h2-sql-smoke.sh
 # Excel 依赖当前项目：fresh setup 会先跑 bootstrap（团队/项目/userConfig）
 ./deploy/test/native-smoke-bootstrap.sh   # 可单独执行，输出 export 语句
@@ -91,6 +93,36 @@ mvn -pl cat2bug-platform-admin -am package -DskipTests
 ./deploy/scripts/h2-mapper-smoke.sh
 ```
 
+## JVM 回归证据
+
+一键脚本（日志追加到 `deploy/test/logs/jvm-regression-YYYYMMDD.log`）：
+
+```bash
+./deploy/scripts/jvm-embedded-regression.sh
+```
+
+脚本依次执行：
+
+1. `mvn -pl cat2bug-platform-admin -am test`
+2. `mvn -pl cat2bug-platform-admin -am package -DskipTests`
+3. 记录 `cat2bug-admin.jar` 体积
+
+**最近一次结果格式（示例，以当日 log 为准）：**
+
+```
+======== 2026-06-15T… jvm-embedded-regression start host=Darwin-arm64 … ========
+======== … mvn -pl cat2bug-platform-admin -am test ========
+… BUILD SUCCESS …
+[exit=0] mvn -pl cat2bug-platform-admin -am test
+======== … mvn -pl cat2bug-platform-admin -am package -DskipTests ========
+… BUILD SUCCESS …
+127M	cat2bug-platform-admin/target/cat2bug-admin.jar
+======== … jvm-embedded-regression done overall_fail=0 log=…/jvm-regression-20260615.log ========
+```
+
+补充：`mvn -pl cat2bug-platform-system test` 可作为 system 模块 spot-check，输出可追加到同一 log。
+
+
 ## 与 Quarkus 线 cherry-pick 对照
 
 | 已移植 | 来源 |
@@ -103,5 +135,5 @@ mvn -pl cat2bug-platform-admin -am package -DskipTests
 ## 已知差距（不阻塞 Phase 3/4）
 
 - Stretch 体积未达标（见 `METRICS.md`）
-- 多实例生产需 Redis（`cat2bug.cache.type=redis`）
+- 多实例生产需 Redis（`cat2bug.cache.type=redis`）；Native 多实例会话不共享，见 [`J2CACHE-NATIVE.md`](J2CACHE-NATIVE.md)
 - Legacy Upgrade 全流程见 `deploy/test/native-upgrade-smoke.sh`（勿设 `CAT2BUG_UPGRADE_SKIP`）

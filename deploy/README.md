@@ -8,6 +8,7 @@
 | [`docker/run-native-spring-minimal.sh`](docker/run-native-spring-minimal.sh) | 最小 Debian/Distroless 容器运行 UPX 二进制 |
 | [`docker/run-native-minimal.sh`](docker/run-native-minimal.sh) | OpenSpec 兼容别名（委托 spring 脚本） |
 | [`test/native-api-smoke.sh`](test/native-api-smoke.sh) | L1–L4 API 冒烟 |
+| [`test/native-spa-smoke.sh`](test/native-spa-smoke.sh) | Phase 1：embedded SPA 静态资源与 history fallback |
 | [`test/native-h2-sql-smoke.sh`](test/native-h2-sql-smoke.sh) | L5 H2 SQL / Phase 2 抽样 |
 | [`test/native-excel-smoke.sh`](test/native-excel-smoke.sh) | L6 Excel 导出（含 bootstrap） |
 | [`test/native-smoke-bootstrap.sh`](test/native-smoke-bootstrap.sh) | fresh setup 补齐团队/项目/userConfig |
@@ -24,6 +25,7 @@
 PORT=2020 ./deploy/docker/run-native-spring-minimal.sh run-bg debian
 
 # 冒烟
+./deploy/test/native-spa-smoke.sh http://127.0.0.1:2020
 ./deploy/test/native-api-smoke.sh http://127.0.0.1:2020
 ./deploy/test/native-h2-sql-smoke.sh http://127.0.0.1:2020
 ./deploy/test/native-excel-smoke.sh http://127.0.0.1:2020

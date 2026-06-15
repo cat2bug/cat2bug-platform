@@ -5,10 +5,13 @@ import com.cat2bug.common.utils.poi.ExcelColumnExportSupport;
 import com.cat2bug.common.utils.poi.ExcelUtilJvmBridge;
 import com.cat2bug.common.utils.poi.ExcelUtil;
 import com.cat2bug.system.domain.SysProjectDefectField;
+import com.cat2bug.system.support.MessageSourceTestSupport;
 import org.apache.poi.ss.usermodel.DataValidation;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -20,6 +23,20 @@ import java.util.Map;
  * 缺陷导出自定义列：writeSheet 后插入列，且不得再次 writeSheet 覆盖。
  */
 public class DefectCustomFieldExcelSupportTest {
+
+    private Runnable messageSourceCleanup;
+
+    @Before
+    public void setUpMessageSource() {
+        messageSourceCleanup = MessageSourceTestSupport.installMessageSource();
+    }
+
+    @After
+    public void tearDownMessageSource() {
+        if (messageSourceCleanup != null) {
+            messageSourceCleanup.run();
+        }
+    }
 
     @Test
     public void applyCustomColumnsAfterWrite_insertsCustomHeaderAndValue() {

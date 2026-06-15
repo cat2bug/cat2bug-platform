@@ -7,6 +7,10 @@ import com.cat2bug.system.domain.SysProjectDefectField;
 import com.cat2bug.system.domain.SysProjectDefectFieldColumnLayout;
 import com.cat2bug.system.mapper.SysProjectDefectFieldMapper;
 import com.cat2bug.system.util.DefectBuiltinFieldRegistry;
+import com.cat2bug.system.util.DefectCustomFieldsValidator;
+import com.cat2bug.system.support.MessageSourceTestSupport;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -22,6 +26,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 /**
@@ -33,8 +38,26 @@ public class SysProjectDefectFieldServiceTest {
     @Mock
     private SysProjectDefectFieldMapper fieldMapper;
 
+    @Mock
+    private DefectCustomFieldsValidator customFieldsValidator;
+
     @InjectMocks
     private SysProjectDefectFieldServiceImpl fieldService;
+
+    private Runnable messageSourceCleanup;
+
+    @Before
+    public void setUpMessageSource() {
+        messageSourceCleanup = MessageSourceTestSupport.installMessageSource();
+        lenient().when(customFieldsValidator.normalizeDefaultValue(any(), any())).thenAnswer(inv -> inv.getArgument(1));
+    }
+
+    @After
+    public void tearDownMessageSource() {
+        if (messageSourceCleanup != null) {
+            messageSourceCleanup.run();
+        }
+    }
 
     @Test
     public void validateTypeConfig_enumEmptyOptions_throws() {
@@ -176,8 +199,8 @@ public class SysProjectDefectFieldServiceTest {
 
     @Test
     public void insert_builtinFieldLabelConflict_throws() {
-        when(fieldMapper.selectByProjectIdAndFieldKey(any(), any())).thenReturn(null);
-        when(fieldMapper.selectByProjectIdAndFieldLabel(any(), any())).thenReturn(null);
+        lenient().when(fieldMapper.selectByProjectIdAndFieldKey(any(), any())).thenReturn(null);
+        lenient().when(fieldMapper.selectByProjectIdAndFieldLabel(any(), any())).thenReturn(null);
 
         SysProjectDefectField field = new SysProjectDefectField();
         field.setProjectId(1L);

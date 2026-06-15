@@ -174,7 +174,7 @@ ui-build embedded → mvn clean package -Pnative -Pembedded → 复制为 cat2bu
 | 1 | `NativeEmbeddedSmokeTest`（Testcontainers 或 `@Disabled` + CI 脚本） | GET `/`、`/login` HTML、静态 JS 200 |
 | 2 | 现有 `mvn test` + 关键集成测试 Native profile | Setup/Upgrade、IM、Excel 冒烟清单 |
 | 3 | 构建脚本断言体积写入 METRICS | UPX 冷启动计时 |
-| 4 | 本地冒烟 `deploy/test/native-*.sh` | AlmaLinux RPM `smoke-install.sh` |
+| 4 | CI `deploy/ci/spring-native.yml` | AlmaLinux dnf 安装 |
 
 **Kill Gate（Phase 1 结束，8 周内）**：
 
@@ -212,7 +212,7 @@ Phase 0 ──► 分支 + native-maven-plugin + build-native-spring.sh 骨架 +
 Phase 1 ──► embedded Native 编译 + SPA 冒烟 + Kill Gate（8 周）
 Phase 2 ──► 全功能 parity（MyBatis/Security/IM/AI/Quartz/Setup/Upgrade/Excel）
 Phase 3 ──► 体积优化（FastExcel/Captcha/packaging-slim/Graal 裁剪/UPX 度量）
-Phase 4 ──► RPM/systemd/AlmaLinux 冒烟 + 切换默认 Release + 文档（**不维护 CI**）
+Phase 4 ──► RPM/systemd/CI/AlmaLinux 冒烟 + 切换默认 Release + 文档
 ```
 
 每 Phase 结束：更新 `readme/spring-native-delivery/PHASE-N.md`；Phase 3 起更新 `METRICS.md` 实测列（含 Quarkus 对照列）。

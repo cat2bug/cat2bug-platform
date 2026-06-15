@@ -136,7 +136,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         </if>
     </sql>
 
-    <!-- 自定义字段 JSON 筛选（H2：JSON_VALUE） -->
+    <!-- 自定义字段 JSON 筛选（H2：JSON 字段访问 (col)."key"，fieldKey 已服务端校验） -->
     <sql id="customFieldFilters" databaseId="h2">
         <if test="defect.params != null and defect.params.customFieldFilters != null and defect.params.customFieldFilters.size() &gt; 0">
             <foreach collection="defect.params.customFieldFilters" item="cf">
@@ -145,29 +145,29 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                         <when test="cf.op == 'isEmpty'">
                             AND (
                                 d.custom_fields IS NULL
-                                OR JSON_VALUE(d.custom_fields, CONCAT('$.', #{cf.fieldKey})) IS NULL
-                                OR TRIM(COALESCE(JSON_VALUE(d.custom_fields, CONCAT('$.', #{cf.fieldKey})), '')) IN ('', 'null', '[]', '{}')
+                                OR (d.custom_fields)."${cf.fieldKey}" IS NULL
+                                OR TRIM(COALESCE(CAST((d.custom_fields)."${cf.fieldKey}" AS VARCHAR), '')) IN ('', 'null', '[]', '{}')
                             )
                         </when>
                         <when test="cf.op == 'isNotEmpty' or cf.op == 'hasValue'">
                             AND d.custom_fields IS NOT NULL
-                            AND JSON_VALUE(d.custom_fields, CONCAT('$.', #{cf.fieldKey})) IS NOT NULL
-                            AND TRIM(COALESCE(JSON_VALUE(d.custom_fields, CONCAT('$.', #{cf.fieldKey})), '')) NOT IN ('', 'null', '[]', '{}')
+                            AND (d.custom_fields)."${cf.fieldKey}" IS NOT NULL
+                            AND TRIM(COALESCE(CAST((d.custom_fields)."${cf.fieldKey}" AS VARCHAR), '')) NOT IN ('', 'null', '[]', '{}')
                         </when>
                         <when test="cf.op == 'eq' and cf.value != null">
-                            AND JSON_VALUE(d.custom_fields, CONCAT('$.', #{cf.fieldKey})) = #{cf.value}
+                            AND TRIM(BOTH '"' FROM CAST((d.custom_fields)."${cf.fieldKey}" AS VARCHAR)) = #{cf.value}
                         </when>
                         <when test="cf.op == 'contains' and cf.value != null and cf.value != ''">
-                            AND JSON_VALUE(d.custom_fields, CONCAT('$.', #{cf.fieldKey})) LIKE CONCAT('%', #{cf.value}, '%')
+                            AND CAST((d.custom_fields)."${cf.fieldKey}" AS VARCHAR) LIKE CONCAT('%', #{cf.value}, '%')
                         </when>
                         <when test="cf.op == 'in' and cf.value != null and cf.value.size() &gt; 0">
-                            AND JSON_VALUE(d.custom_fields, CONCAT('$.', #{cf.fieldKey})) IN
+                            AND TRIM(BOTH '"' FROM CAST((d.custom_fields)."${cf.fieldKey}" AS VARCHAR)) IN
                             <foreach collection="cf.value" item="v" open="(" separator="," close=")">
                                 #{v}
                             </foreach>
                         </when>
                         <when test="cf.op == 'between' and cf.value != null and cf.value.size() &gt;= 2">
-                            AND JSON_VALUE(d.custom_fields, CONCAT('$.', #{cf.fieldKey})) BETWEEN #{cf.value[0]} AND #{cf.value[1]}
+                            AND TRIM(BOTH '"' FROM CAST((d.custom_fields)."${cf.fieldKey}" AS VARCHAR)) BETWEEN #{cf.value[0]} AND #{cf.value[1]}
                         </when>
                     </choose>
                 </if>

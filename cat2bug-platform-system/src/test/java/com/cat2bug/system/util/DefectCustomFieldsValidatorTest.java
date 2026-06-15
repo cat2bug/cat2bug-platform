@@ -4,6 +4,9 @@ import com.alibaba.fastjson2.JSONObject;
 import com.cat2bug.common.exception.ServiceException;
 import com.cat2bug.system.domain.SysProjectDefectField;
 import com.cat2bug.system.mapper.SysProjectDefectFieldMapper;
+import com.cat2bug.system.support.MessageSourceTestSupport;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -32,6 +35,20 @@ public class DefectCustomFieldsValidatorTest {
 
     @InjectMocks
     private DefectCustomFieldsValidator validator;
+
+    private Runnable messageSourceCleanup;
+
+    @Before
+    public void setUpMessageSource() {
+        messageSourceCleanup = MessageSourceTestSupport.installMessageSource();
+    }
+
+    @After
+    public void tearDownMessageSource() {
+        if (messageSourceCleanup != null) {
+            messageSourceCleanup.run();
+        }
+    }
 
     private static SysProjectDefectField def(String key, String type, int required) {
         SysProjectDefectField f = new SysProjectDefectField();

@@ -62,8 +62,11 @@ public class SysDefectCustomFieldFilterMapperTest {
             stmt.execute(
                     "CREATE TABLE sys_defect ("
                             + "defect_id BIGINT PRIMARY KEY, project_id BIGINT, project_num BIGINT, del_flag CHAR(1), "
-                            + "defect_name VARCHAR(128), defect_type INT, defect_state INT, handle_by VARCHAR(255), "
-                            + "custom_fields JSON, create_by_id BIGINT, handle_time TIMESTAMP, defect_level VARCHAR(32), "
+                            + "defect_name VARCHAR(128), defect_describe VARCHAR(512), annex_urls VARCHAR(512), img_urls VARCHAR(512), "
+                            + "defect_type INT, defect_state INT, handle_by VARCHAR(255), "
+                            + "custom_fields JSON, create_by VARCHAR(64), create_by_id BIGINT, update_by VARCHAR(64), update_by_id BIGINT, "
+                            + "handle_time TIMESTAMP, defect_level VARCHAR(32), test_plan_id BIGINT, case_id BIGINT, case_step_id BIGINT, "
+                            + "data_sources VARCHAR(64), data_sources_params VARCHAR(512), "
                             + "plan_start_time TIMESTAMP, plan_end_time TIMESTAMP, sponsor VARCHAR(64), "
                             + "module_id BIGINT, module_version VARCHAR(64), update_time TIMESTAMP, create_time TIMESTAMP"
                             + ")"
@@ -71,11 +74,11 @@ public class SysDefectCustomFieldFilterMapperTest {
             stmt.execute("INSERT INTO sys_project(project_id, project_name) VALUES (100, 'test')");
             stmt.execute(
                     "INSERT INTO sys_defect(defect_id, project_id, project_num, del_flag, defect_name, custom_fields) "
-                            + "VALUES (1, 100, 1, '0', 'prod-defect', '{\"env\":\"prod\",\"severity\":\"P0\"}')"
+                            + "VALUES (1, 100, 1, '0', 'prod-defect', JSON '{\"env\":\"prod\",\"severity\":\"P0\"}')"
             );
             stmt.execute(
                     "INSERT INTO sys_defect(defect_id, project_id, project_num, del_flag, defect_name, custom_fields) "
-                            + "VALUES (2, 100, 2, '0', 'staging-defect', '{\"env\":\"staging\"}')"
+                            + "VALUES (2, 100, 2, '0', 'staging-defect', JSON '{\"env\":\"staging\"}')"
             );
             stmt.execute(
                     "INSERT INTO sys_defect(defect_id, project_id, project_num, del_flag, defect_name, custom_fields) "
@@ -87,6 +90,8 @@ public class SysDefectCustomFieldFilterMapperTest {
         configuration.setEnvironment(new Environment("h2test", new JdbcTransactionFactory(), dataSource));
         configuration.setMapUnderscoreToCamelCase(true);
         configuration.setDefaultScriptingLanguage(XMLLanguageDriver.class);
+        configuration.getTypeAliasRegistry().registerAliases("com.cat2bug.system.domain");
+        configuration.getTypeAliasRegistry().registerAliases("com.cat2bug.common.core.domain.entity");
         configuration.addMapper(SysDefectMapper.class);
 
         DatabaseIdProvider databaseIdProvider = new org.apache.ibatis.mapping.VendorDatabaseIdProvider();

@@ -10,6 +10,9 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
 import com.cat2bug.common.utils.StringUtils;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * spring工具类 方便在非spring管理环境中获取bean
  * 
@@ -22,6 +25,25 @@ public final class SpringUtils implements BeanFactoryPostProcessor, ApplicationC
     private static ConfigurableListableBeanFactory beanFactory;
 
     private static ApplicationContext applicationContext;
+
+    /** 单元测试注入 Bean，避免 mockStatic 依赖 JVM self-attach。 */
+    private static final Map<Class<?>, Object> TEST_BEAN_OVERRIDES = new ConcurrentHashMap<>();
+
+    /**
+     * 注册测试用 Bean 覆盖（仅单元测试调用）。
+     */
+    public static void registerTestBean(Class<?> type, Object bean)
+    {
+        TEST_BEAN_OVERRIDES.put(type, bean);
+    }
+
+    /**
+     * 清除测试用 Bean 覆盖（仅单元测试 tearDown 调用）。
+     */
+    public static void clearTestBeans()
+    {
+        TEST_BEAN_OVERRIDES.clear();
+    }
 
     @Override
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException 
@@ -59,6 +81,11 @@ public final class SpringUtils implements BeanFactoryPostProcessor, ApplicationC
      */
     public static <T> T getBean(Class<T> clz) throws BeansException
     {
+        Object override = TEST_BEAN_OVERRIDES.get(clz);
+        if (override != null)
+        {
+            return (T) override;
+        }
         T result = (T) beanFactory.getBean(clz);
         return result;
     }
