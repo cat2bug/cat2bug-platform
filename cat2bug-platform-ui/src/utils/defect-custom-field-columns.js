@@ -64,6 +64,49 @@ export function buildDefectTableColumnDefaults(tableOptions, layout) {
 /** 与 Cat2BugTable cache-key="defect-table" + TABLE_FIELD_LIST_CACHE_KEY 一致 */
 export const DEFECT_TABLE_COLUMN_CACHE_KEY = 'defect-tabledefect-table-field-list'
 
+const MIN_DEFECT_TABLE_COLUMN_WIDTH = 60
+
+function sanitizeColumnWidth(value) {
+  if (value == null || value === '') return undefined
+  const n = Number(value)
+  if (!Number.isFinite(n)) return undefined
+  return Math.max(MIN_DEFECT_TABLE_COLUMN_WIDTH, Math.round(n))
+}
+
+/** 从 field-list 缓存条目解析用户列宽；无效或未设置时返回 undefined（保留 base 默认） */
+export function resolveColumnWidthFromPrefs(pref, base, locale) {
+  const fromPref = sanitizeColumnWidth(pref && pref.width)
+  if (fromPref !== undefined) return fromPref
+  if (base && locale) {
+    const localeWidth = sanitizeColumnWidth(base['width_' + locale])
+    if (localeWidth !== undefined) return localeWidth
+  }
+  return sanitizeColumnWidth(base && base.width)
+}
+
+function buildDefectTableColumnPrefEntry(col) {
+  const entry = {
+    key: col.key,
+    prop: col.prop,
+    visible: col.visible !== false,
+    fixed: !!col.fixed
+  }
+  const w = sanitizeColumnWidth(col.width)
+  if (w !== undefined) entry.width = w
+  return entry
+}
+
+function mergeColumnWithCachedPrefs(base, pref) {
+  const merged = {
+    ...base,
+    fixed: pref ? !!pref.fixed : !!base.fixed,
+    visible: pref ? pref.visible !== false : base.visible !== false
+  }
+  const w = pref ? sanitizeColumnWidth(pref.width) : undefined
+  if (w !== undefined) merged.width = w
+  return merged
+}
+
 let _cache = { projectId: null, layout: null, promise: null }
 
 function mapEnabledFields(data) {
@@ -132,7 +175,7 @@ function readFieldListCache(localCache, storageKey = DEFECT_TABLE_COLUMN_CACHE_K
 }
 
 /**
- * 合并缺陷表列配置：visible / fixed 来自本地缓存；
+ * 合并缺陷表列配置：visible / fixed / width 来自本地缓存；
  * 缓存为对象数组时，列顺序与缓存一致（表格/Excel 拖列与「显示字段」列表同步）。
  */
 export function mergeDefectTableColumnPrefs(localCache, defaults, storageKey = DEFECT_TABLE_COLUMN_CACHE_KEY) {
@@ -168,21 +211,13 @@ export function mergeDefectTableColumnPrefs(localCache, defaults, storageKey = D
     if (!c || !c.key) return
     const base = defaultByKey[c.key]
     if (!base) return
-    ordered.push({
-      ...base,
-      fixed: !!c.fixed,
-      visible: c.visible !== false
-    })
+    ordered.push(mergeColumnWithCachedPrefs(base, c))
     seen.add(c.key)
   })
   list.forEach(d => {
     if (!d || !d.key || seen.has(d.key)) return
     const pref = prefByKey[d.key]
-    ordered.push({
-      ...d,
-      fixed: pref ? !!pref.fixed : !!d.fixed,
-      visible: pref ? pref.visible !== false : d.visible !== false
-    })
+    ordered.push(mergeColumnWithCachedPrefs(d, pref))
   })
   return ordered
 }
@@ -204,12 +239,7 @@ export function syncNewDefectTableColumnsIntoFieldListCache(
   if (!cached || !cached.length) {
     localCache.setJSON(
       storageKey,
-      columns.map(c => ({
-        key: c.key,
-        prop: c.prop,
-        visible: c.visible !== false,
-        fixed: !!c.fixed
-      }))
+      columns.map(buildDefectTableColumnPrefEntry)
     )
     return
   }
@@ -232,12 +262,7 @@ export function syncNewDefectTableColumnsIntoFieldListCache(
   const additions = []
   columns.forEach(col => {
     if (!col || !col.key || existing.has(col.key)) return
-    additions.push({
-      key: col.key,
-      prop: col.prop,
-      visible: col.visible !== false,
-      fixed: !!col.fixed
-    })
+    additions.push(buildDefectTableColumnPrefEntry(col))
   })
   if (additions.length) {
     localCache.setJSON(storageKey, [...cached, ...additions])

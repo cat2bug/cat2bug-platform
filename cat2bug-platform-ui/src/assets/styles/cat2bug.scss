@@ -55,6 +55,11 @@
   --progress-fill-warning: #e6a23c;
   --progress-fill-exception: #f56c6c;
 
+  /* 测试计划用例统计：通过/未通过/未执行/总数（亮色与暗色语义一致） */
+  --plan-stat-pass-color: rgb(19, 206, 102);
+  --plan-stat-fail-color: #f56c6c;
+  --plan-stat-unexec-color: #909399;
+
   /* Cat2BugTable 表头排序箭头（浅色） */
   --cat2bug-table-sort-caret-inactive: #c0c4cc;
   --cat2bug-table-sort-caret-active: #409eff;
@@ -636,6 +641,21 @@ img.cat2bug-image-error__img {
 /* el-badge 圆点/数字：去掉 Element 默认白边（深浅色主题均适用） */
 .el-badge__content {
   border: none !important;
+}
+
+/* 测试计划用例统计语义色（HandlePlanDialog / 仪表盘 PlanStatisticsChart） */
+.plan-stat-pass {
+  color: var(--plan-stat-pass-color);
+}
+.plan-stat-fail {
+  color: var(--plan-stat-fail-color);
+}
+.plan-stat-unexec {
+  color: var(--plan-stat-unexec-color);
+}
+.plan-stat-total,
+.case-total {
+  font-weight: 500;
 }
 
 /* 全站列表页工具栏：查询项与操作按钮横向间距统一（与 --cat2bug-toolbar-item-gap 一致） */

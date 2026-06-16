@@ -1,5 +1,9 @@
 <template>
-  <div class="cat2-bug-table-wrap" :style="operateColumnWrapStyle">
+  <div
+    class="cat2-bug-table-wrap"
+    :class="{ 'is-column-resizing': columnResizeActive }"
+    :style="operateColumnWrapStyle"
+  >
     <el-table ref="elTable"
               :key="tableKey"
               v-loading="loading"
@@ -15,22 +19,42 @@
       <el-table-column v-for="(col, colIndex) in showTableFieldList"
                        :label="columnHeaderLabel(col)"
                        :key="columnRowKey(col, colIndex)"
-                       :min-width="columnMinWidth(col)"
+                       :width="columnTableWidth(col)"
+                       :min-width="columnMinWidthPx"
                        :prop="col.prop"
                        :class-name="columnClassName(col)"
+                       :label-class-name="columnHeaderLabelClassName(col)"
                        :fixed="col.fixed ? 'left' : false"
                        :align="col.align || 'left'"
                        :sort-by="columnSortBy(col)"
                        :sortable="columnSortableMode(col)">
         <template v-slot:header>
-          <div v-if="col.pinFixedToggle !== false" :class="['table-header', { 'table-header--required': col.required }]">
-            <svg-icon
-              :icon-class="col.fixed ? 'header-right' : 'header-left'"
-              class="table-header-pin"
-              @mousedown.stop
-              @click.stop="handleClickColumnsPin(col)"
-            ></svg-icon>
-            <span :class="['header-title', { 'header-title--required': col.required }]">{{ columnHeaderLabel(col) }}</span>
+          <div v-if="columnHeaderHandlesEnabled(col)" class="table-header-cell-content">
+            <div class="table-header-wrap">
+              <div :class="['table-header', { 'table-header--required': col.required }]">
+                <span
+                  class="col-handle-drag"
+                  :class="{ 'is-resizing-active': isColumnResizeTarget(col) }"
+                  aria-hidden="true"
+                >
+                  <span class="col-handle-drag__grip" aria-hidden="true"></span>
+                </span>
+                <svg-icon
+                  :icon-class="col.fixed ? 'header-right' : 'header-left'"
+                  class="table-header-pin"
+                  @click.stop.prevent="handleClickColumnsPin(col)"
+                ></svg-icon>
+                <span :class="['header-title', { 'header-title--required': col.required }]">{{ columnHeaderLabel(col) }}</span>
+              </div>
+            </div>
+            <span
+              class="col-handle-resize"
+              :class="{ 'is-resizing-active': isColumnResizeTarget(col) }"
+              aria-hidden="true"
+              @mousedown.stop.prevent="onColumnResizeMouseDown(col, $event)"
+            >
+              <span class="col-handle-bar"></span>
+            </span>
           </div>
           <span v-else :class="['header-title-only', { 'header-title--required': col.required }]">{{ columnHeaderLabel(col) }}</span>
         </template>
@@ -66,6 +90,9 @@ const TABLE_FIELD_LIST_CACHE_KEY = 'defect-table-field-list';
 const TABLE_SORT_COLUMN = 'defect_table_sort_column_key';
 const TABLE_SORT_TYPE = 'defect_table_sort_type_key';
 const DEFAULT_COLUMN_WIDTH = 180;
+const COLUMN_MIN_WIDTH_PX = 60;
+const COLUMN_WIDTH_PERSIST_DEBOUNCE_MS = 300;
+const COLUMN_RESIZE_BODY_CLASS = 'cat2bug-table-column-resizing';
 /** append 操作列 class-name 需含此类名以启用自动列宽 */
 const OPERATE_COLUMN_CLASS = 'cat2bug-operate-column';
 /** 操作列内容容器 class，用于测量与换行；无此 class 时回退测量 .cell 内可见子节点 */
@@ -97,6 +124,12 @@ export default {
       _rowSyncRafId: null,
       _lastOperateWidth: null,
       _operateColRo: null,
+      _internalColumnsUpdate: false,
+      columnResizeActive: false,
+      columnResizeColKey: null,
+      _columnWidthPersistTimer: null,
+      _columnResizeSession: null,
+      _columnResizeLayoutRaf: null,
     }
   },
   props: {
@@ -191,7 +224,10 @@ export default {
       return function (column) {
         return column['width_' + this.$i18n.locale] || column.width || DEFAULT_COLUMN_WIDTH;
       }
-    }
+    },
+    columnMinWidthPx() {
+      return COLUMN_MIN_WIDTH_PX;
+    },
   },
   watch: {
     "$i18n.locale": function () {
@@ -215,7 +251,7 @@ export default {
     columns: {
       deep: true,
       handler(cols) {
-        if (!this.preserveColumnOrder) return;
+        if (!this.preserveColumnOrder || this._internalColumnsUpdate) return;
         const next = (cols || []).map(c => ({ ...c }));
         this.tableFieldList = next;
         this.$emit('columns-change', next);
@@ -251,8 +287,36 @@ export default {
       this._rowSyncRafId = null;
     }
     this.teardownCustomHorizontalScrollbar();
+    this.teardownColumnResizeSession();
+    this.teardownColumnResizeClickBlock();
+    if (this._columnWidthPersistTimer) {
+      clearTimeout(this._columnWidthPersistTimer);
+      this._columnWidthPersistTimer = null;
+    }
   },
   methods: {
+    sanitizeColumnWidthPx(value) {
+      if (value == null || value === '') return undefined;
+      const n = Number(value);
+      if (!Number.isFinite(n)) return undefined;
+      return Math.max(COLUMN_MIN_WIDTH_PX, Math.round(n));
+    },
+    columnHeaderHandlesEnabled(col) {
+      if (!col || col.pinFixedToggle === false) return false;
+      const cn = col.className || '';
+      if (cn.indexOf(OPERATE_COLUMN_CLASS) !== -1) return false;
+      return true;
+    },
+    columnHeaderLabelClassName(col) {
+      return this.columnHeaderHandlesEnabled(col) ? 'cat2bug-col-header-handles' : '';
+    },
+    isColumnResizeTarget(col) {
+      return this.columnResizeActive && col && col.key === this.columnResizeColKey;
+    },
+    columnTableWidth(col) {
+      const w = this.sanitizeColumnWidthPx(this.columnWidth(col));
+      return w !== undefined ? w : DEFAULT_COLUMN_WIDTH;
+    },
     /**
      * 固定列区域是独立 table，主表体与固定列行高依赖同一套列宽与 scrollY gutter。
      * 数据/插槽渲染后延迟 doLayout，避免中间列换行高度与固定列不一致。
@@ -407,7 +471,9 @@ export default {
       return (col.key || col.prop) + '_' + colIndex;
     },
     columnMinWidth(col) {
-      return col.minWidth || this.columnWidth(col);
+      const custom = this.sanitizeColumnWidthPx(col.minWidth);
+      if (custom !== undefined) return custom;
+      return COLUMN_MIN_WIDTH_PX;
     },
     columnClassName(col) {
       const parts = [];
@@ -455,11 +521,14 @@ export default {
       cached.forEach(c => {
         const base = defaultByKey[c.key];
         if (!base) return;
-        merged.push({
+        const mergedCol = {
           ...base,
           fixed: !!c.fixed,
           visible: c.visible !== false
-        });
+        };
+        const w = this.sanitizeColumnWidthPx(c.width);
+        if (w !== undefined) mergedCol.width = w;
+        merged.push(mergedCol);
         used.add(c.key);
       });
       list.forEach(d => {
@@ -530,7 +599,107 @@ export default {
     saveShowColumns(columns) {
       const key = this.columnsStorageKey();
       if (!key) return;
-      this.$cache.local.setJSON(key, columns);
+      const payload = (columns || []).map((col) => {
+        const entry = {
+          key: col.key,
+          prop: col.prop,
+          visible: col.visible !== false,
+          fixed: !!col.fixed
+        };
+        const w = this.sanitizeColumnWidthPx(col.width);
+        if (w !== undefined) entry.width = w;
+        return entry;
+      });
+      this.$cache.local.setJSON(key, payload);
+    },
+    schedulePersistColumnWidths() {
+      if (this._columnWidthPersistTimer) clearTimeout(this._columnWidthPersistTimer);
+      this._columnWidthPersistTimer = setTimeout(() => {
+        this._columnWidthPersistTimer = null;
+        if (this.columnsStorageKey()) this.saveShowColumns(this.tableFieldList);
+      }, COLUMN_WIDTH_PERSIST_DEBOUNCE_MS);
+    },
+    teardownColumnResizeClickBlock() {
+      const block = this._columnResizeClickBlock;
+      if (!block) return;
+      document.removeEventListener('click', block.onBlockClick, true);
+      if (block.blockClickTimer) clearTimeout(block.blockClickTimer);
+      this._columnResizeClickBlock = null;
+    },
+    teardownColumnResizeSession() {
+      const s = this._columnResizeSession;
+      if (!s) return;
+      document.removeEventListener('mousemove', s.onMove);
+      document.removeEventListener('mouseup', s.onUp, true);
+      this._columnResizeSession = null;
+      this.columnResizeActive = false;
+      this.columnResizeColKey = null;
+      document.body.classList.remove(COLUMN_RESIZE_BODY_CLASS);
+      if (this._columnResizeLayoutRaf != null) {
+        cancelAnimationFrame(this._columnResizeLayoutRaf);
+        this._columnResizeLayoutRaf = null;
+      }
+    },
+    scheduleBlockColumnHeaderClickAfterResize() {
+      this.teardownColumnResizeClickBlock();
+      const onBlockClick = (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        ev.stopImmediatePropagation();
+      };
+      const blockClickTimer = setTimeout(() => {
+        this.teardownColumnResizeClickBlock();
+      }, 300);
+      document.addEventListener('click', onBlockClick, true);
+      this._columnResizeClickBlock = { onBlockClick, blockClickTimer };
+    },
+    onColumnResizeMouseDown(col, e) {
+      if (!col || !col.key) return;
+      e.preventDefault();
+      this.teardownColumnResizeSession();
+      const startX = e.clientX;
+      const startWidth = this.columnTableWidth(col);
+      this.columnResizeActive = true;
+      this.columnResizeColKey = col.key;
+      document.body.classList.add(COLUMN_RESIZE_BODY_CLASS);
+      const onMove = (ev) => {
+        const delta = ev.clientX - startX;
+        const next = this.sanitizeColumnWidthPx(startWidth + delta);
+        if (next === undefined) return;
+        const idx = this.tableFieldList.findIndex(c => c.key === col.key);
+        if (idx < 0) return;
+        if (this.tableFieldList[idx].width === next) return;
+        this.$set(this.tableFieldList, idx, { ...this.tableFieldList[idx], width: next });
+        if (this._columnResizeLayoutRaf != null) return;
+        this._columnResizeLayoutRaf = requestAnimationFrame(() => {
+          this._columnResizeLayoutRaf = null;
+          const t = this.$refs.elTable;
+          if (t) t.doLayout();
+          this.updateCustomHorizontalScrollbar();
+        });
+      };
+      const onUp = (ev) => {
+        if (ev) {
+          ev.preventDefault();
+          ev.stopPropagation();
+        }
+        this.scheduleBlockColumnHeaderClickAfterResize();
+        this.teardownColumnResizeSession();
+        this.schedulePersistColumnWidths();
+        this.$emit('columns-change', this.tableFieldList.map(c => ({ ...c })));
+        this.$nextTick(() => {
+          if (!this.$refs.elTable) return;
+          this.$refs.elTable.doLayout();
+          requestAnimationFrame(() => {
+            this.syncOperateColumnWidths();
+            this.syncFixedDataRowHeights();
+            this.updateCustomHorizontalScrollbar();
+          });
+        });
+      };
+      this._columnResizeSession = { onMove, onUp };
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp, true);
     },
     getShowColumns(storageKey) {
       const key = storageKey || this.columnsStorageKey();
@@ -565,9 +734,13 @@ export default {
       this.reorderColumns();
     },
     setColumns(columns) {
+      this._internalColumnsUpdate = true;
       this.tableFieldList = columns;
       this.$emit('columns-change', columns);
       if (this.columnsStorageKey()) this.saveShowColumns(columns);
+      this.$nextTick(() => {
+        this._internalColumnsUpdate = false;
+      });
     },
     /**
      * 与 Element UI util.getColumnByCell 一致：th.className 中含 el-table_*_column_*（可多级 _column_），
@@ -803,7 +976,8 @@ export default {
         this.headerSortable[zone] = Sortable.create(el, {
           ghostClass: 'table-header-ghost',
           group: zone,
-          filter: 'th.gutter, .el-table__gutter, .no-drag, .cat2bug-operate-column, .table-header, .table-header-pin',
+          handle: '.col-handle-drag',
+          filter: 'th.gutter, .el-table__gutter, .no-drag, .cat2bug-operate-column, .table-header-pin, .col-handle-resize',
           preventOnFilter: false,
           onStart: () => {
             this.mouseFlag = false;
@@ -1293,9 +1467,28 @@ export default {
       });
     },
     handleClickColumnsPin(column) {
-      column.fixed = !column.fixed;
-      this.reorderColumns();
-      this.tableKey = Date.now();
+      const colKey = column && column.key;
+      if (!colKey) return;
+      const toggled = this.tableFieldList.map(c =>
+        c.key === colKey ? { ...c, fixed: !c.fixed } : { ...c }
+      );
+      const fixedCols = toggled.filter(c => c.fixed);
+      const normalCols = toggled.filter(c => !c.fixed);
+      this.setColumns([...fixedCols, ...normalCols]);
+      // 须等 setColumns 写入后再 bump key，避免与 reorderColumns / columns 同步竞态导致首次点击被覆盖
+      this.$nextTick(() => {
+        this.tableKey = Date.now();
+        this.$nextTick(() => {
+          if (!this.$refs.elTable) return;
+          this.initColumnDrag();
+          this.$refs.elTable.doLayout();
+          requestAnimationFrame(() => {
+            this.syncOperateColumnWidths();
+            this.syncFixedDataRowHeights();
+            this.updateCustomHorizontalScrollbar();
+          });
+        });
+      });
     },
     handleSelectionChange(selection) {
       this.$emit('selection-change', selection);
@@ -1340,6 +1533,11 @@ export default {
 .cat2-bug-table-wrap {
   position: relative;
   --cat2bug-operate-col-applied-width: 450px;
+  --cat2bug-col-drag-handle-width: 12px;
+  --cat2bug-col-handle-bar-width: 2px;
+  --cat2bug-col-handle-dot-size: 3px;
+  --cat2bug-col-handle-grip-color: var(--text-color-placeholder, #c0c4cc);
+  --cat2bug-col-handle-grip-color-active: var(--cat2bug-primary, #409eff);
 
   /* 覆盖 Element UI 默认 .el-table { background: #FFF } / .el-table tr { background: #FFF } */
   ::v-deep .el-table {
@@ -1477,22 +1675,188 @@ export default {
   border-radius: 3px;
 }
 
+.table-header-cell-content {
+  display: contents;
+}
+
+.table-header-wrap {
+  position: relative;
+  order: 1;
+  display: flex;
+  align-items: stretch;
+  flex: 1 1 auto;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  align-self: stretch;
+  height: 100%;
+  min-height: 100%;
+}
+
+.col-handle-drag,
+.col-handle-resize {
+  border-radius: 0;
+  transition: opacity 0.15s ease, color 0.15s ease;
+}
+
+.col-handle-bar {
+  width: var(--cat2bug-col-handle-bar-width, 2px);
+  height: 100%;
+  min-height: 100%;
+  align-self: stretch;
+  border-radius: 1px;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+.col-handle-drag {
+  flex: 0 0 var(--cat2bug-col-drag-handle-width, 12px);
+  width: var(--cat2bug-col-drag-handle-width, 12px);
+  height: 100%;
+  min-height: 100%;
+  align-self: stretch;
+  margin: 0;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: transparent;
+  opacity: 0;
+  pointer-events: none;
+  cursor: grab;
+  flex-shrink: 0;
+}
+
+.col-handle-drag:active {
+  cursor: grabbing;
+}
+
+/* 2×3 六点：通用拖动手势 */
+.col-handle-drag__grip {
+  position: relative;
+  flex-shrink: 0;
+  width: 7px;
+  height: 15px;
+  color: var(--cat2bug-col-handle-grip-color, #c0c4cc);
+  transition: color 0.15s ease;
+}
+
+.col-handle-drag__grip::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--cat2bug-col-handle-dot-size, 3px);
+  height: var(--cat2bug-col-handle-dot-size, 3px);
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow:
+    4px 0 0 currentColor,
+    0 6px 0 currentColor,
+    4px 6px 0 currentColor,
+    0 12px 0 currentColor,
+    4px 12px 0 currentColor;
+}
+
+.col-handle-resize {
+  order: 3;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  flex: 0 0 6px;
+  align-self: stretch;
+  width: 6px;
+  height: 100%;
+  min-height: 100%;
+  background: transparent;
+  color: var(--cat2bug-col-handle-grip-color, #c0c4cc);
+  opacity: 0;
+  pointer-events: none;
+  cursor: col-resize;
+  flex-shrink: 0;
+  transition: color 0.15s ease;
+}
+
+::v-deep thead th.el-table__cell:hover .col-handle-drag__grip,
+::v-deep thead th.el-table__cell:hover .col-handle-resize {
+  color: var(--cat2bug-col-handle-grip-color-active, #409eff);
+}
+
+/* .cell 铺满 th（含 padding 的整列头高度），手柄按列头算高 */
+::v-deep thead th.cat2bug-col-header-handles {
+  position: relative;
+}
+
+::v-deep thead th.cat2bug-col-header-handles > .cell {
+  position: absolute;
+  inset: 0;
+  display: flex !important;
+  flex-direction: row;
+  align-items: stretch !important;
+  box-sizing: border-box;
+  min-height: 100%;
+  height: 100%;
+}
+
+::v-deep th.is-sortable.cat2bug-col-header-handles .caret-wrapper {
+  order: 2;
+  flex-shrink: 0;
+  margin-left: 2px;
+  align-self: center;
+}
+
+::v-deep thead th.el-table__cell:hover .col-handle-drag,
+::v-deep thead th.el-table__cell:hover .col-handle-resize {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* 调宽进行中：隐藏其他列手柄，当前列保留 */
+.cat2-bug-table-wrap.is-column-resizing ::v-deep .col-handle-drag:not(.is-resizing-active),
+.cat2-bug-table-wrap.is-column-resizing ::v-deep .col-handle-resize:not(.is-resizing-active),
+.cat2-bug-table-wrap.is-column-resizing ::v-deep thead th.el-table__cell:hover .col-handle-drag:not(.is-resizing-active),
+.cat2-bug-table-wrap.is-column-resizing ::v-deep thead th.el-table__cell:hover .col-handle-resize:not(.is-resizing-active) {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.cat2-bug-table-wrap.is-column-resizing ::v-deep .col-handle-drag.is-resizing-active,
+.cat2-bug-table-wrap.is-column-resizing ::v-deep .col-handle-resize.is-resizing-active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.cat2-bug-table-wrap.is-column-resizing ::v-deep .col-handle-drag.is-resizing-active .col-handle-drag__grip,
+.cat2-bug-table-wrap.is-column-resizing ::v-deep .col-handle-resize.is-resizing-active {
+  color: var(--cat2bug-col-handle-grip-color-active, #409eff);
+}
+
 .table-header {
   display: inline-flex;
   justify-content: flex-start;
   align-items: center;
   flex-direction: row;
-  gap: 5px;
+  gap: 4px;
   min-width: 0;
   flex: 1 1 auto;
+  height: 100%;
+  min-height: 100%;
 
   ::v-deep .svg-icon {
     cursor: pointer;
     flex-shrink: 0;
+    align-self: center;
   }
 }
 
+.table-header-pin {
+  align-self: center;
+}
+
 .header-title {
+  align-self: center;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1500,16 +1864,15 @@ export default {
 }
 
 /* 自定义表头 slot 后仍保留 Element 排序箭头，避免被挤没或点不到 */
-::v-deep th.is-sortable .cell {
-  display: inline-flex !important;
-  align-items: center;
+::v-deep th.is-sortable.cat2bug-col-header-handles > .cell {
   vertical-align: middle;
   max-width: 100%;
 }
 
-::v-deep th.is-sortable .caret-wrapper {
+::v-deep th.is-sortable:not(.cat2bug-col-header-handles) .caret-wrapper {
   flex-shrink: 0;
   margin-left: 2px;
+  align-self: center;
 }
 
 ::v-deep thead .no-drag {
@@ -1643,5 +2006,12 @@ export default {
 .cat2-bug-table-wrap .el-table__fixed-right tbody tr:hover > td.el-table__cell,
 .cat2-bug-table-wrap .el-table__fixed-right tbody tr.hover-row > td.el-table__cell {
   background-color: var(--table-row-hover-bg) !important;
+}
+
+/* 调宽拖动全程锁定 col-resize，避免经过 pin/标题等元素时光标闪烁 */
+body.cat2bug-table-column-resizing,
+body.cat2bug-table-column-resizing * {
+  cursor: col-resize !important;
+  user-select: none !important;
 }
 </style>

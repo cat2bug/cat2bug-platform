@@ -15,7 +15,8 @@ ADMIN="$ROOT/cat2bug-platform-admin"
 source "$ROOT/deploy/scripts/upx-docker.sh"
 
 MODE="${1:-build}"
-BASE="${2:-${DOCKER_BASE:-minimal}}"
+# core 默认：linux/arm64 与 CI 冒烟均用 debian:bookworm-slim（见 deploy/ci/spring-native.yml）
+BASE="${2:-${DOCKER_BASE:-debian}}"
 
 HOST_ARCH="$(uname -m)"
 case "${ARCH:-$HOST_ARCH}" in
@@ -96,7 +97,7 @@ build_runtime_image() {
   if [[ "$BASE" == "debian" ]]; then
     docker build --platform "$DOCKER_PLATFORM" -t "$IMAGE_TAG" -f- "$stage" <<EOF
 FROM debian:bookworm-slim
-RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates \\
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates zlib1g \\
     && rm -rf /var/lib/apt/lists/*
 COPY cat2bug-admin /cat2bug-admin
 WORKDIR /app
