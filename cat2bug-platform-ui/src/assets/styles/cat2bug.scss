@@ -404,7 +404,15 @@ html.dark .module-mode-switch-hint .el-switch.is-checked:focus-within {
 .el-select-dropdown,
 .el-dropdown-menu {
   border-radius: $cat2bug-radius !important;
+}
+
+/* 下拉菜单需保留 popper 箭头；overflow:hidden 会裁切 .popper__arrow（见 SelectModule 注释） */
+.el-select-dropdown {
   overflow: hidden;
+}
+
+.el-dropdown-menu {
+  overflow: visible;
 }
 
 .el-table {

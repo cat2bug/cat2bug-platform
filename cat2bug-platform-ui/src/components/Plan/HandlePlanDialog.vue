@@ -340,6 +340,7 @@ export default {
     handleListChanged() {
       this.getPlanInfo(this.planId, false);
       this.setDragComponentSize();
+      this.$emit('change');
     },
   }
 }
@@ -418,6 +419,7 @@ export default {
 }
 .plan-item-defect-list {
   width: 400px;
+  overflow: visible !important;
 }
 .plan-item-defect-list > .el-dropdown-menu__item {
   display: -webkit-box;
