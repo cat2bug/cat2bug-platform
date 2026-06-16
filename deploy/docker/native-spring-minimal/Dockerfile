@@ -7,14 +7,14 @@ FROM debian:bookworm-slim AS libs
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates zlib1g \
     && rm -rf /var/lib/apt/lists/* \
-    && mkdir -p /app/logs /app/data /app/upload /app/config/install /tmp \
+    && mkdir -p /export /app/logs /app/data /app/upload /app/config/install /tmp \
+    && cp -a /lib/*-linux-gnu/libz.so.1* /export/ \
     && chmod 1777 /tmp \
     && chown -R 65532:65532 /app
 
 FROM ${BASE_IMAGE}
 ARG GNU_ARCH
-COPY --from=libs /lib/${GNU_ARCH}-linux-gnu/libz.so.1 /lib/${GNU_ARCH}-linux-gnu/libz.so.1
-COPY --from=libs /lib/${GNU_ARCH}-linux-gnu/libz.so.1.* /lib/${GNU_ARCH}-linux-gnu/
+COPY --from=libs /export/ /lib/${GNU_ARCH}-linux-gnu/
 COPY --from=libs /app /app
 COPY cat2bug-admin /cat2bug-admin
 WORKDIR /app

@@ -85,8 +85,9 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <!-- POI 单测在 forked JVM + 受限环境可能 Abort trap；同进程执行更稳定 -->
-                    <forkCount>0</forkCount>
+                    <!-- POI 单测需 headless；fork 以保证 Surefire 3.x 行为与隔离性 -->
+                    <forkCount>1</forkCount>
+                    <reuseForks>true</reuseForks>
                     <argLine>-Djava.awt.headless=true</argLine>
                 </configuration>
             </plugin>

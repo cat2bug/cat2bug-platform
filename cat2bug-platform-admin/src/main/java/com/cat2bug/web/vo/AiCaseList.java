@@ -8,6 +8,7 @@ import com.cat2bug.system.domain.SysCase;
 import com.cat2bug.system.domain.SysCaseStep;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
@@ -20,6 +21,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
+@EqualsAndHashCode(callSuper = false)
 @AIClass
 public class AiCaseList extends AiResponseBody {
     /** 测试用例列表 */

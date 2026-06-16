@@ -4,6 +4,7 @@ import com.cat2bug.common.annotation.Excel;
 import com.cat2bug.common.core.domain.BaseEntity;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
@@ -17,6 +18,7 @@ import java.util.List;
  * @date 2024-02-11
  */
 @Data
+@EqualsAndHashCode(callSuper = false)
 public class ApiProjectApi extends BaseEntity
 {
     private static final long serialVersionUID = 1L;

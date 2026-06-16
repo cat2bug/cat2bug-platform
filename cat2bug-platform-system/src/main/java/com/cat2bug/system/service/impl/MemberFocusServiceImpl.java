@@ -6,12 +6,18 @@ import com.cat2bug.common.core.redis.RedisCache;
 import com.cat2bug.common.websocket.MessageWebsocket;
 import com.cat2bug.system.domain.MemberFocus;
 import com.cat2bug.system.service.IMemberFocusService;
-import com.cat2bug.system.websocket.MemberFocusWebsocket;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -36,7 +42,6 @@ public class MemberFocusServiceImpl implements IMemberFocusService {
                 MEMBER_FOCUS,
                 String.format("%s-%d-%d",moduleName, dataId, user.getUserId()),
                 mf);
-        Collection<String> keys = this.redisCache.getKeys(MEMBER_FOCUS);
         messageWebsocket.sendMessage(WebSocketResult.success(MEMBER_FOCUS,mf));
     }
 
@@ -56,15 +61,57 @@ public class MemberFocusServiceImpl implements IMemberFocusService {
 
     @Override
     public List<SysUser> getFocusMemberList(String moduleName, Long dataId) {
-        Collection<String> keys = this.redisCache.getKeys(MEMBER_FOCUS);
-        return keys.stream().filter(k -> k.indexOf(String.format("%s-%d-",moduleName,dataId))==0).map(k->{
-            try {
-                MemberFocus mf = redisCache.getCacheObject(MEMBER_FOCUS, k);
-                if (mf == null) return null;
-                return mf.getUser();
-            } catch (Exception e) {
-                return null;
+        if (dataId == null) {
+            return Collections.emptyList();
+        }
+        Map<Long, List<SysUser>> map = getFocusMemberMap(moduleName, Collections.singleton(dataId));
+        return map.getOrDefault(dataId, Collections.emptyList());
+    }
+
+    @Override
+    public Map<Long, List<SysUser>> getFocusMemberMap(String moduleName, Collection<Long> dataIds) {
+        if (moduleName == null || dataIds == null || dataIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        Set<Long> wanted = dataIds.stream().filter(Objects::nonNull).collect(Collectors.toCollection(HashSet::new));
+        if (wanted.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        String modulePrefix = moduleName + "-";
+        Map<Long, List<SysUser>> result = new HashMap<>();
+        for (String key : this.redisCache.getKeys(MEMBER_FOCUS)) {
+            if (!key.startsWith(modulePrefix)) {
+                continue;
             }
-        }).filter(k -> k!=null).collect(Collectors.toList());
+            Long dataId = parseFocusDataId(moduleName, key);
+            if (dataId == null || !wanted.contains(dataId)) {
+                continue;
+            }
+            try {
+                MemberFocus mf = redisCache.getCacheObject(MEMBER_FOCUS, key);
+                if (mf != null && mf.getUser() != null) {
+                    result.computeIfAbsent(dataId, ignored -> new ArrayList<>()).add(mf.getUser());
+                }
+            } catch (Exception ignored) {
+            }
+        }
+        return result;
+    }
+
+    private static Long parseFocusDataId(String moduleName, String key) {
+        String prefix = moduleName + "-";
+        if (!key.startsWith(prefix)) {
+            return null;
+        }
+        String rest = key.substring(prefix.length());
+        int dash = rest.indexOf('-');
+        if (dash <= 0) {
+            return null;
+        }
+        try {
+            return Long.parseLong(rest.substring(0, dash));
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 }

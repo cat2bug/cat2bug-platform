@@ -5,6 +5,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import com.cat2bug.common.enums.ExcelHorizontalAlign;
 import com.cat2bug.common.enums.ExcelIndexedColor;
@@ -67,9 +68,9 @@ public @interface Excel
     public int scale() default -1;
 
     /**
-     * BigDecimal 舍入规则 默认:BigDecimal.ROUND_HALF_EVEN
+     * BigDecimal 舍入规则，默认 {@link RoundingMode#HALF_EVEN}
      */
-    public int roundingMode() default BigDecimal.ROUND_HALF_EVEN;
+    public int roundingMode() default 6;
 
     /**
      * 导出时在excel中每个列的高度

@@ -32,6 +32,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/system/report")
+@SuppressWarnings({"rawtypes", "unchecked"})
 public class SysReportController extends BaseController
 {
     private final Logger log = LogManager.getLogger(SysReportController.class);

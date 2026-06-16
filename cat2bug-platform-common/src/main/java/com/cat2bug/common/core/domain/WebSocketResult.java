@@ -2,6 +2,7 @@ package com.cat2bug.common.core.domain;
 
 import com.cat2bug.common.constant.HttpStatus;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * @Author: yuzhantao
@@ -9,6 +10,7 @@ import lombok.Data;
  * @Version: 1.0.0
  */
 @Data
+@EqualsAndHashCode(callSuper = false)
 public class WebSocketResult extends AjaxResult {
     /**
      * 消息类型

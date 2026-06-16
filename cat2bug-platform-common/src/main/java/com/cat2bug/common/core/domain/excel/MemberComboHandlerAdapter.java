@@ -13,9 +13,10 @@ import java.util.Map;
  */
 public class MemberComboHandlerAdapter implements ExcelComboHandlerAdapter {
     @Override
+    @SuppressWarnings("unchecked")
     public List<String> format(Map<String, Object> args) {
         if(args.containsKey("memberList")) {
-            return (List)args.get("memberList");
+            return (List<String>)args.get("memberList");
         } else {
             return new ArrayList<>();
         }

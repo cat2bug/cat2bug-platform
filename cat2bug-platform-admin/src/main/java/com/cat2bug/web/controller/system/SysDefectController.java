@@ -108,6 +108,9 @@ public class SysDefectController extends BaseController
         DefectListQuerySupport.startDefectListPage();
         List<SysDefect> list = sysDefectService.selectSysDefectList(sysDefect);
         TableDataInfo tableDataInfo = getDataTable(list);
+        Map<Long, List<SysUser>> focusMap = memberFocusService.getFocusMemberMap(
+                MODULE_NAME,
+                list.stream().map(SysDefect::getDefectId).collect(Collectors.toList()));
         List<SysDefect> newList = new ArrayList<>(list);
         newList.forEach(l->{
             if(l.getHandleByList()!=null){
@@ -122,8 +125,7 @@ public class SysDefectController extends BaseController
                 }
                 l.setHandleByList(handleList);
             }
-            List<SysUser> focusList = memberFocusService.getFocusMemberList(MODULE_NAME,l.getDefectId());
-            l.setFocusList(focusList);
+            l.setFocusList(focusMap.getOrDefault(l.getDefectId(), Collections.emptyList()));
         });
         tableDataInfo.setRows(newList);
         return tableDataInfo;

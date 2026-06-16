@@ -16,6 +16,7 @@ import com.cat2bug.system.domain.SysAiModuleConfig;
 import com.cat2bug.system.service.ISysAiModuleConfigService;
 import com.cat2bug.web.service.OllamaAvailability;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import com.cat2bug.web.excel.ExcelHttpSupport;
 import com.cat2bug.web.service.excel.SystemExcelExportService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,7 @@ import java.util.stream.Stream;
 @RequestMapping("/system/ai")
 @ConfigurationProperties(prefix = "cat2bug.ai")
 @Data
+@EqualsAndHashCode(callSuper = false)
 public class SysAiModuleConfigController extends BaseController
 {
     @Autowired

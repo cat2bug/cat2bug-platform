@@ -27,6 +27,7 @@ import java.util.stream.Collectors;/**
  */
 @Profile("native")
 @Service
+@SuppressWarnings("unchecked")
 public class FastExcelDefectTrendExcelExportService implements DefectTrendExcelExportService {private static final Map<String, String> STATE_LABELS = Map.of(
             "PROCESSING", "处理中",
             "AUDIT", "待验证",

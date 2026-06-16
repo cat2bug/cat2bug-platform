@@ -61,6 +61,12 @@ build_runtime_image() {
   chmod +x "$stage/cat2bug-admin"
 
   echo "==> 构建运行时镜像 $IMAGE_TAG (platform=$DOCKER_PLATFORM, bin=$(du -h "$bin" | cut -f1))"
+  local gnu_arch
+  case "$GOARCH" in
+    amd64) gnu_arch=x86_64 ;;
+    arm64) gnu_arch=aarch64 ;;
+    *) echo "[ERROR] 未知 GOARCH: $GOARCH" >&2; exit 1 ;;
+  esac
   if [[ "$BASE" == "debian" ]]; then
     docker build --platform "$DOCKER_PLATFORM" -t "$IMAGE_TAG" -f- "$stage" <<EOF
 FROM debian:bookworm-slim
@@ -73,7 +79,10 @@ ENTRYPOINT ["/cat2bug-admin"]
 EOF
   else
     cp "$ROOT/deploy/docker/native-spring-minimal/Dockerfile" "$stage/Dockerfile"
-    docker build --platform "$DOCKER_PLATFORM" -t "$IMAGE_TAG" "$stage"
+    docker build --platform "$DOCKER_PLATFORM" \
+      --build-arg "GNU_ARCH=${gnu_arch}" \
+      --build-arg "BASE_IMAGE=gcr.io/distroless/cc-debian12:latest" \
+      -t "$IMAGE_TAG" "$stage"
   fi
   docker images "$IMAGE_TAG" --format '{{.Repository}}:{{.Tag}}  {{.Size}}'
   echo ""

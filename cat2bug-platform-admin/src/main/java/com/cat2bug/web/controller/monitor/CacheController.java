@@ -28,6 +28,7 @@ import com.cat2bug.system.domain.SysCache;
  */
 @RestController
 @RequestMapping("/monitor/cache")
+@SuppressWarnings("deprecation")
 public class CacheController
 {
     @Autowired

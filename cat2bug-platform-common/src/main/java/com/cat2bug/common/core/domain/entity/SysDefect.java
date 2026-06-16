@@ -6,6 +6,7 @@ import com.cat2bug.common.core.domain.type.SysDefectStateEnum;
 import com.cat2bug.common.core.domain.type.SysDefectTypeEnum;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import com.cat2bug.common.enums.ExcelIndexedColor;
@@ -21,6 +22,7 @@ import java.util.Map;
  * @date 2023-11-23
  */
 @Data
+@EqualsAndHashCode(callSuper = false)
 public class SysDefect extends BaseEntity
 {
     public static final String KEY = "defect";

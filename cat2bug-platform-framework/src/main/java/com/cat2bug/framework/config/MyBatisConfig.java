@@ -176,6 +176,17 @@ public class MyBatisConfig
 
     private String resolveDatabaseId(DataSource dataSource)
     {
+        try
+        {
+            String detected = databaseIdProvider.getDatabaseId(dataSource);
+            if (StringUtils.isNotEmpty(detected))
+            {
+                return detected;
+            }
+        }
+        catch (Exception ignored)
+        {
+        }
         String configured = env.getProperty("spring.database-type");
         if (StringUtils.isEmpty(configured) && runningNativeImage())
         {
@@ -185,13 +196,6 @@ public class MyBatisConfig
         {
             return configured;
         }
-        try
-        {
-            return databaseIdProvider.getDatabaseId(dataSource);
-        }
-        catch (Exception ex)
-        {
-            throw new IllegalStateException("无法解析 MyBatis databaseId", ex);
-        }
+        throw new IllegalStateException("无法解析 MyBatis databaseId");
     }
 }

@@ -2,6 +2,7 @@ package com.cat2bug.api.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.util.List;
 
@@ -11,6 +12,7 @@ import java.util.List;
  * @Version: 1.0.0
  */
 @Data
+@EqualsAndHashCode(callSuper = false)
 public class ApiDefectRequest extends ApiDefect {
     /** 处理人ID集合 */
     @JsonIgnore

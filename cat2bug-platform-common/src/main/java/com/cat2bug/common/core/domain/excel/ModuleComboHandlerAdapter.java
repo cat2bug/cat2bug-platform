@@ -17,9 +17,10 @@ import java.util.stream.Collectors;
  */
 public class ModuleComboHandlerAdapter implements ExcelComboHandlerAdapter {
     @Override
+    @SuppressWarnings("unchecked")
     public List<String> format(Map<String, Object> args) {
         if(args.containsKey("moduleNameList")) {
-            return (List)args.get("moduleNameList");
+            return (List<String>)args.get("moduleNameList");
         } else {
             return new ArrayList<>();
         }
