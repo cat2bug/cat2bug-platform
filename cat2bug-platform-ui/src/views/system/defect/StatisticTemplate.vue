@@ -1,5 +1,10 @@
 <template>
-  <div ref="statisticTemplateRoot" class="app-container statistic-template-page" tabindex="-1">
+  <div
+    ref="statisticTemplateRoot"
+    class="app-container statistic-template-page"
+    tabindex="-1"
+    data-page-action-host="true"
+  >
     <el-row class="project-add-page-header">
       <el-page-header @back="goBack" :content="$t('defect.statistic-template')" />
     </el-row>
@@ -100,14 +105,19 @@ export default {
   },
   created() {
     this.getTemplate()
-    this.registerStatisticTemplateShortcuts()
   },
   mounted() {
+    this.registerStatisticTemplateShortcuts()
     this.$_attachTemplatePageEscListener()
   },
   activated() {
     this.registerStatisticTemplateShortcuts()
     this.$_attachTemplatePageEscListener()
+    this.$nextTick(() => {
+      if (typeof this.$_ensurePageActionHostFocus === 'function') {
+        this.$_ensurePageActionHostFocus()
+      }
+    })
   },
   deactivated() {
     this.exitTemplateKbdNav()

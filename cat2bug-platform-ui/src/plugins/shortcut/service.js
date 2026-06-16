@@ -202,10 +202,17 @@ function hasBlockingUiLayer(options = {}) {
 
 export { hasBlockingUiLayer }
 
+/** 焦点在页面动作宿主内（如统计模版页根节点）时，仍允许 Space 打开动作面板 */
+function isInsidePageActionHost(el) {
+  if (!el || !el.closest) return false
+  return !!el.closest('[data-page-action-host="true"]')
+}
+
 /** 缺陷页空格打开「页面动作」的前置条件 */
 function canOpenDefectPageActions() {
   if (!pageRegistry.hasActions()) return false
   if (hasBlockingUiLayer()) return false
+  if (isInsidePageActionHost(document.activeElement)) return true
   if (onInteractiveElement()) return false
   return true
 }

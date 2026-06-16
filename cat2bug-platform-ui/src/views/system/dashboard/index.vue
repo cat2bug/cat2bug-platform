@@ -123,12 +123,14 @@ export default {
   gap: 10px;
 }
 .dashboard-col {
-  display: inline-flex;
+  display: flex;
   flex-direction: column;
   gap: 10px;
+  width: 100%;
 }
 .dashboard-row > * {
   flex: 1;
+  min-width: 0;
 }
 .action-block {
   flex: 1;
