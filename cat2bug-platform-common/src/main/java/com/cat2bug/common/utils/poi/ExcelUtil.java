@@ -5,6 +5,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -78,6 +79,7 @@ import org.xml.sax.SAXException;
  * 
  * @author ruoyi
  */
+@SuppressWarnings({"deprecation", "unchecked"})
 public class ExcelUtil<T>
 {
     private static final Logger log = LogManager.getLogger(ExcelUtil.class);
@@ -555,7 +557,7 @@ public class ExcelUtil<T>
                     Object val = this.getCellValue(row, entry.getKey());
 
                     // 如果不存在实例则新建.
-                    entity = (entity == null ? clazz.newInstance() : entity);
+                    entity = (entity == null ? clazz.getDeclaredConstructor().newInstance() : entity);
                     // 从map中得到对应列的field.
                     Field field = (Field) entry.getValue()[0];
                     Excel attr = (Excel) entry.getValue()[1];
@@ -1356,7 +1358,7 @@ public class ExcelUtil<T>
                 }
                 else if (value instanceof BigDecimal && -1 != attr.scale())
                 {
-                    cell.setCellValue((((BigDecimal) value).setScale(attr.scale(), attr.roundingMode())).doubleValue());
+                    cell.setCellValue((((BigDecimal) value).setScale(attr.scale(), RoundingMode.valueOf(attr.roundingMode()))).doubleValue());
                 }
                 else if (!attr.handler().equals(ExcelHandlerAdapter.class))
                 {
@@ -1595,7 +1597,7 @@ public class ExcelUtil<T>
     {
         try
         {
-            Object instance = excel.comboHandler().newInstance();
+            Object instance = excel.comboHandler().getDeclaredConstructor().newInstance();
             Method formatMethod = excel.comboHandler().getMethod("format", Map.class);
             return (List<String>) formatMethod.invoke(instance, this.params);
         }
@@ -1617,7 +1619,7 @@ public class ExcelUtil<T>
     {
         try
         {
-            Object instance = excel.handler().newInstance();
+            Object instance = excel.handler().getDeclaredConstructor().newInstance();
             Method formatMethod = excel.handler().getMethod("format", Object.class, String[].class, Map.class);
             Map<String, Object> invokeParams = this.params != null ? new HashMap<>(this.params) : new HashMap<>();
             if (cell == null) {

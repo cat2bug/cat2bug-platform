@@ -32,6 +32,7 @@ public class InstallService implements ApplicationRunner
     public static final Long LEGACY_ADMIN_USER_ID = 1L;
 
     /** @deprecated 仅兼容旧文档；legacy 检测以 {@link #LEGACY_ADMIN_USER_ID} 为准 */
+    @Deprecated
     public static final String LEGACY_ADMIN_USERNAME = "admin";
 
     @Autowired
@@ -139,6 +140,7 @@ public class InstallService implements ApplicationRunner
     }
 
     /** @deprecated 使用 {@link #hasLegacyInstallation()} */
+    @Deprecated
     public boolean hasLegacyAdminUser()
     {
         try

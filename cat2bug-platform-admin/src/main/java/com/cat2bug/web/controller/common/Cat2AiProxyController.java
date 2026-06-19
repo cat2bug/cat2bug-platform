@@ -62,7 +62,7 @@ public class Cat2AiProxyController {
         String prefix = "cat2ai";
         RouteInfo route = routeProperties.getRouteByPrefix(prefix);
         if (route == null) {
-            return new ResponseEntity("No route found!", HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("No route found!");
         }
         String url = rebuildUlr(request, "", prefix);
         // 读取数据
@@ -84,7 +84,7 @@ public class Cat2AiProxyController {
                 .bodyToMono(String.class)
                 .doOnError(throwable -> log.info(throwable.getMessage()))
                 .onErrorResume(e -> Mono.just("Error " + e.getMessage()));
-        return new ResponseEntity(mono.blockOptional().get(), HttpStatus.OK);
+        return ResponseEntity.ok(mono.blockOptional().orElse(""));
     }
 
 //    private RequestEntity buildRequestEntity(String url, HttpServletRequest request) throws IOException {

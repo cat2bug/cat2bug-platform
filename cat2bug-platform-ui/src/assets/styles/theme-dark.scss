@@ -1276,6 +1276,37 @@ html.dark {
     .el-statistic__content-value * {
       color: #ffffff !important; // 数值文字改为纯白色
     }
+
+    // 用例统计语义色：覆盖上方 * 通配，与亮色主题一致
+    .el-statistic__head .plan-stat-pass,
+    .el-statistic__content-value .plan-stat-pass,
+    .head .plan-stat-pass,
+    .content .plan-stat-pass {
+      color: var(--plan-stat-pass-color) !important;
+    }
+    .el-statistic__head .plan-stat-fail,
+    .el-statistic__content-value .plan-stat-fail,
+    .head .plan-stat-fail,
+    .content .plan-stat-fail {
+      color: var(--plan-stat-fail-color) !important;
+    }
+    .el-statistic__head .plan-stat-unexec,
+    .el-statistic__content-value .plan-stat-unexec,
+    .head .plan-stat-unexec,
+    .content .plan-stat-unexec {
+      color: var(--plan-stat-unexec-color) !important;
+    }
+    .el-statistic__head .plan-stat-total,
+    .el-statistic__content-value .plan-stat-total,
+    .head .plan-stat-total,
+    .content .plan-stat-total,
+    .el-statistic__head .case-total,
+    .el-statistic__content-value .case-total,
+    .head .case-total,
+    .content .case-total {
+      color: var(--text-color-primary) !important;
+      font-weight: 500;
+    }
   }
 
   // 强制覆盖全局暗黑模式下 el-statistic 内部的所有标题和数值文字，确保深度穿透
@@ -1286,11 +1317,42 @@ html.dark {
     .con, .con *, .content, .content * {
       color: #ffffff !important;
     }
+
+    .head .plan-stat-pass,
+    .content .plan-stat-pass,
+    .title .plan-stat-pass,
+    .con .plan-stat-pass {
+      color: var(--plan-stat-pass-color) !important;
+    }
+    .head .plan-stat-fail,
+    .content .plan-stat-fail,
+    .title .plan-stat-fail,
+    .con .plan-stat-fail {
+      color: var(--plan-stat-fail-color) !important;
+    }
+    .head .plan-stat-unexec,
+    .content .plan-stat-unexec,
+    .title .plan-stat-unexec,
+    .con .plan-stat-unexec {
+      color: var(--plan-stat-unexec-color) !important;
+    }
+    .head .plan-stat-total,
+    .content .plan-stat-total,
+    .title .plan-stat-total,
+    .con .plan-stat-total,
+    .head .case-total,
+    .content .case-total,
+    .title .case-total,
+    .con .case-total {
+      color: var(--text-color-primary) !important;
+      font-weight: 500;
+    }
   }
 
-  // 适配用例统计中的“总数”在暗黑模式下高亮为白色
+  // 适配用例统计中的“总数”在暗黑模式下与主文字色一致
   .case-total {
-    color: #ffffff !important;
+    color: var(--text-color-primary) !important;
+    font-weight: 500;
   }
 
   // 适配 Element UI 单选按钮组 (el-radio-button) 暗黑模式
@@ -2303,6 +2365,12 @@ html.dark {
   }
 
   // 覆盖 Element UI 默认 .el-table tr { background: #FFF }（含 thead / tbody）
+  // Cat2BugTable 表头拖序/调宽（拖序六点 grip，调宽竖条，同色）
+  .cat2-bug-table-wrap {
+    --cat2bug-col-handle-grip-color: rgba(144, 147, 153, 0.72);
+    --cat2bug-col-handle-grip-color-active: var(--cat2bug-primary, #ffc107);
+  }
+
   .cat2-bug-table-wrap .el-table {
     background-color: var(--table-bg) !important;
 
@@ -2339,6 +2407,11 @@ html.dark {
     tbody tr.hover-row {
       background-color: var(--table-row-hover-bg) !important;
     }
+  }
+
+  .cat2-bug-table-wrap ::v-deep .table-header-ghost,
+  .cat2-bug-table-wrap .table-header-ghost {
+    background-color: rgba(64, 158, 255, 0.18) !important;
   }
 
   // 列表页表头「展开交付物树」按钮（缺陷/用例/测试计划等共用 class 后缀）
@@ -4689,6 +4762,41 @@ html.dark {
           }
           .con, .con *, .content, .content * {
             color: var(--text-color-primary) !important;
+          }
+
+          .plan-stat-pass,
+          .head .plan-stat-pass,
+          .content .plan-stat-pass,
+          .title .plan-stat-pass,
+          .con .plan-stat-pass {
+            color: var(--plan-stat-pass-color) !important;
+          }
+          .plan-stat-fail,
+          .head .plan-stat-fail,
+          .content .plan-stat-fail,
+          .title .plan-stat-fail,
+          .con .plan-stat-fail {
+            color: var(--plan-stat-fail-color) !important;
+          }
+          .plan-stat-unexec,
+          .head .plan-stat-unexec,
+          .content .plan-stat-unexec,
+          .title .plan-stat-unexec,
+          .con .plan-stat-unexec {
+            color: var(--plan-stat-unexec-color) !important;
+          }
+          .plan-stat-total,
+          .case-total,
+          .head .plan-stat-total,
+          .content .plan-stat-total,
+          .title .plan-stat-total,
+          .con .plan-stat-total,
+          .head .case-total,
+          .content .case-total,
+          .title .case-total,
+          .con .case-total {
+            color: var(--text-color-primary) !important;
+            font-weight: 500;
           }
         }
       }

@@ -34,7 +34,8 @@ public class PromptUtils {
      * @param cls
      * @return
      */
-    protected static List<String> obj2Introduces(Class cls) {
+    @SuppressWarnings("unchecked")
+    protected static List<String> obj2Introduces(Class<?> cls) {
         List<String> introduces = new ArrayList<>();
         if(cls.getAnnotation(AIClass.class)==null) {
             return introduces;
@@ -45,11 +46,11 @@ public class PromptUtils {
             introduces.add(field2Introduce(f));
             if(f.getType() == List.class) {
                 ParameterizedType parameterizedType = (ParameterizedType) f.getGenericType();
-                Class c = (Class)parameterizedType.getActualTypeArguments()[0];
+                Class<?> c = (Class<?>)parameterizedType.getActualTypeArguments()[0];
                 introduces.addAll(obj2Introduces(c));
             } else if (f.getType() == Set.class) {
                 ParameterizedType parameterizedType = (ParameterizedType) f.getGenericType();
-                Class c = (Class)parameterizedType.getActualTypeArguments()[0];
+                Class<?> c = (Class<?>)parameterizedType.getActualTypeArguments()[0];
                 introduces.addAll(obj2Introduces(c));
             }
         }
@@ -103,8 +104,16 @@ public class PromptUtils {
      * @throws InstantiationException
      * @throws IllegalAccessException
      */
+    @SuppressWarnings("unchecked")
     protected static <T> Object obj2Map(Class<T> cls) throws InstantiationException, IllegalAccessException {
-        Object clsInstance = cls.newInstance();
+        Object clsInstance;
+        try {
+            clsInstance = cls.getDeclaredConstructor().newInstance();
+        } catch (NoSuchMethodException | java.lang.reflect.InvocationTargetException e) {
+            InstantiationException ie = new InstantiationException(e.getMessage());
+            ie.initCause(e);
+            throw ie;
+        }
         ObjectMapper mapper = new ObjectMapper();
         Map<String, Object> src = mapper.convertValue(clsInstance, new TypeReference<Map<String, Object>>() {});
         // 如果类没有AIClass注解，返回全部属性
@@ -123,11 +132,11 @@ public class PromptUtils {
                 obj.put(f.getName(),src.get(f.getName()));
             } else if (f.getType() == List.class) {
                 ParameterizedType parameterizedType = (ParameterizedType) f.getGenericType();
-                Class c = (Class)parameterizedType.getActualTypeArguments()[0];
+                Class<?> c = (Class<?>)parameterizedType.getActualTypeArguments()[0];
                 obj.put(f.getName(), Arrays.asList(obj2Map(c)));
             } else if (f.getType() == Set.class) {
                 ParameterizedType parameterizedType = (ParameterizedType) f.getGenericType();
-                Class c = (Class)parameterizedType.getActualTypeArguments()[0];
+                Class<?> c = (Class<?>)parameterizedType.getActualTypeArguments()[0];
                 obj.put(f.getName(), Sets.newHashSet(obj2Map(c)));
             } else if (f.getType() == Object.class) {
                 obj.put(f.getName(),obj2Map(f.getType()));

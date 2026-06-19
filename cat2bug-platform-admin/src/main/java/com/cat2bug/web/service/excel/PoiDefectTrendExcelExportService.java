@@ -62,6 +62,7 @@ import java.util.stream.Collectors;/**
  */
 @Profile("!native")
 @Service
+@SuppressWarnings({"deprecation", "unchecked"})
 public class PoiDefectTrendExcelExportService implements DefectTrendExcelExportService {private static final byte[][] ECHARTS_COLORS = {
             new byte[] {(byte) 0x2e, (byte) 0xc7, (byte) 0xc9},
             new byte[] {(byte) 0xb6, (byte) 0xa2, (byte) 0xde},

@@ -624,6 +624,7 @@ public class SysDefectServiceImpl implements ISysDefectService
      * 发送缺陷通知
      * @param defectId
      */
+    @SuppressWarnings("unchecked")
     private void sendDefectNotice(Long projectId, String srcHost, Long defectId) {
         SysDefect defect = this.sysDefectMapper.selectSysDefectByDefectId(defectId,SecurityUtils.getUserId(), DateUtils.getNowDate());
         defect.setSrcHost(srcHost);

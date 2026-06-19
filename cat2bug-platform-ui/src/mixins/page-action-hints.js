@@ -196,14 +196,21 @@ export default {
     /** 页面进入后聚焦宿主并同步跨路由仍按住的 Cmd/Ctrl */
     $_onPageActionHostMounted() {
       if (this._inactive) return
-      this.$nextTick(() => {
+      const run = () => {
         if (this._inactive) return
         if (typeof this.shouldAutoFocusPageActionHost === 'function' && this.shouldAutoFocusPageActionHost()) {
-          this.$_focusPageActionHost()
+          this.$_ensurePageActionHostFocus()
         }
+      }
+      this.$nextTick(() => {
+        run()
         requestAnimationFrame(() => {
-          if (!this._inactive) this.$_tryArmFromGlobalModifier()
+          if (this._inactive) return
+          run()
+          this.$_tryArmFromGlobalModifier()
         })
+        // 路由 fade-transform out-in 约 280ms，过渡后再聚焦，避免 el-page-header 等抢走焦点
+        setTimeout(run, 320)
       })
     },
     $_isPageActionHostReady() {
@@ -218,6 +225,20 @@ export default {
       }
       const rect = el.getBoundingClientRect()
       return rect.width > 0 || rect.height > 0
+    },
+    /** 将焦点收拢到页面宿主，避免页内返回按钮等抢占 Space 动作引导键 */
+    $_ensurePageActionHostFocus() {
+      const root = this.$_getPageActionHintContainer()
+      if (!root) return
+      const active = document.activeElement
+      if (active && active !== root && active !== document.body && root.contains(active)) {
+        const tag = active.tagName
+        const role = active.getAttribute && active.getAttribute('role')
+        if (tag === 'BUTTON' || tag === 'A' || role === 'button' || role === 'link') {
+          if (typeof active.blur === 'function') active.blur()
+        }
+      }
+      this.$_focusPageActionHost()
     },
     $_focusPageActionHost() {
       const root = this.$_getPageActionHintContainer()

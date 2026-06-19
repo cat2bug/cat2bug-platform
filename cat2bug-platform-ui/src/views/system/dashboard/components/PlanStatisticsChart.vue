@@ -25,22 +25,22 @@
         group-separator=",">
         <template slot="title">
           <span>{{$t('case')}}: </span>
-          <span class="click" style="color: rgb(19, 206, 102);">{{$t('case.pass-tested')}}</span>
+          <span class="click plan-stat-pass">{{$t('case.pass-tested')}}</span>
           <span>/</span>
-          <span class="click" style="color: #f56c6c;">{{$t('case.failed-tested')}}</span>
+          <span class="click plan-stat-fail">{{$t('case.failed-tested')}}</span>
           <span>/</span>
-          <span class="click" style="color: #909399;">{{$t('unexecuted')}}</span>
+          <span class="click plan-stat-unexec">{{$t('unexecuted')}}</span>
           <span>/</span>
-          <span class="click case-total" style="font-weight: 500;">{{$t('total')}}</span>
+          <span class="click plan-stat-total">{{$t('total')}}</span>
         </template>
         <template slot="formatter">
-          <span class="click" style="color: rgb(19, 206, 102);">{{selectPlan.passCount||0}}</span>
+          <span class="click plan-stat-pass">{{selectPlan.passCount||0}}</span>
           <span>/</span>
-          <span class="click" style="color: #f56c6c;">{{selectPlan.failCount||0}}</span>
+          <span class="click plan-stat-fail">{{selectPlan.failCount||0}}</span>
           <span>/</span>
-          <span class="click" style="color: #909399;">{{selectPlan.unexecutedCount||0}}</span>
+          <span class="click plan-stat-unexec">{{selectPlan.unexecutedCount||0}}</span>
           <span>/</span>
-          <span class="click case-total" style="font-weight: 500;">{{selectPlan.itemTotal||0}}{{ $t('a') }}</span>
+          <span class="click plan-stat-total">{{selectPlan.itemTotal||0}}{{ $t('a') }}</span>
         </template>
       </el-statistic>
       <!--          缺陷总数-->

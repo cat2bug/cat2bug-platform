@@ -49,6 +49,7 @@ public class OpenAIServiceImpl implements IAiService {
     private static long currentMessageId = 0;
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T> T generate(String aiAccountId, String prompt, boolean stream, long[] context, Class<T> cls) throws Exception {
         AiAccount aiAccount = aiAccountService.selectAiAccountByAccountId(Long.valueOf(aiAccountId));
         if(aiAccount==null) {
@@ -81,7 +82,7 @@ public class OpenAIServiceImpl implements IAiService {
                 contentMap.values().stream().collect(Collectors.toList())
         ).toString();
 
-        RequestBody body = RequestBody.create(FORM_CONTENT_TYPE, jsonRequest);
+        RequestBody body = RequestBody.create(jsonRequest, FORM_CONTENT_TYPE);
         Request request = new Request.Builder()
                 .url(aiAccount.getAiUrl())
                 .post(body)

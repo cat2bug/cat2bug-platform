@@ -41,9 +41,11 @@ public final class InstallConfigSupport
     public static final String UPGRADE_LAST_STEP_MIGRATION = "migration";
 
     /** @deprecated 使用 {@link #UPGRADE_LAST_STEP_CONFIG} */
+    @Deprecated
     public static final String UPGRADE_STEP_CONFIG = UPGRADE_LAST_STEP_CONFIG;
 
     /** @deprecated 使用 {@link #UPGRADE_LAST_STEP_MIGRATION} */
+    @Deprecated
     public static final String UPGRADE_STEP_MIGRATION = UPGRADE_LAST_STEP_MIGRATION;
 
     private InstallConfigSupport()

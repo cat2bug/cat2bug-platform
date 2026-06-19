@@ -20,6 +20,7 @@ import {memberLineOfDefects, memberRankOfDefects} from "@/api/system/dashboard";
 import Cat2BugAvatar from "@/components/Cat2BugAvatar";
 import * as echarts from '@/assets/js/echarts.min.js';
 import resize from "@/views/dashboard/mixins/resize";
+import { disconnectEchartsResize, observeEchartsResize } from '@/components/Cat2BugStatistic/utils/echarts-resize';
 
 export default {
   name: "MemberOfDefectLine",
@@ -62,6 +63,13 @@ export default {
     this.initChart();
     this.getMemberLineOfDefects();
   },
+  beforeDestroy() {
+    disconnectEchartsResize(this.chart);
+    if (this.chart) {
+      this.chart.dispose();
+      this.chart = null;
+    }
+  },
   methods: {
     /** 导出按钮操作 */
     handleExport() {
@@ -94,7 +102,7 @@ export default {
     },
     initChart() {
       this.chart = echarts.init(this.$refs.memberDefectLineChart, 'macarons')
-      this.setOptions([],[])
+      this.setOptions([], [], [])
     },
     setOptions(legendData, xData, series) {
       this.chart.setOption({
@@ -128,7 +136,9 @@ export default {
           type: 'value'
         },
         series: series
-      },true);
+      }, true);
+      observeEchartsResize(this.chart, this.$refs.memberDefectLineChart);
+      this.$nextTick(() => this.chart && this.chart.resize());
     },
     /** 处理时间类型变更 */
     handleTimeTypeChange(val) {
@@ -149,6 +159,14 @@ export default {
 <style lang="scss" scoped>
 .defect-state-chart {
   position: relative;
+  width: 100%;
+  box-sizing: border-box;
+
+  .chart {
+    width: 100% !important;
+    min-width: 0;
+  }
+
   .title {
     position: absolute;
     top: 7px;

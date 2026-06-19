@@ -1,7 +1,7 @@
 package com.cat2bug.ai.vo;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * @Author: yuzhantao
@@ -9,6 +9,7 @@ import lombok.Data;
  * @Version: 1.0.0
  */
 @Data
+@EqualsAndHashCode(callSuper = false)
 public class OllamaPullModuleResponse extends AiPullModuleResponse {
     private String status;
     private String digest;

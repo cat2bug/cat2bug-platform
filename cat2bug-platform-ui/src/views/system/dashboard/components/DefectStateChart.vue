@@ -16,7 +16,8 @@
 <script>
 import * as echarts from '@/assets/js/echarts.min.js';
 import resize from "@/views/dashboard/mixins/resize";
-import {defectLine} from "@/api/system/dashboard";
+import { defectLine } from "@/api/system/dashboard";
+import { disconnectEchartsResize, observeEchartsResize } from '@/components/Cat2BugStatistic/utils/echarts-resize';
 
 export default {
   name: "DefectStateChart",
@@ -61,6 +62,13 @@ export default {
   mounted() {
     this.initChart();
     this.getDefectLine();
+  },
+  beforeDestroy() {
+    disconnectEchartsResize(this.chart);
+    if (this.chart) {
+      this.chart.dispose();
+      this.chart = null;
+    }
   },
   methods: {
     /** 导出按钮操作 */
@@ -128,6 +136,8 @@ export default {
           },
           series: series
       }, true);
+      observeEchartsResize(this.chart, this.$refs.defectStateChart);
+      this.$nextTick(() => this.chart && this.chart.resize());
     },
     /** 处理时间类型变更 */
     handleTimeTypeChange(val) {
@@ -148,6 +158,14 @@ export default {
 <style lang="scss" scoped>
 .defect-state-chart {
   position: relative;
+  width: 100%;
+  box-sizing: border-box;
+
+  .chart {
+    width: 100% !important;
+    min-width: 0;
+  }
+
   .title {
     position: absolute;
     top: 7px;

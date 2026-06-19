@@ -28,6 +28,7 @@ import static com.cat2bug.common.utils.poi.ExcelUtil.applyLineChartsColors;
  */
 @Profile("!native")
 @Service
+@SuppressWarnings("unchecked")
 public class DefectTrendExcelExport {
 
     @Autowired

@@ -311,7 +311,7 @@ public class SysProjectServiceImpl implements ISysProjectService
                 }
             }
             // 缺陷日志
-            List<SysDefectLog> sysDefectLogList = new ArrayList();
+            List<SysDefectLog> sysDefectLogList = new ArrayList<>();
             for(SysDefect d : defectList) {
                 SysDefectLog sysDefectLog = new SysDefectLog();
                 sysDefectLog.setDefectId(d.getDefectId());
@@ -320,7 +320,7 @@ public class SysProjectServiceImpl implements ISysProjectService
             sysDefectLogList = sysDefectLogList.stream().filter(l->l!=null).collect(Collectors.toList());
             compressUtil.addJsonFile("defect_log.json", sysDefectLogList);
             // 缺陷日志评论
-            List<SysComment> defectCommentList = new ArrayList();
+            List<SysComment> defectCommentList = new ArrayList<>();
             for(SysDefectLog log : sysDefectLogList) {
                 SysComment comment = new SysComment();
                 comment.setCorrelationId(log.getDefectId());

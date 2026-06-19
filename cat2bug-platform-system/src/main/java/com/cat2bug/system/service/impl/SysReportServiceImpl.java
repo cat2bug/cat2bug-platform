@@ -31,6 +31,7 @@ import com.cat2bug.system.service.ISysReportService;
  * @date 2024-03-13
  */
 @Service
+@SuppressWarnings({"rawtypes", "unchecked"})
 public class SysReportServiceImpl implements ISysReportService
 {
     private final static Logger log = LogManager.getLogger(SysReportServiceImpl.class);

@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
  * @Version: 1.0.0
  */
 @Service
+@SuppressWarnings("unchecked")
 public class TableParseImpl implements IReportParseService {
     private final static Logger logger = LogManager.getLogger(TableParseImpl.class);
 

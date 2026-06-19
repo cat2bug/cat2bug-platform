@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.cat2bug.common.core.jackson.MultiDateFormatDeserializer;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import com.cat2bug.common.annotation.Excel;
@@ -19,6 +20,7 @@ import com.cat2bug.common.core.domain.BaseEntity;
  * @date 2024-03-13
  */
 @Data
+@EqualsAndHashCode(callSuper = false)
 public class SysReport<T> extends BaseEntity
 {
     private static final long serialVersionUID = 1L;

@@ -2,7 +2,9 @@ package com.cat2bug.system.service;
 
 import com.cat2bug.common.core.domain.entity.SysUser;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Author: yuzhantao
@@ -16,4 +18,9 @@ public interface IMemberFocusService {
     public void removeFocus(Long user);
 
     public List<SysUser> getFocusMemberList(String moduleName, Long dataId);
+
+    /**
+     * 批量查询正在查看/编辑某条数据的成员，避免列表接口 N 次扫描 Redis。
+     */
+    Map<Long, List<SysUser>> getFocusMemberMap(String moduleName, Collection<Long> dataIds);
 }

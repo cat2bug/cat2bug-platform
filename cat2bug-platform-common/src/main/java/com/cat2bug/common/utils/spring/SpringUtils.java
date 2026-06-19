@@ -19,6 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author ruoyi
  */
 @Component
+@SuppressWarnings("unchecked")
 public final class SpringUtils implements BeanFactoryPostProcessor, ApplicationContextAware 
 {
     /** Spring应用上下文环境 */

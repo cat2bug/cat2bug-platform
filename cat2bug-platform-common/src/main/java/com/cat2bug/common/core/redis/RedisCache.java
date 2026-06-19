@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
  * @author ruoyi
  **/
 @Component
+@SuppressWarnings("unchecked")
 public class RedisCache
 {
     private final static String DEFAULT_CACHE_REGION = "default";

@@ -144,7 +144,7 @@ public class AiAccountServiceImpl implements IAiAccountService
                 .readTimeout(TEST_HTTP_TIMEOUT_SEC, TimeUnit.SECONDS)
                 .writeTimeout(TEST_HTTP_TIMEOUT_SEC, TimeUnit.SECONDS)
                 .build();
-        RequestBody body = RequestBody.create(JSON_UTF8, payload);
+        RequestBody body = RequestBody.create(payload, JSON_UTF8);
         Request request = new Request.Builder()
                 .url(account.getAiUrl().trim())
                 .post(body)

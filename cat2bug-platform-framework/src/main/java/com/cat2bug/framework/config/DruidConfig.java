@@ -52,6 +52,7 @@ public class DruidConfig
         Properties p = new Properties();
         p.setProperty("H2", "h2");
         p.setProperty("MySQL", "mysql");
+        p.setProperty("MariaDB", "mysql");
         databaseIdProvider.setProperties(p);
         return databaseIdProvider;
     }

@@ -2,6 +2,7 @@ package com.cat2bug.api.domain;
 
 import com.cat2bug.common.annotation.Excel;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.util.List;
 
@@ -11,6 +12,7 @@ import java.util.List;
  * @Version: 1.0.0
  */
 @Data
+@EqualsAndHashCode(callSuper = false)
 public class ApiMember extends ApiMemberBaseInfo {
     /**
      * 在项目中的权限

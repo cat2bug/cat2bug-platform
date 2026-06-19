@@ -110,6 +110,7 @@ public class OllamaAiServieImpl implements IAiService {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T> T generate(String moduleName, String prompt, boolean stream, long[] context, Class<T> cls) throws Exception {
         try {
             OkHttpClient client = new OkHttpClient().newBuilder().readTimeout(this.timeout, TimeUnit.SECONDS).build();
@@ -126,7 +127,7 @@ public class OllamaAiServieImpl implements IAiService {
             Prompt promptVo = new Prompt(moduleName,requestPrompt,format, false, context);
             String body = JSON.toJSONString(promptVo);
             log.info("generate request:{}",body);
-            RequestBody formBody = RequestBody.create(FORM_CONTENT_TYPE, body);
+            RequestBody formBody = RequestBody.create(body, FORM_CONTENT_TYPE);
             Request request = new Request.Builder()
                     .url(getApiUrl(this.host, GENERATE_URL))
                     .post(formBody).build();
@@ -172,12 +173,13 @@ public class OllamaAiServieImpl implements IAiService {
      * @param <T>
      */
     @Override
+    @SuppressWarnings("unchecked")
     public <T> T getModuleInfo(String moduleName, Class<T> cls) {
         try {
             OkHttpClient client = new OkHttpClient().newBuilder().readTimeout(this.timeout, TimeUnit.SECONDS).build();
             OllamaModuleRequest moduleRequest = new OllamaModuleRequest(moduleName);
             String body = JSON.toJSONString(moduleRequest);
-            RequestBody formBody = RequestBody.create(FORM_CONTENT_TYPE, body);
+            RequestBody formBody = RequestBody.create(body, FORM_CONTENT_TYPE);
             Request request = new Request.Builder()
                     .url(getApiUrl(this.host, SHOW_MODULE_URL))
                     .post(formBody).build();
@@ -209,6 +211,7 @@ public class OllamaAiServieImpl implements IAiService {
      * @param <T>
      */
     @Override
+    @SuppressWarnings("unchecked")
     public <T> List<T> getModuleList(Class<T> cls) {
         try {
             OkHttpClient client = new OkHttpClient().newBuilder().readTimeout(this.timeout, TimeUnit.SECONDS).build();
@@ -245,7 +248,7 @@ public class OllamaAiServieImpl implements IAiService {
             OkHttpClient client = new OkHttpClient().newBuilder().readTimeout(this.timeout, TimeUnit.SECONDS).build();
             OllamaModuleRequest pullModuleRequest = new OllamaModuleRequest(moduleName,stream);
             String body = JSON.toJSONString(pullModuleRequest);
-            RequestBody formBody = RequestBody.create(FORM_CONTENT_TYPE, body);
+            RequestBody formBody = RequestBody.create(body, FORM_CONTENT_TYPE);
             Request request = new Request.Builder()
                     .url(getApiUrl(this.host, PULL_MODULE_URL))
                     .post(formBody).build();
@@ -317,7 +320,7 @@ public class OllamaAiServieImpl implements IAiService {
             OkHttpClient client = new OkHttpClient().newBuilder().readTimeout(this.timeout, TimeUnit.SECONDS).build();
             OllamaModuleRequest pullModuleRequest = new OllamaModuleRequest(moduleName);
             String body = JSON.toJSONString(pullModuleRequest);
-            RequestBody formBody = RequestBody.create(FORM_CONTENT_TYPE, body);
+            RequestBody formBody = RequestBody.create(body, FORM_CONTENT_TYPE);
             Request request = new Request.Builder()
                     .url(getApiUrl(this.host, REMOVE_MODULE_URL))
                     .delete(formBody).build();

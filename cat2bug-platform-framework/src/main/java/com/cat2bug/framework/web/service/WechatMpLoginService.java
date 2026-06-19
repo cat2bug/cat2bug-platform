@@ -2,6 +2,7 @@ package com.cat2bug.framework.web.service;
 
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.TypeReference;
 import com.cat2bug.common.constant.CacheConstants;
 import com.cat2bug.common.constant.Constants;
 import com.cat2bug.common.constant.UserConstants;
@@ -81,7 +82,7 @@ public class WechatMpLoginService
                 + "&js_code=" + code
                 + "&grant_type=authorization_code";
         String json = HttpUtil.get(url);
-        Map<String, Object> wechatResult = JSON.toJavaObject(json, Map.class);
+        Map<String, Object> wechatResult = JSON.parseObject(json, new TypeReference<Map<String, Object>>() {});
         String openId = String.valueOf(wechatResult.get("openid"));
         String sessionKey = String.valueOf(wechatResult.get("session_key"));
         redisCache.setCacheObject(WECHAT_MP_LOGIN_CACHE, code,  wechatResult.get("openid"));

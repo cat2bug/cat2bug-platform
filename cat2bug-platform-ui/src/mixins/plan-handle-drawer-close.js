@@ -32,6 +32,7 @@ export default {
     doClosePlanHandleDrawer() {
       this.visible = false
       this.reset()
+      this.$emit('change')
       this.$emit('close')
     },
     closePlanDrawer(done) {

@@ -42,22 +42,22 @@
                 group-separator=",">
                 <template slot="title">
                   <span>{{$t('case')}}: </span>
-                  <span class="click" style="color: rgb(19, 206, 102);" @click.stop="handlePlanItemStateSearch('pass')">{{$t('case.pass-tested')}}</span>
+                  <span class="click plan-stat-pass" @click.stop="handlePlanItemStateSearch('pass')">{{$t('case.pass-tested')}}</span>
                   <span>/</span>
-                  <span class="click" style="color: #f56c6c;" @click.stop="handlePlanItemStateSearch('not_pass')">{{$t('case.failed-tested')}}</span>
+                  <span class="click plan-stat-fail" @click.stop="handlePlanItemStateSearch('not_pass')">{{$t('case.failed-tested')}}</span>
                   <span>/</span>
-                  <span class="click" style="color: #909399;" @click.stop="handlePlanItemStateSearch('unexecuted')">{{$t('unexecuted')}}</span>
+                  <span class="click plan-stat-unexec" @click.stop="handlePlanItemStateSearch('unexecuted')">{{$t('unexecuted')}}</span>
                   <span>/</span>
-                  <span class="click" style="font-weight: 500;" @click.stop="handlePlanItemStateSearch(null)">{{$t('total')}}{{ $t('a') }}</span>
+                  <span class="click plan-stat-total" @click.stop="handlePlanItemStateSearch(null)">{{$t('total')}}{{ $t('a') }}</span>
                 </template>
                 <template slot="formatter">
-                  <span class="click" style="color: rgb(19, 206, 102);" @click.stop="handlePlanItemStateSearch('pass')">{{plan.passCount}}</span>
+                  <span class="click plan-stat-pass" @click.stop="handlePlanItemStateSearch('pass')">{{plan.passCount}}</span>
                   <span>/</span>
-                  <span class="click" style="color: #f56c6c;" @click.stop="handlePlanItemStateSearch('not_pass')">{{plan.failCount}}</span>
+                  <span class="click plan-stat-fail" @click.stop="handlePlanItemStateSearch('not_pass')">{{plan.failCount}}</span>
                   <span>/</span>
-                  <span class="click" style="color: #909399;" @click.stop="handlePlanItemStateSearch('unexecuted')">{{plan.unexecutedCount}}</span>
+                  <span class="click plan-stat-unexec" @click.stop="handlePlanItemStateSearch('unexecuted')">{{plan.unexecutedCount}}</span>
                   <span>/</span>
-                  <span class="click" style="font-weight: 500;" @click.stop="handlePlanItemStateSearch(null)">{{plan.itemTotal}}{{ $t('a') }}</span>
+                  <span class="click plan-stat-total" @click.stop="handlePlanItemStateSearch(null)">{{plan.itemTotal}}{{ $t('a') }}</span>
                 </template>
               </el-statistic>
             </div>
@@ -340,6 +340,7 @@ export default {
     handleListChanged() {
       this.getPlanInfo(this.planId, false);
       this.setDragComponentSize();
+      this.$emit('change');
     },
   }
 }
@@ -418,6 +419,7 @@ export default {
 }
 .plan-item-defect-list {
   width: 400px;
+  overflow: visible !important;
 }
 .plan-item-defect-list > .el-dropdown-menu__item {
   display: -webkit-box;
