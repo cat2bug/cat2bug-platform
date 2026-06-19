@@ -164,7 +164,7 @@
           <el-collapse accordion>
             <el-collapse-item title="v1.0.0 - 2026-06-10">
               <ol>
-                <li>正式发布 1.0.0：前后端版本号统一，快捷键体系与系统文档完善</li>
+                <li>添加系统快捷键体系</li>
                 <li>缺陷 Excel 暗色主题与 Safari 行号列滚动体验优化</li>
                 <li>安装向导补充 H2 旧版数据库文件格式不兼容提示</li>
               </ol>
@@ -179,7 +179,6 @@
                 <li>缺陷页面表格模式左侧添加交付物列表</li>
                 <li>缺陷页面Tab中添加【已删除缺陷】标签，并在新建中添加【已删除】选项</li>
                 <li>添加AI模型的MCP功能</li>
-                <li>添加系统使用文档</li>
                 <li>优化整体页面</li>
               </ol>
             </el-collapse-item>
