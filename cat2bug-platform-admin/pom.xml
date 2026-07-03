@@ -119,6 +119,18 @@
             <version>${fastexcel.version}</version>
         </dependency>
 
+        <!-- JVM Excel（POI）实现；Native profile 下 scope=provided，源码在 src/jvm/java -->
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi</artifactId>
+            <scope>${excel.poi.scope}</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <scope>${excel.poi.scope}</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
@@ -215,21 +227,6 @@
                                 <phase>none</phase>
                             </execution>
                         </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-compiler-plugin</artifactId>
-                        <configuration combine.children="append">
-                            <excludes combine.children="append">
-                                <exclude>**/web/excel/Poi*.java</exclude>
-                                <exclude>**/web/service/excel/Poi*.java</exclude>
-                                <exclude>**/web/service/excel/jvm/*.java</exclude>
-                                <exclude>**/web/service/DefectTrendExcelExport.java</exclude>
-                                <exclude>**/web/captcha/CaptchaSupport.java</exclude>
-                                <exclude>**/web/captcha/jvm/*.java</exclude>
-                                <exclude>**/web/controller/common/JvmCaptchaController.java</exclude>
-                            </excludes>
-                        </configuration>
                     </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>

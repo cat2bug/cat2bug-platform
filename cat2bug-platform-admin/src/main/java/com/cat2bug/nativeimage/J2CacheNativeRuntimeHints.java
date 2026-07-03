@@ -62,6 +62,10 @@ public class J2CacheNativeRuntimeHints implements RuntimeHintsRegistrar
         collectFromClassLoader(classLoader, classNames);
         for (String className : classNames)
         {
+            if (!isReflectableClassName(className))
+            {
+                continue;
+            }
             hints.reflection().registerType(TypeReference.of(className), MemberCategory.values());
         }
     }
@@ -156,10 +160,22 @@ public class J2CacheNativeRuntimeHints implements RuntimeHintsRegistrar
         if (entryName == null
                 || !entryName.startsWith(packagePrefix)
                 || !entryName.endsWith(".class")
-                || entryName.contains("$"))
+                || entryName.contains("$")
+                || entryName.endsWith("package-info.class")
+                || entryName.endsWith("module-info.class"))
         {
             return;
         }
         classNames.add(entryName.substring(0, entryName.length() - ".class".length()).replace('/', '.'));
+    }
+
+    /** package-info / module-info 等元数据类不能作为反射类型注册。 */
+    private static boolean isReflectableClassName(String className)
+    {
+        return className != null
+                && !className.isEmpty()
+                && !className.endsWith(".package-info")
+                && !className.equals("module-info")
+                && !className.contains("$");
     }
 }

@@ -2334,4 +2334,12 @@ public class ExcelUtil<T>
         return ret;
     }
 
+    /**
+     * Excel 导出过程回调（与 ExcelUtil 同文件，避免 native profile 编译排除导致 IDE 找不到符号）
+     */
+    public interface IExcelListener
+    {
+        Integer sheetCreated(Sheet sheet, int currentRowNum);
+    }
+
 }

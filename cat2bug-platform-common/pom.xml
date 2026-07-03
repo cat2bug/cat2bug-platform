@@ -209,20 +209,49 @@
 
     <profiles>
         <profile>
+            <id>jvm-excel-sources</id>
+            <activation>
+                <property>
+                    <name>!maven.main.skip.jvm.excel</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <version>3.6.0</version>
+                        <executions>
+                            <execution>
+                                <id>add-jvm-excel-sources</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>add-source</goal>
+                                </goals>
+                                <configuration>
+                                    <sources>
+                                        <source>src/jvm/java</source>
+                                    </sources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
             <id>native</id>
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-compiler-plugin</artifactId>
-                        <configuration combine.children="append">
-                            <excludes combine.children="append">
-                                <exclude>**/utils/poi/ExcelUtil.java</exclude>
-                                <exclude>**/utils/poi/PoiStyleBridge.java</exclude>
-                                <exclude>**/utils/poi/IExcelListener.java</exclude>
-                                <exclude>**/utils/poi/ExcelUtilJvmBridge.java</exclude>
-                            </excludes>
-                        </configuration>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>add-jvm-excel-sources</id>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>
