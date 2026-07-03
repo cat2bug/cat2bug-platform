@@ -123,7 +123,7 @@ A:
 
 **无 install 文件的 legacy 数据**：先走 **`/setup`** 附着旧库（`databaseMode: existing`），**不会**直接进入 `/upgrade`。
 
-1. 启动应用后浏览器会进入 **`/upgrade`**（5 步：概览、配置确认、预检、执行、完成/失败重试）
+1. 启动应用后浏览器会进入 **`/upgrade`**（4 步：概览、管理员验证、执行升级、完成/失败重试）
 2. 升级进行中系统**全锁**：无法登录或访问业务 API，仅可访问升级接口与静态资源
 3. 在向导中确认配置（**默认保留**已有 JDBC、路径等，模板仅补缺失项），通过预检后提交
 4. 提交成功会写入/更新 `config/install/application-install.yml` 并执行 Flyway；成功后状态为 `restart_required`，**必须重启**应用

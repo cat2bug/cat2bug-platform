@@ -12,15 +12,18 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.StandardEnvironment;
 
 import java.io.IOException;
 
 /**
- * Spring Boot 3 下 J2Cache 自动配置，行为对齐 j2cache-spring-boot2-starter。
+ * Spring Boot 3 下 J2Cache 自动配置（JVM），行为对齐 j2cache-spring-boot2-starter。
+ * GraalVM Native 路径见 {@link Cat2BugNativeJ2CacheAutoConfiguration}。
  */
 @AutoConfiguration
+@Profile("!native")
 @ConditionalOnClass(name = "net.oschina.j2cache.J2Cache")
 @EnableConfigurationProperties(net.oschina.j2cache.autoconfigure.J2CacheConfig.class)
 @PropertySource(value = "${j2cache.config-location}", encoding = "UTF-8", ignoreResourceNotFound = true)

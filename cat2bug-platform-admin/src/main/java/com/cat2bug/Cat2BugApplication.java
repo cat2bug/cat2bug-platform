@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.ImportRuntimeHints;
 import com.cat2bug.nativeimage.Cat2BugNativeRuntimeHints;
+import com.cat2bug.nativeimage.J2CacheNativeRuntimeHints;
 import com.cat2bug.nativeimage.JwtNativeRuntimeHints;
 import com.cat2bug.nativeimage.MyBatisNativeConfiguration;
 import com.cat2bug.nativeimage.SecurityNativeRuntimeHints;
@@ -20,7 +21,12 @@ import java.io.IOException;
  */
 @SpringBootApplication(exclude = { DataSourceAutoConfiguration.class })
 @Import(MyBatisNativeConfiguration.class)
-@ImportRuntimeHints({ Cat2BugNativeRuntimeHints.class, JwtNativeRuntimeHints.class, SecurityNativeRuntimeHints.class })
+@ImportRuntimeHints({
+        Cat2BugNativeRuntimeHints.class,
+        J2CacheNativeRuntimeHints.class,
+        JwtNativeRuntimeHints.class,
+        SecurityNativeRuntimeHints.class
+})
 public class Cat2BugApplication
 {
     public static void main(String[] args) throws InterruptedException, IOException {

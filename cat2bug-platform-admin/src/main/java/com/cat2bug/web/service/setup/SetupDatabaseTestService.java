@@ -1,5 +1,6 @@
 package com.cat2bug.web.service.setup;
 
+import com.cat2bug.common.utils.FlywaySchemaSupport;
 import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.web.domain.setup.SetupDatabaseTestRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -113,8 +114,19 @@ public class SetupDatabaseTestService
                     return result;
                 }
                 boolean exists = mysqlDatabaseExists(connection, database);
+                String databaseMode = DatabaseExistenceProbe.MODE_NEW;
+                if (exists)
+                {
+                    try (Connection databaseConnection = DriverManager.getConnection(
+                            resolveMysqlUrl(request), username, password))
+                    {
+                        databaseMode = FlywaySchemaSupport.hasCoreSchema(databaseConnection)
+                                ? DatabaseExistenceProbe.MODE_EXISTING
+                                : DatabaseExistenceProbe.MODE_NEW;
+                    }
+                }
                 result.put("success", true);
-                result.put("databaseMode", exists ? DatabaseExistenceProbe.MODE_EXISTING : DatabaseExistenceProbe.MODE_NEW);
+                result.put("databaseMode", databaseMode);
                 result.put("message", exists
                         ? SetupMessages.msg("setup.test.connection.success")
                         : SetupMessages.msg("setup.test.database.mysql.server.ready"));

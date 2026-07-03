@@ -130,11 +130,19 @@ public class DatabaseExistenceProbe
         return SetupDatabaseTestService.mysqlDatabaseExists(serverConnection, database);
     }
 
+    /**
+     * 与 H2 {@link #probeH2Mode(Connection)} 一致：库名存在但无 {@code sys_user} 等业务表仍视为 new
+     * （Docker Compose {@code MYSQL_DATABASE} 预建空库场景）。
+     */
     public String probeMysqlMode(SetupSubmitRequest request)
     {
         String database = request.getMysqlDatabase().trim();
         assertValidDatabaseName(database);
-        return setupMysqlDatabaseService.databaseExists(request, database) ? MODE_EXISTING : MODE_NEW;
+        if (!setupMysqlDatabaseService.databaseExists(request, database))
+        {
+            return MODE_NEW;
+        }
+        return setupMysqlDatabaseService.hasCoreSchema(request, database) ? MODE_EXISTING : MODE_NEW;
     }
 
     public String probeMode(SetupSubmitRequest request)
