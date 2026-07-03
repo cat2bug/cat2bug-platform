@@ -3,6 +3,7 @@ package com.cat2bug.common.core.redis;
 import com.cat2bug.common.utils.NativeImageSupport;
 import net.oschina.j2cache.CacheChannel;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
@@ -56,8 +57,11 @@ public class RedisCache
      */
     public final static String REPEAT_SUBMIT_CACHE_REGION = "apiRepeatSubmit";
 
-    @Autowired
+    @Autowired(required = false)
     private CacheChannel cacheChannel;
+
+    @Value("${cat2bug.cache.type:local}")
+    private String cacheType;
 
     /** Native 下 J2Cache/Caffeine 动态类缺失时的进程内兜底（验证码、配置等短生命周期数据）。 */
     private static final Map<String, Map<String, Object>> NATIVE_FALLBACK = new ConcurrentHashMap<>();
@@ -67,9 +71,17 @@ public class RedisCache
         return NATIVE_FALLBACK.computeIfAbsent(group, ignored -> new ConcurrentHashMap<>());
     }
 
-    private static boolean useNativeFallback()
+    private boolean useNativeFallback()
     {
-        return NativeImageSupport.isRunningNativeImage();
+        return NativeImageSupport.isRunningNativeImage() && !"redis".equalsIgnoreCase(cacheType);
+    }
+
+    private void rethrowIfRedisCache(RuntimeException e)
+    {
+        if ("redis".equalsIgnoreCase(cacheType))
+        {
+            throw e;
+        }
     }
 
     private static <T> T getNativeCacheObject(String group, String key)
@@ -137,6 +149,7 @@ public class RedisCache
         }
         catch (RuntimeException e)
         {
+            rethrowIfRedisCache(e);
             setNativeCacheObject(group, key, value);
         }
     }
@@ -194,6 +207,7 @@ public class RedisCache
         }
         catch (RuntimeException e)
         {
+            rethrowIfRedisCache(e);
             return hasNativeKey(group, key);
         }
     }
@@ -214,6 +228,7 @@ public class RedisCache
         }
         catch (RuntimeException e)
         {
+            rethrowIfRedisCache(e);
             return nativeBucket(group).keySet();
         }
     }
@@ -236,6 +251,7 @@ public class RedisCache
         }
         catch (RuntimeException e)
         {
+            rethrowIfRedisCache(e);
             return getNativeCacheObject(group, key);
         }
     }
@@ -258,6 +274,7 @@ public class RedisCache
         }
         catch (RuntimeException e)
         {
+            rethrowIfRedisCache(e);
             deleteNativeCacheObject(group, key);
         }
         return true;
@@ -288,6 +305,7 @@ public class RedisCache
         }
         catch (RuntimeException e)
         {
+            rethrowIfRedisCache(e);
             Map<String, Object> bucket = nativeBucket(group);
             collection.forEach(bucket::remove);
         }
@@ -440,6 +458,7 @@ public class RedisCache
         }
         catch (RuntimeException e)
         {
+            rethrowIfRedisCache(e);
             return nativeBucket(group).keySet().stream()
                     .filter(n -> n.indexOf(pattern) > -1)
                     .collect(Collectors.toList());

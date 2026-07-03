@@ -139,7 +139,7 @@ class DatabaseExistenceProbeTest
     }
 
     @Test
-    void probeMysqlMode_delegatesToMysqlService()
+    void probeMysqlMode_usesCoreSchemaNotDatabaseNameAlone()
     {
         SetupSubmitRequest request = new SetupSubmitRequest();
         request.setMysqlHost("127.0.0.1");
@@ -149,7 +149,11 @@ class DatabaseExistenceProbeTest
         request.setMysqlPassword("secret");
 
         when(setupMysqlDatabaseService.databaseExists(request, "cat2bug")).thenReturn(true);
+        when(setupMysqlDatabaseService.hasCoreSchema(request, "cat2bug")).thenReturn(true);
         assertEquals(DatabaseExistenceProbe.MODE_EXISTING, probe.probeMysqlMode(request));
+
+        when(setupMysqlDatabaseService.hasCoreSchema(request, "cat2bug")).thenReturn(false);
+        assertEquals(DatabaseExistenceProbe.MODE_NEW, probe.probeMysqlMode(request));
 
         when(setupMysqlDatabaseService.databaseExists(request, "cat2bug")).thenReturn(false);
         assertEquals(DatabaseExistenceProbe.MODE_NEW, probe.probeMysqlMode(request));
@@ -167,6 +171,7 @@ class DatabaseExistenceProbeTest
         mysqlRequest.setDatabaseType("mysql");
         mysqlRequest.setMysqlDatabase("cat2bug");
         when(setupMysqlDatabaseService.databaseExists(mysqlRequest, "cat2bug")).thenReturn(true);
+        when(setupMysqlDatabaseService.hasCoreSchema(mysqlRequest, "cat2bug")).thenReturn(true);
         assertEquals(DatabaseExistenceProbe.MODE_EXISTING, probe.probeMode(mysqlRequest));
     }
 

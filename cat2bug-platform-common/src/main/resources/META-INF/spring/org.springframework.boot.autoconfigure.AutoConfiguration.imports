@@ -1,1 +1,2 @@
 com.cat2bug.common.config.j2cache.Cat2BugJ2CacheAutoConfiguration
+com.cat2bug.common.config.j2cache.Cat2BugNativeJ2CacheAutoConfiguration

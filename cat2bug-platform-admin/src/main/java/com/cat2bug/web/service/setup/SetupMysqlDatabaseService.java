@@ -88,6 +88,19 @@ public class SetupMysqlDatabaseService
         }
     }
 
+    /** 与安装提交阶段 {@link SetupInstallJdbcWriter#isSchemaPresent} 一致，以业务表为准。 */
+    public boolean hasCoreSchema(SetupSubmitRequest request, String database)
+    {
+        try (Connection connection = openDatabaseConnection(request, database))
+        {
+            return FlywaySchemaSupport.hasCoreSchema(connection);
+        }
+        catch (Exception e)
+        {
+            return false;
+        }
+    }
+
     static void assertValidDatabaseName(String database)
     {
         DatabaseExistenceProbe.assertValidDatabaseName(database);
