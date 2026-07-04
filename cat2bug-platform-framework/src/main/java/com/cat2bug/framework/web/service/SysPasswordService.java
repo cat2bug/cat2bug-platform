@@ -51,12 +51,7 @@ public class SysPasswordService
         String username = usernamePasswordAuthenticationToken.getName();
         String password = usernamePasswordAuthenticationToken.getCredentials().toString();
 
-        Integer retryCount = redisCache.getCacheObject(RedisCache.LOGIN_TOKEN_CACHE_REGION, getCacheKey(username));
-
-        if (retryCount == null)
-        {
-            retryCount = 0;
-        }
+        Integer retryCount = readPasswordRetryCount(username);
 
         if (retryCount >= Integer.valueOf(maxRetryCount).intValue())
         {
@@ -90,6 +85,19 @@ public class SysPasswordService
         if (redisCache.hasKey(RedisCache.LOGIN_TOKEN_CACHE_REGION, getCacheKey(loginName)))
         {
             redisCache.deleteObject(RedisCache.LOGIN_TOKEN_CACHE_REGION, getCacheKey(loginName));
+        }
+    }
+
+    private int readPasswordRetryCount(String username)
+    {
+        try
+        {
+            Integer retryCount = redisCache.getCacheObject(RedisCache.LOGIN_TOKEN_CACHE_REGION, getCacheKey(username));
+            return retryCount != null ? retryCount : 0;
+        }
+        catch (RuntimeException ignored)
+        {
+            return 0;
         }
     }
 }

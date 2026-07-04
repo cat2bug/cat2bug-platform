@@ -88,12 +88,11 @@ public class SysLoginService
             if (resolved instanceof BaseException)
             {
                 BaseException be = (BaseException) resolved;
-                AsyncManager.me().execute(AsyncFactory.recordLogininfor(username, Constants.LOGIN_FAIL, be.getMessage()));
+                String failMsg = resolveLoginFailMessage(be.getMessage(), "user.password.not.match");
+                AsyncManager.me().execute(AsyncFactory.recordLogininfor(username, Constants.LOGIN_FAIL, failMsg));
                 throw be;
             }
-            String msg = StringUtils.isNotEmpty(resolved.getMessage())
-                    ? resolved.getMessage()
-                    : MessageUtils.message("user.password.not.match");
+            String msg = resolveLoginFailMessage(resolved.getMessage(), "user.password.not.match");
             AsyncManager.me().execute(AsyncFactory.recordLogininfor(username, Constants.LOGIN_FAIL, msg));
             throw new ServiceException(msg);
         }
@@ -207,5 +206,15 @@ public class SysLoginService
             current = cause;
         }
         return e;
+    }
+
+    private static String resolveLoginFailMessage(String detail, String messageKey)
+    {
+        if (StringUtils.isNotEmpty(detail))
+        {
+            return detail;
+        }
+        String localized = MessageUtils.message(messageKey);
+        return StringUtils.isNotEmpty(localized) ? localized : "用户不存在/密码错误";
     }
 }

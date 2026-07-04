@@ -76,6 +76,11 @@ public class RedisCache
         return NativeImageSupport.isRunningNativeImage() && !"redis".equalsIgnoreCase(cacheType);
     }
 
+    private boolean isRedisCacheMode()
+    {
+        return "redis".equalsIgnoreCase(cacheType);
+    }
+
     private void rethrowIfRedisCache(RuntimeException e)
     {
         if ("redis".equalsIgnoreCase(cacheType))
@@ -201,6 +206,10 @@ public class RedisCache
         {
             return hasNativeKey(group, key);
         }
+        if (cacheChannel == null)
+        {
+            return isRedisCacheMode() ? Boolean.FALSE : hasNativeKey(group, key);
+        }
         try
         {
             return cacheChannel.exists(group, key);
@@ -245,9 +254,22 @@ public class RedisCache
         {
             return getNativeCacheObject(group, key);
         }
+        if (cacheChannel == null)
+        {
+            if (isRedisCacheMode())
+            {
+                return null;
+            }
+            return getNativeCacheObject(group, key);
+        }
         try
         {
-            return (T) cacheChannel.get(group, key).getValue();
+            net.oschina.j2cache.CacheObject holder = cacheChannel.get(group, key);
+            if (holder == null)
+            {
+                return null;
+            }
+            return (T) holder.getValue();
         }
         catch (RuntimeException e)
         {
