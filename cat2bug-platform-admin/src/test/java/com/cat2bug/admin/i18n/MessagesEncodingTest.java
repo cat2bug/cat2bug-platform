@@ -1,11 +1,13 @@
 package com.cat2bug.admin.i18n;
 
+import com.cat2bug.framework.config.Cat2BugMessageSource;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MessagesEncodingTest
@@ -30,5 +32,16 @@ class MessagesEncodingTest
 
         String message = messageSource.getMessage("setup.test.connection.success", null, Locale.SIMPLIFIED_CHINESE);
         assertTrue(message.contains("连接"), () -> "unexpected message: " + message);
+    }
+
+    @Test
+    void cat2BugMessageSourceLoadsLoginErrorsForNativeClasspath()
+    {
+        Cat2BugMessageSource messageSource = new Cat2BugMessageSource();
+        messageSource.setDefaultEncoding(StandardCharsets.UTF_8.name());
+
+        String message = messageSource.getMessage("user.not.exists", null, Locale.SIMPLIFIED_CHINESE);
+        assertTrue(message.contains("成员"), () -> "unexpected message: " + message);
+        assertFalse(message.contains("user.not.exists"), () -> "message key leaked: " + message);
     }
 }

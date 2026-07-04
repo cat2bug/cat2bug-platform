@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.ImportRuntimeHints;
 import com.cat2bug.nativeimage.Cat2BugNativeRuntimeHints;
+import com.cat2bug.nativeimage.I18nNativeRuntimeHints;
 import com.cat2bug.nativeimage.J2CacheNativeRuntimeHints;
 import com.cat2bug.nativeimage.JwtNativeRuntimeHints;
 import com.cat2bug.nativeimage.MyBatisNativeConfiguration;
@@ -23,6 +24,7 @@ import java.io.IOException;
 @Import(MyBatisNativeConfiguration.class)
 @ImportRuntimeHints({
         Cat2BugNativeRuntimeHints.class,
+        I18nNativeRuntimeHints.class,
         J2CacheNativeRuntimeHints.class,
         JwtNativeRuntimeHints.class,
         SecurityNativeRuntimeHints.class
