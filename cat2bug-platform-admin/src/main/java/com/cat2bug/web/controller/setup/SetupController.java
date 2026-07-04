@@ -13,6 +13,7 @@ import com.cat2bug.web.service.setup.SetupMessages;
 import com.cat2bug.web.service.setup.SetupInstallService;
 import com.cat2bug.web.service.setup.SetupOllamaTestService;
 import com.cat2bug.web.service.setup.SetupPathTestService;
+import com.cat2bug.web.service.setup.SetupPreflightService;
 import com.cat2bug.web.service.setup.SetupRedisTestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -49,6 +50,9 @@ public class SetupController extends BaseController
     @Autowired
     private SetupInstallService setupInstallService;
 
+    @Autowired
+    private SetupPreflightService setupPreflightService;
+
     @GetMapping("/status")
     public AjaxResult status()
     {
@@ -57,6 +61,16 @@ public class SetupController extends BaseController
         data.put("skipped", installService.isInstallSkipped());
         data.put("restartRequired", installService.needsRestart());
         return success(data);
+    }
+
+    @GetMapping("/preflight")
+    public AjaxResult preflight()
+    {
+        if (installService.isInstalled())
+        {
+            return error(SetupMessages.msg("setup.install.already"));
+        }
+        return success(setupPreflightService.buildPreflight());
     }
 
     @PostMapping("/test/database")

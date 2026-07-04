@@ -55,11 +55,16 @@ services:
     expose:
       - "2020"
     environment:
+      SPRING_DATABASE_TYPE: mysql
+      CAT2BUG_CACHE_TYPE: redis
       SPRING_DATASOURCE_DRUID_MASTER_URL: jdbc:mysql://cat2bug-platform-mysql:3306/cat2bug_platform?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=GMT%2B8
       SPRING_DATASOURCE_DRUID_MASTER_USERNAME: root
       SPRING_DATASOURCE_DRUID_MASTER_PASSWORD: cat2bug_password
       REDIS_HOSTS: cat2bug-platform-redis:6379
       SPRING_REDIS_HOST: cat2bug-platform-redis
+      SPRING_REDIS_PORT: 6379
+      # 可选：安装向导 AI 步骤预填 Ollama 地址
+      # CAT2BUG_AI_HOST: http://ollama:11434
       # 已 completed install + 换 JAR 有待执行 Flyway 时：跳过 /upgrade UI，启动期静默 migrate；失败则容器 exit 1
       # CAT2BUG_UPGRADE_SKIP: "true"
     volumes:

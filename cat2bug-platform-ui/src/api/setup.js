@@ -61,6 +61,16 @@ export function getSetupStatus() {
   })
 }
 
+/** 从运行环境读取安装向导表单默认值 */
+export function getSetupPreflight() {
+  return request({
+    url: '/setup/preflight',
+    headers: setupHeaders,
+    method: 'get',
+    silentError: true
+  })
+}
+
 /** 测试数据库连接 */
 export function testDatabase(data) {
   return request({

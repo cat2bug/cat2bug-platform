@@ -360,6 +360,7 @@
 <script>
 import {
   getSetupStatus,
+  getSetupPreflight,
   testDatabase,
   testRedis,
   testOllama,
@@ -592,6 +593,7 @@ export default {
     const lang = this.$cache.local.get(I18N_LOCALE_KEY) || 'zh_CN'
     this.$i18n.locale = lang
     this.refreshFormRuleMessages()
+    this.loadPreflight()
     getSetupStatus().then(res => {
       const payload = (res && res.data) ? res.data : (res || {})
       if (payload.restartRequired || sessionStorage.getItem(SETUP_AWAITING_READY_KEY) === '1') {
@@ -640,6 +642,54 @@ export default {
       this.adminRules.adminUsername[0].message = this.$t('setup.admin.usernameRequired')
       this.adminRules.adminPassword[0].message = this.$t('setup.admin.passwordRequired')
       this.adminRules.adminPasswordConfirm[0].message = this.$t('setup.admin.passwordRequired')
+    },
+    loadPreflight() {
+      return getSetupPreflight().then(res => {
+        const payload = (res && res.data) ? res.data : (res || {})
+        this.patchFormFromPreflight(payload)
+      }).catch(() => {})
+    },
+    mergePreflightString(current, value) {
+      if (value != null && String(value).trim() !== '') {
+        return value
+      }
+      return current
+    },
+    patchFormFromPreflight(preflight) {
+      if (!preflight) return
+      if (preflight.databaseType) {
+        this.form.databaseType = preflight.databaseType
+      }
+      if (preflight.cacheType) {
+        this.form.cacheType = preflight.cacheType
+      }
+      this.form.profile = this.mergePreflightString(this.form.profile, preflight.profile)
+      this.form.temp = this.mergePreflightString(this.form.temp, preflight.temp)
+      this.form.logPath = this.mergePreflightString(this.form.logPath, preflight.logPath)
+      if (preflight.aiEnabled === true || preflight.aiEnabled === false) {
+        this.form.aiEnabled = preflight.aiEnabled
+      }
+      this.form.aiHost = this.mergePreflightString(this.form.aiHost, preflight.aiHost)
+
+      this.form.mysqlHost = this.mergePreflightString(this.form.mysqlHost, preflight.mysqlHost)
+      if (preflight.mysqlPort != null) {
+        this.form.mysqlPort = preflight.mysqlPort
+      }
+      this.form.mysqlUsername = this.mergePreflightString(this.form.mysqlUsername, preflight.mysqlUsername)
+      this.form.mysqlPassword = this.mergePreflightString(this.form.mysqlPassword, preflight.mysqlPassword)
+
+      this.form.redisHost = this.mergePreflightString(this.form.redisHost, preflight.redisHost)
+      if (preflight.redisPort != null) {
+        this.form.redisPort = preflight.redisPort
+      }
+      this.form.redisPassword = this.mergePreflightString(this.form.redisPassword, preflight.redisPassword)
+      if (preflight.redisDatabase !== undefined && preflight.redisDatabase !== null) {
+        this.form.redisDatabase = preflight.redisDatabase
+      }
+
+      if (preflight.mysqlDatabase) {
+        this.form.databaseName = preflight.mysqlDatabase
+      }
     },
     onDatabaseTypeChange() {
       this.invalidateDatabaseTest()

@@ -23,6 +23,21 @@ environment:
 
 跳过首次 `/setup` 向导（预配置 install 文件或 Environment 数据源时使用）。
 
+### 安装向导环境变量预填
+
+首次进入 `/setup` 时，后端 `GET /setup/preflight` 从容器/进程环境变量读取基础设施默认值并写入表单。未设置的环境项保留向导内置默认（如 H2、127.0.0.1）；既无环境变量也无内置默认的字段（如数据库密码）留空。
+
+| 向导字段 | 推荐环境变量 |
+|----------|----------------|
+| 数据库类型 | `SPRING_DATABASE_TYPE`（未设置时可根据 JDBC URL 含 `jdbc:mysql` 推断为 mysql） |
+| MySQL 连接 | `SPRING_DATASOURCE_DRUID_MASTER_URL`、`SPRING_DATASOURCE_DRUID_MASTER_USERNAME`、`SPRING_DATASOURCE_DRUID_MASTER_PASSWORD` |
+| 缓存类型 | `CAT2BUG_CACHE_TYPE`（未设置时若存在 `SPRING_REDIS_HOST` 则推断为 redis） |
+| Redis 连接 | `SPRING_REDIS_HOST`、`SPRING_REDIS_PORT`、`SPRING_REDIS_PASSWORD`、`SPRING_REDIS_DATABASE` |
+| 上传/日志路径 | `CAT2BUG_PROFILE`、`CAT2BUG_TEMP`、`LOGGING_FILE_PATH` |
+| AI / Ollama | `CAT2BUG_AI_ENABLED`、`CAT2BUG_AI_HOST` |
+
+`docker-compose.yml` 中 `cat2bug-platform-web-after` 已示例上述 MySQL/Redis 变量；配置完成后打开安装向导通常无需再手改连接信息，核对并提交即可。
+
 ## 首次安装与附着旧库
 
 - **全新空库**：无 install 文件 → 浏览器进入 `/setup`
