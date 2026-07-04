@@ -4,6 +4,7 @@ import org.springframework.core.env.Environment;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * 安装向导预检：直接从 Spring Environment / 进程环境变量读取 compose 注入的配置（优先级最高）。
@@ -19,27 +20,42 @@ final class SetupEnvironmentPreflightSupport
      */
     static void applyExplicitConfiguration(Map<String, Object> result, Environment environment)
     {
-        String databaseType = resolveProperty(environment, "spring.database-type", "SPRING_DATABASE_TYPE");
+        applyExplicitConfiguration(result, environment, System::getenv);
+    }
+
+    static void applyExplicitConfiguration(
+            Map<String, Object> result,
+            Environment environment,
+            Function<String, String> processEnvironment)
+    {
+        String databaseType = resolveProperty(
+                environment, processEnvironment, "spring.database-type", "SPRING_DATABASE_TYPE");
         if (databaseType != null)
         {
             result.put("databaseType", databaseType.trim().toLowerCase());
         }
 
-        String cacheType = resolveProperty(environment, "cat2bug.cache.type", "CAT2BUG_CACHE_TYPE");
+        String cacheType = resolveProperty(
+                environment, processEnvironment, "cat2bug.cache.type", "CAT2BUG_CACHE_TYPE");
         if (cacheType != null)
         {
             result.put("cacheType", cacheType.trim().toLowerCase());
         }
 
-        applyMysqlFromEnvironment(result, environment);
-        applyRedisFromEnvironment(result, environment);
-        applyPathsFromEnvironment(result, environment);
-        applyAiFromEnvironment(result, environment);
+        applyMysqlFromEnvironment(result, environment, processEnvironment);
+        applyRedisFromEnvironment(result, environment, processEnvironment);
+        applyPathsFromEnvironment(result, environment, processEnvironment);
+        applyAiFromEnvironment(result, environment, processEnvironment);
     }
 
-    private static void applyMysqlFromEnvironment(Map<String, Object> result, Environment environment)
+    private static void applyMysqlFromEnvironment(
+            Map<String, Object> result,
+            Environment environment,
+            Function<String, String> processEnvironment)
     {
-        String jdbcUrl = resolveProperty(environment,
+        String jdbcUrl = resolveProperty(
+                environment,
+                processEnvironment,
                 "spring.datasource.druid.master.url",
                 "SPRING_DATASOURCE_DRUID_MASTER_URL",
                 "SPRING_DATASOURCE_URL");
@@ -51,55 +67,75 @@ final class SetupEnvironmentPreflightSupport
             result.put("databaseType", "mysql");
         }
 
-        putIfResolved(result, "mysqlUsername", resolveProperty(environment,
+        putIfResolved(result, "mysqlUsername", resolveProperty(
+                environment,
+                processEnvironment,
                 "spring.datasource.druid.master.username",
                 "SPRING_DATASOURCE_DRUID_MASTER_USERNAME"));
-        putIfResolved(result, "mysqlPassword", resolveProperty(environment,
+        putIfResolved(result, "mysqlPassword", resolveProperty(
+                environment,
+                processEnvironment,
                 "spring.datasource.druid.master.password",
                 "SPRING_DATASOURCE_DRUID_MASTER_PASSWORD"));
     }
 
-    private static void applyRedisFromEnvironment(Map<String, Object> result, Environment environment)
+    private static void applyRedisFromEnvironment(
+            Map<String, Object> result,
+            Environment environment,
+            Function<String, String> processEnvironment)
     {
-        String redisHost = resolveProperty(environment, "spring.redis.host", "SPRING_REDIS_HOST");
+        String redisHost = resolveProperty(
+                environment, processEnvironment, "spring.redis.host", "SPRING_REDIS_HOST");
         if (redisHost != null)
         {
             result.put("redisHost", redisHost);
-            result.putIfAbsent("cacheType", "redis");
+            result.put("cacheType", "redis");
         }
 
-        String redisPort = resolveProperty(environment, "spring.redis.port", "SPRING_REDIS_PORT");
+        String redisPort = resolveProperty(
+                environment, processEnvironment, "spring.redis.port", "SPRING_REDIS_PORT");
         if (redisPort != null)
         {
             result.put("redisPort", parseInteger(redisPort));
         }
 
-        putIfResolved(result, "redisPassword", resolveProperty(environment,
-                "spring.redis.password",
-                "SPRING_REDIS_PASSWORD"));
+        putIfResolved(result, "redisPassword", resolveProperty(
+                environment, processEnvironment, "spring.redis.password", "SPRING_REDIS_PASSWORD"));
 
-        String redisDatabase = resolveProperty(environment, "spring.redis.database", "SPRING_REDIS_DATABASE");
+        String redisDatabase = resolveProperty(
+                environment, processEnvironment, "spring.redis.database", "SPRING_REDIS_DATABASE");
         if (redisDatabase != null)
         {
             result.put("redisDatabase", parseInteger(redisDatabase));
         }
     }
 
-    private static void applyPathsFromEnvironment(Map<String, Object> result, Environment environment)
+    private static void applyPathsFromEnvironment(
+            Map<String, Object> result,
+            Environment environment,
+            Function<String, String> processEnvironment)
     {
-        putIfResolved(result, "profile", resolveProperty(environment, "cat2bug.profile", "CAT2BUG_PROFILE"));
-        putIfResolved(result, "temp", resolveProperty(environment, "cat2bug.temp", "CAT2BUG_TEMP"));
-        putIfResolved(result, "logPath", resolveProperty(environment, "logging.file.path", "LOGGING_FILE_PATH"));
+        putIfResolved(result, "profile", resolveProperty(
+                environment, processEnvironment, "cat2bug.profile", "CAT2BUG_PROFILE"));
+        putIfResolved(result, "temp", resolveProperty(
+                environment, processEnvironment, "cat2bug.temp", "CAT2BUG_TEMP"));
+        putIfResolved(result, "logPath", resolveProperty(
+                environment, processEnvironment, "logging.file.path", "LOGGING_FILE_PATH"));
     }
 
-    private static void applyAiFromEnvironment(Map<String, Object> result, Environment environment)
+    private static void applyAiFromEnvironment(
+            Map<String, Object> result,
+            Environment environment,
+            Function<String, String> processEnvironment)
     {
-        String aiEnabled = resolveProperty(environment, "cat2bug.ai.enabled", "CAT2BUG_AI_ENABLED");
+        String aiEnabled = resolveProperty(
+                environment, processEnvironment, "cat2bug.ai.enabled", "CAT2BUG_AI_ENABLED");
         if (aiEnabled != null)
         {
             result.put("aiEnabled", Boolean.parseBoolean(aiEnabled.trim()));
         }
-        putIfResolved(result, "aiHost", resolveProperty(environment, "cat2bug.ai.host", "CAT2BUG_AI_HOST"));
+        putIfResolved(result, "aiHost", resolveProperty(
+                environment, processEnvironment, "cat2bug.ai.host", "CAT2BUG_AI_HOST"));
     }
 
     private static void mergeNonBlank(Map<String, Object> target, Map<String, Object> source)
@@ -135,18 +171,27 @@ final class SetupEnvironmentPreflightSupport
 
     static String resolveProperty(Environment environment, String propertyKey, String... environmentKeys)
     {
-        String fromProperty = environment.getProperty(propertyKey);
-        if (fromProperty != null && !fromProperty.isBlank())
-        {
-            return fromProperty.trim();
-        }
+        return resolveProperty(environment, System::getenv, propertyKey, environmentKeys);
+    }
+
+    static String resolveProperty(
+            Environment environment,
+            Function<String, String> processEnvironment,
+            String propertyKey,
+            String... environmentKeys)
+    {
         for (String environmentKey : environmentKeys)
         {
-            String fromEnvironment = System.getenv(environmentKey);
+            String fromEnvironment = processEnvironment.apply(environmentKey);
             if (fromEnvironment != null && !fromEnvironment.isBlank())
             {
                 return fromEnvironment.trim();
             }
+        }
+        String fromProperty = environment.getProperty(propertyKey);
+        if (fromProperty != null && !fromProperty.isBlank())
+        {
+            return fromProperty.trim();
         }
         return null;
     }
