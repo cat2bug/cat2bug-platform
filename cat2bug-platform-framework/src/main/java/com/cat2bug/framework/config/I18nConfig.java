@@ -1,11 +1,13 @@
 package com.cat2bug.framework.config;
 
 import org.springframework.boot.autoconfigure.context.MessageSourceProperties;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.context.properties.bind.Bindable;
+import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
+import org.springframework.core.env.Environment;
 import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -22,11 +24,14 @@ import java.time.Duration;
  * 国际化
  */
 @Configuration
-@EnableConfigurationProperties(MessageSourceProperties.class)
-public class I18nConfig implements WebMvcConfigurer {
+public class I18nConfig implements WebMvcConfigurer
+{
     @Bean
-    public MessageSource messageSource(MessageSourceProperties properties)
+    public MessageSource messageSource(Environment environment)
     {
+        MessageSourceProperties properties = new MessageSourceProperties();
+        Binder.get(environment).bind("spring.messages", Bindable.ofInstance(properties));
+
         ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
         if (StringUtils.hasText(properties.getBasename()))
         {
@@ -56,17 +61,12 @@ public class I18nConfig implements WebMvcConfigurer {
     public LocaleResolver localeResolver()
     {
         return new MessageLocaleResolver();
-//        SessionLocaleResolver slr = new SessionLocaleResolver();
-//        // 默认语言
-//        slr.setDefaultLocale(Locale.CHINA);
-//        return slr;
     }
 
     @Bean
     public LocaleChangeInterceptor localeChangeInterceptor()
     {
         LocaleChangeInterceptor lci = new LocaleChangeInterceptor();
-        // 参数名
         lci.setParamName("lang");
         return lci;
     }
