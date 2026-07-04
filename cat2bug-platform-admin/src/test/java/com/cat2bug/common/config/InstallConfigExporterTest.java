@@ -24,6 +24,26 @@ class InstallConfigExporterTest
     }
 
     @Test
+    void exportFromEnvironment_resolvesUppercaseEnvironmentVariables()
+    {
+        StandardEnvironment environment = new StandardEnvironment();
+        Map<String, Object> props = new HashMap<>();
+        props.put("SPRING_REDIS_HOST", "redis");
+        props.put("SPRING_REDIS_PORT", "6379");
+        props.put("SPRING_DATASOURCE_DRUID_MASTER_URL",
+                "jdbc:mysql://mysql:3306/cat2bug_platform?useSSL=false");
+        environment.getPropertySources().addFirst(
+                new org.springframework.core.env.SystemEnvironmentPropertySource("test-env", props));
+
+        Map<String, Object> exported = InstallConfigExporter.exportFromEnvironment(environment);
+
+        assertEquals("redis", nested(exported, "spring", "redis", "host"));
+        assertEquals(6379, nested(exported, "spring", "redis", "port"));
+        assertTrue(String.valueOf(nested(exported, "spring", "datasource", "druid", "master", "url"))
+                .contains("jdbc:mysql://mysql:3306/cat2bug_platform"));
+    }
+
+    @Test
     void exportFromEnvironment_buildsNestedStructure()
     {
         StandardEnvironment environment = new StandardEnvironment();

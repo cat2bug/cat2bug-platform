@@ -20,31 +20,46 @@ public class SetupPreflightService
     public Map<String, Object> buildPreflight()
     {
         Map<String, Object> base = InstallConfigExporter.exportFromEnvironment(environment);
-        if (base == null || base.isEmpty())
+        if (base == null)
         {
-            return Map.of();
+            base = new LinkedHashMap<>();
         }
 
         String databaseType = SetupFormDefaultsSupport.resolveInferredDatabaseType(base);
         String cacheType = SetupFormDefaultsSupport.resolveInferredCacheType(base);
 
         Map<String, Object> result = new LinkedHashMap<>();
+        SetupDockerPreflightSupport.applyDefaults(result, environment, databaseType, cacheType);
         if (databaseType != null)
         {
-            result.put("databaseType", databaseType);
+            result.putIfAbsent("databaseType", databaseType);
         }
         if (cacheType != null)
         {
-            result.put("cacheType", cacheType);
+            result.putIfAbsent("cacheType", cacheType);
         }
 
-        String effectiveDatabaseType = databaseType != null
-                ? databaseType
-                : SetupFormDefaultsSupport.resolveDatabaseType(base);
-        String effectiveCacheType = cacheType != null
-                ? cacheType
-                : SetupFormDefaultsSupport.resolveCacheType(base);
+        String effectiveDatabaseType = stringValue(result.get("databaseType"));
+        if (effectiveDatabaseType.isBlank())
+        {
+            effectiveDatabaseType = databaseType != null
+                    ? databaseType
+                    : SetupFormDefaultsSupport.resolveDatabaseType(base);
+        }
+        String effectiveCacheType = stringValue(result.get("cacheType"));
+        if (effectiveCacheType.isBlank())
+        {
+            effectiveCacheType = cacheType != null
+                    ? cacheType
+                    : SetupFormDefaultsSupport.resolveCacheType(base);
+        }
         SetupFormDefaultsSupport.putFormFields(result, base, effectiveDatabaseType, effectiveCacheType);
+        SetupDockerPreflightSupport.applyHostDefaults(result, environment);
         return result;
+    }
+
+    private static String stringValue(Object value)
+    {
+        return value == null ? "" : String.valueOf(value).trim();
     }
 }

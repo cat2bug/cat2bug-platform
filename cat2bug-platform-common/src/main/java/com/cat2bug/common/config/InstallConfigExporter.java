@@ -7,6 +7,7 @@ import org.springframework.core.env.PropertySource;
 
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -15,6 +16,25 @@ import java.util.Set;
  */
 public final class InstallConfigExporter
 {
+    /**
+     * 通过 {@link Environment#getProperty(String)} 解析的安装相关键（含 {@code SPRING_REDIS_HOST} 等环境变量宽松绑定）。
+     */
+    private static final List<String> RESOLVABLE_INSTALL_PROPERTY_KEYS = List.of(
+            "spring.database-type",
+            "spring.datasource.druid.master.url",
+            "spring.datasource.druid.master.username",
+            "spring.datasource.druid.master.password",
+            "spring.redis.host",
+            "spring.redis.port",
+            "spring.redis.password",
+            "spring.redis.database",
+            "cat2bug.cache.type",
+            "cat2bug.profile",
+            "cat2bug.temp",
+            "cat2bug.ai.enabled",
+            "cat2bug.ai.host",
+            "logging.file.path");
+
     private InstallConfigExporter()
     {
     }
@@ -51,7 +71,23 @@ public final class InstallConfigExporter
                 }
             }
         }
+        overlayResolvableInstallProperties(environment, flat);
         return unflattenProperties(flat);
+    }
+
+    /**
+     * 覆盖枚举属性源未收录的环境变量（如 {@code SPRING_REDIS_HOST}），以 Spring 属性解析结果为准。
+     */
+    private static void overlayResolvableInstallProperties(Environment environment, Map<String, Object> flat)
+    {
+        for (String key : RESOLVABLE_INSTALL_PROPERTY_KEYS)
+        {
+            String value = environment.getProperty(key);
+            if (value != null && !value.isBlank())
+            {
+                flat.put(key, coerceValue(value));
+            }
+        }
     }
 
     static boolean shouldExport(String key)

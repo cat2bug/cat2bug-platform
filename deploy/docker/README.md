@@ -35,6 +35,7 @@ environment:
 | Redis 连接 | `SPRING_REDIS_HOST`、`SPRING_REDIS_PORT`、`SPRING_REDIS_PASSWORD`、`SPRING_REDIS_DATABASE` |
 | 上传/日志路径 | `CAT2BUG_PROFILE`、`CAT2BUG_TEMP`、`LOGGING_FILE_PATH` |
 | AI / Ollama | `CAT2BUG_AI_ENABLED`、`CAT2BUG_AI_HOST` |
+| Docker 服务名兜底 | `CAT2BUG_IN_DOCKER=true`（或容器内存在 `/.dockerenv`）时，未配置的主机默认可填 `mysql` / `redis`；也可用 `CAT2BUG_SETUP_MYSQL_HOST`、`CAT2BUG_SETUP_REDIS_HOST` 覆盖 |
 
 `docker-compose.yml` 中 `cat2bug-platform-web-after` 已示例上述 MySQL/Redis 变量；配置完成后打开安装向导通常无需再手改连接信息，核对并提交即可。
 

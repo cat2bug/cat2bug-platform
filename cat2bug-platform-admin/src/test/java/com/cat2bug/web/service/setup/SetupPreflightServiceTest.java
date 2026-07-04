@@ -1,5 +1,6 @@
 package com.cat2bug.web.service.setup;
 
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -9,6 +10,8 @@ import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -106,8 +109,45 @@ class SetupPreflightServiceTest
     }
 
     @Test
+    void buildPreflight_dockerDefaultsWhenCat2bugInDocker()
+    {
+        Map<String, Object> props = new HashMap<>();
+        props.put("CAT2BUG_IN_DOCKER", "true");
+        environment.getPropertySources().addFirst(new MapPropertySource("test", props));
+
+        Map<String, Object> preflight = setupPreflightService.buildPreflight();
+
+        assertEquals("mysql", preflight.get("databaseType"));
+        assertEquals("redis", preflight.get("cacheType"));
+        assertEquals("mysql", preflight.get("mysqlHost"));
+        assertEquals(3306, preflight.get("mysqlPort"));
+        assertEquals("cat2bug_platform", preflight.get("mysqlDatabase"));
+        assertEquals("redis", preflight.get("redisHost"));
+        assertEquals(6379, preflight.get("redisPort"));
+    }
+
+    @Test
+    void buildPreflight_environmentOverridesDockerServiceNames()
+    {
+        Map<String, Object> props = new HashMap<>();
+        props.put("CAT2BUG_IN_DOCKER", "true");
+        props.put("spring.datasource.druid.master.url",
+                "jdbc:mysql://cat2bug-platform-mysql:3306/cat2bug_platform");
+        props.put("spring.redis.host", "cat2bug-platform-redis");
+        environment.getPropertySources().addFirst(new MapPropertySource("test", props));
+
+        Map<String, Object> preflight = setupPreflightService.buildPreflight();
+
+        assertEquals("cat2bug-platform-mysql", preflight.get("mysqlHost"));
+        assertEquals("cat2bug-platform-redis", preflight.get("redisHost"));
+    }
+
+    @Test
     void buildPreflight_emptyWhenNoInstallRelatedEnvironment()
     {
+        Assumptions.assumeFalse(Files.exists(Paths.get("/.dockerenv")),
+                "skipped in container: /.dockerenv enables docker compose defaults");
+
         Map<String, Object> preflight = setupPreflightService.buildPreflight();
         assertTrue(preflight.isEmpty());
     }
