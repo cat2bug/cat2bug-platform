@@ -146,7 +146,9 @@ export default {
         ]
       },
       loading: false,
-      registerEnabled: true
+      registerEnabled: true,
+      /** 注册已成功，离开页面前不再提示「返回登录页」 */
+      skipLeaveConfirm: false
     };
   },
   created() {
@@ -278,11 +280,27 @@ export default {
       return [f.username, f.nickName, f.password, f.confirmPassword]
         .some((v) => String(v || '').trim() !== '')
     },
-    navigateToLogin() {
-      this.$router.push('/login')
+    resetRegisterForm() {
+      this.registerForm = {
+        username: "",
+        nickName: "",
+        password: "",
+        confirmPassword: ""
+      }
+      this.$nextTick(() => {
+        if (this.$refs.registerForm) {
+          this.$refs.registerForm.clearValidate()
+        }
+      })
+    },
+    navigateToLoginAfterRegister() {
+      this.skipLeaveConfirm = true
+      this.resetRegisterForm()
+      this.$_detachRegisterEscListener()
+      this.navigateToLogin()
     },
     confirmLeaveToLogin() {
-      if (!this.hasRegisterFormData()) {
+      if (this.skipLeaveConfirm || !this.hasRegisterFormData()) {
         this.navigateToLogin()
         return
       }
@@ -293,6 +311,9 @@ export default {
       }).then(() => {
         this.navigateToLogin()
       }).catch(() => {})
+    },
+    navigateToLogin() {
+      this.$router.push('/login')
     },
     goLogin() {
       this.confirmLeaveToLogin()
@@ -327,11 +348,13 @@ export default {
           this.loading = true;
           register(this.registerForm).then(res => {
             const username = this.registerForm.username;
+            this.loading = false;
+            this.skipLeaveConfirm = true;
             this.$alert("<font color='red'>"+strFormat(this.$i18n.t('account-successfully-registered'),username)+"</font>", this.$i18n.t('prompted').toString(), {
               dangerouslyUseHTMLString: true,
               type: 'success'
             }).then(() => {
-              this.$router.push("/login");
+              this.navigateToLoginAfterRegister();
             }).catch(() => {});
           }).catch(() => {
             this.loading = false;

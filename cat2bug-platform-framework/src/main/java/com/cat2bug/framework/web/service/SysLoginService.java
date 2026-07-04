@@ -14,6 +14,7 @@ import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.common.core.domain.model.LoginUser;
 import com.cat2bug.common.core.redis.RedisCache;
 import com.cat2bug.common.exception.ServiceException;
+import com.cat2bug.common.exception.base.BaseException;
 import com.cat2bug.common.exception.user.BlackListException;
 import com.cat2bug.common.exception.user.CaptchaException;
 import com.cat2bug.common.exception.user.CaptchaExpireException;
@@ -78,16 +79,23 @@ public class SysLoginService
         }
         catch (Exception e)
         {
-            if (e instanceof BadCredentialsException)
+            Throwable resolved = unwrapAuthenticationException(e);
+            if (resolved instanceof BadCredentialsException || resolved instanceof UserPasswordNotMatchException)
             {
                 AsyncManager.me().execute(AsyncFactory.recordLogininfor(username, Constants.LOGIN_FAIL, MessageUtils.message("user.password.not.match")));
                 throw new UserPasswordNotMatchException();
             }
-            else
+            if (resolved instanceof BaseException)
             {
-                AsyncManager.me().execute(AsyncFactory.recordLogininfor(username, Constants.LOGIN_FAIL, e.getMessage()));
-                throw new ServiceException(e.getMessage());
+                BaseException be = (BaseException) resolved;
+                AsyncManager.me().execute(AsyncFactory.recordLogininfor(username, Constants.LOGIN_FAIL, be.getMessage()));
+                throw be;
             }
+            String msg = StringUtils.isNotEmpty(resolved.getMessage())
+                    ? resolved.getMessage()
+                    : MessageUtils.message("user.password.not.match");
+            AsyncManager.me().execute(AsyncFactory.recordLogininfor(username, Constants.LOGIN_FAIL, msg));
+            throw new ServiceException(msg);
         }
         finally
         {
@@ -177,5 +185,27 @@ public class SysLoginService
         sysUser.setLoginIp(IpUtils.getIpAddr());
         sysUser.setLoginDate(DateUtils.getNowDate());
         userService.updateUserProfile(sysUser);
+    }
+
+    /**
+     * Spring Security 会将 UserDetails 中的业务异常包一层，需向下解包才能拿到可读消息。
+     */
+    private static Throwable unwrapAuthenticationException(Throwable e)
+    {
+        Throwable current = e;
+        for (int i = 0; i < 8 && current != null; i++)
+        {
+            if (current instanceof BaseException || current instanceof BadCredentialsException)
+            {
+                return current;
+            }
+            Throwable cause = current.getCause();
+            if (cause == null || cause == current)
+            {
+                break;
+            }
+            current = cause;
+        }
+        return e;
     }
 }

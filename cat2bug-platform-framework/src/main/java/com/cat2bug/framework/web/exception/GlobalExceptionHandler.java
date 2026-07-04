@@ -18,6 +18,7 @@ import com.cat2bug.common.constant.HttpStatus;
 import com.cat2bug.common.core.domain.AjaxResult;
 import com.cat2bug.common.exception.DemoModeException;
 import com.cat2bug.common.exception.ServiceException;
+import com.cat2bug.common.exception.base.BaseException;
 import com.cat2bug.common.utils.StringUtils;
 
 /**
@@ -99,6 +100,16 @@ public class GlobalExceptionHandler
         String requestURI = request.getRequestURI();
         log.error("请求参数类型不匹配'{}',发生系统异常.", requestURI, e);
         return AjaxResult.error(String.format("请求参数类型不匹配，参数[%s]要求类型为：'%s'，但输入值为：'%s'", e.getName(), e.getRequiredType().getName(), e.getValue()));
+    }
+
+    /**
+     * 用户/业务基础异常（含国际化消息）
+     */
+    @ExceptionHandler(BaseException.class)
+    public AjaxResult handleBaseException(BaseException e, HttpServletRequest request)
+    {
+        log.error(e.getMessage(), e);
+        return AjaxResult.error(e.getMessage());
     }
 
     /**
