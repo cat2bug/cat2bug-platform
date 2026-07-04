@@ -29,7 +29,10 @@ public class SetupPreflightService
         String cacheType = SetupFormDefaultsSupport.resolveInferredCacheType(base);
 
         Map<String, Object> result = new LinkedHashMap<>();
-        SetupDockerPreflightSupport.applyDefaults(result, environment, databaseType, cacheType);
+        SetupFormDefaultsSupport.putFormFields(result, base,
+                databaseType != null ? databaseType : SetupFormDefaultsSupport.resolveDatabaseType(base),
+                cacheType != null ? cacheType : SetupFormDefaultsSupport.resolveCacheType(base));
+
         if (databaseType != null)
         {
             result.putIfAbsent("databaseType", databaseType);
@@ -39,27 +42,11 @@ public class SetupPreflightService
             result.putIfAbsent("cacheType", cacheType);
         }
 
-        String effectiveDatabaseType = stringValue(result.get("databaseType"));
-        if (effectiveDatabaseType.isBlank())
-        {
-            effectiveDatabaseType = databaseType != null
-                    ? databaseType
-                    : SetupFormDefaultsSupport.resolveDatabaseType(base);
-        }
-        String effectiveCacheType = stringValue(result.get("cacheType"));
-        if (effectiveCacheType.isBlank())
-        {
-            effectiveCacheType = cacheType != null
-                    ? cacheType
-                    : SetupFormDefaultsSupport.resolveCacheType(base);
-        }
-        SetupFormDefaultsSupport.putFormFields(result, base, effectiveDatabaseType, effectiveCacheType);
-        SetupDockerPreflightSupport.applyHostDefaults(result, environment);
-        return result;
-    }
+        SetupDockerPreflightSupport.applyDefaults(result, environment, databaseType, cacheType);
 
-    private static String stringValue(Object value)
-    {
-        return value == null ? "" : String.valueOf(value).trim();
+        // compose / K8s 环境变量最后写入，覆盖引导期 H2 与前端默认 127.0.0.1
+        SetupEnvironmentPreflightSupport.applyExplicitConfiguration(result, environment);
+
+        return result;
     }
 }

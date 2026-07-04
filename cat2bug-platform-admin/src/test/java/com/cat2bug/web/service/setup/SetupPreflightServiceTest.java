@@ -127,6 +127,34 @@ class SetupPreflightServiceTest
     }
 
     @Test
+    void buildPreflight_readsComposeEnvironmentVariables()
+    {
+        Map<String, Object> props = new HashMap<>();
+        props.put("SPRING_DATABASE_TYPE", "mysql");
+        props.put("CAT2BUG_CACHE_TYPE", "redis");
+        props.put("SPRING_DATASOURCE_DRUID_MASTER_URL",
+                "jdbc:mysql://mysql:3306/cat2bug_platform?useSSL=false");
+        props.put("SPRING_DATASOURCE_DRUID_MASTER_USERNAME", "root");
+        props.put("SPRING_DATASOURCE_DRUID_MASTER_PASSWORD", "cat2bug_password");
+        props.put("SPRING_REDIS_HOST", "redis");
+        props.put("SPRING_REDIS_PORT", "6379");
+        environment.getPropertySources().addFirst(
+                new org.springframework.core.env.SystemEnvironmentPropertySource("compose-env", props));
+
+        Map<String, Object> preflight = setupPreflightService.buildPreflight();
+
+        assertEquals("mysql", preflight.get("databaseType"));
+        assertEquals("redis", preflight.get("cacheType"));
+        assertEquals("mysql", preflight.get("mysqlHost"));
+        assertEquals(3306, preflight.get("mysqlPort"));
+        assertEquals("cat2bug_platform", preflight.get("mysqlDatabase"));
+        assertEquals("root", preflight.get("mysqlUsername"));
+        assertEquals("cat2bug_password", preflight.get("mysqlPassword"));
+        assertEquals("redis", preflight.get("redisHost"));
+        assertEquals(6379, preflight.get("redisPort"));
+    }
+
+    @Test
     void buildPreflight_environmentOverridesDockerServiceNames()
     {
         Map<String, Object> props = new HashMap<>();
