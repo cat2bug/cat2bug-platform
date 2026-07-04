@@ -92,7 +92,6 @@ import {
   LOGIN_ACTION_DEFAULTS,
   REGISTER_ACTION_DEFAULTS,
   NOTICE_ACTION_DEFAULTS,
-  DOC_ACTION_DEFAULTS,
   STATISTIC_TEMPLATE_ACTION_DEFAULTS,
   CASE_ACTION_DEFAULTS,
   PLAN_ACTION_DEFAULTS,
@@ -221,20 +220,6 @@ export default {
         id: 'notice',
         title: this.$t('keyboard.sec-notice'),
         items: noticeRows
-      })
-
-      const docRows = DOC_ACTION_DEFAULTS.map((a) => ({
-        bindingId: `action.system-doc.${a.key}`,
-        title: this.$t(a.titleKey),
-        defaultLetter: a.defaultLetter,
-        letter: shortcutStore.getLetter(`action.system-doc.${a.key}`, a.defaultLetter),
-        conflict: false,
-        reserved: false
-      }))
-      sections.push({
-        id: 'system-doc',
-        title: this.$t('keyboard.sec-system-doc'),
-        items: docRows
       })
 
       const phase2Sections = [

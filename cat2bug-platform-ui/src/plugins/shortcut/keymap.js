@@ -50,7 +50,7 @@ export const DEFAULT_MENU_LETTERS = {
  */
 export const TOP_ITEMS = [
   { key: 'notice', type: 'route', defaultLetter: 'N', titleKey: 'notice', to: '/notice/index' },
-  { key: 'help', type: 'route', defaultLetter: 'H', titleKey: 'keyboard.help-doc', to: '/system/doc' },
+  { key: 'help', type: 'action', defaultLetter: 'H', titleKey: 'keyboard.help-doc', action: 'open:docs' },
   {
     key: 'lang',
     type: 'dropdown',
@@ -146,14 +146,6 @@ export const NOTICE_ACTION_DEFAULTS = [
   { key: 'config', defaultLetter: 'G', titleKey: 'keyboard.act.notice-config' },
   { key: 'send', defaultLetter: 'E', titleKey: 'keyboard.act.notice-send' },
   { key: 'switchTab', defaultLetter: 'J', titleKey: 'keyboard.act.switch-tab' }
-]
-
-/** 系统文档页（/system/doc）默认动作 */
-export const DOC_ACTION_DEFAULTS = [
-  { key: 'back', defaultLetter: 'B', titleKey: 'keyboard.act.doc-back' },
-  { key: 'treeNav', defaultLetter: 'L', titleKey: 'keyboard.act.doc-tree-nav' },
-  { key: 'outlineNav', defaultLetter: 'D', titleKey: 'keyboard.act.doc-outline-nav' },
-  { key: 'print', defaultLetter: 'P', titleKey: 'keyboard.act.doc-print' }
 ]
 
 /** 测试用例页默认动作 */
@@ -308,8 +300,6 @@ export function getPageActionDefaults(scopeKey) {
       return PROJECT_CREATE_ACTION_DEFAULTS
     case 'profile':
       return PROFILE_ACTION_DEFAULTS
-    case 'doc':
-      return DOC_ACTION_DEFAULTS
     default:
       return DEFECT_ACTION_DEFAULTS
   }

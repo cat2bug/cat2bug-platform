@@ -250,6 +250,8 @@ export default {
         window.open('https://www.cat2bug.com')
       } else if (action === 'open:git') {
         window.open('https://gitee.com/cat2bug/cat2bug-platform')
+      } else if (action === 'open:docs') {
+        window.open('https://www.cat2bug.com/document/cat2bug-platform')
       }
     },
     applyLang(lang) {

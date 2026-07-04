@@ -5,11 +5,13 @@
 </template>
 
 <script>
+const SYSTEM_DOC_URL = 'https://www.cat2bug.com/document/cat2bug-platform'
+
 export default {
   name: 'Cat2BugDoc',
   methods: {
     goto() {
-      this.$router.push('/system/doc')
+      window.open(SYSTEM_DOC_URL)
     }
   }
 }

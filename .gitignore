@@ -67,6 +67,10 @@ worktrees/
 CLAUDE.md
 
 ######################################################################
+# OpenSpec（本地变更管理，不入库）
+/openspec/
+
+######################################################################
 # Docs
 cat2bug-platform-ui/docs
 cat2bug-platform-ui/public/docs
