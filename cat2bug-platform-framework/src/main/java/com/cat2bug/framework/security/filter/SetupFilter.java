@@ -125,7 +125,7 @@ public class SetupFilter extends OncePerRequestFilter
             {
                 return true;
             }
-            if (path.startsWith("/static/") || path.startsWith("/profile/") || path.startsWith("/docs/images/"))
+            if (path.startsWith("/static/") || path.startsWith("/profile/") || path.startsWith("/docs/"))
             {
                 return true;
             }
@@ -161,7 +161,7 @@ public class SetupFilter extends OncePerRequestFilter
             {
                 return true;
             }
-            if (path.startsWith("/static/") || path.startsWith("/profile/") || path.startsWith("/docs/images/"))
+            if (path.startsWith("/static/") || path.startsWith("/profile/") || path.startsWith("/docs/"))
             {
                 return true;
             }

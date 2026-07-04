@@ -107,7 +107,7 @@ public class SecurityConfig {
                             ant(HttpMethod.GET, "/**/*.css"),
                             ant(HttpMethod.GET, "/**/*.js"),
                             ant(HttpMethod.GET, "/profile/**"),
-                            ant(HttpMethod.GET, "/docs/images/**")
+                            ant(HttpMethod.GET, "/docs/**")
                     ).permitAll();
                     registry.requestMatchers(
                             ant("/doc.html"),

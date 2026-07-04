@@ -61,6 +61,7 @@
 import ShortcutBadge from './ShortcutBadge.vue'
 import { shortcutService } from '@/plugins/shortcut'
 import { normalizeKey } from '@/plugins/shortcut/keymap'
+import { SYSTEM_DOC_URL } from '@/utils/system-doc-url'
 
 const I18N_LOCALE_KEY = 'i18n-locale'
 
@@ -251,7 +252,7 @@ export default {
       } else if (action === 'open:git') {
         window.open('https://gitee.com/cat2bug/cat2bug-platform')
       } else if (action === 'open:docs') {
-        window.open('https://www.cat2bug.com/document/cat2bug-platform')
+        window.open(SYSTEM_DOC_URL)
       }
     },
     applyLang(lang) {

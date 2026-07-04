@@ -114,6 +114,12 @@
         <slot name="tools"></slot>
       </div>
 
+      <div class="login-extra-links">
+        <a class="system-doc-link" :href="systemDocUrl" target="_blank" rel="noopener noreferrer">
+          {{ $t('system-doc') }}
+        </a>
+      </div>
+
       <div class="login-copyright">Copyright © 2024–2026 版权所有</div>
     </el-form>
   </div>
@@ -134,6 +140,7 @@ import {
 import pageActionHints from '@/mixins/page-action-hints'
 import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
 import { LOGIN_LANG_ACTION_DEFAULTS } from '@/plugins/shortcut/keymap'
+import { SYSTEM_DOC_URL } from '@/utils/system-doc-url'
 
 const LOGIN_KBD_SCOPE = 'login'
 
@@ -157,7 +164,8 @@ export default {
       loading: false,
       captchaEnabled: true,
       register: false,
-      redirect: undefined
+      redirect: undefined,
+      systemDocUrl: SYSTEM_DOC_URL
     }
   },
   props: {
@@ -491,6 +499,20 @@ html.dark .login-form {
 .register-link {
   position: relative;
   display: inline-block;
+  font-size: 13px;
+  color: var(--login-accent, #ffc107);
+  text-decoration: none;
+  &:hover {
+    opacity: 0.85;
+  }
+}
+
+.login-extra-links {
+  margin-top: 8px;
+  text-align: center;
+}
+
+.system-doc-link {
   font-size: 13px;
   color: var(--login-accent, #ffc107);
   text-decoration: none;
