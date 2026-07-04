@@ -26,6 +26,8 @@ import java.time.Duration;
 @Configuration
 public class I18nConfig implements WebMvcConfigurer
 {
+    private static final String DEFAULT_MESSAGE_BASENAME = "classpath:i18n/messages";
+
     @Bean
     public MessageSource messageSource(Environment environment)
     {
@@ -33,11 +35,10 @@ public class I18nConfig implements WebMvcConfigurer
         Binder.get(environment).bind("spring.messages", Bindable.ofInstance(properties));
 
         ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
-        if (StringUtils.hasText(properties.getBasename()))
-        {
-            messageSource.setBasenames(StringUtils.commaDelimitedListToStringArray(
-                    StringUtils.trimAllWhitespace(properties.getBasename())));
-        }
+        String basename = StringUtils.hasText(properties.getBasename())
+                ? properties.getBasename()
+                : DEFAULT_MESSAGE_BASENAME;
+        messageSource.setBasenames(toClasspathBasenames(basename));
         if (properties.getEncoding() != null)
         {
             messageSource.setDefaultEncoding(properties.getEncoding().name());
@@ -53,8 +54,20 @@ public class I18nConfig implements WebMvcConfigurer
             messageSource.setCacheMillis(cacheDuration.toMillis());
         }
         messageSource.setAlwaysUseMessageFormat(properties.isAlwaysUseMessageFormat());
-        messageSource.setUseCodeAsDefaultMessage(properties.isUseCodeAsDefaultMessage());
+        messageSource.setUseCodeAsDefaultMessage(true);
         return messageSource;
+    }
+
+    private static String[] toClasspathBasenames(String basename)
+    {
+        String[] names = StringUtils.commaDelimitedListToStringArray(StringUtils.trimAllWhitespace(basename));
+        String[] resolved = new String[names.length];
+        for (int i = 0; i < names.length; i++)
+        {
+            String name = names[i];
+            resolved[i] = name.startsWith("classpath:") ? name : "classpath:" + name;
+        }
+        return resolved;
     }
 
     @Bean

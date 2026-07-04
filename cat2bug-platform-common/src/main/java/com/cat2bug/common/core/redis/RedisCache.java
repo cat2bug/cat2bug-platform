@@ -148,6 +148,15 @@ public class RedisCache
             setNativeCacheObject(group, key, value);
             return;
         }
+        if (cacheChannel == null)
+        {
+            if (isRedisCacheMode())
+            {
+                throw new IllegalStateException("J2Cache CacheChannel is not available; rebuild Native image with Redis cache AOT support or check Redis configuration");
+            }
+            setNativeCacheObject(group, key, value);
+            return;
+        }
         try
         {
             cacheChannel.set(group, key, value);
@@ -231,6 +240,10 @@ public class RedisCache
         {
             return nativeBucket(group).keySet();
         }
+        if (cacheChannel == null)
+        {
+            return isRedisCacheMode() ? java.util.Collections.emptyList() : nativeBucket(group).keySet();
+        }
         try
         {
             return cacheChannel.keys(group);
@@ -290,6 +303,15 @@ public class RedisCache
             deleteNativeCacheObject(group, key);
             return true;
         }
+        if (cacheChannel == null)
+        {
+            if (isRedisCacheMode())
+            {
+                return false;
+            }
+            deleteNativeCacheObject(group, key);
+            return true;
+        }
         try
         {
             cacheChannel.evict(group, key);
@@ -316,6 +338,16 @@ public class RedisCache
         }
         if (useNativeFallback())
         {
+            Map<String, Object> bucket = nativeBucket(group);
+            collection.forEach(bucket::remove);
+            return true;
+        }
+        if (cacheChannel == null)
+        {
+            if (isRedisCacheMode())
+            {
+                return false;
+            }
             Map<String, Object> bucket = nativeBucket(group);
             collection.forEach(bucket::remove);
             return true;
@@ -470,6 +502,16 @@ public class RedisCache
     {
         if (useNativeFallback())
         {
+            return nativeBucket(group).keySet().stream()
+                    .filter(n -> n.indexOf(pattern) > -1)
+                    .collect(Collectors.toList());
+        }
+        if (cacheChannel == null)
+        {
+            if (isRedisCacheMode())
+            {
+                return java.util.Collections.emptyList();
+            }
             return nativeBucket(group).keySet().stream()
                     .filter(n -> n.indexOf(pattern) > -1)
                     .collect(Collectors.toList());

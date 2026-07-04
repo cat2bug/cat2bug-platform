@@ -21,6 +21,25 @@ public class MessageUtils
     public static String message(String code, Object... args)
     {
         MessageSource messageSource = SpringUtils.getBean(MessageSource.class);
-        return messageSource.getMessage(code, args, LocaleContextHolder.getLocale());
+        String fallback = formatFallbackMessage(code, args);
+        return messageSource.getMessage(code, args, fallback, LocaleContextHolder.getLocale());
+    }
+
+    private static String formatFallbackMessage(String code, Object... args)
+    {
+        if (args == null || args.length == 0)
+        {
+            return code;
+        }
+        StringBuilder builder = new StringBuilder(code).append(": ");
+        for (int i = 0; i < args.length; i++)
+        {
+            if (i > 0)
+            {
+                builder.append(", ");
+            }
+            builder.append(args[i]);
+        }
+        return builder.toString();
     }
 }

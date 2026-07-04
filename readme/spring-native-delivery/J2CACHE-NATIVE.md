@@ -43,6 +43,8 @@ MySQL 安装模板见 `defaults/application-install-mysql.yml`。
 
 `J2CacheNativeRuntimeHints` 注册 J2Cache Redis provider、Jedis、fastjson 反射及 `*-j2cache.properties` / `caffeine.properties` 资源。见 `Cat2BugApplication` `@ImportRuntimeHints`。
 
+**AOT 构建：** `process-aot` 须带 `-Dcat2bug.cache.type=redis`（见 `cat2bug-platform-admin/pom.xml` `-Pnative`），否则安装向导选 Redis 后 `CacheChannel` bean 不会编入 Native 镜像，登录写 token 时 NPE。
+
 ## 冒烟
 
 ```bash

@@ -258,7 +258,7 @@
                                     <goal>process-aot</goal>
                                 </goals>
                                 <configuration>
-                                    <jvmArguments>-Dspring.profiles.active=native -Dspring.database-type=h2</jvmArguments>
+                                    <jvmArguments>-Dspring.profiles.active=native -Dspring.database-type=h2 -Dcat2bug.cache.type=redis</jvmArguments>
                                 </configuration>
                             </execution>
                         </executions>

@@ -8,11 +8,11 @@ import net.oschina.j2cache.cache.support.util.SpringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.StandardEnvironment;
@@ -20,12 +20,12 @@ import org.springframework.core.env.StandardEnvironment;
 import java.io.IOException;
 
 /**
- * GraalVM Native 下 Redis-only J2Cache（L1 禁用），仅在 {@code cat2bug.cache.type=redis} 时启用。
- * JVM 路径见 {@link Cat2BugJ2CacheAutoConfiguration}（Caffeine L1 + Redis L2）。
+ * GraalVM Native 下 Redis-only J2Cache（L1 禁用），在 {@code native} profile 下注册；
+ * 运行期 {@code cat2bug.cache.type=redis} 时经 {@link CacheChannel} 读写（见 {@code RedisCache}）。
+ * AOT 须在 {@code process-aot} 阶段以 {@code cat2bug.cache.type=redis} 处理，否则运行期选 Redis 时无 {@link CacheChannel} bean。
  */
 @AutoConfiguration
 @Profile("native")
-@ConditionalOnProperty(name = "cat2bug.cache.type", havingValue = "redis")
 @ConditionalOnClass(name = "net.oschina.j2cache.J2Cache")
 @EnableConfigurationProperties(net.oschina.j2cache.autoconfigure.J2CacheConfig.class)
 @PropertySource(value = "classpath:redis-native-j2cache.properties", encoding = "UTF-8")
@@ -49,6 +49,7 @@ public class Cat2BugNativeJ2CacheAutoConfiguration {
     }
 
     @Bean
+    @Lazy
     @DependsOn({"springUtil", "j2CacheConfig"})
     public CacheChannel cacheChannel(J2CacheConfig j2CacheConfig) {
         return J2CacheBuilder.init(j2CacheConfig).getChannel();
