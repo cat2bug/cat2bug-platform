@@ -23,29 +23,28 @@ WHERE rm.menu_id = 2138
   AND EXISTS (SELECT 1 FROM `sys_menu` WHERE `menu_id` = 2138 AND `perms` = 'feishu:save')
   AND NOT EXISTS (SELECT 1 FROM `sys_role_menu` x WHERE x.role_id = rm.role_id AND x.menu_id = 2143);
 
-DELETE FROM `sys_role_menu`
-WHERE `menu_id` = 2138
-  AND EXISTS (SELECT 1 FROM `sys_menu` WHERE `menu_id` = 2138 AND `perms` = 'feishu:save')
-  AND EXISTS (SELECT 1 FROM `sys_menu` WHERE `menu_id` = 2141 AND `perms` = 'feishu:list');
-
-DELETE FROM `sys_role_menu`
-WHERE `menu_id` = 2137
-  AND EXISTS (SELECT 1 FROM `sys_menu` WHERE `menu_id` = 2137 AND `perms` = 'feishu:query')
-  AND EXISTS (SELECT 1 FROM `sys_menu` WHERE `menu_id` = 2141 AND `perms` = 'feishu:list');
-
-DELETE FROM `sys_role_menu`
-WHERE `menu_id` = 2136
-  AND EXISTS (SELECT 1 FROM `sys_menu` WHERE `menu_id` = 2136 AND `perms` = 'feishu:list')
-  AND EXISTS (SELECT 1 FROM `sys_menu` WHERE `menu_id` = 2141 AND `perms` = 'feishu:list');
+DELETE rm FROM `sys_role_menu` rm
+INNER JOIN (
+  SELECT `menu_id` FROM `sys_menu`
+  WHERE `menu_id` = 2141 AND `perms` = 'feishu:list'
+) canonical ON 1 = 1
+INNER JOIN `sys_menu` m ON m.`menu_id` = rm.`menu_id`
+WHERE rm.`menu_id` IN (2136, 2137, 2138)
+  AND (
+    (rm.`menu_id` = 2136 AND m.`perms` = 'feishu:list')
+    OR (rm.`menu_id` = 2137 AND m.`perms` = 'feishu:query')
+    OR (rm.`menu_id` = 2138 AND m.`perms` = 'feishu:save')
+  );
 
 DELETE FROM `sys_menu`
-WHERE `menu_id` = 2138 AND `perms` = 'feishu:save'
-  AND EXISTS (SELECT 1 FROM `sys_menu` WHERE `menu_id` = 2141 AND `perms` = 'feishu:list');
-
-DELETE FROM `sys_menu`
-WHERE `menu_id` = 2137 AND `perms` = 'feishu:query'
-  AND EXISTS (SELECT 1 FROM `sys_menu` WHERE `menu_id` = 2141 AND `perms` = 'feishu:list');
-
-DELETE FROM `sys_menu`
-WHERE `menu_id` = 2136 AND `perms` = 'feishu:list' AND `path` = 'feishu'
-  AND EXISTS (SELECT 1 FROM `sys_menu` WHERE `menu_id` = 2141 AND `perms` = 'feishu:list');
+WHERE `menu_id` IN (2138, 2137, 2136)
+  AND (
+    (`menu_id` = 2138 AND `perms` = 'feishu:save')
+    OR (`menu_id` = 2137 AND `perms` = 'feishu:query')
+    OR (`menu_id` = 2136 AND `perms` = 'feishu:list' AND `path` = 'feishu')
+  )
+  AND EXISTS (
+    SELECT 1 FROM (
+      SELECT `menu_id` FROM `sys_menu` WHERE `menu_id` = 2141 AND `perms` = 'feishu:list'
+    ) AS `canonical_feishu`
+  );
