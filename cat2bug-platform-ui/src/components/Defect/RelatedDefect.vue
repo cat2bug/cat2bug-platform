@@ -452,11 +452,16 @@ export default {
 .table-defect-title {
   display: inline-flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: flex-start;
+  width: 100%;
+  max-width: 100%;
+  text-align: left;
   .el-link {
     flex: 1;
-    padding-left: 5px;
+    max-width: 100%;
+    padding-left: 0;
+    text-align: left !important;
   }
 }
 .el-table {

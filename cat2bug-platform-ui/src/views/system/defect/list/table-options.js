@@ -23,6 +23,7 @@ export const TableOptions=[{
   fixed: false,
   visible: true,
   required: true,
+  align: 'left',
   width: 400,
   width_ru: 500,
   /** 列表格内展示标题中的换行（见 table.vue .defect-name-col） */

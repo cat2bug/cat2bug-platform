@@ -1215,6 +1215,36 @@ td.cat2bug-operate-column [role='tooltip'][aria-hidden='true'] {
   text-overflow: clip;
 }
 
+/* 缺陷名称列：标题与统计信息左对齐，避免宽列内视觉居中 */
+.el-table td.defect-name-col .cell,
+.cat2-bug-table-wrap td.defect-name-col .cell {
+  display: flex !important;
+  flex-direction: column;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  text-align: left !important;
+}
+
+.table-defect-title {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 100%;
+  text-align: left;
+
+  .el-link {
+    align-self: stretch;
+    width: 100%;
+    max-width: 100%;
+    text-align: left !important;
+    /* Safari：-webkit-line-clamp 未设 box-align 时标题会在格内水平居中 */
+    -webkit-box-pack: start;
+    -webkit-box-align: start;
+  }
+}
+
 /* 处理人列：裁剪叠放头像，避免负边距与 z-index 压住右侧固定操作列 */
 .el-table td.defect-handle-by-col .cell,
 .cat2-bug-table-wrap td.defect-handle-by-col .cell {

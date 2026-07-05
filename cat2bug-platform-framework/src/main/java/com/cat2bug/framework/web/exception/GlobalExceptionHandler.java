@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import com.cat2bug.system.exception.AjaxResultException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.BindException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.MissingPathVariableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 import com.cat2bug.common.constant.HttpStatus;
 import com.cat2bug.common.core.domain.AjaxResult;
 import com.cat2bug.common.exception.DemoModeException;
@@ -138,6 +140,17 @@ public class GlobalExceptionHandler
         return e.getCode()>0?
                 new AjaxResult(e.getCode(), e.getMessage(), null):
                 AjaxResult.error(e.getMessage());
+    }
+
+    /**
+     * 静态资源不存在（如 /profile 下上传文件已删或迁移后路径失效）
+     */
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<Void> handleNoResourceFoundException(NoResourceFoundException e, HttpServletRequest request)
+    {
+        String requestURI = request.getRequestURI();
+        log.warn("请求地址'{}',静态资源不存在: {}", requestURI, e.getResourcePath());
+        return ResponseEntity.notFound().build();
     }
 
     /**

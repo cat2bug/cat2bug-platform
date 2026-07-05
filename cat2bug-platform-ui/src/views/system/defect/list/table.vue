@@ -893,21 +893,29 @@ export default {
 }
 /* 缺陷名称列：标题最多 4 行，超出省略；单元格内 \\n 仍可换行 */
 .defect-table-root ::v-deep td.defect-name-col .cell {
+  display: flex !important;
+  flex-direction: column;
+  align-items: stretch !important;
   white-space: normal !important;
   word-break: break-word;
+  text-align: left !important;
+  justify-content: flex-start !important;
 }
 .table-defect-title {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: flex-start;
   width: 100%;
   max-width: 100%;
+  text-align: left;
   .el-link {
     flex: 0 1 auto;
+    align-self: stretch;
     width: 100%;
     max-width: 100%;
-    padding-left: 5px;
+    padding-left: 0;
+    text-align: left !important;
     white-space: pre-line;
     word-break: break-word;
     line-height: 1.45;
@@ -916,6 +924,8 @@ export default {
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 4;
     line-clamp: 4;
+    -webkit-box-pack: start;
+    -webkit-box-align: start;
   }
 }
 .el-table {
