@@ -8,6 +8,7 @@
               :key="tableKey"
               v-loading="loading"
               :data="data"
+              :fit="true"
               :max-height="elTableMaxHeight"
               @selection-change="handleSelectionChange"
               @sort-change="sortChangeHandle"
@@ -262,12 +263,8 @@ export default {
     const merged = this.preserveColumnOrder
       ? (this.columns || []).map(c => ({ ...c }))
       : this.mergeCachedColumns(this.columns);
-    this.tableFieldList = merged.map(c => {
-      if (!c.flex || c.width == null) return c;
-      const next = { ...c };
-      delete next.width;
-      return next;
-    });
+    this.tableFieldList = merged.map(c => ({ ...c }));
+    this.hydrateFlexColumnWidthsFromTableFieldList();
     this.$emit('columns-change', merged);
     /* 不在 created 写入列缓存：父组件异步加载字段管理顺序前，columns 常为 TableOptions 默认序，会污染本地缓存 */
   },
@@ -278,6 +275,7 @@ export default {
       this.patchTableDoLayout();
       this.setupOperateColumnResizeGuard();
       this.setupCustomHorizontalScrollbar();
+      this.hydrateFlexColumnWidthsFromTableFieldList();
       this.scheduleDoLayout();
     });
   },
@@ -320,7 +318,13 @@ export default {
     },
     columnTableWidth(col) {
       const w = this.sanitizeColumnWidthPx(this.columnWidth(col));
-      return w;
+      return this.capColumnWidth(col, w);
+    },
+    capColumnWidth(col, widthPx) {
+      const maxW = this.sanitizeColumnWidthPx(col && col.maxWidth);
+      if (widthPx === undefined) return undefined;
+      if (maxW !== undefined) return Math.min(widthPx, maxW);
+      return widthPx;
     },
     columnHasFixedWidth(col) {
       return this.columnTableWidth(col) !== undefined;
@@ -328,8 +332,16 @@ export default {
     isFlexColumn(col) {
       return !!(col && col.flex);
     },
+    columnHasUserWidth(col) {
+      return this.columnTableWidth(col) !== undefined;
+    },
+    columnShouldAutoFlex(col) {
+      return this.isFlexColumn(col) && !this.columnHasUserWidth(col);
+    },
     columnBindWidth(col) {
       if (this.isFlexColumn(col)) {
+        const userW = this.columnTableWidth(col);
+        if (userW !== undefined) return userW;
         const w = this.flexColumnWidths[col.key];
         return w !== undefined ? w : undefined;
       }
@@ -342,25 +354,27 @@ export default {
     computeFlexColumnWidths() {
       const t = this.$refs.elTable;
       if (!t || !t.$el) return false;
-      const flexCols = this.showTableFieldList.filter(c => this.isFlexColumn(c));
+      const flexCols = this.showTableFieldList.filter(c => this.columnShouldAutoFlex(c));
       if (!flexCols.length) return false;
 
-      const bodyWrapper = t.$el.querySelector('.el-table__body-wrapper');
-      const containerWidth = Math.floor(
-        (bodyWrapper && bodyWrapper.clientWidth)
-        || Number(t.layout && t.layout.bodyWidth)
-        || 0
-      );
+      const containerWidth = this.resolveFlexContainerWidth(t);
       if (containerWidth <= 0) return false;
 
       let fixedTotal = 0;
+      const columns = (t.store && t.store.states && t.store.states.columns) || [];
       this.showTableFieldList.forEach(col => {
-        if (!col.visible || this.isFlexColumn(col)) return;
+        if (!col.visible) return;
+        if (this.columnShouldAutoFlex(col)) return;
+        const storeCol = columns.find(c => c && c.property === col.prop);
+        const realW = storeCol && storeCol.realWidth;
+        if (realW > 0) {
+          fixedTotal += realW;
+          return;
+        }
         const bound = this.columnBindWidth(col);
         fixedTotal += bound !== undefined ? bound : this.columnMinWidth(col);
       });
 
-      const columns = (t.store && t.store.states && t.store.states.columns) || [];
       const managedProps = new Set(this.showTableFieldList.map(c => c.prop).filter(Boolean));
       columns.forEach(col => {
         if (!col || (col.property && managedProps.has(col.property))) return;
@@ -374,7 +388,12 @@ export default {
 
       let changed = false;
       const applyWidth = (fc, w) => {
-        const next = Math.max(this.columnMinWidth(fc), Math.floor(w));
+        let next = Math.max(0, Math.floor(w));
+        if (next <= 0) return;
+        const minFlex = this.columnMinWidth(fc);
+        if (next < minFlex && remaining >= minFlex) {
+          next = minFlex;
+        }
         const prev = this.flexColumnWidths[fc.key];
         if (prev !== undefined && Math.abs(prev - next) <= FLEX_COLUMN_WIDTH_TOLERANCE_PX) {
           return;
@@ -391,6 +410,59 @@ export default {
       }
       return changed;
     },
+    shrinkFlexColumnsToFit() {
+      const t = this.$refs.elTable;
+      if (!t || !t.$el) return false;
+      const flexCols = this.showTableFieldList.filter(c => this.columnShouldAutoFlex(c));
+      if (flexCols.length !== 1) return false;
+
+      const bw = t.$el.querySelector('.el-table__body-wrapper');
+      if (!bw) return false;
+      const overflow = bw.scrollWidth - bw.clientWidth;
+      if (overflow <= FLEX_COLUMN_WIDTH_TOLERANCE_PX) return false;
+
+      const fc = flexCols[0];
+      const current = this.flexColumnWidths[fc.key];
+      if (current === undefined) return false;
+
+      const next = Math.max(this.columnMinWidth(fc), Math.floor(current - overflow));
+      if (next >= current) return false;
+      this.$set(this.flexColumnWidths, fc.key, next);
+      return true;
+    },
+    hydrateFlexColumnWidthsFromTableFieldList() {
+      this.tableFieldList.forEach(col => {
+        if (!this.isFlexColumn(col) || !this.columnHasUserWidth(col)) return;
+        const w = this.columnTableWidth(col);
+        if (w !== undefined) {
+          this.$set(this.flexColumnWidths, col.key, w);
+        }
+      });
+    },
+    resolveFlexContainerWidth(t) {
+      if (!t || !t.$el) return 0;
+
+      const operateW = this._lastOperateWidth || this.operateColumnMinWidth;
+      const layoutBody = Number(t.layout && t.layout.bodyWidth) || 0;
+      const bodyWrapper = t.$el.querySelector('.el-table__body-wrapper');
+      const wrapperW = bodyWrapper ? Math.floor(bodyWrapper.clientWidth) : 0;
+      const wrapW = this.$el ? Math.floor(this.$el.getBoundingClientRect().width) : 0;
+      const viewMainBudget = wrapW > 0 ? Math.max(0, wrapW - operateW) : 0;
+
+      let containerWidth = 0;
+      if (layoutBody > 0) {
+        containerWidth = Math.floor(layoutBody);
+      } else if (wrapperW > 0) {
+        containerWidth = wrapperW;
+      } else if (viewMainBudget > 0) {
+        containerWidth = viewMainBudget;
+      }
+
+      if (viewMainBudget > 0 && containerWidth > viewMainBudget) {
+        containerWidth = viewMainBudget;
+      }
+      return containerWidth;
+    },
     runTableLayoutPass() {
       if (this._layoutPassRunning) return;
       this._layoutPassRunning = true;
@@ -400,25 +472,41 @@ export default {
         return;
       }
 
-      this.computeFlexColumnWidths();
       this.$nextTick(() => {
         t.doLayout();
         requestAnimationFrame(() => {
           this.syncOperateColumnWidths();
-          const refined = this.computeFlexColumnWidths();
-          const finish = () => {
-            this._layoutPassRunning = false;
-            this.requestFixedRowHeightSync();
-            this.updateCustomHorizontalScrollbar();
-          };
-          if (refined) {
-            this.$nextTick(() => {
-              t.doLayout();
-              requestAnimationFrame(finish);
-            });
-          } else {
-            finish();
-          }
+          requestAnimationFrame(() => {
+            const flexChanged = this.computeFlexColumnWidths();
+            const finish = () => {
+              const shrunk = this.shrinkFlexColumnsToFit();
+              if (shrunk) {
+                this.$nextTick(() => {
+                  t.doLayout();
+                  requestAnimationFrame(() => {
+                    this._layoutPassRunning = false;
+                    this.requestFixedRowHeightSync();
+                    this.updateCustomHorizontalScrollbar();
+                  });
+                });
+                return;
+              }
+              this._layoutPassRunning = false;
+              this.requestFixedRowHeightSync();
+              this.updateCustomHorizontalScrollbar();
+            };
+            if (flexChanged) {
+              this.$nextTick(() => {
+                t.doLayout();
+                requestAnimationFrame(() => {
+                  this.syncOperateColumnWidths();
+                  requestAnimationFrame(finish);
+                });
+              });
+            } else {
+              finish();
+            }
+          });
         });
       });
     },
@@ -636,7 +724,7 @@ export default {
           visible: c.visible !== false
         };
         const w = this.sanitizeColumnWidthPx(c.width);
-        if (w !== undefined && !base.flex) mergedCol.width = w;
+        if (w !== undefined) mergedCol.width = this.capColumnWidth(base, w);
         merged.push(mergedCol);
         used.add(c.key);
       });
@@ -716,7 +804,7 @@ export default {
           fixed: !!col.fixed
         };
         const w = this.sanitizeColumnWidthPx(col.width);
-        if (w !== undefined && !col.flex) entry.width = w;
+        if (w !== undefined) entry.width = w;
         return entry;
       });
       this.$cache.local.setJSON(key, payload);
@@ -768,7 +856,7 @@ export default {
       this.teardownColumnResizeSession();
       const startX = e.clientX;
       const startWidth = this.isFlexColumn(col)
-        ? (this.flexColumnWidths[col.key] || this.columnMinWidth(col))
+        ? (this.columnTableWidth(col) || this.flexColumnWidths[col.key] || this.columnMinWidth(col))
         : (this.columnHasFixedWidth(col)
           ? this.columnTableWidth(col)
           : this.columnMinWidth(col));
@@ -777,12 +865,13 @@ export default {
       document.body.classList.add(COLUMN_RESIZE_BODY_CLASS);
       const onMove = (ev) => {
         const delta = ev.clientX - startX;
-        const next = this.sanitizeColumnWidthPx(startWidth + delta);
+        const next = this.capColumnWidth(col, this.sanitizeColumnWidthPx(startWidth + delta));
         if (next === undefined) return;
         const idx = this.tableFieldList.findIndex(c => c.key === col.key);
         if (idx < 0) return;
         if (this.isFlexColumn(col)) {
-          if (this.flexColumnWidths[col.key] === next) return;
+          if (this.tableFieldList[idx].width === next && this.flexColumnWidths[col.key] === next) return;
+          this.$set(this.tableFieldList, idx, { ...this.tableFieldList[idx], width: next });
           this.$set(this.flexColumnWidths, col.key, next);
         } else {
           if (this.tableFieldList[idx].width === next) return;

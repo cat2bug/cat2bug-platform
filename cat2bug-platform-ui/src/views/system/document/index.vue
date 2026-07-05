@@ -61,12 +61,13 @@
     </div>
 
     <div ref="documentListBody" class="document-list-body">
-      <div class="document-table-x-scroll">
+      <div class="document-table-x-scroll document-table-root">
     <cat2-bug-table
       ref="cat2BugTable"
       cache-key="document-table"
       sort-column-cache-key="document_table_sort_column_key"
       sort-type-cache-key="document_table_sort_type_key"
+      :operate-column-max-width="320"
       :columns="documentTableColumnDefaults"
       :data="documentList"
       :loading="loading"
@@ -79,11 +80,11 @@
         <template v-if="column.prop==='docName'">
           <div class="document-title">
             <svg-icon class="file-icon" :icon-class="fileIcon(scope.row)" />
-            <el-link v-if="scope.row.docType<=0" @click="goFolder(scope.row)" type="primary">
+            <el-link v-if="scope.row.docType<=0" @click="goFolder(scope.row)" type="primary" :title="scope.row.docType===-1 ? $t('doc.upper-level-dir') : scope.row.docName">
               <template v-if="scope.row.docType===-1">{{ '... ' + $t('doc.upper-level-dir') }}</template>
               <template v-else>{{ scope.row.docName }}</template>
             </el-link>
-            <el-link v-else @click="handleView(scope.row)" type="primary">{{ scope.row.docName }}</el-link>
+            <el-link v-else @click="handleView(scope.row)" type="primary" :title="scope.row.docName">{{ scope.row.docName }}</el-link>
           </div>
         </template>
         <template v-else-if="column.prop==='fileExtension'">
@@ -815,10 +816,44 @@ export default {
 }
 .document-table-x-scroll {
   width: 100%;
+  max-width: 100%;
   min-width: 0;
-  overflow-x: auto;
+  overflow-x: hidden;
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
+}
+.document-table-root {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+.document-table-root ::v-deep .cat2-bug-table-wrap {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+.document-table-root ::v-deep .cat2-bug-table-wrap .el-table {
+  width: 100% !important;
+}
+.document-table-root ::v-deep .el-table__body-wrapper,
+.document-table-root ::v-deep .el-table__header-wrapper {
+  overflow-x: hidden !important;
+}
+.document-table-root ::v-deep th.doc-name-col .cell {
+  text-align: left !important;
+  justify-content: flex-start !important;
+}
+.document-table-root ::v-deep th.doc-name-col .table-header,
+.document-table-root ::v-deep th.doc-name-col .header-title {
+  text-align: left !important;
+  justify-content: flex-start !important;
+}
+.document-table-root ::v-deep td.doc-name-col .cell {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  text-align: left !important;
 }
 .document-page ::v-deep h3.document-project-label {
   margin-top: 0;
@@ -923,17 +958,62 @@ export default {
   width: 100%;
   max-width: 100%;
   min-width: 0;
+  text-align: left;
+
+  .file-icon {
+    flex-shrink: 0;
+  }
 
   .el-link {
     flex: 1 1 auto;
     min-width: 0;
     max-width: 100%;
-    text-align: left;
-    word-break: break-all;
+    display: block;
+    text-align: left !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    word-break: normal;
+    -webkit-box-pack: start;
+    -webkit-box-align: start;
+
+    ::v-deep .el-link--inner {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      text-align: left;
+    }
   }
 }
 .document-table-pagination-band {
   flex-shrink: 0;
+}
+/* 操作列：与缺陷/用例页对齐，避免 Safari 下表头与按钮被裁切 */
+.document-table-root ::v-deep th.cat2bug-operate-column .cell {
+  box-sizing: border-box;
+  overflow: visible !important;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  width: 100%;
+  max-width: 100%;
+  color: var(--table-header-color, inherit);
+}
+.document-table-root ::v-deep .cat2-bug-table-wrap:not([data-operate-at-cap='true']) td.cat2bug-operate-column .cell {
+  box-sizing: border-box;
+  overflow: hidden;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+.document-table-root ::v-deep td.cat2bug-operate-column .cat2bug-operate-tools {
+  display: inline-flex;
+  flex-direction: row;
+  flex-wrap: nowrap !important;
+  align-items: center;
+  white-space: nowrap !important;
+  box-sizing: border-box;
+  width: auto !important;
+  max-width: 100% !important;
 }
 .document-hint-create-folder,
 .document-hint-create-file {

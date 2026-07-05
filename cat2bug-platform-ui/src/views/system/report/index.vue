@@ -81,12 +81,13 @@
       </div>
     </div>
     <div ref="reportListBody" class="report-list-body">
-      <div class="report-table-x-scroll">
+      <div class="report-table-x-scroll report-table-root">
     <cat2-bug-table
       ref="cat2BugTable"
       cache-key="report-table"
       sort-column-cache-key="report_table_sort_column_key"
       sort-type-cache-key="report_table_sort_type_key"
+      :operate-column-max-width="250"
       :columns="reportTableColumnDefaults"
       :data="reportList"
       :loading="loading"
@@ -823,6 +824,33 @@ export default {
 }
 .report-table-pagination-band {
   flex-shrink: 0;
+}
+/* 操作列：与缺陷页对齐，避免 Safari 下表头与按钮被裁切 */
+.report-table-root ::v-deep th.cat2bug-operate-column .cell {
+  box-sizing: border-box;
+  overflow: visible !important;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  width: 100%;
+  max-width: 100%;
+  color: var(--table-header-color, inherit);
+}
+.report-table-root ::v-deep .cat2-bug-table-wrap:not([data-operate-at-cap='true']) td.cat2bug-operate-column .cell {
+  box-sizing: border-box;
+  overflow: hidden;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+.report-table-root ::v-deep td.cat2bug-operate-column .cat2bug-operate-tools,
+.report-table-root ::v-deep td.cat2bug-operate-column .report-tools {
+  display: inline-flex;
+  flex-direction: row;
+  flex-wrap: nowrap !important;
+  align-items: center;
+  white-space: nowrap !important;
+  box-sizing: border-box;
+  width: auto !important;
+  max-width: 100% !important;
 }
 .report-hint-batch-delete,
 ::v-deep .report-hint-create {
