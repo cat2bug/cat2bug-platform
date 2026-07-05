@@ -46,6 +46,9 @@ fi
 
 NATIVE_PROFILES=(-Pnative -Pembedded -Prelease)
 MVN_GOAL=(clean package)
+if [[ "${SKIP_MVN_CLEAN:-false}" == "true" ]]; then
+  MVN_GOAL=(package)
+fi
 
 if [[ "$CONTAINER_BUILD" == "true" ]]; then
   HOST_ARCH="$(uname -m)"
