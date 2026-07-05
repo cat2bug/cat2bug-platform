@@ -915,11 +915,22 @@ export default {
   margin-bottom: 0px;
 }
 .document-title {
-  display: inline-flex;
+  display: flex;
   flex-direction: row;
   justify-content: flex-start;
   align-items: center;
   gap: var(--cat2bug-toolbar-item-gap, 10px);
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+
+  .el-link {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: 100%;
+    text-align: left;
+    word-break: break-all;
+  }
 }
 .document-table-pagination-band {
   flex-shrink: 0;

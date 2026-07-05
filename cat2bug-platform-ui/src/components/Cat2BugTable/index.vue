@@ -19,8 +19,8 @@
       <el-table-column v-for="(col, colIndex) in showTableFieldList"
                        :label="columnHeaderLabel(col)"
                        :key="columnRowKey(col, colIndex)"
-                       :width="columnTableWidth(col)"
-                       :min-width="columnMinWidthPx"
+                       :width="columnBindWidth(col)"
+                       :min-width="columnMinWidth(col)"
                        :prop="col.prop"
                        :class-name="columnClassName(col)"
                        :label-class-name="columnHeaderLabelClassName(col)"
@@ -89,7 +89,6 @@ import { getColumnById } from "element-ui/packages/table/src/util";
 const TABLE_FIELD_LIST_CACHE_KEY = 'defect-table-field-list';
 const TABLE_SORT_COLUMN = 'defect_table_sort_column_key';
 const TABLE_SORT_TYPE = 'defect_table_sort_type_key';
-const DEFAULT_COLUMN_WIDTH = 180;
 const COLUMN_MIN_WIDTH_PX = 60;
 const COLUMN_WIDTH_PERSIST_DEBOUNCE_MS = 300;
 const COLUMN_RESIZE_BODY_CLASS = 'cat2bug-table-column-resizing';
@@ -130,6 +129,8 @@ export default {
       _columnWidthPersistTimer: null,
       _columnResizeSession: null,
       _columnResizeLayoutRaf: null,
+      flexColumnWidths: {},
+      _flexColRo: null,
     }
   },
   props: {
@@ -222,11 +223,8 @@ export default {
     },
     columnWidth: function () {
       return function (column) {
-        return column['width_' + this.$i18n.locale] || column.width || DEFAULT_COLUMN_WIDTH;
+        return column['width_' + this.$i18n.locale] || column.width;
       }
-    },
-    columnMinWidthPx() {
-      return COLUMN_MIN_WIDTH_PX;
     },
   },
   watch: {
@@ -262,7 +260,12 @@ export default {
     const merged = this.preserveColumnOrder
       ? (this.columns || []).map(c => ({ ...c }))
       : this.mergeCachedColumns(this.columns);
-    this.tableFieldList = merged;
+    this.tableFieldList = merged.map(c => {
+      if (!c.flex || c.width == null) return c;
+      const next = { ...c };
+      delete next.width;
+      return next;
+    });
     this.$emit('columns-change', merged);
     /* 不在 created 写入列缓存：父组件异步加载字段管理顺序前，columns 常为 TableOptions 默认序，会污染本地缓存 */
   },
@@ -273,6 +276,7 @@ export default {
       this.patchTableDoLayout();
       this.setupOperateColumnResizeGuard();
       this.setupCustomHorizontalScrollbar();
+      this.setupFlexColumnResizeObserver();
       this.scheduleDoLayout();
     });
   },
@@ -293,6 +297,7 @@ export default {
       clearTimeout(this._columnWidthPersistTimer);
       this._columnWidthPersistTimer = null;
     }
+    this.teardownFlexColumnResizeObserver();
   },
   methods: {
     sanitizeColumnWidthPx(value) {
@@ -315,12 +320,80 @@ export default {
     },
     columnTableWidth(col) {
       const w = this.sanitizeColumnWidthPx(this.columnWidth(col));
-      return w !== undefined ? w : DEFAULT_COLUMN_WIDTH;
+      return w;
+    },
+    columnHasFixedWidth(col) {
+      return this.columnTableWidth(col) !== undefined;
+    },
+    isFlexColumn(col) {
+      return !!(col && col.flex);
+    },
+    columnBindWidth(col) {
+      if (this.isFlexColumn(col)) {
+        const w = this.flexColumnWidths[col.key];
+        return w !== undefined ? w : undefined;
+      }
+      return this.columnHasFixedWidth(col) ? this.columnTableWidth(col) : undefined;
     },
     /**
      * 固定列区域是独立 table，主表体与固定列行高依赖同一套列宽与 scrollY gutter。
      * 数据/插槽渲染后延迟 doLayout，避免中间列换行高度与固定列不一致。
      */
+    computeFlexColumnWidths() {
+      const t = this.$refs.elTable;
+      if (!t || !t.layout) return false;
+      const flexCols = this.showTableFieldList.filter(c => this.isFlexColumn(c));
+      if (!flexCols.length) return false;
+
+      const bodyWidth = Number(t.layout.bodyWidth);
+      if (!bodyWidth || bodyWidth <= 0) return false;
+
+      const columns = (t.store && t.store.states && t.store.states.columns) || [];
+      const flexProps = new Set(flexCols.map(c => c.prop));
+      let used = 0;
+      columns.forEach(col => {
+        if (!col || flexProps.has(col.property)) return;
+        const rw = col.realWidth;
+        if (rw && rw > 0) used += rw;
+      });
+
+      const remaining = bodyWidth - used;
+      if (remaining <= 0) return false;
+
+      let changed = false;
+      if (flexCols.length === 1) {
+        const fc = flexCols[0];
+        const w = Math.max(this.columnMinWidth(fc), Math.floor(remaining));
+        if (this.flexColumnWidths[fc.key] !== w) {
+          this.$set(this.flexColumnWidths, fc.key, w);
+          changed = true;
+        }
+      } else {
+        const share = Math.floor(remaining / flexCols.length);
+        flexCols.forEach(fc => {
+          const w = Math.max(this.columnMinWidth(fc), share);
+          if (this.flexColumnWidths[fc.key] !== w) {
+            this.$set(this.flexColumnWidths, fc.key, w);
+            changed = true;
+          }
+        });
+      }
+      return changed;
+    },
+    setupFlexColumnResizeObserver() {
+      if (typeof ResizeObserver === 'undefined' || !this.$el) return;
+      this.teardownFlexColumnResizeObserver();
+      this._flexColRo = new ResizeObserver(() => {
+        this.scheduleDoLayout();
+      });
+      this._flexColRo.observe(this.$el);
+    },
+    teardownFlexColumnResizeObserver() {
+      if (this._flexColRo) {
+        this._flexColRo.disconnect();
+        this._flexColRo = null;
+      }
+    },
     scheduleDoLayout() {
       if (this._doLayoutTimer) clearTimeout(this._doLayoutTimer);
       this._doLayoutTimer = setTimeout(() => {
@@ -331,6 +404,10 @@ export default {
           this.$nextTick(() => {
             this.$nextTick(() => {
               requestAnimationFrame(() => {
+                const relayout = this.computeFlexColumnWidths();
+                if (relayout && t) {
+                  t.doLayout();
+                }
                 this.syncOperateColumnWidths();
                 this.syncFixedDataRowHeights();
                 this.updateCustomHorizontalScrollbar();
@@ -527,7 +604,7 @@ export default {
           visible: c.visible !== false
         };
         const w = this.sanitizeColumnWidthPx(c.width);
-        if (w !== undefined) mergedCol.width = w;
+        if (w !== undefined && !base.flex) mergedCol.width = w;
         merged.push(mergedCol);
         used.add(c.key);
       });
@@ -607,7 +684,7 @@ export default {
           fixed: !!col.fixed
         };
         const w = this.sanitizeColumnWidthPx(col.width);
-        if (w !== undefined) entry.width = w;
+        if (w !== undefined && !col.flex) entry.width = w;
         return entry;
       });
       this.$cache.local.setJSON(key, payload);
@@ -658,7 +735,11 @@ export default {
       e.preventDefault();
       this.teardownColumnResizeSession();
       const startX = e.clientX;
-      const startWidth = this.columnTableWidth(col);
+      const startWidth = this.isFlexColumn(col)
+        ? (this.flexColumnWidths[col.key] || this.columnMinWidth(col))
+        : (this.columnHasFixedWidth(col)
+          ? this.columnTableWidth(col)
+          : this.columnMinWidth(col));
       this.columnResizeActive = true;
       this.columnResizeColKey = col.key;
       document.body.classList.add(COLUMN_RESIZE_BODY_CLASS);
@@ -668,8 +749,13 @@ export default {
         if (next === undefined) return;
         const idx = this.tableFieldList.findIndex(c => c.key === col.key);
         if (idx < 0) return;
-        if (this.tableFieldList[idx].width === next) return;
-        this.$set(this.tableFieldList, idx, { ...this.tableFieldList[idx], width: next });
+        if (this.isFlexColumn(col)) {
+          if (this.flexColumnWidths[col.key] === next) return;
+          this.$set(this.flexColumnWidths, col.key, next);
+        } else {
+          if (this.tableFieldList[idx].width === next) return;
+          this.$set(this.tableFieldList, idx, { ...this.tableFieldList[idx], width: next });
+        }
         if (this._columnResizeLayoutRaf != null) return;
         this._columnResizeLayoutRaf = requestAnimationFrame(() => {
           this._columnResizeLayoutRaf = null;
@@ -1055,6 +1141,10 @@ export default {
       this.$nextTick(() => {
         this.$nextTick(() => {
           requestAnimationFrame(() => {
+            const relayout = this.computeFlexColumnWidths();
+            if (relayout && t) {
+              t.doLayout();
+            }
             this.syncOperateColumnWidths();
             this.syncFixedDataRowHeights();
             this.updateCustomHorizontalScrollbar();

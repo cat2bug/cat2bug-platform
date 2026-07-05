@@ -1217,7 +1217,11 @@ td.cat2bug-operate-column [role='tooltip'][aria-hidden='true'] {
 
 /* 缺陷名称列：标题与统计信息左对齐，避免宽列内视觉居中 */
 .el-table td.defect-name-col .cell,
-.cat2-bug-table-wrap td.defect-name-col .cell {
+.cat2-bug-table-wrap td.defect-name-col .cell,
+.el-table td.doc-name-col .cell,
+.cat2-bug-table-wrap td.doc-name-col .cell,
+.el-table td.report-title-col .cell,
+.cat2-bug-table-wrap td.report-title-col .cell {
   display: flex !important;
   flex-direction: column;
   align-items: stretch !important;

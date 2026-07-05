@@ -814,9 +814,12 @@ export default {
   }
 }
 .table-report-title {
-  display: inline-flex;
+  display: flex;
   flex-direction: column;
   align-items: flex-start;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 .report-table-pagination-band {
   flex-shrink: 0;
