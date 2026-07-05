@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import javax.sql.DataSource;
 import org.apache.ibatis.io.VFS;
 import org.apache.ibatis.mapping.DatabaseIdProvider;
@@ -176,26 +177,62 @@ public class MyBatisConfig
 
     private String resolveDatabaseId(DataSource dataSource)
     {
+        String fromUrl = inferDatabaseTypeFromJdbcUrl(
+                env.getProperty("spring.datasource.druid.master.url"));
+        if (StringUtils.isNotEmpty(fromUrl))
+        {
+            return fromUrl;
+        }
+
+        String configured = normalizeDatabaseType(env.getProperty("spring.database-type"));
+        if (StringUtils.isNotEmpty(configured))
+        {
+            return configured;
+        }
+
         try
         {
             String detected = databaseIdProvider.getDatabaseId(dataSource);
             if (StringUtils.isNotEmpty(detected))
             {
-                return detected;
+                return normalizeDatabaseType(detected);
             }
         }
         catch (Exception ignored)
         {
         }
-        String configured = env.getProperty("spring.database-type");
-        if (StringUtils.isEmpty(configured) && runningNativeImage())
+
+        if (runningNativeImage())
         {
-            configured = "h2";
-        }
-        if (StringUtils.isNotEmpty(configured))
-        {
-            return configured;
+            return "h2";
         }
         throw new IllegalStateException("无法解析 MyBatis databaseId");
+    }
+
+    private static String inferDatabaseTypeFromJdbcUrl(String url)
+    {
+        if (StringUtils.isEmpty(url))
+        {
+            return null;
+        }
+        String lower = url.toLowerCase(Locale.ROOT);
+        if (lower.contains("jdbc:mysql:") || lower.contains("jdbc:mariadb:"))
+        {
+            return "mysql";
+        }
+        if (lower.contains("jdbc:h2:"))
+        {
+            return "h2";
+        }
+        return null;
+    }
+
+    private static String normalizeDatabaseType(String databaseType)
+    {
+        if (StringUtils.isEmpty(databaseType))
+        {
+            return null;
+        }
+        return databaseType.trim().toLowerCase(Locale.ROOT);
     }
 }

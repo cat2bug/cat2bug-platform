@@ -39,7 +39,7 @@ public class InstallRuntimeActivator
 
     /**
      * @param setupDataSource 安装阶段已使用的目标库连接池（MySQL 或 H2）；为 null 时按请求新建
-     * @return true 表示运行期已就绪，无需进程重启；false 表示仍需重启（如 Redis 缓存）
+     * @return true 表示运行期已就绪，无需进程重启；false 表示仍需重启（Redis 缓存、MySQL 等）
      */
     public boolean activateAfterSetup(SetupSubmitRequest request, DruidDataSource setupDataSource)
     {
@@ -55,13 +55,11 @@ public class InstallRuntimeActivator
 
         if ("mysql".equals(databaseType))
         {
-            DruidDataSource master = setupDataSource != null
-                    ? setupDataSource
-                    : setupSubmitDataSourceFactory.createMysqlDataSource(request);
-            dynamicDataSource.replaceMaster(master);
-            log.info("安装向导：运行期主库已热切换为 MySQL");
+            log.info("安装向导：已选择 MySQL，将自动重启进程以加载 MyBatis databaseId 与数据源");
+            return false;
         }
-        else if ("h2".equals(databaseType))
+
+        if ("h2".equals(databaseType))
         {
             DruidDataSource master = setupDataSource != null
                     ? setupDataSource
