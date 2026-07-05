@@ -90,6 +90,7 @@ const TABLE_FIELD_LIST_CACHE_KEY = 'defect-table-field-list';
 const TABLE_SORT_COLUMN = 'defect_table_sort_column_key';
 const TABLE_SORT_TYPE = 'defect_table_sort_type_key';
 const COLUMN_MIN_WIDTH_PX = 60;
+const FLEX_COLUMN_WIDTH_TOLERANCE_PX = 2;
 const COLUMN_WIDTH_PERSIST_DEBOUNCE_MS = 300;
 const COLUMN_RESIZE_BODY_CLASS = 'cat2bug-table-column-resizing';
 /** append 操作列 class-name 需含此类名以启用自动列宽 */
@@ -130,7 +131,8 @@ export default {
       _columnResizeSession: null,
       _columnResizeLayoutRaf: null,
       flexColumnWidths: {},
-      _flexColRo: null,
+      _lastSyncedRowHeights: null,
+      _layoutPassRunning: false,
     }
   },
   props: {
@@ -276,7 +278,6 @@ export default {
       this.patchTableDoLayout();
       this.setupOperateColumnResizeGuard();
       this.setupCustomHorizontalScrollbar();
-      this.setupFlexColumnResizeObserver();
       this.scheduleDoLayout();
     });
   },
@@ -297,7 +298,6 @@ export default {
       clearTimeout(this._columnWidthPersistTimer);
       this._columnWidthPersistTimer = null;
     }
-    this.teardownFlexColumnResizeObserver();
   },
   methods: {
     sanitizeColumnWidthPx(value) {
@@ -341,80 +341,92 @@ export default {
      */
     computeFlexColumnWidths() {
       const t = this.$refs.elTable;
-      if (!t || !t.layout) return false;
+      if (!t || !t.$el) return false;
       const flexCols = this.showTableFieldList.filter(c => this.isFlexColumn(c));
       if (!flexCols.length) return false;
 
-      const bodyWidth = Number(t.layout.bodyWidth);
-      if (!bodyWidth || bodyWidth <= 0) return false;
+      const bodyWrapper = t.$el.querySelector('.el-table__body-wrapper');
+      const containerWidth = Math.floor(
+        (bodyWrapper && bodyWrapper.clientWidth)
+        || Number(t.layout && t.layout.bodyWidth)
+        || 0
+      );
+      if (containerWidth <= 0) return false;
 
-      const columns = (t.store && t.store.states && t.store.states.columns) || [];
-      const flexProps = new Set(flexCols.map(c => c.prop));
-      let used = 0;
-      columns.forEach(col => {
-        if (!col || flexProps.has(col.property)) return;
-        const rw = col.realWidth;
-        if (rw && rw > 0) used += rw;
+      let fixedTotal = 0;
+      this.showTableFieldList.forEach(col => {
+        if (!col.visible || this.isFlexColumn(col)) return;
+        const bound = this.columnBindWidth(col);
+        fixedTotal += bound !== undefined ? bound : this.columnMinWidth(col);
       });
 
-      const remaining = bodyWidth - used;
+      const columns = (t.store && t.store.states && t.store.states.columns) || [];
+      const managedProps = new Set(this.showTableFieldList.map(c => c.prop).filter(Boolean));
+      columns.forEach(col => {
+        if (!col || (col.property && managedProps.has(col.property))) return;
+        if (col.type === 'selection') {
+          fixedTotal += this.sanitizeColumnWidthPx(col.width) || 50;
+        }
+      });
+
+      const remaining = containerWidth - fixedTotal;
       if (remaining <= 0) return false;
 
       let changed = false;
-      if (flexCols.length === 1) {
-        const fc = flexCols[0];
-        const w = Math.max(this.columnMinWidth(fc), Math.floor(remaining));
-        if (this.flexColumnWidths[fc.key] !== w) {
-          this.$set(this.flexColumnWidths, fc.key, w);
-          changed = true;
+      const applyWidth = (fc, w) => {
+        const next = Math.max(this.columnMinWidth(fc), Math.floor(w));
+        const prev = this.flexColumnWidths[fc.key];
+        if (prev !== undefined && Math.abs(prev - next) <= FLEX_COLUMN_WIDTH_TOLERANCE_PX) {
+          return;
         }
+        this.$set(this.flexColumnWidths, fc.key, next);
+        changed = true;
+      };
+
+      if (flexCols.length === 1) {
+        applyWidth(flexCols[0], remaining);
       } else {
-        const share = Math.floor(remaining / flexCols.length);
-        flexCols.forEach(fc => {
-          const w = Math.max(this.columnMinWidth(fc), share);
-          if (this.flexColumnWidths[fc.key] !== w) {
-            this.$set(this.flexColumnWidths, fc.key, w);
-            changed = true;
-          }
-        });
+        const share = remaining / flexCols.length;
+        flexCols.forEach(fc => applyWidth(fc, share));
       }
       return changed;
     },
-    setupFlexColumnResizeObserver() {
-      if (typeof ResizeObserver === 'undefined' || !this.$el) return;
-      this.teardownFlexColumnResizeObserver();
-      this._flexColRo = new ResizeObserver(() => {
-        this.scheduleDoLayout();
-      });
-      this._flexColRo.observe(this.$el);
-    },
-    teardownFlexColumnResizeObserver() {
-      if (this._flexColRo) {
-        this._flexColRo.disconnect();
-        this._flexColRo = null;
+    runTableLayoutPass() {
+      if (this._layoutPassRunning) return;
+      this._layoutPassRunning = true;
+      const t = this.$refs.elTable;
+      if (!t) {
+        this._layoutPassRunning = false;
+        return;
       }
+
+      this.computeFlexColumnWidths();
+      this.$nextTick(() => {
+        t.doLayout();
+        requestAnimationFrame(() => {
+          this.syncOperateColumnWidths();
+          const refined = this.computeFlexColumnWidths();
+          const finish = () => {
+            this._layoutPassRunning = false;
+            this.requestFixedRowHeightSync();
+            this.updateCustomHorizontalScrollbar();
+          };
+          if (refined) {
+            this.$nextTick(() => {
+              t.doLayout();
+              requestAnimationFrame(finish);
+            });
+          } else {
+            finish();
+          }
+        });
+      });
     },
     scheduleDoLayout() {
       if (this._doLayoutTimer) clearTimeout(this._doLayoutTimer);
       this._doLayoutTimer = setTimeout(() => {
         this._doLayoutTimer = null;
-        const t = this.$refs.elTable;
-        if (t) {
-          t.doLayout();
-          this.$nextTick(() => {
-            this.$nextTick(() => {
-              requestAnimationFrame(() => {
-                const relayout = this.computeFlexColumnWidths();
-                if (relayout && t) {
-                  t.doLayout();
-                }
-                this.syncOperateColumnWidths();
-                this.syncFixedDataRowHeights();
-                this.updateCustomHorizontalScrollbar();
-              });
-            });
-          });
-        }
+        this.runTableLayoutPass();
       }, 50);
     },
 
@@ -470,7 +482,6 @@ export default {
       if (!mainBw) return;
 
       const sel = "tbody tr.el-table__row";
-      this.clearDataRowHeights(root);
 
       const mainRows = mainBw.querySelectorAll(sel);
       if (!mainRows.length) return;
@@ -490,13 +501,6 @@ export default {
       if (leftRows && leftRows.length < n) n = leftRows.length;
       if (rightRows && rightRows.length < n) n = rightRows.length;
 
-      for (let i = 0; i < n; i++) {
-        mainRows[i].style.height = "auto";
-        if (leftRows && leftRows[i]) leftRows[i].style.height = "auto";
-        if (rightRows && rightRows[i]) rightRows[i].style.height = "auto";
-      }
-      void root.offsetHeight;
-
       const heights = [];
       for (let i = 0; i < n; i++) {
         let h = this.measureDataRowContentHeight(mainRows[i]);
@@ -509,12 +513,40 @@ export default {
         heights.push(Math.max(1, Math.ceil(h)));
       }
 
+      const prevHeights = this._lastSyncedRowHeights;
+      if (prevHeights
+        && prevHeights.length === heights.length
+        && heights.every((h, i) => Math.abs(h - prevHeights[i]) <= 1)) {
+        return;
+      }
+
+      this.clearDataRowHeights(root);
+
+      for (let i = 0; i < n; i++) {
+        mainRows[i].style.height = "auto";
+        if (leftRows && leftRows[i]) leftRows[i].style.height = "auto";
+        if (rightRows && rightRows[i]) rightRows[i].style.height = "auto";
+      }
+      void root.offsetHeight;
+
+      for (let i = 0; i < n; i++) {
+        let h = this.measureDataRowContentHeight(mainRows[i]);
+        if (leftRows && leftRows[i]) {
+          h = Math.max(h, this.measureDataRowContentHeight(leftRows[i]));
+        }
+        if (rightRows && rightRows[i]) {
+          h = Math.max(h, this.measureDataRowContentHeight(rightRows[i]));
+        }
+        heights[i] = Math.max(1, Math.ceil(h));
+      }
+
       for (let i = 0; i < n; i++) {
         const px = `${heights[i]}px`;
         mainRows[i].style.height = px;
         if (leftRows && leftRows[i]) leftRows[i].style.height = px;
         if (rightRows && rightRows[i]) rightRows[i].style.height = px;
       }
+      this._lastSyncedRowHeights = heights.slice();
     },
 
     /** ResizeObserver 可能高频触发，合并到单次 rAF */
@@ -868,8 +900,8 @@ export default {
 
       this._customXResizeListener = () => {
         this.$nextTick(() => {
+          this.scheduleDoLayout();
           this.updateCustomHorizontalScrollbar();
-          this.requestFixedRowHeightSync();
         });
       };
       window.addEventListener('resize', this._customXResizeListener);
@@ -1135,22 +1167,7 @@ export default {
       this.$refs.elTable.sort(prop, order);
     },
     doLayout() {
-      const t = this.$refs.elTable;
-      if (!t) return;
-      t.doLayout();
-      this.$nextTick(() => {
-        this.$nextTick(() => {
-          requestAnimationFrame(() => {
-            const relayout = this.computeFlexColumnWidths();
-            if (relayout && t) {
-              t.doLayout();
-            }
-            this.syncOperateColumnWidths();
-            this.syncFixedDataRowHeights();
-            this.updateCustomHorizontalScrollbar();
-          });
-        });
-      });
+      this.runTableLayoutPass();
     },
     /** 拦截 el-table.doLayout，防止布局重算后操作列被内容再次撑开 */
     patchTableDoLayout() {
