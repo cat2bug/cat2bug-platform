@@ -229,15 +229,19 @@ public class CommonController
         try
         {
             String fileName = String.valueOf(body.get("fileName"));
+            if (StringUtils.isEmpty(fileName) || "null".equals(fileName))
+            {
+                return AjaxResult.error("文件名称不能为空");
+            }
             // 本地资源路径
             String localPath = Cat2BugConfig.getProfile();
             // 数据库资源地址
             String downloadPath = localPath + StringUtils.substringAfter(fileName, Constants.RESOURCE_PREFIX);
-            if(this.fileService.delete(downloadPath)){
+            if (this.fileService.delete(downloadPath))
+            {
                 return success();
-            } else {
-                return AjaxResult.error();
             }
+            return AjaxResult.error("删除文件失败");
         }
         catch (Exception e)
         {

@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
+import com.cat2bug.common.constant.Constants;
 import com.cat2bug.common.constant.HttpStatus;
 import com.cat2bug.common.core.domain.AjaxResult;
 import com.cat2bug.common.exception.DemoModeException;
@@ -149,7 +150,14 @@ public class GlobalExceptionHandler
     public ResponseEntity<Void> handleNoResourceFoundException(NoResourceFoundException e, HttpServletRequest request)
     {
         String requestURI = request.getRequestURI();
-        log.warn("请求地址'{}',静态资源不存在: {}", requestURI, e.getResourcePath());
+        if (requestURI != null && requestURI.startsWith(Constants.RESOURCE_PREFIX + "/"))
+        {
+            log.debug("请求地址'{}',静态资源不存在: {}", requestURI, e.getResourcePath());
+        }
+        else
+        {
+            log.warn("请求地址'{}',静态资源不存在: {}", requestURI, e.getResourcePath());
+        }
         return ResponseEntity.notFound().build();
     }
 

@@ -124,14 +124,21 @@ public class FileUtils
      */
     public static boolean deleteFile(String filePath)
     {
-        boolean flag = false;
-        File file = new File(filePath);
-        // 路径为文件且不为空则进行删除
-        if (file.isFile() && file.exists())
+        if (StringUtils.isEmpty(filePath))
         {
-            flag = file.delete();
+            return true;
         }
-        return flag;
+        File file = new File(filePath);
+        // 文件已不存在视为删除成功（幂等），便于仅清除业务数据中的引用
+        if (!file.exists())
+        {
+            return true;
+        }
+        if (file.isFile())
+        {
+            return file.delete();
+        }
+        return false;
     }
 
     /**

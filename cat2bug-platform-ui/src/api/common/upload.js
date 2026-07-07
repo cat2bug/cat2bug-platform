@@ -25,3 +25,8 @@ export function deleteFile(data) {
   })
 }
 
+/** 尽力删除：物理文件不存在或已删除时仍视为成功，便于仅更新业务数据 */
+export function deleteFileBestEffort(data) {
+  return deleteFile(data).catch(() => ({ code: 200 }))
+}
+
