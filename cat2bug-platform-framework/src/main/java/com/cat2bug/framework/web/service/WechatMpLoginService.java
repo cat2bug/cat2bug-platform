@@ -82,10 +82,17 @@ public class WechatMpLoginService
                 + "&js_code=" + code
                 + "&grant_type=authorization_code";
         String json = HttpUtil.get(url);
+        log.info("微信jscode2session返回: {}", json);
         Map<String, Object> wechatResult = JSON.parseObject(json, new TypeReference<Map<String, Object>>() {});
-        String openId = String.valueOf(wechatResult.get("openid"));
+        Object openIdObj = wechatResult.get("openid");
+        String openId = openIdObj == null ? null : String.valueOf(openIdObj);
         String sessionKey = String.valueOf(wechatResult.get("session_key"));
-        redisCache.setCacheObject(WECHAT_MP_LOGIN_CACHE, code,  wechatResult.get("openid"));
+        // openid为空说明jscode2session失败(如appid/secret不匹配、code无效)，此时不缓存空值，直接报错避免写入空绑定
+        if (StringUtils.isEmpty(openId)) {
+            log.error("获取微信openid失败, 微信返回: {}", json);
+            throw new ServiceException("获取微信openid失败:" + json);
+        }
+        redisCache.setCacheObject(WECHAT_MP_LOGIN_CACHE, code, openId);
         SysUser user = userService.selectUserByWechatMp(openId);
         if(user==null) {
             throw new WechatMpNotBindException(sessionKey);
@@ -103,6 +110,8 @@ public class WechatMpLoginService
         Preconditions.checkNotNull(code, "未识别到用户微信账号，请刷新重试!");
         Preconditions.checkArgument(redisCache.hasKey(WECHAT_MP_LOGIN_CACHE, code), "未找到用户微信账号，请刷新重试!");
         String openId = this.redisCache.getCacheObject(WECHAT_MP_LOGIN_CACHE, code);
+        Preconditions.checkArgument(StringUtils.isNotEmpty(openId), "微信openid为空，绑定失败，请刷新重试!");
+        log.info("绑定微信: username={}, openId={}", username, openId);
         return userService.updateWechatMp(username, openId);
     }
 
