@@ -1,0 +1,30 @@
+package com.cat2bug.system.service;
+
+import com.cat2bug.system.domain.vo.CreateMemberInviteVo;
+import com.cat2bug.system.domain.vo.MemberInviteAcceptResultVo;
+import com.cat2bug.system.domain.vo.MemberInviteLinkVo;
+import com.cat2bug.system.domain.vo.MemberInvitePreviewVo;
+
+import java.util.List;
+
+/**
+ * 成员邀请链接 Service
+ */
+public interface ISysMemberInviteService {
+
+    MemberInviteLinkVo createTeamInviteLink(Long teamId, CreateMemberInviteVo request, Long createdBy, String inviteBaseUrl);
+
+    MemberInviteLinkVo createProjectInviteLink(Long projectId, CreateMemberInviteVo request, Long createdBy, String inviteBaseUrl);
+
+    List<MemberInviteLinkVo> listActiveTeamInviteLinks(Long teamId, String inviteBaseUrl);
+
+    List<MemberInviteLinkVo> listActiveProjectInviteLinks(Long projectId, String inviteBaseUrl);
+
+    int revokeTeamInviteLink(Long teamId, Long inviteId);
+
+    int revokeProjectInviteLink(Long projectId, Long inviteId);
+
+    MemberInvitePreviewVo preview(String token);
+
+    MemberInviteAcceptResultVo accept(String token, Long userId, String createBy);
+}

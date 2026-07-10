@@ -6,8 +6,14 @@ import java.util.stream.Collectors;
 
 import com.alibaba.fastjson2.JSON;
 import com.cat2bug.common.core.domain.entity.SysRole;
+import com.cat2bug.system.domain.SysTeam;
 import com.cat2bug.system.domain.SysUserConfig;
+import com.cat2bug.system.service.ISysTeamService;
 import com.cat2bug.system.service.ISysUserConfigService;
+import com.cat2bug.system.support.TeamMembershipSupport;
+
+import java.util.HashMap;
+import java.util.Map;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -50,6 +56,12 @@ public class SysLoginController
     @Autowired
     private ISysUserConfigService userConfigService;
 
+    @Autowired
+    private TeamMembershipSupport teamMembershipSupport;
+
+    @Autowired
+    private ISysTeamService sysTeamService;
+
     /**
      * 登录方法
      * 
@@ -86,11 +98,26 @@ public class SysLoginController
 
         SysUserConfig sysUserConfig = userConfigService.selectSysUserConfigByCurrentUserId();
 
+        Long currentTeamId = sysUserConfig != null ? sysUserConfig.getCurrentTeamId() : null;
+        boolean teamMember = currentTeamId != null && currentTeamId > 0
+                && teamMembershipSupport.isTeamMember(user.getUserId(), currentTeamId);
+
         AjaxResult ajax = AjaxResult.success();
         ajax.put("user", user);
         ajax.put("roles", roles.stream().map(r->r.getRoleKey()).collect(Collectors.toList()));
         ajax.put("permissions", permissions);
         ajax.put("config", sysUserConfig);
+        ajax.put("teamMember", teamMember);
+        if (!teamMember && currentTeamId != null && currentTeamId > 0) {
+            SysTeam contextTeam = sysTeamService.selectSysTeamByTeamId(currentTeamId);
+            if (contextTeam != null) {
+                Map<String, Object> context = new HashMap<>();
+                context.put("teamId", contextTeam.getTeamId());
+                context.put("teamName", contextTeam.getTeamName());
+                context.put("teamIcon", contextTeam.getTeamIcon());
+                ajax.put("contextTeam", context);
+            }
+        }
         return ajax;
     }
 

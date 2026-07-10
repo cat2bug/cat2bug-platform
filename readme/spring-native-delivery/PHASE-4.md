@@ -70,7 +70,7 @@ java -jar cat2bug-platform-admin/target/cat2bug-admin.jar
 ```bash
 ./deploy/build-native-spring.sh x86_64   # 或 aarch64
 ./deploy/rpm/cat2bug/build-rpm-spring.sh x86_64
-# 产物：deploy/rpm/cat2bug/dist/cat2bug-platform_1.0.0_x86_64.rpm
+# 产物：deploy/rpm/cat2bug/dist/cat2bug-platform_1.0.1_x86_64.rpm
 ```
 
 本机验证（2026-06-15）：仅有 `cat2bug-admin-linux-arm64` 时执行 `build-rpm-spring.sh aarch64`，生成约 106 MB RPM。
@@ -82,7 +82,7 @@ java -jar cat2bug-platform-admin/target/cat2bug-admin.jar
 在已安装 systemd 的目标机：
 
 ```bash
-sudo ./deploy/rpm/cat2bug/smoke-install.sh deploy/rpm/cat2bug/dist/cat2bug-platform_1.0.0_x86_64.rpm
+sudo ./deploy/rpm/cat2bug/smoke-install.sh deploy/rpm/cat2bug/dist/cat2bug-platform_1.0.1_x86_64.rpm
 ```
 
 本机无 RPM 包管理器时，可用 **systemd 容器**（Apple Silicon / aarch64 示例；无需映射宿主机 2020 端口）：
@@ -91,7 +91,7 @@ sudo ./deploy/rpm/cat2bug/smoke-install.sh deploy/rpm/cat2bug/dist/cat2bug-platf
 docker pull quay.io/almalinux/almalinux:9   # docker.io 镜像源失败时可改用 quay
 docker run -d --name cat2bug-rpm-smoke --privileged --cgroupns=host \
   -v /sys/fs/cgroup:/sys/fs/cgroup:rw \
-  -v "$(pwd)/deploy/rpm/cat2bug/dist/cat2bug-platform_1.0.0_aarch64.rpm":/tmp/cat2bug.rpm:ro \
+  -v "$(pwd)/deploy/rpm/cat2bug/dist/cat2bug-platform_1.0.1_aarch64.rpm":/tmp/cat2bug.rpm:ro \
   -v "$(pwd)/deploy/rpm/cat2bug/smoke-install.sh":/tmp/smoke-install.sh:ro \
   quay.io/almalinux/almalinux:9 /usr/sbin/init
 sleep 12
@@ -101,7 +101,7 @@ docker rm -f cat2bug-rpm-smoke
 
 AlmaLinux 9 基础镜像已带 `curl-minimal`，无需再 `dnf install curl`（与 `curl` 包冲突）。
 
-冒烟通过标准：`GET /version` 返回 `1.0.0`；`GET /setup/status` 返回 `installed:false`（空库首启）。
+冒烟通过标准：`GET /version` 返回 `1.0.1`；`GET /setup/status` 返回 `installed:false`（空库首启）。
 
 ## Go-Live 检查清单
 

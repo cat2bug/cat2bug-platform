@@ -1,5 +1,7 @@
 <template>
-  <el-dialog :title="$t('team.invite-members')" :visible.sync="dialogVisible" width="400px" append-to-body :close-on-click-modal="false" custom-class="cat2bug-form-shortcut-dialog team-invite-member-dialog" :close-on-press-escape="false" :before-close="onToolDialogBeforeClose" @opened="onToolDialogOpened">
+  <el-dialog :title="$t('team.invite-members')" :visible.sync="dialogVisible" width="560px" append-to-body :close-on-click-modal="false" custom-class="cat2bug-form-shortcut-dialog team-invite-member-dialog" :close-on-press-escape="false" :before-close="onToolDialogBeforeClose" @opened="onToolDialogOpened">
+    <el-tabs v-model="activeTab">
+      <el-tab-pane :label="$t('member.invite-direct')" name="direct">
     <el-form ref="form" :model="form" :rules="rules" label-width="120px">
       <el-row>
         <el-col :span="24">
@@ -40,8 +42,18 @@
         </el-col>
       </el-row>
     </el-form>
+      </el-tab-pane>
+      <el-tab-pane :label="$t('member.invite-link')" name="link">
+        <member-invite-link-panel
+          ref="inviteLinkPanel"
+          scope-type="team"
+          :scope-id="teamId"
+          :role-options="roleOptions"
+        />
+      </el-tab-pane>
+    </el-tabs>
     <div slot="footer" class="dialog-footer">
-      <el-button class="defect-kbd-hint-host" type="primary" @click="submitForm">
+      <el-button v-if="activeTab === 'direct'" class="defect-kbd-hint-host" type="primary" @click="submitForm">
         {{$t('submit')}}
         <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
       </el-button>
@@ -56,14 +68,16 @@ import {
   listNotMember, listTeamRole
 } from "@/api/system/team";
 import Cat2BugAvatar from "@/components/Cat2BugAvatar";
+import MemberInviteLinkPanel from "@/components/MemberInviteLinkPanel";
 import defectToolDialogKbd from '@/mixins/defect-tool-dialog-kbd'
 
 export default {
   name: "InviteTeamMember",
   mixins: [defectToolDialogKbd],
-  components: { Cat2BugAvatar },
+  components: { Cat2BugAvatar, MemberInviteLinkPanel },
   data() {
     return {
+      activeTab: 'direct',
       // 遮罩层
       loading: true,
       selectMemberList: [],
@@ -94,6 +108,7 @@ export default {
   methods: {
     open(){
       this.reset();
+      this.activeTab = 'direct';
       this.searchMemberHandle();
       listTeamRole(this.teamId).then(res => {
         this.roleOptions = res.data?res.data.filter(r=>r.isTeamRole && r.teamCreateBy==false).map(r=>{
@@ -101,6 +116,11 @@ export default {
           return r;
         }):[];
         this.dialogVisible = true;
+        this.$nextTick(() => {
+          if (this.$refs.inviteLinkPanel) {
+            this.$refs.inviteLinkPanel.onActivated();
+          }
+        });
       });
     },
     /** 获取团队id */

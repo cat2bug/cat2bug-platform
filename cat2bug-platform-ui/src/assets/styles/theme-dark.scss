@@ -1765,6 +1765,12 @@ html.dark {
   .team-select {
     .el-avatar {
       background-color: #2b2b2c !important; // 深灰色
+      overflow: hidden;
+
+      > img {
+        object-fit: cover !important;
+        object-position: center;
+      }
     }
 
     .el-input--prefix {

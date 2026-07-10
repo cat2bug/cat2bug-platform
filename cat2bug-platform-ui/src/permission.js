@@ -6,6 +6,7 @@ import { getToken } from '@/utils/auth'
 import { isRelogin } from '@/utils/request'
 import { isLockTeamPath } from '@/utils/team'
 import { isLockProjectPath } from '@/utils/project'
+import { isCurrentTeamMember, isTeamManagementPath } from '@/utils/team-membership'
 import { resolveUpgradeStatus } from '@/utils/upgrade-status'
 import { resolveSetupStatus } from '@/utils/setup-status'
 import { isUpgradeAwaitingReady } from '@/utils/upgrade-await'
@@ -40,6 +41,13 @@ function paintNProgressBar() {
 
 const whiteList = ['/login', '/register', '/tools/browser', '/shard/defect', '/setup', '/upgrade']
 
+function isPublicPath(path) {
+  if (whiteList.indexOf(path) !== -1) {
+    return true
+  }
+  return /^\/invite\/[^/]+$/.test(path)
+}
+
 function handleUpgradeAwaitingReadyRoute(to, next) {
   if (!isUpgradeAwaitingReady()) {
     return false
@@ -63,6 +71,8 @@ function proceedWithAuth(to, from, next) {
       next({ path: '/error/team-lock', replace: true })
     } else if (isLockProjectPath(to.path)) {
       next({ path: '/error/project-lock', replace: true })
+    } else if (!isCurrentTeamMember() && isTeamManagementPath(to.path)) {
+      next({ path: '/404', replace: true })
     } else if (store.getters.roles.length === 0) {
       isRelogin.show = true
       store.dispatch('GetInfo').then(() => {
@@ -86,7 +96,7 @@ function proceedWithAuth(to, from, next) {
     } else {
       next()
     }
-  } else if (whiteList.indexOf(to.path) !== -1) {
+  } else if (isPublicPath(to.path)) {
     next()
   } else {
     next(`/login?redirect=${encodeURIComponent(to.fullPath)}`)

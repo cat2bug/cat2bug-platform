@@ -1,0 +1,171 @@
+# Cat2Bug介绍
+
+欢迎使用 Cat2Bug 轻量级 BUG 管理平台！
+
+## 关于 Cat2Bug
+
+Cat2Bug-Platform 是一个开源的轻量级 BUG 管理平台，采用 Spring Boot + Vue.js 前后端分离架构。系统起名叫"猫陪我改BUG"，是因为每天坐在工作台，家里的猫总会过来陪伴。系统的宗旨是轻量化、简单、便捷，让测试管理更贴近生活。
+
+## 核心特点
+
+### 简洁至上
+以 BUG 管理为核心关注点，免去了项目管理中繁多的流程和模块，不管是新手还是老鸟，都可以快速上手，将精力专注在质量管理之中。
+
+### 专注测试
+Cat2Bug-Platform 专门针对测试工作的各个环节及不同角色，开发了专属的功能，解决传统缺陷系统只负责录入，忽略测试效率的问题。
+
+### AI 智能化
+借助于人工智能化技术的飞速提升，系统通过 AI 辅助进行缺陷的发现与管理。在测试用例的生成、自动化测试等方面，都有不俗的表现。
+
+## 快速导航
+
+### 快速开始
+- [快速开始](quick-start.md) - 快速上手指南
+
+### 角色介绍
+- [团队创建人](role-guide/team-creator.md) - 团队创建人的权限和职责
+- [团队管理员](role-guide/team-admin.md) - 团队管理员的权限和职责
+- [团队普通人员](role-guide/team-member.md) - 团队普通成员的权限和职责
+- [项目创建人](role-guide/project-creator.md) - 项目创建人的权限和职责
+- [项目管理员](role-guide/project-admin.md) - 项目管理员的权限和职责
+- [开发](role-guide/developer.md) - 开发人员的权限和职责
+- [测试](role-guide/tester.md) - 测试人员的权限和职责
+- [外部人员](role-guide/external.md) - 外部人员的权限和职责
+- [系统管理员](role-guide/system-admin.md) - 系统管理员的权限和职责
+
+### 用户指南
+
+#### 用户管理
+- [登录](user-guide/user-management/user-login.md) - 用户登录说明
+- [注册](user-guide/user-management/user-register.md) - 用户注册说明
+- [个人中心](user-guide/user-management/user-profile.md) - 个人信息管理
+
+#### 团队和项目
+- [团队列表](user-guide/team-manage.md) - 创建、切换与管理团队
+- [项目管理](user-guide/project-manage.md) - 创建和管理项目
+
+#### 当前项目功能
+- [仪表盘](user-guide/current-project/dashboard.md) - 项目数据概览
+- 测试用例
+  - [测试用例概述](user-guide/current-project/case.md) - 测试用例介绍和名词解释
+  - [用例列表](user-guide/current-project/case/case-list.md) - 查看和管理测试用例列表
+  - [新建用例](user-guide/current-project/case/case-create.md) - 手动创建测试用例
+  - [修改用例](user-guide/current-project/case/case-edit.md) - 编辑已有测试用例
+  - [删除用例](user-guide/current-project/case/case-delete.md) - 删除测试用例（单独或批量）
+  - [导入用例](user-guide/current-project/case/case-import.md) - 从 Excel 文件导入测试用例
+  - [导出用例](user-guide/current-project/case/case-export.md) - 导出测试用例为 Excel 文件
+  - [AI用例生成](user-guide/current-project/case/case-ai.md) - 使用 AI 自动生成测试用例
+- 测试计划
+  - [测试计划概述](user-guide/current-project/plan.md) - 测试计划介绍和功能指南
+  - [新建计划](user-guide/current-project/plan/plan-create.md) - 如何创建和配置测试计划
+  - [复制计划](user-guide/current-project/plan/plan-copy.md) - 快速复制已有测试计划
+  - [执行计划](user-guide/current-project/plan/plan-execute.md) - 执行测试用例和跟踪进度
+  - [修改计划](user-guide/current-project/plan/plan-edit.md) - 修改测试计划内容
+  - [删除计划](user-guide/current-project/plan/plan-delete.md) - 删除不需要的测试计划
+- 缺陷管理
+  - [缺陷介绍](user-guide/current-project/defect.md) - 缺陷管理介绍和名词解释
+  - [页标签](user-guide/current-project/defect/defect-tabs.md) - 自定义缺陷列表筛选视图
+  - [数据统计](user-guide/current-project/defect/defect-statistics.md) - 缺陷统计分析和报表
+  - 缺陷显示模式
+    - Table模式
+      - [Table模式介绍](user-guide/current-project/defect/display-mode/table-mode/table-mode-intro.md) - Table 模式概述与工作流程
+      - [新建缺陷](user-guide/current-project/defect/display-mode/table-mode/defect-create.md) - 创建新的缺陷记录
+      - [修改缺陷](user-guide/current-project/defect/display-mode/table-mode/defect-edit.md) - 修改缺陷信息
+      - [指派缺陷](user-guide/current-project/defect/display-mode/table-mode/defect-assign.md) - 更改缺陷处理人
+      - [修复缺陷](user-guide/current-project/defect/display-mode/table-mode/defect-repair.md) - 开发人员提交修复
+      - [驳回缺陷](user-guide/current-project/defect/display-mode/table-mode/defect-reject.md) - 测试人员驳回修复
+      - [通过缺陷](user-guide/current-project/defect/display-mode/table-mode/defect-pass.md) - 测试人员验证通过
+      - [开启缺陷](user-guide/current-project/defect/display-mode/table-mode/defect-reopen.md) - 重新开启已关闭的缺陷
+      - [关闭缺陷](user-guide/current-project/defect/display-mode/table-mode/defect-close.md) - 关闭缺陷
+      - [删除缺陷](user-guide/current-project/defect/display-mode/table-mode/defect-delete.md) - 删除缺陷记录
+      - [新建评论](user-guide/current-project/defect/display-mode/table-mode/defect-comment.md) - 对缺陷添加评论和讨论
+    - Excel模式
+      - [Excel模式介绍](user-guide/current-project/defect/display-mode/excel-mode/excel-mode-intro.md) - Excel 模式概述与适用场景
+      - [新建缺陷](user-guide/current-project/defect/display-mode/excel-mode/defect-create.md) - 空白行填必填项自动创建
+      - [修改缺陷](user-guide/current-project/defect/display-mode/excel-mode/defect-edit.md) - 单元格直接编辑实时保存
+      - [删除缺陷](user-guide/current-project/defect/display-mode/excel-mode/defect-delete.md) - 选中行按 Del 键删除
+  - [导入缺陷](user-guide/current-project/defect/defect-import.md) - 批量导入缺陷数据
+  - [导出缺陷](user-guide/current-project/defect/defect-export.md) - 导出缺陷为 Excel 文件
+- 交付物管理
+  - [交付物管理概述](user-guide/current-project/module.md) - 交付物管理介绍和功能指南
+  - [新建交付物](user-guide/current-project/module/module-create.md) - 创建新的交付物
+  - [修改交付物](user-guide/current-project/module/module-edit.md) - 编辑交付物信息
+  - [删除交付物](user-guide/current-project/module/module-delete.md) - 删除交付物
+- 报告管理
+  - [报告管理概述](user-guide/current-project/report.md) - 报告管理介绍和功能指南
+  - [添加模版](user-guide/current-project/report/template-create.md) - 添加报告模版
+  - 生成报告
+    - [通过API创建](user-guide/current-project/report/report-create-api.md) - 通过 Open API 创建测试报告
+    - [通过模版创建](user-guide/current-project/report/report-create-template.md) - 通过模版快速创建测试报告
+  - [查看报告](user-guide/current-project/report/report-view.md) - 查看报告详细内容
+  - [导出报告](user-guide/current-project/report/report-export.md) - 导出报告为 Word 或 PDF
+  - [删除报告](user-guide/current-project/report/report-delete.md) - 删除不需要的报告
+- 文档管理
+  - [文档管理概述](user-guide/current-project/document.md) - 文档管理介绍和功能指南
+  - [文档列表](user-guide/current-project/document/document-list.md) - 查看和管理文档列表
+  - [上传文档](user-guide/current-project/document/document-upload.md) - 上传文档文件到项目
+  - [创建文档](user-guide/current-project/document/document-create.md) - 在线创建 Markdown 文档
+  - [查看文档](user-guide/current-project/document/document-view.md) - 查看文档详细内容
+  - [编辑文档](user-guide/current-project/document/document-edit.md) - 编辑文档信息或内容
+  - [删除文档](user-guide/current-project/document/document-delete.md) - 删除不需要的文档
+
+### 管理员指南
+- [安装向导](admin-guide/install-wizard.md) - 系统安装向导与首次部署配置
+- [团队管理](admin-guide/admin-team.md) - 系统管理员的团队管理
+- [项目管理](admin-guide/admin-project.md) - 系统管理员的项目管理
+- [角色管理](admin-guide/admin-role.md) - 系统角色配置
+- [成员管理](admin-guide/admin-member.md) - 系统成员管理
+
+### AI 指南
+- [MCP 接入](ai-guide/mcp.md) - 通过 npm 包 @cat2bug/mcp 将 Cursor 等 AI 客户端接入平台 Open API
+
+### 高级操作
+- [键盘快捷键](advanced/keyboard-shortcuts.md) - 引导键导航、页面动作与自定义键位
+
+### API 文档
+- [API 介绍](api/api-intro.md) - API 接口说明
+- [交付物接口](api/api-deliverable.md) - 交付物相关接口
+- [测试用例接口](api/api-case.md) - 测试用例相关接口
+- [缺陷接口](api/api-defect.md) - 缺陷相关接口
+- [报告接口](api/api-report-defect.md) - 报告相关接口
+- [成员接口](api/api-member.md) - 成员相关接口
+- [文件接口](api/api-file.md) - 文件上传下载接口
+- [项目接口](api/api-project.md) - 项目相关接口
+
+### 其他
+- [常见问题](faq.md) - 常见问题解答
+
+## 系统架构
+
+### 技术栈
+
+**后端技术：**
+- Spring Boot 2.x
+- MyBatis Plus
+- MySQL / H2
+- Redis
+- WebSocket
+
+**前端技术：**
+- Vue.js 2.x
+- Element UI
+- Vuex
+- Vue Router
+
+## 演示环境
+
+- 在线演示：https://www.cat2bug.com:8022
+- 演示账号：
+  - 管理员：admin / cat2bug
+  - 普通用户：demo / 123456
+
+## 技术支持
+
+- 官方网站：https://www.cat2bug.com
+- Gitee：https://gitee.com/cat2bug/cat2bug-platform
+- GitHub：https://github.com/cat2bug/cat2bug-platform
+- 问题反馈：https://gitee.com/cat2bug/cat2bug-platform/issues
+
+## 开源协议
+
+MIT Licensed | Copyright © 2023-2026 cat2bug.com

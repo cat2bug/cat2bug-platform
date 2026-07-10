@@ -4,7 +4,7 @@
 # 用法:
 #   ./deploy/build-native-spring.sh x86_64
 #   ./deploy/rpm/cat2bug/build-rpm-spring.sh x86_64
-#   NFPM_VERSION=1.0.0 ./deploy/rpm/cat2bug/build-rpm-spring.sh aarch64
+#   NFPM_VERSION=1.0.1 ./deploy/rpm/cat2bug/build-rpm-spring.sh aarch64
 set -euo pipefail
 
 if ! command -v nfpm >/dev/null 2>&1; then
@@ -35,7 +35,7 @@ if [[ ! -f "$BIN" ]] || [[ "$(file -b "$BIN")" != *"ELF"* ]]; then
   exit 1
 fi
 
-VERSION="${NFPM_VERSION:-1.0.0}"
+VERSION="${NFPM_VERSION:-1.0.1}"
 STAGE="$RPM_DIR/stage"
 rm -rf "$STAGE"
 mkdir -p "$STAGE/usr/bin" "$STAGE/etc/cat2bug" "$STAGE/lib/systemd/system"

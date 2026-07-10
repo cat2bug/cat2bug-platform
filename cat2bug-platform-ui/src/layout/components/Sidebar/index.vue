@@ -3,7 +3,7 @@
         <team-select v-if="showLogo" :collapse="isCollapse" v-model="teamId"></team-select>
         <el-scrollbar :class="scrollbarThemeClass" wrap-class="scrollbar-wrapper">
           <el-menu
-            v-show="!teamLock && teamId"
+            v-show="!teamLock && teamId && teamMember && teamRouters.length > 0"
             :default-active="activeMenu"
             :collapse="isCollapse"
             :background-color="menuBackgroundColor"
@@ -20,7 +20,7 @@
               :base-path="'team/'+route.path"
             />
           </el-menu>
-          <div v-show="!teamLock && teamId && teamRouters" class="sidebar-divider">
+          <div v-show="!teamLock && teamId && teamMember && teamRouters.length > 0" class="sidebar-divider">
             <el-divider></el-divider>
           </div>
           <el-menu
@@ -45,7 +45,7 @@
             <el-divider></el-divider>
           </div>
           <el-menu
-            v-show="teamId"
+            v-show="teamId && teamMember && teamOptionRouters.length > 0"
             :default-active="activeMenu"
             :collapse="isCollapse"
             :background-color="menuBackgroundColor"
@@ -62,7 +62,7 @@
               :base-path="'team-options/'+route.path"
             />
           </el-menu>
-          <div v-show="teamId && teamOptionRouters" class="sidebar-divider">
+          <div v-show="teamId && teamMember && teamOptionRouters.length > 0" class="sidebar-divider">
             <el-divider></el-divider>
           </div>
 <!--          <el-menu-->
@@ -167,6 +167,9 @@ export default {
       },
       projectLock() {
         return this.$store.state.user.config.currentProjectLock;
+      },
+      teamMember() {
+        return this.$store.state.user.teamMember !== false;
       },
       projectRouters() {
           return this.filterSidebarRouters('project');

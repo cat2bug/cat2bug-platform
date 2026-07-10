@@ -2,7 +2,7 @@
 # AlmaLinux 9 / RHEL 9 Spring Native RPM 安装冒烟（在目标机或容器内执行）
 #
 # 用法:
-#   sudo ./deploy/rpm/cat2bug/smoke-install.sh deploy/rpm/cat2bug/dist/cat2bug-platform_1.0.0_x86_64.rpm
+#   sudo ./deploy/rpm/cat2bug/smoke-install.sh deploy/rpm/cat2bug/dist/cat2bug-platform_1.0.1_x86_64.rpm
 set -euo pipefail
 
 RPM="${1:?Usage: smoke-install.sh <path-to.rpm>}"

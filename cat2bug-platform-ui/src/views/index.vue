@@ -162,6 +162,12 @@
             <span>{{$t('update-log')}}</span>
           </div>
           <el-collapse accordion>
+            <el-collapse-item title="v1.0.1 - 2026-07-10">
+              <ol>
+                <li>个人中心基本资料布局与团队图标显示优化</li>
+                <li>安装向导 MySQL 空库探测修复（Docker Compose 场景）</li>
+              </ol>
+            </el-collapse-item>
             <el-collapse-item title="v1.0.0 - 2026-06-10">
               <ol>
                 <li>添加系统快捷键体系</li>

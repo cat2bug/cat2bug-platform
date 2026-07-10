@@ -37,20 +37,19 @@
         </el-card>
       </el-col>
       <el-col :span="18" :xs="24">
-        <el-card>
-          <div slot="header" class="clearfix">
-            <span>{{ $t('member.basic-info') }}</span>
+        <el-card class="profile-basic-card">
+          <div slot="header" class="profile-basic-card__header">
+            <el-tabs v-model="activeTab" class="profile-hint-tabs">
+              <el-tab-pane name="userinfo">
+                <span slot="label" class="profile-tab-label">{{ $t('member.basic-info') }}</span>
+              </el-tab-pane>
+              <el-tab-pane name="resetPwd">
+                <span slot="label" class="profile-tab-label">{{ $t('modify-password') }}</span>
+              </el-tab-pane>
+            </el-tabs>
           </div>
-          <el-tabs v-model="activeTab" class="profile-hint-tabs">
-            <el-tab-pane :label="$t('member.basic-info')" name="userinfo">
-              <span slot="label" class="profile-tab-label">{{ $t('member.basic-info') }}</span>
-              <userInfo :user="user" :form-active="activeTab === 'userinfo'" />
-            </el-tab-pane>
-            <el-tab-pane :label="$t('modify-password')" name="resetPwd">
-              <span slot="label" class="profile-tab-label">{{ $t('modify-password') }}</span>
-              <resetPwd :form-active="activeTab === 'resetPwd'" />
-            </el-tab-pane>
-          </el-tabs>
+          <userInfo v-show="activeTab === 'userinfo'" :user="user" :form-active="activeTab === 'userinfo'" />
+          <resetPwd v-show="activeTab === 'resetPwd'" :form-active="activeTab === 'resetPwd'" />
         </el-card>
       </el-col>
     </el-row>
@@ -169,6 +168,19 @@ export default {
 }
 .contact-display.is-empty {
   color: var(--text-color-secondary);
+}
+.profile-basic-card ::v-deep .el-card__header {
+  padding: 0 20px;
+  border-bottom: none;
+}
+.profile-basic-card__header {
+  margin: 0 -5px;
+}
+.profile-hint-tabs ::v-deep .el-tabs__header {
+  margin: 0;
+}
+.profile-hint-tabs ::v-deep .el-tabs__content {
+  display: none;
 }
 .profile-hint-tabs ::v-deep .el-tabs__header,
 .profile-hint-tabs ::v-deep .el-tabs__nav-wrap,

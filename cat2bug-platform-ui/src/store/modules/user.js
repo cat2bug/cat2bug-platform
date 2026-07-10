@@ -11,6 +11,8 @@ const user = {
     roles: [],
     permissions: [],
     config: {},
+    teamMember: true,
+    contextTeam: null,
     phoneNumber: ''
   },
 
@@ -35,6 +37,12 @@ const user = {
     },
     SET_CONFIG: (state, config) => {
       state.config = config
+    },
+    SET_TEAM_MEMBER: (state, teamMember) => {
+      state.teamMember = teamMember !== false
+    },
+    SET_CONTEXT_TEAM: (state, contextTeam) => {
+      state.contextTeam = contextTeam || null
     },
     SET_PROJECT_ID: (state, projectId) => {
       state.config.currentProjectId = projectId
@@ -102,6 +110,8 @@ const user = {
           if(res.config) {
             commit('SET_CONFIG', res.config)
           }
+          commit('SET_TEAM_MEMBER', res.teamMember !== false)
+          commit('SET_CONTEXT_TEAM', res.contextTeam || null)
           commit('SET_ID', user.userId)
           commit('SET_NAME', user.userName)
           commit('SET_AVATAR', avatar)
@@ -121,6 +131,8 @@ const user = {
           commit('SET_ROLES', [])
           commit('SET_PERMISSIONS', [])
           commit('SET_CONFIG', {})
+          commit('SET_TEAM_MEMBER', true)
+          commit('SET_CONTEXT_TEAM', null)
           removeToken()
           resolve()
         }).catch(error => {
@@ -136,6 +148,8 @@ const user = {
         commit('SET_ROLES', [])
         commit('SET_PERMISSIONS', [])
         commit('SET_CONFIG', {})
+        commit('SET_TEAM_MEMBER', true)
+        commit('SET_CONTEXT_TEAM', null)
         removeToken()
         resolve()
       })

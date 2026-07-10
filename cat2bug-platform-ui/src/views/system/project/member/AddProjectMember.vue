@@ -2,7 +2,7 @@
   <el-dialog
     :title="$t('project.add-member')"
     :visible.sync="dialogVisible"
-    width="400px"
+    width="560px"
     append-to-body
     :close-on-click-modal="false"
     custom-class="cat2bug-form-shortcut-dialog project-add-member-dialog"
@@ -10,6 +10,8 @@
     :before-close="onToolDialogBeforeClose"
     @opened="onToolDialogOpened"
   >
+    <el-tabs v-model="activeTab">
+      <el-tab-pane :label="$t('member.invite-direct')" name="direct">
     <el-form ref="form" :model="form" :rules="rules" label-width="120px">
       <el-row>
         <el-col :span="24">
@@ -50,8 +52,18 @@
         </el-col>
       </el-row>
     </el-form>
+      </el-tab-pane>
+      <el-tab-pane :label="$t('member.invite-link')" name="link">
+        <member-invite-link-panel
+          ref="inviteLinkPanel"
+          scope-type="project"
+          :scope-id="getProjectId()"
+          :role-options="roleOptions"
+        />
+      </el-tab-pane>
+    </el-tabs>
     <div slot="footer" class="dialog-footer">
-      <el-button class="defect-kbd-hint-host" type="primary" @click="submitForm">
+      <el-button v-if="activeTab === 'direct'" class="defect-kbd-hint-host" type="primary" @click="submitForm">
         {{$t('submit')}}
         <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
       </el-button>
@@ -63,14 +75,16 @@
 <script>
 import {addProjectMembers, listNotMemberOfProject, listProjectRole} from "@/api/system/project";
 import Cat2BugAvatar from "@/components/Cat2BugAvatar";
+import MemberInviteLinkPanel from "@/components/MemberInviteLinkPanel";
 import defectToolDialogKbd from '@/mixins/defect-tool-dialog-kbd'
 
 export default {
   name: "AddProjectMember",
   mixins: [defectToolDialogKbd],
-  components: { Cat2BugAvatar },
+  components: { Cat2BugAvatar, MemberInviteLinkPanel },
   data() {
     return {
+      activeTab: 'direct',
       loading: true,
       selectMemberList: [],
       memberOptions: [],
@@ -87,6 +101,7 @@ export default {
   },
   methods: {
     open(){
+      this.activeTab = 'direct';
       this.getRoleList();
     },
     getRoleList() {
@@ -97,6 +112,11 @@ export default {
         }):[];
         this.searchMemberHandle();
         this.dialogVisible = true;
+        this.$nextTick(() => {
+          if (this.$refs.inviteLinkPanel) {
+            this.$refs.inviteLinkPanel.onActivated();
+          }
+        });
       });
     },
     getProjectId() {

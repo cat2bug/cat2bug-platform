@@ -68,6 +68,11 @@ export const constantRoutes = [
     hidden: true
   },
   {
+    path: '/invite/:token',
+    component: () => import('@/views/invite/index'),
+    hidden: true
+  },
+  {
     path: '/404',
     component: () => import('@/views/error/404'),
     hidden: true

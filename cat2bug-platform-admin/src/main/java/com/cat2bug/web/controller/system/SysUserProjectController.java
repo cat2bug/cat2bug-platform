@@ -15,13 +15,16 @@ import com.cat2bug.framework.web.service.SysLoginService;
 import com.cat2bug.system.domain.SysUserDefect;
 import com.cat2bug.system.domain.SysUserOnline;
 import com.cat2bug.system.domain.vo.BatchUserRoleVo;
+import com.cat2bug.system.domain.vo.CreateMemberInviteVo;
 import com.cat2bug.system.service.*;
+import com.cat2bug.web.util.InviteLinkUrlSupport;
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -43,6 +46,9 @@ public class SysUserProjectController extends BaseController {
 
     @Autowired
     private ISysUserProjectRoleService sysUserProjectRoleService;
+
+    @Autowired
+    private ISysMemberInviteService sysMemberInviteService;
 
     @Autowired
     private ISysUserOnlineService sysUserOnlineService;
@@ -93,6 +99,34 @@ public class SysUserProjectController extends BaseController {
     public AjaxResult addMember(@PathVariable Long projectId, @RequestBody BatchUserRoleVo batchUserRoleVo)
     {
         return toAjax(sysUserProjectService.batchInsertSysUserProject(batchUserRoleVo));
+    }
+
+    @PreAuthorize("@ss.hasPermi('system:project:member:add')")
+    @Log(title = "项目邀请链接", businessType = BusinessType.INSERT)
+    @PostMapping("/{projectId}/invite-link")
+    public AjaxResult createInviteLink(@PathVariable Long projectId,
+                                       @RequestBody CreateMemberInviteVo request,
+                                       HttpServletRequest httpRequest)
+    {
+        return success(sysMemberInviteService.createProjectInviteLink(
+                projectId, request, getUserId(), InviteLinkUrlSupport.resolveInviteBaseUrl(httpRequest)));
+    }
+
+    @PreAuthorize("@ss.hasPermi('system:project:member:add')")
+    @GetMapping("/{projectId}/invite-links")
+    public AjaxResult listInviteLinks(@PathVariable Long projectId, HttpServletRequest httpRequest)
+    {
+        return success(sysMemberInviteService.listActiveProjectInviteLinks(
+                projectId, InviteLinkUrlSupport.resolveInviteBaseUrl(httpRequest)));
+    }
+
+    @PreAuthorize("@ss.hasPermi('system:project:member:add')")
+    @Log(title = "项目邀请链接", businessType = BusinessType.DELETE)
+    @DeleteMapping("/{projectId}/invite-link/{inviteId}")
+    public AjaxResult revokeInviteLink(@PathVariable Long projectId,
+                                       @PathVariable Long inviteId)
+    {
+        return toAjax(sysMemberInviteService.revokeProjectInviteLink(projectId, inviteId));
     }
 
     /**

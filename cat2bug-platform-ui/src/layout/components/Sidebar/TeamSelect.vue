@@ -1,6 +1,13 @@
 <template>
-  <div class="team-select-root layout-nav-hint-anchor" :class="{ 'team-select-root--collapse': collapse }" data-layout-nav="team">
+  <div class="team-select-root layout-nav-hint-anchor" :class="{ 'team-select-root--collapse': collapse, 'team-select-root--readonly': !teamMember }" data-layout-nav="team">
+    <div v-if="!teamMember" class="team-select-readonly">
+      <el-avatar :size="collapse?'small':'medium'" shape="square" v-if="displayTeam && displayTeam.teamIcon" :src="teamAvatarSrc(displayTeam)" fit="cover" @error.native="onTeamAvatarError(displayTeam)"></el-avatar>
+      <el-avatar :size="collapse?'small':'medium'" shape="square" v-else-if="displayTeam">{{ displayTeam.teamName }}</el-avatar>
+      <el-avatar :size="collapse?'small':'medium'" shape="square" v-else :src="imgUrl('add.svg')" fit="cover"></el-avatar>
+      <p class="prefix-team-name" v-if="!collapse">{{ displayTeam ? displayTeam.teamName : '' }}</p>
+    </div>
     <el-select
+      v-else
       class="team-select"
       :collapse="collapse"
       v-model="currentTeamId"
@@ -57,12 +64,28 @@ export default {
   },
   watch: {
     '$store.state.user.config.currentTeamId': function() {
-      this.getTeamList();
+      if (this.teamMember) {
+        this.getTeamList();
+      }
+    },
+    '$store.state.user.contextTeam': function() {
+      if (!this.teamMember) {
+        this.syncReadonlyTeam();
+      }
     }
   },
   computed:{
+    teamMember() {
+      return this.$store.state.user.teamMember !== false;
+    },
     teamId: function (){
       return this.$store.state.user.config.currentTeamId;
+    },
+    displayTeam() {
+      if (this.teamMember) {
+        return this.currentTeam;
+      }
+      return this.$store.state.user.contextTeam;
     },
     currentTeam: function() {
       for(let i in this.teamList){
@@ -79,9 +102,16 @@ export default {
     }
   },
   mounted() {
-    this.getTeamList();
+    if (this.teamMember) {
+      this.getTeamList();
+    } else {
+      this.syncReadonlyTeam();
+    }
   },
   methods:{
+    syncReadonlyTeam() {
+      this.currentTeamId = this.teamId;
+    },
     teamAvatarSrc(team) {
       if (!team || !team.teamIcon) {
         return ''
@@ -140,6 +170,51 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+  .team-select-readonly {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    column-gap: 10px;
+    margin: 10px;
+    width: calc(100% - 20px);
+    min-height: 60px;
+    cursor: default;
+
+    .prefix-team-name {
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+      width: 100px;
+      color: #303133;
+      font-size: 16px;
+      text-align: left;
+      margin: 0;
+    }
+
+    .el-avatar {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      flex-shrink: 0;
+
+      > img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+      }
+    }
+  }
+
+  .team-select-root--readonly.team-select-root--collapse .team-select-readonly {
+    height: 40px;
+    width: 40px;
+    margin-left: 7px;
+    margin-right: 7px;
+    min-height: 40px;
+  }
+
   ::v-deep .team-select {
     cursor: pointer;
     .el-input--prefix {
@@ -169,6 +244,21 @@ export default {
         color: #303133;
         font-size: 16px;
         text-align: left;
+      }
+
+      .el-avatar {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+        flex-shrink: 0;
+
+        > img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          object-position: center;
+        }
       }
     }
     .el-input--prefix:hover {
@@ -216,11 +306,6 @@ export default {
   ::v-deep .el-select-dropdown__wrap {
     max-height: 100%;
   }
-  .el-avatar {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
 </style>
 
 <!-- append-to-body 后下拉在 body，样式需挂 popper-class -->
@@ -235,6 +320,18 @@ export default {
   justify-content: flex-start;
   align-items: center;
   column-gap: 10px;
+
+  .el-avatar {
+    overflow: hidden;
+    flex-shrink: 0;
+
+    > img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+    }
+  }
 }
 .team-select-kbd-popper .team-select-footer {
   height: 60px;
