@@ -326,7 +326,7 @@ public class SysMemberInviteService {
         vo.setCreatedAt(invite.getCreatedAt());
         if (inviteBaseUrl != null && invite.getToken() != null) {
             String base = inviteBaseUrl.endsWith("/") ? inviteBaseUrl.substring(0, inviteBaseUrl.length() - 1) : inviteBaseUrl;
-            vo.setInviteUrl(base + "/invite/" + invite.getToken());
+            vo.setInviteUrl(base + "/#/invite/" + invite.getToken());
         }
         return vo;
     }

@@ -24,7 +24,7 @@ public interface ISysMemberInviteService {
 
     int revokeProjectInviteLink(Long projectId, Long inviteId);
 
-    MemberInvitePreviewVo preview(String token);
+    MemberInvitePreviewVo preview(String token, Long userId);
 
     MemberInviteAcceptResultVo accept(String token, Long userId, String createBy);
 }

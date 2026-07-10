@@ -3,7 +3,10 @@ package com.cat2bug.system.service.impl;
 import com.alibaba.fastjson2.JSON;
 import com.cat2bug.common.utils.DateUtils;
 import com.cat2bug.common.utils.MessageUtils;
+import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.common.utils.uuid.UUID;
+import com.cat2bug.common.core.domain.entity.SysRole;
+import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.system.domain.SysMemberInvite;
 import com.cat2bug.system.domain.SysProject;
 import com.cat2bug.system.domain.SysTeam;
@@ -18,7 +21,9 @@ import com.cat2bug.system.domain.vo.MemberInviteLinkVo;
 import com.cat2bug.system.domain.vo.MemberInvitePreviewVo;
 import com.cat2bug.system.mapper.SysMemberInviteMapper;
 import com.cat2bug.system.mapper.SysProjectMapper;
+import com.cat2bug.system.mapper.SysRoleMapper;
 import com.cat2bug.system.mapper.SysTeamMapper;
+import com.cat2bug.system.mapper.SysUserMapper;
 import com.cat2bug.system.mapper.SysUserProjectMapper;
 import com.cat2bug.system.mapper.SysUserTeamMapper;
 import com.cat2bug.system.mapper.SysUserTeamRoleMapper;
@@ -29,6 +34,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -50,6 +56,12 @@ public class SysMemberInviteServiceImpl implements ISysMemberInviteService {
 
     @Autowired
     private SysProjectMapper sysProjectMapper;
+
+    @Autowired
+    private SysUserMapper sysUserMapper;
+
+    @Autowired
+    private SysRoleMapper sysRoleMapper;
 
     @Autowired
     private SysUserTeamMapper sysUserTeamMapper;
@@ -114,13 +126,18 @@ public class SysMemberInviteServiceImpl implements ISysMemberInviteService {
     }
 
     @Override
-    public MemberInvitePreviewVo preview(String token) {
+    public MemberInvitePreviewVo preview(String token, Long userId) {
         SysMemberInvite invite = requireInvite(token);
         MemberInvitePreviewVo preview = new MemberInvitePreviewVo();
         preview.setScope(invite.getScope());
         preview.setExpired(isExpired(invite));
         preview.setRevoked(isRevoked(invite));
         preview.setValid(!preview.getExpired() && !preview.getRevoked());
+        preview.setExpiresAt(invite.getExpiresAt());
+        preview.setStatus(resolvePreviewStatus(preview.getExpired(), preview.getRevoked()));
+        preview.setInviterName(resolveInviterName(invite.getCreatedBy()));
+        preview.setRoleNames(resolveRoleNames(parseRoleIds(invite.getRoleIds())));
+        preview.setAlreadyMember(userId != null && isAlreadyMember(invite, userId));
 
         SysTeam team = sysTeamMapper.selectSysTeamByTeamId(invite.getTeamId());
         if (team != null) {
@@ -133,6 +150,65 @@ public class SysMemberInviteServiceImpl implements ISysMemberInviteService {
             }
         }
         return preview;
+    }
+
+    private boolean isAlreadyMember(SysMemberInvite invite, Long userId) {
+        if (MemberInviteScope.TEAM.equals(invite.getScope())) {
+            SysUserTeam query = new SysUserTeam();
+            query.setTeamId(invite.getTeamId());
+            query.setUserId(userId);
+            List<SysUserTeam> existing = sysUserTeamMapper.selectSysUserTeamList(query);
+            return existing != null && !existing.isEmpty();
+        }
+        if (MemberInviteScope.PROJECT.equals(invite.getScope()) && invite.getProjectId() != null) {
+            SysUserProject query = new SysUserProject();
+            query.setProjectId(invite.getProjectId());
+            query.setUserId(userId);
+            List<SysUserProject> existing = sysUserProjectMapper.selectSysUserProjectList(query);
+            return existing != null && !existing.isEmpty();
+        }
+        return false;
+    }
+
+    private String resolvePreviewStatus(boolean expired, boolean revoked) {
+        if (revoked) {
+            return "revoked";
+        }
+        if (expired) {
+            return "expired";
+        }
+        return "valid";
+    }
+
+    private String resolveInviterName(Long userId) {
+        if (userId == null) {
+            return null;
+        }
+        SysUser user = sysUserMapper.selectUserById(null, null, userId);
+        if (user == null) {
+            return null;
+        }
+        if (StringUtils.isNotEmpty(user.getNickName())) {
+            return user.getNickName();
+        }
+        return user.getUserName();
+    }
+
+    private List<String> resolveRoleNames(Long[] roleIds) {
+        List<String> names = new ArrayList<>();
+        if (roleIds == null) {
+            return names;
+        }
+        for (Long roleId : roleIds) {
+            if (roleId == null) {
+                continue;
+            }
+            SysRole role = sysRoleMapper.selectRoleById(roleId);
+            if (role != null && StringUtils.isNotEmpty(role.getRoleName())) {
+                names.add(role.getRoleName());
+            }
+        }
+        return names;
     }
 
     @Override
@@ -237,7 +313,7 @@ public class SysMemberInviteServiceImpl implements ISysMemberInviteService {
     }
 
     private SysMemberInvite requireInvite(String token) {
-        Preconditions.checkArgument(token != null && !token.isBlank(), "邀请 token 无效");
+        Preconditions.checkArgument(token != null && !StringUtils.isEmpty(token), "邀请 token 无效");
         SysMemberInvite invite = sysMemberInviteMapper.selectSysMemberInviteByToken(token);
         Preconditions.checkNotNull(invite, "邀请链接不存在");
         return invite;
@@ -252,7 +328,7 @@ public class SysMemberInviteServiceImpl implements ISysMemberInviteService {
     }
 
     private Long[] parseRoleIds(String roleIdsJson) {
-        if (roleIdsJson == null || roleIdsJson.isBlank()) {
+        if (StringUtils.isEmpty(roleIdsJson)) {
             return new Long[0];
         }
         List<Long> roleIds = JSON.parseArray(roleIdsJson, Long.class);
@@ -284,7 +360,7 @@ public class SysMemberInviteServiceImpl implements ISysMemberInviteService {
         vo.setCreatedAt(invite.getCreatedAt());
         if (inviteBaseUrl != null && invite.getToken() != null) {
             String base = inviteBaseUrl.endsWith("/") ? inviteBaseUrl.substring(0, inviteBaseUrl.length() - 1) : inviteBaseUrl;
-            vo.setInviteUrl(base + "/invite/" + invite.getToken());
+            vo.setInviteUrl(base + "/#/invite/" + invite.getToken());
         }
         return vo;
     }

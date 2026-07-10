@@ -10,22 +10,37 @@
     :before-close="onToolDialogBeforeClose"
     @opened="onToolDialogOpened"
   >
-    <el-tabs v-model="activeTab">
+    <el-tabs v-model="activeTab" class="member-invite-dialog-tabs">
       <el-tab-pane :label="$t('member.invite-direct')" name="direct">
     <el-form ref="form" :model="form" :rules="rules" label-width="120px">
       <el-row>
         <el-col :span="24">
+          <el-form-item :label="$t('role')">
+            <el-select v-model="form.roleIds" class="member-direct-select" multiple :placeholder="$t('member.please-select-role')" style="width: 100%">
+              <el-option
+                v-for="item in roleOptions"
+                :key="item.roleId"
+                :label="item.roleName"
+                :value="item.roleId"
+                :disabled="item.status == 1"
+              ></el-option>
+            </el-select>
+          </el-form-item>
+        </el-col>
+        <el-col :span="24">
           <el-form-item :label="$t('member')">
             <el-select
-              class="select-member"
+              class="select-member member-direct-select"
               v-model="form.memberIds"
               multiple
               filterable
               remote
               reserve-keyword
+              :automatic-dropdown="false"
               :placeholder="$t('member.search-placeholder')"
               :remote-method="searchMemberHandle"
-              :loading="loading">
+              :loading="loading"
+              style="width: 100%">
               <el-option
                 v-for="item in memberOptions"
                 :key="item.userId"
@@ -34,19 +49,6 @@
                 <cat2-bug-avatar :member="item" size="small" />
                 <p>{{ item.nickName }}</p>
               </el-option>
-            </el-select>
-          </el-form-item>
-        </el-col>
-        <el-col :span="24">
-          <el-form-item :label="$t('role')">
-            <el-select v-model="form.roleIds" multiple :placeholder="$t('member.please-select-role')">
-              <el-option
-                v-for="item in roleOptions"
-                :key="item.roleId"
-                :label="item.roleName"
-                :value="item.roleId"
-                :disabled="item.status == 1"
-              ></el-option>
             </el-select>
           </el-form-item>
         </el-col>
@@ -85,7 +87,7 @@ export default {
   data() {
     return {
       activeTab: 'direct',
-      loading: true,
+      loading: false,
       selectMemberList: [],
       memberOptions: [],
       dialogVisible: false,
@@ -102,6 +104,7 @@ export default {
   methods: {
     open(){
       this.activeTab = 'direct';
+      this.reset();
       this.getRoleList();
     },
     getRoleList() {
@@ -110,7 +113,8 @@ export default {
           r.roleName = r.roleNameI18nKey?this.$t(r.roleNameI18nKey):r.roleName;
           return r;
         }):[];
-        this.searchMemberHandle();
+        this.memberOptions = [];
+        this.loading = false;
         this.dialogVisible = true;
         this.$nextTick(() => {
           if (this.$refs.inviteLinkPanel) {
@@ -123,6 +127,11 @@ export default {
       return parseInt(this.$store.state.user.config.currentProjectId);
     },
     searchMemberHandle(query) {
+      if (!query || !String(query).trim()) {
+        this.loading = false;
+        this.memberOptions = [];
+        return;
+      }
       this.loading = true;
       listNotMemberOfProject(this.getProjectId(),{params:{search:query}}).then(res => {
         this.loading = false;

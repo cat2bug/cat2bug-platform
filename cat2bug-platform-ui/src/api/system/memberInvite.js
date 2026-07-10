@@ -2,8 +2,14 @@ import request from '@/utils/request'
 
 /** Build full invite URL for hash-mode router */
 export function buildInviteUrl(token) {
-  const base = `${window.location.origin}${window.location.pathname}`.replace(/\/+$/, '')
-  return `${base}#/invite/${token}`
+  let path = window.location.pathname || '/'
+  // dev / 部分部署会把入口挂在 /index，避免生成 .../index#/invite/...
+  path = path.replace(/\/index\.html$/i, '').replace(/\/index$/i, '')
+  path = path.replace(/\/+$/, '')
+  if (!path) {
+    return `${window.location.origin}/#/invite/${token}`
+  }
+  return `${window.location.origin}${path}/#/invite/${token}`
 }
 
 // --- Team invite links ---
@@ -59,8 +65,7 @@ export function revokeProjectInviteLink(projectId, inviteId) {
 export function previewInvite(token) {
   return request({
     url: `/invite/${token}/preview`,
-    method: 'get',
-    headers: { isToken: false }
+    method: 'get'
   })
 }
 

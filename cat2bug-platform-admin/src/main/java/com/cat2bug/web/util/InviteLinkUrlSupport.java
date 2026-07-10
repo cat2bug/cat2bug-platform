@@ -24,4 +24,13 @@ public final class InviteLinkUrlSupport {
         }
         return scheme + "://" + serverName + ":" + serverPort;
     }
+
+    /** 内嵌 SPA（hash 路由）邀请页完整 URL */
+    public static String buildInvitePageUrl(String inviteBaseUrl, String token) {
+        if (inviteBaseUrl == null || token == null || token.isEmpty()) {
+            return null;
+        }
+        String base = inviteBaseUrl.endsWith("/") ? inviteBaseUrl.substring(0, inviteBaseUrl.length() - 1) : inviteBaseUrl;
+        return base + "/#/invite/" + token;
+    }
 }

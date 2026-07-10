@@ -1,6 +1,8 @@
 package com.cat2bug.system.service.impl;
 
 import com.cat2bug.common.utils.DateUtils;
+import com.cat2bug.common.core.domain.entity.SysRole;
+import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.system.domain.SysMemberInvite;
 import com.cat2bug.system.domain.SysProject;
 import com.cat2bug.system.domain.SysTeam;
@@ -12,7 +14,9 @@ import com.cat2bug.system.domain.vo.MemberInviteAcceptResultVo;
 import com.cat2bug.system.domain.vo.MemberInvitePreviewVo;
 import com.cat2bug.system.mapper.SysMemberInviteMapper;
 import com.cat2bug.system.mapper.SysProjectMapper;
+import com.cat2bug.system.mapper.SysRoleMapper;
 import com.cat2bug.system.mapper.SysTeamMapper;
+import com.cat2bug.system.mapper.SysUserMapper;
 import com.cat2bug.system.mapper.SysUserProjectMapper;
 import com.cat2bug.system.mapper.SysUserTeamMapper;
 import com.cat2bug.system.mapper.SysUserTeamRoleMapper;
@@ -48,6 +52,10 @@ public class SysMemberInviteServiceTest {
     @Mock
     private SysProjectMapper sysProjectMapper;
     @Mock
+    private SysUserMapper sysUserMapper;
+    @Mock
+    private SysRoleMapper sysRoleMapper;
+    @Mock
     private SysUserTeamMapper sysUserTeamMapper;
     @Mock
     private SysUserTeamRoleMapper sysUserTeamRoleMapper;
@@ -81,13 +89,21 @@ public class SysMemberInviteServiceTest {
     @Test
     public void preview_expiredInvite_marksExpired() {
         SysMemberInvite expired = invite("expired", MemberInviteScope.TEAM, 10L, null, pastDate());
+        expired.setCreatedBy(1L);
         when(sysMemberInviteMapper.selectSysMemberInviteByToken("expired")).thenReturn(expired);
         when(sysTeamMapper.selectSysTeamByTeamId(10L)).thenReturn(team("Team A"));
+        SysUser inviter = new SysUser();
+        inviter.setNickName("Alice");
+        when(sysUserMapper.selectUserById(null, null, 1L)).thenReturn(inviter);
+        when(sysRoleMapper.selectRoleById(3L)).thenReturn(role("Admin"));
 
-        MemberInvitePreviewVo preview = sysMemberInviteService.preview("expired");
+        MemberInvitePreviewVo preview = sysMemberInviteService.preview("expired", null);
 
         assertTrue(preview.getExpired());
         assertFalse(preview.getValid());
+        assertEquals("expired", preview.getStatus());
+        assertEquals("Alice", preview.getInviterName());
+        assertEquals("Admin", preview.getRoleNames().get(0));
     }
 
     @Test
@@ -97,10 +113,47 @@ public class SysMemberInviteServiceTest {
         when(sysMemberInviteMapper.selectSysMemberInviteByToken("revoked")).thenReturn(revoked);
         when(sysTeamMapper.selectSysTeamByTeamId(10L)).thenReturn(team("Team A"));
 
-        MemberInvitePreviewVo preview = sysMemberInviteService.preview("revoked");
+        MemberInvitePreviewVo preview = sysMemberInviteService.preview("revoked", null);
 
         assertTrue(preview.getRevoked());
         assertFalse(preview.getValid());
+    }
+
+    @Test
+    public void preview_teamInvite_alreadyMember_whenLoggedIn() {
+        when(sysMemberInviteMapper.selectSysMemberInviteByToken("team-token")).thenReturn(activeTeamInvite);
+        when(sysTeamMapper.selectSysTeamByTeamId(10L)).thenReturn(team("Team A"));
+        SysUserTeam existing = new SysUserTeam();
+        existing.setUserTeamId(1L);
+        when(sysUserTeamMapper.selectSysUserTeamList(any())).thenReturn(Collections.singletonList(existing));
+
+        MemberInvitePreviewVo preview = sysMemberInviteService.preview("team-token", 5L);
+
+        assertTrue(preview.getAlreadyMember());
+    }
+
+    @Test
+    public void preview_projectInvite_alreadyMember_whenLoggedIn() {
+        when(sysMemberInviteMapper.selectSysMemberInviteByToken("project-token")).thenReturn(activeProjectInvite);
+        when(sysTeamMapper.selectSysTeamByTeamId(10L)).thenReturn(team("Team A"));
+        when(sysProjectMapper.selectSysProjectByProjectId(20L, null)).thenReturn(project("Cat2Bug-Platform"));
+        SysUserProject existing = new SysUserProject();
+        existing.setUserProjectId(1L);
+        when(sysUserProjectMapper.selectSysUserProjectList(any())).thenReturn(Collections.singletonList(existing));
+
+        MemberInvitePreviewVo preview = sysMemberInviteService.preview("project-token", 7L);
+
+        assertTrue(preview.getAlreadyMember());
+    }
+
+    @Test
+    public void preview_teamInvite_notAlreadyMember_whenAnonymous() {
+        when(sysMemberInviteMapper.selectSysMemberInviteByToken("team-token")).thenReturn(activeTeamInvite);
+        when(sysTeamMapper.selectSysTeamByTeamId(10L)).thenReturn(team("Team A"));
+
+        MemberInvitePreviewVo preview = sysMemberInviteService.preview("team-token", null);
+
+        assertFalse(preview.getAlreadyMember());
     }
 
     @Test
@@ -197,6 +250,20 @@ public class SysMemberInviteServiceTest {
         team.setTeamId(10L);
         team.setTeamName(name);
         return team;
+    }
+
+    private SysRole role(String name) {
+        SysRole role = new SysRole();
+        role.setRoleId(3L);
+        role.setRoleName(name);
+        return role;
+    }
+
+    private SysProject project(String name) {
+        SysProject project = new SysProject();
+        project.setProjectId(20L);
+        project.setProjectName(name);
+        return project;
     }
 
     private Date futureDate() {
