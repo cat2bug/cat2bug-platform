@@ -319,7 +319,7 @@ public class SetupMigrationService implements UpgradeMigrationInspector
                     .baselineVersion("0.5.0")
                     .baselineDescription("BaseLineInitialize")
                     .validateOnMigrate(true)
-                    .outOfOrder(false)
+                    .outOfOrder(true)
                     .dataSource(dataSourceOverride != null ? dataSourceOverride : dataSource);
             return config.load();
         }

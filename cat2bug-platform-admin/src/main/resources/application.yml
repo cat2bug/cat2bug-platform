@@ -133,9 +133,8 @@ spring:
     # 是否开启校验
     # 迁移时是否校验，默认为 true
     validate-on-migrate: true
-    # 开发环境最好开启 outOfOrder, 生产环境关闭 outOfOrder
-    # 是否允许无序的迁移，默认 false
-    out-of-order: false
+    # 允许补跑后插入的 legacy 脚本（如 V0_6_2_17 晚于 V1_0_0_1 合入时）
+    out-of-order: true
     # flyway 的 clean 命令会删除指定 schema 下的所有 table, 生产务必禁掉。
     clean-disabled: false
     # 当读取元数据表时是否忽略错误的迁移，默认false
