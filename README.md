@@ -51,11 +51,13 @@ Cat2Bug-Platform是一套永久免费开源的Bug管理平台，可以完全私�
 
 ## 关联产品
 
-| 名称                                                       | 类型       | 说明                                                                |
-|----------------------------------------------------------|----------|:------------------------------------------------------------------|
-| [Cat2Bug-App](https://gitee.com/cat2bug/cat2bug-app)     | BUG手机端   | Cat2Bug-Platform平台的手机端系统                                          |
-| [Cat2Bug-JUnit](https://gitee.com/cat2bug/cat2bug-junit) | 单元测试框架   | 自动化单元测试框架，目前可以自动扫描Controller接口，随机提供参数测试，并将测试报告提交到Cat2Bug-Platform |
-| [Cat2Bug-JLog](https://gitee.com/cat2bug/cat2bug-jlog)   | 错误日志采集框架 | 获取项目中的异常日志，并将日志报告提交到Cat2Bug-Platform                              |
+| 名称                                                         | 类型          | 说明                                                                |
+|------------------------------------------------------------|-------------|:------------------------------------------------------------------|
+| [Cat2Bug-App](https://gitee.com/cat2bug/cat2bug-app)       | 缺陷管理手机端     | Cat2Bug-Platform平台的手机端系统                                          |
+| [Cat2Bug-Chrome](https://gitee.com/cat2bug/cat2bug-chrome) | 缺陷管理谷歌浏览器插件 | Cat2Bug-Platform平台的谷歌浏览器插件                                        |
+| [Cat2Bug-MCP](https://gitee.com/cat2bug/cat2bug-mcp)       | MCP代理服务     | Cat2Bug-Platform与AI大模型通讯代理服务                                      |
+| [Cat2Bug-JLog](https://gitee.com/cat2bug/cat2bug-jlog)     | 错误日志采集框架    | 获取项目中的异常日志，并将日志报告提交到Cat2Bug-Platform                              |
+| [Cat2Bug-JUnit](https://gitee.com/cat2bug/cat2bug-junit)   | 单元测试框架      | 自动化单元测试框架，目前可以自动扫描Controller接口，随机提供参数测试，并将测试报告提交到Cat2Bug-Platform |
 
 ## 系统架构
 
@@ -213,4 +215,4 @@ docker-compose up -d
 
 | QQ群： [731462000](https://qm.qq.com/cgi-bin/qm/qr?k=G_vJa478flcFo_1ohJxNYD0mRKafQ7I1&jump_from=webapi&authKey=EL0KrLpnjYWqNN9YXTVksNlNFrV9DHYyPMx2RVOhXqLzfnmc+Oz8oQ38aBOGx90t) | 微信群：Cat2Bug                                                                 |
 |--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------|
-| <img src="./readme/images/qq.png" style="width: 150px; height: 150px;">                                                                                                        | <img src="./readme/images/wechat.png" style="width: 150px; height: 150px;"> |
+| <img src="https://www.cat2bug.com/prod-api/images/qq.png" style="width: 150px; height: 150px;">                                                                  | <img src="https://www.cat2bug.com/prod-api/images/wechat.png" style="width: 150px; height: 150px;"> |
