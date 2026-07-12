@@ -1,0 +1,28 @@
+/**
+ * Element Plus theme overrides (replaces element-ui element-variables.scss).
+ */
+@forward 'element-plus/theme-chalk/src/common/var.scss' with (
+  $colors: (
+    'primary': (
+      'base': #1890ff,
+    ),
+    'success': (
+      'base': #13ce66,
+    ),
+    'warning': (
+      'base': #ffba00,
+    ),
+    'danger': (
+      'base': #e64545,
+    ),
+  ),
+  $common-component-size: (
+    'large': 40px,
+    'default': 32px,
+    'small': 32px,
+  )
+);
+
+:export {
+  theme: #1890ff;
+}

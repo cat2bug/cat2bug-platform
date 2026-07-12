@@ -25,7 +25,7 @@
               {{ generateElementIconCode(item) }}
             </div>
             <div class="icon-item">
-              <i :class="'el-icon-' + item" />
+              <legacy-icon :icon="'el-icon-' + item" />
               <span>{{ item }}</span>
             </div>
           </el-tooltip>
@@ -52,7 +52,7 @@ export default {
       return `<svg-icon icon-class="${symbol}" />`
     },
     generateElementIconCode(symbol) {
-      return `<i class="el-icon-${symbol}" />`
+      return `<legacy-icon icon="el-icon-${symbol}" />`
     }
   }
 }

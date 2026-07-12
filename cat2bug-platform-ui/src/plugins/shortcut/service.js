@@ -6,7 +6,7 @@
  *   - CommandPalette 组件：面板打开后接管按键（字母直达 / 搜索 / 方向键 / Esc），
  *     并通过 executor 执行与 Vue 上下文相关的副作用（路由跳转、主题、语言、登出等）。
  */
-import Vue from 'vue'
+import { reactive } from 'vue'
 import i18n from '@/utils/i18n/i18n'
 import { shortcutStore } from './shortcut-store'
 import { pageRegistry } from './registry'
@@ -16,7 +16,7 @@ import {
   normalizeKey
 } from './keymap'
 
-const palette = Vue.observable({
+const palette = reactive({
   open: false,
   mode: '', // 'nav' | 'action'
   stack: [], // [{ title, items: [...] }]
@@ -230,7 +230,7 @@ function buildActionItems() {
     return {
       bindingId,
       type: 'action',
-      title: a.title || (titleKey ? i18n.t(titleKey) : a.key),
+      title: a.title || (titleKey ? i18n.global.t(titleKey) : a.key),
       run: a.run,
       preferred: letter,
       defaultLetter,
@@ -297,7 +297,7 @@ export const shortcutService = {
   openNav() {
     palette.mode = 'nav'
     palette.query = ''
-    palette.stack = [{ title: i18n.t('keyboard.palette.go-to'), items: buildNavItems() }]
+    palette.stack = [{ title: i18n.global.t('keyboard.palette.go-to'), items: buildNavItems() }]
     palette.open = true
   },
 
@@ -306,7 +306,7 @@ export const shortcutService = {
     if (!items.length) return
     palette.mode = 'action'
     palette.query = ''
-    palette.stack = [{ title: i18n.t('keyboard.palette.actions'), items }]
+    palette.stack = [{ title: i18n.global.t('keyboard.palette.actions'), items }]
     palette.open = true
   },
 

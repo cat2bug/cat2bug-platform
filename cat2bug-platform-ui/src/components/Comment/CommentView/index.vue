@@ -7,7 +7,7 @@
         <span class="time">{{ parseTime(comment.createTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
       </div>
       <div>
-        <el-button v-if="showDeleteButton(comment)" icon="el-icon-delete" size="mini" type="text" @click="deleteHandle(comment)"></el-button>
+        <el-button v-if="showDeleteButton(comment)" :icon="$legacyIcon('el-icon-delete')" size="small" type="text" @click="deleteHandle(comment)"></el-button>
       </div>
     </div>
     <div class="comment-view-content" v-html="toHtml(comment.commentContent)"></div>
@@ -17,12 +17,9 @@
 <script>
 import Cat2BugAvatar from "@/components/Cat2BugAvatar";
 import {delComment} from "@/api/system/comment";
+import { defaultEmojiMap } from '@/utils/emoji-assets'
 
-// 初始化图片
-let imgMap = new Map();
-for(let i=1;i<=18;i++) {
-  imgMap.set('emoji'+i,require(`@/assets/emoji/default/emoji${i}.png`))
-}
+const imgMap = defaultEmojiMap
 export default {
   name: "CommentView",
   components: { Cat2BugAvatar },

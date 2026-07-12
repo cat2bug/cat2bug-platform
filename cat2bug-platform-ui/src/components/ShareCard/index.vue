@@ -3,13 +3,13 @@
     class="share-card-popover"
     placement="top"
     trigger="click"
-    :append-to-body="true"
+    :teleported="true"
     popper-class="share-card-popper"
-    v-model="visible">
+    v-model:visible="visible">
     <div v-if="visible" class="shard-context" v-loading="apiLoading">
       <el-form :inline="true" :model="form">
         <el-form-item :label="$t('shard.aging-hour')">
-          <el-select v-model="form.agingHour" size="mini" @change="refresh">
+          <el-select v-model="form.agingHour" size="small" @change="refresh">
             <el-option :label="$t('shard.1hour')" value="1"></el-option>
             <el-option :label="$t('shard.1day')" value="24"></el-option>
             <el-option :label="$t('shard.7day')" value="168"></el-option>
@@ -17,52 +17,54 @@
           </el-select>
         </el-form-item>
         <el-form-item :label="$t('password')">
-          <el-input v-model="form.password" size="mini" clearable :placeholder="$t('shard.please-enter-password')" minlength="4" maxlength="4" @change="refresh"></el-input>
+          <el-input v-model="form.password" size="small" clearable :placeholder="$t('shard.please-enter-password')" minlength="4" maxlength="4" @change="refresh"></el-input>
         </el-form-item>
       </el-form>
-      <el-button type="text" icon="el-icon-close"></el-button>
+      <el-button link :icon="$legacyIcon('el-icon-close')"></el-button>
       <div class="title">
         <label>{{ $t('shard.click-prompt') }}</label>
       </div>
       <div class="share-list">
-        <component
-          v-loading="loading[index]"
-          :agingHour="form.agingHour"
-          :password="form.password"
-          :element-loading-text="$t('click-copy')"
-          element-loading-background="rgba(255, 255, 255, 0.5)"
-          element-loading-spinner="el-icon-document-copy"
-          class="share-card-loading"
-          ref="shareComponent"
-          :is="sc.name"
-          :params="params"
+        <span
           v-for="(sc,index) in shareCardList"
           :key="index"
-          @click.native="copy(index)"
-          @mouseenter.native="onMouseEnterHandle(index)"
-          @mouseleave.native="onMouseLeaveHandle(index)"
-          @copy="copyHandle"
-        />
+          v-loading="loading[index]"
+          :element-loading-text="$t('click-copy')"
+          element-loading-background="rgba(255, 255, 255, 0.5)"
+          class="share-card-loading"
+          @click="copy(index)"
+          @mouseenter="onMouseEnterHandle(index)"
+          @mouseleave="onMouseLeaveHandle(index)"
+        >
+          <component
+            ref="shareComponent"
+            :is="sc.name"
+            :params="params"
+            :agingHour="form.agingHour"
+            :password="form.password"
+            @copy="copyHandle"
+          />
+        </span>
       </div>
     </div>
-    <span slot="reference" class="share-card-trigger" @click="clickHandle">
-      <svg-icon class="button" icon-class="shard"></svg-icon>
-    </span>
+    <template #reference>
+      <span class="share-card-trigger" @click="clickHandle">
+        <svg-icon class="button" icon-class="shard"></svg-icon>
+      </span>
+    </template>
   </el-popover>
 </template>
 
 <script>
 import {getShard, shardDefect} from "@/api/system/DefectShard";
 
-const path = require('path');
-const files = require.context('./DefectShareCard/', true, /\.vue$/);
-const modules = {};
+const shareCardModules = import.meta.glob('./DefectShareCard/*.vue', { eager: true })
+const modules = {}
 
-// 动态加载组件
-files.keys().forEach(key=>{
-  const name = path.basename(key,'.vue');
-  modules[name] = files(key).default||files(key)
-});
+for (const [filePath, mod] of Object.entries(shareCardModules)) {
+  const name = filePath.split('/').pop().replace(/\.vue$/, '')
+  modules[name] = mod.default || mod
+}
 
 export default {
   name: "ShareCard",
@@ -107,17 +109,24 @@ export default {
     },
     /** 刷新分享组件 */
     refreshComponents() {
-      this.$refs.shareComponent.forEach(c=>{
-        c.refresh(this.shard);
-      });
+      const refs = this.$refs.shareComponent
+      if (!refs) return
+      const list = Array.isArray(refs) ? refs : [refs]
+      list.forEach((c) => {
+        if (c && typeof c.refresh === 'function') {
+          c.refresh(this.shard)
+        }
+      })
     },
     /** 复制数据到剪贴板 */
     copy(index) {
-      let self = this;
-      setTimeout( ()=>{
-        self.$refs.shareComponent[index].copy(self.shard, self.form.agingHour, self.form.password);
-        self.visible = false;
-      },0);
+      const refs = this.$refs.shareComponent
+      const comp = Array.isArray(refs) ? refs[index] : refs
+      if (!comp || typeof comp.copy !== 'function') return
+      setTimeout(() => {
+        comp.copy(this.shard, this.form.agingHour, this.form.password)
+        this.visible = false
+      }, 0)
     },
     /** 复制剪贴板成功处理事件 */
     copyHandle() {
@@ -130,11 +139,11 @@ export default {
     },
     /** 鼠标进入分享组件效果 */
     onMouseEnterHandle(index) {
-      this.$set(this.loading,index,true);
+      this.loading = this.loading.map((v, i) => (i === index ? true : v));
     },
     /** 鼠标离开分享组件效果 */
     onMouseLeaveHandle(index) {
-      this.$set(this.loading,index,false);
+      this.loading = this.loading.map((v, i) => (i === index ? false : v));
     },
     /** 获取共享信息 */
     getShardInfo(defectId) {
@@ -179,12 +188,13 @@ html.dark .share-card-loading .el-loading-mask {
     display: inline-flex;
     flex-direction: row;
   }
-  .share-list > * {
+  .share-list > span {
     position: relative;
     margin-left: 5px;
     overflow: hidden;
+    display: inline-flex;
   }
-  .share-list > *:first-child {
+  .share-list > span:first-child {
     margin-left: 0px;
   }
   .share-card-trigger {

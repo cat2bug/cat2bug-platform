@@ -3,7 +3,7 @@
     <el-row>
       <el-col :span="24" class="card-box">
         <el-card>
-          <div slot="header"><span><i class="el-icon-monitor"></i> 基本信息</span></div>
+          <template #header><div><span><legacy-icon icon="el-icon-monitor"></legacy-icon> 基本信息</span></div></template>
           <div class="el-table el-table--enable-row-hover el-table--medium">
             <table cellspacing="0" style="width: 100%">
               <tbody>
@@ -45,7 +45,7 @@
 
       <el-col :span="12" class="card-box">
         <el-card>
-          <div slot="header"><span><i class="el-icon-pie-chart"></i> 命令统计</span></div>
+          <template #header><div><span><legacy-icon icon="el-icon-pie-chart"></legacy-icon> 命令统计</span></div></template>
           <div class="el-table el-table--enable-row-hover el-table--medium">
             <div ref="commandstats" style="height: 420px" />
           </div>
@@ -54,7 +54,7 @@
 
       <el-col :span="12" class="card-box">
         <el-card>
-          <div slot="header"><span><i class="el-icon-odometer"></i> 内存信息</span></div>
+          <template #header><div><span><legacy-icon icon="el-icon-odometer"></legacy-icon> 内存信息</span></div></template>
           <div class="el-table el-table--enable-row-hover el-table--medium">
             <div ref="usedmemory" style="height: 420px" />
           </div>
@@ -66,7 +66,7 @@
 
 <script>
 import { getCache } from "@/api/monitor/cache";
-import * as echarts from '@/assets/js/echarts.min.js';
+import echarts from '@/utils/echarts.js';
 
 export default {
   name: "Cache",

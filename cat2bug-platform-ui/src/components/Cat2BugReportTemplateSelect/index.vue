@@ -12,7 +12,7 @@
           <el-link
             ref="addTemplateLink"
             class="report-template-add-link"
-            icon="el-icon-plus"
+            :icon="$legacyIcon('el-icon-plus')"
             @click="addReportTemplate">{{$t('report.add-template')}}</el-link>
         </div>
       </div>
@@ -41,24 +41,25 @@
       </div>
       <div class="template-list-pagination report-template-pagination">
         <el-pagination
-          small
+          size="small"
           layout="prev, pager, next"
-          :current-page.sync="query.pageNum"
-          :page-size.sync="query.pageSize"
+          v-model:current-page="query.pageNum"
+          v-model:page-size="query.pageSize"
           :total="total"
           @size-change="getTemplateList"
           @current-change="onTemplatePageChange">
         </el-pagination>
       </div>
-      <el-button
-        ref="triggerButton"
-        class="report-hint-create"
-        type="primary"
-        slot="reference"
-        plain
-        icon="el-icon-plus"
-        :size="size"
-      >{{$t('report.make')}}</el-button>
+      <template #reference>
+        <el-button
+          ref="triggerButton"
+          class="report-hint-create"
+          type="primary"
+          plain
+          :icon="$legacyIcon('el-icon-plus')"
+          :size="size"
+        >{{$t('report.make')}}</el-button>
+      </template>
     </el-popover>
   </div>
 </template>
@@ -79,6 +80,7 @@ import {
   syncReportTemplateCardFocus,
   focusReportTemplateCardWhenReady
 } from '@/utils/report-template-popover-kbd'
+import emptyImg from '@/assets/images/empty.png'
 
 export default {
   name: "Cat2BugReportTemplateSelect",
@@ -120,7 +122,7 @@ export default {
         if(template.templateIconUrl) {
           return process.env.VUE_APP_BASE_API + template.templateIconUrl;
         } else {
-          return require('@/assets/images/empty.png')
+          return emptyImg
         }
       }
     },

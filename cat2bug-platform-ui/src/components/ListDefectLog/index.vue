@@ -14,7 +14,7 @@
       <el-col class="list-defect-log-row" :span="24">
         <component :is="logComponentType(log)" :log="log"></component>
         <div>
-          <el-button v-if="commentPermi" icon="el-icon-chat-line-round" size="mini" type="text" @click="showCommentInputHandle(log,logIndex)">{{$i18n.t('comment')}}</el-button>
+          <el-button v-if="commentPermi" :icon="$legacyIcon('el-icon-chat-line-round')" size="mini" type="text" @click="showCommentInputHandle(log,logIndex)">{{$i18n.t('comment')}}</el-button>
           <span class="time">{{ parseTime(log.createTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
         </div>
       </el-col>
@@ -26,10 +26,10 @@
     <div v-if="pagerVisible" class="list-defect-log-pager">
       <el-pagination
         class="statistic-pagination"
-        small
+        size="small"
         layout="prev, next"
         :hide-on-single-page="true"
-        :current-page="currentPage"
+        v-model:current-page="currentPage"
         :page-size="pageSize"
         :total="total"
         @current-change="handlePageChange"

@@ -1,17 +1,17 @@
 <template>
   <el-drawer
     ref="viewReportDrawer"
-    custom-class="report-drawer-accent"
+    class="report-drawer-accent"
     size="90%"
     v-loading="loading"
     :visible.sync="visible"
     direction="rtl"
     :close-on-press-escape="false"
     :before-close="closeReportDrawer">
-    <template slot="title">
+    <template #header>
       <div class="report-edit-header">
         <div class="report-edit-title">
-          <i class="el-icon-arrow-left report-view-back" @click="cancel"></i>
+          <legacy-icon icon="el-icon-arrow-left" class="report-view-back" @click="cancel"></legacy-icon>
           <report-type-flag :report="report" />
           <focus-member-list
             v-model="report.focusList"
@@ -29,7 +29,7 @@
             data-report-tool="export"
             @command="handleExport">
             <el-button size="mini" plain>
-              <i class="el-icon-download"></i>
+              <legacy-icon icon="el-icon-download"></legacy-icon>
             </el-button>
             <el-dropdown-menu slot="dropdown">
               <el-dropdown-item command="word"><svg-icon icon-class="docx" />Word 导出</el-dropdown-item>
@@ -47,6 +47,7 @@
 
 <script>
 import MarkdownItVue from "markdown-it-vue"
+import multimdTable from 'markdown-it-multimd-table'
 import 'markdown-it-vue/dist/markdown-it-vue.css'
 import FileSaver from "file-saver";
 import htmlDocx from "html-docx-js/dist/html-docx";
@@ -294,7 +295,7 @@ export default {
     /** 初始化markdown插件 */
     initMarkdownPlug(reportId) {
       // 可以合并行列的表格
-      this.$refs.markdownView.use(require('markdown-it-multimd-table'), {
+      this.$refs.markdownView.use(multimdTable, {
         multiline:  true,
         rowspan:    true,
         headerless: true,
@@ -366,15 +367,12 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
-  ::v-deep .el-drawer.report-drawer-accent {
-    border-left: 3px solid #ffbe00;
-  }
   ::v-deep .el-drawer.report-drawer-accent .el-drawer__header {
     margin-bottom: 0px;
     max-width: calc(100vw);
     background-color: #303133;
     color: #ffffff;
-    padding: 12px 20px;
+    padding: var(--cat2bug-drawer-header-padding-y) var(--cat2bug-drawer-header-padding-x) !important;
   }
   .report-edit-header {
     width: 100%;
@@ -384,7 +382,7 @@ export default {
     flex-direction: row;
     flex-wrap: wrap;
     .report-edit-tools {
-      padding: 5px 0px;
+      padding: 0;
       overflow: visible;
     }
     .report-edit-title {

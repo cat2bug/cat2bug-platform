@@ -6,6 +6,13 @@
 export const DATE_PICKER_OPEN_ON_FOCUS_CLASS = 'cat2bug-date-open-on-focus'
 
 import {
+  isDatePickerFocusEl as adapterIsDatePickerFocusEl,
+  isVisibleEl,
+  queryActiveDateEditors,
+  queryDatePanels,
+  resolveDatePickerComponent
+} from '@/adapters/element-plus/date-picker-adapter'
+import {
   isDatePanelNavKeyEvent,
   runDatePanelNavByKeyCode,
   resetDatePickerPanelHintModifier
@@ -22,15 +29,6 @@ function stripDay(date) {
   return d
 }
 
-function isVisibleEl(el) {
-  if (!el || !el.getBoundingClientRect) return false
-  if (el.getAttribute('aria-hidden') === 'true') return false
-  const style = window.getComputedStyle(el)
-  if (style.display === 'none' || style.visibility === 'hidden') return false
-  const rect = el.getBoundingClientRect()
-  return rect.width > 0 && rect.height > 0
-}
-
 export function isRangeDatePicker(pickerVm) {
   if (!pickerVm) return false
   if (typeof pickerVm.ranged === 'boolean') return pickerVm.ranged
@@ -40,12 +38,12 @@ export function isRangeDatePicker(pickerVm) {
 
 /** 日期面板已展开（供查询区 ←/→ 让路） */
 export function isDatePickerPanelOpen() {
-  const editors = document.querySelectorAll('.el-range-editor.is-active, .el-date-editor.is-active')
+  const editors = queryActiveDateEditors()
   for (let i = 0; i < editors.length; i++) {
-    const vm = resolveDatePickerVm(editors[i])
+    const vm = resolveDatePickerComponent(editors[i])
     if (vm && vm.pickerVisible) return true
   }
-  return Array.from(document.querySelectorAll('.el-picker-panel')).some(isVisibleEl)
+  return queryDatePanels().length > 0
 }
 
 function findDateTableVms(rootVm) {
@@ -337,27 +335,11 @@ function closeDatePickerPanel(pickerVm) {
 }
 
 export function resolveDatePickerVm(fromEl) {
-  if (!fromEl || !fromEl.closest) return null
-  const editor = fromEl.closest('.el-date-editor')
-  if (!editor) return null
-
-  const candidates = []
-  if (editor.__vue__) candidates.push(editor.__vue__)
-  let vm = fromEl.__vue__
-  while (vm) {
-    if (candidates.indexOf(vm) === -1) candidates.push(vm)
-    vm = vm.$parent
-  }
-
-  for (let i = 0; i < candidates.length; i++) {
-    const node = candidates[i]
-    if (typeof node.handleFocus === 'function' && 'pickerVisible' in node) return node
-  }
-  return null
+  return resolveDatePickerComponent(fromEl)
 }
 
 export function isDatePickerFocusEl(el) {
-  return !!(el && resolveDatePickerVm(el))
+  return adapterIsDatePickerFocusEl(el)
 }
 
 function shouldOpenPanelOnFocus(pickerVm) {

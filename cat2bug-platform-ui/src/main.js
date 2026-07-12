@@ -1,63 +1,52 @@
-import Vue from 'vue'
-
+import { createApp } from 'vue'
 import Cookies from 'js-cookie'
+import { createHead } from '@unhead/vue'
 
-import Element from 'element-ui'
 import '@fontsource/dseg7-classic/latin-400.css'
-import './assets/styles/element-variables.scss'
-import '@/assets/styles/index.scss' // global css
-import '@/assets/styles/ruoyi.scss' // ruoyi css
-// 不使用 default-passive-events：其全局劫持 addEventListener 可能影响依赖 passive 检测的组件。
+import '@/assets/styles/element-plus-variables.scss'
+import 'element-plus/theme-chalk/src/index.scss'
+import '@/assets/styles/index.scss'
+import '@/assets/styles/ruoyi.scss'
 import '@/assets/styles/cat2bug.scss'
 import '@/assets/styles/column-picker-popover.scss'
 import '@/assets/styles/el-table-scrollbar.scss'
+import '@/assets/styles/el-table-fixed-column.scss'
 import '@/assets/styles/project-list-page.scss'
 import '@/assets/styles/page-kbd-hints.scss'
-import App from './App'
+
+import App from './App.vue'
 import store from './store'
+import { pinia } from './store/pinia.js'
 import router from './router'
-import directive from './directive' // directive
-import plugins from './plugins' // plugins
+import directive from './directive'
+import plugins from './plugins'
 import { download } from '@/utils/request'
 
-import './assets/icons' // icon
-import './permission' // permission control
+import './assets/icons'
+import './permission'
 import { getDicts } from '@/api/system/dict/data'
 import { getConfigKey } from '@/api/system/config'
-import { parseTime, resetForm, addDateRange, selectDictLabel, selectDictLabels, handleTree } from '@/utils/ruoyi'
-// 分页组件
+import {
+  parseTime, resetForm, addDateRange, selectDictLabel, selectDictLabels, handleTree
+} from '@/utils/ruoyi'
+
 import Pagination from '@/components/Pagination'
-// 自定义表格工具组件
 import RightToolbar from '@/components/RightToolbar'
-// 富文本组件
 import Editor from '@/components/Editor'
-// 文件上传组件
 import FileUpload from '@/components/FileUpload'
-// 图片上传组件
 import ImageUpload from '@/components/ImageUpload'
-// 图片预览组件
 import ImagePreview from '@/components/ImagePreview'
-// 带默认占位图的图片组件
 import Cat2BugImage from '@/components/Cat2BugImage'
 import { Cat2BugImageErrorSlot } from '@/utils/upload-asset'
-// 字典标签组件
 import DictTag from '@/components/DictTag'
-// 站点版权
 import SiteCopyright from '@/components/SiteCopyright'
-// 头部标签组件
-import VueMeta from 'vue-meta'
-
-// 字典数据组件
 import DictData from '@/components/DictData'
+import SvgIcon from '@/components/SvgIcon'
+import LegacyIcon from '@/components/LegacyIcon'
+import CommandPalette from '@/components/Shortcut/CommandPalette.vue'
 
 import i18n from './utils/i18n/i18n.js'
 
-import websocket from 'vue-native-websocket'
-
-import VueHotkey from 'v-hotkey'
-import VueExcelEditor from 'vue-excel-editor'
-
-// 键盘快捷键引擎
 import ShortcutPlugin from '@/plugins/shortcut'
 import TabDirectionPlugin from '@/plugins/tab-direction'
 import SwitchKeyboardPlugin from '@/plugins/switch-keyboard'
@@ -68,72 +57,23 @@ import DropdownKbdPlugin from '@/plugins/dropdown-kbd'
 import DatePickerEscapePlugin from '@/plugins/date-picker-escape'
 import DatePickerKbdPlugin from '@/plugins/date-picker-kbd'
 import DefectDrawerShortcutsPlugin from '@/plugins/defect-drawer-shortcuts'
-import CommandPalette from '@/components/Shortcut/CommandPalette.vue'
+import WebSocketPlugin from '@/plugins/websocket'
+import VueExcelEditor from 'vue-excel-editor'
+import { ElMessage, ElMessageBox, ElNotification } from 'element-plus'
+import { resolveLegacyIcon } from '@/utils/element-icon'
+import { bootstrapAuthenticatedRoutes } from '@/router/bootstrap'
 
-// 全局方法挂载
-Vue.prototype.getDicts = getDicts
-Vue.prototype.getConfigKey = getConfigKey
-Vue.prototype.parseTime = parseTime
-Vue.prototype.resetForm = resetForm
-Vue.prototype.addDateRange = addDateRange
-Vue.prototype.selectDictLabel = selectDictLabel
-Vue.prototype.selectDictLabels = selectDictLabels
-Vue.prototype.download = download
-Vue.prototype.handleTree = handleTree
+const head = createHead()
+const app = createApp(App)
 
-// 全局组件挂载
-Vue.component('DictTag', DictTag)
-Vue.component('SiteCopyright', SiteCopyright)
-Vue.component('Pagination', Pagination)
-Vue.component('RightToolbar', RightToolbar)
-Vue.component('Editor', Editor)
-Vue.component('FileUpload', FileUpload)
-Vue.component('ImageUpload', ImageUpload)
-Vue.component('ImagePreview', ImagePreview)
-Vue.component('Cat2BugImage', Cat2BugImage)
-Vue.component('Cat2BugImageErrorSlot', Cat2BugImageErrorSlot)
+// vue-treeselect / vue-excel-editor 等 Vue2 库使用 this.$set；须与 Vue.set 一致并返回 value
+app.config.globalProperties.$set = (target, key, value) => {
+  if (target == null) return value
+  target[key] = value
+  return value
+}
 
-Vue.use(directive)
-Vue.use(plugins)
-Vue.use(VueMeta)
-Vue.use(VueHotkey)
-Vue.use(VueExcelEditor)
-Vue.use(ShortcutPlugin)
-Vue.use(TabDirectionPlugin)
-Vue.use(SwitchKeyboardPlugin)
-Vue.use(UploadFocusTabPlugin)
-Vue.use(ComboFocusTabPlugin)
-Vue.use(DropdownBlurClosePlugin)
-Vue.component('CommandPalette', CommandPalette)
-DictData.install()
-
-/**
- * If you don't want to use mock-server
- * you want to use MockJs for mock api
- * you can execute: mockXHR()
- *
- * Currently MockJs will be used in the production environment,
- * please remove it before going online! ! !
- */
-
-Vue.use(Element, {
-  size: Cookies.get('size') || 'medium' // set element-ui default size
-})
-Vue.use(DropdownKbdPlugin)
-Vue.use(DatePickerEscapePlugin)
-Vue.use(DatePickerKbdPlugin)
-Vue.use(DefectDrawerShortcutsPlugin)
-
-const userId = store.state.user.id
-const wsUrl = (window.location.protocol === 'https:' ? `wss://${location.host}${process.env.VUE_APP_BASE_WEBSOCKET}` : `ws://${location.host}${process.env.VUE_APP_BASE_WEBSOCKET}`)
-Vue.use(websocket, wsUrl, {
-  reconnection: true,
-  reconnectionAttempts: 5,
-  reconnectionDelay: 3000,
-  connectManually: true
-})
-
-Vue.config.productionTip = false
+app.use(pinia)
 
 function finishPageLoadBar() {
   const bar = document.getElementById('page-load-bar')
@@ -142,13 +82,71 @@ function finishPageLoadBar() {
   window.setTimeout(() => bar.remove(), 400)
 }
 
-new Vue({
-  el: '#app',
-  i18n,
-  router,
-  store,
-  mounted() {
-    finishPageLoadBar()
-  },
-  render: h => h(App)
-})
+async function mountApp() {
+  try {
+    await bootstrapAuthenticatedRoutes()
+  } catch (_err) {
+    // 登录失效等由 permission 守卫处理
+  }
+
+  // app.use(router) 会立即同步当前 hash，须在动态路由注入之后执行
+  app.use(router)
+  app.use(i18n)
+  app.use(head)
+  app.use(directive)
+  app.use(plugins)
+  app.use(ShortcutPlugin)
+  app.use(TabDirectionPlugin)
+  app.use(SwitchKeyboardPlugin)
+  app.use(UploadFocusTabPlugin)
+  app.use(ComboFocusTabPlugin)
+  app.use(DropdownBlurClosePlugin)
+  app.use(DropdownKbdPlugin)
+  app.use(DatePickerEscapePlugin)
+  app.use(DatePickerKbdPlugin)
+  app.use(DefectDrawerShortcutsPlugin)
+  app.use(WebSocketPlugin, {
+    reconnection: true,
+    reconnectionAttempts: 5,
+    reconnectionDelay: 3000,
+    connectManually: true
+  })
+  app.use(VueExcelEditor)
+
+  DictData.install(app)
+
+  app.component('SvgIcon', SvgIcon)
+  app.component('LegacyIcon', LegacyIcon)
+  app.component('DictTag', DictTag)
+  app.component('SiteCopyright', SiteCopyright)
+  app.component('Pagination', Pagination)
+  app.component('RightToolbar', RightToolbar)
+  app.component('Editor', Editor)
+  app.component('FileUpload', FileUpload)
+  app.component('ImageUpload', ImageUpload)
+  app.component('ImagePreview', ImagePreview)
+  app.component('Cat2BugImage', Cat2BugImage)
+  app.component('Cat2BugImageErrorSlot', Cat2BugImageErrorSlot)
+  app.component('CommandPalette', CommandPalette)
+
+  app.config.globalProperties.getDicts = getDicts
+  app.config.globalProperties.getConfigKey = getConfigKey
+  app.config.globalProperties.parseTime = parseTime
+  app.config.globalProperties.resetForm = resetForm
+  app.config.globalProperties.addDateRange = addDateRange
+  app.config.globalProperties.selectDictLabel = selectDictLabel
+  app.config.globalProperties.selectDictLabels = selectDictLabels
+  app.config.globalProperties.download = download
+  app.config.globalProperties.handleTree = handleTree
+  app.config.globalProperties.$store = store
+  app.config.globalProperties.$confirm = ElMessageBox.confirm
+  app.config.globalProperties.$notify = ElNotification
+  app.config.globalProperties.$message = ElMessage
+  app.config.globalProperties.$legacyIcon = resolveLegacyIcon
+  app.provide('elSize', Cookies.get('size') || 'medium')
+
+  app.mount('#app')
+  finishPageLoadBar()
+}
+
+mountApp()

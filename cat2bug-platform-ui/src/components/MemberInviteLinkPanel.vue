@@ -28,7 +28,7 @@
         >
           <el-button
             slot="append"
-            icon="el-icon-document-copy"
+            :icon="$legacyIcon('el-icon-document-copy')"
             :disabled="!generatedUrl || generating"
             v-clipboard:copy="generatedUrl"
             v-clipboard:success="onCopySuccess"

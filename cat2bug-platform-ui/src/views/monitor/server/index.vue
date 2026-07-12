@@ -3,7 +3,7 @@
     <el-row>
       <el-col :span="12" class="card-box">
         <el-card>
-          <div slot="header"><span><i class="el-icon-cpu"></i> CPU</span></div>
+          <template #header><div><span><legacy-icon icon="el-icon-cpu"></legacy-icon> CPU</span></div></template>
           <div class="el-table el-table--enable-row-hover el-table--medium">
             <table cellspacing="0" style="width: 100%;">
               <thead>
@@ -37,7 +37,7 @@
 
       <el-col :span="12" class="card-box">
         <el-card>
-          <div slot="header"><span><i class="el-icon-tickets"></i> 内存</span></div>
+          <template #header><div><span><legacy-icon icon="el-icon-tickets"></legacy-icon> 内存</span></div></template>
           <div class="el-table el-table--enable-row-hover el-table--medium">
             <table cellspacing="0" style="width: 100%;">
               <thead>
@@ -76,9 +76,9 @@
 
       <el-col :span="24" class="card-box">
         <el-card>
-          <div slot="header">
-            <span><i class="el-icon-monitor"></i> 服务器信息</span>
-          </div>
+          <template #header><div>
+            <span><legacy-icon icon="el-icon-monitor"></legacy-icon> 服务器信息</span>
+          </div></template>
           <div class="el-table el-table--enable-row-hover el-table--medium">
             <table cellspacing="0" style="width: 100%;">
               <tbody>
@@ -102,9 +102,9 @@
 
       <el-col :span="24" class="card-box">
         <el-card>
-          <div slot="header">
-            <span><i class="el-icon-coffee-cup"></i> Java虚拟机信息</span>
-          </div>
+          <template #header><div>
+            <span><legacy-icon icon="el-icon-coffee-cup"></legacy-icon> Java虚拟机信息</span>
+          </div></template>
           <div class="el-table el-table--enable-row-hover el-table--medium">
             <table cellspacing="0" style="width: 100%;table-layout:fixed;">
               <tbody>
@@ -140,9 +140,9 @@
 
       <el-col :span="24" class="card-box">
         <el-card>
-          <div slot="header">
-            <span><i class="el-icon-receiving"></i> 磁盘状态</span>
-          </div>
+          <template #header><div>
+            <span><legacy-icon icon="el-icon-receiving"></legacy-icon> 磁盘状态</span>
+          </div></template>
           <div class="el-table el-table--enable-row-hover el-table--medium">
             <table cellspacing="0" style="width: 100%;">
               <thead>

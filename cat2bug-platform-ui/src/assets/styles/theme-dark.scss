@@ -1,5 +1,8 @@
 // Theme Variables and Dark Mode Adaptations
 
+// EP3：无 type 修饰符时仅有 .el-button（无 --default）；原生 type="button" 使 :not([type]) 无效
+$cat2bug-ep-default-button: ':not(.el-button--primary):not(.el-button--success):not(.el-button--warning):not(.el-button--danger):not(.el-button--info):not(.is-text):not(.is-link)';
+
 :root {
   // Light Mode (Default)
   --bg-color-base: #ffffff;
@@ -39,7 +42,7 @@
 
   --progress-track-bg: #ebeef5;
   --progress-track-border: transparent;
-  --progress-fill-color: #FFC107;
+  --progress-fill-color: #409eff;
   --progress-fill-success: #67c23a;
   --progress-fill-warning: #e6a23c;
   --progress-fill-exception: #f56c6c;
@@ -53,6 +56,8 @@
   --cat2bug-toolbar-item-gap: 10px;
   --cat2bug-toolbar-row-gap: 8px;
   --cat2bug-toolbar-section-gap: 10px;
+  /* 下拉箭头距控件右缘留白（el-select / split-button / 自定义组合下拉） */
+  --cat2bug-dropdown-caret-inset: 8px;
   --cat2bug-toolbar-control-height: 32px;
   --cat2bug-toolbar-control-line-height: 30px;
 
@@ -60,15 +65,15 @@
   --cat2bug-operate-tools-gap: 10px;
   --cat2bug-operate-tools-row-gap: 0;
 
-  /* 表格操作列：text 按钮语义色（DefectTools 指派/驳回/通过/关闭等） */
+  /* 表格操作列：text/link 按钮语义色（浅色主题 hover 统一蓝色，见 UI-DESIGN-SPEC §3.4c） */
   --cat2bug-operate-text-muted: #606266;
-  --cat2bug-operate-text-muted-hover: #FFC107;
+  --cat2bug-operate-text-muted-hover: #409eff;
   --cat2bug-operate-text-danger: #f56c6c;
   --cat2bug-operate-text-danger-hover: #f78989;
   --cat2bug-operate-text-success: #67c23a;
   --cat2bug-operate-text-success-hover: #85ce61;
   --cat2bug-operate-text-warning: #ffba00;
-  --cat2bug-operate-text-warning-hover: #ffc933;
+  --cat2bug-operate-text-warning-hover: #409eff;
 
   /* 收藏星标 StarSwitch：未选中 / 已选中 */
   --star-switch-off-stroke: #c0c4cc;
@@ -82,7 +87,7 @@
   --share-card-bg: #f4f4f4;
   --share-card-surface-bg: #ffffff;
   --share-card-title-bg: #f4f4f4;
-  --share-card-link-color: #FFB300;
+  --share-card-link-color: #409eff;
 
   /* 缺陷状态标签 DefectStateFlag */
   --defect-state-processing-bg: #e04e4e;
@@ -106,9 +111,30 @@
 
   --sidebar-expand-trigger-hover-bg: rgba(255, 193, 7, 0.1);
 
-  --sidebar-bg: #304156;
-  --sidebar-text: #bfcbd9;
-  --sidebar-active-text: #FFC107;
+  /* 侧栏：浅色主题（随 themeMode=light） */
+  --sidebar-bg: #ffffff;
+  --sidebar-text: rgba(0, 0, 0, 0.7);
+  --sidebar-active-text: #409eff;
+  --sidebar-divider-color: #ebeef5;
+  --divider-color: #dcdfe6;
+  --split-button-divider-color: var(--divider-color, #dcdfe6);
+  --split-button-divider-on-solid: rgba(255, 255, 255, 0.45);
+  --sidebar-tile-bg: #f5f7fa;
+  --sidebar-item-hover-bg: rgba(0, 0, 0, 0.04);
+  --sidebar-item-active-bg: rgba(64, 158, 255, 0.12);
+  --sidebar-width-collapsed: 54px;
+  --sidebar-item-size-collapsed: 40px;
+  /* 侧栏右缘投影：与 Vue2 sidebar.scss 一致，分隔侧栏与主内容区 */
+  --sidebar-shadow: 2px 0 6px rgba(0, 21, 41, 0.35);
+
+  /* 团队选择器（浅色） */
+  --team-select-popper-bg: #ffffff;
+  --team-select-popper-border: #e4e7ed;
+  --team-select-popper-hover: #f5f7fa;
+  --team-select-popper-text: #303133;
+  --team-select-avatar-bg: #e4e7ed;
+  --team-select-avatar-text: rgba(0, 0, 0, 0.65);
+  --team-select-avatar-border: #dcdfe6;
 
   /* 项目/团队设置卡片标题图标 */
   --cat2bug-option-card-icon-color: #409EFF;
@@ -129,6 +155,12 @@
   --cat2bug-field-focus-glow-bright: rgba(24, 144, 255, 0.7);
   --cat2bug-field-focus-ring-fade: rgba(24, 144, 255, 0.35);
   --cat2bug-field-focus-ring-none: rgba(24, 144, 255, 0);
+
+  /* Element Plus 按钮 hover（浅色：白+蓝，禁止金色 hover） */
+  --el-button-hover-text-color: #409eff;
+  --el-button-hover-border-color: #c6e2ff;
+  --el-button-hover-bg-color: #ecf5ff;
+  --el-button-hover-link-text-color: #409eff;
 }
 
 html.dark {
@@ -193,6 +225,23 @@ html.dark {
   --input-bg: #1e1e20;
   --input-border: #4c4d4f;
   --input-color: #e5eaf3;
+
+  /* Element Plus：wrapper 背景读 --el-fill-color-blank / --el-input-bg-color */
+  --el-fill-color-blank: var(--input-bg);
+  --el-input-bg-color: var(--input-bg);
+  --el-input-border-color: var(--input-border);
+  --el-input-text-color: var(--input-color);
+  --el-text-color-placeholder: var(--text-color-placeholder);
+  --el-border-color: var(--border-color-base);
+  --el-border-color-hover: var(--input-border);
+  --el-bg-color-overlay: var(--dropdown-bg);
+  --el-border-color-light: var(--border-color-light);
+  --el-fill-color-light: var(--table-row-hover-bg);
+  --el-color-primary-light-9: rgba(255, 193, 7, 0.12);
+  --el-color-primary: var(--cat2bug-primary, #FFC107);
+  --el-button-hover-bg-color: rgba(255, 193, 7, 0.12);
+  --el-button-hover-border-color: #FFC107;
+  --el-button-hover-text-color: #FFC107;
   
   --table-header-bg: #252529;
   --table-header-color: #c0c4cc;
@@ -223,6 +272,23 @@ html.dark {
   --sidebar-bg: #1e1e20;
   --sidebar-text: #a8abb2;
   --sidebar-active-text: #FFC107;
+  --sidebar-divider-color: #363637;
+  --divider-color: #363637;
+  --split-button-divider-color: var(--divider-color, #363637);
+  --split-button-divider-on-solid: rgba(0, 0, 0, 0.35);
+  --sidebar-tile-bg: #252529;
+  --sidebar-item-hover-bg: rgba(255, 255, 255, 0.06);
+  --sidebar-item-active-bg: rgba(255, 193, 7, 0.14);
+  /* 深色主题侧栏投影：与 Vue2 sidebar.scss 一致；侧栏底色与内容区相同，靠右缘阴影分层 */
+  --sidebar-shadow: 2px 0 6px rgba(0, 21, 41, 0.35), 4px 0 16px rgba(0, 0, 0, 0.28);
+
+  --team-select-popper-bg: #252529;
+  --team-select-popper-border: #363637;
+  --team-select-popper-hover: #2d2d31;
+  --team-select-popper-text: #e5eaf3;
+  --team-select-avatar-bg: #2a2a2c;
+  --team-select-avatar-text: #e5eaf3;
+  --team-select-avatar-border: #363637;
 
   --cat2bug-option-card-icon-color: #FFC107;
 
@@ -242,6 +308,7 @@ html.dark {
   --cat2bug-field-focus-glow-bright: rgba(255, 206, 58, 0.7);
   --cat2bug-field-focus-ring-fade: rgba(255, 206, 58, 0.35);
   --cat2bug-field-focus-ring-none: rgba(255, 206, 58, 0);
+  --cat2bug-textarea-tools-hover-bg: rgba(255, 193, 7, 0.12);
 
   /* 未收藏：空心星描边，无实心灰底 */
   --star-switch-off-stroke: var(--text-color-secondary, #909399);
@@ -263,6 +330,8 @@ html.dark {
   --cat2bug-delete-color-hover: rgb(255, 120, 126);
   --cat2bug-operate-text-danger: var(--cat2bug-delete-color);
   --cat2bug-operate-text-danger-hover: var(--cat2bug-delete-color-hover);
+  --el-color-danger: rgb(251, 83, 91);
+  --el-color-danger-light-3: rgb(255, 120, 126);
   --cat2bug-operate-text-success: #85ce61;
   --cat2bug-operate-text-success-hover: #a4da89;
   --cat2bug-operate-text-warning: #eebe77;
@@ -367,7 +436,8 @@ html.dark {
   // Sidebar Overrides
   .sidebar-container {
     background-color: var(--sidebar-bg) !important;
-    box-shadow: 2px 0 6px rgba(0, 0, 0, 0.5) !important;
+    -webkit-box-shadow: var(--sidebar-shadow, 2px 0 6px rgba(0, 21, 41, 0.35), 4px 0 16px rgba(0, 0, 0, 0.28)) !important;
+    box-shadow: var(--sidebar-shadow, 2px 0 6px rgba(0, 21, 41, 0.35), 4px 0 16px rgba(0, 0, 0, 0.28)) !important;
 
     .sidebar-logo-container {
       background-color: var(--sidebar-bg) !important;
@@ -382,36 +452,50 @@ html.dark {
       background-color: var(--sidebar-bg) !important;
     }
 
-    .el-menu-item, .el-submenu__title {
+    .el-menu-item, .el-submenu__title, .el-sub-menu__title {
       color: var(--sidebar-text) !important;
       background-color: transparent !important;
 
-      i {
+      i,
+      .svg-icon {
         color: var(--sidebar-text) !important;
+        fill: currentColor;
       }
 
       &:hover,
       &:focus {
         color: var(--sidebar-active-text) !important;
 
-        i {
+        i,
+        .svg-icon {
           color: var(--sidebar-active-text) !important;
+          fill: currentColor;
         }
       }
     }
 
-    .el-menu-item.is-active, .el-submenu .el-menu-item.is-active {
+    .el-menu-item.is-active,
+    .el-submenu .el-menu-item.is-active,
+    .el-sub-menu .el-menu-item.is-active {
       color: var(--sidebar-active-text) !important;
       background-color: transparent !important;
 
-      i {
+      i,
+      .svg-icon {
         color: var(--sidebar-active-text) !important;
+        fill: currentColor;
       }
     }
 
-    .el-submenu.is-active > .el-submenu__title {
+    .el-submenu.is-active > .el-submenu__title,
+    .el-sub-menu.is-active > .el-sub-menu__title {
       color: var(--sidebar-active-text) !important;
       background-color: transparent !important;
+
+      .svg-icon {
+        color: var(--sidebar-active-text) !important;
+        fill: currentColor;
+      }
     }
   }
 
@@ -593,20 +677,12 @@ html.dark {
     .el-drawer__header {
       color: var(--text-color-primary) !important;
       border-bottom: 1px solid var(--border-color-light) !important;
-      margin-bottom: 0;
-      padding: 15px 20px;
+      margin-bottom: 0 !important;
+      padding: var(--cat2bug-drawer-header-padding-y) var(--cat2bug-drawer-header-padding-x) !important;
     }
   }
 
-  /* 缺陷新建/处理抽屉：与浅色主题一致的左侧红色标识边 */
-  .el-drawer.defect-drawer-accent {
-    border-left: 3px solid #ff4949 !important;
-  }
-
-  /* 报告查看抽屉：与浅色主题一致的左侧黄色标识边 */
-  .el-drawer.report-drawer-accent {
-    border-left: 3px solid #ffbe00 !important;
-  }
+  // 业务抽屉左侧标识边：见 cat2bug.scss 全局 `--cat2bug-drawer-accent-*`（浅色/深色同色）
 
   // 列表表格：无外框，保留行间分割线（与浅色主题 el-table 默认一致）
   .el-table:not(.el-table--border) {
@@ -620,6 +696,11 @@ html.dark {
 
     &::before, &::after {
       background-color: transparent !important;
+    }
+
+    /* Element Plus 表底横线：与行间分割线同色（勿保留 EP 默认浅灰 #ebeef5） */
+    .el-table__inner-wrapper::before {
+      background-color: var(--table-border-color) !important;
     }
 
     .el-table__fixed::before,
@@ -678,7 +759,7 @@ html.dark {
     th.el-table__cell {
       background-color: var(--table-header-bg) !important;
       color: var(--table-header-color) !important;
-      border-bottom: 1px solid var(--border-color-light) !important;
+      border-bottom: 1px solid var(--table-border-color) !important;
     }
 
     thead tr {
@@ -686,7 +767,7 @@ html.dark {
     }
 
     td.el-table__cell {
-      border-bottom: 1px solid var(--border-color-light) !important;
+      border-bottom: 1px solid var(--table-border-color) !important;
       background-color: var(--cat2bug-table-row-bg) !important;
     }
 
@@ -828,6 +909,70 @@ html.dark {
     }
   }
 
+  // Element Plus：可见输入框/下拉框外框（wrapper 承载背景，inner 仅作文字层）
+  .el-input__wrapper {
+    background-color: var(--input-bg) !important;
+    box-shadow: 0 0 0 1px var(--input-border) inset !important;
+
+    &:hover {
+      box-shadow: 0 0 0 1px var(--input-border) inset !important;
+    }
+
+    &.is-focus {
+      box-shadow: 0 0 0 1px #FFC107 inset !important;
+    }
+  }
+
+  .el-select__wrapper {
+    background-color: var(--input-bg) !important;
+    box-shadow: 0 0 0 1px var(--input-border) inset !important;
+
+    &.is-focused,
+    &.is-hovering:not(.is-disabled) {
+      box-shadow: 0 0 0 1px var(--input-border) inset !important;
+    }
+
+    &.is-focused {
+      box-shadow: 0 0 0 1px #FFC107 inset !important;
+    }
+  }
+
+  .el-select__placeholder,
+  .el-select__selected-item {
+    color: var(--input-color) !important;
+  }
+
+  .el-select__caret {
+    color: var(--cat2bug-input-icon-color, #c0c4cc) !important;
+  }
+
+  .el-select__prefix,
+  .el-select__suffix {
+    color: var(--cat2bug-input-icon-color, #c0c4cc) !important;
+  }
+
+  .el-select__prefix .select-header-icon,
+  .el-select__prefix .el-icon,
+  .el-select__suffix .el-icon {
+    color: inherit !important;
+  }
+
+  // 工具栏多选 select（缺陷状态等）已选 tag：深色底 + 灰边，禁止 EP 浅灰白 tag
+  .el-select .el-select__selection .el-tag {
+    background-color: var(--bg-color-block, #252529) !important;
+    border: 1px solid var(--border-color-light) !important;
+    color: var(--text-color-primary) !important;
+
+    .el-tag__close {
+      color: var(--text-color-secondary) !important;
+
+      &:hover {
+        background-color: var(--cat2bug-delete-color, #f56c6c) !important;
+        color: #ffffff !important;
+      }
+    }
+  }
+
   // 禁用/只读：与可编辑输入区分（背景更暗、文字次要色、不可点击光标）
   .el-input.is-disabled .el-input__inner,
   .el-textarea.is-disabled .el-textarea__inner {
@@ -835,6 +980,13 @@ html.dark {
     border-color: var(--border-color-base) !important;
     color: var(--text-color-secondary) !important;
     -webkit-text-fill-color: var(--text-color-secondary) !important;
+    cursor: not-allowed !important;
+  }
+
+  .el-input.is-disabled .el-input__wrapper,
+  .el-select__wrapper.is-disabled {
+    background-color: var(--bg-color-block, #2b2b2c) !important;
+    box-shadow: 0 0 0 1px var(--border-color-base) inset !important;
     cursor: not-allowed !important;
   }
 
@@ -1064,6 +1216,8 @@ html.dark {
 
     .el-upload__text {
       color: var(--text-color-regular) !important;
+
+      em,
       span {
         color: #FFC107 !important;
       }
@@ -1103,7 +1257,7 @@ html.dark {
     background-color: var(--dropdown-bg) !important;
     border-color: var(--border-color-light) !important;
 
-    // 适配下拉菜单的小三角 (popper arrow)
+    // Vue2 popper 三角（兼容）
     &[x-placement^="bottom"] {
       .popper__arrow {
         border-bottom-color: var(--border-color-light) !important;
@@ -1124,7 +1278,9 @@ html.dark {
     .el-dropdown-menu__item {
       color: var(--text-color-regular) !important;
 
-      &:not(.is-disabled):hover, &:focus {
+      &:not(.is-disabled):hover,
+      &:not(.is-disabled):focus,
+      &.is-hovering:not(.is-disabled) {
         background-color: var(--table-row-hover-bg) !important;
         color: #FFC107 !important;
       }
@@ -1136,6 +1292,59 @@ html.dark {
       &::before {
         background-color: var(--dropdown-bg) !important;
       }
+    }
+  }
+
+  // Element Plus 深色 Popper：is-light 浮层（el-select / el-dropdown 等）禁止白底白边白三角
+  .el-popper.is-light {
+    &.el-select__popper,
+    &.el-dropdown__popper,
+    &.el-autocomplete__popper,
+    &.el-cascader__popper,
+    &.el-picker__popper {
+      background: var(--dropdown-bg) !important;
+      border: 1px solid var(--border-color-light) !important;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45) !important;
+      color: var(--text-color-regular) !important;
+    }
+
+    > .el-popper__arrow::before {
+      background: var(--dropdown-bg) !important;
+      border: 1px solid var(--border-color-light) !important;
+    }
+  }
+
+  .el-popper.is-light[data-popper-placement^='bottom'] > .el-popper__arrow::before {
+    border-bottom-color: transparent !important;
+    border-right-color: transparent !important;
+  }
+
+  .el-popper.is-light[data-popper-placement^='top'] > .el-popper__arrow::before {
+    border-top-color: transparent !important;
+    border-left-color: transparent !important;
+  }
+
+  .el-popper.is-light[data-popper-placement^='left'] > .el-popper__arrow::before {
+    border-left-color: transparent !important;
+    border-bottom-color: transparent !important;
+  }
+
+  .el-popper.is-light[data-popper-placement^='right'] > .el-popper__arrow::before {
+    border-right-color: transparent !important;
+    border-top-color: transparent !important;
+  }
+
+  // split-button 下拉三角钮：EP 默认 hover 浅蓝，深色须与工具栏输入一致
+  .el-button.el-dropdown__caret-button:not(.el-button--primary):not(.el-button--success):not(.el-button--warning):not(.el-button--danger) {
+    background-color: var(--input-bg) !important;
+    border-color: var(--border-color-base) !important;
+    color: var(--cat2bug-input-icon-color, #c0c4cc) !important;
+
+    &:hover:not(.is-disabled),
+    &:focus:not(.is-disabled) {
+      background-color: rgba(255, 193, 7, 0.12) !important;
+      border-color: #FFC107 !important;
+      color: #FFC107 !important;
     }
   }
 
@@ -1151,8 +1360,17 @@ html.dark {
   }
 
   // Other common Element UI components for dark mode completeness
+  // Element Plus 横线用 border-top，Vue2/Element UI 用 background-color，需同时适配
   .el-divider {
-    background-color: var(--border-color-light) !important;
+    --el-border-color: var(--divider-color, var(--border-color-light));
+  }
+
+  .el-divider--horizontal {
+    border-top-color: var(--divider-color, var(--border-color-light)) !important;
+  }
+
+  .el-divider--vertical {
+    border-left-color: var(--divider-color, var(--border-color-light)) !important;
   }
 
   .el-select-dropdown {
@@ -1190,11 +1408,14 @@ html.dark {
     .el-select-dropdown__item {
       color: var(--text-color-regular) !important;
 
-      &.hover, &:hover {
+      &.is-hovering,
+      &.hover,
+      &:hover {
         background-color: var(--table-row-hover-bg) !important;
       }
 
-      &.selected {
+      &.selected,
+      &.is-selected {
         color: #FFC107 !important;
         font-weight: bold;
       }
@@ -1204,14 +1425,20 @@ html.dark {
       }
     }
 
-    // 多选下拉：覆盖 Element UI 默认 #F5F7FA 选中白底
+    // 多选下拉（缺陷状态等）：EP 2 使用 .is-selected；禁止浅灰选中底
     &.is-multiple {
       .el-select-dropdown__item {
-        &.selected {
+        &.selected,
+        &.is-selected {
+          color: #FFC107 !important;
+          font-weight: bold;
           background-color: rgba(255, 193, 7, 0.12) !important;
 
-          &.hover, &:hover {
+          &.is-hovering,
+          &.hover,
+          &:hover {
             background-color: var(--table-row-hover-bg) !important;
+            color: #FFC107 !important;
           }
         }
       }
@@ -1445,9 +1672,9 @@ html.dark {
 
   .dict-status-tag.el-tag--danger,
   .dict-status-tag.dict-status-not_pass {
-    background-color: rgba(245, 108, 108, 0.14) !important;
-    border-color: rgba(245, 108, 108, 0.4) !important;
-    color: #f89898 !important;
+    background-color: rgba(251, 83, 91, 0.14) !important;
+    border-color: rgba(251, 83, 91, 0.4) !important;
+    color: var(--cat2bug-delete-color-hover) !important;
   }
 
   .dict-status-tag.el-tag--success,
@@ -1481,11 +1708,33 @@ html.dark {
       color: var(--text-color-regular) !important;
     }
 
+    .el-select .el-select__wrapper,
     .el-select .el-input .el-input__inner,
-    .el-pagination__editor.el-input .el-input__inner {
+    .el-select .el-input .el-input__wrapper {
       background-color: var(--input-bg) !important;
       border-color: var(--input-border) !important;
       color: var(--input-color) !important;
+      box-shadow: 0 0 0 1px var(--input-border) inset !important;
+    }
+
+    .el-pagination__editor.el-input {
+      .el-input__wrapper {
+        background-color: var(--input-bg) !important;
+        border: none !important;
+        box-shadow: 0 0 0 1px var(--input-border) inset !important;
+      }
+
+      .el-input__inner {
+        background-color: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        color: var(--input-color) !important;
+      }
+
+      &.is-focus .el-input__wrapper,
+      .el-input__wrapper.is-focus {
+        box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, #ffce3a) inset !important;
+      }
     }
 
     button:disabled {
@@ -1578,15 +1827,18 @@ html.dark {
     background-color: var(--border-color-light) !important;
   }
 
-  // 适配 Element UI 页面标题栏 (el-page-header) 暗黑模式
+  // 适配页面标题栏 (el-page-header) 暗黑模式（Element UI / Element Plus）
   .el-page-header {
+    border-bottom-color: var(--divider-color, var(--border-color-light)) !important;
+
     .el-page-header__content {
       color: var(--text-color-primary) !important;
     }
     .el-page-header__title {
       color: var(--text-color-regular) !important;
     }
-    .el-icon-back {
+    .el-icon-back,
+    .el-page-header__icon {
       color: var(--text-color-regular) !important;
     }
     .el-page-header__left::after {
@@ -1616,6 +1868,18 @@ html.dark {
 
     .el-message-box__content {
       color: var(--text-color-regular) !important;
+    }
+
+    .el-message-box__btns .el-button#{$cat2bug-ep-default-button} {
+      --el-button-hover-text-color: #FFC107;
+      --el-button-hover-bg-color: rgba(255, 193, 7, 0.12);
+      --el-button-hover-border-color: #FFC107;
+      --el-button-outline-color: var(--cat2bug-field-focus-color, #ffce3a);
+
+      &:focus-visible {
+        outline: 2px solid var(--cat2bug-field-focus-color, #ffce3a) !important;
+        outline-offset: 1px;
+      }
     }
   }
 
@@ -1817,13 +2081,14 @@ html.dark {
   // 2. 左下角管理菜单适配
   .sidebar-container {
     .sidebar-divider {
-      .el-divider {
-        background-color: var(--border-color-light) !important;
+      .el-divider--horizontal {
+        border-top-color: var(--sidebar-divider-color, var(--divider-color, var(--border-color-light))) !important;
       }
     }
 
     // 确保左下角固定定位区域下的 .el-menu 背景色同样为 var(--sidebar-bg)
-    div[style*="position: absolute"] {
+    div[style*="position: absolute"],
+    .sidebar-admin-panel {
       background-color: var(--sidebar-bg) !important;
 
       .el-menu {
@@ -2194,9 +2459,13 @@ html.dark {
       color: #eebe77 !important;
     }
 
-    // 默认按钮适配（如：测试连接等无type属性按钮）
-    .el-button:not([type]),
-    .el-button--default {
+    // 默认按钮适配（如：测试连接、MessageBox 取消等无 type 修饰符按钮）
+    .el-button#{$cat2bug-ep-default-button}:not(.login-btn),
+    .el-button--default:not(.login-btn) {
+      --el-button-hover-text-color: #FFC107;
+      --el-button-hover-bg-color: rgba(255, 193, 7, 0.15);
+      --el-button-hover-border-color: #FFC107;
+      --el-button-outline-color: var(--cat2bug-field-focus-color, #ffce3a);
       background-color: var(--bg-color-block) !important;
       border-color: var(--border-color-base) !important;
       color: var(--text-color-regular) !important;
@@ -2205,6 +2474,11 @@ html.dark {
         background-color: rgba(255, 193, 7, 0.15) !important;
         border-color: #FFC107 !important;
         color: #FFC107 !important;
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--cat2bug-field-focus-color, #ffce3a) !important;
+        outline-offset: 1px;
       }
 
       &:active {
@@ -2507,13 +2781,17 @@ html.dark {
 
   // 6. 全局 Element UI 按钮 (el-button) 暗黑模式深度美化
   .el-button {
-    // 默认按钮/朴素按钮
-    &:not([type]),
-    &--default,
+    // 默认按钮/朴素按钮（含 MessageBox 取消等 EP3 无 --default 修饰符的按钮）
+    &#{$cat2bug-ep-default-button}:not(.login-btn),
+    &--default:not(.login-btn),
     &--success.is-plain,
     &--warning.is-plain,
     &--danger.is-plain,
     &--info.is-plain {
+      --el-button-hover-text-color: #FFC107;
+      --el-button-hover-bg-color: rgba(255, 193, 7, 0.12);
+      --el-button-hover-border-color: #FFC107;
+      --el-button-outline-color: var(--cat2bug-field-focus-color, #ffce3a);
       background-color: var(--bg-color-block) !important;
       border-color: var(--border-color-base) !important;
       color: var(--text-color-regular) !important;
@@ -2522,6 +2800,11 @@ html.dark {
         background-color: rgba(255, 193, 7, 0.12) !important;
         border-color: #FFC107 !important;
         color: #FFC107 !important;
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--cat2bug-field-focus-color, #ffce3a) !important;
+        outline-offset: 1px;
       }
 
       &:active {
@@ -2626,8 +2909,9 @@ html.dark {
     }
   }
 
-  /* 全局的 el-button--text 默认设为黄色 */
-  .el-button--text {
+  /* 全局的 text/link 按钮默认设为黄色（EP2: --text，EP3: .is-link） */
+  .el-button--text,
+  .el-button.is-link {
     color: #FFC107 !important;
 
     &:hover,
@@ -2636,10 +2920,13 @@ html.dark {
     }
   }
 
-  /* 表格操作列 text 按钮：与 --cat2bug-operate-text-* 变量一致，覆盖 scoped 硬编码色 */
+  /* 表格操作列 text/link 按钮：与 --cat2bug-operate-text-* 变量一致，覆盖 scoped 硬编码色 */
   .el-button--text.orange,
+  .el-button.is-link.orange,
   .defect-tools .el-button--text.orange,
-  .cat2bug-operate-tools .el-button--text.orange {
+  .defect-tools .el-button.is-link.orange,
+  .cat2bug-operate-tools .el-button--text.orange,
+  .cat2bug-operate-tools .el-button.is-link.orange {
     color: var(--cat2bug-operate-text-muted) !important;
 
     &:hover,
@@ -2649,8 +2936,11 @@ html.dark {
   }
 
   .el-button--text.red,
+  .el-button.is-link.red,
   .defect-tools .el-button--text.red,
-  .cat2bug-operate-tools .el-button--text.red {
+  .defect-tools .el-button.is-link.red,
+  .cat2bug-operate-tools .el-button--text.red,
+  .cat2bug-operate-tools .el-button.is-link.red {
     color: var(--cat2bug-operate-text-danger) !important;
 
     &:hover,
@@ -2660,8 +2950,11 @@ html.dark {
   }
 
   .el-button--text.green,
+  .el-button.is-link.green,
   .defect-tools .el-button--text.green,
-  .cat2bug-operate-tools .el-button--text.green {
+  .defect-tools .el-button.is-link.green,
+  .cat2bug-operate-tools .el-button--text.green,
+  .cat2bug-operate-tools .el-button.is-link.green {
     color: var(--cat2bug-operate-text-success) !important;
 
     &:hover,
@@ -2671,8 +2964,11 @@ html.dark {
   }
 
   .el-button--text.restore-orange,
+  .el-button.is-link.restore-orange,
   .defect-tools .el-button--text.restore-orange,
-  .cat2bug-operate-tools .el-button--text.restore-orange {
+  .defect-tools .el-button.is-link.restore-orange,
+  .cat2bug-operate-tools .el-button--text.restore-orange,
+  .cat2bug-operate-tools .el-button.is-link.restore-orange {
     color: var(--cat2bug-operate-text-warning) !important;
 
     &:hover,
@@ -2681,9 +2977,11 @@ html.dark {
     }
   }
 
-  /* 查看等无语义 class 的 text 按钮（warning 类型） */
+  /* 查看等无语义 class 的 text/link 按钮（warning 类型） */
   .defect-tools .el-button--text:not(.orange):not(.red):not(.green):not(.restore-orange),
-  .cat2bug-operate-tools .el-button--text:not(.orange):not(.red):not(.green):not(.restore-orange) {
+  .defect-tools .el-button.is-link:not(.orange):not(.red):not(.green):not(.restore-orange),
+  .cat2bug-operate-tools .el-button--text:not(.orange):not(.red):not(.green):not(.restore-orange),
+  .cat2bug-operate-tools .el-button.is-link:not(.orange):not(.red):not(.green):not(.restore-orange) {
     color: #FFC107 !important;
 
     &:hover,
@@ -2692,50 +2990,60 @@ html.dark {
     }
   }
 
-  // split-button 竖向分隔线（缺陷页「全部类型」、新建 split 下拉等）
+  // split-button 竖向分隔线（缺陷页「全部类型」等 plain 下拉、工具栏筛选）
   .el-dropdown .el-dropdown__caret-button::before,
   .el-button-group > .el-dropdown__caret-button::before {
-    background: #141414 !important;
-    background-color: #141414 !important;
+    background: var(--split-button-divider-color, var(--divider-color, #363637)) !important;
+    background-color: var(--split-button-divider-color, var(--divider-color, #363637)) !important;
     opacity: 1 !important;
   }
 
   .el-dropdown .el-dropdown__caret-button:hover:not(.is-disabled)::before,
   .el-button-group > .el-dropdown__caret-button:hover:not(.is-disabled)::before {
-    background: #141414 !important;
-    background-color: #141414 !important;
+    background: var(--split-button-divider-color, var(--divider-color, #363637)) !important;
+    background-color: var(--split-button-divider-color, var(--divider-color, #363637)) !important;
   }
 
-  .defect-add-dropdown,
-  .case-add-dropdown {
-    .el-dropdown__caret-button::before {
-      background: #141414 !important;
-      background-color: #141414 !important;
-    }
+  // 实心主题色 split-button（新建缺陷金钮等）内分隔线加深
+  .el-button-group > .el-button--primary:not(.is-plain):first-child + .el-dropdown__caret-button::before,
+  .el-button-group > .el-button--success:not(.is-plain):first-child + .el-dropdown__caret-button::before,
+  .el-button-group > .el-button--warning:not(.is-plain):first-child + .el-dropdown__caret-button::before,
+  .el-button-group > .el-button--danger:not(.is-plain):first-child + .el-dropdown__caret-button::before,
+  .defect-add-dropdown .el-dropdown__caret-button::before,
+  .case-add-dropdown .el-dropdown__caret-button::before {
+    background: var(--split-button-divider-on-solid, rgba(0, 0, 0, 0.35)) !important;
+    background-color: var(--split-button-divider-on-solid, rgba(0, 0, 0, 0.35)) !important;
+  }
+
+  .el-button-group > .el-button--primary:not(.is-plain):first-child + .el-dropdown__caret-button:hover:not(.is-disabled)::before,
+  .el-button-group > .el-button--success:not(.is-plain):first-child + .el-dropdown__caret-button:hover:not(.is-disabled)::before,
+  .el-button-group > .el-button--warning:not(.is-plain):first-child + .el-dropdown__caret-button:hover:not(.is-disabled)::before,
+  .el-button-group > .el-button--danger:not(.is-plain):first-child + .el-dropdown__caret-button:hover:not(.is-disabled)::before,
+  .defect-add-dropdown .el-dropdown__caret-button:hover:not(.is-disabled)::before,
+  .case-add-dropdown .el-dropdown__caret-button:hover:not(.is-disabled)::before {
+    background: var(--split-button-divider-on-solid, rgba(0, 0, 0, 0.35)) !important;
+    background-color: var(--split-button-divider-on-solid, rgba(0, 0, 0, 0.35)) !important;
   }
 
   .el-button-group {
     > .el-button--primary:not(.is-plain):first-child,
-    > .el-button--primary.is-plain:first-child,
     > .el-button--success:not(.is-plain):first-child,
     > .el-button--warning:not(.is-plain):first-child,
     > .el-button--danger:not(.is-plain):first-child {
-      border-right-color: #141414 !important;
+      border-right-color: var(--split-button-divider-on-solid, rgba(0, 0, 0, 0.35)) !important;
     }
     > .el-button--primary:not(.is-plain):not(:first-child):not(:last-child),
-    > .el-button--primary.is-plain:not(:first-child):not(:last-child),
     > .el-button--success:not(.is-plain):not(:first-child):not(:last-child),
     > .el-button--warning:not(.is-plain):not(:first-child):not(:last-child),
     > .el-button--danger:not(.is-plain):not(:first-child):not(:last-child) {
-      border-left-color: #141414 !important;
-      border-right-color: #141414 !important;
+      border-left-color: var(--split-button-divider-on-solid, rgba(0, 0, 0, 0.35)) !important;
+      border-right-color: var(--split-button-divider-on-solid, rgba(0, 0, 0, 0.35)) !important;
     }
     > .el-button--primary:not(.is-plain):last-child,
-    > .el-button--primary.is-plain:last-child,
     > .el-button--success:not(.is-plain):last-child,
     > .el-button--warning:not(.is-plain):last-child,
     > .el-button--danger:not(.is-plain):last-child {
-      border-left-color: #141414 !important;
+      border-left-color: var(--split-button-divider-on-solid, rgba(0, 0, 0, 0.35)) !important;
     }
   }
 
@@ -2806,7 +3114,8 @@ html.dark {
   }
 
   // 8. 适配项目切换下拉菜单组件 (ProjectSelect) 暗黑模式
-  .select-project-member-input-default {
+  .project-select-trigger,
+  .select-project-member-input-default:not(.select-project-member-input) {
     background-color: transparent !important;
     border: none !important;
     color: var(--text-color-primary) !important;
@@ -2919,13 +3228,16 @@ html.dark {
   }
 
   .red,
-  .red-button {
+  .red-button,
+  .el-button.red-button.is-text {
     color: var(--cat2bug-delete-color, rgb(251, 83, 91)) !important;
     --current-color: var(--cat2bug-delete-color, rgb(251, 83, 91)) !important;
+    --el-button-text-color: var(--cat2bug-delete-color, rgb(251, 83, 91)) !important;
 
     &:hover,
     &:focus {
       color: var(--cat2bug-delete-color-hover, rgb(255, 120, 126)) !important;
+      --el-button-hover-text-color: var(--cat2bug-delete-color-hover, rgb(255, 120, 126)) !important;
     }
   }
 
@@ -3019,9 +3331,11 @@ html.dark {
   // 适配交付物选择框内的嵌套输入框
   .select-module-input {
     .selectProjectMemberInput_content {
-      .el-input__inner {
+      .el-input__inner,
+      .el-input__wrapper {
         background-color: transparent !important;
         border: none !important;
+        box-shadow: none !important;
       }
     }
   }
@@ -3064,12 +3378,17 @@ html.dark {
       .text-length, .el-button {
         background-color: var(--bg-color-block) !important;
         color: var(--text-color-regular) !important;
+        border: none !important;
+        box-shadow: none !important;
       }
 
       .el-button:hover,
       .el-button:focus {
         background-color: rgba(255, 193, 7, 0.12) !important;
         color: #FFC107 !important;
+        border: none !important;
+        box-shadow: none !important;
+        outline: none !important;
       }
 
       // 描述区 AI 机器人组合条
@@ -3550,7 +3869,7 @@ html.dark {
   }
 
   // 22. 适配处理人/项目成员选择组件 (SelectProjectMember) 暗黑模式
-  .select-project-member-input.el-input__inner {
+  .select-project-member-input {
     background-color: var(--input-bg) !important;
     border-color: var(--input-border) !important;
     color: var(--text-color-primary) !important;
@@ -3905,8 +4224,9 @@ html.dark {
     }
   }
 
-  // 23b. Excel 缺陷时间列日期面板（teleport 到 body，与全局 el-picker-panel 规则对齐）
-  .defect-excel-plan-datetime-panel.el-picker-panel {
+  // 23b. Excel / 缺陷表单日期面板（teleport 到 body，z-index 高于抽屉遮罩）
+  .defect-excel-plan-datetime-panel.el-picker-panel,
+  .defect-form-datetime-panel.el-picker-panel {
     background-color: var(--dropdown-bg) !important;
     border-color: var(--border-color-light) !important;
 

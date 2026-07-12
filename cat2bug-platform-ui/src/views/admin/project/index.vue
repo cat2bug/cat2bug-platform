@@ -19,7 +19,7 @@
           <el-input
             v-model="queryParams.projectName"
             :placeholder="$t('project.enter-project-name')"
-            prefix-icon="el-icon-search"
+            :prefix-icon="$legacyIcon('el-icon-search')"
             clearable
             size="small"
             @input="handleQuery"
@@ -54,7 +54,7 @@
           <el-button
             size="mini"
             type="text"
-            :icon="scope.row.lock?'el-icon-unlock':'el-icon-lock'"
+            :icon="$legacyIcon(scope.row.lock?'el-icon-unlock':'el-icon-lock')"
             @click="handleLock(scope.row)"
             v-hasPermi="['admin:project:lock']"
           >{{scope.row.lock?$t('unlock'):$t('lock')}}</el-button>
@@ -78,7 +78,8 @@ import {listProject} from "@/api/admin/project";
 import ProjectNameplate from "@/components/Project/ProjectNameplate";
 import TeamNameplate from "@/components/team/TeamNameplate";
 import ProjectLockDialog from './lock'
-import {mapGetters, mapState} from "vuex";
+import { mapState } from "pinia"
+import { usePermissionStore } from "@/stores/permission";
 
 export default {
   name: "Project",
@@ -128,7 +129,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(["sidebarRouters"]),
+    ...mapState(usePermissionStore, ["sidebarRouters"]),
     collect: function() {
       return function (project) {
         return project.collect?'true':'false';

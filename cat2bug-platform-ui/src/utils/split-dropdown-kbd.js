@@ -8,9 +8,15 @@
 import { hasLayoutNavDropdownSession } from '@/utils/layout-nav-dropdown-kbd'
 import { hasBlockingUiLayer } from '@/plugins/shortcut/service'
 import { findTopFormDrawerVm } from '@/utils/defect-drawer-shortcuts'
+import {
+  DROPDOWN_SELECTORS,
+  findDropdownTrigger as adapterFindDropdownTrigger,
+  isElDropdownVm,
+  resolveDropdownComponent
+} from '@/adapters/element-plus/dropdown-adapter'
 
 export const SPLIT_DROPDOWN_HOST_CLASS = 'cat2bug-split-dropdown-kbd'
-export const DROPDOWN_HOST_SELECTOR = '.el-dropdown'
+export const DROPDOWN_HOST_SELECTOR = DROPDOWN_SELECTORS.host
 export const SPLIT_DROPDOWN_FOCUS_CLASS = 'cat2bug-split-dropdown-focus-target'
 export const SPLIT_DROPDOWN_HOST_FOCUSED_CLASS = 'cat2bug-split-dropdown-host-focused'
 export const SPLIT_DROPDOWN_ITEM_FOCUSED_CLASS = 'cat2bug-split-dropdown-item-focused'
@@ -20,30 +26,12 @@ export const SPLIT_DROPDOWN_TOOLBAR_NAV_CLASS = 'list-query-toolbar-nav-focused'
 const boundHosts = new WeakMap()
 let globalKeydownBound = false
 
-function isElDropdownVm(vm) {
-  if (!vm || !vm.$options) return false
-  const name = vm.$options.name || vm.$options.componentName
-  return name === 'ElDropdown'
-}
-
 export function getDropdownVm(hostEl) {
-  if (!hostEl) return null
-  let el = hostEl
-  while (el) {
-    const vm = el.__vue__
-    if (vm && isElDropdownVm(vm)) return vm
-    el = el.parentElement
-  }
-  return null
+  return resolveDropdownComponent(hostEl)
 }
 
 function findDropdownTrigger(hostEl) {
-  if (!hostEl) return null
-  const direct = hostEl.querySelector(
-    ':scope > button, :scope > .el-button, :scope > .el-dropdown-link, :scope > span, :scope > div'
-  )
-  if (direct && !direct.classList.contains('el-dropdown-menu')) return direct
-  return hostEl.querySelector('button, .el-dropdown-link, [role="button"]')
+  return adapterFindDropdownTrigger(hostEl)
 }
 
 export function ensureSplitDropdownFocusTarget(hostEl) {

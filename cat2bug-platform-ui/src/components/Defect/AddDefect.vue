@@ -1,24 +1,25 @@
 <template>
   <el-drawer
     ref="defectFormDrawer"
-    custom-class="defect-drawer-accent"
+    class="defect-drawer-accent"
     size="65%"
-    :visible.sync="visible"
+    v-model="visible"
     direction="rtl"
     :append-to-body="appendToBody"
+    :show-close="false"
     :close-on-press-escape="false"
     :before-close="closeDefectDrawer">
-    <template slot="title">
+    <template #header>
       <div class="defect-add-header">
         <div class="defect-add-title">
-          <i class="el-icon-arrow-left" @click="requestCloseDefectFormDrawer"></i>
+          <legacy-icon icon="el-icon-arrow-left" @click="requestCloseDefectFormDrawer"></legacy-icon>
           <h3>{{$t('defect.create')}}</h3>
         </div>
         <div>
-          <el-button @click="requestCloseDefectFormDrawer" icon="el-icon-close" size="small">
+          <el-button @click="requestCloseDefectFormDrawer" :icon="$legacyIcon('el-icon-close')" size="small">
             {{$t('close')}}
           </el-button>
-          <el-button class="defect-kbd-hint-host" type="primary" icon="el-icon-finished" @click="submitForm" size="small">
+          <el-button class="defect-kbd-hint-host" type="primary" :icon="$legacyIcon('el-icon-finished')" @click="submitForm" size="small">
             {{$t('defect.save')}}
             <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
           </el-button>
@@ -26,12 +27,12 @@
       </div>
     </template>
     <div class="app-container">
-      <el-form ref="form" :model="form" :rules="rules" label-width="120px">
+      <el-form ref="form" :model="form" :rules="rules" label-width="120px" size="small">
         <el-form-item class="save-cache-form-item">
-          <template slot="label"><span class="save-cache-label-placeholder"></span></template>
+          <template #label><span class="save-cache-label-placeholder"></span></template>
           <span class="save-form-cache-row">
             <span v-show="fieldHintsActive" class="cat2bug-field-hint save-cache-field-hint" aria-hidden="true">O</span>
-            <el-checkbox class="save-form-cache" v-model="isSaveFormCache" @change="handleSaveFormCache">{{ $t('defect.added-save-form-cache') }}</el-checkbox>
+            <el-checkbox class="save-form-cache" size="default" v-model="isSaveFormCache" @change="handleSaveFormCache">{{ $t('defect.added-save-form-cache') }}</el-checkbox>
           </span>
         </el-form-item>
         <defect-form-ordered-fields
@@ -40,7 +41,7 @@
           :project-id="projectId"
           :form="form"
           :config="config"
-          :plan-time-range.sync="planTimeRange"
+          v-model:plan-time-range="planTimeRange"
           :describe-tools="describeTools"
           :defect-field-layout="defectFieldLayout"
           :is-builtin-defect-field-visible="isBuiltinDefectFieldVisible"
@@ -480,9 +481,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  ::v-deep .el-drawer {
-    border-left: 3px solid #ff4949;
-  }
   ::v-deep .el-drawer__header {
     margin-bottom: 0px;
     overflow: visible;
@@ -536,8 +534,8 @@ export default {
     .save-cache-form-item .save-form-cache {
       left: 0;
     }
-    .el-form-item--medium .el-form-item__content {
-      line-height: 35px !important;
+    .el-form-item--small .el-form-item__content {
+      line-height: var(--cat2bug-control-line-height, 30px) !important;
     }
     /* Element 主题里 datetimerange 默认 400px，在 el-col span=12 时会撑出抽屉 */
     .defect-plan-datetimerange.el-date-editor--datetimerange.el-input__inner {

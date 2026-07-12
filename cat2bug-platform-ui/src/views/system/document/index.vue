@@ -7,7 +7,7 @@
           <el-input
             v-model="queryParams.docName"
             :placeholder="$t('doc.please-enter-name')"
-            prefix-icon="el-icon-search"
+            :prefix-icon="$legacyIcon('el-icon-search')"
             clearable
             size="small"
             @input="handleQuery"
@@ -25,7 +25,7 @@
             @hide="onColumnPickerPopoverHide"
           >
             <div class="defect-column-picker-head">
-              <i class="el-icon-s-fold"></i>
+              <el-icon class="legacy-icon-inline"><component :is="$legacyIcon('el-icon-s-fold')" /></el-icon>
               <h4>{{ $t('display-field') }}</h4>
             </div>
             <el-divider class="defect-field-divider"></el-divider>
@@ -37,13 +37,13 @@
             >
               <el-checkbox v-for="c in documentColumnPickerOptions" :key="c.key" :label="c.key">{{ $t(c.key) }}</el-checkbox>
             </el-checkbox-group>
-            <el-button class="document-list-hint-columns" style="padding: 9px;" plain slot="reference" icon="el-icon-s-fold" size="small"></el-button>
+            <el-button class="document-list-hint-columns" style="padding: 9px;" plain slot="reference" :icon="$legacyIcon('el-icon-s-fold')" size="small"></el-button>
           </el-popover>
           <el-button
             class="document-hint-create-folder"
             type="primary"
             plain
-            icon="el-icon-plus"
+            :icon="$legacyIcon('el-icon-plus')"
             size="small"
             @click="handleAddDir"
             v-hasPermi="['system:document:add']"
@@ -52,7 +52,7 @@
             class="document-hint-create-file"
             type="primary"
             plain
-            icon="el-icon-plus"
+            :icon="$legacyIcon('el-icon-plus')"
             size="small"
             @click="handleAddFile"
             v-hasPermi="['system:document:add']"
@@ -106,7 +106,7 @@
                 v-if="scope.row.docType==1"
                 size="mini"
                 type="text"
-                icon="el-icon-edit"
+                :icon="$legacyIcon('el-icon-edit')"
                 @click="handleDownload(scope.row)"
                 v-hasPermi="['system:document:export']"
               >{{ $t('download') }}</el-button>
@@ -119,14 +119,14 @@
               <el-button
                 size="mini"
                 type="text"
-                icon="el-icon-edit"
+                :icon="$legacyIcon('el-icon-edit')"
                 @click="handleUpdate(scope.row)"
                 v-hasPermi="['system:document:edit']"
               >{{ $t('update') }}</el-button>
               <el-button
                 size="mini"
                 type="text"
-                icon="el-icon-delete"
+                :icon="$legacyIcon('el-icon-delete')"
                 class="red"
                 @click="handleDelete(scope.row)"
                 v-if="hasDeletePermi(scope.row)"

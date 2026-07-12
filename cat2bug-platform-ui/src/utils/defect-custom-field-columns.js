@@ -27,6 +27,21 @@ export function resolveDefectTableOrderByColumn(prop) {
   }
 }
 
+/** 列表格内水平居中的自定义字段类型 */
+const CENTER_ALIGNED_CUSTOM_FIELD_TYPES = new Set(['number', 'enum', 'datetime', 'image'])
+
+export function resolveCustomFieldColumnAlign(fieldType) {
+  return CENTER_ALIGNED_CUSTOM_FIELD_TYPES.has(fieldType) ? 'center' : 'left'
+}
+
+export function resolveCustomFieldColumnClassName(fieldType) {
+  if (fieldType === 'image') return 'cat2bug-table-image-col'
+  if (fieldType === 'number' || fieldType === 'enum' || fieldType === 'datetime') {
+    return 'cat2bug-table-center-col'
+  }
+  return undefined
+}
+
 /** 构建表格/Excel 动态列定义 */
 export function buildCustomFieldColumns(fields) {
   return (fields || []).map(f => {
@@ -43,7 +58,8 @@ export function buildCustomFieldColumns(fields) {
       visible: true,
       showInColumnPicker: true,
       sortable: false,
-      align: 'left',
+      align: resolveCustomFieldColumnAlign(row.fieldType),
+      className: resolveCustomFieldColumnClassName(row.fieldType),
       width
     }
   })

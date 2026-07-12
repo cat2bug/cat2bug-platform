@@ -7,7 +7,7 @@
           placeholder="请输入操作地址"
           clearable
           style="width: 240px;"
-          @keyup.enter.native="handleQuery"
+          @keyup.enter="handleQuery"
         />
       </el-form-item>
       <el-form-item label="系统模块" prop="title">
@@ -16,7 +16,7 @@
           placeholder="请输入系统模块"
           clearable
           style="width: 240px;"
-          @keyup.enter.native="handleQuery"
+          @keyup.enter="handleQuery"
         />
       </el-form-item>
       <el-form-item label="操作人员" prop="operName">
@@ -25,7 +25,7 @@
           placeholder="请输入操作人员"
           clearable
           style="width: 240px;"
-          @keyup.enter.native="handleQuery"
+          @keyup.enter="handleQuery"
         />
       </el-form-item>
       <el-form-item label="类型" prop="businessType">
@@ -71,8 +71,8 @@
         ></el-date-picker>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
+        <el-button type="primary" :icon="$legacyIcon('el-icon-search')" size="mini" @click="handleQuery">搜索</el-button>
+        <el-button :icon="$legacyIcon('el-icon-refresh')" size="mini" @click="resetQuery">重置</el-button>
       </el-form-item>
     </el-form>
 
@@ -81,7 +81,7 @@
         <el-button
           type="danger"
           plain
-          icon="el-icon-delete"
+          :icon="$legacyIcon('el-icon-delete')"
           size="mini"
           :disabled="multiple"
           @click="handleDelete"
@@ -92,7 +92,7 @@
         <el-button
           type="danger"
           plain
-          icon="el-icon-delete"
+          :icon="$legacyIcon('el-icon-delete')"
           size="mini"
           @click="handleClean"
           v-hasPermi="['monitor:operlog:remove']"
@@ -102,13 +102,13 @@
         <el-button
           type="warning"
           plain
-          icon="el-icon-download"
+          :icon="$legacyIcon('el-icon-download')"
           size="mini"
           @click="handleExport"
           v-hasPermi="['monitor:operlog:export']"
         >导出</el-button>
       </el-col>
-      <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
+      <right-toolbar v-model:showSearch="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
     <el-table ref="tables" v-loading="loading" :data="list" @selection-change="handleSelectionChange" :default-sort="defaultSort" @sort-change="handleSortChange">
@@ -116,7 +116,7 @@
       <el-table-column label="日志编号" align="center" prop="operId" />
       <el-table-column label="系统模块" align="center" prop="title" :show-overflow-tooltip="true" />
       <el-table-column label="操作类型" align="center" prop="businessType">
-        <template slot-scope="scope">
+        <template #default="scope">
           <dict-tag :options="dict.type.sys_oper_type" :value="scope.row.businessType"/>
         </template>
       </el-table-column>
@@ -124,26 +124,26 @@
       <el-table-column label="操作地址" align="center" prop="operIp" width="130" :show-overflow-tooltip="true" />
       <el-table-column label="操作地点" align="center" prop="operLocation" :show-overflow-tooltip="true" />
       <el-table-column label="操作状态" align="center" prop="status">
-        <template slot-scope="scope">
+        <template #default="scope">
           <dict-tag :options="dict.type.sys_common_status" :value="scope.row.status"/>
         </template>
       </el-table-column>
       <el-table-column label="操作日期" align="center" prop="operTime" width="160" sortable="custom" :sort-orders="['descending', 'ascending']">
-        <template slot-scope="scope">
+        <template #default="scope">
           <span>{{ parseTime(scope.row.operTime) }}</span>
         </template>
       </el-table-column>
       <el-table-column label="消耗时间" align="center" prop="costTime" width="110" :show-overflow-tooltip="true" sortable="custom" :sort-orders="['descending', 'ascending']">
-        <template slot-scope="scope">
+        <template #default="scope">
           <span>{{ scope.row.costTime }}毫秒</span>
         </template>
       </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
-        <template slot-scope="scope">
+        <template #default="scope">
           <el-button
             size="mini"
             type="text"
-            icon="el-icon-view"
+            :icon="$legacyIcon('el-icon-view')"
             @click="handleView(scope.row,scope.index)"
             v-hasPermi="['monitor:operlog:query']"
           >详细</el-button>
@@ -154,13 +154,13 @@
     <pagination
       v-show="total>0"
       :total="total"
-      :page.sync="queryParams.pageNum"
-      :limit.sync="queryParams.pageSize"
+      v-model:page="queryParams.pageNum"
+      v-model:limit="queryParams.pageSize"
       @pagination="getList"
     />
 
     <!-- 操作日志详细 -->
-    <el-dialog title="操作日志详细" :visible.sync="open" width="700px" append-to-body>
+    <el-dialog title="操作日志详细" v-model="open" width="700px" append-to-body>
       <el-form ref="form" :model="form" label-width="100px" size="mini">
         <el-row>
           <el-col :span="12">
@@ -199,9 +199,9 @@
           </el-col>
         </el-row>
       </el-form>
-      <div slot="footer" class="dialog-footer">
+      <template #footer><div class="dialog-footer">
         <el-button @click="open = false">关 闭</el-button>
-      </div>
+      </div></template>
     </el-dialog>
   </div>
 </template>

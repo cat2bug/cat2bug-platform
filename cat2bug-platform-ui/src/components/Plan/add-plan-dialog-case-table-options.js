@@ -86,6 +86,7 @@ export const AddPlanDialogCaseTableOptions = [
     fixed: false,
     visible: true,
     align: 'center',
+    className: 'cat2bug-table-image-col',
     width: 150,
     sortable: false
   },

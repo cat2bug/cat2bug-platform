@@ -5,15 +5,17 @@
     @show="popoverShowHandle"
     @hide="popoverHideHandle"
     popper-class="cat2bug-select-case"
-    v-model="popoverVisible"
+    v-model:visible="popoverVisible"
     ref="popover"
   >
-    <div slot="reference" class="el-input__inner select-case-input" @mouseenter="showClearButtonHandle(true)" @mouseleave="showClearButtonHandle(false)">
-      <i :class="icon" v-if="icon" class="select-case-input__prefix-icon"></i>
-      <case-card ref="caseCard" class="select-case-input_content" :case-model="currentCase" :state-visible="true" :edit="true" v-bind="$attrs" @change="stepChangeHandle" />
-      <i class="select-case-input__icon el-icon-arrow-up" v-show="isClearButtonVisible==false"></i>
-      <i class="select-case-input__icon el-icon-circle-close" v-show="isClearButtonVisible==true" @click="clearSelectModuleHandle"></i>
-    </div>
+    <template #reference>
+      <div class="el-input__inner select-case-input" @mouseenter="showClearButtonHandle(true)" @mouseleave="showClearButtonHandle(false)">
+        <i :class="icon" v-if="icon" class="select-case-input__prefix-icon"></i>
+        <case-card ref="caseCard" class="select-case-input_content" :case-model="currentCase" :state-visible="true" :edit="true" v-bind="$attrs" @change="stepChangeHandle" />
+        <legacy-icon icon="el-icon-arrow-up" class="select-case-input__icon" v-show="isClearButtonVisible==false"></legacy-icon>
+        <legacy-icon icon="el-icon-circle-close" class="select-case-input__icon" v-show="isClearButtonVisible==true" @click="clearSelectModuleHandle"></legacy-icon>
+      </div>
+    </template>
     <div class="case-list">
       <div class="case-list-item" v-for="(c,index) in caseList" :key="index" @click="clickCaseItemHandle(c)">
         <case-card :case-model="c" />

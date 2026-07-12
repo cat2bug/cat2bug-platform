@@ -6,7 +6,7 @@
     </el-tabs>
     <div class="field-box">
       <a class="document-link" target="_blank" :href="documentLink" title="查看组件文档">
-        <i class="el-icon-link" />
+        <legacy-icon icon="el-icon-link" />
       </a>
       <el-scrollbar class="right-scrollbar">
         <!-- 组件属性 -->
@@ -115,14 +115,14 @@
           </el-form-item>
           <el-form-item v-if="activeData['prefix-icon']!==undefined" label="前图标">
             <el-input v-model="activeData['prefix-icon']" placeholder="请输入前图标名称">
-              <el-button slot="append" icon="el-icon-thumb" @click="openIconsDialog('prefix-icon')">
+              <el-button slot="append" :icon="$legacyIcon('el-icon-thumb')" @click="openIconsDialog('prefix-icon')">
                 选择
               </el-button>
             </el-input>
           </el-form-item>
           <el-form-item v-if="activeData['suffix-icon'] !== undefined" label="后图标">
             <el-input v-model="activeData['suffix-icon']" placeholder="请输入后图标名称">
-              <el-button slot="append" icon="el-icon-thumb" @click="openIconsDialog('suffix-icon')">
+              <el-button slot="append" :icon="$legacyIcon('el-icon-thumb')" @click="openIconsDialog('suffix-icon')">
                 选择
               </el-button>
             </el-input>
@@ -280,7 +280,7 @@
             >
               <div v-for="(item, index) in activeData.options" :key="index" class="select-item">
                 <div class="select-line-icon option-drag">
-                  <i class="el-icon-s-operation" />
+                  <legacy-icon icon="el-icon-s-operation" />
                 </div>
                 <el-input v-model="item.label" placeholder="选项名" size="small" />
                 <el-input
@@ -290,14 +290,14 @@
                   @input="setOptionValue(item, $event)"
                 />
                 <div class="close-btn select-line-icon" @click="activeData.options.splice(index, 1)">
-                  <i class="el-icon-remove-outline" />
+                  <legacy-icon icon="el-icon-remove-outline" />
                 </div>
               </div>
             </draggable>
             <div style="margin-left: 20px;">
               <el-button
                 style="padding-bottom: 0"
-                icon="el-icon-circle-plus-outline"
+                :icon="$legacyIcon('el-icon-circle-plus-outline')"
                 type="text"
                 @click="addSelectItem"
               >
@@ -343,7 +343,7 @@
             <div v-if="activeData.dataType === 'static'" style="margin-left: 20px">
               <el-button
                 style="padding-bottom: 0"
-                icon="el-icon-circle-plus-outline"
+                :icon="$legacyIcon('el-icon-circle-plus-outline')"
                 type="text"
                 @click="addTreeItem"
               >
@@ -494,7 +494,7 @@
               class="reg-item"
             >
               <span class="close-btn" @click="activeData.regList.splice(index, 1)">
-                <i class="el-icon-close" />
+                <legacy-icon icon="el-icon-close" />
               </span>
               <el-form-item label="表达式">
                 <el-input v-model="item.pattern" placeholder="请输入正则" />
@@ -504,7 +504,7 @@
               </el-form-item>
             </div>
             <div style="margin-left: 20px">
-              <el-button icon="el-icon-circle-plus-outline" type="text" @click="addReg">
+              <el-button :icon="$legacyIcon('el-icon-circle-plus-outline')" type="text" @click="addReg">
                 添加规则
               </el-button>
             </div>
@@ -750,14 +750,18 @@ export default {
         <div class="custom-tree-node">
           <span>{node.label}</span>
           <span class="node-operation">
-            <i on-click={() => this.append(data)}
-              class="el-icon-plus"
+            <legacy-icon
+              icon="el-icon-plus"
+              class="node-operation-icon"
               title="添加"
-            ></i>
-            <i on-click={() => this.remove(node, data)}
-              class="el-icon-delete"
+              onClick={() => this.append(data)}
+            />
+            <legacy-icon
+              icon="el-icon-delete"
+              class="node-operation-icon"
               title="删除"
-            ></i>
+              onClick={() => this.remove(node, data)}
+            />
           </span>
         </div>
       )

@@ -34,12 +34,14 @@
           slot="reference"
           fit="cover"></el-image>
       </el-popover>
-      <el-button :disabled="currentTextLength==0" type="primary" size="mini" @click="submitHandle">{{ $t('comment.speak') }}</el-button>
+      <el-button :disabled="currentTextLength==0" type="primary" size="small" @click="submitHandle">{{ $t('comment.speak') }}</el-button>
     </div>
   </div>
 </template>
 
 <script>
+import { getEmojiUrl } from '@/utils/emoji-assets'
+
 export default {
   name: "CommentInput",
   components: {},
@@ -99,7 +101,7 @@ export default {
   computed: {
     imgUrl: function () {
       return function (index) {
-        return require(`@/assets/emoji/default/${this.imgName(index)}.png`)
+        return getEmojiUrl(index)
       }
     },
     imgName: function () {

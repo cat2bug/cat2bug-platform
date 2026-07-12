@@ -86,6 +86,7 @@ export const PlanItemCaseTableOptions = [
     fixed: false,
     visible: true,
     align: 'center',
+    className: 'cat2bug-table-image-col',
     width: 120
   },
   {
@@ -111,6 +112,7 @@ export const PlanItemCaseTableOptions = [
     fixed: false,
     visible: true,
     align: 'center',
+    className: 'cat2bug-table-center-col',
     width: 180,
     sortable: false
   }

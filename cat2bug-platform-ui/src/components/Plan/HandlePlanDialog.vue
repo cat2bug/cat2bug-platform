@@ -8,10 +8,10 @@
     :close-on-press-escape="false"
     :before-close="closePlanDrawer">
     <!-- 仅标题与关闭钮同区；统计条移到正文，避免与 el-drawer__close-btn 同一 flex 行挤压 -->
-    <template slot="title">
+    <template #header>
       <div class="plan-run-drawer-title">
         <div class="plan-run-title">
-          <i class="el-icon-arrow-left" @click="cancel"></i>
+          <legacy-icon icon="el-icon-arrow-left" @click="cancel"></legacy-icon>
           <div class="plan-run-title-line">
             <span class="plan-run-title-num">{{ $t('plan') }}:{{plan.planName}}</span>
             <el-button size="mini" type="success">{{ $t('version') }}:{{ plan.planVersion }}</el-button>
@@ -397,12 +397,12 @@ export default {
 }
 .handle-plan-dialog > .el-drawer__header {
   /* 与 .plan-run-title-line 高度一致，供关闭按钮垂直对齐 */
-  --plan-drawer-title-line-height: 36px;
+  --plan-drawer-title-line-height: 32px;
   /* 右侧为关闭钮预留宽度 + 与标题文案的间隔（长标题换行时不贴按钮） */
   --plan-drawer-header-close-reserve: 48px;
   margin-bottom: 0px;
   flex-shrink: 0;
-  padding: 16px var(--plan-drawer-header-close-reserve) 8px 10px;
+  padding: var(--cat2bug-drawer-header-padding-y) var(--plan-drawer-header-close-reserve) var(--cat2bug-drawer-header-padding-y) 10px !important;
   box-sizing: border-box;
   position: relative;
 }
@@ -413,7 +413,7 @@ export default {
 .handle-plan-dialog > .el-drawer__header > .el-drawer__close-btn {
   position: absolute;
   right: 10px;
-  top: calc(16px + var(--plan-drawer-title-line-height) / 2);
+  top: calc(var(--cat2bug-drawer-header-padding-y) + var(--plan-drawer-title-line-height) / 2);
   transform: translateY(-50%);
   margin: 0;
 }

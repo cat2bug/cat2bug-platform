@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <router-link to="/tools/browser" target="_blank">
-      <el-button icon="el-icon-eleme">{{$t('browser')}}</el-button>
+      <el-button :icon="$legacyIcon('el-icon-eleme')">{{$t('browser')}}</el-button>
     </router-link>
 
   </div>

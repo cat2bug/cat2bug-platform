@@ -21,7 +21,7 @@ function isHidden(route) {
 /** 取菜单标题（优先 i18n key） */
 function menuTitle(route) {
   const meta = route.meta || {}
-  if (meta.titleI18nKey) return i18n.t(meta.titleI18nKey)
+  if (meta.titleI18nKey) return i18n.global.t(meta.titleI18nKey)
   if (meta.title) return meta.title
   return route.name || route.path
 }
@@ -83,7 +83,7 @@ function buildTopItems() {
     const base = {
       bindingId,
       type: item.type,
-      title: item.titleKey ? i18n.t(item.titleKey) : item.title || '',
+      title: item.titleKey ? i18n.global.t(item.titleKey) : item.title || '',
       defaultLetter: item.defaultLetter
     }
     if (item.type === 'route') base.to = item.to
@@ -92,7 +92,7 @@ function buildTopItems() {
       base.children = item.children.map((c) => ({
         bindingId: `${bindingId}.${c.key}`,
         type: c.to ? 'route' : 'action',
-        title: c.titleKey ? i18n.t(c.titleKey) : c.title || '',
+        title: c.titleKey ? i18n.global.t(c.titleKey) : c.title || '',
         to: c.to,
         action: c.action,
         defaultLetter: c.defaultLetter,

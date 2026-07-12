@@ -1,10 +1,9 @@
 <template>
-  <div @click="handleClickPreview" class="cat2bug-preview-image">
+  <div class="cat2bug-preview-image" @click.stop>
     <div v-if="imageCount==1">
       <cat2-bug-image
         v-for="(img,index) in images"
         :key="index"
-        @click="handleClickPreview"
         @close="handleViewClose"
         :style="`width: 60px;height: 60px;`"
         :src="resolveImage(img, index)"
@@ -24,7 +23,6 @@
         <cat2-bug-image
           v-for="(img,index) in images"
           :key="index"
-          @click="handleClickPreview"
           @close="handleViewClose"
           :style="`width: ${width}px;height: ${height}px;`"
           :src="resolveImage(img, index)"
@@ -34,17 +32,18 @@
           @error="onImageError(index)"
         ></cat2-bug-image>
       </div>
-      <div slot="reference" class="preview" :style="`width: 60px;height: 60px;`">
-        <cat2-bug-image
-          class="button"
-          @click="handleClickPreview"
-          style="width: 100%; height: 100%;"
-          :src="previewUrl"
-          :preview-src-list="resolvedPreviewList"
-          fit="contain"
-        ></cat2-bug-image>
-        <span v-if="imageCount>1" class="number">+{{ imageCount }}</span>
-      </div>
+      <template #reference>
+        <div class="preview" :style="`width: 60px;height: 60px;`">
+          <cat2-bug-image
+            class="button"
+            style="width: 100%; height: 100%;"
+            :src="previewUrl"
+            :preview-src-list="resolvedPreviewList"
+            fit="contain"
+          ></cat2-bug-image>
+          <span v-if="imageCount>1" class="number">+{{ imageCount }}</span>
+        </div>
+      </template>
     </el-popover>
   </div>
 </template>
@@ -107,11 +106,7 @@ export default {
       return url
     },
     onImageError(index) {
-      this.$set(this.failedIndexes, index, true)
-    },
-    handleClickPreview(event){
-      this.isView = true;
-      event.stopPropagation();
+      this.failedIndexes = { ...this.failedIndexes, [index]: true }
     },
     handleViewClose() {
       this.isView = false;

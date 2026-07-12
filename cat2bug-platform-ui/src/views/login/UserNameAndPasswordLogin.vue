@@ -31,7 +31,7 @@
             auto-complete="off"
             :placeholder="$t('password')"
             :maxlength="LOGIN_PASSWORD_MAX_LENGTH"
-            @keyup.enter.native="handleLogin"
+            @keyup.enter="handleLogin"
             show-password
           />
         </el-form-item>
@@ -47,7 +47,7 @@
             auto-complete="off"
             :placeholder="$t('verification-code')"
             style="width: 63%"
-            @keyup.enter.native="handleLogin"
+            @keyup.enter="handleLogin"
           />
           <div class="login-code">
             <pixel-captcha-canvas
@@ -71,6 +71,19 @@
           <span class="login-kbd-hint login-kbd-hint-register" aria-hidden="true" />
         </router-link>
       </div>
+
+      <el-form-item class="login-btn-item login-kbd-anchor-host">
+        <span class="login-kbd-hint login-kbd-hint-submit" aria-hidden="true" />
+        <el-button
+          :loading="loading"
+          size="default"
+          class="login-btn"
+          @click.prevent="handleLogin"
+        >
+          <span v-if="!loading">{{$t("login")}}<svg-icon icon-class="login_button" class-name="login-btn-arrow" /></span>
+          <span v-else>{{$t("logging-in")}}...</span>
+        </el-button>
+      </el-form-item>
 
       <div class="login-divider">
         <span class="login-divider-line"></span>
@@ -97,27 +110,8 @@
         </div>
       </div>
 
-      <el-form-item class="login-btn-item login-kbd-anchor-host">
-        <span class="login-kbd-hint login-kbd-hint-submit" aria-hidden="true" />
-        <el-button
-          :loading="loading"
-          size="medium"
-          class="login-btn"
-          @click.native.prevent="handleLogin"
-        >
-          <span v-if="!loading">{{$t("login")}}<svg-icon icon-class="login_button" class-name="login-btn-arrow" /></span>
-          <span v-else>{{$t("logging-in")}}...</span>
-        </el-button>
-      </el-form-item>
-
       <div>
         <slot name="tools"></slot>
-      </div>
-
-      <div class="login-extra-links">
-        <a class="system-doc-link" :href="systemDocUrl" target="_blank" rel="noopener noreferrer">
-          {{ $t('system-doc') }}
-        </a>
       </div>
 
       <div class="login-copyright">Copyright © 2024–2026 版权所有</div>
@@ -140,7 +134,8 @@ import {
 import pageActionHints from '@/mixins/page-action-hints'
 import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
 import { LOGIN_LANG_ACTION_DEFAULTS } from '@/plugins/shortcut/keymap'
-import { SYSTEM_DOC_URL } from '@/utils/system-doc-url'
+import { useUserStore } from '@/stores/user'
+import { useAppStore } from '@/stores/app'
 
 const LOGIN_KBD_SCOPE = 'login'
 
@@ -165,7 +160,6 @@ export default {
       captchaEnabled: true,
       register: false,
       redirect: undefined,
-      systemDocUrl: SYSTEM_DOC_URL
     }
   },
   props: {
@@ -194,7 +188,7 @@ export default {
   mounted() {
     this.registerLoginShortcuts()
   },
-  beforeDestroy() {
+  beforeUnmount() {
     if (this.$shortcut) this.$shortcut.unregisterPage(LOGIN_KBD_SCOPE)
   },
   methods: {
@@ -310,6 +304,10 @@ export default {
     focusLoginInput(refName) {
       const comp = this.$refs[refName]
       if (!comp) return
+      if (typeof comp.focus === 'function') {
+        comp.focus()
+        return
+      }
       const input = comp.$refs && comp.$refs.input
       if (input && typeof input.focus === 'function') {
         input.focus()
@@ -335,7 +333,9 @@ export default {
       const credentialRules = buildLoginCredentialRules(key => this.$i18n.t(key))
       this.loginRules = {
         ...credentialRules,
-        code: [{ required: true, trigger: 'change', message: this.$i18n.t('please-enter-verification-code') }]
+        ...(this.captchaEnabled ? {
+          code: [{ required: true, trigger: 'change', message: this.$i18n.t('please-enter-verification-code') }]
+        } : {})
       }
     },
     getCode() {
@@ -345,7 +345,12 @@ export default {
         if (this.captchaEnabled) {
           this.captchaExpr = res.captchaExpr || "";
           this.loginForm.uuid = res.uuid;
+        } else {
+          this.captchaExpr = "";
+          this.loginForm.code = "";
+          this.loginForm.uuid = "";
         }
+        this.syncLoginRules();
       });
     },
     getCookie() {
@@ -370,9 +375,11 @@ export default {
             Cookies.remove('rememberMe');
           }
 
-          this.$store.dispatch("Login", this.loginForm).then(() => {
+          const userStore = useUserStore()
+          const appStore = useAppStore()
+          userStore.Login(this.loginForm).then(() => {
             resetSetupStatusCache()
-            this.$store.dispatch("app/closeSideBar", { withoutAnimation: true });
+            appStore.closeSideBar({ withoutAnimation: true })
             const redirect = this.$route.query.redirect || this.redirect || '/'
             return this.$router.push({ path: redirect })
           }).catch(() => {
@@ -427,21 +434,37 @@ export default {
     margin-bottom: 0;
   }
 
-  ::v-deep .el-input input {
-    height: 35px;
-    line-height: 35px;
-    padding: 0 14px;
-    font-size: 14px;
-    background-color: var(--login-input-bg, var(--bg-color-page, #f5f7fa));
-    border: 1px solid var(--login-input-border, var(--border-color-base));
-    border-radius: 8px;
-    color: var(--login-text-primary, var(--text-color-primary));
-    transition: border-color 0.2s, box-shadow 0.2s;
-  }
+  /* 登录页控件高度对齐 Vue2（输入 35px / 按钮 39px），覆盖全站 32px */
+  ::v-deep .el-input {
+    .el-input__wrapper {
+      height: 35px !important;
+      min-height: 35px !important;
+      max-height: 35px !important;
+      padding: 0 14px;
+      background-color: var(--login-input-bg, var(--bg-color-page, #f5f7fa));
+      border: none !important;
+      border-radius: 8px;
+      box-shadow: 0 0 0 1px var(--login-input-border, var(--border-color-base)) inset;
+      transition: box-shadow 0.2s;
+    }
 
-  ::v-deep .el-input input:focus {
-    border-color: var(--login-accent, #ffc107);
-    box-shadow: 0 0 0 2px var(--login-accent-glow, rgba(255, 193, 7, 0.18));
+    .el-input__inner {
+      height: 35px !important;
+      line-height: 35px !important;
+      padding: 0;
+      font-size: 14px;
+      background-color: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      color: var(--login-text-primary, var(--text-color-primary));
+    }
+
+    &.is-focus .el-input__wrapper,
+    .el-input__wrapper.is-focus {
+      box-shadow:
+        0 0 0 1px var(--login-accent, #ffc107) inset,
+        0 0 0 2px var(--login-accent-glow, rgba(255, 193, 7, 0.18));
+    }
   }
 }
 
@@ -507,34 +530,17 @@ html.dark .login-form {
   }
 }
 
-.login-extra-links {
-  margin-top: 8px;
-  text-align: center;
-}
-
-.system-doc-link {
-  font-size: 13px;
-  color: var(--login-accent, #ffc107);
-  text-decoration: none;
-  &:hover {
-    opacity: 0.85;
-  }
-}
-
-.form-options {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin: 2px 0 12px;
-  ::v-deep .el-checkbox__label {
-    font-size: 13px;
-    color: var(--login-text-regular, var(--text-color-regular));
-  }
+.login-btn-item {
+  margin: 8px 0 12px;
 }
 
 .login-form ::v-deep .login-btn {
   width: 100%;
-  height: 39px;
+  height: 39px !important;
+  min-height: 39px !important;
+  max-height: 39px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
   font-size: 15px;
   font-weight: 700;
   border-radius: 8px;
@@ -570,6 +576,17 @@ html.dark .login-form {
   }
 }
 
+.form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 2px 0 0;
+  ::v-deep .el-checkbox__label {
+    font-size: 13px;
+    color: var(--login-text-regular, var(--text-color-regular));
+  }
+}
+
 .form-options ::v-deep .el-checkbox__input.is-checked .el-checkbox__inner,
 .form-options ::v-deep .el-checkbox__input.is-indeterminate .el-checkbox__inner {
   background-color: var(--login-accent, #ffc107);
@@ -596,7 +613,7 @@ html.dark .login-form {
 }
 
 .lang-section {
-  margin-bottom: 20px;
+  margin-bottom: 0;
 }
 
 .lang-group {

@@ -26,7 +26,10 @@
         v-else-if="field.fieldType === 'datetime'"
         v-model="localValues[field.fieldKey]"
         type="datetime"
-        value-format="yyyy-MM-dd HH:mm:ss"
+        :value-format="defectDatetimeValueFormat"
+        :format="defectDatetimeValueFormat"
+        teleported
+        popper-class="defect-form-datetime-panel"
         class="defect-custom-field-datetime"
       />
       <el-select
@@ -86,7 +89,10 @@
             v-else-if="arrayItemType(field) === 'datetime'"
             v-model="arrayValues(field.fieldKey)[idx]"
             type="datetime"
-            value-format="yyyy-MM-dd HH:mm:ss"
+            :value-format="defectDatetimeValueFormat"
+            :format="defectDatetimeValueFormat"
+            teleported
+            popper-class="defect-form-datetime-panel"
             size="small"
           />
           <el-input
@@ -96,9 +102,9 @@
             :rows="2"
             size="small"
           />
-          <el-button type="text" icon="el-icon-delete" @click="removeArrayItem(field.fieldKey, idx)" />
+          <el-button link :icon="$legacyIcon('el-icon-delete')" @click="removeArrayItem(field.fieldKey, idx)" />
         </div>
-        <el-button type="text" icon="el-icon-plus" @click="addArrayItem(field.fieldKey)">
+        <el-button link :icon="$legacyIcon('el-icon-plus')" @click="addArrayItem(field.fieldKey)">
           {{ $t('defect.custom-field.add-item') }}
         </el-button>
       </div>
@@ -112,6 +118,7 @@ import ImageUpload from '@/components/ImageUpload'
 import FileUpload from '@/components/FileUpload'
 import {
   cloneDefaultFieldValue,
+  DEFECT_DATETIME_VALUE_FORMAT,
   enumOptionTextStyle,
   enumOptions,
   enumSelectCssVars,
@@ -135,6 +142,9 @@ export default {
       localValues: {},
       objectText: {}
     }
+  },
+  computed: {
+    defectDatetimeValueFormat: () => DEFECT_DATETIME_VALUE_FORMAT
   },
   watch: {
     projectId: {

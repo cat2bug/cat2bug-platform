@@ -9,7 +9,7 @@
         <el-autocomplete
           class="inline-input"
           size="small"
-          prefix-icon="el-icon-cloudy"
+          :prefix-icon="$legacyIcon('el-icon-cloudy')"
           v-model="downloadParams.name"
           :fetch-suggestions="searchDownloadModelAutocomplete"
           :placeholder="$t('ai.please-enter-download-name')"
@@ -20,7 +20,7 @@
           type="primary"
           style="float: right;"
           plain
-          icon="el-icon-download"
+          :icon="$legacyIcon('el-icon-download')"
           size="small"
           @click="downloadModelHandle"
           v-hasPermi="['system:ai:add']"
@@ -55,7 +55,7 @@
             v-if="isError(scope.row) || isEmpty(scope.row)"
             size="mini"
             type="text"
-            icon="el-icon-delete"
+            :icon="$legacyIcon('el-icon-delete')"
             @click="downloadModel(scope.row.name)"
             v-hasPermi="['system:ai:add']"
           >{{ $t('re-download') }}</el-button>
@@ -63,7 +63,7 @@
             v-if="isPulling(scope.row)==false"
             size="mini"
             type="text"
-            icon="el-icon-delete"
+            :icon="$legacyIcon('el-icon-delete')"
             class="red"
             @click="handleDelete(scope.row)"
             v-hasPermi="['system:ai:remove']"

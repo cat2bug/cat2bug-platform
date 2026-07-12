@@ -21,10 +21,11 @@
 
 <script>
 // 测试计划燃尽图
-import * as echarts from '@/assets/js/echarts.min.js';
+import echarts from '@/utils/echarts.js';
 import resize from "@/views/dashboard/mixins/resize";
 import {dashboardPlanList, planBurndown} from "@/api/system/dashboard";
-import { mapGetters } from 'vuex';
+import { mapState } from 'pinia'
+import { useSettingsStore } from '@/stores/settings';
 
 export default {
   name: "PlanBurndownChart",
@@ -60,7 +61,7 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['themeMode']),
+    ...mapState(useSettingsStore, ['themeMode']),
     /** 获取项目id */
     projectId() {
       return parseInt(this.$store.state.user.config.currentProjectId);

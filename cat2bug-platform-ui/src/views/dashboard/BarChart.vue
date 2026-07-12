@@ -3,7 +3,7 @@
 </template>
 
 <script>
-import * as echarts from '@/assets/js/echarts.min.js';
+import echarts from '@/utils/echarts.js';
 import resize from './mixins/resize'
 
 const animationDuration = 6000

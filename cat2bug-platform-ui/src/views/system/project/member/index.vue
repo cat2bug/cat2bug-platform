@@ -18,7 +18,7 @@
             <el-form-item class="list-query-nav-item project-member-hint-query" data-query-key="search">
               <el-input
                 v-model="queryParams.params.search"
-                prefix-icon="el-icon-search"
+                :prefix-icon="$legacyIcon('el-icon-search')"
                 :placeholder="$t('member.search-placeholder')"
                 clearable
                 style="width: 320px"
@@ -32,7 +32,7 @@
               class="project-member-hint-add"
               type="primary"
               plain
-              icon="el-icon-user-solid"
+              :icon="$legacyIcon('el-icon-user-solid')"
               size="small"
               @click="addMemberHandle"
               v-hasPermi="['system:project:list']"
@@ -96,7 +96,7 @@
               <el-button
                 size="mini"
                 type="text"
-                icon="el-icon-delete"
+                :icon="$legacyIcon('el-icon-delete')"
                 @click="deleteHandle(scope.row)"
                 v-show="visibleDelete(scope.row)"
               >{{$t('delete')}}</el-button>

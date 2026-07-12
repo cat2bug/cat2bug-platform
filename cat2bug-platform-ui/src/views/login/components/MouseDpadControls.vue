@@ -27,7 +27,7 @@
         @pointercancel.prevent="onPointerRelease('ArrowUp')"
         @pointerleave="onPointerLeave('ArrowUp', $event)"
       >
-        <i class="el-icon-arrow-up" />
+        <legacy-icon icon="el-icon-arrow-up" />
         <span class="mouse-dpad__hint" aria-hidden="true">↑</span>
       </button>
       <button
@@ -41,7 +41,7 @@
         @pointercancel.prevent="onPointerRelease('ArrowLeft')"
         @pointerleave="onPointerLeave('ArrowLeft', $event)"
       >
-        <i class="el-icon-arrow-left" />
+        <legacy-icon icon="el-icon-arrow-left" />
         <span class="mouse-dpad__hint" aria-hidden="true">←</span>
       </button>
       <button
@@ -55,7 +55,7 @@
         @pointercancel.prevent="onPointerRelease('ArrowDown')"
         @pointerleave="onPointerLeave('ArrowDown', $event)"
       >
-        <i class="el-icon-arrow-down" />
+        <legacy-icon icon="el-icon-arrow-down" />
         <span class="mouse-dpad__hint" aria-hidden="true">↓</span>
       </button>
       <button
@@ -69,7 +69,7 @@
         @pointercancel.prevent="onPointerRelease('ArrowRight')"
         @pointerleave="onPointerLeave('ArrowRight', $event)"
       >
-        <i class="el-icon-arrow-right" />
+        <legacy-icon icon="el-icon-arrow-right" />
         <span class="mouse-dpad__hint" aria-hidden="true">→</span>
       </button>
     </div>

@@ -462,7 +462,7 @@
   "defect.builtin-field.createMember": "Создал",
   "defect.builtin-field.updateTime": "Обновлено",
   "defect.custom-field.section": "Поля дефекта",
-  "defect.custom-field.object-placeholder": "JSON-объект, напр. {\"k\":\"v\"}",
+  "defect.custom-field.object-placeholder": "JSON-объект, напр. \"k\": \"v\"",
   "defect.custom-field.invalid-json": "Неверный формат JSON",
   "defect.custom-field.add-item": "Добавить элемент",
   "defect.all-type": "Все типы",

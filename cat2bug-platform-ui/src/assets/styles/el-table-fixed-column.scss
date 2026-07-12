@@ -1,0 +1,134 @@
+/**
+ * Element Plus 表格固定列分隔阴影（对齐 Vue2 Element UI $--table-fixed-box-shadow）。
+ * Vue2：.el-table__fixed / .el-table__fixed-right 容器 box-shadow: 0 0 10px rgba(0,0,0,.12)
+ * EP：sticky 单元格 + ::before inset 阴影，由 --el-table-fixed-*-column 与 is-scrolling-* 控制显隐。
+ */
+
+:root {
+  --cat2bug-table-fixed-shadow-left: inset 10px 0 10px -10px rgba(0, 0, 0, 0.12);
+  --cat2bug-table-fixed-shadow-right: inset -10px 0 10px -10px rgba(0, 0, 0, 0.12);
+  --cat2bug-table-fixed-edge-color: transparent;
+  --el-table-fixed-left-column: var(--cat2bug-table-fixed-shadow-left);
+  --el-table-fixed-right-column: var(--cat2bug-table-fixed-shadow-right);
+}
+
+html.dark {
+  /* 深色底：左右对称 — inset 内缘 + 外扩阴影，禁止描边/边框线 */
+  --cat2bug-table-fixed-edge-color: transparent;
+  --cat2bug-table-fixed-shadow-left: inset 10px 0 14px -8px rgba(0, 0, 0, 0.75),
+    6px 0 12px -4px rgba(0, 0, 0, 0.55);
+  --cat2bug-table-fixed-shadow-right: inset -10px 0 14px -8px rgba(0, 0, 0, 0.75),
+    -6px 0 12px -4px rgba(0, 0, 0, 0.55);
+  --el-table-fixed-left-column: var(--cat2bug-table-fixed-shadow-left);
+  --el-table-fixed-right-column: var(--cat2bug-table-fixed-shadow-right);
+}
+
+/* 固定列实心底：禁止 inherit 透底，与 Vue2 独立固定层一致 */
+.el-table:not(.el-table--border) {
+  th.el-table-fixed-column--left,
+  th.el-table-fixed-column--right {
+    background-color: var(--table-header-bg) !important;
+  }
+
+  td.el-table-fixed-column--left,
+  td.el-table-fixed-column--right {
+    background-color: var(--cat2bug-table-fixed-row-bg, var(--table-bg)) !important;
+  }
+
+  .el-table__row:hover > td.el-table-fixed-column--left.el-table__cell,
+  .el-table__row:hover > td.el-table-fixed-column--right.el-table__cell,
+  .el-table__body tr.hover-row > td.el-table-fixed-column--left.el-table__cell,
+  .el-table__body tr.hover-row > td.el-table-fixed-column--right.el-table__cell {
+    background-color: var(--table-row-hover-bg) !important;
+  }
+
+  /* 左固定区最右缘 / 右固定区最左缘：内缘阴影（滚动态与 Vue2 一致） */
+  .el-table-fixed-column--left.is-last-column,
+  .el-table-fixed-column--right.is-first-column {
+    overflow: visible !important;
+  }
+
+  td.el-table-fixed-column--right.is-first-column.cat2bug-operate-column,
+  th.el-table-fixed-column--right.is-first-column.cat2bug-operate-column,
+  td.el-table-fixed-column--left.is-last-column,
+  th.el-table-fixed-column--left.is-last-column {
+    overflow: visible !important;
+  }
+
+  .el-table-fixed-column--left.is-last-column::before,
+  .el-table-fixed-column--right.is-first-column::before {
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  td.el-table-fixed-column--right.cat2bug-operate-column .cell,
+  th.el-table-fixed-column--right.cat2bug-operate-column .cell {
+    position: relative;
+    z-index: 3;
+  }
+
+  /* 固定列内缘分界：仅阴影，禁止额外 border（EP 非 border 表亦须显式清除） */
+  .el-table-fixed-column--left.is-last-column.el-table__cell,
+  .el-table-fixed-column--right.is-first-column.el-table__cell {
+    border-left: none !important;
+    border-right: none !important;
+  }
+
+  &.is-scrolling-middle {
+    .el-table-fixed-column--left.is-last-column::before {
+      box-shadow: var(--cat2bug-table-fixed-shadow-left) !important;
+    }
+
+    .el-table-fixed-column--right.is-first-column::before {
+      box-shadow: var(--cat2bug-table-fixed-shadow-right) !important;
+    }
+  }
+
+  &.is-scrolling-left {
+    .el-table-fixed-column--right.is-first-column::before {
+      box-shadow: var(--cat2bug-table-fixed-shadow-right) !important;
+    }
+  }
+
+  &.is-scrolling-right {
+    .el-table-fixed-column--left.is-last-column::before {
+      box-shadow: var(--cat2bug-table-fixed-shadow-left) !important;
+    }
+  }
+}
+
+/* Vue2 遗留 DOM（若仍存在独立固定层）：保留容器外发光 */
+.el-table:not(.el-table--border) {
+  .el-table__fixed,
+  .el-table__fixed-right {
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.12) !important;
+  }
+
+  .el-table__fixed::before,
+  .el-table__fixed-right::before {
+    background-color: transparent !important;
+  }
+
+  .el-table__fixed {
+    border-right: none !important;
+  }
+
+  .el-table__fixed-right {
+    border-left: none !important;
+  }
+}
+
+html.dark .el-table:not(.el-table--border) {
+  .el-table__fixed,
+  .el-table__fixed-right {
+    box-shadow: 0 0 12px rgba(0, 0, 0, 0.45) !important;
+
+    tbody td.el-table__cell {
+      background-color: var(--cat2bug-table-fixed-row-bg) !important;
+    }
+
+    thead th.el-table__cell {
+      background-color: var(--table-header-bg) !important;
+    }
+  }
+}

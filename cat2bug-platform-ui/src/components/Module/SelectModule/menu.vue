@@ -8,7 +8,7 @@
         :title="$t('module.scroll-up')"
         :aria-label="$t('module.scroll-up')"
         @click.stop="scrollMenuStep(-1)">
-        <i class="el-icon-arrow-up"></i>
+        <legacy-icon icon="el-icon-arrow-up"></legacy-icon>
       </button>
       <div ref="menuScroller" class="module-menu-scroller" @scroll="syncVerticalScrollIndicators">
         <el-row class="module-menu">
@@ -24,7 +24,7 @@
               'is-keyboard-active': keyboardActiveIndex === index && keyboardActivePart === 'main',
               'is-path-active': isPathActiveRow(module)
             }"
-            @click.native="showSubMenuHandle(module)">
+            @click="showSubMenuHandle(module)">
             <el-tooltip
               :content="module.moduleName"
               placement="top"
@@ -32,14 +32,14 @@
               :disabled="!labelNeedsTooltip(module.moduleName)">
               <span class="module-menu-row-label">{{ formatMenuLabel(module.moduleName) }}</span>
             </el-tooltip>
-            <i v-if="moduleHasChildren(module)" class="el-icon-arrow-right module-menu-row-arrow"></i>
+            <legacy-icon icon="el-icon-arrow-right" v-if="moduleHasChildren(module)" class="module-menu-row-arrow"></legacy-icon>
             <el-button
               v-else-if="isEdit"
-              type="text"
-              size="mini"
+              link
+              size="small"
               class="module-menu-row-side-add"
               :class="{'is-keyboard-active': keyboardActiveIndex === index && keyboardActivePart === 'side'}"
-              @click="addSubMenuHandle($event, module)"><i class="el-icon-plus"></i></el-button>
+              @click="addSubMenuHandle($event, module)"><legacy-icon icon="el-icon-plus"></legacy-icon></el-button>
           </el-col>
         </el-row>
       </div>
@@ -50,7 +50,7 @@
         :title="$t('module.scroll-down')"
         :aria-label="$t('module.scroll-down')"
         @click.stop="scrollMenuStep(1)">
-        <i class="el-icon-arrow-down"></i>
+        <legacy-icon icon="el-icon-arrow-down"></legacy-icon>
       </button>
     </div>
     <div v-if="isEdit" class="module-menu-add-footer">

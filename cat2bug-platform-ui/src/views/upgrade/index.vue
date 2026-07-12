@@ -39,7 +39,7 @@
               >
                 <div class="setup-roadmap-marker-col">
                   <span class="setup-roadmap-marker">
-                    <i v-if="activeStep > index || (activeStep === resultStepIndex && isSuccessResult)" class="el-icon-check" />
+                    <legacy-icon v-if="activeStep > index || (activeStep === resultStepIndex && isSuccessResult)" icon="el-icon-check" />
                     <span v-else>{{ index + 1 }}</span>
                   </span>
                   <span
@@ -178,7 +178,7 @@
 
               <div v-show="currentStepKey === 'upgrade.step.result'" class="setup-step-panel">
                 <div v-if="isSuccessResult" class="setup-success setup-panel-fill">
-                  <i class="el-icon-success setup-success-icon" />
+                  <legacy-icon icon="el-icon-success" class="setup-success-icon" />
                   <h3>{{ $t('upgrade.success.title') }}</h3>
                   <p>{{ $t('upgrade.success.message') }}</p>
                   <p v-if="upgradeRestartRequired" class="setup-tip setup-tip--warn">{{ restartHintText }}</p>
@@ -190,7 +190,7 @@
                   </p>
                 </div>
                 <div v-else class="setup-success setup-panel-fill">
-                  <i class="el-icon-error" style="font-size:64px;color:#f56c6c;" />
+                  <legacy-icon icon="el-icon-error" style="font-size:64px;color:#f56c6c;" />
                   <h3>{{ $t('upgrade.failure.title') }}</h3>
                   <p>{{ status.lastError || $t('upgrade.failure.message') }}</p>
                   <p v-if="status.lastBackupFile" class="setup-tip">{{ $t('upgrade.failure.lastBackup', { file: status.lastBackupFile }) }}</p>

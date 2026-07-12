@@ -2,7 +2,7 @@
   <div class="tree">
     <div class="tree-tools" :style="treeToolsBarStyle">
       <span class="tree-tools-title">
-        <i class="el-icon-menu" />
+        <legacy-icon icon="el-icon-menu" />
         {{ $t('module.list') }}
       </span>
       <el-tooltip v-if="showSidebarToggle" :content="$t('case.hide-module-tree')" placement="bottom">
@@ -13,32 +13,34 @@
           @click.stop="handleSidebarToggle"
           @keyup.enter.stop.prevent="handleSidebarToggle"
         >
-          <i class="el-icon-d-arrow-left" :class="sidebarToggleHintClass" />
+          <legacy-icon icon="el-icon-d-arrow-left" />
         </span>
       </el-tooltip>
     </div>
     <el-tree :highlight-current="true" ref="moduleTree" :show-checkbox="checkVisible" :props="props" :lazy="true" :data="tree" :load="loadNode" node-key="id" @node-click="handleNodeClick" @check-change="handleCheckChange">
-      <span class="tree-node" slot-scope="{ node, data }">
-        <span v-if="node.label!=$t('module.all-module')">{{ node.label }}</span>
-        <span v-else><< {{ node.label }} >></span>
-        <span v-if="editVisible">
-          <el-button
-            type="text"
-            size="mini"
-            v-hasPermi="['system:module:add']"
-            @click="append($event, data)">
-            <i class="el-icon-plus" />
-          </el-button>
-          <el-button
-            type="text"
-            size="mini"
-            class="tree-node-remove-btn"
-            v-show="removeNodeButtonVisible(data)"
-            @click="remove($event, node, data)">
-            <i class="el-icon-close" />
-          </el-button>
+      <template #default="{ node, data }">
+        <span class="tree-node">
+          <span v-if="node.label !== $t('module.all-module')">{{ node.label }}</span>
+          <span v-else><< {{ node.label }} >></span>
+          <span v-if="editVisible">
+            <el-button
+              link
+              size="small"
+              v-hasPermi="['system:module:add']"
+              @click.stop="append($event, data)">
+              <legacy-icon icon="el-icon-plus" />
+            </el-button>
+            <el-button
+              link
+              size="small"
+              class="tree-node-remove-btn"
+              v-show="removeNodeButtonVisible(data)"
+              @click.stop="remove($event, node, data)">
+              <legacy-icon icon="el-icon-close" />
+            </el-button>
+          </span>
         </span>
-      </span>
+      </template>
     </el-tree>
     <module-dialog ref="moduleDialog" :project-id="projectId" @added="batchAddNode" @updated="batchAddNode" />
   </div>
@@ -173,7 +175,8 @@ export default {
       this.$emit('node-click',node.id);
     },
     append(e, data) {
-      this.$refs.moduleDialog.open(null,data.id);
+      const parentId = data && data.id != null ? data.id : 0;
+      this.$refs.moduleDialog.open(null, parentId);
       e.stopPropagation();
     },
     /** 批量添加节点 */

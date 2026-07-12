@@ -6,7 +6,7 @@
     :tools="tools"
     @tools-click="toolsHandle"
   >
-    <template slot="content">
+    <template #content>
       <div class="plan-radar-body">
         <div ref="chart" class="plan-radar-canvas" />
         <div v-show="showEmptyHint" class="plan-radar-empty">{{ emptyHintText }}</div>
@@ -16,15 +16,19 @@
 </template>
 
 <script>
-import * as echarts from '@/assets/js/echarts.min.js'
 import resize from '@/views/dashboard/mixins/resize'
 import Cat2BugCard from '../Components/Card'
 import { statisticPlanMetrics } from '@/api/system/statistic/defect'
-import { mapGetters } from 'vuex'
+import { mapState } from 'pinia'
+import { useSettingsStore } from '@/stores/settings'
 import {
-  disconnectEchartsResize,
-  observeEchartsResize,
   afterChartRefReady,
+  disposeEchartsChart,
+  initEchartsChart,
+  isChartDisposed,
+  observeEchartsResize,
+  safeResizeChart,
+  safeSetOption,
   scheduleEchartsResize
 } from '../utils/echarts-resize'
 import { resolveCurrentProjectId } from '../utils/project-id'
@@ -66,7 +70,7 @@ export default {
     read: { type: Boolean, default: false }
   },
   computed: {
-    ...mapGetters(['themeMode']),
+    ...mapState(useSettingsStore, ['themeMode']),
     currentProjectId() {
       return resolveCurrentProjectId(this)
     },
@@ -167,27 +171,19 @@ export default {
       }, 200)
     },
     clearChart() {
-      disconnectEchartsResize(this.chart)
-      if (this.chart) {
-        try {
-          this.chart.dispose()
-        } catch (e) { /* ignore */ }
-        this.chart = null
-      }
+      disposeEchartsChart(this.chart)
+      this.chart = null
     },
     ensureChart() {
       const el = this.$refs.chart
       if (!el) return false
-      const disposed = this.chart && typeof this.chart.isDisposed === 'function' && this.chart.isDisposed()
-      if (this.chart && !disposed) return true
-      const existing = typeof echarts.getInstanceByDom === 'function' ? echarts.getInstanceByDom(el) : null
-      if (existing) {
-        try {
-          existing.dispose()
-        } catch (e) { /* ignore */ }
+      if (isChartDisposed(this.chart)) {
+        this.chart = null
       }
-      this.chart = echarts.init(el, 'macarons')
-      return true
+      if (!this.chart) {
+        this.chart = initEchartsChart(el)
+      }
+      return !!this.chart
     },
     planMetricValue(plan, key) {
       const v = plan[key]
@@ -308,25 +304,18 @@ export default {
       }
       if (!this.ensureChart()) return
       const el = this.$refs.chart
-      try {
-        this.chart.setOption(this.buildChartOption(), true)
-      } catch (e) {
-        console.error('[TeamPlanMetricsRadar] setOption failed', e)
-        return
-      }
+      if (!safeSetOption(this.chart, this.buildChartOption(), true)) return
       observeEchartsResize(this.chart, el)
       scheduleEchartsResize(this.chart, el)
     },
     resize() {
-      if (!this.chart || !this.metricsList.length) return
-      try {
-        const layout = this.radarLayout()
-        this.chart.setOption({
-          radar: { radius: layout.radius, center: layout.center },
-          legend: { left: layout.legendLeft }
-        })
-        this.chart.resize()
-      } catch (e) { /* ignore */ }
+      if (!this.chart || isChartDisposed(this.chart) || !this.metricsList.length) return
+      const layout = this.radarLayout()
+      safeSetOption(this.chart, {
+        radar: { radius: layout.radius, center: layout.center },
+        legend: { left: layout.legendLeft }
+      })
+      safeResizeChart(this.chart)
     },
     refreshData() {
       this.getPlanMetrics()

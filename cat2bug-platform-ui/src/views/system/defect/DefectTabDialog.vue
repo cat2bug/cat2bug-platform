@@ -1,7 +1,7 @@
 <template>
   <el-dialog
     :title="$t('defect.create-tab')"
-    :visible.sync="dialogVisible"
+    v-model="dialogVisible"
     width="40%"
     :before-close="handleBeforeClose"
     @closed="handleClosed">
@@ -24,12 +24,12 @@
       <el-row :gutter="16" class="defect-tab-switch-row">
         <el-col :span="12">
           <el-form-item :label="$t('defect.my-following')" label-width="120px">
-            <el-switch v-model="form.config.params.collect" active-value="1" inactive-value="0" />
+            <el-switch v-model="form.config.params.collect" size="default" active-value="1" inactive-value="0" />
           </el-form-item>
         </el-col>
         <el-col :span="12">
           <el-form-item :label="$t('defect.show-deleted')" label-width="120px">
-            <el-switch v-model="form.config.params.delFlag" active-value="2" inactive-value="0" />
+            <el-switch v-model="form.config.params.delFlag" size="default" active-value="2" inactive-value="0" />
           </el-form-item>
         </el-col>
       </el-row>
@@ -42,10 +42,12 @@
         :defect-states-options="config.states || []"
       />
     </el-form>
-    <div slot="footer" class="dialog-footer">
-      <el-button @click="close">{{ $t('cancel') }}</el-button>
-      <el-button type="primary" @click="onCreateTab">{{ $t('create') }}</el-button>
-    </div>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button @click="close">{{ $t('cancel') }}</el-button>
+        <el-button type="primary" @click="onCreateTab">{{ $t('create') }}</el-button>
+      </div>
+    </template>
   </el-dialog>
 </template>
 

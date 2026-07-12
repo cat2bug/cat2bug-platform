@@ -1,16 +1,18 @@
 <template>
   <div class="app-container kbd-settings">
     <el-card shadow="never" class="kbd-settings__intro">
-      <div slot="header" class="kbd-settings__header">
-        <span>{{ $t('keyboard.title') }}</span>
-        <div class="kbd-settings__header-ops">
-          <el-switch
-            v-model="enabled"
-            :active-text="$t('keyboard.enabled')"
-          />
-          <el-button size="mini" @click="resetAll">{{ $t('keyboard.reset-all') }}</el-button>
+      <template #header>
+        <div class="kbd-settings__header">
+          <span>{{ $t('keyboard.title') }}</span>
+          <div class="kbd-settings__header-ops">
+            <el-switch
+              v-model="enabled"
+              :active-text="$t('keyboard.enabled')"
+            />
+            <el-button size="small" @click="resetAll">{{ $t('keyboard.reset-all') }}</el-button>
+          </div>
         </div>
-      </div>
+      </template>
       <p class="kbd-settings__desc" v-html="introHtml" />
       <div class="kbd-settings__leaders">
         <span class="kbd-settings__leader">
@@ -24,7 +26,7 @@
       </div>
     </el-card>
 
-    <el-collapse class="kbd-settings__reserved">
+    <el-collapse v-model="reservedActive" class="kbd-settings__reserved">
       <el-collapse-item :title="$t('keyboard.reserved-title')" name="reserved">
         <p class="kbd-settings__reserved-desc">{{ $t('keyboard.reserved-desc') }}</p>
         <p class="kbd-settings__reserved-hint">{{ $t('keyboard.reserved-letters-hint') }}</p>
@@ -40,37 +42,40 @@
       shadow="never"
       class="kbd-settings__section"
     >
-      <div slot="header">{{ section.title }}</div>
+      <template #header>{{ section.title }}</template>
       <el-table :data="section.items" size="small" :show-header="true">
-        <el-table-column :label="$t('keyboard.col-action')" prop="title" min-width="200" />
-        <el-table-column :label="$t('keyboard.col-shortcut')" width="160">
-          <template slot-scope="{ row }">
-            <el-input
-              v-model="row.letter"
-              maxlength="1"
-              size="mini"
-              class="kbd-settings__input"
-              :class="{ 'is-conflict': row.conflict }"
-              @input="(v) => onLetterInput(row, v)"
-            />
-            <span v-if="row.reserved" class="kbd-settings__conflict">
-              {{ $t('keyboard.reserved-forbidden') }}
-            </span>
-            <span v-else-if="row.conflict" class="kbd-settings__conflict">
-              {{ $t('keyboard.conflict') }}
-            </span>
+        <el-table-column :label="$t('keyboard.col-action')" prop="title" min-width="120" show-overflow-tooltip />
+        <el-table-column :label="$t('keyboard.col-shortcut')" min-width="240">
+          <template #default="{ row }">
+            <div class="kbd-settings__shortcut-cell">
+              <el-input
+                v-model="row.letter"
+                maxlength="1"
+                size="small"
+                class="kbd-settings__input"
+                :class="{ 'is-conflict': row.conflict }"
+                @input="(v) => onLetterInput(row, v)"
+              />
+              <span v-if="row.reserved" class="kbd-settings__conflict">
+                {{ $t('keyboard.reserved-forbidden') }}
+              </span>
+              <span v-else-if="row.conflict" class="kbd-settings__conflict">
+                {{ $t('keyboard.conflict') }}
+              </span>
+            </div>
           </template>
         </el-table-column>
         <el-table-column :label="$t('keyboard.col-default')" width="100">
-          <template slot-scope="{ row }">
+          <template #default="{ row }">
             <shortcut-badge :letter="row.defaultLetter" />
           </template>
         </el-table-column>
         <el-table-column :label="$t('keyboard.col-op')" width="100">
-          <template slot-scope="{ row }">
+          <template #default="{ row }">
             <el-button
-              type="text"
-              size="mini"
+              link
+              class="kbd-settings__reset-btn"
+              size="small"
               :disabled="!isOverridden(row)"
               @click="resetBinding(row, section)"
             >
@@ -115,6 +120,7 @@ export default {
   components: { ShortcutBadge },
   data() {
     return {
+      reservedActive: ['reserved'],
       sections: []
     }
   },
@@ -353,6 +359,25 @@ export default {
 }
 .kbd-settings__reserved {
   margin-top: 16px;
+
+  :deep(.el-collapse) {
+    border: 1px solid var(--border-color-light, var(--el-border-color-light));
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  :deep(.el-collapse-item__header) {
+    padding: 0 16px;
+    border-bottom: 1px solid var(--border-color-light, var(--el-border-color-light));
+  }
+
+  :deep(.el-collapse-item__wrap) {
+    border-bottom: none;
+  }
+
+  :deep(.el-collapse-item__content) {
+    padding: 12px 16px 16px;
+  }
 }
 .kbd-settings__reserved-desc,
 .kbd-settings__reserved-hint,
@@ -365,16 +390,32 @@ export default {
 .kbd-settings__section {
   margin-top: 16px;
 }
+.kbd-settings__shortcut-cell {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 8px;
+}
 .kbd-settings__input {
   width: 70px;
+  flex: 0 0 auto;
   text-transform: uppercase;
 }
-.kbd-settings__input.is-conflict ::v-deep .el-input__inner {
+.kbd-settings__input.is-conflict :deep(.el-input__inner) {
   border-color: var(--el-color-danger, #f56c6c);
 }
 .kbd-settings__conflict {
-  margin-left: 8px;
+  flex: 0 1 auto;
   font-size: 12px;
   color: var(--el-color-danger, #f56c6c);
+  white-space: nowrap;
+}
+.kbd-settings__reset-btn {
+  padding: 0;
+  height: auto;
+  min-height: 0;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 </style>

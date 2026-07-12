@@ -5,7 +5,7 @@
         <el-radio-button v-for="tt in timeTypeList" :key="tt.value" :label="tt.value">{{$t(tt.label).toString()}}</el-radio-button>
       </el-radio-group>
       <el-tooltip class="item" effect="dark" :content="$t('export')" placement="right-end">
-        <el-button type="text" icon="el-icon-download" @click="handleExport"></el-button>
+        <el-button type="text" :icon="$legacyIcon('el-icon-download')" @click="handleExport"></el-button>
       </el-tooltip>
     </div>
     <h1 class="title">{{ $t(title) }}</h1>
@@ -14,7 +14,7 @@
 </template>
 
 <script>
-import * as echarts from '@/assets/js/echarts.min.js';
+import echarts from '@/utils/echarts.js';
 import resize from "@/views/dashboard/mixins/resize";
 import { defectLine } from "@/api/system/dashboard";
 import { disconnectEchartsResize, observeEchartsResize } from '@/components/Cat2BugStatistic/utils/echarts-resize';

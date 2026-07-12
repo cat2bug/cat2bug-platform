@@ -5,25 +5,31 @@
         v-for="tag in visitedViews"
         ref="tag"
         :key="tag.path"
-        :class="isActive(tag)?'active':''"
+        v-slot="{ navigate, isActive }"
+        custom
         :to="{ path: tag.path, query: tag.query, fullPath: tag.fullPath }"
-        tag="span"
-        class="tags-view-item"
-        :style="activeStyle(tag)"
-        @click.middle.native="!isAffix(tag)?closeSelectedTag(tag):''"
-        @contextmenu.prevent.native="openMenu(tag,$event)"
       >
-        {{ tag.title }}
-        <span v-if="!isAffix(tag)" class="el-icon-close" @click.prevent.stop="closeSelectedTag(tag)" />
+        <span
+          :class="['tags-view-item', isActive ? 'active' : '']"
+          :style="isActive ? activeStyle(tag) : undefined"
+          @click="navigate"
+          @click.middle="!isAffix(tag) ? closeSelectedTag(tag) : undefined"
+          @contextmenu.prevent="openMenu(tag, $event)"
+        >
+          {{ tag.title }}
+          <span v-if="!isAffix(tag)" class="tags-view-close" @click.prevent.stop="closeSelectedTag(tag)">
+            <el-icon><Close /></el-icon>
+          </span>
+        </span>
       </router-link>
     </scroll-pane>
     <ul v-show="visible" :style="{left:left+'px',top:top+'px'}" class="contextmenu">
-      <li @click="refreshSelectedTag(selectedTag)"><i class="el-icon-refresh-right"></i> 刷新页面</li>
-      <li v-if="!isAffix(selectedTag)" @click="closeSelectedTag(selectedTag)"><i class="el-icon-close"></i> 关闭当前</li>
-      <li @click="closeOthersTags"><i class="el-icon-circle-close"></i> 关闭其他</li>
-      <li v-if="!isFirstView()" @click="closeLeftTags"><i class="el-icon-back"></i> 关闭左侧</li>
-      <li v-if="!isLastView()" @click="closeRightTags"><i class="el-icon-right"></i> 关闭右侧</li>
-      <li @click="closeAllTags(selectedTag)"><i class="el-icon-circle-close"></i> 全部关闭</li>
+      <li @click="refreshSelectedTag(selectedTag)"><el-icon><RefreshRight /></el-icon> 刷新页面</li>
+      <li v-if="!isAffix(selectedTag)" @click="closeSelectedTag(selectedTag)"><el-icon><Close /></el-icon> 关闭当前</li>
+      <li @click="closeOthersTags"><el-icon><CircleClose /></el-icon> 关闭其他</li>
+      <li v-if="!isFirstView()" @click="closeLeftTags"><el-icon><Back /></el-icon> 关闭左侧</li>
+      <li v-if="!isLastView()" @click="closeRightTags"><el-icon><Right /></el-icon> 关闭右侧</li>
+      <li @click="closeAllTags(selectedTag)"><el-icon><CircleClose /></el-icon> 全部关闭</li>
     </ul>
   </div>
 </template>
@@ -31,9 +37,13 @@
 <script>
 import ScrollPane from './ScrollPane'
 import path from 'path'
+import { Back, CircleClose, Close, RefreshRight, Right } from '@element-plus/icons-vue'
+import { useTagsViewStore } from '@/stores/tagsView'
+import { usePermissionStore } from '@/stores/permission'
+import { useSettingsStore } from '@/stores/settings'
 
 export default {
-  components: { ScrollPane },
+  components: { ScrollPane, Back, CircleClose, Close, RefreshRight, Right },
   data() {
     return {
       visible: false,
@@ -45,13 +55,13 @@ export default {
   },
   computed: {
     visitedViews() {
-      return this.$store.state.tagsView.visitedViews
+      return useTagsViewStore().visitedViews
     },
     routes() {
-      return this.$store.state.permission.routes
+      return usePermissionStore().routes
     },
     theme() {
-      return this.$store.state.settings.theme;
+      return useSettingsStore().theme;
     }
   },
   watch: {
@@ -122,19 +132,20 @@ export default {
     },
     initTags() {
       const affixTags = this.affixTags = this.filterAffixTags(this.routes)
+      const tagsViewStore = useTagsViewStore()
       for (const tag of affixTags) {
-        // Must have tag name
         if (tag.name) {
-          this.$store.dispatch('tagsView/addVisitedView', tag)
+          tagsViewStore.addVisitedView(tag)
         }
       }
     },
     addTags() {
       const { name } = this.$route
+      const tagsViewStore = useTagsViewStore()
       if (name) {
-        this.$store.dispatch('tagsView/addView', this.$route)
+        tagsViewStore.addView(this.$route)
         if (this.$route.meta.link) {
-          this.$store.dispatch('tagsView/addIframeView', this.$route)
+          tagsViewStore.addIframeView(this.$route)
         }
       }
       return false
@@ -143,11 +154,12 @@ export default {
       const tags = this.$refs.tag
       this.$nextTick(() => {
         for (const tag of tags) {
-          if (tag.to.path === this.$route.path) {
+          const targetPath = tag.to?.path || tag.$props?.to?.path
+          if (targetPath === this.$route.path) {
             this.$refs.scrollPane.moveToTarget(tag)
-            // when query is different then update
-            if (tag.to.fullPath !== this.$route.fullPath) {
-              this.$store.dispatch('tagsView/updateVisitedView', this.$route)
+            const fullPath = tag.to?.fullPath || tag.$props?.to?.fullPath
+            if (fullPath !== this.$route.fullPath) {
+              useTagsViewStore().updateVisitedView(this.$route)
             }
             break
           }
@@ -157,7 +169,7 @@ export default {
     refreshSelectedTag(view) {
       this.$tab.refreshPage(view);
       if (this.$route.meta.link) {
-        this.$store.dispatch('tagsView/delIframeView', this.$route)
+        useTagsViewStore().delIframeView(this.$route)
       }
     },
     closeSelectedTag(view) {
@@ -297,6 +309,9 @@ export default {
       margin: 0;
       padding: 7px 16px;
       cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
       &:hover {
         background: #eee;
       }
@@ -306,22 +321,20 @@ export default {
 </style>
 
 <style lang="scss">
-//reset element css of el-icon-close
 .tags-view-wrapper {
   .tags-view-item {
-    .el-icon-close {
+    .tags-view-close {
       width: 16px;
       height: 16px;
-      vertical-align: 2px;
+      vertical-align: middle;
       border-radius: 50%;
       text-align: center;
       transition: all .3s cubic-bezier(.645, .045, .355, 1);
       transform-origin: 100% 50%;
-      &:before {
-        transform: scale(.6);
-        display: inline-block;
-        vertical-align: -3px;
-      }
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: 2px;
       &:hover {
         background-color: #b4bccc;
         color: #fff;

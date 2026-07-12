@@ -14,6 +14,9 @@
 </template>
 
 <script>
+import loginCatSceneDark from '@/assets/images/login-cat-scene-dark.jpg'
+import loginCatSceneLight from '@/assets/images/login-cat-scene-light.jpg'
+
 export default {
   name: 'CatIllustration',
   data() {
@@ -24,9 +27,7 @@ export default {
   },
   computed: {
     sceneImage() {
-      return this.isDark
-        ? require('@/assets/images/login-cat-scene-dark.jpg')
-        : require('@/assets/images/login-cat-scene-light.jpg')
+      return this.isDark ? loginCatSceneDark : loginCatSceneLight
     }
   },
   mounted() {
@@ -38,7 +39,7 @@ export default {
       attributeFilter: ['class']
     })
   },
-  beforeDestroy() {
+  beforeUnmount() {
     if (this.themeObserver) {
       this.themeObserver.disconnect()
       this.themeObserver = null

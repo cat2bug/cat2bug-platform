@@ -1,5 +1,5 @@
 <template>
-  <el-dialog :title="$i18n.t('open')" :visible.sync="dialogVisible" :close-on-press-escape="false" :before-close="onToolDialogBeforeClose" append-to-body @opened="onToolDialogOpened" width="30%">
+  <el-dialog :title="$i18n.t('open')" v-model="dialogVisible" :close-on-press-escape="false" :before-close="onToolDialogBeforeClose" append-to-body @opened="onToolDialogOpened" width="30%">
     <el-form ref="form" :model="form" :rules="rules" label-width="120px">
       <el-form-item :label="$i18n.t('describe')" prop="defectLogDescribe">
         <el-input type="textarea"
@@ -11,13 +11,15 @@
         ></el-input>
       </el-form-item>
     </el-form>
-    <div slot="footer" class="dialog-footer">
+    <template #footer>
+    <div class="dialog-footer">
       <el-button @click="requestCloseToolDialog">{{$i18n.t('cancel')}}</el-button>
       <el-button class="defect-kbd-hint-host" type="primary" @click="onSubmit">
         {{$i18n.t('submit')}}
         <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
       </el-button>
     </div>
+    </template>
   </el-dialog>
 </template>
 

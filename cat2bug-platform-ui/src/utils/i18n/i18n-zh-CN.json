@@ -504,7 +504,7 @@
   "defect.builtin-field.createMember": "创建人",
   "defect.builtin-field.updateTime": "更新时间",
   "defect.custom-field.section": "缺陷字段",
-  "defect.custom-field.object-placeholder": "JSON 对象，例如 {\"k\":\"v\"}",
+  "defect.custom-field.object-placeholder": "JSON 对象，例如 \"k\": \"v\"",
   "defect.custom-field.invalid-json": "JSON 格式无效",
   "defect.custom-field.add-item": "添加一项",
   "defect.custom-field-filters": "自定义字段筛选",

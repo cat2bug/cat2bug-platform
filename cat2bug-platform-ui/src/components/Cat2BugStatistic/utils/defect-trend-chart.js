@@ -1,4 +1,5 @@
 import { statisticChartColors } from './chart-theme'
+import { sanitizeChartSeries } from './echarts-resize'
 
 /** SysDefectStateEnum 序 → 缺陷列表 defectStates 参数 */
 export const DEFECT_STATE_NAME_TO_ID = {
@@ -116,7 +117,7 @@ export function buildTrendLineChartOption({ legendData, xData, series, isDark, t
       axisLine: { show: false },
       splitLine: { lineStyle: { color: colors.splitLine } }
     },
-    series
+    series: sanitizeChartSeries(series)
   }
 }
 

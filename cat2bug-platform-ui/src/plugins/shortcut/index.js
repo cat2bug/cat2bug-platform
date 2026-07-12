@@ -6,7 +6,7 @@ import { shortcutStore } from './shortcut-store'
 import { pageRegistry } from './registry'
 
 const ShortcutPlugin = {
-  install(Vue) {
+  install(app) {
     const api = {
       service: shortcutService,
       store: shortcutStore,
@@ -15,7 +15,7 @@ const ShortcutPlugin = {
       registerPage: (scopeKey, actions) => pageRegistry.registerPage(scopeKey, actions),
       unregisterPage: (scopeKey) => pageRegistry.unregisterPage(scopeKey)
     }
-    Vue.prototype.$shortcut = api
+    app.config.globalProperties.$shortcut = api
     shortcutService.start()
   }
 }

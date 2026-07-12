@@ -6,13 +6,13 @@
     :tools="tools"
     @tools-click="toolsHandle"
   >
-    <template slot="left-tools">
+    <template #left-tools>
       <el-select
         v-if="planList.length"
         v-model="planId"
         class="plan-burndown-select"
         popper-class="plan-burndown-select-dropdown"
-        size="mini"
+        size="small"
         filterable
         @change="handlePlanChange"
         @click.native.stop
@@ -28,7 +28,7 @@
         </el-option>
       </el-select>
     </template>
-    <template slot="content">
+    <template #content>
       <div class="plan-burndown-body">
         <div ref="chart" class="plan-burndown-canvas" />
         <div v-show="showEmptyHint" class="plan-burndown-empty">{{ emptyHintText }}</div>
@@ -38,12 +38,20 @@
 </template>
 
 <script>
-import * as echarts from '@/assets/js/echarts.min.js'
 import resize from '@/views/dashboard/mixins/resize'
 import Cat2BugCard from '../Components/Card'
 import { statisticPlanBurndown, statisticPlanList } from '@/api/system/statistic/defect'
-import { mapGetters } from 'vuex'
-import { disconnectEchartsResize, observeEchartsResize, afterChartRefReady } from '../utils/echarts-resize'
+import { mapState } from 'pinia'
+import { useSettingsStore } from '@/stores/settings'
+import {
+  afterChartRefReady,
+  disposeEchartsChart,
+  initEchartsChart,
+  isChartDisposed,
+  observeEchartsResize,
+  safeResizeChart,
+  safeSetOption
+} from '../utils/echarts-resize'
 import { resolveCurrentProjectId } from '../utils/project-id'
 import { statisticChartColors } from '../utils/chart-theme'
 
@@ -68,7 +76,7 @@ export default {
     read: { type: Boolean, default: false }
   },
   computed: {
-    ...mapGetters(['themeMode']),
+    ...mapState(useSettingsStore, ['themeMode']),
     currentProjectId() {
       return resolveCurrentProjectId(this)
     },
@@ -95,7 +103,7 @@ export default {
       }
     },
     themeMode() {
-      if (this.chart && this.lastXData.length) {
+      if (!isChartDisposed(this.chart) && this.lastXData.length) {
         this.setOptions(this.lastXData, this.lastSeries)
       }
     }
@@ -131,21 +139,21 @@ export default {
       })
     },
     clearChart() {
-      disconnectEchartsResize(this.chart)
-      if (this.chart) {
-        this.chart.dispose()
-        this.chart = null
-      }
+      disposeEchartsChart(this.chart)
+      this.chart = null
       this.lastXData = []
       this.lastSeries = []
     },
     ensureChart() {
       const el = this.$refs.chart
       if (!el) return false
-      if (!this.chart) {
-        this.chart = echarts.init(el, 'macarons')
+      if (isChartDisposed(this.chart)) {
+        this.chart = null
       }
-      return true
+      if (!this.chart) {
+        this.chart = initEchartsChart(el)
+      }
+      return !!this.chart
     },
     handlePlanChange() {
       if (!this.planId) return
@@ -176,10 +184,10 @@ export default {
       })
     },
     setOptions(xData, series) {
-      if (!this.chart) return
+      if (!this.chart || isChartDisposed(this.chart)) return
       const dark = this.isDarkTheme
       const colors = statisticChartColors(dark)
-      this.chart.setOption({
+      safeSetOption(this.chart, {
         tooltip: {
           trigger: 'axis',
           confine: true,
@@ -228,10 +236,10 @@ export default {
         }]
       }, true)
       observeEchartsResize(this.chart, this.$refs.chart)
-      this.$nextTick(() => this.chart && this.chart.resize())
+      this.$nextTick(() => safeResizeChart(this.chart))
     },
     resize() {
-      this.chart && this.chart.resize()
+      safeResizeChart(this.chart)
     },
     refreshData() {
       if (this.planId) {
@@ -279,28 +287,37 @@ export default {
   max-width: 140px;
   vertical-align: middle;
 
-  ::v-deep .el-input {
-    height: var(--statistic-card-header-min-height, 17px);
+  ::v-deep .el-select__wrapper {
+    height: calc(var(--statistic-card-header-min-height, 17px) - 2px) !important;
+    min-height: calc(var(--statistic-card-header-min-height, 17px) - 2px) !important;
+    line-height: calc(var(--statistic-card-header-min-height, 17px) - 2px) !important;
+    font-size: 11px;
+    padding: 0 18px 0 6px !important;
+    overflow: hidden;
   }
 
-  ::v-deep .el-input__inner {
-    height: calc(var(--statistic-card-header-min-height, 17px) - 2px);
-    line-height: calc(var(--statistic-card-header-min-height, 17px) - 2px);
-    font-size: 11px;
-    padding: 0 22px 0 6px;
+  ::v-deep .el-select__selection {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
-  ::v-deep .el-input__suffix {
+  ::v-deep .el-select__selected-item,
+  ::v-deep .el-select__placeholder {
+    font-size: 11px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  ::v-deep .el-select__suffix {
     display: flex;
     align-items: center;
     height: 100%;
     right: 2px;
   }
 
-  ::v-deep .el-input__icon {
+  ::v-deep .el-select__caret {
     line-height: 1;
     font-size: 12px;
   }

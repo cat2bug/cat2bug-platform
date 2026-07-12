@@ -16,7 +16,7 @@
               fit="cover"></cat2-bug-image>
           </div>
           <el-badge :value="num(caseModel.imgUrls)" class="item" slot="reference" v-if="num(caseModel.imgUrls)">
-            <el-button icon="el-icon-picture-outline" size="mini"></el-button>
+            <el-button :icon="$legacyIcon('el-icon-picture-outline')" size="mini"></el-button>
           </el-badge>
         </el-popover>
         <el-popover
@@ -26,7 +26,7 @@
             <cat2-bug-text type="down" :content="file" :tooltip="file" v-for="(file,index) in list(caseModel.annexUrls)" :key="index"/>
           </div>
           <el-badge :value="num(caseModel.annexUrls)" class="item" slot="reference" v-if="num(caseModel.annexUrls)">
-            <el-button icon="el-icon-paperclip" size="mini"></el-button>
+            <el-button :icon="$legacyIcon('el-icon-paperclip')" size="mini"></el-button>
           </el-badge>
         </el-popover>
       </div>

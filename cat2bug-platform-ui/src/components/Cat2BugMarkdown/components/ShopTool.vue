@@ -4,9 +4,9 @@
     :visible.sync="drawer"
     :direction="direction"
     :before-close="handleClose">
-    <template slot="title">
+    <template #header>
       <div class="report-shop-header">
-        <i class="el-icon-arrow-left" @click="cancel"></i>
+        <legacy-icon icon="el-icon-arrow-left" @click="cancel"></legacy-icon>
         <h4>{{$t('report.template-shop')}}</h4>
       </div>
     </template>

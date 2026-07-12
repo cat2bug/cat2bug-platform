@@ -36,6 +36,7 @@
 <script>
 import { Multipane, MultipaneResizer } from 'vue-multipane';
 import MarkdownItVue from "markdown-it-vue"
+import multimdTable from 'markdown-it-multimd-table'
 import { TablePlugin } from "./plugins/TablePlugin"
 import { CardPlugin } from "@/components/Cat2BugMarkdown/plugins/CardPlugin";
 import {CaseCardPlugin} from "@/components/Cat2BugMarkdown/plugins/CaseCardPlugin";
@@ -53,7 +54,6 @@ import ToolsMenu from "@/components/Cat2BugMarkdown/components/ToolsMenu";
 import {ImagePlugin} from "@/components/Cat2BugMarkdown/plugins/ImagePlugin";
 import html2canvas from 'html2canvas';
 import {strFormat} from "@/utils";
-import Vue from "vue";
 import {upload} from "@/api/common/upload";
 import {updateTemplate} from "@/api/system/ReportTemplate";
 import {markdownData} from "@/api/markdown/markdown";
@@ -172,7 +172,7 @@ export default {
         tools.forEach(t=>{
           if(t.type=='component') {
             arr.push(t.content);
-            Vue.component(t.content.name ,t.content);
+            this.$.appContext.app.component(t.content.name, t.content);
           }
           if(t.children) {
             let childrenArr = this._registerComponentTools(t.children);
@@ -220,7 +220,7 @@ export default {
     /** 初始化markdown插件 */
     initMarkdownPlug() {
       // 可以合并行列的表格
-      this.$refs.markdownView.use(require('markdown-it-multimd-table'), {
+      this.$refs.markdownView.use(multimdTable, {
         multiline:  true,
         rowspan:    true,
         headerless: true,

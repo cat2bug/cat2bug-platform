@@ -15,7 +15,7 @@
             />
             <span v-else class="type-enum-empty">{{ $i18n.t('defect.value-empty') }}</span>
           </span>
-          <i class="el-icon-right arrow"></i>
+          <legacy-icon icon="el-icon-right" class="arrow"></legacy-icon>
           <span class="defect-log-type-col">
             <defect-type-flag
               v-if="hasEnumValue(change.newValue)"
@@ -26,7 +26,7 @@
         </template>
         <template v-else-if="change.type==='enum'">
           <span class="old">{{ enumLabel(change.field, change.oldValue, change.oldDisplay) }}</span>
-          <i class="el-icon-right arrow"></i>
+          <legacy-icon icon="el-icon-right" class="arrow"></legacy-icon>
           <span class="new">{{ enumLabel(change.field, change.newValue, change.newDisplay) }}</span>
         </template>
         <template v-else-if="change.type==='users'">
@@ -43,7 +43,7 @@
             />
             <span v-else class="plain-old">{{ displayOrEmpty(change.oldDisplay) }}</span>
           </span>
-          <i class="el-icon-right arrow"></i>
+          <legacy-icon icon="el-icon-right" class="arrow"></legacy-icon>
           <span class="handle-by-tags-wrap" :title="change.newDisplay">
             <row-list-member
               v-if="handleByMembers(change, 'new').length > 1"
@@ -59,18 +59,18 @@
         </template>
         <template v-else-if="change.type==='module' || change.type==='case'">
           <span class="old" :title="change.oldDisplay">{{ displayOrEmpty(change.oldDisplay) }}</span>
-          <i class="el-icon-right arrow"></i>
+          <legacy-icon icon="el-icon-right" class="arrow"></legacy-icon>
           <span class="new" :title="change.newDisplay">{{ displayOrEmpty(change.newDisplay) }}</span>
         </template>
         <template v-else-if="change.type==='time'">
           <span class="old">{{ displayOrEmpty(change.oldDisplay) }}</span>
-          <i class="el-icon-right arrow"></i>
+          <legacy-icon icon="el-icon-right" class="arrow"></legacy-icon>
           <span class="new">{{ displayOrEmpty(change.newDisplay) }}</span>
         </template>
         <template v-else-if="change.type==='images' || change.type==='files'">
           <span class="media-change-row" v-for="lab in [mediaLabels(change)]" :key="'media-' + index">
             <span class="media-side media-old">{{ lab.old }}</span>
-            <i class="el-icon-right arrow"></i>
+            <legacy-icon icon="el-icon-right" class="arrow"></legacy-icon>
             <span class="media-side media-new">
               <span class="media-new-main">{{ lab.newMain }}</span>
               <span class="media-new-delta">{{ lab.delta }}</span>
@@ -101,13 +101,13 @@
             </div>
             <span class="long-text">
               <span class="old">{{ truncate(change.oldValue) }}</span>
-              <i class="el-icon-right arrow"></i>
+              <legacy-icon icon="el-icon-right" class="arrow"></legacy-icon>
               <span class="new">{{ truncate(change.newValue) }}</span>
             </span>
           </el-tooltip>
           <template v-else>
             <span class="old">{{ valueText(change.oldValue) }}</span>
-            <i class="el-icon-right arrow"></i>
+            <legacy-icon icon="el-icon-right" class="arrow"></legacy-icon>
             <span class="new">{{ valueText(change.newValue) }}</span>
           </template>
         </template>

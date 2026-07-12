@@ -5,7 +5,7 @@
     :tools="tools"
     @tools-click="toolsHandle"
   >
-    <template slot="content">
+    <template #content>
       <div class="team-workload-panel">
         <div v-if="isEmpty" class="team-workload-empty">{{ $t('no-data') }}</div>
         <template v-else>
@@ -21,11 +21,11 @@
           </div>
           <el-pagination
             class="statistic-pagination"
-            small
+            size="small"
             :hide-on-single-page="total <= formParams.pageSize"
             layout="prev, next"
-            :current-page.sync="formParams.pageNum"
-            :page-size.sync="formParams.pageSize"
+            v-model:current-page="formParams.pageNum"
+            v-model:page-size="formParams.pageSize"
             :total="total"
             @current-change="getStatistic"
           />

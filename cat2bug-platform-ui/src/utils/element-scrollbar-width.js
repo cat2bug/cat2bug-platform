@@ -3,14 +3,12 @@
  * Element 用单一 gutterWidth 同时预留纵向条宽度与横向条高度；原实现只测纵向且 overlay 常为 0，
  * 会导致固定列盖住滚动条。此处双轴测量并取 max，与 el-table-scrollbar.scss 中 14px 厚度对齐。
  */
-import Vue from 'vue'
-
 let cached
 
 const MIN_THEME = 14
 
 export default function scrollbarWidth() {
-  if (Vue.prototype.$isServer) return 0
+  if (typeof document === 'undefined') return 0
   if (cached !== undefined) return cached
 
   const outer = document.createElement('div')

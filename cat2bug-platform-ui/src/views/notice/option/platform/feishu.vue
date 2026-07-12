@@ -2,27 +2,28 @@
   <el-form ref="form" :model="form" :rules="rules" label-width="190px">
     <!-- 单发配置区域 -->
     <el-form-item prop="singleSwitch">
-      <template slot="label">
+      <template #label>
         <span>{{$t('feishu.single-send-config')}}</span>
       </template>
       <el-switch v-model="form.singleSwitch" @change="handleChange"></el-switch>
     </el-form-item>
     <el-form-item prop="mobile">
-      <template slot="label">
+      <template #label>
         <div class="form-label">
           <label>{{$t('feishu.enterprise-mobile')}}</label>
           <el-tooltip class="item" effect="dark" :content="$t('feishu.mobile-illustrate')" placement="bottom">
-            <i class="el-icon-question"></i>
+            <legacy-icon icon="el-icon-question"></legacy-icon>
           </el-tooltip>
         </div>
       </template>
       <el-input v-model="form.mobile" class="notice-option-input-group" @input="handleMobileInput" :placeholder="$t('feishu.enter-mobile')" maxlength="32" :disabled="!form.singleSwitch">
-        <el-button
-          slot="append"
+        <template #append>
+          <el-button
           class="notice-option-test-btn notice-option-test-btn--single"
           :loading="mobileTestLoading"
           :disabled="!form.singleSwitch || !hasMobile"
           @click="handleMobileTest">{{$t('feishu.single-test')}}</el-button>
+        </template>
       </el-input>
     </el-form-item>
     <el-alert
@@ -36,49 +37,50 @@
     <!-- 群发配置区域 -->
     <el-divider></el-divider>
     <el-form-item prop="groupSwitch">
-      <template slot="label">
+      <template #label>
         <span>{{$t('feishu.group-send-config')}}</span>
       </template>
       <el-switch v-model="form.groupSwitch" @change="handleChange"></el-switch>
     </el-form-item>
     <el-form-item prop="key">
-      <template slot="label">
+      <template #label>
         <div class="form-label">
           <label>{{$t('feishu.custom-keyword')}}</label>
           <el-tooltip class="item" effect="dark" :content="$t('feishu.keyword-illustrate')" placement="bottom">
-            <i class="el-icon-question"></i>
+            <legacy-icon icon="el-icon-question"></legacy-icon>
           </el-tooltip>
         </div>
       </template>
       <el-input v-model="form.key" @input="handleChange" :placeholder="$t('feishu.enter-hook-keyword')" maxlength="128" :disabled="!form.groupSwitch"></el-input>
     </el-form-item>
     <el-form-item prop="secret">
-      <template slot="label">
+      <template #label>
         <div class="form-label">
           <label>{{$t('feishu.signature-verification')}}</label>
           <el-tooltip class="item" effect="dark" :content="$t('feishu.secret-illustrate')" placement="bottom">
-            <i class="el-icon-question"></i>
+            <legacy-icon icon="el-icon-question"></legacy-icon>
           </el-tooltip>
         </div>
       </template>
       <el-input v-model="form.secret" @input="handleChange" :placeholder="$t('feishu.enter-secret')" maxlength="128" :disabled="!form.groupSwitch"></el-input>
     </el-form-item>
     <el-form-item prop="hook">
-      <template slot="label">
+      <template #label>
         <div class="form-label">
           <label>{{$t('feishu.hook')}}</label>
           <el-tooltip class="item" effect="dark" :content="$t('feishu.hook-illustrate')" placement="bottom">
-            <i class="el-icon-question"></i>
+            <legacy-icon icon="el-icon-question"></legacy-icon>
           </el-tooltip>
         </div>
       </template>
       <el-input v-model="form.hook" class="notice-option-input-group" @input="handleHookInput" :placeholder="$t('feishu.enter-hook-url')" maxlength="255" :disabled="!form.groupSwitch">
-        <el-button
-          slot="append"
+        <template #append>
+          <el-button
           class="notice-option-test-btn notice-option-test-btn--group"
           :loading="groupTestLoading"
           :disabled="!form.groupSwitch || !hasHook"
           @click="handleGroupTest">{{$t('feishu.group-test')}}</el-button>
+        </template>
       </el-input>
     </el-form-item>
   </el-form>

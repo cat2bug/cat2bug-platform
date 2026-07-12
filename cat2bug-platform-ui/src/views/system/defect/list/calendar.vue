@@ -5,7 +5,7 @@
       <slot name="right-tools"></slot>
     </div>
     <div>
-      <el-button type="text" @click="handlePrevMonthChange"><i class="el-icon-arrow-left"/> </el-button>
+      <el-button type="text" @click="handlePrevMonthChange"><legacy-icon icon="el-icon-arrow-left" /> </el-button>
       <el-date-picker
         class="defect-calendar-picker"
         v-model="currentDate"
@@ -15,7 +15,7 @@
         :format="dateFormat"
         @change="handleCurrentDateChange">
       </el-date-picker>
-      <el-button type="text" @click="handleNextMonthChange"><i class="el-icon-arrow-right"/> </el-button>
+      <el-button type="text" @click="handleNextMonthChange"><legacy-icon icon="el-icon-arrow-right" /> </el-button>
     </div>
     <div class="calendar">
       <div class="row">
@@ -25,7 +25,7 @@
         <div v-for="(day,dayIndex) in row" :key="dayIndex" :week="dayIndex" class="calendar-day">
           <div class="calendar-day-title">
             <div class="calendar-day-title-header">
-              <i class="el-icon-date"/>
+              <legacy-icon icon="el-icon-date" />
               <span :now="day.day.getMonth()==currentMonth">{{parseTime(day.day,'{y}-{m}-{d}')}}</span>
             </div>
             <div>

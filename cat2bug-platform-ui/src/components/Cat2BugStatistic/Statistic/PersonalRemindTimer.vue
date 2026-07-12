@@ -6,7 +6,7 @@
       :tools="tools"
       @tools-click="toolsHandle"
     >
-      <template slot="content">
+      <template #content>
         <div class="remind-timer-body" @click="onBodyClick">
           <div v-if="!activeRow" class="remind-timer-empty">
             {{ $t('defect.personal-remind-timer.empty') }}
@@ -153,7 +153,7 @@
             <el-button
               ref="remindAddBtn"
               type="text"
-              icon="el-icon-plus"
+              :icon="$legacyIcon('el-icon-plus')"
               class="remind-add-btn cat2bug-field-hint-host"
               :title="$t('defect.personal-remind-timer.add').toString()"
               @click="addTimer"
@@ -162,7 +162,7 @@
           <template slot-scope="scope">
             <el-button
               type="text"
-              icon="el-icon-delete"
+              :icon="$legacyIcon('el-icon-delete')"
               data-remind-stop
               class="remind-delete-btn"
               :title="$t('delete').toString()"

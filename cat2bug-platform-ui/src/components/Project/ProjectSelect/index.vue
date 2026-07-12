@@ -1,17 +1,18 @@
 <template>
   <el-popover
     placement="bottom-start"
-    v-model="popoverVisible"
+    v-model:visible="popoverVisible"
     @show="popoverShowHandle"
     @hide="popoverHideHandle"
     trigger="hover">
-    <div slot="reference" :class="['between-row-1', 'click', 'project-select-kbd-hint-anchor', 'select-project-member-input-' + size]">
-      <i class="yellow el-icon-star-on start-switch" :collect="currentProject.collect?'true':'false'" @click="handleProjectCollect(currentProject)"></i>
-<!--      <el-image :src="currentProject.projectIcon" />-->
-      <p class="prefix-project-name">{{currentProject.projectName}}</p>
-      <i class="el-icon-arrow-down" />
-    </div>
-    <h3 class="title"><i class="el-icon-refresh"/> {{ $t('project.select') }}</h3>
+    <template #reference>
+      <div :class="triggerClass">
+        <legacy-icon icon="el-icon-star-on" class="yellow start-switch project-select-star" :collect="currentProjectDisplay.collect ? 'true' : 'false'" @click.stop="handleProjectCollect(currentProjectDisplay, $event)"></legacy-icon>
+        <p class="prefix-project-name">{{ currentProjectDisplay.projectName || '' }}</p>
+        <legacy-icon icon="el-icon-arrow-down" class="project-select-caret" />
+      </div>
+    </template>
+    <h3 class="title"><legacy-icon icon="el-icon-refresh" /> {{ $t('project.select') }}</h3>
     <el-divider></el-divider>
     <div ref="projectList" class="project-select-list">
       <div
@@ -22,7 +23,7 @@
         @click="handleProjectChange(item)"
       >
         <div class="row">
-          <i class="yellow el-icon-star-on start-switch" :collect="item.collect?'true':'false'" @click="handleProjectCollect(item, $event)"></i>
+          <legacy-icon icon="el-icon-star-on" class="yellow start-switch" :collect="item.collect?'true':'false'" @click="handleProjectCollect(item, $event)"></legacy-icon>
 <!--        <el-image :src="item.projectIcon" />-->
           <p class="prefix-project-name">{{item.projectName}}</p>
         </div>
@@ -31,11 +32,11 @@
     <el-divider v-if="total>queryParams.pageSize"></el-divider>
     <el-pagination
       style="float: right;"
-      small
+      size="small"
       :hide-on-single-page="true"
       layout="prev, next"
-      :current-page.sync="queryParams.pageNum"
-      :page-size.sync="queryParams.pageSize"
+      v-model:current-page="queryParams.pageNum"
+      v-model:page-size="queryParams.pageSize"
       :total="total"
       @current-change="getProjectList">
     </el-pagination>
@@ -44,6 +45,8 @@
 
 <script>
 import {collectProject, getProject, listProject} from "@/api/system/project";
+import { listProject as listAdminProject } from "@/api/admin/project";
+import { myListTeam } from "@/api/system/team";
 import store from "@/store";
 import Label from "@/components/Cat2BugStatistic/Components/Label";
 
@@ -85,11 +88,43 @@ export default {
       default: 'default'
     },
   },
+  computed: {
+    currentProjectDisplay() {
+      return this.currentProject && typeof this.currentProject === 'object' ? this.currentProject : {}
+    },
+    /** 与 Vue2 一致：仅 size 后缀类名，不用 select-project-member-input 外框 */
+    triggerClass() {
+      return [
+        'between-row-1',
+        'click',
+        'project-select-trigger',
+        'project-select-kbd-hint-anchor'
+      ]
+    }
+  },
+  watch: {
+    teamId: {
+      immediate: true,
+      handler() {
+        this.queryParams.teamId = this.teamId
+        this.getProjectList()
+      }
+    },
+    memberId(val) {
+      if (!this.queryParams.params) {
+        this.queryParams.params = {}
+      }
+      this.queryParams.params.userId = val
+      this.getProjectList()
+    },
+    projectId(val) {
+      this.getCurrentProjectInfo()
+    }
+  },
   created() {
   },
   mounted() {
     this.getCurrentProjectInfo();
-    this.getProjectList();
   },
   beforeDestroy() {
     this.detachProjectSelectKeyboardListener();
@@ -249,19 +284,96 @@ export default {
     },
     /** 获取当前项目信息 */
     getCurrentProjectInfo() {
-      getProject(this.projectId).then(res=>{
-        this.currentProject = res.data;
+      const projectId = parseInt(this.projectId, 10)
+      if (!Number.isFinite(projectId) || projectId <= 0) {
+        return
+      }
+      getProject(projectId).then(res => {
+        if (res && res.data) {
+          this.currentProject = res.data
+        }
+      })
+    },
+    applyProjectListResponse(res) {
+      this.options = (res && res.rows) ? res.rows : []
+      this.total = (res && res.total != null) ? res.total : this.options.length
+      if (this.popoverVisible && this.activeIndex >= this.options.length) {
+        this.activeIndex = Math.max(0, this.options.length - 1)
+      }
+    },
+    canUseAdminProjectList() {
+      const perms = store.state.user.permissions
+      return Array.isArray(perms) && (perms.includes('*:*:*') || perms.includes('admin:project:list'))
+    },
+    resolveTeamIdFromMyList() {
+      return myListTeam().then((res) => {
+        const first = res && res.rows && res.rows[0]
+        const tid = first && Number(first.teamId)
+        return (Number.isFinite(tid) && tid > 0) ? tid : null
+      }).catch(() => null)
+    },
+    /** currentTeamId 为空时，从当前项目 / 上下文团队 / 我的团队推断 teamId */
+    resolveEffectiveTeamId() {
+      const direct = Number(this.teamId)
+      if (Number.isFinite(direct) && direct > 0) {
+        return Promise.resolve(direct)
+      }
+      const ctx = store.state.user.contextTeam
+      if (ctx && ctx.teamId) {
+        const tid = Number(ctx.teamId)
+        if (Number.isFinite(tid) && tid > 0) {
+          return Promise.resolve(tid)
+        }
+      }
+      const projectId = Number(this.projectId)
+      if (Number.isFinite(projectId) && projectId > 0) {
+        return getProject(projectId).then((res) => {
+          const tid = res && res.data && Number(res.data.teamId)
+          if (Number.isFinite(tid) && tid > 0) {
+            return tid
+          }
+          return this.resolveTeamIdFromMyList()
+        }).catch(() => this.resolveTeamIdFromMyList())
+      }
+      return this.resolveTeamIdFromMyList()
+    },
+    tryAdminProjectList() {
+      if (!this.canUseAdminProjectList()) {
+        this.options = []
+        this.total = 0
+        return Promise.resolve()
+      }
+      return listAdminProject({
+        pageNum: this.queryParams.pageNum,
+        pageSize: this.queryParams.pageSize,
+      }).then((res) => {
+        this.applyProjectListResponse(res)
+      }).catch(() => {
+        this.options = []
+        this.total = 0
       })
     },
     /** 查询收藏的项目列表 */
     getProjectList() {
-      return listProject(this.queryParams).then(res => {
-        this.options = res.rows;
-        this.total = res.total;
-        if (this.popoverVisible && this.activeIndex >= this.options.length) {
-          this.activeIndex = Math.max(0, this.options.length - 1);
+      if (this.memberId) {
+        if (!this.queryParams.params) {
+          this.queryParams.params = {}
         }
-      });
+        this.queryParams.params.userId = this.memberId
+      }
+      return this.resolveEffectiveTeamId().then((teamId) => {
+        if (!teamId) {
+          return this.tryAdminProjectList()
+        }
+        this.queryParams.teamId = teamId
+        return listProject(this.queryParams).then((res) => {
+          if (res && res.rows && res.rows.length) {
+            this.applyProjectListResponse(res)
+            return
+          }
+          return this.tryAdminProjectList()
+        }).catch(() => this.tryAdminProjectList())
+      })
     },
     /** 选择项目 */
     handleProjectChange(project) {
@@ -275,11 +387,14 @@ export default {
     },
     /** 设置当前项目是否收藏 */
     handleProjectCollect(project, event) {
-      this.$set(project, 'collect', !project.collect);
+      if (!project || !project.projectId) {
+        return
+      }
+      project.collect = !project.collect
       // 保存收藏状态
       collectProject(project.projectId, project).then(res=>{
         if(project.projectId == this.currentProject.projectId) {
-          this.$set(this.currentProject, 'collect', project.collect);
+          this.currentProject = { ...this.currentProject, collect: project.collect }
         }
         if(project.collect) {
           this.$message.success(this.$i18n.t('collect-success').toString());
@@ -298,6 +413,13 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+:deep(.el-popover__reference),
+:deep(.el-popover__reference-wrapper) {
+  display: inline-flex;
+  width: auto;
+  max-width: 100%;
+}
+
 .el-divider {
   background-color: var(--border-color-light);
   margin: 10px 0px;
@@ -321,12 +443,37 @@ export default {
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  .el-icon-arrow-down {
-    flex-shrink: 0;
-    color: #909399;
-  }
   .start-switch {
     flex-shrink: 0;
+  }
+}
+
+.project-select-trigger.between-row-1 {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+
+  &:focus,
+  &:focus-within,
+  &:focus-visible {
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+  }
+}
+
+.project-select-caret {
+  flex-shrink: 0;
+  font-size: 10px !important;
+  width: 10px;
+  height: 10px;
+  line-height: 1;
+  color: var(--cat2bug-input-icon-color, #909399);
+
+  :deep(svg) {
+    width: 10px !important;
+    height: 10px !important;
   }
 }
   .prefix-project-name {
@@ -363,7 +510,15 @@ export default {
   padding: 2px 10px;
   border-radius: 3px;
 }
-.click:hover,
+
+.project-select-trigger.click:hover {
+  background-color: #e8f4ff;
+}
+.item.click {
+  padding: 2px 10px;
+  border-radius: 3px;
+}
+.item.click:hover,
 .item.is-keyboard-active {
   background-color: #e8f4ff;
 }
@@ -388,6 +543,10 @@ export default {
 .el-image {
   width: 30px;
   height: 30px;
+}
+
+@at-root html.dark .project-select-trigger.click:hover {
+  background-color: var(--table-row-hover-bg) !important;
 }
 
 @at-root html.dark .project-select-list .item.is-keyboard-active {

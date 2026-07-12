@@ -8,7 +8,7 @@
           <el-input
             v-model="queryParams.roleName"
             :placeholder="$t('role.enter-name')"
-            prefix-icon="el-icon-user"
+            :prefix-icon="$legacyIcon('el-icon-user')"
             clearable
             style="width: 240px"
             @input="handleQuery"
@@ -20,7 +20,7 @@
       <el-table-column :label="$t('role.display-order')" prop="roleSort" width="120" align="center" />
       <el-table-column :label="$t('role.name')" prop="roleName" :show-overflow-tooltip="true"/>
       <el-table-column :label="$t('state')" align="center" width="100">
-        <template slot-scope="scope">
+        <template #default="scope">
           <el-switch
             v-model="scope.row.status"
             active-value="0"
@@ -30,18 +30,20 @@
         </template>
       </el-table-column>
       <el-table-column :label="$t('create-time')" align="center" prop="createTime" width="180">
-        <template slot-scope="scope">
+        <template #default="scope">
           <span>{{ parseTime(scope.row.createTime) }}</span>
         </template>
       </el-table-column>
       <el-table-column :label="$t('operate')" align="center" class-name="small-padding fixed-width" width="100">
-        <template slot-scope="scope" v-if="scope.row.roleId !== 1">
+        <template #default="scope">
+          <template v-if="scope.row.roleId !== 1">
           <el-button
             size="mini"
             type="text"
-            icon="el-icon-edit"
+            :icon="$legacyIcon('el-icon-edit')"
             @click="handleUpdate(scope.row)"
           >{{ $t('modify') }}</el-button>
+          </template>
         </template>
       </el-table-column>
     </el-table>
@@ -49,13 +51,13 @@
     <pagination
       v-show="total>0"
       :total="total"
-      :page.sync="queryParams.pageNum"
-      :limit.sync="queryParams.pageSize"
+      v-model:page="queryParams.pageNum"
+      v-model:limit="queryParams.pageSize"
       @pagination="getList"
     />
 
     <!-- 添加或修改角色配置对话框 -->
-    <el-dialog :title="title" :visible.sync="open" width="800px" append-to-body>
+    <el-dialog :title="title" v-model="open" width="800px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="150px">
         <el-form-item :label="$t('role.name')" prop="roleName">
           <el-input v-model="form.roleName" readonly disabled placeholder="请输入角色名称" />
@@ -95,14 +97,14 @@
           <el-input v-model="form.remark" type="textarea" :placeholder="$t('enter-content')"></el-input>
         </el-form-item>
       </el-form>
-      <div slot="footer" class="dialog-footer">
+      <template #footer><div class="dialog-footer">
         <el-button type="primary" @click="submitForm">{{ $t('ok') }}</el-button>
         <el-button @click="cancel">{{ $t('cancel') }}</el-button>
-      </div>
+      </div></template>
     </el-dialog>
 
     <!-- 分配角色数据权限对话框 -->
-    <el-dialog :title="title" :visible.sync="openDataScope" width="500px" append-to-body>
+    <el-dialog :title="title" v-model="openDataScope" width="500px" append-to-body>
       <el-form :model="form" label-width="80px">
         <el-form-item label="角色名称">
           <el-input v-model="form.roleName" :disabled="true" />
@@ -140,10 +142,10 @@
           ></el-tree>
         </el-form-item>
       </el-form>
-      <div slot="footer" class="dialog-footer">
+      <template #footer><div class="dialog-footer">
         <el-button type="primary" @click="submitDataScope">确 定</el-button>
         <el-button @click="cancelDataScope">取 消</el-button>
-      </div>
+      </div></template>
     </el-dialog>
   </div>
 </template>

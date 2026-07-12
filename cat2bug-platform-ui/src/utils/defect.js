@@ -20,9 +20,9 @@ export function lifeTime (defect){
   lifeTime = lifeTime%(1000 * 60 * 60);
   const minute = Math.floor(lifeTime/(1000 * 60));
   let ret = [];
-  if(day) ret.push(day+i18n.t('day'));
-  if(hour) ret.push(hour+i18n.t('hour'));
-  ret.push(minute+i18n.t('minute'));
+  if(day) ret.push(day + i18n.t('day'));
+  if(hour) ret.push(hour + i18n.t('hour'));
+  ret.push(minute + i18n.t('minute'));
   return ret.join(' ');
 }
 /** 设置缺陷临时Tab标签数据 */

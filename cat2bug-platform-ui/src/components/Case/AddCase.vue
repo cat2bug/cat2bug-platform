@@ -1,15 +1,16 @@
 <template>
   <el-drawer
     size="50%"
+    class="case-drawer-accent"
     :visible.sync="visible"
     direction="rtl"
     :append-to-body="appendToBody"
     :close-on-press-escape="false"
     :before-close="closeDefectDrawer">
-    <template slot="title">
+    <template #header>
       <div class="case-add-header">
         <div class="case-add-title">
-          <i class="el-icon-arrow-left" @click="requestCloseCaseFormDrawer"></i>
+          <legacy-icon icon="el-icon-arrow-left" @click="requestCloseCaseFormDrawer"></legacy-icon>
           <focus-member-list
             v-model="form.focusList"
             module-name="case"
@@ -19,14 +20,14 @@
           <h3>{{title}}</h3>
         </div>
         <div>
-          <el-button v-if="!isAddMode"@click="prevCase" type="text" icon="el-icon-arrow-left" size="mini"></el-button>
-          <el-button v-if="!isAddMode"@click="nextCase" type="text" icon="el-icon-arrow-right" size="mini"></el-button>
-          <el-button @click="requestCloseCaseFormDrawer" icon="el-icon-close" :class="isAddMode?'':'green-button'" size="mini">{{$t('close')}}</el-button>
-          <el-button v-if="isAddMode" v-hasPermi="['system:case:add']" class="defect-kbd-hint-host" type="primary" icon="el-icon-finished" @click="submitForm" size="mini">
+          <el-button v-if="!isAddMode"@click="prevCase" type="text" :icon="$legacyIcon('el-icon-arrow-left')" size="mini"></el-button>
+          <el-button v-if="!isAddMode"@click="nextCase" type="text" :icon="$legacyIcon('el-icon-arrow-right')" size="mini"></el-button>
+          <el-button @click="requestCloseCaseFormDrawer" :icon="$legacyIcon('el-icon-close')" :class="isAddMode?'':'green-button'" size="mini">{{$t('close')}}</el-button>
+          <el-button v-if="isAddMode" v-hasPermi="['system:case:add']" class="defect-kbd-hint-host" type="primary" :icon="$legacyIcon('el-icon-finished')" @click="submitForm" size="mini">
             {{$t('create')}}
             <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
           </el-button>
-          <el-button v-else v-hasPermi="['system:case:edit']" class="defect-kbd-hint-host" type="success" icon="el-icon-finished" @click="submitForm" size="mini">
+          <el-button v-else v-hasPermi="['system:case:edit']" class="defect-kbd-hint-host" type="success" :icon="$legacyIcon('el-icon-finished')" @click="submitForm" size="mini">
             {{$t('modify')}}
             <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
           </el-button>
@@ -363,9 +364,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-::v-deep .el-drawer {
-  border-left: 3px solid #13ce66;
-}
 ::v-deep .el-drawer__header {
   margin-bottom: 0px;
 }

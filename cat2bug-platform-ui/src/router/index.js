@@ -1,8 +1,5 @@
-import Vue from 'vue'
-import Router from 'vue-router'
+import { createRouter, createWebHashHistory } from 'vue-router'
 import i18n from '@/utils/i18n/i18n.js'
-
-Vue.use(Router)
 
 /* Layout */
 import Layout from '@/layout'
@@ -92,12 +89,12 @@ export const constantRoutes = [
         path: 'team-lock',
         component: () => import('@/views/error/team-lock'),
         name: 'TeamLockError',
-        meta: { title: i18n.t('prompted'), titleI18nKey:'prompted', icon: 'dashboard', affix: true }
+        meta: { title: i18n.global.t('prompted'), titleI18nKey:'prompted', icon: 'dashboard', affix: true }
       }, {
         path: 'project-lock',
         component: () => import('@/views/error/project-lock'),
         name: 'ProjectLockError',
-        meta: { title: i18n.t('prompted'), titleI18nKey:'prompted', icon: 'dashboard', affix: true }
+        meta: { title: i18n.global.t('prompted'), titleI18nKey:'prompted', icon: 'dashboard', affix: true }
       }
     ]
   },
@@ -110,7 +107,7 @@ export const constantRoutes = [
         path: 'index',
         component: () => import('@/views/index'),
         name: 'Index',
-        meta: { title: i18n.t('home'), titleI18nKey:'home', icon: 'dashboard', affix: true }
+        meta: { title: i18n.global.t('home'), titleI18nKey:'home', icon: 'dashboard', affix: true }
       }
     ]
   },
@@ -124,13 +121,13 @@ export const constantRoutes = [
         path: 'profile',
         component: () => import('@/views/system/user/profile/index'),
         name: 'Profile',
-        meta: { title: i18n.t('personal-center'), titleI18nKey:'personal-center', icon: 'user' }
+        meta: { title: i18n.global.t('personal-center'), titleI18nKey:'personal-center', icon: 'user' }
       },
       {
         path: 'keyboard',
         component: () => import('@/views/member/keyboard/index'),
         name: 'KeyboardSettings',
-        meta: { title: i18n.t('keyboard.title'), titleI18nKey:'keyboard.title', icon: 'keyboard' }
+        meta: { title: i18n.global.t('keyboard.title'), titleI18nKey:'keyboard.title', icon: 'keyboard' }
       }
     ]
   },
@@ -157,7 +154,7 @@ export const constantRoutes = [
         path: 'index',
         component: () => import('@/views/system/defect/StatisticTemplate'),
         name: 'DefectStatisticTemplate',
-        meta: { title: i18n.t('defect.statistic-template'), titleI18nKey:'defect.statistic-template', icon: 'user' }
+        meta: { title: i18n.global.t('defect.statistic-template'), titleI18nKey:'defect.statistic-template', icon: 'user' }
       }
     ]
   },
@@ -171,7 +168,7 @@ export const constantRoutes = [
         path: 'index',
         component: () => import('@/views/system/report/template/index'),
         name: 'ReportTemplate',
-        meta: { title: i18n.t('report.template'), titleI18nKey:'report.template', icon: 'user' }
+        meta: { title: i18n.global.t('report.template'), titleI18nKey:'report.template', icon: 'user' }
       }
     ]
   },
@@ -185,7 +182,7 @@ export const constantRoutes = [
         path: 'index',
         component: () => import('@/views/system/report/template/EditReportTemplate'),
         name: 'AddDefectReport',
-        meta: { title: i18n.t('report.template'), titleI18nKey:'report.template', icon: 'user' }
+        meta: { title: i18n.global.t('report.template'), titleI18nKey:'report.template', icon: 'user' }
       }
     ]
   },
@@ -199,7 +196,7 @@ export const constantRoutes = [
         path: '/system/project/add-project',
         component: () => import('@/views/system/project/add'),
         name: 'ProjectAdd',
-        meta: { title: i18n.t('project.create-project'), titleI18nKey:'project.create-project', icon: 'user' }
+        meta: { title: i18n.global.t('project.create-project'), titleI18nKey:'project.create-project', icon: 'user' }
       }
     ]
   },
@@ -213,7 +210,7 @@ export const constantRoutes = [
         path: '/system/team/add-member',
         component: () => import('@/views/system/team/add'),
         name: 'TeamAdd',
-        meta: { title: i18n.t('team.create'), titleI18nKey:'team.create', icon: 'user' }
+        meta: { title: i18n.global.t('team.create'), titleI18nKey:'team.create', icon: 'user' }
       }
     ]
   },
@@ -239,7 +236,7 @@ export const constantRoutes = [
         path: '/notice/index',
         component: () => import('@/views/notice'),
         name: 'SystemNotice',
-        meta: { title: i18n.t('notice'), titleI18nKey:'notice' }
+        meta: { title: i18n.global.t('notice'), titleI18nKey:'notice' }
       }
     ]
   }
@@ -314,7 +311,7 @@ export const dynamicRoutes = [
         component: () => import('@/views/system/project/defect-fields/index'),
         name: 'ProjectDefectFields',
         meta: {
-          title: i18n.t('defect.custom-field.title'),
+          title: i18n.global.t('defect.custom-field.title'),
           titleI18nKey: 'defect.custom-field.title',
           activeMenu: '/project/option',
           projectListPage: true
@@ -324,31 +321,31 @@ export const dynamicRoutes = [
   }
 ]
 
-// 防止连续点击多次路由报错
-let routerPush = Router.prototype.push;
-let routerReplace = Router.prototype.replace;
-// push
-Router.prototype.push = function push(location) {
-  return routerPush.call(this, location).catch(err => err)
-}
-// replace
-Router.prototype.replace = function push(location) {
-  return routerReplace.call(this, location).catch(err => err)
-}
-
-const createRouter = () =>
-  new Router({
-    mode: 'hash', // 去掉url中的#
-    scrollBehavior: () => ({ y: 0 }),
-    routes: constantRoutes
+// 防止连续点击多次路由报错 — vue-router 4 默认返回 rejected promise，保留 catch 行为
+const constantRouteNames = new Set()
+function collectRouteNames(routes) {
+  routes.forEach(route => {
+    if (route.name) constantRouteNames.add(route.name)
+    if (route.children) collectRouteNames(route.children)
   })
+}
 
-const router = createRouter()
+const createRouterInstance = () => createRouter({
+  history: createWebHashHistory(),
+  scrollBehavior: () => ({ top: 0 }),
+  routes: constantRoutes
+})
 
-/** 切换项目后重新注入动态菜单时，先重置 matcher 再 addRoutes，避免旧项目路由残留 */
+const router = createRouterInstance()
+collectRouteNames(constantRoutes)
+
+/** 切换项目后重新注入动态菜单时，先移除动态路由再 addRoute，避免旧项目路由残留 */
 export function resetRouter() {
-  const newRouter = createRouter()
-  router.matcher = newRouter.matcher
+  router.getRoutes().forEach(route => {
+    if (route.name && !constantRouteNames.has(route.name)) {
+      router.removeRoute(route.name)
+    }
+  })
 }
 
 export default router

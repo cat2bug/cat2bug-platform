@@ -6,20 +6,14 @@ import dialogDragHeight from './dialog/dragHeight'
 import clipboard from './module/clipboard'
 import imgFallback from './module/imgFallback'
 
-const install = function(Vue) {
-  Vue.directive('hasRole', hasRole)
-  Vue.directive('hasPermi', hasPermi)
-  Vue.directive('clipboard', clipboard)
-  Vue.directive('imgFallback', imgFallback)
-  Vue.directive('dialogDrag', dialogDrag)
-  Vue.directive('dialogDragWidth', dialogDragWidth)
-  Vue.directive('dialogDragHeight', dialogDragHeight)
-}
-
-if (window.Vue) {
-  window['hasRole'] = hasRole
-  window['hasPermi'] = hasPermi
-  Vue.use(install); // eslint-disable-line
+const install = function(app) {
+  app.directive('hasRole', hasRole)
+  app.directive('hasPermi', hasPermi)
+  app.directive('clipboard', clipboard)
+  app.directive('imgFallback', imgFallback)
+  app.directive('dialogDrag', dialogDrag)
+  app.directive('dialogDragWidth', dialogDragWidth)
+  app.directive('dialogDragHeight', dialogDragHeight)
 }
 
 export default install

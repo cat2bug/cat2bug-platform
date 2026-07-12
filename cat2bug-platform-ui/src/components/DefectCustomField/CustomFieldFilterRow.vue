@@ -8,6 +8,7 @@
       <template v-if="field.fieldType === 'boolean'">
         <el-switch
           :value="booleanSwitchValue"
+          size="default"
           @input="onBooleanInput"
         />
       </template>

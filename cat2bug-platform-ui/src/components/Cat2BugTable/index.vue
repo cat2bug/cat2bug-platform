@@ -59,7 +59,7 @@
           </div>
           <span v-else :class="['header-title-only', { 'header-title--required': col.required }]">{{ columnHeaderLabel(col) }}</span>
         </template>
-        <template slot-scope="scope">
+        <template #default="scope">
           <slot name="columns" :scope="scope" :column="col"></slot>
         </template>
       </el-table-column>
@@ -85,7 +85,7 @@
 
 <script>
 import Sortable from "sortablejs";
-import { getColumnById } from "element-ui/packages/table/src/util";
+import { getColumnById, getTableColumns, setTableColumns } from "@/utils/element-table-util";
 
 const TABLE_FIELD_LIST_CACHE_KEY = 'defect-table-field-list';
 const TABLE_SORT_COLUMN = 'defect_table_sort_column_key';
@@ -361,7 +361,7 @@ export default {
       if (containerWidth <= 0) return false;
 
       let fixedTotal = 0;
-      const columns = (t.store && t.store.states && t.store.states.columns) || [];
+      const columns = getTableColumns(t);
       this.showTableFieldList.forEach(col => {
         if (!col.visible) return;
         if (this.columnShouldAutoFlex(col)) return;
@@ -974,15 +974,58 @@ export default {
       const t = this.$refs.elTable;
       return t && t.$el ? t.$el.querySelector('.el-table__body-wrapper') : null;
     },
+    /** EP 横向滚动容器（el-scrollbar wrap），非 body-wrapper 外壳 */
+    getTableHorizontalScrollEl() {
+      const t = this.$refs.elTable;
+      if (!t) return null;
+      const wrap = t.scrollBarRef && t.scrollBarRef.wrapRef;
+      if (wrap) return wrap;
+      const bw = this.getTableBodyWrapper();
+      return bw ? (bw.querySelector('.el-scrollbar__wrap') || bw) : null;
+    },
+    setTableScrollClass(tableRoot, className) {
+      if (!tableRoot) return;
+      const classList = Array.from(tableRoot.classList).filter((item) => !item.startsWith('is-scrolling-'));
+      classList.push(className);
+      tableRoot.className = classList.join(' ');
+    },
+    /** 与 EP syncPosition 一致：更新 is-scrolling-*，驱动固定列内缘阴影 */
+    syncTableFixedColumnScrollClass() {
+      const t = this.$refs.elTable;
+      const scrollEl = this.getTableHorizontalScrollEl();
+      if (!t || !t.$el || !scrollEl) return;
+
+      const tableRoot = t.$el;
+      const layout = t.layout;
+      if (layout && layout.scrollX && !layout.scrollX.value) {
+        this.setTableScrollClass(tableRoot, 'is-scrolling-none');
+        return;
+      }
+
+      const { scrollLeft, offsetWidth, scrollWidth } = scrollEl;
+      const header = tableRoot.querySelector('.el-table__header-wrapper');
+      if (header) header.scrollLeft = scrollLeft;
+
+      if (scrollLeft >= scrollWidth - offsetWidth - 1) {
+        this.setTableScrollClass(tableRoot, 'is-scrolling-right');
+      } else if (scrollLeft === 0) {
+        this.setTableScrollClass(tableRoot, 'is-scrolling-left');
+      } else {
+        this.setTableScrollClass(tableRoot, 'is-scrolling-middle');
+      }
+    },
     setupCustomHorizontalScrollbar() {
       this.teardownCustomHorizontalScrollbar();
-      const bw = this.getTableBodyWrapper();
+      const scrollEl = this.getTableHorizontalScrollEl();
       const wrap = this.$el;
-      if (!bw || !wrap) return;
+      if (!scrollEl || !wrap) return;
 
-      this._customXBoundBody = bw;
-      this._customXScrollListener = () => this.updateCustomHorizontalScrollbar();
-      bw.addEventListener('scroll', this._customXScrollListener, { passive: true });
+      this._customXBoundBody = scrollEl;
+      this._customXScrollListener = () => {
+        this.updateCustomHorizontalScrollbar();
+        this.syncTableFixedColumnScrollClass();
+      };
+      scrollEl.addEventListener('scroll', this._customXScrollListener, { passive: true });
 
       this._customXWheelListener = (e) => this.handleCustomXWheel(e);
       wrap.addEventListener('wheel', this._customXWheelListener, { passive: false, capture: true });
@@ -1000,7 +1043,9 @@ export default {
         this.requestFixedRowHeightSync();
       });
       this._customXRo.observe(wrap);
-      this._customXRo.observe(bw);
+      this._customXRo.observe(scrollEl);
+      const bodyWrapper = this.getTableBodyWrapper();
+      if (bodyWrapper) this._customXRo.observe(bodyWrapper);
       const root = this.$refs.elTable.$el;
       const fixedL = root.querySelector('.el-table__fixed');
       const fixedR = root.querySelector('.el-table__fixed-right');
@@ -1040,10 +1085,11 @@ export default {
 
       const tableRoot = elTable.$el;
       const bw = tableRoot.querySelector('.el-table__body-wrapper');
-      if (!bw) return;
+      const scrollEl = this.getTableHorizontalScrollEl();
+      if (!bw || !scrollEl) return;
 
-      const scrollW = bw.scrollWidth;
-      const clientW = bw.clientWidth;
+      const scrollW = scrollEl.scrollWidth;
+      const clientW = scrollEl.clientWidth;
       const needsX = scrollW > clientW + 2;
 
       wrap.classList.toggle('cat2bug-hide-native-x', needsX);
@@ -1097,7 +1143,7 @@ export default {
       let thumbW = Math.max(18, Math.floor(trackWidth * thumbRatio));
       if (thumbW > trackWidth) thumbW = trackWidth;
       const travel = Math.max(0, trackWidth - thumbW);
-      const thumbLeft = maxScroll <= 0 ? 0 : Math.round((bw.scrollLeft / maxScroll) * travel);
+      const thumbLeft = maxScroll <= 0 ? 0 : Math.round((scrollEl.scrollLeft / maxScroll) * travel);
 
       this.customXThumbStyle = {
         width: `${thumbW}px`,
@@ -1106,6 +1152,7 @@ export default {
       };
 
       this.customXVisible = true;
+      this.syncTableFixedColumnScrollClass();
     },
     /**
      * body-wrapper overflow-x:hidden 后浏览器不再把横滑交给默认横条；在表格外包层捕获 wheel，
@@ -1133,20 +1180,20 @@ export default {
       this.updateCustomHorizontalScrollbar();
     },
     onCustomXThumbMouseDown(e) {
-      const bw = this.getTableBodyWrapper();
+      const scrollEl = this.getTableHorizontalScrollEl();
       const track = this.$refs.customXBarTrack;
       const thumb = this.$refs.customXBarThumb;
-      if (!bw || !track || !thumb) return;
+      if (!scrollEl || !track || !thumb) return;
 
       const startX = e.clientX;
-      const startScroll = bw.scrollLeft;
-      const maxScroll = Math.max(0, bw.scrollWidth - bw.clientWidth);
+      const startScroll = scrollEl.scrollLeft;
+      const maxScroll = Math.max(0, scrollEl.scrollWidth - scrollEl.clientWidth);
       const travel = Math.max(1, track.clientWidth - thumb.offsetWidth);
 
       const onMove = (ev) => {
         const dx = ev.clientX - startX;
         const next = startScroll + (dx / travel) * maxScroll;
-        bw.scrollLeft = Math.max(0, Math.min(maxScroll, next));
+        scrollEl.scrollLeft = Math.max(0, Math.min(maxScroll, next));
         this.updateCustomHorizontalScrollbar();
       };
       const onUp = () => {
@@ -1157,20 +1204,20 @@ export default {
       document.addEventListener('mouseup', onUp);
     },
     onCustomXTrackMouseDown(e) {
-      const bw = this.getTableBodyWrapper();
+      const scrollEl = this.getTableHorizontalScrollEl();
       const track = this.$refs.customXBarTrack;
       const thumb = this.$refs.customXBarThumb;
-      if (!bw || !track || !thumb) return;
+      if (!scrollEl || !track || !thumb) return;
 
       const rect = track.getBoundingClientRect();
       const x = e.clientX - rect.left;
-      const maxScroll = Math.max(0, bw.scrollWidth - bw.clientWidth);
+      const maxScroll = Math.max(0, scrollEl.scrollWidth - scrollEl.clientWidth);
       const trackW = rect.width;
       const thumbW = thumb.offsetWidth;
       const thumbTravel = Math.max(1, trackW - thumbW);
       let ratio = (x - thumbW / 2) / thumbTravel;
       ratio = Math.max(0, Math.min(1, ratio));
-      bw.scrollLeft = ratio * maxScroll;
+      scrollEl.scrollLeft = ratio * maxScroll;
       this.updateCustomHorizontalScrollbar();
     },
     bindSortable(selector, zone) {
@@ -1311,8 +1358,8 @@ export default {
     },
     getOperateColumns() {
       const t = this.$refs.elTable;
-      if (!t || !t.store || !t.store.states || !t.store.states.columns) return [];
-      return t.store.states.columns.filter((col) => this.isOperateColumn(col));
+      if (!t) return [];
+      return getTableColumns(t).filter((col) => this.isOperateColumn(col));
     },
     applyOperateColumnDomWidth(widthPx) {
       const t = this.$refs.elTable;
@@ -1333,7 +1380,10 @@ export default {
         el.style.setProperty('width', cap, 'important');
         el.style.setProperty('max-width', cap, 'important');
         el.style.setProperty('min-width', '0', 'important');
-        if (el.tagName === 'TH') {
+        // 右固定操作列内缘阴影在 ::before（left:-10px）；表体 td 须 visible，与表头一致
+        const isRightFixedEdge = el.classList.contains('el-table-fixed-column--right')
+          && el.classList.contains('is-first-column');
+        if (el.tagName === 'TH' || isRightFixedEdge) {
           el.style.setProperty('overflow', 'visible', 'important');
         } else {
           el.style.setProperty('overflow', 'hidden', 'important');
@@ -1698,16 +1748,16 @@ export default {
       const normalCols = this.tableFieldList.filter(c => !c.fixed);
       this.setColumns([...fixedCols, ...normalCols]);
 
-      const storeCols = this.$refs.elTable.store.states.columns;
+      const storeCols = getTableColumns(this.$refs.elTable);
       const dataCols = storeCols.filter(c => c.property);
       const fixedStore = dataCols.filter(c => c.fixed === 'left');
       const normalStore = dataCols.filter(c => !c.fixed);
 
-      this.$refs.elTable.store.states.columns = [
+      setTableColumns(this.$refs.elTable, [
         ...fixedStore,
         ...normalStore,
         ...storeCols.filter(c => !c.property)
-      ];
+      ]);
       this.$nextTick(() => {
         if (!this.$refs.elTable) return;
         this.$refs.elTable.doLayout();
@@ -2098,8 +2148,8 @@ export default {
   overflow: visible;
 }
 
-::v-deep td.cat2bug-operate-column {
-  overflow: hidden;
+::v-deep td.cat2bug-operate-column.el-table-fixed-column--right.is-first-column {
+  overflow: visible !important;
 }
 
 ::v-deep th.cat2bug-operate-column .cell {

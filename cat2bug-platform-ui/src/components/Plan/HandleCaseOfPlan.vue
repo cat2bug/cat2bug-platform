@@ -1,15 +1,16 @@
 <template>
   <el-drawer
     size="50%"
+    class="plan-drawer-accent"
     :visible.sync="visible"
     direction="rtl"
     :append-to-body="appendToBody"
     :before-close="closeDefectDrawer"
     @closed="cancel">
-    <template slot="title">
+    <template #header>
       <div class="case-add-header">
         <div class="case-add-title">
-          <i class="el-icon-arrow-left" @click="cancel"></i>
+          <legacy-icon icon="el-icon-arrow-left" @click="cancel"></legacy-icon>
           <focus-member-list
             v-model="form.focusList"
             module-name="case"
@@ -19,9 +20,9 @@
           <h3>{{title}}</h3>
         </div>
         <div class="tools-row">
-          <el-button v-if="!isAddMode"@click="prevCase" type="text" icon="el-icon-arrow-left" size="mini"></el-button>
-          <el-button v-if="!isAddMode"@click="nextCase" type="text" icon="el-icon-arrow-right" size="mini"></el-button>
-          <el-button @click="cancel" icon="el-icon-close" :class="isAddMode?'':'green-button'" size="mini">{{$t('close')}}</el-button>
+          <el-button v-if="!isAddMode"@click="prevCase" type="text" :icon="$legacyIcon('el-icon-arrow-left')" size="mini"></el-button>
+          <el-button v-if="!isAddMode"@click="nextCase" type="text" :icon="$legacyIcon('el-icon-arrow-right')" size="mini"></el-button>
+          <el-button @click="cancel" :icon="$legacyIcon('el-icon-close')" :class="isAddMode?'':'green-button'" size="mini">{{$t('close')}}</el-button>
           <plan-item-tools v-model="planItem" :plan="plan" type="primary" :project-id="projectId" @change="handlePlanItemChange" />
         </div>
       </div>
@@ -332,9 +333,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-::v-deep .el-drawer {
-  border-left: 3px solid #13ce66;
-}
 ::v-deep .el-drawer__header {
   margin-bottom: 0px;
 }

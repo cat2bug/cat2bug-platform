@@ -1,8 +1,13 @@
-import store from '@/store'
+import { pinia } from '@/store/pinia.js'
+import { useUserStore } from '@/stores/user'
+
+function getUserStore() {
+  return useUserStore(pinia)
+}
 
 function authPermission(permission) {
   const all_permission = "*:*:*";
-  const permissions = store.getters && store.getters.permissions
+  const permissions = getUserStore().permissions
   if (permission && permission.length > 0) {
     return permissions.some(v => {
       return all_permission === v || v === permission
@@ -14,7 +19,7 @@ function authPermission(permission) {
 
 function authRole(role) {
   const super_admin = "admin";
-  const roles = store.getters && store.getters.roles
+  const roles = getUserStore().roles
   if (role && role.length > 0) {
     return roles.some(v => {
       return super_admin === v || v === role

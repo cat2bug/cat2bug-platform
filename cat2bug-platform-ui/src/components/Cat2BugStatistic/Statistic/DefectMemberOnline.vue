@@ -1,9 +1,9 @@
 <template>
   <div class="member-statistic-root">
     <cat2-bug-card :title="$i18n.t('defect.online-member').toString()" v-loading="loading" :tools="tools" @tools-click="toolsHandle">
-      <template slot="content">
+      <template #content>
         <div class="member-list">
-          <cat2-bug-avatar class="click" size="small" :member="member" :online="true" v-for="member in memberList" :key="member.userId" @click.native="clickHandle(member)" />
+          <cat2-bug-avatar class="click" size="small" :member="member" :online="true" v-for="member in memberList" :key="member.userId" @click="clickHandle(member)" />
         </div>
       </template>
     </cat2-bug-card>
@@ -68,7 +68,6 @@ export default {
       for(let key in this.memberList){
         if(this.memberList[key].userId == memberId) {
           this.memberList[key].online = false;
-          this.$set(this.memberList[key],'online',false);
           break;
         }
       }
@@ -79,7 +78,6 @@ export default {
       for(let key in this.memberList){
         if(this.memberList[key].userId == memberId) {
           this.memberList[key].online = true;
-          this.$set(this.memberList[key],'online',true);
           break;
         }
       }
@@ -107,6 +105,9 @@ export default {
       listMemberOfProject(this.projectId,this.queryMember).then(res=>{
         this.loading = false;
         this.memberList=res.rows;
+      }).catch(() => {
+        this.loading = false;
+        this.memberList = [];
       });
     },
   }

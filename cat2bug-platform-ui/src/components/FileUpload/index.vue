@@ -25,18 +25,19 @@
       >
         <!-- 拖动图标 -->
         <div v-if="drag">
-          <i class="el-icon-upload"></i>
+          <legacy-icon icon="el-icon-upload"></legacy-icon>
           <div class="el-upload__text">{{ $t('case.import-prompt') }}<em>{{ $t('click.upload') }}</em></div>
         </div>
         <!-- 上传按钮 -->
-        <el-button v-else size="mini" type="primary">{{$i18n.t('upload.select-file')}}</el-button>
-        <!-- 上传提示 -->
-        <div class="el-upload__tip" slot="tip" v-if="showTip">
-          {{$t('upload.please-upload')}}
-          <template v-if="fileSize"> {{$t('upload.size-not-exceeding')}} <b style="color: #f56c6c">{{ fileSize }}MB</b> </template>
-          <template v-if="fileType && fileType.length>0"> {{$t('upload.format-is')}} <b style="color: #f56c6c">{{ fileType.join("/") }}</b> </template>
-          {{$t('upload.files')}}
-        </div>
+        <el-button v-else size="small" type="primary">{{$i18n.t('upload.select-file')}}</el-button>
+        <template v-if="showTip" #tip>
+          <div class="el-upload__tip upload-file-tip">
+            {{$t('upload.please-upload')}}
+            <template v-if="fileSize"> {{$t('upload.size-not-exceeding')}} <b style="color: #f56c6c">{{ fileSize }}MB</b> </template>
+            <template v-if="fileType && fileType.length>0"> {{$t('upload.format-is')}} <b style="color: #f56c6c">{{ fileType.join("/") }}</b> </template>
+            {{$t('upload.files')}}
+          </div>
+        </template>
       </el-upload>
     </div>
 
@@ -44,7 +45,7 @@
     <transition-group class="upload-file-list el-upload-list el-upload-list--text" name="el-fade-in-linear" tag="ul">
       <li :key="file.url" class="el-upload-list__item ele-upload-list__item-content" v-for="(file, index) in fileList">
         <el-link :href="`${baseUrl}${file.url}`" :underline="false" target="_blank">
-          <span class="el-icon-document"> {{ getFileName(file.name) }} </span>
+          <legacy-icon icon="el-icon-document" class="upload-file-list__doc-icon" /> {{ getFileName(file.name) }}
         </el-link>
         <div class="ele-upload-list__item-content-action">
           <el-link :underline="false" @click="handleDelete(index)" type="danger">{{$t('delete')}}</el-link>
@@ -332,8 +333,8 @@ export default {
 
 <style scoped lang="scss">
 .cat2bug-upload-focus-target {
-  display: inline-flex;
-  width: fit-content;
+  display: block;
+  width: 100%;
   max-width: 100%;
   overflow: visible;
   border: 1px solid transparent;
@@ -346,6 +347,13 @@ export default {
 }
 .upload-file-uploader {
   margin-bottom: 5px;
+  ::v-deep .el-upload__tip,
+  .upload-file-tip {
+    display: block;
+    margin-top: 7px;
+    line-height: 1.4;
+    color: var(--text-color-secondary, #909399);
+  }
 }
 .upload-file-list {
   margin: 0;

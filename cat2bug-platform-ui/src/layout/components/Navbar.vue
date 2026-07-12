@@ -34,22 +34,24 @@
         </el-tooltip>
       </template>
       <lang-select />
-      <el-dropdown class="avatar-container right-menu-item hover-effect layout-nav-hint-anchor" data-layout-nav="user" trigger="click">
+      <el-dropdown class="avatar-container right-menu-item hover-effect layout-nav-hint-anchor" data-layout-nav="user" trigger="click" popper-class="navbar-user-dropdown">
         <span class="dropdown-title">
           <cat2-bug-avatar :member="member" />
-          <i class="el-icon-caret-bottom" />
+          <el-icon class="dropdown-caret"><ArrowDown /></el-icon>
         </span>
-        <el-dropdown-menu slot="dropdown">
-          <router-link to="/member/profile">
-            <el-dropdown-item>{{ $t('my-center') }}</el-dropdown-item>
-          </router-link>
-          <router-link to="/member/keyboard">
-            <el-dropdown-item>{{ $t('keyboard.title') }}</el-dropdown-item>
-          </router-link>
-          <el-dropdown-item divided @click.native="logout">
-            <span>{{ $t('logout') }}</span>
-          </el-dropdown-item>
-        </el-dropdown-menu>
+        <template #dropdown>
+          <el-dropdown-menu class="dropdown-menu">
+            <router-link to="/member/profile">
+              <el-dropdown-item>{{ $t('my-center') }}</el-dropdown-item>
+            </router-link>
+            <router-link to="/member/keyboard">
+              <el-dropdown-item>{{ $t('keyboard.title') }}</el-dropdown-item>
+            </router-link>
+            <el-dropdown-item divided @click="logout">
+              <span>{{ $t('logout') }}</span>
+            </el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
       </el-dropdown>
     </div>
     <audio ref="audio" hidden :src="noticeSound" @ended="handleAudioEnded" />
@@ -57,7 +59,10 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+import { mapState } from 'pinia'
+import { useAppStore } from '@/stores/app'
+import { useUserStore } from '@/stores/user'
+import { useSettingsStore } from '@/stores/settings'
 import Breadcrumb from '@/components/Breadcrumb'
 import TopNav from '@/components/TopNav'
 import Hamburger from '@/components/Hamburger'
@@ -68,8 +73,19 @@ import Cat2BugGit from '@/components/Cat2Bug/Git'
 import Cat2BugDoc from '@/components/Cat2Bug/Doc'
 import Cat2BugAvatar from '@/components/Cat2BugAvatar'
 import LangSelect from '@/components/LangSelect'
+import { ArrowDown } from '@element-plus/icons-vue'
 import { groupStatisticsNotice } from '@/api/system/notice'
 import { checkPermi } from '@/utils/permission'
+
+const noticeSoundUrls = import.meta.glob('@/assets/sound/*', { eager: true, query: '?url', import: 'default' })
+
+function resolveNoticeSoundUrl(name) {
+  const fileName = name || 'default.mp3'
+  const match = Object.entries(noticeSoundUrls).find(([path]) => path.endsWith(`/${fileName}`))
+  if (match) return match[1]
+  const fallback = Object.entries(noticeSoundUrls).find(([path]) => path.endsWith('/default.mp3'))
+  return fallback ? fallback[1] : ''
+}
 
 export default {
   components: {
@@ -82,7 +98,8 @@ export default {
     Cat2BugGit,
     Cat2BugDoc,
     Cat2BugAvatar,
-    LangSelect
+    LangSelect,
+    ArrowDown
   },
   data() {
     return {
@@ -96,13 +113,9 @@ export default {
     }
   },
   computed: {
-    ...mapGetters([
-      'sidebar',
-      'avatar',
-      'device',
-      'name',
-      'themeMode'
-    ]),
+    ...mapState(useAppStore, ['sidebar', 'device']),
+    ...mapState(useUserStore, ['avatar', 'name']),
+    ...mapState(useSettingsStore, ['themeMode', 'topNav', 'showSettings']),
     member: {
       get() {
         return {
@@ -113,18 +126,13 @@ export default {
     },
     setting: {
       get() {
-        return this.$store.state.settings.showSettings
+        return useSettingsStore().showSettings
       },
       set(val) {
-        this.$store.dispatch('settings/changeSetting', {
+        useSettingsStore().changeSetting({
           key: 'showSettings',
           value: val
         })
-      }
-    },
-    topNav: {
-      get() {
-        return this.$store.state.settings.topNav
       }
     }
   },
@@ -152,7 +160,7 @@ export default {
       }
     })
   },
-  beforeDestroy() {
+  beforeUnmount() {
     // 取消下载模型的WebSocket订阅
     this.$topic.unsubscribe(this.topicId)
     this.$topic.unsubscribe(this.panelTopicId)
@@ -162,11 +170,7 @@ export default {
   methods: {
     /** 播放音效 */
     playMusic(soundName) {
-      if (soundName) {
-        this.noticeSound = require('@/assets/sound/' + soundName)
-      } else {
-        this.noticeSound = require('@/assets/sound/default.mp3')
-      }
+      this.noticeSound = resolveNoticeSoundUrl(soundName)
       // 播放
       this.$nextTick(() => {
         this.$refs.audio.play()
@@ -197,7 +201,7 @@ export default {
       })
     },
     toggleSideBar() {
-      this.$store.dispatch('app/toggleSideBar')
+      useAppStore().toggleSideBar()
     },
     async logout() {
       // 推出确认框
@@ -207,14 +211,15 @@ export default {
         type: 'warning'
       }).then(() => {
         // 用户登出
-        this.$store.dispatch('LogOut').then(() => {
+        useUserStore().LogOut().then(() => {
           location.href = '/index'
         })
       }).catch(() => {})
     },
     toggleThemeMode() {
-      const mode = this.themeMode === 'dark' ? 'light' : 'dark'
-      this.$store.dispatch('settings/changeThemeMode', mode)
+      const settingsStore = useSettingsStore()
+      const mode = settingsStore.themeMode === 'dark' ? 'light' : 'dark'
+      settingsStore.changeThemeMode(mode)
     }
   }
 }
@@ -316,6 +321,26 @@ export default {
         }
       }
     }
+  }
+}
+</style>
+
+<style lang="scss">
+/* 顶栏用户/语言菜单 teleport 到 body，须用 popper-class 放大一档（12px → 14px） */
+.navbar-user-dropdown.el-popper,
+.navbar-lang-dropdown.el-popper {
+  .el-dropdown-menu__item {
+    font-size: 14px;
+    line-height: 22px;
+    padding: 5px 16px;
+  }
+}
+
+.navbar-lang-dropdown.el-popper {
+  .el-dropdown-menu__item .svg-icon {
+    font-size: 18px;
+    margin-right: 6px;
+    vertical-align: -0.15em;
   }
 }
 </style>

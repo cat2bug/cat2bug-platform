@@ -6,7 +6,7 @@
       <div class="table-tools row">
         <el-popover placement="top" trigger="click" popper-class="defect-column-picker-popover" @show="emitColumnPickerVisible(true)" @hide="emitColumnPickerVisible(false)">
           <div class="defect-column-picker-head">
-            <i class="el-icon-s-fold"></i>
+            <el-icon class="legacy-icon-inline"><component :is="$legacyIcon('el-icon-s-fold')" /></el-icon>
             <h4>{{ $t('display-field') }}</h4>
           </div>
           <el-divider class="defect-field-divider"></el-divider>
@@ -19,17 +19,18 @@
             <el-checkbox
               v-for="c in defectColumnPickerOptions"
               :key="c.key"
-              :label="c.key"
+              :value="c.key"
             >{{ c.isCustomField && c.fieldLabel ? c.fieldLabel : (c.label || $t(c.key)) }}</el-checkbox>
           </el-checkbox-group>
-          <el-button
-            style="padding: 9px;"
-            plain
-            class="defect-list-hint-columns"
-            slot="reference"
-            icon="el-icon-s-fold"
-            size="small"
-          ></el-button>
+          <template #reference>
+            <el-button
+              style="padding: 9px;"
+              plain
+              class="defect-list-hint-columns"
+              :icon="$legacyIcon('el-icon-s-fold')"
+              size="small"
+            />
+          </template>
         </el-popover>
         <slot name="right-tools"></slot>
       </div>
@@ -83,7 +84,7 @@
               align="center"
               label-class-name="defect-sidebar-expand-header-cell"
               class-name="defect-sidebar-expand-body-cell">
-              <template slot="header">
+              <template #header>
                 <el-tooltip :content="$t('case.show-module-tree')" placement="bottom">
                   <span
                     class="defect-sidebar-expand-trigger"
@@ -96,7 +97,7 @@
                   </span>
                 </el-tooltip>
               </template>
-              <template slot-scope>
+              <template #default>
                 <span class="defect-sidebar-expand-body-placeholder" />
               </template>
             </el-table-column>
@@ -112,12 +113,12 @@
               <el-link type="primary" :title="scope.row.defectName" @click="handleClickTableRow(scope.row)">{{ scope.row.defectName }}</el-link>
               <div class="defect-statistics">
                 <div>
-                  <i class="el-icon-time"></i>
+                  <legacy-icon icon="el-icon-time"></legacy-icon>
                   <span>{{ $t('defect.life-time') }}:</span>
                   <span class="defect-statistics-value">{{defectLife(scope.row)}}</span>
                 </div>
                 <div>
-                  <i class="el-icon-document-delete"></i>
+                  <legacy-icon icon="el-icon-document-delete"></legacy-icon>
                   <span>{{$i18n.t('reject')}}:</span>
                   <span class="defect-statistics-value">{{scope.row.rejectCount}}</span>
                 </div>
@@ -164,9 +165,9 @@
               align="left"
               class-name="no-drag cat2bug-operate-column"
               fixed="right">
-              <template slot-scope="scope">
+              <template #default="scope">
                 <div class="defect-operate-cell cat2bug-operate-tools">
-                  <defect-tools class="defect-row-tools" :is-text="true" :compact="true" :defect="scope.row" size="mini" :is-show-icon="true" @view="handleClickTableRow" @delete="refreshSearch" @restore="refreshSearch" @update="refreshSearch" @log="refreshSearch"></defect-tools>
+                  <defect-tools class="defect-row-tools" :is-text="true" :compact="true" :defect="scope.row" size="small" :is-show-icon="true" @view="handleClickTableRow" @delete="refreshSearch" @restore="refreshSearch" @update="refreshSearch" @log="refreshSearch"></defect-tools>
                   <focus-member-list
                     v-show="scope.row.focusList && scope.row.focusList.length>0"
                     v-model="scope.row.focusList"
@@ -276,7 +277,7 @@ export default {
       isCheckAll: false,
       isIndeterminate: false,
       checkedDefectList: [],
-      loading: true,
+      loading: false,
       ids: [],
       single: true,
       multiple: true,
@@ -297,6 +298,7 @@ export default {
       defectColumnPickerLiveColumns: null,
       /** 字段管理列布局已加载后再挂载表格，避免 TableOptions 默认序写入缓存 */
       defectTableColumnsReady: false,
+      _columnLayoutGen: 0,
       /** 交付物列表标题栏高度（px），与右侧缺陷表 thead 行高对齐 */
       defectTreeToolbarHeight: null,
       /** 表体 max-height（与用例页一致：表体内纵向滚动） */
@@ -454,24 +456,31 @@ export default {
       return enumOptionTextStyle(opt);
     },
     loadCustomFieldColumns() {
+      const gen = ++this._columnLayoutGen
       clearCustomFieldColumnsCache();
       this.defectTableColumnsReady = false;
       const baseOptions = TableOptions.map(c => ({ ...c }));
-      if (!this.projectId) {
+      const finishWithBase = () => {
+        if (gen !== this._columnLayoutGen) return
         this.tableColumnDefaults = baseOptions;
         this.defectTableColumnsReady = true;
         this.applyTableColumnsToCat2BugTable();
+      };
+      if (!this.projectId) {
+        finishWithBase();
         return;
       }
       loadDefectColumnLayout(this.projectId, { force: true }).then(layout => {
+        if (gen !== this._columnLayoutGen) return
         this.tableColumnDefaults = buildDefectTableColumnDefaults(baseOptions, layout);
         pruneDefectTableColumnCacheFromColumns(this.$cache.local, this.tableColumnDefaults);
         this.defectTableColumnsReady = true;
         this.$nextTick(() => {
+          if (gen !== this._columnLayoutGen) return
           syncNewDefectTableColumnsIntoFieldListCache(this.$cache.local, this.tableColumnDefaults);
           this.applyTableColumnsToCat2BugTable();
         });
-      });
+      }).catch(finishWithBase);
     },
     applyTableColumnsToCat2BugTable() {
       this.$nextTick(() => {
@@ -485,7 +494,6 @@ export default {
       });
     },
     init() {
-      this.loadCustomFieldColumns();
       this.$nextTick(() => {
         if (this.$refs.treeModuleRef) {
           this.$refs.treeModuleRef.reloadData();
@@ -961,18 +969,11 @@ export default {
   margin-left: 0;
 }
 
-/* 列表图片列：缩略图铺满单元格（cover） */
+/* 列表图片列：缩略图固定尺寸，由 cat2bug-table-image-col 在单元格内居中 */
 .defect-list-cell-image {
-  ::v-deep .el-image {
-    padding: 0;
-    overflow: hidden;
-  }
-  ::v-deep .el-image__inner {
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: cover !important;
-    object-position: center center;
-  }
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* 操作列：未超 450px 单行自适应，超出后换行（由 Cat2BugTable data-operate-at-cap 控制） */

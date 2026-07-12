@@ -13,7 +13,7 @@
               v-model="queryParams.caseNum"
               class="case-hint-query-input"
               size="small"
-              prefix-icon="el-icon-s-flag"
+              :prefix-icon="$legacyIcon('el-icon-s-flag')"
               :placeholder="$t('case.please-enter-id')"
               clearable
               @input="handleQuery"
@@ -23,14 +23,14 @@
             <el-input
               v-model="queryParams.caseName"
               size="small"
-              prefix-icon="el-icon-files"
+              :prefix-icon="$legacyIcon('el-icon-files')"
               :placeholder="$t('case.please-enter-title')"
               clearable
               @input="handleQuery"
             />
           </el-form-item>
           <el-form-item prop="caseLevel" class="list-query-nav-item" data-query-key="caseLevel">
-            <cat2-bug-select-level v-model="queryParams.caseLevel" icon="el-icon-s-data" :clearable="true" @change="handleQuery" />
+            <cat2-bug-select-level v-model="queryParams.caseLevel" :icon="$legacyIcon('el-icon-s-data')" :clearable="true" @change="handleQuery" />
           </el-form-item>
         </el-form>
         </div>
@@ -45,7 +45,7 @@
           @hide="onColumnPickerPopoverHide"
         >
           <div class="defect-column-picker-head">
-            <i class="el-icon-s-fold" />
+            <legacy-icon icon="el-icon-s-fold" />
             <h4>{{ $t('display-field') }}</h4>
           </div>
           <el-divider class="defect-field-divider" />
@@ -57,14 +57,14 @@
           >
             <el-checkbox v-for="c in caseColumnPickerOptions" :key="c.key" :label="c.key">{{ $t(c.key) }}</el-checkbox>
           </el-checkbox-group>
-          <el-button slot="reference" class="case-field-picker-btn case-list-hint-columns" style="padding: 9px;" plain icon="el-icon-s-fold" size="small" />
+          <el-button slot="reference" class="case-field-picker-btn case-list-hint-columns" style="padding: 9px;" plain :icon="$legacyIcon('el-icon-s-fold')" size="small" />
         </el-popover>
         <el-button
           v-hasPermi="['system:case:remove']"
           class="case-batch-delete-btn case-hint-batch-delete"
           type="danger"
           plain
-          icon="el-icon-delete"
+          :icon="$legacyIcon('el-icon-delete')"
           size="small"
           :disabled="multiple"
           @click="handleDelete"
@@ -80,14 +80,14 @@
             @click="handleAdd"
           >
             <div class="title">
-              <i class="el-icon-plus" />
+              <legacy-icon icon="el-icon-plus" />
               <span>{{ $i18n.t('case.create') }}</span>
             </div>
             <el-dropdown-menu slot="dropdown" class="case-add-dropdown-menu">
-              <el-dropdown-item @click.native="handleAdd"><i class="el-icon-plus" />{{ $i18n.t('case.create') }}</el-dropdown-item>
+              <el-dropdown-item @click.native="handleAdd"><legacy-icon icon="el-icon-plus" />{{ $i18n.t('case.create') }}</el-dropdown-item>
               <el-divider class="case-add-dropdown-divider" />
-              <el-dropdown-item @click.native="handleImport"><i class="el-icon-upload2" />{{ $t('case.import') }}</el-dropdown-item>
-              <el-dropdown-item @click.native="handleExport"><i class="el-icon-download" />{{ $t('case.export') }}</el-dropdown-item>
+              <el-dropdown-item @click.native="handleImport"><legacy-icon icon="el-icon-upload2" />{{ $t('case.import') }}</el-dropdown-item>
+              <el-dropdown-item @click.native="handleExport"><legacy-icon icon="el-icon-download" />{{ $t('case.export') }}</el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
           <span class="case-add-kbd-anchor-host" aria-hidden="true">
@@ -212,7 +212,7 @@
                       v-hasPermi="['system:case:edit']"
                       size="small"
                       type="text"
-                      icon="el-icon-edit"
+                      :icon="$legacyIcon('el-icon-edit')"
                       @click="handleUpdate(scope.row)"
                     >
                       {{ $t('modify') }}</el-button>
@@ -221,7 +221,7 @@
                       size="small"
                       type="text"
                       class="red"
-                      icon="el-icon-delete"
+                      :icon="$legacyIcon('el-icon-delete')"
                       @click="handleDelete($event,scope.row)"
                     >{{ $t('delete') }}</el-button>
                   </div>
@@ -270,7 +270,7 @@
           :auto-upload="false"
           drag
         >
-          <i class="el-icon-upload" />
+          <legacy-icon icon="el-icon-upload" />
           <div class="el-upload__text">{{ $t('case.import-prompt') }}<em> {{ $t('click.upload') }}</em></div>
           <div slot="tip" class="el-upload__tip text-center">
             <span>{{ strFormat($t('case.import-file-format'), 'xls、xlsx') }}</span>
@@ -1596,7 +1596,7 @@ export default {
     background-color: rgba(255, 255, 255, 0.45);
 
     @at-root html.dark & {
-      background-color: #141414 !important;
+      background-color: var(--split-button-divider-on-solid, rgba(0, 0, 0, 0.35)) !important;
     }
   }
 

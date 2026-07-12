@@ -6,14 +6,14 @@
           <el-col :span="24">
             <el-tooltip class="item" effect="dark" content="新建测试窗口" placement="left">
               <router-link to="/tools/browser" target="_blank">
-                <el-button icon="el-icon-plus" type="danger" plain></el-button>
+                <el-button :icon="$legacyIcon('el-icon-plus')" type="danger" plain></el-button>
               </router-link>
             </el-tooltip>
           </el-col>
           <el-divider></el-divider>
           <el-col :span="24">
             <el-tooltip class="item" effect="dark" content="截屏" placement="left">
-              <el-button icon="el-icon-scissors" @click="screenShotHandle" type="danger" plain></el-button>
+              <el-button :icon="$legacyIcon('el-icon-scissors')" @click="screenShotHandle" type="danger" plain></el-button>
             </el-tooltip>
           </el-col>
           <el-col :span="24">
@@ -36,7 +36,7 @@
           <el-divider></el-divider>
           <el-col :span="24">
             <el-tooltip class="item" effect="dark" content="设置" placement="left">
-              <el-button icon="el-icon-setting" @click="optionHandle" type="danger" plain></el-button>
+              <el-button :icon="$legacyIcon('el-icon-setting')" @click="optionHandle" type="danger" plain></el-button>
             </el-tooltip>
           </el-col>
         </el-row>

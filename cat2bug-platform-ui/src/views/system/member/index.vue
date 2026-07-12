@@ -9,7 +9,7 @@
           <el-input
             v-model="queryParams.userName"
             :placeholder="$t('member.please-enter-name')"
-            prefix-icon="el-icon-user"
+            :prefix-icon="$legacyIcon('el-icon-user')"
             clearable
             style="width: 240px"
             @input="handleQuery"
@@ -19,7 +19,7 @@
           <el-input
             v-model="queryParams.phoneNumber"
             :placeholder="$t('member.please-enter-phone-number')"
-            prefix-icon="el-icon-phone-outline"
+            :prefix-icon="$legacyIcon('el-icon-phone-outline')"
             clearable
             style="width: 240px"
             @input="handleQuery"
@@ -32,7 +32,7 @@
           <el-button
             type="primary"
             plain
-            icon="el-icon-plus"
+            :icon="$legacyIcon('el-icon-plus')"
             size="small"
             @click="handleAdd"
             v-hasPermi="['system:member:add']"
@@ -72,14 +72,14 @@
             <el-button
               size="mini"
               type="text"
-              icon="el-icon-edit"
+              :icon="$legacyIcon('el-icon-edit')"
               @click="handleUpdate(scope.row)"
               v-hasPermi="['system:member:edit']"
             >{{ $t('modify') }}</el-button>
             <el-button
               size="mini"
               type="text"
-              icon="el-icon-delete"
+              :icon="$legacyIcon('el-icon-delete')"
               @click="handleResetPwd(scope.row)"
               v-hasPermi="['system:member:resetPwd']"
             >{{ $t('reset-password') }}</el-button>
@@ -156,7 +156,6 @@
 <script>
 import { listUser, getUser, delUser, addUser, updateUser, resetUserPwd, changeUserStatus, deptTreeSelect } from "@/api/system/user";
 import { getToken } from "@/utils/auth";
-import "@riophae/vue-treeselect/dist/vue-treeselect.css";
 import {strFormat} from "@/utils";
 import { optionalPhoneRule, optionalEmailRule, normalizeContactFields } from "@/utils/user-contact-rules";
 

@@ -7,19 +7,19 @@
         <p>
           <b>{{ $t('version') }}:</b> <span>v{{ version }}</span>
         </p>
-        <p>
+        <p class="home-intro-actions">
           <el-tag type="danger" class="free-open-source-tag">{{$t('free-open-source')}}</el-tag>
           <el-button
             type="primary"
-            size="mini"
-            icon="el-icon-cloudy"
+            size="small"
+            :icon="Cloudy"
             plain
             @click="goTarget('https://gitee.com/cat2bug/cat2bug-platform')"
             >{{$t('visit-gitee')}}</el-button
           >
           <el-button
-            size="mini"
-            icon="el-icon-s-home"
+            size="small"
+            :icon="HomeFilled"
             plain
             @click="goTarget('https://www.cat2bug.com')"
             >{{$t('visit-homepage')}}</el-button
@@ -65,50 +65,54 @@
     <el-row :gutter="20">
       <el-col :xs="24" :sm="24" :md="12" :lg="8">
         <el-card class="update-log">
-          <div slot="header" class="clearfix">
+          <template #header>
+            <div class="clearfix">
             <span>{{$t('contact-information')}}</span>
-          </div>
+            </div>
+          </template>
           <div class="body">
             <p>
-              <i class="el-icon-s-home"></i> {{$t('website')}}：<el-link
+              <legacy-icon icon="el-icon-s-home"></legacy-icon> {{$t('website')}}：<el-link
                 href="https://www.cat2bug.com"
                 target="_blank"
                 >https://www.cat2bug.com</el-link
               >
             </p>
             <p>
-              <i class="el-icon-user-solid"></i> {{$t('qq-group')}}：
+              <legacy-icon icon="el-icon-user-solid"></legacy-icon> {{$t('qq-group')}}：
 <!--              <s> 满12345 </s>-->
               <a target="_blank" href="https://qm.qq.com/cgi-bin/qm/qr?k=vpZaR_tWTwG0lPABP9NqgX2wSSSEEaWV&jump_from=webapi&authKey=8xIzBRe5T9RoEdisRBgYWbMmCoWXIYk4VikARN8S4RA3MZT7z7FUj71ZIIvEzGzq">731462000</a>
             </p>
             <el-image
               class="qcoder"
-              :src="require('@/assets/images/qq-qcoder.png')"
+              :src="qqQcoderImg"
               fit="cover"></el-image>
             <el-image
               class="qcoder"
-              :src="require('@/assets/images/wechat-qcoder.png')"
+              :src="wechatQcoderImg"
               fit="cover"></el-image>
             <el-image
               class="qcoder"
-              :src="require('@/assets/images/wechat-mini-program.png')"
+              :src="wechatMiniProgramImg"
               fit="cover"></el-image>
           </div>
         </el-card>
 
         <el-card class="update-log margin-top-20">
-          <div slot="header" class="clearfix">
+          <template #header>
+            <div class="clearfix">
             <span>{{$t('ecosystem')}}</span>
-          </div>
+            </div>
+          </template>
           <el-collapse accordion>
             <el-collapse-item title="Cat2Bug-APP">
               <div class="body">
                 <p>
-                  <i class="el-icon-s-order"></i> {{$t('project.introduction')}}：
+                  <legacy-icon icon="el-icon-s-order"></legacy-icon> {{$t('project.introduction')}}：
                   Cat2Bug-APP移动端
                 </p>
                 <p>
-                  <i class="el-icon-s-home"></i>{{$t('source-code-address')}}：<el-link
+                  <legacy-icon icon="el-icon-s-home"></legacy-icon>{{$t('source-code-address')}}：<el-link
                   href="https://gitee.com/cat2bug/cat2bug-app"
                   target="_blank">https://gitee.com/cat2bug/cat2bug-app</el-link>
                 </p>
@@ -117,11 +121,11 @@
             <el-collapse-item title="Cat2Bug-MCP">
               <div class="body">
                 <p>
-                  <i class="el-icon-s-order"></i> {{$t('project.introduction')}}：
+                  <legacy-icon icon="el-icon-s-order"></legacy-icon> {{$t('project.introduction')}}：
                   Cat2Bug-Platform MCP服务
                 </p>
                 <p>
-                  <i class="el-icon-s-home"></i>{{$t('source-code-address')}}：<el-link
+                  <legacy-icon icon="el-icon-s-home"></legacy-icon>{{$t('source-code-address')}}：<el-link
                   href="https://gitee.com/cat2bug/cat2bug-mcp"
                   target="_blank">https://gitee.com/cat2bug/cat2bug-mcp</el-link>
                 </p>
@@ -130,11 +134,11 @@
             <el-collapse-item title="Cat2Bug-JUnit">
               <div class="body">
                 <p>
-                  <i class="el-icon-s-order"></i> {{$t('project.introduction')}}：
+                  <legacy-icon icon="el-icon-s-order"></legacy-icon> {{$t('project.introduction')}}：
                   自动化接口单元测试框架
                 </p>
                 <p>
-                  <i class="el-icon-s-home"></i>{{$t('source-code-address')}}：<el-link
+                  <legacy-icon icon="el-icon-s-home"></legacy-icon>{{$t('source-code-address')}}：<el-link
                   href="https://gitee.com/cat2bug/cat2bug-junit"
                   target="_blank">https://gitee.com/cat2bug/cat2bug-junit</el-link>
                 </p>
@@ -143,11 +147,11 @@
             <el-collapse-item title="Cat2Bug-JLog">
               <div class="body">
                 <p>
-                  <i class="el-icon-s-order"></i> {{$t('project.introduction')}}：
+                  <legacy-icon icon="el-icon-s-order"></legacy-icon> {{$t('project.introduction')}}：
                   异常日志采集框架
                 </p>
                 <p>
-                  <i class="el-icon-s-home"></i>{{$t('source-code-address')}}：<el-link
+                  <legacy-icon icon="el-icon-s-home"></legacy-icon>{{$t('source-code-address')}}：<el-link
                   href="https://gitee.com/cat2bug/cat2bug-jlog"
                   target="_blank">https://gitee.com/cat2bug/cat2bug-jlog</el-link>
                 </p>
@@ -158,9 +162,11 @@
       </el-col>
       <el-col :xs="24" :sm="24" :md="12" :lg="8">
         <el-card class="update-log">
-          <div slot="header" class="clearfix">
+          <template #header>
+            <div class="clearfix">
             <span>{{$t('update-log')}}</span>
-          </div>
+            </div>
+          </template>
           <el-collapse accordion>
             <el-collapse-item title="v1.0.1 - 2026-07-10">
               <ol>
@@ -324,13 +330,15 @@
       </el-col>
       <el-col :xs="24" :sm="24" :md="12" :lg="8">
         <el-card class="update-log">
-          <div slot="header" class="clearfix">
+          <template #header>
+            <div class="clearfix">
             <span>{{$t('thanks-formally')}}</span>
-          </div>
+            </div>
+          </template>
           <el-row style="margin-bottom: 20px;">
             <span>{{ $t('thanks-content') }}</span>
           </el-row>
-          <cat2-bug-avatar style="margin-right: 10px;margin-bottom: 20px;" size="large" :member="member" v-for="(member,index) in tanksMemberList" :key="index">
+          <cat2-bug-avatar class="thanks-member-avatar" :member="member" v-for="(member,index) in tanksMemberList" :key="index" :size="40">
             <template v-slot:extend>
               <span>{{member.name}}</span>
             </template>
@@ -343,51 +351,73 @@
 
 <script>
 import {getVersion} from "@/api/version";
+import { Cloudy, HomeFilled } from '@element-plus/icons-vue'
 import Cat2BugAvatar from "@/components/Cat2BugAvatar";
+import qqQcoderImg from '@/assets/images/qq-qcoder.png'
+import wechatQcoderImg from '@/assets/images/wechat-qcoder.png'
+import wechatMiniProgramImg from '@/assets/images/wechat-mini-program.png'
+import thanksGaoqiImg from '@/assets/images/thanks/gaoqi.png'
+import thanksHuranzhijianImg from '@/assets/images/thanks/huranzhijian.jpg'
+import thanksWeiwanchengImg from '@/assets/images/thanks/weiwancheng.png'
+import thanksPiaomiaoguhongyingImg from '@/assets/images/thanks/piaomiaoguhongying.png'
+import thanksLiangcaiImg from '@/assets/images/thanks/liangcai.png'
+import thanksWssdyImg from '@/assets/images/thanks/wssdy.png'
+import thanksRuojiruoliImg from '@/assets/images/thanks/ruojiruoli.jpg'
+import thanksWanmeierImg from '@/assets/images/thanks/wanmeier.png'
+import thanksDingweikangImg from '@/assets/images/thanks/dingweikang.png'
+import thanksRichardChanImg from '@/assets/images/thanks/Richard-CHAN.png'
+import thanksUdLikeImg from '@/assets/images/thanks/u-d-Like.jpg'
+import thanksSilenceImg from '@/assets/images/thanks/Silence.png'
 
 export default {
   name: "Index",
   components: { Cat2BugAvatar },
+  setup() {
+    return { Cloudy, HomeFilled }
+  },
   data() {
     return {
+      qqQcoderImg,
+      wechatQcoderImg,
+      wechatMiniProgramImg,
       // 版本号
       version: null,
       tanksMemberList: [{
         name: '高琪',
-        avatarUrl: require('@/assets/images/thanks/gaoqi.png')
+        avatarUrl: thanksGaoqiImg
       },{
         name: '忽然之間',
-        avatarUrl: require('@/assets/images/thanks/huranzhijian.jpg')
+        avatarUrl: thanksHuranzhijianImg
       },{
         name: '未完成',
-        avatarUrl: require('@/assets/images/thanks/weiwancheng.png')
+        avatarUrl: thanksWeiwanchengImg
       },{
         name: '缥缈孤鸿影',
-        avatarUrl: require('@/assets/images/thanks/piaomiaoguhongying.png')
+        avatarUrl: thanksPiaomiaoguhongyingImg
       },{
         name: '良才ᝰ Cái',
-        avatarUrl: require('@/assets/images/thanks/liangcai.png')
+        avatarUrl: thanksLiangcaiImg
       },{
         name: 'wssdy',
-        avatarUrl: require('@/assets/images/thanks/wssdy.png')
+        avatarUrl: thanksWssdyImg
       },{
         name: '若即若离',
-        avatarUrl: require('@/assets/images/thanks/ruojiruoli.jpg')
+        avatarUrl: thanksRuojiruoliImg
       },{
         name: '完美er',
-        avatarUrl: require('@/assets/images/thanks/wanmeier.png')
+        avatarUrl: thanksWanmeierImg
       },{
         name: '丁为康',
-        avatarUrl: require('@/assets/images/thanks/dingweikang.png')
+        avatarUrl: thanksDingweikangImg
       },{
         name: 'Richard CHAN',
-        avatarUrl: require('@/assets/images/thanks/Richard-CHAN.png')
+        avatarUrl: thanksRichardChanImg
       },{
         name: 'u\'d Like',
-        avatarUrl: require('@/assets/images/thanks/u-d-Like.jpg')
+        avatarUrl: thanksUdLikeImg
       },{
         name: 'Silence、',
-        avatarUrl: require('@/assets/images/thanks/Silence.png')
+        avatarUrl: thanksSilenceImg
       }]
     };
   },
@@ -397,7 +427,7 @@ export default {
   mounted() {
   },
   // 移除滚动条监听
-  destroyed() {
+  beforeUnmount() {
   },
   methods: {
     goTarget(href) {
@@ -463,6 +493,38 @@ export default {
     }
   }
 
+  .home-intro-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+
+    .free-open-source-tag {
+      margin-right: 0;
+      height: 28px;
+      line-height: 26px;
+      padding: 0 10px;
+      box-sizing: border-box;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    :deep(.el-button) {
+      height: 28px !important;
+      min-height: 28px !important;
+      padding-top: 0 !important;
+      padding-bottom: 0 !important;
+      line-height: 1 !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      vertical-align: middle;
+    }
+
+    :deep(.el-button .el-icon) {
+      font-size: 14px;
+    }
+  }
+
   .free-open-source-tag {
     margin-right: 10px;
     vertical-align: middle;
@@ -491,10 +553,15 @@ export default {
       padding-inline-start: 40px;
     }
     > ::v-deep .el-card__body {
-      > .member-avatar {
-        margin-right: 0px !important;
+      > .thanks-member-avatar.member-avatar {
+        margin-right: 0 !important;
+        margin-bottom: 20px;
         width: calc(100% / 4);
         justify-content: start;
+      }
+      > .thanks-member-avatar .el-avatar {
+        width: 40px;
+        height: 40px;
       }
     }
   }

@@ -2,7 +2,7 @@
   <div class="case-mind" ref="caseMind">
     <div class="col" v-if="mindList.length>0">
       <h3><svg-icon icon-class="mind"></svg-icon>通过思维导图创建用例关键信息描述</h3>
-      <span><i class="el-icon-info"></i>以下内容可以直接编辑修改</span>
+      <span><legacy-icon icon="el-icon-info"></legacy-icon>以下内容可以直接编辑修改</span>
       <div class="case-mind-row" v-for="(d,index) in mindList" :key="index">
         <div class="case-mind-row-name">
           <el-checkbox :label="(index + 1) + '.'" v-model="d.checked"/>

@@ -1,9 +1,10 @@
 <template>
   <div :class="{'hidden':hidden}" class="pagination-container">
     <el-pagination
+      size="default"
       :background="background"
-      :current-page.sync="currentPage"
-      :page-size.sync="pageSize"
+      v-model:current-page="currentPage"
+      v-model:page-size="pageSize"
       :layout="layout"
       :page-sizes="pageSizes"
       :pager-count="pagerCount"

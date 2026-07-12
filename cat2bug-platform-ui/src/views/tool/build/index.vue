@@ -78,13 +78,13 @@
 
     <div class="center-board">
       <div class="action-bar">
-        <el-button icon="el-icon-download" type="text" @click="download">
+        <el-button :icon="$legacyIcon('el-icon-download')" type="text" @click="download">
           导出vue文件
         </el-button>
-        <el-button class="copy-btn-main" icon="el-icon-document-copy" type="text" @click="copy">
+        <el-button class="copy-btn-main" :icon="$legacyIcon('el-icon-document-copy')" type="text" @click="copy">
           复制代码
         </el-button>
-        <el-button class="delete-btn" icon="el-icon-delete" type="text" @click="empty">
+        <el-button class="delete-btn" :icon="$legacyIcon('el-icon-delete')" type="text" @click="empty">
           清空
         </el-button>
       </div>

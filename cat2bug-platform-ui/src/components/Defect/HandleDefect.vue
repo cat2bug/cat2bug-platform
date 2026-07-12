@@ -1,17 +1,17 @@
 <template>
   <el-drawer
     ref="handleDefectDrawer"
-    custom-class="defect-drawer-accent"
+    class="defect-drawer-accent"
     size="55%"
-    :visible.sync="visible"
+    v-model="visible"
     direction="rtl"
     :append-to-body="appendToBody"
     :before-close="closeDefectDrawer"
     @opened="loadDefectLogs">
-    <template slot="title">
+    <template #header>
       <div class="defect-edit-header">
         <div class="defect-edit-title">
-          <i class="el-icon-arrow-left" @click="cancel"></i>
+          <legacy-icon icon="el-icon-arrow-left" @click="cancel"></legacy-icon>
           <div style="line-height: 36px;">
             <span class="defect-edit-title-num">#{{defect.projectNum}}</span>
             <span class="defect-edit-title-content">
@@ -41,7 +41,7 @@
           <template slot="title">
             <span class="handle-defect-collapse-title" data-collapse-name="defectDescribe">{{ $i18n.t('describe') }}</span>
           </template>
-          <markdown-it-vue v-if="defect.defectDescribe" :content="defect.defectDescribe+''" />
+          <markdown-content v-if="defect.defectDescribe" :content="defect.defectDescribe+''" />
           <el-empty v-else :description="$t('no-data')"></el-empty>
         </el-collapse-item>
         <el-collapse-item name="customFields">
@@ -99,7 +99,7 @@ import DefectStateFlag from "@/components/Defect/DefectStateFlag";
 import CaseCard from "@/components/Case/CaseCard";
 import FocusMemberList from "@/components/FocusMemberList";
 import {getCase} from "@/api/system/case";
-import MarkdownItVue from "markdown-it-vue"
+import MarkdownContent from '@/components/Markdown/MarkdownContent.vue'
 import 'markdown-it-vue/dist/markdown-it-vue.css'
 import {normalizeDefectTypeAndLevel} from "@/utils/defect-defaults";
 import handleDefectKbdHints from '@/mixins/handle-defect-kbd-hints'
@@ -121,7 +121,7 @@ export default {
     DefectTypeFlag,
     DefectStateFlag,
     CaseCard,
-    MarkdownItVue,
+    MarkdownContent,
     FocusMemberList,
     DefectCustomFieldsDisplay: () => import('@/components/DefectCustomField/DefectCustomFieldsDisplay'),
     DefectCustomFieldAccordionBody: () => import('@/components/DefectCustomField/DefectCustomFieldAccordionBody')
@@ -353,9 +353,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-::v-deep .el-drawer {
-  border-left: 3px solid #ff4949;
-}
 ::v-deep .el-drawer__header {
   margin-bottom: 0px;
   max-width: calc(100vw);
@@ -368,7 +365,7 @@ export default {
   flex-direction: row;
   flex-wrap: wrap;
   .report-edit-tools {
-    padding: 5px 0px;
+    padding: 0;
     overflow: visible;
   }
   .defect-edit-title {

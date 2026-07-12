@@ -1,36 +1,49 @@
 <template>
-  <div class="defect-type-tag bug" v-if="defect.defectTypeName=='BUG'">
-    <img class="defect-type-tag__icon" :src="bugIcon" alt="" />
-    <span>{{$i18n.t(defect.defectTypeName)}}</span>
-  </div>
-  <div class="defect-type-tag task" v-else-if="defect.defectTypeName=='TASK'">
-    <img class="defect-type-tag__icon" :src="taskIcon" alt="" />
-    <span>{{$i18n.t(defect.defectTypeName)}}</span>
-  </div>
-  <div class="defect-type-tag demand" v-else-if="defect.defectTypeName=='DEMAND'">
-    <img class="defect-type-tag__icon" :src="demandIcon" alt="" />
-    <span>{{$i18n.t(defect.defectTypeName)}}</span>
-  </div>
-  <div class="defect-type-tag" v-else>
-    <span>{{$i18n.t(defect.defectTypeName)}}</span>
+  <div class="defect-type-tag" :class="typeClass">
+    <img v-if="typeIcon" class="defect-type-tag__icon" :src="typeIcon" alt="" />
+    <span>{{ typeLabel }}</span>
   </div>
 </template>
 
 <script>
-const bugIcon = require('@/assets/images/bug.png')
-const taskIcon = require('@/assets/images/task.png')
-const demandIcon = require('@/assets/images/demand.png')
+import bugIcon from '@/assets/images/bug.png'
+import taskIcon from '@/assets/images/task.png'
+import demandIcon from '@/assets/images/demand.png'
+
+const KNOWN_TYPES = new Set(['BUG', 'TASK', 'DEMAND'])
 
 export default {
   name: "DefectTypeFlag",
-  props:{
+  props: {
     defect: {
       type: Object,
-      default: ()=>{}
+      default: () => ({})
     }
   },
-  data() {
-    return { bugIcon, taskIcon, demandIcon }
+  computed: {
+    typeName() {
+      const name = this.defect && this.defect.defectTypeName
+      return name == null || name === '' ? '' : String(name)
+    },
+    typeClass() {
+      if (this.typeName === 'BUG') return 'bug'
+      if (this.typeName === 'TASK') return 'task'
+      if (this.typeName === 'DEMAND') return 'demand'
+      return ''
+    },
+    typeIcon() {
+      if (this.typeName === 'BUG') return bugIcon
+      if (this.typeName === 'TASK') return taskIcon
+      if (this.typeName === 'DEMAND') return demandIcon
+      return null
+    },
+    typeLabel() {
+      if (!this.typeName) return ''
+      if (KNOWN_TYPES.has(this.typeName)) {
+        return this.$t(this.typeName)
+      }
+      return this.typeName
+    }
   }
 }
 </script>

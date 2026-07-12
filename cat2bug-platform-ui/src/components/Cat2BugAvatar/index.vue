@@ -1,16 +1,18 @@
 <template>
-  <div class="member-avatar" v-if="isVisible">
+  <div class="member-avatar">
     <el-avatar
+      v-if="isVisible"
       :key="avatarRenderKey"
-      :isStatistics="member.isStatistics?'true':'false'"
+      :isStatistics="member && member.isStatistics ? 'true' : 'false'"
       :src="displayImgUrl"
       :class="{ 'cat2bug-avatar--text-initial': isTextInitial }"
       :style="textAvatarStyle"
       fit="cover"
-      :size="size"
-      @error.native="onAvatarImgError">
+      :size="resolvedSize"
+      @error="onAvatarImgError">
       {{ textInitial }}
     </el-avatar>
+    <el-avatar v-else :size="resolvedSize">?</el-avatar>
     <span v-if="online && member.online" class="online"></span>
     <slot name="extend"></slot>
   </div>
@@ -59,10 +61,19 @@ export default {
     }
   },
   computed: {
+    resolvedSize() {
+      const s = this.size
+      if (s === 'medium' || s === 'default') return 'default'
+      if (s === 'mini') return 'small'
+      if (s === 'small' || s === 'large' || s === '') return s
+      return typeof s === 'number' ? s : 'default'
+    },
     isVisible() {
+      if (!this.member || typeof this.member !== 'object') return false
       return this.member.avatar || this.member.avatarUrl || this.member.nickName || this.member.userName || this.member.name
     },
     imgUrl() {
+      if (!this.member) return ''
       return resolveMemberAvatarUrl(this.member, process.env.VUE_APP_BASE_API)
     },
     displayImgUrl() {
@@ -70,17 +81,18 @@ export default {
       return this.imgUrl
     },
     displayName() {
+      if (!this.member) return ''
       return resolveMemberDisplayName(this.member)
     },
     isTextInitial() {
-      if (this.member.isStatistics) return false
+      if (!this.member || this.member.isStatistics) return false
       return !this.displayImgUrl
     },
     avatarRenderKey() {
       return this.imgUrl || this.displayName || 'avatar'
     },
     textInitial() {
-      if (this.member.isStatistics) return ''
+      if (!this.member || this.member.isStatistics) return ''
       return getAvatarInitial(this.displayName)
     },
     textAvatarStyle() {

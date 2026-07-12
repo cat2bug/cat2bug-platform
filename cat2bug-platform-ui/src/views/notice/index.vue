@@ -7,10 +7,10 @@
     <div class="tabs-tools-row">
       <el-tabs v-model="activeTabName" class="notice-hint-tabs" @tab-click="handleQuery">
         <el-tab-pane v-for="(group,index) in groupList" :key="index" :name="group.groupName">
-          <span slot="label" class="row notice-tab-label">
+          <template #label><span class="row notice-tab-label">
             <span>{{ tabName(group.groupName) }}</span>
             <span v-if="group.notReadCount>0" class="number">{{ group.notReadCount }}</span>
-          </span>
+          </span></template>
         </el-tab-pane>
       </el-tabs>
       <div class="right-tools">
@@ -19,42 +19,40 @@
       </div>
     </div>
     <div class="notice-tools">
-      <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px" :class="{ 'list-query-keyboard-nav': listQueryNavActive }">
+      <el-form class="left" :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px" :class="{ 'list-query-keyboard-nav': listQueryNavActive }">
         <el-form-item label="" prop="noticeTitle" class="notice-hint-query list-query-nav-item" data-query-key="noticeTitle">
           <el-input
-            prefix-icon="el-icon-document"
+            :prefix-icon="Document"
             v-model="queryParams.noticeTitle"
+            size="small"
             :placeholder="$t('notice.please-enter-title')"
             clearable
+            style="width: 240px"
             @input="handleQuery"
           />
         </el-form-item>
       </el-form>
 
-      <el-row ref="noticeToolsRight" :gutter="10" class="mb8">
-        <el-col :span="1.5">
-          <el-button
-            type="danger"
-            plain
-            icon="el-icon-delete"
-            size="mini"
-            :disabled="multiple"
-            @click="handleDelete($event,{})"
-            v-hasPermi="['notice:remove']"
-          >{{ $t('batch-delete') }}</el-button>
-        </el-col>
-        <el-col :span="1.5">
-          <el-button
-            class="notice-hint-send"
-            type="primary"
-            plain
-            icon="el-icon-s-promotion"
-            size="mini"
-            @click="handleSendNotice"
-            v-hasPermi="['notice:send']"
-          >{{ $t('notice.send') }}</el-button>
-        </el-col>
-      </el-row>
+      <div ref="noticeToolsRight" class="notice-tools-right">
+        <el-button
+          type="danger"
+          plain
+          :icon="Delete"
+          size="small"
+          :disabled="multiple"
+          @click="handleDelete($event,{})"
+          v-hasPermi="['notice:remove']"
+        >{{ $t('batch-delete') }}</el-button>
+        <el-button
+          class="notice-hint-send"
+          type="primary"
+          plain
+          :icon="Promotion"
+          size="small"
+          @click="handleSendNotice"
+          v-hasPermi="['notice:send']"
+        >{{ $t('notice.send') }}</el-button>
+      </div>
     </div>
     <el-table
       ref="noticeTable"
@@ -66,7 +64,7 @@
     >
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column :label="$t('create-time')" align="left" prop="createTime" width="170">
-        <template slot-scope="scope">
+        <template #default="scope">
           <span>{{ parseTime(scope.row.createTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
         </template>
       </el-table-column>
@@ -83,18 +81,18 @@
         align="left"
         :show-overflow-tooltip="true"
       >
-        <template slot-scope="scope">
-          <el-tag v-if="scope.row.isRead===false" size="mini" type="danger" effect="dark" class="span font-size9">NEW</el-tag>
+        <template #default="scope">
+          <el-tag v-if="scope.row.isRead===false" size="small" type="danger" effect="dark" class="span font-size9">NEW</el-tag>
           <span>{{scope.row.noticeTitle}}</span>
         </template>
       </el-table-column>
       <el-table-column :label="$t('operate')" align="center" class-name="small-padding fixed-width" width="100">
-        <template slot-scope="scope">
+        <template #default="scope">
           <el-button
             class="red-button"
-            size="mini"
+            size="small"
             type="text"
-            icon="el-icon-delete"
+            :icon="Delete"
             @click="handleDelete($event,scope.row)"
             v-hasPermi="['notice:remove']"
           >{{$t('delete')}}</el-button>
@@ -106,8 +104,8 @@
       v-show="total>0"
       class="notice-table-pagination"
       :total="total"
-      :page.sync="queryParams.pageNum"
-      :limit.sync="queryParams.pageSize"
+      v-model:page="queryParams.pageNum"
+      v-model:limit="queryParams.pageSize"
       @pagination="getList"
     />
     <view-notice ref="viewNotice" @read="refreshData"></view-notice>
@@ -117,6 +115,7 @@
 </template>
 
 <script>
+import { Delete, Document, Promotion } from '@element-plus/icons-vue'
 import {delNotice, groupStatisticsNotice, listNotice} from "@/api/system/notice";
 import OptionNotice from "./option/index"
 import SendNoticeDialog from "./send/index"
@@ -141,6 +140,9 @@ export default {
   mixins: [pageActionHints, listQueryKeyboardNav, noticeListKbd],
   components: { ViewNotice, OptionNotice, SendNoticeDialog },
   dicts: ['sys_notice_status', 'sys_notice_type'],
+  setup() {
+    return { Delete, Document, Promotion }
+  },
   data () {
     return {
       groupList: [],
@@ -201,7 +203,7 @@ export default {
   deactivated() {
     if (this.$shortcut) this.$shortcut.unregisterPage(NOTICE_KBD_SCOPE)
   },
-  beforeDestroy() {
+  beforeUnmount() {
     if (this.$shortcut) this.$shortcut.unregisterPage(NOTICE_KBD_SCOPE)
   },
   methods: {
@@ -432,7 +434,7 @@ export default {
   justify-content: center;
 }
 .number {
-  background-color: #f56c6c;
+  background-color: var(--cat2bug-delete-color);
   color: #FFFFFF;
   font-size: 0.7rem;
   height: 16px;
@@ -444,6 +446,10 @@ export default {
 .notice-page {
   .notice-list-table ::v-deep td.el-table-column--selection .cell {
     overflow: visible !important;
+  }
+  > .project-add-page-header {
+    width: 100%;
+    display: block;
   }
   > .project-add-page-header + .tabs-tools-row {
     margin-top: 10px;
@@ -477,18 +483,45 @@ export default {
   }
 }
 .notice-tools {
+  width: 100%;
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
+  flex-wrap: wrap;
+  justify-content: flex-start;
   align-items: center;
+  align-content: flex-start;
+  column-gap: var(--cat2bug-toolbar-section-gap, 10px);
+  row-gap: var(--cat2bug-toolbar-row-gap, 8px);
   margin-bottom: 10px;
+  .el-form-item {
+    margin-bottom: 0;
+  }
+}
+.notice-tools > .left {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  width: auto;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  row-gap: 8px;
+  column-gap: var(--cat2bug-toolbar-item-gap, 10px);
+  box-sizing: border-box;
+  ::v-deep .el-form-item {
+    margin-right: 0;
+  }
+}
+.notice-tools-right {
+  flex: 0 0 auto;
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: center;
+  gap: var(--cat2bug-toolbar-item-gap, 10px);
+  margin-left: auto;
   > * {
-    display: inline-block;
-    justify-content: flex-start;
-    margin-bottom: 0px;
-    ::v-deep .el-form-item {
-      margin-bottom: 0px;
-    }
+    margin-left: 0;
   }
 }
 </style>

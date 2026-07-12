@@ -46,7 +46,7 @@
                 <el-input
                   v-model="caseQueryParams.caseNum"
                   size="small"
-                  prefix-icon="el-icon-s-flag"
+                  :prefix-icon="$legacyIcon('el-icon-s-flag')"
                   :placeholder="$t('case.please-enter-id')"
                   clearable
                   @input="handleQuery"
@@ -56,14 +56,14 @@
                 <el-input
                   v-model="caseQueryParams.caseName"
                   size="small"
-                  prefix-icon="el-icon-files"
+                  :prefix-icon="$legacyIcon('el-icon-files')"
                   :placeholder="$t('case.please-enter-title')"
                   clearable
                   @input="handleQuery"
                 />
               </el-form-item>
               <el-form-item prop="caseLevel">
-                <cat2-bug-select-level v-model="caseQueryParams.caseLevel" @change="handleQuery" icon="el-icon-s-data" :clearable="true" />
+                <cat2-bug-select-level v-model="caseQueryParams.caseLevel" @change="handleQuery" :icon="$legacyIcon('el-icon-s-data')" :clearable="true" />
               </el-form-item>
             </el-form>
           </div>

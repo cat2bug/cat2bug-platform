@@ -76,7 +76,7 @@ export default {
     margin-left: 10px;
     /* 长项目名时由 ProjectSelect 内省略，避免把「项目:」与选择器折成两行 */
     min-width: 0;
-    flex: 1 1 auto;
+    flex: 0 1 auto;
     max-width: 100%;
   }
   h3 {

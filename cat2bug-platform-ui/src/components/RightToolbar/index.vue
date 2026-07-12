@@ -1,19 +1,25 @@
 <template>
   <div class="top-right-btn" :style="style">
     <el-row>
-      <el-tooltip class="item" effect="dark" :content="showSearch ? this.$i18n.t('hide-search') : this.$i18n.t('show-search')" placement="top" v-if="search">
-        <el-button size="mini" circle icon="el-icon-search" @click="toggleSearch()" />
+      <el-tooltip class="item" effect="dark" :content="showSearch ? $t('hide-search') : $t('show-search')" placement="top" v-if="search">
+        <el-button size="small" circle @click="toggleSearch()">
+          <el-icon><Search /></el-icon>
+        </el-button>
       </el-tooltip>
       <el-tooltip class="item" effect="dark" :content="$t('refresh')" placement="top">
-        <el-button size="mini" circle icon="el-icon-refresh" @click="refresh()" />
+        <el-button size="small" circle @click="refresh()">
+          <el-icon><Refresh /></el-icon>
+        </el-button>
       </el-tooltip>
       <el-tooltip class="item" effect="dark" :content="$t('display-columns')" placement="top" v-if="columns">
-        <el-button size="mini" circle icon="el-icon-menu" @click="showColumn()" />
+        <el-button size="small" circle @click="showColumn()">
+          <el-icon><Menu /></el-icon>
+        </el-button>
       </el-tooltip>
     </el-row>
-    <el-dialog :title="title" :visible.sync="open" append-to-body>
+    <el-dialog :title="title" v-model="open" append-to-body>
       <el-transfer
-        :titles="[this.$i18n.t('show'), this.$i18n.t('hide')]"
+        :titles="[$t('show'), $t('hide')]"
         v-model="value"
         :data="columns"
         @change="dataChange"
@@ -22,15 +28,15 @@
   </div>
 </template>
 <script>
+import { Menu, Refresh, Search } from '@element-plus/icons-vue'
+
 export default {
   name: "RightToolbar",
+  components: { Menu, Refresh, Search },
   data() {
     return {
-      // 显隐数据
       value: [],
-      // 弹出层标题
-      title: this.$i18n.t('show')+'/'+this.$i18n.t('hide'),
-      // 是否显示弹出层
+      title: this.$t('show') + '/' + this.$t('hide'),
       open: false,
     };
   },
@@ -61,7 +67,6 @@ export default {
     }
   },
   created() {
-    // 显隐列初始默认隐藏列
     for (let item in this.columns) {
       if (this.columns[item].visible === false) {
         this.value.push(parseInt(item));
@@ -69,22 +74,18 @@ export default {
     }
   },
   methods: {
-    // 搜索
     toggleSearch() {
       this.$emit("update:showSearch", !this.showSearch);
     },
-    // 刷新
     refresh() {
       this.$emit("queryTable");
     },
-    // 右侧列表元素变化
     dataChange(data) {
       for (let item in this.columns) {
         const key = this.columns[item].key;
         this.columns[item].visible = !data.includes(key);
       }
     },
-    // 打开显隐列dialog
     showColumn() {
       this.open = true;
     },
@@ -92,13 +93,13 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
-::v-deep .el-transfer__button {
+:deep(.el-transfer__button) {
   border-radius: 50%;
   padding: 12px;
   display: block;
   margin-left: 0px;
 }
-::v-deep .el-transfer__button:first-child {
+:deep(.el-transfer__button:first-child) {
   margin-bottom: 10px;
 }
 </style>

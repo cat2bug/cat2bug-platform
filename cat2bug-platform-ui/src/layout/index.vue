@@ -29,8 +29,10 @@ import { AppMain, Navbar, Settings, Sidebar, TagsView } from './components'
 import ResizeMixin from './mixin/ResizeHandler'
 import ViewBackMixin from '@/layout/mixin/ViewBackHandle'
 import layoutNavHints from '@/mixins/layout-nav-hints'
-import { mapState } from 'vuex'
-import variables from '@/assets/styles/variables.scss'
+import { mapState } from 'pinia'
+import { useSettingsStore } from '@/stores/settings'
+import { useAppStore } from '@/stores/app'
+import variables from '@/assets/styles/variables.js'
 import { isProjectListPageRoute } from '@/utils/project-list-page'
 
 export default {
@@ -45,14 +47,8 @@ export default {
   },
   mixins: [ResizeMixin, ViewBackMixin, layoutNavHints],
   computed: {
-    ...mapState({
-      theme: state => state.settings.theme,
-      sideTheme: state => state.settings.sideTheme,
-      sidebar: state => state.app.sidebar,
-      device: state => state.app.device,
-      needTagsView: state => state.settings.tagsView,
-      fixedHeader: state => state.settings.fixedHeader
-    }),
+    ...mapState(useSettingsStore, ['theme', 'sideTheme', 'tagsView', 'fixedHeader']),
+    ...mapState(useAppStore, ['sidebar', 'device']),
     classObj() {
       return {
         hideSidebar: !this.sidebar.opened,
@@ -64,21 +60,24 @@ export default {
     isProjectListPage() {
       return isProjectListPageRoute(this.$route)
     },
+    needTagsView() {
+      return this.tagsView
+    },
     variables() {
       return variables
     }
   },
   methods: {
     handleClickOutside() {
-      this.$store.dispatch('app/closeSideBar', { withoutAnimation: false })
+      useAppStore().closeSideBar({ withoutAnimation: false })
     }
   }
 }
 </script>
 
 <style lang="scss" scoped>
-  @import "~@/assets/styles/mixin.scss";
-  @import "~@/assets/styles/variables.scss";
+  @import "@/assets/styles/mixin.scss";
+  @import "@/assets/styles/variables.scss";
 
   .app-wrapper {
     @include clearfix;

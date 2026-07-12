@@ -6,7 +6,7 @@
     :tools="tools"
     @tools-click="toolsHandle"
   >
-    <template slot="content">
+    <template #content>
       <div class="participation-heatmap-body">
         <div v-if="showEmptyHint" class="participation-heatmap-empty">{{ emptyHintText }}</div>
         <div v-else ref="gridWrap" class="participation-heatmap-grid-wrap" :style="gridWrapStyle">
@@ -47,7 +47,8 @@
 <script>
 import Cat2BugCard from '../Components/Card'
 import { statisticMyParticipation } from '@/api/system/statistic/defect'
-import { mapGetters } from 'vuex'
+import { mapState } from 'pinia'
+import { useSettingsStore } from '@/stores/settings'
 import { resolveCurrentProjectId } from '../utils/project-id'
 import { buildCalendarHeatmapData, WEEKDAY_LABELS, heatColorForCount } from '../utils/calendar-heatmap'
 import { calendarHeatmapTheme } from '../utils/chart-theme'
@@ -85,7 +86,7 @@ export default {
     read: { type: Boolean, default: false }
   },
   computed: {
-    ...mapGetters(['themeMode']),
+    ...mapState(useSettingsStore, ['themeMode']),
     weekdayLabels() {
       return WEEKDAY_LABELS
     },

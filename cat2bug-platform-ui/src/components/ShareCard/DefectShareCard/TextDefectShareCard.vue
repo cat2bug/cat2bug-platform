@@ -18,12 +18,10 @@
     </div>
   </div>
 </template>
-<script src="./src/utils/clipboard.js"></script>
 <script>
 import DefectTypeFlag from "@/components/Defect/DefectTypeFlag";
 import DefectStateFlag from "@/components/Defect/DefectStateFlag";
 import RowListMember from "@/components/RowListMember";
-import ClipboardJS from "clipboard";
 export default {
   name: "TextDefectShareCard",
   components:{DefectTypeFlag, DefectStateFlag, RowListMember},

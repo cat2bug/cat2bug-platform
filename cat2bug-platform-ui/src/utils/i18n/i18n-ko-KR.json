@@ -462,7 +462,7 @@
   "defect.builtin-field.createMember": "작성자",
   "defect.builtin-field.updateTime": "수정 시간",
   "defect.custom-field.section": "결함 필드",
-  "defect.custom-field.object-placeholder": "JSON 객체, 예: {\"k\":\"v\"}",
+  "defect.custom-field.object-placeholder": "JSON 객체, 예: \"k\": \"v\"",
   "defect.custom-field.invalid-json": "잘못된 JSON 형식",
   "defect.custom-field.add-item": "항목 추가",
   "defect.all-type": "모든 유형",

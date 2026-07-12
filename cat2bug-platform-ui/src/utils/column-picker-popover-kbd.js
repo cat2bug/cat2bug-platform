@@ -100,6 +100,20 @@ export function clearColumnPickerFocusMarks(popperEl) {
   popper.querySelectorAll(`.el-checkbox.${COLUMN_PICKER_ITEM_FOCUS_CLASS}`).forEach((el) => {
     el.classList.remove(COLUMN_PICKER_ITEM_FOCUS_CLASS)
   })
+  popper.querySelectorAll(`${CHECKBOX_SELECTOR}[tabindex]`).forEach((el) => {
+    el.removeAttribute('tabindex')
+  })
+}
+
+/** 鼠标点开浮层时：去掉键盘高亮并移出 popper 内焦点 */
+export function releaseColumnPickerMouseFocus(popperEl) {
+  const popper = popperEl || getVisibleColumnPickerPopperEl()
+  if (!popper) return
+  clearColumnPickerFocusMarks(popper)
+  const active = document.activeElement
+  if (active && popper.contains(active) && typeof active.blur === 'function') {
+    active.blur()
+  }
 }
 
 export function syncColumnPickerFocusClass(popperEl, menuIndex) {

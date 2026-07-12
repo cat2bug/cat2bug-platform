@@ -31,8 +31,8 @@
         :class="{hide: fileList.length >= limit}"
       >
         <template v-slot:trigger>
-          <el-button class="update-button update-button-add" v-if="fileList.length < limit" :style="buttonStyle" @click.native.capture="prepareNativeFilePicker">
-            <i class="el-icon-plus"></i>
+          <el-button class="update-button update-button-add" v-if="fileList.length < limit" :style="buttonStyle" @click.capture="prepareNativeFilePicker">
+            <legacy-icon icon="el-icon-plus"></legacy-icon>
           </el-button>
           <el-button v-if="isShowClipboardButton && fileList.length < limit" class="update-button" :style="buttonStyle" @click="clipboardImageHandle">
             <svg-icon icon-class="clipboard" />
@@ -50,7 +50,7 @@
     </div>
 
     <el-dialog
-      :visible.sync="dialogVisible"
+      v-model="dialogVisible"
       :title="$t('preview')"
       width="800"
       append-to-body
@@ -670,16 +670,31 @@ export default {
   flex-direction: row;
   gap: 8px;
 }
-::v-deep.cat2bug-upload > .el-upload--picture-card {
-  width: max-content !important;
-  max-width: 100%;
-  display: inline-flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  gap: 8px;
-  border: none;
-  .update-button + .update-button {
-    margin-left: 0;
+// Element Plus：触发器在 .el-upload-list--picture-card 内，旧版为 .cat2bug-upload 直接子节点
+::v-deep.cat2bug-upload {
+  .el-upload-list--picture-card {
+    width: max-content !important;
+    max-width: 100%;
+    display: inline-flex !important;
+    flex-wrap: nowrap;
+    vertical-align: top;
+  }
+
+  .el-upload-list--picture-card > .el-upload--picture-card,
+  > .el-upload--picture-card {
+    width: max-content !important;
+    max-width: 100%;
+    height: auto !important;
+    display: inline-flex !important;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 8px;
+    border: none;
+    background: transparent;
+
+    .update-button + .update-button {
+      margin-left: 0;
+    }
   }
 }
 </style>

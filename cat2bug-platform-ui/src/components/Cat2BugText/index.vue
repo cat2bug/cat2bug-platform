@@ -1,10 +1,14 @@
 <template>
   <el-tooltip effect="dark" :placement="tooltipPosition">
-    <div v-if="type=='down'" slot="content"><div v-html="fileName(tooltip)"></div></div>
-    <div v-else slot="content"><div v-html="text(tooltip)"></div></div>
-    <el-link v-if="type=='link'" v-html="text(content)" @click="handleClick" type="primary" class="cat2bug-text-content" ></el-link>
-    <el-link v-else-if="type=='down'" icon="el-icon-paperclip" @click="handleClickDown($event, content)" type="primary" class="cat2bug-text-content" >{{ fileName(content) }}</el-link>
-    <div v-else-if="type=='text'" class="cat2bug-text-content" v-html="text(content)"></div>
+    <template #content>
+      <div v-if="type === 'down'" v-html="fileName(tooltip)" />
+      <div v-else v-html="text(tooltip)" />
+    </template>
+    <span class="cat2bug-text-trigger">
+      <el-link v-if="type === 'link'" v-html="text(content)" @click="handleClick" type="primary" class="cat2bug-text-content" />
+      <el-link v-else-if="type === 'down'" :icon="$legacyIcon('el-icon-paperclip')" @click="handleClickDown($event, content)" type="primary" class="cat2bug-text-content">{{ fileName(content) }}</el-link>
+      <div v-else-if="type === 'text'" class="cat2bug-text-content" v-html="text(content)" />
+    </span>
   </el-tooltip>
 </template>
 
@@ -74,6 +78,10 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.cat2bug-text-trigger {
+  display: inline-block;
+  max-width: 100%;
+}
 .cat2bug-text-content {
   display: -webkit-box;
   -webkit-box-orient: vertical;

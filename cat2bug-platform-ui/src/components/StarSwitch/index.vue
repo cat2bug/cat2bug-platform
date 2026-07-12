@@ -1,27 +1,49 @@
 <template>
-  <i
-    :collect="collect ? 'true' : 'false'"
-    :class="[collect ? 'el-icon-star-on' : 'el-icon-star-off', 'start-switch']"
+  <span
+    class="start-switch"
+    :collect="isCollected ? 'true' : 'false'"
     @click="clickCollectHandle"
-  />
+  >
+    <el-icon>
+      <component :is="isCollected ? 'StarFilled' : 'Star'" />
+    </el-icon>
+  </span>
 </template>
 
 <script>
+import { StarFilled, Star } from '@element-plus/icons-vue'
+
 export default {
-  name: "StartSwitch",model: {
-    prop: 'collect',
-    event: 'change'
+  name: 'StartSwitch',
+  inheritAttrs: false,
+  components: {
+    StarFilled,
+    Star
   },
   props: {
-    collect: {
+    /** Vue 3 v-model */
+    modelValue: {
       type: Boolean,
       default: false
+    },
+    /** 兼容旧版 collect 传参 */
+    collect: {
+      type: Boolean,
+      default: undefined
+    }
+  },
+  emits: ['update:modelValue', 'change'],
+  computed: {
+    isCollected() {
+      return this.collect !== undefined ? this.collect : this.modelValue
     }
   },
   methods: {
     clickCollectHandle(event) {
-      this.$emit('change',!this.collect);
-      event.stopPropagation();
+      const next = !this.isCollected
+      this.$emit('update:modelValue', next)
+      this.$emit('change', next)
+      event.stopPropagation()
     }
   }
 }
@@ -29,25 +51,25 @@ export default {
 
 <style lang="scss" scoped>
 .start-switch {
-  font-size: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  font-size: 14px;
   line-height: 1;
   cursor: pointer;
 }
 
-/* 已收藏：color 作描边，background-clip 作填充（勿在未选中态加 background !important，否则会盖掉本段） */
-.start-switch[collect="true"] {
-  color: var(--star-switch-on-stroke, var(--star-switch-on-color, rgb(247, 186, 42)));
-  -webkit-text-stroke: 3px transparent;
-  background: var(--star-switch-on-fill, var(--star-switch-on-color, rgb(247, 186, 42))) top left / 100% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
+.start-switch :deep(.el-icon) {
+  font-size: inherit;
 }
 
-.start-switch:not([collect="true"]) {
-  color: var(--star-switch-off-stroke, var(--star-switch-off-color, #c0c4cc));
-  background: transparent;
-  -webkit-background-clip: unset;
-  background-clip: unset;
-  -webkit-text-stroke: 0;
+.start-switch[collect='true'] :deep(.el-icon) {
+  color: var(--star-switch-on-color, rgb(247, 186, 42));
+}
+
+/* 浅色主题 off-color 为描边色（#fff），SVG 应使用 off-stroke / off-fill */
+.start-switch:not([collect='true']) :deep(.el-icon) {
+  color: var(--star-switch-off-stroke, #c0c4cc);
 }
 </style>

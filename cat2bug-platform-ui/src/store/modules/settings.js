@@ -9,18 +9,25 @@ const initThemeMode = () => {
   return mode
 }
 
-const storageSetting = JSON.parse(localStorage.getItem('layout-setting')) || ''
+const storageSetting = JSON.parse(localStorage.getItem('layout-setting') || '{}')
+const themeMode = initThemeMode()
+const storedSideTheme = storageSetting.sideTheme || sideTheme
+const sideThemeValue =
+  themeMode === 'light' && storedSideTheme === 'theme-dark'
+    ? 'theme-light'
+    : storedSideTheme
+
 const state = {
   title: '',
   theme: storageSetting.theme || '#409EFF',
-  sideTheme: storageSetting.sideTheme || sideTheme,
+  sideTheme: sideThemeValue,
   showSettings: showSettings,
   topNav: storageSetting.topNav === undefined ? topNav : storageSetting.topNav,
   tagsView: storageSetting.tagsView === undefined ? tagsView : storageSetting.tagsView,
   fixedHeader: storageSetting.fixedHeader === undefined ? fixedHeader : storageSetting.fixedHeader,
   sidebarLogo: storageSetting.sidebarLogo === undefined ? sidebarLogo : storageSetting.sidebarLogo,
   dynamicTitle: storageSetting.dynamicTitle === undefined ? dynamicTitle : storageSetting.dynamicTitle,
-  themeMode: initThemeMode()
+  themeMode
 }
 const mutations = {
   CHANGE_SETTING: (state, { key, value }) => {
@@ -30,7 +37,16 @@ const mutations = {
   },
   SET_THEME_MODE: (state, themeMode) => {
     state.themeMode = themeMode
+    const syncedSideTheme = themeMode === 'dark' ? 'theme-dark' : 'theme-light'
+    state.sideTheme = syncedSideTheme
     localStorage.setItem(THEME_MODE_STORAGE_KEY, themeMode)
+    try {
+      const layoutSetting = JSON.parse(localStorage.getItem('layout-setting') || '{}')
+      layoutSetting.sideTheme = syncedSideTheme
+      localStorage.setItem('layout-setting', JSON.stringify(layoutSetting))
+    } catch (e) {
+      /* ignore */
+    }
     applyThemeMode(themeMode)
   }
 }

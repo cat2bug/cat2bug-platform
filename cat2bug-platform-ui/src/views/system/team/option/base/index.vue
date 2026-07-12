@@ -25,7 +25,8 @@
               <el-form-item :label="$t('team.name')" prop="teamName">
                 <el-input v-model="form.teamName" :placeholder="$t('team.please-enter-name')" maxlength="64" />
               </el-form-item>
-              <el-form-item :label="$t('team.icon')" prop="teamIcon">
+              <el-form-item prop="teamIcon" class="cat2bug-form-item-upload">
+                <template #label>{{ $t('team.icon') }}</template>
                 <image-upload v-model="form.teamIcon" :limit="1"/>
               </el-form-item>
               <el-form-item :label="$t('team.introduce')" prop="introduce">

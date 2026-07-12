@@ -5,8 +5,9 @@
 
 .defect-column-picker-popover,
 .defect-excel-column-picker-popover {
-  padding: 8px 6px;
+  padding: 8px 6px !important;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 .defect-column-picker-popover .defect-column-picker-head,
@@ -41,9 +42,42 @@
   flex-direction: column;
   gap: 6px;
   min-width: 220px;
+  max-width: 100%;
   max-height: 380px;
+  overflow-x: hidden;
   overflow-y: auto;
   padding-right: 4px;
+  box-sizing: border-box;
+  /* EP3 checkbox-group 默认 font-size/line-height: 0，须恢复字号 */
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* ConfigProvider 全局 size=small 会把复选框缩为 12px；浮层内恢复 EP 默认（14px） */
+.defect-column-picker-popover .defect-column-picker .el-checkbox.el-checkbox--small,
+.defect-excel-column-picker-popover .defect-column-picker .el-checkbox.el-checkbox--small {
+  height: auto;
+  min-height: 32px;
+  font-size: 14px;
+
+  .el-checkbox__label {
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  .el-checkbox__inner {
+    width: 14px;
+    height: 14px;
+
+    &::after {
+      width: 3px;
+      height: 7px;
+    }
+  }
+
+  .el-checkbox__input.is-indeterminate .el-checkbox__inner::before {
+    top: 5px;
+  }
 }
 
 .defect-column-picker-popover .defect-column-picker .el-checkbox,
@@ -78,6 +112,12 @@
 .defect-excel-column-picker-popover .defect-column-picker .el-checkbox__label {
   line-height: 1.4;
   padding-left: 8px;
+  color: var(--el-text-color-regular, #606266);
+}
+
+.defect-column-picker-popover .defect-column-picker .el-checkbox.is-checked .el-checkbox__label,
+.defect-excel-column-picker-popover .defect-column-picker .el-checkbox.is-checked .el-checkbox__label {
+  color: var(--el-color-primary, #409eff);
 }
 
 /* 键盘导航高亮，与成员下拉 is-keyboard-active 一致 */

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html data-booting="true">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="renderer" content="webkit">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="color-scheme" content="light dark">
+    <link rel="icon" href="/favicon.ico">
+    <title>猫陪我改BUG</title>
+    <script>
+      (function () {
+        var LIGHT_BG = '#fafbfc';
+        var DARK_BG = '#1e1e20';
+        try {
+          var mode = localStorage.getItem('theme-mode');
+          if (mode !== 'dark' && mode !== 'light') {
+            mode = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          }
+          var root = document.documentElement;
+          var isDark = mode === 'dark';
+          var bg = isDark ? DARK_BG : LIGHT_BG;
+          root.setAttribute('data-theme', mode);
+          root.style.backgroundColor = bg;
+          root.style.colorScheme = isDark ? 'dark' : 'light';
+          if (isDark) {
+            root.classList.add('dark');
+          } else {
+            root.classList.remove('dark');
+          }
+          function paintBody() {
+            if (document.body) {
+              document.body.style.backgroundColor = bg;
+            }
+          }
+          if (document.body) {
+            paintBody();
+          } else {
+            document.addEventListener('DOMContentLoaded', paintBody, { once: true });
+          }
+        } catch (e) {
+          document.documentElement.style.backgroundColor = LIGHT_BG;
+        }
+      })();
+    </script>
+    <style>
+    :root {
+      --page-splash-bg: #fafbfc;
+      --page-progress-color: #409eff;
+      --page-progress-glow: rgba(64, 158, 255, 0.45);
+      --page-progress-gradient-start: #337ecc;
+    }
+
+    html {
+      background-color: var(--page-splash-bg);
+      color-scheme: light;
+    }
+    html.dark {
+      --page-splash-bg: #1e1e20;
+      color-scheme: dark;
+      --page-progress-color: #ffc107;
+      --page-progress-glow: rgba(255, 193, 7, 0.55);
+      --page-progress-gradient-start: #e6ac00;
+    }
+
+    html,
+    body,
+    #app {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      background-color: var(--page-splash-bg);
+    }
+
+    #page-load-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      width: 62%;
+      max-width: 880px;
+      background: linear-gradient(90deg, var(--page-progress-gradient-start, #337ecc), var(--page-progress-color, #409eff));
+      z-index: 1000000;
+      box-shadow: 0 0 8px var(--page-progress-glow, rgba(64, 158, 255, 0.45));
+      pointer-events: none;
+      opacity: 0.92;
+    }
+
+    #page-load-bar.is-done {
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    html[data-booting] #nprogress {
+      display: none !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
+    }
+    </style>
+  </head>
+  <body>
+    <div id="page-load-bar" aria-hidden="true"></div>
+    <div id="app"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

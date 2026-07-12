@@ -1,12 +1,22 @@
 <template>
   <el-image
-    v-bind="$attrs"
+    ref="elImageRef"
+    v-bind="imageAttrs"
     v-on="imageListeners"
     :src="displaySrc"
     :preview-src-list="displayPreviewList"
+    :preview-teleported="previewTeleported"
+    :z-index="zIndex"
+    @close="onPreviewClose"
   >
-    <image-error-slot slot="error" />
-    <slot slot="placeholder" name="placeholder"></slot>
+    <template #error>
+      <div class="cat2bug-image-error-trigger" @click.stop="openPreviewFromError">
+        <image-error-slot />
+      </div>
+    </template>
+    <template #placeholder>
+      <slot name="placeholder"></slot>
+    </template>
   </el-image>
 </template>
 
@@ -26,6 +36,14 @@ export default {
     previewSrcList: {
       type: Array,
       default: undefined
+    },
+    previewTeleported: {
+      type: Boolean,
+      default: true
+    },
+    zIndex: {
+      type: Number,
+      default: 3000
     }
   },
   data() {
@@ -41,8 +59,23 @@ export default {
       }
       return this.$attrs['preview-src-list']
     },
+    imageAttrs() {
+      const attrs = { ...this.$attrs }
+      Object.keys(attrs).forEach((key) => {
+        if (key.startsWith('on') && typeof attrs[key] === 'function') {
+          delete attrs[key]
+        }
+      })
+      return attrs
+    },
     imageListeners() {
-      const listeners = { ...this.$listeners }
+      const listeners = {}
+      Object.entries(this.$attrs).forEach(([key, handler]) => {
+        if (key.startsWith('on') && typeof handler === 'function') {
+          const eventName = key.slice(2).replace(/^[A-Z]/, (c) => c.toLowerCase())
+          listeners[eventName] = handler
+        }
+      })
       const userError = listeners.error
       listeners.error = (...args) => {
         this.onImageError()
@@ -91,8 +124,15 @@ export default {
       }
       const index = list.indexOf(this.src)
       if (index > -1) {
-        this.$set(this.failedPreviewIndexes, index, true)
+        this.failedPreviewIndexes = { ...this.failedPreviewIndexes, [index]: true }
       }
+    },
+    openPreviewFromError() {
+      if (!this.displayPreviewList || !this.displayPreviewList.length) return
+      this.$refs.elImageRef?.showPreview?.()
+    },
+    onPreviewClose() {
+      this.$emit('close')
     }
   }
 }
@@ -117,5 +157,13 @@ export default {
   object-fit: contain;
   object-position: center center;
   vertical-align: middle;
+}
+.cat2bug-image-error-trigger {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: zoom-in;
 }
 </style>

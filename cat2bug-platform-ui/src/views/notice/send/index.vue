@@ -1,7 +1,7 @@
 <template>
   <el-dialog
     :title="$t('notice.send')"
-    :visible.sync="visible"
+    v-model="visible"
     width="40%"
     custom-class="cat2bug-form-shortcut-dialog send-notice-dialog"
     :close-on-click-modal="false"
@@ -29,13 +29,13 @@
                   v-model="form.content"></el-input>
       </el-form-item>
     </el-form>
-    <span slot="footer" class="dialog-footer">
+    <template #footer><span class="dialog-footer">
     <el-button @click="requestCloseSendDialog">{{ $t('cancel') }}</el-button>
     <el-button class="defect-kbd-hint-host" type="primary" @click="handleSend">
       {{ $t('ok') }}
       <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
     </el-button>
-  </span>
+  </span></template>
   </el-dialog>
 </template>
 

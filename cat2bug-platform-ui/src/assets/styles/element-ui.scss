@@ -74,6 +74,8 @@
   left: 0;
   position: relative;
   margin: 0 auto;
+  /* EP3 在根节点加 padding，与 Vue2（padding 在 header/body/footer）不一致，归零后由 cat2bug 分段控制 */
+  padding: 0 !important;
 }
 
 // refine element ui upload

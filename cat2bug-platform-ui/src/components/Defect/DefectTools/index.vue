@@ -3,18 +3,20 @@
     <!-- 仅操作按钮参与表格列宽；对话框/弹层挂到隔离层，避免撑开操作列 -->
     <div class="defect-tools__bar">
       <slot name="left"></slot>
-      <share-card v-show="!isDeleted" :params="defect" />
+      <span v-show="!isDeleted" class="defect-tools-share-wrap">
+        <share-card :params="defect" />
+      </span>
       <star-switch v-show="!isDeleted" v-model="defect.collect" @change="clickCollectHandle($event, defect, false)"></star-switch>
-      <el-button v-show="assignVisible" data-defect-tool="assign" :icon="isShowIcon?'el-icon-refresh':''" :size="size" :type="isText?'text':'info'" :class="isText?'orange':''" @click="assignHandle">{{$i18n.t('assign')}}</el-button>
-      <el-button v-show="repairVisible" data-defect-tool="repair" :icon="isShowIcon?'el-icon-document-checked':''" :size="size" :type="isText?'text':'primary'" :class="isText?'orange':''" @click="repairDialogHandle">{{$i18n.t('repair')}}</el-button>
-    <el-button v-show="rejectVisible" data-defect-tool="reject" :icon="isShowIcon?'el-icon-document-delete':''" :size="size" :type="isText?'text':'warning'" :class="isText?'orange':''" @click="rejectHandle">{{$i18n.t('reject')}}</el-button>
-      <el-button v-show="passVisible" data-defect-tool="pass" :icon="isShowIcon?'el-icon-finished':''" :size="size" :type="isText?'text':'success'" :class="isText?'orange':''" @click="passDialogHandle">{{$i18n.t('pass')}}</el-button>
-      <el-button v-show="openVisible" data-defect-tool="open" :icon="isShowIcon?'el-icon-document-copy':''" :size="size" :type="isText?'text':'danger'" :class="isText?'orange':''" @click="openDialogHandle" v-hasPermi="['system:defect:open']">{{$i18n.t('open')}}</el-button>
-      <el-button v-show="closeVisible" data-defect-tool="close" :icon="isShowIcon?'el-icon-takeaway-box':''" :size="size" :type="isText?'text':'danger'" :class="isText?'orange':''" @click="closeDialogHandle">{{$i18n.t('close')}}</el-button>
-      <el-button v-show="viewVisible" data-defect-tool="view" :icon="isShowIcon?'el-icon-view':''" :size="size" :type="isText?'text':'warning'" @click="viewHandle">{{$i18n.t('view')}}</el-button>
-      <el-button v-show="editVisible" data-defect-tool="edit" :icon="isShowIcon?'el-icon-edit':''" :size="size" :type="isText?'text':'success'" :class="isText?'green':''" :plain="!isShowIcon" @click="editDialogHandle" >{{ $t('modify') }}</el-button>
-      <el-button v-show="deleteVisible" data-defect-tool="delete" :icon="isShowIcon?'el-icon-delete':''" :size="size" :type="isText?'text':'danger'" :class="isText?'red':''" :plain="!isShowIcon" @click="handleDelete">{{$i18n.t('delete')}}</el-button>
-      <el-button v-show="restoreVisible" data-defect-tool="restore" :icon="isShowIcon?'el-icon-refresh-left':''" :size="size" :type="isText?'text':'warning'" :class="isText?'restore-orange':''" :plain="!isShowIcon" @click="handleRestore">{{$i18n.t('defect.restore')}}</el-button>
+      <el-button v-show="assignVisible" data-defect-tool="assign" :icon="$legacyIcon(isShowIcon?'el-icon-refresh':'')" :size="buttonSize" :link="!!isText" :type="isText ? undefined : 'info'" :class="isText?'orange':''" @click="assignHandle">{{$i18n.t('assign')}}</el-button>
+      <el-button v-show="repairVisible" data-defect-tool="repair" :icon="$legacyIcon(isShowIcon?'el-icon-document-checked':'')" :size="buttonSize" :link="!!isText" :type="isText ? undefined : 'primary'" :class="isText?'orange':''" @click="repairDialogHandle">{{$i18n.t('repair')}}</el-button>
+    <el-button v-show="rejectVisible" data-defect-tool="reject" :icon="$legacyIcon(isShowIcon?'el-icon-document-delete':'')" :size="buttonSize" :link="!!isText" :type="isText ? undefined : 'warning'" :class="isText?'orange':''" @click="rejectHandle">{{$i18n.t('reject')}}</el-button>
+      <el-button v-show="passVisible" data-defect-tool="pass" :icon="$legacyIcon(isShowIcon?'el-icon-finished':'')" :size="buttonSize" :link="!!isText" :type="isText ? undefined : 'success'" :class="isText?'orange':''" @click="passDialogHandle">{{$i18n.t('pass')}}</el-button>
+      <el-button v-show="openVisible" data-defect-tool="open" :icon="$legacyIcon(isShowIcon?'el-icon-document-copy':'')" :size="buttonSize" :link="!!isText" :type="isText ? undefined : 'danger'" :class="isText?'orange':''" @click="openDialogHandle" v-hasPermi="['system:defect:open']">{{$i18n.t('open')}}</el-button>
+      <el-button v-show="closeVisible" data-defect-tool="close" :icon="$legacyIcon(isShowIcon?'el-icon-takeaway-box':'')" :size="buttonSize" :link="!!isText" :type="isText ? undefined : 'danger'" :class="isText?'orange':''" @click="closeDialogHandle">{{$i18n.t('close')}}</el-button>
+      <el-button v-show="viewVisible" data-defect-tool="view" :icon="$legacyIcon(isShowIcon?'el-icon-view':'')" :size="buttonSize" :link="!!isText" :type="isText ? undefined : 'warning'" @click="viewHandle">{{$i18n.t('view')}}</el-button>
+      <el-button v-show="editVisible" data-defect-tool="edit" :icon="$legacyIcon(isShowIcon?'el-icon-edit':'')" :size="buttonSize" :link="!!isText" :type="isText ? undefined : 'success'" :class="isText?'green':''" :plain="!isShowIcon" @click="editDialogHandle" >{{ $t('modify') }}</el-button>
+      <el-button v-show="deleteVisible" data-defect-tool="delete" :icon="$legacyIcon(isShowIcon?'el-icon-delete':'')" :size="buttonSize" :link="!!isText" :type="isText ? undefined : 'danger'" :class="isText?'red':''" :plain="!isShowIcon" @click="handleDelete">{{$i18n.t('delete')}}</el-button>
+      <el-button v-show="restoreVisible" data-defect-tool="restore" :icon="$legacyIcon(isShowIcon?'el-icon-refresh-left':'')" :size="buttonSize" :link="!!isText" :type="isText ? undefined : 'warning'" :class="isText?'restore-orange':''" :plain="!isShowIcon" @click="handleRestore">{{$i18n.t('defect.restore')}}</el-button>
       <slot name="right"></slot>
     </div>
     <div class="defect-tools__dialogs" aria-hidden="true">
@@ -91,6 +93,14 @@ export default {
     isCompact() {
       if (this.compact != null) return this.compact;
       return this.isText === true;
+    },
+    /** Element Plus: mini/medium → small/default */
+    buttonSize() {
+      const size = this.size
+      if (!size) return undefined
+      if (size === 'mini') return 'small'
+      if (size === 'medium') return 'default'
+      return size
     },
     /** 获取当前用户id */
     currentUserId: function() {
@@ -189,10 +199,9 @@ export default {
         userId: this.currentUserId,
         collect: collect?1:0
       }).then(res=>{
-        this.$set(defect, 'collect', collect);
-        // 如果collect参数存在，表明是点击头部的收藏按钮触发
-        if(isRefreshList) {
-          this.$emit('update',this.defect);
+        defect.collect = collect;
+        if (isRefreshList) {
+          this.$emit('update', this.defect);
         }
         if(collect) {
           this.$message.success(this.$i18n.t('collect-success').toString());
@@ -276,6 +285,15 @@ export default {
     }
   }
 
+  .defect-tools-share-wrap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    line-height: 1;
+    vertical-align: middle;
+  }
+
   /* 对话框容器脱离文档流，避免 append 前撑开表格列宽 */
   .defect-tools__dialogs {
     position: fixed;
@@ -325,6 +343,6 @@ export default {
   }
   .restore-orange:hover,
   .restore-orange:focus {
-    color: var(--cat2bug-operate-text-warning-hover, #ffc933);
+    color: var(--cat2bug-operate-text-warning-hover, #409eff);
   }
 </style>

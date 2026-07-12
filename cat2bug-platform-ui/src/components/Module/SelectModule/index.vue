@@ -2,47 +2,47 @@
   <el-popover
     ref="modulePopover"
     placement="bottom-start"
-    v-model="popoverVisible"
+    v-model:visible="popoverVisible"
     @show="popoverShowHandle"
     @after-enter="onModulePopoverAfterEnter"
     @hide="popoverHideHandle"
     :popper-class="popoverPopperClass"
-    :visible-arrow="popoverVisibleArrow"
+    :show-arrow="popoverVisibleArrow"
     :boundaries-padding="16"
     :popper-options="modulePopoverPopperOptions"
     :trigger="popoverTriggerMode">
-    <!-- directMenu：仅作定位锚点，不展示「请选择交付物」输入条（缺陷 Excel 三角直达下层菜单） -->
-    <div
-      v-if="directMenu"
-      slot="reference"
-      class="select-module-ref-minimal"
-      tabindex="-1"
-      aria-hidden="true"
-    />
-    <div
-      v-else
-      slot="reference"
-      ref="inputBox"
-      :class="'el-input__inner select-module-input cat2bug-combo-focus-target select-module-input-'+size"
-      tabindex="0"
-      @focus="onOuterFocus"
-      @keydown="onShellKeydownForModule"
-      @mouseenter="showClearButtonHandle(true)"
-      @mouseleave="showClearButtonHandle(false)"
-    >
-      <i :class="icon" v-if="icon" class="select-module-input__prefix-icon"></i>
-      <el-tooltip
-        :content="moduleFullPath"
-        placement="top"
-        :disabled="!moduleFullPath || moduleFullPath === queryMember.params.search"
+    <template #reference>
+      <!-- directMenu：仅作定位锚点，不展示「请选择交付物」输入条（缺陷 Excel 三角直达下层菜单） -->
+      <div
+        v-if="directMenu"
+        class="select-module-ref-minimal"
+        tabindex="-1"
+        aria-hidden="true"
+      />
+      <div
+        v-else
+        ref="inputBox"
+        :class="'select-module-input cat2bug-combo-focus-target select-module-input-'+size"
+        tabindex="0"
+        @focus="onOuterFocus"
+        @keydown="onShellKeydownForModule"
+        @mouseenter="showClearButtonHandle(true)"
+        @mouseleave="showClearButtonHandle(false)"
       >
-        <div class="selectProjectMemberInput_content">
-          <el-input ref="selectProjectModuleInput" class="select-module-display-input" :size="size" :class="icon?'padding-left-8':''" readonly :placeholder="$t(placeholder)" v-model="queryMember.params.search" @input="searchChangeHandle" @keydown.native.stop="onShellKeydownForModule"></el-input>
-        </div>
-      </el-tooltip>
-      <i class="select-module-input__icon el-icon-arrow-up" :class="{'is-open': popoverVisible}" v-show="!readonly && isClearButtonVisible==false"></i>
-      <i class="select-module-input__icon el-icon-circle-close" v-show="!readonly && isClearButtonVisible==true" @click="clearSelectModuleHandle"></i>
-    </div>
+        <i :class="icon" v-if="icon" class="select-module-input__prefix-icon"></i>
+        <el-tooltip
+          :content="moduleFullPath"
+          placement="top"
+          :disabled="!moduleFullPath || moduleFullPath === queryMember.params.search"
+        >
+          <div class="selectProjectMemberInput_content">
+            <el-input ref="selectProjectModuleInput" class="select-module-display-input" :size="controlSize" :class="icon?'padding-left-8':''" readonly :placeholder="$t(placeholder)" v-model="queryMember.params.search" @input="searchChangeHandle" @keydown.stop="onShellKeydownForModule"></el-input>
+          </div>
+        </el-tooltip>
+        <legacy-icon icon="el-icon-arrow-up" class="select-module-input__icon" :class="{'is-open': popoverVisible}" v-show="!readonly && isClearButtonVisible==false"></legacy-icon>
+        <legacy-icon icon="el-icon-circle-close" class="select-module-input__icon" v-show="!readonly && isClearButtonVisible==true" @click="clearSelectModuleHandle"></legacy-icon>
+      </div>
+    </template>
     <div class="select-module-menu-outer" :class="{'has-menu-scroll-left': menuScrollHasLeft}">
       <button
         v-show="menuScrollHasLeft"
@@ -54,7 +54,7 @@
         <span
           v-if="menuHiddenParentLevelCount > 0"
           class="select-module-menu-prev-level">{{ $t('module.hidden-parent-levels', [menuHiddenParentLevelCount]) }}</span>
-        <i class="el-icon-arrow-left"></i>
+        <legacy-icon icon="el-icon-arrow-left"></legacy-icon>
       </button>
     <div ref="moduleMenuScroller" class="select-module-menu" @scroll="syncMenuScrollIndicators">
       <module-menu v-for="(moduleId, index) in activeModuleIds"
@@ -90,6 +90,7 @@ import {
   formatDeliverablePath
 } from "@/utils/deliverable-path-display";
 import { observeComboFocusTarget } from '@/utils/combo-focus-tab'
+import { mapElementPlusSize } from '@/utils/element-plus-size'
 
 export default {
   name: "SelectModule",
@@ -182,6 +183,9 @@ export default {
     }
   },
   computed: {
+    controlSize() {
+      return mapElementPlusSize(this.size)
+    },
     popoverPopperClass () {
       const base = 'select-module-popover'
       const extra = (this.popperExtraClass || '').trim()
@@ -1137,7 +1141,9 @@ export default {
     /** 按输入框可视宽度估算可展示字符数 */
     getDisplayMaxLength() {
       const input = this.$refs.selectProjectModuleInput
-      const inner = input && input.$el ? input.$el.querySelector('.el-input__inner') : null
+      const inner = input && input.$el
+        ? (input.$el.querySelector('.el-input__wrapper') || input.$el.querySelector('.el-input__inner'))
+        : null
       if (inner && inner.clientWidth > 0) {
         const style = window.getComputedStyle(inner)
         const fontSize = parseFloat(style.fontSize) || 14
@@ -1517,35 +1523,41 @@ export default {
   }
 </style>
 <style lang="scss" scoped>
-  ::v-deep .select-module-input {
+  .select-module-input {
     display: inline-flex;
     flex-direction: row;
+    flex-wrap: nowrap;
     justify-content: flex-start;
+    align-items: center;
     max-width: 300px;
     width: 100%;
-    height: auto;
-    line-height: 0;
-    align-items: center;
-    padding-left: 0px;
+    min-width: 0;
+    box-sizing: border-box;
+    line-height: 1;
+    padding-left: 0;
     overflow: hidden;
+    vertical-align: middle;
+
     .selectProjectMemberInput_content {
       display: inline-flex;
       flex-direction: row;
       justify-content: flex-start;
       align-items: center;
       flex-wrap: nowrap;
-      flex-grow: 1;
-      flex-shrink: 1;
+      flex: 1 1 auto;
       min-width: 0;
       overflow: hidden;
-      min-height: 30px;
-      margin: 0px 10px 0px 0px;
+      margin: 0 6px 0 0;
       .select-module-display-input {
-        flex-grow: 1;
-        flex-shrink: 1;
-        width: 0;
+        flex: 1 1 auto;
         min-width: 0;
-        height: 26px;
+        width: 0;
+        ::v-deep .el-input__wrapper {
+          box-shadow: none !important;
+          /* 与 Vue2 外层 el-input__inner 左内边距一致，避免 placeholder 贴边 */
+          padding-left: 15px;
+          padding-right: 0;
+        }
         ::v-deep .el-input__inner:focus,
         ::v-deep .el-input__inner:focus-visible {
           outline: none !important;
@@ -1554,15 +1566,11 @@ export default {
         }
       }
       .el-input {
-        flex-grow: 1;
-        flex-shrink: 1;
-        width: 0;
+        flex: 1 1 auto;
         min-width: 0;
-        height: 26px;
-        .el-input__inner {
-          border-width: 0px;
-          height: 26px;
-          line-height: 26px;
+        width: 0;
+        ::v-deep .el-input__inner {
+          border-width: 0;
           display: block;
           width: 100%;
           overflow: hidden;
@@ -1579,7 +1587,8 @@ export default {
       flex-shrink: 0;
     }
     .select-module-input__icon {
-      display: inline;
+      flex-shrink: 0;
+      align-self: center;
       color: var(--cat2bug-input-icon-color, #c0c4cc);
       font-size: 14px;
       transition: transform 0.3s, -webkit-transform 0.3s;
@@ -1604,18 +1613,30 @@ export default {
       border-left-width: 0;
     }
   }
-  ::v-deep .select-module-input-medium {
+  .select-module-input-medium {
+    height: 36px;
+    min-height: 36px;
+    max-height: 36px;
     .selectProjectMemberInput_content {
       min-height: 34px;
     }
   }
 
-  ::v-deep .select-module-input-small {
+  .select-module-input-small {
+    height: 32px;
+    min-height: 32px;
+    max-height: 32px;
+    line-height: 1 !important;
     .selectProjectMemberInput_content {
-      min-height: 30px;
+      min-height: 0;
+      height: 100%;
     }
   }
-  ::v-deep .select-module-input-mini {
+  .select-module-input-mini {
+    height: 28px;
+    min-height: 28px;
+    max-height: 28px;
+    line-height: 1 !important;
     .selectProjectMemberInput_content {
       min-height: 26px;
     }

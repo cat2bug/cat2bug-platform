@@ -17,7 +17,7 @@
         </el-option>
       </el-select>
       <el-tooltip class="item" effect="dark" :content="$t('export')" placement="right-end">
-        <el-button type="text" icon="el-icon-download" @click="handleExport"></el-button>
+        <el-button type="text" :icon="$legacyIcon('el-icon-download')" @click="handleExport"></el-button>
       </el-tooltip>
     </div>
     <div class="plan-statistics" @click="handlePlanClick">

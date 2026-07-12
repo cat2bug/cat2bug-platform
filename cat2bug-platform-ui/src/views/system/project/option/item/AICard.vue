@@ -2,7 +2,7 @@
   <el-col v-if="cardVisible" :span="6">
     <el-card class="box-card">
       <div slot="header" class="clearfix">
-        <i class="el-icon-cpu"></i>
+        <legacy-icon icon="el-icon-cpu"></legacy-icon>
         <div>
           <span>{{$t('project.ai-manager')}}</span>
           <span>{{$t('project.ai-manager-describe')}}</span>

@@ -6,23 +6,23 @@
     :tools="tools"
     @tools-click="toolsHandle"
   >
-    <template slot="right-tools">
+    <template #right-tools>
       <el-radio-group
         v-model="query.timeType"
-        size="mini"
+        size="small"
         class="defect-trend-time-type"
         @input="handleTimeTypeChange"
         @click.native.stop
       >
-        <el-radio-button v-for="tt in timeTypeList" :key="tt.value" :label="tt.value">
+        <el-radio-button v-for="tt in timeTypeList" :key="tt.value" :value="tt.value">
           {{ $t(tt.label).toString() }}
         </el-radio-button>
       </el-radio-group>
       <el-tooltip v-if="!read" effect="dark" :content="$t('export').toString()" placement="top">
-        <el-button type="text" icon="el-icon-download" class="defect-trend-export" @click.stop="handleExport" />
+        <el-button link :icon="$legacyIcon('el-icon-download')" class="defect-trend-export" @click.stop="handleExport" />
       </el-tooltip>
     </template>
-    <template slot="content">
+    <template #content>
       <div ref="trendBody" class="defect-trend-body">
         <div ref="chart" class="defect-trend-canvas" />
         <div v-show="showEmptyHint" class="defect-trend-empty">{{ emptyHintText }}</div>
@@ -32,12 +32,20 @@
 </template>
 
 <script>
-import * as echarts from '@/assets/js/echarts.min.js'
 import resize from '@/views/dashboard/mixins/resize'
 import Cat2BugCard from '../Components/Card'
 import { statisticMemberDefectLine } from '@/api/system/statistic/defect'
-import { mapGetters } from 'vuex'
-import { disconnectEchartsResize, observeEchartsResize, afterChartRefReady } from '../utils/echarts-resize'
+import { mapState } from 'pinia'
+import { useSettingsStore } from '@/stores/settings'
+import {
+  afterChartRefReady,
+  disposeEchartsChart,
+  initEchartsChart,
+  isChartDisposed,
+  observeEchartsResize,
+  safeResizeChart,
+  safeSetOption
+} from '../utils/echarts-resize'
 import { resolveCurrentProjectId } from '../utils/project-id'
 import { buildMemberDefectLineSeries, buildTrendLineChartOption } from '../utils/defect-trend-chart'
 
@@ -67,7 +75,7 @@ export default {
     read: { type: Boolean, default: false }
   },
   computed: {
-    ...mapGetters(['themeMode']),
+    ...mapState(useSettingsStore, ['themeMode']),
     currentProjectId() {
       return resolveCurrentProjectId(this)
     },
@@ -140,13 +148,24 @@ export default {
     ensureChart() {
       const el = this.$refs.chart
       if (!el) return false
-      if (!this.chart) {
-        this.chart = echarts.init(el, 'macarons')
+      if (isChartDisposed(this.chart)) {
+        this.chart = null
       }
-      return true
+      if (!this.chart) {
+        this.chart = initEchartsChart(el)
+      }
+      return !!this.chart
     },
     applyChart() {
-      if (!this.chart) return
+      if (!this.chart || isChartDisposed(this.chart)) return
+      if (!this.lastXData.length || !this.lastSeries.length) {
+        safeSetOption(this.chart, {
+          xAxis: { type: 'category', data: [] },
+          yAxis: { type: 'value' },
+          series: []
+        }, true)
+        return
+      }
       const opt = buildTrendLineChartOption({
         legendData: this.lastLegend,
         xData: this.lastXData,
@@ -154,9 +173,9 @@ export default {
         isDark: this.isDarkTheme,
         tooltipAppendTo: this.$refs.trendBody || undefined
       })
-      this.chart.setOption(opt, true)
+      safeSetOption(this.chart, opt, true)
       observeEchartsResize(this.chart, this.$refs.chart)
-      this.$nextTick(() => this.chart && this.chart.resize())
+      this.$nextTick(() => safeResizeChart(this.chart))
     },
     bindChartClick() {
       if (!this.chart || this.read) return
@@ -194,18 +213,17 @@ export default {
       )
     },
     clearChart() {
-      disconnectEchartsResize(this.chart)
-      if (this.chart) {
+      if (this.chart && !isChartDisposed(this.chart)) {
         this.chart.off('click')
-        this.chart.dispose()
-        this.chart = null
       }
+      disposeEchartsChart(this.chart)
+      this.chart = null
       this.lastLegend = []
       this.lastXData = []
       this.lastSeries = []
     },
     resize() {
-      this.chart && this.chart.resize()
+      safeResizeChart(this.chart)
     },
     refreshData() {
       this.loadData()

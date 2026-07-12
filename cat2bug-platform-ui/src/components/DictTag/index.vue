@@ -29,7 +29,8 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
+import { mapState } from 'pinia';
+import { useSettingsStore } from '@/stores/settings';
 
 export default {
   name: "DictTag",
@@ -51,7 +52,7 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['themeMode']),
+    ...mapState(useSettingsStore, ['themeMode']),
     tagEffect() {
       return this.themeMode === 'dark' ? 'plain' : 'light';
     },

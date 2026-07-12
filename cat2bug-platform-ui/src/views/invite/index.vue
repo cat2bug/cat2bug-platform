@@ -12,7 +12,7 @@
         <template v-if="loadError">
           <div class="invite-outcome invite-outcome--error">
             <div class="invite-outcome-icon" aria-hidden="true">
-              <i class="el-icon-close"></i>
+              <legacy-icon icon="el-icon-close"></legacy-icon>
             </div>
             <p class="invite-outcome-title">{{ $t('invite.status.invalid') }}</p>
             <p v-if="loadError" class="invite-outcome-desc">{{ loadError }}</p>
@@ -61,7 +61,7 @@
           <template v-if="acceptState === 'success'">
             <div class="invite-outcome invite-outcome--success">
               <div class="invite-outcome-icon" aria-hidden="true">
-                <i class="el-icon-check"></i>
+                <legacy-icon icon="el-icon-check"></legacy-icon>
               </div>
               <p class="invite-outcome-title">{{ $t('invite.accept-success') }}</p>
               <div class="invite-outcome-actions">
@@ -73,7 +73,7 @@
           <template v-else-if="acceptState === 'already-member' || showAlreadyMember">
             <div class="invite-outcome invite-outcome--info">
               <div class="invite-outcome-icon" aria-hidden="true">
-                <i class="el-icon-info"></i>
+                <legacy-icon icon="el-icon-info"></legacy-icon>
               </div>
               <p class="invite-outcome-title">{{ alreadyMemberText }}</p>
               <div class="invite-outcome-actions">

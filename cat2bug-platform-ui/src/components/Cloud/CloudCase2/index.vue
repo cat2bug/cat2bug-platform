@@ -6,10 +6,10 @@
     :close-on-press-escape="false"
     :before-close="handleClose">
 <!--    标题-->
-    <template slot="title">
+    <template #header>
       <div class="case-search-header">
         <div class="case-search-title">
-          <i class="el-icon-arrow-left" @click="requestCloseCloudCase2Drawer"></i>
+          <legacy-icon icon="el-icon-arrow-left" @click="requestCloseCloudCase2Drawer"></legacy-icon>
           <h4 class="case-search-title-name"><svg-icon icon-class="robot" style="margin-right: 10px;" />{{ $t('case.ai-create') }}</h4>
         </div>
         <div>

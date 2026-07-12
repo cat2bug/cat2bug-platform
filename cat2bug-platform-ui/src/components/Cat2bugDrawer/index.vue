@@ -3,7 +3,7 @@
     :size="width"
     :visible.sync="drawer"
     :direction="direction">
-    <template slot="title">
+    <template #header>
       <h1 class="title">{{title}}</h1>
       <div class="title-tools">
         <slot name="tools"></slot>
@@ -80,8 +80,8 @@ export default {
     display: none;
   }
   ::v-deep .el-drawer__header {
-    padding-top: 10px;
-    margin-bottom: 10px;
+    margin-bottom: 0;
+    padding: var(--cat2bug-drawer-header-padding-y) var(--cat2bug-drawer-header-padding-x) !important;
   }
   .title-tools {
     display: flex;

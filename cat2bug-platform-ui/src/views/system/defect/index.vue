@@ -18,48 +18,55 @@
       >
         <el-tabs ref="defectTabs" v-model="activeDefectTabName" @tab-click="selectDefectTabHandle">
           <el-tab-pane v-for="tab in config.tabs" :key="tab.tabId+''" :name="tab.tabId+''">
-            <span
-              slot="label"
-              class="defect-tab-label"
-            >
-              <svg-icon icon-class="list2" class="defect-tab-icon" />
-              <span class="defect-tab-text" :title="tab.tabName">{{ tab.tabName }}</span>
-              <i style="width: 14px;" class="el-icon-close" @click.stop="removeDefectTabHandle(tab.tabId)" />
-            </span>
+            <template #label>
+              <span class="defect-tab-label">
+                <svg-icon icon-class="list2" class="defect-tab-icon" />
+                <span class="defect-tab-text" :title="tab.tabName">{{ tab.tabName }}</span>
+                <legacy-icon icon="el-icon-close" style="width: 14px;" @click.stop="removeDefectTabHandle(tab.tabId)" />
+              </span>
+            </template>
           </el-tab-pane>
           <el-tab-pane key="all-tab" :name="allTab">
-            <span
-              slot="label"
-              class="defect-tab-label"
-            >
-              <svg-icon icon-class="all" class="defect-tab-icon" />
-              <span class="defect-tab-text" :title="$t('defect.all-defect')">{{ $t('defect.all-defect') }}</span>
-            </span>
+            <template #label>
+              <span class="defect-tab-label">
+                <svg-icon icon-class="all" class="defect-tab-icon" />
+                <span class="defect-tab-text" :title="$t('defect.all-defect')">{{ $t('defect.all-defect') }}</span>
+              </span>
+            </template>
           </el-tab-pane>
           <el-tab-pane key="deleted-tab" :name="deletedTab">
-            <span
-              slot="label"
-              class="defect-tab-label"
-            >
-              <svg-icon icon-class="delete" class="defect-tab-icon" />
-              <span class="defect-tab-text" :title="$t('defect.deleted-defect')">{{ $t('defect.deleted-defect') }}</span>
-            </span>
+            <template #label>
+              <span class="defect-tab-label">
+                <svg-icon icon-class="delete" class="defect-tab-icon" />
+                <span class="defect-tab-text" :title="$t('defect.deleted-defect')">{{ $t('defect.deleted-defect') }}</span>
+              </span>
+            </template>
           </el-tab-pane>
           <el-tab-pane :name="defectAddTabPaneName" disabled class="defect-tab-add-pane">
-            <svg-icon
-              slot="label"
-              icon-class="add-tab"
-              :class-name="defectTabAddBtnClass"
-              :title="$t('defect.tab')"
-              @click.native.stop="addDefectTabHandle"
-              @mousedown.native.stop.prevent
-            />
+            <template #label>
+              <svg-icon
+                icon-class="add-tab"
+                :class-name="defectTabAddBtnClass"
+                :title="$t('defect.tab')"
+                @click.stop="addDefectTabHandle"
+                @mousedown.stop.prevent
+              />
+            </template>
           </el-tab-pane>
         </el-tabs>
         <div class="defect-tools-tab-right">
           <span class="defect-list-hint-statistic-panel" aria-hidden="true" />
           <span class="defect-list-hint-statistic">
-            <svg-icon v-show="statisticPanelVisible" class="defect-tools-button" icon-class="view-statistic" @click.native="addStatisticHandle" />
+            <button
+              v-show="statisticPanelVisible"
+              type="button"
+              class="defect-tools-button defect-tools-button--statistic"
+              :title="$t('defect.statistic-template')"
+              @click.stop="addStatisticHandle"
+              @mousedown.stop
+            >
+              <svg-icon icon-class="view-statistic" />
+            </button>
           </span>
         </div>
       </div>
@@ -92,7 +99,7 @@
         @refresh="handleRefreshQuery"
         @column-picker-visible-change="onDefectColumnPickerVisibleChange"
       >
-        <template slot="left-tools">
+        <template #left-tools>
           <!-- 搜索-->
           <div class="defect-tools-search" :class="{ 'defect-query-keyboard-nav': defectQueryNavActive }">
             <el-form v-show="showSearch" ref="queryForm" :model="queryParams" size="small" :inline="true" label-width="0">
@@ -101,11 +108,10 @@
                 <el-radio-group
                   v-model="defectContentComponent"
                   class="defect-content-view-switch defect-list-hint-view-switch"
-                  size="mini"
-                  @input="handleDefectContentChange"
+                  size="small"
                 >
                   <!-- 表格模式 -->
-                  <el-radio-button label="DefectTable">
+                  <el-radio-button value="DefectTable">
                     <span class="defect-content-view-switch-inner" :title="$t('table')">
                       <svg-icon icon-class="table" />
                     </span>
@@ -116,7 +122,7 @@
                   <!--                  </span>-->
                   <!--                </el-radio-button>-->
                   <!-- Excel模式 -->
-                  <el-radio-button label="DefectExcel">
+                  <el-radio-button value="DefectExcel">
                     <span class="defect-content-view-switch-inner" :title="$t('excel')">
                       <svg-icon icon-class="excel2" />
                     </span>
@@ -133,11 +139,13 @@
                   @click="selectDefectTabHandle"
                   @visible-change="onDefectTypeDropdownVisibleChange"
                 >
-                  {{ $i18n.t(activeDefectTypeName) }}
-                  <el-dropdown-menu slot="dropdown">
-                    <el-dropdown-item command="">{{ $i18n.t('defect.all-type') }}</el-dropdown-item>
-                    <el-dropdown-item v-for="type in config.types" :key="'type_'+type.key" :command="type.value">{{ $i18n.t(type.value) }}</el-dropdown-item>
-                  </el-dropdown-menu>
+                  <span>{{ $i18n.t(activeDefectTypeName) }}</span>
+                  <template #dropdown>
+                    <el-dropdown-menu>
+                      <el-dropdown-item command="">{{ $i18n.t('defect.all-type') }}</el-dropdown-item>
+                      <el-dropdown-item v-for="type in config.types" :key="'type_'+type.key" :command="type.value">{{ $i18n.t(type.value) }}</el-dropdown-item>
+                    </el-dropdown-menu>
+                  </template>
                 </el-dropdown>
               </el-form-item>
               <el-form-item prop="defectState" class="defect-list-query-nav-item" data-query-key="defectState">
@@ -153,7 +161,7 @@
                   @change="handleQuery()"
                 >
                   <template #prefix>
-                    <i class="select-header-icon el-icon-finished" />
+                    <legacy-icon icon="el-icon-finished" class="select-header-icon" />
                   </template>
                   <el-option
                     v-for="state in config.states"
@@ -180,7 +188,7 @@
                   v-model="queryParams.nameVersionKeyword"
                   size="small"
                   :placeholder="$t('defect.enter-name-or-version')"
-                  prefix-icon="el-icon-search"
+                  :prefix-icon="$legacyIcon('el-icon-search')"
                   clearable
                   @input="handleQuery()"
                 />
@@ -188,7 +196,7 @@
             </el-form>
           </div>
         </template>
-        <template slot="right-tools">
+        <template #right-tools>
           <span v-if="defectAddToolbarVisible" class="defect-add-toolbar-kbd-wrap">
             <el-dropdown
             ref="defectAddDropdown"
@@ -200,13 +208,15 @@
             @click="handleAdd"
             @visible-change="onDefectAddDropdownVisibleChange"
           >
-            <i class="el-icon-plus" />{{ $i18n.t('defect.create') }}
-            <el-dropdown-menu slot="dropdown" class="defect-add-dropdown-menu">
-              <el-dropdown-item @click.native="handleAdd"><i class="el-icon-plus" />{{ $i18n.t('defect.create') }}</el-dropdown-item>
-              <el-divider class="defect-add-dropdown-divider" />
-              <el-dropdown-item @click.native="handleImport"><i class="el-icon-upload2" />{{ $t('defect.import') }}</el-dropdown-item>
-              <el-dropdown-item @click.native="handleExport"><i class="el-icon-download" />{{ $t('defect.export') }}</el-dropdown-item>
-            </el-dropdown-menu>
+            <span><legacy-icon icon="el-icon-plus" />{{ $i18n.t('defect.create') }}</span>
+            <template #dropdown>
+              <el-dropdown-menu class="defect-add-dropdown-menu">
+                <el-dropdown-item @click="handleAdd"><legacy-icon icon="el-icon-plus" />{{ $i18n.t('defect.create') }}</el-dropdown-item>
+                <el-divider class="defect-add-dropdown-divider" />
+                <el-dropdown-item @click="handleImport"><legacy-icon icon="el-icon-upload2" />{{ $t('defect.import') }}</el-dropdown-item>
+                <el-dropdown-item @click="handleExport"><legacy-icon icon="el-icon-download" />{{ $t('defect.export') }}</el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
           </el-dropdown>
           </span>
         </template>
@@ -478,6 +488,10 @@ export default {
       if (newVal != oldVal) {
         // this.handleQuery();
       }
+    },
+    /** 表格 / Excel 切换：与 Vue2 @input 一致，v-model 变更即拉取当前视图数据 */
+    defectContentComponent() {
+      this.handleDefectContentChange()
     }
   },
   created() {
@@ -558,9 +572,9 @@ export default {
       }
       this.activeDefectTabName = tab
       if (!this.queryParams.params) {
-        this.$set(this.queryParams, 'params', { defectStates: [], delFlag: '0' })
+        this.queryParams.params = { defectStates: [], delFlag: '0' }
       }
-      this.$set(this.queryParams.params, 'delFlag', '0')
+      this.queryParams.params.delFlag = '0'
     },
     init() {
       this.queryParams.projectId = this.projectId
@@ -866,14 +880,17 @@ export default {
         return getSplitDropdownFocusTarget(host) || host
       }
       if (key === 'defectState') {
-        return itemEl.querySelector('.defect-state-select .el-input__inner') ||
-          itemEl.querySelector('.el-select .el-input__inner')
+        return itemEl.querySelector('.defect-state-select .el-select__wrapper') ||
+          itemEl.querySelector('.defect-state-select .el-input__wrapper') ||
+          itemEl.querySelector('.defect-state-select .el-input__inner') ||
+          itemEl.querySelector('.defect-state-select .el-select .el-input__inner')
       }
       if (key === 'handleBy') {
         return itemEl.querySelector('.select-project-member-input')
       }
       if (key === 'nameVersionKeyword') {
-        return itemEl.querySelector('input.el-input__inner')
+        return itemEl.querySelector('.defect-tools-search input') ||
+          itemEl.querySelector('input.el-input__inner')
       }
       return itemEl.querySelector('input, button, [tabindex]')
     },
@@ -1712,6 +1729,18 @@ export default {
       popper.querySelectorAll('.el-checkbox.defect-column-picker-item-focused').forEach((el) => {
         el.classList.remove('defect-column-picker-item-focused')
       })
+      popper.querySelectorAll('.defect-column-picker .el-checkbox[tabindex]').forEach((el) => {
+        el.removeAttribute('tabindex')
+      })
+    },
+    releaseDefectColumnPickerMouseFocus() {
+      this.clearDefectColumnPickerFocusMarks()
+      const popper = this.getDefectColumnPickerPopperEl()
+      if (!popper) return
+      const active = document.activeElement
+      if (active && popper.contains(active) && typeof active.blur === 'function') {
+        active.blur()
+      }
     },
     syncDefectColumnPickerFocusClass() {
       this.clearDefectColumnPickerFocusMarks()
@@ -1893,12 +1922,17 @@ export default {
     onDefectColumnPickerVisibleChange(visible) {
       if (visible) {
         this.$_attachDefectColumnPickerMenuListeners()
-        if (this.defectColumnPickerKeyboardOpen || this.defectToolbarNavActive) {
+        if (this.defectColumnPickerKeyboardOpen) {
           this.$nextTick(() => {
             if (!this.focusDefectColumnPickerItem(0)) {
               setTimeout(() => this.focusDefectColumnPickerItem(0), 60)
             }
             this.defectColumnPickerKeyboardOpen = false
+          })
+        } else {
+          this.$nextTick(() => {
+            this.releaseDefectColumnPickerMouseFocus()
+            setTimeout(() => this.releaseDefectColumnPickerMouseFocus(), 0)
           })
         }
         return
@@ -2097,7 +2131,6 @@ export default {
     shortcutSwitchView() {
       const next = this.defectContentComponent === 'DefectExcel' ? 'DefectTable' : 'DefectExcel'
       this.defectContentComponent = next
-      this.handleDefectContentChange()
     },
     getDefectTabNavItems() {
       const items = []
@@ -2345,10 +2378,10 @@ export default {
         return
       }
       if (!this.queryParams.params) {
-        this.$set(this.queryParams, 'params', {})
+        this.queryParams.params = {}
       }
       Object.keys(extension).forEach(key => {
-        this.$set(this.queryParams.params, key, extension[key])
+        this.queryParams.params[key] = extension[key]
       })
     },
     /** Tab config.customFieldFilters → queryParams.params.customFieldFilters */
@@ -2357,9 +2390,9 @@ export default {
         return
       }
       if (!this.queryParams.params) {
-        this.$set(this.queryParams, 'params', {})
+        this.queryParams.params = {}
       }
-      this.$set(this.queryParams.params, 'customFieldFilters', tabConfig.customFieldFilters)
+      this.queryParams.params.customFieldFilters = tabConfig.customFieldFilters
     },
     /** 按当前 Tab 恢复基准查询并清除扩展参数（工具栏无独立重置按钮时，类型下拉主按钮等同此逻辑） */
     resetQueryByCurrentTab() {
@@ -2388,11 +2421,11 @@ export default {
       } else if (obj && typeof obj === 'object') {
         for (const key in obj) {
           if (parent[key] && Array.isArray(obj[key])) {
-            this.$set(parent, key, obj[key])
+            parent[key] = obj[key]
           } else if (parent[key] && typeof obj[key] === 'object') {
-            this.$set(parent, key, this._setProperty(parent[key], obj[key]))
+            parent[key] = this._setProperty(parent[key], obj[key])
           } else {
-            this.$set(parent, key, obj[key])
+            parent[key] = obj[key]
           }
         }
         return parent
@@ -2521,13 +2554,21 @@ export default {
       if (DEFECT_CONTENT_VIEW_ALLOWED.includes(c)) {
         this.$cache.local.set(DEFECT_CONTENT_VIEW_CACHE_KEY, c)
       }
+      /* 动态组件切换后须等子组件挂载完成再 init/search（单 nextTick 时 ref 可能仍指向上一个视图） */
       this.$nextTick(() => {
-        const child = this.$refs.defectContentComponent
-        child.init()
-        child.search(this.queryParams)
-        if (child && typeof child.setDragComponentSize === 'function') {
-          child.setDragComponentSize()
-        }
+        this.$nextTick(() => {
+          const child = this.$refs.defectContentComponent
+          if (!child) return
+          if (typeof child.init === 'function') {
+            try { child.init() } catch (e) { console.warn('[Defect] content init failed', e) }
+          }
+          if (typeof child.search === 'function') {
+            try { child.search(this.queryParams) } catch (e) { console.warn('[Defect] content search failed', e) }
+          }
+          if (typeof child.setDragComponentSize === 'function') {
+            child.setDragComponentSize()
+          }
+        })
       })
     },
     /** ============================================
@@ -2548,9 +2589,9 @@ export default {
       if (activeName === this.allTab) {
         this.reset()
         if (!this.queryParams.params) {
-          this.$set(this.queryParams, 'params', {})
+          this.queryParams.params = {}
         }
-        this.$set(this.queryParams.params, 'delFlag', '0')
+        this.queryParams.params.delFlag = '0'
         this.scheduleTabDataLoad()
         this.$cache.local.set(DEFECT_TAB_CACHE_KEY, activeName)
         return
@@ -2558,9 +2599,9 @@ export default {
       if (activeName === this.deletedTab) {
         this.reset()
         if (!this.queryParams.params) {
-          this.$set(this.queryParams, 'params', {})
+          this.queryParams.params = {}
         }
-        this.$set(this.queryParams.params, 'delFlag', '2')
+        this.queryParams.params.delFlag = '2'
         this.scheduleTabDataLoad()
         // 不缓存「已删除」页签，避免刷新后仍停留在此且工具栏无新建按钮
         return
@@ -2577,7 +2618,7 @@ export default {
             }
           }
           if (tabItem.config.params.delFlag == null || tabItem.config.params.delFlag === '') {
-            this.$set(tabItem.config.params, 'delFlag', '0')
+            tabItem.config.params.delFlag = '0'
           }
           const tc = tabItem.config
           const tp = tc.params
@@ -2585,7 +2626,7 @@ export default {
             if (tc.nameVersionKeyword == null || String(tc.nameVersionKeyword).trim() === '') {
               tc.nameVersionKeyword = String(tp.nameVersionKeyword).trim()
             }
-            this.$delete(tp, 'nameVersionKeyword')
+            delete tp.nameVersionKeyword
           }
           const kwEmpty = tc.nameVersionKeyword == null || String(tc.nameVersionKeyword).trim() === ''
           const hasDn = tc.defectName != null && String(tc.defectName).trim() !== ''
@@ -2607,10 +2648,6 @@ export default {
     },
     /** Tab 快速切换时合并查询，只加载最终停留页签的数据 */
     scheduleTabDataLoad() {
-      const content = this.$refs.defectContentComponent
-      if (content && Object.prototype.hasOwnProperty.call(content, 'loading')) {
-        content.loading = true
-      }
       if (this._tabDataLoadTimer) {
         clearTimeout(this._tabDataLoadTimer)
       }
@@ -2913,7 +2950,7 @@ export default {
       box-sizing: border-box;
     }
     ::v-deep .el-form--inline .el-form-item:nth-child(3) .el-select,
-  ::v-deep .el-form--inline .el-form-item:nth-child(3) .el-select.defect-state-select {
+    ::v-deep .el-form--inline .el-form-item:nth-child(3) .el-select.defect-state-select {
       display: block;
     }
     ::v-deep .el-form--inline .el-form-item:nth-child(3) .el-select,
@@ -2921,6 +2958,8 @@ export default {
       width: 100% !important;
       max-width: 100%;
     }
+    ::v-deep .el-form--inline .el-form-item:nth-child(3) .el-select__wrapper,
+    ::v-deep .el-form--inline .el-form-item:nth-child(3) .el-input__wrapper,
     ::v-deep .el-form--inline .el-form-item:nth-child(3) .el-input__inner {
       width: 100% !important;
       box-sizing: border-box;
@@ -3192,6 +3231,26 @@ export default {
   @at-root html.dark & {
     color: var(--text-color-regular);
   }
+
+  &--statistic {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 28px;
+    min-height: 28px;
+    padding: 4px;
+    border: none;
+    background: transparent;
+    border-radius: var(--cat2bug-border-radius, 4px);
+    line-height: 1;
+    vertical-align: middle;
+
+    ::v-deep .svg-icon {
+      width: 16px;
+      height: 16px;
+      pointer-events: none;
+    }
+  }
 }
 .defect-tools-button:hover {
   color: #409EFF;
@@ -3288,7 +3347,7 @@ export default {
     background-color: rgba(255, 255, 255, 0.45);
 
     @at-root html.dark & {
-      background-color: #141414 !important;
+      background-color: var(--split-button-divider-on-solid, rgba(0, 0, 0, 0.35)) !important;
     }
   }
 
@@ -3462,6 +3521,11 @@ html.dark .defect-add-dropdown-menu .el-dropdown-menu__item:focus {
   flex-wrap: wrap;
   row-gap: 8px;
   justify-content: flex-start;
+}
+/* Excel 右侧工具组：刷新/列选择与新建缺陷同高，须垂直居中（勿继承 table-tools 的 flex-start） */
+.defect-page .defect-view-toolbar .defect-excel-tools-right.table-tools {
+  align-items: center !important;
+  align-self: center;
 }
 .defect-page .defect-view-toolbar .table-tools.row > * {
   margin-bottom: 0 !important;

@@ -6,13 +6,13 @@
     :tools="tools"
     @tools-click="toolsHandle"
   >
-    <template slot="left-tools">
+    <template #left-tools>
       <el-select
         v-if="planList.length"
         v-model="planId"
         class="plan-countdown-select"
         popper-class="plan-countdown-select-dropdown"
-        size="mini"
+        size="small"
         filterable
         @change="onPlanChange"
         @click.native.stop
@@ -28,7 +28,7 @@
         </el-option>
       </el-select>
     </template>
-    <template slot="content">
+    <template #content>
       <div
         class="plan-countdown-body"
         :class="{ 'has-data': summary && !showEmptyHint }"
@@ -315,28 +315,37 @@ export default {
   max-width: 108px;
   vertical-align: middle;
 
-  ::v-deep .el-input {
-    height: var(--statistic-card-header-min-height, 17px);
+  ::v-deep .el-select__wrapper {
+    height: calc(var(--statistic-card-header-min-height, 17px) - 2px) !important;
+    min-height: calc(var(--statistic-card-header-min-height, 17px) - 2px) !important;
+    line-height: calc(var(--statistic-card-header-min-height, 17px) - 2px) !important;
+    font-size: 11px;
+    padding: 0 18px 0 6px !important;
+    overflow: hidden;
   }
 
-  ::v-deep .el-input__inner {
-    height: calc(var(--statistic-card-header-min-height, 17px) - 2px);
-    line-height: calc(var(--statistic-card-header-min-height, 17px) - 2px);
-    font-size: 11px;
-    padding: 0 22px 0 6px;
+  ::v-deep .el-select__selection {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
-  ::v-deep .el-input__suffix {
+  ::v-deep .el-select__selected-item,
+  ::v-deep .el-select__placeholder {
+    font-size: 11px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  ::v-deep .el-select__suffix {
     display: flex;
     align-items: center;
     height: 100%;
     right: 2px;
   }
 
-  ::v-deep .el-input__icon {
+  ::v-deep .el-select__caret {
     line-height: 1;
     font-size: 12px;
   }

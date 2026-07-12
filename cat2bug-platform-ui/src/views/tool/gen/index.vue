@@ -29,8 +29,8 @@
         ></el-date-picker>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
+        <el-button type="primary" :icon="$legacyIcon('el-icon-search')" size="mini" @click="handleQuery">搜索</el-button>
+        <el-button :icon="$legacyIcon('el-icon-refresh')" size="mini" @click="resetQuery">重置</el-button>
       </el-form-item>
     </el-form>
 
@@ -39,7 +39,7 @@
         <el-button
           type="primary"
           plain
-          icon="el-icon-download"
+          :icon="$legacyIcon('el-icon-download')"
           size="mini"
           @click="handleGenTable"
         >生成</el-button>
@@ -48,7 +48,7 @@
         <el-button
           type="info"
           plain
-          icon="el-icon-upload"
+          :icon="$legacyIcon('el-icon-upload')"
           size="mini"
           @click="openImportTable"
         >导入</el-button>
@@ -57,7 +57,7 @@
         <el-button
           type="success"
           plain
-          icon="el-icon-edit"
+          :icon="$legacyIcon('el-icon-edit')"
           size="mini"
           :disabled="single"
           @click="handleEditTable"
@@ -67,20 +67,20 @@
         <el-button
           type="danger"
           plain
-          icon="el-icon-delete"
+          :icon="$legacyIcon('el-icon-delete')"
           size="mini"
           :disabled="multiple"
           @click="handleDelete"
           v-hasPermi="['tool:gen:remove']"
         >删除</el-button>
       </el-col>
-      <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
+      <right-toolbar v-model:showSearch="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
     <el-table v-loading="loading" :data="tableList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" align="center" width="55"></el-table-column>
       <el-table-column label="序号" type="index" width="50" align="center">
-        <template slot-scope="scope">
+        <template #default="scope">
           <span>{{(queryParams.pageNum - 1) * queryParams.pageSize + scope.$index + 1}}</span>
         </template>
       </el-table-column>
@@ -108,38 +108,38 @@
       <el-table-column label="创建时间" align="center" prop="createTime" width="160" />
       <el-table-column label="更新时间" align="center" prop="updateTime" width="160" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
-        <template slot-scope="scope">
+        <template #default="scope">
           <el-button
             type="text"
             size="small"
-            icon="el-icon-view"
+            :icon="$legacyIcon('el-icon-view')"
             @click="handlePreview(scope.row)"
             v-hasPermi="['tool:gen:preview']"
           >预览</el-button>
           <el-button
             type="text"
             size="small"
-            icon="el-icon-edit"
+            :icon="$legacyIcon('el-icon-edit')"
             @click="handleEditTable(scope.row)"
           >编辑</el-button>
           <el-button
             type="text"
             size="small"
-            icon="el-icon-delete"
+            :icon="$legacyIcon('el-icon-delete')"
             @click="handleDelete(scope.row)"
             v-hasPermi="['tool:gen:remove']"
           >删除</el-button>
           <el-button
             type="text"
             size="small"
-            icon="el-icon-refresh"
+            :icon="$legacyIcon('el-icon-refresh')"
             @click="handleSynchDb(scope.row)"
             v-hasPermi="['tool:gen:edit']"
           >同步</el-button>
           <el-button
             type="text"
             size="small"
-            icon="el-icon-download"
+            :icon="$legacyIcon('el-icon-download')"
             @click="handleGenTable(scope.row)"
           >生成代码</el-button>
         </template>
@@ -148,12 +148,12 @@
     <pagination
       v-show="total>0"
       :total="total"
-      :page.sync="queryParams.pageNum"
-      :limit.sync="queryParams.pageSize"
+      v-model:page="queryParams.pageNum"
+      v-model:limit="queryParams.pageSize"
       @pagination="getList"
     />
     <!-- 预览界面 -->
-    <el-dialog :title="preview.title" :visible.sync="preview.open" width="80%" top="5vh" append-to-body class="scrollbar">
+    <el-dialog :title="preview.title" v-model="preview.open" width="80%" top="5vh" append-to-body class="scrollbar">
       <el-tabs v-model="preview.activeName">
         <el-tab-pane
           v-for="(value, key) in preview.data"
@@ -161,7 +161,7 @@
           :name="key.substring(key.lastIndexOf('/')+1,key.indexOf('.vm'))"
           :key="key"
         >
-          <el-link :underline="false" icon="el-icon-document-copy" v-clipboard:copy="value" v-clipboard:success="clipboardSuccess" style="float:right">复制</el-link>
+          <el-link :underline="false" :icon="$legacyIcon('el-icon-document-copy')" v-clipboard:copy="value" v-clipboard:success="clipboardSuccess" style="float:right">复制</el-link>
           <pre><code class="hljs" v-html="highlightedCode(value, key)"></code></pre>
         </el-tab-pane>
       </el-tabs>

@@ -1,6 +1,6 @@
 <template>
   <!-- 用户导入对话框 -->
-  <el-dialog :title="upload.title" :visible.sync="upload.open" width="400px" append-to-body>
+  <el-dialog :title="upload.title" v-model="upload.open" width="400px" append-to-body>
     <el-upload
       ref="upload"
       :limit="1"
@@ -13,21 +13,26 @@
       :auto-upload="false"
       drag
     >
-      <i class="el-icon-upload"></i>
+      <legacy-icon class="el-icon--upload" icon="el-icon-upload" />
       <div class="el-upload__text">{{ $t('defect.import-prompt') }}<em>{{$t('char-span')}} {{ $t('click.upload') }}</em></div>
-      <div class="el-upload__tip text-center" slot="tip">
-        <span>{{ strFormat($t('defect.import-file-format'), 'xls、xlsx') }}</span>
-        <el-link type="primary" :underline="false" style="font-size:12px;vertical-align: baseline;" @click="importTemplate">{{$t('download.template')}}</el-link>
-      </div>
+      <template #tip>
+        <div class="el-upload__tip text-center">
+          <span>{{ strFormat($t('defect.import-file-format'), 'xls、xlsx') }}</span>
+          <el-link type="primary" :underline="false" style="font-size:12px;vertical-align: baseline;" @click="importTemplate">{{$t('download.template')}}</el-link>
+        </div>
+      </template>
     </el-upload>
-    <div slot="footer" class="dialog-footer">
-      <el-button type="primary" @click="submitFileForm">{{ $t('ok') }}</el-button>
-      <el-button @click="upload.open = false">{{ $t('cancel') }}</el-button>
-    </div>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button size="default" @click="upload.open = false">{{ $t('cancel') }}</el-button>
+        <el-button size="default" type="primary" @click="submitFileForm">{{ $t('ok') }}</el-button>
+      </div>
+    </template>
   </el-dialog>
 </template>
 
 <script>
+import { ElMessageBox } from 'element-plus'
 import {getToken} from "@/utils/auth";
 import {strFormat} from "@/utils";
 import {setHeader} from "@/utils/request";
@@ -100,7 +105,11 @@ export default {
       this.upload.open = false;
       this.upload.isUploading = false;
       this.$refs.upload.clearFiles();
-      this.$alert("<div style='overflow: auto;overflow-x: hidden;max-height: 70vh;padding: 10px 20px 0;'>" + response.msg + "</div>", this.$i18n.t('defect.import-result').toString(), { dangerouslyUseHTMLString: true });
+      ElMessageBox.alert(
+        "<div style='overflow: auto;overflow-x: hidden;max-height: 70vh;padding: 10px 20px 0;'>" + response.msg + "</div>",
+        this.$i18n.t('defect.import-result').toString(),
+        { dangerouslyUseHTMLString: true }
+      );
       this.$emit("upload",response);
     },
     // 提交上传文件

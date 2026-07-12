@@ -1,23 +1,41 @@
 /** @type {import('@playwright/test').PlaywrightTestConfig} */
 const { devices } = require('@playwright/test');
+const path = require('path');
+
+const authFile = path.join(__dirname, 'e2e/.auth/admin.json');
 
 module.exports = {
   testDir: './e2e',
+  globalSetup: path.join(__dirname, 'e2e/global-setup.cjs'),
   timeout: 120000,
   expect: { timeout: 15000 },
   fullyParallel: false,
   workers: 1,
   projects: [
     {
-      name: 'chromium',
+      name: 'chromium-login',
+      testMatch: ['**/login.spec.cjs', '**/command-palette-login.spec.cjs'],
       use: {
         ...devices['Desktop Chrome'],
         channel: process.env.PW_CHANNEL === 'chrome' ? 'chrome' : undefined,
       },
     },
     {
+      name: 'chromium',
+      testIgnore: ['**/login.spec.cjs', '**/command-palette-login.spec.cjs'],
+      use: {
+        ...devices['Desktop Chrome'],
+        channel: process.env.PW_CHANNEL === 'chrome' ? 'chrome' : undefined,
+        storageState: authFile,
+      },
+    },
+    {
       name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
+      testIgnore: ['**/login.spec.cjs', '**/command-palette-login.spec.cjs'],
+      use: {
+        ...devices['Desktop Safari'],
+        storageState: authFile,
+      },
     },
   ],
   use: {
@@ -30,7 +48,6 @@ module.exports = {
       args: ['--disable-features=OverlayScrollbar'],
     },
   },
-  /* 仅前端时登录仍会失败；需本地已启动后端 :2020 再跑 */
   webServer: process.env.PLAYWRIGHT_NO_WEB_SERVER
     ? undefined
     : {

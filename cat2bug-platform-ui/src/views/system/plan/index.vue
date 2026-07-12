@@ -7,7 +7,7 @@
           <el-input
             v-model="queryParams.planName"
             :placeholder="$t('plan.enter-name')"
-            prefix-icon="el-icon-files"
+            :prefix-icon="$legacyIcon('el-icon-files')"
             clearable
             size="small"
             @input="handleQuery"
@@ -17,7 +17,7 @@
           <el-input
             v-model="queryParams.planVersion"
             :placeholder="$t('plan.enter-version')"
-            prefix-icon="el-icon-discount"
+            :prefix-icon="$legacyIcon('el-icon-discount')"
             clearable
             size="small"
             @input="handleQuery"
@@ -34,7 +34,7 @@
           @hide="onColumnPickerPopoverHide"
         >
           <div class="defect-column-picker-head">
-            <i class="el-icon-s-fold"></i>
+            <el-icon class="legacy-icon-inline"><component :is="$legacyIcon('el-icon-s-fold')" /></el-icon>
             <h4>{{ $t('display-field') }}</h4>
           </div>
           <el-divider class="defect-field-divider"></el-divider>
@@ -51,7 +51,7 @@
             style="padding: 9px;"
             plain
             slot="reference"
-            icon="el-icon-s-fold"
+            :icon="$legacyIcon('el-icon-s-fold')"
             size="small"
           ></el-button>
         </el-popover>
@@ -59,7 +59,7 @@
           class="plan-hint-create"
           type="primary"
           plain
-          icon="el-icon-plus"
+          :icon="$legacyIcon('el-icon-plus')"
           @click="handleAdd"
           size="small"
           v-hasPermi="['system:plan:add']"
@@ -106,21 +106,21 @@
               <el-button
                 size="mini"
                 type="text"
-                icon="el-icon-plus"
+                :icon="$legacyIcon('el-icon-plus')"
                 @click="handlePlanCopy(scope.row)"
                 v-hasPermi="['system:plan:add']"
               >{{ $t('copy') }}</el-button>
               <el-button
                 size="mini"
                 type="text"
-                icon="el-icon-tickets"
+                :icon="$legacyIcon('el-icon-tickets')"
                 @click="handlePlanRun(scope.row)"
                 v-hasPermi="['system:plan:run']"
               >{{ $t('plan.run') }}</el-button>
               <el-button
                 size="mini"
                 type="text"
-                icon="el-icon-edit"
+                :icon="$legacyIcon('el-icon-edit')"
                 @click="handleUpdate(scope.row)"
                 v-hasPermi="['system:plan:edit']"
               >{{ $t('modify') }}</el-button>
@@ -128,7 +128,7 @@
                 size="mini"
                 type="text"
                 class="red"
-                icon="el-icon-delete"
+                :icon="$legacyIcon('el-icon-delete')"
                 @click="handleDelete(scope.row)"
                 v-hasPermi="['system:plan:remove']"
               >{{ $t('delete') }}</el-button>

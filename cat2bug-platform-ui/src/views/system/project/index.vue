@@ -25,11 +25,10 @@
             <svg-icon icon-class="system"
                 @click="goProjectOptionHandle($event, project)"
                 v-hasPermi="['system:project:option']"></svg-icon>
-<!--            <i class="el-icon-s-platform"></i>-->
-<!--            <i class="el-icon-s-operation"></i>-->
-            <i class="el-icon-delete"
-               @click="handleDelete($event, project)"
-               v-hasPermi="['system:project:remove']"></i>
+<!--            <legacy-icon icon="el-icon-s-platform"></legacy-icon>-->
+<!--            <legacy-icon icon="el-icon-s-operation"></legacy-icon>-->
+            <legacy-icon icon="el-icon-delete" @click="handleDelete($event, project)"
+               v-hasPermi="['system:project:remove']"></legacy-icon>
           </div>
         </el-card>
       </el-col>
@@ -51,7 +50,7 @@
           <el-input
             v-model="queryParams.projectName"
             :placeholder="$t('project.enter-project-name')"
-            prefix-icon="el-icon-search"
+            :prefix-icon="$legacyIcon('el-icon-search')"
             clearable
             size="small"
             @input="handleQuery"
@@ -63,7 +62,7 @@
           class="project-manage-hint-create"
           type="primary"
           plain
-          icon="el-icon-plus"
+          :icon="$legacyIcon('el-icon-plus')"
           size="small"
           @click="handleAdd"
           v-hasPermi="['system:project:add']"
@@ -97,14 +96,14 @@
 <!--          <el-button-->
 <!--            size="small"-->
 <!--            type="text"-->
-<!--            icon="el-icon-edit"-->
+<!--            :icon="$legacyIcon('el-icon-edit')"-->
 <!--            @click="handleUpdate(scope.row)"-->
 <!--            v-hasPermi="['system:project:edit']"-->
 <!--          >修改</el-button>-->
           <el-button
             size="small"
             type="text"
-            icon="el-icon-delete"
+            :icon="$legacyIcon('el-icon-delete')"
             class="red"
             @click="handleDelete($event, scope.row)"
             v-if="visibleDelete(scope.row)"
@@ -151,7 +150,8 @@ import RowListMember from "@/components/RowListMember";
 import { strFormat } from "@/utils/index"
 import store from "@/store";
 import i18n from "@/utils/i18n/i18n";
-import {mapGetters, mapState} from "vuex";
+import { mapState } from "pinia"
+import { usePermissionStore } from "@/stores/permission";
 import {checkPermi} from "@/utils/permission";
 import pageActionHints from '@/mixins/page-action-hints'
 import listQueryKeyboardNav from '@/mixins/list-query-keyboard-nav'
@@ -217,7 +217,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(["sidebarRouters"]),
+    ...mapState(usePermissionStore, ["sidebarRouters"]),
     collect: function() {
       return function (project) {
         return project.collect?'true':'false';

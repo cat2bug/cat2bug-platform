@@ -1,15 +1,16 @@
 <template>
   <el-drawer
+    class="cloud-case-drawer-accent"
     :visible.sync="visible"
     :direction="direction"
     size="90%"
     :close-on-press-escape="false"
     :before-close="handleClose">
 <!--    标题-->
-    <template slot="title">
+    <template #header>
       <div class="case-search-header">
         <div class="case-search-title">
-          <i class="el-icon-arrow-left" @click="requestCloseCloudCaseDrawer"></i>
+          <legacy-icon icon="el-icon-arrow-left" @click="requestCloseCloudCaseDrawer"></legacy-icon>
           <h4 class="case-search-title-name"><svg-icon icon-class="robot" style="margin-right: 10px;" />{{ $t('case.ai-create') }}</h4>
         </div>
         <div>
@@ -72,16 +73,16 @@
                     trigger="click">
                     <div class="cloud-case-prompt">
                       <div v-show="addCasePromptVisible">
-                        <h4><i class="el-icon-plus"></i>{{ $t('case.add-prompt') }}</h4>
+                        <h4><legacy-icon icon="el-icon-plus"></legacy-icon>{{ $t('case.add-prompt') }}</h4>
                         <add-case-prompt ref="addCasePrompt" :project-id="projectId" @added="handleAddCasePrompt" @cancel="addCasePromptVisible=false" />
                         <el-divider></el-divider>
                       </div>
                       <div class="cloud-case-prompt-tools">
                         <div>
-                          <h4><i class="el-icon-tickets"></i>{{ $t('case.prompt-list') }}</h4>
+                          <h4><legacy-icon icon="el-icon-tickets"></legacy-icon>{{ $t('case.prompt-list') }}</h4>
                         </div>
                         <div>
-                          <el-button icon="el-icon-plus" v-show="!addCasePromptVisible" size="mini" @click="handleOpenAddCasePrompt">{{ $t('case.add-prompt') }}</el-button>
+                          <el-button :icon="$legacyIcon('el-icon-plus')" v-show="!addCasePromptVisible" size="mini" @click="handleOpenAddCasePrompt">{{ $t('case.add-prompt') }}</el-button>
                           <el-pagination
                             style="float: right"
                             :current-page.sync="casePromptQuery.pageNum"
@@ -113,7 +114,7 @@
                               <el-button
                                 size="mini"
                                 type="text"
-                                icon="el-icon-edit"
+                                :icon="$legacyIcon('el-icon-edit')"
                                 v-hasPermi="['system:case:add']"
                                 @click="handlePromptEdit($event, scope.row)"
                               >{{ $t('modify') }}</el-button>
@@ -121,7 +122,7 @@
                                 size="mini"
                                 type="text"
                                 class="red"
-                                icon="el-icon-close"
+                                :icon="$legacyIcon('el-icon-close')"
                                 v-hasPermi="['system:case:add']"
                                 @click="handlePromptDelete($event, scope.row)"
                               >{{ $t('delete') }}</el-button>
@@ -163,7 +164,7 @@
                 :disabled="ids.size==0"
                 type="danger"
                 size="mini"
-                icon="el-icon-delete"
+                :icon="$legacyIcon('el-icon-delete')"
                 :title="$t('batch-delete')"
                 @click="batchRemoveCase"
               >
@@ -173,7 +174,7 @@
                 :disabled="ids.size==0"
                 type="primary"
                 size="mini"
-                icon="el-icon-download"
+                :icon="$legacyIcon('el-icon-download')"
                 :title="$t('batch-import')"
                 @click="batchImportCase"
               >
@@ -270,7 +271,7 @@
                     size="mini"
                     type="text"
                     class="red"
-                    icon="el-icon-download"
+                    :icon="$legacyIcon('el-icon-download')"
                     @click="handleImport($event,scope.row)"
                     v-hasPermi="['system:case:import']"
                   >{{ $t('import') }}</el-button>
@@ -278,7 +279,7 @@
                     size="mini"
                     type="text"
                     class="red"
-                    icon="el-icon-delete"
+                    :icon="$legacyIcon('el-icon-delete')"
                     @click="handleDelete($event,scope.row)"
                   >{{ $t('delete') }}</el-button>
                 </div>
@@ -1353,9 +1354,6 @@ export default {
   span {
     color: #F56C6C;
   }
-}
-::v-deep .el-drawer {
-  border-left: 3px solid #67c23a;
 }
 ::v-deep .el-drawer__body {
   overflow-x: hidden;

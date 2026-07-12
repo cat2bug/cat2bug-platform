@@ -7,7 +7,7 @@
           placeholder="请输入登录地址"
           clearable
           style="width: 240px;"
-          @keyup.enter.native="handleQuery"
+          @keyup.enter="handleQuery"
         />
       </el-form-item>
       <el-form-item label="用户名称" prop="userName">
@@ -16,7 +16,7 @@
           placeholder="请输入用户名称"
           clearable
           style="width: 240px;"
-          @keyup.enter.native="handleQuery"
+          @keyup.enter="handleQuery"
         />
       </el-form-item>
       <el-form-item label="状态" prop="status">
@@ -47,8 +47,8 @@
         ></el-date-picker>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
+        <el-button type="primary" :icon="$legacyIcon('el-icon-search')" size="mini" @click="handleQuery">搜索</el-button>
+        <el-button :icon="$legacyIcon('el-icon-refresh')" size="mini" @click="resetQuery">重置</el-button>
       </el-form-item>
     </el-form>
 
@@ -57,7 +57,7 @@
         <el-button
           type="danger"
           plain
-          icon="el-icon-delete"
+          :icon="$legacyIcon('el-icon-delete')"
           size="mini"
           :disabled="multiple"
           @click="handleDelete"
@@ -68,7 +68,7 @@
         <el-button
           type="danger"
           plain
-          icon="el-icon-delete"
+          :icon="$legacyIcon('el-icon-delete')"
           size="mini"
           @click="handleClean"
           v-hasPermi="['monitor:logininfor:remove']"
@@ -78,7 +78,7 @@
         <el-button
           type="primary"
           plain
-          icon="el-icon-unlock"
+          :icon="$legacyIcon('el-icon-unlock')"
           size="mini"
           :disabled="single"
           @click="handleUnlock"
@@ -89,13 +89,13 @@
         <el-button
           type="warning"
           plain
-          icon="el-icon-download"
+          :icon="$legacyIcon('el-icon-download')"
           size="mini"
           @click="handleExport"
           v-hasPermi="['monitor:logininfor:export']"
         >导出</el-button>
       </el-col>
-      <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
+      <right-toolbar v-model:showSearch="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
     <el-table ref="tables" v-loading="loading" :data="list" @selection-change="handleSelectionChange" :default-sort="defaultSort" @sort-change="handleSortChange">
@@ -107,13 +107,13 @@
       <el-table-column label="浏览器" align="center" prop="browser" :show-overflow-tooltip="true" />
       <el-table-column label="操作系统" align="center" prop="os" />
       <el-table-column label="登录状态" align="center" prop="status">
-        <template slot-scope="scope">
+        <template #default="scope">
           <dict-tag :options="dict.type.sys_common_status" :value="scope.row.status"/>
         </template>
       </el-table-column>
       <el-table-column label="操作信息" align="center" prop="msg" :show-overflow-tooltip="true" />
       <el-table-column label="登录日期" align="center" prop="loginTime" sortable="custom" :sort-orders="['descending', 'ascending']" width="180">
-        <template slot-scope="scope">
+        <template #default="scope">
           <span>{{ parseTime(scope.row.loginTime) }}</span>
         </template>
       </el-table-column>
@@ -122,8 +122,8 @@
     <pagination
       v-show="total>0"
       :total="total"
-      :page.sync="queryParams.pageNum"
-      :limit.sync="queryParams.pageSize"
+      v-model:page="queryParams.pageNum"
+      v-model:limit="queryParams.pageSize"
       @pagination="getList"
     />
   </div>

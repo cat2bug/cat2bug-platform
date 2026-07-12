@@ -30,12 +30,12 @@
         </div>
         <div>
           <div class="row">
-            <i class="el-icon-s-home"></i> <span>{{$t('website')}}：</span><el-link
+            <legacy-icon icon="el-icon-s-home"></legacy-icon> <span>{{$t('website')}}：</span><el-link
             href="https://www.cat2bug.com"
             target="_blank">https://www.cat2bug.com</el-link>
           </div>
           <div class="row">
-            <i class="el-icon-user-solid"></i> <span>{{$t('qq-group')}}：</span>
+            <legacy-icon icon="el-icon-user-solid"></legacy-icon> <span>{{$t('qq-group')}}：</span>
             <a target="_blank" href="https://qm.qq.com/cgi-bin/qm/qr?k=vpZaR_tWTwG0lPABP9NqgX2wSSSEEaWV&jump_from=webapi&authKey=8xIzBRe5T9RoEdisRBgYWbMmCoWXIYk4VikARN8S4RA3MZT7z7FUj71ZIIvEzGzq">731462000</a>
           </div>
           <div class="row">
@@ -57,7 +57,7 @@
       <div class="shard-header">
         <div class="" style="display: flex;">
           <div>
-            <!-- <i class="el-icon-takeaway-box" />  -->
+            <!-- <legacy-icon icon="el-icon-takeaway-box" />  -->
             {{$t('project')}}: {{defect.projectName}}
           </div>
 
@@ -138,12 +138,12 @@
         </div>
         <div class="msg">
           <div class="row">
-            <i class="el-icon-s-home"></i> <span>{{$t('website')}}：</span><el-link
+            <legacy-icon icon="el-icon-s-home"></legacy-icon> <span>{{$t('website')}}：</span><el-link
             href="https://www.cat2bug.com"
             target="_blank">https://www.cat2bug.com</el-link>
           </div>
           <div class="row">
-            <i class="el-icon-user-solid"></i> <span>{{$t('qq-group')}}：</span>
+            <legacy-icon icon="el-icon-user-solid"></legacy-icon> <span>{{$t('qq-group')}}：</span>
             <a target="_blank" href="https://qm.qq.com/cgi-bin/qm/qr?k=vpZaR_tWTwG0lPABP9NqgX2wSSSEEaWV&jump_from=webapi&authKey=8xIzBRe5T9RoEdisRBgYWbMmCoWXIYk4VikARN8S4RA3MZT7z7FUj71ZIIvEzGzq">731462000</a>
           </div>
           <div class="row">

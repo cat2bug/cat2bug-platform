@@ -6,18 +6,20 @@
       </div>
       <div class="defect-excel-tools-right table-tools row">
         <el-tooltip :content="$t('refresh')" placement="top">
-          <el-button
-            class="defect-list-hint-excel-refresh"
-            icon="el-icon-refresh"
-            size="small"
-            circle
-            plain
-            :loading="loading"
-            @click="handleExcelToolbarRefresh"
-          />
+          <span class="defect-excel-refresh-trigger">
+            <el-button
+              class="defect-list-hint-excel-refresh"
+              :icon="$legacyIcon('el-icon-refresh')"
+              size="small"
+              circle
+              plain
+              :loading="loading"
+              @click="handleExcelToolbarRefresh"
+            />
+          </span>
         </el-tooltip>
         <el-popover
-          v-model="excelToolbarColumnPickerVisible"
+          v-model:visible="excelToolbarColumnPickerVisible"
           placement="bottom-end"
           trigger="click"
           popper-class="defect-excel-column-picker-popover"
@@ -25,7 +27,7 @@
           @hide="emitColumnPickerVisible(false)"
         >
           <div class="defect-excel-picker-head defect-column-picker-head">
-            <i class="el-icon-s-fold"></i>
+            <el-icon class="legacy-icon-inline"><component :is="$legacyIcon('el-icon-s-fold')" /></el-icon>
             <h4>{{ $t("display-field") }}</h4>
           </div>
           <el-divider class="defect-field-divider" />
@@ -37,12 +39,14 @@
             <el-checkbox
               v-for="c in excelTableColumnPickerOptions"
               :key="c.key"
-              :label="c.key"
+              :value="c.key"
             >{{
               c.isCustomField && c.fieldLabel ? c.fieldLabel : (c.label || $t(c.key))
             }}</el-checkbox>
           </el-checkbox-group>
-          <el-button slot="reference" class="defect-list-hint-excel-columns" style="padding: 9px" plain size="small" icon="el-icon-s-fold" />
+          <template #reference>
+            <el-button class="defect-list-hint-excel-columns" style="padding: 9px" plain size="small" :icon="$legacyIcon('el-icon-s-fold')" />
+          </template>
         </el-popover>
         <slot name="right-tools" />
       </div>
@@ -57,9 +61,10 @@
       @click.capture="onDefectExcelCellInteractiveClickCapture"
       @paste.capture="onDefectExcelPasteCapture"
     >
+      <!-- vue-excel-editor 为 Vue2 组件，v-model 绑定 value；Vue3 的 v-model 对应 modelValue，须用 :value -->
       <vue-excel-editor
         ref="excelEditor"
-        v-model="sheetRows"
+        :value="sheetRows"
         class="defect-vue-excel-editor"
         width="100%"
         :height="excelEditorHeightPx + 'px'"
@@ -159,7 +164,7 @@
         :placeholder="planTimeDialogPlaceholder"
         :editable="false"
         popper-class="defect-excel-plan-datetime-panel"
-        default-time="12:00:00"
+        :default-time="planTimeDefaultTime"
         @change="onPlanTimePickerChange"
         @blur="onPlanTimePickerBlur"
       />
@@ -172,7 +177,8 @@
       :url-list="excelImageViewerUrls"
       :initial-index="excelImageViewerIndex"
       :z-index="3000"
-      :on-close="closeExcelImageViewer"
+      teleported
+      @close="closeExcelImageViewer"
     />
     <!-- Excel 图片/附件列内联上传：由 cellHtml 内按钮触发 click() -->
     <input
@@ -194,7 +200,7 @@
 </template>
 
 <script>
-import ElImageViewer from "element-ui/packages/image/src/image-viewer.vue";
+import { ElImageViewer } from 'element-plus';
 import SelectModule from "@/components/Module/SelectModule/index.vue";
 import { listDefect, updateDefect, addDefect, getDefect, delDefect } from "@/api/system/defect";
 import { listMemberOfProject } from "@/api/system/project";
@@ -209,6 +215,7 @@ import {
   isAllowedImageUploadFile,
   WEB_IMAGE_UPLOAD_EXTENSIONS
 } from '@/utils/upload-asset'
+import { legacyIconInlineHtml } from '@/utils/element-icon'
 import {
   clearCustomFieldColumnsCache,
   loadDefectColumnLayout,
@@ -589,6 +596,8 @@ const VUE_EXCEL_EDITOR_FOOTER_BAR_PX = 8;
 /** 占位行状态列：批量创建队列中的展示（仅存于 defectStateText，非接口值） */
 const EXCEL_CREATE_ROW_QUEUED = "__CAT2BUG_EXCEL_CREATE_QUEUED__";
 const EXCEL_CREATE_ROW_RUNNING = "__CAT2BUG_EXCEL_CREATE_RUNNING__";
+/** Element Plus default-time 须为 Date；仅选日期时默认 12:00:00 */
+const EXCEL_PLAN_TIME_DEFAULT = new Date(2000, 0, 1, 12, 0, 0);
 
 export default {
   name: "DefectExcel",
@@ -656,6 +665,7 @@ export default {
       planTimeDialogField: "",
       planTimeDialogValue: null,
       planTimeDialogOldValue: "",
+      planTimeDefaultTime: EXCEL_PLAN_TIME_DEFAULT,
       /** 延后打开日期面板，避免 vue-excel-editor 内 inputBox.focus 抢走焦点 */
       planTimeOpenTimer: null,
       /** 占位行（无 defectId）正在提交新增，避免重复请求 */
@@ -731,6 +741,7 @@ export default {
       customFieldEnumSelectMaps: {},
       /** 首屏/追加后若仍无纵向滚动条，自动再拉页的上限，防止死循环 */
       excelViewportAutoFetchCount: 0,
+      _excelMounted: false,
     };
   },
   computed: {
@@ -749,7 +760,7 @@ export default {
     },
     defectLevelMap() {
       const m = {};
-      const list = [...(this.dict.type.defect_level || [])];
+      const list = [...((this.dict && this.dict.type && this.dict.type.defect_level) || [])];
       const pri = DEFECT_LEVEL_DICT_VALUE_ORDER;
       list.sort((a, b) => {
         const av = String(a.value);
@@ -881,22 +892,19 @@ export default {
   watch: {
     defectTypeMap: {
       handler(map) {
-        this.syncExcelOptionMap(this.defectTypeSelectMap, map);
-        this.refreshExcelEditorView();
+        this.onExcelOptionMapChanged(this.defectTypeSelectMap, map);
       },
       immediate: true,
     },
     defectLevelMap: {
       handler(map) {
-        this.syncExcelOptionMap(this.defectLevelSelectMap, map);
-        this.refreshExcelEditorView();
+        this.onExcelOptionMapChanged(this.defectLevelSelectMap, map);
       },
       immediate: true,
     },
     defectStateMap: {
       handler(map) {
-        this.syncExcelOptionMap(this.defectStateSelectMap, map);
-        this.refreshExcelEditorView();
+        this.onExcelOptionMapChanged(this.defectStateSelectMap, map);
       },
       immediate: true,
     },
@@ -927,6 +935,7 @@ export default {
     this.loadEnabledCustomFields();
   },
   mounted() {
+    this._excelMounted = true;
     this.bindExcelLayoutObserver();
     this.refreshProjectMembers();
     this.$nextTick(() => {
@@ -1506,9 +1515,20 @@ export default {
       }, 220);
     },
     syncExcelOptionMap(target, map) {
-      Object.keys(target).forEach((k) => this.$delete(target, k));
+      if (!target || typeof target !== "object") return;
+      Object.keys(target).forEach((k) => delete target[k]);
       if (map && typeof map === "object") {
-        Object.keys(map).forEach((k) => this.$set(target, k, map[k]));
+        Object.assign(target, map);
+      }
+    },
+    onExcelOptionMapChanged(target, map) {
+      try {
+        this.syncExcelOptionMap(target, map);
+        if (this._excelMounted) {
+          this.refreshExcelEditorView();
+        }
+      } catch (e) {
+        console.warn("[DefectExcel] option map sync failed", e);
       }
     },
     isDeletedDefectRow(row) {
@@ -1527,11 +1547,19 @@ export default {
         const ed = this.$refs.excelEditor;
         if (!ed) return;
         if (this.isExcelEditorColSepDragging()) return;
-        ed.$forceUpdate();
+        try {
+          if (typeof ed.$forceUpdate === "function") {
+            ed.$forceUpdate();
+          }
+        } catch (e) {
+          console.warn("[DefectExcel] forceUpdate failed", e);
+        }
         /* cell-html（图片/附件）高度变化后，库内 inputSquare 仍用旧 getBoundingClientRect；须重算焦点框与拖选 overlay */
         this.$nextTick(() => {
           requestAnimationFrame(() => {
-            this.repositionExcelEditorFocusChrome();
+            try {
+              this.repositionExcelEditorFocusChrome();
+            } catch (e) { /* ignore */ }
           });
         });
       });
@@ -2301,7 +2329,7 @@ export default {
     markExcelPersistErrorCell(row, colKey, err) {
       const id = this.excelPersistErrorTdId(row, colKey);
       if (!id) return;
-      this.$set(this.excelPersistErrorCellIds, id, true);
+      this.excelPersistErrorCellIds[id] = true;
       const ed = this.$refs.excelEditor;
       const msg = this.buildExcelPersistErrorMessage(this.findExcelCol(colKey), row);
       if (ed && typeof ed.setFieldError === "function") {
@@ -2313,7 +2341,7 @@ export default {
     clearExcelPersistErrorCell(row, colKey) {
       const id = this.excelPersistErrorTdId(row, colKey);
       if (!id || !this.excelPersistErrorCellIds[id]) return;
-      this.$delete(this.excelPersistErrorCellIds, id);
+      delete this.excelPersistErrorCellIds[id];
       const ed = this.$refs.excelEditor;
       if (ed && typeof ed.setFieldError === "function") {
         const field = ed.fields && ed.fields.find((f) => f && f.name === colKey);
@@ -2748,8 +2776,8 @@ export default {
         this.closeExcelModulePicker();
         return;
       }
-      this.$set(row, "moduleId", newId);
-      this.$set(row, "moduleName", newName);
+      row["moduleId"] = newId;
+      row["moduleName"] = newName;
       this.closeExcelModulePicker();
       if (!row.defectId) {
         this.refreshExcelEditorView();
@@ -2770,8 +2798,8 @@ export default {
         this.$modal.msgSuccess(this.$t("defect.excel-save-success").toString());
         this.refreshExcelEditorView();
       } catch (e) {
-        this.$set(row, "moduleId", oldId);
-        this.$set(row, "moduleName", oldName);
+        row["moduleId"] = oldId;
+        row["moduleName"] = oldName;
         this.$modal.msgError(this.buildExcelSaveFailedMessage(row));
       } finally {
         this.excelModulePickerSaving = false;
@@ -2834,8 +2862,8 @@ export default {
             row.customFields && typeof row.customFields === "object" ? { ...row.customFields } : {};
           if (nv) prev[fk] = nv;
           else delete prev[fk];
-          this.$set(row, "customFields", prev);
-          this.$set(row, key, nv);
+          row["customFields"] = prev;
+          row[key] = nv;
           if (!row.defectId) {
             this.refreshExcelEditorView();
             this.$modal.msgWarning(String(this.$t("defect.excel-plan-time-staged-row")));
@@ -2851,7 +2879,7 @@ export default {
           }
         } else if (!row.defectId) {
           /* 占位行无缺陷 ID：仅更新表格展示，刷新页面前不会落库 */
-          this.$set(row, key, nv);
+          row[key] = nv;
           this.refreshExcelEditorView();
           this.$modal.msgWarning(String(this.$t("defect.excel-plan-time-staged-row")));
         } else {
@@ -2868,7 +2896,7 @@ export default {
             else if (key === "planEndTime") payload.params.clearPlanEndTime = true;
           }
           await updateDefect(payload);
-          this.$set(row, key, nv);
+          row[key] = nv;
           this.touchRowUpdateTime(row);
           this.refreshExcelEditorView();
           this.$modal.msgSuccess(this.$t("defect.excel-save-success").toString());
@@ -2958,8 +2986,8 @@ export default {
         row.customFields && typeof row.customFields === "object" ? { ...row.customFields } : {};
       if (parsed === "" || parsed == null) delete prev[fk];
       else prev[fk] = parsed;
-      this.$set(row, "customFields", prev);
-      this.$set(row, col.key, formatCustomFieldExcelText(parsed, col));
+      row["customFields"] = prev;
+      row[col.key] = formatCustomFieldExcelText(parsed, col);
     },
     refreshProjectMembers() {
       const pid =
@@ -2967,7 +2995,7 @@ export default {
         this.projectId ||
         0;
       if (!pid) {
-        Object.keys(this.memberSelectMap).forEach((k) => this.$delete(this.memberSelectMap, k));
+        Object.keys(this.memberSelectMap).forEach((k) => delete this.memberSelectMap[k]);
         this.refreshExcelEditorView();
         return;
       }
@@ -3076,7 +3104,7 @@ export default {
               return (
                 `<span class="defect-excel-img-wrap">` +
                 `<img class="defect-excel-img-tile cat2bug-image-error__img" src="${escAttr(full)}" alt="" loading="lazy" onerror="${imgOnerror}" />` +
-                `<span class="defect-excel-img-remove" data-defect-id="${escAttr(String(record.defectId))}" data-img-path="${escPath}"${cfAttr} title="${removeTitle}" role="button" tabindex="0"><i class="el-icon-close"></i></span>` +
+                `<span class="defect-excel-img-remove" data-defect-id="${escAttr(String(record.defectId))}" data-img-path="${escPath}"${cfAttr} title="${removeTitle}" role="button" tabindex="0">${legacyIconInlineHtml('el-icon-close')}</span>` +
                 `</span>`
               );
             })
@@ -3091,7 +3119,7 @@ export default {
         : "";
       const btn = `<span class="defect-excel-inline-upload-btn" data-upload-kind="${escAttr(uploadKind)}" data-defect-id="${escAttr(
         String(record.defectId)
-      )}" data-project-id="${escAttr(String(record.projectId != null ? record.projectId : ""))}"${cfAttr} title="${uploadTitle}" role="button" tabindex="0"><i class="el-icon-upload2"></i></span>`;
+      )}" data-project-id="${escAttr(String(record.projectId != null ? record.projectId : ""))}"${cfAttr} title="${uploadTitle}" role="button" tabindex="0">${legacyIconInlineHtml('el-icon-upload2')}</span>`;
       return `<div class="defect-excel-attach-cell">${rowInner}${btn}</div>`;
     },
     isDefectExcelPreviewThumbImg(node) {
@@ -3188,8 +3216,8 @@ export default {
                 `<span class="defect-excel-annex-item">` +
                 `<span class="defect-excel-annex-line" data-url="${escAttr(full)}" data-annex-path="${escPath}" title="${escAttr(
                   label
-                )}"><i class="el-icon-paperclip"></i><span class="defect-excel-annex-label">${escText(label)}</span></span>` +
-                `<span class="defect-excel-annex-remove" data-defect-id="${escAttr(String(record.defectId))}" data-annex-path="${escPath}"${cfAttr} title="${removeTitle}" role="button" tabindex="0"><i class="el-icon-close"></i></span>` +
+                )}">${legacyIconInlineHtml('el-icon-paperclip')}<span class="defect-excel-annex-label">${escText(label)}</span></span>` +
+                `<span class="defect-excel-annex-remove" data-defect-id="${escAttr(String(record.defectId))}" data-annex-path="${escPath}"${cfAttr} title="${removeTitle}" role="button" tabindex="0">${legacyIconInlineHtml('el-icon-close')}</span>` +
                 `</span>`
               );
             })
@@ -3204,7 +3232,7 @@ export default {
         : "";
       const btn = `<span class="defect-excel-inline-upload-btn" data-upload-kind="${escAttr(uploadKind)}" data-defect-id="${escAttr(
         String(record.defectId)
-      )}" data-project-id="${escAttr(String(record.projectId != null ? record.projectId : ""))}"${cfAttr} title="${uploadTitle}" role="button" tabindex="0"><i class="el-icon-upload2"></i></span>`;
+      )}" data-project-id="${escAttr(String(record.projectId != null ? record.projectId : ""))}"${cfAttr} title="${uploadTitle}" role="button" tabindex="0">${legacyIconInlineHtml('el-icon-upload2')}</span>`;
       return `<div class="defect-excel-attach-cell"><div class="defect-excel-annex-stack">${stackInner}</div>${btn}</div>`;
     },
     defectExcelClosestInlineUploadBtn(node) {
@@ -3291,14 +3319,14 @@ export default {
           if (next.length) prev[customFieldKey] = next;
           else delete prev[customFieldKey];
           await updateDefect({ defectId: row.defectId, projectId, customFields: prev });
-          this.$set(row, "customFields", prev);
+          row["customFields"] = prev;
         } else {
           const parts = this.excelCommaUrlParts(row.imgUrls);
           const next = parts.filter((p) => String(p) !== String(pathRel));
           if (next.length === parts.length) return;
           const merged = next.join(",");
           await updateDefect({ defectId: row.defectId, projectId, imgUrls: merged });
-          this.$set(row, "imgUrls", merged);
+          row["imgUrls"] = merged;
         }
         this.touchRowUpdateTime(row);
         this.refreshExcelEditorView();
@@ -3345,14 +3373,14 @@ export default {
           if (next.length) prev[customFieldKey] = next;
           else delete prev[customFieldKey];
           await updateDefect({ defectId: row.defectId, projectId, customFields: prev });
-          this.$set(row, "customFields", prev);
+          row["customFields"] = prev;
         } else {
           const parts = this.excelCommaUrlParts(row.annexUrls);
           const next = parts.filter((p) => String(p) !== String(pathRel));
           if (next.length === parts.length) return;
           const merged = next.join(",");
           await updateDefect({ defectId: row.defectId, projectId, annexUrls: merged });
-          this.$set(row, "annexUrls", merged);
+          row["annexUrls"] = merged;
         }
         this.touchRowUpdateTime(row);
         this.refreshExcelEditorView();
@@ -3548,7 +3576,7 @@ export default {
         const prev = (row.customFields && typeof row.customFields === "object") ? { ...row.customFields } : {};
         prev[fieldKey] = [...existing, ...newNames];
         await updateDefect({ defectId: row.defectId, projectId, customFields: prev });
-        this.$set(row, "customFields", prev);
+        row["customFields"] = prev;
         this.touchRowUpdateTime(row);
         this.refreshExcelEditorView();
         this.$modal.msgSuccess(this.$t("defect.excel-save-success").toString());
@@ -3591,7 +3619,7 @@ export default {
         const prev = (row.customFields && typeof row.customFields === "object") ? { ...row.customFields } : {};
         prev[fieldKey] = [...existing, ...newNames];
         await updateDefect({ defectId: row.defectId, projectId, customFields: prev });
-        this.$set(row, "customFields", prev);
+        row["customFields"] = prev;
         this.touchRowUpdateTime(row);
         this.refreshExcelEditorView();
         this.$modal.msgSuccess(this.$t("defect.excel-save-success").toString());
@@ -3637,7 +3665,7 @@ export default {
           projectId,
           imgUrls: merged,
         });
-        this.$set(row, "imgUrls", merged);
+        row["imgUrls"] = merged;
         this.touchRowUpdateTime(row);
         this.refreshExcelEditorView();
         this.$modal.msgSuccess(this.$t("defect.excel-save-success").toString());
@@ -3699,7 +3727,7 @@ export default {
           projectId,
           annexUrls: merged,
         });
-        this.$set(row, "annexUrls", merged);
+        row["annexUrls"] = merged;
         this.touchRowUpdateTime(row);
         this.refreshExcelEditorView();
         this.$modal.msgSuccess(this.$t("defect.excel-save-success").toString());
@@ -4079,7 +4107,7 @@ export default {
         if (this.isDeletedDefectRow(row)) {
           deletedEditAttempted = true;
           this.syncing = true;
-          this.$set(row, rec.name, rec.oldVal == null ? "" : rec.oldVal);
+          row[rec.name] = rec.oldVal == null ? "" : rec.oldVal;
           this.$nextTick(() => {
             this.syncing = false;
           });
@@ -4091,7 +4119,7 @@ export default {
             const msgKey = EXCEL_REQUIRED_EMPTY_MSG_I18N[col.key] || "defect.excel-handle-by-required";
             this.$modal.msgError(this.$t(msgKey).toString());
             this.syncing = true;
-            this.$set(row, col.key, ov);
+            row[col.key] = ov;
             this.$nextTick(() => {
               this.syncing = false;
             });
@@ -4102,7 +4130,7 @@ export default {
           const msgKey = EXCEL_REQUIRED_EMPTY_MSG_I18N[col.key] || "defect.excel-handle-by-required";
           this.$modal.msgError(this.$t(msgKey).toString());
           this.syncing = true;
-          this.$set(row, col.key, ov);
+          row[col.key] = ov;
           this.$nextTick(() => {
             this.syncing = false;
           });
@@ -4110,7 +4138,7 @@ export default {
         }
         if (col.key === "defectStateText" && (!nv || String(nv).trim() === "")) {
           this.syncing = true;
-          this.$set(row, col.key, ov);
+          row[col.key] = ov;
           this.$nextTick(() => {
             this.syncing = false;
           });
@@ -4269,7 +4297,7 @@ export default {
         if (this.excelDefectCreateQueueIds.includes(idStr)) continue;
         this.excelDefectCreateQueueIds.push(idStr);
         if (row.defectStateText !== EXCEL_CREATE_ROW_RUNNING) {
-          this.$set(row, "defectStateText", EXCEL_CREATE_ROW_QUEUED);
+          row["defectStateText"] = EXCEL_CREATE_ROW_QUEUED;
         }
         added = true;
       }
@@ -4287,7 +4315,7 @@ export default {
           const idStr = this.excelDefectCreateQueueIds.shift();
           const row = this.sheetRows.find((r) => String(r.$id) === idStr);
           if (!row || row.defectId) continue;
-          this.$set(row, "defectStateText", EXCEL_CREATE_ROW_RUNNING);
+          row["defectStateText"] = EXCEL_CREATE_ROW_RUNNING;
           this.refreshExcelEditorView();
           const success = await this.createDefectFromExcelPlaceholderRow(row, {
             queueMode: true,
@@ -4318,16 +4346,16 @@ export default {
       if (this.excelPlaceholderRowSubmitLock[lockKey]) return false;
       if (!checkPermi(["system:defect:add"])) {
         this.$modal.msgError(this.buildExcelSaveFailedMessage(row));
-        this.$set(row, "defectStateText", "");
+        row["defectStateText"] = "";
         return false;
       }
       const projectId = row.projectId != null && row.projectId !== "" ? row.projectId : this.queryParams.projectId;
       if (projectId == null || projectId === "") {
         this.$modal.msgError(this.buildExcelSaveFailedMessage(row));
-        this.$set(row, "defectStateText", "");
+        row["defectStateText"] = "";
         return false;
       }
-      this.$set(this.excelPlaceholderRowSubmitLock, lockKey, true);
+      this.excelPlaceholderRowSubmitLock[lockKey] = true;
       if (!queueMode) this.syncing = true;
       if (!queueSilent) this.$modal.loading(this.$t("upload.uploading").toString());
       try {
@@ -4366,24 +4394,24 @@ export default {
         const keep$Id = row.$id;
         Object.keys(sheet).forEach((k) => {
           if (k === "$id") return;
-          this.$set(row, k, sheet[k]);
+          row[k] = sheet[k];
         });
-        if (keep$Id != null) this.$set(row, "$id", keep$Id);
+        if (keep$Id != null) row["$id"] = keep$Id;
         const mappedList = this.mapDefectRowForExcelSheet(detail);
         const idx = (this.defectList || []).findIndex((d) => d && d.defectId === row.defectId);
-        if (idx >= 0) this.$set(this.defectList, idx, mappedList);
+        if (idx >= 0) this.defectList[idx] = mappedList;
         else if (Array.isArray(this.defectList)) this.defectList.push(mappedList);
         this.refreshExcelEditorView();
         if (!queueSilent) this.$modal.msgSuccess(this.$t("create-success").toString());
         return true;
       } catch (e) {
         this.$modal.msgError(this.buildExcelSaveFailedMessage(row));
-        this.$set(row, "defectStateText", "");
+        row["defectStateText"] = "";
         return false;
       } finally {
         if (!queueSilent) this.$modal.closeLoading();
         if (!queueMode) this.syncing = false;
-        this.$delete(this.excelPlaceholderRowSubmitLock, lockKey);
+        delete this.excelPlaceholderRowSubmitLock[lockKey];
       }
     },
     persistSheetCells(items) {
@@ -4417,7 +4445,7 @@ export default {
               const n = Number(raw);
               if (!Number.isFinite(n) || n < 0 || n > 4) continue;
               payload.defectState = n;
-              this.$set(it.row, "defectState", n);
+              it.row["defectState"] = n;
             } else if (it.key === "planStartTime" || it.key === "planEndTime") {
               const nv = String(it.nv != null ? it.nv : "").trim();
               if (nv) {
@@ -4443,8 +4471,8 @@ export default {
                 prev[fk] = parsed;
               }
               payload.customFields = prev;
-              this.$set(it.row, "customFields", prev);
-              this.$set(it.row, it.key, formatCustomFieldExcelText(prev[fk], col));
+              it.row["customFields"] = prev;
+              it.row[it.key] = formatCustomFieldExcelText(prev[fk], col);
               const invalid = this.findInvalidCustomFieldForPersist(it.row, prev);
               if (invalid) {
                 this.reportExcelPersistFieldError(it.row, invalid.colKey, it.key);
@@ -4486,7 +4514,7 @@ export default {
     },
     touchRowUpdateTime(row) {
       if (!row || !row.defectId || typeof this.parseTime !== "function") return;
-      this.$set(row, "updateTime", this.parseTime(new Date(), "{y}-{m}-{d} {h}:{i}:{s}"));
+      row["updateTime"] = this.parseTime(new Date(), "{y}-{m}-{d} {h}:{i}:{s}");
     },
   },
 };
@@ -4572,6 +4600,27 @@ export default {
   > * {
     margin: 0 !important;
   }
+  /* el-tooltip / el-popover 触发器与 32px 按钮同高居中 */
+  .el-tooltip__trigger,
+  .el-popover__reference {
+    display: inline-flex;
+    align-items: center;
+    align-self: center;
+    vertical-align: middle;
+  }
+}
+.defect-excel-refresh-trigger {
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
+  line-height: 0;
+}
+.defect-list-hint-excel-refresh.el-button.is-circle {
+  width: var(--cat2bug-toolbar-control-height, 32px);
+  height: var(--cat2bug-toolbar-control-height, 32px);
+  min-width: var(--cat2bug-toolbar-control-height, 32px);
+  padding: 0;
+  font-size: 16px;
 }
 .defect-excel-context {
   /* 缺陷页 Excel 模式：父级 defect-page 给 min-height + flex，此处撑满剩余高度 */
@@ -5099,9 +5148,9 @@ html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep textarea.input-bo
   background: transparent;
   box-sizing: border-box;
 }
-.defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-inline-upload-btn i {
-  font-size: 12px;
-  line-height: 1;
+.defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-inline-upload-btn .cat2bug-inline-svg-icon {
+  width: 12px;
+  height: 12px;
 }
 .defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-inline-upload-btn:hover {
   color: #409eff;
@@ -5152,8 +5201,9 @@ html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep textarea.input-bo
 .defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-img-remove:hover {
   background: #f56c6c;
 }
-.defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-img-remove .el-icon-close {
-  font-size: 11px;
+.defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-img-remove .cat2bug-inline-svg-icon {
+  width: 11px;
+  height: 11px;
 }
 .defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-img-row--empty {
   min-height: 24px;
@@ -5217,8 +5267,9 @@ html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep textarea.input-bo
 .defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-annex-remove:hover {
   background: #f56c6c;
 }
-.defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-annex-remove .el-icon-close {
-  font-size: 11px;
+.defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-annex-remove .cat2bug-inline-svg-icon {
+  width: 11px;
+  height: 11px;
 }
 .defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-annex-line {
   display: inline-flex;
@@ -5231,9 +5282,10 @@ html.dark .defect-excel-root .defect-vue-excel-editor ::v-deep textarea.input-bo
   color: #409eff;
   text-align: left;
 }
-.defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-annex-line .el-icon-paperclip {
+.defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-annex-line .cat2bug-inline-svg-icon {
   flex-shrink: 0;
-  font-size: 12px;
+  width: 12px;
+  height: 12px;
 }
 .defect-vue-excel-editor ::v-deep .systable tbody td.cell-html .defect-excel-annex-label {
   overflow: hidden;

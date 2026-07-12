@@ -2,16 +2,23 @@
   <el-color-picker
     v-model="theme"
     :predefine="['#409EFF', '#1890ff', '#304156','#212121','#11a983', '#13c2c2', '#6959CD', '#f5222d', ]"
-    class="theme-picker"
+    :class="['theme-picker', { 'theme-picker--ghost': ghost }]"
     popper-class="theme-picker-dropdown"
   />
 </template>
 
 <script>
-const version = require('element-ui/package.json').version // element-ui version from node_modules
+const version = '2.15.13'
 const ORIGINAL_THEME = '#409EFF' // default color
 
 export default {
+  props: {
+    /** 根级隐藏实例：只跑换肤逻辑，不展示取色器 UI */
+    ghost: {
+      type: Boolean,
+      default: false
+    }
+  },
   data() {
     return {
       chalk: '', // content of theme-chalk css

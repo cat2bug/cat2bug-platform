@@ -1,6 +1,6 @@
 <template>
   <div class="select-module-add-root">
-    <el-button v-if="!formVisible" type="text" icon="el-icon-plus" class="select-module-add-full select-module-add-button" @click="openForm">{{$t('module.new')}}</el-button>
+    <el-button v-if="!formVisible" link :icon="$legacyIcon('el-icon-plus')" class="select-module-add-full select-module-add-button" @click="openForm">{{$t('module.new')}}</el-button>
     <el-form v-show="formVisible"
              ref="form"
              :model="form"
@@ -19,7 +19,7 @@
             size="small"
             @input="nameChangeHandle"
             @keydown.native.esc.stop="onInputEscape">
-            <el-button slot="append" icon="el-icon-plus" size="mini"
+            <el-button slot="append" :icon="$legacyIcon('el-icon-plus')" size="small"
                        class="select-module-add-submit"
                        @mousedown.native.prevent
                        @click.stop="addProjectModule"></el-button>

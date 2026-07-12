@@ -22,8 +22,6 @@
 </template>
 
 <script>
-import { mavonEditor } from 'mavon-editor';
-import 'mavon-editor/dist/css/index.css';
 import Cat2BugMarkdown from "@/components/Cat2BugMarkdown";
 import {getReportTemplate, updateTemplate} from "@/api/system/ReportTemplate";
 import {upload} from "@/api/common/upload";
@@ -33,7 +31,7 @@ import pageFormClose from '@/mixins/page-form-close';
 export default {
   name: "AddDefectReport",
   mixins: [dialogFormShortcuts, pageFormClose],
-  components: {Cat2BugMarkdown, mavonEditor},
+  components: {Cat2BugMarkdown},
   data() {
     return {
       visible: true,

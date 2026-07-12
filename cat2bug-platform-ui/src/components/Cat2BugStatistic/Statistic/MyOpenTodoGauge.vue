@@ -5,7 +5,7 @@
     :tools="tools"
     @tools-click="toolsHandle"
   >
-    <template slot="content">
+    <template #content>
       <div class="statistic-echarts-body" @click="clickHandle">
         <div v-if="isEmpty" class="statistic-echarts-zero">0</div>
         <template v-else>
@@ -26,10 +26,16 @@
 </template>
 
 <script>
-import * as echarts from '@/assets/js/echarts.min.js'
 import resize from '@/views/dashboard/mixins/resize'
 import Cat2BugCard from '../Components/Card'
 import { statisticMyOpenWorkload } from '@/api/system/statistic/defect'
+import {
+  disposeEchartsChart,
+  initEchartsChart,
+  isChartDisposed,
+  safeResizeChart,
+  safeSetOption
+} from '../utils/echarts-resize'
 
 const OPEN_DEFECT_STATE_IDS = [0, 1, 3]
 
@@ -92,10 +98,8 @@ export default {
     this.getStatistic()
   },
   beforeDestroy() {
-    if (this.chart) {
-      this.chart.dispose()
-      this.chart = null
-    }
+    disposeEchartsChart(this.chart)
+    this.chart = null
   },
   methods: {
     clickHandle() {
@@ -121,7 +125,7 @@ export default {
           if (!this.isEmpty) {
             this.initChart()
           } else if (this.chart) {
-            this.chart.dispose()
+            disposeEchartsChart(this.chart)
             this.chart = null
           }
         })
@@ -139,11 +143,19 @@ export default {
     initChart() {
       const el = this.$refs.chart
       if (!el) return
-      if (!this.chart) {
-        this.chart = echarts.init(el)
-      }
       const seriesData = this.pieSeriesData()
-      this.chart.setOption({
+      if (!seriesData.length) {
+        if (this.chart) {
+          disposeEchartsChart(this.chart)
+          this.chart = null
+        }
+        return
+      }
+      if (!this.chart || isChartDisposed(this.chart)) {
+        this.chart = initEchartsChart(el)
+      }
+      if (!this.chart) return
+      safeSetOption(this.chart, {
         color: ['#F56C6C', '#FBB13F', '#909399'],
         tooltip: {
           trigger: 'item',
@@ -180,10 +192,10 @@ export default {
           }
         ]
       }, true)
-      this.$nextTick(() => this.chart && this.chart.resize())
+      this.$nextTick(() => safeResizeChart(this.chart))
     },
     resize() {
-      this.chart && this.chart.resize()
+      safeResizeChart(this.chart)
     },
     refreshData() {
       this.getStatistic()

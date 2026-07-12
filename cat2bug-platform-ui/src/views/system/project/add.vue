@@ -86,7 +86,7 @@
                     @show="getMemberList"
                     @hide="resetMember"
                     trigger="click">
-                    <el-input prefix-icon="el-icon-search" :placeholder="$t('team.search-placeholder')" v-model="memberParams.params.search" @input="getMemberList" size="mini"></el-input>
+                    <el-input :prefix-icon="$legacyIcon('el-icon-search')" :placeholder="$t('team.search-placeholder')" v-model="memberParams.params.search" @input="getMemberList" size="mini"></el-input>
 <!--                    成员列表-->
                       <el-row v-if="memberList && memberList.length>0" class="project-members">
                         <el-col :select="member.isSelect" :span="24" v-for="member in memberList" :key="member.userId" @click.native="selectAddMemberHandle(member)">
@@ -94,7 +94,7 @@
                         </el-col>
                       </el-row>
                     <el-empty v-else :description="$t('no-data')"></el-empty>
-                    <el-button slot="reference" size="mini" icon="el-icon-user-solid">{{$t('project.add-member')}}</el-button>
+                    <el-button slot="reference" size="mini" :icon="$legacyIcon('el-icon-user-solid')">{{$t('project.add-member')}}</el-button>
                   </el-popover>
                 </el-col>
                 <el-col :span="24" v-if="projectMemberSwitch">
@@ -135,7 +135,7 @@
                           v-if="scope.row.userId!=currentUserId"
                           size="mini"
                           type="text"
-                          icon="el-icon-delete"
+                          :icon="$legacyIcon('el-icon-delete')"
                           @click="deleteMemberHandle(scope.row)"
                           v-hasPermi="['system:project:remove']"
                         >{{$t('delete')}}</el-button>

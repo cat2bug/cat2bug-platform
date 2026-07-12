@@ -9,6 +9,13 @@
   --border-color-lighter: #f2f6fc;
   --cat2bug-toolbar-control-height: 32px;
   --cat2bug-toolbar-control-line-height: 30px;
+  /* 全站表单/抽屉/对话框控件高度（与工具栏一致，对齐 Vue2 Element UI small） */
+  --cat2bug-control-height: var(--cat2bug-toolbar-control-height);
+  --cat2bug-control-line-height: var(--cat2bug-toolbar-control-line-height);
+  /* Element Plus 尺寸令牌：small 须与 Vue2 small 同为 32px（EP 默认 small 为 24px） */
+  --el-component-size-large: 40px;
+  --el-component-size: 32px;
+  --el-component-size-small: 32px;
   /* 项目列表页：项目切换条与 Tab/工具条/列表等区块之间的纵向间距（缺陷页同源） */
   --project-list-section-v-gap: 10px;
   --project-list-toolbar-v-gap: var(--project-list-section-v-gap);
@@ -75,6 +82,285 @@
   --defect-pagination-v-gap: var(--cat2bug-table-pagination-gap-top);
   /* 全站表格操作列默认最大宽度 */
   --cat2bug-operate-col-max-width: 450px;
+
+  /* 危险/删除语义色：删除按钮、角标、NEW 标签等实心红标记统一引用 */
+  --cat2bug-delete-color: #e64545;
+  --cat2bug-delete-color-hover: #f56c6c;
+  --cat2bug-textarea-tools-hover-bg: #f0f7ff;
+  /* 缺陷新建/编辑抽屉：单行输入类控件最大宽度（与 SelectModule / SelectProjectMember 对齐） */
+  --cat2bug-defect-form-field-max-width: 300px;
+  --cat2bug-defect-form-plan-range-max-width: 480px;
+
+  /* 业务抽屉左侧模块标识边（对齐 Vue2；RTL 抽屉靠内容区一侧为 border-left） */
+  --cat2bug-drawer-accent-width: 3px;
+  --cat2bug-drawer-accent-defect: #ff4949;
+  --cat2bug-drawer-accent-report: #ffbe00;
+  --cat2bug-drawer-accent-case: #13ce66;
+  --cat2bug-drawer-accent-plan: #13ce66;
+  --cat2bug-drawer-accent-notice: #ff4949;
+  --cat2bug-drawer-accent-cloud-case: #67c23a;
+  /* 右侧抽屉标题栏：全站统一内边距与标题字号（较 EP 默认更窄） */
+  --cat2bug-drawer-header-padding-y: 6px;
+  --cat2bug-drawer-header-padding-x: 14px;
+  --cat2bug-drawer-header-title-size: 16px;
+  --cat2bug-drawer-header-title-line-height: 1.25;
+}
+
+/* ========== 业务抽屉左侧模块标识边（EP teleport 到 body，须全局选择器；勿用组件 scoped） ========== */
+.el-drawer.defect-drawer-accent,
+.el-drawer.notice-drawer-accent {
+  border-left: var(--cat2bug-drawer-accent-width) solid var(--cat2bug-drawer-accent-defect) !important;
+}
+
+.el-drawer.report-drawer-accent {
+  border-left: var(--cat2bug-drawer-accent-width) solid var(--cat2bug-drawer-accent-report) !important;
+}
+
+.el-drawer.case-drawer-accent {
+  border-left: var(--cat2bug-drawer-accent-width) solid var(--cat2bug-drawer-accent-case) !important;
+}
+
+.el-drawer.plan-drawer-accent {
+  border-left: var(--cat2bug-drawer-accent-width) solid var(--cat2bug-drawer-accent-plan) !important;
+}
+
+.el-drawer.cloud-case-drawer-accent {
+  border-left: var(--cat2bug-drawer-accent-width) solid var(--cat2bug-drawer-accent-cloud-case) !important;
+}
+
+/* 右侧抽屉标题栏：统一高度（EP 默认 padding 偏大；teleport 到 body，须全局） */
+.el-drawer__header {
+  margin-bottom: 0 !important;
+  padding: var(--cat2bug-drawer-header-padding-y) var(--cat2bug-drawer-header-padding-x) !important;
+  display: flex;
+  align-items: center;
+  min-height: 0;
+  box-sizing: border-box;
+
+  .el-drawer__title {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    font-size: inherit;
+    line-height: inherit;
+    font-weight: inherit;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    margin: 0;
+    font-size: var(--cat2bug-drawer-header-title-size);
+    font-weight: 500;
+    line-height: var(--cat2bug-drawer-header-title-line-height);
+  }
+}
+
+/* 自定义 header 插槽内容：与工具钮同一行高 */
+.el-drawer__header .defect-add-header,
+.el-drawer__header .defect-edit-header,
+.el-drawer__header .defect-edit-form-header,
+.el-drawer__header .notice-header,
+.el-drawer__header .case-add-header,
+.el-drawer__header .case-search-header,
+.el-drawer__header .report-edit-header,
+.el-drawer__header .plan-run-drawer-title {
+  width: 100%;
+  min-height: var(--cat2bug-control-height, 32px);
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.el-drawer__header .report-edit-tools {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+/* ========== 全站控件高度：对齐 Vue2 Element UI size="small"（32px） ========== */
+@mixin cat2bug-standard-control-height {
+  .el-input:not(.el-textarea) .el-input__wrapper,
+  .el-select .el-select__wrapper,
+  .el-date-editor.el-input .el-input__wrapper,
+  .el-cascader .el-input__wrapper,
+  .el-autocomplete .el-input__wrapper {
+    min-height: var(--cat2bug-control-height) !important;
+    height: var(--cat2bug-control-height) !important;
+    box-sizing: border-box;
+  }
+
+  .el-input-number {
+    line-height: var(--cat2bug-control-line-height);
+
+    /* EP small 步进钮高度按 24px 算 (11px×2)，全站 32px 时须重算，否则上下钮中间留缝 */
+    &.is-controls-right {
+      .el-input-number__increase,
+      .el-input-number__decrease {
+        --el-input-number-controls-height: calc((var(--cat2bug-control-height) - 2px) / 2) !important;
+        height: var(--el-input-number-controls-height) !important;
+        line-height: var(--el-input-number-controls-height) !important;
+        width: var(--cat2bug-control-height) !important;
+      }
+
+      .el-input .el-input__wrapper {
+        padding-right: calc(var(--cat2bug-control-height) + 7px) !important;
+      }
+    }
+  }
+
+  .el-input-number .el-input__wrapper {
+    min-height: var(--cat2bug-control-height) !important;
+    height: var(--cat2bug-control-height) !important;
+  }
+
+  .el-button:not(.is-link):not(.el-button--text):not(.is-circle):not(.update-button) {
+    height: var(--cat2bug-control-height) !important;
+    min-height: var(--cat2bug-control-height) !important;
+    box-sizing: border-box;
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+    line-height: 1 !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .el-form-item__label {
+    line-height: var(--cat2bug-control-height);
+  }
+
+  .el-form-item__content {
+    line-height: var(--cat2bug-control-line-height);
+  }
+}
+
+.el-form,
+.el-drawer__header,
+.el-drawer__body,
+.el-dialog__header,
+.el-dialog__body,
+.el-dialog__footer,
+.el-message-box,
+.defect-drawer-accent,
+.report-drawer-accent {
+  @include cat2bug-standard-control-height;
+}
+
+/* 抽屉/对话框表单：描述、附件、图片上传满宽 */
+.defect-drawer-accent .el-form,
+.el-dialog .el-form {
+  .el-form-item__content {
+    > .cat2bug-textarea,
+    > .component-upload-image,
+    > .upload-file,
+    > .defect-custom-field-array {
+      width: 100%;
+      max-width: 100%;
+    }
+  }
+}
+
+/* 非缺陷抽屉的对话框表单：控件仍满宽 */
+.el-dialog .el-form {
+  .el-form-item__content {
+    > .el-input,
+    > .el-select,
+    > .el-input-number,
+    > .el-date-editor,
+    > .el-cascader,
+    > .el-autocomplete,
+    > .defect-custom-field-number,
+    > .defect-custom-field-datetime,
+    > .defect-custom-field-enum,
+    > .defect-plan-datetimerange,
+    > .select-module,
+    > .select-project-member,
+    > .select-case {
+      width: 100%;
+      max-width: 100%;
+    }
+
+    > .select-module .select-module-input,
+    > .select-project-member-input,
+    > .select-case-input {
+      max-width: none;
+    }
+  }
+}
+
+/* 缺陷新建/编辑抽屉：单行输入、下拉、数字、日期等按默认宽度，不占满整行 */
+.defect-drawer-accent .defect-form-ordered-fields {
+  width: 100%;
+
+  .el-form-item__content {
+    > .el-input:not(.el-textarea),
+    > .el-select,
+    > .el-input-number,
+    > .el-date-editor:not(.el-range-editor),
+    > .select-project-member-input,
+    > .select-module-input,
+    > .select-case-input {
+      display: block;
+      max-width: var(--cat2bug-defect-form-field-max-width, 300px);
+      width: 100%;
+    }
+
+    > .el-date-editor.defect-plan-datetimerange {
+      max-width: var(--cat2bug-defect-form-plan-range-max-width, 480px);
+      width: 100% !important;
+      min-width: 0 !important;
+      box-sizing: border-box;
+    }
+
+    > .cat2bug-textarea,
+    > .component-upload-image,
+    > .upload-file {
+      max-width: 100%;
+      width: 100%;
+    }
+  }
+}
+
+.defect-drawer-accent .component-upload-image,
+.el-dialog .component-upload-image {
+  .update-button {
+    width: 148px !important;
+    height: 148px !important;
+    min-height: 148px !important;
+    max-height: none !important;
+    padding: 0 !important;
+    line-height: 1 !important;
+  }
+
+  .el-upload-list--picture-card .el-upload-list__item {
+    width: 148px !important;
+    height: 148px !important;
+  }
+}
+
+/* Cat2BugTextarea 右下角工具条：保持 24px 紧凑行，不受抽屉/对话框全站 32px 控件高度影响 */
+.cat2bug-textarea .tools {
+  .el-select .el-select__wrapper {
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: 24px !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+  }
+
+  .el-button.el-button--text,
+  .el-button.is-link {
+    height: 24px !important;
+    min-height: 24px !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
 }
 
 /* ========== 全站圆角统一（输入框 / 选择框 / 按钮 / 表格 / 分页等） ========== */
@@ -88,8 +374,52 @@ $cat2bug-radius: var(--cat2bug-border-radius, 4px);
 .el-range-editor.el-input__inner,
 .el-input-number .el-input__inner,
 .el-pagination__editor.el-input .el-input__inner,
-.select-project-member-input {
+.select-project-member-input,
+.select-module-input {
   border-radius: $cat2bug-radius !important;
+  box-sizing: border-box;
+  border: 1px solid var(--border-color-base, var(--el-input-border-color, #dcdfe6));
+  background-color: var(--el-input-bg-color, var(--input-bg, #ffffff));
+}
+
+/* 项目切换（ProjectSelect）：与 Vue2 一致，无外框描边 */
+.project-select-trigger,
+.select-project-member-input-default:not(.select-project-member-input) {
+  border: none !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+
+  &:focus,
+  &:focus-within,
+  &:focus-visible {
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+  }
+}
+
+/* Element Plus：外框由 wrapper 单环描边，inner 仅文字层（工具栏查询、分页跳转等同源，禁止双边框） */
+.el-input:not(.el-textarea) .el-input__wrapper .el-input__inner {
+  border: none !important;
+  box-shadow: none !important;
+  background-color: transparent !important;
+}
+
+.el-input:not(.el-textarea) .el-input__wrapper {
+  border-radius: $cat2bug-radius !important;
+  box-shadow: 0 0 0 1px var(--input-border, var(--border-color-base, var(--el-input-border-color, #dcdfe6))) inset !important;
+}
+
+.el-input:not(.el-textarea) .el-input__wrapper.is-focus,
+.el-input:not(.el-textarea).is-focus .el-input__wrapper {
+  box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, var(--el-color-primary, #409eff)) inset !important;
+}
+
+.el-input:not(.el-textarea) .el-input__wrapper .el-input__inner:focus {
+  border-color: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
 }
 
 /* ========== 全站统一聚焦环：1px 外描边，border 色不变，避免快捷键环与 :focus 环重叠 ========== */
@@ -139,10 +469,17 @@ $cat2bug-radius: var(--cat2bug-border-radius, 4px);
 .select-project-member-input .select-project-member-search-input .el-input__inner:focus,
 .select-project-member-input .select-project-member-search-input.is-focus .el-input__inner,
 .select-module-input:focus-within .select-module-display-input .el-input__inner,
-.select-module-input .select-module-display-input .el-input__inner:focus {
+.select-module-input .select-module-display-input .el-input__inner:focus,
+.select-module-input:focus-within .select-module-display-input .el-input__wrapper,
+.select-module-input .select-module-display-input .el-input__wrapper {
   box-shadow: none !important;
   border-color: transparent !important;
   outline: none !important;
+}
+
+.select-module-input .select-module-display-input .el-input__wrapper {
+  padding-left: 15px;
+  padding-right: 0;
 }
 
 /* 附件/文件上传外框（Tab 停靠点）：外圈焦点环，避免与内部 primary 按钮同色 1px 环难以辨认 */
@@ -261,6 +598,48 @@ html.dark .module-mode-switch-hint .el-switch.is-checked:focus-within {
   box-shadow: 0 0 0 1px #ffffff !important;
 }
 
+/* ConfigProvider 全局 size=small 会把开关缩至 16px 轨道；表单内恢复 EP 默认（20px），对齐 Vue2 */
+.el-form-item .el-switch.el-switch--small {
+  height: 32px;
+  font-size: 14px;
+  line-height: 20px;
+
+  .el-switch__label {
+    height: 20px;
+    font-size: 14px;
+
+    * {
+      font-size: 14px;
+    }
+  }
+
+  .el-switch__core {
+    border-radius: 10px;
+    min-width: 40px;
+    height: 20px;
+
+    .el-switch__inner {
+      height: 16px;
+      padding: 0 4px 0 18px;
+    }
+
+    .el-switch__action {
+      width: 16px;
+      height: 16px;
+    }
+  }
+
+  &.is-checked .el-switch__core {
+    .el-switch__action {
+      left: calc(100% - 17px);
+    }
+
+    .el-switch__inner {
+      padding: 0 18px 0 4px;
+    }
+  }
+}
+
 .el-button-group:focus-within {
   @include cat2bug-unified-focus-ring;
   border-radius: $cat2bug-radius;
@@ -343,9 +722,15 @@ html.dark .module-mode-switch-hint .el-switch.is-checked:focus-within {
 
 .el-button--warning.is-plain:focus,
 .el-button--warning.is-plain.list-query-toolbar-nav-focused {
-  border-color: #f5dab1 !important;
-  background-color: #fdf6ec !important;
-  color: #e6a23c !important;
+  border-color: #b3d8ff !important;
+  background-color: #ecf5ff !important;
+  color: #409eff !important;
+}
+
+.el-button--warning.is-plain:hover {
+  border-color: #b3d8ff !important;
+  background-color: #ecf5ff !important;
+  color: #409eff !important;
 }
 
 .el-button--info.is-plain:focus,
@@ -404,6 +789,53 @@ html.dark .module-mode-switch-hint .el-switch.is-checked:focus-within {
 .el-pagination .el-pager li:not(.more),
 .el-pagination button:not(.is-circle) {
   border-radius: $cat2bug-radius !important;
+}
+
+/* 列表底部分页：对齐 Vue2（32px 按钮 / 14px 字号；EP ConfigProvider small 默认为 24px） */
+.el-pagination:not(.statistic-pagination) {
+  --el-pagination-font-size: 14px;
+  --el-pagination-button-width: 32px;
+  --el-pagination-button-height: 32px;
+  --el-pagination-button-width-small: 32px;
+  --el-pagination-button-height-small: 32px;
+  --el-pagination-font-size-small: 14px;
+  font-size: 14px;
+
+  button,
+  .btn-prev,
+  .btn-next,
+  .el-pager li:not(.more) {
+    min-width: 32px;
+    height: 32px;
+    line-height: 32px;
+    font-size: 14px;
+  }
+
+  .el-pagination__total,
+  .el-pagination__jump {
+    font-size: 14px;
+    line-height: 32px;
+  }
+
+  .el-pagination__sizes .el-select .el-select__wrapper,
+  .el-pagination__sizes .el-select .el-input__wrapper {
+    min-height: var(--cat2bug-control-height) !important;
+    height: var(--cat2bug-control-height) !important;
+    font-size: 14px;
+  }
+
+  .el-pagination__editor.el-input {
+    .el-input__wrapper {
+      min-height: var(--cat2bug-control-height) !important;
+      height: var(--cat2bug-control-height) !important;
+    }
+
+    .el-input__inner {
+      height: calc(var(--cat2bug-control-height) - 2px);
+      line-height: calc(var(--cat2bug-control-height) - 2px);
+      font-size: 14px;
+    }
+  }
 }
 
 .el-select-dropdown,
@@ -501,6 +933,53 @@ img.cat2bug-image-error__img {
 
 .el-image__placeholder {
   background-color: var(--cat2bug-image-placeholder-bg) !important;
+}
+
+/* 列表图片列：缩略图在单元格内水平/垂直居中（对齐 Vue2） */
+.el-table td.cat2bug-table-image-col.el-table__cell,
+.el-table th.cat2bug-table-image-col.el-table__cell,
+.el-table td.el-table__cell:has(.cat2bug-preview-image),
+.el-table td.el-table__cell:has(.defect-list-cell-image) {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.el-table td.cat2bug-table-image-col.el-table__cell > .cell,
+.el-table td.el-table__cell > .cell:has(.cat2bug-preview-image),
+.el-table td.el-table__cell > .cell:has(.defect-list-cell-image) {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 100%;
+  min-height: 100%;
+  box-sizing: border-box;
+}
+
+.el-table .cat2bug-preview-image,
+.el-table .defect-list-cell-image {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+/* 图片预览 popover：宽度随内容收缩，左右留白对称（EP3 默认 min-width:150px 会在右侧留空） */
+.el-popover.cat2bug-preview-image-popover {
+  width: fit-content !important;
+  min-width: unset !important;
+  box-sizing: border-box;
+}
+
+/* 列表数字/枚举/时间列：水平居中 */
+.el-table td.cat2bug-table-center-col.el-table__cell,
+.el-table th.cat2bug-table-center-col.el-table__cell {
+  text-align: center;
+}
+
+.el-table td.cat2bug-table-center-col.el-table__cell > .cell,
+.el-table th.cat2bug-table-center-col.el-table__cell > .cell {
+  justify-content: center;
+  text-align: center;
 }
 
 /* 缺陷列表操作列：默认单行；超出 450px 时由 data-operate-at-cap 触发换行 */
@@ -633,14 +1112,79 @@ img.cat2bug-image-error__img {
   align-items: center !important;
 }
 
+/* EP3 clearable：空值时 clear 用 visibility:hidden 仍占位，收起为与 Vue2 一致 */
+.el-input__suffix-inner .el-input__clear[style*="visibility: hidden"],
+.el-input__suffix-inner .el-input__clear[style*="visibility:hidden"] {
+  display: none !important;
+}
+
 .el-input--small .el-input__icon,
 .el-input--small .el-select__caret {
   line-height: var(--cat2bug-toolbar-control-height, 32px) !important;
 }
 
-/* el-badge 圆点/数字：去掉 Element 默认白边（深浅色主题均适用） */
+/* 下拉箭头右缘留白：禁止贴控件外缘；与工具栏 el-select 默认 suffix 内边距对齐 */
+.el-select .el-select__wrapper {
+  padding-right: var(--cat2bug-dropdown-caret-inset, 8px);
+}
+
+.el-select .el-select__suffix {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.el-button-group > .el-dropdown__caret-button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+/* split-button 三角区为独立窄格：箭头在格内左右居中（勿仅用 padding-right 留白，会偏左） */
+.el-dropdown .el-dropdown__caret-button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.select-project-member-input,
+.select-module-input,
+.select-case-input {
+  display: inline-flex !important;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  padding-right: var(--cat2bug-dropdown-caret-inset, 8px);
+  box-sizing: border-box;
+}
+
+.select-project-member-input__icon,
+.select-module-input__icon,
+.select-case-input__icon {
+  flex-shrink: 0;
+}
+
+/* el-badge 圆点/数字：去掉 Element 默认白边；背景与删除按钮同色 */
 .el-badge__content {
   border: none !important;
+  background-color: var(--cat2bug-delete-color) !important;
+}
+
+/* 实心危险标签（如通知 NEW） */
+.el-tag.el-tag--danger.el-tag--dark {
+  background-color: var(--cat2bug-delete-color) !important;
+  border-color: var(--cat2bug-delete-color) !important;
+}
+
+/* Tab 未读数等自定义角标 */
+.cat2bug-danger-badge {
+  background-color: var(--cat2bug-delete-color);
+  color: #ffffff;
 }
 
 /* 测试计划用例统计语义色（HandlePlanDialog / 仪表盘 PlanStatisticsChart） */
@@ -668,6 +1212,7 @@ img.cat2bug-image-error__img {
 .module-tools,
 .document-tools,
 .report-tools,
+.notice-tools,
 .project-manage-tools,
 .project-option-list-tools,
 .defect-excel-tools.defect-view-toolbar {
@@ -690,6 +1235,7 @@ img.cat2bug-image-error__img {
 .module-tools > .left,
 .document-tools > .left,
 .report-tools > .left,
+.notice-tools > .left,
 .project-option-list-tools > .left {
   display: flex !important;
   flex-wrap: wrap;
@@ -703,6 +1249,7 @@ img.cat2bug-image-error__img {
 .plan-query-main .el-form--inline .el-form-item,
 .plan-add-case-toolbar .el-form--inline .el-form-item,
 .defect-table-tools-bar .el-form--inline .el-form-item,
+.notice-tools > .left .el-form-item,
 .project-option-list-tools > .left .el-form-item {
   margin-right: 0 !important;
   margin-bottom: 0 !important;
@@ -716,6 +1263,7 @@ img.cat2bug-image-error__img {
 .module-tools-right,
 .document-tools-right,
 .report-tools-right,
+.notice-tools-right,
 .project-manage-tools-right,
 .project-option-list-tools-right,
 .defect-excel-tools-right {
@@ -752,6 +1300,7 @@ img.cat2bug-image-error__img {
 .module-tools,
 .document-tools,
 .report-tools,
+.notice-tools,
 .project-manage-tools,
 .project-option-list-tools,
 .defect-excel-tools,
@@ -769,6 +1318,7 @@ img.cat2bug-image-error__img {
 .module-tools-right,
 .document-tools-right,
 .report-tools-right,
+.notice-tools-right,
 .app-container > .el-form.el-form--inline,
 .app-container > .el-form.el-form--inline + .el-row.mb8 {
   .el-form--inline .el-form-item {
@@ -787,6 +1337,8 @@ img.cat2bug-image-error__img {
 
   .el-input:not(.el-textarea) .el-input__inner,
   .el-select .el-input__inner,
+  .el-select .el-select__wrapper,
+  .el-select .el-input__wrapper,
   .el-date-editor.el-input .el-input__inner,
   .el-date-editor.el-input__inner,
   .el-range-editor.el-input__inner,
@@ -795,11 +1347,25 @@ img.cat2bug-image-error__img {
     height: var(--cat2bug-toolbar-control-height) !important;
     min-height: var(--cat2bug-toolbar-control-height) !important;
     max-height: var(--cat2bug-toolbar-control-height) !important;
-    line-height: var(--cat2bug-toolbar-control-line-height) !important;
+    line-height: 1 !important;
   }
 
   .el-input-number {
     line-height: var(--cat2bug-toolbar-control-line-height);
+
+    &.is-controls-right {
+      .el-input-number__increase,
+      .el-input-number__decrease {
+        --el-input-number-controls-height: calc((var(--cat2bug-toolbar-control-height) - 2px) / 2) !important;
+        height: var(--el-input-number-controls-height) !important;
+        line-height: var(--el-input-number-controls-height) !important;
+        width: var(--cat2bug-toolbar-control-height) !important;
+      }
+
+      .el-input .el-input__wrapper {
+        padding-right: calc(var(--cat2bug-toolbar-control-height) + 7px) !important;
+      }
+    }
   }
 
   .el-input-number .el-input__inner {
@@ -925,12 +1491,60 @@ img.cat2bug-image-error__img {
 .defect-page .defect-tools-search .el-popover__reference-wrapper {
   display: inline-flex !important;
   vertical-align: top !important;
-  line-height: 0 !important;
+  line-height: normal !important;
   align-items: flex-start !important;
+  min-width: 180px;
+  max-width: 300px;
+}
+
+.defect-page .defect-tools-search .defect-state-select {
+  width: var(--defect-query-field-width, 180px);
+  min-width: var(--defect-query-field-width, 180px);
+
+  .el-select__wrapper,
+  .el-input__wrapper {
+    width: 100%;
+    box-sizing: border-box;
+    padding-right: var(--cat2bug-dropdown-caret-inset, 8px);
+  }
+
+  .el-select__prefix {
+    margin-left: 0;
+  }
+
+  .el-select__selection {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .el-select__placeholder,
+  .el-select__selected-item {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .select-header-icon {
+    color: var(--cat2bug-input-icon-color, #c0c4cc);
+  }
+}
+
+.defect-page .defect-tools-search .defect-list-hint-query .el-input {
+  width: var(--defect-query-field-width, 180px);
+  min-width: var(--defect-query-field-width, 180px);
+  max-width: var(--defect-query-field-width, 180px);
+
+  .el-input__wrapper {
+    width: 100%;
+    box-sizing: border-box;
+  }
 }
 
 .defect-page .defect-tools-search .select-project-member-input {
   vertical-align: top !important;
+  width: 200px !important;
+  min-width: 180px !important;
+  max-width: 300px !important;
 }
 
 .defect-page .defect-view-toolbar > *:nth-child(2),
@@ -938,8 +1552,24 @@ img.cat2bug-image-error__img {
   align-items: flex-start;
 }
 
+/* 表格操作列 link/text 按钮：对齐 Vue2 Element UI --text，点击/聚焦无描边与底色块 */
+@mixin cat2bug-table-operate-link-button-reset {
+  .el-button.is-link,
+  .el-button--text {
+    &:focus,
+    &:focus-visible,
+    &:active {
+      outline: none !important;
+      box-shadow: none !important;
+      border-color: transparent !important;
+      background-color: transparent !important;
+    }
+  }
+}
+
 /* 表格操作列：Cat2BugTable / el-table 行内按钮单行、列宽由 Cat2BugTable 按内容自适应 */
 .cat2bug-operate-tools {
+  @include cat2bug-table-operate-link-button-reset;
   display: inline-flex;
   flex-wrap: nowrap;
   align-items: center;
@@ -965,8 +1595,9 @@ img.cat2bug-image-error__img {
     margin-left: 0 !important;
   }
 
-  /* text 操作按钮语义色：亮色/暗色由 theme-dark.scss 的 --cat2bug-operate-text-* 控制 */
-  .el-button--text.orange {
+  /* text / link 操作按钮语义色：亮色/暗色由 theme-dark.scss 的 --cat2bug-operate-text-* 控制 */
+  .el-button--text.orange,
+  .el-button.is-link.orange {
     color: var(--cat2bug-operate-text-muted, #606266);
 
     &:hover,
@@ -975,7 +1606,8 @@ img.cat2bug-image-error__img {
     }
   }
 
-  .el-button--text.red {
+  .el-button--text.red,
+  .el-button.is-link.red {
     color: var(--cat2bug-operate-text-danger, #f56c6c);
 
     &:hover,
@@ -984,7 +1616,8 @@ img.cat2bug-image-error__img {
     }
   }
 
-  .el-button--text.green {
+  .el-button--text.green,
+  .el-button.is-link.green {
     color: var(--cat2bug-operate-text-success, #67c23a);
 
     &:hover,
@@ -993,12 +1626,13 @@ img.cat2bug-image-error__img {
     }
   }
 
-  .el-button--text.restore-orange {
+  .el-button--text.restore-orange,
+  .el-button.is-link.restore-orange {
     color: var(--cat2bug-operate-text-warning, #ffba00);
 
     &:hover,
     &:focus {
-      color: var(--cat2bug-operate-text-warning-hover, #ffc933);
+      color: var(--cat2bug-operate-text-warning-hover, #409eff);
     }
   }
 }
@@ -1013,11 +1647,18 @@ img.cat2bug-image-error__img {
 }
 
 .el-table td.cat2bug-operate-column {
+  @include cat2bug-table-operate-link-button-reset;
+
   width: var(--cat2bug-operate-col-applied-width, 450px) !important;
   max-width: var(--cat2bug-operate-col-max-width, 450px) !important;
   min-width: 0 !important;
   overflow: hidden;
   box-sizing: border-box;
+
+  /* 右固定操作列：须露出 ::before 分隔阴影（内层 tools 仍 overflow:hidden） */
+  &.el-table-fixed-column--right.is-first-column {
+    overflow: visible !important;
+  }
 }
 
 /* 操作列：DefectTools 对话框层与分享 popover 不参与列宽 */
@@ -1267,10 +1908,24 @@ td.cat2bug-operate-column [role='tooltip'][aria-hidden='true'] {
 }
 
 .el-page-header {
+  width: 100%;
+  box-sizing: border-box;
   padding-bottom: var(--page-header-padding-bottom);
   margin-bottom: 0;
   border-bottom: 1px solid var(--border-color-light);
   line-height: var(--page-header-line-height);
+
+  /* Element Plus：内层 header 行铺满容器（与 Vue2 整行返回栏一致） */
+  .el-page-header__header {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .el-page-header__left {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin-right: 0;
+  }
 
   .el-page-header__left,
   .el-page-header__content,
@@ -1285,7 +1940,26 @@ td.cat2bug-operate-column [role='tooltip'][aria-hidden='true'] {
 }
 
 .el-pagination__editor.el-input .el-input__inner {
-  line-height: 28px;
+  line-height: calc(var(--cat2bug-control-height) - 2px);
+}
+
+/* Element Plus 分页跳转：wrapper 单环描边，inner 不再叠 border/box-shadow */
+.el-pagination__editor.el-input {
+  .el-input__wrapper {
+    border: none !important;
+    box-shadow: 0 0 0 1px var(--input-border, var(--el-input-border-color, var(--border-color-base, #dcdfe6))) inset !important;
+  }
+
+  .el-input__inner {
+    border: none !important;
+    box-shadow: none !important;
+    background-color: transparent !important;
+  }
+
+  &.is-focus .el-input__wrapper,
+  .el-input__wrapper.is-focus {
+    box-shadow: 0 0 0 1px var(--cat2bug-field-focus-color, var(--el-color-primary, #409eff)) inset !important;
+  }
 }
 .delete-button {
   color: #fff !important;
@@ -1298,15 +1972,66 @@ td.cat2bug-operate-column [role='tooltip'][aria-hidden='true'] {
   color: #fff !important;
 }
 .el-dialog__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: 20px var(--cat2bug-dialog-padding-x, 20px) 10px !important;
+  box-sizing: border-box;
+}
+
+.el-dialog__title {
+  flex: 1;
+  min-width: 0;
+  padding-right: 8px;
 }
 
 .el-dialog__headerbtn {
-  right: var(--cat2bug-dialog-padding-x, 20px) !important;
+  position: static !important;
+  top: auto !important;
+  right: auto !important;
+  width: auto !important;
+  height: auto !important;
+  flex-shrink: 0;
+  margin: 0;
+  padding: 0;
+  line-height: 1;
+  transform: none !important;
 }
 
 .el-dialog__body {
   padding: 0 var(--cat2bug-dialog-padding-x, 20px) var(--cat2bug-dialog-content-footer-gap, 20px) !important;
+
+  /* Excel 等导入弹框：拖拽区全宽 + 上传云图标对齐 Vue2/EP 默认 */
+  .el-upload.is-drag {
+    display: block;
+    width: 100%;
+  }
+
+  .el-upload-dragger {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 40px 10px;
+  }
+
+  .el-upload-dragger .el-icon--upload,
+  .el-upload-dragger > .el-icon {
+    font-size: 67px !important;
+    width: auto !important;
+    height: auto !important;
+    color: var(--el-text-color-placeholder, #c0c4cc);
+    margin-bottom: 16px;
+    line-height: 50px;
+  }
+
+  .el-upload-dragger .el-upload__text {
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  .el-upload-dragger + .el-upload__tip,
+  .el-upload__tip.text-center {
+    text-align: center;
+  }
 }
 
 .el-dialog--center .el-dialog__body {
@@ -1319,15 +2044,21 @@ td.cat2bug-operate-column [role='tooltip'][aria-hidden='true'] {
 }
 
 @mixin cat2bug-dialog-footer-buttons {
-  .el-button {
+  .el-button:not(.is-link):not(.el-button--text):not(.is-circle) {
     order: 1;
     margin-left: 0 !important;
+    /* 对齐 Vue2 Element UI 默认 medium 按钮（非全站 32px small） */
+    height: auto !important;
+    min-height: 40px !important;
+    padding: 10px 20px !important;
+    font-size: 14px !important;
+    line-height: 1 !important;
   }
 
-  .el-button--primary,
-  .el-button--success:not(.is-plain),
-  .el-button--warning:not(.is-plain),
-  .el-button--danger:not(.is-plain) {
+  .el-button--primary:not(.is-link):not(.el-button--text):not(.is-circle),
+  .el-button--success:not(.is-plain):not(.is-link):not(.el-button--text):not(.is-circle),
+  .el-button--warning:not(.is-plain):not(.is-link):not(.el-button--text):not(.is-circle),
+  .el-button--danger:not(.is-plain):not(.is-link):not(.el-button--text):not(.is-circle) {
     order: 10;
   }
 }
@@ -1396,6 +2127,40 @@ td.cat2bug-operate-column [role='tooltip'][aria-hidden='true'] {
   }
 }
 
+/* 图片上传表单项：与其它字段一致，左 label（120px）右内容；内容较高时 label 顶对齐 */
+.el-form-item.cat2bug-form-item-upload {
+  display: flex !important;
+  flex-flow: row nowrap !important;
+  align-items: flex-start !important;
+
+  > .el-form-item__label-wrap {
+    flex: 0 0 auto;
+    max-width: none;
+  }
+
+  > .el-form-item__label,
+  > .el-form-item__label-wrap > .el-form-item__label {
+    display: inline-flex !important;
+    justify-content: flex-end;
+    align-items: flex-start;
+    flex: 0 0 auto !important;
+    height: auto !important;
+    line-height: var(--cat2bug-toolbar-control-height, 32px);
+    padding-right: 12px;
+    color: var(--form-label-color, var(--el-text-color-regular)) !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+
+  > .el-form-item__content {
+    flex: 1 1 auto !important;
+    min-width: 0;
+    margin-left: 0 !important;
+    align-items: flex-start;
+    line-height: normal;
+  }
+}
+
 /* 避免最后一项 form-item 下边距叠加 */
 .el-dialog__body .el-form > .el-form-item:last-child {
   margin-bottom: 0;
@@ -1427,10 +2192,17 @@ td.cat2bug-operate-column [role='tooltip'][aria-hidden='true'] {
 .project-add-page-header {
   margin-bottom: 0;
   width: 100%;
+  display: block;
+
+  &.el-row {
+    display: block;
+  }
 
   .el-page-header {
     margin-bottom: 0;
     padding-bottom: var(--page-header-padding-bottom);
+    width: 100%;
+    box-sizing: border-box;
   }
 }
 
@@ -1461,13 +2233,13 @@ td.cat2bug-operate-column [role='tooltip'][aria-hidden='true'] {
 }
 
 .red {
-  color: #f56c6c;
+  color: var(--cat2bug-delete-color);
 }
 .red-button {
-  color: #f56c6c !important;
-  --current-color: #f56c6c !important;
+  color: var(--cat2bug-delete-color) !important;
+  --current-color: var(--cat2bug-delete-color) !important;
   :hover {
-    color: #f56c6c !important;
+    color: var(--cat2bug-delete-color-hover) !important;
   }
 }
 .tabs-tools-row {

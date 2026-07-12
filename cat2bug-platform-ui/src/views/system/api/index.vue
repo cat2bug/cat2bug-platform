@@ -19,7 +19,7 @@
           <el-input
             v-model="queryParams.apiName"
             size="small"
-            prefix-icon="el-icon-s-flag"
+            :prefix-icon="$legacyIcon('el-icon-s-flag')"
             :placeholder="$t('project.api.please-enter-name')"
             clearable
             @input="handleQuery"
@@ -32,7 +32,7 @@
           class="project-api-hint-create"
           type="primary"
           plain
-          icon="el-icon-plus"
+          :icon="$legacyIcon('el-icon-plus')"
           size="small"
           @click="handleAdd"
           v-hasPermi="['system:api:add']"
@@ -48,13 +48,13 @@
           </span>
           <el-button
             type="text"
-            :icon="apiKeyVisibility[scope.row.apiId] ? 'el-icon-view' : 'el-icon-view'"
+            :icon="$legacyIcon(apiKeyVisibility[scope.row.apiId] ? 'el-icon-view' : 'el-icon-view')"
             @click="toggleApiKeyVisibility(scope.row.apiId)"
             style="margin-left: 8px;"
           ></el-button>
           <el-button
             type="text"
-            icon="el-icon-document-copy"
+            :icon="$legacyIcon('el-icon-document-copy')"
             @click="copyApiKey(scope.row.apiId)"
             style="margin-left: 4px;"
           ></el-button>
@@ -79,14 +79,14 @@
           <el-button
             size="mini"
             type="text"
-            icon="el-icon-edit"
+            :icon="$legacyIcon('el-icon-edit')"
             @click="handleUpdate(scope.row)"
             v-hasPermi="['system:api:edit']"
           >{{ $t('modify') }}</el-button>
           <el-button
             size="mini"
             type="text"
-            icon="el-icon-delete"
+            :icon="$legacyIcon('el-icon-delete')"
             @click="handleDelete(scope.row)"
             v-hasPermi="['system:api:remove']"
           >{{ $t('delete') }}</el-button>

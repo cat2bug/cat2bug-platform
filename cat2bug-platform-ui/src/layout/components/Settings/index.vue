@@ -1,5 +1,5 @@
 <template>
-  <el-drawer size="280px" :visible="visible" :with-header="false" :append-to-body="true" :show-close="false">
+  <el-drawer size="280px" v-model="drawerVisible" :with-header="false" :append-to-body="true" :show-close="false">
     <div class="drawer-container">
       <div>
         <div class="setting-drawer-content">
@@ -66,8 +66,8 @@
 
         <el-divider/>
 
-        <el-button size="small" type="primary" plain icon="el-icon-document-add" @click="saveSetting">保存配置</el-button>
-        <el-button size="small" plain icon="el-icon-refresh" @click="resetSetting">重置配置</el-button>
+        <el-button size="small" type="primary" plain :icon="$legacyIcon('el-icon-document-add')" @click="saveSetting">保存配置</el-button>
+        <el-button size="small" plain :icon="$legacyIcon('el-icon-refresh')" @click="resetSetting">重置配置</el-button>
       </div>
     </div>
   </el-drawer>
@@ -88,6 +88,17 @@ export default {
     visible: {
       get() {
         return this.$store.state.settings.showSettings
+      }
+    },
+    drawerVisible: {
+      get() {
+        return this.$store.state.settings.showSettings
+      },
+      set(val) {
+        this.$store.dispatch('settings/changeSetting', {
+          key: 'showSettings',
+          value: val
+        })
       }
     },
     fixedHeader: {

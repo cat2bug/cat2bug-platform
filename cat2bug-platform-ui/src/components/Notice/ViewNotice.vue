@@ -1,13 +1,14 @@
 <template>
   <el-drawer
     size="50%"
-    :visible.sync="visible"
+    class="notice-drawer-accent"
+    v-model="visible"
     direction="rtl"
     :before-close="closeDefectDrawer">
-    <template slot="title">
+    <template #header>
       <div class="notice-header">
         <div class="notice-header-title">
-          <i class="el-icon-arrow-left" @click="cancel"></i>
+          <legacy-icon icon="el-icon-arrow-left" @click="cancel"></legacy-icon>
           <h4 class="notice-header-title-name">{{ notice.noticeTitle }}</h4>
         </div>
       </div>
@@ -15,7 +16,7 @@
     <div class="app-container notice-body" v-loading="loading">
       <el-collapse v-model="activeNames">
         <el-collapse-item name="base">
-          <template slot="title">
+          <template #title>
             <span class="notice-collapse-title">{{ $t('base-info') }}</span>
           </template>
           <el-row class="notice-header-body-base" :gutter="16">
@@ -61,10 +62,10 @@
         </el-collapse-item>
 
         <el-collapse-item v-if="!defectNotice && !defectNoticeLoading" name="content">
-          <template slot="title">
+          <template #title>
             <span class="notice-collapse-title">{{ $t('notice.content') }}</span>
           </template>
-          <markdown-it-vue :content="notice.noticeContent + ''" />
+          <markdown-content :content="notice.noticeContent + ''" />
         </el-collapse-item>
       </el-collapse>
       <div slot="footer" class="dialog-footer"></div>
@@ -76,7 +77,7 @@
 import { getNotice } from '@/api/system/notice'
 import { getDefect } from '@/api/system/defect'
 import { getCase } from '@/api/system/case'
-import MarkdownItVue from 'markdown-it-vue'
+import MarkdownContent from '@/components/Markdown/MarkdownContent'
 import DefectCustomFieldsDisplay from '@/components/DefectCustomField/DefectCustomFieldsDisplay'
 import {
   isDefectGroupNotice,
@@ -86,7 +87,7 @@ import {
 export default {
   name: 'ViewNotice',
   components: {
-    MarkdownItVue,
+    MarkdownContent,
     DefectCustomFieldsDisplay
   },
   data() {
@@ -176,12 +177,8 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-::v-deep .el-drawer {
-  border-left: 3px solid #ff4949;
-  .el-drawer__header {
-    margin-bottom: 0;
-    padding-bottom: 12px;
-  }
+::v-deep .el-drawer__header {
+  margin-bottom: 0;
 }
 .notice-header {
   width: 100%;

@@ -1,8 +1,8 @@
 <template>
   <div class="case-demand" ref="caseDemand">
     <div class="col" v-if="demandList.length>0">
-      <h3><i class="el-icon-document"></i>需求分析</h3>
-      <span><i class="el-icon-info"></i>以下内容可以直接编辑修改</span>
+      <h3><legacy-icon icon="el-icon-document"></legacy-icon>需求分析</h3>
+      <span><legacy-icon icon="el-icon-info"></legacy-icon>以下内容可以直接编辑修改</span>
       <div class="case-demand-row" v-for="(d,index) in demandList" :key="index">
         <div class="case-demand-row-name">
           <el-checkbox :label="d.number+'.'" v-model="d.checked"/>

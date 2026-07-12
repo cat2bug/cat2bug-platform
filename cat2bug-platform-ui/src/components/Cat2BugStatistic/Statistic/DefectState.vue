@@ -1,6 +1,6 @@
 <template>
   <cat2-bug-card :title="$i18n.t('defect.status-statistics').toString()" v-loading="loading" :tools="tools" @tools-click="toolsHandle">
-    <template slot="content">
+    <template #content>
       <div class="defect-state-panel">
       <el-tooltip
         effect="dark"
@@ -9,7 +9,7 @@
         :content="formatStateTooltip($t('all'), total, stateDeltaTotal('d'), stateDeltaTotal('w'))"
       >
         <cat2-but-label @click.native="clickHandle" class="defect-state-label" icon="all" icon-color="#409EFF" :label="$t('all').toString()" content="12">
-          <template slot="content">
+          <template #content>
             <span>{{ total }}</span>
             <span>{{ stateDeltaTotal('d') >= 0 ? '+' + stateDeltaTotal('d') : stateDeltaTotal('d') }}</span>
             <span>{{ stateDeltaTotal('w') >= 0 ? '+' + stateDeltaTotal('w') : stateDeltaTotal('w') }}</span>
@@ -29,7 +29,7 @@
                         icon="pending-processing"
                         :icon-color="iconColor(index)"
                         :label="$t(state.k).toString()">
-          <template slot="content">
+          <template #content>
             <span>{{ state.a }}</span>
             <span :flag="flag(state.d)">{{ flag(state.d) + state.d }}</span>
             <span :flag="flag(state.w)">{{ flag(state.w) + state.w }}</span>
@@ -168,6 +168,9 @@ export default {
           }
         }))
         this.stateList = ret;
+      }).catch(() => {
+        this.loading = false;
+        this.stateList = [];
       })
     },
     toolsHandle(e,tool) {

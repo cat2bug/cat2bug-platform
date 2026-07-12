@@ -1,91 +1,120 @@
 <template>
-  <div id="app">
-    <router-view />
-    <theme-picker />
-  </div>
+  <el-config-provider :locale="elementPlusLocale" :size="elementPlusSize">
+    <div id="app">
+      <router-view />
+      <theme-picker ghost />
+    </div>
+  </el-config-provider>
 </template>
 
 <script>
-import ThemePicker from "@/components/ThemePicker";
+import { ElConfigProvider } from 'element-plus'
+import Cookies from 'js-cookie'
+import { resolveElementPlusLocale } from '@/utils/element-plus-locale'
+import ThemePicker from '@/components/ThemePicker'
 
 export default {
-  name: "App",
-  components: { ThemePicker },
-  metaInfo() {
-      return {
-        taskId:null,
-        title: this.$store.state.settings.dynamicTitle && this.$store.state.settings.title,
-        titleTemplate: title => {
-            return title ? `${title} - ${this.$i18n.t("system-name")}` : this.$i18n.t("system-name")
-        }
-      }
-  },
+  name: 'App',
+  components: { ElConfigProvider, ThemePicker },
   data() {
     return {
-      wsUrl: null
+      wsUrl: null,
+      taskId: null
+    }
+  },
+  computed: {
+    elementPlusLocale() {
+      return resolveElementPlusLocale(this.$i18n.locale)
+    },
+    /** Vue2 全局 size 多为 small/medium；统一映射为 EP small（输入框等已覆写为 32px）。开关须显式 default 或依赖 cat2bug.scss 表单内修正。 */
+    elementPlusSize() {
+      const raw = Cookies.get('size') || 'small'
+      if (raw === 'large') return 'large'
+      return 'small'
+    }
+  },
+  watch: {
+    '$store.state.settings.title': {
+      handler() {
+        this.syncDocumentTitle()
+      }
+    },
+    '$store.state.settings.dynamicTitle': {
+      handler() {
+        this.syncDocumentTitle()
+      }
+    },
+    '$i18n.locale'() {
+      this.syncDocumentTitle()
     }
   },
   created() {
-    this.welcome();
-    this.initWebSocket();
+    this.welcome()
+    this.syncDocumentTitle()
+    this.initWebSocket()
+  },
+  beforeUnmount() {
+    if (this.taskId) {
+      clearInterval(this.taskId)
+      this.taskId = null
+    }
   },
   methods: {
-    /**
-     * 欢迎语
-     */
     welcome() {
-      console.log(this.$i18n.t('welcome'));
+      console.log(this.$i18n.t('welcome'))
     },
-    /**
-     * 初始化websocket
-     */
+    syncDocumentTitle() {
+      const dynamic = this.$store.state.settings.dynamicTitle
+      const pageTitle = this.$store.state.settings.title
+      const systemName = this.$i18n.t('system-name')
+      document.title = dynamic && pageTitle ? `${pageTitle} - ${systemName}` : systemName
+    },
     initWebSocket() {
-      this.taskId = setInterval(()=>{
-        const userId = this.$store.state.user.id;
-        if(userId){
-          this.wsUrl = (window.location.protocol === 'https:' ? `wss://${location.host}${process.env.VUE_APP_BASE_WEBSOCKET}/websocket/${userId}/message` : `ws://${location.host}${process.env.VUE_APP_BASE_WEBSOCKET}/websocket/${userId}/message`)
+      this.taskId = setInterval(() => {
+        const userId = this.$store.state.user.id
+        if (userId) {
+          const wsBase = process.env.VUE_APP_BASE_WEBSOCKET || ''
+          this.wsUrl = (window.location.protocol === 'https:'
+            ? `wss://${location.host}${wsBase}/websocket/${userId}/message`
+            : `ws://${location.host}${wsBase}/websocket/${userId}/message`)
           this.$connect(this.wsUrl, { format: 'json' })
-          this.$socket.onopen = this.webSocketOnOpen;//连接成功方法
-          this.$socket.onerror = this.webSocketOnError;//报错方法
-          this.$socket.onmessage = this.webSocketOnMessage;// 接收端返回或推送信息的方法
-          this.$socket.onclose = this.webSocketClose;//关闭
-
-          clearInterval(this.taskId);
+          this.$socket.onopen = this.webSocketOnOpen
+          this.$socket.onerror = this.webSocketOnError
+          this.$socket.onmessage = this.webSocketOnMessage
+          this.$socket.onclose = this.webSocketClose
+          clearInterval(this.taskId)
+          this.taskId = null
         }
-      },1000);
-
+      }, 1000)
     },
-    /**
-     * 链接ws服务器，e.target.readyState = 0/1/2/3   0 CONNECTING ,1 OPEN, 2 CLOSING, 3 CLOSED
-     * @param e
-     */
-    webSocketOnOpen(e) {
-      // console.log('WebSocket连接成功', e);
-    },
-    /**
-     * 接收端发送过来的信息，整个项目接收信息的唯一入口
-     * @param e
-     */
+    webSocketOnOpen() {},
     webSocketOnMessage(e) {
-      if (!e.data) {return;}
-      let res = JSON.parse(e.data);
-      // 端返回成功信息
+      if (!e.data) return
+      const res = JSON.parse(e.data)
       if (res.code == 200) {
-        this.$topic.publish(res.action,res);
+        this.$topic.publish(res.action, res)
       }
     },
     webSocketOnError(e) {
-      console.error(e);
+      console.error(e)
     },
     webSocketClose(e) {
       console.log(e)
-      this.initWebSocket();
+      this.initWebSocket()
     }
   }
-};
+}
 </script>
-<style scoped>
-#app .theme-picker {
-  display: none;
+<style>
+/* 根级 ThemePicker 仅负责启动时换肤，不可见；设置抽屉内单独实例不带 ghost */
+#app > .theme-picker.theme-picker--ghost {
+  position: absolute !important;
+  width: 0 !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 </style>

@@ -40,7 +40,7 @@
           <el-button
             size="mini"
             type="text"
-            :icon="scope.row.lock?'el-icon-unlock':'el-icon-lock'"
+            :icon="$legacyIcon(scope.row.lock?'el-icon-unlock':'el-icon-lock')"
             @click="handleLock(scope.row)"
             v-hasPermi="['system:team:lock']"
           >{{scope.row.lock?$t('unlock'):$t('lock')}}</el-button>

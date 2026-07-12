@@ -2,7 +2,7 @@
  * 快捷键配置存储：仅持久化用户改动的差异项到 localStorage。
  * 默认映射来自代码（keymap.js + 运行时菜单派生）。
  */
-import Vue from 'vue'
+import { reactive } from 'vue'
 import { STORAGE_KEY, DEFAULT_LEADERS, normalizeKey } from './keymap'
 import { isReservedForScope, isReservedSymbol } from './reserved-keys'
 
@@ -100,7 +100,7 @@ function load() {
 
 const persisted = load() || {}
 
-const state = Vue.observable({
+const state = reactive({
   enabled: persisted.enabled !== false,
   leaders: {
     nav: persisted.leaders && persisted.leaders.nav ? persisted.leaders.nav : DEFAULT_LEADERS.nav,
@@ -153,16 +153,16 @@ export const shortcutStore = {
     if (!validation.ok) return validation
     const norm = normalizeKey(letter)
     if (!norm || norm === normalizeKey(defaultLetter)) {
-      Vue.delete(state.overrides, bindingId)
+      delete state.overrides[bindingId]
     } else {
-      Vue.set(state.overrides, bindingId, norm)
+      state.overrides[bindingId] = norm
     }
     persist()
     return { ok: true }
   },
 
   resetBinding(bindingId) {
-    Vue.delete(state.overrides, bindingId)
+    delete state.overrides[bindingId]
     persist()
   },
 

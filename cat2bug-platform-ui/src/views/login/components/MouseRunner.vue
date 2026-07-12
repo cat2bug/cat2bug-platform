@@ -6,6 +6,12 @@
 
 <script>
 import { markArrowEventHandled, resolveArrowKey } from './mouse-arrow-keys'
+import mouseSpriteRunHorizontal from '@/assets/images/mouse_sprite_run_horizontal_v2.png'
+import mouseSpriteRunTopLeft from '@/assets/images/mouse_sprite_run_top_left.png'
+import mouseSpriteRunBottomLeft from '@/assets/images/mouse_sprite_run_bottom_left.png'
+import mouseSpriteRunTop from '@/assets/images/mouse_sprite_run_top.png'
+import mouseSpriteRunBottom from '@/assets/images/mouse_sprite_run_bottom.png'
+import mouseSpriteSit from '@/assets/images/mouse_sprite_sit_v3.png'
 
 /** 横向奔跑精灵：1 行×8 列，朝右；朝左由 flipX 镜像 */
 const RUN_SPRITE_COLS = 8
@@ -479,12 +485,12 @@ export default {
       this.runTSpriteImage = new Image()
       this.runBSpriteImage = new Image()
       this.sitSpriteImage = new Image()
-      this.runSpriteImage.src = require('@/assets/images/mouse_sprite_run_horizontal_v2.png')
-      this.runTlSpriteImage.src = require('@/assets/images/mouse_sprite_run_top_left.png')
-      this.runBlSpriteImage.src = require('@/assets/images/mouse_sprite_run_bottom_left.png')
-      this.runTSpriteImage.src = require('@/assets/images/mouse_sprite_run_top.png')
-      this.runBSpriteImage.src = require('@/assets/images/mouse_sprite_run_bottom.png')
-      this.sitSpriteImage.src = require('@/assets/images/mouse_sprite_sit_v3.png')
+      this.runSpriteImage.src = mouseSpriteRunHorizontal
+      this.runTlSpriteImage.src = mouseSpriteRunTopLeft
+      this.runBlSpriteImage.src = mouseSpriteRunBottomLeft
+      this.runTSpriteImage.src = mouseSpriteRunTop
+      this.runBSpriteImage.src = mouseSpriteRunBottom
+      this.sitSpriteImage.src = mouseSpriteSit
       this.runSpriteImage.onload = onReady
       this.runTlSpriteImage.onload = onReady
       this.runBlSpriteImage.onload = onReady

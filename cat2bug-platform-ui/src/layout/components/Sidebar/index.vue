@@ -1,6 +1,6 @@
 <template>
-    <div :class="{'has-logo':showLogo}" :style="{ backgroundColor: sidebarShellBackground }">
-        <team-select v-if="showLogo" :collapse="isCollapse" v-model="teamId"></team-select>
+    <div :class="{'has-logo':showLogo, 'sidebar-shell--dark': isSidebarDark}" :style="{ backgroundColor: sidebarShellBackground }">
+        <team-select v-if="showLogo" :collapse="isCollapse" :dark="isSidebarDark"></team-select>
         <el-scrollbar :class="scrollbarThemeClass" wrap-class="scrollbar-wrapper">
           <el-menu
             v-show="!teamLock && teamId && teamMember && teamRouters.length > 0"
@@ -9,7 +9,7 @@
             :background-color="menuBackgroundColor"
             :text-color="menuTextColor"
             :unique-opened="true"
-            :active-text-color="settings.theme"
+            :active-text-color="menuActiveTextColor"
             :collapse-transition="false"
             mode="vertical"
           >
@@ -30,7 +30,7 @@
               :background-color="menuBackgroundColor"
               :text-color="menuTextColor"
               :unique-opened="true"
-              :active-text-color="settings.theme"
+              :active-text-color="menuActiveTextColor"
               :collapse-transition="false"
               mode="vertical"
           >
@@ -51,7 +51,7 @@
             :background-color="menuBackgroundColor"
             :text-color="menuTextColor"
             :unique-opened="true"
-            :active-text-color="settings.theme"
+            :active-text-color="menuActiveTextColor"
             :collapse-transition="false"
             mode="vertical"
           >
@@ -71,7 +71,7 @@
 <!--            :background-color="settings.sideTheme === 'theme-dark' ? variables.menuBackground : variables.menuLightBackground"-->
 <!--            :text-color="settings.sideTheme === 'theme-dark' ? variables.menuColor : variables.menuLightColor"-->
 <!--            :unique-opened="true"-->
-<!--            :active-text-color="settings.theme"-->
+<!--            :active-text-color="menuActiveTextColor"-->
 <!--            :collapse-transition="false"-->
 <!--            mode="vertical"-->
 <!--          >-->
@@ -83,7 +83,7 @@
 <!--            />-->
 <!--          </el-menu>-->
         </el-scrollbar>
-      <div style="bottom: 10px;position: absolute;height: auto;width: 100%;" v-show="adminOptionRouters.length>0" >
+      <div class="sidebar-admin-panel" v-show="adminOptionRouters.length>0" >
         <div class="sidebar-divider">
           <el-divider></el-divider>
         </div>
@@ -93,7 +93,7 @@
           :background-color="menuBackgroundColor"
           :text-color="menuTextColor"
           :unique-opened="true"
-          :active-text-color="settings.theme"
+          :active-text-color="menuActiveTextColor"
           :collapse-transition="false"
           mode="vertical"
         >
@@ -109,10 +109,14 @@
 </template>
 
 <script>
-import { mapGetters, mapState } from "vuex";
+import { mapState } from "pinia";
+import { useSettingsStore } from '@/stores/settings'
+import { usePermissionStore } from '@/stores/permission'
+import { useAppStore } from '@/stores/app'
+import { useUserStore } from '@/stores/user'
 import TeamSelect from "./TeamSelect"
 import SidebarItem from "./SidebarItem";
-import variables from "@/assets/styles/variables.scss";
+import variables from "@/assets/styles/variables.js";
 
 export default {
     components: { SidebarItem, TeamSelect },
@@ -121,55 +125,57 @@ export default {
       }
     },
     computed: {
-        ...mapState(["settings"]),
-        ...mapGetters(["sidebarRouters", "sidebar", "routesRefreshing"]),
-      /** 侧栏菜单背景：暗黑模式跟随 CSS 变量，避免与 html.dark 不同步闪烁 */
+        ...mapState(useSettingsStore, ['themeMode', 'sideTheme', 'theme', 'sidebarLogo']),
+        ...mapState(usePermissionStore, ['sidebarRouters', 'routesRefreshing']),
+        ...mapState(useAppStore, ['sidebar']),
+        settings() {
+          return useSettingsStore()
+        },
+      /** 侧栏菜单背景：随 themeMode / sideTheme 切换 */
       menuBackgroundColor() {
-        if (this.settings.themeMode === 'dark') {
+        if (this.settings?.themeMode === 'dark') {
           return 'var(--sidebar-bg)'
         }
-        return this.settings.sideTheme === 'theme-dark'
+        return this.settings?.sideTheme === 'theme-dark'
           ? variables.menuBackground
           : variables.menuLightBackground
       },
-      /** 侧栏外壳背景：与 themeMode 同步，勿仅用 sideTheme 内联浅色 */
       sidebarShellBackground() {
-        if (this.settings.themeMode === 'dark') {
+        if (this.settings?.themeMode === 'dark') {
           return 'var(--sidebar-bg)'
         }
-        return this.settings.sideTheme === 'theme-dark'
+        return this.settings?.sideTheme === 'theme-dark'
           ? variables.menuBackground
           : variables.menuLightBackground
       },
       scrollbarThemeClass() {
-        if (this.settings.themeMode === 'dark') {
+        if (this.settings?.themeMode === 'dark') {
           return 'theme-dark'
         }
-        return this.settings.sideTheme
+        return this.settings?.sideTheme
       },
-      /** 侧栏菜单文字色：暗黑模式跟随 CSS 变量 */
       menuTextColor() {
-        if (this.settings.themeMode === 'dark') {
+        if (this.settings?.themeMode === 'dark') {
           return 'var(--sidebar-text)'
         }
-        return this.settings.sideTheme === 'theme-dark'
+        return this.settings?.sideTheme === 'theme-dark'
           ? variables.menuColor
           : variables.menuLightColor
       },
       teamId() {
-          return this.$store.state.user.config.currentTeamId;
+          return useUserStore().config.currentTeamId;
       },
       teamLock() {
-        return this.$store.state.user.config.currentTeamLock;
+        return useUserStore().config.currentTeamLock;
       },
       projectId() {
-        return this.$store.state.user.config.currentProjectId
+        return useUserStore().config.currentProjectId
       },
       projectLock() {
-        return this.$store.state.user.config.currentProjectLock;
+        return useUserStore().config.currentProjectLock;
       },
       teamMember() {
-        return this.$store.state.user.teamMember !== false;
+        return useUserStore().teamMember !== false;
       },
       projectRouters() {
           return this.filterSidebarRouters('project');
@@ -203,13 +209,22 @@ export default {
           return path;
       },
       showLogo() {
-          return this.$store.state.settings.sidebarLogo;
+          return useSettingsStore().sidebarLogo;
       },
       variables() {
           return variables;
       },
       isCollapse() {
           return !this.sidebar.opened;
+      },
+      isSidebarDark() {
+        return this.settings?.themeMode === 'dark' || this.settings?.sideTheme === 'theme-dark'
+      },
+      menuActiveTextColor() {
+        if (this.isSidebarDark) {
+          return 'var(--sidebar-active-text, #FFC107)'
+        }
+        return this.settings?.theme
       }
     }
 };
@@ -218,8 +233,18 @@ export default {
   .sidebar-divider {
     padding: 0px 15px;
     .el-divider {
-      margin: 7px 0px;
-      background-color: #EBEEF5;
+      margin: 8px 0px;
     }
+    .el-divider--horizontal {
+      border-top-color: var(--sidebar-divider-color, #ebeef5) !important;
+    }
+  }
+
+  .sidebar-admin-panel {
+    bottom: 10px;
+    position: absolute;
+    height: auto;
+    width: 100%;
+    background-color: inherit;
   }
 </style>

@@ -1,7 +1,7 @@
 <template>
   <el-dialog
     :title="$t('notice.option')"
-    :visible.sync="dialogVisible"
+    v-model="dialogVisible"
     width="60%"
     custom-class="cat2bug-form-shortcut-dialog notice-option-dialog"
     :close-on-click-modal="false"
@@ -10,7 +10,7 @@
     @opened="onToolDialogOpened">
     <el-tabs v-model="activeTabName" class="notice-option-hint-tabs" v-loading="loading">
       <el-tab-pane name="type">
-        <span slot="label" class="notice-option-main-tab-type">{{ $t('notice.send-option') }}</span>
+        <template #label><span class="notice-option-main-tab-type">{{ $t('notice.send-option') }}</span></template>
         <div v-for="(m,index) in moduleList">
           <component
             v-model="option.config.modules[m.name]"
@@ -21,7 +21,7 @@
         </div>
       </el-tab-pane>
       <el-tab-pane name="platform">
-        <span slot="label" class="notice-option-main-tab-platform">{{ $t('notice.receive-platform-option') }}</span>
+        <template #label><span class="notice-option-main-tab-platform">{{ $t('notice.receive-platform-option') }}</span></template>
         <el-alert
           v-if="contactProfileHintVisible"
           type="info"
@@ -32,7 +32,7 @@
         />
         <el-tabs v-model="activePlatformName" class="notice-option-platform-hint-tabs" type="border-card">
           <el-tab-pane name="asystem">
-            <span slot="label" class="notice-option-platform-tab-asystem">{{ $t('system.internal-notification') }}</span>
+            <template #label><span class="notice-option-platform-tab-asystem">{{ $t('system.internal-notification') }}</span></template>
             <component
               ref="platform-asystem"
               v-model="option.config.platforms.asystem"
@@ -40,7 +40,7 @@
             />
           </el-tab-pane>
           <el-tab-pane name="bmail">
-            <span slot="label" class="notice-option-platform-tab-bmail">{{ $t('email') }}</span>
+            <template #label><span class="notice-option-platform-tab-bmail">{{ $t('email') }}</span></template>
             <component
               ref="platform-bmail"
               v-model="option.config.platforms.bmail"
@@ -48,7 +48,7 @@
             />
           </el-tab-pane>
           <el-tab-pane v-for="(p,index) in externalPlatformList" :key="index" :name="p.name">
-            <span slot="label" :class="'notice-option-platform-tab-' + p.name">{{ getPlatformLabel(p.name) }}</span>
+            <template #label><span :class="'notice-option-platform-tab-' + p.name">{{ getPlatformLabel(p.name) }}</span></template>
             <component
               :ref="`platform-${p.name}`"
               v-model="option.config.platforms[p.name]"
@@ -59,13 +59,13 @@
       </el-tab-pane>
     </el-tabs>
 
-    <span slot="footer" class="dialog-footer">
+    <template #footer><span class="dialog-footer">
     <el-button @click="requestCloseToolDialog">{{ $t('cancel') }}</el-button>
     <el-button class="defect-kbd-hint-host" type="primary" @click="handleSaveOption">
       {{ $t('save') }}
       <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
     </el-button>
-  </span>
+  </span></template>
   </el-dialog>
 </template>
 
@@ -73,32 +73,31 @@
 
 import {getIMConfig, saveConfig} from "@/api/im/config";
 import { getUserProfile } from "@/api/system/user";
-
-const path = require('path');
-const moduleFiles = require.context('./module/', true, /\.vue$/);
-const modules = {};
-const allModuleList = [];
-// 动态加载组件
-moduleFiles.keys().forEach(key=>{
-  const name = path.basename(key,'.vue');
-  allModuleList.push({
-    name: name,
-  });
-  modules[name] = moduleFiles(key).default||moduleFiles(key)
-});
-
-const platformFiles = require.context('./platform/', true, /\.vue$/);
-const allPlatformList = [];
-// 动态加载组件
-platformFiles.keys().forEach(key=>{
-  const name = path.basename(key,'.vue');
-  allPlatformList.push({
-    name: name,
-  });
-  modules[name] = platformFiles(key).default||platformFiles(key)
-});
-
 import noticeOptionDialogKbd from '@/mixins/notice-option-dialog-kbd'
+
+function basenameVuePath(filePath) {
+  const match = filePath.match(/\/([^/]+)\.vue$/)
+  return match ? match[1] : filePath
+}
+
+function loadVueModules(globResult) {
+  const modules = {}
+  const list = []
+  Object.entries(globResult).forEach(([filePath, mod]) => {
+    const name = basenameVuePath(filePath)
+    list.push({ name })
+    modules[name] = mod.default || mod
+  })
+  return { modules, list }
+}
+
+const moduleGlob = import.meta.glob('./module/*.vue', { eager: true })
+const platformGlob = import.meta.glob('./platform/*.vue', { eager: true })
+const moduleLoad = loadVueModules(moduleGlob)
+const platformLoad = loadVueModules(platformGlob)
+const modules = { ...moduleLoad.modules, ...platformLoad.modules }
+const allModuleList = moduleLoad.list
+const allPlatformList = platformLoad.list
 
 export default {
   name: "OptionNotice",

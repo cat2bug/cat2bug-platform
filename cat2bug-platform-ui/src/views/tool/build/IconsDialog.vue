@@ -15,7 +15,7 @@
           size="mini"
           :style="{width: '260px'}"
           placeholder="请输入图标名称"
-          prefix-icon="el-icon-search"
+          :prefix-icon="$legacyIcon('el-icon-search')"
           clearable
         />
       </div>

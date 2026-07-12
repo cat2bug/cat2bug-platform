@@ -4,16 +4,17 @@
       <el-form-item :label="$t('team.name')" prop="teamName">
         <el-input v-model="form.teamName" :placeholder="$t('team.please-enter-name')" maxlength="64" />
       </el-form-item>
-      <el-form-item :label="$t('team.icon')" prop="teamIcon">
+      <el-form-item prop="teamIcon" class="cat2bug-form-item-upload">
+        <template #label>{{ $t('team.icon') }}</template>
         <image-upload v-model="form.teamIcon" :limit="1"/>
       </el-form-item>
       <el-form-item :label="$t('team.introduce')" prop="introduce">
         <el-input v-model="form.introduce" :placeholder="$t('team.please-enter-introduce')" type="textarea" rows="5" maxlength="255" show-word-limit />
       </el-form-item>
     </el-form>
-    <el-row>
+    <el-row class="team-add-form-actions">
       <el-col :span="24">
-        <el-button class="defect-kbd-hint-host" type="primary" @click="submitForm">
+        <el-button class="defect-kbd-hint-host team-add-submit" type="primary" size="small" @click="submitForm">
           {{ $t('team.create') }}
           <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
         </el-button>
@@ -103,7 +104,16 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  .el-button {
-    width: 100%;
-  }
+.team-add-form-actions .team-add-submit.el-button {
+  width: 100%;
+  height: var(--cat2bug-toolbar-control-height, 32px) !important;
+  min-height: var(--cat2bug-toolbar-control-height, 32px) !important;
+  max-height: var(--cat2bug-toolbar-control-height, 32px) !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  line-height: 1 !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
 </style>

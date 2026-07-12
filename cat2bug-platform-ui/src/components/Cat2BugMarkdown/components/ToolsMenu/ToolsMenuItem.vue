@@ -8,15 +8,15 @@
           <span>{{menuName(tool.name)}}</span>
         </div>
       </el-menu-item>
-      <el-submenu v-else :index="tool.name">
-        <template slot="title">
+      <el-sub-menu v-else :index="tool.name">
+        <template #title>
           <div class="row">
             <svg-icon v-if="tool.icon" :icon-class="tool.icon" />
             <span>{{menuName(tool.name)}}</span>
           </div>
         </template>
         <tools-menu-item :tools="tool.children" />
-      </el-submenu>
+      </el-sub-menu>
     </template>
   </div>
 </template>

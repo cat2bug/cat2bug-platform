@@ -10,7 +10,7 @@
             @click.stop="handleSidebarToggle"
             @keyup.enter.stop.prevent="handleSidebarToggle"
           >
-            <i class="el-icon-d-arrow-left" />
+            <legacy-icon icon="el-icon-d-arrow-left" />
           </span>
         </el-tooltip>
       </div>
@@ -26,14 +26,14 @@
                   size="mini"
                   v-hasPermi="['system:module:add']"
                   @click="append($event, data)">
-                  <i class="el-icon-plus" />
+                  <legacy-icon icon="el-icon-plus" />
                 </el-button>
                 <el-button
                   type="text"
                   size="mini"
                   v-show="removeNodeButtonVisible(data)"
                   @click="remove($event, node, data)">
-                  <i class="el-icon-close" />
+                  <legacy-icon icon="el-icon-close" />
                 </el-button>
               </span>
             </span>

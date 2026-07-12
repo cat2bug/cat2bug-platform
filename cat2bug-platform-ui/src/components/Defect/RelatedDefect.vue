@@ -16,7 +16,7 @@
                 size="small"
                 v-model="queryParams.defectName"
                 :placeholder="$t('defect.enter-name')"
-                prefix-icon="el-icon-search"
+                :prefix-icon="$legacyIcon('el-icon-search')"
                 clearable
                 @input="search()"
               />
@@ -29,7 +29,7 @@
             trigger="click"
             popper-class="defect-column-picker-popover">
             <div class="defect-column-picker-head">
-              <i class="el-icon-s-fold"></i>
+              <el-icon class="legacy-icon-inline"><component :is="$legacyIcon('el-icon-s-fold')" /></el-icon>
               <h4>{{$t('defect.display-field')}}</h4>
             </div>
             <el-divider class="defect-field-divider"></el-divider>
@@ -40,7 +40,7 @@
               style="padding: 9px;"
               plain
               slot="reference"
-              icon="el-icon-s-fold"
+              :icon="$legacyIcon('el-icon-s-fold')"
               size="small"
             ></el-button>
           </el-popover>
@@ -68,12 +68,12 @@
               <span>{{ scope.row.defectName }}</span>
               <div class="defect-statistics">
                 <div>
-                  <i class="el-icon-time"></i>
+                  <legacy-icon icon="el-icon-time"></legacy-icon>
                   <span>{{ $t('defect.life-time') }}:</span>
                   <span class="defect-statistics-value">{{defectLife(scope.row)}}</span>
                 </div>
                 <div>
-                  <i class="el-icon-document-delete"></i>
+                  <legacy-icon icon="el-icon-document-delete"></legacy-icon>
                   <span>{{$i18n.t('reject')}}:</span>
                   <span class="defect-statistics-value">{{scope.row.rejectCount}}</span>
                 </div>
@@ -136,7 +136,7 @@
               v-if="isRelated(scope.row)"
               size="mini"
               type="text"
-              icon="el-icon-attract"
+              :icon="$legacyIcon('el-icon-attract')"
               @click="handleCancelRelated(scope.row)"
               v-hasPermi="['system:defect:add']"
             >{{ $t('cancel-related') }}</el-button>
@@ -144,7 +144,7 @@
               v-else
               size="mini"
               type="text"
-              icon="el-icon-attract"
+              :icon="$legacyIcon('el-icon-attract')"
               @click="handleRelated(scope.row)"
               v-hasPermi="['system:defect:add']"
             >{{ $t('related') }}</el-button>

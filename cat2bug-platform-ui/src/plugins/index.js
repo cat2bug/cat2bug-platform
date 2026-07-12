@@ -6,18 +6,12 @@ import download from './download'
 import topic from './topic'
 
 export default {
-  install(Vue) {
-    // 页签操作
-    Vue.prototype.$tab = tab
-    // 认证对象
-    Vue.prototype.$auth = auth
-    // 缓存对象
-    Vue.prototype.$cache = cache
-    // 模态框对象
-    Vue.prototype.$modal = modal
-    // 下载文件
-    Vue.prototype.$download = download
-    // 订阅推送消息
-    Vue.prototype.$topic = topic;
+  install(app) {
+    app.config.globalProperties.$tab = tab
+    app.config.globalProperties.$auth = auth
+    app.config.globalProperties.$cache = cache
+    app.config.globalProperties.$modal = modal
+    app.config.globalProperties.$download = download
+    app.config.globalProperties.$topic = topic
   }
 }

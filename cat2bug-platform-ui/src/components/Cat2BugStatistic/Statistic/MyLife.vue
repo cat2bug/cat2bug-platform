@@ -1,7 +1,7 @@
 <template>
   <div class="my-life-statistic-root">
     <cat2-bug-card :style="lifeCardStyle" :title="$i18n.t('defect.my-life').toString()" v-loading="loading" :tools="tools" @tools-click="toolsHandle">
-      <template slot="content">
+      <template #content>
         <div class="life-text" @click="openEditHandle">
           <div ref="lifeBody" class="life-body">{{ myLife }}</div>
         </div>

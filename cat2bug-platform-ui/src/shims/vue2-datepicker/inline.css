@@ -1,0 +1,13 @@
+@import 'vue-datepicker-next/index.css';
+
+.cat2bug-vue2-datepicker-inline .mx-input-wrapper {
+  display: none !important;
+}
+
+.cat2bug-vue2-datepicker-inline .mx-datepicker-popup {
+  position: static !important;
+  top: auto !important;
+  left: auto !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+}

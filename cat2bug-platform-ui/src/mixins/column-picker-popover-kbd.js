@@ -1,5 +1,5 @@
 /**
- * 「显示字段」el-popover 内 ↑↓ 导航：打开后聚焦首项；首项 ↑ 关闭。
+ * 「显示字段」el-popover 内 ↑↓ 导航：仅键盘操作时聚焦；鼠标点开不自动选中首项。
  * 页面需：popper-class="defect-column-picker-popover"、checkbox-group class="defect-column-picker"、
  * @show / @hide 绑定 onColumnPickerPopoverShow / Hide，并实现 closeColumnPickerPopoverKbd()。
  */
@@ -8,7 +8,8 @@ import {
   focusColumnPickerItem,
   getVisibleColumnPickerPopperEl,
   handleColumnPickerMenuKeydown,
-  isColumnPickerPopoverOpen
+  isColumnPickerPopoverOpen,
+  releaseColumnPickerMouseFocus
 } from '@/utils/column-picker-popover-kbd'
 
 export default {
@@ -42,7 +43,11 @@ export default {
     },
     onColumnPickerPopoverShow() {
       this.columnPickerMenuIndex = 0
-      this.$nextTick(() => this.$_columnPickerTryFocusFirst(0))
+      this.$nextTick(() => {
+        releaseColumnPickerMouseFocus(this.getColumnPickerPopperElForKbd())
+        setTimeout(() => releaseColumnPickerMouseFocus(this.getColumnPickerPopperElForKbd()), 0)
+        this.$_attachColumnPickerMenuListeners()
+      })
     },
     onColumnPickerPopoverHide() {
       this.columnPickerMenuIndex = 0

@@ -7,9 +7,9 @@
     <el-row :gutter="20">
       <el-col :span="6" :xs="24">
         <el-card class="box-card">
-          <div slot="header" class="clearfix">
+          <template #header><div class="clearfix">
             <span>{{ $t('member.personal-info') }}</span>
-          </div>
+          </div></template>
           <div>
             <div class="text-center">
               <userAvatar :profile-user="user" @updated="onAvatarUpdated" />
@@ -38,16 +38,16 @@
       </el-col>
       <el-col :span="18" :xs="24">
         <el-card class="profile-basic-card">
-          <div slot="header" class="profile-basic-card__header">
+          <template #header><div class="profile-basic-card__header">
             <el-tabs v-model="activeTab" class="profile-hint-tabs">
               <el-tab-pane name="userinfo">
-                <span slot="label" class="profile-tab-label">{{ $t('member.basic-info') }}</span>
+                <template #label><span class="profile-tab-label">{{ $t('member.basic-info') }}</span></template>
               </el-tab-pane>
               <el-tab-pane name="resetPwd">
-                <span slot="label" class="profile-tab-label">{{ $t('modify-password') }}</span>
+                <template #label><span class="profile-tab-label">{{ $t('modify-password') }}</span></template>
               </el-tab-pane>
             </el-tabs>
-          </div>
+          </div></template>
           <userInfo v-show="activeTab === 'userinfo'" :user="user" :form-active="activeTab === 'userinfo'" />
           <resetPwd v-show="activeTab === 'resetPwd'" :form-active="activeTab === 'resetPwd'" />
         </el-card>
@@ -93,7 +93,7 @@ export default {
   deactivated() {
     if (this.$shortcut) this.$shortcut.unregisterPage(PROFILE_KBD_SCOPE);
   },
-  beforeDestroy() {
+  beforeUnmount() {
     if (this.$shortcut) this.$shortcut.unregisterPage(PROFILE_KBD_SCOPE);
   },
   methods: {

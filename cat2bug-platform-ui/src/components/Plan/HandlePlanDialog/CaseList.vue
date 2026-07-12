@@ -12,7 +12,7 @@
               size="small"
               v-model="query.params.caseName"
               :placeholder="$t('case.please-enter-title')"
-              prefix-icon="el-icon-search"
+              :prefix-icon="$legacyIcon('el-icon-search')"
               clearable
               @input="getPlanItemList()"
             />
@@ -47,7 +47,7 @@
           @hide="onColumnPickerPopoverHide"
         >
           <div class="defect-column-picker-head">
-            <i class="el-icon-s-fold"></i>
+            <el-icon class="legacy-icon-inline"><component :is="$legacyIcon('el-icon-s-fold')" /></el-icon>
             <h4>{{$t('defect.display-field')}}</h4>
           </div>
           <el-divider class="defect-field-divider"></el-divider>
@@ -64,7 +64,7 @@
             style="padding: 9px;"
             plain
             slot="reference"
-            icon="el-icon-s-fold"
+            :icon="$legacyIcon('el-icon-s-fold')"
             size="small"
           ></el-button>
         </el-popover>
@@ -72,7 +72,7 @@
           <el-button
             size="small"
             type="primary"
-            icon="el-icon-check"
+            :icon="$legacyIcon('el-icon-check')"
             :disabled="!multiple"
             v-hasPermi="['system:plan:edit']"
             @click="handlePlanItemState(null, 'pass')"
@@ -147,7 +147,7 @@
         <div v-else-if="column.prop === 'caseName'" class="table-case-title">
           <cat2-bug-text
             :type="checkPermi(['system:case:edit']) ? 'link' : 'text'"
-            v-model="scope.row.caseName + ''"
+            v-model="scope.row.caseName"
             :tooltip="scope.row.caseName"
             @click="handleOpenEditCase(scope.row)"
           />

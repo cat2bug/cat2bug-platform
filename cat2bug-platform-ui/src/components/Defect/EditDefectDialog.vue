@@ -1,27 +1,27 @@
 <template>
   <el-drawer
     ref="defectFormDrawer"
-    custom-class="defect-drawer-accent"
+    class="defect-drawer-accent"
     size="65%"
-    :visible.sync="visible"
+    v-model="visible"
     direction="rtl"
     :append-to-body="appendToBody"
     :close-on-press-escape="false"
     :before-close="closeDefectDrawer">
-    <template slot="title">
+    <template #header>
       <div class="defect-edit-form-header">
         <div class="defect-edit-form-title">
-          <i class="el-icon-arrow-left" @click="requestCloseDefectFormDrawer"></i>
+          <legacy-icon icon="el-icon-arrow-left" @click="requestCloseDefectFormDrawer"></legacy-icon>
           <h3>
             {{ $t('defect.modify') }}
             <span v-if="form.projectNum" class="defect-edit-form-num">#{{ form.projectNum }}</span>
           </h3>
         </div>
         <div>
-          <el-button @click="requestCloseDefectFormDrawer" icon="el-icon-close" size="small">
+          <el-button @click="requestCloseDefectFormDrawer" :icon="$legacyIcon('el-icon-close')" size="small">
             {{ $t('close') }}
           </el-button>
-          <el-button class="defect-kbd-hint-host" type="primary" icon="el-icon-finished" @click="submitForm" size="small">
+          <el-button class="defect-kbd-hint-host" type="primary" :icon="$legacyIcon('el-icon-finished')" @click="submitForm" size="small">
             {{ $t('defect.save') }}
             <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
           </el-button>
@@ -29,14 +29,14 @@
       </div>
     </template>
     <div class="app-container defect-edit-body">
-      <el-form ref="form" :model="form" :rules="rules" label-width="120px">
+      <el-form ref="form" :model="form" :rules="rules" label-width="120px" size="small">
         <defect-form-ordered-fields
           v-if="projectId"
           ref="orderedFields"
           :project-id="projectId"
           :form="form"
           :config="config"
-          :plan-time-range.sync="planTimeRange"
+          v-model:plan-time-range="planTimeRange"
           :describe-tools="describeTools"
           :defect-field-layout="defectFieldLayout"
           :is-builtin-defect-field-visible="isBuiltinDefectFieldVisible"

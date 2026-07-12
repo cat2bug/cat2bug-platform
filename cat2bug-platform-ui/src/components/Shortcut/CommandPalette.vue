@@ -14,7 +14,7 @@
             </span>
           </div>
           <div class="cmdp__search" :class="{ 'is-active': searchFocused }">
-            <i class="el-icon-search" />
+            <legacy-icon icon="el-icon-search" />
             <input
               ref="search"
               v-model="query"
@@ -41,7 +41,7 @@
             >
               <shortcut-badge :letter="item.letter" />
               <span class="cmdp__title" v-html="renderTitle(item.title)" />
-              <i v-if="item.type === 'dropdown'" class="el-icon-arrow-right cmdp__more" />
+              <legacy-icon icon="el-icon-arrow-right" v-if="item.type === 'dropdown'" class="cmdp__more" />
             </li>
           </ul>
         </div>

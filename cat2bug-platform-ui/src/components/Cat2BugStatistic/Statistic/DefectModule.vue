@@ -1,6 +1,6 @@
 <template>
   <cat2-bug-card :title="$i18n.t('defect.module-ranking').toString()" :tools="tools" @tools-click="toolsHandle">
-    <template slot="content">
+    <template #content>
       <div class="defect-module-panel">
       <div v-if="!showModuleList || showModuleList.length==0">
         <div @click="getStatisticModule" class="defect-module-row" v-for="n in 3" :key="n">
@@ -13,11 +13,11 @@
         </div>
         <el-pagination
           class="statistic-pagination"
-          small
+          size="small"
           :hide-on-single-page="total<formParams.pageSize"
           layout="prev, next"
-          :current-page.sync="formParams.pageNum"
-          :page-size.sync="formParams.pageSize"
+          v-model:current-page="formParams.pageNum"
+          v-model:page-size="formParams.pageSize"
           :total="total"
           @current-change="getStatisticModule">
         </el-pagination>

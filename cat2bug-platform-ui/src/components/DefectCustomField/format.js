@@ -1,3 +1,7 @@
+/** Element Plus / dayjs 绑定格式（勿用 Vue2 Element UI 的 yyyy，否则无法解析已有值） */
+export const DEFECT_DATETIME_VALUE_FORMAT = 'YYYY-MM-DD HH:mm:ss'
+export const DEFECT_DATE_VALUE_FORMAT = 'YYYY-MM-DD'
+
 /** 不支持在字段管理中配置默认值的类型 */
 export const FIELD_TYPES_WITHOUT_DEFAULT = ['image', 'file']
 

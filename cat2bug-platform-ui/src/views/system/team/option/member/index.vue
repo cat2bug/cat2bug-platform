@@ -18,7 +18,7 @@
             <el-form-item class="list-query-nav-item team-member-hint-query" data-query-key="search">
               <el-input
                 v-model="queryParams.params.search"
-                prefix-icon="el-icon-search"
+                :prefix-icon="$legacyIcon('el-icon-search')"
                 :placeholder="$t('team.search-placeholder')"
                 clearable
                 style="width: 320px"
@@ -32,7 +32,7 @@
               class="team-member-hint-create"
               type="primary"
               plain
-              icon="el-icon-plus"
+              :icon="$legacyIcon('el-icon-plus')"
               size="small"
               @click="createMemberHandle"
               v-hasPermi="['system:team:member:create']"
@@ -41,7 +41,7 @@
               class="team-member-hint-invite cat2bug-btn-outline"
               type="primary"
               plain
-              icon="el-icon-plus"
+              :icon="$legacyIcon('el-icon-plus')"
               size="small"
               @click="inviteMemberHandle"
               v-hasPermi="['system:team:member:invite']"
@@ -105,7 +105,7 @@
               <el-button
                 size="mini"
                 type="text"
-                icon="el-icon-lock"
+                :icon="$legacyIcon('el-icon-lock')"
                 @click="lockMemberHandle(scope.row)"
                 v-hasPermi="['system:team:member:lock']"
                 v-if="scope.row.status=='0'"
@@ -113,7 +113,7 @@
               <el-button
                 size="mini"
                 type="text"
-                icon="el-icon-unlock"
+                :icon="$legacyIcon('el-icon-unlock')"
                 @click="unlockMemberHandle(scope.row)"
                 v-hasPermi="['system:team:member:lock']"
                 v-else-if="scope.row.status=='1'"

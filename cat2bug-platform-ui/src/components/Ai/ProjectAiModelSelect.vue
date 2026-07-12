@@ -13,7 +13,7 @@
     >
       <el-button
         native-type="button"
-        type="text"
+        link
         class="c2b-model-select__robot"
         :handle="aiLoading ? 'true' : 'false'"
         :disabled="aiLoading"
@@ -32,7 +32,7 @@
         class="c2b-model-select"
         :class="{ 'c2b-model-select--in-combo': embedAiButton }"
         v-model="innerModelId"
-        size="mini"
+        size="small"
         popper-class="c2b-model-select-dropdown"
         placeholder=""
         :loading="loading"
@@ -51,18 +51,16 @@
             :value="item.key"
           >
             <span class="c2b-model-select-option__cell">
-              <i
-                class="el-icon-check c2b-model-select-option__tick"
+              <legacy-icon icon="el-icon-check" class="c2b-model-select-option__tick"
                 :class="{ 'c2b-model-select-option__tick--on': keyEquals(innerModelId, item.key) }"
-                aria-hidden="true"
-              />
+                aria-hidden="true" />
               <span class="c2b-model-select-option__name">{{ item.label }}</span>
             </span>
           </el-option>
         </el-option-group>
         <template slot="empty">
           <div v-if="loading" class="c2b-model-select-dropdown__loading">
-            <i class="el-icon-loading c2b-model-select-dropdown__loading-icon"></i>
+            <legacy-icon icon="el-icon-loading" class="c2b-model-select-dropdown__loading-icon"></legacy-icon>
             <span class="c2b-model-select-dropdown__loading-text">{{ loadingHintText }}</span>
           </div>
           <p v-else class="el-select-dropdown__empty">{{ noDataHintText }}</p>
@@ -251,6 +249,14 @@ export default {
         inp.style.setProperty('width', '100%', 'important');
         inp.style.setProperty('max-width', '100%', 'important');
         inp.style.removeProperty('overflow');
+      }
+      const wrapper = root.querySelector('.el-select__wrapper');
+      if (wrapper) {
+        wrapper.style.setProperty('min-width', '0', 'important');
+        wrapper.style.setProperty('width', '100%', 'important');
+        wrapper.style.setProperty('max-width', '100%', 'important');
+        wrapper.style.setProperty('min-height', '0', 'important');
+        wrapper.style.setProperty('height', '100%', 'important');
       }
       const inner = root.querySelector('.el-input__inner');
       if (inner) {
@@ -484,7 +490,7 @@ $c2b-combo-robot-caret-gap: 4px;
   align-self: stretch;
   overflow: visible;
   display: flex;
-  align-items: center;
+  align-items: stretch;
 }
 
 .c2b-model-select__trigger-shell--combo ::v-deep .c2b-model-select--in-combo.el-select {
@@ -493,6 +499,10 @@ $c2b-combo-robot-caret-gap: 4px;
   max-width: 100% !important;
   height: 100% !important;
   min-height: 0 !important;
+  line-height: 1 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  vertical-align: top !important;
   overflow: visible;
 }
 
@@ -523,6 +533,56 @@ $c2b-combo-robot-caret-gap: 4px;
   border-radius: 0;
   background: transparent;
   box-sizing: border-box;
+}
+
+/* Element Plus：组合内 select 使用 el-select__wrapper，须去掉全站 32px 与白底描边 */
+.c2b-model-select__trigger-shell--combo ::v-deep .c2b-model-select--in-combo .el-select__wrapper {
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  line-height: 1 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  min-width: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  font-size: $c2b-tool-fs;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  box-sizing: border-box;
+  align-self: center;
+}
+
+.c2b-model-select__trigger-shell--combo ::v-deep .c2b-model-select--in-combo.is-focused .el-select__wrapper,
+.c2b-model-select__trigger-shell--combo ::v-deep .c2b-model-select--in-combo .el-select__wrapper.is-focused {
+  box-shadow: none !important;
+}
+
+.c2b-model-select__trigger-shell--combo ::v-deep .c2b-model-select--in-combo .el-select__selection {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.c2b-model-select__trigger-shell--combo ::v-deep .c2b-model-select--in-combo .el-select__selected-item,
+.c2b-model-select__trigger-shell--combo ::v-deep .c2b-model-select--in-combo .el-select__placeholder {
+  display: none;
+}
+
+.c2b-model-select__trigger-shell--combo ::v-deep .c2b-model-select--in-combo .el-select__suffix {
+  position: static;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  padding: 0;
+  height: 100%;
+  width: auto;
 }
 
 .c2b-model-select__trigger-shell--combo ::v-deep .c2b-model-select--in-combo .el-input.is-focus .el-input__inner {
@@ -600,7 +660,17 @@ $c2b-combo-robot-caret-gap: 4px;
   ::v-deep
   .c2b-model-select--in-combo.el-select:not(.is-loading)
   .el-input__suffix-inner
-  .el-select__caret {
+  .el-select__caret,
+.c2b-model-select__trigger-shell--combo
+  ::v-deep
+  .c2b-model-select--in-combo.el-select:not(.is-loading)
+  .el-select__suffix
+  .el-select__caret,
+.c2b-model-select__trigger-shell--combo
+  ::v-deep
+  .c2b-model-select--in-combo.el-select:not(.is-loading)
+  .el-select__suffix
+  .el-select__icon {
   position: relative;
   display: inline-flex !important;
   align-items: center;
@@ -620,7 +690,17 @@ $c2b-combo-robot-caret-gap: 4px;
   ::v-deep
   .c2b-model-select--in-combo.el-select:not(.is-loading)
   .el-input__suffix-inner
-  .el-select__caret::before {
+  .el-select__caret::before,
+.c2b-model-select__trigger-shell--combo
+  ::v-deep
+  .c2b-model-select--in-combo.el-select:not(.is-loading)
+  .el-select__suffix
+  .el-select__caret::before,
+.c2b-model-select__trigger-shell--combo
+  ::v-deep
+  .c2b-model-select--in-combo.el-select:not(.is-loading)
+  .el-select__suffix
+  .el-select__icon::before {
   display: none !important;
 }
 
@@ -628,12 +708,21 @@ $c2b-combo-robot-caret-gap: 4px;
   ::v-deep
   .c2b-model-select--in-combo.el-select:not(.is-loading)
   .el-input__suffix-inner
-  .el-select__caret::after {
+  .el-select__caret::after,
+.c2b-model-select__trigger-shell--combo
+  ::v-deep
+  .c2b-model-select--in-combo.el-select:not(.is-loading)
+  .el-select__suffix
+  .el-select__caret::after,
+.c2b-model-select__trigger-shell--combo
+  ::v-deep
+  .c2b-model-select--in-combo.el-select:not(.is-loading)
+  .el-select__suffix
+  .el-select__icon::after {
   content: '';
   position: absolute;
   left: 50%;
   top: 50%;
-  margin-top: 0.5px;
   transform: translate(-50%, -50%);
   width: 0;
   height: 0;
@@ -643,7 +732,18 @@ $c2b-combo-robot-caret-gap: 4px;
   pointer-events: none;
 }
 
-::v-deep .c2b-model-select.el-select--mini .el-input__inner {
+.c2b-model-select__trigger-shell--combo
+  ::v-deep
+  .c2b-model-select--in-combo.el-select:not(.is-loading)
+  .el-select__suffix
+  .el-select__icon
+  svg {
+  display: none !important;
+}
+
+::v-deep .c2b-model-select.el-select--mini .el-input__inner,
+::v-deep .c2b-model-select.el-select--small .el-input__wrapper,
+::v-deep .c2b-model-select.el-select--small .el-select__wrapper {
   font-size: $c2b-tool-fs;
 }
 
@@ -656,7 +756,9 @@ $c2b-combo-robot-caret-gap: 4px;
 }
 
 /* 收起态始终隐藏输入框内的选中/回退文案（Element 在选项未就绪时会写 String(value)） */
-::v-deep .c2b-model-select .el-input__inner {
+::v-deep .c2b-model-select .el-input__inner,
+::v-deep .c2b-model-select .el-select__input,
+::v-deep .c2b-model-select .el-select__placeholder span {
   color: transparent !important;
   caret-color: transparent;
 }

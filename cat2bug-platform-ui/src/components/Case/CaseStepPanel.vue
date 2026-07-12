@@ -10,14 +10,14 @@
             v-show="caseStepList.length > 1"
             type="text"
             class="case-step-tool-btn case-step-tool-btn--remove"
-            icon="el-icon-error"
+            :icon="$legacyIcon('el-icon-error')"
             :aria-label="$t('delete')"
             @click="removeStepHandle(index)"
           />
           <el-button
             type="text"
             class="case-step-tool-btn case-step-tool-btn--add"
-            icon="el-icon-circle-plus"
+            :icon="$legacyIcon('el-icon-circle-plus')"
             :aria-label="$t('case.add-step')"
             @click="addStepHandle(index)"
           />

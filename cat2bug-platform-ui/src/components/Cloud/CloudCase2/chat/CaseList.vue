@@ -2,7 +2,7 @@
   <div class="case-demand" ref="caseList">
     <div class="col" v-if="caseList.length>0">
       <h3><svg-icon icon-class="case"></svg-icon>测试用例列表</h3>
-      <span><i class="el-icon-info"></i>以下内容可以直接编辑修改</span>
+      <span><legacy-icon icon="el-icon-info"></legacy-icon>以下内容可以直接编辑修改</span>
       <div class="case-demand-row" v-for="(d,index) in caseList" :key="index">
         <div class="case-demand-row-name">
           <el-checkbox :label="(index + 1) + '.'" v-model="d.checked"/>

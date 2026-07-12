@@ -1,6 +1,6 @@
 <template>
   <!-- 导入表 -->
-  <el-dialog title="导入表" :visible.sync="visible" width="800px" top="5vh" append-to-body>
+  <el-dialog title="导入表" v-model="visible" width="800px" top="5vh" append-to-body>
     <el-form :model="queryParams" ref="queryForm" size="small" :inline="true">
       <el-form-item label="表名称" prop="tableName">
         <el-input
@@ -19,8 +19,8 @@
         />
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
+        <el-button type="primary" :icon="$legacyIcon('el-icon-search')" size="mini" @click="handleQuery">搜索</el-button>
+        <el-button :icon="$legacyIcon('el-icon-refresh')" size="mini" @click="resetQuery">重置</el-button>
       </el-form-item>
     </el-form>
     <el-row>
@@ -34,15 +34,15 @@
       <pagination
         v-show="total>0"
         :total="total"
-        :page.sync="queryParams.pageNum"
-        :limit.sync="queryParams.pageSize"
+        v-model:page="queryParams.pageNum"
+        v-model:limit="queryParams.pageSize"
         @pagination="getList"
       />
     </el-row>
-    <div slot="footer" class="dialog-footer">
+    <template #footer><div class="dialog-footer">
       <el-button type="primary" @click="handleImportTable">确 定</el-button>
       <el-button @click="visible = false">取 消</el-button>
-    </div>
+    </div></template>
   </el-dialog>
 </template>
 

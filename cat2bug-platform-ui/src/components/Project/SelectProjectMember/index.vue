@@ -3,18 +3,18 @@
     popper-class="select-project-member-popover"
     placement="bottom-start"
     width="350"
-    v-model="popoverVisible"
+    v-model:visible="popoverVisible"
     @show="popoverShowHandle"
     @hide="popoverHideHandle"
     trigger="click">
     <template #reference>
-    <div ref="inputBox" :style="inputBoxStyle" :class="'el-input__inner select-project-member-input cat2bug-combo-focus-target select-project-member-input-'+size" tabindex="0" @focus="onOuterFocus" @keydown="searchKeyDownHandle">
-      <i :class="icon" v-if="icon" class="select-project-member-input__prefix-icon"></i>
+    <div ref="inputBox" :style="inputBoxStyle" :class="'select-project-member-input cat2bug-combo-focus-target select-project-member-input-'+size" tabindex="0" @focus="onOuterFocus" @keydown="searchKeyDownHandle">
+      <el-icon v-if="iconComponent" class="select-project-member-input__prefix-icon"><component :is="iconComponent" /></el-icon>
       <div ref="tagContent" class="selectProjectMemberInput_content" :class="{'has-members': selectMembers.size > 0, 'is-search-active': searchInputActive}">
         <div ref="tagMeasure" class="select-project-member-tags-measure" aria-hidden="true">
           <el-tag
             class="select-project-member-tag"
-            size="mini"
+            size="small"
             closable
             v-for="member in selectMemberList()"
             :key="'measure-' + member.userId + '-' + (optionsChecks.get(member.userId) || 0)"
@@ -28,7 +28,7 @@
             <el-tag
               ref="memberTags"
               class="select-project-member-tag"
-              size="mini"
+              size="small"
               v-for="(member, index) in selectMemberList()"
               :key="getMemberTagKey(member)"
               v-show="index < visibleTagCount"
@@ -40,10 +40,10 @@
           </span>
           <span v-if="hiddenMemberCount > 0" class="select-project-member-tag-more" :title="hiddenMemberTitle">+{{ hiddenMemberCount }}</span>
         </span>
-        <el-input ref="selectProjectMemberInput" class="select-project-member-search-input" :size="size" :placeholder="selectMembers.size>0?'':$t(placeholder)" v-model="queryMember.params.search" @input="searchChangeHandle" @focus.native="onSearchInputFocus" @blur.native="onSearchInputBlur" @keydown.native.stop="searchKeyDownHandle"></el-input>
+        <el-input ref="selectProjectMemberInput" class="select-project-member-search-input" :size="controlSize" :placeholder="selectMembers.size>0?'':$t(placeholder)" v-model="queryMember.params.search" @input="searchChangeHandle" @focus="onSearchInputFocus" @blur="onSearchInputBlur" @keydown.stop="searchKeyDownHandle"></el-input>
       </div>
-      <i class="select-project-member-input__icon el-icon-arrow-up" :class="{'is-open': popoverVisible}" v-show="isClearButtonVisible==false" @mouseenter="showClearButtonHandle(true)"></i>
-      <i class="select-project-member-input__icon el-icon-circle-close" v-show="isClearButtonVisible==true" @mouseleave="showClearButtonHandle(false)" @click="clearSelectMembersHandle"></i>
+      <legacy-icon icon="el-icon-arrow-up" class="select-project-member-input__icon" :class="{'is-open': popoverVisible}" v-show="isClearButtonVisible==false" @mouseenter="showClearButtonHandle(true)"></legacy-icon>
+      <legacy-icon icon="el-icon-circle-close" class="select-project-member-input__icon" v-show="isClearButtonVisible==true" @mouseleave="showClearButtonHandle(false)" @click="clearSelectMembersHandle"></legacy-icon>
     </div>
     </template>
     <el-tabs v-if="roleGroup" ref="tabs" class="select-project-member-tabs" v-model="queryMember.roleId" @tab-click="getMemberList">
@@ -52,21 +52,21 @@
     </el-tabs>
 
     <el-row ref="memberMenu" v-if="options && options.length>0" class="select-project-member-menu">
-      <el-col :span="24" v-for="(item,itemIndex) in options" :key="itemIndex" @click.native="clickMenuHandle(item,$event)" :active="optionsChecks.get(item.userId)?'true':'false'" :class="{'is-keyboard-active': itemIndex===activeIndex}">
+      <el-col :span="24" v-for="(item,itemIndex) in options" :key="itemIndex" @click="clickMenuHandle(item,$event)" :active="optionsChecks.get(item.userId)?'true':'false'" :class="{'is-keyboard-active': itemIndex===activeIndex}">
         <member-nameplate :member="item"></member-nameplate>
-        <el-tag v-if="isHead" size="mini"  @click.native="setMasterHandle($event,item)" :type="tagType(item)">
+        <el-tag v-if="isHead" size="small" @click="setMasterHandle($event,item)" :type="tagType(item)">
           {{optionsChecks.get(item.userId)===1?$i18n.t('head'):$i18n.t('assistant')}}
         </el-tag>
-        <i v-else class="el-icon-check"></i>
+        <legacy-icon icon="el-icon-check" v-else></legacy-icon>
       </el-col>
     </el-row>
     <el-empty v-else :description="$i18n.t('no-data')"></el-empty>
     <el-pagination
-      small
+      size="small"
       :hide-on-single-page="true"
       layout="prev, next"
-      :current-page.sync="queryMember.pageNum"
-      :page-size.sync="queryMember.pageSize"
+      v-model:current-page="queryMember.pageNum"
+      v-model:page-size="queryMember.pageSize"
       @current-change="currentPageChangeHandle"
       :total="total">
     </el-pagination>
@@ -78,6 +78,7 @@ import i18n from "@/utils/i18n/i18n";
 import {listMemberOfProject, listProjectRole} from "@/api/system/project";
 import MemberNameplate from "@/components/MemberNameplate"
 import { observeComboFocusTarget } from '@/utils/combo-focus-tab'
+import { mapElementPlusSize } from '@/utils/element-plus-size'
 export default {
   name: "SelectProjectMember",
   model: {
@@ -163,11 +164,19 @@ export default {
       default: 'medium'
     },
     icon: {
-      type: String,
+      type: [String, Object],
       default: null
     }
   },
   computed: {
+    controlSize() {
+      return mapElementPlusSize(this.size)
+    },
+    iconComponent() {
+      if (!this.icon) return null
+      if (typeof this.icon === 'string') return this.$legacyIcon(this.icon)
+      return this.icon
+    },
     tagType: function () {
       return function (member) {
         if(this.isHead) {
@@ -241,12 +250,23 @@ export default {
     });
     if (typeof ResizeObserver !== 'undefined') {
       this.$_tagResizeObs = new ResizeObserver(() => this.scheduleTagLayout());
+      this.$_shellResizeObs = new ResizeObserver(() => {
+        this.lockInputWidth();
+        this.scheduleTagLayout();
+      });
       this.$nextTick(() => {
         if (this.$refs.tagContent) {
           this.$_tagResizeObs.observe(this.$refs.tagContent);
         }
         if (this.$refs.tagsRow) {
           this.$_tagResizeObs.observe(this.$refs.tagsRow);
+        }
+        const shell = this.$refs.inputBox;
+        if (shell) {
+          this.$_shellResizeObs.observe(shell);
+          if (shell.parentElement) {
+            this.$_shellResizeObs.observe(shell.parentElement);
+          }
         }
       });
     }
@@ -259,6 +279,10 @@ export default {
     if (this.$_tagResizeObs) {
       this.$_tagResizeObs.disconnect();
       this.$_tagResizeObs = null;
+    }
+    if (this.$_shellResizeObs) {
+      this.$_shellResizeObs.disconnect();
+      this.$_shellResizeObs = null;
     }
     this.detachPopoverEscListener();
     const shell = this.$refs.inputBox;
@@ -377,8 +401,12 @@ export default {
     lockInputWidth() {
       const box = this.$refs.inputBox;
       if (!box) return;
+      const minLockWidth = 120;
       const w = box.offsetWidth;
-      if (w > 0 && (this.lockedInputWidth === 0 || w > this.lockedInputWidth)) {
+      if (this.lockedInputWidth > 0 && this.lockedInputWidth < minLockWidth) {
+        this.lockedInputWidth = 0;
+      }
+      if (w >= minLockWidth && (this.lockedInputWidth === 0 || w > this.lockedInputWidth)) {
         this.lockedInputWidth = w;
       }
     },
@@ -879,12 +907,16 @@ export default {
   }
 </style>
 <style lang="scss" scoped>
-  ::v-deep .el-popover__reference-wrapper {
-    display: block;
+  :deep(.el-popover__reference-wrapper),
+  :deep(.el-tooltip__trigger) {
+    display: inline-flex;
+    align-items: center;
+    vertical-align: middle;
     max-width: 100%;
     min-width: 0;
+    line-height: 0;
   }
-  ::v-deep .select-project-member-input {
+  .select-project-member-input {
     display: inline-flex;
     flex-direction: row;
     max-width: 300px;
@@ -945,6 +977,18 @@ export default {
         overflow: hidden;
         gap: 6px;
         padding-left: 6px;
+      }
+      /* 未选成员时收起 tag 行，避免空容器 padding 把 placeholder 往右挤 */
+      &:not(.has-members) {
+        .select-project-member-tags-row,
+        .select-project-member-tags {
+          flex: 0 0 0;
+          width: 0;
+          min-width: 0;
+          max-width: 0;
+          padding-left: 0;
+          overflow: hidden;
+        }
       }
       ::v-deep .select-project-member-tag.el-tag {
         margin: 0;
@@ -1034,6 +1078,33 @@ export default {
           box-shadow: none !important;
           border-color: transparent !important;
         }
+        /* EP：padding 只放在 wrapper 一层，禁止 wrapper + inner 双层左内边距导致 placeholder 偏右 */
+        ::v-deep .el-input__wrapper {
+          padding-left: 10px;
+          padding-right: 0;
+          padding-top: 0;
+          padding-bottom: 0;
+          background-color: transparent !important;
+          box-shadow: none !important;
+          border-width: 0;
+          height: 100%;
+          min-height: 0;
+          line-height: 1;
+          box-sizing: border-box;
+        }
+        ::v-deep .el-input__inner {
+          padding-left: 0 !important;
+          padding-right: 0 !important;
+          padding-top: 0;
+          padding-bottom: 0;
+          border-width: 0;
+          height: 100%;
+          min-height: 0;
+          line-height: 1;
+          display: block;
+          box-shadow: none !important;
+          background-color: transparent !important;
+        }
       }
       &.has-members:not(.is-search-active) .select-project-member-search-input {
         flex: 0 0 0;
@@ -1043,6 +1114,7 @@ export default {
         overflow: hidden;
         opacity: 0;
         pointer-events: none;
+        ::v-deep .el-input__wrapper,
         ::v-deep .el-input__inner {
           padding: 0;
           width: 0;
@@ -1056,23 +1128,6 @@ export default {
         max-width: 44px;
         opacity: 1;
         pointer-events: auto;
-      }
-      .el-input {
-        flex: 1 1 auto;
-        min-width: 0;
-        min-height: 0;
-        height: 100%;
-        .el-input__inner {
-          padding-left: 10px;
-          padding-right: 0px;
-          padding-top: 0;
-          padding-bottom: 0;
-          border-width: 0px;
-          height: 100%;
-          min-height: 0;
-          line-height: 1;
-          display: block;
-        }
       }
     }
     .select-project-member-input__prefix-icon {
@@ -1089,25 +1144,27 @@ export default {
       cursor: pointer;
     }
   }
-  ::v-deep .select-project-member-input-medium {
+  .select-project-member-input-medium {
     height: 36px;
     min-height: 36px;
     max-height: 36px;
   }
 
-  ::v-deep .select-project-member-input-small {
+  .select-project-member-input-small {
     height: 32px;
     min-height: 32px;
     max-height: 32px;
+    line-height: 1 !important;
   }
-  ::v-deep .select-project-member-input-mini {
+  .select-project-member-input-mini {
     height: 28px;
     min-height: 28px;
     max-height: 28px;
+    line-height: 1 !important;
   }
 
   /* 下拉三角仅在下拉展开时朝上；获取焦点本身不翻转（保持朝下） */
-  ::v-deep .select-project-member-input .select-project-member-input__icon.is-open {
+  .select-project-member-input .select-project-member-input__icon.is-open {
     -webkit-transform: rotateZ(0deg);
     transform: rotateZ(0deg);
   }
@@ -1164,11 +1221,5 @@ export default {
   }
   .el-pagination {
     float: right;
-  }
-  ::v-deep .el-popover__reference-wrapper {
-    display: inline-flex;
-    align-items: center;
-    vertical-align: middle;
-    line-height: 0;
   }
 </style>

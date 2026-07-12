@@ -1,7 +1,19 @@
 <template>
-  <div v-if="isExternal" :style="styleExternalIcon" class="svg-external-icon svg-icon" v-on="$listeners" />
-  <svg v-else :class="svgClass" aria-hidden="true" v-on="$listeners">
-    <use :xlink:href="iconName" />
+  <div
+    v-if="isExternal"
+    :style="styleExternalIcon"
+    class="svg-external-icon svg-icon"
+    v-bind="nonClickAttrs"
+    @click="forwardClick"
+  />
+  <svg
+    v-else
+    :class="svgClass"
+    aria-hidden="true"
+    v-bind="nonClickAttrs"
+    @click="forwardClick"
+  >
+    <use :href="iconName" />
   </svg>
 </template>
 
@@ -10,6 +22,7 @@ import { isExternal } from '@/utils/validate'
 
 export default {
   name: 'SvgIcon',
+  inheritAttrs: false,
   props: {
     iconClass: {
       type: String,
@@ -30,15 +43,30 @@ export default {
     svgClass() {
       if (this.className) {
         return 'svg-icon ' + this.className
-      } else {
-        return 'svg-icon'
       }
+      return 'svg-icon'
     },
     styleExternalIcon() {
       return {
         mask: `url(${this.iconClass}) no-repeat 50% 50%`,
         '-webkit-mask': `url(${this.iconClass}) no-repeat 50% 50%`
       }
+    },
+    nonClickAttrs() {
+      const attrs = { ...this.$attrs }
+      delete attrs.onClick
+      return attrs
+    }
+  },
+  methods: {
+    forwardClick(event) {
+      const handler = this.$attrs.onClick
+      if (!handler) return
+      if (Array.isArray(handler)) {
+        handler.forEach((fn) => fn(event))
+        return
+      }
+      handler(event)
     }
   }
 }

@@ -39,7 +39,7 @@
             >
               <div class="setup-roadmap-marker-col">
                 <span class="setup-roadmap-marker">
-                  <i v-if="finished || activeStep > index" class="el-icon-check" />
+                  <legacy-icon v-if="finished || activeStep > index" icon="el-icon-check" />
                   <span v-else>{{ index + 1 }}</span>
                 </span>
                 <span
@@ -59,7 +59,7 @@
         <div class="setup-panel">
           <template v-if="finished">
             <div class="setup-success setup-panel-fill">
-              <i class="el-icon-success setup-success-icon" />
+              <legacy-icon icon="el-icon-success" class="setup-success-icon" />
               <h3>{{ $t('setup.success.title') }}</h3>
               <p>{{ $t('setup.success.message') }}</p>
               <p class="setup-tip setup-tip--warn" v-if="restartRequired">{{ restartHintText }}</p>
@@ -99,7 +99,7 @@
                         :class="{ 'is-active': form.databaseType === 'h2' }"
                         @click="pickDatabaseType('h2')"
                       >
-                        <i class="el-icon-coin setup-pick-icon" />
+                        <legacy-icon icon="el-icon-coin" class="setup-pick-icon" />
                         <strong>H2</strong>
                         <span>{{ $t('setup.database.h2CardDesc') }}</span>
                       </button>
@@ -109,7 +109,7 @@
                         :class="{ 'is-active': form.databaseType === 'mysql' }"
                         @click="pickDatabaseType('mysql')"
                       >
-                        <i class="el-icon-connection setup-pick-icon" />
+                        <legacy-icon icon="el-icon-connection" class="setup-pick-icon" />
                         <strong>MySQL</strong>
                         <span>{{ $t('setup.database.mysqlCardDesc') }}</span>
                       </button>
@@ -149,13 +149,13 @@
                   </template>
                   <div class="setup-test-row">
                     <el-button :loading="dbTesting" @click="handleTestDatabase">{{ $t('setup.testConnection') }}</el-button>
-                    <span v-if="dbTestPassed" class="setup-test-ok"><i class="el-icon-success" /> {{ $t('setup.testPassed') }}</span>
+                    <span v-if="dbTestPassed" class="setup-test-ok"><legacy-icon icon="el-icon-success" /> {{ $t('setup.testPassed') }}</span>
                   </div>
                   <p v-if="dbTestPassed && databaseMode === 'new'" class="setup-tip setup-tip--success">
-                    <i class="el-icon-info" /> {{ $t('setup.database.modeNew') }}
+                    <legacy-icon icon="el-icon-info" /> {{ $t('setup.database.modeNew') }}
                   </p>
                   <p v-else-if="dbTestPassed && databaseMode === 'existing'" class="setup-tip setup-tip--warn">
-                    <i class="el-icon-warning" /> {{ $t('setup.database.modeExisting') }}
+                    <legacy-icon icon="el-icon-warning" /> {{ $t('setup.database.modeExisting') }}
                   </p>
                   <p v-if="form.databaseType === 'mysql'" class="setup-tip">{{ $t('setup.database.mysqlTestHint') }}</p>
                   <p v-else class="setup-tip">{{ $t('setup.database.h2FileHint') }}</p>
@@ -173,7 +173,7 @@
                         :class="{ 'is-active': form.cacheType === 'local' }"
                         @click="pickCacheType('local')"
                       >
-                        <i class="el-icon-box setup-pick-icon" />
+                        <legacy-icon icon="el-icon-box" class="setup-pick-icon" />
                         <strong>{{ $t('setup.cache.local') }}</strong>
                         <span>{{ $t('setup.cache.localCardDesc') }}</span>
                       </button>
@@ -183,7 +183,7 @@
                         :class="{ 'is-active': form.cacheType === 'redis' }"
                         @click="pickCacheType('redis')"
                       >
-                        <i class="el-icon-cpu setup-pick-icon" />
+                        <legacy-icon icon="el-icon-cpu" class="setup-pick-icon" />
                         <strong>Redis</strong>
                         <span>{{ $t('setup.cache.redisCardDesc') }}</span>
                       </button>
@@ -208,12 +208,12 @@
                     </div>
                     <div class="setup-test-row">
                       <el-button :loading="redisTesting" @click="handleTestRedis">{{ $t('setup.testConnection') }}</el-button>
-                      <span v-if="redisTestPassed" class="setup-test-ok"><i class="el-icon-success" /> {{ $t('setup.testPassed') }}</span>
+                      <span v-if="redisTestPassed" class="setup-test-ok"><legacy-icon icon="el-icon-success" /> {{ $t('setup.testPassed') }}</span>
                     </div>
                   </template>
                   <div v-else class="setup-feature-box">
                     <p class="setup-tip setup-tip--success">
-                      <i class="el-icon-circle-check" /> {{ $t('setup.cache.localHint') }}
+                      <legacy-icon icon="el-icon-circle-check" /> {{ $t('setup.cache.localHint') }}
                     </p>
                   </div>
                 </el-form>
@@ -223,13 +223,11 @@
               <div v-show="activeStep === 2" class="setup-step-panel">
                 <el-form ref="pathForm" :model="form" :rules="pathRules" label-position="top" size="small" class="setup-inner-form">
                   <el-form-item :label="$t('setup.storage.profile')" prop="profile">
-                    <el-input v-model="form.profile" :placeholder="$t('setup.storage.profilePlaceholder')">
-                      <i slot="prefix" class="el-input__icon el-icon-folder" />
+                    <el-input v-model="form.profile" :placeholder="$t('setup.storage.profilePlaceholder')" :prefix-icon="$legacyIcon('el-icon-folder')">
                     </el-input>
                   </el-form-item>
                   <el-form-item :label="$t('setup.storage.logPath')" prop="logPath">
-                    <el-input v-model="form.logPath" :placeholder="$t('setup.storage.logPlaceholder')">
-                      <i slot="prefix" class="el-input__icon el-icon-document" />
+                    <el-input v-model="form.logPath" :placeholder="$t('setup.storage.logPlaceholder')" :prefix-icon="$legacyIcon('el-icon-document')">
                     </el-input>
                   </el-form-item>
                   <p class="setup-tip">{{ $t('setup.storage.restartHint') }}</p>
@@ -249,14 +247,14 @@
                         {{ $t('setup.ai.hostHintPrefix') }}
                         <span class="setup-link">{{ ollamaDemoUrl }}</span>
                         <el-tooltip :content="$t('setup.ai.copyDemoUrlToInput')" placement="top">
-                          <el-button type="text" class="setup-copy-btn" icon="el-icon-document-copy" @click="fillOllamaDemoUrl" />
+                          <el-button type="text" class="setup-copy-btn" :icon="$legacyIcon('el-icon-document-copy')" @click="fillOllamaDemoUrl" />
                         </el-tooltip>
                         {{ $t('setup.ai.hostHintSuffix') }}
                       </p>
                     </el-form-item>
                     <div class="setup-test-row">
                       <el-button :loading="ollamaTesting" @click="handleTestOllama">{{ $t('setup.testConnection') }}</el-button>
-                      <span v-if="ollamaTestPassed" class="setup-test-ok"><i class="el-icon-success" /> {{ $t('setup.testPassed') }}</span>
+                      <span v-if="ollamaTestPassed" class="setup-test-ok"><legacy-icon icon="el-icon-success" /> {{ $t('setup.testPassed') }}</span>
                     </div>
                   </template>
                   <p v-else class="setup-tip">{{ $t('setup.ai.disabledHint') }}</p>

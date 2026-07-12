@@ -12,7 +12,7 @@
         :disabled="!canScrollLeft"
         @click="scrollPrev"
       >
-        <i class="el-icon-arrow-left" />
+        <legacy-icon icon="el-icon-arrow-left" />
       </button>
       <div ref="viewport" class="statistic-scroll-viewport" @scroll="updateScrollState">
       <draggable
@@ -35,7 +35,7 @@
             :tools="tools"
             :params="sc.params"
             :parent="parent"
-            @click.native="clickHandle($event,sc)"
+            @click="clickHandle($event,sc)"
             @tools-click="toolsHandle($event,sc)"
           />
         </div>
@@ -54,7 +54,7 @@
             :tools="tools"
             :params="sc.params"
             :parent="parent"
-            @click.native="clickHandle($event,sc)"
+            @click="clickHandle($event,sc)"
             @tools-click="toolsHandle($event,sc)"
           />
         </div>
@@ -67,7 +67,7 @@
         :disabled="!canScrollRight"
         @click="scrollNext"
       >
-        <i class="el-icon-arrow-right" />
+        <legacy-icon icon="el-icon-arrow-right" />
       </button>
     </div>
   </div>
@@ -79,18 +79,14 @@ import draggable from 'vuedraggable'
 import {addStatistic, listStatistic} from "@/api/system/statistic/template";
 import { resolveCurrentProjectId } from './utils/project-id'
 
-const path = require('path');
-const files = require.context('./Statistic/', true, /\.vue$/);
-const modules = {Cat2ButTitle,draggable};
-const allStatisticList = [];
-// 动态加载组件
-files.keys().forEach(key=>{
-  const name = path.basename(key,'.vue');
-  allStatisticList.push({
-    name: name,
-  });
-  modules[name] = files(key).default||files(key)
-});
+const statisticModules = import.meta.glob('./Statistic/*.vue', { eager: true })
+const modules = { Cat2ButTitle, draggable }
+const allStatisticList = []
+for (const [filePath, mod] of Object.entries(statisticModules)) {
+  const name = filePath.split('/').pop().replace(/\.vue$/, '')
+  allStatisticList.push({ name })
+  modules[name] = mod.default || mod
+}
 
 /** 无统计模板时缺陷页默认统计块（含 ECharts 待办块） */
 const DEFAULT_DEFECT_STATISTIC_TEMPLATE = [
@@ -125,11 +121,8 @@ export const TEAM_STATISTIC_NAMES = [
 
 export default {
   name: "Cat2BugStatistic",
-  model: {
-    prop: 'statisticComponents',
-    event: 'change'
-  },
   components: modules,
+  emits: ['change', 'update:modelValue', 'click-template-node'],
   data() {
     return {
       activeNames: null,
@@ -144,9 +137,15 @@ export default {
     }
   },
   props: {
+    /** Vue 3 v-model */
+    modelValue: {
+      type: Array,
+      default: undefined
+    },
+    /** Vue 2 兼容：显式传入统计块列表 */
     statisticComponents: {
       type: Array,
-      default: null
+      default: undefined
     },
     /** 显示类型，member=根据成员自己设置的模版显示；all=显示所有模版 */
     showType: {
@@ -193,13 +192,22 @@ export default {
           this.list = val;
       }
     },
+    controlledList() {
+      if (this.modelValue !== undefined && this.modelValue !== null) {
+        return this.modelValue
+      }
+      if (this.statisticComponents !== undefined && this.statisticComponents !== null) {
+        return this.statisticComponents
+      }
+      return null
+    },
     list: {
       get(){
-        return this.statisticComponents || this.statisticList;
+        return this.controlledList ?? this.statisticList;
       },
       set(val) {
-        if(this.statisticComponents) {
-          this.$emit('change', val);
+        if (this.controlledList !== null) {
+          this.emitListChange(val);
         }
         this.statisticList = val;
       }
@@ -247,6 +255,10 @@ export default {
     }
   },
   methods: {
+    emitListChange(list) {
+      this.$emit('update:modelValue', list)
+      this.$emit('change', list)
+    },
     /** 保存单个统计块的 params（报时规则、计划选择等） */
     saveStatisticItemParams(name, paramsPatch) {
       if (this.read) {
@@ -261,8 +273,8 @@ export default {
           params: { ...(item.params || {}), ...paramsPatch }
         }
       })
-      if (this.statisticComponents) {
-        this.$emit('change', list)
+      if (this.controlledList !== null) {
+        this.emitListChange(list)
         return
       }
       this.statisticList = list
@@ -273,7 +285,7 @@ export default {
         statisticTemplatConfig: JSON.stringify(list)
       }
       addStatistic(body).then(() => {
-        this.$emit('change', list)
+        this.emitListChange(list)
       })
     },
     /** 更新统计面板 */
@@ -354,23 +366,26 @@ export default {
     },
     /** 获取分析模块 */
     getStatisticList() {
-      if(!this.statisticComponents) {
-        let params = {
-          userId: this.memberId,
-          projectId: this.projectId,
-          moduleType: 1
-        }
-        listStatistic(params).then(res=>{
-          let statisticList=[];
-          if(res.rows.length>0) {
-            statisticList = JSON.parse(res.rows[0].statisticTemplatConfig);
-          } else {
-            statisticList = DEFAULT_DEFECT_STATISTIC_TEMPLATE.map(item => ({ ...item }));
-          }
-          this.statisticList = statisticList;
-          this.$emit('change',statisticList);
-        })
+      if (this.controlledList !== null) {
+        return
       }
+      let params = {
+        userId: this.memberId,
+        projectId: this.projectId,
+        moduleType: 1
+      }
+      listStatistic(params).then(res=>{
+        let statisticList=[];
+        if(res.rows.length>0) {
+          statisticList = JSON.parse(res.rows[0].statisticTemplatConfig);
+        } else {
+          statisticList = DEFAULT_DEFECT_STATISTIC_TEMPLATE.map(item => ({ ...item }));
+        }
+        this.statisticList = statisticList;
+        this.emitListChange(statisticList);
+      }).catch(() => {
+        this.statisticList = DEFAULT_DEFECT_STATISTIC_TEMPLATE.map(item => ({ ...item }));
+      })
     },
     getAllStatisticList() {
       let list = allStatisticList
@@ -401,9 +416,11 @@ export default {
         statisticTemplatConfig: JSON.stringify(list)
       }
       addStatistic(params).then(res=>{
-        this.statisticList = list;
+        if (this.controlledList === null) {
+          this.statisticList = list;
+        }
         this.$message.success(this.$i18n.t('delete.success').toString());
-        this.$emit('change',list);
+        this.emitListChange(list);
       });
     },
     mouseEnterHandle(e){

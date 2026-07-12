@@ -8,7 +8,7 @@
             v-model="queryParams.moduleName"
             size="small"
             :placeholder="$t('module.enter-module-name')"
-            prefix-icon="el-icon-files"
+            :prefix-icon="$legacyIcon('el-icon-files')"
             clearable
             @input="handleQuery"
           />
@@ -20,7 +20,7 @@
             class="module-hint-toggle"
             type="info"
             plain
-            icon="el-icon-sort"
+            :icon="$legacyIcon('el-icon-sort')"
             size="small"
             @click="toggleExpandAll"
           >{{ $t('module.expand-collapse') }}</el-button>
@@ -28,7 +28,7 @@
             class="module-hint-create"
             type="primary"
             plain
-            icon="el-icon-plus"
+            :icon="$legacyIcon('el-icon-plus')"
             size="small"
             @click="handleAdd"
             v-hasPermi="['system:module:add']"
@@ -72,21 +72,21 @@
           <el-button
             size="small"
             type="text"
-            icon="el-icon-edit"
+            :icon="$legacyIcon('el-icon-edit')"
             @click="handleUpdate(scope.row)"
             v-hasPermi="['system:module:edit']"
           >{{ $t('modify') }}</el-button>
           <el-button
             size="small"
             type="text"
-            icon="el-icon-plus"
+            :icon="$legacyIcon('el-icon-plus')"
             @click="handleAdd(scope.row)"
             v-hasPermi="['system:module:add']"
           >{{ $t('add') }}</el-button>
           <el-button
             size="small"
             type="text"
-            icon="el-icon-delete"
+            :icon="$legacyIcon('el-icon-delete')"
             class="red"
             @click="handleDelete(scope.row)"
             v-hasPermi="['system:module:remove']"

@@ -3,7 +3,7 @@
     <template v-for="(tool,index) in tools">
       <li v-if="tool.type=='siding'" class="siding" />
       <el-menu-item v-else-if="!tool.children && tool.icon" :index="tool.name">
-        <template slot="title">
+        <template #title>
           <div class="row">
             <el-tooltip class="item" effect="dark" :content="menuName(tool.name)" placement="bottom">
               <div v-if="tool.type=='check'">
@@ -15,12 +15,12 @@
           </div>
         </template>
       </el-menu-item>
-      <el-submenu v-else :index="tool.name">
-        <template slot="title">
+      <el-sub-menu v-else :index="tool.name">
+        <template #title>
           <svg-icon v-if="tool.icon" class="icon" :icon-class="tool.icon" />
         </template>
         <tools-menu-item :tools="tool.children" />
-      </el-submenu>
+      </el-sub-menu>
     </template>
   </el-menu>
 </template>

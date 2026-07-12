@@ -10,6 +10,7 @@
         <el-input
           ref="defectNameInput"
           v-model="form.defectName"
+          size="small"
           :placeholder="$t('defect.enter-name')"
           maxlength="128"
         />
@@ -21,7 +22,7 @@
         :label="$t('type')"
         prop="defectType"
       >
-        <el-select v-model="form.defectType" clearable :placeholder="$t('defect.select-type')">
+        <el-select v-model="form.defectType" size="small" clearable :placeholder="$t('defect.select-type')">
           <el-option
             v-for="type in config.types"
             :key="type.value || type.key"
@@ -37,7 +38,7 @@
         :label="$t('priority')"
         prop="defectLevel"
       >
-        <el-select v-model="form.defectLevel" clearable :placeholder="$t('defect.select-level')">
+        <el-select v-model="form.defectLevel" size="small" clearable :placeholder="$t('defect.select-level')">
           <el-option
             v-for="dict in dict.type.defect_level"
             :key="dict.value"
@@ -64,9 +65,9 @@
       >
         <el-input
           v-model="form.moduleVersion"
+          size="small"
           :placeholder="$t('defect.enter-version')"
           maxlength="128"
-          style="max-width: 300px;"
         />
       </el-form-item>
 
@@ -80,6 +81,7 @@
           ref="selectModule"
           v-model="form.moduleId"
           :project-id="projectId"
+          size="small"
           @input="onModuleChange"
         />
       </el-form-item>
@@ -92,14 +94,18 @@
       >
         <el-date-picker
           class="defect-plan-datetimerange"
-          :value="planTimeRange"
+          :model-value="planTimeRange"
+          size="small"
           type="datetimerange"
           :range-separator="$t('time-to')"
           :start-placeholder="$t('plan-start-time')"
           :end-placeholder="$t('plan-end-time')"
-          value-format="yyyy-MM-dd HH:mm:ss"
+          :value-format="defectDatetimeValueFormat"
+          :format="defectDatetimeValueFormat"
+          teleported
+          popper-class="defect-form-datetime-panel"
           :placeholder="$t('defect.please-select-end-time')"
-          @input="$emit('update:planTimeRange', $event)"
+          @update:model-value="$emit('update:planTimeRange', $event)"
         />
       </el-form-item>
 
@@ -180,6 +186,7 @@ import Cat2BugTextarea from '@/components/Cat2BugTextarea'
 import DefectCustomFieldFormItem from '@/components/DefectCustomField/DefectCustomFieldFormItem'
 import {
   cloneDefaultFieldValue,
+  DEFECT_DATETIME_VALUE_FORMAT,
   normalizeCustomFieldsForSubmit,
   supportsFieldDefaultValue
 } from '@/components/DefectCustomField/format'
@@ -210,6 +217,9 @@ export default {
     return {
       orderedFormFields: []
     }
+  },
+  computed: {
+    defectDatetimeValueFormat: () => DEFECT_DATETIME_VALUE_FORMAT
   },
   watch: {
     defectFieldLayout: {
@@ -317,9 +327,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.defect-form-ordered-fields ::v-deep .defect-plan-datetimerange.el-date-editor--datetimerange.el-input__inner {
+.defect-form-ordered-fields ::v-deep .defect-plan-datetimerange.el-date-editor--datetimerange {
   width: 100% !important;
-  max-width: 100%;
+  max-width: var(--cat2bug-defect-form-plan-range-max-width, 480px);
   min-width: 0 !important;
   box-sizing: border-box;
 }

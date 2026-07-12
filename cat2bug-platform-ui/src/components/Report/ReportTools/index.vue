@@ -1,7 +1,7 @@
 <template>
   <div class="report-tools report-tools__bar">
     <slot name="left"></slot>
-    <el-button v-show="deleteVisible" data-report-tool="delete" :icon="isShowIcon?'el-icon-delete':''" :size="size" :type="isText?'text':'danger'" :class="isText?'red':''" :plain="!isShowIcon" @click="handleDelete">{{$i18n.t('delete')}}</el-button>
+    <el-button v-show="deleteVisible" data-report-tool="delete" :icon="$legacyIcon(isShowIcon?'el-icon-delete':'')" :size="size" :type="isText?'text':'danger'" :class="isText?'red':''" :plain="!isShowIcon" @click="handleDelete">{{$i18n.t('delete')}}</el-button>
     <slot name="right"></slot>
   </div>
 </template>

@@ -50,7 +50,7 @@
           :is="login.name"
           @lang="changeLang"
         >
-          <template v-if="loginTypeList.length>0" slot="tools">
+          <template v-if="loginTypeList.length>0" #tools>
             <div class="login-type">
               <div class="login-type-title">
                 <el-divider></el-divider>
@@ -77,25 +77,24 @@
 </template>
 
 <script>
-import 'element-ui/lib/theme-chalk/display.css';
-import {getVersion} from "@/api/version";
-import MouseRunner from "./login/components/MouseRunner.vue";
-import MouseDpadControls from "./login/components/MouseDpadControls.vue";
+import { getVersion } from '@/api/version'
+import MouseRunner from './login/components/MouseRunner.vue'
+import MouseDpadControls from './login/components/MouseDpadControls.vue'
 
-const I18N_LOCALE_KEY='i18n-locale'
-const path = require('path');
-const files = require.context('@/views/login/', false, /\.vue$/);
-const modules = {};
-let defaultLogin = null;
-const loginList = [];
-files.keys().forEach(key=>{
-  const name = path.basename(key,'.vue');
-  loginList.push({ name: name });
-  modules[name] = files(key).default||files(key);
-  if(!defaultLogin) {
-    defaultLogin = modules[name]
+const I18N_LOCALE_KEY = 'i18n-locale'
+const loginViews = import.meta.glob('@/views/login/*.vue', { eager: true })
+const modules = {}
+const loginList = []
+let defaultLogin = null
+
+Object.entries(loginViews).forEach(([filePath, mod]) => {
+  const name = filePath.split('/').pop().replace('.vue', '')
+  modules[name] = mod.default
+  loginList.push({ name })
+  if (!defaultLogin) {
+    defaultLogin = { name }
   }
-});
+})
 
 export default {
   name: "Login",
@@ -146,9 +145,9 @@ export default {
       this.$cache.local.set(I18N_LOCALE_KEY,lang);
     },
     handleLoginType(loginComponentName) {
-      this.loginComponentNameList.forEach(c=>{
-        if(loginComponentName == c.name) {
-          this.login = c;
+      this.loginComponentNameList.forEach(c => {
+        if (loginComponentName === c.name) {
+          this.login = c
         }
       })
     }

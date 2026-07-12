@@ -1,7 +1,9 @@
 import { isExternal } from '@/utils/validate'
 
+import defaultImageUrl from '@/assets/images/default-image.svg?url'
+
 /** 上传图片加载失败或路径无效时的统一占位图 */
-export const DEFAULT_IMAGE = require('@/assets/images/default-image.svg')
+export const DEFAULT_IMAGE = defaultImageUrl
 
 /** el-image error 槽外层 class（与全局 cat2bug-image-error 样式配套） */
 export const IMAGE_ERROR_SLOT_CLASS = 'cat2bug-image-error'
@@ -116,6 +118,9 @@ export function resolveUploadUrl(path, baseApi = process.env.VUE_APP_BASE_API ||
     return trimmed
   }
   if (trimmed.startsWith('/static/') || trimmed.indexOf('/static/') > -1) {
+    return trimmed
+  }
+  if (trimmed.startsWith('/assets/')) {
     return trimmed
   }
   if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {

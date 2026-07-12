@@ -2,7 +2,7 @@
   <el-col v-if="cardVisible" :span="6">
     <el-card class="box-card">
       <div slot="header" class="clearfix">
-        <i class="el-icon-user-solid"></i>
+        <legacy-icon icon="el-icon-user-solid"></legacy-icon>
         <div>
           <span>{{$t('project.project-and-member')}}</span>
           <span>{{$t('project.project-and-member-describe')}}</span>

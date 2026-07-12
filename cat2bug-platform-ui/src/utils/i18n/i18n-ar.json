@@ -462,7 +462,7 @@
   "defect.builtin-field.createMember": "أنشأه",
   "defect.builtin-field.updateTime": "وقت التحديث",
   "defect.custom-field.section": "حقول العيب",
-  "defect.custom-field.object-placeholder": "كائن JSON، مثال {\"k\":\"v\"}",
+  "defect.custom-field.object-placeholder": "كائن JSON، مثال \"k\": \"v\"",
   "defect.custom-field.invalid-json": "تنسيق JSON غير صالح",
   "defect.custom-field.add-item": "إضافة عنصر",
   "defect.all-type": "جميع الأنواع",

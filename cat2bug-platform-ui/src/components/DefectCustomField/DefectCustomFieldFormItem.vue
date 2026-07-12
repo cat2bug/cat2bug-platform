@@ -2,16 +2,21 @@
   <el-form-item
     :label="field.fieldLabel"
     :required="field.required"
+    :class="{
+      'cat2bug-form-item-upload': field.fieldType === 'image' || field.fieldType === 'file'
+    }"
   >
     <el-input
       v-if="field.fieldType === 'string'"
       v-model="fieldValue"
+      size="small"
       :maxlength="field.maxLength || 512"
       clearable
     />
     <el-input-number
       v-else-if="field.fieldType === 'number'"
       v-model="fieldValue"
+      size="small"
       controls-position="right"
       class="defect-custom-field-number"
     />
@@ -23,12 +28,17 @@
       v-else-if="field.fieldType === 'datetime'"
       v-model="fieldValue"
       type="datetime"
-      value-format="yyyy-MM-dd HH:mm:ss"
+      size="small"
+      :value-format="defectDatetimeValueFormat"
+      :format="defectDatetimeValueFormat"
+      teleported
+      popper-class="defect-form-datetime-panel"
       class="defect-custom-field-datetime"
     />
     <el-select
       v-else-if="field.fieldType === 'enum'"
       v-model="fieldValue"
+      size="small"
       clearable
       class="defect-custom-field-enum defect-enum-select"
       :style="enumSelectCssVars(field, fieldValue)"
@@ -47,6 +57,7 @@
       v-else-if="field.fieldType === 'object'"
       :value="objectText"
       type="textarea"
+      size="small"
       :rows="4"
       :placeholder="$t('defect.custom-field.object-placeholder')"
       @input="onObjectTextInput"
@@ -87,11 +98,14 @@
         />
         <el-date-picker
           v-else-if="arrayItemType(field) === 'datetime'"
-          :value="arrayValues[idx]"
+          :model-value="arrayValues[idx]"
           type="datetime"
-          value-format="yyyy-MM-dd HH:mm:ss"
+          :value-format="defectDatetimeValueFormat"
+          :format="defectDatetimeValueFormat"
+          teleported
+          popper-class="defect-form-datetime-panel"
           size="small"
-          @input="updateArrayItem(idx, $event)"
+          @update:model-value="updateArrayItem(idx, $event)"
         />
         <el-input
           v-else
@@ -101,9 +115,9 @@
           size="small"
           @input="updateArrayItem(idx, $event)"
         />
-        <el-button type="text" icon="el-icon-delete" @click="removeArrayItem(idx)" />
+        <el-button link :icon="$legacyIcon('el-icon-delete')" @click="removeArrayItem(idx)" />
       </div>
-      <el-button type="text" icon="el-icon-plus" @click="addArrayItem">
+      <el-button link :icon="$legacyIcon('el-icon-plus')" @click="addArrayItem">
         {{ $t('defect.custom-field.add-item') }}
       </el-button>
     </div>
@@ -114,6 +128,7 @@
 import ImageUpload from '@/components/ImageUpload'
 import FileUpload from '@/components/FileUpload'
 import {
+  DEFECT_DATETIME_VALUE_FORMAT,
   enumOptionTextStyle,
   enumOptions,
   enumSelectCssVars,
@@ -135,6 +150,7 @@ export default {
     }
   },
   computed: {
+    defectDatetimeValueFormat: () => DEFECT_DATETIME_VALUE_FORMAT,
     fieldValue: {
       get() {
         if (this.field.fieldType === 'enum') {
@@ -234,6 +250,7 @@ export default {
   margin-bottom: 6px;
 }
 .defect-custom-field-datetime {
+  max-width: var(--cat2bug-defect-form-field-max-width, 300px);
   width: 100%;
 }
 </style>

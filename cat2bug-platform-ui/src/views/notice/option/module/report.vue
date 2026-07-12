@@ -34,8 +34,8 @@
 <!--                  @change="handleChange"-->
 <!--                  placeholder="选择时间">-->
 <!--                </el-time-select>-->
-<!--                <el-button v-if="form.option.regular.list.length>1" type="text" size="mini" icon="el-icon-delete" class="red" @click="handleDeleteRegular(index,r)"></el-button>-->
-<!--                <el-button v-if="index==form.option.regular.list.length-1" type="text" size="mini" icon="el-icon-plus" @click="handleAddRegular"></el-button>-->
+<!--                <el-button v-if="form.option.regular.list.length>1" type="text" size="mini" :icon="$legacyIcon('el-icon-delete')" class="red" @click="handleDeleteRegular(index,r)"></el-button>-->
+<!--                <el-button v-if="index==form.option.regular.list.length-1" type="text" size="mini" :icon="$legacyIcon('el-icon-plus')" @click="handleAddRegular"></el-button>-->
 <!--              </div>-->
 <!--            </div>-->
 <!--          </div>-->

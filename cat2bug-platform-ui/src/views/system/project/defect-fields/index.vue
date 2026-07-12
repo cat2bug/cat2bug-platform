@@ -9,7 +9,7 @@
       <el-button
         class="project-defect-field-hint-add"
         type="primary"
-        icon="el-icon-plus"
+        :icon="$legacyIcon('el-icon-plus')"
         size="small"
         @click="handleAdd"
       >{{ $t('defect.custom-field.add-field') }}</el-button>
@@ -142,18 +142,14 @@
       >
         <template slot-scope="scope">
           <div v-if="canEditDefectField" class="sort-order-arrows" @click.stop>
-            <i
-              class="el-icon-caret-top sort-arrow"
+            <legacy-icon icon="el-icon-caret-top" class="sort-arrow"
               :class="{ 'is-disabled': !canMoveSort(scope.row, -1) }"
               :title="$t('defect.custom-field.sort-up')"
-              @click.stop="handleSortMove(scope.row, -1)"
-            />
-            <i
-              class="el-icon-caret-bottom sort-arrow"
+              @click.stop="handleSortMove(scope.row, -1)" />
+            <legacy-icon icon="el-icon-caret-bottom" class="sort-arrow"
               :class="{ 'is-disabled': !canMoveSort(scope.row, 1) }"
               :title="$t('defect.custom-field.sort-down')"
-              @click.stop="handleSortMove(scope.row, 1)"
-            />
+              @click.stop="handleSortMove(scope.row, 1)" />
           </div>
           <span v-else>{{ scope.row.sortOrder != null ? scope.row.sortOrder : 0 }}</span>
         </template>
@@ -171,14 +167,14 @@
               v-if="canEditDefectField"
               size="mini"
               type="text"
-              icon="el-icon-edit"
+              :icon="$legacyIcon('el-icon-edit')"
               @click="handleUpdate(scope.row)"
             >{{ $t('modify') }}</el-button>
             <el-button
               v-if="canRemoveDefectField"
               size="mini"
               type="text"
-              icon="el-icon-delete"
+              :icon="$legacyIcon('el-icon-delete')"
               class="red"
               @click="handleDelete(scope.row)"
             >{{ $t('delete') }}</el-button>
@@ -269,11 +265,11 @@
             </el-table-column>
             <el-table-column :label="$t('operate')" width="70" align="center">
               <template slot-scope="scope">
-                <el-button type="text" icon="el-icon-delete" class="red" @click="removeEnumOption(scope.$index)" />
+                <el-button type="text" :icon="$legacyIcon('el-icon-delete')" class="red" @click="removeEnumOption(scope.$index)" />
               </template>
             </el-table-column>
           </el-table>
-          <el-button type="text" icon="el-icon-plus" @click="addEnumOption" style="margin-top: 8px;">
+          <el-button type="text" :icon="$legacyIcon('el-icon-plus')" @click="addEnumOption" style="margin-top: 8px;">
             {{ $t('defect.custom-field.add-option') }}
           </el-button>
         </el-form-item>
@@ -345,7 +341,8 @@ import {
 } from '@/utils/defect-custom-field-columns'
 import { TableOptions } from '@/views/system/defect/list/table-options'
 import { isBuiltinFieldAlwaysEnabled } from '@/utils/defect-field-layout'
-import { mapGetters } from 'vuex'
+import { mapState } from 'pinia'
+import { useSettingsStore } from '@/stores/settings'
 import DefectFieldDefaultValueInput from '@/components/DefectCustomField/DefectFieldDefaultValueInput'
 import {
   enumOptionsFromTypeConfig,
@@ -400,7 +397,7 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['themeMode']),
+    ...mapState(useSettingsStore, ['themeMode']),
     /** 浅色主题用 Element 默认 light；深色主题系统灰、自定义蓝（dark） */
     sourceTagEffect() {
       return this.themeMode === 'dark' ? 'dark' : 'light'

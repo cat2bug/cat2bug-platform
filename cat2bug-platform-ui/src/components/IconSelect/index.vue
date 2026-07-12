@@ -1,8 +1,7 @@
 <!-- @author zhengjie -->
 <template>
   <div class="icon-body">
-    <el-input v-model="name" class="icon-search" clearable placeholder="请输入图标名称" @clear="filterIcons" @input="filterIcons">
-      <i slot="suffix" class="el-icon-search el-input__icon" />
+    <el-input v-model="name" class="icon-search" clearable placeholder="请输入图标名称" :suffix-icon="$legacyIcon('el-icon-search')" @clear="filterIcons" @input="filterIcons">
     </el-input>
     <div class="icon-list">
       <div class="list-container">

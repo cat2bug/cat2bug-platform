@@ -3,7 +3,7 @@
     <el-button
       size="small"
       :type="type==='text'?'text':'danger'"
-      icon="el-icon-plus"
+      :icon="$legacyIcon('el-icon-plus')"
       @click="handleOpenAddDefect($event, planItem)"
       v-hasPermi="['system:defect:add']"
     >
@@ -12,7 +12,7 @@
     <el-button
       size="small"
       :type="type==='text'?'text':'danger'"
-      icon="el-icon-attract"
+      :icon="$legacyIcon('el-icon-attract')"
       @click="handleOpenRelatedDefect($event, planItem)"
       v-hasPermi="['system:defect:add']"
     >
@@ -48,14 +48,14 @@
     <el-button
       size="small"
       :type="type"
-      icon="el-icon-check"
+      :icon="$legacyIcon('el-icon-check')"
       @click="handlePlanItemState(planItem, 'pass')"
       v-if="hasPassPermi(planItem)"
     >{{ $t('pass') }}</el-button>
     <el-button
       size="small"
       :type="type"
-      icon="el-icon-close"
+      :icon="$legacyIcon('el-icon-close')"
       @click="handlePlanItemState(planItem, 'unexecuted')"
       v-if="hasCancelPassPermi(planItem)"
     >{{ $t('cancel-pass') }}</el-button>

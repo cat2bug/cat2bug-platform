@@ -17,7 +17,7 @@
       >
         <el-form-item label="" prop="accountName" class="list-query-nav-item project-ai-account-hint-query-name" data-query-key="accountName">
           <el-input
-            prefix-icon="el-icon-setting"
+            :prefix-icon="$legacyIcon('el-icon-setting')"
             v-model="queryParams.accountName"
             placeholder="请输入配置名称"
             clearable
@@ -26,7 +26,7 @@
         </el-form-item>
         <el-form-item label="" prop="modelName" class="list-query-nav-item" data-query-key="modelName">
           <el-input
-            prefix-icon="el-icon-coin"
+            :prefix-icon="$legacyIcon('el-icon-coin')"
             v-model="queryParams.modelName"
             placeholder="请输入模型名称"
             clearable
@@ -39,7 +39,7 @@
           class="project-ai-account-hint-create"
           type="primary"
           plain
-          icon="el-icon-plus"
+          :icon="$legacyIcon('el-icon-plus')"
           size="small"
           @click="handleAdd"
           v-hasPermi="['ai:account:add']"
@@ -61,7 +61,7 @@
           <el-button
             size="mini"
             type="text"
-            icon="el-icon-video-play"
+            :icon="$legacyIcon('el-icon-video-play')"
             :loading="scope.row._testing === true"
             @click="handleTest(scope.row)"
             v-hasPermi="['ai:account:edit']"
@@ -69,14 +69,14 @@
           <el-button
             size="mini"
             type="text"
-            icon="el-icon-edit"
+            :icon="$legacyIcon('el-icon-edit')"
             @click="handleUpdate(scope.row)"
             v-hasPermi="['ai:account:edit']"
           >修改</el-button>
           <el-button
             size="mini"
             type="text"
-            icon="el-icon-delete"
+            :icon="$legacyIcon('el-icon-delete')"
             @click="handleDelete(scope.row)"
             v-hasPermi="['ai:account:remove']"
           >删除</el-button>

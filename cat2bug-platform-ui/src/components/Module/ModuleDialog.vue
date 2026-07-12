@@ -1,6 +1,6 @@
 <template>
-  <el-dialog :title="title" :visible.sync="visible" width="600px" append-to-body :close-on-press-escape="false" :before-close="onToolDialogBeforeClose" @opened="onToolDialogOpened">
-    <el-form ref="form" rules="rules" :model="form" :rules="rules" label-width="150px" class="module-dialog-form">
+  <el-dialog :title="title" v-model="visible" width="600px" append-to-body :close-on-press-escape="false" :before-close="onToolDialogBeforeClose" @opened="onToolDialogOpened">
+    <el-form ref="form" :model="form" :rules="rules" label-width="150px" class="module-dialog-form">
       <el-form-item :label="$t('module.parent-module')" prop="modulePid">
           <treeselect
             v-model="form.modulePid"
@@ -11,7 +11,7 @@
           />
       </el-form-item>
       <el-form-item :prop="moduleNameFormProp" class="module-name-row cat2bug-field-hint-exclude is-no-asterisk">
-        <template slot="label">
+        <template #label>
           <div class="module-switch-title">
             <label class="module-name-label-hint">
               <span v-if="!form.moduleId" class="module-name-required" aria-hidden="true">*</span>{{ moduleNameLabelText }}
@@ -56,13 +56,15 @@
         />
       </el-form-item>
     </el-form>
-    <div slot="footer" class="dialog-footer">
-      <el-button class="defect-kbd-hint-host" type="primary" @click="submitForm">
-        {{ $t('ok') }}
-        <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
-      </el-button>
-      <el-button @click="requestCloseToolDialog">{{ $t('cancel') }}</el-button>
-    </div>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button class="defect-kbd-hint-host" type="primary" @click="submitForm">
+          {{ $t('ok') }}
+          <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
+        </el-button>
+        <el-button @click="requestCloseToolDialog">{{ $t('cancel') }}</el-button>
+      </div>
+    </template>
   </el-dialog>
 </template>
 
@@ -90,6 +92,12 @@ export default {
       moduleOptions: [],
       // 表单参数
       form: {
+        moduleId: null,
+        modulePid: null,
+        moduleName: null,
+        batchModuleNames: [],
+        annexUrls: null,
+        remark: null,
         projectId: this.projectId
       },
       // 表单校验

@@ -2068,3 +2068,28 @@ index 6411a01..cde9559 100644
 +  box-shadow: none !important;
 +}
  </style>
+diff --git a/node_modules/vue-excel-editor/src/VueExcelFilter.vue b/node_modules/vue-excel-editor/src/VueExcelFilter.vue
+index 5b11a21..3032d36 100644
+--- a/node_modules/vue-excel-editor/src/VueExcelFilter.vue
++++ b/node_modules/vue-excel-editor/src/VueExcelFilter.vue
+@@ -9,7 +9,7 @@
+     :style="filterRowTop"
+     autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+     tabindex="-1"
+-    v-on="listeners"
++    @input="onInput"
+     @focus="onFocus"
+     @blur="onBlur"
+     @keydown.exact.37="keyWest"
+@@ -37,11 +37,6 @@ export default {
+     }
+   },
+   computed: {
+-    listeners () {
+-      return {
+-        ...this.$listeners, input: this.onInput
+-      }
+-    },
+     err () {
+       if (this.validate)
+         return this.validate(this.value)

@@ -25,7 +25,7 @@
               @delete="handleDelete(c, index, $event)">
 <!--              <template #tools>-->
 <!--                <div v-show="c.toolsVisible" class="tools">-->
-<!--                  <el-button size="mini" icon="el-icon-plus" />-->
+<!--                  <el-button size="mini" :icon="$legacyIcon('el-icon-plus')" />-->
 <!--                </div>-->
 <!--              </template>-->
             </component>

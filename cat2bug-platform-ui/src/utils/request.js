@@ -56,7 +56,7 @@ service.interceptors.request.use(config => {
       const s_time = sessionObj.time;                // 请求时间
       const interval = 1000;                         // 间隔时间(ms)，小于此时间视为重复提交
       if (s_data === requestObj.data && requestObj.time - s_time < interval && s_url === requestObj.url) {
-        const message = i18n.t('http.not-resubmit').toString();
+        const message = i18n.global.t('http.not-resubmit').toString();
         console.warn(`[${s_url}]: ` + message)
         return Promise.reject(new Error(message))
       } else {
@@ -91,7 +91,7 @@ service.interceptors.response.use(res => {
       )
       if (!skipReloginPrompt && !isRelogin.show) {
         isRelogin.show = true;
-        MessageBox.confirm(i18n.t('http.login-expired').toString(), i18n.t('prompted').toString(), { confirmButtonText: i18n.t('login-again').toString(), cancelButtonText: i18n.t('cancel').toString(), type: 'warning' }).then(() => {
+        MessageBox.confirm(i18n.global.t('http.login-expired').toString(), i18n.global.t('prompted').toString(), { confirmButtonText: i18n.global.t('login-again').toString(), cancelButtonText: i18n.global.t('cancel').toString(), type: 'warning' }).then(() => {
           isRelogin.show = false;
           store.dispatch('LogOut').then(() => {
             location.href = '/index';
@@ -100,7 +100,7 @@ service.interceptors.response.use(res => {
           isRelogin.show = false;
         });
       }
-      return Promise.reject(i18n.t('http.invalid-session'))
+      return Promise.reject(i18n.global.t('http.invalid-session'))
     } else if (code > 10000) {
       return Promise.reject(res.data)
     } else if (code === 500) {
@@ -123,11 +123,11 @@ service.interceptors.response.use(res => {
     console.log('err' + error)
     let { message } = error;
     if (message == "Network Error") {
-      message = i18n.t('http.interface-connect-exception');
+      message = i18n.global.t('http.interface-connect-exception');
     } else if (message.includes("timeout")) {
-      message = i18n.t('http.system-interface-timeout');
+      message = i18n.global.t('http.system-interface-timeout');
     } else if (message.includes("Request failed with status code")) {
-      message = i18n.t('system.interface') + ' ' + message.substr(message.length - 3) + ' ' + i18n.t('exception');
+      message = i18n.global.t('system.interface') + ' ' + message.substr(message.length - 3) + ' ' + i18n.global.t('exception');
     }
     const silent = error.config && error.config.silentError === true
     if (!silent) {
@@ -165,7 +165,7 @@ export function setHeader(url, headers) {
 
 // 通用下载方法
 export function download(url, params, filename, config) {
-  downloadLoadingInstance = Loading.service({ text: i18n.t("http.downloading-wait").toString(), background: "rgba(0, 0, 0, 0.7)", })
+  downloadLoadingInstance = Loading.service({ text: i18n.global.t("http.downloading-wait").toString(), background: "rgba(0, 0, 0, 0.7)", })
   return service.post(url, params, {
     transformRequest: [(params) => { return tansParams(params) }],
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -185,7 +185,7 @@ export function download(url, params, filename, config) {
     downloadLoadingInstance.close();
   }).catch((r) => {
     console.error(r)
-    Message.error(i18n.t('http.download-fail').toString())
+    Message.error(i18n.global.t('http.download-fail').toString())
     downloadLoadingInstance.close();
   })
 }

@@ -1,7 +1,7 @@
 <template>
   <el-card class="box-card">
     <div slot="header" class="clearfix">
-      <i class="el-icon-s-flag"></i>
+      <legacy-icon icon="el-icon-s-flag"></legacy-icon>
       <div>
         <span>{{$t('team.info')}}</span>
         <span>{{$t('team.base-info-describe')}}</span>

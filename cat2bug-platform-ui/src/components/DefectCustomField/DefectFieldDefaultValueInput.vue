@@ -22,12 +22,15 @@
     />
     <el-date-picker
       v-else-if="fieldType === 'datetime'"
-      :value="stringValue"
+      :model-value="stringValue"
       type="datetime"
-      value-format="yyyy-MM-dd HH:mm:ss"
+      :value-format="defectDatetimeValueFormat"
+      :format="defectDatetimeValueFormat"
+      teleported
+      popper-class="defect-form-datetime-panel"
       class="defect-field-default-value-datetime"
       clearable
-      @input="onString"
+      @update:model-value="onString"
     />
     <el-select
       v-else-if="fieldType === 'enum'"
@@ -86,6 +89,7 @@
 import ImageUpload from '@/components/ImageUpload'
 import FileUpload from '@/components/FileUpload'
 import {
+  DEFECT_DATETIME_VALUE_FORMAT,
   enumOptionTextStyle,
   enumOptions,
   enumSelectCssVars,
@@ -109,6 +113,7 @@ export default {
     }
   },
   computed: {
+    defectDatetimeValueFormat: () => DEFECT_DATETIME_VALUE_FORMAT,
     cfg() {
       return parseTypeConfig({ typeConfig: this.typeConfig })
     },

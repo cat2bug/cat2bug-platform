@@ -7,7 +7,7 @@
           <el-input
             v-model="queryParams.reportTitle"
             :placeholder="$t('report.please-enter-title')"
-            prefix-icon="el-icon-tickets"
+            :prefix-icon="$legacyIcon('el-icon-tickets')"
             size="small"
             clearable
             @input="handleQuery"
@@ -48,7 +48,7 @@
             @hide="onColumnPickerPopoverHide"
           >
             <div class="defect-column-picker-head">
-              <i class="el-icon-s-fold"></i>
+              <el-icon class="legacy-icon-inline"><component :is="$legacyIcon('el-icon-s-fold')" /></el-icon>
               <h4>{{ $t('display-field') }}</h4>
             </div>
             <el-divider class="defect-field-divider"></el-divider>
@@ -60,13 +60,13 @@
             >
               <el-checkbox v-for="c in reportColumnPickerOptions" :key="c.key" :label="c.key">{{ $t(c.key) }}</el-checkbox>
             </el-checkbox-group>
-            <el-button class="report-list-hint-columns" style="padding: 9px;" plain slot="reference" icon="el-icon-s-fold" size="small"></el-button>
+            <el-button class="report-list-hint-columns" style="padding: 9px;" plain slot="reference" :icon="$legacyIcon('el-icon-s-fold')" size="small"></el-button>
           </el-popover>
           <el-button
             class="report-hint-batch-delete"
             type="danger"
             plain
-            icon="el-icon-delete"
+            :icon="$legacyIcon('el-icon-delete')"
             size="small"
             :disabled="multiple"
             @click="handleDelete"

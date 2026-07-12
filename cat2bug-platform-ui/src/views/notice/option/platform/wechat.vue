@@ -2,27 +2,28 @@
   <el-form ref="form" :model="form" :rules="rules" label-width="190px">
     <!-- 单发配置区域 -->
     <el-form-item prop="singleSwitch">
-      <template slot="label">
+      <template #label>
         <span>{{$t('enterprise-wechat.single-send-config')}}</span>
       </template>
       <el-switch v-model="form.singleSwitch" @change="handleChange"></el-switch>
     </el-form-item>
     <el-form-item prop="mobile">
-      <template slot="label">
+      <template #label>
         <div class="form-label">
           <label>{{$t('enterprise-wechat.mobile')}}</label>
           <el-tooltip class="item" effect="dark" :content="$t('enterprise-wechat.mobile-illustrate')" placement="bottom">
-            <i class="el-icon-question"></i>
+            <legacy-icon icon="el-icon-question"></legacy-icon>
           </el-tooltip>
         </div>
       </template>
       <el-input v-model="form.mobile" class="notice-option-input-group" @input="handleMobileInput" :placeholder="$t('enterprise-wechat.enter-mobile')" maxlength="32" :disabled="!form.singleSwitch">
-        <el-button
-          slot="append"
+        <template #append>
+          <el-button
           class="notice-option-test-btn notice-option-test-btn--single"
           :loading="mobileTestLoading"
           :disabled="!form.singleSwitch || !hasMobile"
           @click="handleMobileTest">{{$t('enterprise-wechat.single-test')}}</el-button>
+        </template>
       </el-input>
     </el-form-item>
     <el-alert
@@ -36,27 +37,28 @@
     <!-- 群发配置区域 -->
     <el-divider></el-divider>
     <el-form-item prop="groupSwitch">
-      <template slot="label">
+      <template #label>
         <span>{{$t('enterprise-wechat.group-send-config')}}</span>
       </template>
       <el-switch v-model="form.groupSwitch" @change="handleChange"></el-switch>
     </el-form-item>
     <el-form-item prop="hook">
-      <template slot="label">
+      <template #label>
         <div class="form-label">
           <label>{{$t('enterprise-wechat.hook')}}</label>
           <el-tooltip class="item" effect="dark" :content="$t('enterprise-wechat.hook-illustrate')" placement="bottom">
-            <i class="el-icon-question"></i>
+            <legacy-icon icon="el-icon-question"></legacy-icon>
           </el-tooltip>
         </div>
       </template>
       <el-input v-model="form.hook" class="notice-option-input-group" @input="handleHookInput" :placeholder="$t('enterprise-wechat.enter-hook-url')" maxlength="255" :disabled="!form.groupSwitch">
-        <el-button
-          slot="append"
+        <template #append>
+          <el-button
           class="notice-option-test-btn notice-option-test-btn--group"
           :loading="groupTestLoading"
           :disabled="!form.groupSwitch || !hasHook"
           @click="handleGroupTest">{{$t('enterprise-wechat.group-test')}}</el-button>
+        </template>
       </el-input>
     </el-form-item>
   </el-form>

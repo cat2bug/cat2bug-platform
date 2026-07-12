@@ -1,7 +1,17 @@
 <template>
   <div class="project-member-icons">
-    <el-tooltip class="item" effect="dark" v-for="(member,index) in members" :key="member.userId" :disabled="!tooltip" :content="member.nickName" placement="top">
-      <cat2-bug-avatar :member="member" :size="size" />
+    <el-tooltip
+      class="item"
+      effect="dark"
+      v-for="(member, index) in validMembers"
+      :key="memberKey(member, index)"
+      :disabled="!tooltip"
+      :content="member.nickName || member.userName || member.name || ''"
+      placement="top"
+    >
+      <span class="project-member-icons__avatar">
+        <cat2-bug-avatar :member="member" :size="size" />
+      </span>
     </el-tooltip>
   </div>
 </template>
@@ -28,6 +38,18 @@ export default {
     size: {
       type: [String, Number],
       default: 'medium'
+    }
+  },
+  computed: {
+    validMembers() {
+      return (this.members || []).filter((member) => {
+        return member && (member.userId != null || member.nickName || member.userName || member.name)
+      })
+    }
+  },
+  methods: {
+    memberKey(member, index) {
+      return member.userId != null ? member.userId : `member-${index}`
     }
   }
 }
