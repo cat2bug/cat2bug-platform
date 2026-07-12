@@ -28,12 +28,13 @@ export function clearMultipaneResizerSync(resizerEl) {
 }
 
 /** 分隔条高度与左侧交付物树外框一致 */
-export function syncMultipaneResizerWithTree(resizerEl, treeModuleEl) {
+export function syncMultipaneResizerWithTree(resizerEl, treeModuleEl, minHeightPx) {
   if (!resizerEl || !treeModuleEl) {
     clearMultipaneResizerSync(resizerEl);
     return;
   }
-  const height = Math.ceil(treeModuleEl.getBoundingClientRect().height);
+  const treeH = Math.ceil(treeModuleEl.getBoundingClientRect().height);
+  const height = Math.max(treeH, Math.ceil(Number(minHeightPx) || 0));
   if (height > 0) {
     resizerEl.classList.add('multipane-resizer--sync-tree-height');
     resizerEl.style.setProperty('--multipane-resizer-sync-height', `${height}px`);
@@ -43,18 +44,31 @@ export function syncMultipaneResizerWithTree(resizerEl, treeModuleEl) {
   }
 }
 
-export function syncMultipaneTreeModuleWithTable(treeModuleEl, tableComponentRef, resizerEl) {
+function syncResizerAfterLayout(resizerEl, treeModuleEl, fallbackPaneEl) {
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      const fallbackH = fallbackPaneEl
+        ? Math.ceil(fallbackPaneEl.getBoundingClientRect().height)
+        : 0;
+      syncMultipaneResizerWithTree(resizerEl, treeModuleEl, fallbackH);
+    });
+  });
+}
+
+export function syncMultipaneTreeModuleWithTable(treeModuleEl, tableComponentRef, resizerEl, fallbackPaneEl) {
   if (!treeModuleEl) return;
   const tableEl = resolveElTableRoot(tableComponentRef);
   if (!tableEl) {
     clearMultipaneTreeModuleSync(treeModuleEl);
-    clearMultipaneResizerSync(resizerEl);
+    treeModuleEl.classList.add('tree-module--stretch-bottom');
+    syncResizerAfterLayout(resizerEl, treeModuleEl, fallbackPaneEl);
     return;
   }
   const bodyWrapper = tableEl.querySelector('.el-table__body-wrapper');
   if (!bodyWrapper) {
     clearMultipaneTreeModuleSync(treeModuleEl);
-    clearMultipaneResizerSync(resizerEl);
+    treeModuleEl.classList.add('tree-module--stretch-bottom');
+    syncResizerAfterLayout(resizerEl, treeModuleEl, fallbackPaneEl);
     return;
   }
   const hasVerticalScroll = bodyWrapper.scrollHeight > bodyWrapper.clientHeight + 1;
@@ -76,7 +90,10 @@ export function syncMultipaneTreeModuleWithTable(treeModuleEl, tableComponentRef
 
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
-      syncMultipaneResizerWithTree(resizerEl, treeModuleEl);
+      const fallbackH = fallbackPaneEl
+        ? Math.ceil(fallbackPaneEl.getBoundingClientRect().height)
+        : 0;
+      syncMultipaneResizerWithTree(resizerEl, treeModuleEl, fallbackH);
     });
   });
 }

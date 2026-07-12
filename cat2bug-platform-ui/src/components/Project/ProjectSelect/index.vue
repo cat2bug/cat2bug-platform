@@ -8,7 +8,7 @@
     trigger="hover">
     <template #reference>
       <div :class="triggerClass">
-        <legacy-icon icon="el-icon-star-on" class="yellow start-switch project-select-star" :collect="currentProjectDisplay.collect ? 'true' : 'false'" @click.stop="handleProjectCollect(currentProjectDisplay, $event)"></legacy-icon>
+        <legacy-icon :icon="currentProjectDisplay.collect ? 'el-icon-star-on' : 'el-icon-star-off'" class="yellow start-switch project-select-star" :collect="currentProjectDisplay.collect ? 'true' : 'false'" @click.stop="handleProjectCollect(currentProjectDisplay, $event)"></legacy-icon>
         <p class="prefix-project-name">{{ currentProjectDisplay.projectName || '' }}</p>
         <legacy-icon icon="el-icon-arrow-down" class="project-select-caret" />
       </div>
@@ -24,7 +24,7 @@
         @click="handleProjectChange(item)"
       >
         <div class="row">
-          <legacy-icon icon="el-icon-star-on" class="yellow start-switch" :collect="item.collect?'true':'false'" @click="handleProjectCollect(item, $event)"></legacy-icon>
+          <legacy-icon :icon="item.collect ? 'el-icon-star-on' : 'el-icon-star-off'" class="yellow start-switch" :collect="item.collect?'true':'false'" @click="handleProjectCollect(item, $event)"></legacy-icon>
 <!--        <el-image :src="item.projectIcon" />-->
           <p class="prefix-project-name">{{item.projectName}}</p>
         </div>
@@ -461,15 +461,17 @@ export default {
 
 .project-select-caret {
   flex-shrink: 0;
-  font-size: 10px !important;
-  width: 10px;
-  height: 10px;
+  font-size: 12px !important;
+  width: 12px;
+  height: 12px;
   line-height: 1;
-  color: var(--cat2bug-input-icon-color, #909399);
+  color: var(--text-color-regular, #606266);
 
+  :deep(.el-icon),
   :deep(svg) {
-    width: 10px !important;
-    height: 10px !important;
+    width: 12px !important;
+    height: 12px !important;
+    color: inherit;
   }
 }
   .prefix-project-name {
@@ -526,17 +528,26 @@ export default {
 .item.is-keyboard-active {
   background-color: #e8f4ff;
 }
-.start-switch[collect="true"] {
-  color: var(--star-switch-on-color, rgb(247, 186, 42));
-  -webkit-text-stroke: 3px transparent;
-  background: var(--star-switch-on-fill, rgb(247, 186, 42)) top left / 100% 100%;
-  -webkit-background-clip: text;
-}
 .start-switch {
-  color: var(--star-switch-off-color, #ffffff);
-  -webkit-text-stroke: 3px transparent;
-  background: var(--star-switch-off-fill, rgb(198, 209, 222)) top left / 100% 100%;
-  -webkit-background-clip: text;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 14px;
+  line-height: 1;
+
+  :deep(.el-icon) {
+    font-size: inherit;
+    color: inherit;
+  }
+}
+
+.start-switch[collect='true'] {
+  color: var(--star-switch-on-color, rgb(247, 186, 42));
+}
+
+.start-switch:not([collect='true']) {
+  color: var(--star-switch-off-stroke, #c0c4cc);
 }
 .title {
   margin: 5px 5px 15px 10px;
@@ -567,6 +578,14 @@ export default {
 .project-select-popover {
   .title {
     white-space: nowrap;
+  }
+
+  .start-switch[collect='true'] {
+    color: var(--star-switch-on-color, rgb(247, 186, 42));
+  }
+
+  .start-switch:not([collect='true']) {
+    color: var(--star-switch-off-stroke, #c0c4cc);
   }
 
   .project-select-list .item .prefix-project-name {

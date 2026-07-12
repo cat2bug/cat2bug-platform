@@ -30,8 +30,9 @@ export function computeResizerHandleTopPx(resizerEl, lineHeightPx) {
   if (r.height < 1) return null
 
   const lineInsetTop = 0
+  const effectiveH = Math.max(h, r.height)
   const lineTop = r.top + lineInsetTop
-  const lineBottom = lineTop + h
+  const lineBottom = lineTop + effectiveH
 
   const { top: vTop, bottom: vBottom } = getViewportVerticalBounds()
   const visTop = Math.max(lineTop, vTop)
@@ -41,7 +42,7 @@ export function computeResizerHandleTopPx(resizerEl, lineHeightPx) {
   if (visBottom > visTop) {
     centerY = (visTop + visBottom) / 2
   } else {
-    centerY = lineTop + h / 2
+    centerY = lineTop + effectiveH / 2
   }
 
   return centerY - r.top

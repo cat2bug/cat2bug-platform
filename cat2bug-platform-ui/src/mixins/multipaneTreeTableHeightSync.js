@@ -16,8 +16,12 @@ export default {
         const tableRef = this.$refs[tableRefName];
         const resizer = this.$refs.paneResizer;
         const resizerEl = resizer && (resizer.$el || resizer);
-        if (!treeEl || !tableRef) return;
-        syncMultipaneTreeModuleWithTable(treeEl, tableRef, resizerEl);
+        const fallbackPaneEl =
+          this.$refs.defectTableContext ||
+          this.$refs.caseTableContext ||
+          null;
+        if (!treeEl) return;
+        syncMultipaneTreeModuleWithTable(treeEl, tableRef, resizerEl, fallbackPaneEl);
         this.$nextTick(() => {
           if (typeof this.scheduleSyncPaneResizerHandle === 'function') {
             this.scheduleSyncPaneResizerHandle();

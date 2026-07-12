@@ -55,7 +55,7 @@ export default {
       const lineH = (rectH > 1 ? rectH : legacy) || 8
       const px = computeResizerHandleTopPx(el, lineH)
       if (px == null || Number.isNaN(px)) return
-      this.$set(this.multipaneStyle, '--resizerHandleTop', `${Math.round(px * 100) / 100}px`)
+      this.multipaneStyle['--resizerHandleTop'] = `${Math.round(px * 100) / 100}px`
     },
   },
 }

@@ -392,6 +392,14 @@ export default {
         this.loadCustomFieldColumns();
       }
     },
+    loading() {
+      this.$nextTick(() => this.setDragComponentSize());
+    },
+    defectTableColumnsReady(val) {
+      if (val) {
+        this.$nextTick(() => this.setDragComponentSize());
+      }
+    },
     "$i18n.locale": function () {
       this.$nextTick(() => {
         this.$refs.cat2BugTable && this.$refs.cat2BugTable.doLayout();
@@ -541,7 +549,6 @@ export default {
       this.$nextTick(() => {
         this.$refs.cat2BugTable && this.$refs.cat2BugTable.doLayout && this.$refs.cat2BugTable.doLayout();
         this.syncMultipaneTreeTableHeight('cat2BugTable');
-        this.scheduleSyncPaneResizerHandle();
       });
     },
     initDefectTableBodyResizeObserver() {
@@ -676,6 +683,7 @@ export default {
       this.loading = true
       this.queryParams = params
       this.syncDefectTableBodyMaxHeight()
+      this.$nextTick(() => this.setDragComponentSize())
       listDefect(params).then(response => {
         if (gen !== this.defectListRequestGen) return
         this.defectList = response.rows
