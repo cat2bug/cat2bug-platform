@@ -12,10 +12,9 @@
           <el-button
             type="primary"
             size="small"
-            :icon="Cloudy"
             plain
             @click="goTarget('https://gitee.com/cat2bug/cat2bug-platform')"
-            >{{$t('visit-gitee')}}</el-button
+            ><svg-icon icon-class="gitee" class="home-intro-action-icon" />{{$t('visit-gitee')}}</el-button
           >
           <el-button
             size="small"
@@ -357,7 +356,7 @@
 
 <script>
 import {getVersion} from "@/api/version";
-import { Cloudy, HomeFilled } from '@element-plus/icons-vue'
+import { HomeFilled } from '@element-plus/icons-vue'
 import Cat2BugAvatar from "@/components/Cat2BugAvatar";
 import wechatMiniProgramImg from '@/assets/images/wechat-mini-program.png'
 import thanksGaoqiImg from '@/assets/images/thanks/gaoqi.png'
@@ -377,7 +376,7 @@ export default {
   name: "Index",
   components: { Cat2BugAvatar },
   setup() {
-    return { Cloudy, HomeFilled }
+    return { HomeFilled }
   },
   data() {
     return {

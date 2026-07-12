@@ -158,7 +158,12 @@ export default defineConfig(({ mode }) => {
         resolvers: [ElementPlusResolver({ importStyle: 'sass' })]
       }),
       Components({
-        resolvers: [ElementPlusResolver({ importStyle: 'sass' })]
+        resolvers: [ElementPlusResolver({ importStyle: 'sass' })],
+        // CaseList.vue exists in CloudCase2 and Plan dialogs; both are imported explicitly.
+        exclude: [
+          /[\\/]Cloud[\\/]CloudCase2[\\/]chat[\\/]CaseList\.vue$/,
+          /[\\/]Plan[\\/]HandlePlanDialog[\\/]CaseList\.vue$/
+        ]
       }),
       ...(!isDev ? [
         viteCompression({

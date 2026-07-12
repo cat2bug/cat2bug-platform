@@ -44,7 +44,7 @@ else
   echo "==> API-only Native（非默认 Release 路径）"
 fi
 
-NATIVE_PROFILES=(-Pnative -Pembedded -Prelease)
+NATIVE_PROFILES=(-Pnative -Pembedded)
 MVN_GOAL=(clean package)
 if [[ "${SKIP_MVN_CLEAN:-false}" == "true" ]]; then
   MVN_GOAL=(package)

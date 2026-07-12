@@ -90,7 +90,7 @@ export default {
 .dropdown-menu {
   display: flex;
   flex-direction: column;
-  ::v-deep .el-dropdown-menu__item {
+  :deep(.el-dropdown-menu__item) {
     //display: inline-flex;
     //flex-direction: row;
     //align-items: center;

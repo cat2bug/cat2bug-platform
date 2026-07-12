@@ -2316,6 +2316,28 @@ td.cat2bug-operate-column [role='tooltip'][aria-hidden='true'] {
   margin-bottom: 0;
 }
 
+/* 安装/升级向导底栏：恢复 default 按钮尺寸，避免窄屏 flex 拉伸 */
+.setup-page .setup-panel-footer-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+
+  .el-button {
+    flex: 0 0 auto;
+    width: auto;
+    box-sizing: border-box;
+    /* 覆盖 ElConfigProvider 全局 small */
+    font-size: var(--el-font-size-base, 14px) !important;
+    padding: 8px 15px !important;
+    min-height: var(--cat2bug-control-height, 32px) !important;
+    height: var(--cat2bug-control-height, 32px) !important;
+    line-height: 1 !important;
+  }
+}
+
 /* 页面表单底部操作区：取消左、主操作右，与上方输入框左缘对齐 */
 .el-form-item.page-form-actions {
   .page-form-actions__buttons {

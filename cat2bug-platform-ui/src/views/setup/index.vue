@@ -366,6 +366,7 @@ import {
 } from '@/api/setup'
 import { resetSetupStatusCache } from '@/utils/setup-status'
 import { useUserStore } from '@/stores/user'
+import setupWizardMascot from '@/assets/images/setup-wizard-mascot.png'
 
 const I18N_LOCALE_KEY = 'i18n-locale'
 const SETUP_AWAITING_READY_KEY = 'cat2bug.setup.awaitingReady'
@@ -530,7 +531,7 @@ export default {
         : this.$t('setup.cache.local')
     },
     brandLogoSrc() {
-      return require('@/assets/images/setup-wizard-mascot.png')
+      return setupWizardMascot
     },
     dbRules() {
       const validateDatabaseName = (rule, value, callback) => {
@@ -1639,8 +1640,30 @@ $setup-wm-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
   color: $setup-muted;
 }
 
-.setup-summary {
+.setup-summary.el-descriptions {
   margin-bottom: 12px;
+  border: 1px solid #ebeef5;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #fff;
+
+  :deep(.el-descriptions__table.is-bordered) {
+    tr:first-child .el-descriptions__cell {
+      border-top: none;
+    }
+
+    tr:last-child .el-descriptions__cell {
+      border-bottom: none;
+    }
+
+    .el-descriptions__cell.is-bordered-label {
+      border-left: none;
+    }
+
+    .el-descriptions__cell.is-bordered-content {
+      border-right: none;
+    }
+  }
 }
 
 .setup-lang-label {
@@ -1807,12 +1830,7 @@ $setup-wm-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
   }
 
   .setup-panel-footer-nav {
-    justify-content: stretch;
-
-    .el-button {
-      flex: 1;
-      min-width: 0;
-    }
+    justify-content: flex-end;
   }
 
   .setup-pick-grid--2 {

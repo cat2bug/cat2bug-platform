@@ -267,6 +267,7 @@ import {
   LOGIN_USERNAME_MAX_LENGTH
 } from '@/utils/login-credential-rules'
 import { useUserStore } from '@/stores/user'
+import updateWizardMascot from '@/assets/images/update-wizard-mascot.png'
 
 const I18N_LOCALE_KEY = 'i18n-locale'
 const REQUIRED_READY_CONFIRM_COUNT = 2
@@ -444,7 +445,7 @@ export default {
         && !this.isSuccessResult
     },
     brandLogoSrc() {
-      return require('@/assets/images/update-wizard-mascot.png')
+      return updateWizardMascot
     },
     canStartUpgrade() {
       if (!this.form.backupEnabled) {
@@ -1151,11 +1152,11 @@ $setup-wm-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
   background: #fafbfc;
 }
 
-.setup-panel-footer-lang,
-.setup-panel-footer-nav {
+.setup-panel-footer-lang {
   display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 0;
 }
 
 .setup-step-panel {
@@ -1173,7 +1174,7 @@ $setup-wm-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
   }
 }
 
-.setup-inner-form ::v-deep .el-form-item {
+.setup-inner-form :deep(.el-form-item) {
   margin-bottom: 12px;
 }
 
@@ -1225,10 +1226,42 @@ $setup-wm-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
   color: $setup-muted;
 }
 
-.setup-summary {
-  margin-bottom: 12px;
+$setup-card-border: #ebeef5;
 
-  ::v-deep .el-descriptions-item__label {
+.setup-summary.el-descriptions {
+  margin-bottom: 12px;
+  border: 1px solid $setup-card-border;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #fff;
+
+  :deep(.el-descriptions__body) {
+    background-color: transparent;
+  }
+
+  :deep(.el-descriptions__table.is-bordered) {
+    .el-descriptions__cell {
+      border-color: $setup-card-border;
+    }
+
+    tr:first-child .el-descriptions__cell {
+      border-top: none;
+    }
+
+    tr:last-child .el-descriptions__cell {
+      border-bottom: none;
+    }
+
+    .el-descriptions__cell.is-bordered-label {
+      border-left: none;
+    }
+
+    .el-descriptions__cell.is-bordered-content {
+      border-right: none;
+    }
+  }
+
+  :deep(.el-descriptions__cell.is-bordered-label) {
     width: 148px;
     min-width: 148px;
     white-space: nowrap;
@@ -1236,7 +1269,7 @@ $setup-wm-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
     line-height: 1.5;
   }
 
-  ::v-deep .el-descriptions-item__content {
+  :deep(.el-descriptions__cell.is-bordered-content) {
     vertical-align: top;
     word-break: break-word;
   }
@@ -1322,7 +1355,25 @@ $setup-wm-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
   margin-top: 16px;
 }
 
-.upgrade-diff-table ::v-deep .upgrade-diff-row--missing {
+.upgrade-diff-table {
+  border-radius: 6px;
+  overflow: hidden;
+
+  :deep(.el-table__inner-wrapper) {
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  :deep(&.el-table--border) {
+    border: 1px solid $setup-card-border;
+  }
+
+  :deep(&.el-table--border .el-table__cell) {
+    border-color: $setup-card-border;
+  }
+}
+
+.upgrade-diff-table :deep(.upgrade-diff-row--missing) {
   background: #fff8e1;
 }
 
@@ -1336,11 +1387,42 @@ $setup-wm-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 
 .upgrade-config-diff-collapse {
   margin-bottom: 12px;
+  border: 1px solid $setup-card-border;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #fff;
 
-  ::v-deep .el-collapse-item__header {
+  :deep(.el-collapse-item) {
+    border: none;
+  }
+
+  :deep(.el-collapse-item__header) {
+    padding: 10px 14px;
     font-size: 13px;
     font-weight: 600;
     color: #606266;
+    border-bottom: none;
+    border-radius: 8px;
+    line-height: 1.4;
+    min-height: 44px;
+    box-sizing: border-box;
+  }
+
+  :deep(.el-collapse-item.is-active > .el-collapse-item__header) {
+    border-bottom: 1px solid $setup-card-border;
+    border-radius: 8px 8px 0 0;
+  }
+
+  :deep(.el-collapse-item__wrap) {
+    border-bottom: none;
+  }
+
+  :deep(.el-collapse-item__content) {
+    padding: 14px 16px 16px;
+  }
+
+  .setup-step-desc {
+    margin: 0 0 12px;
   }
 }
 
@@ -1367,6 +1449,10 @@ $setup-wm-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
   .setup-panel-footer {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .setup-panel-footer-nav {
+    justify-content: flex-end;
   }
 }
 

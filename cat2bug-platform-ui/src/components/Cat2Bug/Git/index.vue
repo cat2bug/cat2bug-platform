@@ -1,5 +1,5 @@
 <template>
-  <el-dropdown trigger="click" class="cat2bug-git-dropdown" @command="handleCommand">
+  <el-dropdown trigger="hover" class="cat2bug-git-dropdown" popper-class="navbar-git-dropdown" @command="handleCommand">
     <span class="git-dropdown-trigger">
       <svg-icon icon-class="github" />
     </span>
@@ -64,6 +64,31 @@ export default {
 
     .svg-icon {
       font-size: 20px;
+      flex-shrink: 0;
+    }
+  }
+}
+</style>
+
+<style lang="scss">
+/* teleport 到 body，须用 popper-class */
+.navbar-git-dropdown.el-popper {
+  .el-dropdown-menu {
+    padding: 6px 0;
+  }
+
+  .el-dropdown-menu__item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 36px;
+    padding: 8px 16px;
+    font-size: 14px;
+    line-height: 22px;
+    box-sizing: border-box;
+
+    .svg-icon {
+      font-size: 18px;
       flex-shrink: 0;
     }
   }

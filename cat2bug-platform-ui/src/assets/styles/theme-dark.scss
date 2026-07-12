@@ -241,6 +241,9 @@ html.dark {
   --el-border-color-hover: var(--input-border);
   --el-bg-color-overlay: var(--dropdown-bg);
   --el-border-color-light: var(--border-color-light);
+  --el-border-color-lighter: var(--border-color-lighter);
+  --el-descriptions-table-border: 1px solid var(--border-color-light);
+  --el-descriptions-item-bordered-label-background: var(--bg-color-block);
   --el-fill-color-light: var(--table-row-hover-bg);
   --el-color-primary-light-9: rgba(255, 193, 7, 0.12);
   --el-color-primary: var(--cat2bug-primary, #FFC107);
@@ -2345,12 +2348,24 @@ html.dark {
 
     // 配置差异表格（缺失行高亮 + 处理策略标签）
     .upgrade-diff-table {
+      border-radius: 6px;
+      overflow: hidden;
+
+      .el-table__inner-wrapper {
+        border-radius: 6px;
+        overflow: hidden;
+      }
+
       &.el-table--border {
-        border-color: var(--border-color-light) !important;
+        border: 1px solid var(--border-color-light) !important;
       }
 
       &.el-table--border th.el-table__cell,
       &.el-table--border td.el-table__cell {
+        border-color: var(--border-color-light) !important;
+      }
+
+      &.el-table--border .el-table__inner-wrapper::after {
         border-color: var(--border-color-light) !important;
       }
 
@@ -2371,21 +2386,64 @@ html.dark {
       }
     }
 
-    .upgrade-config-diff-collapse {
-      border-color: var(--border-color-light) !important;
+    .setup-summary.el-descriptions {
+      border: 1px solid var(--border-color-light) !important;
+      border-radius: 8px !important;
+      overflow: hidden !important;
+      background-color: var(--table-bg) !important;
 
-      ::v-deep .el-collapse-item__header {
+      .el-descriptions__table.is-bordered {
+        .el-descriptions__cell {
+          border-color: var(--border-color-light) !important;
+        }
+
+        tr:first-child .el-descriptions__cell {
+          border-top: none !important;
+        }
+
+        tr:last-child .el-descriptions__cell {
+          border-bottom: none !important;
+        }
+
+        .el-descriptions__cell.is-bordered-label {
+          border-left: none !important;
+        }
+
+        .el-descriptions__cell.is-bordered-content {
+          border-right: none !important;
+        }
+      }
+    }
+
+    .upgrade-config-diff-collapse.el-collapse {
+      border: 1px solid var(--border-color-light) !important;
+      border-radius: 8px !important;
+      overflow: hidden !important;
+      background-color: var(--collapse-bg) !important;
+
+      .el-collapse-item {
+        border: none !important;
+      }
+
+      .el-collapse-item__header {
         color: var(--text-color-regular) !important;
         background-color: var(--collapse-bg) !important;
-        border-bottom-color: var(--border-color-light) !important;
+        border-bottom: none !important;
+        border-radius: 8px !important;
       }
 
-      ::v-deep .el-collapse-item__wrap {
+      .el-collapse-item.is-active > .el-collapse-item__header {
+        border-bottom: 1px solid var(--border-color-light) !important;
+        border-radius: 8px 8px 0 0 !important;
+      }
+
+      .el-collapse-item__wrap {
         background-color: var(--collapse-bg) !important;
-        border-bottom-color: var(--border-color-light) !important;
+        border-bottom: none !important;
       }
 
-      ::v-deep .el-collapse-item__content {
+      .el-collapse-item__content {
+        padding: 14px 16px 16px !important;
         background-color: var(--collapse-bg) !important;
         color: var(--text-color-regular) !important;
       }
@@ -2497,61 +2555,45 @@ html.dark {
     }
   }
 
-  // Element UI Descriptions Component Overrides（安装/升级向导概览表）
+  // Element Plus Descriptions（非向导页通用）
   .el-descriptions {
-    border-radius: 8px !important;
-    overflow: hidden !important;
-    border: 1px solid var(--border-color-light) !important;
-
-    table {
-      border-collapse: collapse !important;
-      width: 100% !important;
-      background-color: transparent !important;
-    }
+    border-radius: 8px;
+    overflow: hidden;
 
     .el-descriptions__body {
-      background-color: var(--table-bg) !important;
-      color: var(--text-color-regular) !important;
-      border-radius: 8px !important;
-      overflow: hidden !important;
+      background-color: var(--table-bg);
+      color: var(--text-color-regular);
     }
 
-    .el-descriptions-item__label,
-    .el-descriptions-item__content {
-      padding: 12px 16px !important;
-      border-top: none !important;
-      border-left: none !important;
-      border-right: none !important;
-      border-bottom: 1px solid var(--border-color-light) !important;
-    }
+    .el-descriptions__table.is-bordered {
+      border-collapse: collapse;
+      width: 100%;
+      background-color: transparent;
 
-    .el-descriptions-item__label {
-      color: var(--text-color-secondary) !important;
-      font-weight: 600 !important;
-    }
-
-    .el-descriptions-item__content {
-      color: var(--text-color-regular) !important;
-    }
-
-    tbody:nth-child(odd) {
-      .el-descriptions-item__label,
-      .el-descriptions-item__content {
-        background-color: var(--table-bg) !important;
+      .el-descriptions__cell {
+        border-color: var(--border-color-light) !important;
+        color: var(--text-color-regular);
       }
-    }
 
-    tbody:nth-child(even) {
-      .el-descriptions-item__label,
-      .el-descriptions-item__content {
+      .el-descriptions__cell.is-bordered-label {
         background-color: var(--bg-color-block) !important;
+        color: var(--text-color-secondary) !important;
+        font-weight: 600;
       }
-    }
 
-    tbody:last-child {
-      .el-descriptions-item__label,
-      .el-descriptions-item__content {
-        border-bottom: none !important;
+      .el-descriptions__cell.is-bordered-content {
+        background-color: var(--table-bg) !important;
+        color: var(--text-color-regular) !important;
+      }
+
+      tbody tr:nth-child(even) {
+        .el-descriptions__cell.is-bordered-label {
+          background-color: var(--table-bg) !important;
+        }
+
+        .el-descriptions__cell.is-bordered-content {
+          background-color: var(--bg-color-block) !important;
+        }
       }
     }
   }

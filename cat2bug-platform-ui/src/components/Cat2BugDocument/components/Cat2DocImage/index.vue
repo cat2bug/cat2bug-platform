@@ -2,7 +2,7 @@
   <div style="position: relative">
     <slot name="tools"></slot>
     <div class="image-content" :style="{width: imageContent.value.width+'px',height: imageContent.value.height+'px'}">
-      <el-image class="c2d-image" ref="c2d-image" :src="require('@/assets/images/demand.png')" />
+      <el-image class="c2d-image" ref="c2d-image" :src="demandPlaceholder" />
       <div class="c2d-block" v-for="i in 3" :key="i" :style="{left: dragBlock(i).x+'px', top: dragBlock(i).y+'px'}"></div>
     </div>
 <!--    <textarea ref="c2d-input"-->
@@ -22,6 +22,7 @@
 
 <script>
 import ImageUpload from "@/components/ImageUpload";
+import demandPlaceholder from '@/assets/images/demand.png'
 const KEY_ENTER = 13;
 
 export default {
@@ -45,6 +46,7 @@ export default {
   },
   data() {
     return {
+      demandPlaceholder,
       imageContent: this.content,
     }
   },

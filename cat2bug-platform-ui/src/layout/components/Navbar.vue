@@ -257,11 +257,7 @@ export default {
   }
 }
 .dropdown-menu {
-  ::v-deep .el-dropdown-menu__item {
-    display: inline-flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 5px;
+  :deep(.el-dropdown-menu__item) {
     .svg-icon {
       font-size: 20px;
     }
@@ -345,9 +341,22 @@ export default {
 .navbar-user-dropdown.el-popper,
 .navbar-lang-dropdown.el-popper {
   .el-dropdown-menu__item {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    box-sizing: border-box;
     font-size: 14px;
     line-height: 22px;
     padding: 5px 16px;
+  }
+}
+
+.navbar-user-dropdown.el-popper {
+  .el-dropdown-menu > a {
+    display: block;
+    width: 100%;
+    text-decoration: none;
+    color: inherit;
   }
 }
 

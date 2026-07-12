@@ -28,7 +28,7 @@
       </div>
       <div class="shard-footer">
         <div>
-          <el-image class="web-qrcode" :src="require('@/assets/images/web_qrcode.png')" />
+          <el-image class="web-qrcode" :src="webQrcode" />
         </div>
         <div>
           <div class="row">
@@ -136,7 +136,7 @@
       </div>
       <div class="shard-footer">
         <div>
-          <el-image class="web-qrcode" :src="require('@/assets/images/web_qrcode.png')" />
+          <el-image class="web-qrcode" :src="webQrcode" />
         </div>
         <div class="msg">
           <div class="row">
@@ -179,6 +179,7 @@ import { MarkdownRenderer as MarkdownItVue } from '@/components/Markdown';
 import FocusMemberList from "@/components/FocusMemberList";
 import LangSelect from "@/components/LangSelect";
 import {getCase} from "@/api/system/case";
+import webQrcode from '@/assets/images/web_qrcode.png'
 
 const I18N_LOCALE_KEY='i18n-locale'
 const DEFECT_SHARD_PASSWORD_KEY = "defect-shard-password-"
@@ -187,6 +188,7 @@ export default {
   components: { ImageUpload, SelectProjectMember, SelectModule, ListDefectLog, DefectTools, DefectTypeFlag, DefectStateFlag, CaseCard, MarkdownItVue,FocusMemberList, LangSelect },
   data() {
     return {
+      webQrcode,
       defectShardId: null,
       params: {
         password: null

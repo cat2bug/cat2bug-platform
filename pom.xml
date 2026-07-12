@@ -383,15 +383,6 @@
                 <maven.main.skip.jvm.excel>true</maven.main.skip.jvm.excel>
             </properties>
         </profile>
-        <profile>
-            <id>embedded</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-        </profile>
-        <profile>
-            <id>release</id>
-        </profile>
     </profiles>
 
     <repositories>

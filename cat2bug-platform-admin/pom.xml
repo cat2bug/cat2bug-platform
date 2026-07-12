@@ -158,8 +158,23 @@
                 </resources>
             </build>
         </profile>
+        <!-- Apple Silicon：reactor-netty 仅传递 osx-x86_64，需补充 aarch64 原生 DNS 解析库 -->
         <profile>
-            <id>api-only</id>
+            <id>macos-aarch64-netty-dns</id>
+            <activation>
+                <os>
+                    <family>mac</family>
+                    <arch>aarch64</arch>
+                </os>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>io.netty</groupId>
+                    <artifactId>netty-resolver-dns-native-macos</artifactId>
+                    <classifier>osx-aarch_64</classifier>
+                    <scope>runtime</scope>
+                </dependency>
+            </dependencies>
         </profile>
         <profile>
             <id>dev-tools</id>
@@ -182,37 +197,6 @@
                     <artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
                 </dependency>
             </dependencies>
-        </profile>
-        <profile>
-            <id>jvm-excel-sources</id>
-            <activation>
-                <property>
-                    <name>!maven.main.skip.jvm.excel</name>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>build-helper-maven-plugin</artifactId>
-                        <version>3.6.0</version>
-                        <executions>
-                            <execution>
-                                <id>add-jvm-excel-sources</id>
-                                <phase>generate-sources</phase>
-                                <goals>
-                                    <goal>add-source</goal>
-                                </goals>
-                                <configuration>
-                                    <sources>
-                                        <source>src/jvm/java</source>
-                                    </sources>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
         </profile>
         <profile>
             <id>native</id>
@@ -315,9 +299,6 @@
                     </plugin>
                 </plugins>
             </build>
-        </profile>
-        <profile>
-            <id>release</id>
         </profile>
         <!-- JVM fat JAR 瘦身：仅 repackage 剔除 POI/lombok；勿与 -Pnative 同用（process-aot 需 POI classpath） -->
         <profile>
@@ -426,6 +407,25 @@
             </resource>
         </resources>
         <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.6.0</version>
+                <executions>
+                    <execution>
+                        <id>add-jvm-excel-sources</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>src/jvm/java</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
