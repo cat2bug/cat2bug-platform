@@ -2,7 +2,7 @@
   <div v-loading="loading" class="defect-state-chart" :style="{width:width}">
     <h1 v-if="!query.planId">{{ $t('dashboard.plan-statistics.title') }}</h1>
     <div v-else class="chart-tools">
-      <el-select v-model="query.planId" placeholder="" size="mini" class="planSelect" @change="handlePlanChange">
+      <el-select v-model="query.planId" placeholder="" size="small" class="planSelect" @change="handlePlanChange">
         <template #prefix>
           <div class="prefix">
             <h1>{{ $t('dashboard.plan-statistics.title') }}</h1>
@@ -17,13 +17,13 @@
         </el-option>
       </el-select>
       <el-tooltip class="item" effect="dark" :content="$t('export')" placement="right-end">
-        <el-button type="text" :icon="$legacyIcon('el-icon-download')" @click="handleExport"></el-button>
+        <el-button link :icon="$legacyIcon('el-icon-download')" @click="handleExport"></el-button>
       </el-tooltip>
     </div>
     <div class="plan-statistics" @click="handlePlanClick">
       <el-statistic
         group-separator=",">
-        <template slot="title">
+        <template #title>
           <span>{{$t('case')}}: </span>
           <span class="click plan-stat-pass">{{$t('case.pass-tested')}}</span>
           <span>/</span>
@@ -33,7 +33,7 @@
           <span>/</span>
           <span class="click plan-stat-total">{{$t('total')}}</span>
         </template>
-        <template slot="formatter">
+        <template #formatter>
           <span class="click plan-stat-pass">{{selectPlan.passCount||0}}</span>
           <span>/</span>
           <span class="click plan-stat-fail">{{selectPlan.failCount||0}}</span>
@@ -89,6 +89,9 @@ import Cat2BugText from "@/components/Cat2BugText";
 import CaseList from "@/components/Plan/HandlePlanDialog/CaseList";
 import DefectList from "@/components/Plan/HandlePlanDialog/DefectList";
 
+import { storeToRefs } from 'pinia'
+import { useUserStore } from '@/stores/user'
+
 export default {
   name: "PlanStatisticsChart",
   components: {
@@ -104,6 +107,11 @@ export default {
       default: '100px'
     },
   },
+  setup() {
+    const userStore = useUserStore()
+    const { config: userConfig } = storeToRefs(userStore)
+    return { userConfig }
+  },
   data() {
     return {
       loading: false,
@@ -117,7 +125,7 @@ export default {
   computed: {
     /** 获取项目id */
     projectId() {
-      return parseInt(this.$store.state.user.config.currentProjectId);
+      return parseInt(this.userConfig.currentProjectId);
     },
     selectPlanName: function () {
       return function (planId) {
@@ -184,51 +192,95 @@ export default {
   }
 }
 .planSelect {
-  width: 100%;
+  width: auto;
+  max-width: 100%;
+  flex-shrink: 0;
+
   .prefix {
     display: inline-flex;
     flex-direction: row;
     align-items: center;
     gap: 15px;
-    > *:first-child {
-      flex-shrink: 0;
-    }
+    white-space: nowrap;
+
+    > *:first-child,
     > *:last-child {
       flex-shrink: 0;
+    }
+
+    > *:last-child {
       font-size: 1rem;
     }
   }
+
+  ::v-deep .el-select__wrapper {
+    width: auto !important;
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    height: 50px !important;
+    min-height: 50px !important;
+    padding-left: 0 !important;
+    padding-right: 24px !important;
+  }
+
+  ::v-deep .el-select__wrapper:hover,
+  ::v-deep .el-select__wrapper.is-focused,
+  ::v-deep .el-select__wrapper.is-hovering {
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  ::v-deep .el-select__selection,
+  ::v-deep .el-select__selected-item,
+  ::v-deep .el-select__placeholder {
+    opacity: 0 !important;
+    width: 0 !important;
+    overflow: hidden !important;
+  }
+
   ::v-deep .el-input,
+  ::v-deep .el-input__wrapper,
   ::v-deep .el-input__inner {
+    width: auto !important;
     background-color: transparent !important;
     border-color: transparent !important;
     box-shadow: none !important;
   }
+
   ::v-deep input {
-    width: 100%;
+    width: 0 !important;
+    min-width: 0 !important;
     height: 50px;
     line-height: 48px;
-    border: 0px solid #DCDFE6;
+    border: 0;
+    padding: 0;
     color: transparent !important;
     -webkit-text-fill-color: transparent !important;
     background-color: transparent !important;
   }
-  ::v-deep .el-select__caret {
-    height: 38px;
+
+  ::v-deep .el-select__caret,
+  ::v-deep .el-select__suffix {
     color: var(--text-color-secondary);
   }
-  ::v-deep .el-input__prefix {
-    width: 100%;
+
+  ::v-deep .el-input__prefix,
+  ::v-deep .el-select__prefix {
+    width: auto !important;
     display: inline-flex;
     flex-direction: row;
     justify-content: flex-start;
     pointer-events: none;
+    position: relative;
+
     .prefix {
       h1 {
         margin: 5px 0;
         font-size: 24px;
         color: var(--text-color-primary);
       }
+
       span {
         color: var(--text-color-secondary);
       }
@@ -290,6 +342,7 @@ export default {
   display: inline-flex;
   flex-direction: row;
   align-items: center;
+  justify-content: flex-start;
   gap: 10px;
   ::v-deep .el-input__suffix {
     display: inline-flex;

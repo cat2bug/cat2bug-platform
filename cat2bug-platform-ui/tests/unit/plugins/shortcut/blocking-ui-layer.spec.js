@@ -2,6 +2,21 @@
 
 import { hasBlockingUiLayer } from '@/plugins/shortcut/service'
 
+function mockVisibleRects(root = document) {
+  root.querySelectorAll('*').forEach((el) => {
+    if (!el.getBoundingClientRect || el._cat2bugMockRect) return
+    el._cat2bugMockRect = true
+    el.getBoundingClientRect = () => ({
+      width: 100,
+      height: 100,
+      top: 0,
+      left: 0,
+      right: 100,
+      bottom: 100
+    })
+  })
+}
+
 function mountVisibleCaseDrawer() {
   document.body.innerHTML = `
     <div class="el-drawer__wrapper" style="position:fixed;inset:0;width:100px;height:100px;">
@@ -10,6 +25,7 @@ function mountVisibleCaseDrawer() {
       </div>
     </div>
   `
+  mockVisibleRects(document.body)
 }
 
 describe('hasBlockingUiLayer', () => {
@@ -39,6 +55,7 @@ describe('hasBlockingUiLayer', () => {
         </div>
       </div>
     `
+    mockVisibleRects(document.body)
     expect(hasBlockingUiLayer()).toBe(true)
     expect(hasBlockingUiLayer({
       excludeDefectFormDrawer: true,
@@ -55,6 +72,7 @@ describe('hasBlockingUiLayer', () => {
         </div>
       </div>
     `
+    mockVisibleRects(document.body)
     expect(hasBlockingUiLayer()).toBe(true)
     expect(hasBlockingUiLayer({ excludeCaseImportDialog: true })).toBe(false)
   })
@@ -67,6 +85,7 @@ describe('hasBlockingUiLayer', () => {
         </div>
       </div>
     `
+    mockVisibleRects(document.body)
     expect(hasBlockingUiLayer()).toBe(true)
     expect(hasBlockingUiLayer({
       excludeDefectFormDrawer: true,
@@ -86,6 +105,7 @@ describe('hasBlockingUiLayer', () => {
     `
     const wrapper = document.querySelector('.el-dialog__wrapper')
     wrapper.__vue__ = { $options: { name: 'ModuleDialog' }, $parent: null }
+    mockVisibleRects(document.body)
     expect(hasBlockingUiLayer()).toBe(true)
     expect(hasBlockingUiLayer({
       excludeDefectFormDrawer: true,
@@ -102,6 +122,7 @@ describe('hasBlockingUiLayer', () => {
         </div>
       </div>
     `
+    mockVisibleRects(document.body)
     expect(hasBlockingUiLayer()).toBe(true)
     expect(hasBlockingUiLayer({
       excludeDefectFormDrawer: true,
@@ -116,6 +137,7 @@ describe('hasBlockingUiLayer', () => {
         <div class="project-icon-popper"></div>
       </div>
     `
+    mockVisibleRects(document.body)
     expect(hasBlockingUiLayer()).toBe(true)
     expect(hasBlockingUiLayer({
       excludeDefectFormDrawer: true,

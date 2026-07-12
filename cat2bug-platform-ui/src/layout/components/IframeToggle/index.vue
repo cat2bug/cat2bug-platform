@@ -11,13 +11,17 @@
 </template>
 
 <script>
+import { storeToRefs } from 'pinia'
 import InnerLink from "../InnerLink/index";
+import { useTagsViewStore } from '@/stores/tagsView'
 
 export default {
   components: { InnerLink },
-  computed: {
-    iframeViews() {
-      return this.$store.state.tagsView.iframeViews;
+  setup() {
+    const tagsViewStore = useTagsViewStore()
+    const { iframeViews } = storeToRefs(tagsViewStore)
+    return {
+      iframeViews
     }
   },
   methods: {

@@ -2,7 +2,8 @@
   <div class="plan-item-tools">
     <el-button
       size="small"
-      :type="type==='text'?'text':'danger'"
+      :link="isTextMode"
+      :type="isTextMode ? undefined : 'danger'"
       :icon="$legacyIcon('el-icon-plus')"
       @click="handleOpenAddDefect($event, planItem)"
       v-hasPermi="['system:defect:add']"
@@ -11,7 +12,8 @@
     </el-button>
     <el-button
       size="small"
-      :type="type==='text'?'text':'danger'"
+      :link="isTextMode"
+      :type="isTextMode ? undefined : 'danger'"
       :icon="$legacyIcon('el-icon-attract')"
       @click="handleOpenRelatedDefect($event, planItem)"
       v-hasPermi="['system:defect:add']"
@@ -21,7 +23,8 @@
     <el-button
       v-if="planItem.defectIds && planItem.defectIds.length==1"
       size="small"
-      :type="type==='text'?'text':'danger'"
+      :link="isTextMode"
+      :type="isTextMode ? undefined : 'danger'"
       @click="handleOpenHandleDefect(planItem, planItem.defectIds[0])"
       v-hasPermi="['system:defect:edit']"
     > <svg-icon icon-class="bug"></svg-icon>
@@ -30,8 +33,8 @@
     <el-dropdown
       class="defect-dropdown"
       size="small"
-      :split-button="type!=='text'"
-      :type="type!=='text'?'danger':'text'"
+      :split-button="!isTextMode"
+      :type="isTextMode ? undefined : 'danger'"
       placement="bottom-start"
       @visible-change="handlePlanItemDefectList($event, planItem)"
       @command="handleOpenHandleDefect(planItem, $event)"
@@ -40,21 +43,25 @@
         <span class="plan-item-dropdown-link">
           <svg-icon icon-class="bug"></svg-icon>{{ $t('defect') }}({{ planItem.defectIds.length }})
         </span>
-      <el-dropdown-menu class="plan-item-defect-list" slot="dropdown" v-loading="defectLoading">
+      <template #dropdown>
+          <el-dropdown-menu class="plan-item-defect-list" v-loading="defectLoading">
         <el-dropdown-item v-for="(defect,defectIndex) in planItem.defectList" :key="defectIndex" :command="defect.defectId">
           <defect-state-flag :defect="defect" /><span class="plan-item-defect-num">#{{ defect.projectNum }}</span>{{ defect.defectName }}</el-dropdown-item>
       </el-dropdown-menu>
+        </template>
     </el-dropdown>
     <el-button
       size="small"
-      :type="type"
+      :link="isTextMode"
+      :type="isTextMode ? undefined : type"
       :icon="$legacyIcon('el-icon-check')"
       @click="handlePlanItemState(planItem, 'pass')"
       v-if="hasPassPermi(planItem)"
     >{{ $t('pass') }}</el-button>
     <el-button
       size="small"
-      :type="type"
+      :link="isTextMode"
+      :type="isTextMode ? undefined : type"
       :icon="$legacyIcon('el-icon-close')"
       @click="handlePlanItemState(planItem, 'unexecuted')"
       v-if="hasCancelPassPermi(planItem)"
@@ -78,12 +85,9 @@ import {checkPermi} from "@/utils/permission";
 const PLAN_ITEM_STATE_NOT_PASS = 'not_pass';
 
 export default {
+  emits: ['update:planItem', 'change'],
   name: "PlanItemTools",
   components: {HandleDefect, AddDefect, RelatedDefect, DefectStateFlag},
-  model: {
-    prop: 'planItem',
-    event: 'change'
-  },
   props: {
     plan: {
       type: Object,
@@ -108,6 +112,9 @@ export default {
     }
   },
   computed: {
+    isTextMode() {
+      return this.type === 'text'
+    },
     /** 是否有通过权限 */
     hasPassPermi: function() {
       return function (item) {
@@ -152,7 +159,7 @@ export default {
         } else {
           this.planItem.defectIds.push(defect.defectId);
         }
-        this.$emit('change', this.planItem);
+        this.$emit('update:planItem', this.planItem); this.$emit('change', this.planItem);
       })
     },
     /** 更改子项状态操作 */
@@ -170,7 +177,7 @@ export default {
       updatePlanItem(data).then(()=>{
         this.planItem.planItemState = state;
         this.$message.success(this.$i18n.t('plan.pass-success').toString());
-        this.$emit('change', this.planItem, state);
+        this.$emit('update:planItem', this.planItem, state); this.$emit('change', this.planItem, state);
       });
     },
     /** 处理添加缺陷完成操作 */

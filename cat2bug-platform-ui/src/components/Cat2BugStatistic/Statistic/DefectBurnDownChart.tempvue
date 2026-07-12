@@ -1,6 +1,6 @@
 <template>
   <cat2-bug-card :title="title" :tools="tools" @tools-click="toolsHandle">
-    <template slot="content">
+    <template #content>
       <div id="defect-burn-down-chart-div"></div>
     </template>
   </cat2-bug-card>

@@ -19,12 +19,12 @@
         v-if="draggable"
         tag="div"
         v-model="list"
+        item-key="name"
         class="statistic-tools"
         @change="updateStatisticPanel"
       >
+        <template #item="{ element: sc, index }">
         <div
-          v-for="(sc,index) in list"
-          :key="sc.name + '_' + index"
           class="statistic-item"
           :class="'statistic-item--' + sc.name"
         >
@@ -39,6 +39,7 @@
             @tools-click="toolsHandle($event,sc)"
           />
         </div>
+        </template>
       </draggable>
       <div v-else class="statistic-tools">
         <div
@@ -75,12 +76,15 @@
 
 <script>
 import Cat2ButTitle from "./Components/Title"
-import draggable from 'vuedraggable'
+import draggable from '@/adapters/vuedraggable'
 import {addStatistic, listStatistic} from "@/api/system/statistic/template";
 import { resolveCurrentProjectId } from './utils/project-id'
+import { pinia } from '@/store/pinia.js'
+import { useUserStore } from '@/stores/user'
 
 const statisticModules = import.meta.glob('./Statistic/*.vue', { eager: true })
 const modules = { Cat2ButTitle, draggable }
+const userStore = useUserStore(pinia)
 const allStatisticList = []
 for (const [filePath, mod] of Object.entries(statisticModules)) {
   const name = filePath.split('/').pop().replace(/\.vue$/, '')
@@ -220,7 +224,7 @@ export default {
       return resolveCurrentProjectId(this)
     },
     memberId() {
-      return parseInt(this.$store.state.user.id);
+      return parseInt(userStore.id);
     },
     /** 无统计块时不占位（配合缺陷页 .defect-tools-statistic flex gap） */
     emptyHiddenStyle() {

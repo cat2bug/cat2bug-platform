@@ -1,7 +1,7 @@
 <template>
   <el-drawer
     :size="width"
-    :visible.sync="drawer"
+    v-model="drawer"
     :direction="direction">
     <template #header>
       <h1 class="title">{{title}}</h1>
@@ -11,23 +11,27 @@
           <span class="el-dropdown-link">
             <svg-icon icon-class="link" />
           </span>
-          <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item command="30%">30%</el-dropdown-item>
-            <el-dropdown-item command="50%">50%</el-dropdown-item>
-            <el-dropdown-item command="80%">80%</el-dropdown-item>
-            <el-dropdown-item command="100%">100%</el-dropdown-item>
-          </el-dropdown-menu>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item command="30%">30%</el-dropdown-item>
+              <el-dropdown-item command="50%">50%</el-dropdown-item>
+              <el-dropdown-item command="80%">80%</el-dropdown-item>
+              <el-dropdown-item command="100%">100%</el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
         </el-dropdown>
         <el-dropdown @command="windowPositionChangedHandle">
           <span class="el-dropdown-link">
             <svg-icon icon-class="frame-top" />
           </span>
-          <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item command="ttb"><svg-icon icon-class="frame-top" class="marginRight5" />居上</el-dropdown-item>
-            <el-dropdown-item command="rtl"><svg-icon icon-class="frame-right" class="marginRight5" />居右</el-dropdown-item>
-            <el-dropdown-item command="btt"><svg-icon icon-class="frame-bottom" class="marginRight5" />居下</el-dropdown-item>
-            <el-dropdown-item command="ltr"><svg-icon icon-class="frame-left" class="marginRight5" />居左</el-dropdown-item>
-          </el-dropdown-menu>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item command="ttb"><svg-icon icon-class="frame-top" class="marginRight5" />居上</el-dropdown-item>
+              <el-dropdown-item command="rtl"><svg-icon icon-class="frame-right" class="marginRight5" />居右</el-dropdown-item>
+              <el-dropdown-item command="btt"><svg-icon icon-class="frame-bottom" class="marginRight5" />居下</el-dropdown-item>
+              <el-dropdown-item command="ltr"><svg-icon icon-class="frame-left" class="marginRight5" />居左</el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
         </el-dropdown>
         <svg-icon icon-class="close" @click="closeHandle" />
       </div>

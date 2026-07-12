@@ -1,7 +1,7 @@
 <template>
   <el-dialog
     :title="$t('case.edit-input-prompt')"
-    :visible.sync="dialogVisible"
+    v-model="dialogVisible"
     :append-to-body="true"
     width="70%"
     :before-close="close">
@@ -23,10 +23,11 @@
         </div>
       </el-form-item>
     </el-form>
-    <span slot="footer" class="dialog-footer">
+    <template #footer>
+    <span class="dialog-footer">
     <el-button @click="close">{{ $t('cancel') }}</el-button>
     <el-button type="primary" @click="submit">{{ $t('submit') }}</el-button>
-  </span>
+  </span>    </template>
   </el-dialog>
 </template>
 

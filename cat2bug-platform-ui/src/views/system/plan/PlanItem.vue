@@ -6,7 +6,7 @@
           v-model="queryParams.planId"
           placeholder="请输入测试计划"
           clearable
-          @keyup.enter.native="handleQuery"
+          @keyup.enter="handleQuery"
         />
       </el-form-item>
       <el-form-item label="交付物" prop="moduleId">
@@ -14,7 +14,7 @@
           v-model="queryParams.moduleId"
           placeholder="请输入交付物"
           clearable
-          @keyup.enter.native="handleQuery"
+          @keyup.enter="handleQuery"
         />
       </el-form-item>
       <el-form-item label="测试用例" prop="caseId">
@@ -22,7 +22,7 @@
           v-model="queryParams.caseId"
           placeholder="请输入测试用例"
           clearable
-          @keyup.enter.native="handleQuery"
+          @keyup.enter="handleQuery"
         />
       </el-form-item>
       <el-form-item label="计划子项状态" prop="planItemState">
@@ -40,7 +40,7 @@
           v-model="queryParams.updateById"
           placeholder="请输入更新人"
           clearable
-          @keyup.enter.native="handleQuery"
+          @keyup.enter="handleQuery"
         />
       </el-form-item>
       <el-form-item label="更新时间">
@@ -59,12 +59,12 @@
           v-model="queryParams.defectId"
           placeholder="请输入缺陷"
           clearable
-          @keyup.enter.native="handleQuery"
+          @keyup.enter="handleQuery"
         />
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" :icon="$legacyIcon('el-icon-search')" size="mini" @click="handleQuery">搜索</el-button>
-        <el-button :icon="$legacyIcon('el-icon-refresh')" size="mini" @click="resetQuery">重置</el-button>
+        <el-button type="primary" :icon="$legacyIcon('el-icon-search')" size="small" @click="handleQuery">搜索</el-button>
+        <el-button :icon="$legacyIcon('el-icon-refresh')" size="small" @click="resetQuery">重置</el-button>
       </el-form-item>
     </el-form>
 
@@ -74,7 +74,7 @@
           type="primary"
           plain
           :icon="$legacyIcon('el-icon-plus')"
-          size="mini"
+          size="small"
           @click="handleAdd"
           v-hasPermi="['system:PlanItem:add']"
         >新增</el-button>
@@ -84,7 +84,7 @@
           type="success"
           plain
           :icon="$legacyIcon('el-icon-edit')"
-          size="mini"
+          size="small"
           :disabled="single"
           @click="handleUpdate"
           v-hasPermi="['system:PlanItem:edit']"
@@ -95,7 +95,7 @@
           type="danger"
           plain
           :icon="$legacyIcon('el-icon-delete')"
-          size="mini"
+          size="small"
           :disabled="multiple"
           @click="handleDelete"
           v-hasPermi="['system:PlanItem:remove']"
@@ -106,12 +106,12 @@
           type="warning"
           plain
           :icon="$legacyIcon('el-icon-download')"
-          size="mini"
+          size="small"
           @click="handleExport"
           v-hasPermi="['system:PlanItem:export']"
         >导出</el-button>
       </el-col>
-      <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
+      <right-toolbar v-model:showSearch="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
     <el-table v-loading="loading" :data="PlanItemList" @selection-change="handleSelectionChange">
@@ -121,29 +121,29 @@
       <el-table-column label="交付物" align="center" prop="moduleId" />
       <el-table-column label="测试用例" align="center" prop="caseId" />
       <el-table-column label="计划子项状态" align="center" prop="planItemState">
-        <template slot-scope="scope">
+        <template #default="scope">
           <dict-tag :options="dict.type.plan_item_state" :value="scope.row.planItemState"/>
         </template>
       </el-table-column>
       <el-table-column label="更新人" align="center" prop="updateById" />
       <el-table-column label="更新时间" align="center" prop="updateTime" width="180">
-        <template slot-scope="scope">
+        <template #default="scope">
           <span>{{ parseTime(scope.row.updateTime, '{y}-{m}-{d}') }}</span>
         </template>
       </el-table-column>
       <el-table-column label="缺陷" align="center" prop="defectId" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
-        <template slot-scope="scope">
+        <template #default="scope">
           <el-button
-            size="mini"
-            type="text"
+            size="small"
+            link
             :icon="$legacyIcon('el-icon-edit')"
             @click="handleUpdate(scope.row)"
             v-hasPermi="['system:PlanItem:edit']"
           >修改</el-button>
           <el-button
-            size="mini"
-            type="text"
+            size="small"
+            link
             :icon="$legacyIcon('el-icon-delete')"
             @click="handleDelete(scope.row)"
             v-hasPermi="['system:PlanItem:remove']"
@@ -155,13 +155,13 @@
     <pagination
       v-show="total>0"
       :total="total"
-      :page.sync="queryParams.pageNum"
-      :limit.sync="queryParams.pageSize"
+      v-model:page="queryParams.pageNum"
+      v-model:limit="queryParams.pageSize"
       @pagination="getList"
     />
 
     <!-- 添加或修改测试计划子项对话框 -->
-    <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
+    <el-dialog :title="title" v-model="open" width="500px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="测试计划" prop="planId">
           <el-input v-model="form.planId" placeholder="请输入测试计划" />
@@ -189,10 +189,12 @@
           <el-input v-model="form.defectId" placeholder="请输入缺陷" />
         </el-form-item>
       </el-form>
-      <div slot="footer" class="dialog-footer">
+      <template #footer>
+        <div class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
         <el-button @click="cancel">取 消</el-button>
-      </div>
+        </div>
+      </template>
     </el-dialog>
   </div>
 </template>

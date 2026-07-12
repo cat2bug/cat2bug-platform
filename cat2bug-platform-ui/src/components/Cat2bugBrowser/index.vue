@@ -1,32 +1,36 @@
 <template>
   <div class="cat2bug-browser" :style="`width:${widthPx};height:${heightPx};`">
-    <browser-input v-show="!bodyVisible" v-model="url" @input="urlInputHandle" />
+    <browser-input v-show="!bodyVisible" v-model:url="url" @update:url="urlInputHandle" />
     <div class="cat2bug-browser-body" v-show="bodyVisible">
       <div class="cat2bug-browser-header" v-show="screenHeaderToolsVisible">
         <div></div>
   <!--      屏幕尺寸选择-->
         <el-dropdown trigger="click" @command="screenTypeChangedHandle" class="pointer">
           <span>{{activeScreenType.name}}<legacy-icon icon="el-icon-arrow-down"></legacy-icon></span>
-          <el-dropdown-menu slot="dropdown">
+          <template #dropdown>
+          <el-dropdown-menu>
             <el-dropdown-item>满屏</el-dropdown-item>
             <el-dropdown-item v-for="(screen,index) in screenTypeList" :key="index" :divided="index==0" :command="screen.screenSizeId">{{screen.name}}</el-dropdown-item>
           </el-dropdown-menu>
+        </template>
         </el-dropdown>
   <!--      屏幕宽高显示-->
         <div class="cat2bug-browser-header-size">
-          <el-input v-model="screenWidth" size="mini" @keydown.enter.native="widthChangedHandle()" oninput="value=value.replace(/[^0-9.]/g,'')"></el-input>
+          <el-input v-model="screenWidth" size="small" @keydown.enter="widthChangedHandle()" oninput="value=value.replace(/[^0-9.]/g,'')"></el-input>
           <legacy-icon icon="el-icon-close"></legacy-icon>
-          <el-input v-model="screenHeight" size="mini" @keydown.enter.native="heightChangedHandle()" oninput="value=value.replace(/[^0-9.]/g,'')"></el-input>
+          <el-input v-model="screenHeight" size="small" @keydown.enter="heightChangedHandle()" oninput="value=value.replace(/[^0-9.]/g,'')"></el-input>
         </div>
   <!--      屏幕缩放比选择-->
         <el-dropdown trigger="click" @command="zoomChangedHandle" class="pointer">
           <span>
             {{parseInt(zoom * 100)}}%<legacy-icon icon="el-icon-arrow-down"></legacy-icon>
           </span>
-          <el-dropdown-menu slot="dropdown">
+          <template #dropdown>
+          <el-dropdown-menu>
             <el-dropdown-item v-for="(z,index) in zoomList" :key="index" :command="z">{{z}}</el-dropdown-item>
             <el-dropdown-item divided>自动适应</el-dropdown-item>
           </el-dropdown-menu>
+        </template>
         </el-dropdown>
         <!--      屏幕旋转-->
         <svg-icon icon-class="phone-rotate" class="pointer" />

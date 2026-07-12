@@ -1,6 +1,7 @@
-import store from '@/store'
 import DataDict from '@/utils/dict'
 import { getDicts as getDicts } from '@/api/system/dict/data'
+import { pinia } from '@/store/pinia.js'
+import { useDictStore } from '@/stores/dict'
 
 function searchDictByKey(dict, key) {
   if (key == null && key == "") {
@@ -18,19 +19,20 @@ function searchDictByKey(dict, key) {
 }
 
 function install(app) {
+  const dictStore = useDictStore(pinia)
   DataDict(app, {
     metas: {
       '*': {
         labelField: 'dictLabel',
         valueField: 'dictValue',
         request(dictMeta) {
-          const storeDict = searchDictByKey(store.getters.dict, dictMeta.type)
+          const storeDict = searchDictByKey(dictStore.dict, dictMeta.type)
           if (storeDict) {
             return new Promise(resolve => { resolve(storeDict) })
           }
           return new Promise((resolve, reject) => {
             getDicts(dictMeta.type).then(res => {
-              store.dispatch('dict/setDict', { key: dictMeta.type, value: res.data })
+              dictStore.setDict({ key: dictMeta.type, value: res.data })
               resolve(res.data)
             }).catch(error => {
               reject(error)

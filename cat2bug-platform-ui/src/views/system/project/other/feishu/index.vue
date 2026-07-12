@@ -48,10 +48,17 @@
 import {getFeishuConfig, saveFeishuConfig} from "@/api/im/feishu";
 import projectOptionSubFormKbd from '@/mixins/project-option-sub-form-kbd'
 import projectImConfigDocKbd from '@/mixins/project-im-config-doc-kbd'
+import { storeToRefs } from 'pinia';
+import { useUserStore } from '@/stores/user'
 
 export default {
   name: "FeishuConfig",
   mixins: [projectOptionSubFormKbd, projectImConfigDocKbd],
+  setup() {
+    const userStore = useUserStore()
+    const { config } = storeToRefs(userStore)
+    return { config }
+  },
   data() {
     return {
       feishuConfig: {},
@@ -72,6 +79,8 @@ export default {
   created() {
     this.getConfig();
   },
+  computed: {
+  },
   methods: {
     shortcutSave() {
       this.onSubmit()
@@ -81,7 +90,7 @@ export default {
     },
     /** 获取项目ID */
     getProjectId() {
-      return parseInt(this.$store.state.user.config.currentProjectId);
+      return parseInt(this.config.currentProjectId);
     },
     /** 获取飞书配置 */
     getConfig() {

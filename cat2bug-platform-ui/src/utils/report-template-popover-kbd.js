@@ -6,6 +6,13 @@
  */
 
 import {
+  closePopover,
+  isPopoverOpen,
+  isVisiblePopperEl,
+  openPopover,
+  queryVisiblePoppersByClass
+} from '@/adapters/element-plus/popover-adapter'
+import {
   isOnFirstRow,
   moveStatisticGridIndex
 } from '@/utils/statistic-grid-kbd'
@@ -37,19 +44,10 @@ const OVER_POPOVER_BLOCKING_SELECTORS = [
 const bindings = new WeakMap()
 let popoverModifierHeld = false
 
-function isVisibleLayer(el) {
-  if (!el || !el.getBoundingClientRect) return false
-  if (el.getAttribute('aria-hidden') === 'true') return false
-  const style = window.getComputedStyle(el)
-  if (style.display === 'none' || style.visibility === 'hidden') return false
-  const rect = el.getBoundingClientRect()
-  return rect.width > 0 && rect.height > 0
-}
-
 /** MessageBox / Dialog 等叠在浮层上时，勿劫持 Enter 等按键 */
 export function isReportTemplatePopoverKbdSuspended() {
   return OVER_POPOVER_BLOCKING_SELECTORS.some((sel) =>
-    Array.from(document.querySelectorAll(sel)).some((el) => isVisibleLayer(el))
+    Array.from(document.querySelectorAll(sel)).some((el) => isVisiblePopperEl(el))
   )
 }
 
@@ -91,13 +89,17 @@ export function getReportTemplatePopoverVm(vm) {
 
 export function getReportTemplatePopperEl(vm) {
   const pop = getReportTemplatePopoverVm(vm)
-  if (!pop) return null
-  return pop.popperElm || (pop.$refs && pop.$refs.popper) || null
+  if (pop) {
+    const popperRef = pop.popperRef
+    const popperFromRef = popperRef && (popperRef.value || popperRef)
+    const el = popperFromRef || pop.popperElm || (pop.$refs && pop.$refs.popper) || null
+    if (el && isVisiblePopperEl(el)) return el
+  }
+  return queryVisiblePoppersByClass(REPORT_TEMPLATE_POPPER_CLASS)[0] || null
 }
 
 export function isReportTemplatePopoverVisible(vm) {
-  const pop = getReportTemplatePopoverVm(vm)
-  return !!(pop && pop.showPopper)
+  return isPopoverOpen(getReportTemplatePopoverVm(vm))
 }
 
 export function getReportTemplateCards(popperEl) {
@@ -415,14 +417,7 @@ function handlePopoverModifierEvent(e, vm) {
 }
 
 export function openReportTemplatePopover(vm, options = {}) {
-  const pop = getReportTemplatePopoverVm(vm)
-  if (pop) {
-    if (typeof pop.doShow === 'function') {
-      pop.doShow()
-    } else {
-      pop.showPopper = true
-    }
-  }
+  openPopover(getReportTemplatePopoverVm(vm))
   if (options.focusTrigger) {
     vm.$nextTick(() => focusReportTemplateTrigger(vm))
     return
@@ -432,14 +427,7 @@ export function openReportTemplatePopover(vm, options = {}) {
 }
 
 export function closeReportTemplatePopover(vm) {
-  const pop = getReportTemplatePopoverVm(vm)
-  if (pop) {
-    if (typeof pop.doClose === 'function') {
-      pop.doClose()
-    } else {
-      pop.showPopper = false
-    }
-  }
+  closePopover(getReportTemplatePopoverVm(vm))
   clearReportTemplatePopoverFocus(vm)
   popoverModifierHeld = false
   hideReportTemplatePopoverHints()
@@ -453,13 +441,7 @@ export function closeReportTemplatePopover(vm) {
 function openPopoverAndEnterGrid(vm, cardIndex = 0) {
   const pop = getReportTemplatePopoverVm(vm)
   if (!pop) return
-  if (!pop.showPopper) {
-    if (typeof pop.doShow === 'function') {
-      pop.doShow()
-    } else {
-      pop.showPopper = true
-    }
-  }
+  openPopover(pop)
   focusReportTemplateCardWhenReady(vm, cardIndex)
 }
 

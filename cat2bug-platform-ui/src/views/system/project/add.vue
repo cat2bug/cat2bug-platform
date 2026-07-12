@@ -16,58 +16,13 @@
               <el-input
                 type="textarea"
                 :placeholder="$t('enter-content')"
-                rows="5"
+                :rows="5"
                 v-model="form.projectIntroduce"
                 maxlength="255"
                 show-word-limit
               >
               </el-input>
             </el-form-item>
-          </el-col>
-          <!--          项目图标-->
-          <el-col :xs="24" :sm="24" :md="8" :lg="6" :xl="6" class="step2">
-            <cat2-bug-image
-              style="width: 150px; height: 150px; border-radius: 4px; overflow: hidden;"
-              :src="projectIconPreviewUrl"
-              fit="cover"></cat2-bug-image>
-            <div :class="[PROJECT_ICON_POPOVER_HOST_CLASS, { 'is-popover-open': projectIconPopperVisible }]">
-              <el-popover
-                ref="projectIconPopover"
-                v-model="projectIconPopperVisible"
-                popper-class="project-icon-popper"
-                placement="bottom"
-                trigger="click">
-                <div class="project-icon-popper">
-                  <div
-                    class="project-icon-item"
-                    v-for="i in 10"
-                    :key="i"
-                    role="button"
-                    :aria-label="$t('project.change-icon') + ' ' + i"
-                    tabindex="-1"
-                  >
-                    <el-image
-                      @click="clickProjectIconHandle(i)"
-                      :src="activeProjectIconUrl(i)"
-                      fit="cover"
-                    ></el-image>
-                  </div>
-                  <div class="project-icon-item" role="button" :aria-label="$t('upload.upload')" tabindex="-1">
-                    <image-upload v-model="projectIcon" :limit="1" :file-type="[]" :is-show-tip="false" :is-show-clipboard-button="false" buttonStyle="width: 130px; height: 130px;" @input="handleSelectSelfImage" />
-                  </div>
-                </div>
-                <el-button
-                  ref="projectIconTrigger"
-                  slot="reference"
-                  size="mini"
-                  class="project-icon-hint-change defect-kbd-hint-host"
-                >{{$t('project.change-icon')}}
-                  <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint" aria-hidden="true">{{ changeIconHintLetter }}</span>
-                </el-button>
-              </el-popover>
-            </div>
-          </el-col>
-          <el-col :xs="24" :sm="24" :md="16" :lg="16" :xl="12">
             <el-form-item :label="$t('project.member')">
               <el-row>
                 <el-col :span="24">
@@ -80,21 +35,23 @@
                 <el-col :span="24" v-if="projectMemberSwitch">
 <!--                  添加成员按钮-->
                   <el-popover
-                    v-model="memberPopoverVisible"
+                    v-model:visible="memberPopoverVisible"
                     placement="bottom"
                     width="400"
                     @show="getMemberList"
                     @hide="resetMember"
                     trigger="click">
-                    <el-input :prefix-icon="$legacyIcon('el-icon-search')" :placeholder="$t('team.search-placeholder')" v-model="memberParams.params.search" @input="getMemberList" size="mini"></el-input>
+                    <el-input :prefix-icon="$legacyIcon('el-icon-search')" :placeholder="$t('team.search-placeholder')" v-model="memberParams.params.search" @input="getMemberList" size="small"></el-input>
 <!--                    成员列表-->
                       <el-row v-if="memberList && memberList.length>0" class="project-members">
-                        <el-col :select="member.isSelect" :span="24" v-for="member in memberList" :key="member.userId" @click.native="selectAddMemberHandle(member)">
+                        <el-col :select="member.isSelect" :span="24" v-for="member in memberList" :key="member.userId" @click="selectAddMemberHandle(member)">
                           <member-nameplate :member="member"></member-nameplate>
                         </el-col>
                       </el-row>
                     <el-empty v-else :description="$t('no-data')"></el-empty>
-                    <el-button slot="reference" size="mini" :icon="$legacyIcon('el-icon-user-solid')">{{$t('project.add-member')}}</el-button>
+                    <template #reference>
+                      <el-button :icon="$legacyIcon('el-icon-user-solid')">{{$t('project.add-member')}}</el-button>
+                    </template>
                   </el-popover>
                 </el-col>
                 <el-col :span="24" v-if="projectMemberSwitch">
@@ -106,7 +63,7 @@
                       :label="$t('name')"
                       min-width="200"
                     >
-                      <template slot-scope="scope">
+                      <template #default="scope">
                         <member-nameplate :member="scope.row"></member-nameplate>
                       </template>
                     </el-table-column>
@@ -114,7 +71,7 @@
                       prop="roleIds"
                       :label="$t('role')"
                       width="230">
-                      <template slot-scope="scope">
+                      <template #default="scope">
                         <el-form-item :prop="`members.${scope.$index}.roleIds`" :rules="rules.roleIds">
                           <el-select v-model="scope.row.roleIds" :placeholder="$t('member.please-select-role')" multiple collapse-tags :disabled="scope.row.userId==currentUserId">
                             <el-option
@@ -130,11 +87,10 @@
                     <el-table-column
                       width="80"
                       :label="$t('operate')">
-                      <template slot-scope="scope">
+                      <template #default="scope">
                         <el-button
                           v-if="scope.row.userId!=currentUserId"
-                          size="mini"
-                          type="text"
+                          link
                           :icon="$legacyIcon('el-icon-delete')"
                           @click="deleteMemberHandle(scope.row)"
                           v-hasPermi="['system:project:remove']"
@@ -145,7 +101,6 @@
                 </el-col>
               </el-row>
             </el-form-item>
-<!--            保存取消按钮-->
             <el-form-item class="page-form-actions">
               <div class="page-form-actions__buttons">
                 <el-button @click="goBack">{{$t('cancel')}}</el-button>
@@ -155,6 +110,51 @@
                 </el-button>
               </div>
             </el-form-item>
+          </el-col>
+          <!--          项目图标-->
+          <el-col :xs="24" :sm="24" :md="8" :lg="6" :xl="6" class="step2">
+            <cat2-bug-image
+              style="width: 150px; height: 150px; border-radius: 4px; overflow: hidden;"
+              :key="projectIconPreviewUrl"
+              :src="projectIconPreviewUrl"
+              fit="cover"></cat2-bug-image>
+            <div :class="[PROJECT_ICON_POPOVER_HOST_CLASS, { 'is-popover-open': projectIconPopperVisible }]">
+              <el-popover
+                ref="projectIconPopover"
+                v-model:visible="projectIconPopperVisible"
+                popper-class="project-icon-popper"
+                placement="bottom"
+                :width="560"
+                trigger="click">
+                <template #reference>
+                  <el-button
+                    ref="projectIconTrigger"
+                    class="project-icon-hint-change defect-kbd-hint-host"
+                  >{{$t('project.change-icon')}}
+                    <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint" aria-hidden="true">{{ changeIconHintLetter }}</span>
+                  </el-button>
+                </template>
+                <div class="project-icon-popper__grid">
+                  <div
+                    class="project-icon-item"
+                    v-for="i in 10"
+                    :key="i"
+                    role="button"
+                    :aria-label="$t('project.change-icon') + ' ' + i"
+                    tabindex="-1"
+                  >
+                    <el-image
+                      @click="clickProjectIconHandle(i)"
+                      :src="activeProjectIconUrl(i)"
+                      fit="cover"
+                    ></el-image>
+                  </div>
+                  <div class="project-icon-item" role="button" :aria-label="$t('upload')" tabindex="-1">
+                    <image-upload v-model="projectIcon" :limit="1" :file-type="[]" :is-show-tip="false" :is-show-clipboard-button="false" buttonStyle="width: 130px; height: 130px;" @input="handleSelectSelfImage" />
+                  </div>
+                </div>
+              </el-popover>
+            </div>
           </el-col>
         </el-row>
       </el-form>
@@ -167,6 +167,7 @@ import {addProject, listProjectRole} from "@/api/system/project";
 import { listMember } from "@/api/system/team";
 import MemberNameplate from "@/components/MemberNameplate"
 import { resolveProjectIconUrl } from '@/utils/upload-asset'
+import { getDefaultProjectIconUrl, getProjectIconStoragePath } from '@/utils/project-default-icons'
 import projectCreateFormKbd from '@/mixins/project-create-form-kbd'
 import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
 import { PROJECT_CREATE_KBD_SCOPE } from '@/mixins/project-create-kbd'
@@ -180,10 +181,18 @@ import {
 import { isEscapeCloseKey } from '@/utils/defect-drawer-shortcuts'
 import { hasBlockingUiLayer } from '@/plugins/shortcut/service'
 
+import { storeToRefs } from 'pinia'
+import { useUserStore } from '@/stores/user'
+
 export default {
   name: "ProjectAdd",
   mixins: [projectCreateFormKbd],
   components:{ MemberNameplate },
+  setup() {
+    const userStore = useUserStore()
+    const { id: userId, config: userConfig } = storeToRefs(userStore)
+    return { userId, userConfig }
+  },
   data() {
     return {
       PROJECT_ICON_POPOVER_HOST_CLASS,
@@ -218,10 +227,8 @@ export default {
     }
   },
   computed: {
-    activeProjectIconUrl: function () {
-      return function (index){
-        return require('@/assets/images/project/project_icon'+index+'.svg')
-      }
+    activeProjectIconUrl() {
+      return (index) => getDefaultProjectIconUrl(index)
     },
     selectRoleOptions: function (){
       return function (member){
@@ -233,10 +240,10 @@ export default {
       }
     },
     currentUserId: function () {
-      return this.$store.state.user.id;
+      return this.userId;
     },
     currentTeamId: function () {
-      return this.$store.state.user.config.currentTeamId;
+      return this.userConfig.currentTeamId;
     },
     projectIconPreviewUrl() {
       return resolveProjectIconUrl(this.form.projectIcon)
@@ -246,7 +253,7 @@ export default {
     }
   },
   created() {
-    this.form.projectIcon = this.activeProjectIconUrl(1);
+    this.form.projectIcon = getProjectIconStoragePath(1);
     this.getRoleList();
     this.$nextTick(() => this.capturePageFormCloseBaseline())
   },
@@ -371,7 +378,7 @@ export default {
     },
     clickProjectIconHandle(index) {
       this.activeProjectIconIndex = index;
-      this.form.projectIcon = this.activeProjectIconUrl(index);
+      this.form.projectIcon = getProjectIconStoragePath(index);
       this.projectIconPopperVisible = false;
     },
     handleSelectSelfImage(url) {
@@ -410,33 +417,9 @@ export default {
       column-gap: 10px;
       row-gap: 10px;
       border-left: var(--border-color-light) 1px solid;
-      :first-child {
+      > :first-child {
         margin-bottom: 10px;
       }
-      :last-child {
-        width: 150px;
-      }
-    }
-  }
-  .project-icon-popper {
-    width: 550px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    padding: 0;
-    margin: 0;
-    .project-icon-item {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 0;
-      margin: 0;
-    }
-    .el-image {
-      width: 130px;
-      height: 130px;
-      border-radius: 4px;
-      cursor: pointer;
     }
   }
   ::v-deep .el-table__cell {

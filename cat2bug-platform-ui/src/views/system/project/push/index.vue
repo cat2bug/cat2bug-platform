@@ -24,10 +24,17 @@
 <script>
 import {pullProject} from "@/api/system/project";
 import projectOptionSubFormKbd from '@/mixins/project-option-sub-form-kbd'
+import { storeToRefs } from 'pinia';
+import { useUserStore } from '@/stores/user'
 
 export default {
   name: "index",
   mixins: [projectOptionSubFormKbd],
+  setup() {
+    const userStore = useUserStore()
+    const { config } = storeToRefs(userStore)
+    return { config }
+  },
   data() {
     return {
       form: {
@@ -42,10 +49,10 @@ export default {
   },
   computed: {
     teamId() {
-      return this.$store.state.user.config.currentTeamId;
+      return this.config.currentTeamId;
     },
     projectId() {
-      return this.$store.state.user.config.currentProjectId
+      return this.config.currentProjectId
     },
   },
   mounted() {

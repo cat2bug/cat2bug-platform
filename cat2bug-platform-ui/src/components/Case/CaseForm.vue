@@ -6,12 +6,12 @@
     <el-row>
       <el-col :span="12">
         <el-form-item :label="$t('module')" prop="moduleId">
-          <select-module size="medium" v-model="form.moduleId" :project-id="form.projectId"  @input="moduleChangeHandle"/>
+          <select-module size="medium" v-model:moduleId="form.moduleId" :project-id="form.projectId"  @change="moduleChangeHandle"/>
         </el-form-item>
       </el-col>
       <el-col :span="12">
         <el-form-item :label="$t('level')" prop="caseLevel">
-          <cat2-bug-select-level v-model="form.caseLevel" />
+          <cat2-bug-select-level v-model:level="form.caseLevel" />
         </el-form-item>
       </el-col>
     </el-row>
@@ -22,7 +22,7 @@
       <el-input type="textarea" v-model="form.caseExpect" :placeholder="$t('case.please-enter-expectations')" maxlength="65535" rows="3" show-word-limit />
     </el-form-item>
     <el-form-item :label="$t('step')" prop="caseStep">
-      <template slot="label">
+      <template #label>
         <div class="form-item-case-form-step">
           <el-radio-group v-model="caseStepSwitchType" @input="caseStepPanelTypeChangeHandle($event)">
             <el-radio-button label=""><svg-icon icon-class="option" /></el-radio-button>
@@ -32,7 +32,7 @@
           <label>{{ $t('step') }}</label>
         </div>
       </template>
-      <case-step-panel ref="caseStepPanel" v-model="form.caseStep" :panel-type="caseStepSwitchType" />
+      <case-step-panel ref="caseStepPanel" v-model:caseStep="form.caseStep" :panel-type="caseStepSwitchType" />
     </el-form-item>
     <el-form-item :label="$t('remark')" prop="remark">
       <el-input type="textarea" v-model="form.remark" :placeholder="$t('please-enter-remark')" maxlength="255" rows="6" show-word-limit />
@@ -44,6 +44,7 @@
 import CaseStepPanel from "./CaseStepPanel"
 import SelectModule from "@/components/Module/SelectModule"
 import Cat2BugSelectLevel from "@/components/Cat2BugSelectLevel";
+import { useUserStore } from "@/stores/user";
 const CASE_STEP_PANEL_TYPE_CACHE_KEY = 'case-step-panel-type';
 export default {
   name: "CaseForm",
@@ -85,7 +86,7 @@ export default {
   computed: {
     /** 获取项目id */
     projectId() {
-      return parseInt(this.$store.state.user.config.currentProjectId);
+      return parseInt(useUserStore().config.currentProjectId);
     },
   },
   methods: {

@@ -35,7 +35,7 @@
               </el-radio-group>
             </div>
           </div>
-          <case-step-panel class="case-step-panel" ref="caseStepPanel" :key="'caseStepPanel'+index" v-model="d.caseStep" :panel-type="d.caseStepSwitchType" />
+          <case-step-panel class="case-step-panel" ref="caseStepPanel" :key="'caseStepPanel'+index" v-model:caseStep="d.caseStep" :panel-type="d.caseStepSwitchType" />
         </div>
       </div>
       <div class="row">
@@ -53,7 +53,11 @@ import Label from "@/components/Cat2BugStatistic/Components/Label";
 import CaseStepPanel from "@/components/Case/CaseStepPanel";
 import CaseForm from "@/components/Case/CaseForm";
 import {batchAddCase} from "@/api/system/case";
-import {Loading} from "element-ui";
+import { ElLoading } from 'element-plus'
+import { pinia } from '@/store/pinia.js'
+import { useUserStore } from '@/stores/user'
+
+const userStore = useUserStore(pinia)
 
 export default {
   name: "CaseList",
@@ -73,7 +77,7 @@ export default {
   },
   computed: {
     projectId() {
-      return this.$store.state.user.config.currentProjectId
+      return userStore.config.currentProjectId
     },
   },
   mounted() {
@@ -82,7 +86,7 @@ export default {
   methods: {
     getCaseList(data) {
       const self = this;
-      const loadingInstance = Loading.service({
+      const loadingInstance = ElLoading.service({
         target: this.$refs.caseList,
         text: '测试用例分析中,请耐心等待...',
         fullscreen: false,

@@ -1,13 +1,15 @@
 <template>
   <el-col v-if="cardVisible" :span="6">
     <el-card class="box-card">
-      <div slot="header" class="clearfix">
-        <legacy-icon icon="el-icon-cpu"></legacy-icon>
-        <div>
-          <span>{{$t('project.ai-manager')}}</span>
-          <span>{{$t('project.ai-manager-describe')}}</span>
+      <template #header>
+        <div class="clearfix">
+          <legacy-icon icon="el-icon-cpu"></legacy-icon>
+          <div>
+            <span>{{$t('project.ai-manager')}}</span>
+            <span>{{$t('project.ai-manager-describe')}}</span>
+          </div>
         </div>
-      </div>
+      </template>
       <router-link v-if="canManageAiModel" to="ollama"><el-link>{{$t('project.ai-model-manager')}}</el-link></router-link>
       <router-link v-if="canManageAiAccount" to="openai"><el-link>{{$t('project.ai-account-manager')}}</el-link></router-link>
     </el-card>
@@ -17,17 +19,21 @@
 <script>
 import { projectAiModelOptions } from "@/api/system/ai";
 import { hasAnyPermi } from '@/utils/project-option-card'
+import { storeToRefs } from 'pinia';
+import { useUserStore } from '@/stores/user'
 
 export default {
   name: "AICard",
-  model: {
-    prop: 'project'
-  },
   props: {
     project: {
       type: Object,
       default: {}
     }
+  },
+  setup() {
+    const userStore = useUserStore()
+    const { config } = storeToRefs(userStore)
+    return { config }
   },
   data() {
     return {
@@ -36,7 +42,7 @@ export default {
   },
   computed: {
     projectId() {
-      return parseInt(this.$store.state.user.config.currentProjectId);
+      return parseInt(this.config.currentProjectId);
     },
     canManageAiModel() {
       return this.aiEnabled && hasAnyPermi(['system:ai:list'])

@@ -85,10 +85,11 @@ Cat2Bug-Platform是一套永久免费开源的Bug管理平台，可以完全私�
 
 4. 视图层
 
-* Vue 2.6.x
-* Npm 16.16.0
-* Axios 0.21.x
-* Element 2.15.x
+* Vue 3.5 + Vite 6
+* Pinia 2 + Vue Router 4
+* Element Plus 2.9
+* Axios 1.7.x
+* vue-i18n 9（7 语言）
 
 ## 模块
 

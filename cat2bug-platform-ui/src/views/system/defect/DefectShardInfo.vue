@@ -4,7 +4,9 @@
       <el-form ref="form" :model="params" label-width="0px">
         <el-form-item>
           <el-input v-model="params.password" show-password :maxlength="4" :placeholder="$t('shard.please-enter-password')">
-            <svg-icon slot="prefix" icon-class="password" class="el-input__icon input-icon" />
+            <template #prefix>
+              <svg-icon icon-class="password" class="el-input__icon input-icon" />
+            </template>
           </el-input>
         </el-form-item>
         <el-form-item>
@@ -125,7 +127,7 @@
             </div>
           </el-collapse-item>
           <el-collapse-item v-if="defectCase && defectCase.caseId" :title="$i18n.t('case')" name="caseId">
-            <case-card :case-model="defectCase" :state-visible="true" :step-index.sync="defect.caseStepId" :edit="false" />
+            <case-card :case-model="defectCase" :state-visible="true" :step-index="defect.caseStepId" :edit="false" />
           </el-collapse-item>
           <el-collapse-item :title="$i18n.t('log')" name="log">
             <list-defect-log ref="defectLog" :pageSize="5" show-comment />
@@ -173,7 +175,7 @@ import DefectTools from "@/components/Defect/DefectTools";
 import DefectTypeFlag from "@/components/Defect/DefectTypeFlag";
 import DefectStateFlag from "@/components/Defect/DefectStateFlag";
 import CaseCard from "@/components/Case/CaseCard";
-import MarkdownItVue from "markdown-it-vue";
+import { MarkdownRenderer as MarkdownItVue } from '@/components/Markdown';
 import FocusMemberList from "@/components/FocusMemberList";
 import LangSelect from "@/components/LangSelect";
 import {getCase} from "@/api/system/case";

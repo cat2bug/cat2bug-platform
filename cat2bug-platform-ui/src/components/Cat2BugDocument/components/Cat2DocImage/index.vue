@@ -25,12 +25,9 @@ import ImageUpload from "@/components/ImageUpload";
 const KEY_ENTER = 13;
 
 export default {
+  emits: ['update:content', 'input'],
   name: "Cat2DocImage",
   components: { ImageUpload },
-  model: {
-    prop: 'content',
-    event: 'input'
-  },
   props: {
     content: {
       type: Object,
@@ -94,7 +91,7 @@ export default {
     /** 在尾部添加内容 */
     appendValue(value) {
       this.inputContent.value += value;
-      this.$emit('input', this.inputContent);
+      this.$emit('update:content', this.inputContent); this.$emit('input', this.inputContent);
     },
     /** 设置光标选择范围 */
     selectableRange(start, end) {
@@ -106,7 +103,7 @@ export default {
     handleInput(event) {
       this.c2dInput.style.height = 'auto';
       this.c2dInput.style.height = (this.c2dInput.scrollHeight) + 'px';
-      this.$emit('input', this.inputContent);
+      this.$emit('update:content', this.inputContent); this.$emit('input', this.inputContent);
     },
     /** 处理按键按下 */
     handleKeyDown(event) {

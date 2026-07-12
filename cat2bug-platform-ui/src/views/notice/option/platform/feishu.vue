@@ -88,12 +88,16 @@
 
 <script>
 import {groupTestFeishuNotice, singleTestFeishuNotice} from "@/api/im/feishu";
+import { storeToRefs } from "pinia";
+import { useUserStore } from "@/stores/user";
 
 export default {
+  emits: ['update:feishu'],
   name: "FeishuNoticePlatform",
-  model: {
-    prop: 'feishu',
-    event: 'change'
+  setup() {
+    const userStore = useUserStore()
+    const { id, config } = storeToRefs(userStore)
+    return { id, config }
   },
   data() {
     return {
@@ -210,8 +214,8 @@ export default {
       }
       this.mobileTestLoading = true;
       const testData = {
-        projectId: this.$store.state.user.config.currentProjectId,
-        memberId: this.$store.state.user.id,
+        projectId: this.config.currentProjectId,
+        memberId: this.id,
         config: {
           singleSwitch: this.form.singleSwitch,
           groupSwitch: this.form.groupSwitch,
@@ -240,8 +244,8 @@ export default {
       }
       this.groupTestLoading = true;
       const testData = {
-        projectId: this.$store.state.user.config.currentProjectId,
-        memberId: this.$store.state.user.id,
+        projectId: this.config.currentProjectId,
+        memberId: this.id,
         config: {
           singleSwitch: this.form.singleSwitch,
           groupSwitch: this.form.groupSwitch,

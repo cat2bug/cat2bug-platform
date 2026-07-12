@@ -7,17 +7,17 @@
           :key="item.value"
           :index="index"
           :class="item.raw.cssClass"
-        >{{ $i18n.t(item.value)||item.label + " " }}</span
+        >{{ (item.value ? $i18n.t(item.value) : item.label) || item.label + ' ' }}</span
         >
         <el-tag
           v-else
           :disable-transitions="true"
           :key="item.value"
           :index="index"
-          :type="item.raw.listClass == 'primary' ? '' : item.raw.listClass"
+          :type="tagType(item.raw.listClass)"
           :class="item.raw.cssClass"
         >
-          {{ $i18n.t(item.value)||item.label + " " }}
+          {{ (item.value ? $i18n.t(item.value) : item.label) || item.label + ' ' }}
         </el-tag>
       </template>
     </template>
@@ -74,6 +74,13 @@ export default {
       // 没有value不显示
       return false;
     },
+  },
+  methods: {
+    tagType(listClass) {
+      if (!listClass || listClass === 'default') return 'info'
+      if (listClass === 'primary') return 'primary'
+      return listClass
+    }
   },
   filters: {
     handleArray(array) {

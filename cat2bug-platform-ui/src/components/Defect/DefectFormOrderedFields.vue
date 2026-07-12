@@ -54,7 +54,7 @@
         :label="$t('handle-by')"
         prop="handleBy"
       >
-        <select-project-member v-model="form.handleBy" :project-id="projectId" />
+        <select-project-member v-model:memberId="form.handleBy" :project-id="projectId" />
       </el-form-item>
 
       <el-form-item
@@ -79,7 +79,7 @@
       >
         <select-module
           ref="selectModule"
-          v-model="form.moduleId"
+          v-model:moduleId="form.moduleId"
           :project-id="projectId"
           size="small"
           @input="onModuleChange"
@@ -117,7 +117,7 @@
       >
         <select-case
           ref="selectCase"
-          v-model="form.caseId"
+          v-model:caseId="form.caseId"
           :module-id="form.moduleId"
           :step-index="form.caseStepId"
           @step-change="$emit('step-change', $event)"
@@ -135,7 +135,7 @@
           :name="$t('describe').toString()"
           :placeholder="$t('defect.enter-markdown-describe').toString()"
           :tools="describeTools"
-          v-model="form.defectDescribe"
+          :content="form.defectDescribe"
           maxlength="65536"
           rows="8"
           show-word-limit

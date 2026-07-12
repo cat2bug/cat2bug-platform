@@ -1,7 +1,8 @@
 import axios from 'axios'
 import {md5} from 'js-md5'
-import { Notification, MessageBox, Message, Loading } from 'element-ui'
-import store from '@/store'
+import { ElNotification, ElMessageBox, ElMessage, ElLoading } from 'element-plus'
+import { pinia } from '@/store/pinia.js'
+import { useUserStore } from '@/stores/user'
 import { getToken } from '@/utils/auth'
 import errorCode from '@/utils/errorCode'
 import { tansParams, blobValidate } from "@/utils/ruoyi";
@@ -91,9 +92,9 @@ service.interceptors.response.use(res => {
       )
       if (!skipReloginPrompt && !isRelogin.show) {
         isRelogin.show = true;
-        MessageBox.confirm(i18n.global.t('http.login-expired').toString(), i18n.global.t('prompted').toString(), { confirmButtonText: i18n.global.t('login-again').toString(), cancelButtonText: i18n.global.t('cancel').toString(), type: 'warning' }).then(() => {
+        ElMessageBox.confirm(i18n.global.t('http.login-expired').toString(), i18n.global.t('prompted').toString(), { confirmButtonText: i18n.global.t('login-again').toString(), cancelButtonText: i18n.global.t('cancel').toString(), type: 'warning' }).then(() => {
           isRelogin.show = false;
-          store.dispatch('LogOut').then(() => {
+          useUserStore(pinia).LogOut().then(() => {
             location.href = '/index';
           })
         }).catch(() => {
@@ -106,14 +107,14 @@ service.interceptors.response.use(res => {
     } else if (code === 500) {
       const silent = res.config.silentError === true
       if (!silent) {
-        Message({ message: msg, type: 'error' })
+        ElMessage({ message: msg, type: 'error' })
       }
       return silent ? Promise.reject(res.data) : Promise.reject(new Error(msg))
     } else if (code === 601) {
-      Message({ message: msg, type: 'warning' })
+      ElMessage({ message: msg, type: 'warning' })
       return Promise.reject('error')
     } else if (code !== 200) {
-      Notification.error({ title: msg })
+      ElNotification.error({ title: msg })
       return Promise.reject('error')
     } else {
       return res.data
@@ -131,7 +132,7 @@ service.interceptors.response.use(res => {
     }
     const silent = error.config && error.config.silentError === true
     if (!silent) {
-      Message({ message: message, type: 'error', duration: 5 * 1000 })
+      ElMessage({ message: message, type: 'error', duration: 5 * 1000 })
     }
     return Promise.reject(silent ? { msg: message } : error)
   }
@@ -165,7 +166,7 @@ export function setHeader(url, headers) {
 
 // 通用下载方法
 export function download(url, params, filename, config) {
-  downloadLoadingInstance = Loading.service({ text: i18n.global.t("http.downloading-wait").toString(), background: "rgba(0, 0, 0, 0.7)", })
+  downloadLoadingInstance = ElLoading.service({ text: i18n.global.t("http.downloading-wait").toString(), background: "rgba(0, 0, 0, 0.7)", })
   return service.post(url, params, {
     transformRequest: [(params) => { return tansParams(params) }],
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -180,12 +181,12 @@ export function download(url, params, filename, config) {
       const resText = await data.text();
       const rspObj = JSON.parse(resText);
       const errMsg = errorCode[rspObj.code] || rspObj.msg || errorCode['default']
-      Message.error(errMsg);
+      ElMessage.error(errMsg);
     }
     downloadLoadingInstance.close();
   }).catch((r) => {
     console.error(r)
-    Message.error(i18n.global.t('http.download-fail').toString())
+    ElMessage.error(i18n.global.t('http.download-fail').toString())
     downloadLoadingInstance.close();
   })
 }

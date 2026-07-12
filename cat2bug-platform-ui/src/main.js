@@ -15,7 +15,6 @@ import '@/assets/styles/project-list-page.scss'
 import '@/assets/styles/page-kbd-hints.scss'
 
 import App from './App.vue'
-import store from './store'
 import { pinia } from './store/pinia.js'
 import router from './router'
 import directive from './directive'
@@ -58,7 +57,7 @@ import DatePickerEscapePlugin from '@/plugins/date-picker-escape'
 import DatePickerKbdPlugin from '@/plugins/date-picker-kbd'
 import DefectDrawerShortcutsPlugin from '@/plugins/defect-drawer-shortcuts'
 import WebSocketPlugin from '@/plugins/websocket'
-import VueExcelEditor from 'vue-excel-editor'
+import VueExcelEditor from '@/vendor/vue-excel-editor'
 import { ElMessage, ElMessageBox, ElNotification } from 'element-plus'
 import { resolveLegacyIcon } from '@/utils/element-icon'
 import { bootstrapAuthenticatedRoutes } from '@/router/bootstrap'
@@ -66,7 +65,7 @@ import { bootstrapAuthenticatedRoutes } from '@/router/bootstrap'
 const head = createHead()
 const app = createApp(App)
 
-// vue-treeselect / vue-excel-editor 等 Vue2 库使用 this.$set；须与 Vue.set 一致并返回 value
+// 内嵌 excel-editor 等仍使用 this.$set；须与 Vue.set 一致并返回 value
 app.config.globalProperties.$set = (target, key, value) => {
   if (target == null) return value
   target[key] = value
@@ -138,7 +137,6 @@ async function mountApp() {
   app.config.globalProperties.selectDictLabels = selectDictLabels
   app.config.globalProperties.download = download
   app.config.globalProperties.handleTree = handleTree
-  app.config.globalProperties.$store = store
   app.config.globalProperties.$confirm = ElMessageBox.confirm
   app.config.globalProperties.$notify = ElNotification
   app.config.globalProperties.$message = ElMessage

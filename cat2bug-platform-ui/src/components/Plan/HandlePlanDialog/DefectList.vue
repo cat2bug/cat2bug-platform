@@ -33,14 +33,14 @@
               <el-option
                 v-for="state in defectStates"
                 :key="state.key"
-                :label="$i18n.t(state.value)"
+                :label="state.value ? $i18n.t(state.value) : String(state.key)"
                 :value="state.key">
               </el-option>
             </el-select>
           </el-form-item>
           <el-form-item prop="handleBy" class="padding-top-3px">
             <select-project-member
-              v-model="queryParams.handleBy"
+              v-model:memberId="queryParams.handleBy"
               :project-id="projectId"
               placeholder="defect.select-handle-by"
               :is-head="false"
@@ -56,7 +56,7 @@
           placement="top"
           trigger="click"
           popper-class="defect-column-picker-popover"
-          v-model="planDefectColumnPickerVisible"
+          v-model:visible="planDefectColumnPickerVisible"
           @show="onColumnPickerPopoverShow"
           @hide="onColumnPickerPopoverHide"
         >
@@ -75,16 +75,17 @@
               v-for="c in defectColumnPickerOptions"
               :key="c.key"
               :label="c.key"
-            >{{ c.label || (c.customFieldMeta && c.customFieldMeta.fieldLabel) || $t(c.key) }}</el-checkbox>
+            >{{ c.label || (c.customFieldMeta && c.customFieldMeta.fieldLabel) || (c.key ? $t(c.key) : c.prop) }}</el-checkbox>
           </el-checkbox-group>
-          <el-button
-            class="plan-handle-hint-columns"
-            style="padding: 9px;"
-            plain
-            slot="reference"
-            :icon="$legacyIcon('el-icon-s-fold')"
-            size="small"
-          ></el-button>
+          <template #reference>
+            <el-button
+              class="plan-handle-hint-columns"
+              style="padding: 9px;"
+              plain
+              :icon="$legacyIcon('el-icon-s-fold')"
+              size="small"
+            ></el-button>
+          </template>
         </el-popover>
       </div>
     </div>
@@ -130,7 +131,7 @@
           label-class-name="plan-defect-sidebar-expand-header-cell"
           class-name="plan-defect-sidebar-expand-body-cell"
         >
-          <template slot="header">
+          <template #header>
             <el-tooltip :content="$t('case.show-module-tree')" placement="bottom">
               <span
                 class="plan-defect-sidebar-expand-trigger"
@@ -143,7 +144,7 @@
               </span>
             </el-tooltip>
           </template>
-          <template slot-scope>
+          <template #default>
             <span class="plan-defect-sidebar-expand-body-placeholder" />
           </template>
         </el-table-column>
@@ -198,14 +199,14 @@
       </template>
       <template #append>
         <el-table-column :label="$t('operate')" align="left" class-name="no-drag cat2bug-operate-column" fixed="right">
-          <template slot-scope="scope">
+          <template #default="scope">
             <div class="defect-operate-cell cat2bug-operate-tools">
               <defect-tools
                 class="defect-row-tools"
                 :exclusions="defectToolsExclusions"
                 :is-text="true"
                 :defect="scope.row"
-                size="mini"
+                size="small"
                 :is-show-icon="true"
                 @delete="handleDelete"
                 @update="search"
@@ -226,8 +227,8 @@
     <pagination
       v-show="total>0"
       :total="total"
-      :page.sync="queryParams.pageNum"
-      :limit.sync="queryParams.pageSize"
+      v-model:page="queryParams.pageNum"
+      v-model:limit="queryParams.pageSize"
       @pagination="search(queryParams)"
     />
       </div>
@@ -270,6 +271,8 @@ import { Multipane, MultipaneResizer } from "vue-multipane";
 import paneResizerHandleViewport from "@/mixins/paneResizerHandleViewport";
 import multipaneTreeTableHeightSync from "@/mixins/multipaneTreeTableHeightSync";
 import columnPickerPopoverKbd from '@/mixins/column-picker-popover-kbd'
+import { storeToRefs } from "pinia";
+import { useUserStore } from "@/stores/user";
 
 const TREE_MODULE_WIDTH_CACHE_KEY = "plan_case_tree_module_width";
 
@@ -288,6 +291,11 @@ export default {
       type: Boolean,
       default: true,
     },
+  },
+  setup() {
+    const userStore = useUserStore()
+    const { config } = storeToRefs(userStore)
+    return { config }
   },
   data() {
     return {
@@ -403,7 +411,7 @@ export default {
   computed: {
     /** 项目ID */
     projectId: function () {
-      return parseInt(this.$store.state.user.config.currentProjectId);
+      return parseInt(this.config.currentProjectId);
     },
     /** 缺陷批量工具是否可用 */
     batchToolsDisabled: function () {

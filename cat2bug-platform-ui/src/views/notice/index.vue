@@ -14,7 +14,7 @@
         </el-tab-pane>
       </el-tabs>
       <div class="right-tools">
-<!--        <svg-icon class="tools-button" icon-class="add-tab" @click.native="addNoticeTabHandle" />-->
+<!--        <svg-icon class="tools-button" icon-class="add-tab" @click="addNoticeTabHandle" />-->
         <svg-icon class="tools-button notice-hint-config" icon-class="config" @click="setNoticeOptionHandle" />
       </div>
     </div>
@@ -91,7 +91,7 @@
           <el-button
             class="red-button"
             size="small"
-            type="text"
+            link
             :icon="Delete"
             @click="handleDelete($event,scope.row)"
             v-hasPermi="['notice:remove']"
@@ -132,6 +132,8 @@ import {
   isRowIntersectingContainer,
   resolveNoticeTableCheckboxAnchor
 } from '@/utils/defect-row-kbd-hints'
+import { storeToRefs } from "pinia";
+import { useUserStore } from "@/stores/user";
 
 const NOTICE_KBD_SCOPE = 'notice'
 
@@ -141,7 +143,9 @@ export default {
   components: { ViewNotice, OptionNotice, SendNoticeDialog },
   dicts: ['sys_notice_status', 'sys_notice_type'],
   setup() {
-    return { Delete, Document, Promotion }
+    const userStore = useUserStore()
+    const { id, config } = storeToRefs(userStore)
+    return { Delete, Document, Promotion, id, config }
   },
   data () {
     return {
@@ -325,11 +329,11 @@ export default {
     },
     /** 获取项目id */
     getProjectId() {
-      return parseInt(this.$store.state.user.config.currentProjectId || 0);
+      return parseInt(this.config.currentProjectId || 0);
     },
     /** 获取用户id */
     getUserId() {
-      return this.$store.state.user.id;
+      return this.id;
     },
     /** 设置通知配置 */
     setNoticeOptionHandle() {

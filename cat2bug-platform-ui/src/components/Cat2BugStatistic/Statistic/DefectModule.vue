@@ -31,6 +31,7 @@
 <script>
 import Cat2BugCard from "../Components/Card"
 import {statisticModule} from "@/api/system/statistic/defect";
+import { useUserStore } from "@/stores/user";
 export default {
   name: "DefectModule",
   components: {Cat2BugCard},
@@ -107,7 +108,7 @@ export default {
       }
     },
     currentProjectId: function () {
-      return parseInt(this.$store.state.user.config.currentProjectId);
+      return parseInt(useUserStore().config.currentProjectId);
     },
   },
   mounted() {

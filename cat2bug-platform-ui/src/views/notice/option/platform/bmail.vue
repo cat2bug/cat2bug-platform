@@ -13,11 +13,8 @@
 import {validEmail} from "@/utils/validate";
 
 export default {
+  emits: ['update:mail'],
   name: "EMailNoticePlatform",
-  model: {
-    prop: 'mail',
-    event: 'change'
-  },
   data() {
     let validateEMail = (rule, value, callback) => {
       if(validEmail(value)){
@@ -64,7 +61,7 @@ export default {
           this.$refs['form'].clearValidate();
         }
       });
-      this.$emit('change', this.form);
+      this.$emit('update:mail', this.form);
     },
     /** 处理邮件开关改变的操作 */
     handleSwitchChange() {

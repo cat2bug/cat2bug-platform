@@ -1,8 +1,7 @@
 <template>
   <div>
     <drag class="browser-tools" v-show="toolsVisible">
-      <template v-slot="content">
-        <el-row>
+      <el-row>
           <el-col :span="24">
             <el-tooltip class="item" effect="dark" content="新建测试窗口" placement="left">
               <router-link to="/tools/browser" target="_blank">
@@ -20,11 +19,13 @@
             <el-tooltip class="item" effect="dark" content="拆分窗口" placement="left">
               <el-dropdown trigger="click" @command="splitChangedHandle">
                 <el-button type="danger" plain><svg-icon icon-class="split" /></el-button>
-                <el-dropdown-menu slot="dropdown">
-                  <el-dropdown-item command="">单屏</el-dropdown-item>
-                  <el-dropdown-item command="horizontal">水平拆分</el-dropdown-item>
-                  <el-dropdown-item command="vertical">垂直拆分</el-dropdown-item>
-                </el-dropdown-menu>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item command="">单屏</el-dropdown-item>
+                    <el-dropdown-item command="horizontal">水平拆分</el-dropdown-item>
+                    <el-dropdown-item command="vertical">垂直拆分</el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
               </el-dropdown>
             </el-tooltip>
           </el-col>
@@ -40,14 +41,13 @@
             </el-tooltip>
           </el-col>
         </el-row>
-      </template>
     </drag>
     <div>
-      <cat2bug-split-panel ref="cat2bugSplitPanel" v-model="split" :width="screenWidth" :height="screenHeight">
-        <template slot="left">
+      <cat2bug-split-panel ref="cat2bugSplitPanel" v-model:split="split" :width="screenWidth" :height="screenHeight">
+        <template #left>
           <cat2bug-browser width="100%" height="100%" @close="closeLeftBrowserHandle"/>
         </template>
-        <template slot="right">
+        <template #right>
           <cat2bug-browser width="100%" height="100%" @close="closeRightBrowserHandle"/>
         </template>
       </cat2bug-split-panel>
@@ -66,10 +66,17 @@ import Cat2bugBrowser from "@/components/Cat2bugBrowser";
 import Cat2bugSplitPanel from "@/components/Cat2bugSplitPanel";
 import {uploadScreenShot} from "@/api/common/upload";
 import {listScreenSize} from "@/api/system/ScreenSize";
+import { storeToRefs } from 'pinia';
+import { useUserStore } from '@/stores/user'
 
 export default {
   name: "index",
   components: { AddDefect,Drag,ListDefect,Cat2bugBrowser,Cat2bugSplitPanel },
+  setup() {
+    const userStore = useUserStore()
+    const { config } = storeToRefs(userStore)
+    return { config }
+  },
   data() {
     return {
       split: '',
@@ -127,7 +134,7 @@ export default {
     },
     /** 获取项目id */
     getProjectId() {
-      return parseInt(this.$store.state.user.config.currentProjectId);
+      return parseInt(this.config.currentProjectId);
     },
     /** 截屏成功的处理 */
     screenShotSuccessHandle(base64Data) {

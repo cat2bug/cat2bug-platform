@@ -185,8 +185,8 @@
           <pagination
             class="defect-table-pagination"
             :total="total"
-            :page.sync="queryParams.pageNum"
-            :limit.sync="queryParams.pageSize"
+            v-model:page="queryParams.pageNum"
+            v-model:limit="queryParams.pageSize"
             @pagination="search(queryParams)"
           />
         </div>

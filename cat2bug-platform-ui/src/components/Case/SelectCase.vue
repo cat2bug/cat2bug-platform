@@ -29,12 +29,9 @@ import {listCase} from "@/api/system/case";
 import CaseCard from "@/components/Case/CaseCard";
 import Label from "@/components/Cat2BugStatistic/Components/Label";
 export default {
+  emits: ['update:caseId', 'change'],
   name: "SelectCase",
   components: {Label, CaseCard},
-  model: {
-    prop: 'caseId',
-    event: 'change'
-  },
   data() {
     return {
       popoverVisible:false,
@@ -114,7 +111,7 @@ export default {
     },
     setCaseId(val) {
       this.currentCase = val;
-      this.$emit('change',val.caseId);
+      this.$emit('update:caseId', val.caseId); this.$emit('change', val.caseId);
     },
     /** 显示或隐藏清除按钮 */
     showClearButtonHandle(visible) {

@@ -26,7 +26,7 @@
         ref="cat2bugMarkdown"
         :exclude-tools="['siding-9899', 'project', 'case', 'defect', 'member', 'save', 'plan']"
         :placeholder="placeholder"
-        v-model="textContent"
+        v-model:content="textContent"
         @input="handleMarkdownContent"/>
     </el-dialog>
   </div>

@@ -28,8 +28,8 @@ import RightPanel from '@/components/RightPanel'
 import { AppMain, Navbar, Settings, Sidebar, TagsView } from './components'
 import ResizeMixin from './mixin/ResizeHandler'
 import ViewBackMixin from '@/layout/mixin/ViewBackHandle'
-import layoutNavHints from '@/mixins/layout-nav-hints'
-import { mapState } from 'pinia'
+import { useLayoutNavHints } from '@/composables/keyboard/useLayoutNavHints'
+import { storeToRefs } from 'pinia'
 import { useSettingsStore } from '@/stores/settings'
 import { useAppStore } from '@/stores/app'
 import variables from '@/assets/styles/variables.js'
@@ -45,10 +45,24 @@ export default {
     Sidebar,
     TagsView
   },
-  mixins: [ResizeMixin, ViewBackMixin, layoutNavHints],
+  mixins: [ResizeMixin, ViewBackMixin],
+  setup() {
+    useLayoutNavHints()
+    const settingsStore = useSettingsStore()
+    const appStore = useAppStore()
+    const { theme, sideTheme, tagsView, fixedHeader } = storeToRefs(settingsStore)
+    const { sidebar, device } = storeToRefs(appStore)
+    return {
+      appStore,
+      theme,
+      sideTheme,
+      tagsView,
+      fixedHeader,
+      sidebar,
+      device
+    }
+  },
   computed: {
-    ...mapState(useSettingsStore, ['theme', 'sideTheme', 'tagsView', 'fixedHeader']),
-    ...mapState(useAppStore, ['sidebar', 'device']),
     classObj() {
       return {
         hideSidebar: !this.sidebar.opened,
@@ -69,7 +83,7 @@ export default {
   },
   methods: {
     handleClickOutside() {
-      useAppStore().closeSideBar({ withoutAnimation: false })
+      this.appStore.closeSideBar({ withoutAnimation: false })
     }
   }
 }

@@ -7,7 +7,7 @@
     <el-row>
       <el-col :span="16">
         <el-skeleton :loading="loading" animated>
-          <template slot="template">
+          <template #template>
             <div style="padding: 14px;">
               <el-skeleton-item variant="h3" />
             </div>
@@ -20,7 +20,7 @@
               <el-skeleton-item variant="h3" />
             </div>
           </template>
-          <template>
+          <template #default>
             <el-form ref="form" :model="form" :rules="rules" label-width="120px">
               <el-form-item :label="$t('team.name')" prop="teamName">
                 <el-input v-model="form.teamName" :placeholder="$t('team.please-enter-name')" maxlength="64" />
@@ -30,7 +30,7 @@
                 <image-upload v-model="form.teamIcon" :limit="1"/>
               </el-form-item>
               <el-form-item :label="$t('team.introduce')" prop="introduce">
-                <el-input v-model="form.introduce" :placeholder="$t('team.please-enter-introduce')" type="textarea" maxlength="255" rows="5" show-word-limit />
+                <el-input v-model="form.introduce" :placeholder="$t('team.please-enter-introduce')" type="textarea" maxlength="255" :rows="5" show-word-limit />
               </el-form-item>
               <el-form-item class="page-form-actions">
                 <div class="page-form-actions__buttons">
@@ -52,10 +52,17 @@
 <script>
 import {getTeam, updateTeam} from "@/api/system/team";
 import teamOptionSubFormKbd from '@/mixins/team-option-sub-form-kbd'
+import { storeToRefs } from 'pinia';
+import { useUserStore } from '@/stores/user'
 
 export default {
   name: "TeamBaseInfo",
   mixins: [teamOptionSubFormKbd],
+  setup() {
+    const userStore = useUserStore()
+    const { config } = storeToRefs(userStore)
+    return { config }
+  },
   data() {
     return {
       loading: true,
@@ -70,12 +77,14 @@ export default {
       }
     };
   },
+  computed: {
+  },
   mounted() {
     this.getTeamInfo();
   },
   methods: {
     getTeamId() {
-      return this.$store.state.user.config.currentTeamId;
+      return this.config.currentTeamId;
     },
     getTeamInfo(){
       this.loading = true;

@@ -1,13 +1,15 @@
 <template>
   <el-col v-if="cardVisible" :span="6">
     <el-card class="box-card">
-      <div slot="header" class="clearfix">
-        <svg-icon icon-class="bug" />
-        <div>
-          <span>{{ $t('defect.custom-field.settings') }}</span>
-          <span>{{ $t('defect.custom-field.settings-describe') }}</span>
+      <template #header>
+        <div class="clearfix">
+          <svg-icon icon-class="bug" />
+          <div>
+            <span>{{ $t('defect.custom-field.settings') }}</span>
+            <span>{{ $t('defect.custom-field.settings-describe') }}</span>
+          </div>
         </div>
-      </div>
+      </template>
       <router-link
         v-if="canListDefectFields"
         to="defect-fields"
@@ -23,9 +25,6 @@ import { hasAnyPermi } from '@/utils/project-option-card'
 
 export default {
   name: "DefectSettingsCard",
-  model: {
-    prop: 'project'
-  },
   props: {
     project: {
       type: Object,

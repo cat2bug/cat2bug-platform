@@ -49,6 +49,7 @@ let modifierHeld = false
 let installed = false
 let hintsObserverPaused = false
 let hintsUpdateRafId = null
+let bodyObserver = null
 
 function isModifierKeyEvent(e) {
   if (!e) return false
@@ -70,6 +71,9 @@ function ensureOverlay() {
 }
 
 function getVisibleRangePanel() {
+  if (typeof document === 'undefined' || typeof document.querySelectorAll !== 'function') {
+    return null
+  }
   const panels = Array.from(document.querySelectorAll('.el-picker-panel.el-date-range-picker'))
   for (let i = 0; i < panels.length; i++) {
     const panel = panels[i]
@@ -208,6 +212,7 @@ export function installDatePickerPanelHints() {
 
   const observer = new MutationObserver(() => {
     if (hintsObserverPaused) return
+    if (typeof document === 'undefined' || !document.body) return
     if (!getVisibleRangePanel()) {
       if (modifierHeld) resetDatePickerPanelHintModifier()
       else hideDatePickerPanelHints()
@@ -215,6 +220,7 @@ export function installDatePickerPanelHints() {
     }
     scheduleDatePickerPanelHintsUpdate()
   })
+  bodyObserver = observer
   if (document.body) {
     observer.observe(document.body, {
       childList: true,
@@ -223,4 +229,14 @@ export function installDatePickerPanelHints() {
       attributeFilter: ['class', 'style', 'aria-hidden']
     })
   }
+}
+
+/** @internal test teardown */
+export function uninstallDatePickerPanelHints() {
+  if (bodyObserver) {
+    bodyObserver.disconnect()
+    bodyObserver = null
+  }
+  resetDatePickerPanelHintModifier()
+  installed = false
 }

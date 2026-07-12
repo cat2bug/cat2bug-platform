@@ -62,6 +62,8 @@ import ShortcutBadge from './ShortcutBadge.vue'
 import { shortcutService } from '@/plugins/shortcut'
 import { normalizeKey } from '@/plugins/shortcut/keymap'
 import { SYSTEM_DOC_URL } from '@/utils/system-doc-url'
+import { useSettingsStore } from '@/stores/settings'
+import { useUserStore } from '@/stores/user'
 
 const I18N_LOCALE_KEY = 'i18n-locale'
 
@@ -89,6 +91,12 @@ function fuzzy(query, text) {
 export default {
   name: 'CommandPalette',
   components: { ShortcutBadge },
+  setup() {
+    return {
+      settingsStore: useSettingsStore(),
+      userStore: useUserStore()
+    }
+  },
   data() {
     return {
       palette: shortcutService.palette,
@@ -244,7 +252,7 @@ export default {
       if (action.indexOf('lang:') === 0) {
         this.applyLang(action.slice(5))
       } else if (action === 'theme:light' || action === 'theme:dark') {
-        this.$store.dispatch('settings/changeThemeMode', action.split(':')[1])
+        this.settingsStore.changeThemeMode(action.split(':')[1])
       } else if (action === 'logout') {
         this.logout()
       } else if (action === 'open:site') {
@@ -274,7 +282,7 @@ export default {
         }
       )
         .then(() => {
-          this.$store.dispatch('LogOut').then(() => {
+          this.userStore.LogOut().then(() => {
             location.href = '/index'
           })
         })

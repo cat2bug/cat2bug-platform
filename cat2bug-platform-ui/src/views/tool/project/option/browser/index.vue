@@ -1,12 +1,14 @@
 <template>
   <el-card class="box-card">
-    <div slot="header" class="clearfix">
-      <legacy-icon icon="el-icon-s-flag"></legacy-icon>
-      <div>
-        <span>{{$t('browser')}}</span>
-        <span>{{$t('browser.describe')}}</span>
+    <template #header>
+      <div class="clearfix">
+        <legacy-icon icon="el-icon-s-flag"></legacy-icon>
+        <div>
+          <span>{{$t('browser')}}</span>
+          <span>{{$t('browser.describe')}}</span>
+        </div>
       </div>
-    </div>
+    </template>
     <router-link to="team-base-info"><el-link>{{$t('member.base-info')}}</el-link></router-link>
   </el-card>
 </template>

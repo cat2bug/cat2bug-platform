@@ -30,7 +30,7 @@
             />
           </el-form-item>
           <el-form-item prop="caseLevel" class="list-query-nav-item" data-query-key="caseLevel">
-            <cat2-bug-select-level v-model="queryParams.caseLevel" :icon="$legacyIcon('el-icon-s-data')" :clearable="true" @change="handleQuery" />
+            <cat2-bug-select-level v-model:level="queryParams.caseLevel" :icon="$legacyIcon('el-icon-s-data')" :clearable="true" @change="handleQuery" />
           </el-form-item>
         </el-form>
         </div>
@@ -40,7 +40,7 @@
           placement="top"
           trigger="click"
           popper-class="defect-column-picker-popover"
-          v-model="caseColumnPickerVisible"
+          v-model:visible="caseColumnPickerVisible"
           @show="onColumnPickerPopoverShow"
           @hide="onColumnPickerPopoverHide"
         >
@@ -55,9 +55,11 @@
             class="defect-column-picker"
             @change="onCaseColumnPickerChange"
           >
-            <el-checkbox v-for="c in caseColumnPickerOptions" :key="c.key" :label="c.key">{{ $t(c.key) }}</el-checkbox>
+            <el-checkbox v-for="c in caseColumnPickerOptions" :key="c.key" :value="c.key">{{ $t(c.key) }}</el-checkbox>
           </el-checkbox-group>
-          <el-button slot="reference" class="case-field-picker-btn case-list-hint-columns" style="padding: 9px;" plain :icon="$legacyIcon('el-icon-s-fold')" size="small" />
+          <template #reference>
+            <el-button class="case-field-picker-btn case-list-hint-columns" style="padding: 9px;" plain :icon="$legacyIcon('el-icon-s-fold')" size="small" />
+          </template>
         </el-popover>
         <el-button
           v-hasPermi="['system:case:remove']"
@@ -83,12 +85,14 @@
               <legacy-icon icon="el-icon-plus" />
               <span>{{ $i18n.t('case.create') }}</span>
             </div>
-            <el-dropdown-menu slot="dropdown" class="case-add-dropdown-menu">
-              <el-dropdown-item @click.native="handleAdd"><legacy-icon icon="el-icon-plus" />{{ $i18n.t('case.create') }}</el-dropdown-item>
+            <template #dropdown>
+              <el-dropdown-menu class="case-add-dropdown-menu">
+              <el-dropdown-item @click="handleAdd"><legacy-icon icon="el-icon-plus" />{{ $i18n.t('case.create') }}</el-dropdown-item>
               <el-divider class="case-add-dropdown-divider" />
-              <el-dropdown-item @click.native="handleImport"><legacy-icon icon="el-icon-upload2" />{{ $t('case.import') }}</el-dropdown-item>
-              <el-dropdown-item @click.native="handleExport"><legacy-icon icon="el-icon-download" />{{ $t('case.export') }}</el-dropdown-item>
-            </el-dropdown-menu>
+              <el-dropdown-item @click="handleImport"><legacy-icon icon="el-icon-upload2" />{{ $t('case.import') }}</el-dropdown-item>
+              <el-dropdown-item @click="handleExport"><legacy-icon icon="el-icon-download" />{{ $t('case.export') }}</el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
           </el-dropdown>
           <span class="case-add-kbd-anchor-host" aria-hidden="true">
             <span class="case-hint-import"></span>
@@ -155,7 +159,7 @@
                 label-class-name="case-sidebar-expand-header-cell"
                 class-name="case-sidebar-expand-body-cell"
               >
-                <template slot="header">
+                <template #header>
                   <el-tooltip :content="$t('case.show-module-tree')" placement="bottom">
                     <span
                       class="case-sidebar-expand-trigger case-hint-module-tree"
@@ -168,7 +172,7 @@
                     </span>
                   </el-tooltip>
                 </template>
-                <template slot-scope>
+                <template #default>
                   <span class="case-sidebar-expand-body-placeholder" />
                 </template>
               </el-table-column>
@@ -181,15 +185,15 @@
                 :data-case-id="scope.row.caseId"
               >{{ caseNumber(scope.row) }}</span>
               <div v-else-if="column.prop==='caseName'" class="table-case-title">
-                <cat2-bug-text v-model="scope.row.caseName" :tooltip="scope.row.caseName" />
+                <cat2-bug-text :content="scope.row.caseName" :tooltip="scope.row.caseName" />
               </div>
               <cat2-bug-level v-else-if="column.prop==='caseLevel'" :level="scope.row.caseLevel" />
-              <cat2-bug-text v-else-if="column.prop==='casePreconditions'" v-model="scope.row.casePreconditions" :tooltip="scope.row.casePreconditions" />
+              <cat2-bug-text v-else-if="column.prop==='casePreconditions'" :content="scope.row.casePreconditions" :tooltip="scope.row.casePreconditions" />
               <div v-else-if="column.prop==='caseStep'" class="table-row-full-height">
                 <step :steps="scope.row.caseStep" />
               </div>
               <span v-else-if="column.prop==='caseData'">{{ scope.row.caseData }}</span>
-              <cat2-bug-text v-else-if="column.prop==='caseExpect'" v-model="scope.row.caseExpect" :tooltip="scope.row.caseExpect" />
+              <cat2-bug-text v-else-if="column.prop==='caseExpect'" :content="scope.row.caseExpect" :tooltip="scope.row.caseExpect" />
               <cat2-bug-preview-image v-else-if="column.prop==='imgUrls'" :images="getUrl(scope.row.imgUrls)" />
               <div v-else-if="column.prop==='annexUrls'" class="annex-list">
                 <cat2-bug-text v-for="(file,index) in getUrl(scope.row.annexUrls)" :key="index" :content="file" type="down" :tooltip="file" />
@@ -206,12 +210,12 @@
             </template>
             <template #append>
               <el-table-column :label="$t('operate')" align="left" class-name="no-drag cat2bug-operate-column" fixed="right">
-                <template slot-scope="scope">
+                <template #default="scope">
                   <div class="cat2bug-operate-tools">
                     <el-button
                       v-hasPermi="['system:case:edit']"
                       size="small"
-                      type="text"
+                      link
                       :icon="$legacyIcon('el-icon-edit')"
                       @click="handleUpdate(scope.row)"
                     >
@@ -219,7 +223,7 @@
                     <el-button
                       v-hasPermi="['system:case:remove']"
                       size="small"
-                      type="text"
+                      link
                       class="red"
                       :icon="$legacyIcon('el-icon-delete')"
                       @click="handleDelete($event,scope.row)"
@@ -235,8 +239,8 @@
             <pagination
               class="case-table-pagination"
               :total="total"
-              :page.sync="queryParams.pageNum"
-              :limit.sync="queryParams.pageSize"
+              v-model:page="queryParams.pageNum"
+              v-model:limit="queryParams.pageSize"
               @pagination="getList"
             />
           </div>
@@ -248,7 +252,7 @@
     <cloud-case ref="cloudCaseDialog" @added="reloadData" />
     <cloud-case2 ref="cloudCaseDialog2" @added="reloadData" />
     <!-- 用户导入对话框 -->
-    <el-dialog :title="upload.title" :visible.sync="upload.open" custom-class="case-import-dialog" :close-on-press-escape="false" :before-close="onCaseImportDialogBeforeClose" width="400px" append-to-body>
+    <el-dialog :title="upload.title" v-model="upload.open" custom-class="case-import-dialog" :close-on-press-escape="false" :before-close="onCaseImportDialogBeforeClose" width="400px" append-to-body>
       <div
         ref="caseImportUploadFocus"
         class="cat2bug-upload-focus-target case-import-upload-focus-target"
@@ -272,20 +276,24 @@
         >
           <legacy-icon icon="el-icon-upload" />
           <div class="el-upload__text">{{ $t('case.import-prompt') }}<em> {{ $t('click.upload') }}</em></div>
-          <div slot="tip" class="el-upload__tip text-center">
-            <span>{{ strFormat($t('case.import-file-format'), 'xls、xlsx') }}</span>
-            <el-link type="primary" :underline="false" style="font-size:12px;vertical-align: baseline;" @click="importTemplate">
-              {{ $t('download.template') }}</el-link>
-          </div>
+          <template #tip>
+            <div class="el-upload__tip text-center">
+              <span>{{ strFormat($t('case.import-file-format'), 'xls、xlsx') }}</span>
+              <el-link type="primary" :underline="false" style="font-size:12px;vertical-align: baseline;" @click="importTemplate">
+                {{ $t('download.template') }}</el-link>
+            </div>
+          </template>
         </el-upload>
       </div>
-      <div slot="footer" class="dialog-footer">
+      <template #footer>
+        <div class="dialog-footer">
         <el-button class="defect-kbd-hint-host" type="primary" @click="submitFileForm">
           {{ $t('import' ) }}
           <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
         </el-button>
         <el-button @click="shortcutClose()">{{ $t('cancel') }}</el-button>
-      </div>
+        </div>
+      </template>
     </el-dialog>
   </div>
 </template>
@@ -328,6 +336,7 @@ import splitDropdownKbd from '@/mixins/split-dropdown-kbd'
 import caseImportDialogKbd from '@/mixins/case-import-dialog-kbd'
 import { shortcutOpenSplitDropdown } from '@/utils/split-dropdown-kbd'
 import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
+import { useUserStore } from '@/stores/user'
 import {
   assignRowHintLetters,
   collectHintLettersFromToolbar,
@@ -345,6 +354,11 @@ export default {
   name: 'Case',
   mixins: [paneResizerHandleViewport, multipaneTreeTableHeightSync, pageActionHints, listQueryKeyboardNav, columnPickerPopoverKbd, splitDropdownKbd, caseImportDialogKbd],
   components: { ProjectLabel, AddCase, Cat2BugLevel, Step, TreeModule, Multipane, MultipaneResizer, AddDefect, CloudCase, CloudCase2, FocusMemberList, Cat2BugPreviewImage, Cat2BugSelectLevel, Cat2BugText, Cat2BugTable },
+  setup() {
+    return {
+      userStore: useUserStore()
+    }
+  },
   directives: {
     resize: {
       // 指令的名称
@@ -458,7 +472,7 @@ export default {
     },
     /** 项目ID */
     projectId: function() {
-      return parseInt(this.$store.state.user.config.currentProjectId)
+      return parseInt((this.userStore.config || {}).currentProjectId)
     },
     /** 字符转url数组 */
     getUrl: function() {
@@ -671,7 +685,8 @@ export default {
       const itemEl = this.getListQueryNavItemEl(key)
       if (!itemEl) return null
       if (key === 'caseLevel') {
-        return itemEl.querySelector('.case-level-input .el-input__inner') ||
+        return itemEl.querySelector('.case-level-input .el-select__wrapper') ||
+          itemEl.querySelector('.case-level-input .el-input__inner') ||
           itemEl.querySelector('.el-select .el-input__inner')
       }
       return itemEl.querySelector('input.el-input__inner')
@@ -1304,10 +1319,12 @@ export default {
     ::v-deep .el-form--inline .el-form-item .el-select.case-level-input {
       display: block;
     }
+    ::v-deep .el-form--inline .el-form-item .el-select.case-level-input .el-select__wrapper,
     ::v-deep .el-form--inline .el-form-item .el-select.case-level-input .el-input {
       width: 100% !important;
     }
-    ::v-deep .el-form--inline .el-form-item .el-input__inner {
+    ::v-deep .el-form--inline .el-form-item .el-input__inner,
+    ::v-deep .el-form--inline .el-form-item .el-select__wrapper {
       width: 100% !important;
       box-sizing: border-box;
     }

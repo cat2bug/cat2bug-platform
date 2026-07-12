@@ -51,9 +51,9 @@ module.exports = {
   webServer: process.env.PLAYWRIGHT_NO_WEB_SERVER
     ? undefined
     : {
-        command: 'npm run dev',
+        command: 'npm run dev -- --force',
         url: 'http://127.0.0.1:2222',
         timeout: 180000,
-        reuseExistingServer: true,
+        reuseExistingServer: !process.env.CI,
       },
 };

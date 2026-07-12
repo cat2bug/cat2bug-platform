@@ -3,7 +3,7 @@
   <el-drawer
     custom-class="handle-plan-dialog"
     size="90%"
-    :visible.sync="visible"
+    v-model="visible"
     direction="rtl"
     :close-on-press-escape="false"
     :before-close="closePlanDrawer">
@@ -14,8 +14,8 @@
           <legacy-icon icon="el-icon-arrow-left" @click="cancel"></legacy-icon>
           <div class="plan-run-title-line">
             <span class="plan-run-title-num">{{ $t('plan') }}:{{plan.planName}}</span>
-            <el-button size="mini" type="success">{{ $t('version') }}:{{ plan.planVersion }}</el-button>
-            <el-button size="mini" type="primary" plain>{{ $t('plan.time') }}:{{ plan.planStartTime }} - {{ plan.planEndTime }}</el-button>
+            <el-button size="small" type="success">{{ $t('version') }}:{{ plan.planVersion }}</el-button>
+            <el-button size="small" type="primary" plain>{{ $t('plan.time') }}:{{ plan.planStartTime }} - {{ plan.planEndTime }}</el-button>
           </div>
         </div>
       </div>
@@ -40,7 +40,7 @@
             <div class="plan-statistical-block">
               <el-statistic
                 group-separator=",">
-                <template slot="title">
+                <template #title>
                   <span>{{$t('case')}}: </span>
                   <span class="click plan-stat-pass" @click.stop="handlePlanItemStateSearch('pass')">{{$t('case.pass-tested')}}</span>
                   <span>/</span>
@@ -50,7 +50,7 @@
                   <span>/</span>
                   <span class="click plan-stat-total" @click.stop="handlePlanItemStateSearch(null)">{{$t('total')}}{{ $t('a') }}</span>
                 </template>
-                <template slot="formatter">
+                <template #formatter>
                   <span class="click plan-stat-pass" @click.stop="handlePlanItemStateSearch('pass')">{{plan.passCount}}</span>
                   <span>/</span>
                   <span class="click plan-stat-fail" @click.stop="handlePlanItemStateSearch('not_pass')">{{plan.failCount}}</span>
@@ -133,6 +133,8 @@ import DefectRepairAvgHour from "@/components/Plan/statistics/DefectRepairAvgHou
 import { getPlan } from "@/api/system/plan";
 import {checkPermi} from "@/utils/permission";
 import planHandleDrawerKbd from '@/mixins/plan-handle-drawer-kbd';
+import { storeToRefs } from "pinia";
+import { useUserStore } from "@/stores/user";
 
 /** 执行计划抽屉：左侧树是否展开 */
 const PLAN_HANDLE_DRAWER_TREE_VISIBLE_CACHE_KEY = 'plan_handle_drawer_tree_module_visible';
@@ -143,6 +145,11 @@ export default {
   components: { Cat2BugLevel,Step,TreePlanItemModule,
     FocusMemberList, Cat2BugPreviewImage, HandleCaseOfPlan, RowListMember, Cat2BugText, CaseList, DefectList,
     DefectDiscoveryRate, DefectTotal, DefectRepairRate, DefectDensity, DefectDetectionRate, DefectSeverityRate, DefectRestartRate, DefectEscapeRate, DefectRepairAvgHour
+  },
+  setup() {
+    const userStore = useUserStore()
+    const { config } = storeToRefs(userStore)
+    return { config }
   },
   data() {
     return {
@@ -214,7 +221,7 @@ export default {
   computed: {
     /** 项目ID */
     projectId: function () {
-      return parseInt(this.$store.state.user.config.currentProjectId);
+      return parseInt(this.config.currentProjectId);
     },
     getFileName: function () {
       return function (url) {

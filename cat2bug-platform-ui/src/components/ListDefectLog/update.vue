@@ -83,22 +83,23 @@
             placement="top"
             :effect="change.field === 'defectName' ? 'dark' : 'light'"
           >
-            <div
-              slot="content"
-              :class="[
-                'defect-log-update-tooltip',
-                change.field === 'defectName' ? 'defect-log-update-tooltip--dark' : ''
-              ]"
-            >
-              <div class="tooltip-block">
-                <div class="tooltip-title">{{$i18n.t('defect.value-old')}}</div>
-                <pre class="tooltip-pre">{{ valueText(change.oldValue) }}</pre>
+            <template #content>
+              <div
+                :class="[
+                  'defect-log-update-tooltip',
+                  change.field === 'defectName' ? 'defect-log-update-tooltip--dark' : ''
+                ]"
+              >
+                <div class="tooltip-block">
+                  <div class="tooltip-title">{{$i18n.t('defect.value-old')}}</div>
+                  <pre class="tooltip-pre">{{ valueText(change.oldValue) }}</pre>
+                </div>
+                <div class="tooltip-block">
+                  <div class="tooltip-title">{{$i18n.t('defect.value-new')}}</div>
+                  <pre class="tooltip-pre">{{ valueText(change.newValue) }}</pre>
+                </div>
               </div>
-              <div class="tooltip-block">
-                <div class="tooltip-title">{{$i18n.t('defect.value-new')}}</div>
-                <pre class="tooltip-pre">{{ valueText(change.newValue) }}</pre>
-              </div>
-            </div>
+            </template>
             <span class="long-text">
               <span class="old">{{ truncate(change.oldValue) }}</span>
               <legacy-icon icon="el-icon-right" class="arrow"></legacy-icon>

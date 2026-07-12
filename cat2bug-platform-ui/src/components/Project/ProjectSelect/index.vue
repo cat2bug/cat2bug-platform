@@ -2,6 +2,7 @@
   <el-popover
     placement="bottom-start"
     v-model:visible="popoverVisible"
+    popper-class="project-select-popover"
     @show="popoverShowHandle"
     @hide="popoverHideHandle"
     trigger="hover">
@@ -45,14 +46,17 @@
 
 <script>
 import {collectProject, getProject, listProject} from "@/api/system/project";
-import { listProject as listAdminProject } from "@/api/admin/project";
 import { myListTeam } from "@/api/system/team";
-import store from "@/store";
+import { useUserStore } from '@/stores/user'
 import Label from "@/components/Cat2BugStatistic/Components/Label";
 
 export default {
   name: "ProjectSelect",
   components: {Label},
+  setup() {
+    const userStore = useUserStore()
+    return { userStore }
+  },
   data() {
     return {
       popoverVisible: false,
@@ -125,6 +129,7 @@ export default {
   },
   mounted() {
     this.getCurrentProjectInfo();
+    this.getProjectList();
   },
   beforeDestroy() {
     this.detachProjectSelectKeyboardListener();
@@ -301,10 +306,6 @@ export default {
         this.activeIndex = Math.max(0, this.options.length - 1)
       }
     },
-    canUseAdminProjectList() {
-      const perms = store.state.user.permissions
-      return Array.isArray(perms) && (perms.includes('*:*:*') || perms.includes('admin:project:list'))
-    },
     resolveTeamIdFromMyList() {
       return myListTeam().then((res) => {
         const first = res && res.rows && res.rows[0]
@@ -312,46 +313,39 @@ export default {
         return (Number.isFinite(tid) && tid > 0) ? tid : null
       }).catch(() => null)
     },
-    /** currentTeamId 为空时，从当前项目 / 上下文团队 / 我的团队推断 teamId */
-    resolveEffectiveTeamId() {
+    resolveTeamIdFromConfig() {
       const direct = Number(this.teamId)
       if (Number.isFinite(direct) && direct > 0) {
         return Promise.resolve(direct)
       }
-      const ctx = store.state.user.contextTeam
+      const ctx = this.userStore.contextTeam
       if (ctx && ctx.teamId) {
         const tid = Number(ctx.teamId)
         if (Number.isFinite(tid) && tid > 0) {
           return Promise.resolve(tid)
         }
       }
+      return this.resolveTeamIdFromMyList()
+    },
+    /** 优先当前项目所属团队，避免 config.currentTeamId 与当前项目不一致导致列表为空 */
+    resolveEffectiveTeamId() {
       const projectId = Number(this.projectId)
       if (Number.isFinite(projectId) && projectId > 0) {
+        const cached = this.currentProject && Number(this.currentProject.projectId) === projectId
+          ? Number(this.currentProject.teamId)
+          : NaN
+        if (Number.isFinite(cached) && cached > 0) {
+          return Promise.resolve(cached)
+        }
         return getProject(projectId).then((res) => {
           const tid = res && res.data && Number(res.data.teamId)
           if (Number.isFinite(tid) && tid > 0) {
             return tid
           }
-          return this.resolveTeamIdFromMyList()
-        }).catch(() => this.resolveTeamIdFromMyList())
+          return this.resolveTeamIdFromConfig()
+        }).catch(() => this.resolveTeamIdFromConfig())
       }
-      return this.resolveTeamIdFromMyList()
-    },
-    tryAdminProjectList() {
-      if (!this.canUseAdminProjectList()) {
-        this.options = []
-        this.total = 0
-        return Promise.resolve()
-      }
-      return listAdminProject({
-        pageNum: this.queryParams.pageNum,
-        pageSize: this.queryParams.pageSize,
-      }).then((res) => {
-        this.applyProjectListResponse(res)
-      }).catch(() => {
-        this.options = []
-        this.total = 0
-      })
+      return this.resolveTeamIdFromConfig()
     },
     /** 查询收藏的项目列表 */
     getProjectList() {
@@ -363,23 +357,24 @@ export default {
       }
       return this.resolveEffectiveTeamId().then((teamId) => {
         if (!teamId) {
-          return this.tryAdminProjectList()
+          this.options = []
+          this.total = 0
+          return
         }
         this.queryParams.teamId = teamId
         return listProject(this.queryParams).then((res) => {
-          if (res && res.rows && res.rows.length) {
-            this.applyProjectListResponse(res)
-            return
-          }
-          return this.tryAdminProjectList()
-        }).catch(() => this.tryAdminProjectList())
+          this.applyProjectListResponse(res)
+        }).catch(() => {
+          this.options = []
+          this.total = 0
+        })
       })
     },
     /** 选择项目 */
     handleProjectChange(project) {
       this.detachProjectSelectKeyboardListener();
-      store.dispatch('UpdateCurrentProjectId', project.projectId).then(() => {
-        store.dispatch('GetInfo').then(() => {
+      this.userStore.UpdateCurrentProjectId(project.projectId).then(() => {
+        this.userStore.GetInfo().then(() => {
           // 设置缺陷列表显示哪些列属性
           window.location.reload();
         });
@@ -427,6 +422,7 @@ export default {
 .project-select-list {
   max-height: 280px;
   overflow-y: auto;
+  width: 100%;
 }
 .between-row-1 {
   display: inline-flex;
@@ -480,13 +476,15 @@ export default {
     margin: 5px 0px;
   }
 .row {
-  display: inline-flex;
+  display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
   align-items: center;
   gap: 5px;
-  max-width: 100%;
+  width: 100%;
+  min-width: 0;
   .prefix-project-name {
+    flex: 1 1 auto;
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -496,8 +494,14 @@ export default {
 .col {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: stretch;
   gap: 2px;
+  width: 100%;
+}
+.item {
+  font-size: 1rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 .yellow {
   color: #f7ba2a;
@@ -521,9 +525,6 @@ export default {
 .item.click:hover,
 .item.is-keyboard-active {
   background-color: #e8f4ff;
-}
-.item {
-  font-size: 1rem;
 }
 .start-switch[collect="true"] {
   color: var(--star-switch-on-color, rgb(247, 186, 42));
@@ -551,5 +552,27 @@ export default {
 
 @at-root html.dark .project-select-list .item.is-keyboard-active {
   background-color: rgba(255, 193, 7, 0.12);
+}
+</style>
+
+<style lang="scss">
+/* popover 挂载到 body，宽度随最长项目名撑开，最多半屏，超出省略 */
+.project-select-popover.el-popover {
+  width: max-content !important;
+  max-width: 50vw !important;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.project-select-popover {
+  .title {
+    white-space: nowrap;
+  }
+
+  .project-select-list .item .prefix-project-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 </style>

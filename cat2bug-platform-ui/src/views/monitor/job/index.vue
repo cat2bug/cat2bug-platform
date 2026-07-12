@@ -30,8 +30,8 @@
         </el-select>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" :icon="$legacyIcon('el-icon-search')" size="mini" @click="handleQuery">搜索</el-button>
-        <el-button :icon="$legacyIcon('el-icon-refresh')" size="mini" @click="resetQuery">重置</el-button>
+        <el-button type="primary" :icon="$legacyIcon('el-icon-search')" size="small" @click="handleQuery">搜索</el-button>
+        <el-button :icon="$legacyIcon('el-icon-refresh')" size="small" @click="resetQuery">重置</el-button>
       </el-form-item>
     </el-form>
 
@@ -41,7 +41,7 @@
           type="primary"
           plain
           :icon="$legacyIcon('el-icon-plus')"
-          size="mini"
+          size="small"
           @click="handleAdd"
           v-hasPermi="['monitor:job:add']"
         >新增</el-button>
@@ -51,7 +51,7 @@
           type="success"
           plain
           :icon="$legacyIcon('el-icon-edit')"
-          size="mini"
+          size="small"
           :disabled="single"
           @click="handleUpdate"
           v-hasPermi="['monitor:job:edit']"
@@ -62,7 +62,7 @@
           type="danger"
           plain
           :icon="$legacyIcon('el-icon-delete')"
-          size="mini"
+          size="small"
           :disabled="multiple"
           @click="handleDelete"
           v-hasPermi="['monitor:job:remove']"
@@ -73,7 +73,7 @@
           type="warning"
           plain
           :icon="$legacyIcon('el-icon-download')"
-          size="mini"
+          size="small"
           @click="handleExport"
           v-hasPermi="['monitor:job:export']"
         >导出</el-button>
@@ -83,7 +83,7 @@
           type="info"
           plain
           :icon="$legacyIcon('el-icon-s-operation')"
-          size="mini"
+          size="small"
           @click="handleJobLog"
           v-hasPermi="['monitor:job:query']"
         >日志</el-button>
@@ -115,15 +115,15 @@
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template #default="scope">
           <el-button
-            size="mini"
-            type="text"
+            size="small"
+            link
             :icon="$legacyIcon('el-icon-edit')"
             @click="handleUpdate(scope.row)"
             v-hasPermi="['monitor:job:edit']"
           >修改</el-button>
           <el-button
-            size="mini"
-            type="text"
+            size="small"
+            link
             :icon="$legacyIcon('el-icon-delete')"
             @click="handleDelete(scope.row)"
             v-hasPermi="['monitor:job:remove']"
@@ -246,7 +246,7 @@
 
     <!-- 任务日志详细 -->
     <el-dialog title="任务详细" v-model="openView" width="700px" append-to-body>
-      <el-form ref="form" :model="form" label-width="120px" size="mini">
+      <el-form ref="form" :model="form" label-width="120px" size="small">
         <el-row>
           <el-col :span="12">
             <el-form-item label="任务编号：">{{ form.jobId }}</el-form-item>

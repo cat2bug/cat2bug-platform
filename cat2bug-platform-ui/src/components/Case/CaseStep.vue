@@ -7,7 +7,7 @@
       <div v-show="stateVisible" class="step-state" :state="step.state">{{ stateName(step) }}</div>
     </div>
     <div v-show="stateVisible" class="step-tools">
-      <el-link v-show="isShowFoldButton" :underline="false" type="primary" @click.native="foldChangedHandle"><svg-icon :icon-class="foldState?'up':'down'" />{{ foldButtonName }}</el-link>
+      <el-link v-show="isShowFoldButton" :underline="false" type="primary" @click="foldChangedHandle"><svg-icon :icon-class="foldState?'up':'down'" />{{ foldButtonName }}</el-link>
     </div>
   </div>
 </template>
@@ -20,11 +20,8 @@ const PASS_TEST_KEY = 'case.pass-tested';
 // 未通过
 const FAILED_TEST_KEY = 'case.failed-tested';
 export default {
+  emits: ['update:stepIndex', 'change'],
   name: "step",
-  model: {
-    prop: 'stepIndex',
-    event: 'change'
-  },
   data() {
     return {
       foldState: false,
@@ -105,7 +102,7 @@ export default {
   methods: {
     clickStepHandle(e, index) {
       if(this.stateVisible) {
-        this.$emit('change', index);
+        this.$emit('update:stepIndex', index); this.$emit('change', index);
         e.stopPropagation();
       }
     },

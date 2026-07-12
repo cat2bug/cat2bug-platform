@@ -79,7 +79,7 @@
   <!--        </el-date-picker>-->
   <!--      </el-form-item>-->
       </el-form>
-      <div slot="footer" class="dialog-footer"></div>
+      <div class="dialog-footer"></div>
     </div>
   </el-drawer>
 </template>

@@ -4,15 +4,14 @@ import render from '@/utils/generator/render'
 
 const components = {
   itemBtns(h, element, index, parent) {
-    const { copyItem, deleteItem } = this.$listeners
     return [
       <span class="drawing-item-copy" title="复制" onClick={event => {
-        copyItem(element, parent); event.stopPropagation()
+        this.$emit('copyItem', element, parent); event.stopPropagation()
       }}>
         <legacy-icon icon="el-icon-copy-document" />
       </span>,
       <span class="drawing-item-delete" title="删除" onClick={event => {
-        deleteItem(index, parent); event.stopPropagation()
+        this.$emit('deleteItem', index, parent); event.stopPropagation()
       }}>
         <legacy-icon icon="el-icon-delete" />
       </span>
@@ -21,16 +20,15 @@ const components = {
 }
 const layouts = {
   colFormItem(h, element, index, parent) {
-    const { activeItem } = this.$listeners
     let className = this.activeId === element.formId ? 'drawing-item active-from-item' : 'drawing-item'
     if (this.formConf.unFocusedComponentBorder) className += ' unfocus-bordered'
     return (
       <el-col span={element.span} class={className}
-        nativeOnClick={event => { activeItem(element); event.stopPropagation() }}>
+        onClick={event => { this.$emit('activeItem', element); event.stopPropagation() }}>
         <el-form-item label-width={element.labelWidth ? `${element.labelWidth}px` : null}
           label={element.label} required={element.required}>
           <render key={element.renderKey} conf={element} onInput={ event => {
-            this.$set(element, 'defaultValue', event)
+            element.defaultValue = event
           }} />
         </el-form-item>
         {components.itemBtns.apply(this, arguments)}
@@ -38,7 +36,6 @@ const layouts = {
     )
   },
   rowFormItem(h, element, index, parent) {
-    const { activeItem } = this.$listeners
     const className = this.activeId === element.formId ? 'drawing-row-item active-from-item' : 'drawing-row-item'
     let child = renderChildren.apply(this, arguments)
     if (element.type === 'flex') {
@@ -49,7 +46,7 @@ const layouts = {
     return (
       <el-col span={element.span}>
         <el-row gutter={element.gutter} class={className}
-          nativeOnClick={event => { activeItem(element); event.stopPropagation() }}>
+          onClick={event => { this.$emit('activeItem', element); event.stopPropagation() }}>
           <span class="component-name">{element.componentName}</span>
           <draggable list={element.children} animation={340} group="componentsGroup" class="drag-wrapper">
             {child}
@@ -88,6 +85,7 @@ export default {
     'activeId',
     'formConf'
   ],
+  emits: ['activeItem', 'copyItem', 'deleteItem'],
   render(h) {
     const layout = layouts[this.element.layout]
 

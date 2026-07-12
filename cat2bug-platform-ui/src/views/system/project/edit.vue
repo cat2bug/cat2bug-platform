@@ -16,28 +16,47 @@
               <el-input
                 type="textarea"
                 :placeholder="$t('enter-content')"
-                rows="5"
+                :rows="5"
                 v-model="form.projectIntroduce"
                 maxlength="255"
                 show-word-limit
               >
               </el-input>
             </el-form-item>
+            <el-form-item class="page-form-actions">
+              <div class="page-form-actions__buttons">
+                <el-button @click="goBack">{{$t('cancel')}}</el-button>
+                <el-button class="defect-kbd-hint-host" type="primary" @click="onSubmit">
+                  {{$t('update')}}
+                  <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
+                </el-button>
+              </div>
+            </el-form-item>
           </el-col>
           <!--          项目图标-->
           <el-col :xs="24" :sm="24" :md="8" :lg="6" :xl="6" class="step2">
             <cat2-bug-image
               style="width: 150px; height: 150px; border-radius: 4px; overflow: hidden;"
+              :key="projectIconPreviewUrl"
               :src="projectIconPreviewUrl"
               fit="cover"></cat2-bug-image>
             <div :class="[PROJECT_ICON_POPOVER_HOST_CLASS, { 'is-popover-open': projectIconPopperVisible }]">
               <el-popover
                 ref="projectIconPopover"
-                v-model="projectIconPopperVisible"
+                v-model:visible="projectIconPopperVisible"
                 popper-class="project-icon-popper"
                 placement="bottom"
+                :width="560"
                 trigger="click">
-                <div class="project-icon-popper">
+                <template #reference>
+                  <el-button
+                    ref="projectIconTrigger"
+                    class="project-icon-hint-change defect-kbd-hint-host"
+                  >{{$t('project.change-icon')}}
+                    <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint" aria-hidden="true">{{ changeIconHintLetter }}</span>
+                  </el-button>
+                </template>
+                <div class="project-icon-popper__grid">
                   <div
                     class="project-icon-item"
                     v-for="i in 10"
@@ -52,33 +71,12 @@
                       fit="cover"
                     ></el-image>
                   </div>
-                  <div class="project-icon-item" role="button" :aria-label="$t('upload.upload')" tabindex="-1">
+                  <div class="project-icon-item" role="button" :aria-label="$t('upload')" tabindex="-1">
                     <image-upload v-model="projectIcon" :limit="1" :file-type="[]" :is-show-tip="false" :is-show-clipboard-button="false" buttonStyle="width: 130px; height: 130px;" @input="handleSelectSelfImage" />
                   </div>
                 </div>
-                <!--              选择项目图标按钮-->
-                <el-button
-                  ref="projectIconTrigger"
-                  slot="reference"
-                  size="mini"
-                  class="project-icon-hint-change defect-kbd-hint-host"
-                >{{$t('project.change-icon')}}
-                  <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint" aria-hidden="true">{{ changeIconHintLetter }}</span>
-                </el-button>
               </el-popover>
             </div>
-          </el-col>
-          <!--            保存取消按钮-->
-          <el-col :xs="24" :sm="24" :md="16" :lg="16" :xl="12">
-            <el-form-item class="page-form-actions">
-              <div class="page-form-actions__buttons">
-                <el-button @click="goBack">{{$t('cancel')}}</el-button>
-                <el-button class="defect-kbd-hint-host" type="primary" @click="onSubmit">
-                  {{$t('update')}}
-                  <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
-                </el-button>
-              </div>
-            </el-form-item>
           </el-col>
         </el-row>
       </el-form>
@@ -91,6 +89,7 @@ import {addProject, getProject, listProjectRole, updateProject} from "@/api/syst
 import { listMember } from "@/api/system/team";
 import MemberNameplate from "@/components/MemberNameplate"
 import { resolveProjectIconUrl } from '@/utils/upload-asset'
+import { getDefaultProjectIconUrl, getProjectIconStoragePath } from '@/utils/project-default-icons'
 import projectOptionSubFormKbd from '@/mixins/project-option-sub-form-kbd'
 import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
 import { PROJECT_OPTION_KBD_SCOPE } from '@/mixins/project-option-sub-kbd'
@@ -100,11 +99,18 @@ import {
   initProjectIconPopoverKbd,
   shortcutOpenProjectIconPopover
 } from '@/utils/project-icon-popover-kbd'
+import { storeToRefs } from 'pinia';
+import { useUserStore } from '@/stores/user'
 
 export default {
   name: "ProjectEdit",
   mixins: [projectOptionSubFormKbd],
   components:{ MemberNameplate },
+  setup() {
+    const userStore = useUserStore()
+    const { config } = storeToRefs(userStore)
+    return { config }
+  },
   data() {
     return {
       PROJECT_ICON_POPOVER_HOST_CLASS,
@@ -140,10 +146,8 @@ export default {
   },
   computed: {
     /** 计算当前项目图标地址 */
-    activeProjectIconUrl: function () {
-      return function (index){
-        return require('@/assets/images/project/project_icon'+index+'.svg')
-      }
+    activeProjectIconUrl() {
+      return (index) => getDefaultProjectIconUrl(index)
     },
     projectIconPreviewUrl() {
       return resolveProjectIconUrl(this.form.projectIcon)
@@ -210,7 +214,7 @@ export default {
       })
     },
     getProjectId() {
-      return parseInt(this.$store.state.user.config.currentProjectId);
+      return parseInt(this.config.currentProjectId);
     },
     getProject() {
       getProject(this.getProjectId()).then(res=>{
@@ -249,7 +253,7 @@ export default {
     },
     /** 获取团队id */
     getTeamId() {
-      return this.$store.state.user.config.currentTeamId;
+      return this.config.currentTeamId;
     },
     /** 删除选中成员 */
     deleteMemberHandle(member){
@@ -277,9 +281,9 @@ export default {
     },
     /** 点击选中的项目图标处理方法 */
     clickProjectIconHandle(index) {
-      this.activeProjectIconIndex = index;                      // 赋值当前所选索引
-      this.form.projectIcon = this.activeProjectIconUrl(index); // 赋值项目图标
-      this.projectIconPopperVisible = false;                    // 隐藏图标选择组件
+      this.activeProjectIconIndex = index;
+      this.form.projectIcon = getProjectIconStoragePath(index);
+      this.projectIconPopperVisible = false;
     },
     /** 点击选择自定义图片处理方法 */
     handleSelectSelfImage(url) {
@@ -317,40 +321,9 @@ export default {
       column-gap: 10px;
       row-gap: 10px;
       border-left: var(--border-color-light) 1px solid;
-      :first-child {
+      > :first-child {
         margin-bottom: 10px;
       }
-      :last-child {
-        width: 150px;
-      }
-    }
-  }
-  ::v-deep .project-icon-hint-change.defect-kbd-hint-host .defect-kbd-hint {
-    width: max-content !important;
-    min-width: 16px;
-    padding: 0 2px;
-    box-sizing: border-box;
-    transform: translate(50%, calc(50% + 10px));
-  }
-  .project-icon-popper {
-    width: 550px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    padding: 0;
-    margin: 0;
-    .project-icon-item {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 0;
-      margin: 0;
-    }
-    .el-image {
-      width: 130px;
-      height: 130px;
-      border-radius: 4px;
-      cursor: pointer;
     }
   }
   ::v-deep .el-table__cell {

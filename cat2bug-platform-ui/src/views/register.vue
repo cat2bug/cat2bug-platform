@@ -16,7 +16,9 @@
               :placeholder="$t('member.please-enter-account')"
               maxlength="30"
             >
-              <svg-icon slot="prefix" icon-class="user" class="el-input__icon input-icon" />
+              <template #prefix>
+                <svg-icon icon-class="user" class="el-input__icon input-icon" />
+              </template>
             </el-input>
           </el-form-item>
           <span class="register-kbd-hint register-kbd-hint-username" aria-hidden="true" />
@@ -31,7 +33,9 @@
               :placeholder="$t('member.please-enter-name')"
               maxlength="30"
             >
-              <svg-icon slot="prefix" icon-class="name" class="el-input__icon input-icon" />
+              <template #prefix>
+                <svg-icon icon-class="name" class="el-input__icon input-icon" />
+              </template>
             </el-input>
           </el-form-item>
           <span class="register-kbd-hint register-kbd-hint-nickname" aria-hidden="true" />
@@ -44,10 +48,12 @@
               type="password"
               auto-complete="off"
               :placeholder="$t('member.please-enter-password')"
-              @keyup.enter.native="handleRegister"
+              @keyup.enter="handleRegister"
               maxlength="30"
             >
-              <svg-icon slot="prefix" icon-class="password" class="el-input__icon input-icon" />
+              <template #prefix>
+                <svg-icon icon-class="password" class="el-input__icon input-icon" />
+              </template>
             </el-input>
           </el-form-item>
           <span class="register-kbd-hint register-kbd-hint-password" aria-hidden="true" />
@@ -60,10 +66,12 @@
               type="password"
               auto-complete="off"
               :placeholder="$t('confirm-password')"
-              @keyup.enter.native="handleRegister"
+              @keyup.enter="handleRegister"
               maxlength="30"
             >
-              <svg-icon slot="prefix" icon-class="password" class="el-input__icon input-icon" />
+              <template #prefix>
+                <svg-icon icon-class="password" class="el-input__icon input-icon" />
+              </template>
             </el-input>
           </el-form-item>
           <span class="register-kbd-hint register-kbd-hint-confirm-password" aria-hidden="true" />
@@ -72,10 +80,10 @@
           <span class="register-kbd-hint register-kbd-hint-submit" aria-hidden="true" />
           <el-button
             :loading="loading"
-            size="medium"
+            :size="mapElementPlusSize('medium')"
             type="primary"
             style="width:100%;"
-            @click.native.prevent="handleRegister"
+            @click.prevent="handleRegister"
           >
             <span v-if="!loading">{{$t('register')}}</span>
             <span v-else>{{$t('registering')}}...</span>
@@ -84,7 +92,7 @@
             <router-link
               class="link-type register-kbd-anchor-host"
               :to="'/login'"
-              @click.native.prevent="goLogin"
+              @click.prevent="goLogin"
             >
               {{$t('login-existing-account')}}
               <span class="register-kbd-hint register-kbd-hint-go-login" aria-hidden="true" />
@@ -106,6 +114,7 @@ import {strFormat} from "@/utils";
 import pageActionHints from '@/mixins/page-action-hints'
 import { hasBlockingUiLayer } from '@/plugins/shortcut/service'
 import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
+import { mapElementPlusSize } from '@/utils/element-plus-size'
 
 const REGISTER_KBD_SCOPE = 'register'
 
@@ -172,6 +181,7 @@ export default {
     if (this.$shortcut) this.$shortcut.unregisterPage(REGISTER_KBD_SCOPE)
   },
   methods: {
+    mapElementPlusSize,
     registerRegisterShortcuts() {
       if (!this.$shortcut) return
       this.$shortcut.registerPage(REGISTER_KBD_SCOPE, [

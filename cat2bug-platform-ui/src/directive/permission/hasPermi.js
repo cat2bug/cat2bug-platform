@@ -3,12 +3,13 @@
  * Copyright (c) 2023 cat2bug
  */
 
-import store from '@/store'
+import { pinia } from '@/store/pinia.js'
+import { useUserStore } from '@/stores/user'
 
 function applyHasPermi(el, binding) {
   const { value } = binding
   const all_permission = '*:*:*'
-  const permissions = (store.getters && store.getters.permissions) || []
+  const permissions = useUserStore(pinia).permissions || []
 
   if (value && value instanceof Array && value.length > 0) {
     const permissionFlag = value

@@ -29,7 +29,7 @@
           placement="top"
           trigger="click"
           popper-class="defect-column-picker-popover"
-          v-model="planColumnPickerVisible"
+          v-model:visible="planColumnPickerVisible"
           @show="onColumnPickerPopoverShow"
           @hide="onColumnPickerPopoverHide"
         >
@@ -44,16 +44,17 @@
             class="defect-column-picker"
             @change="onPlanColumnPickerChange"
           >
-            <el-checkbox v-for="c in planColumnPickerOptions" :key="c.key" :label="c.key">{{ $t(c.key) }}</el-checkbox>
+            <el-checkbox v-for="c in planColumnPickerOptions" :key="c.key" :value="c.key">{{ c.key ? $t(c.key) : (c.label || c.prop) }}</el-checkbox>
           </el-checkbox-group>
-          <el-button
-            class="plan-list-hint-columns"
-            style="padding: 9px;"
-            plain
-            slot="reference"
-            :icon="$legacyIcon('el-icon-s-fold')"
-            size="small"
-          ></el-button>
+          <template #reference>
+            <el-button
+              class="plan-list-hint-columns"
+              style="padding: 9px;"
+              plain
+              :icon="$legacyIcon('el-icon-s-fold')"
+              size="small"
+            ></el-button>
+          </template>
         </el-popover>
         <el-button
           class="plan-hint-create"
@@ -101,32 +102,32 @@
       </template>
       <template #append>
         <el-table-column :label="$t('operate')" align="left" class-name="no-drag cat2bug-operate-column" fixed="right">
-          <template slot-scope="scope">
+          <template #default="scope">
             <div class="table-operate cat2bug-operate-tools">
               <el-button
-                size="mini"
-                type="text"
+                size="small"
+                link
                 :icon="$legacyIcon('el-icon-plus')"
                 @click="handlePlanCopy(scope.row)"
                 v-hasPermi="['system:plan:add']"
               >{{ $t('copy') }}</el-button>
               <el-button
-                size="mini"
-                type="text"
+                size="small"
+                link
                 :icon="$legacyIcon('el-icon-tickets')"
                 @click="handlePlanRun(scope.row)"
                 v-hasPermi="['system:plan:run']"
               >{{ $t('plan.run') }}</el-button>
               <el-button
-                size="mini"
-                type="text"
+                size="small"
+                link
                 :icon="$legacyIcon('el-icon-edit')"
                 @click="handleUpdate(scope.row)"
                 v-hasPermi="['system:plan:edit']"
               >{{ $t('modify') }}</el-button>
               <el-button
-                size="mini"
-                type="text"
+                size="small"
+                link
                 class="red"
                 :icon="$legacyIcon('el-icon-delete')"
                 @click="handleDelete(scope.row)"
@@ -143,8 +144,8 @@
       <pagination
         class="plan-table-pagination"
         :total="total"
-        :page.sync="queryParams.pageNum"
-        :limit.sync="queryParams.pageSize"
+        v-model:page="queryParams.pageNum"
+        v-model:limit="queryParams.pageSize"
         @pagination="getList"
       />
     </div>
@@ -170,6 +171,7 @@ import pageActionHints from '@/mixins/page-action-hints'
 import listQueryKeyboardNav from '@/mixins/list-query-keyboard-nav'
 import columnPickerPopoverKbd from '@/mixins/column-picker-popover-kbd'
 import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
+import { useUserStore } from '@/stores/user'
 import {
   assignRowHintLetters,
   collectHintLettersFromToolbar,
@@ -190,6 +192,11 @@ export default {
   mixins: [pageActionHints, listQueryKeyboardNav, columnPickerPopoverKbd],
   dicts: ['plan_item_state'],
   components:{ ProjectLabel, AddPlanDialog, HandlePlanDialog, DictOptionDialog, RowListMember, Cat2BugTable },
+  setup() {
+    return {
+      userStore: useUserStore()
+    }
+  },
   data() {
     return {
       // 遮罩层
@@ -262,7 +269,7 @@ export default {
     },
     /** 项目ID */
     projectId: function () {
-      return parseInt(this.$store.state.user.config.currentProjectId);
+      return parseInt((this.userStore.config || {}).currentProjectId)
     },
     /** 成员结构 */
     member: function () {

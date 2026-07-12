@@ -68,7 +68,6 @@
           <markdown-content :content="notice.noticeContent + ''" />
         </el-collapse-item>
       </el-collapse>
-      <div slot="footer" class="dialog-footer"></div>
     </div>
   </el-drawer>
 </template>

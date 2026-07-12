@@ -1,7 +1,7 @@
 <template>
-  <div class="defect-state-chart" :style="{height:height,width:width}">
+  <div class="defect-state-chart plan-burndown-chart" :style="{ height, width }">
     <h1 v-if="!query.planId">{{ $t('dashboard.plan-burndown-chart.title') }}</h1>
-    <el-select v-else v-model="query.planId" placeholder="" size="mini" class="planSelect" @change="handlePlanChange">
+    <el-select v-else v-model="query.planId" placeholder="" size="small" class="planSelect" @change="handlePlanChange">
       <template #prefix>
         <div class="prefix">
           <h1>{{ $t('dashboard.plan-burndown-chart.title') }}</h1>
@@ -15,21 +15,38 @@
         :value="item.planId">
       </el-option>
     </el-select>
-    <div v-loading="loading" ref="planBurndownChart" :class="className" :style="{height:height,width:width}" />
+    <div
+      v-loading="loading"
+      ref="planBurndownChart"
+      :class="[className, 'plan-burndown-chart__canvas']"
+    />
   </div>
 </template>
 
 <script>
 // 测试计划燃尽图
-import echarts from '@/utils/echarts.js';
 import resize from "@/views/dashboard/mixins/resize";
 import {dashboardPlanList, planBurndown} from "@/api/system/dashboard";
-import { mapState } from 'pinia'
+import { disconnectEchartsResize, initEchartsChart, observeEchartsResize, safeSetOption } from '@/components/Cat2BugStatistic/utils/echarts-resize';
+import { computed } from 'vue';
+import { storeToRefs } from 'pinia';
 import { useSettingsStore } from '@/stores/settings';
+import { useUserStore } from '@/stores/user';
 
 export default {
   name: "PlanBurndownChart",
   mixins: [resize],
+  setup() {
+    const settingsStore = useSettingsStore();
+    const userStore = useUserStore();
+    const { themeMode } = storeToRefs(settingsStore);
+    const { config } = storeToRefs(userStore);
+    const currentProjectId = computed(() => Number.parseInt(config.value?.currentProjectId, 10));
+    return {
+      themeMode,
+      currentProjectId
+    };
+  },
   props: {
     className: {
       type: String,
@@ -61,10 +78,9 @@ export default {
     }
   },
   computed: {
-    ...mapState(useSettingsStore, ['themeMode']),
     /** 获取项目id */
     projectId() {
-      return parseInt(this.$store.state.user.config.currentProjectId);
+      return this.currentProjectId;
     },
     isDarkTheme() {
       return this.themeMode === 'dark';
@@ -85,6 +101,13 @@ export default {
   mounted() {
     this.getPlanList();
   },
+  beforeDestroy() {
+    disconnectEchartsResize(this.chart);
+    if (this.chart) {
+      this.chart.dispose();
+      this.chart = null;
+    }
+  },
   methods: {
     getPlanList() {
       this.loading = true;
@@ -102,10 +125,12 @@ export default {
           this.loading = false;
         }
 
-        this.$nextTick(()=>{
+        this.$nextTick(() => {
           self.initChart();
+          if (self.query.planId) {
+            self.handlePlanChange();
+          }
         });
-        this.handlePlanChange();
       }).catch(e=>{
         this.loading = false;
       })
@@ -123,17 +148,19 @@ export default {
       }).catch(e=>this.loading = false);
     },
     initChart() {
-      this.chart = echarts.init(this.$refs.planBurndownChart, 'macarons')
-      this.setOptions([],[])
+      this.chart = initEchartsChart(this.$refs.planBurndownChart)
+      this.setOptions([], [])
+      observeEchartsResize(this.chart, this.$refs.planBurndownChart)
     },
     setOptions(xData, series) {
+      if (!this.chart) return
       this.lastXData = xData || [];
       this.lastSeries = series || [];
       const dark = this.isDarkTheme;
       const axisColor = dark ? '#909399' : '#606266';
       const lineColor = dark ? '#363637' : '#dcdfe6';
       const splitColor = dark ? '#2b2b2c' : '#ebeef5';
-      this.chart.setOption({
+      safeSetOption(this.chart, {
         tooltip: {
           trigger: 'axis',
           backgroundColor: dark ? '#252529' : '#ffffff',
@@ -155,13 +182,13 @@ export default {
           axisLine: { lineStyle: { color: lineColor } },
           splitLine: { lineStyle: { color: splitColor } }
         },
-        grid: [{
+        grid: {
           top: 10,
           left: 40,
           right: 16,
           bottom: 24,
           containLabel: true
-        }],
+        },
         series: [
           {
             data: series,
@@ -182,16 +209,30 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.defect-state-chart {
+.defect-state-chart.plan-burndown-chart {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
 
   > h1 {
     margin: 5px 0 0;
     font-size: 24px;
     color: var(--text-color-primary);
+    flex-shrink: 0;
+  }
+
+  .plan-burndown-chart__canvas {
+    flex: 1 1 auto;
+    min-height: 0;
+    width: 100% !important;
+    height: auto !important;
+    overflow: hidden;
   }
 }
 .planSelect {
+  flex-shrink: 0;
   width: 100%;
   .prefix {
     display: inline-flex;
@@ -206,7 +247,28 @@ export default {
       font-size: 1rem;
     }
   }
+  ::v-deep .el-select__wrapper {
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    height: 50px !important;
+    min-height: 50px !important;
+    padding-left: 0 !important;
+    padding-right: 24px !important;
+  }
+  ::v-deep .el-select__wrapper:hover,
+  ::v-deep .el-select__wrapper.is-focused,
+  ::v-deep .el-select__wrapper.is-hovering {
+    border: none !important;
+    box-shadow: none !important;
+  }
+  ::v-deep .el-select__selection,
+  ::v-deep .el-select__selected-item,
+  ::v-deep .el-select__placeholder {
+    opacity: 0 !important;
+  }
   ::v-deep .el-input,
+  ::v-deep .el-input__wrapper,
   ::v-deep .el-input__inner {
     background-color: transparent !important;
     border-color: transparent !important;
@@ -221,11 +283,12 @@ export default {
     -webkit-text-fill-color: transparent !important;
     background-color: transparent !important;
   }
-  ::v-deep .el-select__caret {
-    height: 38px;
+  ::v-deep .el-select__caret,
+  ::v-deep .el-select__suffix {
     color: var(--text-color-secondary);
   }
-  ::v-deep .el-input__prefix {
+  ::v-deep .el-input__prefix,
+  ::v-deep .el-select__prefix {
     width: 100%;
     display: inline-flex;
     flex-direction: row;

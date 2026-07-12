@@ -19,7 +19,7 @@
 <script>
 import {makeCaseDemand} from "@/api/ai/AiCase2";
 import Label from "@/components/Cat2BugStatistic/Components/Label";
-import { Loading } from 'element-ui';
+import { ElLoading } from 'element-plus'
 
 export default {
   name: "CaseDemand",
@@ -41,7 +41,7 @@ export default {
   },
   methods: {
     getDemandList() {
-      const loadingInstance = Loading.service({
+      const loadingInstance = ElLoading.service({
         target: this.$refs.caseDemand,
         text: '需求分析中,请耐心等待...',
         fullscreen: false,

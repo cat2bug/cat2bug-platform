@@ -67,6 +67,7 @@ describe('split-dropdown-kbd', () => {
     const host = document.createElement('div')
     host.className = 'el-dropdown cat2bug-split-dropdown-kbd'
     const dropdownVm = {
+      $options: { name: 'ElDropdown' },
       visible: true,
       timeout: setTimeout(() => {}, 1000),
       removeTabindex() {

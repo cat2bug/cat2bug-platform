@@ -12,6 +12,9 @@ import { ElConfigProvider } from 'element-plus'
 import Cookies from 'js-cookie'
 import { resolveElementPlusLocale } from '@/utils/element-plus-locale'
 import ThemePicker from '@/components/ThemePicker'
+import { pinia } from '@/store/pinia'
+import { useSettingsStore } from '@/stores/settings'
+import { useUserStore } from '@/stores/user'
 
 export default {
   name: 'App',
@@ -26,6 +29,12 @@ export default {
     elementPlusLocale() {
       return resolveElementPlusLocale(this.$i18n.locale)
     },
+    settingsTitle() {
+      return useSettingsStore(pinia).title
+    },
+    settingsDynamicTitle() {
+      return useSettingsStore(pinia).dynamicTitle
+    },
     /** Vue2 全局 size 多为 small/medium；统一映射为 EP small（输入框等已覆写为 32px）。开关须显式 default 或依赖 cat2bug.scss 表单内修正。 */
     elementPlusSize() {
       const raw = Cookies.get('size') || 'small'
@@ -34,15 +43,11 @@ export default {
     }
   },
   watch: {
-    '$store.state.settings.title': {
-      handler() {
-        this.syncDocumentTitle()
-      }
+    settingsTitle() {
+      this.syncDocumentTitle()
     },
-    '$store.state.settings.dynamicTitle': {
-      handler() {
-        this.syncDocumentTitle()
-      }
+    settingsDynamicTitle() {
+      this.syncDocumentTitle()
     },
     '$i18n.locale'() {
       this.syncDocumentTitle()
@@ -64,14 +69,15 @@ export default {
       console.log(this.$i18n.t('welcome'))
     },
     syncDocumentTitle() {
-      const dynamic = this.$store.state.settings.dynamicTitle
-      const pageTitle = this.$store.state.settings.title
+      const settings = useSettingsStore(pinia)
+      const dynamic = settings.dynamicTitle
+      const pageTitle = settings.title
       const systemName = this.$i18n.t('system-name')
       document.title = dynamic && pageTitle ? `${pageTitle} - ${systemName}` : systemName
     },
     initWebSocket() {
       this.taskId = setInterval(() => {
-        const userId = this.$store.state.user.id
+        const userId = useUserStore(pinia).id
         if (userId) {
           const wsBase = process.env.VUE_APP_BASE_WEBSOCKET || ''
           this.wsUrl = (window.location.protocol === 'https:'

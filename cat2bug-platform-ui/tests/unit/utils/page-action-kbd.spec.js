@@ -12,6 +12,14 @@ import {
 describe('page-action-kbd helpers', () => {
   beforeEach(() => {
     document.body.innerHTML = ''
+    Range.prototype.getClientRects = function mockTextRects() {
+      const node = this.commonAncestorContainer
+      const el = node && node.nodeType === Node.TEXT_NODE ? node.parentElement : node
+      if (el && el.classList && el.classList.contains('plan-name')) {
+        return [{ top: 10, left: 20, right: 180, bottom: 34, width: 160, height: 24 }]
+      }
+      return []
+    }
   })
 
   it('resolvePageActionLetter normalizes digit row keys', () => {
@@ -119,6 +127,6 @@ describe('page-action-kbd helpers', () => {
 
     const layout = resolveTableRowFirstColumnKbdBadgeLayout(mainTr, tableRoot, null, null)
     expect(layout.floatOffset.placement).toBe('center-cell')
-    expect(layout.rect.width).toBe(104)
+    expect(layout.rect.width).toBe(90)
   })
 })

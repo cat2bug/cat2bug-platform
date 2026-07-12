@@ -34,23 +34,23 @@
         <p>当前配置目的是发送个人通知到企业微信平台，此功能是通过微信【企业内部开发】->【服务器API】->【消息推送】实现的；调用此接口需要先在企业微信平台创建应用，并将配置完成的账号ID配置到Cat2Bug-Platform平台，步骤如下。</p>
         <p>1. 用企业管理员的账号登陆企业微信平台 <a href="https://work.weixin.qq.com">https://work.weixin.qq.com</a></p>
         <p>2. 选择【应用管理】菜单，点击【创建应用】功能创建发送消息的应用。</p>
-        <el-image :src="require('@/assets/images/help/wechat/wechat-create-app.png')" />
+        <el-image :src="helpImages.createApp" />
         <p>3. 上传图标，填写应用名称，可见范围选择您想发送消息的部门，之后点击【创建应用】按钮。</p>
-        <el-image :src="require('@/assets/images/help/wechat/wechat-create-app-page1.png')" />
+        <el-image :src="helpImages.createAppPage1" />
         <p>4. 进入应用界面后配置企业可信IP。</p>
-        <el-image :src="require('@/assets/images/help/wechat/wechat-create-app-page2.png')" />
+        <el-image :src="helpImages.createAppPage2" />
         <p>注意：可信IP为Cat2Bug-Platform平台外网IP地址，不配置此项，企业微信将无法正常接收通知消息。</p>
         <p>5. 将应用详情上方的【AgentId】复制到左侧【应用ID】一栏，将【Secret】复制到左侧【应用凭证】栏中。</p>
-        <el-image :src="require('@/assets/images/help/wechat/wechat-app-id.png')" />
+        <el-image :src="helpImages.appId" />
         <p>6. 选择导航栏中的【我的企业】菜单，将最下放的【企业ID】复制到左侧栏中，点击【保存】按钮保存配置。</p>
-        <el-image :src="require('@/assets/images/help/wechat/wechat-enterprise-id.png')" />
+        <el-image :src="helpImages.enterpriseId" />
         <h2>配置用户信息</h2>
         <p>如果需要将通知信息单独发送给指定成员，需要获取成员在企业微信中的账号，并配置到Cat2Bug-Platform个人通知配置中，操作步骤如下。</p>
         <p>1. 用企业管理员的账号登陆企业微信平台 <a href="https://work.weixin.qq.com">https://work.weixin.qq.com</a></p>
         <p>2. 在导航菜单中选择【通讯录】，在右侧成员列表中点击需要查看的成员信息，查看并复制成员账号。</p>
-        <el-image :src="require('@/assets/images/help/wechat/wechat-user-id.png')" />
+        <el-image :src="helpImages.userId" />
         <p>3. 进入Cat2Bug-Platform系统，点击右上角的通知图标，进入后选择右侧配置按钮，将复制的账号粘贴在【接收平台】->【企业微信】->【成员账号】中。</p>
-        <el-image :src="require('@/assets/images/help/wechat/wechat-user-config.png')" />
+        <el-image :src="helpImages.userConfig" />
         <p>注意：当用户没有配置账号时，默认采用【个人中心】中配置的默认企业微信账号。</p>
         <p>至此，所有配置完成，当缺陷或报告发生变化后，即可通过企业微信收到消息。</p>
       </el-col>
@@ -59,19 +59,24 @@
 </template>
 
 <script>
-import {addProject, getProject, listProjectRole, updateProject} from "@/api/system/project";
-import { listMember } from "@/api/system/team";
-import MemberNameplate from "@/components/MemberNameplate"
 import {getWeChatConfig, saveWeChatConfig} from "@/api/im/wechat";
+import { wechatHelpImages } from '@/utils/im-help-images'
 import projectOptionSubFormKbd from '@/mixins/project-option-sub-form-kbd'
 import projectImConfigDocKbd from '@/mixins/project-im-config-doc-kbd'
+import { storeToRefs } from 'pinia';
+import { useUserStore } from '@/stores/user'
 
 export default {
   name: "EnterpriseWeChat",
   mixins: [projectOptionSubFormKbd, projectImConfigDocKbd],
-  components:{ MemberNameplate },
+  setup() {
+    const userStore = useUserStore()
+    const { config } = storeToRefs(userStore)
+    return { config }
+  },
   data() {
     return {
+      helpImages: wechatHelpImages,
       wechatConfig: {},
       form:{
         corpId: null,             // 企业id
@@ -95,6 +100,8 @@ export default {
   created() {
     this.getConfig();
   },
+  computed: {
+  },
   methods: {
     shortcutSave() {
       this.onSubmit()
@@ -104,7 +111,7 @@ export default {
     },
     /** 获取项目ID */
     getProjectId() {
-      return parseInt(this.$store.state.user.config.currentProjectId);
+      return parseInt(this.config.currentProjectId);
     },
     /** 获取微信企业配置 */
     getConfig() {

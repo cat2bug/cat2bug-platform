@@ -15,9 +15,11 @@
               :preview-src-list="list(caseModel.imgUrls)"
               fit="cover"></cat2-bug-image>
           </div>
-          <el-badge :value="num(caseModel.imgUrls)" class="item" slot="reference" v-if="num(caseModel.imgUrls)">
-            <el-button :icon="$legacyIcon('el-icon-picture-outline')" size="mini"></el-button>
-          </el-badge>
+          <template #reference>
+            <el-badge :value="num(caseModel.imgUrls)" class="item" v-if="num(caseModel.imgUrls)">
+              <el-button :icon="$legacyIcon('el-icon-picture-outline')" size="small"></el-button>
+            </el-badge>
+          </template>
         </el-popover>
         <el-popover
           placement="left-start"
@@ -25,9 +27,11 @@
           <div style="display: inline-flex; flex-direction: column; align-items: start;">
             <cat2-bug-text type="down" :content="file" :tooltip="file" v-for="(file,index) in list(caseModel.annexUrls)" :key="index"/>
           </div>
-          <el-badge :value="num(caseModel.annexUrls)" class="item" slot="reference" v-if="num(caseModel.annexUrls)">
-            <el-button :icon="$legacyIcon('el-icon-paperclip')" size="mini"></el-button>
-          </el-badge>
+          <template #reference>
+            <el-badge :value="num(caseModel.annexUrls)" class="item" v-if="num(caseModel.annexUrls)">
+              <el-button :icon="$legacyIcon('el-icon-paperclip')" size="small"></el-button>
+            </el-badge>
+          </template>
         </el-popover>
       </div>
       <div class="case-card-content">
@@ -43,7 +47,7 @@
           </div>
         </div>
         <div class="row footer">
-          <label>{{ $t('step') }}</label><case-step ref="caseStep" class="step" :case-steps="caseModel.caseStep" v-bind="$attrs" v-on="$listeners" />
+          <label>{{ $t('step') }}</label><case-step ref="caseStep" class="step" :case-steps="caseModel.caseStep" v-bind="$attrs" />
         </div>
       </div>
     </div>
@@ -59,12 +63,9 @@ import CaseStep from "@/components/Case/CaseStep";
 import Cat2BugText from "@/components/Cat2BugText";
 
 export default {
+  emits: ['update:stepIndex', 'change'],
   name: "CaseCard",
   components: {CaseStep, Cat2BugText},
-  model: {
-    prop: 'stepIndex',
-    event:'change'
-  },
   data() {
     return {
     }

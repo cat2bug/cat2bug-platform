@@ -17,26 +17,28 @@
       <el-tabs v-model="activeName" stretch class="tree-plan-item-tabs" @tab-click="handleTabClick">
         <el-tab-pane :label="$t('module.list')" name="module">
           <el-tree v-loading="loading" :highlight-current="true" ref="moduleTree" :show-checkbox="checkVisible" :props="props" :lazy="true" :data="tree" :load="loadNode" node-key="(id,pid)" @node-click="handleNodeClick" @check-change="handleCheckChange">
-            <span class="tree-node" slot-scope="{ node, data }">
+            <template #default="{ node, data }">
+            <span class="tree-node">
               <span v-if="node.label!=$t('module.all-module')">{{ node.label }}</span>
               <span v-else><< {{ node.label }} >></span>
               <span v-if="editVisible">
                 <el-button
-                  type="text"
-                  size="mini"
+                  link
+                  size="small"
                   v-hasPermi="['system:module:add']"
                   @click="append($event, data)">
                   <legacy-icon icon="el-icon-plus" />
                 </el-button>
                 <el-button
-                  type="text"
-                  size="mini"
+                  link
+                  size="small"
                   v-show="removeNodeButtonVisible(data)"
                   @click="remove($event, node, data)">
                   <legacy-icon icon="el-icon-close" />
                 </el-button>
               </span>
             </span>
+            </template>
           </el-tree>
         </el-tab-pane>
         <el-tab-pane :label="$t('defect.level-list')" name="defect-level">

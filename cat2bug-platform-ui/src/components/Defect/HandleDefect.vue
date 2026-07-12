@@ -18,7 +18,7 @@
                 <defect-type-flag :defect="defect" />
                 <defect-state-flag :defect="defect" />
                 <focus-member-list
-                  v-model="defect.focusList"
+                  v-model:members="defect.focusList"
                   module-name="defect"
                   :data-id="defect.defectId"
                   :tooltip="false"
@@ -28,7 +28,7 @@
           </div>
         </div>
         <div class="report-edit-tools">
-          <defect-tools :exclusions="defectToolsExclusions" :defect="defect" size="mini" @delete="deleteHandle" @restore="restoreHandle" @log="logHandle"></defect-tools>
+          <defect-tools :exclusions="defectToolsExclusions" :defect="defect" size="small" @delete="deleteHandle" @restore="restoreHandle" @log="logHandle"></defect-tools>
         </div>
       </div>
     </template>
@@ -38,14 +38,14 @@
       </div>
       <el-collapse v-model="activeNames">
         <el-collapse-item name="defectDescribe">
-          <template slot="title">
+          <template #title>
             <span class="handle-defect-collapse-title" data-collapse-name="defectDescribe">{{ $i18n.t('describe') }}</span>
           </template>
           <markdown-content v-if="defect.defectDescribe" :content="defect.defectDescribe+''" />
           <el-empty v-else :description="$t('no-data')"></el-empty>
         </el-collapse-item>
         <el-collapse-item name="customFields">
-          <template slot="title">
+          <template #title>
             <span class="handle-defect-collapse-title" data-collapse-name="customFields">{{ $i18n.t('defect.base-info') }}</span>
           </template>
           <defect-custom-fields-display
@@ -62,7 +62,7 @@
           :key="row.fieldKey"
           :name="customFieldAccordionCollapseName(row.fieldKey)"
         >
-          <template slot="title">
+          <template #title>
             <span
               class="handle-defect-collapse-title"
               :data-collapse-name="customFieldAccordionCollapseName(row.fieldKey)"
@@ -71,19 +71,19 @@
           <defect-custom-field-accordion-body :row="row" />
         </el-collapse-item>
         <el-collapse-item v-if="defectCase && defectCase.caseId" name="caseId">
-          <template slot="title">
+          <template #title>
             <span class="handle-defect-collapse-title" data-collapse-name="caseId">{{ $i18n.t('case') }}</span>
           </template>
-          <case-card :case-model="defectCase" :state-visible="true" :step-index.sync="defect.caseStepId" :edit="false" />
+          <case-card :case-model="defectCase" :state-visible="true" v-model:step-index="defect.caseStepId" :edit="false" />
         </el-collapse-item>
         <el-collapse-item name="log">
-          <template slot="title">
+          <template #title>
             <span class="handle-defect-collapse-title" data-collapse-name="log">{{ $i18n.t('log') }}</span>
           </template>
           <list-defect-log ref="defectLog" :pageSize="5" show-comment />
         </el-collapse-item>
       </el-collapse>
-      <div slot="footer" class="dialog-footer"></div>
+      <div class="dialog-footer"></div>
     </div>
   </el-drawer>
 </template>
@@ -100,7 +100,6 @@ import CaseCard from "@/components/Case/CaseCard";
 import FocusMemberList from "@/components/FocusMemberList";
 import {getCase} from "@/api/system/case";
 import MarkdownContent from '@/components/Markdown/MarkdownContent.vue'
-import 'markdown-it-vue/dist/markdown-it-vue.css'
 import {normalizeDefectTypeAndLevel} from "@/utils/defect-defaults";
 import handleDefectKbdHints from '@/mixins/handle-defect-kbd-hints'
 import {

@@ -78,13 +78,13 @@
 
     <div class="center-board">
       <div class="action-bar">
-        <el-button :icon="$legacyIcon('el-icon-download')" type="text" @click="download">
+        <el-button :icon="$legacyIcon('el-icon-download')" link @click="download">
           导出vue文件
         </el-button>
-        <el-button class="copy-btn-main" :icon="$legacyIcon('el-icon-document-copy')" type="text" @click="copy">
+        <el-button class="copy-btn-main" :icon="$legacyIcon('el-icon-document-copy')" link @click="copy">
           复制代码
         </el-button>
-        <el-button class="delete-btn" :icon="$legacyIcon('el-icon-delete')" type="text" @click="empty">
+        <el-button class="delete-btn" :icon="$legacyIcon('el-icon-delete')" link @click="empty">
           清空
         </el-button>
       </div>
@@ -126,7 +126,7 @@
     />
 
     <code-type-dialog
-      :visible.sync="dialogVisible"
+      v-model:visible="dialogVisible"
       title="选择生成类型"
       :show-file-name="showFileName"
       @confirm="generate"

@@ -5,20 +5,22 @@
       <div class="browser-input-content">
         <span class="browser-input-url">{{$i18n.t('browser.website')}}</span>
         <el-popover
-          v-model="urlPopoverVisible"
+          v-model:visible="urlPopoverVisible"
           placement="bottom-start"
           popper-class="browser-input-url-input-list"
           trigger="click">
           <el-row>
-            <el-col :span="24" v-for="(url,index) in oldUrlOptions" :key="index" @click.native="clickUrlHandle(url)">
+            <el-col :span="24" v-for="(url,index) in oldUrlOptions" :key="index" @click="clickUrlHandle(url)">
               <div v-html="html(url)">{{url}}</div>
             </el-col>
           </el-row>
-          <el-input slot="reference" v-model="selectUrl"
-                    @click="urlChangedHandle"
-                    @input="urlChangedHandle"
-                    @keyup.enter.native="inputHandle"
-                    :placeholder="$i18n.t('browser.please-enter-testing-website')"></el-input>
+          <template #reference>
+            <el-input v-model="selectUrl"
+                      @click="urlChangedHandle"
+                      @input="urlChangedHandle"
+                      @keyup.enter="inputHandle"
+                      :placeholder="$i18n.t('browser.please-enter-testing-website')"></el-input>
+          </template>
         </el-popover>
         <el-button :disabled="!selectUrl" type="primary" @click="inputHandle">{{$i18n.t('browser.access')}}</el-button>
       </div>
@@ -29,11 +31,8 @@
 
 <script>
 export default {
+  emits: ['update:url', 'input'],
   name: "BrowserInput",
-  model: {
-    prop: 'url',
-    event: 'input'
-  },
   props: {
     url: {
       type: String,
@@ -138,7 +137,7 @@ export default {
 
       this.saveBrowserUrlList(list);
       this.saveLastBrowserUrl(this.selectUrl);
-      this.$emit('input',this.selectUrl);
+      this.$emit('update:url', this.selectUrl); this.$emit('input', this.selectUrl);
     }
   }
 }

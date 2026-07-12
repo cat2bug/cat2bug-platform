@@ -1,16 +1,19 @@
 <template>
   <el-tooltip placement="bottom">
-    <div slot="content" class="column">
+    <template #content>
+    <div class="column">
       <span class="key-point">{{$t('definition')}}</span>
       <div>{{$t('plan.defect-count.definition')}}</div>
     </div>
+        </template>
     <div class="plan-statistical-block">
       <el-statistic
         :title="$t('plan.defect-count')"
       >
-        <template slot="formatter">
-          {{`${plan.defectCount||0}`}}{{ $t('a') }}
+        <template #formatter>
+          {{ plan.defectCount || 0 }}
         </template>
+        <template #suffix>{{ $t('a') }}</template>
       </el-statistic>
     </div>
   </el-tooltip>

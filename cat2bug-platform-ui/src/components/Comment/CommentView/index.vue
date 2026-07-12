@@ -7,7 +7,7 @@
         <span class="time">{{ parseTime(comment.createTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
       </div>
       <div>
-        <el-button v-if="showDeleteButton(comment)" :icon="$legacyIcon('el-icon-delete')" size="small" type="text" @click="deleteHandle(comment)"></el-button>
+        <el-button v-if="showDeleteButton(comment)" :icon="$legacyIcon('el-icon-delete')" size="small" link @click="deleteHandle(comment)"></el-button>
       </div>
     </div>
     <div class="comment-view-content" v-html="toHtml(comment.commentContent)"></div>
@@ -18,8 +18,11 @@
 import Cat2BugAvatar from "@/components/Cat2BugAvatar";
 import {delComment} from "@/api/system/comment";
 import { defaultEmojiMap } from '@/utils/emoji-assets'
+import { pinia } from '@/store/pinia.js'
+import { useUserStore } from '@/stores/user'
 
 const imgMap = defaultEmojiMap
+const userStore = useUserStore(pinia)
 export default {
   name: "CommentView",
   components: { Cat2BugAvatar },
@@ -37,7 +40,7 @@ export default {
   computed: {
     showDeleteButton: function (){
       return function (comment) {
-        return this.$store.state.user.id==comment.createById;
+        return userStore.id == comment.createById;
       }
     },
   },

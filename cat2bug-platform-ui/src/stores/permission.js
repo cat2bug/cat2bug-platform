@@ -1,5 +1,6 @@
 import { getRouters } from '@/api/menu'
 import { isProjectListPageView } from '@/utils/project-list-page'
+import { applyMenuIconOverrides } from '@/utils/menu-icon'
 import { defineStore } from 'pinia'
 
 const devToolsEnabled = process.env.VUE_APP_ENABLE_DEV_TOOLS === 'true'
@@ -154,6 +155,8 @@ export const usePermissionStore = defineStore('permission', {
           const routeData = Array.isArray(res.data) ? res.data : []
           const sdata = JSON.parse(JSON.stringify(routeData))
           const rdata = JSON.parse(JSON.stringify(routeData))
+          applyMenuIconOverrides(sdata)
+          applyMenuIconOverrides(rdata)
           const sidebarRoutes = filterAsyncRouter(sdata)
           const rewriteRoutes = filterAsyncRouter(rdata, false, true)
           const asyncRoutes = filterDynamicRoutes(dynamicRoutesRef)

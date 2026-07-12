@@ -30,8 +30,8 @@
         </el-select>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" :icon="$legacyIcon('el-icon-search')" size="mini" @click="handleQuery">搜索</el-button>
-        <el-button :icon="$legacyIcon('el-icon-refresh')" size="mini" @click="resetQuery">重置</el-button>
+        <el-button type="primary" :icon="$legacyIcon('el-icon-search')" size="small" @click="handleQuery">搜索</el-button>
+        <el-button :icon="$legacyIcon('el-icon-refresh')" size="small" @click="resetQuery">重置</el-button>
       </el-form-item>
     </el-form>
 
@@ -41,7 +41,7 @@
           type="primary"
           plain
           :icon="$legacyIcon('el-icon-plus')"
-          size="mini"
+          size="small"
           @click="handleAdd"
           v-hasPermi="['system:dict:add']"
         >新增</el-button>
@@ -51,7 +51,7 @@
           type="success"
           plain
           :icon="$legacyIcon('el-icon-edit')"
-          size="mini"
+          size="small"
           :disabled="single"
           @click="handleUpdate"
           v-hasPermi="['system:dict:edit']"
@@ -62,7 +62,7 @@
           type="danger"
           plain
           :icon="$legacyIcon('el-icon-delete')"
-          size="mini"
+          size="small"
           :disabled="multiple"
           @click="handleDelete"
           v-hasPermi="['system:dict:remove']"
@@ -73,7 +73,7 @@
           type="warning"
           plain
           :icon="$legacyIcon('el-icon-download')"
-          size="mini"
+          size="small"
           @click="handleExport"
           v-hasPermi="['system:dict:export']"
         >导出</el-button>
@@ -83,7 +83,7 @@
           type="warning"
           plain
           :icon="$legacyIcon('el-icon-close')"
-          size="mini"
+          size="small"
           @click="handleClose"
         >关闭</el-button>
       </el-col>
@@ -115,15 +115,15 @@
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template #default="scope">
           <el-button
-            size="mini"
-            type="text"
+            size="small"
+            link
             :icon="$legacyIcon('el-icon-edit')"
             @click="handleUpdate(scope.row)"
             v-hasPermi="['system:dict:edit']"
           >修改</el-button>
           <el-button
-            size="mini"
-            type="text"
+            size="small"
+            link
             :icon="$legacyIcon('el-icon-delete')"
             @click="handleDelete(scope.row)"
             v-hasPermi="['system:dict:remove']"
@@ -193,9 +193,17 @@
 import { listData, getData, delData, addData, updateData } from "@/api/system/dict/data";
 import { optionselect as getDictOptionselect, getType } from "@/api/system/dict/type";
 
+import { storeToRefs } from 'pinia'
+import { useDictStore } from '@/stores/dict'
+
 export default {
   name: "Data",
   dicts: ['sys_normal_disable'],
+  setup() {
+    const dictStore = useDictStore()
+    const { dict: dictItems } = storeToRefs(dictStore)
+    return { dictStore, dictItems }
+  },
   data() {
     return {
       // 遮罩层
@@ -364,14 +372,14 @@ export default {
         if (valid) {
           if (this.form.dictCode != undefined) {
             updateData(this.form).then(response => {
-              this.$store.dispatch('dict/removeDict', this.queryParams.dictType);
+              this.dictStore.removeDict(this.queryParams.dictType);
               this.$modal.msgSuccess("修改成功");
               this.open = false;
               this.getList();
             });
           } else {
             addData(this.form).then(response => {
-              this.$store.dispatch('dict/removeDict', this.queryParams.dictType);
+              this.dictStore.removeDict(this.queryParams.dictType);
               this.$modal.msgSuccess("新增成功");
               this.open = false;
               this.getList();
@@ -388,7 +396,7 @@ export default {
       }).then(() => {
         this.getList();
         this.$modal.msgSuccess("删除成功");
-        this.$store.dispatch('dict/removeDict', this.queryParams.dictType);
+        this.dictStore.removeDict(this.queryParams.dictType);
       }).catch(() => {});
     },
     /** 导出按钮操作 */

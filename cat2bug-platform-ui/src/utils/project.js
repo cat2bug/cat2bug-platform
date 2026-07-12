@@ -1,5 +1,6 @@
 import Cookies from 'js-cookie'
-import store from "@/store";
+import { pinia } from '@/store/pinia.js'
+import { useUserStore } from '@/stores/user'
 
 const projectIdKey = 'Current-Project-Id'
 
@@ -19,7 +20,8 @@ export function removeCurrentProjectId() {
 export function isLockProjectPath (path){
   const lockTeamErrorPath = '/error/project-lock';  // 锁定团队的页面路径
   // 如果路径是报错路径或项目没被禁用，跳到报错界面
-  if (!path || path === lockTeamErrorPath || !store.state.user.config.currentProjectLock) {
+  const userStore = useUserStore(pinia)
+  if (!path || path === lockTeamErrorPath || !userStore.config.currentProjectLock) {
     return false;
   }
   const paths = path.split('/');

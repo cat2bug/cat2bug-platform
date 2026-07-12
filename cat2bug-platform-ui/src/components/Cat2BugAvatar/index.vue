@@ -28,11 +28,8 @@ import {
 } from '@/utils/member-avatar'
 
 export default {
+  emits: ['update:member', 'change'],
   name: "Cat2BugAvatar",
-  model: {
-    prop: 'member',
-    event: 'change'
-  },
   props: {
     member: {
       type: Object,
@@ -49,15 +46,21 @@ export default {
   },
   data() {
     return {
-      photoLoadFailed: false
+      photoLoadFailed: false,
+      lastAvatarUrl: ''
     }
   },
   watch: {
     member: {
-      handler() {
-        this.photoLoadFailed = false
+      handler(member) {
+        const url = resolveMemberAvatarUrl(member, process.env.VUE_APP_BASE_API)
+        if (url !== this.lastAvatarUrl) {
+          this.lastAvatarUrl = url
+          this.photoLoadFailed = false
+        }
       },
-      deep: true
+      deep: true,
+      immediate: true
     }
   },
   computed: {

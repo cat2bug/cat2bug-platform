@@ -96,7 +96,7 @@
               :value="activeData.min"
               :min="0"
               placeholder="至少应选"
-              @input="$set(activeData, 'min', $event?$event:undefined)"
+              @input="setActiveDataMin"
             />
           </el-form-item>
           <el-form-item v-if="activeData.tag==='el-checkbox-group'" label="最多可选">
@@ -104,7 +104,7 @@
               :value="activeData.max"
               :min="0"
               placeholder="最多可选"
-              @input="$set(activeData, 'max', $event?$event:undefined)"
+              @input="setActiveDataMax"
             />
           </el-form-item>
           <el-form-item v-if="activeData.prepend!==undefined" label="前缀">
@@ -115,16 +115,20 @@
           </el-form-item>
           <el-form-item v-if="activeData['prefix-icon']!==undefined" label="前图标">
             <el-input v-model="activeData['prefix-icon']" placeholder="请输入前图标名称">
-              <el-button slot="append" :icon="$legacyIcon('el-icon-thumb')" @click="openIconsDialog('prefix-icon')">
-                选择
-              </el-button>
+              <template #append>
+                <el-button :icon="$legacyIcon('el-icon-thumb')" @click="openIconsDialog('prefix-icon')">
+                  选择
+                </el-button>
+              </template>
             </el-input>
           </el-form-item>
           <el-form-item v-if="activeData['suffix-icon'] !== undefined" label="后图标">
             <el-input v-model="activeData['suffix-icon']" placeholder="请输入后图标名称">
-              <el-button slot="append" :icon="$legacyIcon('el-icon-thumb')" @click="openIconsDialog('suffix-icon')">
-                选择
-              </el-button>
+              <template #append>
+                <el-button :icon="$legacyIcon('el-icon-thumb')" @click="openIconsDialog('suffix-icon')">
+                  选择
+                </el-button>
+              </template>
             </el-input>
           </el-form-item>
           <el-form-item v-if="activeData.tag === 'el-cascader'" label="选项分隔符">
@@ -160,7 +164,7 @@
           </el-form-item>
           <el-form-item v-if="activeData.maxlength !== undefined" label="最多输入">
             <el-input v-model="activeData.maxlength" placeholder="请输入字符长度">
-              <template slot="append">
+              <template #append>
                 个字符
               </template>
             </el-input>
@@ -224,11 +228,13 @@
           </el-form-item>
           <el-form-item v-if="activeData.fileSize !== undefined" label="文件大小">
             <el-input v-model.number="activeData.fileSize" placeholder="请输入文件大小">
-              <el-select slot="append" v-model="activeData.sizeUnit" :style="{ width: '66px' }">
-                <el-option label="KB" value="KB" />
-                <el-option label="MB" value="MB" />
-                <el-option label="GB" value="GB" />
-              </el-select>
+              <template #append>
+                <el-select v-model="activeData.sizeUnit" :style="{ width: '66px' }">
+                  <el-option label="KB" value="KB" />
+                  <el-option label="MB" value="MB" />
+                  <el-option label="GB" value="GB" />
+                </el-select>
+              </template>
             </el-input>
           </el-form-item>
           <el-form-item v-if="activeData.action !== undefined" label="上传地址">
@@ -298,7 +304,7 @@
               <el-button
                 style="padding-bottom: 0"
                 :icon="$legacyIcon('el-icon-circle-plus-outline')"
-                type="text"
+                link
                 @click="addSelectItem"
               >
                 添加选项
@@ -344,7 +350,7 @@
               <el-button
                 style="padding-bottom: 0"
                 :icon="$legacyIcon('el-icon-circle-plus-outline')"
-                type="text"
+                link
                 @click="addTreeItem"
               >
                 添加父级
@@ -477,12 +483,12 @@
               default-expand-all
               draggable
             >
-              <span slot-scope="{ node, data }">
+              <template #default="{ node, data }">
                 <span class="node-label">
                   <svg-icon class="node-icon" :icon-class="data.tagIcon" />
                   {{ node.label }}
                 </span>
-              </span>
+              </template>
             </el-tree>
           </template>
 
@@ -504,7 +510,7 @@
               </el-form-item>
             </div>
             <div style="margin-left: 20px">
-              <el-button :icon="$legacyIcon('el-icon-circle-plus-outline')" type="text" @click="addReg">
+              <el-button :icon="$legacyIcon('el-icon-circle-plus-outline')" link @click="addReg">
                 添加规则
               </el-button>
             </div>
@@ -566,8 +572,8 @@
       </el-scrollbar>
     </div>
 
-    <treeNode-dialog :visible.sync="dialogVisible" title="添加选项" @commit="addNode" />
-    <icons-dialog :visible.sync="iconsVisible" :current="activeData[currentIconModel]" @select="setIcon" />
+    <treeNode-dialog v-model:visible="dialogVisible" title="添加选项" @commit="addNode" />
+    <icons-dialog v-model:visible="iconsVisible" :current="activeData[currentIconModel]" @select="setIcon" />
   </div>
 </template>
 
@@ -868,6 +874,12 @@ export default {
       let target = inputComponents.find(item => item.tagIcon === tagIcon)
       if (!target) target = selectComponents.find(item => item.tagIcon === tagIcon)
       this.$emit('tag-change', target)
+    },
+    setActiveDataMin(val) {
+      this.activeData.min = val ? val : undefined
+    },
+    setActiveDataMax(val) {
+      this.activeData.max = val ? val : undefined
     }
   }
 }

@@ -2,9 +2,10 @@
   <el-drawer
     size="50%"
     class="case-drawer-accent"
-    :visible.sync="visible"
+    v-model="visible"
     direction="rtl"
     :append-to-body="appendToBody"
+    :show-close="false"
     :close-on-press-escape="false"
     :before-close="closeDefectDrawer">
     <template #header>
@@ -12,7 +13,7 @@
         <div class="case-add-title">
           <legacy-icon icon="el-icon-arrow-left" @click="requestCloseCaseFormDrawer"></legacy-icon>
           <focus-member-list
-            v-model="form.focusList"
+            v-model:members="form.focusList"
             module-name="case"
             :data-id="form.caseId"
             :tooltip="false"
@@ -20,14 +21,14 @@
           <h3>{{title}}</h3>
         </div>
         <div>
-          <el-button v-if="!isAddMode"@click="prevCase" type="text" :icon="$legacyIcon('el-icon-arrow-left')" size="mini"></el-button>
-          <el-button v-if="!isAddMode"@click="nextCase" type="text" :icon="$legacyIcon('el-icon-arrow-right')" size="mini"></el-button>
-          <el-button @click="requestCloseCaseFormDrawer" :icon="$legacyIcon('el-icon-close')" :class="isAddMode?'':'green-button'" size="mini">{{$t('close')}}</el-button>
-          <el-button v-if="isAddMode" v-hasPermi="['system:case:add']" class="defect-kbd-hint-host" type="primary" :icon="$legacyIcon('el-icon-finished')" @click="submitForm" size="mini">
+          <el-button v-if="!isAddMode"@click="prevCase" link :icon="$legacyIcon('el-icon-arrow-left')" size="small"></el-button>
+          <el-button v-if="!isAddMode"@click="nextCase" link :icon="$legacyIcon('el-icon-arrow-right')" size="small"></el-button>
+          <el-button @click="requestCloseCaseFormDrawer" :icon="$legacyIcon('el-icon-close')" :class="isAddMode?'':'green-button'" size="small">{{$t('close')}}</el-button>
+          <el-button v-if="isAddMode" v-hasPermi="['system:case:add']" class="defect-kbd-hint-host" type="primary" :icon="$legacyIcon('el-icon-finished')" @click="submitForm" size="small">
             {{$t('create')}}
             <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
           </el-button>
-          <el-button v-else v-hasPermi="['system:case:edit']" class="defect-kbd-hint-host" type="success" :icon="$legacyIcon('el-icon-finished')" @click="submitForm" size="mini">
+          <el-button v-else v-hasPermi="['system:case:edit']" class="defect-kbd-hint-host" type="success" :icon="$legacyIcon('el-icon-finished')" @click="submitForm" size="small">
             {{$t('modify')}}
             <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
           </el-button>
@@ -48,12 +49,12 @@
         <el-row>
           <el-col :span="12">
             <el-form-item :label="$t('module')" prop="moduleId">
-              <select-module ref="selectModule" size="medium" v-model="form.moduleId" :project-id="projectId"/>
+              <select-module ref="selectModule" size="medium" v-model:moduleId="form.moduleId" :project-id="projectId"/>
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item :label="$t('level')" prop="caseLevel">
-              <cat2-bug-select-level v-model="form.caseLevel" />
+              <cat2-bug-select-level v-model:level="form.caseLevel" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -64,7 +65,7 @@
           <el-input type="textarea" v-model="form.casePreconditions" :placeholder="$t('case.please-enter-prerequisite')" maxlength="65535" rows="3" show-word-limit />
         </el-form-item>
         <el-form-item :label="$t('step')" prop="caseStep">
-          <template slot="label">
+          <template #label>
             <div class="form-item-case-step">
               <el-radio-group v-model="caseStepSwitchType" @input="caseStepPanelTypeChangeHandle">
                 <el-radio-button label=""><svg-icon icon-class="option" /></el-radio-button>
@@ -74,7 +75,7 @@
               <label>{{ $t('step') }}</label>
             </div>
           </template>
-          <case-step-panel ref="caseStepPanel" v-model="form.caseStep" :panel-type="caseStepSwitchType" />
+          <case-step-panel ref="caseStepPanel" v-model:caseStep="form.caseStep" :panel-type="caseStepSwitchType" />
         </el-form-item>
         <el-form-item :label="$t('data')" prop="caseData">
           <el-input type="textarea" v-model="form.caseData" :placeholder="$t('case.please-enter-data')" maxlength="65535" rows="3" show-word-limit />
@@ -103,6 +104,7 @@ import FocusMemberList from "@/components/FocusMemberList";
 import dialogFormShortcuts from "@/mixins/dialog-form-shortcuts";
 import formFieldHints from "@/mixins/form-field-hints";
 import caseDrawerClose from "@/mixins/case-drawer-close";
+import { useUserStore } from "@/stores/user";
 
 const CASE_STEP_PANEL_TYPE_CACHE_KEY = 'case-step-panel-type';
 
@@ -161,11 +163,11 @@ export default {
   computed: {
     /** 获取当前用户id */
     userId: function () {
-      return this.$store.state.user.id;
+      return useUserStore().id;
     },
     /** 获取项目id */
     projectId: function() {
-      return parseInt(this.$store.state.user.config.currentProjectId);
+      return parseInt(useUserStore().config.currentProjectId);
     },
     /** 是否是添加模式 */
     isAddMode: function (){

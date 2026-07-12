@@ -29,7 +29,11 @@ export function safeSetOption(chart, option, notMerge = false) {
         payload = { ...option, series: [] }
       }
     }
-    chart.setOption(payload, notMerge)
+    if (notMerge) {
+      chart.setOption(payload, { notMerge: true, replaceMerge: ['series'] })
+    } else {
+      chart.setOption(payload, notMerge)
+    }
     return true
   } catch (e) {
     console.warn('[echarts] setOption failed', e)
@@ -67,11 +71,18 @@ export function observeEchartsResize(chart, el) {
     ro.observe(el)
     chart.__resizeRo = ro
   }
+  const timers = []
+  const schedule = (fn, ms) => {
+    const id = setTimeout(fn, ms)
+    timers.push(id)
+    return id
+  }
   requestAnimationFrame(() => {
     requestAnimationFrame(doResize)
   })
-  setTimeout(doResize, 120)
-  setTimeout(doResize, 400)
+  schedule(doResize, 120)
+  schedule(doResize, 400)
+  chart.__resizeTimers = timers
   return chart.__resizeRo || null
 }
 
@@ -88,6 +99,10 @@ export function afterChartRefReady(vm, fn) {
 }
 
 export function disconnectEchartsResize(chart) {
+  if (chart && chart.__resizeTimers) {
+    chart.__resizeTimers.forEach((id) => clearTimeout(id))
+    chart.__resizeTimers = null
+  }
   if (chart && chart.__resizeRo) {
     chart.__resizeRo.disconnect()
     chart.__resizeRo = null

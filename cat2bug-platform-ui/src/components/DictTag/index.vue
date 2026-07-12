@@ -29,7 +29,7 @@
 </template>
 
 <script>
-import { mapState } from 'pinia';
+import { storeToRefs } from 'pinia';
 import { useSettingsStore } from '@/stores/settings';
 
 export default {
@@ -46,13 +46,17 @@ export default {
       default: true,
     }
   },
+  setup() {
+    const settingsStore = useSettingsStore()
+    const { themeMode } = storeToRefs(settingsStore)
+    return { themeMode }
+  },
   data() {
     return {
       unmatchArray: [], // 记录未匹配的项
     }
   },
   computed: {
-    ...mapState(useSettingsStore, ['themeMode']),
     tagEffect() {
       return this.themeMode === 'dark' ? 'plain' : 'light';
     },

@@ -42,18 +42,18 @@
     <el-table v-loading="loading" :data="apiList" @selection-change="handleSelectionChange">
       <el-table-column :label="$t('project.api.name')" align="center" prop="apiName" />
       <el-table-column :label="$t('project.api.key')" align="center" prop="apiId">
-        <template slot-scope="scope">
+        <template #default="scope">
           <span :style="apiKeyVisibility[scope.row.apiId] ? 'font-family: monospace;' : 'font-family: monospace;'">
             {{ apiKeyVisibility[scope.row.apiId] ? scope.row.apiId : '•'.repeat(scope.row.apiId.length) }}
           </span>
           <el-button
-            type="text"
+            link
             :icon="$legacyIcon(apiKeyVisibility[scope.row.apiId] ? 'el-icon-view' : 'el-icon-view')"
             @click="toggleApiKeyVisibility(scope.row.apiId)"
             style="margin-left: 8px;"
           ></el-button>
           <el-button
-            type="text"
+            link
             :icon="$legacyIcon('el-icon-document-copy')"
             @click="copyApiKey(scope.row.apiId)"
             style="margin-left: 4px;"
@@ -62,30 +62,30 @@
       </el-table-column>
 <!--      <el-table-column :label="$t('project.api.white-list')" align="center" prop="whiteList" />-->
       <el-table-column :label="$t('project.api.enable-status')" align="center" prop="enabled" width="100">
-        <template slot-scope="scope">
+        <template #default="scope">
           <el-tag :type="(scope.row.enabled === true || scope.row.enabled === 1) ? 'success' : 'info'" size="small">
             {{ (scope.row.enabled === true || scope.row.enabled === 1) ? $t('enable') : $t('close') }}
           </el-tag>
         </template>
       </el-table-column>
       <el-table-column :label="$t('project.api.expire-time')" align="center" prop="expireTime" width="180">
-        <template slot-scope="scope">
+        <template #default="scope">
           <span>{{ parseTime(scope.row.expireTime, '{y}-{m}-{d}') }}</span>
         </template>
       </el-table-column>
       <el-table-column :label="$t('remark')" align="center" prop="remark" />
       <el-table-column :label="$t('operate')" align="center" width="120" class-name="small-padding fixed-width">
-        <template slot-scope="scope">
+        <template #default="scope">
           <el-button
-            size="mini"
-            type="text"
+            size="small"
+            link
             :icon="$legacyIcon('el-icon-edit')"
             @click="handleUpdate(scope.row)"
             v-hasPermi="['system:api:edit']"
           >{{ $t('modify') }}</el-button>
           <el-button
-            size="mini"
-            type="text"
+            size="small"
+            link
             :icon="$legacyIcon('el-icon-delete')"
             @click="handleDelete(scope.row)"
             v-hasPermi="['system:api:remove']"
@@ -98,15 +98,15 @@
       class="project-api-table-pagination"
       v-show="total>0"
       :total="total"
-      :page.sync="queryParams.pageNum"
-      :limit.sync="queryParams.pageSize"
+      v-model:page="queryParams.pageNum"
+      v-model:limit="queryParams.pageSize"
       @pagination="getList"
     />
 
     <!-- 添加或修改项目API对话框 -->
     <el-dialog
       :title="title"
-      :visible.sync="open"
+      v-model="open"
       width="800px"
       append-to-body
       custom-class="cat2bug-form-shortcut-dialog"
@@ -156,16 +156,16 @@
                 </el-checkbox>
               </div>
               <el-checkbox-group v-model="permissions.defect" class="permission-options">
-                <el-checkbox label="list">{{ $t('project.api.permission.list') }}</el-checkbox>
-                <el-checkbox label="query">{{ $t('project.api.permission.query') }}</el-checkbox>
-                <el-checkbox label="create">{{ $t('project.api.permission.create') }}</el-checkbox>
-                <el-checkbox label="update">{{ $t('project.api.permission.update') }}</el-checkbox>
-                <el-checkbox label="repair">{{ $t('project.api.permission.repair') }}</el-checkbox>
-                <el-checkbox label="assign">{{ $t('project.api.permission.assign') }}</el-checkbox>
-                <el-checkbox label="reject">{{ $t('project.api.permission.reject') }}</el-checkbox>
-                <el-checkbox label="pass">{{ $t('project.api.permission.pass') }}</el-checkbox>
-                <el-checkbox label="close">{{ $t('project.api.permission.close') }}</el-checkbox>
-                <el-checkbox label="open">{{ $t('project.api.permission.open') }}</el-checkbox>
+                <el-checkbox value="list">{{ $t('project.api.permission.list') }}</el-checkbox>
+                <el-checkbox value="query">{{ $t('project.api.permission.query') }}</el-checkbox>
+                <el-checkbox value="create">{{ $t('project.api.permission.create') }}</el-checkbox>
+                <el-checkbox value="update">{{ $t('project.api.permission.update') }}</el-checkbox>
+                <el-checkbox value="repair">{{ $t('project.api.permission.repair') }}</el-checkbox>
+                <el-checkbox value="assign">{{ $t('project.api.permission.assign') }}</el-checkbox>
+                <el-checkbox value="reject">{{ $t('project.api.permission.reject') }}</el-checkbox>
+                <el-checkbox value="pass">{{ $t('project.api.permission.pass') }}</el-checkbox>
+                <el-checkbox value="close">{{ $t('project.api.permission.close') }}</el-checkbox>
+                <el-checkbox value="open">{{ $t('project.api.permission.open') }}</el-checkbox>
               </el-checkbox-group>
             </div>
 
@@ -180,11 +180,11 @@
                 </el-checkbox>
               </div>
               <el-checkbox-group v-model="permissions.case" class="permission-options">
-                <el-checkbox label="list">{{ $t('project.api.permission.list') }}</el-checkbox>
-                <el-checkbox label="query">{{ $t('project.api.permission.query') }}</el-checkbox>
-                <el-checkbox label="create">{{ $t('project.api.permission.create') }}</el-checkbox>
-                <el-checkbox label="update">{{ $t('project.api.permission.update') }}</el-checkbox>
-                <el-checkbox label="delete">{{ $t('project.api.permission.delete') }}</el-checkbox>
+                <el-checkbox value="list">{{ $t('project.api.permission.list') }}</el-checkbox>
+                <el-checkbox value="query">{{ $t('project.api.permission.query') }}</el-checkbox>
+                <el-checkbox value="create">{{ $t('project.api.permission.create') }}</el-checkbox>
+                <el-checkbox value="update">{{ $t('project.api.permission.update') }}</el-checkbox>
+                <el-checkbox value="delete">{{ $t('project.api.permission.delete') }}</el-checkbox>
               </el-checkbox-group>
             </div>
 
@@ -199,9 +199,9 @@
                 </el-checkbox>
               </div>
               <el-checkbox-group v-model="permissions.deliverable" class="permission-options">
-                <el-checkbox label="list">{{ $t('project.api.permission.list') }}</el-checkbox>
-                <el-checkbox label="query">{{ $t('project.api.permission.query') }}</el-checkbox>
-                <el-checkbox label="create">{{ $t('project.api.permission.create') }}</el-checkbox>
+                <el-checkbox value="list">{{ $t('project.api.permission.list') }}</el-checkbox>
+                <el-checkbox value="query">{{ $t('project.api.permission.query') }}</el-checkbox>
+                <el-checkbox value="create">{{ $t('project.api.permission.create') }}</el-checkbox>
               </el-checkbox-group>
             </div>
 
@@ -211,7 +211,7 @@
                 <span class="permission-group-title">{{ $t('project.api.file-management') }}</span>
               </div>
               <el-checkbox-group v-model="permissions.file" class="permission-options">
-                <el-checkbox label="upload">{{ $t('project.api.permission.upload') }}</el-checkbox>
+                <el-checkbox value="upload">{{ $t('project.api.permission.upload') }}</el-checkbox>
               </el-checkbox-group>
             </div>
 
@@ -226,21 +226,23 @@
                 </el-checkbox>
               </div>
               <el-checkbox-group v-model="permissions.project" class="permission-options">
-                <el-checkbox label="info">{{ $t('project.api.permission.info') }}</el-checkbox>
-                <el-checkbox label="members">{{ $t('project.api.permission.members') }}</el-checkbox>
+                <el-checkbox value="info">{{ $t('project.api.permission.info') }}</el-checkbox>
+                <el-checkbox value="members">{{ $t('project.api.permission.members') }}</el-checkbox>
               </el-checkbox-group>
             </div>
           </div>
         </el-form-item>
       </el-form>
 
-      <div slot="footer" class="dialog-footer">
+      <template #footer>
+        <div class="dialog-footer">
         <el-button class="defect-kbd-hint-host" type="primary" @click="submitForm">
           {{ $t('ok') }}
           <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
         </el-button>
         <el-button @click="requestCloseToolDialog">{{ $t('cancel') }}</el-button>
-      </div>
+        </div>
+      </template>
     </el-dialog>
   </div>
 </template>
@@ -254,10 +256,18 @@ import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
 import { PROJECT_OPTION_KBD_SCOPE } from '@/mixins/project-option-sub-kbd'
 import { checkPermi } from '@/utils/permission'
 
+import { storeToRefs } from 'pinia'
+import { useUserStore } from '@/stores/user'
+
 export default {
   name: "Api",
   mixins: [projectOptionSubListKbd, defectToolDialogKbd],
   components: {ProjectLabel},
+  setup() {
+    const userStore = useUserStore()
+    const { config: userConfig } = storeToRefs(userStore)
+    return { userConfig }
+  },
   data() {
     return {
       // 遮罩层
@@ -322,7 +332,7 @@ export default {
   computed: {
     /** 获取项目id操作 */
     projectId() {
-      return parseInt(this.$store.state.user.config.currentProjectId);
+      return parseInt(this.userConfig.currentProjectId);
     },
     /** 供弹框快捷键 mixin 识别 open 状态 */
     dialogVisible: {

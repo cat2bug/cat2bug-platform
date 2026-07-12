@@ -33,26 +33,26 @@
         <p>当前配置目的是发送个人通知到钉钉平台，此功能是通过钉钉【人与机器人会话接口】实现的，目前标准版接口累计可调用次数为1万次/月，如需更多次数调用，可升级钉钉专业版；调用此接口需要在钉钉开发者平台创建应用机器人，并将配置完成的账号ID配置到Cat2Bug-Platform平台，步骤如下。</p>
         <p>1. 用企业管理员的账号登陆钉钉开发者平台 <a href="https://open-dev.dingtalk.com">https://open-dev.dingtalk.com</a></p>
         <p>2. 根据下图步骤创建应用。</p>
-        <el-image :src="require('@/assets/images/help/ding/ding_create_app.png')" />
+        <el-image :src="helpImages.createApp" />
         <p>3. 输入应用配置后点击【保存】按钮。</p>
-        <el-image :src="require('@/assets/images/help/ding/ding_create_app_page1.png')" />
+        <el-image :src="helpImages.createAppPage1" />
         <p>4. 应用保存后，点击【添加应用能力】功能，为应用添加机器人服务。</p>
-        <el-image :src="require('@/assets/images/help/ding/ding_create_app_page2.png')" />
+        <el-image :src="helpImages.createAppPage2" />
         <p>5. 根据自己需求配置机器人选项。</p>
-        <el-image :src="require('@/assets/images/help/ding/ding_create_app_page3.png')" />
+        <el-image :src="helpImages.createAppPage3" />
         <p>6. 根据下图发布版本，使应用转为"已上线"状态。</p>
-        <el-image :src="require('@/assets/images/help/ding/ding_create_version.png')" />
+        <el-image :src="helpImages.createVersion" />
         <p>7. 将下图的应用Client ID和Client Secret填入左侧配置项目。</p>
-        <el-image :src="require('@/assets/images/help/ding/ding_view_app.png')" />
+        <el-image :src="helpImages.viewApp" />
         <p>8. 将下图的机器人RobotCode填入左侧配置项目。</p>
-        <el-image :src="require('@/assets/images/help/ding/ding_view_robot.png')" />
+        <el-image :src="helpImages.viewRobot" />
         <h2>配置用户信息</h2>
         <p>如果需要将通知信息单独发送给指定成员，需要获取成员在钉钉企业内的UserId，并配置到Cat2Bug-Platform个人通知配置中，操作步骤如下。</p>
         <p>1. 用管理员账号登陆钉钉OA平台 <a href="https://oa.dingtalk.com">https://oa.dingtalk.com</a></p>
         <p>2. 进入指定企业组织后，选择【通讯录】->【成员管理】菜单，在右侧成员列表中点击需要查看的成员信息，在右侧弹出界面上侧，查看并复制UserId。</p>
-        <el-image :src="require('@/assets/images/help/ding/ding_oa_member.png')" />
+        <el-image :src="helpImages.oaMember" />
         <p>3. 进入Cat2Bug-Platform系统，点击右上角的通知图标，进入后选择右侧配置按钮，将钉钉中获取的UserId设置在【接收平台】->【钉钉机器人】->【单发User ID】中。</p>
-        <el-image :src="require('@/assets/images/help/ding/ding_member_config.png')" />
+        <el-image :src="helpImages.memberConfig" />
         <p>注意：当用户没有配置 User ID时，默认采用【个人中心】中配置的默认钉钉 User ID。</p>
         <p>至此，所有配置完成，当缺陷或报告发生变化后，即可通过钉钉收到消息。</p>
       </el-col>
@@ -61,17 +61,24 @@
 </template>
 
 <script>
-import MarkdownItVue from "markdown-it-vue"
 import {getDingConfig, saveDingConfig} from "@/api/im/ding";
+import { dingHelpImages } from '@/utils/im-help-images'
 import projectOptionSubFormKbd from '@/mixins/project-option-sub-form-kbd'
 import projectImConfigDocKbd from '@/mixins/project-im-config-doc-kbd'
+import { storeToRefs } from 'pinia';
+import { useUserStore } from '@/stores/user'
 
 export default {
   name: "EnterpriseWeChat",
   mixins: [projectOptionSubFormKbd, projectImConfigDocKbd],
-  components:{ MarkdownItVue },
+  setup() {
+    const userStore = useUserStore()
+    const { config } = storeToRefs(userStore)
+    return { config }
+  },
   data() {
     return {
+      helpImages: dingHelpImages,
       // 钉钉配置
       dingConfig: {},
       // markdown说明内容
@@ -98,6 +105,8 @@ export default {
   created() {
     this.getConfig();
   },
+  computed: {
+  },
   methods: {
     shortcutSave() {
       this.onSubmit()
@@ -107,7 +116,7 @@ export default {
     },
     /** 获取项目ID */
     getProjectId() {
-      return parseInt(this.$store.state.user.config.currentProjectId);
+      return parseInt(this.config.currentProjectId);
     },
     /** 获取微信企业配置 */
     getConfig() {

@@ -1,4 +1,5 @@
 import { debounce } from '@/utils'
+import { safeResizeChart } from '@/components/Cat2BugStatistic/utils/echarts-resize'
 
 export default {
   data() {
@@ -49,8 +50,7 @@ export default {
       this.$_sidebarElm && this.$_sidebarElm.removeEventListener('transitionend', this.$_sidebarResizeHandler)
     },
     resize() {
-      const { chart } = this
-      chart && chart.resize()
+      safeResizeChart(this.chart)
     }
   }
 }

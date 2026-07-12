@@ -78,10 +78,17 @@ import {
   estimateCharsForPixelWidth,
   formatDeliverableMenuLabel
 } from '@/utils/deliverable-path-display';
+import { storeToRefs } from "pinia";
+import { useUserStore } from "@/stores/user";
 
 export default {
   name: "ModuleMenu",
   components: { AddModuleMenuItem },
+  setup() {
+    const userStore = useUserStore()
+    const { config } = storeToRefs(userStore)
+    return { config }
+  },
   data() {
     return {
       loading: false,
@@ -135,7 +142,7 @@ export default {
   },
   computed: {
     getCurrentProjectId() {
-      return parseInt(this.$store.state.user.config.currentProjectId);
+      return parseInt(this.config.currentProjectId);
     },
     effectiveLabelMaxLength() {
       if (this.labelMaxLengthOverride != null && this.labelMaxLengthOverride > 0) {

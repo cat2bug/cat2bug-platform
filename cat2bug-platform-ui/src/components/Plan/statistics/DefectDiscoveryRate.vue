@@ -1,7 +1,8 @@
 <template>
   <el-tooltip placement="bottom" popper-class="tooltip-width">
     <!--            缺陷发现率的说明-->
-    <div slot="content" class="column">
+    <template #content>
+    <div class="column">
       <span class="key-point">{{$t('definition')}}</span>
       <div>
         <span v-for="d in definition">{{d}}<br/></span>
@@ -19,14 +20,15 @@
       </div>
       <span>{{ $t('plan.defect-discovery-rate.remark') }}</span>
     </div>
+    </template>
     <!--            缺陷发现率的数据-->
     <div class="plan-statistical-block">
       <el-statistic
         group-separator=","
         :title="$t('plan.defect-discovery-rate')"
       >
-        <template slot="formatter">
-          {{`${plan.defectDiscoveryRate||'0%'}`}}
+        <template #formatter>
+          {{ plan.defectDiscoveryRate || '0%' }}
         </template>
       </el-statistic>
     </div>

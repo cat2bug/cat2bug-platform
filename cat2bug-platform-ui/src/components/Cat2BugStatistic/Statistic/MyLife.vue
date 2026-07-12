@@ -9,7 +9,7 @@
     </cat2-bug-card>
     <el-dialog
     :title="$t('defect.my-life')"
-    :visible.sync="dialogVisible"
+    v-model="dialogVisible"
     width="480px"
     append-to-body
     custom-class="my-life-dialog"
@@ -49,13 +49,14 @@
         />
       </el-form-item>
     </el-form>
-    <span slot="footer" class="dialog-footer">
+    <template #footer>
+    <span class="dialog-footer">
       <el-button @click="requestCloseToolDialog">{{ $t('cancel') }}</el-button>
       <el-button class="defect-kbd-hint-host" type="primary" @click="onSubmit">
         {{ $t('update') }}
         <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
       </el-button>
-    </span>
+    </span>    </template>
   </el-dialog>
   </div>
 </template>
@@ -64,6 +65,8 @@
 import Cat2BugCard from "../Components/Card"
 import statisticDialogKbd from '@/mixins/statistic-dialog-kbd'
 import { updateConfig } from "@/api/system/user-config";
+import { useUserStore } from "@/stores/user";
+import { useSettingsStore } from "@/stores/settings";
 
 export default {
   name: "MyLife",
@@ -101,7 +104,7 @@ export default {
   },
   computed: {
     currentProjectId() {
-      return parseInt(this.$store.state.user.config.currentProjectId);
+      return parseInt(useUserStore().config.currentProjectId);
     },
     myLife() {
       return this.form.lifeContent || this.$i18n.t(this.lifeContent);
@@ -114,16 +117,18 @@ export default {
     },
     lifeTextColor() {
       const color = this.form.color || '#303133';
-      if (this.$store.state.settings.themeMode === 'dark' && this.isColorTooDarkOnDarkBg(color)) {
+      if (useSettingsStore().themeMode === 'dark' && this.isColorTooDarkOnDarkBg(color)) {
         return '#f5f7fa';
       }
       return color;
     },
   },
   created() {
-    if (this.$store.state.user.config.lifeContent) {
-      this.form = JSON.parse(this.$store.state.user.config.lifeContent);
-    } else if (this.$store.state.settings.themeMode === 'dark') {
+    const userStore = useUserStore();
+    const settingsStore = useSettingsStore();
+    if (userStore.config.lifeContent) {
+      this.form = JSON.parse(userStore.config.lifeContent);
+    } else if (settingsStore.themeMode === 'dark') {
       this.form.color = '#f5f7fa';
     }
   },

@@ -26,13 +26,14 @@
           style="width: 100%"
           :placeholder="generating ? $t('loading') : ''"
         >
+          <template #append>
           <el-button
-            slot="append"
             :icon="$legacyIcon('el-icon-document-copy')"
             :disabled="!generatedUrl || generating"
             v-clipboard:copy="generatedUrl"
             v-clipboard:success="onCopySuccess"
           ></el-button>
+          </template>
         </el-input>
         <p class="invite-link-hint">{{ $t('invite.link-validity-hint') }}</p>
       </el-form-item>

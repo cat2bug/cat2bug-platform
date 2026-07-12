@@ -28,11 +28,8 @@
 <script>
 import ToolsMenuItem from "./ToolsMenuItem";
 export default {
+  emits: ['update:tools', 'select'],
   name: "ToolsMenu",
-  model: {
-    prop: 'tools',
-    event: 'select'
-  },
   components: { ToolsMenuItem },
   data() {
     return {
@@ -64,7 +61,7 @@ export default {
             tool.check = true;
           }
         }
-        this.$emit('select', this.tools, tool)
+        this.$emit('update:tools', this.tools, tool); this.$emit('select', this.tools, tool)
       }
     },
     getNode(tools, path) {

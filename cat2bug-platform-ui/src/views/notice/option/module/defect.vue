@@ -12,8 +12,8 @@
 <!--          <div class="option-item">-->
 <!--            <el-checkbox label="间隔时间" v-model="form.option.interval.switch" class="margin-right-30" @change="handleChange"></el-checkbox>-->
 <!--            <span>每隔</span>-->
-<!--            <el-input-number v-model="form.option.interval.time" size="mini" :min="1" :max="365" style="width: 120px" @input="handleChange"></el-input-number>-->
-<!--            <el-select v-model="form.option.interval.unit" size="mini" placeholder="请选择" style="width: 80px" @change="handleChange">-->
+<!--            <el-input-number v-model="form.option.interval.time" size="small" :min="1" :max="365" style="width: 120px" @input="handleChange"></el-input-number>-->
+<!--            <el-select v-model="form.option.interval.unit" size="small" placeholder="请选择" style="width: 80px" @change="handleChange">-->
 <!--              <el-option-->
 <!--                v-for="item in timeUnitOptions"-->
 <!--                :key="item.value"-->
@@ -28,14 +28,14 @@
 <!--              <div class="row" v-for="(r,index) in form.option.regular.list" :key="index">-->
 <!--                <el-time-select-->
 <!--                  v-model="r.time"-->
-<!--                  size="mini"-->
+<!--                  size="small"-->
 <!--                  style="width: 170px"-->
 <!--                  :picker-options="timeSpanOptions"-->
 <!--                  @change="handleChange"-->
 <!--                  placeholder="选择时间">-->
 <!--                </el-time-select>-->
-<!--                <el-button v-if="form.option.regular.list.length>1" type="text" size="mini" :icon="$legacyIcon('el-icon-delete')" class="red" @click="handleDeleteRegular(index,r)"></el-button>-->
-<!--                <el-button v-if="index==form.option.regular.list.length-1" type="text" size="mini" :icon="$legacyIcon('el-icon-plus')" @click="handleAddRegular"></el-button>-->
+<!--                <el-button v-if="form.option.regular.list.length>1" link size="small" :icon="$legacyIcon('el-icon-delete')" class="red" @click="handleDeleteRegular(index,r)"></el-button>-->
+<!--                <el-button v-if="index==form.option.regular.list.length-1" link size="small" :icon="$legacyIcon('el-icon-plus')" @click="handleAddRegular"></el-button>-->
 <!--              </div>-->
 <!--            </div>-->
 <!--          </div>-->
@@ -47,11 +47,8 @@
 
 <script>
 export default {
+  emits: ['update:defect'],
   name: "DefectNoticeOption",
-  model: {
-    prop: 'defect',
-    event: 'change'
-  },
   data() {
     return {
       form: this.defect,
@@ -100,7 +97,7 @@ export default {
   methods: {
     /** 操作改变 */
     handleChange() {
-      this.$emit('change', this.form);
+      this.$emit('update:defect', this.form);
     },
     /** 删除固定时间 */
     handleDeleteRegular(index, row) {

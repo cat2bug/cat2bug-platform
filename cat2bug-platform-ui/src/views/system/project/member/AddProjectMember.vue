@@ -1,7 +1,7 @@
 <template>
   <el-dialog
     :title="$t('project.add-member')"
-    :visible.sync="dialogVisible"
+    v-model="dialogVisible"
     width="560px"
     append-to-body
     :close-on-click-modal="false"
@@ -64,13 +64,15 @@
         />
       </el-tab-pane>
     </el-tabs>
-    <div slot="footer" class="dialog-footer">
+    <template #footer>
+      <div class="dialog-footer">
       <el-button v-if="activeTab === 'direct'" class="defect-kbd-hint-host" type="primary" @click="submitForm">
         {{$t('submit')}}
         <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
       </el-button>
       <el-button @click="requestCloseToolDialog">{{$t('cancel')}}</el-button>
-    </div>
+      </div>
+    </template>
   </el-dialog>
 </template>
 
@@ -79,11 +81,18 @@ import {addProjectMembers, listNotMemberOfProject, listProjectRole} from "@/api/
 import Cat2BugAvatar from "@/components/Cat2BugAvatar";
 import MemberInviteLinkPanel from "@/components/MemberInviteLinkPanel";
 import defectToolDialogKbd from '@/mixins/defect-tool-dialog-kbd'
+import { storeToRefs } from 'pinia';
+import { useUserStore } from '@/stores/user'
 
 export default {
   name: "AddProjectMember",
   mixins: [defectToolDialogKbd],
   components: { Cat2BugAvatar, MemberInviteLinkPanel },
+  setup() {
+    const userStore = useUserStore()
+    const { config } = storeToRefs(userStore)
+    return { config }
+  },
   data() {
     return {
       activeTab: 'direct',
@@ -100,6 +109,8 @@ export default {
       roleOptions: [],
       initPassword: null,
     }
+  },
+  computed: {
   },
   methods: {
     open(){
@@ -124,7 +135,7 @@ export default {
       });
     },
     getProjectId() {
-      return parseInt(this.$store.state.user.config.currentProjectId);
+      return parseInt(this.config.currentProjectId);
     },
     searchMemberHandle(query) {
       if (!query || !String(query).trim()) {

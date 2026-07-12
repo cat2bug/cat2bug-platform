@@ -143,7 +143,7 @@
                   <template #dropdown>
                     <el-dropdown-menu>
                       <el-dropdown-item command="">{{ $i18n.t('defect.all-type') }}</el-dropdown-item>
-                      <el-dropdown-item v-for="type in config.types" :key="'type_'+type.key" :command="type.value">{{ $i18n.t(type.value) }}</el-dropdown-item>
+                      <el-dropdown-item v-for="type in config.types" :key="'type_'+type.key" :command="type.value">{{ type.value ? $i18n.t(type.value) : $t('defect.all-type') }}</el-dropdown-item>
                     </el-dropdown-menu>
                   </template>
                 </el-dropdown>
@@ -166,7 +166,7 @@
                   <el-option
                     v-for="state in config.states"
                     :key="state.key"
-                    :label="$i18n.t(state.value)"
+                    :label="state.value ? $i18n.t(state.value) : String(state.key)"
                     :value="state.key"
                   />
                 </el-select>
@@ -174,7 +174,7 @@
               <el-form-item prop="handleBy" class="defect-list-query-nav-item" data-query-key="handleBy">
                 <select-project-member
                   ref="defectQueryHandleBy"
-                  v-model="queryParams.handleBy"
+                  v-model:memberId="queryParams.handleBy"
                   :project-id="projectId"
                   placeholder="defect.select-handle-by"
                   :is-head="false"
@@ -254,7 +254,7 @@ import {
   appendExportColumnParams,
   resolveDefectExportColumns
 } from '@/utils/excel-export-columns'
-import store from '@/store'
+import { useUserStore } from '@/stores/user'
 import DefectTable from './list/table'
 import DefectExcel from './list/excel'
 import { clearExtensionParams, hasParticipationExtension } from './query-extension'
@@ -312,6 +312,11 @@ export default {
   name: 'Defect',
   mixins: [pageActionHints, splitDropdownKbd],
   components: { AddDefect, HandleDefect, SelectProjectMember, ProjectLabel, Cat2BugStatistic, DefectTabDialog, DefectTable, DefectExcel, DefectImport },
+  setup() {
+    return {
+      userStore: useUserStore()
+    }
+  },
   data() {
     return {
       // 当前缺陷面板的类型
@@ -400,15 +405,15 @@ export default {
   computed: {
     /** 获取当前用户id */
     currentUserId: function() {
-      return this.$store.state.user.id
+      return this.userStore.id
     },
     /** 获取项目id */
     projectId: function() {
-      return this.$route.query.projectId ? parseInt(this.$route.query.projectId) : parseInt(this.$store.state.user.config.currentProjectId)
+      return this.$route.query.projectId ? parseInt(this.$route.query.projectId) : parseInt((this.userStore.config || {}).currentProjectId)
     },
     /** 获取用户id */
     userId: function() {
-      return Number(this.$store.state.user.id)
+      return Number(this.userStore.id)
     },
     /** Excel 视图额外参数（其它视图不声明对应 prop，避免落到根 DOM） */
     defectViewExtraProps() {
@@ -508,7 +513,7 @@ export default {
     /** 根据项目ID跳转 */
     if (this.$route.query.projectId) {
       const _this = this
-      store.dispatch('SwitchCurrentProject', this.$route.query.projectId).then(() => {
+      this.userStore.SwitchCurrentProject(this.$route.query.projectId).then(() => {
         _this.init()
       })
     } else {
@@ -2486,7 +2491,7 @@ export default {
     },
     /** 获取项目id */
     getProjectId() {
-      return this.$route.query.projectId ? parseInt(this.$route.query.projectId) : parseInt(this.$store.state.user.config.currentProjectId)
+      return this.$route.query.projectId ? parseInt(this.$route.query.projectId) : parseInt((this.userStore.config || {}).currentProjectId)
     },
     /** 搜索按钮操作 */
     handleQuery() {

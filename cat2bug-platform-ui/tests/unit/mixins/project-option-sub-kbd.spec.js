@@ -1,9 +1,13 @@
-import projectOptionSubKbd from '@/mixins/project-option-sub-kbd'
+/** @jest-environment jsdom */
+
+import { projectOptionSubKbdLegacyMixin } from '@/composables/keyboard/useProjectOptionSubKbd'
 import { hasBlockingUiLayer } from '@/plugins/shortcut/service'
 
 jest.mock('@/plugins/shortcut/service', () => ({
   hasBlockingUiLayer: jest.fn(() => false)
 }))
+
+const methods = projectOptionSubKbdLegacyMixin.methods
 
 describe('project-option-sub-kbd', () => {
   it('registers back action and handles Esc when no blocking layer', () => {
@@ -14,9 +18,9 @@ describe('project-option-sub-kbd', () => {
       $shortcut: { registerPage, unregisterPage: jest.fn() },
       goBack,
       $_projectOptionSubEscBound: false,
-      useProjectOptionSubEscShortcut: projectOptionSubKbd.methods.useProjectOptionSubEscShortcut,
-      registerProjectOptionSubShortcuts: projectOptionSubKbd.methods.registerProjectOptionSubShortcuts,
-      $_attachProjectOptionSubEscListener: projectOptionSubKbd.methods.$_attachProjectOptionSubEscListener
+      useProjectOptionSubEscShortcut: methods.useProjectOptionSubEscShortcut,
+      registerProjectOptionSubShortcuts: methods.registerProjectOptionSubShortcuts,
+      $_attachProjectOptionSubEscListener: methods.$_attachProjectOptionSubEscListener
     }
     vm.registerProjectOptionSubShortcuts.call(vm)
     expect(registerPage).toHaveBeenCalledWith(
@@ -38,8 +42,8 @@ describe('project-option-sub-kbd', () => {
     const vm = {
       _inactive: false,
       goBack,
-      useProjectOptionSubEscShortcut: projectOptionSubKbd.methods.useProjectOptionSubEscShortcut,
-      $_attachProjectOptionSubEscListener: projectOptionSubKbd.methods.$_attachProjectOptionSubEscListener,
+      useProjectOptionSubEscShortcut: methods.useProjectOptionSubEscShortcut,
+      $_attachProjectOptionSubEscListener: methods.$_attachProjectOptionSubEscListener,
       $_projectOptionSubEscBound: false
     }
     vm.$_attachProjectOptionSubEscListener.call(vm)

@@ -8,7 +8,7 @@
         :open-delay="200"
         :content="formatStateTooltip($t('all'), total, stateDeltaTotal('d'), stateDeltaTotal('w'))"
       >
-        <cat2-but-label @click.native="clickHandle" class="defect-state-label" icon="all" icon-color="#409EFF" :label="$t('all').toString()" content="12">
+        <cat2-but-label @click="clickHandle" class="defect-state-label" icon="all" icon-color="#409EFF" :label="$t('all').toString()" content="12">
           <template #content>
             <span>{{ total }}</span>
             <span>{{ stateDeltaTotal('d') >= 0 ? '+' + stateDeltaTotal('d') : stateDeltaTotal('d') }}</span>
@@ -24,7 +24,7 @@
         :open-delay="200"
         :content="formatStateTooltip($t(state.k), state.a, state.d, state.w)"
       >
-        <cat2-but-label @click.native="clickHandle($event,state)"
+        <cat2-but-label @click="clickHandle($event,state)"
                         class="defect-state-label"
                         icon="pending-processing"
                         :icon-color="iconColor(index)"
@@ -45,6 +45,7 @@
 import Cat2BugCard from "../Components/Card"
 import Cat2ButLabel from "../Components/Label"
 import {statisticDefectState} from "@/api/system/statistic/defect";
+import { useUserStore } from "@/stores/user";
 
 export default {
   name: "DefectState",
@@ -86,7 +87,7 @@ export default {
       }
     },
     currentProjectId: function () {
-      return parseInt(this.$store.state.user.config.currentProjectId);
+      return parseInt(useUserStore().config.currentProjectId);
     },
     total: function () {
       let all = 0;

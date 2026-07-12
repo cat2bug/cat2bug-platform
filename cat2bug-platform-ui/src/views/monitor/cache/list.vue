@@ -7,7 +7,7 @@
             <span><legacy-icon icon="el-icon-collection"></legacy-icon> 缓存列表</span>
             <el-button
               style="float: right; padding: 3px 0"
-              type="text"
+              link
               :icon="$legacyIcon('el-icon-refresh-right')"
               @click="refreshCacheNames()"
             ></el-button>
@@ -48,8 +48,8 @@
             >
               <template #default="scope">
                 <el-button
-                  size="mini"
-                  type="text"
+                  size="small"
+                  link
                   :icon="$legacyIcon('el-icon-delete')"
                   @click="handleClearCacheName(scope.row)"
                 ></el-button>
@@ -65,7 +65,7 @@
             <span><legacy-icon icon="el-icon-key"></legacy-icon> 键名列表</span>
             <el-button
               style="float: right; padding: 3px 0"
-              type="text"
+              link
               :icon="$legacyIcon('el-icon-refresh-right')"
               @click="refreshCacheKeys()"
             ></el-button>
@@ -98,8 +98,8 @@
             >
               <template #default="scope">
                 <el-button
-                  size="mini"
-                  type="text"
+                  size="small"
+                  link
                   :icon="$legacyIcon('el-icon-delete')"
                   @click="handleClearCacheKey(scope.row)"
                 ></el-button>
@@ -115,7 +115,7 @@
             <span><legacy-icon icon="el-icon-document"></legacy-icon> 缓存内容</span>
             <el-button
               style="float: right; padding: 3px 0"
-              type="text"
+              link
               :icon="$legacyIcon('el-icon-refresh-right')"
               @click="handleClearCacheAll()"
               >清理全部</el-button

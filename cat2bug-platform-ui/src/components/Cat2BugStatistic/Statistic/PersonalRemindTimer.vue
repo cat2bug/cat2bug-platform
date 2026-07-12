@@ -46,7 +46,7 @@
 
     <el-dialog
       :title="$t('defect.personal-remind-timer')"
-      :visible.sync="dialogVisible"
+      v-model="dialogVisible"
       width="800px"
       append-to-body
       custom-class="personal-remind-timer-dialog"
@@ -56,20 +56,20 @@
       @opened="onToolDialogOpened"
       @closed="onDialogClosed"
     >
-      <el-table ref="remindTimerTable" :data="editTimers" size="mini" class="remind-timer-table">
+      <el-table ref="remindTimerTable" :data="editTimers" size="small" class="remind-timer-table">
         <el-table-column width="58" align="center" class-name="remind-switch-col">
-          <template slot-scope="scope">
+          <template #default="scope">
             <el-switch v-model="scope.row.enabled" data-remind-stop />
           </template>
         </el-table-column>
         <el-table-column :label="$t('defect.personal-remind-timer.label')" min-width="136">
-          <template slot-scope="scope">
-            <el-input v-model="scope.row.label" data-remind-stop="label" size="mini" maxlength="32" />
+          <template #default="scope">
+            <el-input v-model="scope.row.label" data-remind-stop="label" size="small" maxlength="32" />
           </template>
         </el-table-column>
         <el-table-column :label="$t('defect.personal-remind-timer.type')" width="108">
-          <template slot-scope="scope">
-            <el-select v-model="scope.row.schedule.type" data-remind-stop size="mini" @change="onTypeChange(scope.row)">
+          <template #default="scope">
+            <el-select v-model="scope.row.schedule.type" data-remind-stop size="small" @change="onTypeChange(scope.row)">
               <el-option value="once" :label="$t('defect.personal-remind-timer.type-once')" />
               <el-option value="daily" :label="$t('defect.personal-remind-timer.type-daily')" />
               <el-option value="weekly" :label="$t('defect.personal-remind-timer.type-weekly')" />
@@ -78,7 +78,7 @@
           </template>
         </el-table-column>
         <el-table-column :label="$t('defect.personal-remind-timer.when')" min-width="204">
-          <template slot-scope="scope">
+          <template #default="scope">
             <div class="remind-when-cell">
               <el-date-picker
                 v-if="scope.row.schedule.type === 'once'"
@@ -86,14 +86,14 @@
                 data-remind-stop
                 type="date"
                 value-format="yyyy-MM-dd"
-                size="mini"
+                size="small"
                 class="remind-when-date"
               />
               <el-select
                 v-else-if="scope.row.schedule.type === 'weekly'"
                 v-model="scope.row.schedule.weekday"
                 data-remind-stop
-                size="mini"
+                size="small"
                 class="remind-when-week"
               >
                 <el-option v-for="w in weekdays" :key="w.v" :value="w.v" :label="w.l" />
@@ -104,7 +104,7 @@
                 data-remind-stop
                 :min="1"
                 :max="31"
-                size="mini"
+                size="small"
                 controls-position="right"
                 class="remind-when-day"
               />
@@ -113,7 +113,7 @@
                 data-remind-stop
                 format="HH:mm"
                 value-format="HH:mm"
-                size="mini"
+                size="small"
                 :clearable="false"
                 class="remind-when-time"
                 @focus="onRemindTimePickerFocus"
@@ -124,9 +124,9 @@
           </template>
         </el-table-column>
         <el-table-column :label="$t('defect.personal-remind-timer.sound')" width="176" class-name="remind-sound-col">
-          <template slot-scope="scope">
+          <template #default="scope">
             <div class="remind-sound-cell">
-              <el-select v-model="scope.row.sound" data-remind-stop size="mini" class="remind-sound-select">
+              <el-select v-model="scope.row.sound" data-remind-stop size="small" class="remind-sound-select">
                 <el-option
                   v-for="s in soundOptions"
                   :key="s.id"
@@ -135,9 +135,9 @@
                 />
               </el-select>
               <el-button
-                type="text"
+                link
                 data-remind-stop
-                size="mini"
+                size="small"
                 class="remind-sound-preview"
                 @click="previewSound(scope.row.sound)"
               >{{ $t('defect.personal-remind-timer.preview') }}</el-button>
@@ -149,19 +149,19 @@
           align="center"
           class-name="remind-action-col"
         >
-          <template slot="header">
+          <template #header>
             <el-button
               ref="remindAddBtn"
-              type="text"
+              link
               :icon="$legacyIcon('el-icon-plus')"
               class="remind-add-btn cat2bug-field-hint-host"
               :title="$t('defect.personal-remind-timer.add').toString()"
               @click="addTimer"
             />
           </template>
-          <template slot-scope="scope">
+          <template #default="scope">
             <el-button
-              type="text"
+              link
               :icon="$legacyIcon('el-icon-delete')"
               data-remind-stop
               class="remind-delete-btn"
@@ -171,13 +171,14 @@
           </template>
         </el-table-column>
       </el-table>
-      <span slot="footer">
+      <template #footer>
+    <span>
         <el-button @click="requestCloseToolDialog">{{ $t('cancel') }}</el-button>
         <el-button class="defect-kbd-hint-host" type="primary" @click="saveDialog">
           {{ $t('update') }}
           <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
         </el-button>
-      </span>
+      </span>    </template>
     </el-dialog>
   </div>
 </template>

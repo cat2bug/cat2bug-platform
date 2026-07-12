@@ -35,7 +35,14 @@ describe('resolveOrderedDefectFormFields', () => {
       'custom:custom_priority',
       'defectType',
       'handleBy',
-      'moduleId'
+      'defectLevel',
+      'moduleVersion',
+      'moduleId',
+      'planTime',
+      'caseId',
+      'defectDescribe',
+      'imgUrls',
+      'annexUrls'
     ])
   })
 

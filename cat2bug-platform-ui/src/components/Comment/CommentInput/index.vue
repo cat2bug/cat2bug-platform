@@ -16,7 +16,7 @@
     <div class="comment-input-tools">
       <el-popover
         popper-class="comment-input-emoji-popover"
-        v-model="commentInputEmojiPopoverVisible"
+        v-model:visible="commentInputEmojiPopoverVisible"
         placement="top"
         width="240"
         trigger="click">
@@ -28,11 +28,12 @@
             @click="insertImage(imgName(i), imgUrl(i))"
             fit="cover"></el-image>
         </div>
-        <el-image
-          class="emoji-button pointer"
-          :src="imgUrl(9)"
-          slot="reference"
-          fit="cover"></el-image>
+        <template #reference>
+          <el-image
+            class="emoji-button pointer"
+            :src="imgUrl(9)"
+            fit="cover"></el-image>
+        </template>
       </el-popover>
       <el-button :disabled="currentTextLength==0" type="primary" size="small" @click="submitHandle">{{ $t('comment.speak') }}</el-button>
     </div>
@@ -43,12 +44,9 @@
 import { getEmojiUrl } from '@/utils/emoji-assets'
 
 export default {
+  emits: ['update:value', 'change'],
   name: "CommentInput",
   components: {},
-  model: {
-    prop: 'value',
-    event: 'change'
-  },
   data() {
     return {
       inputLock: false,

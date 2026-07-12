@@ -1,10 +1,12 @@
-import store from "@/store";
+import { pinia } from '@/store/pinia.js'
+import { useUserStore } from '@/stores/user'
 
 /** 团队锁定时是否锁定当前页面 */
 export function isLockTeamPath (path){
   const lockTeamErrorPath = '/error/team-lock';  // 锁定团队的页面路径
   // 如果路径是报错路径或项目没被禁用，跳到报错界面
-  if (!path || path === lockTeamErrorPath || !store.state.user.config.currentTeamLock) {
+  const userStore = useUserStore(pinia)
+  if (!path || path === lockTeamErrorPath || !userStore.config.currentTeamLock) {
     return false;
   }
   const paths = path.split('/');

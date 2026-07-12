@@ -503,7 +503,7 @@
   "defect.builtin-field.createMember": "Created By",
   "defect.builtin-field.updateTime": "Updated At",
   "defect.custom-field.section": "Defect fields",
-  "defect.custom-field.object-placeholder": "JSON object, e.g. \"k\": \"v\"",
+  "defect.custom-field.object-placeholder": "JSON object, e.g. k: v",
   "defect.custom-field.invalid-json": "Invalid JSON",
   "defect.custom-field.add-item": "Add item",
   "defect.custom-field-filters": "Custom field filters",

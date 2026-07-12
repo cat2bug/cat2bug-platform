@@ -9,7 +9,7 @@
         <image-upload v-model="form.teamIcon" :limit="1"/>
       </el-form-item>
       <el-form-item :label="$t('team.introduce')" prop="introduce">
-        <el-input v-model="form.introduce" :placeholder="$t('team.please-enter-introduce')" type="textarea" rows="5" maxlength="255" show-word-limit />
+        <el-input v-model="form.introduce" :placeholder="$t('team.please-enter-introduce')" type="textarea" :rows="5" maxlength="255" show-word-limit />
       </el-form-item>
     </el-form>
     <el-row class="team-add-form-actions">
@@ -27,7 +27,7 @@
 import {addTeam, listTeam, updateTeam} from "@/api/system/team";
 import {updateConfig} from "@/api/system/user-config";
 import {removeCurrentProjectId} from "@/utils/project";
-import store from "@/store";
+import { useUserStore } from '@/stores/user'
 import dialogFormShortcuts from '@/mixins/dialog-form-shortcuts'
 import formFieldHints from '@/mixins/form-field-hints'
 
@@ -90,7 +90,7 @@ export default {
               updateConfig({
                 currentTeamId: response.data.teamId
               }).then(res => {
-                store.dispatch('GetInfo').then(() => {
+                useUserStore().GetInfo().then(() => {
                   _this.$router.push({path:'/team/project-list'});
                 });
               });

@@ -464,7 +464,7 @@
   "defect.builtin-field.createMember": "創建人",
   "defect.builtin-field.updateTime": "更新時間",
   "defect.custom-field.section": "缺陷欄位",
-  "defect.custom-field.object-placeholder": "JSON 物件，例如 \"k\": \"v\"",
+  "defect.custom-field.object-placeholder": "JSON 物件，例如 k: v",
   "defect.custom-field.invalid-json": "JSON 格式無效",
   "defect.custom-field.add-item": "新增一項",
   "defect.all-type": "全部類型",

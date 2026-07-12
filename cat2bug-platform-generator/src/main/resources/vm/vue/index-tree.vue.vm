@@ -109,19 +109,19 @@
 #if($column.pk)
 #elseif($column.list && $column.htmlType == "datetime")
       <el-table-column label="${comment}" align="center" prop="${javaField}" width="180">
-        <template slot-scope="scope">
+        <template #default="scope">
           <span>{{ parseTime(scope.row.${javaField}, '{y}-{m}-{d}') }}</span>
         </template>
       </el-table-column>
 #elseif($column.list && $column.htmlType == "imageUpload")
       <el-table-column label="${comment}" align="center" prop="${javaField}" width="100">
-        <template slot-scope="scope">
+        <template #default="scope">
           <image-preview :src="scope.row.${javaField}" :width="50" :height="50"/>
         </template>
       </el-table-column>
 #elseif($column.list && "" != $column.dictType)
       <el-table-column label="${comment}" align="center" prop="${javaField}">
-        <template slot-scope="scope">
+        <template #default="scope">
 #if($column.htmlType == "checkbox")
           <dict-tag :options="dict.type.${column.dictType}" :value="scope.row.${javaField} ? scope.row.${javaField}.split(',') : []"/>
 #else
@@ -138,7 +138,7 @@
 #end
 #end
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
-        <template slot-scope="scope">
+        <template #default="scope">
           <el-button
             size="mini"
             type="text"

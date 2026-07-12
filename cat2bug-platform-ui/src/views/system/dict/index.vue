@@ -46,8 +46,8 @@
         ></el-date-picker>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" :icon="$legacyIcon('el-icon-search')" size="mini" @click="handleQuery">搜索</el-button>
-        <el-button :icon="$legacyIcon('el-icon-refresh')" size="mini" @click="resetQuery">重置</el-button>
+        <el-button type="primary" :icon="$legacyIcon('el-icon-search')" size="small" @click="handleQuery">搜索</el-button>
+        <el-button :icon="$legacyIcon('el-icon-refresh')" size="small" @click="resetQuery">重置</el-button>
       </el-form-item>
     </el-form>
 
@@ -57,7 +57,7 @@
           type="primary"
           plain
           :icon="$legacyIcon('el-icon-plus')"
-          size="mini"
+          size="small"
           @click="handleAdd"
           v-hasPermi="['system:dict:add']"
         >新增</el-button>
@@ -67,7 +67,7 @@
           type="success"
           plain
           :icon="$legacyIcon('el-icon-edit')"
-          size="mini"
+          size="small"
           :disabled="single"
           @click="handleUpdate"
           v-hasPermi="['system:dict:edit']"
@@ -78,7 +78,7 @@
           type="danger"
           plain
           :icon="$legacyIcon('el-icon-delete')"
-          size="mini"
+          size="small"
           :disabled="multiple"
           @click="handleDelete"
           v-hasPermi="['system:dict:remove']"
@@ -89,7 +89,7 @@
           type="warning"
           plain
           :icon="$legacyIcon('el-icon-download')"
-          size="mini"
+          size="small"
           @click="handleExport"
           v-hasPermi="['system:dict:export']"
         >导出</el-button>
@@ -99,7 +99,7 @@
           type="danger"
           plain
           :icon="$legacyIcon('el-icon-refresh')"
-          size="mini"
+          size="small"
           @click="handleRefreshCache"
           v-hasPermi="['system:dict:remove']"
         >刷新缓存</el-button>
@@ -132,15 +132,15 @@
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template #default="scope">
           <el-button
-            size="mini"
-            type="text"
+            size="small"
+            link
             :icon="$legacyIcon('el-icon-edit')"
             @click="handleUpdate(scope.row)"
             v-hasPermi="['system:dict:edit']"
           >修改</el-button>
           <el-button
-            size="mini"
-            type="text"
+            size="small"
+            link
             :icon="$legacyIcon('el-icon-delete')"
             @click="handleDelete(scope.row)"
             v-hasPermi="['system:dict:remove']"
@@ -190,9 +190,17 @@
 <script>
 import { listType, getType, delType, addType, updateType, refreshCache } from "@/api/system/dict/type";
 
+import { storeToRefs } from 'pinia'
+import { useDictStore } from '@/stores/dict'
+
 export default {
   name: "Dict",
   dicts: ['sys_normal_disable'],
+  setup() {
+    const dictStore = useDictStore()
+    const { dict: dictItems } = storeToRefs(dictStore)
+    return { dictStore, dictItems }
+  },
   data() {
     return {
       // 遮罩层
@@ -339,7 +347,7 @@ export default {
     handleRefreshCache() {
       refreshCache().then(() => {
         this.$modal.msgSuccess("刷新成功");
-        this.$store.dispatch('dict/cleanDict');
+        this.dictStore.cleanDict();
       });
     }
   }

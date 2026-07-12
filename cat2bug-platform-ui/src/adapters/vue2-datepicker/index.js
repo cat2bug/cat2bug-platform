@@ -1,5 +1,5 @@
 /**
- * Vue 3 shim for vue-excel-editor date cells (legacy vue2-datepicker API).
+ * Vue 3 adapter for vue-excel-editor date cells (legacy vue2-datepicker API → vue-datepicker-next).
  */
 import DatePickerNext from 'vue-datepicker-next'
 import { defineComponent, computed, h } from 'vue'

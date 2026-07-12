@@ -1,5 +1,5 @@
 <template>
-  <el-dialog :title="(form.lock?$t('lock'):$t('unlock')) + $t('team')" :visible.sync="visible" width="600px" append-to-body>
+  <el-dialog :title="(form.lock?$t('lock'):$t('unlock')) + $t('team')" v-model="visible" width="600px" append-to-body>
     <el-form ref="form" :model="form" :rules="rules" label-width="140px">
       <el-form-item :label="$t('team.name')">
         <span>{{form.teamName}}</span>
@@ -13,10 +13,10 @@
           maxlength="255" />
       </el-form-item>
     </el-form>
-    <div slot="footer" class="dialog-footer">
+    <template #footer><div class="dialog-footer">
       <el-button @click="visible=false">{{ $t('cancel') }}</el-button>
       <el-button type="primary" @click="handleLock">{{ form.lock?$t('lock'):$t('unlock') }}</el-button>
-    </div>
+    </div></template>
   </el-dialog>
 </template>
 

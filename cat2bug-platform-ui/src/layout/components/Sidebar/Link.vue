@@ -1,7 +1,10 @@
 <template>
-  <component :is="type" v-bind="linkProps(to)">
-    <slot />
-  </component>
+  <a v-if="isExternal" v-bind="linkProps(to)">
+    <slot :navigate="null" />
+  </a>
+  <router-link v-else v-slot="{ navigate }" custom :to="to">
+    <slot :navigate="navigate" />
+  </router-link>
 </template>
 
 <script>
@@ -17,25 +20,14 @@ export default {
   computed: {
     isExternal() {
       return isExternal(this.to)
-    },
-    type() {
-      if (this.isExternal) {
-        return 'a'
-      }
-      return 'router-link'
     }
   },
   methods: {
     linkProps(to) {
-      if (this.isExternal) {
-        return {
-          href: to,
-          target: '_blank',
-          rel: 'noopener'
-        }
-      }
       return {
-        to: to
+        href: to,
+        target: '_blank',
+        rel: 'noopener'
       }
     }
   }

@@ -1,7 +1,7 @@
 <template>
   <el-dialog
     :title="$t('defect.related')"
-    :visible.sync="dialogVisible"
+    v-model="dialogVisible"
     :close-on-click-modal="false"
     width="70%"
     append-to-body
@@ -34,15 +34,16 @@
             </div>
             <el-divider class="defect-field-divider"></el-divider>
             <el-checkbox-group v-model="tableShowFieldList" class="defect-column-picker" @change="checkedFieldListChange">
-              <el-checkbox v-for="field in tableAllFieldList" :label="field" :key="field">{{$t(field)}}</el-checkbox>
+              <el-checkbox v-for="field in tableAllFieldList" :value="field" :key="field">{{$t(field)}}</el-checkbox>
             </el-checkbox-group>
+            <template #reference>
             <el-button
               style="padding: 9px;"
               plain
-              slot="reference"
               :icon="$legacyIcon('el-icon-s-fold')"
               size="small"
             ></el-button>
+            </template>
           </el-popover>
           <div>
             <slot name="right-tools"></slot>
@@ -53,17 +54,17 @@
       <el-table ref="defectTable" :key="tableKey" v-loading="loading" style="width:100%;" :data="defectList" @selection-change="handleSelectionChange" @sort-change="sortChangeHandle" @row-click="handleClickTableRow">
 
         <el-table-column v-if="showField('id')" :label="$t('id')" :key="$t('id')" align="left" prop="projectNum" width="80" sortable >
-          <template slot-scope="scope">
+          <template #default="scope">
             <span>{{ '#' + scope.row.projectNum }}</span>
           </template>
         </el-table-column>
         <el-table-column v-if="showField('type')" :label="$t('type')" :key="$t('type')" align="left" prop="defectTypeName" width="100" sortable>
-          <template slot-scope="scope">
+          <template #default="scope">
             <defect-type-flag :defect="scope.row" />
           </template>
         </el-table-column>
         <el-table-column v-if="showField('defect.name')" :label="$t('defect.name')" :key="$t('defect.name')" align="left" prop="defectName" width="300" sortable>
-          <template slot-scope="scope">
+          <template #default="scope">
             <div class="table-defect-title">
               <span>{{ scope.row.defectName }}</span>
               <div class="defect-statistics">
@@ -82,68 +83,68 @@
           </template>
         </el-table-column>
         <el-table-column v-if="showField('handle-by')" :label="$t('handle-by')" :key="$t('handle-by')" align="center" min-width="160" prop="handleBy">
-          <template slot-scope="scope">
+          <template #default="scope">
             <row-list-member :members="scope.row.handleByList"></row-list-member>
           </template>
         </el-table-column>
         <el-table-column v-if="showField('priority')" :label="$t('priority')" :key="$t('priority')" align="center" prop="defectLevel" width="100" sortable >
-          <template slot-scope="scope">
+          <template #default="scope">
             <level-tag :options="dict.type.defect_level" :value="scope.row.defectLevel"/>
           </template>
         </el-table-column>
         <el-table-column v-if="showField('state')" :label="$t('state')" :key="$t('state')" align="center" prop="defectStateName" width="120" sortable>
-          <template slot-scope="scope">
+          <template #default="scope">
             <defect-state-flag :defect="scope.row" />
           </template>
         </el-table-column>
         <el-table-column v-if="showField('module')" :label="$t('module')" :key="$t('module')" align="left" prop="moduleName" min-width="200" sortable />
         <el-table-column v-if="showField('version')" :label="$t('version')" :key="$t('version')" align="left" prop="moduleVersion" width="100" sortable />
         <el-table-column v-if="showField('image')" :label="$t('image')" :key="$t('image')" align="center" prop="imgUrls" width="80">
-          <template slot-scope="scope">
+          <template #default="scope">
             <cat2-bug-preview-image :images="getUrl(scope.row.imgUrls)" />
           </template>
         </el-table-column>
         <el-table-column v-if="showField('annex')" :label="$t('annex')" :key="$t('annex')" align="left" prop="annexUrls" min-width="300">
-          <template slot-scope="scope">
+          <template #default="scope">
             <div class="annex-list">
               <cat2-bug-text :content="file" type="down" :tooltip="file" v-for="(file,index) in getUrl(scope.row.annexUrls)" :key="index" />
             </div>
           </template>
         </el-table-column>
         <el-table-column v-if="showField('update-time')" :label="$t('update-time')" :key="$t('update-time')" align="left" prop="updateTime" width="160" sortable >
-          <template slot-scope="scope">
+          <template #default="scope">
             <span>{{ parseTime(scope.row.updateTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
           </template>
         </el-table-column>
         <el-table-column v-if="showField('plan-start-time')" :label="$t('plan-start-time')" :key="$t('plan-start-time')" align="left" prop="planStartTime" width="160" sortable >
-          <template slot-scope="scope">
+          <template #default="scope">
             <span>{{ parseTime(scope.row.planStartTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
           </template>
         </el-table-column>
         <el-table-column v-if="showField('plan-end-time')" :label="$t('plan-end-time')" :key="$t('plan-end-time')" align="left" prop="planEndTime" width="160" sortable >
-          <template slot-scope="scope">
+          <template #default="scope">
             <span>{{ parseTime(scope.row.planEndTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
           </template>
         </el-table-column>
         <el-table-column v-if="showField('createBy')" :label="$t('createBy')" :key="$t('createBy')" align="center" min-width="160" prop="createMember">
-          <template slot-scope="scope">
+          <template #default="scope">
             <row-list-member :members="[scope.row.createMember]"></row-list-member>
           </template>
         </el-table-column>
         <el-table-column :label="$t('operate')" align="center" class-name="small-padding fixed-width" width="100" fixed="right">
-          <template slot-scope="scope">
+          <template #default="scope">
             <el-button
               v-if="isRelated(scope.row)"
-              size="mini"
-              type="text"
+              size="small"
+              link
               :icon="$legacyIcon('el-icon-attract')"
               @click="handleCancelRelated(scope.row)"
               v-hasPermi="['system:defect:add']"
             >{{ $t('cancel-related') }}</el-button>
             <el-button
               v-else
-              size="mini"
-              type="text"
+              size="small"
+              link
               :icon="$legacyIcon('el-icon-attract')"
               @click="handleRelated(scope.row)"
               v-hasPermi="['system:defect:add']"
@@ -155,8 +156,8 @@
       <pagination
         v-show="total>0"
         :total="total"
-        :page.sync="queryParams.pageNum"
-        :limit.sync="queryParams.pageSize"
+        v-model:page="queryParams.pageNum"
+        v-model:limit="queryParams.pageSize"
         @pagination="search(queryParams)"
       />
     </div>

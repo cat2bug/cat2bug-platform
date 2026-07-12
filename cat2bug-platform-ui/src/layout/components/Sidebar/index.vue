@@ -109,7 +109,7 @@
 </template>
 
 <script>
-import { mapState } from "pinia";
+import { storeToRefs } from 'pinia'
 import { useSettingsStore } from '@/stores/settings'
 import { usePermissionStore } from '@/stores/permission'
 import { useAppStore } from '@/stores/app'
@@ -120,16 +120,31 @@ import variables from "@/assets/styles/variables.js";
 
 export default {
     components: { SidebarItem, TeamSelect },
-    data() {
+    setup() {
+      const settingsStore = useSettingsStore()
+      const permissionStore = usePermissionStore()
+      const appStore = useAppStore()
+      const userStore = useUserStore()
+      const { themeMode, sideTheme, theme, sidebarLogo } = storeToRefs(settingsStore)
+      const { sidebarRouters, routesRefreshing } = storeToRefs(permissionStore)
+      const { sidebar } = storeToRefs(appStore)
+      const { config, teamMember } = storeToRefs(userStore)
       return {
+        settingsStore,
+        themeMode,
+        sideTheme,
+        theme,
+        sidebarLogo,
+        sidebarRouters,
+        routesRefreshing,
+        sidebar,
+        userConfig: config,
+        userTeamMember: teamMember
       }
     },
     computed: {
-        ...mapState(useSettingsStore, ['themeMode', 'sideTheme', 'theme', 'sidebarLogo']),
-        ...mapState(usePermissionStore, ['sidebarRouters', 'routesRefreshing']),
-        ...mapState(useAppStore, ['sidebar']),
         settings() {
-          return useSettingsStore()
+          return this.settingsStore
         },
       /** 侧栏菜单背景：随 themeMode / sideTheme 切换 */
       menuBackgroundColor() {
@@ -163,19 +178,19 @@ export default {
           : variables.menuLightColor
       },
       teamId() {
-          return useUserStore().config.currentTeamId;
+          return this.userConfig && this.userConfig.currentTeamId
       },
       teamLock() {
-        return useUserStore().config.currentTeamLock;
+        return this.userConfig && this.userConfig.currentTeamLock
       },
       projectId() {
-        return useUserStore().config.currentProjectId
+        return this.userConfig && this.userConfig.currentProjectId
       },
       projectLock() {
-        return useUserStore().config.currentProjectLock;
+        return this.userConfig && this.userConfig.currentProjectLock
       },
       teamMember() {
-        return useUserStore().teamMember !== false;
+        return this.userTeamMember !== false
       },
       projectRouters() {
           return this.filterSidebarRouters('project');
@@ -209,7 +224,7 @@ export default {
           return path;
       },
       showLogo() {
-          return useSettingsStore().sidebarLogo;
+          return this.sidebarLogo
       },
       variables() {
           return variables;

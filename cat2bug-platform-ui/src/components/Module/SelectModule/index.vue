@@ -93,11 +93,8 @@ import { observeComboFocusTarget } from '@/utils/combo-focus-tab'
 import { mapElementPlusSize } from '@/utils/element-plus-size'
 
 export default {
+  emits: ['update:moduleId', 'input'],
   name: "SelectModule",
-  model: {
-    prop: 'moduleId',
-    event: 'input'
-  },
   components: { MemberNameplate, ModuleMenu },
   data() {
     return {
@@ -378,7 +375,7 @@ export default {
           this.selectModule = module;
           const pathOverride = this.buildModulePathFromOpenColumns(module, columnIndex);
           this.syncModuleDisplay(module, pathOverride);
-          this.$emit('input', module.moduleId, module);
+          this.$emit('update:moduleId', module.moduleId, module); this.$emit('input', module.moduleId, module);
           this.reloadModulePathMap(this.projectId || module.projectId);
         }
         this.$nextTick(() => {
@@ -1215,7 +1212,7 @@ export default {
       this.refreshRootMenu()
       this.$forceUpdate()
       if (emitInput) {
-        this.$emit('input', null)
+        this.$emit('update:moduleId', null); this.$emit('input', null)
       }
     },
     reset() {
@@ -1224,7 +1221,7 @@ export default {
     },
     /** 搜索成员事件 */
     searchChangeHandle() {
-      this.$emit('input',this.selectModule.moduleId);
+      this.$emit('update:moduleId', this.selectModule.moduleId); this.$emit('input', this.selectModule.moduleId);
     },
     /** 弹窗显示事件 */
     popoverShowHandle() {
@@ -1277,7 +1274,7 @@ export default {
       const pathOverride = this.buildModulePathFromOpenColumns(module, index);
       this.syncModuleDisplay(module, pathOverride);
       this.popoverVisible = false;
-      this.$emit('input', this.selectModule.moduleId, this.selectModule);
+      this.$emit('update:moduleId', this.selectModule.moduleId, this.selectModule); this.$emit('input', this.selectModule.moduleId, this.selectModule);
       this.resetMenu();
     },
     /** 点击菜单添加按钮的事件处理 */

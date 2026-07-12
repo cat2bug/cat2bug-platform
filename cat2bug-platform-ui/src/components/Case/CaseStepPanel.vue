@@ -1,21 +1,27 @@
 <template>
   <div class="case-step">
-    <draggable v-show="panelType!='input'" v-model="caseStepList" @change="updatePanelHandle">
-      <div ref="caseStepInputGroup" v-for="(step,index) in caseStepList" :key="index" class="case-step-row">
+    <draggable
+      v-show="panelType!='input'"
+      v-model="caseStepList"
+      item-key="caseStepDragKey"
+      @change="updatePanelHandle"
+    >
+      <template #item="{ element: step, index }">
+      <div ref="caseStepInputGroup" class="case-step-row">
         <label>{{index+1}}</label>
-        <el-input type="textarea" ref="caseStepDescribeRef" v-model="step.stepDescribe" :key="step.caseStepDescribeKey" :placeholder="$t('case.please-enter-step-describe')" maxlength="128" :autosize="autoSizeRang(step)" @input.native="caseStepListChangeHandle($event, caseStepList, index, 'describe')" />
-        <el-input type="textarea" ref="caseStepExpectRef" v-model="step.stepExpect" :key="step.caseStepExpectKey" :placeholder="$t('case.please-enter-step-expected')" maxlength="128" :autosize="autoSizeRang(step)" @input.native="caseStepListChangeHandle($event,caseStepList, index, 'expect')" />
+        <el-input type="textarea" ref="caseStepDescribeRef" v-model="step.stepDescribe" :key="step.caseStepDescribeKey" :placeholder="$t('case.please-enter-step-describe')" maxlength="128" :autosize="autoSizeRang(step)" @input="caseStepListChangeHandle($event, caseStepList, index, 'describe')" />
+        <el-input type="textarea" ref="caseStepExpectRef" v-model="step.stepExpect" :key="step.caseStepExpectKey" :placeholder="$t('case.please-enter-step-expected')" maxlength="128" :autosize="autoSizeRang(step)" @input="caseStepListChangeHandle($event,caseStepList, index, 'expect')" />
         <div class="case-step-row-tools">
           <el-button
             v-show="caseStepList.length > 1"
-            type="text"
+            link
             class="case-step-tool-btn case-step-tool-btn--remove"
             :icon="$legacyIcon('el-icon-error')"
             :aria-label="$t('delete')"
             @click="removeStepHandle(index)"
           />
           <el-button
-            type="text"
+            link
             class="case-step-tool-btn case-step-tool-btn--add"
             :icon="$legacyIcon('el-icon-circle-plus')"
             :aria-label="$t('case.add-step')"
@@ -23,22 +29,20 @@
           />
         </div>
       </div>
+      </template>
     </draggable>
     <el-input class="case-step-script-input" v-show="panelType!='list'" type="textarea" v-model="stepScript" :placeholder="$t('case.please-enter-step-script')" maxlength="10000" :autosize="{ minRows: 4, maxRows: 20 }" show-word-limit @input="scriptChangeHandle" />
-    <el-button class="button-full case-add-step-btn defect-kbd-hint-host" type="success" size="mini" plain @click="addStepHandle(undefined)">{{ $t('case.add-step') }}</el-button>
+    <el-button class="button-full case-add-step-btn defect-kbd-hint-host" type="success" size="small" plain @click="addStepHandle(undefined)">{{ $t('case.add-step') }}</el-button>
   </div>
 </template>
 
 <script>
-import draggable from 'vuedraggable'
+import draggable from '@/adapters/vuedraggable'
 /** 测试用例步骤组件 */
 export default {
+  emits: ['update:caseStep', 'change'],
   name: "CaseStepPanel",
   components: {draggable},
-  model: {
-    prop: 'caseStep',
-    event: 'change'
-  },
   data() {
     return {
       stepScript: null,
@@ -101,25 +105,28 @@ export default {
       this.caseStepList=this.caseStep.map((c,index)=>{
         c.caseStepDescribeKey = "caseStepDescribeKey"+index+time;
         c.caseStepExpectKey = "caseStepExpectKey"+index+time;
+        c.caseStepDragKey = c.caseStepDescribeKey;
         return c;
       });
       this.caseStepListChangeHandle({}, this.caseStep);
     },
     /** 添加步骤 */
     addStepHandle(index) {
-      this.caseStepList.push({});
+      const time = new Date().getMilliseconds();
+      const dragKey = 'caseStepDragKey' + time + Math.random();
+      this.caseStepList.push({ caseStepDragKey: dragKey });
       this.caseStepListChangeHandle({},this.caseStepList);
-      this.$emit('change',this.caseStepList);
+      this.$emit('update:caseStep', this.caseStepList); this.$emit('change', this.caseStepList);
     },
     /** 移除步骤 */
     removeStepHandle(index) {
       this.caseStepList.splice(index,1);
       this.caseStepListChangeHandle({},this.caseStepList);
-      this.$emit('change',this.caseStepList);
+      this.$emit('update:caseStep', this.caseStepList); this.$emit('change', this.caseStepList);
     },
     /** 步骤拖动更新事件 */
     updatePanelHandle() {
-      this.$emit('change',this.caseStepList);
+      this.$emit('update:caseStep', this.caseStepList); this.$emit('change', this.caseStepList);
     },
     /** 计算input的行高 */
     calcInputRows(name, index, text) {
@@ -166,17 +173,19 @@ export default {
     /** 步骤脚本改变处理 */
     scriptChangeHandle() {
       console.log('scriptChangeHandle')
-      this.caseStepList = (this.stepScript||"").split('\n').filter(r=>r).map(r=>{
+      this.caseStepList = (this.stepScript||"").split('\n').filter(r=>r).map((r, index)=>{
         let cols = r.split('---');
+        const time = new Date().getMilliseconds();
         return {
           stepDescribe: cols[0],
-          stepExpect: cols[1]
+          stepExpect: cols[1],
+          caseStepDragKey: 'caseStepDragKey' + index + time
         }
       });
       if(this.caseStepList.length==0){
         this.caseStepList=[{}];
       }
-      this.$emit('change',this.caseStepList);
+      this.$emit('update:caseStep', this.caseStepList); this.$emit('change', this.caseStepList);
     }
   }
 }

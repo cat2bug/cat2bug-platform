@@ -2,7 +2,7 @@
   <el-dialog :title="$i18n.t('assign')" v-model="dialogVisible" :close-on-press-escape="false" :before-close="onToolDialogBeforeClose" append-to-body @opened="onToolDialogOpened" width="30%">
     <el-form ref="form" :model="form" :rules="rules" label-width="120px">
       <el-form-item :label="$i18n.t('defect.assigned-to')" prop="receiveBy">
-        <select-project-member ref="selectProjectMember" v-model="form.receiveBy" :project-id="projectId" />
+        <select-project-member ref="selectProjectMember" v-model:memberId="form.receiveBy" :project-id="projectId" />
       </el-form-item>
       <el-form-item :label="$i18n.t('describe')">
         <el-input type="textarea"

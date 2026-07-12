@@ -2,17 +2,16 @@
   <div class="markdown">
     <div class="markdown-tools">
       <tools-menu :tools="toolMenus" @select="toolsHandle" />
-      <tools-menu v-model="viewTools" @select="viewToolsHandle" />
+      <tools-menu v-model:tools="viewTools" @select="viewToolsHandle" />
     </div>
     <multipane layout="vertical" ref="multiPane" class="markdown-body" @paneResizeStop="dragStopHandle">
-      <textarea
+      <md-editor-pane
         class="markdown-body-edit"
         :mode="viewVisible?'':'single'"
         ref="markdownEdit"
         v-resize="setDragComponentSize"
         v-model="markdownContent"
-        @input="inputHandle"
-        :placeholder="placeholder"
+        @change="inputHandle"
       />
       <multipane-resizer v-show="viewVisible" class="markdown-body-resizer" :style="multipaneStyle"></multipane-resizer>
       <div
@@ -34,8 +33,9 @@
 </template>
 
 <script>
-import { Multipane, MultipaneResizer } from 'vue-multipane';
-import MarkdownItVue from "markdown-it-vue"
+import { Multipane, MultipaneResizer } from '@/vendor/vue-multipane';
+import { MarkdownRenderer as MarkdownItVue } from '@/components/Markdown'
+import MdEditorPane from '@/components/Markdown/MdEditorPane.vue'
 import multimdTable from 'markdown-it-multimd-table'
 import { TablePlugin } from "./plugins/TablePlugin"
 import { CardPlugin } from "@/components/Cat2BugMarkdown/plugins/CardPlugin";
@@ -46,7 +46,6 @@ import {CenterPointPlugin} from "@/components/Cat2BugMarkdown/plugins/CenterPoin
 import {LeftPointPlugin} from "@/components/Cat2BugMarkdown/plugins/LeftPointPlugin";
 import {RightPointPlugin} from "@/components/Cat2BugMarkdown/plugins/RightPointPlugin";
 import { MarkdownTools } from "./MarkdownTools"
-import 'markdown-it-vue/dist/markdown-it-vue.css'
 import {listDefect} from "@/api/system/defect";
 import {listCase} from "@/api/system/case";
 import {getProject} from "@/api/system/project";
@@ -57,14 +56,12 @@ import {strFormat} from "@/utils";
 import {upload} from "@/api/common/upload";
 import {updateTemplate} from "@/api/system/ReportTemplate";
 import {markdownData} from "@/api/markdown/markdown";
+import { useUserStore } from "@/stores/user";
 
 export default {
+  emits: ['update:content', 'input'],
   name: "Cat2BugMarkdown",
-  components: { Multipane, MultipaneResizer, MarkdownItVue, ToolsMenu },
-  model: {
-    prop: 'content',
-    event: 'input'
-  },
+  components: { Multipane, MultipaneResizer, MarkdownItVue, ToolsMenu, MdEditorPane },
   data() {
     return {
       multipaneStyle: {'--marginTop':'0px'},
@@ -151,7 +148,7 @@ export default {
   },
   computed: {
     projectId() {
-      return this.$store.state.user.config.currentProjectId
+      return useUserStore().config.currentProjectId
     },
     toolMenus() {
       return this.tools.filter(t=>this.excludeTools.indexOf(t.name)===-1)
@@ -215,7 +212,7 @@ export default {
     },
     /** 编辑文档时触发事件 */
     inputHandle() {
-      this.$emit('input',this.markdownContent);
+      this.$emit('update:content', this.markdownContent); this.$emit('input', this.markdownContent);
     },
     /** 初始化markdown插件 */
     initMarkdownPlug() {
@@ -501,47 +498,56 @@ export default {
     },
     /** 聚焦左侧 Markdown 编辑区 */
     focusEditor() {
-      const markdownEdit = this.$refs.markdownEdit;
+      const markdownEdit = this.$refs.markdownEdit
       if (markdownEdit && typeof markdownEdit.focus === 'function') {
-        markdownEdit.focus();
+        markdownEdit.focus()
       }
     },
     /** 插入文本内容到编辑框 */
     async insertText(text) {
-      if(!text) return;
-      const markdownEdit = this.$refs.markdownEdit;
-      if (markdownEdit.selectionStart || markdownEdit.selectionStart === 0) {
-        let startPos = markdownEdit.selectionStart
-        let endPos = markdownEdit.selectionEnd
-        let content =text;
-        this.markdownContent = markdownEdit.value.substring(0, startPos) + '\n' + content + '\n' + markdownEdit.value.substring(endPos, markdownEdit.value.length);
-        await this.$nextTick() // 这句是重点, 圈起来
+      if (!text) return
+      const markdownEdit = this.$refs.markdownEdit
+      if (markdownEdit && typeof markdownEdit.insertAtCursor === 'function') {
+        markdownEdit.insertAtCursor(text)
+        await this.$nextTick()
         markdownEdit.focus()
-        markdownEdit.setSelectionRange(endPos + text.length+1, endPos + text.length+1);
-      } else {
-        this.markdownContent += '\n' + text + '\n';
+        this.inputHandle()
+        return
       }
-      this.inputHandle();
+      this.markdownContent += `\n${text}\n`
+      this.inputHandle()
     },
     /** 插入内容到编辑框 */
     async insertContent(tool) {
-      const markdownEdit = this.$refs.markdownEdit;
-      let content;
+      let content
       if (tool.content instanceof Function || tool.content instanceof Promise) {
-        content = await tool.content(this, tool);
+        content = await tool.content(this, tool)
       } else {
-        content = this.$i18n.te(tool.content)?this.$i18n.t(tool.content):tool.content;
+        content = this.$i18n.te(tool.content) ? this.$i18n.t(tool.content) : tool.content
       }
-      if (markdownEdit.selectionStart || markdownEdit.selectionStart === 0) {
-        if (markdownEdit.selectionStart == markdownEdit.selectionEnd) {
-          content = strFormat(content, tool.name);
-        } else {
-          let startPos = markdownEdit.selectionStart
-          let endPos = markdownEdit.selectionEnd
-          content = strFormat(content, markdownEdit.value.substring(startPos, endPos));
+      const markdownEdit = this.$refs.markdownEdit
+      if (markdownEdit && typeof markdownEdit.insertFormatted === 'function') {
+        const inserted = markdownEdit.insertFormatted((selectedText) => {
+          if (selectedText) {
+            content = strFormat(content, selectedText)
+          } else {
+            content = strFormat(content, tool.name)
+          }
+          return {
+            targetValue: `\n${content}\n`,
+            select: false,
+            deviationStart: 0,
+            deviationEnd: 0
+          }
+        })
+        if (inserted) {
+          await this.$nextTick()
+          markdownEdit.focus()
+          this.inputHandle()
+          return
         }
       }
-      await this.insertText(content);
+      await this.insertText(content)
     },
     /** 左侧工具栏处理事件 */
     async toolsHandle(tools, tool) {
@@ -657,10 +663,10 @@ export default {
     width: calc( 50% - 5px );
     flex-shrink: 0;
     margin-right: 5px;
-    font-size: 16px;
     border: none;
-    outline:none;
-    letter-spacing: 1px;
+    outline: none;
+    min-height: 100px;
+    overflow: hidden;
   }
   > .markdown-body-view {
     flex: 1;

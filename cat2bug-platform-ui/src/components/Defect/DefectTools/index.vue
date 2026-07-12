@@ -44,6 +44,8 @@ import ShareCard from "@/components/ShareCard";
 import {delDefect, restoreDefect, updateUserDefect} from "@/api/system/defect";
 import {checkPermi} from "@/utils/permission";
 import i18n from "@/utils/i18n/i18n";
+import { storeToRefs } from "pinia";
+import { useUserStore } from "@/stores/user";
 
 /** 处理中状态 */
 const PROCESSING_STATE = 'PROCESSING';
@@ -56,11 +58,13 @@ const REJECTED_STATE = 'REJECTED';
 /** 关闭状态 */
 const CLOSE_STATE = 'CLOSED';
 export default {
+  emits: ['update:defect', 'update'],
   name: "DefectTools",
   components: {PassDialog, AssignDialog, RejectDialog, RepairDialog,CloseDialog,OpenDialog,EditDefectDialog,StarSwitch, ShareCard },
-  model: {
-    prop: 'defect',
-    event: 'update'
+  setup() {
+    const userStore = useUserStore()
+    const { id } = storeToRefs(userStore)
+    return { id }
   },
   props:{
     exclusions: {
@@ -104,7 +108,7 @@ export default {
     },
     /** 获取当前用户id */
     currentUserId: function() {
-      return this.$store.state.user.id;
+      return this.id;
     },
     isDeleted() {
       const f = this.defect && this.defect.delFlag;
@@ -201,7 +205,7 @@ export default {
       }).then(res=>{
         defect.collect = collect;
         if (isRefreshList) {
-          this.$emit('update', this.defect);
+          this.$emit('update:defect', this.defect); this.$emit('update', this.defect);
         }
         if(collect) {
           this.$message.success(this.$i18n.t('collect-success').toString());

@@ -24,16 +24,16 @@
           role="button"
           :aria-label="t.templateTitle"
           @click="createReportHandle(t)">
-          <el-image fit="contain" :src="iconUrl(t)" />
+          <cat2-bug-image fit="contain" :src="iconUrl(t)" />
           <span>{{t.templateTitle}}</span>
           <div class="menu">
-            <el-button type="text" size="mini" class="report-template-card-copy" @click="copyReportTemplate($event,t)">
+            <el-button link size="small" class="report-template-card-copy" @click="copyReportTemplate($event,t)">
               <svg-icon icon-class="copy"/>
             </el-button>
-            <el-button type="text" size="mini" class="report-template-card-edit" @click="goReportTemplateView($event,t.templateId)">
+            <el-button link size="small" class="report-template-card-edit" @click="goReportTemplateView($event,t.templateId)">
               <svg-icon icon-class="edit"/>
             </el-button>
-            <el-button type="text" size="mini" class="report-template-card-delete" @click="deleteReport($event,t.templateId,index)">
+            <el-button link size="small" class="report-template-card-delete" @click="deleteReport($event,t.templateId,index)">
               <svg-icon icon-class="close"/>
             </el-button>
           </div>
@@ -57,7 +57,7 @@
           type="primary"
           plain
           :icon="$legacyIcon('el-icon-plus')"
-          :size="size"
+          :size="controlSize"
         >{{$t('report.make')}}</el-button>
       </template>
     </el-popover>
@@ -81,9 +81,13 @@ import {
   focusReportTemplateCardWhenReady
 } from '@/utils/report-template-popover-kbd'
 import emptyImg from '@/assets/images/empty.png'
+import { mapElementPlusSize } from '@/utils/element-plus-size'
+import Cat2BugImage from '@/components/Cat2BugImage'
+import { resolveUploadUrl } from '@/utils/upload-asset'
 
 export default {
   name: "Cat2BugReportTemplateSelect",
+  components: { Cat2BugImage },
   data() {
     return {
       hostClass: REPORT_TEMPLATE_HOST_CLASS,
@@ -117,14 +121,8 @@ export default {
     }
   },
   computed: {
-    iconUrl() {
-      return function (template) {
-        if(template.templateIconUrl) {
-          return process.env.VUE_APP_BASE_API + template.templateIconUrl;
-        } else {
-          return emptyImg
-        }
-      }
+    controlSize() {
+      return mapElementPlusSize(this.size)
     },
   },
   mounted() {
@@ -135,8 +133,27 @@ export default {
   beforeDestroy() {
     destroyReportTemplatePopoverKbd(this);
     this.unbindPopoverOpenWatch();
+    this.closeTemplatePopover();
+  },
+  beforeUnmount() {
+    destroyReportTemplatePopoverKbd(this);
+    this.unbindPopoverOpenWatch();
+    this.closeTemplatePopover();
+  },
+  deactivated() {
+    this.closeTemplatePopover();
   },
   methods: {
+    closeTemplatePopover() {
+      closeReportTemplatePopover(this);
+      this.popoverOpen = false;
+    },
+    iconUrl(template) {
+      if (template && template.templateIconUrl) {
+        return resolveUploadUrl(template.templateIconUrl, process.env.VUE_APP_BASE_API);
+      }
+      return emptyImg;
+    },
     bindPopoverOpenWatch() {
       const pop = this.$refs.templatePopover;
       if (!pop || this._popoverOpenWatch) return;
@@ -341,6 +358,7 @@ export default {
         background-color: var(--table-row-hover-bg);
       }
     }
+    .cat2-bug-image,
     .el-image {
       width: 180px;
       height: 120px;

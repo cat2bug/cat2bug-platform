@@ -3,13 +3,14 @@
  * Copyright (c) 2023 cat2bug
  */
 
-import store from '@/store'
+import { pinia } from '@/store/pinia.js'
+import { useUserStore } from '@/stores/user'
 
 export default {
   inserted(el, binding, vnode) {
     const { value } = binding
     const super_admin = "admin";
-    const roles = store.getters && store.getters.roles
+    const roles = useUserStore(pinia).roles || []
 
     if (value && value instanceof Array && value.length > 0) {
       const roleFlag = value

@@ -29,6 +29,9 @@ import {defectStatistics} from "@/api/system/dashboard";
 import {strFormat} from "@/utils";
 import {setDefectTempTab} from "@/utils/defect";
 
+import { storeToRefs } from 'pinia'
+import { useUserStore } from '@/stores/user'
+
 export default {
   name: "DefectStatisticsChart",
   components: { Cat2BugBlock },
@@ -42,6 +45,11 @@ export default {
       default: '100px'
     },
   },
+  setup() {
+    const userStore = useUserStore()
+    const { config: userConfig } = storeToRefs(userStore)
+    return { userConfig }
+  },
   data() {
     return {
       loading: false,
@@ -52,7 +60,7 @@ export default {
   computed: {
     /** 获取项目id */
     projectId() {
-      return parseInt(this.$store.state.user.config.currentProjectId);
+      return parseInt(this.userConfig.currentProjectId);
     },
     iconColor: function () {
       return function (index) {

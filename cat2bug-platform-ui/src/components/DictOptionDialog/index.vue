@@ -1,7 +1,7 @@
 <template>
   <el-dialog
     :title="title"
-    :visible.sync="visible"
+    v-model="visible"
     width="500"
     :close-on-click-modal="false"
     :before-close="close">
@@ -16,14 +16,14 @@
         <el-table-column
           prop="dictLabel"
           label="名称">
-          <template slot-scope="scope">
+          <template #default="scope">
             <el-input v-model="scope.row.dictLabel" />
           </template>
         </el-table-column>
         <el-table-column
           prop="dictValue"
           label="值">
-          <template slot-scope="scope">
+          <template #default="scope">
             <el-input v-model="scope.row.dictValue" />
           </template>
         </el-table-column>
@@ -32,7 +32,7 @@
           prop="cssClass"
           label="颜色"
           width="80">
-          <template slot-scope="scope">
+          <template #default="scope">
             <el-color-picker v-model="scope.row.cssClass"></el-color-picker>
           </template>
         </el-table-column>
@@ -41,7 +41,7 @@
           prop="isDefault"
           label="默认选项"
           width="80">
-          <template slot-scope="scope">
+          <template #default="scope">
             <el-radio v-model="isDefaultId" :label="scope.row.planItemId">{{ ' ' }}</el-radio>
           </template>
         </el-table-column>
@@ -50,7 +50,7 @@
           prop="status"
           label="禁用"
           width="80">
-          <template slot-scope="scope">
+          <template #default="scope">
             <el-switch
               v-model="scope.row.status"
               active-color="#13ce66"
@@ -60,11 +60,12 @@
         </el-table-column>
       </el-table>
     </div>
-    <span slot="footer" class="dialog-footer">
+    <template #footer>
+    <span class="dialog-footer">
       <el-button @click="handleAdd">新 增</el-button>
       <el-button @click="visible = false">取 消</el-button>
       <el-button type="primary" @click="visible = false">确 定</el-button>
-    </span>
+    </span>    </template>
   </el-dialog>
 </template>
 

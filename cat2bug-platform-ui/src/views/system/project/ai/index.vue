@@ -30,7 +30,7 @@
 
     <el-table v-loading="loading" :data="aiList" @selection-change="handleSelectionChange" :key="tableKey">
       <el-table-column :label="$t('ai.name')" align="left" prop="name">
-        <template slot-scope="scope">
+        <template #default="scope">
           <div class="col">
             <span>{{ scope.row.name }}</span>
             <span v-if="isError(scope.row) && scope.row.error" class="error">{{ `${$t('download.error')}:${scope.row.error}` }}</span>
@@ -38,31 +38,31 @@
         </template>
       </el-table-column>
       <el-table-column :label="$t('state')" align="center" prop="size" width="150">
-        <template slot-scope="scope">
+        <template #default="scope">
           <el-progress v-if="isPulling(scope.row)" :percentage="pullProgress(scope.row)"></el-progress>
           <span v-else>{{ modelState(scope.row) }}</span>
         </template>
       </el-table-column>
       <el-table-column :label="$t('ai.model-size')" align="center" prop="size" width="150">
-        <template slot-scope="scope">
+        <template #default="scope">
           <span v-if="isPulling(scope.row)">{{ `${fileSizeUnit(scope.row.pullCompleted+scope.row.pullCompletedLayerSize)}/${fileSizeUnit(scope.row.size)}` }}</span>
           <span v-else>{{ fileSizeUnit(scope.row.size) }}</span>
         </template>
       </el-table-column>
       <el-table-column :label="$t('operate')" align="center" class-name="small-padding fixed-width" width="100">
-        <template slot-scope="scope">
+        <template #default="scope">
           <el-button
             v-if="isError(scope.row) || isEmpty(scope.row)"
-            size="mini"
-            type="text"
+            size="small"
+            link
             :icon="$legacyIcon('el-icon-delete')"
             @click="downloadModel(scope.row.name)"
             v-hasPermi="['system:ai:add']"
           >{{ $t('re-download') }}</el-button>
           <el-button
             v-if="isPulling(scope.row)==false"
-            size="mini"
-            type="text"
+            size="small"
+            link
             :icon="$legacyIcon('el-icon-delete')"
             class="red"
             @click="handleDelete(scope.row)"
@@ -97,9 +97,17 @@ import projectOptionSubKbd, { PROJECT_OPTION_KBD_SCOPE } from '@/mixins/project-
 import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
 import { checkPermi } from '@/utils/permission'
 
+import { storeToRefs } from 'pinia'
+import { useUserStore } from '@/stores/user'
+
 export default {
   name: "Ai",
   mixins: [projectOptionSubKbd],
+  setup() {
+    const userStore = useUserStore()
+    const { config: userConfig } = storeToRefs(userStore)
+    return { userConfig }
+  },
   data() {
     return {
       searchModelSet: [],
@@ -275,7 +283,7 @@ export default {
     fileSizeUnit,
     /** 获取当前项目ID */
     getProjectId() {
-      return parseInt(this.$store.state.user.config.currentProjectId);
+      return parseInt(this.userConfig.currentProjectId);
     },
     /** 保存下载的模型信息 */
     savePullModel(model) {

@@ -82,10 +82,18 @@ const TPL_KBD_SCOPE = 'statistic-template'
 const TPL_KBD_ZONE_ORDER = ['preview', 'personal', 'team']
 
 // 统计模版
+import { storeToRefs } from 'pinia'
+import { useUserStore } from '@/stores/user'
+
 export default {
   name: 'StatisticTemplate',
   components: { Cat2BugStatistic },
   mixins: [pageActionHints],
+  setup() {
+    const userStore = useUserStore()
+    const { id: userId } = storeToRefs(userStore)
+    return { userId }
+  },
   data() {
     return {
       selectTemplate: [],
@@ -97,7 +105,7 @@ export default {
   },
   computed: {
     userId() {
-      return this.$store.state.user.id
+      return this.userId
     },
     projectId() {
       return resolveCurrentProjectId(this)

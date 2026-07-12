@@ -48,7 +48,7 @@
         <el-table-column :label="$t('email')" align="center" key="email" prop="email" v-if="columns[2].visible"/>
         <el-table-column :label="$t('phone-number')" align="center" key="phoneNumber" prop="phoneNumber" v-if="columns[3].visible" width="120" />
         <el-table-column :label="$t('state')" align="center" key="status" v-if="columns[4].visible">
-          <template slot-scope="scope">
+          <template #default="scope">
             <el-switch
               v-model="scope.row.status"
               active-value="0"
@@ -58,7 +58,7 @@
           </template>
         </el-table-column>
         <el-table-column :label="$t('create-time')" align="center" prop="createTime" v-if="columns[5].visible" width="160">
-          <template slot-scope="scope">
+          <template #default="scope">
             <span>{{ parseTime(scope.row.createTime) }}</span>
           </template>
         </el-table-column>
@@ -68,21 +68,23 @@
           width="200"
           class-name="small-padding fixed-width"
         >
-          <template slot-scope="scope" v-if="scope.row.userId !== 1">
+          <template #default="scope">
+            <template v-if="scope.row.userId !== 1">
             <el-button
-              size="mini"
-              type="text"
+              size="small"
+              link
               :icon="$legacyIcon('el-icon-edit')"
               @click="handleUpdate(scope.row)"
               v-hasPermi="['system:member:edit']"
             >{{ $t('modify') }}</el-button>
             <el-button
-              size="mini"
-              type="text"
+              size="small"
+              link
               :icon="$legacyIcon('el-icon-delete')"
               @click="handleResetPwd(scope.row)"
               v-hasPermi="['system:member:resetPwd']"
             >{{ $t('reset-password') }}</el-button>
+            </template>
           </template>
         </el-table-column>
       </el-table>
@@ -90,14 +92,14 @@
       <pagination
         v-show="total>0"
         :total="total"
-        :page.sync="queryParams.pageNum"
-        :limit.sync="queryParams.pageSize"
+        v-model:page="queryParams.pageNum"
+        v-model:limit="queryParams.pageSize"
         @pagination="getList"
       />
     </el-row>
 
     <!-- 添加或修改用户配置对话框 -->
-    <el-dialog :title="title" :visible.sync="open" width="600px" append-to-body>
+    <el-dialog :title="title" v-model="open" width="600px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
         <el-row>
           <el-col :span="12">
@@ -145,10 +147,12 @@
           </el-col>
         </el-row>
       </el-form>
-      <div slot="footer" class="dialog-footer">
+      <template #footer>
+        <div class="dialog-footer">
         <el-button type="primary" @click="submitForm">{{  $t('ok') }}</el-button>
         <el-button @click="cancel">{{ $t('cancel') }}</el-button>
-      </div>
+        </div>
+      </template>
     </el-dialog>
   </div>
 </template>

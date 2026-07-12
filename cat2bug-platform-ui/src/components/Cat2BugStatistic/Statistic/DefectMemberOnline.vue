@@ -15,6 +15,7 @@ import Cat2BugCard from "../Components/Card"
 import Cat2BugAvatar from "@/components/Cat2BugAvatar";
 
 import {listMemberOfProject} from "@/api/system/project";
+import { useUserStore } from "@/stores/user";
 
 export default {
   name: "DefectMemberOnline",
@@ -57,7 +58,7 @@ export default {
   computed: {
     /** 获取项目id */
     projectId: function() {
-      return parseInt(this.$store.state.user.config.currentProjectId);
+      return parseInt(useUserStore().config.currentProjectId);
     },
   },
   created() {

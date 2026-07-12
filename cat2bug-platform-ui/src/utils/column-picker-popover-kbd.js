@@ -1,4 +1,14 @@
 /** 与缺陷列表「显示字段」共用 popper 类名（dropdown-blur-close / 主题样式已注册） */
+import {
+  closePopover,
+  findPopoverTriggerInContainer,
+  isPopoverOpen,
+  isVisiblePopperEl,
+  openPopover,
+  queryVisiblePoppersByClass,
+  resolvePopoverComponent
+} from '@/adapters/element-plus/popover-adapter'
+
 export const COLUMN_PICKER_POPPER_CLASS = 'defect-column-picker-popover'
 
 export const COLUMN_PICKER_ITEM_FOCUS_CLASS = 'defect-column-picker-item-focused'
@@ -6,52 +16,23 @@ export const COLUMN_PICKER_ITEM_FOCUS_CLASS = 'defect-column-picker-item-focused
 const CHECKBOX_SELECTOR = '.defect-column-picker .el-checkbox:not(.is-disabled)'
 
 export function resolveColumnPickerPopoverVm(el) {
-  if (!el) return null
-  const node = el.$el || el
-  if (node.classList && node.classList.contains('el-popover') && node.__vue__) {
-    const vm = node.__vue__
-    if (vm.$options && vm.$options.name === 'ElPopover') return vm
-  }
-  let vm = node.__vue__
-  while (vm) {
-    if (vm.$options && vm.$options.name === 'ElPopover') return vm
-    vm = vm.$parent
-  }
-  return null
+  return resolvePopoverComponent(el)
 }
 
 export function openColumnPickerPopover(triggerEl) {
-  const vm = resolveColumnPickerPopoverVm(triggerEl)
-  if (!vm) return false
-  if (vm.showPopper) return true
-  if (typeof vm.doShow === 'function') vm.doShow()
-  else vm.showPopper = true
-  return true
+  return openPopover(resolvePopoverComponent(triggerEl))
 }
 
 export function closeColumnPickerPopover(triggerEl) {
-  const vm = resolveColumnPickerPopoverVm(triggerEl)
-  if (!vm || !vm.showPopper) return false
-  if (typeof vm.doClose === 'function') vm.doClose()
-  else vm.showPopper = false
-  return true
+  return closePopover(resolvePopoverComponent(triggerEl))
 }
 
 export function isColumnPickerPopoverOpen(triggerEl) {
-  const vm = resolveColumnPickerPopoverVm(triggerEl)
-  return !!(vm && vm.showPopper)
+  return isPopoverOpen(resolvePopoverComponent(triggerEl))
 }
 
 export function findColumnPickerTriggerInToolbar(toolbarEl, focusedEl) {
-  const target = focusedEl || document.activeElement
-  if (!toolbarEl || !target || !toolbarEl.contains(target)) return null
-  const host = target.closest('.el-popover__reference') ||
-    target.closest('.el-popover__reference-wrapper') ||
-    (target.matches && target.matches('button') ? target : null)
-  if (!host || !toolbarEl.contains(host)) return null
-  const trigger = host.matches('button') ? host : host.querySelector('button')
-  if (!trigger || !resolveColumnPickerPopoverVm(trigger)) return null
-  return trigger
+  return findPopoverTriggerInContainer(toolbarEl, focusedEl)
 }
 
 export function openColumnPickerFromToolbarFocus(toolbarEl, focusedEl) {
@@ -71,21 +52,12 @@ export function isColumnPickerOpenInToolbar(toolbarEl) {
 }
 
 export function isVisibleColumnPickerPopper(el) {
-  if (!el || !el.getBoundingClientRect) return false
-  if (el.getAttribute('aria-hidden') === 'true') return false
-  const style = window.getComputedStyle(el)
-  if (style.display === 'none' || style.visibility === 'hidden') return false
-  const rect = el.getBoundingClientRect()
-  return rect.width > 0 && rect.height > 0
+  return isVisiblePopperEl(el)
 }
 
 /** 当前可见的「显示字段」浮层（同时仅应有一个） */
 export function getVisibleColumnPickerPopperEl() {
-  const nodes = document.querySelectorAll(`.${COLUMN_PICKER_POPPER_CLASS}`)
-  for (let i = 0; i < nodes.length; i++) {
-    if (isVisibleColumnPickerPopper(nodes[i])) return nodes[i]
-  }
-  return null
+  return queryVisiblePoppersByClass(COLUMN_PICKER_POPPER_CLASS)[0] || null
 }
 
 export function getColumnPickerCheckboxEls(popperEl) {

@@ -7,7 +7,7 @@
 #
 # 覆盖:
 #   - GET / 返回 HTML
-#   - GET /static/js/*.js 至少一个 200
+#   - GET /static/js/*.js（Vue2）或 /static/index-*.js（Vite）至少一个 200
 #   - GET /login（Accept: text/html）SPA fallback HTML
 # POST /login API 由 native-api-smoke.sh 覆盖
 set -euo pipefail
@@ -30,20 +30,31 @@ else
   log_fail "GET / returns HTML" "code=$code body=${body:0:120}"
 fi
 
-# 从 index.html 解析 static/js/*.js
+# 从 index.html 解析主 bundle：Vue2 static/js/*.js 或 Vite static/*.js
 js_path=""
 if echo "$body" | rg -q 'static/js/[^"'\'' ]+\.js'; then
   js_path=$(echo "$body" | rg -o 'static/js/[^"'\'' ]+\.js' | head -1)
+elif echo "$body" | rg -q 'static/[^"'\'' ]+\.js'; then
+  js_path=$(echo "$body" | rg -o 'static/[^"'\'' ]+\.js' | head -1)
 fi
 if [[ -z "$js_path" ]]; then
-  # 回退：探测常见 chunk 命名
-  for guess in static/js/app.js static/js/chunk-vendors.js; do
+  # 回退：探测常见 chunk 命名（Vue2 webpack / Vite embedded）
+  for guess in static/js/app.js static/js/chunk-vendors.js static/index.js; do
     c=$(curl -sS -o /dev/null -w '%{http_code}' "$BASE/$guess" || echo 000)
     if [[ "$c" == "200" ]]; then
       js_path="$guess"
       break
     fi
   done
+  if [[ -z "$js_path" ]]; then
+    vite_guess=$(curl -sS "$BASE/index.html" 2>/dev/null | rg -o 'static/index-[^"'\'' ]+\.js' | head -1 || true)
+    if [[ -n "$vite_guess" ]]; then
+      c=$(curl -sS -o /dev/null -w '%{http_code}' "$BASE/$vite_guess" || echo 000)
+      if [[ "$c" == "200" ]]; then
+        js_path="$vite_guess"
+      fi
+    fi
+  fi
 fi
 if [[ -n "$js_path" ]]; then
   js_code=$(curl -sS -o /dev/null -w '%{http_code}' "$BASE/$js_path" || echo 000)
@@ -53,7 +64,7 @@ if [[ -n "$js_path" ]]; then
     log_fail "GET /$js_path" "code=$js_code"
   fi
 else
-  log_fail "GET /static/js/*.js" "no js path found in index.html"
+  log_fail "GET /static/*.js" "no js path found in index.html"
 fi
 
 # SPA fallback: /login with Accept: text/html

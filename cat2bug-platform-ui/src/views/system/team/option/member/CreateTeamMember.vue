@@ -1,5 +1,5 @@
 <template>
-  <el-dialog :title="$t('member.create')" :visible.sync="dialogVisible" width="800px" append-to-body :close-on-click-modal="false" custom-class="cat2bug-form-shortcut-dialog team-create-member-dialog" :close-on-press-escape="false" :before-close="onToolDialogBeforeClose" @opened="onToolDialogOpened">
+  <el-dialog :title="$t('member.create')" v-model="dialogVisible" width="800px" append-to-body :close-on-click-modal="false" custom-class="cat2bug-form-shortcut-dialog team-create-member-dialog" :close-on-press-escape="false" :before-close="onToolDialogBeforeClose" @opened="onToolDialogOpened">
     <el-form ref="form" :model="form" :rules="rules" label-width="120px">
       <el-row>
         <el-col :span="12">
@@ -71,19 +71,21 @@
                       :placeholder="$t('enter-content')"
                       maxlength="500"
                       show-word-limit
-                      rows="5"
+                      :rows="5"
             ></el-input>
           </el-form-item>
         </el-col>
       </el-row>
     </el-form>
-    <div slot="footer" class="dialog-footer">
+    <template #footer>
+      <div class="dialog-footer">
       <el-button class="defect-kbd-hint-host" type="primary" @click="submitForm">
         {{$t('submit')}}
         <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
       </el-button>
       <el-button @click="requestCloseToolDialog">{{$t('cancel')}}</el-button>
-    </div>
+      </div>
+    </template>
   </el-dialog>
 </template>
 
@@ -92,11 +94,18 @@ import {addMember, addTeam, getMemberByTeam, listTeamRole, updateTeam} from "@/a
 import {getUser} from "@/api/system/user";
 import { optionalPhoneRule, optionalEmailRule, normalizeContactFields } from "@/utils/user-contact-rules";
 import defectToolDialogKbd from '@/mixins/defect-tool-dialog-kbd'
+import { storeToRefs } from 'pinia';
+import { useUserStore } from '@/stores/user'
 
 export default {
   name: "CreateTeamMember",
   mixins: [defectToolDialogKbd],
   dicts: ['sys_normal_disable', 'sys_user_sex'],
+  setup() {
+    const userStore = useUserStore()
+    const { config } = storeToRefs(userStore)
+    return { config }
+  },
   data() {
     return {
       // 遮罩层
@@ -133,7 +142,7 @@ export default {
   computed: {
     /** 获取团队id */
     teamId() {
-      return this.$store.state.user.config.currentTeamId;
+      return this.config.currentTeamId;
     }
   },
   created() {
@@ -163,7 +172,7 @@ export default {
         if (valid) {
           const payload = { ...this.form };
           normalizeContactFields(payload);
-          addMember(this.$store.state.user.config.currentTeamId, payload).then(res => {
+          addMember(this.teamId, payload).then(res => {
             this.$modal.msgSuccess("新增成功");
             this.doCloseToolDialog();
             this.$emit("create",res);

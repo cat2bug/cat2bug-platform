@@ -36,6 +36,7 @@ import {
   safeResizeChart,
   safeSetOption
 } from '../utils/echarts-resize'
+import { useUserStore } from '@/stores/user'
 
 const OPEN_DEFECT_STATE_IDS = [0, 1, 3]
 
@@ -63,10 +64,10 @@ export default {
   },
   computed: {
     currentProjectId() {
-      return parseInt(this.$store.state.user.config.currentProjectId)
+      return parseInt(useUserStore().config.currentProjectId)
     },
     currentUserId() {
-      return parseInt(this.$store.state.user.id)
+      return parseInt(useUserStore().id)
     },
     isEmpty() {
       return (this.workload.total || 0) <= 0

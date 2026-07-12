@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-dialog :title="$t('mk.add-image')" :visible.sync="dialogFormVisible" append-to-body width="500px">
+    <el-dialog :title="$t('mk.add-image')" v-model="dialogFormVisible" append-to-body width="500px">
       <el-form :model="form">
         <el-form-item :label="$t('mk.image-describe')" label-width="120">
           <el-input v-model="form.describe" autocomplete="off" maxlength="255"></el-input>
@@ -9,10 +9,12 @@
           <el-input v-model="form.url" autocomplete="off" maxlength="255"></el-input>
         </el-form-item>
       </el-form>
-      <div slot="footer" class="dialog-footer">
+      <template #footer>
+      <div class="dialog-footer">
         <el-button @click="dialogFormVisible = false">{{$t('cancel')}}</el-button>
         <el-button type="primary" @click="toolHandle">{{$t('ok')}}</el-button>
       </div>
+      </template>
     </el-dialog>
   </div>
 </template>

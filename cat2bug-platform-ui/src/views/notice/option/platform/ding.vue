@@ -88,12 +88,16 @@
 
 <script>
 import {groupTestDingNotice, singleTestDingNotice} from "@/api/im/ding";
+import { storeToRefs } from "pinia";
+import { useUserStore } from "@/stores/user";
 
 export default {
+  emits: ['update:ding'],
   name: "DingDingNoticePlatform",
-  model: {
-    prop: 'ding',
-    event: 'change'
+  setup() {
+    const userStore = useUserStore()
+    const { id, config, phoneNumber } = storeToRefs(userStore)
+    return { id, config, phoneNumber }
   },
   data() {
     return {
@@ -127,8 +131,8 @@ export default {
           singleSwitch: n.singleSwitch !== undefined ? n.singleSwitch : !!(n.switch && n.mobile),
           groupSwitch: n.groupSwitch !== undefined ? n.groupSwitch : !!(n.switch && n.hook)
         };
-        if (!this.form.mobile && !this.autoFilledMobile && this.$store.state.user.phoneNumber) {
-          this.form.mobile = this.$store.state.user.phoneNumber;
+        if (!this.form.mobile && !this.autoFilledMobile && this.phoneNumber) {
+          this.form.mobile = this.phoneNumber;
           this.autoFilledMobile = true;
           this.handleChange();
         }
@@ -159,8 +163,8 @@ export default {
       singleSwitch: this.form.singleSwitch !== undefined ? this.form.singleSwitch : !!(this.form.switch && this.form.mobile),
       groupSwitch: this.form.groupSwitch !== undefined ? this.form.groupSwitch : !!(this.form.switch && this.form.hook)
     };
-    if (!this.form.mobile && !this.autoFilledMobile && this.$store.state.user.phoneNumber) {
-      this.form.mobile = this.$store.state.user.phoneNumber;
+    if (!this.form.mobile && !this.autoFilledMobile && this.phoneNumber) {
+      this.form.mobile = this.phoneNumber;
       this.autoFilledMobile = true;
       this.handleChange();
     }
@@ -172,7 +176,7 @@ export default {
           this.$refs['form'].clearValidate();
         }
       });
-      this.$emit('change', this.form);
+      this.$emit('update:ding', this.form);
     },
     handleMobileInput() {
       if (!this.form.mobile) {
@@ -197,8 +201,8 @@ export default {
       }
       this.mobileTestLoading = true;
       const testData = {
-        projectId: this.$store.state.user.config.currentProjectId,
-        memberId: this.$store.state.user.id,
+        projectId: this.config.currentProjectId,
+        memberId: this.id,
         config: {
           singleSwitch: this.form.singleSwitch,
           groupSwitch: this.form.groupSwitch,
@@ -227,8 +231,8 @@ export default {
       }
       this.groupTestLoading = true;
       const testData = {
-        projectId: this.$store.state.user.config.currentProjectId,
-        memberId: this.$store.state.user.id,
+        projectId: this.config.currentProjectId,
+        memberId: this.id,
         config: {
           singleSwitch: this.form.singleSwitch,
           groupSwitch: this.form.groupSwitch,

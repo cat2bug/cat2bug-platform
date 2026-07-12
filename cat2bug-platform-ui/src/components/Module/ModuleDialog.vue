@@ -2,12 +2,15 @@
   <el-dialog :title="title" v-model="visible" width="600px" append-to-body :close-on-press-escape="false" :before-close="onToolDialogBeforeClose" @opened="onToolDialogOpened">
     <el-form ref="form" :model="form" :rules="rules" label-width="150px" class="module-dialog-form">
       <el-form-item :label="$t('module.parent-module')" prop="modulePid">
-          <treeselect
+          <el-tree-select
             v-model="form.modulePid"
-            :options="moduleOptions"
-            :normalizer="normalizer"
-            :searchable="false"
+            :data="moduleOptions"
+            :props="{ value: 'moduleId', label: 'moduleName', children: 'children' }"
+            value-key="moduleId"
+            check-strictly
+            :render-after-expand="false"
             :placeholder="$t('module.please-select-parent-module')"
+            style="width: 100%"
           />
       </el-form-item>
       <el-form-item :prop="moduleNameFormProp" class="module-name-row cat2bug-field-hint-exclude is-no-asterisk">
@@ -70,15 +73,13 @@
 
 <script>
 import {addModule, getModule, listModule, updateModule} from "@/api/system/module";
-import Treeselect from "@riophae/vue-treeselect";
-import "@riophae/vue-treeselect/dist/vue-treeselect.css";
 import Label from "@/components/Cat2BugStatistic/Components/Label";
 import {strFormat} from "@/utils";
 import defectToolDialogKbd from '@/mixins/defect-tool-dialog-kbd'
 export default {
   name: "ModuleDialog",
   mixins: [defectToolDialogKbd],
-  components: {Label, Treeselect},
+  components: {Label},
   data() {
     return {
       // 添加模型的模式（true=单个添加；false=多个添加）
@@ -214,6 +215,18 @@ export default {
         }
       })
     },
+    /** 清理空 children，供 el-tree-select 使用 */
+    pruneEmptyChildren(nodes) {
+      if (!Array.isArray(nodes)) return nodes;
+      nodes.forEach((node) => {
+        if (node.children && !node.children.length) {
+          delete node.children;
+        } else if (node.children) {
+          this.pruneEmptyChildren(node.children);
+        }
+      });
+      return nodes;
+    },
     open(moduleId, modulePid) {
       this.getTreeselect();
       this.reset();
@@ -229,17 +242,6 @@ export default {
         this.visible = true;
       }
     },
-    /** 转换模块数据结构 */
-    normalizer(node) {
-      if (node.children && !node.children.length) {
-        delete node.children;
-      }
-      return {
-        id: node.moduleId,
-        label: node.moduleName,
-        children: node.children
-      };
-    },
     /** 查询模块下拉树结构 */
     getTreeselect() {
       let params = {
@@ -248,7 +250,7 @@ export default {
       listModule(params).then(response => {
         this.moduleOptions = [];
         const data = { moduleId: 0, moduleName: this.$i18n.t('module.root-node'), children: [] };
-        data.children = this.handleTree(response.data, "moduleId", "modulePid");
+        data.children = this.pruneEmptyChildren(this.handleTree(response.data, "moduleId", "modulePid"));
         this.moduleOptions.push(data);
       });
     },

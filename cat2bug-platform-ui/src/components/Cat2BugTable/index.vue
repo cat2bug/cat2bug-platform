@@ -13,9 +13,9 @@
               @selection-change="handleSelectionChange"
               @sort-change="sortChangeHandle"
               @row-click="handleClickTableRow"
-              @mousedown.native="e => $emit('native-mousedown', e)"
-              @mouseup.native="e => $emit('native-mouseup', e)"
-              @mousemove.native="e => $emit('native-mousemove', e)">
+              @mousedown="e => $emit('native-mousedown', e)"
+              @mouseup="e => $emit('native-mouseup', e)"
+              @mousemove="e => $emit('native-mousemove', e)">
       <slot name="prepend"></slot>
       <el-table-column v-for="(col, colIndex) in showTableFieldList"
                        :label="columnHeaderLabel(col)"
@@ -661,8 +661,10 @@ export default {
       return null;
     },
     columnHeaderLabel(col) {
-      if (col.label !== undefined && col.label !== null) return col.label;
-      return this.$t(col.key);
+      if (col.label !== undefined && col.label !== null && col.label !== '') return col.label;
+      if (col.key) return this.$t(col.key);
+      if (col.prop) return String(col.prop);
+      return '';
     },
     columnRowKey(col, colIndex) {
       return (col.key || col.prop) + '_' + colIndex;
@@ -1591,8 +1593,8 @@ export default {
         col.minWidth = this.operateColumnMinWidth;
         col.realWidth = cap;
       });
-      this._lastOperateWidth = capPx;
-      this.applyOperateColumnDomWidth(capPx);
+      this._lastOperateWidth = cap;
+      this.applyOperateColumnDomWidth(cap);
       this.syncFixedDataRowHeights();
       return true;
     },

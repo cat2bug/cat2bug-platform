@@ -26,6 +26,9 @@ import Cat2BugAvatar from "@/components/Cat2BugAvatar";
 import {actionList} from "@/api/system/dashboard";
 import {strFormat} from "@/utils";
 
+import { storeToRefs } from 'pinia'
+import { useUserStore } from '@/stores/user'
+
 export default {
   name: "ActionList",
   components: { Cat2BugText, Cat2BugAvatar },
@@ -39,6 +42,11 @@ export default {
       default: '100px'
     },
   },
+  setup() {
+    const userStore = useUserStore()
+    const { config: userConfig } = storeToRefs(userStore)
+    return { userConfig }
+  },
   data() {
     return {
       loading: false,
@@ -51,7 +59,7 @@ export default {
   computed: {
     /** 获取项目id */
     projectId() {
-      return parseInt(this.$store.state.user.config.currentProjectId);
+      return parseInt(this.userConfig.currentProjectId);
     },
     formatDate: function () {
       return function (time) {

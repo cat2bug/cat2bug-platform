@@ -2,7 +2,7 @@
   <el-drawer
     size="50%"
     class="plan-drawer-accent"
-    :visible.sync="visible"
+    v-model="visible"
     direction="rtl"
     :append-to-body="appendToBody"
     :before-close="closeDefectDrawer"
@@ -12,7 +12,7 @@
         <div class="case-add-title">
           <legacy-icon icon="el-icon-arrow-left" @click="cancel"></legacy-icon>
           <focus-member-list
-            v-model="form.focusList"
+            v-model:members="form.focusList"
             module-name="case"
             :data-id="form.caseId"
             :tooltip="false"
@@ -20,10 +20,10 @@
           <h3>{{title}}</h3>
         </div>
         <div class="tools-row">
-          <el-button v-if="!isAddMode"@click="prevCase" type="text" :icon="$legacyIcon('el-icon-arrow-left')" size="mini"></el-button>
-          <el-button v-if="!isAddMode"@click="nextCase" type="text" :icon="$legacyIcon('el-icon-arrow-right')" size="mini"></el-button>
-          <el-button @click="cancel" :icon="$legacyIcon('el-icon-close')" :class="isAddMode?'':'green-button'" size="mini">{{$t('close')}}</el-button>
-          <plan-item-tools v-model="planItem" :plan="plan" type="primary" :project-id="projectId" @change="handlePlanItemChange" />
+          <el-button v-if="!isAddMode"@click="prevCase" link :icon="$legacyIcon('el-icon-arrow-left')" size="small"></el-button>
+          <el-button v-if="!isAddMode"@click="nextCase" link :icon="$legacyIcon('el-icon-arrow-right')" size="small"></el-button>
+          <el-button @click="cancel" :icon="$legacyIcon('el-icon-close')" :class="isAddMode?'':'green-button'" size="small">{{$t('close')}}</el-button>
+          <plan-item-tools v-model:planItem="planItem" :plan="plan" type="primary" :project-id="projectId" @change="handlePlanItemChange" />
         </div>
       </div>
     </template>
@@ -41,12 +41,12 @@
         <el-row>
           <el-col :span="12">
             <el-form-item :label="$t('module')" prop="moduleId">
-              <select-module ref="selectModule" size="medium" v-model="form.moduleId" :project-id="projectId" readonly />
+              <select-module ref="selectModule" size="medium" v-model:moduleId="form.moduleId" :project-id="projectId" readonly />
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item :label="$t('level')" prop="caseLevel">
-              <cat2-bug-select-level v-model="form.caseLevel" readonly />
+              <cat2-bug-select-level v-model:level="form.caseLevel" readonly />
             </el-form-item>
           </el-col>
         </el-row>
@@ -92,15 +92,19 @@ import Label from "@/components/Cat2BugStatistic/Components/Label";
 import FocusMemberList from "@/components/FocusMemberList";
 import PlanItemTools from "@/components/Plan/PlanItemTools";
 import CaseStep from "@/components/Case/CaseStep";
-import {getNextPlanItem, getPrevPlanItem, getPrevPlanItemId} from "@/api/system/PlanItem";
+import {getNextPlanItem, getPrevPlanItem} from "@/api/system/PlanItem";
+import { storeToRefs } from "pinia";
+import { useUserStore } from "@/stores/user";
 const CASE_STEP_PANEL_TYPE_CACHE_KEY = 'case-step-panel-type';
 
 export default {
+  emits: ['update:planItem'],
   name: "HandleCaseOfPlan",
   components: {Label,CaseStepPanel,SelectModule,Cat2BugSelectLevel,FocusMemberList,PlanItemTools,CaseStep},
-  model: {
-    prop: 'planItem',
-    event: 'change'
+  setup() {
+    const userStore = useUserStore()
+    const { id, config } = storeToRefs(userStore)
+    return { id, config }
   },
   data() {
     return {
@@ -157,11 +161,11 @@ export default {
   computed: {
     /** 获取当前用户id */
     userId: function () {
-      return this.$store.state.user.id;
+      return this.id;
     },
     /** 获取项目id */
     projectId: function() {
-      return parseInt(this.$store.state.user.config.currentProjectId);
+      return parseInt(this.config.currentProjectId);
     },
     /** 是否是添加模式 */
     isAddMode: function (){
@@ -326,7 +330,7 @@ export default {
       if(state==='pass' && this.jumpNextCase) {
         this.nextCase();
       }
-      this.$emit('change');
+      this.$emit('update:planItem');
     }
   }
 }

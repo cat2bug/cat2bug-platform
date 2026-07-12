@@ -20,12 +20,16 @@
 </template>
 
 <script>
-import {myListTeam} from "@/api/system/team";
-import {updateConfig} from "@/api/system/user-config";
-import store from "@/store";
+import { storeToRefs } from "pinia";
+import { useUserStore } from "@/stores/user";
 
 export default {
   name: "ProjectLockError",
+  setup() {
+    const userStore = useUserStore()
+    const { config } = storeToRefs(userStore)
+    return { config }
+  },
   data() {
     return {
       teamList:[],
@@ -33,7 +37,7 @@ export default {
   },
   computed: {
     lockRemark() {
-      return this.$store.state.user.config.currentProjectLockRemark;
+      return this.config.currentProjectLockRemark;
     },
     iconUrl: function (){
       return function (team){
@@ -41,7 +45,7 @@ export default {
       }
     },
     teamId() {
-      return this.$store.state.user.config.currentTeamId;
+      return this.config.currentTeamId;
     },
   },
   methods: {

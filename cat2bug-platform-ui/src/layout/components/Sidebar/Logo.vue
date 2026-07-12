@@ -14,8 +14,10 @@
 </template>
 
 <script>
+import { storeToRefs } from 'pinia'
 import logoImg from '@/assets/logo/logo.png'
 import variables from '@/assets/styles/variables.js'
+import { useSettingsStore } from '@/stores/settings'
 
 export default {
   name: 'SidebarLogo',
@@ -25,15 +27,17 @@ export default {
       required: true
     }
   },
+  setup() {
+    const settingsStore = useSettingsStore()
+    const { sideTheme, themeMode } = storeToRefs(settingsStore)
+    return {
+      sideTheme,
+      themeMode
+    }
+  },
   computed: {
     variables() {
       return variables;
-    },
-    sideTheme() {
-      return this.$store.state.settings.sideTheme
-    },
-    themeMode() {
-      return this.$store.state.settings.themeMode
     },
     logoBackgroundColor() {
       if (this.themeMode === 'dark') {

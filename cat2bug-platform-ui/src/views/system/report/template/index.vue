@@ -6,7 +6,7 @@
     </el-row>
     <div class="row">
       <div class="template" v-for="(t, index) in templateList" :key="index" @click="goReportTemplateView(t.templateId)">
-        <el-image fit="contain" :src="iconUrl(t)" />
+        <cat2-bug-image fit="contain" :src="iconUrl(t)" />
         <span>{{ t.templateTitle }}</span>
       </div>
       <div class="add" @click="addReportTemplate">
@@ -20,9 +20,20 @@
 <script>
 
 import {addReportTemplate, listReportTemplate} from "@/api/system/ReportTemplate";
+import Cat2BugImage from '@/components/Cat2BugImage'
+import emptyImg from '@/assets/images/empty.png'
+import { resolveUploadUrl } from '@/utils/upload-asset'
+import { storeToRefs } from 'pinia';
+import { useUserStore } from '@/stores/user'
 
 export default {
   name: "ReportTemplate",
+  components: { Cat2BugImage },
+  setup() {
+    const userStore = useUserStore()
+    const { config } = storeToRefs(userStore)
+    return { config }
+  },
   data() {
     return {
       templateList: [],
@@ -39,11 +50,14 @@ export default {
   computed: {
     iconUrl() {
       return function (template) {
-        return process.env.VUE_APP_BASE_API + template.templateIconUrl;
+        if (template && template.templateIconUrl) {
+          return resolveUploadUrl(template.templateIconUrl, process.env.VUE_APP_BASE_API);
+        }
+        return emptyImg;
       }
     },
     projectId() {
-      return this.$store.state.user.config.currentProjectId
+      return this.config.currentProjectId
     },
   },
   created() {
@@ -110,6 +124,7 @@ export default {
   }
 }
 .template {
+  .cat2-bug-image,
   .el-image {
     width: 100%;
     border-radius: 5px;

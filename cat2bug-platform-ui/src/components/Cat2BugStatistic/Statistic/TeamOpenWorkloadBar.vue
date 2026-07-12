@@ -38,8 +38,11 @@
 <script>
 import Cat2BugCard from '../Components/Card'
 import { statisticOpenWorkload } from '@/api/system/statistic/defect'
+import { pinia } from '@/store/pinia.js'
+import { useUserStore } from '@/stores/user'
 
 const OPEN_DEFECT_STATE_IDS = [0, 1, 3]
+const userStore = useUserStore(pinia)
 
 export default {
   name: 'TeamOpenWorkloadBar',
@@ -63,7 +66,7 @@ export default {
   },
   computed: {
     currentProjectId() {
-      return parseInt(this.$store.state.user.config.currentProjectId)
+      return parseInt(userStore.config.currentProjectId)
     },
     isEmpty() {
       return this.total === 0

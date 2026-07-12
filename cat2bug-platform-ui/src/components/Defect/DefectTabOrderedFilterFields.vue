@@ -15,7 +15,7 @@
           <el-option
             v-for="type in defectTypes"
             :key="type.key || type.value"
-            :label="$i18n.t(type.value)"
+            :label="type.value ? $i18n.t(type.value) : $t('defect.all-type')"
             :value="type.value"
           />
         </el-select>
@@ -48,7 +48,7 @@
         prop="handleBy"
       >
         <select-project-member
-          v-model="config.handleBy"
+          v-model:memberId="config.handleBy"
           :project-id="projectId"
           :placeholder="$t('defect.select-handle-by').toString()"
           :is-head="false"
@@ -77,7 +77,7 @@
         prop="moduleId"
       >
         <select-module
-          v-model="config.moduleId"
+          v-model:moduleId="config.moduleId"
           :project-id="projectId"
           :is-edit="false"
           size="medium"
@@ -91,7 +91,7 @@
         prop="caseId"
       >
         <select-case
-          v-model="config.caseId"
+          v-model:caseId="config.caseId"
           :module-id="config.moduleId"
         />
       </el-form-item>
@@ -112,7 +112,7 @@
           <el-option
             v-for="state in defectStatesOptions"
             :key="state.key"
-            :label="$i18n.t(state.value)"
+            :label="state.value ? $i18n.t(state.value) : String(state.key)"
             :value="state.key"
           />
         </el-select>
@@ -125,7 +125,7 @@
         prop="createByIds"
       >
         <select-project-member
-          v-model="config.createByIds"
+          v-model:memberId="config.createByIds"
           :project-id="projectId"
           :placeholder="$t('defect.select-create-by').toString()"
           :is-head="false"

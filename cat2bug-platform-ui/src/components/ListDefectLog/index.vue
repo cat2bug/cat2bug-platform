@@ -14,7 +14,7 @@
       <el-col class="list-defect-log-row" :span="24">
         <component :is="logComponentType(log)" :log="log"></component>
         <div>
-          <el-button v-if="commentPermi" :icon="$legacyIcon('el-icon-chat-line-round')" size="mini" type="text" @click="showCommentInputHandle(log,logIndex)">{{$i18n.t('comment')}}</el-button>
+          <el-button v-if="commentPermi" :icon="$legacyIcon('el-icon-chat-line-round')" size="small" link @click="showCommentInputHandle(log,logIndex)">{{$i18n.t('comment')}}</el-button>
           <span class="time">{{ parseTime(log.createTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
         </div>
       </el-col>

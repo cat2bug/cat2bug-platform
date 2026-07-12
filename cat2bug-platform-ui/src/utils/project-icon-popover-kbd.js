@@ -3,6 +3,12 @@
  */
 
 import {
+  closePopover,
+  isPopoverOpen,
+  isVisiblePopperEl,
+  queryVisiblePoppersByClass
+} from '@/adapters/element-plus/popover-adapter'
+import {
   isOnFirstRow,
   moveStatisticGridIndex
 } from '@/utils/statistic-grid-kbd'
@@ -43,14 +49,6 @@ function directionFromKey(key) {
   return null
 }
 
-function isVisibleEl(el) {
-  if (!el || !el.getBoundingClientRect) return false
-  const style = window.getComputedStyle(el)
-  if (style.display === 'none' || style.visibility === 'hidden') return false
-  const rect = el.getBoundingClientRect()
-  return rect.width > 0 || rect.height > 0
-}
-
 function isEditableFocus() {
   const el = document.activeElement
   if (!el || el === document.body) return false
@@ -61,11 +59,7 @@ function isEditableFocus() {
 
 /** DOM 中是否存在可见的项目封面 popover（teleport 到 body） */
 export function isAnyProjectIconPopoverOpenInDom() {
-  const nodes = document.querySelectorAll(`.el-popover.${PROJECT_ICON_POPPER_CLASS}`)
-  for (let i = 0; i < nodes.length; i++) {
-    if (isVisibleEl(nodes[i])) return true
-  }
-  return false
+  return queryVisiblePoppersByClass(PROJECT_ICON_POPPER_CLASS).length > 0
 }
 
 export function getProjectIconPopoverVm(vm) {
@@ -75,21 +69,19 @@ export function getProjectIconPopoverVm(vm) {
 export function getProjectIconPopperEl(vm) {
   const pop = getProjectIconPopoverVm(vm)
   if (pop) {
-    const el = pop.popperElm || (pop.$refs && pop.$refs.popper) || null
-    if (el && isVisibleEl(el)) return el
+    const popperRef = pop.popperRef
+    const popperFromRef = popperRef && (popperRef.value || popperRef)
+    const el = popperFromRef || pop.popperElm || (pop.$refs && pop.$refs.popper) || null
+    if (el && isVisiblePopperEl(el)) return el
   }
-  const nodes = document.querySelectorAll(`.el-popover.${PROJECT_ICON_POPPER_CLASS}`)
-  for (let i = nodes.length - 1; i >= 0; i--) {
-    if (isVisibleEl(nodes[i])) return nodes[i]
-  }
-  return null
+  const visible = queryVisiblePoppersByClass(PROJECT_ICON_POPPER_CLASS)
+  return visible.length ? visible[visible.length - 1] : null
 }
 
 export function isProjectIconPopoverVisible(vm) {
   if (isAnyProjectIconPopoverOpenInDom()) return true
   if (vm && vm.projectIconPopperVisible === true) return true
-  const pop = getProjectIconPopoverVm(vm)
-  return !!(pop && pop.showPopper)
+  return isPopoverOpen(getProjectIconPopoverVm(vm))
 }
 
 function linkVmToHost(vm) {
@@ -140,7 +132,7 @@ function bumpGlobalKeydownHandler() {
 
 export function getProjectIconPopoverItems(popperEl) {
   if (!popperEl || !popperEl.querySelectorAll) return []
-  return Array.from(popperEl.querySelectorAll('.project-icon-item')).filter(isVisibleEl)
+  return Array.from(popperEl.querySelectorAll('.project-icon-item')).filter(isVisiblePopperEl)
 }
 
 export function focusProjectIconTrigger(vm) {
@@ -213,14 +205,7 @@ export function openProjectIconPopover(vm, options = {}) {
 }
 
 export function closeProjectIconPopover(vm) {
-  const pop = getProjectIconPopoverVm(vm)
-  if (pop) {
-    if (typeof pop.doClose === 'function') {
-      pop.doClose()
-    } else {
-      pop.showPopper = false
-    }
-  }
+  closePopover(getProjectIconPopoverVm(vm))
   vm.projectIconPopperVisible = false
   clearProjectIconPopoverFocus(vm)
   const rec = bindings.get(vm)

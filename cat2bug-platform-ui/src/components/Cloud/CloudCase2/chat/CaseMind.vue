@@ -34,7 +34,7 @@
 <script>
 import { makeCaseMind } from "@/api/ai/AiCase2";
 import Label from "@/components/Cat2BugStatistic/Components/Label";
-import {Loading} from "element-ui";
+import { ElLoading } from 'element-plus'
 
 export default {
   name: "CaseMind",
@@ -55,7 +55,7 @@ export default {
   },
   methods: {
     getMindList(data) {
-      const loadingInstance = Loading.service({
+      const loadingInstance = ElLoading.service({
         target: this.$refs.caseMind,
         text: '思维导图分析中,请耐心等待...',
         fullscreen: false,

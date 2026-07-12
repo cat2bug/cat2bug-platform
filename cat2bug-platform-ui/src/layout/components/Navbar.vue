@@ -59,7 +59,7 @@
 </template>
 
 <script>
-import { mapState } from 'pinia'
+import { storeToRefs } from 'pinia'
 import { useAppStore } from '@/stores/app'
 import { useUserStore } from '@/stores/user'
 import { useSettingsStore } from '@/stores/settings'
@@ -112,10 +112,25 @@ export default {
       noticeSound: null
     }
   },
+  setup() {
+    const appStore = useAppStore()
+    const userStore = useUserStore()
+    const settingsStore = useSettingsStore()
+    const { sidebar, device } = storeToRefs(appStore)
+    const { avatar, name } = storeToRefs(userStore)
+    const { themeMode, topNav, showSettings } = storeToRefs(settingsStore)
+    return {
+      sidebar,
+      device,
+      avatar,
+      name,
+      themeMode,
+      topNav,
+      showSettings,
+      settingsStore
+    }
+  },
   computed: {
-    ...mapState(useAppStore, ['sidebar', 'device']),
-    ...mapState(useUserStore, ['avatar', 'name']),
-    ...mapState(useSettingsStore, ['themeMode', 'topNav', 'showSettings']),
     member: {
       get() {
         return {
@@ -126,10 +141,10 @@ export default {
     },
     setting: {
       get() {
-        return useSettingsStore().showSettings
+        return this.showSettings
       },
       set(val) {
-        useSettingsStore().changeSetting({
+        this.settingsStore.changeSetting({
           key: 'showSettings',
           value: val
         })

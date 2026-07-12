@@ -10,11 +10,11 @@
       <el-input v-model="user.confirmPassword" :placeholder="$t('member.please-enter-new-password')" type="password" show-password maxlength="20" minlength="6" />
     </el-form-item>
     <el-form-item>
-      <el-button class="defect-kbd-hint-host" type="primary" size="mini" @click="submit">
+      <el-button class="defect-kbd-hint-host" type="primary" size="small" @click="submit">
         {{ $t('save') }}
         <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
       </el-button>
-      <el-button type="danger" size="mini" @click="close">{{ $t('close') }}</el-button>
+      <el-button type="danger" size="small" @click="close">{{ $t('close') }}</el-button>
     </el-form-item>
   </el-form>
 </template>

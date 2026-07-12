@@ -12,7 +12,7 @@
             <el-checkbox :label="$t('notice.system.bgm-enable')" v-model="form.backgroundMusic" @change="handleChange" :disabled="!form.switch"></el-checkbox>
           </span>
           <span class="notice-option-asystem-bgm-select cat2bug-field-hint-host-inline">
-            <el-select v-model="form.backgroundMusicUrl" size="mini" placeholder="请选择" :disabled="!form.switch || !form.backgroundMusic">
+            <el-select v-model="form.backgroundMusicUrl" size="small" placeholder="请选择" :disabled="!form.switch || !form.backgroundMusic">
               <el-option
                 v-for="item in backgroundMusicOptions"
                 :key="item.value"
@@ -34,11 +34,8 @@
 
 <script>
 export default {
+  emits: ['update:system'],
   name: "SystemNoticePlatform",
-  model: {
-    prop: 'system',
-    event: 'change'
-  },
   data() {
     return {
       form: this.system,
@@ -81,7 +78,7 @@ export default {
   methods: {
     /** 操作改变 */
     handleChange() {
-      this.$emit('change', this.form);
+      this.$emit('update:system', this.form);
     },
     /** 处理系统开关改变的操作 */
     handleSwitchChange() {

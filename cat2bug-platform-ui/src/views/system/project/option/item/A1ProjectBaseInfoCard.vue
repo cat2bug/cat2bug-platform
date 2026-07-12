@@ -1,13 +1,15 @@
 <template>
   <el-col v-if="cardVisible" :span="6">
     <el-card class="box-card">
-      <div slot="header" class="clearfix">
-        <legacy-icon icon="el-icon-s-flag"></legacy-icon>
-        <div>
-          <span>{{$t('project.info')}}</span>
-          <span>{{$t('project.base-info-describe')}}</span>
+      <template #header>
+        <div class="clearfix">
+          <legacy-icon icon="el-icon-s-flag"></legacy-icon>
+          <div>
+            <span>{{$t('project.info')}}</span>
+            <span>{{$t('project.base-info-describe')}}</span>
+          </div>
         </div>
-      </div>
+      </template>
       <router-link v-if="canEditProject" to="project-base-info"><el-link>{{$t('project.base-info')}}</el-link></router-link>
       <router-link v-if="canManageApi" to="project-api"><el-link>{{$t('project.api-key')}}</el-link></router-link>
       <router-link v-if="canPushProject" to="/project/push"><el-link>{{$t('project.push')}}</el-link></router-link>
@@ -20,14 +22,11 @@
 import {strFormat} from "@/utils";
 import {delProject} from "@/api/system/project";
 import i18n from "@/utils/i18n/i18n";
-import store from "@/store";
+import { useUserStore } from '@/stores/user'
 import { hasAnyPermi } from '@/utils/project-option-card'
 
 export default {
   name: "ProjectBaseInfoCard",
-  model: {
-    prop: 'project'
-  },
   props: {
     project: {
       type: Object,
@@ -73,7 +72,7 @@ export default {
       }).then(function(res) {
         delProject(_this.project.projectId, res.value).then(()=>{
           _this.$modal.msgSuccess(_this.$i18n.t('delete-success'));
-          store.dispatch('GetInfo').then(() => {
+          useUserStore().GetInfo().then(() => {
             _this.$router.push({path:'/team/index'});
           });
         });

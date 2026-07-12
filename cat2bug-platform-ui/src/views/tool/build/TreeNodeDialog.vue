@@ -1,10 +1,10 @@
 <template>
   <div>
     <el-dialog
+      v-model="dialogVisible"
       v-bind="$attrs"
       :close-on-click-modal="false"
       :modal-append-to-body="false"
-      v-on="$listeners"
       @open="onOpen"
       @close="onClose"
     >
@@ -38,25 +38,26 @@
                 placeholder="请输入选项值"
                 clearable
               >
-                <el-select
-                  slot="append"
-                  v-model="dataType"
-                  :style="{width: '100px'}"
-                >
-                  <el-option
-                    v-for="(item, index) in dataTypeOptions"
-                    :key="index"
-                    :label="item.label"
-                    :value="item.value"
-                    :disabled="item.disabled"
-                  />
-                </el-select>
+                <template #append>
+                  <el-select
+                    v-model="dataType"
+                    :style="{width: '100px'}"
+                  >
+                    <el-option
+                      v-for="(item, index) in dataTypeOptions"
+                      :key="index"
+                      :label="item.label"
+                      :value="item.value"
+                      :disabled="item.disabled"
+                    />
+                  </el-select>
+                </template>
               </el-input>
             </el-form-item>
           </el-col>
         </el-form>
       </el-row>
-      <div slot="footer">
+      <template #footer>
         <el-button
           type="primary"
           @click="handleConfirm"
@@ -66,7 +67,7 @@
         <el-button @click="close">
           取消
         </el-button>
-      </div>
+      </template>
     </el-dialog>
   </div>
 </template>
@@ -76,7 +77,8 @@ import { isNumberStr } from '@/utils/index'
 export default {
   components: {},
   inheritAttrs: false,
-  props: [],
+  props: ['visible'],
+  emits: ['update:visible', 'commit'],
   data() {
     return {
       id: 100,
@@ -113,7 +115,16 @@ export default {
       ]
     }
   },
-  computed: {},
+  computed: {
+    dialogVisible: {
+      get() {
+        return this.visible
+      },
+      set(val) {
+        this.$emit('update:visible', val)
+      }
+    }
+  },
   watch: {
     // eslint-disable-next-line func-names
     'formData.value': function (val) {

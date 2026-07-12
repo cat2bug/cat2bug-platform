@@ -10,8 +10,9 @@
     <el-dialog :title="title" v-model="open" width="800px" append-to-body @opened="modalOpened"  @close="closeDialog">
       <el-row>
         <el-col :xs="24" :md="12" :style="{height: '350px'}">
-          <vue-cropper
+          <VueCropper
             ref="cropper"
+            :key="cropperKey"
             :img="options.avatar"
             :info="true"
             :autoCrop="options.autoCrop"
@@ -23,41 +24,36 @@
             :centerBox="options.centerBox"
             :canMoveBox="options.canMoveBox"
             :outputType="options.outputType"
+            :mode="options.mode"
             @realTime="realTime"
             @imgLoad="onCropperImgLoad"
             v-if="visible"
           />
         </el-col>
-        <el-col :xs="24" :md="12" :style="{height: '350px'}">
-          <div class="avatar-upload-preview">
-            <img :src="previews.url" :style="previews.img" />
+        <el-col :xs="24" :md="12" class="avatar-preview-panel">
+          <div class="avatar-preview-panel__content">
+            <div class="avatar-upload-preview">
+              <img :src="previews.url" :style="previews.img" />
+            </div>
+            <el-button type="primary" size="small" @click="uploadImg()">{{ $t('submit') }}</el-button>
           </div>
         </el-col>
       </el-row>
       <br />
       <el-row>
-        <el-col :lg="2" :sm="3" :xs="3">
-          <el-upload action="#" :http-request="requestUpload" :show-file-list="false" :before-upload="beforeUpload">
-            <el-button size="small">
-              {{ $t('select') }}
-              <legacy-icon icon="el-icon-upload"></legacy-icon>
-            </el-button>
-          </el-upload>
-        </el-col>
-        <el-col :lg="{span: 1, offset: 2}" :sm="2" :xs="2">
-          <el-button :icon="$legacyIcon('el-icon-plus')" size="small" @click="changeScale(1)"></el-button>
-        </el-col>
-        <el-col :lg="{span: 1, offset: 1}" :sm="2" :xs="2">
-          <el-button :icon="$legacyIcon('el-icon-minus')" size="small" @click="changeScale(-1)"></el-button>
-        </el-col>
-        <el-col :lg="{span: 1, offset: 1}" :sm="2" :xs="2">
-          <el-button :icon="$legacyIcon('el-icon-refresh-left')" size="small" @click="rotateLeft()"></el-button>
-        </el-col>
-        <el-col :lg="{span: 1, offset: 1}" :sm="2" :xs="2">
-          <el-button :icon="$legacyIcon('el-icon-refresh-right')" size="small" @click="rotateRight()"></el-button>
-        </el-col>
-        <el-col :lg="{span: 2, offset: 6}" :sm="2" :xs="2">
-          <el-button type="primary" size="small" @click="uploadImg()">{{ $t('submit') }}</el-button>
+        <el-col :xs="24" :md="12">
+          <div class="avatar-cropper-tools">
+            <el-upload action="#" :http-request="requestUpload" :show-file-list="false" :before-upload="beforeUpload">
+              <el-button size="small">
+                {{ $t('select') }}
+                <legacy-icon icon="el-icon-upload"></legacy-icon>
+              </el-button>
+            </el-upload>
+            <el-button :icon="$legacyIcon('el-icon-plus')" size="small" @click="changeScale(1)"></el-button>
+            <el-button :icon="$legacyIcon('el-icon-minus')" size="small" @click="changeScale(-1)"></el-button>
+            <el-button :icon="$legacyIcon('el-icon-refresh-left')" size="small" @click="rotateLeft()"></el-button>
+            <el-button :icon="$legacyIcon('el-icon-refresh-right')" size="small" @click="rotateRight()"></el-button>
+          </div>
         </el-col>
       </el-row>
     </el-dialog>
@@ -65,12 +61,13 @@
 </template>
 
 <script>
-import store from "@/store";
-import { VueCropper } from "vue-cropper";
+import { VueCropper } from "vue-cropper/dist/vue-cropper.es.js";
+import "vue-cropper/dist/index.css";
 import { uploadAvatar } from "@/api/system/user";
 import { debounce } from '@/utils'
 import Cat2BugAvatar from "@/components/Cat2BugAvatar";
 import { isNonEmptyUploadPath, resolveUploadUrl } from '@/utils/upload-asset'
+import { useUserStore } from '@/stores/user'
 
 export default {
   components: { VueCropper, Cat2BugAvatar },
@@ -81,6 +78,7 @@ export default {
     }
   },
   data() {
+    const userStore = useUserStore()
     return {
       // 是否显示弹出层
       open: false,
@@ -89,7 +87,7 @@ export default {
       // 弹出层标题
       title: "修改头像",
       options: {
-        name: store.getters.name,  // 当前用户名
+        name: userStore.name,  // 当前用户名
         avatar: '', // vue-cropper 需完整 URL，打开弹窗时再解析
         autoCrop: true, // 是否默认生成截图框
         autoCropWidth: 200, // 默认生成截图框宽度
@@ -99,9 +97,11 @@ export default {
         fixedBox: true, // 固定截图框大小 不允许改变
         centerBox: true, // 截图框限制在图片内
         canMoveBox: false, // 固定截图框，拖动图片调整
+        mode: 'cover', // 默认铺满裁剪框，避免头像留白
         outputType:"png" // 默认生成截图为PNG格式
       },
-      avatar: store.getters.avatar, //裁剪图片的地址
+      avatar: userStore.avatar, //裁剪图片的地址
+      cropperKey: 0,
       previews: {},
       resizeHandler: null
     };
@@ -119,7 +119,7 @@ export default {
   watch: {
     profileUser: {
       handler(user) {
-        const next = (user && user.avatar) || store.getters.avatar || ''
+        const next = (user && user.avatar) || useUserStore().avatar || ''
         if (next !== this.avatar) {
           this.avatar = next
         }
@@ -129,6 +129,9 @@ export default {
     }
   },
   methods: {
+    getCropper() {
+      return this.$refs.cropper
+    },
     resolveCropperImage(path) {
       if (!isNonEmptyUploadPath(path)) {
         return ''
@@ -140,7 +143,7 @@ export default {
       return resolveUploadUrl(trimmed, process.env.VUE_APP_BASE_API)
     },
     syncCropperImage() {
-      const path = this.avatar || store.getters.avatar || ''
+      const path = this.avatar || useUserStore().avatar || ''
       this.options.avatar = this.resolveCropperImage(path)
     },
     onCropperImgLoad(status) {
@@ -152,7 +155,7 @@ export default {
       })
     },
     fitImageToCropBox() {
-      const cropper = this.$refs.cropper
+      const cropper = this.getCropper()
       if (!cropper || !cropper.imgs) {
         return
       }
@@ -169,7 +172,7 @@ export default {
         if (!trueWidth || !trueHeight || !cropW || !cropH) {
           return
         }
-        const scale = Math.min(cropW / trueWidth, cropH / trueHeight)
+        const scale = Math.max(cropW / trueWidth, cropH / trueHeight)
         cropper.scale = scale
         const displayW = trueWidth * scale
         const displayH = trueHeight * scale
@@ -198,39 +201,48 @@ export default {
     },
     // 刷新组件
     refresh() {
-      this.$refs.cropper.refresh();
+      const cropper = this.getCropper()
+      if (cropper && typeof cropper.refresh === 'function') {
+        cropper.refresh()
+      }
     },
     // 覆盖默认的上传行为
     requestUpload() {
     },
     // 向左旋转
     rotateLeft() {
-      this.$refs.cropper.rotateLeft();
+      this.getCropper()?.rotateLeft?.()
     },
     // 向右旋转
     rotateRight() {
-      this.$refs.cropper.rotateRight();
+      this.getCropper()?.rotateRight?.()
     },
     // 图片缩放
     changeScale(num) {
       num = num || 1;
-      this.$refs.cropper.changeScale(num);
+      this.getCropper()?.changeScale?.(num)
     },
     // 上传预处理
     beforeUpload(file) {
       if (file.type.indexOf("image/") == -1) {
         this.$modal.msgError(this.$i18n.t('member.upload-file-format-exception'));
-      } else {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => {
-          this.options.avatar = reader.result;
-        };
+        return false;
       }
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        this.options.avatar = reader.result;
+        this.cropperKey += 1;
+      };
+      return false;
     },
     // 上传图片
     uploadImg() {
-      this.$refs.cropper.getCropBlob(data => {
+      const cropper = this.getCropper()
+      if (!cropper || typeof cropper.getCropBlob !== 'function') {
+        return
+      }
+      cropper.getCropBlob(data => {
         let formData = new FormData();
         formData.append("avatarfile", data);
         uploadAvatar(formData).then(response => {
@@ -240,7 +252,7 @@ export default {
             return
           }
           this.avatar = imgUrl
-          store.commit('SET_AVATAR', imgUrl)
+          useUserStore().avatar = imgUrl
           this.$emit('updated', imgUrl)
           this.$modal.msgSuccess(this.$i18n.t('modify-success'))
           this.visible = false
@@ -256,7 +268,9 @@ export default {
     closeDialog() {
       this.options.avatar = ''
       this.visible = false
-      window.removeEventListener("resize", this.resizeHandler)
+      if (this.resizeHandler) {
+        window.removeEventListener("resize", this.resizeHandler)
+      }
     }
   }
 };
@@ -294,5 +308,33 @@ export default {
   line-height: 120px;
   border-radius: 50%;
   pointer-events: none;
+}
+
+.avatar-preview-panel {
+  height: 350px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-preview-panel__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.avatar-preview-panel :deep(.avatar-upload-preview) {
+  position: static;
+  top: auto;
+  left: auto;
+  transform: none;
+}
+
+.avatar-cropper-tools {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 </style>

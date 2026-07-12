@@ -14,9 +14,16 @@
 <script>
 import {getProject} from "@/api/system/project";
 import ProjectSelect from "@/components/Project/ProjectSelect";
+import { storeToRefs } from "pinia";
+import { useUserStore } from "@/stores/user";
 export default {
   name: "ProjectLabel",
   components: {ProjectSelect},
+  setup() {
+    const userStore = useUserStore()
+    const { id, config } = storeToRefs(userStore)
+    return { id, config }
+  },
   data() {
     return {
       project:{}
@@ -40,20 +47,24 @@ export default {
   },
   computed: {
     currentProjectId: function () {
-      return this.projectId==0?parseInt(this.$store.state.user.config.currentProjectId):this.projectId;
+      return this.projectId==0?parseInt(this.config.currentProjectId):this.projectId;
     },
     /** 获取当前成员id */
     currentMemberId: function() {
-      return this.$store.state.user.id;
+      return this.id;
     },
-    /** 获取团队id */
+    /** 获取团队id（优先当前项目所属团队，避免 config.currentTeamId 与当前项目不一致） */
     currentTeamId() {
-      return this.$store.state.user.config.currentTeamId;
+      const projectTeamId = this.project && this.project.teamId
+      if (projectTeamId) {
+        return projectTeamId
+      }
+      return this.config.currentTeamId
     },
   },
   methods: {
     getProjectId() {
-      return this.projectId==0?parseInt(this.$store.state.user.config.currentProjectId):this.projectId;
+      return this.projectId==0?parseInt(this.config.currentProjectId):this.projectId;
     },
     getProjectInfo(projectId) {
       getProject(projectId).then(res=>{

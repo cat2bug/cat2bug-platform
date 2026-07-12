@@ -10,8 +10,13 @@
 </template>
 
 <script>
+import { ElStep, ElSteps } from 'element-plus'
+import 'element-plus/es/components/step/style/css'
+import 'element-plus/es/components/steps/style/css'
+
 export default {
-  name: "CaseHelloWorld"
+  name: 'CaseHelloWorld',
+  components: { ElSteps, ElStep }
 }
 </script>
 

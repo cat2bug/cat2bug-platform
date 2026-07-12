@@ -5,6 +5,7 @@ import {
   PROJECT_ICON_POPOVER_HOST_CLASS,
   PROJECT_ICON_POPPER_CLASS,
   clearProjectIconPopoverFocus,
+  destroyProjectIconPopoverKbd,
   getProjectIconPopoverItems,
   getProjectIconPopperEl,
   initProjectIconPopoverKbd,
@@ -16,6 +17,14 @@ function mockRect(left, top, width = 130, height = 130) {
   return { left, top, width, height, right: left + width, bottom: top + height }
 }
 
+function mockPopoverRef(overrides = {}) {
+  return {
+    showPopper: true,
+    $watch: jest.fn(() => jest.fn()),
+    ...overrides
+  }
+}
+
 function buildPopperDom() {
   document.body.innerHTML = `
     <div class="el-popover project-icon-popper">
@@ -24,6 +33,7 @@ function buildPopperDom() {
       </div>
     </div>`
   const popper = document.querySelector('.el-popover.project-icon-popper')
+  popper.getBoundingClientRect = () => mockRect(0, 0, 560, 280)
   const items = popper.querySelectorAll('.project-icon-item')
   items.forEach((el, i) => {
     const col = i % 4
@@ -34,7 +44,29 @@ function buildPopperDom() {
   return popper
 }
 
+function popoverRef(popper, extra = {}) {
+  return {
+    popperElm: popper,
+    showPopper: true,
+    $watch: jest.fn(),
+    ...extra
+  }
+}
+
 describe('project-icon-popover-kbd', () => {
+  const initializedVms = []
+
+  afterEach(() => {
+    initializedVms.splice(0).forEach((vm) => destroyProjectIconPopoverKbd(vm))
+    document.body.innerHTML = ''
+  })
+
+  function initKbd(vm) {
+    initProjectIconPopoverKbd(vm)
+    initializedVms.push(vm)
+    return vm
+  }
+
   it('exports stable class names', () => {
     expect(PROJECT_ICON_POPOVER_HOST_CLASS).toBe('project-icon-popover-kbd')
     expect(PROJECT_ICON_POPPER_CLASS).toBe('project-icon-popper')
@@ -51,11 +83,11 @@ describe('project-icon-popover-kbd', () => {
     const popper = buildPopperDom()
     const vm = {
       projectIconPopperVisible: true,
-      $refs: { projectIconPopover: { popperElm: popper, showPopper: true } },
+      $refs: { projectIconPopover: mockPopoverRef({ popperElm: popper }) },
       $nextTick(fn) { if (fn) fn() },
       $watch: jest.fn()
     }
-    initProjectIconPopoverKbd(vm)
+    initKbd(vm)
     syncProjectIconItemFocus(vm, 2)
     const items = getProjectIconPopoverItems(popper)
     expect(items[2].classList.contains(PROJECT_ICON_ITEM_FOCUS_CLASS)).toBe(true)
@@ -68,11 +100,11 @@ describe('project-icon-popover-kbd', () => {
     const popper = buildPopperDom()
     const vm = {
       projectIconPopperVisible: true,
-      $refs: { projectIconPopover: { popperElm: popper, showPopper: true } },
+      $refs: { projectIconPopover: mockPopoverRef({ popperElm: popper }) },
       $nextTick(fn) { if (fn) fn() },
       $watch: jest.fn()
     }
-    initProjectIconPopoverKbd(vm)
+    initKbd(vm)
     syncProjectIconItemFocus(vm, 0)
     window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }))
     const items = getProjectIconPopoverItems(popper)
@@ -83,11 +115,11 @@ describe('project-icon-popover-kbd', () => {
     const popper = buildPopperDom()
     const vm = {
       projectIconPopperVisible: true,
-      $refs: { projectIconPopover: { popperElm: popper, showPopper: true } },
+      $refs: { projectIconPopover: mockPopoverRef({ popperElm: popper }) },
       $nextTick(fn) { if (fn) fn() },
       $watch: jest.fn()
     }
-    initProjectIconPopoverKbd(vm)
+    initKbd(vm)
     syncProjectIconItemFocus(vm, 0)
     window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }))
     const items = getProjectIconPopoverItems(popper)
@@ -105,13 +137,13 @@ describe('project-icon-popover-kbd', () => {
     const vm = {
       projectIconPopperVisible: true,
       $refs: {
-        projectIconPopover: { popperElm: popper, showPopper: true, doClose },
+        projectIconPopover: mockPopoverRef({ popperElm: popper, doClose }),
         projectIconTrigger: { $el: { focus: jest.fn() } }
       },
       $nextTick(fn) { if (fn) fn() },
       $watch: jest.fn()
     }
-    initProjectIconPopoverKbd(vm)
+    initKbd(vm)
     syncProjectIconItemFocus(vm, 0)
     window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
     expect(doClose).toHaveBeenCalled()

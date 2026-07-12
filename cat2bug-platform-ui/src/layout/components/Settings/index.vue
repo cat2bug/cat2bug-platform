@@ -75,27 +75,37 @@
 
 <script>
 import ThemePicker from '@/components/ThemePicker'
+import { useSettingsStore } from '@/stores/settings'
+import { useAppStore } from '@/stores/app'
+import { usePermissionStore } from '@/stores/permission'
 
 export default {
   components: { ThemePicker },
-  data() {
+  setup() {
     return {
-      theme: this.$store.state.settings.theme,
-      sideTheme: this.$store.state.settings.sideTheme
-    };
+      settingsStore: useSettingsStore(),
+      appStore: useAppStore(),
+      permissionStore: usePermissionStore()
+    }
   },
   computed: {
+    theme() {
+      return this.settingsStore.theme
+    },
+    sideTheme() {
+      return this.settingsStore.sideTheme
+    },
     visible: {
       get() {
-        return this.$store.state.settings.showSettings
+        return this.settingsStore.showSettings
       }
     },
     drawerVisible: {
       get() {
-        return this.$store.state.settings.showSettings
+        return this.settingsStore.showSettings
       },
       set(val) {
-        this.$store.dispatch('settings/changeSetting', {
+        this.settingsStore.changeSetting({
           key: 'showSettings',
           value: val
         })
@@ -103,10 +113,10 @@ export default {
     },
     fixedHeader: {
       get() {
-        return this.$store.state.settings.fixedHeader
+        return this.settingsStore.fixedHeader
       },
       set(val) {
-        this.$store.dispatch('settings/changeSetting', {
+        this.settingsStore.changeSetting({
           key: 'fixedHeader',
           value: val
         })
@@ -114,25 +124,25 @@ export default {
     },
     topNav: {
       get() {
-        return this.$store.state.settings.topNav
+        return this.settingsStore.topNav
       },
       set(val) {
-        this.$store.dispatch('settings/changeSetting', {
+        this.settingsStore.changeSetting({
           key: 'topNav',
           value: val
         })
         if (!val) {
-          this.$store.dispatch('app/toggleSideBarHide', false);
-          this.$store.commit("SET_SIDEBAR_ROUTERS", this.$store.state.permission.defaultRoutes);
+          this.appStore.toggleSideBarHide(false)
+          this.permissionStore.setSidebarRouters(this.permissionStore.defaultRoutes)
         }
       }
     },
     tagsView: {
       get() {
-        return this.$store.state.settings.tagsView
+        return this.settingsStore.tagsView
       },
       set(val) {
-        this.$store.dispatch('settings/changeSetting', {
+        this.settingsStore.changeSetting({
           key: 'tagsView',
           value: val
         })
@@ -140,10 +150,10 @@ export default {
     },
     sidebarLogo: {
       get() {
-        return this.$store.state.settings.sidebarLogo
+        return this.settingsStore.sidebarLogo
       },
       set(val) {
-        this.$store.dispatch('settings/changeSetting', {
+        this.settingsStore.changeSetting({
           key: 'sidebarLogo',
           value: val
         })
@@ -151,10 +161,10 @@ export default {
     },
     dynamicTitle: {
       get() {
-        return this.$store.state.settings.dynamicTitle
+        return this.settingsStore.dynamicTitle
       },
       set(val) {
-        this.$store.dispatch('settings/changeSetting', {
+        this.settingsStore.changeSetting({
           key: 'dynamicTitle',
           value: val
         })
@@ -163,18 +173,16 @@ export default {
   },
   methods: {
     themeChange(val) {
-      this.$store.dispatch('settings/changeSetting', {
+      this.settingsStore.changeSetting({
         key: 'theme',
         value: val
       })
-      this.theme = val;
     },
     handleTheme(val) {
-      this.$store.dispatch('settings/changeSetting', {
+      this.settingsStore.changeSetting({
         key: 'sideTheme',
         value: val
       })
-      this.sideTheme = val;
     },
     saveSetting() {
       this.$modal.loading("正在保存到本地，请稍候...");

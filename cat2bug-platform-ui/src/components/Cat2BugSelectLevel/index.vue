@@ -1,7 +1,15 @@
 <template>
-  <el-select popper-class="case-level" class="case-level-input" v-model="value" placeholder="请选择" @change="changeHandle" :disabled="readonly" :clearable="clearable">
-    <template v-slot:prefix>
-      <i v-if="icon" class="select-header-icon" :class="icon"></i>
+  <el-select
+    popper-class="case-level"
+    class="case-level-input"
+    v-model="value"
+    :placeholder="$t('defect.select-level')"
+    size="small"
+    @change="changeHandle"
+    :disabled="readonly"
+    :clearable="clearable">
+    <template #prefix>
+      <el-icon v-if="iconComponent" class="select-header-icon"><component :is="iconComponent" /></el-icon>
     </template>
     <el-option
       v-for="item in maxLevel"
@@ -18,11 +26,8 @@
 import Cat2BugLevel from "@/components/Cat2BugLevel";
 import {getLevelName, getLevelExplain, MAX_LEVEL_INDEX} from "@/utils/case";
 export default {
+  emits: ['update:level', 'change'],
   name: "index",
-  model:{
-    prop: 'level',
-    event: 'change'
-  },
   components: {Cat2BugLevel},
   data() {
     return {
@@ -40,12 +45,12 @@ export default {
       default: false
     },
     icon: {
-      type: String,
+      type: [String, Object],
       default: null
     },
     level: {
       type: [Number, String],
-      default: 1,
+      default: null,
     },
     maxLevel: {
       type: Number,
@@ -56,11 +61,18 @@ export default {
       default: false
     },
   },
+  computed: {
+    iconComponent() {
+      if (!this.icon) return null
+      if (typeof this.icon === 'string') return this.$legacyIcon(this.icon)
+      return this.icon
+    }
+  },
   methods: {
     getLevelName,
     getLevelExplain,
     changeHandle() {
-      this.$emit('change',this.value)
+      this.$emit('update:level', this.value); this.$emit('change', this.value)
     }
   }
 }
@@ -79,8 +91,12 @@ export default {
 }
 </style>
 <style lang="scss" scoped>
+.case-level-input {
+  min-width: 180px;
+}
 .select-header-icon {
-  margin-left: 5px;
+  margin-left: 2px;
+  font-size: 14px;
 }
 .level-explain {
   font-size: 0.7rem;
@@ -92,14 +108,12 @@ export default {
   white-space: normal !important;
   margin-top: 5px;
 }
-.el-select.case-level-input > ::v-deep.el-input.is-disabled {
-  > .el-input__inner {
-    background-color: white;
-    cursor: default;
-    color: #303133;
-  }
-  > .el-input__suffix {
-    display: none;
-  }
+:deep(.el-select.case-level-input.is-disabled .el-select__wrapper) {
+  background-color: white;
+  cursor: default;
+  color: #303133;
+}
+:deep(.el-select.case-level-input.is-disabled .el-select__suffix) {
+  display: none;
 }
 </style>

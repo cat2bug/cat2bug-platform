@@ -28,5 +28,11 @@ export const pageRegistry = {
       }
     })
     return result
+  },
+
+  hasActions() {
+    return Object.keys(state.pages).some(
+      (k) => state.pages[k] && state.pages[k].actions && state.pages[k].actions.length > 0
+    )
   }
 }

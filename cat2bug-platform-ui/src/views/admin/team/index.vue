@@ -17,29 +17,29 @@
 
     <el-table v-loading="loading" :data="teamList">
       <el-table-column :label="$t('team.icon')" align="center" prop="teamIcon" width="100">
-        <template slot-scope="scope">
+        <template #default="scope">
           <image-preview :src="scope.row.teamIcon" :width="50" :height="50"/>
         </template>
       </el-table-column>
       <el-table-column :label="$t('team.name')" align="left" prop="teamName" />
       <el-table-column :label="$t('createBy')" align="left" prop="createBy" width="100"  />
       <el-table-column :label="$t('createTime')" align="center" prop="createTime" width="180">
-        <template slot-scope="scope">
+        <template #default="scope">
           <span>{{ parseTime(scope.row.createTime, '{y}-{m}-{d}') }}</span>
         </template>
       </el-table-column>
       <el-table-column :label="$t('project.count')" align="center" prop="projectCount" width="130">
-        <template slot-scope="scope">
+        <template #default="scope">
           <el-link type="primary" @click="handleProjectListClick(scope.row)">{{ scope.row.projectCount }}</el-link>
         </template>
       </el-table-column>
       <el-table-column :label="$t('member.count')" align="center" prop="memberCount" width="130" />
       <el-table-column :label="$t('team.introduce')" align="left" prop="introduce" />
       <el-table-column :label="$t('operate')" align="center" class-name="small-padding" width="120">
-        <template slot-scope="scope">
+        <template #default="scope">
           <el-button
-            size="mini"
-            type="text"
+            size="small"
+            link
             :icon="$legacyIcon(scope.row.lock?'el-icon-unlock':'el-icon-lock')"
             @click="handleLock(scope.row)"
             v-hasPermi="['system:team:lock']"
@@ -51,8 +51,8 @@
     <pagination
       v-show="total>0"
       :total="total"
-      :page.sync="queryParams.pageNum"
-      :limit.sync="queryParams.pageSize"
+      v-model:page="queryParams.pageNum"
+      v-model:limit="queryParams.pageSize"
       @pagination="getList"
     />
     <team-lock-dialog ref="teamLockDialog" @change="handleQuery"></team-lock-dialog>

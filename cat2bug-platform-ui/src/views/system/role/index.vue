@@ -38,8 +38,8 @@
         <template #default="scope">
           <template v-if="scope.row.roleId !== 1">
           <el-button
-            size="mini"
-            type="text"
+            size="small"
+            link
             :icon="$legacyIcon('el-icon-edit')"
             @click="handleUpdate(scope.row)"
           >{{ $t('modify') }}</el-button>

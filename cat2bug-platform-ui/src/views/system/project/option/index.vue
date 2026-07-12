@@ -2,7 +2,7 @@
   <div class="app-container project-option-page" ref="optionMain">
     <project-label />
     <el-row :gutter="20">
-      <component :is="m.name" v-for="(m, index) in itemList" :key="index" v-model="project"></component>
+      <component :is="m.name" v-for="(m, index) in itemList" :key="index" :project="project"></component>
     </el-row>
   </div>
 </template>
@@ -16,18 +16,17 @@ import {
   buildOptionCardPageActionHints,
   buildOptionCardRegisterActions
 } from '@/utils/option-card-kbd-hints'
+import { storeToRefs } from 'pinia';
+import { useUserStore } from '@/stores/user'
 
-const path = require('path');
-const files = require.context('./item/', true, /\.vue$/);
-const modules = {ProjectLabel};
+const itemModules = import.meta.glob('./item/*.vue', { eager: true });
+const modules = { ProjectLabel };
 const moduleList = [];
-// 动态加载组件
-files.keys().forEach(key=>{
-  const name = path.basename(key,'.vue');
-  moduleList.push({
-    name: name,
-  });
-  modules[name] = files(key).default||files(key)
+// 动态加载组件（Vite: import.meta.glob 替代 webpack require.context）
+Object.entries(itemModules).forEach(([key, mod]) => {
+  const name = key.replace(/^\.\/item\/(.+)\.vue$/, '$1');
+  moduleList.push({ name });
+  modules[name] = mod.default || mod;
 });
 
 const PROJECT_OPTION_KBD_SCOPE = 'project-option'
@@ -36,11 +35,18 @@ export default {
   name: "ProjectOption",
   mixins: [pageActionHints],
   components: modules,
+  setup() {
+    const userStore = useUserStore()
+    const { config } = storeToRefs(userStore)
+    return { config }
+  },
   data() {
     return {
       project: {},
       itemList: moduleList
     };
+  },
+  computed: {
   },
   mounted() {
     this.getProject();
@@ -80,7 +86,7 @@ export default {
       })
     },
     getProjectId() {
-      return parseInt(this.$store.state.user.config.currentProjectId);
+      return parseInt(this.config.currentProjectId);
     },
     getProject() {
       getProject(this.getProjectId()).then(res=>{

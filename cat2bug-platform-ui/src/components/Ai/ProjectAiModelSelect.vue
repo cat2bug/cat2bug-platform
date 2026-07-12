@@ -58,7 +58,7 @@
             </span>
           </el-option>
         </el-option-group>
-        <template slot="empty">
+        <template #empty>
           <div v-if="loading" class="c2b-model-select-dropdown__loading">
             <legacy-icon icon="el-icon-loading" class="c2b-model-select-dropdown__loading-icon"></legacy-icon>
             <span class="c2b-model-select-dropdown__loading-text">{{ loadingHintText }}</span>

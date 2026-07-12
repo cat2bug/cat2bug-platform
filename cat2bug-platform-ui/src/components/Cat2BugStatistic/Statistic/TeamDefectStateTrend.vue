@@ -12,7 +12,7 @@
         size="small"
         class="defect-trend-time-type"
         @input="handleTimeTypeChange"
-        @click.native.stop
+        @click.stop
       >
         <el-radio-button v-for="tt in timeTypeList" :key="tt.value" :value="tt.value">
           {{ $t(tt.label).toString() }}
@@ -35,7 +35,7 @@
 import resize from '@/views/dashboard/mixins/resize'
 import Cat2BugCard from '../Components/Card'
 import { statisticDefectStateLine } from '@/api/system/statistic/defect'
-import { mapState } from 'pinia'
+import { storeToRefs } from 'pinia'
 import { useSettingsStore } from '@/stores/settings'
 import {
   afterChartRefReady,
@@ -80,8 +80,12 @@ export default {
     parent: { type: Object, default: () => ({}) },
     read: { type: Boolean, default: false }
   },
+  setup() {
+    const settingsStore = useSettingsStore()
+    const { themeMode } = storeToRefs(settingsStore)
+    return { themeMode }
+  },
   computed: {
-    ...mapState(useSettingsStore, ['themeMode']),
     currentProjectId() {
       return resolveCurrentProjectId(this)
     },

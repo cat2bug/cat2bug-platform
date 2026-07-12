@@ -19,15 +19,17 @@
           trigger="hover">
           <div class="team-menu">
             <div class="team-row" :style="{cursor:team.lock?'not-allowed':'pointer'}" v-for="(team, teamIndex) in teamList" :key="teamIndex" @click="handleTeamClick(team)">
-              <el-avatar class="team-row-icon" shape="square" v-if="team.teamIcon" :src="teamAvatarSrc(team)" fit="cover" @error.native="onTeamAvatarError(team)"></el-avatar>
+              <el-avatar class="team-row-icon" shape="square" v-if="team.teamIcon" :src="teamAvatarSrc(team)" fit="cover" @error="onTeamAvatarError(team)"></el-avatar>
               <el-avatar class="team-row-icon" shape="square" v-else>{{team.teamName}}</el-avatar>
               <p>
                 {{ team.teamName }}
-                <el-tag v-if="team.lock" type="danger" effect="dark" size="mini">{{ $t('locked') }}</el-tag>
+                <el-tag v-if="team.lock" type="danger" effect="dark" size="small">{{ $t('locked') }}</el-tag>
               </p>
             </div>
           </div>
-          <el-button slot="reference" type="primary" round>{{ $t('team.select') }}</el-button>
+          <template #reference>
+            <el-button type="primary" round>{{ $t('team.select') }}</el-button>
+          </template>
         </el-popover>
       </div>
     </div>
@@ -37,11 +39,17 @@
 <script>
 import {myListTeam} from "@/api/system/team";
 import {updateConfig} from "@/api/system/user-config";
-import store from "@/store";
 import { resolveTeamIconUrl } from '@/utils/upload-asset'
+import { storeToRefs } from "pinia";
+import { useUserStore } from "@/stores/user";
 
 export default {
   name: "TeamLockError",
+  setup() {
+    const userStore = useUserStore()
+    const { config } = storeToRefs(userStore)
+    return { config }
+  },
   data() {
     return {
       teamList:[],
@@ -50,10 +58,10 @@ export default {
   },
   computed: {
     lockRemark() {
-      return this.$store.state.user.config.currentTeamLockRemark;
+      return this.config.currentTeamLockRemark;
     },
     teamId() {
-      return this.$store.state.user.config.currentTeamId;
+      return this.config.currentTeamId;
     },
   },
   mounted() {
@@ -86,7 +94,8 @@ export default {
         currentTeamId: team.teamId,
         currentProjectId: 0
       }).then(res => {
-        store.dispatch('GetInfo').then((res1) => {
+        const userStore = useUserStore();
+        userStore.GetInfo().then((res1) => {
           this.$router.push({path: '/team/project-list'});
         });
       });

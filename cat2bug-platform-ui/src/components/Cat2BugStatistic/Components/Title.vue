@@ -4,11 +4,8 @@
 
 <script>
 export default {
+  emits: ['update:title'],
   name: "Title",
-  model: {
-    prop: 'title',
-    event: 'change'
-  },
   props: {
     title: {
       type: String,

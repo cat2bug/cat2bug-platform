@@ -9,9 +9,9 @@
           v-model="form.casePromptContent"></el-input>
       </el-form-item>
     </el-form>
-    <span slot="footer" class="dialog-footer add-case-prompt-dialog-footer">
-      <el-button size="mini" @click="cancel">{{ $t('cancel') }}</el-button>
-      <el-button size="mini" type="primary" @click="submit">{{ $t(isAdd?'add':'update') }}</el-button>
+    <span class="dialog-footer add-case-prompt-dialog-footer">
+      <el-button size="small" @click="cancel">{{ $t('cancel') }}</el-button>
+      <el-button size="small" type="primary" @click="submit">{{ $t(isAdd?'add':'update') }}</el-button>
     </span>
   </div>
 </template>

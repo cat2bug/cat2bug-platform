@@ -186,6 +186,8 @@
   .el-input:not(.el-textarea) .el-input__wrapper,
   .el-select .el-select__wrapper,
   .el-date-editor.el-input .el-input__wrapper,
+  .el-date-editor.el-range-editor,
+  .el-range-editor.el-input__wrapper,
   .el-cascader .el-input__wrapper,
   .el-autocomplete .el-input__wrapper {
     min-height: var(--cat2bug-control-height) !important;
@@ -269,7 +271,7 @@
   .el-form-item__content {
     > .el-input,
     > .el-select,
-    > .el-input-number,
+    > .el-input-number:not(.defect-field-compact-number):not(.cat2bug-form-compact-number),
     > .el-date-editor,
     > .el-cascader,
     > .el-autocomplete,
@@ -277,6 +279,7 @@
     > .defect-custom-field-datetime,
     > .defect-custom-field-enum,
     > .defect-plan-datetimerange,
+    > .defect-field-default-value,
     > .select-module,
     > .select-project-member,
     > .select-case {
@@ -289,6 +292,15 @@
     > .select-case-input {
       max-width: none;
     }
+  }
+}
+
+/* 对话框内数字步进器：默认紧凑宽度，不占满整行 */
+.el-dialog .el-form .el-form-item__content {
+  > .defect-field-compact-number.el-input-number,
+  > .cat2bug-form-compact-number.el-input-number {
+    width: 150px;
+    max-width: 100%;
   }
 }
 
@@ -1202,6 +1214,86 @@ img.cat2bug-image-error__img {
   font-weight: 500;
 }
 
+/* 测试计划统计（仪表盘 / 执行计划抽屉）：各指标标题与数值水平居中 */
+.plan-statistics > *,
+.plan-statistical-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.plan-statistics > .el-tooltip,
+.plan-statistical-item > .el-tooltip {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.plan-statistical-block {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+
+  .el-statistic {
+    width: 100%;
+    text-align: center;
+  }
+
+  .el-statistic__head,
+  .el-statistic__content,
+  .el-statistic .head,
+  .el-statistic .con,
+  .el-statistic .title,
+  .el-statistic .content {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    width: 100%;
+  }
+
+  .el-statistic__content-value {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+  }
+}
+
+.plan-statistics > .el-statistic {
+  width: 100%;
+  text-align: center;
+
+  .el-statistic__head,
+  .el-statistic__content,
+  .head,
+  .con,
+  .title,
+  .content {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    width: 100%;
+  }
+
+  .el-statistic__content-value {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+  }
+}
+
 /* 全站列表页工具栏：查询项与操作按钮横向间距统一（与 --cat2bug-toolbar-item-gap 一致） */
 .defect-table-tools-bar,
 .defect-view-toolbar,
@@ -1213,6 +1305,7 @@ img.cat2bug-image-error__img {
 .document-tools,
 .report-tools,
 .notice-tools,
+.defect-field-tools,
 .project-manage-tools,
 .project-option-list-tools,
 .defect-excel-tools.defect-view-toolbar {
@@ -1301,6 +1394,7 @@ img.cat2bug-image-error__img {
 .document-tools,
 .report-tools,
 .notice-tools,
+.defect-field-tools,
 .project-manage-tools,
 .project-option-list-tools,
 .defect-excel-tools,
@@ -1535,6 +1629,40 @@ img.cat2bug-image-error__img {
   max-width: var(--defect-query-field-width, 180px);
 
   .el-input__wrapper {
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+.case-page .case-tools-search .el-select.case-level-input {
+  width: var(--defect-query-field-width, 180px);
+  min-width: var(--defect-query-field-width, 180px);
+  max-width: var(--defect-query-field-width, 180px);
+
+  .el-select__wrapper {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .el-select__selection {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .el-select__selected-item,
+  .el-select__placeholder {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.plan-add-case-toolbar .el-select.case-level-input {
+  width: var(--defect-query-field-width, 180px);
+  min-width: var(--defect-query-field-width, 180px);
+  max-width: var(--defect-query-field-width, 180px);
+
+  .el-select__wrapper {
     width: 100%;
     box-sizing: border-box;
   }
@@ -2001,6 +2129,14 @@ td.cat2bug-operate-column [role='tooltip'][aria-hidden='true'] {
 .el-dialog__body {
   padding: 0 var(--cat2bug-dialog-padding-x, 20px) var(--cat2bug-dialog-content-footer-gap, 20px) !important;
 
+  /* EP3 size=small 标签默认 24px 高，与全站 32px 控件混排时星号/文字会错位 */
+  .el-form.el-form--small .el-form-item__label,
+  .el-form.el-form--small .el-form-item__label-wrap > .el-form-item__label {
+    height: var(--cat2bug-control-height, 32px) !important;
+    line-height: var(--cat2bug-control-height, 32px) !important;
+    align-items: center !important;
+  }
+
   /* Excel 等导入弹框：拖拽区全宽 + 上传云图标对齐 Vue2/EP 默认 */
   .el-upload.is-drag {
     display: block;
@@ -2141,15 +2277,22 @@ td.cat2bug-operate-column [role='tooltip'][aria-hidden='true'] {
   > .el-form-item__label,
   > .el-form-item__label-wrap > .el-form-item__label {
     display: inline-flex !important;
+    flex-direction: row;
     justify-content: flex-end;
-    align-items: flex-start;
+    align-items: center !important;
     flex: 0 0 auto !important;
-    height: auto !important;
-    line-height: var(--cat2bug-toolbar-control-height, 32px);
+    height: var(--cat2bug-control-height, 32px) !important;
+    min-height: var(--cat2bug-control-height, 32px);
+    line-height: var(--cat2bug-control-height, 32px) !important;
     padding-right: 12px;
     color: var(--form-label-color, var(--el-text-color-regular)) !important;
     visibility: visible !important;
     opacity: 1 !important;
+
+    &::before {
+      line-height: 1;
+      margin-top: 0;
+    }
   }
 
   > .el-form-item__content {
@@ -2157,7 +2300,14 @@ td.cat2bug-operate-column [role='tooltip'][aria-hidden='true'] {
     min-width: 0;
     margin-left: 0 !important;
     align-items: flex-start;
+    align-self: flex-start;
     line-height: normal;
+
+    > .upload-file,
+    > .upload-file .upload-file-uploader,
+    > .upload-file .el-upload {
+      width: 100%;
+    }
   }
 }
 
@@ -2174,9 +2324,16 @@ td.cat2bug-operate-column [role='tooltip'][aria-hidden='true'] {
     align-items: center;
     gap: var(--cat2bug-dialog-footer-gap, 10px);
 
-    .el-button {
+    > .el-button {
       order: 1;
       margin-left: 0 !important;
+      width: auto;
+      flex: 0 0 auto;
+      /* 覆盖 ElConfigProvider 全局 small，恢复 default 按钮字号与内边距 */
+      font-size: var(--el-font-size-base, 14px) !important;
+      padding: 8px 15px !important;
+      min-height: var(--cat2bug-control-height, 32px) !important;
+      height: var(--cat2bug-control-height, 32px) !important;
     }
 
     .el-button--primary,
@@ -2220,6 +2377,34 @@ td.cat2bug-operate-column [role='tooltip'][aria-hidden='true'] {
   overflow-x: hidden;
   max-width: 100%;
   box-sizing: border-box;
+
+  /* el-form 作为 el-row 子节点时须占满整行，否则栅格列会按内容收缩（Vue2 下表现更宽） */
+  .project-add-page-container {
+    width: 100%;
+
+    > .el-form {
+      width: 100%;
+      max-width: 100%;
+      flex: 0 0 100%;
+    }
+
+    .step1 {
+      width: 100%;
+      align-items: flex-start;
+    }
+
+    .el-form-item__content {
+      > .el-input,
+      > .el-textarea {
+        width: 100%;
+        max-width: 100%;
+      }
+    }
+
+    .page-form-actions {
+      margin-bottom: 0;
+    }
+  }
 }
 
 /* 表单等内容页：页头与正文 20px */

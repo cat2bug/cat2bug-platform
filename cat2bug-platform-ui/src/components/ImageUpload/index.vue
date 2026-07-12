@@ -38,15 +38,16 @@
             <svg-icon icon-class="clipboard" />
           </el-button>
         </template>
+        <template v-if="showTip" #tip>
+          <div class="el-upload__tip">
+            {{$t('upload.please-upload')}}
+            <template v-if="fileSize"> {{$t('upload.size-not-exceeding')}} <b style="color: #f56c6c">{{ fileSize }}MB</b> </template>
+            <template v-if="fileType && fileType.length"> {{$t('upload.format-is')}} <b style="color: #f56c6c" :title="fileType.join('/')">{{ fileTypeHint }}</b> </template>
+            {{$t('upload.files')}}
+          </div>
+        </template>
       </el-upload>
     </div>
-    </div>
-    <!-- 上传提示 -->
-    <div class="el-upload__tip" slot="tip" v-if="showTip">
-      {{$t('upload.please-upload')}}
-      <template v-if="fileSize"> {{$t('upload.size-not-exceeding')}} <b style="color: #f56c6c">{{ fileSize }}MB</b> </template>
-      <template v-if="fileType && fileType.length"> {{$t('upload.format-is')}} <b style="color: #f56c6c" :title="fileType.join('/')">{{ fileTypeHint }}</b> </template>
-      {{$t('upload.files')}}
     </div>
 
     <el-dialog
@@ -81,7 +82,10 @@ import { observeUploadFocusTarget, patchUploadFocusTarget } from '@/utils/upload
 import { bindNativeFilePickerResume, beginNativeFilePickerSession, endNativeFilePickerSession, isNativeFilePickerOpen } from '@/utils/native-file-picker'
 
 export default {
+  emits: ['update:modelValue', 'input'],
   props: {
+    modelValue: [String, Object, Array],
+    /** @deprecated Vue2 兼容 */
     value: [String, Object, Array],
     // 图片数量限制
     limit: {
@@ -134,7 +138,7 @@ export default {
     };
   },
   watch: {
-    value: {
+    boundValue: {
       handler(val) {
         if (this.pendingUploadCount > 0) {
           return;
@@ -146,6 +150,12 @@ export default {
     }
   },
   computed: {
+    boundValue() {
+      if (this.modelValue !== undefined && this.modelValue !== null) {
+        return this.modelValue;
+      }
+      return this.value;
+    },
     // 是否显示提示
     showTip() {
       return this.isShowTip && (this.fileType || this.fileSize);
@@ -186,6 +196,10 @@ export default {
     this.closeNativeFilePickerSession();
   },
   methods: {
+    emitValue(val) {
+      this.$emit('update:modelValue', val);
+      this.$emit('input', val);
+    },
     patchUploadTabStop() {
       patchUploadFocusTarget(this.$refs.focusTarget);
     },
@@ -356,13 +370,19 @@ export default {
           const formData = new FormData();
           formData.append('file', file);
           const res = await upload(formData);
-          nextList.push({ name: res.fileName, url: res.fileName });
-          this.$emit('input', this.listToString(nextList));
+          const fileName = res && (res.fileName || (res.data && res.data.fileName));
+          if (!fileName) continue;
+          nextList.push(this.toUploadFileItem(fileName));
           uploaded++;
           remaining--;
         } catch (err) {
           console.error(err);
         }
+      }
+      if (uploaded > 0) {
+        const nextValue = this.listToString(nextList);
+        this.emitValue(nextValue);
+        this.syncFileListFromValue(nextValue);
       }
       if (uploaded === 0) {
         this.$message.warning(this.$i18n.t('upload.clipboard-not-img').toString());
@@ -453,6 +473,14 @@ export default {
         return;
       }
     },
+    toUploadFileItem(fileName) {
+      const path = String(fileName || '');
+      if (path.indexOf(this.baseUrl) === -1) {
+        const url = this.baseUrl + path;
+        return { name: url, url };
+      }
+      return { name: path, url: path };
+    },
     syncFileListFromValue(val) {
       if (val) {
         const list = Array.isArray(val) ? val : String(val).split(',');
@@ -520,7 +548,7 @@ export default {
     handleUploadSuccess(res, file) {
       const fileName = res && (res.fileName || (res.data && res.data.fileName));
       if (res && res.code === 200 && fileName) {
-        this.uploadList.push({ name: fileName, url: fileName });
+        this.uploadList.push(this.toUploadFileItem(fileName));
         this.uploadedSuccessfully();
       } else {
         this.number = Math.max(0, this.number - 1);
@@ -550,7 +578,7 @@ export default {
       const findex = this.fileList.map(f => f.name).indexOf(file.name);
       if(findex > -1) {
         this.fileList.splice(findex, 1);
-        this.$emit("input", this.listToString(this.fileList));
+        this.emitValue(this.listToString(this.fileList));
       }
     },
     // 上传失败
@@ -567,9 +595,10 @@ export default {
         this.uploadList = [];
         this.number = 0;
         this.pendingUploadCount = 0;
-        this.$emit("input", this.listToString(this.fileList));
+        const nextValue = this.listToString(this.fileList);
+        this.emitValue(nextValue);
         this.$modal.closeAllLoading();
-        this.syncFileListFromValue(this.value);
+        this.syncFileListFromValue(nextValue);
       } else if (this.pendingUploadCount > 0) {
         this.pendingUploadCount = 0;
         this.$modal.closeAllLoading();
@@ -646,10 +675,16 @@ export default {
   flex-shrink: 0;
 }
 ::v-deep .el-upload-list--picture-card .el-upload-list__item {
+  width: 148px;
+  height: 148px;
   border-radius: var(--cat2bug-border-radius, 4px);
   overflow: hidden;
 }
 ::v-deep .el-upload-list--picture-card .el-upload-list__item-thumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
   border-radius: var(--cat2bug-border-radius, 4px);
 }
 ::v-deep .el-upload-list--picture-card .el-upload-list__item.is-keyboard-focus {

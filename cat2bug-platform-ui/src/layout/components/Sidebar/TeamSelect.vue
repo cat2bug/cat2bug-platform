@@ -36,7 +36,7 @@
                  key="team-select-footer-create-team"
                  value="team-select-footer-create-team"
       >
-        <el-button style="width: 100%;" @click="addTeamHandle">
+        <el-button class="team-select-footer-btn" plain @click="addTeamHandle">
           <el-icon><Plus /></el-icon>
           {{ $t('team.create') }}
         </el-button>
@@ -46,16 +46,27 @@
 </template>
 
 <script>
+import { storeToRefs } from 'pinia'
 import addSvgUrl from '@/assets/images/add.svg?url'
 import { Plus } from '@element-plus/icons-vue'
 import { myListTeam } from '@/api/system/team'
 import { updateConfig } from "@/api/system/user-config";
-import store from "@/store";
+import { useUserStore } from '@/stores/user'
 import { resolveTeamIconUrl } from '@/utils/upload-asset'
 
 export default {
   name: "TeamSelect",
   components: { Plus },
+  setup() {
+    const userStore = useUserStore()
+    const { config, teamMember, contextTeam } = storeToRefs(userStore)
+    return {
+      userStore,
+      userConfig: config,
+      userTeamMember: teamMember,
+      userContextTeam: contextTeam
+    }
+  },
   data() {
     return {
       teamList:[],
@@ -78,31 +89,29 @@ export default {
       immediate: true,
       handler(val) {
         this.currentTeamId = val
+        if (this.teamMember) {
+          this.getTeamList()
+        }
       }
     },
-    '$store.state.user.config.currentTeamId': function() {
-      if (this.teamMember) {
-        this.getTeamList();
-      }
-    },
-    '$store.state.user.contextTeam': function() {
+    userContextTeam: function() {
       if (!this.teamMember) {
-        this.syncReadonlyTeam();
+        this.syncReadonlyTeam()
       }
     }
   },
   computed:{
     teamMember() {
-      return this.$store.state.user.teamMember !== false;
+      return this.userTeamMember !== false
     },
     teamId: function (){
-      return this.$store.state.user.config.currentTeamId;
+      return this.userConfig && this.userConfig.currentTeamId
     },
     displayTeam() {
       if (this.teamMember) {
-        return this.currentTeam;
+        return this.currentTeam
       }
-      return this.$store.state.user.contextTeam;
+      return this.userContextTeam
     },
     currentTeam: function() {
       for(let i in this.teamList){
@@ -150,7 +159,11 @@ export default {
     getTeamList() {
       myListTeam().then(res => {
         this.teamList = res.rows
-        this.currentTeamId = this.teamId
+        if (!this.teamId && this.teamList.length > 0) {
+          this.selectTeam(this.teamList[0].teamId, true)
+        } else {
+          this.currentTeamId = this.teamId
+        }
       })
     },
     addTeamHandle(e) {
@@ -174,7 +187,7 @@ export default {
           currentTeamId: currentTeamId,
           currentProjectId: 0
         }).then(res => {
-          store.dispatch('GetInfo').then((res1) => {
+          this.userStore.GetInfo().then(() => {
             let path = '/team/project-list';
             if (_this.$route.path == path) {
               location.reload();
@@ -408,7 +421,7 @@ export default {
     }
   }
 
-  .el-select-dropdown__item {
+  .el-select-dropdown__item:not(.team-select-footer) {
     height: 80px;
     display: flex;
     justify-content: flex-start;
@@ -416,8 +429,11 @@ export default {
     column-gap: 10px;
   }
   .team-select-footer {
-    height: 60px;
-    padding-top: 5px;
+    height: auto !important;
+    min-height: 64px;
+    padding: 10px 12px 12px !important;
+    display: flex !important;
+    align-items: stretch !important;
     background-color: transparent;
   }
   .team-select-footer[line="true"] {
@@ -430,6 +446,26 @@ export default {
 
 <!-- append-to-body 后下拉在 body，样式需挂 popper-class -->
 <style lang="scss">
+@mixin team-select-footer-btn-base {
+  width: 100% !important;
+  min-height: 44px;
+  height: auto !important;
+  padding: 10px 16px !important;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-sizing: border-box;
+
+  .el-icon {
+    font-size: 16px;
+  }
+}
+
 .team-select-kbd-popper:not(.team-select-kbd-popper--dark).el-select__popper.el-popper,
 .team-select-kbd-popper:not(.team-select-kbd-popper--dark).el-popper {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12) !important;
@@ -449,7 +485,8 @@ export default {
   }
 }
 
-.team-select-kbd-popper:not(.team-select-kbd-popper--dark) .team-select-footer .el-button {
+.team-select-kbd-popper:not(.team-select-kbd-popper--dark) .team-select-footer .team-select-footer-btn.el-button {
+  @include team-select-footer-btn-base;
   border-color: var(--el-color-primary, #409eff) !important;
   color: var(--el-color-primary, #409eff) !important;
 
@@ -485,7 +522,7 @@ export default {
   border-left-color: transparent !important;
 }
 
-.team-select-kbd-popper .el-select-dropdown__item {
+.team-select-kbd-popper .el-select-dropdown__item:not(.team-select-footer) {
   height: 80px;
   display: flex;
   justify-content: flex-start;
@@ -539,8 +576,11 @@ export default {
 }
 
 .team-select-kbd-popper .team-select-footer {
-  height: 60px;
-  padding-top: 5px;
+  height: auto !important;
+  min-height: 64px;
+  padding: 10px 12px 12px !important;
+  display: flex !important;
+  align-items: stretch !important;
   background-color: var(--team-select-popper-bg, #252529) !important;
   color: var(--team-select-popper-text, #e5eaf3) !important;
 
@@ -549,7 +589,8 @@ export default {
     background-color: var(--team-select-popper-bg, #252529) !important;
   }
 
-  .el-button {
+  .team-select-footer-btn.el-button {
+    @include team-select-footer-btn-base;
     background-color: transparent !important;
     border-color: var(--sidebar-active-text, #ffc107) !important;
     color: var(--sidebar-active-text, #ffc107) !important;

@@ -42,7 +42,7 @@
           placement="top"
           trigger="click"
           popper-class="defect-column-picker-popover"
-          v-model="planCaseColumnPickerVisible"
+          v-model:visible="planCaseColumnPickerVisible"
           @show="onColumnPickerPopoverShow"
           @hide="onColumnPickerPopoverHide"
         >
@@ -57,16 +57,17 @@
             class="defect-column-picker"
             @change="onPlanCaseColumnPickerChange"
           >
-            <el-checkbox v-for="c in planCaseColumnPickerOptions" :key="c.key" :label="c.key">{{ $t(c.key) }}</el-checkbox>
+            <el-checkbox v-for="c in planCaseColumnPickerOptions" :key="c.key" :value="c.key">{{ c.key ? $t(c.key) : (c.label || c.prop) }}</el-checkbox>
           </el-checkbox-group>
-          <el-button
-            class="plan-handle-hint-columns"
-            style="padding: 9px;"
-            plain
-            slot="reference"
-            :icon="$legacyIcon('el-icon-s-fold')"
-            size="small"
-          ></el-button>
+          <template #reference>
+            <el-button
+              class="plan-handle-hint-columns"
+              style="padding: 9px;"
+              plain
+              :icon="$legacyIcon('el-icon-s-fold')"
+              size="small"
+            ></el-button>
+          </template>
         </el-popover>
         <el-col :span="1.5">
           <el-button
@@ -122,7 +123,7 @@
           label-class-name="plan-case-sidebar-expand-header-cell"
           class-name="plan-case-sidebar-expand-body-cell"
         >
-          <template slot="header">
+          <template #header>
             <el-tooltip :content="$t('case.show-module-tree')" placement="bottom">
               <span
                 class="plan-case-sidebar-expand-trigger"
@@ -135,7 +136,7 @@
               </span>
             </el-tooltip>
           </template>
-          <template slot-scope>
+          <template #default>
             <span class="plan-case-sidebar-expand-body-placeholder" />
           </template>
         </el-table-column>
@@ -147,17 +148,17 @@
         <div v-else-if="column.prop === 'caseName'" class="table-case-title">
           <cat2-bug-text
             :type="checkPermi(['system:case:edit']) ? 'link' : 'text'"
-            v-model="scope.row.caseName"
+            :content="scope.row.caseName"
             :tooltip="scope.row.caseName"
             @click="handleOpenEditCase(scope.row)"
           />
         </div>
         <cat2-bug-level v-else-if="column.prop === 'caseLevel'" :level="scope.row.caseLevel" />
-        <cat2-bug-text v-else-if="column.prop === 'casePreconditions'" v-model="scope.row.casePreconditions" :tooltip="scope.row.casePreconditions" />
+        <cat2-bug-text v-else-if="column.prop === 'casePreconditions'" :content="scope.row.casePreconditions" :tooltip="scope.row.casePreconditions" />
         <div v-else-if="column.prop === 'caseStep'" class="table-row-full-height">
           <step :steps="scope.row.caseStep" />
         </div>
-        <cat2-bug-text v-else-if="column.prop === 'caseExpect'" v-model="scope.row.caseExpect" :tooltip="scope.row.caseExpect" />
+        <cat2-bug-text v-else-if="column.prop === 'caseExpect'" :content="scope.row.caseExpect" :tooltip="scope.row.caseExpect" />
         <cat2-bug-preview-image v-else-if="column.prop === 'imgUrls'" :images="getUrl(scope.row.imgUrls)" />
         <div v-else-if="column.prop === 'annexUrls'" class="annex-list">
           <cat2-bug-text :content="file" type="down" :tooltip="file" v-for="(file, index) in getUrl(scope.row.annexUrls)" :key="index" />
@@ -168,9 +169,9 @@
       </template>
       <template #append>
         <el-table-column :label="$t('operate')" align="left" class-name="no-drag cat2bug-operate-column" fixed="right">
-          <template slot-scope="scope">
+          <template #default="scope">
             <div class="plan-operate cat2bug-operate-tools">
-              <plan-item-tools v-model="scope.row" :plan="parentPlan" :project-id="projectId" @change="getPlanItemList" />
+              <plan-item-tools v-model:planItem="scope.row" :plan="parentPlan" :project-id="projectId" @change="getPlanItemList" />
             </div>
           </template>
         </el-table-column>
@@ -180,8 +181,8 @@
     <pagination
       v-show="total>0"
       :total="total"
-      :page.sync="query.pageNum"
-      :limit.sync="query.pageSize"
+      v-model:page="query.pageNum"
+      v-model:limit="query.pageSize"
       @pagination="getPlanItemList"
     />
     <handle-case-of-plan ref="handleCaseDialog" :module-id="planItem.moduleId" :append-to-body="true" @change="getPlanItemList" />

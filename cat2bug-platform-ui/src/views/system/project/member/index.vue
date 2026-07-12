@@ -42,24 +42,26 @@
 
         <el-table v-loading="loading" :data="memberList">
           <el-table-column :label="$t('member.name')" align="left" key="nickName" prop="nickName" min-width="200" :show-overflow-tooltip="true">
-            <template slot-scope="scope">
-              <member-nameplate :member="scope.row"></member-nameplate>
+            <template #default="{ row }">
+              <member-nameplate :member="row"></member-nameplate>
             </template>
           </el-table-column>
           <el-table-column
             :label="$t('role')"
             align="left"
           >
-            <template slot-scope="scope" v-if="scope.row.userId !== 1">
-              <el-select class="member-operate"
-                         v-model="scope.row.roleIds"
-                         multiple
-                         :placeholder="$t('member.please-select-role')"
-                         :disabled="isMemberDisabled(scope.row)"
-                         @change="roleChangeHandle(scope.row)"
+            <template #default="{ row }">
+              <el-select
+                v-if="row.userId !== 1"
+                class="member-operate"
+                v-model="row.roleIds"
+                multiple
+                :placeholder="$t('member.please-select-role')"
+                :disabled="isMemberDisabled(row)"
+                @change="roleChangeHandle(row)"
               >
                 <el-option
-                  v-for="item in selectRoleOptions(scope.row)"
+                  v-for="item in selectRoleOptions(row)"
                   :key="item.roleId"
                   :label="item.roleName"
                   :value="item.roleId"
@@ -69,21 +71,20 @@
             </template>
           </el-table-column>
           <el-table-column :label="$t('email')" align="left" key="email" prop="email" :show-overflow-tooltip="true" width="300">
-            <template slot-scope="scope">
-              <span :teamLock="scope.row.status">{{ scope.row.email }}</span>
+            <template #default="{ row }">
+              <span :teamLock="row.status">{{ row.email }}</span>
             </template>
           </el-table-column>
           <el-table-column :label="$t('phone-number')" align="left" key="phoneNumber" prop="phoneNumber" width="150">
-            <template slot-scope="scope">
-              <span :teamLock="scope.row.status">{{ scope.row.phoneNumber }}</span>
+            <template #default="{ row }">
+              <span :teamLock="row.status">{{ row.phoneNumber }}</span>
             </template>
           </el-table-column>
           <el-table-column :label="$t('register-time')" align="left" key="createTime" prop="createTime" width="180">
-            <template slot-scope="scope">
-              <div teamLock="scope.row.status">
-                <span :teamLock="scope.row.status">{{ scope.row.createTime }}</span>
+            <template #default="{ row }">
+              <div :teamLock="row.status">
+                <span :teamLock="row.status">{{ row.createTime }}</span>
               </div>
-
             </template>
           </el-table-column>
           <el-table-column
@@ -92,13 +93,14 @@
             width="160"
             class-name="small-padding fixed-width"
           >
-            <template slot-scope="scope" v-if="scope.row.userId !== 1">
+            <template #default="{ row }">
               <el-button
-                size="mini"
-                type="text"
+                v-if="row.userId !== 1"
+                size="small"
+                link
                 :icon="$legacyIcon('el-icon-delete')"
-                @click="deleteHandle(scope.row)"
-                v-show="visibleDelete(scope.row)"
+                @click="deleteHandle(row)"
+                v-show="visibleDelete(row)"
               >{{$t('delete')}}</el-button>
             </template>
           </el-table-column>
@@ -107,8 +109,8 @@
           class="project-member-table-pagination"
           v-show="total>0"
           :total="total"
-          :page.sync="queryParams.pageNum"
-          :limit.sync="queryParams.pageSize"
+          v-model:page="queryParams.pageNum"
+          v-model:limit="queryParams.pageSize"
           @pagination="getMemberList"
         />
       </el-col>
@@ -132,11 +134,18 @@ import {checkPermi} from "@/utils/permission";
 import projectOptionSubListKbd from '@/mixins/project-option-sub-list-kbd'
 import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
 import { PROJECT_OPTION_KBD_SCOPE } from '@/mixins/project-option-sub-kbd'
+import { storeToRefs } from 'pinia';
+import { useUserStore } from '@/stores/user'
 
 export default {
   name: "ProjectMemberManage",
   mixins: [projectOptionSubListKbd],
   components: { AddProjectMember, MemberNameplate },
+  setup() {
+    const userStore = useUserStore()
+    const { id, config } = storeToRefs(userStore)
+    return { id, config }
+  },
   data() {
     return {
       // 遮罩层
@@ -162,37 +171,29 @@ export default {
     this.getRoleList();
   },
   computed: {
-    selectRoleOptions: function () {
-      return function (member) {
-        if(member.roles && member.roles.filter(r=>r.projectCreateBy).length>0){
-          return this.roleOptions.filter(r=>r.projectCreateBy);
-        } else {
-          return this.roleOptions.filter(r=>r.projectCreateBy==false);
-        }
-      }
-    },
     /** 获取当前用户id */
-    currentUserId: function () {
-      return this.$store.state.user.id;
+    currentUserId() {
+      return this.id;
     },
     /** 获取项目id */
-    currentProjectId: function () {
-      return parseInt(this.$store.state.user.config.currentProjectId);
-    },
-    /** 成员是否禁用 */
-    isMemberDisabled: function () {
-      return function (member) {
-        return member.status==1 || (member.roles && member.roles.filter(r=>r.projectCreateBy).length>0);
-      }
-    },
-    /** 是否显示删除按钮 */
-    visibleDelete() {
-      return function (member) {
-        return checkPermi(['system:project:member:remove']) && member.roles.filter(r=>r.projectCreateBy).length==0;
-      }
+    currentProjectId() {
+      return parseInt(this.config.currentProjectId);
     },
   },
   methods: {
+    selectRoleOptions(member) {
+      if (member.roles && member.roles.filter(r => r.projectCreateBy).length > 0) {
+        return this.roleOptions.filter(r => r.projectCreateBy);
+      }
+      return this.roleOptions.filter(r => r.projectCreateBy == false);
+    },
+    isMemberDisabled(member) {
+      return member.status == 1 || (member.roles && member.roles.filter(r => r.projectCreateBy).length > 0);
+    },
+    visibleDelete(member) {
+      const roles = member && member.roles ? member.roles : [];
+      return checkPermi(['system:project:member:remove']) && roles.filter(r => r.projectCreateBy).length == 0;
+    },
     shouldProjectOptionSubEscGoBack() {
       const dlg = this.$refs.addProjectMemberDialog
       return !(dlg && dlg.dialogVisible)

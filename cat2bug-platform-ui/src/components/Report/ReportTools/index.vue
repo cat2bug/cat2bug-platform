@@ -1,7 +1,7 @@
 <template>
   <div class="report-tools report-tools__bar">
     <slot name="left"></slot>
-    <el-button v-show="deleteVisible" data-report-tool="delete" :icon="$legacyIcon(isShowIcon?'el-icon-delete':'')" :size="size" :type="isText?'text':'danger'" :class="isText?'red':''" :plain="!isShowIcon" @click="handleDelete">{{$i18n.t('delete')}}</el-button>
+    <el-button v-show="deleteVisible" data-report-tool="delete" :icon="$legacyIcon(isShowIcon?'el-icon-delete':'')" :size="controlSize" :link="!!isText" :type="isText ? undefined : 'danger'" :class="isText?'red':''" :plain="!isShowIcon && !isText" @click="handleDelete">{{$i18n.t('delete')}}</el-button>
     <slot name="right"></slot>
   </div>
 </template>
@@ -10,13 +10,18 @@
 import {checkPermi} from "@/utils/permission";
 import i18n from "@/utils/i18n/i18n";
 import {delReport} from "@/api/system/report";
+import { mapElementPlusSize } from '@/utils/element-plus-size'
+import { storeToRefs } from "pinia";
+import { useUserStore } from "@/stores/user";
 
 export default {
+  emits: ['update:report', 'update'],
   name: "ReportTools",
   components: { },
-  model: {
-    prop: 'report',
-    event: 'update'
+  setup() {
+    const userStore = useUserStore()
+    const { id } = storeToRefs(userStore)
+    return { id }
   },
   props:{
     report: {
@@ -37,9 +42,12 @@ export default {
     }
   },
   computed: {
+    controlSize() {
+      return mapElementPlusSize(this.size)
+    },
     /** 获取当前用户id */
     currentUserId: function() {
-      return this.$store.state.user.id;
+      return this.id;
     },
     deleteVisible: function () {
       return this.report.createById==this.currentUserId || checkPermi(['system:report:remove']);

@@ -32,7 +32,7 @@
         align="center"
         class-name="defect-field-source-col"
       >
-        <template slot-scope="scope">
+        <template #default="scope">
           <el-tag
             v-if="isBuiltinField(scope.row)"
             size="small"
@@ -61,7 +61,7 @@
         min-width="120"
         show-overflow-tooltip
       >
-        <template slot-scope="scope">
+        <template #default="scope">
           <span class="defect-field-row-kbd-hint-anchor">{{ displayFieldLabel(scope.row) }}</span>
         </template>
       </el-table-column>
@@ -71,7 +71,7 @@
         width="116"
         align="center"
       >
-        <template slot-scope="scope">
+        <template #default="scope">
           {{ fieldTypeLabel(scope.row.fieldType) }}
         </template>
       </el-table-column>
@@ -81,7 +81,7 @@
         width="108"
         align="center"
       >
-        <template slot-scope="scope">
+        <template #default="scope">
           <span>{{ scope.row.maxLength != null ? scope.row.maxLength : '—' }}</span>
         </template>
       </el-table-column>
@@ -91,7 +91,7 @@
         min-width="120"
         show-overflow-tooltip
       >
-        <template slot-scope="scope">
+        <template #default="scope">
           <span>{{ formatDefaultValueDisplay(scope.row) }}</span>
         </template>
       </el-table-column>
@@ -101,7 +101,7 @@
         width="80"
         align="center"
       >
-        <template slot-scope="scope">
+        <template #default="scope">
           <span>{{ isTruthy(scope.row.required) ? $t('defect.custom-field.yes') : $t('defect.custom-field.no') }}</span>
         </template>
       </el-table-column>
@@ -111,7 +111,7 @@
         width="80"
         align="center"
       >
-        <template slot-scope="scope">
+        <template #default="scope">
           <span>{{ isTruthy(scope.row.nullable) ? $t('defect.custom-field.yes') : $t('defect.custom-field.no') }}</span>
         </template>
       </el-table-column>
@@ -121,10 +121,10 @@
         width="90"
         align="center"
       >
-        <template slot-scope="scope">
+        <template #default="scope">
           <el-switch
             v-if="canEditDefectField && !isBuiltinEnabledLocked(scope.row)"
-            :value="isTruthy(scope.row.enabled)"
+            :model-value="isTruthy(scope.row.enabled)"
             :disabled="scope.row._toggleLoading"
             @change="val => handleEnabledChange(scope.row, val)"
           />
@@ -140,7 +140,7 @@
         align="center"
         class-name="defect-field-sort-col"
       >
-        <template slot-scope="scope">
+        <template #default="scope">
           <div v-if="canEditDefectField" class="sort-order-arrows" @click.stop>
             <legacy-icon icon="el-icon-caret-top" class="sort-arrow"
               :class="{ 'is-disabled': !canMoveSort(scope.row, -1) }"
@@ -160,20 +160,21 @@
         align="left"
         :width="operateColumnWidth"
         class-name="cat2bug-operate-column small-padding"
+        fixed="right"
       >
-        <template slot-scope="scope">
+        <template #default="scope">
           <div v-if="!isBuiltinField(scope.row)" class="cat2bug-operate-tools defect-field-operate-tools">
             <el-button
               v-if="canEditDefectField"
-              size="mini"
-              type="text"
+              size="small"
+              link
               :icon="$legacyIcon('el-icon-edit')"
               @click="handleUpdate(scope.row)"
             >{{ $t('modify') }}</el-button>
             <el-button
               v-if="canRemoveDefectField"
-              size="mini"
-              type="text"
+              size="small"
+              link
               :icon="$legacyIcon('el-icon-delete')"
               class="red"
               @click="handleDelete(scope.row)"
@@ -188,8 +189,8 @@
       <pagination
         class="defect-field-table-pagination"
         :total="total"
-        :page.sync="queryParams.pageNum"
-        :limit.sync="queryParams.pageSize"
+        v-model:page="queryParams.pageNum"
+        v-model:limit="queryParams.pageSize"
         @pagination="handlePagination"
       />
     </div>
@@ -197,7 +198,7 @@
 
     <el-dialog
       :title="title"
-      :visible.sync="open"
+      v-model="open"
       width="720px"
       append-to-body
       :close-on-click-modal="false"
@@ -245,17 +246,17 @@
         <el-form-item v-if="form.fieldType === 'enum'" :label="$t('defect.custom-field.enum-options')">
           <el-table :data="enumOptions" size="small" border class="enum-options-table defect-field-enum-table">
             <el-table-column :label="$t('defect.custom-field.option-key')" min-width="120">
-              <template slot-scope="scope">
+              <template #default="scope">
                 <el-input v-model="scope.row.key" size="small" maxlength="64" />
               </template>
             </el-table-column>
             <el-table-column :label="$t('defect.custom-field.option-label')" min-width="120">
-              <template slot-scope="scope">
+              <template #default="scope">
                 <el-input v-model="scope.row.label" size="small" maxlength="128" />
               </template>
             </el-table-column>
             <el-table-column :label="$t('defect.custom-field.option-color')" width="90" align="center">
-              <template slot-scope="scope">
+              <template #default="scope">
                 <el-color-picker
                   v-model="scope.row.color"
                   size="small"
@@ -264,12 +265,12 @@
               </template>
             </el-table-column>
             <el-table-column :label="$t('operate')" width="70" align="center">
-              <template slot-scope="scope">
-                <el-button type="text" :icon="$legacyIcon('el-icon-delete')" class="red" @click="removeEnumOption(scope.$index)" />
+              <template #default="scope">
+                <el-button link :icon="$legacyIcon('el-icon-delete')" class="red" @click="removeEnumOption(scope.$index)" />
               </template>
             </el-table-column>
           </el-table>
-          <el-button type="text" :icon="$legacyIcon('el-icon-plus')" @click="addEnumOption" style="margin-top: 8px;">
+          <el-button link :icon="$legacyIcon('el-icon-plus')" @click="addEnumOption" style="margin-top: 8px;">
             {{ $t('defect.custom-field.add-option') }}
           </el-button>
         </el-form-item>
@@ -288,10 +289,10 @@
         <el-form-item v-if="supportsFieldMaxLength(form.fieldType)" :label="$t('defect.custom-field.max-length')" prop="maxLength">
           <el-input-number
             v-model="form.maxLength"
+            class="defect-field-compact-number"
             :min="1"
             :max="65535"
             controls-position="right"
-            style="width: 100%"
           />
         </el-form-item>
         <el-form-item :label="$t('defect.custom-field.required')" prop="required">
@@ -309,16 +310,24 @@
           <el-switch v-model="form.enabled" :active-value="1" :inactive-value="0" />
         </el-form-item>
         <el-form-item :label="$t('defect.custom-field.sort-order')" prop="sortOrder">
-          <el-input-number v-model="form.sortOrder" :min="0" :max="9999" controls-position="right" style="width: 100%" />
+          <el-input-number
+            v-model="form.sortOrder"
+            class="defect-field-compact-number"
+            :min="0"
+            :max="9999"
+            controls-position="right"
+          />
         </el-form-item>
       </el-form>
-      <div slot="footer" class="dialog-footer">
+      <template #footer>
+        <div class="dialog-footer">
         <el-button class="defect-kbd-hint-host" type="primary" @click="submitForm">
           {{ $t('ok') }}
           <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
         </el-button>
         <el-button @click="requestCloseToolDialog">{{ $t('cancel') }}</el-button>
-      </div>
+        </div>
+      </template>
     </el-dialog>
   </div>
 </template>
@@ -341,8 +350,9 @@ import {
 } from '@/utils/defect-custom-field-columns'
 import { TableOptions } from '@/views/system/defect/list/table-options'
 import { isBuiltinFieldAlwaysEnabled } from '@/utils/defect-field-layout'
-import { mapState } from 'pinia'
+import { storeToRefs } from 'pinia';
 import { useSettingsStore } from '@/stores/settings'
+import { useUserStore } from '@/stores/user'
 import DefectFieldDefaultValueInput from '@/components/DefectCustomField/DefectFieldDefaultValueInput'
 import {
   enumOptionsFromTypeConfig,
@@ -372,6 +382,13 @@ export default {
   name: 'ProjectDefectFields',
   mixins: [projectOptionSubKbd, defectToolDialogKbd],
   components: { DefectFieldDefaultValueInput },
+  setup() {
+    const settingsStore = useSettingsStore()
+    const { themeMode } = storeToRefs(settingsStore)
+    const userStore = useUserStore()
+    const { config } = storeToRefs(userStore)
+    return { themeMode, config }
+  },
   data() {
     return {
       loading: false,
@@ -397,7 +414,6 @@ export default {
     }
   },
   computed: {
-    ...mapState(useSettingsStore, ['themeMode']),
     /** 浅色主题用 Element 默认 light；深色主题系统灰、自定义蓝（dark） */
     sourceTagEffect() {
       return this.themeMode === 'dark' ? 'dark' : 'light'
@@ -406,7 +422,7 @@ export default {
       return this.themeMode === 'dark' ? 'defect-field-source-tag--system' : ''
     },
     projectId() {
-      return parseInt(this.$store.state.user.config.currentProjectId)
+      return parseInt(this.config.currentProjectId)
     },
     canAddDefectField() {
       return hasAnyPermi(['system:project:defect-field:add'])
@@ -902,7 +918,7 @@ export default {
         return
       }
       const enabled = val ? 1 : 0
-      this.$set(row, '_toggleLoading', true)
+      row._toggleLoading = true
       const request = this.isBuiltinField(row)
         ? updateBuiltinFieldLayout(this.projectId, this.builtinLayoutPayload(row, { enabled }))
         : updateField(this.projectId, row.fieldId, this.buildPatchPayload(row, { enabled }))
@@ -922,7 +938,7 @@ export default {
         })
         .catch(() => {})
         .finally(() => {
-          this.$set(row, '_toggleLoading', false)
+          row._toggleLoading = false
         })
     },
     canMoveSort(row, delta) {
@@ -955,7 +971,7 @@ export default {
         return
       }
 
-      changes.forEach(c => this.$set(c.row, '_toggleLoading', true))
+      changes.forEach(c => { c.row._toggleLoading = true })
       Promise.all(changes.map(c => {
         const r = c.row
         return this.isBuiltinField(r)
@@ -974,7 +990,7 @@ export default {
           this.$modal.msgError(this.$t('defect.custom-field.sort-move-fail'))
         })
         .finally(() => {
-          changes.forEach(c => this.$set(c.row, '_toggleLoading', false))
+          changes.forEach(c => { c.row._toggleLoading = false })
         })
     },
     reset() {
@@ -1182,6 +1198,9 @@ export default {
   flex-shrink: 0;
 }
 .form-tip {
+  display: block;
+  width: 100%;
+  flex: 0 0 100%;
   font-size: 12px;
   color: #909399;
   line-height: 1.4;
@@ -1344,6 +1363,16 @@ html.dark .defect-field-page .sort-order-arrows .sort-arrow.is-disabled {
       cursor: not-allowed;
       pointer-events: none;
     }
+  }
+}
+</style>
+
+<style lang="scss">
+/* 对话框 append-to-body，须非 scoped */
+.el-dialog .project-defect-field-dialog-form {
+  .el-form-item__content > .defect-field-compact-number.el-input-number {
+    width: 150px;
+    max-width: 100%;
   }
 }
 </style>

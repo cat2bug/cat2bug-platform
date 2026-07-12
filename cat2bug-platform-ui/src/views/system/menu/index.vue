@@ -20,8 +20,8 @@
         </el-select>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" :icon="$legacyIcon('el-icon-search')" size="mini" @click="handleQuery">搜索</el-button>
-        <el-button :icon="$legacyIcon('el-icon-refresh')" size="mini" @click="resetQuery">重置</el-button>
+        <el-button type="primary" :icon="$legacyIcon('el-icon-search')" size="small" @click="handleQuery">搜索</el-button>
+        <el-button :icon="$legacyIcon('el-icon-refresh')" size="small" @click="resetQuery">重置</el-button>
       </el-form-item>
     </el-form>
 
@@ -31,7 +31,7 @@
           type="primary"
           plain
           :icon="$legacyIcon('el-icon-plus')"
-          size="mini"
+          size="small"
           @click="handleAdd"
         >新增</el-button>
       </el-col>
@@ -40,7 +40,7 @@
           type="info"
           plain
           :icon="$legacyIcon('el-icon-sort')"
-          size="mini"
+          size="small"
           @click="toggleExpandAll"
         >展开/折叠</el-button>
       </el-col>
@@ -77,20 +77,20 @@
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template #default="scope">
           <el-button
-            size="mini"
-            type="text"
+            size="small"
+            link
             :icon="$legacyIcon('el-icon-edit')"
             @click="handleUpdate(scope.row)"
           >修改</el-button>
           <el-button
-            size="mini"
-            type="text"
+            size="small"
+            link
             :icon="$legacyIcon('el-icon-plus')"
             @click="handleAdd(scope.row)"
           >新增</el-button>
           <el-button
-            size="mini"
-            type="text"
+            size="small"
+            link
             :icon="$legacyIcon('el-icon-delete')"
             @click="handleDelete(scope.row)"
           >删除</el-button>

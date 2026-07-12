@@ -462,7 +462,7 @@
   "defect.builtin-field.createMember": "作成者",
   "defect.builtin-field.updateTime": "更新日時",
   "defect.custom-field.section": "缺陷フィールド",
-  "defect.custom-field.object-placeholder": "JSON オブジェクト（例: \"k\": \"v\"）",
+  "defect.custom-field.object-placeholder": "JSON オブジェクト（例: k: v）",
   "defect.custom-field.invalid-json": "JSON の形式が無効です",
   "defect.custom-field.add-item": "項目を追加",
   "defect.all-type": "全タイプ",

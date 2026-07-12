@@ -247,7 +247,7 @@
                         {{ $t('setup.ai.hostHintPrefix') }}
                         <span class="setup-link">{{ ollamaDemoUrl }}</span>
                         <el-tooltip :content="$t('setup.ai.copyDemoUrlToInput')" placement="top">
-                          <el-button type="text" class="setup-copy-btn" :icon="$legacyIcon('el-icon-document-copy')" @click="fillOllamaDemoUrl" />
+                          <el-button link class="setup-copy-btn" :icon="$legacyIcon('el-icon-document-copy')" @click="fillOllamaDemoUrl" />
                         </el-tooltip>
                         {{ $t('setup.ai.hostHintSuffix') }}
                       </p>
@@ -365,7 +365,7 @@ import {
   submitSetup
 } from '@/api/setup'
 import { resetSetupStatusCache } from '@/utils/setup-status'
-import store from '@/store'
+import { useUserStore } from '@/stores/user'
 
 const I18N_LOCALE_KEY = 'i18n-locale'
 const SETUP_AWAITING_READY_KEY = 'cat2bug.setup.awaitingReady'
@@ -1027,10 +1027,9 @@ export default {
       this.clearWaitTimers()
       sessionStorage.removeItem(SETUP_AWAITING_READY_KEY)
       sessionStorage.removeItem(SETUP_AWAITING_RESTART_KEY)
-      store.dispatch('FedLogOut').finally(() => {
-        resetSetupStatusCache()
-        window.location.href = '/login'
-      })
+      useUserStore().FedLogOut()
+      resetSetupStatusCache()
+      window.location.href = '/login'
     }
   }
 }

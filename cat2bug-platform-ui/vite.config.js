@@ -59,9 +59,10 @@ function docsDevMiddleware() {
   }
 }
 
-const vue2DatepickerShimRoot = path.resolve(__dirname, 'src/shims/vue2-datepicker')
+const vue2DatepickerAdapterRoot = path.resolve(__dirname, 'src/adapters/vue2-datepicker')
+const vuedraggableLegacyPath = path.resolve(__dirname, 'src/shims/vuedraggable-legacy.js')
 
-/** vue-excel-editor 依赖 vue2-datepicker（Vue2）；强制走 Vue3 shim，避免预构建拉取 index.esm.js */
+/** vue-excel-editor 依赖 vue2-datepicker（Vue2）；强制走 Vue3 adapter，避免预构建拉取 index.esm.js */
 function vue2DatepickerShimPlugin() {
   return {
     name: 'vue2-datepicker-shim',
@@ -69,13 +70,34 @@ function vue2DatepickerShimPlugin() {
     resolveId(source) {
       const normalized = source.replace(/\\/g, '/')
       if (normalized === 'vue2-datepicker' || normalized === 'vue2-datepicker/index.js') {
-        return path.join(vue2DatepickerShimRoot, 'index.js')
+        return path.join(vue2DatepickerAdapterRoot, 'index.js')
       }
       if (normalized === 'vue2-datepicker/index.css') {
-        return path.join(vue2DatepickerShimRoot, 'index.css')
+        return path.join(vue2DatepickerAdapterRoot, 'index.css')
       }
       if (normalized.includes('node_modules/vue2-datepicker/')) {
-        return path.join(vue2DatepickerShimRoot, 'index.js')
+        return path.join(vue2DatepickerAdapterRoot, 'index.js')
+      }
+      return null
+    }
+  }
+}
+
+/** vue-excel-editor / tool builder / Cat2Doc 仍使用 v2 风格 API；其余组件走 vuedraggable v4 */
+function vuedraggableLegacyShimPlugin() {
+  return {
+    name: 'vuedraggable-legacy-shim',
+    enforce: 'pre',
+    resolveId(source, importer) {
+      if (source !== 'vuedraggable') return null
+      const from = (importer || '').replace(/\\/g, '/')
+      if (
+        from.includes('node_modules/vue-excel-editor/')
+        || from.includes('/vendor/vue-excel-editor/')
+        || from.includes('/views/tool/build/')
+        || from.includes('/components/Cat2BugDocument/')
+      ) {
+        return vuedraggableLegacyPath
       }
       return null
     }
@@ -125,6 +147,7 @@ export default defineConfig(({ mode }) => {
     },
     plugins: [
       vue2DatepickerShimPlugin(),
+      vuedraggableLegacyShimPlugin(),
       vue(),
       ...(isDev ? [docsDevMiddleware()] : []),
       createSvgIconsPlugin({
@@ -158,24 +181,24 @@ export default defineConfig(({ mode }) => {
       ] : [])
     ],
     resolve: {
-      alias: {
-        '@': resolve('src'),
-        '~@': resolve('src'),
-        'vue-multipane': resolve('src/vendor/vue-multipane/index.js'),
-        'element-ui': resolve('src/shims/element-ui.js'),
-        'element-ui/lib/locale': resolve('src/shims/element-ui-locale.js'),
-        'element-ui/packages/table/src/util': resolve('src/utils/element-table-util.js'),
-        [path.resolve(__dirname, 'node_modules/markdown-it-vue/src/utils.js')]: resolve('src/vendor/markdown-it-vue-utils.js'),
-        'markdown-it-vue/dist/markdown-it-vue.css': path.resolve(__dirname, 'node_modules/markdown-it-vue/dist/markdown-it-vue.css'),
-        'markdown-it-vue': resolve('src/components/Markdown/MarkdownItVueCompat.vue'),
-        'vuex': resolve('src/shims/vuex.js'),
-        'path': resolve('src/utils/path-browser.js'),
-        'html-docx-js/dist/html-docx': resolve('src/shims/html-docx-js.js'),
-        'html-docx-js': resolve('src/shims/html-docx-js.js'),
-        'vuedraggable': resolve('src/shims/vuedraggable.js'),
-        'xlsx': resolve('src/shims/xlsx.js'),
-        'vue2-datepicker': resolve('src/shims/vue2-datepicker'),
-      },
+      alias: [
+        {
+          find: /^vue-cropper$/,
+          replacement: path.resolve(__dirname, 'node_modules/vue-cropper/dist/vue-cropper.es.js')
+        },
+        { find: '@', replacement: resolve('src') },
+        { find: '~@', replacement: resolve('src') },
+        { find: 'vue-multipane', replacement: resolve('src/vendor/vue-multipane/index.js') },
+        { find: 'vue-excel-editor', replacement: resolve('src/vendor/vue-excel-editor/index.js') },
+        { find: 'element-ui', replacement: resolve('src/shims/element-ui.js') },
+        { find: 'element-ui/lib/locale', replacement: resolve('src/shims/element-ui-locale.js') },
+        { find: 'element-ui/packages/table/src/util', replacement: resolve('src/utils/element-table-util.js') },
+        { find: 'path', replacement: resolve('src/utils/path-browser.js') },
+        { find: 'html-docx-js/dist/html-docx', replacement: resolve('src/shims/html-docx-js.js') },
+        { find: 'html-docx-js', replacement: resolve('src/shims/html-docx-js.js') },
+        { find: 'xlsx', replacement: resolve('src/shims/xlsx.js') },
+        { find: 'vue2-datepicker', replacement: resolve('src/adapters/vue2-datepicker') }
+      ],
       extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.vue']
     },
     css: {
@@ -187,12 +210,31 @@ export default defineConfig(({ mode }) => {
     },
     define: buildProcessEnvDefine(mergedEnv),
     optimizeDeps: {
-      include: ['vue', 'vue-router', 'pinia', 'axios', 'js-cookie', 'nprogress', 'vue-excel-editor', 'sortablejs', 'xlsx', 'vue-datepicker-next', 'date-format-parse'],
-      exclude: ['vue2-datepicker'],
-      entries: ['index.html'],
+      include: [
+        'vue',
+        'vue-router',
+        'pinia',
+        'axios',
+        'js-cookie',
+        'nprogress',
+        'sortablejs',
+        'xlsx',
+        'vue-datepicker-next',
+        'date-format-parse',
+        'vuedraggable/dist/vuedraggable.umd.js'
+      ],
+      exclude: ['vue2-datepicker', 'vue-cropper'],
+      entries: [
+        'index.html',
+        'src/views/system/defect/index.vue',
+        'src/views/system/case/index.vue',
+        'src/views/system/plan/index.vue'
+      ],
+      holdUntilCrawlEnd: true,
       esbuildOptions: {
         alias: {
-          'vue2-datepicker': path.join(vue2DatepickerShimRoot, 'index.js')
+          'vue2-datepicker': path.join(vue2DatepickerAdapterRoot, 'index.js'),
+          'vue-cropper': path.resolve(__dirname, 'node_modules/vue-cropper/dist/vue-cropper.es.js')
         },
         loader: { '.js': 'jsx' },
         jsx: 'transform',
@@ -204,6 +246,16 @@ export default defineConfig(({ mode }) => {
       host: devHost,
       port,
       open: true,
+      warmup: {
+        clientFiles: [
+          './src/views/system/defect/index.vue',
+          './src/views/system/defect/list/table.vue',
+          './src/components/Cat2BugStatistic/index.vue',
+          './src/views/system/case/index.vue',
+          './src/views/system/plan/index.vue',
+          './src/components/Cloud/CloudCase2/chat/CaseHelloWorld.vue'
+        ]
+      },
       proxy: {
         [baseApi]: {
           target: 'http://localhost:2020',

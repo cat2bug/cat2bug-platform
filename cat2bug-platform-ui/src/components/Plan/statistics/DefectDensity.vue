@@ -1,7 +1,8 @@
 <template>
   <el-tooltip placement="bottom" popper-class="tooltip-width">
     <!--            缺陷密度的说明-->
-    <div slot="content" class="column">
+    <template #content>
+    <div class="column">
       <span class="key-point">{{$t('definition')}}</span>
       <div>
         <span v-for="d in definition">{{d}}<br/></span>
@@ -17,14 +18,15 @@
         </span>
       </div>
     </div>
+    </template>
     <!--            缺陷密度的数据-->
     <div class="plan-statistical-block">
       <el-statistic
         group-separator=","
         :title="$t('plan.defect-density')"
       >
-        <template slot="formatter">
-          {{`${plan.defectDensity||0}`}}
+        <template #formatter>
+          {{ plan.defectDensity || 0 }}
         </template>
       </el-statistic>
     </div>

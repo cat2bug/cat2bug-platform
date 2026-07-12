@@ -2,7 +2,7 @@
  * 项目设置列表类子页：分页快捷键（与返回 B 错开，默认 U/P）。
  */
 import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
-import { PROJECT_OPTION_KBD_SCOPE } from '@/mixins/project-option-sub-kbd'
+import { PROJECT_OPTION_KBD_SCOPE } from '@/composables/keyboard/useProjectOptionSubKbd'
 
 const PAGINATION_FLOAT = { placement: 'bottom-right-outset', outset: 2 }
 

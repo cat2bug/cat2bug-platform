@@ -28,7 +28,7 @@
         </el-form-item>
         <el-form-item label="" prop="createById" class="list-query-nav-item" data-query-key="createById">
           <select-project-member
-            v-model="queryParams.createByIds"
+            v-model:memberId="queryParams.createByIds"
             :project-id="projectId"
             placeholder="report.please-enter-pusher"
             :is-head="false"
@@ -43,7 +43,7 @@
             placement="top"
             trigger="click"
             popper-class="defect-column-picker-popover"
-            v-model="reportColumnPickerVisible"
+            v-model:visible="reportColumnPickerVisible"
             @show="onColumnPickerPopoverShow"
             @hide="onColumnPickerPopoverHide"
           >
@@ -58,9 +58,11 @@
               class="defect-column-picker"
               @change="onReportColumnPickerChange"
             >
-              <el-checkbox v-for="c in reportColumnPickerOptions" :key="c.key" :label="c.key">{{ $t(c.key) }}</el-checkbox>
+              <el-checkbox v-for="c in reportColumnPickerOptions" :key="c.key" :value="c.key">{{ $t(c.key) }}</el-checkbox>
             </el-checkbox-group>
-            <el-button class="report-list-hint-columns" style="padding: 9px;" plain slot="reference" :icon="$legacyIcon('el-icon-s-fold')" size="small"></el-button>
+            <template #reference>
+              <el-button class="report-list-hint-columns" style="padding: 9px;" plain :icon="$legacyIcon('el-icon-s-fold')" size="small"></el-button>
+            </template>
           </el-popover>
           <el-button
             class="report-hint-batch-delete"
@@ -103,24 +105,20 @@
       <template #columns="{ scope, column }">
         <report-type-flag v-if="column.prop==='reportKey'" :report="scope.row" />
         <div v-else-if="column.prop==='reportTitle'" class="table-report-title">
-          <focus-member-list
-            v-model="scope.row.focusList"
-            module-name="report"
-            :data-id="scope.row.reportId" />
           <span class="report-row-kbd-hint-anchor">{{ scope.row.reportTitle }}</span>
         </div>
         <span v-else-if="column.prop==='reportTime'">{{ parseTime(scope.row.reportTime, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
         <span v-else-if="column.prop==='reportSource'">{{ scope.row.reportSource }}</span>
         <template v-else-if="column.prop==='createBy'">
           <el-tooltip v-if="scope.row.createBy" class="item" effect="dark" :content="scope.row.createBy" placement="top">
-            <cat2-bug-avatar :member="member(scope.row)" />
+            <cat2-bug-avatar :member="memberForReport(scope.row)" />
           </el-tooltip>
         </template>
         <span v-else>{{ scope.row[column.prop] }}</span>
       </template>
       <template #append>
         <el-table-column :label="$t('operate')" align="left" class-name="no-drag cat2bug-operate-column" fixed="right">
-          <template slot-scope="scope">
+          <template #default="scope">
             <report-tools class="cat2bug-operate-tools" :report="scope.row" :is-text="true" :is-show-icon="true" @delete="getList" />
           </template>
         </el-table-column>
@@ -132,15 +130,15 @@
       <pagination
         class="report-table-pagination"
         :total="total"
-        :page.sync="queryParams.pageNum"
-        :limit.sync="queryParams.pageSize"
+        v-model:page="queryParams.pageNum"
+        v-model:limit="queryParams.pageSize"
         @pagination="getList"
       />
     </div>
     </div>
 
     <!-- 添加或修改报告对话框 -->
-    <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
+    <el-dialog :title="title" v-model="open" width="500px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="报告标题" prop="reportTitle">
           <el-input v-model="form.reportTitle" placeholder="请输入报告标题" />
@@ -160,10 +158,12 @@
           <el-input v-model="form.createById" placeholder="请输入 推送人ID" />
         </el-form-item>
       </el-form>
-      <div slot="footer" class="dialog-footer">
+      <template #footer>
+        <div class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
         <el-button @click="cancel">取 消</el-button>
-      </div>
+        </div>
+      </template>
     </el-dialog>
     <view-report ref="viewReport" :project-id="projectId" @delete="handleQuery" />
   </div>
@@ -175,14 +175,12 @@ import ProjectLabel from "@/components/Project/ProjectLabel";
 import ViewReport from "@/components/Report/ViewReport";
 import Step from "@/components/Case/CaseStep";
 import ReportTools from "@/components/Report/ReportTools";
-import FocusMemberList from "@/components/FocusMemberList";
 import ReportTypeFlag from "@/components/Report/ReportTypeFlag";
 import Cat2BugReportTemplateSelect from "@/components/Cat2BugReportTemplateSelect";
 import SelectProjectMember from "@/components/Project/SelectProjectMember";
 import Cat2BugAvatar from "@/components/Cat2BugAvatar";
 import i18n from "@/utils/i18n/i18n";
 import {delUser} from "@/api/system/user";
-import store from "@/store";
 
 import Cat2BugTable from "@/components/Cat2BugTable";
 import { ReportTableColumnDefaults } from "@/views/system/report/report-table-options";
@@ -191,6 +189,7 @@ import listQueryKeyboardNav from '@/mixins/list-query-keyboard-nav'
 import columnPickerPopoverKbd from '@/mixins/column-picker-popover-kbd'
 import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
 import { checkPermi } from '@/utils/permission'
+import { closeReportTemplatePopover } from '@/utils/report-template-popover-kbd'
 import {
   assignRowHintLetters,
   collectHintLettersFromToolbar,
@@ -201,13 +200,20 @@ import {
   resolveElTableRowData,
   scrollTableBodyByArrow
 } from '@/utils/defect-row-kbd-hints'
+import { storeToRefs } from 'pinia';
+import { useUserStore } from '@/stores/user'
 
 const REPORT_KBD_SCOPE = 'report'
 
 export default {
   name: "Report",
   mixins: [pageActionHints, listQueryKeyboardNav, columnPickerPopoverKbd],
-  components: { Step, ProjectLabel, ViewReport, ReportTools, FocusMemberList, ReportTypeFlag, Cat2BugReportTemplateSelect, Cat2BugAvatar, SelectProjectMember, Cat2BugTable },
+  components: { Step, ProjectLabel, ViewReport, ReportTools, ReportTypeFlag, Cat2BugReportTemplateSelect, Cat2BugAvatar, SelectProjectMember, Cat2BugTable },
+  setup() {
+    const userStore = useUserStore()
+    const { config } = storeToRefs(userStore)
+    return { config }
+  },
   data() {
     return {
       // 遮罩层
@@ -231,6 +237,7 @@ export default {
       reportPickerColumnList: null,
       reportToolsWrapped: false,
       reportTableBodyMaxHeight: null,
+      reportMemberById: {},
       // 弹出层标题
       title: "",
       // 是否显示弹出层
@@ -271,15 +278,7 @@ export default {
     },
     /** 获取项目id */
     projectId() {
-      return parseInt(this.$store.state.user.config.currentProjectId);
-    },
-    member: function () {
-      return function (report) {
-        return {
-          nickName: report.createBy,
-          avatar: report.createByAvatar
-        }
-      }
+      return parseInt(this.config.currentProjectId);
     },
   },
   created() {
@@ -289,7 +288,7 @@ export default {
   mounted() {
     if(this.$route.query.projectId) {
       let _this = this;
-      store.dispatch('SwitchCurrentProject', this.$route.query.projectId).then(() => {
+      useUserStore().SwitchCurrentProject(this.$route.query.projectId).then(() => {
         _this.getList();
         if(_this.$route.query.reportId) {
           _this.$refs.viewReport.open(this.$route.query.reportId);
@@ -318,19 +317,40 @@ export default {
     });
   },
   deactivated() {
+    this.closeReportPageOverlays()
     if (this.$shortcut) this.$shortcut.unregisterPage(REPORT_KBD_SCOPE);
   },
   // 移除滚动条监听
   destroyed() {
+    this.closeReportPageOverlays()
     window.removeEventListener("resize", this.syncReportToolsWrapped);
     window.removeEventListener("resize", this.syncReportTableBodyMaxHeight);
     this.destroyReportListBodyResizeObserver();
     if (this.$shortcut) this.$shortcut.unregisterPage(REPORT_KBD_SCOPE);
   },
   beforeDestroy() {
+    this.closeReportPageOverlays()
+    if (this.$shortcut) this.$shortcut.unregisterPage(REPORT_KBD_SCOPE);
+  },
+  beforeUnmount() {
+    this.closeReportPageOverlays()
+    window.removeEventListener("resize", this.syncReportToolsWrapped);
+    window.removeEventListener("resize", this.syncReportTableBodyMaxHeight);
+    this.destroyReportListBodyResizeObserver();
     if (this.$shortcut) this.$shortcut.unregisterPage(REPORT_KBD_SCOPE);
   },
   methods: {
+    closeReportPageOverlays() {
+      this.reportColumnPickerVisible = false
+      const viewReport = this.$refs.viewReport
+      if (viewReport && viewReport.visible) {
+        viewReport.visible = false
+      }
+      const templateSelect = this.$refs.reportTemplateSelect
+      if (templateSelect) {
+        closeReportTemplatePopover(templateSelect)
+      }
+    },
     registerReportShortcuts() {
       if (!this.$shortcut) return
       this.$shortcut.registerPage(REPORT_KBD_SCOPE, [
@@ -565,6 +585,7 @@ export default {
         this.queryParams.params["endReportTime"] = this.daterangeReportTime[1];
       }
       listReport(this.queryParams).then(response => {
+        this.reportMemberById = {};
         this.reportList = response.rows;
         this.total = response.total;
         this.loading = false;
@@ -615,6 +636,19 @@ export default {
     },
     rowClickHandle(report) {
       this.$refs.viewReport.open(report.reportId);
+    },
+    memberForReport(report) {
+      if (!report) return {};
+      const key = String(report.reportId);
+      const nickName = report.createBy;
+      const avatar = report.createByAvatar;
+      const cached = this.reportMemberById[key];
+      if (cached && cached.nickName === nickName && cached.avatar === avatar) {
+        return cached;
+      }
+      const next = { nickName, avatar };
+      this.reportMemberById[key] = next;
+      return next;
     },
     /** 新增按钮操作 */
     handleAdd() {

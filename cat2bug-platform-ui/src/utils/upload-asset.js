@@ -1,4 +1,5 @@
 import { isExternal } from '@/utils/validate'
+import { getDefaultProjectIconUrl, parseProjectIconIndex } from '@/utils/project-default-icons'
 
 import defaultImageUrl from '@/assets/images/default-image.svg?url'
 
@@ -123,6 +124,9 @@ export function resolveUploadUrl(path, baseApi = process.env.VUE_APP_BASE_API ||
   if (trimmed.startsWith('/assets/')) {
     return trimmed
   }
+  if (trimmed.startsWith('/src/assets/')) {
+    return trimmed
+  }
   if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
     return trimmed
   }
@@ -172,8 +176,12 @@ export function resolveProjectIconUrl(projectIcon, baseApi = process.env.VUE_APP
   if (isExternal(trimmed) || trimmed.startsWith('data:')) {
     return trimmed
   }
-  if (trimmed.startsWith('/static/') || trimmed.indexOf('/static/') > -1) {
-    return trimmed
+  const presetIndex = parseProjectIconIndex(trimmed)
+  if (presetIndex != null) {
+    const presetUrl = getDefaultProjectIconUrl(presetIndex)
+    if (presetUrl) {
+      return presetUrl
+    }
   }
   if (trimmed.startsWith(baseApi)) {
     return trimmed

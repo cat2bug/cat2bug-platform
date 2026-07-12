@@ -10,11 +10,13 @@
     <h4 v-show="collectList.length>0">{{$t('project.collect-project')}}</h4>
     <el-row v-show="collectList.length>0" class="project-collects" :gutter="10">
       <el-col :xs="24" :sm="12" :md="8" :lg="4" :xl="4" v-for="project in collectList" :key="project.projectId">
-        <el-card class="box-card project-block" @click.native="clickProject(project)">
-          <div slot="header" class="clearfix project-collects-card-header">
-            <project-nameplate :project="project"></project-nameplate>
-            <star-switch v-model="project.collect" @change="clickCollectHandle($event, project, true)"></star-switch>
-          </div>
+        <el-card class="box-card project-block" @click="clickProject(project)">
+          <template #header>
+            <div class="clearfix project-collects-card-header">
+              <project-nameplate :project="project"></project-nameplate>
+              <star-switch v-model="project.collect" @change="clickCollectHandle($event, project, true)"></star-switch>
+            </div>
+          </template>
           <div class="project-collects-card-tools">
 <!--            <svg-icon icon-class="nested"-->
 <!--                      @click="goCaseHandle($event, project)"-->
@@ -71,7 +73,7 @@
     </div>
     <el-table ref="projectTable" v-loading="loading" :data="projectList">
       <el-table-column :label="$t('project.name')" align="left" prop="projectName">
-        <template slot-scope="scope">
+        <template #default="scope">
           <span
             class="project-row-kbd-hint-anchor project-list-title"
             @click="clickProject(scope.row)"
@@ -81,28 +83,28 @@
         </template>
       </el-table-column>
       <el-table-column :label="$t('update-time')" align="left" prop="updateTime" width="180">
-        <template slot-scope="scope">
+        <template #default="scope">
           <span>{{ parseTime(scope.row.updateTime, '{y}-{m}-{d}') }}</span>
         </template>
       </el-table-column>
       <el-table-column :label="$t('member')" align="center" prop="members" width="200">
-        <template slot-scope="scope">
+        <template #default="scope">
           <row-list-member :members="scope.row.listShowMembers" />
         </template>
       </el-table-column>
       <el-table-column :label="$t('operate')" align="left" class-name="small-padding fixed-width" width="150">
-        <template slot-scope="scope">
+        <template #default="scope">
           <star-switch v-if="visibleDelete(scope.row)" v-model="scope.row.collect" @change="clickCollectHandle($event, scope.row, false)"></star-switch>
 <!--          <el-button-->
 <!--            size="small"-->
-<!--            type="text"-->
+<!--            link-->
 <!--            :icon="$legacyIcon('el-icon-edit')"-->
 <!--            @click="handleUpdate(scope.row)"-->
 <!--            v-hasPermi="['system:project:edit']"-->
 <!--          >修改</el-button>-->
           <el-button
             size="small"
-            type="text"
+            link
             :icon="$legacyIcon('el-icon-delete')"
             class="red"
             @click="handleDelete($event, scope.row)"
@@ -116,13 +118,13 @@
       class="project-manage-table-pagination"
       v-show="total>0"
       :total="total"
-      :page.sync="queryParams.pageNum"
-      :limit.sync="queryParams.pageSize"
+      v-model:page="queryParams.pageNum"
+      v-model:limit="queryParams.pageSize"
       @pagination="getList"
     />
 
     <!-- 添加或修改项目对话框 -->
-    <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
+    <el-dialog :title="title" v-model="open" width="500px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="项目名称" prop="projectName">
           <el-input v-model="form.projectName" placeholder="请输入项目名称" />
@@ -134,24 +136,27 @@
           <el-input v-model="form.projectIntroduce" placeholder="请输入项目介绍" />
         </el-form-item>
       </el-form>
-      <div slot="footer" class="dialog-footer">
+      <template #footer>
+        <div class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
         <el-button @click="cancel">取 消</el-button>
-      </div>
+        </div>
+      </template>
     </el-dialog>
   </div>
 </template>
 
 <script>
 import {listProject, getProject, delProject, addProject, updateProject, collectProject} from "@/api/system/project";
+import { listProject as listAdminProject } from "@/api/admin/project";
 import ProjectNameplate from "@/components/Project/ProjectNameplate";
 import StarSwitch from "@/components/StarSwitch";
 import RowListMember from "@/components/RowListMember";
 import { strFormat } from "@/utils/index"
-import store from "@/store";
 import i18n from "@/utils/i18n/i18n";
-import { mapState } from "pinia"
+import { storeToRefs } from "pinia";
 import { usePermissionStore } from "@/stores/permission";
+import { useUserStore } from "@/stores/user";
 import {checkPermi} from "@/utils/permission";
 import pageActionHints from '@/mixins/page-action-hints'
 import listQueryKeyboardNav from '@/mixins/list-query-keyboard-nav'
@@ -165,6 +170,12 @@ import {
   resolveTableRowFirstColumnHintAnchor,
   resolveTableRowFirstColumnKbdBadgeLayout
 } from '@/utils/defect-row-kbd-hints'
+import {
+  canUseAdminProjectList,
+  getCurrentTeamId,
+  getCurrentUserId,
+  resolveEffectiveTeamId
+} from '@/utils/store-context'
 
 const PROJECT_MANAGE_KBD_SCOPE = 'project-manage'
 
@@ -172,6 +183,11 @@ export default {
   name: "Project",
   mixins: [pageActionHints, listQueryKeyboardNav],
   components: { ProjectNameplate, RowListMember,StarSwitch },
+  setup() {
+    const permissionStore = usePermissionStore()
+    const { sidebarRouters } = storeToRefs(permissionStore)
+    return { sidebarRouters }
+  },
   data() {
     return {
       activeProjectTabName: this.$i18n.t('project.my-participated-in'),
@@ -217,19 +233,18 @@ export default {
     };
   },
   computed: {
-    ...mapState(usePermissionStore, ["sidebarRouters"]),
     collect: function() {
       return function (project) {
         return project.collect?'true':'false';
       }
     },
     /** 获取当前用户id */
-    currentUserId: function() {
-      return this.$store.state.user.id;
+    currentUserId() {
+      return getCurrentUserId();
     },
     /** 获取团队id */
     currentTeamId() {
-      return this.$store.state.user.config.currentTeamId;
+      return getCurrentTeamId();
     },
     /** 是否显示添加按钮 */
     visibleAdd() {
@@ -381,50 +396,90 @@ export default {
       this.reset();
       switch (this.activeProjectTabName) {
         case this.$i18n.t('project.my-participated-in'):
-          this.queryParams.params.userId = this.$store.state.user.id;
+          this.queryParams.params.userId = getCurrentUserId();
           break;
         default:
           this.queryParams.params.userId = null;
       }
       this.getList();
     },
+    normalizeProjectRows(rows) {
+      const list = rows || [];
+      list.forEach(p => {
+        if (!p.members) {
+          p.listShowMembers = [];
+        } else {
+          p.listShowMembers = p.members;
+        }
+      });
+      return list;
+    },
+    tryAdminProjectList() {
+      if (!canUseAdminProjectList()) {
+        this.projectList = [];
+        this.total = 0;
+        return Promise.resolve();
+      }
+      return listAdminProject({
+        pageNum: this.queryParams.pageNum,
+        pageSize: this.queryParams.pageSize,
+        projectName: this.queryParams.projectName,
+        params: this.queryParams.params,
+      }).then(res => {
+        this.projectList = this.normalizeProjectRows(res.rows);
+        this.total = res.total;
+      });
+    },
     /** 查询项目列表 */
     getList() {
-      this.queryParams.teamId = this.currentTeamId;
       this.loading = true;
-      listProject(this.queryParams).then(res => {
-        res.rows.forEach(p=>{
-          if(!p.members){
-            p.listShowMembers = [];
-          } else if(p.members.length<=3) {
-            p.listShowMembers = p.members;
-          } else {
-            let ms = p.members;
-            p.listShowMembers = [{
-              userName: p.members.length,
-              nickName: '共'+p.members.length+"人",
-              isStatistics: true
-            },ms[1],ms[0]]
+      resolveEffectiveTeamId().then((teamId) => {
+        if (!teamId) {
+          return this.tryAdminProjectList();
+        }
+        this.queryParams.teamId = teamId;
+        return listProject(this.queryParams).then(res => {
+          if (res && res.rows && res.rows.length) {
+            this.projectList = this.normalizeProjectRows(res.rows);
+            this.total = res.total;
+            return;
           }
+          return this.tryAdminProjectList();
+        }).catch(() => this.tryAdminProjectList());
+      }).catch(() => this.tryAdminProjectList())
+        .finally(() => {
+          this.loading = false;
         });
-        this.projectList = res.rows;
-        this.total = res.total;
-        this.loading = false;
-      });
     },
     /** 查询收藏的项目列表 */
     getCollectList() {
-      let params = {
-        teamId: this.currentTeamId,
+      const params = {
         params: {
-          userId: this.currentUserId,
+          userId: getCurrentUserId(),
         },
         collect: true,
         pageNum: 1,
         pageSize: 99
-      }
-      listProject(params).then(res => {
-        this.collectList = res.rows;
+      };
+      resolveEffectiveTeamId().then((teamId) => {
+        if (!teamId) {
+          if (!canUseAdminProjectList()) {
+            this.collectList = [];
+            return Promise.resolve();
+          }
+          params.teamId = null;
+          return listAdminProject(params).then(res => {
+            this.collectList = res.rows || [];
+          });
+        }
+        params.teamId = teamId;
+        return listProject(params).then(res => {
+          this.collectList = res.rows || [];
+        }).catch(() => {
+          this.collectList = [];
+        });
+      }).catch(() => {
+        this.collectList = [];
       });
     },
     // 取消按钮
@@ -537,7 +592,7 @@ export default {
     clickProject(project) {
       let _this = this;
       if(this.isViewDefect(project)) {
-        store.dispatch('SwitchCurrentProject', project.projectId).then(() => {
+        useUserStore().SwitchCurrentProject(project.projectId).then(() => {
           _this.$router.push({name:'Dashboard', params: { projectId: project.projectId }})
         });
       } else {
@@ -552,7 +607,7 @@ export default {
     /** 跳转到项目设置 */
     goProjectOptionHandle(e,project) {
       let _this = this;
-      store.dispatch('SwitchCurrentProject', project.projectId).then(() => {
+      useUserStore().SwitchCurrentProject(project.projectId).then(() => {
         _this.$router.push({name:'Option', params: { projectId: project.projectId }})
       });
       e.stopPropagation();
@@ -560,7 +615,7 @@ export default {
     /** 跳转到测试用例 */
     goCaseHandle(e,project) {
       let _this = this;
-      store.dispatch('SwitchCurrentProject', project.projectId).then(() => {
+      useUserStore().SwitchCurrentProject(project.projectId).then(() => {
         _this.$router.push({name: 'Case', params: {projectId: project.projectId}})
       });
     }

@@ -29,31 +29,31 @@
     </div>
     <el-table v-loading="loading" :data="projectList">
       <el-table-column :label="$t('team.name')" align="left" prop="teamName">
-        <template slot-scope="scope">
-          <team-nameplate class="project-list-title" :team="scope.row" @click.native="clickProject(scope.row)"></team-nameplate>
+        <template #default="scope">
+          <team-nameplate class="project-list-title" :team="scope.row" @click="clickProject(scope.row)"></team-nameplate>
         </template>
       </el-table-column>
       <el-table-column :label="$t('project.name')" align="left" prop="projectName">
-        <template slot-scope="scope">
-          <project-nameplate class="project-list-title" :project="scope.row" @click.native="clickProject(scope.row)"></project-nameplate>
+        <template #default="scope">
+          <project-nameplate class="project-list-title" :project="scope.row" @click="clickProject(scope.row)"></project-nameplate>
         </template>
       </el-table-column>
       <el-table-column :label="$t('create-time')" align="left" prop="createTime" width="180">
-        <template slot-scope="scope">
+        <template #default="scope">
           <span>{{ parseTime(scope.row.createTime, '{y}-{m}-{d}') }}</span>
         </template>
       </el-table-column>
       <el-table-column :label="$t('member')" align="center" prop="members" width="200">
-        <template slot-scope="scope">
-          <span>{{ scope.row.listShowMembers.length }}</span>
+        <template #default="scope">
+          <span>{{ (scope.row.members && scope.row.members.length) || 0 }}</span>
         </template>
       </el-table-column>
       <el-table-column :label="$t('project.introduction')" align="center" prop="projectIntroduce"></el-table-column>
       <el-table-column :label="$t('operate')" align="left" class-name="small-padding" width="130">
-        <template slot-scope="scope">
+        <template #default="scope">
           <el-button
-            size="mini"
-            type="text"
+            size="small"
+            link
             :icon="$legacyIcon(scope.row.lock?'el-icon-unlock':'el-icon-lock')"
             @click="handleLock(scope.row)"
             v-hasPermi="['admin:project:lock']"
@@ -65,8 +65,8 @@
     <pagination
       v-show="total>0"
       :total="total"
-      :page.sync="queryParams.pageNum"
-      :limit.sync="queryParams.pageSize"
+      v-model:page="queryParams.pageNum"
+      v-model:limit="queryParams.pageSize"
       @pagination="getList"
     />
     <project-lock-dialog ref="projectLockDialog" @change="handleQuery"></project-lock-dialog>
@@ -78,12 +78,17 @@ import {listProject} from "@/api/admin/project";
 import ProjectNameplate from "@/components/Project/ProjectNameplate";
 import TeamNameplate from "@/components/team/TeamNameplate";
 import ProjectLockDialog from './lock'
-import { mapState } from "pinia"
+import { storeToRefs } from "pinia";
 import { usePermissionStore } from "@/stores/permission";
 
 export default {
   name: "Project",
   components: { TeamNameplate, ProjectNameplate, ProjectLockDialog },
+  setup() {
+    const permissionStore = usePermissionStore()
+    const { sidebarRouters } = storeToRefs(permissionStore)
+    return { sidebarRouters }
+  },
   data() {
     return {
       activeProjectTabName: this.$i18n.t('project.my-participated-in'),
@@ -129,7 +134,6 @@ export default {
     };
   },
   computed: {
-    ...mapState(usePermissionStore, ["sidebarRouters"]),
     collect: function() {
       return function (project) {
         return project.collect?'true':'false';
@@ -154,15 +158,8 @@ export default {
         res.rows.forEach(p=>{
           if(!p.members){
             p.listShowMembers = [];
-          } else if(p.members.length<=3) {
-            p.listShowMembers = p.members;
           } else {
-            let ms = p.members;
-            p.listShowMembers = [{
-              userName: p.members.length,
-              nickName: '共'+p.members.length+"人",
-              isStatistics: true
-            },ms[1],ms[0]]
+            p.listShowMembers = p.members;
           }
         });
         this.projectList = res.rows;

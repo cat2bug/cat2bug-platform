@@ -21,7 +21,7 @@
             v-model="queryParams.accountName"
             placeholder="请输入配置名称"
             clearable
-            @keyup.enter.native="handleQuery"
+            @keyup.enter="handleQuery"
           />
         </el-form-item>
         <el-form-item label="" prop="modelName" class="list-query-nav-item" data-query-key="modelName">
@@ -30,7 +30,7 @@
             v-model="queryParams.modelName"
             placeholder="请输入模型名称"
             clearable
-            @keyup.enter.native="handleQuery"
+            @keyup.enter="handleQuery"
           />
         </el-form-item>
       </el-form>
@@ -49,7 +49,7 @@
     <el-table ref="aiAccountTable" v-loading="loading" :data="accountList" @selection-change="handleSelectionChange">
 <!--      <el-table-column type="selection" width="55" align="center" />-->
       <el-table-column :label="$t('project.ai.account-name')" align="center" prop="accountName" width="200">
-        <template slot-scope="scope">
+        <template #default="scope">
           <span class="ai-account-row-kbd-hint-anchor">{{ scope.row.accountName }}</span>
         </template>
       </el-table-column>
@@ -57,25 +57,25 @@
       <el-table-column :label="$t('project.ai.model-name')" align="center" prop="modelName" width="200" />
       <el-table-column :label="$t('project.ai.max-token')" align="center" prop="maxCompletionTokens" width="100" />
       <el-table-column :label="$t('operate')" align="center" class-name="small-padding fixed-width" width="220">
-        <template slot-scope="scope">
+        <template #default="scope">
           <el-button
-            size="mini"
-            type="text"
+            size="small"
+            link
             :icon="$legacyIcon('el-icon-video-play')"
             :loading="scope.row._testing === true"
             @click="handleTest(scope.row)"
             v-hasPermi="['ai:account:edit']"
           >{{ $t('project.ai.test') }}</el-button>
           <el-button
-            size="mini"
-            type="text"
+            size="small"
+            link
             :icon="$legacyIcon('el-icon-edit')"
             @click="handleUpdate(scope.row)"
             v-hasPermi="['ai:account:edit']"
           >修改</el-button>
           <el-button
-            size="mini"
-            type="text"
+            size="small"
+            link
             :icon="$legacyIcon('el-icon-delete')"
             @click="handleDelete(scope.row)"
             v-hasPermi="['ai:account:remove']"
@@ -88,15 +88,15 @@
       class="project-ai-account-table-pagination"
       v-show="total>0"
       :total="total"
-      :page.sync="queryParams.pageNum"
-      :limit.sync="queryParams.pageSize"
+      v-model:page="queryParams.pageNum"
+      v-model:limit="queryParams.pageSize"
       @pagination="getList"
     />
 
     <!-- 新建或修改 OpenAI 账号对话框 -->
     <el-dialog
       :title="title"
-      :visible.sync="open"
+      v-model="open"
       width="500px"
       append-to-body
       custom-class="cat2bug-form-shortcut-dialog"
@@ -115,19 +115,27 @@
           <el-input v-model="form.modelName" placeholder="请输入模型名称" :maxlength="255" />
         </el-form-item>
         <el-form-item :label="$t('project.ai.max-token')" prop="maxCompletionTokens">
-          <el-input-number v-model="form.maxCompletionTokens" :min="1" :max="65536" label="请输入最大Token"></el-input-number>
+          <el-input-number
+            v-model="form.maxCompletionTokens"
+            class="cat2bug-form-compact-number"
+            :min="1"
+            :max="65536"
+            controls-position="right"
+          />
         </el-form-item>
         <el-form-item :label="$t('project.ai.app-key')" prop="apiKey">
           <el-input v-model="form.apiKey" placeholder="请输入密钥" :maxlength="255" show-password />
         </el-form-item>
       </el-form>
-      <div slot="footer" class="dialog-footer">
+      <template #footer>
+        <div class="dialog-footer">
         <el-button class="defect-kbd-hint-host" type="primary" @click="submitForm">
           确 定
           <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
         </el-button>
         <el-button @click="requestCloseToolDialog">取 消</el-button>
-      </div>
+        </div>
+      </template>
     </el-dialog>
   </div>
 </template>
@@ -171,9 +179,17 @@ function validateAiUrl(rule, value, callback) {
   }
 }
 
+import { storeToRefs } from 'pinia'
+import { useUserStore } from '@/stores/user'
+
 export default {
   name: "Account",
   mixins: [projectOptionSubListKbd, defectToolDialogKbd],
+  setup() {
+    const userStore = useUserStore()
+    const { config: userConfig } = storeToRefs(userStore)
+    return { userConfig }
+  },
   data() {
     return {
       // 遮罩层
@@ -227,7 +243,7 @@ export default {
   },
   computed: {
     currentProjectId: function () {
-      return parseInt(this.$store.state.user.config.currentProjectId);
+      return parseInt(this.userConfig.currentProjectId);
     },
     /** 供弹框快捷键 mixin 识别 open 状态 */
     dialogVisible: {

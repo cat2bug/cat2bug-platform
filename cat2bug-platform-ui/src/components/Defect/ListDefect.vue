@@ -2,38 +2,38 @@
   <cat2bug-drawer
     :title="$i18n.t('defect.manage').toString()"
     ref="cat2bugDrawer">
-    <template slot="content">
+    <template #content>
       <el-table v-loading="loading" :data="defectList" @sort-change="sortChangeHandle" @row-click="editDefectHandle">
         <el-table-column type="selection" width="55" align="center" />
         <el-table-column :label="$t('id')" align="left" prop="projectNum" width="80" sortable >
-          <template slot-scope="scope">
+          <template #default="scope">
             <span>{{ '#' + scope.row.projectNum }}</span>
           </template>
         </el-table-column>
         <el-table-column :label="$t('type')" align="left" prop="defectTypeName" width="80" sortable>
-          <template slot-scope="scope">
+          <template #default="scope">
             <defect-type-flag :defect="scope.row" />
           </template>
         </el-table-column>
         <el-table-column :label="$t('defect.name')" align="left" prop="defectName" sortable >
-          <template slot-scope="scope">
+          <template #default="scope">
             <el-link type="primary" @click="editDefectHandle(scope.row)">{{ scope.row.defectName }}</el-link>
           </template>
         </el-table-column>
         <el-table-column :label="$t('handle-by')" align="left" prop="handleBy">
-          <template slot-scope="scope">
+          <template #default="scope">
             <row-list-member :members="scope.row.handleByList"></row-list-member>
           </template>
         </el-table-column>
         <el-table-column :label="$t('priority')" align="left" prop="defectLevel" width="100" sortable >
-          <template slot-scope="scope">
+          <template #default="scope">
             <level-tag :options="dict.type.defect_level" :value="scope.row.defectLevel"/>
           </template>
         </el-table-column>
         <el-table-column :label="$t('state')" align="left" prop="defectStateName" width="120" sortable />
         <el-table-column :label="$t('module')" align="left" prop="moduleName" width="150" sortable />
         <el-table-column :label="$t('image')" align="left" prop="imgUrls">
-          <template slot-scope="scope">
+          <template #default="scope">
             <cat2-bug-image
               v-for="(img,index) in getUrl(scope.row.imgUrls)"
               :key="index"
@@ -45,8 +45,8 @@
           </template>
         </el-table-column>
         <el-table-column :label="$t('operate')" align="left" class-name="small-padding fixed-width" width="150">
-          <template slot-scope="scope">
-            <defect-tools :is-text="true" :defect="scope.row" size="mini" :is-show-icon="true" @log="getList" />
+          <template #default="scope">
+            <defect-tools :is-text="true" :defect="scope.row" size="small" :is-show-icon="true" @log="getList" />
           </template>
         </el-table-column>
       </el-table>
@@ -54,8 +54,8 @@
       <pagination
         v-show="total>0"
         :total="total"
-        :page.sync="queryParams.pageNum"
-        :limit.sync="queryParams.pageSize"
+        v-model:page="queryParams.pageNum"
+        v-model:limit="queryParams.pageSize"
         @pagination="getList"
       />
     </template>
@@ -73,11 +73,18 @@ import SelectProjectMember from "@/components/Project/SelectProjectMember";
 import ProjectLabel from "@/components/Project/ProjectLabel";
 import DefectTypeFlag from "@/components/Defect/DefectTypeFlag";
 import DefectTools from "@/components/Defect/DefectTools";
+import { storeToRefs } from "pinia";
+import { useUserStore } from "@/stores/user";
 
 export default {
   name: "ListDefect",
   components: {Cat2bugDrawer,SelectModule, RowListMember, AddDefect, LevelTag, SelectProjectMember,ProjectLabel,DefectTypeFlag, DefectTools },
   dicts: ['defect_level'],
+  setup() {
+    const userStore = useUserStore()
+    const { config } = storeToRefs(userStore)
+    return { config }
+  },
   data() {
     return {
       drawer: false,
@@ -140,7 +147,7 @@ export default {
     },
     /** 获取项目id */
     getProjectId() {
-      return parseInt(this.$store.state.user.config.currentProjectId);
+      return parseInt(this.config.currentProjectId);
     },
     /** 排序改变的处理 */
     sortChangeHandle(e) {

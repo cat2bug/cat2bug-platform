@@ -7,8 +7,8 @@
              :rules="rules"
              label-width="0"
              class="select-module-add"
-             @keydown.enter.native='addProjectModule'
-             @submit.native.prevent>
+             @keydown.enter='addProjectModule'
+             @submit.prevent>
       <el-form-item prop="moduleName" label-width="0" class="select-module-add-item">
         <div class="select-module-add-combo">
           <el-input
@@ -18,11 +18,13 @@
             v-model="name"
             size="small"
             @input="nameChangeHandle"
-            @keydown.native.esc.stop="onInputEscape">
-            <el-button slot="append" :icon="$legacyIcon('el-icon-plus')" size="small"
+            @keydown.esc.stop="onInputEscape">
+            <template #append>
+            <el-button :icon="$legacyIcon('el-icon-plus')" size="small"
                        class="select-module-add-submit"
-                       @mousedown.native.prevent
+                       @mousedown.prevent
                        @click.stop="addProjectModule"></el-button>
+          </template>
           </el-input>
         </div>
       </el-form-item>
@@ -35,11 +37,8 @@ import {addModule} from "@/api/system/module";
 import { suppressDropdownBlurClose } from '@/utils/dropdown-blur-close';
 
 export default {
+  emits: ['update:moduleName'],
   name: "AddModuleMenuItem",
-  model: {
-    prop: 'moduleName',
-    event: 'input'
-  },
   data() {
     return {
       name: null,
@@ -94,7 +93,7 @@ export default {
       this.$emit('input-escape');
     },
     nameChangeHandle(val){
-      this.$emit('input',val);
+      this.$emit('update:moduleName', val);
     },
     addProjectModule(){
       const that = this;

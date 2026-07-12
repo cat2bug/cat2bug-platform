@@ -51,8 +51,8 @@
 
         <el-table v-loading="loading" :data="memberList">
           <el-table-column :label="$t('member.name')" align="left" key="nickName" prop="nickName" min-width="260" :show-overflow-tooltip="true">
-            <template slot-scope="scope">
-              <member-nameplate :member="scope.row"></member-nameplate>
+            <template #default="{ row }">
+              <member-nameplate :member="row"></member-nameplate>
             </template>
           </el-table-column>
           <el-table-column
@@ -60,16 +60,18 @@
             align="left"
             width="280"
           >
-            <template slot-scope="scope" v-if="scope.row.userId !== 1">
-              <el-select class="member-operate"
-                         v-model="scope.row.roleIds"
-                         multiple
-                         :placeholder="$t('member.please-select-role')"
-                         :disabled="isMemberDisabled(scope.row) || isCreateBy(scope.row)"
-                         @change="roleChangeHandle(scope.row)"
+            <template #default="{ row }">
+              <el-select
+                v-if="row.userId !== 1"
+                class="member-operate"
+                v-model="row.roleIds"
+                multiple
+                :placeholder="$t('member.please-select-role')"
+                :disabled="isMemberDisabled(row) || isCreateBy(row)"
+                @change="roleChangeHandle(row)"
               >
                 <el-option
-                  v-for="item in selectRoleOptions(scope.row)"
+                  v-for="item in selectRoleOptions(row)"
                   :key="item.roleId"
                   :label="item.roleName"
                   :value="item.roleId"
@@ -79,19 +81,19 @@
             </template>
           </el-table-column>
           <el-table-column :label="$t('email')" align="left" key="email" prop="email" :show-overflow-tooltip="true" width="300">
-            <template slot-scope="scope">
-              <span :teamLock="scope.row.status">{{ scope.row.email }}</span>
+            <template #default="{ row }">
+              <span :teamLock="row.status">{{ row.email }}</span>
             </template>
           </el-table-column>
           <el-table-column :label="$t('phone-number')" align="left" key="phoneNumber" prop="phoneNumber" width="150">
-            <template slot-scope="scope">
-              <span :teamLock="scope.row.status">{{ scope.row.phoneNumber }}</span>
+            <template #default="{ row }">
+              <span :teamLock="row.status">{{ row.phoneNumber }}</span>
             </template>
           </el-table-column>
           <el-table-column :label="$t('register-time')" align="left" key="createTime" prop="createTime" width="180">
-            <template slot-scope="scope">
-              <div teamLock="scope.row.status">
-                <span :teamLock="scope.row.status">{{ scope.row.createTime }}</span>
+            <template #default="{ row }">
+              <div :teamLock="row.status">
+                <span :teamLock="row.status">{{ row.createTime }}</span>
               </div>
             </template>
           </el-table-column>
@@ -101,23 +103,25 @@
             width="160"
             class-name="small-padding fixed-width"
           >
-            <template slot-scope="scope" v-if="isCreateBy(scope.row)==false">
+            <template #default="{ row }">
+              <template v-if="!isCreateBy(row)">
               <el-button
-                size="mini"
-                type="text"
+                size="small"
+                link
                 :icon="$legacyIcon('el-icon-lock')"
-                @click="lockMemberHandle(scope.row)"
+                @click="lockMemberHandle(row)"
                 v-hasPermi="['system:team:member:lock']"
-                v-if="scope.row.status=='0'"
+                v-if="row.status=='0'"
               >{{$t('lock')}}</el-button>
               <el-button
-                size="mini"
-                type="text"
+                size="small"
+                link
                 :icon="$legacyIcon('el-icon-unlock')"
-                @click="unlockMemberHandle(scope.row)"
+                @click="unlockMemberHandle(row)"
                 v-hasPermi="['system:team:member:lock']"
-                v-else-if="scope.row.status=='1'"
+                v-else-if="row.status=='1'"
               >{{$t('unlock')}}</el-button>
+              </template>
             </template>
           </el-table-column>
         </el-table>
@@ -125,8 +129,8 @@
           class="team-member-table-pagination"
           v-show="total>0"
           :total="total"
-          :page.sync="queryParams.pageNum"
-          :limit.sync="queryParams.pageSize"
+          v-model:page="queryParams.pageNum"
+          v-model:limit="queryParams.pageSize"
           @pagination="getMemberList"
         />
       </el-col>
@@ -151,6 +155,8 @@ import {
   buildProjectOptionSubPaginationShortcuts,
   clickProjectOptionSubPagination
 } from '@/utils/project-option-sub-list-kbd'
+import { storeToRefs } from 'pinia';
+import { useUserStore } from '@/stores/user'
 
 const TEAM_MEMBER_KBD_SCOPE = 'team-member'
 
@@ -158,6 +164,11 @@ export default {
   name: "TeamMemberManage",
   mixins: [pageActionHints, listQueryKeyboardNav, teamMemberListKbd],
   components: { CreateTeamMember, InviteTeamMember, MemberNameplate },
+  setup() {
+    const userStore = useUserStore()
+    const { config } = storeToRefs(userStore)
+    return { config }
+  },
   data() {
     return {
       // 遮罩层
@@ -180,27 +191,6 @@ export default {
     }
   },
   computed: {
-    /** 是否是创建人 */
-    isCreateBy: function (){
-      return function (member) {
-        return member.admin || (this.roleOptions.filter(r=>r.teamCreateBy && member.roleIds && member.roleIds.indexOf(r.roleId)>-1).length>0);
-      }
-    },
-    /** 成员是否禁用 */
-    isMemberDisabled: function () {
-      return function (member) {
-        return member.status==1;
-      }
-    },
-    selectRoleOptions: function (){
-      return function (member){
-        if(this.isCreateBy(member)){
-          return this.roleOptions.filter(r=>r.teamCreateBy);
-        } else {
-          return this.roleOptions.filter(r=>r.teamCreateBy==false);
-        }
-      }
-    }
   },
   created() {
     this.init();
@@ -308,7 +298,21 @@ export default {
     },
     /** 获取团队id */
     getTeamId() {
-      return this.$store.state.user.config.currentTeamId;
+      return this.config.currentTeamId;
+    },
+    /** 是否是创建人 */
+    isCreateBy(member) {
+      return member.admin || (this.roleOptions.filter(r => r.teamCreateBy && member.roleIds && member.roleIds.indexOf(r.roleId) > -1).length > 0);
+    },
+    /** 成员是否禁用 */
+    isMemberDisabled(member) {
+      return member.status == 1;
+    },
+    selectRoleOptions(member) {
+      if (this.isCreateBy(member)) {
+        return this.roleOptions.filter(r => r.teamCreateBy);
+      }
+      return this.roleOptions.filter(r => r.teamCreateBy == false);
     },
     /** 搜索用户 */
     memberSearchHandle(e){

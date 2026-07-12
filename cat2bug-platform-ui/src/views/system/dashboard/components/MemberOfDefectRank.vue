@@ -26,6 +26,9 @@ import {memberRankOfDefects} from "@/api/system/dashboard";
 import Cat2BugAvatar from "@/components/Cat2BugAvatar";
 import {setDefectTempTab} from "@/utils/defect";
 
+import { storeToRefs } from 'pinia'
+import { useUserStore } from '@/stores/user'
+
 export default {
   name: "MemberOfDefectRank",
   components: { Cat2BugAvatar },
@@ -34,6 +37,11 @@ export default {
       type: String,
       default: '100%'
     },
+  },
+  setup() {
+    const userStore = useUserStore()
+    const { config: userConfig } = storeToRefs(userStore)
+    return { userConfig }
   },
   data() {
     return {
@@ -49,7 +57,7 @@ export default {
   computed: {
     /** 获取项目id */
     projectId() {
-      return parseInt(this.$store.state.user.config.currentProjectId);
+      return parseInt(this.userConfig.currentProjectId);
     },
     percentageTotal: function () {
       return function (val) {

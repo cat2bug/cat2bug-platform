@@ -6,7 +6,7 @@
           v-model="queryParams.tableName"
           placeholder="请输入表名称"
           clearable
-          @keyup.enter.native="handleQuery"
+          @keyup.enter="handleQuery"
         />
       </el-form-item>
       <el-form-item label="表描述" prop="tableComment">
@@ -14,7 +14,7 @@
           v-model="queryParams.tableComment"
           placeholder="请输入表描述"
           clearable
-          @keyup.enter.native="handleQuery"
+          @keyup.enter="handleQuery"
         />
       </el-form-item>
       <el-form-item label="创建时间">
@@ -29,8 +29,8 @@
         ></el-date-picker>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" :icon="$legacyIcon('el-icon-search')" size="mini" @click="handleQuery">搜索</el-button>
-        <el-button :icon="$legacyIcon('el-icon-refresh')" size="mini" @click="resetQuery">重置</el-button>
+        <el-button type="primary" :icon="$legacyIcon('el-icon-search')" size="small" @click="handleQuery">搜索</el-button>
+        <el-button :icon="$legacyIcon('el-icon-refresh')" size="small" @click="resetQuery">重置</el-button>
       </el-form-item>
     </el-form>
 
@@ -40,7 +40,7 @@
           type="primary"
           plain
           :icon="$legacyIcon('el-icon-download')"
-          size="mini"
+          size="small"
           @click="handleGenTable"
         >生成</el-button>
       </el-col>
@@ -49,7 +49,7 @@
           type="info"
           plain
           :icon="$legacyIcon('el-icon-upload')"
-          size="mini"
+          size="small"
           @click="openImportTable"
         >导入</el-button>
       </el-col>
@@ -58,7 +58,7 @@
           type="success"
           plain
           :icon="$legacyIcon('el-icon-edit')"
-          size="mini"
+          size="small"
           :disabled="single"
           @click="handleEditTable"
         >修改</el-button>
@@ -68,7 +68,7 @@
           type="danger"
           plain
           :icon="$legacyIcon('el-icon-delete')"
-          size="mini"
+          size="small"
           :disabled="multiple"
           @click="handleDelete"
           v-hasPermi="['tool:gen:remove']"
@@ -110,34 +110,34 @@
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template #default="scope">
           <el-button
-            type="text"
+            link
             size="small"
             :icon="$legacyIcon('el-icon-view')"
             @click="handlePreview(scope.row)"
             v-hasPermi="['tool:gen:preview']"
           >预览</el-button>
           <el-button
-            type="text"
+            link
             size="small"
             :icon="$legacyIcon('el-icon-edit')"
             @click="handleEditTable(scope.row)"
           >编辑</el-button>
           <el-button
-            type="text"
+            link
             size="small"
             :icon="$legacyIcon('el-icon-delete')"
             @click="handleDelete(scope.row)"
             v-hasPermi="['tool:gen:remove']"
           >删除</el-button>
           <el-button
-            type="text"
+            link
             size="small"
             :icon="$legacyIcon('el-icon-refresh')"
             @click="handleSynchDb(scope.row)"
             v-hasPermi="['tool:gen:edit']"
           >同步</el-button>
           <el-button
-            type="text"
+            link
             size="small"
             :icon="$legacyIcon('el-icon-download')"
             @click="handleGenTable(scope.row)"

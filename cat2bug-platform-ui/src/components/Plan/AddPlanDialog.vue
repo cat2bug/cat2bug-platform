@@ -1,6 +1,6 @@
 <template>
   <!-- 添加或修改测试计划对话框 -->
-  <el-dialog :title="$t(title)" :visible.sync="open" width="80%" custom-class="plan-add-dialog" append-to-body :close-on-press-escape="false" :before-close="onToolDialogBeforeClose" @closed="cancel" @opened="onPlanAddDialogOpened">
+  <el-dialog :title="title ? $t(title) : ''" v-model="open" width="80%" custom-class="plan-add-dialog" append-to-body :close-on-press-escape="false" :before-close="onToolDialogBeforeClose" @closed="cancel" @opened="onPlanAddDialogOpened">
     <el-form ref="form" class="plan-add-dialog__form" :model="form" :rules="rules" label-width="120px">
       <el-form-item :label="$t('plan.name')" prop="planName">
         <el-input v-model="form.planName" :placeholder="$t('plan.enter-name')" maxlength="255" />
@@ -63,7 +63,7 @@
                 />
               </el-form-item>
               <el-form-item prop="caseLevel">
-                <cat2-bug-select-level v-model="caseQueryParams.caseLevel" @change="handleQuery" :icon="$legacyIcon('el-icon-s-data')" :clearable="true" />
+                <cat2-bug-select-level v-model:level="caseQueryParams.caseLevel" @change="handleQuery" :icon="$legacyIcon('el-icon-s-data')" :clearable="true" />
               </el-form-item>
             </el-form>
           </div>
@@ -102,7 +102,7 @@
               label-class-name="plan-add-sidebar-expand-header-cell"
               class-name="plan-add-sidebar-expand-body-cell"
             >
-              <template slot="header">
+              <template #header>
                 <el-tooltip :content="$t('case.show-module-tree')" placement="bottom">
                   <span
                     class="plan-add-sidebar-expand-trigger"
@@ -115,56 +115,56 @@
                   </span>
                 </el-tooltip>
               </template>
-              <template slot-scope>
+              <template #default>
                 <span class="plan-add-sidebar-expand-body-placeholder" />
               </template>
             </el-table-column>
             <el-table-column type="selection" width="50" align="center" fixed />
             <el-table-column :label="$t('id')" align="left" prop="caseNum" width="80" sortable fixed>
-              <template slot-scope="scope">
+              <template #default="scope">
                 <span>{{ caseNumber(scope.row) }}</span>
               </template>
             </el-table-column>
             <el-table-column :label="$t('title')" align="left" prop="caseName" min-width="200" sortable fixed>
-              <template slot-scope="scope">
+              <template #default="scope">
                 <div class="table-case-title">
 <!--                  <focus-member-list-->
 <!--                    v-model="scope.row.focusList"-->
 <!--                    module-name="case"-->
 <!--                    :data-id="scope.row.caseId" />-->
-                  <cat2-bug-text v-model="scope.row.caseName" :tooltip="scope.row.caseName" />
+                  <cat2-bug-text :content="scope.row.caseName" :tooltip="scope.row.caseName" />
                 </div>
               </template>
             </el-table-column>
             <el-table-column :label="$t('module')" align="left" prop="moduleName" min-width="150" sortable />
             <el-table-column :label="$t('level')" align="left" prop="caseLevel" sortable width="80">
-              <template slot-scope="scope">
+              <template #default="scope">
                 <cat2-bug-level :level="scope.row.caseLevel" />
               </template>
             </el-table-column>
             <el-table-column :label="$t('preconditions')" align="left" prop="casePreconditions" min-width="250" sortable >
-              <template slot-scope="scope">
-                <cat2-bug-text v-model="scope.row.casePreconditions" :tooltip="scope.row.casePreconditions" />
+              <template #default="scope">
+                <cat2-bug-text :content="scope.row.casePreconditions" :tooltip="scope.row.casePreconditions" />
               </template>
             </el-table-column>
             <el-table-column :label="$t('step')" align="left" prop="caseStep" width="300" sortable>
-              <template slot-scope="scope">
+              <template #default="scope">
                 <step :steps="scope.row.caseStep" style="width: 300px;" />
               </template>
             </el-table-column>
             <el-table-column :label="$t('data')" align="left" prop="caseData" min-width="250" sortable />
             <el-table-column :label="$t('expect')" align="left" prop="caseExpect" min-width="250" sortable >
-              <template slot-scope="scope">
-                <cat2-bug-text v-model="scope.row.caseExpect" :tooltip="scope.row.caseExpect" />
+              <template #default="scope">
+                <cat2-bug-text :content="scope.row.caseExpect" :tooltip="scope.row.caseExpect" />
               </template>
             </el-table-column>
             <el-table-column :label="$t('image')" :key="$t('image')" align="center" prop="imgUrls" width="100">
-              <template slot-scope="scope">
+              <template #default="scope">
                 <cat2-bug-preview-image :images="getUrl(scope.row.imgUrls)" />
               </template>
             </el-table-column>
             <el-table-column :label="$t('annex')" :key="$t('annex')" align="left" prop="annexUrls" min-width="300">
-              <template slot-scope="scope">
+              <template #default="scope">
                 <div class="annex-list">
                   <cat2-bug-text :content="file" type="down" :tooltip="file" v-for="(file,index) in getUrl(scope.row.annexUrls)" :key="index" />
                 </div>
@@ -177,8 +177,8 @@
             <pagination
               class="plan-add-table-pagination"
               :total="total"
-              :page.sync="caseQueryParams.pageNum"
-              :limit.sync="caseQueryParams.pageSize"
+              v-model:page="caseQueryParams.pageNum"
+              v-model:limit="caseQueryParams.pageSize"
               @pagination="getPlanItemCaseList"
             />
           </div>
@@ -187,13 +187,14 @@
         </multipane>
       </div>
     </el-form>
-    <div slot="footer" class="dialog-footer">
+    <template #footer>
+    <div class="dialog-footer">
       <el-button type="primary" class="defect-kbd-hint-host" @click="submitForm">
         {{ $t('plan.save') }}
         <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
       </el-button>
       <el-button @click="requestCloseToolDialog">{{ $t('cancel') }}</el-button>
-    </div>
+    </div>    </template>
   </el-dialog>
 </template>
 
@@ -212,6 +213,8 @@ import planAddDialogKbd from '@/mixins/plan-add-dialog-kbd';
 import {addPlan, getPlan, updatePlan} from "@/api/system/plan";
 import {listPlanItemCase} from "@/api/system/PlanItem";
 import {listCase, listPlanCaseId, listPlanCaseLevel} from "@/api/system/case";
+import { storeToRefs } from "pinia";
+import { useUserStore } from "@/stores/user";
 
 const TREE_MODULE_WIDTH_CACHE_KEY = 'plan_case_tree_module_width';
 /** 新建/编辑计划弹窗：左侧树是否展开（与缺陷列表一致用 local） */
@@ -222,6 +225,11 @@ export default {
   dicts: ['plan_item_state'],
   mixins: [paneResizerHandleViewport, multipaneTreeTableHeightSync, planAddDialogKbd],
   components: { Cat2BugLevel,Step,TreePlanItemModule,Multipane,MultipaneResizer, FocusMemberList, Cat2BugPreviewImage,Cat2BugText, Cat2BugSelectLevel },
+  setup() {
+    const userStore = useUserStore()
+    const { config } = storeToRefs(userStore)
+    return { config }
+  },
   data() {
     return {
       multipaneStyle: {},
@@ -326,7 +334,7 @@ export default {
     },
     /** 项目ID */
     projectId: function () {
-      return parseInt(this.$store.state.user.config.currentProjectId);
+      return parseInt(this.config.currentProjectId);
     },
     /** 字符转url数组 */
     getUrl: function () {

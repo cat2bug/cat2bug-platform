@@ -8,6 +8,9 @@
 </template>
 
 <script>
+import { pinia } from '@/store/pinia'
+import { useSettingsStore } from '@/stores/settings'
+
 const version = '2.15.13'
 const ORIGINAL_THEME = '#409EFF' // default color
 
@@ -27,7 +30,7 @@ export default {
   },
   computed: {
     defaultTheme() {
-      return this.$store.state.settings.theme
+      return useSettingsStore(pinia).theme
     }
   },
   watch: {

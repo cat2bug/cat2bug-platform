@@ -18,11 +18,8 @@
 const LEFT_SIZE='cat2bug-split-panel-left-size';
 
 export default {
+  emits: ['update:split', 'change'],
   name: "Cat2bugSplitPanel",
-  model: {
-    prop: 'split',
-    event: 'change'
-  },
   props: {
     width:{
       type:[String,Number],
@@ -148,7 +145,7 @@ export default {
     hideLeft() {
       if(this.rightVisible){
         this.leftVisible = false;
-        this.$emit('change','');
+        this.$emit('update:split', ''); this.$emit('change', '');
       } else {
         this.$message.warning(this.$i18n.t('browser.window-not-close').toString());
       }
@@ -156,7 +153,7 @@ export default {
     hideRight() {
       if(this.leftVisible) {
         this.rightVisible = false;
-        this.$emit('change','');
+        this.$emit('update:split', ''); this.$emit('change', '');
       } else {
         this.$message.warning(this.$i18n.t('browser.window-not-close').toString());
       }

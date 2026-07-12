@@ -80,11 +80,8 @@ import MemberNameplate from "@/components/MemberNameplate"
 import { observeComboFocusTarget } from '@/utils/combo-focus-tab'
 import { mapElementPlusSize } from '@/utils/element-plus-size'
 export default {
+  emits: ['update:memberId', 'input'],
   name: "SelectProjectMember",
-  model: {
-    prop: 'memberId',
-    event: 'input'
-  },
   components: { MemberNameplate },
   data() {
     return {
@@ -161,7 +158,8 @@ export default {
     },
     size: {
       type: String,
-      default: 'medium'
+      default: 'medium',
+      validator: (value) => value == null || value === '' || typeof value === 'string'
     },
     icon: {
       type: [String, Object],
@@ -170,7 +168,7 @@ export default {
   },
   computed: {
     controlSize() {
-      return mapElementPlusSize(this.size)
+      return mapElementPlusSize(this.size || 'medium')
     },
     iconComponent() {
       if (!this.icon) return null
@@ -896,7 +894,7 @@ export default {
       for(let i in arr){
         values.push(arr[i].userId);
       }
-      this.$emit('input', values);
+      this.$emit('update:memberId', values); this.$emit('input', values);
     }
   }
 }

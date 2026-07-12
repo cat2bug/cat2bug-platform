@@ -8,9 +8,9 @@
       <el-tab-pane label="Icons">
         <div v-for="item of svgIcons" :key="item">
           <el-tooltip placement="top">
-            <div slot="content">
+            <template #content>
               {{ generateIconCode(item) }}
-            </div>
+            </template>
             <div class="icon-item">
               <svg-icon :icon-class="item" class-name="disabled" />
               <span>{{ item }}</span>
@@ -21,9 +21,9 @@
       <el-tab-pane label="Element-UI Icons">
         <div v-for="item of elementIcons" :key="item">
           <el-tooltip placement="top">
-            <div slot="content">
+            <template #content>
               {{ generateElementIconCode(item) }}
-            </div>
+            </template>
             <div class="icon-item">
               <legacy-icon :icon="'el-icon-' + item" />
               <span>{{ item }}</span>

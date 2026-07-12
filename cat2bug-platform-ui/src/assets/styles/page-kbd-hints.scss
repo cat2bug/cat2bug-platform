@@ -237,6 +237,79 @@ html.dark .report-template-select-popper .template-list-item.report-template-car
 }
 
 /** 项目信息「更改封面」浮层：方向键焦点环（popover teleport 到 body，须全局样式） */
+/* 防止 teleport 异常时封面网格铺在页面上 */
+.project-icon-popover-kbd > .project-icon-popper__grid {
+  display: none !important;
+}
+
+.el-popover.project-icon-popper {
+  width: auto !important;
+  max-width: none !important;
+  box-sizing: border-box;
+}
+
+.el-popover.project-icon-popper .project-icon-popper__grid {
+  width: 550px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 0;
+  margin: 0;
+}
+
+.el-popover.project-icon-popper .project-icon-popper__grid .project-icon-item {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  margin: 0;
+}
+
+.el-popover.project-icon-popper .project-icon-popper__grid .el-image {
+  width: 130px;
+  height: 130px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* 项目封面区：popover 触发器与按钮同宽，文字水平垂直居中 */
+.project-icon-popover-kbd {
+  width: 150px;
+  display: block;
+
+  > .el-tooltip__trigger,
+  .el-popover__reference {
+    display: block;
+    width: 100%;
+  }
+}
+
+.project-icon-hint-change.defect-kbd-hint-host.el-button {
+  display: inline-flex !important;
+  width: 100%;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center;
+  margin-bottom: 0 !important;
+  line-height: 1 !important;
+  box-sizing: border-box;
+
+  > span {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    line-height: 1 !important;
+  }
+}
+
+.project-icon-hint-change.defect-kbd-hint-host .defect-kbd-hint {
+  width: max-content !important;
+  min-width: 16px;
+  padding: 0 2px;
+  box-sizing: border-box;
+  transform: translate(50%, calc(50% + 10px));
+}
+
 .el-popover.project-icon-popper .project-icon-item.project-icon-item-kbd-current .el-image {
   border: 2px solid #FFC107 !important;
   box-shadow: 0 0 0 2px rgba(255, 193, 7, 0.35);

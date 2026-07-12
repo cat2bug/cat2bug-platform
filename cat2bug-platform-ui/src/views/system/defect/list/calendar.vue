@@ -5,7 +5,7 @@
       <slot name="right-tools"></slot>
     </div>
     <div>
-      <el-button type="text" @click="handlePrevMonthChange"><legacy-icon icon="el-icon-arrow-left" /> </el-button>
+      <el-button link @click="handlePrevMonthChange"><legacy-icon icon="el-icon-arrow-left" /> </el-button>
       <el-date-picker
         class="defect-calendar-picker"
         v-model="currentDate"
@@ -15,7 +15,7 @@
         :format="dateFormat"
         @change="handleCurrentDateChange">
       </el-date-picker>
-      <el-button type="text" @click="handleNextMonthChange"><legacy-icon icon="el-icon-arrow-right" /> </el-button>
+      <el-button link @click="handleNextMonthChange"><legacy-icon icon="el-icon-arrow-right" /> </el-button>
     </div>
     <div class="calendar">
       <div class="row">
@@ -71,13 +71,15 @@
                 />
               </div>
             </div>
-            <defect-flag slot="reference" class="defect-flag" :defect="d" @click.native="handleDefectClick($event,d)" />
+            <template #reference>
+              <defect-flag class="defect-flag" :defect="d" @click="handleDefectClick($event,d)" />
+            </template>
           </el-popover>
           <div class="right">
             <el-pagination
               :hide-on-single-page="true"
-              :current-page.sync="day.pageNum"
-              :page-size.sync="day.pageSize"
+              v-model:current-page="day.pageNum"
+              v-model:page-size="day.pageSize"
               :total="day.list.length"
               layout="prev, next">
             </el-pagination>

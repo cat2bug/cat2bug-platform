@@ -20,7 +20,7 @@
             placement="top"
             trigger="click"
             popper-class="defect-column-picker-popover"
-            v-model="docColumnPickerVisible"
+            v-model:visible="docColumnPickerVisible"
             @show="onColumnPickerPopoverShow"
             @hide="onColumnPickerPopoverHide"
           >
@@ -35,9 +35,11 @@
               class="defect-column-picker"
               @change="onDocColumnPickerChange"
             >
-              <el-checkbox v-for="c in documentColumnPickerOptions" :key="c.key" :label="c.key">{{ $t(c.key) }}</el-checkbox>
+              <el-checkbox v-for="c in documentColumnPickerOptions" :key="c.key" :value="c.key">{{ $t(c.key) }}</el-checkbox>
             </el-checkbox-group>
-            <el-button class="document-list-hint-columns" style="padding: 9px;" plain slot="reference" :icon="$legacyIcon('el-icon-s-fold')" size="small"></el-button>
+            <template #reference>
+              <el-button class="document-list-hint-columns" style="padding: 9px;" plain :icon="$legacyIcon('el-icon-s-fold')" size="small"></el-button>
+            </template>
           </el-popover>
           <el-button
             class="document-hint-create-folder"
@@ -100,32 +102,32 @@
       </template>
       <template #append>
         <el-table-column :label="$t('operate')" align="left" class-name="no-drag cat2bug-operate-column" fixed="right">
-          <template slot-scope="scope">
+          <template #default="scope">
             <div v-show="scope.row.docType>-1" class="cat2bug-operate-tools">
               <el-button
                 v-if="scope.row.docType==1"
-                size="mini"
-                type="text"
+                size="small"
+                link
                 :icon="$legacyIcon('el-icon-edit')"
                 @click="handleDownload(scope.row)"
                 v-hasPermi="['system:document:export']"
               >{{ $t('download') }}</el-button>
               <el-button
-                size="mini"
-                type="text"
+                size="small"
+                link
                 @click="handleOpenMoveDialog(scope.row)"
                 v-hasPermi="['system:document:edit']"
               ><svg-icon class="button-icon" icon-class="file-move"></svg-icon>{{ $t('move') }}</el-button>
               <el-button
-                size="mini"
-                type="text"
+                size="small"
+                link
                 :icon="$legacyIcon('el-icon-edit')"
                 @click="handleUpdate(scope.row)"
                 v-hasPermi="['system:document:edit']"
               >{{ $t('update') }}</el-button>
               <el-button
-                size="mini"
-                type="text"
+                size="small"
+                link
                 :icon="$legacyIcon('el-icon-delete')"
                 class="red"
                 @click="handleDelete(scope.row)"
@@ -142,15 +144,15 @@
       <pagination
         class="document-table-pagination"
         :total="total"
-        :page.sync="queryParams.pageNum"
-        :limit.sync="queryParams.pageSize"
+        v-model:page="queryParams.pageNum"
+        v-model:limit="queryParams.pageSize"
         @pagination="getList"
       />
     </div>
     </div>
 
     <!-- 添加或修改文档对话框 -->
-    <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body :close-on-press-escape="false" :before-close="onToolDialogBeforeClose" @opened="onCreateDialogOpened">
+    <el-dialog :title="title" v-model="open" width="500px" append-to-body :close-on-press-escape="false" :before-close="onToolDialogBeforeClose" @opened="onCreateDialogOpened">
       <el-form ref="form" :model="form" :rules="rules" label-width="100px">
         <el-form-item :label="fileFieldName" prop="docName">
           <el-input ref="docNameInput" v-model="form.docName" :placeholder="$t('doc.please-enter-name')" maxlength="255" />
@@ -158,21 +160,24 @@
 <!--        <el-form-item label="备注" prop="docRemark">-->
 <!--          <el-input v-model="form.docRemark" placeholder="请输入备注" />-->
 <!--        </el-form-item>-->
-        <el-form-item v-if="form.docType==1" :label="$t('file')" prop="fileUrl">
+        <el-form-item v-if="form.docType==1" prop="fileUrl" class="cat2bug-form-item-upload">
+          <template #label>{{ $t('file') }}</template>
           <file-upload v-model="form.fileUrl" :drag="true" :file-size="500" :limit="1" :file-type="[]" @upload="fileUploadHandle"/>
         </el-form-item>
       </el-form>
-      <div slot="footer" class="dialog-footer">
+      <template #footer>
+        <div class="dialog-footer">
         <el-button class="defect-kbd-hint-host" type="primary" @click="submitForm">
           {{ $t('ok') }}
           <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
         </el-button>
         <el-button @click="requestCloseToolDialog">{{ $t('cancel') }}</el-button>
-      </div>
+        </div>
+      </template>
     </el-dialog>
 
     <!-- 移动文档对话框 -->
-    <el-dialog :title="$t('doc.move-to')" :visible.sync="moveDialogVisible" width="500px" append-to-body :close-on-press-escape="false" :before-close="onToolDialogBeforeClose" @opened="onMoveDialogOpened">
+    <el-dialog :title="$t('doc.move-to')" v-model="moveDialogVisible" width="500px" append-to-body :close-on-press-escape="false" :before-close="onToolDialogBeforeClose" @opened="onMoveDialogOpened">
       <el-form ref="moveForm" :model="folderForm" :rules="rules" label-width="0px">
         <el-form-item class="margin-bottom-0" label="" prop="docId">
           <el-tree
@@ -182,20 +187,24 @@
             accordion
             @node-click="handleNodeClick"
             node-key="docId">
-            <div slot-scope="{ data }" class="span__" style="padding-left:6px;">
+            <template #default="{ data }">
+            <div class="span__" style="padding-left:6px;">
               <svg-icon icon-class="dir"></svg-icon>
               <span class="tree-node-text">{{ data.docName }}</span>
             </div>
+            </template>
           </el-tree>
         </el-form-item>
       </el-form>
-      <div slot="footer" class="dialog-footer">
+      <template #footer>
+        <div class="dialog-footer">
         <el-button class="defect-kbd-hint-host" type="primary" :disabled="!isClickFolder" @click="handleMoveFolder">
           {{ $t('ok') }}
           <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
         </el-button>
         <el-button @click="requestCloseToolDialog">{{ $t('cancel') }}</el-button>
-      </div>
+        </div>
+      </template>
     </el-dialog>
   </div>
 </template>
@@ -215,6 +224,7 @@ import columnPickerPopoverKbd from '@/mixins/column-picker-popover-kbd'
 import defectToolDialogKbd from '@/mixins/defect-tool-dialog-kbd'
 import { serializeToolDialogFormCloseState } from '@/utils/defect-tool-dialog-close-state'
 import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
+import { getCurrentProjectId, getCurrentUserId } from '@/utils/store-context'
 
 const DOCUMENT_KBD_SCOPE = 'document'
 
@@ -304,32 +314,6 @@ export default {
       }
       return DocumentTableColumnDefaults.filter(c => c.showInColumnPicker !== false);
     },
-    member: function () {
-      return function (doc) {
-        return {
-          nickName: doc.updateBy,
-          avatar: doc.updateByAvatar
-        }
-      }
-    },
-    fileIcon: function () {
-      return function (doc) {
-        if(doc.docType===-1) {
-          return 'root-dir'
-        } else if(doc.docType===0) {
-          return 'dir'
-        } else if (doc.fileExtension && this.fileExtensions.indexOf(doc.fileExtension)!==-1) {
-          return doc.fileExtension;
-        } else {
-          return 'unknown-file';
-        }
-      }
-    },
-    hasDeletePermi: function() {
-      return function (doc) {
-        return doc.createById==this.$store.state.user.id || checkPermi(['system:document:remove']);
-      }
-    }
   },
   watch: {
     open(val) {
@@ -500,8 +484,29 @@ export default {
       });
     },
     /** 获取项目ID */
-    getProjectId: function () {
-      return parseInt(this.$store.state.user.config.currentProjectId);
+    getProjectId() {
+      return getCurrentProjectId();
+    },
+    member(doc) {
+      return {
+        nickName: doc.updateBy,
+        avatar: doc.updateByAvatar
+      };
+    },
+    fileIcon(doc) {
+      if (doc.docType === -1) {
+        return 'root-dir';
+      }
+      if (doc.docType === 0) {
+        return 'dir';
+      }
+      if (doc.fileExtension && this.fileExtensions.indexOf(doc.fileExtension) !== -1) {
+        return doc.fileExtension;
+      }
+      return 'unknown-file';
+    },
+    hasDeletePermi(doc) {
+      return doc.createById == getCurrentUserId() || checkPermi(['system:document:remove']);
     },
     onDocTableColumnsChange(columns) {
       this.docColumnPickerRev += 1;

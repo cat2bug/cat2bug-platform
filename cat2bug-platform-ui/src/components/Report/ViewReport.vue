@@ -3,18 +3,19 @@
     ref="viewReportDrawer"
     class="report-drawer-accent"
     size="90%"
-    v-loading="loading"
-    :visible.sync="visible"
+    v-model="visible"
     direction="rtl"
+    destroy-on-close
     :close-on-press-escape="false"
-    :before-close="closeReportDrawer">
+    :before-close="closeReportDrawer"
+    @closed="onReportDrawerClosed">
     <template #header>
       <div class="report-edit-header">
         <div class="report-edit-title">
           <legacy-icon icon="el-icon-arrow-left" class="report-view-back" @click="cancel"></legacy-icon>
           <report-type-flag :report="report" />
           <focus-member-list
-            v-model="report.focusList"
+            v-model:members="report.focusList"
             module-name="report"
             :data-id="report.reportId"
             :tooltip="false"
@@ -28,27 +29,32 @@
             class="report-view-export cat2bug-split-dropdown-kbd"
             data-report-tool="export"
             @command="handleExport">
-            <el-button size="mini" plain>
+            <el-button size="small" plain>
               <legacy-icon icon="el-icon-download"></legacy-icon>
             </el-button>
-            <el-dropdown-menu slot="dropdown">
+            <template #dropdown>
+          <el-dropdown-menu>
               <el-dropdown-item command="word"><svg-icon icon-class="docx" />Word 导出</el-dropdown-item>
               <el-dropdown-item command="pdf"><svg-icon icon-class="pdf" />PDF 导出</el-dropdown-item>
             </el-dropdown-menu>
+        </template>
           </el-dropdown>
         </div>
       </div>
     </template>
-    <div ref="report-data" id="report-data" class="app-container" v-loading="loading">
-      <markdown-it-vue ref="markdownView" class="md" :options="options" :content="report.reportDescription+''" />
+    <div v-if="visible" ref="report-data" id="report-data" class="app-container" v-loading="loading">
+      <markdown-it-vue
+        ref="markdownView"
+        class="md"
+        :options="options"
+        :content="(report.reportDescription || '') + ''" />
     </div>
   </el-drawer>
 </template>
 
 <script>
-import MarkdownItVue from "markdown-it-vue"
+import { MarkdownRenderer as MarkdownItVue } from '@/components/Markdown'
 import multimdTable from 'markdown-it-multimd-table'
-import 'markdown-it-vue/dist/markdown-it-vue.css'
 import FileSaver from "file-saver";
 import htmlDocx from "html-docx-js/dist/html-docx";
 import html2canvas from 'html2canvas';
@@ -82,6 +88,7 @@ export default {
       loading: false,
       // 显示窗口
       visible: false,
+      markdownPluginsReady: false,
       report: {},
       options: {
         markdownIt: {
@@ -96,6 +103,16 @@ export default {
       type: Number,
       default: null
     },
+  },
+  deactivated() {
+    if (this.visible) {
+      this.visible = false
+    }
+  },
+  beforeUnmount() {
+    if (this.visible) {
+      this.visible = false
+    }
   },
   computed: {
     getUrl: function () {
@@ -243,7 +260,11 @@ export default {
     /** 取消返回 */
     cancel() {
       this.visible = false;
-      this.reset();
+    },
+    onReportDrawerClosed() {
+      this.markdownPluginsReady = false;
+      this.report = {};
+      this.loading = false;
     },
     handleDelete() {
       this.$emit('delete');
@@ -294,24 +315,37 @@ export default {
     },
     /** 初始化markdown插件 */
     initMarkdownPlug(reportId) {
+      const loadReport = () => {
+        this.reportId = reportId;
+        this.getReportInfo(reportId);
+      };
+      if (this.markdownPluginsReady) {
+        loadReport();
+        return;
+      }
+      const markdownView = this.$refs.markdownView;
+      if (!markdownView) {
+        this.$nextTick(() => this.initMarkdownPlug(reportId));
+        return;
+      }
       // 可以合并行列的表格
-      this.$refs.markdownView.use(multimdTable, {
+      markdownView.use(multimdTable, {
         multiline:  true,
         rowspan:    true,
         headerless: true,
         multibody:  true,
         aotolabel:  true,
       });
-      this.$refs.markdownView.use(LeftPointPlugin);
-      this.$refs.markdownView.use(RightPointPlugin);
-      this.$refs.markdownView.use(CenterPointPlugin);
+      markdownView.use(LeftPointPlugin);
+      markdownView.use(RightPointPlugin);
+      markdownView.use(CenterPointPlugin);
       // 缺陷操作符
       const defectList = listDefect().then(res=>{
-        this.$refs.markdownView.use(TablePlugin,{
+        markdownView.use(TablePlugin,{
           name: 'api.defect.list',
           value: res.rows
         });
-        this.$refs.markdownView.use(CardPlugin,{
+        markdownView.use(CardPlugin,{
           name: 'api.defect.list',
           value: res.rows
         });
@@ -319,7 +353,7 @@ export default {
       });
       // 测试用例操作符
       const caseList = listCase().then(res=>{
-        this.$refs.markdownView.use(TablePlugin,{
+        markdownView.use(TablePlugin,{
           name: 'api.case.list',
           value: res.rows
         });
@@ -327,38 +361,33 @@ export default {
       });
       // 项目操作符
       const project = getProject(this.projectId).then(res=>{
-        this.$refs.markdownView.use(ImagePlugin,{
+        markdownView.use(ImagePlugin,{
           name: 'api.project',
           value: res.data
         });
-        this.$refs.markdownView.use(VariablePlugin,{
+        markdownView.use(VariablePlugin,{
           name: 'api.project',
           value: res.data
         });
         return res;
       });
       const data = markdownData(this.projectId).then(res=>{
-        this.$refs.markdownView.use(CaseCardPlugin,{
+        markdownView.use(CaseCardPlugin,{
           name: 'api.case.list',
           value: res.data.case?res.data.case.list:[]
         });
-        this.$refs.markdownView.use(VariablePlugin,{
+        markdownView.use(VariablePlugin,{
           name: 'api.case.total',
           value: res.data.case?res.data.case.total:0
         });
-        this.$refs.markdownView.use(PlanVariablePlugin,{
+        markdownView.use(PlanVariablePlugin,{
           name: 'api.plan',
           value: res.data.plan?res.data.plan.list:[]
         });
       });
-      Promise.all([defectList,caseList,project,data]).then(res=>{
-        this.visible = true;
-        this.reset();
-        this.reportId = reportId;
-        this.getReportInfo(reportId);
-        this.$nextTick(()=>{
-
-        });
+      Promise.all([defectList,caseList,project,data]).then(()=>{
+        this.markdownPluginsReady = true;
+        loadReport();
       }).catch(e=>{
         this.$message.error(e);
       })

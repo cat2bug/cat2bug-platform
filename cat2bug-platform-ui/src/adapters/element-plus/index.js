@@ -1,2 +1,5 @@
 export * from './date-picker-adapter'
 export * from './dropdown-adapter'
+export * from './popover-adapter'
+export * from './select-adapter'
+export * from './table-adapter'

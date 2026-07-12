@@ -71,8 +71,8 @@
         ></el-date-picker>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" :icon="$legacyIcon('el-icon-search')" size="mini" @click="handleQuery">搜索</el-button>
-        <el-button :icon="$legacyIcon('el-icon-refresh')" size="mini" @click="resetQuery">重置</el-button>
+        <el-button type="primary" :icon="$legacyIcon('el-icon-search')" size="small" @click="handleQuery">搜索</el-button>
+        <el-button :icon="$legacyIcon('el-icon-refresh')" size="small" @click="resetQuery">重置</el-button>
       </el-form-item>
     </el-form>
 
@@ -82,7 +82,7 @@
           type="danger"
           plain
           :icon="$legacyIcon('el-icon-delete')"
-          size="mini"
+          size="small"
           :disabled="multiple"
           @click="handleDelete"
           v-hasPermi="['monitor:operlog:remove']"
@@ -93,7 +93,7 @@
           type="danger"
           plain
           :icon="$legacyIcon('el-icon-delete')"
-          size="mini"
+          size="small"
           @click="handleClean"
           v-hasPermi="['monitor:operlog:remove']"
         >清空</el-button>
@@ -103,7 +103,7 @@
           type="warning"
           plain
           :icon="$legacyIcon('el-icon-download')"
-          size="mini"
+          size="small"
           @click="handleExport"
           v-hasPermi="['monitor:operlog:export']"
         >导出</el-button>
@@ -141,8 +141,8 @@
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template #default="scope">
           <el-button
-            size="mini"
-            type="text"
+            size="small"
+            link
             :icon="$legacyIcon('el-icon-view')"
             @click="handleView(scope.row,scope.index)"
             v-hasPermi="['monitor:operlog:query']"
@@ -161,7 +161,7 @@
 
     <!-- 操作日志详细 -->
     <el-dialog title="操作日志详细" v-model="open" width="700px" append-to-body>
-      <el-form ref="form" :model="form" label-width="100px" size="mini">
+      <el-form ref="form" :model="form" label-width="100px" size="small">
         <el-row>
           <el-col :span="12">
             <el-form-item label="操作模块：">{{ form.title }} / {{ typeFormat(form) }}</el-form-item>

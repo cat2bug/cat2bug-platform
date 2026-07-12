@@ -55,12 +55,12 @@
       :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
     >
       <el-table-column :label="$t('module.name')" align="start" prop="moduleName">
-        <template slot-scope="scope">
+        <template #default="scope">
           <span class="module-row-kbd-hint-anchor">{{ scope.row.moduleName }}</span>
         </template>
       </el-table-column>
       <el-table-column :label="$t('annex')" align="left" prop="annexUrls">
-        <template slot-scope="scope">
+        <template #default="scope">
           <div>
             <cat2-bug-text :content="file" type="down" :tooltip="file" v-for="(file,index) in getUrl(scope.row.annexUrls)" :key="index" />
           </div>
@@ -68,24 +68,24 @@
       </el-table-column>
       <el-table-column :label="$t('remark')" align="center" prop="remark" />
       <el-table-column :label="$t('operate')" align="left" class-name="small-padding fixed-width" width="200">
-        <template slot-scope="scope">
+        <template #default="scope">
           <el-button
             size="small"
-            type="text"
+            link
             :icon="$legacyIcon('el-icon-edit')"
             @click="handleUpdate(scope.row)"
             v-hasPermi="['system:module:edit']"
           >{{ $t('modify') }}</el-button>
           <el-button
             size="small"
-            type="text"
+            link
             :icon="$legacyIcon('el-icon-plus')"
             @click="handleAdd(scope.row)"
             v-hasPermi="['system:module:add']"
           >{{ $t('add') }}</el-button>
           <el-button
             size="small"
-            type="text"
+            link
             :icon="$legacyIcon('el-icon-delete')"
             class="red"
             @click="handleDelete(scope.row)"
@@ -111,6 +111,12 @@ import pageActionHints from '@/mixins/page-action-hints'
 import listQueryKeyboardNav from '@/mixins/list-query-keyboard-nav'
 import { shortcutStore } from '@/plugins/shortcut/shortcut-store'
 import { checkPermi } from '@/utils/permission'
+import { getCurrentProjectId } from '@/utils/store-context'
+import {
+  getElTableCurrentRow,
+  getElTableTreeDataMap,
+  toggleElTableTreeExpansion
+} from '@/utils/element-table-util'
 import {
   assignRowHintLetters,
   collectHintLettersFromToolbar,
@@ -310,12 +316,12 @@ export default {
       const visible = this.getVisibleModuleTableRows()
       const table = this.$refs.moduleTable
       if (!table || !visible.length) return
-      const current = table.store && table.store.states.currentRow
+      const current = getElTableCurrentRow(table)
       const idx = current
         ? visible.findIndex((item) => item.row.moduleId === current.moduleId)
         : -1
       table.setCurrentRow(visible[idx >= 0 ? idx : 0].row)
-      this.$nextTick(() => this.scrollModuleTableRowIntoView(table.store.states.currentRow))
+      this.$nextTick(() => this.scrollModuleTableRowIntoView(getElTableCurrentRow(table)))
     },
     getVisibleModuleTableRows() {
       const table = this.$refs.moduleTable
@@ -332,29 +338,26 @@ export default {
       return rows
     },
     getCurrentModuleTableRow() {
-      const table = this.$refs.moduleTable
-      return (table && table.store && table.store.states.currentRow) || null
+      return getElTableCurrentRow(this.$refs.moduleTable)
     },
     moduleRowHasChildren(row) {
       return !!(row && row.children && row.children.length)
     },
     isModuleRowExpanded(row) {
-      const table = this.$refs.moduleTable
-      const store = table && table.store
-      const treeData = store && store.states && store.states.treeData
+      const treeData = getElTableTreeDataMap(this.$refs.moduleTable)
       if (!row || !treeData) return false
       const node = treeData[row.moduleId]
       return !!(node && node.expanded)
     },
     expandModuleRow(row) {
       const table = this.$refs.moduleTable
-      if (!table || !table.store || !this.moduleRowHasChildren(row)) return
-      table.store.toggleTreeExpansion(row, true)
+      if (!table || !this.moduleRowHasChildren(row)) return
+      toggleElTableTreeExpansion(table, row, true)
     },
     collapseModuleRow(row) {
       const table = this.$refs.moduleTable
-      if (!table || !table.store) return
-      table.store.toggleTreeExpansion(row, false)
+      if (!table) return
+      toggleElTableTreeExpansion(table, row, false)
     },
     scrollModuleTableRowIntoView(row) {
       if (!row) return
@@ -416,7 +419,7 @@ export default {
       if (!table) return
       const visible = this.getVisibleModuleTableRows()
       if (!visible.length) return
-      const current = table.store && table.store.states.currentRow
+      const current = getElTableCurrentRow(table)
       let idx = current ? visible.findIndex((item) => item.row.moduleId === current.moduleId) : -1
       if (idx < 0) idx = 0
       else idx = Math.max(0, Math.min(visible.length - 1, idx + delta))
@@ -485,7 +488,7 @@ export default {
     },
     /** 获取项目id操作 */
     getProjectId() {
-      return parseInt(this.$store.state.user.config.currentProjectId);
+      return getCurrentProjectId()
     },
     /** 搜索按钮操作 */
     handleQuery() {

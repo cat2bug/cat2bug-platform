@@ -19,6 +19,12 @@
           >
           <el-button
             size="small"
+            plain
+            @click="goTarget('https://github.com/cat2bug/cat2bug-platform')"
+            ><svg-icon icon-class="github" class="home-intro-action-icon" />{{$t('visit-github')}}</el-button
+          >
+          <el-button
+            size="small"
             :icon="HomeFilled"
             plain
             @click="goTarget('https://www.cat2bug.com')"
@@ -353,8 +359,6 @@
 import {getVersion} from "@/api/version";
 import { Cloudy, HomeFilled } from '@element-plus/icons-vue'
 import Cat2BugAvatar from "@/components/Cat2BugAvatar";
-import qqQcoderImg from '@/assets/images/qq-qcoder.png'
-import wechatQcoderImg from '@/assets/images/wechat-qcoder.png'
 import wechatMiniProgramImg from '@/assets/images/wechat-mini-program.png'
 import thanksGaoqiImg from '@/assets/images/thanks/gaoqi.png'
 import thanksHuranzhijianImg from '@/assets/images/thanks/huranzhijian.jpg'
@@ -377,8 +381,8 @@ export default {
   },
   data() {
     return {
-      qqQcoderImg,
-      wechatQcoderImg,
+      qqQcoderImg: 'https://www.cat2bug.com/prod-api/images/qq.png',
+      wechatQcoderImg: 'https://www.cat2bug.com/prod-api/images/wechat.png',
       wechatMiniProgramImg,
       // 版本号
       version: null,
@@ -510,6 +514,7 @@ export default {
     }
 
     :deep(.el-button) {
+      margin-left: 0 !important;
       height: 28px !important;
       min-height: 28px !important;
       padding-top: 0 !important;
@@ -522,6 +527,13 @@ export default {
 
     :deep(.el-button .el-icon) {
       font-size: 14px;
+    }
+
+    :deep(.el-button .home-intro-action-icon) {
+      width: 14px;
+      height: 14px;
+      margin-right: 4px;
+      vertical-align: -0.15em;
     }
   }
 

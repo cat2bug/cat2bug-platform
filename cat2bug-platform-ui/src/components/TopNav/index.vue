@@ -32,6 +32,9 @@
 
 <script>
 import { constantRoutes } from "@/router";
+import { useAppStore } from '@/stores/app'
+import { usePermissionStore } from '@/stores/permission'
+import { useSettingsStore } from '@/stores/settings'
 
 // 隐藏侧边栏路由
 const hideList = ['/index', '/member/profile'];
@@ -52,7 +55,7 @@ export default {
       }
     },
     theme() {
-      return this.$store.state.settings.theme;
+      return this.settingsStore.theme
     },
     // 顶部显示菜单
     topMenus() {
@@ -71,7 +74,7 @@ export default {
     },
     // 所有的路由信息
     routers() {
-      return this.$store.state.permission.topbarRouters;
+      return this.permissionStore.topbarRouters
     },
     // 设置子路由
     childrenMenus() {
@@ -101,15 +104,22 @@ export default {
         const tmpPath = path.substring(1, path.length);
         activePath = "/" + tmpPath.substring(0, tmpPath.indexOf("/"));
         if (!this.$route.meta.link) {
-          this.$store.dispatch('app/toggleSideBarHide', false);
+          this.appStore.toggleSideBarHide(false)
         }
       } else if(!this.$route.children) {
         activePath = path;
-        this.$store.dispatch('app/toggleSideBarHide', true);
+        this.appStore.toggleSideBarHide(true)
       }
       this.activeRoutes(activePath);
       return activePath;
     },
+  },
+  setup() {
+    return {
+      appStore: useAppStore(),
+      permissionStore: usePermissionStore(),
+      settingsStore: useSettingsStore()
+    }
   },
   beforeMount() {
     window.addEventListener('resize', this.setVisibleNumber)
@@ -142,11 +152,11 @@ export default {
         } else {
           this.$router.push({ path: key });
         }
-        this.$store.dispatch('app/toggleSideBarHide', true);
+        this.appStore.toggleSideBarHide(true)
       } else {
         // 显示左侧联动菜单
         this.activeRoutes(key);
-        this.$store.dispatch('app/toggleSideBarHide', false);
+        this.appStore.toggleSideBarHide(false)
       }
     },
     // 当前激活的路由
@@ -160,9 +170,9 @@ export default {
         });
       }
       if(routes.length > 0) {
-        this.$store.commit("SET_SIDEBAR_ROUTERS", routes);
+        this.permissionStore.setSidebarRouters(routes)
       } else {
-        this.$store.dispatch('app/toggleSideBarHide', true);
+        this.appStore.toggleSideBarHide(true)
       }
     },
     ishttp(url) {

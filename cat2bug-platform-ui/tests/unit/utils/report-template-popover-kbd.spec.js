@@ -3,6 +3,7 @@
 import {
   REPORT_TEMPLATE_CARD_FOCUS_CLASS,
   clearReportTemplateCardFocus,
+  destroyReportTemplatePopoverKbd,
   getReportTemplateCards,
   initReportTemplatePopoverKbd,
   isReportTemplatePopoverKbdSuspended,
@@ -10,7 +11,40 @@ import {
   syncReportTemplateCardFocus
 } from '@/utils/report-template-popover-kbd'
 
+function mockPopoverRef(overrides = {}) {
+  return {
+    showPopper: true,
+    $watch: jest.fn(() => jest.fn()),
+    ...overrides
+  }
+}
+
+function mockVisiblePopper(el, width = 400, height = 300) {
+  el.getBoundingClientRect = () => ({
+    width,
+    height,
+    top: 0,
+    left: 0,
+    right: width,
+    bottom: height
+  })
+}
+
 describe('report-template-popover-kbd', () => {
+  const initializedVms = []
+
+  afterEach(() => {
+    initializedVms.splice(0).forEach((vm) => destroyReportTemplatePopoverKbd(vm))
+    document.body.innerHTML = ''
+    document.getElementById('cat2bug-report-template-popover-hints')?.remove()
+  })
+
+  function initKbd(vm) {
+    initReportTemplatePopoverKbd(vm)
+    initializedVms.push(vm)
+    return vm
+  }
+
   it('getReportTemplateCards returns visible template cards', () => {
     document.body.innerHTML = `
       <div class="report-template-select-popper">
@@ -35,6 +69,7 @@ describe('report-template-popover-kbd', () => {
         </div>
       </div>`
     const popper = document.getElementById('popper')
+    mockVisiblePopper(popper)
     popper.querySelectorAll('.template-list-item').forEach((el, i) => {
       el.getBoundingClientRect = () => ({
         width: 180,
@@ -48,11 +83,11 @@ describe('report-template-popover-kbd', () => {
     })
     const vm = {
       $refs: {
-        templatePopover: { popperElm: popper, showPopper: true }
+        templatePopover: mockPopoverRef({ popperElm: popper })
       },
       $nextTick(fn) { if (fn) fn() }
     }
-    initReportTemplatePopoverKbd(vm)
+    initKbd(vm)
     syncReportTemplateCardFocus(vm, 1)
     const cards = popper.querySelectorAll('.template-list-item')
     expect(cards[1].classList.contains(REPORT_TEMPLATE_CARD_FOCUS_CLASS)).toBe(true)
@@ -62,7 +97,7 @@ describe('report-template-popover-kbd', () => {
   })
 
   it('isReportTemplatePopoverVisible reads showPopper', () => {
-    const vm = { $refs: { templatePopover: { showPopper: true } } }
+    const vm = { $refs: { templatePopover: mockPopoverRef() } }
     expect(isReportTemplatePopoverVisible(vm)).toBe(true)
   })
 
@@ -72,16 +107,17 @@ describe('report-template-popover-kbd', () => {
         <a class="report-template-add-link">Add</a>
       </div>`
     const popper = document.querySelector('.report-template-select-popper')
+    mockVisiblePopper(popper)
     popper.querySelector('.report-template-add-link').getBoundingClientRect = () => ({
       width: 80, height: 20, top: 0, left: 0, right: 80, bottom: 20
     })
     const addReportTemplate = jest.fn()
     const vm = {
       addReportTemplate,
-      $refs: { templatePopover: { popperElm: popper, showPopper: true } },
+      $refs: { templatePopover: mockPopoverRef({ popperElm: popper }) },
       $nextTick(fn) { if (fn) fn() }
     }
-    initReportTemplatePopoverKbd(vm)
+    initKbd(vm)
     document.dispatchEvent(new KeyboardEvent('keydown', {
       key: 'a',
       ctrlKey: true,
@@ -97,13 +133,14 @@ describe('report-template-popover-kbd', () => {
         <a class="report-template-add-link">Add</a>
       </div>`
     const popper = document.querySelector('.report-template-select-popper')
+    mockVisiblePopper(popper)
     const addReportTemplate = jest.fn()
     const vm = {
       addReportTemplate,
-      $refs: { templatePopover: { popperElm: popper, showPopper: true } },
+      $refs: { templatePopover: mockPopoverRef({ popperElm: popper }) },
       $nextTick(fn) { if (fn) fn() }
     }
-    initReportTemplatePopoverKbd(vm)
+    initKbd(vm)
     document.dispatchEvent(new KeyboardEvent('keydown', {
       key: 'a',
       bubbles: true,
@@ -126,6 +163,7 @@ describe('report-template-popover-kbd', () => {
         </div>
       </div>`
     const popper = document.querySelector('.report-template-select-popper')
+    mockVisiblePopper(popper)
     popper.querySelector('.template-list-item').getBoundingClientRect = () => ({
       width: 180, height: 140, top: 0, left: 0, right: 180, bottom: 140
     })
@@ -137,11 +175,11 @@ describe('report-template-popover-kbd', () => {
       copyReportTemplateAtIndex: jest.fn(),
       editReportTemplateAtIndex: jest.fn(),
       deleteReportTemplateAtIndex: jest.fn(),
-      $refs: { templatePopover: { popperElm: popper, showPopper: true } },
+      $refs: { templatePopover: mockPopoverRef({ popperElm: popper }) },
       $nextTick(fn) { if (fn) fn() },
       ...overrides
     }
-    initReportTemplatePopoverKbd(vm)
+    initKbd(vm)
     syncReportTemplateCardFocus(vm, 0)
     return vm
   }
@@ -180,13 +218,18 @@ describe('report-template-popover-kbd', () => {
   })
 
   it('Enter does not create report while delete confirm MessageBox is open', () => {
-    document.body.innerHTML += `
-      <div class="el-message-box__wrapper" style="position:fixed;inset:0;width:100px;height:100px;">
-        <div class="el-message-box" style="width:420px;height:180px;"></div>
-      </div>`
     const vm = cardPopoverVm({
       createReportFromCardIndex: jest.fn()
     })
+    const wrapper = document.createElement('div')
+    wrapper.className = 'el-message-box__wrapper'
+    wrapper.style.cssText = 'position:fixed;inset:0;width:100px;height:100px;'
+    const box = document.createElement('div')
+    box.className = 'el-message-box'
+    box.style.cssText = 'width:420px;height:180px;'
+    wrapper.appendChild(box)
+    document.body.appendChild(wrapper)
+    mockVisiblePopper(wrapper, 100, 100)
     document.dispatchEvent(new KeyboardEvent('keydown', {
       key: 'Enter',
       bubbles: true,

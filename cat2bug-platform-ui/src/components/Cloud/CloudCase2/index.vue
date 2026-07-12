@@ -1,6 +1,6 @@
 <template>
   <el-drawer
-    :visible.sync="visible"
+    v-model="visible"
     :direction="direction"
     size="90%"
     :close-on-press-escape="false"
@@ -78,7 +78,10 @@ import CaseList from "@/components/Cloud/CloudCase2/chat/CaseList";
 import CaseHelloWorld from "@/components/Cloud/CloudCase2/chat/CaseHelloWorld";
 import TextMessage from "@/components/Cloud/CloudCase2/chat/TextMessage";
 import cloudCase2Kbd from '@/mixins/cloud-case2-kbd'
+import { pinia } from '@/store/pinia.js'
+import { useUserStore } from '@/stores/user'
 const AI_CASE_QUERY_KEY = 'ai_case2_query_key';
+const userStore = useUserStore(pinia)
 export default {
   name: "index",
   mixins: [cloudCase2Kbd],
@@ -130,7 +133,7 @@ export default {
         component: 'TextMessage',
         ref: 'TextMessage'+(this.chatList.length+1),
         data: this.query.query,
-        member: this.$store.state.user,
+        member: { ...userStore.$state },
         direction: 'right'
       };
       this.chatList.push(newChat);

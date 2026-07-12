@@ -55,7 +55,8 @@ describe('date-picker-kbd daterange', () => {
     const pickerVm = {
       ranged: true,
       pickerVisible: true,
-      picker: panel
+      picker: panel,
+      $nextTick(fn) { if (fn) fn() }
     }
     panel._cat2bugKbdFocusDate = new Date(2026, 5, 8)
     handleDateRangePanelKeydown(pickerVm, { keyCode: 13, target: {} })

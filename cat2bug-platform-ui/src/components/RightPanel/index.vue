@@ -10,8 +10,15 @@
 </template>
 
 <script>
+import { useSettingsStore } from '@/stores/settings'
+
 export default {
   name: 'RightPanel',
+  setup() {
+    return {
+      settingsStore: useSettingsStore()
+    }
+  },
   props: {
     clickNotClose: {
       default: false,
@@ -21,10 +28,10 @@ export default {
   computed: {
     show: {
       get() {
-        return this.$store.state.settings.showSettings
+        return this.settingsStore.showSettings
       },
       set(val) {
-        this.$store.dispatch('settings/changeSetting', {
+        this.settingsStore.changeSetting({
           key: 'showSettings',
           value: val
         })

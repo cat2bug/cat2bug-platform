@@ -1,7 +1,7 @@
 <template>
   <el-drawer
     title="我是标题"
-    :visible.sync="drawer"
+    v-model="drawer"
     :direction="direction"
     :before-close="handleClose">
     <template #header>

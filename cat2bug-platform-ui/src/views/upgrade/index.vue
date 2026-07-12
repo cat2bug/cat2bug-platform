@@ -81,7 +81,7 @@
                       <el-tag
                         v-for="item in migrationList"
                         :key="item"
-                        size="mini"
+                        size="small"
                         type="warning"
                         class="upgrade-tag"
                       >
@@ -102,21 +102,21 @@
                 <el-collapse v-if="hasConfigDiffs" class="upgrade-config-diff-collapse">
                   <el-collapse-item :title="$t('upgrade.overview.configDiffOptional')" name="config-diff">
                     <p class="setup-step-desc">{{ $t('upgrade.diff.desc') }}</p>
-                    <el-table :data="diffRows" size="mini" border class="upgrade-diff-table" :row-class-name="diffRowClassName">
+                    <el-table :data="diffRows" size="small" border class="upgrade-diff-table" :row-class-name="diffRowClassName">
                       <el-table-column prop="key" :label="$t('upgrade.diff.key')" min-width="240" />
                       <el-table-column prop="currentValue" :label="$t('upgrade.diff.currentValue')" min-width="180">
-                        <template slot-scope="scope">
+                        <template #default="scope">
                           <span>{{ formatDiffValue(scope.row.currentValue) }}</span>
                         </template>
                       </el-table-column>
                       <el-table-column prop="suggestedValue" :label="$t('upgrade.diff.suggestedValue')" min-width="180">
-                        <template slot-scope="scope">
+                        <template #default="scope">
                           <span>{{ formatDiffValue(scope.row.suggestedValue) }}</span>
                         </template>
                       </el-table-column>
                       <el-table-column prop="action" :label="$t('upgrade.diff.action')" width="150">
-                        <template slot-scope="scope">
-                          <el-tag :type="isMissingRow(scope.row) ? 'warning' : 'info'" size="mini">
+                        <template #default="scope">
+                          <el-tag :type="isMissingRow(scope.row) ? 'warning' : 'info'" size="small">
                             {{ isMissingRow(scope.row) ? $t('upgrade.diff.fillMissing') : $t('upgrade.diff.preserve') }}
                           </el-tag>
                         </template>
@@ -266,7 +266,7 @@ import {
   LOGIN_PASSWORD_MAX_LENGTH,
   LOGIN_USERNAME_MAX_LENGTH
 } from '@/utils/login-credential-rules'
-import store from '@/store'
+import { useUserStore } from '@/stores/user'
 
 const I18N_LOCALE_KEY = 'i18n-locale'
 const REQUIRED_READY_CONFIRM_COUNT = 2
@@ -780,9 +780,8 @@ export default {
       clearUpgradeAwaitingReady()
       resetUpgradeStatusCache()
       resetSetupStatusCache()
-      store.dispatch('FedLogOut').finally(() => {
-        window.location.href = '/login'
-      })
+      useUserStore().FedLogOut()
+      window.location.href = '/login'
     },
     startWaitingForReady() {
       this.clearWaitTimers()

@@ -4,14 +4,20 @@ import {
   DATE_PANEL_NAV_KEYS,
   hideDatePickerPanelHints,
   installDatePickerPanelHints,
+  resetDatePickerPanelHintModifier,
   runDatePanelNavByKeyCode,
-  showDatePickerPanelHints
+  showDatePickerPanelHints,
+  uninstallDatePickerPanelHints
 } from '@/utils/date-picker-panel-hints'
 
 describe('date-picker-panel-hints', () => {
   beforeEach(() => {
     document.body.innerHTML = ''
-    hideDatePickerPanelHints()
+    resetDatePickerPanelHintModifier()
+  })
+
+  afterAll(() => {
+    uninstallDatePickerPanelHints()
   })
 
   it('exports nav key labels', () => {

@@ -1,11 +1,11 @@
 <template>
   <div>
     <el-dialog
+      v-model="dialogVisible"
       v-bind="$attrs"
       width="500px"
       :close-on-click-modal="false"
       :modal-append-to-body="false"
-      v-on="$listeners"
       @open="onOpen"
       @close="onClose"
     >
@@ -14,7 +14,7 @@
           ref="elForm"
           :model="formData"
           :rules="rules"
-          size="medium"
+          :size="mapElementPlusSize('medium')"
           label-width="100px"
         >
           <el-col :span="24">
@@ -37,21 +37,24 @@
         </el-form>
       </el-row>
 
-      <div slot="footer">
+      <template #footer>
         <el-button @click="close">
           取消
         </el-button>
         <el-button type="primary" @click="handleConfirm">
           确定
         </el-button>
-      </div>
+      </template>
     </el-dialog>
   </div>
 </template>
 <script>
+import { mapElementPlusSize } from '@/utils/element-plus-size.js'
+
 export default {
   inheritAttrs: false,
-  props: ['showFileName'],
+  props: ['visible', 'showFileName'],
+  emits: ['update:visible', 'confirm'],
   data() {
     return {
       formData: {
@@ -80,10 +83,19 @@ export default {
     }
   },
   computed: {
+    dialogVisible: {
+      get() {
+        return this.visible
+      },
+      set(val) {
+        this.$emit('update:visible', val)
+      }
+    }
   },
   watch: {},
   mounted() {},
   methods: {
+    mapElementPlusSize,
     onOpen() {
       if (this.showFileName) {
         this.formData.fileName = `${+new Date()}.vue`

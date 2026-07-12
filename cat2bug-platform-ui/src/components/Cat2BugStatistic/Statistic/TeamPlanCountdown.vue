@@ -15,7 +15,7 @@
         size="small"
         filterable
         @change="onPlanChange"
-        @click.native.stop
+        @click.stop
       >
         <el-option
           v-for="item in planList"

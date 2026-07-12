@@ -12,7 +12,7 @@
       <el-form-item :label="$t('notice.receiver')" prop="receiveIds">
         <select-project-member
           :placeholder="$t('notice.please-select-receiver')"
-          v-model="form.receiveIds"
+          v-model:memberId="form.receiveIds"
           :project-id="getProjectId()"
           :is-head="false"
         />
@@ -43,6 +43,10 @@
 import SelectProjectMember from "@/components/Project/SelectProjectMember";
 import {sendNotice} from "@/api/system/notice";
 import sendNoticeDialogKbd from '@/mixins/send-notice-dialog-kbd'
+import { pinia } from '@/store/pinia.js'
+import { useUserStore } from '@/stores/user'
+
+const userStore = useUserStore(pinia)
 
 export default {
   name: "SendNoticeDialog",
@@ -78,7 +82,7 @@ export default {
     },
     /** 获取项目ID */
     getProjectId() {
-      return parseInt(this.$store.state.user.config.currentProjectId);
+      return parseInt(userStore.config.currentProjectId);
     },
     /** 发送通知 */
     handleSend() {

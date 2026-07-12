@@ -26,7 +26,12 @@ describe('resolveOrderedDefectTabFilterFields', () => {
       'handleBy',
       'custom:custom_tag',
       'defectType',
-      'moduleId'
+      'moduleId',
+      'defectLevel',
+      'moduleVersion',
+      'caseId',
+      'defectState',
+      'createMember'
     ])
   })
 

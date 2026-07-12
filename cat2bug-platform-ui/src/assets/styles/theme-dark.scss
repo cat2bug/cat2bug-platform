@@ -83,6 +83,11 @@ $cat2bug-ep-default-button: ':not(.el-button--primary):not(.el-button--success):
   --star-switch-on-color: rgb(247, 186, 42);
   --star-switch-on-fill: rgb(247, 186, 42);
 
+  /* 多人头像人数角标 RowListMember */
+  --member-overflow-badge-bg: #e4e7ed;
+  --member-overflow-badge-color: #909399;
+  --member-overflow-badge-border: #ffffff;
+
   /* 缺陷共享弹框 ShareCard */
   --share-card-bg: #f4f4f4;
   --share-card-surface-bg: #ffffff;
@@ -317,6 +322,11 @@ html.dark {
   --star-switch-on-stroke: rgb(247, 186, 42);
   --star-switch-on-color: rgb(247, 186, 42);
   --star-switch-on-fill: rgb(247, 186, 42);
+
+  /* 多人头像人数角标：深色主题灰色统计标记 */
+  --member-overflow-badge-bg: #606266;
+  --member-overflow-badge-color: #e5eaf3;
+  --member-overflow-badge-border: var(--bg-color-base, #1e1e20);
 
   --share-card-bg: var(--bg-color-block);
   --share-card-surface-bg: var(--table-bg);
@@ -4663,6 +4673,27 @@ html.dark {
 
         &::placeholder {
           color: var(--text-color-placeholder) !important;
+        }
+
+        // md-editor-v3 (MdEditorPane) 编辑区
+        .cat2bug-md-editor-pane,
+        .md-editor {
+          --md-bk-color: var(--bg-color-block);
+          --md-color: var(--text-color-primary);
+          --md-border-color: var(--border-color-light);
+          background-color: var(--bg-color-block) !important;
+          color: var(--text-color-primary) !important;
+        }
+        .md-editor .cm-editor,
+        .md-editor .cm-scroller,
+        .md-editor .cm-content {
+          background-color: var(--bg-color-block) !important;
+          color: var(--text-color-primary) !important;
+        }
+        .md-editor .cm-gutters {
+          background-color: var(--bg-color-page) !important;
+          color: var(--text-color-secondary) !important;
+          border-right: 1px solid var(--border-color-light) !important;
         }
       }
 

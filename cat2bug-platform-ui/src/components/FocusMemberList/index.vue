@@ -5,12 +5,9 @@
 <script>
 import RowListMember from "@/components/RowListMember";
 export default {
+  emits: ['update:members', 'change'],
   name: "FocusMemberList",
   components: {RowListMember},
-  model: {
-    prop: 'members',
-    event: 'change'
-  },
   data(){
     return {
       topicId: null,
@@ -50,7 +47,7 @@ export default {
       if(data.data.moduleName==this.moduleName && this.dataId==data.data.dataId) {
         this.memberList.push(data.data.user);
       }
-      this.$emit('change',this.memberList);
+      this.$emit('update:members', this.memberList); this.$emit('change', this.memberList);
     });
   },
   beforeDestroy() {

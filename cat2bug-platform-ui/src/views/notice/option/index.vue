@@ -74,6 +74,8 @@
 import {getIMConfig, saveConfig} from "@/api/im/config";
 import { getUserProfile } from "@/api/system/user";
 import noticeOptionDialogKbd from '@/mixins/notice-option-dialog-kbd'
+import { storeToRefs } from "pinia";
+import { useUserStore } from "@/stores/user";
 
 function basenameVuePath(filePath) {
   const match = filePath.match(/\/([^/]+)\.vue$/)
@@ -103,6 +105,11 @@ export default {
   name: "OptionNotice",
   mixins: [noticeOptionDialogKbd],
   components: modules,
+  setup() {
+    const userStore = useUserStore()
+    const { id, config } = storeToRefs(userStore)
+    return { id, config }
+  },
   data() {
     return {
       loading: false,
@@ -160,11 +167,11 @@ export default {
     },
     /** 获取项目ID */
     getProjectId() {
-      return parseInt(this.$store.state.user.config.currentProjectId);
+      return parseInt(this.config.currentProjectId);
     },
     /** 获取用户id */
     getUserId() {
-      return this.$store.state.user.id;
+      return this.id;
     },
     /** 获取配置 */
     getConfig() {

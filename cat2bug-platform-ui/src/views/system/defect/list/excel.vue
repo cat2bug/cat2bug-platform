@@ -61,7 +61,7 @@
       @click.capture="onDefectExcelCellInteractiveClickCapture"
       @paste.capture="onDefectExcelPasteCapture"
     >
-      <!-- vue-excel-editor 为 Vue2 组件，v-model 绑定 value；Vue3 的 v-model 对应 modelValue，须用 :value -->
+      <!-- 内嵌 vue-excel-editor（vendor）；v-model 绑定 value，Vue3 须用 :value + @update -->
       <vue-excel-editor
         ref="excelEditor"
         :value="sheetRows"
@@ -599,6 +599,9 @@ const EXCEL_CREATE_ROW_RUNNING = "__CAT2BUG_EXCEL_CREATE_RUNNING__";
 /** Element Plus default-time 须为 Date；仅选日期时默认 12:00:00 */
 const EXCEL_PLAN_TIME_DEFAULT = new Date(2000, 0, 1, 12, 0, 0);
 
+import { storeToRefs } from 'pinia'
+import { useUserStore } from '@/stores/user'
+
 export default {
   name: "DefectExcel",
   components: {
@@ -632,6 +635,11 @@ export default {
       type: Number,
       default: EXCEL_VIEWPORT_BOTTOM_GAP,
     },
+  },
+  setup() {
+    const userStore = useUserStore()
+    const { id: userId } = storeToRefs(userStore)
+    return { userId }
   },
   data() {
     return {
@@ -4182,7 +4190,7 @@ export default {
       if (!Array.isArray(rows) || !rows.length) return;
       const persisted = rows.filter((r) => r && r.defectId);
       if (!checkPermi(["system:defect:remove"])) {
-        const currentUserId = this.$store.state.user.id;
+        const currentUserId = this.userId;
         const allPersistedOwnedByCurrentUser = persisted.every((r) => r.createById == currentUserId);
         if (!allPersistedOwnedByCurrentUser) {
           this.$modal.msgError(errorCode["403"]);

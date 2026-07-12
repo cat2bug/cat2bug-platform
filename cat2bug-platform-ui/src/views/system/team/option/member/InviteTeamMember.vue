@@ -1,5 +1,5 @@
 <template>
-  <el-dialog :title="$t('team.invite-members')" :visible.sync="dialogVisible" width="560px" append-to-body :close-on-click-modal="false" custom-class="cat2bug-form-shortcut-dialog team-invite-member-dialog" :close-on-press-escape="false" :before-close="onToolDialogBeforeClose" @opened="onToolDialogOpened">
+  <el-dialog :title="$t('team.invite-members')" v-model="dialogVisible" width="560px" append-to-body :close-on-click-modal="false" custom-class="cat2bug-form-shortcut-dialog team-invite-member-dialog" :close-on-press-escape="false" :before-close="onToolDialogBeforeClose" @opened="onToolDialogOpened">
     <el-tabs v-model="activeTab" class="member-invite-dialog-tabs">
       <el-tab-pane :label="$t('member.invite-direct')" name="direct">
     <el-form ref="form" :model="form" :rules="rules" label-width="120px">
@@ -54,13 +54,15 @@
         />
       </el-tab-pane>
     </el-tabs>
-    <div slot="footer" class="dialog-footer">
+    <template #footer>
+      <div class="dialog-footer">
       <el-button v-if="activeTab === 'direct'" class="defect-kbd-hint-host" type="primary" @click="submitForm">
         {{$t('submit')}}
         <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
       </el-button>
       <el-button @click="requestCloseToolDialog">{{$t('cancel')}}</el-button>
-    </div>
+      </div>
+    </template>
   </el-dialog>
 </template>
 
@@ -72,11 +74,18 @@ import {
 import Cat2BugAvatar from "@/components/Cat2BugAvatar";
 import MemberInviteLinkPanel from "@/components/MemberInviteLinkPanel";
 import defectToolDialogKbd from '@/mixins/defect-tool-dialog-kbd'
+import { storeToRefs } from 'pinia';
+import { useUserStore } from '@/stores/user'
 
 export default {
   name: "InviteTeamMember",
   mixins: [defectToolDialogKbd],
   components: { Cat2BugAvatar, MemberInviteLinkPanel },
+  setup() {
+    const userStore = useUserStore()
+    const { config } = storeToRefs(userStore)
+    return { config }
+  },
   data() {
     return {
       activeTab: 'direct',
@@ -104,7 +113,7 @@ export default {
   computed: {
     /** 获取团队id */
     teamId() {
-      return this.$store.state.user.config.currentTeamId;
+      return this.config.currentTeamId;
     }
   },
   methods: {
@@ -126,7 +135,7 @@ export default {
     },
     /** 获取团队id */
     getTeamId() {
-      return this.$store.state.user.config.currentTeamId;
+      return this.config.currentTeamId;
     },
     /** 获取团队成员列表 */
     searchMemberHandle(query) {

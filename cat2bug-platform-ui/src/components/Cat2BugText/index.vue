@@ -14,11 +14,8 @@
 
 <script>
 export default {
+  emits: ['click'],
   name: "Cat2BugText",
-  model: {
-    prop: 'content',
-    event: 'click'
-  },
   props: {
     content: {
       type: String,

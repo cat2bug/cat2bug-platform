@@ -1,7 +1,7 @@
 <template>
   <el-drawer
     class="cloud-case-drawer-accent"
-    :visible.sync="visible"
+    v-model="visible"
     :direction="direction"
     size="90%"
     :close-on-press-escape="false"
@@ -19,7 +19,7 @@
     </template>
     <div class="case" v-loading="loading" :element-loading-text="$t('case.load-prompted')">
       <div ref="caseHistory" v-show="promptHistoryList && promptHistoryList.length>0" class="case-history">
-        <el-row class="case-history-row" v-for="(prompt,index) in promptHistoryList" :key="index" @click.native="selectHistoryHandle(prompt)">
+        <el-row class="case-history-row" v-for="(prompt,index) in promptHistoryList" :key="index" @click="selectHistoryHandle(prompt)">
           <el-tag type="success" effect="dark">{{$t('DEMAND') + ' ' + (index+1).toString().padStart(2,'0')}}</el-tag>
           <span class="case-history-prompt" v-html="prompt.prompt"></span>
         </el-row>
@@ -27,7 +27,7 @@
       <div ref="caseSearch" class="case-search">
           <cat2-bug-textarea
             :readonly="loading"
-            v-model="prompt.prompt"
+            :content="prompt.prompt"
             maxlength="65536"
             :min-rows="12"
             :max-rows="22"
@@ -38,8 +38,8 @@
             :placeholder="$t('case.ai-search-describe').toString()">
             <template v-slot:tools>
               <div class="cloud-case-input-tools">
-                <el-select class="cloud-case-prompt-select" v-model="prompt.modelId" size="mini" :placeholder="$t('please-select')" @change="handleCaseAiModelChange">
-                  <template slot="prefix">
+                <el-select class="cloud-case-prompt-select" v-model="prompt.modelId" size="small" :placeholder="$t('please-select')" @change="handleCaseAiModelChange">
+                  <template #prefix>
                     <span class="cloud-case-model-select-robot" aria-hidden="true">
                       <svg-icon icon-class="robot" />
                     </span>
@@ -57,10 +57,10 @@
                   </el-option-group>
                 </el-select>
                 <el-tooltip class="item" effect="dark" :content="$t('case.create-row-count')" placement="top">
-                  <el-input-number class="cloud-case-prompt-input-number" size="mini" :min="1" :max="100" v-model="prompt.rowCount" @change="setDefaultRowCount(prompt.rowCount)"></el-input-number>
+                  <el-input-number class="cloud-case-prompt-input-number" size="small" :min="1" :max="100" v-model="prompt.rowCount" @change="setDefaultRowCount(prompt.rowCount)"></el-input-number>
                 </el-tooltip>
                 <el-tooltip class="item" effect="dark" :content="$t('clear')" placement="top">
-                  <el-button class="cat2-bug-textarea-button" type="text" @click="handleClearPromptContent"><svg-icon icon-class="delete"></svg-icon></el-button>
+                  <el-button class="cat2-bug-textarea-button" link @click="handleClearPromptContent"><svg-icon icon-class="delete"></svg-icon></el-button>
                 </el-tooltip>
                 <el-tooltip class="item" effect="dark" :content="$t('case.prompt-tooltip')" placement="top">
                   <el-popover
@@ -82,10 +82,10 @@
                           <h4><legacy-icon icon="el-icon-tickets"></legacy-icon>{{ $t('case.prompt-list') }}</h4>
                         </div>
                         <div>
-                          <el-button :icon="$legacyIcon('el-icon-plus')" v-show="!addCasePromptVisible" size="mini" @click="handleOpenAddCasePrompt">{{ $t('case.add-prompt') }}</el-button>
+                          <el-button :icon="$legacyIcon('el-icon-plus')" v-show="!addCasePromptVisible" size="small" @click="handleOpenAddCasePrompt">{{ $t('case.add-prompt') }}</el-button>
                           <el-pagination
                             style="float: right"
-                            :current-page.sync="casePromptQuery.pageNum"
+                            v-model:current-page="casePromptQuery.pageNum"
                             :page-size="casePromptQuery.pageSize"
                             layout="prev, pager, next"
                             :total="casePromptTotal"
@@ -102,25 +102,25 @@
                           style="width: 100%">
                           <el-table-column
                             prop="casePromptContent">
-                            <template slot-scope="scope">
+                            <template #default="scope">
                               <div v-show="!scope.row.isEditVisible" class="case-prompt-content" v-html="renderCasePromptContent(scope.row.casePromptContent)"></div>
-                              <add-case-prompt v-show="scope.row.isEditVisible" :is-add="false" :case-prompt="scope.row" :auto-size="{ minRows: 1, maxRows: 15 }" @click.native="handleEditCasePromptClick" @updated="getCasePrompt" @cancel="scope.row.isEditVisible=false" />
+                              <add-case-prompt v-show="scope.row.isEditVisible" :is-add="false" :case-prompt="scope.row" :auto-size="{ minRows: 1, maxRows: 15 }" @click="handleEditCasePromptClick" @updated="getCasePrompt" @cancel="scope.row.isEditVisible=false" />
                             </template>
                           </el-table-column>
                           <el-table-column
                             prop="operate"
                             width="120">
-                            <template slot-scope="scope">
+                            <template #default="scope">
                               <el-button
-                                size="mini"
-                                type="text"
+                                size="small"
+                                link
                                 :icon="$legacyIcon('el-icon-edit')"
                                 v-hasPermi="['system:case:add']"
                                 @click="handlePromptEdit($event, scope.row)"
                               >{{ $t('modify') }}</el-button>
                               <el-button
-                                size="mini"
-                                type="text"
+                                size="small"
+                                link
                                 class="red"
                                 :icon="$legacyIcon('el-icon-close')"
                                 v-hasPermi="['system:case:add']"
@@ -131,7 +131,7 @@
                         </el-table>
                         <el-pagination
                           style="float: right; margin-top: 10px;"
-                          :current-page.sync="casePromptQuery.pageNum"
+                          v-model:current-page="casePromptQuery.pageNum"
                           :page-size="casePromptQuery.pageSize"
                           layout="total, prev, pager, next"
                           :total="casePromptTotal"
@@ -141,7 +141,9 @@
                       </div>
                       <el-empty v-if="!casePromptList || casePromptList.length==0" :description="$t('case.empty-prompt')"></el-empty>
                     </div>
-                    <el-button slot="reference" class="cat2-bug-textarea-button" type="text"><svg-icon icon-class="tips"></svg-icon></el-button>
+                    <template #reference>
+                      <el-button class="cat2-bug-textarea-button" link><svg-icon icon-class="tips"></svg-icon></el-button>
+                    </template>
                   </el-popover>
                 </el-tooltip>
               </div>
@@ -150,10 +152,12 @@
         <el-dropdown split-button type="success" class="defect-kbd-hint-host" :disabled="loading" @click="searchHandle" @command="searchCommandHandle">
           {{ $t('case.add-ai-case-prompt') }}
           <span v-show="fieldHintsActive && !importDialogVisible" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
-          <el-dropdown-menu slot="dropdown">
+          <template #dropdown>
+          <el-dropdown-menu>
             <el-dropdown-item command="add">{{ $t('case.add-ai-case-prompt') }}</el-dropdown-item>
             <el-dropdown-item command="new">{{ $t('case.new-ai-case-prompt') }}</el-dropdown-item>
           </el-dropdown-menu>
+        </template>
         </el-dropdown>
       </div>
       <div class="case-data">
@@ -163,7 +167,7 @@
               <el-button
                 :disabled="ids.size==0"
                 type="danger"
-                size="mini"
+                size="small"
                 :icon="$legacyIcon('el-icon-delete')"
                 :title="$t('batch-delete')"
                 @click="batchRemoveCase"
@@ -173,7 +177,7 @@
               <el-button
                 :disabled="ids.size==0"
                 type="primary"
-                size="mini"
+                size="small"
                 :icon="$legacyIcon('el-icon-download')"
                 :title="$t('batch-import')"
                 @click="batchImportCase"
@@ -183,7 +187,7 @@
             </div>
             <div class="case-table-tools-pagination">
               <el-pagination
-                :current-page.sync="pageIndex"
+                v-model:current-page="pageIndex"
                 :page-size="pageSize"
                 layout="total, prev, pager, next"
                 :total="caseTotal">
@@ -193,7 +197,7 @@
           <el-table ref="caseTable" :data="pageList" @row-click="handleUpdate" @selection-change="handleSelectionChange">
             <el-table-column type="selection" width="50" align="center" />
             <el-table-column :label="$t('case')" align="center" class-name="cloud-case-table-case-cell">
-              <template slot-scope="scope">
+              <template #default="scope">
                 <div class="case-info">
                   <div class="case-base">
                     <div class="case-base-title-with-state">
@@ -201,7 +205,7 @@
                         <el-tag
                           class="case-state-tag"
                           :type="importStateType(scope.row)"
-                          size="mini"
+                          size="small"
                           effect="plain"
                         >{{ importStateName(scope.row) }}</el-tag>
                         <label>{{ $t('title') }}</label>
@@ -265,19 +269,19 @@
               </template>
             </el-table-column>
             <el-table-column :label="$t('operate')" align="center" class-name="small-padding fixed-width" width="120">
-              <template slot-scope="scope">
+              <template #default="scope">
                 <div class="case-table-actions">
                   <el-button
-                    size="mini"
-                    type="text"
+                    size="small"
+                    link
                     class="red"
                     :icon="$legacyIcon('el-icon-download')"
                     @click="handleImport($event,scope.row)"
                     v-hasPermi="['system:case:import']"
                   >{{ $t('import') }}</el-button>
                   <el-button
-                    size="mini"
-                    type="text"
+                    size="small"
+                    link
                     class="red"
                     :icon="$legacyIcon('el-icon-delete')"
                     @click="handleDelete($event,scope.row)"
@@ -288,34 +292,35 @@
           </el-table>
           <el-pagination
             style="float: right; margin-top: 5px"
-            :current-page.sync="pageIndex"
+            v-model:current-page="pageIndex"
             :page-size="pageSize"
             layout="total, prev, pager, next"
             :total="caseTotal">
           </el-pagination>
         </div>
         <div ref="caseContext" class="case-context" v-show="caseContextVisible">
-          <case-form class="case-form" ref="caseForm" :form.sync="currentCase" />
+          <case-form class="case-form" ref="caseForm" v-model:form="currentCase" />
         </div>
       </div>
     </div>
     <!-- 将用例导入到系统对话框 -->
-    <el-dialog :title="$t('import')" :visible.sync="importDialogVisible" :close-on-press-escape="false" :before-close="onToolDialogBeforeClose" append-to-body width="500px" @opened="onImportDialogOpened">
+    <el-dialog :title="$t('import')" v-model="importDialogVisible" :close-on-press-escape="false" :before-close="onToolDialogBeforeClose" append-to-body width="500px" @opened="onImportDialogOpened">
       <el-form ref="form" :model="importForm" label-width="100px">
         <el-form-item :label="$t('module')" prop="teamName">
           <div class="import-dialog-module-form-item">
-            <select-module v-model="importForm.moduleId" :project-id="projectId" @input="importFormModuleChangeHandle" />
+            <select-module v-model:moduleId="importForm.moduleId" :project-id="projectId" @change="importFormModuleChangeHandle" />
             <span>{{$t('case.batch-import-module-describe')}}</span>
           </div>
         </el-form-item>
       </el-form>
-      <div slot="footer" class="dialog-footer">
+      <template #footer>
+    <div class="dialog-footer">
         <el-button @click="requestCloseToolDialog">{{ $t('cancel') }}</el-button>
         <el-button class="defect-kbd-hint-host" type="primary" @click="submitImportForm">
           {{ $t('ok') }}
           <span v-show="fieldHintsActive" class="cat2bug-field-hint defect-kbd-hint defect-kbd-hint--primary" aria-hidden="true">{{ dialogSaveShortcutLabel }}</span>
         </el-button>
-      </div>
+      </div>    </template>
     </el-dialog>
     <handle-case-prompt ref="handCasePrompt" @submit="handleCasePromptCorrect" />
   </el-drawer>
@@ -339,10 +344,13 @@ import i18n from "@/utils/i18n/i18n";
 import {delCasePrompt, listCasePrompt} from "@/api/system/CasePrompt";
 import { projectAiModelOptions } from "@/api/system/ai";
 import cloudCaseKbd from '@/mixins/cloud-case-kbd'
+import { pinia } from '@/store/pinia.js'
+import { useUserStore } from '@/stores/user'
 
 const DEFAULT_ROW_COUNT_KEY = 'case_default_row_count';
 const CASE_AI_MODEL_ID_PREFIX = 'case_ai_model_id_';
 const PATTERN = /\$\{\s*[0-9a-zA-z]{1,255}\s*\}/g;
+const userStore = useUserStore(pinia)
 
 export default {
   name: "index",
@@ -446,7 +454,7 @@ export default {
       }
     },
     projectId: function () {
-      return parseInt(this.$store.state.user.config.currentProjectId);
+      return parseInt(userStore.config.currentProjectId);
     },
     caseTotal: function () {
       return this.caseList.length;
@@ -898,6 +906,27 @@ export default {
     padding: 0 20px;
     border-color: #c2e7b0;
     color: #67c23a;
+  }
+  /* 添加需求 split 按钮与左侧输入区同高（覆盖 drawer body 内全站 32px 固定按钮高度） */
+  .el-drawer__body .case .case-search > .el-dropdown {
+    align-self: stretch;
+    display: flex;
+  }
+  .el-drawer__body .case .case-search > .el-dropdown .el-button-group {
+    height: 100%;
+    display: inline-flex;
+    align-items: stretch;
+    align-self: stretch;
+    margin: 0;
+    border-radius: 0 5px 5px 0;
+  }
+  .el-drawer__body .case .case-search > .el-dropdown .el-button-group > .el-button {
+    height: 100% !important;
+    min-height: 100% !important;
+    box-sizing: border-box;
+  }
+  .el-drawer__body .case .case-search > .el-dropdown .el-button-group > .el-button:first-child {
+    border-radius: 0;
   }
   /* prefix 机器人：避免与选中模型文案重叠 */
   .case-search .cloud-case-prompt-select.el-select .el-input.el-input--prefix .el-input__inner {

@@ -3,16 +3,32 @@
     <div>
       <svg-icon class-name="size-icon" icon-class="size" />
     </div>
-    <el-dropdown-menu slot="dropdown">
+    <template #dropdown>
+    <el-dropdown-menu>
       <el-dropdown-item v-for="item of sizeOptions" :key="item.value" :disabled="size===item.value" :command="item.value">
         {{ item.label }}
       </el-dropdown-item>
     </el-dropdown-menu>
+    </template>
   </el-dropdown>
 </template>
 
 <script>
+import { storeToRefs } from 'pinia'
+import { useAppStore } from '@/stores/app'
+import { useTagsViewStore } from '@/stores/tagsView'
+
 export default {
+  setup() {
+    const appStore = useAppStore()
+    const tagsViewStore = useTagsViewStore()
+    const { size } = storeToRefs(appStore)
+    return {
+      appStore,
+      tagsViewStore,
+      size
+    }
+  },
   data() {
     return {
       sizeOptions: [
@@ -23,15 +39,10 @@ export default {
       ]
     }
   },
-  computed: {
-    size() {
-      return this.$store.getters.size
-    }
-  },
   methods: {
     handleSetSize(size) {
       this.$ELEMENT.size = size
-      this.$store.dispatch('app/setSize', size)
+      this.appStore.setSize(size)
       this.refreshView()
       this.$message({
         message: 'Switch Size Success',
@@ -40,7 +51,7 @@ export default {
     },
     refreshView() {
       // In order to make the cached page re-rendered
-      this.$store.dispatch('tagsView/delAllCachedViews', this.$route)
+      this.tagsViewStore.delAllCachedViews(this.$route)
 
       const { fullPath } = this.$route
 

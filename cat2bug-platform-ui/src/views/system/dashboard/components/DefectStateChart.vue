@@ -1,11 +1,11 @@
 <template>
   <div v-loading="loading" class="defect-state-chart" :style="{height:height,width:width}">
     <div class="chart-tools">
-      <el-radio-group v-model="query.timeType" size="mini" @input="handleTimeTypeChange">
-        <el-radio-button v-for="tt in timeTypeList" :key="tt.value" :label="tt.value">{{$t(tt.label).toString()}}</el-radio-button>
+      <el-radio-group v-model="query.timeType" size="small" @input="handleTimeTypeChange">
+        <el-radio-button v-for="tt in timeTypeList" :key="tt.value" :value="tt.value">{{$t(tt.label).toString()}}</el-radio-button>
       </el-radio-group>
       <el-tooltip class="item" effect="dark" :content="$t('export')" placement="right-end">
-        <el-button type="text" :icon="$legacyIcon('el-icon-download')" @click="handleExport"></el-button>
+        <el-button link :icon="$legacyIcon('el-icon-download')" @click="handleExport"></el-button>
       </el-tooltip>
     </div>
     <h1 class="title">{{ $t(title) }}</h1>
@@ -14,14 +14,29 @@
 </template>
 
 <script>
-import echarts from '@/utils/echarts.js';
 import resize from "@/views/dashboard/mixins/resize";
 import { defectLine } from "@/api/system/dashboard";
-import { disconnectEchartsResize, observeEchartsResize } from '@/components/Cat2BugStatistic/utils/echarts-resize';
+import { disconnectEchartsResize, initEchartsChart, observeEchartsResize, safeSetOption } from '@/components/Cat2BugStatistic/utils/echarts-resize';
+import { computed } from 'vue';
+import { storeToRefs } from 'pinia';
+import { useSettingsStore } from '@/stores/settings';
+import { useUserStore } from '@/stores/user';
+import { buildDashboardAxisStyle, getDashboardChartTheme } from '@/utils/dashboard-chart-theme';
 
 export default {
   name: "DefectStateChart",
   mixins: [resize],
+  setup() {
+    const settingsStore = useSettingsStore();
+    const userStore = useUserStore();
+    const { themeMode } = storeToRefs(settingsStore);
+    const { config } = storeToRefs(userStore);
+    const currentProjectId = computed(() => Number.parseInt(config.value?.currentProjectId, 10));
+    return {
+      themeMode,
+      currentProjectId
+    };
+  },
   props: {
     className: {
       type: String,
@@ -54,10 +69,18 @@ export default {
     }
   },
   computed: {
+    isDarkTheme() {
+      return this.themeMode === 'dark';
+    },
     /** 获取项目id */
     projectId() {
-      return parseInt(this.$store.state.user.config.currentProjectId);
+      return this.currentProjectId;
     },
+  },
+  watch: {
+    themeMode() {
+      this.getDefectLine();
+    }
   },
   mounted() {
     this.initChart();
@@ -98,16 +121,25 @@ export default {
       }).catch(e=>this.loading=false);
     },
     initChart() {
-      this.chart = echarts.init(this.$refs.defectStateChart, 'macarons')
-      this.setOptions([],[], [])
+      this.chart = initEchartsChart(this.$refs.defectStateChart)
+      this.setOptions([], [], [])
+      observeEchartsResize(this.chart, this.$refs.defectStateChart)
     },
     setOptions(legendData, xData, series) {
-      this.chart.setOption({
+      if (!this.chart) return
+      const theme = getDashboardChartTheme(this.isDarkTheme);
+      const axisStyle = buildDashboardAxisStyle(theme);
+      safeSetOption(this.chart, {
           title: {
             text: ''
           },
           tooltip: {
-            trigger: 'axis'
+            trigger: 'axis',
+            backgroundColor: theme.tooltipBg,
+            borderColor: theme.tooltipBorder,
+            textStyle: {
+              color: theme.tooltipText
+            }
           },
           legend: {
             top: '35',
@@ -116,6 +148,13 @@ export default {
             type: 'scroll',
             width: 'auto',
             data: legendData,
+            textStyle: {
+              color: theme.legendText
+            },
+            pageTextStyle: {
+              color: theme.legendText
+            },
+            inactiveColor: theme.legendInactive
           },
           grid: {
             top: '70',
@@ -124,20 +163,19 @@ export default {
             bottom: '3%',
             containLabel: true
           },
-          toolbox: {
-          },
           xAxis: {
             type: 'category',
             boundaryGap: false,
-            data: xData
+            data: xData,
+            ...axisStyle
           },
           yAxis: {
-            type: 'value'
+            type: 'value',
+            ...axisStyle,
+            splitLine: { lineStyle: { color: theme.splitColor } }
           },
           series: series
       }, true);
-      observeEchartsResize(this.chart, this.$refs.defectStateChart);
-      this.$nextTick(() => this.chart && this.chart.resize());
     },
     /** 处理时间类型变更 */
     handleTimeTypeChange(val) {

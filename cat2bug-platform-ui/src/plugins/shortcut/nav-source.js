@@ -1,8 +1,9 @@
 /**
  * 从实时左侧菜单树（store.sidebarRouters）与顶部工具栏派生导航面板项。
  */
-import store from '@/store'
 import i18n from '@/utils/i18n/i18n'
+import { pinia } from '@/store/pinia.js'
+import { usePermissionStore } from '@/stores/permission'
 import { TOP_ITEMS, DEFAULT_MENU_LETTERS, DEFAULT_LEADERS, assignLetters } from './keymap'
 import { shortcutStore } from './shortcut-store'
 
@@ -52,7 +53,8 @@ function lastSegment(path) {
 
 /** 构建左侧菜单导航项（已解析标题、默认字母、跳转回调描述） */
 function buildMenuItems() {
-  const routers = (store.getters.sidebarRouters || store.state.permission.sidebarRouters || [])
+  const permissionStore = usePermissionStore(pinia)
+  const routers = permissionStore.sidebarRouters || []
   const items = []
   MENU_GROUPS.forEach((groupName) => {
     const group = routers.find(

@@ -47,7 +47,8 @@
 <script>
 import Cat2BugCard from '../Components/Card'
 import { statisticMyParticipation } from '@/api/system/statistic/defect'
-import { mapState } from 'pinia'
+import { storeToRefs } from 'pinia'
+import { useUserStore } from '@/stores/user'
 import { useSettingsStore } from '@/stores/settings'
 import { resolveCurrentProjectId } from '../utils/project-id'
 import { buildCalendarHeatmapData, WEEKDAY_LABELS, heatColorForCount } from '../utils/calendar-heatmap'
@@ -85,8 +86,14 @@ export default {
     parent: { type: Object, default: () => ({}) },
     read: { type: Boolean, default: false }
   },
+  setup() {
+    const settingsStore = useSettingsStore()
+    const userStore = useUserStore()
+    const { themeMode } = storeToRefs(settingsStore)
+    const { id: userId } = storeToRefs(userStore)
+    return { themeMode, userId }
+  },
   computed: {
-    ...mapState(useSettingsStore, ['themeMode']),
     weekdayLabels() {
       return WEEKDAY_LABELS
     },
@@ -106,7 +113,7 @@ export default {
       return this.$t('defect.my-participation.empty').toString()
     },
     currentUserId() {
-      const id = this.$store.state.user.id
+      const id = this.userId
       const n = Number(id)
       return Number.isFinite(n) ? n : null
     },
