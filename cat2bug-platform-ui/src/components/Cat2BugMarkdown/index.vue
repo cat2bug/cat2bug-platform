@@ -33,6 +33,10 @@
 </template>
 
 <script>
+/**
+ * @deprecated 模版编辑已迁移至 ReportTemplateEditor（Milkdown）。
+ * 本组件保留：markdown-it 插件链仍被 ViewReport / 预览渲染引用。
+ */
 import { Multipane, MultipaneResizer } from '@/vendor/vue-multipane';
 import { MarkdownRenderer as MarkdownItVue } from '@/components/Markdown'
 import MdEditorPane from '@/components/Markdown/MdEditorPane.vue'

@@ -74,9 +74,9 @@ export const PLAN_VARIABLE_FIELDS = [
 export const DEFECT_TABLE_TOOLBAR_TOKEN =
   '$table{api.defect.list[projectNum,defectTypeName,defectLevel,defectName,defectStateName,moduleName,moduleVersion,defectDescribe,createBy,createTime,updateBy,updateTime,imgList,annexList]}'
 
-/** Same as TablePlugin.js */
+/** Same as TablePlugin.js, with empty `[]` allowed (defaults applied at parse time). */
 export const TABLE_TOKEN_RE =
-  /\$table\{((?:\w|\.)+)(?:\[((?:(?:\w|\.)+(?::(?:\w|[\u3040-\uD7AF]|\.)+)*)(?:,(?:\w|\.)+(?::(?:\w|[\u3040-\uD7AF]|\.)+)*)*)\])?\}/
+  /\$table\{((?:\w|\.)+)(?:\[([^\]]*)\])?\}/
 
 export const CARD_TOKEN_RE = /\$card\{((?:\w|\.)+)\}/
 

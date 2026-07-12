@@ -1,5 +1,11 @@
 <template>
-  <el-menu :default-active="activeToolsIndex" class="tools-menu" mode="horizontal" @select="toolsHandle">
+  <el-menu
+    :default-active="activeToolsIndex"
+    class="tools-menu"
+    mode="horizontal"
+    :ellipsis="ellipsis"
+    @select="toolsHandle"
+  >
     <template v-for="(tool,index) in tools">
       <li v-if="tool.type=='siding'" class="siding" />
       <el-menu-item v-else-if="!tool.children && tool.icon" :index="tool.name">
@@ -48,6 +54,11 @@ export default {
     tools: {
       type: Array,
       default: () => []
+    },
+    /** false = show all toolbar icons (no "..." overflow menu) */
+    ellipsis: {
+      type: Boolean,
+      default: true
     }
   },
   methods: {
@@ -88,7 +99,9 @@ export default {
   border: none;
   display: inline-flex;
   flex-direction: row;
+  flex-wrap: wrap;
   align-items: center;
+  row-gap: 4px;
   .el-menu-item, ::v-deep .el-submenu {
     height: 30px;
     width: 30px;

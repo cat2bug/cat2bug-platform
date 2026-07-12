@@ -14,4 +14,12 @@ export {
 } from './grammar'
 
 export { parseTemplate } from './parse'
+export { normalizeDslSource, unescapeDslEscapes } from './normalize'
 export { serializeTemplate, roundTripTemplate } from './serialize'
+export {
+  RAW_BLOCK_KIND,
+  isPlanStatisticsTableContent,
+  isMultimdMergedTableContent,
+  findRawPreservedBlockRanges,
+  splitSourceWithRawBlocks
+} from './complex-blocks'

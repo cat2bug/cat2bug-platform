@@ -4708,6 +4708,12 @@ html.dark {
     .markdown-body {
       background-color: var(--bg-color-page) !important;
 
+      > .markdown-body-edit {
+        background-color: var(--bg-color-block) !important;
+        color: var(--text-color-primary) !important;
+        border-right: 1px solid var(--border-color-light) !important;
+      }
+
       .markdown-body-edit {
         background-color: var(--bg-color-block) !important;
         color: var(--text-color-primary) !important;
@@ -4782,27 +4788,48 @@ html.dark {
 
   // 28b. 报告模版 Milkdown 编辑器暗黑模式
   .report-template-editor {
-    .report-template-editor__body {
-      border-color: var(--border-color-light) !important;
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.5) !important;
+
+    .report-template-editor__toolbar,
+    &.markdown-tools {
+      background-color: var(--bg-color-block) !important;
+      border-bottom-color: var(--border-color-light) !important;
+    }
+
+    .report-template-editor__body,
+    &.markdown-body {
       background-color: var(--bg-color-base) !important;
     }
 
-    .report-milkdown-editor {
-      background-color: var(--bg-color-base) !important;
-      border-color: var(--border-color-light) !important;
+    .report-template-editor__edit,
+    .markdown-body-edit {
+      background-color: #1e1e20 !important;
+      color: inherit !important;
+      overflow: hidden !important;
     }
 
-    .report-milkdown-editor :deep(.ProseMirror) {
+    .report-template-editor__source,
+    .report-template-editor__preview,
+    .markdown-body-view {
+      background-color: var(--bg-color-block) !important;
+    }
+
+    .report-milkdown-editor.milkdown {
+      background-color: #1e1e20 !important;
+    }
+
+    .report-milkdown-editor .ProseMirror {
+      color: var(--text-color-regular) !important;
+      background-color: transparent !important;
+    }
+
+    .report-template-markdown-source .md-editor {
+      background-color: #1e1e20 !important;
       color: var(--text-color-regular) !important;
     }
 
-    .cat2bug-defect-table-block {
-      background-color: var(--bg-color-block) !important;
-      border-color: var(--border-color-light) !important;
-    }
-
     .report-template-preview {
-      background-color: var(--bg-color-base) !important;
+      background-color: transparent !important;
     }
   }
 
@@ -4959,9 +4986,24 @@ html.dark {
 
   // 适配新建报告模版页面的顶部标题和输入框
   .project-add-page-header {
-    .report-name > .el-input__inner {
-      background-color: transparent !important;
-      color: var(--text-color-primary) !important;
+    .report-name.el-input {
+      .el-input__wrapper {
+        border: none !important;
+        box-shadow: none !important;
+        background-color: transparent !important;
+      }
+
+      &.is-focus .el-input__wrapper,
+      .el-input__wrapper.is-focus,
+      &:hover .el-input__wrapper {
+        border: none !important;
+        box-shadow: none !important;
+      }
+
+      .el-input__inner {
+        background-color: transparent !important;
+        color: var(--text-color-primary) !important;
+      }
     }
     .time {
       background-color: var(--bg-color-block) !important;

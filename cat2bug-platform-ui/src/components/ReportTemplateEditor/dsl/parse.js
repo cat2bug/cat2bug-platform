@@ -4,8 +4,11 @@ import {
   IMAGE_TOKEN_RE,
   PLAN_VARIABLE_TOKEN_RE,
   VARIABLE_TOKEN_RE,
+  DEFECT_TABLE_DEFAULT_COLUMNS,
   parseTableColumns
 } from './grammar'
+import { normalizeDslSource } from './normalize'
+import { splitSourceWithRawBlocks } from './complex-blocks'
 
 /**
  * @typedef {object} TextSegment
@@ -59,6 +62,7 @@ import {
  * @typedef {object} RawSegment
  * @property {'raw'} type
  * @property {string} value
+ * @property {string} [kind]
  */
 
 /** @typedef {TextSegment|VariableSegment|PlanVariableSegment|DefectTableSegment|CaseCardSegment|DynamicImageSegment|RawSegment} TemplateSegment */
@@ -76,9 +80,12 @@ const INLINE_RES = [
 
 function parseTableToken(match) {
   const dataSource = match[1]
-  const columns = parseTableColumns(match[2])
+  let columns = parseTableColumns(match[2])
+  if (!columns.length && dataSource === 'api.defect.list') {
+    columns = DEFECT_TABLE_DEFAULT_COLUMNS.map((field) => ({ field, label: null }))
+  }
   return {
-    type: dataSource === 'api.defect.list' ? 'defectTable' : 'defectTable',
+    type: 'defectTable',
     dataSource,
     columns,
     raw: match[0]
@@ -147,7 +154,8 @@ function tryMatchAt(src, pos, patterns) {
  * @returns {TemplateSegment[]}
  */
 export function parseTemplate(content) {
-  if (!content) {
+  const source = normalizeDslSource(content)
+  if (!source) {
     return []
   }
 
@@ -156,14 +164,14 @@ export function parseTemplate(content) {
   let pos = 0
   let textStart = 0
 
-  while (pos < content.length) {
-    const atLineStart = pos === 0 || content[pos - 1] === '\n'
+  while (pos < source.length) {
+    const atLineStart = pos === 0 || source[pos - 1] === '\n'
     const patterns = atLineStart ? [...BLOCK_RES, ...INLINE_RES] : INLINE_RES
-    const hit = tryMatchAt(content, pos, patterns)
+    const hit = tryMatchAt(source, pos, patterns)
 
     if (hit) {
       if (pos > textStart) {
-        segments.push({ type: 'text', value: content.slice(textStart, pos) })
+        segments.push({ type: 'text', value: source.slice(textStart, pos) })
       }
       segments.push(hit.segment)
       pos += hit.length
@@ -174,9 +182,48 @@ export function parseTemplate(content) {
     pos += 1
   }
 
-  if (textStart < content.length) {
-    segments.push({ type: 'text', value: content.slice(textStart) })
+  if (textStart < source.length) {
+    segments.push({ type: 'text', value: source.slice(textStart) })
   }
 
-  return segments
+  return expandRawPreservedSegments(segments)
+}
+
+/**
+ * @param {TemplateSegment[]} segments
+ * @returns {TemplateSegment[]}
+ */
+function expandRawPreservedSegments(segments) {
+  /** @type {TemplateSegment[]} */
+  const expanded = []
+
+  for (const segment of segments) {
+    if (segment.type !== 'text') {
+      expanded.push(segment)
+      continue
+    }
+
+    const parts = splitSourceWithRawBlocks(segment.value)
+    if (parts.length === 1 && parts[0].type === 'markdown') {
+      expanded.push(segment)
+      continue
+    }
+
+    for (const part of parts) {
+      if (part.type === 'raw') {
+        expanded.push({
+          type: 'raw',
+          value: part.value,
+          kind: part.kind
+        })
+        continue
+      }
+      if (!part.value) {
+        continue
+      }
+      expanded.push(...parseTemplate(part.value))
+    }
+  }
+
+  return expanded
 }

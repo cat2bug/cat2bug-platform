@@ -55,6 +55,8 @@ const legacyMixin = {
   }
 }
 
+export const pageFormCloseLegacyMixin = legacyMixin
+
 export function usePageFormClose() {
   return useLegacyKeyboardMixin(legacyMixin)
 }

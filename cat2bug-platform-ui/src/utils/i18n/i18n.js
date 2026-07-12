@@ -32,9 +32,12 @@ const i18n = createI18n({
   }
 })
 
-// Vue 2 style API for plain JS modules (vue-i18n 9 only exposes t on global)
+// Vue 2 style API for plain JS modules (vue-i18n 9 only exposes t/te on global)
 if (typeof i18n.t !== 'function') {
   i18n.t = (...args) => i18n.global.t(...args)
+}
+if (typeof i18n.te !== 'function') {
+  i18n.te = (...args) => i18n.global.te(...args)
 }
 
 export default i18n

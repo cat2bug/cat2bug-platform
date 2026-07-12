@@ -33,9 +33,34 @@ describe('report template DSL round-trip', () => {
     expect(roundTripTemplate(DEFECT_TABLE_TOOLBAR_TOKEN)).toBe(DEFECT_TABLE_TOOLBAR_TOKEN)
   })
 
+  it('preserves defect table with empty column brackets', () => {
+    const input = '$table{api.defect.list[]}'
+    const segments = parseTemplate(input)
+    expect(segments).toHaveLength(1)
+    expect(segments[0].type).toBe('defectTable')
+    expect(segments[0].columns.map((c) => c.field)).toEqual(DEFECT_TABLE_DEFAULT_COLUMNS)
+  })
+
+  it('parses editor-escaped defect table token', () => {
+    const input = '\\$table{api.defect.list\\[]}'
+    const segments = parseTemplate(input)
+    expect(segments).toHaveLength(1)
+    expect(segments[0].type).toBe('defectTable')
+    expect(segments[0].raw).toBe('$table{api.defect.list[]}')
+  })
+
   it('preserves defect table with column aliases', () => {
     const input = '$table{api.defect.list[defectName:缺陷名称,defectLevel:等级]}'
     expect(roundTripTemplate(input)).toBe(input)
+  })
+
+  it('preserves defect table token wrapped across lines', () => {
+    const input = `$table{api.defect.list\\
+[projectNum,defectTypeName,defectLevel]}`
+    const segments = parseTemplate(input)
+    expect(segments).toHaveLength(1)
+    expect(segments[0].type).toBe('defectTable')
+    expect(segments[0].raw).toBe('$table{api.defect.list[projectNum,defectTypeName,defectLevel]}')
   })
 
   it('preserves case card token', () => {
@@ -84,6 +109,12 @@ describe('report template DSL round-trip', () => {
 
   it('phase0 golden sample round-trips', () => {
     expect(roundTripTemplate(phase0Sample)).toBe(phase0Sample)
+  })
+
+  it('phase0 E4 viewreport golden round-trips', () => {
+    const e4Path = path.join(__dirname, '../../fixtures/report-template/phase0-e4-viewreport-golden.md')
+    const e4Golden = fs.readFileSync(e4Path, 'utf8')
+    expect(roundTripTemplate(e4Golden)).toBe(e4Golden)
   })
 
   it('phase0 sample defect table column edit serializes correctly', () => {

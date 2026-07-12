@@ -54,6 +54,7 @@
     "@element-plus/icons-vue": "^2.3.1",
     "@fontsource/dseg7-classic": "^5.2.5",
     "@milkdown/core": "^7.21.2",
+    "@milkdown/crepe": "^7.21.2",
     "@milkdown/ctx": "^7.21.2",
     "@milkdown/plugin-listener": "^7.21.2",
     "@milkdown/preset-commonmark": "^7.21.2",

@@ -1,0 +1,540 @@
+@import '@milkdown/crepe/theme/common/style.css';
+@import '@milkdown/crepe/theme/classic.css';
+
+.report-template-editor .report-milkdown-editor.milkdown {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  background: var(--crepe-color-background);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* Crepe 默认 padding 为 60px 120px；分屏时略收窄，但左侧仍需足够 gutter */
+.report-template-editor .report-milkdown-editor.milkdown .ProseMirror {
+  padding: 32px 28px 40px 96px;
+  min-height: 280px;
+}
+
+.report-template-editor .report-milkdown-editor.milkdown .milkdown-block-handle {
+  z-index: 30;
+}
+
+/* 暗色：html.dark 与 is-dark 双路径，避免类名未同步时仍发白底 */
+html.dark .report-template-editor .report-milkdown-editor.milkdown,
+.report-template-editor .report-milkdown-editor.milkdown.is-dark {
+  --crepe-color-background: #1e1e20;
+  --crepe-color-on-background: #e5eaf3;
+  --crepe-color-surface: #252529;
+  --crepe-color-surface-low: #1a1a1c;
+  --crepe-color-on-surface: #e5eaf3;
+  --crepe-color-on-surface-variant: #a3a6ad;
+  --crepe-color-outline: #6b6e75;
+  --crepe-color-primary: #f4bd6f;
+  --crepe-color-secondary: #3a3428;
+  --crepe-color-on-secondary: #fbdebc;
+  --crepe-color-inverse: #e5eaf3;
+  --crepe-color-on-inverse: #1e1e20;
+  --crepe-color-inline-code: #ffb4ab;
+  --crepe-color-error: #ffb4ab;
+  --crepe-color-hover: #2a2a2c;
+  --crepe-color-selected: #333336;
+  --crepe-color-inline-area: #2a2a2c;
+  background-color: #1e1e20 !important;
+  color: #e5eaf3 !important;
+}
+
+html.dark .report-template-editor .report-milkdown-editor.milkdown .ProseMirror,
+.report-template-editor .report-milkdown-editor.milkdown.is-dark .ProseMirror {
+  background-color: #1e1e20 !important;
+  color: #e5eaf3 !important;
+}
+
+html.dark .report-template-editor.report-template-editor--dark .report-template-editor__edit,
+html.dark .report-template-editor.report-template-editor--dark .report-template-editor__body,
+.report-template-editor.report-template-editor--dark .report-template-editor__edit,
+.report-template-editor.report-template-editor--dark .report-template-editor__body {
+  background-color: #1e1e20 !important;
+}
+
+html.dark .report-template-editor .markdown-body-edit,
+.report-template-editor.report-template-editor--dark .markdown-body-edit {
+  background-color: #1e1e20 !important;
+}
+
+/* ── 表格：与平台 --table-* 令牌对齐 ───────────────────────────── */
+.report-template-editor {
+  --report-editor-table-bg: #ffffff;
+  --report-editor-table-header-bg: #f6f8fa;
+  --report-editor-table-header-color: #515a6e;
+  --report-editor-table-row-alt-bg: #f6f8fa;
+  --report-editor-table-border: #dfe2e5;
+  --report-editor-table-hover-bg: #f5f7fa;
+  --report-editor-table-selected-bg: rgba(64, 158, 255, 0.12);
+  --report-editor-table-selected-outline: #409eff;
+  --report-editor-table-resize-handle: #409eff;
+}
+
+html.dark .report-template-editor,
+.report-template-editor.report-template-editor--dark {
+  --report-editor-table-bg: var(--table-bg, #1e1e20);
+  --report-editor-table-header-bg: var(--table-header-bg, #252529);
+  --report-editor-table-header-color: var(--table-header-color, #c0c4cc);
+  --report-editor-table-row-alt-bg: #252529;
+  --report-editor-table-border: var(--table-border-color, #363637);
+  --report-editor-table-hover-bg: var(--table-row-hover-bg, #2d2d31);
+  --report-editor-table-selected-bg: rgba(244, 189, 111, 0.14);
+  --report-editor-table-selected-outline: var(--crepe-color-primary, #f4bd6f);
+  --report-editor-table-resize-handle: var(--crepe-color-primary, #f4bd6f);
+}
+
+/* Milkdown / Crepe 可编辑表格 */
+.report-template-editor .report-milkdown-editor.milkdown {
+  .tableWrapper {
+    margin: 8px 0 12px;
+    border-radius: 6px;
+    border: 1px solid var(--report-editor-table-border);
+    background: var(--report-editor-table-bg);
+    overflow: hidden;
+  }
+
+  .milkdown-table-block table {
+    background: var(--report-editor-table-bg);
+    color: inherit;
+  }
+
+  .milkdown-table-block th,
+  .milkdown-table-block td {
+    border-color: var(--report-editor-table-border);
+    color: inherit;
+    transition: background-color 0.15s ease;
+  }
+
+  .milkdown-table-block td {
+    background-color: var(--report-editor-table-bg);
+  }
+
+  .milkdown-table-block th {
+    background-color: var(--report-editor-table-header-bg);
+    color: var(--report-editor-table-header-color);
+    font-weight: 600;
+  }
+
+  .milkdown-table-block tr:nth-child(even) td {
+    background-color: var(--report-editor-table-row-alt-bg);
+  }
+
+  /* ProseMirror 默认 selectedCell 为浅蓝，暗色下统一为金色半透明 */
+  .ProseMirror .selectedCell::after {
+    background: var(--report-editor-table-selected-bg) !important;
+    opacity: 1 !important;
+  }
+
+  .milkdown-table-block tr:hover td {
+    background-color: var(--report-editor-table-hover-bg);
+  }
+
+  .milkdown-table-block th:hover,
+  .milkdown-table-block tr:nth-child(even) td:hover,
+  .milkdown-table-block tr:hover th {
+    background-color: var(--report-editor-table-hover-bg);
+  }
+
+  .milkdown-table-block .selectedCell::after {
+    background-color: var(--report-editor-table-selected-bg) !important;
+    opacity: 1 !important;
+  }
+
+  .milkdown-table-block th:has(.ProseMirror-selectednode),
+  .milkdown-table-block td:has(.ProseMirror-selectednode) {
+    outline-color: var(--report-editor-table-selected-outline);
+  }
+
+  .milkdown-table-block .drag-preview {
+    background-color: var(--report-editor-table-header-bg);
+    outline-color: var(--report-editor-table-selected-outline);
+  }
+
+  .ProseMirror .column-resize-handle {
+    background-color: var(--report-editor-table-resize-handle);
+    opacity: 0.65;
+  }
+
+  .milkdown-table-block .cell-handle,
+  .milkdown-table-block .cell-handle .button-group {
+    background-color: var(--report-editor-table-header-bg);
+    border: 1px solid var(--report-editor-table-border);
+    color: var(--report-editor-table-header-color);
+  }
+
+  .milkdown-table-block .cell-handle:hover,
+  .milkdown-table-block .cell-handle .button-group button:hover {
+    background-color: var(--report-editor-table-hover-bg);
+  }
+
+  .milkdown-table-block .cell-handle .button-group button:active {
+    background-color: var(--report-editor-table-selected-bg);
+  }
+
+  .milkdown-table-block svg {
+    fill: var(--report-editor-table-header-color);
+  }
+
+  .milkdown-table-block .line-handle {
+    background-color: var(--report-editor-table-selected-outline);
+  }
+
+  .milkdown-table-block .line-handle .add-button {
+    background-color: var(--report-editor-table-header-bg);
+    border: 1px solid var(--report-editor-table-border);
+    color: var(--report-editor-table-header-color);
+  }
+
+  .milkdown-table-block .line-handle .add-button:hover {
+    background-color: var(--report-editor-table-hover-bg);
+  }
+
+  .milkdown-table-block .line-handle .add-button:active {
+    background-color: var(--report-editor-table-selected-bg);
+  }
+}
+
+/* 报告预览 / Markdown 渲染表格（右侧预览与抽屉，md-body） */
+html.dark .report-template-editor .report-template-preview .md-body table,
+html.dark .report-template-editor .report-template-preview .markdown-it-vue table,
+.report-template-editor.report-template-editor--dark .report-template-preview .md-body table,
+.report-template-editor.report-template-editor--dark .report-template-preview .markdown-it-vue table,
+html.dark .report-template-editor .el-drawer .md-body table,
+html.dark .report-template-editor .el-drawer .markdown-it-vue table,
+.report-template-editor.report-template-editor--dark .el-drawer .md-body table,
+.report-template-editor.report-template-editor--dark .el-drawer .markdown-it-vue table {
+  border-collapse: collapse;
+  background: var(--report-editor-table-bg);
+  border: 1px solid var(--report-editor-table-border);
+}
+
+html.dark .report-template-editor .report-template-preview .md-body table th,
+html.dark .report-template-editor .report-template-preview .md-body table td,
+html.dark .report-template-editor .report-template-preview .markdown-it-vue table th,
+html.dark .report-template-editor .report-template-preview .markdown-it-vue table td,
+.report-template-editor.report-template-editor--dark .report-template-preview .md-body table th,
+.report-template-editor.report-template-editor--dark .report-template-preview .md-body table td,
+.report-template-editor.report-template-editor--dark .report-template-preview .markdown-it-vue table th,
+.report-template-editor.report-template-editor--dark .report-template-preview .markdown-it-vue table td,
+html.dark .report-template-editor .el-drawer .md-body table th,
+html.dark .report-template-editor .el-drawer .md-body table td,
+html.dark .report-template-editor .el-drawer .markdown-it-vue table th,
+html.dark .report-template-editor .el-drawer .markdown-it-vue table td,
+.report-template-editor.report-template-editor--dark .el-drawer .md-body table th,
+.report-template-editor.report-template-editor--dark .el-drawer .md-body table td,
+.report-template-editor.report-template-editor--dark .el-drawer .markdown-it-vue table th,
+.report-template-editor.report-template-editor--dark .el-drawer .markdown-it-vue table td {
+  border: 1px solid var(--report-editor-table-border);
+  color: var(--text-color-primary, #e5eaf3);
+}
+
+html.dark .report-template-editor .report-template-preview .md-body table th,
+html.dark .report-template-editor .report-template-preview .markdown-it-vue table th,
+.report-template-editor.report-template-editor--dark .report-template-preview .md-body table th,
+.report-template-editor.report-template-editor--dark .report-template-preview .markdown-it-vue table th,
+html.dark .report-template-editor .el-drawer .md-body table th,
+html.dark .report-template-editor .el-drawer .markdown-it-vue table th,
+.report-template-editor.report-template-editor--dark .el-drawer .md-body table th,
+.report-template-editor.report-template-editor--dark .el-drawer .markdown-it-vue table th {
+  background-color: var(--report-editor-table-header-bg);
+  color: var(--report-editor-table-header-color);
+  font-weight: 600;
+}
+
+html.dark .report-template-editor .report-template-preview .md-body table tr,
+html.dark .report-template-editor .report-template-preview .markdown-it-vue table tr,
+.report-template-editor.report-template-editor--dark .report-template-preview .md-body table tr,
+.report-template-editor.report-template-editor--dark .report-template-preview .markdown-it-vue table tr,
+html.dark .report-template-editor .el-drawer .md-body table tr,
+html.dark .report-template-editor .el-drawer .markdown-it-vue table tr,
+.report-template-editor.report-template-editor--dark .el-drawer .md-body table tr,
+.report-template-editor.report-template-editor--dark .el-drawer .markdown-it-vue table tr {
+  background-color: var(--report-editor-table-bg);
+  border-top: 1px solid var(--report-editor-table-border);
+}
+
+html.dark .report-template-editor .report-template-preview .md-body table tr:nth-child(2n),
+html.dark .report-template-editor .report-template-preview .markdown-it-vue table tr:nth-child(2n),
+.report-template-editor.report-template-editor--dark .report-template-preview .md-body table tr:nth-child(2n),
+.report-template-editor.report-template-editor--dark .report-template-preview .markdown-it-vue table tr:nth-child(2n),
+html.dark .report-template-editor .el-drawer .md-body table tr:nth-child(2n),
+html.dark .report-template-editor .el-drawer .markdown-it-vue table tr:nth-child(2n),
+.report-template-editor.report-template-editor--dark .el-drawer .md-body table tr:nth-child(2n),
+.report-template-editor.report-template-editor--dark .el-drawer .markdown-it-vue table tr:nth-child(2n) {
+  background-color: var(--report-editor-table-row-alt-bg);
+}
+
+/* 右侧 Markdown 源码面板（分屏）暗色 — 略浅于主背景，避免纯黑 */
+$report-source-bg-dark: #2a2a2e;
+$report-source-gutter-dark: #323238;
+$report-source-active-line-dark: #36363c;
+
+html.dark .report-template-editor .report-template-editor__source,
+.report-template-editor.report-template-editor--dark .report-template-editor__source,
+html.dark .report-template-editor.report-template-editor--dark .report-template-editor__source {
+  background-color: $report-source-bg-dark !important;
+}
+
+html.dark .report-template-editor .report-template-editor__source .cat2bug-md-editor-pane .md-editor,
+.report-template-editor.report-template-editor--dark .report-template-editor__source .cat2bug-md-editor-pane .md-editor,
+html.dark .report-template-editor.report-template-editor--dark .report-template-editor__source .cat2bug-md-editor-pane .md-editor {
+  --md-bk-color: #{$report-source-bg-dark};
+  --md-color: #e5eaf3;
+  --md-border-color: #45454d;
+  background-color: $report-source-bg-dark !important;
+  color: #e5eaf3 !important;
+}
+
+html.dark .report-template-editor .report-template-editor__source .cat2bug-md-editor-pane .md-editor .cm-editor,
+html.dark .report-template-editor .report-template-editor__source .cat2bug-md-editor-pane .md-editor .cm-scroller,
+html.dark .report-template-editor .report-template-editor__source .cat2bug-md-editor-pane .md-editor .cm-content,
+.report-template-editor.report-template-editor--dark .report-template-editor__source .cat2bug-md-editor-pane .md-editor .cm-editor,
+.report-template-editor.report-template-editor--dark .report-template-editor__source .cat2bug-md-editor-pane .md-editor .cm-scroller,
+.report-template-editor.report-template-editor--dark .report-template-editor__source .cat2bug-md-editor-pane .md-editor .cm-content,
+html.dark .report-template-editor.report-template-editor--dark .report-template-editor__source .cat2bug-md-editor-pane .md-editor .cm-editor,
+html.dark .report-template-editor.report-template-editor--dark .report-template-editor__source .cat2bug-md-editor-pane .md-editor .cm-scroller,
+html.dark .report-template-editor.report-template-editor--dark .report-template-editor__source .cat2bug-md-editor-pane .md-editor .cm-content {
+  background-color: $report-source-bg-dark !important;
+  color: #e5eaf3 !important;
+}
+
+html.dark .report-template-editor .report-template-editor__source .cat2bug-md-editor-pane .md-editor .cm-gutters,
+.report-template-editor.report-template-editor--dark .report-template-editor__source .cat2bug-md-editor-pane .md-editor .cm-gutters,
+html.dark .report-template-editor.report-template-editor--dark .report-template-editor__source .cat2bug-md-editor-pane .md-editor .cm-gutters {
+  background-color: $report-source-gutter-dark !important;
+  color: #a3a6ad !important;
+  border-right: 1px solid #45454d !important;
+}
+
+html.dark .report-template-editor .report-template-editor__source .cat2bug-md-editor-pane .md-editor .cm-activeLine,
+html.dark .report-template-editor .report-template-editor__source .cat2bug-md-editor-pane .md-editor .cm-activeLineGutter,
+.report-template-editor.report-template-editor--dark .report-template-editor__source .cat2bug-md-editor-pane .md-editor .cm-activeLine,
+.report-template-editor.report-template-editor--dark .report-template-editor__source .cat2bug-md-editor-pane .md-editor .cm-activeLineGutter,
+html.dark .report-template-editor.report-template-editor--dark .report-template-editor__source .cat2bug-md-editor-pane .md-editor .cm-activeLine,
+html.dark .report-template-editor.report-template-editor--dark .report-template-editor__source .cat2bug-md-editor-pane .md-editor .cm-activeLineGutter {
+  background-color: $report-source-active-line-dark !important;
+}
+
+/* 纯源码模式 MdEditorPane 暗色 */
+html.dark .report-template-editor .report-template-editor__edit .cat2bug-md-editor-pane .md-editor,
+.report-template-editor.report-template-editor--dark .report-template-editor__edit .cat2bug-md-editor-pane .md-editor,
+html.dark .report-template-editor.report-template-editor--dark .report-template-editor__edit .cat2bug-md-editor-pane .md-editor {
+  --md-bk-color: #{$report-source-bg-dark};
+  --md-color: #e5eaf3;
+  --md-border-color: #45454d;
+  background-color: $report-source-bg-dark !important;
+  color: #e5eaf3 !important;
+}
+
+html.dark .report-template-editor .report-template-editor__edit .cat2bug-md-editor-pane .md-editor .cm-editor,
+html.dark .report-template-editor .report-template-editor__edit .cat2bug-md-editor-pane .md-editor .cm-scroller,
+html.dark .report-template-editor .report-template-editor__edit .cat2bug-md-editor-pane .md-editor .cm-content,
+.report-template-editor.report-template-editor--dark .report-template-editor__edit .cat2bug-md-editor-pane .md-editor .cm-editor,
+.report-template-editor.report-template-editor--dark .report-template-editor__edit .cat2bug-md-editor-pane .md-editor .cm-scroller,
+.report-template-editor.report-template-editor--dark .report-template-editor__edit .cat2bug-md-editor-pane .md-editor .cm-content,
+html.dark .report-template-editor.report-template-editor--dark .report-template-editor__edit .cat2bug-md-editor-pane .md-editor .cm-editor,
+html.dark .report-template-editor.report-template-editor--dark .report-template-editor__edit .cat2bug-md-editor-pane .md-editor .cm-scroller,
+html.dark .report-template-editor.report-template-editor--dark .report-template-editor__edit .cat2bug-md-editor-pane .md-editor .cm-content {
+  background-color: $report-source-bg-dark !important;
+  color: #e5eaf3 !important;
+}
+
+html.dark .report-template-editor .report-template-editor__edit .cat2bug-md-editor-pane .md-editor .cm-gutters,
+.report-template-editor.report-template-editor--dark .report-template-editor__edit .cat2bug-md-editor-pane .md-editor .cm-gutters,
+html.dark .report-template-editor.report-template-editor--dark .report-template-editor__edit .cat2bug-md-editor-pane .md-editor .cm-gutters {
+  background-color: $report-source-gutter-dark !important;
+  color: #a3a6ad !important;
+  border-right: 1px solid #45454d !important;
+}
+
+/* 覆盖全局 theme-dark 中 markdown-body-view 的底色 */
+html.dark .report-template-editor .markdown-body > .markdown-body-view.report-template-editor__source,
+.report-template-editor.report-template-editor--dark .markdown-body > .markdown-body-view.report-template-editor__source {
+  background-color: $report-source-bg-dark !important;
+}
+
+/* Cat2Bug DSL 块 / 变量芯片（Milkdown 可视化） */
+.report-template-editor .cat2bug-dsl-block__view {
+  border: 1px dashed var(--report-editor-table-selected-outline, #f4bd6f);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin: 10px 0;
+  background: var(--report-editor-table-header-bg, #252529);
+  color: var(--text-color-primary, #e5eaf3);
+}
+
+.report-template-editor .cat2bug-dsl-block__view-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--report-editor-table-header-color, #c0c4cc);
+}
+
+.report-template-editor .cat2bug-dsl-block__view-icon {
+  display: inline-flex;
+  width: 18px;
+  height: 18px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  background: rgba(244, 189, 111, 0.16);
+  color: var(--report-editor-table-selected-outline, #f4bd6f);
+  font-size: 12px;
+}
+
+.report-template-editor .cat2bug-dsl-block__view-token {
+  display: block;
+  font-size: 12px;
+  line-height: 1.5;
+  word-break: break-all;
+  color: var(--text-color-secondary, #a3a6ad);
+  background: transparent;
+}
+
+.report-template-editor .cat2bug-dsl-block__view-hint {
+  margin: 4px 0 8px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--el-color-warning, #e6a23c);
+}
+
+.report-template-editor .cat2bug-dsl-block__view--raw {
+  .cat2bug-dsl-block__view-token--raw {
+    margin: 0;
+    max-height: 240px;
+    overflow: auto;
+    white-space: pre-wrap;
+    padding: 8px;
+    border-radius: 4px;
+    background: var(--el-fill-color-light, rgba(0, 0, 0, 0.04));
+  }
+}
+
+.report-template-editor .cat2bug-dsl-chip__view {
+  display: inline-block;
+  padding: 1px 8px;
+  margin: 0 2px;
+  border-radius: 4px;
+  font-size: 12px;
+  line-height: 1.6;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  background: rgba(244, 189, 111, 0.14);
+  color: #f4bd6f;
+  border: 1px solid rgba(244, 189, 111, 0.35);
+  vertical-align: baseline;
+}
+
+.report-template-editor .cat2bug-dsl-chip__view--plan {
+  background: rgba(64, 158, 255, 0.12);
+  color: #79bbff;
+  border-color: rgba(64, 158, 255, 0.35);
+}
+
+/* 缺陷表格实时预览（与 Cat2BugMarkdown TablePlugin 同源数据） */
+.report-template-editor .cat2bug-dsl-block__view--live-table {
+  .cat2bug-dsl-block__view-body {
+    margin-top: 8px;
+  }
+}
+
+.report-template-editor .cat2bug-dsl-preview-table-wrap {
+  width: 100%;
+}
+
+.report-template-editor .cat2bug-dsl-preview-table__scroll {
+  overflow-x: auto;
+  border: 1px solid var(--report-editor-table-border);
+  border-radius: 6px;
+  background: var(--report-editor-table-bg);
+}
+
+.report-template-editor .cat2bug-dsl-preview-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  line-height: 1.5;
+
+  th,
+  td {
+    border: 1px solid var(--report-editor-table-border);
+    padding: 6px 8px;
+    text-align: left;
+    vertical-align: top;
+    white-space: nowrap;
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  th {
+    background: var(--report-editor-table-header-bg);
+    color: var(--report-editor-table-header-color);
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+
+  td {
+    background: var(--report-editor-table-bg);
+    color: inherit;
+    white-space: normal;
+  }
+
+  tbody tr:nth-child(even) td {
+    background: var(--report-editor-table-row-alt-bg);
+  }
+
+  tbody tr:hover td {
+    background: var(--report-editor-table-hover-bg);
+  }
+}
+
+.report-template-editor .cat2bug-dsl-preview-table__hint,
+.report-template-editor .cat2bug-dsl-preview-table__meta {
+  font-size: 12px;
+  color: var(--text-color-secondary, #a3a6ad);
+  padding: 6px 2px;
+}
+
+.report-template-editor .cat2bug-dsl-preview-table__meta {
+  text-align: right;
+}
+
+.report-template-editor .cat2bug-dsl-block__view--live-image {
+  .cat2bug-dsl-block__view-body {
+    margin-top: 8px;
+  }
+}
+
+.report-template-editor .cat2bug-dsl-preview-image-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.report-template-editor .cat2bug-dsl-preview-image {
+  display: block;
+  max-width: 100%;
+  border-radius: 6px;
+  border: 1px solid var(--report-editor-table-border);
+  background: var(--report-editor-table-bg);
+}
+
+.report-template-editor .cat2bug-dsl-preview-image__hint {
+  font-size: 12px;
+  color: var(--text-color-secondary, #a3a6ad);
+  padding: 6px 2px;
+}
+

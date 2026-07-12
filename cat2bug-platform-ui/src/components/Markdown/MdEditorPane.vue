@@ -3,10 +3,12 @@
     ref="editorRef"
     class="cat2bug-md-editor-pane"
     :model-value="modelValue"
+    :theme="resolvedTheme"
     :preview="false"
+    :no-katex="noKatex"
     :toolbars="[]"
     :footers="[]"
-    :show-code-row-number="false"
+    :show-code-row-number="showCodeRowNumber"
     language="zh-CN"
     @update:model-value="$emit('update:modelValue', $event)"
     @on-change="onChange"
@@ -14,8 +16,19 @@
 </template>
 
 <script>
+import { computed } from 'vue'
+import { storeToRefs } from 'pinia'
 import { MdEditor } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
+import { useSettingsStore } from '@/stores/settings'
+import { readStoredThemeMode } from '@/utils/theme-mode'
+
+function isEditorDarkMode() {
+  if (typeof document !== 'undefined' && document.documentElement.classList.contains('dark')) {
+    return true
+  }
+  return readStoredThemeMode() === 'dark'
+}
 
 /**
  * Edit pane for Cat2BugMarkdown — md-editor-v3 codemirror without built-in toolbar/preview.
@@ -28,9 +41,35 @@ export default {
     modelValue: {
       type: String,
       default: ''
+    },
+    theme: {
+      type: String,
+      default: ''
+    },
+    showCodeRowNumber: {
+      type: Boolean,
+      default: false
+    },
+    /**
+     * Cat2Bug DSL 大量使用 $ / ${...}，与 KaTeX 行内公式定界符冲突。
+     */
+    noKatex: {
+      type: Boolean,
+      default: true
     }
   },
   emits: ['update:modelValue', 'change'],
+  setup(props) {
+    const settingsStore = useSettingsStore()
+    const { themeMode } = storeToRefs(settingsStore)
+    const resolvedTheme = computed(() => {
+      if (props.theme === 'light' || props.theme === 'dark') {
+        return props.theme
+      }
+      return themeMode.value === 'dark' || isEditorDarkMode() ? 'dark' : 'light'
+    })
+    return { resolvedTheme }
+  },
   methods: {
     onChange(value) {
       this.$emit('change', value)
