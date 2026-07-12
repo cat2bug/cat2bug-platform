@@ -4780,6 +4780,32 @@ html.dark {
     }
   }
 
+  // 28b. 报告模版 Milkdown 编辑器暗黑模式
+  .report-template-editor {
+    .report-template-editor__body {
+      border-color: var(--border-color-light) !important;
+      background-color: var(--bg-color-base) !important;
+    }
+
+    .report-milkdown-editor {
+      background-color: var(--bg-color-base) !important;
+      border-color: var(--border-color-light) !important;
+    }
+
+    .report-milkdown-editor :deep(.ProseMirror) {
+      color: var(--text-color-regular) !important;
+    }
+
+    .cat2bug-defect-table-block {
+      background-color: var(--bg-color-block) !important;
+      border-color: var(--border-color-light) !important;
+    }
+
+    .report-template-preview {
+      background-color: var(--bg-color-base) !important;
+    }
+  }
+
   // Markdown 工具栏子菜单弹出层
   .el-menu.el-menu--popup {
     background-color: var(--dropdown-bg) !important;

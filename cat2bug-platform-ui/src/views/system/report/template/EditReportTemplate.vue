@@ -11,7 +11,22 @@
         </template>
       </el-page-header>
     </el-row>
-    <cat2-bug-markdown ref="cat2bugMarkdown" v-model:content="template.templateContent" :placeholder="$t('mk.start-edit').toString()" :template="template" @input="changeHandle(5000)" />
+    <report-template-editor
+      v-if="useMilkdownEditor"
+      ref="templateEditor"
+      v-model:content="template.templateContent"
+      :placeholder="$t('mk.start-edit').toString()"
+      :template="template"
+      @input="changeHandle(5000)"
+    />
+    <cat2-bug-markdown
+      v-else
+      ref="cat2bugMarkdown"
+      v-model:content="template.templateContent"
+      :placeholder="$t('mk.start-edit').toString()"
+      :template="template"
+      @input="changeHandle(5000)"
+    />
   </div>
 </template>
 
@@ -21,11 +36,21 @@ import {getReportTemplate, updateTemplate} from "@/api/system/ReportTemplate";
 import {upload} from "@/api/common/upload";
 import dialogFormShortcuts from '@/mixins/dialog-form-shortcuts';
 import pageFormClose from '@/mixins/page-form-close';
+import { defineAsyncComponent } from 'vue';
+
+const ReportTemplateEditor = defineAsyncComponent(() =>
+  import('@/components/ReportTemplateEditor').then((m) => m.ReportTemplateEditor)
+);
 
 export default {
   name: "AddDefectReport",
   mixins: [dialogFormShortcuts, pageFormClose],
-  components: {Cat2BugMarkdown},
+  components: { Cat2BugMarkdown, ReportTemplateEditor },
+  computed: {
+    useMilkdownEditor() {
+      return import.meta.env.VITE_REPORT_TEMPLATE_MILKDOWN === 'true'
+    }
+  },
   data() {
     return {
       visible: true,
@@ -55,9 +80,11 @@ export default {
   },
   methods: {
     focusMarkdownEditor() {
-      const md = this.$refs.cat2bugMarkdown;
+      const md = this.$refs.templateEditor || this.$refs.cat2bugMarkdown;
       if (md && typeof md.focusEditor === 'function') {
         md.focusEditor();
+      } else if (md && typeof md.focus === 'function') {
+        md.focus();
       }
     },
     serializePageFormCloseState() {
