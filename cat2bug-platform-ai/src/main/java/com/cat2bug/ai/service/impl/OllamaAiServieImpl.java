@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
 /**
  * @Author: yuzhantao
  * @CreateTime: 2024-06-11 11:56
- * @Version: 1.0.1
+ * @Version: 1.1.0
  * Ollama服务
  */
 @Service("ollama")

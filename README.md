@@ -2,7 +2,7 @@
   <!-- 与登录页 CatIllustration 同源（login-cat-scene-light/dark.jpg） -->
   <img src="readme/images/login-cat-scene-dark.png" width="550" alt="猫陪我改 BUG — Cat2Bug Platform" style="max-width: 100%; height: auto; margin-top: 50px;" />
 </div>
-<h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">Cat2Bug-Platform v1.0.1</h1>
+<h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">Cat2Bug-Platform v1.1.0</h1>
 <h4 align="center">轻量化智能BUG管理平台</h4>
 
 ## 平台简介
@@ -26,9 +26,9 @@ Cat2Bug-Platform是一套永久免费开源的Bug管理平台，可以完全私�
 
 ## 最新版本更新说明
 
-当前最新版本是1.0.1
+当前最新版本是1.1.0
 
-**运行时要求（1.0.1 后端）**：构建与运行后端需 **JDK 17+**、**Spring Boot 3.3.x**；Maven 版本号为 1.0.1。详见 [docs/backend-spring-boot-3.md](docs/backend-spring-boot-3.md) 与 [CHANGELOG.md](CHANGELOG.md)。
+**运行时要求（1.1.0 后端）**：构建与运行后端需 **JDK 17+**、**Spring Boot 3.3.x**；Maven 版本号为 1.1.0。详见 [docs/backend-spring-boot-3.md](docs/backend-spring-boot-3.md) 与 [CHANGELOG.md](CHANGELOG.md)。
 
 * 添加系统快捷键体系
 * 缺陷 Excel 暗色主题与 Safari 行号列滚动体验优化

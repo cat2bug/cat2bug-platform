@@ -173,6 +173,13 @@
             </div>
           </template>
           <el-collapse accordion>
+            <el-collapse-item title="v1.1.0 - 2026-07-12">
+              <ol>
+                <li>前端升级至 Vue 3、Vite 与 Element Plus</li>
+                <li>顶栏导航与项目选择交互优化</li>
+                <li>缺陷列表加载时分隔条滑块位置修复</li>
+              </ol>
+            </el-collapse-item>
             <el-collapse-item title="v1.0.1 - 2026-07-10">
               <ol>
                 <li>个人中心基本资料布局与团队图标显示优化</li>
