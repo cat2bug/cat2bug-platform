@@ -19,7 +19,7 @@ function isBlockAddButton(target) {
 }
 
 /**
- * @param {{ getMenuGroups: () => { key: string, label: string, items: { key: string, label: string, onSelect: (ctx: MilkdownCtx) => void }[] }[], runEditorAction: (fn: (ctx: MilkdownCtx) => void) => void, focusEditor?: () => void, isDark?: () => boolean }} options
+ * @param {{ getMenuGroups: () => { key: string, label: string, items: { key: string, label: string, onSelect: (ctx: MilkdownCtx) => void }[] }[], runEditorAction: (fn: (ctx: MilkdownCtx) => void) => void, focusEditor?: () => void, captureInsertSelection?: () => void, restoreInsertSelection?: (ctx: MilkdownCtx) => void, isDark?: () => boolean }} options
  * @returns {() => void}
  */
 export function installReportBlockAddOverlay(options) {
@@ -27,6 +27,8 @@ export function installReportBlockAddOverlay(options) {
     getMenuGroups,
     runEditorAction,
     focusEditor = () => {},
+    captureInsertSelection = () => {},
+    restoreInsertSelection = () => {},
     isDark = () => false
   } = options
 
@@ -40,6 +42,14 @@ export function installReportBlockAddOverlay(options) {
   let openAfterAddFrame = 0
   /** @type {DOMRect | null} */
   let anchorRectAtClick = null
+
+  function captureInsertSelectionFromEditor() {
+    captureInsertSelection()
+  }
+
+  function restoreInsertSelectionInEditor(ctx) {
+    restoreInsertSelection(ctx)
+  }
 
   function ensureDom() {
     if (host) {
@@ -284,8 +294,9 @@ export function installReportBlockAddOverlay(options) {
           event.preventDefault()
           event.stopPropagation()
           runEditorAction((ctx) => {
-            item.onSelect(ctx)
             focusEditor()
+            restoreInsertSelectionInEditor(ctx)
+            item.onSelect(ctx)
           })
           close()
         })
@@ -339,6 +350,7 @@ export function installReportBlockAddOverlay(options) {
       openAfterAddFrame = requestAnimationFrame(() => {
         openAfterAddFrame = 0
         hideCrepeSlashMenu()
+        captureInsertSelectionFromEditor()
         openMenu()
       })
     })

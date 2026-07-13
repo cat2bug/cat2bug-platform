@@ -13,6 +13,25 @@ export function unescapeDslEscapes(content) {
 }
 
 /**
+ * Repair $image["style":"..."]{path} when the closing ] before { is missing.
+ * e.g. $image["style":"width:100px;"{api.project.projectIcon}
+ */
+export function repairImageTokenBrackets(content) {
+  if (!content) {
+    return ''
+  }
+  return content.replace(
+    /(\$(?:img|image)(?:\[[^\]]*"[^"]*")+)(\{[\w.]+\})/g,
+    (full, attrPart, pathPart) => {
+      if (attrPart.endsWith(']')) {
+        return full
+      }
+      return `${attrPart}]${pathPart}`
+    }
+  )
+}
+
+/**
  * Collapse soft line breaks inside Cat2Bug DSL block tokens.
  * md-editor / manual edits may wrap long tokens across lines:
  *   $table{api.defect.list\
@@ -24,6 +43,7 @@ export function normalizeDslSource(content) {
   }
 
   let result = unescapeDslEscapes(content)
+  result = repairImageTokenBrackets(result)
   // Stray backslash before column brackets after line-wrap edits: list\[] -> list[]
   result = result.replace(/(\$table\{[^}\r\n]*?)\\(?=[\[\]])/g, '$1')
   // Backslash continuation (common in code editors)

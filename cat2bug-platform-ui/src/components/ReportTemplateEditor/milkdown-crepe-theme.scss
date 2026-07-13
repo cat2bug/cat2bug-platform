@@ -550,13 +550,33 @@ html.dark .report-template-editor .markdown-body > .markdown-body-view.report-te
   padding: 1px 8px;
   margin: 0 2px;
   border-radius: 4px;
-  font-size: 12px;
-  line-height: 1.6;
+  font-size: inherit;
+  line-height: inherit;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   background: rgba(244, 189, 111, 0.14);
   color: #f4bd6f;
   border: 1px solid rgba(244, 189, 111, 0.35);
   vertical-align: baseline;
+
+  &.is-resolved {
+    font-family: inherit;
+    font-size: inherit;
+    padding: 0;
+    margin: 0;
+    background: transparent;
+    border-color: transparent;
+    color: inherit;
+  }
+
+  &.is-empty {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 12px;
+    color: var(--el-text-color-placeholder, #a3a6ad);
+  }
+
+  &.is-loading {
+    opacity: 0.6;
+  }
 }
 
 .report-template-editor .cat2bug-dsl-chip__view--plan {

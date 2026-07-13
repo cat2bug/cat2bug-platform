@@ -101,7 +101,7 @@ function parseCardToken(match) {
 }
 
 function parseImageToken(match) {
-  const attrChunk = match[1]
+  const attrChunk = match[1] || ''
   const path = match[2]
   let style = ''
   const styleMatch = attrChunk.match(/"style"\s*:\s*"([^"]*)"/)

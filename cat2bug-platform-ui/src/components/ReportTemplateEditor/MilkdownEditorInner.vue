@@ -14,7 +14,8 @@ import { storeToRefs } from 'pinia'
 import { Milkdown, useEditor } from '@milkdown/vue'
 import { Crepe, CrepeFeature } from '@milkdown/crepe'
 import { editorViewCtx } from '@milkdown/kit/core'
-import { getMarkdown, replaceAll, forceUpdate } from '@milkdown/kit/utils'
+import { TextSelection } from '@milkdown/prose/state'
+import { getMarkdown, insert, replaceAll, forceUpdate } from '@milkdown/kit/utils'
 import { useSettingsStore } from '@/stores/settings'
 import { isReportEditorDarkMode } from './report-editor-theme'
 import { useReportDslPlugins } from './milkdown'
@@ -22,6 +23,8 @@ import { normalizeDslSource } from './dsl/normalize'
 import { subscribeReportPreviewData, ensureReportPreviewData } from './milkdown/report-preview-data'
 import { installBlockDragImageFix } from './milkdown/block-drag-image'
 import { installReportBlockAddOverlay } from './milkdown/report-block-add-overlay'
+import { documentContainsRawDslText } from './milkdown/dsl-doc-sync'
+import { markdownSemanticallyEqual, shouldApplyExternalModelSync } from './milkdown/model-sync'
 import {
   buildDefaultBlockMenuGroups,
   businessGroupsToOverlayGroups
@@ -59,6 +62,9 @@ export default defineComponent({
     let unsubscribePreviewData = null
     let uninstallBlockDragImageFix = null
     let uninstallBlockAddOverlay = null
+    let uninstallEditorBlurSync = null
+    /** @type {number | null} */
+    let insertSelectionPos = null
     /** @type {import('@milkdown/crepe').Crepe | null} */
     let crepeInstance = null
     const blockEditConfig = {
@@ -81,6 +87,38 @@ export default defineComponent({
       }
     }
 
+    function captureInsertSelection() {
+      const editor = get()
+      if (!editor) {
+        return
+      }
+      editor.action((ctx) => {
+        const view = ctx.get(editorViewCtx)
+        if (!view) {
+          return
+        }
+        insertSelectionPos = view.state.selection.from
+      })
+    }
+
+    function restoreInsertSelection(ctx) {
+      if (insertSelectionPos == null) {
+        return
+      }
+      const view = ctx.get(editorViewCtx)
+      if (!view) {
+        return
+      }
+      const { doc } = view.state
+      const safePos = Math.max(1, Math.min(insertSelectionPos, doc.content.size - 1))
+      try {
+        const tr = view.state.tr.setSelection(TextSelection.near(doc.resolve(safePos)))
+        view.dispatch(tr)
+      } catch (_e) {
+        // ignore invalid selection restore
+      }
+    }
+
     function insertBusinessContentAtSelection(ctx, content) {
       if (!content) {
         return
@@ -91,14 +129,124 @@ export default defineComponent({
             '计划统计大表已插入；表格结构请在「源码」模式中编辑，计划变量将完整保留。'
         )
       }
+
       const view = ctx.get(editorViewCtx)
       if (!view) {
         return
       }
-      const { from, to } = view.state.selection
-      const tr = view.state.tr.insertText(content, from, to)
-      view.dispatch(tr)
-      view.focus()
+
+      const $from = view.state.selection.$from
+      const parent = $from.parent
+      const isEmptyTextblock = parent.isTextblock && parent.content.size === 0
+
+      syncing.value = true
+      try {
+        if (isEmptyTextblock) {
+          insert(content, false)(ctx)
+        } else {
+          // 光标不在空行时强制新开段落，避免拼到上一行末尾
+          insert(`\n${content}`, false)(ctx)
+        }
+        const next = normalizeDslSource(getMarkdown()(ctx) || '')
+        replaceAll(next, true)(ctx)
+        ctx.get(editorViewCtx)?.focus()
+        refreshPreviewViews()
+        emit('update:modelValue', next)
+        emit('change', next)
+      } finally {
+        syncing.value = false
+      }
+    }
+
+    function runWithPreservedSelection(action) {
+      const editor = get()
+      if (!editor) {
+        return
+      }
+      editor.action((ctx) => {
+        const view = ctx.get(editorViewCtx)
+        if (!view) {
+          action(ctx)
+          return
+        }
+        const { from, to } = view.state.selection
+        const hadFocus = view.hasFocus()
+        action(ctx)
+        if (!hadFocus) {
+          return
+        }
+        const { doc } = view.state
+        const safeFrom = Math.max(0, Math.min(from, doc.content.size))
+        const safeTo = Math.max(0, Math.min(to, doc.content.size))
+        try {
+          const selection =
+            safeFrom === safeTo
+              ? TextSelection.near(doc.resolve(Math.max(1, safeFrom)))
+              : TextSelection.create(doc, safeFrom, safeTo)
+          const tr = view.state.tr.setSelection(selection)
+          view.dispatch(tr)
+          view.focus()
+        } catch (_e) {
+          view.focus()
+        }
+      })
+    }
+
+    function emitCurrentMarkdown(ctx) {
+      const normalized = normalizeDslSource(getMarkdown()(ctx) || '')
+      emit('update:modelValue', normalized)
+      emit('change', normalized)
+    }
+
+    function installEditorBlurSync() {
+      uninstallEditorBlurSync?.()
+      const editor = get()
+      if (!editor) {
+        return
+      }
+      editor.action((ctx) => {
+        const view = ctx.get(editorViewCtx)
+        if (!view?.dom) {
+          return
+        }
+        const onFocusOut = (event) => {
+          const related = event.relatedTarget
+          if (related instanceof Node) {
+            if (view.dom.contains(related)) {
+              return
+            }
+            const menuHost = document.querySelector('.report-block-add-menu-host')
+            if (menuHost?.contains(related)) {
+              return
+            }
+          }
+          if (syncing.value) {
+            return
+          }
+          syncing.value = true
+          try {
+            emitCurrentMarkdown(ctx)
+          } finally {
+            syncing.value = false
+          }
+        }
+        view.dom.addEventListener('focusout', onFocusOut, true)
+        uninstallEditorBlurSync = () => {
+          view.dom.removeEventListener('focusout', onFocusOut, true)
+        }
+      })
+    }
+
+    function editorHasFocus() {
+      const editor = get()
+      if (!editor) {
+        return false
+      }
+      let focused = false
+      editor.action((ctx) => {
+        focused = ctx.get(editorViewCtx)?.hasFocus() ?? false
+      })
+      return focused
     }
 
     function refreshPreviewViews() {
@@ -107,7 +255,9 @@ export default defineComponent({
         return
       }
       try {
-        editor.action(forceUpdate())
+        runWithPreservedSelection(() => {
+          editor.action(forceUpdate())
+        })
       } catch (_e) {
         // editor may not be ready yet
       }
@@ -118,7 +268,9 @@ export default defineComponent({
         return
       }
       ensureReportPreviewData(projectId).finally(() => {
-        refreshPreviewViews()
+        if (!editorHasFocus()) {
+          refreshPreviewViews()
+        }
       })
     }
 
@@ -136,7 +288,9 @@ export default defineComponent({
         attributeFilter: ['class']
       })
       unsubscribePreviewData = subscribeReportPreviewData(() => {
-        refreshPreviewViews()
+        if (!editorHasFocus()) {
+          refreshPreviewViews()
+        }
       })
     })
 
@@ -145,6 +299,7 @@ export default defineComponent({
       unsubscribePreviewData?.()
       uninstallBlockDragImageFix?.()
       uninstallBlockAddOverlay?.()
+      uninstallEditorBlurSync?.()
       crepeInstance = null
     })
 
@@ -211,8 +366,11 @@ export default defineComponent({
       return crepeInstance
     })
 
-    function syncModelToEditor() {
+    function syncModelToEditor(force = false) {
       if (editorBooting.value || !crepeInstance) {
+        return
+      }
+      if (!shouldApplyExternalModelSync({ force, editorFocused: editorHasFocus() })) {
         return
       }
       const editor = get()
@@ -220,18 +378,29 @@ export default defineComponent({
         return
       }
       const next = normalizeDslSource(props.modelValue || '')
-      let current = ''
-      try {
-        current = normalizeDslSource(editor.action(getMarkdown()) || '')
-      } catch (_e) {
-        return
-      }
-      if (current === next) {
-        return
+      if (!force) {
+        let current = null
+        try {
+          current = normalizeDslSource(editor.action(getMarkdown()) || '')
+        } catch (_e) {
+          current = null
+        }
+        if (current !== null && markdownSemanticallyEqual(current, next)) {
+          return
+        }
+        const needsDslResync = editor.action((ctx) => documentContainsRawDslText(ctx, editorViewCtx))
+        if (!needsDslResync && current !== null && current === next) {
+          return
+        }
       }
       syncing.value = true
       try {
-        editor.action(replaceAll(next, true))
+        runWithPreservedSelection((ctx) => {
+          replaceAll(next, true)(ctx)
+        })
+        if (!editorHasFocus()) {
+          refreshPreviewViews()
+        }
       } catch (error) {
         if (import.meta.env.DEV) {
           console.error('[ReportTemplateEditor] Milkdown replaceAll failed:', error)
@@ -255,8 +424,9 @@ export default defineComponent({
       ]
     }
 
-    watch(editorBooting, (isLoading) => {
+    watch(editorBooting, async (isLoading) => {
       if (!isLoading) {
+        await refreshBusinessBlockMenus(props.projectId)
         uninstallBlockDragImageFix?.()
         uninstallBlockDragImageFix = installBlockDragImageFix()
         uninstallBlockAddOverlay?.()
@@ -266,8 +436,11 @@ export default defineComponent({
             get()?.action(fn)
           },
           focusEditor: () => focus(),
+          captureInsertSelection,
+          restoreInsertSelection,
           isDark: () => isDark.value
         })
+        installEditorBlurSync()
         syncModelToEditor()
         syncPreviewData(props.projectId)
         refreshPreviewViews()
@@ -300,7 +473,7 @@ export default defineComponent({
       })
     }
 
-    expose({ insertMarkdown, focus, refreshPreviewViews })
+    expose({ insertMarkdown, focus, refreshPreviewViews, syncFromModel: () => syncModelToEditor(true) })
 
     return { isDark }
   }

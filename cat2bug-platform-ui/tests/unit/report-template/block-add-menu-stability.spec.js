@@ -123,4 +123,41 @@ describe('report-block-add-overlay', () => {
     expect(menuTop).toBeLessThan(200)
     expect(menuTop).not.toBe(600)
   })
+
+  it('restores captured selection before running menu item insert', async () => {
+    let captured = false
+    let restored = false
+    cleanup()
+    cleanup = installReportBlockAddOverlay({
+      getMenuGroups: () => [
+        {
+          key: 'project',
+          label: '项目',
+          items: [
+            {
+              key: 'intro',
+              label: '描述',
+              onSelect: () => {}
+            }
+          ]
+        }
+      ],
+      runEditorAction: (fn) => fn({ get: () => ({ focus: () => {} }) }),
+      captureInsertSelection: () => {
+        captured = true
+      },
+      restoreInsertSelection: () => {
+        restored = true
+      }
+    })
+
+    clickBlockAddLikeCrepe()
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+
+    const menuItem = document.querySelector('.report-block-add-menu li[data-index="0"]')
+    menuItem.dispatchEvent(new MouseEvent('pointerup', { bubbles: true, cancelable: true }))
+
+    expect(captured).toBe(true)
+    expect(restored).toBe(true)
+  })
 })

@@ -10,6 +10,7 @@ import {
 import { subscribeReportPreviewData, ensureReportPreviewData, getReportPreviewState, getActivePreviewProjectId } from './report-preview-data'
 import { renderPreviewTable } from './render-preview-table'
 import { renderPreviewImage } from './render-preview-image'
+import { resolvePreviewVariable, resolvePreviewPlanVariable } from './render-preview-variable'
 
 const BLOCK_META = {
   cat2bug_defect_table: { label: '缺陷表格', icon: '▦' },
@@ -250,12 +251,58 @@ function createRawBlockView() {
 }
 
 /** @returns {import('@milkdown/prose/view').NodeViewConstructor} */
-function createChipView(className) {
+function createLiveChipView(className, resolveDisplay) {
   return (node) => {
     const dom = document.createElement('span')
     dom.className = `cat2bug-dsl-chip__view ${className}`
     dom.contentEditable = 'false'
-    dom.textContent = node.attrs.raw || ''
+
+    let currentAttrs = { ...node.attrs }
+    let paintToken = 0
+
+    function applyDisplay(result) {
+      dom.classList.remove('is-loading', 'is-resolved', 'is-empty')
+      dom.removeAttribute('title')
+
+      if (result.kind === 'loading') {
+        dom.textContent = '…'
+        dom.classList.add('is-loading')
+        return
+      }
+      if (result.kind === 'error' || result.kind === 'empty') {
+        dom.textContent = '—'
+        dom.classList.add('is-empty')
+        if (currentAttrs.raw) {
+          dom.title = currentAttrs.raw
+        }
+        return
+      }
+
+      dom.textContent = result.text || ''
+      dom.classList.add('is-resolved')
+      if (currentAttrs.raw) {
+        dom.title = currentAttrs.raw
+      }
+    }
+
+    function paint() {
+      const token = ++paintToken
+      const render = () => {
+        if (token !== paintToken) {
+          return
+        }
+        applyDisplay(resolveDisplay(currentAttrs))
+      }
+      render()
+      const snapshot = getReportPreviewState()
+      const projectId = getActivePreviewProjectId()
+      if (projectId && (snapshot.loading || !snapshot.data)) {
+        ensureReportPreviewData(projectId).finally(render)
+      }
+    }
+
+    paint()
+    const unsubscribe = subscribeReportPreviewData(paint)
 
     return {
       dom,
@@ -263,8 +310,12 @@ function createChipView(className) {
         if (updated.type !== node.type) {
           return false
         }
-        dom.textContent = updated.attrs.raw || ''
+        currentAttrs = { ...updated.attrs }
+        paint()
         return true
+      },
+      destroy() {
+        unsubscribe()
       }
     }
   }
@@ -290,13 +341,13 @@ export const cat2bugDynamicImageView = $viewAsync(
 
 export const cat2bugVariableView = $viewAsync(
   cat2bugVariableNode,
-  () => createChipView('cat2bug-dsl-chip__view--variable'),
+  () => createLiveChipView('cat2bug-dsl-chip__view--variable', resolvePreviewVariable),
   'Cat2bugVariableView'
 )
 
 export const cat2bugPlanVariableView = $viewAsync(
   cat2bugPlanVariableNode,
-  () => createChipView('cat2bug-dsl-chip__view--plan'),
+  () => createLiveChipView('cat2bug-dsl-chip__view--plan', resolvePreviewPlanVariable),
   'Cat2bugPlanVariableView'
 )
 

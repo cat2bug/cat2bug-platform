@@ -73,9 +73,28 @@ describe('report template DSL round-trip', () => {
     expect(roundTripTemplate(input)).toBe(input)
   })
 
+  it('preserves dynamic image token without style brackets', () => {
+    const input = '$image{api.project.projectIcon}'
+    expect(roundTripTemplate(input)).toBe(input)
+    const segments = parseTemplate(input)
+    expect(segments).toHaveLength(1)
+    expect(segments[0].type).toBe('dynamicImage')
+    expect(segments[0].path).toBe('api.project.projectIcon')
+  })
+
   it('preserves image style variants', () => {
     const input = '$image["style":"width:100px;height:100px;"]{api.project.projectIcon}'
     expect(roundTripTemplate(input)).toBe(input)
+  })
+
+  it('repairs dynamic image token missing ] before path', () => {
+    const malformed = '$image["style":"width:100px;height:100px;"{api.project.projectIcon}'
+    const fixed = '$image["style":"width:100px;height:100px;"]{api.project.projectIcon}'
+    expect(roundTripTemplate(malformed)).toBe(fixed)
+    const segments = parseTemplate(malformed)
+    expect(segments).toHaveLength(1)
+    expect(segments[0].type).toBe('dynamicImage')
+    expect(segments[0].path).toBe('api.project.projectIcon')
   })
 
   it('preserves composite sample template', () => {

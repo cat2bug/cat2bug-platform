@@ -16,12 +16,13 @@
 </template>
 
 <script>
-import { computed } from 'vue'
+import { computed, watch, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { MdEditor } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
 import { useSettingsStore } from '@/stores/settings'
 import { readStoredThemeMode } from '@/utils/theme-mode'
+import { normalizeDslSource } from '@/components/ReportTemplateEditor/dsl/normalize'
 
 function isEditorDarkMode() {
   if (typeof document !== 'undefined' && document.documentElement.classList.contains('dark')) {
@@ -68,11 +69,32 @@ export default {
       }
       return themeMode.value === 'dark' || isEditorDarkMode() ? 'dark' : 'light'
     })
-    return { resolvedTheme }
+    /** Ignore programmatic onChange echoes after parent updates modelValue. */
+    const ignoreChangeValue = ref(null)
+    watch(
+      () => props.modelValue,
+      (next) => {
+        ignoreChangeValue.value = normalizeDslSource(next ?? '')
+      }
+    )
+    return { resolvedTheme, ignoreChangeValue }
   },
   methods: {
     onChange(value) {
-      this.$emit('change', value)
+      const next = typeof value === 'string' ? value : ''
+      if (this.ignoreChangeValue !== null) {
+        const ignored = normalizeDslSource(this.ignoreChangeValue)
+        if (normalizeDslSource(next) === ignored) {
+          this.ignoreChangeValue = null
+          return
+        }
+        this.ignoreChangeValue = null
+      }
+      if (normalizeDslSource(next) === normalizeDslSource(this.modelValue)) {
+        return
+      }
+      this.$emit('update:modelValue', next)
+      this.$emit('change', next)
     },
     focus() {
       const editor = this.$refs.editorRef

@@ -1,5 +1,5 @@
 import { getReportPreviewState, resolvePreviewPath } from './report-preview-data'
-import { resolveProjectIconUrl } from '@/utils/upload-asset'
+import { resolveProjectIconUrl, applyDefaultImageOnError } from '@/utils/upload-asset'
 
 function parseInlineStyle(styleText) {
   const style = {}
@@ -65,6 +65,7 @@ export function renderPreviewImage(attrs) {
   img.alt = attrs.path || 'preview'
   img.src = String(src)
   img.loading = 'lazy'
+  applyDefaultImageOnError(img)
 
   const style = parseInlineStyle(attrs.style)
   Object.assign(img.style, style)

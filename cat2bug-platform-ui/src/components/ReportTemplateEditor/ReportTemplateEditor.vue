@@ -40,15 +40,15 @@
         <md-editor-pane
           v-if="viewMode === 'source'"
           ref="sourceEditor"
-          v-model="editorContent"
-          @change="onEditorChange"
+          :model-value="editorContent"
+          @change="onSourceEditorChange"
         />
         <milkdown-editor
           v-else
           ref="milkdownEditor"
           :project-id="projectId"
           v-model="editorContent"
-          @change="onEditorChange"
+          @change="onVisualEditorChange"
         />
       </div>
       <multipane-resizer v-show="viewMode === 'split'" class="markdown-body-resizer" />
@@ -56,8 +56,8 @@
         v-if="viewMode === 'split'"
         class="report-template-editor__source markdown-body-view"
         :show-code-row-number="true"
-        v-model="editorContent"
-        @change="onEditorChange"
+        :model-value="editorContent"
+        @change="onSourceEditorChange"
       />
     </multipane>
   </div>
@@ -190,17 +190,46 @@ export default {
       const prefix = this.editorContent && !this.editorContent.endsWith('\n') ? '\n' : ''
       this.editorContent = `${this.editorContent || ''}${prefix}${content}\n`
       this.emitContent()
+      this.syncVisualFromSource()
     },
     onImport(content) {
       this.editorContent = normalizeDslSource(content || '')
       this.emitContent()
+      this.syncVisualFromSource()
     },
-    onEditorChange() {
+    onVisualEditorChange() {
       const next = normalizeDslSource(this.editorContent)
       if (next !== this.editorContent) {
         this.editorContent = next
       }
       this.emitContent()
+    },
+    onSourceEditorChange(value) {
+      if (typeof value === 'string') {
+        const next = normalizeDslSource(value)
+        if (next === normalizeDslSource(this.editorContent)) {
+          return
+        }
+        this.editorContent = next
+      } else {
+        const next = normalizeDslSource(this.editorContent)
+        if (next !== this.editorContent) {
+          this.editorContent = next
+        }
+      }
+      this.emitContent()
+      if (this.viewMode !== 'split') {
+        return
+      }
+      this.syncVisualFromSource()
+    },
+    syncVisualFromSource() {
+      if (this.viewMode !== 'split') {
+        return
+      }
+      this.$nextTick(() => {
+        this.$refs.milkdownEditor?.syncFromModel?.()
+      })
     },
     emitContent() {
       const content = normalizeDslSource(this.editorContent)
@@ -209,6 +238,9 @@ export default {
     },
     setViewMode(mode) {
       this.viewMode = mode
+      if (mode === 'split') {
+        this.syncVisualFromSource()
+      }
     },
     focusEditor() {
       if (this.viewMode === 'source' && this.$refs.sourceEditor) {

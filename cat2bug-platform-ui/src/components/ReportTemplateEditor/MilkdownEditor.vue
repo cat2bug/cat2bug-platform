@@ -40,6 +40,9 @@ export default {
     },
     refreshPreviewViews() {
       this.$refs.innerRef?.refreshPreviewViews?.()
+    },
+    syncFromModel() {
+      this.$refs.innerRef?.syncFromModel?.()
     }
   }
 }
