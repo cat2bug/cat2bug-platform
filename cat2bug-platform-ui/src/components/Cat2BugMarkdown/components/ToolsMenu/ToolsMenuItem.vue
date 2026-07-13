@@ -22,6 +22,8 @@
 </template>
 
 <script>
+import { resolveToolbarMenuLabel } from '@/components/Cat2BugMarkdown/resolveToolbarMenuLabel'
+
 export default {
   name: "ToolsMenuItem",
   props: {
@@ -31,10 +33,8 @@ export default {
     }
   },
   computed: {
-    menuName: function () {
-      return function (name) {
-        return this.$i18n.te(name)?this.$i18n.t(name):name;
-      }
+    menuName() {
+      return (name) => resolveToolbarMenuLabel(this.$i18n, name)
     }
   },
 }
@@ -53,9 +53,16 @@ export default {
   flex-direction: row;
   justify-content: center;
   align-items: center;
+  color: inherit;
+
   > * {
     margin-right: 5px;
   }
+
+  span {
+    color: inherit;
+  }
+
   ::v-deep .el-submenu__icon-arrow {
     display: none;
   }

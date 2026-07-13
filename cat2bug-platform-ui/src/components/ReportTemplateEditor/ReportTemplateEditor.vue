@@ -243,11 +243,13 @@ export default {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   gap: 8px;
-  padding: 5px 10px;
+  padding: 6px 10px;
   border-bottom: 1px solid var(--el-border-color-lighter);
   flex-shrink: 0;
+  min-height: 40px;
+  box-sizing: border-box;
 
   :deep(.el-submenu__icon-arrow) {
     display: none !important;
@@ -264,7 +266,6 @@ export default {
   flex-direction: row;
   align-items: center;
   flex-shrink: 0;
-  padding-top: 2px;
 }
 
 .report-template-editor__view-mode {

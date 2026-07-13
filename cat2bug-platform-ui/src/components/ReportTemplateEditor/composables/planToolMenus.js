@@ -59,7 +59,7 @@ export function buildPlanSubMenu(plan) {
           { type: 'siding' },
           {
             icon: 'mk-member',
-            name: `plan.member.${n}`,
+            name: `member.${n}`,
             children: [
               { icon: 'mk-member', name: `plan.create-defect-count-by-tester.${n}`, content: planFieldLine('plan.create-defect-count-by-tester', 'createDefectCountByTester', n) },
               { icon: 'mk-member', name: `plan.create-defect-count-by-outsider.${n}`, content: planFieldLine('plan.create-defect-count-by-outsider', 'createDefectCountByOutsider', n) }
@@ -68,7 +68,7 @@ export function buildPlanSubMenu(plan) {
           { type: 'siding' },
           {
             icon: 'mk-total',
-            name: `plan.defect.state.${n}`,
+            name: `defect.state.${n}`,
             children: [
               { icon: 'mk-total', name: `plan.defect-processing-count.${n}`, content: planFieldLine('plan.defect-processing-count', 'defectProcessingStateCount', n) },
               { icon: 'mk-total', name: `plan.defect-audit-count.${n}`, content: planFieldLine('plan.defect-audit-count', 'defectAuditStateCount', n) },

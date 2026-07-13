@@ -33,6 +33,7 @@
 
 <script>
 import ToolsMenuItem from "./ToolsMenuItem";
+import { resolveToolbarMenuLabel } from "@/components/Cat2BugMarkdown/resolveToolbarMenuLabel";
 export default {
   emits: ['update:tools', 'select'],
   name: "ToolsMenu",
@@ -44,10 +45,8 @@ export default {
     }
   },
   computed: {
-    menuName: function () {
-      return function (name) {
-        return this.$i18n.te(name)?this.$i18n.t(name):name;
-      }
+    menuName() {
+      return (name) => resolveToolbarMenuLabel(this.$i18n, name)
     }
   },
   props:{

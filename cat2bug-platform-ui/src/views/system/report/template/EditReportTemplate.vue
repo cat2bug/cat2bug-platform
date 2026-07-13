@@ -17,7 +17,7 @@
       :placeholder="$t('mk.start-edit').toString()"
       :template="template"
       @input="changeHandle(5000)"
-      @save="saveTemplateNow"
+      @save="onToolbarSave"
     />
   </div>
 </template>
@@ -100,12 +100,18 @@ export default {
         this._closingTemplatePage = false
       }
     },
-    async saveTemplateNow() {
+    async saveTemplateNow(notifySuccess = false) {
       const res = await updateTemplate(this.template)
       this.template = res.data
       await this.$nextTick()
       this.capturePageFormCloseBaseline()
+      if (notifySuccess) {
+        this.$message.success(this.$t('save.success').toString())
+      }
       return res
+    },
+    onToolbarSave() {
+      this.saveTemplateNow(true).catch(() => {})
     },
     getReportTemplate(id) {
       getReportTemplate(id).then((res) => {
@@ -156,6 +162,12 @@ export default {
   position: absolute;
   top: 0px;
   bottom: 0px;
+
+  > .project-add-page-header + .report-template-editor {
+    margin-top: 0;
+    flex: 1;
+    min-height: 0;
+  }
 }
 :deep(.report-name.el-input) {
   .el-input__wrapper {

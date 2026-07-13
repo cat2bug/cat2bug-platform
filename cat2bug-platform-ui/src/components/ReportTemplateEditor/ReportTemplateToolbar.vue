@@ -44,6 +44,9 @@ export default {
       this.tools = await loadReportToolbarMenus(projectId)
     },
     onToolSelect(_tools, tool) {
+      if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur()
+      }
       if (!tool) {
         return
       }
@@ -94,6 +97,8 @@ export default {
 .report-template-toolbar {
   width: 100%;
   min-width: 0;
+  display: flex;
+  align-items: center;
 }
 
 .report-template-toolbar__import-input {
@@ -105,6 +110,7 @@ export default {
   background: transparent;
   width: 100%;
   height: auto !important;
+  min-height: 30px;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -113,6 +119,7 @@ export default {
 
 .report-template-toolbar :deep(.el-menu--horizontal) {
   height: auto !important;
+  min-height: 30px;
   border-bottom: none !important;
   display: flex;
   flex-wrap: wrap;
@@ -125,16 +132,19 @@ export default {
   float: none;
   flex-shrink: 0;
   width: 30px;
+  height: 30px;
   min-width: 30px;
   padding: 0 !important;
   margin: 0 !important;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  border-radius: 6px;
 }
 
 .report-template-toolbar :deep(.el-menu--horizontal > .el-sub-menu .el-sub-menu__title) {
   width: 30px;
+  height: 30px;
   min-width: 30px;
   padding: 0 !important;
   margin: 0 !important;
@@ -142,12 +152,23 @@ export default {
   align-items: center;
   justify-content: center;
   border-bottom: none !important;
+  border-radius: 6px;
+  line-height: 1;
 }
 
 .report-template-toolbar :deep(.tools-menu .siding) {
   float: none;
   flex-shrink: 0;
+  align-self: center;
   margin: 0 4px;
+}
+
+.report-template-toolbar :deep(.tools-menu .row) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
 }
 
 .report-template-toolbar :deep(.tools-menu .icon),
@@ -159,8 +180,74 @@ export default {
   fill: currentColor;
 }
 
+.report-template-toolbar :deep(.tools-menu.el-menu--horizontal > .el-menu-item:hover),
+.report-template-toolbar :deep(.tools-menu.el-menu--horizontal > .el-sub-menu:hover > .el-sub-menu__title),
+.report-template-toolbar :deep(.tools-menu.el-menu--horizontal > .el-sub-menu .el-sub-menu__title:hover) {
+  color: var(--el-color-primary, #409eff) !important;
+  background-color: var(--el-color-primary-light-9, #ecf5ff) !important;
+  border-color: transparent !important;
+}
+
+.report-template-toolbar :deep(.tools-menu.el-menu--horizontal > .el-menu-item:focus),
+.report-template-toolbar :deep(.tools-menu.el-menu--horizontal > .el-menu-item.is-active),
+.report-template-toolbar :deep(.tools-menu.el-menu--horizontal > .el-sub-menu .el-sub-menu__title:focus),
+.report-template-toolbar :deep(.tools-menu.el-menu--horizontal > .el-sub-menu.is-active > .el-sub-menu__title) {
+  outline: none !important;
+  color: var(--el-text-color-regular, #606266) !important;
+  background-color: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
 html.dark .report-template-toolbar :deep(.tools-menu .icon),
 html.dark .report-template-toolbar :deep(.tools-menu .svg-icon) {
   color: #a3a6ad;
+}
+
+html.dark .report-template-toolbar :deep(.tools-menu.el-menu--horizontal > .el-menu-item:hover),
+html.dark .report-template-toolbar :deep(.tools-menu.el-menu--horizontal > .el-sub-menu:hover > .el-sub-menu__title),
+html.dark .report-template-toolbar :deep(.tools-menu.el-menu--horizontal > .el-sub-menu .el-sub-menu__title:hover) {
+  color: #f4bd6f !important;
+  background-color: rgba(244, 189, 111, 0.14) !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+html.dark .report-template-toolbar :deep(.tools-menu.el-menu--horizontal > .el-menu-item:focus),
+html.dark .report-template-toolbar :deep(.tools-menu.el-menu--horizontal > .el-menu-item.is-active),
+html.dark .report-template-toolbar :deep(.tools-menu.el-menu--horizontal > .el-sub-menu .el-sub-menu__title:focus),
+html.dark .report-template-toolbar :deep(.tools-menu.el-menu--horizontal > .el-sub-menu.is-active > .el-sub-menu__title) {
+  color: #a3a6ad !important;
+  background-color: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+html.dark .report-template-toolbar :deep(.tools-menu.el-menu--horizontal > .el-menu-item:hover .icon),
+html.dark .report-template-toolbar :deep(.tools-menu.el-menu--horizontal > .el-menu-item:hover .svg-icon),
+html.dark .report-template-toolbar :deep(.tools-menu.el-menu--horizontal > .el-sub-menu:hover .svg-icon) {
+  color: #f4bd6f !important;
+}
+
+html.dark .report-template-toolbar :deep(.tools-menu .siding) {
+  background-color: #363637;
+}
+</style>
+
+<style lang="scss">
+/* 子菜单 teleport 到 body，须全局暗色覆盖 */
+html.dark .el-menu.el-menu--popup.el-popper {
+  .tools-row .el-menu-item {
+    color: var(--text-color-regular, #a3a6ad) !important;
+
+    &:hover,
+    &:focus {
+      color: #ffc107 !important;
+    }
+
+    .row span {
+      color: inherit !important;
+    }
+  }
 }
 </style>

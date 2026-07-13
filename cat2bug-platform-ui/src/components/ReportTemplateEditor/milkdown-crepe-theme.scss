@@ -11,16 +11,137 @@
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
+  --report-block-handle-left: 10px;
+  --report-block-handle-width: 68px;
+  --report-block-handle-gutter: 82px;
 }
 
-/* Crepe 默认 padding 为 60px 120px；分屏时略收窄，但左侧仍需足够 gutter */
+/* Crepe 默认 padding 为 60px 120px；左侧留出 block-handle 专用 gutter */
 .report-template-editor .report-milkdown-editor.milkdown .ProseMirror {
-  padding: 32px 28px 40px 96px;
+  padding: 32px 96px 40px var(--report-block-handle-gutter);
   min-height: 280px;
+}
+
+.report-template-editor .report-milkdown-editor.milkdown:has(.ProseMirror[data-dragging='true']) {
+  overflow-y: hidden;
+}
+
+.report-template-editor .ProseMirror[data-dragging='true'] .cat2bug-dsl-preview-table__scroll {
+  overflow: hidden !important;
 }
 
 .report-template-editor .report-milkdown-editor.milkdown .milkdown-block-handle {
   z-index: 30;
+  left: var(--report-block-handle-left) !important;
+  right: auto !important;
+  width: var(--report-block-handle-width);
+  flex-direction: row;
+  justify-content: flex-start;
+}
+
+/* 独立块添加弹层（fixed，teleport 到 body；须自带 .milkdown 父级以匹配 Crepe block-edit.css） */
+.report-block-add-menu-host {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  pointer-events: none;
+}
+
+.report-block-add-menu-backdrop {
+  position: absolute;
+  inset: 0;
+  pointer-events: auto;
+  background: transparent;
+}
+
+.report-block-add-menu-host .report-block-add-menu-theme.milkdown {
+  position: fixed;
+  z-index: 10001;
+  pointer-events: none;
+}
+
+.report-block-add-menu-host .report-block-add-menu-theme .report-block-add-menu.milkdown-slash-menu {
+  position: relative;
+  display: block !important;
+  pointer-events: auto;
+  min-width: 280px;
+  width: max-content;
+  max-width: min(360px, calc(100vw - 24px));
+}
+
+.report-block-add-menu-host .report-block-add-menu-theme .tab-group ul {
+  overflow-x: auto;
+  overflow-y: hidden;
+  flex-wrap: nowrap;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+.report-block-add-menu-host .report-block-add-menu-theme .tab-group ul li {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.report-block-add-menu-host .report-block-add-menu-theme .menu-groups {
+  max-height: min(420px, calc(100vh - 160px));
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 与编辑器暗色 Crepe 变量对齐（弹层在 body 上，不继承 .report-template-editor） */
+html.dark .report-block-add-menu-host .report-block-add-menu-theme.milkdown,
+.report-block-add-menu-host .report-block-add-menu-theme.milkdown.is-dark {
+  --crepe-color-background: #1e1e20;
+  --crepe-color-on-background: #e5eaf3;
+  --crepe-color-surface: #252529;
+  --crepe-color-surface-low: #1a1a1c;
+  --crepe-color-on-surface: #e5eaf3;
+  --crepe-color-on-surface-variant: #a3a6ad;
+  --crepe-color-outline: #6b6e75;
+  --crepe-color-primary: #f4bd6f;
+  --crepe-color-secondary: #3a3428;
+  --crepe-color-on-secondary: #fbdebc;
+  --crepe-color-inverse: #e5eaf3;
+  --crepe-color-on-inverse: #1e1e20;
+  --crepe-color-inline-code: #ffb4ab;
+  --crepe-color-error: #ffb4ab;
+  --crepe-color-hover: #2a2a2c;
+  --crepe-color-selected: #333336;
+  --crepe-color-inline-area: #2a2a2c;
+  --crepe-shadow-1: 0 4px 16px rgba(0, 0, 0, 0.45);
+  --crepe-shadow-2: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.report-block-add-menu__icon {
+  display: inline-flex;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  color: var(--crepe-color-outline);
+}
+
+.report-block-add-menu__icon svg {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+}
+
+/* 块拖动预览：挂在 body 上，需保留编辑器主题作用域 */
+.report-template-block-drag-ghost-host {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+
+  .ProseMirror-selectednode,
+  .cat2bug-dsl-block__view {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+}
+
+.report-template-block-drag-ghost-host .cat2bug-dsl-block__view {
+  margin: 0;
 }
 
 /* 暗色：html.dark 与 is-dark 双路径，避免类名未同步时仍发白底 */
@@ -363,6 +484,9 @@ html.dark .report-template-editor .markdown-body > .markdown-body-view.report-te
 
 /* Cat2Bug DSL 块 / 变量芯片（Milkdown 可视化） */
 .report-template-editor .cat2bug-dsl-block__view {
+  width: fit-content;
+  max-width: 100%;
+  box-sizing: border-box;
   border: 1px dashed var(--report-editor-table-selected-outline, #f4bd6f);
   border-radius: 8px;
   padding: 10px 12px;
@@ -449,18 +573,22 @@ html.dark .report-template-editor .markdown-body > .markdown-body-view.report-te
 }
 
 .report-template-editor .cat2bug-dsl-preview-table-wrap {
-  width: 100%;
+  display: inline-block;
+  max-width: 100%;
+  vertical-align: top;
 }
 
 .report-template-editor .cat2bug-dsl-preview-table__scroll {
   overflow-x: auto;
+  max-width: 100%;
   border: 1px solid var(--report-editor-table-border);
   border-radius: 6px;
   background: var(--report-editor-table-bg);
 }
 
 .report-template-editor .cat2bug-dsl-preview-table {
-  width: 100%;
+  width: max-content;
+  max-width: none;
   border-collapse: collapse;
   font-size: 12px;
   line-height: 1.5;

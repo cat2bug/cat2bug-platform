@@ -4794,6 +4794,55 @@ html.dark {
     &.markdown-tools {
       background-color: var(--bg-color-block) !important;
       border-bottom-color: var(--border-color-light) !important;
+
+      .tools-menu.el-menu,
+      .tools-menu.el-menu--horizontal {
+        background-color: transparent !important;
+        border-bottom: none !important;
+        align-items: center !important;
+
+        > .el-menu-item,
+        > .el-sub-menu .el-sub-menu__title,
+        > .el-submenu .el-submenu__title {
+          color: var(--text-color-regular) !important;
+          background-color: transparent !important;
+          border-bottom: none !important;
+        }
+
+        > .el-menu-item:hover,
+        > .el-menu-item:focus,
+        > .el-sub-menu:hover > .el-sub-menu__title,
+        > .el-sub-menu .el-sub-menu__title:hover,
+        > .el-submenu:hover .el-submenu__title,
+        > .el-submenu .el-submenu__title:hover {
+          color: #f4bd6f !important;
+          background-color: rgba(244, 189, 111, 0.14) !important;
+          border-bottom: none !important;
+          box-shadow: none !important;
+        }
+
+        > .el-menu-item.is-active {
+          color: #f4bd6f !important;
+          border-bottom: none !important;
+        }
+
+        .siding {
+          align-self: center;
+          background-color: var(--border-color-light) !important;
+        }
+
+        .icon,
+        .svg-icon {
+          color: var(--text-color-regular) !important;
+        }
+
+        > .el-menu-item:hover .icon,
+        > .el-menu-item:hover .svg-icon,
+        > .el-sub-menu:hover .svg-icon,
+        > .el-submenu:hover .svg-icon {
+          color: #f4bd6f !important;
+        }
+      }
     }
 
     .report-template-editor__body,
@@ -4834,11 +4883,15 @@ html.dark {
   }
 
   // Markdown 工具栏子菜单弹出层
-  .el-menu.el-menu--popup {
+  .el-menu.el-menu--popup,
+  .el-menu.el-menu--popup.el-popper,
+  .el-menu--popup.el-popper {
     background-color: var(--dropdown-bg) !important;
     border: 1px solid var(--border-color-light) !important;
 
-    .el-menu-item {
+    .el-menu-item,
+    .el-sub-menu__title,
+    .el-submenu__title {
       color: var(--text-color-regular) !important;
       background-color: transparent !important;
 
@@ -4853,7 +4906,8 @@ html.dark {
       border-bottom-color: var(--border-color-light) !important;
     }
 
-    .row span {
+    .tools-row .row,
+    .tools-row .row span {
       color: inherit !important;
     }
   }
