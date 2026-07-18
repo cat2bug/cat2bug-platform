@@ -883,6 +883,7 @@
   "code": "代码",
   "table": "表格",
   "edit-mode": "编辑模式",
+  "variables-expand-collapse": "变量展开/折叠",
   "markdown-explanation": "Markdown语法说明",
   "upload-image": "上传图片",
   "mk.add-image-link": "添加图片链接",

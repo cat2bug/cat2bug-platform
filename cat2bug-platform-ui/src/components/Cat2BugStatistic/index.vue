@@ -29,6 +29,7 @@
           :class="'statistic-item--' + sc.name"
         >
           <component
+            v-if="isKnownStatistic(sc.name)"
             :is="sc.name"
             ref="statisticItem"
             :read="read"
@@ -49,6 +50,7 @@
           :class="'statistic-item--' + sc.name"
         >
           <component
+            v-if="isKnownStatistic(sc.name)"
             :is="sc.name"
             ref="statisticItem"
             :read="read"
@@ -86,10 +88,13 @@ const statisticModules = import.meta.glob('./Statistic/*.vue', { eager: true })
 const modules = { Cat2ButTitle, draggable }
 const userStore = useUserStore(pinia)
 const allStatisticList = []
+/** 已注册的统计块名称集合，用于过滤模版配置中已失效/未注册的统计块 */
+const KNOWN_STATISTIC_NAMES = new Set()
 for (const [filePath, mod] of Object.entries(statisticModules)) {
   const name = filePath.split('/').pop().replace(/\.vue$/, '')
   allStatisticList.push({ name })
   modules[name] = mod.default || mod
+  KNOWN_STATISTIC_NAMES.add(name)
 }
 
 /** 无统计模板时缺陷页默认统计块（含 ECharts 待办块） */
@@ -368,6 +373,15 @@ export default {
         common: { params: { defectStates: [], delFlag: '0' } }
       });
     },
+    /** 是否为已注册的统计块（过滤模版配置中残留的失效名称，避免渲染成原生元素报错） */
+    isKnownStatistic(name) {
+      return KNOWN_STATISTIC_NAMES.has(name);
+    },
+    /** 过滤掉未注册的统计块，保证 <component :is> 始终解析到真实组件 */
+    filterKnownStatistics(list) {
+      if (!Array.isArray(list)) return [];
+      return list.filter(item => item && this.isKnownStatistic(item.name));
+    },
     /** 获取分析模块 */
     getStatisticList() {
       if (this.controlledList !== null) {
@@ -385,6 +399,7 @@ export default {
         } else {
           statisticList = DEFAULT_DEFECT_STATISTIC_TEMPLATE.map(item => ({ ...item }));
         }
+        statisticList = this.filterKnownStatistics(statisticList);
         this.statisticList = statisticList;
         this.emitListChange(statisticList);
       }).catch(() => {

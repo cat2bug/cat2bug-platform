@@ -882,6 +882,7 @@
   "code": "Code",
   "table": "Table",
   "edit-mode": "Edit Mode",
+  "variables-expand-collapse": "Expand/Collapse Variables",
   "markdown-explanation": "Markdown Syntax Explanation",
   "upload-image": "Upload Image",
   "mk.add-image-link": "Add Image Link",

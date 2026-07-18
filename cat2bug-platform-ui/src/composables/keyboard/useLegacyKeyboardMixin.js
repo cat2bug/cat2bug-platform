@@ -12,6 +12,7 @@ import {
   toRefs,
   watch
 } from 'vue'
+import { invokeBridgeSetup } from '@/composables/keyboard/keyboardBridgeRuntime'
 
 const LIFECYCLE_HOOKS = [
   ['beforeMount', onBeforeMount],
@@ -44,9 +45,13 @@ function getByPath(source, path) {
   return value
 }
 
-function createLegacyContext(proxy, state, methods, computedRefs) {
+function createLegacyContext(proxy, state, methods, computedRefs, ownOverrideKeys) {
+  const overrides = ownOverrideKeys || new Set()
   return new Proxy({}, {
     get(_, key) {
+      // 组件自身在 methods/computed 里定义的成员优先于 mixin 默认实现，
+      // 保持 Vue2 时代「组件覆盖 mixin」的合并语义。
+      if (overrides.has(key) && key in proxy) return proxy[key]
       if (Object.prototype.hasOwnProperty.call(methods, key)) return methods[key]
       if (Object.prototype.hasOwnProperty.call(computedRefs, key)) return computedRefs[key].value
       if (Object.prototype.hasOwnProperty.call(state, key)) return state[key]
@@ -123,7 +128,12 @@ export function useLegacyKeyboardMixin(legacyMixin) {
   const stateRefs = toRefs(state)
   const methods = {}
   const computedRefs = {}
-  const ctx = createLegacyContext(proxy, state, methods, computedRefs)
+  const type = instance && instance.type
+  const ownOverrideKeys = new Set([
+    ...Object.keys((type && type.methods) || {}),
+    ...Object.keys((type && type.computed) || {})
+  ])
+  const ctx = createLegacyContext(proxy, state, methods, computedRefs, ownOverrideKeys)
 
   mixins.forEach((m) => {
     const methodMap = m.methods || {}
@@ -175,7 +185,21 @@ export function useLegacyKeyboardMixin(legacyMixin) {
     })
   })
 
+  // 嵌套 mixin 若是「composable 桥接」（仅有 setup()），Vue3 不会执行它们的 setup，
+  // 这里主动调用并合并其返回值，恢复 Vue2 时代 mixins 递归组合的效果。
+  // 通过 invokeBridgeSetup 按（实例, mixin）去重，避免与全局桥接运行时重复执行。
+  const nestedSetupBindings = {}
+  mixins.forEach((m) => {
+    if (typeof m.setup === 'function') {
+      const result = invokeBridgeSetup(m)
+      if (result && typeof result === 'object') {
+        Object.assign(nestedSetupBindings, result)
+      }
+    }
+  })
+
   return {
+    ...nestedSetupBindings,
     ...stateRefs,
     ...computedRefs,
     ...methods

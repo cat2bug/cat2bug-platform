@@ -17,6 +17,16 @@ export function buildReportFileCommands() {
     },
     {
       type: 'siding'
+    },
+    {
+      type: 'check',
+      name: 'variables-expand-collapse',
+      icon: 'mk-not-look',
+      activeIcon: 'mk-look',
+      check: true
+    },
+    {
+      type: 'siding'
     }
   ]
 }

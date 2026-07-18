@@ -18,9 +18,16 @@ export function useDialogFormShortcuts() {
 
   let $_dialogShortcutsRegistered = false
 
+  // 组件可自定义「表单浮层是否可见」（如文档页用 open/moveDialogVisible 而非 visible/dialogVisible）。
+  const type = instance && instance.type
+  const hostOwnsSurface = !!(type && type.computed && type.computed.$_formShortcutSurfaceVisible)
+
   const $_formShortcutSurfaceVisible = computed(() => {
     const host = vm()
-    return !!host && (host.visible === true || host.dialogVisible === true)
+    if (!host) return false
+    // 组件自身定义了同名计算属性时，以组件的为准（避免读取本 composable 暴露值造成递归）。
+    if (hostOwnsSurface) return host.$_formShortcutSurfaceVisible === true
+    return host.visible === true || host.dialogVisible === true
   })
 
   const dialogSaveShortcutLabel = computed(() => {

@@ -236,7 +236,9 @@ export function useViewReportKbd() {
   const getViewReportKbdDrawerRoot = () => {
     const host = vm()
     const drawer = host && host.$refs && host.$refs.viewReportDrawer
-    return (drawer && drawer.$el) || (host && host.$el) || null
+    const root = (drawer && drawer.$el) || (host && host.$el) || null
+    // 组件未展示时 $el 可能是注释/文本占位节点（Fragment 根），没有 querySelector
+    return root && typeof root.querySelector === 'function' ? root : null
   }
 
   const $_canActivateViewReportKbdHints = () => {

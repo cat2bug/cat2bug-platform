@@ -832,6 +832,7 @@
   "code": "コード",
   "table": "テーブル",
   "edit-mode": "编集モード",
+  "variables-expand-collapse": "変数の展開/折りたたみ",
   "markdown-explanation": "Markdown构文の说明",
   "upload-image": "画像をアップロード",
   "mk.add-image-link": "画像リンクを追加",

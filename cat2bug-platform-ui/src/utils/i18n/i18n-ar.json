@@ -832,6 +832,7 @@
   "code": "كود",
   "table": "جدول",
   "edit-mode": "وضع التحرير",
+  "variables-expand-collapse": "توسيع/طي المتغيرات",
   "markdown-explanation": "شرح بناء جملة Markdown",
   "upload-image": "رفع صورة",
   "mk.add-image-link": "إضافة رابط صورة",

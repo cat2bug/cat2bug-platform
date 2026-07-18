@@ -834,6 +834,7 @@
   "code": "程式碼",
   "table": "表格",
   "edit-mode": "編輯模式",
+  "variables-expand-collapse": "變數展開/折疊",
   "markdown-explanation": "Markdown語法說明",
   "upload-image": "上傳圖片",
   "mk.add-image-link": "新增圖片連結",

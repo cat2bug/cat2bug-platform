@@ -832,6 +832,7 @@
   "code": "Код",
   "table": "Таблица",
   "edit-mode": "Режим редактирования",
+  "variables-expand-collapse": "Развернуть/свернуть переменные",
   "markdown-explanation": "Описание синтаксиса Markdown",
   "upload-image": "Загрузить изображение",
   "mk.add-image-link": "Добавить ссылку на изображение",

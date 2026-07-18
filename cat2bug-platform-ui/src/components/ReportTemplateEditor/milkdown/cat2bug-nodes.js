@@ -1,5 +1,6 @@
 import { $node } from '@milkdown/kit/utils'
 import { serializeTemplate } from '../dsl/serialize'
+import { emitPreservedRawMarkdown } from './raw-block-serialize'
 
 function emitRawBlock(state, raw) {
   state.openNode('paragraph')
@@ -316,17 +317,7 @@ export const cat2bugRawBlockNode = $node('cat2bug_raw_block', () => ({
   toMarkdown: {
     match: (node) => node.type.name === 'cat2bug_raw_block',
     runner: (state, node) => {
-      const value = node.attrs.value || ''
-      if (!value) {
-        return
-      }
-      const lines = value.split('\n')
-      lines.forEach((line, index) => {
-        if (index > 0) {
-          state.addNode('break')
-        }
-        state.addNode('text', undefined, line)
-      })
+      emitPreservedRawMarkdown(state, node.attrs.value)
     }
   }
 }))

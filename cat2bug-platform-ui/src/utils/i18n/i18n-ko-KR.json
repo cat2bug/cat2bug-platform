@@ -832,6 +832,7 @@
   "code": "코드",
   "table": "표",
   "edit-mode": "편집 모드",
+  "variables-expand-collapse": "변수 펼치기/접기",
   "markdown-explanation": "Markdown 문법 설명",
   "upload-image": "이미지 업로드",
   "mk.add-image-link": "이미지 링크 추가",

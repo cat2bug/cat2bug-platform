@@ -545,53 +545,185 @@ html.dark .report-template-editor .markdown-body > .markdown-body-view.report-te
   }
 }
 
-.report-template-editor .cat2bug-dsl-chip__view {
-  display: inline-block;
-  padding: 1px 8px;
-  margin: 0 2px;
+/*
+ * 变量单元（普通变量 / 计划变量）：默认与生产 Markdown 一致——行内纯文本，无边框、无按钮、无标题。
+ * 悬停时仅标题条 + 虚线框用 position:fixed 浮层（JS 同步坐标），正文始终留在文档流，
+ * 表格内悬停/滚动都不会把内容挤偏或盖住。
+ */
+.report-template-editor .cat2bug-dsl-var__view {
+  position: relative;
+  display: inline;
   border-radius: 4px;
-  font-size: inherit;
-  line-height: inherit;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  background: rgba(244, 189, 111, 0.14);
-  color: #f4bd6f;
-  border: 1px solid rgba(244, 189, 111, 0.35);
-  vertical-align: baseline;
+  cursor: default;
 
-  &.is-resolved {
-    font-family: inherit;
-    font-size: inherit;
-    padding: 0;
-    margin: 0;
-    background: transparent;
-    border-color: transparent;
-    color: inherit;
-  }
-
-  &.is-empty {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    font-size: 12px;
+  &.is-empty .cat2bug-dsl-var__body {
     color: var(--el-text-color-placeholder, #a3a6ad);
   }
 
-  &.is-loading {
+  &.is-loading .cat2bug-dsl-var__body {
     opacity: 0.6;
+  }
+
+  &.is-variable .cat2bug-dsl-var__body {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.92em;
   }
 }
 
-.report-template-editor .cat2bug-dsl-chip__view--plan {
-  background: rgba(64, 158, 255, 0.12);
-  color: #79bbff;
-  border-color: rgba(64, 158, 255, 0.35);
+.report-template-editor .cat2bug-dsl-var__frame {
+  display: none;
+}
+
+.report-template-editor .cat2bug-dsl-var__chrome {
+  display: none;
+}
+
+.report-template-editor .cat2bug-dsl-var__body {
+  white-space: pre-wrap;
+}
+
+.report-template-editor .cat2bug-dsl-var__view.is-hovered {
+  .cat2bug-dsl-var__frame {
+    display: block;
+    position: fixed;
+    z-index: 4000;
+    box-sizing: border-box;
+    /* 命中热区；背景透明，正文留在文档流中透过显示，位置不变 */
+    pointer-events: auto;
+    border: 1px dashed var(--report-editor-table-selected-outline, #f4bd6f);
+    border-radius: 6px;
+    background: transparent;
+  }
+
+  .cat2bug-dsl-var__chrome {
+    display: flex;
+    position: fixed;
+    z-index: 4001;
+    align-items: center;
+    gap: 4px;
+    max-width: min(280px, 70vw);
+    height: 15px;
+    padding: 0 5px 0 3px;
+    overflow: hidden;
+    border-radius: 5px 0 5px 0;
+    background: var(--report-editor-table-selected-outline, #f4bd6f);
+    color: #1f1f1f;
+    line-height: 15px;
+    white-space: nowrap;
+  }
+
+  /* 悬停正文与标题条统一黄底黑字，避免暗色主题继承白色造成黄白对比 */
+  .cat2bug-dsl-var__body {
+    border-radius: 3px;
+    background: var(--report-editor-table-selected-outline, #f4bd6f);
+    color: #1f1f1f;
+  }
+}
+
+.report-template-editor .cat2bug-dsl-var__toggle {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 13px;
+  padding: 0;
+  border: none;
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.18);
+  color: #1f1f1f;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 9px;
+  line-height: 13px;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.32);
+  }
+}
+
+.report-template-editor .cat2bug-dsl-var__title {
+  overflow: hidden;
+  color: #1f1f1f;
+  font-size: 10px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+}
+
+/* 计划变量与普通变量悬停样式统一为黄黑，不再用蓝底白字 */
+.report-template-editor .cat2bug-dsl-var__view--plan.is-hovered {
+  .cat2bug-dsl-var__frame {
+    border-color: var(--report-editor-table-selected-outline, #f4bd6f);
+  }
+
+  .cat2bug-dsl-var__body {
+    background: var(--report-editor-table-selected-outline, #f4bd6f);
+    color: #1f1f1f;
+  }
+
+  .cat2bug-dsl-var__chrome {
+    background: var(--report-editor-table-selected-outline, #f4bd6f);
+    color: #1f1f1f;
+  }
+
+  .cat2bug-dsl-var__toggle {
+    color: #1f1f1f;
+    background: rgba(0, 0, 0, 0.18);
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.32);
+    }
+  }
+
+  .cat2bug-dsl-var__title {
+    color: #1f1f1f;
+  }
+}
+
+/*
+ * 块级 DSL 单元（$table / $card / $image）：与变量单元共享同一套悬停 chrome
+ * （见上方 .cat2bug-dsl-var__view 基础规则）。默认（未悬停）无边框/无标题——
+ * 只显示内容（表格/图片/卡片）或原始 token，对齐生产预览；悬停才挂虚线框 +
+ * 左上角两态按钮 + 标题行。旧的 .cat2bug-dsl-block__view chrome 仅保留给
+ * 保留块（createRawBlockView）使用。
+ */
+.report-template-editor .cat2bug-dsl-var__view--block {
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin: 10px 0;
+
+  .cat2bug-dsl-var__body {
+    display: block;
+    white-space: normal;
+  }
+
+  &.is-variable .cat2bug-dsl-var__body {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.92em;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+}
+
+.report-template-editor .cat2bug-dsl-var__view--block.is-hovered {
+  .cat2bug-dsl-var__frame {
+    border-radius: 8px;
+  }
+
+  .cat2bug-dsl-var__chrome {
+    height: 17px;
+    padding: 0 6px 0 4px;
+    border-radius: 6px 0 6px 0;
+  }
+
+  .cat2bug-dsl-var__title {
+    font-size: 11px;
+  }
 }
 
 /* 缺陷表格实时预览（与 Cat2BugMarkdown TablePlugin 同源数据） */
-.report-template-editor .cat2bug-dsl-block__view--live-table {
-  .cat2bug-dsl-block__view-body {
-    margin-top: 8px;
-  }
-}
-
 .report-template-editor .cat2bug-dsl-preview-table-wrap {
   display: inline-block;
   max-width: 100%;
@@ -660,12 +792,6 @@ html.dark .report-template-editor .markdown-body > .markdown-body-view.report-te
   text-align: right;
 }
 
-.report-template-editor .cat2bug-dsl-block__view--live-image {
-  .cat2bug-dsl-block__view-body {
-    margin-top: 8px;
-  }
-}
-
 .report-template-editor .cat2bug-dsl-preview-image-wrap {
   display: flex;
   align-items: center;
@@ -684,5 +810,150 @@ html.dark .report-template-editor .markdown-body > .markdown-body-view.report-te
   font-size: 12px;
   color: var(--text-color-secondary, #a3a6ad);
   padding: 6px 2px;
+}
+
+/* 用例卡片实时预览（简化版：id + 名称列表，与 CaseCardPlugin 同源数据） */
+.report-template-editor .cat2bug-dsl-preview-card-wrap {
+  display: block;
+  max-width: 100%;
+}
+
+.report-template-editor .cat2bug-dsl-preview-card__list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 260px;
+  overflow-y: auto;
+  border: 1px solid var(--report-editor-table-border);
+  border-radius: 6px;
+  padding: 6px;
+  background: var(--report-editor-table-bg);
+}
+
+.report-template-editor .cat2bug-dsl-preview-card__item {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 4px;
+  background: var(--report-editor-table-row-alt-bg);
+  font-size: 12px;
+}
+
+.report-template-editor .cat2bug-dsl-preview-card__id {
+  flex-shrink: 0;
+  color: var(--text-color-secondary, #a3a6ad);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.report-template-editor .cat2bug-dsl-preview-card__name {
+  overflow: hidden;
+  color: inherit;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.report-template-editor .cat2bug-dsl-preview-card__hint,
+.report-template-editor .cat2bug-dsl-preview-card__meta {
+  font-size: 12px;
+  color: var(--text-color-secondary, #a3a6ad);
+  padding: 6px 2px;
+}
+
+.report-template-editor .cat2bug-dsl-preview-card__meta {
+  text-align: right;
+}
+
+/* 计划统计大表：按 Markdown 表格渲染，单元格内变量为可交互单元（悬停 chrome）
+ * 覆盖全局 .markdown-body table tr { background:#fff } 的白底 */
+.report-template-editor .cat2bug-dsl-preview-plan-stats-host {
+  width: 100%;
+  max-width: 100%;
+  margin: 10px 0;
+}
+
+.report-template-editor .cat2bug-dsl-preview-plan-stats-host__body {
+  width: 100%;
+  max-width: 100%;
+}
+
+.report-template-editor .cat2bug-dsl-preview-plan-stats {
+  width: 100%;
+  max-width: 100%;
+}
+
+.report-template-editor .cat2bug-dsl-preview-plan-stats__scroll {
+  overflow-x: auto;
+  max-width: 100%;
+  padding: 4px;
+  border: 1px solid var(--report-editor-table-border);
+  border-radius: 6px;
+  background: var(--report-editor-table-bg);
+}
+
+.report-template-editor .markdown-body .cat2bug-dsl-preview-plan-stats__table,
+.report-template-editor .cat2bug-dsl-preview-plan-stats__table {
+  display: table;
+  width: max-content;
+  min-width: 100%;
+  margin: 0;
+  border-collapse: collapse;
+  border-spacing: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  background: var(--report-editor-table-bg);
+  color: inherit;
+
+  tr {
+    background: transparent;
+    border-top: none;
+  }
+
+  td {
+    border: 1px solid var(--report-editor-table-border);
+    padding: 4px 8px;
+    vertical-align: middle;
+    white-space: nowrap;
+    background: var(--report-editor-table-bg);
+    color: inherit;
+  }
+
+  tr:nth-child(even) td {
+    background: var(--report-editor-table-row-alt-bg);
+  }
+
+  td.cat2bug-dsl-preview-plan-stats__cell--label {
+    background: var(--report-editor-table-header-bg);
+    color: var(--report-editor-table-header-color);
+    font-weight: 600;
+  }
+
+  tr:nth-child(even) td.cat2bug-dsl-preview-plan-stats__cell--label {
+    background: var(--report-editor-table-header-bg);
+  }
+
+  td.cat2bug-dsl-preview-plan-stats__cell--empty {
+    color: var(--text-color-secondary, #a3a6ad);
+  }
+
+  td.cat2bug-dsl-preview-plan-stats__cell--value {
+    color: inherit;
+    font-weight: 400;
+  }
+
+  /* 单元格内变量悬停时抬升，避免被相邻单元格盖住 */
+  .cat2bug-dsl-var__view.is-hovered {
+    z-index: 3;
+  }
+}
+
+.report-template-editor .cat2bug-dsl-preview-plan-stats__hint {
+  font-size: 12px;
+  color: var(--text-color-secondary, #a3a6ad);
+  padding: 8px 2px;
+}
+
+.report-template-editor .cat2bug-dsl-preview-plan-stats__hint--error {
+  color: var(--el-color-danger, #f56c6c);
 }
 

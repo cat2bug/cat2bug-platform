@@ -61,9 +61,14 @@ import VueExcelEditor from '@/vendor/vue-excel-editor'
 import { ElMessage, ElMessageBox, ElNotification } from 'element-plus'
 import { resolveLegacyIcon } from '@/utils/element-icon'
 import { bootstrapAuthenticatedRoutes } from '@/router/bootstrap'
+import { installKeyboardMixinBridges } from '@/composables/keyboard/installKeyboardMixinBridges'
 
 const head = createHead()
 const app = createApp(App)
+
+// Vue3 会忽略 mixin 的 setup()，此处注册全局桥接运行时，
+// 使各页面通过 @/mixins/* 声明的键盘增强 composable 重新生效。
+installKeyboardMixinBridges(app)
 
 // 内嵌 excel-editor 等仍使用 this.$set；须与 Vue.set 一致并返回 value
 app.config.globalProperties.$set = (target, key, value) => {

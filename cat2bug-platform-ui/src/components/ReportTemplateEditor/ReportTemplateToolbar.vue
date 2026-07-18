@@ -15,6 +15,9 @@
 import ToolsMenu from '@/components/Cat2BugMarkdown/components/ToolsMenu'
 import { loadReportToolbarMenus } from './composables/toolbarMenuLoader'
 import { resolveToolContent } from './composables/useReportTemplateTools'
+import { getVariablesExpanded, setVariablesExpanded } from './milkdown/variable-expand-state'
+
+const VARIABLES_EXPAND_TOOL_NAME = 'variables-expand-collapse'
 
 export default {
   name: 'ReportTemplateToolbar',
@@ -42,6 +45,13 @@ export default {
   methods: {
     async loadMenus(projectId) {
       this.tools = await loadReportToolbarMenus(projectId)
+      this.syncVariablesExpandTool()
+    },
+    syncVariablesExpandTool() {
+      const tool = this.tools.find((t) => t.name === VARIABLES_EXPAND_TOOL_NAME)
+      if (tool) {
+        tool.check = getVariablesExpanded()
+      }
     },
     onToolSelect(_tools, tool) {
       if (document.activeElement instanceof HTMLElement) {
@@ -66,6 +76,9 @@ export default {
         return
       }
       if (tool.type === 'check') {
+        if (tool.name === VARIABLES_EXPAND_TOOL_NAME) {
+          setVariablesExpanded(!!tool.check)
+        }
         return
       }
       const content = resolveToolContent(tool)
