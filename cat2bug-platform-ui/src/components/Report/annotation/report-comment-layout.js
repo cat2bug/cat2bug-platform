@@ -83,3 +83,55 @@ export function buildDesiredCommentTops(threads, scrollRoot, viewportDelta = 0) 
   })
   return tops
 }
+
+/**
+ * 草稿优先落在正文锚点 Y；若与已有评论卡片重叠则下推，不覆盖已有块。
+ * @param {number} desiredTop
+ * @param {Array<{ top: number, height: number }>} occupied
+ * @param {number} [draftHeight=120]
+ * @param {number} [gap=8]
+ * @returns {number}
+ */
+export function resolveDraftTopAmongComments(desiredTop, occupied, draftHeight = 120, gap = 8) {
+  let top = Math.max(0, Number(desiredTop) || 0)
+  const h = clampCommentCardHeight(draftHeight, { min: 72, max: 360 })
+  const sorted = (occupied || [])
+    .slice()
+    .sort((a, b) => a.top - b.top)
+  for (const item of sorted) {
+    const ih = clampCommentCardHeight(item.height)
+    const itemBottom = item.top + ih
+    const draftBottom = top + h
+    const overlaps = top < itemBottom + gap && draftBottom + gap > item.top
+    if (overlaps) {
+      top = itemBottom + gap
+    }
+  }
+  return top
+}
+
+/**
+ * 用 quote 在可见正文中找锚点元素（编辑态选区消失后的兜底）。
+ * @param {Element|null|undefined} root
+ * @param {string} quote
+ * @returns {Element|null}
+ */
+export function findElementByQuote(root, quote) {
+  if (!root || !quote) {
+    return null
+  }
+  const q = String(quote).trim()
+  if (!q) {
+    return null
+  }
+  const nodes = root.querySelectorAll
+    ? root.querySelectorAll('h1,h2,h3,h4,h5,h6,p,li,td,th,blockquote,pre')
+    : []
+  for (const el of Array.from(nodes)) {
+    const text = (el.textContent || '').trim()
+    if (text && text.indexOf(q) !== -1) {
+      return el
+    }
+  }
+  return null
+}

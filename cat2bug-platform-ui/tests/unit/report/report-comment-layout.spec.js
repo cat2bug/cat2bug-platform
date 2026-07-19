@@ -1,6 +1,10 @@
+/** @jest-environment jsdom */
+
 import {
   getContentOffsetTop,
   resolveCommentCollisions,
+  resolveDraftTopAmongComments,
+  findElementByQuote,
   buildDesiredCommentTops,
   clampCommentCardHeight
 } from '@/components/Report/annotation/report-comment-layout'
@@ -68,5 +72,26 @@ describe('report-comment-layout', () => {
     ], scrollRoot, 0)
     expect(tops['1']).toBe(50)
     expect(tops['2']).toBeUndefined()
+  })
+
+  it('keeps draft at desired top when no occupied cards', () => {
+    expect(resolveDraftTopAmongComments(240, [], 120)).toBe(240)
+  })
+
+  it('pushes draft below an overlapping existing comment', () => {
+    // existing card [8, 96), draft wants 40 → push to 96+8
+    expect(resolveDraftTopAmongComments(40, [{ top: 8, height: 88 }], 120, 8)).toBe(104)
+  })
+
+  it('does not cover a higher card when draft target is below', () => {
+    // existing at top, draft wants mid-page → stay
+    expect(resolveDraftTopAmongComments(400, [{ top: 8, height: 88 }], 120, 8)).toBe(400)
+  })
+
+  it('finds element by quote text', () => {
+    const root = document.createElement('div')
+    root.innerHTML = '<h2>标题二</h2><h2>飞书地方就哭了</h2>'
+    expect(findElementByQuote(root, '飞书地方就哭了').textContent).toBe('飞书地方就哭了')
+    expect(findElementByQuote(root, '不存在')).toBeNull()
   })
 })

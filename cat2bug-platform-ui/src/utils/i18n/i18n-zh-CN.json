@@ -835,6 +835,7 @@
   "report.time": "报告时间",
   "report.type": "报告类型",
   "report.source": "报表来源",
+  "report.char-count": "字数",
   "report.create-by": "创建人",
   "report.delete-report": "是否要删除此报告？",
   "report.delete-select-report": "是否要删除已选择的报告？",

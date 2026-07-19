@@ -834,6 +834,7 @@
   "report.time": "Report Time",
   "report.type": "Report Type",
   "report.source": "Report Source",
+  "report.char-count": "Characters",
   "report.create-by": "Created By",
   "report.delete-report": "Do you want to delete this report ?",
   "report.delete-select-report": "Do you want to delete the selected report ?",

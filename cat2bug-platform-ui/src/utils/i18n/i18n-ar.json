@@ -785,6 +785,7 @@
   "report.time": "وقت التقرير",
   "report.type": "نوع التقرير",
   "report.source": "مصدر التقرير",
+  "report.char-count": "عدد الأحرف",
   "report.create-by": "المنشئ",
   "report.delete-report": "هل تريد حذف هذا التقرير؟",
   "report.delete-select-report": "هل تريد حذف التقارير المختارة؟",

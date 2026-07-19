@@ -785,6 +785,7 @@
   "report.time": "レポート时间",
   "report.type": "レポートタイプ",
   "report.source": "レポートの出典",
+  "report.char-count": "文字数",
   "report.create-by": "作成者",
   "report.delete-report": "このレポートを削除しますか?",
   "report.delete-select-report": "选択したレポートを削除しますか?",

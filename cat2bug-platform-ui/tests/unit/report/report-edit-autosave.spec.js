@@ -12,8 +12,13 @@ describe('report-edit-autosave', () => {
     expect(isReportContentDirty('x', null)).toBe(true)
   })
 
-  it('exposes history module and autosave interval', () => {
+  it('ignores trailing newline-only differences', () => {
+    expect(isReportContentDirty('hello\n', 'hello')).toBe(false)
+    expect(isReportContentDirty('hello\n\n', 'hello\n')).toBe(false)
+  })
+
+  it('exposes history module and 3-minute autosave interval', () => {
     expect(REPORT_HISTORY_COMMENT_MODULE).toBe('report_history')
-    expect(REPORT_AUTOSAVE_INTERVAL_MS).toBe(60000)
+    expect(REPORT_AUTOSAVE_INTERVAL_MS).toBe(180000)
   })
 })

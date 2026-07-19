@@ -35,7 +35,19 @@
             fit="cover"></el-image>
         </template>
       </el-popover>
-      <el-button :disabled="currentTextLength==0" type="primary" size="small" @click="submitHandle">{{ $t('comment.speak') }}</el-button>
+      <div class="comment-input-tools-actions">
+        <el-button
+          :disabled="currentTextLength==0"
+          type="primary"
+          :size="buttonSize"
+          @click="submitHandle"
+        >{{ $t('comment.speak') }}</el-button>
+        <el-button
+          v-if="showCancel"
+          :size="buttonSize"
+          @click="$emit('cancel')"
+        >{{ $t('cancel') }}</el-button>
+      </div>
     </div>
   </div>
 </template>
@@ -44,7 +56,7 @@
 import { getEmojiUrl } from '@/utils/emoji-assets'
 
 export default {
-  emits: ['update:value', 'change'],
+  emits: ['update:value', 'change', 'submit', 'cancel'],
   name: "CommentInput",
   components: {},
   data() {
@@ -91,6 +103,16 @@ export default {
     maxLength: {
       type: Number,
       default: 255
+    },
+    /** 工具栏是否显示取消按钮（与发言同一行） */
+    showCancel: {
+      type: Boolean,
+      default: false
+    },
+    /** 发言/取消按钮尺寸 */
+    buttonSize: {
+      type: String,
+      default: 'small'
     }
   },
   watch: {
@@ -352,16 +374,28 @@ export default {
   }
 }
 .comment-input-tools {
-  display: inline-flex;
+  display: flex;
   flex-direction: row;
-  justify-content: flex-end;
+  justify-content: flex-start;
   align-items: center;
-  gap: 10px;
+  width: 100%;
+  box-sizing: border-box;
+  gap: 8px;
+  margin-top: 8px;
   .emoji-button {
-    padding-top: 8px;
-    width: 30px;
+    padding-top: 0;
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
     /* 全局 .el-image 占位底在暗色下比侧栏浅，透明表情会透出一块浅底 */
     background-color: transparent !important;
   }
+}
+.comment-input-tools-actions {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
 }
 </style>

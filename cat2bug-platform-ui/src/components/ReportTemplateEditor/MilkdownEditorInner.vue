@@ -556,7 +556,20 @@ export default defineComponent({
                       const contextAfter = view.state.doc
                         .textBetween(to, Math.min(docSize, to + 60), ' ')
                         .slice(0, 60)
-                      emit('selection-comment', { quote, contextBefore, contextAfter })
+                      let anchorRect = null
+                      try {
+                        const start = view.coordsAtPos(from)
+                        const end = view.coordsAtPos(to)
+                        anchorRect = {
+                          top: Math.min(start.top, end.top),
+                          bottom: Math.max(start.bottom, end.bottom),
+                          left: Math.min(start.left, end.left),
+                          right: Math.max(start.right, end.right)
+                        }
+                      } catch (e) {
+                        anchorRect = null
+                      }
+                      emit('selection-comment', { quote, contextBefore, contextAfter, anchorRect })
                     }
                   })
                 }

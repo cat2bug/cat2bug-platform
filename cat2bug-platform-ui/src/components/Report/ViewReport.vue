@@ -80,7 +80,9 @@
         :style="{ width: tocWidth + 'px' }"
         :headings="headings"
         :active-id="activeHeadingId"
+        :reorderable="isEditing"
         @select="handleTocSelect"
+        @reorder="handleTocReorder"
         @toggle-collapse="tocCollapsed = true"
       />
       <div
@@ -253,6 +255,11 @@
           <span class="report-status-bar__label">{{ $t('report.source') }}</span>
           <span class="report-status-bar__value" :title="report.reportSource || ''">{{ report.reportSource || '—' }}</span>
         </div>
+        <div class="report-status-bar__item report-status-bar__item--chars">
+          <legacy-icon icon="el-icon-edit-outline" class="report-status-bar__icon"></legacy-icon>
+          <span class="report-status-bar__label">{{ $t('report.char-count') }}</span>
+          <span class="report-status-bar__value">{{ reportCharCount }}</span>
+        </div>
       </div>
       <report-selection-toolbar
         :visible="!isEditing && selectionToolbar.visible"
@@ -282,7 +289,8 @@ import ReportContentToolbar from "@/components/Report/ReportContentToolbar.vue";
 import { resolveToolContent } from "@/components/ReportTemplateEditor/composables/useReportTemplateTools";
 import { normalizeDslSource } from "@/components/ReportTemplateEditor/dsl/normalize";
 import { rewriteReportSnapshotImageSrcs } from "@/components/ReportTemplateEditor/milkdown/rewrite-report-snapshot-images";
-import {extractHeadings, createScrollSpy} from "@/components/Report/annotation/report-toc";
+import {extractHeadings, createScrollSpy, reorderMarkdownHeadingBlocks, splitMarkdownHeadingBlocks} from "@/components/Report/annotation/report-toc";
+import { countReportChars } from "@/components/Report/annotation/report-char-count";
 import "@/components/ReportTemplateEditor/milkdown-crepe-theme.scss";
 import {
   ANNOTATABLE_SELECTOR,
@@ -332,6 +340,8 @@ import { htmlDocxAsBlob } from '@/utils/html-docx-runtime'
 import { scrollTargetToPeerHeight } from '@/components/Report/annotation/report-scroll-align'
 import {
   resolveCommentCollisions,
+  resolveDraftTopAmongComments,
+  findElementByQuote,
   getContentOffsetTop,
   clampCommentCardHeight
 } from '@/components/Report/annotation/report-comment-layout'
@@ -416,7 +426,8 @@ export default {
       reportBodyObserver: null,
       scrollSpyHandle: null,
       refreshDetailTimer: null,
-      applyingHighlights: false
+      applyingHighlights: false,
+      applyingToc: false
     }
   },
   props: {
@@ -488,6 +499,13 @@ export default {
       }
       return this.parseTime(this.report.reportTime, '{y}-{m}-{d} {h}:{i}:{s}') || '—';
     },
+    /** 底部字数：编辑态跟草稿，预览态跟当前报告正文 */
+    reportCharCount() {
+      const src = this.isEditing
+        ? this.editDraft
+        : (this.editDraft || (this.report && this.report.reportDescription) || '');
+      return countReportChars(src);
+    },
     /** 按 parentId 归并为线程（主评 + 扁平回复），并附上锚点重匹配结果 */
     threads() {
       const roots = this.comments.filter(c => !c.parentId);
@@ -534,6 +552,8 @@ export default {
     },
     isEditing() {
       this.$nextTick(() => {
+        // 进入/退出编辑时切换观察目标（Milkdown ↔ markdown-it），并刷新目录
+        this.setupReportDetailObservers();
         this.scheduleCommentLayout();
         if (this.comments.length) {
           this.refreshAnchors();
@@ -781,8 +801,9 @@ export default {
         this.loading = false;
         res.data.reportDescription = (res.data.reportDescription || '').replace(' \n ','\n');
         this.report = res.data;
-        this.savedDescription = res.data.reportDescription || '';
-        this.editDraft = this.savedDescription;
+        const description = normalizeDslSource(res.data.reportDescription || '');
+        this.savedDescription = description;
+        this.editDraft = description;
         // 有编辑权限时直接进入正文编辑（无顶部编辑按钮）
         this.isEditing = this.canEdit;
         this.loadComments();
@@ -1106,17 +1127,27 @@ export default {
     /** 监听正文 DOM 变化（渲染完成/内容编辑后）以刷新目录与批注锚点 */
     setupReportDetailObservers() {
       this.teardownReportDetailObservers();
-      if (this.isEditing) {
-        return;
-      }
-      const container = this.$refs['report-data'];
+      const shell = this.$refs['report-data'];
+      // 编辑态只观察可见编辑器，避免扫到 v-show 隐藏的 markdown-it 标题
+      const container = this.isEditing
+        ? (this.getAnnotationContentRoot() || shell)
+        : shell;
       if (!container || typeof MutationObserver === 'undefined') {
         this.refreshDetail();
         return;
       }
       this.reportBodyObserver = new MutationObserver(() => {
-        if (this.applyingHighlights) {
+        if (this.applyingHighlights || this.applyingToc) {
           return;
+        }
+        // Milkdown 异步挂载后，从壳层切到 ProseMirror 再观察
+        if (this.isEditing) {
+          const liveRoot = this.getAnnotationContentRoot();
+          if (liveRoot && liveRoot !== container && liveRoot.classList
+            && liveRoot.classList.contains('ProseMirror')) {
+            this.setupReportDetailObservers();
+            return;
+          }
         }
         this.scheduleRefreshDetail();
       });
@@ -1142,7 +1173,7 @@ export default {
       }
     },
     scheduleRefreshDetail() {
-      if (this.applyingHighlights) {
+      if (this.applyingHighlights || this.applyingToc) {
         return;
       }
       if (this.refreshDetailTimer) {
@@ -1219,8 +1250,8 @@ export default {
       this.$nextTick(() => { this.syncingScroll = false; });
     },
     /**
-     * 编辑态：正文是 Milkdown，无法按 markdown 锚点对齐。
-     * 改为自上而下堆叠，避免 threadTops 缺失导致 visibility:hidden。
+     * 编辑态：正文是 Milkdown，无法按 markdown 锚点对齐已有评论。
+     * 已有评论自上而下堆叠；草稿按正文选区 Y 落位，并避开已有卡片。
      */
     layoutCommentsStacked() {
       if (this.sideTab !== 'comments') {
@@ -1251,10 +1282,11 @@ export default {
           maxBottom = Math.max(maxBottom, y);
         });
         this.threadTops = tops;
-        this.commentCanvasHeight = maxBottom;
         if (this.draftAnnotation) {
-          this.draftTop = 8;
+          this.updateDraftTop();
+          maxBottom = Math.max(maxBottom, (this.draftTop || 0) + 160);
         }
+        this.commentCanvasHeight = maxBottom;
       });
     },
     /** 按正文锚点 Y 排布右侧评论；每条优先对齐自己的锚点，仅重叠时轻微下推 */
@@ -1262,7 +1294,7 @@ export default {
       if (this.sideTab !== 'comments') {
         return;
       }
-      // 编辑态不能按预览 DOM 锚点排布，否则发表后评论一直 hidden
+      // 编辑态：已有评论堆叠；草稿仍按选区实际位置落位
       if (this.isEditing) {
         this.layoutCommentsStacked();
         return;
@@ -1342,11 +1374,25 @@ export default {
         });
 
         this.threadTops = tops;
-        this.commentCanvasHeight = maxBottom;
-
         if (this.draftAnnotation) {
           this.updateDraftTop();
+          maxBottom = Math.max(maxBottom, (this.draftTop || 0) + 160);
         }
+        this.commentCanvasHeight = maxBottom;
+      });
+    },
+    /** 收集已有评论卡片占用区间（用于草稿避让） */
+    getOccupiedCommentSlots() {
+      return this.threads.map(thread => {
+        const id = String(thread.root.commentId);
+        const top = Object.prototype.hasOwnProperty.call(this.threadTops || {}, id)
+          ? this.threadTops[id]
+          : 0;
+        const el = typeof document !== 'undefined'
+          ? document.querySelector(`[data-report-thread-id="${id}"]`)
+          : null;
+        const height = clampCommentCardHeight(el ? el.offsetHeight : 88);
+        return { id, top, height };
       });
     },
     updateDraftTop() {
@@ -1356,47 +1402,94 @@ export default {
         this.draftTop = null;
         return;
       }
-      // 优先用当前选区/悬停块；否则吸顶
-      let el = this.hoverLineBlock;
-      if (!el && this.pendingSelectionRange) {
-        try {
-          const node = this.pendingSelectionRange.commonAncestorContainer;
-          el = node && node.nodeType === 1 ? node : (node && node.parentElement);
-        } catch (e) {
-          el = null;
-        }
-      }
-      if (!el) {
-        this.draftTop = 8;
-        return;
-      }
       const viewportDelta = commentsBody
         ? scrollRoot.getBoundingClientRect().top - commentsBody.getBoundingClientRect().top
         : 0;
       const rootRect = scrollRoot.getBoundingClientRect();
-      const elRect = el.getBoundingClientRect();
-      this.draftTop = Math.max(0, elRect.top - rootRect.top + scrollRoot.scrollTop + viewportDelta);
+      let desired = null;
+
+      // 1) 打开草稿时记录的选区/块矩形（最准）
+      const rect = this.draftAnnotation.anchorRect;
+      if (rect && typeof rect.top === 'number') {
+        desired = rect.top - rootRect.top + scrollRoot.scrollTop + viewportDelta;
+      }
+
+      // 2) 悬停块 / 选区公共祖先
+      if (desired == null) {
+        let el = this.hoverLineBlock;
+        if (!el && this.pendingSelectionRange) {
+          try {
+            const node = this.pendingSelectionRange.commonAncestorContainer;
+            el = node && node.nodeType === 1 ? node : (node && node.parentElement);
+          } catch (e) {
+            el = null;
+          }
+        }
+        if (el && typeof el.getBoundingClientRect === 'function') {
+          const elRect = el.getBoundingClientRect();
+          desired = elRect.top - rootRect.top + scrollRoot.scrollTop + viewportDelta;
+        }
+      }
+
+      // 3) 用 quote 在可见正文中回找
+      if (desired == null && this.draftAnnotation.quote) {
+        const found = findElementByQuote(
+          this.getAnnotationContentRoot() || this.$refs['report-data'],
+          this.draftAnnotation.quote
+        );
+        if (found) {
+          const offset = getContentOffsetTop(scrollRoot, found);
+          if (offset != null) {
+            desired = offset + viewportDelta;
+          }
+        }
+      }
+
+      if (desired == null) {
+        desired = 8;
+      }
+
+      const draftEl = typeof document !== 'undefined'
+        ? document.querySelector('.report-detail-comments-draft')
+        : null;
+      const draftHeight = draftEl ? draftEl.offsetHeight : 140;
+      this.draftTop = resolveDraftTopAmongComments(
+        desired,
+        this.getOccupiedCommentSlots(),
+        draftHeight,
+        8
+      );
     },
-    /** 重新扫描标题生成目录 + scroll-spy，并重新匹配批注锚点 */
+    /** 重新扫描标题生成目录 + scroll-spy；预览态同时重匹配批注锚点 */
     refreshDetail() {
-      const container = this.$refs['report-data'];
+      const container = this.getAnnotationContentRoot() || this.$refs['report-data'];
       if (!container) {
         return;
       }
-      this.headings = extractHeadings(container);
-      if (this.activeHeadingId && !this.headings.some(h => h.id === this.activeHeadingId)) {
-        this.activeHeadingId = this.headings.length ? this.headings[0].id : null;
+      this.applyingToc = true;
+      try {
+        this.headings = extractHeadings(container);
+        if (this.activeHeadingId && !this.headings.some(h => h.id === this.activeHeadingId)) {
+          this.activeHeadingId = this.headings.length ? this.headings[0].id : null;
+        }
+        if (this.scrollSpyHandle) {
+          this.scrollSpyHandle.disconnect();
+        }
+        this.scrollSpyHandle = createScrollSpy({
+          root: this.getMainScrollElement(),
+          headings: this.headings,
+          onActiveChange: (id) => { this.activeHeadingId = id; }
+        });
+      } finally {
+        this.$nextTick(() => {
+          this.applyingToc = false;
+        });
       }
-      if (this.scrollSpyHandle) {
-        this.scrollSpyHandle.disconnect();
+      // 编辑态输入频繁，仅刷新目录；批注锚点在进出编辑 / 显式操作时再匹配
+      if (!this.isEditing) {
+        this.refreshAnchors();
+        this.scheduleCommentLayout();
       }
-      this.scrollSpyHandle = createScrollSpy({
-        root: this.getMainScrollElement(),
-        headings: this.headings,
-        onActiveChange: (id) => { this.activeHeadingId = id; }
-      });
-      this.refreshAnchors();
-      this.scheduleCommentLayout();
     },
     /** 点击目录项：滚动正文到对应标题 */
     handleTocSelect(id) {
@@ -1405,6 +1498,38 @@ export default {
         heading.el.scrollIntoView({ behavior: 'smooth', block: 'start' });
         this.activeHeadingId = id;
       }
+    },
+    /**
+     * 目录拖拽重排 → 同步中间 Markdown 正文（Milkdown 经 v-model 实时替换）。
+     * 每个目录项对应「该标题 + 下一标题前的正文」整块移动。
+     */
+    handleTocReorder({ oldIndex, newIndex, headings: nextHeadings }) {
+      if (!this.isEditing || !Number.isInteger(oldIndex) || !Number.isInteger(newIndex)) {
+        return;
+      }
+      if (oldIndex === newIndex) {
+        return;
+      }
+      const { headingBlocks } = splitMarkdownHeadingBlocks(this.editDraft || '');
+      // 目录与 Markdown 标题数不一致时拒绝，避免错位改写
+      if (headingBlocks.length !== (this.headings || []).length) {
+        return;
+      }
+      const next = reorderMarkdownHeadingBlocks(this.editDraft || '', oldIndex, newIndex);
+      if (next === (this.editDraft || '')) {
+        return;
+      }
+      // 先更新本地目录顺序，正文 replaceAll 后再由 observer 精刷
+      if (Array.isArray(nextHeadings) && nextHeadings.length) {
+        this.headings = nextHeadings.map(h => ({
+          id: h.id,
+          text: h.text,
+          level: h.level,
+          el: h.el
+        }));
+      }
+      this.editDraft = next;
+      this.onEditDraftChange(next);
     },
 
     // ===================== 批注锚点重匹配与高亮 =====================
@@ -1791,12 +1916,20 @@ export default {
         return;
       }
       const context = extractSelectionContext(container, range, 60);
+      let anchorRect = null;
+      try {
+        const rect = range.getBoundingClientRect();
+        anchorRect = { top: rect.top, bottom: rect.bottom, left: rect.left, right: rect.right };
+      } catch (e) {
+        anchorRect = null;
+      }
       this.openDraft({
         anchorKind: 'selection',
         quote,
         contextBefore: context.before,
         contextAfter: context.after,
-        anchorHint: this.nearestHeadingHint(range.startContainer)
+        anchorHint: this.nearestHeadingHint(range.startContainer),
+        anchorRect
       });
       this.selectionToolbar.visible = false;
       this.pendingSelectionRange = null;
@@ -1815,7 +1948,8 @@ export default {
         quote,
         contextBefore: (payload && payload.contextBefore) || '',
         contextAfter: (payload && payload.contextAfter) || '',
-        anchorHint: null
+        anchorHint: null,
+        anchorRect: (payload && payload.anchorRect) || null
       });
     },
 
@@ -1859,12 +1993,20 @@ export default {
       if (!quote) {
         return;
       }
+      let anchorRect = null;
+      try {
+        const rect = block.getBoundingClientRect();
+        anchorRect = { top: rect.top, bottom: rect.bottom, left: rect.left, right: rect.right };
+      } catch (e) {
+        anchorRect = null;
+      }
       this.openDraft({
         anchorKind: 'line',
         quote,
         contextBefore: '',
         contextAfter: '',
-        anchorHint: this.nearestHeadingHint(block)
+        anchorHint: this.nearestHeadingHint(block),
+        anchorRect
       });
       this.lineButton.visible = false;
     },
@@ -1997,13 +2139,16 @@ export default {
     onEditDraftChange(val) {
       const next = normalizeDslSource(val == null ? '' : val);
       this.editDraft = next;
+      // 草稿变更时同步左侧目录（MutationObserver 的兜底，覆盖部分非 DOM 感知路径）
+      this.scheduleRefreshDetail();
     },
     setupAutosave() {
       if (this.autosaveTimer || !this.canEdit) {
         return;
       }
       this.autosaveTimer = setInterval(() => {
-        if (this.isDirty && this.visible) {
+        // 内容未变（!isDirty）则跳过，后端也不会写历史
+        if (this.isDirty && this.visible && !this.saving) {
           this.saveReportContent({ silent: true });
         }
       }, REPORT_AUTOSAVE_INTERVAL_MS);
@@ -2049,19 +2194,27 @@ export default {
     /** 保存正文；silent 时不弹成功提示（定时自动保存） */
     saveReportContent(options = {}) {
       const silent = !!options.silent;
+      // 无实质变更：不请求、不写历史
       if (!this.canEdit || !this.report.reportId || !this.isDirty || this.saving) {
+        return Promise.resolve(false);
+      }
+      const nextDescription = normalizeDslSource(this.editDraft == null ? '' : this.editDraft);
+      if (!isReportContentDirty(nextDescription, this.savedDescription)) {
+        this.editDraft = nextDescription;
+        this.savedDescription = nextDescription;
         return Promise.resolve(false);
       }
       const payload = {
         reportId: this.report.reportId,
-        reportDescription: this.editDraft,
+        reportDescription: nextDescription,
         projectId: this.report.projectId,
         reportTitle: this.report.reportTitle
       };
       this.saving = true;
       return updateReport(payload).then(() => {
-        this.savedDescription = this.editDraft;
-        this.report = { ...this.report, reportDescription: this.editDraft };
+        this.editDraft = nextDescription;
+        this.savedDescription = nextDescription;
+        this.report = { ...this.report, reportDescription: nextDescription };
         this.lastSavedAt = Date.now();
         if (!silent) {
           this.$message.success(this.$t('report.save-success').toString());
@@ -2367,6 +2520,9 @@ export default {
     gap: 6px;
     min-width: 0;
     max-width: 100%;
+  }
+  .report-status-bar__item--chars {
+    margin-left: auto;
   }
   .report-status-bar__icon {
     flex-shrink: 0;

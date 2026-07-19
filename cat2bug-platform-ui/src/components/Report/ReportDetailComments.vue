@@ -18,26 +18,6 @@
       v-loading="loading"
       @scroll="$emit('scroll', $event)"
     >
-      <div
-        v-if="draft"
-        class="report-detail-comments-draft"
-        :style="draftStyle"
-      >
-        <div class="report-detail-comments-draft-quote">
-          <span class="report-detail-comments-draft-label">{{ $t('report.quote-preview-prefix') }}</span>
-          “{{ truncate(draft.quote) }}”
-        </div>
-        <comment-input
-          ref="draftInput"
-          show-word-limit
-          :max-length="500"
-          @submit="onSubmitDraft"
-        />
-        <div class="report-detail-comments-draft-actions">
-          <el-button size="small" @click="$emit('cancel-draft')">{{ $t('cancel') }}</el-button>
-        </div>
-      </div>
-
       <p v-if="!threads.length && !draft" class="report-detail-comments-empty">
         {{ $t('report.comments-empty') }}
       </p>
@@ -46,6 +26,26 @@
         class="report-detail-comments-canvas"
         :style="{ minHeight: canvasMinHeight + 'px' }"
       >
+        <div
+          v-if="draft"
+          class="report-detail-comments-draft"
+          :style="draftStyle"
+        >
+          <div class="report-detail-comments-draft-quote">
+            <span class="report-detail-comments-draft-label">{{ $t('report.quote-preview-prefix') }}</span>
+            “{{ truncate(draft.quote) }}”
+          </div>
+          <comment-input
+            ref="draftInput"
+            show-word-limit
+            show-cancel
+            button-size="small"
+            :max-length="500"
+            @submit="onSubmitDraft"
+            @cancel="$emit('cancel-draft')"
+          />
+        </div>
+
         <div
           v-for="thread in threads"
           :key="thread.root.commentId"
@@ -191,14 +191,10 @@ export default {
   computed: {
     draftStyle() {
       if (this.draftTop == null || Number.isNaN(this.draftTop)) {
-        return { position: 'sticky', top: '0px', zIndex: 2 }
+        return { top: '8px' }
       }
       return {
-        position: 'absolute',
-        top: `${Math.max(0, this.draftTop)}px`,
-        left: '12px',
-        right: '12px',
-        zIndex: 3
+        top: `${Math.max(0, this.draftTop)}px`
       }
     }
   },
@@ -358,11 +354,28 @@ export default {
   color: var(--el-text-color-placeholder, #c0c4cc);
 }
 .report-detail-comments-draft {
-  margin: 8px 12px;
-  padding: 10px;
-  border-radius: 6px;
+  /* 与 .report-thread 同宽同左右边距（画布内 absolute） */
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  width: auto;
+  margin: 0;
+  padding: 10px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--el-border-color-extra-light, #f2f6fc);
   background-color: var(--el-fill-color-light, #f5f7fa);
   box-sizing: border-box;
+  z-index: 3;
+
+  :deep(.comment-input-tools-actions .el-button) {
+    height: 24px;
+    padding: 0 10px;
+    font-size: 12px;
+  }
+  :deep(.comment-input-tools .emoji-button) {
+    width: 22px;
+    height: 22px;
+  }
 }
 .report-detail-comments-draft-quote {
   font-size: 12px;
@@ -372,11 +385,6 @@ export default {
 }
 .report-detail-comments-draft-label {
   margin-right: 2px;
-}
-.report-detail-comments-draft-actions {
-  margin-top: 8px;
-  display: flex;
-  justify-content: flex-end;
 }
 .report-thread {
   position: absolute;

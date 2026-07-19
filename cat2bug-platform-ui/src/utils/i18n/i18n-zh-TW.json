@@ -787,6 +787,7 @@
   "report.time": "報告時間",
   "report.type": "報告類型",
   "report.source": "報表來源",
+  "report.char-count": "字數",
   "report.create-by": "建立人",
   "report.delete-report": "是否要刪除此報告？",
   "report.delete-select-report": "是否要刪除已選擇的報告？",

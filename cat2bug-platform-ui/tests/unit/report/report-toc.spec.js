@@ -1,6 +1,10 @@
 /** @jest-environment jsdom */
 
-import { extractAndAssignHeadingToc } from '@/components/Report/annotation/report-toc'
+import {
+  extractAndAssignHeadingToc,
+  splitMarkdownHeadingBlocks,
+  reorderMarkdownHeadingBlocks
+} from '@/components/Report/annotation/report-toc'
 
 function renderBody(html) {
   const el = document.createElement('div')
@@ -59,5 +63,46 @@ describe('extractAndAssignHeadingToc', () => {
     const ids = toc.map((item) => item.id)
     expect(new Set(ids).size).toBe(2)
     expect(ids[0]).not.toBe(ids[1])
+  })
+})
+
+describe('reorderMarkdownHeadingBlocks', () => {
+  const sample = [
+    '前言段落',
+    '',
+    '# 饭撒的',
+    '内容一',
+    '',
+    '## 标题二',
+    '内容二',
+    '',
+    '## 飞书地方就哭了',
+    '内容三'
+  ].join('\n')
+
+  it('splits preamble and heading blocks', () => {
+    const { preamble, headingBlocks } = splitMarkdownHeadingBlocks(sample)
+    expect(preamble.join('\n')).toContain('前言段落')
+    expect(headingBlocks.map(b => b.title)).toEqual(['饭撒的', '标题二', '飞书地方就哭了'])
+    expect(headingBlocks.map(b => b.level)).toEqual([1, 2, 2])
+  })
+
+  it('moves a heading block with its body content', () => {
+    const next = reorderMarkdownHeadingBlocks(sample, 2, 1)
+    const { headingBlocks } = splitMarkdownHeadingBlocks(next)
+    expect(headingBlocks.map(b => b.title)).toEqual(['饭撒的', '飞书地方就哭了', '标题二'])
+    expect(headingBlocks[1].lines.join('\n')).toContain('内容三')
+    expect(headingBlocks[2].lines.join('\n')).toContain('内容二')
+  })
+
+  it('ignores # inside fenced code', () => {
+    const md = ['# A', '```', '# not-heading', '```', '# B', 'body'].join('\n')
+    const { headingBlocks } = splitMarkdownHeadingBlocks(md)
+    expect(headingBlocks.map(b => b.title)).toEqual(['A', 'B'])
+    expect(headingBlocks[0].lines.join('\n')).toContain('# not-heading')
+  })
+
+  it('returns original when index out of range', () => {
+    expect(reorderMarkdownHeadingBlocks(sample, 0, 99)).toBe(sample)
   })
 })

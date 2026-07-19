@@ -785,6 +785,7 @@
   "report.time": "보고서 작성 시간",
   "report.type": "보고서 유형",
   "report.source": "보고서 출처",
+  "report.char-count": "글자 수",
   "report.create-by": "작성자",
   "report.delete-report": "이 보고서를 삭제하시겠습니까?",
   "report.delete-select-report": "선택한 보고서를 삭제하시겠습니까?",

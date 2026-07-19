@@ -785,6 +785,7 @@
   "report.time": "Время отчета",
   "report.type": "Тип отчета",
   "report.source": "Источник отчета",
+  "report.char-count": "Символы",
   "report.create-by": "Автор",
   "report.delete-report": "Удалить этот отчет?",
   "report.delete-select-report": "Удалить выбранные отчеты?",
