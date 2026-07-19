@@ -1,13 +1,16 @@
 /**
- * Phase 1 build shim — html-docx-js uses legacy `with` statements that Rollup cannot parse.
- * Word export is restored in Phase 3c (frontend-lib-migration).
+ * Word export entry — loads real html-docx-js UMD at runtime
+ * (bundlers cannot parse its legacy `with` templates).
  */
+import { htmlDocxAsBlob } from '@/utils/html-docx-runtime'
+
 export default {
+  /**
+   * @param {string} html
+   * @param {object} [options]
+   * @returns {Promise<Blob>}
+   */
   asBlob(html, options) {
-    void options
-    const body = typeof html === 'string' ? html : String(html ?? '')
-    return new Blob([body], {
-      type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-    })
+    return htmlDocxAsBlob(html, options)
   }
 }

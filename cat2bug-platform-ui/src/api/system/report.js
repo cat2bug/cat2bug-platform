@@ -37,6 +37,38 @@ export function updateReport(data) {
   })
 }
 
+// 报告编辑历史列表
+export function listReportHistory(reportId) {
+  return request({
+    url: '/system/report/' + reportId + '/history',
+    method: 'get'
+  })
+}
+
+// 单条报告编辑历史
+export function getReportHistory(historyId) {
+  return request({
+    url: '/system/report/history/' + historyId,
+    method: 'get'
+  })
+}
+
+// 恢复报告到指定历史正文
+export function restoreReportHistory(historyId) {
+  return request({
+    url: '/system/report/history/' + historyId + '/restore',
+    method: 'post'
+  })
+}
+
+// 删除单条报告编辑历史
+export function delReportHistory(historyId) {
+  return request({
+    url: '/system/report/history/' + historyId,
+    method: 'delete'
+  })
+}
+
 // 删除报告
 export function delReport(reportId) {
   return request({

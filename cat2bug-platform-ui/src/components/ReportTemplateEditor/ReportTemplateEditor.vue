@@ -181,10 +181,19 @@ export default {
       }
     },
     onToolbarInsert(content) {
+      if (!content) {
+        return
+      }
+      // Visual / split: insert at Milkdown caret (selection survives toolbar click).
+      // Source-only mode has no Milkdown instance.
+      if (this.viewMode !== 'source' && this.$refs.milkdownEditor) {
+        this.$refs.milkdownEditor.insertMarkdown?.(content)
+        return
+      }
       if (isPlanStatisticsTableContent(content)) {
         this.$message.info(
           this.$t('mk.plan-table-insert-hint') ||
-            '计划统计大表已插入；表格结构请在「源码」模式中编辑，计划变量将完整保留。'
+            '计划统计大表已插入；可在可视化表格中编辑单元格，并使用加减行/列手柄调整结构。'
         )
       }
       const prefix = this.editorContent && !this.editorContent.endsWith('\n') ? '\n' : ''
@@ -221,6 +230,10 @@ export default {
       if (this.viewMode !== 'split') {
         return
       }
+      // Visual editor is source of truth while focused — MdEditor prop echoes must not replaceAll.
+      if (this.$refs.milkdownEditor?.hasFocus?.()) {
+        return
+      }
       this.syncVisualFromSource()
     },
     syncVisualFromSource() {
@@ -228,6 +241,9 @@ export default {
         return
       }
       this.$nextTick(() => {
+        if (this.$refs.milkdownEditor?.hasFocus?.()) {
+          return
+        }
         this.$refs.milkdownEditor?.syncFromModel?.()
       })
     },

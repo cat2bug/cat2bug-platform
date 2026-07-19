@@ -154,6 +154,12 @@ public class SysRole extends BaseEntity
         return roleId != null && 6L == roleId;
     }
 
+    /** 团队管理员 role_id = 4（role_key = team.admin） */
+    public boolean isTeamAdmin()
+    {
+        return roleId != null && 4L == roleId;
+    }
+
     public boolean isProjectCreateBy() {
         return roleId != null && 11L == roleId;
     }

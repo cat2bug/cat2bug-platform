@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>report-export-host visual check</title>
+  <style>
+    /* mirrored from buildReportExportHostCss */
+    [data-report-export-host] {
+      box-sizing: border-box;
+      background: #ffffff !important;
+      color: #24292e !important;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, "PingFang SC",
+        "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+      padding: 24px 28px;
+      width: 794px;
+    }
+    [data-report-export-host] img {
+      display: inline-block !important;
+      max-width: 100% !important;
+      height: auto !important;
+      margin: 12px 0 !important;
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+      background: transparent !important;
+    }
+    [data-report-export-host] table {
+      display: table !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      table-layout: fixed !important;
+      border-collapse: collapse !important;
+      background: #ffffff !important;
+    }
+    [data-report-export-host] th,
+    [data-report-export-host] td {
+      border: 1px solid #dfe2e5 !important;
+      padding: 6px 8px !important;
+      word-break: break-word !important;
+      overflow-wrap: anywhere !important;
+      white-space: normal !important;
+      min-width: 0 !important;
+      vertical-align: top !important;
+      background: #ffffff !important;
+      color: #24292e !important;
+    }
+    [data-report-export-host] th {
+      background: #f6f8fa !important;
+      font-weight: 600 !important;
+    }
+  </style>
+</head>
+<body style="margin:0;background:#333;">
+  <div id="host" data-report-export-host="1">
+    <table>
+      <tr>
+        <td>项目名称</td>
+        <td><img id="icon" width="64" height="64" alt="icon"
+          src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64'><rect width='64' height='64' fill='%23409eff'/><text x='12' y='38' fill='white' font-size='14'>ICON</text></svg>" /></td>
+      </tr>
+      <tr>
+        <td>测试计划</td>
+        <td>项目名称: Cat2Bug-Platform</td>
+      </tr>
+    </table>
+    <p>度量指标数据如下：</p>
+    <table id="metrics">
+      <tr>
+        <th>缺陷发现率 (单位: %)</th>
+        <th>缺陷修复率 (单位: %)</th>
+        <th>缺陷探测率 (单位: %)</th>
+        <th>缺陷密度 (单位: 个)</th>
+        <th>缺陷严重率 (单位: %)</th>
+        <th>缺陷重开率 (单位: %)</th>
+        <th>缺陷逃逸率 (单位: 个)</th>
+        <th>用例执行效率 (单位: 个)</th>
+        <th>缺陷修复平均时长 (单位: h)</th>
+      </tr>
+      <tr>
+        <td>0%</td><td>0%</td><td>0%</td><td>0个</td><td>0%</td><td>0%</td><td>0个</td><td>0个</td><td>0h</td>
+      </tr>
+    </table>
+  </div>
+</body>
+</html>

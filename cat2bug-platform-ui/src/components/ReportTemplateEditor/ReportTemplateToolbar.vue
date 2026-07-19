@@ -1,5 +1,5 @@
 <template>
-  <div class="report-template-toolbar">
+  <div class="report-template-toolbar" @mousedown.prevent>
     <input
       ref="importInput"
       type="file"
@@ -8,6 +8,28 @@
       @change="onImportFile"
     />
     <tools-menu :tools="tools" :ellipsis="false" @select="onToolSelect" />
+    <el-dialog
+      :title="$t('mk.add-link')"
+      v-model="linkDialogVisible"
+      append-to-body
+      width="500px"
+      @closed="onLinkDialogClosed"
+    >
+      <el-form :model="linkForm" @submit.prevent>
+        <el-form-item :label="$t('mk.link-describe')" label-width="120px">
+          <el-input v-model="linkForm.describe" autocomplete="off" maxlength="255" />
+        </el-form-item>
+        <el-form-item :label="$t('mk.link-url')" label-width="120px">
+          <el-input v-model="linkForm.url" autocomplete="off" maxlength="255" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="cancelLinkDialog">{{ $t('cancel') }}</el-button>
+          <el-button type="primary" @click="confirmLinkDialog">{{ $t('ok') }}</el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -16,6 +38,10 @@ import ToolsMenu from '@/components/Cat2BugMarkdown/components/ToolsMenu'
 import { loadReportToolbarMenus } from './composables/toolbarMenuLoader'
 import { resolveToolContent } from './composables/useReportTemplateTools'
 import { getVariablesExpanded, setVariablesExpanded } from './milkdown/variable-expand-state'
+import {
+  formatMarkdownLink,
+  setLinkInsertRequester
+} from './milkdown/link-insert-bridge'
 
 const VARIABLES_EXPAND_TOOL_NAME = 'variables-expand-collapse'
 
@@ -31,7 +57,14 @@ export default {
   emits: ['insert', 'clear', 'save', 'import', 'component-tool'],
   data() {
     return {
-      tools: []
+      tools: [],
+      linkDialogVisible: false,
+      linkForm: {
+        describe: '',
+        url: ''
+      },
+      /** @type {null | ((value: string|null) => void)} */
+      linkDialogResolve: null
     }
   },
   watch: {
@@ -41,6 +74,13 @@ export default {
         this.loadMenus(id)
       }
     }
+  },
+  mounted() {
+    setLinkInsertRequester(() => this.openLinkDialog())
+  },
+  beforeUnmount() {
+    setLinkInsertRequester(null)
+    this.resolveLinkDialog(null)
   },
   methods: {
     async loadMenus(projectId) {
@@ -53,10 +93,36 @@ export default {
         tool.check = getVariablesExpanded()
       }
     },
-    onToolSelect(_tools, tool) {
-      if (document.activeElement instanceof HTMLElement) {
-        document.activeElement.blur()
+    openLinkDialog() {
+      return new Promise((resolve) => {
+        this.resolveLinkDialog(null)
+        this.linkDialogResolve = resolve
+        this.linkForm = { describe: '', url: '' }
+        this.linkDialogVisible = true
+      })
+    },
+    resolveLinkDialog(value) {
+      if (typeof this.linkDialogResolve === 'function') {
+        const resolve = this.linkDialogResolve
+        this.linkDialogResolve = null
+        resolve(value)
       }
+    },
+    confirmLinkDialog() {
+      const markdown = formatMarkdownLink(this.linkForm.describe, this.linkForm.url)
+      this.linkDialogVisible = false
+      this.resolveLinkDialog(markdown)
+    },
+    cancelLinkDialog() {
+      this.linkDialogVisible = false
+      this.resolveLinkDialog(null)
+    },
+    onLinkDialogClosed() {
+      // Esc / mask click — treat as cancel if still pending
+      this.resolveLinkDialog(null)
+    },
+    onToolSelect(_tools, tool) {
+      // Keep editor selection: blur would make insert fall back to document end.
       if (!tool) {
         return
       }
@@ -71,8 +137,19 @@ export default {
         return
       }
       if (tool.type === 'component') {
+        if (tool.name === 'link') {
+          this.openLinkDialog().then((markdown) => {
+            if (markdown) {
+              this.$emit('insert', markdown)
+            }
+          })
+          return
+        }
         this.$emit('component-tool', tool)
-        this.$message.info(this.$t('mk.use-source-mode-for-component') || '链接/上传图片请使用源码模式')
+        this.$message.info(
+          this.$t('mk.use-source-mode-for-component') ||
+            '链接/上传图片请使用源码模式'
+        )
         return
       }
       if (tool.type === 'check') {

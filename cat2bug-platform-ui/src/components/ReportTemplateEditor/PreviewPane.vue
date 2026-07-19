@@ -2,7 +2,7 @@
   <div class="report-template-preview" v-loading="loading">
     <markdown-renderer
       ref="markdownView"
-      class="report-template-preview__body"
+      class="report-template-preview__body markdown-body"
       :content="content"
       :options="options"
     />

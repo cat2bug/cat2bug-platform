@@ -280,6 +280,8 @@ export default {
   width: calc(100% / 6);
   max-width: 40px;
   cursor: pointer;
+  /* 表情 PNG 四周透明，勿套全局 el-image 占位底 */
+  background-color: transparent !important;
 }
 </style>
 <style lang="scss" scoped>
@@ -307,18 +309,24 @@ export default {
   display: inline-flex;
   flex-direction: column;
   .comment-input-content {
+    position: relative;
     width: 100%;
     height:100px;
     overflow-x: hidden;
     overflow-y: auto;
     text-align: left;
     white-space: normal;
+    padding-bottom: 28px;
   }
   .comment-input-content:after {
     content: var(--wordLimitContent);
     position: absolute;
-    top: 105px;
     right: 10px;
+    bottom: 6px;
+    z-index: 1;
+    pointer-events: none;
+    font-size: 12px;
+    line-height: 1;
     background-color: var(--input-bg, rgba(242, 246, 252, 0.53));
     color: var(--text-color-secondary, #909399);
   }
@@ -348,9 +356,12 @@ export default {
   flex-direction: row;
   justify-content: flex-end;
   align-items: center;
+  gap: 10px;
   .emoji-button {
     padding-top: 8px;
     width: 30px;
+    /* 全局 .el-image 占位底在暗色下比侧栏浅，透明表情会透出一块浅底 */
+    background-color: transparent !important;
   }
 }
 </style>

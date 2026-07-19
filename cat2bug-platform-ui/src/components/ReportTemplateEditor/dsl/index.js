@@ -20,6 +20,31 @@ export {
   RAW_BLOCK_KIND,
   isPlanStatisticsTableContent,
   isMultimdMergedTableContent,
+  findPlanStatisticsTableRange,
+  normalizePlanStatisticsTablesInSource,
   findRawPreservedBlockRanges,
   splitSourceWithRawBlocks
 } from './complex-blocks'
+
+export {
+  normalizePipeTableMarkdown,
+  splitPipeTableCells,
+  formatPipeRow,
+  formatPipeSeparator
+} from './normalize-pipe-table'
+
+export {
+  MULTIMD_TABLE_MARKER,
+  serializeMultimdTable,
+  rewriteMarkdownTablesFromDoc,
+  sourceNeedsMultimdSpanApply,
+  tableHasSpanAttrs,
+  findPipeTableBlocks
+} from './serialize-multimd-table'
+
+export {
+  parseMultimdTable,
+  buildPmTableFromMultimdGrid,
+  applyMultimdSpansToDoc,
+  createTableCellInlineContent
+} from './parse-multimd-table'

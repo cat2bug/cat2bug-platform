@@ -5,8 +5,11 @@
         ref="innerRef"
         :model-value="modelValue"
         :project-id="projectId"
+        :enable-dsl="enableDsl"
+        :enable-selection-comment="enableSelectionComment"
         @update:model-value="$emit('update:modelValue', $event)"
         @change="$emit('change', $event)"
+        @selection-comment="$emit('selection-comment', $event)"
       />
     </MilkdownProvider>
   </div>
@@ -28,9 +31,19 @@ export default {
     projectId: {
       type: [Number, String],
       default: null
+    },
+    /** When false, skip remark-cat2bug-dsl / dynamic variable NodeViews (report body). */
+    enableDsl: {
+      type: Boolean,
+      default: true
+    },
+    /** Report body: add「批注」on Crepe selection toolbar. */
+    enableSelectionComment: {
+      type: Boolean,
+      default: false
     }
   },
-  emits: ['update:modelValue', 'change'],
+  emits: ['update:modelValue', 'change', 'selection-comment'],
   methods: {
     insertMarkdown(text) {
       this.$refs.innerRef?.insertMarkdown?.(text)
@@ -43,6 +56,9 @@ export default {
     },
     syncFromModel() {
       this.$refs.innerRef?.syncFromModel?.()
+    },
+    hasFocus() {
+      return !!this.$refs.innerRef?.hasFocus?.()
     }
   }
 }

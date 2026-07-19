@@ -118,6 +118,17 @@ export function resolveUploadUrl(path, baseApi = process.env.VUE_APP_BASE_API ||
   if (isExternal(trimmed) || trimmed.startsWith('data:')) {
     return trimmed
   }
+  if (trimmed.startsWith('/static/img/') || trimmed.indexOf('/static/img/') > -1) {
+    // Backend-served icons (Spring static). Vite SPA does not own /static/img/* —
+    // go through the API proxy (e.g. /dev-api/static/img/...).
+    if (baseApi && !trimmed.startsWith(baseApi)) {
+      const path = trimmed.includes('/static/img/')
+        ? trimmed.slice(trimmed.indexOf('/static/img/'))
+        : trimmed
+      return baseApi + path
+    }
+    return trimmed
+  }
   if (trimmed.startsWith('/static/') || trimmed.indexOf('/static/') > -1) {
     return trimmed
   }

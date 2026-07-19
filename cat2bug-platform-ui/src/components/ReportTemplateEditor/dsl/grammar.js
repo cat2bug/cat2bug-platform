@@ -80,8 +80,8 @@ export const TABLE_TOKEN_RE =
 
 export const CARD_TOKEN_RE = /\$card\{((?:\w|\.)+)\}/
 
-/** Same as ImagePlugin.js — style attribute brackets are optional */
-export const IMAGE_TOKEN_RE = /\$(?:img|image)((?:\[[^\]]+\])*)?\{((?:\w|\.)+)\}/
+/** Same as ImagePlugin.js — style attribute brackets are optional; allow space before `{` */
+export const IMAGE_TOKEN_RE = /\$(?:img|image)((?:\[[^\]]+\])*)?\s*\{((?:\w|\.)+)\}/
 
 /** Plan variables — PlanVariablePlugin.js */
 export const PLAN_VARIABLE_TOKEN_RE = /\$\{((?:\w|\.)+)\[(\d+)\]\}/

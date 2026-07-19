@@ -30,6 +30,85 @@
   overflow: hidden !important;
 }
 
+/* 表格单元格工具条：与 Crepe .milkdown-toolbar 同系（挂在 .milkdown 下继承 token） */
+.report-template-editor .report-milkdown-editor.milkdown .cat2bug-table-cell-action-toolbar.milkdown-toolbar,
+.cat2bug-table-cell-action-toolbar.milkdown-toolbar {
+  position: fixed;
+  z-index: 10;
+  display: none;
+  transform: translateX(-50%);
+  align-items: center;
+  gap: 0;
+  padding: 0;
+  margin: 0;
+  border: none;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--crepe-color-surface);
+  box-shadow: var(--crepe-shadow-1);
+  color: var(--crepe-color-outline);
+  pointer-events: auto;
+}
+
+.report-template-editor .report-milkdown-editor.milkdown .cat2bug-table-cell-action-toolbar.milkdown-toolbar[data-show='true'],
+.cat2bug-table-cell-action-toolbar.milkdown-toolbar[data-show='true'] {
+  display: flex;
+}
+
+/* 单元格工具条自身 is-dark（挂载瞬间父级 token 未就绪时的兜底） */
+.cat2bug-table-cell-action-toolbar.milkdown-toolbar.is-dark {
+  --crepe-color-surface: #252529;
+  --crepe-color-outline: #a3a6ad;
+  --crepe-color-hover: #2a2a2c;
+  --crepe-color-selected: #333336;
+  --crepe-shadow-1: 0 4px 16px rgba(0, 0, 0, 0.45);
+  background: #252529 !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45) !important;
+  color: #a3a6ad;
+}
+
+.report-template-editor .report-milkdown-editor.milkdown .cat2bug-table-cell-action-toolbar__btn.toolbar-item,
+.cat2bug-table-cell-action-toolbar__btn.toolbar-item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  margin: 6px;
+  padding: 4px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--crepe-color-outline);
+  cursor: pointer;
+}
+
+.report-template-editor .report-milkdown-editor.milkdown .cat2bug-table-cell-action-toolbar__btn.toolbar-item svg,
+.cat2bug-table-cell-action-toolbar__btn.toolbar-item svg {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+  display: block;
+  pointer-events: none;
+}
+
+.report-template-editor .report-milkdown-editor.milkdown .cat2bug-table-cell-action-toolbar__btn.toolbar-item:hover:not(:disabled),
+.cat2bug-table-cell-action-toolbar__btn.toolbar-item:hover:not(:disabled) {
+  background: var(--crepe-color-hover);
+}
+
+.report-template-editor .report-milkdown-editor.milkdown .cat2bug-table-cell-action-toolbar__btn.toolbar-item:active:not(:disabled),
+.cat2bug-table-cell-action-toolbar__btn.toolbar-item:active:not(:disabled) {
+  background: var(--crepe-color-selected);
+}
+
+.report-template-editor .report-milkdown-editor.milkdown .cat2bug-table-cell-action-toolbar__btn.toolbar-item:disabled,
+.cat2bug-table-cell-action-toolbar__btn.toolbar-item:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 .report-template-editor .report-milkdown-editor.milkdown .milkdown-block-handle {
   z-index: 30;
   left: var(--report-block-handle-left) !important;
@@ -60,6 +139,14 @@
   pointer-events: none;
 }
 
+/* Never show Crepe's built-in slash menu — custom overlay owns block insert. */
+.report-template-editor .milkdown-slash-menu:not(.report-block-add-menu) {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
+}
+
 .report-block-add-menu-host .report-block-add-menu-theme .report-block-add-menu.milkdown-slash-menu {
   position: relative;
   display: block !important;
@@ -84,6 +171,9 @@
 
 .report-block-add-menu-host .report-block-add-menu-theme .menu-groups {
   max-height: min(420px, calc(100vh - 160px));
+  overflow: auto;
+  /* Crepe sets scroll-behavior:smooth — kills trackpad/wheel responsiveness */
+  scroll-behavior: auto;
   overscroll-behavior: contain;
   touch-action: pan-y;
   -webkit-overflow-scrolling: touch;
@@ -153,7 +243,7 @@ html.dark .report-template-editor .report-milkdown-editor.milkdown,
   --crepe-color-surface-low: #1a1a1c;
   --crepe-color-on-surface: #e5eaf3;
   --crepe-color-on-surface-variant: #a3a6ad;
-  --crepe-color-outline: #6b6e75;
+  --crepe-color-outline: #a3a6ad;
   --crepe-color-primary: #f4bd6f;
   --crepe-color-secondary: #3a3428;
   --crepe-color-on-secondary: #fbdebc;
@@ -164,14 +254,106 @@ html.dark .report-template-editor .report-milkdown-editor.milkdown,
   --crepe-color-hover: #2a2a2c;
   --crepe-color-selected: #333336;
   --crepe-color-inline-area: #2a2a2c;
+  --crepe-shadow-1: 0 4px 16px rgba(0, 0, 0, 0.45);
+  --crepe-shadow-2: 0 8px 24px rgba(0, 0, 0, 0.5);
   background-color: #1e1e20 !important;
   color: #e5eaf3 !important;
+}
+
+/*
+ * 悬浮工具条暗色（文字格式条 / 单元格操作条 / 链接气泡）。
+ * 用实体色兜底，避免 classic 浅色 token 或挂载时机导致仍发白。
+ */
+html.dark .report-template-editor .report-milkdown-editor.milkdown .milkdown-toolbar,
+.report-template-editor .report-milkdown-editor.milkdown.is-dark .milkdown-toolbar,
+html.dark .report-template-editor .report-milkdown-editor.milkdown .cat2bug-table-cell-action-toolbar,
+.report-template-editor .report-milkdown-editor.milkdown.is-dark .cat2bug-table-cell-action-toolbar,
+.report-template-editor.report-template-editor--dark .milkdown-toolbar,
+.report-template-editor.report-template-editor--dark .cat2bug-table-cell-action-toolbar {
+  background: #252529 !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45) !important;
+  color: #a3a6ad;
+}
+
+html.dark .report-template-editor .report-milkdown-editor.milkdown .milkdown-toolbar .toolbar-item,
+.report-template-editor .report-milkdown-editor.milkdown.is-dark .milkdown-toolbar .toolbar-item,
+html.dark .report-template-editor .report-milkdown-editor.milkdown .cat2bug-table-cell-action-toolbar__btn,
+.report-template-editor .report-milkdown-editor.milkdown.is-dark .cat2bug-table-cell-action-toolbar__btn,
+.report-template-editor.report-template-editor--dark .milkdown-toolbar .toolbar-item,
+.report-template-editor.report-template-editor--dark .cat2bug-table-cell-action-toolbar__btn {
+  color: #a3a6ad;
+}
+
+html.dark .report-template-editor .report-milkdown-editor.milkdown .milkdown-toolbar .toolbar-item svg,
+.report-template-editor .report-milkdown-editor.milkdown.is-dark .milkdown-toolbar .toolbar-item svg,
+.report-template-editor.report-template-editor--dark .milkdown-toolbar .toolbar-item svg {
+  color: #a3a6ad !important;
+  fill: #a3a6ad !important;
+}
+
+html.dark .report-template-editor .report-milkdown-editor.milkdown .milkdown-toolbar .toolbar-item:hover,
+.report-template-editor .report-milkdown-editor.milkdown.is-dark .milkdown-toolbar .toolbar-item:hover,
+html.dark .report-template-editor .report-milkdown-editor.milkdown .cat2bug-table-cell-action-toolbar__btn:hover:not(:disabled),
+.report-template-editor .report-milkdown-editor.milkdown.is-dark .cat2bug-table-cell-action-toolbar__btn:hover:not(:disabled),
+.report-template-editor.report-template-editor--dark .milkdown-toolbar .toolbar-item:hover,
+.report-template-editor.report-template-editor--dark .cat2bug-table-cell-action-toolbar__btn:hover:not(:disabled) {
+  background: #2a2a2c !important;
+}
+
+html.dark .report-template-editor .report-milkdown-editor.milkdown .milkdown-toolbar .toolbar-item:active,
+.report-template-editor .report-milkdown-editor.milkdown.is-dark .milkdown-toolbar .toolbar-item:active,
+html.dark .report-template-editor .report-milkdown-editor.milkdown .cat2bug-table-cell-action-toolbar__btn:active:not(:disabled),
+.report-template-editor .report-milkdown-editor.milkdown.is-dark .cat2bug-table-cell-action-toolbar__btn:active:not(:disabled),
+.report-template-editor.report-template-editor--dark .milkdown-toolbar .toolbar-item:active,
+.report-template-editor.report-template-editor--dark .cat2bug-table-cell-action-toolbar__btn:active:not(:disabled) {
+  background: #333336 !important;
+}
+
+html.dark .report-template-editor .report-milkdown-editor.milkdown .milkdown-toolbar .toolbar-item.active svg,
+.report-template-editor .report-milkdown-editor.milkdown.is-dark .milkdown-toolbar .toolbar-item.active svg,
+.report-template-editor.report-template-editor--dark .milkdown-toolbar .toolbar-item.active svg {
+  color: #f4bd6f !important;
+  fill: #f4bd6f !important;
+}
+
+html.dark .report-template-editor .report-milkdown-editor.milkdown .milkdown-toolbar .divider,
+.report-template-editor .report-milkdown-editor.milkdown.is-dark .milkdown-toolbar .divider,
+.report-template-editor.report-template-editor--dark .milkdown-toolbar .divider {
+  background: rgba(163, 166, 173, 0.25) !important;
+}
+
+html.dark .report-template-editor .report-milkdown-editor.milkdown .milkdown-link-preview > .link-preview,
+html.dark .report-template-editor .report-milkdown-editor.milkdown .milkdown-link-edit,
+.report-template-editor .report-milkdown-editor.milkdown.is-dark .milkdown-link-preview > .link-preview,
+.report-template-editor .report-milkdown-editor.milkdown.is-dark .milkdown-link-edit,
+.report-template-editor.report-template-editor--dark .milkdown-link-preview > .link-preview,
+.report-template-editor.report-template-editor--dark .milkdown-link-edit {
+  background: #252529 !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45) !important;
+  color: #e5eaf3;
 }
 
 html.dark .report-template-editor .report-milkdown-editor.milkdown .ProseMirror,
 .report-template-editor .report-milkdown-editor.milkdown.is-dark .ProseMirror {
   background-color: #1e1e20 !important;
   color: #e5eaf3 !important;
+  caret-color: #e5eaf3;
+  --prosemirror-virtual-cursor-color: #e5eaf3;
+}
+
+html.dark .report-template-editor .report-milkdown-editor.milkdown .ProseMirror-focused,
+.report-template-editor .report-milkdown-editor.milkdown.is-dark .ProseMirror-focused {
+  --prosemirror-virtual-cursor-color: #e5eaf3;
+}
+
+html.dark .report-template-editor .report-milkdown-editor.milkdown .ProseMirror-gapcursor:after,
+.report-template-editor .report-milkdown-editor.milkdown.is-dark .ProseMirror-gapcursor:after {
+  border-top-color: #e5eaf3;
+}
+
+html.dark .report-template-editor .report-milkdown-editor.milkdown .prosemirror-virtual-cursor,
+.report-template-editor .report-milkdown-editor.milkdown.is-dark .prosemirror-virtual-cursor {
+  border-color: #e5eaf3;
 }
 
 html.dark .report-template-editor.report-template-editor--dark .report-template-editor__edit,
@@ -192,7 +374,7 @@ html.dark .report-template-editor .markdown-body-edit,
   --report-editor-table-header-bg: #f6f8fa;
   --report-editor-table-header-color: #515a6e;
   --report-editor-table-row-alt-bg: #f6f8fa;
-  --report-editor-table-border: #dfe2e5;
+  --report-editor-table-border: #c0c4cc;
   --report-editor-table-hover-bg: #f5f7fa;
   --report-editor-table-selected-bg: rgba(64, 158, 255, 0.12);
   --report-editor-table-selected-outline: #409eff;
@@ -214,24 +396,49 @@ html.dark .report-template-editor,
 
 /* Milkdown / Crepe 可编辑表格 */
 .report-template-editor .report-milkdown-editor.milkdown {
+  .tableWrapper,
+  .milkdown-table-block {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
   .tableWrapper {
     margin: 8px 0 12px;
     border-radius: 6px;
     border: 1px solid var(--report-editor-table-border);
     background: var(--report-editor-table-bg);
-    overflow: hidden;
+    /* 需可见，否则 Crepe 表格加减行/列加号会被裁切 */
+    overflow: visible;
   }
 
-  .milkdown-table-block table {
+  /* 覆盖全局 .markdown-body table { display:block }，否则无法按整行拉伸 */
+  .milkdown-table-block table,
+  .ProseMirror table {
+    display: table !important;
+    width: 100% !important;
+    max-width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+    overflow: visible;
     background: var(--report-editor-table-bg);
     color: inherit;
+  }
+
+  .milkdown-table-block colgroup col {
+    /* 列宽按整表比例分配，避免固定 px 把表撑成内容宽 */
+    min-width: 0;
   }
 
   .milkdown-table-block th,
   .milkdown-table-block td {
     border-color: var(--report-editor-table-border);
     color: inherit;
+    cursor: text;
     transition: background-color 0.15s ease;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    min-width: 0;
   }
 
   .milkdown-table-block td {
@@ -252,6 +459,7 @@ html.dark .report-template-editor,
   .ProseMirror .selectedCell::after {
     background: var(--report-editor-table-selected-bg) !important;
     opacity: 1 !important;
+    z-index: 1;
   }
 
   .milkdown-table-block tr:hover td {
@@ -267,6 +475,25 @@ html.dark .report-template-editor,
   .milkdown-table-block .selectedCell::after {
     background-color: var(--report-editor-table-selected-bg) !important;
     opacity: 1 !important;
+    /* 勿盖住虚拟光标 / gapcursor */
+    z-index: 1;
+  }
+
+  /* Crepe 虚拟光标：跟正文色，避免暗色主题落到 classic 的近黑 on-background */
+  .prosemirror-virtual-cursor {
+    z-index: 6;
+  }
+
+  .ProseMirror {
+    caret-color: currentColor;
+  }
+
+  .ProseMirror-focused {
+    --prosemirror-virtual-cursor-color: currentColor;
+  }
+
+  .ProseMirror-gapcursor:after {
+    border-top-color: currentColor;
   }
 
   .milkdown-table-block th:has(.ProseMirror-selectednode),
@@ -300,6 +527,38 @@ html.dark .report-template-editor,
     background-color: var(--report-editor-table-selected-bg);
   }
 
+  /*
+   * 列/行操作弹层：Milkdown 会在 pointermove 里把 data-show 清掉。
+   * 用 is-ops-open 强制显示，盖过 [data-show='false']。
+   */
+  .milkdown-table-block .cell-handle.is-ops-open {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+
+  .milkdown-table-block .cell-handle.is-ops-open .button-group,
+  .milkdown-table-block .cell-handle.is-ops-open .button-group[data-show='false'] {
+    display: flex !important;
+  }
+
+  /*
+   * 列/行操作弹层在手柄上方，Milkdown 默认 ::after 桥只有 8px，
+   * 鼠标移向弹层时容易落到父级并触发 pointermove 关掉弹层。加大热区。
+   */
+  .milkdown-table-block .cell-handle[data-role='col-drag-handle'] .button-group::after {
+    height: 56px;
+    bottom: -56px;
+  }
+
+  .milkdown-table-block .cell-handle[data-role='row-drag-handle'] .button-group::after {
+    width: 56px;
+    height: 100%;
+    top: 0;
+    bottom: auto;
+    left: -56px;
+    right: auto;
+  }
+
   .milkdown-table-block svg {
     fill: var(--report-editor-table-header-color);
   }
@@ -321,6 +580,28 @@ html.dark .report-template-editor,
   .milkdown-table-block .line-handle .add-button:active {
     background-color: var(--report-editor-table-selected-bg);
   }
+
+}
+
+/* 报告编辑器内 Markdown 表格：整行拉伸（覆盖 .markdown-body table { display:block }） */
+.report-template-editor .md-body table,
+.report-template-editor .markdown-it-vue table,
+.report-template-editor .report-template-preview table {
+  display: table !important;
+  width: 100% !important;
+  max-width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+.report-template-editor .md-body table th,
+.report-template-editor .md-body table td,
+.report-template-editor .markdown-it-vue table th,
+.report-template-editor .markdown-it-vue table td,
+.report-template-editor .report-template-preview table th,
+.report-template-editor .report-template-preview table td {
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 /* 报告预览 / Markdown 渲染表格（右侧预览与抽屉，md-body） */
@@ -793,9 +1074,199 @@ html.dark .report-template-editor .markdown-body > .markdown-body-view.report-te
 }
 
 .report-template-editor .cat2bug-dsl-preview-image-wrap {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
+  max-width: 100%;
+  vertical-align: middle;
+  position: relative;
+  box-sizing: border-box;
+}
+
+.report-template-editor .cat2bug-dsl-preview-image-stage {
+  position: relative;
+  flex-shrink: 0;
+  transform-origin: center center;
+  line-height: 0;
+}
+
+.report-template-editor .cat2bug-dsl-preview-image-wrap.is-resizable {
+  /* Outline follows the image box (stage), not the AABB spacer */
+  .cat2bug-dsl-preview-image-stage {
+    outline: 2px solid var(--crepe-color-primary, #f4bd6f);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  .cat2bug-dsl-preview-image {
+    pointer-events: none;
+  }
+}
+
+/* Selected image: hover frame must not cover resize/rotate handles */
+.report-template-editor .cat2bug-dsl-var__view--image.is-selected.is-hovered {
+  .cat2bug-dsl-var__frame {
+    pointer-events: none;
+  }
+}
+
+.report-template-editor .cat2bug-dsl-preview-image__controls {
+  position: absolute;
+  inset: 0;
+  z-index: 4002;
+  pointer-events: none;
+}
+
+.report-template-editor .cat2bug-dsl-preview-image__resize {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  margin: 0;
+  border-radius: 2px;
+  background: var(--crepe-color-primary, #f4bd6f);
+  border: 2px solid var(--crepe-color-surface, #252529);
+  box-sizing: border-box;
+  z-index: 1;
+  pointer-events: auto;
+  touch-action: none;
+  /* Expanded invisible hit area so cursor flips inside the whole square */
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -8px;
+  }
+}
+
+.report-template-editor .cat2bug-dsl-preview-image__resize--nw {
+  top: -5px;
+  left: -5px;
+  cursor: nwse-resize;
+}
+
+.report-template-editor .cat2bug-dsl-preview-image__resize--n {
+  top: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  cursor: ns-resize;
+}
+
+.report-template-editor .cat2bug-dsl-preview-image__resize--ne {
+  top: -5px;
+  right: -5px;
+  cursor: nesw-resize;
+}
+
+.report-template-editor .cat2bug-dsl-preview-image__resize--e {
+  top: 50%;
+  right: -5px;
+  transform: translateY(-50%);
+  cursor: ew-resize;
+}
+
+.report-template-editor .cat2bug-dsl-preview-image__resize--se {
+  right: -5px;
+  bottom: -5px;
+  cursor: nwse-resize;
+}
+
+.report-template-editor .cat2bug-dsl-preview-image__resize--s {
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  cursor: ns-resize;
+}
+
+.report-template-editor .cat2bug-dsl-preview-image__resize--sw {
+  left: -5px;
+  bottom: -5px;
+  cursor: nesw-resize;
+}
+
+.report-template-editor .cat2bug-dsl-preview-image__resize--w {
+  top: 50%;
+  left: -5px;
+  transform: translateY(-50%);
+  cursor: ew-resize;
+}
+
+.report-template-editor .cat2bug-dsl-preview-image__resize--rotate {
+  top: -28px;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  cursor: grab;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 100%;
+    width: 1px;
+    height: 14px;
+    background: var(--crepe-color-primary, #f4bd6f);
+    transform: translateX(-50%);
+    pointer-events: none;
+  }
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.report-template-editor .cat2bug-dsl-preview-image__reset {
+  position: absolute;
+  top: -30px;
+  right: -6px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  padding: 0;
+  border: 2px solid var(--crepe-color-surface, #252529);
+  border-radius: 4px;
+  background: var(--crepe-color-primary, #f4bd6f);
+  color: #1f1f1f;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  pointer-events: auto;
+  touch-action: none;
+  box-sizing: border-box;
+
+  &:hover {
+    filter: brightness(1.08);
+  }
+
+  &:active {
+    filter: brightness(0.95);
+  }
+}
+
+body.is-image-transform-dragging {
+  user-select: none !important;
+  cursor: grabbing;
+}
+
+.report-template-editor .cat2bug-dsl-var__view--image.is-selected {
+  z-index: 1;
+}
+
+.report-template-editor .cat2bug-dsl-var__view--image {
+  display: inline-block;
+  vertical-align: middle;
+  max-width: 100%;
+  line-height: 0;
+}
+
+.report-template-editor .cat2bug-dsl-var__view--image .cat2bug-dsl-var__body {
+  display: inline-block;
+  max-width: 100%;
+  line-height: normal;
 }
 
 .report-template-editor .cat2bug-dsl-preview-image {
@@ -803,7 +1274,19 @@ html.dark .report-template-editor .markdown-body > .markdown-body-view.report-te
   max-width: 100%;
   border-radius: 6px;
   border: 1px solid var(--report-editor-table-border);
-  background: var(--report-editor-table-bg);
+  /* Transparent: avoid dark-theme “black bars” when the box is taller/wider than the bitmap */
+  background: transparent;
+  object-fit: cover;
+  object-position: center;
+  vertical-align: middle;
+}
+
+/* Beat global .markdown-body img { height:auto; background:#fff } for DSL previews */
+.report-template-editor.markdown-body .cat2bug-dsl-preview-image,
+.report-template-editor .markdown-body .cat2bug-dsl-preview-image,
+.report-template-editor .cat2bug-dsl-preview-image {
+  margin: 0;
+  background-color: transparent;
 }
 
 .report-template-editor .cat2bug-dsl-preview-image__hint {

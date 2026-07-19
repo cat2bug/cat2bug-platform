@@ -1522,11 +1522,29 @@ img.cat2bug-image-error__img {
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
+    border-radius: var(--cat2bug-border-radius, 4px) !important;
   }
 
-  .report-view-export > .el-button.el-button--mini {
-    padding-left: 10px !important;
-    padding-right: 10px !important;
+  .report-view-export > .el-button,
+  .report-tools .report-tools__icon-btn {
+    width: var(--cat2bug-toolbar-control-height, 32px) !important;
+    min-width: var(--cat2bug-toolbar-control-height, 32px) !important;
+    padding: 0 !important;
+    gap: 0 !important;
+
+    .el-icon,
+    [class*='el-icon'],
+    .legacy-icon {
+      margin: 0 !important;
+    }
+
+    > span {
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
   }
 }
 

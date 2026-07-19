@@ -7,7 +7,9 @@ import com.cat2bug.common.core.domain.entity.SysUser;
 import com.cat2bug.common.core.page.TableDataInfo;
 import com.cat2bug.common.enums.BusinessType;
 import com.cat2bug.common.core.domain.entity.SysReport;
+import com.cat2bug.system.domain.SysReportHistory;
 import com.cat2bug.system.service.IMemberFocusService;
+import com.cat2bug.system.service.ISysReportHistoryService;
 import com.cat2bug.system.service.ISysReportService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -39,6 +41,9 @@ public class SysReportController extends BaseController
     private final static String MODULE_NAME = "report";
     @Autowired
     private ISysReportService sysReportService;
+
+    @Autowired
+    private ISysReportHistoryService sysReportHistoryService;
 
     @Autowired
     private SystemExcelExportService systemExcelExportService;
@@ -86,6 +91,49 @@ public class SysReportController extends BaseController
             sysReport.setFocusList(focusList);
         }
         return success(sysReport);
+    }
+
+    /**
+     * 报告编辑历史列表（修改人、修改时间；正文快照用于回看）
+     */
+    @PreAuthorize("@ss.hasPermi('system:report:query')")
+    @GetMapping(value = "/{reportId}/history")
+    public AjaxResult historyList(@PathVariable("reportId") Long reportId)
+    {
+        List<SysReportHistory> list = sysReportHistoryService.selectSysReportHistoryListByReportId(reportId);
+        return success(list);
+    }
+
+    /**
+     * 单条报告编辑历史
+     */
+    @PreAuthorize("@ss.hasPermi('system:report:query')")
+    @GetMapping(value = "/history/{historyId}")
+    public AjaxResult historyInfo(@PathVariable("historyId") Long historyId)
+    {
+        return success(sysReportHistoryService.selectSysReportHistoryByHistoryId(historyId));
+    }
+
+    /**
+     * 恢复报告到指定历史正文快照
+     */
+    @PreAuthorize("@ss.hasPermi('system:report:edit')")
+    @Log(title = "报告历史", businessType = BusinessType.UPDATE)
+    @PostMapping(value = "/history/{historyId}/restore")
+    public AjaxResult restoreHistory(@PathVariable("historyId") Long historyId)
+    {
+        return toAjax(sysReportHistoryService.restoreSysReportHistory(historyId));
+    }
+
+    /**
+     * 删除单条报告编辑历史
+     */
+    @PreAuthorize("@ss.hasPermi('system:report:edit')")
+    @Log(title = "报告历史", businessType = BusinessType.DELETE)
+    @DeleteMapping(value = "/history/{historyId}")
+    public AjaxResult removeHistory(@PathVariable("historyId") Long historyId)
+    {
+        return toAjax(sysReportHistoryService.deleteSysReportHistoryByHistoryId(historyId));
     }
 
     /**

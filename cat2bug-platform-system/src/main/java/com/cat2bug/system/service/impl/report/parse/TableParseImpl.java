@@ -37,7 +37,8 @@ import java.util.stream.Collectors;
 public class TableParseImpl implements IReportParseService {
     private final static Logger logger = LogManager.getLogger(TableParseImpl.class);
 
-    private static final String  RG = "\\s*\\$table\\{((\\w|\\.)*)(\\[(((\\w|\\.)+(:(\\w|[\\u3040-\\uD7AF]|\\.)+)*){1}(,(\\w|[\\u3040-\\uD7AF]|\\.)+(:(\\w|\\.)+)*)*)\\])?\\}";
+    private static final Pattern TOKEN = Pattern.compile(
+            "\\$table\\{((?:\\w|\\.)+)(?:\\[([^\\]]*)\\])?\\}");
 
     private static final Map<String,String> defaultCaseTitleNames = new LinkedHashMap();
 
@@ -57,47 +58,61 @@ public class TableParseImpl implements IReportParseService {
 
     @Override
     public boolean isHandle(String content) {
-        return Pattern.matches(RG,content);
+        return StringUtils.isNotBlank(content) && TOKEN.matcher(content).find();
     }
 
     @Override
     public String parse(Long projectId, String content, Map<String, Object> para) {
-        Matcher matcher = Pattern.compile(RG).matcher(content);
-        while(matcher.find()){
+        if (StringUtils.isBlank(content)) {
+            return content;
+        }
+        Matcher matcher = TOKEN.matcher(content);
+        StringBuffer sb = new StringBuffer();
+        while (matcher.find()) {
             String api = matcher.group(1);
-            if(StringUtils.isBlank(api)) continue;
+            if (StringUtils.isBlank(api)) {
+                matcher.appendReplacement(sb, ReportParseUtils.quoteReplacement(matcher.group(0)));
+                continue;
+            }
 
-            Map<String,String> params = new LinkedHashMap<>();
-            String strParams = matcher.group(4);
-            if(StringUtils.isNotBlank(strParams)) {
+            Map<String, String> params = new LinkedHashMap<>();
+            String strParams = matcher.group(2);
+            if (StringUtils.isNotBlank(strParams)) {
                 String[] strs = strParams.split(",");
-                for(String s : strs) {
-                    if(StringUtils.isBlank(s)) continue;
+                for (String s : strs) {
+                    if (StringUtils.isBlank(s)) {
+                        continue;
+                    }
                     String[] ss = s.split(":");
-                    if(ss.length>1) {
-                        params.put(ss[0],ss[1]);
+                    if (ss.length > 1) {
+                        params.put(ss[0].trim(), ss[1].trim());
                     } else {
-                        params.put(s,s);
+                        params.put(s.trim(), s.trim());
                     }
                 }
             }
-            List<Object> values=null;
+            List<Object> values = null;
             switch (api) {
                 case "api.case.list":
                     values = this.getCaseList(projectId);
-                    params = (params==null || params.size()==0?defaultCaseTitleNames:params);
+                    params = (params == null || params.size() == 0 ? defaultCaseTitleNames : params);
                     break;
                 case "api.defect.list":
-                    values = this.getDefectList(projectId,para);
-                    params = (params==null || params.size()==0?defaultDefectTitleNames:params);
+                    values = this.getDefectList(projectId, ReportParseUtils.safeParams(para));
+                    params = (params == null || params.size() == 0 ? defaultDefectTitleNames : params);
+                    break;
+                default:
                     break;
             }
-            if(values!=null) {
-                String strTable = this.toTable(values,params).toString();
-                return strTable;
+            if (values != null) {
+                String strTable = this.toTable(values, params).toString();
+                matcher.appendReplacement(sb, ReportParseUtils.quoteReplacement(strTable));
+            } else {
+                matcher.appendReplacement(sb, ReportParseUtils.quoteReplacement(matcher.group(0)));
             }
         }
-        return content;
+        matcher.appendTail(sb);
+        return sb.toString();
     }
 
     private List<Object> getCaseList(Long projectId) {

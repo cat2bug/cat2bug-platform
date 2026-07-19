@@ -11,6 +11,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="createTime"    column="create_time"    />
         <result property="moduleType"    column="module_type"    />
         <result property="correlationId"    column="correlation_id"    />
+        <result property="parentId"    column="parent_id"    />
+        <result property="anchorKind"    column="anchor_kind"    />
+        <result property="quote"    column="quote"    />
+        <result property="contextBefore"    column="context_before"    />
+        <result property="contextAfter"    column="context_after"    />
+        <result property="anchorHint"    column="anchor_hint"    />
         <association property="createMember"    javaType="SysUser"         resultMap="memberResult" />
     </resultMap>
 
@@ -25,6 +31,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
     <sql id="selectSysCommentVo">
         select c.comment_id, c.comment_content, c.create_by_id, c.create_time, c.module_type, c.correlation_id,
+            c.parent_id, c.anchor_kind, c.quote, c.context_before, c.context_after, c.anchor_hint,
             u.user_id as member_user_id, u.user_name as member_user_name, u.nick_name as member_nick_name, u.email as member_email, u.phonenumber as member_phone_number, u.avatar as member_avatar
             from sys_comment c
             left join sys_user u on u.user_id = c.create_by_id
@@ -36,6 +43,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="createById != null "> and c.create_by_id = #{createById}</if>
             <if test="moduleType != null  and moduleType != ''"> and c.module_type = #{moduleType}</if>
             <if test="correlationId != null "> and c.correlation_id = #{correlationId}</if>
+            <if test="parentId != null "> and c.parent_id = #{parentId}</if>
         </where>
         ORDER BY c.create_time DESC
     </select>
@@ -63,6 +71,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="createTime != null">create_time,</if>
             <if test="moduleType != null">module_type,</if>
             <if test="correlationId != null">correlation_id,</if>
+            <if test="parentId != null">parent_id,</if>
+            <if test="anchorKind != null">anchor_kind,</if>
+            <if test="quote != null">quote,</if>
+            <if test="contextBefore != null">context_before,</if>
+            <if test="contextAfter != null">context_after,</if>
+            <if test="anchorHint != null">anchor_hint,</if>
          </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="commentContent != null and commentContent != ''">#{commentContent},</if>
@@ -70,6 +84,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="createTime != null">#{createTime},</if>
             <if test="moduleType != null">#{moduleType},</if>
             <if test="correlationId != null">#{correlationId},</if>
+            <if test="parentId != null">#{parentId},</if>
+            <if test="anchorKind != null">#{anchorKind},</if>
+            <if test="quote != null">#{quote},</if>
+            <if test="contextBefore != null">#{contextBefore},</if>
+            <if test="contextAfter != null">#{contextAfter},</if>
+            <if test="anchorHint != null">#{anchorHint},</if>
          </trim>
     </insert>
 
@@ -81,6 +101,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="createTime != null">create_time = #{createTime},</if>
             <if test="moduleType != null">module_type = #{moduleType},</if>
             <if test="correlationId != null">correlation_id = #{correlationId},</if>
+            <if test="parentId != null">parent_id = #{parentId},</if>
+            <if test="anchorKind != null">anchor_kind = #{anchorKind},</if>
+            <if test="quote != null">quote = #{quote},</if>
+            <if test="contextBefore != null">context_before = #{contextBefore},</if>
+            <if test="contextAfter != null">context_after = #{contextAfter},</if>
+            <if test="anchorHint != null">anchor_hint = #{anchorHint},</if>
         </trim>
         where comment_id = #{commentId}
     </update>
@@ -94,5 +120,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <foreach item="commentId" collection="array" open="(" separator="," close=")">
             #{commentId}
         </foreach>
+    </delete>
+
+    <delete id="deleteSysCommentByParentId" parameterType="Long">
+        delete from sys_comment where parent_id = #{parentId}
     </delete>
 </mapper>

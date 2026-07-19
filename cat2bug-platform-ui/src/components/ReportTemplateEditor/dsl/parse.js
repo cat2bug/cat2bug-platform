@@ -74,6 +74,8 @@ const BLOCK_RES = [
 ]
 
 const INLINE_RES = [
+  // $image is block-or-inline: allow mid-paragraph / table-cell (not only line start).
+  { type: 'dynamicImage', re: IMAGE_TOKEN_RE, parse: parseImageToken },
   { type: 'planVariable', re: PLAN_VARIABLE_TOKEN_RE, parse: parsePlanVariableToken },
   { type: 'variable', re: VARIABLE_TOKEN_RE, parse: parseVariableToken }
 ]
@@ -108,11 +110,15 @@ function parseImageToken(match) {
   if (styleMatch) {
     style = styleMatch[1]
   }
+  // Canonical raw (no space before `{`) so Multimd rewrite / re-parse stays stable.
+  const raw = attrChunk
+    ? `$image${attrChunk}{${path}}`
+    : `$image{${path}}`
   return {
     type: 'dynamicImage',
     style,
     path,
-    raw: match[0]
+    raw
   }
 }
 

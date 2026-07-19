@@ -165,7 +165,7 @@
         </div>
       </template>
     </el-dialog>
-    <view-report ref="viewReport" :project-id="projectId" @delete="handleQuery" />
+    <view-report ref="viewReport" :project-id="projectId" @delete="handleQuery" @update="handleQuery" />
   </div>
 </template>
 
@@ -252,8 +252,8 @@ export default {
         reportTime: null,
         reportDataType: null,
         createById: null,
-        orderByColumn: null,
-        isAsc: null,
+        orderByColumn: 'reportTime',
+        isAsc: 'descending',
         params:{
           createByIds:[]
         }
@@ -282,8 +282,33 @@ export default {
     },
   },
   created() {
-    this.queryParams.orderByColumn = this.$cache.local.get('report_table_sort_column_key') || null
-    this.queryParams.isAsc = this.$cache.local.get('report_table_sort_type_key') || null
+    const DEFAULT_COL = 'reportTime'
+    const DEFAULT_ORD = 'descending'
+    // 覆盖历史误点「报告时间升序」的本地缓存，确保默认倒序一次生效
+    const SORT_DEFAULT_FLAG = 'report_table_default_sort_desc_v1'
+    const cachedCol = this.$cache.local.get('report_table_sort_column_key')
+    const cachedType = this.$cache.local.get('report_table_sort_type_key')
+    const defaultApplied = this.$cache.local.get(SORT_DEFAULT_FLAG)
+
+    if (!defaultApplied) {
+      this.queryParams.orderByColumn = DEFAULT_COL
+      this.queryParams.isAsc = DEFAULT_ORD
+      this.$cache.local.set('report_table_sort_column_key', DEFAULT_COL)
+      this.$cache.local.set('report_table_sort_type_key', DEFAULT_ORD)
+      this.$cache.local.set(SORT_DEFAULT_FLAG, '1')
+      return
+    }
+
+    if (cachedCol && cachedType) {
+      this.queryParams.orderByColumn = cachedCol
+      this.queryParams.isAsc = cachedType
+      return
+    }
+
+    this.queryParams.orderByColumn = DEFAULT_COL
+    this.queryParams.isAsc = DEFAULT_ORD
+    this.$cache.local.set('report_table_sort_column_key', DEFAULT_COL)
+    this.$cache.local.set('report_table_sort_type_key', DEFAULT_ORD)
   },
   mounted() {
     if(this.$route.query.projectId) {

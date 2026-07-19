@@ -1,5 +1,5 @@
 <template>
-  <div class="markdown-it-vue md-body" v-html="html" />
+  <div class="markdown-it-vue md-body markdown-body" v-html="html" />
 </template>
 
 <script>

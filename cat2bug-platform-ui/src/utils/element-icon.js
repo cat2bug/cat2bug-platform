@@ -33,6 +33,7 @@ const LEGACY_ICON_MAP = {
   'el-icon-thumb': 'Pointer',
   'el-icon-receiving': 'Box',
   'el-icon-date': 'Calendar',
+  'el-icon-notebook-2': 'Notebook',
   'el-icon-scissors': 'Scissor',
   'el-icon-copy-document': 'CopyDocument',
   'el-icon-document-add': 'DocumentAdd',

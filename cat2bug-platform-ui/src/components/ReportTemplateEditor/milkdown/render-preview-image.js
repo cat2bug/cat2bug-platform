@@ -1,28 +1,12 @@
 import { getReportPreviewState, resolvePreviewPath } from './report-preview-data'
 import { resolveProjectIconUrl, applyDefaultImageOnError } from '@/utils/upload-asset'
-
-function parseInlineStyle(styleText) {
-  const style = {}
-  if (!styleText) {
-    return style
-  }
-  styleText.split(';').forEach((chunk) => {
-    const part = chunk.trim()
-    if (!part) {
-      return
-    }
-    const colon = part.indexOf(':')
-    if (colon === -1) {
-      return
-    }
-    const key = part.slice(0, colon).trim()
-    const value = part.slice(colon + 1).trim()
-    if (key) {
-      style[key] = value
-    }
-  })
-  return style
-}
+import {
+  assignImgStyle,
+  parseInlineStyle,
+  parseRotateDeg,
+  withPreviewImageFit
+} from './preview-image-style'
+import { applyImageLayoutDom, parseCssPx } from './image-variable-resize'
 
 /**
  * @param {{ style?: string, path?: string }} attrs
@@ -60,6 +44,9 @@ export function renderPreviewImage(attrs) {
     return wrapper
   }
 
+  const stage = document.createElement('div')
+  stage.className = 'cat2bug-dsl-preview-image-stage'
+
   const img = document.createElement('img')
   img.className = 'cat2bug-dsl-preview-image'
   img.alt = attrs.path || 'preview'
@@ -67,9 +54,22 @@ export function renderPreviewImage(attrs) {
   img.loading = 'lazy'
   applyDefaultImageOnError(img)
 
-  const style = parseInlineStyle(attrs.style)
-  Object.assign(img.style, style)
+  const styleMap = withPreviewImageFit(parseInlineStyle(attrs.style))
+  const rotate = parseRotateDeg(attrs.style || '')
+  const width = parseCssPx(styleMap.width)
+  const height = parseCssPx(styleMap.height)
+  const imgStyle = { ...styleMap }
+  delete imgStyle.transform
+  assignImgStyle(img.style, imgStyle)
 
-  wrapper.append(img)
+  stage.append(img)
+  wrapper.append(stage)
+
+  if (width && height) {
+    applyImageLayoutDom(wrapper, stage, img, width, height, rotate)
+  } else if (rotate) {
+    stage.style.transform = `rotate(${rotate}deg)`
+  }
+
   return wrapper
 }

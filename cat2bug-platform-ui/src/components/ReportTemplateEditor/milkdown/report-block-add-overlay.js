@@ -19,7 +19,16 @@ function isBlockAddButton(target) {
 }
 
 /**
- * @param {{ getMenuGroups: () => { key: string, label: string, items: { key: string, label: string, onSelect: (ctx: MilkdownCtx) => void }[] }[], runEditorAction: (fn: (ctx: MilkdownCtx) => void) => void, focusEditor?: () => void, captureInsertSelection?: () => void, restoreInsertSelection?: (ctx: MilkdownCtx) => void, isDark?: () => boolean }} options
+ * @param {{
+ *   getMenuGroups: () => { key: string, label: string, items: { key: string, label: string, onSelect: (ctx: MilkdownCtx) => void }[] }[],
+ *   runEditorAction: (fn: (ctx: MilkdownCtx) => void) => void,
+ *   focusEditor?: () => void,
+ *   captureCaretBeforeBlockAdd?: () => void,
+ *   captureInsertSelection?: () => void,
+ *   restoreInsertSelection?: (ctx: MilkdownCtx) => void,
+ *   isDark?: () => boolean,
+ *   prepareTableCellInsert?: (handleEl: HTMLElement) => boolean
+ * }} options
  * @returns {() => void}
  */
 export function installReportBlockAddOverlay(options) {
@@ -27,9 +36,11 @@ export function installReportBlockAddOverlay(options) {
     getMenuGroups,
     runEditorAction,
     focusEditor = () => {},
+    captureCaretBeforeBlockAdd = () => {},
     captureInsertSelection = () => {},
     restoreInsertSelection = () => {},
-    isDark = () => false
+    isDark = () => false,
+    prepareTableCellInsert = () => false
   } = options
 
   let host = null
@@ -38,8 +49,6 @@ export function installReportBlockAddOverlay(options) {
   let backdrop = null
   let open = false
   let activeTab = 0
-  let suppressObserver = null
-  let openAfterAddFrame = 0
   /** @type {DOMRect | null} */
   let anchorRectAtClick = null
 
@@ -86,45 +95,15 @@ export function installReportBlockAddOverlay(options) {
   }
 
   function hideCrepeSlashMenu() {
+    // Crepe native slash is also hidden via CSS; this clears any inlined show state.
     document.querySelectorAll('.report-template-editor .milkdown-slash-menu').forEach((node) => {
       if (node instanceof HTMLElement) {
         node.dataset.show = 'false'
         node.style.display = 'none'
+        node.style.visibility = 'hidden'
+        node.style.pointerEvents = 'none'
       }
     })
-  }
-
-  function startSuppressingNativeMenu() {
-    hideCrepeSlashMenu()
-    suppressObserver?.disconnect()
-    suppressObserver = new MutationObserver(() => {
-      if (!open) {
-        return
-      }
-      suppressObserver.disconnect()
-      hideCrepeSlashMenu()
-      const editorRoot = document.querySelector('.report-template-editor .report-milkdown-editor')
-      if (editorRoot && open) {
-        suppressObserver.observe(editorRoot, {
-          subtree: true,
-          attributes: true,
-          attributeFilter: ['data-show', 'style', 'class']
-        })
-      }
-    })
-    const editorRoot = document.querySelector('.report-template-editor .report-milkdown-editor')
-    if (editorRoot) {
-      suppressObserver.observe(editorRoot, {
-        subtree: true,
-        attributes: true,
-        attributeFilter: ['data-show', 'style', 'class']
-      })
-    }
-  }
-
-  function stopSuppressingNativeMenu() {
-    suppressObserver?.disconnect()
-    suppressObserver = null
   }
 
   function resolveMenuPosition(anchorRect) {
@@ -259,14 +238,14 @@ export function installReportBlockAddOverlay(options) {
 
     const scrollRoot = document.createElement('div')
     scrollRoot.className = 'menu-groups'
+    // Native overflow scroll only — do not hijack wheel + scrollTop
+    // (that stacks with Crepe's scroll-behavior:smooth and feels extremely slow).
     scrollRoot.addEventListener(
       'wheel',
       (event) => {
         event.stopPropagation()
-        event.preventDefault()
-        scrollRoot.scrollTop += event.deltaY
       },
-      { passive: false }
+      { passive: true }
     )
 
     groups.forEach((group, groupIndex) => {
@@ -295,7 +274,11 @@ export function installReportBlockAddOverlay(options) {
           event.stopPropagation()
           runEditorAction((ctx) => {
             focusEditor()
-            restoreInsertSelectionInEditor(ctx)
+            // Default block items (标题/列表) need the empty paragraph from prepare.
+            // Business $image/${} restore their own pre-+ caret inside onSelect.
+            if (!item.skipSelectionRestore) {
+              restoreInsertSelectionInEditor(ctx)
+            }
             item.onSelect(ctx)
           })
           close()
@@ -327,7 +310,6 @@ export function installReportBlockAddOverlay(options) {
     host.style.display = 'block'
     open = true
     clampMenuToViewport()
-    startSuppressingNativeMenu()
   }
 
   function close() {
@@ -337,23 +319,7 @@ export function installReportBlockAddOverlay(options) {
     host.style.display = 'none'
     open = false
     anchorRectAtClick = null
-    stopSuppressingNativeMenu()
     hideCrepeSlashMenu()
-  }
-
-  function scheduleOpenAfterBlockAdd() {
-    if (openAfterAddFrame) {
-      cancelAnimationFrame(openAfterAddFrame)
-    }
-    // Crepe BlockHandle stops pointerup propagation; run after its onAdd + menuAPI.show.
-    openAfterAddFrame = requestAnimationFrame(() => {
-      openAfterAddFrame = requestAnimationFrame(() => {
-        openAfterAddFrame = 0
-        hideCrepeSlashMenu()
-        captureInsertSelectionFromEditor()
-        openMenu()
-      })
-    })
   }
 
   function onBlockAddPointerUpCapture(event) {
@@ -364,10 +330,19 @@ export function installReportBlockAddOverlay(options) {
       ? event.target.closest('.report-template-editor .milkdown-block-handle')
       : null
     if (handle instanceof HTMLElement) {
-      // Capture before Crepe onAdd inserts a new block and moves the handle.
+      // Capture before any handle move; always own the menu (never Crepe slash).
       anchorRectAtClick = handle.getBoundingClientRect()
     }
-    scheduleOpenAfterBlockAdd()
+    // Stop Crepe onAdd + menuAPI.show — that path races our overlay and freezes the UI.
+    event.preventDefault()
+    event.stopPropagation()
+    // Remember caret before prepare inserts an empty paragraph (for $image / ${}).
+    captureCaretBeforeBlockAdd()
+    if (handle instanceof HTMLElement) {
+      prepareTableCellInsert(handle)
+    }
+    captureInsertSelectionFromEditor()
+    openMenu()
   }
 
   function onDocumentKeyDown(event) {
@@ -381,11 +356,17 @@ export function installReportBlockAddOverlay(options) {
   document.addEventListener('pointerup', onBlockAddPointerUpCapture, true)
   document.addEventListener('keydown', onDocumentKeyDown, true)
 
-  return () => {
-    if (openAfterAddFrame) {
-      cancelAnimationFrame(openAfterAddFrame)
-      openAfterAddFrame = 0
+  function openAt(anchorRect) {
+    if (anchorRect instanceof DOMRect || (anchorRect && typeof anchorRect.left === 'number')) {
+      anchorRectAtClick = anchorRect
     }
+    // Cell toolbar: no empty-para prepare — still collapse NodeSelection to caret.
+    captureCaretBeforeBlockAdd()
+    captureInsertSelectionFromEditor()
+    openMenu()
+  }
+
+  function destroy() {
     close()
     document.removeEventListener('pointerup', onBlockAddPointerUpCapture, true)
     document.removeEventListener('keydown', onDocumentKeyDown, true)
@@ -395,4 +376,6 @@ export function installReportBlockAddOverlay(options) {
     menuEl = null
     backdrop = null
   }
+
+  return { destroy, openAt }
 }

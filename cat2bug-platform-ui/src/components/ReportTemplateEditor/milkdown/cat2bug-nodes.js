@@ -129,9 +129,10 @@ export const cat2bugCaseCardNode = $node('cat2bug_case_card', () => ({
 }))
 
 export const cat2bugDynamicImageNode = $node('cat2bug_dynamic_image', () => ({
-  group: 'block',
+  // Inline so $image can live in paragraphs and GFM table cells (not raw text).
+  group: 'inline',
+  inline: true,
   atom: true,
-  isolating: true,
   priority: 100,
   attrs: {
     style: { default: '' },
@@ -139,19 +140,29 @@ export const cat2bugDynamicImageNode = $node('cat2bug_dynamic_image', () => ({
     raw: { default: '' }
   },
   parseDOM: [{
-    tag: 'div[data-cat2bug-dynamic-image]',
+    tag: 'span[data-cat2bug-dynamic-image]',
     getAttrs: (dom) => ({
       style: dom.getAttribute('data-style') || '',
       path: dom.getAttribute('data-path') || '',
       raw: dom.getAttribute('data-raw') || ''
     })
   }],
-  toDOM: (node) => blockFallbackDom('动态图片', node.attrs.raw, 'cat2bug-dsl-block--image', {
-    'data-cat2bug-dynamic-image': 'true',
-    'data-style': node.attrs.style,
-    'data-path': node.attrs.path,
-    'data-raw': node.attrs.raw
-  }),
+  toDOM: (node) => [
+    'span',
+    {
+      'data-cat2bug-dynamic-image': 'true',
+      'data-style': node.attrs.style,
+      'data-path': node.attrs.path,
+      'data-raw': node.attrs.raw,
+      contenteditable: 'false',
+      class: 'cat2bug-dsl-chip cat2bug-dsl-chip--image'
+    },
+    node.attrs.raw || serializeTemplate([{
+      type: 'dynamicImage',
+      style: node.attrs.style,
+      path: node.attrs.path
+    }])
+  ],
   parseMarkdown: {
     match: ({ type }) => type === 'cat2bugDynamicImage',
     runner: (state, node, type) => {
@@ -165,7 +176,7 @@ export const cat2bugDynamicImageNode = $node('cat2bug_dynamic_image', () => ({
   toMarkdown: {
     match: (node) => node.type.name === 'cat2bug_dynamic_image',
     runner: (state, node) => {
-      emitRawBlock(state, node.attrs.raw || serializeTemplate([{
+      state.addNode('text', undefined, node.attrs.raw || serializeTemplate([{
         type: 'dynamicImage',
         style: node.attrs.style,
         path: node.attrs.path

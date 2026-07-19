@@ -13,30 +13,58 @@ import { defineComponent, watch, ref, markRaw, onMounted, onUnmounted, computed 
 import { storeToRefs } from 'pinia'
 import { Milkdown, useEditor } from '@milkdown/vue'
 import { Crepe, CrepeFeature } from '@milkdown/crepe'
-import { editorViewCtx } from '@milkdown/kit/core'
+import { editorViewCtx, parserCtx } from '@milkdown/kit/core'
+import { blockConfig } from '@milkdown/kit/plugin/block'
 import { TextSelection } from '@milkdown/prose/state'
 import { getMarkdown, insert, replaceAll, forceUpdate } from '@milkdown/kit/utils'
 import { useSettingsStore } from '@/stores/settings'
 import { isReportEditorDarkMode } from './report-editor-theme'
 import { useReportDslPlugins } from './milkdown'
 import { normalizeDslSource } from './dsl/normalize'
+import { rewriteMarkdownTablesFromDoc, sourceNeedsMultimdSpanApply } from './dsl/serialize-multimd-table'
+import { applyMultimdSpansToDoc } from './dsl/parse-multimd-table'
+import { tableCellMergePluginKey } from './milkdown/table-cell-merge-plugin'
 import { subscribeReportPreviewData, ensureReportPreviewData } from './milkdown/report-preview-data'
 import { installBlockDragImageFix } from './milkdown/block-drag-image'
 import { installReportBlockAddOverlay } from './milkdown/report-block-add-overlay'
+import { installTableCellActionToolbar } from './milkdown/table-cell-action-toolbar'
 import { documentContainsRawDslText } from './milkdown/dsl-doc-sync'
 import { markdownSemanticallyEqual, shouldApplyExternalModelSync } from './milkdown/model-sync'
 import {
   buildDefaultBlockMenuGroups,
-  businessGroupsToOverlayGroups
+  toolbarAddMenuToOverlayGroups
 } from './milkdown/default-block-menu'
+import {
+  isBlockishDslContent,
+  insertBlockFragmentAfterTable,
+  prepareBlockHandleInsert,
+  resolveTablePosAroundSelection,
+  tableAwareFilterNodes
+} from './milkdown/table-cell-block-handle'
+import { resolveBusinessInsertMode, isInlineImageDslContent } from './milkdown/business-insert-mode'
+import {
+  insertInlineDslAtCaret,
+  insertInlineFragmentAtCaret,
+  extractInlineFragmentFromParsedDoc,
+  cleanupEphemeralEmptyParagraph,
+  resolveInlineInsertCaret
+} from './milkdown/inline-dsl-insert'
 import { Message } from 'element-ui'
 import i18n from '@/utils/i18n/i18n'
 import { isPlanStatisticsTableContent } from './dsl/complex-blocks'
 import {
   appendBusinessGroupsToBlockMenu,
-  loadReportBusinessBlockMenuGroups,
-  sortBusinessMenuGroups
+  loadReportAddMenuGroups
 } from './composables/blockEditBusinessMenu'
+import { upload } from '@/api/common/upload'
+import { resolveUploadUrl } from '@/utils/upload-asset'
+
+/** Crepe selection toolbar: 批注 icon (chat bubble) */
+const SELECTION_COMMENT_ICON = `
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+    <path fill="currentColor" d="M4 4h16c1.1 0 2 .9 2 2v10c0 1.1-.9 2-2 2H8l-4 4V6c0-1.1.9-2 2-2zm2 3v2h12V7H6zm0 4v2h8v-2H6z"/>
+  </svg>
+`
 
 export default defineComponent({
   name: 'MilkdownEditorInner',
@@ -49,11 +77,23 @@ export default defineComponent({
     projectId: {
       type: [Number, String],
       default: null
+    },
+    /** Template editor: true. Report body snapshot: false (no DSL variable blocks). */
+    enableDsl: {
+      type: Boolean,
+      default: true
+    },
+    /** Report body: Crepe selection toolbar shows「批注」action. */
+    enableSelectionComment: {
+      type: Boolean,
+      default: false
     }
   },
-  emits: ['update:modelValue', 'change'],
+  emits: ['update:modelValue', 'change', 'selection-comment'],
   setup(props, { emit, expose }) {
     const syncing = ref(false)
+    /** Ignore markdownUpdated until this time (covers Milkdown listener 200ms debounce after replaceAll). */
+    let ignoreMarkdownUpdatedUntil = 0
     const settingsStore = useSettingsStore()
     const { themeMode } = storeToRefs(settingsStore)
     const domDark = ref(isReportEditorDarkMode())
@@ -62,28 +102,46 @@ export default defineComponent({
     let unsubscribePreviewData = null
     let uninstallBlockDragImageFix = null
     let uninstallBlockAddOverlay = null
+    let uninstallTableCellActionToolbar = null
+    /** @type {{ destroy: () => void, openAt: (rect: DOMRect) => void } | null} */
+    let blockAddOverlayApi = null
     let uninstallEditorBlurSync = null
     /** @type {number | null} */
     let insertSelectionPos = null
+    /** Caret before block-handle prepare (empty para). Used for $image / ${} inline insert. */
+    /** @type {number | null} */
+    let caretBeforeBlockAdd = null
+    /** Empty paragraph created by prepare — removed after inline insert. */
+    /** @type {number | null} */
+    let ephemeralEmptyParaPos = null
     /** @type {import('@milkdown/crepe').Crepe | null} */
     let crepeInstance = null
     const blockEditConfig = {
-      businessMenuGroups: [],
+      /** Toolbar-aligned groups for left-+ overlay (and Crepe business append). */
+      addMenuGroups: [],
       blockHandle: null,
       buildMenu(groupBuilder) {
+        if (!props.enableDsl) {
+          return
+        }
         appendBusinessGroupsToBlockMenu(
           groupBuilder,
-          blockEditConfig.businessMenuGroups,
+          blockEditConfig.addMenuGroups,
           insertBusinessContentAtSelection
         )
       }
     }
 
-    async function refreshBusinessBlockMenus(projectId) {
+    async function refreshAddMenuGroups(projectId) {
+      // Report body snapshot: no DSL business tabs; left-+ uses Crepe default groups.
+      if (!props.enableDsl) {
+        blockEditConfig.addMenuGroups = []
+        return
+      }
       try {
-        blockEditConfig.businessMenuGroups = await loadReportBusinessBlockMenuGroups(projectId)
+        blockEditConfig.addMenuGroups = await loadReportAddMenuGroups(projectId)
       } catch (_e) {
-        blockEditConfig.businessMenuGroups = []
+        blockEditConfig.addMenuGroups = []
       }
     }
 
@@ -98,6 +156,26 @@ export default defineComponent({
           return
         }
         insertSelectionPos = view.state.selection.from
+      })
+    }
+
+    /** Capture caret before block-handle prepare inserts an empty paragraph. */
+    function captureCaretBeforeBlockAdd() {
+      const editor = get()
+      if (!editor) {
+        return
+      }
+      editor.action((ctx) => {
+        const view = ctx.get(editorViewCtx)
+        if (!view) {
+          return
+        }
+        const collapsed = resolveInlineInsertCaret(view.state)
+        if (collapsed) {
+          view.dispatch(view.state.tr.setSelection(collapsed))
+        }
+        caretBeforeBlockAdd = view.state.selection.from
+        ephemeralEmptyParaPos = null
       })
     }
 
@@ -126,7 +204,7 @@ export default defineComponent({
       if (isPlanStatisticsTableContent(content)) {
         Message.info(
           i18n.t('mk.plan-table-insert-hint') ||
-            '计划统计大表已插入；表格结构请在「源码」模式中编辑，计划变量将完整保留。'
+            '计划统计大表已插入；可在可视化表格中编辑单元格，并使用加减行/列手柄调整结构。'
         )
       }
 
@@ -135,20 +213,59 @@ export default defineComponent({
         return
       }
 
-      const $from = view.state.selection.$from
-      const parent = $from.parent
-      const isEmptyTextblock = parent.isTextblock && parent.content.size === 0
-
       syncing.value = true
+      ignoreMarkdownUpdatedUntil = Date.now() + 450
       try {
-        if (isEmptyTextblock) {
-          insert(content, false)(ctx)
+        // $table/$card: keep outside cells (block insert after table).
+        if (isBlockishDslContent(content)) {
+          const tablePos = resolveTablePosAroundSelection(view, insertSelectionPos)
+          if (tablePos != null) {
+            const parsed = ctx.get(parserCtx)(content)
+            if (parsed?.content?.size) {
+              insertBlockFragmentAfterTable(view, tablePos, parsed.content)
+            }
+          } else {
+            const insertMode = resolveBusinessInsertMode(view.state.selection, content)
+            if (insertMode === 'block') {
+              insert(content, false)(ctx)
+            } else {
+              insert(`\n${content}`, false)(ctx)
+            }
+          }
         } else {
-          // 光标不在空行时强制新开段落，避免拼到上一行末尾
-          insert(`\n${content}`, false)(ctx)
+          // $image / ${…}: insert inline nodes at the pre-+ caret. Do NOT insertText
+          // + replaceAll — that serialize/parse round-trip drops sibling cell text.
+          const preferredPos =
+            caretBeforeBlockAdd != null ? caretBeforeBlockAdd : insertSelectionPos
+          const parsed = ctx.get(parserCtx)(content)
+          const inlineFrag = extractInlineFragmentFromParsedDoc(parsed)
+          const { insertPos, insertedLength } = inlineFrag
+            ? insertInlineFragmentAtCaret(view, inlineFrag, preferredPos)
+            : insertInlineDslAtCaret(view, content, preferredPos)
+          if (isInlineImageDslContent(content) || caretBeforeBlockAdd != null) {
+            cleanupEphemeralEmptyParagraph(
+              view,
+              ephemeralEmptyParaPos,
+              insertPos,
+              insertedLength
+            )
+          }
+          caretBeforeBlockAdd = null
+          ephemeralEmptyParaPos = null
+          const next = readEditorMarkdown(ctx)
+          // Keep the live doc — only refresh multimd spans if needed.
+          applyMultimdSpansAfterLoad(ctx, next)
+          ctx.get(editorViewCtx)?.focus()
+          refreshPreviewViews()
+          emit('update:modelValue', next)
+          emit('change', next)
+          return
         }
-        const next = normalizeDslSource(getMarkdown()(ctx) || '')
+        caretBeforeBlockAdd = null
+        ephemeralEmptyParaPos = null
+        const next = readEditorMarkdown(ctx)
         replaceAll(next, true)(ctx)
+        applyMultimdSpansAfterLoad(ctx, next)
         ctx.get(editorViewCtx)?.focus()
         refreshPreviewViews()
         emit('update:modelValue', next)
@@ -156,6 +273,47 @@ export default defineComponent({
       } finally {
         syncing.value = false
       }
+    }
+
+    function applyTableAwareBlockFilter() {
+      const editor = get()
+      if (!editor) {
+        return
+      }
+      editor.action((ctx) => {
+        ctx.update(blockConfig.key, (prev) => ({
+          ...prev,
+          filterNodes: tableAwareFilterNodes
+        }))
+      })
+    }
+
+    function prepareTableCellInsert(handleEl) {
+      const editor = get()
+      if (!editor) {
+        return false
+      }
+      let handled = false
+      editor.action((ctx) => {
+        const view = ctx.get(editorViewCtx)
+        if (!view) {
+          return
+        }
+        const sizeBefore = view.state.doc.content.size
+        // Always skip Crepe onAdd: cell / after-table / whole-table / normal block.
+        handled = prepareBlockHandleInsert(view, handleEl)
+        insertSelectionPos = view.state.selection.from
+        if (view.state.doc.content.size > sizeBefore) {
+          const $from = view.state.selection.$from
+          for (let depth = $from.depth; depth > 0; depth -= 1) {
+            if ($from.node(depth).type.name === 'paragraph') {
+              ephemeralEmptyParaPos = $from.before(depth)
+              break
+            }
+          }
+        }
+      })
+      return handled
     }
 
     function runWithPreservedSelection(action) {
@@ -192,10 +350,33 @@ export default defineComponent({
       })
     }
 
+    function readEditorMarkdown(ctx) {
+      const view = ctx.get(editorViewCtx)
+      let markdown = getMarkdown()(ctx) || ''
+      if (view?.state?.doc) {
+        markdown = rewriteMarkdownTablesFromDoc(markdown, view.state.doc)
+      }
+      return normalizeDslSource(markdown)
+    }
+
     function emitCurrentMarkdown(ctx) {
-      const normalized = normalizeDslSource(getMarkdown()(ctx) || '')
+      const normalized = readEditorMarkdown(ctx)
       emit('update:modelValue', normalized)
       emit('change', normalized)
+    }
+
+    function applyMultimdSpansAfterLoad(ctx, source) {
+      if (!sourceNeedsMultimdSpanApply(source)) {
+        return
+      }
+      const view = ctx.get(editorViewCtx)
+      if (!view) {
+        return
+      }
+      const tr = applyMultimdSpansToDoc(view.state, { forceEmptyColspan: true })
+      if (tr) {
+        view.dispatch(tr.setMeta(tableCellMergePluginKey, { spansApplied: true }))
+      }
     }
 
     function installEditorBlurSync() {
@@ -276,7 +457,7 @@ export default defineComponent({
 
     watch(() => props.projectId, (id) => {
       syncPreviewData(id)
-      refreshBusinessBlockMenus(id)
+      refreshAddMenuGroups(id)
     }, { immediate: true })
 
     onMounted(() => {
@@ -299,7 +480,9 @@ export default defineComponent({
       unsubscribePreviewData?.()
       uninstallBlockDragImageFix?.()
       uninstallBlockAddOverlay?.()
+      uninstallTableCellActionToolbar?.()
       uninstallEditorBlurSync?.()
+      blockAddOverlayApi = null
       crepeInstance = null
     })
 
@@ -335,28 +518,88 @@ export default defineComponent({
         defaultValue: props.modelValue || '',
         features: {
           [CrepeFeature.BlockEdit]: true,
-          [CrepeFeature.Toolbar]: false,
+          [CrepeFeature.Table]: true,
+          [CrepeFeature.Toolbar]: true,
+          // Crepe slash 「高级」里的图片 / 代码块依赖这些 feature
+          [CrepeFeature.ImageBlock]: true,
+          [CrepeFeature.CodeMirror]: true,
           [CrepeFeature.TopBar]: false,
           // 避免 remark-math 干扰 $table{...} / ${...} DSL
           [CrepeFeature.Latex]: false
         },
         featureConfigs: {
           [CrepeFeature.Placeholder]: {
-            text: '开始编写报告模板…',
+            text: props.enableDsl ? '开始编写报告模板…' : '开始编写报告…',
             mode: 'doc'
           },
-          [CrepeFeature.BlockEdit]: blockEditConfig
+          [CrepeFeature.BlockEdit]: blockEditConfig,
+          [CrepeFeature.Toolbar]: props.enableSelectionComment
+            ? {
+                buildToolbar: (builder) => {
+                  builder.getGroup('function').addItem('comment', {
+                    icon: SELECTION_COMMENT_ICON,
+                    active: () => false,
+                    onRun: (ctx) => {
+                      const view = ctx.get(editorViewCtx)
+                      const { from, to, empty } = view.state.selection
+                      if (empty || from === to) {
+                        return
+                      }
+                      const quote = view.state.doc.textBetween(from, to, ' ').trim().slice(0, 400)
+                      if (!quote) {
+                        return
+                      }
+                      const docSize = view.state.doc.content.size
+                      const contextBefore = view.state.doc
+                        .textBetween(Math.max(0, from - 60), from, ' ')
+                        .slice(-60)
+                      const contextAfter = view.state.doc
+                        .textBetween(to, Math.min(docSize, to + 60), ' ')
+                        .slice(0, 60)
+                      emit('selection-comment', { quote, contextBefore, contextAfter })
+                    }
+                  })
+                }
+              }
+            : undefined,
+          [CrepeFeature.ImageBlock]: {
+            blockUploadButton: '上传文件',
+            blockUploadPlaceholderText: '或粘贴图片链接',
+            blockCaptionPlaceholderText: '图片说明',
+            blockConfirmButton: '确认',
+            inlineUploadButton: '上传',
+            inlineUploadPlaceholderText: '或粘贴图片链接',
+            onUpload: async (file) => {
+              const formData = new FormData()
+              formData.append('file', file)
+              const res = await upload(formData)
+              const fileName = res && (res.fileName || (res.data && res.data.fileName))
+              if (!fileName) {
+                throw new Error('image upload failed')
+              }
+              return resolveUploadUrl(fileName)
+            }
+          }
         }
       })
 
-      useReportDslPlugins(crepe.editor)
+      useReportDslPlugins(crepe.editor, { enableDsl: props.enableDsl })
 
       crepe.on((listener) => {
-        listener.markdownUpdated((_ctx, markdown) => {
-          if (syncing.value) {
+        listener.markdownUpdated((ctx, markdown) => {
+          if (syncing.value || Date.now() < ignoreMarkdownUpdatedUntil) {
             return
           }
-          const normalized = normalizeDslSource(markdown || '')
+          const view = ctx.get(editorViewCtx)
+          let next = markdown || ''
+          if (view?.state?.doc) {
+            next = rewriteMarkdownTablesFromDoc(next, view.state.doc)
+          }
+          const normalized = normalizeDslSource(next)
+          // Empty table cells serialize as <br />; after normalize they match model — skip echo
+          if (markdownSemanticallyEqual(normalized, props.modelValue || '')) {
+            return
+          }
           emit('update:modelValue', normalized)
           emit('change', normalized)
         })
@@ -378,25 +621,29 @@ export default defineComponent({
         return
       }
       const next = normalizeDslSource(props.modelValue || '')
+      let current = null
+      try {
+        current = editor.action((ctx) => readEditorMarkdown(ctx))
+      } catch (_e) {
+        current = null
+      }
+      // Always skip when equal — including force — to break split-pane replaceAll ↔ markdownUpdated loops
+      if (current !== null && markdownSemanticallyEqual(current, next)) {
+        return
+      }
       if (!force) {
-        let current = null
-        try {
-          current = normalizeDslSource(editor.action(getMarkdown()) || '')
-        } catch (_e) {
-          current = null
-        }
-        if (current !== null && markdownSemanticallyEqual(current, next)) {
-          return
-        }
         const needsDslResync = editor.action((ctx) => documentContainsRawDslText(ctx, editorViewCtx))
         if (!needsDslResync && current !== null && current === next) {
           return
         }
       }
       syncing.value = true
+      // Milkdown listener debounces markdownUpdated ~200ms; keep ignoring past finally{}
+      ignoreMarkdownUpdatedUntil = Date.now() + 450
       try {
         runWithPreservedSelection((ctx) => {
           replaceAll(next, true)(ctx)
+          applyMultimdSpansAfterLoad(ctx, next)
         })
         if (!editorHasFocus()) {
           refreshPreviewViews()
@@ -413,31 +660,53 @@ export default defineComponent({
     watch(() => props.modelValue, syncModelToEditor, { flush: 'post' })
 
     function getOverlayMenuGroups() {
-      return [
-        ...buildDefaultBlockMenuGroups(),
-        ...sortBusinessMenuGroups(
-          businessGroupsToOverlayGroups(
-            blockEditConfig.businessMenuGroups,
-            insertBusinessContentAtSelection
-          )
-        )
-      ]
+      // Static report editing: default text/list/advanced inserts (headings, table, image…).
+      // Template editing: toolbar-aligned groups including project/case/defect/plan DSL.
+      if (!props.enableDsl) {
+        return buildDefaultBlockMenuGroups()
+      }
+      const groups = toolbarAddMenuToOverlayGroups(blockEditConfig.addMenuGroups, {
+        onInsertContent: insertBusinessContentAtSelection
+      })
+      return groups.length ? groups : buildDefaultBlockMenuGroups()
     }
 
     watch(editorBooting, async (isLoading) => {
       if (!isLoading) {
-        await refreshBusinessBlockMenus(props.projectId)
+        await refreshAddMenuGroups(props.projectId)
         uninstallBlockDragImageFix?.()
         uninstallBlockDragImageFix = installBlockDragImageFix()
+        applyTableAwareBlockFilter()
         uninstallBlockAddOverlay?.()
-        uninstallBlockAddOverlay = installReportBlockAddOverlay({
+        uninstallTableCellActionToolbar?.()
+        blockAddOverlayApi = installReportBlockAddOverlay({
           getMenuGroups: getOverlayMenuGroups,
           runEditorAction: (fn) => {
             get()?.action(fn)
           },
           focusEditor: () => focus(),
+          captureCaretBeforeBlockAdd,
           captureInsertSelection,
           restoreInsertSelection,
+          prepareTableCellInsert,
+          isDark: () => isDark.value
+        })
+        uninstallBlockAddOverlay = () => {
+          blockAddOverlayApi?.destroy()
+          blockAddOverlayApi = null
+        }
+        uninstallTableCellActionToolbar = installTableCellActionToolbar({
+          getView: () => {
+            let view = null
+            get()?.action((ctx) => {
+              view = ctx.get(editorViewCtx)
+            })
+            return view
+          },
+          onAdd: (anchorRect) => {
+            captureInsertSelection()
+            blockAddOverlayApi?.openAt(anchorRect)
+          },
           isDark: () => isDark.value
         })
         installEditorBlurSync()
@@ -455,15 +724,10 @@ export default defineComponent({
       if (!editor) {
         return
       }
+      // Toolbar may blur the DOM; ProseMirror selection is still at the caret (e.g. table cell).
+      // Do not restore insertSelectionPos here — that is only for the block-add menu flow.
       editor.action((ctx) => {
-        const view = ctx.get(editorViewCtx)
-        if (!view) {
-          return
-        }
-        const { from, to } = view.state.selection
-        const tr = view.state.tr.insertText(text, from, to)
-        view.dispatch(tr)
-        view.focus()
+        insertBusinessContentAtSelection(ctx, text)
       })
     }
 
@@ -473,7 +737,19 @@ export default defineComponent({
       })
     }
 
-    expose({ insertMarkdown, focus, refreshPreviewViews, syncFromModel: () => syncModelToEditor(true) })
+    expose({
+      insertMarkdown,
+      focus,
+      refreshPreviewViews,
+      hasFocus: editorHasFocus,
+      // Never force-replace while user is typing in the visual editor (split-pane MdEditor echoes).
+      syncFromModel: () => {
+        if (editorHasFocus()) {
+          return
+        }
+        syncModelToEditor(true)
+      }
+    })
 
     return { isDark }
   }

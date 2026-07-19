@@ -71,10 +71,20 @@ export default {
     })
     /** Ignore programmatic onChange echoes after parent updates modelValue. */
     const ignoreChangeValue = ref(null)
+    /** @type {ReturnType<typeof setTimeout> | null} */
+    let ignoreClearTimer = null
     watch(
       () => props.modelValue,
       (next) => {
         ignoreChangeValue.value = normalizeDslSource(next ?? '')
+        if (ignoreClearTimer) {
+          clearTimeout(ignoreClearTimer)
+        }
+        // Keep echo suppression briefly even if Codemirror emits a non-matching intermediate value
+        ignoreClearTimer = setTimeout(() => {
+          ignoreClearTimer = null
+          ignoreChangeValue.value = null
+        }, 400)
       }
     )
     return { resolvedTheme, ignoreChangeValue }
@@ -83,12 +93,11 @@ export default {
     onChange(value) {
       const next = typeof value === 'string' ? value : ''
       if (this.ignoreChangeValue !== null) {
-        const ignored = normalizeDslSource(this.ignoreChangeValue)
-        if (normalizeDslSource(next) === ignored) {
-          this.ignoreChangeValue = null
+        if (normalizeDslSource(next) === normalizeDslSource(this.ignoreChangeValue)) {
           return
         }
-        this.ignoreChangeValue = null
+        // Mismatch while ignoring: drop the event (prop push still settling), do not clear ignore
+        return
       }
       if (normalizeDslSource(next) === normalizeDslSource(this.modelValue)) {
         return

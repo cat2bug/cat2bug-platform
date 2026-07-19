@@ -41,6 +41,24 @@ public class SysComment extends BaseEntity
     @Excel(name = "关联id")
     private Long correlationId;
 
+    /** 父评论ID（NULL=主评论，非空=扁平回复挂主评；defect_log 路径不使用，保持为空） */
+    private Long parentId;
+
+    /** 锚点类型：line=整行，selection=选中文字（仅报告批注使用） */
+    private String anchorKind;
+
+    /** 锚点原文片段快照（仅报告批注使用） */
+    private String quote;
+
+    /** 锚点前文片段快照，用于重复片段消歧（仅报告批注使用） */
+    private String contextBefore;
+
+    /** 锚点后文片段快照，用于重复片段消歧（仅报告批注使用） */
+    private String contextAfter;
+
+    /** 锚点辅助信息，如最近标题ID/块指纹，仅辅助匹配（仅报告批注使用） */
+    private String anchorHint;
+
     /** 创建人 */
     private SysUser createMember;
 
@@ -53,6 +71,8 @@ public class SysComment extends BaseEntity
             .append("createTime", getCreateTime())
             .append("moduleType", getModuleType())
             .append("correlationId", getCorrelationId())
+            .append("parentId", getParentId())
+            .append("anchorKind", getAnchorKind())
             .toString();
     }
 }

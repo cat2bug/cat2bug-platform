@@ -4595,6 +4595,12 @@ html.dark {
       background-color: var(--input-bg) !important;
       color: var(--text-color-secondary) !important;
     }
+
+    // 发言旁表情按钮：去掉 el-image 占位底，避免透明 PNG 透出浅色方块
+    .comment-input-tools .emoji-button.el-image,
+    .comment-input-tools .emoji-button {
+      background-color: transparent !important;
+    }
   }
 
   // 缺陷更新日志 diff（scoped 内 .new 为 #303133，深色下不可读）

@@ -1,22 +1,25 @@
 import i18n from '@/utils/i18n/i18n'
+import { normalizePipeTableMarkdown } from '../dsl/normalize-pipe-table'
 
 /**
  * Build plan statistics mega-table markdown (from Cat2BugMarkdown.addDynamicToolMenu).
+ * Output is normalized GFM so Milkdown/Crepe can edit rows/columns visually.
  * @param {number} planNumber
  */
 export function buildPlanStatisticsTable(planNumber) {
   const n = planNumber
-  return `|项目名称|\${api.project.projectName}|||||||||||||||||
+  const legacy = `|项目名称|\${api.project.projectName}|||||||||||||||||
 |测试计划|\${api.plan.planName[${n}]}|||||||||||||||||
 测试版本号|\${api.plan.planVersion[${n}]}||用例通过数量|\${api.plan.passCount[${n}]} 个|用例未通过数量|\${api.plan.failCount[${n}]} 个|用例未执行数量|\${api.plan.unexecutedCount[${n}]} 个||||||||||
 |||||||
 |-|-|-|-|
 |度量指标数据如下:||||||||||||||||||
-|缺陷发现率（单位：%）||缺陷修复率（单位：%）||缺陷探测率（单位：%） ||缺陷密度（单位：个）||缺陷严重率（单位：%） ||缺陷重开率（单位：%） ||缺陷逃逸率（单位：个）||用例执行效率（单位：个）||缺陷修复平均时长（单位：h）||
+|缺陷发现率（单位：%）||缺陷修复率（单位：%）||缺陷探测率（单位：%）||缺陷密度（单位：个）||缺陷严重率（单位：%）||缺陷重开率（单位：%）||缺陷逃逸率（单位：个）||用例执行效率（单位：个）||缺陷修复平均时长（单位：h）||
 |本轮已发现的缺陷数量|本轮已执行的用例数量|本轮已修复的缺陷数量|本轮发现的总的缺陷数量|测试或探测者发现的缺陷数量|客户反馈的缺陷数量|缺陷数量|代码行数或功能点的数 代码行数或功能点的数量|本计划所发现的严重缺陷数量|本轮已发现的缺陷总数|本轮重新打开的缺陷数量|本轮已修复的缺陷数量|用户反馈或实际使用中发现的缺陷数量|测试发现的缺陷数|本轮迭代执行的测试用例数量|执行本轮迭代测试耗时|缺陷数量|统计周期内缺陷的总解决时长
 |\${api.plan.defectCount[${n}]}|\${api.plan.executedCount[${n}]}个|\${api.plan.defectCloseStateCount[${n}]}| \${api.plan.defectCount[${n}]}|\${api.plan.createDefectCountByTester[${n}]}|\${api.plan.createDefectCountByOutsider[${n}]}|\${api.plan.defectCount[${n}]}|\${api.plan.moduleCount[${n}]}|\${api.plan.defectLevelUrgentCount[${n}]}|\${api.plan.defectCount[${n}]}|\${api.plan.defectRestartCount[${n}]}|\${api.plan.defectHistoryPassCount[${n}]}|\${api.plan.createDefectCountByOutsider[${n}]}|\${api.plan.defectCount[${n}]}|\${api.plan.defectCount[${n}]}| |\${api.plan.defectCount[${n}]}|\${api.plan.defectUseHourTime[${n}]}h|
 
 |\${api.plan.defectDiscoveryRate[${n}]}||\${api.plan.defectRepairRate[${n}]}||\${api.plan.defectDetectionRate[${n}]}||\${api.plan.defectDensity[${n}]}个||\${api.plan.defectSeverityRate[${n}]}||\${api.plan.defectRestartRate[${n}]}||\${api.plan.defectEscapeRate[${n}]}|| ||\${api.plan.defectRepairAvgHour[${n}]}h||`
+  return normalizePipeTableMarkdown(legacy)
 }
 
 function planFieldLine(i18nKey, field, planNumber) {

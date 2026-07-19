@@ -1,17 +1,20 @@
 import { visit } from 'unist-util-visit'
 import { createTimer } from '@milkdown/ctx'
 import { InitReady, remarkPluginsCtx, schemaTimerCtx } from '@milkdown/kit/core'
-import {
-  TABLE_TOKEN_RE,
-  CARD_TOKEN_RE,
-  IMAGE_TOKEN_RE
-} from '../dsl/grammar'
 import { parseTemplate } from '../dsl/parse'
 import { normalizeDslSource } from '../dsl/normalize'
 import { remarkPreserveRawBlocks } from './remark-preserve-raw-blocks'
+import {
+  blockMdastFromSegment,
+  expandTableCellDslText,
+  isBlockToken,
+  segmentToMdast
+} from './remark-cat2bug-dsl-transform'
 
 export const Cat2bugRawRemarkReady = createTimer('Cat2bugRawRemarkReady')
 export const Cat2bugDslRemarkReady = createTimer('Cat2bugDslRemarkReady')
+
+export { expandTableCellDslText, isBlockToken, segmentToMdast, blockMdastFromSegment }
 
 function paragraphText(node) {
   if (!node.children?.length) {
@@ -21,79 +24,6 @@ function paragraphText(node) {
     .filter((child) => child.type === 'text')
     .map((child) => child.value)
     .join('')
-}
-
-function isBlockToken(text) {
-  const trimmed = normalizeDslSource(text || '').trim()
-  if (!trimmed) {
-    return null
-  }
-  TABLE_TOKEN_RE.lastIndex = 0
-  CARD_TOKEN_RE.lastIndex = 0
-  IMAGE_TOKEN_RE.lastIndex = 0
-  const table = TABLE_TOKEN_RE.exec(trimmed)
-  if (table && table[0] === trimmed) {
-    return { kind: 'defectTable', segment: parseTemplate(trimmed)[0] }
-  }
-  const card = CARD_TOKEN_RE.exec(trimmed)
-  if (card && card[0] === trimmed) {
-    return { kind: 'caseCard', segment: parseTemplate(trimmed)[0] }
-  }
-  const image = IMAGE_TOKEN_RE.exec(trimmed)
-  if (image && image[0] === trimmed) {
-    return { kind: 'dynamicImage', segment: parseTemplate(trimmed)[0] }
-  }
-  return null
-}
-
-function segmentToMdast(segment) {
-  switch (segment.type) {
-    case 'text':
-      return segment.value ? [{ type: 'text', value: segment.value }] : []
-    case 'variable':
-      return [{ type: 'cat2bugVariable', path: segment.path, raw: segment.raw }]
-    case 'planVariable':
-      return [{
-        type: 'cat2bugPlanVariable',
-        path: segment.path,
-        planIndex: segment.planIndex,
-        raw: segment.raw
-      }]
-    case 'defectTable':
-      return [{
-        type: 'cat2bugDefectTable',
-        dataSource: segment.dataSource,
-        columns: segment.columns,
-        raw: segment.raw
-      }]
-    case 'caseCard':
-      return [{
-        type: 'cat2bugCaseCard',
-        dataSource: segment.dataSource,
-        raw: segment.raw
-      }]
-    case 'dynamicImage':
-      return [{
-        type: 'cat2bugDynamicImage',
-        style: segment.style,
-        path: segment.path,
-        raw: segment.raw
-      }]
-    default:
-      return segment.raw ? [{ type: 'text', value: segment.raw }] : []
-  }
-}
-
-function blockMdastFromSegment(segment) {
-  const nodes = segmentToMdast(segment)
-  const block = nodes[0]
-  if (!block || block.type === 'text') {
-    return {
-      type: 'paragraph',
-      children: nodes.length ? nodes : [{ type: 'text', value: segment.raw || '' }]
-    }
-  }
-  return block
 }
 
 function mergeSplitBlockDslParagraphs(children) {
@@ -112,7 +42,7 @@ function mergeSplitBlockDslParagraphs(children) {
       continue
     }
 
-    let text = paragraphText(node)
+    const text = paragraphText(node)
     const normalized = normalizeDslSource(text).trim()
     const startsBlockDsl = /^\$(?:table|card|image|img)/.test(normalized)
 
@@ -223,13 +153,24 @@ function remarkCat2bugDsl() {
       }
 
       const nextChildren = segments.flatMap((segment) => {
-        if (segment.type === 'defectTable' || segment.type === 'caseCard' || segment.type === 'dynamicImage') {
+        if (segment.type === 'defectTable' || segment.type === 'caseCard') {
           return [{ type: 'text', value: segment.raw }]
         }
         return segmentToMdast(segment)
       })
 
       node.children = nextChildren.length ? nextChildren : node.children
+    })
+
+    // GFM table cells hold phrasing nodes — promote ${} / $image so Milkdown can edit them in-cell.
+    visit(tree, 'tableCell', (node) => {
+      const text = (node.children || [])
+        .map((child) => (child.type === 'text' ? child.value : ''))
+        .join('')
+      const nextChildren = expandTableCellDslText(text)
+      if (nextChildren) {
+        node.children = nextChildren
+      }
     })
   }
 }

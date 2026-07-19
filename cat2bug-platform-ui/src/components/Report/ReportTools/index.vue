@@ -1,7 +1,22 @@
 <template>
   <div class="report-tools report-tools__bar">
     <slot name="left"></slot>
-    <el-button v-show="deleteVisible" data-report-tool="delete" :icon="$legacyIcon(isShowIcon?'el-icon-delete':'')" :size="controlSize" :link="!!isText" :type="isText ? undefined : 'danger'" :class="isText?'red':''" :plain="!isShowIcon && !isText" @click="handleDelete">{{$i18n.t('delete')}}</el-button>
+    <el-button
+      v-show="deleteVisible"
+      data-report-tool="delete"
+      :icon="isIconOnly ? undefined : $legacyIcon(isShowIcon ? 'el-icon-delete' : '')"
+      :size="controlSize"
+      :link="!!isText"
+      :type="isText ? undefined : 'danger'"
+      :class="[isText ? 'red' : '', isIconOnly ? 'report-tools__icon-btn' : '']"
+      :plain="isIconOnly || (!isShowIcon && !isText)"
+      :aria-label="$i18n.t('delete')"
+      :title="isIconOnly ? $i18n.t('delete') : undefined"
+      @click="handleDelete"
+    >
+      <legacy-icon v-if="isIconOnly" icon="el-icon-delete" />
+      <template v-else>{{ $i18n.t('delete') }}</template>
+    </el-button>
     <slot name="right"></slot>
   </div>
 </template>
@@ -44,6 +59,9 @@ export default {
   computed: {
     controlSize() {
       return mapElementPlusSize(this.size)
+    },
+    isIconOnly() {
+      return !!this.isShowIcon && !this.isText
     },
     /** 获取当前用户id */
     currentUserId: function() {

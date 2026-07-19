@@ -31,5 +31,14 @@ describe('model-sync', () => {
     it('detects real content differences', () => {
       expect(markdownSemanticallyEqual('行一\n', '行一\n行二\n')).toBe(false)
     })
+
+    it('treats empty table cells and Milkdown <br /> cells as equivalent', () => {
+      expect(
+        markdownSemanticallyEqual(
+          '|a||\n|-|-|\n||b|',
+          '|a|<br />|\n|-|-|\n| <br /> |b|'
+        )
+      ).toBe(true)
+    })
   })
 })

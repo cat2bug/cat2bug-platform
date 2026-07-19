@@ -14,6 +14,8 @@ import {
   selectTextNearPosCommand
 } from '@milkdown/kit/preset/commonmark'
 import { createTable } from '@milkdown/kit/preset/gfm'
+import { imageBlockSchema } from '@milkdown/kit/component/image-block'
+import { requestLinkInsertMarkdown } from './link-insert-bridge'
 
 function runCommands(ctx, ...steps) {
   const commands = ctx.get(commandsCtx)
@@ -139,7 +141,24 @@ export function buildDefaultBlockMenuGroups() {
     {
       key: 'advanced',
       label: '高级',
+      // Order matches Crepe official slash menu: Image → Code → Table
       items: [
+        {
+          key: 'image',
+          label: '图片',
+          onSelect: (ctx) => {
+            const imageBlock = imageBlockSchema.type(ctx)
+            if (!imageBlock) {
+              return
+            }
+            runCommands(ctx, {
+              key: clearTextInCurrentBlockCommand.key
+            }, {
+              key: addBlockTypeCommand.key,
+              payload: { nodeType: imageBlock }
+            })
+          }
+        },
         {
           key: 'code',
           label: '代码块',
@@ -172,6 +191,27 @@ export function buildDefaultBlockMenuGroups() {
 }
 
 /**
+ * Insert Crepe image-block at the current selection (toolbar「图片」).
+ * @param {import('@milkdown/ctx').Ctx} ctx
+ */
+export function insertImageBlockAtSelection(ctx) {
+  const imageBlock = imageBlockSchema.type(ctx)
+  if (!imageBlock) {
+    return
+  }
+  runCommands(ctx, {
+    key: clearTextInCurrentBlockCommand.key
+  }, {
+    key: addBlockTypeCommand.key,
+    payload: { nodeType: imageBlock }
+  })
+}
+
+function contentNeedsCaretPreserve(content) {
+  return /\$\{|\$image|\$img|\$table|\$card/.test(String(content || ''))
+}
+
+/**
  * @param {{ key: string, label: string, items: { key: string, label: string, content: string }[] }[]} businessGroups
  * @param {(ctx: import('@milkdown/ctx').Ctx, content: string) => void} onInsert
  */
@@ -182,7 +222,52 @@ export function businessGroupsToOverlayGroups(businessGroups, onInsert) {
     items: (group.items || []).map((item) => ({
       key: item.key,
       label: item.label,
+      // Keep pre-+ caret; do not jump to the ephemeral empty paragraph first.
+      skipSelectionRestore: true,
       onSelect: (ctx) => onInsert(ctx, item.content)
     }))
+  }))
+}
+
+/**
+ * Convert toolbar-aligned add-menu groups into overlay menu groups.
+ * @param {{ key: string, label: string, items: { key: string, label: string, content?: string, insertMode?: string }[] }[]} groups
+ * @param {{ onInsertContent: (ctx: import('@milkdown/ctx').Ctx, content: string) => void, onInsertImageBlock?: (ctx: import('@milkdown/ctx').Ctx) => void }} handlers
+ */
+export function toolbarAddMenuToOverlayGroups(groups, handlers) {
+  const onInsertContent = handlers?.onInsertContent
+  const onInsertImageBlock = handlers?.onInsertImageBlock || insertImageBlockAtSelection
+  return (groups || []).map((group) => ({
+    key: group.key,
+    label: group.label,
+    items: (group.items || []).map((item) => {
+      if (item.insertMode === 'image-block') {
+        return {
+          key: item.key,
+          label: item.label,
+          onSelect: (ctx) => onInsertImageBlock(ctx)
+        }
+      }
+      if (item.insertMode === 'link') {
+        return {
+          key: item.key,
+          label: item.label,
+          skipSelectionRestore: true,
+          onSelect: (ctx) => {
+            requestLinkInsertMarkdown().then((markdown) => {
+              if (markdown) {
+                onInsertContent?.(ctx, markdown)
+              }
+            })
+          }
+        }
+      }
+      return {
+        key: item.key,
+        label: item.label,
+        skipSelectionRestore: contentNeedsCaretPreserve(item.content),
+        onSelect: (ctx) => onInsertContent?.(ctx, item.content)
+      }
+    })
   }))
 }

@@ -9,10 +9,9 @@ import {
 } from './cat2bug-nodes'
 import { subscribeReportPreviewData, ensureReportPreviewData, getReportPreviewState, getActivePreviewProjectId } from './report-preview-data'
 import { renderPreviewTable } from './render-preview-table'
-import { renderPreviewImage } from './render-preview-image'
 import { renderPreviewCaseCard } from './render-preview-case-card'
-import { renderPreviewPlanStatistics, disposePlanStatisticsPreview } from './render-preview-plan-statistics'
 import { resolvePreviewVariable, resolvePreviewPlanVariable } from './render-preview-variable'
+import { createDynamicImageNodeView } from './dynamic-image-view'
 import {
   createVariableUnitKey,
   getVariableDisplayMode,
@@ -37,19 +36,14 @@ const BLOCK_META = {
 }
 
 const RAW_BLOCK_HINTS = {
-  'plan-statistics': '计划统计表：表格按 Markdown 展示，单元格内变量随工具栏展开/折起切换内容与 token。结构请在「源码」模式编辑。',
-  'multimd-table': '合并单元格表格为只读保留块，请切换至「源码」模式编辑。',
+  'plan-statistics': '旧版计划统计保留块：请重新插入计划统计表，或切换至「源码」模式改为标准 Markdown 表格后即可可视化编辑。',
+  'multimd-table': '合并表格（含 ^^ / colspan）可在可视化编辑器中直接编辑；复杂情况可切换至「源码」模式。',
   generic: '复杂 DSL / 表格片段为只读保留块，请切换至「源码」模式编辑。'
 }
 
 /** @returns {import('@milkdown/prose/view').NodeViewConstructor} */
 function createRawBlockView() {
   return (node) => {
-    const kind = node.attrs.kind || 'generic'
-    if (kind === 'plan-statistics') {
-      return createPlanStatisticsTableView(node)
-    }
-
     const dom = document.createElement('div')
     dom.className = 'cat2bug-dsl-block__view cat2bug-dsl-block__view--raw'
     dom.contentEditable = 'false'
@@ -88,83 +82,9 @@ function createRawBlockView() {
         if (updated.type !== node.type) {
           return false
         }
-        if ((updated.attrs.kind || 'generic') === 'plan-statistics') {
-          return false
-        }
         paint(updated)
         return true
       }
-    }
-  }
-}
-
-/** Plan-statistics: raw storage for round-trip; visual = HTML table + in-cell variables. */
-function createPlanStatisticsTableView(node) {
-  const dom = document.createElement('div')
-  // Not a variable unit itself — only hosts the table; avoid block var hover chrome on the whole table.
-  dom.className = 'cat2bug-dsl-preview-plan-stats-host'
-  dom.contentEditable = 'false'
-
-  const body = document.createElement('div')
-  body.className = 'cat2bug-dsl-preview-plan-stats-host__body'
-  dom.append(body)
-
-  let currentAttrs = { ...node.attrs }
-  let paintToken = 0
-  /** @type {HTMLElement|null} */
-  let previewRoot = null
-
-  function paint() {
-    const token = ++paintToken
-    const render = () => {
-      if (token !== paintToken) {
-        return
-      }
-      try {
-        disposePlanStatisticsPreview(previewRoot)
-        previewRoot = renderPreviewPlanStatistics(currentAttrs.value || '')
-        body.replaceChildren(previewRoot)
-      } catch (error) {
-        disposePlanStatisticsPreview(previewRoot)
-        previewRoot = null
-        const hint = document.createElement('div')
-        hint.className = 'cat2bug-dsl-preview-plan-stats__hint cat2bug-dsl-preview-plan-stats__hint--error'
-        hint.textContent = '计划统计表预览渲染失败'
-        body.replaceChildren(hint)
-        if (import.meta.env.DEV) {
-          console.error('[ReportTemplateEditor] plan statistics preview failed:', error)
-        }
-      }
-    }
-    render()
-    const snapshot = getReportPreviewState()
-    const projectId = getActivePreviewProjectId()
-    if (projectId && (snapshot.loading || !snapshot.data)) {
-      ensureReportPreviewData(projectId).finally(render)
-    }
-  }
-
-  paint()
-  // In-cell variable units subscribe to expand state themselves; only re-render table on data refresh.
-  const unsubscribePreview = subscribeReportPreviewData(paint)
-
-  return {
-    dom,
-    update(updated) {
-      if (updated.type !== node.type) {
-        return false
-      }
-      if ((updated.attrs.kind || 'generic') !== 'plan-statistics') {
-        return false
-      }
-      currentAttrs = { ...updated.attrs }
-      paint()
-      return true
-    },
-    destroy() {
-      disposePlanStatisticsPreview(previewRoot)
-      previewRoot = null
-      unsubscribePreview()
     }
   }
 }
@@ -323,15 +243,15 @@ function createVariableUnitView({ isPlan = false, resolveDisplay, resolveTitle }
  * images, card lists) instead of inline text. Default (not hovered) renders only
  * the current-mode content with no border/toggle/title, matching the production
  * preview; hover reveals the dashed-border chrome with the two-state toggle and title.
- * @param {{ resolveTitle: (attrs: object) => string, renderContent: (attrs: object) => Node, viewModifierClass?: string }} options
+ * @param {{ resolveTitle: (attrs: object) => string, renderContent: (attrs: object) => Node, viewModifierClass?: string, isBlock?: boolean }} options
  * @returns {import('@milkdown/prose/view').NodeViewConstructor}
  */
-function createDslTokenBlockView({ resolveTitle, renderContent, viewModifierClass = '' }) {
+function createDslTokenBlockView({ resolveTitle, renderContent, viewModifierClass = '', isBlock = true }) {
   return (node) => {
     const unitKey = createVariableUnitKey()
     let generationSeen = getVariableExpandGeneration()
 
-    const { dom, frame, chrome, toggle, title, body } = createVariableUnitDomShell({ isBlock: true })
+    const { dom, frame, chrome, toggle, title, body } = createVariableUnitDomShell({ isBlock })
     if (viewModifierClass) {
       dom.classList.add(viewModifierClass)
     }
@@ -492,11 +412,7 @@ export const cat2bugCaseCardView = $viewAsync(
 
 export const cat2bugDynamicImageView = $viewAsync(
   cat2bugDynamicImageNode,
-  () => createDslTokenBlockView({
-    resolveTitle: () => BLOCK_META.cat2bug_dynamic_image.label,
-    renderContent: (attrs) => renderPreviewImage(attrs),
-    viewModifierClass: 'cat2bug-dsl-var__view--image'
-  }),
+  () => createDynamicImageNodeView(),
   'Cat2bugDynamicImageView'
 )
 

@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 public class SysCaseCardParseImpl implements IReportParseService {
     private final static Logger logger = LogManager.getLogger(SysCaseCardParseImpl.class);
 
-    private static final String  RG = "\\s*\\$card\\{(api\\.case\\.list)(\\})";
+    private static final Pattern TOKEN = Pattern.compile("\\$card\\{(api\\.case\\.list)\\}");
 
     @Lazy
     @Autowired
@@ -46,22 +46,27 @@ public class SysCaseCardParseImpl implements IReportParseService {
 
     @Override
     public boolean isHandle(String content) {
-        return Pattern.matches(RG,content);
+        return StringUtils.isNotBlank(content) && TOKEN.matcher(content).find();
     }
 
     @Override
     public String parse(Long projectId, String content, Map<String, Object> para) {
+        if (StringUtils.isBlank(content)) {
+            return content;
+        }
         List<SysCase> list = getCaseList(projectId);
-
-        Matcher matcher = Pattern.compile(RG).matcher(content);
-        while(matcher.find()){
+        Matcher matcher = TOKEN.matcher(content);
+        StringBuffer sb = new StringBuffer();
+        while (matcher.find()) {
             try {
-                content = matcher.replaceAll(this.toCard(list, null).toString());
+                matcher.appendReplacement(sb, ReportParseUtils.quoteReplacement(this.toCard(list, null).toString()));
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error(e);
+                matcher.appendReplacement(sb, ReportParseUtils.quoteReplacement(matcher.group(0)));
             }
         }
-        return content;
+        matcher.appendTail(sb);
+        return sb.toString();
     }
 
     private StringBuffer toCard(List<SysCase> list, Map<String,String> params) {

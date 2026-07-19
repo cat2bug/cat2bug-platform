@@ -69,4 +69,12 @@ public interface SysCommentMapper
      * @return 结果
      */
     public int deleteSysCommentByCommentIds(Long[] commentIds);
+
+    /**
+     * 按父评论ID删除其全部扁平回复（用于删除主评论时级联删除）
+     *
+     * @param parentId 父评论（主评论）ID
+     * @return 结果
+     */
+    public int deleteSysCommentByParentId(Long parentId);
 }
