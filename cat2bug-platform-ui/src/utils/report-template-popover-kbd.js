@@ -471,6 +471,15 @@ function activateFocusedCard(vm) {
   }
 }
 
+function isEditableKeyTarget(e) {
+  const t = e && e.target
+  if (!t) return false
+  const tag = (t.tagName || '').toLowerCase()
+  if (tag === 'input' || tag === 'textarea' || tag === 'select') return true
+  if (t.isContentEditable) return true
+  return false
+}
+
 function handleDocumentKeydown(e, vm) {
   const pop = getReportTemplatePopoverVm(vm)
   if (!pop) return
@@ -482,6 +491,7 @@ function handleDocumentKeydown(e, vm) {
   const key = e.key
   const visible = isReportTemplatePopoverVisible(vm)
   const triggerFocused = isReportTemplateTriggerFocused(vm)
+  const editingSearch = visible && isEditableKeyTarget(e)
 
   if (!visible) {
     if (!triggerFocused || !isOpenKey(key)) return
@@ -491,6 +501,16 @@ function handleDocumentKeydown(e, vm) {
   }
 
   if (isReportTemplatePopoverKbdSuspended()) return
+
+  // 搜索框内输入时不劫持方向键/回车；Esc 仍可关闭浮层
+  if (editingSearch) {
+    if (key === 'Escape' || key === 'Esc') {
+      stopKeyEvent(e)
+      closeReportTemplatePopover(vm)
+      focusReportTemplateTrigger(vm)
+    }
+    return
+  }
 
   if (handlePopoverModifierShortcut(e, vm)) return
 

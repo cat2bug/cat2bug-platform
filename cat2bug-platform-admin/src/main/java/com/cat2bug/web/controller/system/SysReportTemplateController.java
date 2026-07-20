@@ -63,16 +63,21 @@ public class SysReportTemplateController extends BaseController
     public AjaxResult picker(
             @RequestParam(value = "projectId", required = false) Long projectId,
             @RequestParam(value = "pageNum", required = false) Integer pageNum,
-            @RequestParam(value = "pageSize", required = false) Integer pageSize)
+            @RequestParam(value = "pageSize", required = false) Integer pageSize,
+            @RequestParam(value = "templateTitle", required = false) String templateTitle)
     {
         SysReportTemplate query = new SysReportTemplate();
         query.setProjectId(projectId);
+        if (templateTitle != null && !templateTitle.isBlank())
+        {
+            query.setTemplateTitle(templateTitle.trim());
+        }
         if (pageNum != null && pageSize != null)
         {
             startPage();
         }
         List<SysReportTemplate> customs = sysReportTemplateService.selectSysReportTemplateList(query);
-        ReportTemplatePickerResponse response = reportPresetTemplateService.buildPicker(customs);
+        ReportTemplatePickerResponse response = reportPresetTemplateService.buildPicker(customs, templateTitle);
         if (pageNum != null && pageSize != null)
         {
             TableDataInfo page = getDataTable(customs);

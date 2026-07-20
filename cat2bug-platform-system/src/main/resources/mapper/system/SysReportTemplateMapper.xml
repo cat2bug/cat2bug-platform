@@ -26,7 +26,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <include refid="selectSysReportTemplateVo"/>
         <where>  
             <if test="moduleType != null  and moduleType != ''"> and module_type = #{moduleType}</if>
-            <if test="templateTitle != null  and templateTitle != ''"> and template_title = #{templateTitle}</if>
+            <if test="templateTitle != null  and templateTitle != ''"> and template_title like concat('%', #{templateTitle}, '%')</if>
             <if test="updateById != null "> and update_by_id = #{updateById}</if>
             <if test="projectId != null "> and project_id = #{projectId}</if>
             <if test="templateIconUrl != null  and templateIconUrl != ''"> and template_icon_url = #{templateIconUrl}</if>

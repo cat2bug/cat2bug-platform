@@ -1,6 +1,8 @@
 package com.cat2bug.web.service.report;
 
+import com.cat2bug.common.config.Cat2BugConfig;
 import com.cat2bug.common.exception.ServiceException;
+import com.cat2bug.common.utils.file.FileUtils;
 import com.cat2bug.system.domain.SysReportTemplate;
 import com.cat2bug.web.domain.report.ReportPresetManifest;
 import com.cat2bug.web.domain.report.ReportTemplatePickerGroup;
@@ -45,8 +47,18 @@ public class ReportPresetTemplateService
 
     public ReportTemplatePickerResponse buildPicker(List<SysReportTemplate> customTemplates)
     {
+        return buildPicker(customTemplates, null);
+    }
+
+    /**
+     * @param titleKeyword optional case-insensitive substring filter for preset titles
+     *                     (custom templates are expected to be filtered by the caller/DB)
+     */
+    public ReportTemplatePickerResponse buildPicker(List<SysReportTemplate> customTemplates, String titleKeyword)
+    {
         ReportPresetManifest manifest = loadManifest().orElse(null);
         Map<String, ReportPresetManifest.ReportPresetManifestGroup> manifestByCode = indexManifestGroups(manifest);
+        String normalizedKeyword = normalizeTitleKeyword(titleKeyword);
 
         ReportTemplatePickerResponse response = new ReportTemplatePickerResponse();
         List<ReportTemplatePickerGroup> groups = new ArrayList<>();
@@ -65,8 +77,10 @@ public class ReportPresetTemplateService
         customGroup.setItems(customItems);
         groups.add(customGroup);
 
-        groups.add(buildPresetPickerGroup(GROUP_ISO_29119_3, ISO_29119_3_GROUP_TITLE, manifestByCode.get(GROUP_ISO_29119_3)));
-        groups.add(buildPresetPickerGroup(GROUP_ISO_9001, ISO_9001_GROUP_TITLE, manifestByCode.get(GROUP_ISO_9001)));
+        groups.add(buildPresetPickerGroup(
+                GROUP_ISO_29119_3, ISO_29119_3_GROUP_TITLE, manifestByCode.get(GROUP_ISO_29119_3), normalizedKeyword));
+        groups.add(buildPresetPickerGroup(
+                GROUP_ISO_9001, ISO_9001_GROUP_TITLE, manifestByCode.get(GROUP_ISO_9001), normalizedKeyword));
 
         response.setGroups(groups);
         return response;
@@ -105,7 +119,33 @@ public class ReportPresetTemplateService
         copy.setTemplateContent(content);
         copy.setMajorVersion(1L);
         copy.setMinorVersion(0L);
+        copy.setTemplateIconUrl(persistPresetPreviewIcon(item));
         return copy;
+    }
+
+    /**
+     * Copy classpath preset PNG into upload dir so custom picker cards keep a preview.
+     */
+    private String persistPresetPreviewIcon(ReportPresetManifest.ReportPresetManifestItem item)
+    {
+        if (item == null || item.getPreviewPath() == null || item.getPreviewPath().isBlank())
+        {
+            return null;
+        }
+        try
+        {
+            byte[] png = readBinaryResource(item.getPreviewPath());
+            if (png == null || png.length == 0)
+            {
+                return null;
+            }
+            return FileUtils.writeBytes(png, Cat2BugConfig.getUploadPath());
+        }
+        catch (Exception ex)
+        {
+            // Preview is best-effort; content copy must still succeed.
+            return null;
+        }
     }
 
     /**
@@ -156,7 +196,8 @@ public class ReportPresetTemplateService
     private ReportTemplatePickerGroup buildPresetPickerGroup(
             String defaultCode,
             String defaultTitle,
-            ReportPresetManifest.ReportPresetManifestGroup manifestGroup)
+            ReportPresetManifest.ReportPresetManifestGroup manifestGroup,
+            String normalizedKeyword)
     {
         ReportTemplatePickerGroup group = new ReportTemplatePickerGroup();
         group.setCode(defaultCode);
@@ -172,6 +213,10 @@ public class ReportPresetTemplateService
                 {
                     continue;
                 }
+                if (!titleMatchesKeyword(manifestItem.getTitle(), normalizedKeyword))
+                {
+                    continue;
+                }
                 items.add(ReportTemplatePickerItem.fromPreset(
                         defaultCode,
                         manifestItem.getKey(),
@@ -181,6 +226,29 @@ public class ReportPresetTemplateService
         }
         group.setItems(items);
         return group;
+    }
+
+    private static String normalizeTitleKeyword(String titleKeyword)
+    {
+        if (titleKeyword == null)
+        {
+            return null;
+        }
+        String trimmed = titleKeyword.trim();
+        return trimmed.isEmpty() ? null : trimmed.toLowerCase();
+    }
+
+    private static boolean titleMatchesKeyword(String title, String normalizedKeyword)
+    {
+        if (normalizedKeyword == null)
+        {
+            return true;
+        }
+        if (title == null)
+        {
+            return false;
+        }
+        return title.toLowerCase().contains(normalizedKeyword);
     }
 
     private Map<String, ReportPresetManifest.ReportPresetManifestGroup> indexManifestGroups(ReportPresetManifest manifest)

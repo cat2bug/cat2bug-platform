@@ -8,10 +8,28 @@
       :popper-class="popperClass">
       <div class="template-header">
         <span>{{$t('report.select-template')}}</span>
+        <el-input
+          ref="templateSearchInput"
+          v-model="searchKeyword"
+          clearable
+          size="small"
+          class="template-search-input"
+          :placeholder="$t('report.search-template')"
+          :prefix-icon="$legacyIcon('el-icon-search')"
+          @input="onSearchInput"
+          @clear="onSearchClear"
+          @mousedown.stop
+          @click.stop
+        />
       </div>
       <div class="template-picker-body" ref="templatePickerBody">
+        <div
+          v-if="hasSearchKeyword && !flatTemplateList.length"
+          class="template-search-empty">
+          {{$t('report.search-template-empty')}}
+        </div>
         <section
-          v-for="group in pickerGroups"
+          v-for="group in visiblePickerGroups"
           :key="group.code"
           class="template-group">
           <div class="template-group-header">
@@ -97,11 +115,14 @@ import {
   fetchPresetPreviewBlob,
   pickerReportTemplates,
   presetTemplatePreviewPath,
+  updateTemplate,
   REPORT_TEMPLATE_PICKER_GROUP_ORDER
 } from "@/api/system/ReportTemplate";
 import {addReport} from "@/api/system/report";
+import { upload } from "@/api/common/upload";
 import i18n from "@/utils/i18n/i18n";
 import {strFormat} from "@/utils";
+import { captureTemplateContentPreview } from "@/utils/capture-template-preview";
 import {
   REPORT_TEMPLATE_HOST_CLASS,
   REPORT_TEMPLATE_POPPER_CLASS,
@@ -134,6 +155,8 @@ export default {
       popoverOpen: false,
       pickerGroups: EMPTY_PICKER_GROUPS.map((g) => ({ ...g, items: [] })),
       customTotal: 0,
+      searchKeyword: '',
+      _searchTimer: null,
       query: {
         projectId: this.projectId,
         pageNum: 1,
@@ -165,9 +188,24 @@ export default {
     controlSize() {
       return mapElementPlusSize(this.size)
     },
+    hasSearchKeyword() {
+      return !!(this.searchKeyword && String(this.searchKeyword).trim())
+    },
+    trimmedSearchKeyword() {
+      return this.hasSearchKeyword ? String(this.searchKeyword).trim() : ''
+    },
+    visiblePickerGroups() {
+      const kw = this.trimmedSearchKeyword
+      return this.pickerGroups.filter((group) => {
+        if (!group) return false
+        if (group.code === 'custom') return true
+        if (!kw) return true
+        return (group.items || []).length > 0
+      })
+    },
     flatTemplateList() {
       const list = []
-      this.pickerGroups.forEach((group) => {
+      this.visiblePickerGroups.forEach((group) => {
         (group.items || []).forEach((item) => list.push(item))
       })
       return list
@@ -183,12 +221,14 @@ export default {
     this.$nextTick(() => this.bindPopoverOpenWatch());
   },
   beforeDestroy() {
+    this.clearSearchTimer()
     destroyReportTemplatePopoverKbd(this);
     this.unbindPopoverOpenWatch();
     this.closeTemplatePopover();
     this.revokePreviewBlobs();
   },
   beforeUnmount() {
+    this.clearSearchTimer()
     destroyReportTemplatePopoverKbd(this);
     this.unbindPopoverOpenWatch();
     this.closeTemplatePopover();
@@ -198,6 +238,36 @@ export default {
     this.closeTemplatePopover();
   },
   methods: {
+    clearSearchTimer() {
+      if (this._searchTimer) {
+        clearTimeout(this._searchTimer)
+        this._searchTimer = null
+      }
+    },
+    onSearchInput() {
+      this.clearSearchTimer()
+      this._searchTimer = setTimeout(() => {
+        this._searchTimer = null
+        this.query.pageNum = 1
+        this.loadPicker().then(() => {
+          if (this.popoverOpen) {
+            this.$nextTick(() => {
+              if (this.flatTemplateList.length) {
+                syncReportTemplateCardFocus(this, 0)
+              } else {
+                clearReportTemplatePopoverFocus(this)
+              }
+            })
+          }
+        })
+      }, 300)
+    },
+    onSearchClear() {
+      this.clearSearchTimer()
+      this.searchKeyword = ''
+      this.query.pageNum = 1
+      this.loadPicker()
+    },
     getReportTemplateFlatList() {
       return this.flatTemplateList
     },
@@ -259,7 +329,14 @@ export default {
           template.presetFolder || template.folder
         ) || ''
       }
+      if (template.templateId != null) return `custom-${template.templateId}`
       return template.templateIconUrl || ''
+    },
+    setPreviewBlob(cacheKey, objectUrl) {
+      if (!cacheKey || !objectUrl) return
+      this.$set
+        ? this.$set(this.previewBlobUrls, cacheKey, objectUrl)
+        : (this.previewBlobUrls = { ...this.previewBlobUrls, [cacheKey]: objectUrl })
     },
     revokePreviewBlobs() {
       Object.keys(this.previewBlobUrls || {}).forEach((key) => {
@@ -270,8 +347,50 @@ export default {
       })
       this.previewBlobUrls = {}
     },
+    async persistCustomPreview(template, blob) {
+      if (!template || template.templateId == null || !blob) return
+      try {
+        const formData = new FormData()
+        formData.append('file', blob, 'template-preview.png')
+        const res = await upload(formData)
+        if (!res || !res.fileName) return
+        template.templateIconUrl = res.fileName
+        await updateTemplate({
+          templateId: template.templateId,
+          projectId: template.projectId || this.projectId,
+          templateTitle: template.templateTitle,
+          templateContent: template.templateContent,
+          templateIconUrl: res.fileName,
+          moduleType: template.moduleType,
+          majorVersion: template.majorVersion,
+          minorVersion: template.minorVersion
+        })
+      } catch (_e) {
+        // best-effort persistence
+      }
+    },
+    hydrateCustomPreviewBlobs() {
+      const tasks = []
+      this.pickerGroups.forEach((group) => {
+        (group.items || []).forEach((item) => {
+          if (!this.isCustomTemplate(item)) return
+          const cacheKey = this.previewCacheKey(item)
+          if (!cacheKey) return
+          // 已有上传预览图：直接用 URL，无需再渲
+          if (item.templateIconUrl) return
+          tasks.push(
+            captureTemplateContentPreview(item.templateContent || '').then(async (blob) => {
+              if (!blob) return
+              const objectUrl = URL.createObjectURL(blob)
+              this.setPreviewBlob(cacheKey, objectUrl)
+              await this.persistCustomPreview(item, blob)
+            })
+          )
+        })
+      })
+      return Promise.all(tasks)
+    },
     hydratePresetPreviewBlobs() {
-      this.revokePreviewBlobs()
       const tasks = []
       this.pickerGroups.forEach((group) => {
         (group.items || []).forEach((item) => {
@@ -285,14 +404,19 @@ export default {
             fetchPresetPreviewBlob(groupCode, key, folder).then((blob) => {
               if (!blob) return
               const objectUrl = URL.createObjectURL(blob)
-              this.$set
-                ? this.$set(this.previewBlobUrls, cacheKey, objectUrl)
-                : (this.previewBlobUrls = { ...this.previewBlobUrls, [cacheKey]: objectUrl })
+              this.setPreviewBlob(cacheKey, objectUrl)
             })
           )
         })
       })
       return Promise.all(tasks)
+    },
+    hydrateAllPreviewBlobs() {
+      this.revokePreviewBlobs()
+      return Promise.all([
+        this.hydratePresetPreviewBlobs(),
+        this.hydrateCustomPreviewBlobs()
+      ])
     },
     bindPopoverOpenWatch() {
       const pop = this.$refs.templatePopover;
@@ -412,13 +536,19 @@ export default {
     },
     applyCustomListFallback(res) {
       const rows = res.rows || []
+      const kw = this.trimmedSearchKeyword.toLowerCase()
+      const filtered = kw
+        ? rows.filter((row) => String(row.templateTitle || '').toLowerCase().includes(kw))
+        : rows
       this.pickerGroups = this.mergeOrderedPickerGroups([
         {
           code: 'custom',
-          items: rows.map((row) => this.normalizePickerItem(row, 'custom'))
+          items: filtered.map((row) => this.normalizePickerItem(row, 'custom'))
         }
       ])
-      this.customTotal = res.total != null ? res.total : rows.length
+      this.customTotal = kw
+        ? filtered.length
+        : (res.total != null ? res.total : rows.length)
     },
     loadPicker() {
       this.query.projectId = this.projectId;
@@ -427,10 +557,14 @@ export default {
         this.customTotal = 0
         return Promise.resolve()
       }
-      return pickerReportTemplates(this.projectId, {
+      const params = {
         pageNum: this.query.pageNum,
         pageSize: this.query.pageSize
-      }).then((res) => {
+      }
+      if (this.trimmedSearchKeyword) {
+        params.templateTitle = this.trimmedSearchKeyword
+      }
+      return pickerReportTemplates(this.projectId, params).then((res) => {
         const payload = res && res.data != null ? res.data : res
         const groups = payload.groups || payload.groupList || []
         this.pickerGroups = this.mergeOrderedPickerGroups(groups)
@@ -440,11 +574,18 @@ export default {
         this.customTotal = totalFromGroup != null
           ? totalFromGroup
           : (totalFromPayload != null ? totalFromPayload : (customGroup.items || []).length)
-        this.hydratePresetPreviewBlobs()
+        this.hydrateAllPreviewBlobs()
         return res
       }).catch(() => {
-        return listReportTemplate(this.query).then((res) => {
+        const fallbackQuery = {
+          ...this.query
+        }
+        if (this.trimmedSearchKeyword) {
+          fallbackQuery.templateTitle = this.trimmedSearchKeyword
+        }
+        return listReportTemplate(fallbackQuery).then((res) => {
           this.applyCustomListFallback(res)
+          this.hydrateAllPreviewBlobs()
           return res
         })
       })
@@ -599,11 +740,24 @@ export default {
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
   width: 100%;
   span {
+    flex-shrink: 0;
     font-size: 16px;
     color: var(--text-color-primary);
   }
+  .template-search-input {
+    flex: 1;
+    min-width: 0;
+    max-width: 280px;
+  }
+}
+.template-search-empty {
+  padding: 24px 8px 8px;
+  text-align: center;
+  color: var(--text-color-secondary, #909399);
+  font-size: 13px;
 }
 .template-picker-body {
   max-height: 460px;

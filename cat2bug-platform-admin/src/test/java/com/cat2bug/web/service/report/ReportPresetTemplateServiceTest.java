@@ -39,12 +39,23 @@ class ReportPresetTemplateServiceTest
     }
 
     @Test
-    void readMarkdownContent_loadsStubFile()
+    void buildPicker_filtersPresetTitlesByKeyword()
     {
-        String content = reportPresetTemplateService.readMarkdownContent(
-                ReportPresetTemplateService.GROUP_ISO_29119_3,
-                "test-completion-report",
-                null);
-        assertTrue(content.contains("测试完成报告"));
+        ReportTemplatePickerResponse all = reportPresetTemplateService.buildPicker(Collections.emptyList());
+        int allPresetCount = all.getGroups().get(1).getItems().size() + all.getGroups().get(2).getItems().size();
+        assertTrue(allPresetCount > 0);
+
+        ReportTemplatePickerResponse filtered = reportPresetTemplateService.buildPicker(Collections.emptyList(), "完成");
+        int filteredCount = filtered.getGroups().get(1).getItems().size() + filtered.getGroups().get(2).getItems().size();
+        assertTrue(filteredCount > 0);
+        assertTrue(filteredCount <= allPresetCount);
+        filtered.getGroups().get(1).getItems().forEach(item ->
+                assertTrue(item.getTemplateTitle().toLowerCase().contains("完成")));
+        filtered.getGroups().get(2).getItems().forEach(item ->
+                assertTrue(item.getTemplateTitle().toLowerCase().contains("完成")));
+
+        ReportTemplatePickerResponse none = reportPresetTemplateService.buildPicker(Collections.emptyList(), "___no_such_template___");
+        assertTrue(none.getGroups().get(1).getItems().isEmpty());
+        assertTrue(none.getGroups().get(2).getItems().isEmpty());
     }
 }

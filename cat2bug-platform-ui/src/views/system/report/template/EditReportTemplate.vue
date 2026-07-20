@@ -24,6 +24,7 @@
 
 <script>
 import { getReportTemplate, updateTemplate } from '@/api/system/ReportTemplate'
+import { upload } from '@/api/common/upload'
 import dialogFormShortcuts from '@/mixins/dialog-form-shortcuts'
 import pageFormClose from '@/mixins/page-form-close'
 import { defineAsyncComponent } from 'vue'
@@ -50,7 +51,8 @@ export default {
       },
       pushId: null,
       content: '',
-      html: ''
+      html: '',
+      _previewCapturing: false
     }
   },
   created() {
@@ -92,7 +94,7 @@ export default {
           this.pushId = null
         }
         if (this.isPageFormCloseDirty()) {
-          await this.saveTemplateNow()
+          await this.saveTemplateNow(false, { capturePreview: true })
         }
         this.pageFormCloseBaseline = null
         this.$router.back()
@@ -100,7 +102,32 @@ export default {
         this._closingTemplatePage = false
       }
     },
-    async saveTemplateNow(notifySuccess = false) {
+    async refreshTemplatePreviewIcon() {
+      if (this._previewCapturing) return
+      const editor = this.$refs.templateEditor
+      if (!editor || typeof editor.capturePreviewBlob !== 'function') return
+      this._previewCapturing = true
+      try {
+        const blob = await editor.capturePreviewBlob()
+        if (!blob || blob.type !== 'image/png' || blob.size < 32) return
+        const formData = new FormData()
+        formData.append('file', blob, 'template-preview.png')
+        const res = await upload(formData)
+        if (res && res.fileName) {
+          this.template.templateIconUrl = res.fileName
+        }
+      } catch (_e) {
+        // Preview is best-effort; content save must not fail because of it.
+      } finally {
+        this._previewCapturing = false
+      }
+    },
+    async saveTemplateNow(notifySuccess = false, options = {}) {
+      const capturePreview = options.capturePreview === true
+        || (!this.template.templateIconUrl && options.capturePreview !== false)
+      if (capturePreview) {
+        await this.refreshTemplatePreviewIcon()
+      }
       const res = await updateTemplate(this.template)
       this.template = res.data
       await this.$nextTick()
@@ -111,7 +138,7 @@ export default {
       return res
     },
     onToolbarSave() {
-      this.saveTemplateNow(true).catch(() => {})
+      this.saveTemplateNow(true, { capturePreview: true }).catch(() => {})
     },
     getReportTemplate(id) {
       getReportTemplate(id).then((res) => {
@@ -133,7 +160,10 @@ export default {
         const delay = time ? time : 1000
         this.pushId = setTimeout(() => {
           this.pushId = null
-          this.saveTemplateNow().catch(() => {})
+          // Autosave: only capture preview when icon is still missing
+          this.saveTemplateNow(false, {
+            capturePreview: !this.template.templateIconUrl
+          }).catch(() => {})
         }, delay)
       }
     }

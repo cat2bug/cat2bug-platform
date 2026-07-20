@@ -268,6 +268,72 @@ export default {
     clear() {
       this.editorContent = ''
       this.emitContent()
+    },
+    /**
+     * Screenshot Milkdown (or source pane) for template card preview.
+     * @returns {Promise<Blob|null>}
+     */
+    async capturePreviewBlob() {
+      await this.$nextTick()
+      const root = this.$el
+      if (!root || typeof root.querySelector !== 'function') {
+        return null
+      }
+      let el = root.querySelector('.report-milkdown-editor')
+        || root.querySelector('.report-milkdown-host')
+        || root.querySelector('.markdown-body-edit')
+      if (!el && this.viewMode === 'source') {
+        el = this.$refs.sourceEditor?.$el || root.querySelector('.report-template-editor__edit')
+      }
+      if (!el) {
+        return null
+      }
+      try {
+        const html2canvas = (await import('html2canvas')).default
+        const maxW = 720
+        const maxH = 480
+        const canvas = await html2canvas(el, {
+          backgroundColor: '#ffffff',
+          scale: 1,
+          logging: false,
+          useCORS: true,
+          allowTaint: true,
+          width: Math.min(el.scrollWidth || el.clientWidth || maxW, maxW),
+          height: Math.min(el.scrollHeight || el.clientHeight || maxH, maxH),
+          windowWidth: Math.min(el.scrollWidth || el.clientWidth || maxW, maxW),
+          windowHeight: Math.min(el.scrollHeight || el.clientHeight || maxH, maxH),
+          onclone: (doc) => {
+            const cloned = doc.querySelector('.report-milkdown-editor')
+              || doc.querySelector('.report-milkdown-host')
+              || doc.querySelector('.markdown-body-edit')
+            if (!cloned) return
+            cloned.classList.remove('is-dark')
+            cloned.style.backgroundColor = '#ffffff'
+            cloned.style.color = '#303133'
+            cloned.querySelectorAll('.is-dark').forEach((node) => node.classList.remove('is-dark'))
+          }
+        })
+        return await new Promise((resolve) => {
+          if (typeof canvas.toBlob === 'function') {
+            canvas.toBlob((blob) => resolve(blob || null), 'image/png')
+            return
+          }
+          try {
+            const dataUrl = canvas.toDataURL('image/png')
+            const base64 = dataUrl.replace(/^data:image\/png;base64,/, '')
+            const binary = atob(base64)
+            const bytes = new Uint8Array(binary.length)
+            for (let i = 0; i < binary.length; i += 1) {
+              bytes[i] = binary.charCodeAt(i)
+            }
+            resolve(new Blob([bytes], { type: 'image/png' }))
+          } catch (_e) {
+            resolve(null)
+          }
+        })
+      } catch (_e) {
+        return null
+      }
     }
   }
 }
