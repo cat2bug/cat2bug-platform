@@ -9,7 +9,7 @@
 
 ## 模版预览 / DSL
 
-- [x] `defaults/README.md` 清单与 `taxonomy.md` 一致
+- [x] `29119-3/README.md` 清单与 `taxonomy.md` 一致
 - [x] 单元测试：`cd cat2bug-platform-ui && npm run test:unit -- --testPathPattern=national-standard-defaults-dsl`（10 passed）
 - [ ] 可选：在报告模版编辑器中粘贴 `test-status-report.md` / `test-completion-report.md` / `test-incident-report.md`，确认变量与 `$table` 可预览
 - [x] 确认模版未发明未登记的 `${api...}`（单测 `assertKnownTokens`）

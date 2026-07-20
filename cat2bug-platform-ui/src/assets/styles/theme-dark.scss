@@ -4878,6 +4878,17 @@ html.dark {
       background-color: transparent !important;
     }
 
+    /* 覆盖全局 .markdown-body h1–h6 { color:#24292e }，暗色标题可读 */
+    .markdown-body .ProseMirror h1,
+    .markdown-body .ProseMirror h2,
+    .markdown-body .ProseMirror h3,
+    .markdown-body .ProseMirror h4,
+    .markdown-body .ProseMirror h5,
+    .markdown-body .ProseMirror h6 {
+      color: var(--text-color-primary) !important;
+      border-bottom-color: var(--border-color-light) !important;
+    }
+
     .report-template-markdown-source .md-editor {
       background-color: #1e1e20 !important;
       color: var(--text-color-regular) !important;
@@ -5117,21 +5128,23 @@ html.dark {
         background-color: var(--table-row-hover-bg) !important;
       }
 
-      .el-image {
-        background-color: var(--input-bg) !important;
+      .el-image,
+      .cat2-bug-image {
+        /* 预制预览固定为白底截图，深色主题下也保持与浅色一致，勿用 multiply 压暗 */
+        background-color: #f5f6f8 !important;
         border: 1px solid var(--border-color-light) !important;
         box-sizing: border-box;
 
         .el-image__inner,
         .el-image__placeholder,
         .el-image__error {
-          background-color: var(--input-bg) !important;
+          background-color: #f5f6f8 !important;
         }
 
         .el-image__inner {
           object-fit: contain;
-          mix-blend-mode: multiply;
-          filter: brightness(0.92) contrast(1.08);
+          mix-blend-mode: normal;
+          filter: none;
         }
       }
 
@@ -5140,18 +5153,32 @@ html.dark {
       }
 
       .menu {
-        .el-button--text {
-          color: var(--text-color-secondary) !important;
+        background: rgba(255, 255, 255, 0.92) !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.22) !important;
+
+        .el-button--text,
+        .el-button.is-link,
+        .el-button {
+          color: #606266 !important;
 
           &:hover,
           &:focus {
-            color: #FFC107 !important;
+            color: #303133 !important;
+            background-color: rgba(0, 0, 0, 0.06) !important;
           }
+        }
+
+        .svg-icon {
+          color: #606266 !important;
+        }
+
+        button:hover .svg-icon {
+          color: #303133 !important;
         }
       }
 
       .menu button:hover {
-        background-color: rgba(255, 193, 7, 0.12) !important;
+        background-color: rgba(0, 0, 0, 0.06) !important;
       }
     }
   }

@@ -401,6 +401,13 @@
             <resource>
                 <directory>src/main/resources</directory>
                 <includes>
+                    <include>报告/模版/**</include>
+                </includes>
+                <filtering>false</filtering>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
                     <include>static/**</include>
                 </includes>
                 <filtering>false</filtering>

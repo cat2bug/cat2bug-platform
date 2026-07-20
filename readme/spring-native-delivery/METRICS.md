@@ -1,6 +1,6 @@
 # Spring Native 发布物度量
 
-记录 **embedded 单文件 Native** 与 JVM 对照。Quarkus 列为参考基线（`feature/quarkus-full-migration` 实测）。
+记录 **embedded 单文件 Native** 与 JVM 对照。表中「历史对照基线」列为早期实验分支实测，**非** 当前产品交付路径。
 
 ## 构建命令
 
@@ -42,9 +42,9 @@ DATA_VOL=cat2bug-native-coldstart-data CONFIG_VOL=cat2bug-native-coldstart-confi
 ARCH=amd64 ./deploy/test/measure-native-coldstart.sh raw 3   # x86_64 Linux / ubuntu-latest CI（需 cat2bug-admin-linux-amd64）
 ```
 
-## 参考对照（Quarkus embedded，非 Spring 实测）
+## 参考对照（历史 Quarkus embedded 基线，非 Spring 实测、非当前交付）
 
-| 指标 | Quarkus embedded Native | Spring Native（arm64 ELF，API-only） |
+| 指标 | 历史对照基线（Quarkus embedded Native） | Spring Native（arm64 ELF，API-only） |
 |------|------------------------|--------------------------------------|
 | 未压缩 ELF amd64 | ~190 MB | **333 MB**（2026-06-14，API-only） |
 | UPX amd64 | ~42 MB | **84 MB**（25.1%） |
@@ -116,7 +116,7 @@ GitHub Actions workflow [`.github/workflows/spring-native.yml`](../../.github/wo
 | Phase 3（API-only） | **333 MB** | **89 MB**（26.8%） | raw **-6.7%** / UPX **-5.3%** | packaging-slim + CaptchaPngRenderer + Graal locale；POI 仍在 |
 | **Phase 3（embedded）** | **312 MB** | **77 MB**（24.7%） | raw **-6.3%** vs API-only | `UPX_IN_DOCKER=true ./deploy/build-native-spring.sh aarch64`（2026-06-15） |
 | **Phase 3（embedded，POI 剔除后）** | **304 MB** | **76 MB**（24.85%） | raw **-2.6%** / UPX **-1.3%** vs POI 前 | 同上命令（2026-06-15）；`verify-native-no-poi.sh` **通过** |
-| Quarkus 对照 | ~190 MB | ~42 MB | — | B9 FastExcel 已完成 |
+| 历史对照基线 | ~190 MB | ~42 MB | — | B9 FastExcel 已完成 |
 
 **精确字节（Phase 3 embedded arm64，2026-06-15）：** raw `326,823,136` · UPX `80,733,516`
 

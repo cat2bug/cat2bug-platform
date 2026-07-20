@@ -158,7 +158,7 @@ export function filterDynamicRoutes(routes) {
   return res
 }
 
-const LOAD_VIEW_USE_REQUIRE = ['development', 'embedded', 'embedded-quarkus']
+const LOAD_VIEW_USE_REQUIRE = ['development', 'embedded']
 
 export const loadView = (view) => {
   if (LOAD_VIEW_USE_REQUIRE.includes(process.env.NODE_ENV)) {

@@ -15,6 +15,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import com.cat2bug.web.excel.ExcelHttpSupport;
 import com.cat2bug.web.service.excel.SystemExcelExportService;
+import com.cat2bug.common.utils.StringUtils;
+import com.cat2bug.web.service.report.ReportPresetTemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import java.io.IOException;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -49,7 +51,11 @@ public class SysReportController extends BaseController
     private SystemExcelExportService systemExcelExportService;
 
     @Autowired
+    private ReportPresetTemplateService reportPresetTemplateService;
+
+    @Autowired
     private IMemberFocusService memberFocusService;
+
     /**
      * 查询报告列表
      */
@@ -188,6 +194,24 @@ public class SysReportController extends BaseController
             ipAddress="";
         }
         sysReport.setReportSource(ipAddress);
+        if (StringUtils.isEmpty(sysReport.getReportDescription())
+                && StringUtils.isNotEmpty(sysReport.getPresetGroup())
+                && StringUtils.isNotEmpty(sysReport.getPresetKey()))
+        {
+            String presetKey = sysReport.getPresetKey();
+            if (!presetKey.contains("/") && sysReport.getParams() != null)
+            {
+                Object folder = sysReport.getParams().get("presetFolder");
+                if (folder != null && StringUtils.isNotEmpty(folder.toString()))
+                {
+                    presetKey = folder + "/" + presetKey;
+                }
+            }
+            sysReport.setReportDescription(
+                    reportPresetTemplateService.readMarkdownByPresetKey(
+                            sysReport.getPresetGroup(),
+                            presetKey));
+        }
         return toAjax(sysReportService.insertSysReport(sysReport));
     }
 

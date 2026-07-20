@@ -75,4 +75,10 @@ public class SysReport<T> extends BaseEntity
     private List<SysUser> focusList;
     /** 报告KEY */
     private String reportKey;
+
+    /** 从 classpath 预制生成报告时分组（非持久化） */
+    private String presetGroup;
+
+    /** 从 classpath 预制生成报告时 key，9001 可为 {@code manuals/quality-manual}（非持久化） */
+    private String presetKey;
 }

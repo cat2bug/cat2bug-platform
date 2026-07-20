@@ -376,7 +376,7 @@ export default {
 .comment-input-tools {
   display: flex;
   flex-direction: row;
-  justify-content: flex-start;
+  justify-content: flex-end;
   align-items: center;
   width: 100%;
   box-sizing: border-box;
@@ -395,7 +395,10 @@ export default {
   display: inline-flex;
   flex-direction: row;
   align-items: center;
-  gap: 6px;
-  margin-left: auto;
+  gap: 10px;
+
+  :deep(.el-button + .el-button) {
+    margin-left: 0;
+  }
 }
 </style>

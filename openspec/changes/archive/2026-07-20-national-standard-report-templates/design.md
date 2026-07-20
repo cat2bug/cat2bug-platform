@@ -58,7 +58,7 @@
 
 ### D4 — 默认模版交付形态
 
-- **选择**：Markdown 文件（含 DSL）放在 `readme/development/skills/report-templates/defaults/`；若产品需要入库，另增可选任务：导入为系统预置模版（design 允许分阶段，首期以 skills/仓库文件为准）。
+- **选择**：Markdown 文件（含 DSL）放在 `readme/development/skills/report-templates/29119-3/`；若产品需要入库，另增可选任务：导入为系统预置模版（design 允许分阶段，首期以 skills/仓库文件为准）。
 - **替代**：直接写库 SQL seed —— 首期不做，降低耦合。
 
 ### D5 — Apply 并行策略

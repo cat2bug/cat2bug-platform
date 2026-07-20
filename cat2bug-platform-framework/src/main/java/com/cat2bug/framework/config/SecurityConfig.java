@@ -107,7 +107,9 @@ public class SecurityConfig {
                             ant(HttpMethod.GET, "/**/*.css"),
                             ant(HttpMethod.GET, "/**/*.js"),
                             ant(HttpMethod.GET, "/profile/**"),
-                            ant(HttpMethod.GET, "/docs/**")
+                            ant(HttpMethod.GET, "/docs/**"),
+                            // 预制报告模版预览图由 <img> 加载，不会带 token
+                            ant(HttpMethod.GET, "/system/report/template/preset/**/preview")
                     ).permitAll();
                     registry.requestMatchers(
                             ant("/doc.html"),

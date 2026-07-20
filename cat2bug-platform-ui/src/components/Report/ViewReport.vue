@@ -139,6 +139,7 @@
           <div
             v-if="isEditing"
             class="report-template-editor report-body-visual-editor"
+            :class="{ 'report-template-editor--dark': isEditorDark }"
           >
             <milkdown-editor
               ref="reportEditor"
@@ -292,6 +293,8 @@ import { rewriteReportSnapshotImageSrcs } from "@/components/ReportTemplateEdito
 import {extractHeadings, createScrollSpy, reorderMarkdownHeadingBlocks, splitMarkdownHeadingBlocks} from "@/components/Report/annotation/report-toc";
 import { countReportChars } from "@/components/Report/annotation/report-char-count";
 import "@/components/ReportTemplateEditor/milkdown-crepe-theme.scss";
+import { isReportEditorDarkMode } from "@/components/ReportTemplateEditor/report-editor-theme";
+import { useSettingsStore } from "@/stores/settings";
 import {
   ANNOTATABLE_SELECTOR,
   getBlockText,
@@ -468,6 +471,10 @@ export default {
     },
     canEdit() {
       return checkPermi(['system:report:edit']);
+    },
+    isEditorDark() {
+      const settingsStore = useSettingsStore(pinia);
+      return settingsStore.themeMode === 'dark' || isReportEditorDarkMode();
     },
     /** markdown-it 预览：把 /static/img 项目图标解析成可加载 URL（不写回正文） */
     displayReportDescription() {

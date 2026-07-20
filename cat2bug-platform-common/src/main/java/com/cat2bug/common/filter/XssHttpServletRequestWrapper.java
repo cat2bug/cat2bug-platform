@@ -1,15 +1,9 @@
 package com.cat2bug.common.filter;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import jakarta.servlet.ReadListener;
 import jakarta.servlet.ServletInputStream;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletRequestWrapper;
-import org.apache.commons.io.IOUtils;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import com.cat2bug.common.utils.StringUtils;
 import com.cat2bug.common.utils.html.EscapeUtil;
 
 /**
@@ -48,64 +42,12 @@ public class XssHttpServletRequestWrapper extends HttpServletRequestWrapper
     @Override
     public ServletInputStream getInputStream() throws IOException
     {
-        // 非json类型，直接返回
-        if (!isJsonRequest())
-        {
-            return super.getInputStream();
-        }
-
-        // 为空，直接返回
-        String json = IOUtils.toString(super.getInputStream(), "utf-8");
-        if (StringUtils.isEmpty(json))
-        {
-            return super.getInputStream();
-        }
-
-        // xss过滤
-        json = EscapeUtil.clean(json).trim();
-        byte[] jsonBytes = json.getBytes("utf-8");
-        final ByteArrayInputStream bis = new ByteArrayInputStream(jsonBytes);
-        return new ServletInputStream()
-        {
-            @Override
-            public boolean isFinished()
-            {
-                return true;
-            }
-
-            @Override
-            public boolean isReady()
-            {
-                return true;
-            }
-
-            @Override
-            public int available() throws IOException
-            {
-                return jsonBytes.length;
-            }
-
-            @Override
-            public void setReadListener(ReadListener readListener)
-            {
-            }
-
-            @Override
-            public int read() throws IOException
-            {
-                return bis.read();
-            }
-        };
-    }
-
-    /**
-     * 是否是Json请求
-     * 
-     * @param request
-     */
-    public boolean isJsonRequest()
-    {
-        String header = super.getHeader(HttpHeaders.CONTENT_TYPE);
-        return StringUtils.startsWithIgnoreCase(header, MediaType.APPLICATION_JSON_VALUE);
+        /*
+         * JSON 请求体禁止整段 EscapeUtil.clean / HTMLFilter。
+         * 报告正文等含 <img src="..."> 时，过滤器会弄坏 JSON 字符串转义，
+         * Jackson 报 Unexpected character ('a')...（见 /system/report PUT）。
+         * 表单参数仍走 getParameterValues；字段级可用 @Xss。
+         */
+        return super.getInputStream();
     }
 }

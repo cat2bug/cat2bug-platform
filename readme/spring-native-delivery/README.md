@@ -4,9 +4,9 @@
 
 ## 分支
 
-- 开发分支：`feature/spring-native-upx`
-- 基线：`core`（Spring Boot 3.3.13）
-- 与 `feature/quarkus-full-migration` 并行；Quarkus 线作对照与 cherry-pick 来源
+- 开发分支：`feature/spring-native-upx`（历史；默认 Release 已合入 `core`）
+- 基线：`core`（Spring Boot 3.3.x）
+- 可执行后端：**仅** `cat2bug-platform-admin`（Spring Boot / Spring Native）
 
 ## 文档
 
@@ -17,7 +17,7 @@
 | [PHASE-2.md](PHASE-2.md) | 全功能 Native parity 与冒烟清单 |
 | [PHASE-3.md](PHASE-3.md) | 体积优化与 UPX |
 | [PHASE-4.md](PHASE-4.md) | RPM / 本地交付 / Go-Live |
-| [METRICS.md](METRICS.md) | 体积/冷启动实测（对照 Quarkus） |
+| [METRICS.md](METRICS.md) | 体积/冷启动实测（含历史对照基线） |
 | [NATIVE-API-SMOKE-TEST-PLAN.md](NATIVE-API-SMOKE-TEST-PLAN.md) | API 冒烟分层说明 |
 
 ## 构建命令（Phase 0 起）
@@ -30,11 +30,11 @@ mvn -pl cat2bug-platform-admin -am package -DskipTests
 ./deploy/build-native-spring.sh x86_64
 ```
 
-## 与 Quarkus 线关系
+## 历史对照（已退役 Quarkus 交付）
 
-- `feature/quarkus-full-migration`：**已冻结为对照/reference**（体积基线 190/42 MB、FastExcel/Captcha 实现源；历史分支仍可查阅）
-- 生产默认交付：**Spring Native**（`./deploy/build-native-spring.sh`）
-- Quarkus 模块（`cat2bug-platform-quarkus-*`）已从本仓库移除
+- 本仓库 **不再** 构建或发布 Quarkus 模块；`cat2bug-platform-quarkus-*` 已从 `core` 移除。
+- `METRICS.md` 中 **190 MB / 42 MB UPX** 等数字为早期 `feature/quarkus-full-migration` 实测，仅作体积对照，**非** 当前交付路径。
+- 生产默认交付：**Spring Native**（`./deploy/build-native-spring.sh`）；开发/回滚：**Spring Boot JVM**（`mvn spring-boot:run` / `cat2bug-admin.jar`）。
 
 ## OpenSpec
 

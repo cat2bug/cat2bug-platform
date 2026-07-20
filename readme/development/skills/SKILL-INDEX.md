@@ -2,8 +2,8 @@
 name: cat2bug-report-skills-index
 description: >-
   Index for Cat2Bug report template AI skills: national test standards (GB/T 38634 /
-  ISO 29119), Cat2Bug Markdown DSL variables, and default templates. Use when
-  authoring or reviewing test report templates.
+  ISO 29119), ISO 9001 / GB/T 19001 QMS, Cat2Bug Markdown DSL variables, and
+  default templates. Use when authoring or reviewing test report or QMS templates.
 ---
 
 # Cat2Bug 报告模版 Skills 索引
@@ -13,8 +13,9 @@ description: >-
 | 场景 | 先读 | 再读 |
 |------|------|------|
 | 写/改报告模版 DSL | `cat2bug-report-dsl/SKILL.md` | `variables-reference.md` 等 |
-| 对齐国标文档结构 | 本索引 + `standards/gb-t-38634-overview.md` | 仅打开任务相关 `_sources` 切片 |
-| 选默认模版形态 | `report-templates/taxonomy.md` | `report-templates/defaults/*` |
+| 对齐国标**测试文档**结构 | 本索引 + `standards/gb-t-38634-overview.md` | 仅打开任务相关 `_sources` 切片；模版见 `29119-3/` |
+| 选 29119-3 默认模版形态 | `report-templates/taxonomy.md` | `report-templates/29119-3/*` |
+| ISO 9001 / GB/T 19001 **QMS** 手册、程序、记录 | `report-templates/9001/SKILL.md` | `9001/manuals/`、`9001/records/`；与测试文档分工见 `9001/vs-29119-3.md` |
 
 ## 国标裁剪原则（摘要）
 
@@ -45,7 +46,7 @@ readme/development/skills/
 ├── _sources/                      ← OCR / ISO 切片（按需读）
 ├── standards/                     ← 国标摘要 skills
 ├── cat2bug-report-dsl/            ← DSL / 变量 skills
-└── report-templates/              ← taxonomy + defaults/
+└── report-templates/              ← taxonomy + 29119-3/ + 9001/
 ```
 
 ## Standards skills（链接）
@@ -60,17 +61,29 @@ readme/development/skills/
 
 | 文件 | 用途 |
 |------|------|
-| `report-templates/taxonomy.md` | 信息项 → standalone / combined / appendix / skeleton-only；推荐 `defaults/*` 文件名 |
-| `report-templates/defaults/README.md` | 默认模版库存一览 |
-| `report-templates/defaults/test-status-report.md` | 测试状态报告（P0） |
-| `report-templates/defaults/test-completion-report.md` | 测试完成报告（P0） |
-| `report-templates/defaults/test-plan.md` | 测试计划（P0） |
-| `report-templates/defaults/test-incident-report.md` | 测试事件/缺陷报告（P0） |
-| `report-templates/defaults/test-specification.md` | 测试说明 8.2–8.4（P1） |
-| `report-templates/defaults/test-data-readiness-report.md` | 测试数据就绪（P2） |
-| `report-templates/defaults/test-environment-readiness-report.md` | 测试环境就绪（P2） |
-| `report-templates/defaults/skeleton-test-policy.md` | 测试方针骨架（P3） |
-| `report-templates/defaults/skeleton-organizational-test-practices.md` | 组织级测试实践骨架（P3） |
+| `report-templates/taxonomy.md` | 信息项 → standalone / combined / appendix / skeleton-only；推荐 `29119-3/*` 文件名 |
+| `report-templates/29119-3/README.md` | 默认模版库存一览 |
+| `report-templates/29119-3/test-status-report.md` | 测试状态报告（P0） |
+| `report-templates/29119-3/test-completion-report.md` | 测试完成报告（P0） |
+| `report-templates/29119-3/test-plan.md` | 测试计划（P0） |
+| `report-templates/29119-3/test-incident-report.md` | 测试事件/缺陷报告（P0） |
+| `report-templates/29119-3/test-specification.md` | 测试说明（模型/用例/规程，P1） |
+| `report-templates/29119-3/test-data-readiness-report.md` | 测试数据就绪（P2） |
+| `report-templates/29119-3/test-environment-readiness-report.md` | 测试环境就绪（P2） |
+| `report-templates/29119-3/skeleton-test-policy.md` | 测试方针（P3） |
+| `report-templates/29119-3/skeleton-organizational-test-practices.md` | 组织级测试实践（P3） |
+
+## QMS 9001 skills（链接）
+
+| 文件 | 用途 |
+|------|------|
+| `report-templates/9001/SKILL.md` | QMS 入口；与 29119-3 分工、PDCA、加载顺序 |
+| `report-templates/9001/README.md` | 9001 目录库存一览 |
+| `report-templates/9001/overview-iso-9001-gbt-19001.md` | ISO 9001:2015 ↔ GB/T 19001-2016 条款意图摘要 |
+| `report-templates/9001/cat2bug-qms-mapping.md` | QMS 证据 ↔ Cat2Bug 能力映射（含缺口） |
+| `report-templates/9001/vs-29119-3.md` | QMS 记录 vs 测试文档信息项 |
+| `report-templates/9001/manuals/` | 质量手册与程序文件 |
+| `report-templates/9001/records/` | 过程记录模版（含测试用例评审记录等） |
 
 ## Cat2Bug DSL skills（链接）
 
@@ -86,4 +99,4 @@ readme/development/skills/
 1. `cat2bug-report-dsl/SKILL.md` + `authoring-rules.md`
 2. `report-templates/taxonomy.md`
 3. 按 taxonomy 打开 **一个** 相关标准切片（如完成报告章节）
-4. 编写 `defaults/*.md`（仅用已文档化 DSL）
+4. 编写 `29119-3/*.md`（仅用已文档化 DSL）

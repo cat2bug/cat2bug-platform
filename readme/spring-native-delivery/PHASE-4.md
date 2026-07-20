@@ -13,7 +13,7 @@
 | 4.3 | Docker minimal 默认交付 | **完成**：`run-native-spring-minimal.sh` + OpenSpec 别名 `run-native-minimal.sh` |
 | 4.4 | CI | **草案已同步**（2026-06-15）：`.github/workflows/spring-native.yml` 与 `deploy/ci/spring-native.yml` 双架构构建 + 冒烟；仓库默认不强制启用 Actions |
 | 4.5 | 根 README / deploy 文档切换默认 Release | **已完成**（2026-06-15）：根 `README.md`、`CLAUDE.md`、`deploy/README.md` |
-| 4.6 | Quarkus 线标注 archived | **已完成**（2026-06-15）：见 `readme/spring-native-delivery/README.md` |
+| 4.6 | 历史 Quarkus 交付标注 retired | **已完成**（2026-06-15 起对照；2026-07 起 `core` 移除 Quarkus 模块）：见 `readme/spring-native-delivery/README.md` |
 | 4.7 | Go-Live 检查清单 | **完成** |
 
 ## 默认 Release 命令
@@ -149,10 +149,11 @@ AlmaLinux 9 基础镜像已带 `curl-minimal`，无需再 `dnf install curl`（�
 - [x] 文档：根 README 指向 Spring Native 为默认 Release（4.5）
 - [x] 本地冒烟脚本链：`deploy/test/native-*.sh`（不维护 CI）
 
-## 与 Quarkus 线关系
+## 交付线（当前）
 
-- `feature/quarkus-full-migration`：**archived / 参考对照**（体积基线、FastExcel 实现源；见 `readme/spring-native-delivery/README.md`）
-- 生产默认交付已切换至 **Spring Native**（任务 4.5/4.6 已完成）
+- 生产默认：**Spring Native**（`./deploy/build-native-spring.sh`）
+- 开发与回滚：**Spring Boot** `cat2bug-platform-admin`（JVM）
+- Quarkus 模块与 deploy 脚本已从 `core` 移除；体积对照见 `METRICS.md` 历史列
 
 ## 已知差距（不阻塞 Go-Live）
 

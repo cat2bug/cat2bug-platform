@@ -10,7 +10,7 @@ import {
 
 const defaultsDir = path.join(
   __dirname,
-  '../../../../readme/development/skills/report-templates/defaults'
+  '../../../../readme/development/skills/report-templates/29119-3'
 )
 
 const DEFAULT_FILES = [

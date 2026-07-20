@@ -366,15 +366,31 @@ export default {
   background-color: var(--el-fill-color-light, #f5f7fa);
   box-sizing: border-box;
   z-index: 3;
+}
 
+/* 讨论框工具栏：表情 + 发言/取消靠右；按钮再小一号，两按钮间距 10px */
+.report-detail-comments-draft,
+.report-thread {
+  :deep(.comment-input-tools) {
+    justify-content: flex-end;
+    gap: 6px;
+  }
+  :deep(.comment-input-tools-actions) {
+    gap: 10px;
+  }
   :deep(.comment-input-tools-actions .el-button) {
-    height: 24px;
-    padding: 0 10px;
-    font-size: 12px;
+    height: 20px;
+    min-height: 20px;
+    padding: 0 6px;
+    font-size: 11px;
+    margin-left: 0;
+  }
+  :deep(.comment-input-tools-actions .el-button + .el-button) {
+    margin-left: 0;
   }
   :deep(.comment-input-tools .emoji-button) {
-    width: 22px;
-    height: 22px;
+    width: 18px;
+    height: 18px;
   }
 }
 .report-detail-comments-draft-quote {

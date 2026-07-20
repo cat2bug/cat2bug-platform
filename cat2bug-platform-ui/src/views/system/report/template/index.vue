@@ -18,6 +18,7 @@
 </template>
 
 <script>
+// 本页使用 listReportTemplate，仅列出 DB 中的项目自定义模版；classpath 预制不在此列表，需从「生成报告」分组选择器复制后在此编辑。
 
 import {addReportTemplate, listReportTemplate} from "@/api/system/ReportTemplate";
 import Cat2BugImage from '@/components/Cat2BugImage'

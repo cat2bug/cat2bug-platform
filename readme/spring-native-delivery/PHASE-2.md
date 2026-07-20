@@ -123,14 +123,14 @@ mvn -pl cat2bug-platform-admin -am package -DskipTests
 补充：`mvn -pl cat2bug-platform-system test` 可作为 system 模块 spot-check，输出可追加到同一 log。
 
 
-## 与 Quarkus 线 cherry-pick 对照
+## 自历史实验分支移植的对照
 
-| 已移植 | 来源 |
+| 已移植 | 来源（历史分支 / 提交，非当前交付） |
 |--------|------|
-| FastExcel SPI（B9） | quarkus-admin excel 包 |
-| CaptchaPngRenderer | quarkus Captcha |
+| FastExcel SPI（B9） | 早期 Quarkus 实验线 excel 包 |
+| CaptchaPngRenderer | 同上 Captcha 实现 |
 | packaging-slim | prod-docs-images-slim |
-| UPX / Docker minimal 脚本结构 | quarkus deploy |
+| UPX / Docker minimal 脚本结构 | 本仓库 `deploy/` Spring Native 脚本（已取代 Quarkus deploy） |
 
 ## 已知差距（不阻塞 Phase 3/4）
 

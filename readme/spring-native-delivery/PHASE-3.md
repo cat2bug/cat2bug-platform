@@ -69,7 +69,7 @@
 | UPX | < 65 MB | **89 MB** | **未达标**；不阻塞 Phase 4 |
 | 冷启动 UPX | < 5 s | 冒烟通过 | 精确秒数待 Docker 补测 |
 
-**Quarkus 对照（embedded）：** raw ~190 MB / UPX ~42 MB — Spring 仍偏大主因：**POI + 未完成的 FastExcel 替换**、Spring 框架本身大于 Quarkus。
+**历史对照基线（embedded，已退役 Quarkus 线）：** raw ~190 MB / UPX ~42 MB — Spring 仍偏大主因：**POI + 未完成的 FastExcel 替换**、Spring 框架体积。
 
 ## 重建与验收
 
@@ -88,11 +88,10 @@ SKIP_EMBEDDED=true UPX_IN_DOCKER=true ./deploy/build-native-spring.sh aarch64
 
 ## 后续（不阻塞 Phase 4）
 
-1. **Phase 2.10 / B9：** cherry-pick Quarkus FastExcel 服务层，Native 排除 POI（预计最大体积收益）
+1. **Phase 2.10 / B9：** FastExcel 服务层（自历史实验线移植），Native 排除 POI（预计最大体积收益）
 2. amd64 双架构 CI + 冷启动/RSS 系统补测
 3. embedded SPA 全量重建对比（当前 API-only 与 Phase 1 可比）
 
 ## 参考
 
-- [B9-EXCEL-NATIVE-MIGRATION.md](../../readme/quarkus-full-migration/B9-EXCEL-NATIVE-MIGRATION.md)
 - [METRICS.md](./METRICS.md)

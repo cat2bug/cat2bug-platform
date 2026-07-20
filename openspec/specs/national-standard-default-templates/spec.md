@@ -29,7 +29,7 @@ The default template set SHALL cover the primary standard reporting scenarios ne
 
 #### Scenario: Status and completion defaults exist
 
-- **WHEN** an agent lists `readme/development/skills/report-templates/defaults/`
+- **WHEN** an agent lists `readme/development/skills/report-templates/29119-3/`
 - **THEN** files (or clearly named equivalents) for test status and test completion oriented templates MUST be present
 
 #### Scenario: Skeleton for low-DSL documents

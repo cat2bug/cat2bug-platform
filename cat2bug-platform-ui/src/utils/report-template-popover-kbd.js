@@ -198,6 +198,13 @@ function noopEvent() {
   return { stopPropagation() {} }
 }
 
+function flatTemplatesForKbd(vm) {
+  if (typeof vm.getReportTemplateFlatList === 'function') {
+    return vm.getReportTemplateFlatList() || []
+  }
+  return vm.flatTemplateList || vm.templateList || []
+}
+
 function activateCardCopy(vm) {
   const idx = getFocusedCardIndex(vm)
   if (idx < 0) return false
@@ -205,7 +212,7 @@ function activateCardCopy(vm) {
     vm.copyReportTemplateAtIndex(idx)
     return true
   }
-  const template = vm.templateList && vm.templateList[idx]
+  const template = flatTemplatesForKbd(vm)[idx]
   if (!template || typeof vm.copyReportTemplate !== 'function') return false
   vm.copyReportTemplate(noopEvent(), template)
   return true
@@ -214,11 +221,14 @@ function activateCardCopy(vm) {
 function activateCardEdit(vm) {
   const idx = getFocusedCardIndex(vm)
   if (idx < 0) return false
+  if (typeof vm.isReportTemplateEditableAtIndex === 'function' && !vm.isReportTemplateEditableAtIndex(idx)) {
+    return false
+  }
   if (typeof vm.editReportTemplateAtIndex === 'function') {
     vm.editReportTemplateAtIndex(idx)
     return true
   }
-  const template = vm.templateList && vm.templateList[idx]
+  const template = flatTemplatesForKbd(vm)[idx]
   if (!template || typeof vm.goReportTemplateView !== 'function') return false
   vm.goReportTemplateView(noopEvent(), template.templateId)
   return true
@@ -227,11 +237,14 @@ function activateCardEdit(vm) {
 function activateCardDelete(vm) {
   const idx = getFocusedCardIndex(vm)
   if (idx < 0) return false
+  if (typeof vm.isReportTemplateDeletableAtIndex === 'function' && !vm.isReportTemplateDeletableAtIndex(idx)) {
+    return false
+  }
   if (typeof vm.deleteReportTemplateAtIndex === 'function') {
     vm.deleteReportTemplateAtIndex(idx)
     return true
   }
-  const template = vm.templateList && vm.templateList[idx]
+  const template = flatTemplatesForKbd(vm)[idx]
   if (!template || typeof vm.deleteReport !== 'function') return false
   vm.deleteReport(noopEvent(), template.templateId)
   return true

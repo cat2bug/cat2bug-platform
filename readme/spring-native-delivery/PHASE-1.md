@@ -67,7 +67,7 @@ SKIP_EMBEDDED=true UPX_COMPRESS=false CONTAINER_BUILD=false ./deploy/build-nativ
 | 构建方式 | 本机 GraalVM 17（macOS arm64） |
 | 编译耗时 | ~5m 38s（含 AOT + native-image） |
 | 二进制大小 | **362 MB** raw（Mach-O arm64） |
-| Quarkus 对照 | ~190 MB ELF raw / ~42 MB UPX |
+| 历史对照基线（已退役 Quarkus 线） | ~190 MB ELF raw / ~42 MB UPX |
 | 编译 | ✅ BUILD SUCCESS |
 | 启动 | ✅ 2026-06-14：arm64 容器 embedded 构建可启动；`/version`、登录 API、H2 SQL 统计接口冒烟通过 |
 
@@ -81,4 +81,4 @@ SKIP_EMBEDDED=true UPX_COMPRESS=false CONTAINER_BUILD=false ./deploy/build-nativ
 
 ## Kill Gate
 
-8 周内 Phase 1 未通过 → 文档化 blocker，保留 Quarkus 作为备选交付路径。
+8 周内 Phase 1 未通过 → 文档化 blocker；继续以 Spring Boot JVM 为可运行后端，评估是否终止 Native 路线（**不**恢复 Quarkus 交付）。

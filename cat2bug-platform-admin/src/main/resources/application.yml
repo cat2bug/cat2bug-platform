@@ -237,6 +237,8 @@ xss:
   # 过滤开关
   enabled: true
   # 排除链接（多个用逗号分隔）
-  excludes: /system/notice,system/comment
+  # /system/report：正文/模版含 HTML、Markdown、DSL；整段 JSON 走 HTMLFilter 会弄坏引号（保存报 JSON parse error）
+  excludes: /system/notice,system/comment,/system/report,/system/report/**
   # 匹配链接
   urlPatterns: /system/*,/monitor/*,/tool/*
+
