@@ -1,0 +1,64 @@
+{
+  "standard": "GB/T 38634.2-2020",
+  "title": "GB/T 38634.2-2020 系统与软件工程 软件测试 第2部分：测试过程",
+  "isoCounterpart": "ISO/IEC/IEEE 29119-2",
+  "sourcePdf": "GB-T38634.2-2020系统与软件工程　软件测试　第2部分：测试过程.pdf",
+  "totalPages": 54,
+  "dpi": 200,
+  "ocrLang": "chi_sim+eng",
+  "rawTextFile": "_raw-all-pages.txt",
+  "pagesDir": "pages/",
+  "slices": [
+    {
+      "id": "front-toc",
+      "title": "封面/前言/目录",
+      "pageStart": 1,
+      "pageEnd": 8,
+      "path": "front-toc.md",
+      "isoPointer": "ISO/IEC/IEEE 29119-2",
+      "note": "Approximate chapter bounds; refine after TOC OCR QA"
+    },
+    {
+      "id": "org-process",
+      "title": "组织级测试过程",
+      "pageStart": 9,
+      "pageEnd": 22,
+      "path": "org-process.md",
+      "isoPointer": "ISO/IEC/IEEE 29119-2",
+      "note": "Approximate chapter bounds; refine after TOC OCR QA"
+    },
+    {
+      "id": "mgmt-process",
+      "title": "测试管理过程",
+      "pageStart": 23,
+      "pageEnd": 38,
+      "path": "mgmt-process.md",
+      "isoPointer": "ISO/IEC/IEEE 29119-2",
+      "note": "Approximate chapter bounds; refine after TOC OCR QA"
+    },
+    {
+      "id": "dynamic-process",
+      "title": "动态测试过程",
+      "pageStart": 39,
+      "pageEnd": 50,
+      "path": "dynamic-process.md",
+      "isoPointer": "ISO/IEC/IEEE 29119-2",
+      "note": "Approximate chapter bounds; refine after TOC OCR QA"
+    },
+    {
+      "id": "annex",
+      "title": "附录与参考文献",
+      "pageStart": 51,
+      "pageEnd": 54,
+      "path": "annex.md",
+      "isoPointer": "ISO/IEC/IEEE 29119-2",
+      "note": "Approximate chapter bounds; refine after TOC OCR QA"
+    }
+  ],
+  "qa": {
+    "tocReadable": null,
+    "failedPages": [],
+    "failedPageCount": 0,
+    "notes": "Auto QA: short/few-CJK pages listed. Part 3 tocReadable checks key terms in front-toc.md."
+  }
+}

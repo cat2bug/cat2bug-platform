@@ -1,0 +1,83 @@
+{
+  "standard": "GB/T 38634.4-2020",
+  "title": "GB/T 38634.4-2020 系统与软件工程 软件测试 第4部分：测试技术",
+  "isoCounterpart": "ISO/IEC/IEEE 29119-4",
+  "sourcePdf": "GB-T38634.4-2020系统与软件工程   软件测试  第4部分：测试技术.pdf",
+  "totalPages": 127,
+  "dpi": 200,
+  "ocrLang": "chi_sim+eng",
+  "rawTextFile": "_raw-all-pages.txt",
+  "pagesDir": "pages/",
+  "slices": [
+    {
+      "id": "front-toc",
+      "title": "封面/前言/目录",
+      "pageStart": 1,
+      "pageEnd": 12,
+      "path": "front-toc.md",
+      "isoPointer": "ISO/IEC/IEEE 29119-4",
+      "note": "Approximate chapter bounds; refine after TOC OCR QA"
+    },
+    {
+      "id": "techniques-overview",
+      "title": "测试技术总则",
+      "pageStart": 13,
+      "pageEnd": 40,
+      "path": "techniques-overview.md",
+      "isoPointer": "ISO/IEC/IEEE 29119-4",
+      "note": "Approximate chapter bounds; refine after TOC OCR QA"
+    },
+    {
+      "id": "specification-based",
+      "title": "基于规格的技术",
+      "pageStart": 41,
+      "pageEnd": 80,
+      "path": "specification-based.md",
+      "isoPointer": "ISO/IEC/IEEE 29119-4",
+      "note": "Approximate chapter bounds; refine after TOC OCR QA"
+    },
+    {
+      "id": "structure-experience",
+      "title": "基于结构/经验的技术",
+      "pageStart": 81,
+      "pageEnd": 115,
+      "path": "structure-experience.md",
+      "isoPointer": "ISO/IEC/IEEE 29119-4",
+      "note": "Approximate chapter bounds; refine after TOC OCR QA"
+    },
+    {
+      "id": "annex",
+      "title": "附录与参考文献",
+      "pageStart": 116,
+      "pageEnd": 127,
+      "path": "annex.md",
+      "isoPointer": "ISO/IEC/IEEE 29119-4",
+      "note": "Approximate chapter bounds; refine after TOC OCR QA"
+    }
+  ],
+  "qa": {
+    "tocReadable": null,
+    "failedPages": [
+      {
+        "page": 2,
+        "reason": "too_short_or_few_cjk",
+        "chars": 0,
+        "cjk": 0
+      },
+      {
+        "page": 4,
+        "reason": "too_short_or_few_cjk",
+        "chars": 0,
+        "cjk": 0
+      },
+      {
+        "page": 127,
+        "reason": "too_short_or_few_cjk",
+        "chars": 264,
+        "cjk": 1
+      }
+    ],
+    "failedPageCount": 3,
+    "notes": "Auto QA: short/few-CJK pages listed. Part 3 tocReadable checks key terms in front-toc.md."
+  }
+}

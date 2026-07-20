@@ -1,0 +1,104 @@
+{
+  "standard": "GB/T 38634.3-2020",
+  "title": "GB/T 38634.3-2020 系统与软件工程 软件测试 第3部分：测试文档",
+  "isoCounterpart": "ISO/IEC/IEEE 29119-3",
+  "sourcePdf": "GB-T38634.3-2020系统与软件工程   软件测试  第3部分：测试文档.pdf",
+  "totalPages": 111,
+  "dpi": 220,
+  "ocrLang": "chi_sim+eng",
+  "rawTextFile": "_raw-all-pages.txt",
+  "pagesDir": "pages/",
+  "slices": [
+    {
+      "id": "front-toc",
+      "title": "封面/前言/目录",
+      "pageStart": 1,
+      "pageEnd": 12,
+      "path": "front-toc.md",
+      "isoPointer": "ISO/IEC/IEEE 29119-3",
+      "note": "Approximate chapter bounds; refine after TOC OCR QA"
+    },
+    {
+      "id": "conformance-common",
+      "title": "符合性与公共信息元素",
+      "pageStart": 13,
+      "pageEnd": 28,
+      "path": "conformance-common.md",
+      "isoPointer": "ISO/IEC/IEEE 29119-3",
+      "note": "Approximate chapter bounds; refine after TOC OCR QA"
+    },
+    {
+      "id": "org-docs",
+      "title": "组织级测试文档",
+      "pageStart": 29,
+      "pageEnd": 40,
+      "path": "org-docs.md",
+      "isoPointer": "ISO/IEC/IEEE 29119-3",
+      "note": "Approximate chapter bounds; refine after TOC OCR QA"
+    },
+    {
+      "id": "mgmt-docs",
+      "title": "测试管理文档（计划/状态/完成）",
+      "pageStart": 41,
+      "pageEnd": 70,
+      "path": "mgmt-docs.md",
+      "isoPointer": "ISO/IEC/IEEE 29119-3",
+      "note": "Approximate chapter bounds; refine after TOC OCR QA"
+    },
+    {
+      "id": "dynamic-docs",
+      "title": "动态测试文档",
+      "pageStart": 71,
+      "pageEnd": 100,
+      "path": "dynamic-docs.md",
+      "isoPointer": "ISO/IEC/IEEE 29119-3",
+      "note": "Approximate chapter bounds; refine after TOC OCR QA"
+    },
+    {
+      "id": "annex",
+      "title": "附录与参考文献",
+      "pageStart": 101,
+      "pageEnd": 111,
+      "path": "annex.md",
+      "isoPointer": "ISO/IEC/IEEE 29119-3",
+      "note": "Approximate chapter bounds; refine after TOC OCR QA"
+    }
+  ],
+  "qa": {
+    "tocReadable": true,
+    "failedPages": [
+      {
+        "page": 2,
+        "reason": "too_short_or_few_cjk",
+        "chars": 0,
+        "cjk": 0
+      },
+      {
+        "page": 55,
+        "reason": "too_short_or_few_cjk",
+        "chars": 162,
+        "cjk": 4
+      },
+      {
+        "page": 57,
+        "reason": "too_short_or_few_cjk",
+        "chars": 99,
+        "cjk": 4
+      },
+      {
+        "page": 58,
+        "reason": "too_short_or_few_cjk",
+        "chars": 159,
+        "cjk": 3
+      },
+      {
+        "page": 96,
+        "reason": "too_short_or_few_cjk",
+        "chars": 134,
+        "cjk": 0
+      }
+    ],
+    "failedPageCount": 5,
+    "notes": "Auto QA: short/few-CJK pages listed. Part 3 tocReadable checks key terms in front-toc.md."
+  }
+}

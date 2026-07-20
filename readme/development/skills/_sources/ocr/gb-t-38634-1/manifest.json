@@ -1,0 +1,55 @@
+{
+  "standard": "GB/T 38634.1-2020",
+  "title": "GB/T 38634.1-2020 系统与软件工程 软件测试 第1部分：概念和定义",
+  "isoCounterpart": "ISO/IEC/IEEE 29119-1",
+  "sourcePdf": "GB-T38634.1-2020系统与软件工程　软件测试　第1部分：概念和定义.pdf",
+  "totalPages": 53,
+  "dpi": 200,
+  "ocrLang": "chi_sim+eng",
+  "rawTextFile": "_raw-all-pages.txt",
+  "pagesDir": "pages/",
+  "slices": [
+    {
+      "id": "front-toc",
+      "title": "封面/前言/目录",
+      "pageStart": 1,
+      "pageEnd": 8,
+      "path": "front-toc.md",
+      "isoPointer": "ISO/IEC/IEEE 29119-1",
+      "note": "Approximate chapter bounds; refine after TOC OCR QA"
+    },
+    {
+      "id": "scope-terms",
+      "title": "范围与术语",
+      "pageStart": 9,
+      "pageEnd": 35,
+      "path": "scope-terms.md",
+      "isoPointer": "ISO/IEC/IEEE 29119-1",
+      "note": "Approximate chapter bounds; refine after TOC OCR QA"
+    },
+    {
+      "id": "concepts",
+      "title": "概念主体",
+      "pageStart": 36,
+      "pageEnd": 50,
+      "path": "concepts.md",
+      "isoPointer": "ISO/IEC/IEEE 29119-1",
+      "note": "Approximate chapter bounds; refine after TOC OCR QA"
+    },
+    {
+      "id": "annex",
+      "title": "附录与参考文献",
+      "pageStart": 51,
+      "pageEnd": 53,
+      "path": "annex.md",
+      "isoPointer": "ISO/IEC/IEEE 29119-1",
+      "note": "Approximate chapter bounds; refine after TOC OCR QA"
+    }
+  ],
+  "qa": {
+    "tocReadable": null,
+    "failedPages": [],
+    "failedPageCount": 0,
+    "notes": "Auto QA: short/few-CJK pages listed. Part 3 tocReadable checks key terms in front-toc.md."
+  }
+}

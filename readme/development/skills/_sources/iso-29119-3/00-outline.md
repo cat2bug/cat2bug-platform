@@ -1,0 +1,170 @@
+# ISO/IEC/IEEE 29119-3:2021 — Outline
+
+Source PDF: `ISO:IEC:IEEE 29119-3-2021 软件和系统工程--软件测试--第3部分.pdf`
+
+Total pages: 98
+
+Extracted from PDF bookmarks. Page numbers are 1-based PDF page indices.
+
+- p.3 — Contents
+- p.7 — Foreword
+- p.8 — Introduction
+- p.11 — 1 Scope
+- p.11 — 2 Normative references
+- p.11 — 3 Terms and definitions
+- p.15 — 4 Conformance
+  - p.15 — 4.1 Intended usage
+    - p.15 — 4.1.1 General
+    - p.15 — 4.1.2 Full conformance
+    - p.15 — 4.1.3 Tailored conformance
+- p.16 — 5 Common information for all test documentation
+  - p.16 — 5.1 Overview
+  - p.16 — 5.2 Common information elements
+    - p.16 — 5.2.1 Unique identifier
+    - p.16 — 5.2.2 Issuing organization
+    - p.16 — 5.2.3 Approval authority
+    - p.16 — 5.2.4 Change history
+    - p.16 — 5.2.5 Status
+    - p.16 — 5.2.6 Introduction
+    - p.17 — 5.2.7 Scope
+    - p.17 — 5.2.8 References
+    - p.17 — 5.2.9 Glossary
+- p.17 — 6 Organizational test process documentation
+  - p.17 — 6.1 Overview
+  - p.17 — 6.2 Test policy
+    - p.17 — 6.2.1 Overview
+    - p.17 — 6.2.2 Objectives of testing
+    - p.18 — 6.2.3 Test process
+    - p.18 — 6.2.4 Test organization structure
+    - p.18 — 6.2.5 Tester training
+    - p.18 — 6.2.6 Tester ethics
+    - p.18 — 6.2.7 Standards
+    - p.18 — 6.2.8 Other relevant policies
+    - p.18 — 6.2.9 Measuring the value of testing
+    - p.18 — 6.2.10 Test asset archiving and reuse
+    - p.18 — 6.2.11 Test process improvement
+  - p.18 — 6.3 Organizational test practices
+    - p.18 — 6.3.1 Overview
+    - p.19 — 6.3.2 Organization-level test practice statements
+    - p.20 — 6.3.3 Test level/type-specific organizational test practice statements
+- p.22 — 7 Test management processes documentation
+  - p.22 — 7.1 Overview
+  - p.22 — 7.2 Test plan
+    - p.22 — 7.2.1 Overview
+    - p.22 — 7.2.2 Context of testing
+    - p.23 — 7.2.3 Assumptions and constraints
+    - p.23 — 7.2.4 Stakeholders
+    - p.23 — 7.2.5 Testing communication
+    - p.23 — 7.2.6 Risk register
+    - p.24 — 7.2.7 Test strategy
+    - p.26 — 7.2.8 Testing activities and estimates
+    - p.26 — 7.2.9 Staffing
+    - p.27 — 7.2.10 Schedule
+  - p.27 — 7.3 Test status report
+    - p.27 — 7.3.1 Overview
+    - p.27 — 7.3.2 Test status
+    - p.28 — 7.3.3 Reporting period
+    - p.28 — 7.3.4 Progress against test plan
+    - p.28 — 7.3.5 Factors blocking progress
+    - p.28 — 7.3.6 Test measures
+    - p.28 — 7.3.7 New and changed risks
+    - p.28 — 7.3.8 Planned testing
+  - p.28 — 7.4 Test completion report
+    - p.28 — 7.4.1 Overview
+    - p.28 — 7.4.2 Summary of testing performed
+    - p.28 — 7.4.3 Deviations from planned testing
+    - p.29 — 7.4.4 Test completion evaluation
+    - p.29 — 7.4.5 Factors that blocked progress
+    - p.29 — 7.4.6 Test measures
+    - p.29 — 7.4.7 Residual risks
+    - p.29 — 7.4.8 Test deliverables
+    - p.29 — 7.4.9 Reusable test assets
+    - p.29 — 7.4.10 Lessons learned
+- p.29 — 8 Dynamic test processes documentation
+  - p.29 — 8.1 Overview
+  - p.30 — 8.2 Test model specification
+    - p.30 — 8.2.1 Overview
+    - p.30 — 8.2.2 Unique identifier
+    - p.31 — 8.2.3 Objective
+    - p.31 — 8.2.4 Priority
+    - p.31 — 8.2.5 Test strategy extract
+    - p.31 — 8.2.6 Test model
+    - p.31 — 8.2.7 Traceability
+  - p.31 — 8.3 Test case specification
+    - p.31 — 8.3.1 Overview
+    - p.31 — 8.3.2 Test coverage items
+    - p.32 — 8.3.3 Test cases
+  - p.33 — 8.4 Test procedure specification
+    - p.33 — 8.4.1 Overview
+    - p.34 — 8.4.2 Unique identifier
+    - p.34 — 8.4.3 Objective
+    - p.34 — 8.4.4 Priority
+    - p.34 — 8.4.5 Start up
+    - p.34 — 8.4.6 Ordered test cases
+    - p.34 — 8.4.7 Relationship to other procedures
+    - p.34 — 8.4.8 Stop and wrap up
+  - p.35 — 8.5 Test data requirements
+    - p.35 — 8.5.1 Overview
+    - p.35 — 8.5.2 Unique identifier
+    - p.35 — 8.5.3 Description
+    - p.35 — 8.5.4 Responsibility
+    - p.35 — 8.5.5 Period needed
+    - p.35 — 8.5.6 Resetting needs
+    - p.35 — 8.5.7 Archiving or disposal
+  - p.35 — 8.6 Test environment requirements
+    - p.35 — 8.6.1 Overview
+    - p.36 — 8.6.2 Unique identifier
+    - p.36 — 8.6.3 Test environment item
+    - p.36 — 8.6.4 Description
+    - p.37 — 8.6.5 Responsibility
+    - p.37 — 8.6.6 Period needed
+  - p.37 — 8.7 Test data readiness report
+    - p.37 — 8.7.1 Overview
+    - p.37 — 8.7.2 Unique identifier
+    - p.37 — 8.7.3 Description of status
+  - p.37 — 8.8 Test environment readiness report
+    - p.37 — 8.8.1 Overview
+    - p.37 — 8.8.2 Unique identifier
+    - p.37 — 8.8.3 Description of status
+  - p.38 — 8.9 Actual results and test result
+    - p.38 — 8.9.1 General
+    - p.38 — 8.9.2 Actual results
+    - p.38 — 8.9.3 Test result
+  - p.38 — 8.10 Test execution log
+    - p.38 — 8.10.1 Overview
+    - p.39 — 8.10.2 Unique identifier
+    - p.39 — 8.10.3 Date/time
+    - p.39 — 8.10.4 Description
+    - p.39 — 8.10.5 Impact
+  - p.39 — 8.11 Test incident report
+    - p.39 — 8.11.1 Overview
+    - p.40 — 8.11.2 Timing information
+    - p.40 — 8.11.3 Originator
+    - p.40 — 8.11.4 Context
+    - p.40 — 8.11.5 Description of the incident
+    - p.40 — 8.11.6 Originator’s assessment of severity
+    - p.40 — 8.11.7 Originator’s assessment of priority
+    - p.41 — 8.11.8 Risk
+    - p.41 — 8.11.9 Status of the incident
+- p.42 — Annex A (normative) ISO/IEC/IEEE 29119-3 requirements, recommendations and permissions
+- p.47 — Annex B (informative) Overview of examples
+- p.49 — Annex C (informative) Test policy
+- p.51 — Annex D (informative) Organizational test practices
+- p.56 — Annex E (informative) Test plan
+- p.64 — Annex F (informative) Test status report
+- p.68 — Annex G (informative) Test completion report
+- p.70 — Annex H (informative) Test model specification
+- p.72 — Annex I (informative) Test case specification
+- p.74 — Annex J (informative) Test procedure specification
+- p.76 — Annex K (informative) Test data requirements
+- p.77 — Annex L (informative) Test environment requirements
+- p.78 — Annex M (informative) Test data readiness report
+- p.79 — Annex N (informative) Test environment readiness report
+- p.80 — Annex O (informative) Actual results
+- p.81 — Annex P (informative) Test result
+- p.83 — Annex Q (informative) Test execution log
+- p.84 — Annex R (informative) Incident report
+- p.86 — Annex S (informative) Mappings to IEEE 829:2008 (superseded)
+- p.92 — Annex T (informative) Test models
+- p.93 — Bibliography
+- p.95 — IEEE Notices and Abstract
